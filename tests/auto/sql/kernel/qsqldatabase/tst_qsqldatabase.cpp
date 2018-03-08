@@ -75,6 +75,8 @@ private slots:
     void addDatabase();
     void errorReporting_data();
     void errorReporting();
+    void cloneDatabase_data() { generic_data(); }
+    void cloneDatabase();
 
     //database specific tests
     void recordMySQL_data() { generic_data("QMYSQL"); }
@@ -124,6 +126,10 @@ private slots:
     void formatValueTrimStrings();
     void precisionPolicy_data() { generic_data(); }
     void precisionPolicy();
+    void infinityAndNan_data() { generic_data(); }
+    void infinityAndNan();
+    void multipleThreads_data() { generic_data(); }
+    void multipleThreads();
 
     void db2_valueCacheUpdate_data() { generic_data("QDB2"); }
     void db2_valueCacheUpdate();
@@ -1252,7 +1258,7 @@ void tst_QSqlDatabase::psql_schemas()
     QString table = schemaName + '.' + qTableName("qtesttable", __FILE__, db);
     QVERIFY_SQL(q, exec("CREATE TABLE " + table + " (id int primary key, name varchar(20))"));
 
-    QVERIFY(db.tables().contains(table));
+    QVERIFY(db.tables().contains(table, Qt::CaseInsensitive));
 
     QSqlRecord rec = db.record(table);
     QCOMPARE(rec.count(), 2);
@@ -1343,11 +1349,6 @@ void tst_QSqlDatabase::psql_bug249059()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-
-    QString version=tst_Databases::getPSQLVersion( db );
-    double ver=version.section(QChar::fromLatin1('.'),0,1).toDouble();
-    if (ver < 7.3)
-        QSKIP("Test requires PostgreSQL >= 7.3");
 
     QSqlQuery q(db);
     const QString tableName(qTableName("bug_249059", __FILE__, db));
@@ -1466,6 +1467,46 @@ void tst_QSqlDatabase::precisionPolicy()
     QVERIFY_SQL(q2, next());
     QCOMPARE(q2.value(0).type(), QVariant::LongLong);
     db.setNumericalPrecisionPolicy(oldPrecision);
+}
+
+void tst_QSqlDatabase::infinityAndNan()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    if (tst_Databases::getDatabaseType(db) != QSqlDriver::PostgreSQL)
+       QSKIP("checking for infinity/nan currently only works for PostgreSQL");
+
+    QSqlQuery q(db);
+    const QString tableName(qTableName("infititytest", __FILE__, db));
+    tst_Databases::safeDropTables(db, {tableName});
+    QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (id smallint, val double precision)").arg(tableName)));
+
+    QVERIFY_SQL(q, prepare(QString("INSERT INTO %1 VALUES (?, ?)").arg(tableName)));
+
+    q.bindValue(0, 1);
+    q.bindValue(1, qQNaN());
+    QVERIFY_SQL(q, exec());
+    q.bindValue(0, 2);
+    q.bindValue(1, qInf());
+    QVERIFY_SQL(q, exec());
+    q.bindValue(0, 3);
+    q.bindValue(1, -qInf());
+    QVERIFY_SQL(q, exec());
+
+    QVERIFY_SQL(q, exec(QString("SELECT val FROM %1 ORDER BY id").arg(tableName)));
+
+    QVERIFY_SQL(q, next());
+    QVERIFY(qIsNaN(q.value(0).toDouble()));
+
+    QVERIFY_SQL(q, next());
+    QVERIFY(qIsInf(q.value(0).toDouble()));
+    QVERIFY(q.value(0).toDouble() > 0);
+
+    QVERIFY_SQL(q, next());
+    QVERIFY(qIsInf(q.value(0).toDouble()));
+    QVERIFY(q.value(0).toDouble() < 0);
 }
 
 // This test needs a ODBC data source containing MYSQL in it's name
@@ -2289,6 +2330,68 @@ void tst_QSqlDatabase::sqlite_enableRegexp()
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toString(), QString("a1"));
     QFAIL_SQL(q, next());
+}
+
+void tst_QSqlDatabase::cloneDatabase()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    {
+        QSqlDatabase clonedDatabase = QSqlDatabase::cloneDatabase(db, "clonedDatabase");
+        QCOMPARE(clonedDatabase.databaseName(), db.databaseName());
+        QCOMPARE(clonedDatabase.userName(), db.userName());
+        QCOMPARE(clonedDatabase.password(), db.password());
+        QCOMPARE(clonedDatabase.hostName(), db.hostName());
+        QCOMPARE(clonedDatabase.driverName(), db.driverName());
+        QCOMPARE(clonedDatabase.port(), db.port());
+        QCOMPARE(clonedDatabase.connectOptions(), db.connectOptions());
+        QCOMPARE(clonedDatabase.numericalPrecisionPolicy(), db.numericalPrecisionPolicy());
+    }
+    {
+        // Now double check numericalPrecisionPolicy after changing it since it
+        // is a special case, as changing it can set it on the driver as well as
+        // the database object. When retrieving the numerical precision policy
+        // it may just get it from the driver so we have to check that the
+        // clone has also ensured the copied driver has the correct precision
+        // policy too.
+        db.setNumericalPrecisionPolicy(QSql::LowPrecisionDouble);
+        QSqlDatabase clonedDatabase = QSqlDatabase::cloneDatabase(db, "clonedDatabaseCopy");
+        QCOMPARE(clonedDatabase.numericalPrecisionPolicy(), db.numericalPrecisionPolicy());
+    }
+}
+
+class DatabaseThreadObject : public QObject
+{
+    Q_OBJECT
+public:
+    DatabaseThreadObject(const QString &name, QObject *parent = nullptr) : QObject(parent), dbName(name)
+    {}
+public slots:
+    void ready()
+    {
+        QTest::ignoreMessage(QtWarningMsg,
+            "QSqlDatabasePrivate::database: requested database does not belong to the calling thread.");
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        QVERIFY(!db.isValid());
+        QThread::currentThread()->exit();
+    }
+private:
+    QString dbName;
+};
+
+void tst_QSqlDatabase::multipleThreads()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    DatabaseThreadObject dto(dbName);
+    QThread t;
+    dto.moveToThread(&t);
+    connect(&t, &QThread::started, &dto, &DatabaseThreadObject::ready);
+    t.start();
+    QTRY_VERIFY(t.isRunning());
+    QTRY_VERIFY(t.isFinished());
 }
 
 QTEST_MAIN(tst_QSqlDatabase)

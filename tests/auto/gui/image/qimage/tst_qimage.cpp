@@ -33,6 +33,7 @@
 #include <qimagereader.h>
 #include <qlist.h>
 #include <qmatrix.h>
+#include <qrandom.h>
 #include <stdio.h>
 
 #include <qpainter.h>
@@ -1754,7 +1755,7 @@ void tst_QImage::smoothScale2()
 
 static inline int rand8()
 {
-    return int(256. * (qrand() / (RAND_MAX + 1.0)));
+    return QRandomGenerator::global()->bounded(256);
 }
 
 void tst_QImage::smoothScale3_data()
@@ -3440,10 +3441,10 @@ void tst_QImage::hugeQImage()
     QVERIFY(!image.isNull());
     QCOMPARE(image.height(), 25000);
     QCOMPARE(image.width(), 25000);
-    QCOMPARE(image.sizeInBytes(), qssize_t(25000)*25000*4);
+    QCOMPARE(image.sizeInBytes(), qsizetype(25000)*25000*4);
     QCOMPARE(image.bytesPerLine(), 25000 * 4);
 
-    QCOMPARE(image.constScanLine(24990), image.constBits() + qssize_t(25000)*24990*4);
+    QCOMPARE(image.constScanLine(24990), image.constBits() + qsizetype(25000)*24990*4);
 
     image.setPixel(20000, 24990, 0xffaabbcc);
     QCOMPARE(image.pixel(20000, 24990), 0xffaabbcc);

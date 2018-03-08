@@ -47,6 +47,7 @@
 #include <QtCore/QSysInfo>
 #include <QtCore/qfunctions_winrt.h>
 #include <private/qnativesocketengine_winrt_p.h>
+#include <private/qeventdispatcher_winrt_p.h>
 
 #include <windows.networking.h>
 #include <windows.networking.sockets.h>
@@ -443,8 +444,11 @@ void QSslSocketBackendPrivate::continueHandshake()
         return;
     }
 
-    hr = op->put_Completed(Callback<IAsyncActionCompletedHandler>(
-                               this, &QSslSocketBackendPrivate::onSslUpgrade).Get());
+    hr = QEventDispatcherWinRT::runOnXamlThread([this, op]() {
+        HRESULT hr = op->put_Completed(Callback<IAsyncActionCompletedHandler>(
+            this, &QSslSocketBackendPrivate::onSslUpgrade).Get());
+        return hr;
+    });
     Q_ASSERT_SUCCEEDED(hr);
 }
 

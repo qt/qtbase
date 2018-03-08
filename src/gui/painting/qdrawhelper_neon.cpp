@@ -1080,23 +1080,41 @@ const uint * QT_FASTCALL qt_fetchUntransformed_888_neon(uint *buffer, const Oper
     return buffer;
 }
 
-#if defined(Q_PROCESSOR_ARM_64) && Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
 template<bool RGBA>
 static inline void convertARGBToARGB32PM_neon(uint *buffer, const uint *src, int count)
 {
     int i = 0;
+#if defined(Q_PROCESSOR_ARM_64)
     const uint8x16_t rgbaMask  = { 2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15};
+#else
+    const uint8x8_t rgbaMask  = { 2, 1, 0, 3, 6, 5, 4, 7 };
+#endif
     const uint8x8_t shuffleMask = { 3, 3, 3, 3, 7, 7, 7, 7};
     const uint32x4_t blendMask = vdupq_n_u32(0xff000000);
 
     for (; i < count - 3; i += 4) {
         uint32x4_t srcVector = vld1q_u32(src + i);
         uint32x4_t alphaVector = vshrq_n_u32(srcVector, 24);
+#if defined(Q_PROCESSOR_ARM_64)
         uint32_t alphaSum = vaddvq_u32(alphaVector);
+#else
+        // no vaddvq_u32
+        uint32x2_t tmp = vpadd_u32(vget_low_u32(alphaVector), vget_high_u32(alphaVector));
+        uint32_t alphaSum = vget_lane_u32(vpadd_u32(tmp, tmp), 0);
+#endif
         if (alphaSum) {
             if (alphaSum != 255 * 4) {
-                if (RGBA)
+                if (RGBA) {
+#if defined(Q_PROCESSOR_ARM_64)
                     srcVector = vreinterpretq_u32_u8(vqtbl1q_u8(vreinterpretq_u8_u32(srcVector), rgbaMask));
+#else
+                    // no vqtbl1q_u8
+                    const uint8x8_t low = vtbl1_u8(vreinterpret_u8_u32(vget_low_u32(srcVector)), rgbaMask);
+                    const uint8x8_t high = vtbl1_u8(vreinterpret_u8_u32(vget_high_u32(srcVector)), rgbaMask);
+                    srcVector = vcombine_u32(vreinterpret_u32_u8(low), vreinterpret_u32_u8(high));
+#endif
+                }
                 const uint8x8_t s1 = vreinterpret_u8_u32(vget_low_u32(srcVector));
                 const uint8x8_t s2 = vreinterpret_u8_u32(vget_high_u32(srcVector));
                 const uint8x8_t alpha1 = vtbl1_u8(s1, shuffleMask);
@@ -1110,10 +1128,19 @@ static inline void convertARGBToARGB32PM_neon(uint *buffer, const uint *src, int
                 const uint32x4_t d = vbslq_u32(blendMask, srcVector, vreinterpretq_u32_u8(vcombine_u8(d1, d2)));
                 vst1q_u32(buffer + i, d);
             } else {
-                if (RGBA)
-                    vst1q_u32(buffer + i, vreinterpretq_u32_u8(vqtbl1q_u8(vreinterpretq_u8_u32(srcVector), rgbaMask)));
-                else if (buffer != src)
+                if (RGBA) {
+#if defined(Q_PROCESSOR_ARM_64)
+                    srcVector = vreinterpretq_u32_u8(vqtbl1q_u8(vreinterpretq_u8_u32(srcVector), rgbaMask));
+#else
+                    // no vqtbl1q_u8
+                    const uint8x8_t low = vtbl1_u8(vreinterpret_u8_u32(vget_low_u32(srcVector)), rgbaMask);
+                    const uint8x8_t high = vtbl1_u8(vreinterpret_u8_u32(vget_high_u32(srcVector)), rgbaMask);
+                    srcVector = vcombine_u32(vreinterpret_u32_u8(low), vreinterpret_u32_u8(high));
+#endif
                     vst1q_u32(buffer + i, srcVector);
+                } else if (buffer != src) {
+                    vst1q_u32(buffer + i, srcVector);
+                }
             }
         } else {
             vst1q_u32(buffer + i, vdupq_n_u32(0));
@@ -1139,7 +1166,8 @@ const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_neon(uint *buffer, const uint 
     convertARGBToARGB32PM_neon<true>(buffer, src, count);
     return buffer;
 }
-#endif
+
+#endif // Q_BYTE_ORDER == Q_LITTLE_ENDIAN
 
 QT_END_NAMESPACE
 

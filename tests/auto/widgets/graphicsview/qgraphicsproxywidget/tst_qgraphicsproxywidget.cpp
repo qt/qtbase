@@ -1471,6 +1471,15 @@ protected:
     }
 };
 
+// ### work around missing QVector ctor from iterator pair:
+static QVector<QRect> rects(const QRegion &region)
+{
+    QVector<QRect> result;
+    for (QRect r : region)
+        result.push_back(r);
+    return result;
+}
+
 void tst_QGraphicsProxyWidget::scrollUpdate()
 {
     ScrollWidget *widget = new ScrollWidget;
@@ -1492,10 +1501,10 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
     // QRect(0, 0, 200, 12) is the first update, expanded (-2, -2, 2, 2)
     // QRect(0, 12, 102, 10) is the scroll update, expanded (-2, -2, 2, 2),
     // intersected with the above update.
-    QCOMPARE(view.paintEventRegion.rects(),
+    QCOMPARE(rects(view.paintEventRegion),
              QVector<QRect>() << QRect(0, 0, 200, 12) << QRect(0, 12, 102, 10));
     QCOMPARE(widget->npaints, 2);
-    QCOMPARE(widget->paintEventRegion.rects(),
+    QCOMPARE(rects(widget->paintEventRegion),
              QVector<QRect>() << QRect(0, 0, 200, 12) << QRect(0, 12, 102, 10));
 }
 
@@ -2661,9 +2670,6 @@ void tst_QGraphicsProxyWidget::childPos_data()
 
 void tst_QGraphicsProxyWidget::childPos()
 {
-#ifdef Q_OS_IRIX
-    QSKIP("This test is not reliable on IRIX.");
-#endif
     QFETCH(bool, moveCombo);
     QFETCH(QPoint, comboPos);
     QFETCH(QPointF, proxyPos);

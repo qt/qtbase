@@ -44,6 +44,7 @@
 #include <QtCore/qstandardpaths.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qdir.h>
+#include <QtCore/qcoreapplication.h>
 
 // We can't use the default macros because this would lead to recursion.
 // Instead let's define our own one that unconditionally logs...
@@ -255,6 +256,16 @@ void QLoggingSettingsParser::parseNextLine(QStringRef line)
 QLoggingRegistry::QLoggingRegistry()
     : categoryFilter(defaultCategoryFilter)
 {
+#if defined(Q_OS_ANDROID)
+    // Unless QCoreApplication has been constructed we can't be sure that
+    // we are on Qt's main thread. If we did allow logging here, we would
+    // potentially set Qt's main thread to Android's thread 0, which would
+    // confuse Qt later when running main().
+    if (!qApp)
+        return;
+#endif
+
+    initializeRules(); // Init on first use
 }
 
 static bool qtLoggingDebug()
@@ -283,7 +294,7 @@ static QVector<QLoggingRule> loadRulesFromFile(const QString &filePath)
     Initializes the rules database by loading
     $QT_LOGGING_CONF, $QT_LOGGING_RULES, and .config/QtProject/qtlogging.ini.
  */
-void QLoggingRegistry::init()
+void QLoggingRegistry::initializeRules()
 {
     QVector<QLoggingRule> er, qr, cr;
     // get rules from environment

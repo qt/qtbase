@@ -181,9 +181,9 @@ Q_DECL_CONST_FUNCTION static inline QPair<qint64, qint64> toSecsAndNSecs(qint64 
 */
 
 /*!
-    \fn QDeadlineTimer::QDeadlineTimer(ForeverConstant forever, Qt::TimerType timerType)
+    \fn QDeadlineTimer::QDeadlineTimer(ForeverConstant, Qt::TimerType timerType)
 
-    QDeadlineTimer objects created with parameter \a forever never expire.
+    QDeadlineTimer objects created with ForeverConstant never expire.
     For such objects, remainingTime() will return -1, deadline() will return the
     maximum value, and isForever() will return true.
 
@@ -220,7 +220,7 @@ QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) Q_DECL_NOTHROW
 }
 
 /*!
-    \fn QDeadlineTimer::QDeadlineTimer(std::chrono::time_point<Clock, Duration> deadline, Qt::TimerType type)
+    \fn template <class Clock, class Duration> QDeadlineTimer::QDeadlineTimer(std::chrono::time_point<Clock, Duration> deadline, Qt::TimerType type)
 
     Constructs a QDeadlineTimer object with a deadline at \a deadline time
     point, converting from the clock source \c{Clock} to Qt's internal clock
@@ -236,7 +236,7 @@ QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) Q_DECL_NOTHROW
 */
 
 /*!
-    \fn QDeadlineTimer::QDeadlineTimer(std::chrono::duration<Rep, Period> remaining, Qt::TimerType type)
+    \fn template <class Rep, class Period> QDeadlineTimer::QDeadlineTimer(std::chrono::duration<Rep, Period> remaining, Qt::TimerType type)
 
     Constructs a QDeadlineTimer object with a remaining time of \a remaining.
     If \a remaining is zero or negative, this QDeadlineTimer object will be
@@ -263,7 +263,7 @@ QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) Q_DECL_NOTHROW
 */
 
 /*!
-    \fn void QDeadlineTimer::setDeadline(std::chrono::time_point<Clock, Duration> deadline, Qt::TimerType type)
+    \fn template <class Clock, class Duration> void QDeadlineTimer::setDeadline(std::chrono::time_point<Clock, Duration> deadline, Qt::TimerType type)
 
     Sets this QDeadlineTimer to the deadline marked by \a deadline time
     point, converting from the clock source \c{Clock} to Qt's internal clock
@@ -329,7 +329,7 @@ void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, qint64 nsecs, Qt::Time
 
 /*!
     \overload
-    \fn void QDeadlineTimer::setRemainingTime(std::chrono::duration<Rep, Period> remaining, Qt::TimerType type)
+    \fn template <class Rep, class Period> void QDeadlineTimer::setRemainingTime(std::chrono::duration<Rep, Period> remaining, Qt::TimerType type)
 
     Sets the remaining time for this QDeadlineTimer object to \a remaining. If
     \a remaining is zero or negative, this QDeadlineTimer object will be mark
@@ -756,13 +756,13 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
  */
 
 /*!
-  \fn QDeadlineTimer & QDeadlineTimer::operator=(std::chrono::time_point<Clock, Duration> deadline_)
+  \fn template <class Clock, class Duration> QDeadlineTimer & QDeadlineTimer::operator=(std::chrono::time_point<Clock, Duration> deadline_)
 
   Assigns \a deadline_ to this deadline timer.
  */
 
 /*!
-  \fn QDeadlineTimer & QDeadlineTimer::operator=(std::chrono::duration<Rep, Period> remaining)
+  \fn template <class Rep, class Period> QDeadlineTimer & QDeadlineTimer::operator=(std::chrono::duration<Rep, Period> remaining)
 
   Sets this deadline timer to the \a remaining time.
  */

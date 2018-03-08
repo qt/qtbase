@@ -161,7 +161,7 @@ qtConfig(timezone) {
         tools/qtimezoneprivate.cpp
     !nacl:darwin: \
         SOURCES += tools/qtimezoneprivate_mac.mm
-    else: android: \
+    else: android:!android-embedded: \
         SOURCES += tools/qtimezoneprivate_android.cpp
     else: unix: \
         SOURCES += tools/qtimezoneprivate_tz.cpp
@@ -223,4 +223,3 @@ TR_EXCLUDE += ../3rdparty/*
 # MIPS DSP
 MIPS_DSP_ASM += tools/qstring_mips_dsp_asm.S
 MIPS_DSP_HEADERS += ../gui/painting/qt_mips_asm_dsp_p.h
-CONFIG += simd

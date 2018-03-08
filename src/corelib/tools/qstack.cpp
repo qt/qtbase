@@ -77,7 +77,7 @@
 */
 
 /*!
-    \fn void QStack::swap(QStack<T> &other)
+    \fn template<class T> void QStack<T>::swap(QStack<T> &other)
     \since 4.8
 
     Swaps stack \a other with this stack. This operation is very fast and
@@ -85,7 +85,7 @@
 */
 
 /*!
-    \fn void QStack::push(const T& t)
+    \fn template<class T> void QStack<T>::push(const T& t)
 
     Adds element \a t to the top of the stack.
 
@@ -95,7 +95,7 @@
 */
 
 /*!
-    \fn T& QStack::top()
+    \fn template<class T> T& QStack<T>::top()
 
     Returns a reference to the stack's top item. This function
     assumes that the stack isn't empty.
@@ -106,7 +106,7 @@
 */
 
 /*!
-    \fn const T& QStack::top() const
+    \fn template<class T> const T& QStack<T>::top() const
 
     \overload
 
@@ -114,7 +114,7 @@
 */
 
 /*!
-    \fn T QStack::pop()
+    \fn template<class T> T QStack<T>::pop()
 
     Removes the top item from the stack and returns it. This function
     assumes that the stack isn't empty.

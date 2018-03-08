@@ -70,6 +70,7 @@ class QTextCursor;
 
 template<typename T> class QVector;
 
+#ifndef Q_CLANG_QDOC
 namespace Qt
 {
     Q_GUI_EXPORT bool mightBeRichText(const QString&);
@@ -79,6 +80,7 @@ namespace Qt
     Q_GUI_EXPORT QTextCodec *codecForHtml(const QByteArray &ba);
 #endif
 }
+#endif
 
 class Q_GUI_EXPORT QAbstractUndoItem
 {

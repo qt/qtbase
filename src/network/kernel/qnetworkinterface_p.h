@@ -52,7 +52,9 @@
 //
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
+#include <QtNetwork/qnetworkinterface.h>
 #include <QtCore/qatomic.h>
+#include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qreadwritelock.h>
 #include <QtCore/qstring.h>
@@ -69,7 +71,12 @@ class QNetworkAddressEntryPrivate
 public:
     QHostAddress address;
     QHostAddress broadcast;
+    QDeadlineTimer preferredLifetime = QDeadlineTimer::Forever;
+    QDeadlineTimer validityLifetime = QDeadlineTimer::Forever;
+
     QNetmask netmask;
+    bool lifetimeKnown = false;
+    QNetworkAddressEntry::DnsEligibilityStatus dnsEligibility = QNetworkAddressEntry::DnsEligibilityUnknown;
 };
 
 class QNetworkInterfacePrivate: public QSharedData
@@ -81,7 +88,9 @@ public:
     { }
 
     int index;                  // interface index, if know
+    int mtu = 0;
     QNetworkInterface::InterfaceFlags flags;
+    QNetworkInterface::InterfaceType type = QNetworkInterface::Unknown;
 
     QString name;
     QString friendlyName;
@@ -90,6 +99,20 @@ public:
     QList<QNetworkAddressEntry> addressEntries;
 
     static QString makeHwAddress(int len, uchar *data);
+    static void calculateDnsEligibility(QNetworkAddressEntry *entry, bool isTemporary,
+                                        bool isDeprecated)
+    {
+        // this implements an algorithm that yields the same results as Windows
+        // produces, for the same input (as far as I can test)
+        if (isTemporary || isDeprecated)
+            entry->setDnsEligibility(QNetworkAddressEntry::DnsIneligible);
+
+        AddressClassification cl = QHostAddressPrivate::classify(entry->ip());
+        if (cl == LoopbackAddress || cl == LinkLocalAddress)
+            entry->setDnsEligibility(QNetworkAddressEntry::DnsIneligible);
+        else
+            entry->setDnsEligibility(QNetworkAddressEntry::DnsEligible);
+    }
 
 private:
     // disallow copying -- avoid detaching

@@ -67,12 +67,19 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::openImage()
 {
-    const QString fileName =
-        QFileDialog::getOpenFileName(this, tr("Open Image"), QString(),
-                                     tr("Image Files (*.png *.jpg *.bmp)"));
-
-    if (!fileName.isEmpty())
-        loadImage(fileName);
+    const QString directory =
+        QStandardPaths::standardLocations(QStandardPaths::PicturesLocation).value(0, QDir::homePath());
+    QFileDialog dialog(this, tr("Open Image"), directory);
+    dialog.setAcceptMode(QFileDialog::AcceptOpen);
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    QStringList mimeTypeFilters;
+    for (const QByteArray &mimeTypeName : QImageReader::supportedMimeTypes())
+        mimeTypeFilters.append(mimeTypeName);
+    mimeTypeFilters.sort();
+    dialog.setMimeTypeFilters(mimeTypeFilters);
+    dialog.selectMimeTypeFilter("image/jpeg");
+    if (dialog.exec() == QDialog::Accepted)
+        loadImage(dialog.selectedFiles().constFirst());
 }
 
 void MainWindow::loadImage(const QString &fileName)
@@ -101,8 +108,8 @@ void MainWindow::setCompleted()
 void MainWindow::setupPuzzle()
 {
     int size = qMin(puzzleImage.width(), puzzleImage.height());
-    puzzleImage = puzzleImage.copy((puzzleImage.width() - size)/2,
-        (puzzleImage.height() - size)/2, size, size).scaled(puzzleWidget->width(),
+    puzzleImage = puzzleImage.copy((puzzleImage.width() - size) / 2,
+        (puzzleImage.height() - size) / 2, size, size).scaled(puzzleWidget->width(),
             puzzleWidget->height(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
     piecesList->clear();
@@ -115,10 +122,8 @@ void MainWindow::setupPuzzle()
         }
     }
 
-    qsrand(QCursor::pos().x() ^ QCursor::pos().y());
-
     for (int i = 0; i < piecesList->count(); ++i) {
-        if (int(2.0*qrand()/(RAND_MAX+1.0)) == 1) {
+        if (QRandomGenerator::global()->bounded(2) == 1) {
             QListWidgetItem *item = piecesList->takeItem(i);
             piecesList->insertItem(0, item);
         }

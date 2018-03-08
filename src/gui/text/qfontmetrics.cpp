@@ -452,7 +452,7 @@ bool QFontMetrics::inFontUcs4(uint ucs4) const
     value is negative if the pixels of the character extend to the
     left of the logical origin.
 
-    See width(QChar) for a graphical description of this metric.
+    See width() for a graphical description of this metric.
 
     \sa rightBearing(), minLeftBearing(), width()
 */
@@ -510,6 +510,7 @@ int QFontMetrics::rightBearing(QChar ch) const
     return qRound(rb);
 }
 
+#if QT_DEPRECATED_SINCE(5, 11)
 /*!
     Returns the width in pixels of the first \a len characters of \a
     text. If \a len is negative (the default), the entire string is
@@ -520,11 +521,13 @@ int QFontMetrics::rightBearing(QChar ch) const
     string will cover whereas width() returns the distance to where
     the next string should be drawn.
 
+    \deprecated in Qt 5.11. Use horizontalAdvance() instead.
+
     \sa boundingRect()
 */
 int QFontMetrics::width(const QString &text, int len) const
 {
-    return width(text, len, 0);
+    return horizontalAdvance(text, len);
 }
 
 /*!
@@ -532,17 +535,17 @@ int QFontMetrics::width(const QString &text, int len) const
 */
 int QFontMetrics::width(const QString &text, int len, int flags) const
 {
-    int pos = text.indexOf(QLatin1Char('\x9c'));
-    if (pos != -1) {
-        len = (len < 0) ? pos : qMin(pos, len);
-    } else if (len < 0) {
-        len = text.length();
-    }
-    if (len == 0)
-        return 0;
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_DEPRECATED_SINCE(5, 11) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (flags & Qt::TextBypassShaping) {
+        int pos = text.indexOf(QLatin1Char('\x9c'));
+        if (pos != -1) {
+            len = (len < 0) ? pos : qMin(pos, len);
+        } else if (len < 0) {
+            len = text.length();
+        }
+        if (len == 0)
+            return 0;
+
         // Skip complex shaping, only use advances
         int numGlyphs = len;
         QVarLengthGlyphLayoutArray glyphs(numGlyphs);
@@ -555,10 +558,11 @@ int QFontMetrics::width(const QString &text, int len, int flags) const
             width += glyphs.advances[i];
         return qRound(width);
     }
+#else
+    Q_UNUSED(flags)
 #endif
 
-    QStackTextEngine layout(text, QFont(d.data()));
-    return qRound(layout.width(0, len));
+    return horizontalAdvance(text, len);
 }
 
 /*!
@@ -577,6 +581,8 @@ int QFontMetrics::width(const QString &text, int len, int flags) const
     in this particular font are both negative, while the bearings of
     "o" are both positive.
 
+    \deprecated in Qt 5.11. Use horizontalAdvance() instead.
+
     \warning This function will produce incorrect results for Arabic
     characters or non-spacing marks in the middle of a string, as the
     glyph shaping and positioning of marks that happens when
@@ -586,6 +592,65 @@ int QFontMetrics::width(const QString &text, int len, int flags) const
     \sa boundingRect()
 */
 int QFontMetrics::width(QChar ch) const
+{
+    return horizontalAdvance(ch);
+}
+#endif // QT_DEPRECATED_SINCE(5, 11)
+
+/*!
+    Returns the horizontal advance in pixels of the first \a len characters of \a
+    text. If \a len is negative (the default), the entire string is
+    used.
+
+    This is the distance appropriate for drawing a subsequent character
+    after \a text.
+
+    \since 5.11
+
+    \sa boundingRect()
+*/
+int QFontMetrics::horizontalAdvance(const QString &text, int len) const
+{
+    int pos = text.indexOf(QLatin1Char('\x9c'));
+    if (pos != -1) {
+        len = (len < 0) ? pos : qMin(pos, len);
+    } else if (len < 0) {
+        len = text.length();
+    }
+    if (len == 0)
+        return 0;
+
+    QStackTextEngine layout(text, QFont(d.data()));
+    return qRound(layout.width(0, len));
+}
+
+/*!
+    \overload
+
+    \image bearings.png Bearings
+
+    Returns the horizontal advance of character \a ch in pixels. This is a
+    distance appropriate for drawing a subsequent character after \a
+    ch.
+
+    Some of the metrics are described in the image. The
+    central dark rectangles cover the logical horizontalAdvance() of each
+    character. The outer pale rectangles cover the leftBearing() and
+    rightBearing() of each character. Notice that the bearings of "f"
+    in this particular font are both negative, while the bearings of
+    "o" are both positive.
+
+    \warning This function will produce incorrect results for Arabic
+    characters or non-spacing marks in the middle of a string, as the
+    glyph shaping and positioning of marks that happens when
+    processing strings cannot be taken into account. When implementing
+    an interactive text control, use QTextLayout instead.
+
+    \since 5.11
+
+    \sa boundingRect()
+*/
+int QFontMetrics::horizontalAdvance(QChar ch) const
 {
     if (QChar::category(ch.unicode()) == QChar::Mark_NonSpacing)
         return 0;
@@ -677,7 +742,7 @@ int QFontMetrics::charWidth(const QString &text, int pos) const
     rectangle might be different than what the width() method returns.
 
     If you want to know the advance width of the string (to lay out
-    a set of strings next to each other), use width() instead.
+    a set of strings next to each other), use horizontalAdvance() instead.
 
     Newline characters are processed as normal characters, \e not as
     linebreaks.
@@ -711,7 +776,7 @@ QRect QFontMetrics::boundingRect(const QString &text) const
     base line.
 
     \warning The width of the returned rectangle is not the advance width
-    of the character. Use boundingRect(const QString &) or width() instead.
+    of the character. Use boundingRect(const QString &) or horizontalAdvance() instead.
 
     \sa width()
 */
@@ -846,7 +911,7 @@ QSize QFontMetrics::size(int flags, const QString &text, int tabStops, int *tabA
     rectangle might be different than what the width() method returns.
 
     If you want to know the advance width of the string (to lay out
-    a set of strings next to each other), use width() instead.
+    a set of strings next to each other), use horizontalAdvance() instead.
 
     Newline characters are processed as normal characters, \e not as
     linebreaks.
@@ -1337,7 +1402,7 @@ bool QFontMetricsF::inFontUcs4(uint ucs4) const
     value is negative if the pixels of the character extend to the
     left of the logical origin.
 
-    See width(QChar) for a graphical description of this metric.
+    See width() for a graphical description of this metric.
 
     \sa rightBearing(), minLeftBearing(), width()
 */
@@ -1396,6 +1461,7 @@ qreal QFontMetricsF::rightBearing(QChar ch) const
 
 }
 
+#if QT_DEPRECATED_SINCE(5, 11)
 /*!
     Returns the width in pixels of the characters in the given \a text.
 
@@ -1404,16 +1470,13 @@ qreal QFontMetricsF::rightBearing(QChar ch) const
     describing the pixels this string will cover whereas width()
     returns the distance to where the next string should be drawn.
 
+    \deprecated in Qt 5.11. Use horizontalAdvance() instead.
+
     \sa boundingRect()
 */
 qreal QFontMetricsF::width(const QString &text) const
 {
-    int pos = text.indexOf(QLatin1Char('\x9c'));
-    int len = (pos != -1) ? pos : text.length();
-
-    QStackTextEngine layout(text, QFont(d.data()));
-    layout.itemize();
-    return layout.width(0, len).toReal();
+    return horizontalAdvance(text);
 }
 
 /*!
@@ -1432,6 +1495,8 @@ qreal QFontMetricsF::width(const QString &text) const
     in this particular font are both negative, while the bearings of
     "o" are both positive.
 
+    \deprecated in Qt 5.11. Use horizontalAdvance() instead.
+
     \warning This function will produce incorrect results for Arabic
     characters or non-spacing marks in the middle of a string, as the
     glyph shaping and positioning of marks that happens when
@@ -1441,6 +1506,66 @@ qreal QFontMetricsF::width(const QString &text) const
     \sa boundingRect()
 */
 qreal QFontMetricsF::width(QChar ch) const
+{
+    return horizontalAdvance(ch);
+}
+#endif
+
+/*!
+    Returns the horizontal advance in pixels of the first \a length characters of \a
+    text. If \a length is negative (the default), the entire string is
+    used.
+
+    The advance is the distance appropriate for drawing a subsequent
+    character after \a text.
+
+    \since 5.11
+
+    \sa boundingRect()
+*/
+qreal QFontMetricsF::horizontalAdvance(const QString &text, int length) const
+{
+    int pos = text.indexOf(QLatin1Char('\x9c'));
+    if (pos != -1)
+        length = (length < 0) ? pos : qMin(pos, length);
+    else if (length < 0)
+        length = text.length();
+
+    if (length == 0)
+        return 0;
+
+    QStackTextEngine layout(text, QFont(d.data()));
+    layout.itemize();
+    return layout.width(0, length).toReal();
+}
+
+/*!
+    \overload
+
+    \image bearings.png Bearings
+
+    Returns the horizontal advance of character \a ch in pixels. This is a
+    distance appropriate for drawing a subsequent character after \a
+    ch.
+
+    Some of the metrics are described in the image to the right. The
+    central dark rectangles cover the logical width() of each
+    character. The outer pale rectangles cover the leftBearing() and
+    rightBearing() of each character. Notice that the bearings of "f"
+    in this particular font are both negative, while the bearings of
+    "o" are both positive.
+
+    \warning This function will produce incorrect results for Arabic
+    characters or non-spacing marks in the middle of a string, as the
+    glyph shaping and positioning of marks that happens when
+    processing strings cannot be taken into account. When implementing
+    an interactive text control, use QTextLayout instead.
+
+    \since 5.11
+
+    \sa boundingRect()
+*/
+qreal QFontMetricsF::horizontalAdvance(QChar ch) const
 {
     if (ch.category() == QChar::Mark_NonSpacing)
         return 0.;
@@ -1467,6 +1592,7 @@ qreal QFontMetricsF::width(QChar ch) const
     return advance.toReal();
 }
 
+
 /*!
     Returns the bounding rectangle of the characters in the string
     specified by \a text. The bounding rectangle always covers at least
@@ -1477,7 +1603,7 @@ qreal QFontMetricsF::width(QChar ch) const
     rectangle might be different than what the width() method returns.
 
     If you want to know the advance width of the string (to lay out
-    a set of strings next to each other), use width() instead.
+    a set of strings next to each other), use horizontalAdvance() instead.
 
     Newline characters are processed as normal characters, \e not as
     linebreaks.
@@ -1650,7 +1776,7 @@ QSizeF QFontMetricsF::size(int flags, const QString &text, int tabStops, int *ta
     rectangle might be different than what the width() method returns.
 
     If you want to know the advance width of the string (to lay out
-    a set of strings next to each other), use width() instead.
+    a set of strings next to each other), use horizontalAdvance() instead.
 
     Newline characters are processed as normal characters, \e not as
     linebreaks.

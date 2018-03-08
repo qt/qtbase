@@ -53,7 +53,7 @@ HEADERS += \
     $$PWD/qwindowsservices.h \
     $$PWD/qwindowsnativeinterface.h \
     $$PWD/qwindowsopengltester.h \
-    $$PWD/qwindowsthreadpoolrunner.h
+    $$PWD/qwindowsthreadpoolrunner.h \
     $$PWD/qwin10helpers.h
 
 INCLUDEPATH += $$PWD
@@ -109,7 +109,7 @@ qtConfig(imageformat_png):RESOURCES += $$PWD/cursors.qrc
 
 RESOURCES += $$PWD/openglblacklists.qrc
 
-qtConfig(accessibility): include($$PWD/accessible/accessible.pri)
+qtConfig(accessibility): include($$PWD/uiautomation/uiautomation.pri)
 
 qtConfig(combined-angle-lib) {
     DEFINES *= LIBEGL_NAME=$${LIBQTANGLE_NAME}

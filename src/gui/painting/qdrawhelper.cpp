@@ -174,29 +174,31 @@ template<QImage::Format Format>
 static const uint *QT_FASTCALL convertToRGB32(uint *buffer, const uint *src, int count,
                                               const QVector<QRgb> *, QDitherInfo *)
 {
-    Q_CONSTEXPR uint redMask = ((1 << redWidth<Format>()) - 1);
-    Q_CONSTEXPR uint greenMask = ((1 << greenWidth<Format>()) - 1);
-    Q_CONSTEXPR uint blueMask = ((1 << blueWidth<Format>()) - 1);
+    auto conversion = [](uint s) {
+        // MSVC needs these constexpr defined in here otherwise it will create a capture.
+        Q_CONSTEXPR uint redMask = ((1 << redWidth<Format>()) - 1);
+        Q_CONSTEXPR uint greenMask = ((1 << greenWidth<Format>()) - 1);
+        Q_CONSTEXPR uint blueMask = ((1 << blueWidth<Format>()) - 1);
 
-    Q_CONSTEXPR uchar redLeftShift = 8 - redWidth<Format>();
-    Q_CONSTEXPR uchar greenLeftShift = 8 - greenWidth<Format>();
-    Q_CONSTEXPR uchar blueLeftShift = 8 - blueWidth<Format>();
+        Q_CONSTEXPR uchar redLeftShift = 8 - redWidth<Format>();
+        Q_CONSTEXPR uchar greenLeftShift = 8 - greenWidth<Format>();
+        Q_CONSTEXPR uchar blueLeftShift = 8 - blueWidth<Format>();
 
-    Q_CONSTEXPR uchar redRightShift = 2 * redWidth<Format>() - 8;
-    Q_CONSTEXPR uchar greenRightShift = 2 * greenWidth<Format>() - 8;
-    Q_CONSTEXPR uchar blueRightShift = 2 * blueWidth<Format>() - 8;
+        Q_CONSTEXPR uchar redRightShift = 2 * redWidth<Format>() - 8;
+        Q_CONSTEXPR uchar greenRightShift = 2 * greenWidth<Format>() - 8;
+        Q_CONSTEXPR uchar blueRightShift = 2 * blueWidth<Format>() - 8;
 
-    for (int i = 0; i < count; ++i) {
-        uint red = (src[i] >> redShift<Format>()) & redMask;
-        uint green = (src[i] >> greenShift<Format>()) & greenMask;
-        uint blue = (src[i] >> blueShift<Format>()) & blueMask;
+        uint red   = (s >> redShift<Format>()) & redMask;
+        uint green = (s >> greenShift<Format>()) & greenMask;
+        uint blue  = (s >> blueShift<Format>()) & blueMask;
 
         red = ((red << redLeftShift) | (red >> redRightShift)) << 16;
         green = ((green << greenLeftShift) | (green >> greenRightShift)) << 8;
         blue = (blue << blueLeftShift) | (blue >> blueRightShift);
-        buffer[i] = 0xff000000 | red | green | blue;
-    }
+        return 0xff000000 | red | green | blue;
+    };
 
+    UNALIASED_CONVERSION_LOOP(buffer, src, count, conversion);
     return buffer;
 }
 
@@ -348,21 +350,21 @@ static const uint *QT_FASTCALL convertRGBFromARGB32PM(uint *buffer, const uint *
 
     // RGB32 -> RGB888 is not a precision loss.
     if (!dither || (rWidth == 8 && gWidth == 8 && bWidth == 8)) {
-        Q_CONSTEXPR uint rMask = (1 << rWidth) - 1;
-        Q_CONSTEXPR uint gMask = (1 << gWidth) - 1;
-        Q_CONSTEXPR uint bMask = (1 << bWidth) - 1;
+        auto conversion = [](uint s) {
+            const uint c = fromRGB ? s : qUnpremultiply(s);
+            Q_CONSTEXPR uint rMask = (1 << redWidth<Format>()) - 1;
+            Q_CONSTEXPR uint gMask = (1 << greenWidth<Format>()) - 1;
+            Q_CONSTEXPR uint bMask = (1 << blueWidth<Format>()) - 1;
+            Q_CONSTEXPR uchar rRightShift = 24 - redWidth<Format>();
+            Q_CONSTEXPR uchar gRightShift = 16 - greenWidth<Format>();
+            Q_CONSTEXPR uchar bRightShift =  8 - blueWidth<Format>();
 
-        Q_CONSTEXPR uchar rRightShift = 24 - rWidth;
-        Q_CONSTEXPR uchar gRightShift = 16 - gWidth;
-        Q_CONSTEXPR uchar bRightShift =  8 - bWidth;
-
-        for (int i = 0; i < count; ++i) {
-            const uint c = fromRGB ? src[i] : qUnpremultiply(src[i]);
             const uint r = ((c >> rRightShift) & rMask) << redShift<Format>();
             const uint g = ((c >> gRightShift) & gMask) << greenShift<Format>();
             const uint b = ((c >> bRightShift) & bMask) << blueShift<Format>();
-            buffer[i] = r | g | b;
-        }
+            return r | g | b;
+        };
+        UNALIASED_CONVERSION_LOOP(buffer, src, count, conversion);
     } else {
         // We do ordered dither by using a rounding conversion, but instead of
         // adding half of input precision, we add the adjusted result from the
@@ -394,32 +396,32 @@ template<QImage::Format Format, bool fromRGB>
 static const uint *QT_FASTCALL convertARGBPMFromARGB32PM(uint *buffer, const uint *src, int count,
                                                          const QVector<QRgb> *, QDitherInfo *dither)
 {
-    Q_CONSTEXPR uchar aWidth = alphaWidth<Format>();
-    Q_CONSTEXPR uchar rWidth = redWidth<Format>();
-    Q_CONSTEXPR uchar gWidth = greenWidth<Format>();
-    Q_CONSTEXPR uchar bWidth = blueWidth<Format>();
-
     if (!dither) {
-        Q_CONSTEXPR uint aMask = (1 << aWidth) - 1;
-        Q_CONSTEXPR uint rMask = (1 << rWidth) - 1;
-        Q_CONSTEXPR uint gMask = (1 << gWidth) - 1;
-        Q_CONSTEXPR uint bMask = (1 << bWidth) - 1;
+        auto conversion = [](uint c) {
+            Q_CONSTEXPR uint aMask = (1 << alphaWidth<Format>()) - 1;
+            Q_CONSTEXPR uint rMask = (1 << redWidth<Format>()) - 1;
+            Q_CONSTEXPR uint gMask = (1 << greenWidth<Format>()) - 1;
+            Q_CONSTEXPR uint bMask = (1 << blueWidth<Format>()) - 1;
 
-        Q_CONSTEXPR uchar aRightShift = 32 - aWidth;
-        Q_CONSTEXPR uchar rRightShift = 24 - rWidth;
-        Q_CONSTEXPR uchar gRightShift = 16 - gWidth;
-        Q_CONSTEXPR uchar bRightShift =  8 - bWidth;
+            Q_CONSTEXPR uchar aRightShift = 32 - alphaWidth<Format>();
+            Q_CONSTEXPR uchar rRightShift = 24 - redWidth<Format>();
+            Q_CONSTEXPR uchar gRightShift = 16 - greenWidth<Format>();
+            Q_CONSTEXPR uchar bRightShift =  8 - blueWidth<Format>();
 
-        Q_CONSTEXPR uint aOpaque = aMask << alphaShift<Format>();
-        for (int i = 0; i < count; ++i) {
-            const uint c = src[i];
+            Q_CONSTEXPR uint aOpaque = aMask << alphaShift<Format>();
             const uint a = fromRGB ? aOpaque : (((c >> aRightShift) & aMask) << alphaShift<Format>());
             const uint r = ((c >> rRightShift) & rMask) << redShift<Format>();
             const uint g = ((c >> gRightShift) & gMask) << greenShift<Format>();
             const uint b = ((c >> bRightShift) & bMask) << blueShift<Format>();
-            buffer[i] = a | r | g | b;
-        }
+            return a | r | g | b;
+        };
+        UNALIASED_CONVERSION_LOOP(buffer, src, count, conversion);
     } else {
+        Q_CONSTEXPR uchar aWidth = alphaWidth<Format>();
+        Q_CONSTEXPR uchar rWidth = redWidth<Format>();
+        Q_CONSTEXPR uchar gWidth = greenWidth<Format>();
+        Q_CONSTEXPR uchar bWidth = blueWidth<Format>();
+
         const uint *bayer_line = qt_bayer_matrix[dither->y & 15];
         for (int i = 0; i < count; ++i) {
             const uint c = src[i];
@@ -514,8 +516,7 @@ static const uint *QT_FASTCALL convertARGB32ToARGB32PM(uint *buffer, const uint 
 static const uint *QT_FASTCALL convertRGBA8888PMToARGB32PM(uint *buffer, const uint *src, int count,
                                                            const QVector<QRgb> *, QDitherInfo *)
 {
-    for (int i = 0; i < count; ++i)
-        buffer[i] = RGBA2ARGB(src[i]);
+    UNALIASED_CONVERSION_LOOP(buffer, src, count, RGBA2ARGB);
     return buffer;
 }
 
@@ -568,8 +569,7 @@ static const uint *QT_FASTCALL convertARGB32FromARGB32PM(uint *buffer, const uin
 static const uint *QT_FASTCALL convertRGBA8888PMFromARGB32PM(uint *buffer, const uint *src, int count,
                                                              const QVector<QRgb> *, QDitherInfo *)
 {
-    for (int i = 0; i < count; ++i)
-        buffer[i] = ARGB2RGBA(src[i]);
+    UNALIASED_CONVERSION_LOOP(buffer, src, count, ARGB2RGBA);
     return buffer;
 }
 
@@ -695,8 +695,7 @@ static const uint *QT_FASTCALL convertRGBA8888FromARGB32PM(uint *buffer, const u
 static const uint *QT_FASTCALL convertRGBXFromRGB32(uint *buffer, const uint *src, int count,
                                                     const QVector<QRgb> *, QDitherInfo *)
 {
-    for (int i = 0; i < count; ++i)
-        buffer[i] = ARGB2RGBA(0xff000000 | src[i]);
+    UNALIASED_CONVERSION_LOOP(buffer, src, count, [](uint c) { return ARGB2RGBA(0xff000000 | c); });
     return buffer;
 }
 
@@ -713,8 +712,7 @@ static const uint *QT_FASTCALL convertA2RGB30PMToARGB32PM(uint *buffer, const ui
                                                           const QVector<QRgb> *, QDitherInfo *dither)
 {
     if (!dither) {
-        for (int i = 0; i < count; ++i)
-            buffer[i] = qConvertA2rgb30ToArgb32<PixelOrder>(src[i]);
+        UNALIASED_CONVERSION_LOOP(buffer, src, count, qConvertA2rgb30ToArgb32<PixelOrder>);
     } else {
         for (int i = 0; i < count; ++i) {
             const uint c = src[i];
@@ -796,8 +794,7 @@ template<QtPixelOrder PixelOrder>
 static const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM(uint *buffer, const uint *src, int count,
                                                             const QVector<QRgb> *, QDitherInfo *)
 {
-    for (int i = 0; i < count; ++i)
-        buffer[i] = qConvertArgb32ToA2rgb30<PixelOrder>(src[i]);
+    UNALIASED_CONVERSION_LOOP(buffer, src, count, qConvertArgb32ToA2rgb30<PixelOrder>);
     return buffer;
 }
 
@@ -814,8 +811,7 @@ template<QtPixelOrder PixelOrder>
 static const uint *QT_FASTCALL convertRGB30FromARGB32PM(uint *buffer, const uint *src, int count,
                                                         const QVector<QRgb> *, QDitherInfo *)
 {
-    for (int i = 0; i < count; ++i)
-        buffer[i] = qConvertRgb32ToRgb30<PixelOrder>(qUnpremultiply(src[i]));
+    UNALIASED_CONVERSION_LOOP(buffer, src, count, qConvertRgb32ToRgb30<PixelOrder>);
     return buffer;
 }
 
@@ -2383,7 +2379,7 @@ static void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper(uint
         __m128i v_fy = _mm_setr_epi32(fy, fy + fdy, fy + fdy + fdy, fy + fdy + fdy + fdy);
 
         const uchar *textureData = image.imageData;
-        const qssize_t bytesPerLine = image.bytesPerLine;
+        const qsizetype bytesPerLine = image.bytesPerLine;
         const __m128i vbpl = _mm_shufflelo_epi16(_mm_cvtsi32_si128(bytesPerLine/4), _MM_SHUFFLE(0, 0, 0, 0));
 
         while (b < boundedEnd - 3) {
@@ -4719,6 +4715,7 @@ static void blend_transformed_argb(int count, const QSpan *spans, void *userData
 
     CompositionFunction func = functionForMode[data->rasterBuffer->compositionMode];
     uint buffer[buffer_size];
+    quint32 mask = (data->texture.format == QImage::Format_RGB32) ? 0xff000000 : 0;
 
     const int image_x1 = data->texture.x1;
     const int image_y1 = data->texture.y1;
@@ -4752,7 +4749,7 @@ static void blend_transformed_argb(int count, const QSpan *spans, void *userData
                 while (b < end) {
                     int px = qBound(image_x1, x >> 16, image_x2);
                     int py = qBound(image_y1, y >> 16, image_y2);
-                    *b = reinterpret_cast<const uint *>(data->texture.scanLine(py))[px];
+                    *b = reinterpret_cast<const uint *>(data->texture.scanLine(py))[px] | mask;
 
                     x += fdx;
                     y += fdy;
@@ -4793,7 +4790,7 @@ static void blend_transformed_argb(int count, const QSpan *spans, void *userData
                     const int px = qBound(image_x1, int(tx) - (tx < 0), image_x2);
                     const int py = qBound(image_y1, int(ty) - (ty < 0), image_y2);
 
-                    *b = reinterpret_cast<const uint *>(data->texture.scanLine(py))[px];
+                    *b = reinterpret_cast<const uint *>(data->texture.scanLine(py))[px] | mask;
                     x += fdx;
                     y += fdy;
                     w += fdw;
@@ -4959,7 +4956,7 @@ static void blend_transformed_tiled_argb(int count, const QSpan *spans, void *us
 
     int image_width = data->texture.width;
     int image_height = data->texture.height;
-    const qssize_t scanline_offset = data->texture.bytesPerLine / 4;
+    const qsizetype scanline_offset = data->texture.bytesPerLine / 4;
 
     if (data->fast_matrix) {
         // The increment pr x in the scanline
@@ -5572,6 +5569,8 @@ static void qt_alphamapblit_generic(QRasterBuffer *rasterBuffer,
 
                 int start = qMax<int>(x, clip.x);
                 int end = qMin<int>(x + mapWidth, clip.x + clip.len);
+                if (end <= start)
+                    continue;
                 Q_ASSERT(end - start <= buffer_size);
                 QRgba64 *dest = destFetch64((QRgba64*)buffer, rasterBuffer, start, clip.y, end - start);
 
@@ -5845,6 +5844,8 @@ static void qt_alphargbblit_generic(QRasterBuffer *rasterBuffer,
 
                 int start = qMax<int>(x, clip.x);
                 int end = qMin<int>(x + mapWidth, clip.x + clip.len);
+                if (end <= start)
+                    continue;
                 Q_ASSERT(end - start <= buffer_size);
                 QRgba64 *dest = destFetch64((QRgba64*)buffer, rasterBuffer, start, clip.y, end - start);
 
@@ -6394,12 +6395,19 @@ static void qInitDrawhelperFunctions()
         qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_avx2;
         qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_avx2;
 
-        extern void QT_FASTCALL comp_func_SourceOver_avx2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
-        extern void QT_FASTCALL comp_func_solid_SourceOver_avx2(uint *destPixels, int length, uint color, uint const_alpha);
         extern void QT_FASTCALL comp_func_Source_avx2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
-        qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_avx2;
-        qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_avx2;
+        extern void QT_FASTCALL comp_func_Source_rgb64_avx2(QRgba64 *destPixels, const QRgba64 *srcPixels, int length, uint const_alpha);
+        extern void QT_FASTCALL comp_func_SourceOver_avx2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+        extern void QT_FASTCALL comp_func_SourceOver_rgb64_avx2(QRgba64 *destPixels, const QRgba64 *srcPixels, int length, uint const_alpha);
+        extern void QT_FASTCALL comp_func_solid_SourceOver_avx2(uint *destPixels, int length, uint color, uint const_alpha);
+        extern void QT_FASTCALL comp_func_solid_SourceOver_rgb64_avx2(QRgba64 *destPixels, int length, QRgba64 color, uint const_alpha);
+
         qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_avx2;
+        qt_functionForMode64_C[QPainter::CompositionMode_Source] = comp_func_Source_rgb64_avx2;
+        qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_avx2;
+        qt_functionForMode64_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_rgb64_avx2;
+        qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_avx2;
+        qt_functionForModeSolid64_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_rgb64_avx2;
 
         extern void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper_avx2(uint *b, uint *end, const QTextureData &image,
                                                                                             int &fx, int &fy, int fdx, int /*fdy*/);
@@ -6439,7 +6447,7 @@ static void qInitDrawhelperFunctions()
 
     sourceFetchUntransformed[QImage::Format_RGB888] = qt_fetchUntransformed_888_neon;
 
-#if defined(Q_PROCESSOR_ARM_64) && Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
     extern const uint *QT_FASTCALL convertARGB32ToARGB32PM_neon(uint *buffer, const uint *src, int count,
                                                                 const QVector<QRgb> *, QDitherInfo *);
     extern const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_neon(uint *buffer, const uint *src, int count,

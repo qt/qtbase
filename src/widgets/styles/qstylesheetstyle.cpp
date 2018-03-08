@@ -833,7 +833,7 @@ QHash<QStyle::SubControl, QRect> QStyleSheetStyle::titleBarLayout(const QWidget 
                 continue;
             }
             if (info.element == PseudoElement_TitleBar) {
-                info.width = tb->fontMetrics.width(tb->text) + 6;
+                info.width = tb->fontMetrics.horizontalAdvance(tb->text) + 6;
                 subRule.geo = new QStyleSheetGeometryData(info.width, tb->fontMetrics.height(), -1, -1, -1, -1);
             } else {
                 subRule = renderRule(w, tb, info.element);
@@ -2692,24 +2692,19 @@ void QStyleSheetStyle::unsetStyleSheetFont(QWidget *w) const
 static void updateObjects(const QList<const QObject *>& objects)
 {
     if (!styleSheetCaches->styleRulesCache.isEmpty() || !styleSheetCaches->hasStyleRuleCache.isEmpty() || !styleSheetCaches->renderRulesCache.isEmpty()) {
-        for (int i = 0; i < objects.size(); ++i) {
-            const QObject *object = objects.at(i);
+        for (const QObject *object : objects) {
             styleSheetCaches->styleRulesCache.remove(object);
             styleSheetCaches->hasStyleRuleCache.remove(object);
             styleSheetCaches->renderRulesCache.remove(object);
         }
     }
 
-    QWidgetList widgets;
-    foreach (const QObject *object, objects) {
-        if (QWidget *w = qobject_cast<QWidget*>(const_cast<QObject*>(object)))
-            widgets << w;
-    }
-
     QEvent event(QEvent::StyleChange);
-    foreach (QWidget *widget, widgets) {
-        widget->style()->polish(widget);
-        QApplication::sendEvent(widget, &event);
+    for (const QObject *object : objects) {
+        if (auto widget = qobject_cast<QWidget*>(const_cast<QObject*>(object))) {
+            widget->style()->polish(widget);
+            QApplication::sendEvent(widget, &event);
+        }
     }
 }
 
@@ -3649,6 +3644,8 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             QFont oldFont = p->font();
             if (subRule.hasFont)
                 p->setFont(subRule.font.resolve(p->font()));
+            else
+                p->setFont(mi.font);
 
             // We fall back to drawing with the style sheet code whenever at least one of the
             // items are styled in an incompatible way, such as having a background image.
@@ -3657,7 +3654,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             if ((pseudo == PseudoElement_MenuSeparator) && subRule.hasDrawable()) {
                 subRule.drawRule(p, opt->rect);
             } else if ((pseudo == PseudoElement_Item)
-                        && (allRules.hasBox() || allRules.hasBorder()
+                        && (allRules.hasBox() || allRules.hasBorder() || subRule.hasFont
                             || (allRules.background() && !allRules.background()->pixmap.isNull()))) {
                 subRule.drawRule(p, opt->rect);
                 if (subRule.hasBackground()) {
@@ -3765,8 +3762,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 }
             }
 
-            if (subRule.hasFont)
-                p->setFont(oldFont);
+            p->setFont(oldFont);
 
             return;
         }
@@ -3972,10 +3968,11 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                         x += reverse ? -chunkWidth : chunkWidth;
                         --chunkCount;
                     };
-                } else {
+                } else if (chunkWidth > 0) {
+                    const int chunkCount = ceil(qreal(fillWidth)/chunkWidth);
                     int x = reverse ? r.left() + r.width() - chunkWidth : r.x();
 
-                    for (int i = 0; i < ceil(qreal(fillWidth)/chunkWidth); ++i) {
+                    for (int i = 0; i < chunkCount; ++i) {
                         r.setRect(x, rect.y(), chunkWidth, rect.height());
                         r = m.mapRect(QRectF(r)).toRect();
                         subRule.drawRule(p, r);
@@ -4620,7 +4617,7 @@ QStyle::SubControl QStyleSheetStyle::hitTestComplexControl(ComplexControl cc, co
         if (!rule.hasDrawable() && !rule.hasBox())
             break;
                        }
-        // intentionally falls through
+        Q_FALLTHROUGH();
     case CC_SpinBox:
     case CC_GroupBox:
     case CC_ComboBox:
@@ -5485,7 +5482,7 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
                     groupBox.rect = rule.borderRect(opt->rect);
                     return baseStyle()->subControlRect(cc, &groupBox, sc, w);
                 }
-                int tw = opt->fontMetrics.width(gb->text);
+                int tw = opt->fontMetrics.horizontalAdvance(gb->text);
                 int th = opt->fontMetrics.height();
                 int spacing = pixelMetric(QStyle::PM_CheckBoxLabelSpacing, opt, w);
                 int iw = pixelMetric(QStyle::PM_IndicatorWidth, opt, w);
@@ -5786,7 +5783,7 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
         if (!qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             return subElementRect(SE_CheckBoxIndicator, opt, w);
         }
-        // intentionally falls through
+        Q_FALLTHROUGH();
     case SE_ItemViewItemText:
     case SE_ItemViewItemDecoration:
     case SE_ItemViewItemFocusRect:
@@ -5846,15 +5843,15 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
 #if QT_CONFIG(tabbar)
     case SE_TabWidgetLeftCorner:
         pe = PseudoElement_TabWidgetLeftCorner;
-        // intentionally falls through
+        Q_FALLTHROUGH();
     case SE_TabWidgetRightCorner:
         if (pe == PseudoElement_None)
             pe = PseudoElement_TabWidgetRightCorner;
-        // intentionally falls through
+        Q_FALLTHROUGH();
     case SE_TabWidgetTabBar:
         if (pe == PseudoElement_None)
             pe = PseudoElement_TabWidgetTabBar;
-        // intentionally falls through
+        Q_FALLTHROUGH();
     case SE_TabWidgetTabPane:
     case SE_TabWidgetTabContents:
         if (pe == PseudoElement_None)

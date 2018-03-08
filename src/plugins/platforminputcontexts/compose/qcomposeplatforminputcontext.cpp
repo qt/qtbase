@@ -82,7 +82,37 @@ static const int composingKeys[] = {
     Qt::Key_Dead_Semivoiced_Sound,
     Qt::Key_Dead_Belowdot,
     Qt::Key_Dead_Hook,
-    Qt::Key_Dead_Horn
+    Qt::Key_Dead_Horn,
+    Qt::Key_Dead_Stroke,
+    Qt::Key_Dead_Abovecomma,
+    Qt::Key_Dead_Abovereversedcomma,
+    Qt::Key_Dead_Doublegrave,
+    Qt::Key_Dead_Belowring,
+    Qt::Key_Dead_Belowmacron,
+    Qt::Key_Dead_Belowcircumflex,
+    Qt::Key_Dead_Belowtilde,
+    Qt::Key_Dead_Belowbreve,
+    Qt::Key_Dead_Belowdiaeresis,
+    Qt::Key_Dead_Invertedbreve,
+    Qt::Key_Dead_Belowcomma,
+    Qt::Key_Dead_Currency,
+    Qt::Key_Dead_a,
+    Qt::Key_Dead_A,
+    Qt::Key_Dead_e,
+    Qt::Key_Dead_E,
+    Qt::Key_Dead_i,
+    Qt::Key_Dead_I,
+    Qt::Key_Dead_o,
+    Qt::Key_Dead_O,
+    Qt::Key_Dead_u,
+    Qt::Key_Dead_U,
+    Qt::Key_Dead_Small_Schwa,
+    Qt::Key_Dead_Capital_Schwa,
+    Qt::Key_Dead_Greek,
+    Qt::Key_Dead_Lowline,
+    Qt::Key_Dead_Aboveverticalline,
+    Qt::Key_Dead_Belowverticalline,
+    Qt::Key_Dead_Longsolidusoverlay
 };
 
 QComposeInputContext::QComposeInputContext()
@@ -222,7 +252,7 @@ bool QComposeInputContext::checkComposeTable()
     int next = 1;
     do {
         // if we are at the end of the table, then we have nothing to do here
-        if (it + next != m_composeTable.end()) {
+        if (it + next != m_composeTable.constEnd()) {
             QComposeTableElement nextElem = *(it + next);
             if (isDuplicate(elem, nextElem)) {
                 elem = nextElem;

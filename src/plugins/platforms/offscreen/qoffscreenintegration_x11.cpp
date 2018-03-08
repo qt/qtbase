@@ -71,6 +71,9 @@ QPlatformOpenGLContext *QOffscreenX11Integration::createPlatformOpenGLContext(QO
     if (!m_connection)
         m_connection.reset(new QOffscreenX11Connection);
 
+    if (!m_connection->display())
+        return nullptr;
+
     return new QOffscreenX11GLXContext(m_connection->x11Info(), context);
 }
 
@@ -81,12 +84,13 @@ QOffscreenX11Connection::QOffscreenX11Connection()
     QByteArray displayName = qgetenv("DISPLAY");
     Display *display = XOpenDisplay(displayName.constData());
     m_display = display;
-    m_screenNumber = DefaultScreen(display);
+    m_screenNumber = m_display ? DefaultScreen(m_display) : -1;
 }
 
 QOffscreenX11Connection::~QOffscreenX11Connection()
 {
-    XCloseDisplay((Display *)m_display);
+    if (m_display)
+        XCloseDisplay((Display *)m_display);
 }
 
 class QOffscreenX11Info

@@ -82,6 +82,7 @@ equals(MAKEFILE_GENERATOR, MSBUILD) \
     QMAKE_MKDIR             = mkdir          # legacy
     QMAKE_MKDIR_CMD         = if not exist %1 mkdir %1 & if not exist %1 exit 1
     QMAKE_STREAM_EDITOR     = $(QMAKE) -install sed
+    QMAKE_SHELL_NULL_DEVICE = NUL
     QMAKE_INSTALL_FILE      = copy /y
     QMAKE_INSTALL_PROGRAM   = copy /y
 } else {
@@ -101,6 +102,7 @@ equals(MAKEFILE_GENERATOR, MSBUILD) \
     QMAKE_MKDIR             = mkdir -p   # legacy
     QMAKE_MKDIR_CMD         = test -d %1 || mkdir -p %1
     QMAKE_STREAM_EDITOR     = sed
+    QMAKE_SHELL_NULL_DEVICE = /dev/null
 
     equals(QMAKE_HOST.os, Windows) {
         MINGW_IN_SHELL = 1   # legacy
@@ -118,9 +120,11 @@ equals(MAKEFILE_GENERATOR, MSBUILD) \
 }
 QMAKE_INSTALL_DIR = $$QMAKE_COPY_DIR
 equals(QMAKE_HOST.os, Windows) {
-    QMAKE_SYMBOLIC_LINK     = $(QMAKE) -install ln -f -s
-    QMAKE_LN_SHLIB          = $(QMAKE) -install ln -s
+    QMAKE_SYMBOLIC_LINK      = $(QMAKE) -install ln -f -s
+    QMAKE_LN_SHLIB           = $(QMAKE) -install ln -s
+    QMAKE_SYSTEM_NULL_DEVICE = NUL
 } else {
-    QMAKE_SYMBOLIC_LINK     = ln -f -s
-    QMAKE_LN_SHLIB          = ln -s
+    QMAKE_SYMBOLIC_LINK      = ln -f -s
+    QMAKE_LN_SHLIB           = ln -s
+    QMAKE_SYSTEM_NULL_DEVICE = /dev/null
 }

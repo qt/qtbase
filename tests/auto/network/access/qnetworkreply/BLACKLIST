@@ -1,10 +1,44 @@
 # See qtbase/src/testlib/qtestblacklist.cpp for format
 osx
-[ioGetFromBuiltinHttp:http+limited]
-ubuntu-14.04
-[ioGetFromBuiltinHttp:https+limited]
-ubuntu-14.04
+[authenticationCacheAfterCancel]
+windows
 [httpAbort]
 *
 [backgroundRequestInterruption:ftp, bg, nobg]
 *
+[getErrors:ftp-host]
+linux
+[getFromHttpIntoBuffer]
+windows
+[getFromHttpIntoBuffer2]
+windows
+[headFromHttp]
+windows
+[ioGetFromHttpWithSocksProxy]
+windows
+[ioPostToHttpFromSocket]
+windows
+# QTBUG-66247
+[ioHttpRedirect]
+windows
+# QTBUG-66602
+[ioHttpRedirectMultipartPost]
+*
+# QTBUG-66247
+[ioHttpRedirectPolicy]
+*
+[ioHttpRedirectPostPut]
+linux
+windows
+[putToFtp]
+windows ci
+[putToFtpWithInvalidCredentials]
+windows ci
+[putWithServerClosingConnectionImmediately]
+windows
+[qtbug28035browserDoesNotLoadQtProjectOrgCorrectly]
+windows
+[getFromUnreachableIp]
+windows msvc-2017
+[ioHttpRedirectErrors:too-many-redirects]
+rhel-6.6 ci

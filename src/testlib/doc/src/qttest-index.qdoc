@@ -31,7 +31,9 @@
 
     Qt Test provides classes for unit testing Qt applications and libraries.
     All public methods are in the \l QTest namespace. In addition, the
-    \l QSignalSpy class provides easy introspection for Qt's signals and slots.
+    \l QSignalSpy class provides easy introspection for Qt's signals and slots,
+    and the \l QAbstractItemModelTester allows for non-destructive testing
+    of item models.
 
     \section1 Getting Started
 
@@ -53,12 +55,13 @@
     \section1 Licenses and Attributions
 
     Qt Test is available under commercial licenses from \l{The Qt Company}.
-    In addition, it is available under the
+    In addition, it is available under free software licenses. Since Qt 5.4,
+    these free software licenses are
     \l{GNU Lesser General Public License, version 3}, or
     the \l{GNU General Public License, version 2}.
     See \l{Qt Licensing} for further details.
 
-    Furthermore Qt Test potentially contains third party
+    Furthermore, Qt Test in Qt \QtVersion may contain third party
     modules under following permissive licenses:
 
     \generatelist{groupsbymodule attributions-qttestlib}

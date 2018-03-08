@@ -899,10 +899,7 @@ xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t win, int 
         connection()->flush();
 
         // sleep 50 ms, so we don't use up CPU cycles all the time.
-        struct timeval usleep_tv;
-        usleep_tv.tv_sec = 0;
-        usleep_tv.tv_usec = 50000;
-        select(0, 0, 0, 0, &usleep_tv);
+        QThread::msleep(50);
     } while (timer.elapsed() < timeout);
 
     return 0;

@@ -357,7 +357,7 @@ static int fromOffsetString(const QStringRef &offsetString, bool *valid) Q_DECL_
     there are in this date's month and year, respectively. The
     isLeapYear() function indicates whether a date is in a leap year.
 
-    \section1
+    \section1 Remarks
 
     \section2 No Year 0
 
@@ -1272,7 +1272,7 @@ QDate QDate::fromString(const QString& string, Qt::DateFormat format)
 }
 
 /*!
-    \fn QDate::fromString(const QString &string, const QString &format)
+    \fn QDate QDate::fromString(const QString &string, const QString &format)
 
     Returns the QDate represented by the \a string, using the \a
     format given, or an invalid date if the string cannot be parsed.
@@ -2000,7 +2000,7 @@ QTime QTime::fromString(const QString& string, Qt::DateFormat format)
 }
 
 /*!
-    \fn QTime::fromString(const QString &string, const QString &format)
+    \fn QTime QTime::fromString(const QString &string, const QString &format)
 
     Returns the QTime represented by the \a string, using the \a
     format given, or an invalid time if the string cannot be parsed.
@@ -2216,7 +2216,7 @@ static int qt_timezone()
 static QString qt_tzname(QDateTimePrivate::DaylightStatus daylightStatus)
 {
     int isDst = (daylightStatus == QDateTimePrivate::DaylightTime) ? 1 : 0;
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#if defined(Q_CC_MSVC)
     size_t s = 0;
     char name[512];
     if (_get_tzname(&s, name, 512, isDst))
@@ -2227,7 +2227,7 @@ static QString qt_tzname(QDateTimePrivate::DaylightStatus daylightStatus)
 #endif // Q_OS_WIN
 }
 
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(datetimeparser) && QT_CONFIG(timezone)
 /*
   \internal
   Implemented here to share qt_tzname()
@@ -2245,7 +2245,7 @@ int QDateTimeParser::startsWithLocalTimeZone(const QStringRef name)
     }
     return 0;
 }
-#endif // QT_BOOTSTRAPPED
+#endif // datetimeparser && timezone
 
 // Calls the platform variant of mktime for the given date, time and daylightStatus,
 // and updates the date, time, daylightStatus and abbreviation with the returned values
@@ -2346,7 +2346,7 @@ static bool qt_localtime(qint64 msecsSinceEpoch, QDate *localDate, QTime *localT
     res = localtime_r(&secsSinceEpoch, &local);
     if (res)
         valid = true;
-#elif defined(_MSC_VER) && _MSC_VER >= 1400
+#elif defined(Q_CC_MSVC)
     if (!_localtime64_s(&local, &secsSinceEpoch))
         valid = true;
 #else
@@ -3047,7 +3047,7 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
 
     \note QDateTime does not account for leap seconds.
 
-    \section1
+    \section1 Remarks
 
     \section2 No Year 0
 
@@ -3065,8 +3065,7 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     extreme values that you do not overflow the storage.  The exact range of
     supported values varies depending on the Qt::TimeSpec and time zone.
 
-    \section2
-    Use of System Timezone
+    \section2 Use of System Timezone
 
     QDateTime uses the system's time zone information to determine the
     offset of local time from UTC. If the system is not configured
@@ -4944,7 +4943,7 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
 }
 
 /*!
-    \fn QDateTime::fromString(const QString &string, const QString &format)
+    \fn QDateTime QDateTime::fromString(const QString &string, const QString &format)
 
     Returns the QDateTime represented by the \a string, using the \a
     format given, or an invalid datetime if the string cannot be parsed.

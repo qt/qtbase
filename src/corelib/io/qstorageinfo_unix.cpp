@@ -45,6 +45,7 @@
 #include <QtCore/qtextstream.h>
 
 #include <QtCore/private/qcore_unix_p.h>
+#include <QtCore/private/qlocale_tools_p.h>
 
 #include <errno.h>
 #include <sys/stat.h>
@@ -107,6 +108,13 @@
 #  endif // QT_LARGEFILE_SUPPORT
 #endif // Q_OS_BSD4
 
+#if QT_HAS_INCLUDE(<paths.h>)
+#  include <paths.h>
+#endif
+#ifndef _PATH_MOUNTED
+#  define _PATH_MOUNTED     "/etc/mnttab"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QStorageIterator
@@ -121,6 +129,7 @@ public:
     inline QByteArray fileSystemType() const;
     inline QByteArray device() const;
     inline QByteArray options() const;
+    inline QByteArray subvolume() const;
 private:
 #if defined(Q_OS_BSD4)
     QT_STATFSBUF *stat_buf;
@@ -136,9 +145,36 @@ private:
     QByteArray m_device;
     QByteArray m_options;
 #elif defined(Q_OS_LINUX) || defined(Q_OS_HURD)
+    struct mountinfoent : public mntent {
+        // Details from proc(5) section from /proc/<pid>/mountinfo:
+        //(1)  mount ID: a unique ID for the mount (may be reused after umount(2)).
+        int mount_id;
+        //(2)  parent ID: the ID of the parent mount (or of self for the top of the mount tree).
+//      int parent_id;
+        //(3)  major:minor: the value of st_dev for files on this filesystem (see stat(2)).
+//      dev_t rdev;
+        //(4)  root: the pathname of the directory in the filesystem which forms the root of this mount.
+        char *subvolume;
+        //(5)  mount point: the pathname of the mount point relative to the process's root directory.
+//      char *mnt_dir;      // in mntent
+        //(6)  mount options: per-mount options.
+//      char *mnt_opts;     // in mntent
+        //(7)  optional fields: zero or more fields of the form "tag[:value]"; see below.
+//      int flags;
+        //(8)  separator: the end of the optional fields is marked by a single hyphen.
+
+        //(9)  filesystem type: the filesystem type in the form "type[.subtype]".
+//      char *mnt_type;     // in mntent
+        //(10) mount source: filesystem-specific information or "none".
+//      char *mnt_fsname;   // in mntent
+        //(11) super options: per-superblock options.
+        char *superopts;
+    };
+
     FILE *fp;
-    mntent mnt;
     QByteArray buffer;
+    mountinfoent mnt;
+    bool usingMountinfo;
 #elif defined(Q_OS_HAIKU)
     BVolumeRoster m_volumeRoster;
 
@@ -239,13 +275,15 @@ inline QByteArray QStorageIterator::options() const
     return QByteArray();
 }
 
+inline QByteArray QStorageIterator::subvolume() const
+{
+    return QByteArray();
+}
 #elif defined(Q_OS_SOLARIS)
-
-static const char pathMounted[] = "/etc/mnttab";
 
 inline QStorageIterator::QStorageIterator()
 {
-    const int fd = qt_safe_open(pathMounted, O_RDONLY);
+    const int fd = qt_safe_open(_PATH_MOUNTED, O_RDONLY);
     fp = ::fdopen(fd, "r");
 }
 
@@ -280,13 +318,15 @@ inline QByteArray QStorageIterator::device() const
     return QByteArray(mnt.mnt_mntopts);
 }
 
+inline QByteArray QStorageIterator::subvolume() const
+{
+    return QByteArray();
+}
 #elif defined(Q_OS_ANDROID)
-
-static const QLatin1String pathMounted("/proc/mounts");
 
 inline QStorageIterator::QStorageIterator()
 {
-    file.setFileName(pathMounted);
+    file.setFileName(_PATH_MOUNTED);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
 }
 
@@ -337,22 +377,40 @@ inline QByteArray QStorageIterator::options() const
     return m_options;
 }
 
+inline QByteArray QStorageIterator::subvolume() const
+{
+    return QByteArray();
+}
 #elif defined(Q_OS_LINUX) || defined(Q_OS_HURD)
 
-static const char pathMounted[] = "/etc/mtab";
 static const int bufferSize = 1024; // 2 paths (mount point+device) and metainfo;
                                     // should be enough
 
 inline QStorageIterator::QStorageIterator() :
     buffer(QByteArray(bufferSize, 0))
 {
-    fp = ::setmntent(pathMounted, "r");
+    fp = nullptr;
+
+#ifdef Q_OS_LINUX
+    // first, try to open /proc/self/mountinfo, which has more details
+    fp = ::fopen("/proc/self/mountinfo", "re");
+#endif
+    if (fp) {
+        usingMountinfo = true;
+    } else {
+        usingMountinfo = false;
+        fp = ::setmntent(_PATH_MOUNTED, "r");
+    }
 }
 
 inline QStorageIterator::~QStorageIterator()
 {
-    if (fp)
-        ::endmntent(fp);
+    if (fp) {
+        if (usingMountinfo)
+            ::fclose(fp);
+        else
+            ::endmntent(fp);
+    }
 }
 
 inline bool QStorageIterator::isValid() const
@@ -362,7 +420,127 @@ inline bool QStorageIterator::isValid() const
 
 inline bool QStorageIterator::next()
 {
-    return ::getmntent_r(fp, &mnt, buffer.data(), buffer.size()) != nullptr;
+    mnt.subvolume = nullptr;
+    mnt.superopts = nullptr;
+    if (!usingMountinfo)
+        return ::getmntent_r(fp, &mnt, buffer.data(), buffer.size()) != nullptr;
+
+    // Helper function to parse paths that the kernel inserts escape sequences
+    // for. The unescaped string is left at \a src and is properly
+    // NUL-terminated. Returns a pointer to the delimiter that terminated the
+    // path, or nullptr if it failed.
+    auto parseMangledPath = [](char *src) {
+        // The kernel escapes with octal the following characters:
+        //  space ' ', tab '\t', backslask '\\', and newline '\n'
+        char *dst = src;
+        while (*src) {
+            switch (*src) {
+            case ' ':
+                // Unescaped space: end of the field.
+                *dst = '\0';
+                return src;
+
+            default:
+                *dst++ = *src++;
+                break;
+
+            case '\\':
+                // It always uses exactly three octal characters.
+                ++src;
+                char c = (*src++ - '0') << 6;
+                c |= (*src++ - '0') << 3;
+                c |= (*src++ - '0');
+                *dst++ = c;
+                break;
+            }
+        }
+
+        // Found a NUL before the end of the field.
+        src = nullptr;
+        return src;
+    };
+
+    char *ptr = buffer.data();
+    if (fgets(ptr, buffer.size(), fp) == nullptr)
+        return false;
+
+    size_t len = strlen(buffer.data());
+    if (len == 0)
+        return false;
+    if (ptr[len - 1] == '\n')
+        ptr[len - 1] = '\0';
+
+    // parse the line
+    bool ok;
+    mnt.mnt_freq = 0;
+    mnt.mnt_passno = 0;
+
+    mnt.mount_id = qstrtoll(ptr, const_cast<const char **>(&ptr), 10, &ok);
+    if (!ptr || !ok)
+        return false;
+
+    int parent_id = qstrtoll(ptr, const_cast<const char **>(&ptr), 10, &ok);
+    Q_UNUSED(parent_id);
+    if (!ptr || !ok)
+        return false;
+
+    int rdevmajor = qstrtoll(ptr, const_cast<const char **>(&ptr), 10, &ok);
+    if (!ptr || !ok)
+        return false;
+    if (*ptr != ':')
+        return false;
+    int rdevminor = qstrtoll(ptr + 1, const_cast<const char **>(&ptr), 10, &ok);
+    if (!ptr || !ok)
+        return false;
+    Q_UNUSED(rdevmajor);
+    Q_UNUSED(rdevminor);
+
+    if (*ptr != ' ')
+        return false;
+
+    mnt.subvolume = ++ptr;
+    ptr = parseMangledPath(ptr);
+    if (!ptr)
+        return false;
+
+    // unset a subvolume of "/" -- it's not a *sub* volume
+    if (mnt.subvolume + 1 == ptr)
+        *mnt.subvolume = '\0';
+
+    mnt.mnt_dir = ++ptr;
+    ptr = parseMangledPath(ptr);
+    if (!ptr)
+        return false;
+
+    mnt.mnt_opts = ++ptr;
+    ptr = strchr(ptr, ' ');
+    if (!ptr)
+        return false;
+
+    // we don't parse the flags, so just find the separator
+    if (char *const dashed = strstr(ptr, " - ")) {
+        *ptr = '\0';
+        ptr = dashed + strlen(" - ") - 1;
+    } else {
+        return false;
+    }
+
+    mnt.mnt_type = ++ptr;
+    ptr = strchr(ptr, ' ');
+    if (!ptr)
+        return false;
+    *ptr = '\0';
+
+    mnt.mnt_fsname = ++ptr;
+    ptr = parseMangledPath(ptr);
+    if (!ptr)
+        return false;
+
+    mnt.superopts = ++ptr;
+    ptr += strcspn(ptr, " \n");
+    *ptr = '\0';
+
+    return true;
 }
 
 inline QString QStorageIterator::rootPath() const
@@ -382,9 +560,28 @@ inline QByteArray QStorageIterator::device() const
 
 inline QByteArray QStorageIterator::options() const
 {
+    // Merge the two options, starting with the superblock options and letting
+    // the per-mount options override.
+    const char *superopts = mnt.superopts;
+
+    // Both mnt_opts and superopts start with "ro" or "rw", so we can skip the
+    // superblock's field (see show_mountinfo() in fs/proc_namespace.c).
+    if (superopts && superopts[0] == 'r') {
+        if (superopts[2] == '\0')       // no other superopts besides "ro" / "rw"?
+            superopts = nullptr;
+        else if (superopts[2] == ',')
+            superopts += 3;
+    }
+
+    if (superopts)
+        return QByteArray(superopts) + ',' + mnt.mnt_opts;
     return QByteArray(mnt.mnt_opts);
 }
 
+inline QByteArray QStorageIterator::subvolume() const
+{
+    return QByteArray(mnt.subvolume);
+}
 #elif defined(Q_OS_HAIKU)
 inline QStorageIterator::QStorageIterator()
 {
@@ -447,6 +644,10 @@ inline QByteArray QStorageIterator::options() const
     return QByteArray();
 }
 
+inline QByteArray QStorageIterator::subvolume() const
+{
+    return QByteArray();
+}
 #else
 
 inline QStorageIterator::QStorageIterator()
@@ -487,31 +688,11 @@ inline QByteArray QStorageIterator::options() const
     return QByteArray();
 }
 
-#endif
-
-static QByteArray extractSubvolume(const QStorageIterator &it)
+inline QByteArray QStorageIterator::subvolume() const
 {
-#ifdef Q_OS_LINUX
-    if (it.fileSystemType() == "btrfs") {
-        const QByteArrayList opts = it.options().split(',');
-        QByteArray id;
-        for (const QByteArray &opt : opts) {
-            static const char subvol[] = "subvol=";
-            static const char subvolid[] = "subvolid=";
-            if (opt.startsWith(subvol))
-                return std::move(opt).mid(strlen(subvol));
-            if (opt.startsWith(subvolid))
-                id = std::move(opt).mid(strlen(subvolid));
-        }
-
-        // if we didn't find the subvolume name, return the subvolume ID
-        return id;
-    }
-#else
-    Q_UNUSED(it)
-#endif
     return QByteArray();
 }
+#endif
 
 void QStorageInfoPrivate::initRootPath()
 {
@@ -539,10 +720,42 @@ void QStorageInfoPrivate::initRootPath()
             rootPath = mountDir;
             device = it.device();
             fileSystemType = fsName;
-            subvolume = extractSubvolume(it);
+            subvolume = it.subvolume();
         }
     }
 }
+
+#ifdef Q_OS_LINUX
+// udev encodes the labels with ID_LABEL_FS_ENC which is done with
+// blkid_encode_string(). Within this function some 1-byte utf-8
+// characters not considered safe (e.g. '\' or ' ') are encoded as hex
+static QString decodeFsEncString(const QString &str)
+{
+    QString decoded;
+    decoded.reserve(str.size());
+
+    int i = 0;
+    while (i < str.size()) {
+        if (i <= str.size() - 4) {    // we need at least four characters \xAB
+            if (str.at(i) == QLatin1Char('\\') &&
+                str.at(i+1) == QLatin1Char('x')) {
+                bool bOk;
+                const int code = str.midRef(i+2, 2).toInt(&bOk, 16);
+                // only decode characters between 0x20 and 0x7f but not
+                // the backslash to prevent collisions
+                if (bOk && code >= 0x20 && code < 0x80 && code != '\\') {
+                    decoded += QChar(code);
+                    i += 4;
+                    continue;
+                }
+            }
+        }
+        decoded += str.at(i);
+        ++i;
+    }
+    return decoded;
+}
+#endif
 
 static inline QString retrieveLabel(const QByteArray &device)
 {
@@ -557,7 +770,7 @@ static inline QString retrieveLabel(const QByteArray &device)
         it.next();
         QFileInfo fileInfo(it.fileInfo());
         if (fileInfo.isSymLink() && fileInfo.symLinkTarget() == devicePath)
-            return fileInfo.fileName();
+            return decodeFsEncString(fileInfo.fileName());
     }
 #elif defined Q_OS_HAIKU
     fs_info fsInfo;

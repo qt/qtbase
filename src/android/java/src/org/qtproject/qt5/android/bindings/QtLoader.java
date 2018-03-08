@@ -243,10 +243,6 @@ public abstract class QtLoader {
 
             QtApplication.setQtContextDelegate(m_delegateClass, qtLoader);
 
-            // now load the application library so it's accessible from this class loader
-            if (libName != null)
-                System.loadLibrary(libName);
-
             Method startAppMethod=qtLoader.getClass().getMethod("startApplication");
             if (!(Boolean)startAppMethod.invoke(qtLoader))
                 throw new Exception("");
@@ -442,7 +438,6 @@ public abstract class QtLoader {
 
         {
             String key = BUNDLED_IN_LIB_RESOURCE_ID_KEY;
-            java.util.Set<String> keys = m_contextInfo.metaData.keySet();
             if (m_contextInfo.metaData.containsKey(key)) {
                 String[] list = m_context.getResources().getStringArray(m_contextInfo.metaData.getInt(key));
 
@@ -569,7 +564,8 @@ public abstract class QtLoader {
                 boolean bundlingQtLibs = false;
                 if (m_contextInfo.metaData.containsKey("android.app.bundle_local_qt_libs")
                         && m_contextInfo.metaData.getInt("android.app.bundle_local_qt_libs") == 1) {
-                    localPrefix = m_context.getApplicationInfo().dataDir + "/";
+                    File dataDir = new File(m_context.getApplicationInfo().dataDir);
+                    localPrefix = dataDir.getCanonicalPath() + "/";
                     pluginsPrefix = localPrefix + "qt-reserved-files/";
 
                     if (libsDir == null)

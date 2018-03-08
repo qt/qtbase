@@ -32,7 +32,6 @@ SOURCES += \
            ../../corelib/global/qrandom.cpp \
            ../../corelib/io/qabstractfileengine.cpp \
            ../../corelib/io/qbuffer.cpp \
-           ../../corelib/io/qdatastream.cpp \
            ../../corelib/io/qdebug.cpp \
            ../../corelib/io/qdir.cpp \
            ../../corelib/io/qdiriterator.cpp \
@@ -47,7 +46,6 @@ SOURCES += \
            ../../corelib/io/qresource.cpp \
            ../../corelib/io/qtemporarydir.cpp \
            ../../corelib/io/qtemporaryfile.cpp \
-           ../../corelib/io/qtextstream.cpp \
            ../../corelib/io/qsavefile.cpp \
            ../../corelib/io/qstandardpaths.cpp \
            ../../corelib/io/qloggingcategory.cpp \
@@ -58,6 +56,17 @@ SOURCES += \
            ../../corelib/kernel/qvariant.cpp \
            ../../corelib/kernel/qsystemerror.cpp \
            ../../corelib/plugin/quuid.cpp \
+           ../../corelib/serialization/qdatastream.cpp \
+           ../../corelib/serialization/qjson.cpp \
+           ../../corelib/serialization/qjsondocument.cpp \
+           ../../corelib/serialization/qjsonobject.cpp \
+           ../../corelib/serialization/qjsonarray.cpp \
+           ../../corelib/serialization/qjsonvalue.cpp \
+           ../../corelib/serialization/qjsonparser.cpp \
+           ../../corelib/serialization/qjsonwriter.cpp \
+           ../../corelib/serialization/qtextstream.cpp \
+           ../../corelib/serialization/qxmlutils.cpp \
+           ../../corelib/serialization/qxmlstream.cpp \
            ../../corelib/tools/qbitarray.cpp \
            ../../corelib/tools/qbytearray.cpp \
            ../../corelib/tools/qarraydata.cpp \
@@ -84,15 +93,6 @@ SOURCES += \
            ../../corelib/tools/qstringlist.cpp \
            ../../corelib/tools/qversionnumber.cpp \
            ../../corelib/tools/qvsnprintf.cpp \
-           ../../corelib/xml/qxmlutils.cpp \
-           ../../corelib/xml/qxmlstream.cpp \
-           ../../corelib/json/qjson.cpp \
-           ../../corelib/json/qjsondocument.cpp \
-           ../../corelib/json/qjsonobject.cpp \
-           ../../corelib/json/qjsonarray.cpp \
-           ../../corelib/json/qjsonvalue.cpp \
-           ../../corelib/json/qjsonparser.cpp \
-           ../../corelib/json/qjsonwriter.cpp \
            ../../xml/dom/qdom.cpp \
            ../../xml/sax/qxml.cpp
 
@@ -146,9 +146,6 @@ win32 {
 }
 
 load(qt_module)
-
-# otherwise mingw headers do not declare common functions like putenv
-mingw: CONFIG -= strict_c++
 
 lib.CONFIG = dummy_install
 INSTALLS += lib

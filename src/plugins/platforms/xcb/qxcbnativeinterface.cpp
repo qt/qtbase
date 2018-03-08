@@ -306,13 +306,13 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QXcbNativeInterfa
         return func;
 
     if (lowerCaseResource == "setstartupid")
-        return NativeResourceForIntegrationFunction(setStartupId);
+        return NativeResourceForIntegrationFunction(reinterpret_cast<void *>(setStartupId));
     if (lowerCaseResource == "generatepeekerid")
-        return NativeResourceForIntegrationFunction(generatePeekerId);
+        return NativeResourceForIntegrationFunction(reinterpret_cast<void *>(generatePeekerId));
     if (lowerCaseResource == "removepeekerid")
-            return NativeResourceForIntegrationFunction(removePeekerId);
+        return NativeResourceForIntegrationFunction(reinterpret_cast<void *>(removePeekerId));
     if (lowerCaseResource == "peekeventqueue")
-            return NativeResourceForIntegrationFunction(peekEventQueue);
+        return NativeResourceForIntegrationFunction(reinterpret_cast<void *>(peekEventQueue));
 
     return 0;
 }
@@ -334,9 +334,9 @@ QPlatformNativeInterface::NativeResourceForScreenFunction QXcbNativeInterface::n
         return func;
 
     if (lowerCaseResource == "setapptime")
-        return NativeResourceForScreenFunction(setAppTime);
+        return NativeResourceForScreenFunction(reinterpret_cast<void *>(setAppTime));
     else if (lowerCaseResource == "setappusertime")
-        return NativeResourceForScreenFunction(setAppUserTime);
+        return NativeResourceForScreenFunction(reinterpret_cast<void *>(setAppUserTime));
     return 0;
 }
 
@@ -388,7 +388,7 @@ QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &functio
     }
 
     if (function == QXcbScreenFunctions::virtualDesktopNumberIdentifier())
-        return QFunctionPointer(QXcbScreenFunctions::VirtualDesktopNumber(QXcbScreen::virtualDesktopNumberStatic));
+        return QFunctionPointer(QXcbScreenFunctions::VirtualDesktopNumber(reinterpret_cast<void *>(QXcbScreen::virtualDesktopNumberStatic)));
 
     return nullptr;
 }
@@ -671,6 +671,62 @@ void *QXcbNativeInterface::handlerNativeResourceForBackingStore(const QByteArray
     if (func)
         return func(backingStore);
     return nullptr;
+}
+
+static void dumpNativeWindowsRecursion(const QXcbConnection *connection, xcb_window_t window,
+                                       int level, QTextStream &str)
+{
+    if (level)
+        str << QByteArray(2 * level, ' ');
+
+    xcb_connection_t *conn = connection->xcb_connection();
+    auto geomReply = Q_XCB_REPLY(xcb_get_geometry, conn, window);
+    if (!geomReply)
+        return;
+    const QRect geom(geomReply->x, geomReply->y, geomReply->width, geomReply->height);
+    if (!geom.isValid() || (geom.width() <= 3 && geom.height() <= 3))
+        return; // Skip helper/dummy windows.
+    str << "0x";
+    const int oldFieldWidth = str.fieldWidth();
+    const QChar oldPadChar =str.padChar();
+    str.setFieldWidth(8);
+    str.setPadChar(QLatin1Char('0'));
+    str << hex << window;
+    str.setFieldWidth(oldFieldWidth);
+    str.setPadChar(oldPadChar);
+    str << dec << " \""
+        << QXcbWindow::windowTitle(connection, window) << "\" "
+        << geom.width() << 'x' << geom.height() << forcesign << geom.x() << geom.y()
+        << noforcesign << '\n';
+
+    auto reply = Q_XCB_REPLY(xcb_query_tree, conn, window);
+    if (reply) {
+        const int count = xcb_query_tree_children_length(reply.get());
+        const xcb_window_t *children = xcb_query_tree_children(reply.get());
+        for (int i = 0; i < count; ++i)
+            dumpNativeWindowsRecursion(connection, children[i], level + 1, str);
+    }
+}
+
+QString QXcbNativeInterface::dumpConnectionNativeWindows(const QXcbConnection *connection, WId root) const
+{
+    QString result;
+    QTextStream str(&result);
+    if (root) {
+        dumpNativeWindowsRecursion(connection, xcb_window_t(root), 0, str);
+    } else {
+        for (const QXcbScreen *screen : connection->screens()) {
+            str << "Screen: \"" << screen->name() << "\"\n";
+            dumpNativeWindowsRecursion(connection, screen->root(), 0, str);
+            str << '\n';
+        }
+    }
+    return result;
+}
+
+QString QXcbNativeInterface::dumpNativeWindows(WId root) const
+{
+    return dumpConnectionNativeWindows(QXcbIntegration::instance()->defaultConnection(), root);
 }
 
 QT_END_NAMESPACE

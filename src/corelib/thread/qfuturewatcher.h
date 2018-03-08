@@ -41,10 +41,9 @@
 #define QFUTUREWATCHER_H
 
 #include <QtCore/qfuture.h>
-
-#ifndef QT_NO_QFUTURE
-
 #include <QtCore/qobject.h>
+
+QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
 
@@ -115,7 +114,7 @@ template <typename T>
 class QFutureWatcher : public QFutureWatcherBase
 {
 public:
-    explicit QFutureWatcher(QObject *_parent = 0)
+    explicit QFutureWatcher(QObject *_parent = nullptr)
         : QFutureWatcherBase(_parent)
     { }
     ~QFutureWatcher()
@@ -212,6 +211,5 @@ Q_INLINE_TEMPLATE void QFutureWatcher<void>::setFuture(const QFuture<void> &_fut
 }
 
 QT_END_NAMESPACE
-#endif // QT_NO_QFUTURE
 
 #endif // QFUTUREWATCHER_H

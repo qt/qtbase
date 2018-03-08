@@ -990,7 +990,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 XPThemeData theme(widget, 0, QWindowsXPStylePrivate::ToolBarTheme,
                                   TP_DROPDOWNBUTTON);
                 if (theme.isValid()) {
-                    const QSizeF size = theme.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget);
+                    const QSizeF size = theme.size() * QStyleHelper::dpiScaled(1);
                     if (!size.isEmpty()) {
                         mbiw = qRound(size.width());
                         mbih = qRound(size.height());
@@ -1513,7 +1513,7 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
     if (d->transitionsEnabled() && canAnimate(option))
     {
 
-        if (control == CC_ScrollBar || control == CC_SpinBox ) {
+        if (control == CC_ScrollBar || control == CC_SpinBox || control == CC_ComboBox) {
 
             QObject *styleObject = option->styleObject; // Can be widget or qquickitem
 
@@ -1643,12 +1643,28 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
 
             } else {
                 if (sub & SC_ComboBoxFrame) {
-                    QStyleOptionButton btn;
-                    btn.QStyleOption::operator=(*option);
-                    btn.rect = option->rect.adjusted(-1, -1, 1, 1);
-                    if (sub & SC_ComboBoxArrow)
-                        btn.features = QStyleOptionButton::HasMenu;
-                    proxy()->drawControl(QStyle::CE_PushButton, &btn, painter, widget);
+                    XPThemeData theme(widget, painter, QWindowsXPStylePrivate::ComboboxTheme);
+                    theme.rect = option->rect;
+                    theme.partId = CP_READONLY;
+                    if (!(cmb->state & State_Enabled))
+                        theme.stateId = CBXS_DISABLED;
+                    else if (cmb->state & State_Sunken || cmb->state & State_On)
+                        theme.stateId = CBXS_PRESSED;
+                    else if (cmb->state & State_MouseOver)
+                        theme.stateId = CBXS_HOT;
+                    else
+                        theme.stateId = CBXS_NORMAL;
+                    d->drawBackground(theme);
+                }
+                if (sub & SC_ComboBoxArrow) {
+                    XPThemeData theme(widget, painter, QWindowsXPStylePrivate::ComboboxTheme);
+                    theme.rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget);
+                    theme.partId = option->direction == Qt::RightToLeft ? CP_DROPDOWNBUTTONLEFT : CP_DROPDOWNBUTTONRIGHT;
+                    if (!(cmb->state & State_Enabled))
+                        theme.stateId = CBXS_DISABLED;
+                    else
+                        theme.stateId = CBXS_NORMAL;
+                    d->drawBackground(theme);
                 }
             }
        }
@@ -2123,15 +2139,12 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
 #if QT_CONFIG(combobox)
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
-            int x = cb->rect.x(),
-                y = cb->rect.y(),
-                wi = cb->rect.width(),
-                he = cb->rect.height();
-            int xpos = x;
-            int margin = cb->frame ? 3 : 0;
-            int bmarg = cb->frame ? 2 : 0;
-            int arrowButtonWidth = bmarg + 16;
-            xpos += wi - arrowButtonWidth;
+            const int x = cb->rect.x(), y = cb->rect.y(), wi = cb->rect.width(), he = cb->rect.height();
+            const int margin = cb->frame ? 3 : 0;
+            const int bmarg = cb->frame ? 2 : 0;
+            const int arrowWidth = qRound(QStyleHelper::dpiScaled(16));
+            const int arrowButtonWidth = bmarg + arrowWidth;
+            const int xpos = x + wi - arrowButtonWidth;
 
             switch (subControl) {
             case SC_ComboBoxFrame:
@@ -2141,7 +2154,7 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
                 rect.setRect(xpos, y , arrowButtonWidth, he);
                 break;
             case SC_ComboBoxEditField:
-                rect.setRect(x + margin, y + margin, wi - 2 * margin - 16, he - 2 * margin);
+                rect.setRect(x + margin, y + margin, wi - 2 * margin - arrowWidth, he - 2 * margin);
                 break;
             case SC_ComboBoxListBoxPopup:
                 rect = cb->rect;

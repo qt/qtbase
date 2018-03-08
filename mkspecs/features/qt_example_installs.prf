@@ -44,19 +44,25 @@ contains(TEMPLATE, .*app): \
 for(ex, EXAMPLE_FILES): \
     sourcefiles += $$files($$absolute_path($$ex, $$_PRO_FILE_PWD_))
 for(res, RESOURCES) {
-    rfile = $$cat($$absolute_path($$res, $$_PRO_FILE_PWD_), lines)
-    for(rline, rfile) {
+    !contains(res, .*\\.qrc): \
+        next()
+    rfile = $$absolute_path($$res, $$_PRO_FILE_PWD_)
+    rpath = $$dirname(rfile)
+    rcont = $$cat($$rfile, lines)
+    for (rline, rcont) {
         resrc = $$replace(rline, ^[ \\t]*<file[^>]*>([^<]+)</file>[ \\t]*$, \\1)
         !equals(resrc, $$rline): \
-            sourcefiles += $$resrc
+            sourcefiles += $$absolute_path($$resrc, $$rpath)
     }
 }
 for(res, RC_FILE) {
-    rfile = $$cat($$absolute_path($$res, $$_PRO_FILE_PWD_), lines)
-    for(rline, rfile) {
+    rfile = $$absolute_path($$res, $$_PRO_FILE_PWD_)
+    rpath = $$dirname(rfile)
+    rcont = $$cat($$rfile, lines)
+    for (rline, rcont) {
         resrc = $$replace(rline, "^\\d+\\s+ICON\\s+[^\"]*\"([^\"]+)\"\$", \\1)
         !equals(resrc, $$rline): \
-            sourcefiles += $$resrc
+            sourcefiles += $$absolute_path($$resrc, $$rpath)
     }
 }
 sourcefiles += \

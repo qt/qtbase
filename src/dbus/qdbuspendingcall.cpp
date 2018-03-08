@@ -414,7 +414,7 @@ QDBusMessage QDBusPendingCall::reply() const
 }
 
 #if 0
-/*!
+/*
     Sets the slot \a member in object \a target to be called when the
     reply arrives. The slot's parameter list must match the reply
     message's arguments for it to be called.

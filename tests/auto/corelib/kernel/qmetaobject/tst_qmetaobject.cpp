@@ -779,13 +779,22 @@ void tst_QMetaObject::invokePointer()
     QCOMPARE(QtTestObject::staticResult, QString("staticFunction1"));
 
     // Test lambdas
-    QVERIFY(QMetaObject::invokeMethod(&obj, [&](){obj.sl1(t1);}));
-    QCOMPARE(obj.slotResult, QString("sl1:1"));
-
-    QString exp;
-    QVERIFY(QMetaObject::invokeMethod(&obj, [&]()->QString{return obj.sl1("bubu");}, &exp));
-    QCOMPARE(exp, QString("yessir"));
-    QCOMPARE(obj.slotResult, QString("sl1:bubu"));
+    QCOMPARE(countedStructObjectsCount, 0);
+    {
+        CountedStruct str;
+        QVERIFY(QMetaObject::invokeMethod(&obj, [str, &t1, &obj]() { obj.sl1(t1); }));
+        QCOMPARE(obj.slotResult, QString("sl1:1"));
+    }
+    QCOMPARE(countedStructObjectsCount, 0);
+    {
+        CountedStruct str;
+        QString exp;
+        QVERIFY(QMetaObject::invokeMethod(
+            &obj, [str, &obj]() -> QString { return obj.sl1("bubu"); }, &exp));
+        QCOMPARE(exp, QString("yessir"));
+        QCOMPARE(obj.slotResult, QString("sl1:bubu"));
+    }
+    QCOMPARE(countedStructObjectsCount, 0);
 }
 
 void tst_QMetaObject::invokeQueuedMetaMember()
@@ -873,16 +882,28 @@ void tst_QMetaObject::invokeQueuedPointer()
     QCOMPARE(QtTestObject::staticResult, QString("staticFunction0"));
 
     // Test lambda
-    obj.slotResult.clear();
-    QVERIFY(QMetaObject::invokeMethod(&obj, [&](){obj.sl0();}, Qt::QueuedConnection));
-    QVERIFY(obj.slotResult.isEmpty());
-    qApp->processEvents(QEventLoop::AllEvents);
-    QCOMPARE(obj.slotResult, QString("sl0"));
-
-    qint32 var = 0;
-    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::invokeMethod: Unable to invoke methods with return values in queued connections");
-    QVERIFY(!QMetaObject::invokeMethod(&obj, []()->qint32{return 1;}, Qt::QueuedConnection, &var));
-    QCOMPARE(var, 0);
+    QCOMPARE(countedStructObjectsCount, 0);
+    {
+        CountedStruct str;
+        obj.slotResult.clear();
+        QVERIFY(
+            QMetaObject::invokeMethod(&obj, [str, &obj]() { obj.sl0(); }, Qt::QueuedConnection));
+        QVERIFY(obj.slotResult.isEmpty());
+        qApp->processEvents(QEventLoop::AllEvents);
+        QCOMPARE(obj.slotResult, QString("sl0"));
+    }
+    QCOMPARE(countedStructObjectsCount, 0);
+    {
+        CountedStruct str;
+        qint32 var = 0;
+        QTest::ignoreMessage(QtWarningMsg,
+                             "QMetaObject::invokeMethod: Unable to invoke methods with return "
+                             "values in queued connections");
+        QVERIFY(!QMetaObject::invokeMethod(&obj, [str]() -> qint32 { return 1; },
+                                           Qt::QueuedConnection, &var));
+        QCOMPARE(var, 0);
+    }
+    QCOMPARE(countedStructObjectsCount, 0);
 }
 
 
@@ -1063,17 +1084,26 @@ void tst_QMetaObject::invokeBlockingQueuedPointer()
     QCOMPARE(QtTestObject::staticResult, QString("staticFunction1"));
 
     // Test lambdas
-    QVERIFY(QMetaObject::invokeMethod(&obj, [&](){obj.sl1(t1);}, Qt::BlockingQueuedConnection));
-    QCOMPARE(obj.slotResult, QString("sl1:1"));
-
-    QString exp;
-    QVERIFY(QMetaObject::invokeMethod(&obj, [&]()->QString{return obj.sl1("bubu");}, Qt::BlockingQueuedConnection, &exp));
-    QCOMPARE(exp, QString("yessir"));
-    QCOMPARE(obj.slotResult, QString("sl1:bubu"));
-
+    QCOMPARE(countedStructObjectsCount, 0);
+    {
+        CountedStruct str;
+        QVERIFY(QMetaObject::invokeMethod(&obj, [str, &obj, &t1]() { obj.sl1(t1); },
+                                          Qt::BlockingQueuedConnection));
+        QCOMPARE(obj.slotResult, QString("sl1:1"));
+    }
+    {
+        CountedStruct str;
+        QString exp;
+        QVERIFY(QMetaObject::invokeMethod(&obj,
+                                          [&obj, str]() -> QString { return obj.sl1("bubu"); },
+                                          Qt::BlockingQueuedConnection, &exp));
+        QCOMPARE(exp, QString("yessir"));
+        QCOMPARE(obj.slotResult, QString("sl1:bubu"));
+    }
     QVERIFY(QMetaObject::invokeMethod(&obj, [&](){obj.moveToThread(QThread::currentThread());}, Qt::BlockingQueuedConnection));
     t.quit();
     QVERIFY(t.wait());
+    QCOMPARE(countedStructObjectsCount, 0);
 }
 
 

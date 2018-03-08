@@ -290,6 +290,13 @@ struct QUtf8
     static QString convertToUnicode(const char *, int, QTextCodec::ConverterState *);
     static QByteArray convertFromUnicode(const QChar *, int);
     static QByteArray convertFromUnicode(const QChar *, int, QTextCodec::ConverterState *);
+    struct ValidUtf8Result {
+        bool isValidUtf8;
+        bool isValidAscii;
+    };
+    static ValidUtf8Result isValidUtf8(const char *, qsizetype);
+    static int compareUtf8(const char *, qsizetype, const QChar *, int);
+    static int compareUtf8(const char *, qsizetype, QLatin1String s);
 };
 
 struct QUtf16

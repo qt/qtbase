@@ -76,11 +76,11 @@ QMAKE_EXTRA_TARGETS += qtattributionsscanner
 
 doc_command = $$QDOC $$QMAKE_DOCS
 prepare_docs {
-    prepare_docs.commands += $$doc_command -prepare $$PREP_DOC_INDEXES -no-link-errors
-    generate_docs.commands += $$doc_command -generate $$DOC_INDEXES
+    prepare_docs.commands += $$doc_command -prepare $$PREP_DOC_INDEXES -no-link-errors $(INCPATH)
+    generate_docs.commands += $$doc_command -generate $$DOC_INDEXES $(INCPATH)
     prepare_docs.depends += qtattributionsscanner
 } else {
-    html_docs.commands += $$doc_command $$DOC_INDEXES
+    html_docs.commands += $$doc_command $$DOC_INDEXES $(INCPATH)
     html_docs.depends += qtattributionsscanner
 }
 

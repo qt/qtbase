@@ -352,16 +352,28 @@ bool QWindowsTabletSupport::translateTabletProximityEvent(WPARAM /* wParam */, L
 {
     PACKET proximityBuffer[1]; // we are only interested in the first packet in this case
     const int totalPacks = QWindowsTabletSupport::m_winTab32DLL.wTPacketsGet(m_context, 1, proximityBuffer);
-    if (!totalPacks)
-        return false;
+
     if (!LOWORD(lParam)) {
         qCDebug(lcQpaTablet) << "leave proximity for device #" << m_currentDevice;
-        QWindowSystemInterface::handleTabletLeaveProximityEvent(proximityBuffer[0].pkTime,
-                                                                m_devices.at(m_currentDevice).currentDevice,
-                                                                m_devices.at(m_currentDevice).currentPointerType,
-                                                                m_devices.at(m_currentDevice).uniqueId);
+        if (m_currentDevice < 0 || m_currentDevice >= m_devices.size()) // QTBUG-65120, spurious leave observed
+            return false;
+        if (totalPacks > 0) {
+            QWindowSystemInterface::handleTabletLeaveProximityEvent(proximityBuffer[0].pkTime,
+                                                                    m_devices.at(m_currentDevice).currentDevice,
+                                                                    m_devices.at(m_currentDevice).currentPointerType,
+                                                                    m_devices.at(m_currentDevice).uniqueId);
+        } else {
+            QWindowSystemInterface::handleTabletLeaveProximityEvent(m_devices.at(m_currentDevice).currentDevice,
+                                                                    m_devices.at(m_currentDevice).currentPointerType,
+                                                                    m_devices.at(m_currentDevice).uniqueId);
+
+        }
         return true;
     }
+
+    if (!totalPacks)
+        return false;
+
     const UINT currentCursor = proximityBuffer[0].pkCursor;
     UINT physicalCursorId;
     QWindowsTabletSupport::m_winTab32DLL.wTInfo(WTI_CURSORS + currentCursor, CSR_PHYSID, &physicalCursorId);
@@ -409,7 +421,8 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
     //    in which case we snap the position to the mouse position.
     // It seems there is no way to find out the mode programmatically, the LOGCONTEXT orgX/Y/Ext
     // area is always the virtual desktop.
-    const QRect virtualDesktopArea = QGuiApplication::primaryScreen()->virtualGeometry();
+    const QRect virtualDesktopArea =
+        QWindowsScreen::virtualGeometry(QGuiApplication::primaryScreen()->handle());
 
     qCDebug(lcQpaTablet) << __FUNCTION__ << "processing " << packetCount
         << "target:" << QGuiApplicationPrivate::tabletDevicePoint(uniqueId).target;
@@ -443,7 +456,9 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
         if (!target)
             continue;
 
-        const QPoint localPos = target->mapFromGlobal(globalPos);
+        const QPlatformWindow *platformWindow = target->handle();
+        Q_ASSERT(platformWindow);
+        const QPoint localPos = platformWindow->mapFromGlobal(globalPos);
 
         const qreal pressureNew = packet.pkButtons && (currentPointer == QTabletEvent::Pen || currentPointer == QTabletEvent::Eraser) ?
             m_devices.at(m_currentDevice).scalePressure(packet.pkNormalPressure) :

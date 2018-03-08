@@ -60,6 +60,10 @@
 
 #ifndef IBUS_RELEASE_MASK
 #define IBUS_RELEASE_MASK (1 << 30)
+#define IBUS_SHIFT_MASK   (1 <<  0)
+#define IBUS_CONTROL_MASK (1 <<  2)
+#define IBUS_MOD1_MASK    (1 <<  3)
+#define IBUS_META_MASK    (1 << 28)
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -307,6 +311,38 @@ void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint
     d->predit = t.text;
 }
 
+void QIBusPlatformInputContext::forwardKeyEvent(uint keyval, uint keycode, uint state)
+{
+    if (!qApp)
+        return;
+
+    QObject *input = qApp->focusObject();
+    if (!input)
+        return;
+
+    if (debug)
+        qDebug() << "forwardKeyEvent" << keyval << keycode << state;
+
+    QEvent::Type type = QEvent::KeyPress;
+    if (state & IBUS_RELEASE_MASK)
+        type = QEvent::KeyRelease;
+
+    state &= ~IBUS_RELEASE_MASK;
+
+    Qt::KeyboardModifiers modifiers = Qt::NoModifier;
+    if (state & IBUS_SHIFT_MASK)
+        modifiers |= Qt::ShiftModifier;
+    if (state & IBUS_CONTROL_MASK)
+        modifiers |= Qt::ControlModifier;
+    if (state & IBUS_MOD1_MASK)
+        modifiers |= Qt::AltModifier;
+    if (state & IBUS_META_MASK)
+        modifiers |= Qt::MetaModifier;
+
+    QKeyEvent event(type, keyval, modifiers, QString(keyval));
+    QCoreApplication::sendEvent(input, &event);
+}
+
 void QIBusPlatformInputContext::surroundingTextRequired()
 {
     if (debug)
@@ -522,6 +558,7 @@ void QIBusPlatformInputContext::connectToContextSignals()
     if (d->context) {
         connect(d->context, SIGNAL(CommitText(QDBusVariant)), SLOT(commitText(QDBusVariant)));
         connect(d->context, SIGNAL(UpdatePreeditText(QDBusVariant,uint,bool)), this, SLOT(updatePreeditText(QDBusVariant,uint,bool)));
+        connect(d->context, SIGNAL(ForwardKeyEvent(uint, uint, uint)), this, SLOT(forwardKeyEvent(uint, uint, uint)));
         connect(d->context, SIGNAL(DeleteSurroundingText(int,uint)), this, SLOT(deleteSurroundingText(int,uint)));
         connect(d->context, SIGNAL(RequireSurroundingText()), this, SLOT(surroundingTextRequired()));
         connect(d->context, SIGNAL(HidePreeditText()), this, SLOT(hidePreeditText()));

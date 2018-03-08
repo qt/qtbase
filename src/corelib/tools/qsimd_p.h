@@ -53,7 +53,6 @@
 //
 
 #include <QtCore/private/qglobal_p.h>
-#include <qatomic.h>
 
 /*
  * qt_module_config.prf defines the QT_COMPILER_SUPPORTS_XXX macros.
@@ -165,11 +164,7 @@
 #  if !defined(__MIPS_DSPR2__) && defined(__mips_dspr2) && defined(Q_PROCESSOR_MIPS_32)
 #    define __MIPS_DSPR2__
 #  endif
-#elif (defined(Q_CC_INTEL) || defined(Q_CC_MSVC) \
-    || (defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && Q_CC_GNU >= 409) \
-    || (defined(Q_CC_CLANG) && Q_CC_CLANG >= 308)) \
-    && !defined(QT_BOOTSTRAPPED)
-#  define QT_COMPILER_SUPPORTS_SIMD_ALWAYS
+#elif defined(Q_PROCESSOR_X86) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS)
 #  define QT_COMPILER_SUPPORTS_HERE(x)    ((__ ## x ## __) || QT_COMPILER_SUPPORTS(x))
 #  if defined(Q_CC_GNU) && !defined(Q_CC_INTEL)
      /* GCC requires attributes for a function */
@@ -182,55 +177,37 @@
 #  define QT_FUNCTION_TARGET(x)
 #endif
 
-#if defined(Q_CC_MSVC) && (defined(_M_AVX) || defined(__AVX__))
+#ifdef Q_PROCESSOR_X86
+/* -- x86 intrinsic support -- */
+
+#  if defined(Q_CC_MSVC) && (defined(_M_X64) || _M_IX86_FP >= 2)
+// MSVC doesn't define __SSE2__, so do it ourselves
+#    define __SSE__                         1
+#    define __SSE2__                        1
+#  endif
+
+#  ifdef __SSE2__
+// #include the intrinsics
+#    include <immintrin.h>
+#  endif
+
+#  if defined(Q_CC_GNU) && !defined(Q_CC_INTEL)
+// GCC 4.4 and Clang 2.8 added a few more intrinsics there
+#    include <x86intrin.h>
+#  endif
+
+#  if defined(Q_CC_MSVC) && (defined(_M_AVX) || defined(__AVX__))
 // Visual Studio defines __AVX__ when /arch:AVX is passed, but not the earlier macros
 // See: https://msdn.microsoft.com/en-us/library/b0084kay.aspx
-// SSE2 is handled by _M_IX86_FP below
-#  define __SSE3__ 1
-#  define __SSSE3__ 1
+#    define __SSE3__                        1
+#    define __SSSE3__                       1
 // no Intel CPU supports SSE4a, so don't define it
-#  define __SSE4_1__ 1
-#  define __SSE4_2__ 1
-#  ifndef __AVX__
-#    define __AVX__ 1
+#    define __SSE4_1__                      1
+#    define __SSE4_2__                      1
+#    ifndef __AVX__
+#      define __AVX__                       1
+#    endif
 #  endif
-#endif
-
-// SSE intrinsics
-#if defined(__SSE2__) || (defined(QT_COMPILER_SUPPORTS_SSE2) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
-#if defined(QT_LINUXBASE)
-/// this is an evil hack - the posix_memalign declaration in LSB
-/// is wrong - see http://bugs.linuxbase.org/show_bug.cgi?id=2431
-#  define posix_memalign _lsb_hack_posix_memalign
-#  include <emmintrin.h>
-#  undef posix_memalign
-#else
-#  include <emmintrin.h>
-#endif
-#if defined(Q_CC_MSVC) && (defined(_M_X64) || _M_IX86_FP >= 2)
-#  define __SSE__ 1
-#  define __SSE2__ 1
-#endif
-#endif
-
-// SSE3 intrinsics
-#if defined(__SSE3__) || (defined(QT_COMPILER_SUPPORTS_SSE3) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
-#include <pmmintrin.h>
-#endif
-
-// SSSE3 intrinsics
-#if defined(__SSSE3__) || (defined(QT_COMPILER_SUPPORTS_SSSE3) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
-#include <tmmintrin.h>
-#endif
-
-// SSE4.1 intrinsics
-#if defined(__SSE4_1__) || (defined(QT_COMPILER_SUPPORTS_SSE4_1) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
-#include <smmintrin.h>
-#endif
-
-// SSE4.2 intrinsics
-#if defined(__SSE4_2__) || (defined(QT_COMPILER_SUPPORTS_SSE4_2) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
-#include <nmmintrin.h>
 
 #  if defined(__SSE4_2__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS) && (defined(Q_CC_INTEL) || defined(Q_CC_MSVC))
 // POPCNT instructions:
@@ -238,13 +215,8 @@
 // (but neither MSVC nor the Intel compiler define this macro)
 #    define __POPCNT__                      1
 #  endif
-#endif
 
 // AVX intrinsics
-#if defined(__AVX__) || (defined(QT_COMPILER_SUPPORTS_AVX) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
-// immintrin.h is the ultimate header, we don't need anything else after this
-#include <immintrin.h>
-
 #  if defined(__AVX__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS) && (defined(Q_CC_INTEL) || defined(Q_CC_MSVC))
 // AES, PCLMULQDQ instructions:
 // All processors that support AVX support AES, PCLMULQDQ
@@ -260,11 +232,6 @@
 #    define __F16C__                        1
 #    define __RDRND__                       1
 #  endif
-#endif
-
-#if defined(__AES__) || defined(__PCLMUL__) || (defined(QT_COMPILER_SUPPORTS_AES) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
-#  include <wmmintrin.h>
-#endif
 
 #define QT_FUNCTION_TARGET_STRING_SSE2      "sse2"
 #define QT_FUNCTION_TARGET_STRING_SSE3      "sse3"
@@ -293,19 +260,7 @@
 #define QT_FUNCTION_TARGET_STRING_RDSEED        "rdseed"
 #define QT_FUNCTION_TARGET_STRING_SHA           "sha"
 
-// other x86 intrinsics
-#if defined(Q_PROCESSOR_X86) && ((defined(Q_CC_GNU) && (Q_CC_GNU >= 404)) \
-    || (defined(Q_CC_CLANG) && (Q_CC_CLANG >= 208)) \
-    || defined(Q_CC_INTEL))
-#  define QT_COMPILER_SUPPORTS_X86INTRIN
-#  ifdef Q_CC_INTEL
-// The Intel compiler has no <x86intrin.h> -- all intrinsics are in <immintrin.h>;
-#    include <immintrin.h>
-#  else
-// GCC 4.4 and Clang 2.8 added a few more intrinsics there
-#    include <x86intrin.h>
-#  endif
-#endif
+#endif  /* Q_PROCESSOR_X86 */
 
 // Clang compiler fix, see http://lists.llvm.org/pipermail/cfe-commits/Week-of-Mon-20160222/151168.html
 // This should be tweaked with an "upper version" of clang once we know which release fixes the
@@ -333,8 +288,10 @@
 #  include <arm_acle.h>
 #endif
 
-QT_BEGIN_NAMESPACE
+#ifdef __cplusplus
+#include <qatomic.h>
 
+QT_BEGIN_NAMESPACE
 
 enum CPUFeatures {
 #if defined(Q_PROCESSOR_ARM)
@@ -512,9 +469,11 @@ static inline quint64 qCpuFeatures()
 #define ALIGNMENT_PROLOGUE_32BYTES(ptr, i, length) \
     for (; i < static_cast<int>(qMin(static_cast<quintptr>(length), ((8 - ((reinterpret_cast<quintptr>(ptr) >> 2) & 0x7)) & 0x7))); ++i)
 
+QT_END_NAMESPACE
+
+#endif // __cplusplus
+
 #define SIMD_EPILOGUE(i, length, max) \
     for (int _i = 0; _i < max && i < length; ++i, ++_i)
-
-QT_END_NAMESPACE
 
 #endif // QSIMD_P_H

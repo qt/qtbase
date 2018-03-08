@@ -268,7 +268,7 @@ char *qstrcpy(char *dst, const char *src)
 {
     if (!src)
         return 0;
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#ifdef Q_CC_MSVC
     const int len = int(strlen(src));
     // This is actually not secure!!! It will be fixed
     // properly in a later release!
@@ -304,7 +304,7 @@ char *qstrncpy(char *dst, const char *src, uint len)
     if (!src || !dst)
         return 0;
     if (len > 0) {
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#ifdef Q_CC_MSVC
         strncpy_s(dst, len, src, len - 1);
 #else
         strncpy(dst, src, len);

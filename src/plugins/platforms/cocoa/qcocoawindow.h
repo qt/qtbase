@@ -209,8 +209,6 @@ protected:
     void recreateWindowIfNeeded();
     QCocoaNSWindow *createNSWindow(bool shouldBePanel);
 
-    QRect nativeWindowGeometry() const;
-
     Qt::WindowState windowState() const;
     void applyWindowState(Qt::WindowStates newState);
     void toggleMaximized();
@@ -262,7 +260,7 @@ public: // for QNSView
 
     bool m_hasModalSession;
     bool m_frameStrutEventsEnabled;
-    bool m_isExposed;
+    QRect m_exposedRect;
     int m_registerTouchCount;
     bool m_resizableTransientParent;
 

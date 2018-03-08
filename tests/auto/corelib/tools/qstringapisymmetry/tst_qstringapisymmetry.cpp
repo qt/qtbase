@@ -33,6 +33,7 @@
 #include <QString>
 #include <QStringView>
 #include <QChar>
+#include <QScopedArrayPointer>
 #include <QStringRef>
 #include <QLatin1String>
 #include <QVector>
@@ -69,6 +70,19 @@ MAKE_ALL(const char*, QChar)
 #undef MAKE_ALL
 #undef MAKE_RELOP
 // END FIXME
+
+// Return a plain ASCII row name consisting of maximum 16 chars and the
+// size for data
+static QByteArray rowName(const QByteArray &data)
+{
+    const int size = data.size();
+    QScopedArrayPointer<char> prettyC(QTest::toPrettyCString(data.constData(), qMin(16, size)));
+    QByteArray result = prettyC.data();
+    result += " (";
+    result += QByteArray::number(size);
+    result += ')';
+    return result;
+}
 
 class tst_QStringApiSymmetry : public QObject
 {
@@ -483,32 +497,6 @@ struct has_qCompareStrings {
 };
 
 template <typename LHS, typename RHS>
-using if_has_qCompareStrings = typename std::enable_if<has_qCompareStrings<LHS, RHS>::value, bool>::type;
-
-template <typename LHS, typename RHS>
-using if_lacks_qCompareStrings = typename std::enable_if<!has_qCompareStrings<LHS, RHS>::value, bool>::type;
-
-static inline Q_DECL_CONSTEXPR int sign(int x) Q_DECL_NOTHROW
-{
-    return x < 0 ? -1 :
-           x > 0 ? +1 :
-           /*else*/ 0 ;
-}
-
-template <typename LHS, typename RHS, if_has_qCompareStrings<LHS, RHS> = true>
-int qCompareStringsWrapper(const LHS &lhs, const RHS &rhs, Qt::CaseSensitivity cs, int)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(qCompareStrings(lhs, rhs, cs)))
-{
-    return qCompareStrings(lhs, rhs, cs);
-}
-
-template <typename LHS, typename RHS, if_lacks_qCompareStrings<LHS, RHS> = true>
-int qCompareStringsWrapper(const LHS &, const RHS &, Qt::CaseSensitivity, int result)
-{
-    return result;
-}
-
-template <typename LHS, typename RHS>
 void tst_QStringApiSymmetry::compare_impl() const
 {
     QFETCH(QStringRef, lhsUnicode);
@@ -517,6 +505,7 @@ void tst_QStringApiSymmetry::compare_impl() const
     QFETCH(QLatin1String, rhsLatin1);
     QFETCH(int, caseSensitiveCompareResult);
     QFETCH(const int, caseInsensitiveCompareResult);
+    Q_UNUSED(caseInsensitiveCompareResult);
 
     const auto lhsU8 = lhsUnicode.toUtf8();
     const auto rhsU8 = rhsUnicode.toUtf8();
@@ -533,10 +522,6 @@ void tst_QStringApiSymmetry::compare_impl() const
 # define QVERIFY_NOEXCEPT(expr)
 #endif
 
-    QCOMPARE(sign(qCompareStringsWrapper(lhs, rhs, Qt::CaseSensitive, caseSensitiveCompareResult)),
-             sign(caseSensitiveCompareResult));
-    QCOMPARE(sign(qCompareStringsWrapper(lhs, rhs, Qt::CaseInsensitive, caseInsensitiveCompareResult)),
-             sign(caseInsensitiveCompareResult));
 #define CHECK(op) \
     QVERIFY_NOEXCEPT(lhs op rhs); \
     do { if (caseSensitiveCompareResult op 0) { \
@@ -1101,7 +1086,7 @@ void tst_QStringApiSymmetry::toLocal8Bit_data()
         QString s;
         for (char c : ba)
             s += QLatin1Char(c);
-        QTest::addRow("\"%s\" (%d)", ba.left(16).constData(), ba.size()) << s << ba;
+        QTest::newRow(rowName(ba).constData()) << s << ba;
     };
 
     QTest::addRow("null") << QString() << QByteArray();
@@ -1136,7 +1121,7 @@ void tst_QStringApiSymmetry::toLatin1_data()
         QString s;
         for (char c : ba)
             s += QLatin1Char(c);
-        QTest::addRow("\"%s\" (%d)", ba.left(16).constData(), ba.size()) << s << ba;
+        QTest::newRow(rowName(ba).constData()) << s << ba;
     };
 
     QTest::addRow("null") << QString() << QByteArray();
@@ -1169,7 +1154,7 @@ void tst_QStringApiSymmetry::toUtf8_data()
     auto add = [](const char *u8) {
         QByteArray ba(u8);
         QString s = ba;
-        QTest::addRow("\"%s\" (%d)", ba.left(16).constData(), ba.size()) << s << ba;
+        QTest::newRow(rowName(ba).constData()) << s << ba;
     };
 
     QTest::addRow("null") << QString() << QByteArray();
@@ -1207,7 +1192,7 @@ void tst_QStringApiSymmetry::toUcs4_data()
             s += QLatin1Char(c);
             ucs4.append(uint(uchar(c)));
         }
-        QTest::addRow("\"%s\" (%d)", ba.left(16).constData(), ba.size()) << s << ucs4;
+        QTest::newRow(rowName(ba).constData()) << s << ucs4;
     };
 
     QTest::addRow("null") << QString() << QVector<uint>();

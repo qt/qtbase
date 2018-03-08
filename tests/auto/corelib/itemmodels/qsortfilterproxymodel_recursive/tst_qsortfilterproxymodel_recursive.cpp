@@ -1,31 +1,26 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, authors Filipe Azevedo <filipe.azevedo@kdab.com> and David Faure <david.faure@kdab.com>
+** Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, authors Filipe Azevedo <filipe.azevedo@kdab.com> and David Faure <david.faure@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL21$
+** $QT_BEGIN_LICENSE:GPL-EXCEPT$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 or version 3 as published by the Free
-** Software Foundation and appearing in the file LICENSE.LGPLv21 and
-** LICENSE.LGPLv3 included in the packaging of this file. Please review the
-** following information to ensure the GNU Lesser General Public License
-** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
-** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** As a special exception, The Qt Company gives you certain additional
-** rights. These rights are described in The Qt Company LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3 as published by the Free Software
+** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -38,6 +33,8 @@
 #include <QtGui/QStandardItem>
 
 Q_DECLARE_METATYPE(QModelIndex)
+
+static const int s_filterRole = Qt::UserRole + 1;
 
 class ModelSignalSpy : public QObject {
     Q_OBJECT
@@ -72,7 +69,7 @@ private Q_SLOTS:
         mSignals << QStringLiteral("rowsMoved");
     }
     void onDataChanged(const QModelIndex &from, const QModelIndex& ) {
-        mSignals << QStringLiteral("dataChanged(%1)").arg(from.data().toString());
+        mSignals << QStringLiteral("dataChanged(%1)").arg(from.data(Qt::DisplayRole).toString());
     }
     void onLayoutChanged() {
         mSignals << QStringLiteral("layoutChanged");
@@ -83,7 +80,7 @@ private Q_SLOTS:
 private:
     QString textForRowSpy(const QModelIndex &parent, int start, int end)
     {
-        QString txt = parent.data().toString();
+        QString txt = parent.data(Qt::DisplayRole).toString();
         if (!txt.isEmpty())
             txt += QLatin1Char('.');
         txt += QString::number(start+1);
@@ -100,13 +97,14 @@ public:
     TestModel(QAbstractItemModel *sourceModel)
         : QSortFilterProxyModel()
     {
-        setRecursiveFiltering(true);
+        setFilterRole(s_filterRole);
+        setRecursiveFilteringEnabled(true);
         setSourceModel(sourceModel);
     }
 
     virtual bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override
     {
-        return sourceModel()->index(sourceRow, 0, sourceParent).data(Qt::UserRole +1).toBool()
+        return sourceModel()->index(sourceRow, 0, sourceParent).data(s_filterRole).toBool()
                 && QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
     }
 };
@@ -119,7 +117,7 @@ public:
 // - - E
 // as a single string, englobing children in brackets, like this:
 // [A[B[C D] E]]
-// In addition, items that match the filtering (data(UserRole+1) == true) have a * after their value.
+// In addition, items that match the filtering (data(s_filterRole) == true) have a * after their value.
 static QString treeAsString(const QAbstractItemModel &model, const QModelIndex &parent = QModelIndex())
 {
     QString ret;
@@ -131,8 +129,8 @@ static QString treeAsString(const QAbstractItemModel &model, const QModelIndex &
                 ret += ' ';
             }
             const QModelIndex child = model.index(row, 0, parent);
-            ret += child.data().toString();
-            if (child.data(Qt::UserRole+1).toBool())
+            ret += child.data(Qt::DisplayRole).toString();
+            if (child.data(s_filterRole).toBool())
                 ret += QLatin1Char('*');
             ret += treeAsString(model, child);
         }
@@ -151,7 +149,7 @@ static void fillModel(QStandardItemModel &model, const QString &str)
         const QChar ch = str.at(i);
         if ((ch == '[' || ch == ']' || ch == ' ') && !data.isEmpty()) {
             if (data.endsWith('*')) {
-                item->setData(true, Qt::UserRole + 1);
+                item->setData(true, s_filterRole);
                 data.chop(1);
             }
             item->setText(data);
@@ -213,6 +211,7 @@ private Q_SLOTS:
         QCOMPARE(treeAsString(model), sourceStr);
 
         TestModel proxy(&model);
+        QVERIFY(proxy.isRecursiveFilteringEnabled());
         QCOMPARE(treeAsString(proxy), proxyStr);
     }
 
@@ -235,10 +234,10 @@ private Q_SLOTS:
 
         QCOMPARE(treeAsString(proxy), QStringLiteral("[1[1.1[ME*]]]"));
 
+        // filterRole is Qt::UserRole + 1, so parents are not checked and
+        // therefore no dataChanged for parents
         QCOMPARE(spy.mSignals, QStringList()
-                 << QStringLiteral("dataChanged(ME)")
-                 << QStringLiteral("dataChanged(1.1)")
-                 << QStringLiteral("dataChanged(1)"));
+                 << QStringLiteral("dataChanged(ME)"));
     }
 
     // Test changing a role that is unrelated to the filtering, in a hidden item.
@@ -323,8 +322,8 @@ private Q_SLOTS:
         ModelSignalSpy spy(proxy);
         // When changing the data on the designated item to show this row
         QStandardItem *itemToChange = itemByText(model, add);
-        QVERIFY(!itemToChange->data().toBool());
-        itemToChange->setData(true);
+        QVERIFY(!itemToChange->data(s_filterRole).toBool());
+        itemToChange->setData(true, s_filterRole);
 
         // The proxy should update as expected
         QCOMPARE(treeAsString(proxy), expectedProxyStr);
@@ -412,8 +411,8 @@ private Q_SLOTS:
 
         // When changing the data on the designated item to exclude this row again
         QStandardItem *itemToChange = itemByText(model, remove);
-        QVERIFY(itemToChange->data().toBool());
-        itemToChange->setData(false);
+        QVERIFY(itemToChange->data(s_filterRole).toBool());
+        itemToChange->setData(false, s_filterRole);
 
         // The proxy should update as expected
         QCOMPARE(treeAsString(proxy), expectedProxyStr);
@@ -435,7 +434,7 @@ private Q_SLOTS:
         ModelSignalSpy spy(proxy);
         QStandardItem *item_1_1_1 = model.item(0)->child(0)->child(0);
         QStandardItem *item_1_1_1_1 = new QStandardItem(QStringLiteral("1.1.1.1"));
-        item_1_1_1_1->setData(true);
+        item_1_1_1_1->setData(true, s_filterRole);
         item_1_1_1->appendRow(item_1_1_1_1);
         QCOMPARE(treeAsString(proxy), QStringLiteral("[1[1.1[1.1.1[1.1.1.1*]]]]"));
 
@@ -460,7 +459,7 @@ private Q_SLOTS:
         ModelSignalSpy spy(proxy);
         {
             QStandardItem *item_1_1_1_1 = new QStandardItem(QStringLiteral("1.1.1.1"));
-            item_1_1_1_1->setData(true);
+            item_1_1_1_1->setData(true, s_filterRole);
             QStandardItem *item_1_1_1 = model.item(0)->child(0)->child(0);
             item_1_1_1->appendRow(item_1_1_1_1);
         }
@@ -488,7 +487,7 @@ private Q_SLOTS:
         {
             QStandardItem *item_1_1_1 = new QStandardItem(QStringLiteral("1.1.1"));
             QStandardItem *item_1_1_1_1 = new QStandardItem(QStringLiteral("1.1.1.1"));
-            item_1_1_1_1->setData(true);
+            item_1_1_1_1->setData(true, s_filterRole);
             item_1_1_1->appendRow(item_1_1_1_1);
 
             QStandardItem *item_1_1 = model.item(0)->child(0);
@@ -515,7 +514,7 @@ private Q_SLOTS:
         {
             QStandardItem *item_1_1_2 = new QStandardItem(QStringLiteral("1.1.2"));
             QStandardItem *item_1_1_2_1 = new QStandardItem(QStringLiteral("1.1.2.1"));
-            item_1_1_2_1->setData(true);
+            item_1_1_2_1->setData(true, s_filterRole);
             item_1_1_2->appendRow(item_1_1_2_1);
 
             QStandardItem *item_1_1 = model.item(0)->child(0);
@@ -710,6 +709,7 @@ private Q_SLOTS:
         ModelSignalSpy spy(proxy);
 
         //qDebug() << "setFilterFixedString";
+        proxy.setFilterRole(Qt::DisplayRole);
         proxy.setFilterFixedString(filter);
 
         QCOMPARE(treeAsString(proxy), expectedProxyStr);

@@ -61,13 +61,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QGenericMatrix::QGenericMatrix()
+    \fn template <int N, int M, typename T> QGenericMatrix<N, M, T>::QGenericMatrix()
 
     Constructs a NxM identity matrix.
 */
 
 /*!
-    \fn QGenericMatrix::QGenericMatrix(Qt::Initialization)
+    \fn template <int N, int M, typename T> QGenericMatrix<N, M, T>::QGenericMatrix(Qt::Initialization)
     \since 5.5
     \internal
 
@@ -75,7 +75,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QGenericMatrix::QGenericMatrix(const T *values)
+    \fn template <int N, int M, typename T> QGenericMatrix<N, M, T>::QGenericMatrix(const T *values)
 
     Constructs a matrix from the given N * M floating-point \a values.
     The contents of the array \a values is assumed to be in
@@ -85,21 +85,21 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const T& QGenericMatrix::operator()(int row, int column) const
+    \fn template <int N, int M, typename T> const T& QGenericMatrix<N, M, T>::operator()(int row, int column) const
 
     Returns a constant reference to the element at position
     (\a row, \a column) in this matrix.
 */
 
 /*!
-    \fn T& QGenericMatrix::operator()(int row, int column)
+    \fn template <int N, int M, typename T> T& QGenericMatrix<N, M, T>::operator()(int row, int column)
 
     Returns a reference to the element at position (\a row, \a column)
     in this matrix so that the element can be assigned to.
 */
 
 /*!
-    \fn bool QGenericMatrix::isIdentity() const
+    \fn template <int N, int M, typename T> bool QGenericMatrix<N, M, T>::isIdentity() const
 
     Returns \c true if this matrix is the identity; false otherwise.
 
@@ -107,7 +107,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QGenericMatrix::setToIdentity()
+    \fn template <int N, int M, typename T> void QGenericMatrix<N, M, T>::setToIdentity()
 
     Sets this matrix to the identity.
 
@@ -115,77 +115,77 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QGenericMatrix::fill(T value)
+    \fn template <int N, int M, typename T> void QGenericMatrix<N, M, T>::fill(T value)
 
     Fills all elements of this matrix with \a value.
 */
 
 /*!
-    \fn QGenericMatrix<M, N> QGenericMatrix::transposed() const
+    \fn template <int N, int M, typename T> QGenericMatrix<M, N> QGenericMatrix<N, M, T>::transposed() const
 
     Returns this matrix, transposed about its diagonal.
 */
 
 /*!
-    \fn QGenericMatrix<N, M, T>& QGenericMatrix::operator+=(const QGenericMatrix<N, M, T>& other)
+    \fn template <int N, int M, typename T> QGenericMatrix<N, M, T>& QGenericMatrix<N, M, T>::operator+=(const QGenericMatrix<N, M, T>& other)
 
     Adds the contents of \a other to this matrix.
 */
 
 /*!
-    \fn QGenericMatrix<N, M, T>& QGenericMatrix::operator-=(const QGenericMatrix<N, M, T>& other)
+    \fn template <int N, int M, typename T> QGenericMatrix<N, M, T>& QGenericMatrix<N, M, T>::operator-=(const QGenericMatrix<N, M, T>& other)
 
     Subtracts the contents of \a other from this matrix.
 */
 
 /*!
-    \fn QGenericMatrix<N, M, T>& QGenericMatrix::operator*=(T factor)
+    \fn template <int N, int M, typename T> QGenericMatrix<N, M, T>& QGenericMatrix<N, M, T>::operator*=(T factor)
 
     Multiplies all elements of this matrix by \a factor.
 */
 
 /*!
-    \fn QGenericMatrix<N, M, T>& QGenericMatrix::operator/=(T divisor)
+    \fn template <int N, int M, typename T> QGenericMatrix<N, M, T>& QGenericMatrix<N, M, T>::operator/=(T divisor)
 
     Divides all elements of this matrix by \a divisor.
 */
 
 /*!
-    \fn bool QGenericMatrix::operator==(const QGenericMatrix<N, M, T>& other) const
+    \fn template <int N, int M, typename T> bool QGenericMatrix<N, M, T>::operator==(const QGenericMatrix<N, M, T>& other) const
 
     Returns \c true if this matrix is identical to \a other; false otherwise.
 */
 
 /*!
-    \fn bool QGenericMatrix::operator!=(const QGenericMatrix<N, M, T>& other) const
+    \fn template <int N, int M, typename T> bool QGenericMatrix<N, M, T>::operator!=(const QGenericMatrix<N, M, T>& other) const
 
     Returns \c true if this matrix is not identical to \a other; false otherwise.
 */
 
 /*!
-    \fn QGenericMatrix<N, M, T> operator+(const QGenericMatrix<N, M, T>& m1, const QGenericMatrix<N, M, T>& m2)
+    \fn template <int N, int M, typename T> QGenericMatrix<N, M, T> operator+(const QGenericMatrix<N, M, T>& m1, const QGenericMatrix<N, M, T>& m2)
     \relates QGenericMatrix
 
     Returns the sum of \a m1 and \a m2.
 */
 
 /*!
-    \fn QGenericMatrix<N, M, T> operator-(const QGenericMatrix<N, M, T>& m1, const QGenericMatrix<N, M, T>& m2)
+    \fn template <int N, int M, typename T> QGenericMatrix<N, M, T> operator-(const QGenericMatrix<N, M, T>& m1, const QGenericMatrix<N, M, T>& m2)
     \relates QGenericMatrix
 
     Returns the difference of \a m1 and \a m2.
 */
 
 /*!
-    \fn QGenericMatrix<M1, M2, T> operator*(const QGenericMatrix<N, M2, T>& m1, const QGenericMatrix<M1, N, T>& m2)
+    \fn template<int NN, int M1, int M2, typename TT> QGenericMatrix<M1, M2, TT> operator*(const QGenericMatrix<NN, M2, TT>& m1, const QGenericMatrix<M1, NN, TT>& m2)
     \relates QGenericMatrix
 
-    Returns the product of the NxM2 matrix \a m1 and the M1xN matrix \a m2
+    Returns the product of the NNxM2 matrix \a m1 and the M1xNN matrix \a m2
     to produce a M1xM2 matrix result.
 */
 
 /*!
-    \fn QGenericMatrix<N, M, T> operator-(const QGenericMatrix<N, M, T>& matrix)
+    \fn template <int N, int M, typename T> QGenericMatrix<N, M, T> operator-(const QGenericMatrix<N, M, T>& matrix)
     \overload
     \relates QGenericMatrix
 
@@ -193,35 +193,35 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QGenericMatrix<N, M, T> operator*(T factor, const QGenericMatrix<N, M, T>& matrix)
+    \fn template <int N, int M, typename T> QGenericMatrix<N, M, T> operator*(T factor, const QGenericMatrix<N, M, T>& matrix)
     \relates QGenericMatrix
 
     Returns the result of multiplying all elements of \a matrix by \a factor.
 */
 
 /*!
-    \fn QGenericMatrix<N, M, T> operator*(const QGenericMatrix<N, M, T>& matrix, T factor)
+    \fn template <int N, int M, typename T> QGenericMatrix<N, M, T> operator*(const QGenericMatrix<N, M, T>& matrix, T factor)
     \relates QGenericMatrix
 
     Returns the result of multiplying all elements of \a matrix by \a factor.
 */
 
 /*!
-    \fn QGenericMatrix<N, M, T> operator/(const QGenericMatrix<N, M, T>& matrix, T divisor)
+    \fn template <int N, int M, typename T> QGenericMatrix<N, M, T> operator/(const QGenericMatrix<N, M, T>& matrix, T divisor)
     \relates QGenericMatrix
 
     Returns the result of dividing all elements of \a matrix by \a divisor.
 */
 
 /*!
-    \fn void QGenericMatrix::copyDataTo(T *values) const
+    \fn template <int N, int M, typename T> void QGenericMatrix<N, M, T>::copyDataTo(T *values) const
 
     Retrieves the N * M items in this matrix and copies them to \a values
     in row-major order.
 */
 
 /*!
-    \fn T *QGenericMatrix::data()
+    \fn template <int N, int M, typename T> T *QGenericMatrix<N, M, T>::data()
 
     Returns a pointer to the raw data of this matrix.
 
@@ -229,7 +229,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const T *QGenericMatrix::data() const
+    \fn template <int N, int M, typename T> const T *QGenericMatrix<N, M, T>::data() const
 
     Returns a constant pointer to the raw data of this matrix.
 
@@ -237,7 +237,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const T *QGenericMatrix::constData() const
+    \fn template <int N, int M, typename T> const T *QGenericMatrix<N, M, T>::constData() const
 
     Returns a constant pointer to the raw data of this matrix.
 
@@ -247,7 +247,7 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_DATASTREAM
 
 /*!
-    \fn QDataStream &operator<<(QDataStream &stream, const QGenericMatrix<N, M, T> &matrix)
+    \fn template <int N, int M, typename T> QDataStream &operator<<(QDataStream &stream, const QGenericMatrix<N, M, T> &matrix)
     \relates QGenericMatrix
 
     Writes the given \a matrix to the given \a stream and returns a
@@ -257,7 +257,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QDataStream &operator>>(QDataStream &stream, QGenericMatrix<N, M, T> &matrix)
+    \fn template <int N, int M, typename T> QDataStream &operator>>(QDataStream &stream, QGenericMatrix<N, M, T> &matrix)
     \relates QGenericMatrix
 
     Reads a NxM matrix from the given \a stream into the given \a matrix

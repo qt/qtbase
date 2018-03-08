@@ -87,10 +87,8 @@ void tst_QCssParser::scanner_data()
 
 #if defined(Q_OS_ANDROID) || defined(Q_OS_WINRT)
     QDir d(":/");
-#elif !defined(Q_OS_IRIX)
-    QDir d(SRCDIR);
 #else
-    QDir d(QDir::current());
+    QDir d(SRCDIR);
 #endif
     d.cd("testdata");
     d.cd("scanner");

@@ -514,12 +514,13 @@ void QStyledItemDelegate::updateEditorGeometry(QWidget *editor,
 
     QStyle *style = widget ? widget->style() : QApplication::style();
     QRect geom = style->subElementRect(QStyle::SE_ItemViewItemText, &opt, widget);
-    if ( editor->layoutDirection() == Qt::RightToLeft) {
-        const int delta = qSmartMinSize(editor).width() - geom.width();
-        if (delta > 0) {
-            //we need to widen the geometry
+    const int delta = qSmartMinSize(editor).width() - geom.width();
+    if (delta > 0) {
+        //we need to widen the geometry
+        if (editor->layoutDirection() == Qt::RightToLeft)
             geom.adjust(-delta, 0, 0, 0);
-        }
+        else
+            geom.adjust(0, 0, delta, 0);
     }
 
     editor->setGeometry(geom);
@@ -570,7 +571,7 @@ void QStyledItemDelegate::setItemEditorFactory(QItemEditorFactory *factory)
     \uicontrol Return keys are \e not handled.
 
     In the case of \uicontrol Tab, \uicontrol Backtab, \uicontrol Enter and \uicontrol Return
-    key press events, the \a editor's data is comitted to the model
+    key press events, the \a editor's data is committed to the model
     and the editor is closed. If the \a event is a \uicontrol Tab key press
     the view will open an editor on the next item in the
     view. Likewise, if the \a event is a \uicontrol Backtab key press the

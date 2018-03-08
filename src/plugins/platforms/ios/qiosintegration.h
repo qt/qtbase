@@ -58,8 +58,6 @@ class QIOSServices;
 class QIOSIntegration : public QPlatformNativeInterface, public QPlatformIntegration
 {
     Q_OBJECT
-    Q_PROPERTY(bool debugWindowManagement READ debugWindowManagement WRITE setDebugWindowManagement);
-
 public:
     QIOSIntegration();
     ~QIOSIntegration();
@@ -104,10 +102,9 @@ public:
 
     void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) override;
 
-    void setDebugWindowManagement(bool);
-    bool debugWindowManagement() const;
-
     QFactoryLoader *optionalPlugins() { return m_optionalPlugins; }
+
+    QIOSApplicationState applicationState;
 
 private:
     QPlatformFontDatabase *m_fontDatabase;
@@ -116,15 +113,12 @@ private:
 #endif
     QPlatformInputContext *m_inputContext;
     QTouchDevice *m_touchDevice;
-    QIOSApplicationState m_applicationState;
     QIOSServices *m_platformServices;
     mutable QPlatformAccessibility *m_accessibility;
     QFactoryLoader *m_optionalPlugins;
 #ifndef Q_OS_TVOS
     QIOSTextInputOverlay m_textInputOverlay;
 #endif
-
-    bool m_debugWindowManagement;
 };
 
 QT_END_NAMESPACE

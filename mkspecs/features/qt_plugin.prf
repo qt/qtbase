@@ -48,7 +48,7 @@ CONFIG(static, static|shared)|prefix_build {
 
     !build_pass {
         qt_plugin_deps = $$QT $$QT_PRIVATE
-        qt_plugin_deps = s,-private$,_private,g
+        qt_plugin_deps ~= s,-private$,_private,g
 
         MODULE_PRI_CONT = \
             "QT_PLUGIN.$${MODULE}.TYPE = $$PLUGIN_TYPE" \
@@ -94,6 +94,8 @@ INSTALLS += target
 TARGET = $$qt5LibraryTarget($$TARGET)
 
 CONFIG += create_cmake
+
+DEFINES *= QT_DEPRECATED_WARNINGS
 
 load(qt_targets)
 load(qt_common)

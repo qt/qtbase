@@ -103,7 +103,6 @@
             "platform": "string",
             "plugin-manifests": "boolean",
             "profile": "boolean",
-            "qml-debug": "boolean",
             "qreal": "string",
             "qtlibinfix": { "type": "string", "name": "qt_libinfix" },
             "qtnamespace": { "type": "string", "name": "qt_namespace" },
@@ -216,12 +215,11 @@
         "compile": [ "verifyspec" ],
         "detectPkgConfig": [ "cross_compile", "machineTuple" ],
         "library": [ "pkg-config" ],
-        "getPkgConfigVariable": [ "pkg-config" ],
-        "subarch": [ "architecture" ]
+        "getPkgConfigVariable": [ "pkg-config" ]
     },
 
     "testTypeAliases": {
-        "compile": [ "library", "architecture" ]
+        "compile": [ "library", "architecture", "x86Simd", "x86SimdAlways" ]
     },
 
     "tests": {
@@ -310,6 +308,11 @@
             "type": "linkerSupportsFlag",
             "flag": "--enable-new-dtags"
         },
+        "gdb_index": {
+            "label": "gdb index support",
+            "type": "linkerSupportsFlag",
+            "flag": "--gdb-index"
+        },
         "reduce_exports": {
             "label": "symbol visibility support",
             "type": "compile",
@@ -365,221 +368,88 @@
         },
         "sse2": {
             "label": "SSE2 instructions",
-            "type": "compile",
-            "test": {
-                "include": "emmintrin.h",
-                "main": [
-                    "__m128i a = _mm_setzero_si128();",
-                    "_mm_maskmoveu_si128(a, _mm_setzero_si128(), 0);"
-                ],
-                "qmake": [
-                    "!defined(QMAKE_CFLAGS_SSE2, var): error(\"This compiler does not support SSE2\")",
-                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_SSE2"
-                ]
-            }
+            "type": "x86Simd"
         },
         "sse3": {
             "label": "SSE3 instructions",
-            "type": "compile",
-            "test": {
-                "include": "pmmintrin.h",
-                "main": [
-                    "__m128d a = _mm_set1_pd(6.28);",
-                    "__m128d b = _mm_set1_pd(3.14);",
-                    "__m128d result = _mm_addsub_pd(a, b);",
-                    "(void) _mm_movedup_pd(result);"
-                ],
-                "qmake": [
-                    "!defined(QMAKE_CFLAGS_SSE3, var): error(\"This compiler does not support SSE3\")",
-                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_SSE3"
-                ]
-            }
+            "type": "x86Simd"
         },
         "ssse3": {
             "label": "SSSE3 instructions",
-            "type": "compile",
-            "test": {
-                "include": "tmmintrin.h",
-                "main": [
-                    "__m128i a = _mm_set1_epi32(42);",
-                    "_mm_abs_epi8(a);",
-                    "(void) _mm_sign_epi16(a, _mm_set1_epi32(64));"
-                ],
-                "qmake": [
-                    "!defined(QMAKE_CFLAGS_SSSE3, var): error(\"This compiler does not support SSSE3\")",
-                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_SSSE3"
-                ]
-            }
+            "type": "x86Simd"
         },
         "sse4_1": {
             "label": "SSE4.1 instructions",
-            "type": "compile",
-            "test": {
-                "include": "smmintrin.h",
-                "main": [
-                    "__m128 a = _mm_setzero_ps();",
-                    "_mm_ceil_ps(a);",
-                    "__m128i result = _mm_mullo_epi32(_mm_set1_epi32(42), _mm_set1_epi32(64));",
-                    "(void)result;"
-                ],
-                "qmake": [
-                    "!defined(QMAKE_CFLAGS_SSE4_1, var): error(\"This compiler does not support SSE4.1\")",
-                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_SSE4_1"
-                ]
-            }
+            "type": "x86Simd"
         },
         "sse4_2": {
             "label": "SSE4.2 instructions",
-            "type": "compile",
-            "test": {
-                "include": "nmmintrin.h",
-                "main": [
-                    "__m128i a = _mm_setzero_si128();",
-                    "__m128i b = _mm_set1_epi32(42);",
-                    "(void) _mm_cmpestrm(a, 16, b, 16, 0);"
-                ],
-                "qmake": [
-                    "!defined(QMAKE_CFLAGS_SSE4_2, var): error(\"This compiler does not support SSE4.2\")",
-                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_SSE4_2"
-                ]
-            }
+            "type": "x86Simd"
         },
         "aesni": {
             "label": "AES new instructions",
-            "type": "compile",
-            "test": "common/aesni"
+            "type": "x86Simd"
         },
         "f16c": {
             "label": "F16C instructions",
-            "type": "compile",
-            "test": {
-                "include": "immintrin.h",
-                "main": [
-                    "__m128i a = _mm_setzero_si128();",
-                    "__m128 b = _mm_cvtph_ps(a);",
-                    "__m256 b256 = _mm256_cvtph_ps(a);",
-                    "(void) _mm_cvtps_ph(b, 0);",
-                    "(void) _mm256_cvtps_ph(b256, 0);"
-                ],
-                "qmake": [
-                    "!defined(QMAKE_CFLAGS_F16C, var): error(\"This compiler does not support F16C\")",
-                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_F16C"
-                ]
-            }
+            "type": "x86Simd"
         },
         "rdrnd": {
             "label": "RDRAND instruction",
-            "type": "compile",
-            "test": "common/rdrnd"
+            "type": "x86Simd"
         },
         "shani": {
             "label": "SHA new instructions",
-            "type": "compile",
-            "test": "common/shani"
+            "type": "x86Simd"
         },
         "avx": {
             "label": "AVX instructions",
-            "type": "compile",
-            "test": {
-                "include": "immintrin.h",
-                "main": [
-                    "__m256d a = _mm256_setzero_pd();",
-                    "__m256d b = _mm256_set1_pd(42.42);",
-                    "(void) _mm256_add_pd(a, b);"
-                ],
-                "qmake": [
-                    "!defined(QMAKE_CFLAGS_AVX, var): error(\"This compiler does not support AVX\")",
-                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_AVX"
-                ]
-            }
+            "type": "x86Simd"
         },
         "avx2": {
             "label": "AVX2 instructions",
-            "type": "compile",
-            "test": {
-                "include": "immintrin.h",
-                "main": [
-                    "// AVX",
-                    "_mm256_zeroall();",
-                    "__m256i a = _mm256_setzero_si256();",
-                    "// AVX2",
-                    "__m256i b = _mm256_and_si256(a, a);",
-                    "(void) _mm256_add_epi8(a, b);"
-                ],
-                "qmake": [
-                    "!defined(QMAKE_CFLAGS_AVX2, var): error(\"This compiler does not support AVX2\")",
-                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_AVX2"
-                ]
-            }
+            "type": "x86Simd"
         },
         "avx512f": {
             "label": "AVX512 F instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=F"
+            "type": "x86Simd"
         },
         "avx512er": {
             "label": "AVX512 ER instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=ER"
+            "type": "x86Simd"
         },
         "avx512cd": {
             "label": "AVX512 CD instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=CD"
+            "type": "x86Simd"
         },
         "avx512pf": {
             "label": "AVX512 PF instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=PF"
+            "type": "x86Simd"
         },
         "avx512dq": {
             "label": "AVX512 DQ instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=DQ"
+            "type": "x86Simd"
         },
         "avx512bw": {
             "label": "AVX512 BW instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=BW"
+            "type": "x86Simd"
         },
         "avx512vl": {
             "label": "AVX512 VL instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=VL"
+            "type": "x86Simd"
         },
         "avx512ifma": {
             "label": "AVX512 IFMA instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=IFMA"
+            "type": "x86Simd"
         },
         "avx512vbmi": {
             "label": "AVX512 VBMI instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=VBMI"
+            "type": "x86Simd"
         },
-        "mips_dsp": {
-            "label": "MIPS DSP instructions",
-            "type": "subarch",
-            "subarch": "dsp"
-        },
-        "mips_dspr2": {
-            "label": "MIPS DSPr2 instructions",
-            "type": "subarch",
-            "subarch": "dspr2"
-        },
-        "neon": {
-            "label": "NEON instructions",
-            "type": "subarch",
-            "subarch": "neon"
+        "x86SimdAlways": {
+            "label": "Intrinsics without -mXXX argument",
+            "type": "x86SimdAlways",
+            "test": "x86_simd"
         },
         "posix_fallocate": {
             "label": "POSIX fallocate()",
@@ -706,7 +576,7 @@
         },
         "optimize_debug": {
             "label": "Optimize debug build",
-            "condition": "!config.msvc && (features.debug || features.debug_and_release) && tests.optimize_debug",
+            "condition": "!config.msvc && !config.clang && (features.debug || features.debug_and_release) && tests.optimize_debug",
             "output": [ "privateConfig" ]
         },
         "optimize_size": {
@@ -878,7 +748,7 @@
         "sanitizer": {
             "label": "Sanitizers",
             "condition": "features.sanitize_address || features.sanitize_thread || features.sanitize_memory || features.sanitize_undefined",
-            "output": [ "publicConfig" ]
+            "output": [ "sanitizer", "publicConfig" ]
         },
         "GNUmake": {
             "label": "GNU make",
@@ -941,6 +811,12 @@
         "enable_new_dtags": {
             "label": "Using new DTAGS",
             "condition": "config.linux && tests.enable_new_dtags",
+            "output": [ "privateConfig" ]
+        },
+        "enable_gdb_index": {
+            "label": "Generating GDB index",
+            "autoDetect": "features.developer-build",
+            "condition": "config.gcc && !config.clang && (features.debug || features.force_debug_info || features.debug_and_release) && tests.gdb_index",
             "output": [ "privateConfig" ]
         },
         "reduce_exports": {
@@ -1123,9 +999,17 @@
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_SHA", "value": 1 }
             ]
         },
+        "x86SimdAlways": {
+            "label": "Intrinsics without -mXXX option",
+            "condition": "(arch.i386 || arch.x86_64) && tests.x86SimdAlways",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_SIMD_ALWAYS", "value": 1 }
+            ]
+        },
         "mips_dsp": {
             "label": "DSP",
-            "condition": "arch.mips && tests.mips_dsp",
+            "condition": "arch.mips && subarch.dsp",
             "output": [
                 "privateConfig",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_MIPS_DSP", "value": 1 }
@@ -1133,7 +1017,7 @@
         },
         "mips_dspr2": {
             "label": "DSPr2",
-            "condition": "arch.mips && tests.mips_dspr2",
+            "condition": "arch.mips && subarch.dspr2",
             "output": [
                 "privateConfig",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_MIPS_DSPR2", "value": 1 }
@@ -1141,7 +1025,7 @@
         },
         "neon": {
             "label": "NEON",
-            "condition": "(arch.arm || arch.arm64) && tests.neon",
+            "condition": "(arch.arm || arch.arm64) && subarch.neon",
             "output": [
                 "privateConfig",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_NEON", "value": 1 }
@@ -1177,11 +1061,17 @@
             "condition": "libs.zlib && config.emscripten",
             "output": [ "privateFeature" ]
         },
+        "future": {
+            "label": "QFuture",
+            "purpose": "Provides QFuture and related classes.",
+            "section": "Kernel",
+            "output": [ "publicFeature" ]
+        },
         "concurrent": {
             "label": "Qt Concurrent",
             "purpose": "Provides a high-level multi-threading API.",
             "section": "Kernel",
-            "condition": "features.thread",
+            "condition": "features.future && features.thread",
             "output": [ "publicFeature", "feature" ]
         },
         "dbus": {
@@ -1246,13 +1136,6 @@
             "label": "udev",
             "condition": "libs.libudev",
             "output": [ "privateFeature" ]
-        },
-        "qml-debug": {
-            "label": "QML debugging",
-            "output": [
-                "privateFeature",
-                { "type": "publicQtConfig", "negative": true }
-            ]
         },
         "compile_examples": {
             "label": "Compile examples",
@@ -1364,7 +1247,7 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                 {
                     "type": "feature",
                     "args": "optimize_debug",
-                    "condition": "!config.msvc && (features.debug || features.debug_and_release)"
+                    "condition": "!config.msvc && !config.clang && (features.debug || features.debug_and_release)"
                 },
                 {
                     "type": "feature",
@@ -1387,6 +1270,11 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                     "type": "feature",
                     "args": "enable_new_dtags",
                     "condition": "config.linux"
+                },
+                {
+                    "type": "feature",
+                    "args": "enable_gdb_index",
+                    "condition": "config.gcc && !config.clang && (features.debug || features.force_debug_info || features.debug_and_release)"
                 },
                 "precompile_header",
                 "ltcg",
@@ -1416,6 +1304,11 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                             "type": "featureList",
                             "args": "aesni f16c rdrnd shani",
                             "condition": "(arch.i386 || arch.x86_64)"
+                        },
+                        {
+                            "type": "feature",
+                            "args": "x86SimdAlways",
+                            "condition": "(arch.i386 || arch.x86_64) && !config.msvc"
                         },
                         {
                             "type": "feature",
@@ -1466,7 +1359,6 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
             "section": "Support enabled for",
             "entries": [
                 "pkg-config",
-                "qml-debug",
                 "libudev",
                 "system-zlib",
                 "thread"

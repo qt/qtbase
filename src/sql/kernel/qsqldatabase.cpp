@@ -50,6 +50,7 @@
 #include "private/qsqlnulldriver_p.h"
 #include "qmutex.h"
 #include "qhash.h"
+#include "qthread.h"
 #include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
@@ -58,11 +59,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QSqlDriverFactoryInterface_iid,
                            QLatin1String("/sqldrivers")))
 
-#if !defined(Q_CC_MSVC) || _MSC_VER >= 1900
-// ### Qt6: remove the #ifdef
-const
-#endif
-char *QSqlDatabase::defaultConnection = const_cast<char *>("qt_sql_default_connection");
+const char *QSqlDatabase::defaultConnection = const_cast<char *>("qt_sql_default_connection");
 
 typedef QHash<QString, QSqlDriverCreatorBase*> DriverDict;
 
@@ -135,6 +132,8 @@ QSqlDatabasePrivate::QSqlDatabasePrivate(const QSqlDatabasePrivate &other) : ref
     connOptions = other.connOptions;
     driver = other.driver;
     precisionPolicy = other.precisionPolicy;
+    if (driver)
+        driver->setNumericalPrecisionPolicy(other.driver->numericalPrecisionPolicy());
 }
 
 QSqlDatabasePrivate::~QSqlDatabasePrivate()
@@ -230,6 +229,11 @@ QSqlDatabase QSqlDatabasePrivate::database(const QString& name, bool open)
     dict->lock.lockForRead();
     QSqlDatabase db = dict->value(name);
     dict->lock.unlock();
+    if (db.driver() && db.driver()->thread() != QThread::currentThread()) {
+        qWarning("QSqlDatabasePrivate::database: requested database does not belong to the calling thread.");
+        return QSqlDatabase();
+    }
+
     if (db.isValid() && !db.isOpen() && open) {
         if (!db.open())
             qWarning() << "QSqlDatabasePrivate::database: unable to open database:" << db.lastError().text();
@@ -253,6 +257,8 @@ void QSqlDatabasePrivate::copy(const QSqlDatabasePrivate *other)
     port = other->port;
     connOptions = other->connOptions;
     precisionPolicy = other->precisionPolicy;
+    if (driver)
+        driver->setNumericalPrecisionPolicy(other->driver->numericalPrecisionPolicy());
 }
 
 void QSqlDatabasePrivate::disable()
@@ -307,7 +313,7 @@ void QSqlDatabasePrivate::disable()
 */
 
 /*!
-    \fn QSqlDriver *QSqlDriverCreator::createObject() const
+    \fn template <class T> QSqlDriver *QSqlDriverCreator<T>::createObject() const
     \reimp
 */
 

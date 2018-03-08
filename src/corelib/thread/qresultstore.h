@@ -40,12 +40,10 @@
 #ifndef QTCORE_RESULTSTORE_H
 #define QTCORE_RESULTSTORE_H
 
-#include <QtCore/qglobal.h>
-
-#ifndef QT_NO_QFUTURE
-
 #include <QtCore/qmap.h>
 #include <QtCore/qdebug.h>
+
+QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
 
@@ -201,7 +199,5 @@ Q_DECLARE_TYPEINFO(QtPrivate::ResultItem, Q_PRIMITIVE_TYPE);
 #endif //Q_QDOC
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_QFUTURE
 
 #endif

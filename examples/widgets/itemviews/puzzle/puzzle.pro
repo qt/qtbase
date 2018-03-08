@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(listview))
 
 HEADERS     = mainwindow.h \
               piecesmodel.h \

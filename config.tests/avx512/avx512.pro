@@ -7,4 +7,4 @@ value = $$eval($$varname)
 !defined($$varname, "var"): error("This compiler does not support AVX512")
 
 QMAKE_CXXFLAGS += $$value
-DEFINES += AVX512WANT=$$AVX512
+DEFINES += WANT_AVX512=$$AVX512 WANT_AVX512$$AVX512

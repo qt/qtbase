@@ -71,6 +71,8 @@ public:
     bool isExposed() const override;
     void propagateSizeHints() override {}
 
+    QMargins safeAreaMargins() const override;
+
     void raise() override{ raiseOrLower(true); }
     void lower() override { raiseOrLower(false); }
 
@@ -107,6 +109,10 @@ private:
 
     friend class QIOSScreen;
 };
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QIOSWindow *window);
+#endif
 
 QT_END_NAMESPACE
 

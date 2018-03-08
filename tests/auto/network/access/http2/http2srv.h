@@ -48,19 +48,6 @@
 
 QT_BEGIN_NAMESPACE
 
-struct Http2Setting
-{
-    Http2::Settings identifier;
-    quint32 value = 0;
-
-    Http2Setting(Http2::Settings ident, quint32 v)
-        : identifier(ident),
-          value(v)
-    {}
-};
-
-using Http2Settings = std::vector<Http2Setting>;
-
 // At the moment we do not have any public API parsing HTTP headers. Even worse -
 // the code that can do this exists only in QHttpNetworkReplyPrivate class.
 // To be able to access reply's d_func() we have these classes:
@@ -78,8 +65,8 @@ class Http2Server : public QTcpServer
 {
     Q_OBJECT
 public:
-    Http2Server(bool clearText, const Http2Settings &serverSettings,
-                const Http2Settings &clientSettings);
+    Http2Server(bool clearText, const Http2::RawSettings &serverSettings,
+                const Http2::RawSettings &clientSettings);
 
     ~Http2Server();
 
@@ -144,8 +131,8 @@ private:
     bool settingsSent = false;
     bool waitingClientAck = false;
 
-    Http2Settings serverSettings;
-    std::map<quint16, quint32> expectedClientSettings;
+    Http2::RawSettings serverSettings;
+    Http2::RawSettings expectedClientSettings;
 
     bool connectionError = false;
 

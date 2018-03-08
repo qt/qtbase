@@ -7,5 +7,7 @@ QMAKE_USE += db2
 
 OTHER_FILES += db2.json
 
+equals(QT_ARCH, x86_64): DEFINES += ODBC64
+
 PLUGIN_CLASS_NAME = QDB2DriverPlugin
 include(../qsqldriverbase.pri)

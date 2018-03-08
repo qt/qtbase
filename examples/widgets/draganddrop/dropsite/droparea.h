@@ -63,13 +63,13 @@ class DropArea : public QLabel
     Q_OBJECT
 
 public:
-    DropArea(QWidget *parent = 0);
+    explicit DropArea(QWidget *parent = nullptr);
 
 public slots:
     void clear();
 
 signals:
-    void changed(const QMimeData *mimeData = 0);
+    void changed(const QMimeData *mimeData = nullptr);
 //! [DropArea header part1]
 
 //! [DropArea header part2]

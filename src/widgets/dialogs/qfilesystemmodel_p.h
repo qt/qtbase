@@ -72,6 +72,23 @@ class ExtendedInformation;
 class QFileSystemModelPrivate;
 class QFileIconProvider;
 
+#if defined(Q_OS_WIN)
+class QFileSystemModelNodePathKey : public QString
+{
+public:
+    QFileSystemModelNodePathKey() {}
+    QFileSystemModelNodePathKey(const QString &other) : QString(other) {}
+    QFileSystemModelNodePathKey(const QFileSystemModelNodePathKey &other) : QString(other) {}
+    bool operator==(const QFileSystemModelNodePathKey &other) const { return !compare(other, Qt::CaseInsensitive); }
+};
+
+Q_DECLARE_TYPEINFO(QFileSystemModelNodePathKey, Q_MOVABLE_TYPE);
+
+inline uint qHash(const QFileSystemModelNodePathKey &key) { return qHash(key.toCaseFolded()); }
+#else // Q_OS_WIN
+typedef QString QFileSystemModelNodePathKey;
+#endif
+
 class Q_AUTOTEST_EXPORT QFileSystemModelPrivate : public QAbstractItemModelPrivate
 {
     Q_DECLARE_PUBLIC(QFileSystemModel)
@@ -189,7 +206,7 @@ public:
 
         bool populatedChildren;
         bool isVisible;
-        QHash<QString,QFileSystemNode *> children;
+        QHash<QFileSystemModelNodePathKey, QFileSystemNode *> children;
         QList<QString> visibleChildren;
         int dirtyChildrenIndex;
         QFileSystemNode *parent;
@@ -280,9 +297,13 @@ public:
     static int naturalCompare(const QString &s1, const QString &s2, Qt::CaseSensitivity cs);
 
     QDir rootDir;
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
+#  ifdef Q_OS_WIN
+    QStringList unwatchPathsAt(const QModelIndex &);
+    void watchPaths(const QStringList &paths) { fileInfoGatherer.watchPaths(paths); }
+#  endif // Q_OS_WIN
     QFileInfoGatherer fileInfoGatherer;
-#endif
+#endif // filesystemwatcher
     QTimer delayedSortTimer;
     bool forceSort;
     int sortColumn;

@@ -165,6 +165,12 @@
 */
 
 /*!
+  \enum QDBusPendingReply::anonymous
+
+  \value Count The number of arguments the reply is expected to have
+ */
+
+/*!
     \fn int QDBusPendingReply::count() const
 
     Return the number of arguments the reply is supposed to have. This
@@ -192,21 +198,9 @@
 */
 
 /*!
-    \fn Type QDBusPendingReply::argumentAt() const
-
-    Returns the argument at position \c Index (which is a template
-    parameter) cast to type \c Type. This function uses template code
-    to determine the proper \c Type type, according to the type list
-    used in the construction of this object.
-
-    Note that, if the reply hasn't arrived, this function causes the
-    calling thread to block until the reply is processed.
-
-    If the reply does not contain an argument at position \c Index or if the
-    reply was an error, this function returns a \c Type object that is default
-    constructed, which may be indistinguishable from a valid value. To reliably
-    determine whether the message was an error, use isError().
-*/
+  \typedef QDBusPendingReply::T1
+  \internal
+ */
 
 /*!
     \fn T1 QDBusPendingReply::value() const

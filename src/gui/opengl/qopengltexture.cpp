@@ -778,6 +778,8 @@ static QOpenGLTexture::PixelFormat pixelFormatCompatibleWithInternalFormat(QOpen
         return QOpenGLTexture::Alpha;
 
     case QOpenGLTexture::RGBFormat:
+        return QOpenGLTexture::RGB;
+
     case QOpenGLTexture::RGBAFormat:
         return QOpenGLTexture::RGBA;
 

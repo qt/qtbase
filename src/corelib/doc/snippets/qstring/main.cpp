@@ -333,11 +333,11 @@ void Widget::compareSensitiveFunction()
     int z = QString::compare("auto", "Car", Qt::CaseInsensitive);   // z < 0
     //! [16]
 
-    //! [qCompareStrings-QSV-QSV]
-    int x = qCompareStrings(u"aUtO", u"AuTo", Qt::CaseInsensitive);  // x == 0
-    int y = qCompareStrings(u"auto", u"Car", Qt::CaseSensitive);     // y > 0
-    int z = qCompareStrings(u"auto", u"Car", Qt::CaseInsensitive);   // z < 0
-    //! [qCompareStrings-QSV-QSV]
+    //! [QtPrivate::compareStrings-QSV-QSV]
+    int x = QtPrivate::compareStrings(u"aUtO", u"AuTo", Qt::CaseInsensitive);  // x == 0
+    int y = QtPrivate::compareStrings(u"auto", u"Car", Qt::CaseSensitive);     // y > 0
+    int z = QtPrivate::compareStrings(u"auto", u"Car", Qt::CaseInsensitive);   // z < 0
+    //! [QtPrivate::compareStrings-QSV-QSV]
 }
 
 void Widget::containsFunction()
@@ -750,7 +750,6 @@ void Widget::sizeFunction()
     int n = str.size();         // n == 5
     str.data()[0];              // returns 'W'
     str.data()[4];              // returns 'd'
-    str.data()[5];              // returns '\0'
     //! [58]
 }
 
@@ -810,6 +809,18 @@ void Widget::splitCaseSensitiveFunction()
     QStringList list2 = str.split(',', QString::SkipEmptyParts);
     // list2: [ "a", "b", "c" ]
     //! [62]
+
+    //! [62-empty]
+    QString str = "abc";
+    auto parts = str.split("");
+    // parts: {"", "a", "b", "c", ""}
+    //! [62-empty]
+
+    //! [62-slashes]
+    QString str = "/a/b/c/";
+    auto parts = str.split('/');
+    // parts: {"", "a", "b", "c", ""}
+    //! [62-slashes]
 }
 
 void Widget::sprintfFunction()

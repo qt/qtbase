@@ -2,7 +2,6 @@ QT_FOR_CONFIG += widgets
 
 TEMPLATE      = subdirs
 SUBDIRS       = classwizard \
-                configdialog \
                 extension \
                 findfiles \
                 licensewizard \

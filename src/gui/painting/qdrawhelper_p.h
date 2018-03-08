@@ -293,7 +293,7 @@ struct QTextureData
     int y1;
     int x2;
     int y2;
-    qssize_t bytesPerLine;
+    qsizetype bytesPerLine;
     QImage::Format format;
     const QVector<QRgb> *colorTable;
     bool hasAlpha;
@@ -847,7 +847,7 @@ inline void qt_memfill(T *dest, T value, int count)
 
 template <class T> Q_STATIC_TEMPLATE_FUNCTION
 inline void qt_rectfill(T *dest, T value,
-                        int x, int y, int width, int height, qssize_t stride)
+                        int x, int y, int width, int height, qsizetype stride)
 {
     char *d = reinterpret_cast<char*>(dest + x) + y * stride;
     if (uint(stride) == (width * sizeof(T))) {
@@ -1104,21 +1104,29 @@ inline int qBlue565(quint16 rgb) {
     return (b << 3) | (b >> 2);
 }
 
+// We manually unalias the variables to make sure the compiler
+// fully optimizes both aliased and unaliased cases.
+#define UNALIASED_CONVERSION_LOOP(buffer, src, count, conversion) \
+    if (src == buffer) { \
+        for (int i = 0; i < count; ++i) \
+            buffer[i] = conversion(buffer[i]); \
+    } else { \
+        for (int i = 0; i < count; ++i) \
+            buffer[i] = conversion(src[i]); \
+    }
+
 
 static Q_ALWAYS_INLINE const uint *qt_convertARGB32ToARGB32PM(uint *buffer, const uint *src, int count)
 {
-    for (int i = 0; i < count; ++i)
-        buffer[i] = qPremultiply(src[i]);
+    UNALIASED_CONVERSION_LOOP(buffer, src, count, qPremultiply);
     return buffer;
 }
 
 static Q_ALWAYS_INLINE const uint *qt_convertRGBA8888ToARGB32PM(uint *buffer, const uint *src, int count)
 {
-    for (int i = 0; i < count; ++i)
-        buffer[i] = qPremultiply(RGBA2ARGB(src[i]));
+    UNALIASED_CONVERSION_LOOP(buffer, src, count, [](uint s) { return qPremultiply(RGBA2ARGB(s));});
     return buffer;
 }
-
 
 const uint qt_bayer_matrix[16][16] = {
     { 0x1, 0xc0, 0x30, 0xf0, 0xc, 0xcc, 0x3c, 0xfc,
@@ -1160,23 +1168,23 @@ const uint qt_bayer_matrix[16][16] = {
 
 
 #if Q_PROCESSOR_WORDSIZE == 8 // 64-bit versions
-#define AMIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
-#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
+#define AMIX(mask) (qMin(((quint64(s)&mask) + (quint64(d)&mask)), quint64(mask)))
+#define MIX(mask) (qMin(((quint64(s)&mask) + (quint64(d)&mask)), quint64(mask)))
 #else // 32 bits
 // The mask for alpha can overflow over 32 bits
-#define AMIX(mask) quint32(qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
+#define AMIX(mask) quint32(qMin(((quint64(s)&mask) + (quint64(d)&mask)), quint64(mask)))
 #define MIX(mask) (qMin(((quint32(s)&mask) + (quint32(d)&mask)), quint32(mask)))
 #endif
 
-inline int comp_func_Plus_one_pixel_const_alpha(uint d, const uint s, const uint const_alpha, const uint one_minus_const_alpha)
+inline uint comp_func_Plus_one_pixel_const_alpha(uint d, const uint s, const uint const_alpha, const uint one_minus_const_alpha)
 {
-    const int result = (AMIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
+    const uint result = uint(AMIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
     return INTERPOLATE_PIXEL_255(result, const_alpha, d, one_minus_const_alpha);
 }
 
-inline int comp_func_Plus_one_pixel(uint d, const uint s)
+inline uint comp_func_Plus_one_pixel(uint d, const uint s)
 {
-    const int result = (AMIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
+    const uint result = uint(AMIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
     return result;
 }
 

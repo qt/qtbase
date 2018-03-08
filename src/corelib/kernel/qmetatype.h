@@ -406,7 +406,7 @@ class Q_CORE_EXPORT QMetaType {
                          FlagsEx = 0x100, MetaObjectEx = 0x200
                        };
 public:
-#ifndef Q_QDOC
+#ifndef Q_CLANG_QDOC
     // The code that actually gets compiled.
     enum Type {
         // these are merged with QVariant
@@ -441,6 +441,7 @@ public:
         QJsonValue = 45, QJsonObject = 46, QJsonArray = 47, QJsonDocument = 48,
         QByteArrayList = 49, QObjectStar = 39, SChar = 40,
         Void = 43,
+        Nullptr = 51,
         QVariantMap = 8, QVariantList = 9, QVariantHash = 28,
         QFont = 64, QPixmap = 65, QBrush = 66, QColor = 67, QPalette = 68,
         QIcon = 69, QImage = 70, QPolygon = 71, QRegion = 72, QBitmap = 73,
@@ -448,6 +449,8 @@ public:
         QMatrix = 79, QTransform = 80, QMatrix4x4 = 81, QVector2D = 82,
         QVector3D = 83, QVector4D = 84, QQuaternion = 85, QPolygonF = 86,
         QSizePolicy = 121,
+        LastCoreType = Nullptr,
+        LastGuiType = QPolygonF,
         User = 1024
     };
 #endif
@@ -596,7 +599,7 @@ public:
         return registerConverter<From, To>(QtPrivate::convertImplicit<From, To>);
     }
 
-#ifdef Q_QDOC
+#ifdef Q_CLANG_QDOC
     template<typename MemberFunction, int>
     static bool registerConverter(MemberFunction function);
     template<typename MemberFunctionOk, char>
@@ -692,7 +695,7 @@ private:
 
 // ### Qt6: FIXME: Remove the special Q_CC_MSVC handling, it was introduced to maintain BC.
 #if !defined(Q_NO_TEMPLATE_FRIENDS) && !defined(Q_CC_MSVC)
-#ifndef Q_QDOC
+#ifndef Q_CLANG_QDOC
     template<typename, bool> friend struct QtPrivate::ValueTypeIsMetaType;
     template<typename, typename> friend struct QtPrivate::ConverterMemberFunction;
     template<typename, typename> friend struct QtPrivate::ConverterMemberFunctionOk;
@@ -1682,7 +1685,7 @@ namespace QtPrivate {
 
 template <typename T>
 int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName
-#ifndef Q_QDOC
+#ifndef Q_CLANG_QDOC
     , T * dummy = 0
     , typename QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::DefinedType defined = QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::Defined
 #endif
@@ -1719,7 +1722,7 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
 
 template <typename T>
 int qRegisterMetaType(const char *typeName
-#ifndef Q_QDOC
+#ifndef Q_CLANG_QDOC
     , T * dummy = nullptr
     , typename QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::DefinedType defined = QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::Defined
 #endif
@@ -1736,7 +1739,7 @@ int qRegisterMetaType(const char *typeName
 #ifndef QT_NO_DATASTREAM
 template <typename T>
 void qRegisterMetaTypeStreamOperators(const char *typeName
-#ifndef Q_QDOC
+#ifndef Q_CLANG_QDOC
     , T * /* dummy */ = nullptr
 #endif
 )
@@ -1760,7 +1763,7 @@ inline Q_DECL_CONSTEXPR int qRegisterMetaType()
     return qMetaTypeId<T>();
 }
 
-#if QT_DEPRECATED_SINCE(5, 1) && !defined(Q_QDOC)
+#if QT_DEPRECATED_SINCE(5, 1) && !defined(Q_CLANG_QDOC)
 // There used to be a T *dummy = 0 argument in Qt 4.0 to support MSVC6
 template <typename T>
 QT_DEPRECATED inline Q_DECL_CONSTEXPR int qMetaTypeId(T *)
@@ -1932,7 +1935,7 @@ QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_FORWARD_DECLARE_STATIC_TYPES_ITER)
 typedef QList<QVariant> QVariantList;
 typedef QMap<QString, QVariant> QVariantMap;
 typedef QHash<QString, QVariant> QVariantHash;
-#ifndef Q_QDOC
+#ifndef Q_CLANG_QDOC
 typedef QList<QByteArray> QByteArrayList;
 #endif
 

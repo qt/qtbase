@@ -141,7 +141,7 @@ private:
     mutable QPixmap m_linkDragCursor;
     mutable QPixmap m_ignoreDragCursor;
 
-    HCURSOR m_overriddenCursor = nullptr;
+    static HCURSOR m_overriddenCursor;
 };
 
 QT_END_NAMESPACE

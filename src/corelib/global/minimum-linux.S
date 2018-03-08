@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "private/qglobal_p.h"
+#include "minimum-linux_p.h"
 
 /* Copied from #include <elf.h>:
  */
@@ -76,32 +76,6 @@
 /* Operating systems: */
     .long       ELF_NOTE_OS_LINUX
 
-/* Minimum Linux kernel version:
- * We require the following features in Qt (unconditional, no fallback):
- *   Feature                    Added in version        Macro
- * - inotify_init1              before 2.6.12-rc12
- * - futex(2)                   before 2.6.12-rc12
- * - FUTEX_WAKE_OP              2.6.14                  FUTEX_OP
- * - linkat(2)                  2.6.17                  O_TMPFILE
- * - FUTEX_PRIVATE_FLAG         2.6.22
- * - O_CLOEXEC                  2.6.23
- * - eventfd                    2.6.23
- * - pipe2 & dup3               2.6.27
- * - accept4                    2.6.28
- * - renameat2                  3.16                    QT_CONFIG(renameat2)
- * - getrandom                  3.17                    QT_CONFIG(getentropy)
- */
-
-#if QT_CONFIG(getentropy)
-    .long       3
-    .long       17
-    .long       0
-#elif QT_CONFIG(renameat2)
-    .long       3
-    .long       16
-    .long       0
-#else
-    .long       2
-    .long       6
-    .long       28
-#endif
+    .long       MINLINUX_MAJOR
+    .long       MINLINUX_MINOR
+    .long       MINLINUX_PATCH

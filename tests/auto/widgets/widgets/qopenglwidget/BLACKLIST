@@ -1,18 +1,5 @@
 [clearAndGrab]
-opensuse-13.1
 ubuntu
-
-#QTBUG-31611
-[painter]
-windows msvc-2010 32bit developer-build
-
-#QTBUG-31611
-[reparentToAlreadyCreated]
-windows msvc-2010 32bit developer-build
-
-#QTBUG-31611
-[reparentToNotYetCreated]
-windows msvc-2010 32bit developer-build
 
 [stackWidgetOpaqueChildIsVisible]
 windows

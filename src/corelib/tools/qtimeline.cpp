@@ -269,7 +269,7 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
 */
 
 /*!
-    \fn QTimeLine::valueChanged(qreal value)
+    \fn void QTimeLine::valueChanged(qreal value)
 
     QTimeLine emits this signal at regular intervals when in \l Running state,
     but only if the current value changes. \a value is the current value. \a value is
@@ -279,7 +279,7 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
 */
 
 /*!
-    \fn QTimeLine::frameChanged(int frame)
+    \fn void QTimeLine::frameChanged(int frame)
 
     QTimeLine emits this signal at regular intervals when in \l Running state,
     but only if the current frame changes. \a frame is the current frame number.
@@ -288,14 +288,14 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
 */
 
 /*!
-    \fn QTimeLine::stateChanged(QTimeLine::State newState)
+    \fn void QTimeLine::stateChanged(QTimeLine::State newState)
 
     This signal is emitted whenever QTimeLine's state changes. The new state
     is \a newState.
 */
 
 /*!
-    \fn QTimeLine::finished()
+    \fn void QTimeLine::finished()
 
     This signal is emitted when QTimeLine finishes (i.e., reaches the end of
     its time line), and does not loop.

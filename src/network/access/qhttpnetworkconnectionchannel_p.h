@@ -68,8 +68,6 @@
 #include <private/qhttpnetworkconnection_p.h>
 #include <private/qabstractprotocolhandler_p.h>
 
-#ifndef QT_NO_HTTP
-
 #ifndef QT_NO_SSL
 #    include <QtNetwork/qsslsocket.h>
 #    include <QtNetwork/qsslerror.h>
@@ -79,6 +77,8 @@
 #endif
 
 #include <QtCore/qscopedpointer.h>
+
+QT_REQUIRE_CONFIG(http);
 
 QT_BEGIN_NAMESPACE
 
@@ -215,7 +215,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_HTTP
 
 #endif

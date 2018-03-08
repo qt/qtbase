@@ -41,6 +41,7 @@
 #include <QtTest/qtestassert.h>
 
 #include <QtCore/qbytearray.h>
+#include <QtCore/qstring.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -119,6 +120,29 @@ void QAbstractTestLogger::startLogging()
 
 void QAbstractTestLogger::stopLogging()
 {
+}
+
+void QAbstractTestLogger::addMessage(QtMsgType type, const QMessageLogContext &context,
+                                     const QString &message)
+{
+    QAbstractTestLogger::MessageTypes messageType = [=]() {
+        switch (type) {
+        case QtDebugMsg: return QAbstractTestLogger::QDebug;
+        case QtInfoMsg: return QAbstractTestLogger::QInfo;
+        case QtCriticalMsg: return QAbstractTestLogger::QSystem;
+        case QtWarningMsg: return QAbstractTestLogger::QWarning;
+        case QtFatalMsg: return QAbstractTestLogger::QFatal;
+        }
+        Q_UNREACHABLE();
+        return QAbstractTestLogger::QFatal;
+    }();
+
+    QString formattedMessage = qFormatLogMessage(type, context, message);
+
+    // Note that we explicitly ignore the file and line of the context here,
+    // as that's what QTest::messageHandler used to do when calling the same
+    // overload directly.
+    addMessage(messageType, formattedMessage);
 }
 
 namespace QTest

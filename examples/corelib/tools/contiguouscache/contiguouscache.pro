@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(listview))
 
 HEADERS       = randomlistmodel.h
 SOURCES       = randomlistmodel.cpp \

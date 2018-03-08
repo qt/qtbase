@@ -214,7 +214,7 @@ void JavaStyle::drawControl(ControlElement control, const QStyleOption *option,
                 painter->translate(box->rect.width(), -box->rect.height());
             }
 
-            int textWidth = box->fontMetrics.width(box->text) + 20;
+            int textWidth = box->fontMetrics.horizontalAdvance(box->text) + 20;
 
             QPolygon innerLine;
             innerLine << (box->rect.topLeft() + QPoint(0, 1)) <<
@@ -1016,7 +1016,7 @@ void JavaStyle::drawControl(ControlElement control, const QStyleOption *option,
                     int h = pixmap.height();
 
                     if (!button->text.isEmpty())
-                        w += button->fontMetrics.width(button->text) + 2;
+                        w += button->fontMetrics.horizontalAdvance(button->text) + 2;
 
                     point = QPoint(ir.x() + ir.width() / 2 - w / 2,
                                    ir.y() + ir.height() / 2 - h / 2);
@@ -2453,7 +2453,7 @@ QRect JavaStyle::subElementRect(SubElement element,
 
             rect.moveTopLeft(box->rect.topLeft() + QPoint(0, 2));
             rect.setHeight(box->rect.height() - 4);
-            rect.setWidth(box->fontMetrics.width(box->text) + 15);
+            rect.setWidth(box->fontMetrics.horizontalAdvance(box->text) + 15);
             break;
         }
         case SE_ProgressBarLabel:
@@ -2467,7 +2467,7 @@ QRect JavaStyle::subElementRect(SubElement element,
                 qstyleoption_cast<const QStyleOptionButton *>(option);
 
             rect = btn->fontMetrics.boundingRect(btn->text);
-            rect = QRect(0, 0, btn->fontMetrics.width(btn->text),
+            rect = QRect(0, 0, btn->fontMetrics.horizontalAdvance(btn->text),
                          rect.height());
 
             if (!btn->icon.isNull()) {

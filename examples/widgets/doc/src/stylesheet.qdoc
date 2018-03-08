@@ -33,5 +33,56 @@
 
     \borderedimage stylesheet-pagefold.png
     \caption Screen Shot of the Pagefold style sheet
+
+    The Style Sheet example shows how widgets can be styled using Qt Style Sheets.
+    You can open the style editor by selecting \uicontrol File > \uicontrol Edit Style Sheet,
+    to select an existing style sheet or design your own style and load it.
+
+    The Style Sheet example consists of 2 classes:
+    \list
+    \li \c MainWindow
+    \li \c StyleSheetEditor
+    \endlist
+
+
+    \section1 MainWindow Class
+
+    \c MainWindow inherits QWidget, and is the application's main window defined in
+    \c mainwindow.ui. The style of \c MainWindow can be modified with \c StyleSheetEditor.
+
+
+    \section1 StyleSheetEditor Class
+
+    \c StyleSheetEditor enables you to open an editor where you can load an existing style sheet.
+    It is also possible to define a new stylesheet and load it. Its layout is defined in
+    \c stylesheeteditor.ui.
+
+    \quotefromfile widgets/stylesheet/stylesheeteditor.cpp
+    \skipto on_styleCombo_activated
+    \printline on_styleCombo_activated
+
+    Sets the specified \a styleName and grays the \c applyButton.
+
+    \skipto on_styleSheetCombo_activated
+    \printline on_styleSheetCombo_activated
+
+    Loads the stylesheet from \c styleSheetName.
+
+    \skipto on_styleTextEdit_textChanged()
+    \printline on_styleTextEdit_textChanged()
+
+    Enables the \c applyButton when the text in the buffer has changed.
+
+    \skipto on_applyButton_clicked()
+    \printline on_applyButton_clicked()
+
+    Sets the stylesheet properties in \l qApp and disables the \c applyButton.
+
+    \skipto loadStyleSheet(const QString &sheetName)
+    \printline loadStyleSheet(const QString &sheetName)
+
+    Loads the specified \a sheetName, and sets its properties in
+    \l qApp.
+
 */
 

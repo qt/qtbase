@@ -153,7 +153,8 @@ static QBasicAtomicInteger<quint32> *futexLow32(QBasicAtomicInteger<quintptr> *p
 }
 
 #ifdef FUTEX_OP
-static const quintptr futexMultiWaiterBit = Q_UINT64_C(1) << 63;
+// quintptr might be 32bit, in which case we want this to be 0, without implicitly casting.
+static const quintptr futexMultiWaiterBit = static_cast<quintptr>(Q_UINT64_C(1) << 63);
 static QBasicAtomicInteger<quint32> *futexHigh32(QBasicAtomicInteger<quintptr> *ptr)
 {
     auto result = reinterpret_cast<QBasicAtomicInteger<quint32> *>(ptr);
@@ -413,13 +414,18 @@ bool QSemaphore::tryAcquire(int n)
 bool QSemaphore::tryAcquire(int n, int timeout)
 {
     Q_ASSERT_X(n >= 0, "QSemaphore::tryAcquire", "parameter 'n' must be non-negative");
+
+    // We're documented to accept any negative value as "forever"
+    // but QDeadlineTimer only accepts -1.
+    timeout = qMax(timeout, -1);
+
     if (futexAvailable())
-        return futexSemaphoreTryAcquire<true>(u, n, timeout < 0 ? -1 : timeout);
+        return futexSemaphoreTryAcquire<true>(u, n, timeout);
 
     QDeadlineTimer timer(timeout);
     QMutexLocker locker(&d->mutex);
     qint64 remainingTime = timer.remainingTime();
-    while (n > d->avail && remainingTime > 0) {
+    while (n > d->avail && remainingTime != 0) {
         if (!d->cond.wait(locker.mutex(), remainingTime))
             return false;
         remainingTime = timer.remainingTime();

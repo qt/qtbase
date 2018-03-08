@@ -121,7 +121,8 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
                                  const QVariant &nativeHandle)
     : m_context(nil),
       m_shareContext(nil),
-      m_format(format)
+      m_format(format),
+      m_didCheckForSoftwareContext(false)
 {
     if (!nativeHandle.isNull()) {
         if (!nativeHandle.canConvert<QCocoaNativeContext>()) {
@@ -152,9 +153,32 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
 
     QMacAutoReleasePool pool; // For the SG Canvas render thread
 
+    m_shareContext = share ? static_cast<QCocoaGLContext *>(share)->nsOpenGLContext() : nil;
+
+    if (m_shareContext) {
+        // Allow sharing between 3.2 Core and 4.1 Core profile versions in
+        // cases where NSOpenGLContext creates a 4.1 context where a 3.2
+        // context was requested. Due to the semantics of QSurfaceFormat
+        // this 4.1 version can find its way onto the format for the new
+        // context, even though it was at no point requested by the user.
+        GLint shareContextRequestedProfile;
+        [m_shareContext.pixelFormat getValues:&shareContextRequestedProfile
+            forAttribute:NSOpenGLPFAOpenGLProfile forVirtualScreen:0];
+        auto shareContextActualProfile = share->format().version();
+
+        if (shareContextRequestedProfile == NSOpenGLProfileVersion3_2Core &&
+            shareContextActualProfile >= qMakePair(4, 1)) {
+
+            // There is a mismatch, downgrade requested format to make the
+            // NSOpenGLPFAOpenGLProfile attributes match. (NSOpenGLContext will
+            // fail to create a new context if there is a mismatch).
+            if (m_format.version() >= qMakePair(4, 1))
+                m_format.setVersion(3, 2);
+        }
+    }
+
     // create native context for the requested pixel format and share
     NSOpenGLPixelFormat *pixelFormat = createNSOpenGLPixelFormat(m_format);
-    m_shareContext = share ? static_cast<QCocoaGLContext *>(share)->nsOpenGLContext() : nil;
     m_context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:m_shareContext];
 
     // retry without sharing on context creation failure.
@@ -239,6 +263,22 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
 
     QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
     setActiveWindow(window);
+
+    // Disable high-resolution surfaces when using the software renderer, which has the
+    // problem that the system silently falls back to a to using a low-resolution buffer
+    // when a high-resolution buffer is requested. This is not detectable using the NSWindow
+    // convertSizeToBacking and backingScaleFactor APIs. A typical result of this is that Qt
+    // will display a quarter of the window content when running in a virtual machine.
+    if (!m_didCheckForSoftwareContext) {
+        m_didCheckForSoftwareContext = true;
+
+        const GLubyte* renderer = glGetString(GL_RENDERER);
+        if (qstrcmp((const char *)renderer, "Apple Software Renderer") == 0) {
+            NSView *view = static_cast<QCocoaWindow *>(surface)->m_view;
+            [view setWantsBestResolutionOpenGLSurface:NO];
+        }
+    }
+
     update();
     return true;
 }

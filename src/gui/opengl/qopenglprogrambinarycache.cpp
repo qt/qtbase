@@ -161,10 +161,26 @@ bool QOpenGLProgramBinaryCache::setProgramBinary(uint programId, uint blobFormat
     QOpenGLExtraFunctions *funcs = QOpenGLContext::currentContext()->extraFunctions();
     while (funcs->glGetError() != GL_NO_ERROR) { }
     funcs->glProgramBinary(programId, blobFormat, p, blobSize);
-    int err = funcs->glGetError();
+
+    GLenum err = funcs->glGetError();
+    if (err != GL_NO_ERROR) {
+        qCDebug(DBG_SHADER_CACHE, "Program binary failed to load for program %u, size %d, "
+                                  "format 0x%x, err = 0x%x",
+                programId, blobSize, blobFormat, err);
+        return false;
+    }
+    GLint linkStatus = 0;
+    funcs->glGetProgramiv(programId, GL_LINK_STATUS, &linkStatus);
+    if (linkStatus != GL_TRUE) {
+        qCDebug(DBG_SHADER_CACHE, "Program binary failed to load for program %u, size %d, "
+                                  "format 0x%x, linkStatus = 0x%x, err = 0x%x",
+                programId, blobSize, blobFormat, linkStatus, err);
+        return false;
+    }
+
     qCDebug(DBG_SHADER_CACHE, "Program binary set for program %u, size %d, format 0x%x, err = 0x%x",
             programId, blobSize, blobFormat, err);
-    return err == 0;
+    return true;
 }
 
 #ifdef Q_OS_UNIX

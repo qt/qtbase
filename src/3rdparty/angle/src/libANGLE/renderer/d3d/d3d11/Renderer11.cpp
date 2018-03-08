@@ -2645,7 +2645,7 @@ bool Renderer11::getShareHandleSupport() const
 
     if (deviceType == d3d11::ANGLE_D3D11_DEVICE_TYPE_WARP)
     {
-#if !defined(ANGLE_ENABLE_WINDOWS_STORE) && !defined(__GNUC__)
+#ifndef ANGLE_ENABLE_WINDOWS_STORE
         if (!IsWindows8OrGreater())
         {
             // WARP on Windows 7 doesn't support shared handles

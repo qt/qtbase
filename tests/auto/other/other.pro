@@ -9,7 +9,6 @@ SUBDIRS=\
    macgui \
    macnativeevents \
    macplist \
-   modeltest \
    networkselftest \
    qaccessibility \
    # qaccessibilitylinux \ # QTBUG-44434
@@ -17,7 +16,6 @@ SUBDIRS=\
    qcomplextext \
    qfocusevent \
    qnetworkaccessmanager_and_qprogressdialog \
-   qobjectperformance \
    qobjectrace \
    qsharedpointer_and_qwidget \
    qprocess_and_guieventloop \
@@ -32,7 +30,6 @@ SUBDIRS=\
    gestures \
    lancelot \
    languagechange \
-   modeltest \
    qaccessibility \
    qfocusevent \
    qnetworkaccessmanager_and_qprogressdialog \
@@ -46,7 +43,6 @@ SUBDIRS=\
    lancelot \
    networkselftest \
    qnetworkaccessmanager_and_qprogressdialog \
-   qobjectperformance
 
 cross_compile: SUBDIRS -= \
    atwrapper \

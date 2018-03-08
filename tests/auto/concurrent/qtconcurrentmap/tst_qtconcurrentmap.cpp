@@ -2204,13 +2204,13 @@ InstanceCounter slowMap(const InstanceCounter &in)
 
 InstanceCounter fastMap(const InstanceCounter &in)
 {
-    QTest::qSleep(rand() % 2 + 1);
+    QTest::qSleep(QRandomGenerator::global()->bounded(2) + 1);
     return in;
 }
 
 void slowReduce(int &result, const InstanceCounter&)
 {
-    QTest::qSleep(rand() % 4 + 1);
+    QTest::qSleep(QRandomGenerator::global()->bounded(4) + 1);
     ++result;
 }
 
@@ -2402,9 +2402,12 @@ void tst_QtConcurrentMap::qFutureAssignmentLeak()
         future.waitForFinished();
     }
 
-    QCOMPARE(currentInstanceCount.load(), 1000);
+    // Use QTRY_COMPARE because QtConcurrent::ThreadEngine::asynchronousFinish()
+    // deletes its internals after signaling finished, so it might still be holding
+    // on to copies of InstanceCounter for a short while.
+    QTRY_COMPARE(currentInstanceCount.load(), 1000);
     future = QFuture<InstanceCounter>();
-    QCOMPARE(currentInstanceCount.load(), 0);
+    QTRY_COMPARE(currentInstanceCount.load(), 0);
 }
 
 inline void increment(int &num)

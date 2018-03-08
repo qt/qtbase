@@ -217,7 +217,16 @@ static QString getFilesDir()
     if (!path.isEmpty())
         return path;
 
-    return (path  = QDir::homePath());
+    QJNIObjectPrivate appCtx = applicationContext();
+    if (!appCtx.isValid())
+        return QString();
+
+    QJNIObjectPrivate file = appCtx.callObjectMethod("getFilesDir",
+                                                     "()Ljava/io/File;");
+    if (!file.isValid())
+        return QString();
+
+    return (path = getAbsolutePath(file));
 }
 
 QString QStandardPaths::writableLocation(StandardLocation type)
@@ -319,7 +328,9 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
         if (!ba.isEmpty())
             return QStringList((fontLocation = QDir::cleanPath(QString::fromLocal8Bit(ba))));
 
-        return QStringList((fontLocation = QLatin1String("/system/fonts")));
+        // Don't cache the fallback, as we might just have been called before
+        // QT_ANDROID_FONT_LOCATION has been set.
+        return QStringList(QLatin1String("/system/fonts"));
     }
 
     return QStringList(writableLocation(type));

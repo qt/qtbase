@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
     MainWindow window;
-    window.loadImage(":/images/example.jpg");
+    window.loadImage(QStringLiteral(":/images/example.jpg"));
     window.show();
     return app.exec();
 }

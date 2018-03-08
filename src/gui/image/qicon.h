@@ -118,6 +118,9 @@ public:
     static QStringList themeSearchPaths();
     static void setThemeSearchPaths(const QStringList &searchpath);
 
+    static QStringList fallbackSearchPaths();
+    static void setFallbackSearchPaths(const QStringList &paths);
+
     static QString themeName();
     static void setThemeName(const QString &path);
 

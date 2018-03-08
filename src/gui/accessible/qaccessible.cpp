@@ -1578,7 +1578,7 @@ QAccessibleTextCursorEvent::~QAccessibleTextCursorEvent()
 
 
 /*!
-    \fn QAccessibleTextCursorEvent(QAccessibleInterface *iface, int cursorPos)
+    \fn QAccessibleTextCursorEvent::QAccessibleTextCursorEvent(QAccessibleInterface *iface, int cursorPos)
 
     Create a new QAccessibleTextCursorEvent for \a iface,
     The \a cursorPos is the new cursor position.
@@ -1761,7 +1761,6 @@ QAccessibleTextSelectionEvent::~QAccessibleTextSelectionEvent()
 
 /*!
     Returns the QAccessibleInterface associated with the event.
-    The caller of this function takes ownership of the returned interface.
 */
 QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
 {

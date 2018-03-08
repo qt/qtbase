@@ -1,4 +1,5 @@
 QT += network widgets
+requires(qtConfig(filedialog))
 
 HEADERS += addtorrentdialog.h \
            bencodeparser.h \

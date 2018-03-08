@@ -14,6 +14,8 @@ HEADERS =   qminimalintegration.h \
 
 OTHER_FILES += minimal.json
 
+qtConfig(freetype): QMAKE_USE_PRIVATE += freetype
+
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QMinimalIntegrationPlugin
 !equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -

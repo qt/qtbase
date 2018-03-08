@@ -26,7 +26,7 @@ qhp.QtWidgets.subprojects.classes.sortPages = true
 
 tagfile                 = ../../../doc/qtwidgets/qtwidgets.tags
 
-depends                 += qtcore qtgui qtdoc qtsql qtdesigner qtquick qmake qtplatformheaders qtsvg
+depends                 += qtcore qtgui qtdoc qtsql qtdesigner qtquick qmake qtplatformheaders qtsvg qtlinguist
 
 headerdirs  += ..
 
@@ -48,4 +48,6 @@ imagedirs   += images \
 navigation.landingpage = "Qt Widgets"
 navigation.cppclassespage = "Qt Widgets C++ Classes"
 manifestmeta.highlighted.names = "QtWidgets/Calendar Widget Example" \
-                                 "QtWidgets/Simple Tree Model Example"
+                                 "QtWidgets/Editable Tree Model Example" \
+                                 "QtWidgets/Address Book Example" \
+                                 "QtWidgets/Application Example"

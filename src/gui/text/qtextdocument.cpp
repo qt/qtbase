@@ -73,17 +73,6 @@ QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION unsigned int qt_int_sqrt(unsigned int n);
 
-/*!
-    Returns \c true if the string \a text is likely to be rich text;
-    otherwise returns \c false.
-
-    This function uses a fast and therefore simple heuristic. It
-    mainly checks whether there is something that looks like a tag
-    before the first line break. Although the result may be correct
-    for common cases, there is no guarantee.
-
-    This function is defined in the \c <QTextDocument> header file.
-*/
 bool Qt::mightBeRichText(const QString& text)
 {
     if (text.isEmpty())
@@ -142,17 +131,6 @@ bool Qt::mightBeRichText(const QString& text)
     return false;
 }
 
-
-/*!
-    Converts the plain text string \a plain to an HTML-formatted
-    paragraph while preserving most of its look.
-
-    \a mode defines how whitespace is handled.
-
-    This function is defined in the \c <QTextDocument> header file.
-
-    \sa escape(), mightBeRichText()
-*/
 QString Qt::convertFromPlainText(const QString &plain, Qt::WhiteSpaceMode mode)
 {
     int col = 0;
@@ -202,11 +180,6 @@ QString Qt::convertFromPlainText(const QString &plain, Qt::WhiteSpaceMode mode)
 }
 
 #ifndef QT_NO_TEXTCODEC
-/*!
-    \internal
-
-    This function is defined in the \c <QTextDocument> header file.
-*/
 QTextCodec *Qt::codecForHtml(const QByteArray &ba)
 {
     return QTextCodec::codecForHtml(ba);
@@ -805,7 +778,7 @@ void QTextDocument::adjustSize()
     // Pull this private function in from qglobal.cpp
     QFont f = defaultFont();
     QFontMetrics fm(f);
-    int mw =  fm.width(QLatin1Char('x')) * 80;
+    int mw =  fm.horizontalAdvance(QLatin1Char('x')) * 80;
     int w = mw;
     setTextWidth(w);
     QSizeF size = documentLayout()->documentSize();
@@ -970,7 +943,7 @@ QString QTextDocument::defaultStyleSheet() const
 
 
 /*!
-    \fn QTextDocument::undoAvailable(bool available);
+    \fn void QTextDocument::undoAvailable(bool available);
 
     This signal is emitted whenever undo operations become available
     (\a available is true) or unavailable (\a available is false).
@@ -982,14 +955,14 @@ QString QTextDocument::defaultStyleSheet() const
 */
 
 /*!
-    \fn QTextDocument::redoAvailable(bool available);
+    \fn void QTextDocument::redoAvailable(bool available);
 
     This signal is emitted whenever redo operations become available
     (\a available is true) or unavailable (\a available is false).
 */
 
 /*!
-    \fn QTextDocument::cursorPositionChanged(const QTextCursor &cursor);
+    \fn void QTextDocument::cursorPositionChanged(const QTextCursor &cursor);
 
     This signal is emitted whenever the position of a cursor changed
     due to an editing operation. The cursor that changed is passed in
@@ -999,7 +972,7 @@ QString QTextDocument::defaultStyleSheet() const
 */
 
 /*!
-    \fn QTextDocument::blockCountChanged(int newBlockCount);
+    \fn void QTextDocument::blockCountChanged(int newBlockCount);
     \since 4.3
 
     This signal is emitted when the total number of text blocks in the
@@ -1008,7 +981,7 @@ QString QTextDocument::defaultStyleSheet() const
 */
 
 /*!
-    \fn QTextDocument::documentLayoutChanged();
+    \fn void QTextDocument::documentLayoutChanged();
     \since 4.4
 
     This signal is emitted when a new document layout is set.
@@ -1376,7 +1349,7 @@ QTextCursor QTextDocument::find(const QString &subString, int from, FindFlags op
     If the given \a cursor has a selection, the search begins after the
     selection; otherwise it begins at the cursor's position.
 
-    By default the search is case-sensitive, and can match text anywhere in the
+    By default the search is case insensitive, and can match text anywhere in the
     document.
 */
 QTextCursor QTextDocument::find(const QString &subString, const QTextCursor &cursor, FindFlags options) const
@@ -1499,7 +1472,7 @@ QTextCursor QTextDocument::find(const QRegExp & expr, int from, FindFlags option
     If the given \a cursor has a selection, the search begins after the
     selection; otherwise it begins at the cursor's position.
 
-    By default the search is case-sensitive, and can match text anywhere in the
+    By default the search is case insensitive, and can match text anywhere in the
     document.
 */
 QTextCursor QTextDocument::find(const QRegExp &expr, const QTextCursor &cursor, FindFlags options) const
@@ -1626,7 +1599,7 @@ QTextCursor QTextDocument::find(const QRegularExpression &expr, int from, FindFl
     If the given \a cursor has a selection, the search begins after the
     selection; otherwise it begins at the cursor's position.
 
-    By default the search is case-sensitive, and can match text anywhere in the
+    By default the search is case insensitive, and can match text anywhere in the
     document.
 */
 QTextCursor QTextDocument::find(const QRegularExpression &expr, const QTextCursor &cursor, FindFlags options) const
@@ -1841,7 +1814,7 @@ QFont QTextDocument::defaultFont() const
 }
 
 /*!
-    \fn QTextDocument::modificationChanged(bool changed)
+    \fn void QTextDocument::modificationChanged(bool changed)
 
     This signal is emitted whenever the content of the document
     changes in a way that affects the modification state. If \a
@@ -1898,7 +1871,7 @@ static void printPage(int index, QPainter *painter, const QTextDocument *doc, co
         painter->setFont(QFont(doc->defaultFont()));
         const QString pageString = QString::number(index);
 
-        painter->drawText(qRound(pageNumberPos.x() - painter->fontMetrics().width(pageString)),
+        painter->drawText(qRound(pageNumberPos.x() - painter->fontMetrics().horizontalAdvance(pageString)),
                           qRound(pageNumberPos.y() + view.top()),
                           pageString);
     }

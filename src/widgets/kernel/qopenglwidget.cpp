@@ -381,7 +381,7 @@ QT_BEGIN_NAMESPACE
   QOpenGLContext. By connecting a slot, using direct connection, to this signal,
   it is possible to perform cleanup whenever the the underlying native context
   handle, or the entire QOpenGLContext instance, is going to be released. The
-  following snippet is in principal equivalent to the previous one:
+  following snippet is in principle equivalent to the previous one:
 
   \snippet code/doc_gui_widgets_qopenglwidget.cpp 5
 
@@ -1429,7 +1429,7 @@ bool QOpenGLWidget::event(QEvent *e)
             d->reset();
         if (isHidden())
             break;
-        // FALLTHROUGH
+        Q_FALLTHROUGH();
     case QEvent::Show: // reparenting may not lead to a resize so reinitalize on Show too
         if (d->initialized && window()->windowHandle()
                 && d->context->shareContext() != QWidgetPrivate::get(window())->shareContext())

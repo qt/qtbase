@@ -44,6 +44,46 @@
 
 QT_BEGIN_NAMESPACE
 
+void QRingChunk::allocate(int alloc)
+{
+    Q_ASSERT(alloc > 0 && size() == 0);
+
+    if (chunk.size() < alloc || isShared())
+        chunk = QByteArray(alloc, Qt::Uninitialized);
+}
+
+void QRingChunk::detach()
+{
+    Q_ASSERT(isShared());
+
+    const int chunkSize = size();
+    QByteArray x(chunkSize, Qt::Uninitialized);
+    ::memcpy(x.data(), chunk.constData() + headOffset, chunkSize);
+    chunk = qMove(x);
+    headOffset = 0;
+    tailOffset = chunkSize;
+}
+
+QByteArray QRingChunk::toByteArray()
+{
+    if (headOffset != 0 || tailOffset != chunk.size()) {
+        if (isShared())
+            return chunk.mid(headOffset, size());
+
+        if (headOffset != 0) {
+            char *ptr = chunk.data();
+            ::memmove(ptr, ptr + headOffset, size());
+            tailOffset -= headOffset;
+            headOffset = 0;
+        }
+
+        chunk.reserve(0); // avoid that resizing needlessly reallocates
+        chunk.resize(tailOffset);
+    }
+
+    return chunk;
+}
+
 /*!
     \internal
 
@@ -53,16 +93,15 @@ QT_BEGIN_NAMESPACE
 */
 const char *QRingBuffer::readPointerAtPosition(qint64 pos, qint64 &length) const
 {
-    if (pos >= 0) {
-        pos += head;
-        for (int i = 0; i < buffers.size(); ++i) {
-            length = (i == tailBuffer ? tail : buffers[i].size());
-            if (length > pos) {
-                length -= pos;
-                return buffers[i].constData() + pos;
-            }
-            pos -= length;
+    Q_ASSERT(pos >= 0);
+
+    for (const QRingChunk &chunk : buffers) {
+        length = chunk.size();
+        if (length > pos) {
+            length -= pos;
+            return chunk.data() + pos;
         }
+        pos -= length;
     }
 
     length = 0;
@@ -74,66 +113,57 @@ void QRingBuffer::free(qint64 bytes)
     Q_ASSERT(bytes <= bufferSize);
 
     while (bytes > 0) {
-        const qint64 blockSize = buffers.constFirst().size() - head;
+        const qint64 chunkSize = buffers.constFirst().size();
 
-        if (tailBuffer == 0 || blockSize > bytes) {
+        if (buffers.size() == 1 || chunkSize > bytes) {
+            QRingChunk &chunk = buffers.first();
             // keep a single block around if it does not exceed
             // the basic block size, to avoid repeated allocations
             // between uses of the buffer
-            if (bufferSize <= bytes) {
-                if (buffers.constFirst().size() <= basicBlockSize) {
+            if (bufferSize == bytes) {
+                if (chunk.capacity() <= basicBlockSize && !chunk.isShared()) {
+                    chunk.reset();
                     bufferSize = 0;
-                    head = tail = 0;
                 } else {
                     clear(); // try to minify/squeeze us
                 }
             } else {
                 Q_ASSERT(bytes < MaxByteArraySize);
-                head += int(bytes);
+                chunk.advance(bytes);
                 bufferSize -= bytes;
             }
             return;
         }
 
-        bufferSize -= blockSize;
-        bytes -= blockSize;
+        bufferSize -= chunkSize;
+        bytes -= chunkSize;
         buffers.removeFirst();
-        --tailBuffer;
-        head = 0;
     }
 }
 
 char *QRingBuffer::reserve(qint64 bytes)
 {
-    if (bytes <= 0 || bytes >= MaxByteArraySize)
-        return 0;
+    Q_ASSERT(bytes > 0 && bytes < MaxByteArraySize);
 
+    const int chunkSize = qMax(basicBlockSize, int(bytes));
+    int tail = 0;
     if (bufferSize == 0) {
         if (buffers.isEmpty())
-            buffers.append(QByteArray(qMax(basicBlockSize, int(bytes)), Qt::Uninitialized));
+            buffers.append(QRingChunk(chunkSize));
         else
-            buffers.first().resize(qMax(basicBlockSize, int(bytes)));
+            buffers.first().allocate(chunkSize);
     } else {
-        const qint64 newSize = bytes + tail;
+        const QRingChunk &chunk = buffers.constLast();
         // if need a new buffer
-        if (basicBlockSize == 0 || (newSize > buffers.constLast().capacity()
-                                    && (tail >= basicBlockSize || newSize >= MaxByteArraySize))) {
-            // shrink this buffer to its current size
-            buffers.last().resize(tail);
-
-            // create a new QByteArray
-            buffers.append(QByteArray(qMax(basicBlockSize, int(bytes)), Qt::Uninitialized));
-            ++tailBuffer;
-            tail = 0;
-        } else if (newSize > buffers.constLast().size()) {
-            buffers.last().resize(qMax(basicBlockSize, int(newSize)));
-        }
+        if (basicBlockSize == 0 || chunk.isShared() || bytes > chunk.available())
+            buffers.append(QRingChunk(chunkSize));
+        else
+            tail = chunk.size();
     }
 
-    char *writePtr = buffers.last().data() + tail;
+    buffers.last().grow(bytes);
     bufferSize += bytes;
-    tail += int(bytes);
-    return writePtr;
+    return buffers.last().data() + tail;
 }
 
 /*!
@@ -143,32 +173,30 @@ char *QRingBuffer::reserve(qint64 bytes)
 */
 char *QRingBuffer::reserveFront(qint64 bytes)
 {
-    if (bytes <= 0 || bytes >= MaxByteArraySize)
-        return 0;
+    Q_ASSERT(bytes > 0 && bytes < MaxByteArraySize);
 
-    if (head < bytes || basicBlockSize == 0) {
-        if (head > 0) {
-            buffers.first().remove(0, head);
-            if (tailBuffer == 0)
-                tail -= head;
-        }
-
-        head = qMax(basicBlockSize, int(bytes));
-        if (bufferSize == 0) {
-            if (buffers.isEmpty())
-                buffers.prepend(QByteArray(head, Qt::Uninitialized));
-            else
-                buffers.first().resize(head);
-            tail = head;
+    const int chunkSize = qMax(basicBlockSize, int(bytes));
+    if (bufferSize == 0) {
+        if (buffers.isEmpty())
+            buffers.prepend(QRingChunk(chunkSize));
+        else
+            buffers.first().allocate(chunkSize);
+        buffers.first().grow(chunkSize);
+        buffers.first().advance(chunkSize - bytes);
+    } else {
+        const QRingChunk &chunk = buffers.constFirst();
+        // if need a new buffer
+        if (basicBlockSize == 0 || chunk.isShared() || bytes > chunk.head()) {
+            buffers.prepend(QRingChunk(chunkSize));
+            buffers.first().grow(chunkSize);
+            buffers.first().advance(chunkSize - bytes);
         } else {
-            buffers.prepend(QByteArray(head, Qt::Uninitialized));
-            ++tailBuffer;
+            buffers.first().advance(-bytes);
         }
     }
 
-    head -= int(bytes);
     bufferSize += bytes;
-    return buffers.first().data() + head;
+    return buffers.first().data();
 }
 
 void QRingBuffer::chop(qint64 bytes)
@@ -176,30 +204,31 @@ void QRingBuffer::chop(qint64 bytes)
     Q_ASSERT(bytes <= bufferSize);
 
     while (bytes > 0) {
-        if (tailBuffer == 0 || tail > bytes) {
+        const qint64 chunkSize = buffers.constLast().size();
+
+        if (buffers.size() == 1 || chunkSize > bytes) {
+            QRingChunk &chunk = buffers.last();
             // keep a single block around if it does not exceed
             // the basic block size, to avoid repeated allocations
             // between uses of the buffer
-            if (bufferSize <= bytes) {
-                if (buffers.constFirst().size() <= basicBlockSize) {
+            if (bufferSize == bytes) {
+                if (chunk.capacity() <= basicBlockSize && !chunk.isShared()) {
+                    chunk.reset();
                     bufferSize = 0;
-                    head = tail = 0;
                 } else {
                     clear(); // try to minify/squeeze us
                 }
             } else {
                 Q_ASSERT(bytes < MaxByteArraySize);
-                tail -= int(bytes);
+                chunk.grow(-bytes);
                 bufferSize -= bytes;
             }
             return;
         }
 
-        bufferSize -= tail;
-        bytes -= tail;
+        bufferSize -= chunkSize;
+        bytes -= chunkSize;
         buffers.removeLast();
-        --tailBuffer;
-        tail = buffers.constLast().size();
     }
 }
 
@@ -210,24 +239,22 @@ void QRingBuffer::clear()
 
     buffers.erase(buffers.begin() + 1, buffers.end());
     buffers.first().clear();
-
-    head = tail = 0;
-    tailBuffer = 0;
     bufferSize = 0;
 }
 
 qint64 QRingBuffer::indexOf(char c, qint64 maxLength, qint64 pos) const
 {
-    if (maxLength <= 0 || pos < 0)
+    Q_ASSERT(maxLength >= 0 && pos >= 0);
+
+    if (maxLength == 0)
         return -1;
 
-    qint64 index = -(pos + head);
-    for (int i = 0; i < buffers.size(); ++i) {
-        const qint64 nextBlockIndex = qMin(index + (i == tailBuffer ? tail : buffers[i].size()),
-                                           maxLength);
+    qint64 index = -pos;
+    for (const QRingChunk &chunk : buffers) {
+        const qint64 nextBlockIndex = qMin(index + chunk.size(), maxLength);
 
         if (nextBlockIndex > 0) {
-            const char *ptr = buffers[i].constData();
+            const char *ptr = chunk.data();
             if (index < 0) {
                 ptr -= index;
                 index = 0;
@@ -271,19 +298,8 @@ QByteArray QRingBuffer::read()
     if (bufferSize == 0)
         return QByteArray();
 
-    QByteArray qba(buffers.takeFirst());
-
-    qba.reserve(0); // avoid that resizing needlessly reallocates
-    if (tailBuffer == 0) {
-        qba.resize(tail);
-        tail = 0;
-    } else {
-        --tailBuffer;
-    }
-    qba.remove(0, head); // does nothing if head is 0
-    head = 0;
-    bufferSize -= qba.size();
-    return qba;
+    bufferSize -= buffers.constFirst().size();
+    return buffers.takeFirst().toByteArray();
 }
 
 /*!
@@ -293,21 +309,19 @@ QByteArray QRingBuffer::read()
 */
 qint64 QRingBuffer::peek(char *data, qint64 maxLength, qint64 pos) const
 {
+    Q_ASSERT(maxLength >= 0 && pos >= 0);
+
     qint64 readSoFar = 0;
+    for (int i = 0; readSoFar < maxLength && i < buffers.size(); ++i) {
+        qint64 blockLength = buffers[i].size();
 
-    if (pos >= 0) {
-        pos += head;
-        for (int i = 0; readSoFar < maxLength && i < buffers.size(); ++i) {
-            qint64 blockLength = (i == tailBuffer ? tail : buffers[i].size());
-
-            if (pos < blockLength) {
-                blockLength = qMin(blockLength - pos, maxLength - readSoFar);
-                memcpy(data + readSoFar, buffers[i].constData() + pos, blockLength);
-                readSoFar += blockLength;
-                pos = 0;
-            } else {
-                pos -= blockLength;
-            }
+        if (pos < blockLength) {
+            blockLength = qMin(blockLength - pos, maxLength - readSoFar);
+            memcpy(data + readSoFar, buffers[i].data() + pos, blockLength);
+            readSoFar += blockLength;
+            pos = 0;
+        } else {
+            pos -= blockLength;
         }
     }
 
@@ -321,10 +335,15 @@ qint64 QRingBuffer::peek(char *data, qint64 maxLength, qint64 pos) const
 */
 void QRingBuffer::append(const char *data, qint64 size)
 {
+    Q_ASSERT(size >= 0);
+
+    if (size == 0)
+        return;
+
     char *writePointer = reserve(size);
     if (size == 1)
         *writePointer = *data;
-    else if (size)
+    else
         ::memcpy(writePointer, data, size);
 }
 
@@ -335,25 +354,18 @@ void QRingBuffer::append(const char *data, qint64 size)
 */
 void QRingBuffer::append(const QByteArray &qba)
 {
-    if (tail == 0) {
-        if (buffers.isEmpty())
-            buffers.append(qba);
-        else
-            buffers.last() = qba;
-    } else {
-        buffers.last().resize(tail);
-        buffers.append(qba);
-        ++tailBuffer;
-    }
-    tail = qba.size();
-    bufferSize += tail;
+    if (bufferSize != 0 || buffers.isEmpty())
+        buffers.append(QRingChunk(qba));
+    else
+        buffers.last().assign(qba);
+    bufferSize += qba.size();
 }
 
 qint64 QRingBuffer::readLine(char *data, qint64 maxLength)
 {
-    if (!data || --maxLength <= 0)
-        return -1;
+    Q_ASSERT(data != nullptr && maxLength > 1);
 
+    --maxLength;
     qint64 i = indexOf('\n', maxLength);
     i = read(data, i >= 0 ? (i + 1) : maxLength);
 

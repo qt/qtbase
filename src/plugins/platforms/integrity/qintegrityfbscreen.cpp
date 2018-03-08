@@ -204,15 +204,14 @@ QRegion QIntegrityFbScreen::doRedraw()
     if (!mBlitter)
         mBlitter = new QPainter(&mFbScreenImage);
 
-    QVector<QRect> rects = touched.rects();
-    for (int i = 0; i < rects.size(); i++) {
+    for (QRect rect : touched) {
         FBRect fbrect = {
-            (uint32_t)rects[i].left(),
-            (uint32_t)rects[i].top(),
-            (uint32_t)rects[i].width(),
-            (uint32_t)rects[i].height()
+            (uint32_t)rect.left(),
+            (uint32_t)rect.top(),
+            (uint32_t)rect.width(),
+            (uint32_t)rect.height()
         };
-        mBlitter->drawImage(rects[i], mScreenImage, rects[i]);
+        mBlitter->drawImage(rect, mScreenImage, rect);
         gh_FB_expose(mFbh, &fbrect, NULL);
     }
     return touched;

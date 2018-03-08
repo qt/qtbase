@@ -66,10 +66,12 @@
 #include "QtNetwork/private/qauthenticator_p.h"
 #include "QtNetwork/qsslconfiguration.h"
 #include "QtNetwork/qnetworkconfigmanager.h"
-#include "QtNetwork/qhttpmultipart.h"
-#include "qhttpmultipart_p.h"
 
+#if QT_CONFIG(http)
+#include "qhttpmultipart.h"
+#include "qhttpmultipart_p.h"
 #include "qnetworkreplyhttpimpl_p.h"
+#endif
 
 #include "qthread.h"
 
@@ -473,7 +475,7 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     qRegisterMetaType<QSslPreSharedKeyAuthenticator *>();
 #endif
     qRegisterMetaType<QList<QPair<QByteArray,QByteArray> > >();
-#ifndef QT_NO_HTTP
+#if QT_CONFIG(http)
     qRegisterMetaType<QHttpNetworkRequest>();
 #endif
     qRegisterMetaType<QNetworkReply::NetworkError>();
@@ -783,7 +785,9 @@ bool QNetworkAccessManager::isStrictTransportSecurityStoreEnabled() const
 /*!
     \since 5.9
 
-    Adds HTTP Strict Transport Security policies contained in \a knownHosts into HSTS cache.
+    Adds HTTP Strict Transport Security policies into HSTS cache.
+    \a knownHosts contains the known hosts that have QHstsPolicy
+    information.
 
     \note An expired policy will remove a known host from the cache, if previously
     present.
@@ -881,6 +885,7 @@ QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, const
     return reply;
 }
 
+#if QT_CONFIG(http)
 /*!
     \since 4.8
 
@@ -920,6 +925,7 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, QHttpM
     QNetworkReply *reply = put(newRequest, device);
     return reply;
 }
+#endif // QT_CONFIG(http)
 
 /*!
     Uploads the contents of \a data to the destination \a request and
@@ -1031,8 +1037,7 @@ QNetworkConfiguration QNetworkAccessManager::configuration() const
     if (session) {
         return session->configuration();
     } else {
-        QNetworkConfigurationManager manager;
-        return manager.defaultConfiguration();
+        return d->networkConfigurationManager.defaultConfiguration();
     }
 }
 
@@ -1056,12 +1061,11 @@ QNetworkConfiguration QNetworkAccessManager::activeConfiguration() const
     Q_D(const QNetworkAccessManager);
 
     QSharedPointer<QNetworkSession> networkSession(d->getNetworkSession());
-    QNetworkConfigurationManager manager;
     if (networkSession) {
-        return manager.configurationFromIdentifier(
+        return d->networkConfigurationManager.configurationFromIdentifier(
             networkSession->sessionProperty(QLatin1String("ActiveConfiguration")).toString());
     } else {
-        return manager.defaultConfiguration();
+        return d->networkConfigurationManager.defaultConfiguration();
     }
 }
 
@@ -1289,6 +1293,7 @@ QNetworkReply *QNetworkAccessManager::sendCustomRequest(const QNetworkRequest &r
     return reply;
 }
 
+#if QT_CONFIG(http)
 /*!
     \since 5.8
 
@@ -1310,6 +1315,7 @@ QNetworkReply *QNetworkAccessManager::sendCustomRequest(const QNetworkRequest &r
     QNetworkReply *reply = sendCustomRequest(newRequest, verb, device);
     return reply;
 }
+#endif // QT_CONFIG(http)
 
 /*!
     Returns a new QNetworkReply object to handle the operation \a op
@@ -1400,17 +1406,16 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     }
 
     if (!d->networkSessionStrongRef && (d->initializeSession || !d->networkConfiguration.identifier().isEmpty())) {
-        QNetworkConfigurationManager manager;
         if (!d->networkConfiguration.identifier().isEmpty()) {
             if ((d->networkConfiguration.state() & QNetworkConfiguration::Defined)
-                    && d->networkConfiguration != manager.defaultConfiguration())
-                d->createSession(manager.defaultConfiguration());
+                    && d->networkConfiguration != d->networkConfigurationManager.defaultConfiguration())
+                d->createSession(d->networkConfigurationManager.defaultConfiguration());
             else
                 d->createSession(d->networkConfiguration);
 
         } else {
-            if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired)
-                d->createSession(manager.defaultConfiguration());
+            if (d->networkSessionRequired)
+                d->createSession(d->networkConfigurationManager.defaultConfiguration());
             else
                 d->initializeSession = false;
         }
@@ -1435,7 +1440,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         }
     }
 
-#ifndef QT_NO_HTTP
+#if QT_CONFIG(http)
     // Since Qt 5 we use the new QNetworkReplyHttpImpl
     if (scheme == QLatin1String("http") || scheme == QLatin1String("preconnect-http")
 #ifndef QT_NO_SSL
@@ -1467,7 +1472,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 #endif
         return reply;
     }
-#endif // QT_NO_HTTP
+#endif // QT_CONFIG(http)
 
     // first step: create the reply
     QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
@@ -1543,7 +1548,7 @@ QStringList QNetworkAccessManager::supportedSchemesImplementation() const
 
     QStringList schemes = d->backendSupportedSchemes();
     // Those ones don't exist in backends
-#ifndef QT_NO_HTTP
+#if QT_CONFIG(http)
     schemes << QStringLiteral("http");
 #ifndef QT_NO_SSL
     if (QSslSocket::supportsSsl())
@@ -1900,7 +1905,8 @@ void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession
         emit q->networkSessionConnected();
     lastSessionState = state;
 
-    if (online && state == QNetworkSession::Disconnected) {
+    if (online && (state == QNetworkSession::Disconnected
+                   || state == QNetworkSession::NotAvailable)) {
         const auto cfgs = networkConfigurationManager.allConfigurations();
         for (const QNetworkConfiguration &cfg : cfgs) {
             if (cfg.state().testFlag(QNetworkConfiguration::Active)) {
@@ -1942,9 +1948,9 @@ void QNetworkAccessManagerPrivate::_q_onlineStateChanged(bool isOnline)
         online = (networkConfiguration.state() & QNetworkConfiguration::Active);
     } else {
         if (online != isOnline) {
-                _q_networkSessionClosed();
-                createSession(q->configuration());
             online = isOnline;
+            _q_networkSessionClosed();
+            createSession(q->configuration());
         }
     }
     if (online) {
@@ -1967,13 +1973,13 @@ void QNetworkAccessManagerPrivate::_q_configurationChanged(const QNetworkConfigu
     const QString id = configuration.identifier();
     if (configuration.state().testFlag(QNetworkConfiguration::Active)) {
         if (!onlineConfigurations.contains(id)) {
-
             QSharedPointer<QNetworkSession> session(getNetworkSession());
             if (session) {
                 if (online && session->configuration().identifier()
                         != networkConfigurationManager.defaultConfiguration().identifier()) {
 
                     onlineConfigurations.insert(id);
+                    // CHECK: If it's having Active flag - why would it be disconnected ???
                     //this one disconnected but another one is online,
                     // close and create new session
                     _q_networkSessionClosed();
@@ -1984,6 +1990,7 @@ void QNetworkAccessManagerPrivate::_q_configurationChanged(const QNetworkConfigu
 
     } else if (onlineConfigurations.contains(id)) {
         //this one is disconnecting
+        // CHECK: If it disconnected while we create a session over a down configuration ???
         onlineConfigurations.remove(id);
         if (!onlineConfigurations.isEmpty()) {
             _q_networkSessionClosed();
@@ -2008,6 +2015,7 @@ void QNetworkAccessManagerPrivate::_q_networkSessionFailed(QNetworkSession::Sess
 
 #endif // QT_NO_BEARERMANAGEMENT
 
+#if QT_CONFIG(http)
 QNetworkRequest QNetworkAccessManagerPrivate::prepareMultipart(const QNetworkRequest &request, QHttpMultiPart *multiPart)
 {
     // copy the request, we probably need to add some headers
@@ -2055,6 +2063,7 @@ QNetworkRequest QNetworkAccessManagerPrivate::prepareMultipart(const QNetworkReq
 
     return newRequest;
 }
+#endif // QT_CONFIG(http)
 
 QT_END_NAMESPACE
 

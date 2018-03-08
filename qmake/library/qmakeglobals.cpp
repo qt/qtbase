@@ -68,6 +68,7 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+using namespace QMakeInternal; // for IoUtils
 
 #define fL1S(s) QString::fromLatin1(s)
 
@@ -96,9 +97,9 @@ QString QMakeGlobals::cleanSpec(QMakeCmdLineParserState &state, const QString &s
 {
     QString ret = QDir::cleanPath(spec);
     if (ret.contains(QLatin1Char('/'))) {
-        QString absRet = QDir(state.pwd).absoluteFilePath(ret);
+        QString absRet = IoUtils::resolvePath(state.pwd, ret);
         if (QFile::exists(absRet))
-            ret = QDir::cleanPath(absRet);
+            ret = absRet;
     }
     return ret;
 }
@@ -126,10 +127,10 @@ QMakeGlobals::ArgumentReturn QMakeGlobals::addCommandLineArguments(
             user_template_prefix = arg;
             break;
         case ArgCache:
-            cachefile = args[*pos] = QDir::cleanPath(QDir(state.pwd).absoluteFilePath(arg));
+            cachefile = args[*pos] = IoUtils::resolvePath(state.pwd, arg);
             break;
         case ArgQtConf:
-            qtconf = args[*pos] = QDir::cleanPath(QDir(state.pwd).absoluteFilePath(arg));
+            qtconf = args[*pos] = IoUtils::resolvePath(state.pwd, arg);
             break;
         default:
             if (arg.startsWith(QLatin1Char('-'))) {
@@ -259,11 +260,11 @@ QStringList QMakeGlobals::splitPathList(const QString &val) const
 {
     QStringList ret;
     if (!val.isEmpty()) {
-        QDir bdir;
+        QString cwd(QDir::currentPath());
         const QStringList vals = val.split(dirlist_sep);
         ret.reserve(vals.length());
         for (const QString &it : vals)
-            ret << QDir::cleanPath(bdir.absoluteFilePath(it));
+            ret << IoUtils::resolvePath(cwd, it);
     }
     return ret;
 }
@@ -318,7 +319,7 @@ bool QMakeGlobals::initProperties()
         return false;
     data = proc.readAll();
 #else
-    if (FILE *proc = QT_POPEN(QString(QMakeInternal::IoUtils::shellQuote(qmake_abslocation)
+    if (FILE *proc = QT_POPEN(QString(IoUtils::shellQuote(qmake_abslocation)
                                       + QLatin1String(" -query")).toLocal8Bit(), QT_POPEN_READ)) {
         char buff[1024];
         while (!feof(proc))

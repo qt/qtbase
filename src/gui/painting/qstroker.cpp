@@ -1147,8 +1147,6 @@ void QDashStroker::processCurrentSubpath()
 
     QLineF cline;
 
-    QPainterPath dashPath;
-
     QSubpathFlatIterator it(&m_elements, m_dashThreshold);
     qfixed2d prev = it.next();
 

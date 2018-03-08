@@ -363,6 +363,13 @@ void *QEglFSDeviceIntegration::nativeResourceForIntegration(const QByteArray &na
     return nullptr;
 }
 
+void *QEglFSDeviceIntegration::nativeResourceForScreen(const QByteArray &resource, QScreen *screen)
+{
+    Q_UNUSED(resource);
+    Q_UNUSED(screen);
+    return nullptr;
+}
+
 void *QEglFSDeviceIntegration::wlDisplay() const
 {
     return nullptr;

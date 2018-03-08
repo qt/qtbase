@@ -765,8 +765,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 */
 
 /*!
-    \fn void QStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *option, \
-                                   QPainter *painter, const QWidget *widget) const
+    \fn void QStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 
     Draws the given primitive \a element with the provided \a painter using the style
     options specified by \a option.
@@ -1592,8 +1591,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 */
 
 /*!
-    \fn QSize QStyle::sizeFromContents(ContentsType type, const QStyleOption *option, \
-                                       const QSize &contentsSize, const QWidget *widget) const
+    \fn QSize QStyle::sizeFromContents(ContentsType type, const QStyleOption *option, const QSize &contentsSize, const QWidget *widget) const
 
     Returns the size of the element described by the specified
     \a option and \a type, based on the provided \a contentsSize.
@@ -1840,9 +1838,8 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value SH_UnderlineShortcut  Whether shortcuts are underlined.
 
-    \value SH_SpellCheckUnderlineStyle  A
-        QTextCharFormat::UnderlineStyle value that specifies the way
-        misspelled words should be underlined.
+    \value SH_SpellCheckUnderlineStyle  Obsolete. Use SpellCheckUnderlineStyle
+    hint in QPlatformTheme instead.
 
     \value SH_SpinBox_AnimateButton  Animate a click when up or down is
     pressed in a spin box.
@@ -1995,12 +1992,20 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
            A value equal to zero means that the animations will be disabled.
            This enum value has been introduced in Qt 5.10.
 
+    \value SH_ComboBox_AllowWheelScrolling
+           Determines if the mouse wheel can be used to scroll inside a QComboBox.
+           This is on by default in all styles except the Mac style.
+           This enum value has been introduced in Qt 5.10.
+
+    \value SH_SpinBox_ButtonsInsideFrame
+           Determnines if the spin box buttons are inside the line edit frame.
+           This enum value has been introduced in Qt 5.11.
+
     \sa styleHint()
 */
 
 /*!
-    \fn int QStyle::styleHint(StyleHint hint, const QStyleOption *option, \
-                              const QWidget *widget, QStyleHintReturn *returnData) const
+    \fn int QStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidget *widget, QStyleHintReturn *returnData) const
 
     Returns an integer representing the specified style \a hint for
     the given \a widget described by the provided style \a option.
@@ -2112,8 +2117,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 */
 
 /*!
-    \fn QPixmap QStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *option, \
-                                       const QWidget *widget) const
+    \fn QPixmap QStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *option, const QWidget *widget) const
 
     \obsolete
     Returns a pixmap for the given \a standardPixmap.

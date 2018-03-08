@@ -484,7 +484,7 @@ QSize QGroupBox::minimumSizeHint() const
 
     QFontMetrics metrics(fontMetrics());
 
-    int baseWidth = metrics.width(d->title) + metrics.width(QLatin1Char(' '));
+    int baseWidth = metrics.horizontalAdvance(d->title) + metrics.horizontalAdvance(QLatin1Char(' '));
     int baseHeight = metrics.height();
     if (d->checkable) {
         baseWidth += style()->pixelMetric(QStyle::PM_IndicatorWidth);

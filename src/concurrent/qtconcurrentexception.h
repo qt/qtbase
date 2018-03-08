@@ -41,10 +41,9 @@
 #define QTCONCURRENT_EXCEPTION_H
 
 #include <QtConcurrent/qtconcurrent_global.h>
-
-#ifndef QT_NO_QFUTURE
-
 #include <QtCore/qexception.h>
+
+QT_REQUIRE_CONFIG(concurrent);
 
 QT_BEGIN_NAMESPACE
 
@@ -52,7 +51,7 @@ QT_BEGIN_NAMESPACE
 namespace QtConcurrent
 {
 
-#ifndef QT_NO_EXCEPTIONS
+#if !defined(QT_NO_EXCEPTIONS) || defined(Q_CLANG_QDOC)
 
 typedef Q_DECL_DEPRECATED QException Exception;
 typedef Q_DECL_DEPRECATED QUnhandledException UnhandledException;
@@ -62,7 +61,5 @@ typedef Q_DECL_DEPRECATED QUnhandledException UnhandledException;
 } // namespace QtConcurrent
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_QFUTURE
 
 #endif

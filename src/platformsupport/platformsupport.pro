@@ -16,7 +16,7 @@ qtConfig(evdev)|qtConfig(tslib)|qtConfig(libinput)|qtConfig(integrityhid) {
     input.depends += devicediscovery
 }
 
-unix:!darwin: \
+if(unix:!darwin)|qtConfig(xcb): \
     SUBDIRS += services
 
 qtConfig(opengl): \
@@ -34,6 +34,7 @@ qtConfig(accessibility) {
         SUBDIRS += linuxaccessibility
         linuxaccessibility.depends += accessibility
     }
+    win32:!winrt: SUBDIRS += windowsuiautomation
 }
 
 darwin {

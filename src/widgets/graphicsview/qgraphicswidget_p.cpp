@@ -406,7 +406,7 @@ void QGraphicsWidgetPrivate::windowFrameMousePressEvent(QGraphicsSceneMouseEvent
     event->setAccepted(windowData->grabbedSection != Qt::NoSection);
 }
 
-/*!
+/*
   Used to calculate the
   Precondition:
   \a widget should support either hfw or wfh

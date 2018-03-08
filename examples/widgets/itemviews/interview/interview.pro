@@ -1,5 +1,6 @@
 TEMPLATE = app
 QT += widgets
+requires(qtConfig(treeview))
 
 HEADERS += model.h
 SOURCES += model.cpp main.cpp

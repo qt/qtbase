@@ -220,79 +220,59 @@ public:
 
     bool addDbs()
     {
-        //addDb("QOCI", "localhost", "system", "penandy");
-//         addDb( "QOCI8", "//horsehead.qt-project.org:1521/pony.troll.no", "scott", "tiger" ); // Oracle 9i on horsehead
-//         addDb( "QOCI8", "//horsehead.qt-project.org:1521/ustest.troll.no", "scott", "tiger", "" ); // Oracle 9i on horsehead
-//         addDb( "QOCI8", "//iceblink.qt-project.org:1521/ice.troll.no", "scott", "tiger", "" ); // Oracle 8 on iceblink (not currently working)
-//         addDb( "QOCI", "//silence.qt-project.org:1521/testdb", "scott", "tiger" ); // Oracle 10g on silence
-//         addDb( "QOCI", "//bq-oracle10g.qt-project.org:1521/XE", "scott", "tiger" ); // Oracle 10gexpress
+        // Test databases can be defined in a file using the following format:
+        //
+        // {
+        //  "entries": [
+        //      {
+        //          "driver": "QPSQL",
+        //          "name": "testdb",
+        //          "username": "postgres",
+        //          "password": "password",
+        //          "hostname": "localhost",
+        //          "port": 5432,
+        //          "parameters": "extraoptions"
+        //      },
+        //      {
+        //          ....
+        //      }
+        //  ]
+        // }
 
-//      This requires a local ODBC data source to be configured( pointing to a MySql database )
-//         addDb( "QODBC", "mysqlodbc", "troll", "trond" );
-//         addDb( "QODBC", "SqlServer", "troll", "trond" );
-//         addDb( "QTDS7", "testdb", "troll", "trondk", "horsehead" );
-//         addDb( "QODBC", "silencetestdb", "troll", "trond", "silence" );
-//         addDb( "QODBC", "horseheadtestdb", "troll", "trondk", "horsehead" );
-
-//         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.qt-project.org" );
-//         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.qt-project.org", 3307 );
-//         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.qt-project.org", 3308, "CLIENT_COMPRESS=1" ); // MySQL 4.1.1
-//         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.qt-project.org", 3309, "CLIENT_COMPRESS=1" ); // MySQL 5.0.18 Linux
-//         addDb( "QMYSQL3", "testdb", "troll", "trond", "silence.qt-project.org" ); // MySQL 5.1.36 Windows
-
-//         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "bq-mysql41.qt-project.org" ); // MySQL 4.1.22-2.el4  linux
-//         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "bq-mysql50.qt-project.org" ); // MySQL 5.0.45-7.el5 linux
-//         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "bq-mysql51.qt-project.org" ); // MySQL 5.1.36-6.7.2.i586 linux
-
-//         addDb( "QPSQL7", "testdb", "troll", "trond", "horsehead.qt-project.org" ); // V7.2 NOT SUPPORTED!
-//         addDb( "QPSQL7", "testdb", "troll", "trond", "horsehead.qt-project.org", 5434 ); // V7.2 NOT SUPPORTED! Multi-byte
-//         addDb( "QPSQL7", "testdb", "troll", "trond", "horsehead.qt-project.org", 5435 ); // V7.3
-//         addDb( "QPSQL7", "testdb", "troll", "trond", "horsehead.qt-project.org", 5436 ); // V7.4
-//         addDb( "QPSQL7", "testdb", "troll", "trond", "horsehead.qt-project.org", 5437 ); // V8.0.3
-//         addDb( "QPSQL7", "testdb", "troll", "trond", "silence.qt-project.org" );         // V8.2.1, UTF-8
-
-//         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "bq-postgres74.qt-project.org" );         // Version 7.4.19-1.el4_6.1
-//         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "bq-pgsql81.qt-project.org" );         // Version 8.1.11-1.el5_1.1
-//         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "bq-pgsql84.qt-project.org" );         // Version 8.4.1-2.1.i586
-//         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "bq-pgsql90.qt-project.org" );         // Version 9.0.0
-
-
-//         addDb( "QDB2", "testdb", "troll", "trond", "silence.qt-project.org" ); // DB2 v9.1 on silence
-//         addDb( "QDB2", "testdb", "testuser", "Ee4Gabf6_", "bq-db2-972.qt-project.org" ); // DB2
-
-//      yes - interbase really wants the physical path on the host machine.
-//         addDb( "QIBASE", "/opt/interbase/qttest.gdb", "SYSDBA", "masterkey", "horsehead.qt-project.org" );
-//         addDb( "QIBASE", "silence.troll.no:c:\\ibase\\testdb", "SYSDBA", "masterkey", "" ); // InterBase 7.5 on silence
-//         addDb( "QIBASE", "silence.troll.no:c:\\ibase\\testdb_ascii", "SYSDBA", "masterkey", "" ); // InterBase 7.5 on silence
-//         addDb( "QIBASE", "/opt/firebird/databases/testdb.fdb", "testuser", "Ee4Gabf6_", "firebird1-nokia.trolltech.com.au" ); // Firebird 1.5.5
-//         addDb( "QIBASE", "/opt/firebird/databases/testdb.fdb", "testuser", "Ee4Gabf6_", "firebird2-nokia.trolltech.com.au" ); // Firebird 2.1.1
-
-//         addDb( "QIBASE", "/opt/firebird/databases/testdb.fdb", "testuser", "Ee4Gabf6_", "bq-firebird1.qt-project.org" ); // Firebird 1.5.5
-//         addDb( "QIBASE", "/opt/firebird/databases/testdb.fdb", "testuser", "Ee4Gabf6_", "bq-firebird2.qt-project.org" ); // Firebird 2.1.1
-
-//      use in-memory database to prevent local files
-//         addDb("QSQLITE", ":memory:");
+        bool added = false;
+        const QString databasesFile(qgetenv("QT_TEST_DATABASES_FILE"));
+        QFile f(databasesFile.isEmpty() ? "testdbs.json" : databasesFile);
+        if (f.exists() && f.open(QIODevice::ReadOnly)) {
+            const QJsonDocument doc = QJsonDocument::fromJson(f.readAll());
+            f.close();
+            const QJsonValue entriesV = doc.object().value(QLatin1String("entries"));
+            if (!entriesV.isArray()) {
+                qWarning() << "No entries in " + f.fileName();
+            } else {
+                const QJsonArray entriesA = entriesV.toArray();
+                QJsonArray::const_iterator it = entriesA.constBegin();
+                while (it != entriesA.constEnd()) {
+                    if ((*it).isObject()) {
+                        const QJsonObject object = (*it).toObject();
+                        addDb(object.value(QStringLiteral("driver")).toString(),
+                              object.value(QStringLiteral("name")).toString(),
+                              object.value(QStringLiteral("username")).toString(),
+                              object.value(QStringLiteral("password")).toString(),
+                              object.value(QStringLiteral("hostname")).toString(),
+                              object.value(QStringLiteral("port")).toInt(),
+                              object.value(QStringLiteral("parameters")).toString());
+                        added = true;
+                    }
+                    ++it;
+                }
+            }
+        }
         QTemporaryDir *sqLiteDir = dbDir();
-        if (!sqLiteDir)
-            return false;
-        addDb( QStringLiteral("QSQLITE"), QDir::toNativeSeparators(sqLiteDir->path() + QStringLiteral("/foo.db")) );
-//         addDb( "QSQLITE2", QDir::toNativeSeparators(dbDir.path() + "/foo2.db") );
-//         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=iceblink.qt-project.org\\ICEBLINK", "troll", "trond", "" );
-//         addDb( "QODBC3", "DRIVER={SQL Native Client};SERVER=silence.qt-project.org\\SQLEXPRESS", "troll", "trond", "" );
-
-//         addDb( "QODBC", "DRIVER={MySQL ODBC 5.1 Driver};SERVER=bq-mysql50.qt-project.org;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
-//         addDb( "QODBC", "DRIVER={MySQL ODBC 5.1 Driver};SERVER=bq-mysql51.qt-project.org;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
-//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=horsehead.qt-project.org;DATABASE=testdb;PORT=4101;UID=troll;PWD=trondk", "troll", "trondk", "" );
-//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=silence.qt-project.org;DATABASE=testdb;PORT=2392;UID=troll;PWD=trond", "troll", "trond", "" );
-//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=bq-winserv2003-x86-01.qt-project.org;DATABASE=testdb;PORT=1433;UID=testuser;PWD=Ee4Gabf6_;TDS_Version=8.0", "", "", "" );
-//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=bq-winserv2008-x86-01.qt-project.org;DATABASE=testdb;PORT=1433;UID=testuser;PWD=Ee4Gabf6_;TDS_Version=8.0", "", "", "" );
-//         addDb( "QTDS7", "testdb", "testuser", "Ee4Gabf6_", "bq-winserv2003" );
-//         addDb( "QTDS7", "testdb", "testuser", "Ee4Gabf6_", "bq-winserv2008" );
-//         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=bq-winserv2003-x86-01.qt-project.org;DATABASE=testdb;PORT=1433", "testuser", "Ee4Gabf6_", "" );
-//         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=bq-winserv2008-x86-01.qt-project.org;DATABASE=testdb;PORT=1433", "testuser", "Ee4Gabf6_", "" );
-//         addDb( "QODBC", "DRIVER={Microsoft Access Driver (*.mdb)};DBQ=c:\\dbs\\access\\testdb.mdb", "", "", "" );
-//         addDb( "QODBC", "DRIVER={Postgresql};SERVER=bq-pgsql84.qt-project.org;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
-         return true;
+        if (sqLiteDir) {
+            addDb(QStringLiteral("QSQLITE"), QDir::toNativeSeparators(sqLiteDir->path() + QStringLiteral("/foo.db")));
+            added = true;
+        }
+        return added;
     }
 
     // 'false' return indicates a system error, for example failure to create a temporary directory.

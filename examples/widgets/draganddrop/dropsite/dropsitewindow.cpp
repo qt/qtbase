@@ -88,8 +88,8 @@ DropSiteWindow::DropSiteWindow()
     buttonBox->addButton(clearButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
 
-    connect(quitButton, &QAbstractButton::pressed, this, &QWidget::close);
-    connect(clearButton, &QAbstractButton::pressed, dropArea, &DropArea::clear);
+    connect(quitButton, &QAbstractButton::clicked, this, &QWidget::close);
+    connect(clearButton, &QAbstractButton::clicked, dropArea, &DropArea::clear);
 //! [constructor part4]
 
 //! [constructor part5]
@@ -113,7 +113,7 @@ void DropSiteWindow::updateFormatsTable(const QMimeData *mimeData)
 //! [updateFormatsTable() part1]
 
 //! [updateFormatsTable() part2]
-    foreach (QString format, mimeData->formats()) {
+    for (const QString &format : mimeData->formats()) {
         QTableWidgetItem *formatItem = new QTableWidgetItem(format);
         formatItem->setFlags(Qt::ItemIsEnabled);
         formatItem->setTextAlignment(Qt::AlignTop | Qt::AlignLeft);

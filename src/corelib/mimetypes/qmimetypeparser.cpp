@@ -201,6 +201,7 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
     return false;
 #else
     QMimeTypePrivate data;
+    data.loaded = true;
     int priority = 50;
     QStack<QMimeMagicRule *> currentRules; // stack for the nesting of rules
     QList<QMimeMagicRule> rules; // toplevel rules

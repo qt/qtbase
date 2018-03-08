@@ -402,7 +402,8 @@ inline QRegion fromNativeLocalExposedRegion(const QRegion &pixelRegion, const QW
         const QPointF topLeftP = rect.topLeft() / scaleFactor;
         const QSizeF sizeP = rect.size() / scaleFactor;
         pointRegion += QRect(QPoint(qFloor(topLeftP.x()), qFloor(topLeftP.y())),
-                             QSize(qCeil(sizeP.width()), qCeil(sizeP.height())));
+                             QPoint(qCeil(topLeftP.x() + sizeP.width()  - 1.0),
+                                    qCeil(topLeftP.y() + sizeP.height() - 1.0)));
     }
     return pointRegion;
 }

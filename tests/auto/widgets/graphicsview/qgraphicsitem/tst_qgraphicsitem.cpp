@@ -28,14 +28,17 @@
 
 
 #include <QtTest/QtTest>
+#include <QtTest/private/qtesthelpers_p.h>
 
 #include <private/qgraphicsitem_p.h>
 #include <private/qgraphicsview_p.h>
 #include <private/qgraphicsscene_p.h>
+#include <QRandomGenerator>
 #include <QStyleOptionGraphicsItem>
 #include <QAbstractTextDocumentLayout>
 #include <QBitmap>
 #include <QCursor>
+#include <QDesktopWidget>
 #include <QScreen>
 #include <QLabel>
 #include <QDial>
@@ -52,10 +55,13 @@
 #include <QPushButton>
 #include <QLineEdit>
 #include <QGraphicsLinearLayout>
+#include <QTransform>
 #include <float.h>
 #include <QStyleHints>
 
 Q_DECLARE_METATYPE(QPainterPath)
+Q_DECLARE_METATYPE(QSizeF)
+Q_DECLARE_METATYPE(QTransform)
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 #include <windows.h>
@@ -125,17 +131,6 @@ static void sendKeyClick(QGraphicsScene *scene, Qt::Key key)
 {
     sendKeyPress(scene, key);
     sendKeyRelease(scene, key);
-}
-
-static inline void centerOnScreen(QWidget *w, const QSize &size)
-{
-    const QPoint offset = QPoint(size.width() / 2, size.height() / 2);
-    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
-}
-
-static inline void centerOnScreen(QWidget *w)
-{
-    centerOnScreen(w, w->geometry().size());
 }
 
 class EventSpy : public QGraphicsWidget
@@ -444,6 +439,8 @@ private slots:
     void focusHandling();
     void touchEventPropagation_data();
     void touchEventPropagation();
+    void touchEventTransformation_data();
+    void touchEventTransformation();
     void deviceCoordinateCache_simpleRotations();
     void resolvePaletteForItemChildren();
 
@@ -474,6 +471,7 @@ private slots:
 
 private:
     QList<QGraphicsItem *> paintedItems;
+    QTouchDevice *m_touchDevice = nullptr;
 };
 
 void tst_QGraphicsItem::construction()
@@ -3595,12 +3593,12 @@ void tst_QGraphicsItem::group()
     QList<QGraphicsItem *> newItems;
     for (int i = 0; i < 100; ++i) {
         QGraphicsItem *item = scene.addRect(QRectF(-25, -25, 50, 50), QPen(Qt::black, 0),
-                                            QBrush(QColor(rand() % 255, rand() % 255,
-                                                          rand() % 255, rand() % 255)));
+                                            QBrush(QColor(QRandomGenerator::global()->bounded(255), QRandomGenerator::global()->bounded(255),
+                                                          QRandomGenerator::global()->bounded(255), QRandomGenerator::global()->bounded(255))));
         newItems << item;
-        item->setPos(-1000 + rand() % 2000,
-                     -1000 + rand() % 2000);
-        item->setTransform(QTransform().rotate(rand() % 90), true);
+        item->setPos(-1000 + QRandomGenerator::global()->bounded(2000),
+                     -1000 + QRandomGenerator::global()->bounded(2000));
+        item->setTransform(QTransform().rotate(QRandomGenerator::global()->bounded(90)), true);
     }
 
     view.fitInView(scene.itemsBoundingRect());
@@ -4143,8 +4141,8 @@ void tst_QGraphicsItem::ensureVisible()
 
     for (int x = -100; x < 100; x += 25) {
         for (int y = -100; y < 100; y += 25) {
-            int xmargin = rand() % 75;
-            int ymargin = rand() % 75;
+            int xmargin = QRandomGenerator::global()->bounded(75);
+            int ymargin = QRandomGenerator::global()->bounded(75);
             item->ensureVisible(x, y, 25, 25, xmargin, ymargin);
             QApplication::processEvents();
 
@@ -4211,7 +4209,7 @@ void tst_QGraphicsItem::cursor()
 
     QWidget topLevel;
     topLevel.resize(250, 150);
-    centerOnScreen(&topLevel);
+    QTestPrivate::centerOnScreen(&topLevel);
     QGraphicsView view(&scene,&topLevel);
     view.setFixedSize(200, 100);
     topLevel.show();
@@ -7137,7 +7135,7 @@ public:
         : QGraphicsRectItem(QRectF(-10, -10, 20, 20))
     {
         setPen(QPen(Qt::black, 0));
-        setBrush(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
+        setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
     }
 
     QTransform x;
@@ -10954,6 +10952,95 @@ void tst_QGraphicsItem::focusHandling()
     QCOMPARE(scene.focusItem(), focusableUnder);
 }
 
+class TouchEventTestee : public QGraphicsRectItem
+{
+public:
+    TouchEventTestee(const QSizeF &size = QSizeF(100, 100)) :
+        QGraphicsRectItem(QRectF(QPointF(), size))
+    {
+        setAcceptTouchEvents(true);
+        setFlag(QGraphicsItem::ItemIsFocusable, false);
+    }
+
+    QList<QTouchEvent::TouchPoint> touchBeginPoints() const { return m_touchBeginPoints; }
+    int touchBeginEventCount() const { return m_touchBeginPoints.size(); }
+
+    QList<QTouchEvent::TouchPoint> touchUpdatePoints() const { return m_touchUpdatePoints; }
+    int touchUpdateEventCount() const { return m_touchUpdatePoints.size(); }
+
+protected:
+    bool sceneEvent(QEvent *ev) override
+    {
+        switch (ev->type()) {
+        case QEvent::TouchBegin:
+            m_touchBeginPoints.append(static_cast<const QTouchEvent *>(ev)->touchPoints().constFirst());
+            ev->accept();
+            return true;
+        case QEvent::TouchUpdate:
+            m_touchUpdatePoints.append(static_cast<const QTouchEvent *>(ev)->touchPoints().constFirst());
+            ev->accept();
+            return true;
+        default:
+            break;
+        }
+
+        return QGraphicsRectItem::sceneEvent(ev);
+    }
+
+private:
+    QList<QTouchEvent::TouchPoint> m_touchBeginPoints;
+    QList<QTouchEvent::TouchPoint> m_touchUpdatePoints;
+};
+
+static QList<QTouchEvent::TouchPoint>
+    createTouchPoints(const QGraphicsView &view,
+                      const QPointF &scenePos,
+                      const QSizeF &ellipseDiameters,
+                      Qt::TouchPointState state = Qt::TouchPointPressed)
+{
+    QTouchEvent::TouchPoint tp(0);
+    tp.setState(state);
+    tp.setScenePos(scenePos);
+    tp.setStartScenePos(scenePos);
+    tp.setLastScenePos(scenePos);
+    const QPointF screenPos = view.viewport()->mapToGlobal(view.mapFromScene(scenePos));
+    tp.setScreenPos(screenPos);
+    tp.setStartScreenPos(screenPos);
+    tp.setLastScreenPos(screenPos);
+    tp.setEllipseDiameters(ellipseDiameters);
+    const QSizeF screenSize = QApplication::desktop()->screenGeometry(&view).size();
+    tp.setNormalizedPos(QPointF(screenPos.x() / screenSize.width(), screenPos.y() / screenSize.height()));
+    return QList<QTouchEvent::TouchPoint>() << tp;
+}
+
+static bool comparePointF(const QPointF &p1, const QPointF &p2)
+{
+    return qFuzzyCompare(p1.x(), p2.x()) && qFuzzyCompare(p1.y(), p2.y());
+}
+
+static bool compareSizeF(const QSizeF &s1, const QSizeF &s2)
+{
+    return qFuzzyCompare(s1.width(), s2.width()) && qFuzzyCompare(s1.height(), s2.height());
+}
+
+static QByteArray msgPointFComparisonFailed(const QPointF &p1, const QPointF &p2)
+{
+    return QByteArray::number(p1.x()) + ", " + QByteArray::number(p1.y())
+        + " != " + QByteArray::number(p2.x()) + ", " + QByteArray::number(p2.y());
+}
+
+static QByteArray msgSizeFComparisonFailed(const QSizeF &s1, const QSizeF &s2)
+{
+    return QByteArray::number(s1.width()) + 'x' + QByteArray::number(s1.height())
+        + " != " + QByteArray::number(s2.width()) + 'x' + QByteArray::number(s2.height());
+}
+
+#define COMPARE_POINTF(ACTUAL, EXPECTED) \
+    QVERIFY2(comparePointF(ACTUAL, EXPECTED), msgPointFComparisonFailed(ACTUAL, EXPECTED).constData())
+
+#define COMPARE_SIZEF(ACTUAL, EXPECTED) \
+    QVERIFY2(compareSizeF(ACTUAL, EXPECTED), msgSizeFComparisonFailed(ACTUAL, EXPECTED).constData())
+
 void tst_QGraphicsItem::touchEventPropagation_data()
 {
     QTest::addColumn<QGraphicsItem::GraphicsItemFlag>("flag");
@@ -10972,29 +11059,7 @@ void tst_QGraphicsItem::touchEventPropagation()
     QFETCH(QGraphicsItem::GraphicsItemFlag, flag);
     QFETCH(int, expectedCount);
 
-    class Testee : public QGraphicsRectItem
-    {
-    public:
-        int touchBeginEventCount;
-
-        Testee()
-            : QGraphicsRectItem(0, 0, 100, 100)
-            , touchBeginEventCount(0)
-        {
-            setAcceptTouchEvents(true);
-            setFlag(QGraphicsItem::ItemIsFocusable, false);
-        }
-
-        bool sceneEvent(QEvent *ev)
-        {
-            if (ev->type() == QEvent::TouchBegin)
-                ++touchBeginEventCount;
-
-            return QGraphicsRectItem::sceneEvent(ev);
-        }
-    };
-
-    Testee *touchEventReceiver = new Testee;
+    TouchEventTestee *touchEventReceiver = new TouchEventTestee;
     QGraphicsItem *topMost = new QGraphicsRectItem(touchEventReceiver->boundingRect());
 
     QGraphicsScene scene;
@@ -11007,26 +11072,107 @@ void tst_QGraphicsItem::touchEventPropagation()
     topMost->setFlag(flag, true);
 
     QGraphicsView view(&scene);
+    view.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1String("::")
+                        + QLatin1String(QTest::currentDataTag()));
     view.setSceneRect(touchEventReceiver->boundingRect());
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QCOMPARE(touchEventReceiver->touchBeginEventCount, 0);
+    QCOMPARE(touchEventReceiver->touchBeginEventCount(), 0);
 
-    QTouchEvent::TouchPoint tp(0);
-    tp.setState(Qt::TouchPointPressed);
-    tp.setScenePos(view.sceneRect().center());
-    tp.setLastScenePos(view.sceneRect().center());
-
-    QList<QTouchEvent::TouchPoint> touchPoints;
-    touchPoints << tp;
-
-    sendMousePress(&scene, tp.scenePos());
-    QTouchDevice *device = QTest::createTouchDevice();
-    QTouchEvent touchBegin(QEvent::TouchBegin, device, Qt::NoModifier, Qt::TouchPointPressed, touchPoints);
+    const QPointF scenePos = view.sceneRect().center();
+    sendMousePress(&scene, scenePos);
+    if (m_touchDevice == nullptr)
+        m_touchDevice = QTest::createTouchDevice();
+    QTouchEvent touchBegin(QEvent::TouchBegin, m_touchDevice, Qt::NoModifier, Qt::TouchPointPressed,
+                           createTouchPoints(view, scenePos, QSizeF(10, 10)));
+    touchBegin.setTarget(view.viewport());
 
     qApp->sendEvent(&scene, &touchBegin);
-    QCOMPARE(touchEventReceiver->touchBeginEventCount, expectedCount);
+    QCOMPARE(touchEventReceiver->touchBeginEventCount(), expectedCount);
+}
+
+void tst_QGraphicsItem::touchEventTransformation_data()
+{
+    QTest::addColumn<QGraphicsItem::GraphicsItemFlag>("flag");
+    QTest::addColumn<QTransform>("viewTransform");
+    QTest::addColumn<QPointF>("touchScenePos");
+    QTest::addColumn<QSizeF>("ellipseDiameters");
+    QTest::addColumn<QPointF>("expectedItemPos");
+
+    QTest::newRow("notransform")
+        << QGraphicsItem::ItemIsSelectable << QTransform()
+        << QPointF(150, 150) << QSizeF(7, 8) << QPointF(50, 50);
+    QTest::newRow("scaled")
+        << QGraphicsItem::ItemIsSelectable << QTransform::fromScale(0.5, 0.5)
+        << QPointF(150, 150) << QSizeF(7, 8) << QPointF(50, 50);
+    // QTBUG-66192: When the item ignores the downscaling transformation,
+    // it will receive the touch point at 25,25 instead of 50,50.
+    QTest::newRow("scaled/ItemIgnoresTransformations")
+        << QGraphicsItem::ItemIgnoresTransformations << QTransform::fromScale(0.5, 0.5)
+        << QPointF(150, 150) << QSizeF(7, 8) << QPointF(25, 25);
+}
+
+void tst_QGraphicsItem::touchEventTransformation()
+{
+    QFETCH(QGraphicsItem::GraphicsItemFlag, flag);
+    QFETCH(QTransform, viewTransform);
+    QFETCH(QPointF, touchScenePos);
+    QFETCH(QSizeF, ellipseDiameters);
+    QFETCH(QPointF, expectedItemPos);
+
+    TouchEventTestee *touchEventReceiver = new TouchEventTestee;
+
+    QGraphicsScene scene;
+    scene.addItem(touchEventReceiver);
+    const QPointF itemPos(100, 100);
+
+    touchEventReceiver->setPos(itemPos);
+
+    touchEventReceiver->setFlag(flag, true);
+
+    QGraphicsView view(&scene);
+    view.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1String("::")
+                        + QLatin1String(QTest::currentDataTag()));
+    view.setSceneRect(QRectF(QPointF(0, 0), QSizeF(300, 300)));
+    view.setTransform(viewTransform);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    QCOMPARE(touchEventReceiver->touchBeginEventCount(), 0);
+
+    if (m_touchDevice == nullptr)
+        m_touchDevice = QTest::createTouchDevice();
+    QTouchEvent touchBegin(QEvent::TouchBegin, m_touchDevice, Qt::NoModifier, Qt::TouchPointPressed,
+                           createTouchPoints(view, touchScenePos, ellipseDiameters));
+    touchBegin.setTarget(view.viewport());
+
+    QCoreApplication::sendEvent(&scene, &touchBegin);
+    QCOMPARE(touchEventReceiver->touchBeginEventCount(), 1);
+
+    const QTouchEvent::TouchPoint touchBeginPoint = touchEventReceiver->touchBeginPoints().constFirst();
+
+    COMPARE_POINTF(touchBeginPoint.scenePos(), touchScenePos);
+    COMPARE_POINTF(touchBeginPoint.startScenePos(), touchScenePos);
+    COMPARE_POINTF(touchBeginPoint.lastScenePos(), touchScenePos);
+    COMPARE_POINTF(touchBeginPoint.pos(), expectedItemPos);
+    COMPARE_SIZEF(touchBeginPoint.ellipseDiameters(), ellipseDiameters); // Must remain untransformed
+
+    QTouchEvent touchUpdate(QEvent::TouchUpdate, m_touchDevice, Qt::NoModifier, Qt::TouchPointMoved,
+                           createTouchPoints(view, touchScenePos, ellipseDiameters,  Qt::TouchPointMoved));
+    touchUpdate.setTarget(view.viewport());
+
+    QCoreApplication::sendEvent(&scene, &touchUpdate);
+    QCOMPARE(touchEventReceiver->touchUpdateEventCount(), 1);
+
+    const QTouchEvent::TouchPoint touchUpdatePoint = touchEventReceiver->touchUpdatePoints().constFirst();
+
+    COMPARE_POINTF(touchUpdatePoint.scenePos(), touchScenePos);
+    COMPARE_POINTF(touchBeginPoint.startScenePos(), touchScenePos);
+    COMPARE_POINTF(touchUpdatePoint.lastScenePos(), touchScenePos);
+    COMPARE_POINTF(touchUpdatePoint.pos(), expectedItemPos);
+    COMPARE_SIZEF(touchUpdatePoint.ellipseDiameters(), ellipseDiameters); // Must remain untransformed
+
 }
 
 void tst_QGraphicsItem::deviceCoordinateCache_simpleRotations()

@@ -40,8 +40,6 @@
 #include "qhttpnetworkrequest_p.h"
 #include "private/qnoncontiguousbytedevice_p.h"
 
-#ifndef QT_NO_HTTP
-
 QT_BEGIN_NAMESPACE
 
 QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(QHttpNetworkRequest::Operation op,
@@ -281,6 +279,11 @@ void QHttpNetworkRequest::setHeaderField(const QByteArray &name, const QByteArra
     d->setHeaderField(name, data);
 }
 
+void QHttpNetworkRequest::prependHeaderField(const QByteArray &name, const QByteArray &data)
+{
+    d->prependHeaderField(name, data);
+}
+
 QHttpNetworkRequest &QHttpNetworkRequest::operator=(const QHttpNetworkRequest &other)
 {
     d = other.d;
@@ -394,6 +397,4 @@ int QHttpNetworkRequest::minorVersion() const
 
 
 QT_END_NAMESPACE
-
-#endif
 

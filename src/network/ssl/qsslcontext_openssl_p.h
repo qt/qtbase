@@ -107,6 +107,7 @@ protected:
 private:
     static void initSslContext(QSslContext* sslContext, QSslSocket::SslMode mode, const QSslConfiguration &configuration,
                                bool allowRootCertOnDemandLoading);
+    static void applyBackendConfig(QSslContext *sslContext);
 
 private:
     SSL_CTX* ctx;

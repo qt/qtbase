@@ -55,10 +55,10 @@
 
 #if defined(Q_OS_WIN32)
 // PMIB_TCPTABLE2 is only available since Vista
-#if _WIN32_WINNT < 0x0600
+#if _WIN32_WINNT < 0x0601
 #  undef _WIN32_WINNT
-#  define _WIN32_WINNT 0x0600
-#endif // _WIN32_WINNT < 0x0600
+#  define _WIN32_WINNT 0x0601
+#endif // _WIN32_WINNT < 0x0601
 #include "../platformdefs_win.h"
 #include <iphlpapi.h>
 #endif
@@ -132,7 +132,7 @@ static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interf
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
 
     ifreq request;
-    strncpy(request.ifr_name, interface.toLocal8Bit().data(), sizeof(request.ifr_name));
+    strncpy(request.ifr_name, interface.toLocal8Bit().data(), sizeof(request.ifr_name) - 1);
     request.ifr_name[sizeof(request.ifr_name) - 1] = '\0';
     int result = ioctl(sock, SIOCGIFHWADDR, &request);
     close(sock);

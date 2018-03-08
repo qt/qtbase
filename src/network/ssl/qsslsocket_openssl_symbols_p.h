@@ -232,9 +232,10 @@ BIO *q_BIO_new_mem_buf(void *a, int b);
 int q_BIO_read(BIO *a, void *b, int c);
 Q_AUTOTEST_EXPORT int q_BIO_write(BIO *a, const void *b, int c);
 int q_BN_num_bits(const BIGNUM *a);
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+
+#if QT_CONFIG(opensslv11)
 int q_BN_is_word(BIGNUM *a, BN_ULONG w);
-#else
+#else // opensslv11
 // BN_is_word is implemented purely as a
 // macro in OpenSSL < 1.1. It doesn't
 // call any functions.
@@ -245,7 +246,8 @@ int q_BN_is_word(BIGNUM *a, BN_ULONG w);
 //
 // Users are required to include <openssl/bn.h>.
 #define q_BN_is_word BN_is_word
-#endif // OPENSSL_VERSION_NUMBER >= 0x10100000L
+#endif // !opensslv11
+
 BN_ULONG q_BN_mod_word(const BIGNUM *a, BN_ULONG w);
 #ifndef OPENSSL_NO_EC
 const EC_GROUP* q_EC_KEY_get0_group(const EC_KEY* k);
@@ -350,6 +352,14 @@ int q_SSL_CTX_use_PrivateKey(SSL_CTX *a, EVP_PKEY *b);
 int q_SSL_CTX_use_RSAPrivateKey(SSL_CTX *a, RSA *b);
 int q_SSL_CTX_use_PrivateKey_file(SSL_CTX *a, const char *b, int c);
 X509_STORE *q_SSL_CTX_get_cert_store(const SSL_CTX *a);
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+SSL_CONF_CTX *q_SSL_CONF_CTX_new();
+void q_SSL_CONF_CTX_free(SSL_CONF_CTX *a);
+void q_SSL_CONF_CTX_set_ssl_ctx(SSL_CONF_CTX *a, SSL_CTX *b);
+unsigned int q_SSL_CONF_CTX_set_flags(SSL_CONF_CTX *a, unsigned int b);
+int q_SSL_CONF_CTX_finish(SSL_CONF_CTX *a);
+int q_SSL_CONF_cmd(SSL_CONF_CTX *a, const char *b, const char *c);
+#endif
 void q_SSL_free(SSL *a);
 STACK_OF(SSL_CIPHER) *q_SSL_get_ciphers(const SSL *a);
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L

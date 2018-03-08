@@ -80,8 +80,7 @@
     \snippet graphicsview/collidingmice/mouse.cpp 0
 
     To calculate the various components of the mouse's color, we use
-    the global qrand() function which is a thread-safe version of the
-    standard C++ rand() function.
+    \l QRandomGenerator.
 
     Then we call the \l {QGraphicsItem::setRotation()}{setRotation()} function
     inherited from QGraphicsItem. Items live in their own local
@@ -178,12 +177,7 @@
 
     \snippet graphicsview/collidingmice/main.cpp 0
 
-    First, we create an application object and call the global
-    qsrand() function to specify the seed used to generate a new
-    random number sequence of pseudo random integers with the
-    previously mentioned qrand() function.
-
-    Then it is time to create the scene:
+    First, we create an application object and create the scene:
 
     \snippet graphicsview/collidingmice/main.cpp 1
 

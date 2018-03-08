@@ -101,6 +101,7 @@ struct QWindowCreationContext
     int frameY = CW_USEDEFAULT;
     int frameWidth = CW_USEDEFAULT;
     int frameHeight = CW_USEDEFAULT;
+    int menuHeight = 0;
 };
 
 struct QWindowsWindowData
@@ -269,6 +270,7 @@ public:
     inline bool hasMouseCapture() const { return GetCapture() == m_data.hwnd; }
 
     bool startSystemResize(const QPoint &pos, Qt::Corner corner) override;
+    bool startSystemMove(const QPoint &pos) override;
 
     void setFrameStrutEventsEnabled(bool enabled) override;
     bool frameStrutEventsEnabled() const override { return testFlag(FrameStrutEventsEnabled); }

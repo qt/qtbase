@@ -937,7 +937,9 @@ GLuint QOpenGLContext::defaultFramebufferObject() const
 
 /*!
     Makes the context current in the current thread, against the given
-    \a surface. Returns \c true if successful.
+    \a surface. Returns \c true if successful; otherwise returns \c false.
+    The latter may happen if the surface is not exposed, or the graphics
+    hardware is not available due to e.g. the application being suspended.
 
     If \a surface is 0 this is equivalent to calling doneCurrent().
 
@@ -1002,14 +1004,20 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
                 if (rendererString)
                     needsWorkaround =
                             qstrncmp(rendererString, "Mali-4xx", 6) == 0 // Mali-400, Mali-450
+                            || qstrcmp(rendererString, "Mali-T880") == 0
                             || qstrncmp(rendererString, "Adreno (TM) 2xx", 13) == 0 // Adreno 200, 203, 205
                             || qstrncmp(rendererString, "Adreno 2xx", 8) == 0 // Same as above but without the '(TM)'
-                            || qstrncmp(rendererString, "Adreno (TM) 30x", 14) == 0 // Adreno 302, 305
-                            || qstrncmp(rendererString, "Adreno 30x", 9) == 0 // Same as above but without the '(TM)'
+                            || qstrncmp(rendererString, "Adreno (TM) 3xx", 13) == 0 // Adreno 302, 305, 320, 330
+                            || qstrncmp(rendererString, "Adreno 3xx", 8) == 0 // Same as above but without the '(TM)'
                             || qstrncmp(rendererString, "Adreno (TM) 4xx", 13) == 0 // Adreno 405, 418, 420, 430
                             || qstrncmp(rendererString, "Adreno 4xx", 8) == 0 // Same as above but without the '(TM)'
+                            || qstrncmp(rendererString, "Adreno (TM) 5xx", 13) == 0 // Adreno 505, 506, 510, 530, 540
+                            || qstrncmp(rendererString, "Adreno 5xx", 8) == 0 // Same as above but without the '(TM)'
+                            || qstrncmp(rendererString, "Adreno (TM) 6xx", 13) == 0 // Adreno 610, 620, 630
+                            || qstrncmp(rendererString, "Adreno 6xx", 8) == 0 // Same as above but without the '(TM)'
                             || qstrcmp(rendererString, "GC800 core") == 0
                             || qstrcmp(rendererString, "GC1000 core") == 0
+                            || strstr(rendererString, "GC2000") != 0
                             || qstrcmp(rendererString, "Immersion.16") == 0;
             }
             needsWorkaroundSet = true;

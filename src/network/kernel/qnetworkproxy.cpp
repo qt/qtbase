@@ -230,7 +230,11 @@
 #if QT_CONFIG(socks5)
 #include "private/qsocks5socketengine_p.h"
 #endif
+
+#if QT_CONFIG(http)
 #include "private/qhttpsocketengine_p.h"
+#endif
+
 #include "qauthenticator.h"
 #include "qdebug.h"
 #include "qmutex.h"
@@ -256,7 +260,7 @@ public:
 #if QT_CONFIG(socks5)
         , socks5SocketEngineHandler(0)
 #endif
-#ifndef QT_NO_HTTP
+#if QT_CONFIG(http)
         , httpSocketEngineHandler(0)
 #endif
 #ifdef QT_USE_SYSTEM_PROXIES
@@ -268,7 +272,7 @@ public:
 #if QT_CONFIG(socks5)
         socks5SocketEngineHandler = new QSocks5SocketEngineHandler();
 #endif
-#ifndef QT_NO_HTTP
+#if QT_CONFIG(http)
         httpSocketEngineHandler = new QHttpSocketEngineHandler();
 #endif
     }
@@ -280,7 +284,7 @@ public:
 #if QT_CONFIG(socks5)
         delete socks5SocketEngineHandler;
 #endif
-#ifndef QT_NO_HTTP
+#if QT_CONFIG(http)
         delete httpSocketEngineHandler;
 #endif
     }
@@ -340,7 +344,7 @@ private:
 #if QT_CONFIG(socks5)
     QSocks5SocketEngineHandler *socks5SocketEngineHandler;
 #endif
-#ifndef QT_NO_HTTP
+#if QT_CONFIG(http)
     QHttpSocketEngineHandler *httpSocketEngineHandler;
 #endif
     bool useSystemProxies;

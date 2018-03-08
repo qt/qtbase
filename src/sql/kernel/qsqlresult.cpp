@@ -565,6 +565,14 @@ bool QSqlResult::isForwardOnly() const
     \note Calling setForwardOnly after execution of the query will result
     in unexpected results at best, and crashes at worst.
 
+    \note To make sure the forward-only query completed successfully,
+    the application should check lastError() for an error not only after
+    executing the query, but also after navigating the query results.
+
+    \warning PostgreSQL: While navigating the query results in forward-only
+    mode, do not execute any other SQL command on the same database
+    connection. This will cause the query results to be lost.
+
     \sa isForwardOnly(), fetchNext(), QSqlQuery::setForwardOnly()
 */
 void QSqlResult::setForwardOnly(bool forward)
@@ -1001,6 +1009,10 @@ bool QSqlResult::nextResult()
     is modified (for example, if you clear it).
 
     \warning The handle can be NULL if the result was not executed yet.
+
+    \warning PostgreSQL: in forward-only mode, the handle of QSqlResult can change
+    after calling fetch(), fetchFirst(), fetchLast(), fetchNext(), fetchPrevious(),
+    nextResult().
 
     The handle returned here is database-dependent, you should query the type
     name of the variant before accessing it.

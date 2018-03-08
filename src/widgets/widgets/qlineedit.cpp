@@ -80,9 +80,8 @@
 #include "private/qapplication_p.h"
 #include "private/qshortcutmap_p.h"
 #include "qkeysequence.h"
-#define ACCEL_KEY(k) ((qApp->testAttribute(Qt::AA_DontShowIconsInMenus) \
-                        ? false \
-                        : qApp->styleHints()->showShortcutsInContextMenus()) \
+#define ACCEL_KEY(k) ((!QCoreApplication::testAttribute(Qt::AA_DontShowIconsInMenus) \
+                        && QGuiApplication::styleHints()->showShortcutsInContextMenus()) \
                       && !qApp->d_func()->shortcutMap.hasShortcutForKeySequence(k) ? \
                       QLatin1Char('\t') + QKeySequence(k).toString(QKeySequence::NativeText) : QString())
 #else
@@ -231,10 +230,10 @@ void QLineEdit::initStyleOption(QStyleOptionFrame *option) const
 */
 
 /*!
-    \fn void QLineEdit::cursorPositionChanged(int old, int new)
+    \fn void QLineEdit::cursorPositionChanged(int oldPos, int newPos)
 
     This signal is emitted whenever the cursor moves. The previous
-    position is given by \a old, and the new position by \a new.
+    position is given by \a oldPos, and the new position by \a newPos.
 
     \sa setCursorPosition(), cursorPosition()
 */
@@ -682,7 +681,7 @@ QSize QLineEdit::sizeHint() const
     int h = qMax(fm.height(), 14) + 2*d->verticalMargin
             + d->topTextMargin + d->bottomTextMargin
             + d->topmargin + d->bottommargin;
-    int w = fm.width(QLatin1Char('x')) * 17 + 2*d->horizontalMargin
+    int w = fm.horizontalAdvance(QLatin1Char('x')) * 17 + 2*d->horizontalMargin
             + d->effectiveLeftTextMargin() + d->effectiveRightTextMargin()
             + d->leftmargin + d->rightmargin; // "some"
     QStyleOptionFrame opt;
@@ -1466,6 +1465,8 @@ bool QLineEdit::event(QEvent * e)
 #endif
     } else if (e->type() == QEvent::Resize) {
         d->positionSideWidgets();
+    } else if (e->type() == QEvent::StyleChange) {
+        d->initMouseYThreshold();
     }
 #ifdef QT_KEYPAD_NAVIGATION
     if (QApplication::keypadNavigationEnabled()) {
@@ -1546,7 +1547,17 @@ void QLineEdit::mouseMoveEvent(QMouseEvent * e)
             const bool select = (d->imHints & Qt::ImhNoPredictiveText);
 #endif
 #ifndef QT_NO_IM
-            if (d->control->composeMode() && select) {
+            if (d->mouseYThreshold > 0 && e->pos().y() > d->mousePressPos.y() + d->mouseYThreshold) {
+                if (layoutDirection() == Qt::RightToLeft)
+                    d->control->home(select);
+                else
+                    d->control->end(select);
+            } else if (d->mouseYThreshold > 0 && e->pos().y() + d->mouseYThreshold < d->mousePressPos.y()) {
+                if (layoutDirection() == Qt::RightToLeft)
+                    d->control->end(select);
+                else
+                    d->control->home(select);
+            } else if (d->control->composeMode() && select) {
                 int startPos = d->xToPos(d->mousePressPos.x());
                 int currentPos = d->xToPos(e->pos().x());
                 if (startPos != currentPos)

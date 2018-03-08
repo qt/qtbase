@@ -54,24 +54,6 @@ public Q_SLOTS: // METHODS
         return asyncCallWithArgumentList(QLatin1String("Exit"), argumentList);
     }
 
-    inline QDBusPendingReply<QString> GetAddress()
-    {
-        QList<QVariant> argumentList;
-        return asyncCallWithArgumentList(QLatin1String("GetAddress"), argumentList);
-    }
-
-    inline QDBusPendingReply<QVariantList> ListActiveEngines()
-    {
-        QList<QVariant> argumentList;
-        return asyncCallWithArgumentList(QLatin1String("ListActiveEngines"), argumentList);
-    }
-
-    inline QDBusPendingReply<QVariantList> ListEngines()
-    {
-        QList<QVariant> argumentList;
-        return asyncCallWithArgumentList(QLatin1String("ListEngines"), argumentList);
-    }
-
     inline QDBusPendingReply<QDBusVariant> Ping(const QDBusVariant &data)
     {
         QList<QVariant> argumentList;
@@ -86,19 +68,45 @@ public Q_SLOTS: // METHODS
         return asyncCallWithArgumentList(QLatin1String("RegisterComponent"), argumentList);
     }
 
-    inline QDBusPendingReply<QDBusVariant> GetGlobalEngine()
+// Property
+    inline QDBusPendingCall GetProperty(const QString method)
     {
         if (!this->isValid() || this->service().isEmpty() || this->path().isEmpty())
-             return QDBusMessage::createError(this->lastError());
+             return QDBusPendingCall::fromError(this->lastError());
 
         QDBusMessage msg = QDBusMessage::createMethodCall(this->service(),
                                                           this->path(),
                                                           dbusInterfaceProperties(),
                                                           QStringLiteral("Get"));
-        msg << this->interface() << QStringLiteral("GlobalEngine");
+        msg << this->interface() << method;
         return this->connection().asyncCall(msg, this->timeout());
     }
 
+#ifdef QIBUS_GET_ADDRESS
+    inline QDBusPendingCall Address()
+    {
+        return GetProperty(QStringLiteral("Address"));
+    }
+#endif
+
+#ifdef QIBUS_GET_ENGINES
+    inline QDBusPendingCall Engines()
+    {
+        return GetProperty(QStringLiteral("Engines"));
+    }
+#endif
+
+    inline QDBusPendingCall GlobalEngine()
+    {
+        return GetProperty(QStringLiteral("GlobalEngine"));
+    }
+
+#ifdef QIBUS_GET_ADDRESS
+    QString getAddress();
+#endif
+#ifdef QIBUS_GET_ENGINES
+    QList<QIBusEngineDesc> getEngines();
+#endif
     QIBusEngineDesc getGlobalEngine();
 
 private:

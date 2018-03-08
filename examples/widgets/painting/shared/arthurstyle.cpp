@@ -294,7 +294,7 @@ void ArthurStyle::drawComplexControl(ComplexControl control, const QStyleOptionC
                 QPixmap titleLeft = cached(":res/images/title_cap_left.png");
                 QPixmap titleRight = cached(":res/images/title_cap_right.png");
                 QPixmap titleStretch = cached(":res/images/title_stretch.png");
-                int txt_width = groupBox->fontMetrics.width(groupBox->text) + 20;
+                int txt_width = groupBox->fontMetrics.horizontalAdvance(groupBox->text) + 20;
                 painter->drawPixmap(r.center().x() - txt_width/2, 0, titleLeft);
                 QRect tileRect = subControlRect(control, groupBox, SC_GroupBoxLabel, widget);
                 painter->drawTiledPixmap(tileRect, titleStretch);
@@ -385,7 +385,7 @@ QRect ArthurStyle::subControlRect(ComplexControl control, const QStyleOptionComp
                 QPixmap titleLeft = cached(":res/images/title_cap_left.png");
                 QPixmap titleRight = cached(":res/images/title_cap_right.png");
                 QPixmap titleStretch = cached(":res/images/title_stretch.png");
-                int txt_width = group->fontMetrics.width(group->text) + 20;
+                int txt_width = group->fontMetrics.horizontalAdvance(group->text) + 20;
                 rect = QRect(group->rect.center().x() - txt_width/2 + titleLeft.width(), 0,
                              txt_width - titleLeft.width() - titleRight.width(),
                              titleStretch.height());

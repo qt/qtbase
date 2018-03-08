@@ -1,20 +1,19 @@
 [positioning:default]
-ubuntu-14.04
-ubuntu-16.04
+linux
 osx-10.12 ci
 [positioning:fake]
 osx-10.12 ci
 [modalWindowPosition]
-ubuntu-14.04
 ubuntu-16.04
 [modalWithChildWindow]
-ubuntu-14.04
 ubuntu-16.04
+# QTBUG-66851
+opensuse
 [setVisible]
-ubuntu-14.04
 [modalWindowEnterEventOnHide_QTBUG35109]
-ubuntu-14.04
 ubuntu-16.04
+osx ci
+windows ci
 [modalDialogClosingOneOfTwoModal]
 osx
 [modalWindowModallity]
@@ -25,3 +24,5 @@ osx-10.12 ci
 
 [testInputEvents]
 rhel-7.4
+# QTBUG-66798
+windows

@@ -146,7 +146,7 @@ Q_DECL_CONSTEXPR inline QVector4D::QVector4D(float xpos, float ypos, float zpos,
 
 Q_DECL_CONSTEXPR inline QVector4D::QVector4D(const QPoint& point) : xp(point.x()), yp(point.y()), zp(0.0f), wp(0.0f) {}
 
-Q_DECL_CONSTEXPR inline QVector4D::QVector4D(const QPointF& point) : xp(point.x()), yp(point.y()), zp(0.0f), wp(0.0f) {}
+Q_DECL_CONSTEXPR inline QVector4D::QVector4D(const QPointF& point) : xp(float(point.x())), yp(float(point.y())), zp(0.0f), wp(0.0f) {}
 
 inline bool QVector4D::isNull() const
 {

@@ -230,6 +230,7 @@ QObjectPrivate::QObjectPrivate(int version)
     connectedSignals[0] = connectedSignals[1] = 0;
     metaObject = 0;
     isWindow = false;
+    deleteLaterCalled = false;
 }
 
 QObjectPrivate::~QObjectPrivate()
@@ -237,7 +238,7 @@ QObjectPrivate::~QObjectPrivate()
     if (extraData && !extraData->runningTimers.isEmpty()) {
         if (Q_LIKELY(threadData->thread == QThread::currentThread())) {
             // unregister pending timers
-            if (threadData->eventDispatcher.load())
+            if (threadData->hasEventDispatcher())
                 threadData->eventDispatcher.load()->unregisterTimers(q_ptr);
 
             // release the timer ids back to the pool
@@ -517,7 +518,7 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
 
     \reentrant
 
-    QSignalBlocker can be used whereever you would otherwise use a
+    QSignalBlocker can be used wherever you would otherwise use a
     pair of calls to blockSignals(). It blocks signals in its
     constructor and in the destructor it resets the state to what
     it was before the constructor ran.
@@ -1046,7 +1047,7 @@ QObjectPrivate::Connection::~Connection()
 
 
 /*!
-    \fn QMetaObject *QObject::metaObject() const
+    \fn const QMetaObject *QObject::metaObject() const
 
     Returns a pointer to the meta-object of this object.
 
@@ -1094,7 +1095,9 @@ QObjectPrivate::Connection::~Connection()
     \sa metaObject()
 */
 
-/*! \fn T *qobject_cast<T *>(QObject *object)
+/*!
+    \fn template <class T> T qobject_cast(QObject *object)
+    \fn template <class T> T qobject_cast(const QObject *object)
     \relates QObject
 
     Returns the given \a object cast to type T if the object is of type
@@ -1540,7 +1543,7 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
             ++eventsMoved;
         }
     }
-    if (eventsMoved > 0 && targetData->eventDispatcher.load()) {
+    if (eventsMoved > 0 && targetData->hasEventDispatcher()) {
         targetData->canWait = false;
         targetData->eventDispatcher.load()->wakeUp();
     }
@@ -1623,7 +1626,7 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
         qWarning("QObject::startTimer: Timers cannot have negative intervals");
         return 0;
     }
-    if (Q_UNLIKELY(!d->threadData->eventDispatcher.load())) {
+    if (Q_UNLIKELY(!d->threadData->hasEventDispatcher())) {
         qWarning("QObject::startTimer: Timers can only be used with threads started with QThread");
         return 0;
     }
@@ -1705,7 +1708,7 @@ void QObject::killTimer(int id)
             return;
         }
 
-        if (d->threadData->eventDispatcher.load())
+        if (d->threadData->hasEventDispatcher())
             d->threadData->eventDispatcher.load()->unregisterTimer(id);
 
         d->extraData->runningTimers.remove(at);
@@ -1747,7 +1750,7 @@ void QObject::killTimer(int id)
 
 
 /*!
-    \fn T *QObject::findChild(const QString &name, Qt::FindChildOptions options) const
+    \fn template<typename T> T *QObject::findChild(const QString &name, Qt::FindChildOptions options) const
 
     Returns the child of this object that can be cast into type T and
     that is called \a name, or 0 if there is no such object.
@@ -1784,7 +1787,7 @@ void QObject::killTimer(int id)
 */
 
 /*!
-    \fn QList<T> QObject::findChildren(const QString &name, Qt::FindChildOptions options) const
+    \fn template<typename T> QList<T> QObject::findChildren(const QString &name, Qt::FindChildOptions options) const
 
     Returns all children of this object with the given \a name that can be
     cast to type T, or an empty list if there are no such objects.
@@ -1809,7 +1812,7 @@ void QObject::killTimer(int id)
 */
 
 /*!
-    \fn QList<T> QObject::findChildren(const QRegExp &regExp, Qt::FindChildOptions options) const
+    \fn template<typename T> QList<T> QObject::findChildren(const QRegExp &regExp, Qt::FindChildOptions options) const
     \overload findChildren()
 
     Returns the children of this object that can be cast to type T
@@ -1833,7 +1836,7 @@ void QObject::killTimer(int id)
 */
 
 /*!
-    \fn T qFindChild(const QObject *obj, const QString &name)
+    \fn template<typename T> T qFindChild(const QObject *obj, const QString &name)
     \relates QObject
     \overload qFindChildren()
     \obsolete
@@ -1849,7 +1852,7 @@ void QObject::killTimer(int id)
 */
 
 /*!
-    \fn QList<T> qFindChildren(const QObject *obj, const QString &name)
+    \fn template<typename T> QList<T> qFindChildren(const QObject *obj, const QString &name)
     \relates QObject
     \overload qFindChildren()
     \obsolete
@@ -1865,7 +1868,7 @@ void QObject::killTimer(int id)
 */
 
 /*!
-    \fn QList<T> qFindChildren(const QObject *obj, const QRegExp &regExp)
+    \fn template<typename T> QList<T> qFindChildren(const QObject *obj, const QRegExp &regExp)
     \relates QObject
     \overload qFindChildren()
 
@@ -2132,7 +2135,7 @@ void QObject::removeEventFilter(QObject *obj)
 
 
 /*!
-    \fn QObject::destroyed(QObject *obj)
+    \fn void QObject::destroyed(QObject *obj)
 
     This signal is emitted immediately before the object \a obj is
     destroyed, and can not be blocked.
@@ -4604,7 +4607,7 @@ void qDeleteInEventHandler(QObject *o)
 }
 
 /*!
-    \fn QMetaObject::Connection QObject::connect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method, Qt::ConnectionType type)
+    \fn template<typename PointerToMemberFunction> QMetaObject::Connection QObject::connect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method, Qt::ConnectionType type)
     \overload connect()
     \threadsafe
 
@@ -4668,7 +4671,7 @@ void qDeleteInEventHandler(QObject *o)
  */
 
 /*!
-    \fn QMetaObject::Connection QObject::connect(const QObject *sender, PointerToMemberFunction signal, Functor functor)
+    \fn template<typename PointerToMemberFunction, typename Functor> QMetaObject::Connection QObject::connect(const QObject *sender, PointerToMemberFunction signal, Functor functor)
 
     \threadsafe
     \overload connect()
@@ -4702,7 +4705,7 @@ void qDeleteInEventHandler(QObject *o)
  */
 
 /*!
-    \fn QMetaObject::Connection QObject::connect(const QObject *sender, PointerToMemberFunction signal, const QObject *context, Functor functor, Qt::ConnectionType type)
+    \fn template<typename PointerToMemberFunction, typename Functor> QMetaObject::Connection QObject::connect(const QObject *sender, PointerToMemberFunction signal, const QObject *context, Functor functor, Qt::ConnectionType type)
 
     \threadsafe
     \overload connect()
@@ -4801,7 +4804,7 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
                                              QtPrivate::QSlotObjectBase *slotObj, Qt::ConnectionType type,
                                              const int *types, const QMetaObject *senderMetaObject)
 {
-    if (!sender || !slotObj || !senderMetaObject) {
+    if (!sender || !receiver || !slotObj || !senderMetaObject) {
         qWarning("QObject::connect: invalid null parameter");
         if (slotObj)
             slotObj->destroyIfLastRef();
@@ -4900,7 +4903,7 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
     return true;
 }
 
-/*! \fn bool QObject::disconnect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method)
+/*! \fn template<typename PointerToMemberFunction> bool QObject::disconnect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method)
     \overload diconnect()
     \threadsafe
 
@@ -5029,7 +5032,7 @@ bool QObjectPrivate::disconnect(const QObject *sender, int signal_index, void **
  */
 
 /*!
-    Create a copy of the handle to the connection
+    Create a copy of the handle to the \a other connection
  */
 QMetaObject::Connection::Connection(const QMetaObject::Connection &other) : d_ptr(other.d_ptr)
 {
@@ -5037,6 +5040,9 @@ QMetaObject::Connection::Connection(const QMetaObject::Connection &other) : d_pt
         static_cast<QObjectPrivate::Connection *>(d_ptr)->ref();
 }
 
+/*!
+    Assigns \a other to this connection and returns a reference to this connection.
+*/
 QMetaObject::Connection& QMetaObject::Connection::operator=(const QMetaObject::Connection& other)
 {
     if (other.d_ptr != d_ptr) {

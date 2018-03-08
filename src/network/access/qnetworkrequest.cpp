@@ -308,7 +308,9 @@ QT_BEGIN_NAMESPACE
         was specified, QNetworkAccessManager gives up, without attempting to
         fall back to HTTP/1.1. If both HTTP2AllowedAttribute and
         Http2DirectAttribute are set, Http2DirectAttribute takes priority.
-        (This value was introduced in 5.10.)
+        (This value was introduced in 5.11.)
+
+    \omitvalue ResourceTypeAttribute
 
     \value User
         Special type. Additional information can be passed in

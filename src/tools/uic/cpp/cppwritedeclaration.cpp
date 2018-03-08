@@ -70,8 +70,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
     QString qualifiedClassName = node->elementClass() + m_option.postfix;
     QString className = qualifiedClassName;
 
-    QString varName = m_driver->findOrInsertWidget(node->elementWidget());
-    QString widgetClassName = node->elementWidget()->attributeClass();
+    m_driver->findOrInsertWidget(node->elementWidget());
 
     QString exportMacro = node->elementExportMacro();
     if (!exportMacro.isEmpty())

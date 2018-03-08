@@ -47,7 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcVk, "qt.vulkan")
+Q_LOGGING_CATEGORY(lcGuiVk, "qt.vulkan")
 
 /*!
   \class QVulkanWindow
@@ -357,7 +357,7 @@ QVector<VkPhysicalDeviceProperties> QVulkanWindow::availablePhysicalDevices()
         return d->physDevProps;
     }
 
-    qCDebug(lcVk, "%d physical devices", count);
+    qCDebug(lcGuiVk, "%d physical devices", count);
     if (!count)
         return d->physDevProps;
 
@@ -373,7 +373,7 @@ QVector<VkPhysicalDeviceProperties> QVulkanWindow::availablePhysicalDevices()
     for (uint32_t i = 0; i < count; ++i) {
         VkPhysicalDeviceProperties *p = &d->physDevProps[i];
         f->vkGetPhysicalDeviceProperties(d->physDevs.at(i), p);
-        qCDebug(lcVk, "Physical device [%d]: name '%s' version %d.%d.%d", i, p->deviceName,
+        qCDebug(lcGuiVk, "Physical device [%d]: name '%s' version %d.%d.%d", i, p->deviceName,
                 VK_VERSION_MAJOR(p->driverVersion), VK_VERSION_MINOR(p->driverVersion),
                 VK_VERSION_PATCH(p->driverVersion));
     }
@@ -442,7 +442,7 @@ QVulkanInfoVector<QVulkanExtension> QVulkanWindow::supportedDeviceExtensions()
                 exts.append(ext);
             }
             d->supportedDevExtensions.insert(physDev, exts);
-            qDebug(lcVk) << "Supported device extensions:" << exts;
+            qDebug(lcGuiVk) << "Supported device extensions:" << exts;
             return exts;
         }
     }
@@ -615,7 +615,7 @@ void QVulkanWindowPrivate::init()
     Q_Q(QVulkanWindow);
     Q_ASSERT(status == StatusUninitialized);
 
-    qCDebug(lcVk, "QVulkanWindow init");
+    qCDebug(lcGuiVk, "QVulkanWindow init");
 
     inst = q->vulkanInstance();
     if (!inst) {
@@ -648,7 +648,7 @@ void QVulkanWindowPrivate::init()
         qWarning("QVulkanWindow: Invalid physical device index; defaulting to 0");
         physDevIndex = 0;
     }
-    qCDebug(lcVk, "Using physical device [%d]", physDevIndex);
+    qCDebug(lcGuiVk, "Using physical device [%d]", physDevIndex);
 
     // Give a last chance to do decisions based on the physical device and the surface.
     if (renderer)
@@ -665,7 +665,7 @@ void QVulkanWindowPrivate::init()
     presQueueFamilyIdx = uint32_t(-1);
     for (int i = 0; i < queueFamilyProps.count(); ++i) {
         const bool supportsPresent = inst->supportsPresent(physDev, i, q);
-        qCDebug(lcVk, "queue family %d: flags=0x%x count=%d supportsPresent=%d", i,
+        qCDebug(lcGuiVk, "queue family %d: flags=0x%x count=%d supportsPresent=%d", i,
                 queueFamilyProps[i].queueFlags, queueFamilyProps[i].queueCount, supportsPresent);
         if (gfxQueueFamilyIdx == uint32_t(-1)
                 && (queueFamilyProps[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
@@ -675,7 +675,7 @@ void QVulkanWindowPrivate::init()
     if (gfxQueueFamilyIdx != uint32_t(-1)) {
         presQueueFamilyIdx = gfxQueueFamilyIdx;
     } else {
-        qCDebug(lcVk, "No queue with graphics+present; trying separate queues");
+        qCDebug(lcGuiVk, "No queue with graphics+present; trying separate queues");
         for (int i = 0; i < queueFamilyProps.count(); ++i) {
             if (gfxQueueFamilyIdx == uint32_t(-1) && (queueFamilyProps[i].queueFlags & VK_QUEUE_GRAPHICS_BIT))
                 gfxQueueFamilyIdx = i;
@@ -698,7 +698,7 @@ void QVulkanWindowPrivate::init()
     if (qEnvironmentVariableIsSet("QT_VK_PRESENT_QUEUE_INDEX"))
         presQueueFamilyIdx = qEnvironmentVariableIntValue("QT_VK_PRESENT_QUEUE_INDEX");
 #endif
-    qCDebug(lcVk, "Using queue families: graphics = %u present = %u", gfxQueueFamilyIdx, presQueueFamilyIdx);
+    qCDebug(lcGuiVk, "Using queue families: graphics = %u present = %u", gfxQueueFamilyIdx, presQueueFamilyIdx);
 
     VkDeviceQueueCreateInfo queueInfo[2];
     const float prio[] = { 0 };
@@ -724,7 +724,7 @@ void QVulkanWindowPrivate::init()
         if (supportedExtensions.contains(ext))
             devExts.append(ext.constData());
     }
-    qCDebug(lcVk) << "Enabling device extensions:" << devExts;
+    qCDebug(lcGuiVk) << "Enabling device extensions:" << devExts;
 
     VkDeviceCreateInfo devInfo;
     memset(&devInfo, 0, sizeof(devInfo));
@@ -774,7 +774,7 @@ void QVulkanWindowPrivate::init()
         physDevs.clear();
         physDevProps.clear();
         status = StatusUninitialized;
-        qCDebug(lcVk, "Attempting to restart in 2 seconds");
+        qCDebug(lcGuiVk, "Attempting to restart in 2 seconds");
         QTimer::singleShot(2000, q, [this]() { ensureStarted(); });
         return;
     }
@@ -819,7 +819,7 @@ void QVulkanWindowPrivate::init()
     f->vkGetPhysicalDeviceMemoryProperties(physDev, &physDevMemProps);
     for (uint32_t i = 0; i < physDevMemProps.memoryTypeCount; ++i) {
         const VkMemoryType *memType = physDevMemProps.memoryTypes;
-        qCDebug(lcVk, "memtype %d: flags=0x%x", i, memType[i].propertyFlags);
+        qCDebug(lcGuiVk, "memtype %d: flags=0x%x", i, memType[i].propertyFlags);
         // Find a host visible, host coherent memtype. If there is one that is
         // cached as well (in addition to being coherent), prefer that.
         const int hostVisibleAndCoherent = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
@@ -831,7 +831,7 @@ void QVulkanWindowPrivate::init()
             }
         }
     }
-    qCDebug(lcVk, "Picked memtype %d for host visible memory", hostVisibleMemIndex);
+    qCDebug(lcGuiVk, "Picked memtype %d for host visible memory", hostVisibleMemIndex);
     deviceLocalMemIndex = 0;
     for (uint32_t i = 0; i < physDevMemProps.memoryTypeCount; ++i) {
         const VkMemoryType *memType = physDevMemProps.memoryTypes;
@@ -841,7 +841,7 @@ void QVulkanWindowPrivate::init()
             break;
         }
     }
-    qCDebug(lcVk, "Picked memtype %d for device local memory", deviceLocalMemIndex);
+    qCDebug(lcGuiVk, "Picked memtype %d for device local memory", deviceLocalMemIndex);
 
     if (!vkGetPhysicalDeviceSurfaceCapabilitiesKHR || !vkGetPhysicalDeviceSurfaceFormatsKHR) {
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR>(
@@ -906,7 +906,7 @@ void QVulkanWindowPrivate::init()
     if (dsFormatIdx == dsFormatCandidateCount)
         qWarning("QVulkanWindow: Failed to find an optimal depth-stencil format");
 
-    qCDebug(lcVk, "Color format: %d Depth-stencil format: %d", colorFormat, dsFormat);
+    qCDebug(lcGuiVk, "Color format: %d Depth-stencil format: %d", colorFormat, dsFormat);
 
     if (!createDefaultRenderPass())
         return;
@@ -922,7 +922,7 @@ void QVulkanWindowPrivate::reset()
     if (!dev) // do not rely on 'status', a half done init must be cleaned properly too
         return;
 
-    qCDebug(lcVk, "QVulkanWindow reset");
+    qCDebug(lcGuiVk, "QVulkanWindow reset");
 
     devFuncs->vkDeviceWaitIdle(dev);
 
@@ -1118,7 +1118,7 @@ void QVulkanWindowPrivate::recreateSwapChain()
     swapChainInfo.clipped = true;
     swapChainInfo.oldSwapchain = oldSwapChain;
 
-    qCDebug(lcVk, "Creating new swap chain of %d buffers, size %dx%d", reqBufferCount, bufferSize.width, bufferSize.height);
+    qCDebug(lcGuiVk, "Creating new swap chain of %d buffers, size %dx%d", reqBufferCount, bufferSize.width, bufferSize.height);
 
     VkSwapchainKHR newSwapChain;
     VkResult err = vkCreateSwapchainKHR(dev, &swapChainInfo, nullptr, &newSwapChain);
@@ -1139,7 +1139,7 @@ void QVulkanWindowPrivate::recreateSwapChain()
         return;
     }
 
-    qCDebug(lcVk, "Actual swap chain buffer count: %d (supportsReadback=%d)",
+    qCDebug(lcGuiVk, "Actual swap chain buffer count: %d (supportsReadback=%d)",
             actualSwapChainBufferCount, swapChainSupportsReadBack);
     if (actualSwapChainBufferCount > MAX_SWAPCHAIN_BUFFER_COUNT) {
         qWarning("QVulkanWindow: Too many swapchain buffers (%d)", actualSwapChainBufferCount);
@@ -1389,7 +1389,7 @@ bool QVulkanWindowPrivate::createTransientImage(VkFormat format,
             return false;
         }
         startIndex = memInfo.memoryTypeIndex + 1;
-        qCDebug(lcVk, "Allocating %u bytes for transient image (memtype %u)",
+        qCDebug(lcGuiVk, "Allocating %u bytes for transient image (memtype %u)",
                 uint32_t(memInfo.allocationSize), memInfo.memoryTypeIndex);
         err = devFuncs->vkAllocateMemory(dev, &memInfo, nullptr, mem);
         if (err != VK_SUCCESS && err != VK_ERROR_OUT_OF_DEVICE_MEMORY) {
@@ -1435,7 +1435,7 @@ void QVulkanWindowPrivate::releaseSwapChain()
     if (!dev || !swapChain) // do not rely on 'status', a half done init must be cleaned properly too
         return;
 
-    qCDebug(lcVk, "Releasing swapchain");
+    qCDebug(lcGuiVk, "Releasing swapchain");
 
     devFuncs->vkDeviceWaitIdle(dev);
 
@@ -2059,10 +2059,10 @@ bool QVulkanWindowPrivate::checkDeviceLost(VkResult err)
         qWarning("QVulkanWindow: Device lost");
         if (renderer)
             renderer->logicalDeviceLost();
-        qCDebug(lcVk, "Releasing all resources due to device lost");
+        qCDebug(lcGuiVk, "Releasing all resources due to device lost");
         releaseSwapChain();
         reset();
-        qCDebug(lcVk, "Restarting");
+        qCDebug(lcGuiVk, "Restarting");
         ensureStarted();
         return true;
     }

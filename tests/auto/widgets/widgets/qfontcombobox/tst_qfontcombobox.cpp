@@ -204,7 +204,7 @@ void tst_QFontComboBox::sizeHint()
     SubQFontComboBox box;
     QSize sizeHint = box.QComboBox::sizeHint();
     QFontMetrics fm(box.font());
-    sizeHint.setWidth(qMax(sizeHint.width(), fm.width(QLatin1Char('m'))*14));
+    sizeHint.setWidth(qMax(sizeHint.width(), fm.horizontalAdvance(QLatin1Char('m'))*14));
     QCOMPARE(box.sizeHint(), sizeHint);
 }
 

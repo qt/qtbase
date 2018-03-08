@@ -106,7 +106,8 @@ public:
     uint sendChildEvents : 1;
     uint receiveChildEvents : 1;
     uint isWindow : 1; //for QWindow
-    uint unused : 25;
+    uint deleteLaterCalled : 1;
+    uint unused : 24;
     int postedEvents;
     QDynamicMetaObjectData *metaObject;
     QMetaObject *dynamicMetaObject() const;
@@ -126,13 +127,7 @@ public:
     virtual bool event(QEvent *event);
     virtual bool eventFilter(QObject *watched, QEvent *event);
 
-#ifdef Q_QDOC
-    static QString tr(const char *sourceText, const char *comment = nullptr, int n = -1);
-    static QString trUtf8(const char *sourceText, const char *comment = nullptr, int n = -1);
-    virtual const QMetaObject *metaObject() const;
-    static const QMetaObject staticMetaObject;
-#endif
-#ifdef QT_NO_TRANSLATION
+#if defined(QT_NO_TRANSLATION)
     static QString tr(const char *sourceText, const char * = nullptr, int = -1)
         { return QString::fromUtf8(sourceText); }
 #if QT_DEPRECATED_SINCE(5, 0)
@@ -154,7 +149,7 @@ public:
     void moveToThread(QThread *thread);
 
     int startTimer(int interval, Qt::TimerType timerType = Qt::CoarseTimer);
-#if QT_HAS_INCLUDE(<chrono>) || defined(Q_QDOC)
+#if QT_HAS_INCLUDE(<chrono>)
     Q_ALWAYS_INLINE
     int startTimer(std::chrono::milliseconds time, Qt::TimerType timerType = Qt::CoarseTimer)
     {
@@ -220,7 +215,7 @@ public:
     inline QMetaObject::Connection connect(const QObject *sender, const char *signal,
                         const char *member, Qt::ConnectionType type = Qt::AutoConnection) const;
 
-#ifdef Q_QDOC
+#ifdef Q_CLANG_QDOC
     template<typename PointerToMemberFunction>
     static QMetaObject::Connection connect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method, Qt::ConnectionType type = Qt::AutoConnection);
     template<typename PointerToMemberFunction, typename Functor>
@@ -337,7 +332,7 @@ public:
                                 typename SignalType::ReturnType>(std::move(slot)),
                            type, types, &SignalType::Object::staticMetaObject);
     }
-#endif //Q_QDOC
+#endif //Q_CLANG_QDOC
 
     static bool disconnect(const QObject *sender, const char *signal,
                            const QObject *receiver, const char *member);
@@ -350,7 +345,7 @@ public:
         { return disconnect(this, nullptr, receiver, member); }
     static bool disconnect(const QMetaObject::Connection &);
 
-#ifdef Q_QDOC
+#ifdef Q_CLANG_QDOC
     template<typename PointerToMemberFunction>
     static bool disconnect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method);
 #else
@@ -383,7 +378,7 @@ public:
         return disconnectImpl(sender, reinterpret_cast<void **>(&signal), receiver, zero,
                               &SignalType::Object::staticMetaObject);
     }
-#endif //Q_QDOC
+#endif //Q_CLANG_QDOC
 
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -479,11 +474,6 @@ public:
 };
 #endif
 
-#ifdef Q_QDOC
-T qFindChild(const QObject *o, const QString &name = QString());
-QList<T> qFindChildren(const QObject *oobj, const QString &name = QString());
-QList<T> qFindChildren(const QObject *o, const QRegExp &re);
-#endif
 #if QT_DEPRECATED_SINCE(5, 0)
 template<typename T>
 inline QT_DEPRECATED T qFindChild(const QObject *o, const QString &name = QString())
@@ -495,7 +485,7 @@ inline QT_DEPRECATED QList<T> qFindChildren(const QObject *o, const QString &nam
     return o->findChildren<T>(name);
 }
 
-#ifndef QT_NO_REGEXP
+#if !defined(QT_NO_REGEXP) || defined(Q_CLANG_QDOC)
 template<typename T>
 inline QT_DEPRECATED QList<T> qFindChildren(const QObject *o, const QRegExp &re)
 {
@@ -527,7 +517,7 @@ inline T qobject_cast(const QObject *object)
 template <class T> inline const char * qobject_interface_iid()
 { return nullptr; }
 
-#ifndef Q_MOC_RUN
+#if !defined(Q_MOC_RUN) && !defined(Q_CLANG_QDOC)
 #  define Q_DECLARE_INTERFACE(IFace, IId) \
     template <> inline const char *qobject_interface_iid<IFace *>() \
     { return IId; } \

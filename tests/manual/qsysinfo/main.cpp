@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -133,6 +133,8 @@ int main(int argc, char *argv[])
     printf("QSysInfo::productVersion() = %s\n", qPrintable(QSysInfo::productVersion()));
     printf("QSysInfo::prettyProductName() = %s\n", qPrintable(QSysInfo::prettyProductName()));
     printf("QSysInfo::machineHostName() = %s\n", qPrintable(QSysInfo::machineHostName()));
+    printf("QSysInfo::machineUniqueId() = %s\n", QSysInfo::machineUniqueId().constData());
+    printf("QSysInfo::bootUniqueId() = %s\n", qPrintable(QSysInfo::bootUniqueId()));
 
     const auto osv = QOperatingSystemVersion::current();
     printf("QOperatingSystemVersion::current() = %s %d.%d.%d\n",

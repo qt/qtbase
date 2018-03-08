@@ -65,3 +65,78 @@
     \c{QT_QPA_EGLFS_DISABLE_INPUT} is set or when building Qt without evdev
     support, this function will have no effect.
 */
+
+/*!
+    \fn int QEglFSFunctions::vsp2AddLayer(const QScreen *screen, int dmabufFd, const QSize &size, const QPoint &position, uint drmPixelFormat, uint bytesPerLine)
+    \internal
+    \preliminary
+*/
+
+/*!
+    \fn bool QEglFSFunctions::vsp2RemoveLayer(const QScreen *screen, int id)
+    \internal
+    \preliminary
+*/
+
+/*!
+    \fn void QEglFSFunctions::vsp2SetLayerBuffer(const QScreen *screen, int id, int dmabufFd)
+    \internal
+    \preliminary
+*/
+
+/*!
+    \fn bool QEglFSFunctions::vsp2SetLayerPosition(const QScreen *screen, int id, const QPoint &position)
+    \internal
+    \preliminary
+*/
+
+/*!
+    \fn void QEglFSFunctions::vsp2AddBlendListener(const QScreen *screen, void(*callback)())
+    \internal
+    \preliminary
+*/
+
+/*!
+    \typedef QEglFSFunctions::Vsp2AddBlendListenerType
+    \internal
+*/
+
+/*!
+    \typedef QEglFSFunctions::Vsp2AddLayerType
+    \internal
+*/
+
+/*!
+    \typedef QEglFSFunctions::Vsp2RemoveLayerType
+    \internal
+*/
+
+/*!
+    \typedef QEglFSFunctions::Vsp2SetLayerBufferType
+    \internal
+*/
+
+/*!
+    \typedef QEglFSFunctions::Vsp2SetLayerPositionType
+    \internal
+*/
+
+/*! \fn QByteArray QEglFSFunctions::vsp2AddBlendListenerTypeIdentifier()
+    \internal
+ */
+
+/*! \fn QByteArray QEglFSFunctions::vsp2AddLayerTypeIdentifier()
+    \internal
+ */
+
+/*! \fn QByteArray QEglFSFunctions::vsp2RemoveLayerTypeIdentifier()
+    \internal
+ */
+
+/*! \fn QByteArray QEglFSFunctions::vsp2SetLayerBufferTypeIdentifier()
+    \internal
+ */
+
+/*! \fn QByteArray QEglFSFunctions::vsp2SetLayerPositionTypeIdentifier()
+    \internal
+ */

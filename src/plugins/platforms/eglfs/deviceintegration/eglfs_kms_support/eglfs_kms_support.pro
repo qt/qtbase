@@ -19,4 +19,5 @@ SOURCES += $$PWD/qeglfskmsintegration.cpp \
 
 HEADERS += $$PWD/qeglfskmsintegration.h \
            $$PWD/qeglfskmsdevice.h \
-           $$PWD/qeglfskmsscreen.h
+           $$PWD/qeglfskmsscreen.h \
+           $$PWD/qeglfskmshelpers.h

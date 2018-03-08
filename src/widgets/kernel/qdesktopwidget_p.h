@@ -100,6 +100,8 @@ public:
     static int screenNumber(const QWidget *widget = nullptr);
     static int screenNumber(const QPoint &);
 
+    static QScreen *screen(int screenNo = -1);
+
     static const QRect screenGeometry(int screen = -1);
     static const QRect screenGeometry(const QWidget *widget);
     static const QRect screenGeometry(const QPoint &point)

@@ -120,16 +120,24 @@ public:
     QList<int> supportedResolutions() const;
 
     QPrint::InputSlot defaultInputSlot() const;
-    QList<QPrint::InputSlot> supportedInputSlots() const;
+    QVector<QPrint::InputSlot> supportedInputSlots() const;
 
     QPrint::OutputBin defaultOutputBin() const;
-    QList<QPrint::OutputBin> supportedOutputBins() const;
+    QVector<QPrint::OutputBin> supportedOutputBins() const;
 
     QPrint::DuplexMode defaultDuplexMode() const;
-    QList<QPrint::DuplexMode> supportedDuplexModes() const;
+    QVector<QPrint::DuplexMode> supportedDuplexModes() const;
 
     QPrint::ColorMode defaultColorMode() const;
-    QList<QPrint::ColorMode> supportedColorModes() const;
+    QVector<QPrint::ColorMode> supportedColorModes() const;
+
+    enum PrintDevicePropertyKey {
+        PDPK_CustomBase = 0xff00
+    };
+
+    QVariant property(PrintDevicePropertyKey key) const;
+    bool setProperty(PrintDevicePropertyKey key, const QVariant &value);
+    bool isFeatureAvailable(PrintDevicePropertyKey key, const QVariant &params) const;
 
 #ifndef QT_NO_MIMETYPE
     QList<QMimeType> supportedMimeTypes() const;

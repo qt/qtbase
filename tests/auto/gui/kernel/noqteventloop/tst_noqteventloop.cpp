@@ -64,7 +64,7 @@ public:
         m_received.clear();
     }
 
-    bool event(QEvent *event)
+    bool event(QEvent *event) override
     {
         m_received[event->type()]++;
         return QWindow::event(event);

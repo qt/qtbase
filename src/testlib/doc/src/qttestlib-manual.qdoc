@@ -382,6 +382,7 @@
     \li \l {Chapter 3: Simulating GUI Events}{Simulating GUI Events}
     \li \l {Chapter 4: Replaying GUI Events}{Replaying GUI Events}
     \li \l {Chapter 5: Writing a Benchmark}{Writing a Benchmark}
+    \li \l {Chapter 6: Skipping Tests with QSKIP}{Skipping Tests}
     \endlist
 
 */
@@ -715,6 +716,7 @@
 
     \previouspage {Chapter 4: Replaying GUI Events}{Chapter 4}
     \contentspage {Qt Test Tutorial}{Contents}
+    \nextpage {Chapter 6: Skipping Tests with QSKIP}{Chapter 6}
 
     \title Chapter 5: Writing a Benchmark
     \brief How to write a benchmark.
@@ -764,4 +766,49 @@
     See the \l{qtestlib-tools Announcement}{qtestlib-tools announcement}
     for more information on these tools and a simple graphing example.
 
+*/
+/*!
+    \page qttestlib-tutorial6.html
+
+    \previouspage {Chapter 5: Writing a Benchmark}{Chapter 5}
+    \contentspage {Qt Test Tutorial}{Contents}
+
+    \title Chapter 6: Skipping Tests with QSKIP
+    \brief How to skip tests in certain cases.
+
+    \section2 Using QSKIP(\a description) in a test function
+
+    If the QSKIP() macro is called from a test function, it stops
+    the execution of the test without adding a failure to the test log.
+    It can be used to skip tests that are certain to fail. The text in
+    the QSKIP \a description parameter is appended to the test log,
+    and explains why the test was not carried out.
+
+    QSKIP can be used to skip testing when the implementation is not yet
+    complete or not supported on a certain platform. When there are known
+    failures, it is recommended to use QEXPECT_FAIL, so that the test is
+    always completely executed.
+
+    Example of QSKIP in a test function:
+
+    \snippet code/doc_src_qtqskip.cpp 0
+
+    In a data-driven test, each call to QSKIP() skips only the current
+    row of test data. If the data-driven test contains an unconditional
+    call to QSKIP, it produces a skip message for each row of test data.
+
+    \section2 Using QSKIP in a _data function
+
+    If called from a _data function, the QSKIP() macro stops
+    execution of the _data function. This prevents execution of the
+    associated test function.
+
+    See below for an example:
+
+    \snippet code/doc_src_qtqskip.cpp 1
+
+    \section2 Using QSKIP from initTestCase() or initTestCase_data()
+
+    If called from \c initTestCase() or \c initTestCase_data(), the
+    QSKIP() macro will skip all test and _data functions.
 */

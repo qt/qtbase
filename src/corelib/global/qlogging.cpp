@@ -41,6 +41,7 @@
 
 #include "qglobal_p.h"
 #include "qlogging.h"
+#include "qlogging_p.h"
 #include "qlist.h"
 #include "qbytearray.h"
 #include "qstring.h"
@@ -61,11 +62,18 @@
 #include <qt_windows.h>
 #endif
 #if QT_CONFIG(slog2)
-#include <slog2.h>
+#include <sys/slog2.h>
+#endif
+#if QT_HAS_INCLUDE(<paths.h>)
+#include <paths.h>
 #endif
 
 #ifdef Q_OS_ANDROID
 #include <android/log.h>
+#endif
+
+#ifdef Q_OS_DARWIN
+#include <QtCore/private/qcore_mac_p.h>
 #endif
 
 #if QT_CONFIG(journald)
@@ -152,6 +160,7 @@ Q_NORETURN
 #endif
 static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const QString &message);
 static void qt_message_print(QtMsgType, const QMessageLogContext &context, const QString &message);
+static void qt_message_print(const QString &message);
 
 static int checked_var_value(const char *varname)
 {
@@ -191,54 +200,106 @@ static bool isFatal(QtMsgType msgType)
     return false;
 }
 
-static bool willLogToConsole()
+static bool isDefaultCategory(const char *category)
+{
+    return !category || strcmp(category, "default") == 0;
+}
+
+/*!
+    Returns true if writing to \c stderr is supported.
+
+    \sa stderrHasConsoleAttached()
+*/
+static bool systemHasStderr()
 {
 #if defined(Q_OS_WINRT)
-    // these systems have no stderr, so always log to the system log
-    return false;
-#elif defined(QT_BOOTSTRAPPED)
-    return true;
-#else
-    // rules to determine if we'll log preferably to the console:
-    //  1) if QT_LOGGING_TO_CONSOLE is set, it determines behavior:
-    //    - if it's set to 0, we will not log to console
-    //    - if it's set to 1, we will log to console
-    //  2) otherwise, we will log to console if we have a console window (Windows)
-    //     or a controlling TTY (Unix). This is done even if stderr was redirected
-    //     to the blackhole device (NUL or /dev/null).
-
-    bool ok = true;
-    uint envcontrol = qgetenv("QT_LOGGING_TO_CONSOLE").toUInt(&ok);
-    if (ok)
-        return envcontrol;
-
-#  ifdef Q_OS_WIN
-    return GetConsoleWindow();
-#  elif defined(Q_OS_UNIX)
-    // if /dev/tty exists, we can only open it if we have a controlling TTY
-    int devtty = qt_safe_open("/dev/tty", O_RDONLY);
-    if (devtty == -1 && (errno == ENOENT || errno == EPERM || errno == ENXIO)) {
-        // no /dev/tty, fall back to isatty on stderr
-        return isatty(STDERR_FILENO);
-    } else if (devtty != -1) {
-        // there is a /dev/tty and we could open it: we have a controlling TTY
-        qt_safe_close(devtty);
-        return true;
-    }
-
-    // no controlling TTY
-    return false;
-#  else
-#    error "Not Unix and not Windows?"
-#  endif
+    return false; // WinRT has no stderr
 #endif
+
+    return true;
 }
 
-Q_CORE_EXPORT bool qt_logging_to_console()
+/*!
+    Returns true if writing to \c stderr will end up in a console/terminal visible to the user.
+
+    This is typically the case if the application was started from the command line.
+
+    If the application is started without a controlling console/terminal, but the parent
+    process reads \c stderr and presents it to the user in some other way, the parent process
+    may override the detection in this function by setting the QT_ASSUME_STDERR_HAS_CONSOLE
+    environment variable to \c 1.
+
+    \note Qt Creator does not implement a pseudo TTY, nor does it launch apps with
+    the override environment variable set, but it will read stderr and print it to
+    the user, so in effect this function can not be used to conclude that stderr
+    output will _not_ be visible to the user, as even if this function returns false,
+    the output might still end up visible to the user. For this reason, we don't guard
+    the stderr output in the default message handler with stderrHasConsoleAttached().
+
+    \sa systemHasStderr()
+*/
+bool stderrHasConsoleAttached()
 {
-    static const bool logToConsole = willLogToConsole();
-    return logToConsole;
+    static const bool stderrHasConsoleAttached = []() -> bool {
+        if (!systemHasStderr())
+            return false;
+
+        if (qEnvironmentVariableIntValue("QT_LOGGING_TO_CONSOLE")) {
+            fprintf(stderr, "warning: Environment variable QT_LOGGING_TO_CONSOLE is deprecated, use\n"
+                            "QT_ASSUME_STDERR_HAS_CONSOLE and/or QT_FORCE_STDERR_LOGGING instead.\n");
+            return true;
+        }
+
+        if (qEnvironmentVariableIntValue("QT_ASSUME_STDERR_HAS_CONSOLE"))
+            return true;
+
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+        return GetConsoleWindow();
+#elif defined(Q_OS_UNIX)
+#       ifndef _PATH_TTY
+#       define _PATH_TTY "/dev/tty"
+#       endif
+
+        // If we can open /dev/tty, we have a controlling TTY
+        int ttyDevice = -1;
+        if ((ttyDevice = qt_safe_open(_PATH_TTY, O_RDONLY)) >= 0) {
+            qt_safe_close(ttyDevice);
+            return true;
+        } else if (errno == ENOENT || errno == EPERM || errno == ENXIO) {
+            // Fall back to isatty for some non-critical errors
+            return isatty(STDERR_FILENO);
+        } else {
+            return false;
+        }
+#else
+        return false; // No way to detect if stderr has a console attached
+#endif
+    }();
+
+    return stderrHasConsoleAttached;
 }
+
+
+namespace QtPrivate {
+
+/*!
+    Returns true if logging \c stderr should be ensured.
+
+    This is normally the case if \c stderr has a console attached, but may be overridden
+    by the user by setting the QT_FORCE_STDERR_LOGGING environment variable to \c 1.
+
+    \sa stderrHasConsoleAttached()
+*/
+bool shouldLogToStderr()
+{
+    static bool forceStderrLogging = qEnvironmentVariableIntValue("QT_FORCE_STDERR_LOGGING");
+    return forceStderrLogging || stderrHasConsoleAttached();
+}
+
+
+} // QtPrivate
+
+using namespace QtPrivate;
 
 /*!
     \class QMessageLogContext
@@ -1203,20 +1264,10 @@ void QMessagePattern::setPattern(const QString &pattern)
         error += QLatin1String("QT_MESSAGE_PATTERN: %{if-*} cannot be nested\n");
     else if (inIf)
         error += QLatin1String("QT_MESSAGE_PATTERN: missing %{endif}\n");
-    if (!error.isEmpty()) {
-#if defined(Q_OS_WINRT)
-        OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));
-        if (0)
-#elif defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
-        if (!qt_logging_to_console()) {
-            OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));
-        } else
-#endif
-        {
-            fprintf(stderr, "%s", error.toLocal8Bit().constData());
-            fflush(stderr);
-        }
-    }
+
+    if (!error.isEmpty())
+        qt_message_print(error);
+
     literals = new const char*[literalsVar.size() + 1];
     literals[literalsVar.size()] = 0;
     memcpy(literals, literalsVar.constData(), literalsVar.size() * sizeof(const char*));
@@ -1244,7 +1295,7 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
     static QRegularExpression rx(QStringLiteral("^(?:[^(]*/)?([^(/]+)\\(([^+]*)(?:[\\+[a-f0-9x]*)?\\) \\[[a-f0-9x]*\\]$"),
                                  QRegularExpression::OptimizeOnFirstUsageOption);
 
-    QVarLengthArray<void*, 32> buffer(7 + frameCount);
+    QVarLengthArray<void*, 32> buffer(8 + frameCount);
     int n = backtrace(buffer.data(), buffer.size());
     if (n > 0) {
         int numberPrinted = 0;
@@ -1305,57 +1356,6 @@ static QString formatBacktraceForLogMessage(const QMessagePattern::BacktracePara
     return frames.join(backtraceSeparator);
 }
 #endif // QLOGGING_HAVE_BACKTRACE && !QT_BOOTSTRAPPED
-
-#if QT_CONFIG(slog2)
-#ifndef QT_LOG_CODE
-#define QT_LOG_CODE 9000
-#endif
-
-static void slog2_default_handler(QtMsgType msgType, const char *message)
-{
-    if (slog2_set_default_buffer((slog2_buffer_t)-1) == 0) {
-        slog2_buffer_set_config_t buffer_config;
-        slog2_buffer_t buffer_handle;
-
-        buffer_config.buffer_set_name = __progname;
-        buffer_config.num_buffers = 1;
-        buffer_config.verbosity_level = SLOG2_DEBUG1;
-        buffer_config.buffer_config[0].buffer_name = "default";
-        buffer_config.buffer_config[0].num_pages = 8;
-
-        if (slog2_register(&buffer_config, &buffer_handle, 0) == -1) {
-            fprintf(stderr, "Error registering slogger2 buffer!\n");
-            fprintf(stderr, "%s", message);
-            fflush(stderr);
-            return;
-        }
-
-        // Set as the default buffer
-        slog2_set_default_buffer(buffer_handle);
-    }
-    int severity;
-    //Determines the severity level
-    switch (msgType) {
-    case QtDebugMsg:
-        severity = SLOG2_DEBUG1;
-        break;
-    case QtInfoMsg:
-        severity = SLOG2_INFO;
-        break;
-    case QtWarningMsg:
-        severity = SLOG2_NOTICE;
-        break;
-    case QtCriticalMsg:
-        severity = SLOG2_WARNING;
-        break;
-    case QtFatalMsg:
-        severity = SLOG2_ERROR;
-        break;
-    }
-    //writes to the slog2 buffer
-    slog2c(NULL, QT_LOG_CODE, severity, message);
-}
-#endif // slog2
 
 Q_GLOBAL_STATIC(QMessagePattern, qMessagePattern)
 
@@ -1474,7 +1474,7 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
             }
 #endif // !QT_BOOTSTRAPPED
         } else if (token == ifCategoryTokenC) {
-            if (!context.category || (strcmp(context.category, "default") == 0))
+            if (isDefaultCategory(context.category))
                 skip = true;
 #define HANDLE_IF_TOKEN(LEVEL)  \
         } else if (token == if##LEVEL##TokenC) { \
@@ -1506,11 +1506,80 @@ static QBasicAtomicPointer<void (QtMsgType, const char*)> msgHandler = Q_BASIC_A
 // pointer to QtMessageHandler debug handler (with context)
 static QBasicAtomicPointer<void (QtMsgType, const QMessageLogContext &, const QString &)> messageHandler = Q_BASIC_ATOMIC_INITIALIZER(qDefaultMessageHandler);
 
+// ------------------------ Alternate logging sinks -------------------------
+
+#if defined(QT_BOOTSTRAPPED)
+    // Boostrapped tools always print to stderr, so no need for alternate sinks
+#else
+
+#if QT_CONFIG(slog2)
+#ifndef QT_LOG_CODE
+#define QT_LOG_CODE 9000
+#endif
+
+static bool slog2_default_handler(QtMsgType type, const QMessageLogContext &context, const QString &message)
+{
+    if (shouldLogToStderr())
+        return false; // Leave logging up to stderr handler
+
+    QString formattedMessage = qFormatLogMessage(type, context, message);
+    formattedMessage.append(QLatin1Char('\n'));
+    if (slog2_set_default_buffer((slog2_buffer_t)-1) == 0) {
+        slog2_buffer_set_config_t buffer_config;
+        slog2_buffer_t buffer_handle;
+
+        buffer_config.buffer_set_name = __progname;
+        buffer_config.num_buffers = 1;
+        buffer_config.verbosity_level = SLOG2_DEBUG1;
+        buffer_config.buffer_config[0].buffer_name = "default";
+        buffer_config.buffer_config[0].num_pages = 8;
+
+        if (slog2_register(&buffer_config, &buffer_handle, 0) == -1) {
+            fprintf(stderr, "Error registering slogger2 buffer!\n");
+            fprintf(stderr, "%s", formattedMessage.toLocal8Bit().constData());
+            fflush(stderr);
+            return false;
+        }
+
+        // Set as the default buffer
+        slog2_set_default_buffer(buffer_handle);
+    }
+    int severity;
+    //Determines the severity level
+    switch (type) {
+    case QtDebugMsg:
+        severity = SLOG2_DEBUG1;
+        break;
+    case QtInfoMsg:
+        severity = SLOG2_INFO;
+        break;
+    case QtWarningMsg:
+        severity = SLOG2_NOTICE;
+        break;
+    case QtCriticalMsg:
+        severity = SLOG2_WARNING;
+        break;
+    case QtFatalMsg:
+        severity = SLOG2_ERROR;
+        break;
+    }
+    //writes to the slog2 buffer
+    slog2c(NULL, QT_LOG_CODE, severity, formattedMessage.toLocal8Bit().constData());
+
+    return true; // Prevent further output to stderr
+}
+#endif // slog2
+
 #if QT_CONFIG(journald)
-static void systemd_default_message_handler(QtMsgType type,
+static bool systemd_default_message_handler(QtMsgType type,
                                             const QMessageLogContext &context,
                                             const QString &message)
 {
+    if (shouldLogToStderr())
+        return false; // Leave logging up to stderr handler
+
+    QString formattedMessage = qFormatLogMessage(type, context, message);
+
     int priority = LOG_INFO; // Informational
     switch (type) {
     case QtDebugMsg:
@@ -1530,19 +1599,26 @@ static void systemd_default_message_handler(QtMsgType type,
         break;
     }
 
-    sd_journal_send("MESSAGE=%s",     message.toUtf8().constData(),
+    sd_journal_send("MESSAGE=%s",     formattedMessage.toUtf8().constData(),
                     "PRIORITY=%i",    priority,
                     "CODE_FUNC=%s",   context.function ? context.function : "unknown",
                     "CODE_LINE=%d",   context.line,
                     "CODE_FILE=%s",   context.file ? context.file : "unknown",
                     "QT_CATEGORY=%s", context.category ? context.category : "unknown",
                     NULL);
+
+    return true; // Prevent further output to stderr
 }
 #endif
 
 #if QT_CONFIG(syslog)
-static void syslog_default_message_handler(QtMsgType type, const char *message)
+static bool syslog_default_message_handler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
+    if (shouldLogToStderr())
+        return false; // Leave logging up to stderr handler
+
+    QString formattedMessage = qFormatLogMessage(type, context, message);
+
     int priority = LOG_INFO; // Informational
     switch (type) {
     case QtDebugMsg:
@@ -1562,15 +1638,22 @@ static void syslog_default_message_handler(QtMsgType type, const char *message)
         break;
     }
 
-    syslog(priority, "%s", message);
+    syslog(priority, "%s", formattedMessage.toUtf8().constData());
+
+    return true; // Prevent further output to stderr
 }
 #endif
 
-#ifdef Q_OS_ANDROID
-static void android_default_message_handler(QtMsgType type,
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+static bool android_default_message_handler(QtMsgType type,
                                   const QMessageLogContext &context,
                                   const QString &message)
 {
+    if (shouldLogToStderr())
+        return false; // Leave logging up to stderr handler
+
+    QString formattedMessage = qFormatLogMessage(type, context, message);
+
     android_LogPriority priority = ANDROID_LOG_DEBUG;
     switch (type) {
     case QtDebugMsg: priority = ANDROID_LOG_DEBUG; break;
@@ -1582,45 +1665,76 @@ static void android_default_message_handler(QtMsgType type,
 
     __android_log_print(priority, qPrintable(QCoreApplication::applicationName()),
                         "%s:%d (%s): %s\n", context.file, context.line,
-                        context.function, qPrintable(message));
+                        context.function, qPrintable(formattedMessage));
+
+    return true; // Prevent further output to stderr
 }
 #endif //Q_OS_ANDROID
+
+#ifdef Q_OS_WIN
+static bool win_message_handler(QtMsgType type, const QMessageLogContext &context, const QString &message)
+{
+    if (shouldLogToStderr())
+        return false; // Leave logging up to stderr handler
+
+    QString formattedMessage = qFormatLogMessage(type, context, message);
+    formattedMessage.append(QLatin1Char('\n'));
+    OutputDebugString(reinterpret_cast<const wchar_t *>(formattedMessage.utf16()));
+
+    return true; // Prevent further output to stderr
+}
+#endif
+
+#endif // Bootstrap check
+
+// --------------------------------------------------------------------------
+
+static void stderr_message_handler(QtMsgType type, const QMessageLogContext &context, const QString &message)
+{
+    QString formattedMessage = qFormatLogMessage(type, context, message);
+
+    // print nothing if message pattern didn't apply / was empty.
+    // (still print empty lines, e.g. because message itself was empty)
+    if (formattedMessage.isNull())
+        return;
+
+    fprintf(stderr, "%s\n", formattedMessage.toLocal8Bit().constData());
+    fflush(stderr);
+}
 
 /*!
     \internal
 */
 static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &context,
-                                   const QString &buf)
+                                   const QString &message)
 {
-    QString logMessage = qFormatLogMessage(type, context, buf);
+    bool handledStderr = false;
 
-    // print nothing if message pattern didn't apply / was empty.
-    // (still print empty lines, e.g. because message itself was empty)
-    if (logMessage.isNull())
-        return;
+    // A message sink logs the message to a structured or unstructured destination,
+    // optionally formatting the message if the latter, and returns true if the sink
+    // handled stderr output as well, which will shortcut our default stderr output.
+    // In the future, if we allow multiple/dynamic sinks, this will be iterating
+    // a list of sinks.
 
-    if (!qt_logging_to_console()) {
-#if defined(Q_OS_WIN)
-        logMessage.append(QLatin1Char('\n'));
-        OutputDebugString(reinterpret_cast<const wchar_t *>(logMessage.utf16()));
-        return;
-#elif QT_CONFIG(slog2)
-        logMessage.append(QLatin1Char('\n'));
-        slog2_default_handler(type, logMessage.toLocal8Bit().constData());
-        return;
-#elif QT_CONFIG(journald)
-        systemd_default_message_handler(type, context, logMessage);
-        return;
-#elif QT_CONFIG(syslog)
-        syslog_default_message_handler(type, logMessage.toUtf8().constData());
-        return;
-#elif defined(Q_OS_ANDROID)
-        android_default_message_handler(type, context, logMessage);
-        return;
+#if !defined(QT_BOOTSTRAPPED)
+# if defined(Q_OS_WIN)
+    handledStderr |= win_message_handler(type, context, message);
+# elif QT_CONFIG(slog2)
+    handledStderr |= slog2_default_handler(type, context, message);
+# elif QT_CONFIG(journald)
+    handledStderr |= systemd_default_message_handler(type, context, message);
+# elif QT_CONFIG(syslog)
+    handledStderr |= syslog_default_message_handler(type, context, message);
+# elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+    handledStderr |= android_default_message_handler(type, context, message);
+# elif defined(QT_USE_APPLE_UNIFIED_LOGGING)
+    if (__builtin_available(macOS 10.12, iOS 10, tvOS 10, watchOS 3, *))
+        handledStderr |= AppleUnifiedLogger::messageHandler(type, context, message);
+# endif
 #endif
-    }
-    fprintf(stderr, "%s\n", logMessage.toLocal8Bit().constData());
-    fflush(stderr);
+
+    if (!handledStderr)
+        stderr_message_handler(type, context, message);
 }
 
 /*!
@@ -1659,7 +1773,7 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
 {
 #ifndef QT_BOOTSTRAPPED
     // qDebug, qWarning, ... macros do not check whether category is enabled
-    if (!context.category || (strcmp(context.category, "default") == 0)) {
+    if (isDefaultCategory(context.category)) {
         if (QLoggingCategory *defaultCategory = QLoggingCategory::defaultCategory()) {
             if (!defaultCategory->isEnabled(msgType))
                 return;
@@ -1681,6 +1795,21 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
     } else {
         fprintf(stderr, "%s\n", message.toLocal8Bit().constData());
     }
+}
+
+static void qt_message_print(const QString &message)
+{
+#if defined(Q_OS_WINRT)
+    OutputDebugString(reinterpret_cast<const wchar_t*>(message.utf16()));
+    return;
+#elif defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
+    if (!shouldLogToStderr()) {
+        OutputDebugString(reinterpret_cast<const wchar_t*>(message.utf16()));
+        return;
+    }
+#endif
+    fprintf(stderr, "%s", message.toLocal8Bit().constData());
+    fflush(stderr);
 }
 
 static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const QString &message)
@@ -1879,6 +2008,10 @@ void qErrnoWarning(int code, const char *msg, ...)
     The \a pattern can also be changed at runtime by setting the QT_MESSAGE_PATTERN
     environment variable; if both \l qSetMessagePattern() is called and QT_MESSAGE_PATTERN is
     set, the environment variable takes precedence.
+
+    \note The message pattern only applies to unstructured logging, such as the default
+    \c stderr output. Structured logging such as systemd will record the message as is,
+    along with as much structured information as can be captured.
 
     Custom message handlers can use qFormatLogMessage() to take \a pattern into account.
 

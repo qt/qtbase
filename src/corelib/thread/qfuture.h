@@ -42,10 +42,10 @@
 
 #include <QtCore/qglobal.h>
 
-#ifndef QT_NO_QFUTURE
-
 #include <QtCore/qfutureinterface.h>
 #include <QtCore/qstring.h>
+
+QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
 
@@ -65,6 +65,11 @@ public:
     explicit QFuture(QFutureInterface<T> *p) // internal
         : d(*p)
     { }
+#if defined(Q_CLANG_QDOC)
+    ~QFuture() { }
+    QFuture(const QFuture<T> &) { }
+    QFuture<T> & operator=(const QFuture<T> &) { }
+#endif
 
     bool operator==(const QFuture &other) const { return (d == other.d); }
     bool operator!=(const QFuture &other) const { return (d != other.d); }
@@ -241,7 +246,5 @@ QFuture<void> qToVoidFuture(const QFuture<T> &future)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_QFUTURE
 
 #endif // QFUTURE_H

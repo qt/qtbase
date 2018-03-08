@@ -435,7 +435,7 @@ QHttpMultiPartPrivate::QHttpMultiPartPrivate() : contentType(QHttpMultiPart::Mix
 {
     // 24 random bytes, becomes 32 characters when encoded to Base64
     quint32 random[6];
-    QRandomGenerator::fillRange(random);
+    QRandomGenerator::global()->fillRange(random);
     boundary = "boundary_.oOo._"
                + QByteArray::fromRawData(reinterpret_cast<char *>(random), sizeof(random)).toBase64();
 
@@ -476,6 +476,8 @@ bool QHttpMultiPartIODevice::isSequential() const
 
 bool QHttpMultiPartIODevice::reset()
 {
+    // Reset QIODevice's data
+    QIODevice::reset();
     for (int a = 0; a < multiPart->parts.count(); a++)
         if (!multiPart->parts[a].d->reset())
             return false;

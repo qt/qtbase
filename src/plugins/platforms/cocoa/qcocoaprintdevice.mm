@@ -46,6 +46,15 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_PRINTER
 
+// The CUPS PPD APIs were deprecated in CUPS 1.6/macOS 10.8, but
+// as long as we're supporting RHEL 6, which still ships CUPS 1.4
+// we're not going to rewrite this, as we want to share the code
+// between macOS and Linux for the CUPS-bits. See discussion in
+// https://bugreports.qt.io/browse/QTBUG-56545
+#pragma message "Disabling CUPS PPD deprecation warnings. This should be fixed once we drop support for RHEL6 (QTBUG-56545)"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 static QPrint::DuplexMode macToDuplexMode(const PMDuplexMode &mode)
 {
     if (mode == kPMDuplexTumble)
@@ -473,6 +482,8 @@ PMPaper QCocoaPrintDevice::macPaper(const QPageSize &pageSize) const
     m_macPapers.insert(pageSize.key(), paper);
     return paper;
 }
+
+#pragma clang diagnostic pop
 
 #endif // QT_NO_PRINTER
 

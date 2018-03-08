@@ -100,6 +100,12 @@ typedef QSqlRelationalTableModelSql Sql;
 */
 
 /*!
+  \fn void QSqlRelation::swap(QSqlRelation &other)
+
+  Swaps \c this with \a other.
+ */
+
+/*!
     \fn QString QSqlRelation::tableName() const
 
     Returns the name of the table to which a foreign key refers.

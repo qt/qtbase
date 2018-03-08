@@ -90,11 +90,6 @@
     fromPercentEncoding() and toPercentEncoding() which deal with
     percent encoding and decoding of QString objects.
 
-    Calling isRelative() will tell whether or not the URL is
-    relative. A relative URL can be resolved by passing it as argument
-    to resolved(), which returns an absolute URL. isParentOf() is used
-    for determining whether one URL is a parent of another.
-
     fromLocalFile() constructs a QUrl by parsing a local
     file path. toLocalFile() converts a URL to a local file path.
 
@@ -115,6 +110,37 @@
     \l{http://freedesktop.org/wiki/Specifications/file-uri-spec/}{file URI specification}
     from freedesktop.org, provided that the locale encodes file names using
     UTF-8 (required by IDN).
+
+    \section2 Relative URLs vs Relative Paths
+
+    Calling isRelative() will return whether or not the URL is relative.
+    A relative URL has no \l {scheme}. For example:
+
+    \code
+    qDebug() << QUrl("main.qml").isRelative();          // true: no scheme
+    qDebug() << QUrl("qml/main.qml").isRelative();      // true: no scheme
+    qDebug() << QUrl("file:main.qml").isRelative();     // false: has "file" scheme
+    qDebug() << QUrl("file:qml/main.qml").isRelative(); // false: has "file" scheme
+    \endcode
+
+    Notice that a URL can be absolute while containing a relative path, and
+    vice versa:
+
+    \code
+    // Absolute URL, relative path
+    QUrl url("file:file.txt");
+    qDebug() << url.isRelative();                 // false: has "file" scheme
+    qDebug() << QDir::isAbsolutePath(url.path()); // false: relative path
+
+    // Relative URL, absolute path
+    url = QUrl("/home/user/file.txt");
+    qDebug() << url.isRelative();                 // true: has no scheme
+    qDebug() << QDir::isAbsolutePath(url.path()); // true: absolute path
+    \endcode
+
+    A relative URL can be resolved by passing it as an argument to resolved(),
+    which returns an absolute URL. isParentOf() is used for determining whether
+    one URL is a parent of another.
 
     \section2 Error checking
 
@@ -499,9 +525,10 @@ public:
 
         InvalidFragmentError = Fragment << 8,
 
-        // the following two cases are only possible in combination
-        // with presence/absence of the authority and scheme. See validityError().
+        // the following three cases are only possible in combination with
+        // presence/absence of the path, authority and scheme. See validityError().
         AuthorityPresentAndPathIsRelative = Authority << 8 | Path << 8 | 0x10000,
+        AuthorityAbsentAndPathIsDoubleSlash,
         RelativeUrlPathContainsColonBeforeSlash = Scheme << 8 | Authority << 8 | Path << 8 | 0x10000,
 
         NoError = 0
@@ -1036,6 +1063,7 @@ inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QU
 {
     sectionIsPresent &= ~Authority;
     sectionIsPresent |= Host;
+    port = -1;
 
     // we never actually _loop_
     while (from != end) {
@@ -1060,10 +1088,8 @@ inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QU
             }
         }
 
-        if (colonIndex == end - 1) {
-            // found a colon but no digits after it
-            port = -1;
-        } else if (uint(colonIndex) < uint(end)) {
+        if (uint(colonIndex) < uint(end) - 1) {
+            // found a colon with digits after it
             unsigned long x = 0;
             for (int i = colonIndex + 1; i < end; ++i) {
                 ushort c = auth.at(i).unicode();
@@ -1082,8 +1108,6 @@ inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QU
                 if (mode == QUrl::StrictMode)
                     break;
             }
-        } else {
-            port = -1;
         }
 
         setHost(auth, from, qMin<uint>(end, colonIndex), mode);
@@ -1627,19 +1651,31 @@ inline QUrlPrivate::ErrorCode QUrlPrivate::validityError(QString *source, int *p
         return error->code;
     }
 
-    // There are two more cases of invalid URLs that QUrl recognizes and they
+    // There are three more cases of invalid URLs that QUrl recognizes and they
     // are only possible with constructed URLs (setXXX methods), not with
     // parsing. Therefore, they are tested here.
     //
-    // The two cases are a non-empty path that doesn't start with a slash and:
+    // Two cases are a non-empty path that doesn't start with a slash and:
     //  - with an authority
     //  - without an authority, without scheme but the path with a colon before
     //    the first slash
+    // The third case is an empty authority and a non-empty path that starts
+    // with "//".
     // Those cases are considered invalid because toString() would produce a URL
     // that wouldn't be parsed back to the same QUrl.
 
-    if (path.isEmpty() || path.at(0) == QLatin1Char('/'))
+    if (path.isEmpty())
         return NoError;
+    if (path.at(0) == QLatin1Char('/')) {
+        if (hasAuthority() || path.length() == 1 || path.at(1) != QLatin1Char('/'))
+            return NoError;
+        if (source) {
+            *source = path;
+            *position = 0;
+        }
+        return AuthorityAbsentAndPathIsDoubleSlash;
+    }
+
     if (sectionIsPresent & QUrlPrivate::Host) {
         if (source) {
             *source = path;
@@ -2460,6 +2496,8 @@ void QUrl::setPort(int port)
     }
 
     d->port = port;
+    if (port != -1)
+        d->sectionIsPresent |= QUrlPrivate::Host;
 }
 
 /*!
@@ -2514,10 +2552,7 @@ void QUrl::setPath(const QString &path, ParsingMode mode)
         mode = TolerantMode;
     }
 
-    int from = 0;
-    while (from < data.length() - 2 && data.midRef(from, 2) == QLatin1String("//"))
-        ++from;
-    d->setPath(data, from, data.length());
+    d->setPath(data, 0, data.length());
 
     // optimized out, since there is no path delimiter
 //    if (path.isNull())
@@ -2530,6 +2565,12 @@ void QUrl::setPath(const QString &path, ParsingMode mode)
 /*!
     Returns the path of the URL.
 
+    \code
+    qDebug() << QUrl("file:file.txt").path();                   // "file.txt"
+    qDebug() << QUrl("/home/user/file.txt").path();             // "/home/user/file.txt"
+    qDebug() << QUrl("http://www.example.com/test/123").path(); // "/test/123"
+    \endcode
+
     The \a options argument controls how to format the path component. All
     values produce an unambiguous result. With QUrl::FullyDecoded, all
     percent-encoded sequences are decoded; otherwise, the returned value may
@@ -2539,6 +2580,31 @@ void QUrl::setPath(const QString &path, ParsingMode mode)
     Note that QUrl::FullyDecoded may cause data loss if those non-representable
     sequences are present. It is recommended to use that value when the result
     will be used in a non-URL context, such as sending to an FTP server.
+
+    An example of data loss is when you have non-Unicode percent-encoded sequences
+    and use FullyDecoded (the default):
+
+    \code
+    qDebug() << QUrl("/foo%FFbar").path();
+    \endcode
+
+    In this example, there will be some level of data loss because the \c %FF cannot
+    be converted.
+
+    Data loss can also occur when the path contains sub-delimiters (such as \c +):
+
+    \code
+    qDebug() << QUrl("/foo+bar%2B").path(); // "/foo+bar+"
+    \endcode
+
+    Other decoding examples:
+
+    \code
+    const QUrl url("/tmp/Mambo %235%3F.mp3");
+    qDebug() << url.path(QUrl::FullyDecoded);  // "/tmp/Mambo #5?.mp3"
+    qDebug() << url.path(QUrl::PrettyDecoded); // "/tmp/Mambo #5?.mp3"
+    qDebug() << url.path(QUrl::FullyEncoded);  // "/tmp/Mambo%20%235%3F.mp3"
+    \endcode
 
     \sa setPath()
 */
@@ -3248,6 +3314,8 @@ QUrl QUrl::resolved(const QUrl &relative) const
     equivalent to calling scheme().isEmpty().
 
     Relative references are defined in RFC 3986 section 4.2.
+
+    \sa {Relative URLs vs Relative Paths}
 */
 bool QUrl::isRelative() const
 {
@@ -3787,6 +3855,41 @@ bool QUrl::isDetached() const
 
     An empty \a localFile leads to an empty URL (since Qt 5.4).
 
+    \code
+    qDebug() << QUrl::fromLocalFile("file.txt");            // QUrl("file:file.txt")
+    qDebug() << QUrl::fromLocalFile("/home/user/file.txt"); // QUrl("file:///home/user/file.txt")
+    qDebug() << QUrl::fromLocalFile("file:file.txt");       // doesn't make sense; expects path, not url with scheme
+    \endcode
+
+    In the first line in snippet above, a file URL is constructed from a
+    local, relative path. A file URL with a relative path only makes sense
+    if there is a base URL to resolve it against. For example:
+
+    \code
+    QUrl url = QUrl::fromLocalFile("file.txt");
+    QUrl baseUrl = QUrl("file:/home/user/");
+    // wrong: prints QUrl("file:file.txt"), as url already has a scheme
+    qDebug() << baseUrl.resolved(url);
+    \endcode
+
+    To resolve such a URL, it's necessary to remove the scheme beforehand:
+
+    \code
+    // correct: prints QUrl("file:///home/user/file.txt")
+    url.setScheme(QString());
+    qDebug() << baseUrl.resolved(url);
+    \endcode
+
+    For this reason, it is better to use a relative URL (that is, no scheme)
+    for relative file paths:
+
+    \code
+    QUrl url = QUrl("file.txt");
+    QUrl baseUrl = QUrl("file:/home/user/");
+    // prints QUrl("file:///home/user/file.txt")
+    qDebug() << baseUrl.resolved(url);
+    \endcode
+
     \sa toLocalFile(), isLocalFile(), QDir::toNativeSeparators()
 */
 QUrl QUrl::fromLocalFile(const QString &localFile)
@@ -3830,6 +3933,12 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
     If this URL contains a non-empty hostname, it will be encoded in the
     returned value in the form found on SMB networks (for example,
     "//servername/path/to/file.txt").
+
+    \code
+    qDebug() << QUrl("file:file.txt").toLocalFile();            // "file:file.txt"
+    qDebug() << QUrl("file:/home/user/file.txt").toLocalFile(); // "file:///home/user/file.txt"
+    qDebug() << QUrl("file.txt").toLocalFile();                 // ""; wasn't a local file as it had no scheme
+    \endcode
 
     Note: if the path component of this URL contains a non-UTF-8 binary
     sequence (such as %80), the behaviour of this function is undefined.
@@ -3989,6 +4098,8 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, const QString &err
 
     case QUrlPrivate::AuthorityPresentAndPathIsRelative:
         return QStringLiteral("Path component is relative and authority is present");
+    case QUrlPrivate::AuthorityAbsentAndPathIsDoubleSlash:
+        return QStringLiteral("Path component starts with '//' and authority is absent");
     case QUrlPrivate::RelativeUrlPathContainsColonBeforeSlash:
         return QStringLiteral("Relative URL's path component contains ':' before any '/'");
     }

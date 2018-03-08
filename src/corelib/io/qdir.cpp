@@ -2087,6 +2087,7 @@ bool QDir::match(const QString &filter, const QString &fileName)
 #endif // QT_NO_REGEXP
 
 /*!
+    \internal
     Returns \a path with redundant directory separators removed,
     and "."s and ".."s resolved (as far as possible).
 

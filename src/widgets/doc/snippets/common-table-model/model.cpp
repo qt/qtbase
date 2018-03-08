@@ -68,7 +68,7 @@ TableModel::TableModel(int rows, int columns, QObject *parent)
     QStringList newList;
 
     for (int column = 0; column < qMax(1, columns); ++column) {
-        newList.append("");
+        newList.append(QString());
     }
 
     for (int row = 0; row < qMax(1, rows); ++row) {
@@ -129,9 +129,9 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
         return QVariant();
 
     if (orientation == Qt::Horizontal)
-        return QString("Column %1").arg(section);
+        return QStringLiteral("Column %1").arg(section);
     else
-        return QString("Row %1").arg(section);
+        return QStringLiteral("Row %1").arg(section);
 }
 
 /*!
@@ -164,7 +164,7 @@ bool TableModel::setData(const QModelIndex &index,
         return false;
 
     rowList[index.row()][index.column()] = value.toString();
-    emit dataChanged(index, index);
+    emit dataChanged(index, index, {role});
     return true;
 }
 
@@ -180,7 +180,7 @@ bool TableModel::insertRows(int position, int rows, const QModelIndex &parent)
     for (int row = 0; row < rows; ++row) {
         QStringList items;
         for (int column = 0; column < columns; ++column)
-            items.append("");
+            items.append(QString());
         rowList.insert(position, items);
     }
 
@@ -202,7 +202,7 @@ bool TableModel::insertColumns(int position, int columns,
 
     for (int row = 0; row < rows; ++row) {
         for (int column = position; column < columns; ++column) {
-            rowList[row].insert(position, "");
+            rowList[row].insert(position, QString());
         }
     }
 

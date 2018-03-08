@@ -216,6 +216,7 @@ struct DefinedTypesFilter {
     \value QChar QChar
     \value QString QString
     \value QByteArray QByteArray
+    \value Nullptr \c{std::nullptr_t}
 
     \value VoidStar \c{void *}
     \value Long \c{long}
@@ -287,6 +288,8 @@ struct DefinedTypesFilter {
 
     \value User  Base value for user types
     \value UnknownType This is an invalid type id. It is returned from QMetaType for types that are not registered
+    \omitvalue LastCoreType
+    \omitvalue LastGuiType
 
     Additional types can be registered using Q_DECLARE_METATYPE().
 
@@ -586,7 +589,7 @@ Q_GLOBAL_STATIC(QMetaTypeDebugStreamRegistry, customTypesDebugStreamRegistry)
 */
 
 /*!
-    \fn bool QMetaType::registerConverter(MemberFunction function)
+    \fn  template<typename MemberFunction, int> bool QMetaType::registerConverter(MemberFunction function)
     \since 5.2
     \overload
     Registers a method \a function like To From::function() const as converter from type From
@@ -594,7 +597,7 @@ Q_GLOBAL_STATIC(QMetaTypeDebugStreamRegistry, customTypesDebugStreamRegistry)
 */
 
 /*!
-    \fn bool QMetaType::registerConverter(MemberFunctionOk function)
+    \fn template<typename MemberFunctionOk, char> bool QMetaType::registerConverter(MemberFunctionOk function)
     \since 5.2
     \overload
     Registers a method \a function like To From::function(bool *ok) const as converter from type From
@@ -602,7 +605,7 @@ Q_GLOBAL_STATIC(QMetaTypeDebugStreamRegistry, customTypesDebugStreamRegistry)
 */
 
 /*!
-    \fn bool QMetaType::registerConverter(UnaryFunction function)
+    \fn template<typename UnaryFunction> bool QMetaType::registerConverter(UnaryFunction function)
     \since 5.2
     \overload
     Registers a unary function object \a function as converter from type From

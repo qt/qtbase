@@ -117,6 +117,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \typedef QStringView::storage_type
+
+    Alias for \c{char16_t} for non-Windows or if Q_COMPILER_UNICODE_STRINGS
+    is defined. Otherwise, alias for \c{wchar_t}.
+*/
+
+/*!
     \typedef QStringView::value_type
 
     Alias for \c{const QChar}. Provided for compatibility with the STL.
@@ -131,9 +138,9 @@ QT_BEGIN_NAMESPACE
 /*!
     \typedef QStringView::size_type
 
-    Alias for qssize_t. Provided for compatibility with the STL.
+    Alias for qsizetype. Provided for compatibility with the STL.
 
-    Unlike other Qt classes, QStringView uses qssize_t as its \c size_type, to allow
+    Unlike other Qt classes, QStringView uses qsizetype as its \c size_type, to allow
     accepting data from \c{std::basic_string} without truncation. The Qt API functions,
     for example length(), return \c int, while the STL-compatible functions, for example
     size(), return \c size_type.
@@ -224,7 +231,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView::QStringView(const Char *str, qssize_t len)
+    \fn  template <typename Char> QStringView::QStringView(const Char *str, qsizetype len)
 
     Constructs a string view on \a str with length \a len.
 
@@ -240,7 +247,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView::QStringView(const Char *first, const Char *last)
+    \fn template <typename Char> QStringView::QStringView(const Char *first, const Char *last)
 
     Constructs a string view on \a first with length (\a last - \a first).
 
@@ -260,7 +267,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView::QStringView(const Char *str)
+    \fn template <typename Char> QStringView::QStringView(const Char *str)
 
     Constructs a string view on \a str. The length is determined
     by scanning for the first \c{Char(0)}.
@@ -277,7 +284,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView::QStringView(const Char (&string)[N])
+    \fn template <typename Char, size_t N> QStringView::QStringView(const Char (&string)[N])
 
     Constructs a string view on the character string literal \a string.
     The length is set to \c{N-1}, excluding the trailing \{Char(0)}.
@@ -319,7 +326,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView::QStringView(const StdBasicString &str)
+    \fn template <typename StdBasicString> QStringView::QStringView(const StdBasicString &str)
 
     Constructs a string view on \a str. The length is taken from \c{str.size()}.
 
@@ -364,8 +371,7 @@ QT_BEGIN_NAMESPACE
 
     Returns a const pointer to the first character in the string.
 
-    \c{storage_type} is \c{char16_t}, except on MSVC 2013 (which lacks \c char16_t support),
-    where it is \c{wchar_t} instead.
+    \c{storage_type} is \c{char16_t}.
 
     \note The character array represented by the return value is \e not null-terminated.
 
@@ -486,7 +492,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn qssize_t QStringView::size() const
+    \fn qsizetype QStringView::size() const
 
     Returns the size of this string view, in UTF-16 code points (that is,
     surrogate pairs count as two for the purposes of this function, the same
@@ -510,7 +516,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QChar QStringView::operator[](qssize_t n) const
+    \fn QChar QStringView::operator[](qsizetype n) const
 
     Returns the character at position \a n in this string view.
 
@@ -520,7 +526,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QChar QStringView::at(qssize_t n) const
+    \fn QChar QStringView::at(qsizetype n) const
 
     Returns the character at position \a n in this string view.
 
@@ -582,7 +588,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView QStringView::mid(qssize_t start) const
+    \fn QStringView QStringView::mid(qsizetype start) const
 
     Returns the substring starting at position \a start in this object,
     and extending to the end of the string.
@@ -593,7 +599,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView QStringView::mid(qssize_t start, qssize_t length) const
+    \fn QStringView QStringView::mid(qsizetype start, qsizetype length) const
     \overload
 
     Returns the substring of length \a length starting at position
@@ -606,7 +612,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView QStringView::left(qssize_t length) const
+    \fn QStringView QStringView::left(qsizetype length) const
 
     Returns the substring of length \a length starting at position
     0 in this object.
@@ -617,7 +623,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView QStringView::right(qssize_t length) const
+    \fn QStringView QStringView::right(qsizetype length) const
 
     Returns the substring of length \a length starting at position
     size() - \a length in this object.
@@ -628,7 +634,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView QStringView::chopped(qssize_t length) const
+    \fn QStringView QStringView::chopped(qsizetype length) const
 
     Returns the substring of length size() - \a length starting at the
     beginning of this object.
@@ -641,7 +647,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QStringView::truncate(qssize_t length)
+    \fn void QStringView::truncate(qsizetype length)
 
     Truncates this string view to length \a length.
 
@@ -653,7 +659,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QStringView::chop(qssize_t length)
+    \fn void QStringView::chop(qsizetype length)
 
     Truncates this string view by \a length characters.
 
@@ -672,8 +678,6 @@ QT_BEGIN_NAMESPACE
     Whitespace means any character for which QChar::isSpace() returns
     \c true. This includes the ASCII characters '\\t', '\\n', '\\v',
     '\\f', '\\r', and ' '.
-
-    \sa qTrimmed()
 */
 
 /*!
@@ -689,7 +693,7 @@ QT_BEGIN_NAMESPACE
     If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
     otherwise the search is case-insensitive.
 
-    \sa endsWith(), qStartsWith()
+    \sa endsWith()
 */
 
 /*!
@@ -705,7 +709,7 @@ QT_BEGIN_NAMESPACE
     If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
     otherwise the search is case-insensitive.
 
-    \sa startsWith(), qEndsWith()
+    \sa startsWith()
 */
 
 /*!
@@ -715,7 +719,7 @@ QT_BEGIN_NAMESPACE
 
     The behavior is undefined if the string contains non-Latin1 characters.
 
-    \sa toUtf8(), toLocal8Bit(), QTextCodec, qConvertToLatin1()
+    \sa toUtf8(), toLocal8Bit(), QTextCodec
 */
 
 /*!
@@ -730,7 +734,7 @@ QT_BEGIN_NAMESPACE
     The behavior is undefined if the string contains characters not
     supported by the locale's 8-bit encoding.
 
-    \sa toLatin1(), toUtf8(), QTextCodec, qConvertToLocal8Bit()
+    \sa toLatin1(), toUtf8(), QTextCodec
 */
 
 /*!
@@ -741,7 +745,7 @@ QT_BEGIN_NAMESPACE
     UTF-8 is a Unicode codec and can represent all characters in a Unicode
     string like QString.
 
-    \sa toLatin1(), toLocal8Bit(), QTextCodec, qConvertToUtf8()
+    \sa toLatin1(), toLocal8Bit(), QTextCodec
 */
 
 /*!
@@ -760,7 +764,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn qToStringViewIgnoringNull(const QStringLike &s);
+    \fn template <typename QStringLike> qToStringViewIgnoringNull(const QStringLike &s);
     \since 5.10
     \internal
 
@@ -772,6 +776,15 @@ QT_BEGIN_NAMESPACE
     if null QStrings can legitimately be treated as empty ones.
 
     \sa QString::isNull(), QStringRef::isNull(), QStringView
+*/
+
+/*!
+    \fn bool QStringView::isRightToLeft() const
+    \since 5.11
+
+    Returns \c true if the string is read right to left.
+
+    \sa QString::isRightToLeft()
 */
 
 QT_END_NAMESPACE

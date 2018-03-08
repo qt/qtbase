@@ -207,14 +207,17 @@ bool QFileSystemModel::remove(const QModelIndex &aindex)
 
     const QString path = d->filePath(aindex);
     const QFileInfo fileInfo(path);
+#if QT_CONFIG(filesystemwatcher) && defined(Q_OS_WIN)
+    // QTBUG-65683: Remove file system watchers prior to deletion to prevent
+    // failure due to locked files on Windows.
+    const QStringList watchedPaths = d->unwatchPathsAt(aindex);
+#endif // filesystemwatcher && Q_OS_WIN
     const bool success = (fileInfo.isFile() || fileInfo.isSymLink())
             ? QFile::remove(path) : QDir(path).removeRecursively();
-#ifndef QT_NO_FILESYSTEMWATCHER
-    if (success) {
-        QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());
-        d->fileInfoGatherer.removePath(path);
-    }
-#endif
+#if QT_CONFIG(filesystemwatcher) && defined(Q_OS_WIN)
+    if (!success)
+        d->watchPaths(watchedPaths);
+#endif // filesystemwatcher && Q_OS_WIN
     return success;
 }
 
@@ -260,7 +263,10 @@ QModelIndex QFileSystemModel::index(int row, int column, const QModelIndex &pare
     Q_ASSERT(parentNode);
 
     // now get the internal pointer for the index
-    const QString &childName = parentNode->visibleChildren.at(d->translateVisibleLocation(parentNode, row));
+    const int i = d->translateVisibleLocation(parentNode, row);
+    if (i >= parentNode->visibleChildren.size())
+        return QModelIndex();
+    const QString &childName = parentNode->visibleChildren.at(i);
     const QFileSystemModelPrivate::QFileSystemNode *indexNode = parentNode->children.value(childName);
     Q_ASSERT(indexNode);
 
@@ -744,7 +750,7 @@ QVariant QFileSystemModel::data(const QModelIndex &index, int role) const
         break;
     case Qt::TextAlignmentRole:
         if (index.column() == 1)
-            return Qt::AlignRight;
+            return QVariant(Qt::AlignTrailing | Qt::AlignVCenter);
         break;
     case FilePermissions:
         int p = permissions(index);
@@ -848,6 +854,20 @@ QIcon QFileSystemModelPrivate::icon(const QModelIndex &index) const
     return node(index)->icon();
 }
 
+static void displayRenameFailedMessage(const QString &newName)
+{
+#if QT_CONFIG(messagebox)
+    const QString message =
+        QFileSystemModel::tr("<b>The name \"%1\" cannot be used.</b>"
+                             "<p>Try using another name, with fewer characters or no punctuation marks.")
+                             .arg(newName);
+    QMessageBox::information(nullptr, QFileSystemModel::tr("Invalid filename"),
+                             message, QMessageBox::Ok);
+#else
+    Q_UNUSED(newName)
+#endif // QT_CONFIG(messagebox)
+}
+
 /*!
     \reimp
 */
@@ -868,15 +888,21 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
 
     const QString parentPath = filePath(parent(idx));
 
-    if (newName.isEmpty()
-        || QDir::toNativeSeparators(newName).contains(QDir::separator())
-        || !QDir(parentPath).rename(oldName, newName)) {
-#if QT_CONFIG(messagebox)
-        QMessageBox::information(0, QFileSystemModel::tr("Invalid filename"),
-                                QFileSystemModel::tr("<b>The name \"%1\" can not be used.</b><p>Try using another name, with fewer characters or no punctuations marks.")
-                                .arg(newName),
-                                 QMessageBox::Ok);
-#endif // QT_CONFIG(messagebox)
+    if (newName.isEmpty() || QDir::toNativeSeparators(newName).contains(QDir::separator())) {
+        displayRenameFailedMessage(newName);
+        return false;
+    }
+
+#if QT_CONFIG(filesystemwatcher) && defined(Q_OS_WIN)
+    // QTBUG-65683: Remove file system watchers prior to renaming to prevent
+    // failure due to locked files on Windows.
+    const QStringList watchedPaths = d->unwatchPathsAt(idx);
+#endif // filesystemwatcher && Q_OS_WIN
+    if (!QDir(parentPath).rename(oldName, newName)) {
+#if QT_CONFIG(filesystemwatcher) && defined(Q_OS_WIN)
+        d->watchPaths(watchedPaths);
+#endif
+        displayRenameFailedMessage(newName);
         return false;
     } else {
         /*
@@ -1083,8 +1109,8 @@ void QFileSystemModelPrivate::sortChildren(int column, const QModelIndex &parent
         return;
 
     QVector<QFileSystemModelPrivate::QFileSystemNode*> values;
-    QHash<QString, QFileSystemNode *>::const_iterator iterator;
-    for(iterator = indexNode->children.constBegin() ; iterator != indexNode->children.constEnd() ; ++iterator) {
+
+    for (auto iterator = indexNode->children.constBegin(), cend = indexNode->children.constEnd(); iterator != cend; ++iterator) {
         if (filtersAcceptsNode(iterator.value())) {
             values.append(iterator.value());
         } else {
@@ -1644,13 +1670,10 @@ void QFileSystemModelPrivate::_q_directoryChanged(const QString &directory, cons
     QStringList toRemove;
     QStringList newFiles = files;
     std::sort(newFiles.begin(), newFiles.end());
-    QHash<QString, QFileSystemNode*>::const_iterator i = parentNode->children.constBegin();
-    while (i != parentNode->children.constEnd()) {
+    for (auto i = parentNode->children.constBegin(), cend = parentNode->children.constEnd(); i != cend; ++i) {
         QStringList::iterator iterator = std::lower_bound(newFiles.begin(), newFiles.end(), i.value()->fileName);
         if ((iterator == newFiles.end()) || (i.value()->fileName < *iterator))
             toRemove.append(i.value()->fileName);
-
-        ++i;
     }
     for (int i = 0 ; i < toRemove.count() ; ++i )
         removeNode(parentNode, toRemove[i]);
@@ -1881,6 +1904,46 @@ void QFileSystemModelPrivate::_q_resolvedName(const QString &fileName, const QSt
 {
     resolvedSymLinks[fileName] = resolvedName;
 }
+
+#if QT_CONFIG(filesystemwatcher) && defined(Q_OS_WIN)
+// Remove file system watchers at/below the index and return a list of previously
+// watched files. This should be called prior to operations like rename/remove
+// which might fail due to watchers on platforms like Windows. The watchers
+// should be restored on failure.
+QStringList QFileSystemModelPrivate::unwatchPathsAt(const QModelIndex &index)
+{
+    const QFileSystemModelPrivate::QFileSystemNode *indexNode = node(index);
+    if (indexNode == nullptr)
+        return QStringList();
+    const Qt::CaseSensitivity caseSensitivity = indexNode->caseSensitive()
+        ? Qt::CaseSensitive : Qt::CaseInsensitive;
+    const QString path = indexNode->fileInfo().absoluteFilePath();
+
+    QStringList result;
+    const auto filter = [path, caseSensitivity] (const QString &watchedPath)
+    {
+        const int pathSize = path.size();
+        if (pathSize == watchedPath.size()) {
+            return path.compare(watchedPath, caseSensitivity) == 0;
+        } else if (watchedPath.size() > pathSize) {
+            return watchedPath.at(pathSize) == QLatin1Char('/')
+                && watchedPath.startsWith(path, caseSensitivity);
+        }
+        return false;
+    };
+
+    const QStringList &watchedFiles = fileInfoGatherer.watchedFiles();
+    std::copy_if(watchedFiles.cbegin(), watchedFiles.cend(),
+                 std::back_inserter(result), filter);
+
+    const QStringList &watchedDirectories = fileInfoGatherer.watchedDirectories();
+    std::copy_if(watchedDirectories.cbegin(), watchedDirectories.cend(),
+                 std::back_inserter(result), filter);
+
+    fileInfoGatherer.unwatchPaths(result);
+    return result;
+}
+#endif // filesystemwatcher && Q_OS_WIN
 
 /*!
     \internal

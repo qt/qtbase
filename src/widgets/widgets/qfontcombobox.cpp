@@ -263,7 +263,7 @@ void QFontFamilyDelegate::paint(QPainter *painter,
         system = writingSystem;
 
     if (system != QFontDatabase::Any) {
-        int w = painter->fontMetrics().width(text + QLatin1String("  "));
+        int w = painter->fontMetrics().horizontalAdvance(text + QLatin1String("  "));
         painter->setFont(font2);
         QString sample = QFontDatabase().writingSystemSample(system);
         if (option.direction == Qt::RightToLeft)
@@ -287,7 +287,7 @@ QSize QFontFamilyDelegate::sizeHint(const QStyleOptionViewItem &option,
 //     font.setFamily(text);
     font.setPointSize(QFontInfo(font).pointSize() * 3/2);
     QFontMetrics fontMetrics(font);
-    return QSize(fontMetrics.width(text), fontMetrics.height());
+    return QSize(fontMetrics.horizontalAdvance(text), fontMetrics.height());
 }
 
 
@@ -524,7 +524,7 @@ void QFontComboBox::setCurrentFont(const QFont &font)
 }
 
 /*!
-    \fn QFontComboBox::currentFontChanged(const QFont &font)
+    \fn void QFontComboBox::currentFontChanged(const QFont &font)
 
     This signal is emitted whenever the current font changes, with
     the new \a font.
@@ -554,7 +554,7 @@ QSize QFontComboBox::sizeHint() const
 {
     QSize sz = QComboBox::sizeHint();
     QFontMetrics fm(font());
-    sz.setWidth(fm.width(QLatin1Char('m'))*14);
+    sz.setWidth(fm.horizontalAdvance(QLatin1Char('m'))*14);
     return sz;
 }
 

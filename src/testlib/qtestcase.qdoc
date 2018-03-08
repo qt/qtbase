@@ -103,7 +103,7 @@
    to catch an exception thrown from the \a expression. If the \a expression
    throws an exception and its type is the same as \a exceptiontype
    or \a exceptiontype is substitutable with the type of thrown exception
-   (i.e. usually the type of thrown exception is publically derived
+   (i.e. usually the type of thrown exception is publicly derived
    from \a exceptiontype) then execution will be continued. If not-substitutable
    type of exception is thrown or the \a expression doesn't throw an exception
    at all, then a failure will be recorded in the test log and
@@ -877,7 +877,42 @@
 */
 
 /*!
-    \fn char *QTest::toString(const T &value)
+    \fn template <typename T1, typename T2> char *QTest::toString(const QPair<T1, T2> &pair)
+    \overload
+    \since 5.11
+    Returns a textual representation of the \a pair.
+*/
+
+/*!
+    \fn template <typename T1, typename T2> char *QTest::toString(const std::pair<T1, T2> &pair)
+    \overload
+    \since 5.11
+    Returns a textual representation of the \a pair.
+*/
+
+/*!
+    \fn char *QTest::toString(const QVector2D &v)
+    \overload
+    \since 5.11
+    Returns a textual representation of the 2D vector \a v.
+*/
+
+/*!
+    \fn char *QTest::toString(const QVector3D &v)
+    \overload
+    \since 5.11
+    Returns a textual representation of the 3D vector \a v.
+*/
+
+/*!
+    \fn char *QTest::toString(const QVector4D &v)
+    \overload
+    \since 5.11
+    Returns a textual representation of the 4D vector \a v.
+*/
+
+/*!
+    \fn template<typename T> char *QTest::toString(const T &value)
 
     Returns a textual representation of \a value. This function is used by
     \l QCOMPARE() to output verbose information in case of a test failure.
@@ -925,6 +960,22 @@
     \since 5.8
 
     Returns a string containing \c{nullptr}.
+*/
+
+/*!
+    \fn char *QTest::toString(const QStringView &string)
+    \overload
+    \since 5.11
+
+    Returns a textual representation of the given \a string.
+*/
+
+/*!
+    \fn char *QTest::toString(const QUuid &uuid)
+    \overload
+    \since 5.11
+
+    Returns a textual representation of the given \a uuid.
 */
 
 /*!
@@ -1075,7 +1126,7 @@
     \sa QTest::qSleep(), QSignalSpy::wait()
 */
 
-/*! \fn void QTest::qWaitFor(Functor predicate, int timeout)
+/*! \fn template <typename Functor> bool QTest::qWaitFor(Functor predicate, int timeout)
 
     Waits for \a timeout milliseconds or until the \a predicate returns true.
 
@@ -1326,10 +1377,6 @@
 */
 
 // Internals of qtestmouse.h:
-
-/*! \fn void QTest::waitForEvents()
-    \internal
-*/
 
 /*! \fn void QTest::mouseEvent(MouseAction action, QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers stateKey, QPoint pos, int delay=-1)
     \internal

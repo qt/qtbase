@@ -363,7 +363,7 @@ void QDateTimeEdit::setMinimumDateTime(const QDateTime &dt)
   clearMaximumDateTime().
 
   By default, this property contains a date that refers to 31 December,
-  7999 and a time of 23:59:59 and 999 milliseconds.
+  9999 and a time of 23:59:59 and 999 milliseconds.
 
   \sa minimumDateTime(), minimumTime(), maximumTime(), minimumDate(),
   maximumDate(), setDateTimeRange(), setDateRange(), setTimeRange(),
@@ -466,7 +466,7 @@ void QDateTimeEdit::clearMinimumDate()
   necessary to ensure that the range remains valid. If the date is
   not a valid QDate object, this function does nothing.
 
-  By default, this property contains a date that refers to December 31, 7999.
+  By default, this property contains a date that refers to December 31, 9999.
 
   \sa minimumDate, minimumTime, maximumTime, setDateRange()
 */
@@ -966,12 +966,12 @@ QSize QDateTimeEdit::sizeHint() const
         int w = 0;
         QString s;
         s = d->textFromValue(d->minimum) + QLatin1Char(' ');
-        w = qMax<int>(w, fm.width(s));
+        w = qMax<int>(w, fm.horizontalAdvance(s));
         s = d->textFromValue(d->maximum) + QLatin1Char(' ');
-        w = qMax<int>(w, fm.width(s));
+        w = qMax<int>(w, fm.horizontalAdvance(s));
         if (d->specialValueText.size()) {
             s = d->specialValueText;
-            w = qMax<int>(w, fm.width(s));
+            w = qMax<int>(w, fm.horizontalAdvance(s));
         }
         w += 2; // cursor blinking space
 
@@ -1129,7 +1129,7 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
             }
 #endif
         }
-        // else fall through
+        Q_FALLTHROUGH();
     case Qt::Key_Backtab:
     case Qt::Key_Tab: {
         event->accept();

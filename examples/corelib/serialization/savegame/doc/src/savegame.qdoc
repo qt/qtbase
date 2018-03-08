@@ -1,0 +1,187 @@
+/****************************************************************************
+**
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example serialization/savegame
+    \title JSON Save Game Example
+
+    \brief The JSON Save Game example demonstrates how to save and load a
+    small game using QJsonDocument, QJsonObject and QJsonArray.
+
+    Many games provide save functionality, so that the player's progress through
+    the game can be saved and loaded at a later time. The process of saving a
+    game generally involves serializing each game object's member variables
+    to a file. Many formats can be used for this purpose, one of which is JSON.
+    With QJsonDocument, you also have the ability to serialize a document in a
+    binary format, which is great if you don't want the save file to be
+    readable, or if you need to keep the file size down.
+
+    In this example, we'll demonstrate how to save and load a simple game to
+    and from JSON and binary formats.
+
+    \section1 The Character Class
+
+    The Character class represents a non-player character (NPC) in our game, and
+    stores the player's name, level, and class type.
+
+    It provides read() and write() functions to serialise its member variables.
+
+    \snippet serialization/savegame/character.h 0
+
+    Of particular interest to us are the read and write function
+    implementations:
+
+    \snippet serialization/savegame/character.cpp 0
+
+    In the read() function, we assign Character's members values from the
+    QJsonObject argument. You can use either \l QJsonObject::operator[]() or
+    QJsonObject::value() to access values within the JSON object; both are
+    const functions and return QJsonValue::Undefined if the key is invalid. We
+    check if the keys are valid before attempting to read them with
+    QJsonObject::contains().
+
+    \snippet serialization/savegame/character.cpp 1
+
+    In the write() function, we do the reverse of the read() function; assign
+    values from the Character object to the JSON object. As with accessing
+    values, there are two ways to set values on a QJsonObject:
+    \l QJsonObject::operator[]() and QJsonObject::insert(). Both will override
+    any existing value at the given key.
+
+    Next up is the Level class:
+
+    \snippet serialization/savegame/level.h 0
+
+    We want to have several levels in our game, each with several NPCs, so we
+    keep a QVector of Character objects. We also provide the familiar read() and
+    write() functions.
+
+    \snippet serialization/savegame/level.cpp 0
+
+    Containers can be written and read to and from JSON using QJsonArray. In our
+    case, we construct a QJsonArray from the value associated with the key
+    \c "npcs". Then, for each QJsonValue element in the array, we call
+    toObject() to get the Character's JSON object. The Character object can then
+    read their JSON and be appended to our NPC array.
+
+    \note \l{Container Classes}{Associate containers} can be written by storing
+    the key in each value object (if it's not already). With this approach, the
+    container is stored as a regular array of objects, but the index of each
+    element is used as the key to construct the container when reading it back
+    in.
+
+    \snippet serialization/savegame/level.cpp 1
+
+    Again, the write() function is similar to the read() function, except
+    reversed.
+
+    Having established the Character and Level classes, we can move on to
+    the Game class:
+
+    \snippet serialization/savegame/game.h 0
+
+    First of all, we define the \c SaveFormat enum. This will allow us to
+    specify the format in which the game should be saved: \c Json or \c Binary.
+
+    Next, we provide accessors for the player and levels. We then expose three
+    functions: newGame(), saveGame() and loadGame().
+
+    The read() and write() functions are used by saveGame() and loadGame().
+
+    \snippet serialization/savegame/game.cpp 0
+
+    To setup a new game, we create the player and populate the levels and their
+    NPCs.
+
+    \snippet serialization/savegame/game.cpp 1
+
+    The first thing we do in the read() function is tell the player to read
+    itself. We then clear the level array so that calling loadGame() on the
+    same Game object twice doesn't result in old levels hanging around.
+
+    We then populate the level array by reading each Level from a QJsonArray.
+
+    \snippet serialization/savegame/game.cpp 2
+
+    We write the game to JSON similarly to how we write Level.
+
+    \snippet serialization/savegame/game.cpp 3
+
+    When loading a saved game in loadGame(), the first thing we do is open the
+    save file based on which format it was saved to; \c "save.json" for JSON,
+    and \c "save.dat" for binary. We print a warning and return \c false if the
+    file couldn't be opened.
+
+    Since QJsonDocument's \l{QJsonDocument::fromJson()}{fromJson()} and
+    \l{QJsonDocument::fromBinaryData()}{fromBinaryData()} functions both take a
+    QByteArray, we can read the entire contents of the save file into one,
+    regardless of the save format.
+
+    After constructing the QJsonDocument, we instruct the Game object to read
+    itself and then return \c true to indicate success.
+
+    \snippet serialization/savegame/game.cpp 4
+
+    Not surprisingly, saveGame() looks very much like loadGame(). We determine
+    the file extension based on the format, print a warning and return \c false
+    if the opening of the file fails. We then write the Game object to a
+    QJsonDocument, and call either QJsonDocument::toJson() or to
+    QJsonDocument::toBinaryData() to save the game, depending on which format
+    was specified.
+
+    We are now ready to enter main():
+
+    \snippet serialization/savegame/main.cpp 0
+
+    Since we're only interested in demonstrating \e serialization of a game with
+    JSON, our game is not actually playable. Therefore, we only need
+    QCoreApplication and have no event loop. On application start-up we parse
+    the command-line arguments to decide how to start the game. For the first
+    argument the options "new" (default) and "load" are available. When "new"
+    is specified a new game will be generated, and when "load" is specified a
+    previously saved game will be loaded in. For the second argument
+    "json" (default) and "binary" are available as options. This argument will
+    decide which file is saved to and/or loaded from. We then move ahead and
+    assume that the player had a great time and made lots of progress, altering
+    the internal state of our Character, Level and Game objects.
+
+    \snippet serialization/savegame/main.cpp 1
+
+    When the player has finished, we save their game. For demonstration
+    purposes, we can serialize to either JSON or binary. You can examine the
+    contents of the files in the same directory as the executable (or re-run
+    the example, making sure to also specify the "load" option), although the
+    binary save file will contain some garbage characters (which is normal).
+
+    That concludes our example. As you can see, serialization with Qt's JSON
+    classes is very simple and convenient. The advantages of using QJsonDocument
+    and friends over QDataStream, for example, is that you not only get
+    human-readable JSON files, but you also have the option to use a binary
+    format if it's required, \e without rewriting any code.
+
+    \sa {JSON Support in Qt}, {Data Storage}
+*/

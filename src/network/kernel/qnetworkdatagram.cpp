@@ -124,9 +124,7 @@ QT_BEGIN_NAMESPACE
       \row      \li Linux               \li Supported       \li Supported       \li Supported
       \row      \li OS X                \li Supported       \li Supported       \li Only for IPv6
       \row      \li Other Unix supporting RFC 3542 \li Only for IPv6 \li Only for IPv6 \li Only for IPv6
-      \row      \li Windows XP and older \li Not supported  \li Not supported   \li Not supported
-      \row      \li Windows Vista & up  \li Supported       \li Supported       \li Supported
-      \row      \li Windows CE          \li Not supported   \li Not supported   \li Not supported
+      \row      \li Windows (desktop)   \li Supported       \li Supported       \li Supported
       \row      \li Windows RT          \li Not supported   \li Not supported   \li Not supported
     \endtable
 
@@ -444,10 +442,11 @@ void QNetworkDatagram::setData(const QByteArray &data)
 }
 
 /*!
-    \fn QNetworkDatagram QNetworkDatagram::makeReply(const QByteArray &data) const
+    \fn QNetworkDatagram QNetworkDatagram::makeReply(const QByteArray &payload) const &
+    \fn QNetworkDatagram QNetworkDatagram::makeReply(const QByteArray &payload) &&
 
     Creates a new QNetworkDatagram representing a reply to this incoming datagram
-    and sets the payload data to \a data. This function is a very convenient
+    and sets the payload data to \a payload. This function is a very convenient
     way of responding to a datagram back to the original sender.
 
     Example:
@@ -497,6 +496,7 @@ void QNetworkDatagram::setData(const QByteArray &data)
     \endcode
  */
 
+
 static bool isNonMulticast(const QHostAddress &addr)
 {
     // is it a multicast address?
@@ -529,6 +529,11 @@ void QNetworkDatagram::destroy(QNetworkDatagramPrivate *d)
     Q_ASSUME(d);
     delete d;
 }
+
+/*! \fn  void QNetworkDatagram::swap(QNetworkDatagram &other)
+  Swaps this instance with \a other.
+*/
+
 
 QT_END_NAMESPACE
 

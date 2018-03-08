@@ -39,8 +39,6 @@
 
 #include "qresultstore.h"
 
-#ifndef QT_NO_QFUTURE
-
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
@@ -256,5 +254,3 @@ int ResultStoreBase::updateInsertIndex(int index, int _count)
 } // namespace QtPrivate
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_QFUTURE

@@ -1,7 +1,8 @@
 {
     "module": "gui",
     "depends": [
-        "core"
+        "core",
+        "network"
     ],
     "testDir": "../../config.tests",
 
@@ -45,7 +46,6 @@
             "xcb-xlib": "boolean",
             "xinput2": "boolean",
             "xkb": "boolean",
-            "xkb-config-root": "string",
             "xkbcommon": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "xkbcommon-evdev": "boolean",
             "xkbcommon-x11": { "type": "enum", "name": "xkbcommon", "values": [ "no", "qt", "system" ] }
@@ -167,25 +167,20 @@
             "label": "Fontconfig",
             "test": {
                 "head": [
-                    "#include <ft2build.h>",
-                    "#include FT_FREETYPE_H",
                     "#include <fontconfig/fontconfig.h>",
                     "#ifndef FC_RGBA_UNKNOWN",
                     "#  error This version of fontconfig is tool old, it is missing the FC_RGBA_UNKNOWN define",
-                    "#endif",
-                    "#if ((FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) < 20110)",
-                    "#  error This version of freetype is too old.",
                     "#endif"
                 ],
                 "main": [
-                    "FT_Face face = 0;",
                     "FcPattern *pattern = 0;"
                 ]
             },
             "sources": [
-                { "type": "pkgConfig", "args": "fontconfig freetype2" },
-                { "type": "freetype", "libs": "-lfontconfig -lfreetype" }
-            ]
+                { "type": "pkgConfig", "args": "fontconfig" },
+                { "type": "freetype", "libs": "-lfontconfig" }
+            ],
+            "use": "freetype"
         },
         "gbm": {
             "label": "GBM",
@@ -207,7 +202,7 @@
             "test": {
                 "include": "harfbuzz/hb.h",
                 "tail": [
-                    "#if !HB_VERSION_ATLEAST(0, 9, 42)",
+                    "#if !HB_VERSION_ATLEAST(1, 6, 0)",
                     "#  error This version of harfbuzz is too old.",
                     "#endif"
                 ],
@@ -395,6 +390,30 @@
             },
             "sources": [
                 "-lts"
+            ]
+        },
+        "v4l2": {
+            "label": "V4L2",
+            "test": {
+                "include": [
+                    "cstddef"
+                ],
+                "tail": [
+                    "extern \"C\" {",
+                    "#include <mediactl/mediactl.h>",
+                    "#include <mediactl/v4l2subdev.h>",
+                    "}"
+                ],
+                "main": [
+                    "v4l2_format fmt;",
+                    "media_pad *pad = nullptr;",
+                    "media_device *device = media_device_new(\"/dev/media\");",
+                    "v4l2_subdev_set_format(nullptr, nullptr, 0, V4L2_SUBDEV_FORMAT_ACTIVE);"
+                ]
+            },
+            "sources": [
+                { "type": "pkgConfig", "args": "libv4l2 libmediactl" },
+                "-lmediactl -lv4l2 -lv4l2subdev"
             ]
         },
         "vulkan": {
@@ -606,15 +625,20 @@
     },
 
     "testTypeAliases": {
-        "files": [ "directX" ],
-        "getPkgConfigVariable": [ "xkbConfigRoot" ]
+        "files": [ "directX" ]
     },
 
     "tests": {
         "angle_d3d11_qdtd": {
             "label": "D3D11_QUERY_DATA_TIMESTAMP_DISJOINT",
             "type": "compile",
-            "test": "win/angle_d3d11_qdtd"
+            "test": {
+                "include": "d3d11.h",
+                "main": [
+                    "D3D11_QUERY_DATA_TIMESTAMP_DISJOINT qdtd;",
+                    "(void) qdtd;"
+                ]
+            }
         },
         "directwrite2": {
             "label": "DirectWrite 2",
@@ -723,6 +747,33 @@
                 ]
             },
             "use": "egl"
+        },
+        "egl-openwfd": {
+            "label": "OpenWFD EGL",
+            "type": "compile",
+            "test": {
+                "include": [ "wfd.h" ],
+                "main": [
+                    "wfdEnumerateDevices(nullptr, 0, nullptr);"
+                ]
+            },
+            "use": "egl"
+        },
+        "egl-rcar": {
+            "label": "RCAR EGL",
+            "type": "compile",
+            "test": {
+                "include": [ "EGL/egl.h" ],
+                "tail": [
+                    "extern \"C\" {",
+                    "extern unsigned long PVRGrfxServerInit(void);",
+                    "}"
+                ],
+                "main": [
+                    "PVRGrfxServerInit();"
+                ]
+            },
+            "use": "egl opengl_es2"
         },
         "evdev": {
             "label": "evdev",
@@ -837,13 +888,6 @@
             "value": "/usr",
             "log": "value"
         },
-        "xkbconfigroot": {
-            "label": "XKB config root",
-            "type": "xkbConfigRoot",
-            "pkg-config-args": "xkeyboard-config",
-            "pkg-config-variable": "xkb_base",
-            "log": "value"
-        },
         "xlib": {
             "label": "XLib",
             "type": "compile",
@@ -930,7 +974,8 @@
         },
         "fontconfig": {
             "label": "Fontconfig",
-            "condition": "!config.win32 && !config.darwin && features.system-freetype && libs.fontconfig",
+            "autoDetect": "!config.darwin",
+            "condition": "!config.win32 && features.system-freetype && libs.fontconfig",
             "output": [ "privateFeature", "feature" ]
         },
         "gbm": {
@@ -954,7 +999,7 @@
             "label": "IMF",
             "emitIf": "config.qnx",
             "condition": "libs.imf",
-            "output": [ "privateConfig" ]
+            "output": [ "privateFeature" ]
         },
         "integrityfb": {
             "label": "INTEGRITY framebuffer",
@@ -994,10 +1039,19 @@
             "condition": "tests.linuxfb && features.regularexpression",
             "output": [ "privateFeature" ]
         },
+        "vsp2": {
+            "label": "VSP2",
+            "condition": "libs.v4l2",
+            "autoDetect": false,
+            "output": [ "privateFeature" ]
+        },
         "vnc": {
             "label": "VNC",
             "section": "Platform plugins",
-            "condition": "config.unix && !config.android && !config.darwin && features.regularexpression",
+            "condition": [
+                "config.unix && !config.android && !config.darwin",
+                "features.regularexpression && features.network"
+            ],
             "output": [ "privateFeature" ]
         },
         "mirclient": {
@@ -1113,6 +1167,11 @@
             "condition": "features.eglfs && features.gbm && features.kms",
             "output": [ "privateFeature" ]
         },
+        "eglfs_vsp2": {
+            "label": "EGLFS VSP2",
+            "condition": "features.eglfs && features.gbm && features.kms && features.vsp2",
+            "output": [ "privateFeature" ]
+        },
         "eglfs_mali": {
             "label": "EGLFS Mali",
             "condition": "features.eglfs && (tests.egl-mali || tests.egl-mali-2)",
@@ -1123,9 +1182,19 @@
             "condition": "features.eglfs && tests.egl-viv",
             "output": [ "privateFeature" ]
         },
+        "eglfs_rcar": {
+            "label": "EGLFS RCAR",
+            "condition": "config.integrity && features.eglfs && tests.egl-rcar",
+            "output": [ "privateFeature" ]
+        },
         "eglfs_viv_wl": {
             "label": "EGLFS i.Mx6 Wayland",
             "condition": "features.eglfs_viv && libs.wayland_server",
+            "output": [ "privateFeature" ]
+        },
+        "eglfs_openwfd": {
+            "label": "EGLFS OpenWFD",
+            "condition": "config.integrity && features.eglfs && tests.egl-openwfd",
             "output": [ "privateFeature" ]
         },
         "gif": {
@@ -1193,10 +1262,17 @@
             "condition": "libs.tslib",
             "output": [ "privateFeature" ]
         },
+        "tuiotouch": {
+            "label": "TuioTouch",
+            "purpose": "Provides the TuioTouch input plugin.",
+            "condition": "features.network && features.udpsocket",
+            "output": [ "privateFeature" ]
+        },
         "xcb": {
             "label": "XCB",
             "section": "Platform plugins",
             "autoDetect": "!config.darwin",
+            "enable": "input.xcb == 'system' || input.xcb == 'qt'",
             "condition": "libs.xcb",
             "output": [ "privateFeature" ]
         },
@@ -1274,14 +1350,9 @@
             "condition": "libs.xkbcommon_x11",
             "output": [ "privateFeature" ]
         },
-        "xkb-config-root": {
-            "label": "XKB config root",
-            "emitIf": "features.xcb",
-            "condition": "features.xcb && !features.xkbcommon-system && tests.xkbconfigroot",
-            "output": [ { "type": "varAssign", "name": "QMAKE_XKB_CONFIG_ROOT", "value": "tests.xkbconfigroot.value"} ]
-        },
         "xlib": {
             "label": "XLib",
+            "autoDetect": "!config.darwin || features.xcb",
             "condition": "tests.xlib",
             "output": [ "privateFeature" ]
         },
@@ -1498,10 +1569,11 @@
 
     "report": [
         {
-            "type": "warning",
-            "condition": "features.xcb && !features.xkbcommon-system && !features.xkb-config-root",
-            "message": "Could not find XKB config root, use -xkb-config-root to set a path to
-XKB configuration data. This is required for keyboard input support."
+            "type": "note",
+            "condition": "features.xcb && config.darwin",
+            "message": "XCB support on macOS is minimal and untested. Some features will
+not work properly or at all (e.g. OpenGL, desktop services or accessibility),
+or may depend on your system and XQuartz setup."
         },
         {
             "type": "note",
@@ -1613,7 +1685,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                     "section": "EGLFS details",
                     "condition": "features.eglfs",
                     "entries": [
-                        "eglfs_viv", "eglfs_viv_wl", "eglfs_egldevice", "eglfs_gbm", "eglfs_mali", "eglfs_brcm", "egl_x11"
+                        "eglfs_openwfd", "eglfs_viv", "eglfs_viv_wl", "eglfs_rcar", "eglfs_egldevice", "eglfs_gbm", "eglfs_vsp2", "eglfs_mali", "eglfs_brcm", "egl_x11"
                     ]
                 },
                 "linuxfb", "vnc", "mirclient",

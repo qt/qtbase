@@ -1,6 +1,7 @@
 # Nokia Qt Examples: elided label example
 
 QT += core gui widgets
+requires(qtConfig(combobox))
 
 TARGET = elidedlabel
 TEMPLATE = app

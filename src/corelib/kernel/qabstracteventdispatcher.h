@@ -49,7 +49,7 @@ class QAbstractNativeEventFilter;
 class QAbstractEventDispatcherPrivate;
 class QSocketNotifier;
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
 class QWinEventNotifier;
 #endif
 
@@ -96,7 +96,7 @@ public:
 
     virtual int remainingTime(int timerId) = 0;
 
-#if defined(Q_OS_WIN) || defined(Q_QDOC)
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
     virtual bool registerEventNotifier(QWinEventNotifier *notifier) = 0;
     virtual void unregisterEventNotifier(QWinEventNotifier *notifier) = 0;
 #endif

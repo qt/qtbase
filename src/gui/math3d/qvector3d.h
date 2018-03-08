@@ -154,7 +154,7 @@ Q_DECL_CONSTEXPR inline QVector3D::QVector3D() : xp(0.0f), yp(0.0f), zp(0.0f) {}
 
 Q_DECL_CONSTEXPR inline QVector3D::QVector3D(const QPoint& point) : xp(point.x()), yp(point.y()), zp(0.0f) {}
 
-Q_DECL_CONSTEXPR inline QVector3D::QVector3D(const QPointF& point) : xp(point.x()), yp(point.y()), zp(0.0f) {}
+Q_DECL_CONSTEXPR inline QVector3D::QVector3D(const QPointF& point) : xp(float(point.x())), yp(float(point.y())), zp(0.0f) {}
 
 inline bool QVector3D::isNull() const
 {

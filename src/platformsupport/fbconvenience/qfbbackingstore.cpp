@@ -104,9 +104,8 @@ void QFbBackingStore::beginPaint(const QRegion &region)
     if (mImage.hasAlphaChannel()) {
         QPainter p(&mImage);
         p.setCompositionMode(QPainter::CompositionMode_Source);
-        const QVector<QRect> rects = region.rects();
-        for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it)
-            p.fillRect(*it, Qt::transparent);
+        for (const QRect &r : region)
+            p.fillRect(r, Qt::transparent);
     }
 }
 

@@ -318,7 +318,7 @@ QSize QCommandLinkButton::sizeHint() const
 
     QSize size = QPushButton::sizeHint();
     QFontMetrics fm(d->titleFont());
-    int textWidth = qMax(fm.width(text()), 135);
+    int textWidth = qMax(fm.horizontalAdvance(text()), 135);
     int buttonWidth = textWidth + d->textOffset() + d->rightMargin();
     int heightWithoutDescription = d->descriptionOffset() + d->bottomMargin();
 

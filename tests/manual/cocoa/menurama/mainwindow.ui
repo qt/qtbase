@@ -131,6 +131,7 @@ Click on &quot;Dynamic Stuff&quot; then move left and right to other menus. Disa
     <addaction name="menuSubmenu"/>
     <addaction name="actionDisabled_Item"/>
     <addaction name="menuDisabled_Submenu"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuDisabled_Stuff">
     <property name="enabled">

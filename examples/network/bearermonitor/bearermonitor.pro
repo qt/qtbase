@@ -1,5 +1,6 @@
 TARGET = bearermonitor
 QT = core gui network widgets
+requires(qtConfig(treeview))
 
 HEADERS = sessionwidget.h \
           bearermonitor.h

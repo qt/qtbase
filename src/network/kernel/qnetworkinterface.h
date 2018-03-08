@@ -49,13 +49,19 @@
 
 QT_BEGIN_NAMESPACE
 
-
+class QDeadlineTimer;
 template<typename T> class QList;
 
 class QNetworkAddressEntryPrivate;
 class Q_NETWORK_EXPORT QNetworkAddressEntry
 {
 public:
+    enum DnsEligibilityStatus : qint8 {
+        DnsEligibilityUnknown = -1,
+        DnsIneligible = 0,
+        DnsEligible = 1
+    };
+
     QNetworkAddressEntry();
     QNetworkAddressEntry(const QNetworkAddressEntry &other);
 #ifdef Q_COMPILER_RVALUE_REFS
@@ -70,6 +76,9 @@ public:
     inline bool operator!=(const QNetworkAddressEntry &other) const
     { return !(*this == other); }
 
+    DnsEligibilityStatus dnsEligibility() const;
+    void setDnsEligibility(DnsEligibilityStatus status);
+
     QHostAddress ip() const;
     void setIp(const QHostAddress &newIp);
 
@@ -81,6 +90,14 @@ public:
     QHostAddress broadcast() const;
     void setBroadcast(const QHostAddress &newBroadcast);
 
+    bool isLifetimeKnown() const;
+    QDeadlineTimer preferredLifetime() const;
+    QDeadlineTimer validityLifetime() const;
+    void setAddressLifetime(QDeadlineTimer preferred, QDeadlineTimer validity);
+    void clearAddressLifetime();
+    bool isPermanent() const;
+    bool isTemporary() const { return !isPermanent(); }
+
 private:
     QScopedPointer<QNetworkAddressEntryPrivate> d;
 };
@@ -90,6 +107,7 @@ Q_DECLARE_SHARED(QNetworkAddressEntry)
 class QNetworkInterfacePrivate;
 class Q_NETWORK_EXPORT QNetworkInterface
 {
+    Q_GADGET
 public:
     enum InterfaceFlag {
         IsUp = 0x1,
@@ -100,6 +118,27 @@ public:
         CanMulticast = 0x20
     };
     Q_DECLARE_FLAGS(InterfaceFlags, InterfaceFlag)
+    Q_FLAG(InterfaceFlags)
+
+    enum InterfaceType {
+        Loopback = 1,
+        Virtual,
+        Ethernet,
+        Slip,
+        CanBus,
+        Ppp,
+        Fddi,
+        Wifi,
+        Ieee80211 = Wifi,   // alias
+        Phonet,
+        Ieee802154,
+        SixLoWPAN,  // 6LoWPAN, but we can't start with a digit
+        Ieee80216,
+        Ieee1394,
+
+        Unknown = 0
+    };
+    Q_ENUM(InterfaceType)
 
     QNetworkInterface();
     QNetworkInterface(const QNetworkInterface &other);
@@ -114,9 +153,11 @@ public:
     bool isValid() const;
 
     int index() const;
+    int maxTransmissionUnit() const;
     QString name() const;
     QString humanReadableName() const;
     InterfaceFlags flags() const;
+    InterfaceType type() const;
     QString hardwareAddress() const;
     QList<QNetworkAddressEntry> addressEntries() const;
 

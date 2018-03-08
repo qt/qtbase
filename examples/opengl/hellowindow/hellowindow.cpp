@@ -52,6 +52,7 @@
 
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
+#include <QRandomGenerator>
 #include <qmath.h>
 
 Renderer::Renderer(const QSurfaceFormat &format, Renderer *share, QScreen *screen)
@@ -68,9 +69,9 @@ Renderer::Renderer(const QSurfaceFormat &format, Renderer *share, QScreen *scree
     m_context->create();
 
     m_backgroundColor = QColor::fromRgbF(0.1f, 0.1f, 0.2f, 1.0f);
-    m_backgroundColor.setRed(qrand() % 64);
-    m_backgroundColor.setGreen(qrand() % 128);
-    m_backgroundColor.setBlue(qrand() % 256);
+    m_backgroundColor.setRed(QRandomGenerator::global()->bounded(64));
+    m_backgroundColor.setGreen(QRandomGenerator::global()->bounded(128));
+    m_backgroundColor.setBlue(QRandomGenerator::global()->bounded(256));
 }
 
 HelloWindow::HelloWindow(const QSharedPointer<Renderer> &renderer, QScreen *screen)

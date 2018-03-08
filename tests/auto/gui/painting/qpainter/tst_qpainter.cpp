@@ -45,6 +45,7 @@
 #include <qdesktopwidget.h>
 #endif
 #include <qpixmap.h>
+#include <qrandom.h>
 
 #include <private/qdrawhelper_p.h>
 #include <qpainter.h>
@@ -2826,7 +2827,7 @@ void tst_QPainter::monoImages()
     }
 }
 
-#if !defined(Q_OS_IRIX) && !defined(Q_OS_AIX) && !defined(Q_CC_MSVC) && !defined(Q_OS_SOLARIS) && !defined(__UCLIBC__)
+#if !defined(Q_OS_AIX) && !defined(Q_CC_MSVC) && !defined(Q_OS_SOLARIS) && !defined(__UCLIBC__)
 #include <fenv.h>
 
 static const QString fpeExceptionString(int exception)
@@ -3052,7 +3053,7 @@ void tst_QPainter::fpe_steepSlopes_data()
 
 qreal randf()
 {
-    return rand() / (RAND_MAX + 1.0);
+    return QRandomGenerator::global()->bounded(1.0);
 }
 
 QPointF randInRect(const QRectF &rect)
@@ -4497,7 +4498,7 @@ void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
 {
     QFontMetricsF fm(qApp->font());
 
-    QImage baseLine(fm.width(QChar::fromLatin1('e')), fm.height(), QImage::Format_RGB32);
+    QImage baseLine(fm.horizontalAdvance(QChar::fromLatin1('e')), fm.height(), QImage::Format_RGB32);
     baseLine.fill(Qt::white);
     {
         QPainter p(&baseLine);

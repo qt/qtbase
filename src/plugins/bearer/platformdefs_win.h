@@ -45,6 +45,7 @@
 #include <winsock2.h>
 #include <mswsock.h>
 #undef interface
+#include <wincrypt.h>
 #include <winioctl.h>
 
 QT_BEGIN_NAMESPACE

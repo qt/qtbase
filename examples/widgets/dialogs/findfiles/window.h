@@ -79,7 +79,7 @@ private slots:
 
 private:
     QStringList findFiles(const QStringList &files, const QString &text);
-    void showFiles(const QStringList &files);
+    void showFiles(const QStringList &paths);
     QComboBox *createComboBox(const QString &text = QString());
     void createFilesTable();
 

@@ -69,19 +69,15 @@
                 {
                     "comment": "placeholder for OPENSSL_{PATH,LIBS{,_{DEBUG,RELEASE}}}",
                     "libs": "",
-                    "builds": {
-                        "debug": "",
-                        "release": ""
-                    },
                     "condition": "config.win32 && !features.shared"
                 },
                 {
                     "libs": "-lssleay32 -llibeay32",
-                    "builds": {
-                        "debug": "",
-                        "release": ""
-                    },
                     "condition": "config.win32 && features.shared"
+                },
+                {
+                    "libs": "-llibssl -llibcrypto",
+                    "condition": "config.win32"
                 },
                 { "libs": "-lssl -lcrypto", "condition": "!config.win32" }
             ]
@@ -89,31 +85,6 @@
     },
 
     "tests": {
-        "getaddrinfo": {
-            "label": "getaddrinfo()",
-            "type": "compile",
-            "test": {
-                "head": [
-                    "#include <stdio.h>",
-                    "#include <stdlib.h>",
-                    "#ifdef __MINGW32__",
-                    "#  include <winsock2.h>",
-                    "#  include <ws2tcpip.h>",
-                    "#else",
-                    "#  include <sys/types.h>",
-                    "#  include <sys/socket.h>",
-                    "#  include <netdb.h>",
-                    "#endif"
-                ],
-                "main": [
-                    "addrinfo *res = 0;",
-                    "(void) getaddrinfo(\"foo\", 0, 0, &res);",
-                    "freeaddrinfo(res);",
-                    "gai_strerror(0);"
-                ]
-            },
-            "use": "network"
-        },
         "getifaddrs": {
             "label": "getifaddrs()",
             "type": "compile",
@@ -141,6 +112,24 @@
             },
             "use": "network"
         },
+        "linux-netlink": {
+            "label": "Linux AF_NETLINK sockets",
+            "type": "compile",
+            "test": {
+                "include": [ "asm/types.h", "linux/netlink.h", "linux/rtnetlink.h", "sys/socket.h" ],
+                "main": [
+                    "struct rtattr rta = { };",
+                    "struct ifinfomsg ifi = {};",
+                    "struct ifaddrmsg ifa = {};",
+                    "struct ifa_cacheinfo ci;",
+                    "ci.ifa_prefered = ci.ifa_valid = 0;",
+                    "(void)RTM_NEWLINK; (void)RTM_NEWADDR;",
+                    "(void)IFLA_ADDRESS; (void)IFLA_IFNAME;",
+                    "(void)IFA_ADDRESS; (void)IFA_LABEL; (void)IFA_CACHEINFO;",
+                    "(void)(IFA_F_SECONDARY | IFA_F_DEPRECATED | IFA_F_PERMANENT | IFA_F_MANAGETEMPADDR);"
+                ]
+            }
+        },
         "sctp": {
             "label": "SCTP support",
             "type": "compile",
@@ -156,10 +145,10 @@
             "use": "network"
         },
         "openssl11": {
-            "label": "OpenSSL v. 1.1 support",
+            "label": "OpenSSL 1.1 support",
             "type": "compile",
             "test": "unix/openssl11",
-            "use": "network"
+            "use": "openssl"
         }
     },
 
@@ -169,11 +158,6 @@
             "condition": "libs.corewlan",
             "emitIf": "config.darwin",
             "output": [ "feature", "privateFeature" ]
-        },
-        "getaddrinfo": {
-            "label": "getaddrinfo()",
-            "condition": "tests.getaddrinfo",
-            "output": [ "feature" ]
         },
         "getifaddrs": {
             "label": "getifaddrs()",
@@ -189,6 +173,11 @@
             "label": "libproxy",
             "autoDetect": false,
             "condition": "libs.libproxy",
+            "output": [ "privateFeature" ]
+        },
+        "linux-netlink": {
+            "label": "Linux AF_NETLINK",
+            "condition": "config.linux && tests.linux-netlink",
             "output": [ "privateFeature" ]
         },
         "openssl": {
@@ -228,9 +217,9 @@
             "output": [ "publicFeature", "feature" ]
         },
         "opensslv11": {
-            "label": "OpenSSL v. 1.1",
-            "condition": "tests.openssl11",
-            "output": ["publicFeature", "feature"]
+            "label": "OpenSSL 1.1",
+            "condition": "features.openssl && tests.openssl11",
+            "output": [ "publicFeature" ]
         },
         "sctp": {
             "label": "SCTP",
@@ -300,6 +289,12 @@
             "section": "Networking",
             "condition": "features.temporaryfile",
             "output": [ "publicFeature", "feature" ]
+        },
+        "dnslookup": {
+            "label": "QDnsLookup",
+            "purpose": "Provides API for DNS lookups.",
+            "section": "Networking",
+            "output": [ "publicFeature" ]
         }
     },
 
@@ -337,7 +332,12 @@ For example:
                     "args": "corewlan",
                     "condition": "config.darwin"
                 },
-                "getaddrinfo", "getifaddrs", "ipv6ifname", "libproxy",
+                "getifaddrs", "ipv6ifname", "libproxy",
+                {
+                    "type": "feature",
+                    "args": "linux-netlink",
+                    "condition": "config.linux"
+                },
                 {
                     "type": "feature",
                     "args": "securetransport",
@@ -345,6 +345,7 @@ For example:
                 },
                 "openssl",
                 "openssl-linked",
+                "opensslv11",
                 "sctp",
                 "system-proxies"
             ]

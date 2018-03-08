@@ -101,30 +101,21 @@ void WigglyWidget::paintEvent(QPaintEvent * /* event */)
     };
 
     QFontMetrics metrics(font());
-    //int y = (height() + metrics.ascent() - metrics.descent()) / 2;
+    int x = (width() - metrics.horizontalAdvance(text)) / 2;
+    int y = (height() + metrics.ascent() - metrics.descent()) / 2;
     QColor color;
 //! [2]
 
 //! [3]
     QPainter painter(this);
 //! [3] //! [4]
-
-    int sts = 20;
-    int st = height() / (sts+1);
-
-    for (int j = 0; j < sts; ++j)
-    {
-        int x = (width() - metrics.width(text)) / 2;
-        int y = (j+1) * st;
-
-        for (int i = 0; i < text.size(); ++i) {
-            int index = (step + i) % 16;
-            color.setHsv((15 - index) * 16, 255, 191);
-            painter.setPen(color);
-            painter.drawText(x, y - ((sineTable[index] * metrics.height()) / 400),
-                            QString(text[i]));
-            x += metrics.width(text[i]);
-        }
+    for (int i = 0; i < text.size(); ++i) {
+        int index = (step + i) % 16;
+        color.setHsv((15 - index) * 16, 255, 191);
+        painter.setPen(color);
+        painter.drawText(x, y - ((sineTable[index] * metrics.height()) / 400),
+                         QString(text[i]));
+        x += metrics.horizontalAdvance(text[i]);
     }
 
     std::ostringstream ss;

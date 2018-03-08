@@ -64,33 +64,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QHostAddressPrivate : public QSharedData
-{
-public:
-    QHostAddressPrivate();
-
-    void setAddress(quint32 a_ = 0);
-    void setAddress(const quint8 *a_);
-    void setAddress(const Q_IPV6ADDR &a_);
-
-    bool parse(const QString &ipString);
-    void clear();
-
-    QString scopeId;
-
-    union {
-        Q_IPV6ADDR a6; // IPv6 address
-        struct { quint64 c[2]; } a6_64;
-        struct { quint32 c[4]; } a6_32;
-    };
-    quint32 a;    // IPv4 address
-    qint8 protocol;
-
-    AddressClassification classify() const;
-
-    friend class QHostAddress;
-};
-
 QHostAddressPrivate::QHostAddressPrivate()
     : a(0), protocol(QAbstractSocket::UnknownNetworkLayerProtocol)
 {
@@ -534,49 +507,6 @@ QHostAddress::QHostAddress(SpecialAddress address)
 }
 
 /*!
-    \overload
-    \since 5.8
-
-    Sets the special address specified by \a address.
-*/
-void QHostAddress::setAddress(SpecialAddress address)
-{
-    d->clear();
-
-    Q_IPV6ADDR ip6;
-    memset(&ip6, 0, sizeof ip6);
-    quint32 ip4 = INADDR_ANY;
-
-    switch (address) {
-    case Null:
-        return;
-
-    case Broadcast:
-        ip4 = INADDR_BROADCAST;
-        break;
-    case LocalHost:
-        ip4 = INADDR_LOOPBACK;
-        break;
-    case AnyIPv4:
-        break;
-
-    case LocalHostIPv6:
-        ip6[15] = 1;
-        Q_FALLTHROUGH();
-    case AnyIPv6:
-        d->setAddress(ip6);
-        return;
-
-    case Any:
-        d->protocol = QAbstractSocket::AnyIPProtocol;
-        return;
-    }
-
-    // common IPv4 part
-    d->setAddress(ip4);
-}
-
-/*!
     Destroys the host address object.
 */
 QHostAddress::~QHostAddress()
@@ -737,6 +667,49 @@ void QHostAddress::setAddress(const struct sockaddr *sockaddr)
 #else
     Q_UNUSED(sockaddr)
 #endif
+}
+
+/*!
+    \overload
+    \since 5.8
+
+    Sets the special address specified by \a address.
+*/
+void QHostAddress::setAddress(SpecialAddress address)
+{
+    clear();
+
+    Q_IPV6ADDR ip6;
+    memset(&ip6, 0, sizeof ip6);
+    quint32 ip4 = INADDR_ANY;
+
+    switch (address) {
+    case Null:
+        return;
+
+    case Broadcast:
+        ip4 = INADDR_BROADCAST;
+        break;
+    case LocalHost:
+        ip4 = INADDR_LOOPBACK;
+        break;
+    case AnyIPv4:
+        break;
+
+    case LocalHostIPv6:
+        ip6[15] = 1;
+        Q_FALLTHROUGH();
+    case AnyIPv6:
+        d->setAddress(ip6);
+        return;
+
+    case Any:
+        d->protocol = QAbstractSocket::AnyIPProtocol;
+        return;
+    }
+
+    // common IPv4 part
+    d->setAddress(ip4);
 }
 
 /*!
@@ -1260,7 +1233,7 @@ bool QHostAddress::isGlobal() const
     \l{https://www.iana.org/assignments/ipv6-address-space/ipv6-address-space.xhtml}{IANA
     IPv6 Address Space} registry for more information.
 
-    \sa isLoopback(), isGlobal(). isMulticast(), isSiteLocal(), isUniqueLocalUnicast()
+    \sa isLoopback(), isGlobal(), isMulticast(), isSiteLocal(), isUniqueLocalUnicast()
 */
 bool QHostAddress::isLinkLocal() const
 {
@@ -1365,8 +1338,8 @@ uint qHash(const QHostAddress &key, uint seed) Q_DECL_NOTHROW
 }
 
 /*!
+    \fn bool operator==(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
     \relates QHostAddress
-    \fn operator==(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
 
     Returns \c true if special address \a lhs is the same as host address \a rhs;
     otherwise returns \c false.
@@ -1375,9 +1348,9 @@ uint qHash(const QHostAddress &key, uint seed) Q_DECL_NOTHROW
 */
 
 /*!
+    \fn bool operator!=(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
     \relates QHostAddress
     \since 5.9
-    \fn operator!=(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
 
     Returns \c false if special address \a lhs is the same as host address \a rhs;
     otherwise returns \c true.

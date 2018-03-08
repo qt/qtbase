@@ -149,7 +149,7 @@ void tst_QLibrary::version_data()
 
     QTest::newRow( "ok00, version 1" ) << "mylib" << 1 << 1;
     QTest::newRow( "ok00, version 2" ) << "mylib" << 2 << 2;
-    QTest::newRow( "ok00, default to last version" ) << "mylib" << -1 << 2;
+    QTest::newRow( "ok00, load without version" ) << "mylib" << -1 << 2;
 }
 
 void tst_QLibrary::version()

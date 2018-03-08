@@ -293,7 +293,7 @@ void tst_QProgressBar::sizeHint()
     QFontMetrics fm = bar.fontMetrics();
     QStyleOptionProgressBar opt;
     bar.initStyleOption(&opt);
-    QSize size = QSize(9 * 7 + fm.width(QLatin1Char('0')) * 4, fm.height() + 8);
+    QSize size = QSize(9 * 7 + fm.horizontalAdvance(QLatin1Char('0')) * 4, fm.height() + 8);
     size= bar.style()->sizeFromContents(QStyle::CT_ProgressBar, &opt, size, &bar);
     QSize barSize = bar.sizeHint();
     QVERIFY(barSize.width() >= size.width());

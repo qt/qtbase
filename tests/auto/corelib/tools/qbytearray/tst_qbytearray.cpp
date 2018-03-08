@@ -756,13 +756,7 @@ void tst_QByteArray::qvsnprintf()
     QCOMPARE(static_cast<const char *>(buf), "bub****************");
 # endif
 #else
-#ifdef Q_OS_IRIX
-    // Irix reports back the amount of characters written without the \0
-    QCOMPARE(::qsnprintf(buf, 3, "%s", "bubu"), 2);
-#else
-    // Every other system in this world reports the amount of data that could have been written
     QCOMPARE(::qsnprintf(buf, 3, "%s", "bubu"), 4);
-#endif
     QCOMPARE(static_cast<const char*>(buf), "bu");
 #endif
     QCOMPARE(buf[4], char(42));

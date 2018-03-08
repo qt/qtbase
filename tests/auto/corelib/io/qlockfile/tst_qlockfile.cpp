@@ -39,6 +39,8 @@
 #  include <qt_windows.h>
 #endif
 
+#include <private/qlockfile_p.h>  // for getLockFileHandle()
+
 class tst_QLockFile : public QObject
 {
     Q_OBJECT
@@ -61,8 +63,12 @@ private slots:
     void noPermissionsWindows();
     void corruptedLockFile();
     void corruptedLockFileInTheFuture();
+    void hostnameChange();
+    void differentMachines();
+    void reboot();
 
 private:
+    static bool overwriteLineInLockFile(QFile &f, int line, const QString &newLine);
     static bool overwritePidInLockFile(const QString &filePath, qint64 pid);
 
 public:
@@ -72,7 +78,7 @@ public:
 
 void tst_QLockFile::initTestCase()
 {
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     QSKIP("This test requires deploying and running external console applications");
 #elif !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
@@ -295,7 +301,7 @@ void tst_QLockFile::staleLockFromCrashedProcessReusedPid()
 
     QLockFile secondLock(fileName);
     qint64 pid = 0;
-    secondLock.getLockInfo(&pid, 0, 0);
+    QVERIFY(secondLock.getLockInfo(&pid, 0, 0));
     QCOMPARE(pid, QCoreApplication::applicationPid());
     secondLock.setStaleLockTime(0);
     QVERIFY(secondLock.tryLock());
@@ -549,22 +555,109 @@ void tst_QLockFile::corruptedLockFileInTheFuture()
 #endif
 }
 
+void tst_QLockFile::hostnameChange()
+{
+    const QByteArray hostid = QSysInfo::machineUniqueId();
+    if (hostid.isEmpty())
+        QSKIP("Could not get a unique host ID on this machine");
+
+    QString lockFile = dir.path() + "/hostnameChangeLock";
+    QLockFile lock1(lockFile);
+    QVERIFY(lock1.lock());
+
+    {
+        // now modify it
+        QFile f;
+        QVERIFY(f.open(QLockFilePrivate::getLockFileHandle(&lock1),
+                       QIODevice::ReadWrite | QIODevice::Text,
+                       QFile::DontCloseHandle));
+        QVERIFY(overwriteLineInLockFile(f, 3, "this is not a hostname"));
+    }
+
+    {
+        // we should fail to lock
+        QLockFile lock2(lockFile);
+        QVERIFY(!lock2.tryLock(1000));
+    }
+}
+
+void tst_QLockFile::differentMachines()
+{
+    const QByteArray hostid = QSysInfo::machineUniqueId();
+    if (hostid.isEmpty())
+        QSKIP("Could not get a unique host ID on this machine");
+
+    QString lockFile = dir.path() + "/differentMachinesLock";
+    QLockFile lock1(lockFile);
+    QVERIFY(lock1.lock());
+
+    {
+        // now modify it
+        QFile f;
+        QVERIFY(f.open(QLockFilePrivate::getLockFileHandle(&lock1),
+                       QIODevice::ReadWrite | QIODevice::Text,
+                       QFile::DontCloseHandle));
+        QVERIFY(overwriteLineInLockFile(f, 1, QT_STRINGIFY(INT_MAX)));
+        QVERIFY(overwriteLineInLockFile(f, 4, "this is not a UUID"));
+    }
+
+    {
+        // we should fail to lock
+        QLockFile lock2(lockFile);
+        QVERIFY(!lock2.tryLock(1000));
+    }
+}
+
+void tst_QLockFile::reboot()
+{
+    const QByteArray bootid = QSysInfo::bootUniqueId();
+    if (bootid.isEmpty())
+        QSKIP("Could not get a unique boot ID on this machine");
+
+    // create a lock so we can get its contents
+    QString lockFile = dir.path() + "/rebootLock";
+    QLockFile lock1(lockFile);
+    QVERIFY(lock1.lock());
+
+    QFile f(lockFile);
+    QVERIFY(f.open(QFile::ReadOnly | QFile::Text));
+    auto lines = f.readAll().split('\n');
+    f.close();
+
+    lock1.unlock();
+
+    // now recreate the file simulating a reboot
+    QVERIFY(f.open(QFile::WriteOnly | QFile::Text));
+    lines[4] = "this is not a UUID";
+    f.write(lines.join('\n'));
+    f.close();
+
+    // we should succeed in locking
+    QVERIFY(lock1.tryLock(0));
+}
+
 bool tst_QLockFile::overwritePidInLockFile(const QString &filePath, qint64 pid)
 {
     QFile f(filePath);
-    if (!f.open(QFile::ReadWrite)) {
-        qWarning("Cannot open %s.", qPrintable(filePath));
+    if (!f.open(QFile::ReadWrite | QFile::Text)) {
+        qErrnoWarning("Cannot open %s", qPrintable(filePath));
         return false;
     }
+    return overwriteLineInLockFile(f, 1, QString::number(pid));
+}
+
+bool tst_QLockFile::overwriteLineInLockFile(QFile &f, int line, const QString &newLine)
+{
+    f.seek(0);
     QByteArray buf = f.readAll();
-    int i = buf.indexOf('\n');
-    if (i < 0) {
+    QStringList lines = QString::fromUtf8(buf).split('\n');
+    if (lines.size() < 3 && lines.size() < line - 1) {
         qWarning("Unexpected lockfile content.");
         return false;
     }
-    buf.remove(0, i);
-    buf.prepend(QByteArray::number(pid));
+    lines[line - 1] = newLine;
     f.seek(0);
+    buf = lines.join('\n').toUtf8();
     f.resize(buf.size());
     return f.write(buf) == buf.size();
 }

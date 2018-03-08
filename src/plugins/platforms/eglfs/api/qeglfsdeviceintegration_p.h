@@ -105,7 +105,7 @@ public:
     virtual bool supportsSurfacelessContexts() const;
     virtual QFunctionPointer platformFunction(const QByteArray &function) const;
     virtual void *nativeResourceForIntegration(const QByteArray &name);
-
+    virtual void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen);
     virtual void *wlDisplay() const;
 
     static EGLConfig chooseConfig(EGLDisplay display, const QSurfaceFormat &format);

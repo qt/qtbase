@@ -252,7 +252,7 @@ public:
 
         GLuint fbo = 0xFFFF;
         QOpenGLContext::currentContext()->functions()->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *) &fbo);
-        QCOMPARE(fbo, GLuint(0));
+        QCOMPARE(fbo, QOpenGLContext::currentContext()->defaultFramebufferObject());
     }
 
     void paintGL() override {
@@ -264,7 +264,7 @@ public:
         // Using PartialUpdateBlend so paintGL() targets a user fbo, not the default.
         GLuint fbo = 0xFFFF;
         QOpenGLContext::currentContext()->functions()->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *) &fbo);
-        QVERIFY(fbo != 0);
+        QVERIFY(fbo != QOpenGLContext::currentContext()->defaultFramebufferObject());
         QCOMPARE(fbo, defaultFramebufferObject());
     }
 
@@ -276,7 +276,7 @@ public:
 
         GLuint fbo = 0xFFFF;
         QOpenGLContext::currentContext()->functions()->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *) &fbo);
-        QCOMPARE(fbo, GLuint(0));
+        QCOMPARE(fbo, QOpenGLContext::currentContext()->defaultFramebufferObject());
     }
 };
 

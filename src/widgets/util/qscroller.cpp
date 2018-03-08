@@ -58,6 +58,7 @@
 #include <QGraphicsView>
 #endif
 #include <QDesktopWidget>
+#include <private/qdesktopwidget_p.h>
 #include <QVector2D>
 #include <QtCore/qmath.h>
 #include <QtGui/qevent.h>
@@ -280,10 +281,9 @@ private:
 */
 
 typedef QMap<QObject *, QScroller *> ScrollerHash;
-typedef QSet<QScroller *> ScrollerSet;
 
 Q_GLOBAL_STATIC(ScrollerHash, qt_allScrollers)
-Q_GLOBAL_STATIC(ScrollerSet, qt_activeScrollers)
+Q_GLOBAL_STATIC(QList<QScroller *>, qt_activeScrollers)
 
 /*!
     Returns \c true if a QScroller object was already created for \a target; \c false otherwise.
@@ -334,7 +334,7 @@ const QScroller *QScroller::scroller(const QObject *target)
 */
 QList<QScroller *> QScroller::activeScrollers()
 {
-    return qt_activeScrollers()->toList();
+    return *qt_activeScrollers();
 }
 
 /*!
@@ -348,7 +348,7 @@ QObject *QScroller::target() const
 }
 
 /*!
-    \fn QScroller::scrollerPropertiesChanged(const QScrollerProperties &newProperties);
+    \fn void QScroller::scrollerPropertiesChanged(const QScrollerProperties &newProperties);
 
     QScroller emits this signal whenever its scroller properties change.
     \a newProperties are the new scroller properties.
@@ -511,14 +511,14 @@ QScroller::~QScroller()
     d->recognizer = 0;
 #endif
     qt_allScrollers()->remove(d->target);
-    qt_activeScrollers()->remove(this);
+    qt_activeScrollers()->removeOne(this);
 
     delete d_ptr;
 }
 
 
 /*!
-    \fn QScroller::stateChanged(QScroller::State newState);
+    \fn void QScroller::stateChanged(QScroller::State newState);
 
     QScroller emits this signal whenever the state changes. \a newState is the new State.
 
@@ -1013,40 +1013,6 @@ bool QScroller::handleInput(Input input, const QPointF &position, qint64 timesta
     return false;
 }
 
-#if 1 // Used to be excluded in Qt4 for Q_WS_MAC
-// the Mac version is implemented in qscroller_mac.mm
-
-QPointF QScrollerPrivate::realDpi(int screen) const
-{
-#  if 0 /* Used to be included in Qt4 for Q_WS_X11 */ && !defined(QT_NO_XRANDR)
-    if (X11 && X11->use_xrandr && X11->ptrXRRSizes && X11->ptrXRRRootToScreen) {
-        int nsizes = 0;
-        // QDesktopWidget is based on Xinerama screens, which do not always
-        // correspond to RandR screens: NVidia's TwinView e.g.  will show up
-        // as 2 screens in QDesktopWidget, but libXRandR will only see 1 screen.
-        // (although with the combined size of the Xinerama screens).
-        // Additionally, libXrandr will simply crash when calling XRRSizes
-        // for (the non-existent) screen 1 in this scenario.
-        Window root =  RootWindow(X11->display, screen == -1 ? X11->defaultScreen : screen);
-        int randrscreen = (root != XNone) ? X11->ptrXRRRootToScreen(X11->display, root) : -1;
-
-        XRRScreenSize *sizes = X11->ptrXRRSizes(X11->display, randrscreen == -1 ? 0 : randrscreen, &nsizes);
-        if (nsizes > 0 && sizes && sizes->width && sizes->height && sizes->mwidth && sizes->mheight) {
-            qScrollerDebug() << "XRandR DPI:" << QPointF(qreal(25.4) * qreal(sizes->width) / qreal(sizes->mwidth),
-                                                         qreal(25.4) * qreal(sizes->height) / qreal(sizes->mheight));
-            return QPointF(qreal(25.4) * qreal(sizes->width) / qreal(sizes->mwidth),
-                           qreal(25.4) * qreal(sizes->height) / qreal(sizes->mheight));
-        }
-    }
-#  endif
-
-    QWidget *w = QApplication::desktop()->screen(screen);
-    return QPointF(w->physicalDpiX(), w->physicalDpiY());
-}
-
-#endif
-
-
 /*! \internal
     Returns the resolution of the used screen.
 */
@@ -1071,8 +1037,8 @@ void QScrollerPrivate::setDpi(const QPointF &dpi)
 */
 void QScrollerPrivate::setDpiFromWidget(QWidget *widget)
 {
-    QDesktopWidget *dw = QApplication::desktop();
-    setDpi(realDpi(widget ? dw->screenNumber(widget) : dw->primaryScreen()));
+    const QScreen *screen = QGuiApplication::screens().at(QApplication::desktop()->screenNumber(widget));
+    setDpi(QPointF(screen->physicalDotsPerInchX(), screen->physicalDotsPerInchY()));
 }
 
 /*! \internal
@@ -1767,9 +1733,9 @@ void QScrollerPrivate::setState(QScroller::State newstate)
         firstScroll = true;
     }
     if (state == QScroller::Dragging || state == QScroller::Scrolling)
-        qt_activeScrollers()->insert(q);
+        qt_activeScrollers()->push_back(q);
     else
-        qt_activeScrollers()->remove(q);
+        qt_activeScrollers()->removeOne(q);
     emit q->stateChanged(state);
 }
 

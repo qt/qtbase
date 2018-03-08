@@ -1,0 +1,58 @@
+From: Konstantin Ritt <ritt.ks@gmail.com>
+Date: Sun, 17 Dec 2017 07:46:20 +0400
+Subject: Qt-specific workaround for AAT shaper
+
+CoreText API doesn't give us a fontdata to reconstruct the original font,
+so we have to store the CTFont and CGFont of interest in context object
+passed to HB from native font engine
+---
+ src/3rdparty/harfbuzz-ng/src/hb-coretext.cc | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/src/3rdparty/harfbuzz-ng/src/hb-coretext.cc b/src/3rdparty/harfbuzz-ng/src/hb-coretext.cc
+index 2dd10d2..c993ec0 100644
+--- a/src/3rdparty/harfbuzz-ng/src/hb-coretext.cc
++++ b/src/3rdparty/harfbuzz-ng/src/hb-coretext.cc
+@@ -35,6 +35,20 @@
+ #include "hb-coretext.h"
+ #include <math.h>
+ 
++
++typedef bool (*qt_get_font_table_func_t) (void *user_data, unsigned int tag, unsigned char *buffer, unsigned int *length);
++
++struct FontEngineFaceData {
++  void *user_data;
++  qt_get_font_table_func_t get_font_table;
++};
++
++struct CoreTextFontEngineData {
++  CTFontRef ctFont;
++  CGFontRef cgFont;
++};
++
++
+ /* https://developer.apple.com/documentation/coretext/1508745-ctfontcreatewithgraphicsfont */
+ #define HB_CORETEXT_DEFAULT_FONT_SIZE 12.f
+ 
+@@ -129,6 +143,7 @@ create_cg_font (hb_face_t *face)
+   }
+   else
+   {
++#if 0
+     hb_blob_t *blob = hb_face_reference_blob (face);
+     unsigned int blob_length;
+     const char *blob_data = hb_blob_get_data (blob, &blob_length);
+@@ -143,6 +158,11 @@ create_cg_font (hb_face_t *face)
+ 	DEBUG_MSG (CORETEXT, face, "Face CGFontCreateWithDataProvider() failed");
+       CGDataProviderRelease (provider);
+     }
++#else
++    FontEngineFaceData *fontEngineFaceData = (FontEngineFaceData *) face->user_data;
++    CoreTextFontEngineData *coreTextFontEngineData = (CoreTextFontEngineData *) fontEngineFaceData->user_data;
++    cg_font = CGFontRetain (coreTextFontEngineData->cgFont);
++#endif
+   }
+   return cg_font;
+ }
+-- 
+

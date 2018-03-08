@@ -237,6 +237,7 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
          default:
              break;
          }
+         break;
     case WM_GETOBJECT:
         return QtWindows::AccessibleObjectFromWindowRequest;
     case WM_SETFOCUS:

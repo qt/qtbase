@@ -103,9 +103,15 @@ QHstsPolicy::QHstsPolicy() : d(new QHstsPolicyPrivate)
 }
 
 /*!
-    Constructs QHstsPolicy with \a expiry (in UTC):
-    - \a host data is interpreted according to \a mode;
-    - \a flags selects options to apply to this policy.
+  \enum QHstsPolicy::PolicyFlag
+
+  \value IncludeSubDomains Indicates whether a policy must include subdomains
+*/
+
+/*!
+    Constructs QHstsPolicy with \a expiry (in UTC); \a flags is a value indicating
+    whether this policy must also include subdomains, \a host data is interpreted
+    according to \a mode.
 
     \sa QUrl::setHost(), QUrl::ParsingMode, QHstsPolicy::PolicyFlag
 */
@@ -212,5 +218,11 @@ bool QHstsPolicy::isExpired() const
 {
     return !d->expiry.isValid() || d->expiry <= QDateTime::currentDateTimeUtc();
 }
+
+/*!
+  \fn void QHstsPolicy::swap(QHstsPolicy &other)
+
+  Swaps this policy with the \a other policy.
+*/
 
 QT_END_NAMESPACE

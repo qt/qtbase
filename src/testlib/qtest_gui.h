@@ -62,10 +62,7 @@
 #include <QtGui/qvector2d.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector4d.h>
-
-#ifdef QT_WIDGETS_LIB
 #include <QtGui/qicon.h>
-#endif
 
 #if 0
 // inform syncqt
@@ -78,12 +75,9 @@ QT_BEGIN_NAMESPACE
 namespace QTest
 {
 
-/*!
-    \internal
- */
 template<> inline char *toString(const QColor &color)
 {
-    return qstrdup(color.name().toLocal8Bit().constData());
+    return qstrdup(color.name(QColor::HexArgb).toLocal8Bit().constData());
 }
 
 template<> inline char *toString(const QRegion &region)
@@ -94,8 +88,8 @@ template<> inline char *toString(const QRegion &region)
     } else if (region.isEmpty()) {
         result += "empty";
     } else {
-        const QVector<QRect> &rects = region.rects();
-        const int rectCount = rects.size();
+        const auto rects = region.begin();
+        const int rectCount = region.rectCount();
         if (rectCount > 1) {
             result += QByteArray::number(rectCount);
             result += " rectangles, ";
@@ -103,7 +97,7 @@ template<> inline char *toString(const QRegion &region)
         for (int i = 0; i < rectCount; ++i) {
             if (i)
                 result += ", ";
-            const QRect &r = rects.at(i);
+            const QRect &r = rects[i];
             result += QByteArray::number(r.width());
             result += 'x';
             result += QByteArray::number(r.height());
@@ -119,7 +113,7 @@ template<> inline char *toString(const QRegion &region)
     return qstrdup(result.constData());
 }
 
-#ifndef QT_NO_VECTOR2D
+#if !defined(QT_NO_VECTOR2D) || defined(Q_CLANG_QDOC)
 template<> inline char *toString(const QVector2D &v)
 {
     QByteArray result = "QVector2D(" + QByteArray::number(double(v.x())) + ", "
@@ -127,7 +121,7 @@ template<> inline char *toString(const QVector2D &v)
     return qstrdup(result.constData());
 }
 #endif // !QT_NO_VECTOR2D
-#ifndef QT_NO_VECTOR3D
+#if !defined(QT_NO_VECTOR3D) || defined(Q_CLANG_QDOC)
 template<> inline char *toString(const QVector3D &v)
 {
     QByteArray result = "QVector3D(" + QByteArray::number(double(v.x())) + ", "
@@ -135,7 +129,7 @@ template<> inline char *toString(const QVector3D &v)
     return qstrdup(result.constData());
 }
 #endif // !QT_NO_VECTOR3D
-#ifndef QT_NO_VECTOR4D
+#if !defined(QT_NO_VECTOR4D) || defined(Q_CLANG_QDOC)
 template<> inline char *toString(const QVector4D &v)
 {
     QByteArray result = "QVector4D(" + QByteArray::number(double(v.x())) + ", "

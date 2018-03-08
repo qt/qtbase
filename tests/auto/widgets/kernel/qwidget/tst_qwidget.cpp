@@ -50,6 +50,7 @@
 #include <qcalendarwidget.h>
 #include <qmainwindow.h>
 #include <qdockwidget.h>
+#include <qrandom.h>
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
 #include <QtGui/qpaintengine.h>
@@ -72,6 +73,9 @@
 #endif
 
 #include <QtTest/QTest>
+#include <QtTest/private/qtesthelpers_p.h>
+
+using namespace QTestPrivate;
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 #  include <QtCore/qt_windows.h>
@@ -107,22 +111,6 @@ bool macHasAccessToWindowsServer()
     return (sessionInfo & sessionHasGraphicAccess);
 }
 #endif
-
-// Make a widget frameless to prevent size constraints of title bars
-// from interfering (Windows).
-static inline void setFrameless(QWidget *w)
-{
-    Qt::WindowFlags flags = w->windowFlags();
-    flags |= Qt::FramelessWindowHint;
-    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    w->setWindowFlags(flags);
-}
-
-static inline void centerOnScreen(QWidget *w)
-{
-    const QPoint offset = QPoint(w->width() / 2, w->height() / 2);
-    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
-}
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 static inline void setWindowsAnimationsEnabled(bool enabled)
@@ -3718,7 +3706,7 @@ public:
         gotPaintEvent = true;
 //        qDebug() << "paint" << e->region();
         // Look for a full update, set partial to false if found.
-        foreach(QRect r, e->region().rects()) {
+        for (QRect r : e->region()) {
             partial = (r != rect());
             if (partial == false)
                 break;
@@ -5157,13 +5145,12 @@ static QPixmap grabWindow(QWindow *window, int x, int y, int width, int height)
 
 bool verifyColor(QWidget &child, const QRegion &region, const QColor &color, unsigned int callerLine)
 {
-    const QRegion r = QRegion(region);
     QWindow *window = child.window()->windowHandle();
     Q_ASSERT(window);
     const QPoint offset = child.mapTo(child.window(), QPoint(0,0));
     bool grabBackingStore = false;
-    for (int i = 0; i < r.rects().size(); ++i) {
-        QRect rect = r.rects().at(i).translated(offset);
+    for (QRect r : region) {
+        QRect rect = r.translated(offset);
         for (int t = 0; t < 6; t++) {
             const QPixmap pixmap = grabBackingStore
                 ? child.grab(rect)
@@ -5188,7 +5175,7 @@ bool verifyColor(QWidget &child, const QRegion &region, const QColor &color, uns
                 } else {
                     if (t == 4) {
                         grabBackingStore = true;
-                        rect = r.rects().at(i);
+                        rect = r;
                     } else {
                         QTest::qWait(200);
                     }
@@ -5396,19 +5383,22 @@ void tst_QWidget::multipleToplevelFocusCheck()
     TopLevelFocusCheck w1;
     TopLevelFocusCheck w2;
 
+    const QString title = QLatin1String(QTest::currentTestFunction());
+    w1.setWindowTitle(title + QLatin1String("_W1"));
+    w1.move(m_availableTopLeft + QPoint(20, 20));
     w1.resize(200, 200);
     w1.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w1));
+    w2.setWindowTitle(title + QLatin1String("_W2"));
+    w2.move(w1.frameGeometry().topRight() + QPoint(20, 0));
     w2.resize(200,200);
     w2.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w2));
-    QTest::qWait(50);
 
     QApplication::setActiveWindow(&w1);
     w1.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&w1));
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w1));
-    QTest::qWait(50);
     QTest::mouseDClick(&w1, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), static_cast<QWidget *>(w1.edit));
 
@@ -8231,7 +8221,7 @@ public:
         QPainter p(this);
 
         paintedRegion += event->region();
-        foreach(QRect r, event->region().rects())
+        for (const QRect &r : event->region())
             p.fillRect(r, Qt::red);
     }
 
@@ -8742,7 +8732,7 @@ public:
         QPainter p(this);
 
         paintedRegion += event->region();
-        foreach(QRect r, event->region().rects())
+        for (const QRect &r : event->region())
             p.fillRect(r, Qt::red);
     }
 
@@ -9826,7 +9816,7 @@ void tst_QWidget::grab()
         for (int row = 0; row < image.height(); ++row) {
             QRgb *line = reinterpret_cast<QRgb *>(image.scanLine(row));
             for (int col = 0; col < image.width(); ++col)
-                line[col] = qRgba(rand() & 255, row, col, opaque ? 255 : 127);
+                line[col] = qRgba(QRandomGenerator::global()->bounded(255), row, col, opaque ? 255 : 127);
         }
 
         QPalette pal = widget.palette();

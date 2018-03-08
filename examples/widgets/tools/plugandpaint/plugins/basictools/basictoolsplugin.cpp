@@ -101,7 +101,7 @@ QRect BasicToolsPlugin::mouseMove(const QString &brush, QPainter &painter,
                                 thickness, thickness);
         }
     } else if (brush == tr("Random Letters")) {
-        QChar ch('A' + (qrand() % 26));
+        QChar ch(QRandomGenerator::global()->bounded('A', 'Z' + 1));
 
         QFont biggerFont = painter.font();
         biggerFont.setBold(true);

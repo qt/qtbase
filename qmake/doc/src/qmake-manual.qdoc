@@ -939,6 +939,8 @@
             order in which they are given.
     \row    \li precompile_header \li Enables support for the use of
             \l{Using Precompiled Headers}{precompiled headers} in projects.
+    \row    \li precompile_header_c (MSVC only) \li Enables support for the use of
+            \l{Using Precompiled Headers}{precompiled headers} for C files.
     \row    \li warn_on  \li The compiler should output as many warnings as possible.
             If \c warn_off is also specified, the last one takes effect.
     \row    \li warn_off \li The compiler should output as few warnings as possible.
@@ -1821,9 +1823,55 @@
     Specifies the name of the property list file, \c{.plist}, you
     would like to include in your \macos, iOS, tvOS, and watchOS application bundle.
 
-    In the \c{.plist} file, you can define some variables, e.g., @EXECUTABLE@,
-    which qmake will replace with the actual executable name. Other variables
-    include @ICON@, @TYPEINFO@, @LIBRARY@, and @SHORT_VERSION@.
+    In the \c{.plist} file, you can define some variables which
+    qmake will replace with the relevant values:
+
+    \table
+    \header
+        \li Placeholder(s)
+        \li Effect
+    \row
+        \li \c ${PRODUCT_BUNDLE_IDENTIFIER}, \c @BUNDLEIDENTIFIER@
+        \li Expands to the target bundle's bundle identifier string,
+            for example: \c{com.example.myapp}. Determined by concatenating the
+            values of QMAKE_TARGET_BUNDLE_PREFIX and QMAKE_BUNDLE, separated
+            by a full stop (\c{.}).
+    \row
+        \li \c ${EXECUTABLE_NAME}, \c @EXECUTABLE@, \c @LIBRARY@
+        \li Equivalent to the value of QMAKE_APPLICATION_BUNDLE_NAME,
+            QMAKE_PLUGIN_BUNDLE_NAME, or QMAKE_FRAMEWORK_BUNDLE_NAME
+            (depending on the type of target being created),
+            or TARGET if none of the previous values are set.
+    \row
+        \li \c ${ASSETCATALOG_COMPILER_APPICON_NAME}, \c @ICON@
+        \li Expands to the value of ICON.
+    \row
+        \li \c ${QMAKE_PKGINFO_TYPEINFO}, \c @TYPEINFO@
+        \li Expands to the value of QMAKE_PKGINFO_TYPEINFO.
+    \row
+        \li \c ${QMAKE_FULL_VERSION}, \c @FULL_VERSION@
+        \li Expands to the value of VERSION expressed with three version components.
+    \row
+        \li \c ${QMAKE_SHORT_VERSION}, \c @SHORT_VERSION@
+        \li Expands to the value of VERSION expressed with two version components.
+    \row
+        \li \c ${MACOSX_DEPLOYMENT_TARGET}
+        \li Expands to the value of QMAKE_MACOSX_DEPLOYMENT_TARGET.
+    \row
+        \li \c ${IPHONEOS_DEPLOYMENT_TARGET}
+        \li Expands to the value of QMAKE_IPHONEOS_DEPLOYMENT_TARGET.
+    \row
+        \li \c ${TVOS_DEPLOYMENT_TARGET}
+        \li Expands to the value of QMAKE_TVOS_DEPLOYMENT_TARGET.
+    \row
+        \li \c ${WATCHOS_DEPLOYMENT_TARGET}
+        \li Expands to the value of QMAKE_WATCHOS_DEPLOYMENT_TARGET.
+    \endtable
+
+    \note When using the Xcode generator, the above \c{${var}}-style
+    placeholders are replaced directly by the Xcode build system and are not
+    handled by qmake. The \c{@var@} style placeholders work only with the qmake
+    Makefile generators and not with the Xcode generator.
 
     If building for iOS, and the \c{.plist} file contains the key
     \c NSPhotoLibraryUsageDescription, qmake will include an additional plugin
@@ -2310,6 +2358,9 @@
 
     Specifies the \l{All Modules}{Qt modules} that are used by your project. For
     the value to add for each module, see the module documentation.
+
+    At the C++ implementation level, using a Qt module makes its headers
+    available for inclusion and causes it to be linked to the binary.
 
     By default, \c QT contains \c core and \c gui, ensuring that standard
     GUI applications can be built without further configuration.
@@ -3120,11 +3171,6 @@
 
     \snippet code/doc_src_qmake-manual.pro 70
 
-    \section2 sprintf(string, arguments...)
-
-    Replaces %1-%9 with the arguments passed in the comma-separated list
-    of function \c arguments and returns the processed string.
-
     \section2 resolve_depends(variablename, prefix)
 
     This is an internal function that you will typically not need.
@@ -3190,6 +3236,11 @@
     For example:
 
     \snippet code/doc_src_qmake-manual.pro 168
+
+    \section2 sprintf(string, arguments...)
+
+    Replaces %1-%9 in \c string with the arguments passed in the comma-separated
+    list of function \c arguments and returns the processed string.
 
     \target str_member()
     \section2 str_member(arg [, start [, end]])
@@ -3258,7 +3309,7 @@
 
     \section2 system_quote(arg)
 
-    Quotes \c arg for the for the shell that is used by the \c{system()}
+    Quotes \c arg for the shell that is used by the \c{system()}
     functions.
 
     See also \l{shell_quote(arg)}{shell_quote()}.
@@ -4576,6 +4627,11 @@
     For example:
 
     \snippet code/doc_src_qmake-manual.pro 106
+
+    To use the precompiled header also for C files on MSVC nmake target, add
+    \c precompile_header_c to the \l{CONFIG} variable. If the header is
+    used also for C++ and it contains C++ keywords/includes, enclose them
+    with \c{#ifdef __cplusplus}).
 
     \section1 Notes on Possible Issues
 

@@ -49,8 +49,18 @@
 
 #include <QtCore/qscopedpointer.h>
 
-QT_BEGIN_NAMESPACE
+#if defined(Q_CLANG_QDOC)
+#undef GLuint
+typedef unsigned int GLuint;
+#undef GLenum
+typedef unsigned int GLenum;
+#undef GL_TEXTURE_2D
+#define GL_TEXTURE_2D 0x0DE1
+#undef GLbitfield
+typedef unsigned int GLbitfield;
+#endif
 
+QT_BEGIN_NAMESPACE
 
 class QOpenGLFramebufferObjectPrivate;
 class QOpenGLFramebufferObjectFormat;

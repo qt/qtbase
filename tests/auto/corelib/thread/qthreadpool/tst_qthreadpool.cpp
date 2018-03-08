@@ -94,6 +94,8 @@ private slots:
     void destroyingWaitsForTasksToFinish();
     void stackSize();
     void stressTest();
+    void takeAllAndIncreaseMaxThreadCount();
+    void waitForDoneAfterTake();
 
 private:
     QMutex m_functionTestMutex;
@@ -1201,6 +1203,136 @@ void tst_QThreadPool::stressTest()
         t.start();
         t.wait();
     }
+}
+
+void tst_QThreadPool::takeAllAndIncreaseMaxThreadCount() {
+    class Task : public QRunnable
+    {
+    public:
+        Task(QSemaphore *mainBarrier, QSemaphore *threadBarrier)
+            : m_mainBarrier(mainBarrier)
+            , m_threadBarrier(threadBarrier)
+        {
+            setAutoDelete(false);
+        }
+
+        void run() {
+            m_mainBarrier->release();
+            m_threadBarrier->acquire();
+        }
+    private:
+        QSemaphore *m_mainBarrier;
+        QSemaphore *m_threadBarrier;
+    };
+
+    QSemaphore mainBarrier;
+    QSemaphore taskBarrier;
+
+    QThreadPool threadPool;
+    threadPool.setMaxThreadCount(1);
+
+    Task *task1 = new Task(&mainBarrier, &taskBarrier);
+    Task *task2 = new Task(&mainBarrier, &taskBarrier);
+    Task *task3 = new Task(&mainBarrier, &taskBarrier);
+
+    threadPool.start(task1);
+    threadPool.start(task2);
+    threadPool.start(task3);
+
+    mainBarrier.acquire(1);
+
+    QCOMPARE(threadPool.activeThreadCount(), 1);
+
+    QVERIFY(!threadPool.tryTake(task1));
+    QVERIFY(threadPool.tryTake(task2));
+    QVERIFY(threadPool.tryTake(task3));
+
+    // A bad queue implementation can segfault here because two consecutive items in the queue
+    // have been taken
+    threadPool.setMaxThreadCount(4);
+
+    // Even though we increase the max thread count, there should only be one job to run
+    QCOMPARE(threadPool.activeThreadCount(), 1);
+
+    // Make sure jobs 2 and 3 never started
+    QCOMPARE(mainBarrier.available(), 0);
+
+    taskBarrier.release(1);
+
+    threadPool.waitForDone();
+
+    QCOMPARE(threadPool.activeThreadCount(), 0);
+
+    delete task1;
+    delete task2;
+    delete task3;
+}
+
+void tst_QThreadPool::waitForDoneAfterTake()
+{
+    class Task : public QRunnable
+    {
+    public:
+        Task(QSemaphore *mainBarrier, QSemaphore *threadBarrier)
+            : m_mainBarrier(mainBarrier)
+            , m_threadBarrier(threadBarrier)
+        {}
+
+        void run()
+        {
+            m_mainBarrier->release();
+            m_threadBarrier->acquire();
+        }
+
+    private:
+        QSemaphore *m_mainBarrier = nullptr;
+        QSemaphore *m_threadBarrier = nullptr;
+    };
+
+    int threadCount = 4;
+
+    // Blocks the main thread from releasing the threadBarrier before all run() functions have started
+    QSemaphore mainBarrier;
+    // Blocks the tasks from completing their run function
+    QSemaphore threadBarrier;
+
+    QThreadPool manager;
+    manager.setMaxThreadCount(threadCount);
+
+    // Fill all the threads with runnables that wait for the threadBarrier
+    for (int i = 0; i < threadCount; i++) {
+        auto *task = new Task(&mainBarrier, &threadBarrier);
+        manager.start(task);
+    }
+
+    QVERIFY(manager.activeThreadCount() == manager.maxThreadCount());
+
+    // Add runnables that are immediately removed from the pool queue.
+    // This sets the queue elements to nullptr in QThreadPool and we want to test that
+    // the threads keep going through the queue after encountering a nullptr.
+    for (int i = 0; i < threadCount; i++) {
+        QRunnable *runnable = createTask(emptyFunct);
+        manager.start(runnable);
+        QVERIFY(manager.tryTake(runnable));
+    }
+
+    // Add another runnable that will not be removed
+    manager.start(createTask(emptyFunct));
+
+    // Wait for the first runnables to start
+    mainBarrier.acquire(threadCount);
+
+    QVERIFY(mainBarrier.available() == 0);
+    QVERIFY(threadBarrier.available() == 0);
+
+    // Release runnables that are waiting and expect all runnables to complete
+    threadBarrier.release(threadCount);
+
+    // Using qFatal instead of QVERIFY to force exit if threads are still running after timeout.
+    // Otherwise, QCoreApplication will still wait for the stale threads and never exit the test.
+    if (!manager.waitForDone(5 * 60 * 1000))
+        qFatal("waitForDone returned false. Aborting to stop background threads.");
+
 }
 
 QTEST_MAIN(tst_QThreadPool);

@@ -364,7 +364,7 @@ void QPlainTextDocumentLayout::layoutBlock(const QTextBlock &block)
     int extraMargin = 0;
     if (option.flags() & QTextOption::AddSpaceForLineAndParagraphSeparators) {
         QFontMetrics fm(block.charFormat().font());
-        extraMargin += fm.width(QChar(0x21B5));
+        extraMargin += fm.horizontalAdvance(QChar(0x21B5));
     }
     tl->beginLayout();
     qreal availableWidth = d->width;

@@ -74,6 +74,7 @@
 #include <qpa/qwindowsysteminterface.h>
 
 #include <QtCore/QDebug>
+#include <QtCore/QLibraryInfo>
 
 #include <dwmapi.h>
 
@@ -702,7 +703,7 @@ void WindowCreationData::initialize(const QWindow *w, HWND hwnd, bool frameChang
 {
     if (!hwnd)
         return;
-    UINT swpFlags = SWP_NOMOVE | SWP_NOSIZE;
+    UINT swpFlags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER;
     if (frameChange)
         swpFlags |= SWP_FRAMECHANGED;
     if (topLevel) {
@@ -906,7 +907,7 @@ void QWindowsBaseWindow::raise_sys()
     const Qt::WindowType type = window()->type();
     if (type == Qt::Popup
         || type == Qt::SubWindow // Special case for QTBUG-63121: MDI subwindows with WindowStaysOnTopHint
-        || (window()->flags() & (Qt::WindowStaysOnTopHint | Qt::WindowStaysOnBottomHint)) == 0) {
+        || !(window()->flags() & Qt::WindowStaysOnBottomHint)) {
         SetWindowPos(handle(), HWND_TOP, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
     }
 }
@@ -914,7 +915,7 @@ void QWindowsBaseWindow::raise_sys()
 void QWindowsBaseWindow::lower_sys()
 {
     qCDebug(lcQpaWindows) << __FUNCTION__ << this << window();
-    if ((window()->flags() & (Qt::WindowStaysOnTopHint | Qt::WindowStaysOnBottomHint)) == 0)
+    if (!(window()->flags() & Qt::WindowStaysOnTopHint))
         SetWindowPos(handle(), HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 }
 
@@ -1033,8 +1034,10 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
         const QMargins effectiveMargins = margins + customMargins;
         frameWidth = effectiveMargins.left() + geometry.width() + effectiveMargins.right();
         frameHeight = effectiveMargins.top() + geometry.height() + effectiveMargins.bottom();
-        if (QWindowsMenuBar::menuBarOf(w) != nullptr)
-            frameHeight += GetSystemMetrics(SM_CYMENU);
+        if (QWindowsMenuBar::menuBarOf(w) != nullptr) {
+            menuHeight = GetSystemMetrics(SM_CYMENU);
+            frameHeight += menuHeight;
+        }
         const bool isDefaultPosition = !frameX && !frameY && w->isTopLevel();
         if (!QWindowsGeometryHint::positionIncludesFrame(w) && !isDefaultPosition) {
             frameX -= effectiveMargins.left();
@@ -1579,7 +1582,7 @@ void QWindowsWindow::setGeometry(const QRect &rectIn)
         setFlag(WithinSetGeometry);
         setGeometry_sys(rect);
         clearFlag(WithinSetGeometry);
-        if (m_data.geometry != rect) {
+        if (m_data.geometry != rect && (isVisible() || QLibraryInfo::isDebugBuild())) {
             qWarning("%s: Unable to set geometry %dx%d+%d+%d on %s/'%s'."
                      " Resulting geometry:  %dx%d+%d+%d "
                      "(frame: %d, %d, %d, %d, custom margin: %d, %d, %d, %d"
@@ -2070,9 +2073,17 @@ void QWindowsWindow::propagateSizeHints()
 
 bool QWindowsWindow::handleGeometryChangingMessage(MSG *message, const QWindow *qWindow, const QMargins &margins)
 {
+    WINDOWPOS *windowPos = reinterpret_cast<WINDOWPOS *>(message->lParam);
+    if ((windowPos->flags & SWP_NOZORDER) == 0) {
+        if (QWindowsWindow *platformWindow = QWindowsWindow::windowsWindowOf(qWindow)) {
+            QWindow *parentWindow = qWindow->parent();
+            HWND parentHWND = GetAncestor(windowPos->hwnd, GA_PARENT);
+            HWND desktopHWND = GetDesktopWindow();
+            platformWindow->m_data.embedded = !parentWindow && parentHWND && (parentHWND != desktopHWND);
+        }
+    }
     if (!qWindow->isTopLevel()) // Implement hasHeightForWidth().
         return false;
-    WINDOWPOS *windowPos = reinterpret_cast<WINDOWPOS *>(message->lParam);
     if ((windowPos->flags & (SWP_NOCOPYBITS | SWP_NOSIZE)))
         return false;
     const QRect suggestedFrameGeometry(windowPos->x, windowPos->y,
@@ -2265,6 +2276,16 @@ bool QWindowsWindow::startSystemResize(const QPoint &, Qt::Corner corner)
     ReleaseCapture();
     PostMessage(m_data.hwnd, WM_SYSCOMMAND, cornerToWinOrientation(corner), 0);
     setFlag(SizeGripOperation);
+    return true;
+}
+
+bool QWindowsWindow::startSystemMove(const QPoint &)
+{
+    if (!GetSystemMenu(m_data.hwnd, FALSE))
+        return false;
+
+    ReleaseCapture();
+    PostMessage(m_data.hwnd, WM_SYSCOMMAND, 0xF012 /*SC_DRAGMOVE*/, 0);
     return true;
 }
 
@@ -2539,7 +2560,7 @@ void QWindowsWindow::setCustomMargins(const QMargins &newCustomMargins)
         newFrame.moveTo(topLeft);
         qCDebug(lcQpaWindows) << __FUNCTION__ << oldCustomMargins << "->" << newCustomMargins
             << currentFrameGeometry << "->" << newFrame;
-        SetWindowPos(m_data.hwnd, 0, newFrame.x(), newFrame.y(), newFrame.width(), newFrame.height(), SWP_NOZORDER | SWP_FRAMECHANGED);
+        SetWindowPos(m_data.hwnd, 0, newFrame.x(), newFrame.y(), newFrame.width(), newFrame.height(), SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOACTIVATE);
     }
 }
 

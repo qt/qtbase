@@ -223,9 +223,16 @@ void QIOSWindow::applyGeometry(const QRect &rect)
         [m_view layoutIfNeeded];
 }
 
+QMargins QIOSWindow::safeAreaMargins() const
+{
+    UIEdgeInsets safeAreaInsets = m_view.qt_safeAreaInsets;
+    return QMargins(safeAreaInsets.left, safeAreaInsets.top,
+        safeAreaInsets.right, safeAreaInsets.bottom);
+}
+
 bool QIOSWindow::isExposed() const
 {
-    return qApp->applicationState() >= Qt::ApplicationActive
+    return qApp->applicationState() != Qt::ApplicationSuspended
         && window()->isVisible() && !window()->geometry().isEmpty();
 }
 
@@ -239,15 +246,28 @@ void QIOSWindow::setWindowState(Qt::WindowStates state)
     if (window()->isTopLevel() && window()->isVisible() && window()->isActive())
         [m_view.qtViewController updateProperties];
 
-    if (state & Qt::WindowMinimized)
+    if (state & Qt::WindowMinimized) {
         applyGeometry(QRect());
-    else if (state & Qt::WindowFullScreen)
-        applyGeometry(screen()->geometry());
-    else if (state & Qt::WindowMaximized)
-        applyGeometry(window()->flags() & Qt::MaximizeUsingFullscreenGeometryHint ?
-            screen()->geometry() : screen()->availableGeometry());
-    else
+    } else if (state & (Qt::WindowFullScreen | Qt::WindowMaximized)) {
+        // When an application is in split-view mode, the UIScreen still has the
+        // same geometry, but the UIWindow is resized to the area reserved for the
+        // application. We use this to constrain the geometry used when applying the
+        // fullscreen or maximized window states. Note that we do not do this
+        // in applyGeometry(), as we don't want to artificially limit window
+        // placement "outside" of the screen bounds if that's what the user wants.
+
+        QRect uiWindowBounds = QRectF::fromCGRect(m_view.window.bounds).toRect();
+        QRect fullscreenGeometry = screen()->geometry().intersected(uiWindowBounds);
+        QRect maximizedGeometry = window()->flags() & Qt::MaximizeUsingFullscreenGeometryHint ?
+            fullscreenGeometry : screen()->availableGeometry().intersected(uiWindowBounds);
+
+        if (state & Qt::WindowFullScreen)
+            applyGeometry(fullscreenGeometry);
+        else
+            applyGeometry(maximizedGeometry);
+    } else {
         applyGeometry(m_normalGeometry);
+    }
 }
 
 void QIOSWindow::setParent(const QPlatformWindow *parentWindow)
@@ -360,6 +380,19 @@ CAEAGLLayer *QIOSWindow::eaglLayer() const
     Q_ASSERT([m_view.layer isKindOfClass:[CAEAGLLayer class]]);
     return static_cast<CAEAGLLayer *>(m_view.layer);
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QIOSWindow *window)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug << "QIOSWindow(" << (const void *)window;
+    if (window)
+        debug << ", window=" << window->window();
+    debug << ')';
+    return debug;
+}
+#endif // !QT_NO_DEBUG_STREAM
 
 #include "moc_qioswindow.cpp"
 

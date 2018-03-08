@@ -58,6 +58,12 @@ typedef int GLint;
 typedef unsigned int GLuint;
 #undef GLenum
 typedef unsigned int GLenum;
+#undef GLclampf
+typedef float GLclampf;
+#undef GLsizei
+typedef int GLsizei;
+#undef GLboolean
+typedef bool GLboolean;
 #endif
 
 

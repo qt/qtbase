@@ -73,9 +73,10 @@ QT_BEGIN_NAMESPACE
     For building QStrings:
 
     \list
-    \li QString, QStringRef,
-    \li QChar, QCharRef, QLatin1Char,
+    \li QString, QStringRef, (since 5.10:) QStringView
+    \li QChar, QCharRef, QLatin1Char, (since 5.10:) \c char16_t,
     \li QLatin1String,
+    \li (since 5.10:) \c{const char16_t[]} (\c{u"foo"}),
     \li QByteArray, \c char, \c{const char[]}.
     \endlist
 
@@ -96,11 +97,11 @@ QT_BEGIN_NAMESPACE
     \sa QLatin1String, QString
 */
 
-/*! \fn QStringBuilder::QStringBuilder(const A &a, const B &b)
+/*! \fn template <typename A, typename B> QStringBuilder<A, B>::QStringBuilder(const A &a, const B &b)
   Constructs a QStringBuilder from \a a and \a b.
  */
 
-/* \fn QStringBuilder::operator%(const A &a, const B &b)
+/* \fn template <typename A, typename B> QStringBuilder<A, B>::operator%(const A &a, const B &b)
 
     Returns a \c QStringBuilder object that is converted to a QString object
     when assigned to a variable of QString type or passed to a function that
@@ -111,12 +112,12 @@ QT_BEGIN_NAMESPACE
     \c QChar, \c QCharRef, \c QLatin1Char, and \c char.
 */
 
-/* \fn QByteArray QStringBuilder::toLatin1() const
+/* \fn template <typename A, typename B> QByteArray QStringBuilder<A, B>::toLatin1() const
   Returns a Latin-1 representation of the string as a QByteArray.  The
   returned byte array is undefined if the string contains non-Latin1
   characters.
  */
-/* \fn QByteArray QStringBuilder::toUtf8() const
+/* \fn template <typename A, typename B> QByteArray QStringBuilder<A, B>::toUtf8() const
   Returns a UTF-8 representation of the string as a QByteArray.
  */
 

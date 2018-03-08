@@ -43,12 +43,9 @@
 #include <QtConcurrent/qtconcurrentcompilertest.h>
 #include <QtCore/QStringList>
 
-#ifndef QT_NO_CONCURRENT
+#if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)
 
 QT_BEGIN_NAMESPACE
-
-
-#ifndef Q_QDOC
 
 namespace QtConcurrent {
 
@@ -375,7 +372,6 @@ struct MapResultType<QStringList, U(C::*)() const noexcept>
 
 } // namespace QtPrivate.
 
-#endif //Q_QDOC
 
 QT_END_NAMESPACE
 

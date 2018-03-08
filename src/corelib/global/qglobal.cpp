@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -46,6 +46,9 @@
 #include "qdatetime.h"
 #include "qoperatingsystemversion.h"
 #include "qoperatingsystemversion_p.h"
+#if defined(Q_OS_WIN) || defined(Q_OS_CYGWIN) || defined(Q_OS_WINRT)
+#include "qoperatingsystemversion_win_p.h"
+#endif
 #include <private/qlocale_tools_p.h>
 
 #include <qmutex.h>
@@ -73,11 +76,15 @@
 #include <Ws2tcpip.h>
 #endif // Q_OS_WINRT
 
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
+#endif
+
 #if defined(Q_OS_VXWORKS) && defined(_WRS_KERNEL)
 #  include <envLib.h>
 #endif
 
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 #include <private/qjni_p.h>
 #endif
 
@@ -160,8 +167,8 @@ Q_STATIC_ASSERT_X(std::numeric_limits<float>::radix == 2,
 
 // not required by the definition of size_t, but we depend on this
 Q_STATIC_ASSERT_X(sizeof(size_t) == sizeof(void *), "size_t and a pointer don't have the same size");
-Q_STATIC_ASSERT(sizeof(size_t) == sizeof(qssize_t)); // implied by the definition
-Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
+Q_STATIC_ASSERT(sizeof(size_t) == sizeof(qsizetype)); // implied by the definition
+Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
 
 /*!
     \class QFlag
@@ -178,28 +185,28 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 /*!
     \fn QFlag::QFlag(int value)
 
-    Constructs a QFlag object that stores the given \a value.
+    Constructs a QFlag object that stores the \a value.
 */
 
 /*!
     \fn QFlag::QFlag(uint value)
     \since 5.3
 
-    Constructs a QFlag object that stores the given \a value.
+    Constructs a QFlag object that stores the \a value.
 */
 
 /*!
     \fn QFlag::QFlag(short value)
     \since 5.3
 
-    Constructs a QFlag object that stores the given \a value.
+    Constructs a QFlag object that stores the \a value.
 */
 
 /*!
     \fn QFlag::QFlag(ushort value)
     \since 5.3
 
-    Constructs a QFlag object that stores the given \a value.
+    Constructs a QFlag object that stores the \a value.
 */
 
 /*!
@@ -294,29 +301,28 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags::QFlags(const QFlags &other)
+    \fn template<typename Enum> QFlags<Enum>::QFlags(const QFlags &other)
 
     Constructs a copy of \a other.
 */
 
 /*!
-    \fn QFlags::QFlags(Enum flag)
+    \fn template <typename Enum> QFlags<Enum>::QFlags(Enum flags)
 
-    Constructs a QFlags object storing the given \a flag.
+    Constructs a QFlags object storing the \a flags.
 */
 
 /*!
-    \fn QFlags::QFlags(Zero zero)
+    \fn template <typename Enum> QFlags<Enum>::QFlags(Zero)
 
-    Constructs a QFlags object with no flags set. \a zero must be a
+    Constructs a QFlags object with no flags set. The parameter must be a
     literal 0 value.
 */
 
 /*!
-    \fn QFlags::QFlags(QFlag value)
+    \fn template <typename Enum> QFlags<Enum>::QFlags(QFlag flag)
 
-    Constructs a QFlags object initialized with the given integer \a
-    value.
+    Constructs a QFlags object initialized with the integer \a flag.
 
     The QFlag type is a helper type. By using it here instead of \c
     int, we effectively ensure that arbitrary enum values cannot be
@@ -325,7 +331,7 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags::QFlags(std::initializer_list<Enum> flags)
+    \fn template <typename Enum> QFlags<Enum>::QFlags(std::initializer_list<Enum> flags)
     \since 5.4
 
     Constructs a QFlags object initialized with all \a flags
@@ -335,14 +341,14 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags &QFlags::operator=(const QFlags &other)
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator=(const QFlags &other)
 
     Assigns \a other to this object and returns a reference to this
     object.
 */
 
 /*!
-    \fn QFlags &QFlags::operator&=(int mask)
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator&=(int mask)
 
     Performs a bitwise AND operation with \a mask and stores the
     result in this QFlags object. Returns a reference to this object.
@@ -351,19 +357,19 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags &QFlags::operator&=(uint mask)
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator&=(uint mask)
 
     \overload
 */
 
 /*!
-    \fn QFlags &QFlags::operator&=(Enum mask)
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator&=(Enum mask)
 
     \overload
 */
 
 /*!
-    \fn QFlags &QFlags::operator|=(QFlags other)
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator|=(QFlags other)
 
     Performs a bitwise OR operation with \a other and stores the
     result in this QFlags object. Returns a reference to this object.
@@ -372,13 +378,13 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags &QFlags::operator|=(Enum other)
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator|=(Enum other)
 
     \overload
 */
 
 /*!
-    \fn QFlags &QFlags::operator^=(QFlags other)
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator^=(QFlags other)
 
     Performs a bitwise XOR operation with \a other and stores the
     result in this QFlags object. Returns a reference to this object.
@@ -387,13 +393,13 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags &QFlags::operator^=(Enum other)
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator^=(Enum other)
 
     \overload
 */
 
 /*!
-    \fn QFlags::operator Int() const
+    \fn template <typename Enum> QFlags<Enum>::operator Int() const
 
     Returns the value stored in the QFlags object as an integer.
 
@@ -401,7 +407,7 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags QFlags::operator|(QFlags other) const
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator|(QFlags other) const
 
     Returns a QFlags object containing the result of the bitwise OR
     operation on this object and \a other.
@@ -410,13 +416,13 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags QFlags::operator|(Enum other) const
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator|(Enum other) const
 
     \overload
 */
 
 /*!
-    \fn QFlags QFlags::operator^(QFlags other) const
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator^(QFlags other) const
 
     Returns a QFlags object containing the result of the bitwise XOR
     operation on this object and \a other.
@@ -425,13 +431,13 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags QFlags::operator^(Enum other) const
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator^(Enum other) const
 
     \overload
 */
 
 /*!
-    \fn QFlags QFlags::operator&(int mask) const
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator&(int mask) const
 
     Returns a QFlags object containing the result of the bitwise AND
     operation on this object and \a mask.
@@ -440,19 +446,19 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags QFlags::operator&(uint mask) const
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator&(uint mask) const
 
     \overload
 */
 
 /*!
-    \fn QFlags QFlags::operator&(Enum mask) const
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator&(Enum mask) const
 
     \overload
 */
 
 /*!
-    \fn QFlags QFlags::operator~() const
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator~() const
 
     Returns a QFlags object that contains the bitwise negation of
     this object.
@@ -461,24 +467,24 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn bool QFlags::operator!() const
+    \fn template <typename Enum> bool QFlags<Enum>::operator!() const
 
     Returns \c true if no flag is set (i.e., if the value stored by the
     QFlags object is 0); otherwise returns \c false.
 */
 
 /*!
-    \fn bool QFlags::testFlag(Enum flag) const
+    \fn template <typename Enum> bool QFlags<Enum>::testFlag(Enum flag) const
     \since 4.2
 
-    Returns \c true if the \a flag is set, otherwise \c false.
+    Returns \c true if the flag \a flag is set, otherwise \c false.
 */
 
 /*!
-    \fn QFlags QFlags::setFlag(Enum flag, bool on)
+    \fn template <typename Enum> QFlags QFlags<Enum>::setFlag(Enum flag, bool on)
     \since 5.7
 
-    Sets the indicated \a flag if \a on is \c true or unsets it if
+    Sets the flag \a flag if \a on is \c true or unsets it if
     \a on is \c false. Returns a reference to this object.
 */
 
@@ -824,7 +830,7 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \typedef qssize_t
+    \typedef qsizetype
     \relates <QtGlobal>
     \since 5.10
 
@@ -833,7 +839,7 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
     This type is guaranteed to be the same size as a \c size_t on all
     platforms supported by Qt.
 
-    Note that qssize_t is signed. Use \c size_t for unsigned values.
+    Note that qsizetype is signed. Use \c size_t for unsigned values.
 
     \sa qptrdiff
 */
@@ -916,11 +922,11 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
     \sa quint64, qlonglong
 */
 
-/*! \fn T qAbs(const T &value)
+/*! \fn template <typename T> T qAbs(const T &t)
     \relates <QtGlobal>
 
-    Compares \a value to the 0 of type T and returns the absolute
-    value. Thus if T is \e {double}, then \a value is compared to
+    Compares \a t to the 0 of type T and returns the absolute
+    value. Thus if T is \e {double}, then \a t is compared to
     \e{(double) 0}.
 
     Example:
@@ -928,50 +934,50 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
     \snippet code/src_corelib_global_qglobal.cpp 10
 */
 
-/*! \fn int qRound(double value)
+/*! \fn int qRound(double d)
     \relates <QtGlobal>
 
-    Rounds \a value to the nearest integer.
+    Rounds \a d to the nearest integer.
 
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 11A
 */
 
-/*! \fn int qRound(float value)
+/*! \fn int qRound(float d)
     \relates <QtGlobal>
 
-    Rounds \a value to the nearest integer.
+    Rounds \a d to the nearest integer.
 
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 11B
 */
 
-/*! \fn qint64 qRound64(double value)
+/*! \fn qint64 qRound64(double d)
     \relates <QtGlobal>
 
-    Rounds \a value to the nearest 64-bit integer.
+    Rounds \a d to the nearest 64-bit integer.
 
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 12A
 */
 
-/*! \fn qint64 qRound64(float value)
+/*! \fn qint64 qRound64(float d)
     \relates <QtGlobal>
 
-    Rounds \a value to the nearest 64-bit integer.
+    Rounds \a d to the nearest 64-bit integer.
 
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 12B
 */
 
-/*! \fn const T &qMin(const T &value1, const T &value2)
+/*! \fn template <typename T> const T &qMin(const T &a, const T &b)
     \relates <QtGlobal>
 
-    Returns the minimum of \a value1 and \a value2.
+    Returns the minimum of \a a and \a b.
 
     Example:
 
@@ -980,10 +986,10 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
     \sa qMax(), qBound()
 */
 
-/*! \fn const T &qMax(const T &value1, const T &value2)
+/*! \fn template <typename T> const T &qMax(const T &a, const T &b)
     \relates <QtGlobal>
 
-    Returns the maximum of \a value1 and \a value2.
+    Returns the maximum of \a a and \a b.
 
     Example:
 
@@ -992,11 +998,11 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
     \sa qMin(), qBound()
 */
 
-/*! \fn const T &qBound(const T &min, const T &value, const T &max)
+/*! \fn template <typename T> const T &qBound(const T &min, const T &val, const T &max)
     \relates <QtGlobal>
 
-    Returns \a value bounded by \a min and \a max. This is equivalent
-    to qMax(\a min, qMin(\a value, \a max)).
+    Returns \a val bounded by \a min and \a max. This is equivalent
+    to qMax(\a min, qMin(\a val, \a max)).
 
     Example:
 
@@ -1005,7 +1011,7 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
     \sa qMin(), qMax()
 */
 
-/*! \fn auto qOverload(T functionPointer)
+/*! \fn template <typename T> auto qOverload(T functionPointer)
     \relates <QtGlobal>
     \since 5.7
 
@@ -1027,7 +1033,7 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
     and Functor-Based Connections}
 */
 
-/*! \fn auto qConstOverload(T memberFunctionPointer)
+/*! \fn template <typename T> auto qConstOverload(T memberFunctionPointer)
     \relates <QtGlobal>
     \since 5.7
 
@@ -1039,7 +1045,7 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
     and Functor-Based Connections}
 */
 
-/*! \fn auto qNonConstOverload(T memberFunctionPointer)
+/*! \fn template <typename T> auto qNonConstOverload(T memberFunctionPointer)
     \relates <QtGlobal>
     \since 5.7
 
@@ -1428,13 +1434,6 @@ bool qSharedBuild() Q_DECL_NOTHROW
 */
 
 /*!
-    \macro Q_OS_ULTRIX
-    \relates <QtGlobal>
-
-    Defined on DEC Ultrix.
-*/
-
-/*!
     \macro Q_OS_LINUX
     \relates <QtGlobal>
 
@@ -1470,41 +1469,6 @@ bool qSharedBuild() Q_DECL_NOTHROW
 */
 
 /*!
-    \macro Q_OS_BSDI
-    \relates <QtGlobal>
-
-    Defined on BSD/OS.
-*/
-
-/*!
-    \macro Q_OS_IRIX
-    \relates <QtGlobal>
-
-    Defined on SGI Irix.
-*/
-
-/*!
-    \macro Q_OS_OSF
-    \relates <QtGlobal>
-
-    Defined on HP Tru64 UNIX.
-*/
-
-/*!
-    \macro Q_OS_SCO
-    \relates <QtGlobal>
-
-    Defined on SCO OpenServer 5.
-*/
-
-/*!
-    \macro Q_OS_UNIXWARE
-    \relates <QtGlobal>
-
-    Defined on UnixWare 7, Open UNIX 8.
-*/
-
-/*!
     \macro Q_OS_AIX
     \relates <QtGlobal>
 
@@ -1516,27 +1480,6 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \relates <QtGlobal>
 
     Defined on GNU Hurd.
-*/
-
-/*!
-    \macro Q_OS_DGUX
-    \relates <QtGlobal>
-
-    Defined on DG/UX.
-*/
-
-/*!
-    \macro Q_OS_RELIANT
-    \relates <QtGlobal>
-
-    Defined on Reliant UNIX.
-*/
-
-/*!
-    \macro Q_OS_DYNIX
-    \relates <QtGlobal>
-
-    Defined on DYNIX/ptx.
 */
 
 /*!
@@ -2355,7 +2298,7 @@ static bool findUnixOsVersion(QUnixOSVersion &v)
 #  endif // USE_ETC_OS_RELEASE
 #endif // Q_OS_UNIX
 
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 static const char *osVer_helper(QOperatingSystemVersion)
 {
 /* Data:
@@ -2836,7 +2779,7 @@ QString QSysInfo::productVersion()
 */
 QString QSysInfo::prettyProductName()
 {
-#if defined(Q_OS_ANDROID) || defined(Q_OS_DARWIN) || defined(Q_OS_WIN)
+#if (defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)) || defined(Q_OS_DARWIN) || defined(Q_OS_WIN)
     const auto version = QOperatingSystemVersion::current();
     const char *name = osVer_helper(version);
     if (name)
@@ -2881,10 +2824,11 @@ QString QSysInfo::prettyProductName()
 
     This function returns the same as QHostInfo::localHostName().
 
-    \sa QHostInfo::localDomainName
+    \sa QHostInfo::localDomainName, machineUniqueId()
  */
 QString QSysInfo::machineHostName()
 {
+    // the hostname can change, so we can't cache it
 #if defined(Q_OS_LINUX)
     // gethostname(3) on Linux just calls uname(2), so do it ourselves
     // and avoid a memcpy
@@ -2906,6 +2850,119 @@ QString QSysInfo::machineHostName()
     return QString();
 }
 #endif // QT_BOOTSTRAPPED
+
+enum {
+    UuidStringLen = sizeof("00000000-0000-0000-0000-000000000000") - 1
+};
+
+/*!
+    \since 5.10
+
+    Returns a unique ID for this machine, if one can be determined. If no
+    unique ID could be determined, this function returns an empty byte array.
+    Unlike machineHostName(), the value returned by this function is likely
+    globally unique.
+
+    A unique ID is useful in network operations to identify this machine for an
+    extended period of time, when the IP address could change or if this
+    machine could have more than one IP address. For example, the ID could be
+    used when communicating with a server or when storing device-specific data
+    in shared network storage.
+
+    Note that on some systems, this value will persist across reboots and on
+    some it will not. Applications should not blindly depend on this fact
+    without verifying the OS capabilities. In particular, on Linux systems,
+    this ID is usually permanent and it matches the D-Bus machine ID, except
+    for nodes without their own storage (replicated nodes).
+
+    \sa machineHostName(), bootUniqueId()
+*/
+QByteArray QSysInfo::machineUniqueId()
+{
+#ifdef Q_OS_BSD4
+    char uuid[UuidStringLen];
+    size_t uuidlen = sizeof(uuid);
+#  ifdef KERN_HOSTUUID
+    int name[] = { CTL_KERN, KERN_HOSTUUID };
+    if (sysctl(name, sizeof name / sizeof name[0], &uuid, &uuidlen, nullptr, 0) == 0
+            && uuidlen == sizeof(uuid))
+        return QByteArray(uuid, uuidlen);
+
+#  else
+    // Darwin: no fixed value, we need to search by name
+    if (sysctlbyname("kern.uuid", uuid, &uuidlen, nullptr, 0) == 0 && uuidlen == sizeof(uuid))
+        return QByteArray(uuid, uuidlen);
+#  endif
+#elif defined(Q_OS_UNIX)
+    // The modern name on Linux is /etc/machine-id, but that path is
+    // unlikely to exist on non-Linux (non-systemd) systems. The old
+    // path is more than enough.
+    static const char fullfilename[] = "/usr/local/var/lib/dbus/machine-id";
+    const char *firstfilename = fullfilename + sizeof("/usr/local") - 1;
+    int fd = qt_safe_open(firstfilename, O_RDONLY);
+    if (fd == -1 && errno == ENOENT)
+        fd = qt_safe_open(fullfilename, O_RDONLY);
+
+    if (fd != -1) {
+        char buffer[32];    // 128 bits, hex-encoded
+        qint64 len = qt_safe_read(fd, buffer, sizeof(buffer));
+        qt_safe_close(fd);
+
+        if (len != -1)
+            return QByteArray(buffer, len);
+    }
+#elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    // Let's poke at the registry
+    HKEY key = NULL;
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ, &key)
+            == ERROR_SUCCESS) {
+        wchar_t buffer[UuidStringLen + 1];
+        DWORD size = sizeof(buffer);
+        bool ok = (RegQueryValueEx(key, L"MachineGuid", NULL, NULL, (LPBYTE)buffer, &size) ==
+                   ERROR_SUCCESS);
+        RegCloseKey(key);
+        if (ok)
+            return QStringView(buffer, (size - 1) / 2).toLatin1();
+    }
+#endif
+    return QByteArray();
+}
+
+/*!
+    \since 5.10
+
+    Returns a unique ID for this machine's boot, if one can be determined. If
+    no unique ID could be determined, this function returns an empty byte
+    array. This value is expected to change after every boot and can be
+    considered globally unique.
+
+    This function is currently only implemented for Linux and Apple operating
+    systems.
+
+    \sa machineUniqueId()
+*/
+QByteArray QSysInfo::bootUniqueId()
+{
+#ifdef Q_OS_LINUX
+    // use low-level API here for simplicity
+    int fd = qt_safe_open("/proc/sys/kernel/random/boot_id", O_RDONLY);
+    if (fd != -1) {
+        char uuid[UuidStringLen];
+        qint64 len = qt_safe_read(fd, uuid, sizeof(uuid));
+        qt_safe_close(fd);
+        if (len == UuidStringLen)
+            return QByteArray(uuid, UuidStringLen);
+    }
+#elif defined(Q_OS_DARWIN)
+    // "kern.bootsessionuuid" is only available by name
+    char uuid[UuidStringLen];
+    size_t uuidlen = sizeof(uuid);
+    if (sysctlbyname("kern.bootsessionuuid", uuid, &uuidlen, nullptr, 0) == 0
+            && uuidlen == sizeof(uuid))
+        return QByteArray(uuid, uuidlen);
+#endif
+    return QByteArray();
+};
 
 /*!
     \macro void Q_ASSERT(bool test)
@@ -3050,10 +3107,10 @@ QString QSysInfo::machineHostName()
 */
 
 /*!
-    \fn T *q_check_ptr(T *pointer)
+    \fn template <typename T> T *q_check_ptr(T *p)
     \relates <QtGlobal>
 
-    Uses Q_CHECK_PTR on \a pointer, then returns \a pointer.
+    Uses Q_CHECK_PTR on \a p, then returns \a p.
 
     This can be used as an inline version of Q_CHECK_PTR.
 */
@@ -3192,7 +3249,7 @@ static QBasicMutex environmentMutex;
 QByteArray qgetenv(const char *varName)
 {
     QMutexLocker locker(&environmentMutex);
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#ifdef Q_CC_MSVC
     size_t requiredSize = 0;
     QByteArray buffer;
     getenv_s(&requiredSize, 0, 0, varName);
@@ -3211,6 +3268,8 @@ QByteArray qgetenv(const char *varName)
 
 
 /*!
+    QString qEnvironmentVariable(const char *varName, const QString &defaultValue);
+
     \relates <QtGlobal>
     \since 5.10
 
@@ -3285,6 +3344,9 @@ QString qEnvironmentVariable(const char *varName, const QString &defaultValue)
 #endif
 }
 
+/*!
+  \internal
+*/
 QString qEnvironmentVariable(const char *varName)
 {
     return qEnvironmentVariable(varName, QString());
@@ -3307,7 +3369,7 @@ QString qEnvironmentVariable(const char *varName)
 bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT
 {
     QMutexLocker locker(&environmentMutex);
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#ifdef Q_CC_MSVC
     // we provide a buffer that can only hold the empty string, so
     // when the env.var isn't empty, we'll get an ERANGE error (buffer
     // too small):
@@ -3348,7 +3410,7 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
         (std::numeric_limits<uint>::digits + NumBinaryDigitsPerOctalDigit - 1) / NumBinaryDigitsPerOctalDigit;
 
     QMutexLocker locker(&environmentMutex);
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#ifdef Q_CC_MSVC
     // we provide a buffer that can hold any int value:
     char buffer[MaxDigitsForOctalInt + 2]; // +1 for NUL +1 for optional '-'
     size_t dummy;
@@ -3395,7 +3457,7 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
 bool qEnvironmentVariableIsSet(const char *varName) Q_DECL_NOEXCEPT
 {
     QMutexLocker locker(&environmentMutex);
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#ifdef Q_CC_MSVC
     size_t requiredSize = 0;
     (void)getenv_s(&requiredSize, 0, 0, varName);
     return requiredSize != 0;
@@ -3425,7 +3487,7 @@ bool qEnvironmentVariableIsSet(const char *varName) Q_DECL_NOEXCEPT
 bool qputenv(const char *varName, const QByteArray& value)
 {
     QMutexLocker locker(&environmentMutex);
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#if defined(Q_CC_MSVC)
     return _putenv_s(varName, value.constData()) == 0;
 #elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_HAIKU)
     // POSIX.1-2001 has setenv
@@ -3456,7 +3518,7 @@ bool qputenv(const char *varName, const QByteArray& value)
 bool qunsetenv(const char *varName)
 {
     QMutexLocker locker(&environmentMutex);
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#if defined(Q_CC_MSVC)
     return _putenv_s(varName, "") == 0;
 #elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_BSD4) || defined(Q_OS_HAIKU)
     // POSIX.1-2001, BSD and Haiku have unsetenv
@@ -3548,7 +3610,7 @@ bool qunsetenv(const char *varName)
 */
 
 /*!
-    \fn qAsConst(T &t)
+    \fn template <typename T> typename std::add_const<T>::type &qAsConst(T &t)
     \relates <QtGlobal>
     \since 5.7
 
@@ -3600,7 +3662,7 @@ bool qunsetenv(const char *varName)
 */
 
 /*!
-    \fn qAsConst(const T &&t)
+    \fn template <typename T> void qAsConst(const T &&t)
     \relates <QtGlobal>
     \since 5.7
     \overload
@@ -4012,43 +4074,6 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 */
 
 /*!
-    \macro Q_GLOBAL_STATIC(type, name)
-    \internal
-
-    Declares a global static variable with the given \a type and \a name.
-
-    Use this macro to instantiate an object in a thread-safe way, creating
-    a global pointer that can be used to refer to it.
-
-    \warning This macro is subject to a race condition that can cause the object
-    to be constructed twice. However, if this occurs, the second instance will
-    be immediately deleted.
-
-    See also
-    \l{http://www.aristeia.com/publications.html}{"C++ and the perils of Double-Checked Locking"}
-    by Scott Meyers and Andrei Alexandrescu.
-*/
-
-/*!
-    \macro Q_GLOBAL_STATIC_WITH_ARGS(type, name, arguments)
-    \internal
-
-    Declares a global static variable with the specified \a type and \a name.
-
-    Use this macro to instantiate an object using the \a arguments specified
-    in a thread-safe way, creating a global pointer that can be used to refer
-    to it.
-
-    \warning This macro is subject to a race condition that can cause the object
-    to be constructed twice. However, if this occurs, the second instance will
-    be immediately deleted.
-
-    See also
-    \l{http://www.aristeia.com/publications.html}{"C++ and the perils of Double-Checked Locking"}
-    by Scott Meyers and Andrei Alexandrescu.
-*/
-
-/*!
     \macro QT_NAMESPACE
     \internal
 
@@ -4296,6 +4321,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 /*!
     \macro qDebug(const char *message, ...)
     \relates <QtGlobal>
+    \threadsafe
 
     Calls the message handler with the debug message \a message. If no
     message handler has been installed, the message is printed to
@@ -4332,6 +4358,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 /*!
     \macro qInfo(const char *message, ...)
     \relates <QtGlobal>
+    \threadsafe
     \since 5.5
 
     Calls the message handler with the informational message \a message. If no
@@ -4369,6 +4396,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 /*!
     \macro qWarning(const char *message, ...)
     \relates <QtGlobal>
+    \threadsafe
 
     Calls the message handler with the warning message \a message. If no
     message handler has been installed, the message is printed to
@@ -4406,6 +4434,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 /*!
     \macro qCritical(const char *message, ...)
     \relates <QtGlobal>
+    \threadsafe
 
     Calls the message handler with the critical message \a message. If no
     message handler has been installed, the message is printed to

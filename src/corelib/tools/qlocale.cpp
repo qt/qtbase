@@ -64,6 +64,9 @@
 #include "qstringbuilder.h"
 #include "private/qnumeric_p.h"
 #include <cmath>
+#ifndef QT_NO_SYSTEMLOCALE
+#   include "qmutex.h"
+#endif
 #ifdef Q_OS_WIN
 #   include <qt_windows.h>
 #   include <time.h>
@@ -107,31 +110,32 @@ QLocale::Language QLocalePrivate::codeToLanguage(QStringView code) Q_DECL_NOTHRO
             return QLocale::Language((c - language_code_list)/3);
     }
 
-    // legacy codes
-    if (uc1 == 'n' && uc2 == 'o' && uc3 == 0) { // no -> nb
-        Q_STATIC_ASSERT(QLocale::Norwegian == QLocale::NorwegianBokmal);
-        return QLocale::Norwegian;
+    if (uc3 == 0) {
+        // legacy codes
+        if (uc1 == 'n' && uc2 == 'o') { // no -> nb
+            Q_STATIC_ASSERT(QLocale::Norwegian == QLocale::NorwegianBokmal);
+            return QLocale::Norwegian;
+        }
+        if (uc1 == 't' && uc2 == 'l') { // tl -> fil
+            Q_STATIC_ASSERT(QLocale::Tagalog == QLocale::Filipino);
+            return QLocale::Tagalog;
+        }
+        if (uc1 == 's' && uc2 == 'h') { // sh -> sr[_Latn]
+            Q_STATIC_ASSERT(QLocale::SerboCroatian == QLocale::Serbian);
+            return QLocale::SerboCroatian;
+        }
+        if (uc1 == 'm' && uc2 == 'o') { // mo -> ro
+            Q_STATIC_ASSERT(QLocale::Moldavian == QLocale::Romanian);
+            return QLocale::Moldavian;
+        }
+        // Android uses the following deprecated codes
+        if (uc1 == 'i' && uc2 == 'w') // iw -> he
+            return QLocale::Hebrew;
+        if (uc1 == 'i' && uc2 == 'n') // in -> id
+            return QLocale::Indonesian;
+        if (uc1 == 'j' && uc2 == 'i') // ji -> yi
+            return QLocale::Yiddish;
     }
-    if (uc1 == 't' && uc2 == 'l' && uc3 == 0) { // tl -> fil
-        Q_STATIC_ASSERT(QLocale::Tagalog == QLocale::Filipino);
-        return QLocale::Tagalog;
-    }
-    if (uc1 == 's' && uc2 == 'h' && uc3 == 0) { // sh -> sr[_Latn]
-        Q_STATIC_ASSERT(QLocale::SerboCroatian == QLocale::Serbian);
-        return QLocale::SerboCroatian;
-    }
-    if (uc1 == 'm' && uc2 == 'o' && uc3 == 0) { // mo -> ro
-        Q_STATIC_ASSERT(QLocale::Moldavian == QLocale::Romanian);
-        return QLocale::Moldavian;
-    }
-    // Android uses the following deprecated codes
-    if (uc1 == 'i' && uc2 == 'w' && uc3 == 0) // iw -> he
-        return QLocale::Hebrew;
-    if (uc1 == 'i' && uc2 == 'n' && uc3 == 0) // in -> id
-        return QLocale::Indonesian;
-    if (uc1 == 'j' && uc2 == 'i' && uc3 == 0) // ji -> yi
-        return QLocale::Yiddish;
-
     return QLocale::C;
 }
 
@@ -368,48 +372,52 @@ static const QLocaleData *findLocaleDataById(const QLocaleId &localeId)
 const QLocaleData *QLocaleData::findLocaleData(QLocale::Language language, QLocale::Script script, QLocale::Country country)
 {
     QLocaleId localeId = QLocaleId::fromIds(language, script, country);
-    localeId = localeId.withLikelySubtagsAdded();
+    QLocaleId likelyId = localeId.withLikelySubtagsAdded();
 
-    const uint idx = locale_index[localeId.language_id];
+    const uint idx = locale_index[likelyId.language_id];
 
-    // Try a straight match
-    if (const QLocaleData *const data = findLocaleDataById(localeId))
+    // Try a straight match with the likely data:
+    if (const QLocaleData *const data = findLocaleDataById(likelyId))
         return data;
     QList<QLocaleId> tried;
-    tried.push_back(localeId);
+    tried.push_back(likelyId);
 
     // No match; try again with likely country
-    localeId = QLocaleId::fromIds(language, script, QLocale::AnyCountry);
-    localeId = localeId.withLikelySubtagsAdded();
-    if (!tried.contains(localeId)) {
-        if (const QLocaleData *const data = findLocaleDataById(localeId))
-            return data;
-        tried.push_back(localeId);
-    }
+    if (country != QLocale::AnyCountry
+        && (language != QLocale::AnyLanguage || script != QLocale::AnyScript)) {
+        localeId = QLocaleId::fromIds(language, script, QLocale::AnyCountry);
+        likelyId = localeId.withLikelySubtagsAdded();
+        if (!tried.contains(likelyId)) {
+            if (const QLocaleData *const data = findLocaleDataById(likelyId))
+                return data;
+            tried.push_back(likelyId);
+        }
 
-    // No match; try again with any country
-    localeId = QLocaleId::fromIds(language, script, QLocale::AnyCountry);
-    if (!tried.contains(localeId)) {
-        if (const QLocaleData *const data = findLocaleDataById(localeId))
-            return data;
-        tried.push_back(localeId);
+        // No match; try again with any country
+        if (!tried.contains(localeId)) {
+            if (const QLocaleData *const data = findLocaleDataById(localeId))
+                return data;
+            tried.push_back(localeId);
+        }
     }
 
     // No match; try again with likely script
-    localeId = QLocaleId::fromIds(language, QLocale::AnyScript, country);
-    localeId = localeId.withLikelySubtagsAdded();
-    if (!tried.contains(localeId)) {
-        if (const QLocaleData *const data = findLocaleDataById(localeId))
-            return data;
-        tried.push_back(localeId);
-    }
+    if (script != QLocale::AnyScript
+        && (language != QLocale::AnyLanguage || country != QLocale::AnyCountry)) {
+        localeId = QLocaleId::fromIds(language, QLocale::AnyScript, country);
+        likelyId = localeId.withLikelySubtagsAdded();
+        if (!tried.contains(likelyId)) {
+            if (const QLocaleData *const data = findLocaleDataById(likelyId))
+                return data;
+            tried.push_back(likelyId);
+        }
 
-    // No match; try again with any script
-    localeId = QLocaleId::fromIds(language, QLocale::AnyScript, country);
-    if (!tried.contains(localeId)) {
-        if (const QLocaleData *const data = findLocaleDataById(localeId))
-            return data;
-        tried.push_back(localeId);
+        // No match; try again with any script
+        if (!tried.contains(localeId)) {
+            if (const QLocaleData *const data = findLocaleDataById(localeId))
+                return data;
+            tried.push_back(localeId);
+        }
     }
 
     // No match; return data at original index
@@ -576,7 +584,7 @@ int qt_repeatCount(QStringView s)
     if (s.isEmpty())
         return 0;
     const QChar c = s.front();
-    qssize_t j = 1;
+    qsizetype j = 1;
     while (j < s.size() && s.at(j) == c)
         ++j;
     return int(j);
@@ -593,8 +601,6 @@ static QLocalePrivate *c_private()
 }
 
 #ifndef QT_NO_SYSTEMLOCALE
-
-
 /******************************************************************************
 ** Default system locale behavior
 */
@@ -683,14 +689,24 @@ void QLocalePrivate::updateSystemPrivate()
     if (!res.isNull())
         system_data->m_plus = res.toString().at(0).unicode();
 }
-#endif
+#endif // !QT_NO_SYSTEMLOCALE
 
 static const QLocaleData *systemData()
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    // copy over the information from the fallback locale and modify
-    if (!system_data || system_data->m_language_id == 0)
-        QLocalePrivate::updateSystemPrivate();
+    /*
+      Copy over the information from the fallback locale and modify.
+
+      This modifies (cross-thread) global state, so take care to only call it in
+      one thread.
+    */
+    {
+        static QBasicMutex systemDataMutex;
+        systemDataMutex.lock();
+        if (!system_data || system_data->m_language_id == 0)
+            QLocalePrivate::updateSystemPrivate();
+        systemDataMutex.unlock();
+    }
 
     return system_data;
 #else
@@ -836,6 +852,8 @@ QLocale::QLocale(const QString &name)
 QLocale::QLocale()
     : d(*defaultLocalePrivate)
 {
+    // Make sure system data is up to date
+    systemData();
 }
 
 /*!
@@ -3447,7 +3465,7 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
     bool dec = false;
     int decDigitCnt = 0;
 
-    for (qssize_t i = 0; i < str.size(); ++i) {
+    for (qsizetype i = 0; i < str.size(); ++i) {
         char c = digitToCLocale(str.at(i));
 
         if (c >= '0' && c <= '9') {
@@ -3791,6 +3809,12 @@ QString QLocale::toCurrencyString(double value, const QString &symbol, int preci
 }
 
 /*!
+  \fn QString QLocale::toCurrencyString(float i, const QString &symbol) const
+  \fn QString QLocale::toCurrencyString(float i, const QString &symbol, int precision) const
+  \overload toCurrencyString()
+*/
+
+/*!
     \since 5.10
 
     \enum QLocale::DataSizeFormat
@@ -3809,17 +3833,18 @@ QString QLocale::toCurrencyString(double value, const QString &symbol, int preci
 /*!
     \since 5.10
 
-    Converts a size in bytes to a human-readable localized string, expressed in
-    a unit for which the numeric portion is at least 1 but as low as
-    possible. For example if \a bytes is 16384, \a precision is 2, and \a format
-    is \c DataSizeIecFormat (the default), this function returns "16.00 KiB";
-    for 1330409069609 bytes it returns "1.21 GiB"; and so on. If \a format is \c
-    DataSizeIecFormat or \c DataSizeTraditionalFormat, the given number of bytes
-    is divided by a power of 1024, with result less than 1024; for \c
-    DataSizeSIFormat, it is divided by a power of 1000, with result less than
-    1000.  DataSizeIecFormat uses the new IEC standard quantifiers Ki, Mi and so
-    on, whereas DataSizeSIFormat uses and DataSizeTraditionalFormat abuses the
-    older SI quantifiers k, M, etc.
+    Converts a size in bytes to a human-readable localized string, comprising a
+    number and a quantified unit. The quantifier is chosen such that the number
+    is at least one, and as small as possible. For example if \a bytes is
+    16384, \a precision is 2, and \a format is \l DataSizeIecFormat (the
+    default), this function returns "16.00 KiB"; for 1330409069609 bytes it
+    returns "1.21 GiB"; and so on. If \a format is \l DataSizeIecFormat or
+    \l DataSizeTraditionalFormat, the given number of bytes is divided by a
+    power of 1024, with result less than 1024; for \l DataSizeSIFormat, it is
+    divided by a power of 1000, with result less than 1000.
+    \c DataSizeIecFormat uses the new IEC standard quantifiers Ki, Mi and so on,
+    whereas \c DataSizeSIFormat uses the older SI quantifiers k, M, etc., and
+    \c DataSizeTraditionalFormat abuses them.
 */
 QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats format)
 {

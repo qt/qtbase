@@ -129,7 +129,7 @@ static inline qreal initialGlobalScaleFactor()
 
     Note that the functions in this file do not work with the OS scale factor
     directly and are limited to converting between device independent and native
-    pixels. The OS scale factor is accunted for by QWindow::devicePixelRatio()
+    pixels. The OS scale factor is accounted for by QWindow::devicePixelRatio()
     and similar functions.
 
     Configuration Examples:
@@ -168,7 +168,7 @@ static inline qreal initialGlobalScaleFactor()
 
     1) A global scale factor
         The QT_SCALE_FACTOR environment variable can be used to set
-        a global scale factor for all windows in the processs. This
+        a global scale factor for all windows in the process. This
         is useful for testing and debugging (you can simulate any
         devicePixelRatio without needing access to special hardware),
         and perhaps also for targeting a specific application to
@@ -204,7 +204,7 @@ static inline qreal initialGlobalScaleFactor()
         T fromNativePixels(T, QWindow*)
 
     The following classes in QtGui use native pixels, for the convenience of the
-    plataform plugins:
+    platform plugins:
         QPlatformWindow
         QPlatformScreen
         QWindowSystemInterface (API only - Events are in device independent pixels)
@@ -376,8 +376,22 @@ qreal QHighDpiScaling::screenSubfactor(const QPlatformScreen *screen)
 {
     qreal factor = qreal(1.0);
     if (screen) {
-        if (m_usePixelDensity)
-            factor *= screen->pixelDensity();
+        if (m_usePixelDensity) {
+            qreal pixelDensity = screen->pixelDensity();
+
+            // Pixel density reported by the screen is sometimes not precise enough,
+            // so recalculate it: divide px (physical pixels) by dp (device-independent pixels)
+            // for both width and height, and then use the average if it is different from
+            // the one initially reported by the screen
+            QRect screenGeometry = screen->geometry();
+            qreal wFactor = qreal(screenGeometry.width()) / qRound(screenGeometry.width() / pixelDensity);
+            qreal hFactor = qreal(screenGeometry.height()) / qRound(screenGeometry.height() / pixelDensity);
+            qreal averageDensity = (wFactor + hFactor) / 2;
+            if (!qFuzzyCompare(pixelDensity, averageDensity))
+                pixelDensity = averageDensity;
+
+            factor *= pixelDensity;
+        }
         if (m_screenFactorSet) {
             QVariant screenFactor = screen->screen()->property(scaleFactorProperty);
             if (screenFactor.isValid())

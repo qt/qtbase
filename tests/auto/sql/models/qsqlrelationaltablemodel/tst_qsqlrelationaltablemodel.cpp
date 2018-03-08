@@ -77,6 +77,7 @@ private slots:
     void psqlSchemaTest();
     void selectAfterUpdate();
     void relationOnFirstColumn();
+    void setRelation();
 
 private:
     void dropTestTables( QSqlDatabase db );
@@ -384,6 +385,7 @@ void tst_QSqlRelationalTableModel::setData()
         model.setRelation(1, QSqlRelation(reltest5, "title", "abbrev"));
         model.setEditStrategy(QSqlTableModel::OnManualSubmit);
         model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
+        model.setSort(0, Qt::AscendingOrder);
         QVERIFY_SQL(model, select());
 
         QCOMPARE(model.data(model.index(0,1)).toString(), QString("Mr"));
@@ -782,24 +784,32 @@ void tst_QSqlRelationalTableModel::sort()
     QVERIFY_SQL(model, select());
 
     QCOMPARE(model.rowCount(), 6);
-    QCOMPARE(model.data(model.index(0, 2)).toString(), QString("mister"));
-    QCOMPARE(model.data(model.index(1, 2)).toString(), QString("mister"));
-    QCOMPARE(model.data(model.index(2, 2)).toString(), QString("herr"));
-    QCOMPARE(model.data(model.index(3, 2)).toString(), QString("herr"));
-    QCOMPARE(model.data(model.index(4, 2)).toString(), QString(""));
-    QCOMPARE(model.data(model.index(5, 2)).toString(), QString(""));
+
+    QStringList stringsInDatabaseOrder;
+    // PostgreSQL puts the null ones (from the table with the original value) first in descending order
+    // which translate to empty strings in the related table
+    if (dbType == QSqlDriver::PostgreSQL)
+        stringsInDatabaseOrder << "" << "" << "mister" << "mister" << "herr" << "herr";
+    else
+        stringsInDatabaseOrder << "mister" << "mister" << "herr" << "herr" << "" << "";
+    for (int i = 0; i < 6; ++i)
+        QCOMPARE(model.data(model.index(i, 2)).toString(), stringsInDatabaseOrder.at(i));
 
     model.setSort(3, Qt::AscendingOrder);
     QVERIFY_SQL(model, select());
 
+    // PostgreSQL puts the null ones (from the table with the original value) first in descending order
+    // which translate to empty strings in the related table
+    stringsInDatabaseOrder.clear();
+    if (dbType == QSqlDriver::PostgreSQL)
+        stringsInDatabaseOrder << "herr" << "mister" << "mister" << "mister" << "mister" << "";
+    else if (dbType != QSqlDriver::Sybase)
+        stringsInDatabaseOrder << "" << "herr" << "mister" << "mister" << "mister" << "mister";
+
     if (dbType != QSqlDriver::Sybase) {
         QCOMPARE(model.rowCount(), 6);
-        QCOMPARE(model.data(model.index(0, 3)).toString(), QString(""));
-        QCOMPARE(model.data(model.index(1, 3)).toString(), QString("herr"));
-        QCOMPARE(model.data(model.index(2, 3)).toString(), QString("mister"));
-        QCOMPARE(model.data(model.index(3, 3)).toString(), QString("mister"));
-        QCOMPARE(model.data(model.index(4, 3)).toString(), QString("mister"));
-        QCOMPARE(model.data(model.index(5, 3)).toString(), QString("mister"));
+        for (int i = 0; i < 6; ++i)
+            QCOMPARE(model.data(model.index(i, 3)).toString(), stringsInDatabaseOrder.at(i));
     } else {
         QCOMPARE(model.data(model.index(0, 3)).toInt(), 1);
         QCOMPARE(model.data(model.index(1, 3)).toInt(), 2);
@@ -1537,6 +1547,8 @@ void tst_QSqlRelationalTableModel::relationOnFirstColumn()
 
     //modify the model data
     QVERIFY_SQL(model, setData(model.index(0, 0), 40));
+    if (tst_Databases::getDatabaseType(db) == QSqlDriver::PostgreSQL)
+        QEXPECT_FAIL("", "Currently broken for PostgreSQL due to case sensitivity problems - see QTBUG-65788", Abort);
     QVERIFY_SQL(model, submit());
     QVERIFY_SQL(model, setData(model.index(1, 0), 50));
     QVERIFY_SQL(model, submit());
@@ -1548,6 +1560,28 @@ void tst_QSqlRelationalTableModel::relationOnFirstColumn()
     QCOMPARE(model.data(model.index(2, 0)), QVariant("Annala"));
 
     tst_Databases::safeDropTables(db, QStringList() << testTable1 << testTable2);
+}
+
+void tst_QSqlRelationalTableModel::setRelation()
+{
+    QFETCH_GLOBAL(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    recreateTestTables(db);
+
+    QSqlRelationalTableModel model(0, db);
+    model.setTable(reltest1);
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.data(model.index(0, 2)), QVariant(1));
+
+    model.setRelation(2, QSqlRelation(reltest2, "id", "title"));
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.data(model.index(0, 2)), QVariant("herr"));
+
+    // Check that setting an invalid QSqlRelation() clears the relation
+    model.setRelation(2, QSqlRelation());
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.data(model.index(0, 2)), QVariant(1));
 }
 
 QTEST_MAIN(tst_QSqlRelationalTableModel)

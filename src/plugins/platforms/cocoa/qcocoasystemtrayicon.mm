@@ -72,8 +72,6 @@
 **
 ****************************************************************************/
 
-#define QT_MAC_SYSTEMTRAY_USE_GROWL
-
 #include "qcocoasystemtrayicon.h"
 
 #ifndef QT_NO_SYSTEMTRAYICON
@@ -86,13 +84,14 @@
 
 #include "qt_mac_p.h"
 #include "qcocoahelpers.h"
+#include "qcocoaintegration.h"
+#include "qcocoascreen.h"
 #include <QtGui/private/qcoregraphics_p.h>
 
 #import <AppKit/AppKit.h>
 
 QT_USE_NAMESPACE
 
-@class QT_MANGLE_NAMESPACE(QNSMenu);
 @class QT_MANGLE_NAMESPACE(QNSImageView);
 
 @interface QT_MANGLE_NAMESPACE(QNSStatusItem) : NSObject <NSUserNotificationCenterDelegate>
@@ -123,16 +122,8 @@ QT_USE_NAMESPACE
 -(void)mousePressed:(NSEvent *)mouseEvent button:(Qt::MouseButton)mouseButton;
 @end
 
-@interface QT_MANGLE_NAMESPACE(QNSMenu) : NSMenu <NSMenuDelegate> {
-    QPlatformMenu *qmenu;
-}
--(QPlatformMenu*)menu;
--(id)initWithQMenu:(QPlatformMenu*)qmenu;
-@end
-
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSStatusItem);
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSImageView);
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSMenu);
 
 QT_BEGIN_NAMESPACE
 class QSystemTrayIconSys
@@ -298,9 +289,6 @@ void QCocoaSystemTrayIcon::showMessage(const QString &title, const QString &mess
 }
 QT_END_NAMESPACE
 
-@implementation NSStatusItem (Qt)
-@end
-
 @implementation QNSImageView
 -(id)initWithParent:(QNSStatusItem*)myParent {
     self = [super init];
@@ -399,9 +387,8 @@ QT_END_NAMESPACE
 }
 -(QRectF)geometry {
     if (NSWindow *window = [[item view] window]) {
-        NSRect screenRect = [[window screen] frame];
-        NSRect windowRect = [window frame];
-        return QRectF(windowRect.origin.x, screenRect.size.height-windowRect.origin.y-windowRect.size.height, windowRect.size.width, windowRect.size.height);
+        if (QCocoaScreen *screen = QCocoaIntegration::instance()->screenForNSScreen([window screen]))
+            return screen->mapFromNative([window frame]);
     }
     return QRectF();
 }
@@ -445,28 +432,6 @@ QT_END_NAMESPACE
     emit systray->messageClicked();
 }
 
-@end
-
-class QSystemTrayIconQMenu : public QPlatformMenu
-{
-public:
-    void doAboutToShow() { emit aboutToShow(); }
-private:
-    QSystemTrayIconQMenu();
-};
-
-@implementation QNSMenu
--(id)initWithQMenu:(QPlatformMenu*)qm {
-    self = [super init];
-    if (self) {
-        self->qmenu = qm;
-        [self setDelegate:self];
-    }
-    return self;
-}
--(QPlatformMenu*)menu {
-    return qmenu;
-}
 @end
 
 #endif // QT_NO_SYSTEMTRAYICON

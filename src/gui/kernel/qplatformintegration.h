@@ -97,6 +97,7 @@ public:
         NonFullScreenWindows,
         NativeWidgets,
         WindowManagement,
+        WindowActivation, // whether requestActivate is supported
         SyncState,
         RasterGLSurface,
         AllGLFunctionsQueryable,
@@ -164,6 +165,7 @@ public:
         UiEffects,
         WheelScrollLines,
         ShowShortcutsInContextMenus,
+        MouseQuickSelectionThreshold
     };
 
     virtual QVariant styleHint(StyleHint hint) const;
@@ -192,7 +194,7 @@ public:
 
     virtual void beep() const;
 
-#if QT_CONFIG(vulkan)
+#if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
     virtual QPlatformVulkanInstance *createPlatformVulkanInstance(QVulkanInstance *instance) const;
 #endif
 

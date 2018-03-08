@@ -165,6 +165,35 @@ QFSFileEngine::QFSFileEngine(QFSFileEnginePrivate &dd)
 }
 
 /*!
+    \internal
+*/
+bool QFSFileEngine::processOpenModeFlags(QIODevice::OpenMode *mode)
+{
+    QIODevice::OpenMode &openMode = *mode;
+    if ((openMode & QFile::NewOnly) && (openMode & QFile::ExistingOnly)) {
+        qWarning("NewOnly and ExistingOnly are mutually exclusive");
+        setError(QFile::OpenError, QLatin1String("NewOnly and ExistingOnly are mutually exclusive"));
+        return false;
+    }
+
+    if ((openMode & QFile::ExistingOnly) && !(openMode & (QFile::ReadOnly | QFile::WriteOnly))) {
+        qWarning("ExistingOnly must be specified alongside ReadOnly, WriteOnly, or ReadWrite");
+        setError(QFile::OpenError, QLatin1String("ExistingOnly must be specified alongside ReadOnly, WriteOnly, or ReadWrite"));
+        return false;
+    }
+
+    // Either Append or NewOnly implies WriteOnly
+    if (openMode & (QFile::Append | QFile::NewOnly))
+        openMode |= QFile::WriteOnly;
+
+    // WriteOnly implies Truncate when ReadOnly, Append, and NewOnly are not set.
+    if ((openMode & QFile::WriteOnly) && !(openMode & (QFile::ReadOnly | QFile::Append | QFile::NewOnly)))
+        openMode |= QFile::Truncate;
+
+    return true;
+}
+
+/*!
     Destructs the QFSFileEngine.
 */
 QFSFileEngine::~QFSFileEngine()
@@ -205,13 +234,8 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode)
         return false;
     }
 
-    // Append implies WriteOnly.
-    if (openMode & QFile::Append)
-        openMode |= QFile::WriteOnly;
-
-    // WriteOnly implies Truncate if neither ReadOnly nor Append are sent.
-    if ((openMode & QFile::WriteOnly) && !(openMode & (QFile::ReadOnly | QFile::Append)))
-        openMode |= QFile::Truncate;
+    if (!processOpenModeFlags(&openMode))
+        return false;
 
     d->openMode = openMode;
     d->lastFlushFailed = false;
@@ -238,13 +262,8 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh, QFile::FileHand
 
     Q_D(QFSFileEngine);
 
-    // Append implies WriteOnly.
-    if (openMode & QFile::Append)
-        openMode |= QFile::WriteOnly;
-
-    // WriteOnly implies Truncate if neither ReadOnly nor Append are sent.
-    if ((openMode & QFile::WriteOnly) && !(openMode & (QFile::ReadOnly | QFile::Append)))
-        openMode |= QFile::Truncate;
+    if (!processOpenModeFlags(&openMode))
+        return false;
 
     d->openMode = openMode;
     d->lastFlushFailed = false;
@@ -302,13 +321,8 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd, QFile::FileHandle
 {
     Q_D(QFSFileEngine);
 
-    // Append implies WriteOnly.
-    if (openMode & QFile::Append)
-        openMode |= QFile::WriteOnly;
-
-    // WriteOnly implies Truncate if neither ReadOnly nor Append are sent.
-    if ((openMode & QFile::WriteOnly) && !(openMode & (QFile::ReadOnly | QFile::Append)))
-        openMode |= QFile::Truncate;
+    if (!processOpenModeFlags(&openMode))
+        return false;
 
     d->openMode = openMode;
     d->lastFlushFailed = false;
@@ -915,11 +929,11 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
   For Unix, the list contains just the root path "/".
 */
 
-/*! \fn QString QFSFileEngine::fileName(FileName file) const
+/*! \fn QString QFSFileEngine::fileName(QAbstractFileEngine::FileName file) const
   \reimp
 */
 
-/*! \fn bool QFSFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
+/*! \fn bool QFSFileEngine::setFileTime(const QDateTime &newDate, QAbstractFileEngine::FileTime time)
   \reimp
 */
 
@@ -945,7 +959,7 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
   \reimp
 */
 
-/*! \fn uint QFSFileEngine::ownerId(FileOwner own) const
+/*! \fn uint QFSFileEngine::ownerId(QAbstractFileEngine::FileOwner own) const
   In Unix, if stat() is successful, the \c uid is returned if
   \a own is the owner. Otherwise the \c gid is returned. If stat()
   is unsuccessful, -2 is reuturned.
@@ -953,7 +967,7 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
   For Windows, -2 is always returned.
 */
 
-/*! \fn QString QFSFileEngine::owner(FileOwner own) const
+/*! \fn QString QFSFileEngine::owner(QAbstractFileEngine::FileOwner own) const
   \reimp
 */
 

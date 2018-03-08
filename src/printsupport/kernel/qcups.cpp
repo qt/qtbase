@@ -43,34 +43,43 @@
 
 QT_BEGIN_NAMESPACE
 
-QStringList QCUPSSupport::cupsOptionsList(QPrinter *printer)
+static QStringList cupsOptionsList(QPrinter *printer) Q_DECL_NOTHROW
 {
     return printer->printEngine()->property(PPK_CupsOptions).toStringList();
 }
 
-void QCUPSSupport::setCupsOptions(QPrinter *printer, const QStringList &cupsOptions)
+void setCupsOptions(QPrinter *printer, const QStringList &cupsOptions) Q_DECL_NOTHROW
 {
     printer->printEngine()->setProperty(PPK_CupsOptions, QVariant(cupsOptions));
 }
 
-void QCUPSSupport::setCupsOption(QStringList &cupsOptions, const QString &option, const QString &value)
+void QCUPSSupport::setCupsOption(QPrinter *printer, const QString &option, const QString &value)
 {
+    QStringList cupsOptions = cupsOptionsList(printer);
     if (cupsOptions.contains(option)) {
         cupsOptions.replace(cupsOptions.indexOf(option) + 1, value);
     } else {
         cupsOptions.append(option);
         cupsOptions.append(value);
     }
+    setCupsOptions(printer, cupsOptions);
 }
 
-void QCUPSSupport::clearCupsOption(QStringList &cupsOptions, const QString &option)
+void QCUPSSupport::clearCupsOption(QPrinter *printer, const QString &option)
 {
+    QStringList cupsOptions = cupsOptionsList(printer);
     // ### use const_iterator once QList::erase takes them
     const QStringList::iterator it = std::find(cupsOptions.begin(), cupsOptions.end(), option);
     if (it != cupsOptions.end()) {
         Q_ASSERT(it + 1 < cupsOptions.end());
         cupsOptions.erase(it, it+1);
+        setCupsOptions(printer, cupsOptions);
     }
+}
+
+void QCUPSSupport::clearCupsOptions(QPrinter *printer)
+{
+    setCupsOptions(printer, QStringList());
 }
 
 static inline QString jobHoldToString(const QCUPSSupport::JobHoldUntil jobHold, const QTime holdUntilTime)
@@ -107,32 +116,57 @@ static inline QString jobHoldToString(const QCUPSSupport::JobHoldUntil jobHold, 
     return QString();
 }
 
+QCUPSSupport::JobHoldUntilWithTime QCUPSSupport::parseJobHoldUntil(const QString &jobHoldUntil)
+{
+    if (jobHoldUntil == QLatin1String("indefinite")) {
+        return { QCUPSSupport::Indefinite, QTime() };
+    } else if (jobHoldUntil == QLatin1String("day-time")) {
+        return { QCUPSSupport::DayTime, QTime() };
+    } else if (jobHoldUntil == QLatin1String("night")) {
+        return { QCUPSSupport::Night, QTime() };
+    } else if (jobHoldUntil == QLatin1String("second-shift")) {
+        return { QCUPSSupport::SecondShift, QTime() };
+    } else if (jobHoldUntil == QLatin1String("third-shift")) {
+        return { QCUPSSupport::ThirdShift, QTime() };
+    } else if (jobHoldUntil == QLatin1String("weekend")) {
+        return { QCUPSSupport::Weekend, QTime() };
+    }
+
+
+    QTime parsedTime = QTime::fromString(jobHoldUntil, QStringLiteral("h:m:s"));
+    if (!parsedTime.isValid())
+        parsedTime = QTime::fromString(jobHoldUntil, QStringLiteral("h:m"));
+    if (parsedTime.isValid()) {
+        // CUPS time is in UTC, user expects local time, so get the equivalent
+        QDateTime dateTimeUtc = QDateTime::currentDateTimeUtc();
+        dateTimeUtc.setTime(parsedTime);
+        return { QCUPSSupport::SpecificTime, dateTimeUtc.toLocalTime().time() };
+    }
+
+    return { QCUPSSupport::NoHold, QTime() };
+}
+
+
 void QCUPSSupport::setJobHold(QPrinter *printer, const JobHoldUntil jobHold, const QTime &holdUntilTime)
 {
-    QStringList cupsOptions = cupsOptionsList(printer);
     const QString jobHoldUntilArgument = jobHoldToString(jobHold, holdUntilTime);
     if (!jobHoldUntilArgument.isEmpty()) {
-        setCupsOption(cupsOptions,
+        setCupsOption(printer,
                       QStringLiteral("job-hold-until"),
                       jobHoldUntilArgument);
     } else {
-        clearCupsOption(cupsOptions, QStringLiteral("job-hold-until"));
+        clearCupsOption(printer, QStringLiteral("job-hold-until"));
     }
-    setCupsOptions(printer, cupsOptions);
 }
 
 void QCUPSSupport::setJobBilling(QPrinter *printer, const QString &jobBilling)
 {
-    QStringList cupsOptions = cupsOptionsList(printer);
-    setCupsOption(cupsOptions, QStringLiteral("job-billing"), jobBilling);
-    setCupsOptions(printer, cupsOptions);
+    setCupsOption(printer, QStringLiteral("job-billing"), jobBilling);
 }
 
 void QCUPSSupport::setJobPriority(QPrinter *printer, int priority)
 {
-    QStringList cupsOptions = cupsOptionsList(printer);
-    setCupsOption(cupsOptions, QStringLiteral("job-priority"), QString::number(priority));
-    setCupsOptions(printer, cupsOptions);
+    setCupsOption(printer, QStringLiteral("job-priority"), QString::number(priority));
 }
 
 static inline QString bannerPageToString(const QCUPSSupport::BannerPage bannerPage)
@@ -150,19 +184,42 @@ static inline QString bannerPageToString(const QCUPSSupport::BannerPage bannerPa
     return QString();
 }
 
+static inline QCUPSSupport::BannerPage stringToBannerPage(const QString &bannerPage)
+{
+    if (bannerPage == QLatin1String("none")) return QCUPSSupport::NoBanner;
+    else if (bannerPage == QLatin1String("standard")) return QCUPSSupport::Standard;
+    else if (bannerPage == QLatin1String("unclassified")) return QCUPSSupport::Unclassified;
+    else if (bannerPage == QLatin1String("confidential")) return QCUPSSupport::Confidential;
+    else if (bannerPage == QLatin1String("classified")) return QCUPSSupport::Classified;
+    else if (bannerPage == QLatin1String("secret")) return QCUPSSupport::Secret;
+    else if (bannerPage == QLatin1String("topsecret")) return QCUPSSupport::TopSecret;
+
+    return QCUPSSupport::NoBanner;
+}
+
+QCUPSSupport::JobSheets QCUPSSupport::parseJobSheets(const QString &jobSheets)
+{
+    JobSheets result;
+
+    const QStringList parts = jobSheets.split(QLatin1Char(','));
+    if (parts.count() == 2) {
+        result.startBannerPage = stringToBannerPage(parts[0]);
+        result.endBannerPage = stringToBannerPage(parts[1]);
+    }
+
+    return result;
+}
+
 void QCUPSSupport::setBannerPages(QPrinter *printer, const BannerPage startBannerPage, const BannerPage endBannerPage)
 {
-    QStringList cupsOptions = cupsOptionsList(printer);
     const QString startBanner = bannerPageToString(startBannerPage);
     const QString endBanner   = bannerPageToString(endBannerPage);
 
-    setCupsOption(cupsOptions, QStringLiteral("job-sheets"), startBanner + QLatin1Char(',') + endBanner);
-    setCupsOptions(printer, cupsOptions);
+    setCupsOption(printer, QStringLiteral("job-sheets"), startBanner + QLatin1Char(',') + endBanner);
 }
 
 void QCUPSSupport::setPageSet(QPrinter *printer, const PageSet pageSet)
 {
-    QStringList cupsOptions = cupsOptionsList(printer);
     QString pageSetString;
 
     switch (pageSet) {
@@ -177,29 +234,29 @@ void QCUPSSupport::setPageSet(QPrinter *printer, const PageSet pageSet)
         break;
     }
 
-    setCupsOption(cupsOptions, QStringLiteral("page-set"), pageSetString);
-    setCupsOptions(printer, cupsOptions);
+    setCupsOption(printer, QStringLiteral("page-set"), pageSetString);
 }
 
 void QCUPSSupport::setPagesPerSheetLayout(QPrinter *printer,  const PagesPerSheet pagesPerSheet,
                                           const PagesPerSheetLayout pagesPerSheetLayout)
 {
-    QStringList cupsOptions = cupsOptionsList(printer);
     // WARNING: the following trick (with a [2]-extent) only works as
     // WARNING: long as there's only one two-digit number in the list
     // WARNING: and it is the last one (before the "\0")!
     static const char pagesPerSheetData[][2] = { "1", "2", "4", "6", "9", {'1', '6'}, "\0" };
     static const char pageLayoutData[][5] = {"lrtb", "lrbt", "rlbt", "rltb", "btlr", "btrl", "tblr", "tbrl"};
-    setCupsOption(cupsOptions, QStringLiteral("number-up"), QLatin1String(pagesPerSheetData[pagesPerSheet]));
-    setCupsOption(cupsOptions, QStringLiteral("number-up-layout"), QLatin1String(pageLayoutData[pagesPerSheetLayout]));
-    setCupsOptions(printer, cupsOptions);
+    setCupsOption(printer, QStringLiteral("number-up"), QLatin1String(pagesPerSheetData[pagesPerSheet]));
+    setCupsOption(printer, QStringLiteral("number-up-layout"), QLatin1String(pageLayoutData[pagesPerSheetLayout]));
 }
 
 void QCUPSSupport::setPageRange(QPrinter *printer, int pageFrom, int pageTo)
 {
-    QStringList cupsOptions = cupsOptionsList(printer);
-    setCupsOption(cupsOptions, QStringLiteral("page-ranges"), QStringLiteral("%1-%2").arg(pageFrom).arg(pageTo));
-    setCupsOptions(printer, cupsOptions);
+    setPageRange(printer, QStringLiteral("%1-%2").arg(pageFrom).arg(pageTo));
+}
+
+void QCUPSSupport::setPageRange(QPrinter *printer, const QString &pageRange)
+{
+    setCupsOption(printer, QStringLiteral("page-ranges"), pageRange);
 }
 
 QT_END_NAMESPACE

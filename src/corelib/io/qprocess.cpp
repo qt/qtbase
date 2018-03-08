@@ -99,6 +99,10 @@ QT_END_NAMESPACE
 #include <private/qcore_unix_p.h>
 #endif
 
+#if QT_HAS_INCLUDE(<paths.h>)
+#include <paths.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -1090,10 +1094,9 @@ bool QProcessPrivate::_q_canReadStandardError()
 */
 bool QProcessPrivate::_q_canWrite()
 {
-    if (stdinChannel.notifier)
-        stdinChannel.notifier->setEnabled(false);
-
     if (writeBuffer.isEmpty()) {
+        if (stdinChannel.notifier)
+            stdinChannel.notifier->setEnabled(false);
 #if defined QPROCESS_DEBUG
         qDebug("QProcessPrivate::canWrite(), not writing anything (empty write buffer).");
 #endif
@@ -1102,10 +1105,10 @@ bool QProcessPrivate::_q_canWrite()
 
     const bool writeSucceeded = writeToStdin();
 
-    if (stdinChannel.notifier && !writeBuffer.isEmpty())
-        stdinChannel.notifier->setEnabled(true);
     if (writeBuffer.isEmpty() && stdinChannel.closed)
         closeWriteChannel();
+    else if (stdinChannel.notifier)
+        stdinChannel.notifier->setEnabled(!writeBuffer.isEmpty());
     return writeSucceeded;
 }
 
@@ -2638,6 +2641,8 @@ QString QProcess::nullDevice()
 {
 #ifdef Q_OS_WIN
     return QStringLiteral("\\\\.\\NUL");
+#elif defined(_PATH_DEVNULL)
+    return QStringLiteral(_PATH_DEVNULL);
 #else
     return QStringLiteral("/dev/null");
 #endif

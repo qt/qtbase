@@ -51,9 +51,9 @@
 #ifndef PUZZLEWIDGET_H
 #define PUZZLEWIDGET_H
 
-#include <QList>
-#include <QPixmap>
 #include <QPoint>
+#include <QPixmap>
+#include <QVector>
 #include <QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -67,7 +67,7 @@ class PuzzleWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit PuzzleWidget(int imageSize, QWidget *parent = 0);
+    explicit PuzzleWidget(int imageSize, QWidget *parent = nullptr);
     void clear();
 
     int pieceSize() const;
@@ -85,12 +85,16 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 private:
+    struct Piece {
+        QPixmap pixmap;
+        QRect rect;
+        QPoint location;
+    };
+
     int findPiece(const QRect &pieceRect) const;
     const QRect targetSquare(const QPoint &position) const;
 
-    QList<QPixmap> piecePixmaps;
-    QList<QRect> pieceRects;
-    QList<QPoint> pieceLocations;
+    QVector<Piece> pieces;
     QRect highlightedRect;
     int inPlace;
     int m_ImageSize;

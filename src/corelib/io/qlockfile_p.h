@@ -55,7 +55,10 @@
 #include <QtCore/qlockfile.h>
 #include <QtCore/qfile.h>
 
+#include <qplatformdefs.h>
+
 #ifdef Q_OS_WIN
+#include <io.h>
 #include <qt_windows.h>
 #endif
 
@@ -96,6 +99,19 @@ public:
     int staleLockTime; // "int milliseconds" is big enough for 24 days
     QLockFile::LockError lockError;
     bool isLocked;
+
+    static int getLockFileHandle(QLockFile *f)
+    {
+        int fd;
+#ifdef Q_OS_WIN
+        // Use of this function on Windows WILL leak a file descriptor.
+        fd = _open_osfhandle(intptr_t(f->d_func()->fileHandle), 0);
+#else
+        fd = f->d_func()->fileHandle;
+#endif
+        QT_LSEEK(fd, 0, SEEK_SET);
+        return fd;
+    }
 };
 
 QT_END_NAMESPACE

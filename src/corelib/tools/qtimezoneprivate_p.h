@@ -68,7 +68,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSTimeZone);
 #include <qt_windows.h>
 #endif // Q_OS_WIN
 
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 #include <QtCore/private/qjni_p.h>
 #endif
 
@@ -266,7 +266,7 @@ private:
 };
 #endif
 
-#if defined Q_OS_UNIX && !defined Q_OS_MAC && !defined Q_OS_ANDROID
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_EMBEDDED))
 struct QTzTransitionTime
 {
     qint64 atMSecsSinceEpoch;
@@ -431,9 +431,8 @@ public:
 
 private:
     void init(const QByteArray &ianaId);
-    QWinTransitionRule ruleForYear(int year) const;
     QTimeZonePrivate::Data ruleToData(const QWinTransitionRule &rule, qint64 atMSecsSinceEpoch,
-                                      QTimeZone::TimeType type) const;
+                                      QTimeZone::TimeType type, bool fakeDst = false) const;
 
     QByteArray m_windowsId;
     QString m_displayName;
@@ -443,7 +442,7 @@ private:
 };
 #endif // Q_OS_WIN
 
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 class QAndroidTimeZonePrivate final : public QTimeZonePrivate
 {
 public:

@@ -59,6 +59,8 @@
 #include <QtGui/QWindow>
 #include <QtGui/private/qwindow_p.h>
 
+#include <vector>
+
 QT_BEGIN_NAMESPACE
 
 #ifdef QANDROIDPLATFORMSCREEN_DEBUG
@@ -376,8 +378,7 @@ void QAndroidPlatformScreen::doRedraw()
                 || !window->isRaster())
             continue;
 
-        const QVector<QRect> visibleRects = visibleRegion.rects();
-        for (const QRect &rect : visibleRects) {
+        for (const QRect &rect : std::vector<QRect>(visibleRegion.begin(), visibleRegion.end())) {
             QRect targetRect = window->geometry();
             targetRect &= rect;
 

@@ -35,9 +35,6 @@ int main(int argc, char **argv)
     Q_UNUSED(argc)
     Q_UNUSED(argv)
 
-    // First, break QUuid.
-    qrand();
-
     // Now print a few uuids.
     printf("%s", qPrintable(QUuid::createUuid().toString()));
     printf("%s", qPrintable(QUuid::createUuid().toString()));

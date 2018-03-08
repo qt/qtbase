@@ -206,10 +206,12 @@ private slots:
     void task248050_hideRow();
     void QTBUG6058_reset();
     void QTBUG7833_sectionClicked();
+    void checkLayoutChangeEmptyModel();
     void QTBUG8650_crashOnInsertSections();
     void QTBUG12268_hiddenMovedSectionSorting();
     void QTBUG14242_hideSectionAutoSize();
     void QTBUG50171_visualRegionForSwappedItems();
+    void QTBUG53221_assertShiftHiddenRow();
     void ensureNoIndexAtLength();
     void offsetConsistent();
 
@@ -238,13 +240,15 @@ private slots:
     void testStreamWithHide();
     void testStylePosition();
     void stretchAndRestoreLastSection();
-
+    void testMinMaxSectionSizeStretched();
+    void testMinMaxSectionSizeNotStretched();
     void sizeHintCrash();
 
 protected:
     void setupTestData(bool use_reset_model = false);
     void additionalInit();
     void calculateAndCheck(int cppline, const int precalced_comparedata[]);
+    void testMinMaxSectionSize(bool stretchLastSection);
 
     QWidget *topLevel;
     QHeaderView *view;
@@ -281,6 +285,13 @@ public:
         beginInsertColumns(QModelIndex(), col, col);
         --cols;
         endInsertColumns();
+    }
+
+    void removeFirstRow()
+    {
+        beginRemoveRows(QModelIndex(), 0, 0);
+        --rows;
+        endRemoveRows();
     }
 
     void removeLastRow()
@@ -322,6 +333,24 @@ public:
     {
         cols = 3;
         rows = 3;
+        emit layoutChanged();
+    }
+
+    void emitLayoutChanged()
+    {
+        emit layoutAboutToBeChanged();
+        emit layoutChanged();
+    }
+
+    void emitLayoutChangedWithRemoveFirstRow()
+    {
+        emit layoutAboutToBeChanged();
+        QModelIndexList milNew;
+        const auto milOld = persistentIndexList();
+        milNew.reserve(milOld.size());
+        for (int i = 0; i < milOld.size(); ++i)
+            milNew += QModelIndex();
+        changePersistentIndexList(milOld, milNew);
         emit layoutChanged();
     }
 
@@ -401,6 +430,7 @@ void tst_QHeaderView::init()
     QCOMPARE(view->length(), 0);
     QCOMPARE(view->sizeHint(), QSize(0,0));
     QCOMPARE(view->sectionSizeHint(0), -1);
+    view->setMinimumSectionSize(0);    // system default min size can be to large
 
     /*
     model = new QStandardItemModel(1, 1);
@@ -513,6 +543,12 @@ void tst_QHeaderView::movable()
     QCOMPARE(view->sectionsMovable(), false);
     view->setSectionsMovable(true);
     QCOMPARE(view->sectionsMovable(), true);
+
+    QCOMPARE(view->firstSectionMovable(), true);
+    view->setFirstSectionMovable(false);
+    QCOMPARE(view->firstSectionMovable(), false);
+    view->setFirstSectionMovable(true);
+    QCOMPARE(view->firstSectionMovable(), true);
 }
 
 void tst_QHeaderView::clickable()
@@ -1597,6 +1633,7 @@ static QByteArray savedState()
     QStandardItemModel m(4, 4);
     QHeaderView h1(Qt::Horizontal);
     h1.setModel(&m);
+    h1.setMinimumSectionSize(0);    // system default min size can be to large
     h1.swapSections(0, 2);
     h1.resizeSection(1, 10);
     h1.setSortIndicatorShown(true);
@@ -2187,6 +2224,7 @@ void tst_QHeaderView::task248050_hideRow()
     //this is the sequence of events that make the task fail
     protected_QHeaderView header(Qt::Vertical);
     QStandardItemModel model(0, 1);
+    header.setMinimumSectionSize(0);    // system default min size can be to large
     header.setStretchLastSection(false);
     header.setDefaultSectionSize(17);
     header.setModel(&model);
@@ -2250,10 +2288,6 @@ void tst_QHeaderView::QTBUG6058_reset()
 
 void tst_QHeaderView::QTBUG7833_sectionClicked()
 {
-
-
-
-
     QTableView tv;
     QStandardItemModel *sim = new QStandardItemModel(&tv);
     QSortFilterProxyModel *proxyModel = new QSortFilterProxyModel(&tv);
@@ -2277,10 +2311,24 @@ void tst_QHeaderView::QTBUG7833_sectionClicked()
     tv.horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
 
     tv.setModel(proxyModel);
+    const int section4Size = tv.horizontalHeader()->sectionSize(4) + 1;
+    const int section5Size = section4Size + 1;
+    tv.horizontalHeader()->resizeSection(4, section4Size);
+    tv.horizontalHeader()->resizeSection(5, section5Size);
     tv.setColumnHidden(5, true);
     tv.setColumnHidden(6, true);
     tv.horizontalHeader()->swapSections(8, 10);
     tv.sortByColumn(1, Qt::AscendingOrder);
+
+    QCOMPARE(tv.isColumnHidden(5), true);
+    QCOMPARE(tv.isColumnHidden(6), true);
+    QCOMPARE(tv.horizontalHeader()->sectionsMoved(), true);
+    QCOMPARE(tv.horizontalHeader()->logicalIndex(8), 10);
+    QCOMPARE(tv.horizontalHeader()->logicalIndex(10), 8);
+    QCOMPARE(tv.horizontalHeader()->sectionSize(4), section4Size);
+    tv.setColumnHidden(5, false);   // unhide, section size must be properly restored
+    QCOMPARE(tv.horizontalHeader()->sectionSize(5), section5Size);
+    tv.setColumnHidden(5, true);
 
     QSignalSpy clickedSpy(tv.horizontalHeader(), SIGNAL(sectionClicked(int)));
     QSignalSpy pressedSpy(tv.horizontalHeader(), SIGNAL(sectionPressed(int)));
@@ -2308,6 +2356,52 @@ void tst_QHeaderView::QTBUG7833_sectionClicked()
     QCOMPARE(pressedSpy.count(), 3);
     QCOMPARE(clickedSpy.at(2).at(0).toInt(), 0);
     QCOMPARE(pressedSpy.at(2).at(0).toInt(), 0);
+}
+
+void tst_QHeaderView::checkLayoutChangeEmptyModel()
+{
+    QtTestModel tm;
+    tm.cols = 11;
+    QTableView tv;
+    tv.verticalHeader()->setStretchLastSection(true);
+    tv.setModel(&tm);
+
+    const int section4Size = tv.horizontalHeader()->sectionSize(4) + 1;
+    const int section5Size = section4Size + 1;
+    tv.horizontalHeader()->resizeSection(4, section4Size);
+    tv.horizontalHeader()->resizeSection(5, section5Size);
+    tv.setColumnHidden(5, true);
+    tv.setColumnHidden(6, true);
+    tv.horizontalHeader()->swapSections(8, 10);
+
+    tv.sortByColumn(1, Qt::AscendingOrder);
+    tm.emitLayoutChanged();
+
+    QCOMPARE(tv.isColumnHidden(5), true);
+    QCOMPARE(tv.isColumnHidden(6), true);
+    QCOMPARE(tv.horizontalHeader()->sectionsMoved(), true);
+    QCOMPARE(tv.horizontalHeader()->logicalIndex(8), 10);
+    QCOMPARE(tv.horizontalHeader()->logicalIndex(10), 8);
+    QCOMPARE(tv.horizontalHeader()->sectionSize(4), section4Size);
+    tv.setColumnHidden(5, false);   // unhide, section size must be properly restored
+    QCOMPARE(tv.horizontalHeader()->sectionSize(5), section5Size);
+    tv.setColumnHidden(5, true);
+
+    // adjust
+    tm.rows = 3;
+    tm.emitLayoutChanged();
+
+    // remove the row used for QPersistenModelIndexes
+    tm.emitLayoutChangedWithRemoveFirstRow();
+    QCOMPARE(tv.isColumnHidden(5), true);
+    QCOMPARE(tv.isColumnHidden(6), true);
+    QCOMPARE(tv.horizontalHeader()->sectionsMoved(), true);
+    QCOMPARE(tv.horizontalHeader()->logicalIndex(8), 10);
+    QCOMPARE(tv.horizontalHeader()->logicalIndex(10), 8);
+    QCOMPARE(tv.horizontalHeader()->sectionSize(4), section4Size);
+    tv.setColumnHidden(5, false);   // unhide, section size must be properly restored
+    QCOMPARE(tv.horizontalHeader()->sectionSize(5), section5Size);
+    tv.setColumnHidden(5, true);
 }
 
 void tst_QHeaderView::QTBUG8650_crashOnInsertSections()
@@ -2382,6 +2476,54 @@ void tst_QHeaderView::QTBUG50171_visualRegionForSwappedItems()
     headerView.swapSections(1, 2);
     headerView.hideSection(0);
     headerView.testVisualRegionForSelection();
+}
+
+class QTBUG53221_Model : public QAbstractItemModel
+{
+public:
+    void insertRowAtBeginning()
+    {
+        Q_EMIT layoutAboutToBeChanged();
+        m_displayNames.insert(0, QStringLiteral("Item %1").arg(m_displayNames.count()));
+        // Rows are always inserted at the beginning, so move all others.
+        foreach (const QModelIndex &persIndex, persistentIndexList())
+        {
+            // The vertical header view will have a persistent index stored here on the second call to insertRowAtBeginning.
+            changePersistentIndex(persIndex, index(persIndex.row() + 1, persIndex.column(), persIndex.parent()));
+        }
+        Q_EMIT layoutChanged();
+    }
+
+    QVariant data(const QModelIndex &index, int role) const override
+    {
+        return (role == Qt::DisplayRole) ? m_displayNames.at(index.row()) : QVariant();
+    }
+
+    QModelIndex index(int row, int column, const QModelIndex &) const override { return createIndex(row, column); }
+    QModelIndex parent(const QModelIndex &) const override { return QModelIndex(); }
+    int rowCount(const QModelIndex &) const override { return m_displayNames.count(); }
+    int columnCount(const QModelIndex &) const override { return 1; }
+
+private:
+    QStringList m_displayNames;
+};
+
+void tst_QHeaderView::QTBUG53221_assertShiftHiddenRow()
+{
+    QTableView tableView;
+    QTBUG53221_Model modelTableView;
+    tableView.setModel(&modelTableView);
+
+    modelTableView.insertRowAtBeginning();
+    tableView.setRowHidden(0, true);
+    QCOMPARE(tableView.verticalHeader()->isSectionHidden(0), true);
+    modelTableView.insertRowAtBeginning();
+    QCOMPARE(tableView.verticalHeader()->isSectionHidden(0), false);
+    QCOMPARE(tableView.verticalHeader()->isSectionHidden(1), true);
+    modelTableView.insertRowAtBeginning();
+    QCOMPARE(tableView.verticalHeader()->isSectionHidden(0), false);
+    QCOMPARE(tableView.verticalHeader()->isSectionHidden(1), false);
+    QCOMPARE(tableView.verticalHeader()->isSectionHidden(2), true);
 }
 
 void protected_QHeaderView::testVisualRegionForSelection()
@@ -3006,6 +3148,7 @@ void tst_QHeaderView::stretchAndRestoreLastSection()
     tv.setModel(&m);
     tv.showMaximized();
 
+    const int minimumSectionSize = 20;
     const int defaultSectionSize = 30;
     const int someOtherSectionSize = 40;
     const int biggerSizeThanAnySection = 50;
@@ -3013,6 +3156,9 @@ void tst_QHeaderView::stretchAndRestoreLastSection()
     QVERIFY(QTest::qWaitForWindowExposed(&tv));
 
     QHeaderView &header = *tv.horizontalHeader();
+    // set minimum size before resizeSections() is called
+    // which is done inside setStretchLastSection
+    header.setMinimumSectionSize(minimumSectionSize);
     header.setDefaultSectionSize(defaultSectionSize);
     header.resizeSection(9, someOtherSectionSize);
     header.setStretchLastSection(true);
@@ -3122,6 +3268,77 @@ void tst_QHeaderView::stretchAndRestoreLastSection()
     header.setStretchLastSection(false);
     QCOMPARE(header.sectionSize(9), someOtherSectionSize);
 }
+
+void tst_QHeaderView::testMinMaxSectionSizeStretched()
+{
+    testMinMaxSectionSize(true);
+}
+
+void tst_QHeaderView::testMinMaxSectionSizeNotStretched()
+{
+    testMinMaxSectionSize(false);
+}
+
+static void waitFor(const std::function<bool()> &func)
+{
+    for (int i = 0; i < 100; i++)
+    {
+        if (func())
+          return;
+        QTest::qWait(10);
+    }
+}
+
+void tst_QHeaderView::testMinMaxSectionSize(bool stretchLastSection)
+{
+    QStandardItemModel m(5, 5);
+    QTableView tv;
+    tv.setModel(&m);
+    tv.show();
+
+    const int sectionSizeMin = 20;
+    const int sectionSizeMax = 40;
+    const int defaultSectionSize = 30;
+
+    QVERIFY(QTest::qWaitForWindowExposed(&tv));
+
+    QHeaderView &header = *tv.horizontalHeader();
+    header.setMinimumSectionSize(sectionSizeMin);
+    header.setMaximumSectionSize(sectionSizeMax);
+    header.setDefaultSectionSize(defaultSectionSize);
+    header.setStretchLastSection(stretchLastSection);
+
+    // check defaults
+    QCOMPARE(header.sectionSize(0), defaultSectionSize);
+    QCOMPARE(header.sectionSize(3), defaultSectionSize);
+
+    // do not go above maxSectionSize
+    header.resizeSection(0, sectionSizeMax + 1);
+    QCOMPARE(header.sectionSize(0), sectionSizeMax);
+
+    // do not go below minSectionSize
+    header.resizeSection(0, sectionSizeMin - 1);
+    QCOMPARE(header.sectionSize(0), sectionSizeMin);
+
+    // change section size on max change
+    header.setMinimumSectionSize(sectionSizeMin);
+    header.setMaximumSectionSize(sectionSizeMax);
+    header.resizeSection(0, sectionSizeMax);
+    QCOMPARE(header.sectionSize(0), sectionSizeMax);
+    header.setMaximumSectionSize(defaultSectionSize);
+    waitFor([this, &header, defaultSectionSize]() { return header.sectionSize(0) == defaultSectionSize; });
+    QCOMPARE(header.sectionSize(0), defaultSectionSize);
+
+    // change section size on min change
+    header.setMinimumSectionSize(sectionSizeMin);
+    header.setMaximumSectionSize(sectionSizeMax);
+    header.resizeSection(0, sectionSizeMin);
+    QCOMPARE(header.sectionSize(0), sectionSizeMin);
+    header.setMinimumSectionSize(defaultSectionSize);
+    waitFor([this, &header, defaultSectionSize]() { return header.sectionSize(0) == defaultSectionSize; });
+    QCOMPARE(header.sectionSize(0), defaultSectionSize);
+}
+
 
 QTEST_MAIN(tst_QHeaderView)
 #include "tst_qheaderview.moc"

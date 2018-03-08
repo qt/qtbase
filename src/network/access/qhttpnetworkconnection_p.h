@@ -67,10 +67,11 @@
 #include <private/qhttpnetworkheader_p.h>
 #include <private/qhttpnetworkrequest_p.h>
 #include <private/qhttpnetworkreply_p.h>
+#include <private/http2protocol_p.h>
 
 #include <private/qhttpnetworkconnectionchannel_p.h>
 
-#ifndef QT_NO_HTTP
+QT_REQUIRE_CONFIG(http);
 
 QT_BEGIN_NAMESPACE
 
@@ -139,6 +140,9 @@ public:
 
     ConnectionType connectionType();
     void setConnectionType(ConnectionType type);
+
+    Http2::ProtocolParameters http2Parameters() const;
+    void setHttp2Parameters(const Http2::ProtocolParameters &params);
 
 #ifndef QT_NO_SSL
     void setSslConfiguration(const QSslConfiguration &config);
@@ -283,13 +287,13 @@ public:
     QSharedPointer<QNetworkSession> networkSession;
 #endif
 
+    Http2::ProtocolParameters http2Parameters;
+
     friend class QHttpNetworkConnectionChannel;
 };
 
 
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_HTTP
 
 #endif

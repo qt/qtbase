@@ -73,9 +73,6 @@ QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, qt_opensslInitMutex, (QMutex::Recursive))
 
-/*!
-    \internal
-*/
 void QSslSocketPrivate::deinitialize()
 {
     // This function exists only for compatibility with the pre-11 code,

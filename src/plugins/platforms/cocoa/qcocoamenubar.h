@@ -71,6 +71,9 @@ public:
 
     QList<QCocoaMenuItem*> merged() const;
     NSMenuItem *itemForRole(QPlatformMenuItem::MenuRole r);
+    QCocoaWindow *cocoaWindow() const;
+
+    void syncMenu_helper(QPlatformMenu *menu, bool menubarUpdate);
 
 private:
     static QCocoaWindow *findWindowForMenubar();

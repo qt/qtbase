@@ -91,16 +91,8 @@ QXcbVirtualDesktop::QXcbVirtualDesktop(QXcbConnection *connection, xcb_screen_t 
     if (reply && reply->format == 32 && reply->type == XCB_ATOM_WINDOW) {
         xcb_window_t windowManager = *((xcb_window_t *)xcb_get_property_value(reply.get()));
 
-        if (windowManager != XCB_WINDOW_NONE) {
-            auto windowManagerReply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
-                                                            false, windowManager,
-                                                            atom(QXcbAtom::_NET_WM_NAME),
-                                                            atom(QXcbAtom::UTF8_STRING), 0, 1024);
-            if (windowManagerReply && windowManagerReply->format == 8 && windowManagerReply->type == atom(QXcbAtom::UTF8_STRING)) {
-                m_windowManagerName = QString::fromUtf8((const char *)xcb_get_property_value(windowManagerReply.get()),
-                                                        xcb_get_property_value_length(windowManagerReply.get()));
-            }
-        }
+        if (windowManager != XCB_WINDOW_NONE)
+            m_windowManagerName = QXcbWindow::windowTitle(connection, windowManager);
     }
 
     const xcb_query_extension_reply_t *sync_reply = xcb_get_extension_data(xcb_connection(), &xcb_sync_id);
@@ -446,17 +438,24 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
 
     m_cursor = new QXcbCursor(connection, this);
 
-    // Parse EDID
-    if (m_edid.parse(getEdid()))
-        qCDebug(lcQpaScreen, "EDID data for output \"%s\": identifier '%s', manufacturer '%s', model '%s', serial '%s', physical size: %.2fx%.2f",
-                name().toLatin1().constData(),
-                m_edid.identifier.toLatin1().constData(),
-                m_edid.manufacturer.toLatin1().constData(),
-                m_edid.model.toLatin1().constData(),
-                m_edid.serialNumber.toLatin1().constData(),
-                m_edid.physicalSize.width(), m_edid.physicalSize.height());
-    else
-        qCDebug(lcQpaScreen) << "Failed to parse EDID data for output" << name(); // keep this debug, not warning
+    if (connection->hasXRandr()) { // Parse EDID
+        QByteArray edid = getEdid();
+        if (m_edid.parse(edid)) {
+            qCDebug(lcQpaScreen, "EDID data for output \"%s\": identifier '%s', manufacturer '%s',"
+                                 "model '%s', serial '%s', physical size: %.2fx%.2f",
+                    name().toLatin1().constData(),
+                    m_edid.identifier.toLatin1().constData(),
+                    m_edid.manufacturer.toLatin1().constData(),
+                    m_edid.model.toLatin1().constData(),
+                    m_edid.serialNumber.toLatin1().constData(),
+                    m_edid.physicalSize.width(), m_edid.physicalSize.height());
+        } else {
+            // This property is defined by the xrandr spec. Parsing failure indicates a valid error,
+            // but keep this as debug, for details see 4f515815efc318ddc909a0399b71b8a684962f38.
+            qCDebug(lcQpaScreen) << "Failed to parse EDID data for output" << name() <<
+                                    "edid data: " << edid;
+        }
+    }
 }
 
 QXcbScreen::~QXcbScreen()
@@ -584,7 +583,9 @@ QRect QXcbScreen::availableGeometry() const
 QImage::Format QXcbScreen::format() const
 {
     QImage::Format format;
-    qt_xcb_imageFormatForVisual(connection(), screen()->root_depth, visualForId(screen()->root_visual), &format);
+    bool needsRgbSwap;
+    qt_xcb_imageFormatForVisual(connection(), screen()->root_depth, visualForId(screen()->root_visual), &format, &needsRgbSwap);
+    // We are ignoring needsRgbSwap here and just assumes the backing-store will handle it.
     return format;
 }
 
@@ -901,9 +902,13 @@ QByteArray QXcbScreen::getOutputProperty(xcb_atom_t atom) const
 
 QByteArray QXcbScreen::getEdid() const
 {
+    QByteArray result;
+    if (!connection()->hasXRandr())
+        return result;
+
     // Try a bunch of atoms
     xcb_atom_t atom = connection()->internAtom("EDID");
-    QByteArray result = getOutputProperty(atom);
+    result = getOutputProperty(atom);
     if (result.isEmpty()) {
         atom = connection()->internAtom("EDID_DATA");
         result = getOutputProperty(atom);

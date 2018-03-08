@@ -126,7 +126,7 @@ void MandelbrotWidget::paintEvent(QPaintEvent * /* event */)
     QString text = tr("Use mouse wheel or the '+' and '-' keys to zoom. "
                       "Press and hold left mouse button to scroll.");
     QFontMetrics metrics = painter.fontMetrics();
-    int textWidth = metrics.width(text);
+    int textWidth = metrics.horizontalAdvance(text);
 
     painter.setPen(Qt::NoPen);
     painter.setBrush(QColor(0, 0, 0, 127));

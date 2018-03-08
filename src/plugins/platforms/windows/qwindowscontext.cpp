@@ -47,11 +47,13 @@
 #include "qwindowsmenu.h"
 #include "qwindowsmime.h"
 #include "qwindowsinputcontext.h"
-#include "qwindowstabletsupport.h"
+#if QT_CONFIG(tabletevent)
+#  include "qwindowstabletsupport.h"
+#endif
 #include "qwindowstheme.h"
 #include <private/qguiapplication_p.h>
 #ifndef QT_NO_ACCESSIBILITY
-# include "accessible/qwindowsaccessibility.h"
+#  include "uiautomation/qwindowsuiaaccessibility.h"
 #endif
 #if QT_CONFIG(sessionmanager)
 # include <private/qsessionmanager_p.h>
@@ -96,6 +98,7 @@ Q_LOGGING_CATEGORY(lcQpaDialogs, "qt.qpa.dialogs")
 Q_LOGGING_CATEGORY(lcQpaMenus, "qt.qpa.menus")
 Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 Q_LOGGING_CATEGORY(lcQpaAccessibility, "qt.qpa.accessibility")
+Q_LOGGING_CATEGORY(lcQpaUiAutomation, "qt.qpa.uiautomation")
 Q_LOGGING_CATEGORY(lcQpaTrayIcon, "qt.qpa.trayicon")
 
 int QWindowsContext::verbose = 0;
@@ -955,7 +958,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return false;
     case QtWindows::AccessibleObjectFromWindowRequest:
 #ifndef QT_NO_ACCESSIBILITY
-        return QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(hwnd, wParam, lParam, result);
+        return QWindowsUiaAccessibility::handleWmGetObject(hwnd, wParam, lParam, result);
 #else
         return false;
 #endif
@@ -977,8 +980,10 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         case QtWindows::QuerySizeHints:
             d->m_creationContext->applyToMinMaxInfo(reinterpret_cast<MINMAXINFO *>(lParam));
             return true;
-        case QtWindows::ResizeEvent:
-            d->m_creationContext->obtainedGeometry.setSize(QSize(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
+        case QtWindows::ResizeEvent: {
+            const QSize size(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) - d->m_creationContext->menuHeight);
+            d->m_creationContext->obtainedGeometry.setSize(size);
+        }
             return true;
         case QtWindows::MoveEvent:
             d->m_creationContext->obtainedGeometry.moveTo(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));

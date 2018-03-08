@@ -93,23 +93,23 @@
     \sa QFutureWatcher, {Qt Concurrent}
 */
 
-/*! \fn QFuture::QFuture()
+/*! \fn template <typename T> QFuture<T>::QFuture()
 
     Constructs an empty, canceled future.
 */
 
-/*! \fn QFuture::QFuture(const QFuture &other)
+/*! \fn template <typename T> QFuture<T>::QFuture(const QFuture<T> &other)
 
     Constructs a copy of \a other.
 
     \sa operator=()
 */
 
-/*! \fn QFuture::QFuture(QFutureInterface<T> *resultHolder)
+/*! \fn template <typename T> QFuture<T>::QFuture(QFutureInterface<T> *resultHolder)
     \internal
 */
 
-/*! \fn QFuture::~QFuture()
+/*! \fn template <typename T> QFuture<T>::~QFuture()
 
     Destroys the future.
 
@@ -118,23 +118,23 @@
     computation is completed before the future is destroyed.
 */
 
-/*! \fn QFuture &QFuture::operator=(const QFuture &other)
+/*! \fn template <typename T> QFuture<T> &QFuture<T>::operator=(const QFuture<T> &other)
 
      Assigns \a other to this future and returns a reference to this future.
 */
 
-/*! \fn bool QFuture::operator==(const QFuture &other) const
+/*! \fn template <typename T> bool QFuture<T>::operator==(const QFuture &other) const
 
     Returns \c true if \a other is a copy of this future; otherwise returns \c false.
 */
 
-/*! \fn bool QFuture::operator!=(const QFuture &other) const
+/*! \fn template <typename T> bool QFuture<T>::operator!=(const QFuture &other) const
 
     Returns \c true if \a other is \e not a copy of this future; otherwise returns
     false.
 */
 
-/*! \fn void QFuture::cancel()
+/*! \fn template <typename T> void QFuture<T>::cancel()
 
     Cancels the asynchronous computation represented by this future. Note that
     the cancelation is asynchronous. Use waitForFinished() after calling
@@ -150,7 +150,7 @@
     but the future returned by QtConcurrent::mappedReduced() can.
 */
 
-/*! \fn bool QFuture::isCanceled() const
+/*! \fn template <typename T> bool QFuture<T>::isCanceled() const
 
     Returns \c true if the asynchronous computation has been canceled with the
     cancel() function; otherwise returns \c false.
@@ -159,7 +159,7 @@
     function returns \c true. See cancel() for more details.
 */
 
-/*! \fn void QFuture::setPaused(bool paused)
+/*! \fn template <typename T> void QFuture<T>::setPaused(bool paused)
 
     If \a paused is true, this function pauses the asynchronous computation
     represented by the future. If the computation is  already paused, this
@@ -178,7 +178,7 @@
     \sa pause(), resume(), togglePaused()
 */
 
-/*! \fn bool QFuture::isPaused() const
+/*! \fn template <typename T> bool QFuture<T>::isPaused() const
 
     Returns \c true if the asynchronous computation has been paused with the
     pause() function; otherwise returns \c false.
@@ -189,7 +189,7 @@
     \sa setPaused(), togglePaused()
 */
 
-/*! \fn void QFuture::pause()
+/*! \fn template <typename T> void QFuture<T>::pause()
 
     Pauses the asynchronous computation represented by this future. This is a
     convenience method that simply calls setPaused(true).
@@ -197,7 +197,7 @@
     \sa resume()
 */
 
-/*! \fn void QFuture::resume()
+/*! \fn template <typename T> void QFuture<T>::resume()
 
     Resumes the asynchronous computation represented by this future. This is a
     convenience method that simply calls setPaused(false).
@@ -205,7 +205,7 @@
     \sa pause()
 */
 
-/*! \fn void QFuture::togglePaused()
+/*! \fn template <typename T> void QFuture<T>::togglePaused()
 
     Toggles the paused state of the asynchronous computation. In other words,
     if the computation is currently paused, calling this function resumes it;
@@ -215,25 +215,25 @@
     \sa setPaused(), pause(), resume()
 */
 
-/*! \fn bool QFuture::isStarted() const
+/*! \fn template <typename T> bool QFuture<T>::isStarted() const
 
     Returns \c true if the asynchronous computation represented by this future
     has been started; otherwise returns \c false.
 */
 
-/*! \fn bool QFuture::isFinished() const
+/*! \fn template <typename T> bool QFuture<T>::isFinished() const
 
     Returns \c true if the asynchronous computation represented by this future
     has finished; otherwise returns \c false.
 */
 
-/*! \fn bool QFuture::isRunning() const
+/*! \fn template <typename T> bool QFuture<T>::isRunning() const
 
     Returns \c true if the asynchronous computation represented by this future is
     currently running; otherwise returns \c false.
 */
 
-/*! \fn int QFuture::resultCount() const
+/*! \fn template <typename T> int QFuture<T>::resultCount() const
 
     Returns the number of continuous results available in this future. The real
     number of results stored might be different from this value, due to gaps
@@ -242,7 +242,7 @@
     \sa result(), resultAt(), results()
 */
 
-/*! \fn int QFuture::progressValue() const
+/*! \fn template <typename T> int QFuture<T>::progressValue() const
 
     Returns the current progress value, which is between the progressMinimum()
     and progressMaximum().
@@ -250,21 +250,21 @@
     \sa progressMinimum(), progressMaximum()
 */
 
-/*! \fn int QFuture::progressMinimum() const
+/*! \fn template <typename T> int QFuture<T>::progressMinimum() const
 
     Returns the minimum progressValue().
 
     \sa progressValue(), progressMaximum()
 */
 
-/*! \fn int QFuture::progressMaximum() const
+/*! \fn template <typename T> int QFuture<T>::progressMaximum() const
 
     Returns the maximum progressValue().
 
     \sa progressValue(), progressMinimum()
 */
 
-/*! \fn QString QFuture::progressText() const
+/*! \fn template <typename T> QString QFuture<T>::progressText() const
 
     Returns the (optional) textual representation of the progress as reported
     by the asynchronous computation.
@@ -273,13 +273,13 @@
     progress, and as such, this function may return an empty string.
 */
 
-/*! \fn void QFuture::waitForFinished()
+/*! \fn template <typename T> void QFuture<T>::waitForFinished()
 
     Waits for the asynchronous computation to finish (including cancel()ed
     computations).
 */
 
-/*! \fn T QFuture::result() const
+/*! \fn template <typename T> T QFuture<T>::result() const
 
     Returns the first result in the future. If the result is not immediately
     available, this function will block and wait for the result to become
@@ -288,7 +288,7 @@
     \sa resultAt(), results()
 */
 
-/*! \fn T QFuture::resultAt(int index) const
+/*! \fn template <typename T> T QFuture<T>::resultAt(int index) const
 
     Returns the result at \a index in the future. If the result is not
     immediately available, this function will block and wait for the result to
@@ -297,7 +297,7 @@
     \sa result(), results(), resultCount()
 */
 
-/*! \fn bool QFuture::isResultReadyAt(int index) const
+/*! \fn template <typename T> bool QFuture<T>::isResultReadyAt(int index) const
 
     Returns \c true if the result at \a index is immediately available; otherwise
     returns \c false.
@@ -305,7 +305,7 @@
     \sa resultAt(), resultCount()
 */
 
-/*! \fn QFuture::operator T() const
+/*! \fn template <typename T> QFuture<T>::operator T() const
 
     Returns the first result in the future. If the result is not immediately
     available, this function will block and wait for the result to become
@@ -315,7 +315,7 @@
     \sa result(), resultAt(), results()
 */
 
-/*! \fn QList<T> QFuture::results() const
+/*! \fn template <typename T> QList<T> QFuture<T>::results() const
 
     Returns all results from the future. If the results are not immediately
     available, this function will block and wait for them to become available.
@@ -323,7 +323,7 @@
     \sa result(), resultAt(), resultCount()
 */
 
-/*! \fn QFuture::const_iterator QFuture::begin() const
+/*! \fn template <typename T> QFuture<T>::const_iterator QFuture<T>::begin() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first result in the
     future.
@@ -331,7 +331,7 @@
     \sa constBegin(), end()
 */
 
-/*! \fn QFuture::const_iterator QFuture::end() const
+/*! \fn template <typename T> QFuture<T>::const_iterator QFuture<T>::end() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary result
     after the last result in the future.
@@ -339,7 +339,7 @@
     \sa begin(), constEnd()
 */
 
-/*! \fn QFuture::const_iterator QFuture::constBegin() const
+/*! \fn template <typename T> QFuture<T>::const_iterator QFuture<T>::constBegin() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first result in the
     future.
@@ -347,7 +347,7 @@
     \sa begin(), constEnd()
 */
 
-/*! \fn QFuture::const_iterator QFuture::constEnd() const
+/*! \fn template <typename T> QFuture<T>::const_iterator QFuture<T>::constEnd() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary result
     after the last result in the future.
@@ -403,7 +403,7 @@
     Typedef for const T &. Provided for STL compatibility.
 */
 
-/*! \fn QFuture::const_iterator::const_iterator()
+/*! \fn template <typename T> QFuture<T>::const_iterator::const_iterator()
 
     Constructs an uninitialized iterator.
 
@@ -414,31 +414,31 @@
     \sa QFuture::constBegin(), QFuture::constEnd()
 */
 
-/*! \fn QFuture::const_iterator::const_iterator(QFuture const * const future, int index)
+/*! \fn template <typename T> QFuture<T>::const_iterator::const_iterator(QFuture const * const future, int index)
     \internal
 */
 
-/*! \fn QFuture::const_iterator::const_iterator(const const_iterator &other)
+/*! \fn template <typename T> QFuture<T>::const_iterator::const_iterator(const const_iterator &other)
 
     Constructs a copy of \a other.
 */
 
-/*! \fn QFuture::const_iterator &QFuture::const_iterator::operator=(const const_iterator &other)
+/*! \fn template <typename T> QFuture<T>::const_iterator &QFuture<T>::const_iterator::operator=(const const_iterator &other)
 
     Assigns \a other to this iterator.
 */
 
-/*! \fn const T &QFuture::const_iterator::operator*() const
+/*! \fn template <typename T> const T &QFuture<T>::const_iterator::operator*() const
 
     Returns the current result.
 */
 
-/*! \fn const T *QFuture::const_iterator::operator->() const
+/*! \fn template <typename T> const T *QFuture<T>::const_iterator::operator->() const
 
     Returns a pointer to the current result.
 */
 
-/*! \fn bool QFuture::const_iterator::operator!=(const const_iterator &other) const
+/*! \fn template <typename T> bool QFuture<T>::const_iterator::operator!=(const const_iterator &other) const
 
     Returns \c true if \a other points to a different result than this iterator;
     otherwise returns \c false.
@@ -446,7 +446,7 @@
     \sa operator==()
 */
 
-/*! \fn bool QFuture::const_iterator::operator==(const const_iterator &other) const
+/*! \fn template <typename T> bool QFuture<T>::const_iterator::operator==(const const_iterator &other) const
 
     Returns \c true if \a other points to the same result as this iterator;
     otherwise returns \c false.
@@ -454,17 +454,17 @@
     \sa operator!=()
 */
 
-/*! \fn QFuture::const_iterator &QFuture::const_iterator::operator++()
+/*! \fn template <typename T> QFuture<T>::const_iterator &QFuture<T>::const_iterator::operator++()
 
     The prefix ++ operator (\c{++it}) advances the iterator to the next result
     in the future and returns an iterator to the new current result.
 
-    Calling this function on QFuture::constEnd() leads to undefined results.
+    Calling this function on QFuture<T>::constEnd() leads to undefined results.
 
     \sa operator--()
 */
 
-/*! \fn QFuture::const_iterator QFuture::const_iterator::operator++(int)
+/*! \fn template <typename T> QFuture<T>::const_iterator QFuture<T>::const_iterator::operator++(int)
 
     \overload
 
@@ -473,17 +473,17 @@
     result.
 */
 
-/*! \fn QFuture::const_iterator &QFuture::const_iterator::operator--()
+/*! \fn template <typename T> QFuture<T>::const_iterator &QFuture<T>::const_iterator::operator--()
 
     The prefix -- operator (\c{--it}) makes the preceding result current and
     returns an iterator to the new current result.
 
-    Calling this function on QFuture::constBegin() leads to undefined results.
+    Calling this function on QFuture<T>::constBegin() leads to undefined results.
 
     \sa operator++()
 */
 
-/*! \fn QFuture::const_iterator QFuture::const_iterator::operator--(int)
+/*! \fn template <typename T> QFuture<T>::const_iterator QFuture<T>::const_iterator::operator--(int)
 
     \overload
 
@@ -491,7 +491,7 @@
     returns an iterator to the previously current result.
 */
 
-/*! \fn QFuture::const_iterator &QFuture::const_iterator::operator+=(int j)
+/*! \fn template <typename T> QFuture<T>::const_iterator &QFuture<T>::const_iterator::operator+=(int j)
 
     Advances the iterator by \a j results. (If \a j is negative, the iterator
     goes backward.)
@@ -499,7 +499,7 @@
     \sa operator-=(), operator+()
 */
 
-/*! \fn QFuture::const_iterator &QFuture::const_iterator::operator-=(int j)
+/*! \fn template <typename T> QFuture<T>::const_iterator &QFuture<T>::const_iterator::operator-=(int j)
 
     Makes the iterator go back by \a j results. (If \a j is negative, the
     iterator goes forward.)
@@ -507,7 +507,7 @@
     \sa operator+=(), operator-()
 */
 
-/*! \fn QFuture::const_iterator QFuture::const_iterator::operator+(int j) const
+/*! \fn template <typename T> QFuture<T>::const_iterator QFuture<T>::const_iterator::operator+(int j) const
 
     Returns an iterator to the results at \a j positions forward from this
     iterator. (If \a j is negative, the iterator goes backward.)
@@ -515,7 +515,7 @@
     \sa operator-(), operator+=()
 */
 
-/*! \fn QFuture::const_iterator QFuture::const_iterator::operator-(int j) const
+/*! \fn template <typename T> QFuture<T>::const_iterator QFuture<T>::const_iterator::operator-(int j) const
 
     Returns an iterator to the result at \a j positions backward from this
     iterator. (If \a j is negative, the iterator goes forward.)
@@ -582,7 +582,7 @@
 */
 
 /*!
-    \fn QFutureIterator::QFutureIterator(const QFuture<T> &future)
+    \fn template <typename T> QFutureIterator<T>::QFutureIterator(const QFuture<T> &future)
 
     Constructs an iterator for traversing \a future. The iterator is set to be
     at the front of the result list (before the first result).
@@ -590,7 +590,7 @@
     \sa operator=()
 */
 
-/*! \fn QFutureIterator &QFutureIterator::operator=(const QFuture<T> &future)
+/*! \fn template <typename T> QFutureIterator<T> &QFutureIterator<T>::operator=(const QFuture<T> &future)
 
     Makes the iterator operate on \a future. The iterator is set to be at the
     front of the result list (before the first result).
@@ -598,7 +598,7 @@
     \sa toFront(), toBack()
 */
 
-/*! \fn void QFutureIterator::toFront()
+/*! \fn template <typename T> void QFutureIterator<T>::toFront()
 
     Moves the iterator to the front of the result list (before the first
     result).
@@ -606,14 +606,14 @@
     \sa toBack(), next()
 */
 
-/*! \fn void QFutureIterator::toBack()
+/*! \fn template <typename T> void QFutureIterator<T>::toBack()
 
     Moves the iterator to the back of the result list (after the last result).
 
     \sa toFront(), previous()
 */
 
-/*! \fn bool QFutureIterator::hasNext() const
+/*! \fn template <typename T> bool QFutureIterator<T>::hasNext() const
 
     Returns \c true if there is at least one result ahead of the iterator, e.g.,
     the iterator is \e not at the back of the result list; otherwise returns
@@ -622,7 +622,7 @@
     \sa hasPrevious(), next()
 */
 
-/*! \fn const T &QFutureIterator::next()
+/*! \fn template <typename T> const T &QFutureIterator<T>::next()
 
     Returns the next result and advances the iterator by one position.
 
@@ -632,7 +632,7 @@
     \sa hasNext(), peekNext(), previous()
 */
 
-/*! \fn const T &QFutureIterator::peekNext() const
+/*! \fn template <typename T> const T &QFutureIterator<T>::peekNext() const
 
     Returns the next result without moving the iterator.
 
@@ -642,7 +642,7 @@
     \sa hasNext(), next(), peekPrevious()
 */
 
-/*! \fn bool QFutureIterator::hasPrevious() const
+/*! \fn template <typename T> bool QFutureIterator<T>::hasPrevious() const
 
     Returns \c true if there is at least one result ahead of the iterator, e.g.,
     the iterator is \e not at the front of the result list; otherwise returns
@@ -651,7 +651,7 @@
     \sa hasNext(), previous()
 */
 
-/*! \fn const T &QFutureIterator::previous()
+/*! \fn template <typename T> const T &QFutureIterator<T>::previous()
 
     Returns the previous result and moves the iterator back by one position.
 
@@ -661,7 +661,7 @@
     \sa hasPrevious(), peekPrevious(), next()
 */
 
-/*! \fn const T &QFutureIterator::peekPrevious() const
+/*! \fn template <typename T> const T &QFutureIterator<T>::peekPrevious() const
 
     Returns the previous result without moving the iterator.
 
@@ -671,7 +671,7 @@
     \sa hasPrevious(), previous(), peekNext()
 */
 
-/*! \fn bool QFutureIterator::findNext(const T &value)
+/*! \fn template <typename T> bool QFutureIterator<T>::findNext(const T &value)
 
     Searches for \a value starting from the current iterator position forward.
     Returns \c true if \a value is found; otherwise returns \c false.
@@ -683,7 +683,7 @@
     \sa findPrevious()
 */
 
-/*! \fn bool QFutureIterator::findPrevious(const T &value)
+/*! \fn template <typename T> bool QFutureIterator<T>::findPrevious(const T &value)
 
     Searches for \a value starting from the current iterator position
     backward. Returns \c true if \a value is found; otherwise returns \c false.

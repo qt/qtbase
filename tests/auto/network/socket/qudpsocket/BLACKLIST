@@ -1,7 +1,3 @@
-[multicast:same bind, group ipv6 address]
-*
-[multicast]
-osx
 [writeDatagramToNonExistingPeer]
 windows
 osx
@@ -25,4 +21,6 @@ osx
 [zeroLengthDatagram]
 osx
 [linkLocalIPv6]
-redhatenterpriselinuxworkstation-6.6
+linux
+[readyReadForEmptyDatagram]
+linux

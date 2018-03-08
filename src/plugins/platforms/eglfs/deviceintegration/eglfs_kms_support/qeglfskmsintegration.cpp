@@ -141,6 +141,16 @@ void *QEglFSKmsIntegration::nativeResourceForIntegration(const QByteArray &name)
     return nullptr;
 }
 
+void *QEglFSKmsIntegration::nativeResourceForScreen(const QByteArray &resource, QScreen *screen)
+{
+    QEglFSKmsScreen *s = static_cast<QEglFSKmsScreen *>(screen->handle());
+    if (s) {
+        if (resource == QByteArrayLiteral("dri_crtcid"))
+            return (void *) (qintptr) s->output().crtc_id;
+    }
+    return nullptr;
+}
+
 QKmsDevice *QEglFSKmsIntegration::device() const
 {
     return m_device;

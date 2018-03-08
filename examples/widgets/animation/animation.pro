@@ -1,7 +1,6 @@
 TEMPLATE         = \
                  subdirs
 SUBDIRS          += \
-                 appchooser \
                  easing \
                  moveblocks \
                  states \

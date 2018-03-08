@@ -108,10 +108,12 @@ namespace QDBusPendingReplyTypes {
     template <>           struct NotVoid<void> { typedef TypeIsVoid Type; };
 } // namespace QDBusPendingReplyTypes
 
+#ifndef Q_CLANG_QDOC
 template<typename T1 = void, typename T2 = void, typename T3 = void, typename T4 = void,
          typename T5 = void, typename T6 = void, typename T7 = void, typename T8 = void>
+#endif
 class QDBusPendingReply:
-#ifdef Q_QDOC
+#ifdef Q_CLANG_QDOC
     public QDBusPendingCall
 #else
     public QDBusPendingReplyData
@@ -144,13 +146,23 @@ public:
 
     inline int count() const { return Count; }
 
-#if defined(Q_QDOC)
+#if defined(Q_CLANG_QDOC)
     QVariant argumentAt(int index) const;
 #else
     using QDBusPendingReplyData::argumentAt;
 #endif
 
-#if defined(Q_QDOC)
+#ifndef Q_CLANG_QDOC
+    template<int Index> inline
+    const typename Select<Index>::Type argumentAt() const
+    {
+        Q_STATIC_ASSERT_X(Index >= 0 && Index < Count, "Index out of bounds");
+        typedef typename Select<Index>::Type ResultType;
+        return qdbus_cast<ResultType>(argumentAt(Index), 0);
+    }
+#endif
+
+#if defined(Q_CLANG_QDOC)
     bool isFinished() const;
     void waitForFinished();
 
@@ -159,18 +171,10 @@ public:
     QDBusError error() const;
     QDBusMessage reply() const;
 
-    template<int Index> inline Type argumentAt() const;
+    typedef QVariant T1;
     inline T1 value() const;
     inline operator T1() const;
 #else
-    template<int Index> inline
-    const typename Select<Index>::Type argumentAt() const
-    {
-        Q_STATIC_ASSERT_X(Index >= 0 && Index < Count, "Index out of bounds");
-        typedef typename Select<Index>::Type ResultType;
-        return qdbus_cast<ResultType>(argumentAt(Index), 0);
-    }
-
     inline typename Select<0>::Type value() const
     {
         return argumentAt<0>();

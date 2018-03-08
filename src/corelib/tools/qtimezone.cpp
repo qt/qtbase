@@ -62,9 +62,9 @@ static QTimeZonePrivate *newBackendTimeZone()
 #else
 #if defined Q_OS_MAC
     return new QMacTimeZonePrivate();
-#elif defined Q_OS_ANDROID
+#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     return new QAndroidTimeZonePrivate();
-#elif defined Q_OS_UNIX
+#elif defined(Q_OS_UNIX) || defined(Q_OS_ANDROID_EMBEDDED)
     return new QTzTimeZonePrivate();
     // Registry based timezone backend not available on WinRT
 #elif defined Q_OS_WIN
@@ -89,9 +89,9 @@ static QTimeZonePrivate *newBackendTimeZone(const QByteArray &ianaId)
 #else
 #if defined Q_OS_MAC
     return new QMacTimeZonePrivate(ianaId);
-#elif defined Q_OS_ANDROID
+#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     return new QAndroidTimeZonePrivate(ianaId);
-#elif defined Q_OS_UNIX
+#elif defined(Q_OS_UNIX) || defined(Q_OS_ANDROID_EMBEDDED)
     return new QTzTimeZonePrivate(ianaId);
     // Registry based timezone backend not available on WinRT
 #elif defined Q_OS_WIN
@@ -139,7 +139,7 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     \note For consistency with QDateTime, QTimeZone does not account for leap
     seconds.
 
-    \section1
+    \section1 Remarks
 
     \section2 IANA Time Zone IDs
 
@@ -222,6 +222,20 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     \l{Unicode CLDR (Unicode Common Locale Data Repository)} for the details.
 
     \sa QDateTime
+*/
+
+/*!
+  \enum QTimeZone::anonymous
+
+  Sane UTC offsets range from -14 to +14 hours.
+  No known zone > 12 hrs West of Greenwich (Baker Island, USA).
+  No known zone > 14 hrs East of Greenwich (Kiritimati, Christmas Island, Kiribati).
+
+  \value MinUtcOffsetSecs
+          -14 * 3600,
+
+  \value MaxUtcOffsetSecs
+          +14 * 3600
 */
 
 /*!

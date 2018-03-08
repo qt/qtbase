@@ -125,7 +125,7 @@ public:
     static QFontEngine::GlyphFormat defaultGlyphFormat;
 
     static QCoreTextFontEngine *create(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
-private:
+protected:
     void init();
     QImage imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool colorful, const QTransform &m);
     CTFontRef ctfont;

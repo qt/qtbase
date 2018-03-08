@@ -131,14 +131,14 @@ MyRecord record(int row) const
     See the \l{Contiguous Cache Example}{Contiguous Cache} example.
 */
 
-/*! \fn QContiguousCache::QContiguousCache(int capacity)
+/*! \fn template<typename T> QContiguousCache<T>::QContiguousCache(int capacity)
 
     Constructs a cache with the given \a capacity.
 
     \sa setCapacity()
 */
 
-/*! \fn QContiguousCache::QContiguousCache(const QContiguousCache<T> &other)
+/*! \fn template<typename T> QContiguousCache<T>::QContiguousCache(const QContiguousCache<T> &other)
 
     Constructs a copy of \a other.
 
@@ -150,20 +150,20 @@ MyRecord record(int row) const
     \sa operator=()
 */
 
-/*! \fn QContiguousCache::~QContiguousCache()
+/*! \fn template<typename T> QContiguousCache<T>::~QContiguousCache()
 
     Destroys the cache.
 */
 
-/*! \fn void QContiguousCache::detach()
+/*! \fn template<typename T> void QContiguousCache<T>::detach()
     \internal
 */
 
-/*! \fn bool QContiguousCache::isDetached() const
+/*! \fn template<typename T> bool QContiguousCache<T>::isDetached() const
     \internal
 */
 
-/*! \fn void QContiguousCache::setSharable(bool sharable)
+/*! \fn template<typename T> void QContiguousCache<T>::setSharable(bool sharable)
     \internal
 */
 
@@ -195,27 +195,27 @@ MyRecord record(int row) const
   \internal
  */
 
-/*! \fn QContiguousCache<T> &QContiguousCache::operator=(const QContiguousCache<T> &other)
+/*! \fn template<typename T> QContiguousCache<T> &QContiguousCache<T>::operator=(const QContiguousCache<T> &other)
 
     Assigns \a other to this cache and returns a reference to this cache.
 */
 
 /*!
-    \fn QContiguousCache<T> &QContiguousCache::operator=(QContiguousCache<T> &&other)
+    \fn template<typename T> QContiguousCache<T> &QContiguousCache<T>::operator=(QContiguousCache<T> &&other)
 
     Move-assigns \a other to this QContiguousCache instance.
 
     \since 5.2
 */
 
-/*! \fn void QContiguousCache::swap(QContiguousCache<T> &other)
+/*! \fn template<typename T> void QContiguousCache<T>::swap(QContiguousCache<T> &other)
     \since 4.8
 
     Swaps cache \a other with this cache. This operation is very
     fast and never fails.
 */
 
-/*! \fn bool QContiguousCache::operator==(const QContiguousCache<T> &other) const
+/*! \fn template<typename T> bool QContiguousCache<T>::operator==(const QContiguousCache<T> &other) const
 
     Returns \c true if \a other is equal to this cache; otherwise returns \c false.
 
@@ -225,7 +225,7 @@ MyRecord record(int row) const
     \sa operator!=()
 */
 
-/*! \fn bool QContiguousCache::operator!=(const QContiguousCache<T> &other) const
+/*! \fn template<typename T> bool QContiguousCache<T>::operator!=(const QContiguousCache<T> &other) const
 
     Returns \c true if \a other is not equal to this cache; otherwise
     returns \c false.
@@ -236,7 +236,7 @@ MyRecord record(int row) const
     \sa operator==()
 */
 
-/*! \fn int QContiguousCache::capacity() const
+/*! \fn template<typename T> int QContiguousCache<T>::capacity() const
 
     Returns the number of items the cache can store before it is full.
     When a cache contains a number of items equal to its capacity, adding new
@@ -245,26 +245,26 @@ MyRecord record(int row) const
     \sa setCapacity(), size()
 */
 
-/*! \fn int QContiguousCache::count() const
+/*! \fn template<typename T> int QContiguousCache<T>::count() const
 
     Same as size().
 */
 
-/*! \fn int QContiguousCache::size() const
+/*! \fn template<typename T> int QContiguousCache<T>::size() const
 
     Returns the number of items contained within the cache.
 
     \sa capacity()
 */
 
-/*! \fn bool QContiguousCache::isEmpty() const
+/*! \fn template<typename T> bool QContiguousCache<T>::isEmpty() const
 
     Returns \c true if no items are stored within the cache.
 
     \sa size(), capacity()
 */
 
-/*! \fn bool QContiguousCache::isFull() const
+/*! \fn template<typename T> bool QContiguousCache<T>::isFull() const
 
     Returns \c true if the number of items stored within the cache is equal
     to the capacity of the cache.
@@ -272,19 +272,19 @@ MyRecord record(int row) const
     \sa size(), capacity()
 */
 
-/*! \fn int QContiguousCache::available() const
+/*! \fn template<typename T> int QContiguousCache<T>::available() const
 
     Returns the number of items that can be added to the cache before it becomes full.
 
     \sa size(), capacity(), isFull()
 */
 
-/*! \fn void QContiguousCache::clear()
+/*! \fn template<typename T> void QContiguousCache<T>::clear()
 
     Removes all items from the cache.  The capacity is unchanged.
 */
 
-/*! \fn void QContiguousCache::setCapacity(int size)
+/*! \fn template<typename T> void QContiguousCache<T>::setCapacity(int size)
 
     Sets the capacity of the cache to the given \a size.  A cache can hold a
     number of items equal to its capacity.  When inserting, appending or prepending
@@ -297,7 +297,7 @@ MyRecord record(int row) const
     \sa capacity(), isFull()
 */
 
-/*! \fn const T &QContiguousCache::at(int i) const
+/*! \fn template<typename T> const T &QContiguousCache<T>::at(int i) const
 
     Returns the item at index position \a i in the cache.  \a i must
     be a valid index position in the cache (i.e, firstIndex() <= \a i <= lastIndex()).
@@ -311,7 +311,7 @@ MyRecord record(int row) const
     \sa firstIndex(), lastIndex(), insert(), operator[]()
 */
 
-/*! \fn T &QContiguousCache::operator[](int i)
+/*! \fn template<typename T> T &QContiguousCache<T>::operator[](int i)
 
     Returns the item at index position \a i as a modifiable reference. If
     the cache does not contain an item at the given index position \a i
@@ -326,14 +326,14 @@ MyRecord record(int row) const
     \sa insert(), at()
 */
 
-/*! \fn const T &QContiguousCache::operator[](int i) const
+/*! \fn template<typename T> const T &QContiguousCache<T>::operator[](int i) const
 
     \overload
 
     Same as at(\a i).
 */
 
-/*! \fn void QContiguousCache::append(const T &value)
+/*! \fn template<typename T> void QContiguousCache<T>::append(const T &value)
 
     Inserts \a value at the end of the cache.  If the cache is already full
     the item at the start of the cache will be removed.
@@ -341,7 +341,7 @@ MyRecord record(int row) const
     \sa prepend(), insert(), isFull()
 */
 
-/*! \fn void QContiguousCache::prepend(const T &value)
+/*! \fn template<typename T> void QContiguousCache<T>::prepend(const T &value)
 
     Inserts \a value at the start of the cache.  If the cache is already full
     the item at the end of the cache will be removed.
@@ -349,7 +349,7 @@ MyRecord record(int row) const
     \sa append(), insert(), isFull()
 */
 
-/*! \fn void QContiguousCache::insert(int i, const T &value)
+/*! \fn template<typename T> void QContiguousCache<T>::insert(int i, const T &value)
 
     Inserts the \a value at the index position \a i.  If the cache already contains
     an item at \a i then that value is replaced.  If \a i is either one more than
@@ -369,14 +369,14 @@ MyRecord record(int row) const
     \sa prepend(), append(), isFull(), firstIndex(), lastIndex()
 */
 
-/*! \fn bool QContiguousCache::containsIndex(int i) const
+/*! \fn template<typename T> bool QContiguousCache<T>::containsIndex(int i) const
 
     Returns \c true if the cache's index range includes the given index \a i.
 
     \sa firstIndex(), lastIndex()
 */
 
-/*! \fn int QContiguousCache::firstIndex() const
+/*! \fn template<typename T> int QContiguousCache<T>::firstIndex() const
 
     Returns the first valid index in the cache.  The index will be invalid if the
     cache is empty.
@@ -384,7 +384,7 @@ MyRecord record(int row) const
     \sa capacity(), size(), lastIndex()
 */
 
-/*! \fn int QContiguousCache::lastIndex() const
+/*! \fn template<typename T> int QContiguousCache<T>::lastIndex() const
 
     Returns the last valid index in the cache.  The index will be invalid if the cache is empty.
 
@@ -392,7 +392,7 @@ MyRecord record(int row) const
 */
 
 
-/*! \fn T &QContiguousCache::first()
+/*! \fn template<typename T> T &QContiguousCache<T>::first()
 
     Returns a reference to the first item in the cache.  This function
     assumes that the cache isn't empty.
@@ -400,7 +400,7 @@ MyRecord record(int row) const
     \sa last(), isEmpty()
 */
 
-/*! \fn T &QContiguousCache::last()
+/*! \fn template<typename T> T &QContiguousCache<T>::last()
 
     Returns a reference to the last item in the cache.  This function
     assumes that the cache isn't empty.
@@ -408,17 +408,17 @@ MyRecord record(int row) const
     \sa first(), isEmpty()
 */
 
-/*! \fn const T& QContiguousCache::first() const
+/*! \fn template<typename T> const T& QContiguousCache<T>::first() const
 
     \overload
 */
 
-/*! \fn const T& QContiguousCache::last() const
+/*! \fn template<typename T> const T& QContiguousCache<T>::last() const
 
     \overload
 */
 
-/*! \fn void QContiguousCache::removeFirst()
+/*! \fn template<typename T> void QContiguousCache<T>::removeFirst()
 
     Removes the first item from the cache.  This function assumes that
     the cache isn't empty.
@@ -426,7 +426,7 @@ MyRecord record(int row) const
     \sa removeLast()
 */
 
-/*! \fn void QContiguousCache::removeLast()
+/*! \fn template<typename T> void QContiguousCache<T>::removeLast()
 
     Removes the last item from the cache.  This function assumes that
     the cache isn't empty.
@@ -434,7 +434,7 @@ MyRecord record(int row) const
     \sa removeFirst()
 */
 
-/*! \fn T QContiguousCache::takeFirst()
+/*! \fn template<typename T> T QContiguousCache<T>::takeFirst()
 
     Removes the first item in the cache and returns it.  This function
     assumes that the cache isn't empty.
@@ -444,7 +444,7 @@ MyRecord record(int row) const
     \sa takeLast(), removeFirst()
 */
 
-/*! \fn T QContiguousCache::takeLast()
+/*! \fn template<typename T> T QContiguousCache<T>::takeLast()
 
     Removes the last item in the cache and returns it. This function
     assumes that the cache isn't empty.
@@ -454,7 +454,7 @@ MyRecord record(int row) const
     \sa takeFirst(), removeLast()
 */
 
-/*! \fn void QContiguousCache::normalizeIndexes()
+/*! \fn template<typename T> void QContiguousCache<T>::normalizeIndexes()
 
     Moves the first index and last index of the cache
     such that they point to valid indexes.  The function does not modify
@@ -473,7 +473,7 @@ MyRecord record(int row) const
     \sa areIndexesValid(), append(), prepend()
 */
 
-/*! \fn bool QContiguousCache::areIndexesValid() const
+/*! \fn template<typename T> bool QContiguousCache<T>::areIndexesValid() const
 
     Returns whether the indexes for items stored in the cache are valid.
     Indexes can become invalid if items are appended after the index position

@@ -6,13 +6,15 @@ MODULE = core     # not corelib, as per project file
 MODULE_CONFIG = moc resources
 !isEmpty(QT_NAMESPACE): MODULE_DEFINES = QT_NAMESPACE=$$QT_NAMESPACE
 
+TRACEPOINT_PROVIDER = $$PWD/qtcore.tracepoints
+CONFIG += qt_tracepoints
+
 CONFIG += $$MODULE_CONFIG
 DEFINES += $$MODULE_DEFINES
 DEFINES += QT_NO_USING_NAMESPACE QT_NO_FOREACH
-win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x67000000
-irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
+msvc:equals(QT_ARCH, i386): QMAKE_LFLAGS += /BASE:0x67000000
 
-CONFIG += optimize_full
+CONFIG += simd optimize_full
 
 QMAKE_DOCS = $$PWD/doc/qtcore.qdocconf
 
@@ -36,21 +38,14 @@ include(thread/thread.pri)
 include(tools/tools.pri)
 include(io/io.pri)
 include(itemmodels/itemmodels.pri)
-include(json/json.pri)
 include(plugin/plugin.pri)
 include(kernel/kernel.pri)
 include(codecs/codecs.pri)
+include(serialization/serialization.pri)
 include(statemachine/statemachine.pri)
 include(mimetypes/mimetypes.pri)
-include(xml/xml.pri)
 
 win32 {
-    mingw {
-        # otherwise mingw headers do not declare common functions like putenv
-        CONFIG -= strict_c++
-        # Override MinGW's definition in _mingw.h
-        DEFINES += WINVER=0x600 _WIN32_WINNT=0x0600
-    }
     LIBS_PRIVATE += -lws2_32
     !winrt {
         LIBS_PRIVATE += -lkernel32 -luser32 -lshell32 -luuid -lole32 -ladvapi32 -lwinmm

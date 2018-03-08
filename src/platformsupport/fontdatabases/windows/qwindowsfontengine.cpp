@@ -1267,31 +1267,36 @@ QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
             lf.lfFaceName[nameSubstituteLength] = 0;
         }
 
-        IDWriteFont *directWriteFont = 0;
-        HRESULT hr = data->directWriteGdiInterop->CreateFontFromLOGFONT(&lf, &directWriteFont);
-        if (FAILED(hr)) {
-            qWarning("%s: %s", __FUNCTION__,
-                     qPrintable(msgDirectWriteFunctionFailed(hr, "CreateFontFromLOGFONT", fam, nameSubstitute)));
+        HFONT hfont = CreateFontIndirect(&lf);
+        if (hfont == nullptr) {
+            qErrnoWarning("%s: CreateFontIndirect failed", __FUNCTION__);
         } else {
-            Q_ASSERT(directWriteFont);
-            IDWriteFontFace *directWriteFontFace = NULL;
-            HRESULT hr = directWriteFont->CreateFontFace(&directWriteFontFace);
+            HGDIOBJ oldFont = SelectObject(data->hdc, hfont);
+
+            IDWriteFontFace *directWriteFontFace = nullptr;
+            QWindowsFontEngineDirectWrite *fedw = nullptr;
+            HRESULT hr = data->directWriteGdiInterop->CreateFontFaceFromHdc(data->hdc, &directWriteFontFace);
             if (SUCCEEDED(hr)) {
                 Q_ASSERT(directWriteFontFace);
-                QWindowsFontEngineDirectWrite *fedw = new QWindowsFontEngineDirectWrite(directWriteFontFace,
-                                                                                        fontEngine->fontDef.pixelSize,
-                                                                                        data);
+                fedw = new QWindowsFontEngineDirectWrite(directWriteFontFace,
+                                                         fontEngine->fontDef.pixelSize,
+                                                         data);
                 fedw->fontDef.weight = fontEngine->fontDef.weight;
                 if (fontEngine->fontDef.style > QFont::StyleNormal)
                     fedw->fontDef.style = fontEngine->fontDef.style;
                 fedw->fontDef.family = fam;
                 fedw->fontDef.hintingPreference = fontEngine->fontDef.hintingPreference;
                 fedw->fontDef.stretch = fontEngine->fontDef.stretch;
-                return fedw;
             } else {
                 qWarning("%s: %s", __FUNCTION__,
                          qPrintable(msgDirectWriteFunctionFailed(hr, "CreateFontFace", fam, nameSubstitute)));
             }
+
+            SelectObject(data->hdc, oldFont);
+            DeleteObject(hfont);
+
+            if (fedw != nullptr)
+                return fedw;
         }
     }
 #endif

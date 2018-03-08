@@ -268,27 +268,93 @@
 */
 
 /*!
-    \variable QGraphicsItem::Type
+  \enum QGraphicsItem::anonymous
 
-    The type value returned by the virtual type() function in standard
-    graphics item classes in Qt. All such standard graphics item
-    classes in Qt are associated with a unique value for Type,
-    e.g. the value returned by QGraphicsPathItem::type() is 2.
+  The value returned by the virtual type() function in standard
+  graphics item classes in Qt. All such standard graphics item classes
+  in Qt are associated with a unique value for Type, e.g. the value
+  returned by QGraphicsPathItem::type() is 2.
+
+  \value Type
 
     \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 18
+
+  \value UserType The lowest value returned by the virtual type()
+  function for custom subclasses of QGraphicsItem.
+
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 1
 */
 
 /*!
-    \variable QGraphicsItem::UserType
+  \enum QGraphicsPathItem::anonymous
 
-    The lowest permitted type value for custom items (subclasses
-    of QGraphicsItem or any of the standard items). This value is
-    used in conjunction with a reimplementation of QGraphicsItem::type()
-    and declaring a Type enum value. Example:
+  The value returned by the virtual type() function.
 
-    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 1
+  \value Type A graphics path item
+*/
 
-    \note UserType = 65536
+/*!
+  \enum QGraphicsRectItem::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics rect item
+*/
+
+/*!
+  \enum QGraphicsEllipseItem::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics ellipse item
+*/
+
+/*!
+  \enum QGraphicsPolygonItem::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics polygon item
+*/
+
+/*!
+  \enum QGraphicsPixmapItem::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics pixmap item
+*/
+
+/*!
+  \enum QGraphicsTextItem::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics text item
+*/
+
+/*!
+  \enum QGraphicsSimpleTextItem::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics simple text item
+*/
+
+/*!
+  \enum QGraphicsItemGroup::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics item group
+*/
+
+/*!
+  \enum QGraphicsLineItem::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics line item
 */
 
 /*!
@@ -1068,19 +1134,26 @@ void QGraphicsItemPrivate::remapItemPos(QEvent *event, QGraphicsItem *item)
     is untransformable, this function will correctly map \a pos from the scene using the
     view's transformation.
 */
-QPointF QGraphicsItemPrivate::genericMapFromScene(const QPointF &pos,
-                                                  const QWidget *viewport) const
+
+QTransform QGraphicsItemPrivate::genericMapFromSceneTransform(const QWidget *viewport) const
 {
     Q_Q(const QGraphicsItem);
     if (!itemIsUntransformable())
-        return q->mapFromScene(pos);
-    QGraphicsView *view = 0;
-    if (viewport)
-        view = qobject_cast<QGraphicsView *>(viewport->parentWidget());
-    if (!view)
-        return q->mapFromScene(pos);
+       return sceneTransform.inverted();
+    const QGraphicsView *view = viewport
+        ? qobject_cast<QGraphicsView *>(viewport->parentWidget())
+        : nullptr;
+    if (view == nullptr)
+        return sceneTransform.inverted();
     // ### More ping pong than needed.
-    return q->deviceTransform(view->viewportTransform()).inverted().map(view->mapFromScene(pos));
+    const QTransform viewportTransform = view->viewportTransform();
+    return viewportTransform * q->deviceTransform(viewportTransform).inverted();
+}
+
+QPointF QGraphicsItemPrivate::genericMapFromScene(const QPointF &pos,
+                                                  const QWidget *viewport) const
+{
+    return genericMapFromSceneTransform(viewport).map(pos);
 }
 
 /*!
@@ -10574,7 +10647,7 @@ bool QGraphicsTextItemPrivate::_q_mouseOnEdge(QGraphicsSceneMouseEvent *event)
 }
 
 /*!
-    \fn QGraphicsTextItem::linkActivated(const QString &link)
+    \fn void QGraphicsTextItem::linkActivated(const QString &link)
 
     This signal is emitted when the user clicks on a link on a text item
     that enables Qt::LinksAccessibleByMouse or Qt::LinksAccessibleByKeyboard.
@@ -10584,7 +10657,7 @@ bool QGraphicsTextItemPrivate::_q_mouseOnEdge(QGraphicsSceneMouseEvent *event)
 */
 
 /*!
-    \fn QGraphicsTextItem::linkHovered(const QString &link)
+    \fn void QGraphicsTextItem::linkHovered(const QString &link)
 
     This signal is emitted when the user hovers over a link on a text item
     that enables Qt::LinksAccessibleByMouse. \a link is

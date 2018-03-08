@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
  */
 static QString qt_strippedText(QString s)
 {
-    s.remove(QStringLiteral("..."));
+    s.remove(QLatin1String("..."));
     for (int i = 0; i < s.size(); ++i) {
         if (s.at(i) == QLatin1Char('&'))
             s.remove(i, 1);
@@ -1120,6 +1120,8 @@ void
 QAction::setData(const QVariant &data)
 {
     Q_D(QAction);
+    if (d->userData == data)
+        return;
     d->userData = data;
     d->sendDataChanged();
 }
@@ -1330,9 +1332,8 @@ bool QAction::isShortcutVisibleInContextMenu() const
 {
     Q_D(const QAction);
     if (d->shortcutVisibleInContextMenu == -1) {
-        if (QApplication::instance()->testAttribute(Qt::AA_DontShowIconsInMenus))
-            return false;
-        return qApp->styleHints()->showShortcutsInContextMenus();
+        return !QCoreApplication::testAttribute(Qt::AA_DontShowShortcutsInContextMenus)
+            && QGuiApplication::styleHints()->showShortcutsInContextMenus();
     }
     return d->shortcutVisibleInContextMenu;
 }

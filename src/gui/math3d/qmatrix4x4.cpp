@@ -126,7 +126,7 @@ QMatrix4x4::QMatrix4x4(const float *values)
 */
 
 /*!
-    \fn QMatrix4x4::QMatrix4x4(const QGenericMatrix<N, M, float>& matrix)
+    \fn template <int N, int M> QMatrix4x4::QMatrix4x4(const QGenericMatrix<N, M, float>& matrix)
 
     Constructs a 4x4 matrix from the left-most 4 columns and top-most
     4 rows of \a matrix.  If \a matrix has less than 4 columns or rows,
@@ -146,7 +146,7 @@ QMatrix4x4::QMatrix4x4(const float *values)
 */
 
 /*!
-    \fn QMatrix4x4 qGenericMatrixToMatrix4x4(const QGenericMatrix<N, M, float>& matrix)
+    \fn template <int N, int M> QMatrix4x4 qGenericMatrixToMatrix4x4(const QGenericMatrix<N, M, float>& matrix)
     \relates QMatrix4x4
     \obsolete
 

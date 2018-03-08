@@ -46,6 +46,8 @@
 #include <QtCore/QIODevice>
 #include <QtNetwork/QNetworkRequest>
 
+QT_REQUIRE_CONFIG(http);
+
 QT_BEGIN_NAMESPACE
 
 

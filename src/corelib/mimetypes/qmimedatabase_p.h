@@ -59,7 +59,9 @@
 #include "qmimetype_p.h"
 #include "qmimeglobpattern_p.h"
 
+#include <QtCore/qelapsedtimer.h>
 #include <QtCore/qmutex.h>
+#include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -77,22 +79,37 @@ public:
 
     static QMimeDatabasePrivate *instance();
 
-    QMimeProviderBase *provider();
-    void setProvider(QMimeProviderBase *theProvider);
-
     inline QString defaultMimeType() const { return m_defaultMimeType; }
 
     bool inherits(const QString &mime, const QString &parent);
 
     QList<QMimeType> allMimeTypes();
 
-
+    QString resolveAlias(const QString &nameOrAlias);
+    QStringList parents(const QString &mimeName);
     QMimeType mimeTypeForName(const QString &nameOrAlias);
     QMimeType mimeTypeForFileNameAndData(const QString &fileName, QIODevice *device, int *priorityPtr);
     QMimeType findByData(const QByteArray &data, int *priorityPtr);
     QStringList mimeTypeForFileName(const QString &fileName);
+    QMimeGlobMatchResult findByFileName(const QString &fileName);
 
-    mutable QMimeProviderBase *m_provider;
+    // API for QMimeType. Takes care of locking the mutex.
+    void loadMimeTypePrivate(QMimeTypePrivate &mimePrivate);
+    void loadGenericIcon(QMimeTypePrivate &mimePrivate);
+    void loadIcon(QMimeTypePrivate &mimePrivate);
+    QStringList mimeParents(const QString &mimeName);
+    QStringList listAliases(const QString &mimeName);
+    bool mimeInherits(const QString &mime, const QString &parent);
+
+private:
+    QVector<QMimeProviderBase *> providers();
+    bool shouldCheck();
+    void loadProviders();
+
+    mutable QVector<QMimeProviderBase *> m_providers;
+    QElapsedTimer m_lastCheck;
+
+public:
     const QString m_defaultMimeType;
     QMutex mutex;
 };

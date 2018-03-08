@@ -54,7 +54,6 @@
 #include <private/qapplication_p.h>
 #include <qpa/qplatformnativeinterface.h>
 
-#include <qdesktopwidget.h>
 #if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
 #endif
@@ -186,7 +185,6 @@ HRGN XPThemeData::mask(QWidget *widget)
 
 // QWindowsXPStylePrivate -------------------------------------------------------------------------
 // Static initializations
-QPixmap *QWindowsXPStylePrivate::tabbody = 0;
 HWND QWindowsXPStylePrivate::m_vistaTreeViewHelper = 0;
 HTHEME QWindowsXPStylePrivate::m_themes[NThemes];
 bool QWindowsXPStylePrivate::use_xp = false;
@@ -266,8 +264,6 @@ void QWindowsXPStylePrivate::cleanup(bool force)
 
     use_xp = false;
     cleanupHandleMap();
-    delete tabbody;
-    tabbody = 0;
 }
 
 /* In order to obtain the correct VistaTreeViewTheme (arrows for PE_IndicatorBranch),
@@ -286,10 +282,10 @@ static inline HWND createTreeViewHelperWindow()
         void *hwnd = 0;
         void *wndProc = reinterpret_cast<void *>(DefWindowProc);
         if (QMetaObject::invokeMethod(ni, "createMessageWindow", Qt::DirectConnection,
-                                  Q_RETURN_ARG(void *, hwnd),
+                                  Q_RETURN_ARG(void*, hwnd),
                                   Q_ARG(QString, QStringLiteral("QTreeViewThemeHelperWindowClass")),
                                   Q_ARG(QString, QStringLiteral("QTreeViewThemeHelperWindow")),
-                                  Q_ARG(void *, wndProc)) && hwnd) {
+                                  Q_ARG(void*, wndProc)) && hwnd) {
             return reinterpret_cast<HWND>(hwnd);
         }
     }
@@ -404,38 +400,13 @@ HWND QWindowsXPStylePrivate::winId(const QWidget *widget)
             return hwnd;
 
     // Find top level with native window (there might be dialogs that do not have one).
-    const auto topLevels = QApplication::topLevelWidgets();
-    for (const QWidget *toplevel : topLevels) {
-        if (toplevel->windowHandle() && toplevel->windowHandle()->handle())
-            if (const HWND topLevelHwnd = QApplicationPrivate::getHWNDForWidget(toplevel))
-                return topLevelHwnd;
+    const auto allWindows = QGuiApplication::allWindows();
+    for (const QWindow *window : allWindows) {
+        if (window->isTopLevel() && window->type() != Qt::Desktop && window->handle() != nullptr)
+            return reinterpret_cast<HWND>(window->winId());
     }
 
     return GetDesktopWindow();
-}
-
-/*! \internal
-    Returns the pointer to a tab widgets body pixmap, scaled to the
-    height of the screen. This way the theme engine doesn't need to
-    scale the body for every time we ask for it. (Speed optimization)
-*/
-const QPixmap *QWindowsXPStylePrivate::tabBody(QWidget *widget)
-{
-    if (!tabbody) {
-        XPThemeData theme(0, 0, QWindowsXPStylePrivate::TabTheme, TABP_BODY);
-        const QSize size = (theme.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget)).toSize();
-
-        tabbody = new QPixmap(size.width(), QApplication::desktop()->screenGeometry().height());
-        QPainter painter(tabbody);
-        theme.rect = QRect(QPoint(0, 0), size);
-        drawBackground(theme);
-        // We fill with the last line of the themedata, that
-        // way we don't get a tiled pixmap inside big tabs
-        QPixmap temp(size.width(), 1);
-        painter.drawPixmap(0, 0, temp, 0, size.height() - 1, -1, -1);
-        painter.drawTiledPixmap(0, size.height(), size.width(), tabbody->height() - size.height(), temp);
-    }
-    return tabbody;
 }
 
 /*! \internal
@@ -561,16 +532,6 @@ QRegion QWindowsXPStylePrivate::region(XPThemeData &themeData)
     DeleteObject(dest);
 
     return region;
-}
-
-/*! \internal
-    Sets the parts region on a window.
-*/
-void QWindowsXPStylePrivate::setTransparency(QWidget *widget, XPThemeData &themeData)
-{
-    HRGN hrgn = themeData.mask(widget);
-    if (hrgn && widget)
-        SetWindowRgn(winId(widget), hrgn, true);
 }
 
 /*! \internal
@@ -760,10 +721,8 @@ static QRegion scaleRegion(const QRegion &region, qreal factor)
 {
     if (region.isEmpty() || qFuzzyCompare(factor, qreal(1)))
         return region;
-    if (region.rectCount() == 1)
-        return QRegion(scaleRect(QRectF(region.boundingRect()), factor).toRect());
     QRegion result;
-    foreach (const QRect &rect, region.rects())
+    for (const QRect &rect : region)
         result += QRectF(QPointF(rect.topLeft()) * factor, QSizeF(rect.size() * factor)).toRect();
     return result;
 }
@@ -928,6 +887,7 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
         PROPERTYORIGIN origin = PO_NOTFOUND;
         GetThemePropertyOrigin(themeData.handle(), themeData.partId, themeData.stateId, TMT_BORDERSIZE, &origin);
         GetThemeInt(themeData.handle(), themeData.partId, themeData.stateId, TMT_BORDERSIZE, &borderSize);
+        borderSize *= additionalDevicePixelRatio;
 
         // Clip away border region
         if ((origin == PO_CLASS || origin == PO_PART || origin == PO_STATE) && borderSize > 0) {
@@ -1037,7 +997,7 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
     }
 
     if (addBorderContentClipping)
-        painter->setClipRegion(extraClip, Qt::IntersectClip);
+        painter->setClipRegion(scaleRegion(extraClip, 1.0 / additionalDevicePixelRatio), Qt::IntersectClip);
 
     if (!themeData.mirrorHorizontally && !themeData.mirrorVertically && !themeData.rotate) {
         if (!haveCachedPixmap)
@@ -1520,11 +1480,12 @@ case PE_Frame:
                 // GetThemeInt(theme.handle(), partId, stateId, TMT_BORDERCOLOR, &borderSize);
 
                 // Inner white border
-                p->setPen(QPen(option->palette.base().color(), 1));
-                p->drawRect(option->rect.adjusted(1, 1, -2, -2));
+                p->setPen(QPen(option->palette.base().color(), 0));
+                p->drawRect(QRectF(option->rect).adjusted(QStyleHelper::dpiScaled(0.5), QStyleHelper::dpiScaled(0.5),
+                                                          QStyleHelper::dpiScaled(-1), QStyleHelper::dpiScaled(-1)));
                 // Outer dark border
-                p->setPen(QPen(bordercolor, 1));
-                p->drawRect(option->rect.adjusted(0, 0, -1, -1));
+                p->setPen(QPen(bordercolor, 0));
+                p->drawRect(QRectF(option->rect).adjusted(0, 0, QStyleHelper::dpiScaled(-0.5), QStyleHelper::dpiScaled(-0.5)));
                 p->setPen(oldPen);
                 return;
             } else if (fillType == BT_NONE) {
@@ -3552,9 +3513,8 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
 
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
-            int x = cmb->rect.x(), y = cmb->rect.y(), wi = cmb->rect.width(), he = cmb->rect.height();
-            int xpos = x;
-            xpos += wi - 1 - 16;
+            const int x = cmb->rect.x(), y = cmb->rect.y(), wi = cmb->rect.width(), he = cmb->rect.height();
+            const int xpos = x + wi - qRound(QStyleHelper::dpiScaled(1 + 16));
 
             switch (subControl) {
             case SC_ComboBoxFrame:
@@ -3562,11 +3522,13 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
                 break;
 
             case SC_ComboBoxArrow:
-                rect = QRect(xpos, y+1, 16, he-2);
+                rect = QRect(xpos, y + qRound(QStyleHelper::dpiScaled(1)),
+                             qRound(QStyleHelper::dpiScaled(16)), he - qRound(QStyleHelper::dpiScaled(2)));
                 break;
 
             case SC_ComboBoxEditField:
-                rect = QRect(x+2, y+2, wi-3-16, he-4);
+                rect = QRect(x + qRound(QStyleHelper::dpiScaled(2)), y + qRound(QStyleHelper::dpiScaled(2)),
+                             wi - qRound(QStyleHelper::dpiScaled(3 + 16)), he - qRound(QStyleHelper::dpiScaled(4)));
                 break;
 
             case SC_ComboBoxListBoxPopup:

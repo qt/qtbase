@@ -95,6 +95,16 @@ static inline QStringList systemIconSearchPaths()
     return QStringList();
 }
 
+static inline QStringList systemFallbackSearchPaths()
+{
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+        const QVariant themeHint = theme->themeHint(QPlatformTheme::IconFallbackSearchPaths);
+        if (themeHint.isValid())
+            return themeHint.toStringList();
+    }
+    return QStringList();
+}
+
 extern QFactoryLoader *qt_iconEngineFactoryLoader(); // qicon.cpp
 
 void QIconLoader::ensureInitialized()
@@ -156,6 +166,20 @@ QStringList QIconLoader::themeSearchPaths() const
         m_iconDirs.append(QLatin1String(":/icons"));
     }
     return m_iconDirs;
+}
+
+void QIconLoader::setFallbackSearchPaths(const QStringList &searchPaths)
+{
+    m_fallbackDirs = searchPaths;
+    invalidateKey();
+}
+
+QStringList QIconLoader::fallbackSearchPaths() const
+{
+    if (m_fallbackDirs.isEmpty()) {
+        m_fallbackDirs = systemFallbackSearchPaths();
+    }
+    return m_fallbackDirs;
 }
 
 /*!
@@ -481,11 +505,54 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
     return info;
 }
 
+QThemeIconInfo QIconLoader::lookupFallbackIcon(const QString &iconName) const
+{
+    QThemeIconInfo info;
+
+    const QString pngIconName = iconName + QLatin1String(".png");
+    const QString xpmIconName = iconName + QLatin1String(".xpm");
+    const QString svgIconName = iconName + QLatin1String(".svg");
+
+    const auto searchPaths = QIcon::fallbackSearchPaths();
+    for (const QString &iconDir: searchPaths) {
+        QDir currentDir(iconDir);
+        if (currentDir.exists(pngIconName)) {
+            PixmapEntry *iconEntry = new PixmapEntry;
+            iconEntry->dir.type = QIconDirInfo::Fallback;
+            iconEntry->filename = currentDir.filePath(pngIconName);
+            info.entries.append(iconEntry);
+            break;
+        } else if (currentDir.exists(xpmIconName)) {
+            PixmapEntry *iconEntry = new PixmapEntry;
+            iconEntry->dir.type = QIconDirInfo::Fallback;
+            iconEntry->filename = currentDir.filePath(xpmIconName);
+            info.entries.append(iconEntry);
+            break;
+        } else if (m_supportsSvg &&
+                   currentDir.exists(svgIconName)) {
+            ScalableEntry *iconEntry = new ScalableEntry;
+            iconEntry->dir.type = QIconDirInfo::Fallback;
+            iconEntry->filename = currentDir.filePath(svgIconName);
+            info.entries.append(iconEntry);
+            break;
+        }
+    }
+
+    if (!info.entries.isEmpty())
+        info.iconName = iconName;
+
+    return info;
+}
+
 QThemeIconInfo QIconLoader::loadIcon(const QString &name) const
 {
     if (!themeName().isEmpty()) {
         QStringList visited;
-        return findIconHelper(themeName(), name, visited);
+        const QThemeIconInfo iconInfo = findIconHelper(themeName(), name, visited);
+        if (!iconInfo.entries.isEmpty())
+            return iconInfo;
+
+        return lookupFallbackIcon(name);
     }
 
     return QThemeIconInfo();
@@ -573,6 +640,8 @@ static bool directoryMatchesSize(const QIconDirInfo &dir, int iconsize, int icon
     } else if (dir.type == QIconDirInfo::Threshold) {
         return iconsize >= dir.size - dir.threshold &&
                 iconsize <= dir.size + dir.threshold;
+    } else if (dir.type == QIconDirInfo::Fallback) {
+        return true;
     }
 
     Q_ASSERT(1); // Not a valid value
@@ -603,6 +672,8 @@ static int directorySizeDistance(const QIconDirInfo &dir, int iconsize, int icon
         else if (scaledIconSize > (dir.size + dir.threshold) * dir.scale)
             return scaledIconSize - dir.maxSize * dir.scale;
         else return 0;
+    } else if (dir.type == QIconDirInfo::Fallback) {
+        return 0;
     }
 
     Q_ASSERT(1); // Not a valid value
@@ -657,9 +728,11 @@ QSize QIconLoaderEngine::actualSize(const QSize &size, QIcon::Mode mode,
     QIconLoaderEngineEntry *entry = entryForSize(m_info, size);
     if (entry) {
         const QIconDirInfo &dir = entry->dir;
-        if (dir.type == QIconDirInfo::Scalable)
+        if (dir.type == QIconDirInfo::Scalable) {
             return size;
-        else {
+        } else if (dir.type == QIconDirInfo::Fallback) {
+            return QIcon(entry->filename).actualSize(size, mode, state);
+        } else {
             int result = qMin<int>(dir.size, qMin(size.width(), size.height()));
             return QSize(result, result);
         }
@@ -745,8 +818,13 @@ void QIconLoaderEngine::virtual_hook(int id, void *data)
 
             // Gets all sizes from the DirectoryInfo entries
             for (int i = 0; i < N; ++i) {
-                int size = m_info.entries.at(i)->dir.size;
-                sizes.append(QSize(size, size));
+                const QIconLoaderEngineEntry *entry = m_info.entries.at(i);
+                if (entry->dir.type == QIconDirInfo::Fallback) {
+                    sizes.append(QIcon(entry->filename).availableSizes());
+                } else {
+                    int size = entry->dir.size;
+                    sizes.append(QSize(size, size));
+                }
             }
             arg.sizes.swap(sizes); // commit
         }

@@ -34,8 +34,8 @@
 */
 
 /*!
+    \fn template <typename T> T qFromUnaligned(const void *ptr)
     \internal
-    \fn T qFromUnaligned(const void *ptr)
     \since 5.5
 
     Loads a \c{T} from address \a ptr, which may be misaligned.
@@ -45,8 +45,8 @@
 */
 
 /*!
+    \fn template <typename T> void qToUnaligned(const T t, void *ptr)
     \internal
-    \fn void qToUnaligned(T t, void *ptr)
     \since 4.5
 
     Stores \a t to address \a ptr, which may be misaligned.
@@ -57,7 +57,7 @@
 
 
 /*!
-    \fn T qFromBigEndian(const void *src)
+    \fn template <typename T> T qFromBigEndian(const void *src)
     \since 4.3
     \relates <QtEndian>
 
@@ -78,7 +78,7 @@
     \sa qToLittleEndian()
 */
 /*!
-    \fn T qFromBigEndian(T src)
+    \fn template <typename T> T qFromBigEndian(T src)
     \since 4.3
     \relates <QtEndian>
     \overload
@@ -90,7 +90,7 @@
     unmodified.
 */
 /*!
-    \fn T qFromLittleEndian(const void *src)
+    \fn template <typename T> T qFromLittleEndian(const void *src)
     \since 4.3
     \relates <QtEndian>
 
@@ -111,7 +111,7 @@
     \sa qToLittleEndian()
 */
 /*!
-    \fn T qFromLittleEndian(T src)
+    \fn template <typename T> T qFromLittleEndian(T src)
     \since 4.3
     \relates <QtEndian>
     \overload
@@ -123,7 +123,7 @@
     unmodified.
 */
 /*!
-    \fn void qToBigEndian(T src, void *dest)
+    \fn template <typename T> void qToBigEndian(T src, void *dest)
     \since 4.3
     \relates <QtEndian>
 
@@ -141,7 +141,7 @@
     \sa qToLittleEndian()
 */
 /*!
-    \fn T qToBigEndian(T src)
+    \fn template <typename T> T qToBigEndian(T src)
     \since 4.3
     \relates <QtEndian>
     \overload
@@ -153,7 +153,7 @@
     unmodified.
 */
 /*!
-    \fn void qToLittleEndian(T src, void *dest)
+    \fn template <typename T> void qToLittleEndian(T src, void *dest)
     \since 4.3
     \relates <QtEndian>
 
@@ -171,7 +171,7 @@
     \sa qToBigEndian()
 */
 /*!
-    \fn T qToLittleEndian(T src)
+    \fn template <typename T> T qToLittleEndian(T src)
     \since 4.3
     \relates <QtEndian>
     \overload
@@ -203,100 +203,100 @@
     an exact endian is needed.
 */
 
-/*! \fn QLEInteger::QLEInteger(T value)
+/*! \fn template <typename T> QLEInteger<T>::QLEInteger(T value)
 
     Constructs a QLEInteger with the given \a value.
 */
 
-/*! \fn QLEInteger &QLEInteger::operator=(T value)
+/*! \fn template <typename T> QLEInteger &QLEInteger<T>::operator=(T i)
 
-    Assigns \a value to this QLEInteger and returns a reference to
+    Assigns \a i to this QLEInteger and returns a reference to
     this QLEInteger.
 */
 
 /*!
-    \fn QLEInteger::operator T() const
+    \fn template <typename T> QLEInteger<T>::operator T() const
 
     Returns the value of this QLEInteger as a native integer.
 */
 
 /*!
-    \fn bool QLEInteger::operator==(QLEInteger other) const
+    \fn template <typename T> bool QLEInteger<T>::operator==(QLEInteger other) const
 
     Returns \c true if the value of this QLEInteger is equal to the value of \a other.
 */
 
 /*!
-    \fn bool QLEInteger::operator!=(QLEInteger other) const
+    \fn template <typename T> bool QLEInteger<T>::operator!=(QLEInteger other) const
 
     Returns \c true if the value of this QLEInteger is not equal to the value of \a other.
 */
 
 /*!
-    \fn QLEInteger &QLEInteger::operator+=(T i)
+    \fn template <typename T> QLEInteger &QLEInteger<T>::operator+=(T i)
 
     Adds \a i to this QLEInteger and returns a reference to
     this object.
 */
 
 /*!
-    \fn QLEInteger &QLEInteger::operator-=(T i)
+    \fn template <typename T> QLEInteger &QLEInteger<T>::operator-=(T i)
 
     Subtracts \a i from this QLEInteger and returns a reference to
     this object.
 */
 
 /*!
-    \fn QLEInteger &QLEInteger::operator*=(T i)
+    \fn template <typename T> QLEInteger &QLEInteger<T>::operator*=(T i)
 
     Multiplies \a i with this QLEInteger and returns a reference to
     this object.
 */
 
 /*!
-    \fn QLEInteger &QLEInteger::operator/=(T i)
+    \fn template <typename T> QLEInteger &QLEInteger<T>::operator/=(T i)
 
     Divides this QLEInteger with \a i and returns a reference to
     this object.
 */
 
 /*!
-    \fn QLEInteger &QLEInteger::operator%=(T i)
+    \fn template <typename T> QLEInteger &QLEInteger<T>::operator%=(T i)
 
     Sets this QLEInteger to the remainder of a division by \a i and
     returns a reference to this object.
 */
 
 /*!
-    \fn QLEInteger &QLEInteger::operator>>=(T i)
+    \fn template <typename T> QLEInteger &QLEInteger<T>::operator>>=(T i)
 
     Performs a left-shift by \a i on this QLEInteger and returns a
     reference to this object.
 */
 
 /*!
-    \fn QLEInteger &QLEInteger::operator<<=(T i)
+    \fn template <typename T> QLEInteger &QLEInteger<T>::operator<<=(T i)
 
     Performs a right-shift by \a i on this QLEInteger and returns a
     reference to this object.
 */
 
 /*!
-    \fn QLEInteger &QLEInteger::operator|=(T i)
+    \fn template <typename T> QLEInteger &QLEInteger<T>::operator|=(T i)
 
     Performs a bitwise OR with \a i onto this QLEInteger and returns a reference to
     this object.
 */
 
 /*!
-    \fn QLEInteger &QLEInteger::operator&=(T i)
+    \fn template <typename T> QLEInteger &QLEInteger<T>::operator&=(T i)
 
     Performs a bitwise AND with \a i onto this QLEInteger and returns a reference to
     this object.
 */
 
 /*!
-    \fn QLEInteger &QLEInteger::operator^=(T i)
+    \fn template <typename T> QLEInteger &QLEInteger<T>::operator^=(T i)
 
     Performs a bitwise XOR with \a i onto this QLEInteger and returns a reference to
     this object.
@@ -322,100 +322,100 @@
     an exact endian is needed.
 */
 
-/*! \fn QBEInteger::QBEInteger(T value)
+/*! \fn template <typename T> QBEInteger<T>::QBEInteger(T value)
 
     Constructs a QBEInteger with the given \a value.
 */
 
-/*! \fn QBEInteger &QBEInteger::operator=(T value)
+/*! \fn template <typename T> QBEInteger &QBEInteger<T>::operator=(T i)
 
-    Assigns \a value to this QBEInteger and returns a reference to
+    Assigns \a i to this QBEInteger and returns a reference to
     this QBEInteger.
 */
 
 /*!
-    \fn QBEInteger::operator T() const
+    \fn template <typename T> QBEInteger<T>::operator T() const
 
     Returns the value of this QBEInteger as a native integer.
 */
 
 /*!
-    \fn bool QBEInteger::operator==(QBEInteger other) const
+    \fn template <typename T> bool QBEInteger<T>::operator==(QBEInteger other) const
 
     Returns \c true if the value of this QBEInteger is equal to the value of \a other.
 */
 
 /*!
-    \fn bool QBEInteger::operator!=(QBEInteger other) const
+    \fn template <typename T> bool QBEInteger<T>::operator!=(QBEInteger other) const
 
     Returns \c true if the value of this QBEInteger is not equal to the value of \a other.
 */
 
 /*!
-    \fn QBEInteger &QBEInteger::operator+=(T i)
+    \fn template <typename T> QBEInteger &QBEInteger<T>::operator+=(T i)
 
     Adds \a i to this QBEInteger and returns a reference to
     this object.
 */
 
 /*!
-    \fn QBEInteger &QBEInteger::operator-=(T i)
+    \fn template <typename T> QBEInteger &QBEInteger<T>::operator-=(T i)
 
     Subtracts \a i from this QBEInteger and returns a reference to
     this object.
 */
 
 /*!
-    \fn QBEInteger &QBEInteger::operator*=(T i)
+    \fn template <typename T> QBEInteger &QBEInteger<T>::operator*=(T i)
 
     Multiplies \a i with this QBEInteger and returns a reference to
     this object.
 */
 
 /*!
-    \fn QBEInteger &QBEInteger::operator/=(T i)
+    \fn template <typename T> QBEInteger &QBEInteger<T>::operator/=(T i)
 
     Divides this QBEInteger with \a i and returns a reference to
     this object.
 */
 
 /*!
-    \fn QBEInteger &QBEInteger::operator%=(T i)
+    \fn template <typename T> QBEInteger &QBEInteger<T>::operator%=(T i)
 
     Sets this QBEInteger to the remainder of a division by \a i and
     returns a reference to this object.
 */
 
 /*!
-    \fn QBEInteger &QBEInteger::operator>>=(T i)
+    \fn template <typename T> QBEInteger &QBEInteger<T>::operator>>=(T i)
 
     Performs a left-shift by \a i on this QBEInteger and returns a
     reference to this object.
 */
 
 /*!
-    \fn QBEInteger &QBEInteger::operator<<=(T i)
+    \fn template <typename T> QBEInteger &QBEInteger<T>::operator<<=(T i)
 
     Performs a right-shift by \a i on this QBEInteger and returns a
     reference to this object.
 */
 
 /*!
-    \fn QBEInteger &QBEInteger::operator|=(T i)
+    \fn template <typename T> QBEInteger &QBEInteger<T>::operator|=(T i)
 
     Performs a bitwise OR with \a i onto this QBEInteger and returns a reference to
     this object.
 */
 
 /*!
-    \fn QBEInteger &QBEInteger::operator&=(T i)
+    \fn template <typename T> QBEInteger &QBEInteger<T>::operator&=(T i)
 
     Performs a bitwise AND with \a i onto this QBEInteger and returns a reference to
     this object.
 */
 
 /*!
-    \fn QBEInteger &QBEInteger::operator^=(T i)
+    \fn template <typename T> QBEInteger &QBEInteger<T>::operator^=(T i)
 
     Performs a bitwise XOR with \a i onto this QBEInteger and returns a reference to
     this object.

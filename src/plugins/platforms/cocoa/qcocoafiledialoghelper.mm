@@ -63,7 +63,8 @@
 #include <qsysinfo.h>
 #include <qoperatingsystemversion.h>
 #include <qglobal.h>
-#include <QDir>
+#include <qdir.h>
+#include <qregularexpression.h>
 
 #include <qpa/qplatformnativeinterface.h>
 
@@ -161,11 +162,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSOpenSavePanelDelegate);
     // resetting our mCurrentDir, set the delegate
     // here to make sure it gets the correct value.
     [mSavePanel setDelegate:self];
-
-#if QT_OSX_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_11)
-    if (__builtin_available(macOS 10.11, *))
-        mOpenPanel.accessoryViewDisclosed = YES;
-#endif
+    mOpenPanel.accessoryViewDisclosed = YES;
 
     if (mOptions->isLabelExplicitlySet(QFileDialogOptions::Accept))
         [mSavePanel setPrompt:[self strip:options->labelText(QFileDialogOptions::Accept)]];
@@ -197,7 +194,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSOpenSavePanelDelegate);
 
 static QString strippedText(QString s)
 {
-    s.remove( QString::fromLatin1("...") );
+    s.remove(QLatin1String("..."));
     return QPlatformTheme::removeMnemonics(s).trimmed();
 }
 
@@ -418,6 +415,13 @@ static QString strippedText(QString s)
     } else {
         QList<QUrl> result;
         QString filename = QString::fromNSString([[mSavePanel URL] path]).normalized(QString::NormalizationForm_C);
+        const QString defaultSuffix = mOptions->defaultSuffix();
+        const QFileInfo fileInfo(filename);
+        // If neither the user or the NSSavePanel have provided a suffix, use
+        // the default suffix (if it exists).
+        if (fileInfo.suffix().isEmpty() && !defaultSuffix.isEmpty()) {
+                filename.append('.').append(defaultSuffix);
+        }
         result << QUrl::fromLocalFile(filename.remove(QLatin1String("___qt_very_unlikely_prefix_")));
         return result;
     }
@@ -445,10 +449,7 @@ static QString strippedText(QString s)
     [mPopUpButton setHidden:chooseDirsOnly];    // TODO hide the whole sunken pane instead?
 
     if (mOptions->acceptMode() == QFileDialogOptions::AcceptSave) {
-        QStringList ext = [self acceptableExtensionsForSave];
-        const QString defaultSuffix = mOptions->defaultSuffix();
-        if (!ext.isEmpty() && !defaultSuffix.isEmpty())
-            ext.prepend(defaultSuffix);
+        const QStringList ext = [self acceptableExtensionsForSave];
         [mSavePanel setAllowedFileTypes:ext.isEmpty() ? nil : qt_mac_QStringListToNSMutableArray(ext)];
     } else {
         [mOpenPanel setAllowedFileTypes:nil]; // delegate panel:shouldEnableURL: does the file filtering for NSOpenPanel
@@ -509,9 +510,10 @@ static QString strippedText(QString s)
 
 - (QString)removeExtensions:(const QString &)filter
 {
-    QRegExp regExp(QString::fromLatin1(QPlatformFileDialogHelper::filterRegExp));
-    if (regExp.indexIn(filter) != -1)
-        return regExp.cap(1).trimmed();
+    QRegularExpression regExp(QString::fromLatin1(QPlatformFileDialogHelper::filterRegExp));
+    QRegularExpressionMatch match = regExp.match(filter);
+    if (match.hasMatch())
+        return match.captured(1).trimmed();
     return filter;
 }
 

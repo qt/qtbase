@@ -380,7 +380,7 @@ QList<QPrinter::DuplexMode> QPrinterInfo::supportedDuplexModes() const
 {
     Q_D(const QPrinterInfo);
     QList<QPrinter::DuplexMode> list;
-    const QList<QPrint::DuplexMode> supportedDuplexModes = d->m_printDevice.supportedDuplexModes();
+    const auto supportedDuplexModes = d->m_printDevice.supportedDuplexModes();
     list.reserve(supportedDuplexModes.size());
     for (QPrint::DuplexMode mode : supportedDuplexModes)
         list << QPrinter::DuplexMode(mode);

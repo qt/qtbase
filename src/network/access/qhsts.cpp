@@ -136,7 +136,7 @@ void QHstsCache::updateKnownHost(const QString &host, const QDateTime &expires,
             return;
         }
 
-        knownHosts.insert(pos, hostName, newPolicy);
+        knownHosts.insert(pos, {hostName, newPolicy});
         if (hstsStore)
             hstsStore->addToObserved(newPolicy);
         return;
@@ -144,8 +144,8 @@ void QHstsCache::updateKnownHost(const QString &host, const QDateTime &expires,
 
     if (newPolicy.isExpired())
         knownHosts.erase(pos);
-    else  if (*pos != newPolicy)
-        *pos = std::move(newPolicy);
+    else  if (pos->second != newPolicy)
+        pos->second = std::move(newPolicy);
     else
         return;
 
@@ -185,13 +185,13 @@ bool QHstsCache::isKnownHost(const QUrl &url) const
     while (nameToTest.fragment.size()) {
         auto const pos = knownHosts.find(nameToTest);
         if (pos != knownHosts.end()) {
-            if (pos.value().isExpired()) {
+            if (pos->second.isExpired()) {
                 knownHosts.erase(pos);
                 if (hstsStore) {
                     // Inform our store that this policy has expired.
-                    hstsStore->addToObserved(pos.value());
+                    hstsStore->addToObserved(pos->second);
                 }
-            } else if (!superDomainMatch || pos.value().includesSubDomains()) {
+            } else if (!superDomainMatch || pos->second.includesSubDomains()) {
                 return true;
             }
         }
@@ -215,9 +215,9 @@ void QHstsCache::clear()
 QVector<QHstsPolicy> QHstsCache::policies() const
 {
     QVector<QHstsPolicy> values;
-    values.reserve(knownHosts.size());
+    values.reserve(int(knownHosts.size()));
     for (const auto &host : knownHosts)
-        values << host;
+        values << host.second;
     return values;
 }
 

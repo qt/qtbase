@@ -148,7 +148,7 @@ public:
     mutable QPointer<QScreen> m_screen;
 
     // Touch filtering and prediction are part of the same thing. The default
-    // prediction is 0ms, but sensible results can be acheived by setting it
+    // prediction is 0ms, but sensible results can be achieved by setting it
     // to, for instance, 16ms.
     // For filtering to work well, the QPA plugin should provide a dead-steady
     // implementation of QPlatformWindow::requestUpdate().

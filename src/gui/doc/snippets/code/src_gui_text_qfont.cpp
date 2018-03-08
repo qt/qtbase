@@ -72,6 +72,6 @@ QString family = info.family();
 
 //! [4]
 QFontMetrics fm(f1);
-int textWidthInPixels = fm.width("How many pixels wide is this text?");
+int textWidthInPixels = fm.horizontalAdvance("How many pixels wide is this text?");
 int textHeightInPixels = fm.height();
 //! [4]

@@ -378,21 +378,21 @@ void QDBusConnectionInterface::disconnectNotify(const QMetaMethod &signal)
 
 // signals
 /*!
-    \fn QDBusConnectionInterface::serviceRegistered(const QString &serviceName)
+    \fn QDBusConnectionInterface::serviceRegistered(const QString &service)
 
     This signal is emitted by the D-Bus server when the bus service
     name (unique connection name or well-known service name) given by
-    \a serviceName is acquired by this application.
+    \a service is acquired by this application.
 
     Acquisition happens after this application has requested a name using
     registerService().
 */
 
 /*!
-    \fn QDBusConnectionInterface::serviceUnregistered(const QString &serviceName)
+    \fn QDBusConnectionInterface::serviceUnregistered(const QString &service)
 
     This signal is emitted by the D-Bus server when this application
-    loses ownership of the bus service name given by \a serviceName.
+    loses ownership of the bus service name given by \a service.
 */
 
 /*!

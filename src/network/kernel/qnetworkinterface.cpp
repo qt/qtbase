@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -59,19 +59,15 @@ static QList<QNetworkInterfacePrivate *> postProcess(QList<QNetworkInterfacePriv
     // The math is:
     //    broadcast = IP | ~netmask
 
-    QList<QNetworkInterfacePrivate *>::Iterator it = list.begin();
-    const QList<QNetworkInterfacePrivate *>::Iterator end = list.end();
-    for ( ; it != end; ++it) {
-        QList<QNetworkAddressEntry>::Iterator addr_it = (*it)->addressEntries.begin();
-        const QList<QNetworkAddressEntry>::Iterator addr_end = (*it)->addressEntries.end();
-        for ( ; addr_it != addr_end; ++addr_it) {
-            if (addr_it->ip().protocol() != QAbstractSocket::IPv4Protocol)
+    for (QNetworkInterfacePrivate *interface : list) {
+        for (QNetworkAddressEntry &address : interface->addressEntries) {
+            if (address.ip().protocol() != QAbstractSocket::IPv4Protocol)
                 continue;
 
-            if (!addr_it->netmask().isNull() && addr_it->broadcast().isNull()) {
-                QHostAddress bcast = addr_it->ip();
-                bcast = QHostAddress(bcast.toIPv4Address() | ~addr_it->netmask().toIPv4Address());
-                addr_it->setBroadcast(bcast);
+            if (!address.netmask().isNull() && address.broadcast().isNull()) {
+                QHostAddress bcast = address.ip();
+                bcast = QHostAddress(bcast.toIPv4Address() | ~address.netmask().toIPv4Address());
+                address.setBroadcast(bcast);
             }
         }
     }
@@ -91,17 +87,16 @@ QNetworkInterfaceManager::~QNetworkInterfaceManager()
 
 QSharedDataPointer<QNetworkInterfacePrivate> QNetworkInterfaceManager::interfaceFromName(const QString &name)
 {
-    QList<QSharedDataPointer<QNetworkInterfacePrivate> > interfaceList = allInterfaces();
-    QList<QSharedDataPointer<QNetworkInterfacePrivate> >::ConstIterator it = interfaceList.constBegin();
+    const auto interfaceList = allInterfaces();
 
     bool ok;
     uint index = name.toUInt(&ok);
 
-    for ( ; it != interfaceList.constEnd(); ++it) {
-        if (ok && (*it)->index == int(index))
-            return *it;
-        else if ((*it)->name == name)
-            return *it;
+    for (const auto &interface : interfaceList) {
+        if (ok && interface->index == int(index))
+            return interface;
+        else if (interface->name == name)
+            return interface;
     }
 
     return empty;
@@ -109,11 +104,11 @@ QSharedDataPointer<QNetworkInterfacePrivate> QNetworkInterfaceManager::interface
 
 QSharedDataPointer<QNetworkInterfacePrivate> QNetworkInterfaceManager::interfaceFromIndex(int index)
 {
-    QList<QSharedDataPointer<QNetworkInterfacePrivate> > interfaceList = allInterfaces();
-    QList<QSharedDataPointer<QNetworkInterfacePrivate> >::ConstIterator it = interfaceList.constBegin();
-    for ( ; it != interfaceList.constEnd(); ++it)
-        if ((*it)->index == index)
-            return *it;
+    const auto interfaceList = allInterfaces();
+    for (const auto &interface : interfaceList) {
+        if (interface->index == index)
+            return interface;
+    }
 
     return empty;
 }
@@ -124,8 +119,15 @@ QList<QSharedDataPointer<QNetworkInterfacePrivate> > QNetworkInterfaceManager::a
     QList<QSharedDataPointer<QNetworkInterfacePrivate> > result;
     result.reserve(list.size());
 
-    for (QNetworkInterfacePrivate *ptr : list)
+    for (QNetworkInterfacePrivate *ptr : list) {
+        if ((ptr->flags & QNetworkInterface::IsUp) == 0) {
+            // if the network interface isn't UP, the addresses are ineligible for DNS
+            for (auto &addr : ptr->addressEntries)
+                addr.setDnsEligibility(QNetworkAddressEntry::DnsIneligible);
+        }
+
         result << QSharedDataPointer<QNetworkInterfacePrivate>(ptr);
+    }
 
     return result;
 }
@@ -161,6 +163,32 @@ QString QNetworkInterfacePrivate::makeHwAddress(int len, uchar *data)
     address (depending on support from the operating system).
 
     This class represents one such group.
+*/
+
+/*!
+    \enum QNetworkAddressEntry::DnsEligibilityStatus
+    \since 5.11
+
+    This enum indicates whether a given host address is eligible to be
+    published in the Domain Name System (DNS) or other similar name resolution
+    mechanisms. In general, an address is suitable for publication if it is an
+    address this machine will be reached at for an indeterminate amount of
+    time, though it need not be permanent. For example, addresses obtained via
+    DHCP are often eligible, but cryptographically-generated temporary IPv6
+    addresses are not.
+
+    \value DnsEligibilityUnknown    Qt and the operating system could not determine
+                                    whether this address should be published or not.
+                                    The application may need to apply further
+                                    heuristics if it cannot find any eligible
+                                    addresses.
+    \value DnsEligible              This address is eligible for publication in DNS.
+    \value DnsIneligible            This address should not be published in DNS and
+                                    should not be transmitted to other parties,
+                                    except maybe as the source address of an outgoing
+                                    packet.
+
+    \sa dnsEligibility(), setDnsEligibility()
 */
 
 /*!
@@ -215,6 +243,39 @@ bool QNetworkAddressEntry::operator==(const QNetworkAddressEntry &other) const
     return d->address == other.d->address &&
         d->netmask == other.d->netmask &&
         d->broadcast == other.d->broadcast;
+}
+
+/*!
+    \since 5.11
+
+    Returns whether this address is eligible for publication in the Domain Name
+    System (DNS) or similar name resolution mechanisms.
+
+    In general, an address is suitable for publication if it is an address this
+    machine will be reached at for an indeterminate amount of time, though it
+    need not be permanent. For example, addresses obtained via DHCP are often
+    eligible, but cryptographically-generated temporary IPv6 addresses are not.
+
+    On some systems, QNetworkInterface will need to heuristically determine
+    which addresses are eligible.
+
+    \sa isLifetimeKnown(), isPermanent(), setDnsEligibility()
+*/
+QNetworkAddressEntry::DnsEligibilityStatus QNetworkAddressEntry::dnsEligibility() const
+{
+    return d->dnsEligibility;
+}
+
+/*!
+    \since 5.11
+
+    Sets the DNS eligibility flag for this address to \a status.
+
+    \sa dnsEligibility()
+*/
+void QNetworkAddressEntry::setDnsEligibility(DnsEligibilityStatus status)
+{
+    d->dnsEligibility = status;
 }
 
 /*!
@@ -340,6 +401,122 @@ void QNetworkAddressEntry::setBroadcast(const QHostAddress &newBroadcast)
 }
 
 /*!
+    \since 5.11
+
+    Returns \c true if the address lifetime is known, \c false if not. If the
+    lifetime is not known, both preferredLifetime() and validityLifetime() will
+    return QDeadlineTimer::Forever.
+
+    \sa preferredLifetime(), validityLifetime(), setAddressLifetime(), clearAddressLifetime()
+*/
+bool QNetworkAddressEntry::isLifetimeKnown() const
+{
+    return d->lifetimeKnown;
+}
+
+/*!
+    \since 5.11
+
+    Returns the deadline when this address becomes deprecated (no longer
+    preferred), if known. If the address lifetime is not known (see
+    isLifetimeKnown()), this function always returns QDeadlineTimer::Forever.
+
+    While an address is preferred, it may be used by the operating system as
+    the source address for new, outgoing packets. After it becomes deprecated,
+    it will remain valid for incoming packets for a while longer until finally
+    removed (see validityLifetime()).
+
+    \sa validityLifetime(), isLifetimeKnown(), setAddressLifetime(), clearAddressLifetime()
+*/
+QDeadlineTimer QNetworkAddressEntry::preferredLifetime() const
+{
+    return d->preferredLifetime;
+}
+
+/*!
+    \since 5.11
+
+    Returns the deadline when this address becomes invalid and will be removed
+    from the networking stack, if known. If the address lifetime is not known
+    (see isLifetimeKnown()), this function always returns
+    QDeadlineTimer::Forever.
+
+    While an address is valid, it will be accepted by the operating system as a
+    valid destination address for this machine. Whether it is used as a source
+    address for new, outgoing packets is controlled by, among other rules, the
+    preferred lifetime (see preferredLifetime()).
+
+    \sa preferredLifetime(), isLifetimeKnown(), setAddressLifetime(), clearAddressLifetime()
+*/
+QDeadlineTimer QNetworkAddressEntry::validityLifetime() const
+{
+    return d->validityLifetime;
+}
+
+/*!
+    \since 5.11
+
+    Sets both the preferred and valid lifetimes for this address to the \a
+    preferred and \a validity deadlines, respectively. After this call,
+    isLifetimeKnown() will return \c true, even if both parameters are
+    QDeadlineTimer::Forever.
+
+    \sa preferredLifetime(), validityLifetime(), isLifetimeKnown(), clearAddressLifetime()
+*/
+void QNetworkAddressEntry::setAddressLifetime(QDeadlineTimer preferred, QDeadlineTimer validity)
+{
+    d->preferredLifetime = preferred;
+    d->validityLifetime = validity;
+    d->lifetimeKnown = true;
+}
+
+/*!
+    \since 5.11
+
+    Resets both the preferred and valid lifetimes for this address. After this
+    call, isLifetimeKnown() will return \c false.
+
+    \sa preferredLifetime(), validityLifetime(), isLifetimeKnown(), setAddressLifetime()
+*/
+void QNetworkAddressEntry::clearAddressLifetime()
+{
+    d->preferredLifetime = QDeadlineTimer::Forever;
+    d->validityLifetime = QDeadlineTimer::Forever;
+    d->lifetimeKnown = false;
+}
+
+/*!
+    \since 5.11
+
+    Returns \c true if this address is permanent on this interface, \c false if
+    it's temporary. A permenant address is one which has no expiration time and
+    is often static (manually configured).
+
+    If this information could not be determined, this function returns \c true.
+
+    \note Depending on the operating system and the networking configuration
+    tool, it is possible for a temporary address to be interpreted as
+    permanent, if the tool did not inform the details correctly to the
+    operating system.
+
+    \sa isLifetimeKnown(), validityLifetime(), isTemporary()
+*/
+bool QNetworkAddressEntry::isPermanent() const
+{
+    return d->validityLifetime.isForever();
+}
+
+/*!
+    \fn bool QNetworkAddressEntry::isTemporary() const
+    \since 5.11
+
+    Returns \c true if this address is temporary on this interface, \c false if
+    it's permanent.
+
+    \sa isLifetimeKnown(), validityLifetime(), isPermanent()
+*/
+
+/*!
     \class QNetworkInterface
     \brief The QNetworkInterface class provides a listing of the host's IP
     addresses and network interfaces.
@@ -393,6 +570,57 @@ void QNetworkAddressEntry::setBroadcast(const QHostAddress &newBroadcast)
 
     Note that one network interface cannot be both broadcast-based and
     point-to-point.
+*/
+
+/*!
+    \enum QNetworkInterface::InterfaceType
+
+    Specifies the type of hardware (PHY layer, OSI level 1) this interface is,
+    if it could be determined. Interface types that are not among those listed
+    below will generally be listed as Unknown, though future versions of Qt may
+    add new enumeration values.
+
+    The possible values are:
+
+    \value Unknown              The interface type could not be determined or is not
+                                one of the other listed types.
+    \value Loopback             The virtual loopback interface, which is assigned
+                                the loopback IP addresses (127.0.0.1, ::1).
+    \value Virtual              A type of interface determined to be virtual, but
+                                not any of the other possible types. For example,
+                                tunnel interfaces are (currently) detected as
+                                virtual ones.
+    \value Ethernet             IEEE 802.3 Ethernet interfaces, though on many
+                                systems other types of IEEE 802 interfaces may also
+                                be detected as Ethernet (especially Wi-Fi).
+    \value Wifi                 IEEE 802.11 Wi-Fi interfaces. Note that on some
+                                systems, QNetworkInterface may be unable to
+                                distinguish regular Ethernet from Wi-Fi and will
+                                not return this enum value.
+    \value Ieee80211            An alias for WiFi.
+    \value CanBus               ISO 11898 Controller Area Network bus interfaces,
+                                usually found on automotive systems.
+    \value Fddi                 ANSI X3T12 Fiber Distributed Data Interface, a local area
+                                network over optical fibers.
+    \value Ppp                  Point-to-Point Protocol interfaces, establishing a
+                                direct connection between two nodes over a lower
+                                transport layer (often serial over radio or physical
+                                line).
+    \value Slip                 Serial Line Internet Protocol interfaces.
+    \value Phonet               Interfaces using the Linux Phonet socket family, for
+                                communication with cellular modems. See the
+                                \l {https://www.kernel.org/doc/Documentation/networking/phonet.txt}{Linux kernel documentation}
+                                for more information.
+    \value Ieee802154           IEEE 802.15.4 Personal Area Network interfaces, other
+                                than 6LoWPAN (see below).
+    \value SixLoWPAN            6LoWPAN (IPv6 over Low-power Wireless Personal Area
+                                Networks) interfaces, which operate on IEEE 802.15.4
+                                PHY, but have specific header compression schemes
+                                for IPv6 and UDP. This type of interface is often
+                                used for mesh networking.
+    \value Ieee80216            IEEE 802.16 Wireless Metropolitan Area Network, also
+                                known under the commercial name "WiMAX".
+    \value Ieee1394             IEEE 1394 interfaces (a.k.a. "FireWire").
 */
 
 /*!
@@ -461,6 +689,29 @@ int QNetworkInterface::index() const
 }
 
 /*!
+    \since 5.11
+
+    Returns the maximum transmission unit on this interface, if known, or 0
+    otherwise.
+
+    The maximum transmission unit is the largest packet that may be sent on
+    this interface without incurring link-level fragmentation. Applications may
+    use this value to calculate the size of the payload that will fit an
+    unfragmented UDP datagram. Remember to subtract the sizes of headers used
+    in your communication over the interface, e.g. TCP (20 bytes) or UDP (12),
+    IPv4 (20) or IPv6 (40, absent some form of header compression), when
+    computing how big a payload you can transmit. Also note that the MTU along
+    the full path (the Path MTU) to the destination may be smaller than the
+    interface's MTU.
+
+    \sa QUdpSocket
+*/
+int QNetworkInterface::maxTransmissionUnit() const
+{
+    return d ? d->mtu : 0;
+}
+
+/*!
     Returns the name of this network interface. On Unix systems, this
     is a string containing the type of the interface and optionally a
     sequence number, such as "eth0", "lo" or "pcn0". On Windows, it's
@@ -499,6 +750,19 @@ QNetworkInterface::InterfaceFlags QNetworkInterface::flags() const
 }
 
 /*!
+    \since 5.11
+
+    Returns the type of this interface, if it could be determined. If it could
+    not be determined, this function returns QNetworkInterface::Unknown.
+
+    \sa hardwareAddress()
+*/
+QNetworkInterface::InterfaceType QNetworkInterface::type() const
+{
+    return d ? d->type : Unknown;
+}
+
+/*!
     Returns the low-level hardware address for this interface. On
     Ethernet interfaces, this will be a MAC address in string
     representation, separated by colons.
@@ -506,6 +770,8 @@ QNetworkInterface::InterfaceFlags QNetworkInterface::flags() const
     Other interface types may have other types of hardware
     addresses. Implementations should not depend on this function
     returning a valid MAC address.
+
+    \sa type()
 */
 QString QNetworkInterface::hardwareAddress() const
 {
@@ -690,5 +956,7 @@ QDebug operator<<(QDebug debug, const QNetworkInterface &networkInterface)
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qnetworkinterface.cpp"
 
 #endif // QT_NO_NETWORKINTERFACE

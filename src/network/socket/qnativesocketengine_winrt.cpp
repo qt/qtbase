@@ -1514,6 +1514,7 @@ int QNativeSocketEnginePrivate::option(QAbstractSocketEngine::SocketOption opt) 
     case QAbstractSocketEngine::MulticastLoopbackOption:
     case QAbstractSocketEngine::TypeOfServiceOption:
     case QAbstractSocketEngine::MaxStreamsSocketOption:
+    case QAbstractSocketEngine::PathMtuInformation:
     default:
         return -1;
     }
@@ -1573,6 +1574,7 @@ bool QNativeSocketEnginePrivate::setOption(QAbstractSocketEngine::SocketOption o
     case QAbstractSocketEngine::MulticastLoopbackOption:
     case QAbstractSocketEngine::TypeOfServiceOption:
     case QAbstractSocketEngine::MaxStreamsSocketOption:
+    case QAbstractSocketEngine::PathMtuInformation:
     default:
         return false;
     }

@@ -84,6 +84,7 @@ private:
     NSOpenGLContext *m_shareContext;
     QSurfaceFormat m_format;
     QPointer<QWindow> m_currentWindow;
+    bool m_didCheckForSoftwareContext;
 };
 
 QT_END_NAMESPACE

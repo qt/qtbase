@@ -105,7 +105,7 @@
 */
 
 /*!
-    \fn QRgba64::setRed(quint16 red)
+    \fn void QRgba64::setRed(quint16 red)
 
     Sets the red color component of this color to \a red.
 
@@ -121,7 +121,7 @@
 */
 
 /*!
-    \fn QRgba64::setGreen(quint16 green)
+    \fn void QRgba64::setGreen(quint16 green)
 
     Sets the green color component of this color to \a green.
 
@@ -137,7 +137,7 @@
 */
 
 /*!
-    \fn QRgba64::setBlue(quint16 blue)
+    \fn void QRgba64::setBlue(quint16 blue)
 
     Sets the blue color component of this color to \a blue.
 
@@ -153,7 +153,7 @@
 */
 
 /*!
-    \fn QRgba64::setAlpha(quint16 alpha)
+    \fn void QRgba64::setAlpha(quint16 alpha)
 
     Sets the alpha of this color to \a alpha.
 

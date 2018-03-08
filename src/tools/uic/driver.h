@@ -103,6 +103,9 @@ public:
     void insertPixmap(const QString &pixmap);
     bool containsPixmap(const QString &pixmap) const;
 
+    bool useIdBasedTranslations() const { return m_idBasedTranslations; }
+    void setUseIdBasedTranslations(bool u) { m_idBasedTranslations = u; }
+
 private:
     Option m_option;
     QTextStream m_stdout;
@@ -120,6 +123,7 @@ private:
     QHash<DomAction*, QString> m_actions;
     QHash<QString, bool> m_nameRepository;
     QHash<QString, bool> m_pixmaps;
+    bool m_idBasedTranslations = false;
 };
 
 QT_END_NAMESPACE

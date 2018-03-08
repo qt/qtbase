@@ -64,19 +64,15 @@
 #include <qhostinfo.h>
 #include "private/qhostinfo_p.h"
 
-#if !defined(QT_NO_GETADDRINFO)
-#  include <sys/types.h>
-# if defined(Q_OS_UNIX)
+#include <sys/types.h>
+#if defined(Q_OS_UNIX)
 #  include <sys/socket.h>
-# endif
-# if !defined(Q_OS_WIN)
 #  include <netdb.h>
-# endif
 #endif
 
 #include "../../../network-settings.h"
 
-#define TEST_DOMAIN ".test.macieira.org"
+#define TEST_DOMAIN ".test.qt-project.org"
 
 
 class tst_QHostInfo : public QObject
@@ -191,7 +187,7 @@ void tst_QHostInfo::initTestCase()
     networkSession.reset(new QNetworkSession(networkConfiguration));
     if (!networkSession->isOpen()) {
         networkSession->open();
-        QVERIFY(networkSession->waitForOpened(30000));
+        networkSession->waitForOpened(30000);
     }
 #endif
 
@@ -204,15 +200,13 @@ void tst_QHostInfo::initTestCase()
         ipv6Available = true;
     }
 
-// HP-UX 11i does not support IPv6 reverse lookups.
-#if !defined(QT_NO_GETADDRINFO) && !(defined(Q_OS_HPUX) && defined(__ia64))
     // check if the system getaddrinfo can do IPv6 lookups
     struct addrinfo hint, *result = 0;
     memset(&hint, 0, sizeof hint);
     hint.ai_family = AF_UNSPEC;
-# ifdef AI_ADDRCONFIG
+#ifdef AI_ADDRCONFIG
     hint.ai_flags = AI_ADDRCONFIG;
-# endif
+#endif
 
     int res = getaddrinfo("::1", "80", &hint, &result);
     if (res == 0) {
@@ -224,7 +218,6 @@ void tst_QHostInfo::initTestCase()
             ipv6LookupsAvailable = true;
         }
     }
-#endif
 
     // run each testcase with and without test enabled
     QTest::addColumn<bool>("cache");

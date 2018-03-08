@@ -197,13 +197,10 @@ qmake_pch.obj:
 {$(SOURCE_PATH)\src\corelib\plugin}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
 
+{$(SOURCE_PATH)\src\corelib\serialization}.cpp{}.obj::
+	$(CXX) $(CXXFLAGS) $<
+
 {$(SOURCE_PATH)\src\corelib\tools}.cpp{}.obj::
-	$(CXX) $(CXXFLAGS) $<
-
-{$(SOURCE_PATH)\src\corelib\xml}.cpp{}.obj::
-	$(CXX) $(CXXFLAGS) $<
-
-{$(SOURCE_PATH)\src\corelib\json}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
 
 # Make sure qstring_compat.obj and qlibraryinfo.obj aren't compiled with PCH enabled

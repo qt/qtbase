@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(combobox))
 
 HEADERS       = regexpdialog.h
 SOURCES       = regexpdialog.cpp \

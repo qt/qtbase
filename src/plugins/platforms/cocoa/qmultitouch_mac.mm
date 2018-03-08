@@ -39,6 +39,7 @@
 
 #include "qmultitouch_mac_p.h"
 #include "qcocoahelpers.h"
+#include "qcocoascreen.h"
 #include <private/qtouchdevice_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -83,7 +84,7 @@ void QCocoaTouch::updateTouchData(NSTouch *nstouch, NSTouchPhase phase)
 
     if (_touchPoint.id == 0 && phase == NSTouchPhaseBegan) {
         _trackpadReferencePos = qnpos;
-        _screenReferencePos = qt_mac_flipPoint([NSEvent mouseLocation]);
+        _screenReferencePos = QCocoaScreen::mapFromNative([NSEvent mouseLocation]);
     }
 
     QPointF screenPos = _screenReferencePos;

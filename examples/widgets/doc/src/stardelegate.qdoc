@@ -37,7 +37,7 @@
     When displaying data in a QListView, QTableView, or QTreeView,
     the individual items are drawn by a
     \l{Delegate Classes}{delegate}. Also, when the user starts
-    editing an item (e.g., by double-clicking the item), the delegate
+    editing an item (for example, by double-clicking the item), the delegate
     provides an editor widget that is placed on top of the item while
     editing takes place.
 
@@ -96,9 +96,9 @@
     QItemDelegate paint it for us. This ensures that the \c
     StarDelegate can handle the most common data types.
 
-    In the case where the item is a \c StarRating, we draw the
-    background if the item is selected, and we draw the item using \c
-    StarRating::paint(), which we will review later.
+    If the item is a \c StarRating, we draw the background if the
+    item is selected, and we draw the item using \c StarRating::paint(),
+    which we will review later.
 
     \c{StartRating}s can be stored in a QVariant thanks to the
     Q_DECLARE_METATYPE() macro appearing in \c starrating.h. More on
@@ -133,8 +133,8 @@
     We simply call \c setStarRating() on the editor.
 
     The \l{QAbstractItemDelegate::}{setModelData()} function is
-    called when editing is finished, to commit data from the editor
-    to the model:
+    called to commit data from the editor to the model when editing
+    is finished:
 
     \snippet itemviews/stardelegate/stardelegate.cpp 4
 
@@ -210,7 +210,7 @@
     current rating, and \c myMaxStarCount stores the highest possible
     rating (typically 5).
 
-    The Q_DECLARE_METATYPE() macro makes the type \c StarRating known
+    The \c Q_DECLARE_METATYPE() macro makes the type \c StarRating known
     to QVariant, making it possible to store \c StarRating values in
     QVariant.
 
@@ -283,7 +283,7 @@
     \list
     \li It is possible to open editors programmatically by calling
        QAbstractItemView::edit(), instead of relying on edit
-       triggers. This could be use to support other edit triggers
+       triggers. This could be used to support other edit triggers
        than those offered by the QAbstractItemView::EditTrigger enum.
        For example, in the Star Delegate example, hovering over an
        item with the mouse might make sense as a way to pop up an

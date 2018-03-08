@@ -226,7 +226,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         tl[1] = 0;
         errCode = XmbTextListToTextProperty(dpy, tl, 1, XStdICCTextStyle, &tp);
         if (errCode < 0)
-            qDebug("XmbTextListToTextProperty result code %d", errCode);
+            qCDebug(lcQpaXcb, "XmbTextListToTextProperty result code %d", errCode);
     }
     if (!mapper || errCode < 0) {
         mapper = QTextCodec::codecForName("latin1");
@@ -644,6 +644,15 @@ void QXcbWindow::setGeometry(const QRect &rect)
             qBound<qint32>(1,           wmGeometry.height(), XCOORD_MAX),
         };
         xcb_configure_window(xcb_connection(), m_window, mask, reinterpret_cast<const quint32*>(values));
+        if (window()->parent() && !window()->transientParent()) {
+            // Wait for server reply for parented windows to ensure that a few window
+            // moves will come as a one event. This is important when native widget is
+            // moved a few times in X and Y directions causing native scroll. Widget
+            // must get single event to not trigger unwanted widget position changes
+            // and then expose events causing backingstore flushes with incorrect
+            // offset causing image crruption.
+            connection()->sync();
+        }
     }
 
     xcb_flush(xcb_connection());
@@ -859,7 +868,9 @@ void QXcbWindow::hide()
             if (QWindow *childWindow = childWindowAt(enterWindow, cursorPos))
                 enterWindow = childWindow;
             const QPoint localPos = enterWindow->mapFromGlobal(cursorPos);
-            QWindowSystemInterface::handleEnterEvent(enterWindow, localPos, cursorPos);
+            QWindowSystemInterface::handleEnterEvent(enterWindow,
+                                                     localPos * QHighDpiScaling::factor(enterWindow),
+                                                     nativePos);
         }
     }
 }
@@ -2060,7 +2071,7 @@ bool QXcbWindow::isEmbedded() const
 QPoint QXcbWindow::mapToGlobal(const QPoint &pos) const
 {
     if (!m_embedded)
-        return pos;
+        return QPlatformWindow::mapToGlobal(pos);
 
     QPoint ret;
     auto reply = Q_XCB_REPLY(xcb_translate_coordinates, xcb_connection(),
@@ -2077,7 +2088,7 @@ QPoint QXcbWindow::mapToGlobal(const QPoint &pos) const
 QPoint QXcbWindow::mapFromGlobal(const QPoint &pos) const
 {
     if (!m_embedded)
-        return pos;
+        return QPlatformWindow::mapFromGlobal(pos);
 
     QPoint ret;
     auto reply = Q_XCB_REPLY(xcb_translate_coordinates, xcb_connection(),
@@ -2549,6 +2560,9 @@ bool QXcbWindow::setMouseGrabEnabled(bool grab)
     if (!grab && connection()->mouseGrabber() == this)
         connection()->setMouseGrabber(nullptr);
 
+    if (grab && !connection()->canGrab())
+        return false;
+
 #if QT_CONFIG(xinput2)
     if (connection()->hasXInput2() && !connection()->xi2MouseEventsDisabled()) {
         bool result = connection()->xi2SetMouseGrabEnabled(m_window, grab);
@@ -2557,8 +2571,6 @@ bool QXcbWindow::setMouseGrabEnabled(bool grab)
         return result;
     }
 #endif
-    if (grab && !connection()->canGrab())
-        return false;
 
     if (!grab) {
         xcb_ungrab_pointer(xcb_connection(), XCB_TIME_CURRENT_TIME);
@@ -2628,18 +2640,28 @@ void QXcbWindow::windowEvent(QEvent *event)
 
 bool QXcbWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
 {
+    return startSystemMoveResize(pos, corner);
+}
+
+bool QXcbWindow::startSystemMove(const QPoint &pos)
+{
+    return startSystemMoveResize(pos, 4);
+}
+
+bool QXcbWindow::startSystemMoveResize(const QPoint &pos, int corner)
+{
     const xcb_atom_t moveResize = connection()->atom(QXcbAtom::_NET_WM_MOVERESIZE);
     if (!connection()->wmSupport()->isSupportedByWM(moveResize))
         return false;
     const QPoint globalPos = QHighDpi::toNativePixels(window()->mapToGlobal(pos), window()->screen());
 #ifdef XCB_USE_XINPUT22
-    if (connection()->startSystemResizeForTouchBegin(m_window, globalPos, corner))
+    if (connection()->startSystemMoveResizeForTouchBegin(m_window, globalPos, corner))
         return true;
 #endif
-    return doStartSystemResize(globalPos, corner);
+    return doStartSystemMoveResize(globalPos, corner);
 }
 
-bool QXcbWindow::doStartSystemResize(const QPoint &globalPos, Qt::Corner corner)
+bool QXcbWindow::doStartSystemMoveResize(const QPoint &globalPos, int corner)
 {
     const xcb_atom_t moveResize = connection()->atom(QXcbAtom::_NET_WM_MOVERESIZE);
     xcb_client_message_event_t xev;
@@ -2650,12 +2672,16 @@ bool QXcbWindow::doStartSystemResize(const QPoint &globalPos, Qt::Corner corner)
     xev.format = 32;
     xev.data.data32[0] = globalPos.x();
     xev.data.data32[1] = globalPos.y();
-    const bool bottom = corner == Qt::BottomRightCorner || corner == Qt::BottomLeftCorner;
-    const bool left = corner == Qt::BottomLeftCorner || corner == Qt::TopLeftCorner;
-    if (bottom)
-        xev.data.data32[2] = left ? 6 : 4; // bottomleft/bottomright
-    else
-        xev.data.data32[2] = left ? 0 : 2; // topleft/topright
+    if (corner == 4) {
+        xev.data.data32[2] = 8; // move
+    } else {
+        const bool bottom = corner == Qt::BottomRightCorner || corner == Qt::BottomLeftCorner;
+        const bool left = corner == Qt::BottomLeftCorner || corner == Qt::TopLeftCorner;
+        if (bottom)
+            xev.data.data32[2] = left ? 6 : 4; // bottomleft/bottomright
+        else
+            xev.data.data32[2] = left ? 0 : 2; // topleft/topright
+    }
     xev.data.data32[3] = XCB_BUTTON_INDEX_1;
     xev.data.data32[4] = 0;
     xcb_ungrab_pointer(connection()->xcb_connection(), XCB_CURRENT_TIME);
@@ -2765,6 +2791,15 @@ void QXcbWindow::setOpacity(qreal level)
                         (uchar *)&value);
 }
 
+QVector<xcb_rectangle_t> qRegionToXcbRectangleList(const QRegion &region)
+{
+    QVector<xcb_rectangle_t> rects;
+    rects.reserve(region.rectCount());
+    for (const QRect &r : region)
+        rects.push_back(qRectToXCBRectangle(r));
+    return rects;
+}
+
 void QXcbWindow::setMask(const QRegion &region)
 {
     if (!connection()->hasXShape())
@@ -2773,10 +2808,7 @@ void QXcbWindow::setMask(const QRegion &region)
         xcb_shape_mask(connection()->xcb_connection(), XCB_SHAPE_SO_SET,
                        XCB_SHAPE_SK_BOUNDING, xcb_window(), 0, 0, XCB_NONE);
     } else {
-        QVector<xcb_rectangle_t> rects;
-        rects.reserve(region.rectCount());
-        for (const QRect &r : region)
-            rects.push_back(qRectToXCBRectangle(r));
+        const auto rects = qRegionToXcbRectangleList(region);
         xcb_shape_rectangles(connection()->xcb_connection(), XCB_SHAPE_SO_SET,
                              XCB_SHAPE_SK_BOUNDING, XCB_CLIP_ORDERING_UNSORTED,
                              xcb_window(), 0, 0, rects.size(), &rects[0]);
@@ -2815,6 +2847,19 @@ void QXcbWindow::postSyncWindowRequest()
 QXcbScreen *QXcbWindow::xcbScreen() const
 {
     return static_cast<QXcbScreen *>(screen());
+}
+
+QString QXcbWindow::windowTitle(const QXcbConnection *conn, xcb_window_t window)
+{
+    const xcb_atom_t utf8Atom = conn->atom(QXcbAtom::UTF8_STRING);
+    auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, conn->xcb_connection(),
+                                       false, window, conn->atom(QXcbAtom::_NET_WM_NAME),
+                                       utf8Atom, 0, 1024);
+    if (reply && reply->format == 8 && reply->type == utf8Atom) {
+        const char *name = reinterpret_cast<const char *>(xcb_get_property_value(reply.get()));
+        return QString::fromUtf8(name, xcb_get_property_value_length(reply.get()));
+    }
+    return QString();
 }
 
 QT_END_NAMESPACE

@@ -225,7 +225,7 @@ bool QLocalServerPrivate::addListener()
 void QLocalServerPrivate::setError(const QString &function)
 {
     int windowsError = GetLastError();
-    errorString = QString::fromLatin1("%1: %2").arg(function).arg(qt_error_string(windowsError));
+    errorString = QString::fromLatin1("%1: %2").arg(function, qt_error_string(windowsError));
     error = QAbstractSocket::UnknownSocketError;
 }
 

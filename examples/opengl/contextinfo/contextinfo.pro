@@ -1,5 +1,6 @@
 TEMPLATE = app
 QT += widgets
+requires(qtConfig(filedialog))
 
 SOURCES += main.cpp \
            widget.cpp \

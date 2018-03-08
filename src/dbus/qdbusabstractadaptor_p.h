@@ -67,6 +67,10 @@
 
 #ifndef QT_NO_DBUS
 
+#ifdef interface
+#  undef interface
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QDBusAbstractAdaptor;
@@ -102,10 +106,6 @@ public: // typedefs
         { return QLatin1String(interface) < other; }
         inline bool operator<(const QByteArray &other) const
         { return interface < other; }
-#if defined(Q_CC_MSVC) && _MSC_VER < 1600
-        friend inline bool operator<(const QString &str, const AdaptorData &obj)
-        { return str < QLatin1String(obj.interface); }
-#endif
     };
     typedef QVector<AdaptorData> AdaptorMap;
 

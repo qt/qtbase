@@ -329,7 +329,7 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
         // Only around the transition times might we need another.
         Data tran = previousTransition(forLocalMSecs - sixteenHoursInMSecs);
         Q_ASSERT(forLocalMSecs < 0 || // Pre-epoch TZ info may be unavailable
-                 forLocalMSecs >= tran.atMSecsSinceEpoch + tran.offsetFromUtc * 1000);
+                 forLocalMSecs - tran.offsetFromUtc * 1000 >= tran.atMSecsSinceEpoch);
         Data nextTran = nextTransition(tran.atMSecsSinceEpoch);
         /*
           Now walk those forward until they bracket forLocalMSecs with transitions.
@@ -363,7 +363,7 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
               fail life's tricky.
             */
             Q_ASSERT(forLocalMSecs < 0
-                                     || forLocalMSecs > tran.atMSecsSinceEpoch + tran.offsetFromUtc * 1000);
+                     || forLocalMSecs - tran.offsetFromUtc * 1000 > tran.atMSecsSinceEpoch);
             const qint64 nextStart = nextTran.atMSecsSinceEpoch;
             // Work out the UTC values it might make sense to return:
             nextTran.atMSecsSinceEpoch = forLocalMSecs - nextTran.offsetFromUtc * 1000;

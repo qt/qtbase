@@ -318,6 +318,15 @@ void QWindowsScreen::handleChanges(const QWindowsScreenData &newData)
     }
 }
 
+QRect QWindowsScreen::virtualGeometry(const QPlatformScreen *screen) // cf QScreen::virtualGeometry()
+{
+    QRect result;
+    const auto siblings = screen->virtualSiblings();
+    for (const QPlatformScreen *sibling : siblings)
+        result |= sibling->geometry();
+    return result;
+}
+
 enum OrientationPreference // matching Win32 API ORIENTATION_PREFERENCE
 #if defined(Q_COMPILER_CLASS_ENUM) || defined(Q_CC_MSVC)
     : DWORD

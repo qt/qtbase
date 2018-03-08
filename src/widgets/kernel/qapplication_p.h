@@ -137,12 +137,6 @@ public:
     bool canQuit();
 #endif
 
-    //style
-    static bool usesNativeStyle()
-    {
-        return !overrides_native_style;
-    }
-
     bool notify_helper(QObject *receiver, QEvent * e);
 
     void init(
@@ -178,7 +172,6 @@ public:
     static QSize app_strut;
     static QWidgetList *popupWidgets;
     static QStyle *app_style;
-    static bool overrides_native_style;
     static QPalette *sys_pal;
     static QPalette *set_pal;
 

@@ -89,9 +89,6 @@
 #  define Q_CC_MSVC (_MSC_VER)
 #  define Q_CC_MSVC_NET
 #  define Q_OUTOFLINE_TEMPLATE inline
-#  if _MSC_VER < 1600
-#    define Q_NO_TEMPLATE_FRIENDS
-#  endif
 #  define Q_COMPILER_MANGLES_RETURN_TYPE
 #  define Q_FUNC_INFO __FUNCSIG__
 #  define Q_ALIGNOF(type) __alignof(type)
@@ -105,12 +102,8 @@
 #  endif
 #  define Q_DECL_EXPORT __declspec(dllexport)
 #  define Q_DECL_IMPORT __declspec(dllimport)
-#  if _MSC_VER >= 1800
-#    define QT_MAKE_UNCHECKED_ARRAY_ITERATOR(x) stdext::make_unchecked_array_iterator(x)
-#  endif
-#  if _MSC_VER >= 1500
-#    define QT_MAKE_CHECKED_ARRAY_ITERATOR(x, N) stdext::make_checked_array_iterator(x, size_t(N))
-#  endif
+#  define QT_MAKE_UNCHECKED_ARRAY_ITERATOR(x) stdext::make_unchecked_array_iterator(x) // Since _MSC_VER >= 1800
+#  define QT_MAKE_CHECKED_ARRAY_ITERATOR(x, N) stdext::make_checked_array_iterator(x, size_t(N)) // Since _MSC_VER >= 1500
 /* Intel C++ disguising as Visual C++: the `using' keyword avoids warnings */
 #  if defined(__INTEL_COMPILER)
 #    define Q_DECL_VARIABLE_DEPRECATED
@@ -246,6 +239,7 @@
 #  define Q_REQUIRED_RESULT __attribute__ ((__warn_unused_result__))
 #  define Q_DECL_PURE_FUNCTION __attribute__((pure))
 #  define Q_DECL_CONST_FUNCTION __attribute__((const))
+#  define Q_DECL_COLD_FUNCTION __attribute__((cold))
 #  if !defined(QT_MOC_CPP)
 #    define Q_PACKED __attribute__ ((__packed__))
 #    ifndef __ARM_EABI__
@@ -566,7 +560,7 @@
  */
 
 #ifdef __cplusplus
-#  if __cplusplus < 201103L && !(defined(Q_CC_MSVC) && Q_CC_MSVC >= 1800)
+#  if __cplusplus < 201103L && !defined(Q_CC_MSVC)
 #    error Qt requires a C++11 compiler and yours does not seem to be that.
 #  endif
 #endif
@@ -638,21 +632,11 @@
 #      define Q_COMPILER_THREAD_LOCAL
 #      define Q_COMPILER_UDL
 #    endif
-#    ifdef _MSC_VER
-#      if _MSC_VER == 1700
-//       <initializer_list> is missing with MSVC 2012 (it's present in 2010, 2013 and up)
-#        undef Q_COMPILER_INITIALIZER_LISTS
-#      endif
-#      if _MSC_VER < 1900
-//       ICC disables unicode string support when compatibility mode with MSVC 2013 or lower is active
-#        undef Q_COMPILER_UNICODE_STRINGS
-//       Even though ICC knows about ref-qualified members, MSVC 2013 or lower doesn't, so
-//       certain member functions (like QString::toUpper) may be missing from the DLLs.
-#        undef Q_COMPILER_REF_QUALIFIERS
-//       Disable constexpr unless the MS headers have constexpr in all the right places too
-//       (like std::numeric_limits<T>::max())
-#        undef Q_COMPILER_CONSTEXPR
-#      endif
+#  elif defined(__STDC_VERSION__) && __STDC_VERSION__ > 199901L s
+//   C11 features supported. Only tested with ICC 17 and up.
+#    define Q_COMPILER_STATIC_ASSERT
+#    if __has_include(<threads.h>)
+#      define Q_COMPILER_THREAD_LOCAL
 #    endif
 #  endif
 #endif
@@ -806,6 +790,17 @@
 #    endif
 #  endif
 
+#  if defined(__STDC_VERSION__)
+#    if __has_feature(c_static_assert)
+#      define Q_COMPILER_STATIC_ASSERT
+#    endif
+#    if __has_feature(c_thread_local) && __has_include(<threads.h>)
+#      if !defined(__FreeBSD__) /* FreeBSD clang fails on __cxa_thread_atexit */
+#        define Q_COMPILER_THREAD_LOCAL
+#      endif
+#    endif
+#  endif
+
 #  if defined(__has_warning)
 #    if __has_warning("-Wunused-private-field")
 #      define Q_DECL_UNUSED_MEMBER Q_DECL_UNUSED
@@ -901,15 +896,25 @@
 #      define Q_COMPILER_RETURN_TYPE_DEDUCTION
 #    endif
 #  endif
+#  if defined(__STDC_VERSION__) && __STDC_VERSION__ > 199901L
+#    if Q_CC_GNU >= 407
+       /* C11 features supported in GCC 4.7: */
+#      define Q_COMPILER_STATIC_ASSERT
+#    endif
+#    if Q_CC_GNU >= 409
+       /* C11 features supported in GCC 4.9: */
+#      if __has_include(<threads.h>)
+#        define Q_COMPILER_THREAD_LOCAL
+#      endif
+#    endif
+#  endif
 #endif
 
 #if defined(Q_CC_MSVC)
 #  if defined(__cplusplus)
-#    if _MSC_VER >= 1400
        /* C++11 features supported in VC8 = VC2005: */
 #      define Q_COMPILER_VARIADIC_MACROS
 
-#      ifndef __cplusplus_cli
        /* 2005 supports the override and final contextual keywords, in
         the same positions as the C++11 variants, but 'final' is
         called 'sealed' instead:
@@ -918,12 +923,7 @@
         "virtual" keyword to be present too, so don't define for that.
         So don't define Q_COMPILER_EXPLICIT_OVERRIDES (since it's not
         the same as the C++11 version), but define the Q_DECL_* flags
-        accordingly: */
-#      define Q_DECL_OVERRIDE override
-#      define Q_DECL_FINAL sealed
-#      endif
-#    endif
-#    if _MSC_VER >= 1600
+        accordingly. */
        /* C++11 features supported in VC10 = VC2010: */
 #      define Q_COMPILER_AUTO_FUNCTION
 #      define Q_COMPILER_AUTO_TYPE
@@ -933,57 +933,31 @@
 #      define Q_COMPILER_NULLPTR
 #      define Q_COMPILER_RVALUE_REFS
 #      define Q_COMPILER_STATIC_ASSERT
-//  MSVC's library has std::initializer_list, but the compiler does not support the braces initialization
-//#      define Q_COMPILER_INITIALIZER_LISTS
-//#      define Q_COMPILER_UNIFORM_INIT
-#    endif
-#    if _MSC_VER >= 1700
        /* C++11 features supported in VC11 = VC2012: */
-#       undef Q_DECL_OVERRIDE               /* undo 2005/2008 settings... */
-#       undef Q_DECL_FINAL                  /* undo 2005/2008 settings... */
 #      define Q_COMPILER_EXPLICIT_OVERRIDES /* ...and use std C++11 now   */
 #      define Q_COMPILER_CLASS_ENUM
 #      define Q_COMPILER_ATOMICS
-#    endif /* VC 11 */
-#    if _MSC_VER >= 1800
        /* C++11 features in VC12 = VC2013 */
-/* Implemented, but can't be used on move special members */
-/* #      define Q_COMPILER_DEFAULT_MEMBERS */
 #      define Q_COMPILER_DELETE_MEMBERS
 #      define Q_COMPILER_DELEGATING_CONSTRUCTORS
 #      define Q_COMPILER_EXPLICIT_CONVERSIONS
 #      define Q_COMPILER_NONSTATIC_MEMBER_INIT
-// implemented, but nested initialization fails (eg tst_qvector): http://connect.microsoft.com/VisualStudio/feedback/details/800364/initializer-list-calls-object-destructor-twice
-//      #define Q_COMPILER_INITIALIZER_LISTS
-// implemented in principle, but has a bug that makes it unusable: http://connect.microsoft.com/VisualStudio/feedback/details/802058/c-11-unified-initialization-fails-with-c-style-arrays
-//      #define Q_COMPILER_UNIFORM_INIT
 #      define Q_COMPILER_RAW_STRINGS
 #      define Q_COMPILER_TEMPLATE_ALIAS
 #      define Q_COMPILER_VARIADIC_TEMPLATES
-#    endif /* VC 12 */
-#    if _MSC_FULL_VER >= 180030324 // VC 12 SP 2 RC
-#      define Q_COMPILER_INITIALIZER_LISTS
-#    endif /* VC 12 SP 2 RC */
-#    if _MSC_VER >= 1900
+#      define Q_COMPILER_INITIALIZER_LISTS // VC 12 SP 2 RC
        /* C++11 features in VC14 = VC2015 */
 #      define Q_COMPILER_DEFAULT_MEMBERS
 #      define Q_COMPILER_ALIGNAS
 #      define Q_COMPILER_ALIGNOF
-// Partial support, insufficient for Qt
-//#      define Q_COMPILER_CONSTEXPR
 #      define Q_COMPILER_INHERITING_CONSTRUCTORS
 #      define Q_COMPILER_NOEXCEPT
 #      define Q_COMPILER_RANGE_FOR
 #      define Q_COMPILER_REF_QUALIFIERS
 #      define Q_COMPILER_THREAD_LOCAL
-// Broken, see QTBUG-47224 and https://connect.microsoft.com/VisualStudio/feedback/details/1549785
-//#      define Q_COMPILER_THREADSAFE_STATICS
 #      define Q_COMPILER_UDL
 #      define Q_COMPILER_UNICODE_STRINGS
-// Uniform initialization is not working yet -- build errors with QUuid
-//#      define Q_COMPILER_UNIFORM_INIT
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
-#    endif
 #    if _MSC_FULL_VER >= 190023419
 #      define Q_COMPILER_ATTRIBUTES
 // Almost working, see https://connect.microsoft.com/VisualStudio/feedback/details/2011648
@@ -1249,6 +1223,9 @@
 #ifndef Q_DECL_CONST_FUNCTION
 #  define Q_DECL_CONST_FUNCTION Q_DECL_PURE_FUNCTION
 #endif
+#ifndef Q_DECL_COLD_FUNCTION
+#  define Q_DECL_COLD_FUNCTION
+#endif
 #ifndef QT_MAKE_UNCHECKED_ARRAY_ITERATOR
 #  define QT_MAKE_UNCHECKED_ARRAY_ITERATOR(x) (x)
 #endif
@@ -1285,7 +1262,7 @@
 #  define QT_WARNING_DISABLE_CLANG(text)
 #  define QT_WARNING_DISABLE_GCC(text)
 #  define QT_WARNING_DISABLE_DEPRECATED         QT_WARNING_DISABLE_INTEL(1478 1786)
-#elif defined(Q_CC_MSVC) && _MSC_VER >= 1500 && !defined(Q_CC_CLANG)
+#elif defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
 #  undef QT_DO_PRAGMA                           /* not needed */
 #  define QT_WARNING_PUSH                       __pragma(warning(push))
 #  define QT_WARNING_POP                        __pragma(warning(pop))
@@ -1350,12 +1327,12 @@
     } while (false)
 
 #if defined(__cplusplus)
-#if QT_HAS_CPP_ATTRIBUTE(fallthrough)
-#  define Q_FALLTHROUGH() [[fallthrough]]
-#elif QT_HAS_CPP_ATTRIBUTE(clang::fallthrough)
+#if QT_HAS_CPP_ATTRIBUTE(clang::fallthrough)
 #    define Q_FALLTHROUGH() [[clang::fallthrough]]
 #elif QT_HAS_CPP_ATTRIBUTE(gnu::fallthrough)
 #    define Q_FALLTHROUGH() [[gnu::fallthrough]]
+#elif QT_HAS_CPP_ATTRIBUTE(fallthrough)
+#  define Q_FALLTHROUGH() [[fallthrough]]
 #endif
 #endif
 #ifndef Q_FALLTHROUGH

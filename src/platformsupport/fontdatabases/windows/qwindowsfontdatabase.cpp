@@ -76,8 +76,6 @@ typedef HRESULT (WINAPI *DWriteCreateFactoryType)(DWRITE_FACTORY_TYPE, const IID
 
 static inline DWriteCreateFactoryType resolveDWriteCreateFactory()
 {
-    if (QSysInfo::windowsVersion() < QSysInfo::WV_VISTA)
-        return nullptr;
     QSystemLibrary library(QStringLiteral("dwrite"));
     QFunctionPointer result = library.resolve("DWriteCreateFactory");
     if (Q_UNLIKELY(!result)) {
@@ -874,8 +872,8 @@ FontNames qt_getCanonicalFontNames(const uchar *table, quint32 bytes)
 
         if ((platform_id == PlatformId_Microsoft
             && (encoding_id == 0 || encoding_id == 1))
-            && (language_id & 0x3ff) == MS_LangIdEnglish
-            && *idType < Microsoft) {
+            && ((language_id & 0x3ff) == MS_LangIdEnglish
+                || *idType < Microsoft)) {
             *id = i;
             *idType = Microsoft;
         }
@@ -1174,6 +1172,46 @@ static int QT_WIN_CALLBACK populateFontFamilies(const LOGFONT *logFont, const TE
     return 1; // continue
 }
 
+void QWindowsFontDatabase::addDefaultEUDCFont()
+{
+    QString path;
+    {
+        HKEY key;
+        if (RegOpenKeyEx(HKEY_CURRENT_USER,
+                         L"EUDC\\1252",
+                         0,
+                         KEY_READ,
+                         &key) != ERROR_SUCCESS) {
+            return;
+        }
+
+        WCHAR value[MAX_PATH];
+        DWORD bufferSize = sizeof(value);
+        ZeroMemory(value, bufferSize);
+
+        if (RegQueryValueEx(key,
+                            L"SystemDefaultEUDCFont",
+                            nullptr,
+                            nullptr,
+                            reinterpret_cast<LPBYTE>(value),
+                            &bufferSize) == ERROR_SUCCESS) {
+            path = QString::fromWCharArray(value);
+        }
+
+        RegCloseKey(key);
+    }
+
+    if (!path.isEmpty()) {
+        QFile file(path);
+        if (!file.open(QIODevice::ReadOnly)) {
+            qCWarning(lcQpaFonts) << "Unable to open default EUDC font:" << path;
+            return;
+        }
+
+        m_eudcFonts = addApplicationFont(file.readAll(), path);
+    }
+}
+
 void QWindowsFontDatabase::populateFontDatabase()
 {
     removeApplicationFonts();
@@ -1188,6 +1226,7 @@ void QWindowsFontDatabase::populateFontDatabase()
     QString systemDefaultFamily = QWindowsFontDatabase::systemDefaultFont().family();
     if (QPlatformFontDatabase::resolveFontFamilyAlias(systemDefaultFamily) == systemDefaultFamily)
         QPlatformFontDatabase::registerFontFamily(systemDefaultFamily);
+    addDefaultEUDCFont();
 }
 
 typedef QSharedPointer<QWindowsFontEngineData> QWindowsFontEngineDataPtr;
@@ -1585,6 +1624,7 @@ void QWindowsFontDatabase::removeApplicationFonts()
         }
     }
     m_applicationFonts.clear();
+    m_eudcFonts.clear();
 }
 
 void QWindowsFontDatabase::releaseHandle(void *handle)
@@ -1719,11 +1759,8 @@ LOGFONT QWindowsFontDatabase::fontDefToLOGFONT(const QFontDef &request, const QS
         qual = PROOF_QUALITY;
 
     if (request.styleStrategy & QFont::PreferAntialias) {
-        if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP && !(request.styleStrategy & QFont::NoSubpixelAntialias)) {
-            qual = CLEARTYPE_QUALITY;
-        } else {
-            qual = ANTIALIASED_QUALITY;
-        }
+        qual = (request.styleStrategy & QFont::NoSubpixelAntialias) == 0
+            ? CLEARTYPE_QUALITY : ANTIALIASED_QUALITY;
     } else if (request.styleStrategy & QFont::NoAntialias) {
         qual = NONANTIALIASED_QUALITY;
     } else if ((request.styleStrategy & QFont::NoSubpixelAntialias) && sharedFontData()->clearTypeEnabled) {
@@ -1849,6 +1886,7 @@ QStringList QWindowsFontDatabase::fallbacksForFamily(const QString &family, QFon
 {
     QStringList result;
     result.append(QWindowsFontDatabase::familyForStyleHint(styleHint));
+    result.append(m_eudcFonts);
     result.append(QWindowsFontDatabase::extraTryFontsForFamily(family));
     result.append(QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script));
 
@@ -1980,12 +2018,6 @@ QFont QWindowsFontDatabase::systemDefaultFont()
     // long deprecated; the message font of the NONCLIENTMETRICS structure obtained by
     // SystemParametersInfo(SPI_GETNONCLIENTMETRICS) should be used instead (see
     // QWindowsTheme::refreshFonts(), typically "Segoe UI, 9pt"), which is larger.
-    // In single monitor setups, the point sizes revolve around 8 (depending on UI
-    // scale factor, but not proportional to it). However, in multi monitor setups,
-    // where the DPI of the primary monitor are smaller than those of the secondary,
-    // large bogus values are returned. Limit to 8.25 in that case.
-    if (GetSystemMetrics(SM_CMONITORS) > 1 && systemFont.pointSizeF() > 8.25)
-        systemFont.setPointSizeF(8.25);
 #endif // Qt 5
     qCDebug(lcQpaFonts) << __FUNCTION__ << systemFont;
     return systemFont;
@@ -2042,6 +2074,11 @@ QString QWindowsFontDatabase::readRegistryString(HKEY parentHandle, const wchar_
         RegCloseKey(handle);
     }
     return result;
+}
+
+bool QWindowsFontDatabase::isPrivateFontFamily(const QString &family) const
+{
+    return m_eudcFonts.contains(family) || QPlatformFontDatabase::isPrivateFontFamily(family);
 }
 
 QT_END_NAMESPACE

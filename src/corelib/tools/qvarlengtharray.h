@@ -175,10 +175,16 @@ public:
     void append(const T *buf, int size);
     inline QVarLengthArray<T, Prealloc> &operator<<(const T &t)
     { append(t); return *this; }
+    inline QVarLengthArray<T, Prealloc> &operator<<(T &&t)
+    { append(t); return *this; }
     inline QVarLengthArray<T, Prealloc> &operator+=(const T &t)
     { append(t); return *this; }
+    inline QVarLengthArray<T, Prealloc> &operator+=(T &&t)
+    { append(t); return *this; }
 
+    void prepend(T &&t);
     void prepend(const T &t);
+    void insert(int i, T &&t);
     void insert(int i, const T &t);
     void insert(int i, int n, const T &t);
     void replace(int i, const T &t);
@@ -218,6 +224,7 @@ public:
     const_reverse_iterator crbegin() const { return const_reverse_iterator(end()); }
     const_reverse_iterator crend() const { return const_reverse_iterator(begin()); }
     iterator insert(const_iterator before, int n, const T &x);
+    iterator insert(const_iterator before, T &&x);
     inline iterator insert(const_iterator before, const T &x) { return insert(before, 1, x); }
     iterator erase(const_iterator begin, const_iterator end);
     inline iterator erase(const_iterator pos) { return erase(pos, pos+1); }
@@ -341,7 +348,7 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::append(const T *abuf, in
         while (s < asize)
             new (ptr+(s++)) T(*abuf++);
     } else {
-        memcpy(&ptr[s], abuf, increment * sizeof(T));
+        memcpy(static_cast<void *>(&ptr[s]), static_cast<const void *>(abuf), increment * sizeof(T));
         s = asize;
     }
 }
@@ -373,9 +380,9 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(int asize, int a
         s = 0;
         if (!QTypeInfoQuery<T>::isRelocatable) {
             QT_TRY {
-                // copy all the old elements
+                // move all the old elements
                 while (s < copySize) {
-                    new (ptr+s) T(*(oldPtr+s));
+                    new (ptr+s) T(std::move(*(oldPtr+s)));
                     (oldPtr+s)->~T();
                     s++;
                 }
@@ -389,7 +396,7 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(int asize, int a
                 QT_RETHROW;
             }
         } else {
-            memcpy(ptr, oldPtr, copySize * sizeof(T));
+            memcpy(static_cast<void *>(ptr), static_cast<const void *>(oldPtr), copySize * sizeof(T));
         }
     }
     s = copySize;
@@ -427,6 +434,10 @@ Q_OUTOFLINE_TEMPLATE T QVarLengthArray<T, Prealloc>::value(int i, const T &defau
 }
 
 template <class T, int Prealloc>
+inline void QVarLengthArray<T, Prealloc>::insert(int i, T &&t)
+{ Q_ASSERT_X(i >= 0 && i <= s, "QVarLengthArray::insert", "index out of range");
+  insert(cbegin() + i, std::move(t)); }
+template <class T, int Prealloc>
 inline void QVarLengthArray<T, Prealloc>::insert(int i, const T &t)
 { Q_ASSERT_X(i >= 0 && i <= s, "QVarLengthArray::insert", "index out of range");
   insert(begin() + i, 1, t); }
@@ -443,6 +454,9 @@ inline void QVarLengthArray<T, Prealloc>::remove(int i)
 { Q_ASSERT_X(i >= 0 && i < s, "QVarLengthArray::remove", "index out of range");
   erase(begin() + i, begin() + i + 1); }
 template <class T, int Prealloc>
+inline void QVarLengthArray<T, Prealloc>::prepend(T &&t)
+{ insert(cbegin(), std::move(t)); }
+template <class T, int Prealloc>
 inline void QVarLengthArray<T, Prealloc>::prepend(const T &t)
 { insert(begin(), 1, t); }
 
@@ -454,6 +468,34 @@ inline void QVarLengthArray<T, Prealloc>::replace(int i, const T &t)
     data()[i] = copy;
 }
 
+template <class T, int Prealloc>
+Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, T &&t)
+{
+    Q_ASSERT_X(isValidIterator(before), "QVarLengthArray::insert", "The specified const_iterator argument 'before' is invalid");
+
+    int offset = int(before - ptr);
+    reserve(s + 1);
+    if (!QTypeInfo<T>::isRelocatable) {
+        T *b = ptr + offset;
+        T *i = ptr + s;
+        T *j = i + 1;
+        // The new end-element needs to be constructed, the rest must be move assigned
+        if (i != b) {
+            new (--j) T(std::move(*--i));
+            while (i != b)
+                *--j = std::move(*--i);
+            *b = std::move(t);
+        } else {
+            new (b) T(std::move(t));
+        }
+    } else {
+        T *b = ptr + offset;
+        memmove(b + 1, b, (s - offset) * sizeof(T));
+        new (b) T(std::move(t));
+    }
+    s += 1;
+    return ptr + offset;
+}
 
 template <class T, int Prealloc>
 Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, size_type n, const T &t)

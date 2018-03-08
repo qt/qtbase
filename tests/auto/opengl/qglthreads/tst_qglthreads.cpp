@@ -138,7 +138,7 @@ public:
 
         makeCurrent();
         QPainter p(this);
-        p.fillRect(rect(), QColor(rand() % 256, rand() % 256, rand() % 256));
+        p.fillRect(rect(), QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
         p.setPen(Qt::red);
         p.setFont(QFont("SansSerif", 24));
         p.drawText(rect(), Qt::AlignCenter, "This is an autotest");
@@ -185,139 +185,6 @@ void tst_QGLThreads::swapInThread()
     QVERIFY(true);
 }
 
-
-
-
-
-
-
-/*
-   textureUploadInThread
-
-   The purpose of this testcase is to verify that doing texture uploads in a background
-   thread is possible and that it works.
- */
-
-class CreateAndUploadThread : public QThread
-{
-    Q_OBJECT
-public:
-    CreateAndUploadThread(QGLWidget *shareWidget, QSemaphore *semaphore)
-        : m_semaphore(semaphore)
-    {
-        m_gl = new QGLWidget(0, shareWidget);
-        moveToThread(this);
-
-    }
-
-    void moveContextToThread()
-    {
-        m_gl->context()->moveToThread(this);
-    }
-
-    ~CreateAndUploadThread()
-    {
-        delete m_gl;
-    }
-
-    void run() {
-        m_gl->makeCurrent();
-        QTime time;
-        time.start();
-        while (time.elapsed() < RUNNING_TIME) {
-            int width = 400;
-            int height = 300;
-            QImage image(width, height, QImage::Format_RGB32);
-            QPainter p(&image);
-            p.fillRect(image.rect(), QColor(rand() % 256, rand() % 256, rand() % 256));
-            p.setPen(Qt::red);
-            p.setFont(QFont("SansSerif", 24));
-            p.drawText(image.rect(), Qt::AlignCenter, "This is an autotest");
-            p.end();
-            m_gl->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
-
-            m_semaphore->acquire(1);
-
-            createdAndUploaded(image);
-        }
-    }
-
-signals:
-    void createdAndUploaded(const QImage &image);
-
-private:
-    QGLWidget *m_gl;
-    QSemaphore *m_semaphore;
-};
-
-class TextureDisplay : public QGLWidget
-{
-    Q_OBJECT
-public:
-    TextureDisplay(QSemaphore *semaphore)
-        : m_semaphore(semaphore)
-    {
-    }
-
-    void paintEvent(QPaintEvent *) {
-        QPainter p(this);
-        for (int i=0; i<m_images.size(); ++i) {
-            p.drawImage(m_positions.at(i), m_images.at(i));
-            m_positions[i] += QPoint(1, 1);
-        }
-        update();
-    }
-
-public slots:
-    void receiveImage(const QImage &image) {
-        m_images << image;
-        m_positions << QPoint(-rand() % width() / 2, -rand() % height() / 2);
-
-        m_semaphore->release(1);
-
-        if (m_images.size() > 100) {
-            m_images.takeFirst();
-            m_positions.takeFirst();
-        }
-    }
-
-private:
-    QList <QImage> m_images;
-    QList <QPoint> m_positions;
-
-    QSemaphore *m_semaphore;
-};
-
-void tst_QGLThreads::textureUploadInThread()
-{
-    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL))
-        QSKIP("No platformsupport for ThreadedOpenGL");
-
-    // prevent producer thread from queuing up too many images
-    QSemaphore semaphore(100);
-    TextureDisplay display(&semaphore);
-    CreateAndUploadThread thread(&display, &semaphore);
-
-    connect(&thread, SIGNAL(createdAndUploaded(QImage)), &display, SLOT(receiveImage(QImage)));
-
-    display.show();
-    QVERIFY(QTest::qWaitForWindowActive(&display));
-
-    thread.moveContextToThread();
-    thread.start();
-
-    while (thread.isRunning()) {
-        qApp->processEvents();
-    }
-
-    QVERIFY(true);
-}
-
-
-
-
-
-
 /*
    renderInThread
 
@@ -326,7 +193,7 @@ void tst_QGLThreads::textureUploadInThread()
    if that works, we're in good shape..
  */
 
-static inline float qrandom() { return (rand() % 100) / 100.f; }
+static inline float qrandom() { return (QRandomGenerator::global()->bounded(100)) / 100.f; }
 
 void renderAScene(int w, int h)
 {
@@ -345,12 +212,12 @@ void renderAScene(int w, int h)
 
         for (int i=0; i<1000; ++i) {
             GLfloat pos[] = {
-                (rand() % 100) / 100.f,
-                (rand() % 100) / 100.f,
-                (rand() % 100) / 100.f,
-                (rand() % 100) / 100.f,
-                (rand() % 100) / 100.f,
-                (rand() % 100) / 100.f
+                (QRandomGenerator::global()->bounded(100)) / 100.f,
+                (QRandomGenerator::global()->bounded(100)) / 100.f,
+                (QRandomGenerator::global()->bounded(100)) / 100.f,
+                (QRandomGenerator::global()->bounded(100)) / 100.f,
+                (QRandomGenerator::global()->bounded(100)) / 100.f,
+                (QRandomGenerator::global()->bounded(100)) / 100.f
             };
 
             funcs->glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, pos);

@@ -126,8 +126,8 @@ public:
     bool isEmpty() const override;
     QSizePolicy::ControlTypes controlTypes() const override;
 
-    // ### Qt 6 make this function virtual
-    QLayoutItem *replaceWidget(QWidget *from, QWidget *to, Qt::FindChildOptions options = Qt::FindChildrenRecursively);
+    QT6_VIRTUAL QLayoutItem *replaceWidget(QWidget *from, QWidget *to,
+                                           Qt::FindChildOptions options = Qt::FindChildrenRecursively);
 
     int totalHeightForWidth(int w) const;
     QSize totalMinimumSize() const;

@@ -69,6 +69,8 @@ public:
     void setDeviceCount(QInputDeviceManager::DeviceType type, int count);
 
     QMap<QInputDeviceManager::DeviceType, int> m_deviceCount;
+
+    Qt::KeyboardModifiers keyboardModifiers;
 };
 
 QT_END_NAMESPACE

@@ -1292,19 +1292,19 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
             switch (versionString[2].toLatin1()) {
             case '5':
                 versionFlags |= QGLFormat::OpenGL_Version_1_5;
-                // fall through
+                Q_FALLTHROUGH();
             case '4':
                 versionFlags |= QGLFormat::OpenGL_Version_1_4;
-                // fall through
+                Q_FALLTHROUGH();
             case '3':
                 versionFlags |= QGLFormat::OpenGL_Version_1_3;
-                // fall through
+                Q_FALLTHROUGH();
             case '2':
                 versionFlags |= QGLFormat::OpenGL_Version_1_2;
-                // fall through
+                Q_FALLTHROUGH();
             case '1':
                 versionFlags |= QGLFormat::OpenGL_Version_1_1;
-                // fall through
+                Q_FALLTHROUGH();
             default:
                 break;
             }
@@ -1329,13 +1329,13 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
             switch (versionString[2].toLatin1()) {
             case '3':
                 versionFlags |= QGLFormat::OpenGL_Version_3_3;
-                // fall through
+                Q_FALLTHROUGH();
             case '2':
                 versionFlags |= QGLFormat::OpenGL_Version_3_2;
-                // fall through
+                Q_FALLTHROUGH();
             case '1':
                 versionFlags |= QGLFormat::OpenGL_Version_3_1;
-                // fall through
+                Q_FALLTHROUGH();
             case '0':
                 break;
             default:
@@ -1360,13 +1360,13 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
             switch (versionString[2].toLatin1()) {
             case '3':
                 versionFlags |= QGLFormat::OpenGL_Version_4_3;
-                // fall through
+                Q_FALLTHROUGH();
             case '2':
                 versionFlags |= QGLFormat::OpenGL_Version_4_2;
-                // fall through
+                Q_FALLTHROUGH();
             case '1':
                 versionFlags |= QGLFormat::OpenGL_Version_4_1;
-                // fall through
+                Q_FALLTHROUGH();
             case '0':
                 break;
             default:

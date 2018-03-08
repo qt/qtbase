@@ -127,10 +127,20 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareQColor">
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[Qt::yellow vs "yellow"]]></DataTag>
+</Incident>
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+    <DataTag><![CDATA[Qt::yellow vs Qt::green]]></DataTag>
     <Description><![CDATA[Compared values are not the same
-   Actual   (yellow): #ffff00
-   Expected (green) : #00ff00]]></Description>
+   Actual   (colorA): #ffffff00
+   Expected (colorB): #ff00ff00]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+    <DataTag><![CDATA[0x88ff0000 vs 0xffff0000]]></DataTag>
+    <Description><![CDATA[Compared values are not the same
+   Actual   (colorA): #88ff0000
+   Expected (colorB): #ffff0000]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>

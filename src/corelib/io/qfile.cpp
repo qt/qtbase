@@ -503,7 +503,8 @@ bool
 QFile::remove()
 {
     Q_D(QFile);
-    if (d->fileName.isEmpty()) {
+    if (d->fileName.isEmpty() &&
+            !static_cast<QFSFileEngine *>(d->engine())->isUnnamedFile()) {
         qWarning("QFile::remove: Empty or null file name");
         return false;
     }
@@ -892,9 +893,9 @@ bool QFile::open(OpenMode mode)
         qWarning("QFile::open: File (%s) already open", qPrintable(fileName()));
         return false;
     }
-    if (mode & Append)
+    // Either Append or NewOnly implies WriteOnly
+    if (mode & (Append | NewOnly))
         mode |= WriteOnly;
-
     unsetError();
     if ((mode & (ReadOnly | WriteOnly)) == 0) {
         qWarning("QIODevice::open: File access not specified");
@@ -964,7 +965,8 @@ bool QFile::open(FILE *fh, OpenMode mode, FileHandleFlags handleFlags)
         qWarning("QFile::open: File (%s) already open", qPrintable(fileName()));
         return false;
     }
-    if (mode & Append)
+    // Either Append or NewOnly implies WriteOnly
+    if (mode & (Append | NewOnly))
         mode |= WriteOnly;
     unsetError();
     if ((mode & (ReadOnly | WriteOnly)) == 0) {
@@ -1022,7 +1024,8 @@ bool QFile::open(int fd, OpenMode mode, FileHandleFlags handleFlags)
         qWarning("QFile::open: File (%s) already open", qPrintable(fileName()));
         return false;
     }
-    if (mode & Append)
+    // Either Append or NewOnly implies WriteOnly
+    if (mode & (Append | NewOnly))
         mode |= WriteOnly;
     unsetError();
     if ((mode & (ReadOnly | WriteOnly)) == 0) {

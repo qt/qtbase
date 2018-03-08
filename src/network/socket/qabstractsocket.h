@@ -120,7 +120,8 @@ public:
         MulticastLoopbackOption, // IP_MULTICAST_LOOPBACK
         TypeOfServiceOption, //IP_TOS
         SendBufferSizeSocketOption,    //SO_SNDBUF
-        ReceiveBufferSizeSocketOption  //SO_RCVBUF
+        ReceiveBufferSizeSocketOption,  //SO_RCVBUF
+        PathMtuSocketOption // IP_MTU
     };
     Q_ENUM(SocketOption)
     enum BindFlag {

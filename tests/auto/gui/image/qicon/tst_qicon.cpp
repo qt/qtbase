@@ -554,6 +554,11 @@ void tst_QIcon::fromTheme()
     QCOMPARE(firstSearchPath, QIcon::themeSearchPaths()[0]);
     QCOMPARE(secondSearchPath, QIcon::themeSearchPaths()[1]);
 
+    QString fallbackSearchPath = QStringLiteral(":/fallback_icons");
+    QIcon::setFallbackSearchPaths(QStringList() << fallbackSearchPath);
+    QCOMPARE(QIcon::fallbackSearchPaths().size(), 1);
+    QCOMPARE(fallbackSearchPath, QIcon::fallbackSearchPaths().at(0));
+
     QString themeName("testtheme");
     QIcon::setThemeName(themeName);
     QCOMPARE(QIcon::themeName(), themeName);
@@ -579,6 +584,12 @@ void tst_QIcon::fromTheme()
     QVERIFY(!abIcon.isNull());
     QVERIFY(QIcon::hasThemeIcon("address-book-new"));
     QVERIFY(!abIcon.availableSizes().isEmpty());
+
+    // Test icon from fallback path
+    QIcon fallbackIcon = QIcon::fromTheme("red");
+    QVERIFY(!fallbackIcon.isNull());
+    QVERIFY(QIcon::hasThemeIcon("red"));
+    QCOMPARE(fallbackIcon.availableSizes().size(), 1);
 
     // Test non existing icon
     QIcon noIcon = QIcon::fromTheme("broken-icon");

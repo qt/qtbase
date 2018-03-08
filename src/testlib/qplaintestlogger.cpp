@@ -44,6 +44,8 @@
 #include <QtTest/private/qbenchmark_p.h>
 #include <QtTest/private/qbenchmarkmetric_p.h>
 
+#include <QtCore/private/qlogging_p.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -205,15 +207,11 @@ namespace QTest {
     }
 }
 
-#if defined(Q_OS_WIN)
-Q_CORE_EXPORT bool qt_logging_to_console(); // defined in qlogging.cpp
-#endif
-
 void QPlainTestLogger::outputMessage(const char *str)
 {
 #if defined(Q_OS_WIN)
-    // log to system log only if output is not redirected, and no console is attached
-    if (!qt_logging_to_console() && stream == stdout) {
+    // Log to system log only if output is not redirected and stderr not preferred
+    if (stream == stdout && !QtPrivate::shouldLogToStderr()) {
         OutputDebugStringA(str);
         return;
     }
@@ -223,38 +221,46 @@ void QPlainTestLogger::outputMessage(const char *str)
     outputString(str);
 }
 
+static void testIdentifier(QTestCharBuffer *identifier)
+{
+    const char *testObject = QTestResult::currentTestObjectName();
+    const char *testFunction = QTestResult::currentTestFunction() ? QTestResult::currentTestFunction() : "UnknownTestFunc";
+
+    const char *dataTag = QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "";
+    const char *globalDataTag = QTestResult::currentGlobalDataTag() ? QTestResult::currentGlobalDataTag() : "";
+    const char *tagFiller = (dataTag[0] && globalDataTag[0]) ? ":" : "";
+
+    QTest::qt_asprintf(identifier, "%s::%s(%s%s%s)", testObject, testFunction, globalDataTag, tagFiller, dataTag);
+}
+
 void QPlainTestLogger::printMessage(const char *type, const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(type);
     QTEST_ASSERT(msg);
 
-    QTestCharBuffer buf;
+    QTestCharBuffer messagePrefix;
 
-    const char *fn = QTestResult::currentTestFunction() ? QTestResult::currentTestFunction()
-        : "UnknownTestFunc";
-    const char *tag = QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "";
-    const char *gtag = QTestResult::currentGlobalDataTag()
-                     ? QTestResult::currentGlobalDataTag()
-                     : "";
-    const char *filler = (tag[0] && gtag[0]) ? ":" : "";
+    QTestCharBuffer failureLocation;
     if (file) {
-        QTest::qt_asprintf(&buf, "%s: %s::%s(%s%s%s)%s%s\n"
 #ifdef Q_OS_WIN
-                      "%s(%d) : failure location\n"
+#define FAILURE_LOCATION_STR "\n%s(%d) : failure location"
 #else
-                      "   Loc: [%s(%d)]\n"
+#define FAILURE_LOCATION_STR "\n   Loc: [%s(%d)]"
 #endif
-                      , type, QTestResult::currentTestObjectName(), fn, gtag, filler, tag,
-                      msg[0] ? " " : "", msg, file, line);
-    } else {
-        QTest::qt_asprintf(&buf, "%s: %s::%s(%s%s%s)%s%s\n",
-                type, QTestResult::currentTestObjectName(), fn, gtag, filler, tag,
-                msg[0] ? " " : "", msg);
+        QTest::qt_asprintf(&failureLocation, FAILURE_LOCATION_STR, file, line);
     }
+
+    const char *msgFiller = msg[0] ? " " : "";
+    QTestCharBuffer testIdent;
+    testIdentifier(&testIdent);
+    QTest::qt_asprintf(&messagePrefix, "%s: %s%s%s%s\n",
+                       type, testIdent.data(), msgFiller, msg, failureLocation.data());
+
     // In colored mode, printf above stripped our nonprintable control characters.
     // Put them back.
-    memcpy(buf.data(), type, strlen(type));
-    outputMessage(buf.data());
+    memcpy(messagePrefix.data(), type, strlen(type));
+
+    outputMessage(messagePrefix.data());
 }
 
 void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)
@@ -388,6 +394,11 @@ void QPlainTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
         return;
 
     printBenchmarkResult(result);
+}
+
+void QPlainTestLogger::addMessage(QtMsgType type, const QMessageLogContext &context, const QString &message)
+{
+    QAbstractTestLogger::addMessage(type, context, message);
 }
 
 void QPlainTestLogger::addMessage(MessageTypes type, const QString &message,

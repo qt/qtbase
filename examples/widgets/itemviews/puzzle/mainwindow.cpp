@@ -69,12 +69,19 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::openImage()
 {
-    const QString fileName =
-        QFileDialog::getOpenFileName(this,
-                                     tr("Open Image"), QString(),
-                                     tr("Image Files (*.png *.jpg *.bmp)"));
-    if (!fileName.isEmpty())
-        loadImage(fileName);
+    const QString directory =
+        QStandardPaths::standardLocations(QStandardPaths::PicturesLocation).value(0, QDir::homePath());
+    QFileDialog dialog(this, tr("Open Image"), directory);
+    dialog.setAcceptMode(QFileDialog::AcceptOpen);
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    QStringList mimeTypeFilters;
+    for (const QByteArray &mimeTypeName : QImageReader::supportedMimeTypes())
+        mimeTypeFilters.append(mimeTypeName);
+    mimeTypeFilters.sort();
+    dialog.setMimeTypeFilters(mimeTypeFilters);
+    dialog.selectMimeTypeFilter("image/jpeg");
+    if (dialog.exec() == QDialog::Accepted)
+        loadImage(dialog.selectedFiles().constFirst());
 }
 
 void MainWindow::loadImage(const QString &fileName)
@@ -83,7 +90,7 @@ void MainWindow::loadImage(const QString &fileName)
     if (!newImage.load(fileName)) {
         QMessageBox::warning(this, tr("Open Image"),
                              tr("The image file could not be loaded."),
-                             QMessageBox::Cancel);
+                             QMessageBox::Close);
         return;
     }
     puzzleImage = newImage;
@@ -107,8 +114,6 @@ void MainWindow::setupPuzzle()
         (puzzleImage.height() - size) / 2, size, size).scaled(puzzleWidget->imageSize(),
             puzzleWidget->imageSize(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
-    qsrand(QCursor::pos().x() ^ QCursor::pos().y());
-
     model->addPieces(puzzleImage);
     puzzleWidget->clear();
 }
@@ -117,19 +122,15 @@ void MainWindow::setupMenus()
 {
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
 
-    QAction *openAction = fileMenu->addAction(tr("&Open..."));
+    QAction *openAction = fileMenu->addAction(tr("&Open..."), this, &MainWindow::openImage);
     openAction->setShortcuts(QKeySequence::Open);
 
-    QAction *exitAction = fileMenu->addAction(tr("E&xit"));
+    QAction *exitAction = fileMenu->addAction(tr("E&xit"), qApp, &QCoreApplication::quit);
     exitAction->setShortcuts(QKeySequence::Quit);
 
     QMenu *gameMenu = menuBar()->addMenu(tr("&Game"));
 
-    QAction *restartAction = gameMenu->addAction(tr("&Restart"));
-
-    connect(openAction, &QAction::triggered, this, &MainWindow::openImage);
-    connect(exitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
-    connect(restartAction, &QAction::triggered, this, &MainWindow::setupPuzzle);
+    gameMenu->addAction(tr("&Restart"), this, &MainWindow::setupPuzzle);
 }
 
 void MainWindow::setupWidgets()

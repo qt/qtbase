@@ -8,6 +8,7 @@ SOURCES   = dialog.cpp \
 
 QT += sql widgets
 QT += xml widgets
+requires(qtConfig(tableview))
 
 EXAMPLE_FILES = albumdetails.xml
 

@@ -129,6 +129,7 @@ class QStatusNotifierItemAdaptor: public QDBusAbstractAdaptor
 "    <signal name=\"NewIcon\"/>\n"
 "    <signal name=\"NewAttentionIcon\"/>\n"
 "    <signal name=\"NewOverlayIcon\"/>\n"
+"    <signal name=\"NewMenu\"/>\n"
 "    <signal name=\"NewToolTip\"/>\n"
 "    <signal name=\"NewStatus\">\n"
 "      <arg type=\"s\" name=\"status\"/>\n"
@@ -191,6 +192,7 @@ Q_SIGNALS: // SIGNALS
     void NewAttentionIcon();
     void NewIcon();
     void NewOverlayIcon();
+    void NewMenu();
     void NewStatus(const QString &status);
     void NewTitle();
     void NewToolTip();

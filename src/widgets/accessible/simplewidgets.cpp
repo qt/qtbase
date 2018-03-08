@@ -170,7 +170,7 @@ QAccessible::State QAccessibleButton::state() const
     if (b->isChecked())
         state.checked = true;
 #if QT_CONFIG(checkbox)
-    else if (cb && cb->checkState() == Qt::PartiallyChecked)
+    if (cb && cb->checkState() == Qt::PartiallyChecked)
         state.checkStateMixed = true;
 #endif
     if (b->isDown())
@@ -704,6 +704,8 @@ QString QAccessibleLineEdit::text(QAccessible::Text t) const
     }
     if (str.isEmpty())
         str = QAccessibleWidget::text(t);
+    if (str.isEmpty() && t == QAccessible::Description)
+        str = lineEdit()->placeholderText();
     return str;
 }
 
@@ -777,7 +779,7 @@ QRect QAccessibleLineEdit::characterRect(int offset) const
     const QString ch = text(offset, offset + 1);
     if (ch.isEmpty())
         return QRect();
-    int w = fm.width(ch);
+    int w = fm.horizontalAdvance(ch);
     int h = fm.height();
     QRect r(x, y, w, h);
     r.moveTo(lineEdit()->mapToGlobal(r.topLeft()));
@@ -953,7 +955,7 @@ QAccessibleWindowContainer::QAccessibleWindowContainer(QWidget *w)
 
 int QAccessibleWindowContainer::childCount() const
 {
-    if (container()->containedWindow())
+    if (container()->containedWindow() && QAccessible::queryAccessibleInterface(container()->containedWindow()))
         return 1;
     return 0;
 }

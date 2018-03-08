@@ -63,6 +63,8 @@ public:
     inline void *internalPointer() const Q_DECL_NOTHROW { return reinterpret_cast<void*>(i); }
     inline QModelIndex parent() const;
     inline QModelIndex sibling(int row, int column) const;
+    inline QModelIndex siblingAtColumn(int column) const;
+    inline QModelIndex siblingAtRow(int row) const;
 #if QT_DEPRECATED_SINCE(5, 8)
     QT_DEPRECATED_X("Use QAbstractItemModel::index") inline QModelIndex child(int row, int column) const;
 #endif
@@ -250,6 +252,17 @@ public:
     };
     Q_ENUM(LayoutChangeHint)
 
+    enum class CheckIndexOption {
+        NoOption         = 0x0000,
+        IndexIsValid     = 0x0001,
+        DoNotUseParent   = 0x0002,
+        ParentIsInvalid  = 0x0004,
+    };
+    Q_ENUM(CheckIndexOption)
+    Q_DECLARE_FLAGS(CheckIndexOptions, CheckIndexOption)
+
+    Q_REQUIRED_RESULT bool checkIndex(const QModelIndex &index, CheckIndexOptions options = CheckIndexOption::NoOption) const;
+
 Q_SIGNALS:
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
     void headerDataChanged(Qt::Orientation orientation, int first, int last);
@@ -343,6 +356,8 @@ private:
     Q_DISABLE_COPY(QAbstractItemModel)
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractItemModel::CheckIndexOptions)
+
 inline bool QAbstractItemModel::insertRow(int arow, const QModelIndex &aparent)
 { return insertRows(arow, 1, aparent); }
 inline bool QAbstractItemModel::insertColumn(int acolumn, const QModelIndex &aparent)
@@ -422,6 +437,12 @@ inline QModelIndex QModelIndex::parent() const
 
 inline QModelIndex QModelIndex::sibling(int arow, int acolumn) const
 { return m ? (r == arow && c == acolumn) ? *this : m->sibling(arow, acolumn, *this) : QModelIndex(); }
+
+inline QModelIndex QModelIndex::siblingAtColumn(int acolumn) const
+{ return m ? (c == acolumn) ? *this : m->sibling(r, acolumn, *this) : QModelIndex(); }
+
+inline QModelIndex QModelIndex::siblingAtRow(int arow) const
+{ return m ? (r == arow) ? *this : m->sibling(arow, c, *this) : QModelIndex(); }
 
 #if QT_DEPRECATED_SINCE(5, 8)
 inline QModelIndex QModelIndex::child(int arow, int acolumn) const

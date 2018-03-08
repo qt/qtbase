@@ -1,0 +1,144 @@
+Qt 5.9.3 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.9.0 through 5.9.2.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+http://doc.qt.io/qt-5/index.html
+
+The Qt version 5.9 series is binary compatible with the 5.8.x series.
+Applications compiled for 5.8 will continue to run with 5.9.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                               Qt 5.9.3 Changes                           *
+****************************************************************************
+
+QtCore
+------
+
+ - QFileSystemWatcher:
+   * [QTBUG-64171] Fixed a bug that would cause the application to crash if
+     QFileSystemWatcher was created in an auxiliary thread on Windows.
+
+ - QStorageInfo:
+   * [QTBUG-61420] Fixed decoding of volume labels containing certain
+     uncommon characters on Linux.
+
+ - QThreadPool:
+   * Improved performance with large amount of QRunnable items.
+
+QtGui
+------
+
+ - [QTBUG-64239] Fixed memory corruption on scaled emojis.
+ - [QTBUG-63846] Fixed dragging inside a modal window when a
+   QShapedPixmapWindow is used.
+ - [QTBUG-61777] Fixed painting of zero-length lines with scaling.
+ - [QTBUG-61244] Fixed centering of some items in layouts.
+ - [QTBUG-63168] Fixed a crash when reparenting QWindowContainer.
+
+
+QtNetwork
+---------
+
+ - QHostAddress:
+   * [QTBUG-63764] Fixed a problem in QHostAddress not detaching in its
+     setters and thus spoiling shared data.
+
+ - QNetworkAccessManager:
+   * [QTBUG-63075] Added support for HTTP status 308.
+   * [QTBUG-61300] Fixed a problem with mixing headers from different
+     responses.
+   * [QTBUG-63471] Fixed redirects support in HTTP/2 protocol handler.
+   * [QTBUG-63313] Fixed cookies received during a redirect not being
+     applied in the redirect.
+   * [QTBUG-63142] Fixed HTTP method always being changed to GET when
+     redirected with 307 and 308.
+
+ - QNetworkCookieJar:
+   * Fixed cookies with a root path ("/") not matching an empty path ("").
+
+QtSql
+------
+
+ - PostgreSQL:
+   * Fixed handling of binary data for PostgreSQL 9.x and later
+   * Fixed detection of PostgreSQL 9.x and later
+
+ - OCI:
+   * [QTBUG-57765] Fixed a bug that would see some cached results returned
+     when issuing a forward only query
+
+QtWidgets
+---------
+
+ - QAction:
+  * [QTBUG-62006] Ensured setData() does not emit changed() if no change
+    happened.
+
+ - QDockWidget:
+  * [QTBUG-63526] Fixed an issue in QDockWidgets where the widget would
+    not resize despite showing a resize cursor.
+
+ - QHeaderView:
+   * [QTBUG-54601] Fixed resizing when hidden sections were involved.
+   * [QTBUG-64036] Ensured maximumSectionSize property is honored during
+     resizeSections().
+
+ - QListView:
+   * [QTBUG-45427] Fixed the laying out of a QListView in a grid layout
+     after the dataChanged() signal is emitted.
+
+ - QMenuBar
+   * [QTBUG-34160] Fixed a problem with adding the same QAction to more than
+     one menu.
+
+ - QWidget
+   * [QTBUG-56860] Fixed widget losing focus after showing menu second time.
+
+ - QWizard:
+   * [QTBUG-46894] Fixed the shortcut for the Next button on Windows.
+
+
+Platform-specific changes
+-------------------------
+
+ - Cocoa:
+   * optimize backingstore flush on 10-bit displays
+   * [QTBUG-57076] [QTBUG-63712] Attach menu items when updating the menubar
+   * [QTBUG-63444] Toggle titlebar transparency to support unified toolbar
+
+ - iOS:
+   * [QTBUG-57428][QTBUG-63660] add support for adding mimetypes other than text
+   on the clipboard
+
+ - Windows:
+   * [QTBUG-63654] Windows font database: Remove clamping of default font size
+
+ - X11:
+   * [QTBUG-48034] Don't misdetect certain trackballs as tablets
+   * [QTBUG-62840] Fix crash on X servers with BGR888 display
+
+Third-Party Code
+----------------
+
+ - Improved documentation about Freetype 2 licenses.
+ - Updated Sqlite to fix CVE-2017-10989.
+ - Updated bundled libpng to version 1.6.34.
+
+Tools
+-----
+
+ * qmake:
+   - [QTBUG-63409] Fixed a build error with MSVC when concrt.h was included
+     while exceptions are disabled.
+   - [QTBUG-62985] Fixed a bug that caused the accidental creation of files
+     called "NUL" when using MinGW.

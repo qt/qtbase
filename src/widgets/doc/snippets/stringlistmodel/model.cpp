@@ -135,9 +135,9 @@ QVariant StringListModel::headerData(int section, Qt::Orientation orientation,
         return QVariant();
 
     if (orientation == Qt::Horizontal)
-        return QString("Column %1").arg(section);
+        return QStringLiteral("Column %1").arg(section);
     else
-        return QString("Row %1").arg(section);
+        return QStringLiteral("Row %1").arg(section);
 }
 //! [2]
 
@@ -174,7 +174,7 @@ bool StringListModel::setData(const QModelIndex &index,
     if (index.isValid() && role == Qt::EditRole) {
 
         stringList.replace(index.row(), value.toString());
-        emit dataChanged(index, index);
+        emit dataChanged(index, index, {role});
         return true;
     }
 //! [4] //! [5]

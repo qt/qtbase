@@ -1064,7 +1064,7 @@ searchDependencies:
     return QString();
 }
 
-/*!
+/*
     Empties this translator of all contents.
 
     This function works with stripped translator files.

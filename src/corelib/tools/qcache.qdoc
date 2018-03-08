@@ -80,25 +80,25 @@
     \sa QPixmapCache, QHash, QMap
 */
 
-/*! \fn QCache::QCache(int maxCost = 100)
+/*! \fn template <class Key, class T> QCache<Key, T>::QCache(int maxCost = 100)
 
     Constructs a cache whose contents will never have a total cost
     greater than \a maxCost.
 */
 
-/*! \fn QCache::~QCache()
+/*! \fn template <class Key, class T> QCache<Key, T>::~QCache()
 
     Destroys the cache. Deletes all the objects in the cache.
 */
 
-/*! \fn int QCache::maxCost() const
+/*! \fn template <class Key, class T> int QCache<Key, T>::maxCost() const
 
     Returns the maximum allowed total cost of the cache.
 
     \sa setMaxCost(), totalCost()
 */
 
-/*! \fn void QCache::setMaxCost(int cost)
+/*! \fn template <class Key, class T> void QCache<Key, T>::setMaxCost(int cost)
 
     Sets the maximum allowed total cost of the cache to \a cost. If
     the current total cost is greater than \a cost, some objects are
@@ -107,7 +107,7 @@
     \sa maxCost(), totalCost()
 */
 
-/*! \fn int QCache::totalCost() const
+/*! \fn template <class Key, class T> int QCache<Key, T>::totalCost() const
 
     Returns the total cost of the objects in the cache.
 
@@ -120,19 +120,19 @@
     \sa setMaxCost()
 */
 
-/*! \fn int QCache::size() const
+/*! \fn template <class Key, class T> int QCache<Key, T>::size() const
 
     Returns the number of objects in the cache.
 
     \sa isEmpty()
 */
 
-/*! \fn int QCache::count() const
+/*! \fn template <class Key, class T> int QCache<Key, T>::count() const
 
     Same as size().
 */
 
-/*! \fn bool QCache::isEmpty() const
+/*! \fn template <class Key, class T> bool QCache<Key, T>::isEmpty() const
 
     Returns \c true if the cache contains no objects; otherwise
     returns \c false.
@@ -140,12 +140,12 @@
     \sa size()
 */
 
-/*! \fn QList<Key> QCache::keys() const
+/*! \fn template <class Key, class T> QList<Key> QCache<Key, T>::keys() const
 
     Returns a list of the keys in the cache.
 */
 
-/*! \fn void QCache::clear();
+/*! \fn template <class Key, class T> void QCache<Key, T>::clear();
 
     Deletes all the objects in the cache.
 
@@ -153,7 +153,7 @@
 */
 
 
-/*! \fn bool QCache::insert(const Key &key, T *object, int cost = 1)
+/*! \fn template <class Key, class T> bool QCache<Key, T>::insert(const Key &key, T *object, int cost = 1)
 
     Inserts \a object into the cache with key \a key and
     associated cost \a cost. Any object with the same key already in
@@ -169,7 +169,7 @@
     \sa take(), remove()
 */
 
-/*! \fn T *QCache::object(const Key &key) const
+/*! \fn template <class Key, class T> T *QCache<Key, T>::object(const Key &key) const
 
     Returns the object associated with key \a key, or 0 if the key does
     not exist in the cache.
@@ -180,7 +180,7 @@
     \sa take(), remove()
 */
 
-/*! \fn bool QCache::contains(const Key &key) const
+/*! \fn template <class Key, class T> bool QCache<Key, T>::contains(const Key &key) const
 
     Returns \c true if the cache contains an object associated with key \a
     key; otherwise returns \c false.
@@ -188,7 +188,7 @@
     \sa take(), remove()
 */
 
-/*! \fn T *QCache::operator[](const Key &key) const
+/*! \fn template <class Key, class T> T *QCache<Key, T>::operator[](const Key &key) const
 
     Returns the object associated with key \a key, or 0 if the key does
     not exist in the cache.
@@ -199,7 +199,7 @@
     deleted at any time.
 */
 
-/*! \fn bool QCache::remove(const Key &key)
+/*! \fn template <class Key, class T> bool QCache<Key, T>::remove(const Key &key)
 
     Deletes the object associated with key \a key. Returns \c true if the
     object was found in the cache; otherwise returns \c false.
@@ -207,7 +207,7 @@
     \sa take(), clear()
 */
 
-/*! \fn T *QCache::take(const Key &key)
+/*! \fn template <class Key, class T> T *QCache<Key, T>::take(const Key &key)
 
     Takes the object associated with key \a key out of the cache
     without deleting it. Returns a pointer to the object taken out, or

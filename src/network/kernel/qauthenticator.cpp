@@ -48,6 +48,7 @@
 #include <qendian.h>
 #include <qstring.h>
 #include <qdatetime.h>
+#include <qrandom.h>
 
 #ifdef Q_OS_WIN
 #include <qmutex.h>
@@ -357,7 +358,7 @@ QAuthenticatorPrivate::QAuthenticatorPrivate()
     , phase(Start)
     , nonceCount(0)
 {
-    cnonce = QCryptographicHash::hash(QByteArray::number(qrand(), 16) + QByteArray::number(qrand(), 16),
+    cnonce = QCryptographicHash::hash(QByteArray::number(QRandomGenerator::system()->generate64(), 16),
                                       QCryptographicHash::Md5).toHex();
     nonceCount = 0;
 }

@@ -96,7 +96,7 @@ QT_BEGIN_NAMESPACE
 
     When intermixing QPainter and OpenGL, it is important to notify
     QPainter that the OpenGL state may have been cluttered so it can
-    restore its internal state. This is acheived by calling \l
+    restore its internal state. This is achieved by calling \l
     QPainter::beginNativePainting() before starting the OpenGL
     rendering and calling \l QPainter::endNativePainting() after
     finishing.

@@ -109,6 +109,7 @@ public:
     bool fontsAlwaysScalable() const override;
     void derefUniqueFont(const QString &uniqueFont);
     void refUniqueFont(const QString &uniqueFont);
+    bool isPrivateFontFamily(const QString &family) const override;
 
     static QFont systemDefaultFont();
 
@@ -134,6 +135,7 @@ public:
 
 private:
     void removeApplicationFonts();
+    void addDefaultEUDCFont();
 
     struct WinApplicationFont {
         HANDLE handle;
@@ -150,6 +152,7 @@ private:
     QMap<QString, UniqueFontData> m_uniqueFontData;
 
     static unsigned m_fontOptions;
+    QStringList m_eudcFonts;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

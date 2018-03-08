@@ -46,6 +46,8 @@ private slots:
     void promotionTests();
     void arithOps_data();
     void arithOps();
+    void floatToFloat16();
+    void floatFromFloat16();
 };
 
 void tst_qfloat16::fuzzyCompare_data()
@@ -158,12 +160,14 @@ void tst_qfloat16::qNan()
     qfloat16 nan = qQNaN();
     QVERIFY(!(0. > nan));
     QVERIFY(!(0. < nan));
+    QVERIFY(!qIsInf(nan));
     QVERIFY(qIsNaN(nan));
     QVERIFY(qIsNaN(nan + 1.f));
     QVERIFY(qIsNaN(-nan));
     qfloat16 inf = qInf();
     QVERIFY(inf > qfloat16(0));
     QVERIFY(-inf < qfloat16(0));
+    QVERIFY(!qIsNaN(inf));
     QVERIFY(qIsInf(inf));
     QVERIFY(qIsInf(-inf));
     QVERIFY(qIsInf(2.f*inf));
@@ -303,6 +307,42 @@ void tst_qfloat16::arithOps()
     float r4 = 1.f;
     r4 /= qfloat16(val2);
     QVERIFY(qFuzzyCompare(r4,1.f/val2));
+}
+
+void tst_qfloat16::floatToFloat16()
+{
+    float in[63];
+    qfloat16 out[63];
+    qfloat16 expected[63];
+
+    for (int i = 0; i < 63; ++i)
+        in[i] = i * (1/13.f);
+
+    for (int i = 0; i < 63; ++i)
+        expected[i] = qfloat16(in[i]);
+
+    qFloatToFloat16(out, in, 63);
+
+    for (int i = 0; i < 63; ++i)
+        QVERIFY(qFuzzyCompare(out[i], expected[i]));
+}
+
+void tst_qfloat16::floatFromFloat16()
+{
+    qfloat16 in[35];
+    float out[35];
+    float expected[35];
+
+    for (int i = 0; i < 35; ++i)
+        in[i] = qfloat16(i * (17.f / 3));
+
+    for (int i = 0; i < 35; ++i)
+        expected[i] = float(in[i]);
+
+    qFloatFromFloat16(out, in, 35);
+
+    for (int i = 0; i < 35; ++i)
+        QCOMPARE(out[i], expected[i]);
 }
 
 QTEST_APPLESS_MAIN(tst_qfloat16)

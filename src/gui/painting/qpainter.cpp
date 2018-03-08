@@ -4256,7 +4256,7 @@ void QPainter::drawEllipse(const QRectF &r)
 }
 
 /*!
-    \fn QPainter::drawEllipse(const QRect &rectangle)
+    \fn void QPainter::drawEllipse(const QRect &rectangle)
 
     \overload
 
@@ -4298,7 +4298,7 @@ void QPainter::drawEllipse(const QRect &r)
 }
 
 /*!
-    \fn QPainter::drawEllipse(int x, int y, int width, int height)
+    \fn void QPainter::drawEllipse(int x, int y, int width, int height)
 
     \overload
 
@@ -4309,7 +4309,7 @@ void QPainter::drawEllipse(const QRect &r)
 /*!
     \since 4.4
 
-    \fn QPainter::drawEllipse(const QPointF &center, qreal rx, qreal ry)
+    \fn void QPainter::drawEllipse(const QPointF &center, qreal rx, qreal ry)
 
     \overload
 
@@ -4319,7 +4319,7 @@ void QPainter::drawEllipse(const QRect &r)
 /*!
     \since 4.4
 
-    \fn QPainter::drawEllipse(const QPoint &center, int rx, int ry)
+    \fn void QPainter::drawEllipse(const QPoint &center, int rx, int ry)
 
     \overload
 
@@ -5622,8 +5622,8 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, QFixedPoint *positio
         QVarLengthArray<QGlyphJustification, 128> glyphJustifications(glyphCount);
         QVarLengthArray<QGlyphAttributes, 128> glyphAttributes(glyphCount);
         memset(glyphAttributes.data(), 0, glyphAttributes.size() * sizeof(QGlyphAttributes));
-        memset(advances.data(), 0, advances.size() * sizeof(QFixed));
-        memset(glyphJustifications.data(), 0, glyphJustifications.size() * sizeof(QGlyphJustification));
+        memset(static_cast<void *>(advances.data()), 0, advances.size() * sizeof(QFixed));
+        memset(static_cast<void *>(glyphJustifications.data()), 0, glyphJustifications.size() * sizeof(QGlyphJustification));
 
         textItem.glyphs.numGlyphs = glyphCount;
         textItem.glyphs.glyphs = const_cast<glyph_t *>(glyphArray);
@@ -5744,7 +5744,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
     if (d->extended == 0
             || !d->state->matrix.isAffine()
             || !fe->supportsTransformation(d->state->matrix)) {
-        staticText_d->paintText(topLeftPosition, this);
+        staticText_d->paintText(topLeftPosition, this, pen().color());
         return;
     }
 
@@ -5816,11 +5816,16 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
 
     QPen oldPen = d->state->pen;
     QColor currentColor = oldPen.color();
+    static const QColor bodyIndicator(0, 0, 0, 0);
     for (int i=0; i<staticText_d->itemCount; ++i) {
         QStaticTextItem *item = staticText_d->items + i;
-        if (item->color.isValid() && currentColor != item->color) {
-            setPen(item->color);
-            currentColor = item->color;
+        if (item->color.isValid() && currentColor != item->color
+            && item->color != bodyIndicator) {
+                setPen(item->color);
+                currentColor = item->color;
+        } else if (item->color == bodyIndicator) {
+            setPen(oldPen);
+            currentColor = oldPen.color();
         }
         d->extended->drawStaticTextItem(item);
 
@@ -5850,7 +5855,7 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
     if (!d->engine || str.isEmpty() || pen().style() == Qt::NoPen)
         return;
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_DEPRECATED_SINCE(5, 11) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (tf & Qt::TextBypassShaping) {
         // Skip complex shaping, shape using glyph advances only
         int len = str.length();
@@ -6261,6 +6266,8 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
         QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
         if (theme)
             underlineStyle = QTextCharFormat::UnderlineStyle(theme->themeHint(QPlatformTheme::SpellCheckUnderlineStyle).toInt());
+        if (underlineStyle == QTextCharFormat::SpellCheckUnderline) // still not resolved
+            underlineStyle = QTextCharFormat::WaveUnderline;
     }
 
     if (underlineStyle == QTextCharFormat::WaveUnderline) {
@@ -6480,7 +6487,7 @@ void QPainterPrivate::drawTextItem(const QPointF &p, const QTextItem &_ti, QText
                 extended->drawTextItem(QPointF(x, y), ti2);
             else
                 engine->drawTextItem(QPointF(x, y), ti2);
-            drawTextItemDecoration(q, p, ti2.fontEngine, textEngine, ti2.underlineStyle,
+            drawTextItemDecoration(q, QPointF(x, y), ti2.fontEngine, textEngine, ti2.underlineStyle,
                                    ti2.flags, ti2.width.toReal(), ti2.charFormat);
 
             if (!rtl)
@@ -6513,7 +6520,7 @@ void QPainterPrivate::drawTextItem(const QPointF &p, const QTextItem &_ti, QText
             extended->drawTextItem(QPointF(x, y), ti2);
         else
             engine->drawTextItem(QPointF(x,y), ti2);
-        drawTextItemDecoration(q, p, ti2.fontEngine, textEngine, ti2.underlineStyle,
+        drawTextItemDecoration(q, QPointF(x, y), ti2.fontEngine, textEngine, ti2.underlineStyle,
                                ti2.flags, ti2.width.toReal(), ti2.charFormat);
 
         // reset the high byte for all glyphs
@@ -6735,7 +6742,7 @@ void QPainter::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPo
 }
 
 /*!
-    \fn QPainter::drawTiledPixmap(const QRect &rectangle, const QPixmap &pixmap,
+    \fn void QPainter::drawTiledPixmap(const QRect &rectangle, const QPixmap &pixmap,
                                   const QPoint &position = QPoint())
     \overload
 
@@ -7476,7 +7483,7 @@ start_lengthVariant:
             if (!expandtabs) {
                 text[offset] = QLatin1Char(' ');
             } else if (!tabarraylen && !tabstops) {
-                tabstops = qRound(fm.width(QLatin1Char('x'))*8);
+                tabstops = qRound(fm.horizontalAdvance(QLatin1Char('x'))*8);
             }
         } else if (chr == QChar(ushort(0x9c))) {
             // string with multiple length variants

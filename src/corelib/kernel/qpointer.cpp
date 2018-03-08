@@ -111,7 +111,7 @@
 */
 
 /*!
-    \fn QPointer::QPointer()
+    \fn template <class T> QPointer<T>::QPointer()
 
     Constructs a 0 guarded pointer.
 
@@ -119,14 +119,14 @@
 */
 
 /*!
-    \fn QPointer::QPointer(T* p)
+    \fn template <class T> QPointer<T>::QPointer(T* p)
 
     Constructs a guarded pointer that points to the same object that \a p
     points to.
 */
 
 /*!
-    \fn QPointer::~QPointer()
+    \fn template <class T> QPointer<T>::~QPointer()
 
     Destroys the guarded pointer. Just like a normal pointer,
     destroying a guarded pointer does \e not destroy the object being
@@ -134,7 +134,7 @@
 */
 
 /*!
-    \fn void QPointer::swap(QPointer &other)
+    \fn template <class T> void QPointer<T>::swap(QPointer &other)
     \since 5.6
 
     Swaps the contents of this QPointer with the contents of \a other.
@@ -142,28 +142,28 @@
 */
 
 /*!
-    \fn QPointer<T> & QPointer::operator=(T* p)
+    \fn template <class T> QPointer<T> & QPointer<T>::operator=(T* p)
 
     Assignment operator. This guarded pointer will now point to the
     same object that \a p points to.
 */
 
 /*!
-    \fn T* QPointer::data() const
+    \fn template <class T> T* QPointer<T>::data() const
     \since 4.4
 
     Returns the pointer to the object being guarded.
 */
 
 /*!
-    \fn bool QPointer::isNull() const
+    \fn template <class T> bool QPointer<T>::isNull() const
 
     Returns \c true if the referenced object has been destroyed or if
     there is no referenced object; otherwise returns \c false.
 */
 
 /*!
-    \fn void QPointer::clear()
+    \fn template <class T> void QPointer<T>::clear()
     \since 5.0
 
     Clears this QPointer object.
@@ -172,21 +172,21 @@
 */
 
 /*!
-    \fn T* QPointer::operator->() const
+    \fn template <class T> T* QPointer<T>::operator->() const
 
     Overloaded arrow operator; implements pointer semantics. Just use
     this operator as you would with a normal C++ pointer.
 */
 
 /*!
-    \fn T& QPointer::operator*() const
+    \fn template <class T> T& QPointer<T>::operator*() const
 
     Dereference operator; implements pointer semantics. Just use this
     operator as you would with a normal C++ pointer.
 */
 
 /*!
-    \fn QPointer::operator T*() const
+    \fn template <class T> QPointer<T>::operator T*() const
 
     Cast operator; implements pointer semantics. Because of this
     function you can pass a QPointer\<T\> to a function where a T*
@@ -194,7 +194,7 @@
 */
 
 /*!
-    \fn bool operator==(const T *o, const QPointer<T> &p)
+    \fn template <class T> bool operator==(const T *o, const QPointer<T> &p)
     \relates QPointer
 
     Equality operator. Returns \c true if \a o and the guarded
@@ -203,7 +203,7 @@
 
 */
 /*!
-    \fn bool operator==(const QPointer<T> &p, const T *o)
+    \fn template <class T> bool operator==(const QPointer<T> &p, const T *o)
     \relates QPointer
 
     Equality operator. Returns \c true if \a o and the guarded
@@ -212,7 +212,7 @@
 
 */
 /*!
-    \fn bool operator==(T *o, const QPointer<T> &p)
+    \fn template <class T> bool operator==(T *o, const QPointer<T> &p)
     \relates QPointer
 
     Equality operator. Returns \c true if \a o and the guarded
@@ -221,7 +221,7 @@
 
 */
 /*!
-    \fn bool operator==(const QPointer<T> &p, T *o)
+    \fn template <class T> bool operator==(const QPointer<T> &p, T *o)
     \relates QPointer
 
     Equality operator. Returns \c true if \a o and the guarded
@@ -230,7 +230,7 @@
 
 */
 /*!
-    \fn bool operator==(const QPointer<T> &p1, const QPointer<T> &p2)
+    \fn template <class T> bool operator==(const QPointer<T> &p1, const QPointer<T> &p2)
     \relates QPointer
 
     Equality operator. Returns \c true if the guarded pointers \a p1 and \a p2
@@ -241,7 +241,7 @@
 
 
 /*!
-    \fn bool operator!=(const T *o, const QPointer<T> &p)
+    \fn template <class T> bool operator!=(const T *o, const QPointer<T> &p)
     \relates QPointer
 
     Inequality operator. Returns \c true if \a o and the guarded
@@ -249,7 +249,7 @@
     returns \c false.
 */
 /*!
-    \fn bool operator!=(const QPointer<T> &p, const T *o)
+    \fn template <class T> bool operator!=(const QPointer<T> &p, const T *o)
     \relates QPointer
 
     Inequality operator. Returns \c true if \a o and the guarded
@@ -257,7 +257,7 @@
     returns \c false.
 */
 /*!
-    \fn bool operator!=(T *o, const QPointer<T> &p)
+    \fn template <class T> bool operator!=(T *o, const QPointer<T> &p)
     \relates QPointer
 
     Inequality operator. Returns \c true if \a o and the guarded
@@ -265,7 +265,7 @@
     returns \c false.
 */
 /*!
-    \fn bool operator!=(const QPointer<T> &p, T *o)
+    \fn template <class T> bool operator!=(const QPointer<T> &p, T *o)
     \relates QPointer
 
     Inequality operator. Returns \c true if \a o and the guarded
@@ -273,7 +273,7 @@
     returns \c false.
 */
 /*!
-    \fn bool operator!=(const QPointer<T> &p1, const QPointer<T> &p2)
+    \fn template <class T> bool operator!=(const QPointer<T> &p1, const QPointer<T> &p2)
     \relates QPointer
 
     Inequality operator. Returns \c true if  the guarded pointers \a p1 and
@@ -281,7 +281,7 @@
     returns \c false.
 */
 /*!
-    \fn QPointer<T> qPointerFromVariant(const QVariant &variant)
+    \fn template <typename T> QPointer<T> qPointerFromVariant(const QVariant &variant)
 
     \internal
 

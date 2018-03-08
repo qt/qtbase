@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(datawidgetmapper))
 
 HEADERS   = window.h
 SOURCES   = main.cpp \

@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(tableview))
 qtHaveModule(printsupport): QT += printsupport
 
 HEADERS     = imagemodel.h \

@@ -187,6 +187,7 @@ Q_SIGNALS:
 #endif
     void paletteChanged(const QPalette &pal);
     void applicationDisplayNameChanged();
+    void fontChanged(const QFont &font);
 
 protected:
     bool event(QEvent *) override;

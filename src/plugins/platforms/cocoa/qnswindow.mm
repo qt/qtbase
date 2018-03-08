@@ -46,6 +46,8 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <qoperatingsystemversion.h>
 
+Q_LOGGING_CATEGORY(lcCocoaEvents, "qt.qpa.cocoa.events");
+
 static bool isMouseEvent(NSEvent *ev)
 {
     switch ([ev type]) {
@@ -97,23 +99,46 @@ static bool isMouseEvent(NSEvent *ev)
     const Class windowClass = [self class];
     const Class panelClass = [QNSPanel class];
 
-    unsigned int methodDescriptionsCount;
-    objc_method_description *methods = protocol_copyMethodDescriptionList(
-        objc_getProtocol("QNSWindowProtocol"), NO, YES, &methodDescriptionsCount);
+    unsigned int protocolCount;
+    Protocol **protocols = class_copyProtocolList(windowClass, &protocolCount);
+    for (unsigned int i = 0; i < protocolCount; ++i) {
+        Protocol *protocol = protocols[i];
 
-    for (unsigned int i = 0; i < methodDescriptionsCount; ++i) {
-        objc_method_description method = methods[i];
-        class_addMethod(panelClass, method.name,
-            class_getMethodImplementation(windowClass, method.name),
-            method.types);
+        unsigned int methodDescriptionsCount;
+        objc_method_description *methods = protocol_copyMethodDescriptionList(
+            protocol, NO, YES, &methodDescriptionsCount);
+
+        for (unsigned int j = 0; j < methodDescriptionsCount; ++j) {
+            objc_method_description method = methods[j];
+            class_addMethod(panelClass, method.name,
+                class_getMethodImplementation(windowClass, method.name),
+                method.types);
+        }
+        free(methods);
     }
 
-    free(methods);
+    free(protocols);
 }
 
 - (QCocoaWindow *)platformWindow
 {
     return qnsview_cast(self.contentView).platformWindow;
+}
+
+- (NSString *)description
+{
+    NSMutableString *description = [NSMutableString stringWithString:qt_objcDynamicSuper()];
+
+#ifndef QT_NO_DEBUG_STREAM
+    QString contentViewDescription;
+    QDebug debug(&contentViewDescription);
+    debug.nospace() << "; contentView=" << qnsview_cast(self.contentView) << ">";
+
+    NSRange lastCharacter = [description rangeOfComposedCharacterSequenceAtIndex:description.length - 1];
+    [description replaceCharactersInRange:lastCharacter withString:contentViewDescription.toNSString()];
+#endif
+
+    return description;
 }
 
 - (BOOL)canBecomeKeyWindow
@@ -177,6 +202,8 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (void)sendEvent:(NSEvent*)theEvent
 {
+    qCDebug(lcCocoaEvents) << "Sending" << theEvent << "to" << self;
+
     // We might get events for a NSWindow after the corresponding platform
     // window has been deleted, as the NSWindow can outlive the QCocoaWindow
     // e.g. if being retained by other parts of AppKit, or in an auto-release
@@ -184,6 +211,10 @@ static bool isMouseEvent(NSEvent *ev)
     // come via events, but if they do there's no point in propagating them.
     if (!self.platformWindow)
         return;
+
+    // Prevent deallocation of this NSWindow during event delivery, as we
+    // have logic further below that depends on the window being alive.
+    [[self retain] autorelease];
 
     const char *eventType = object_getClassName(theEvent);
     if (QWindowSystemInterface::handleNativeEvent(self.platformWindow->window(),
@@ -221,6 +252,7 @@ static bool isMouseEvent(NSEvent *ev)
 #pragma clang diagnostic ignored "-Wobjc-missing-super-calls"
 - (void)dealloc
 {
+    qCDebug(lcQpaCocoaWindow) << "dealloc" << self;
     qt_objcDynamicSuper();
 }
 #pragma clang diagnostic pop

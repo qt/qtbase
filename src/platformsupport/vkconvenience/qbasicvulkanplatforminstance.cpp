@@ -45,7 +45,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcVk, "qt.vulkan")
+Q_LOGGING_CATEGORY(lcPlatVk, "qt.vulkan")
 
 /*!
     \class QBasicPlatformVulkanInstance
@@ -87,7 +87,7 @@ void QBasicPlatformVulkanInstance::init(QLibrary *lib)
     if (m_vkGetInstanceProcAddr)
         return;
 
-    qCDebug(lcVk, "Vulkan init (%s)", qPrintable(lib->fileName()));
+    qCDebug(lcPlatVk, "Vulkan init (%s)", qPrintable(lib->fileName()));
 
     // While not strictly required with every implementation, try to follow the spec
     // and do not rely on core functions being exported.
@@ -137,7 +137,7 @@ void QBasicPlatformVulkanInstance::init(QLibrary *lib)
             m_supportedLayers.append(layer);
         }
     }
-    qCDebug(lcVk) << "Supported Vulkan instance layers:" << m_supportedLayers;
+    qCDebug(lcPlatVk) << "Supported Vulkan instance layers:" << m_supportedLayers;
 
     uint32_t extCount = 0;
     m_vkEnumerateInstanceExtensionProperties(nullptr, &extCount, nullptr);
@@ -152,7 +152,7 @@ void QBasicPlatformVulkanInstance::init(QLibrary *lib)
             m_supportedExtensions.append(ext);
         }
     }
-    qDebug(lcVk) << "Supported Vulkan instance extensions:" << m_supportedExtensions;
+    qDebug(lcPlatVk) << "Supported Vulkan instance extensions:" << m_supportedExtensions;
 }
 
 QVulkanInfoVector<QVulkanLayer> QBasicPlatformVulkanInstance::supportedLayers() const
@@ -206,13 +206,13 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
             if (!m_supportedLayers.contains(layerName))
                 m_enabledLayers.removeAt(i--);
         }
-        qDebug(lcVk) << "Enabling Vulkan instance layers:" << m_enabledLayers;
+        qDebug(lcPlatVk) << "Enabling Vulkan instance layers:" << m_enabledLayers;
         for (int i = 0; i < m_enabledExtensions.count(); ++i) {
             const QByteArray &extName(m_enabledExtensions[i]);
             if (!m_supportedExtensions.contains(extName))
                 m_enabledExtensions.removeAt(i--);
         }
-        qDebug(lcVk) << "Enabling Vulkan instance extensions:" << m_enabledExtensions;
+        qDebug(lcPlatVk) << "Enabling Vulkan instance extensions:" << m_enabledExtensions;
 
         VkInstanceCreateInfo instInfo;
         memset(&instInfo, 0, sizeof(instInfo));

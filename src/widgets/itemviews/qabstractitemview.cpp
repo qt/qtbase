@@ -219,7 +219,7 @@ void QAbstractItemViewPrivate::_q_scrollerStateChanged()
                 q->selectionModel()->select(oldSelection, QItemSelectionModel::ClearAndSelect);
                 q->selectionModel()->setCurrentIndex(oldCurrent, QItemSelectionModel::NoUpdate);
             }
-            // fall through
+            Q_FALLTHROUGH();
 
         default:
             oldSelection = QItemSelection();
@@ -2194,7 +2194,7 @@ QAbstractItemViewPrivate::position(const QPoint &pos, const QRect &rect, const Q
 {
     QAbstractItemView::DropIndicatorPosition r = QAbstractItemView::OnViewport;
     if (!overwrite) {
-        const int margin = 2;
+        const int margin = qBound(2, qRound(qreal(rect.height()) / 5.5), 12);
         if (pos.y() - rect.top() < margin) {
             r = QAbstractItemView::AboveItem;
         } else if (rect.bottom() - pos.y() < margin) {
@@ -3217,12 +3217,14 @@ void QAbstractItemView::setIndexWidget(const QModelIndex &index, QWidget *widget
     if (QWidget *oldWidget = indexWidget(index)) {
         d->persistent.remove(oldWidget);
         d->removeEditor(oldWidget);
+        oldWidget->removeEventFilter(this);
         oldWidget->deleteLater();
     }
     if (widget) {
         widget->setParent(viewport());
         d->persistent.insert(widget);
         d->addEditor(index, widget, true);
+        widget->installEventFilter(this);
         widget->show();
         dataChanged(index, index); // update the geometry
         if (!d->delayedPendingLayout)
@@ -4499,6 +4501,24 @@ QModelIndexList QAbstractItemViewPrivate::selectedDraggableIndexes() const
     return indexes;
 }
 
+/*!
+    \reimp
+*/
+
+bool QAbstractItemView::eventFilter(QObject *object, QEvent *event)
+{
+    Q_D(QAbstractItemView);
+    if (object == this || object == viewport() || event->type() != QEvent::FocusIn)
+        return QAbstractScrollArea::eventFilter(object, event);
+    QWidget *widget = qobject_cast<QWidget *>(object);
+    // If it is not a persistent widget then we did not install
+    // the event filter on it, so assume a base implementation is
+    // filtering
+    if (!widget || !d->persistent.contains(widget))
+        return QAbstractScrollArea::eventFilter(object, event);
+    setCurrentIndex(d->indexForEditor(widget));
+    return false;
+}
 
 QT_END_NAMESPACE
 

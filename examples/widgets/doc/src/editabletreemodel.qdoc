@@ -153,7 +153,7 @@
     We can retrieve pointers stored in this way by calling the
     \l{QModelIndex::}{internalPointer()} function on the relevant model
     index - we create our own \l{TreeModel::getItem}{getItem()} function to
-    do this work for us, and call it from our \l{TreeModel::data}{data()}
+    do the work for us, and call it from our \l{TreeModel::data}{data()}
     and \l{TreeModel::parent}{parent()} implementations.
 
     Storing pointers to items is convenient when we control how they are
@@ -169,7 +169,7 @@
     \row \li \b{Storing information in the underlying data structure}
 
     Several pieces of data are stored as QVariant objects in the \c itemData
-    member of each \c TreeItem instance
+    member of each \c TreeItem instance.
 
     The diagram shows how pieces of information,
     represented by the labels \b{a}, \b{b} and \b{c} in the
@@ -227,8 +227,8 @@
     \section1 TreeItem Class Definition
 
     The \c TreeItem class provides simple items that contain several
-    pieces of data, and which can provide information about their parent
-    and child items:
+    pieces of data, including information about their parent and
+    child items:
 
     \snippet itemviews/editabletreemodel/treeitem.h 0
 
@@ -302,7 +302,7 @@
     \snippet itemviews/editabletreemodel/treeitem.cpp 11
 
     To make implementation of the model easier, we return true to indicate
-    whether the data was set successfully, or false if an invalid column
+    that the data was set successfully.
 
     Editable models often need to be resizable, enabling rows and columns to
     be inserted and removed. The insertion of rows beneath a given model index
@@ -356,29 +356,29 @@
     We call the internal \l{TreeModel::setupModelData}{setupModelData()}
     function to convert the textual data supplied to a data structure we can
     use with the model. Other models may be initialized with a ready-made
-    data structure, or use an API to a library that maintains its own data.
+    data structure, or use an API from a library that maintains its own data.
 
-    The destructor only has to delete the root item; all child items will
-    be recursively deleted by the \c TreeItem destructor.
+    The destructor only has to delete the root item, which will cause all child
+    items to be recursively deleted.
 
     \snippet itemviews/editabletreemodel/treemodel.cpp 1
 
     \target TreeModel::getItem
     Since the model's interface to the other model/view components is based
-    on model indexes, and the internal data structure is item-based, many of
-    the functions implemented by the model need to be able to convert any
-    given model index to its corresponding item. For convenience and
+    on model indexes, and since the internal data structure is item-based,
+    many of the functions implemented by the model need to be able to convert
+    any given model index to its corresponding item. For convenience and
     consistency, we have defined a \c getItem() function to perform this
     repetitive task:
 
     \snippet itemviews/editabletreemodel/treemodel.cpp 4
 
-    This function assumes that each model index it is passed corresponds to
-    a valid item in memory. If the index is invalid, or its internal pointer
-    does not refer to a valid item, the root item is returned instead.
+    Each model index passed to this function should correspond to a valid
+    item in memory. If the index is invalid, or its internal pointer does
+    not refer to a valid item, the root item is returned instead.
 
     The model's \c rowCount() implementation is simple: it first uses the
-    \c getItem() function to obtain the relevant item, then returns the
+    \c getItem() function to obtain the relevant item; then it returns the
     number of children it contains:
 
     \snippet itemviews/editabletreemodel/treemodel.cpp 8

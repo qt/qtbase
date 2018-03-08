@@ -62,13 +62,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QScopedValueRollback::QScopedValueRollback(T &var)
+    \fn template <typename T> QScopedValueRollback<T>::QScopedValueRollback(T &var)
 
     Stores the previous value of \a var internally, for revert on destruction.
 */
 
 /*!
-    \fn QScopedValueRollback::QScopedValueRollback(T &var, T value)
+    \fn template <typename T> QScopedValueRollback<T>::QScopedValueRollback(T &var, T value)
 
     Assigns \a value to \ var and stores the previous value of \a var
     internally, for revert on destruction.
@@ -77,14 +77,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QScopedValueRollback::~QScopedValueRollback()
+    \fn template <typename T> QScopedValueRollback<T>::~QScopedValueRollback()
 
     Assigns the previous value to the managed variable.
     This is the value at construction time, or at the last call to commit()
 */
 
 /*!
-    \fn void QScopedValueRollback::commit()
+    \fn template <typename T> void QScopedValueRollback<T>::commit()
 
     Updates the previous value of the managed variable to its current value.
 */

@@ -2228,6 +2228,14 @@ bool QGraphicsWidget::testAttribute(Qt::WidgetAttribute attribute) const
 }
 
 /*!
+  \enum QGraphicsWidget::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics widget item
+*/
+
+/*!
     \reimp
 */
 int QGraphicsWidget::type() const

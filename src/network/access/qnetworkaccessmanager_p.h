@@ -164,7 +164,9 @@ public:
 
 #endif
 
+#if QT_CONFIG(http)
     QNetworkRequest prepareMultipart(const QNetworkRequest &request, QHttpMultiPart *multiPart);
+#endif
 
     // this is the cache for storing downloaded files
     QAbstractNetworkCache *networkCache;

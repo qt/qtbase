@@ -55,6 +55,7 @@
 #  include "qaccessible.h"
 #endif
 #include "qhighdpiscaling_p.h"
+#include "qshapedpixmapdndwindow_p.h"
 
 #include <private/qevent_p.h>
 
@@ -379,7 +380,9 @@ void QWindowPrivate::setVisible(bool visible)
             QGuiApplicationPrivate::showModalWindow(q);
         else
             QGuiApplicationPrivate::hideModalWindow(q);
-    } else if (visible && QGuiApplication::modalWindow()) {
+    // QShapedPixmapWindow is used on some platforms for showing a drag pixmap, so don't block
+    // input to this window as it is performing a drag - QTBUG-63846
+    } else if (visible && QGuiApplication::modalWindow() && !qobject_cast<QShapedPixmapWindow *>(q)) {
         QGuiApplicationPrivate::updateBlockedStatus(q);
     }
 
@@ -2575,7 +2578,7 @@ QPoint QWindowPrivate::globalPosition() const
     QPoint offset = q->position();
     for (const QWindow *p = q->parent(); p; p = p->parent()) {
         QPlatformWindow *pw = p->handle();
-        if (pw && pw->isForeignWindow()) {
+        if (pw && (pw->isForeignWindow() || pw->isEmbedded())) {
             // Use mapToGlobal() for foreign windows
             offset += p->mapToGlobal(QPoint(0, 0));
             break;
@@ -2787,6 +2790,8 @@ bool QWindowPrivate::applyCursor()
             if (!platformWindow)
                 return true;
             QCursor *c = QGuiApplication::overrideCursor();
+            if (c != nullptr && platformCursor->capabilities().testFlag(QPlatformCursor::OverrideCursor))
+                return true;
             if (!c && hasCursor)
                 c = &cursor;
             platformCursor->changeCursor(c, q);
@@ -2836,7 +2841,7 @@ QDebug operator<<(QDebug debug, const QWindow *window)
 }
 #endif // !QT_NO_DEBUG_STREAM
 
-#if QT_CONFIG(vulkan)
+#if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
 
 /*!
     Associates this window with the specified Vulkan \a instance.

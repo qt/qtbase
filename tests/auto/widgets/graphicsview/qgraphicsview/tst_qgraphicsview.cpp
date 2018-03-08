@@ -61,6 +61,10 @@
 
 #include "tst_qgraphicsview.h"
 
+#include <QtTest/private/qtesthelpers_p.h>
+
+using namespace QTestPrivate;
+
 Q_DECLARE_METATYPE(ExpectedValueDescription)
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QList<QRectF>)
@@ -129,14 +133,6 @@ class FriendlyGraphicsScene : public QGraphicsScene
     Q_DECLARE_PRIVATE(QGraphicsScene);
 };
 #endif
-
-static inline void setFrameless(QWidget *w)
-{
-    Qt::WindowFlags flags = w->windowFlags();
-    flags |= Qt::FramelessWindowHint;
-    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    w->setWindowFlags(flags);
-}
 
 class tst_QGraphicsView : public QObject
 {
@@ -2468,9 +2464,9 @@ void tst_QGraphicsView::viewportUpdateMode()
     // The view gets two updates for the update scene updates.
     QTRY_VERIFY(!view.lastUpdateRegions.isEmpty());
 #ifndef Q_OS_MAC //cocoa doesn't support drawing regions
-    QCOMPARE(view.lastUpdateRegions.last().rects().size(), 2);
-    QCOMPARE(view.lastUpdateRegions.last().rects().at(0).size(), QSize(14, 14));
-    QCOMPARE(view.lastUpdateRegions.last().rects().at(1).size(), QSize(14, 14));
+    QCOMPARE(view.lastUpdateRegions.last().rectCount(), 2);
+    QCOMPARE(view.lastUpdateRegions.last().begin()[0].size(), QSize(14, 14));
+    QCOMPARE(view.lastUpdateRegions.last().begin()[1].size(), QSize(14, 14));
 #endif
 
     // Set full update mode.
@@ -2485,8 +2481,8 @@ void tst_QGraphicsView::viewportUpdateMode()
     qApp->processEvents();
 
     // The view gets one full viewport update for the update scene updates.
-    QCOMPARE(view.lastUpdateRegions.last().rects().size(), 1);
-    QCOMPARE(view.lastUpdateRegions.last().rects().at(0).size(), view.viewport()->size());
+    QCOMPARE(view.lastUpdateRegions.last().rectCount(), 1);
+    QCOMPARE(view.lastUpdateRegions.last().begin()[0].size(), view.viewport()->size());
     view.lastUpdateRegions.clear();
 
     // Set smart update mode
@@ -2503,8 +2499,8 @@ void tst_QGraphicsView::viewportUpdateMode()
     qApp->processEvents();
 
     // The view gets one bounding rect update.
-    QCOMPARE(view.lastUpdateRegions.last().rects().size(), 1);
-    QCOMPARE(view.lastUpdateRegions.last().rects().at(0).size(), QSize(32, 32));
+    QCOMPARE(view.lastUpdateRegions.last().rectCount(), 1);
+    QCOMPARE(view.lastUpdateRegions.last().begin()[0].size(), QSize(32, 32));
 
     // Set no update mode
     view.setViewportUpdateMode(QGraphicsView::NoViewportUpdate);

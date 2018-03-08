@@ -57,7 +57,7 @@ QVector<DataType> generateData(QString dataSetType, const int length)
     QVector<DataType> container;
     if (dataSetType == "Random") {
         for (int i = 0; i < length; ++i)
-            container.append(rand());
+            container.append(QRandomGenerator::global()->generate());
     } else if (dataSetType == "Ascending") {
         for (int i = 0; i < length; ++i)
             container.append(i);

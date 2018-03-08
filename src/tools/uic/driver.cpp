@@ -251,6 +251,7 @@ bool Driver::printDependencies(const QString &fileName)
 bool Driver::uic(const QString &fileName, DomUI *ui, QTextStream *out)
 {
     m_option.inputFile = fileName;
+    setUseIdBasedTranslations(ui->attributeIdbasedtr());
 
     QTextStream *oldOutput = m_output;
 

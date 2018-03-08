@@ -137,6 +137,9 @@ function(QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options moc_target 
                        DEPENDS ${infile} ${moc_depends}
                        ${_moc_working_dir}
                        VERBATIM)
+    set_source_files_properties(${infile} PROPERTIES SKIP_AUTOMOC ON)
+    set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC ON)
+    set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOUIC ON)
 endfunction()
 
 
@@ -155,7 +158,6 @@ function(QT5_GENERATE_MOC infile outfile )
         set(moc_target ${ARGV3})
     endif()
     qt5_create_moc_command(${abs_infile} ${_outfile} "${moc_flags}" "" "${moc_target}" "")
-    set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC TRUE)  # dont run automoc on this file
 endfunction()
 
 
@@ -246,6 +248,7 @@ function(QT5_ADD_BINARY_RESOURCES target )
         get_filename_component(infile ${it} ABSOLUTE)
 
         _QT5_PARSE_QRC_FILE(${infile} _out_depends _rc_depends)
+        set_source_files_properties(${infile} PROPERTIES SKIP_AUTORCC ON)
         set(infiles ${infiles} ${infile})
         set(out_depends ${out_depends} ${_out_depends})
         set(rc_depends ${rc_depends} ${_rc_depends})
@@ -254,8 +257,7 @@ function(QT5_ADD_BINARY_RESOURCES target )
     add_custom_command(OUTPUT ${rcc_destination}
                        COMMAND ${Qt5Core_RCC_EXECUTABLE}
                        ARGS ${rcc_options} --binary --name ${target} --output ${rcc_destination} ${infiles}
-                       DEPENDS ${rc_depends} ${out_depends} VERBATIM)
-
+                       DEPENDS ${rc_depends} ${out_depends} ${infiles} VERBATIM)
     add_custom_target(${target} ALL DEPENDS ${rcc_destination})
 endfunction()
 
@@ -283,12 +285,15 @@ function(QT5_ADD_RESOURCES outfiles )
         set(outfile ${CMAKE_CURRENT_BINARY_DIR}/qrc_${outfilename}.cpp)
 
         _QT5_PARSE_QRC_FILE(${infile} _out_depends _rc_depends)
+        set_source_files_properties(${infile} PROPERTIES SKIP_AUTORCC ON)
 
         add_custom_command(OUTPUT ${outfile}
                            COMMAND ${Qt5Core_RCC_EXECUTABLE}
                            ARGS ${rcc_options} --name ${outfilename} --output ${outfile} ${infile}
                            MAIN_DEPENDENCY ${infile}
                            DEPENDS ${_rc_depends} "${out_depends}" VERBATIM)
+        set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC ON)
+        set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOUIC ON)
         list(APPEND ${outfiles} ${outfile})
     endforeach()
     set(${outfiles} ${${outfiles}} PARENT_SCOPE)

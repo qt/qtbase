@@ -1,0 +1,57 @@
+From 55821d34b2208e7858dbba5648760b83c66b58a5 Mon Sep 17 00:00:00 2001
+From: Oliver Wolff <oliver.wolff@qt.io>
+Date: Mon, 29 Aug 2016 09:48:28 +0200
+Subject: [PATCH] ANGLE: Fix resizing of windows
+
+Use the correct height/width values when calculating
+the vector for resizing the window content and the
+new size as viewport size.
+
+Task-number: QTBUG-62475
+Change-Id: I33a8dc1379a908e991b04bc31dfc6254a6d005c9
+---
+ .../libANGLE/renderer/d3d/d3d11/SwapChain11.cpp    | 35 +++++++++++-----------
+ 1 file changed, 17 insertions(+), 18 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
+index 785a83cd77..fe72bc935d 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
+@@ -707,15 +706,15 @@ EGLint SwapChain11::copyOffscreenToBackbuffer(EGLint x, EGLint y, EGLint width,
+     d3d11::PositionTexCoordVertex *vertices = static_cast<d3d11::PositionTexCoordVertex*>(mappedResource.pData);
+ 
+     // Create a quad in homogeneous coordinates
+-    float x1 = (x / float(mWidth)) * 2.0f - 1.0f;
+-    float y1 = (y / float(mHeight)) * 2.0f - 1.0f;
+-    float x2 = ((x + width) / float(mWidth)) * 2.0f - 1.0f;
+-    float y2 = ((y + height) / float(mHeight)) * 2.0f - 1.0f;
++    float x1 = (x / float(width)) * 2.0f - 1.0f;
++    float y1 = (y / float(height)) * 2.0f - 1.0f;
++    float x2 = ((x + width) / float(width)) * 2.0f - 1.0f;
++    float y2 = ((y + height) / float(height)) * 2.0f - 1.0f;
+ 
+-    float u1 = x / float(mWidth);
+-    float v1 = y / float(mHeight);
+-    float u2 = (x + width) / float(mWidth);
+-    float v2 = (y + height) / float(mHeight);
++    float u1 = x / float(width);
++    float v1 = y / float(height);
++    float u2 = (x + width) / float(width);
++    float v2 = (y + height) / float(height);
+ 
+     // Invert the quad vertices depending on the surface orientation.
+     if ((mOrientation & EGL_SURFACE_ORIENTATION_INVERT_X_ANGLE) != 0)
+@@ -760,8 +759,8 @@ EGLint SwapChain11::copyOffscreenToBackbuffer(EGLint x, EGLint y, EGLint width,
+     D3D11_VIEWPORT viewport;
+     viewport.TopLeftX = 0;
+     viewport.TopLeftY = 0;
+-    viewport.Width = static_cast<FLOAT>(mWidth);
+-    viewport.Height = static_cast<FLOAT>(mHeight);
++    viewport.Width = static_cast<FLOAT>(width);
++    viewport.Height =  static_cast<FLOAT>(height);
+     viewport.MinDepth = 0.0f;
+     viewport.MaxDepth = 1.0f;
+     deviceContext->RSSetViewports(1, &viewport);
+-- 
+2.15.0.windows.1
+

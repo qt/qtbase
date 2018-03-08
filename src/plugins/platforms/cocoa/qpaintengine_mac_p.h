@@ -73,8 +73,6 @@ public:
 
     bool begin(QPaintDevice *pdev);
     bool end();
-    static CGColorSpaceRef macGenericColorSpace();
-    static CGColorSpaceRef macDisplayColorSpace(const QWidget *widget = 0);
 
     void updateState(const QPaintEngineState &state);
 
@@ -126,10 +124,6 @@ protected:
     QCoreGraphicsPaintEngine(QPaintEnginePrivate &dptr);
 
 private:
-    static bool m_postRoutineRegistered;
-    static CGColorSpaceRef m_genericColorSpace;
-    static QHash<CGDirectDisplayID, CGColorSpaceRef> m_displayColorSpaceHash;
-    static void cleanUpMacColorSpaces();
     Q_DISABLE_COPY(QCoreGraphicsPaintEngine)
 };
 

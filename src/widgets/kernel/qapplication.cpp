@@ -152,20 +152,6 @@ static void clearSystemPalette()
     QApplicationPrivate::sys_pal = 0;
 }
 
-static QByteArray get_style_class_name()
-{
-    QScopedPointer<QStyle> s(QStyleFactory::create(QApplicationPrivate::desktopStyleKey()));
-    if (!s.isNull())
-        return s->metaObject()->className();
-    return QByteArray();
-}
-
-static QByteArray nativeStyleClassName()
-{
-    static QByteArray name = get_style_class_name();
-    return name;
-}
-
 bool QApplicationPrivate::autoSipEnabled = true;
 
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, int flags)
@@ -395,8 +381,6 @@ void qt_init_tooltip_palette();
 void qt_cleanup();
 
 QStyle *QApplicationPrivate::app_style = 0;        // default application style
-bool QApplicationPrivate::overrides_native_style = false; // whether native QApplication style is
-                                                          // overridden, i.e. not native
 #ifndef QT_NO_STYLE_STYLESHEET
 QString QApplicationPrivate::styleSheet;           // default application stylesheet
 #endif
@@ -1091,8 +1075,6 @@ QStyle *QApplication::style()
             Q_ASSERT(!"No styles available!");
             return 0;
         }
-        QApplicationPrivate::overrides_native_style =
-            app_style->objectName() != QApplicationPrivate::desktopStyleKey();
     }
     // take ownership of the style
     QApplicationPrivate::app_style->setParent(qApp);
@@ -1156,9 +1138,6 @@ void QApplication::setStyle(QStyle *style)
     }
 
     QStyle *old = QApplicationPrivate::app_style; // save
-
-    QApplicationPrivate::overrides_native_style =
-        nativeStyleClassName() == QByteArray(style->metaObject()->className());
 
 #ifndef QT_NO_STYLE_STYLESHEET
     if (!QApplicationPrivate::styleSheet.isEmpty() && !qobject_cast<QStyleSheetStyle *>(style)) {
@@ -2868,7 +2847,7 @@ void QApplication::setStartDragDistance(int l)
     and the current position (e.g. in the mouse move event) is \c currentPos,
     you can find out if a drag should be started with code like this:
 
-    \snippet code/src_gui_kernel_qapplication.cpp 6
+    \snippet code/src_gui_kernel_qapplication.cpp 7
 
     Qt uses this value internally, e.g. in QFileDialog.
 
@@ -3078,7 +3057,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonDblClick:
         d->toolTipFallAsleep.stop();
-        // fall-through
+        Q_FALLTHROUGH();
     case QEvent::Leave:
         d->toolTipWakeUp.stop();
     default:

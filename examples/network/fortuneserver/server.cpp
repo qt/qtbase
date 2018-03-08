@@ -182,7 +182,7 @@ void Server::sendFortune()
     QDataStream out(&block, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_10);
 
-    out << fortunes[QRandomGenerator::bounded(fortunes.size())];
+    out << fortunes[QRandomGenerator::global()->bounded(fortunes.size())];
 //! [4] //! [7]
 
     QTcpSocket *clientConnection = tcpServer->nextPendingConnection();

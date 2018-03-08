@@ -133,7 +133,7 @@ public:
     /* we don't cache glyphs that are too large anyway, so we can make this struct rather small */
     struct Glyph {
         ~Glyph();
-        short linearAdvance;
+        int linearAdvance : 22;
         unsigned char width;
         unsigned char height;
         short x;
@@ -321,7 +321,7 @@ private:
     int loadFlags(QGlyphSet *set, GlyphFormat format, int flags, bool &hsubpixel, int &vfactor) const;
     bool shouldUseDesignMetrics(ShaperFlags flags) const;
     QFixed scaledBitmapMetrics(QFixed m) const;
-    glyph_metrics_t scaledBitmapMetrics(const glyph_metrics_t &m) const;
+    glyph_metrics_t scaledBitmapMetrics(const glyph_metrics_t &m, const QTransform &matrix) const;
 
     GlyphFormat defaultFormat;
     FT_Matrix matrix;

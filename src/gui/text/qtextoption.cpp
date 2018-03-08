@@ -165,7 +165,7 @@ void QTextOption::setTabArray(const QList<qreal> &tabStops)
     Sets the tab positions for the text layout to those specified by
     \a tabStops.
 
-    \sa tabStops()
+    \sa tabStop()
 */
 void QTextOption::setTabs(const QList<QTextOption::Tab> &tabStops)
 {
@@ -404,24 +404,24 @@ QList<QTextOption::Tab> QTextOption::tabs() const
 */
 
 /*!
-    \variable Tab::type
+    \variable QTextOption::Tab::type
     Determine which type is used.
     In a paragraph that has layoutDirection() RightToLeft the type LeftTab will
     be interpreted to be a RightTab and vice versa.
 */
 
 /*!
-    \variable Tab::delimiter
+    \variable QTextOption::Tab::delimiter
     If type is DelimitorTab; tab until this char is found in the text.
 */
 
 /*!
-    \fn Tab::Tab()
+    \fn QTextOption::Tab::Tab()
     Creates a default left tab with position 80.
 */
 
 /*!
-    \fn Tab::Tab(qreal pos, TabType tabType, QChar delim = QChar())
+    \fn QTextOption::Tab::Tab(qreal pos, TabType tabType, QChar delim = QChar())
 
     Creates a tab with the given position, tab type, and delimiter
     (\a pos, \a tabType, \a delim).
@@ -432,24 +432,17 @@ QList<QTextOption::Tab> QTextOption::tabs() const
 */
 
 /*!
-    \fn bool Tab::operator==(const Tab &other) const
+    \fn bool QTextOption::Tab::operator==(const QTextOption::Tab &other) const
 
     Returns \c true if tab \a other is equal to this tab;
     otherwise returns \c false.
 */
 
 /*!
-    \fn bool Tab::operator!=(const Tab &other) const
+    \fn bool QTextOption::Tab::operator!=(const QTextOption::Tab &other) const
 
     Returns \c true if tab \a other is not equal to this tab;
     otherwise returns \c false.
-*/
-
-/*!
-  \fn void setTabs(const QList<Tab> &tabStops)
-  Set the Tab properties to \a tabStops.
-
-  \sa tabStopDistance(), tabs()
 */
 
 /*!

@@ -749,8 +749,8 @@ void QNetworkSession::disconnectNotify(const QMetaMethod &signal)
         d->setALREnabled(false);
 }
 
-#include "moc_qnetworksession.cpp"
-
 QT_END_NAMESPACE
+
+#include "moc_qnetworksession.cpp"
 
 #endif // QT_NO_BEARERMANAGEMENT

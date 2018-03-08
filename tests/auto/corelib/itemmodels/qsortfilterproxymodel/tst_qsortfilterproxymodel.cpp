@@ -28,7 +28,6 @@
 
 #include <QtTest/QtTest>
 #include "dynamictreemodel.h"
-#include "modeltest.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtGui/QStandardItem>
@@ -152,6 +151,7 @@ private slots:
     void emitLayoutChangedOnlyIfSortingChanged_data();
     void emitLayoutChangedOnlyIfSortingChanged();
 
+    void checkSetNewModel();
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
     void checkHierarchy(const QStringList &data, const QAbstractItemModel *model);
@@ -1873,9 +1873,6 @@ void tst_QSortFilterProxyModel::changeFilter()
         QCOMPARE(args.at(2).toInt(), finalRemoveIntervals.at(i).second);
     }
 
-#ifdef Q_OS_IRIX
-    QEXPECT_FAIL("filter (2)", "Not reliable on IRIX", Abort);
-#endif
     QCOMPARE(finalInsertSpy.count(), insertIntervals.count());
     for (int i = 0; i < finalInsertSpy.count(); ++i) {
         QList<QVariant> args = finalInsertSpy.at(i);
@@ -3314,7 +3311,7 @@ void tst_QSortFilterProxyModel::filteredColumns()
     FilteredColumnProxyModel *proxy = new FilteredColumnProxyModel(this);
     proxy->setSourceModel(model);
 
-    new ModelTest(proxy, this);
+    new QAbstractItemModelTester(proxy, this);
 
     ModelInsertCommand *insertCommand = new ModelInsertCommand(model, this);
     insertCommand->setNumCols(2);
@@ -3353,7 +3350,7 @@ void tst_QSortFilterProxyModel::headerDataChanged()
     QSortFilterProxyModel *proxy = new QSortFilterProxyModel(this);
     proxy->setSourceModel(model);
 
-    new ModelTest(proxy, this);
+    new QAbstractItemModelTester(proxy, this);
 
     model->emitHeaderDataChanged();
 }
@@ -4131,7 +4128,7 @@ void tst_QSortFilterProxyModel::resortingDoesNotBreakTreeModels()
     proxy.sort(0);
     proxy.setSourceModel(treeModel);
 
-    ModelTest modelTest(&proxy);
+    QAbstractItemModelTester modelTester(&proxy);
 
     QCOMPARE(proxy.rowCount(), 2);
     e1->setText("entry1");
@@ -4230,6 +4227,10 @@ public:
 
     QModelIndex index(int, int, const QModelIndex& parent = QModelIndex()) const override
     {
+        // QTBUG-44962: Would we always expect the parent to belong to the model
+        qDebug() << parent.model() << this;
+        Q_ASSERT(!parent.isValid() || parent.model() == this);
+
         quintptr parentId = (parent.isValid()) ? parent.internalId() : 0;
         if (parentId >= m_depth)
             return QModelIndex();
@@ -4508,6 +4509,22 @@ void tst_QSortFilterProxyModel::dynamicFilterWithoutSort()
     QCOMPARE(model.stringList(), QStringList() << "Monday" << "Tuesday" << "Wednesday" << "Thursday" << "Friday");
 
     QCOMPARE(resetSpy.count(), 1);
+}
+
+void tst_QSortFilterProxyModel::checkSetNewModel()
+{
+    QTreeView tv;
+    StepTreeModel model1;
+    model1.setDepth(4);
+    StepTreeModel model2;
+    model2.setDepth(4);
+
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model1);
+    tv.setModel(&proxy);
+    tv.show();
+    tv.expandAll(); // create persistent indexes
+    proxy.setSourceModel(&model2);
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)

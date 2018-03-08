@@ -678,15 +678,20 @@ void QAbstractSpinBox::setLineEdit(QLineEdit *lineEdit)
         Q_ASSERT(lineEdit);
         return;
     }
+
+    if (lineEdit == d->edit)
+        return;
+
     delete d->edit;
     d->edit = lineEdit;
+    setProperty("_q_spinbox_lineedit", QVariant::fromValue<QWidget *>(d->edit));
     if (!d->edit->validator())
         d->edit->setValidator(d->validator);
 
     if (d->edit->parent() != this)
         d->edit->setParent(this);
 
-    d->edit->setFrame(false);
+    d->edit->setFrame(!style()->styleHint(QStyle::SH_SpinBox_ButtonsInsideFrame, nullptr, this));
     d->edit->setFocusProxy(this);
     d->edit->setAcceptDrops(false);
 
@@ -818,6 +823,8 @@ void QAbstractSpinBox::changeEvent(QEvent *event)
             d->spinClickTimerInterval = style()->styleHint(QStyle::SH_SpinBox_ClickAutoRepeatRate, 0, this);
             d->spinClickThresholdTimerInterval =
                 style()->styleHint(QStyle::SH_SpinBox_ClickAutoRepeatThreshold, 0, this);
+            if (d->edit)
+                d->edit->setFrame(!style()->styleHint(QStyle::SH_SpinBox_ButtonsInsideFrame, nullptr, this));
             d->reset();
             d->updateEditFieldGeometry();
             break;
@@ -870,15 +877,15 @@ QSize QAbstractSpinBox::sizeHint() const
         s = d->textFromValue(d->minimum);
         s.truncate(18);
         s += fixedContent;
-        w = qMax(w, fm.width(s));
+        w = qMax(w, fm.horizontalAdvance(s));
         s = d->textFromValue(d->maximum);
         s.truncate(18);
         s += fixedContent;
-        w = qMax(w, fm.width(s));
+        w = qMax(w, fm.horizontalAdvance(s));
 
         if (d->specialValueText.size()) {
             s = d->specialValueText;
-            w = qMax(w, fm.width(s));
+            w = qMax(w, fm.horizontalAdvance(s));
         }
         w += 2; // cursor blinking space
 
@@ -911,15 +918,15 @@ QSize QAbstractSpinBox::minimumSizeHint() const
         s = d->textFromValue(d->minimum);
         s.truncate(18);
         s += fixedContent;
-        w = qMax(w, fm.width(s));
+        w = qMax(w, fm.horizontalAdvance(s));
         s = d->textFromValue(d->maximum);
         s.truncate(18);
         s += fixedContent;
-        w = qMax(w, fm.width(s));
+        w = qMax(w, fm.horizontalAdvance(s));
 
         if (d->specialValueText.size()) {
             s = d->specialValueText;
-            w = qMax(w, fm.width(s));
+            w = qMax(w, fm.horizontalAdvance(s));
         }
         w += 2; // cursor blinking space
 
@@ -1644,7 +1651,9 @@ void QAbstractSpinBox::initStyleOption(QStyleOptionSpinBox *option) const
     option->initFrom(this);
     option->activeSubControls = QStyle::SC_None;
     option->buttonSymbols = d->buttonSymbols;
-    option->subControls = QStyle::SC_SpinBoxFrame | QStyle::SC_SpinBoxEditField;
+    option->subControls = QStyle::SC_SpinBoxEditField;
+    if (!style()->styleHint(QStyle::SH_SpinBox_ButtonsInsideFrame, nullptr, this))
+        option->subControls |= QStyle::SC_SpinBoxFrame;
     if (d->buttonSymbols != QAbstractSpinBox::NoButtons) {
         option->subControls |= QStyle::SC_SpinBoxUp | QStyle::SC_SpinBoxDown;
         if (d->buttonState & Up) {

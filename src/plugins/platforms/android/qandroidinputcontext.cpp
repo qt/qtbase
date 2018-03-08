@@ -438,6 +438,16 @@ QAndroidInputContext::QAndroidInputContext()
 
     QObject::connect(QGuiApplication::inputMethod(), &QInputMethod::cursorRectangleChanged,
                      this, &QAndroidInputContext::updateSelectionHandles);
+    QObject::connect(QGuiApplication::inputMethod(), &QInputMethod::anchorRectangleChanged,
+                     this, &QAndroidInputContext::updateSelectionHandles);
+    QObject::connect(QGuiApplication::inputMethod(), &QInputMethod::inputItemClipRectangleChanged, this, [this]{
+        auto im = qGuiApp->inputMethod();
+        if (!im->inputItemClipRectangle().contains(im->anchorRectangle()) ||
+                !im->inputItemClipRectangle().contains(im->cursorRectangle())) {
+            m_cursorHandleShown = CursorHandleNotShown;
+            updateSelectionHandles();
+        }
+    });
 }
 
 QAndroidInputContext::~QAndroidInputContext()
@@ -526,6 +536,10 @@ void QAndroidInputContext::updateCursorPosition()
 
 void QAndroidInputContext::updateSelectionHandles()
 {
+    static bool noHandles = qEnvironmentVariableIntValue("QT_QPA_NO_TEXT_HANDLES");
+    if (noHandles)
+        return;
+
     auto im = qGuiApp->inputMethod();
     if (!m_focusObject || (m_cursorHandleShown == CursorHandleNotShown)) {
         // Hide the handles
@@ -591,27 +605,63 @@ void QAndroidInputContext::handleLocationChanged(int handleId, int x, int y)
     double pixelDensity = window
         ? QHighDpiScaling::factor(window)
         : QHighDpiScaling::factor(QtAndroid::androidPlatformIntegration()->screen());
-    QPoint point(x / pixelDensity, y / pixelDensity);
-    y -= leftRect.width() / 2;
+    QPointF point(x / pixelDensity, y / pixelDensity);
+    point.setY(point.y() - leftRect.width() / 2);
     if (handleId == 1) {
         setSelectionOnFocusObject(point, point);
         return;
     }
 
-    QInputMethodQueryEvent query(Qt::ImCursorPosition | Qt::ImAnchorPosition);
+    QInputMethodQueryEvent query(Qt::ImCursorPosition | Qt::ImAnchorPosition | Qt::ImCurrentSelection);
     QCoreApplication::sendEvent(m_focusObject, &query);
     int cpos = query.value(Qt::ImCursorPosition).toInt();
     int anchor = query.value(Qt::ImAnchorPosition).toInt();
-
+    bool rtl = query.value(Qt::ImCurrentSelection).toString().isRightToLeft();
     auto rightRect = im->anchorRectangle();
     if (cpos > anchor)
         std::swap(leftRect, rightRect);
 
+    auto checkLeftHandle = [&rightRect](QPointF &handlePos) {
+        if (handlePos.y() > rightRect.center().y())
+            handlePos.setY(rightRect.center().y()); // adjust Y handle pos
+        if (handlePos.y() >= rightRect.y() && handlePos.y() <= rightRect.bottom() && handlePos.x() >= rightRect.x())
+            return false; // same line and wrong X pos ?
+        return true;
+    };
+
+    auto checkRtlRightHandle = [&rightRect](QPointF &handlePos) {
+        if (handlePos.y() > rightRect.center().y())
+            handlePos.setY(rightRect.center().y()); // adjust Y handle pos
+        if (handlePos.y() >= rightRect.y() && handlePos.y() <= rightRect.bottom() && rightRect.x() >= handlePos.x())
+            return false; // same line and wrong X pos ?
+        return true;
+    };
+
+    auto checkRightHandle = [&leftRect](QPointF &handlePos) {
+        if (handlePos.y() < leftRect.center().y())
+            handlePos.setY(leftRect.center().y()); // adjust Y handle pos
+        if (handlePos.y() >= leftRect.y() && handlePos.y() <= leftRect.bottom() && leftRect.x() >= handlePos.x())
+            return false; // same line and wrong X pos ?
+        return true;
+    };
+
+    auto checkRtlLeftHandle = [&leftRect](QPointF &handlePos) {
+        if (handlePos.y() < leftRect.center().y())
+            handlePos.setY(leftRect.center().y()); // adjust Y handle pos
+        if (handlePos.y() >= leftRect.y() && handlePos.y() <= leftRect.bottom() && handlePos.x() >= leftRect.x())
+            return false; // same line and wrong X pos ?
+        return true;
+    };
+
     if (handleId == 2) {
-        QPoint rightPoint(rightRect.center().toPoint());
+        QPointF rightPoint(rightRect.center());
+        if ((!rtl && !checkLeftHandle(point)) || (rtl && !checkRtlRightHandle(point)))
+            return;
         setSelectionOnFocusObject(point, rightPoint);
     } else if (handleId == 3) {
-        QPoint leftPoint(leftRect.center().toPoint());
+        QPointF leftPoint(leftRect.center());
+        if ((!rtl && !checkRightHandle(point)) || (rtl && !checkRtlLeftHandle(point)))
+            return;
         setSelectionOnFocusObject(leftPoint, point);
     }
 }
@@ -843,11 +893,11 @@ jint QAndroidInputContext::getCursorCapsMode(jint /*reqModes*/)
 
     const uint qtInputMethodHints = query->value(Qt::ImHints).toUInt();
 
-    if (qtInputMethodHints & Qt::ImhPreferUppercase)
-        res = CAP_MODE_SENTENCES;
+    if (!(qtInputMethodHints & Qt::ImhLowercaseOnly) && !(qtInputMethodHints & Qt::ImhNoAutoUppercase))
+        res |= CAP_MODE_SENTENCES;
 
     if (qtInputMethodHints & Qt::ImhUppercaseOnly)
-        res = CAP_MODE_CHARACTERS;
+        res |= CAP_MODE_CHARACTERS;
 
     return res;
 }

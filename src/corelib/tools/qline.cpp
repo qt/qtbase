@@ -508,7 +508,7 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 */
 
 /*!
-    \fn QLineF::setLength(qreal length)
+    \fn void QLineF::setLength(qreal length)
 
     Sets the length of the line to the given \a length. QLineF will
     move the end point - p2() - of the line to give the line its new length.

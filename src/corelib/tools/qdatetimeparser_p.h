@@ -69,7 +69,7 @@ QT_REQUIRE_CONFIG(datetimeparser);
 #define QDATETIMEEDIT_TIME_MAX QTime(23, 59, 59, 999)
 #define QDATETIMEEDIT_DATE_MIN QDate(100, 1, 1)
 #define QDATETIMEEDIT_COMPAT_DATE_MIN QDate(1752, 9, 14)
-#define QDATETIMEEDIT_DATE_MAX QDate(7999, 12, 31)
+#define QDATETIMEEDIT_DATE_MAX QDate(9999, 12, 31)
 #define QDATETIMEEDIT_DATETIME_MIN QDateTime(QDATETIMEEDIT_DATE_MIN, QDATETIMEEDIT_TIME_MIN)
 #define QDATETIMEEDIT_COMPAT_DATETIME_MIN QDateTime(QDATETIMEEDIT_COMPAT_DATE_MIN, QDATETIMEEDIT_TIME_MIN)
 #define QDATETIMEEDIT_DATETIME_MAX QDateTime(QDATETIMEEDIT_DATE_MAX, QDATETIMEEDIT_TIME_MAX)
@@ -223,7 +223,10 @@ private:
                 QString *dayName = 0, int *used = 0) const;
     ParsedSection findTimeZone(QStringRef str, const QDateTime &when,
                                int maxVal, int minVal) const;
-    static int startsWithLocalTimeZone(const QStringRef name); // implemented in qdatetime.cpp
+#if QT_CONFIG(timezone)
+    // Implemented in qdatetime.cpp:
+    static int startsWithLocalTimeZone(const QStringRef name);
+#endif
 
     enum AmPmFinder {
         Neither = -1,

@@ -548,6 +548,8 @@ CursorHandlePtr QWindowsCursor::standardWindowCursor(Qt::CursorShape shape)
     return it != m_standardCursorCache.end() ? it.value() : CursorHandlePtr(new CursorHandle);
 }
 
+HCURSOR QWindowsCursor::m_overriddenCursor = nullptr;
+
 /*!
     \brief Return cached pixmap cursor or create new one.
 */
@@ -623,7 +625,9 @@ void QWindowsCursor::setOverrideCursor(const QCursor &cursor)
 {
     const CursorHandlePtr wcursor = cursorHandle(cursor);
     if (wcursor->handle()) {
-        m_overriddenCursor = SetCursor(wcursor->handle());
+        const HCURSOR previousCursor = SetCursor(wcursor->handle());
+        if (m_overriddenCursor == nullptr)
+            m_overriddenCursor = previousCursor;
     } else {
         qWarning("%s: Unable to obtain system cursor for %d",
                  __FUNCTION__, cursor.shape());

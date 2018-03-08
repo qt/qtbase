@@ -147,7 +147,7 @@ static bool setNativeLocks(int fd)
 QLockFile::LockError QLockFilePrivate::tryLock_sys()
 {
     const QByteArray lockFileName = QFile::encodeName(fileName);
-    const int fd = qt_safe_open(lockFileName.constData(), O_WRONLY | O_CREAT | O_EXCL, 0666);
+    const int fd = qt_safe_open(lockFileName.constData(), O_RDWR | O_CREAT | O_EXCL, 0666);
     if (fd < 0) {
         switch (errno) {
         case EEXIST:

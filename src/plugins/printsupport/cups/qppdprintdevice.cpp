@@ -42,6 +42,8 @@
 #include <QtCore/QMimeDatabase>
 #include <qdebug.h>
 
+#include "private/qcups_p.h" // Only needed for PDPK_*
+
 #ifndef QT_LINUXBASE // LSB merges everything into cups.h
 #include <cups/language.h>
 #endif
@@ -421,6 +423,46 @@ QPrint::ColorMode QPpdPrintDevice::defaultColorMode() const
     return QPrint::GrayScale;
 }
 
+QVariant QPpdPrintDevice::property(QPrintDevice::PrintDevicePropertyKey key) const
+{
+    if (key == PDPK_PpdFile)
+        return QVariant::fromValue<ppd_file_t *>(m_ppd);
+    else if (key == PDPK_CupsJobPriority)
+        return printerOption(QStringLiteral("job-priority"));
+    else if (key == PDPK_CupsJobSheets)
+        return printerOption(QStringLiteral("job-sheets"));
+    else if (key == PDPK_CupsJobBilling)
+        return printerOption(QStringLiteral("job-billing"));
+    else if (key == PDPK_CupsJobHoldUntil)
+        return printerOption(QStringLiteral("job-hold-until"));
+
+    return QPlatformPrintDevice::property(key);
+}
+
+bool QPpdPrintDevice::setProperty(QPrintDevice::PrintDevicePropertyKey key, const QVariant &value)
+{
+    if (key == PDPK_PpdOption) {
+        const QStringList values = value.toStringList();
+        if (values.count() == 2) {
+            ppdMarkOption(m_ppd, values[0].toLatin1(), values[1].toLatin1());
+            return true;
+        }
+    }
+
+    return QPlatformPrintDevice::setProperty(key, value);
+}
+
+bool QPpdPrintDevice::isFeatureAvailable(QPrintDevice::PrintDevicePropertyKey key, const QVariant &params) const
+{
+    if (key == PDPK_PpdChoiceIsInstallableConflict) {
+        const QStringList values = params.toStringList();
+        if (values.count() == 2)
+            return ppdInstallableConflict(m_ppd, values[0].toLatin1(), values[1].toLatin1());
+    }
+
+    return QPlatformPrintDevice::isFeatureAvailable(key, params);
+}
+
 #ifndef QT_NO_MIMETYPE
 void QPpdPrintDevice::loadMimeTypes() const
 {
@@ -452,7 +494,7 @@ void QPpdPrintDevice::loadPrinter()
     }
 
     // Get the print instance and PPD file
-    m_cupsDest = cupsGetNamedDest(CUPS_HTTP_DEFAULT, m_cupsName, m_cupsInstance);
+    m_cupsDest = cupsGetNamedDest(CUPS_HTTP_DEFAULT, m_cupsName, m_cupsInstance.isNull() ? nullptr : m_cupsInstance.constData());
     if (m_cupsDest) {
         const char *ppdFile = cupsGetPPD(m_cupsName);
         if (ppdFile) {
@@ -461,6 +503,8 @@ void QPpdPrintDevice::loadPrinter()
         }
         if (m_ppd) {
             ppdMarkDefaults(m_ppd);
+            cupsMarkOptions(m_ppd, m_cupsDest->num_options, m_cupsDest->options);
+            ppdLocalize(m_ppd);
         } else {
             cupsFreeDests(1, m_cupsDest);
             m_cupsDest = 0;

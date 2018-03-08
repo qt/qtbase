@@ -131,7 +131,7 @@ public:
     ~QStaticTextPrivate();
 
     void init();
-    void paintText(const QPointF &pos, QPainter *p);
+    void paintText(const QPointF &pos, QPainter *p, const QColor &pen);
 
     void invalidate()
     {

@@ -69,6 +69,12 @@ public:
 
 public Q_SLOTS:
     void setOrientation(Qt::Orientation o);
+
+protected:
+    bool event(QEvent *e) override;
+
+private:
+    Qt::Orientation m_orientation;
 };
 
 QT_END_NAMESPACE

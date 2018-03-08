@@ -75,32 +75,36 @@ NSScreen *QCocoaScreen::nativeScreen() const
     return [screens objectAtIndex:m_screenIndex];
 }
 
-/*!
-    Flips the Y coordinate of the point between quadrant I and IV.
-
-    The native coordinate system on macOS uses quadrant I, with origin
-    in bottom left, and Qt uses quadrant IV, with origin in top left.
-
-    By flippig the Y coordinate, we can map the position between the
-    two coordinate systems.
-*/
-QPointF QCocoaScreen::flipCoordinate(const QPointF &pos) const
+static QString displayName(CGDirectDisplayID displayID)
 {
-    return QPointF(pos.x(), m_geometry.height() - pos.y());
-}
+    QIOType<io_iterator_t> iterator;
+    if (IOServiceGetMatchingServices(kIOMasterPortDefault,
+        IOServiceMatching("IODisplayConnect"), &iterator))
+        return QString();
 
-/*!
-    Flips the Y coordinate of the rectangle between quadrant I and IV.
+    QIOType<io_service_t> display;
+    while ((display = IOIteratorNext(iterator)) != 0)
+    {
+        NSDictionary *info = [(__bridge NSDictionary*)IODisplayCreateInfoDictionary(
+            display, kIODisplayOnlyPreferredName) autorelease];
 
-    The native coordinate system on macOS uses quadrant I, with origin
-    in bottom left, and Qt uses quadrant IV, with origin in top left.
+        if ([[info objectForKey:@kDisplayVendorID] longValue] != CGDisplayVendorNumber(displayID))
+            continue;
 
-    By flippig the Y coordinate, we can map the rectangle between the
-    two coordinate systems.
-*/
-QRectF QCocoaScreen::flipCoordinate(const QRectF &rect) const
-{
-    return QRectF(flipCoordinate(rect.topLeft() + QPoint(0, rect.height())), rect.size());
+        if ([[info objectForKey:@kDisplayProductID] longValue] != CGDisplayModelNumber(displayID))
+            continue;
+
+        if ([[info objectForKey:@kDisplaySerialNumber] longValue] != CGDisplaySerialNumber(displayID))
+            continue;
+
+        NSDictionary *localizedNames = [info objectForKey:@kDisplayProductName];
+        if (![localizedNames count])
+            break; // Correct screen, but no name in dictionary
+
+        return QString::fromNSString([localizedNames objectForKey:[[localizedNames allKeys] objectAtIndex:0]]);
+    }
+
+    return QString();
 }
 
 void QCocoaScreen::updateGeometry()
@@ -109,20 +113,10 @@ void QCocoaScreen::updateGeometry()
     if (!nsScreen)
         return;
 
-    // At this point the geometry is in native coordinates, but the size
-    // is correct, which we take advantage of next when we map the native
-    // coordinates to the Qt coordinate system.
-    m_geometry = QRectF::fromCGRect(NSRectToCGRect(nsScreen.frame)).toRect();
-    m_availableGeometry = QRectF::fromCGRect(NSRectToCGRect(nsScreen.visibleFrame)).toRect();
-
-    // The reference screen for the geometry is always the primary screen, but since
-    // we may be in the process of creating and registering the primary screen, we
-    // must special-case that and assign it direcly.
-    QCocoaScreen *primaryScreen = (nsScreen == [[NSScreen screens] firstObject]) ?
-        this : QCocoaScreen::primaryScreen();
-
-    m_geometry = primaryScreen->mapFromNative(m_geometry).toRect();
-    m_availableGeometry = primaryScreen->mapFromNative(m_availableGeometry).toRect();
+    // The reference screen for the geometry is always the primary screen
+    QRectF primaryScreenGeometry = QRectF::fromCGRect([[NSScreen screens] firstObject].frame);
+    m_geometry = qt_mac_flip(QRectF::fromCGRect(nsScreen.frame), primaryScreenGeometry).toRect();
+    m_availableGeometry = qt_mac_flip(QRectF::fromCGRect(nsScreen.visibleFrame), primaryScreenGeometry).toRect();
 
     m_format = QImage::Format_RGB32;
     m_depth = NSBitsPerPixelFromDepth([nsScreen depth]);
@@ -139,12 +133,7 @@ void QCocoaScreen::updateGeometry()
     if (refresh > 0)
         m_refreshRate = refresh;
 
-    // Get m_name (brand/model of the monitor)
-    NSDictionary *deviceInfo = (NSDictionary *)IODisplayCreateInfoDictionary(CGDisplayIOServicePort(dpy), kIODisplayOnlyPreferredName);
-    NSDictionary *localizedNames = [deviceInfo objectForKey:[NSString stringWithUTF8String:kDisplayProductName]];
-    if ([localizedNames count] > 0)
-        m_name = QString::fromUtf8([[localizedNames objectForKey:[[localizedNames allKeys] objectAtIndex:0]] UTF8String]);
-    [deviceInfo release];
+    m_name = displayName(dpy);
 
     QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry(), availableGeometry());
     QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen(), m_logicalDpi.first, m_logicalDpi.second);
@@ -170,7 +159,7 @@ QPlatformScreen::SubpixelAntialiasingType QCocoaScreen::subpixelAntialiasingType
 
 QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
 {
-    NSPoint screenPoint = qt_mac_flipPoint(point);
+    NSPoint screenPoint = mapToNative(point);
 
     // Search (hit test) for the top-level window. [NSWidow windowNumberAtPoint:
     // belowWindowWithWindowNumber] may return windows that are not interesting
@@ -244,25 +233,28 @@ QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height
             windowSize.setHeight(windowRect.height());
     }
 
-    QPixmap windowPixmap(windowSize * devicePixelRatio());
+    const qreal dpr = devicePixelRatio();
+    QPixmap windowPixmap(windowSize * dpr);
     windowPixmap.fill(Qt::transparent);
 
     for (uint i = 0; i < displayCount; ++i) {
         const CGRect bounds = CGDisplayBounds(displays[i]);
-        int w = (width < 0 ? bounds.size.width : width) * devicePixelRatio();
-        int h = (height < 0 ? bounds.size.height : height) * devicePixelRatio();
-        QRect displayRect = QRect(x, y, w, h);
-        displayRect = displayRect.translated(qRound(-bounds.origin.x), qRound(-bounds.origin.y));
-        QCFType<CGImageRef> image = CGDisplayCreateImageForRect(displays[i],
-            CGRectMake(displayRect.x(), displayRect.y(), displayRect.width(), displayRect.height()));
-        QPixmap pix(w, h);
-        pix.fill(Qt::transparent);
-        CGRect rect = CGRectMake(0, 0, w, h);
-        QMacCGContext ctx(&pix);
-        qt_mac_drawCGImage(ctx, &rect, image);
 
+        // Calculate the position and size of the requested area
+        QPoint pos(qAbs(bounds.origin.x - x), qAbs(bounds.origin.y - y));
+        QSize size(qMin(pos.x() + width, qRound(bounds.size.width)),
+                   qMin(pos.y() + height, qRound(bounds.size.height)));
+        pos *= dpr;
+        size *= dpr;
+
+        // Take the whole screen and crop it afterwards, because CGDisplayCreateImageForRect
+        // has a strange behavior when mixing highDPI and non-highDPI displays
+        QCFType<CGImageRef> cgImage = CGDisplayCreateImage(displays[i]);
+        const QImage image = qt_mac_toQImage(cgImage);
+
+        // Draw into windowPixmap only the requested size
         QPainter painter(&windowPixmap);
-        painter.drawPixmap(0, 0, pix);
+        painter.drawImage(windowPixmap.rect(), image, QRect(pos, size));
     }
     return windowPixmap;
 }
@@ -274,5 +266,47 @@ QCocoaScreen *QCocoaScreen::primaryScreen()
 {
     return static_cast<QCocoaScreen *>(QGuiApplication::primaryScreen()->handle());
 }
+
+CGPoint QCocoaScreen::mapToNative(const QPointF &pos, QCocoaScreen *screen)
+{
+    Q_ASSERT(screen);
+    return qt_mac_flip(pos, screen->geometry()).toCGPoint();
+}
+
+CGRect QCocoaScreen::mapToNative(const QRectF &rect, QCocoaScreen *screen)
+{
+    Q_ASSERT(screen);
+    return qt_mac_flip(rect, screen->geometry()).toCGRect();
+}
+
+QPointF QCocoaScreen::mapFromNative(CGPoint pos, QCocoaScreen *screen)
+{
+    Q_ASSERT(screen);
+    return qt_mac_flip(QPointF::fromCGPoint(pos), screen->geometry());
+}
+
+QRectF QCocoaScreen::mapFromNative(CGRect rect, QCocoaScreen *screen)
+{
+    Q_ASSERT(screen);
+    return qt_mac_flip(QRectF::fromCGRect(rect), screen->geometry());
+}
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QCocoaScreen *screen)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug << "QCocoaScreen(" << (const void *)screen;
+    if (screen) {
+        debug << ", index=" << screen->m_screenIndex;
+        debug << ", native=" << screen->nativeScreen();
+        debug << ", geometry=" << screen->geometry();
+        debug << ", dpr=" << screen->devicePixelRatio();
+        debug << ", name=" << screen->name();
+    }
+    debug << ')';
+    return debug;
+}
+#endif // !QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE

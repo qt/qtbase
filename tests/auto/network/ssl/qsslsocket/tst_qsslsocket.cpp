@@ -238,6 +238,8 @@ private slots:
     void allowedProtocolNegotiation();
     void pskServer();
     void forwardReadChannelFinished();
+    void signatureAlgorithm_data();
+    void signatureAlgorithm();
 #endif
 
     void setEmptyDefaultConfiguration(); // this test should be last
@@ -278,7 +280,10 @@ private:
 #endif // QT_NO_SSL
 private:
     static int loopLevel;
+public:
+    static QString testDataDir;
 };
+QString tst_QSslSocket::testDataDir;
 
 #ifndef QT_NO_SSL
 #ifndef QT_NO_OPENSSL
@@ -332,6 +337,11 @@ void tst_QSslSocket::initTestCase_data()
 
 void tst_QSslSocket::initTestCase()
 {
+    testDataDir = QFileInfo(QFINDTESTDATA("certs")).absolutePath();
+    if (testDataDir.isEmpty())
+        testDataDir = QCoreApplication::applicationDirPath();
+    if (!testDataDir.endsWith(QLatin1String("/")))
+        testDataDir += QLatin1String("/");
 #ifndef QT_NO_SSL
     qDebug("Using SSL library %s (%ld)",
            qPrintable(QSslSocket::sslLibraryVersionString()),
@@ -705,7 +715,7 @@ void tst_QSslSocket::connectToHostEncrypted()
 
     QSslSocketPtr socket = newSocket();
     this->socket = socket.data();
-    QVERIFY(socket->addCaCertificates(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem")));
+    QVERIFY(socket->addCaCertificates(testDataDir + "certs/qt-test-server-cacert.pem"));
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
     connect(socket.data(), SIGNAL(sslErrors(QList<QSslError>)),
             this, SLOT(untrustedWorkaroundSlot(QList<QSslError>)));
@@ -739,7 +749,7 @@ void tst_QSslSocket::connectToHostEncryptedWithVerificationPeerName()
     QSslSocketPtr socket = newSocket();
     this->socket = socket.data();
 
-    socket->addCaCertificates(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
+    socket->addCaCertificates(testDataDir + "certs/qt-test-server-cacert.pem");
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
     connect(socket.data(), SIGNAL(sslErrors(QList<QSslError>)),
             this, SLOT(untrustedWorkaroundSlot(QList<QSslError>)));
@@ -803,10 +813,10 @@ void tst_QSslSocket::localCertificate()
     // values. This test should just run the codepath inside qsslsocket_openssl.cpp
 
     QSslSocketPtr socket = newSocket();
-    QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/qt-test-server-cacert.pem");
+    QList<QSslCertificate> localCert = QSslCertificate::fromPath(testDataDir + "certs/qt-test-server-cacert.pem");
     socket->setCaCertificates(localCert);
-    socket->setLocalCertificate(QLatin1String(SRCDIR "certs/fluke.cert"));
-    socket->setPrivateKey(QLatin1String(SRCDIR "certs/fluke.key"));
+    socket->setLocalCertificate(testDataDir + "certs/fluke.cert");
+    socket->setPrivateKey(testDataDir + "certs/fluke.key");
 
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
     QFETCH_GLOBAL(bool, setProxy);
@@ -832,7 +842,7 @@ void tst_QSslSocket::peerCertificateChain()
     QSslSocketPtr socket = newSocket();
     this->socket = socket.data();
 
-    QList<QSslCertificate> caCertificates = QSslCertificate::fromPath(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
+    QList<QSslCertificate> caCertificates = QSslCertificate::fromPath(testDataDir + "certs/qt-test-server-cacert.pem");
     QCOMPARE(caCertificates.count(), 1);
     socket->addCaCertificates(caCertificates);
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
@@ -895,7 +905,7 @@ void tst_QSslSocket::privateKeyOpaque()
     if (!QSslSocket::supportsSsl())
         return;
 
-    QFile file(SRCDIR "certs/fluke.key");
+    QFile file(testDataDir + "certs/fluke.key");
     QVERIFY(file.open(QIODevice::ReadOnly));
     QSslKey key(file.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
     QVERIFY(!key.isNull());
@@ -908,9 +918,9 @@ void tst_QSslSocket::privateKeyOpaque()
     // values. This test should just run the codepath inside qsslsocket_openssl.cpp
 
     QSslSocketPtr socket = newSocket();
-    QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/qt-test-server-cacert.pem");
+    QList<QSslCertificate> localCert = QSslCertificate::fromPath(testDataDir + "certs/qt-test-server-cacert.pem");
     socket->setCaCertificates(localCert);
-    socket->setLocalCertificate(QLatin1String(SRCDIR "certs/fluke.cert"));
+    socket->setLocalCertificate(testDataDir + "certs/fluke.cert");
     socket->setPrivateKey(QSslKey(reinterpret_cast<Qt::HANDLE>(pkey)));
 
     socket->setPeerVerifyMode(QSslSocket::QueryPeer);
@@ -928,7 +938,7 @@ void tst_QSslSocket::protocol()
 
     QSslSocketPtr socket = newSocket();
     this->socket = socket.data();
-    QList<QSslCertificate> certs = QSslCertificate::fromPath(SRCDIR "certs/qt-test-server-cacert.pem");
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(testDataDir + "certs/qt-test-server-cacert.pem");
 
     socket->setCaCertificates(certs);
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
@@ -1075,8 +1085,8 @@ class SslServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    SslServer(const QString &keyFile = SRCDIR "certs/fluke.key",
-              const QString &certFile = SRCDIR "certs/fluke.cert",
+    SslServer(const QString &keyFile = tst_QSslSocket::testDataDir + "certs/fluke.key",
+              const QString &certFile = tst_QSslSocket::testDataDir + "certs/fluke.cert",
               const QString &interFile = QString())
         : socket(0),
           config(QSslConfiguration::defaultConfiguration()),
@@ -1167,6 +1177,9 @@ protected slots:
 
 void tst_QSslSocket::protocolServerSide_data()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QTest::addColumn<QSsl::SslProtocol>("serverProtocol");
     QTest::addColumn<QSsl::SslProtocol>("clientProtocol");
     QTest::addColumn<bool>("works");
@@ -1347,6 +1360,9 @@ void tst_QSslSocket::protocolServerSide()
 
 void tst_QSslSocket::serverCipherPreferences()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     if (!QSslSocket::supportsSsl()) {
         qWarning("SSL not supported, skipping test");
         return;
@@ -1422,7 +1438,7 @@ void tst_QSslSocket::setCaCertificates()
 
     QSslSocket socket;
     QCOMPARE(socket.caCertificates(), QSslSocket::defaultCaCertificates());
-    socket.setCaCertificates(QSslCertificate::fromPath(SRCDIR "certs/qt-test-server-cacert.pem"));
+    socket.setCaCertificates(QSslCertificate::fromPath(testDataDir + "certs/qt-test-server-cacert.pem"));
     QCOMPARE(socket.caCertificates().size(), 1);
     socket.setCaCertificates(socket.defaultCaCertificates());
     QCOMPARE(socket.caCertificates(), QSslSocket::defaultCaCertificates());
@@ -1438,7 +1454,7 @@ void tst_QSslSocket::localCertificateChain()
         return;
 
     QSslSocket socket;
-    socket.setLocalCertificate(QLatin1String(SRCDIR "certs/fluke.cert"));
+    socket.setLocalCertificate(testDataDir + "certs/fluke.cert");
 
     QSslConfiguration conf = socket.sslConfiguration();
     QList<QSslCertificate> chain = conf.localCertificateChain();
@@ -1449,6 +1465,9 @@ void tst_QSslSocket::localCertificateChain()
 
 void tst_QSslSocket::setLocalCertificateChain()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     if (!QSslSocket::supportsSsl())
         return;
 
@@ -1456,9 +1475,9 @@ void tst_QSslSocket::setLocalCertificateChain()
     if (setProxy)
         return;
 
-    SslServer server(QLatin1String(SRCDIR "certs/leaf.key"),
-                     QLatin1String(SRCDIR "certs/leaf.crt"),
-                     QLatin1String(SRCDIR "certs/inter.crt"));
+    SslServer server(testDataDir + "certs/leaf.key",
+                     testDataDir + "certs/leaf.crt",
+                     testDataDir + "certs/inter.crt");
 
     QVERIFY(server.listen());
 
@@ -1486,6 +1505,9 @@ void tst_QSslSocket::setPrivateKey()
 
 void tst_QSslSocket::setSocketDescriptor()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     if (!QSslSocket::supportsSsl())
         return;
 
@@ -1524,7 +1546,7 @@ void tst_QSslSocket::setSslConfiguration_data()
     QTest::newRow("empty") << QSslConfiguration() << false;
     QSslConfiguration conf = QSslConfiguration::defaultConfiguration();
     QTest::newRow("default") << conf << false; // does not contain test server cert
-    QList<QSslCertificate> testServerCert = QSslCertificate::fromPath(SRCDIR "certs/qt-test-server-cacert.pem");
+    QList<QSslCertificate> testServerCert = QSslCertificate::fromPath(testDataDir + "certs/qt-test-server-cacert.pem");
     conf.setCaCertificates(testServerCert);
     QTest::newRow("set-root-cert") << conf << true;
     conf.setProtocol(QSsl::SecureProtocols);
@@ -1601,7 +1623,12 @@ void tst_QSslSocket::waitForConnectedEncryptedReadyRead()
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy && !socket->waitForEncrypted(10000))
         QSKIP("Skipping flaky test - See QTBUG-29941");
-    QVERIFY(socket->waitForReadyRead(10000));
+
+    // We only do this if we have no bytes available to read already because readyRead will
+    // not be emitted again.
+    if (socket->bytesAvailable() == 0)
+        QVERIFY(socket->waitForReadyRead(10000));
+
     QVERIFY(!socket->peerCertificate().isNull());
     QVERIFY(!socket->peerCertificateChain().isEmpty());
 }
@@ -1622,7 +1649,7 @@ void tst_QSslSocket::addDefaultCaCertificate()
     // Reset the global CA chain
     QSslSocket::setDefaultCaCertificates(QSslSocket::systemCaCertificates());
 
-    QList<QSslCertificate> flukeCerts = QSslCertificate::fromPath(SRCDIR "certs/qt-test-server-cacert.pem");
+    QList<QSslCertificate> flukeCerts = QSslCertificate::fromPath(testDataDir + "certs/qt-test-server-cacert.pem");
     QCOMPARE(flukeCerts.size(), 1);
     QList<QSslCertificate> globalCerts = QSslSocket::defaultCaCertificates();
     QVERIFY(!globalCerts.contains(flukeCerts.first()));
@@ -1734,7 +1761,7 @@ void tst_QSslSocket::isMatchingHostname()
 {
     // with normalization:  (the certificate has *.SCHÄUFELE.DE as a CN)
     // openssl req -x509 -nodes -subj "/CN=*.SCHÄUFELE.DE" -newkey rsa:512 -keyout /dev/null -out xn--schufele-2za.crt
-    QList<QSslCertificate> certs = QSslCertificate::fromPath(SRCDIR "certs/xn--schufele-2za.crt");
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(testDataDir + "certs/xn--schufele-2za.crt");
     QVERIFY(!certs.isEmpty());
     QSslCertificate cert = certs.first();
 
@@ -1790,7 +1817,7 @@ protected:
         socket->ignoreSslErrors();
 
         // Only set the certificate
-        QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
+        QList<QSslCertificate> localCert = QSslCertificate::fromPath(tst_QSslSocket::testDataDir + "certs/fluke.cert");
         QVERIFY(!localCert.isEmpty());
         QVERIFY(!localCert.first().isNull());
         socket->setLocalCertificate(localCert.first());
@@ -1803,6 +1830,9 @@ protected:
 
 void tst_QSslSocket::setEmptyKey()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     if (!QSslSocket::supportsSsl())
         return;
 
@@ -1824,6 +1854,9 @@ void tst_QSslSocket::setEmptyKey()
 
 void tst_QSslSocket::spontaneousWrite()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -1869,6 +1902,9 @@ void tst_QSslSocket::spontaneousWrite()
 
 void tst_QSslSocket::setReadBufferSize()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -2019,13 +2055,14 @@ protected:
         socket = new QSslSocket(this);
         connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
 
-        QFile file(SRCDIR "certs/fluke.key");
+        QFile file(tst_QSslSocket::testDataDir + "certs/fluke.key");
         QVERIFY(file.open(QIODevice::ReadOnly));
         QSslKey key(file.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
         QVERIFY(!key.isNull());
         socket->setPrivateKey(key);
 
-        QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
+        QList<QSslCertificate> localCert = QSslCertificate::fromPath(tst_QSslSocket::testDataDir
+                                                                     + "certs/fluke.cert");
         QVERIFY(!localCert.isEmpty());
         QVERIFY(!localCert.first().isNull());
         socket->setLocalCertificate(localCert.first());
@@ -2129,6 +2166,9 @@ void tst_QSslSocket::waitForMinusOne()
 #ifdef Q_OS_WIN
     QSKIP("QTBUG-24451 - indefinite wait may hang");
 #endif
+#ifdef Q_OS_WINRT // This can stay in case the one above goes away
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -2198,8 +2238,8 @@ protected:
     {
         socket = new QSslSocket(this);
 
-        socket->setPrivateKey(SRCDIR "certs/fluke.key");
-        socket->setLocalCertificate(SRCDIR "certs/fluke.cert");
+        socket->setPrivateKey(tst_QSslSocket::testDataDir + "certs/fluke.key");
+        socket->setLocalCertificate(tst_QSslSocket::testDataDir + "certs/fluke.cert");
         socket->setSocketDescriptor(socketDescriptor);
         socket->startServerEncryption();
     }
@@ -2207,6 +2247,9 @@ protected:
 
 void tst_QSslSocket::verifyMode()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -2314,7 +2357,7 @@ void tst_QSslSocket::resetProxy()
     // make sure the connection works, and then set a nonsense proxy, and then
     // make sure it does not work anymore
     QSslSocket socket;
-    socket.addCaCertificates(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
+    socket.addCaCertificates(testDataDir + "certs/qt-test-server-cacert.pem");
     socket.setProxy(goodProxy);
     socket.connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
     QVERIFY2(socket.waitForConnected(10000), qPrintable(socket.errorString()));
@@ -2333,7 +2376,7 @@ void tst_QSslSocket::resetProxy()
     // set the nonsense proxy and make sure the connection does not work,
     // and then set the right proxy and make sure it works
     QSslSocket socket2;
-    socket2.addCaCertificates(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
+    socket2.addCaCertificates(testDataDir + "certs/qt-test-server-cacert.pem");
     socket2.setProxy(badProxy);
     socket2.connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
     QVERIFY(! socket2.waitForConnected(10000));
@@ -2352,7 +2395,7 @@ void tst_QSslSocket::ignoreSslErrorsList_data()
     // construct the list of errors that we will get with the SSL handshake and that we will ignore
     QList<QSslError> expectedSslErrors;
     // fromPath gives us a list of certs, but it actually only contains one
-    QList<QSslCertificate> certs = QSslCertificate::fromPath(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(testDataDir + "certs/qt-test-server-cacert.pem");
     QSslError rightError(FLUKE_CERTIFICATE_ERROR, certs.at(0));
     QSslError wrongError(FLUKE_CERTIFICATE_ERROR);
 
@@ -2425,6 +2468,9 @@ void tst_QSslSocket::ignoreSslErrorsListWithSlot()
 
 void tst_QSslSocket::abortOnSslErrors()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -2521,11 +2567,14 @@ void tst_QSslSocket::writeBigChunk()
 
 void tst_QSslSocket::blacklistedCertificates()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
 
-    SslServer server(SRCDIR "certs/fake-login.live.com.key", SRCDIR "certs/fake-login.live.com.pem");
+    SslServer server(testDataDir + "certs/fake-login.live.com.key", testDataDir + "certs/fake-login.live.com.pem");
     QSslSocket *receiver = new QSslSocket(this);
     connect(receiver, SIGNAL(readyRead()), SLOT(exitLoop()));
 
@@ -2637,7 +2686,7 @@ void tst_QSslSocket::resume_data()
     QTest::newRow("DoNotIgnoreErrors") << false << QList<QSslError>() << false;
     QTest::newRow("ignoreAllErrors") << true << QList<QSslError>() << true;
 
-    QList<QSslCertificate> certs = QSslCertificate::fromPath(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(testDataDir + "certs/qt-test-server-cacert.pem");
     QSslError rightError(FLUKE_CERTIFICATE_ERROR, certs.at(0));
     QSslError wrongError(FLUKE_CERTIFICATE_ERROR);
     errorsList.append(wrongError);
@@ -2707,8 +2756,8 @@ class WebSocket : public QSslSocket
     Q_OBJECT
 public:
     explicit WebSocket(qintptr socketDescriptor,
-                       const QString &keyFile = SRCDIR "certs/fluke.key",
-                       const QString &certFile = SRCDIR "certs/fluke.cert");
+                       const QString &keyFile = tst_QSslSocket::testDataDir + "certs/fluke.key",
+                       const QString &certFile = tst_QSslSocket::testDataDir + "certs/fluke.cert");
 
 protected slots:
     void onReadyReadFirstBytes(void);
@@ -2778,6 +2827,9 @@ protected:
 
 void tst_QSslSocket::qtbug18498_peek()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -2845,6 +2897,9 @@ protected:
 
 void tst_QSslSocket::qtbug18498_peek2()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -2913,13 +2968,13 @@ void tst_QSslSocket::qtbug18498_peek2()
     QCOMPARE(a[2], 'S');
     QCOMPARE(server->readAll(), QByteArray("TLS\r\n"));
 
-    QFile file(SRCDIR "certs/fluke.key");
+    QFile file(testDataDir + "certs/fluke.key");
     QVERIFY(file.open(QIODevice::ReadOnly));
     QSslKey key(file.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
     QVERIFY(!key.isNull());
     server->setPrivateKey(key);
 
-    QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
+    QList<QSslCertificate> localCert = QSslCertificate::fromPath(testDataDir + "certs/fluke.cert");
     QVERIFY(!localCert.isEmpty());
     QVERIFY(!localCert.first().isNull());
     server->setLocalCertificate(localCert.first());
@@ -2959,6 +3014,9 @@ void tst_QSslSocket::qtbug18498_peek2()
 
 void tst_QSslSocket::dhServer()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     if (!QSslSocket::supportsSsl())
         QSKIP("No SSL support");
 
@@ -3068,6 +3126,9 @@ void tst_QSslSocket::dhServerCustomParams()
 
 void tst_QSslSocket::ecdhServer()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     if (!QSslSocket::supportsSsl()) {
         qWarning("SSL not supported, skipping test");
         return;
@@ -3113,10 +3174,10 @@ void tst_QSslSocket::verifyClientCertificate_data()
     QTest::newRow("NoCert:VerifyPeer") << QSslSocket::VerifyPeer << noCerts << noKey << false;
 
     // self-signed certificate
-    QList<QSslCertificate> flukeCerts = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
+    QList<QSslCertificate> flukeCerts = QSslCertificate::fromPath(testDataDir + "certs/fluke.cert");
     QCOMPARE(flukeCerts.size(), 1);
 
-    QFile flukeFile(SRCDIR "certs/fluke.key");
+    QFile flukeFile(testDataDir + "certs/fluke.key");
     QVERIFY(flukeFile.open(QIODevice::ReadOnly));
     QSslKey flukeKey(flukeFile.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
     QVERIFY(!flukeKey.isNull());
@@ -3127,10 +3188,10 @@ void tst_QSslSocket::verifyClientCertificate_data()
     QTest::newRow("SelfSignedCert:VerifyPeer") << QSslSocket::VerifyPeer << flukeCerts << flukeKey << false;
 
     // valid certificate, but wrong usage (server certificate)
-    QList<QSslCertificate> serverCerts = QSslCertificate::fromPath(SRCDIR "certs/bogus-server.crt");
+    QList<QSslCertificate> serverCerts = QSslCertificate::fromPath(testDataDir + "certs/bogus-server.crt");
     QCOMPARE(serverCerts.size(), 1);
 
-    QFile serverFile(SRCDIR "certs/bogus-server.key");
+    QFile serverFile(testDataDir + "certs/bogus-server.key");
     QVERIFY(serverFile.open(QIODevice::ReadOnly));
     QSslKey serverKey(serverFile.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
     QVERIFY(!serverKey.isNull());
@@ -3141,10 +3202,10 @@ void tst_QSslSocket::verifyClientCertificate_data()
     QTest::newRow("ValidServerCert:VerifyPeer") << QSslSocket::VerifyPeer << serverCerts << serverKey << false;
 
     // valid certificate, correct usage (client certificate)
-    QList<QSslCertificate> validCerts = QSslCertificate::fromPath(SRCDIR "certs/bogus-client.crt");
+    QList<QSslCertificate> validCerts = QSslCertificate::fromPath(testDataDir + "certs/bogus-client.crt");
     QCOMPARE(validCerts.size(), 1);
 
-    QFile validFile(SRCDIR "certs/bogus-client.key");
+    QFile validFile(testDataDir + "certs/bogus-client.key");
     QVERIFY(validFile.open(QIODevice::ReadOnly));
     QSslKey validKey(validFile.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
     QVERIFY(!validKey.isNull());
@@ -3155,7 +3216,7 @@ void tst_QSslSocket::verifyClientCertificate_data()
     QTest::newRow("ValidClientCert:VerifyPeer") << QSslSocket::VerifyPeer << validCerts << validKey << true;
 
     // valid certificate, correct usage (client certificate), with chain
-    validCerts += QSslCertificate::fromPath(SRCDIR "certs/bogus-ca.crt");
+    validCerts += QSslCertificate::fromPath(testDataDir + "certs/bogus-ca.crt");
     QCOMPARE(validCerts.size(), 2);
 
     QTest::newRow("ValidClientCert:AutoVerifyPeer") << QSslSocket::AutoVerifyPeer << validCerts << validKey << true;
@@ -3174,6 +3235,9 @@ void tst_QSslSocket::verifyClientCertificate()
     // success instead of failure etc.).
     QSKIP("This test can not work with Secure Transport");
 #endif
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     if (!QSslSocket::supportsSsl()) {
         qWarning("SSL not supported, skipping test");
         return;
@@ -3185,7 +3249,7 @@ void tst_QSslSocket::verifyClientCertificate()
 
     QFETCH(QSslSocket::PeerVerifyMode, peerVerifyMode);
     SslServer server;
-    server.addCaCertificates = QLatin1String(SRCDIR "certs/bogus-ca.crt");
+    server.addCaCertificates = testDataDir + "certs/bogus-ca.crt";
     server.ignoreSslErrors = false;
     server.peerVerifyMode = peerVerifyMode;
     QVERIFY(server.listen());
@@ -3684,6 +3748,9 @@ void tst_QSslSocket::simplePskConnect()
 
 void tst_QSslSocket::ephemeralServerKey_data()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QTest::addColumn<QString>("cipher");
     QTest::addColumn<bool>("emptyKey");
 
@@ -3758,6 +3825,9 @@ void tst_QSslSocket::allowedProtocolNegotiation()
 
 void tst_QSslSocket::pskServer()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (!QSslSocket::supportsSsl() || setProxy)
         return;
@@ -3838,6 +3908,134 @@ void tst_QSslSocket::pskServer()
 
     QCOMPARE(socket.state(), QAbstractSocket::UnconnectedState);
     QCOMPARE(disconnectedSpy.count(), 1);
+}
+
+void tst_QSslSocket::signatureAlgorithm_data()
+{
+    if (!QSslSocket::supportsSsl())
+        QSKIP("Signature algorithms cannot be tested without SSL support");
+
+    if (QSslSocket::sslLibraryVersionNumber() < 0x10002000L)
+        QSKIP("Signature algorithms cannot be tested with OpenSSL < 1.0.2");
+
+    QTest::addColumn<QByteArrayList>("serverSigAlgPairs");
+    QTest::addColumn<QSsl::SslProtocol>("serverProtocol");
+    QTest::addColumn<QByteArrayList>("clientSigAlgPairs");
+    QTest::addColumn<QSsl::SslProtocol>("clientProtocol");
+    QTest::addColumn<QAbstractSocket::SocketState>("state");
+
+    const QByteArray dsaSha1("DSA+SHA1");
+    const QByteArray ecdsaSha1("ECDSA+SHA1");
+    const QByteArray ecdsaSha512("ECDSA+SHA512");
+    const QByteArray rsaSha256("RSA+SHA256");
+    const QByteArray rsaSha384("RSA+SHA384");
+    const QByteArray rsaSha512("RSA+SHA512");
+
+    QTest::newRow("match_TlsV1_2")
+        << QByteArrayList({rsaSha256})
+        << QSsl::TlsV1_2
+        << QByteArrayList({rsaSha256})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::ConnectedState;
+    QTest::newRow("no_hashalg_match_TlsV1_2")
+        << QByteArrayList({rsaSha256})
+        << QSsl::TlsV1_2
+        << QByteArrayList({rsaSha512})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::UnconnectedState;
+    QTest::newRow("no_sigalg_match_TlsV1_2")
+        << QByteArrayList({ecdsaSha512})
+        << QSsl::TlsV1_2
+        << QByteArrayList({rsaSha512})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::UnconnectedState;
+    QTest::newRow("no_cipher_match_AnyProtocol")
+        << QByteArrayList({rsaSha512})
+        << QSsl::AnyProtocol
+        << QByteArrayList({ecdsaSha512})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::UnconnectedState;
+    QTest::newRow("match_multiple-choice")
+        << QByteArrayList({dsaSha1, rsaSha256, rsaSha384, rsaSha512})
+        << QSsl::AnyProtocol
+        << QByteArrayList({ecdsaSha1, rsaSha384, rsaSha512, ecdsaSha512})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::ConnectedState;
+    QTest::newRow("match_client_longer")
+        << QByteArrayList({dsaSha1, rsaSha256})
+        << QSsl::AnyProtocol
+        << QByteArrayList({ecdsaSha1, ecdsaSha512, rsaSha256})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::ConnectedState;
+    QTest::newRow("match_server_longer")
+        << QByteArrayList({ecdsaSha1, ecdsaSha512, rsaSha256})
+        << QSsl::AnyProtocol
+        << QByteArrayList({dsaSha1, rsaSha256})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::ConnectedState;
+
+    // signature algorithms do not match, but are ignored because the tls version is not v1.2
+    QTest::newRow("client_ignore_TlsV1_1")
+        << QByteArrayList({rsaSha256})
+        << QSsl::TlsV1_1
+        << QByteArrayList({rsaSha512})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::ConnectedState;
+    QTest::newRow("server_ignore_TlsV1_1")
+        << QByteArrayList({rsaSha256})
+        << QSsl::AnyProtocol
+        << QByteArrayList({rsaSha512})
+        << QSsl::TlsV1_1
+        << QAbstractSocket::ConnectedState;
+    QTest::newRow("client_ignore_TlsV1_0")
+        << QByteArrayList({rsaSha256})
+        << QSsl::TlsV1_0
+        << QByteArrayList({rsaSha512})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::ConnectedState;
+    QTest::newRow("server_ignore_TlsV1_0")
+        << QByteArrayList({rsaSha256})
+        << QSsl::AnyProtocol
+        << QByteArrayList({rsaSha512})
+        << QSsl::TlsV1_0
+        << QAbstractSocket::ConnectedState;
+}
+
+void tst_QSslSocket::signatureAlgorithm()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        QSKIP("Test not adapted for use with proxying");
+
+    QFETCH(QByteArrayList, serverSigAlgPairs);
+    QFETCH(QSsl::SslProtocol, serverProtocol);
+    QFETCH(QByteArrayList, clientSigAlgPairs);
+    QFETCH(QSsl::SslProtocol, clientProtocol);
+    QFETCH(QAbstractSocket::SocketState, state);
+
+    SslServer server;
+    server.protocol = serverProtocol;
+    server.config.setCiphers({QSslCipher("ECDHE-RSA-AES256-SHA")});
+    server.config.setBackendConfigOption(QByteArrayLiteral("SignatureAlgorithms"), serverSigAlgPairs.join(':'));
+    QVERIFY(server.listen());
+
+    QSslConfiguration clientConfig = QSslConfiguration::defaultConfiguration();
+    clientConfig.setProtocol(clientProtocol);
+    clientConfig.setBackendConfigOption(QByteArrayLiteral("SignatureAlgorithms"), clientSigAlgPairs.join(':'));
+    QSslSocket client;
+    client.setSslConfiguration(clientConfig);
+    socket = &client;
+
+    QEventLoop loop;
+    QTimer::singleShot(5000, &loop, &QEventLoop::quit);
+    connect(socket, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error), &loop, &QEventLoop::quit);
+    connect(socket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors), this, &tst_QSslSocket::ignoreErrorSlot);
+    connect(socket, &QSslSocket::encrypted, &loop, &QEventLoop::quit);
+
+    client.connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
+    loop.exec();
+    socket = nullptr;
+    QCOMPARE(client.state(), state);
 }
 
 void tst_QSslSocket::forwardReadChannelFinished()

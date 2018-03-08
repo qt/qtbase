@@ -195,7 +195,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtDBus
     \brief Information about one interface on the bus.
 
-    Each interface on D-Bus has an unique \a name, identifying where that interface was defined.
+    Each interface on D-Bus has a unique \a name, identifying where that interface was defined.
     Interfaces may have annotations, methods, signals and properties, but none are mandatory.
 */
 

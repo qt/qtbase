@@ -777,16 +777,6 @@ QDBusMessage::MessageType QDBusMessage::type() const
     return InvalidMessage;
 }
 
-/*!
-    Sends the message without waiting for a reply. This is suitable
-    for errors, signals, and return values as well as calls whose
-    return values are not necessary.
-
-    Returns \c true if the message was queued successfully;
-    otherwise returns \c false.
-
-    \sa QDBusConnection::send()
-*/
 #ifndef QT_NO_DEBUG_STREAM
 static QDebug operator<<(QDebug dbg, QDBusMessage::MessageType t)
 {
@@ -838,6 +828,12 @@ QDebug operator<<(QDebug dbg, const QDBusMessage &msg)
     return dbg;
 }
 #endif
+
+/*!
+    \fn void QDBusMessage::swap(QDBusMessage &other)
+
+    Swaps this QDBusMessage instance with \a other.
+*/
 
 QT_END_NAMESPACE
 

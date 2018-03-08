@@ -336,7 +336,7 @@ void tst_QDateTimeEdit::constructor_qwidget()
     QCOMPARE(dte.dateTime(), QDateTime(QDate(2000, 1, 1), QTime(0, 0, 0, 0)));
     QCOMPARE(dte.minimumDate(), QDate(1752, 9, 14));
     QCOMPARE(dte.minimumTime(), QTime(0, 0, 0, 0));
-    QCOMPARE(dte.maximumDate(), QDate(7999, 12, 31));
+    QCOMPARE(dte.maximumDate(), QDate(9999, 12, 31));
     QCOMPARE(dte.maximumTime(), QTime(23, 59, 59, 999));
 }
 
@@ -352,12 +352,12 @@ void tst_QDateTimeEdit::constructor_qdatetime_data()
     QTest::newRow("normal") << QDateTime(QDate(2004, 6, 16), QTime(13, 46, 32, 764))
                             << QDateTime(QDate(2004, 6, 16), QTime(13, 46, 32, 764))
                             << QDate(1752, 9, 14) << QTime(0, 0, 0, 0)
-                            << QDate(7999, 12, 31) << QTime(23, 59, 59, 999);
+                            << QDate(9999, 12, 31) << QTime(23, 59, 59, 999);
 
     QTest::newRow("invalid") << QDateTime(QDate(9999, 99, 99), QTime(13, 46, 32, 764))
                              << QDateTime(QDate(2000, 1, 1), QTime(0, 0, 0, 0))
                              << QDate(1752, 9, 14) << QTime(0, 0, 0, 0)
-                             << QDate(7999, 12, 31) << QTime(23, 59, 59, 999);
+                             << QDate(9999, 12, 31) << QTime(23, 59, 59, 999);
 }
 
 void tst_QDateTimeEdit::constructor_qdatetime()
@@ -392,12 +392,12 @@ void tst_QDateTimeEdit::constructor_qdate_data()
     QTest::newRow("normal") << QDate(2004, 6, 16)
                             << QDateTime(QDate(2004, 6, 16), QTime(0, 0, 0, 0))
                             << QDate(1752, 9, 14) << QTime(0, 0, 0, 0)
-                            << QDate(7999, 12, 31) << QTime(23, 59, 59, 999);
+                            << QDate(9999, 12, 31) << QTime(23, 59, 59, 999);
 
     QTest::newRow("invalid") << QDate(9999, 99, 99)
                              << QDateTime(QDate(2000, 1, 1), QTime(0, 0, 0, 0))
                              << QDate(1752, 9, 14) << QTime(0, 0, 0, 0)
-                             << QDate(7999, 12, 31) << QTime(23, 59, 59, 999);
+                             << QDate(9999, 12, 31) << QTime(23, 59, 59, 999);
 }
 
 void tst_QDateTimeEdit::constructor_qdate()
@@ -467,7 +467,7 @@ void tst_QDateTimeEdit::minimumDate_data()
 
     QTest::newRow("normal-0") << QDate(2004, 5, 10) << QDate(2004, 5, 10);
     QTest::newRow("normal-1") << QDate(2002, 3, 15) << QDate(2002, 3, 15);
-    QTest::newRow("normal-2") << QDate(7999, 12, 31) << QDate(7999, 12, 31);
+    QTest::newRow("normal-2") << QDate(9999, 12, 31) << QDate(9999, 12, 31);
     QTest::newRow("normal-3") << QDate(1753, 1, 1) << QDate(1753, 1, 1);
     QTest::newRow("invalid-0") << QDate(0, 0, 0) << QDate(1752, 9, 14);
     QTest::newRow("old") << QDate(1492, 8, 3) << QDate(1492, 8, 3);
@@ -528,7 +528,7 @@ void tst_QDateTimeEdit::maximumDateTime_data()
                               << QDateTime(QDate(2007, 5, 10), QTime(22, 23, 23));
     QTest::newRow("normal-4") << QDateTime(QDate(2008, 5, 10), QTime(2, 3, 1))
                               << QDateTime(QDate(2008, 5, 10), QTime(2, 3, 1));
-    QTest::newRow("invalid-0") << QDateTime() << QDateTime(QDate(7999, 12, 31), QTime(23, 59, 59, 999));
+    QTest::newRow("invalid-0") << QDateTime() << QDateTime(QDate(9999, 12, 31), QTime(23, 59, 59, 999));
 }
 
 void tst_QDateTimeEdit::maximumDateTime()
@@ -547,9 +547,9 @@ void tst_QDateTimeEdit::maximumDate_data()
 
     QTest::newRow("normal-0") << QDate(2004, 05, 10) << QDate(2004, 5, 10);
     QTest::newRow("normal-1") << QDate(2002, 03, 15) << QDate(2002, 3, 15);
-    QTest::newRow("normal-2") << QDate(7999, 12, 31) << QDate(7999, 12, 31);
+    QTest::newRow("normal-2") << QDate(9999, 12, 31) << QDate(9999, 12, 31);
     QTest::newRow("normal-3") << QDate(1753, 1, 1) << QDate(1753, 1, 1);
-    QTest::newRow("invalid-0") << QDate(0, 0, 0) << QDate(7999, 12, 31);
+    QTest::newRow("invalid-0") << QDate(0, 0, 0) << QDate(9999, 12, 31);
 }
 
 void tst_QDateTimeEdit::maximumDate()
@@ -569,7 +569,7 @@ void tst_QDateTimeEdit::clearMinimumDate_data()
 
     QTest::newRow("normal-0") << QDate(2004, 05, 10) << true << QDate(1752, 9, 14);
     QTest::newRow("normal-1") << QDate(2002, 3, 15) << true << QDate(1752, 9, 14);
-    QTest::newRow("normal-2") << QDate(7999, 12, 31) << true << QDate(1752, 9, 14);
+    QTest::newRow("normal-2") << QDate(9999, 12, 31) << true << QDate(1752, 9, 14);
     QTest::newRow("normal-3") << QDate(1753, 1, 1) << true << QDate(1752, 9, 14);
     QTest::newRow("invalid-0") << QDate(0, 0, 0) << false << QDate(1752, 9, 14);
 }
@@ -597,7 +597,7 @@ void tst_QDateTimeEdit::clearMinimumDateTime_data()
                               << true << QDateTime(QDate(1752, 9, 14), QTime(0, 0));
     QTest::newRow("normal-1") << QDateTime(QDate(2002, 3, 15), QTime(13, 13, 13))
                               << true << QDateTime(QDate(1752, 9, 14), QTime(0, 0));
-    QTest::newRow("normal-2") << QDateTime(QDate(7999, 12, 31), QTime(14, 14, 14))
+    QTest::newRow("normal-2") << QDateTime(QDate(9999, 12, 31), QTime(14, 14, 14))
                               << true << QDateTime(QDate(1752, 9, 14), QTime(0, 0));
     QTest::newRow("normal-3") << QDateTime(QDate(1753, 1, 1), QTime(15, 15, 15))
                               << true << QDateTime(QDate(1752, 9, 14), QTime(0, 0));
@@ -626,15 +626,15 @@ void tst_QDateTimeEdit::clearMaximumDateTime_data()
     QTest::addColumn<QDateTime>("expectedMinDateTimeAfterClear");
 
     QTest::newRow("normal-0") << QDateTime(QDate(2004, 05, 10), QTime(12, 12, 12))
-                              << true << QDateTime(QDate(7999, 12, 31), QTime(23, 59, 59, 999));
+                              << true << QDateTime(QDate(9999, 12, 31), QTime(23, 59, 59, 999));
     QTest::newRow("normal-1") << QDateTime(QDate(2002, 3, 15), QTime(13, 13, 13))
-                              << true << QDateTime(QDate(7999, 12, 31), QTime(23, 59, 59, 999));
-    QTest::newRow("normal-2") << QDateTime(QDate(7999, 12, 31), QTime(14, 14, 14))
-                              << true << QDateTime(QDate(7999, 12, 31), QTime(23, 59, 59, 999));
+                              << true << QDateTime(QDate(9999, 12, 31), QTime(23, 59, 59, 999));
+    QTest::newRow("normal-2") << QDateTime(QDate(9999, 12, 31), QTime(14, 14, 14))
+                              << true << QDateTime(QDate(9999, 12, 31), QTime(23, 59, 59, 999));
     QTest::newRow("normal-3") << QDateTime(QDate(1753, 1, 1), QTime(15, 15, 15))
-                              << true << QDateTime(QDate(7999, 12, 31), QTime(23, 59, 59, 999));
+                              << true << QDateTime(QDate(9999, 12, 31), QTime(23, 59, 59, 999));
     QTest::newRow("invalid-0") << QDateTime()
-                               << false << QDateTime(QDate(7999, 12, 31), QTime(23, 59, 59, 999));
+                               << false << QDateTime(QDate(9999, 12, 31), QTime(23, 59, 59, 999));
 }
 
 void tst_QDateTimeEdit::clearMaximumDateTime()
@@ -656,11 +656,11 @@ void tst_QDateTimeEdit::clearMaximumDate_data()
     QTest::addColumn<bool>("valid");
     QTest::addColumn<QDate>("expectedMaxDateAfterClear");
 
-    QTest::newRow("normal-0") << QDate(2004, 05, 10) << true << QDate(7999, 12, 31);
-    QTest::newRow("normal-1") << QDate(2002, 03, 15) << true << QDate(7999, 12, 31);
-    QTest::newRow("normal-2") << QDate(7999, 12, 31) << true << QDate(7999, 12, 31);
-    QTest::newRow("normal-3") << QDate(2000, 1, 1) << true << QDate(7999, 12, 31);
-    QTest::newRow("invalid-0") << QDate(0, 0, 0) << false << QDate(7999, 12, 31);
+    QTest::newRow("normal-0") << QDate(2004, 05, 10) << true << QDate(9999, 12, 31);
+    QTest::newRow("normal-1") << QDate(2002, 03, 15) << true << QDate(9999, 12, 31);
+    QTest::newRow("normal-2") << QDate(9999, 12, 31) << true << QDate(9999, 12, 31);
+    QTest::newRow("normal-3") << QDate(2000, 1, 1) << true << QDate(9999, 12, 31);
+    QTest::newRow("invalid-0") << QDate(0, 0, 0) << false << QDate(9999, 12, 31);
 }
 
 void tst_QDateTimeEdit::clearMaximumDate()

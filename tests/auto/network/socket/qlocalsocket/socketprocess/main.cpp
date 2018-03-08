@@ -83,9 +83,10 @@ bool runClient()
         socket.connectToServer(serverName, QLocalSocket::ReadWrite);
         if (socket.waitForConnected())
             break;
-        if (socket.error() == QLocalSocket::ServerNotFoundError) {
+        if (socket.error() == QLocalSocket::ServerNotFoundError
+            || socket.error() == QLocalSocket::ConnectionRefusedError) {
             if (connectTimer.elapsed() > 5000) {
-                fprintf(stderr, "client: server not found. Giving up.\n");
+                fprintf(stderr, "client: server not found or connection refused. Giving up.\n");
                 return false;
             }
             printf("client: server not found. Trying again...\n");

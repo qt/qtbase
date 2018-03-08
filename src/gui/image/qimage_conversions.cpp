@@ -823,8 +823,8 @@ static bool convert_indexed8_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConve
 
     const int depth = 32;
 
-    const qssize_t dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
-    const qssize_t nbytes = dst_bytes_per_line * data->height;
+    const qsizetype dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
+    const qsizetype nbytes = dst_bytes_per_line * data->height;
     uchar *const newData = (uchar *)realloc(data->data, nbytes);
     if (!newData)
         return false;
@@ -877,8 +877,8 @@ static bool convert_indexed8_to_ARGB_inplace(QImageData *data, Qt::ImageConversi
 
     const int depth = 32;
 
-    const qssize_t dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
-    const qssize_t nbytes = dst_bytes_per_line * data->height;
+    const qsizetype dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
+    const qsizetype nbytes = dst_bytes_per_line * data->height;
     uchar *const newData = (uchar *)realloc(data->data, nbytes);
     if (!newData)
         return false;
@@ -945,8 +945,8 @@ static bool convert_indexed8_to_RGB16_inplace(QImageData *data, Qt::ImageConvers
 
     const int depth = 16;
 
-    const qssize_t dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
-    const qssize_t nbytes = dst_bytes_per_line * data->height;
+    const qsizetype dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
+    const qsizetype nbytes = dst_bytes_per_line * data->height;
     uchar *const newData = (uchar *)realloc(data->data, nbytes);
     if (!newData)
         return false;
@@ -1002,8 +1002,8 @@ static bool convert_RGB_to_RGB16_inplace(QImageData *data, Qt::ImageConversionFl
 
     const int depth = 16;
 
-    const qssize_t dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
-    const qssize_t src_bytes_per_line = data->bytes_per_line;
+    const qsizetype dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
+    const qsizetype src_bytes_per_line = data->bytes_per_line;
     quint32 *src_data = (quint32 *) data->data;
     quint16 *dst_data = (quint16 *) data->data;
 
@@ -1257,9 +1257,9 @@ void dither_to_Mono(QImageData *dst, const QImageData *src,
     }
 
     uchar *dst_data = dst->data;
-    qssize_t dst_bpl = dst->bytes_per_line;
+    qsizetype dst_bpl = dst->bytes_per_line;
     const uchar *src_data = src->data;
-    qssize_t src_bpl = src->bytes_per_line;
+    qsizetype src_bpl = src->bytes_per_line;
 
     switch (dithermode) {
     case Diffuse: {
@@ -1912,8 +1912,8 @@ static void convert_Indexed8_to_Alpha8(QImageData *dest, const QImageData *src, 
     if (simpleCase)
         memcpy(dest->data, src->data, src->bytes_per_line * src->height);
     else {
-        qssize_t size = src->bytes_per_line * src->height;
-        for (qssize_t i = 0; i < size; ++i) {
+        qsizetype size = src->bytes_per_line * src->height;
+        for (qsizetype i = 0; i < size; ++i) {
             dest->data[i] = translate[src->data[i]];
         }
     }
@@ -1936,8 +1936,8 @@ static void convert_Indexed8_to_Grayscale8(QImageData *dest, const QImageData *s
     if (simpleCase)
         memcpy(dest->data, src->data, src->bytes_per_line * src->height);
     else {
-        qssize_t size = src->bytes_per_line * src->height;
-        for (qssize_t i = 0; i < size; ++i) {
+        qsizetype size = src->bytes_per_line * src->height;
+        for (qsizetype i = 0; i < size; ++i) {
             dest->data[i] = translate[src->data[i]];
         }
     }

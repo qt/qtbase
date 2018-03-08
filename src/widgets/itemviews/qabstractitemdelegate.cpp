@@ -58,6 +58,7 @@
 #endif
 #include <qapplication.h>
 #include <qvalidator.h>
+#include <qjsonvalue.h>
 #include <private/qtextengine_p.h>
 #include <private/qabstractitemdelegate_p.h>
 
@@ -525,7 +526,15 @@ bool QAbstractItemDelegatePrivate::editorEventFilter(QObject *object, QEvent *ev
             if (tryFixup(editor))
                 emit q->commitData(editor);
 
+            // If the application loses focus while editing, then the focus needs to go back
+            // to the itemview when the editor closes. This ensures that when the application
+            // is active again it will have the focus on the itemview as expected.
+            const bool manuallyFixFocus = (event->type() == QEvent::FocusOut) && !editor->hasFocus() &&
+                    editor->parentWidget() &&
+                    (static_cast<QFocusEvent *>(event)->reason() == Qt::ActiveWindowFocusReason);
             emit q->closeEditor(editor, QAbstractItemDelegate::NoHint);
+            if (manuallyFixFocus)
+                editor->parentWidget()->setFocus();
         }
 #ifndef QT_NO_SHORTCUT
     } else if (event->type() == QEvent::ShortcutOverride) {
@@ -585,17 +594,25 @@ QString QAbstractItemDelegatePrivate::textForRole(Qt::ItemDataRole role, const Q
     case QVariant::Time:
         text = locale.toString(value.toTime(), formatType);
         break;
-    case QVariant::DateTime: {
-        const QDateTime dateTime = value.toDateTime();
-        text = locale.toString(dateTime.date(), formatType)
-             + QLatin1Char(' ')
-             + locale.toString(dateTime.time(), formatType);
-        break; }
-    default:
-        text = value.toString();
+    case QVariant::DateTime:
+        text = locale.toString(value.toDateTime(), formatType);
+        break;
+    default: {
+        if (value.canConvert<QJsonValue>()) {
+            const QJsonValue val = value.toJsonValue();
+            if (val.isBool())
+                text = QVariant(val.toBool()).toString();
+            else if (val.isDouble())
+                text = locale.toString(val.toDouble(), 'g', precision);
+            else if (val.isString())
+                text = val.toString();
+        } else {
+            text = value.toString();
+        }
         if (role == Qt::DisplayRole)
             text.replace(QLatin1Char('\n'), QChar::LineSeparator);
         break;
+    }
     }
     return text;
 }

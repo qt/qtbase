@@ -265,20 +265,28 @@ void QWindowSystemInterface::handleWindowScreenChanged(QWindow *window, QScreen 
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState newState, bool forcePropagate)
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleSafeAreaMarginsChanged, QWindow *window)
+{
+    QWindowSystemInterfacePrivate::SafeAreaMarginsChangedEvent *e =
+        new QWindowSystemInterfacePrivate::SafeAreaMarginsChangedEvent(window);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
+}
+
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleApplicationStateChanged, Qt::ApplicationState newState, bool forcePropagate)
 {
     Q_ASSERT(QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ApplicationState));
     QWindowSystemInterfacePrivate::ApplicationStateChangedEvent *e =
         new QWindowSystemInterfacePrivate::ApplicationStateChangedEvent(newState, forcePropagate);
-    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
 QWindowSystemInterfacePrivate::GeometryChangeEvent::GeometryChangeEvent(QWindow *window, const QRect &newGeometry)
     : WindowSystemEvent(GeometryChange)
     , window(window)
-    , requestedGeometry(window->handle() ? window->handle()->QPlatformWindow::geometry() : QRect())
     , newGeometry(newGeometry)
 {
+    if (const QPlatformWindow *pw = window->handle())
+        requestedGeometry = QHighDpi::fromNativePixels(pw->QPlatformWindow::geometry(), window);
 }
 
 QT_DEFINE_QPA_EVENT_HANDLER(void, handleGeometryChange, QWindow *window, const QRect &newRect)

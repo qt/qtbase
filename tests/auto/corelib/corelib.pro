@@ -9,10 +9,9 @@ SUBDIRS = \
    global \
    io \
    itemmodels \
-   json \
    mimetypes \
    plugin \
+   serialization \
    statemachine \
    thread \
-   tools \
-   xml
+   tools

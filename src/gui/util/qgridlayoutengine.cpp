@@ -1051,10 +1051,12 @@ void QGridLayoutEngine::setGeometries(const QRectF &contentsGeometry, const QAbs
         if (m_snapToPixelGrid) {
             // x and y should already be rounded, but the call to geometryWithin() above might
             // result in a geom with x,y at half-pixels (due to centering within the cell)
-            geom.setX(qround(geom.x()));
+            // QRectF may change the width as it wants to maintain the right edge. In this
+            // case the width need to be preserved.
+            geom.moveLeft(qround(geom.x()));
             // Do not snap baseline aligned items, since that might cause the baselines to not be aligned.
             if (align != Qt::AlignBaseline)
-                geom.setY(qround(geom.y()));
+                geom.moveTop(qround(geom.y()));
         }
         visualRect(&geom, visualDirection(), contentsGeometry);
         item->setGeometry(geom);

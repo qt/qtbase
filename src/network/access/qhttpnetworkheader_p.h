@@ -53,10 +53,10 @@
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
-#ifndef QT_NO_HTTP
-
 #include <qshareddata.h>
 #include <qurl.h>
+
+QT_REQUIRE_CONFIG(http);
 
 QT_BEGIN_NAMESPACE
 
@@ -92,16 +92,13 @@ public:
     QByteArray headerField(const QByteArray &name, const QByteArray &defaultValue = QByteArray()) const;
     QList<QByteArray> headerFieldValues(const QByteArray &name) const;
     void setHeaderField(const QByteArray &name, const QByteArray &data);
+    void prependHeaderField(const QByteArray &name, const QByteArray &data);
     bool operator==(const QHttpNetworkHeaderPrivate &other) const;
 
 };
 
 
 QT_END_NAMESPACE
-
-
-#endif // QT_NO_HTTP
-
 
 #endif // QHTTPNETWORKHEADER_H
 

@@ -28,6 +28,7 @@
 
 
 #include <QtTest/QtTest>
+#include <QtTest/private/qtesthelpers_p.h>
 #include "qlineedit.h"
 #include "qapplication.h"
 #include "qstringlist.h"
@@ -42,10 +43,6 @@
 #include "qstylehints.h"
 #include <private/qapplication_p.h>
 #include "qclipboard.h"
-
-#ifdef Q_OS_MAC
-#include <cstdlib> // For the random function.
-#endif
 
 #include <qlineedit.h>
 #include <private/qlineedit_p.h>
@@ -70,20 +67,13 @@
 #include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
 
+Q_LOGGING_CATEGORY(lcTests, "qt.widgets.tests")
+
 QT_BEGIN_NAMESPACE
 class QPainter;
 QT_END_NAMESPACE
 
-static inline void centerOnScreen(QWidget *w, const QSize &size)
-{
-    const QPoint offset = QPoint(size.width() / 2, size.height() / 2);
-    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
-}
-
-static inline void centerOnScreen(QWidget *w)
-{
-    centerOnScreen(w, w->geometry().size());
-}
+using namespace QTestPrivate;
 
 class StyleOptionTestStyle : public QCommonStyle
 {
@@ -312,8 +302,8 @@ private slots:
     void shortcutOverrideOnReadonlyLineEdit_data();
     void shortcutOverrideOnReadonlyLineEdit();
     void QTBUG59957_clearButtonLeftmostAction();
-
     void QTBUG_60319_setInputMaskCheckImSurroundingText();
+    void testQuickSelectionWithMouse();
 
 protected slots:
     void editingFinished();
@@ -421,6 +411,7 @@ void tst_QLineEdit::cleanup()
 {
     delete m_testWidget;
     m_testWidget = 0;
+    m_platformInputContext.m_commitString.clear();
 }
 
 void tst_QLineEdit::experimental()
@@ -1949,17 +1940,7 @@ void tst_QLineEdit::noCursorBlinkWhenReadOnly()
 static void figureOutProperKey(Qt::Key &key, Qt::KeyboardModifiers &pressState)
 {
 #ifdef Q_OS_MAC
-    static bool tst_lineedit_randomized = false;
-    // Mac has 3 different ways of accomplishing this (same for moving to the back)
-    // So I guess we should just randomly do this for now. Which may get people mad, but if
-    // we fail at one point, it's just a matter of setting roll to the correct value
-    // instead of random.
-
-    if (!tst_lineedit_randomized) {
-        tst_lineedit_randomized = true;
-        ::srandom(ulong(time(0)));
-    }
-    long roll = ::random() % 3;
+    long roll = QRandomGenerator::global()->bounded(3);
     switch (roll) {
     case 0:
         key = key == Qt::Key_Home ? Qt::Key_Up : Qt::Key_Down;
@@ -3458,8 +3439,8 @@ void tst_QLineEdit::textMargin_data()
 
     // Different styles generate different offsets, so
     // calculate the width rather than hardcode it.
-    const int pixelWidthOfM = metrics.width(s, 1);
-    const int pixelWidthOfMMM_MM = metrics.width(s, 6);
+    const int pixelWidthOfM = metrics.horizontalAdvance(s, 1);
+    const int pixelWidthOfMMM_MM = metrics.horizontalAdvance(s, 6);
 
     QTest::newRow("default-0") << 0 << 0 << 0 << 0 << QPoint(pixelWidthOfMMM_MM, 0) << 6;
     QTest::newRow("default-1") << 0 << 0 << 0 << 0 << QPoint(1, 1) << 0;
@@ -4719,6 +4700,91 @@ void tst_QLineEdit::QTBUG_60319_setInputMaskCheckImSurroundingText()
     QString surroundingText = testWidget->inputMethodQuery(Qt::ImSurroundingText).toString();
     int cursorPosition = testWidget->inputMethodQuery(Qt::ImCursorPosition).toInt();
     QCOMPARE(surroundingText.length(), cursorPosition);
+}
+
+void tst_QLineEdit::testQuickSelectionWithMouse()
+{
+    const auto text = QStringLiteral("This is quite a long line of text.");
+    const auto prefix = QStringLiteral("Th");
+    const auto suffix = QStringLiteral("t.");
+    QVERIFY(text.startsWith(prefix));
+    QVERIFY(text.endsWith(suffix));
+
+    QLineEdit lineEdit;
+    lineEdit.setText(text);
+    lineEdit.show();
+
+    const QPoint center = lineEdit.contentsRect().center();
+
+    // Normal mouse selection from left to right, y doesn't change.
+    QTest::mousePress(lineEdit.windowHandle(), Qt::LeftButton, Qt::NoModifier, center);
+    QTest::mouseMove(lineEdit.windowHandle(), center + QPoint(20, 0));
+    qCDebug(lcTests) << "Selected text:" << lineEdit.selectedText();
+    QVERIFY(!lineEdit.selectedText().isEmpty());
+    QVERIFY(!lineEdit.selectedText().endsWith(suffix));
+
+    // Normal mouse selection from left to right, y change is below threshold.
+    QTest::mousePress(lineEdit.windowHandle(), Qt::LeftButton, Qt::NoModifier, center);
+    QTest::mouseMove(lineEdit.windowHandle(), center + QPoint(20, 5));
+    qCDebug(lcTests) << "Selected text:" << lineEdit.selectedText();
+    QVERIFY(!lineEdit.selectedText().isEmpty());
+    QVERIFY(!lineEdit.selectedText().endsWith(suffix));
+
+    // Normal mouse selection from right to left, y doesn't change.
+    QTest::mousePress(lineEdit.windowHandle(), Qt::LeftButton, Qt::NoModifier, center);
+    QTest::mouseMove(lineEdit.windowHandle(), center + QPoint(-20, 0));
+    qCDebug(lcTests) << "Selected text:" << lineEdit.selectedText();
+    QVERIFY(!lineEdit.selectedText().isEmpty());
+    QVERIFY(!lineEdit.selectedText().startsWith(prefix));
+
+    // Normal mouse selection from right to left, y change is below threshold.
+    QTest::mousePress(lineEdit.windowHandle(), Qt::LeftButton, Qt::NoModifier, center);
+    QTest::mouseMove(lineEdit.windowHandle(), center + QPoint(-20, -5));
+    qCDebug(lcTests) << "Selected text:" << lineEdit.selectedText();
+    QVERIFY(!lineEdit.selectedText().isEmpty());
+    QVERIFY(!lineEdit.selectedText().startsWith(prefix));
+
+    const int offset = QGuiApplication::styleHints()->mouseQuickSelectionThreshold() + 1;
+
+    // Select the whole right half.
+    QTest::mousePress(lineEdit.windowHandle(), Qt::LeftButton, Qt::NoModifier, center);
+    QTest::mouseMove(lineEdit.windowHandle(), center + QPoint(1, offset));
+    qCDebug(lcTests) << "Selected text:" << lineEdit.selectedText();
+    QVERIFY(lineEdit.selectedText().endsWith(suffix));
+
+    // Select the whole left half.
+    QTest::mousePress(lineEdit.windowHandle(), Qt::LeftButton, Qt::NoModifier, center);
+    QTest::mouseMove(lineEdit.windowHandle(), center + QPoint(1, -offset));
+    qCDebug(lcTests) << "Selected text:" << lineEdit.selectedText();
+    QVERIFY(lineEdit.selectedText().startsWith(prefix));
+
+    // Normal selection -> quick selection -> back to normal selection.
+    QTest::mousePress(lineEdit.windowHandle(), Qt::LeftButton, Qt::NoModifier, center);
+    QTest::mouseMove(lineEdit.windowHandle(), center + QPoint(20, 0));
+    const auto partialSelection = lineEdit.selectedText();
+    qCDebug(lcTests) << "Selected text:" << lineEdit.selectedText();
+    QVERIFY(!partialSelection.endsWith(suffix));
+    QTest::mouseMove(lineEdit.windowHandle(), center + QPoint(20, offset));
+    qCDebug(lcTests) << "Selected text:" << lineEdit.selectedText();
+    QVERIFY(lineEdit.selectedText().endsWith(suffix));
+    QTest::mouseMove(lineEdit.windowHandle(), center + QPoint(20, 0));
+    qCDebug(lcTests) << "Selected text:" << lineEdit.selectedText();
+#ifdef Q_PROCESSOR_ARM
+    QEXPECT_FAIL("", "Currently fails on gcc-armv7, needs investigation.", Continue);
+#endif
+    QCOMPARE(lineEdit.selectedText(), partialSelection);
+
+    lineEdit.setLayoutDirection(Qt::RightToLeft);
+
+    // Select the whole left half (RTL layout).
+    QTest::mousePress(lineEdit.windowHandle(), Qt::LeftButton, Qt::NoModifier, center);
+    QTest::mouseMove(lineEdit.windowHandle(), center + QPoint(1, offset));
+    QVERIFY(lineEdit.selectedText().startsWith(prefix));
+
+    // Select the whole right half (RTL layout).
+    QTest::mousePress(lineEdit.windowHandle(), Qt::LeftButton, Qt::NoModifier, center);
+    QTest::mouseMove(lineEdit.windowHandle(), center + QPoint(1, -offset));
+    QVERIFY(lineEdit.selectedText().endsWith(suffix));
 }
 
 QTEST_MAIN(tst_QLineEdit)

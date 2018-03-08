@@ -184,7 +184,8 @@ void QSaveFile::setFileName(const QString &name)
     Important: the \a mode must include QIODevice::WriteOnly.
     It may also have additional flags, such as QIODevice::Text and QIODevice::Unbuffered.
 
-    QIODevice::ReadWrite and QIODevice::Append are not supported at the moment.
+    QIODevice::ReadWrite, QIODevice::Append, QIODevice::NewOnly and
+    QIODevice::ExistingOnly are not supported at the moment.
 
     \sa QIODevice::OpenMode, setFileName()
 */
@@ -201,7 +202,8 @@ bool QSaveFile::open(OpenMode mode)
         return false;
     }
     // In the future we could implement ReadWrite by copying from the existing file to the temp file...
-    if ((mode & ReadOnly) || (mode & Append)) {
+    // The implications of NewOnly and ExistingOnly when used with QSaveFile need to be considered carefully...
+    if (mode & (ReadOnly | Append | NewOnly | ExistingOnly)) {
         qWarning("QSaveFile::open: Unsupported open mode 0x%x", int(mode));
         return false;
     }
@@ -262,7 +264,7 @@ bool QSaveFile::open(OpenMode mode)
     }
 #endif
 
-    d->fileEngine = new QTemporaryFileEngine(&d->finalFileName);
+    d->fileEngine = new QTemporaryFileEngine(&d->finalFileName, QTemporaryFileEngine::Win32NonShared);
     // if the target file exists, we'll copy its permissions below,
     // but until then, let's ensure the temporary file is not accessible
     // to a third party

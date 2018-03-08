@@ -140,6 +140,7 @@ private slots:
     void compareQListInt();
     void compareQListDouble();
 #ifdef QT_GUI_LIB
+    void compareQColor_data();
     void compareQColor();
     void compareQPixmaps();
     void compareQPixmaps_data();
@@ -377,13 +378,22 @@ void tst_Cmptest::compareQListDouble()
 }
 
 #ifdef QT_GUI_LIB
+void tst_Cmptest::compareQColor_data()
+{
+    QTest::addColumn<QColor>("colorA");
+    QTest::addColumn<QColor>("colorB");
+
+    QTest::newRow("Qt::yellow vs \"yellow\"") << QColor(Qt::yellow) << QColor(QStringLiteral("yellow"));
+    QTest::newRow("Qt::yellow vs Qt::green") << QColor(Qt::yellow) << QColor(Qt::green);
+    QTest::newRow("0x88ff0000 vs 0xffff0000") << QColor::fromRgba(0x88ff0000) << QColor::fromRgba(0xffff0000);
+}
+
 void tst_Cmptest::compareQColor()
 {
-    const QColor yellow(Qt::yellow);
-    const QColor yellowFromName(QStringLiteral("yellow"));
-    const QColor green(Qt::green);
-    QCOMPARE(yellow, yellowFromName);
-    QCOMPARE(yellow, green);
+    QFETCH(QColor, colorA);
+    QFETCH(QColor, colorB);
+
+    QCOMPARE(colorA, colorB);
 }
 
 void tst_Cmptest::compareQPixmaps_data()

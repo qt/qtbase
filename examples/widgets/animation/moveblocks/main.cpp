@@ -125,7 +125,7 @@ public:
     void onEntry(QEvent *) override
     {
         int n;
-        while ((n = (qrand() % m_stateCount + 1)) == m_lastIndex)
+        while ((n = QRandomGenerator::global()->bounded(m_stateCount) + 1) == m_lastIndex)
         { }
         m_lastIndex = n;
         machine()->postEvent(new StateSwitchEvent(n));
@@ -322,8 +322,6 @@ int main(int argc, char **argv)
 
     window.resize(300, 300);
     window.show();
-
-    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
     return app.exec();
 }

@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(undoview))
 
 SOURCES += main.cpp mainwindow.cpp commands.cpp document.cpp
 HEADERS += mainwindow.h commands.h document.h

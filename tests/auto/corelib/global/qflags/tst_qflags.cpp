@@ -290,6 +290,18 @@ void tst_QFlags::testSetFlags()
     btn.setFlag(Qt::LeftButton, false);
     QVERIFY(!btn.testFlag(Qt::LeftButton));
     QVERIFY(!btn.testFlag(Qt::MidButton));
+
+    MyStrictFlags flags;
+    flags.setFlag(MyStrictEnum::StrictOne);
+    flags.setFlag(MyStrictEnum::StrictTwo, true);
+    QVERIFY(flags.testFlag(MyStrictEnum::StrictOne));
+    QVERIFY(flags.testFlag(MyStrictEnum::StrictTwo));
+    QVERIFY(!flags.testFlag(MyStrictEnum::StrictFour));
+
+    flags.setFlag(MyStrictEnum::StrictTwo, false);
+    QVERIFY(flags.testFlag(MyStrictEnum::StrictOne));
+    QVERIFY(!flags.testFlag(MyStrictEnum::StrictTwo));
+    QVERIFY(!flags.testFlag(MyStrictEnum::StrictFour));
 }
 
 // (statically) check QTypeInfo for QFlags instantiations:

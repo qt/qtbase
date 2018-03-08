@@ -435,7 +435,7 @@ namespace {
     public:
         DrawTextItemRecorder(bool untransformedCoordinates, bool useBackendOptimizations)
                 : m_dirtyPen(false), m_useBackendOptimizations(useBackendOptimizations),
-                  m_untransformedCoordinates(untransformedCoordinates), m_currentColor(Qt::black)
+                  m_untransformedCoordinates(untransformedCoordinates), m_currentColor(0, 0, 0, 0)
         {
         }
 
@@ -599,7 +599,7 @@ namespace {
     };
 }
 
-void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
+void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p, const QColor &pen)
 {
     bool preferRichText = textFormat == Qt::RichText
                           || (textFormat == Qt::AutoText && Qt::mightBeRichText(text));
@@ -631,15 +631,16 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
         textLayout.endLayout();
 
         actualSize = textLayout.boundingRect().size();
+        p->setPen(pen);
         textLayout.draw(p, topLeftPosition);
     } else {
         QTextDocument document;
 #ifndef QT_NO_CSSPARSER
-        QColor color = p->pen().color();
-        document.setDefaultStyleSheet(QString::fromLatin1("body { color: #%1%2%3 }")
-                                      .arg(QString::number(color.red(), 16), 2, QLatin1Char('0'))
-                                      .arg(QString::number(color.green(), 16), 2, QLatin1Char('0'))
-                                      .arg(QString::number(color.blue(), 16), 2, QLatin1Char('0')));
+        document.setDefaultStyleSheet(QString::fromLatin1("body { color: rgba(%1, %2, %3, %4%) }")
+                                      .arg(QString::number(pen.red()))
+                                      .arg(QString::number(pen.green()))
+                                      .arg(QString::number(pen.blue()))
+                                      .arg(QString::number(pen.alpha())));
 #endif
         document.setDefaultFont(font);
         document.setDocumentMargin(0.0);
@@ -657,12 +658,9 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
         p->save();
         p->translate(topLeftPosition);
         QAbstractTextDocumentLayout::PaintContext ctx;
-        ctx.palette.setColor(QPalette::Text, p->pen().color());
+        ctx.palette.setColor(QPalette::Text, pen);
         document.documentLayout()->draw(p, ctx);
         p->restore();
-
-        if (textWidth >= 0.0)
-            document.adjustSize(); // Find optimal size
 
         actualSize = document.size();
     }
@@ -682,7 +680,7 @@ void QStaticTextPrivate::init()
         painter.setFont(font);
         painter.setTransform(matrix);
 
-        paintText(QPointF(0, 0), &painter);
+        paintText(QPointF(0, 0), &painter, QColor(0, 0, 0, 0));
     }
 
     QVector<QStaticTextItem> deviceItems = device.items();

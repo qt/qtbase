@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
     \ingroup basicwidgets
     \inmodule QtWidgets
 
-    \image windows-pushbutton.jpg
+    \image windows-pushbutton.png
 
     The push button, or command button, is perhaps the most commonly
     used widget in any graphical user interface. Push (click) a button
@@ -461,7 +461,7 @@ void QPushButton::keyPressEvent(QKeyEvent *e)
             click();
             break;
         }
-        // fall through
+        Q_FALLTHROUGH();
     default:
         QAbstractButton::keyPressEvent(e);
     }

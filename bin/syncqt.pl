@@ -76,8 +76,8 @@ sub normalizePath {
 # set output basedir to be where ever syncqt is run from
 our $out_basedir = getcwd();
 normalizePath(\$out_basedir);
+our $build_basedir;
 our $basedir;
-our $quoted_basedir;
 
 # Make sure we use Windows line endings for chomp and friends on Windows.
 $INPUT_RECORD_SEPARATOR = "\r\n" if ($^O eq "msys");
@@ -129,6 +129,7 @@ sub showUsage
     print "  -showonly             Show action but not perform        (default: " . ($showonly ? "yes" : "no") . ")\n";
     print "  -minimal              Do not create CamelCase headers    (default: " . ($minimal ? "yes" : "no") . ")\n";
     print "  -outdir <PATH>        Specify output directory for sync  (default: $out_basedir)\n";
+    print "  -builddir <PATH>      Specify build directory for sync   (default: same as -outdir)\n";
     print "  -version <VERSION>    Specify the module's version       (default: detect from qglobal.h)\n";
     print "  -quiet                Only report problems, not activity (same as -verbose 0)\n";
     print "  -v, -verbose <level>  Sets the verbosity level (max. 4)  (default: $verbose_level)\n";
@@ -591,21 +592,18 @@ sub copyFile
 }
 
 ######################################################################
-# Syntax:  findFiles(dir, match, descend)
+# Syntax:  findFiles(dir, match)
 # Params:  dir, string, directory to search for name
 #          match, string, regular expression to match in dir
-#          descend, integer, 0 = non-recursive search
-#                            1 = recurse search into subdirectories
 #
 # Purpose: Finds files matching a regular expression.
 # Returns: List of matching files.
 #
-# Examples:
-#   findFiles("/usr","\.cpp$",1)  - finds .cpp files in /usr and below
-#   findFiles("/tmp","^#",0)      - finds #* files in /tmp
+# Example:
+#   findFiles("/tmp", "^#")      - finds #* files in /tmp
 ######################################################################
 sub findFiles {
-    my ($dir,$match,$descend) = @_;
+    my ($dir, $match) = @_;
     my ($file,$p,@files);
     local(*D);
     normalizePath(\$dir);
@@ -620,9 +618,6 @@ sub findFiles {
             next if ( $file  =~ /^\.\.?$/ );
             $p = $file;
             ($file =~ /$match/) && (push @files, $p);
-            if ( $descend && -d $p && ! -l $p ) {
-                push @files, &findFiles($p,$match,$descend);
-            }
         }
         closedir(D);
     }
@@ -648,17 +643,16 @@ sub listSubdirs {
 ######################################################################
 # Syntax:  loadSyncProfile()
 #
-# Purpose: Locates the sync.profile.
-# Returns: Hashmap of module name -> directory.
+# Purpose: Loads the sync.profile.
 ######################################################################
 sub loadSyncProfile {
-    my ($srcbase, $outbase) = @_;
     if ($verbose_level) {
-        print("<srcbase> = $$srcbase \n");
-        print("<outbase> = $$outbase \n");
+        print("<srcbase> = $basedir \n");
+        print("<bldbase> = $build_basedir \n");
+        print("<outbase> = $out_basedir \n");
     }
 
-    my $syncprofile = "$$srcbase/sync.profile";
+    my $syncprofile = "$basedir/sync.profile";
     my $result;
     unless ($result = do "$syncprofile") {
         die "syncqt couldn't parse $syncprofile: $@" if $@;
@@ -670,13 +664,12 @@ sub loadSyncProfile {
             $reverse_classnames{$cn} = $fn;
         }
     }
-
-    return $result;
 }
 
 sub basePrettify {
     my ($arg) = @_;
     $$arg =~ s,^\Q$basedir\E,<srcbase>,;
+    $$arg =~ s,^\Q$build_basedir\E,<bldbase>,;
     $$arg =~ s,^\Q$out_basedir\E,<outbase>,;
 }
 
@@ -686,6 +679,11 @@ sub cleanPath {
     return $arg;
 }
 
+######################################################################
+# Syntax:  locateSyncProfile()
+#
+# Purpose: Locates the sync.profile.
+######################################################################
 sub locateSyncProfile
 {
     my ($directory) = @_;
@@ -728,7 +726,6 @@ $basedir = locateSyncProfile($out_basedir);
 if ($basedir) {
     $basedir = dirname($basedir) ;
     normalizePath(\$basedir);
-    $quoted_basedir = "\Q$basedir";
 }
 
 # --------------------------------------------------------------------
@@ -749,6 +746,9 @@ while ( @ARGV ) {
         $val = "yes";
     } elsif($arg eq "-o" || $arg eq "-outdir") {
         $var = "output";
+        $val = shift @ARGV;
+    } elsif($arg eq "-builddir") {
+        $var = "build";
         $val = shift @ARGV;
     } elsif($arg eq "-showonly" || $arg eq "-remove-stale" || $arg eq "-windows" ||
             $arg eq "-relative" || $arg eq "-check-includes") {
@@ -796,7 +796,6 @@ while ( @ARGV ) {
         die "Could not find a sync.profile for '$arg'\n" if (!$basedir);
         $basedir = dirname($basedir);
         normalizePath(\$basedir);
-        $quoted_basedir = "\Q$basedir";
         $var = "ignore";
     }
 
@@ -877,12 +876,24 @@ while ( @ARGV ) {
             $out_basedir = $outdir;
         }
         normalizePath(\$out_basedir);
+    } elsif ($var eq "build") {
+        my $outdir = $val;
+        if (checkRelative($outdir)) {
+            $build_basedir = getcwd();
+            chomp $build_basedir;
+            $build_basedir .= "/" . $outdir;
+        } else {
+            $build_basedir = $outdir;
+        }
+        normalizePath(\$build_basedir);
     }
 }
 
 # if we have no $basedir we cannot be sure which sources you want, so die
 die "Could not find any sync.profile for your module!\nPass <module directory> to syncqt to sync your header files.\nsyncqt failed" if (!$basedir);
 die "The -version argument is mandatory" if (!$module_version);
+
+$build_basedir = $out_basedir if (!defined($build_basedir));
 
 our @ignore_headers = ();
 our @ignore_for_master_contents = ();
@@ -892,7 +903,7 @@ our @ignore_for_qt_module_check = ();
 our %inject_headers = ();
 
 # load the module's sync.profile here, before we can
-loadSyncProfile(\$basedir, \$out_basedir);
+loadSyncProfile();
 
 @modules_to_sync = keys(%modules) if($#modules_to_sync == -1);
 
@@ -925,6 +936,7 @@ foreach my $lib (@modules_to_sync) {
     #information used after the syncing
     my $pri_install_classes = "";
     my $pri_install_files = "";
+    my $pri_install_ifiles = "";
     my $pri_install_pfiles = "";
     my $pri_install_ipfiles = "";
     my $pri_install_qpafiles = "";
@@ -940,7 +952,7 @@ foreach my $lib (@modules_to_sync) {
         for my $p (keys %inject_headers) {
             next unless ($p =~ /^\Q$dir\E(\/|$)/);
             my $sp = $p;
-            $sp =~ s,^\Q$basedir\E/,$out_basedir/,;
+            $sp =~ s,^\Q$basedir\E/,$build_basedir/,;
             for my $n (@{$inject_headers{$p}}) {
                 $injections{$sp."/".$n} = 1;
             }
@@ -1000,7 +1012,7 @@ foreach my $lib (@modules_to_sync) {
 
             #calc files and "copy" them
             foreach my $subdir (@subdirs) {
-                my @headers = findFiles($subdir, "^[-a-z0-9_]*\\.h\$" , 0);
+                my @headers = findFiles($subdir, "^[-a-z0-9_]*\\.h\$");
                 @headers = grep(!/^qt[a-z0-9]+-config(_p)?\.h$/, @headers);
                 if (defined $inject_headers{$subdir}) {
                     foreach my $if (@{$inject_headers{$subdir}}) {
@@ -1036,8 +1048,9 @@ foreach my $lib (@modules_to_sync) {
 
                         my $clean_header;
                         my $requires;
-                        my $iheader = $subdir . "/" . $header;
-                        $iheader =~ s/^\Q$basedir\E/$out_basedir/ if ($shadow);
+                        my $iheader_src = $subdir . "/" . $header;
+                        my $iheader = $iheader_src;
+                        $iheader =~ s/^\Q$basedir\E/$build_basedir/ if ($shadow);
                         if ($check_includes) {
                             # We need both $public_header and $private_header because QPA headers count as neither
                             my $private_header = !$public_header && !$qpa_header
@@ -1078,13 +1091,9 @@ foreach my $lib (@modules_to_sync) {
                             }
                             $header_copies++ if (!$shadow && syncHeader($lib, $oheader, $iheader, $copy_headers, $ts));
 
-                            my $pri_install_iheader = fixPaths($iheader, $dir);
+                            my $pri_install_iheader = fixPaths($iheader_src, $dir);
                             my $injection = "";
-                            if($public_header) {
-                                #put it into the master file
-                                $master_contents{$public_header} = $requires if (!$shadow && shouldMasterInclude($iheader));
-
-                                #deal with the install directives
+                            if ($public_header) {
                                 foreach my $class (@classes) {
                                     # Strip namespaces:
                                     $class =~ s/^.*:://;
@@ -1096,8 +1105,17 @@ foreach my $lib (@modules_to_sync) {
                                                                 unless($pri_install_classes =~ $class_header);
                                     $injection .= ":$class";
                                 }
-                                $pri_install_files.= "$pri_install_iheader ";;
-                                $pri_clean_files .= "$pri_install_iheader".($requires ? ":".$requires : "")." " if ($clean_header);
+
+                                if ($shadow) {
+                                    $pri_install_ifiles .= "$pri_install_iheader ";
+                                } else {
+                                    # put it into the master file
+                                    $master_contents{$public_header} = $requires if (shouldMasterInclude($iheader));
+
+                                    # deal with the install directives
+                                    $pri_install_files .= "$pri_install_iheader ";
+                                    $pri_clean_files .= "$pri_install_iheader".($requires ? ":".$requires : "")." " if ($clean_header);
+                                }
                             }
                             elsif ($qpa_header) {
                                 $pri_install_qpafiles.= "$pri_install_iheader ";;
@@ -1247,6 +1265,7 @@ foreach my $lib (@modules_to_sync) {
         #handle the headers.pri for each module
         my $headers_pri_contents = "";
         $headers_pri_contents .= "SYNCQT.HEADER_FILES = $pri_install_files\n";
+        $headers_pri_contents .= "SYNCQT.INJECTED_HEADER_FILES = $pri_install_ifiles\n";
         $headers_pri_contents .= "SYNCQT.HEADER_CLASSES = $pri_install_classes\n";
         $headers_pri_contents .= "SYNCQT.PRIVATE_HEADER_FILES = $pri_install_pfiles\n";
         $headers_pri_contents .= "SYNCQT.INJECTED_PRIVATE_HEADER_FILES = $pri_install_ipfiles\n";

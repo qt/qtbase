@@ -91,6 +91,8 @@ public:
 #endif
 #if defined(Q_OS_WIN)
     Q_STATIC_ASSERT(sizeof(wchar_t) == sizeof(ushort));
+#endif
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
     Q_DECL_CONSTEXPR QChar(wchar_t ch) Q_DECL_NOTHROW : ucs(ushort(ch)) {} // implicit
 #endif
 
@@ -296,6 +298,20 @@ public:
         Script_OldHungarian,
         Script_SignWriting,
 
+        // Unicode 9.0 additions
+        Script_Adlam,
+        Script_Bhaiksuki,
+        Script_Marchen,
+        Script_Newa,
+        Script_Osage,
+        Script_Tangut,
+
+        // Unicode 10.0 additions
+        Script_MasaramGondi,
+        Script_Nushu,
+        Script_Soyombo,
+        Script_ZanabazarSquare,
+
         ScriptCount
     };
 
@@ -387,7 +403,9 @@ public:
         Unicode_6_2,
         Unicode_6_3,
         Unicode_7_0,
-        Unicode_8_0
+        Unicode_8_0,
+        Unicode_9_0,
+        Unicode_10_0
     };
     // ****** WHEN ADDING FUNCTIONS, CONSIDER ADDING TO QCharRef TOO
 

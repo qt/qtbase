@@ -115,7 +115,6 @@ Q_CONSTRUCTOR_FUNCTION(initializeLang)
 
 static QString seedAndTemplate()
 {
-    qsrand(QDateTime::currentSecsSinceEpoch());
     return QDir::tempPath() + "/tst_qmimedatabase-XXXXXX";
 }
 
@@ -149,7 +148,7 @@ void tst_QMimeDatabase::initTestCase()
     qDebug() << "\nGlobal XDG_DATA_DIRS: " << m_globalXdgDir;
 
     const QString freeDesktopXml = QStringLiteral("freedesktop.org.xml");
-    const QString xmlFileName = QLatin1String(RESOURCE_PREFIX) + freeDesktopXml;
+    const QString xmlFileName = QLatin1String(RESOURCE_PREFIX "packages/") + freeDesktopXml;
     const QString xmlTargetFileName = globalPackageDir + QLatin1Char('/') + freeDesktopXml;
     QVERIFY2(copyResourceFile(xmlFileName, xmlTargetFileName, &errorMessage), qPrintable(errorMessage));
 #endif
@@ -223,8 +222,10 @@ void tst_QMimeDatabase::mimeTypeForName()
         qWarning() << "ls not found";
     else {
         const QString executableType = QString::fromLatin1("application/x-executable");
+        const QString sharedLibType = QString::fromLatin1("application/x-sharedlib");
         //QTest::newRow("executable") << exePath << executableType;
-        QCOMPARE(db.mimeTypeForFile(exePath).name(), executableType);
+        QVERIFY(db.mimeTypeForFile(exePath).name() == executableType ||
+                db.mimeTypeForFile(exePath).name() == sharedLibType);
     }
 #endif
 
@@ -636,6 +637,7 @@ void tst_QMimeDatabase::suffixes_data()
     QTest::newRow("mimetype with multiple patterns") << "text/plain" << "*.asc;*.txt;*,v" << "txt";
     QTest::newRow("mimetype with uncommon pattern") << "text/x-readme" << "README*" << QString();
     QTest::newRow("mimetype with no patterns") << "application/x-ole-storage" << QString() << QString();
+    QTest::newRow("default_mimetype") << "application/octet-stream" << "*.bin" << QString();
 }
 
 void tst_QMimeDatabase::suffixes()
@@ -1043,17 +1045,46 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     QCOMPARE(db.mimeTypeForFile(qmlTestFile).name(),
              QString::fromLatin1("text/x-qml"));
 
-    // Now test removing the local mimetypes again (note, this leaves a mostly-empty mime.cache file)
-    for (int i = 0; i < m_additionalMimeFileNames.size(); ++i)
-        QFile::remove(destDir + m_additionalMimeFileNames.at(i));
+    // Now that we have two directories with mime definitions, check that everything still works
+    inheritance();
+    if (QTest::currentTestFailed())
+        return;
+
+    aliases();
+    if (QTest::currentTestFailed())
+        return;
+
+    icons();
+    if (QTest::currentTestFailed())
+        return;
+
+    comment();
+    if (QTest::currentTestFailed())
+        return;
+
+    mimeTypeForFileWithContent();
+    if (QTest::currentTestFailed())
+        return;
+
+    mimeTypeForName();
+    if (QTest::currentTestFailed())
+        return;
+
+    // Now test removing local mimetypes
+    for (int i = 1 ; i <= 3 ; ++i)
+        QFile::remove(destDir + QStringLiteral("invalid-magic%1.xml").arg(i));
     if (m_isUsingCacheProvider && !waitAndRunUpdateMimeDatabase(m_localMimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
-    QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
-             QString::fromLatin1("application/octet-stream"));
-    QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
+    QVERIFY(!db.mimeTypeForName(QLatin1String("text/invalid-magic1")).isValid()); // deleted
+    QVERIFY(db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid()); // still present
 
-    // And now the user goes wild and uses rm -rf
+    // The user deletes the cache -> the XML provider makes things still work
     QFile::remove(m_localMimeDir + QString::fromLatin1("/mime.cache"));
+    QVERIFY(!db.mimeTypeForName(QLatin1String("text/invalid-magic1")).isValid()); // deleted
+    QVERIFY(db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid()); // still present
+
+    // Finally, the user deletes the whole local dir
+    QVERIFY2(QDir(m_localMimeDir).removeRecursively(), qPrintable(m_localMimeDir + ": " + qt_error_string()));
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
              QString::fromLatin1("application/octet-stream"));
     QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());

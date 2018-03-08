@@ -54,3 +54,14 @@ macx-xcode:qtConfig(static): \
 # feature, which allows Xcode to choose the Qt libraries to link to
 # at build time, depending on the current Xcode SDK and configuration.
 QMAKE_XCODE_LIBRARY_SUFFIX_SETTING = QT_LIBRARY_SUFFIX
+
+xcode_copy_phase_strip_setting.name = COPY_PHASE_STRIP
+xcode_copy_phase_strip_setting.value = NO
+QMAKE_MAC_XCODE_SETTINGS += xcode_copy_phase_strip_setting
+
+xcode_product_bundle_identifier_setting.name = PRODUCT_BUNDLE_IDENTIFIER
+xcode_product_bundle_identifier_setting.value = $$QMAKE_TARGET_BUNDLE_PREFIX
+isEmpty(xcode_product_bundle_identifier_setting.value): \
+    xcode_product_bundle_identifier_setting.value = "com.yourcompany"
+xcode_product_bundle_identifier_setting.value = "$${xcode_product_bundle_identifier_setting.value}.${PRODUCT_NAME:rfc1034identifier}"
+QMAKE_MAC_XCODE_SETTINGS += xcode_product_bundle_identifier_setting

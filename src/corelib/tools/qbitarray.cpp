@@ -300,6 +300,46 @@ void QBitArray::fill(bool value, int begin, int end)
         setBit(begin++, value);
 }
 
+/*!
+    \fn const char *QBitArray::bits() const
+    \since 5.11
+
+    Returns a pointer to a dense bit array for this QBitArray. Bits are counted
+    upwards from the least significant bit in each byte. The the number of bits
+    relevant in the last byte is given by \c{size() % 8}.
+
+    \sa fromBits(), size()
+ */
+
+/*!
+    \since 5.11
+
+    Creates a QBitArray with the dense bit array located at \a data, with \a
+    size bits. The byte array at \a data must be at least \a size / 8 (rounded up)
+    bytes long.
+
+    If \a size is not a multiple of 8, this function will include the lowest
+    \a size % 8 bits from the last byte in \a data.
+
+    \sa bits()
+ */
+QBitArray QBitArray::fromBits(const char *data, qsizetype size)
+{
+    QBitArray result;
+    qsizetype nbytes = (size + 7) / 8;
+
+    result.d = QByteArray(nbytes + 1, Qt::Uninitialized);
+    char *bits = result.d.data();
+    memcpy(bits + 1, data, nbytes);
+
+    // clear any unused bits from the last byte
+    if (size & 7)
+        bits[nbytes] &= 0xffU >> (size & 7);
+
+    *bits = result.d.size() * 8 - size;
+    return result;
+}
+
 /*! \fn bool QBitArray::isDetached() const
 
     \internal

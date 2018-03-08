@@ -75,7 +75,7 @@ QString qt_mac_applicationmenu_string(int type)
 QPlatformMenuItem::MenuRole detectMenuRole(const QString &caption)
 {
     QString captionNoAmpersand(caption);
-    captionNoAmpersand.remove(QChar('&'));
+    captionNoAmpersand.remove(QLatin1Char('&'));
     const QString aboutString = QCoreApplication::translate("QCocoaMenuItem", "About");
     if (captionNoAmpersand.startsWith(aboutString, Qt::CaseInsensitive) || caption.endsWith(aboutString, Qt::CaseInsensitive))
         return QPlatformMenuItem::AboutRole;

@@ -1,9 +1,5 @@
 [check_menuPosition]
-ubuntu-14.04
 ubuntu-16.04
-[taskQTBUG4965_escapeEaten]
-ubuntu-14.04
-ubuntu-16.04
-redhatenterpriselinuxworkstation-6.6
-[task256322_highlight]
-osx
+#QTBUG-66255
+[activatedCount]
+*

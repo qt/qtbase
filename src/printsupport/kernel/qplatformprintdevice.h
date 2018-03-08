@@ -53,10 +53,13 @@
 
 #include <QtPrintSupport/qtprintsupportglobal.h>
 #include <private/qprint_p.h>
+#include <private/qprintdevice_p.h>
 
+#include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qmimetype.h>
 #include <QtGui/qpagelayout.h>
+
 
 QT_BEGIN_NAMESPACE
 
@@ -107,16 +110,20 @@ public:
     virtual QList<int> supportedResolutions() const;
 
     virtual QPrint::InputSlot defaultInputSlot() const;
-    virtual QList<QPrint::InputSlot> supportedInputSlots() const;
+    virtual QVector<QPrint::InputSlot> supportedInputSlots() const;
 
     virtual QPrint::OutputBin defaultOutputBin() const;
-    virtual QList<QPrint::OutputBin> supportedOutputBins() const;
+    virtual QVector<QPrint::OutputBin> supportedOutputBins() const;
 
     virtual QPrint::DuplexMode defaultDuplexMode() const;
-    virtual QList<QPrint::DuplexMode> supportedDuplexModes() const;
+    virtual QVector<QPrint::DuplexMode> supportedDuplexModes() const;
 
     virtual QPrint::ColorMode defaultColorMode() const;
-    virtual QList<QPrint::ColorMode> supportedColorModes() const;
+    virtual QVector<QPrint::ColorMode> supportedColorModes() const;
+
+    virtual QVariant property(QPrintDevice::PrintDevicePropertyKey key) const;
+    virtual bool setProperty(QPrintDevice::PrintDevicePropertyKey key, const QVariant &value);
+    virtual bool isFeatureAvailable(QPrintDevice::PrintDevicePropertyKey key, const QVariant &params) const;
 
 #ifndef QT_NO_MIMETYPE
     virtual QList<QMimeType> supportedMimeTypes() const;
@@ -149,7 +156,7 @@ protected:
     bool m_supportsCollateCopies;
 
     mutable bool m_havePageSizes;
-    mutable QVector<QPageSize> m_pageSizes;
+    mutable QList<QPageSize> m_pageSizes;
 
     bool m_supportsCustomPageSizes;
 
@@ -157,7 +164,7 @@ protected:
     QSize m_maximumPhysicalPageSize;
 
     mutable bool m_haveResolutions;
-    mutable QVector<int> m_resolutions;
+    mutable QList<int> m_resolutions;
 
     mutable bool m_haveInputSlots;
     mutable QVector<QPrint::InputSlot> m_inputSlots;
@@ -173,7 +180,7 @@ protected:
 
 #ifndef QT_NO_MIMETYPE
     mutable bool m_haveMimeTypes;
-    mutable QVector<QMimeType> m_mimeTypes;
+    mutable QList<QMimeType> m_mimeTypes;
 #endif
 };
 

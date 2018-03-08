@@ -103,7 +103,7 @@
 */
 
 /*!
-    \fn QAbstractAnimation::finished()
+    \fn void QAbstractAnimation::finished()
 
     QAbstractAnimation emits this signal after the animation has stopped and
     has reached the end.
@@ -114,7 +114,7 @@
 */
 
 /*!
-    \fn QAbstractAnimation::stateChanged(QAbstractAnimation::State newState, QAbstractAnimation::State oldState)
+    \fn void QAbstractAnimation::stateChanged(QAbstractAnimation::State newState, QAbstractAnimation::State oldState)
 
     QAbstractAnimation emits this signal whenever the state of the animation has
     changed from \a oldState to \a newState. This signal is emitted after the virtual
@@ -124,7 +124,7 @@
 */
 
 /*!
-    \fn QAbstractAnimation::currentLoopChanged(int currentLoop)
+    \fn void QAbstractAnimation::currentLoopChanged(int currentLoop)
 
     QAbstractAnimation emits this signal whenever the current loop
     changes. \a currentLoop is the current loop.
@@ -133,7 +133,7 @@
 */
 
 /*!
-    \fn QAbstractAnimation::directionChanged(QAbstractAnimation::Direction newDirection);
+    \fn void QAbstractAnimation::directionChanged(QAbstractAnimation::Direction newDirection);
 
     QAbstractAnimation emits this signal whenever the direction has been
     changed. \a newDirection is the new direction.
@@ -299,13 +299,13 @@ void QUnifiedTimer::stopAnimationDriver()
     driver->stop();
 }
 
-void QUnifiedTimer::updateAnimationTimers(qint64)
+void QUnifiedTimer::updateAnimationTimers(qint64 currentTick)
 {
     //setCurrentTime can get this called again while we're the for loop. At least with pauseAnimations
     if(insideTick)
         return;
 
-    qint64 totalElapsed = elapsed();
+    qint64 totalElapsed = currentTick > 0 ? currentTick : elapsed();
 
     // ignore consistentTiming in case the pause timer is active
     qint64 delta = (consistentTiming && !pauseTimer.isActive()) ?

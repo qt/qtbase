@@ -48,6 +48,7 @@
 
 #include <qplatformdefs.h>
 #include <QtCore/QCoreApplication>
+#include <QtCore/QVersionNumber>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/qpa/qwindowsysteminterface.h>
 #include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
@@ -73,127 +74,60 @@ public:
     QWindowsDirect2DContext m_d2dContext;
 };
 
-class Direct2DVersion
+static QVersionNumber systemD2DVersion()
 {
-private:
-    Direct2DVersion() = default;
+    static const int bufSize = 512;
+    TCHAR filename[bufSize];
 
-    Direct2DVersion(int one, int two, int three, int four)
-        : partOne(one)
-        , partTwo(two)
-        , partThree(three)
-        , partFour(four)
-    {}
+    UINT i = GetSystemDirectory(filename, bufSize);
+    if (i > 0 && i < bufSize) {
+        if (_tcscat_s(filename, bufSize, __TEXT("\\d2d1.dll")) == 0) {
+            DWORD versionInfoSize = GetFileVersionInfoSize(filename, NULL);
+            if (versionInfoSize) {
+                QVarLengthArray<BYTE> info(static_cast<int>(versionInfoSize));
+                if (GetFileVersionInfo(filename, 0, versionInfoSize, info.data())) {
+                    UINT size;
+                    DWORD *fi;
 
-public:
+                    if (VerQueryValue(info.constData(), __TEXT("\\"),
+                                      reinterpret_cast<void **>(&fi), &size) && size) {
+                        const VS_FIXEDFILEINFO *verInfo = reinterpret_cast<const VS_FIXEDFILEINFO *>(fi);
+                        return QVersionNumber{HIWORD(verInfo->dwFileVersionMS), LOWORD(verInfo->dwFileVersionMS),
+                                              HIWORD(verInfo->dwFileVersionLS), LOWORD(verInfo->dwFileVersionLS)};
+                    }
+                }
+            }
+        }
+    }
+    return QVersionNumber();
+}
+
+static QVersionNumber minimumD2DVersion()
+{
     // 6.2.9200.16492 corresponds to Direct2D 1.1 on Windows 7 SP1 with Platform Update
-    enum {
+    enum : int {
         D2DMinVersionPart1 = 6,
         D2DMinVersionPart2 = 2,
         D2DMinVersionPart3 = 9200,
         D2DMinVersionPart4 = 16492
     };
 
-    static Direct2DVersion systemVersion() {
-        static const int bufSize = 512;
-        TCHAR filename[bufSize];
-
-        UINT i = GetSystemDirectory(filename, bufSize);
-        if (i > 0 && i < bufSize) {
-            if (_tcscat_s(filename, bufSize, __TEXT("\\d2d1.dll")) == 0) {
-                DWORD versionInfoSize = GetFileVersionInfoSize(filename, NULL);
-                if (versionInfoSize) {
-                    QVarLengthArray<BYTE> info(static_cast<int>(versionInfoSize));
-                    if (GetFileVersionInfo(filename, 0, versionInfoSize, info.data())) {
-                        UINT size;
-                        DWORD *fi;
-
-                        if (VerQueryValue(info.constData(), __TEXT("\\"),
-                                          reinterpret_cast<void **>(&fi), &size) && size) {
-                            const VS_FIXEDFILEINFO *verInfo = reinterpret_cast<const VS_FIXEDFILEINFO *>(fi);
-                            return Direct2DVersion(HIWORD(verInfo->dwFileVersionMS),
-                                                   LOWORD(verInfo->dwFileVersionMS),
-                                                   HIWORD(verInfo->dwFileVersionLS),
-                                                   LOWORD(verInfo->dwFileVersionLS));
-                        }
-                    }
-                }
-            }
-        }
-
-        return Direct2DVersion();
-    }
-
-    static Direct2DVersion minimumVersion() {
-        return Direct2DVersion(D2DMinVersionPart1,
-                               D2DMinVersionPart2,
-                               D2DMinVersionPart3,
-                               D2DMinVersionPart4);
-    }
-
-    bool isValid() const {
-        return partOne || partTwo || partThree || partFour;
-    }
-
-    bool operator<(const Direct2DVersion &other) {
-        int c = cmp(partOne, other.partOne);
-        if (c > 0)
-            return false;
-        if (c < 0)
-            return true;
-
-        c = cmp(partTwo, other.partTwo);
-        if (c > 0)
-            return false;
-        if (c < 0)
-            return true;
-
-        c = cmp(partThree, other.partThree);
-        if (c > 0)
-            return false;
-        if (c < 0)
-            return true;
-
-        c = cmp(partFour, other.partFour);
-        if (c > 0)
-            return false;
-        if (c < 0)
-            return true;
-
-        return false;
-    }
-
-    static Q_DECL_CONSTEXPR int cmp(int a, int b) {
-        return a - b;
-    }
-
-    int partOne = 0;
-    int partTwo = 0;
-    int partThree = 0;
-    int partFour = 0;
-};
+    return QVersionNumber{D2DMinVersionPart1, D2DMinVersionPart2, D2DMinVersionPart3, D2DMinVersionPart4};
+}
 
 QWindowsDirect2DIntegration *QWindowsDirect2DIntegration::create(const QStringList &paramList)
 {
-    Direct2DVersion systemVersion = Direct2DVersion::systemVersion();
-
-    if (systemVersion.isValid() && systemVersion < Direct2DVersion::minimumVersion()) {
+    const QVersionNumber systemVersion = systemD2DVersion();
+    const QVersionNumber minimumVersion = minimumD2DVersion();
+    if (!systemVersion.isNull() && systemVersion < minimumVersion) {
         QString msg = QCoreApplication::translate("QWindowsDirect2DIntegration",
             "Qt cannot load the direct2d platform plugin because " \
             "the Direct2D version on this system is too old. The " \
             "minimum system requirement for this platform plugin " \
             "is Windows 7 SP1 with Platform Update.\n\n" \
-            "The minimum Direct2D version required is %1.%2.%3.%4. " \
-            "The Direct2D version on this system is %5.%6.%7.%8.");
-
-        msg = msg.arg(Direct2DVersion::D2DMinVersionPart1)
-                 .arg(Direct2DVersion::D2DMinVersionPart2)
-                 .arg(Direct2DVersion::D2DMinVersionPart3)
-                 .arg(Direct2DVersion::D2DMinVersionPart4)
-                 .arg(systemVersion.partOne)
-                 .arg(systemVersion.partTwo)
-                 .arg(systemVersion.partThree)
-                 .arg(systemVersion.partFour);
+            "The minimum Direct2D version required is %1. " \
+            "The Direct2D version on this system is %2.")
+            .arg(minimumVersion.toString(), systemVersion.toString());
 
         QString caption = QCoreApplication::translate("QWindowsDirect2DIntegration",
             "Cannot load direct2d platform plugin");

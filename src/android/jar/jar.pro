@@ -21,7 +21,8 @@ JAVASOURCES += \
     $$PATHPREFIX/ExtractStyle.java \
     $$PATHPREFIX/EditMenu.java \
     $$PATHPREFIX/EditPopupMenu.java \
-    $$PATHPREFIX/CursorHandle.java
+    $$PATHPREFIX/CursorHandle.java \
+    $$PATHPREFIX/QtThread.java
 
 # install
 target.path = $$[QT_INSTALL_PREFIX]/jar

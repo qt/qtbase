@@ -155,6 +155,20 @@ UnixMakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::
     }
 }
 
+static QString rfc1034Identifier(const QString &str)
+{
+    QString s = str;
+    for (QChar &ch : s) {
+        const char c = ch.toLatin1();
+
+        const bool okChar = (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z')
+                || (c >= 'a' && c <= 'z') || c == '-' || c == '.';
+        if (!okChar)
+            ch = QChar::fromLatin1('-');
+    }
+    return s;
+}
+
 void
 UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 {
@@ -806,14 +820,23 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t << mkdir_p_asstring(destdir) << "\n\t";
             ProStringList commonSedArgs;
             if (!project->values("VERSION").isEmpty()) {
-                commonSedArgs << "-e \"s,@SHORT_VERSION@," << project->first("VER_MAJ") << "."
-                                                           << project->first("VER_MIN") << ",g\" ";
-                commonSedArgs << "-e \"s,@FULL_VERSION@," << project->first("VER_MAJ") << "."
-                                                          << project->first("VER_MIN") << "."
-                                                          << project->first("VER_PAT") << ",g\" ";
+                const ProString shortVersion =
+                    project->first("VER_MAJ") + "." +
+                    project->first("VER_MIN");
+                commonSedArgs << "-e \"s,@SHORT_VERSION@," << shortVersion << ",g\" ";
+                commonSedArgs << "-e \"s,\\$${QMAKE_SHORT_VERSION}," << shortVersion << ",g\" ";
+                const ProString fullVersion =
+                    project->first("VER_MAJ") + "." +
+                    project->first("VER_MIN") + "." +
+                    project->first("VER_PAT");
+                commonSedArgs << "-e \"s,@FULL_VERSION@," << fullVersion << ",g\" ";
+                commonSedArgs << "-e \"s,\\$${QMAKE_FULL_VERSION}," << fullVersion << ",g\" ";
             }
-            commonSedArgs << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
-                       QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" ";
+            const ProString typeInfo = project->isEmpty("QMAKE_PKGINFO_TYPEINFO")
+                ? QString::fromLatin1("????")
+                : project->first("QMAKE_PKGINFO_TYPEINFO").left(4);
+            commonSedArgs << "-e \"s,@TYPEINFO@," << typeInfo << ",g\" ";
+            commonSedArgs << "-e \"s,\\$${QMAKE_PKGINFO_TYPEINFO}," << typeInfo << ",g\" ";
 
             QString bundlePrefix = project->first("QMAKE_TARGET_BUNDLE_PREFIX").toQString();
             if (bundlePrefix.isEmpty())
@@ -826,8 +849,18 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             if (bundleIdentifier.endsWith(".framework"))
                 bundleIdentifier.chop(10);
             // replace invalid bundle id characters
-            bundleIdentifier.replace('_', '-');
+            bundleIdentifier = rfc1034Identifier(bundleIdentifier);
             commonSedArgs << "-e \"s,@BUNDLEIDENTIFIER@," << bundleIdentifier << ",g\" ";
+            commonSedArgs << "-e \"s,\\$${PRODUCT_BUNDLE_IDENTIFIER}," << bundleIdentifier << ",g\" ";
+
+            commonSedArgs << "-e \"s,\\$${MACOSX_DEPLOYMENT_TARGET},"
+                          << project->first("QMAKE_MACOSX_DEPLOYMENT_TARGET").toQString() << ",g\" ";
+            commonSedArgs << "-e \"s,\\$${IPHONEOS_DEPLOYMENT_TARGET},"
+                          << project->first("QMAKE_IPHONEOS_DEPLOYMENT_TARGET").toQString() << ",g\" ";
+            commonSedArgs << "-e \"s,\\$${TVOS_DEPLOYMENT_TARGET},"
+                          << project->first("QMAKE_TVOS_DEPLOYMENT_TARGET").toQString() << ",g\" ";
+            commonSedArgs << "-e \"s,\\$${WATCHOS_DEPLOYMENT_TARGET},"
+                          << project->first("QMAKE_WATCHOS_DEPLOYMENT_TARGET").toQString() << ",g\" ";
 
             if (!isFramework) {
                 ProString app_bundle_name = var("QMAKE_APPLICATION_BUNDLE_NAME");
@@ -843,11 +876,14 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                   << "@sed ";
                 for (const ProString &arg : qAsConst(commonSedArgs))
                     t << arg;
-                t << "-e \"s,@ICON@," << icon.section(Option::dir_sep, -1) << ",g\" "
+                const QString iconName = icon.section(Option::dir_sep, -1);
+                t << "-e \"s,@ICON@," << iconName << ",g\" "
+                  << "-e \"s,\\$${ASSETCATALOG_COMPILER_APPICON_NAME}," << iconName << ",g\" "
                   << "-e \"s,@EXECUTABLE@," << app_bundle_name << ",g\" "
                   << "-e \"s,@LIBRARY@," << plugin_bundle_name << ",g\" "
-                  << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
-                             QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" "
+                  << "-e \"s,\\$${EXECUTABLE_NAME}," << (app_bundle_name.isEmpty() ? app_bundle_name : plugin_bundle_name) << ",g\" "
+                  << "-e \"s,@TYPEINFO@,"<< typeInfo << ",g\" "
+                  << "-e \"s,\\$${QMAKE_PKGINFO_TYPEINFO},"<< typeInfo << ",g\" "
                   << "" << info_plist << " >" << info_plist_out << endl;
                 //copy the icon
                 if (!project->isEmpty("ICON")) {
@@ -873,9 +909,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 for (const ProString &arg : qAsConst(commonSedArgs))
                     t << arg;
                 t << "-e \"s,@LIBRARY@," << lib_bundle_name << ",g\" "
-                  << "-e \"s,@TYPEINFO@,"
-                  << (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
-                      QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" "
+                  << "-e \"s,\\$${EXECUTABLE_NAME}," << lib_bundle_name << ",g\" "
+                  << "-e \"s,@TYPEINFO@," << typeInfo << ",g\" "
+                  << "-e \"s,\\$${QMAKE_PKGINFO_TYPEINFO}," << typeInfo << ",g\" "
                   << "" << info_plist << " >" << info_plist_out << endl;
             }
             break;

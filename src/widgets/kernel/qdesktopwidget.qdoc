@@ -32,6 +32,7 @@
     \ingroup advanced
     \ingroup desktop
     \inmodule QtWidgets
+    \obsolete
 
     Systems with more than one graphics card and monitor can manage the
     physical screen space available either as multiple desktops, or as a
@@ -125,7 +126,7 @@
 
     \obsolete
 
-    This function is deprecated. Use screenCount instead.
+    Use QGuiApplication::screens() instead.
 
     \sa primaryScreen
 */
@@ -140,6 +141,10 @@
     have the geometry of the entire virtual desktop; i.e., bounding
     every \a screen.
 
+    \obsolete
+
+    Use QScreen instead.
+
     \sa primaryScreen, screenCount, virtualDesktop
 */
 
@@ -151,6 +156,10 @@
      platform decides is available (for example excludes the dock and menu bar
      on \macos, or the task bar on Windows). The default screen is used if
      \a screen is -1.
+
+    \obsolete
+
+    Use QGuiApplication::screens() instead.
 
      \sa screenNumber(), screenGeometry(), QScreen::availableGeometry()
 */
@@ -170,6 +179,10 @@
 
     Returns the available geometry of the screen which contains \a p.
 
+    \obsolete
+
+    Use QGuiApplication::screenAt() instead.
+
     \sa screenGeometry()
 */
 
@@ -179,6 +192,10 @@
 
     Returns the geometry of the screen with index \a screen. The default
     screen is used if \a screen is -1.
+
+    \obsolete
+
+    Use QGuiApplication::screens() instead.
 
     \sa screenNumber()
 */
@@ -195,6 +212,10 @@
     \overload
 
     Returns the geometry of the screen which contains \a p.
+
+    \obsolete
+
+    Use QGuiApplication::screenAt() instead.
 */
 
 
@@ -214,29 +235,46 @@
     Returns the index of the screen that contains the \a point, or the
     screen which is the shortest distance from the \a point.
 
+    \obsolete
+
+    Use QGuiApplication::screenAt() instead.
+
     \sa primaryScreen
 */
 
 /*!
     \fn void QDesktopWidget::resizeEvent(QResizeEvent *event)
     \reimp
+    \internal
 */
 
 /*!
     \fn void QDesktopWidget::resized(int screen)
 
     This signal is emitted when the size of \a screen changes.
+
+    \obsolete
+
+    Use QScreen::geometryChanged() instead.
 */
 
 /*!
     \fn void QDesktopWidget::workAreaResized(int screen)
 
     This signal is emitted when the work area available on \a screen changes.
+
+    \obsolete
+
+    Use QScreen::availableGeometryChanged() instead.
 */
 
 /*!
     \property QDesktopWidget::screenCount
     \brief the number of screens currently available on the system.
+
+    \obsolete
+
+    Use QGuiApplication::screens() instead.
 
     \since 4.6
 */
@@ -245,6 +283,10 @@
     \property QDesktopWidget::primaryScreen
     \brief the index of the screen that is configured to be the primary screen
     on the system.
+
+    \obsolete
+
+    Use QGuiApplication::primaryScreen() instead.
 */
 
 /*!
@@ -255,6 +297,10 @@
     For virtual desktops, screen() will always return the same widget.
     The size of the virtual desktop is the size of this desktop
     widget.
+
+    \obsolete
+
+    Use QScreen::virtualSiblings() of primary screen instead.
 */
 
 /*!
@@ -263,6 +309,10 @@
     \since 4.6
 
     This signal is emitted when the number of screens changes to \a newCount.
+
+    \obsolete
+
+    Use QGuiApplication::screenAdded and QGuiApplication::screenRemoved() instead.
 
     \sa screenCount
 */
@@ -277,6 +327,10 @@
 
     \note This doesn't mean the QDesktopWidget::primaryScreen index will
     necessarily be different, but now it will refer to the new primary screen.
+
+    \obsolete
+
+    Use QGuiApplication::primaryScreenChanged() instead.
 
     \sa primaryScreen, screenGeometry()
 */

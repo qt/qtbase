@@ -210,10 +210,9 @@ QRegion QFbScreen::doRedraw()
     if (!mPainter)
         mPainter = new QPainter(&mScreenImage);
 
-    const QVector<QRect> rects = mRepaintRegion.rects();
     const QRect screenRect = mGeometry.translated(-screenOffset);
-    for (int rectIndex = 0; rectIndex < mRepaintRegion.rectCount(); rectIndex++) {
-        const QRect rect = rects[rectIndex].intersected(screenRect);
+    for (QRect rect : mRepaintRegion) {
+        rect = rect.intersected(screenRect);
         if (rect.isEmpty())
             continue;
 

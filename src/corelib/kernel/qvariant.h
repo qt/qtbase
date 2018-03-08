@@ -53,6 +53,10 @@
 #include <QtCore/qbytearraylist.h>
 #endif
 
+#if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
+#include <variant>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 
@@ -355,12 +359,21 @@ class Q_CORE_EXPORT QVariant
     static inline QVariant fromValue(const T &value)
     { return qVariantFromValue(value); }
 
+#if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
+    template<typename... Types>
+    static inline QVariant fromStdVariant(const std::variant<Types...> &value)
+    {
+        if (value.valueless_by_exception())
+            return QVariant();
+        return std::visit([](const auto &arg) { return fromValue(arg); }, value);
+    }
+#endif
+
     template<typename T>
     bool canConvert() const
     { return canConvert(qMetaTypeId<T>()); }
 
  public:
-#ifndef Q_QDOC
     struct PrivateShared
     {
         inline PrivateShared(void *v) : ptr(v), ref(1) { }
@@ -431,7 +444,6 @@ class Q_CORE_EXPORT QVariant
         f_canConvert canConvert;
         f_debugStream debugStream;
     };
-#endif
 
     inline bool operator==(const QVariant &v) const
     { return cmp(v); }
@@ -504,6 +516,11 @@ inline QVariant qVariantFromValue(const T &t)
 
 template <>
 inline QVariant qVariantFromValue(const QVariant &t) { return t; }
+
+#if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
+template <>
+inline QVariant qVariantFromValue(const std::monostate &) { return QVariant(); }
+#endif
 
 template <typename T>
 inline void qVariantSetValue(QVariant &v, const T &t)

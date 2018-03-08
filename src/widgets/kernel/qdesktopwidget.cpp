@@ -176,17 +176,26 @@ void QDesktopWidgetPrivate::_q_updateScreens()
         // Notice that we trigger screenCountChanged even if a screen was removed and another one added,
         // in which case the total number of screens did not change. This is the only way for applications
         // to notice that a screen was swapped out against another one.
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         emit q->screenCountChanged(targetLength);
+QT_WARNING_POP
     }
     foreach (int changedScreen, changedScreens)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         emit q->resized(changedScreen);
+QT_WARNING_POP
 }
 
 void QDesktopWidgetPrivate::_q_availableGeometryChanged()
 {
     Q_Q(QDesktopWidget);
     if (QScreen *screen = qobject_cast<QScreen *>(q->sender()))
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         emit q->workAreaResized(QGuiApplication::screens().indexOf(screen));
+QT_WARNING_POP
 }
 
 QDesktopWidget::QDesktopWidget()
@@ -268,13 +277,8 @@ const QRect QDesktopWidget::availableGeometry(int screenNo) const
 
 const QRect QDesktopWidgetPrivate::availableGeometry(int screenNo)
 {
-    QList<QScreen *> screens = QGuiApplication::screens();
-    if (screenNo == -1)
-        screenNo = 0;
-    if (screenNo < 0 || screenNo >= screens.size())
-        return QRect();
-    else
-        return screens.at(screenNo)->availableGeometry();
+    const QScreen *screen = QDesktopWidgetPrivate::screen(screenNo);
+    return screen ? screen->availableGeometry() : QRect();
 }
 
 const QRect QDesktopWidget::screenGeometry(int screenNo) const
@@ -284,13 +288,8 @@ const QRect QDesktopWidget::screenGeometry(int screenNo) const
 
 const QRect QDesktopWidgetPrivate::screenGeometry(int screenNo)
 {
-    QList<QScreen *> screens = QGuiApplication::screens();
-    if (screenNo == -1)
-        screenNo = 0;
-    if (screenNo < 0 || screenNo >= screens.size())
-        return QRect();
-    else
-        return screens.at(screenNo)->geometry();
+    const QScreen *screen = QDesktopWidgetPrivate::screen(screenNo);
+    return screen ? screen->geometry() : QRect();
 }
 
 int QDesktopWidget::screenNumber(const QWidget *w) const
@@ -354,6 +353,16 @@ int QDesktopWidgetPrivate::screenNumber(const QPoint &p)
 {
     QScreen *screen = QGuiApplication::screenAt(p);
     return screen ? QGuiApplication::screens().indexOf(screen) : primaryScreen();
+}
+
+QScreen *QDesktopWidgetPrivate::screen(int screenNo)
+{
+    QList<QScreen *> screens = QGuiApplication::screens();
+    if (screenNo == -1)
+        screenNo = 0;
+    if (screenNo < 0 || screenNo >= screens.size())
+        return nullptr;
+    return screens.at(screenNo);
 }
 
 void QDesktopWidget::resizeEvent(QResizeEvent *)

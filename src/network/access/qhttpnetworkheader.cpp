@@ -41,8 +41,6 @@
 
 #include <algorithm>
 
-#ifndef QT_NO_HTTP
-
 QT_BEGIN_NAMESPACE
 
 QHttpNetworkHeaderPrivate::QHttpNetworkHeaderPrivate(const QUrl &newUrl)
@@ -114,6 +112,11 @@ void QHttpNetworkHeaderPrivate::setHeaderField(const QByteArray &name, const QBy
     fields.append(qMakePair(name, data));
 }
 
+void QHttpNetworkHeaderPrivate::prependHeaderField(const QByteArray &name, const QByteArray &data)
+{
+    fields.prepend(qMakePair(name, data));
+}
+
 bool QHttpNetworkHeaderPrivate::operator==(const QHttpNetworkHeaderPrivate &other) const
 {
    return (url == other.url);
@@ -121,5 +124,3 @@ bool QHttpNetworkHeaderPrivate::operator==(const QHttpNetworkHeaderPrivate &othe
 
 
 QT_END_NAMESPACE
-
-#endif

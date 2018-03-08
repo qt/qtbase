@@ -1287,10 +1287,11 @@ void QGraphicsScenePrivate::sendHoverEvent(QEvent::Type type, QGraphicsItem *ite
 {
     QGraphicsSceneHoverEvent event(type);
     event.setWidget(hoverEvent->widget());
-    event.setPos(item->d_ptr->genericMapFromScene(hoverEvent->scenePos(), hoverEvent->widget()));
+    const QTransform mapFromScene = item->d_ptr->genericMapFromSceneTransform(hoverEvent->widget());
+    event.setPos(mapFromScene.map(hoverEvent->scenePos()));
     event.setScenePos(hoverEvent->scenePos());
     event.setScreenPos(hoverEvent->screenPos());
-    event.setLastPos(item->d_ptr->genericMapFromScene(hoverEvent->lastScenePos(), hoverEvent->widget()));
+    event.setLastPos(mapFromScene.map(hoverEvent->lastScenePos()));
     event.setLastScenePos(hoverEvent->lastScenePos());
     event.setLastScreenPos(hoverEvent->lastScreenPos());
     event.setModifiers(hoverEvent->modifiers());
@@ -1313,14 +1314,16 @@ void QGraphicsScenePrivate::sendMouseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     if (item->isBlockedByModalPanel())
         return;
 
+    const QTransform mapFromScene = item->d_ptr->genericMapFromSceneTransform(mouseEvent->widget());
+    const QPointF itemPos = mapFromScene.map(mouseEvent->scenePos());
     for (int i = 0x1; i <= 0x10; i <<= 1) {
         Qt::MouseButton button = Qt::MouseButton(i);
-        mouseEvent->setButtonDownPos(button, mouseGrabberButtonDownPos.value(button, item->d_ptr->genericMapFromScene(mouseEvent->scenePos(), mouseEvent->widget())));
+        mouseEvent->setButtonDownPos(button, mouseGrabberButtonDownPos.value(button, itemPos));
         mouseEvent->setButtonDownScenePos(button, mouseGrabberButtonDownScenePos.value(button, mouseEvent->scenePos()));
         mouseEvent->setButtonDownScreenPos(button, mouseGrabberButtonDownScreenPos.value(button, mouseEvent->screenPos()));
     }
-    mouseEvent->setPos(item->d_ptr->genericMapFromScene(mouseEvent->scenePos(), mouseEvent->widget()));
-    mouseEvent->setLastPos(item->d_ptr->genericMapFromScene(mouseEvent->lastScenePos(), mouseEvent->widget()));
+    mouseEvent->setPos(itemPos);
+    mouseEvent->setLastPos(mapFromScene.map(mouseEvent->lastScenePos()));
     sendEvent(item, mouseEvent);
 }
 
@@ -5522,7 +5525,7 @@ bool QGraphicsScene::focusNextPrevChild(bool next)
 */
 
 /*!
-    \fn QGraphicsScene::focusItemChanged(QGraphicsItem *newFocusItem, QGraphicsItem *oldFocusItem, Qt::FocusReason reason)
+    \fn void QGraphicsScene::focusItemChanged(QGraphicsItem *newFocusItem, QGraphicsItem *oldFocusItem, Qt::FocusReason reason)
 
     This signal is emitted by QGraphicsScene whenever focus changes in the
     scene (i.e., when an item gains or loses input focus, or when focus
@@ -5859,10 +5862,17 @@ void QGraphicsScenePrivate::removeView(QGraphicsView *view)
 
 void QGraphicsScenePrivate::updateTouchPointsForItem(QGraphicsItem *item, QTouchEvent *touchEvent)
 {
+    const QTransform mapFromScene =
+        item->d_ptr->genericMapFromSceneTransform(static_cast<const QWidget *>(touchEvent->target()));
+
     for (auto &touchPoint : touchEvent->_touchPoints) {
-        touchPoint.setRect(item->mapFromScene(touchPoint.sceneRect()).boundingRect());
-        touchPoint.setStartPos(item->d_ptr->genericMapFromScene(touchPoint.startScenePos(), static_cast<QWidget *>(touchEvent->target())));
-        touchPoint.setLastPos(item->d_ptr->genericMapFromScene(touchPoint.lastScenePos(), static_cast<QWidget *>(touchEvent->target())));
+        // Deprecated TouchPoint::setRect clobbers ellipseDiameters, restore
+        const QSizeF ellipseDiameters = touchPoint.ellipseDiameters();
+        touchPoint.setRect(mapFromScene.map(touchPoint.sceneRect()).boundingRect());
+        touchPoint.setEllipseDiameters(ellipseDiameters);
+        touchPoint.setPos(mapFromScene.map(touchPoint.scenePos()));
+        touchPoint.setStartPos(mapFromScene.map(touchPoint.startScenePos()));
+        touchPoint.setLastPos(mapFromScene.map(touchPoint.lastScenePos()));
     }
 }
 

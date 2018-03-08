@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -992,13 +992,12 @@ void QFontEngine::removeGlyphFromCache(glyph_t)
 QFontEngine::Properties QFontEngine::properties() const
 {
     Properties p;
-    QByteArray psname = QFontEngine::convertToPostscriptFontFamilyName(fontDef.family.toUtf8());
-    psname += '-';
-    psname += QByteArray::number(fontDef.style);
-    psname += '-';
-    psname += QByteArray::number(fontDef.weight);
-
-    p.postscriptName = psname;
+    p.postscriptName
+            = QFontEngine::convertToPostscriptFontFamilyName(fontDef.family.toUtf8())
+            + '-'
+            + QByteArray::number(fontDef.style)
+            + '-'
+            + QByteArray::number(fontDef.weight);
     p.ascent = ascent();
     p.descent = descent();
     p.leading = leading();
@@ -1845,7 +1844,12 @@ QFontEngine *QFontEngineMulti::loadEngine(int at)
     request.styleStrategy |= QFont::NoFontMerging;
     request.family = fallbackFamilyAt(at - 1);
 
-    if (QFontEngine *engine = QFontDatabase::findFont(request, m_script)) {
+    // At this point, the main script of the text has already been considered
+    // when fetching the list of fallback families from the database, and the
+    // info about the actual script of the characters may have been discarded,
+    // so we do not check for writing system support, but instead just load
+    // the family indiscriminately.
+    if (QFontEngine *engine = QFontDatabase::findFont(request, QFontDatabase::Any)) {
         engine->fontDef.weight = request.weight;
         if (request.style > QFont::StyleNormal)
             engine->fontDef.style = request.style;
@@ -1898,8 +1902,33 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
 
     int glyph_pos = 0;
     QStringIterator it(str, str + len);
+
+    int lastFallback = -1;
     while (it.hasNext()) {
         const uint ucs4 = it.peekNext();
+
+        // If we applied a fallback font to previous glyph, and the current is either
+        // ZWJ or ZWNJ, we should also try applying the same fallback font to that, in order
+        // to get the correct shaping rules applied.
+        if (lastFallback >= 0 && (ucs4 == QChar(0x200d) || ucs4 == QChar(0x200c))) {
+            QFontEngine *engine = m_engines.at(lastFallback);
+            glyph_t glyph = engine->glyphIndex(ucs4);
+            if (glyph != 0) {
+                glyphs->glyphs[glyph_pos] = glyph;
+                if (!(flags & GlyphIndicesOnly)) {
+                    QGlyphLayout g = glyphs->mid(glyph_pos, 1);
+                    engine->recalcAdvances(&g, flags);
+                }
+
+                // set the high byte to indicate which engine the glyph came from
+                glyphs->glyphs[glyph_pos] |= (lastFallback << 24);
+            } else {
+                lastFallback = -1;
+            }
+        } else {
+            lastFallback = -1;
+        }
+
         if (glyphs->glyphs[glyph_pos] == 0
                 && ucs4 != QChar::LineSeparator
                 && ucs4 != QChar::LineFeed
@@ -1928,6 +1957,9 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
                         QGlyphLayout g = glyphs->mid(glyph_pos, 1);
                         engine->recalcAdvances(&g, flags);
                     }
+
+                    lastFallback = x;
+
                     // set the high byte to indicate which engine the glyph came from
                     glyphs->glyphs[glyph_pos] |= (x << 24);
                     break;

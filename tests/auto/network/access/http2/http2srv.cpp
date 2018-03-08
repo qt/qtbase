@@ -76,13 +76,11 @@ void fill_push_header(const HttpHeader &originalRequest, HttpHeader &promisedReq
 
 }
 
-Http2Server::Http2Server(bool h2c, const Http2Settings &ss, const Http2Settings &cs)
+Http2Server::Http2Server(bool h2c, const Http2::RawSettings &ss, const Http2::RawSettings &cs)
     : serverSettings(ss),
+      expectedClientSettings(cs),
       clearTextHTTP2(h2c)
 {
-    for (const auto &s : cs)
-        expectedClientSettings[quint16(s.identifier)] = s.value;
-
     responseBody = "<html>\n"
                    "<head>\n"
                    "<title>Sample \"Hello, World\" Application</title>\n"
@@ -159,11 +157,11 @@ void Http2Server::sendServerSettings()
         return;
 
     writer.start(FrameType::SETTINGS, FrameFlag::EMPTY, connectionStreamID);
-    for (const auto &s : serverSettings) {
-        writer.append(s.identifier);
-        writer.append(s.value);
-        if (s.identifier == Settings::INITIAL_WINDOW_SIZE_ID)
-            streamRecvWindowSize = s.value;
+    for (auto it = serverSettings.cbegin(); it != serverSettings.cend(); ++it) {
+        writer.append(it.key());
+        writer.append(it.value());
+        if (it.key() == Settings::INITIAL_WINDOW_SIZE_ID)
+            streamRecvWindowSize = it.value();
     }
     writer.write(*socket);
     // Now, let's update our peer on a session recv window size:
@@ -285,9 +283,9 @@ void Http2Server::incomingConnection(qintptr socketDescriptor)
 
 quint32 Http2Server::clientSetting(Http2::Settings identifier, quint32 defaultValue)
 {
-    const auto it = expectedClientSettings.find(quint16(identifier));
+    const auto it = expectedClientSettings.find(identifier);
     if (it != expectedClientSettings.end())
-        return  it->second;
+        return  it.value();
     return defaultValue;
 }
 
@@ -623,7 +621,7 @@ void Http2Server::handleSETTINGS()
     const auto notFound = expectedClientSettings.end();
 
     while (src != end) {
-        const auto id = qFromBigEndian<quint16>(src);
+        const auto id = Http2::Settings(qFromBigEndian<quint16>(src));
         const auto value = qFromBigEndian<quint32>(src + 2);
         if (expectedClientSettings.find(id) == notFound ||
             expectedClientSettings[id] != value) {

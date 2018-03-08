@@ -56,6 +56,8 @@ HEADERS += \
     $$PWD/src/hb-buffer-deserialize-json.hh \
     $$PWD/src/hb-buffer-deserialize-text.hh \
     $$PWD/src/hb-cache-private.hh \
+    $$PWD/src/hb-debug.hh \
+    $$PWD/src/hb-dsalgs.hh \
     $$PWD/src/hb-face-private.hh \
     $$PWD/src/hb-font-private.hh \
     $$PWD/src/hb-mutex-private.hh \
@@ -73,11 +75,13 @@ HEADERS += \
     $$PWD/src/hb-ot-os2-table.hh \
     $$PWD/src/hb-ot-post-table.hh \
     $$PWD/src/hb-private.hh \
+    $$PWD/src/hb-set-digest-private.hh \
     $$PWD/src/hb-set-private.hh \
     $$PWD/src/hb-shape-plan-private.hh \
     $$PWD/src/hb-shaper-impl-private.hh \
     $$PWD/src/hb-shaper-list.hh \
     $$PWD/src/hb-shaper-private.hh \
+    $$PWD/src/hb-string-array.hh \
     $$PWD/src/hb-unicode-private.hh \
     $$PWD/src/hb-utf-private.hh
 
@@ -116,9 +120,11 @@ contains(SHAPERS, opentype) {
         $$PWD/src/hb-ot-shape-complex-use.cc \
         $$PWD/src/hb-ot-shape-complex-use-table.cc \
         $$PWD/src/hb-ot-shape-fallback.cc \
-        $$PWD/src/hb-ot-shape-normalize.cc
+        $$PWD/src/hb-ot-shape-normalize.cc \
+	$$PWD/src/hb-ot-var.cc
 
     HEADERS += \
+        $$PWD/src/hb-ot-kern-table.hh \
         $$PWD/src/hb-ot-layout-common-private.hh \
         $$PWD/src/hb-ot-layout-gdef-table.hh \
         $$PWD/src/hb-ot-layout-gpos-table.hh \
@@ -128,6 +134,8 @@ contains(SHAPERS, opentype) {
         $$PWD/src/hb-ot-layout-math-table.hh \
         $$PWD/src/hb-ot-layout-private.hh \
         $$PWD/src/hb-ot-map-private.hh \
+        $$PWD/src/hb-ot-math-table.hh \
+        $$PWD/src/hb-ot-post-macroman.hh \
         $$PWD/src/hb-ot-shape-complex-arabic-fallback.hh \
         $$PWD/src/hb-ot-shape-complex-arabic-private.hh \
         $$PWD/src/hb-ot-shape-complex-arabic-table.hh \
@@ -140,7 +148,11 @@ contains(SHAPERS, opentype) {
         $$PWD/src/hb-ot-shape-complex-use-private.hh \
         $$PWD/src/hb-ot-shape-fallback-private.hh \
         $$PWD/src/hb-ot-shape-normalize-private.hh \
-        $$PWD/src/hb-ot-shape-private.hh
+        $$PWD/src/hb-ot-shape-private.hh \
+        $$PWD/src/hb-ot-var-avar-table.hh \
+        $$PWD/src/hb-ot-var-fvar-table.hh \
+        $$PWD/src/hb-ot-var-hvar-table.hh \
+        $$PWD/src/hb-ot-var-mvar-table.hh
 
     HEADERS += \
         $$PWD/src/hb-ot.h \
@@ -148,7 +160,8 @@ contains(SHAPERS, opentype) {
         $$PWD/src/hb-ot-layout.h \
         $$PWD/src/hb-ot-math.h \
         $$PWD/src/hb-ot-shape.h \
-        $$PWD/src/hb-ot-tag.h
+        $$PWD/src/hb-ot-tag.h \
+        $$PWD/src/hb-ot-var.h
 }
 
 contains(SHAPERS, coretext) {

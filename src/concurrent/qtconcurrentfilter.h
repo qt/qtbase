@@ -42,62 +42,16 @@
 
 #include <QtConcurrent/qtconcurrent_global.h>
 
-#ifndef QT_NO_CONCURRENT
+#if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)
 
 #include <QtConcurrent/qtconcurrentfilterkernel.h>
 #include <QtConcurrent/qtconcurrentfunctionwrappers.h>
 
 QT_BEGIN_NAMESPACE
 
-
-#ifdef Q_QDOC
-
 namespace QtConcurrent {
 
-    QFuture<void> filter(Sequence &sequence, FilterFunction filterFunction);
-
-    template <typename T>
-    QFuture<T> filtered(const Sequence &sequence, FilterFunction filterFunction);
-    template <typename T>
-    QFuture<T> filtered(ConstIterator begin, ConstIterator end, FilterFunction filterFunction);
-
-    template <typename T>
-    QFuture<T> filteredReduced(const Sequence &sequence,
-                               FilterFunction filterFunction,
-                               ReduceFunction reduceFunction,
-                               QtConcurrent::ReduceOptions reduceOptions = UnorderedReduce | SequentialReduce);
-    template <typename T>
-    QFuture<T> filteredReduced(ConstIterator begin,
-                               ConstIterator end,
-                               FilterFunction filterFunction,
-                               ReduceFunction reduceFunction,
-                               QtConcurrent::ReduceOptions reduceOptions = UnorderedReduce | SequentialReduce);
-
-    void blockingFilter(Sequence &sequence, FilterFunction filterFunction);
-
-    template <typename Sequence>
-    Sequence blockingFiltered(const Sequence &sequence, FilterFunction filterFunction);
-    template <typename Sequence>
-    Sequence blockingFiltered(ConstIterator begin, ConstIterator end, FilterFunction filterFunction);
-
-    template <typename T>
-    T blockingFilteredReduced(const Sequence &sequence,
-                              FilterFunction filterFunction,
-                              ReduceFunction reduceFunction,
-                              QtConcurrent::ReduceOptions reduceOptions = UnorderedReduce | SequentialReduce);
-    template <typename T>
-    T blockingFilteredReduced(ConstIterator begin,
-                              ConstIterator end,
-                              FilterFunction filterFunction,
-                              ReduceFunction reduceFunction,
-                              QtConcurrent::ReduceOptions reduceOptions = UnorderedReduce | SequentialReduce);
-
-} // namespace QtConcurrent
-
-#else
-
-namespace QtConcurrent {
-
+//! [QtConcurrent-1]
 template <typename Sequence, typename KeepFunctor, typename ReduceFunctor>
 ThreadEngineStarter<void> filterInternal(Sequence &sequence, KeepFunctor keep, ReduceFunctor reduce)
 {
@@ -122,6 +76,7 @@ QFuture<ResultType> filteredReduced(const Sequence &sequence,
     return startFilteredReduced<ResultType>(sequence, QtPrivate::createFunctionWrapper(keep), QtPrivate::createFunctionWrapper(reduce), options);
 }
 
+#ifndef Q_CLANG_QDOC
 template <typename Sequence, typename KeepFunctor, typename ReduceFunctor>
 QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> filteredReduced(const Sequence &sequence,
                                     KeepFunctor keep,
@@ -134,6 +89,7 @@ QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> filtere
              QtPrivate::createFunctionWrapper(reduce),
              options);
 }
+#endif
 
 // filteredReduced() on iterators
 template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor>
@@ -146,6 +102,7 @@ QFuture<ResultType> filteredReduced(Iterator begin,
    return startFilteredReduced<ResultType>(begin, end, QtPrivate::createFunctionWrapper(keep), QtPrivate::createFunctionWrapper(reduce), options);
 }
 
+#ifndef Q_CLANG_QDOC
 template <typename Iterator, typename KeepFunctor, typename ReduceFunctor>
 QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> filteredReduced(Iterator begin,
                                     Iterator end,
@@ -159,6 +116,7 @@ QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> filtere
             QtPrivate::createFunctionWrapper(reduce),
             options);
 }
+#endif
 
 // filtered() on sequences
 template <typename Sequence, typename KeepFunctor>
@@ -192,6 +150,7 @@ ResultType blockingFilteredReduced(const Sequence &sequence,
         .startBlocking();
 }
 
+#ifndef Q_CLANG_QDOC
 template <typename Sequence, typename KeepFunctor, typename ReduceFunctor>
 typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingFilteredReduced(const Sequence &sequence,
                                    KeepFunctor keep,
@@ -204,6 +163,7 @@ typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingFiltered
          QtPrivate::createFunctionWrapper(reduce),
          options);
 }
+#endif
 
 // blocking filteredReduced() on iterators
 template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor>
@@ -221,6 +181,7 @@ ResultType blockingFilteredReduced(Iterator begin,
         .startBlocking();
 }
 
+#ifndef Q_CLANG_QDOC
 template <typename Iterator, typename KeepFunctor, typename ReduceFunctor>
 typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingFilteredReduced(Iterator begin,
                                    Iterator end,
@@ -235,6 +196,7 @@ typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingFiltered
          options)
         .startBlocking();
 }
+#endif
 
 // blocking filtered() on sequences
 template <typename Sequence, typename KeepFunctor>
@@ -254,8 +216,6 @@ OutputSequence blockingFiltered(Iterator begin, Iterator end, KeepFunctor keep)
 }
 
 } // namespace QtConcurrent
-
-#endif // Q_QDOC
 
 QT_END_NAMESPACE
 

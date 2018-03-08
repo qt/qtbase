@@ -346,6 +346,7 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
     void timerEvent(QTimerEvent *event) override;
     void inputMethodEvent(QInputMethodEvent *event) override;
+    bool eventFilter(QObject *object, QEvent *event) override;
 
 #ifndef QT_NO_DRAGANDDROP
     enum DropIndicatorPosition { OnItem, AboveItem, BelowItem, OnViewport };

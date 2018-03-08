@@ -67,13 +67,9 @@
 #include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
 
-static inline void setFrameless(QWidget *w)
-{
-    Qt::WindowFlags flags = w->windowFlags();
-    flags |= Qt::FramelessWindowHint;
-    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    w->setWindowFlags(flags);
-}
+#include <QtTest/private/qtesthelpers_p.h>
+
+using namespace QTestPrivate;
 
 class tst_QComboBox : public QObject
 {
@@ -2056,13 +2052,13 @@ void tst_QComboBox::mouseWheel_data()
     QTest::newRow("upper locked") << disabled << start << wheel << expected;
 
     wheel = -1;
-#ifdef Q_OS_DARWIN
+    const bool allowsWheelScroll = QApplication::style()->styleHint(QStyle::SH_ComboBox_AllowWheelScrolling);
     // on OS X & iOS mouse wheel shall have no effect on combo box
-    expected = start;
-#else
-    // on other OSes we should jump to next enabled item (no. 5)
-    expected = 5;
-#endif
+    if (!allowsWheelScroll)
+        expected = start;
+    else // on other OSes we should jump to next enabled item (no. 5)
+        expected = 5;
+
     QTest::newRow("jump over") << disabled << start << wheel << expected;
 
     disabled.clear();

@@ -96,7 +96,16 @@ public:
     }
 
     QRectF closestAcceptableGeometry(const QRectF &rect) const override;
+#if QT_CONFIG(opengl)
     QOpenGLContext *shareContext() const override;
+#endif
+
+    void processSafeAreaMarginsChanged() override
+    {
+        Q_Q(QWidgetWindow);
+        if (QWidget *widget = q->widget())
+            QWidgetPrivate::get(widget)->updateContentsRect();
+    }
 };
 
 QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
@@ -128,12 +137,14 @@ QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
     return result;
 }
 
+#if QT_CONFIG(opengl)
 QOpenGLContext *QWidgetWindowPrivate::shareContext() const
 {
     Q_Q(const QWidgetWindow);
     const QWidgetPrivate *widgetPrivate = QWidgetPrivate::get(q->widget());
     return widgetPrivate->shareContext();
 }
+#endif // opengl
 
 QWidgetWindow::QWidgetWindow(QWidget *widget)
     : QWindow(*new QWidgetWindowPrivate(), 0)
@@ -237,7 +248,7 @@ bool QWidgetWindow::event(QEvent *event)
     // are sent by QApplicationPrivate::notifyActiveWindowChange()
     case QEvent::FocusIn:
         handleFocusInEvent(static_cast<QFocusEvent *>(event));
-        // Fallthrough
+        Q_FALLTHROUGH();
     case QEvent::FocusOut: {
 #ifndef QT_NO_ACCESSIBILITY
         QAccessible::State state;
@@ -633,12 +644,9 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 
     QWidget *receiver = QApplicationPrivate::pickMouseReceiver(m_widget, event->windowPos().toPoint(), &mapped, event->type(), event->buttons(),
                                                                qt_button_down, widget);
-
-    if (!receiver) {
-        if (event->type() == QEvent::MouseButtonRelease)
-            QApplicationPrivate::mouse_buttons &= ~event->button();
+    if (!receiver)
         return;
-    }
+
     if ((event->type() != QEvent::MouseButtonPress)
         || !(event->flags().testFlag(Qt::MouseEventCreatedDoubleClick))) {
 

@@ -993,12 +993,7 @@
     \value WA_LayoutUsesWidgetRect Ignore the layout item rect from the style
     when laying out this widget with QLayout.
 
-    \value WA_MacNoClickThrough When a widget that has this attribute set
-    is clicked, and its window is inactive, the click will make the window
-    active but won't be seen by the widget. Typical use of this attribute
-    is on widgets with "destructive" actions, such as a "Delete" button.
-    WA_MacNoClickThrough also applies to all child widgets of the widget
-    that has it set.
+    \value WA_MacNoClickThrough This value is obsolete and has no effect.
 
     \value WA_MacOpaqueSizeGrip Indicates that the native Carbon size grip
     should be opaque instead of transparent (the default). This attribute
@@ -1027,9 +1022,7 @@
     alternative sizes for widgets to avoid clipping.
     This attribute is only applicable to \macos.
 
-    \value WA_MacBrushedMetal Indicates the widget should be drawn in
-    the brushed metal style as supported by the windowing system. This
-    attribute is only applicable to \macos.
+    \value WA_MacBrushedMetal This value is obsolete and has no effect.
 
     \omitvalue WA_MacMetalStyle
 
@@ -1284,9 +1277,7 @@
     has no effect on non-X11 platforms. \b Note: Qt automatically sets this
     attribute on the feedback widget used during a drag.
 
-    \value WA_MacFrameworkScaled Enables resolution independence aware mode
-    on Mac when using Carbon. This attribute has no effect on Cocoa.
-    The attribute is off by default and can be enabled on a per-window basis.
+    \value WA_MacFrameworkScaled This value is obsolete and has no effect.
 
     \value WA_AcceptTouchEvents Allows touch events (see QTouchEvent)
     to be sent to the widget. Must be set on all widgets that can
@@ -1338,6 +1329,7 @@
     \omitvalue WA_WState_WindowOpacitySet
     \omitvalue WA_WState_AcceptedTouchBeginEvent
     \omitvalue WA_MacNoShadow
+    \omitvalue WA_ContentsMarginsRespectsSafeArea
 */
 
 /*! \typedef Qt::HANDLE
@@ -1613,6 +1605,36 @@
     \value Key_Dead_Belowdot
     \value Key_Dead_Hook
     \value Key_Dead_Horn
+    \value Key_Dead_Stroke
+    \value Key_Dead_Abovecomma
+    \value Key_Dead_Abovereversedcomma
+    \value Key_Dead_Doublegrave
+    \value Key_Dead_Belowring
+    \value Key_Dead_Belowmacron
+    \value Key_Dead_Belowcircumflex
+    \value Key_Dead_Belowtilde
+    \value Key_Dead_Belowbreve
+    \value Key_Dead_Belowdiaeresis
+    \value Key_Dead_Invertedbreve
+    \value Key_Dead_Belowcomma
+    \value Key_Dead_Currency
+    \value Key_Dead_a
+    \value Key_Dead_A
+    \value Key_Dead_e
+    \value Key_Dead_E
+    \value Key_Dead_i
+    \value Key_Dead_I
+    \value Key_Dead_o
+    \value Key_Dead_O
+    \value Key_Dead_u
+    \value Key_Dead_U
+    \value Key_Dead_Small_Schwa
+    \value Key_Dead_Capital_Schwa
+    \value Key_Dead_Greek
+    \value Key_Dead_Lowline
+    \value Key_Dead_Aboveverticalline
+    \value Key_Dead_Belowverticalline
+    \value Key_Dead_Longsolidusoverlay
     \value Key_Back
     \value Key_Forward
     \value Key_Stop
@@ -2129,7 +2151,7 @@
                    with a somewhat lighter frame. It can also be
                    combined with Qt::FramelessWindowHint.
                    On \macos, tool windows correspond to the
-                   \l{http://developer.apple.com/documentation/Carbon/Conceptual/HandlingWindowsControls/hitb-wind_cont_concept/chapter_2_section_2.html}{Floating}
+                   \l{https://developer.apple.com/documentation/appkit/nspanel}{NSPanel}
                    class of windows. This means that the window lives on a
                    level above normal windows making it impossible to put a normal
                    window on top of it. By default, tool windows will disappear
@@ -2563,6 +2585,9 @@
     \value ImhPreferLatin            Latin characters are preferred (but not required).
 
     \value ImhMultiLine              Multiple lines can be entered into the text field.
+
+    \value ImhNoEditMenu             Do not use built-in edit menu. This flag was introduced in Qt 5.11.
+    \value ImhNoTextHandles          Do not use built-in text cursor and selection handles. This flag was introduced in Qt 5.11.
 
     Flags that restrict input (exclusive flags):
 
@@ -3077,9 +3102,8 @@
                                              it is displayed regardless of device type.
                                              The keypad is used to implement a virtual cursor, unless
                                              the device has an analog mouse type of input device (e.g. touchpad)
-
-    \note In 4.6, cursor navigation is only implemented for Symbian OS.
-           On other platforms, it behaves as NavigationModeNone.
+    \note Cursor navigation is not currently implemented on any platform
+    and behaves as NavigationModeNone.
     \sa QApplication::setNavigationMode()
     \sa QApplication::navigationMode()
 */
@@ -3191,4 +3215,38 @@
   \value ChecksumIso3309 Checksum calculation based on ISO 3309.
 
   \value ChecksumItuV41 Checksum calculation based on ITU-V.41.
+*/
+
+/*!
+    \fn bool Qt::mightBeRichText(const QString& text)
+
+    Returns \c true if the string \a text is likely to be rich text;
+    otherwise returns \c false.
+
+    This function uses a fast and therefore simple heuristic. It
+    mainly checks whether there is something that looks like a tag
+    before the first line break. Although the result may be correct
+    for common cases, there is no guarantee.
+
+    This function is defined in the \c <QTextDocument> header file.
+*/
+
+/*!
+    \fn QString Qt::convertFromPlainText(const QString &plain, Qt::WhiteSpaceMode mode)
+
+    Converts the plain text string \a plain to an HTML-formatted
+    paragraph while preserving most of its look.
+
+    \a mode defines how whitespace is handled.
+
+    This function is defined in the \c <QTextDocument> header file.
+
+    \sa escape(), mightBeRichText()
+*/
+
+/*!
+    \fn QTextCodec *Qt::codecForHtml(const QByteArray &ba)
+    \internal
+
+    This function is defined in the \c <QTextDocument> header file.
 */

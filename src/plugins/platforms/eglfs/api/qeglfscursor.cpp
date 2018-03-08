@@ -40,10 +40,10 @@
 #include "qeglfscursor_p.h"
 #include "qeglfsintegration_p.h"
 #include "qeglfsscreen_p.h"
+#include "qeglfscontext_p.h"
 
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QOpenGLContext>
-#include <QtGui/QOpenGLShaderProgram>
 #include <QtCore/QFile>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonArray>
@@ -115,13 +115,6 @@ void QEglFSCursorDeviceListener::onDeviceListChanged(QInputDeviceManager::Device
 
 void QEglFSCursor::resetResources()
 {
-    if (QOpenGLContext *ctx = QOpenGLContext::currentContext()) {
-        GraphicsContextData &gfx(m_gfx[ctx]);
-        delete gfx.program;
-        glDeleteTextures(1, &gfx.customCursorTexture);
-        glDeleteTextures(1, &gfx.atlasTexture);
-        gfx = GraphicsContextData();
-    }
     m_cursor.customCursorPending = !m_cursor.customCursorImage.isNull();
 }
 
@@ -144,8 +137,8 @@ void QEglFSCursor::createShaderPrograms()
         "   gl_FragColor = texture2D(texture, textureCoord).bgra;\n"
         "}\n";
 
-    GraphicsContextData &gfx(m_gfx[QOpenGLContext::currentContext()]);
-    gfx.program = new QOpenGLShaderProgram;
+    QEglFSCursorData &gfx = static_cast<QEglFSContext*>(QOpenGLContext::currentContext()->handle())->cursorData;
+    gfx.program.reset(new QOpenGLShaderProgram);
     gfx.program->addCacheableShaderFromSourceCode(QOpenGLShader::Vertex, textureVertexProgram);
     gfx.program->addCacheableShaderFromSourceCode(QOpenGLShader::Fragment, textureFragmentProgram);
     gfx.program->bindAttributeLocation("vertexCoordEntry", 0);
@@ -475,7 +468,7 @@ void QEglFSCursor::draw(const QRectF &r)
 {
     StateSaver stateSaver;
 
-    GraphicsContextData &gfx(m_gfx[QOpenGLContext::currentContext()]);
+    QEglFSCursorData &gfx = static_cast<QEglFSContext*>(QOpenGLContext::currentContext()->handle())->cursorData;
     if (!gfx.program) {
         // one time initialization
         initializeOpenGLFunctions();

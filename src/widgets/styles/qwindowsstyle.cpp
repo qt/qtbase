@@ -798,9 +798,10 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
         break;
     case PE_FrameDefaultButton: {
         QPen oldPen = p->pen();
-        p->setPen(opt->palette.shadow().color());
-        QRect rect = opt->rect;
-        rect.adjust(0, 0, -1, -1);
+        p->setPen(QPen(opt->palette.shadow().color(), 0));
+        QRectF rect = opt->rect;
+        rect.adjust(QStyleHelper::dpiScaled(0.5), QStyleHelper::dpiScaled(0.5),
+                    QStyleHelper::dpiScaled(-1.5), QStyleHelper::dpiScaled(-1.5));
         p->drawRect(rect);
         p->setPen(oldPen);
         break;
@@ -843,22 +844,16 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
         }
 #endif // QT_CONFIG(itemviews)
         if (!(opt->state & State_Off)) {
-            QLineF lines[7];
-            int i, xx, yy;
-            xx = opt->rect.x() + 3;
-            yy = opt->rect.y() + 5;
-            for (i = 0; i < 3; ++i) {
-                lines[i] = QLineF(xx, yy, xx, yy + 2);
-                ++xx;
-                ++yy;
-            }
-            yy -= 2;
-            for (i = 3; i < 7; ++i) {
-                lines[i] = QLineF(xx, yy, xx, yy + 2);
-                ++xx;
-                --yy;
-            }
-            p->drawLines(lines, 7);
+            QPointF  points[6];
+            points[0] = { opt->rect.x() + QStyleHelper::dpiScaled(3.5), opt->rect.y() + QStyleHelper::dpiScaled(5.5) };
+            points[1] = { points[0].x(), points[0].y() + QStyleHelper::dpiScaled(2) };
+            points[2] = { points[1].x() + QStyleHelper::dpiScaled(2), points[1].y() + QStyleHelper::dpiScaled(2) };
+            points[3] = { points[2].x() + QStyleHelper::dpiScaled(4), points[2].y() - QStyleHelper::dpiScaled(4) };
+            points[4] = { points[3].x(), points[3].y() - QStyleHelper::dpiScaled(2) };
+            points[5] = { points[4].x() - QStyleHelper::dpiScaled(4), points[4].y() + QStyleHelper::dpiScaled(4) };
+            p->setPen(QPen(opt->palette.text().color(), 0));
+            p->setBrush(opt->palette.text().color());
+            p->drawPolygon(points, 6);
         }
         if (doRestore)
             p->restore();
@@ -890,86 +885,57 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
         break;
     case PE_IndicatorRadioButton:
         {
-#define PTSARRLEN(x) sizeof(x)/(sizeof(QPoint))
-            static const QPoint pts1[] = {              // dark lines
-                QPoint(1, 9), QPoint(1, 8), QPoint(0, 7), QPoint(0, 4), QPoint(1, 3), QPoint(1, 2),
-                QPoint(2, 1), QPoint(3, 1), QPoint(4, 0), QPoint(7, 0), QPoint(8, 1), QPoint(9, 1)
-            };
-            static const QPoint pts2[] = {              // black lines
-                QPoint(2, 8), QPoint(1, 7), QPoint(1, 4), QPoint(2, 3), QPoint(2, 2), QPoint(3, 2),
-                QPoint(4, 1), QPoint(7, 1), QPoint(8, 2), QPoint(9, 2)
-            };
-            static const QPoint pts3[] = {              // background lines
-                QPoint(2, 9), QPoint(3, 9), QPoint(4, 10), QPoint(7, 10), QPoint(8, 9), QPoint(9, 9),
-                QPoint(9, 8), QPoint(10, 7), QPoint(10, 4), QPoint(9, 3)
-            };
-            static const QPoint pts4[] = {              // white lines
-                QPoint(2, 10), QPoint(3, 10), QPoint(4, 11), QPoint(7, 11), QPoint(8, 10),
-                QPoint(9, 10), QPoint(10, 9), QPoint(10, 8), QPoint(11, 7), QPoint(11, 4),
-                QPoint(10, 3), QPoint(10, 2)
-            };
-            static const QPoint pts5[] = {              // inner fill
-                QPoint(4, 2), QPoint(7, 2), QPoint(9, 4), QPoint(9, 7), QPoint(7, 9), QPoint(4, 9),
-                QPoint(2, 7), QPoint(2, 4)
-            };
-
-            // make sure the indicator is square
-            QRect ir = opt->rect;
-
-            if (opt->rect.width() < opt->rect.height()) {
-                ir.setTop(opt->rect.top() + (opt->rect.height() - opt->rect.width()) / 2);
-                ir.setHeight(opt->rect.width());
-            } else if (opt->rect.height() < opt->rect.width()) {
-                ir.setLeft(opt->rect.left() + (opt->rect.width() - opt->rect.height()) / 2);
-                ir.setWidth(opt->rect.height());
-            }
-
+            QRect r = opt->rect;
             p->save();
-            p->setRenderHint(QPainter::Qt4CompatiblePainting);
-            bool down = opt->state & State_Sunken;
-            bool enabled = opt->state & State_Enabled;
-            bool on = opt->state & State_On;
-            QPolygon a;
+            p->setRenderHint(QPainter::Antialiasing, true);
 
-            //center when rect is larger than indicator size
-            int xOffset = 0;
-            int yOffset = 0;
-            int indicatorWidth = proxy()->pixelMetric(PM_ExclusiveIndicatorWidth);
-            int indicatorHeight = proxy()->pixelMetric(PM_ExclusiveIndicatorHeight);
-            if (ir.width() > indicatorWidth)
-                xOffset += (ir.width() - indicatorWidth)/2;
-            if (ir.height() > indicatorHeight)
-                yOffset += (ir.height() - indicatorHeight)/2;
-            p->translate(xOffset, yOffset);
+            QPointF circleCenter = r.center() + QPoint(1, 1);
+            qreal radius = (r.width() + (r.width() + 1) % 2) / 2.0 - 1;
 
-            p->translate(ir.x(), ir.y());
+            QPainterPath path1;
+            path1.addEllipse(circleCenter, radius, radius);
+            radius *= 0.85;
+            QPainterPath path2;
+            path2.addEllipse(circleCenter, radius, radius);
+            radius *= 0.85;
+            QPainterPath path3;
+            path3.addEllipse(circleCenter, radius, radius);
+            radius *= 0.5;
+            QPainterPath path4;
+            path4.addEllipse(circleCenter, radius, radius);
 
+            QPolygon topLeftPol, bottomRightPol;
+            topLeftPol.setPoints(3, r.x(), r.y(), r.x(), r.y() + r.height(), r.x() + r.width(), r.y());
+            bottomRightPol.setPoints(3, r.x(), r.y() + r.height(), r.x() + r.width(), r.y() + r.height(), r.x() + r.width(), r.y());
+
+            p->setClipRegion(QRegion(topLeftPol));
             p->setPen(opt->palette.dark().color());
-            p->drawPolyline(pts1, PTSARRLEN(pts1));
-
+            p->setBrush(opt->palette.dark().color());
+            p->drawPath(path1);
             p->setPen(opt->palette.shadow().color());
-            p->drawPolyline(pts2, PTSARRLEN(pts2));
+            p->setBrush(opt->palette.shadow().color());
+            p->drawPath(path2);
 
-            p->setPen(opt->palette.midlight().color());
-            p->drawPolyline(pts3, PTSARRLEN(pts3));
-
+            p->setClipRegion(QRegion(bottomRightPol));
             p->setPen(opt->palette.light().color());
-            p->drawPolyline(pts4, PTSARRLEN(pts4));
+            p->setBrush(opt->palette.light().color());
+            p->drawPath(path1);
+            p->setPen(opt->palette.midlight().color());
+            p->setBrush(opt->palette.midlight().color());
+            p->drawPath(path2);
 
-            QColor fillColor = (down || !enabled)
-                               ? opt->palette.button().color()
-                               : opt->palette.base().color();
+            QColor fillColor = ((opt->state & State_Sunken) || !(opt->state & State_Enabled)) ?
+                                opt->palette.button().color() : opt->palette.base().color();
+
+            p->setClipping(false);
             p->setPen(fillColor);
-            p->setBrush(fillColor) ;
-            p->drawPolygon(pts5, PTSARRLEN(pts5));
+            p->setBrush(fillColor);
+            p->drawPath(path3);
 
-            p->translate(-ir.x(), -ir.y()); // restore translate
-
-            if (on) {
-                p->setPen(Qt::NoPen);
+            if (opt->state & State_On) {
+                p->setPen(opt->palette.text().color());
                 p->setBrush(opt->palette.text());
-                p->drawRect(ir.x() + 5, ir.y() + 4, 2, 4);
-                p->drawRect(ir.x() + 4, ir.y() + 5, 4, 2);
+                p->drawPath(path4);
             }
             p->restore();
             break;
@@ -2388,7 +2354,7 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 QFont fontBold = mi->font;
                 fontBold.setBold(true);
                 QFontMetrics fmBold(fontBold);
-                w += fmBold.width(mi->text) - fm.width(mi->text);
+                w += fmBold.horizontalAdvance(mi->text) - fm.horizontalAdvance(mi->text);
             }
 
             int checkcol = qMax<int>(maxpmw, QWindowsStylePrivate::windowsCheckMarkWidth); // Windows always shows a check column

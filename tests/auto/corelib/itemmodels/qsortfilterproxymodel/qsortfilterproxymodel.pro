@@ -2,8 +2,8 @@ CONFIG += testcase
 TARGET = tst_qsortfilterproxymodel
 
 QT += widgets testlib
-mtdir = ../../../other/modeltest
+mtdir = ../../../other/qabstractitemmodelutils
 
 INCLUDEPATH += $$PWD/$${mtdir}
-SOURCES         += tst_qsortfilterproxymodel.cpp $${mtdir}/dynamictreemodel.cpp $${mtdir}/modeltest.cpp
-HEADERS         += $${mtdir}/dynamictreemodel.h $${mtdir}/modeltest.h
+SOURCES         += tst_qsortfilterproxymodel.cpp $${mtdir}/dynamictreemodel.cpp
+HEADERS         += $${mtdir}/dynamictreemodel.h

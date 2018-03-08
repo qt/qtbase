@@ -43,6 +43,7 @@
 #if defined(Q_OS_WIN)
 # include <qt_windows.h> // for SetFileAttributes
 #endif
+#include <private/qfilesystemengine_p.h>
 
 #include <algorithm>
 
@@ -101,6 +102,7 @@ private slots:
 
     void mkdir();
     void deleteFile();
+    void deleteDirectory();
 
     void caseSensitivity();
 
@@ -239,13 +241,18 @@ void tst_QFileSystemModel::readOnly()
     QCOMPARE(model->isReadOnly(), true);
     QTemporaryFile file(flatDirTestPath + QStringLiteral("/XXXXXX.dat"));
     QVERIFY2(file.open(), qPrintable(file.errorString()));
+    const QString fileName = file.fileName();
+    file.close();
+
+    const QFileInfo fileInfo(fileName);
+    QTRY_VERIFY(QDir(flatDirTestPath).entryInfoList().contains(fileInfo));
     QModelIndex root = model->setRootPath(flatDirTestPath);
 
     QTRY_VERIFY(model->rowCount(root) > 0);
-    QVERIFY(!(model->flags(model->index(file.fileName())) & Qt::ItemIsEditable));
+    QVERIFY(!(model->flags(model->index(fileName)) & Qt::ItemIsEditable));
     model->setReadOnly(false);
     QCOMPARE(model->isReadOnly(), false);
-    QVERIFY(model->flags(model->index(file.fileName())) & Qt::ItemIsEditable);
+    QVERIFY(model->flags(model->index(fileName)) & Qt::ItemIsEditable);
 }
 
 class CustomFileIconProvider : public QFileIconProvider
@@ -729,6 +736,9 @@ void tst_QFileSystemModel::sortPersistentIndex()
 {
     QTemporaryFile file(flatDirTestPath + QStringLiteral("/XXXXXX.dat"));
     QVERIFY2(file.open(), qPrintable(file.errorString()));
+    const QFileInfo fileInfo(file.fileName());
+    file.close();
+    QTRY_VERIFY(QDir(flatDirTestPath).entryInfoList().contains(fileInfo));
     QModelIndex root = model->setRootPath(flatDirTestPath);
     QTRY_VERIFY(model->rowCount(root) > 0);
 
@@ -875,6 +885,56 @@ void tst_QFileSystemModel::deleteFile()
     QVERIFY(!newFile.exists());
 }
 
+void tst_QFileSystemModel::deleteDirectory()
+{
+    // QTBUG-65683: Verify that directories can be removed recursively despite
+    // file system watchers being active on them or their sub-directories (Windows).
+    // Create a temporary directory, a nested directory and expand a treeview
+    // to show them to ensure watcher creation. Then delete the directory.
+    QTemporaryDir dirToBeDeleted(flatDirTestPath + QStringLiteral("/deleteDirectory-XXXXXX"));
+    QVERIFY(dirToBeDeleted.isValid());
+    const QString dirToBeDeletedPath = dirToBeDeleted.path();
+    const QString nestedTestDir = QStringLiteral("test");
+    QVERIFY(QDir(dirToBeDeletedPath).mkpath(nestedTestDir));
+    const QString nestedTestDirPath = dirToBeDeletedPath + QLatin1Char('/') + nestedTestDir;
+    QFile testFile(nestedTestDirPath + QStringLiteral("/test.txt"));
+    QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Text));
+    testFile.write("Hello\n");
+    testFile.close();
+
+    QFileSystemModel model;
+    const QModelIndex rootIndex = model.setRootPath(flatDirTestPath);
+    QTreeView treeView;
+    treeView.setWindowTitle(QTest::currentTestFunction());
+    treeView.setModel(&model);
+    treeView.setRootIndex(rootIndex);
+
+    const QModelIndex dirToBeDeletedPathIndex = model.index(dirToBeDeletedPath);
+    QVERIFY(dirToBeDeletedPathIndex.isValid());
+    treeView.setExpanded(dirToBeDeletedPathIndex, true);
+    const QModelIndex nestedTestDirIndex = model.index(nestedTestDirPath);
+    QVERIFY(nestedTestDirIndex.isValid());
+    treeView.setExpanded(nestedTestDirIndex, true);
+
+    treeView.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&treeView));
+
+    QVERIFY(model.remove(dirToBeDeletedPathIndex));
+    dirToBeDeleted.setAutoRemove(false);
+}
+
+static QString flipCase(QString s)
+{
+    for (int i = 0, size = s.size(); i < size; ++i) {
+        const QChar c = s.at(i);
+        if (c.isUpper())
+            s[i] = c.toLower();
+        else if (c.isLower())
+            s[i] = c.toUpper();
+    }
+    return s;
+}
+
 void tst_QFileSystemModel::caseSensitivity()
 {
     QString tmp = flatDirTestPath;
@@ -882,9 +942,23 @@ void tst_QFileSystemModel::caseSensitivity()
     files << "a" << "c" << "C";
     QVERIFY(createFiles(tmp, files));
     QModelIndex root = model->index(tmp);
+    QStringList paths;
+    QModelIndexList indexes;
     QCOMPARE(model->rowCount(root), 0);
     for (int i = 0; i < files.count(); ++i) {
-        QVERIFY(model->index(tmp + '/' + files.at(i)).isValid());
+        const QString path = tmp + '/' + files.at(i);
+        const QModelIndex index = model->index(path);
+        QVERIFY(index.isValid());
+        paths.append(path);
+        indexes.append(index);
+    }
+
+    if (!QFileSystemEngine::isCaseSensitive()) {
+        // QTBUG-31103, QTBUG-64147: Verify that files can be accessed by paths with fLipPeD case.
+        for (int i = 0; i < paths.count(); ++i) {
+            const QModelIndex flippedCaseIndex = model->index(flipCase(paths.at(i)));
+            QCOMPARE(indexes.at(i), flippedCaseIndex);
+        }
     }
 }
 

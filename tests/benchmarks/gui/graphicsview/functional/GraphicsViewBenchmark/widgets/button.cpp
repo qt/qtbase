@@ -123,7 +123,7 @@ QSizeF Button::sizeHint(Qt::SizeHint which,
      case Qt::PreferredSize:
          {
          QFontMetricsF fm(d->textItem->font());
-         return QSizeF(fm.width(d->textItem->text()), fm.height());
+         return QSizeF(fm.horizontalAdvance(d->textItem->text()), fm.height());
          }
     default:
         return QGraphicsWidget::sizeHint(which, constraint);

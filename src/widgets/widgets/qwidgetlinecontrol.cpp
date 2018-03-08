@@ -44,7 +44,9 @@
 #endif
 #include "qclipboard.h"
 #include <private/qguiapplication_p.h>
+#if QT_CONFIG(completer)
 #include <private/qcompleter_p.h>
+#endif
 #include <qpa/qplatformtheme.h>
 #include <qstylehints.h>
 #ifndef QT_NO_ACCESSIBILITY
@@ -1177,9 +1179,9 @@ bool QWidgetLineControl::hasAcceptableInput(const QString &str) const
     that blanks will be used, false that previous input is used.
     Calling this when no inputMask is set is undefined.
 */
-QString QWidgetLineControl::maskString(uint pos, const QString &str, bool clear) const
+QString QWidgetLineControl::maskString(int pos, const QString &str, bool clear) const
 {
-    if (pos >= (uint)m_maxLength)
+    if (pos >= m_maxLength)
         return QString::fromLatin1("");
 
     QString fill;
@@ -1252,13 +1254,13 @@ QString QWidgetLineControl::maskString(uint pos, const QString &str, bool clear)
     Returns a "cleared" string with only separators and blank chars.
     Calling this when no inputMask is set is undefined.
 */
-QString QWidgetLineControl::clearString(uint pos, uint len) const
+QString QWidgetLineControl::clearString(int pos, int len) const
 {
-    if (pos >= (uint)m_maxLength)
+    if (pos >= m_maxLength)
         return QString();
 
     QString s;
-    int end = qMin((uint)m_maxLength, pos + len);
+    int end = qMin(m_maxLength, pos + len);
     for (int i = pos; i < end; ++i)
         if (m_maskData[i].separator)
             s += m_maskData[i].maskChar;

@@ -47,7 +47,9 @@
 #include "qsslkey_p.h"
 
 #include <QtCore/qmessageauthenticationcode.h>
+#include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/qcryptographichash.h>
+#include <QtCore/qsystemdetection.h>
 #include <QtCore/qdatastream.h>
 #include <QtCore/qsysinfo.h>
 #include <QtCore/qvector.h>
@@ -92,7 +94,7 @@ EphemeralSecKeychain::EphemeralSecKeychain()
 {
     const auto uuid = QUuid::createUuid();
     if (uuid.isNull()) {
-        qCWarning(lcSsl) << "Failed to create an unique keychain name";
+        qCWarning(lcSsl) << "Failed to create a unique keychain name";
         return;
     }
 
@@ -160,7 +162,8 @@ EphemeralSecKeychain::~EphemeralSecKeychain()
 }
 
 #endif // Q_OS_MACOS
-}
+
+} // unnamed namespace
 
 static SSLContextRef qt_createSecureTransportContext(QSslSocket::SslMode mode)
 {
@@ -372,6 +375,43 @@ void QSslSocketBackendPrivate::continueHandshake()
 #endif
     Q_Q(QSslSocket);
     connectionEncrypted = true;
+
+#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_NA, __IPHONE_11_0, __TVOS_11_0, __WATCHOS_4_0)
+    // Unlike OpenSSL, Secure Transport does not allow to negotiate protocols via
+    // a callback during handshake. We can only set our list of preferred protocols
+    // (and send it during handshake) and then receive what our peer has sent to us.
+    // And here we can finally try to find a match (if any).
+    if (__builtin_available(iOS 11.0, tvOS 11.0, watchOS 4.0, *)) {
+        const auto &requestedProtocols = configuration.nextAllowedProtocols;
+        if (const int requestedCount = requestedProtocols.size()) {
+            configuration.nextProtocolNegotiationStatus = QSslConfiguration::NextProtocolNegotiationNone;
+            configuration.nextNegotiatedProtocol.clear();
+
+            QCFType<CFArrayRef> cfArray;
+            const OSStatus result = SSLCopyALPNProtocols(context, &cfArray);
+            if (result == errSecSuccess && cfArray && CFArrayGetCount(cfArray)) {
+                const int size = CFArrayGetCount(cfArray);
+                QVector<QString> peerProtocols(size);
+                for (int i = 0; i < size; ++i)
+                    peerProtocols[i] = QString::fromCFString((CFStringRef)CFArrayGetValueAtIndex(cfArray, i));
+
+                for (int i = 0; i < requestedCount; ++i) {
+                    const auto requestedName = QString::fromLatin1(requestedProtocols[i]);
+                    for (int j = 0; j < size; ++j) {
+                        if (requestedName == peerProtocols[j]) {
+                            configuration.nextNegotiatedProtocol = requestedName.toLatin1();
+                            configuration.nextProtocolNegotiationStatus = QSslConfiguration::NextProtocolNegotiationNegotiated;
+                            break;
+                        }
+                    }
+                    if (configuration.nextProtocolNegotiationStatus == QSslConfiguration::NextProtocolNegotiationNegotiated)
+                        break;
+                }
+            }
+        }
+    }
+#endif // QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE
+
     emit q->encrypted();
     if (autoStartHandshake && pendingClose) {
         pendingClose = false;
@@ -838,6 +878,29 @@ bool QSslSocketBackendPrivate::initSslContext()
         return false;
     }
 
+#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_NA, __IPHONE_11_0, __TVOS_11_0, __WATCHOS_4_0)
+    if (__builtin_available(iOS 11.0, tvOS 11.0, watchOS 4.0, *)) {
+        const auto protocolNames = configuration.nextAllowedProtocols;
+        QCFType<CFMutableArrayRef> cfNames(CFArrayCreateMutable(nullptr, 0, &kCFTypeArrayCallBacks));
+        if (cfNames) {
+            for (const QByteArray &name : protocolNames) {
+                QCFString cfName(QString::fromLatin1(name).toCFString());
+                CFArrayAppendValue(cfNames, cfName);
+            }
+
+            if (CFArrayGetCount(cfNames)) {
+                // Up to the application layer to check that negotiation
+                // failed, and handle this non-TLS error, we do not handle
+                // the result of this call as an error:
+                if (SSLSetALPNProtocols(context, cfNames) != errSecSuccess)
+                    qCWarning(lcSsl) << "SSLSetALPNProtocols failed - too long protocol names?";
+            }
+        } else {
+            qCWarning(lcSsl) << "failed to allocate ALPN names array";
+        }
+    }
+#endif // QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE
+
     if (mode == QSslSocket::SslClientMode) {
         // enable Server Name Indication (SNI)
         QString tlsHostName(verificationPeerName.isEmpty() ? q->peerName() : verificationPeerName);
@@ -1245,13 +1308,17 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
     // actual system CA certificate list (which most use-cases need) other than
     // by letting SecTrustEvaluate fall through to the system list; so, in this case
     // (even though the client code may have provided its own certs), we retain
-    // the default behavior.
+    // the default behavior. Note, with macOS SDK below 10.12 using 'trust my
+    // anchors only' may result in some valid chains rejected, apparently the
+    // ones containing intermediated certificates; so we use this functionality
+    // on more recent versions only.
+
+    bool anchorsFromConfigurationOnly = false;
 
 #ifdef Q_OS_MACOS
-    const bool anchorsFromConfigurationOnly = true;
-#else
-    const bool anchorsFromConfigurationOnly = false;
-#endif
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSierra)
+        anchorsFromConfigurationOnly = true;
+#endif // Q_OS_MACOS
 
     SecTrustSetAnchorCertificatesOnly(trust, anchorsFromConfigurationOnly);
 

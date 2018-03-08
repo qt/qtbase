@@ -47,28 +47,18 @@
 
 #include <cmath>
 
-#if defined(Q_OS_OSX) && !QT_OSX_DEPLOYMENT_TARGET_BELOW(__MAC_10_11)
+#if defined(Q_OS_MACOS)
 #import <AppKit/AppKit.h>
 #endif
 
-#if defined(QT_PLATFORM_UIKIT) && !QT_IOS_DEPLOYMENT_TARGET_BELOW(__IPHONE_8_2)
+#if defined(QT_PLATFORM_UIKIT)
 #import <UIKit/UIKit.h>
 #endif
 
 // These are available cross platform, exported as kCTFontWeightXXX from CoreText.framework,
 // but they are not documented and are not in public headers so are private API and exposed
 // only through the NSFontWeightXXX and UIFontWeightXXX aliases in AppKit and UIKit (rdar://26109857)
-#if QT_MAC_DEPLOYMENT_TARGET_BELOW(__MAC_10_11, __IPHONE_8_2)
-#define kCTFontWeightUltraLight -0.8
-#define kCTFontWeightThin -0.6
-#define kCTFontWeightLight -0.4
-#define kCTFontWeightRegular 0
-#define kCTFontWeightMedium 0.23
-#define kCTFontWeightSemibold 0.3
-#define kCTFontWeightBold 0.4
-#define kCTFontWeightHeavy 0.56
-#define kCTFontWeightBlack 0.62
-#elif defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
 #define kCTFontWeightUltraLight NSFontWeightUltraLight
 #define kCTFontWeightThin NSFontWeightThin
 #define kCTFontWeightLight NSFontWeightLight
@@ -192,6 +182,14 @@ public:
         : QCoreTextFontEngine(font, def)
         , m_fontData(fontData)
     {}
+    QFontEngine *cloneWithSize(qreal pixelSize) const
+    {
+        QFontDef newFontDef = fontDef;
+        newFontDef.pixelSize = pixelSize;
+        newFontDef.pointSize = pixelSize * 72.0 / qt_defaultDpi();
+
+        return new QCoreTextRawFontEngine(cgFont, newFontDef, m_fontData);
+    }
     QByteArray m_fontData;
 };
 
@@ -665,11 +663,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     if (!im.width() || !im.height())
         return im;
 
-#ifdef Q_OS_OSX
-    CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
-#else
-    CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
-#endif
+    CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
     uint cgflags = isColorGlyph ? kCGImageAlphaPremultipliedFirst : kCGImageAlphaNoneSkipFirst;
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
     cgflags |= kCGBitmapByteOrder32Host;

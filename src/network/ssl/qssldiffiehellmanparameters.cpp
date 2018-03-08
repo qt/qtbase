@@ -161,7 +161,7 @@ QSslDiffieHellmanParameters::QSslDiffieHellmanParameters(const QSslDiffieHellman
 }
 
 /*!
-    \fn QSslDiffieHellmanParameters(QSslDiffieHellmanParameters &&other)
+    \fn QSslDiffieHellmanParameters::QSslDiffieHellmanParameters(QSslDiffieHellmanParameters &&other)
 
     Move-constructs from \a other.
 

@@ -137,7 +137,7 @@ Q_DECL_CONSTEXPR inline QVector2D::QVector2D(float xpos, float ypos) : xp(xpos),
 
 Q_DECL_CONSTEXPR inline QVector2D::QVector2D(const QPoint& point) : xp(point.x()), yp(point.y()) {}
 
-Q_DECL_CONSTEXPR inline QVector2D::QVector2D(const QPointF& point) : xp(point.x()), yp(point.y()) {}
+Q_DECL_CONSTEXPR inline QVector2D::QVector2D(const QPointF& point) : xp(float(point.x())), yp(float(point.y())) {}
 
 inline bool QVector2D::isNull() const
 {

@@ -32,7 +32,6 @@
 #include <qtcpsocket.h>
 #include <qtcpserver.h>
 #include <qhostaddress.h>
-#include <qprocess.h>
 #include <qstringlist.h>
 #include <qplatformdefs.h>
 #include <qhostinfo.h>

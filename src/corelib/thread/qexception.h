@@ -40,10 +40,6 @@
 #ifndef QTCORE_QEXCEPTION_H
 #define QTCORE_QEXCEPTION_H
 
-#include <QtCore/qglobal.h>
-
-#ifndef QT_NO_QFUTURE
-
 #include <QtCore/qatomic.h>
 #include <QtCore/qshareddata.h>
 
@@ -51,10 +47,12 @@
 #  include <exception>
 #endif
 
+QT_REQUIRE_CONFIG(future);
+
 QT_BEGIN_NAMESPACE
 
 
-#ifndef QT_NO_EXCEPTIONS
+#if !defined(QT_NO_EXCEPTIONS) || defined(Q_CLANG_QDOC)
 
 class Q_CORE_EXPORT QException : public std::exception
 {
@@ -127,7 +125,5 @@ public:
 #endif // QT_NO_EXCEPTIONS
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_QFUTURE
 
 #endif

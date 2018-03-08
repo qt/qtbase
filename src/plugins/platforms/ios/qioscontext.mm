@@ -38,10 +38,13 @@
 ****************************************************************************/
 
 #include "qioscontext.h"
+
+#include "qiosintegration.h"
 #include "qioswindow.h"
 
 #include <dlfcn.h>
 
+#include <QtGui/QGuiApplication>
 #include <QtGui/QOpenGLContext>
 
 #import <OpenGLES/EAGL.h>
@@ -136,6 +139,9 @@ bool QIOSContext::makeCurrent(QPlatformSurface *surface)
 {
     Q_ASSERT_IS_GL_SURFACE(surface);
 
+    if (!verifyGraphicsHardwareAvailability())
+        return false;
+
     [EAGLContext setCurrentContext:m_eaglContext];
 
     // For offscreen surfaces we don't prepare a default FBO
@@ -165,8 +171,6 @@ bool QIOSContext::makeCurrent(QPlatformSurface *surface)
                 glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
                     framebufferObject.depthRenderbuffer);
         }
-
-        connect(static_cast<QIOSWindow *>(surface), SIGNAL(destroyed(QObject*)), this, SLOT(windowDestroyed(QObject*)));
     } else {
         glBindFramebuffer(GL_FRAMEBUFFER, framebufferObject.handle);
     }
@@ -216,17 +220,11 @@ void QIOSContext::swapBuffers(QPlatformSurface *surface)
 {
     Q_ASSERT_IS_GL_SURFACE(surface);
 
+    if (!verifyGraphicsHardwareAvailability())
+        return;
+
     if (surface->surface()->surfaceClass() == QSurface::Offscreen)
         return; // Nothing to do
-
-    // When using threaded rendering, the render-thread may not have picked up
-    // yet on the fact that a window is no longer exposed, and will try to swap
-    // a non-exposed window. This may in some cases result in crashes, e.g. when
-    // iOS is suspending an application, so we have an extra guard here.
-    if (!static_cast<QIOSWindow *>(surface)->isExposed()) {
-        qCDebug(lcQpaGLContext, "Detected swapBuffers on a non-exposed window, skipping flush");
-        return;
-    }
 
     FramebufferObject &framebufferObject = backingFramebufferObjectFor(surface);
     Q_ASSERT_X(framebufferObject.isComplete, "QIOSContext", "swapBuffers on incomplete FBO");
@@ -249,8 +247,13 @@ QIOSContext::FramebufferObject &QIOSContext::backingFramebufferObjectFor(QPlatfo
     // should probably use QOpenGLMultiGroupSharedResource to track the shared default-FBOs.
     if (m_sharedContext)
         return m_sharedContext->backingFramebufferObjectFor(surface);
-    else
-        return m_framebufferObjects[surface];
+
+    if (!m_framebufferObjects.contains(surface)) {
+        // We're about to create a new FBO, make sure it's cleaned up as well
+        connect(static_cast<QIOSWindow *>(surface), SIGNAL(destroyed(QObject*)), this, SLOT(windowDestroyed(QObject*)));
+    }
+
+    return m_framebufferObjects[surface];
 }
 
 GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
@@ -282,6 +285,54 @@ bool QIOSContext::needsRenderbufferResize(QPlatformSurface *surface) const
         return true;
 
     return false;
+}
+
+bool QIOSContext::verifyGraphicsHardwareAvailability()
+{
+    // Per the iOS OpenGL ES Programming Guide, background apps may not execute commands on the
+    // graphics hardware. Specifically: "In your app delegate’s applicationDidEnterBackground:
+    // method, your app may want to delete some of its OpenGL ES objects to make memory and
+    // resources available to the foreground app. Call the glFinish function to ensure that
+    // the resources are removed immediately. After your app exits its applicationDidEnterBackground:
+    // method, it must not make any new OpenGL ES calls. If it makes an OpenGL ES call, it is
+    // terminated by iOS.".
+    static bool applicationBackgrounded = QGuiApplication::applicationState() == Qt::ApplicationSuspended;
+
+    static dispatch_once_t onceToken = 0;
+    dispatch_once(&onceToken, ^{
+        QIOSApplicationState *applicationState = &QIOSIntegration::instance()->applicationState;
+        connect(applicationState, &QIOSApplicationState::applicationStateWillChange, [](Qt::ApplicationState state) {
+            if (applicationBackgrounded && state != Qt::ApplicationSuspended) {
+                qCDebug(lcQpaGLContext) << "app no longer backgrounded, rendering enabled";
+                applicationBackgrounded = false;
+            }
+        });
+        connect(applicationState, &QIOSApplicationState::applicationStateDidChange, [](Qt::ApplicationState state) {
+            if (state != Qt::ApplicationSuspended)
+                return;
+
+            qCDebug(lcQpaGLContext) << "app backgrounded, rendering disabled";
+            applicationBackgrounded = true;
+
+            // By the time we receive this signal the application has moved into
+            // Qt::ApplactionStateSuspended, and all windows have been obscured,
+            // which should stop all rendering. If there's still an active GL context,
+            // we follow Apple's advice and call glFinish before making it inactive.
+            if (QOpenGLContext *currentContext = QOpenGLContext::currentContext()) {
+                qCWarning(lcQpaGLContext) << "explicitly glFinishing and deactivating" << currentContext;
+                glFinish();
+                currentContext->doneCurrent();
+            }
+        });
+    });
+
+    if (applicationBackgrounded) {
+        static const char warning[] = "OpenGL ES calls are not allowed while an application is backgrounded";
+        Q_ASSERT_X(!applicationBackgrounded, "QIOSContext", warning);
+        qCWarning(lcQpaGLContext, warning);
+    }
+
+    return !applicationBackgrounded;
 }
 
 void QIOSContext::windowDestroyed(QObject *object)

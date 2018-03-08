@@ -36,7 +36,7 @@
 class MenuramaApplication : public QApplication
 {
 public:
-    MenuramaApplication(int argc, char **argv);
+    MenuramaApplication(int &argc, char **argv);
     void addDynMenu(QLatin1String title, QMenu *parentMenu);
     QAction *findAction(QLatin1String title, QMenu *parentMenu);
 

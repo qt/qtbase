@@ -90,10 +90,16 @@ public:
 
     int leftBearing(QChar) const;
     int rightBearing(QChar) const;
+
+#if QT_DEPRECATED_SINCE(5, 11)
     int width(const QString &, int len = -1) const;
     int width(const QString &, int len, int flags) const;
-
     int width(QChar) const;
+#endif
+
+    int horizontalAdvance(const QString &, int len = -1) const;
+    int horizontalAdvance(QChar) const;
+
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QT_DEPRECATED int charWidth(const QString &str, int pos) const;
 #endif
@@ -164,9 +170,14 @@ public:
 
     qreal leftBearing(QChar) const;
     qreal rightBearing(QChar) const;
-    qreal width(const QString &string) const;
 
+#if QT_DEPRECATED_SINCE(5, 11)
+    qreal width(const QString &string) const;
     qreal width(QChar) const;
+#endif
+
+    qreal horizontalAdvance(const QString &string, int length = -1) const;
+    qreal horizontalAdvance(QChar) const;
 
     QRectF boundingRect(const QString &string) const;
     QRectF boundingRect(QChar) const;

@@ -1,0 +1,576 @@
+Qt 5.10 introduces many new features and improvements as well as bugfixes
+over the 5.9.x series. For more details, refer to the online documentation
+included in this distribution. The documentation is also available online:
+
+http://doc.qt.io/qt-5/index.html
+
+The Qt version 5.10 series is binary compatible with the 5.9.x series.
+Applications compiled for 5.9 will continue to run with 5.10.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                        Important Behavior Changes                        *
+****************************************************************************
+
+ - [QTBUG-60857] The names of the roles returned by
+   QSqlQueryModel::roleNames now only include a name for the
+   Qt::DisplayRole. Previously all the roles names of QSqlQueryModel were
+   returned.
+ - QFileInfo on empty strings now behaves like the default-constructed
+   QFileInfo. Notably, path() will now be the empty string too, instead of
+   ".", which means absoluteFilePath() is no longer the current working
+   directory.
+
+ - QTemporaryFile:
+   * rename() no longer attempts to do block copying, as that usually
+     indicates a mistake in the user's code. Instead, either create the
+     temporary file in the same directory as the new name to be, or use
+     QSaveFile.
+   * On Linux, QTemporaryFile will attempt to create unnamed temporary
+     files. If that succeeds, open() will return true but exists() will be
+     false. If you call fileName() or any function that calls it,
+     QTemporaryFile will give the file a name, so most applications will
+     not see a difference.
+
+ - Windows:
+   * [QTBUG-62662] On Windows, a drag & drop operation of local file URIs,
+     like QListView items backed by a QFileSystemModel, will result in the
+     attachment or opening of the files by the target application, instead
+     of the creation of hyperlinks.
+
+****************************************************************************
+*                               General Notes                              *
+****************************************************************************
+
+Deprecation Notice
+------------------
+
+ - Starting with Qt 5.10, IPv6 support is mandatory for all platforms.
+   Systems without proper IPv6 support, such as the getaddrinfo() function
+   or the proper socket address structures, will not be able to build
+   QtNetwork anymore.
+
+ - QSignalMapper is now marked as deprecated.
+
+Potentially Source-Incompatible Changes
+---------------------------------------
+
+ - QByteArray:
+   * qbytearray.h no longer includes qstring.h. In particular, this means
+     that in order to use QStringBuilder with QByteArray, you need to
+     include both qbytearray.h and qstring.h now (or <QByteArray> and
+     <QString>, resp.).
+
+ - QStaticText:
+   * The QStaticText(const QString &) constructor is now explicit.
+
+Third-Party Code
+----------------
+
+ - PCRE2 has been updated to version 10.30.
+ - Replaced bundled libjpeg by libjpeg-turbo 1.5.2
+ - Improve documentation about Freetype 2 licenses.
+ - Sqlite was updated to version 3.20.1
+
+****************************************************************************
+*                               Library                                    *
+****************************************************************************
+
+QtCore
+------
+
+ - Added qHash(QStringView).
+ - [QTBUG-37253] Added QMetaObject::invokeMethod() overloads for function
+   pointers.
+ - [QTBUG-41006] Added qEnvironmentVariable, which returns the value of an
+   environment variable in a QString, while qgetenv continues to be used to
+   return it in a QByteArray. For Unix, since most environment variables
+   seem to contain path names, qEnvironmentVariable will do the same as
+   QFile::decodeName, which means NFC/NFD conversion on Apple OSes.
+ - [QTBUG-62915] qAddPostRoutine() and qRemovePostRoutine() are now
+   thread-safe.
+
+ - Containers:
+   * Added an STL-like iterator to go through QHash/QMap returning both the
+     key and the value of the element pointed to. That lets QHash/QMap
+     interoperate better with stl's algorithms like std::set_union.
+
+ - JSON:
+   * QJsonArray, QJsonDocument, QJsonObject and QJsonValue now have move
+     operations and a swap() member function.
+
+ - Logging:
+   * If you set QT_FATAL_WARNINGS to a number n > 1, Qt will stop the
+     application on that n-th warning, instead of on the first. For the
+     sake of compatibility with previous versions, if the variable is set
+     to any non-empty and non-numeric value, Qt will understand it as "stop
+     on first warning".
+
+ - QByteArray:
+   * Added shrink_to_fit() for compatibility with the Standard Library. This
+     function does the same as squeeze().
+
+ - QChar:
+   * Added constructors from char16_t and, on Windows, wchar_t.
+
+ - QCoreApplication:
+   * [QTBUG-57095] Calling QCoreApplication::translate() is now
+     thread-safe.
+
+ - QCryptographicHash:
+   * [QTBUG-59770] In order to preserve compatibility with earlier versions
+     of Qt, QCryptographicHash is now able to calculate Keccak message
+     digests. Please see the release notes for Qt 5.9.2 for more details.
+
+ - QDate/QTime/QDateTime:
+   * Added toString() overloads taking the format as a QStringView.
+   * [QTBUG-22833] Added support for parsing of time-zones.
+
+ - QDebug:
+   * Added streaming of QStringViews.
+
+ - QFile:
+   * [QTBUG-984] Added fileTime() and setFileTime().
+
+ - QFileInfo:
+   * [QTBUG-984] Added fileTime().
+   * Deprecated created() because it could return one of three different
+     file times depending on the OS and filesystem type, without the
+     ability to determine which one is which. It is replaced by
+     metadataChangeTime() and birthTime().
+   * Added QFileInfo::metadataChangeTime(), which returns the time the
+     file's metadata was last changed, if it is known, and falling back to
+     the same value as lastModified() otherwise. On Unix systems, this
+     corresponds to the file's ctime.
+   * Added QFileInfo::birthTime(), which returns the file's birth time if
+     it is known, an invalid QDateTime otherwise. This function is
+     supported on Windows and on some Unix systems.
+
+ - QIODevice:
+   * Added skip() method to improve performance in read operations.
+
+ - QLatin1String:
+   * Added isEmpty(), isNull().
+   * Added iterators, {c,}{r,}{begin,end}().
+   * Added chopped(), chop(), truncate().
+   * Added startsWith(), endsWith().
+   * Added a constructor taking two pointers, complementing the constructor
+     that takes a pointer and a length.
+   * Added trimmed() function.
+
+ - QLocale:
+   * Added toString(QDate/QTime/QDateTime) overloads taking the format
+     string as a QStringView.
+   * Added QLocale::formattedDataSize() for formatting quantities of bytes
+     as kB, MB, GB etc.
+
+ - QLockFile:
+   * Fixed a bug that would cause QLockFile to mis-identify valid lock
+     files as stale if the application name was set with
+     QCoreApplication::setApplicationName().
+
+ - QMimeType:
+   * Add Q_GADGET, so that QML applications can make use of QMimeType's
+     properties and methods.
+
+ - QObject:
+   * [QTBUG-60339] Added connect() support for move-only function objects.
+
+ - QProcess:
+   * [QTBUG-2058][QTBUG-2284][QTBUG-37656][QTBUG-52405][QTBUG-57687] Added
+     non-static QProcess::startDetached to support more features for
+     detached processes.
+   * [QTBUG-2284] Added the ability to set a custom process environment for
+     detached processes.
+   * [QTBUG-52405] Added the ability to specify native arguments for
+     detached processes on Windows.
+   * [QTBUG-2058][QTBUG-37656] Added support for standard channel
+     redirection using setStandard{Input|Output|Error}File to
+     QProcess::startDetached.
+
+ - QSaveFile:
+   * [QTBUG-47379] Saving to Alternate Data Streams on NTFS on Windows is
+     now possible, but requires setDirectWriteFallback(true).
+
+ - QSemaphore:
+   * Added a new RAII class, QSemaphoreReleaser, to reliably perform
+     release() calls.
+
+ - QSettings:
+   * [QTBUG-47379] Added setAtomicSyncRequired(), which allows one to use
+     QSettings with config files in unwriteable directories or in Alternate
+     Data Streams on NTFS on Windows. This used to work before Qt 5.4, but
+     remains a non-default behavior due to the potential of data
+     corruption.
+
+ - QSortFilterProxyModel:
+   * QSortFilterProxyModel now does not emit an unnecessary layoutChanged()
+     following a model reset.
+
+ - QStandardPaths:
+   * On Windows, QStandardPaths now also looks into
+     "<APPDIR>/data/<APPNAME>" for non-generic paths.
+
+ - QString:
+   * Added arg(QStringView), arg(QLatin1String) overloads.
+   * Added shrink_to_fit(), for compatibility with the Standard
+     Library. This function does the same as squeeze().
+
+ - QString/QStringRef:
+   * Added startsWith(), endsWith() overloads taking QStringView.
+
+ - QString/QStringRef/QByteArray:
+   * Added chopped(n), a const version of chop(n).
+
+ - QString/QStringRef/QByteArray/QLatin1String:
+   * Added front() and back() for STL compatibility.
+
+ - QStringBuilder:
+   * Added support for (non-const) char*.
+
+ - QStringList:
+   * Added contains(QLatin1String) overload.
+
+ - QStringRef:
+   * trimmed() now returns an empty string-ref for an empty input. Before,
+     it would return a null one.
+
+ - QStringView:
+   * New class, superseding const QString and QStringRef as function
+     parameters, accepting a wide variety of UTF-16 string data sources,
+     e.g. u"string", std::u16string{,_view}, and, on Windows, L"string",
+     std::wstring{,_view} without converting to QString first.
+
+ - QTemporaryDir:
+   * The class now supports the "XXXXXX" replacement token anywhere in the
+     template, not just at the end. This behavior is similar to what
+     QTemporaryFile supports.
+
+ - QTextCodec:
+   * Added fromUnicode() and canEncode() overloads taking QStringView.
+
+ - QTextEncoder:
+   * Added fromUnicode() overload taking QStringView.
+
+ - QThread:
+   * Added the QThread::create() function.
+   * An exception escaping from QThread::run() will now result in immediate
+     and abnormal program termination. The same applies if an exception
+     leaves a slot connected directly to the QThread::started() or
+     QThread::finished() signals.
+
+ - QUuid:
+   * Added fromString(QStringView/QLatin1String).
+
+ - QVariant:
+   * QVariants containing pointers will now return true on isNull() if the
+     contained pointer is null.
+
+ - QVarLengthArray:
+   * Added shrink_to_fit(), for compatibility with the Standard Library.
+
+ - QVector:
+   * Added shrink_to_fit(), for compatibility with the Standard Library.
+
+ - QVersionNumber:
+   * Added QStringView and QLatin1String overloads of fromString().
+
+ - QtGlobal:
+   * Q_ASSERT() and Q_ASSERT_X() now always expand to expressions of type
+     void that are usable in constexpr contexts. This makes them usable in
+     both C++11 and C++14 constexpr functions and in comma expressions.
+
+QtGui
+-----
+
+ - [QTBUG-55981] Added support for rendering to QWindow via the Vulkan
+   graphics API.
+ - [QTBUG-55981] Added QVulkanWindow, a convenience subclass of QWindow.
+ - Added support for the OpenGL ES 3.2 API in QOpenGLExtraFunctions
+ - [QTBUG-50987] Added support for requesting OpenGL windows with
+   sRGB-capable default framebuffers. While this is implicit on some
+   platforms, QSurfaceFormat now has the necessary flags to request such
+   windows in a cross-platform manner.
+ - High DPI variants of 9-patch images can now be loaded using the
+   following syntax: "foo@2x.9.png"
+ - It's now possible to retrieve the screen at a given point via
+   QGuiApplication::screenAt().
+
+ - Important Behvior Changes:
+   * [QTBUG-56848][QTCREATORBUG-17683] Changed CSS line-height property
+     with multiplier to follow CSS spec
+
+ - Tablet support:
+   * [QTBUG-44964] If the application attribute AA_CompressTabletEvents is
+     set in addition to AA_CompressHighFrequencyEvents, even the
+     QTabletEvents will be compressed (only on the X11 platform so far).
+     AA_CompressHighFrequencyEvents does not enable compression of tablet
+     events by itself, because paint applications typically need to process
+     all possible tablet events in order to draw the smoothest curves.
+
+ - QPA:
+   * [QTBUG-57608] QWindowSystemInterfacePrivate::handleGeometryChange no
+     longer takes the old geometry as an argument.
+
+ - QImage:
+   * QImages can now use more than 2GByte of pixel data.
+
+ - QCursor:
+   * Added equality operators.
+
+ - QImageWriter:
+   * Add QImageWriter::InvalidImageError to communicate invalid attempts to
+     write a bad QImage (for instance, a null QImage).
+
+ - QMovie:
+   * Added lastError and lastErrorString accessors, as a convenience over
+     connecting to the error() signal.
+
+ - QWindow:
+   * setMask() no longer requires the window to be created to have an
+     effect; it can be set at any time.
+
+ - Text:
+   * [QTBUG-56728] Added QFont::PreferNoShaping style strategy to support
+     improvements to performance at the expense of some cosmetic font
+     features.
+
+ - Windows:
+   * [QTBUG-55967] Native menus have been implemented.
+   * A native system tray icon is now available for SystemTrayIcon.
+
+QtNetwork
+---------
+
+ - [QTBUG-56102] QSslSocket can now use a temporary keychain on macOS.
+ - Fixed a proxy-authentication issue, after a wrong password has been used,
+   when supplying the right password.
+
+ - HTTP/2:
+   * [QTBUG-61397] In case of clear text HTTP/2 we now initiate a required
+     protocol upgrade procedure instead of 'H2Direct' connection.
+
+ - QHostInfo:
+   * Added swap() and move operator.
+
+ - QLocalServer:
+   * [QTBUG-55043] Added a function to retrieve the socket descriptor.
+
+ - QNetworkAccessManager:
+   * [QTBUG-63075] Added support for HTTP status 308.
+
+ - QNetworkInterface:
+   * [QTBUG-51922] Changed allAddresses() to not include addresses found in
+     inactive interfaces, matching the user expectations of this function.
+     If those addresses are needed for some purpose, the application can
+     call allInterfaces() and obtain the addresses in each interface.
+
+ - QNetworkProxy:
+   * [QTBUG-45495] Setting of network proxies is now supported on UWP.
+   * [QTBUG-45495] UWP now supports proxies using SOCKS5.
+   * The functions related to QNetworkConfiguration are deprecated. They've
+     performed no action since Qt 5.0, so code using them can safely stop
+     doing so.
+
+ - QSslSocket:
+   * [QTBUG-52905] Added OpenSSL 1.1 backend.
+
+QtSql
+-----
+
+ - QSqlError:
+   * Added swap().
+
+ - SQLite:
+   * Named placeholder can now be used. If compiling Qt by hand and using
+     system libraries, this feature requires at least SQLite 3.3.11.
+   * [QTBUG-18084] Added QSQLITE_ENABLE_REGEXP connect option for the SQLite
+     backend. If set, a Qt based regexp() implementation is provided
+     allowing use of REGEXP in SQL statements.
+
+QtTest
+------
+
+ - [QTBUG-53381] Added keySequence() function.
+
+ - QCOMPARE:
+   * Can now be used for mixed-type comparisons.
+   * Now outputs contents of QPair and std::pair on failure.
+   * Now supports printing QStringViews in case of test failures.
+
+QtWidgets
+---------
+
+ - The windowsxp style is no longer available as a separate style, because
+   it did not (and cannot) actually provide an XP-style appearance on
+   currently supported Qt platforms.
+ - Added AA_DisableWindowContextHelpButton attribute. Setting this
+   attribute globally prevents the automatic "What's this" button on
+   dialogs on Windows (WindowsContextHelpButtonHint).
+ - [QTBUG-56860] Fixed widget losing focus after showing menu second time.
+ - [QTBUG-47185][QTBUG-61280] QOpenGLWidget is now able to render and
+   return its content via grabFramebuffer(), QWidget::grab() or
+   QWidget::render() even when the widget has not been made visible.
+ - [QTBUG-10907] When tabbing to a widget with focus proxy, focus will now
+   be given to the proxy rather than just being ignored.
+
+ - ItemViews:
+   * Made it easier to drop above and below items.
+
+ - QAbstractItemView/QTreeWidget/QTableWidget/QListWidget:
+   * [QTBUG-61139] Added isPersistentEditorOpen().
+
+ - QDockWidget:
+   * When QMainWindow::GrouppedDragging and QMainWindow::AllowNestedDocks
+     are both enabled, floating dock widgets now have the ability to be
+     dropped together side by side.
+   * [QTBUG-63526] Fixed an issue in QDockWidgets where the widget would
+     not resize despite showing a resize cursor.
+
+ - QFusionStyle:
+   * The default palette used by the platform-agnostic Fusion style has
+     been desaturated. Previously the window background color, and other
+     colors derived from it, were brown shades. Now these colors are
+     neutral gray that fit better on any desktop.
+
+ - QInputDialog:
+   * [QTBUG-17547] Added setDoubleStep to enable changing of the step
+     amount for getDouble().
+
+ - QLineEdit:
+   * Added selectionEnd(), selectionLength(), complementing
+     selectionStart().
+
+ - QOpenGLWidget:
+   * [QTBUG-50987] Added support for specifying custom internal texture
+     formats in QOpenGLWidget in order to make it possible to have the
+     widget backed by an sRGB-capable framebuffer.
+
+ - QSplashScreen:
+   * All constructors now implicitly set Qt::FramelessWindowHint, not just
+     the (pixmap, flags) one.
+
+ - QWidget:
+   * [QTBUG-10907] QWidget::setTabOrder() will now preserve the local tab
+     order inside a widget if it has a focus proxy set to an inner child.
+
+ - Styles:
+   * Added SH_Widget_Animation_Duration style hint which supersedes
+     SH_Widget_Animate, which is now deprecated.
+
+ - Text:
+   * Introduced tabStopDistance property in QTextOption, QTextEdit and
+     QPlainTextEdit as replacement for the inconsistently named tabStop and
+     tabStopWidth properties. QTextOption::tabStop, QTextEdit::tabStopWidth
+     and QPlainTextEdit::tabStopWidth are now deprecated.
+
+****************************************************************************
+*                         Platform-specific Changes                        *
+****************************************************************************
+
+ - [QTBUG-60268] Input context is now supported with the offscreen platform.
+
+Android
+-------
+
+ - QtLoader: Enabled loading shared libraries from /system/lib or a custom
+   path specified with the android.app.system_libs_prefix metadata variable in
+   AndroidManifest.xml. This supports deploying Qt apps as Android system
+   apps.
+ - [QTBUG-58060] Android dialogs now have more appropriate button layouts,
+   with affirmative actions on the right.
+ - [QTBUG-59175] QWidget::createWindowContainer() is now supported on
+   Android for embedding OpenGL-based QWindows into widget UIs.
+
+iOS
+---
+
+ - [QTBUG-59403] Support added for using the input panel as a trackpad
+   using two-finger swipe.
+ - The minimum deployment target for applications is now iOS 10.0.
+
+Linux
+-----
+
+ - Qt uses the statx(2) system call for obtaining file information on
+   kernels 4.12 and later. Some older container systems install system call
+   protection rules that do not include this system call. If you experience
+   problems running Qt applications inside containers (such as the report of
+   a file not existing when it does), ensure the statx(2) is allowed in the
+   container configuration.
+
+ - Linux/XCB:
+   * Added screen product information from EDID.
+
+ - eglfs/KMS:
+   * Screen modes, including current and preferred ones, are now listed.
+   * Added screen product information from EDID.
+
+Windows
+-------
+
+ - Accessibility:
+   * MinGW builds now support IAccessible2.
+
+ - Fonts:
+   * [QTBUG-62176] Some key fonts, such as Calibri, were being detected as
+     bitmap fonts and not rendered correctly in Qt Quick. This has now been
+     fixed.
+
+X11
+---
+
+ - Native painting (instead of software rasterization) has been experimentally
+   re-introduced. Enabled by the configure option -xcb-native-painting.
+ - XInput device property changes are now detected at runtime (no
+   application restart required).
+ - [QTBUG-60513][QTBUG-29278][QTBUG-43768][QTBUG-18380] The _NET_WORKAREA
+   atom is used for calculating QScreen::availableGeometry() only on systems
+   with one monitor. In all other cases QScreen::availableGeometry() is
+   equal to QScreen::geometry(). To restore the legacy behavior with
+   untrustworthy values in QScreen::availableGeometry() set
+   QT_RELY_ON_NET_WORKAREA_ATOM=1 in the environment.
+ - The QT_XCB_NO_XI2_MOUSE environment variable is deprecated and will be
+   removed in Qt 6. If your application relies on behavior set by
+   QT_XCB_NO_XI2_MOUSE, it should be updated accordingly.
+
+ - Pointer event delivery on X11 is now done starting from XInput version
+   2.0 (when available) instead of 2.2. XInput support can be disabled by
+   setting QT_XCB_NO_XI2=1 in the environment; note that doing so will also
+   disable tablet and touch support.
+
+****************************************************************************
+*                                Tools                                     *
+****************************************************************************
+
+moc
+---
+
+ - moc now supports NOTIFY signals of parent classes in Q_PROPERTY
+
+qmake
+-----
+
+ - [QTBUG-1581] Introduced the variable OBJECTIVE_HEADERS.
+ - [QTBUG-11117][nmake] Added support for precompiled header also for
+   plain C files.
+ - Added versionAtLeast() and versionAtMost() test functions.
+ - If you use CONFIG+=qmltestcase with no SOURCES, 'make check' will now
+   run qmltestrunner for you.
+ - [Darwin] Added support for Info.plist in non-bundle apps and libs.
+
+uic
+---
+
+ - [QTBUG-51602] Added the no-stringliteral option, to be used for building
+   shared objects which are meant to be unloadable.
+ - Old images embedded in ui files, imported from Qt 3, are now ignored.
+   uic will now behave consistently with Qt Designer - both will ignore
+   them.

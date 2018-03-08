@@ -500,23 +500,25 @@ void QIOSInputContext::scrollToCursor()
 
     QWindow *focusWindow = qApp->focusWindow();
     QRect cursorRect = qApp->inputMethod()->cursorRectangle().translated(focusWindow->geometry().topLeft()).toRect();
-    if (cursorRect.isNull()) {
-         scroll(0);
-         return;
-    }
-
-     // Add some padding so that the cusor does not end up directly above the keyboard
-    static const int kCursorRectPadding = 20;
-    cursorRect.adjust(0, -kCursorRectPadding, 0, kCursorRectPadding);
 
     // We explicitly ask for the geometry of the screen instead of the availableGeometry,
-    // as we hide the statusbar when scrolling the screen, so the available geometry will
+    // as we hide the status bar when scrolling the screen, so the available geometry will
     // include the space taken by the status bar at the moment.
     QRect screenGeometry = focusWindow->screen()->geometry();
+
+    if (!cursorRect.isNull()) {
+         // Add some padding so that the cursor does not end up directly above the keyboard
+        static const int kCursorRectPadding = 20;
+        cursorRect.adjust(0, -kCursorRectPadding, 0, kCursorRectPadding);
+
+        // Make sure the cursor rect is still within the screen geometry after padding
+        cursorRect &= screenGeometry;
+    }
+
     QRect keyboardGeometry = QRectF::fromCGRect(m_keyboardState.keyboardEndRect).toRect();
     QRect availableGeometry = (QRegion(screenGeometry) - keyboardGeometry).boundingRect();
 
-    if (!availableGeometry.contains(cursorRect, true)) {
+    if (!cursorRect.isNull() && !availableGeometry.contains(cursorRect)) {
         qImDebug() << "cursor rect" << cursorRect << "not fully within" << availableGeometry;
         int scrollToCenter = -(availableGeometry.center() - cursorRect.center()).y();
         int scrollToBottom = focusWindow->screen()->geometry().bottom() - availableGeometry.bottom();
@@ -528,6 +530,8 @@ void QIOSInputContext::scrollToCursor()
 
 void QIOSInputContext::scroll(int y)
 {
+    Q_ASSERT(y >= 0);
+
     UIView *rootView = scrollableRootView();
     if (!rootView)
         return;

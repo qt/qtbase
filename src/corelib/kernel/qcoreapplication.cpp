@@ -95,7 +95,7 @@
 #endif
 #endif // QT_NO_QOBJECT
 
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 #  include <private/qjni_p.h>
 #  include <private/qjnihelpers_p.h>
 #endif
@@ -118,6 +118,12 @@
 
 #ifdef Q_OS_HTML5
 #include <emscripten.h>
+#endif
+
+#ifdef QT_BOOTSTRAPPED
+#include <private/qtrace_p.h>
+#else
+#include <qtcore_tracepoints_p.h>
 #endif
 
 #include <algorithm>
@@ -185,7 +191,7 @@ QString QCoreApplicationPrivate::appVersion() const
 #ifndef QT_BOOTSTRAPPED
 #  ifdef Q_OS_DARWIN
     applicationVersion = infoDictionaryStringProperty(QStringLiteral("CFBundleVersion"));
-#  elif defined(Q_OS_ANDROID)
+#  elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     QJNIObjectPrivate context(QtAndroidPrivate::context());
     if (context.isValid()) {
         QJNIObjectPrivate pm = context.callObjectMethod(
@@ -544,29 +550,10 @@ void QCoreApplicationPrivate::cleanupThreadData()
 void QCoreApplicationPrivate::createEventDispatcher()
 {
     Q_Q(QCoreApplication);
-#if defined(Q_OS_UNIX)
-#  if defined(Q_OS_DARWIN)
-    bool ok = false;
-    int value = qEnvironmentVariableIntValue("QT_EVENT_DISPATCHER_CORE_FOUNDATION", &ok);
-    if (ok && value > 0)
-        eventDispatcher = new QEventDispatcherCoreFoundation(q);
-    else
-        eventDispatcher = new QEventDispatcherUNIX(q);
-#  elif !defined(QT_NO_GLIB)
-    if (qEnvironmentVariableIsEmpty("QT_NO_GLIB") && QEventDispatcherGlib::versionSupported())
-        eventDispatcher = new QEventDispatcherGlib(q);
-    else
-        eventDispatcher = new QEventDispatcherUNIX(q);
-#  else
-        eventDispatcher = new QEventDispatcherUNIX(q);
-#  endif
-#elif defined(Q_OS_WINRT)
-    eventDispatcher = new QEventDispatcherWinRT(q);
-#elif defined(Q_OS_WIN)
-    eventDispatcher = new QEventDispatcherWin32(q);
-#else
-#  error "QEventDispatcher not yet ported to this platform"
-#endif
+    QThreadData *data = QThreadData::current();
+    Q_ASSERT(!data->hasEventDispatcher());
+    eventDispatcher = QThreadPrivate::createEventDispatcher(data);
+    eventDispatcher->setParent(q);
 }
 
 void QCoreApplicationPrivate::eventDispatcherReady()
@@ -793,9 +780,17 @@ QCoreApplication::QCoreApplication(int &argc, char **argv
 #endif
 }
 
+/*!
+  \enum QCoreApplication::anonymous
+  \internal
+
+  \value ApplicationFlags QT_VERSION
+*/
 
 void QCoreApplicationPrivate::init()
 {
+    Q_TRACE(qcoreapplicationprivate_init_entry);
+
 #if defined(Q_OS_MACOS)
     QMacAutoReleasePool pool;
 #endif
@@ -827,7 +822,13 @@ void QCoreApplicationPrivate::init()
     if (!coreappdata()->applicationVersionSet)
         coreappdata()->applicationVersion = appVersion();
 
-    QLoggingRegistry::instance()->init();
+#if defined(Q_OS_ANDROID)
+    // We've deferred initializing the logging registry due to not being
+    // able to guarantee that logging happened on the same thread as the
+    // Qt main thread, but now that the Qt main thread is set up, we can
+    // enable categorized logging.
+    QLoggingRegistry::instance()->initializeRules();
+#endif
 
 #if QT_CONFIG(library)
     // Reset the lib paths, so that they will be recomputed, taking the availability of argv[0]
@@ -861,8 +862,9 @@ void QCoreApplicationPrivate::init()
 
 #ifndef QT_NO_QOBJECT
     // use the event dispatcher created by the app programmer (if any)
-    if (!eventDispatcher)
-        eventDispatcher = threadData->eventDispatcher.load();
+    Q_ASSERT(!eventDispatcher);
+    eventDispatcher = threadData->eventDispatcher.load();
+
     // otherwise we create one
     if (!eventDispatcher)
         createEventDispatcher();
@@ -894,6 +896,8 @@ void QCoreApplicationPrivate::init()
 #ifndef QT_NO_QOBJECT
     is_app_running = true; // No longer starting up.
 #endif
+
+    Q_TRACE(qcoreapplicationprivate_init_exit);
 }
 
 /*!
@@ -1391,6 +1395,13 @@ void QCoreApplicationPrivate::execCleanup()
   By convention, a \a returnCode of 0 means success, and any non-zero
   value indicates an error.
 
+  It's good practice to always connect signals to this slot using a
+  \l{Qt::}{QueuedConnection}. If a signal connected (non-queued) to this slot
+  is emitted before control enters the main event loop (such as before
+  "int main" calls \l{QCoreApplication::}{exec()}), the slot has no effect
+  and the application never exits. Using a queued connection ensures that the
+  slot will not be invoked until after control enters the main event loop.
+
   Note that unlike the C library function of the same name, this
   function \e does return to the caller -- it is event processing that
   stops.
@@ -1495,6 +1506,9 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         return;
     }
 
+    if (event->type() == QEvent::DeferredDelete)
+        receiver->d_ptr->deleteLaterCalled = true;
+
     if (event->type() == QEvent::DeferredDelete && data == QThreadData::current()) {
         // remember the current running eventloop for DeferredDelete
         // events posted in the receiver's thread.
@@ -1554,22 +1568,34 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
                 return true;
             }
         }
-    } else
+        return false;
+    }
 #endif
-        if ((event->type() == QEvent::DeferredDelete
-             || event->type() == QEvent::Quit)
-            && receiver->d_func()->postedEvents > 0) {
-            for (int i = 0; i < postedEvents->size(); ++i) {
-                const QPostEvent &cur = postedEvents->at(i);
-                if (cur.receiver != receiver
+
+    if (event->type() == QEvent::DeferredDelete) {
+        if (receiver->d_ptr->deleteLaterCalled) {
+            // there was a previous DeferredDelete event, so we can drop the new one
+            delete event;
+            return true;
+        }
+        // deleteLaterCalled is set to true in postedEvents when queueing the very first
+        // deferred deletion event.
+        return false;
+    }
+
+    if (event->type() == QEvent::Quit && receiver->d_func()->postedEvents > 0) {
+        for (int i = 0; i < postedEvents->size(); ++i) {
+            const QPostEvent &cur = postedEvents->at(i);
+            if (cur.receiver != receiver
                     || cur.event == 0
                     || cur.event->type() != event->type())
-                    continue;
-                // found an event for this receiver
-                delete event;
-                return true;
-            }
+                continue;
+            // found an event for this receiver
+            delete event;
+            return true;
         }
+    }
+
     return false;
 }
 
@@ -1920,6 +1946,13 @@ void QCoreApplicationPrivate::maybeQuit()
     to quit(), and you also often connect e.g. QAbstractButton::clicked() or
     signals in QAction, QMenu, or QMenuBar to it.
 
+    It's good practice to always connect signals to this slot using a
+    \l{Qt::}{QueuedConnection}. If a signal connected (non-queued) to this slot
+    is emitted before control enters the main event loop (such as before
+    "int main" calls \l{QCoreApplication::}{exec()}), the slot has no effect
+    and the application never exits. Using a queued connection ensures that the
+    slot will not be invoked until after control enters the main event loop.
+
     Example:
 
     \snippet code/src_corelib_kernel_qcoreapplication.cpp 1
@@ -2224,11 +2257,11 @@ QString QCoreApplication::applicationFilePath()
     QCoreApplicationPrivate *d = self->d_func();
 
     if (d->argc) {
-        static const char *procName = d->argv[0];
-        if (qstrcmp(procName, d->argv[0]) != 0) {
+        static QByteArray procName = QByteArray(d->argv[0]);
+        if (procName != d->argv[0]) {
             // clear the cache if the procname changes, so we reprocess it.
             QCoreApplicationPrivate::clearApplicationFilePath();
-            procName = d->argv[0];
+            procName = QByteArray(d->argv[0]);
         }
     }
 
@@ -2249,7 +2282,7 @@ QString QCoreApplication::applicationFilePath()
     }
 #endif
 #if defined( Q_OS_UNIX )
-#  if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
+#  if defined(Q_OS_LINUX) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_EMBEDDED))
     // Try looking for a /proc/<pid>/exe symlink first which points to
     // the absolute path of the executable
     QFileInfo pfi(QString::fromLatin1("/proc/%1/exe").arg(getpid()));
@@ -2909,6 +2942,10 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
 
     If QCoreApplication is deleted and another QCoreApplication is created,
     the startup function will be invoked again.
+
+    \note This macro is not suitable for use in library code that is then
+    statically linked into an application since the function may not be called
+    at all due to being eliminated by the linker.
 */
 
 /*!

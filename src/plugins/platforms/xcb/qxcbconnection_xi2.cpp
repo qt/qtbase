@@ -52,12 +52,6 @@
 
 void QXcbConnection::initializeXInput2()
 {
-    // TODO Qt 6 (or perhaps earlier): remove these redundant env variables
-    if (qEnvironmentVariableIsSet("QT_XCB_DEBUG_XINPUT"))
-        const_cast<QLoggingCategory&>(lcQpaXInput()).setEnabled(QtDebugMsg, true);
-    if (qEnvironmentVariableIsSet("QT_XCB_DEBUG_XINPUT_DEVICES"))
-        const_cast<QLoggingCategory&>(lcQpaXInputDevices()).setEnabled(QtDebugMsg, true);
-
     Display *xDisplay = static_cast<Display *>(m_xlib_display);
     if (XQueryExtension(xDisplay, "XInputExtension", &m_xiOpCode, &m_xiEventBase, &m_xiErrorBase)) {
         int xiMajor = 2;
@@ -100,6 +94,7 @@ void QXcbConnection::xi2SelectStateEvents()
     XIEventMask xiEventMask;
     bitMask = XI_HierarchyChangedMask;
     bitMask |= XI_DeviceChangedMask;
+    bitMask |= XI_PropertyEventMask;
     xiEventMask.deviceid = XIAllDevices;
     xiEventMask.mask_len = sizeof(bitMask);
     xiEventMask.mask = xiBitMask;
@@ -121,7 +116,6 @@ void QXcbConnection::xi2SelectDeviceEvents(xcb_window_t window)
     // core enter/leave events will be ignored in this case.
     bitMask |= XI_EnterMask;
     bitMask |= XI_LeaveMask;
-    bitMask |= XI_PropertyEventMask;
 #ifdef XCB_USE_XINPUT22
     if (isAtLeastXI22()) {
         bitMask |= XI_TouchBeginMask;
@@ -249,7 +243,7 @@ void QXcbConnection::xi2SetupDevice(void *info, bool removeExisting)
         isTablet = true;
         tabletData.pointerType = QTabletEvent::Eraser;
         dbgType = QLatin1String("eraser");
-    } else if (name.contains("cursor")) {
+    } else if (name.contains("cursor") && !(name.contains("cursor controls") && name.contains("trackball"))) {
         isTablet = true;
         tabletData.pointerType = QTabletEvent::Cursor;
         dbgType = QLatin1String("cursor");
@@ -325,12 +319,18 @@ void QXcbConnection::xi2SetupDevices()
     Display *xDisplay = static_cast<Display *>(m_xlib_display);
     int deviceCount = 0;
     XIDeviceInfo *devices = XIQueryDevice(xDisplay, XIAllDevices, &deviceCount);
+    m_xiMasterPointerIds.clear();
     for (int i = 0; i < deviceCount; ++i) {
-        // Only non-master pointing devices are relevant here.
-        if (devices[i].use != XISlavePointer)
+        XIDeviceInfo deviceInfo = devices[i];
+        if (deviceInfo.use == XIMasterPointer) {
+            m_xiMasterPointerIds.append(deviceInfo.deviceid);
             continue;
-        xi2SetupDevice(&devices[i], false);
+        }
+        if (deviceInfo.use == XISlavePointer) // only slave pointer devices are relevant here
+            xi2SetupDevice(&deviceInfo, false);
     }
+    if (m_xiMasterPointerIds.size() > 1)
+        qCDebug(lcQpaXInputDevices) << "multi-pointer X detected";
     XIFreeDeviceInfo(devices);
 }
 
@@ -378,24 +378,25 @@ void QXcbConnection::xi2SelectDeviceEventsCompatibility(xcb_window_t window)
 
     unsigned int mask = 0;
     unsigned char *bitMask = reinterpret_cast<unsigned char *>(&mask);
-    mask |= XI_PropertyEventMask;
+    Display *dpy = static_cast<Display *>(m_xlib_display);
+
 #ifdef XCB_USE_XINPUT22
     if (isAtLeastXI22()) {
         mask |= XI_TouchBeginMask;
         mask |= XI_TouchUpdateMask;
         mask |= XI_TouchEndMask;
+
+        XIEventMask xiMask;
+        xiMask.mask_len = sizeof(mask);
+        xiMask.mask = bitMask;
+        xiMask.deviceid = XIAllMasterDevices;
+        Status result = XISelectEvents(dpy, window, &xiMask, 1);
+        if (result == Success)
+            QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
+        else
+            qCDebug(lcQpaXInput, "failed to select events, window %x, result %d", window, result);
     }
 #endif
-    XIEventMask xiMask;
-    xiMask.mask_len = sizeof(mask);
-    xiMask.mask = bitMask;
-    xiMask.deviceid = XIAllMasterDevices;
-    Display *dpy = static_cast<Display *>(m_xlib_display);
-    Status result = XISelectEvents(dpy, window, &xiMask, 1);
-    if (result == Success)
-        QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
-    else
-        qCDebug(lcQpaXInput, "failed to select events, window %x, result %d", window, result);
 
     mask = XI_ButtonPressMask;
     mask |= XI_ButtonReleaseMask;
@@ -433,6 +434,11 @@ void QXcbConnection::xi2SelectDeviceEventsCompatibility(xcb_window_t window)
         }
         XISelectEvents(dpy, window, xiEventMask.data(), i);
     }
+#endif
+
+#if !QT_CONFIG(tabletevent) && !defined(XCB_USE_XINPUT21)
+    Q_UNUSED(bitMask);
+    Q_UNUSED(dpy);
 #endif
 }
 
@@ -755,8 +761,9 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
         // Touches must be accepted when we are grabbing touch events. Otherwise the entire sequence
         // will get replayed when the grab ends.
         if (m_xiGrab) {
-            // XIAllowTouchEvents deadlocks with libXi < 1.7.4 (this has nothing to do with the XI2 versions like 2.2)
-            // http://lists.x.org/archives/xorg-devel/2014-July/043059.html
+            // Note that XIAllowTouchEvents is known to deadlock with older libXi versions,
+            // for details see qtbase/src/plugins/platforms/xcb/README. This has nothing to
+            // do with the XInput protocol version, but is a bug in libXi implementation instead.
             XIAllowTouchEvents(static_cast<Display *>(m_xlib_display), xiDeviceEvent->deviceid,
                                xiDeviceEvent->detail, xiDeviceEvent->event, XIAcceptTouch);
         }
@@ -777,15 +784,15 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
         }
 
         if (dev->qtTouchDevice->type() == QTouchDevice::TouchScreen &&
-            xiDeviceEvent->event == m_startSystemResizeInfo.window &&
-            xiDeviceEvent->sourceid == m_startSystemResizeInfo.deviceid &&
-            xiDeviceEvent->detail == m_startSystemResizeInfo.pointid) {
-            QXcbWindow *window = platformWindowFromId(m_startSystemResizeInfo.window);
+            xiDeviceEvent->event == m_startSystemMoveResizeInfo.window &&
+            xiDeviceEvent->sourceid == m_startSystemMoveResizeInfo.deviceid &&
+            xiDeviceEvent->detail == m_startSystemMoveResizeInfo.pointid) {
+            QXcbWindow *window = platformWindowFromId(m_startSystemMoveResizeInfo.window);
             if (window) {
                 XIAllowTouchEvents(static_cast<Display *>(m_xlib_display), xiDeviceEvent->deviceid,
                                    xiDeviceEvent->detail, xiDeviceEvent->event, XIRejectTouch);
-                window->doStartSystemResize(QPoint(x, y), m_startSystemResizeInfo.corner);
-                m_startSystemResizeInfo.window = XCB_NONE;
+                window->doStartSystemMoveResize(QPoint(x, y), m_startSystemMoveResizeInfo.corner);
+                m_startSystemMoveResizeInfo.window = XCB_NONE;
             }
         }
         break;
@@ -818,7 +825,7 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
         touchPoint.state = Qt::TouchPointStationary;
 }
 
-bool QXcbConnection::startSystemResizeForTouchBegin(xcb_window_t window, const QPoint &point, Qt::Corner corner)
+bool QXcbConnection::startSystemMoveResizeForTouchBegin(xcb_window_t window, const QPoint &point, int corner)
 {
     QHash<int, TouchDeviceData>::const_iterator devIt = m_touchDevices.constBegin();
     for (; devIt != m_touchDevices.constEnd(); ++devIt) {
@@ -827,10 +834,10 @@ bool QXcbConnection::startSystemResizeForTouchBegin(xcb_window_t window, const Q
             QHash<int, QPointF>::const_iterator pointIt = deviceData.pointPressedPosition.constBegin();
             for (; pointIt != deviceData.pointPressedPosition.constEnd(); ++pointIt) {
                 if (pointIt.value().toPoint() == point) {
-                    m_startSystemResizeInfo.window = window;
-                    m_startSystemResizeInfo.deviceid = devIt.key();
-                    m_startSystemResizeInfo.pointid = pointIt.key();
-                    m_startSystemResizeInfo.corner = corner;
+                    m_startSystemMoveResizeInfo.window = window;
+                    m_startSystemMoveResizeInfo.deviceid = devIt.key();
+                    m_startSystemMoveResizeInfo.pointid = pointIt.key();
+                    m_startSystemMoveResizeInfo.corner = corner;
                     return true;
                 }
             }
@@ -842,62 +849,54 @@ bool QXcbConnection::startSystemResizeForTouchBegin(xcb_window_t window, const Q
 
 bool QXcbConnection::xi2SetMouseGrabEnabled(xcb_window_t w, bool grab)
 {
-    if (grab && !canGrab())
-        return false;
-
-    int num_devices = 0;
     Display *xDisplay = static_cast<Display *>(xlib_display());
-    XIDeviceInfo *info = XIQueryDevice(xDisplay, XIAllMasterDevices, &num_devices);
-    if (!info)
-        return false;
+    bool ok = false;
 
-    XIEventMask evmask;
-    unsigned char mask[XIMaskLen(XI_LASTEVENT)];
-    evmask.mask = mask;
-    evmask.mask_len = sizeof(mask);
-    memset(mask, 0, sizeof(mask));
-    evmask.deviceid = XIAllMasterDevices;
+    if (grab) { // grab
+        XIEventMask evmask;
+        unsigned char mask[XIMaskLen(XI_LASTEVENT)];
+        evmask.mask = mask;
+        evmask.mask_len = sizeof(mask);
+        memset(mask, 0, sizeof(mask));
+        XISetMask(mask, XI_ButtonPress);
+        XISetMask(mask, XI_ButtonRelease);
+        XISetMask(mask, XI_Motion);
+        XISetMask(mask, XI_Enter);
+        XISetMask(mask, XI_Leave);
+        XISetMask(mask, XI_TouchBegin);
+        XISetMask(mask, XI_TouchUpdate);
+        XISetMask(mask, XI_TouchEnd);
 
-    XISetMask(mask, XI_ButtonPress);
-    XISetMask(mask, XI_ButtonRelease);
-    XISetMask(mask, XI_Motion);
-    XISetMask(mask, XI_Enter);
-    XISetMask(mask, XI_Leave);
-    XISetMask(mask, XI_TouchBegin);
-    XISetMask(mask, XI_TouchUpdate);
-    XISetMask(mask, XI_TouchEnd);
-
-    bool grabbed = true;
-    for (int i = 0; i < num_devices; i++) {
-        int id = info[i].deviceid, n = 0;
-        XIDeviceInfo *deviceInfo = XIQueryDevice(xDisplay, id, &n);
-        if (deviceInfo) {
-            const bool grabbable = deviceInfo->use != XIMasterKeyboard;
-            XIFreeDeviceInfo(deviceInfo);
-            if (!grabbable)
-                continue;
+        for (int id : m_xiMasterPointerIds) {
+            evmask.deviceid = id;
+            Status result = XIGrabDevice(xDisplay, id, w, CurrentTime, None,
+                                         XIGrabModeAsync, XIGrabModeAsync, False, &evmask);
+            if (result != Success) {
+                qCDebug(lcQpaXInput, "failed to grab events for device %d on window %x"
+                                     "(result %d)", id, w, result);
+            } else {
+                // Managed to grab at least one of master pointers, that should be enough
+                // to properly dismiss windows that rely on mouse grabbing.
+                ok = true;
+            }
         }
-        if (!grab) {
+    } else { // ungrab
+        for (int id : m_xiMasterPointerIds) {
             Status result = XIUngrabDevice(xDisplay, id, CurrentTime);
-            if (result != Success) {
-                grabbed = false;
-                qCDebug(lcQpaXInput, "XInput 2.2: failed to ungrab events for device %d (result %d)", id, result);
-            }
-        } else {
-            Status result = XIGrabDevice(xDisplay, id, w, CurrentTime, None, XIGrabModeAsync,
-                                         XIGrabModeAsync, False, &evmask);
-            if (result != Success) {
-                grabbed = false;
-                qCDebug(lcQpaXInput, "XInput 2.2: failed to grab events for device %d on window %x (result %d)", id, w, result);
-            }
+            if (result != Success)
+                qCDebug(lcQpaXInput, "XIUngrabDevice failed - id: %d (result %d)", id, result);
         }
+        // XIUngrabDevice does not seem to wait for a reply from X server (similar to
+        // xcb_ungrab_pointer). Ungrabbing won't fail, unless NoSuchExtension error
+        // has occurred due to a programming error somewhere else in the stack. That
+        // would mean that things will crash soon anyway.
+        ok = true;
     }
 
-    XIFreeDeviceInfo(info);
+    if (ok)
+        m_xiGrab = grab;
 
-    m_xiGrab = grabbed;
-
-    return grabbed;
+    return ok;
 }
 
 void QXcbConnection::xi2HandleHierarchyEvent(void *event)
@@ -1012,10 +1011,12 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
                     double delta = scrollingDevice.lastScrollPosition.y() - value;
                     scrollingDevice.lastScrollPosition.setY(value);
                     angleDelta.setY((delta / scrollingDevice.verticalIncrement) * 120);
-                    // We do not set "pixel" delta if it is only measured in ticks.
-                    if (scrollingDevice.verticalIncrement > 1)
+                    // With most drivers the increment is 1 for wheels.
+                    // For libinput it is hardcoded to a useless 15.
+                    // For a proper touchpad driver it should be in the same order of magnitude as 120
+                    if (scrollingDevice.verticalIncrement > 15)
                         rawDelta.setY(delta);
-                    else if (scrollingDevice.verticalIncrement < -1)
+                    else if (scrollingDevice.verticalIncrement < -15)
                         rawDelta.setY(-delta);
                 }
             }
@@ -1024,10 +1025,10 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
                     double delta = scrollingDevice.lastScrollPosition.x() - value;
                     scrollingDevice.lastScrollPosition.setX(value);
                     angleDelta.setX((delta / scrollingDevice.horizontalIncrement) * 120);
-                    // We do not set "pixel" delta if it is only measured in ticks.
-                    if (scrollingDevice.horizontalIncrement > 1)
+                    // See comment under vertical
+                    if (scrollingDevice.horizontalIncrement > 15)
                         rawDelta.setX(delta);
-                    else if (scrollingDevice.horizontalIncrement < -1)
+                    else if (scrollingDevice.horizontalIncrement < -15)
                         rawDelta.setX(-delta);
                 }
             }

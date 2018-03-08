@@ -279,9 +279,6 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
         QString configName = (as_release ? "Release" : "Debug");
 
         QMap<QString, QString> settings;
-        settings.insert("COPY_PHASE_STRIP", (as_release ? "YES" : "NO"));
-        if(as_release)
-            settings.insert("GCC_GENERATE_DEBUGGING_SYMBOLS", "NO");
         if(project->isActiveConfig("sdk") && !project->isEmpty("QMAKE_MAC_SDK"))
             settings.insert("SDKROOT", project->first("QMAKE_MAC_SDK").toQString());
         {
@@ -1495,11 +1492,9 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 settings.insert("PROVISIONING_PROFILE_SPECIFIER", project->first("QMAKE_PROVISIONING_PROFILE").toQString());
         }
 
-        settings.insert("COPY_PHASE_STRIP", (as_release ? "YES" : "NO"));
         settings.insert("APPLICATION_EXTENSION_API_ONLY", project->isActiveConfig("app_extension_api_only") ? "YES" : "NO");
         // required for tvOS (and watchos), optional on iOS (deployment target >= iOS 6.0)
         settings.insert("ENABLE_BITCODE", project->isActiveConfig("bitcode") ? "YES" : "NO");
-        settings.insert("GCC_GENERATE_DEBUGGING_SYMBOLS", as_release ? "NO" : "YES");
         if(!as_release)
             settings.insert("GCC_OPTIMIZATION_LEVEL", "0");
         if(project->isActiveConfig("sdk") && !project->isEmpty("QMAKE_MAC_SDK"))

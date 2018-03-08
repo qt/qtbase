@@ -95,3 +95,47 @@ QSqlDatabase: available drivers: QMYSQL
 //! [34]
 column.contains(QRegularExpression("pattern"));
 //! [34]
+
+
+//! [36]
+QSqlQuery query(db);
+query.setForwardOnly(true);
+query.exec("SELECT * FROM table");
+while (query.next()) {
+    // Handle changes in every iteration of the loop
+    QVariant v = query.result()->handle();
+    if (qstrcmp(v.typeName(), "PGresult*") == 0) {
+        PGresult *handle = *static_cast<PGresult **>(v.data());
+        if (handle != 0) {
+            // Do something...
+        }
+    }
+}
+//! [36]
+
+
+//! [37]
+int value;
+QSqlQuery query1(db);
+query1.setForwardOnly(true);
+query1.exec("select * FROM table1");
+while (query1.next()) {
+    value = query1.value(0).toInt();
+    if (value == 1) {
+        QSqlQuery query2(db);
+        query2.exec("update table2 set col=2");  // WRONG: This will discard all results of
+    }                                            // query1, and cause the loop to quit
+}
+//! [37]
+
+
+//! [39]
+QSqlDatabase db = QSqlDatabase::addDatabase("QODBC3");
+QString connectString = QStringLiteral(
+    "DRIVER=/path/to/installation/libodbcHDB.so;"
+    "SERVERNODE=hostname:port;"
+    "UID=USER;"
+    "PWD=PASSWORD;"
+    "SCROLLABLERESULT=true");
+db.setDatabaseName(connectString);
+//! [39]

@@ -350,6 +350,13 @@ void QWindowsMenuItem::setIsSeparator(bool isSeparator)
     if (m_separator == isSeparator)
         return;
     m_separator = isSeparator;
+    if (m_parentMenu == nullptr)
+        return;
+    MENUITEMINFO menuItemInfo;
+    menuItemInfoInit(menuItemInfo);
+    menuItemInfo.fMask = MIIM_FTYPE;
+    menuItemInfo.fType = isSeparator ? MFT_SEPARATOR : MFT_STRING;
+    SetMenuItemInfo(parentMenuHandle(), m_id, FALSE, &menuItemInfo);
 }
 
 void QWindowsMenuItem::setCheckable(bool checkable)
@@ -686,9 +693,16 @@ void QWindowsPopupMenu::showPopup(const QWindow *parentWindow, const QRect &targ
 bool QWindowsPopupMenu::trackPopupMenu(HWND windowHandle, int x, int y)
 {
     lastShownPopupMenu = this;
-    return TrackPopupMenu(menuHandle(),
+    // Emulate Show()/Hide() signals. Could be implemented by catching the
+    // WM_EXITMENULOOP, WM_ENTERMENULOOP messages; but they do not carry
+    // information telling which menu was opened.
+    emit aboutToShow();
+    const bool result =
+        TrackPopupMenu(menuHandle(),
                           QGuiApplication::layoutDirection() == Qt::RightToLeft ? UINT(TPM_RIGHTALIGN) : UINT(0),
                           x, y, 0, windowHandle, nullptr) == TRUE;
+    emit aboutToHide();
+    return result;
 }
 
 bool QWindowsPopupMenu::notifyTriggered(uint id)

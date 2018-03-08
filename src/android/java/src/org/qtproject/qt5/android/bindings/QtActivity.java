@@ -132,7 +132,7 @@ public class QtActivity extends Activity
     }
     public boolean super_dispatchPopulateAccessibilityEvent(AccessibilityEvent event)
     {
-        return super_dispatchPopulateAccessibilityEvent(event);
+        return super.dispatchPopulateAccessibilityEvent(event);
     }
     //---------------------------------------------------------------------------
 

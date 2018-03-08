@@ -165,7 +165,7 @@ QFileSystemEntry::NativePath QTemporaryFileName::generateNext()
 
         Char *rIter = placeholderEnd;
         while (rIter != placeholderStart) {
-            quint32 rnd = QRandomGenerator::generate();
+            quint32 rnd = QRandomGenerator::global()->generate();
             auto applyOne = [&]() {
                 quint32 v = rnd & ((1 << BitsPerCharacter) - 1);
                 rnd >>= BitsPerCharacter;
@@ -207,7 +207,7 @@ QFileSystemEntry::NativePath QTemporaryFileName::generateNext()
     changed and contain the generated path name.
 */
 static bool createFileFromTemplate(NativeFileHandle &file, QTemporaryFileName &templ,
-                                   quint32 mode, QSystemError &error)
+                                   quint32 mode, int flags, QSystemError &error)
 {
     const int maxAttempts = 16;
     for (int attempt = 0; attempt < maxAttempts; ++attempt) {
@@ -216,16 +216,18 @@ static bool createFileFromTemplate(NativeFileHandle &file, QTemporaryFileName &t
 
 #if defined(Q_OS_WIN)
         Q_UNUSED(mode);
+        const DWORD shareMode = (flags & QTemporaryFileEngine::Win32NonShared)
+                                ? 0u : (FILE_SHARE_READ | FILE_SHARE_WRITE);
 
 #  ifndef Q_OS_WINRT
         file = CreateFile((const wchar_t *)path.constData(),
                 GENERIC_READ | GENERIC_WRITE,
-                FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_NEW,
+                shareMode, NULL, CREATE_NEW,
                 FILE_ATTRIBUTE_NORMAL, NULL);
 #  else // !Q_OS_WINRT
         file = CreateFile2((const wchar_t *)path.constData(),
                 GENERIC_READ | GENERIC_WRITE,
-                FILE_SHARE_READ | FILE_SHARE_WRITE, CREATE_NEW,
+                shareMode, CREATE_NEW,
                 NULL);
 #  endif // Q_OS_WINRT
 
@@ -247,8 +249,9 @@ static bool createFileFromTemplate(NativeFileHandle &file, QTemporaryFileName &t
             return false;
         }
 #else // POSIX
+        Q_UNUSED(flags)
         file = QT_OPEN(path.constData(),
-                QT_OPEN_CREAT | O_EXCL | QT_OPEN_RDWR | QT_OPEN_LARGEFILE,
+                QT_OPEN_CREAT | QT_OPEN_EXCL | QT_OPEN_RDWR | QT_OPEN_LARGEFILE,
                 static_cast<mode_t>(mode));
 
         if (file != -1)
@@ -366,7 +369,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
         unnamedFile = true;
         d->fileEntry.clear();
     } else if (st == CreateUnnamedFileStatus::NotSupported &&
-               createFileFromTemplate(file, tfn, fileMode, error)) {
+               createFileFromTemplate(file, tfn, fileMode, flags, error)) {
         filePathIsTemplate = false;
         unnamedFile = false;
         d->fileEntry = QFileSystemEntry(tfn.path, QFileSystemEntry::FromNativePath());
@@ -393,7 +396,9 @@ bool QTemporaryFileEngine::remove()
     // we must explicitly call QFSFileEngine::close() before we remove it.
     d->unmapAll();
     QFSFileEngine::close();
-    if (isUnnamedFile() || QFSFileEngine::remove()) {
+    if (isUnnamedFile())
+        return true;
+    if (!filePathIsTemplate && QFSFileEngine::remove()) {
         d->fileEntry.clear();
         // If a QTemporaryFile is constructed using a template file path, the path
         // is generated in QTemporaryFileEngine::open() and then filePathIsTemplate
@@ -511,7 +516,10 @@ bool QTemporaryFileEngine::materializeUnnamedFile(const QString &newName, QTempo
 bool QTemporaryFileEngine::isUnnamedFile() const
 {
 #ifdef LINUX_UNNAMED_TMPFILE
-    Q_ASSERT(unnamedFile == d_func()->fileEntry.isEmpty());
+    if (unnamedFile) {
+        Q_ASSERT(d_func()->fileEntry.isEmpty());
+        Q_ASSERT(filePathIsTemplate);
+    }
     return unnamedFile;
 #else
     return false;
@@ -749,9 +757,20 @@ bool QTemporaryFile::autoRemove() const
 }
 
 /*!
-    Sets the QTemporaryFile into auto-remove mode if \a b is true.
+    Sets the QTemporaryFile into auto-remove mode if \a b is \c true.
 
     Auto-remove is on by default.
+
+    If you set this property to \c false, ensure the application provides a way
+    to remove the file once it is no longer needed, including passing the
+    responsibility on to another process. Always use the fileName() function to
+    obtain the name and never try to guess the name that QTemporaryFile has
+    generated.
+
+    On some systems, if fileName() is not called before closing the file, the
+    temporary file may be removed regardless of the state of this property.
+    This behavior should not be relied upon, so application code should either
+    call fileName() or leave the auto removal functionality enabled.
 
     \sa autoRemove(), remove()
 */

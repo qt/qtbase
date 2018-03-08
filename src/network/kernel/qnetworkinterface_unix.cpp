@@ -41,32 +41,17 @@
 #include "qset.h"
 #include "qnetworkinterface.h"
 #include "qnetworkinterface_p.h"
+#include "qnetworkinterface_unix_p.h"
 #include "qalgorithms.h"
-#include "private/qnet_unix_p.h"
 
 #ifndef QT_NO_NETWORKINTERFACE
 
-#define IP_MULTICAST    // make AIX happy and define IFF_MULTICAST
-
-#include <sys/types.h>
-#include <sys/socket.h>
-
-#ifdef Q_OS_SOLARIS
-# include <sys/sockio.h>
-#endif
-#include <net/if.h>
-
-#ifndef QT_NO_IPV6IFNAME
-#include <net/if.h>
+#if defined(QT_NO_CLOCK_MONOTONIC)
+#  include "qdatetime.h"
 #endif
 
 #if defined(QT_LINUXBASE)
 #  define QT_NO_GETIFADDRS
-#endif
-
-#ifdef Q_OS_HAIKU
-# include <sys/sockio.h>
-# define IFF_RUNNING 0x0001
 #endif
 
 #ifndef QT_NO_GETIFADDRS
@@ -105,23 +90,6 @@ static QHostAddress addressFromSockaddr(sockaddr *sa, int ifindex = 0, const QSt
     }
     return address;
 
-}
-
-static QNetworkInterface::InterfaceFlags convertFlags(uint rawFlags)
-{
-    QNetworkInterface::InterfaceFlags flags = 0;
-    flags |= (rawFlags & IFF_UP) ? QNetworkInterface::IsUp : QNetworkInterface::InterfaceFlag(0);
-    flags |= (rawFlags & IFF_RUNNING) ? QNetworkInterface::IsRunning : QNetworkInterface::InterfaceFlag(0);
-    flags |= (rawFlags & IFF_BROADCAST) ? QNetworkInterface::CanBroadcast : QNetworkInterface::InterfaceFlag(0);
-    flags |= (rawFlags & IFF_LOOPBACK) ? QNetworkInterface::IsLoopBack : QNetworkInterface::InterfaceFlag(0);
-#ifdef IFF_POINTOPOINT //cygwin doesn't define IFF_POINTOPOINT
-    flags |= (rawFlags & IFF_POINTOPOINT) ? QNetworkInterface::IsPointToPoint : QNetworkInterface::InterfaceFlag(0);
-#endif
-
-#ifdef IFF_MULTICAST
-    flags |= (rawFlags & IFF_MULTICAST) ? QNetworkInterface::CanMulticast : QNetworkInterface::InterfaceFlag(0);
-#endif
-    return flags;
 }
 
 uint QNetworkInterfaceManager::interfaceIndexFromName(const QString &name)
@@ -169,6 +137,15 @@ QString QNetworkInterfaceManager::interfaceNameFromIndex(uint index)
     }
 #endif
     return QString::number(uint(index));
+}
+
+static int getMtu(int socket, struct ifreq *req)
+{
+#ifdef SIOCGIFMTU
+    if (qt_safe_ioctl(socket, SIOCGIFMTU, req) == 0)
+        return req->ifr_mtu;
+#endif
+    return 0;
 }
 
 #ifdef QT_NO_GETIFADDRS
@@ -310,6 +287,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
         if (qt_safe_ioctl(socket, SIOCGIFFLAGS, &req) >= 0) {
             iface->flags = convertFlags(req.ifr_flags);
         }
+        iface->mtu = getMtu(socket, &req);
 
 #ifdef SIOCGIFHWADDR
         // Get the HW address
@@ -363,6 +341,7 @@ QT_END_INCLUDE_NAMESPACE
 
 static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
 {
+    Q_UNUSED(getMtu)
     QList<QNetworkInterfacePrivate *> interfaces;
     QSet<QString> seenInterfaces;
     QVarLengthArray<int, 16> seenIndexes;   // faster than QSet<int>
@@ -417,14 +396,96 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
     return interfaces;
 }
 
+static void getAddressExtraInfo(QNetworkAddressEntry *entry, struct sockaddr *sa, const char *ifname)
+{
+    Q_UNUSED(entry);
+    Q_UNUSED(sa);
+    Q_UNUSED(ifname)
+}
+
 # elif defined(Q_OS_BSD4)
 QT_BEGIN_INCLUDE_NAMESPACE
 #  include <net/if_dl.h>
+#if defined(QT_PLATFORM_UIKIT)
+#  include "qnetworkinterface_uikit_p.h"
+#if !defined(QT_WATCHOS_OUTDATED_SDK_WORKAROUND)
+// TODO: remove it as soon as SDK is updated on CI!!!
+#  include <net/if_types.h>
+#endif
+#else
+#  include <net/if_media.h>
+#  include <net/if_types.h>
+#  include <netinet/in_var.h>
+#endif // QT_PLATFORM_UIKIT
 QT_END_INCLUDE_NAMESPACE
+
+static int openSocket(int &socket)
+{
+    if (socket == -1)
+        socket = qt_safe_socket(AF_INET, SOCK_DGRAM, 0);
+    return socket;
+}
+
+static QNetworkInterface::InterfaceType probeIfType(int socket, int iftype, struct ifmediareq *req)
+{
+    // Determine the interface type.
+
+    // On Darwin, these are #defines, but on FreeBSD they're just an
+    // enum, so we can't #ifdef them. Use the authoritative list from
+    // https://www.iana.org/assignments/smi-numbers/smi-numbers.xhtml#smi-numbers-5
+    switch (iftype) {
+    case IFT_PPP:
+        return QNetworkInterface::Ppp;
+
+    case IFT_LOOP:
+        return QNetworkInterface::Loopback;
+
+    case IFT_SLIP:
+        return QNetworkInterface::Slip;
+
+    case 0x47:      // IFT_IEEE80211
+        return QNetworkInterface::Ieee80211;
+
+    case IFT_IEEE1394:
+        return QNetworkInterface::Ieee1394;
+
+    case IFT_GIF:
+    case IFT_STF:
+        return QNetworkInterface::Virtual;
+    }
+
+    // For the remainder (including Ethernet), let's try SIOGIFMEDIA
+    req->ifm_count = 0;
+    if (qt_safe_ioctl(socket, SIOCGIFMEDIA, req) == 0) {
+        // see https://man.openbsd.org/ifmedia.4
+
+        switch (IFM_TYPE(req->ifm_current)) {
+        case IFM_ETHER:
+            return QNetworkInterface::Ethernet;
+
+        case IFM_FDDI:
+            return QNetworkInterface::Fddi;
+
+        case IFM_IEEE80211:
+            return QNetworkInterface::Ieee80211;
+        }
+    }
+
+    return QNetworkInterface::Unknown;
+}
 
 static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
 {
     QList<QNetworkInterfacePrivate *> interfaces;
+    union {
+        struct ifmediareq mediareq;
+        struct ifreq req;
+    };
+    int socket = -1;
+
+    // ensure both structs start with the name field, of size IFNAMESIZ
+    Q_STATIC_ASSERT(sizeof(mediareq.ifm_name) == sizeof(req.ifr_name));
+    Q_ASSERT(&mediareq.ifm_name == &req.ifr_name);
 
     // on NetBSD we use AF_LINK and sockaddr_dl
     // scan the list for that family
@@ -438,15 +499,73 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
             iface->name = QString::fromLatin1(ptr->ifa_name);
             iface->flags = convertFlags(ptr->ifa_flags);
             iface->hardwareAddress = iface->makeHwAddress(sdl->sdl_alen, (uchar*)LLADDR(sdl));
+
+            strlcpy(mediareq.ifm_name, ptr->ifa_name, sizeof(mediareq.ifm_name));
+            iface->type = probeIfType(openSocket(socket), sdl->sdl_type, &mediareq);
+            iface->mtu = getMtu(socket, &req);
         }
 
+    if (socket != -1)
+        qt_safe_close(socket);
     return interfaces;
+}
+
+static void getAddressExtraInfo(QNetworkAddressEntry *entry, struct sockaddr *sa, const char *ifname)
+{
+    // get IPv6 address lifetimes
+    if (sa->sa_family != AF_INET6)
+        return;
+
+    struct in6_ifreq ifr;
+
+    int s6 = qt_safe_socket(AF_INET6, SOCK_DGRAM, 0);
+    if (Q_UNLIKELY(s6 < 0)) {
+        qErrnoWarning("QNetworkInterface: could not create IPv6 socket");
+        return;
+    }
+
+    strlcpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
+
+    // get flags
+    ifr.ifr_addr = *reinterpret_cast<struct sockaddr_in6 *>(sa);
+    if (qt_safe_ioctl(s6, SIOCGIFAFLAG_IN6, &ifr) < 0) {
+        qt_safe_close(s6);
+        return;
+    }
+    int flags = ifr.ifr_ifru.ifru_flags6;
+    QNetworkInterfacePrivate::calculateDnsEligibility(entry,
+                                                      flags & IN6_IFF_TEMPORARY,
+                                                      flags & IN6_IFF_DEPRECATED);
+
+    // get lifetimes
+    ifr.ifr_addr = *reinterpret_cast<struct sockaddr_in6 *>(sa);
+    if (qt_safe_ioctl(s6, SIOCGIFALIFETIME_IN6, &ifr) < 0) {
+        qt_safe_close(s6);
+        return;
+    }
+    qt_safe_close(s6);
+
+    auto toDeadline = [](time_t when) {
+        QDeadlineTimer deadline = QDeadlineTimer::Forever;
+        if (when) {
+#if defined(QT_NO_CLOCK_MONOTONIC)
+            // no monotonic clock
+            deadline.setPreciseRemainingTime(when - QDateTime::currentSecsSinceEpoch());
+#else
+            deadline.setPreciseDeadline(when);
+#endif
+        }
+        return deadline;
+    };
+    entry->setAddressLifetime(toDeadline(ifr.ifr_ifru.ifru_lifetime.ia6t_preferred),
+                              toDeadline(ifr.ifr_ifru.ifru_lifetime.ia6t_expire));
 }
 
 # else  // Generic version
 
 static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
 {
+    Q_UNUSED(getMtu)
     QList<QNetworkInterfacePrivate *> interfaces;
 
     // make sure there's one entry for each interface
@@ -474,8 +593,13 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
     return interfaces;
 }
 
+static void getAddressExtraInfo(QNetworkAddressEntry *entry, struct sockaddr *sa, const char *ifname)
+{
+    Q_UNUSED(entry);
+    Q_UNUSED(sa);
+    Q_UNUSED(ifname)
+}
 # endif
-
 
 static QList<QNetworkInterfacePrivate *> interfaceListing()
 {
@@ -525,6 +649,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
         entry.setNetmask(addressFromSockaddr(ptr->ifa_netmask, iface->index, iface->name));
         if (iface->flags & QNetworkInterface::CanBroadcast)
             entry.setBroadcast(addressFromSockaddr(ptr->ifa_broadaddr, iface->index, iface->name));
+        getAddressExtraInfo(&entry, ptr->ifa_addr, name.latin1());
 
         iface->addressEntries << entry;
     }

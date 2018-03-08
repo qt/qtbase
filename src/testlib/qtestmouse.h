@@ -68,11 +68,16 @@ Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *window, const QPointF &local, con
                                       Qt::MouseButtons state, Qt::MouseButton button,
                                       QEvent::Type type, Qt::KeyboardModifiers mods, int timestamp);
 
+namespace QTestPrivate
+{
+    extern Q_TESTLIB_EXPORT Qt::MouseButtons qtestMouseButtons;
+}
+
 namespace QTest
 {
     enum MouseAction { MousePress, MouseRelease, MouseClick, MouseDClick, MouseMove };
 
-    extern Q_TESTLIB_EXPORT Qt::MouseButton lastMouseButton;
+    extern Q_TESTLIB_EXPORT Qt::MouseButton lastMouseButton; // ### unsued
     extern Q_TESTLIB_EXPORT int lastMouseTimestamp;
 
     // This value is used to emulate timestamps to avoid creating double clicks by mistake.
@@ -80,15 +85,13 @@ namespace QTest
     // to depend on platform themes.
     static const int mouseDoubleClickInterval = 500;
 
-    static void waitForEvents()
-    {
-#ifdef Q_OS_MAC
-        QTest::qWait(20);
-#else
-        qApp->processEvents();
-#endif
-    }
+/*! \internal
 
+    This function mocks all mouse events by bypassing the windowing system. The
+    result is that the mouse events do not come from the system via Qt platform
+    plugins, but are created on the spot and immediately available for processing
+    by Qt.
+*/
     static void mouseEvent(MouseAction action, QWindow *window, Qt::MouseButton button,
                            Qt::KeyboardModifiers stateKey, QPoint pos, int delay=-1)
     {
@@ -119,38 +122,41 @@ namespace QTest
         QPointF global = window->mapToGlobal(pos);
         QPointer<QWindow> w(window);
 
+        using namespace QTestPrivate;
         switch (action)
         {
         case MouseDClick:
-            qt_handleMouseEvent(w, pos, global, button, button, QEvent::MouseButtonPress,
+            qtestMouseButtons.setFlag(button, true);
+            qt_handleMouseEvent(w, pos, global, qtestMouseButtons, button, QEvent::MouseButtonPress,
                                 stateKey, ++lastMouseTimestamp);
-            qt_handleMouseEvent(w, pos, global, Qt::NoButton, button, QEvent::MouseButtonRelease,
+            qtestMouseButtons.setFlag(button, false);
+            qt_handleMouseEvent(w, pos, global, qtestMouseButtons, button, QEvent::MouseButtonRelease,
                                 stateKey, ++lastMouseTimestamp);
             Q_FALLTHROUGH();
         case MousePress:
         case MouseClick:
-            qt_handleMouseEvent(w, pos, global, button, button, QEvent::MouseButtonPress,
+            qtestMouseButtons.setFlag(button, true);
+            qt_handleMouseEvent(w, pos, global, qtestMouseButtons, button, QEvent::MouseButtonPress,
                                 stateKey, ++lastMouseTimestamp);
-            lastMouseButton = button;
+            lastMouseButton = button; // ### unsued
             if (action == MousePress)
                 break;
             Q_FALLTHROUGH();
         case MouseRelease:
-            qt_handleMouseEvent(w, pos, global, Qt::NoButton, button, QEvent::MouseButtonRelease,
+            qtestMouseButtons.setFlag(button, false);
+            qt_handleMouseEvent(w, pos, global, qtestMouseButtons, button, QEvent::MouseButtonRelease,
                                 stateKey, ++lastMouseTimestamp);
             lastMouseTimestamp += mouseDoubleClickInterval; // avoid double clicks being generated
-            lastMouseButton = Qt::NoButton;
+            lastMouseButton = Qt::NoButton; // ### unsued
             break;
         case MouseMove:
-            qt_handleMouseEvent(w, pos, global, lastMouseButton, Qt::NoButton, QEvent::MouseMove,
+            qt_handleMouseEvent(w, pos, global, qtestMouseButtons, Qt::NoButton, QEvent::MouseMove,
                                 stateKey, ++lastMouseTimestamp);
-            // No QCursor::setPos() call here. That could potentially result in mouse events sent by the windowing system
-            // which is highly undesired here. Tests must avoid relying on QCursor.
             break;
         default:
             QTEST_ASSERT(false);
         }
-        waitForEvents();
+        qApp->processEvents();
     }
 
     inline void mousePress(QWindow *window, Qt::MouseButton button,

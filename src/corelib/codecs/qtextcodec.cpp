@@ -88,7 +88,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <locale.h>
-#if defined (_XOPEN_UNIX) && !defined(Q_OS_QNX) && !defined(Q_OS_OSF) && !defined(Q_OS_ANDROID)
+#if defined (_XOPEN_UNIX) && !defined(Q_OS_QNX) && !defined(Q_OS_ANDROID)
 # include <langinfo.h>
 #endif
 
@@ -180,7 +180,7 @@ static QTextCodec *setupLocaleMapper()
     // This is because the builtin utf8 codec is around 5 times faster
     // then the using QIconvCodec
 
-#if defined (_XOPEN_UNIX) && !defined(Q_OS_OSF)
+#if defined (_XOPEN_UNIX)
     char *charset = nl_langinfo(CODESET);
     if (charset)
         locale = QTextCodec::codecForName(charset);

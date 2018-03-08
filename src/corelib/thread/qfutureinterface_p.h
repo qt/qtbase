@@ -59,6 +59,8 @@
 #include <QtCore/qrunnable.h>
 #include <QtCore/qthreadpool.h>
 
+QT_REQUIRE_CONFIG(future);
+
 QT_BEGIN_NAMESPACE
 
 class QFutureCallOutEvent : public QEvent

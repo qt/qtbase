@@ -493,21 +493,4 @@ INLINE_ELAPSED(inline)
 #define HAVE_TICK_COUNTER
 #endif
 
-/*----------------------------------------------------------------*/
-/* Symbian */
-#if defined(__SYMBIAN32__) && !defined(HAVE_TICK_COUNTER)
-#include <e32std.h>
-
-typedef TUint32 CycleCounterTicks;
-
-static inline CycleCounterTicks getticks(void)
-{
-    return User::FastCounter();
-}
-
-INLINE_ELAPSED(inline)
-
-#define HAVE_TICK_COUNTER
-#endif
-
 #endif // QBENCHLIB_CYCLE_H

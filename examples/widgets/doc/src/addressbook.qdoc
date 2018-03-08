@@ -60,8 +60,8 @@
     the address book.
 
     \c TableModel is a subclass of QAbstractTableModel that provides
-    the standard model/view API to access data. It also holds a
-    QList of \l{QPair}s corresponding to the contacts added.
+    the standard model/view API to access data. It holds a list of
+    added contacts.
     However, this data is not all visible in a single tab. Instead,
     QTableView is used to provide 9 different views of the same
     data, according to the alphabet groups.
@@ -80,7 +80,7 @@
     \section1 TableModel Class Definition
 
     The \c TableModel class provides standard API to access data in
-    its QList of \l{QPair}s by subclassing QAbstractTableModel. The
+    its list of contacts by subclassing QAbstractTableModel. The
     basic functions that must be implemented in order to do so are:
     \c rowCount(), \c columnCount(), \c data(), \c headerData().
     For TableModel to be editable, it has to provide implementations
@@ -90,15 +90,14 @@
     \snippet itemviews/addressbook/tablemodel.h 0
 
     Two constructors are used, a default constructor which uses
-    \c TableModel's own \c {QList<QPair<QString, QString>>} and one
-    that takes \c {QList<QPair<QString, QString>} as an argument,
-    for convenience.
+    \c TableModel's own \c {QList<Contact>} and one that takes
+    \c {QList<Contact>} as an argument, for convenience.
 
 
     \section1 TableModel Class Implementation
 
     We implement the two constructors as defined in the header file.
-    The second constructor initializes the list of pairs in the
+    The second constructor initializes the list of contacts in the
     model, with the parameter value.
 
     \snippet itemviews/addressbook/tablemodel.cpp 0
@@ -117,7 +116,7 @@
     The \c data() function returns either a \b Name or
     \b {Address}, based on the contents of the model index
     supplied. The row number stored in the model index is used to
-    reference an item in the list of pairs. Selection is handled
+    reference an item in the list of contacts. Selection is handled
     by the QItemSelectionModel, which will be explained with
     \c AddressWidget.
 
@@ -164,12 +163,11 @@
     use the editing features of the QTableView object, we enable
     them here so that we can reuse the model in other programs.
 
-    The last function in \c {TableModel}, \c getList() returns the
-    QList<QPair<QString, QString>> object that holds all the
-    contacts in the address book. We use this function later to
-    obtain the list of contacts to check for existing entries, write
-    the contacts to a file and read them back. Further explanation is
-    given with \c AddressWidget.
+    The last function in \c {TableModel}, \c getContacts() returns the
+    QList<Contact> object that holds all the contacts in the address
+    book. We use this function later to obtain the list of contacts to
+    check for existing entries, write the contacts to a file and read
+    them back. Further explanation is given with \c AddressWidget.
 
     \snippet itemviews/addressbook/tablemodel.cpp 8
 
@@ -222,11 +220,12 @@
     The QItemSelectionModel class provides a
     \l{QItemSelectionModel::selectionChanged()}{selectionChanged}
     signal that is connected to \c{AddressWidget}'s
-    \c selectionChanged() signal. This signal to signal connection
-    is necessary to enable the \uicontrol{Edit Entry...} and
-    \uicontrol{Remove Entry} actions in \c MainWindow's Tools menu. This
-    connection is further explained in \c MainWindow's
-    implementation.
+    \c selectionChanged() signal. We also connect
+    QTabWidget::currentChanged() signal to the lambda expression which
+    emits \c{AddressWidget}'s \c selectionChanged() as well. These
+    connections are necessary to enable the \uicontrol{Edit Entry...} and
+    \uicontrol{Remove Entry} actions in \c MainWindow's Tools menu.
+    It is further explained in \c MainWindow's implementation.
 
     Each table view in the address book is added as a tab to the
     QTabWidget with the relevant label, obtained from the QStringList
@@ -250,7 +249,7 @@
     Basic validation is done in the second \c addEntry() function to
     prevent duplicate entries in the address book. As mentioned with
     \c TableModel, this is part of the reason why we require the
-    getter method \c getList().
+    getter method \c getContacts().
 
     \snippet itemviews/addressbook/addresswidget.cpp 3
 
@@ -292,7 +291,7 @@
 
     The \c writeToFile() function is used to save a file containing
     all the contacts in the address book. The file is saved in a
-    custom \c{.dat} format. The contents of the QList of \l{QPair}s
+    custom \c{.dat} format. The contents of the list of contacts
     are written to \c file using QDataStream. If the file cannot be
     opened, a QMessageBox is displayed with the related error message.
 
@@ -301,7 +300,7 @@
     The \c readFromFile() function loads a file containing all the
     contacts in the address book, previously saved using
     \c writeToFile(). QDataStream is used to read the contents of a
-    \c{.dat} file into a list of pairs and each of these is added
+    \c{.dat} file into a list of contacts and each of these is added
     using \c addEntry().
 
     \snippet itemviews/addressbook/addresswidget.cpp 7

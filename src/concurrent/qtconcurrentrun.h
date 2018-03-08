@@ -43,15 +43,16 @@
 
 #include <QtConcurrent/qtconcurrentcompilertest.h>
 
-#ifndef QT_NO_CONCURRENT
+#if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)
 
 #include <QtConcurrent/qtconcurrentrunbase.h>
 #include <QtConcurrent/qtconcurrentstoredfunctioncall.h>
 
 QT_BEGIN_NAMESPACE
 
+#ifdef Q_CLANG_QDOC
 
-#ifdef Q_QDOC
+typedef int Function;
 
 namespace QtConcurrent {
 
@@ -919,7 +920,7 @@ QFuture<T> run(QThreadPool *pool, const Class *object, T (Class::*fn)(Param1, Pa
 
 } //namespace QtConcurrent
 
-#endif // Q_QDOC
+#endif // Q_CLANG_QDOC
 
 QT_END_NAMESPACE
 

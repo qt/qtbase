@@ -140,7 +140,7 @@ void QNetworkCookieJar::setAllCookies(const QList<QNetworkCookie> &cookieList)
 
 static inline bool isParentPath(const QString &path, const QString &reference)
 {
-    if (path.startsWith(reference)) {
+    if ((path.isEmpty() && reference == QLatin1String("/")) || path.startsWith(reference)) {
         //The cookie-path and the request-path are identical.
         if (path.length() == reference.length())
             return true;

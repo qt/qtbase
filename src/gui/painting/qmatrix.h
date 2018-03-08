@@ -65,10 +65,10 @@ public:
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     // ### Qt 6: remove; the compiler-generated ones are fine!
     QMatrix &operator=(QMatrix &&other) Q_DECL_NOTHROW // = default
-    { memcpy(this, &other, sizeof(QMatrix)); return *this; }
+    { memcpy(static_cast<void *>(this), static_cast<void *>(&other), sizeof(QMatrix)); return *this; }
     QMatrix &operator=(const QMatrix &) Q_DECL_NOTHROW; // = default
     QMatrix(QMatrix &&other) Q_DECL_NOTHROW // = default
-    { memcpy(this, &other, sizeof(QMatrix)); }
+    { memcpy(static_cast<void *>(this), static_cast<void *>(&other), sizeof(QMatrix)); }
     QMatrix(const QMatrix &other) Q_DECL_NOTHROW; // = default
 #endif
 

@@ -3265,7 +3265,7 @@ QStyleOptionViewItem::QStyleOptionViewItem(int version)
 
 #endif // QT_CONFIG(itemviews)
 /*!
-    \fn T qstyleoption_cast<T>(const QStyleOption *option)
+    \fn template <typename T> T qstyleoption_cast<T>(const QStyleOption *option)
     \relates QStyleOption
 
     Returns a T or 0 depending on the \l{QStyleOption::type}{type} and
@@ -3279,7 +3279,7 @@ QStyleOptionViewItem::QStyleOptionViewItem(int version)
 */
 
 /*!
-    \fn T qstyleoption_cast<T>(QStyleOption *option)
+    \fn template <typename T> T qstyleoption_cast<T>(QStyleOption *option)
     \overload
     \relates QStyleOption
 
@@ -4001,7 +4001,7 @@ QStyleHintReturnVariant::~QStyleHintReturnVariant()
 */
 
 /*!
-    \fn T qstyleoption_cast<T>(const QStyleHintReturn *hint)
+    \fn template <typename T> T qstyleoption_cast<T>(const QStyleHintReturn *hint)
     \relates QStyleHintReturn
 
     Returns a T or 0 depending on the \l{QStyleHintReturn::type}{type}
@@ -4015,7 +4015,7 @@ QStyleHintReturnVariant::~QStyleHintReturnVariant()
 */
 
 /*!
-    \fn T qstyleoption_cast<T>(QStyleHintReturn *hint)
+    \fn template <typename T> T qstyleoption_cast<T>(QStyleHintReturn *hint)
     \overload
     \relates QStyleHintReturn
 

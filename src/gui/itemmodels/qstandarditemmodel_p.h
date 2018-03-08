@@ -200,7 +200,7 @@ public:
     }
 
     void sort(QStandardItem *parent, int column, Qt::SortOrder order);
-    void itemChanged(QStandardItem *item);
+    void itemChanged(QStandardItem *item, const QVector<int> &roles = QVector<int>());
     void rowsAboutToBeInserted(QStandardItem *parent, int start, int end);
     void columnsAboutToBeInserted(QStandardItem *parent, int start, int end);
     void rowsAboutToBeRemoved(QStandardItem *parent, int start, int end);

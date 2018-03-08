@@ -971,6 +971,9 @@ int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, QS
         option.rect.setHeight(height);
         option.rect.setX(q->columnViewportPosition(index.column()));
         option.rect.setWidth(q->columnWidth(index.column()));
+        // 1px less space when grid is shown (see drawCell)
+        if (showGrid)
+            option.rect.setWidth(option.rect.width() - 1);
     }
     hint = qMax(hint, q->itemDelegate(index)->sizeHint(option, index).height());
     return hint;
@@ -1226,7 +1229,7 @@ void QTableView::setHorizontalHeader(QHeaderView *header)
         delete d->horizontalHeader;
     d->horizontalHeader = header;
     d->horizontalHeader->setParent(this);
-    d->horizontalHeader->d_func()->setAllowUserMoveOfSection0(true);
+    d->horizontalHeader->setFirstSectionMovable(true);
     if (!d->horizontalHeader->model()) {
         d->horizontalHeader->setModel(d->model);
         if (d->selectionModel)
@@ -1264,7 +1267,7 @@ void QTableView::setVerticalHeader(QHeaderView *header)
         delete d->verticalHeader;
     d->verticalHeader = header;
     d->verticalHeader->setParent(this);
-    d->verticalHeader->d_func()->setAllowUserMoveOfSection0(true);
+    d->verticalHeader->setFirstSectionMovable(true);
     if (!d->verticalHeader->model()) {
         d->verticalHeader->setModel(d->model);
         if (d->selectionModel)
@@ -1362,8 +1365,8 @@ void QTableView::paintEvent(QPaintEvent *event)
     if (horizontalHeader->count() == 0 || verticalHeader->count() == 0 || !d->itemDelegate)
         return;
 
-    uint x = horizontalHeader->length() - horizontalHeader->offset() - (rightToLeft ? 0 : 1);
-    uint y = verticalHeader->length() - verticalHeader->offset() - 1;
+    const int x = horizontalHeader->length() - horizontalHeader->offset() - (rightToLeft ? 0 : 1);
+    const int y = verticalHeader->length() - verticalHeader->offset() - 1;
 
     //firstVisualRow is the visual index of the first visible row.  lastVisualRow is the visual index of the last visible Row.
     //same goes for ...VisualColumn
@@ -1397,6 +1400,9 @@ void QTableView::paintEvent(QPaintEvent *event)
         } else {
             dirtyArea.setRight(qMin(dirtyArea.right(), int(x)));
         }
+        // dirtyArea may be invalid when the horizontal header is not stretched
+        if (!dirtyArea.isValid())
+            continue;
 
         // get the horizontal start and end visual sections
         int left = horizontalHeader->visualIndexAt(dirtyArea.left());
@@ -1412,10 +1418,10 @@ void QTableView::paintEvent(QPaintEvent *event)
         int top = 0;
         bool alternateBase = false;
         if (alternate && verticalHeader->sectionsHidden()) {
-            uint verticalOffset = verticalHeader->offset();
+            const int verticalOffset = verticalHeader->offset();
             int row = verticalHeader->logicalIndex(top);
             for (int y = 0;
-                 ((uint)(y += verticalHeader->sectionSize(top)) <= verticalOffset) && (top < bottom);
+                 ((y += verticalHeader->sectionSize(top)) <= verticalOffset) && (top < bottom);
                  ++top) {
                 row = verticalHeader->logicalIndex(top);
                 if (alternate && !verticalHeader->isSectionHidden(row))
@@ -2128,9 +2134,9 @@ void QTableView::updateGeometries()
     // ### move this block into the if
     QSize vsize = d->viewport->size();
     QSize max = maximumViewportSize();
-    uint horizontalLength = d->horizontalHeader->length();
-    uint verticalLength = d->verticalHeader->length();
-    if ((uint)max.width() >= horizontalLength && (uint)max.height() >= verticalLength)
+    const int horizontalLength = d->horizontalHeader->length();
+    const int verticalLength = d->verticalHeader->length();
+    if (max.width() >= horizontalLength && max.height() >= verticalLength)
         vsize = max;
 
     // horizontal scroll bar

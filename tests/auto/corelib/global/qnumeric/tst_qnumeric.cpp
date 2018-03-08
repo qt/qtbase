@@ -223,11 +223,20 @@ void tst_QNumeric::floatDistance_double()
 void tst_QNumeric::addOverflow_data()
 {
     QTest::addColumn<int>("size");
+
+    // for unsigned, all sizes are supported
     QTest::newRow("quint8") << 8;
     QTest::newRow("quint16") << 16;
     QTest::newRow("quint32") << 32;
     QTest::newRow("quint64") << 64;
     QTest::newRow("ulong") << 48;   // it's either 32- or 64-bit, so on average it's 48 :-)
+
+    // for signed, we can't guarantee 64-bit
+    QTest::newRow("qint8") << -8;
+    QTest::newRow("qint16") << -16;
+    QTest::newRow("qint32") << -32;
+    if (sizeof(void *) == sizeof(qint64))
+        QTest::newRow("qint64") << -64;
 }
 
 // Note: in release mode, all the tests may be statically determined and only the calls
@@ -238,6 +247,7 @@ template <typename Int> static void addOverflow_template()
     QSKIP("Test disabled, this test generates an Internal Compiler Error compiling in release mode");
 #else
     const Int max = std::numeric_limits<Int>::max();
+    const Int min = std::numeric_limits<Int>::min();
     Int r;
 
     // basic values
@@ -248,15 +258,50 @@ template <typename Int> static void addOverflow_template()
     QCOMPARE(add_overflow(Int(0), Int(1), &r), false);
     QCOMPARE(r, Int(1));
 
+    QCOMPARE(sub_overflow(Int(0), Int(0), &r), false);
+    QCOMPARE(r, Int(0));
+    QCOMPARE(sub_overflow(Int(1), Int(0), &r), false);
+    QCOMPARE(r, Int(1));
+    QCOMPARE(sub_overflow(Int(1), Int(1), &r), false);
+    QCOMPARE(r, Int(0));
+    QCOMPARE(sub_overflow(Int(0), Int(1), &r), !min);
+    if (min)
+        QCOMPARE(r, Int(-1));
+
     // half-way through max
     QCOMPARE(add_overflow(Int(max/2), Int(max/2), &r), false);
     QCOMPARE(r, Int(max / 2 * 2));
+    QCOMPARE(sub_overflow(Int(max/2), Int(max/2), &r), false);
+    QCOMPARE(r, Int(0));
     QCOMPARE(add_overflow(Int(max/2 - 1), Int(max/2 + 1), &r), false);
     QCOMPARE(r, Int(max / 2 * 2));
+    QCOMPARE(sub_overflow(Int(max/2 - 1), Int(max/2 + 1), &r), !min);
+    if (min)
+        QCOMPARE(r, Int(-2));
     QCOMPARE(add_overflow(Int(max/2 + 1), Int(max/2), &r), false);
     QCOMPARE(r, max);
+    QCOMPARE(sub_overflow(Int(max/2 + 1), Int(max/2), &r), false);
+    QCOMPARE(r, Int(1));
     QCOMPARE(add_overflow(Int(max/2), Int(max/2 + 1), &r), false);
     QCOMPARE(r, max);
+    QCOMPARE(sub_overflow(Int(max/2), Int(max/2 + 1), &r), !min);
+    if (min)
+        QCOMPARE(r, Int(-1));
+
+    QCOMPARE(add_overflow(Int(min/2), Int(min/2), &r), false);
+    QCOMPARE(r, Int(min / 2 * 2));
+    QCOMPARE(sub_overflow(Int(min/2), Int(min/2), &r), false);
+    QCOMPARE(r, Int(0));
+    QCOMPARE(add_overflow(Int(min/2 - 1), Int(min/2 + 1), &r), !min);
+    if (min)
+        QCOMPARE(r, Int(min / 2 * 2));
+    QCOMPARE(sub_overflow(Int(min/2 - 1), Int(min/2 + 1), &r), false);
+    QCOMPARE(r, Int(-2));
+    QCOMPARE(sub_overflow(Int(min/2 + 1), Int(min/2), &r), false);
+    QCOMPARE(r, Int(1));
+    QCOMPARE(sub_overflow(Int(min/2), Int(min/2 + 1), &r), !min);
+    if (min)
+        QCOMPARE(r, Int(-1));
 
     // more than half
     QCOMPARE(add_overflow(Int(max/4 * 3), Int(max/4), &r), false);
@@ -265,19 +310,55 @@ template <typename Int> static void addOverflow_template()
     // max
     QCOMPARE(add_overflow(max, Int(0), &r), false);
     QCOMPARE(r, max);
+    QCOMPARE(sub_overflow(max, Int(0), &r), false);
+    QCOMPARE(r, max);
     QCOMPARE(add_overflow(Int(0), max, &r), false);
     QCOMPARE(r, max);
+    QCOMPARE(sub_overflow(Int(0), max, &r), !min);
+    if (min)
+        QCOMPARE(r, Int(-max));
+
+    QCOMPARE(add_overflow(min, Int(0), &r), false);
+    QCOMPARE(r, min);
+    QCOMPARE(sub_overflow(min, Int(0), &r), false);
+    QCOMPARE(r, min);
+    QCOMPARE(add_overflow(Int(0), min, &r), false);
+    QCOMPARE(r, min);
+    QCOMPARE(sub_overflow(Int(0), Int(min+1), &r), !min);
+    if (min)
+        QCOMPARE(r, Int(-(min+1)));
 
     // 64-bit issues
     if (max > std::numeric_limits<uint>::max()) {
         QCOMPARE(add_overflow(Int(std::numeric_limits<uint>::max()), Int(std::numeric_limits<uint>::max()), &r), false);
         QCOMPARE(r, Int(2 * Int(std::numeric_limits<uint>::max())));
+        QCOMPARE(sub_overflow(Int(std::numeric_limits<uint>::max()), Int(std::numeric_limits<uint>::max()), &r), false);
+        QCOMPARE(r, Int(0));
+    }
+    if (min && min < -Int(std::numeric_limits<uint>::max())) {
+        QCOMPARE(add_overflow(Int(-Int(std::numeric_limits<uint>::max())), Int(-Int(std::numeric_limits<uint>::max())), &r), false);
+        QCOMPARE(r, Int(-2 * Int(std::numeric_limits<uint>::max())));
+        QCOMPARE(sub_overflow(Int(-Int(std::numeric_limits<uint>::max())), Int(-Int(std::numeric_limits<uint>::max())), &r), false);
+        QCOMPARE(r, Int(0));
     }
 
-    // overflows
+    // overflows past max
     QCOMPARE(add_overflow(max, Int(1), &r), true);
     QCOMPARE(add_overflow(Int(1), max, &r), true);
     QCOMPARE(add_overflow(Int(max/2 + 1), Int(max/2 + 1), &r), true);
+    if (!min) {
+        QCOMPARE(sub_overflow(Int(-max), Int(-2), &r), true);
+        QCOMPARE(sub_overflow(Int(max/2 - 1), Int(max/2 + 1), &r), true);
+    }
+
+    // overflows past min (in case of min == 0, repeats some tests above)
+    if (min) {
+        QCOMPARE(sub_overflow(min, Int(1), &r), true);
+        QCOMPARE(sub_overflow(Int(1), min, &r), true);
+        QCOMPARE(sub_overflow(Int(min/2 - 1), Int(-Int(min/2)), &r), true);
+        QCOMPARE(add_overflow(min, Int(-1), &r), true);
+        QCOMPARE(add_overflow(Int(-1), min, &r), true);
+    }
 #endif
 }
 
@@ -294,6 +375,15 @@ void tst_QNumeric::addOverflow()
         addOverflow_template<ulong>();  // not really 48-bit
     if (size == 64)
         addOverflow_template<quint64>();
+
+    if (size == -8)
+        addOverflow_template<qint8>();
+    if (size == -16)
+        addOverflow_template<qint16>();
+    if (size == -32)
+        addOverflow_template<qint32>();
+    if (size == -64)
+        addOverflow_template<qint64>();
 }
 
 void tst_QNumeric::mulOverflow_data()
@@ -309,7 +399,13 @@ template <typename Int> static void mulOverflow_template()
     QSKIP("Test disabled, this test generates an Internal Compiler Error compiling");
 #else
     const Int max = std::numeric_limits<Int>::max();
-    const Int middle = Int(max >> (sizeof(Int) * CHAR_BIT / 2));
+    const Int min = std::numeric_limits<Int>::min();
+
+    //  for unsigned (even number of significant bits):  mid2 = mid1 - 1
+    //  for signed (odd number of significant bits):     mid2 = mid1 / 2 - 1
+    const Int mid1 = Int(Int(1) << sizeof(Int) * CHAR_BIT / 2);
+    const Int mid2 = (std::numeric_limits<Int>::digits % 2 ? mid1 / 2 : mid1) - 1;
+
     Int r;
 
     // basic multiplications
@@ -323,6 +419,10 @@ template <typename Int> static void mulOverflow_template()
     QCOMPARE(r, Int(0));
     QCOMPARE(mul_overflow(Int(0), max, &r), false);
     QCOMPARE(r, Int(0));
+    QCOMPARE(mul_overflow(min, Int(0), &r), false);
+    QCOMPARE(r, Int(0));
+    QCOMPARE(mul_overflow(Int(0), min, &r), false);
+    QCOMPARE(r, Int(0));
 
     QCOMPARE(mul_overflow(Int(1), Int(1), &r), false);
     QCOMPARE(r, Int(1));
@@ -330,23 +430,45 @@ template <typename Int> static void mulOverflow_template()
     QCOMPARE(r, max);
     QCOMPARE(mul_overflow(max, Int(1), &r), false);
     QCOMPARE(r, max);
+    QCOMPARE(mul_overflow(Int(1), min, &r), false);
+    QCOMPARE(r, min);
+    QCOMPARE(mul_overflow(min, Int(1), &r), false);
+    QCOMPARE(r, min);
 
     // almost max
-    QCOMPARE(mul_overflow(middle, middle, &r), false);
-    QCOMPARE(r, Int(max - 2 * middle));
-    QCOMPARE(mul_overflow(Int(middle + 1), middle, &r), false);
-    QCOMPARE(r, Int(middle << (sizeof(Int) * CHAR_BIT / 2)));
-    QCOMPARE(mul_overflow(middle, Int(middle + 1), &r), false);
-    QCOMPARE(r, Int(middle << (sizeof(Int) * CHAR_BIT / 2)));
+    QCOMPARE(mul_overflow(mid1, mid2, &r), false);
+    QCOMPARE(r, Int(max - mid1 + 1));
     QCOMPARE(mul_overflow(Int(max / 2), Int(2), &r), false);
     QCOMPARE(r, Int(max & ~Int(1)));
     QCOMPARE(mul_overflow(Int(max / 4), Int(4), &r), false);
     QCOMPARE(r, Int(max & ~Int(3)));
+    if (min) {
+        QCOMPARE(mul_overflow(Int(-mid1), mid2, &r), false);
+        QCOMPARE(r, Int(-max + mid1 - 1));
+        QCOMPARE(mul_overflow(Int(-max / 2), Int(2), &r), false);
+        QCOMPARE(r, Int(-max + 1));
+        QCOMPARE(mul_overflow(Int(-max / 4), Int(4), &r), false);
+        QCOMPARE(r, Int(-max + 3));
+
+        QCOMPARE(mul_overflow(Int(-mid1), Int(mid2 + 1), &r), false);
+        QCOMPARE(r, min);
+        QCOMPARE(mul_overflow(mid1, Int(-mid2 - 1), &r), false);
+        QCOMPARE(r, min);
+    }
 
     // overflows
     QCOMPARE(mul_overflow(max, Int(2), &r), true);
     QCOMPARE(mul_overflow(Int(max / 2), Int(3), &r), true);
-    QCOMPARE(mul_overflow(Int(middle + 1), Int(middle + 1), &r), true);
+    QCOMPARE(mul_overflow(mid1, Int(mid2 + 1), &r), true);
+    QCOMPARE(mul_overflow(Int(max / 2 + 2), Int(2), &r), true);
+    QCOMPARE(mul_overflow(Int(1ULL << (std::numeric_limits<Int>::digits - 1)), Int(2), &r), true);
+
+    if (min) {
+        QCOMPARE(mul_overflow(min, Int(2), &r), true);
+        QCOMPARE(mul_overflow(Int(min / 2), Int(3), &r), true);
+        QCOMPARE(mul_overflow(Int(min / 2 - 1), Int(2), &r), true);
+        QCOMPARE(mul_overflow(Int(min + min/2), Int(2), &r), true);
+    }
 #endif
 }
 
@@ -373,6 +495,20 @@ void tst_QNumeric::mulOverflow()
         MulOverflowDispatch<ulong>()();     // not really 48-bit
     if (size == 64)
         MulOverflowDispatch<quint64>()();
+
+    if (size == -8)
+        MulOverflowDispatch<qint8>()();
+    if (size == -16)
+        MulOverflowDispatch<qint16>()();
+    if (size == -32)
+        MulOverflowDispatch<qint32>()();
+    if (size == -64) {
+#if QT_POINTER_SIZE == 8
+        MulOverflowDispatch<qint64>()();
+#else
+        QFAIL("128-bit multiplication not supported on this platform");
+#endif
+    }
 }
 
 void tst_QNumeric::signedOverflow()

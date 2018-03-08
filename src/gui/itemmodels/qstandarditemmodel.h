@@ -419,6 +419,7 @@ public:
     bool dropMimeData (const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
 
 Q_SIGNALS:
+    // ### Qt 6: add changed roles
     void itemChanged(QStandardItem *item);
 
 protected:

@@ -39,11 +39,51 @@
 
 #include "qtconcurrentthreadengine.h"
 
-#ifndef QT_NO_CONCURRENT
+#if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)
 
 QT_BEGIN_NAMESPACE
 
 namespace QtConcurrent {
+
+/*!
+  \class QtConcurrent::ThreadEngineBarrier
+  \inmodule QtConcurrent
+  \internal
+*/
+
+/*!
+  \enum QtConcurrent::ThreadFunctionResult
+  \internal
+*/
+
+/*!
+  \class QtConcurrent::ThreadEngineBase
+  \inmodule QtConcurrent
+  \internal
+*/
+
+/*!
+  \class QtConcurrent::ThreadEngine
+  \inmodule QtConcurrent
+  \internal
+*/
+
+/*!
+  \class QtConcurrent::ThreadEngineStarterBase
+  \inmodule QtConcurrent
+  \internal
+*/
+
+/*!
+  \class QtConcurrent::ThreadEngineStarter
+  \inmodule QtConcurrent
+  \internal
+*/
+
+/*!
+  \fn [qtconcurrentthreadengine-1] template <typename ThreadEngine> ThreadEngineStarter<typename ThreadEngine::ResultType> QtConcurrent::startThreadEngine(ThreadEngine *threadEngine)
+  \internal
+*/
 
 ThreadEngineBarrier::ThreadEngineBarrier()
 :count(0) { }

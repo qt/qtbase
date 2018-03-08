@@ -40,8 +40,6 @@
 #include "qhttpnetworkreply_p.h"
 #include "qhttpnetworkconnection_p.h"
 
-#ifndef QT_NO_HTTP
-
 #ifndef QT_NO_SSL
 #    include <QtNetwork/qsslkey.h>
 #    include <QtNetwork/qsslcipher.h>
@@ -96,7 +94,7 @@ void QHttpNetworkReply::setRedirectUrl(const QUrl &url)
 bool QHttpNetworkReply::isHttpRedirect(int statusCode)
 {
     return (statusCode == 301 || statusCode == 302 || statusCode == 303
-            || statusCode == 305 || statusCode == 307);
+            || statusCode == 305 || statusCode == 307 || statusCode == 308);
 }
 
 qint64 QHttpNetworkReply::contentLength() const
@@ -1035,5 +1033,3 @@ void QHttpNetworkReply::ignoreSslErrors(const QList<QSslError> &errors)
 
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_HTTP

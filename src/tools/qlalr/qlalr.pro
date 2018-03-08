@@ -25,5 +25,5 @@ OTHER_FILES += \
 DEFINES += \
     QT_NO_FOREACH
 
-QMAKE_TARGET_DESCRIPTION = "Qt Look Ahead LR Parser"
+QMAKE_TARGET_DESCRIPTION = "Qt Look Ahead LR Parser Generator"
 load(qt_tool)

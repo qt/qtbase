@@ -7,8 +7,6 @@ osx
 osx
 [testChildWindowInFrontOfStaysOnTopParentWindow]
 osx
-[testModifierCtrlWithDontSwapCtrlAndMeta]
-osx
 [testMouseMoveLocation]
 osx
 [testMouseLeftDoubleClick]

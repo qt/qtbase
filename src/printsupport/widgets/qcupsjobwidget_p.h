@@ -65,16 +65,18 @@ QT_BEGIN_NAMESPACE
 class QString;
 class QTime;
 class QPrinter;
+class QPrintDevice;
 
 class QCupsJobWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit QCupsJobWidget(QWidget *parent = 0);
+    explicit QCupsJobWidget(QPrinter *printer, QPrintDevice *printDevice, QWidget *parent = nullptr);
     ~QCupsJobWidget();
-    void setPrinter(QPrinter *printer);
     void setupPrinter();
+    void updateSavedValues();
+    void revertToSavedValues();
 
 private Q_SLOTS:
     void toggleJobHoldTime();
@@ -103,7 +105,13 @@ private:
     void initBannerPages();
 
     QPrinter *m_printer;
+    QPrintDevice *m_printDevice;
     Ui::QCupsJobWidget m_ui;
+
+    QCUPSSupport::JobHoldUntilWithTime m_savedJobHoldWithTime;
+    QString m_savedJobBilling;
+    int m_savedPriority;
+    QCUPSSupport::JobSheets m_savedJobSheets;
 
     Q_DISABLE_COPY(QCupsJobWidget)
 };

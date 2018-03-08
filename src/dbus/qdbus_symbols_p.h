@@ -63,6 +63,10 @@
 #  include "dbus_minimal_p.h"
 #endif
 
+#ifdef interface
+#  undef interface
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #if !defined QT_LINKED_LIBDBUS

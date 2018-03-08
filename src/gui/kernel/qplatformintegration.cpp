@@ -265,7 +265,7 @@ QPlatformServices *QPlatformIntegration::services() const
 bool QPlatformIntegration::hasCapability(Capability cap) const
 {
     return cap == NonFullScreenWindows || cap == NativeWidgets || cap == WindowManagement
-        || cap == TopStackedNativeChildWindows;
+        || cap == TopStackedNativeChildWindows || cap == WindowActivation;
 }
 
 QPlatformPixmap *QPlatformIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
@@ -418,6 +418,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::UiEffects);
     case WheelScrollLines:
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::WheelScrollLines);
+    case MouseQuickSelectionThreshold:
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::MouseQuickSelectionThreshold);
     }
 
     return 0;
@@ -444,12 +446,13 @@ Qt::KeyboardModifiers QPlatformIntegration::queryKeyboardModifiers() const
 
 /*!
   Should be used to obtain a list of possible shortcuts for the given key
-  event. As that needs system functionality it cannot be done in qkeymapper.
+  event. Shortcuts should be encoded as int(Qt::Key + Qt::KeyboardModifiers).
 
-  One example for more than 1 possibility is the key combination of Shift+5.
+  One example for more than one possibility is the key combination of Shift+5.
   That one might trigger a shortcut which is set as "Shift+5" as well as one
-  using %. These combinations depend on the currently set keyboard layout
-  which cannot be obtained by Qt functionality.
+  using %. These combinations depend on the currently set keyboard layout.
+
+  \note This function should be called only from key event handlers.
 */
 QList<int> QPlatformIntegration::possibleKeys(const QKeyEvent *) const
 {
@@ -629,7 +632,7 @@ void QPlatformIntegration::setApplicationIcon(const QIcon &icon) const
     Q_UNUSED(icon);
 }
 
-#if QT_CONFIG(vulkan)
+#if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
 
 /*!
     Factory function for QPlatformVulkanInstance. The \a instance parameter is a

@@ -411,7 +411,7 @@ QStateMachinePrivate::~QStateMachinePrivate()
     qDeleteAll(internalEventQueue);
     qDeleteAll(externalEventQueue);
 
-    for (QHash<int, DelayedEvent>::const_iterator it = delayedEvents.begin(), eit = delayedEvents.end(); it != eit; ++it) {
+    for (QHash<int, DelayedEvent>::const_iterator it = delayedEvents.cbegin(), eit = delayedEvents.cend(); it != eit; ++it) {
         delete it.value().event;
     }
 }
@@ -3096,10 +3096,12 @@ int QSignalEventGenerator::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 
 void QSignalEventGenerator::execute(void **_a)
 {
+    auto machinePrivate = QStateMachinePrivate::get(qobject_cast<QStateMachine*>(parent()));
+    if (machinePrivate->state != QStateMachinePrivate::Running)
+        return;
     int signalIndex = senderSignalIndex();
     Q_ASSERT(signalIndex != -1);
-    QStateMachine *machine = qobject_cast<QStateMachine*>(parent());
-    QStateMachinePrivate::get(machine)->handleTransitionSignal(sender(), signalIndex, _a);
+    machinePrivate->handleTransitionSignal(sender(), signalIndex, _a);
 }
 
 QSignalEventGenerator::QSignalEventGenerator(QStateMachine *parent)

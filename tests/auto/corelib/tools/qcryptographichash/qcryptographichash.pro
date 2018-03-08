@@ -5,7 +5,7 @@ SOURCES = tst_qcryptographichash.cpp
 
 TESTDATA += data/*
 
-android {
+android:!android-embedded {
     RESOURCES += \
         testdata.qrc
 }

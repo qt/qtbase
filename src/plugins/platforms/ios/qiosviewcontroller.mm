@@ -77,8 +77,7 @@
     if (!(self = [super init]))
         return nil;
 
-    QIOSIntegration *iosIntegration = QIOSIntegration::instance();
-    if (iosIntegration && iosIntegration->debugWindowManagement()) {
+    if (qEnvironmentVariableIntValue("QT_IOS_DEBUG_WINDOW_MANAGEMENT")) {
         static UIImage *gridPattern = nil;
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
@@ -157,6 +156,26 @@
 
 - (void)layoutSubviews
 {
+    if (QGuiApplication::applicationState() == Qt::ApplicationSuspended) {
+        // Despite the OpenGL ES Programming Guide telling us to avoid all
+        // use of OpenGL while in the background, iOS will perform its view
+        // snapshotting for the app switcher after the application has been
+        // backgrounded; once for each orientation. Presumably the expectation
+        // is that no rendering needs to be done to provide an alternate
+        // orientation snapshot, just relayouting of views. But in our case,
+        // or any non-stretchable content case such as a OpenGL based game,
+        // this is not true. Instead of continuing layout, which will send
+        // potentially expensive geometry changes (with isExposed false,
+        // since we're in the background), we short-circuit the snapshotting
+        // here. iOS will still use the latest rendered frame to create the
+        // application switcher thumbnail, but it will be based on the last
+        // active orientation of the application.
+        QIOSScreen *screen = self.qtViewController->m_screen;
+        qCDebug(lcQpaWindow) << "ignoring layout of subviews while suspended,"
+            << "likely system snapshot of" << screen->screen()->primaryOrientation();
+        return;
+    }
+
     for (int i = int(self.subviews.count) - 1; i >= 0; --i) {
         UIView *view = static_cast<UIView *>([self.subviews objectAtIndex:i]);
         if (![view isKindOfClass:[QUIView class]])

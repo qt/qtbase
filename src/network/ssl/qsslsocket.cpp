@@ -215,7 +215,7 @@
 */
 
 /*!
-    \fn QSslSocket::encrypted()
+    \fn void QSslSocket::encrypted()
 
     This signal is emitted when QSslSocket enters encrypted mode. After this
     signal has been emitted, QSslSocket::isEncrypted() will return true, and
@@ -225,7 +225,7 @@
 */
 
 /*!
-    \fn QSslSocket::modeChanged(QSslSocket::SslMode mode)
+    \fn void QSslSocket::modeChanged(QSslSocket::SslMode mode)
 
     This signal is emitted when QSslSocket changes from \l
     QSslSocket::UnencryptedMode to either \l QSslSocket::SslClientMode or \l
@@ -235,7 +235,7 @@
 */
 
 /*!
-    \fn QSslSocket::encryptedBytesWritten(qint64 written)
+    \fn void QSslSocket::encryptedBytesWritten(qint64 written)
     \since 4.4
 
     This signal is emitted when QSslSocket writes its encrypted data to the
@@ -922,6 +922,7 @@ void QSslSocket::setSslConfiguration(const QSslConfiguration &configuration)
     d->configuration.peerVerifyDepth = configuration.peerVerifyDepth();
     d->configuration.peerVerifyMode = configuration.peerVerifyMode();
     d->configuration.protocol = configuration.protocol();
+    d->configuration.backendConfig = configuration.backendConfig();
     d->configuration.sslOptions = configuration.d->sslOptions;
     d->configuration.sslSession = configuration.sessionTicket();
     d->configuration.sslSessionTicketLifeTimeHint = configuration.sessionTicketLifeTimeHint();
@@ -1686,7 +1687,8 @@ bool QSslSocket::waitForDisconnected(int msecs)
 
     if (!d->plainSocket)
         return false;
-    if (d->mode == UnencryptedMode)
+    // Forward to the plain socket unless the connection is secure.
+    if (d->mode == UnencryptedMode && !d->autoStartHandshake)
         return d->plainSocket->waitForDisconnected(msecs);
 
     QElapsedTimer stopWatch;
@@ -1697,6 +1699,17 @@ bool QSslSocket::waitForDisconnected(int msecs)
         if (!waitForEncrypted(msecs))
             return false;
     }
+    // We are delaying the disconnect, if the write buffer is not empty.
+    // So, start the transmission.
+    if (!d->writeBuffer.isEmpty())
+        d->transmit();
+
+    // At this point, the socket might be disconnected, if disconnectFromHost()
+    // was called just after the connectToHostEncrypted() call. Also, we can
+    // lose the connection as a result of the transmit() call.
+    if (state() == UnconnectedState)
+        return true;
+
     bool retVal = d->plainSocket->waitForDisconnected(qt_subtract_from_timeout(msecs, stopWatch.elapsed()));
     if (!retVal) {
         setSocketState(d->plainSocket->state());
@@ -2244,6 +2257,7 @@ void QSslConfigurationPrivate::deepCopyDefaultConfiguration(QSslConfigurationPri
     ptr->peerVerifyDepth = global->peerVerifyDepth;
     ptr->sslOptions = global->sslOptions;
     ptr->ellipticCurves = global->ellipticCurves;
+    ptr->backendConfig = global->backendConfig;
 }
 
 /*!

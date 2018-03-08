@@ -28,6 +28,7 @@
 
 
 #include <QtTest/QtTest>
+#include <QtTest/private/qtesthelpers_p.h>
 
 #include <qabstractitemview.h>
 #include <qstandarditemmodel.h>
@@ -57,19 +58,7 @@
 
 Q_DECLARE_METATYPE(Qt::ItemFlags);
 
-static inline void setFrameless(QWidget *w)
-{
-    Qt::WindowFlags flags = w->windowFlags();
-    flags |= Qt::FramelessWindowHint;
-    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    w->setWindowFlags(flags);
-}
-
-static inline void centerOnScreen(QWidget *w)
-{
-    const QPoint offset = QPoint(w->width() / 2, w->height() / 2);
-    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
-}
+using namespace QTestPrivate;
 
 // Move cursor out of widget area to avoid undesired interaction on Mac.
 static inline void moveCursorAway(const QWidget *topLevel)
@@ -158,6 +147,10 @@ private slots:
     void testClearModelInClickedSignal();
     void inputMethodEnabled_data();
     void inputMethodEnabled();
+    void currentFollowsIndexWidget_data();
+    void currentFollowsIndexWidget();
+    void checkFocusAfterActivationChanges_data();
+    void checkFocusAfterActivationChanges();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -2399,6 +2392,133 @@ void tst_QAbstractItemView::inputMethodEnabled()
     QApplication::setActiveWindow(view.data());
     QVERIFY(QTest::qWaitForWindowActive(view.data()));
     QCOMPARE(view->testAttribute(Qt::WA_InputMethodEnabled), result);
+}
+
+void tst_QAbstractItemView::currentFollowsIndexWidget_data()
+{
+    QTest::addColumn<QByteArray>("viewType");
+
+    QList<QByteArray> widgets;
+    widgets << "QListView" << "QTreeView" << "QTableView";
+    for (const QByteArray &widget : qAsConst(widgets))
+        QTest::newRow(widget) << widget;
+}
+
+void tst_QAbstractItemView::currentFollowsIndexWidget()
+{
+    QFETCH(QByteArray, viewType);
+
+    QScopedPointer<QAbstractItemView> view;
+    if (viewType == "QListView")
+        view.reset(new QListView());
+    else if (viewType == "QTableView")
+        view.reset(new QTableView());
+    else if (viewType == "QTreeView")
+        view.reset(new QTreeView());
+    else
+        QVERIFY(0);
+
+    centerOnScreen(view.data());
+    view->show();
+    QVERIFY(QTest::qWaitForWindowExposed(view.data()));
+
+    QStandardItemModel *model = new QStandardItemModel(view.data());
+    QStandardItem *item1 = new QStandardItem("first item");
+    item1->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    model->appendRow(item1);
+
+    QStandardItem *item2 = new QStandardItem("test item");
+    item2->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    model->appendRow(item2);
+
+    view->setModel(model);
+    QLineEdit *lineEdit1 = new QLineEdit;
+    QLineEdit *lineEdit2 = new QLineEdit;
+    view->setIndexWidget(item1->index(), lineEdit1);
+    view->setIndexWidget(item2->index(), lineEdit2);
+
+    lineEdit2->setFocus();
+    QTRY_VERIFY(lineEdit2->hasFocus());
+    QCOMPARE(view->currentIndex(), item2->index());
+    lineEdit1->setFocus();
+    QTRY_VERIFY(lineEdit1->hasFocus());
+    QCOMPARE(view->currentIndex(), item1->index());
+}
+
+class EditorItemDelegate : public QItemDelegate
+{
+public:
+    EditorItemDelegate() : QItemDelegate(), openedEditor(nullptr) { }
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &,
+                          const QModelIndex &) const override
+    {
+        openedEditor = new QLineEdit(parent);
+        return openedEditor;
+    }
+    mutable QPointer<QWidget> openedEditor;
+};
+
+// Testing the case reported in QTBUG-62253.
+// When an itemview with an editor that has focus loses focus
+// due to a change in the active window then we need to check
+// that the itemview gets focus once the activation is back
+// on the original window.
+void tst_QAbstractItemView::checkFocusAfterActivationChanges_data()
+{
+    QTest::addColumn<QString>("viewType");
+
+    QTest::newRow("QListView") << "QListView";
+    QTest::newRow("QTableView") << "QTableView";
+    QTest::newRow("QTreeView") << "QTreeView";
+}
+
+void tst_QAbstractItemView::checkFocusAfterActivationChanges()
+{
+    QFETCH(QString, viewType);
+
+    const QRect availableGeo = qApp->primaryScreen()->availableGeometry();
+    const int halfWidth = availableGeo.width() / 2;
+    QWidget otherTopLevel;
+    otherTopLevel.setGeometry(availableGeo.x(), availableGeo.y(),
+                              halfWidth, availableGeo.height());
+    otherTopLevel.show();
+
+    QWidget w;
+    w.setGeometry(availableGeo.x() + halfWidth, availableGeo.y(),
+                              halfWidth, availableGeo.height());
+    QLineEdit *le = new QLineEdit(&w);
+    QAbstractItemView *view = 0;
+    if (viewType == "QListView")
+        view = new QListView(&w);
+    else if (viewType == "QTableView")
+        view = new QTableView(&w);
+    else if (viewType == "QTreeView")
+        view = new QTreeView(&w);
+
+    QStandardItemModel model(5, 5);
+    view->setModel(&model);
+    view->move(0, 50);
+    EditorItemDelegate delegate;
+    view->setItemDelegate(&delegate);
+    w.show();
+
+    QVERIFY(QTest::qWaitForWindowActive(&w));
+    QVERIFY(le->hasFocus());
+
+    view->setFocus();
+    QVERIFY(view->hasFocus());
+
+    view->edit(model.index(0,0));
+    QVERIFY(QTest::qWaitForWindowExposed(delegate.openedEditor));
+    QVERIFY(delegate.openedEditor->hasFocus());
+
+    QApplication::setActiveWindow(&otherTopLevel);
+    otherTopLevel.setFocus();
+    QTRY_VERIFY(!delegate.openedEditor);
+
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
+    QVERIFY(view->hasFocus());
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

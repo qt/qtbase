@@ -45,6 +45,9 @@
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include "qevent.h"
+#ifndef QT_NO_ACCESSIBILITY
+#include "qaccessible.h"
+#endif
 
 #include "private/qabstractbutton_p.h"
 
@@ -144,6 +147,7 @@ void QCheckBoxPrivate::init()
     q->setCheckable(true);
     q->setMouseTracking(true);
     q->setForegroundRole(QPalette::WindowText);
+    q->setAttribute(Qt::WA_MacShowFocusRect);
     setLayoutItemMargins(QStyle::SE_CheckBoxLayoutItem);
 }
 
@@ -243,6 +247,9 @@ Qt::CheckState QCheckBox::checkState() const
 void QCheckBox::setCheckState(Qt::CheckState state)
 {
     Q_D(QCheckBox);
+#ifndef QT_NO_ACCESSIBILITY
+    bool noChange = d->noChange;
+#endif
     if (state == Qt::PartiallyChecked) {
         d->tristate = true;
         d->noChange = true;
@@ -257,6 +264,15 @@ void QCheckBox::setCheckState(Qt::CheckState state)
         d->publishedState = state;
         emit stateChanged(state);
     }
+
+#ifndef QT_NO_ACCESSIBILITY
+    if (noChange != d->noChange) {
+        QAccessible::State s;
+        s.checkStateMixed = true;
+        QAccessibleStateChangeEvent event(this, s);
+        QAccessible::updateAccessibility(&event);
+    }
+#endif
 }
 
 

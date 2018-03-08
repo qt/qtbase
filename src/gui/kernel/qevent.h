@@ -205,10 +205,10 @@ public:
 #ifndef QT_NO_INTEGER_EVENT_COORDINATES
     inline QPoint pos() const { return p.toPoint(); }
     inline QPoint globalPos()   const { return g.toPoint(); }
-    inline int x() const { return p.x(); }
-    inline int y() const { return p.y(); }
-    inline int globalX() const { return g.x(); }
-    inline int globalY() const { return g.y(); }
+    inline int x() const { return int(p.x()); }
+    inline int y() const { return int(p.y()); }
+    inline int globalX() const { return int(g.x()); }
+    inline int globalY() const { return int(g.y()); }
 #endif
     inline const QPointF &posF() const { return p; }
     inline const QPointF &globalPosF()   const { return g; }

@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(tableview))
 
 HEADERS += freezetablewidget.h
 SOURCES += main.cpp freezetablewidget.cpp

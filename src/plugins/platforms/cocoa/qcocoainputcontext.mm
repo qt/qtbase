@@ -129,6 +129,8 @@ void QCocoaInputContext::focusObjectChanged(QObject *focusObject)
             return;
 
         QCocoaWindow *window = static_cast<QCocoaWindow *>(mWindow->handle());
+        if (!window)
+            return;
         QNSView *view = qnsview_cast(window->view());
         if (!view)
             return;

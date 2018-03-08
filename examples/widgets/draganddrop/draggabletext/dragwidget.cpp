@@ -123,7 +123,7 @@ void DragWidget::dropEvent(QDropEvent *event)
             hotSpot.setY(hotSpotPos.last().toInt());
         }
 
-        foreach (const QString &piece, pieces) {
+        for (const QString &piece : pieces) {
             QLabel *newLabel = createDragLabel(piece, this);
             newLabel->move(position - hotSpot);
             newLabel->show();
@@ -141,7 +141,7 @@ void DragWidget::dropEvent(QDropEvent *event)
     } else {
         event->ignore();
     }
-    foreach (QWidget *widget, findChildren<QWidget *>()) {
+    for (QWidget *widget : findChildren<QWidget *>()) {
         if (!widget->isVisible())
             widget->deleteLater();
     }

@@ -477,8 +477,8 @@ void tst_QAbstractProxyModel::testSwappingRowsProxy()
     for (int row = 0; row < defaultModel.rowCount(); ++row) {
         QModelIndex left = proxy.index(row, 0, QModelIndex());
         QModelIndex right = proxy.index(row, 1, QModelIndex());
-        QCOMPARE(left.sibling(left.row(), 1), right);
-        QCOMPARE(right.sibling(right.row(), 0), left);
+        QCOMPARE(left.siblingAtColumn(1), right);
+        QCOMPARE(right.siblingAtColumn(0), left);
     }
 }
 

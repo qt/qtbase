@@ -60,6 +60,7 @@ MainWindow::MainWindow(TabletCanvas *canvas)
     createMenus();
     setWindowTitle(tr("Tablet Example"));
     setCentralWidget(m_canvas);
+    QCoreApplication::setAttribute(Qt::AA_CompressHighFrequencyEvents);
 }
 //! [0]
 
@@ -96,6 +97,11 @@ void MainWindow::setSaturationValuator(QAction *action)
     m_canvas->setColorSaturationValuator(action->data().value<TabletCanvas::Valuator>());
 }
 //! [4]
+
+void MainWindow::setEventCompression(bool compress)
+{
+    QCoreApplication::setAttribute(Qt::AA_CompressTabletEvents, compress);
+}
 
 //! [5]
 void MainWindow::save()
@@ -219,6 +225,10 @@ void MainWindow::createMenus()
     colorSaturationGroup->addAction(noColorSaturationAction);
     connect(colorSaturationGroup, &QActionGroup::triggered,
             this, &MainWindow::setSaturationValuator);
+
+    QAction *compressAction = tabletMenu->addAction(tr("Co&mpress events"));
+    compressAction->setCheckable(true);
+    connect(compressAction, &QAction::toggled, this, &MainWindow::setEventCompression);
 
     QMenu *helpMenu = menuBar()->addMenu("&Help");
     helpMenu->addAction(tr("A&bout"), this, &MainWindow::about);

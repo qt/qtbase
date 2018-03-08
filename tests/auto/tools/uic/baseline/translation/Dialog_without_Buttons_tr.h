@@ -10,11 +10,8 @@
 #define DIALOG_WITHOUT_BUTTONS_TR_H
 
 #include <QtCore/QVariant>
-#include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QDialog>
-#include <QtWidgets/QHeaderView>
 #include <ki18n.h>
 
 QT_BEGIN_NAMESPACE

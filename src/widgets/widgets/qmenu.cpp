@@ -234,9 +234,6 @@ void QMenuPrivate::setPlatformMenu(QPlatformMenu *menu)
     }
 }
 
-// forward declare function
-static void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem *item, QPlatformMenu *itemsMenu);
-
 void QMenuPrivate::syncPlatformMenu()
 {
     Q_Q(QMenu);
@@ -246,17 +243,62 @@ void QMenuPrivate::syncPlatformMenu()
     QPlatformMenuItem *beforeItem = nullptr;
     const QList<QAction*> actions = q->actions();
     for (QList<QAction*>::const_reverse_iterator it = actions.rbegin(), end = actions.rend(); it != end; ++it) {
-        QPlatformMenuItem *menuItem = platformMenu->createMenuItem();
-        QAction *action = *it;
-        menuItem->setTag(reinterpret_cast<quintptr>(action));
-        QObject::connect(menuItem, SIGNAL(activated()), action, SLOT(trigger()), Qt::QueuedConnection);
-        QObject::connect(menuItem, SIGNAL(hovered()), action, SIGNAL(hovered()), Qt::QueuedConnection);
-        copyActionToPlatformItem(action, menuItem, platformMenu.data());
-        platformMenu->insertMenuItem(menuItem, beforeItem);
+        QPlatformMenuItem *menuItem = insertActionInPlatformMenu(*it, beforeItem);
         beforeItem = menuItem;
     }
     platformMenu->syncSeparatorsCollapsible(collapsibleSeparators);
     platformMenu->setEnabled(q->isEnabled());
+}
+
+void QMenuPrivate::copyActionToPlatformItem(const QAction *action, QPlatformMenuItem *item)
+{
+    item->setText(action->text());
+    item->setIsSeparator(action->isSeparator());
+    if (action->isIconVisibleInMenu()) {
+        item->setIcon(action->icon());
+        if (QWidget *w = action->parentWidget()) {
+            QStyleOption opt;
+            opt.init(w);
+            item->setIconSize(w->style()->pixelMetric(QStyle::PM_SmallIconSize, &opt, w));
+        } else {
+            QStyleOption opt;
+            item->setIconSize(qApp->style()->pixelMetric(QStyle::PM_SmallIconSize, &opt, 0));
+        }
+    } else {
+        item->setIcon(QIcon());
+    }
+    item->setVisible(action->isVisible());
+#if QT_CONFIG(shortcut)
+    item->setShortcut(action->shortcut());
+#endif
+    item->setCheckable(action->isCheckable());
+    item->setChecked(action->isChecked());
+    item->setHasExclusiveGroup(action->actionGroup() && action->actionGroup()->isExclusive());
+    item->setFont(action->font());
+    item->setRole((QPlatformMenuItem::MenuRole) action->menuRole());
+    item->setEnabled(action->isEnabled());
+
+    if (action->menu()) {
+        if (!action->menu()->platformMenu())
+            action->menu()->setPlatformMenu(platformMenu->createSubMenu());
+        item->setMenu(action->menu()->platformMenu());
+    } else {
+        item->setMenu(0);
+    }
+}
+
+QPlatformMenuItem * QMenuPrivate::insertActionInPlatformMenu(const QAction *action, QPlatformMenuItem *beforeItem)
+{
+    QPlatformMenuItem *menuItem = platformMenu->createMenuItem();
+    Q_ASSERT(menuItem);
+
+    menuItem->setTag(reinterpret_cast<quintptr>(action));
+    QObject::connect(menuItem, &QPlatformMenuItem::activated, action, &QAction::trigger, Qt::QueuedConnection);
+    QObject::connect(menuItem, &QPlatformMenuItem::hovered, action, &QAction::hovered, Qt::QueuedConnection);
+    copyActionToPlatformItem(action, menuItem);
+    platformMenu->insertMenuItem(menuItem, beforeItem);
+
+    return menuItem;
 }
 
 int QMenuPrivate::scrollerHeight() const
@@ -393,13 +435,13 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
                 QString s = action->text();
                 int t = s.indexOf(QLatin1Char('\t'));
                 if (t != -1) {
-                    tabWidth = qMax(int(tabWidth), qfm.width(s.mid(t+1)));
+                    tabWidth = qMax(int(tabWidth), qfm.horizontalAdvance(s.mid(t+1)));
                     s = s.left(t);
     #ifndef QT_NO_SHORTCUT
                 } else if (action->isShortcutVisibleInContextMenu() || !contextMenu) {
                     QKeySequence seq = action->shortcut();
                     if (!seq.isEmpty())
-                        tabWidth = qMax(int(tabWidth), qfm.width(seq.toString(QKeySequence::NativeText)));
+                        tabWidth = qMax(int(tabWidth), qfm.horizontalAdvance(seq.toString(QKeySequence::NativeText)));
     #endif
                 }
                 sz.setWidth(fm.boundingRect(QRect(), Qt::TextSingleLine | Qt::TextShowMnemonic, s).width());
@@ -860,10 +902,8 @@ void QMenuPrivate::adjustMenuScreen(const QPoint &p)
     // The windowHandle must point to the screen where the menu will be shown.
     // The (item) size calculations depend on the menu screen,
     // so a wrong screen would often cause wrong sizes (on high DPI)
-    const QScreen *primaryScreen = QApplication::primaryScreen();
-    const QScreen *currentScreen = q->windowHandle() ? q->windowHandle()->screen() : primaryScreen;
-    const int screenNumberForPoint = QApplication::desktop()->screenNumber(p);
-    QScreen *actualScreen = QGuiApplication::screens().at(screenNumberForPoint);
+    const QScreen *currentScreen = q->windowHandle() ? q->windowHandle()->screen() : nullptr;
+    QScreen *actualScreen = QGuiApplication::screenAt(p);
     if (actualScreen && currentScreen != actualScreen) {
         if (!q->windowHandle()) // Try to create a window handle if not created.
             createWinId();
@@ -1762,7 +1802,7 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     return action;
 }
 
-/*!\fn QAction *QMenu::addAction(const QString &text, const QObject *receiver, PointerToMemberFunction method, const QKeySequence &shortcut = 0)
+/*!\fn template<typename PointerToMemberFunction> QAction *QMenu::addAction(const QString &text, const QObject *receiver, PointerToMemberFunction method, const QKeySequence &shortcut = 0)
 
     \since 5.6
 
@@ -1777,7 +1817,7 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     QMenu takes ownership of the returned QAction.
 */
 
-/*!\fn QAction *QMenu::addAction(const QString &text, Functor functor, const QKeySequence &shortcut = 0)
+/*!\fn template<typename Functor> QAction *QMenu::addAction(const QString &text, Functor functor, const QKeySequence &shortcut = 0)
 
     \since 5.6
 
@@ -1792,7 +1832,7 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     QMenu takes ownership of the returned QAction.
 */
 
-/*!\fn QAction *QMenu::addAction(const QString &text, const QObject *context, Functor functor, const QKeySequence &shortcut = 0)
+/*!\fn template<typename Functor> QAction *QMenu::addAction(const QString &text, const QObject *context, Functor functor, const QKeySequence &shortcut)
 
     \since 5.6
 
@@ -1809,7 +1849,7 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     QMenu takes ownership of the returned QAction.
 */
 
-/*!\fn QAction *QMenu::addAction(const QIcon &icon, const QString &text, const QObject *receiver, PointerToMemberFunction method, const QKeySequence &shortcut = 0)
+/*!\fn template<typename PointerToMemberFunction> QAction *QMenu::addAction(const QIcon &icon, const QString &text, const QObject *receiver, PointerToMemberFunction method, const QKeySequence &shortcut = 0)
 
     \since 5.6
 
@@ -1824,7 +1864,7 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     QMenu takes ownership of the returned QAction.
 */
 
-/*!\fn QAction *QMenu::addAction(const QIcon &icon, const QString &text, Functor functor, const QKeySequence &shortcut = 0)
+/*!\fn template<typename Functor> QAction *QMenu::addAction(const QIcon &icon, const QString &text, Functor functor, const QKeySequence &shortcut = 0)
 
     \since 5.6
 
@@ -1839,7 +1879,7 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     QMenu takes ownership of the returned QAction.
 */
 
-/*!\fn QAction *QMenu::addAction(const QIcon &icon, const QString &text, const QObject *context, Functor functor, const QKeySequence &shortcut = 0)
+/*!\fn template<typename Functor> QAction *QMenu::addAction(const QIcon &icon, const QString &text, const QObject *context, Functor functor, const QKeySequence &shortcut)
 
     \since 5.6
 
@@ -2338,6 +2378,12 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     d->doChildEffects = true;
     d->updateLayoutDirection();
     d->adjustMenuScreen(p);
+
+    const bool contextMenu = d->isContextMenu();
+    if (d->lastContextMenu != contextMenu) {
+        d->itemsDirty = true;
+        d->lastContextMenu = contextMenu;
+    }
 
 #if QT_CONFIG(menubar)
     // if this menu is part of a chain attached to a QMenuBar, set the
@@ -3477,43 +3523,6 @@ QMenu::timerEvent(QTimerEvent *e)
     }
 }
 
-static void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem *item, QPlatformMenu *itemsMenu)
-{
-    item->setText(action->text());
-    item->setIsSeparator(action->isSeparator());
-    if (action->isIconVisibleInMenu()) {
-        item->setIcon(action->icon());
-        if (QWidget *w = action->parentWidget()) {
-            QStyleOption opt;
-            opt.init(w);
-            item->setIconSize(w->style()->pixelMetric(QStyle::PM_SmallIconSize, &opt, w));
-        } else {
-            QStyleOption opt;
-            item->setIconSize(qApp->style()->pixelMetric(QStyle::PM_SmallIconSize, &opt, 0));
-        }
-    } else {
-        item->setIcon(QIcon());
-    }
-    item->setVisible(action->isVisible());
-#ifndef QT_NO_SHORTCUT
-    item->setShortcut(action->shortcut());
-#endif
-    item->setCheckable(action->isCheckable());
-    item->setChecked(action->isChecked());
-    item->setHasExclusiveGroup(action->actionGroup() && action->actionGroup()->isExclusive());
-    item->setFont(action->font());
-    item->setRole((QPlatformMenuItem::MenuRole) action->menuRole());
-    item->setEnabled(action->isEnabled());
-
-    if (action->menu()) {
-        if (!action->menu()->platformMenu())
-            action->menu()->setPlatformMenu(itemsMenu->createSubMenu());
-        item->setMenu(action->menu()->platformMenu());
-    } else {
-        item->setMenu(0);
-    }
-}
-
 /*!
   \reimp
 */
@@ -3525,9 +3534,13 @@ void QMenu::actionEvent(QActionEvent *e)
     if (d->tornPopup)
         d->tornPopup->syncWithMenu(this, e);
     if (e->type() == QEvent::ActionAdded) {
-        if(!d->tornoff) {
-            connect(e->action(), SIGNAL(triggered()), this, SLOT(_q_actionTriggered()));
-            connect(e->action(), SIGNAL(hovered()), this, SLOT(_q_actionHovered()));
+
+        if (!d->tornoff
+            && !qobject_cast<QMenuBar*>(e->action()->parent())) {
+            // Only connect if the action was not directly added by QMenuBar::addAction(const QString &text)
+            // to avoid the signal being emitted twice
+            connect(e->action(), SIGNAL(triggered()), this, SLOT(_q_actionTriggered()), Qt::UniqueConnection);
+            connect(e->action(), SIGNAL(hovered()), this, SLOT(_q_actionHovered()), Qt::UniqueConnection);
         }
         if (QWidgetAction *wa = qobject_cast<QWidgetAction *>(e->action())) {
             QWidget *widget = wa->requestWidget(this);
@@ -3567,15 +3580,10 @@ void QMenu::actionEvent(QActionEvent *e)
 
     if (!d->platformMenu.isNull()) {
         if (e->type() == QEvent::ActionAdded) {
-            QPlatformMenuItem *menuItem = d->platformMenu->createMenuItem();
-            menuItem->setTag(reinterpret_cast<quintptr>(e->action()));
-            QObject::connect(menuItem, SIGNAL(activated()), e->action(), SLOT(trigger()));
-            QObject::connect(menuItem, SIGNAL(hovered()), e->action(), SIGNAL(hovered()));
-            copyActionToPlatformItem(e->action(), menuItem, d->platformMenu);
             QPlatformMenuItem *beforeItem = e->before()
                 ? d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->before()))
                 : nullptr;
-            d->platformMenu->insertMenuItem(menuItem, beforeItem);
+            d->insertActionInPlatformMenu(e->action(), beforeItem);
         } else if (e->type() == QEvent::ActionRemoved) {
             QPlatformMenuItem *menuItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->action()));
             d->platformMenu->removeMenuItem(menuItem);
@@ -3583,7 +3591,7 @@ void QMenu::actionEvent(QActionEvent *e)
         } else if (e->type() == QEvent::ActionChanged) {
             QPlatformMenuItem *menuItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->action()));
             if (menuItem) {
-                copyActionToPlatformItem(e->action(), menuItem, d->platformMenu);
+                d->copyActionToPlatformItem(e->action(), menuItem);
                 d->platformMenu->syncMenuItem(menuItem);
             }
         }

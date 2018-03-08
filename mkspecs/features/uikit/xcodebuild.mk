@@ -63,7 +63,7 @@ ifneq ($(filter check%,$(MAKECMDGOALS)),)
   ifeq ($(DEVICES),)
     $(info Enumerating test destinations (you may override this by setting DEVICES explicitly), please wait...)
     DESTINATIONS_INCLUDE = /tmp/device_destinations.mk
-    $(shell $(MAKEFILE_DIR)device_destinations.sh '$(EXPORT_DEVICE_FILTER)' $(TARGET) > $(DESTINATIONS_INCLUDE))
+    $(shell $(MAKEFILE_DIR)device_destinations.sh $(TARGET) $(EXPORT_DEVICE_FILTER) > $(DESTINATIONS_INCLUDE))
     include $(DESTINATIONS_INCLUDE)
   endif
 endif
@@ -72,7 +72,7 @@ endif
 %-device: DEVICES = $(HARDWARE_DEVICES)
 
 GENERIC_DEVICE_DESTINATION := $(EXPORT_GENERIC_DEVICE_DESTINATION)
-GENERIC_SIMULATOR_DESTINATION := "id=$(shell $(MAKEFILE_DIR)devices.pl '$(EXPORT_DEVICE_FILTER)' "NOT unavailable" | tail -n 1)"
+GENERIC_SIMULATOR_DESTINATION := "id=$(shell $(MAKEFILE_DIR)devices.py $(EXPORT_DEVICE_FILTER) | tail -n 1)"
 
 %-simulator: DESTINATION = $(if $(DESTINATION_ID),"id=$(DESTINATION_ID)",$(GENERIC_SIMULATOR_DESTINATION))
 %-device: DESTINATION = $(if $(DESTINATION_ID),"id=$(DESTINATION_ID)",$(GENERIC_DEVICE_DESTINATION))
@@ -90,7 +90,7 @@ DESTINATION_MESSAGE = "Running $(call tolower,$(CONFIGURATION)) $(ACTION) \
 
 xcodebuild-%:
 		@$(if $(DESTINATION_NAME), echo $(DESTINATION_MESSAGE),)
-		xcodebuild $(ACTION) $(XCODEBUILD_FLAGS) -project $(TARGET).xcodeproj -scheme $(TARGET) $(if $(SDK), -sdk $(SDK),) $(if $(CONFIGURATION), -configuration $(CONFIGURATION),) $(if $(DESTINATION), -destination $(DESTINATION) -destination-timeout 1,) $(if $(INSTALL_ROOT), DSTROOT=$(INSTALL_ROOT),)
+		xcodebuild $(ACTION) $(XCODEBUILD_FLAGS) -project $(TARGET).xcodeproj -scheme $(TARGET) $(if $(SDK), -sdk $(SDK),) $(if $(CONFIGURATION), -configuration $(CONFIGURATION),) $(if $(DESTINATION), -destination $(DESTINATION) -destination-timeout 1,) $(if $(DESTINATION_ID),, ENABLE_ONLY_ACTIVE_RESOURCES=NO) $(if $(INSTALL_ROOT), DSTROOT=$(INSTALL_ROOT),)
 
 xcodebuild-check-device_%: DESTINATION_ID=$(lastword $(subst _, ,$@))
 

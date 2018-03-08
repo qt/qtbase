@@ -739,6 +739,8 @@ public:
         SH_ItemView_ScrollMode,
         SH_TitleBar_ShowToolTipsOnButtons,
         SH_Widget_Animation_Duration,
+        SH_ComboBox_AllowWheelScrolling,
+        SH_SpinBox_ButtonsInsideFrame,
         // Add new style hint values here
 
         SH_CustomBase = 0xf0000000

@@ -185,6 +185,10 @@ QUdpSocket::~QUdpSocket()
     This function returns \c true if successful; otherwise it returns \c false
     and sets the socket error accordingly.
 
+    \note Joining IPv6 multicast groups without an interface selection is not
+    supported in all operating systems. Consider using the overload where the
+    interface is specified.
+
     \sa leaveMulticastGroup()
 */
 bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress)
@@ -219,6 +223,9 @@ bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress,
    This function returns \c true if successful; otherwise it returns \c false and
    sets the socket error accordingly.
 
+   \note This function should be called with the same arguments as were passed
+   to joinMulticastGroup().
+
    \sa joinMulticastGroup()
 */
 bool QUdpSocket::leaveMulticastGroup(const QHostAddress &groupAddress)
@@ -232,6 +239,9 @@ bool QUdpSocket::leaveMulticastGroup(const QHostAddress &groupAddress)
 
     Leaves the multicast group specified by \a groupAddress on the interface \a
     iface.
+
+    \note This function should be called with the same arguments as were passed
+    to joinMulticastGroup().
 
     \sa joinMulticastGroup()
 */
@@ -454,10 +464,12 @@ QNetworkDatagram QUdpSocket::receiveDatagram(qint64 maxSize)
                                                      QAbstractSocketEngine::WantAll);
     d->hasPendingData = false;
     d->socketEngine->setReadNotificationEnabled(true);
-    if (readBytes < 0)
+    if (readBytes < 0) {
         d->setErrorAndEmit(d->socketEngine->error(), d->socketEngine->errorString());
-    else if (readBytes != result.d->data.size())
-        result.d->data.truncate(readBytes);
+        readBytes = 0;
+    }
+
+    result.d->data.truncate(readBytes);
     return result;
 }
 

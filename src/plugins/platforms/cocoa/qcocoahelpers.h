@@ -63,6 +63,8 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSView));
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(lcQpaCocoaWindow)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaCocoaDrawing)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaCocoaMouse)
 
 class QPixmap;
 class QString;
@@ -85,13 +87,8 @@ QT_MANGLE_NAMESPACE(QNSView) *qnsview_cast(NSView *view);
 void qt_mac_transformProccessToForegroundApplication();
 QString qt_mac_applicationName();
 
-int qt_mac_flipYCoordinate(int y);
-qreal qt_mac_flipYCoordinate(qreal y);
-QPointF qt_mac_flipPoint(const NSPoint &p);
-NSPoint qt_mac_flipPoint(const QPoint &p);
-NSPoint qt_mac_flipPoint(const QPointF &p);
-
-NSRect qt_mac_flipRect(const QRect &rect);
+QPointF qt_mac_flip(const QPointF &pos, const QRectF &reference);
+QRectF qt_mac_flip(const QRectF &rect, const QRectF &reference);
 
 Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum);
 
@@ -164,7 +161,10 @@ T qt_mac_resolveOption(const T &fallback, QWindow *window, const QByteArray &pro
 
 QT_END_NAMESPACE
 
-@protocol QT_MANGLE_NAMESPACE(QNSPanelDelegate)
+// @compatibility_alias doesn't work with protocols
+#define QNSPanelDelegate QT_MANGLE_NAMESPACE(QNSPanelDelegate)
+
+@protocol QNSPanelDelegate
 @required
 - (void)onOkClicked;
 - (void)onCancelClicked;
@@ -182,7 +182,7 @@ QT_END_NAMESPACE
 @property (nonatomic, readonly) NSView *panelContents; // ARC: unretained, make it weak
 @property (nonatomic, assign) NSEdgeInsets panelContentsMargins;
 
-- (instancetype)initWithPanelDelegate:(id<QT_MANGLE_NAMESPACE(QNSPanelDelegate)>)panelDelegate;
+- (instancetype)initWithPanelDelegate:(id<QNSPanelDelegate>)panelDelegate;
 - (void)dealloc;
 
 - (NSButton *)createButtonWithTitle:(const char *)title;
@@ -190,6 +190,19 @@ QT_END_NAMESPACE
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSPanelContentsWrapper);
+
+// -------------------------------------------------------------------------
+
+// QAppleRefCounted expects the retain function to return the object
+io_object_t q_IOObjectRetain(io_object_t obj);
+// QAppleRefCounted expects the release function to return void
+void q_IOObjectRelease(io_object_t obj);
+
+template <typename T>
+class QIOType : public QAppleRefCounted<T, io_object_t, q_IOObjectRetain, q_IOObjectRelease>
+{
+    using QAppleRefCounted<T, io_object_t, q_IOObjectRetain, q_IOObjectRelease>::QAppleRefCounted;
+};
 
 // -------------------------------------------------------------------------
 

@@ -2604,30 +2604,20 @@ namespace {
     class MyPaintEngine : public QPaintEngine
     {
     public:
-        bool begin(QPaintDevice *)
-        {
-            return true;
-        }
+        bool begin(QPaintDevice *) override { return true; }
 
-        bool end()
-        {
-            return true;
-        }
+        bool end() override { return true; }
 
-        void updateState(const QPaintEngineState &)
-        {
-        }
+        void updateState(const QPaintEngineState &) override  { }
 
-        void drawPixmap(const QRectF &, const QPixmap &, const QRectF &)
-        {
-        }
+        void drawPixmap(const QRectF &, const QPixmap &, const QRectF &) override { }
 
         void drawTextItem(const QPointF &, const QTextItem &textItem) override
         {
             itemFonts.append(qMakePair(textItem.text(), textItem.font()));
         }
 
-        Type type() const { return User; }
+        Type type() const override { return User; }
 
 
         QList<QPair<QString, QFont> > itemFonts;

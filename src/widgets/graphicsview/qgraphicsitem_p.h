@@ -190,6 +190,7 @@ public:
     void updateAncestorFlags();
     void setIsMemberOfGroup(bool enabled);
     void remapItemPos(QEvent *event, QGraphicsItem *item);
+    QTransform genericMapFromSceneTransform(const QWidget *viewport = nullptr) const;
     QPointF genericMapFromScene(const QPointF &pos, const QWidget *viewport) const;
     inline bool itemIsUntransformable() const
     {

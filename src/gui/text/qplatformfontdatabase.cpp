@@ -62,8 +62,6 @@ void qt_registerFontFamily(const QString &familyName);
 void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias);
 
 /*!
-    \fn void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *handle)
-
     Registers the pre-rendered QPF2 font contained in the given \a dataArray.
 
     \sa registerFont()
@@ -371,17 +369,6 @@ QFontEngine *QPlatformFontDatabase::fontEngine(const QByteArray &fontData, qreal
     qWarning("This plugin does not support font engines created directly from font data");
     return 0;
 }
-
-/*!
-    \fn QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
-
-    Returns a list of alternative fonts for the specified \a family and
-    \a style and \a script using the \a styleHint given.
-
-    Default implementation returns a list of fonts for which \a style and \a script support
-    has been reported during the font database population.
-*/
-// implemented in qfontdatabase.cpp
 
 /*!
     Adds an application font described by the font contained supplied \a fontData

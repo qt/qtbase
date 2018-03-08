@@ -67,6 +67,7 @@
 #include <qabstractproxymodel.h>
 #include <qstylehints.h>
 #include <private/qguiapplication_p.h>
+#include <private/qhighdpiscaling_p.h>
 #include <private/qapplication_p.h>
 #include <private/qcombobox_p.h>
 #include <private/qabstractitemmodel_p.h>
@@ -312,7 +313,7 @@ int QComboBoxPrivate::computeWidthHint() const
     const QFontMetrics &fontMetrics = q->fontMetrics();
 
     for (int i = 0; i < count; ++i) {
-        const int textWidth = fontMetrics.width(q->itemText(i));
+        const int textWidth = fontMetrics.horizontalAdvance(q->itemText(i));
         if (q->itemIcon(i).isNull())
             width = (qMax(width, textWidth));
         else
@@ -341,7 +342,7 @@ QSize QComboBoxPrivate::recomputeSizeHint(QSize &sh) const
             case QComboBox::AdjustToContents:
             case QComboBox::AdjustToContentsOnFirstShow:
                 if (count == 0) {
-                    sh.rwidth() = 7 * fm.width(QLatin1Char('x'));
+                    sh.rwidth() = 7 * fm.horizontalAdvance(QLatin1Char('x'));
                 } else {
                     for (int i = 0; i < count; ++i) {
                         if (!q->itemIcon(i).isNull()) {
@@ -364,7 +365,7 @@ QSize QComboBoxPrivate::recomputeSizeHint(QSize &sh) const
                 hasIcon = !q->itemIcon(i).isNull();
         }
         if (minimumContentsLength > 0)
-            sh.setWidth(qMax(sh.width(), minimumContentsLength * fm.width(QLatin1Char('X')) + (hasIcon ? iconSize.width() + 4 : 0)));
+            sh.setWidth(qMax(sh.width(), minimumContentsLength * fm.horizontalAdvance(QLatin1Char('X')) + (hasIcon ? iconSize.width() + 4 : 0)));
 
 
         // height
@@ -2582,7 +2583,8 @@ bool QComboBoxPrivate::showNativePopup()
     else if (q->testAttribute(Qt::WA_MacMiniSize))
         offset = QPoint(-2, 6);
 
-    m_platformMenu->showPopup(tlw, QRect(tlw->mapFromGlobal(q->mapToGlobal(offset)), QSize()), currentItem);
+    const QRect targetRect = QRect(tlw->mapFromGlobal(q->mapToGlobal(offset)), QSize());
+    m_platformMenu->showPopup(tlw, QHighDpi::toNativePixels(targetRect, tlw), currentItem);
 
 #ifdef Q_OS_OSX
     // The Cocoa popup will swallow any mouse release event.
@@ -3215,7 +3217,7 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Up:
         if (e->modifiers() & Qt::ControlModifier)
             break; // pass to line edit for auto completion
-        // fall through
+        Q_FALLTHROUGH();
     case Qt::Key_PageUp:
 #ifdef QT_KEYPAD_NAVIGATION
         if (QApplication::keypadNavigationEnabled())
@@ -3303,7 +3305,7 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
         switch (move) {
         case MoveFirst:
             newIndex = -1;
-            // fall through
+            Q_FALLTHROUGH();
         case MoveDown:
             newIndex++;
             while (newIndex < rowCount && !(d->model->index(newIndex, d->modelColumn, d->root).flags() & Qt::ItemIsEnabled))
@@ -3311,7 +3313,7 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
             break;
         case MoveLast:
             newIndex = rowCount;
-            // fall through
+            Q_FALLTHROUGH();
         case MoveUp:
             newIndex--;
             while ((newIndex >= 0) && !(d->model->flags(d->model->index(newIndex,d->modelColumn,d->root)) & Qt::ItemIsEnabled))
@@ -3350,11 +3352,11 @@ void QComboBox::keyReleaseEvent(QKeyEvent *e)
 #if QT_CONFIG(wheelevent)
 void QComboBox::wheelEvent(QWheelEvent *e)
 {
-#ifdef Q_OS_DARWIN
-    Q_UNUSED(e);
-#else
     Q_D(QComboBox);
-    if (!d->viewContainer()->isVisible()) {
+    QStyleOptionComboBox opt;
+    initStyleOption(&opt);
+    if (style()->styleHint(QStyle::SH_ComboBox_AllowWheelScrolling, &opt, this) &&
+        !d->viewContainer()->isVisible()) {
         const int rowCount = count();
         int newIndex = currentIndex();
 
@@ -3374,7 +3376,6 @@ void QComboBox::wheelEvent(QWheelEvent *e)
         }
         e->accept();
     }
-#endif
 }
 #endif
 

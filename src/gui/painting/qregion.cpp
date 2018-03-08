@@ -81,8 +81,9 @@ QT_BEGIN_NAMESPACE
     contains() a QPoint or QRect. The bounding rectangle can be found
     with boundingRect().
 
-    Iteration over the region (with begin(), end()) gives a decomposition of
-    the region into rectangles. The same sequence of rectangles is returned by rects().
+    Iteration over the region (with begin(), end(), or C++11
+    ranged-for loops) gives a decomposition of the region into
+    rectangles.
 
     Example of using complex regions:
     \snippet code/src_gui_painting_qregion.cpp 0
@@ -447,19 +448,20 @@ QDebug operator<<(QDebug s, const QRegion &r)
     } else if (r.isEmpty()) {
         s << "empty";
     } else {
-        const QVector<QRect> rects = r.rects();
-        const int count = rects.size();
+        const int count = r.rectCount();
         if (count > 1)
             s << "size=" << count << ", bounds=(";
         QtDebugUtils::formatQRect(s, r.boundingRect());
         if (count > 1) {
             s << ") - [";
-            for (int i = 0; i < count; ++i) {
-                if (i)
+            bool first = true;
+            for (const QRect &rect : r) {
+                if (!first)
                     s << ", ";
                 s << '(';
-                QtDebugUtils::formatQRect(s, rects.at(i));
+                QtDebugUtils::formatQRect(s, rect);
                 s << ')';
+                first = false;
             }
             s << ']';
         }
@@ -740,7 +742,7 @@ bool QRegion::intersects(const QRegion &region) const
 
 
 #if !defined (Q_OS_UNIX) && !defined (Q_OS_WIN) || defined(Q_CLANG_QDOC)
-/*!
+/*
     \overload
     \since 4.4
 */
@@ -754,7 +756,8 @@ QRegion QRegion::intersect(const QRect &r) const
     \fn int QRegion::rectCount() const
     \since 4.6
 
-    Returns the number of rectangles that will be returned in rects().
+    Returns the number of rectangles that this region is composed of.
+    Same as \c{end() - begin()}.
 */
 
 /*!
@@ -916,20 +919,28 @@ QRegion QRegion::intersect(const QRect &r) const
     gives a rectangle that is QRect::isNull().
 */
 
+#if QT_DEPRECATED_SINCE(5, 11)
 /*!
     \fn QVector<QRect> QRegion::rects() const
+    \obsolete
+
+    Use begin() and end() instead.
 
     Returns an array of non-overlapping rectangles that make up the
     region.
 
     The union of all the rectangles is equal to the original region.
 */
+#endif
 
 /*!
     \typedef QRegion::const_iterator
     \since 5.8
 
-    An iterator over the QRects that make up the region.
+    An iterator over the non-overlapping rectangles that make up the
+    region.
+
+    The union of all the rectangles is equal to the original region.
 
     QRegion does not offer mutable iterators.
 
@@ -940,7 +951,10 @@ QRegion QRegion::intersect(const QRect &r) const
     \typedef QRegion::const_reverse_iterator
     \since 5.8
 
-    A reverse iterator over the QRects that make up the region.
+    A reverse iterator over the non-overlapping rectangles that make up the
+    region.
+
+    The union of all the rectangles is equal to the original region.
 
     QRegion does not offer mutable iterators.
 
@@ -952,8 +966,9 @@ QRegion QRegion::intersect(const QRect &r) const
     \since 5.8
 
     Returns a const_iterator pointing to the beginning of the range of
-    rectangles that make up this range, in the order in which rects()
-    returns them.
+    non-overlapping rectangles that make up the region.
+
+    The union of all the rectangles is equal to the original region.
 
     \sa rbegin(), cbegin(), end()
 */
@@ -969,9 +984,10 @@ QRegion QRegion::intersect(const QRect &r) const
     \fn QRegion::end() const
     \since 5.8
 
-    Returns a const_iterator pointing to one past the end of the range of
-    rectangles that make up this range, in the order in which rects()
-    returns them.
+    Returns a const_iterator pointing to one past the end of
+    non-overlapping rectangles that make up the region.
+
+    The union of all the rectangles is equal to the original region.
 
     \sa rend(), cend(), begin()
 */
@@ -987,9 +1003,10 @@ QRegion QRegion::intersect(const QRect &r) const
     \fn QRegion::rbegin() const
     \since 5.8
 
-    Returns a const_reverse_iterator pointing to the beginning of the range of
-    rectangles that make up this range, in the reverse order in which rects()
-    returns them.
+    Returns a const_reverse_iterator pointing to the beginning of the
+    range of non-overlapping rectangles that make up the region.
+
+    The union of all the rectangles is equal to the original region.
 
     \sa begin(), crbegin(), rend()
 */
@@ -1005,9 +1022,10 @@ QRegion QRegion::intersect(const QRect &r) const
     \fn QRegion::rend() const
     \since 5.8
 
-    Returns a const_reverse_iterator pointing to one past the end of the range of
-    rectangles that make up this range, in the reverse order in which rects()
-    returns them.
+    Returns a const_reverse_iterator pointing to one past the end of
+    the range of non-overlapping rectangles that make up the region.
+
+    The union of all the rectangles is equal to the original region.
 
     \sa end(), crend(), rbegin()
 */
@@ -4347,6 +4365,7 @@ bool qt_region_strictContains(const QRegion &region, const QRect &rect)
             && rect.top() >= r1.top() && rect.bottom() <= r1.bottom());
 }
 
+#if QT_DEPRECATED_SINCE(5, 11)
 QVector<QRect> QRegion::rects() const
 {
     if (d->qt_rgn) {
@@ -4358,6 +4377,7 @@ QVector<QRect> QRegion::rects() const
         return QVector<QRect>();
     }
 }
+#endif
 
 QRegion::const_iterator QRegion::begin() const Q_DECL_NOTHROW
 {

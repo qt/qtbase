@@ -69,7 +69,7 @@ class QIconLoader;
 
 struct QIconDirInfo
 {
-    enum Type { Fixed, Scalable, Threshold };
+    enum Type { Fixed, Scalable, Threshold, Fallback };
     QIconDirInfo(const QString &_path = QString()) :
             path(_path),
             size(0),
@@ -180,6 +180,8 @@ public:
     QIconTheme theme() { return themeList.value(themeName()); }
     void setThemeSearchPath(const QStringList &searchPaths);
     QStringList themeSearchPaths() const;
+    void setFallbackSearchPaths(const QStringList &searchPaths);
+    QStringList fallbackSearchPaths() const;
     QIconDirInfo dirInfo(int dirindex);
     static QIconLoader *instance();
     void updateSystemTheme();
@@ -191,6 +193,8 @@ private:
     QThemeIconInfo findIconHelper(const QString &themeName,
                                   const QString &iconName,
                                   QStringList &visited) const;
+    QThemeIconInfo lookupFallbackIcon(const QString &iconName) const;
+
     uint m_themeKey;
     bool m_supportsSvg;
     bool m_initialized;
@@ -199,6 +203,7 @@ private:
     mutable QString m_systemTheme;
     mutable QStringList m_iconDirs;
     mutable QHash <QString, QIconTheme> themeList;
+    mutable QStringList m_fallbackDirs;
 };
 
 QT_END_NAMESPACE

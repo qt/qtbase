@@ -156,7 +156,7 @@ void tst_NetworkRemoteStressTest::clearManager()
 
 bool nativeLookup(const char *hostname, int port, QByteArray &buf)
 {
-#if !defined(QT_NO_GETADDRINFO) && 0
+#if 0
     addrinfo *res = 0;
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));

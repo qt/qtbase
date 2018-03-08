@@ -94,7 +94,6 @@ namespace QStyleHelper
 
     enum WidgetSizePolicy { SizeLarge = 0, SizeSmall = 1, SizeMini = 2, SizeDefault = -1 };
 
-    void setWidgetSizePolicy(const QWidget *w, WidgetSizePolicy policy);
     Q_WIDGETS_EXPORT WidgetSizePolicy widgetSizePolicy(const QWidget *w, const QStyleOption *opt = 0);
 }
 

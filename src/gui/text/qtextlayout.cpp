@@ -93,14 +93,14 @@ QT_BEGIN_NAMESPACE
     Specifies the format to apply.
 */
 
-/*! \fn bool operator==(const FormatRange &lhs, const FormatRange &rhs)
+/*! \fn bool operator==(const QTextLayout::FormatRange &lhs, const QTextLayout::FormatRange &rhs)
   \relates QTextLayout::FormatRange
 
   Returns true if the \c {start}, \c {length}, and \c {format} fields
   in \a lhs and \a rhs contain the same values respectively.
  */
 
-/*! \fn bool operator!=(const FormatRange &lhs, const FormatRange &rhs)
+/*! \fn bool operator!=(const QTextLayout::FormatRange &lhs, const QTextLayout::FormatRange &rhs)
   \relates QTextLayout::FormatRange
 
   Returns true if any of the \c {start}, \c {length}, or \c {format} fields
@@ -2453,7 +2453,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
 
             const qreal lineHeight = line.height().toReal();
             QRectF r(pos.x() + line.x.toReal(), pos.y() + line.y.toReal(),
-                     lineHeight / 2, QFontMetrics(eng->font()).width(QLatin1Char(' ')));
+                     lineHeight / 2, QFontMetrics(eng->font()).horizontalAdvance(QLatin1Char(' ')));
             setPenAndDrawBackground(p, QPen(), selection->format, r);
             p->setPen(pen);
         }
@@ -2540,7 +2540,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
                     QPainterPrivate::get(p)->drawTextItem(QPointF(iterator.x.toReal(), y.toReal()), gf, eng);
                     if (eng->option.flags() & QTextOption::ShowTabsAndSpaces) {
                         QChar visualTab(0x2192);
-                        int w = QFontMetrics(f).width(visualTab);
+                        int w = QFontMetrics(f).horizontalAdvance(visualTab);
                         qreal x = iterator.itemWidth.toReal() - w; // Right-aligned
                         if (x < 0)
                              p->setClipRect(QRectF(iterator.x.toReal(), line.y.toReal(),
@@ -2762,6 +2762,7 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
                 glyph_start++;
             for (int i = glyph_end - 1; i >= glyph_start; i--)
                 x += glyphs.effectiveAdvance(i);
+            x -= eng->offsetInLigature(si, pos, end, glyph_pos);
         } else {
             int start = qMax(line.from - si->position, 0);
             int glyph_start = logClusters[start];
@@ -2770,8 +2771,8 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
                 glyph_end--;
             for (int i = glyph_start; i <= glyph_end; i++)
                 x += glyphs.effectiveAdvance(i);
+            x += eng->offsetInLigature(si, pos, end, glyph_pos);
         }
-        x += eng->offsetInLigature(si, pos, end, glyph_pos);
     }
 
     if (eng->option.wrapMode() != QTextOption::NoWrap && x > line.x + line.width)

@@ -501,10 +501,10 @@ void tst_MacNativeEvents::testModifierCtrlWithDontSwapCtrlAndMeta()
     native.append(new QNativeModifierEvent(Qt::NoModifier));
 
     ExpectedEventList expected(&w);
-    expected.append(new QKeyEvent(QEvent::KeyPress, Qt::Key_Meta, Qt::NoModifier));
+    expected.append(new QKeyEvent(QEvent::KeyPress, Qt::Key_Control, Qt::NoModifier));
     expected.append(new QKeyEvent(QEvent::KeyPress, Qt::Key_A, Qt::ControlModifier));
     expected.append(new QKeyEvent(QEvent::KeyRelease, Qt::Key_A, Qt::ControlModifier));
-    expected.append(new QKeyEvent(QEvent::KeyRelease, Qt::Key_Meta, Qt::ControlModifier));
+    expected.append(new QKeyEvent(QEvent::KeyRelease, Qt::Key_Control, Qt::ControlModifier));
 
     native.play();
     QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");

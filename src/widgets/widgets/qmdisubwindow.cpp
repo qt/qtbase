@@ -1986,6 +1986,13 @@ void QMdiSubWindowPrivate::updateActions()
     for (int i = 0; i < NumWindowStateActions; ++i)
         setVisible(WindowStateAction(i), false);
 
+#ifdef Q_OS_MACOS
+    if (q_func()->style()->inherits("QMacStyle"))
+        for (int i = 0; i < NumWindowStateActions; ++i)
+            if (QAction *action = actions[i])
+                action->setIconVisibleInMenu(false);
+#endif
+
     if (windowFlags & Qt::FramelessWindowHint)
         return;
 

@@ -83,21 +83,27 @@ bool _q_fromHex(const char *&src, Integral &value)
     return true;
 }
 
-static char *_q_uuidToHex(const QUuid &uuid, char *dst)
+static char *_q_uuidToHex(const QUuid &uuid, char *dst, QUuid::StringFormat mode = QUuid::WithBraces)
 {
-    *dst++ = '{';
+    if ((mode & QUuid::WithoutBraces) == 0)
+        *dst++ = '{';
     _q_toHex(dst, uuid.data1);
-    *dst++ = '-';
+    if ((mode & QUuid::Id128) != QUuid::Id128)
+        *dst++ = '-';
     _q_toHex(dst, uuid.data2);
-    *dst++ = '-';
+    if ((mode & QUuid::Id128) != QUuid::Id128)
+        *dst++ = '-';
     _q_toHex(dst, uuid.data3);
-    *dst++ = '-';
+    if ((mode & QUuid::Id128) != QUuid::Id128)
+        *dst++ = '-';
     for (int i = 0; i < 2; i++)
         _q_toHex(dst, uuid.data4[i]);
-    *dst++ = '-';
+    if ((mode & QUuid::Id128) != QUuid::Id128)
+        *dst++ = '-';
     for (int i = 2; i < 8; i++)
         _q_toHex(dst, uuid.data4[i]);
-    *dst++ = '}';
+    if ((mode & QUuid::WithoutBraces) == 0)
+        *dst++ = '}';
     return dst;
 }
 
@@ -143,7 +149,6 @@ static QUuid _q_uuidFromHex(const char *src)
     return QUuid();
 }
 
-#ifndef QT_BOOTSTRAPPED
 static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCryptographicHash::Algorithm algorithm, int version)
 {
     QByteArray hashResult;
@@ -166,7 +171,6 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
 
     return result;
 }
-#endif
 
 /*!
     \class QUuid
@@ -304,6 +308,22 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
     using the static createUuid() function. They can be converted to a
     string with toString(). UUIDs have a variant() and a version(),
     and null UUIDs return true from isNull().
+*/
+
+/*!
+    \enum QUuid::StringFormat
+    \since 5.11
+
+    This enum is used by toString(StringFormat) to control the formatting of the
+    string representation. The possible values are:
+
+    \value WithBraces       The default, toString() will return five hex fields, separated by
+                            dashes and surrounded by braces. Example:
+                            {00000000-0000-0000-0000-000000000000}.
+    \value WithoutBraces    Only the five dash-separated fields, without the braces. Example:
+                            00000000-0000-0000-0000-000000000000.
+    \value Id128            Only the hex digits, without braces or dashes. Note that QUuid
+                            cannot parse this back again as input.
 */
 
 /*!
@@ -488,12 +508,12 @@ QUuid QUuid::createUuidV3(const QUuid &ns, const QByteArray &baseData)
 {
     return createFromName(ns, baseData, QCryptographicHash::Md5, 3);
 }
+#endif
 
 QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData)
 {
     return createFromName(ns, baseData, QCryptographicHash::Sha1, 5);
 }
-#endif
 
 /*!
   Creates a QUuid object from the binary representation of the UUID, as
@@ -592,6 +612,47 @@ QString QUuid::toString() const
 }
 
 /*!
+    \since 5.11
+
+    Returns the string representation of this QUuid, with the formattiong
+    controlled by the \a mode parameter. From left to right, the five hex
+    fields are obtained from the four public data members in QUuid as follows:
+
+    \table
+    \header
+    \li Field #
+    \li Source
+
+    \row
+    \li 1
+    \li data1
+
+    \row
+    \li 2
+    \li data2
+
+    \row
+    \li 3
+    \li data3
+
+    \row
+    \li 4
+    \li data4[0] .. data4[1]
+
+    \row
+    \li 5
+    \li data4[2] .. data4[7]
+
+    \endtable
+*/
+QString QUuid::toString(QUuid::StringFormat mode) const
+{
+    char latin1[MaxStringUuidLength];
+    const auto end = _q_uuidToHex(*this, latin1, mode);
+    return QString::fromLatin1(latin1, end - latin1);
+}
+
+/*!
     Returns the binary representation of this QUuid. The byte array is
     formatted as five hex fields separated by '-' and enclosed in
     curly braces, i.e., "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where
@@ -633,6 +694,48 @@ QByteArray QUuid::toByteArray() const
     const auto end = _q_uuidToHex(*this, const_cast<char*>(result.constData()));
     Q_ASSERT(end - result.constData() == MaxStringUuidLength);
     Q_UNUSED(end);
+    return result;
+}
+
+/*!
+    \since 5.11
+
+    Returns the string representation of this QUuid, with the formattiong
+    controlled by the \a mode parameter. From left to right, the five hex
+    fields are obtained from the four public data members in QUuid as follows:
+
+    \table
+    \header
+    \li Field #
+    \li Source
+
+    \row
+    \li 1
+    \li data1
+
+    \row
+    \li 2
+    \li data2
+
+    \row
+    \li 3
+    \li data3
+
+    \row
+    \li 4
+    \li data4[0] .. data4[1]
+
+    \row
+    \li 5
+    \li data4[2] .. data4[7]
+
+    \endtable
+*/
+QByteArray QUuid::toByteArray(QUuid::StringFormat mode) const
+{
+    QByteArray result(MaxStringUuidLength, Qt::Uninitialized);
+    const auto end = _q_uuidToHex(*this, const_cast<char*>(result.constData()), mode);
+    result.resize(end - result.constData());
     return result;
 }
 
@@ -945,7 +1048,7 @@ QUuid QUuid::createUuid()
     QUuid result(Qt::Uninitialized);
     uint *data = &(result.data1);
     enum { AmountToRead = 4 };
-    QRandomGenerator::fillRange(data, AmountToRead);
+    QRandomGenerator::system()->fillRange(data, AmountToRead);
 
     result.data4[0] = (result.data4[0] & 0x3F) | 0x80;        // UV_DCE
     result.data3 = (result.data3 & 0x0FFF) | 0x4000;        // UV_Random

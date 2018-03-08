@@ -67,6 +67,14 @@ QT_BEGIN_NAMESPACE
 // removed from the dialogs.
 #define PPK_CupsOptions QPrintEngine::PrintEnginePropertyKey(0xfe00)
 
+#define PDPK_PpdFile          QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase)
+#define PDPK_PpdOption        QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 1)
+#define PDPK_CupsJobPriority  QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 2)
+#define PDPK_CupsJobSheets    QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 3)
+#define PDPK_CupsJobBilling   QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 4)
+#define PDPK_CupsJobHoldUntil QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 5)
+#define PDPK_PpdChoiceIsInstallableConflict QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 6)
+
 class Q_PRINTSUPPORT_EXPORT QCUPSSupport
 {
 public:
@@ -122,10 +130,9 @@ public:
         TopToBottomRightToLeft
     };
 
-    static QStringList cupsOptionsList(QPrinter *printer);
-    static void setCupsOptions(QPrinter *printer, const QStringList &cupsOptions);
-    static void setCupsOption(QStringList &cupsOptions, const QString &option, const QString &value);
-    static void clearCupsOption(QStringList &cupsOptions, const QString &option);
+    static void setCupsOption(QPrinter *printer, const QString &option, const QString &value);
+    static void clearCupsOption(QPrinter *printer, const QString &option);
+    static void clearCupsOptions(QPrinter *printer);
 
     static void setJobHold(QPrinter *printer, const JobHoldUntil jobHold = NoHold, const QTime &holdUntilTime = QTime());
     static void setJobBilling(QPrinter *printer, const QString &jobBilling = QString());
@@ -135,6 +142,27 @@ public:
     static void setPagesPerSheetLayout(QPrinter *printer, const PagesPerSheet pagesPerSheet,
                                        const PagesPerSheetLayout pagesPerSheetLayout);
     static void setPageRange(QPrinter *printer, int pageFrom, int pageTo);
+    static void setPageRange(QPrinter *printer, const QString &pageRange);
+
+    struct JobSheets
+    {
+        JobSheets(BannerPage s = NoBanner, BannerPage e = NoBanner)
+         : startBannerPage(s), endBannerPage(e) {}
+
+        BannerPage startBannerPage;
+        BannerPage endBannerPage;
+    };
+    static JobSheets parseJobSheets(const QString &jobSheets);
+
+    struct JobHoldUntilWithTime
+    {
+        JobHoldUntilWithTime(JobHoldUntil jh = NoHold, const QTime &t = QTime())
+            : jobHold(jh), time(t) {}
+
+        JobHoldUntil jobHold;
+        QTime time;
+    };
+    static JobHoldUntilWithTime parseJobHoldUntil(const QString &jobHoldUntil);
 };
 Q_DECLARE_TYPEINFO(QCUPSSupport::JobHoldUntil,        Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QCUPSSupport::BannerPage,          Q_PRIMITIVE_TYPE);

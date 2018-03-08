@@ -42,6 +42,7 @@
 #include "qnsview.h"
 #include "qcocoawindow.h"
 #include "qcocoahelpers.h"
+#include "qcocoascreen.h"
 #include "qmultitouch_mac_p.h"
 #include "qcocoadrag.h"
 #include "qcocoainputcontext.h"
@@ -147,6 +148,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         m_isMenuView = false;
         self.focusRingType = NSFocusRingTypeNone;
         self.cursor = nil;
+        m_updateRequested = false;
     }
     return self;
 }
@@ -299,6 +301,25 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     return m_platformWindow->isOpaque();
 }
 
+- (void)requestUpdate
+{
+    if (self.needsDisplay) {
+        // If the view already has needsDisplay set it means that there may be code waiting for
+        // a real expose event, so we can't issue setNeedsDisplay now as a way to trigger an
+        // update request. We will re-trigger requestUpdate from drawRect.
+        return;
+    }
+
+    [self setNeedsDisplay:YES];
+    m_updateRequested = true;
+}
+
+- (void)setNeedsDisplayInRect:(NSRect)rect
+{
+    [super setNeedsDisplayInRect:rect];
+    m_updateRequested = false;
+}
+
 - (void)drawRect:(NSRect)dirtyRect
 {
     Q_UNUSED(dirtyRect);
@@ -313,8 +334,12 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     for (int i = 0; i < numDirtyRects; ++i)
         exposedRegion += QRectF::fromCGRect(dirtyRects[i]).toRect();
 
-    qCDebug(lcQpaCocoaWindow) << "[QNSView drawRect:]" << m_platformWindow->window() << exposedRegion;
+    qCDebug(lcQpaCocoaDrawing) << "[QNSView drawRect:]" << m_platformWindow->window() << exposedRegion;
+    [self updateRegion:exposedRegion];
+}
 
+- (void)updateRegion:(QRegion)dirtyRegion
+{
 #ifndef QT_NO_OPENGL
     if (m_glContext && m_shouldSetGLContextinDrawRect) {
         [m_glContext->nsOpenGLContext() setView:self];
@@ -322,17 +347,24 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     }
 #endif
 
-    m_platformWindow->handleExposeEvent(exposedRegion);
+    QWindowPrivate *windowPrivate = qt_window_private(m_platformWindow->window());
 
-    // A call to QWindow::requestUpdate was issued during the expose event, but
-    // AppKit will reset the needsDisplay state of the view after completing the
-    // current display cycle, so we need to defer the request to redisplay.
-    // FIXME: Perhaps this should be a trigger to enable CADisplayLink?
-    if (qt_window_private(m_platformWindow->window())->updateRequestPending) {
-        qCDebug(lcQpaCocoaWindow) << "[QNSView drawRect:] deferring setNeedsDisplay";
-        dispatch_async(dispatch_get_main_queue (), ^{
-            [self setNeedsDisplay:YES];
-        });
+    if (m_updateRequested) {
+        Q_ASSERT(windowPrivate->updateRequestPending);
+        qCDebug(lcQpaCocoaWindow) << "Delivering update request to" << m_platformWindow->window();
+        windowPrivate->deliverUpdateRequest();
+        m_updateRequested = false;
+    } else {
+        m_platformWindow->handleExposeEvent(dirtyRegion);
+    }
+
+    if (windowPrivate->updateRequestPending) {
+        // A call to QWindow::requestUpdate was issued during event delivery above,
+        // but AppKit will reset the needsDisplay state of the view after completing
+        // the current display cycle, so we need to defer the request to redisplay.
+        // FIXME: Perhaps this should be a trigger to enable CADisplayLink?
+        qCDebug(lcQpaCocoaDrawing) << "[QNSView drawRect:] issuing deferred setNeedsDisplay due to pending update request";
+        dispatch_async(dispatch_get_main_queue (), ^{ [self requestUpdate]; });
     }
 }
 
@@ -346,10 +378,16 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     if (!m_platformWindow)
         return;
 
-    qCDebug(lcQpaCocoaWindow) << "[QNSView updateLayer]" << m_platformWindow->window();
+    qCDebug(lcQpaCocoaDrawing) << "[QNSView updateLayer]" << m_platformWindow->window();
 
     // FIXME: Find out if there's a way to resolve the dirty rect like in drawRect:
-    m_platformWindow->handleExposeEvent(QRectF::fromCGRect(self.bounds).toRect());
+    [self updateRegion:QRectF::fromCGRect(self.bounds).toRect()];
+}
+
+- (void)viewDidChangeBackingProperties
+{
+    if (self.layer)
+        self.layer.contentsScale = self.window.backingScaleFactor;
 }
 
 - (BOOL)isFlipped
@@ -435,8 +473,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     nsWindowPoint = windowRect.origin;                    // NSWindow coordinates
     NSPoint nsViewPoint = [self convertPoint: nsWindowPoint fromView: nil]; // NSView/QWindow coordinates
     *qtWindowPoint = QPointF(nsViewPoint.x, nsViewPoint.y);                     // NSView/QWindow coordinates
-
-    *qtScreenPoint = QPointF(mouseLocation.x, qt_mac_flipYCoordinate(mouseLocation.y)); // Qt screen coordinates
+    *qtScreenPoint = QCocoaScreen::mapFromNative(mouseLocation);
 }
 
 - (void)resetMouseButtons
@@ -547,7 +584,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     NSPoint nsViewPoint = [self convertPoint: windowPoint fromView: nil];
     QPoint qtWindowPoint = QPoint(nsViewPoint.x, titleBarHeight + nsViewPoint.y);
     NSPoint screenPoint = [window convertRectToScreen:NSMakeRect(windowPoint.x, windowPoint.y, 0, 0)].origin;
-    QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
+    QPoint qtScreenPoint = QCocoaScreen::mapFromNative(screenPoint).toPoint();
 
     ulong timestamp = [theEvent timestamp] * 1000;
     QWindowSystemInterface::handleFrameStrutMouseEvent(m_platformWindow->window(), timestamp, qtWindowPoint, qtScreenPoint, m_frameStrutButtons);
@@ -639,7 +676,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     if (!popups->isEmpty()) {
         // Check if the click is outside all popups.
         bool inside = false;
-        QPointF qtScreenPoint = qt_mac_flipPoint([self screenMousePoint:theEvent]);
+        QPointF qtScreenPoint = QCocoaScreen::mapFromNative([self screenMousePoint:theEvent]);
         for (QList<QCocoaWindow *>::const_iterator it = popups->begin(); it != popups->end(); ++it) {
             if ((*it)->geometry().contains(qtScreenPoint.toPoint())) {
                 inside = true;
@@ -682,7 +719,8 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     if ([self hasMarkedText]) {
         [[NSTextInputContext currentInputContext] handleEvent:theEvent];
     } else {
-        if (!m_dontOverrideCtrlLMB && [QNSView convertKeyModifiers:[theEvent modifierFlags]] & Qt::MetaModifier) {
+        auto ctrlOrMetaModifier = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta) ? Qt::ControlModifier : Qt::MetaModifier;
+        if (!m_dontOverrideCtrlLMB && [QNSView convertKeyModifiers:[theEvent modifierFlags]] & ctrlOrMetaModifier) {
             m_buttons |= Qt::RightButton;
             m_sendUpAsRightButton = true;
         } else {
@@ -779,7 +817,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 - (void)cursorUpdate:(NSEvent *)theEvent
 {
-    qCDebug(lcQpaCocoaWindow) << "[QNSView cursorUpdate:]" << self.cursor;
+    qCDebug(lcQpaCocoaMouse) << "[QNSView cursorUpdate:]" << self.cursor;
 
     // Note: We do not get this callback when moving from a subview that
     // uses the legacy cursorRect API, so the cursor is reset to the arrow
@@ -879,6 +917,8 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
 
 - (bool)handleTabletEvent: (NSEvent *)theEvent
 {
+    static bool ignoreButtonMapping = qEnvironmentVariableIsSet("QT_MAC_TABLET_IGNORE_BUTTON_MAPPING");
+
     if (!m_platformWindow)
         return false;
 
@@ -927,14 +967,15 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
         rotation -= 360.0;
 
     Qt::KeyboardModifiers keyboardModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
+    Qt::MouseButtons buttons = ignoreButtonMapping ? static_cast<Qt::MouseButtons>(static_cast<uint>([theEvent buttonMask])) : m_buttons;
 
     qCDebug(lcQpaTablet, "event on tablet %d with tool %d type %d unique ID %lld pos %6.1f, %6.1f root pos %6.1f, %6.1f buttons 0x%x pressure %4.2lf tilt %d, %d rotation %6.2lf",
         deviceId, deviceData.device, deviceData.pointerType, deviceData.uid,
         windowPoint.x(), windowPoint.y(), screenPoint.x(), screenPoint.y(),
-        static_cast<uint>(m_buttons), pressure, xTilt, yTilt, rotation);
+        static_cast<uint>(buttons), pressure, xTilt, yTilt, rotation);
 
     QWindowSystemInterface::handleTabletEvent(m_platformWindow->window(), timestamp, windowPoint, screenPoint,
-                                              deviceData.device, deviceData.pointerType, m_buttons, pressure, xTilt, yTilt,
+                                              deviceData.device, deviceData.pointerType, buttons, pressure, xTilt, yTilt,
                                               tangentialPressure, rotation, z, deviceData.uid,
                                               keyboardModifiers);
     return true;
@@ -1293,6 +1334,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     // "isInverted": natural OS X scrolling, inverted from the Qt/other platform/Jens perspective.
     bool isInverted  = [theEvent isDirectionInvertedFromDevice];
 
+    qCDebug(lcQpaCocoaMouse) << "scroll wheel @ window pos" << qt_windowPoint << "delta px" << pixelDelta << "angle" << angleDelta << "phase" << ph << (isInverted ? "inverted" : "");
     QWindowSystemInterface::handleWheelEvent(m_platformWindow->window(), qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers, ph, source, isInverted);
 }
 #endif // QT_CONFIG(wheelevent)
@@ -1304,15 +1346,16 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 + (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags
 {
+    const bool dontSwapCtrlAndMeta = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
     Qt::KeyboardModifiers qtMods =Qt::NoModifier;
     if (modifierFlags &  NSShiftKeyMask)
         qtMods |= Qt::ShiftModifier;
     if (modifierFlags & NSControlKeyMask)
-        qtMods |= Qt::MetaModifier;
+        qtMods |= dontSwapCtrlAndMeta ? Qt::ControlModifier : Qt::MetaModifier;
     if (modifierFlags & NSAlternateKeyMask)
         qtMods |= Qt::AltModifier;
     if (modifierFlags & NSCommandKeyMask)
-        qtMods |= Qt::ControlModifier;
+        qtMods |= dontSwapCtrlAndMeta ? Qt::MetaModifier : Qt::ControlModifier;
     if (modifierFlags & NSNumericPadKeyMask)
         qtMods |= Qt::KeypadModifier;
     return qtMods;
@@ -1345,7 +1388,8 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     // ALT+E to be used as a shortcut with an English keyboard even though
     // pressing ALT+E will give a dead key while doing normal text input.
     if ([characters length] != 0 || [charactersIgnoringModifiers length] != 0) {
-        if (((modifiers & Qt::MetaModifier) || (modifiers & Qt::AltModifier)) && ([charactersIgnoringModifiers length] != 0))
+        auto ctrlOrMetaModifier = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta) ? Qt::ControlModifier : Qt::MetaModifier;
+        if (((modifiers & ctrlOrMetaModifier) || (modifiers & Qt::AltModifier)) && ([charactersIgnoringModifiers length] != 0))
             ch = QChar([charactersIgnoringModifiers characterAtIndex:0]);
         else if ([characters length] != 0)
             ch = QChar([characters characterAtIndex:0]);
@@ -1494,10 +1538,17 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         if ((delta & mac_mask) == 0u)
             continue;
 
+        Qt::Key qtCode = modifier_key_symbols[i].qt_code;
+        if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
+            if (qtCode == Qt::Key_Meta)
+                qtCode = Qt::Key_Control;
+            else if (qtCode == Qt::Key_Control)
+                qtCode = Qt::Key_Meta;
+        }
         QWindowSystemInterface::handleKeyEvent(m_platformWindow->window(),
                                                timestamp,
                                                (lastKnownModifiers & mac_mask) ? QEvent::KeyRelease : QEvent::KeyPress,
-                                               modifier_key_symbols[i].qt_code,
+                                               qtCode,
                                                qmodifiers ^ [QNSView convertKeyModifiers:mac_mask]);
     }
 }
@@ -1729,14 +1780,8 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
     // The returned rect is always based on the internal cursor.
     QRect mr = qApp->inputMethod()->cursorRectangle().toRect();
-    QPoint mp = m_platformWindow->window()->mapToGlobal(mr.bottomLeft());
-
-    NSRect rect;
-    rect.origin.x = mp.x();
-    rect.origin.y = qt_mac_flipYCoordinate(mp.y());
-    rect.size.width = mr.width();
-    rect.size.height = mr.height();
-    return rect;
+    mr.moveBottomLeft(m_platformWindow->window()->mapToGlobal(mr.bottomLeft()));
+    return QCocoaScreen::mapToNative(mr);
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)aPoint
@@ -1883,6 +1928,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     }
     else {
         NSImage *nsimage = qt_mac_create_nsimage(pixmapCursor);
+        nsimage.size = NSSizeFromCGSize((pixmapCursor.size() / pixmapCursor.devicePixelRatioF()).toCGSize());
         nativeCursor = [[NSCursor alloc] initWithImage:nsimage hotSpot:NSZeroPoint];
         [nsimage release];
     }
@@ -2021,8 +2067,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     NSPoint windowPoint = [self.window convertRectFromScreen:NSMakeRect(screenPoint.x, screenPoint.y, 1, 1)].origin;
     NSPoint nsViewPoint = [self convertPoint: windowPoint fromView: nil]; // NSView/QWindow coordinates
     QPoint qtWindowPoint(nsViewPoint.x, nsViewPoint.y);
-
-    QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
+    QPoint qtScreenPoint = QCocoaScreen::mapFromNative(screenPoint).toPoint();
 
     QWindowSystemInterface::handleMouseEvent(target, mapWindowCoordinates(m_platformWindow->window(), target, qtWindowPoint), qtScreenPoint, m_buttons);
 }
