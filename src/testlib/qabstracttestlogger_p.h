@@ -175,6 +175,11 @@ namespace QTest
     int qt_asprintf(QTestCharBuffer *buf, const char *format, ...);
 }
 
+namespace QTestPrivate
+{
+    enum IdentifierPart { TestObject = 0x1, TestFunction = 0x2, TestDataTag = 0x4, AllParts = 0xFFFF };
+    void generateTestIdentifier(QTestCharBuffer *identifier, int parts = AllParts);
+}
 
 QT_END_NAMESPACE
 

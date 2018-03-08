@@ -78,6 +78,9 @@ embedded:QMAKE_CXXFLAGS += -fno-rtti
 mac {
     LIBS += -framework Security
 
+    SOURCES += qappletestlogger.cpp
+    HEADERS += qappletestlogger_p.h
+
     macos {
         HEADERS += qtestutil_macos_p.h
         OBJECTIVE_SOURCES += qtestutil_macos.mm

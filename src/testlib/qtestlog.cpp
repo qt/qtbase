@@ -51,6 +51,10 @@
 #include <QtTest/private/qxctestlogger_p.h>
 #endif
 
+#if defined(Q_OS_DARWIN)
+#include <QtTest/private/qappletestlogger_p.h>
+#endif
+
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/QElapsedTimer>
@@ -502,6 +506,15 @@ void QTestLog::addLogger(LogMode mode, const char *filename)
         break;
 #endif
     }
+
+#if defined(QT_USE_APPLE_UNIFIED_LOGGING)
+    // Logger that also feeds messages to AUL. It needs to wrap the existing
+    // logger, as it needs to be able to short circuit the existing logger
+    // in case AUL prints to stderr.
+    if (QAppleTestLogger::debugLoggingEnabled())
+        logger = new QAppleTestLogger(logger);
+#endif
+
     QTEST_ASSERT(logger);
     QTest::TestLoggers::addLogger(logger);
 }

@@ -39,6 +39,7 @@
 
 #include <QtTest/private/qabstracttestlogger_p.h>
 #include <QtTest/qtestassert.h>
+#include <qtestresult_p.h>
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstring.h>
@@ -185,6 +186,28 @@ int qt_asprintf(QTestCharBuffer *str, const char *format, ...)
     }
 
     return res;
+}
+
+}
+
+namespace QTestPrivate
+{
+
+void generateTestIdentifier(QTestCharBuffer *identifier, int parts)
+{
+    const char *testObject = parts & TestObject ? QTestResult::currentTestObjectName() : "";
+    const char *testFunction = parts & TestFunction ? (QTestResult::currentTestFunction() ? QTestResult::currentTestFunction() : "UnknownTestFunc") : "";
+    const char *objectFunctionFiller = parts & TestObject && parts & (TestFunction | TestDataTag) ? "::" : "";
+    const char *testFuctionStart = parts & TestFunction ? "(" : "";
+    const char *testFuctionEnd = parts & TestFunction ? ")" : "";
+
+    const char *dataTag = (parts & TestDataTag) && QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "";
+    const char *globalDataTag = (parts & TestDataTag) && QTestResult::currentGlobalDataTag() ? QTestResult::currentGlobalDataTag() : "";
+    const char *tagFiller = (dataTag[0] && globalDataTag[0]) ? ":" : "";
+
+    QTest::qt_asprintf(identifier, "%s%s%s%s%s%s%s%s",
+        testObject, objectFunctionFiller, testFunction, testFuctionStart,
+        globalDataTag, tagFiller, dataTag, testFuctionEnd);
 }
 
 }
