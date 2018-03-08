@@ -72,8 +72,12 @@ HEADERS += qcocoaintegration.h \
 
 qtConfig(opengl.*) {
     SOURCES += qcocoaglcontext.mm
-
     HEADERS += qcocoaglcontext.h
+}
+
+qtConfig(vulkan) {
+    SOURCES += qcocoavulkaninstance.mm
+    HEADERS += qcocoavulkaninstance.h
 }
 
 RESOURCES += qcocoaresources.qrc
@@ -84,6 +88,8 @@ QT += \
     core-private gui-private \
     accessibility_support-private clipboard_support-private theme_support-private \
     fontdatabase_support-private graphics_support-private
+
+qtConfig(vulkan): QT += vulkan_support-private
 
 CONFIG += no_app_extension_api_only
 

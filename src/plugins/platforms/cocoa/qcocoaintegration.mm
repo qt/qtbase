@@ -379,6 +379,19 @@ QAbstractEventDispatcher *QCocoaIntegration::createEventDispatcher() const
     return new QCocoaEventDispatcher;
 }
 
+#if QT_CONFIG(vulkan)
+QPlatformVulkanInstance *QCocoaIntegration::createPlatformVulkanInstance(QVulkanInstance *instance) const
+{
+    mCocoaVulkanInstance = new QCocoaVulkanInstance(instance);
+    return mCocoaVulkanInstance;
+}
+
+QCocoaVulkanInstance *QCocoaIntegration::getCocoaVulkanInstance() const
+{
+    return mCocoaVulkanInstance;
+}
+#endif
+
 QCoreTextFontDatabase *QCocoaIntegration::fontDatabase() const
 {
     return mFontDb.data();

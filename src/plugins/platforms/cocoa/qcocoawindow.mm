@@ -222,10 +222,16 @@ QCocoaWindow::~QCocoaWindow()
     if (!isForeignWindow())
         [[NSNotificationCenter defaultCenter] removeObserver:m_view];
 
-    // While it is unlikely that this window will be in the popup stack
-    // during deletetion we clear any pointers here to make sure.
-    if (QCocoaIntegration::instance()) {
-        QCocoaIntegration::instance()->popupWindowStack()->removeAll(this);
+    if (QCocoaIntegration *cocoaIntegration = QCocoaIntegration::instance()) {
+        // While it is unlikely that this window will be in the popup stack
+        // during deletetion we clear any pointers here to make sure.
+        cocoaIntegration->popupWindowStack()->removeAll(this);
+
+#if QT_CONFIG(vulkan)
+        auto vulcanInstance = cocoaIntegration->getCocoaVulkanInstance();
+        if (vulcanInstance)
+            vulcanInstance->destroySurface(m_vulkanSurface);
+#endif
     }
 
     [m_view release];

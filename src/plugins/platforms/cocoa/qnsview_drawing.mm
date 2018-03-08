@@ -141,13 +141,19 @@
     // on and off is not a supported use-case, so this code is effectively
     // returning a constant for the lifetime of our QSNSView, which means
     // we don't care about emitting KVO signals for @"wantsLayer".
-    return qt_mac_resolveOption(false, m_platformWindow->window(),
+    bool layerRequested = qt_mac_resolveOption(false, m_platformWindow->window(),
         "_q_mac_wantsLayer", "QT_MAC_WANTS_LAYER");
+
+    // Support Vulkan via MoltenVK, which requires a Metal layer
+    bool layerForVulkan = (m_platformWindow->window()->surfaceType() == QWindow::VulkanSurface);
+
+    return layerRequested || layerForVulkan;
 }
 
 - (CALayer *)makeBackingLayer
 {
-    bool makeMetalLayer = false; // TODO: Add/implement enabling API
+    // Support Vulkan via MoltenVK, which requires a Metal layer
+    bool makeMetalLayer = (m_platformWindow->window()->surfaceType() == QWindow::VulkanSurface);
     if (makeMetalLayer) {
         // Check if Metal is supported. If it isn't then it's most likely
         // too late at this point and the QWindow will be non-functional,

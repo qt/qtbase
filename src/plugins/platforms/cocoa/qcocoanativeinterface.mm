@@ -71,6 +71,10 @@
 
 #include <AppKit/AppKit.h>
 
+#if QT_CONFIG(vulkan)
+#include <MoltenVK/mvk_vulkan.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QCocoaNativeInterface::QCocoaNativeInterface()
@@ -104,6 +108,11 @@ void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceS
 #endif
     } else if (resourceString == "nswindow") {
         return static_cast<QCocoaWindow *>(window->handle())->nativeWindow();
+#if QT_CONFIG(vulkan)
+    } else if (resourceString == "vkSurface") {
+        if (QVulkanInstance *instance = window->vulkanInstance())
+            return static_cast<QCocoaVulkanInstance *>(instance->handle())->createSurface(window);
+#endif
     }
     return nullptr;
 }
