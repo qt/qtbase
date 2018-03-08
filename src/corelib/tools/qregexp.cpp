@@ -3813,8 +3813,10 @@ struct QRegExpPrivate
 };
 
 #if !defined(QT_NO_REGEXP_OPTIM)
-typedef QCache<QRegExpEngineKey, QRegExpEngine> EngineCache;
+typedef QHash<QRegExpEngineKey, QRegExpEngine *> EngineCache;
 Q_GLOBAL_STATIC(EngineCache, globalEngineCache)
+typedef QCache<QRegExpEngineKey, QRegExpEngine> UnusedEngineCache;
+Q_GLOBAL_STATIC(UnusedEngineCache, globalUnusedEngineCache)
 static QBasicMutex globalEngineCacheMutex;
 #endif // QT_NO_REGEXP_OPTIM
 
@@ -3822,14 +3824,16 @@ static void derefEngine(QRegExpEngine *eng, const QRegExpEngineKey &key)
 {
     if (!eng->ref.deref()) {
 #if !defined(QT_NO_REGEXP_OPTIM)
-        if (globalEngineCache()) {
+        if (globalUnusedEngineCache()) {
             QMutexLocker locker(&globalEngineCacheMutex);
             QT_TRY {
-                globalEngineCache()->insert(key, eng, 4 + key.pattern.length() / 4);
+                globalUnusedEngineCache()->insert(key, eng, 4 + key.pattern.length() / 4);
             } QT_CATCH(const std::bad_alloc &) {
                 // in case of an exception (e.g. oom), just delete the engine
                 delete eng;
             }
+            if (globalEngineCache())
+                globalEngineCache()->remove(key);
         } else {
             delete eng;
         }
@@ -3844,9 +3848,11 @@ static void prepareEngine_helper(QRegExpPrivate *priv)
 {
     bool initMatchState = !priv->eng;
 #if !defined(QT_NO_REGEXP_OPTIM)
-    if (!priv->eng && globalEngineCache()) {
+    if (!priv->eng && globalUnusedEngineCache()) {
         QMutexLocker locker(&globalEngineCacheMutex);
-        priv->eng = globalEngineCache()->take(priv->engineKey);
+        priv->eng = globalUnusedEngineCache()->take(priv->engineKey);
+        if (!priv->eng && globalEngineCache())
+            priv->eng = globalEngineCache()->value(priv->engineKey);
         if (priv->eng != 0)
             priv->eng->ref.ref();
     }
@@ -3854,6 +3860,10 @@ static void prepareEngine_helper(QRegExpPrivate *priv)
 
     if (!priv->eng)
         priv->eng = new QRegExpEngine(priv->engineKey);
+#if !defined(QT_NO_REGEXP_OPTIM)
+    if (globalEngineCache())
+        globalEngineCache()->insert(priv->engineKey, priv->eng);
+#endif
 
     if (initMatchState)
         priv->matchState.prepareForMatch(priv->eng);
