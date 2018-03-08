@@ -128,10 +128,10 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
     QList<QSslCertificate> systemCerts;
     // SecTrustSettingsCopyCertificates is not defined on iOS.
 #ifdef Q_OS_OSX
-    QCFType<CFArrayRef> cfCerts;
     // iterate through all enum members, order:
     // kSecTrustSettingsDomainUser, kSecTrustSettingsDomainAdmin, kSecTrustSettingsDomainSystem
     for (int dom = kSecTrustSettingsDomainUser; dom <= int(kSecTrustSettingsDomainSystem); dom++) {
+        QCFType<CFArrayRef> cfCerts;
         OSStatus status = SecTrustSettingsCopyCertificates(SecTrustSettingsDomain(dom), &cfCerts);
         if (status == noErr) {
             const CFIndex size = CFArrayGetCount(cfCerts);
