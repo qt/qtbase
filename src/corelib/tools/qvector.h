@@ -283,6 +283,10 @@ public:
     { append(t); return *this; }
     inline QVector<T> &operator<<(const QVector<T> &l)
     { *this += l; return *this; }
+    inline QVector<T> &operator+=(T &&t)
+    { append(t); return *this; }
+    inline QVector<T> &operator<<(T &&t)
+    { append(t); return *this; }
 
     QList<T> toList() const;
 

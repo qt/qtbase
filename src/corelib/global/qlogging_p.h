@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,53 +37,28 @@
 **
 ****************************************************************************/
 
-#ifndef QCOCOANSMENU_H
-#define QCOCOANSMENU_H
+#ifndef QLOGGING_P_H
+#define QLOGGING_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
+// This file is not part of the Qt API.  It exists for the convenience
+// of a number of Qt sources files.  This header file may change from
+// version to version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#import <AppKit/AppKit.h>
+QT_BEGIN_NAMESPACE
 
-#include <QtCore/qpointer.h>
-#include <qcocoahelpers.h>
+namespace QtPrivate {
 
-QT_FORWARD_DECLARE_CLASS(QCocoaMenu);
-typedef QPointer<QCocoaMenu> QCocoaMenuPointer;
+Q_CORE_EXPORT bool shouldLogToStderr();
 
+}
 
-@interface QT_MANGLE_NAMESPACE(QCocoaNSMenuDelegate) : NSObject <NSMenuDelegate>
+QT_END_NAMESPACE
 
-+ (instancetype)sharedMenuDelegate;
-
-- (NSMenuItem *)findItemInMenu:(NSMenu *)menu
-                        forKey:(NSString *)key
-                     modifiers:(NSUInteger)modifiers;
-
-@end
-
-@interface QT_MANGLE_NAMESPACE(QCocoaNSMenu) : NSMenu
-
-@property (readonly, nonatomic) QCocoaMenuPointer qpaMenu;
-
-- (instancetype)initWithQPAMenu:(QCocoaMenu *)menu;
-
-- (void)qt_itemFired:(NSMenuItem *)item;
-
-- (BOOL)worksWhenModal;
-- (BOOL)validateMenuItem:(NSMenuItem*)item; // NSMenuValidation
-
-@end
-
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaNSMenu);
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaNSMenuDelegate);
-
-#endif // QCOCOANSMENU_H
+#endif // QLOGGING_P_H

@@ -412,7 +412,8 @@ QWindowsOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
                     const QPoint localPos = m_windowUnderMouse->handle()->mapFromGlobal(globalPos);
                     QWindowSystemInterface::handleMouseEvent(m_windowUnderMouse.data(),
                                                              QPointF(localPos), QPointF(globalPos),
-                                                             QWindowsMouseHandler::queryMouseButtons());
+                                                             QWindowsMouseHandler::queryMouseButtons(),
+                                                             Qt::LeftButton, QEvent::MouseButtonRelease);
                 }
             }
             m_currentButtons = Qt::NoButton;

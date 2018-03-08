@@ -48,52 +48,52 @@ class QSqlFieldPrivate
 public:
     QSqlFieldPrivate(const QString &name,
                      QVariant::Type type, const QString &tableName) :
-        ref(1), nm(name), ro(false), type(type), req(QSqlField::Unknown),
-        len(-1), prec(-1), tp(-1), gen(true), autoval(false), table(tableName)
-    {
-    }
+        ref(1), nm(name), table(tableName), def(QVariant()), type(type),
+        req(QSqlField::Unknown), len(-1), prec(-1), tp(-1),
+        ro(false), gen(true), autoval(false)
+    {}
 
     QSqlFieldPrivate(const QSqlFieldPrivate &other)
         : ref(1),
           nm(other.nm),
-          ro(other.ro),
+          table(other.table),
+          def(other.def),
           type(other.type),
           req(other.req),
           len(other.len),
           prec(other.prec),
-          def(other.def),
           tp(other.tp),
+          ro(other.ro),
           gen(other.gen),
-          autoval(other.autoval),
-          table(other.table)
+          autoval(other.autoval)
     {}
 
     bool operator==(const QSqlFieldPrivate& other) const
     {
         return (nm == other.nm
-                && ro == other.ro
+                && table == other.table
+                && def == other.def
                 && type == other.type
                 && req == other.req
                 && len == other.len
                 && prec == other.prec
-                && def == other.def
+                && ro == other.ro
                 && gen == other.gen
-                && autoval == other.autoval
-                && table == other.table);
+                && autoval == other.autoval);
     }
 
     QAtomicInt ref;
     QString nm;
-    uint ro: 1;
+    QString table;
+    QVariant def;
     QVariant::Type type;
     QSqlField::RequiredStatus req;
     int len;
     int prec;
-    QVariant def;
     int tp;
-    uint gen: 1;
-    uint autoval: 1;
-    QString table;
+    bool ro: 1;
+    bool gen: 1;
+    bool autoval: 1;
 };
 
 

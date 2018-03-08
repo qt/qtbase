@@ -44,6 +44,8 @@
 #include <QtTest/private/qbenchmark_p.h>
 #include <QtTest/private/qbenchmarkmetric_p.h>
 
+#include <QtCore/private/qlogging_p.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -205,15 +207,11 @@ namespace QTest {
     }
 }
 
-#if defined(Q_OS_WIN)
-Q_CORE_EXPORT bool qt_logging_to_console(); // defined in qlogging.cpp
-#endif
-
 void QPlainTestLogger::outputMessage(const char *str)
 {
 #if defined(Q_OS_WIN)
-    // log to system log only if output is not redirected, and no console is attached
-    if (!qt_logging_to_console() && stream == stdout) {
+    // Log to system log only if output is not redirected and stderr not preferred
+    if (stream == stdout && !QtPrivate::shouldLogToStderr()) {
         OutputDebugStringA(str);
         return;
     }

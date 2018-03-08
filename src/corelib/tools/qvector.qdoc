@@ -1162,6 +1162,14 @@
     \sa append(), operator<<()
 */
 
+/*! \fn template <typename T> void QVector<T>::operator+=(T &&value)
+    \since 5.11
+
+    \overload
+
+    \sa append(), operator<<()
+*/
+
 /*! \fn template <typename T> QVector<T> QVector<T>::operator+(const QVector<T> &other) const
 
     Returns a vector that contains all the items in this vector
@@ -1177,6 +1185,15 @@
 
     \sa append(), operator+=()
 */
+
+/*! \fn template <typename T> QVector<T> &QVector<T>::operator<<(T &&value)
+    \since 5.11
+
+    \overload
+
+    \sa append(), operator+=()
+*/
+
 
 /*! \fn template <typename T> QVector<T> &QVector<T>::operator<<(const QVector<T> &other)
 

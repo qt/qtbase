@@ -132,9 +132,8 @@ void QCocoaMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *
 
 void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
 {
+    setItemTargetAction(item);
     NSMenuItem *nativeItem = item->nsItem();
-    nativeItem.target = m_nativeMenu.delegate;
-    nativeItem.action = @selector(itemFired:);
     // Someone's adding new items after aboutToShow() was emitted
     if (isOpen() && nativeItem && item->menu())
         item->menu()->setAttachedItem(nativeItem);
@@ -492,6 +491,13 @@ void QCocoaMenu::setAttachedItem(NSMenuItem *item)
 NSMenuItem *QCocoaMenu::attachedItem() const
 {
     return m_attachedItem;
+}
+
+void QCocoaMenu::setItemTargetAction(QCocoaMenuItem *item) const
+{
+    auto *nsItem = item->nsItem();
+    nsItem.target = m_nativeMenu;
+    nsItem.action = @selector(qt_itemFired:);
 }
 
 QT_END_NAMESPACE

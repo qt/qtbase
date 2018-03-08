@@ -832,10 +832,26 @@
     \sa append(), operator+=()
 */
 
+/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc> &QVarLengthArray<T, Prealloc>::operator<<(T &&value)
+    \since 5.11
+
+    \overload
+
+    \sa append(), operator+=()
+*/
+
 /*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc> &QVarLengthArray<T, Prealloc>::operator+=(const T &value)
 
     \since 4.8
     Appends \a value to the array and returns a reference to this vector.
+
+    \sa append(), operator<<()
+*/
+
+/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc> &QVarLengthArray<T, Prealloc>::operator+=(T &&value)
+    \since 5.11
+
+    \overload
 
     \sa append(), operator<<()
 */

@@ -82,6 +82,43 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
     return self;
 }
 
+// Cocoa will query the menu item's target for the worksWhenModal selector.
+// So we need to implement this to allow the items to be handled correctly
+// when a modal dialog is visible. See documentation for NSMenuItem.target.
+- (BOOL)worksWhenModal
+{
+    if (!QGuiApplication::modalWindow())
+        return YES;
+    if (const auto *mb = qobject_cast<QCocoaMenuBar *>(self.qpaMenu->menuParent()))
+        return QGuiApplication::modalWindow()->handle() == mb->cocoaWindow() ? YES : NO;
+    return YES;
+}
+
+- (void)qt_itemFired:(NSMenuItem *)item
+{
+    auto *qpaItem = reinterpret_cast<QCocoaMenuItem *>(item.tag);
+    // Menu-holding items also get a target to play nicely
+    // with NSMenuValidation but should not trigger.
+    if (!qpaItem || qpaItem->menu())
+        return;
+
+    QScopedScopeLevelCounter scopeLevelCounter(QGuiApplicationPrivate::instance()->threadData);
+    QGuiApplicationPrivate::modifier_buttons = [QNSView convertKeyModifiers:[NSEvent modifierFlags]];
+
+    static QMetaMethod activatedSignal = QMetaMethod::fromSignal(&QCocoaMenuItem::activated);
+    activatedSignal.invoke(qpaItem, Qt::QueuedConnection);
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem*)item
+{
+    auto *qpaItem = reinterpret_cast<QCocoaMenuItem *>(item.tag);
+    // Menu-holding items are always enabled, as it's conventional in Cocoa
+    if (!qpaItem || qpaItem->menu())
+        return YES;
+
+    return qpaItem->isEnabled();
+}
+
 @end
 
 #define CHECK_MENU_CLASS(menu) Q_ASSERT([menu isMemberOfClass:[QCocoaNSMenu class]])
@@ -158,31 +195,6 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
     qpaMenu->setIsOpen(false);
     // wrong, but it's the best we can do
     emit qpaMenu->aboutToHide();
-}
-
-- (void)itemFired:(NSMenuItem *)item
-{
-    auto *qpaItem = reinterpret_cast<QCocoaMenuItem *>(item.tag);
-    // Menu-holding items also get a target to play nicely
-    // with NSMenuValidation but should not trigger.
-    if (!qpaItem || qpaItem->menu())
-        return;
-
-    QScopedScopeLevelCounter scopeLevelCounter(QGuiApplicationPrivate::instance()->threadData);
-    QGuiApplicationPrivate::modifier_buttons = [QNSView convertKeyModifiers:[NSEvent modifierFlags]];
-
-    static QMetaMethod activatedSignal = QMetaMethod::fromSignal(&QCocoaMenuItem::activated);
-    activatedSignal.invoke(qpaItem, Qt::QueuedConnection);
-}
-
-- (BOOL)validateMenuItem:(NSMenuItem*)item
-{
-    auto *qpaItem = reinterpret_cast<QCocoaMenuItem *>(item.tag);
-    // Menu-holding items are always enabled, as it's conventional in Cocoa
-    if (!qpaItem || qpaItem->menu())
-        return YES;
-
-    return qpaItem->isEnabled();
 }
 
 - (BOOL)menuHasKeyEquivalent:(NSMenu *)menu forEvent:(NSEvent *)event target:(id *)target action:(SEL *)action
@@ -291,19 +303,6 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
     }
 
     return nil;
-}
-
-// Cocoa will query the menu item's target for the worksWhenModal selector.
-// So we need to implement this to allow the items to be handled correctly
-// when a modal dialog is visible.
-- (BOOL)worksWhenModal
-{
-    if (!QGuiApplication::modalWindow())
-        return YES;
-    const auto &qpaMenu = static_cast<QCocoaNSMenu *>(self).qpaMenu;
-    if (auto *mb = qobject_cast<QCocoaMenuBar *>(qpaMenu->menuParent()))
-        return QGuiApplication::modalWindow()->handle() == mb->cocoaWindow() ? YES : NO;
-    return YES;
 }
 
 @end

@@ -175,7 +175,11 @@ public:
     void append(const T *buf, int size);
     inline QVarLengthArray<T, Prealloc> &operator<<(const T &t)
     { append(t); return *this; }
+    inline QVarLengthArray<T, Prealloc> &operator<<(T &&t)
+    { append(t); return *this; }
     inline QVarLengthArray<T, Prealloc> &operator+=(const T &t)
+    { append(t); return *this; }
+    inline QVarLengthArray<T, Prealloc> &operator+=(T &&t)
     { append(t); return *this; }
 
     void prepend(T &&t);

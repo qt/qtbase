@@ -41,6 +41,7 @@
 
 #include "qglobal_p.h"
 #include "qlogging.h"
+#include "qlogging_p.h"
 #include "qlist.h"
 #include "qbytearray.h"
 #include "qstring.h"
@@ -204,55 +205,101 @@ static bool isDefaultCategory(const char *category)
     return !category || strcmp(category, "default") == 0;
 }
 
-static bool willLogToConsole()
+/*!
+    Returns true if writing to \c stderr is supported.
+
+    \sa stderrHasConsoleAttached()
+*/
+static bool systemHasStderr()
 {
 #if defined(Q_OS_WINRT)
-    // these systems have no stderr, so always log to the system log
-    return false;
-#else
-    // rules to determine if we'll log preferably to the console:
-    //  1) if QT_LOGGING_TO_CONSOLE is set, it determines behavior:
-    //    - if it's set to 0, we will not log to console
-    //    - if it's set to 1, we will log to console
-    //  2) otherwise, we will log to console if we have a console window (Windows)
-    //     or a controlling TTY (Unix). This is done even if stderr was redirected
-    //     to the blackhole device (NUL or /dev/null).
-
-    bool ok = true;
-    uint envcontrol = qgetenv("QT_LOGGING_TO_CONSOLE").toUInt(&ok);
-    if (ok)
-        return envcontrol;
-
-#  ifdef Q_OS_WIN
-    return GetConsoleWindow();
-#  elif defined(Q_OS_UNIX)
-#    ifndef _PATH_TTY
-#    define _PATH_TTY "/dev/tty"
-#    endif
-    // if /dev/tty exists, we can only open it if we have a controlling TTY
-    int devtty = qt_safe_open(_PATH_TTY, O_RDONLY);
-    if (devtty == -1 && (errno == ENOENT || errno == EPERM || errno == ENXIO)) {
-        // no /dev/tty, fall back to isatty on stderr
-        return isatty(STDERR_FILENO);
-    } else if (devtty != -1) {
-        // there is a /dev/tty and we could open it: we have a controlling TTY
-        qt_safe_close(devtty);
-        return true;
-    }
-
-    // no controlling TTY
-    return false;
-#  else
-#    error "Not Unix and not Windows?"
-#  endif
+    return false; // WinRT has no stderr
 #endif
+
+    return true;
 }
 
-Q_CORE_EXPORT bool qt_logging_to_console()
+/*!
+    Returns true if writing to \c stderr will end up in a console/terminal visible to the user.
+
+    This is typically the case if the application was started from the command line.
+
+    If the application is started without a controlling console/terminal, but the parent
+    process reads \c stderr and presents it to the user in some other way, the parent process
+    may override the detection in this function by setting the QT_ASSUME_STDERR_HAS_CONSOLE
+    environment variable to \c 1.
+
+    \note Qt Creator does not implement a pseudo TTY, nor does it launch apps with
+    the override environment variable set, but it will read stderr and print it to
+    the user, so in effect this function can not be used to conclude that stderr
+    output will _not_ be visible to the user, as even if this function returns false,
+    the output might still end up visible to the user. For this reason, we don't guard
+    the stderr output in the default message handler with stderrHasConsoleAttached().
+
+    \sa systemHasStderr()
+*/
+bool stderrHasConsoleAttached()
 {
-    static const bool logToConsole = willLogToConsole();
-    return logToConsole;
+    static const bool stderrHasConsoleAttached = []() -> bool {
+        if (!systemHasStderr())
+            return false;
+
+        if (qEnvironmentVariableIntValue("QT_LOGGING_TO_CONSOLE")) {
+            fprintf(stderr, "warning: Environment variable QT_LOGGING_TO_CONSOLE is deprecated, use\n"
+                            "QT_ASSUME_STDERR_HAS_CONSOLE and/or QT_FORCE_STDERR_LOGGING instead.\n");
+            return true;
+        }
+
+        if (qEnvironmentVariableIntValue("QT_ASSUME_STDERR_HAS_CONSOLE"))
+            return true;
+
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+        return GetConsoleWindow();
+#elif defined(Q_OS_UNIX)
+#       ifndef _PATH_TTY
+#       define _PATH_TTY "/dev/tty"
+#       endif
+
+        // If we can open /dev/tty, we have a controlling TTY
+        int ttyDevice = -1;
+        if ((ttyDevice = qt_safe_open(_PATH_TTY, O_RDONLY)) >= 0) {
+            qt_safe_close(ttyDevice);
+            return true;
+        } else if (errno == ENOENT || errno == EPERM || errno == ENXIO) {
+            // Fall back to isatty for some non-critical errors
+            return isatty(STDERR_FILENO);
+        } else {
+            return false;
+        }
+#else
+        return false; // No way to detect if stderr has a console attached
+#endif
+    }();
+
+    return stderrHasConsoleAttached;
 }
+
+
+namespace QtPrivate {
+
+/*!
+    Returns true if logging \c stderr should be ensured.
+
+    This is normally the case if \c stderr has a console attached, but may be overridden
+    by the user by setting the QT_FORCE_STDERR_LOGGING environment variable to \c 1.
+
+    \sa stderrHasConsoleAttached()
+*/
+bool shouldLogToStderr()
+{
+    static bool forceStderrLogging = qEnvironmentVariableIntValue("QT_FORCE_STDERR_LOGGING");
+    return forceStderrLogging || stderrHasConsoleAttached();
+}
+
+
+} // QtPrivate
+
+using namespace QtPrivate;
 
 /*!
     \class QMessageLogContext
@@ -1472,8 +1519,8 @@ static QBasicAtomicPointer<void (QtMsgType, const QMessageLogContext &, const QS
 
 static bool slog2_default_handler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
-    if (qt_logging_to_console())
-        return false;
+    if (shouldLogToStderr())
+        return false; // Leave logging up to stderr handler
 
     QString formattedMessage = qFormatLogMessage(type, context, message);
     formattedMessage.append(QLatin1Char('\n'));
@@ -1528,8 +1575,8 @@ static bool systemd_default_message_handler(QtMsgType type,
                                             const QMessageLogContext &context,
                                             const QString &message)
 {
-    if (qt_logging_to_console())
-        return false;
+    if (shouldLogToStderr())
+        return false; // Leave logging up to stderr handler
 
     QString formattedMessage = qFormatLogMessage(type, context, message);
 
@@ -1567,8 +1614,8 @@ static bool systemd_default_message_handler(QtMsgType type,
 #if QT_CONFIG(syslog)
 static bool syslog_default_message_handler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
-    if (qt_logging_to_console())
-        return false;
+    if (shouldLogToStderr())
+        return false; // Leave logging up to stderr handler
 
     QString formattedMessage = qFormatLogMessage(type, context, message);
 
@@ -1602,8 +1649,8 @@ static bool android_default_message_handler(QtMsgType type,
                                   const QMessageLogContext &context,
                                   const QString &message)
 {
-    if (qt_logging_to_console())
-        return false;
+    if (shouldLogToStderr())
+        return false; // Leave logging up to stderr handler
 
     QString formattedMessage = qFormatLogMessage(type, context, message);
 
@@ -1627,8 +1674,8 @@ static bool android_default_message_handler(QtMsgType type,
 #ifdef Q_OS_WIN
 static bool win_message_handler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
-    if (qt_logging_to_console())
-        return false;
+    if (shouldLogToStderr())
+        return false; // Leave logging up to stderr handler
 
     QString formattedMessage = qFormatLogMessage(type, context, message);
     formattedMessage.append(QLatin1Char('\n'));
@@ -1756,7 +1803,7 @@ static void qt_message_print(const QString &message)
     OutputDebugString(reinterpret_cast<const wchar_t*>(message.utf16()));
     return;
 #elif defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
-    if (!qt_logging_to_console()) {
+    if (!shouldLogToStderr()) {
         OutputDebugString(reinterpret_cast<const wchar_t*>(message.utf16()));
         return;
     }

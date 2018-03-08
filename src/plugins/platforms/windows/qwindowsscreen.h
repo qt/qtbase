@@ -113,6 +113,8 @@ public:
 
     const QWindowsScreenData &data() const  { return m_data; }
 
+    static QRect virtualGeometry(const QPlatformScreen *screen);
+
 private:
     QWindowsScreenData m_data;
 #ifndef QT_NO_CURSOR

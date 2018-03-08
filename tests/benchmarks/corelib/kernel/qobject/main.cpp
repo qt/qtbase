@@ -43,6 +43,8 @@ Q_OBJECT
 private slots:
     void signal_slot_benchmark();
     void signal_slot_benchmark_data();
+    void signal_many_receivers();
+    void signal_many_receivers_data();
     void qproperty_benchmark_data();
     void qproperty_benchmark();
     void dynamic_property_benchmark();
@@ -127,13 +129,36 @@ void QObjectBenchmark::signal_slot_benchmark()
     }
 }
 
+void QObjectBenchmark::signal_many_receivers_data()
+{
+    QTest::addColumn<int>("receiverCount");
+    QTest::newRow("100 receivers") << 100;
+    QTest::newRow("1 000 receivers") << 1000;
+    QTest::newRow("10 000 receivers") << 10000;
+}
+
+void QObjectBenchmark::signal_many_receivers()
+{
+    QFETCH(int, receiverCount);
+    Object sender;
+    std::vector<Object> receivers(receiverCount);
+
+    for (Object &receiver : receivers)
+        QObject::connect(&sender, &Object::signal0, &receiver, &Object::slot0);
+
+    QBENCHMARK {
+        sender.emitSignal0();
+    }
+}
+
 void QObjectBenchmark::qproperty_benchmark_data()
 {
     QTest::addColumn<QByteArray>("name");
     const QMetaObject *mo = &QTreeView::staticMetaObject;
     for (int i = 0; i < mo->propertyCount(); ++i) {
         QMetaProperty prop = mo->property(i);
-        QTest::newRow(prop.name()) << QByteArray(prop.name());
+        if (prop.isWritable())
+            QTest::newRow(prop.name()) << QByteArray(prop.name());
     }
 }
 
