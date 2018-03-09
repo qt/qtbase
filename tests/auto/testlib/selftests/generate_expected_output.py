@@ -257,7 +257,7 @@ def main(name, *args):
         # Avoid interference from any qtlogging.ini files, e.g. in
         # /etc/xdg/QtProject/, (must match tst_selftests.cpp's
         # processEnvironment()'s value):
-        QT_LOGGING_RULES = '*.debug=true;qt.qpa.screen=false')
+        QT_LOGGING_RULES = '*.debug=true;qt.*=false')
 
     herePath = os.getcwd()
     cleaner = Cleaner(herePath, name)
