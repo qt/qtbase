@@ -159,6 +159,8 @@ void tst_QExplicitlySharedDataPointer::data() const
     {
         QExplicitlySharedDataPointer<const MyClass> pointer;
         QCOMPARE(pointer.data(), static_cast<const MyClass *>(0));
+        QVERIFY(pointer == nullptr);
+        QVERIFY(nullptr == pointer);
     }
 
     /* On const pointer. Must not mutate the pointer. */
@@ -168,6 +170,9 @@ void tst_QExplicitlySharedDataPointer::data() const
 
         /* Check that this cast is possible. */
         static_cast<const MyClass *>(pointer.data());
+
+        QVERIFY(! (pointer == nullptr));
+        QVERIFY(! (nullptr == pointer));
     }
 
     /* On mutatable pointer. Must not mutate the pointer. */
