@@ -284,9 +284,9 @@ public:
     inline QVector<T> &operator<<(const QVector<T> &l)
     { *this += l; return *this; }
     inline QVector<T> &operator+=(T &&t)
-    { append(t); return *this; }
+    { append(std::move(t)); return *this; }
     inline QVector<T> &operator<<(T &&t)
-    { append(t); return *this; }
+    { append(std::move(t)); return *this; }
 
     QList<T> toList() const;
 
