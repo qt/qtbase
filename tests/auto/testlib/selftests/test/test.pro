@@ -12,7 +12,9 @@ win32 {
   }
 }
 
-RESOURCES += ../selftests.qrc
+expected_files.files = $$files($$PWD/../expected_*)
+expected_files.base = $$PWD/..
+RESOURCES += expected_files
 
 include(../selftests.pri)
 !winrt: for(file, SUBPROGRAMS): TEST_HELPER_INSTALLS += "../$${file}/$${file}"
