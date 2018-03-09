@@ -230,7 +230,16 @@ for(ever) {
         QMAKE_FRAMEWORKPATH *= $$MODULE_FRAMEWORKS
         !isEmpty(MODULE_MODULE) {
             contains(MODULE_CONFIG, lib_bundle) {
-                LIBS$$var_sfx += -framework $$MODULE_MODULE
+                framework = $$MODULE_MODULE
+                qtConfig(debug_and_release):!macx-xcode {
+                    platform_target_suffix = $$qtPlatformTargetSuffix()
+                    !isEmpty(platform_target_suffix): \
+                        # The -framework linker argument supports a name[,suffix] version,
+                        # where if the suffix is specified the framework is first searched
+                        # for the library with the suffix and then without.
+                        framework = $$framework,$$platform_target_suffix
+                }
+                LIBS$$var_sfx += -framework $$framework
             } else {
                 !isEmpty(MODULE_LIBS_ADD): \
                     LIBS$$var_sfx += -L$$MODULE_LIBS_ADD
