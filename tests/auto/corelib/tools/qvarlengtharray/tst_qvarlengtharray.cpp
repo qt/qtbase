@@ -966,12 +966,14 @@ void tst_QVarLengthArray::insertMove()
         QCOMPARE(MyBase::liveCount, 4);
 
         vec.append(std::move(m3));
+        QVERIFY(m3.wasConstructedAt(nullptr));
         QVERIFY(vec.at(0).wasConstructedAt(&m3));
         QCOMPARE(MyBase::errorCount, 0);
         QCOMPARE(MyBase::liveCount, 4);
         QCOMPARE(MyBase::movedCount, 1);
 
         vec.push_back(std::move(m4));
+        QVERIFY(m4.wasConstructedAt(nullptr));
         QVERIFY(vec.at(0).wasConstructedAt(&m3));
         QVERIFY(vec.at(1).wasConstructedAt(&m4));
         QCOMPARE(MyBase::errorCount, 0);
@@ -979,6 +981,7 @@ void tst_QVarLengthArray::insertMove()
         QCOMPARE(MyBase::movedCount, 2);
 
         vec.prepend(std::move(m1));
+        QVERIFY(m1.wasConstructedAt(nullptr));
         QVERIFY(vec.at(0).wasConstructedAt(&m1));
         QVERIFY(vec.at(1).wasConstructedAt(&m3));
         QVERIFY(vec.at(2).wasConstructedAt(&m4));
@@ -987,9 +990,11 @@ void tst_QVarLengthArray::insertMove()
         QCOMPARE(MyBase::movedCount, 3);
 
         vec.insert(1, std::move(m2));
+        QVERIFY(m2.wasConstructedAt(nullptr));
         QVERIFY(vec.at(0).wasConstructedAt(&m1));
         QVERIFY(vec.at(1).wasConstructedAt(&m2));
         QVERIFY(vec.at(2).wasConstructedAt(&m3));
+        QVERIFY(vec.at(3).wasConstructedAt(&m4));
 
         QCOMPARE(MyBase::copyCount, 0);
         QCOMPARE(MyBase::liveCount, 4);
@@ -1014,15 +1019,19 @@ void tst_QVarLengthArray::nonCopyable()
     int *const ptr4 = val4.get();
 
     vec.append(std::move(val3));
+    QVERIFY(!val3);
     QVERIFY(ptr3 == vec.at(0).get());
     vec.append(std::move(val4));
+    QVERIFY(!val4);
     QVERIFY(ptr3 == vec.at(0).get());
     QVERIFY(ptr4 == vec.at(1).get());
     vec.prepend(std::move(val1));
+    QVERIFY(!val1);
     QVERIFY(ptr1 == vec.at(0).get());
     QVERIFY(ptr3 == vec.at(1).get());
     QVERIFY(ptr4 == vec.at(2).get());
     vec.insert(1, std::move(val2));
+    QVERIFY(!val2);
     QVERIFY(ptr1 == vec.at(0).get());
     QVERIFY(ptr2 == vec.at(1).get());
     QVERIFY(ptr3 == vec.at(2).get());

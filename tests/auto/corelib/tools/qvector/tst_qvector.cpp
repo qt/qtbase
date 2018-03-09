@@ -2895,26 +2895,40 @@ void tst_QVector::insertMove() const
     const int instancesCount = Movable::counter.loadAcquire();
     {
         QVector<Movable> vec;
+        vec.reserve(5);
+        Movable m0;
         Movable m1;
         Movable m2;
         Movable m3;
         Movable m4;
 
         vec.append(std::move(m3));
+        QVERIFY(m3.wasConstructedAt(nullptr));
         QVERIFY(vec.at(0).wasConstructedAt(&m3));
         vec.push_back(std::move(m4));
+        QVERIFY(m4.wasConstructedAt(nullptr));
         QVERIFY(vec.at(0).wasConstructedAt(&m3));
         QVERIFY(vec.at(1).wasConstructedAt(&m4));
         vec.prepend(std::move(m1));
+        QVERIFY(m1.wasConstructedAt(nullptr));
         QVERIFY(vec.at(0).wasConstructedAt(&m1));
         QVERIFY(vec.at(1).wasConstructedAt(&m3));
         QVERIFY(vec.at(2).wasConstructedAt(&m4));
         vec.insert(1, std::move(m2));
+        QVERIFY(m2.wasConstructedAt(nullptr));
         QVERIFY(vec.at(0).wasConstructedAt(&m1));
         QVERIFY(vec.at(1).wasConstructedAt(&m2));
         QVERIFY(vec.at(2).wasConstructedAt(&m3));
+        QVERIFY(vec.at(3).wasConstructedAt(&m4));
+        vec.push_front(std::move(m0));
+        QVERIFY(m0.wasConstructedAt(nullptr));
+        QVERIFY(vec.at(0).wasConstructedAt(&m0));
+        QVERIFY(vec.at(1).wasConstructedAt(&m1));
+        QVERIFY(vec.at(2).wasConstructedAt(&m2));
+        QVERIFY(vec.at(3).wasConstructedAt(&m3));
+        QVERIFY(vec.at(4).wasConstructedAt(&m4));
 
-        QCOMPARE(Movable::counter.loadAcquire(), instancesCount + 8);
+        QCOMPARE(Movable::counter.loadAcquire(), instancesCount + 10);
     }
     QCOMPARE(Movable::counter.loadAcquire(), instancesCount);
 }
