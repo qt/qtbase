@@ -567,6 +567,10 @@ static QProcessEnvironment processEnvironment()
             if (useVariable)
                 result.insert(key, systemEnvironment.value(key));
         }
+        // Avoid interference from any qtlogging.ini files, e.g. in /etc/xdg/QtProject/:
+        result.insert(QStringLiteral("QT_LOGGING_RULES"),
+                      // Must match generate_expected_output.py's main()'s value:
+                      QStringLiteral("*.debug=true;qt.*=false"));
     }
     return result;
 }

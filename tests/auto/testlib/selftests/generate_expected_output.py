@@ -186,7 +186,13 @@ def generateTestData(testname, clean,
 
 def main(name, *args):
     """Minimal argument parsing and driver for the real work"""
-    os.environ['LC_ALL'] = 'C'
+    os.environ.update(
+        LC_ALL = 'C', # Use standard locale
+        # Avoid interference from any qtlogging.ini files, e.g. in
+        # /etc/xdg/QtProject/, (must match tst_selftests.cpp's
+        # processEnvironment()'s value):
+        QT_LOGGING_RULES = '*.debug=true;qt.*=false')
+
     herePath = os.getcwd()
     cleaner = Cleaner(herePath, name)
 
