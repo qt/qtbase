@@ -1426,6 +1426,11 @@ QList<QtDependency> findFilesRecursively(const Options &options, const QFileInfo
 
 QList<QtDependency> findFilesRecursively(const Options &options, const QString &fileName)
 {
+    for (const auto &prefix : options.extraPrefixDirs) {
+        QFileInfo info(prefix + QLatin1Char('/') + fileName);
+        if (info.exists())
+            return findFilesRecursively(options, info, prefix + QLatin1Char('/'));
+    }
     QFileInfo info(options.qtInstallDirectory + QLatin1Char('/') + fileName);
     return findFilesRecursively(options, info, options.qtInstallDirectory + QLatin1Char('/'));
 }
@@ -1435,7 +1440,7 @@ bool readAndroidDependencyXml(Options *options,
                               QSet<QString> *usedDependencies,
                               QSet<QString> *remainingDependencies)
 {
-    QString androidDependencyName = options->qtInstallDirectory + QString::fromLatin1("/lib/%1-android-dependencies.xml").arg(moduleName);
+    QString androidDependencyName = absoluteFilePath(options, QString::fromLatin1("/lib/%1-android-dependencies.xml").arg(moduleName));
 
     QFile androidDependencyFile(androidDependencyName);
     if (androidDependencyFile.exists()) {
@@ -1480,7 +1485,7 @@ bool readAndroidDependencyXml(Options *options,
                     int bundling = reader.attributes().value(QLatin1String("bundling")).toInt();
                     QString fileName = reader.attributes().value(QLatin1String("file")).toString();
                     if (bundling == (options->deploymentMechanism == Options::Bundled)) {
-                        QtDependency dependency(fileName, options->qtInstallDirectory + QLatin1Char('/') + fileName);
+                        QtDependency dependency(fileName, absoluteFilePath(options, fileName));
                         if (!usedDependencies->contains(dependency.absolutePath)) {
                             options->qtDependencies.append(dependency);
                             usedDependencies->insert(dependency.absolutePath);
