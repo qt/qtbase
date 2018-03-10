@@ -140,6 +140,13 @@ static const quintptr futexNeedsWakeAllBit =
 static int futexAvailCounter(quintptr v)
 {
     // the low 31 bits
+    if (futexHasWaiterCount) {
+        // the high bit of the low word isn't used
+        Q_ASSERT((v & 0x80000000U) == 0);
+
+        // so we can be a little faster
+        return int(unsigned(v));
+    }
     return int(v & 0x7fffffffU);
 }
 
