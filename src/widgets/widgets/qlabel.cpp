@@ -963,7 +963,9 @@ bool QLabel::event(QEvent *e)
     if (type == QEvent::Shortcut) {
         QShortcutEvent *se = static_cast<QShortcutEvent *>(e);
         if (se->shortcutId() == d->shortcutId) {
-            QWidget * w = d->buddy;
+            QWidget *w = d->buddy;
+            if (!w)
+                return QFrame::event(e);
             if (w->focusPolicy() != Qt::NoFocus)
                 w->setFocus(Qt::ShortcutFocusReason);
 #if QT_CONFIG(abstractbutton)
@@ -1162,7 +1164,15 @@ void QLabelPrivate::updateLabel()
 void QLabel::setBuddy(QWidget *buddy)
 {
     Q_D(QLabel);
+
+    if (d->buddy)
+        disconnect(d->buddy, SIGNAL(destroyed()), this, SLOT(_q_buddyDeleted()));
+
     d->buddy = buddy;
+
+    if (buddy)
+        connect(buddy, SIGNAL(destroyed()), this, SLOT(_q_buddyDeleted()));
+
     if (d->isTextLabel) {
         if (d->shortcutId)
             releaseShortcut(d->shortcutId);
@@ -1201,6 +1211,13 @@ void QLabelPrivate::updateShortcut()
         return;
     hasShortcut = true;
     shortcutId = q->grabShortcut(QKeySequence::mnemonic(text));
+}
+
+
+void QLabelPrivate::_q_buddyDeleted()
+{
+    Q_Q(QLabel);
+    q->setBuddy(nullptr);
 }
 
 #endif // QT_NO_SHORTCUT

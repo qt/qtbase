@@ -1381,7 +1381,7 @@ namespace QtPrivate
     };
 
     template<typename T, typename Enable = void>
-    struct IsGadgetHelper { enum { Value = false }; };
+    struct IsGadgetHelper { enum { IsRealGadget = false, IsGadgetOrDerivedFrom = false }; };
 
     template<typename T>
     struct IsGadgetHelper<T, typename T::QtGadgetHelper>
@@ -1389,11 +1389,14 @@ namespace QtPrivate
         template <typename X>
         static char checkType(void (X::*)());
         static void *checkType(void (T::*)());
-        enum { Value =  sizeof(checkType(&T::qt_check_for_QGADGET_macro)) == sizeof(void *) };
+        enum {
+            IsRealGadget = sizeof(checkType(&T::qt_check_for_QGADGET_macro)) == sizeof(void *),
+            IsGadgetOrDerivedFrom = true
+        };
     };
 
     template<typename T, typename Enable = void>
-    struct IsPointerToGadgetHelper { enum { Value = false }; };
+    struct IsPointerToGadgetHelper { enum { IsRealGadget = false, IsGadgetOrDerivedFrom = false }; };
 
     template<typename T>
     struct IsPointerToGadgetHelper<T*, typename T::QtGadgetHelper>
@@ -1402,7 +1405,10 @@ namespace QtPrivate
         template <typename X>
         static char checkType(void (X::*)());
         static void *checkType(void (T::*)());
-        enum { Value =  sizeof(checkType(&T::qt_check_for_QGADGET_macro)) == sizeof(void *) };
+        enum {
+            IsRealGadget = sizeof(checkType(&T::qt_check_for_QGADGET_macro)) == sizeof(void *),
+            IsGadgetOrDerivedFrom = true
+        };
     };
 
 
@@ -1435,12 +1441,12 @@ namespace QtPrivate
         static inline const QMetaObject *value() { return &T::staticMetaObject; }
     };
     template<typename T>
-    struct MetaObjectForType<T, typename std::enable_if<IsGadgetHelper<T>::Value>::type>
+    struct MetaObjectForType<T, typename std::enable_if<IsGadgetHelper<T>::IsGadgetOrDerivedFrom>::type>
     {
         static inline const QMetaObject *value() { return &T::staticMetaObject; }
     };
     template<typename T>
-    struct MetaObjectForType<T, typename QEnableIf<IsPointerToGadgetHelper<T>::Value>::Type>
+    struct MetaObjectForType<T, typename std::enable_if<IsPointerToGadgetHelper<T>::IsGadgetOrDerivedFrom>::type>
     {
         static inline const QMetaObject *value() { return &IsPointerToGadgetHelper<T>::BaseType::staticMetaObject; }
     };
@@ -1599,8 +1605,8 @@ namespace QtPrivate
 
 template <typename T, int =
     QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::PointerToQObject :
-    QtPrivate::IsGadgetHelper<T>::Value                    ? QMetaType::IsGadget :
-    QtPrivate::IsPointerToGadgetHelper<T>::Value           ? QMetaType::PointerToGadget :
+    QtPrivate::IsGadgetHelper<T>::IsRealGadget             ? QMetaType::IsGadget :
+    QtPrivate::IsPointerToGadgetHelper<T>::IsRealGadget    ? QMetaType::PointerToGadget :
     QtPrivate::IsQEnumHelper<T>::Value                     ? QMetaType::IsEnumeration : 0>
 struct QMetaTypeIdQObject
 {
@@ -1653,8 +1659,8 @@ namespace QtPrivate {
                      | (IsWeakPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::WeakPointerToQObject : 0)
                      | (IsTrackingPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::TrackingPointerToQObject : 0)
                      | (std::is_enum<T>::value ? QMetaType::IsEnumeration : 0)
-                     | (IsGadgetHelper<T>::Value ? QMetaType::IsGadget : 0)
-                     | (IsPointerToGadgetHelper<T>::Value ? QMetaType::PointerToGadget : 0)
+                     | (IsGadgetHelper<T>::IsGadgetOrDerivedFrom ? QMetaType::IsGadget : 0)
+                     | (IsPointerToGadgetHelper<T>::IsGadgetOrDerivedFrom ? QMetaType::PointerToGadget : 0)
              };
     };
 

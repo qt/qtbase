@@ -178,9 +178,11 @@ void tst_QLabel::setBuddy()
     test_label= new QLabel( test_box );
     test_label->setText( "&Test with a buddy" );
     QWidget *test_edit = new QLineEdit( test_box );
+    QWidget *test_edit2 = new QLineEdit( test_box );
     QVBoxLayout *layout = new QVBoxLayout(test_box);
     layout->addWidget(test_label);
     layout->addWidget(test_edit);
+    layout->addWidget(test_edit2);
     test_box->show();
     qApp->setActiveWindow(test_box);
     QVERIFY(test_box->isActiveWindow());
@@ -190,6 +192,16 @@ void tst_QLabel::setBuddy()
     QVERIFY( !test_edit->hasFocus() );
     QTest::keyClick( test_box, 't', Qt::AltModifier );
     QVERIFY( test_edit->hasFocus() );
+
+    // Setting a new buddy should disconnect the old one's destroyed() signal
+    test_label->setBuddy(test_edit2);
+    delete test_edit;
+    QCOMPARE(test_label->buddy(), test_edit2);
+
+    // And deleting our own buddy should disconnect and not crash
+    delete test_edit2;
+    QTest::keyClick(test_box, 't', Qt::AltModifier );
+
     delete test_box;
 }
 #endif

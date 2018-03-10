@@ -956,7 +956,7 @@ void QXcbConnection::xi2UpdateScrollingDevice(ScrollingDevice &scrollingDevice)
         return;
     }
     QPointF lastScrollPosition;
-    if (lcQpaXInput().isDebugEnabled())
+    if (lcQpaXInputEvents().isDebugEnabled())
         lastScrollPosition = scrollingDevice.lastScrollPosition;
     for (int c = 0; c < deviceInfo->num_classes; ++c) {
         XIAnyClassInfo *classInfo = deviceInfo->classes[c];

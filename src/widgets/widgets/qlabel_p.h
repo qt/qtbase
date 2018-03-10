@@ -89,6 +89,7 @@ public:
 #endif
 #ifndef QT_NO_SHORTCUT
     void updateShortcut();
+    void _q_buddyDeleted();
 #endif
     inline bool needTextControl() const {
         return isTextLabel
