@@ -759,8 +759,8 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
         QList<QByteArray> res = splitLines(actualOutputs[n]);
         QString errorMessage;
         QString expectedFileName = expectedFileNameFromTest(subdir, logger);
-        if (QFileInfo::exists(expectedFileName)) {
-            QByteArrayList exp = expectedResult(expectedFileName);
+        QByteArrayList exp = expectedResult(expectedFileName);
+        if (!exp.isEmpty()) {
 #ifdef Q_CC_MINGW
             // MinGW formats double numbers differently (last verified with 7.1)
             if (n == 0 && subdir == QStringLiteral("float")) {
