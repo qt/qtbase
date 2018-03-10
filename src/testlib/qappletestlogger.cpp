@@ -84,7 +84,7 @@ static IncidentClassification incidentTypeToClassification(QAbstractTestLogger::
     case QAbstractTestLogger::Pass:
         return IncidentClassification(QtInfoMsg, "pass");
     case QAbstractTestLogger::XFail:
-        return IncidentClassification(QtInfoMsg, "xpass");
+        return IncidentClassification(QtInfoMsg, "xfail");
     case QAbstractTestLogger::Fail:
         return IncidentClassification(QtCriticalMsg, "fail");
     case QAbstractTestLogger::XPass:
