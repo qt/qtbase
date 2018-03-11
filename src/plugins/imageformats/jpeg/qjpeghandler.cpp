@@ -493,10 +493,10 @@ static inline void set_text(const QImage &image, j_compress_ptr cinfo, const QSt
 {
     const QMap<QString, QString> text = qt_getImageText(image, description);
     for (auto it = text.begin(), end = text.end(); it != end; ++it) {
-        QByteArray comment = it.key().toLatin1();
+        QByteArray comment = it.key().toUtf8();
         if (!comment.isEmpty())
             comment += ": ";
-        comment += it.value().toLatin1();
+        comment += it.value().toUtf8();
         if (comment.length() > 65530)
             comment.truncate(65530);
         jpeg_write_marker(cinfo, JPEG_COM, (const JOCTET *)comment.constData(), comment.size());
@@ -904,7 +904,7 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
             for (jpeg_saved_marker_ptr marker = info.marker_list; marker != NULL; marker = marker->next) {
                 if (marker->marker == JPEG_COM) {
                     QString key, value;
-                    QString s = QString::fromLatin1((const char *)marker->data, marker->data_length);
+                    QString s = QString::fromUtf8((const char *)marker->data, marker->data_length);
                     int index = s.indexOf(QLatin1String(": "));
                     if (index == -1 || s.indexOf(QLatin1Char(' ')) < index) {
                         key = QLatin1String("Description");

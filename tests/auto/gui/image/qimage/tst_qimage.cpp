@@ -192,6 +192,7 @@ private slots:
     void exif_QTBUG45865();
     void exifInvalidData_data();
     void exifInvalidData();
+    void exifReadComments();
 
     void cleanupFunctions();
 
@@ -3064,6 +3065,34 @@ void tst_QImage::exifInvalidData()
     QImage image;
     QVERIFY(image.load(m_prefix + "jpeg_exif_invalid_data_" + QTest::currentDataTag() + ".jpg"));
     QVERIFY(!image.isNull());
+}
+
+void tst_QImage::exifReadComments()
+{
+    QImage image;
+    QVERIFY(image.load(m_prefix + "jpeg_exif_utf8_comment.jpg"));
+    QVERIFY(!image.isNull());
+    QCOMPARE(image.textKeys().size(), 1);
+    QCOMPARE(image.textKeys().first(), "Description");
+    // check if exif comment is read as utf-8
+    QCOMPARE(image.text("Description"), QString::fromUtf8("some unicode chars: ÖÄÜ€@"));
+
+    QByteArray ba;
+    {
+        QBuffer buf(&ba);
+        QVERIFY(buf.open(QIODevice::WriteOnly));
+        QVERIFY(image.save(&buf, "JPG"));
+    }
+    QVERIFY(!ba.isEmpty());
+    image = QImage();
+    QCOMPARE(image.textKeys().size(), 0);
+    {
+        QBuffer buf(&ba);
+        QVERIFY(buf.open(QIODevice::ReadOnly));
+        QVERIFY(image.load(&buf, "JPG"));
+    }
+    // compare written (and reread) description text
+    QCOMPARE(image.text("Description"), QString::fromUtf8("some unicode chars: ÖÄÜ€@"));
 }
 
 static void cleanupFunction(void* info)
