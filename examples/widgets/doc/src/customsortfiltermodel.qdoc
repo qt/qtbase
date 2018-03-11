@@ -121,14 +121,14 @@
 
     \snippet itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 6
 
-    We use QRegExp to define a pattern for the addresses we are looking
-    for. The QRegExp::indexIn() function attempts to find a match in
-    the given string and returns the position of the first match, or
-    -1 if there was no match. If the given string contains the
-    pattern, we use QRegExp's \l {QRegExp::cap()}{cap()} function to
-    retrieve the actual address. The \l {QRegExp::cap()}{cap()}
-    function returns the text captured by the \e nth
-    subexpression. The entire match has index 0 and the parenthesized
+    We use QRegularExpression to define a pattern for the addresses we
+    are looking for. The \l {QRegularExpression::match()}{match()} function
+    returns a QRegularExpressionMatch object which contains the result of
+    the matching. If there is a match,
+    \l {QRegularExpressionMatch::hasMatch()}{hasMatch()} returns true. The
+    result of the match can be retrieved with QRegularExpressionMatch's
+    \l {QRegularExpressionMatch::captured()}{captured()} function.
+    The entire match has index 0 and the parenthesized
     subexpressions have indexes starting from 1 (excluding
     non-capturing parentheses).
 
