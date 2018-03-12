@@ -62,4 +62,4 @@ int main(int argc, char **argv)
     win.show();
 
     return app.exec();
-};
+}
