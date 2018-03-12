@@ -194,7 +194,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue Pointer
     \value Polish                           The widget is polished.
     \value PolishRequest                    The widget should be polished.
-    \value QueryWhatsThis                   The widget should accept the event if it has "What's This?" help.
+    \value QueryWhatsThis                   The widget should accept the event if it has "What's This?" help (QHelpEvent).
     \value ReadOnlyChange                   Widget's read-only state has changed (since Qt 5.4).
     \value RequestSoftwareInputPanel        A widget wants to open a software input panel (SIP).
     \value Resize                           Widget's size changed (QResizeEvent).

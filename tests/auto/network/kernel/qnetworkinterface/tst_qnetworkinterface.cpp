@@ -143,7 +143,7 @@ void tst_QNetworkInterface::dump()
         qDebug() << "    flags:     " << qPrintable(flags);
         qDebug() << "    type:      " << i.type();
         qDebug() << "    hw address:" << qPrintable(i.hardwareAddress());
-        qDebug() << "    MTU:       " << i.maxTransmissionUnit();
+        qDebug() << "    MTU:       " << i.maximumTransmissionUnit();
 
         int count = 0;
         foreach (const QNetworkAddressEntry &e, i.addressEntries()) {
@@ -187,7 +187,7 @@ void tst_QNetworkInterface::consistencyCheck()
         if (iface.index())
             interfaceIndexes << iface.index();
 
-        QVERIFY(iface.maxTransmissionUnit() >= 0);
+        QVERIFY(iface.maximumTransmissionUnit() >= 0);
 
         const QList<QNetworkAddressEntry> addresses = iface.addressEntries();
         for (auto entry : addresses) {
@@ -275,7 +275,7 @@ void tst_QNetworkInterface::localAddress()
              << "pmtu" << pmtu;
 
     // check that the Path MTU is less than or equal the interface's MTU
-    QVERIFY(pmtu <= outgoingIface->maxTransmissionUnit());
+    QVERIFY(pmtu <= outgoingIface->maximumTransmissionUnit());
 }
 
 void tst_QNetworkInterface::interfaceFromXXX_data()
