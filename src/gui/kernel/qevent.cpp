@@ -960,6 +960,43 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
       invertedScrolling(inverted)
 {}
 
+/*!
+    Constructs a wheel event object.
+
+    The \a pos provides the location of the mouse cursor
+    within the window. The position in global coordinates is specified
+    by \a globalPos.
+
+    \a pixelDelta contains the scrolling distance in pixels on screen, while
+    \a angleDelta contains the wheel rotation distance. \a pixelDelta is
+    optional and can be null.
+
+    The mouse and keyboard states at the time of the event are specified by
+    \a buttons and \a modifiers.
+
+    The scrolling phase of the event is specified by \a phase.
+
+    If the wheel event comes from a physical mouse wheel, \a source is set to
+    Qt::MouseEventNotSynthesized. If it comes from a gesture detected by the
+    operating system, or from a non-mouse hardware device, such that \a
+    pixelDelta is directly related to finger movement, \a source is set to
+    Qt::MouseEventSynthesizedBySystem. If it comes from Qt, source would be set
+    to Qt::MouseEventSynthesizedByQt.
+
+    If the system is configured to invert the delta values delivered with the
+    event (such as natural scrolling of the touchpad on macOS), \a inverted
+    should be \c true. Otherwise, \a inverted is \c false
+
+    \sa posF(), globalPosF(), angleDelta(), pixelDelta(), phase()
+*/
+QWheelEvent::QWheelEvent(QPointF pos, QPointF globalPos, QPoint pixelDelta, QPoint angleDelta,
+            Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase,
+            bool inverted, Qt::MouseEventSource source)
+    : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), pixelD(pixelDelta),
+      angleD(angleDelta), mouseState(buttons), ph(phase), src(source),
+      invertedScrolling(inverted)
+{}
+
 #endif // QT_CONFIG(wheelevent)
 
 /*!
