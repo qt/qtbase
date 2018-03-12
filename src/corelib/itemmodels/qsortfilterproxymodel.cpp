@@ -577,6 +577,19 @@ QVector<QPair<int, int > > QSortFilterProxyModelPrivate::proxy_intervals_for_sou
         proxy_intervals.append(QPair<int, int>(first_proxy_item, last_proxy_item));
     }
     std::stable_sort(proxy_intervals.begin(), proxy_intervals.end());
+    // Consolidate adjacent intervals
+    for (int i = proxy_intervals.size()-1; i > 0; --i) {
+        QPair<int, int> &interval = proxy_intervals[i];
+        QPair<int, int> &preceeding_interval = proxy_intervals[i - 1];
+        if (interval.first == preceeding_interval.second + 1) {
+            preceeding_interval.second = interval.second;
+            interval.first = interval.second = -1;
+        }
+    }
+    proxy_intervals.erase(
+        std::remove_if(proxy_intervals.begin(), proxy_intervals.end(),
+                       [](QPair<int, int> &interval) { return interval.first < 0; }),
+        proxy_intervals.end());
     return proxy_intervals;
 }
 

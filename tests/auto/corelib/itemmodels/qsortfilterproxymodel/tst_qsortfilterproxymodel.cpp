@@ -152,6 +152,10 @@ private slots:
     void emitLayoutChangedOnlyIfSortingChanged();
 
     void checkSetNewModel();
+
+    void removeIntervals_data();
+    void removeIntervals();
+
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
     void checkHierarchy(const QStringList &data, const QAbstractItemModel *model);
@@ -4402,6 +4406,44 @@ void tst_QSortFilterProxyModel::emitLayoutChangedOnlyIfSortingChanged_data()
     QTest::newRow("many_changes_no_layoutChanged") << -1 << Qt::DisplayRole << "7,5,4,3,2,1,0,8" << "75432108" << "0248" << 0;
 }
 
+// Custom version of QStringListModel which supports emitting dataChanged for many rows at once
+class CustomStringListModel : public QAbstractListModel
+{
+public:
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override
+    {
+        if (index.row() >= 0 && index.row() < lst.size()
+            && (role == Qt::EditRole || role == Qt::DisplayRole)) {
+            lst.replace(index.row(), value.toString());
+            emit dataChanged(index, index, { Qt::DisplayRole, Qt::EditRole });
+            return true;
+        }
+        return false;
+    }
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
+    {
+        if (role == Qt::DisplayRole || role == Qt::EditRole)
+            return lst.at(index.row());
+        return QVariant();
+    }
+    int rowCount(const QModelIndex & = QModelIndex()) const override { return lst.count(); }
+
+    void replaceData(const QStringList &newData)
+    {
+        lst = newData;
+        emit dataChanged(index(0, 0), index(rowCount() - 1, 0), { Qt::DisplayRole, Qt::EditRole });
+    }
+
+    void emitDecorationChangedSignal()
+    {
+        const QModelIndex idx = index(0, 0);
+        emit dataChanged(idx, idx, { Qt::DecorationRole });
+    }
+
+private:
+    QStringList lst;
+};
+
 void tst_QSortFilterProxyModel::emitLayoutChangedOnlyIfSortingChanged()
 {
     QFETCH(int, changedRow);
@@ -4411,45 +4453,6 @@ void tst_QSortFilterProxyModel::emitLayoutChangedOnlyIfSortingChanged()
     QFETCH(QString, expectedProxyRowTexts);
     QFETCH(int, expectedLayoutChanged);
 
-    // Custom version of QStringListModel which supports emitting dataChanged for many rows at once
-    class CustomStringListModel : public QAbstractListModel
-    {
-    public:
-        bool setData(const QModelIndex &index, const QVariant &value, int role) override
-        {
-            if (index.row() >= 0 && index.row() < lst.size()
-                && (role == Qt::EditRole || role == Qt::DisplayRole)) {
-                lst.replace(index.row(), value.toString());
-                emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
-                return true;
-            }
-            return false;
-        }
-        QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
-        {
-            if (role == Qt::DisplayRole || role == Qt::EditRole)
-                return lst.at(index.row());
-            return QVariant();
-        }
-        int rowCount(const QModelIndex & = QModelIndex()) const override
-        {
-            return lst.count();
-        }
-
-        void replaceData(const QStringList &newData)
-        {
-            lst = newData;
-            emit dataChanged(index(0, 0), index(rowCount()-1, 0), {Qt::DisplayRole, Qt::EditRole});
-        }
-
-        void emitDecorationChangedSignal()
-        {
-            const QModelIndex idx = index(0, 0);
-            emit dataChanged(idx, idx, {Qt::DecorationRole});
-        }
-    private:
-        QStringList lst;
-    };
     CustomStringListModel model;
     QStringList strings;
     for (auto i = 8; i >= 1; --i)
@@ -4485,6 +4488,137 @@ void tst_QSortFilterProxyModel::emitLayoutChangedOnlyIfSortingChanged()
     QCOMPARE(rowTexts(&proxy), expectedProxyRowTexts);
     QCOMPARE(modelDataChangedSpy.size(), 1);
     QCOMPARE(proxyLayoutChangedSpy.size(), expectedLayoutChanged);
+}
+
+void tst_QSortFilterProxyModel::removeIntervals_data()
+{
+    QTest::addColumn<QStringList>("sourceItems");
+    QTest::addColumn<int>("sortOrder");
+    QTest::addColumn<QString>("filter");
+    QTest::addColumn<QStringList>("replacementSourceItems");
+    QTest::addColumn<IntPairList>("expectedRemovedProxyIntervals");
+    QTest::addColumn<QStringList>("expectedProxyItems");
+
+    QTest::newRow("filter all, sort ascending")
+        << (QStringList() << "a"
+                          << "b"
+                          << "c") // sourceItems
+        << static_cast<int>(Qt::AscendingOrder) // sortOrder
+        << "[^x]" // filter
+        << (QStringList() << "x"
+                          << "x"
+                          << "x") // replacementSourceItems
+        << (IntPairList() << IntPair(0, 2)) // expectedRemovedIntervals
+        << QStringList() // expectedProxyItems
+        ;
+
+    QTest::newRow("filter all, sort descending")
+        << (QStringList() << "a"
+                          << "b"
+                          << "c") // sourceItems
+        << static_cast<int>(Qt::DescendingOrder) // sortOrder
+        << "[^x]" // filter
+        << (QStringList() << "x"
+                          << "x"
+                          << "x") // replacementSourceItems
+        << (IntPairList() << IntPair(0, 2)) // expectedRemovedIntervals
+        << QStringList() // expectedProxyItems
+        ;
+
+    QTest::newRow("filter first and last, sort ascending")
+        << (QStringList() << "a"
+                          << "b"
+                          << "c") // sourceItems
+        << static_cast<int>(Qt::AscendingOrder) // sortOrder
+        << "[^x]" // filter
+        << (QStringList() << "x"
+                          << "b"
+                          << "x") // replacementSourceItems
+        << (IntPairList() << IntPair(2, 2) << IntPair(0, 0)) // expectedRemovedIntervals
+        << (QStringList() << "b") // expectedProxyItems
+        ;
+
+    QTest::newRow("filter first and last, sort descending")
+        << (QStringList() << "a"
+                          << "b"
+                          << "c") // sourceItems
+        << static_cast<int>(Qt::DescendingOrder) // sortOrder
+        << "[^x]" // filter
+        << (QStringList() << "x"
+                          << "b"
+                          << "x") // replacementSourceItems
+        << (IntPairList() << IntPair(2, 2) << IntPair(0, 0)) // expectedRemovedIntervals
+        << (QStringList() << "b") // expectedProxyItems
+        ;
+}
+
+void tst_QSortFilterProxyModel::removeIntervals()
+{
+    QFETCH(QStringList, sourceItems);
+    QFETCH(int, sortOrder);
+    QFETCH(QString, filter);
+    QFETCH(QStringList, replacementSourceItems);
+    QFETCH(IntPairList, expectedRemovedProxyIntervals);
+    QFETCH(QStringList, expectedProxyItems);
+
+    CustomStringListModel model;
+    QSortFilterProxyModel proxy;
+
+    model.replaceData(sourceItems);
+    proxy.setSourceModel(&model);
+
+    for (int i = 0; i < sourceItems.count(); ++i) {
+        QModelIndex sindex = model.index(i, 0, QModelIndex());
+        QModelIndex pindex = proxy.index(i, 0, QModelIndex());
+        QCOMPARE(proxy.data(pindex, Qt::DisplayRole), model.data(sindex, Qt::DisplayRole));
+    }
+
+    proxy.setDynamicSortFilter(true);
+
+    if (sortOrder != -1)
+        proxy.sort(0, static_cast<Qt::SortOrder>(sortOrder));
+    if (!filter.isEmpty())
+        proxy.setFilterRegExp(QRegExp(filter));
+
+    (void)proxy.rowCount(QModelIndex()); // force mapping
+
+    QSignalSpy removeSpy(&proxy, &QSortFilterProxyModel::rowsRemoved);
+    QSignalSpy insertSpy(&proxy, &QSortFilterProxyModel::rowsInserted);
+    QSignalSpy aboutToRemoveSpy(&proxy, &QSortFilterProxyModel::rowsAboutToBeRemoved);
+    QSignalSpy aboutToInsertSpy(&proxy, &QSortFilterProxyModel::rowsAboutToBeInserted);
+
+    QVERIFY(removeSpy.isValid());
+    QVERIFY(insertSpy.isValid());
+    QVERIFY(aboutToRemoveSpy.isValid());
+    QVERIFY(aboutToInsertSpy.isValid());
+
+    model.replaceData(replacementSourceItems);
+
+    QCOMPARE(aboutToRemoveSpy.count(), expectedRemovedProxyIntervals.count());
+    for (int i = 0; i < aboutToRemoveSpy.count(); ++i) {
+        QList<QVariant> args = aboutToRemoveSpy.at(i);
+        QCOMPARE(args.at(1).type(), QVariant::Int);
+        QCOMPARE(args.at(2).type(), QVariant::Int);
+        QCOMPARE(args.at(1).toInt(), expectedRemovedProxyIntervals.at(i).first);
+        QCOMPARE(args.at(2).toInt(), expectedRemovedProxyIntervals.at(i).second);
+    }
+    QCOMPARE(removeSpy.count(), expectedRemovedProxyIntervals.count());
+    for (int i = 0; i < removeSpy.count(); ++i) {
+        QList<QVariant> args = removeSpy.at(i);
+        QCOMPARE(args.at(1).type(), QVariant::Int);
+        QCOMPARE(args.at(2).type(), QVariant::Int);
+        QCOMPARE(args.at(1).toInt(), expectedRemovedProxyIntervals.at(i).first);
+        QCOMPARE(args.at(2).toInt(), expectedRemovedProxyIntervals.at(i).second);
+    }
+
+    QCOMPARE(insertSpy.count(), 0);
+    QCOMPARE(aboutToInsertSpy.count(), 0);
+
+    QCOMPARE(proxy.rowCount(QModelIndex()), expectedProxyItems.count());
+    for (int i = 0; i < expectedProxyItems.count(); ++i) {
+        QModelIndex pindex = proxy.index(i, 0, QModelIndex());
+        QCOMPARE(proxy.data(pindex, Qt::DisplayRole).toString(), expectedProxyItems.at(i));
+    }
 }
 
 void tst_QSortFilterProxyModel::dynamicFilterWithoutSort()
