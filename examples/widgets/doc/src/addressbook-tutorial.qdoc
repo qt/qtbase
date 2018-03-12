@@ -80,7 +80,7 @@
 /*!
     \example tutorials/addressbook/part1
     \title Part 1 - Designing the User Interface
-
+    \brief Describes how to code the user interface of the Address Book Example.
     This first part covers the design of the basic graphical user
     interface (GUI) for our address book application.
 
@@ -232,6 +232,7 @@
 /*!
     \example tutorials/addressbook/part2
     \title Part 2 - Adding Addresses
+    \brief Describes the code for inserting records in the Address Book Example.
 
     The next step in creating the address book is to implement some
     user interactions.
@@ -381,9 +382,10 @@
 /*!
     \example tutorials/addressbook/part3
     \title Part 3 - Navigating between Entries
+    \brief Explains the code that enables navigating the contacts.
 
     The address book is now about half complete. We should add the
-    capability to navigate among the contacts, but first we must
+    capability to navigate the contacts, but first we must
     decide what sort of a data structure we need for containing these
     contacts.
 
@@ -496,6 +498,7 @@
 /*!
     \example tutorials/addressbook/part4
     \title Part 4 - Editing and Removing Addresses
+    \brief Explains how to add edit and remove functionality.
 
     Now we look at ways to modify the contents of contacts stored in
     the address book.
@@ -628,6 +631,7 @@
 /*!
     \example tutorials/addressbook/part5
     \title Part 5 - Adding a Find Function
+    \brief Describes how to add a find function.
 
     Here we look at ways to locate contacts and addresses in the
     address book.
@@ -770,6 +774,7 @@
 /*!
     \example tutorials/addressbook/part6
     \title Part 6 - Loading and Saving
+    \brief Describes how to add save and load functionality.
 
     This part covers the Qt file handling features we use to write
     loading and saving routines for the address book.
@@ -890,6 +895,7 @@
 /*!
     \example tutorials/addressbook/part7
     \title Part 7 - Additional Features
+    \brief Describes how to export data in VCard format.
 
     This part covers some additional features that make the address
     book more convenient for the frequent user.
