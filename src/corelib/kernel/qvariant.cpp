@@ -3896,7 +3896,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     \sa setValue(), value()
 */
 
-/*! \fn static inline QVariant fromStdVariant(const std::variant<T, Types...> &value)
+/*! \fn template<typename... Types> QVariant QVariant::fromStdVariant(const std::variant<Types...> &value)
     \since 5.11
 
     Returns a QVariant with the type and value of the active variant of \a value. If
