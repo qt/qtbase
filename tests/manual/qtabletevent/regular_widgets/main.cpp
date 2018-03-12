@@ -61,22 +61,37 @@ struct TabletPoint
 
 class ProximityEventFilter : public QObject
 {
+    Q_OBJECT
 public:
     explicit ProximityEventFilter(QObject *parent) : QObject(parent) { }
 
-    bool eventFilter(QObject *, QEvent *event) override
-    {
-        switch (event->type()) {
-        case QEvent::TabletEnterProximity:
-        case QEvent::TabletLeaveProximity:
-            qDebug() << event;
-            break;
-        default:
-            break;
-        }
-        return false;
-    }
+    bool eventFilter(QObject *, QEvent *event) override;
+
+    static bool tabletPenProximity() { return m_tabletPenProximity; }
+
+signals:
+    void proximityChanged();
+
+private:
+    static bool m_tabletPenProximity;
 };
+
+bool ProximityEventFilter::eventFilter(QObject *, QEvent *event)
+{
+    switch (event->type()) {
+    case QEvent::TabletEnterProximity:
+    case QEvent::TabletLeaveProximity:
+        ProximityEventFilter::m_tabletPenProximity = event->type() == QEvent::TabletEnterProximity;
+        emit proximityChanged();
+        qDebug() << event;
+        break;
+    default:
+        break;
+    }
+    return false;
+}
+
+bool ProximityEventFilter::m_tabletPenProximity = false;
 
 class EventReportWidget : public QWidget
 {
@@ -111,6 +126,7 @@ private:
     Qt::MouseButton m_lastButton = Qt::NoButton;
     QVector<TabletPoint> m_points;
     QVector<QPointF> m_touchPoints;
+    QPointF m_tabletPos;
     int m_tabletMoveCount = 0;
     int m_paintEventCount = 0;
 };
@@ -169,6 +185,13 @@ void EventReportWidget::paintEvent(QPaintEvent *)
               }
           }
     }
+
+    // Draw haircross when tablet pen is in proximity
+    if (ProximityEventFilter::tabletPenProximity() && geom.contains(m_tabletPos)) {
+        p.setPen(Qt::black);
+        p.drawLine(QPointF(0, m_tabletPos.y()), QPointF(geom.width(), m_tabletPos.y()));
+        p.drawLine(QPointF(m_tabletPos.x(), 0), QPointF(m_tabletPos.x(), geom.height()));
+    }
     p.setPen(Qt::blue);
     for (QPointF t : m_touchPoints) {
         p.drawLine(t.x() - 40, t.y(), t.x() + 40, t.y());
@@ -181,20 +204,21 @@ void EventReportWidget::tabletEvent(QTabletEvent *event)
 {
     QWidget::tabletEvent(event);
     bool isMove = false;
+    m_tabletPos = event->posF();
     switch (event->type()) {
     case QEvent::TabletMove:
-        m_points.push_back(TabletPoint(event->pos(), TabletMove, m_lastButton, event->pointerType(), event->pressure(), event->rotation()));
+        m_points.push_back(TabletPoint(m_tabletPos, TabletMove, m_lastButton, event->pointerType(), event->pressure(), event->rotation()));
         update();
         isMove = true;
         ++m_tabletMoveCount;
         break;
     case QEvent::TabletPress:
-        m_points.push_back(TabletPoint(event->pos(), TabletButtonPress, event->button(), event->pointerType(), event->rotation()));
+        m_points.push_back(TabletPoint(m_tabletPos, TabletButtonPress, event->button(), event->pointerType(), event->rotation()));
         m_lastButton = event->button();
         update();
         break;
     case QEvent::TabletRelease:
-        m_points.push_back(TabletPoint(event->pos(), TabletButtonRelease, event->button(), event->pointerType(), event->rotation()));
+        m_points.push_back(TabletPoint(m_tabletPos, TabletButtonRelease, event->button(), event->pointerType(), event->rotation()));
         update();
         break;
     default:
@@ -253,10 +277,14 @@ void EventReportWidget::timerEvent(QTimerEvent *)
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    app.installEventFilter(new ProximityEventFilter(&app));
+
+    ProximityEventFilter *proximityEventFilter = new ProximityEventFilter(&app);
+    app.installEventFilter(proximityEventFilter);
     QMainWindow mainWindow;
     mainWindow.setWindowTitle(QString::fromLatin1("Tablet Test %1").arg(QT_VERSION_STR));
     EventReportWidget *widget = new EventReportWidget;
+    QObject::connect(proximityEventFilter, &ProximityEventFilter::proximityChanged,
+                     widget, QOverload<void>::of(&QWidget::update));
     widget->setMinimumSize(640, 480);
     QMenu *fileMenu = mainWindow.menuBar()->addMenu("File");
     fileMenu->addAction("Clear", widget, &EventReportWidget::clearPoints);
