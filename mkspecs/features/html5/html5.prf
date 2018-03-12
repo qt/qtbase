@@ -31,9 +31,9 @@ contains(TEMPLATE, .*app) {
         INSTALLS += js_file
 
     !contains(CONFIG,config_test):!build_pass:cross_compile: {
-        QMAKE_CFLAGS += -s WASM=1 -s MODULARIZE=1 -s \"BINARYEN_METHOD=\'native-wasm\'\"
-        QMAKE_CXXFLAGS += -s WASM=1 -s MODULARIZE=1 -s \"BINARYEN_METHOD=\'native-wasm\'\"
-        QMAKE_LFLAGS += -s WASM=1 -s MODULARIZE=1 -s \"BINARYEN_METHOD=\'native-wasm\'\"
+        QMAKE_CFLAGS += -s WASM=1 -s MODULARIZE=1 -s \"BINARYEN_METHOD=\'native-wasm\'\" -s \"BINARYEN_TRAP_MODE=\'clamp\'\"
+        QMAKE_CXXFLAGS += -s WASM=1 -s MODULARIZE=1 -s \"BINARYEN_METHOD=\'native-wasm\'\" -s \"BINARYEN_TRAP_MODE=\'clamp\'\"
+        QMAKE_LFLAGS += -s WASM=1 -s MODULARIZE=1 -s \"BINARYEN_METHOD=\'native-wasm\'\" -s \"BINARYEN_TRAP_MODE=\'clamp\'\"
     }
 
     # Generate/copy hosting html and javascript to the application build directory.
