@@ -406,6 +406,7 @@ bool QWindowsTabletSupport::translateTabletProximityEvent(WPARAM /* wParam */, L
         qCDebug(lcQpaTablet) << "leave proximity for device #" << m_currentDevice;
         if (m_currentDevice < 0 || m_currentDevice >= m_devices.size()) // QTBUG-65120, spurious leave observed
             return false;
+        m_state = PenUp;
         if (totalPacks > 0) {
             QWindowSystemInterface::handleTabletLeaveProximityEvent(proximityBuffer[0].pkTime,
                                                                     m_devices.at(m_currentDevice).currentDevice,
@@ -438,6 +439,7 @@ bool QWindowsTabletSupport::translateTabletProximityEvent(WPARAM /* wParam */, L
         m_devices.push_back(tabletInit(uniqueId, cursorType));
     }
     m_devices[m_currentDevice].currentPointerType = pointerType(currentCursor);
+    m_state = PenProximity;
     qCDebug(lcQpaTablet) << "enter proximity for device #"
         << m_currentDevice << m_devices.at(m_currentDevice);
     QWindowSystemInterface::handleTabletEnterProximityEvent(proximityBuffer[0].pkTime,
@@ -458,7 +460,8 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
     const int currentPointer = m_devices.at(m_currentDevice).currentPointerType;
     const qint64 uniqueId = m_devices.at(m_currentDevice).uniqueId;
 
-    // The tablet can be used in 2 different modes, depending on it settings:
+    // The tablet can be used in 2 different modes (reflected in enum Mode),
+    // depending on its settings:
     // 1) Absolute (pen) mode:
     //    The coordinates are scaled to the virtual desktop (by default). The user
     //    can also choose to scale to the monitor or a region of the screen.
@@ -473,8 +476,11 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
     const QRect virtualDesktopArea =
         QWindowsScreen::virtualGeometry(QGuiApplication::primaryScreen()->handle());
 
-    qCDebug(lcQpaTablet) << __FUNCTION__ << "processing " << packetCount
-        << "target:" << QGuiApplicationPrivate::tabletDevicePoint(uniqueId).target;
+    if (QWindowsContext::verbose > 1)  {
+        qCDebug(lcQpaTablet) << __FUNCTION__ << "processing" << packetCount
+            << "mode=" << m_mode << "target:"
+            << QGuiApplicationPrivate::tabletDevicePoint(uniqueId).target;
+    }
 
     const Qt::KeyboardModifiers keyboardModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
 
@@ -485,20 +491,24 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
 
         // This code is to delay the tablet data one cycle to sync with the mouse location.
         QPointF globalPosF = m_oldGlobalPosF;
-        m_oldGlobalPosF = m_devices.at(m_currentDevice).scaleCoordinates(packet.pkX, packet.pkY, virtualDesktopArea);
+        const QPointF currentGlobalPosF =
+            m_devices.at(m_currentDevice).scaleCoordinates(packet.pkX, packet.pkY, virtualDesktopArea);
+        m_oldGlobalPosF = currentGlobalPosF;
 
         QWindow *target = QGuiApplicationPrivate::tabletDevicePoint(uniqueId).target; // Pass to window that grabbed it.
-        QPoint globalPos = globalPosF.toPoint();
 
         // Get Mouse Position and compare to tablet info
         const QPoint mouseLocation = QWindowsCursor::mousePosition();
-
-        // Positions should be almost the same if we are in absolute
-        // mode. If they are not, use the mouse location.
-        if ((mouseLocation - globalPos).manhattanLength() > m_absoluteRange) {
-            globalPos = mouseLocation;
-            globalPosF = globalPos;
+        if (m_state == PenProximity) {
+            m_state = PenDown;
+            m_mode = (mouseLocation - currentGlobalPosF).manhattanLength() > m_absoluteRange
+                ? MouseMode : PenMode;
+            qCDebug(lcQpaTablet) << __FUNCTION__ << "mode=" << m_mode << "pen:"
+                << currentGlobalPosF << "mouse:" << mouseLocation;
         }
+        if (m_mode == MouseMode)
+            globalPosF = mouseLocation;
+        const QPoint globalPos = globalPosF.toPoint();
 
         if (!target)
             target = QWindowsScreen::windowAt(globalPos, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT);
