@@ -135,9 +135,9 @@ QDebug operator<<(QDebug d, const QWindowsTabletDeviceData &t)
     d.nospace();
     d << "TabletDevice id:" << t.uniqueId << " pressure: " << t.minPressure
       << ".." << t.maxPressure << " tan pressure: " << t.minTanPressure << ".."
-      << t.maxTanPressure << " area:" << t.minX << t.minY <<t.minZ
-      << ".." << t.maxX << t.maxY << t.maxZ << " device " << t.currentDevice
-      << " pointer " << t.currentPointerType;
+      << t.maxTanPressure << " area: (" << t.minX << ',' << t.minY << ',' << t.minZ
+      << ")..(" << t.maxX << ',' << t.maxY << ',' << t.maxZ << ") device "
+      << t.currentDevice << " pointer " << t.currentPointerType;
     return d;
 }
 
@@ -211,9 +211,6 @@ bool QWindowsWinTab32DLL::init()
 QWindowsTabletSupport::QWindowsTabletSupport(HWND window, HCTX context)
     : m_window(window)
     , m_context(context)
-    , m_absoluteRange(20)
-    , m_tiltSupport(false)
-    , m_currentDevice(-1)
 {
      AXIS orientation[3];
     // Some tablets don't support tilt, check if it is possible,
@@ -230,13 +227,13 @@ QWindowsTabletSupport::~QWindowsTabletSupport()
 QWindowsTabletSupport *QWindowsTabletSupport::create()
 {
     if (!m_winTab32DLL.init())
-        return 0;
+        return nullptr;
     const HWND window = QWindowsContext::instance()->createDummyWindow(QStringLiteral("TabletDummyWindow"),
                                                                        L"TabletDummyWindow",
                                                                        qWindowsTabletSupportWndProc);
     if (!window) {
         qCWarning(lcQpaTablet) << __FUNCTION__ << "Unable to create window for tablet.";
-        return 0;
+        return nullptr;
     }
     LOGCONTEXT lcMine;
     // build our context from the default context
@@ -255,7 +252,7 @@ QWindowsTabletSupport *QWindowsTabletSupport::create()
     if (!context) {
         qCDebug(lcQpaTablet) << __FUNCTION__ << "Unable to open tablet.";
         DestroyWindow(window);
-        return 0;
+        return nullptr;
 
     }
     // Set the size of the Packet Queue to the correct size
@@ -266,7 +263,7 @@ QWindowsTabletSupport *QWindowsTabletSupport::create()
                 qWarning("Unable to set queue size on tablet. The tablet will not work.");
                 QWindowsTabletSupport::m_winTab32DLL.wTClose(context);
                 DestroyWindow(window);
-                return 0;
+                return nullptr;
             } // cannot restore old size
         } // cannot set
     } // mismatch
@@ -285,7 +282,7 @@ unsigned QWindowsTabletSupport::options() const
 
 QString QWindowsTabletSupport::description() const
 {
-    const unsigned size = m_winTab32DLL.wTInfo(WTI_INTERFACE, IFC_WINTABID, 0);
+    const unsigned size = m_winTab32DLL.wTInfo(WTI_INTERFACE, IFC_WINTABID, nullptr);
     if (!size)
         return QString();
     QVarLengthArray<TCHAR> winTabId(size + 1);
