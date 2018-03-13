@@ -31,7 +31,10 @@ qml1_target {
     instbase = $$[QT_INSTALL_QML]
 }
 
-!qml1_target:static: CONFIG += builtin_resources
+!qml1_target:static: \
+    CONFIG += builtin_resources
+else: \
+    CONFIG += install_qml_files
 
 builtin_resources {
     URITARGET = $$replace(URI, "\\.", "_")
@@ -48,7 +51,7 @@ builtin_resources {
 qmldir.base = $$_PRO_FILE_PWD_
 # Tools need qmldir and plugins.qmltypes always installed on the file system
 qmldir.files = $$qmldir_file $$fq_aux_qml_files
-!builtin_resources: qmldir.files += $$fq_qml_files
+install_qml_files: qmldir.files += $$fq_qml_files
 qmldir.path = $$instbase/$$TARGETPATH
 INSTALLS += qmldir
 
