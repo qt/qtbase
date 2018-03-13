@@ -95,41 +95,25 @@ QFlatpakTheme::QFlatpakTheme()
 QPlatformMenuItem* QFlatpakTheme::createPlatformMenuItem() const
 {
     Q_D(const QFlatpakTheme);
-
-    if (d->baseTheme)
-        return d->baseTheme->createPlatformMenuItem();
-
-    return QPlatformTheme::createPlatformMenuItem();
+    return d->baseTheme->createPlatformMenuItem();
 }
 
 QPlatformMenu* QFlatpakTheme::createPlatformMenu() const
 {
     Q_D(const QFlatpakTheme);
-
-    if (d->baseTheme)
-        return d->baseTheme->createPlatformMenu();
-
-    return QPlatformTheme::createPlatformMenu();
+    return d->baseTheme->createPlatformMenu();
 }
 
 QPlatformMenuBar* QFlatpakTheme::createPlatformMenuBar() const
 {
     Q_D(const QFlatpakTheme);
-
-    if (d->baseTheme)
-        return d->baseTheme->createPlatformMenuBar();
-
-    return QFlatpakTheme::createPlatformMenuBar();
+    return d->baseTheme->createPlatformMenuBar();
 }
 
 void QFlatpakTheme::showPlatformMenuBar()
 {
     Q_D(const QFlatpakTheme);
-
-    if (d->baseTheme)
-        return d->baseTheme->showPlatformMenuBar();
-
-    return QFlatpakTheme::showPlatformMenuBar();
+    return d->baseTheme->showPlatformMenuBar();
 }
 
 bool QFlatpakTheme::usePlatformNativeDialog(DialogType type) const
@@ -139,10 +123,7 @@ bool QFlatpakTheme::usePlatformNativeDialog(DialogType type) const
     if (type == FileDialog)
         return true;
 
-    if (d->baseTheme)
-        return d->baseTheme->usePlatformNativeDialog(type);
-
-    return QFlatpakTheme::usePlatformNativeDialog(type);
+    return d->baseTheme->usePlatformNativeDialog(type);
 }
 
 QPlatformDialogHelper* QFlatpakTheme::createPlatformDialogHelper(DialogType type) const
@@ -152,103 +133,64 @@ QPlatformDialogHelper* QFlatpakTheme::createPlatformDialogHelper(DialogType type
     if (type == FileDialog)
         return new QFlatpakFileDialog;
 
-    if (d->baseTheme)
-        return d->baseTheme->createPlatformDialogHelper(type);
-
-    return QFlatpakTheme::createPlatformDialogHelper(type);
+    return d->baseTheme->createPlatformDialogHelper(type);
 }
 
 #ifndef QT_NO_SYSTEMTRAYICON
 QPlatformSystemTrayIcon* QFlatpakTheme::createPlatformSystemTrayIcon() const
 {
     Q_D(const QFlatpakTheme);
-
-    if (d->baseTheme)
-        return d->baseTheme->createPlatformSystemTrayIcon();
-
-    return QPlatformTheme::createPlatformSystemTrayIcon();
+    return d->baseTheme->createPlatformSystemTrayIcon();
 }
 #endif
 
 const QPalette *QFlatpakTheme::palette(Palette type) const
 {
     Q_D(const QFlatpakTheme);
-
-    if (d->baseTheme)
-        return d->baseTheme->palette(type);
-
-    return QPlatformTheme::palette(type);
+    return d->baseTheme->palette(type);
 }
 
 const QFont* QFlatpakTheme::font(Font type) const
 {
     Q_D(const QFlatpakTheme);
-
-    if (d->baseTheme)
-        return d->baseTheme->font(type);
-
-    return QPlatformTheme::font(type);
+    return d->baseTheme->font(type);
 }
 
 QVariant QFlatpakTheme::themeHint(ThemeHint hint) const
 {
     Q_D(const QFlatpakTheme);
-
-    if (d->baseTheme)
-        return d->baseTheme->themeHint(hint);
-
-    return QPlatformTheme::themeHint(hint);
+    return d->baseTheme->themeHint(hint);
 }
 
 QPixmap QFlatpakTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
 {
     Q_D(const QFlatpakTheme);
-
-    if (d->baseTheme)
-        return d->baseTheme->standardPixmap(sp, size);
-
-    return QPlatformTheme::standardPixmap(sp, size);
+    return d->baseTheme->standardPixmap(sp, size);
 }
 
 QIcon QFlatpakTheme::fileIcon(const QFileInfo &fileInfo,
                               QPlatformTheme::IconOptions iconOptions) const
 {
     Q_D(const QFlatpakTheme);
-
-    if (d->baseTheme)
-        return d->baseTheme->fileIcon(fileInfo, iconOptions);
-
-    return QPlatformTheme::fileIcon(fileInfo, iconOptions);
+    return d->baseTheme->fileIcon(fileInfo, iconOptions);
 }
 
 QIconEngine * QFlatpakTheme::createIconEngine(const QString &iconName) const
 {
     Q_D(const QFlatpakTheme);
-
-    if (d->baseTheme)
-        return d->baseTheme->createIconEngine(iconName);
-
-    return QPlatformTheme::createIconEngine(iconName);
+    return d->baseTheme->createIconEngine(iconName);
 }
 
 QList<QKeySequence> QFlatpakTheme::keyBindings(QKeySequence::StandardKey key) const
 {
     Q_D(const QFlatpakTheme);
-
-    if (d->baseTheme)
-        return d->baseTheme->keyBindings(key);
-
-    return QPlatformTheme::keyBindings(key);
+    return d->baseTheme->keyBindings(key);
 }
 
 QString QFlatpakTheme::standardButtonText(int button) const
 {
     Q_D(const QFlatpakTheme);
-
-    if (d->baseTheme)
-        return d->baseTheme->standardButtonText(button);
-
-    return QPlatformTheme::standardButtonText(button);
+    return d->baseTheme->standardButtonText(button);
 }
 
 QT_END_NAMESPACE
