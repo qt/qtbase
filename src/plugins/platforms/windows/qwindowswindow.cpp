@@ -1107,7 +1107,6 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
     updateDropSite(window()->isTopLevel());
 
     registerTouchWindow();
-    setWindowState(aWindow->windowStates());
     const qreal opacity = qt_window_private(aWindow)->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
         setOpacity(opacity);
@@ -1136,9 +1135,11 @@ void QWindowsWindow::initialize()
     QWindowCreationContextPtr creationContext =
         QWindowsContext::instance()->setWindowCreationContext(QWindowCreationContextPtr());
 
+    QWindow *w = window();
+    setWindowState(w->windowStates());
+
     // Trigger geometry change (unless it has a special state in which case setWindowState()
     // will send the message) and screen change signals of QWindow.
-    QWindow *w = window();
     if (w->type() != Qt::Desktop) {
         const Qt::WindowState state = w->windowState();
         if (state != Qt::WindowMaximized && state != Qt::WindowFullScreen

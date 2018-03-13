@@ -222,6 +222,9 @@ void QOpenGLWindowPrivate::initialize()
     if (context)
         return;
 
+    if (!q->handle())
+        qWarning("Attempted to initialize QOpenGLWindow without a platform window");
+
     context.reset(new QOpenGLContext);
     context->setShareContext(shareContext);
     context->setFormat(q->requestedFormat());
