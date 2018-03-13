@@ -2600,8 +2600,10 @@ void tst_QTreeView::setSortingEnabledChild()
 {
     QMainWindow win;
     QTreeView view;
-    QStandardItemModel model(1,1);
+    // two columns to not get in trouble with stretchLastSection
+    QStandardItemModel model(1,2);
     view.setModel(&model);
+    view.header()->setDefaultSectionSize(92);
     win.setCentralWidget(&view);
     const int size = view.header()->sectionSize(0);
     view.setSortingEnabled(true);
