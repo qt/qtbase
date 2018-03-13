@@ -1345,6 +1345,7 @@ void QNativeSocketEngine::handleConnectOpFinished(bool success, QAbstractSocket:
     }
 
     d->socketState = QAbstractSocket::ConnectedState;
+    d->fetchConnectionParameters();
     emit connectionReady();
 
     if (d->socketType != QAbstractSocket::TcpSocket)
