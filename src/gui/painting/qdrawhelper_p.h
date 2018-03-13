@@ -784,6 +784,7 @@ static Q_ALWAYS_INLINE uint qAlphaRgb30(uint c)
 }
 
 struct quint24 {
+    quint24() = default;
     quint24(uint value);
     operator uint() const;
     uchar data[3];
