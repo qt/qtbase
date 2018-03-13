@@ -599,7 +599,7 @@ void QtAndroidPrivate::setOnBindListener(QtAndroidPrivate::OnBindListener *liste
 jobject QtAndroidPrivate::callOnBindListener(jobject intent)
 {
     QMutexLocker lock(g_onBindListenerMutex);
-    if (g_onBindListener)
+    if (*g_onBindListener)
         return (*g_onBindListener)->onBind(intent);
     return nullptr;
 }
