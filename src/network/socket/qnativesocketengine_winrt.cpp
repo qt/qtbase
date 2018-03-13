@@ -1075,14 +1075,10 @@ qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHea
         *header = datagram.header;
 
     QByteArray readOrigin;
-    // Do not read the whole datagram. Put the rest of it back into the "queue"
-    if (maxlen < datagram.data.length()) {
+    if (maxlen < datagram.data.length())
         readOrigin = datagram.data.left(maxlen);
-        datagram.data = datagram.data.remove(0, maxlen);
-        d->worker->pendingDatagrams.prepend(datagram);
-    } else {
+    else
         readOrigin = datagram.data;
-    }
     if (d->worker->pendingDatagrams.isEmpty()) {
         qCDebug(lcNetworkSocket) << this << Q_FUNC_INFO << "That's all folks";
         d->worker->emitDataReceived = true;
