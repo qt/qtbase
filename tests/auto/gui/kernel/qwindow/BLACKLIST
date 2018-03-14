@@ -21,5 +21,3 @@ osx
 osx
 [testInputEvents]
 rhel-7.4
-# QTBUG-66798
-windows
