@@ -42,6 +42,7 @@ private slots:
     void initTestCase();
     void create();
     void basic();
+    void resize();
     void painter();
     void partial_data();
     void partial();
@@ -115,8 +116,7 @@ void tst_QOpenGLWindow::basic()
 
     // Check that the virtuals are invoked.
     QCOMPARE(w.initCount, 1);
-    int resCount = w.resizeCount;
-    QVERIFY(resCount >= 1);
+    QVERIFY(w.resizeCount >= 1);
     QVERIFY(w.paintCount >= 1);
 
     // Check that something has been drawn;
@@ -132,6 +132,27 @@ void tst_QOpenGLWindow::basic()
     QCOMPARE(v[2], GLint(w.width() * w.devicePixelRatio()));
     QCOMPARE(v[3], GLint(w.height() * w.devicePixelRatio()));
     w.doneCurrent();
+}
+
+static bool isPlatformWayland()
+{
+    return QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive);
+}
+
+void tst_QOpenGLWindow::resize()
+{
+    if (isPlatformWayland())
+        QSKIP("Wayland: Crashes on Intel Mesa due to a driver bug (QTBUG-66848).");
+
+    Window w;
+    w.reset();
+    w.resize(640, 480);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+
+    // Check that the virtuals are invoked.
+    int resCount = w.resizeCount;
+    QVERIFY(resCount >= 1);
 
     // Check that a future resize triggers resizeGL.
     w.resize(800, 600);
