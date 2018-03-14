@@ -215,6 +215,8 @@ public:
         QStyleHelper::WidgetSizePolicy size;
 
         bool operator==(const CocoaControl &other) const;
+
+        QSizeF defaultFrameSize() const;
     };
 
 
@@ -283,11 +285,11 @@ public:
 
     void setupVerticalInvertedXform(CGContextRef cg, bool reverse, bool vertical, const CGRect &rect) const;
 
-    void drawNSViewInRect(CocoaControl widget, NSView *view, const QRect &rect, QPainter *p, bool isQWidget = true, __attribute__((noescape)) DrawRectBlock drawRectBlock = nil) const;
+    void drawNSViewInRect(CocoaControl widget, NSView *view, const QRectF &rect, QPainter *p, bool isQWidget = true, __attribute__((noescape)) DrawRectBlock drawRectBlock = nil) const;
     void resolveCurrentNSView(QWindow *window) const;
 
     void drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, qreal radius = 0) const;
-    void drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const;
+    void drawFocusRing(QPainter *p, const QRectF &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const;
 
     QPainterPath windowPanelPath(const QRectF &r) const;
 

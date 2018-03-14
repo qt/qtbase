@@ -331,6 +331,22 @@ static const qreal closeButtonCornerRadius = 2.0;
 static const int headerSectionArrowHeight = 6;
 static const int headerSectionSeparatorInset = 2;
 
+// One for each of QStyleHelper::WidgetSizePolicy
+static const QMarginsF pullDownButtonShadowMargins[3] = {
+    { 0.5, -1, 0.5, 2 },
+    { 0.5, -1.5, 0.5, 2.5 },
+    { 0.5, 0, 0.5, 1 }
+};
+
+static const QMarginsF pushButtonShadowMargins[3] = {
+    { 1.5, -1.5, 1.5, 4.5 },
+    { 1.5, -1, 1.5, 4 },
+    { 1.5, 0.5, 1.5, 2.5 }
+};
+
+static const int toolButtonArrowSize = 7;
+static const int toolButtonArrowMargin = 2;
+
 #if QT_CONFIG(tabbar)
 static bool isVerticalTabs(const QTabBar::Shape shape) {
     return (shape == QTabBar::RoundedEast
@@ -1203,7 +1219,7 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int h
                   QRect(focusRingPixmap.width() - shCornerSize, svCornerSize, shCornerSize, focusRingPixmap.width() - 2 * svCornerSize));
 }
 
-void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const
+void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const
 {
     static const auto focusRingWidth = 3.5;
 
@@ -1239,8 +1255,21 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int h
         focusRingPath.addEllipse(rbOutterRect);
         break;
     }
+    case Button_PopupButton:
+    case Button_PullDown:
+    case Button_PushButton: {
+        const qreal innerRadius = cw.type == Button_PullDown ? 4 : 3;
+        const qreal outterRadius = innerRadius + focusRingWidth;
+        hOffset = targetRect.left();
+        vOffset = targetRect.top();
+        const auto innerRect = targetRect.translated(-targetRect.topLeft());
+        const auto outterRect = innerRect.adjusted(-hMargin, -vMargin, hMargin, vMargin);
+        focusRingPath.setFillRule(Qt::OddEvenFill);
+        focusRingPath.addRoundedRect(innerRect, innerRadius, innerRadius);
+        focusRingPath.addRoundedRect(outterRect, outterRadius, outterRadius);
+        break;
+    }
     default:
-        Q_UNUSED(vMargin);
         Q_UNREACHABLE();
     }
 
@@ -1519,6 +1548,35 @@ QMacStylePrivate::CocoaControl::CocoaControl(CocoaControlType t, QStyleHelper::W
 bool QMacStylePrivate::CocoaControl::operator==(const CocoaControl &other) const
 {
     return other.type == type && other.size == size;
+}
+
+QSizeF QMacStylePrivate::CocoaControl::defaultFrameSize() const
+{
+    // We need this because things like NSView.alignmentRectInsets
+    // or -[NSCell titleRectForBounds:] won't work unless the control
+    // has a reasonable frame set. IOW, it's a chicken and egg problem.
+    // These values are as observed in Xcode 9's Interface Builder.
+
+    if (type == Button_PushButton) {
+        if (size == QStyleHelper::SizeLarge)
+            return QSizeF(-1, 32);
+        if (size == QStyleHelper::SizeSmall)
+            return QSizeF(-1, 28);
+        if (size == QStyleHelper::SizeMini)
+            return QSizeF(-1, 16);
+    }
+
+    if (type == Button_PopupButton
+            || type == Button_PullDown) {
+        if (size == QStyleHelper::SizeLarge)
+            return QSizeF(-1, 26);
+        if (size == QStyleHelper::SizeSmall)
+            return QSizeF(-1, 22);
+        if (size == QStyleHelper::SizeMini)
+            return QSizeF(-1, 15);
+    }
+
+    return QSizeF();
 }
 
 /**
@@ -2118,19 +2176,14 @@ NSCell *QMacStylePrivate::cocoaCell(CocoaControl widget) const
     return cell;
 }
 
-void QMacStylePrivate::drawNSViewInRect(CocoaControl widget, NSView *view, const QRect &qtRect, QPainter *p, bool isQWidget, __attribute__((noescape)) DrawRectBlock drawRectBlock) const
+void QMacStylePrivate::drawNSViewInRect(CocoaControl widget, NSView *view, const QRectF &qtRect, QPainter *p, bool isQWidget, __attribute__((noescape)) DrawRectBlock drawRectBlock) const
 {
+    Q_UNUSED(isQWidget);
     QPoint offset;
     if (widget == CocoaControl(Button_PopupButton, QStyleHelper::SizeSmall))
         offset.setY(1);
     else if (widget == CocoaControl(Button_PopupButton, QStyleHelper::SizeMini))
         offset = QPoint(2, -1);
-    else if (widget == CocoaControl(Button_PullDown, QStyleHelper::SizeLarge))
-        offset = isQWidget ? QPoint(3, -1) : QPoint(-1, -3);
-    else if (widget == CocoaControl(Button_PullDown, QStyleHelper::SizeSmall))
-        offset = QPoint(2, 1);
-    else if (widget == CocoaControl(Button_PullDown, QStyleHelper::SizeMini))
-        offset = QPoint(5, 0);
     else if (widget == CocoaControl(ComboBox, QStyleHelper::SizeLarge))
         offset = QPoint(3, 0);
 
@@ -2476,6 +2529,10 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
 
     case PM_MenuBarPanelWidth:
         ret = 0;
+        break;
+
+    case PM_MenuButtonIndicator:
+        ret = toolButtonArrowSize;
         break;
 
     case QStyle::PM_MenuDesktopFrameWidth:
@@ -3643,7 +3700,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                             const QWidget *w) const
 {
     Q_D(const QMacStyle);
-    ThemeDrawState tds = d->getDrawState(opt->state);
     QMacCGContext cg(p);
     QWindow *window = w && w->window() ? w->window()->windowHandle() :
                      QStyleHelper::styleObjectWindow(opt->styleObject);
@@ -3815,120 +3871,104 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 break;
             }
 
+            const bool hasFocus = btn->state & State_HasFocus;
+            const bool isActive = btn->state & State_Active;
+
             // a focused auto-default button within an active window
             // takes precedence over a normal default button
             if ((btn->features & QStyleOptionButton::AutoDefaultButton)
-                && (opt->state & State_Active)
-                && (opt->state & State_HasFocus))
+                && isActive && hasFocus)
                 d->autoDefaultButton = opt->styleObject;
             else if (d->autoDefaultButton == opt->styleObject)
                 d->autoDefaultButton = nullptr;
 
-            bool hasMenu = btn->features & QStyleOptionButton::HasMenu;
-            HIThemeButtonDrawInfo bdi;
-            d->initHIThemePushButton(btn, w, tds, &bdi);
-
-            if (!hasMenu) {
-                // HITheme is not drawing a nice focus frame around buttons.
-                // We'll do it ourselves further down.
-                bdi.adornment &= ~kThemeAdornmentFocus;
-
-                // We can't rely on an animation existing to test for the default look. That means a bit
-                // more logic (notice that the logic is slightly different for the bevel and the label).
-                if (tds == kThemeStateActive
-                    && (btn->features & QStyleOptionButton::DefaultButton
-                        || (btn->features & QStyleOptionButton::AutoDefaultButton
-                            && d->autoDefaultButton == btn->styleObject)))
-                    bdi.adornment |= kThemeAdornmentDefault;
-            }
-
-            // Unlike Carbon, we want the button to always be drawn inside its bounds.
-            // Therefore, make the button a bit smaller, so that even if it got focus,
-            // the focus 'shadow' will be inside.
-            CGRect newRect = btn->rect.toCGRect();
-            if (bdi.kind == kThemePushButton || bdi.kind == kThemePushButtonSmall) {
-                newRect.origin.x += QMacStylePrivate::PushButtonLeftOffset;
-                newRect.origin.y += QMacStylePrivate::PushButtonTopOffset;
-                newRect.size.width -= QMacStylePrivate::PushButtonRightOffset;
-                newRect.size.height -= QMacStylePrivate::PushButtonBottomOffset;
-            } else if (bdi.kind == kThemePushButtonMini) {
-                newRect.origin.x += QMacStylePrivate::PushButtonLeftOffset - 2;
-                newRect.origin.y += QMacStylePrivate::PushButtonTopOffset;
-                newRect.size.width -= QMacStylePrivate::PushButtonRightOffset - 4;
-            }
-
-            QMacStylePrivate::CocoaControl cw = QMacStylePrivate::cocoaControlFromHIThemeButtonKind(bdi.kind);
-            if (hasMenu)
-                cw.type = QMacStylePrivate::Button_PullDown;
-            if (hasMenu && bdi.kind != kThemeBevelButton) {
-                NSPopUpButton *pdb = (NSPopUpButton *)d->cocoaControl(cw);
-                [pdb highlight:(bdi.state == kThemeStatePressed)];
-                pdb.enabled = bdi.state != kThemeStateUnavailable && bdi.state != kThemeStateUnavailableInactive;
-                QRect rect = opt->rect;
-                rect.adjust(0, 0, cw.size == QStyleHelper::SizeSmall ? -4 : cw.size == QStyleHelper::SizeMini ? -9 : -6, 0);
-                d->drawNSViewInRect(cw, pdb, rect, p, w != 0);
-            } else if (hasMenu && bdi.state == kThemeStatePressed)
-                d->drawColorlessButton(newRect, &bdi, cw, p, opt);
-            else
-                HIThemeDrawButton(&newRect, &bdi, cg, kHIThemeOrientationNormal, 0);
-
-            if (btn->state & State_HasFocus) {
-                CGRect focusRect = newRect;
-                if (bdi.kind == kThemePushButton)
-                    focusRect.size.height += 1; // Another thing HITheme and Cocoa seem to disagree about.
-                else if (bdi.kind == kThemePushButtonMini)
-                    focusRect.size.height = 15; // Our QPushButton sizes are really weird
-
-                if (bdi.adornment & kThemeAdornmentDefault || bdi.state == kThemeStatePressed) {
-                    if (bdi.kind == kThemePushButtonSmall) {
-                        focusRect = CGRectInset(focusRect, -1, 0);
-                    } else if (bdi.kind == kThemePushButtonMini) {
-                        focusRect = CGRectInset(focusRect, 1, 0);
-                    }
+            const bool isEnabled = btn->state & State_Enabled;
+            const bool isPressed = btn->state & State_Sunken;
+            const bool isHighlighted = isActive &&
+                    ((btn->state & State_On)
+                     || (btn->features & QStyleOptionButton::DefaultButton)
+                     || (btn->features & QStyleOptionButton::AutoDefaultButton
+                         && d->autoDefaultButton == btn->styleObject));
+            const bool hasMenu = btn->features & QStyleOptionButton::HasMenu;
+            // TODO When the contents won't fit in a large sized button,
+            // and WA_MacNormalSize is not set, make the button square.
+            const bool isSquare = btn->features & QStyleOptionButton::Flat;
+            const auto ct = hasMenu ? QMacStylePrivate::Button_PullDown : QMacStylePrivate::Button_PushButton;
+            const auto cs = d->effectiveAquaSizeConstrain(opt, w);
+            const auto cw = QMacStylePrivate::CocoaControl(ct, cs);
+            auto *pb = static_cast<NSButton *>(d->cocoaControl(cw));
+            // Ensure same size and location as we used to have with HITheme.
+            // This is more convoluted than we initialy thought. See for example
+            // differences between plain and menu button frames.
+            QRectF frameRect;
+            if (isSquare) {
+                frameRect = btn->rect;
+            } else {
+                const auto frameSize = cw.defaultFrameSize();
+                if (hasMenu) {
+                    // Center in the style option's rect.
+                    frameRect = QRectF(QPointF(0, (btn->rect.height() - frameSize.height()) / 2.0),
+                                       QSizeF(btn->rect.width(), frameSize.height()));
+                    if (cw.size == QStyleHelper::SizeLarge)
+                        frameRect = frameRect.adjusted(0, 0, -6, 0).translated(3, -1);
+                    else if (cw.size == QStyleHelper::SizeSmall)
+                        frameRect = frameRect.adjusted(0, 0, -4, 0).translated(2, 1);
+                    else if (cw.size == QStyleHelper::SizeMini)
+                        frameRect = frameRect.adjusted(0, 0, -9, 0).translated(5, 0);
                 } else {
-                    if (bdi.kind == kThemePushButton) {
-                        focusRect = CGRectInset(focusRect, 1, 1);
-                    } else if (bdi.kind == kThemePushButtonSmall) {
-                        focusRect = CGRectInset(focusRect, 0, 2);
-                    } else if (bdi.kind == kThemePushButtonMini) {
-                        focusRect = CGRectInset(focusRect, 2, 1);
-                    }
+                    // Start from the style option's top-left corner.
+                    frameRect = QRectF(btn->rect.topLeft(),
+                                       QSizeF(btn->rect.width(), frameSize.height()));
+                    if (cw.size == QStyleHelper::SizeSmall)
+                        frameRect = frameRect.translated(0, 1.5);
+                    else if (cw.size == QStyleHelper::SizeMini)
+                        frameRect = frameRect.adjusted(0, 0, -8, 0).translated(4, 4);
                 }
-
-                const qreal radius = bdi.kind == kThemeBevelButton ? 0 : 3;
-                const int hMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin, btn, w);
-                const int vMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin, btn, w);
-                const QRect focusTargetRect(focusRect.origin.x, focusRect.origin.y, focusRect.size.width, focusRect.size.height);
-                d->drawFocusRing(p, focusTargetRect.adjusted(-hMargin, -vMargin, hMargin, vMargin), hMargin, vMargin, radius);
             }
+            pb.frame = frameRect.toCGRect();
 
-            if (hasMenu && bdi.kind == kThemeBevelButton) {
-                int mbi = proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator, btn, w);
-                QRect ir = btn->rect;
-                int arrowXOffset = bdi.kind == kThemePushButton ? 6 :
-                                   bdi.kind == kThemePushButtonSmall ? 7 : 8;
-                int arrowYOffset = bdi.kind == kThemePushButton ? 3 :
-                                   bdi.kind == kThemePushButtonSmall ? 1 : 2;
+            pb.bezelStyle = isSquare ? NSBezelStyleShadowlessSquare : NSBezelStyleRounded;
+            pb.buttonType = NSPushOnPushOffButton;
+            pb.enabled = isEnabled;
+            [pb highlight:isPressed];
+            pb.state = isHighlighted && !isPressed ? NSOnState : NSOffState;
+            d->drawNSViewInRect(cw, pb, frameRect, p, true, ^(CGContextRef __unused ctx, const CGRect &r) {
+                [pb.cell drawBezelWithFrame:r inView:pb.superview];
+            });
+
+            if (hasMenu && isSquare) {
+                // Using -[NSPopuButtonCell drawWithFrame:inView:] above won't do
+                // it right because we don't set the text in the native button.
+                const int mbi = proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator, btn, w);
+                const auto ir = frameRect.toRect();
+                int arrowYOffset = 0;
+#if 0
+                // FIXME What's this for again?
                 if (!w) {
                     // adjustment for Qt Quick Controls
                     arrowYOffset -= ir.top();
-                    if (bdi.kind == kThemePushButtonSmall)
+                    if (cw.second == QStyleHelper::SizeSmall)
                         arrowYOffset += 1;
                 }
-                QRect ar = QRect(ir.right() - mbi - QMacStylePrivate::PushButtonRightOffset,
-                                 ir.height() / 2 - arrowYOffset, mbi, ir.height() / 2);
-                ar = visualRect(btn->direction, ir, ar);
-                CGRect arrowRect = CGRectMake(ar.x() + arrowXOffset, ar.y(), ar.width(), ar.height());
+#endif
+                const auto ar = visualRect(btn->direction, ir, QRect(ir.right() - mbi - 6, ir.height() / 2 - arrowYOffset, mbi, mbi));
 
-                HIThemePopupArrowDrawInfo pdi;
-                pdi.version = qt_mac_hitheme_version;
-                pdi.state = tds == kThemeStateInactive ? kThemeStateActive : tds;
-                pdi.orientation = kThemeArrowDown;
-                if (bdi.kind == kThemePushButtonMini)
-                    pdi.size = kThemeArrow5pt;
-                else if (bdi.kind == kThemePushButton || bdi.kind == kThemePushButtonSmall)
-                    pdi.size = kThemeArrow7pt;
-                HIThemeDrawPopupArrow(&arrowRect, &pdi, cg, kHIThemeOrientationNormal);
+                QStyleOption arrowOpt = *opt;
+                arrowOpt.rect = ar;
+                proxy()->drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, p, w);
+            }
+
+
+            if (btn->state & State_HasFocus) {
+                // TODO Remove and use QFocusFrame instead.
+                const int hMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin, btn, w);
+                const int vMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin, btn, w);
+                auto focusRect = QRectF::fromCGRect([pb alignmentRectForFrame:pb.frame]);
+                if (cw.type == QMacStylePrivate::Button_PushButton)
+                    focusRect -= pushButtonShadowMargins[cw.size];
+                else if (cw.type == QMacStylePrivate::Button_PullDown)
+                    focusRect -= pullDownButtonShadowMargins[cw.size];
+                d->drawFocusRing(p, focusRect, hMargin, vMargin, cw);
             }
         }
         break;
@@ -3942,10 +3982,12 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             const bool hasMenu = btn.features & QStyleOptionButton::HasMenu;
             const bool hasIcon = !btn.icon.isNull();
             const bool hasText = !btn.text.isEmpty();
+            const bool isActive = btn.state & State_Active;
+            const bool isPressed = btn.state & State_Sunken;
 
             if (!hasMenu) {
-                if (tds == kThemeStatePressed
-                    || (tds == kThemeStateActive
+                if (isPressed
+                    || (isActive
                         && ((btn.features & QStyleOptionButton::DefaultButton && !d->autoDefaultButton)
                             || d->autoDefaultButton == btn.styleObject)))
                 btn.palette.setColor(QPalette::ButtonText, Qt::white);
