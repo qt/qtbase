@@ -5183,16 +5183,15 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
     return rect;
 }
 
-static inline void drawToolbarButtonArrow(const QRect &toolButtonRect, ThemeDrawState tds, CGContextRef cg)
+void QMacStylePrivate::drawToolbarButtonArrow(const QStyleOption *opt, QPainter *p) const
 {
-    QRect arrowRect = QRect(toolButtonRect.right() - 9, toolButtonRect.bottom() - 9, 7, 5);
-    HIThemePopupArrowDrawInfo padi;
-    padi.version = qt_mac_hitheme_version;
-    padi.state = tds;
-    padi.orientation = kThemeArrowDown;
-    padi.size = kThemeArrow7pt;
-    CGRect cgRect = arrowRect.toCGRect();
-    HIThemeDrawPopupArrow(&cgRect, &padi, cg, kHIThemeOrientationNormal);
+    Q_Q(const QMacStyle);
+    QStyleOption arrowOpt = *opt;
+    arrowOpt.rect = QRect(opt->rect.right() - (toolButtonArrowSize + toolButtonArrowMargin),
+                          opt->rect.bottom() - (toolButtonArrowSize + toolButtonArrowMargin),
+                          toolButtonArrowSize,
+                          toolButtonArrowSize);
+    q->proxy()->drawPrimitive(QStyle::PE_IndicatorArrowDown, &arrowOpt, p);
 }
 
 void QMacStylePrivate::setupNSGraphicsContext(CGContextRef cg, bool flipped) const
@@ -5701,7 +5700,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     proxy()->drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, p, widget);
                 } else if ((tb->features & QStyleOptionToolButton::HasMenu)
                             && (tb->toolButtonStyle != Qt::ToolButtonTextOnly && !tb->icon.isNull())) {
-                    drawToolbarButtonArrow(tb->rect, tds, cg);
+                    d->drawToolbarButtonArrow(tb, p);
                 }
                 if (tb->state & State_On) {
                     QWindow *window = 0;
@@ -5726,81 +5725,45 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             } else
 #endif // QT_NO_ACCESSIBILITY
             {
-                ThemeButtonKind bkind = kThemeBevelButton;
-                switch (d->aquaSizeConstrain(opt, widget)) {
-                case QStyleHelper::SizeDefault:
-                case QStyleHelper::SizeLarge:
-                    bkind = kThemeBevelButton;
-                    break;
-                case QStyleHelper::SizeMini:
-                case QStyleHelper::SizeSmall:
-                    bkind = kThemeSmallBevelButton;
-                    break;
-                }
-
-                QRect button, menuarea;
-                button   = proxy()->subControlRect(cc, tb, SC_ToolButton, widget);
-                menuarea = proxy()->subControlRect(cc, tb, SC_ToolButtonMenu, widget);
-                State bflags = tb->state,
-                mflags = tb->state;
+                auto bflags = tb->state;
                 if (tb->subControls & SC_ToolButton)
                     bflags |= State_Sunken;
+                auto mflags = tb->state;
                 if (tb->subControls & SC_ToolButtonMenu)
                     mflags |= State_Sunken;
 
                 if (tb->subControls & SC_ToolButton) {
                     if (bflags & (State_Sunken | State_On | State_Raised)) {
-                        HIThemeButtonDrawInfo bdi;
-                        bdi.version = qt_mac_hitheme_version;
-                        bdi.state = tds;
-                        bdi.adornment = kThemeAdornmentNone;
-                        bdi.kind = bkind;
-                        bdi.value = kThemeButtonOff;
-                        if (tb->state & State_HasFocus)
-                            bdi.adornment = kThemeAdornmentFocus;
-                        if (tb->state & State_Sunken)
-                            bdi.state = kThemeStatePressed;
-                        if (tb->state & State_On)
-                            bdi.value = kThemeButtonOn;
-
-                        CGRect myRect, macRect;
-                        myRect = CGRectMake(tb->rect.x(), tb->rect.y(),
-                                            tb->rect.width(), tb->rect.height());
-                        HIThemeGetButtonBackgroundBounds(&myRect, &bdi, &macRect);
-
-                        const auto offMargins = QMargins(int(myRect.origin.x - macRect.origin.x),
-                                                          int(myRect.origin.y - macRect.origin.y),
-                                                          int(macRect.size.width - myRect.size.width),
-                                                          int(macRect.size.height - myRect.size.height));
-                        myRect = button.marginsRemoved(offMargins).toCGRect();
-                        HIThemeDrawButton(&myRect, &bdi, cg, kHIThemeOrientationNormal, 0);
+                        const bool isEnabled = tb->state & State_Enabled;
+                        const bool isPressed = tb->state & State_Sunken;
+                        const bool isHighlighted = (tb->state & State_Active) && (tb->state & State_On);
+                        const auto ct = QMacStylePrivate::Button_PushButton;
+                        const auto cs = d->effectiveAquaSizeConstrain(opt, widget);
+                        const auto cw = QMacStylePrivate::CocoaControl(ct, cs);
+                        auto *pb = static_cast<NSButton *>(d->cocoaControl(cw));
+                        pb.bezelStyle = NSShadowlessSquareBezelStyle; // TODO Use NSTexturedRoundedBezelStyle in the future.
+                        pb.frame = opt->rect.toCGRect();
+                        pb.buttonType = NSPushOnPushOffButton;
+                        pb.enabled = isEnabled;
+                        [pb highlight:isPressed];
+                        pb.state = isHighlighted && !isPressed ? NSOnState : NSOffState;
+                        const auto buttonRect  = proxy()->subControlRect(cc, tb, SC_ToolButton, widget);
+                        d->drawNSViewInRect(cw, pb, buttonRect, p, ^(CGContextRef __unused ctx, const CGRect &rect) {
+                            [pb.cell drawBezelWithFrame:rect inView:pb];
+                        });
                     }
                 }
 
                 if (tb->subControls & SC_ToolButtonMenu) {
-                    HIThemeButtonDrawInfo bdi;
-                    bdi.version = qt_mac_hitheme_version;
-                    bdi.state = tds;
-                    bdi.value = kThemeButtonOff;
-                    bdi.adornment = kThemeAdornmentNone;
-                    bdi.kind = bkind;
-                    if (tb->state & State_HasFocus)
-                        bdi.adornment = kThemeAdornmentFocus;
-                    if (tb->state & (State_On | State_Sunken)
-                                     || (tb->activeSubControls & SC_ToolButtonMenu))
-                        bdi.state = kThemeStatePressed;
-                    CGRect cgRect = menuarea.toCGRect();
-                    HIThemeDrawButton(&cgRect, &bdi, cg, kHIThemeOrientationNormal, 0);
-                    QRect r(menuarea.x() + ((menuarea.width() / 2) - 3), menuarea.height() - 8, 8, 8);
-                    HIThemePopupArrowDrawInfo padi;
-                    padi.version = qt_mac_hitheme_version;
-                    padi.state = tds;
-                    padi.orientation = kThemeArrowDown;
-                    padi.size = kThemeArrow7pt;
-                    cgRect = r.toCGRect();
-                    HIThemeDrawPopupArrow(&cgRect, &padi, cg, kHIThemeOrientationNormal);
+                    const auto menuRect = proxy()->subControlRect(cc, tb, SC_ToolButtonMenu, widget);
+                    QStyleOption arrowOpt = *tb;
+                    arrowOpt.rect = QRect(menuRect.x() + ((menuRect.width() - toolButtonArrowSize) / 2),
+                                          menuRect.height() - (toolButtonArrowSize + toolButtonArrowMargin),
+                                          toolButtonArrowSize,
+                                          toolButtonArrowSize);
+                    proxy()->drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, p, widget);
                 } else if (tb->features & QStyleOptionToolButton::HasMenu) {
-                    drawToolbarButtonArrow(tb->rect, tds, cg);
+                    d->drawToolbarButtonArrow(tb, p);
                 }
                 QRect buttonRect = proxy()->subControlRect(CC_ToolButton, tb, SC_ToolButton, widget);
                 int fw = proxy()->pixelMetric(PM_DefaultFrameWidth, opt, widget);

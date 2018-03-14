@@ -291,6 +291,8 @@ public:
     void drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, qreal radius = 0) const;
     void drawFocusRing(QPainter *p, const QRectF &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const;
 
+    void drawToolbarButtonArrow(const QStyleOption *opt, QPainter *p) const;
+
     QPainterPath windowPanelPath(const QRectF &r) const;
 
     CocoaControlType windowButtonCocoaControl(QStyle::SubControl sc) const;
