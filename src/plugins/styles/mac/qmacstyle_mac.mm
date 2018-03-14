@@ -1210,13 +1210,13 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int h
     QPainterPath focusRingPath;
     qreal hOffset = 0.0;
     qreal vOffset = 0.0;
-    switch (cw.first) {
+    switch (cw.type) {
     case Button_CheckBox: {
-        const auto cbInnerRadius = (cw.second == QStyleHelper::SizeMini ? 2.0 : 3.0);
-        const auto cbSize = cw.second == QStyleHelper::SizeLarge ? 13 :
-                            cw.second == QStyleHelper::SizeSmall ? 11 : 9; // As measured
-        hOffset = hMargin + (cw.second == QStyleHelper::SizeLarge ? 2.5 :
-                             cw.second == QStyleHelper::SizeSmall ? 2.0 : 1.0); // As measured
+        const auto cbInnerRadius = (cw.size == QStyleHelper::SizeMini ? 2.0 : 3.0);
+        const auto cbSize = cw.size == QStyleHelper::SizeLarge ? 13 :
+                            cw.size == QStyleHelper::SizeSmall ? 11 : 9; // As measured
+        hOffset = hMargin + (cw.size == QStyleHelper::SizeLarge ? 2.5 :
+                             cw.size == QStyleHelper::SizeSmall ? 2.0 : 1.0); // As measured
         vOffset = 0.5 * qreal(targetRect.height() - cbSize);
         const auto cbInnerRect = QRectF(0, 0, cbSize, cbSize);
         const auto cbOutterRadius = cbInnerRadius + focusRingWidth;
@@ -1227,10 +1227,10 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int h
         break;
     }
     case Button_RadioButton: {
-        const auto rbSize = cw.second == QStyleHelper::SizeLarge ? 15 :
-                            cw.second == QStyleHelper::SizeSmall ? 13 : 9; // As measured
-        hOffset = hMargin + (cw.second == QStyleHelper::SizeLarge ? 1.5 :
-                             cw.second == QStyleHelper::SizeSmall ? 1.0 : 1.0); // As measured
+        const auto rbSize = cw.size == QStyleHelper::SizeLarge ? 15 :
+                            cw.size == QStyleHelper::SizeSmall ? 13 : 9; // As measured
+        hOffset = hMargin + (cw.size == QStyleHelper::SizeLarge ? 1.5 :
+                             cw.size == QStyleHelper::SizeSmall ? 1.0 : 1.0); // As measured
         vOffset = 0.5 * qreal(targetRect.height() - rbSize);
         const auto rbInnerRect = QRectF(0, 0, rbSize, rbSize);
         const auto rbOutterRect = rbInnerRect.adjusted(-focusRingWidth, -focusRingWidth, focusRingWidth, focusRingWidth);
@@ -1501,6 +1501,26 @@ QSize QMacStylePrivate::pushButtonSizeFromContents(const QStyleOptionButton *btn
     return csz;
 }
 
+uint qHash(const QMacStylePrivate::CocoaControl &cw, uint seed = 0)
+{
+    return ((cw.type << 2) | cw.size) ^ seed;
+}
+
+QMacStylePrivate::CocoaControl::CocoaControl()
+  : type(NoControl), size(QStyleHelper::SizeDefault)
+{
+}
+
+QMacStylePrivate::CocoaControl::CocoaControl(CocoaControlType t, QStyleHelper::WidgetSizePolicy s)
+    : type(t), size(s)
+{
+}
+
+bool QMacStylePrivate::CocoaControl::operator==(const CocoaControl &other) const
+{
+    return other.type == type && other.size == size;
+}
+
 /**
     Checks if the actual contents of btn fits inside the free content bounds of
     'buttonKindToCheck'. Meant as a helper function for 'initHIThemePushButton'
@@ -1605,8 +1625,8 @@ void QMacStylePrivate::initComboboxBdi(const QStyleOptionComboBox *combo, HIThem
         bdi->state = tds;
 
     QStyleHelper::WidgetSizePolicy aSize = aquaSizeConstrain(combo, widget);
-    cw->first = combo->editable ? ComboBox : Button_PopupButton;
-    cw->second = aSize;
+    cw->type = combo->editable ? ComboBox : Button_PopupButton;
+    cw->size = aSize;
     switch (aSize) {
     case QStyleHelper::SizeMini:
         bdi->kind = combo->editable ? ThemeButtonKind(kThemeComboBoxMini)
@@ -1638,26 +1658,26 @@ void QMacStylePrivate::initComboboxBdi(const QStyleOptionComboBox *combo, HIThem
                 // or return any subcontrol size of the poor thing.
                 if (h < 9) {
                     bdi->kind = kThemeComboBoxMini;
-                    cw->second = QStyleHelper::SizeMini;
+                    cw->size = QStyleHelper::SizeMini;
                 } else if (h < 22) {
                     bdi->kind = kThemeComboBoxSmall;
-                    cw->second = QStyleHelper::SizeSmall;
+                    cw->size = QStyleHelper::SizeSmall;
                 } else {
                     bdi->kind = kThemeComboBox;
-                    cw->second = QStyleHelper::SizeLarge;
+                    cw->size = QStyleHelper::SizeLarge;
                 }
             } else
 #endif
             {
                 if (h < 21) {
                     bdi->kind = kThemeComboBoxMini;
-                    cw->second = QStyleHelper::SizeMini;
+                    cw->size = QStyleHelper::SizeMini;
                 } else if (h < 26) {
                     bdi->kind = kThemeComboBoxSmall;
-                    cw->second = QStyleHelper::SizeSmall;
+                    cw->size = QStyleHelper::SizeSmall;
                 } else {
                     bdi->kind = kThemeComboBox;
-                    cw->second = QStyleHelper::SizeLarge;
+                    cw->size = QStyleHelper::SizeLarge;
                 }
             }
         } else {
@@ -1668,13 +1688,13 @@ void QMacStylePrivate::initComboboxBdi(const QStyleOptionComboBox *combo, HIThem
             // the use of LargeButtons explicit.
             if (h < 21) {
                 bdi->kind = kThemePopupButtonMini;
-                cw->second = QStyleHelper::SizeMini;
+                cw->size = QStyleHelper::SizeMini;
             } else if (h < 26) {
                 bdi->kind = kThemePopupButtonSmall;
-                cw->second = QStyleHelper::SizeSmall;
+                cw->size = QStyleHelper::SizeSmall;
             } else {
                 bdi->kind = kThemePopupButton;
-                cw->second = QStyleHelper::SizeLarge;
+                cw->size = QStyleHelper::SizeLarge;
             }
         }
         break;
@@ -1691,8 +1711,8 @@ CGRect QMacStylePrivate::comboboxInnerBounds(const CGRect &outerBounds, const Co
     // Carbon draw parts of the view outside the rect.
     // So make the rect a bit smaller to compensate
     // (I wish HIThemeGetButtonBackgroundBounds worked)
-    if (cocoaWidget.first == Button_PopupButton) {
-        switch (cocoaWidget.second) {
+    if (cocoaWidget.type == Button_PopupButton) {
+        switch (cocoaWidget.size) {
         case QStyleHelper::SizeSmall:
             innerBounds.origin.x += 3;
             innerBounds.origin.y += 3;
@@ -1712,8 +1732,8 @@ CGRect QMacStylePrivate::comboboxInnerBounds(const CGRect &outerBounds, const Co
             innerBounds.size.width -= 5;
             innerBounds.size.height -= 6;
         }
-    } else if (cocoaWidget.first == ComboBox) {
-        switch (cocoaWidget.second) {
+    } else if (cocoaWidget.type == ComboBox) {
+        switch (cocoaWidget.size) {
         case QStyleHelper::SizeSmall:
             innerBounds.origin.x += 3;
             innerBounds.origin.y += 3;
@@ -1866,28 +1886,28 @@ ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
     case kThemePopupButton:
     case kThemePopupButtonSmall:
     case kThemePopupButtonMini:
-        w.first = Button_PopupButton;
+        w.type = Button_PopupButton;
         break;
     case kThemeComboBox:
-        w.first = ComboBox;
+        w.type = ComboBox;
         break;
     case kThemeArrowButton:
-        w.first = Button_Disclosure;
+        w.type = Button_Disclosure;
         break;
     case kThemeCheckBox:
     case kThemeCheckBoxSmall:
     case kThemeCheckBoxMini:
-        w.first = Button_CheckBox;
+        w.type = Button_CheckBox;
         break;
     case kThemeRadioButton:
     case kThemeRadioButtonSmall:
     case kThemeRadioButtonMini:
-        w.first = Button_RadioButton;
+        w.type = Button_RadioButton;
         break;
     case kThemePushButton:
     case kThemePushButtonSmall:
     case kThemePushButtonMini:
-        w.first = Button_PushButton;
+        w.type = Button_PushButton;
         break;
     default:
         break;
@@ -1898,16 +1918,16 @@ ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
     case kThemePopupButtonSmall:
     case kThemeCheckBoxSmall:
     case kThemeRadioButtonSmall:
-        w.second = QStyleHelper::SizeSmall;
+        w.size = QStyleHelper::SizeSmall;
         break;
     case kThemePushButtonMini:
     case kThemePopupButtonMini:
     case kThemeCheckBoxMini:
     case kThemeRadioButtonMini:
-        w.second = QStyleHelper::SizeMini;
+        w.size = QStyleHelper::SizeMini;
         break;
     default:
-        w.second = QStyleHelper::SizeLarge;
+        w.size = QStyleHelper::SizeLarge;
         break;
     }
 
@@ -1928,7 +1948,7 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
     NSView *bv = cocoaControls.value(widget, nil);
 
     if (!bv) {
-        switch (widget.first) {
+        switch (widget.type) {
         case Box: {
             NSBox *bc = [[NSBox alloc] init];
             bc.title = @"";
@@ -1948,7 +1968,7 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
         case Button_PullDown: {
             NSPopUpButton *bc = [[NSPopUpButton alloc] init];
             bc.title = @"";
-            if (widget.first == Button_PullDown)
+            if (widget.type == Button_PullDown)
                 bc.pullsDown = YES;
             bv = bc;
             break;
@@ -1963,7 +1983,7 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
         case Button_WindowMiniaturize:
         case Button_WindowZoom: {
             const NSWindowButton button = [=] {
-                switch (widget.first) {
+                switch (widget.type) {
                 case Button_WindowClose:
                     return NSWindowCloseButton;
                 case Button_WindowMiniaturize:
@@ -2030,7 +2050,7 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
 
         if ([bv isKindOfClass:[NSControl class]]) {
             auto *ctrl = static_cast<NSControl *>(bv);
-            switch (widget.second) {
+            switch (widget.size) {
             case QStyleHelper::SizeSmall:
                 ctrl.controlSize = NSSmallControlSize;
                 break;
@@ -2040,11 +2060,11 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
             default:
                 break;
             }
-        } else if (widget.first == ProgressIndicator_Determinate ||
-                   widget.first == ProgressIndicator_Indeterminate) {
+        } else if (widget.type == ProgressIndicator_Determinate ||
+                   widget.type == ProgressIndicator_Indeterminate) {
             auto *pi = static_cast<NSProgressIndicator *>(bv);
-            pi.indeterminate = (widget.first == ProgressIndicator_Indeterminate);
-            switch (widget.second) {
+            pi.indeterminate = (widget.type == ProgressIndicator_Indeterminate);
+            switch (widget.size) {
             case QStyleHelper::SizeSmall:
                 pi.controlSize = NSSmallControlSize;
                 break;
@@ -2066,7 +2086,7 @@ NSCell *QMacStylePrivate::cocoaCell(CocoaControl widget) const
 {
     NSCell *cell = cocoaCells[widget];
     if (!cell) {
-        switch (widget.first) {
+        switch (widget.type) {
         case Stepper:
             cell = [[NSStepperCell alloc] init];
             break;
@@ -2081,7 +2101,7 @@ NSCell *QMacStylePrivate::cocoaCell(CocoaControl widget) const
             break;
         }
 
-        switch (widget.second) {
+        switch (widget.size) {
         case QStyleHelper::SizeSmall:
             cell.controlSize = NSSmallControlSize;
             break;
@@ -3839,13 +3859,13 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 
             QMacStylePrivate::CocoaControl cw = QMacStylePrivate::cocoaControlFromHIThemeButtonKind(bdi.kind);
             if (hasMenu)
-                cw.first = QMacStylePrivate::Button_PullDown;
+                cw.type = QMacStylePrivate::Button_PullDown;
             if (hasMenu && bdi.kind != kThemeBevelButton) {
                 NSPopUpButton *pdb = (NSPopUpButton *)d->cocoaControl(cw);
                 [pdb highlight:(bdi.state == kThemeStatePressed)];
                 pdb.enabled = bdi.state != kThemeStateUnavailable && bdi.state != kThemeStateUnavailableInactive;
                 QRect rect = opt->rect;
-                rect.adjust(0, 0, cw.second == QStyleHelper::SizeSmall ? -4 : cw.second == QStyleHelper::SizeMini ? -9 : -6, 0);
+                rect.adjust(0, 0, cw.size == QStyleHelper::SizeSmall ? -4 : cw.size == QStyleHelper::SizeMini ? -9 : -6, 0);
                 d->drawNSViewInRect(cw, pdb, rect, p, w != 0);
             } else if (hasMenu && bdi.state == kThemeStatePressed)
                 d->drawColorlessButton(newRect, &bdi, cw, p, opt);
@@ -4513,7 +4533,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             const auto cw = QMacStylePrivate::CocoaControl(ct, QStyleHelper::SizeLarge);
             auto *sv = static_cast<NSSplitView *>(d->cocoaControl(cw));
             sv.frame = opt->rect.toCGRect();
-            d->drawNSViewInRect(cw, sv, opt->rect, p, w != nullptr, ^(CGContextRef ctx, const CGRect &rect) {
+            d->drawNSViewInRect(cw, sv, opt->rect, p, w != nullptr, ^(CGContextRef __unused ctx, const CGRect &rect) {
                 [sv drawDividerInRect:rect];
             });
         } else {
@@ -6467,8 +6487,8 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     if (const QStyleOptionComboBox *combo = qstyleoption_cast<const QStyleOptionComboBox *>(opt)){
         const auto widgetSize = d->aquaSizeConstrain(opt, widget);
         QMacStylePrivate::CocoaControl cw;
-        cw.first = combo->editable ? QMacStylePrivate::ComboBox : QMacStylePrivate::Button_PopupButton;
-        cw.second = widgetSize;
+        cw.type = combo->editable ? QMacStylePrivate::ComboBox : QMacStylePrivate::Button_PopupButton;
+        cw.size = widgetSize;
         const CGRect diffRect = QMacStylePrivate::comboboxInnerBounds(CGRectZero, cw);
         sz.rwidth() -= qRound(diffRect.size.width);
         sz.rheight() -= qRound(diffRect.size.height);

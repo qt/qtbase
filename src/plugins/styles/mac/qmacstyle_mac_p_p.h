@@ -206,7 +206,17 @@ public:
         TextField
     };
 
-    typedef QPair<CocoaControlType, QStyleHelper::WidgetSizePolicy> CocoaControl;
+
+    struct CocoaControl {
+        CocoaControl();
+        CocoaControl(CocoaControlType t, QStyleHelper::WidgetSizePolicy s);
+
+        CocoaControlType type;
+        QStyleHelper::WidgetSizePolicy size;
+
+        bool operator==(const CocoaControl &other) const;
+    };
+
 
     typedef void (^DrawRectBlock)(CGContextRef, const CGRect &);
 
