@@ -101,8 +101,7 @@ void tst_QAbstractPrintDialog::setMinMax()
     QPrinter printer;
     MyAbstractPrintDialog obj1(&printer);
     obj1.setEnabledOptions(QAbstractPrintDialog::PrintDialogOptions(QAbstractPrintDialog::None));
-    QEXPECT_FAIL("", "QTBUG-22637", Abort);
-    QCOMPARE(obj1.minPage(), 1);
+    QCOMPARE(obj1.minPage(), 0);
     QCOMPARE(obj1.maxPage(), INT_MAX);
     QVERIFY(!obj1.isOptionEnabled(QAbstractPrintDialog::PrintPageRange));
     obj1.setMinMax(2,5);
