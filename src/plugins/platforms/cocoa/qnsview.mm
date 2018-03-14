@@ -363,7 +363,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     for (int i = 0; i < numDirtyRects; ++i)
         exposedRegion += QRectF::fromCGRect(dirtyRects[i]).toRect();
 
-    qCDebug(lcQpaCocoaDrawing) << "[QNSView drawRect:]" << m_platformWindow->window() << exposedRegion;
+    qCDebug(lcQpaDrawing) << "[QNSView drawRect:]" << m_platformWindow->window() << exposedRegion;
     [self updateRegion:exposedRegion];
 }
 
@@ -380,7 +380,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
     if (m_updateRequested) {
         Q_ASSERT(windowPrivate->updateRequestPending);
-        qCDebug(lcQpaCocoaWindow) << "Delivering update request to" << m_platformWindow->window();
+        qCDebug(lcQpaWindow) << "Delivering update request to" << m_platformWindow->window();
         windowPrivate->deliverUpdateRequest();
         m_updateRequested = false;
     } else {
@@ -392,7 +392,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         // but AppKit will reset the needsDisplay state of the view after completing
         // the current display cycle, so we need to defer the request to redisplay.
         // FIXME: Perhaps this should be a trigger to enable CADisplayLink?
-        qCDebug(lcQpaCocoaDrawing) << "[QNSView drawRect:] issuing deferred setNeedsDisplay due to pending update request";
+        qCDebug(lcQpaDrawing) << "[QNSView drawRect:] issuing deferred setNeedsDisplay due to pending update request";
         dispatch_async(dispatch_get_main_queue (), ^{ [self requestUpdate]; });
     }
 }
@@ -407,7 +407,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     if (!m_platformWindow)
         return;
 
-    qCDebug(lcQpaCocoaDrawing) << "[QNSView updateLayer]" << m_platformWindow->window();
+    qCDebug(lcQpaDrawing) << "[QNSView updateLayer]" << m_platformWindow->window();
 
     // FIXME: Find out if there's a way to resolve the dirty rect like in drawRect:
     [self updateRegion:QRectF::fromCGRect(self.bounds).toRect()];
@@ -846,7 +846,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 - (void)cursorUpdate:(NSEvent *)theEvent
 {
-    qCDebug(lcQpaCocoaMouse) << "[QNSView cursorUpdate:]" << self.cursor;
+    qCDebug(lcQpaMouse) << "[QNSView cursorUpdate:]" << self.cursor;
 
     // Note: We do not get this callback when moving from a subview that
     // uses the legacy cursorRect API, so the cursor is reset to the arrow
@@ -1363,7 +1363,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     // "isInverted": natural OS X scrolling, inverted from the Qt/other platform/Jens perspective.
     bool isInverted  = [theEvent isDirectionInvertedFromDevice];
 
-    qCDebug(lcQpaCocoaMouse) << "scroll wheel @ window pos" << qt_windowPoint << "delta px" << pixelDelta << "angle" << angleDelta << "phase" << ph << (isInverted ? "inverted" : "");
+    qCDebug(lcQpaMouse) << "scroll wheel @ window pos" << qt_windowPoint << "delta px" << pixelDelta << "angle" << angleDelta << "phase" << ph << (isInverted ? "inverted" : "");
     QWindowSystemInterface::handleWheelEvent(m_platformWindow->window(), qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers, ph, source, isInverted);
 }
 #endif // QT_CONFIG(wheelevent)

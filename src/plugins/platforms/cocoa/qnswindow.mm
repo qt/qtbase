@@ -45,7 +45,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <qoperatingsystemversion.h>
 
-Q_LOGGING_CATEGORY(lcCocoaEvents, "qt.qpa.cocoa.events");
+Q_LOGGING_CATEGORY(lcQpaEvents, "qt.qpa.events");
 
 static bool isMouseEvent(NSEvent *ev)
 {
@@ -201,7 +201,7 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (void)sendEvent:(NSEvent*)theEvent
 {
-    qCDebug(lcCocoaEvents) << "Sending" << theEvent << "to" << self;
+    qCDebug(lcQpaEvents) << "Sending" << theEvent << "to" << self;
 
     // We might get events for a NSWindow after the corresponding platform
     // window has been deleted, as the NSWindow can outlive the QCocoaWindow
@@ -238,7 +238,7 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (void)closeAndRelease
 {
-    qCDebug(lcQpaCocoaWindow) << "closeAndRelease" << self;
+    qCDebug(lcQpaWindow) << "closeAndRelease" << self;
 
     [self.delegate release];
     self.delegate = nil;
@@ -251,7 +251,7 @@ static bool isMouseEvent(NSEvent *ev)
 #pragma clang diagnostic ignored "-Wobjc-missing-super-calls"
 - (void)dealloc
 {
-    qCDebug(lcQpaCocoaWindow) << "dealloc" << self;
+    qCDebug(lcQpaWindow) << "dealloc" << self;
     qt_objcDynamicSuper();
 }
 #pragma clang diagnostic pop

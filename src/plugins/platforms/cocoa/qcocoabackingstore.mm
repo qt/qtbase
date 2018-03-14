@@ -44,7 +44,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcCocoaBackingStore, "qt.qpa.cocoa.backingstore");
+Q_LOGGING_CATEGORY(lcQpaBackingStore, "qt.qpa.backingstore");
 
 QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
     : QRasterBackingStore(window)
@@ -101,13 +101,13 @@ void QCocoaBackingStore::flush(QWindow *window, const QRegion &region, const QPo
     QNSView *topLevelView = qnsview_cast(static_cast<QCocoaWindow *>(topLevelWindow->handle())->view());
     QNSView *view = qnsview_cast(static_cast<QCocoaWindow *>(window->handle())->view());
 
-    if (lcCocoaBackingStore().isDebugEnabled()) {
+    if (lcQpaBackingStore().isDebugEnabled()) {
         QString targetViewDescription;
         if (view != topLevelView) {
             QDebug targetDebug(&targetViewDescription);
             targetDebug << "onto" << topLevelView << "at" << offset;
         }
-        qCDebug(lcCocoaBackingStore) << "Flushing" << region << "of" << view << qPrintable(targetViewDescription);
+        qCDebug(lcQpaBackingStore) << "Flushing" << region << "of" << view << qPrintable(targetViewDescription);
     }
 
     // Prevent potentially costly color conversion by assigning the display color space

@@ -57,9 +57,9 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcQpaCocoaWindow, "qt.qpa.cocoa.window");
-Q_LOGGING_CATEGORY(lcQpaCocoaDrawing, "qt.qpa.cocoa.drawing");
-Q_LOGGING_CATEGORY(lcQpaCocoaMouse, "qt.qpa.cocoa.mouse");
+Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window");
+Q_LOGGING_CATEGORY(lcQpaDrawing, "qt.qpa.drawing");
+Q_LOGGING_CATEGORY(lcQpaMouse, "qt.qpa.input.mouse");
 
 //
 // Conversion Functions
