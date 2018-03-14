@@ -216,7 +216,10 @@ const QChar *parseIp6(IPv6Address &address, const QChar *begin, const QChar *end
         quint64 ll = qstrtoull(ptr, &endptr, 16, &ok);
         quint16 x = ll;
 
-        if (!ok || ll != x)
+        // Reject malformed fields:
+        // - failed to parse
+        // - too many hex digits
+        if (!ok || endptr > ptr + 4)
             return begin + (ptr - buffer.data());
 
         if (*endptr == '.') {
