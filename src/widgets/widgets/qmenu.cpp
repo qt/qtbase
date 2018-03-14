@@ -3641,6 +3641,13 @@ void QMenu::internalDelayedPopup()
     if (subMenuPos.x() > screen.right())
         subMenuPos.setX(QCursor::pos().x());
 
+    const auto &subMenuActions = d->activeMenu->actions();
+    if (!subMenuActions.isEmpty()) {
+        // Offset by the submenu's 1st action position to align with the current action
+        const auto subMenuActionRect = d->activeMenu->actionGeometry(subMenuActions.first());
+        subMenuPos.ry() -= subMenuActionRect.top();
+    }
+
     d->activeMenu->popup(subMenuPos);
     d->sloppyState.setSubMenuPopup(actionRect, d->currentAction, d->activeMenu);
 
