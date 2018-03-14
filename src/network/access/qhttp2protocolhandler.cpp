@@ -40,8 +40,6 @@
 #include "qhttpnetworkconnection_p.h"
 #include "qhttp2protocolhandler_p.h"
 
-#if !defined(QT_NO_HTTP)
-
 #include "http2/bitstreams_p.h"
 
 #include <private/qnoncontiguousbytedevice_p.h>
@@ -1475,5 +1473,3 @@ void QHttp2ProtocolHandler::closeSession()
 }
 
 QT_END_NAMESPACE
-
-#endif // !defined(QT_NO_HTTP)

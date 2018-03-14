@@ -2075,9 +2075,15 @@ void QHeaderViewPrivate::_q_layoutAboutToBeChanged()
     layoutChangePersistentSections.clear();
     layoutChangePersistentSections.reserve(std::min(10, sectionItems.count()));
     // after layoutChanged another section can be last stretched section
-    if (stretchLastSection) {
+    if (stretchLastSection && lastSectionLogicalIdx >= 0 && lastSectionLogicalIdx < sectionItems.count()) {
         const int visual = visualIndex(lastSectionLogicalIdx);
-        sectionItems[visual].size = lastSectionSize;
+        if (visual >= 0 && visual < sectionItems.size()) {
+            auto &itemRef = sectionItems[visual];
+            if (itemRef.size != lastSectionSize) {
+                length += lastSectionSize - itemRef.size;
+                itemRef.size = lastSectionSize;
+            }
+        }
     }
     for (int i = 0; i < sectionItems.size(); ++i) {
         auto s = sectionItems.at(i);

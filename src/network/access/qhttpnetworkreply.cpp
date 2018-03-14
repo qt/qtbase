@@ -40,8 +40,6 @@
 #include "qhttpnetworkreply_p.h"
 #include "qhttpnetworkconnection_p.h"
 
-#ifndef QT_NO_HTTP
-
 #ifndef QT_NO_SSL
 #    include <QtNetwork/qsslkey.h>
 #    include <QtNetwork/qsslcipher.h>
@@ -1035,5 +1033,3 @@ void QHttpNetworkReply::ignoreSslErrors(const QList<QSslError> &errors)
 
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_HTTP

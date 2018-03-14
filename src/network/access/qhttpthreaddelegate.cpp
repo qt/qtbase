@@ -49,8 +49,6 @@
 #include "private/qnetworkaccesscache_p.h"
 #include "private/qnoncontiguousbytedevice_p.h"
 
-#ifndef QT_NO_HTTP
-
 QT_BEGIN_NAMESPACE
 
 static QNetworkReply::NetworkError statusCodeFromHttp(int httpStatusCode, const QUrl &url)
@@ -753,7 +751,5 @@ void  QHttpThreadDelegate::synchronousProxyAuthenticationRequiredSlot(const QNet
 }
 
 #endif
-
-#endif // QT_NO_HTTP
 
 QT_END_NAMESPACE

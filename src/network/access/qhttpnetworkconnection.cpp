@@ -53,8 +53,6 @@
 #include <qpair.h>
 #include <qdebug.h>
 
-#ifndef QT_NO_HTTP
-
 #ifndef QT_NO_SSL
 #    include <private/qsslsocket_p.h>
 #    include <QtNetwork/qsslkey.h>
@@ -1504,5 +1502,3 @@ void QHttpNetworkConnectionPrivate::emitProxyAuthenticationRequired(const QHttpN
 QT_END_NAMESPACE
 
 #include "moc_qhttpnetworkconnection_p.cpp"
-
-#endif // QT_NO_HTTP

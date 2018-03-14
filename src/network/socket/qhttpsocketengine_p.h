@@ -57,9 +57,11 @@
 #include "qnetworkproxy.h"
 #include "private/qauthenticator_p.h"
 
+QT_REQUIRE_CONFIG(http);
+
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_NETWORKPROXY) && !defined(QT_NO_HTTP)
+#if !defined(QT_NO_NETWORKPROXY)
 
 class QTcpSocket;
 class QHttpNetworkReply;

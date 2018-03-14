@@ -53,8 +53,6 @@
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
-#ifndef QT_NO_HTTP
-
 #include <qplatformdefs.h>
 
 #ifndef QT_NO_COMPRESS
@@ -76,6 +74,8 @@ struct z_stream_s;
 #include <private/qauthenticator_p.h>
 #include <private/qringbuffer_p.h>
 #include <private/qbytedata_p.h>
+
+QT_REQUIRE_CONFIG(http);
 
 QT_BEGIN_NAMESPACE
 
@@ -284,8 +284,5 @@ public:
 
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_HTTP
-
 
 #endif // QHTTPNETWORKREPLY_H

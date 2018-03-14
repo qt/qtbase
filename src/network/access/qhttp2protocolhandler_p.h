@@ -55,8 +55,6 @@
 #include <private/qabstractprotocolhandler_p.h>
 #include <private/qhttpnetworkrequest_p.h>
 
-#if !defined(QT_NO_HTTP)
-
 #include <private/http2protocol_p.h>
 #include <private/http2streams_p.h>
 #include <private/http2frames_p.h>
@@ -74,6 +72,8 @@
 #include <limits>
 #include <deque>
 #include <set>
+
+QT_REQUIRE_CONFIG(http);
 
 QT_BEGIN_NAMESPACE
 
@@ -213,7 +213,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // !defined(QT_NO_HTTP)
 
 #endif

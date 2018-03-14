@@ -15,9 +15,12 @@ ubuntu-14.04
 ubuntu-14.04
 ubuntu-16.04
 osx ci
+windows ci
 [modalDialogClosingOneOfTwoModal]
 osx
 [modalWindowModallity]
 osx
 [testInputEvents]
 rhel-7.4
+# QTBUG-66798
+windows
