@@ -75,7 +75,7 @@ public:
     void endPaint() override;
 
 private:
-    QXcbBackingStoreImage *m_image;
+    QXcbBackingStoreImage *m_image = nullptr;
     QStack<QRegion> m_paintRegions;
     QImage m_rgbImage;
 };

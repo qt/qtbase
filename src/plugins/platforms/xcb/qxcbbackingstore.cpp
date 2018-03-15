@@ -70,10 +70,12 @@
 
 QT_BEGIN_NAMESPACE
 
+class QXcbBackingStore;
+
 class QXcbBackingStoreImage : public QXcbObject
 {
 public:
-    QXcbBackingStoreImage(QXcbScreen *connection, const QSize &size, uint depth, QImage::Format format);
+    QXcbBackingStoreImage(QXcbBackingStore *backingStore, const QSize &size);
     ~QXcbBackingStoreImage() { destroy(true); }
 
     void resize(const QSize &size);
@@ -105,25 +107,24 @@ private:
     void flushPixmap(const QRegion &region, bool fullRegion = false);
     void setClip(const QRegion &region);
 
-    xcb_window_t m_screen_root;
-
     xcb_shm_segment_info_t m_shm_info;
-    size_t m_segmentSize;
+    QXcbBackingStore *m_backingStore = nullptr;
+    size_t m_segmentSize = 0;
 
-    xcb_image_t *m_xcb_image;
+    xcb_image_t *m_xcb_image = nullptr;
 
     QImage m_qimage;
-    QPlatformGraphicsBuffer *m_graphics_buffer;
+    QPlatformGraphicsBuffer *m_graphics_buffer = nullptr;
 
-    xcb_gcontext_t m_gc;
-    xcb_drawable_t m_gc_drawable;
+    xcb_gcontext_t m_gc = 0;
+    xcb_drawable_t m_gc_drawable = 0;
 
     // When using shared memory these variables are used only for server-side scrolling.
     // When not using shared memory, we maintain a server-side pixmap with the backing
     // store as well as repainted content not yet flushed to the pixmap. We only flush
     // the regions we need and only when these are marked dirty. This way we can just
     // do a server-side copy on expose instead of sending the pixels every time
-    xcb_pixmap_t m_xcb_pixmap;
+    xcb_pixmap_t m_xcb_pixmap = 0;
     QRegion m_pendingFlush;
 
     // This is the scrolled region which is stored in server-side pixmap
@@ -136,8 +137,8 @@ private:
     // as a pixmap region to server
     QByteArray m_flushBuffer;
 
-    bool m_hasAlpha;
-    bool m_clientSideScroll;
+    bool m_hasAlpha = false;
+    bool m_clientSideScroll = false;
 };
 
 class QXcbGraphicsBuffer : public QPlatformGraphicsBuffer
@@ -145,7 +146,6 @@ class QXcbGraphicsBuffer : public QPlatformGraphicsBuffer
 public:
     QXcbGraphicsBuffer(QImage *image)
         : QPlatformGraphicsBuffer(image->size(), QImage::toPixelFormat(image->format()))
-        , m_access_lock(QPlatformGraphicsBuffer::None)
         , m_image(image)
     { }
 
@@ -165,9 +165,10 @@ public:
     int bytesPerLine() const override { return m_image->bytesPerLine(); }
 
     Origin origin() const override { return QPlatformGraphicsBuffer::OriginTopLeft; }
+
 private:
-    AccessTypes m_access_lock;
-    QImage *m_image;
+    AccessTypes m_access_lock = QPlatformGraphicsBuffer::None;
+    QImage *m_image = nullptr;
 };
 
 static inline size_t imageDataSize(const xcb_image_t *image)
@@ -175,25 +176,22 @@ static inline size_t imageDataSize(const xcb_image_t *image)
     return static_cast<size_t>(image->stride) * image->height;
 }
 
-QXcbBackingStoreImage::QXcbBackingStoreImage(QXcbScreen *screen, const QSize &size, uint depth, QImage::Format format)
-    : QXcbObject(screen->connection())
-    , m_screen_root(screen->screen()->root)
-    , m_segmentSize(0)
-    , m_graphics_buffer(nullptr)
-    , m_gc(0)
-    , m_gc_drawable(0)
-    , m_xcb_pixmap(0)
-    , m_clientSideScroll(false)
+QXcbBackingStoreImage::QXcbBackingStoreImage(QXcbBackingStore *backingStore, const QSize &size)
+    : QXcbObject(backingStore->connection())
+    , m_backingStore(backingStore)
 {
-    const xcb_format_t *fmt = connection()->formatForDepth(depth);
+    QXcbWindow *window = static_cast<QXcbWindow *>(backingStore->window()->handle());
+    const xcb_format_t *fmt = connection()->formatForDepth(window->depth());
     Q_ASSERT(fmt);
 
+    memset(&m_shm_info, 0, sizeof m_shm_info);
+
+    QImage::Format format = window->imageFormat();
     m_hasAlpha = QImage::toPixelFormat(format).alphaUsage() == QPixelFormat::UsesAlpha;
     if (!m_hasAlpha)
-        format = qt_maybeAlphaVersionWithSameDepth(format);
-
-    memset(&m_shm_info, 0, sizeof m_shm_info);
-    create(size, fmt, format);
+        create(size, fmt, qt_maybeAlphaVersionWithSameDepth(format));
+    else
+        create(size, fmt, format);
 }
 
 void QXcbBackingStoreImage::resize(const QSize &size)
@@ -235,10 +233,11 @@ void QXcbBackingStoreImage::create(const QSize &size, const xcb_format_t *fmt, Q
     m_graphics_buffer = new QXcbGraphicsBuffer(&m_qimage);
 
     m_xcb_pixmap = xcb_generate_id(xcb_connection());
+    auto xcbScreen = static_cast<QXcbScreen *>(m_backingStore->window()->screen()->handle());
     xcb_create_pixmap(xcb_connection(),
                       m_xcb_image->depth,
                       m_xcb_pixmap,
-                      m_screen_root,
+                      xcbScreen->root(),
                       m_xcb_image->width, m_xcb_image->height);
 }
 
@@ -719,7 +718,6 @@ void QXcbBackingStoreImage::preparePaint(const QRegion &region)
 
 QXcbBackingStore::QXcbBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
-    , m_image(0)
 {
     QXcbScreen *screen = static_cast<QXcbScreen *>(window->screen()->handle());
     setConnection(screen->connection());
@@ -856,12 +854,10 @@ void QXcbBackingStore::resize(const QSize &size, const QRegion &)
     }
     QXcbWindow* win = static_cast<QXcbWindow *>(pw);
 
-    if (m_image) {
+    if (m_image)
         m_image->resize(size);
-    } else {
-        QXcbScreen *screen = static_cast<QXcbScreen *>(window()->screen()->handle());
-        m_image = new QXcbBackingStoreImage(screen, size, win->depth(), win->imageFormat());
-    }
+    else
+        m_image = new QXcbBackingStoreImage(this, size);
 
     // Slow path for bgr888 VNC: Create an additional image, paint into that and
     // swap R and B while copying to m_image after each paint.
