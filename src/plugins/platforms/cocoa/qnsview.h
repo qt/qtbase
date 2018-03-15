@@ -56,59 +56,24 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 
 @property (nonatomic, retain) NSCursor *cursor;
 
-- (instancetype)init;
 - (instancetype)initWithCocoaWindow:(QCocoaWindow *)platformWindow;
+
 #ifndef QT_NO_OPENGL
 - (void)setQCocoaGLContext:(QCocoaGLContext *)context;
 #endif
-- (void)drawRect:(NSRect)dirtyRect;
-- (void)viewDidHide;
-- (void)removeFromSuperview;
-- (void)cancelComposingText;
-
-- (BOOL)isFlipped;
-- (BOOL)acceptsFirstResponder;
-- (BOOL)becomeFirstResponder;
-- (BOOL)isOpaque;
 
 - (void)convertFromScreen:(NSPoint)mouseLocation toWindowPoint:(QPointF *)qtWindowPoint andScreenPoint:(QPointF *)qtScreenPoint;
 
-- (void)resetMouseButtons;
-
 - (void)requestUpdate;
 
-- (void)handleMouseEvent:(NSEvent *)theEvent;
-- (bool)handleMouseDownEvent:(NSEvent *)theEvent withButton:(int)buttonNumber;
-- (bool)handleMouseDraggedEvent:(NSEvent *)theEvent withButton:(int)buttonNumber;
-- (bool)handleMouseUpEvent:(NSEvent *)theEvent withButton:(int)buttonNumber;
-- (void)mouseDown:(NSEvent *)theEvent;
-- (void)mouseDragged:(NSEvent *)theEvent;
-- (void)mouseUp:(NSEvent *)theEvent;
 - (void)mouseMovedImpl:(NSEvent *)theEvent;
 - (void)mouseEnteredImpl:(NSEvent *)theEvent;
 - (void)mouseExitedImpl:(NSEvent *)theEvent;
-- (void)rightMouseDown:(NSEvent *)theEvent;
-- (void)rightMouseDragged:(NSEvent *)theEvent;
-- (void)rightMouseUp:(NSEvent *)theEvent;
-- (void)otherMouseDown:(NSEvent *)theEvent;
-- (void)otherMouseDragged:(NSEvent *)theEvent;
-- (void)otherMouseUp:(NSEvent *)theEvent;
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent;
+- (void)resetMouseButtons;
 
-#ifndef QT_NO_TABLETEVENT
-- (bool)handleTabletEvent:(NSEvent *)theEvent;
-- (void)tabletPoint:(NSEvent *)theEvent;
-- (void)tabletProximity:(NSEvent *)theEvent;
-#endif
-
-- (int)convertKeyCode:(QChar)keyCode;
 + (Qt::KeyboardModifiers)convertKeyModifiers:(ulong)modifierFlags;
-- (bool)handleKeyEvent:(NSEvent *)theEvent eventType:(int)eventType;
-- (void)keyDown:(NSEvent *)theEvent;
-- (void)keyUp:(NSEvent *)theEvent;
-
-- (void)registerDragTypes;
-- (NSDragOperation)handleDrag:(id <NSDraggingInfo>)sender;
+- (void)cancelComposingText;
 
 @end
 

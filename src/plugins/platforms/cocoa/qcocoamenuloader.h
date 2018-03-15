@@ -56,25 +56,15 @@
 
 @interface QT_MANGLE_NAMESPACE(QCocoaMenuLoader) : NSResponder
 + (instancetype)sharedMenuLoader;
-- (instancetype)init;
 - (void)ensureAppMenuInMenu:(NSMenu *)menu;
 - (void)removeActionsFromAppMenu;
-- (NSMenu *)applicationMenu;
-- (NSMenu *)menu;
 - (NSMenuItem *)quitMenuItem;
 - (NSMenuItem *)preferencesMenuItem;
 - (NSMenuItem *)aboutMenuItem;
 - (NSMenuItem *)aboutQtMenuItem;
 - (NSMenuItem *)hideMenuItem;
 - (NSMenuItem *)appSpecificMenuItem:(NSInteger)tag;
-- (void)terminate:(id)sender;
-- (void)orderFrontStandardAboutPanel:(id)sender;
-- (void)hideOtherApplications:(id)sender;
-- (void)unhideAllApplications:(id)sender;
-- (void)hide:(id)sender;
 - (void)qtDispatcherToQPAMenuItem:(id)sender;
-- (void)orderFrontCharacterPalette:(id)sender;
-- (BOOL)validateMenuItem:(NSMenuItem*)menuItem;
 - (void)qtTranslateApplicationMenu;
 - (NSArray<NSMenuItem *> *)mergeable;
 @end
