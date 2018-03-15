@@ -184,6 +184,7 @@ private slots:
                                  WinRTSocketEngine::ErrorString errorString);
     void handleNewData();
     void handleTcpError(QAbstractSocket::SocketError error);
+    void processReadReady();
 
 private:
     Q_DECLARE_PRIVATE(QNativeSocketEngine)
@@ -228,6 +229,7 @@ private:
     EventRegistrationToken connectionToken;
 
     bool emitReadReady = true;
+    bool pendingReadNotification = false;
 
     HRESULT handleClientConnection(ABI::Windows::Networking::Sockets::IStreamSocketListener *tcpListener,
                                    ABI::Windows::Networking::Sockets::IStreamSocketListenerConnectionReceivedEventArgs *args);
