@@ -547,9 +547,12 @@ QNativeSocketEngine::QNativeSocketEngine(QObject *parent)
         d->sslSocket = qobject_cast<QSslSocket *>(parent->parent());
 #endif
 
-    connect(this, SIGNAL(connectionReady()), SLOT(connectionNotification()), Qt::QueuedConnection);
-    connect(this, SIGNAL(readReady()), SLOT(processReadReady()), Qt::QueuedConnection);
-    connect(this, SIGNAL(writeReady()), SLOT(writeNotification()), Qt::QueuedConnection);
+    connect(this, &QNativeSocketEngine::connectionReady,
+            this, &QNativeSocketEngine::connectionNotification, Qt::QueuedConnection);
+    connect(this, &QNativeSocketEngine::readReady,
+            this, &QNativeSocketEngine::processReadReady, Qt::QueuedConnection);
+    connect(this, &QNativeSocketEngine::writeReady,
+            this, &QNativeSocketEngine::writeNotification, Qt::QueuedConnection);
     connect(d->worker, &SocketEngineWorker::connectOpFinished,
             this, &QNativeSocketEngine::handleConnectOpFinished, Qt::QueuedConnection);
     connect(d->worker, &SocketEngineWorker::newDataReceived, this, &QNativeSocketEngine::handleNewData, Qt::QueuedConnection);
