@@ -124,6 +124,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 // Private interface
 @interface QT_MANGLE_NAMESPACE(QNSView) ()
 - (BOOL)isTransparentForUserInput;
+- (void)textInputContextKeyboardSelectionDidChangeNotification:(NSNotification *)textInputContextKeyboardSelectionDidChangeNotification;
 @end
 
 @implementation QT_MANGLE_NAMESPACE(QNSView) {
@@ -295,15 +296,6 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     }
 
     return focusWindow;
-}
-
-- (void)textInputContextKeyboardSelectionDidChangeNotification : (NSNotification *) textInputContextKeyboardSelectionDidChangeNotification
-{
-    Q_UNUSED(textInputContextKeyboardSelectionDidChangeNotification)
-    if (([NSApp keyWindow] == [self window]) && [[self window] firstResponder] == self) {
-        QCocoaInputContext *ic = qobject_cast<QCocoaInputContext *>(QCocoaIntegration::instance()->inputContext());
-        ic->updateLocale();
-    }
 }
 
 - (void)viewDidHide
@@ -1840,6 +1832,15 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
     // Support only underline color/style.
     return @[NSUnderlineColorAttributeName, NSUnderlineStyleAttributeName];
+}
+
+- (void)textInputContextKeyboardSelectionDidChangeNotification:(NSNotification *)textInputContextKeyboardSelectionDidChangeNotification
+{
+    Q_UNUSED(textInputContextKeyboardSelectionDidChangeNotification)
+    if (([NSApp keyWindow] == self.window) && self.window.firstResponder == self) {
+        QCocoaInputContext *ic = qobject_cast<QCocoaInputContext *>(QCocoaIntegration::instance()->inputContext());
+        ic->updateLocale();
+    }
 }
 
 -(void)registerDragTypes

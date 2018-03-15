@@ -62,7 +62,6 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 - (void)setQCocoaGLContext:(QCocoaGLContext *)context;
 #endif
 - (void)drawRect:(NSRect)dirtyRect;
-- (void)textInputContextKeyboardSelectionDidChangeNotification : (NSNotification *) textInputContextKeyboardSelectionDidChangeNotification;
 - (void)viewDidHide;
 - (void)removeFromSuperview;
 - (void)cancelComposingText;
