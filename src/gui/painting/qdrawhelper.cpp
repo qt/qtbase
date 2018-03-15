@@ -5489,6 +5489,8 @@ static inline void alphamapblend_argb32(quint32 *dst, int coverage, QRgba64 srcL
         // nothing
     } else if (coverage == 255) {
         *dst = src;
+    } else if (!colorProfile) {
+        *dst = INTERPOLATE_PIXEL_255(src, coverage, *dst, 255 - coverage);
     } else {
         if (*dst >= 0xff000000) {
             grayBlendPixel(dst, coverage, srcLinear, colorProfile);

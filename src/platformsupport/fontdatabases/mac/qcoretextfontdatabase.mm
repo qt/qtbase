@@ -507,6 +507,8 @@ static void addExtraFallbacks(QStringList *fallbackList)
     // add Apple Symbols to cover those too.
     if (!fallbackList->contains(QStringLiteral("Apple Symbols")))
         fallbackList->append(QStringLiteral("Apple Symbols"));
+#else
+    Q_UNUSED(fallbackList)
 #endif
 }
 

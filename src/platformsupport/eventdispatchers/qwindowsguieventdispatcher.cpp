@@ -134,6 +134,7 @@ messageDebugEntries[] = {
     {WM_XBUTTONUP, "WM_XBUTTONUP", true},
     {WM_XBUTTONDBLCLK, "WM_XBUTTONDBLCLK", true},
     {WM_MOUSEHWHEEL, "WM_MOUSEHWHEEL", true},
+    {WM_GETOBJECT, "WM_GETOBJECT", true},
     {WM_IME_SETCONTEXT, "WM_IME_SETCONTEXT", true},
     {WM_INPUTLANGCHANGE, "WM_INPUTLANGCHANGE", true},
     {WM_IME_NOTIFY, "WM_IME_NOTIFY", true},
@@ -162,6 +163,7 @@ messageDebugEntries[] = {
     {WM_GETMINMAXINFO, "WM_GETMINMAXINFO", true},
     {WM_WINDOWPOSCHANGING, "WM_WINDOWPOSCHANGING", true},
     {WM_NCCREATE, "WM_NCCREATE", true},
+    {WM_NCDESTROY, "WM_NCDESTROY", true},
     {WM_NCCALCSIZE, "WM_NCCALCSIZE", true},
     {WM_NCACTIVATE, "WM_NCACTIVATE", true},
     {WM_NCMOUSEMOVE, "WM_NCMOUSEMOVE", true},
@@ -180,7 +182,9 @@ messageDebugEntries[] = {
     {WM_CHANGECBCHAIN, "WM_CHANGECBCHAIN", true},
     {WM_DISPLAYCHANGE, "WM_DISPLAYCHANGE", true},
     {WM_DRAWCLIPBOARD, "WM_DRAWCLIPBOARD", true},
-    {WM_THEMECHANGED, "WM_THEMECHANGED", true}
+    {WM_THEMECHANGED, "WM_THEMECHANGED", true},
+    {0x90, "WM_UAHDESTROYWINDOW", true},
+    {0x272, "WM_UNREGISTER_WINDOW_SERVICES", true}
 };
 
 static inline const MessageDebugEntry *messageDebugEntry(UINT msg)

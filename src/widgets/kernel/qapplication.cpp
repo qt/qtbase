@@ -113,8 +113,10 @@
 static void initResources()
 {
     Q_INIT_RESOURCE(qstyle);
-    Q_INIT_RESOURCE(qmessagebox);
 
+#if QT_CONFIG(messagebox)
+    Q_INIT_RESOURCE(qmessagebox);
+#endif
 }
 
 QT_BEGIN_NAMESPACE

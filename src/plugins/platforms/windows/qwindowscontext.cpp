@@ -1364,9 +1364,10 @@ extern "C" LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND hwnd, UINT message, WPAR
     const bool handled = QWindowsContext::instance()->windowsProc(hwnd, message, et, wParam, lParam, &result, &platformWindow);
     if (QWindowsContext::verbose > 1 && lcQpaEvents().isDebugEnabled()) {
         if (const char *eventName = QWindowsGuiEventDispatcher::windowsMessageName(message)) {
-            qCDebug(lcQpaEvents) << "EVENT: hwd=" << hwnd << eventName << hex << "msg=0x"  << message
-                << "et=0x" << et << dec << "wp=" << int(wParam) << "at"
-                << GET_X_LPARAM(lParam) << GET_Y_LPARAM(lParam) << "handled=" << handled;
+            qCDebug(lcQpaEvents).nospace() << "EVENT: hwd=" << hwnd << ' ' << eventName
+                << " msg=0x" << hex << message << " et=0x" << et << dec << " wp="
+                << int(wParam) << " at " << GET_X_LPARAM(lParam) << ','
+                << GET_Y_LPARAM(lParam) << " handled=" << handled;
         }
     }
     if (!handled)

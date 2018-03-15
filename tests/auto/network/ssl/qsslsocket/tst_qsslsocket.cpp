@@ -4016,12 +4016,12 @@ void tst_QSslSocket::signatureAlgorithm()
     SslServer server;
     server.protocol = serverProtocol;
     server.config.setCiphers({QSslCipher("ECDHE-RSA-AES256-SHA")});
-    server.config.setBackendConfigOption(QByteArrayLiteral("SignatureAlgorithms"), serverSigAlgPairs.join(':'));
+    server.config.setBackendConfigurationOption(QByteArrayLiteral("SignatureAlgorithms"), serverSigAlgPairs.join(':'));
     QVERIFY(server.listen());
 
     QSslConfiguration clientConfig = QSslConfiguration::defaultConfiguration();
     clientConfig.setProtocol(clientProtocol);
-    clientConfig.setBackendConfigOption(QByteArrayLiteral("SignatureAlgorithms"), clientSigAlgPairs.join(':'));
+    clientConfig.setBackendConfigurationOption(QByteArrayLiteral("SignatureAlgorithms"), clientSigAlgPairs.join(':'));
     QSslSocket client;
     client.setSslConfiguration(clientConfig);
     socket = &client;

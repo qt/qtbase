@@ -544,11 +544,11 @@ void tst_QHeaderView::movable()
     view->setSectionsMovable(true);
     QCOMPARE(view->sectionsMovable(), true);
 
-    QCOMPARE(view->firstSectionMovable(), true);
+    QCOMPARE(view->isFirstSectionMovable(), true);
     view->setFirstSectionMovable(false);
-    QCOMPARE(view->firstSectionMovable(), false);
+    QCOMPARE(view->isFirstSectionMovable(), false);
     view->setFirstSectionMovable(true);
-    QCOMPARE(view->firstSectionMovable(), true);
+    QCOMPARE(view->isFirstSectionMovable(), true);
 }
 
 void tst_QHeaderView::clickable()

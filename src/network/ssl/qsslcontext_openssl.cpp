@@ -245,7 +245,7 @@ QString QSslContext::errorString() const
 // static
 void QSslContext::applyBackendConfig(QSslContext *sslContext)
 {
-    if (sslContext->sslConfiguration.backendConfig().isEmpty())
+    if (sslContext->sslConfiguration.backendConfiguration().isEmpty())
         return;
 
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
@@ -255,7 +255,7 @@ void QSslContext::applyBackendConfig(QSslContext *sslContext)
             q_SSL_CONF_CTX_set_ssl_ctx(cctx.data(), sslContext->ctx);
             q_SSL_CONF_CTX_set_flags(cctx.data(), SSL_CONF_FLAG_FILE);
 
-            const auto &backendConfig = sslContext->sslConfiguration.backendConfig();
+            const auto &backendConfig = sslContext->sslConfiguration.backendConfiguration();
             for (auto i = backendConfig.constBegin(); i != backendConfig.constEnd(); ++i) {
                 if (!i.value().canConvert(QMetaType::QByteArray)) {
                     sslContext->errorCode = QSslError::UnspecifiedError;

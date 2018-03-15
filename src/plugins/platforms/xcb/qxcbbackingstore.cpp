@@ -74,7 +74,9 @@ class QXcbShmImage : public QXcbObject
 {
 public:
     QXcbShmImage(QXcbScreen *connection, const QSize &size, uint depth, QImage::Format format);
-    ~QXcbShmImage() { destroy(); }
+    ~QXcbShmImage() { destroy(true); }
+
+    void resize(const QSize &size);
 
     void flushScrolledRegion(bool clientSideScroll);
 
@@ -95,14 +97,18 @@ private:
     void createShmSegment(size_t segmentSize);
     void destroyShmSegment(size_t segmentSize);
 
-    void destroy();
+    void create(const QSize &size, const xcb_format_t *fmt, QImage::Format format);
+    void destroy(bool destroyShm);
 
     void ensureGC(xcb_drawable_t dst);
     void shmPutImage(xcb_drawable_t drawable, const QRegion &region, const QPoint &offset = QPoint());
     void flushPixmap(const QRegion &region, bool fullRegion = false);
     void setClip(const QRegion &region);
 
+    xcb_window_t m_screen_root;
+
     xcb_shm_segment_info_t m_shm_info;
+    size_t m_segmentSize;
 
     xcb_image_t *m_xcb_image;
 
@@ -171,6 +177,8 @@ static inline size_t imageDataSize(const xcb_image_t *image)
 
 QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QImage::Format format)
     : QXcbObject(screen->connection())
+    , m_screen_root(screen->screen()->root)
+    , m_segmentSize(0)
     , m_graphics_buffer(nullptr)
     , m_gc(0)
     , m_gc_drawable(0)
@@ -180,6 +188,27 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
     const xcb_format_t *fmt = connection()->formatForDepth(depth);
     Q_ASSERT(fmt);
 
+    m_hasAlpha = QImage::toPixelFormat(format).alphaUsage() == QPixelFormat::UsesAlpha;
+    if (!m_hasAlpha)
+        format = qt_maybeAlphaVersionWithSameDepth(format);
+
+    memset(&m_shm_info, 0, sizeof m_shm_info);
+    create(size, fmt, format);
+}
+
+void QXcbShmImage::resize(const QSize &size)
+{
+    xcb_format_t fmt;
+    fmt.depth = m_xcb_image->depth;
+    fmt.bits_per_pixel = m_xcb_image->bpp;
+    fmt.scanline_pad = m_xcb_image->scanline_pad;
+    memset(fmt.pad0, 0, sizeof(fmt.pad0));
+    destroy(false);
+    create(size, &fmt, m_qimage.format());
+}
+
+void QXcbShmImage::create(const QSize &size, const xcb_format_t *fmt, QImage::Format format)
+{
     m_xcb_image = xcb_image_create(size.width(), size.height(),
                                    XCB_IMAGE_FORMAT_Z_PIXMAP,
                                    fmt->scanline_pad,
@@ -192,13 +221,15 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
     if (!segmentSize)
         return;
 
-    createShmSegment(segmentSize);
+    if (hasShm() && m_segmentSize > 0 && (m_segmentSize < segmentSize || m_segmentSize / 2 >= segmentSize))
+        destroyShmSegment(m_segmentSize);
+    if (!hasShm() && connection()->hasShm())
+    {
+        qCDebug(lcQpaXcb) << "creating shared memory" << segmentSize << "for" << size << "depth" << fmt->depth << "bits" << fmt->bits_per_pixel;
+        createShmSegment(segmentSize);
+    }
 
     m_xcb_image->data = m_shm_info.shmaddr ? m_shm_info.shmaddr : (uint8_t *)malloc(segmentSize);
-
-    m_hasAlpha = QImage::toPixelFormat(format).alphaUsage() == QPixelFormat::UsesAlpha;
-    if (!m_hasAlpha)
-        format = qt_maybeAlphaVersionWithSameDepth(format);
 
     m_qimage = QImage( (uchar*) m_xcb_image->data, m_xcb_image->width, m_xcb_image->height, m_xcb_image->stride, format);
     m_graphics_buffer = new QXcbShmGraphicsBuffer(&m_qimage);
@@ -207,8 +238,34 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
     xcb_create_pixmap(xcb_connection(),
                       m_xcb_image->depth,
                       m_xcb_pixmap,
-                      screen->screen()->root,
+                      m_screen_root,
                       m_xcb_image->width, m_xcb_image->height);
+}
+
+void QXcbShmImage::destroy(bool destroyShm)
+{
+    if (m_xcb_image->data) {
+        if (m_shm_info.shmaddr) {
+            if (destroyShm)
+                destroyShmSegment(m_segmentSize);
+        } else {
+            free(m_xcb_image->data);
+        }
+    }
+
+    xcb_image_destroy(m_xcb_image);
+
+    if (m_gc) {
+        xcb_free_gc(xcb_connection(), m_gc);
+        m_gc = 0;
+    }
+    m_gc_drawable = 0;
+
+    delete m_graphics_buffer;
+    m_graphics_buffer = nullptr;
+
+    xcb_free_pixmap(xcb_connection(), m_xcb_pixmap);
+    m_xcb_pixmap = 0;
 }
 
 void QXcbShmImage::flushScrolledRegion(bool clientSideScroll)
@@ -261,10 +318,8 @@ void QXcbShmImage::flushScrolledRegion(bool clientSideScroll)
 
 void QXcbShmImage::createShmSegment(size_t segmentSize)
 {
-    m_shm_info.shmaddr = nullptr;
-
-    if (!connection()->hasShm())
-        return;
+    Q_ASSERT(connection()->hasShm());
+    Q_ASSERT(m_segmentSize == 0);
 
 #ifdef XCB_USE_SHM_FD
     if (connection()->hasShmFd()) {
@@ -302,6 +357,8 @@ void QXcbShmImage::createShmSegment(size_t segmentSize)
         close(fds[0]);
         m_shm_info.shmseg = seg;
         m_shm_info.shmaddr = static_cast<quint8 *>(addr);
+
+        m_segmentSize = segmentSize;
     } else
 #endif
     {
@@ -338,6 +395,8 @@ void QXcbShmImage::createShmSegment(size_t segmentSize)
         m_shm_info.shmseg = seg;
         m_shm_info.shmid = id; // unused
         m_shm_info.shmaddr = static_cast<quint8 *>(addr);
+
+        m_segmentSize = segmentSize;
     }
 }
 
@@ -350,6 +409,7 @@ void QXcbShmImage::destroyShmSegment(size_t segmentSize)
     xcb_generic_error_t *error = xcb_request_check(xcb_connection(), cookie);
     if (error)
         connection()->printXcbError("QXcbShmImage: xcb_shm_detach() failed with error", error);
+    m_shm_info.shmseg = 0;
 
 #ifdef XCB_USE_SHM_FD
     if (connection()->hasShmFd()) {
@@ -364,7 +424,11 @@ void QXcbShmImage::destroyShmSegment(size_t segmentSize)
             qWarning("QXcbShmImage: shmdt() failed (%d: %s) for %p",
                      errno, strerror(errno), m_shm_info.shmaddr);
         }
+        m_shm_info.shmid = 0; // unused
     }
+    m_shm_info.shmaddr = nullptr;
+
+    m_segmentSize = 0;
 }
 
 extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
@@ -411,26 +475,6 @@ bool QXcbShmImage::scroll(const QRegion &area, int dx, int dy)
     }
 
     return true;
-}
-
-void QXcbShmImage::destroy()
-{
-    if (m_xcb_image->data) {
-        if (m_shm_info.shmaddr)
-            destroyShmSegment(imageDataSize(m_xcb_image));
-        else
-            free(m_xcb_image->data);
-    }
-
-    xcb_image_destroy(m_xcb_image);
-
-    if (m_gc)
-        xcb_free_gc(xcb_connection(), m_gc);
-    delete m_graphics_buffer;
-    m_graphics_buffer = nullptr;
-
-    xcb_free_pixmap(xcb_connection(), m_xcb_pixmap);
-    m_xcb_pixmap = 0;
 }
 
 void QXcbShmImage::ensureGC(xcb_drawable_t dst)
@@ -805,7 +849,6 @@ void QXcbBackingStore::resize(const QSize &size, const QRegion &)
     if (m_image && size == m_image->size())
         return;
 
-    QXcbScreen *screen = static_cast<QXcbScreen *>(window()->screen()->handle());
     QPlatformWindow *pw = window()->handle();
     if (!pw) {
         window()->create();
@@ -813,8 +856,13 @@ void QXcbBackingStore::resize(const QSize &size, const QRegion &)
     }
     QXcbWindow* win = static_cast<QXcbWindow *>(pw);
 
-    delete m_image;
-    m_image = new QXcbShmImage(screen, size, win->depth(), win->imageFormat());
+    if (m_image) {
+        m_image->resize(size);
+    } else {
+        QXcbScreen *screen = static_cast<QXcbScreen *>(window()->screen()->handle());
+        m_image = new QXcbShmImage(screen, size, win->depth(), win->imageFormat());
+    }
+
     // Slow path for bgr888 VNC: Create an additional image, paint into that and
     // swap R and B while copying to m_image after each paint.
     if (win->imageNeedsRgbSwap()) {

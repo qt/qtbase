@@ -251,7 +251,7 @@ QT_DEFINE_QPA_EVENT_HANDLER(void, handleWindowStateChanged, QWindow *window, Qt:
 {
     Q_ASSERT(window);
     if (oldState < Qt::WindowNoState)
-        oldState = window->windowState();
+        oldState = window->windowStates();
 
     QWindowSystemInterfacePrivate::WindowStateChangedEvent *e =
         new QWindowSystemInterfacePrivate::WindowStateChangedEvent(window, newState, Qt::WindowStates(oldState));
