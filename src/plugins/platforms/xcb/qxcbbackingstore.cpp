@@ -219,12 +219,14 @@ void QXcbBackingStoreImage::create(const QSize &size, const xcb_format_t *fmt, Q
     if (!segmentSize)
         return;
 
-    if (hasShm() && m_segmentSize > 0 && (m_segmentSize < segmentSize || m_segmentSize / 2 >= segmentSize))
-        destroyShmSegment(m_segmentSize);
-    if (!hasShm() && connection()->hasShm())
-    {
-        qCDebug(lcQpaXcb) << "creating shared memory" << segmentSize << "for" << size << "depth" << fmt->depth << "bits" << fmt->bits_per_pixel;
-        createShmSegment(segmentSize);
+    if (connection()->hasShm()) {
+        if (m_shm_info.shmaddr && (m_segmentSize < segmentSize || m_segmentSize / 2 >= segmentSize))
+            destroyShmSegment(m_segmentSize);
+        if (!m_shm_info.shmaddr) {
+            qCDebug(lcQpaXcb) << "creating shared memory" << segmentSize << "for"
+                              << size << "depth" << fmt->depth << "bits" << fmt->bits_per_pixel;
+            createShmSegment(segmentSize);
+        }
     }
 
     m_xcb_image->data = m_shm_info.shmaddr ? m_shm_info.shmaddr : (uint8_t *)malloc(segmentSize);
