@@ -817,6 +817,7 @@ void QHtml5Compositor::frame()
     qreal dpr = mScreen->devicePixelRatio();
     glViewport(0, 0, mScreen->geometry().width() * dpr, mScreen->geometry().height() *dpr);
 
+    mContext->functions()->glClearColor(0.2, 0.2, 0.2, 1.0);
     mContext->functions()->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     mBlitter->bind();
