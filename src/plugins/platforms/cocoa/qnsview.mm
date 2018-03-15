@@ -92,10 +92,9 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 - (instancetype)initWithView:(QNSView *)theView
 {
-    self = [super init];
-    if (self) {
+    if ((self = [super init]))
         view = theView;
-    }
+
     return self;
 }
 
@@ -157,7 +156,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 - (instancetype)init
 {
-    if (self = [super initWithFrame:NSZeroRect]) {
+    if ((self = [super initWithFrame:NSZeroRect])) {
         m_buttons = Qt::NoButton;
         m_acceptedMouseDowns = Qt::NoButton;
         m_frameStrutButtons = Qt::NoButton;
@@ -200,36 +199,34 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 - (instancetype)initWithCocoaWindow:(QCocoaWindow *)platformWindow
 {
-    self = [self init];
-    if (!self)
-        return 0;
-
-    m_platformWindow = platformWindow;
-    m_sendKeyEvent = false;
-    m_dontOverrideCtrlLMB = qt_mac_resolveOption(false, platformWindow->window(), "_q_platform_MacDontOverrideCtrlLMB", "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
-    m_trackingArea = nil;
+    if ((self = [self init])) {
+        m_platformWindow = platformWindow;
+        m_sendKeyEvent = false;
+        m_dontOverrideCtrlLMB = qt_mac_resolveOption(false, platformWindow->window(), "_q_platform_MacDontOverrideCtrlLMB", "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
+        m_trackingArea = nil;
 
 #ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
-    // prevent rift in space-time continuum, disable
-    // accessibility for the accessibility inspector's windows.
-    static bool skipAccessibilityForInspectorWindows = false;
-    if (!skipAccessibilityForInspectorWindows) {
+        // prevent rift in space-time continuum, disable
+        // accessibility for the accessibility inspector's windows.
+        static bool skipAccessibilityForInspectorWindows = false;
+        if (!skipAccessibilityForInspectorWindows) {
 
-        // m_accessibleRoot = window->accessibleRoot();
+            // m_accessibleRoot = window->accessibleRoot();
 
-        AccessibilityInspector *inspector = new AccessibilityInspector(window);
-        skipAccessibilityForInspectorWindows = true;
-        inspector->inspectWindow(window);
-        skipAccessibilityForInspectorWindows = false;
-    }
+            AccessibilityInspector *inspector = new AccessibilityInspector(window);
+            skipAccessibilityForInspectorWindows = true;
+            inspector->inspectWindow(window);
+            skipAccessibilityForInspectorWindows = false;
+        }
 #endif
 
-    [self registerDragTypes];
+        [self registerDragTypes];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                          selector:@selector(textInputContextKeyboardSelectionDidChangeNotification:)
-                                          name:NSTextInputContextKeyboardSelectionDidChangeNotification
-                                          object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                              selector:@selector(textInputContextKeyboardSelectionDidChangeNotification:)
+                                              name:NSTextInputContextKeyboardSelectionDidChangeNotification
+                                              object:nil];
+    }
 
     return self;
 }
@@ -251,7 +248,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 }
 
 #ifndef QT_NO_OPENGL
-- (void) setQCocoaGLContext:(QCocoaGLContext *)context
+- (void)setQCocoaGLContext:(QCocoaGLContext *)context
 {
     m_glContext = context;
     [m_glContext->nsOpenGLContext() setView:self];
@@ -315,7 +312,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     [super removeFromSuperview];
 }
 
-- (BOOL) isOpaque
+- (BOOL)isOpaque
 {
     if (!m_platformWindow)
         return true;
@@ -503,7 +500,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     m_frameStrutButtons = Qt::NoButton;
 }
 
-- (NSPoint) screenMousePoint:(NSEvent *)theEvent
+- (NSPoint)screenMousePoint:(NSEvent *)theEvent
 {
     NSPoint screenPoint;
     if (theEvent) {
@@ -936,7 +933,7 @@ struct QCocoaTabletDeviceData
 typedef QHash<uint, QCocoaTabletDeviceData> QCocoaTabletDeviceDataHash;
 Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
 
-- (bool)handleTabletEvent: (NSEvent *)theEvent
+- (bool)handleTabletEvent:(NSEvent *)theEvent
 {
     static bool ignoreButtonMapping = qEnvironmentVariableIsSet("QT_MAC_TABLET_IGNORE_BUTTON_MAPPING");
 
@@ -1360,12 +1357,12 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 }
 #endif // QT_CONFIG(wheelevent)
 
-- (int) convertKeyCode : (QChar)keyChar
+- (int)convertKeyCode:(QChar)keyChar
 {
     return qt_mac_cocoaKey2QtKey(keyChar);
 }
 
-+ (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags
++ (Qt::KeyboardModifiers)convertKeyModifiers:(ulong)modifierFlags
 {
     const bool dontSwapCtrlAndMeta = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
     Qt::KeyboardModifiers qtMods =Qt::NoModifier;
@@ -1574,18 +1571,18 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     }
 }
 
-- (void) insertNewline:(id)sender
+- (void)insertNewline:(id)sender
 {
     Q_UNUSED(sender);
     m_resendKeyEvent = true;
 }
 
-- (void) doCommandBySelector:(SEL)aSelector
+- (void)doCommandBySelector:(SEL)aSelector
 {
     [self tryToPerform:aSelector with:self];
 }
 
-- (void) insertText:(id)aString replacementRange:(NSRange)replacementRange
+- (void)insertText:(id)aString replacementRange:(NSRange)replacementRange
 {
     Q_UNUSED(replacementRange)
 
@@ -1619,7 +1616,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     m_composingFocusObject = nullptr;
 }
 
-- (void) setMarkedText:(id)aString selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
+- (void)setMarkedText:(id)aString selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
     Q_UNUSED(replacementRange)
     QString preeditString;
@@ -1703,7 +1700,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     m_composingFocusObject = nullptr;
 }
 
-- (void) unmarkText
+- (void)unmarkText
 {
     if (!m_composingText.isEmpty()) {
         if (QObject *fo = m_platformWindow->window()->focusObject()) {
@@ -1721,12 +1718,12 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     m_composingFocusObject = nullptr;
 }
 
-- (BOOL) hasMarkedText
+- (BOOL)hasMarkedText
 {
     return (m_composingText.isEmpty() ? NO: YES);
 }
 
-- (NSAttributedString *) attributedSubstringForProposedRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange
+- (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange
 {
     Q_UNUSED(actualRange)
     QObject *fo = m_platformWindow->window()->focusObject();
@@ -1747,7 +1744,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     return [[[NSAttributedString alloc]  initWithString:const_cast<NSString *>(tmpString)] autorelease];
 }
 
-- (NSRange) markedRange
+- (NSRange)markedRange
 {
     NSRange range;
     if (!m_composingText.isEmpty()) {
@@ -1760,7 +1757,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     return range;
 }
 
-- (NSRange) selectedRange
+- (NSRange)selectedRange
 {
     NSRange selectedRange = {0, 0};
 
@@ -1782,7 +1779,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     return selectedRange;
 }
 
-- (NSRect) firstRectForCharacterRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange
+- (NSRect)firstRectForCharacterRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange
 {
     Q_UNUSED(aRange)
     Q_UNUSED(actualRange)
