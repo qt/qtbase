@@ -32,6 +32,7 @@
 #include "qhtml5eventdispatcher.h"
 #include "qhtml5compositor.h"
 #include "qhtml5openglcontext.h"
+#include "qhtml5theme.h"
 
 #include "qhtml5window.h"
 #ifndef QT_NO_OPENGL
@@ -195,6 +196,18 @@ QAbstractEventDispatcher *QHtml5Integration::createEventDispatcher() const
 QVariant QHtml5Integration::styleHint(QPlatformIntegration::StyleHint hint) const
 {
     return QPlatformIntegration::styleHint(hint);
+}
+
+QStringList QHtml5Integration::themeNames() const
+{
+    return QStringList() << QLatin1String("html5");
+}
+
+QPlatformTheme *QHtml5Integration::createPlatformTheme(const QString &name) const
+{
+    if (name == QLatin1String("html5"))
+        return new QHtml5Theme();
+    return QPlatformIntegration::createPlatformTheme(name);
 }
 
 int QHtml5Integration::uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData)

@@ -20,7 +20,8 @@ SOURCES =   main.cpp \
             qhtml5eventdispatcher.cpp \
             qhtml5compositor.cpp \
             qhtml5cursor.cpp \
-            qhtml5openglcontext.cpp
+            qhtml5openglcontext.cpp \
+            qhtml5theme.cpp
 
 HEADERS =   qhtml5integration.h \
             qhtml5window.h \
@@ -31,7 +32,8 @@ HEADERS =   qhtml5integration.h \
             qhtml5compositor.h \
             qhtml5stylepixmaps_p.h \
             qhtml5cursor.h \
-            qhtml5openglcontext.h
+            qhtml5openglcontext.h \
+            qhtml5theme.h
 
 RESOURCES += fonts/html5fonts.qrc
 
