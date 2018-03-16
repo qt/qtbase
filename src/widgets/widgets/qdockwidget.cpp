@@ -160,9 +160,13 @@ bool QDockWidgetTitleButton::event(QEvent *event)
 static inline bool isWindowsStyle(const QStyle *style)
 {
     // Note: QStyleSheetStyle inherits QWindowsStyle
-    const QStyle *effectiveStyle = style->inherits("QStyleSheetStyle")
-        ? static_cast<const QStyleSheetStyle *>(style)->baseStyle()
-        : style;
+    const QStyle *effectiveStyle = style;
+
+#if QT_CONFIG(style_stylesheet)
+    if (style->inherits("QStyleSheetStyle"))
+      effectiveStyle = static_cast<const QStyleSheetStyle *>(style)->baseStyle();
+#endif
+
     return effectiveStyle->inherits("QWindowsStyle");
 }
 
