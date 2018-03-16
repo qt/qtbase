@@ -19,6 +19,8 @@ linux
 osx
 [windowMoveResize]
 osx
+[childEvents]
+osx ci
 [renderInvisible]
 osx
 [optimizedResizeMove]
