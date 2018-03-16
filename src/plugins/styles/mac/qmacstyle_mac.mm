@@ -344,8 +344,14 @@ static const QMarginsF pushButtonShadowMargins[3] = {
     { 1.5, 0.5, 1.5, 2.5 }
 };
 
+static const qreal pushButtonDefaultHeight[3] = {
+    32, 28, 24
+};
+
 static const int toolButtonArrowSize = 7;
 static const int toolButtonArrowMargin = 2;
+
+static const qreal focusRingWidth = 3.5;
 
 #if QT_CONFIG(tabbar)
 static bool isVerticalTabs(const QTabBar::Shape shape) {
@@ -1221,8 +1227,6 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int h
 
 void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const
 {
-    static const auto focusRingWidth = 3.5;
-
     QPainterPath focusRingPath;
     qreal hOffset = 0.0;
     qreal vOffset = 0.0;
@@ -1577,6 +1581,55 @@ QSizeF QMacStylePrivate::CocoaControl::defaultFrameSize() const
     }
 
     return QSizeF();
+}
+
+bool QMacStylePrivate::CocoaControl::getCocoaButtonTypeAndBezelStyle(NSButtonType *buttonType, NSBezelStyle *bezelStyle) const
+{
+    switch (type) {
+    case Button_CheckBox:
+        *buttonType = NSSwitchButton;
+        *bezelStyle = NSRegularSquareBezelStyle;
+        break;
+    case Button_Disclosure:
+        *buttonType = NSOnOffButton;
+        *bezelStyle = NSDisclosureBezelStyle;
+        break;
+    case Button_RadioButton:
+        *buttonType = NSRadioButton;
+        *bezelStyle = NSRegularSquareBezelStyle;
+        break;
+    case Button_SquareButton:
+        *buttonType = NSPushOnPushOffButton;
+        *bezelStyle = NSShadowlessSquareBezelStyle;
+        break;
+    case Button_PushButton:
+        *buttonType = NSPushOnPushOffButton;
+        *bezelStyle = NSRoundedBezelStyle;
+        break;
+    default:
+        return false;
+    }
+
+    return true;
+}
+
+QMacStylePrivate::CocoaControlType cocoaControlType(const QStyleOption *opt, const QWidget *w)
+{
+    if (const auto *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+        const bool hasMenu = btn->features & QStyleOptionButton::HasMenu;
+        // When the contents won't fit in a large sized button,
+        // and WA_MacNormalSize is not set, make the button square.
+        // Threshold used to be at 34, not 32.
+        const auto maxNonSquareHeight = pushButtonDefaultHeight[QStyleHelper::SizeLarge];
+        const bool isSquare = (btn->features & QStyleOptionButton::Flat)
+                || (btn->rect.height() > maxNonSquareHeight
+                    && !(w && w->testAttribute(Qt::WA_MacNormalSize)));
+        return (isSquare? QMacStylePrivate::Button_SquareButton :
+                hasMenu ? QMacStylePrivate::Button_PullDown :
+                QMacStylePrivate::Button_PushButton);
+    }
+
+    return QMacStylePrivate::NoControl;
 }
 
 /**
@@ -1992,19 +2045,9 @@ ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
     return w;
 }
 
-static NSButton *makeButton(NSButtonType type, NSBezelStyle style)
-{
-    NSButton *b = [[NSButton alloc] init];
-    b.title = @"";
-    b.buttonType = type;
-    b.bezelStyle = style;
-    return b;
-}
-
 NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
 {
     NSView *bv = cocoaControls.value(widget, nil);
-
     if (!bv) {
         switch (widget.type) {
         case Box: {
@@ -2017,11 +2060,16 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
             break;
         }
         case Button_CheckBox:
-            bv = makeButton(NSSwitchButton, NSRegularSquareBezelStyle);
-            break;
         case Button_Disclosure:
-            bv = makeButton(NSOnOffButton, NSDisclosureBezelStyle);
+        case Button_PushButton:
+        case Button_RadioButton:
+        case Button_SquareButton: {
+            NSButton *bc = [[NSButton alloc] init];
+            bc.title = @"";
+            // See below for style and bezel setting.
+            bv = bc;
             break;
+        }
         case Button_PopupButton:
         case Button_PullDown: {
             NSPopUpButton *bc = [[NSPopUpButton alloc] init];
@@ -2031,12 +2079,6 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
             bv = bc;
             break;
         }
-        case Button_PushButton:
-            bv = makeButton(NSMomentaryLightButton, NSRoundedBezelStyle);
-            break;
-        case Button_RadioButton:
-            bv = makeButton(NSRadioButton, NSRegularSquareBezelStyle);
-            break;
         case Button_WindowClose:
         case Button_WindowMiniaturize:
         case Button_WindowZoom: {
@@ -2135,6 +2177,16 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
         }
 
         cocoaControls.insert(widget, bv);
+    }
+
+    NSButtonType buttonType;
+    NSBezelStyle bezelStyle;
+    if (widget.getCocoaButtonTypeAndBezelStyle(&buttonType, &bezelStyle)) {
+        // FIXME We need to reset the button's type and
+        // bezel style properties, even when cached.
+        auto *button = static_cast<NSButton *>(bv);
+        button.buttonType = buttonType;
+        button.bezelStyle = bezelStyle;
     }
 
     return bv;
@@ -3890,10 +3942,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                      || (btn->features & QStyleOptionButton::AutoDefaultButton
                          && d->autoDefaultButton == btn->styleObject));
             const bool hasMenu = btn->features & QStyleOptionButton::HasMenu;
-            // TODO When the contents won't fit in a large sized button,
-            // and WA_MacNormalSize is not set, make the button square.
-            const bool isSquare = btn->features & QStyleOptionButton::Flat;
-            const auto ct = hasMenu ? QMacStylePrivate::Button_PullDown : QMacStylePrivate::Button_PushButton;
+            const auto ct = cocoaControlType(btn, w);
             const auto cs = d->effectiveAquaSizeConstrain(opt, w);
             const auto cw = QMacStylePrivate::CocoaControl(ct, cs);
             auto *pb = static_cast<NSButton *>(d->cocoaControl(cw));
@@ -3901,8 +3950,10 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             // This is more convoluted than we initialy thought. See for example
             // differences between plain and menu button frames.
             QRectF frameRect;
-            if (isSquare) {
-                frameRect = btn->rect;
+            if (cw.type == QMacStylePrivate::Button_SquareButton) {
+                frameRect = btn->rect
+                        .adjusted(3, 1, -3, -5)
+                        .adjusted(focusRingWidth, focusRingWidth, -focusRingWidth, -focusRingWidth);
             } else {
                 const auto frameSize = cw.defaultFrameSize();
                 if (hasMenu) {
@@ -3915,7 +3966,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         frameRect = frameRect.adjusted(0, 0, -4, 0).translated(2, 1);
                     else if (cw.size == QStyleHelper::SizeMini)
                         frameRect = frameRect.adjusted(0, 0, -9, 0).translated(5, 0);
-                } else {
+                } else if (cw.type == QMacStylePrivate::Button_PushButton) {
                     // Start from the style option's top-left corner.
                     frameRect = QRectF(btn->rect.topLeft(),
                                        QSizeF(btn->rect.width(), frameSize.height()));
@@ -3927,8 +3978,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             }
             pb.frame = frameRect.toCGRect();
 
-            pb.bezelStyle = isSquare ? NSBezelStyleShadowlessSquare : NSBezelStyleRounded;
-            pb.buttonType = NSPushOnPushOffButton;
             pb.enabled = isEnabled;
             [pb highlight:isPressed];
             pb.state = isHighlighted && !isPressed ? NSOnState : NSOffState;
@@ -3936,7 +3985,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 [pb.cell drawBezelWithFrame:r inView:pb.superview];
             });
 
-            if (hasMenu && isSquare) {
+            if (hasMenu && cw.type == QMacStylePrivate::Button_SquareButton) {
                 // Using -[NSPopuButtonCell drawWithFrame:inView:] above won't do
                 // it right because we don't set the text in the native button.
                 const int mbi = proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator, btn, w);
@@ -3963,12 +4012,17 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 // TODO Remove and use QFocusFrame instead.
                 const int hMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin, btn, w);
                 const int vMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin, btn, w);
-                auto focusRect = QRectF::fromCGRect([pb alignmentRectForFrame:pb.frame]);
-                if (cw.type == QMacStylePrivate::Button_PushButton)
-                    focusRect -= pushButtonShadowMargins[cw.size];
-                else if (cw.type == QMacStylePrivate::Button_PullDown)
-                    focusRect -= pullDownButtonShadowMargins[cw.size];
-                d->drawFocusRing(p, focusRect, hMargin, vMargin, cw);
+                if (cw.type == QMacStylePrivate::Button_SquareButton) {
+                    const auto focusRect = frameRect.adjusted(-focusRingWidth, -focusRingWidth, focusRingWidth, focusRingWidth);
+                    d->drawFocusRing(p, focusRect.toAlignedRect(), hMargin, vMargin, 0);
+                } else {
+                    auto focusRect = QRectF::fromCGRect([pb alignmentRectForFrame:pb.frame]);
+                    if (cw.type == QMacStylePrivate::Button_PushButton)
+                        focusRect -= pushButtonShadowMargins[cw.size];
+                    else if (cw.type == QMacStylePrivate::Button_PullDown)
+                        focusRect -= pullDownButtonShadowMargins[cw.size];
+                    d->drawFocusRing(p, focusRect, hMargin, vMargin, cw);
+                }
             }
         }
         break;

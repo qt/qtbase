@@ -190,6 +190,7 @@ public:
         Button_PullDown, // QPushButton with menu
         Button_PushButton,
         Button_RadioButton,
+        Button_SquareButton, // Oversized QPushButton
         Button_WindowClose,
         Button_WindowMiniaturize,
         Button_WindowZoom,
@@ -217,6 +218,8 @@ public:
         bool operator==(const CocoaControl &other) const;
 
         QSizeF defaultFrameSize() const;
+
+        bool getCocoaButtonTypeAndBezelStyle(NSButtonType *buttonType, NSBezelStyle *bezelStyle) const;
     };
 
 
