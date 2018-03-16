@@ -1,0 +1,122 @@
+Qt 5.9.5 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.9.0 through 5.9.4.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+http://doc.qt.io/qt-5/index.html
+
+The Qt version 5.9 series is binary compatible with the 5.8.x series.
+Applications compiled for 5.8 will continue to run with 5.9.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                              Qt 5.9.5 Changes                            *
+****************************************************************************
+
+QtCore
+------
+
+ - QDateTime and QLocale:
+   * [QTBUG-66076] Fixed a crash if the date/time parsed with Qt::ISODate and
+     Qt::ISODateWithMS had a 'T' for the time, but no actual time.
+
+ - QObject:
+   * [QTBUG-65712] Improved performance of QObject::deleteLater.
+
+ - QPluginLoader:
+   * [QTBUG-65197] Fixed a bug that would cause the Qt plugin scanning
+     system to allocate too much memory and possibly crash the process.
+
+ - QStandardPaths:
+   * [QTBUG-65687] Fixed a memory leak with displayName() on Apple platforms.
+   * [QTBUG-65820] Fixed QStandardPaths::AppDataLocation on Android.
+
+QtGui
+-----
+
+ - Text:
+   * [QTBUG-61882] Fixed a bug where mixing different writing systems with
+     emojis could lead to missing glyphs.
+   * [QTBUG-65519] Fixed ZWJ and ZWNJ control characters when fallback
+     fonts are in use.
+
+QtWidgets
+---------
+
+ - QTreeView:
+   * [QTBUG-65980] Fixed missing update of QTreeView on changing tree
+     position.
+
+ - QLabel:
+   * [QTBUG-66841] Fixed crash related to deleted buddy.
+
+ - QHeaderView:
+   * [QTBUG-65478] Fixed crash that could happen during layout.
+   * [QTBUG-66444][QTBUG-65478][QTBUG-65478] Fixed section resize settings
+     getting lost after layouting.
+   * [QTBUG-66413][QTBUG-65478] Fixed hidden section issues during layout.
+   * [QTBUG-65478] Fixed section restore issues after a layout change.
+
+ - QFusionStyle:
+   * [QTBUG-66343] Fixed checkbox rendering regression in low DPI settings.
+
+ - QComboBox:
+   * [QTBUG-55251] Fixed context menu opening up at the wrong location.
+
+ - QFileDialog:
+   * Fixed regression when using QFileDialog::getOpenFileUrl() using
+     remote URLs.
+
+ - QWidget:
+   * [QTBUG-65783] Fixed crash when platform window creation fails.
+
+Third-Party Code
+----------------
+
+ - Documented use of "Unicode Character Database (UCD)" in Qt Core.
+ - Clarified use of "Unicode Common Local Data Repository (CLDR)" in the
+   documentation. Also updated SPDX license name / ID.
+
+Platform-specific changes
+-------------------------
+
+ - Android:
+   * [QTBUG-65863] Fixed the detection of which thread is the main thread on
+     Android.
+
+ - Windows:
+   * Named pipes internally created by QProcess now contain the PID in their
+     name to ensure uniqueness.
+
+ - winrt:
+   * -qdevel and -qdebug are removed from the command line arguments and
+     not passed to the application.
+
+****************************************************************************
+*                                Tools                                     *
+****************************************************************************
+
+configure & build system
+------------------------
+
+ - [QTBUG-65753] Fixed installation of example sources for qrc/rc files.
+ - [Windows] cl.exe is now preferred over clang-cl.exe again.
+
+qmake
+-----
+
+ - [QTBUG-50839][Windows] Paths starting with a (back-)slash but without
+   a drive letter are not considered absolute any more.
+ - [QTBUG-63637][MinGW] Fixed cross-compilation from Linux.
+ - [QTBUG-65106] Fixed complaints about missing modules in $$QT after the
+   project has already failed requires() (or REQUIRES=).
+ - [QTBUG-65477][Darwin] Bundle identifiers are now properly escaped.
+ - [Windows] Fixed 'make check' for executables in subdirectories.
