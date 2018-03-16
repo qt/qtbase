@@ -218,6 +218,7 @@ public:
         bool operator==(const CocoaControl &other) const;
 
         QSizeF defaultFrameSize() const;
+        QRectF adjustedControlFrame(const QRectF &rect) const;
 
         bool getCocoaButtonTypeAndBezelStyle(NSButtonType *buttonType, NSBezelStyle *bezelStyle) const;
     };

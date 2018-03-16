@@ -344,8 +344,16 @@ static const QMarginsF pushButtonShadowMargins[3] = {
     { 1.5, 0.5, 1.5, 2.5 }
 };
 
+// These are frame heights as reported by Xcode 9's Interface Builder.
+// Alignemnet rectangle's heights match for push and popup buttons
+// with respective values 21, 18 and 15.
+
 static const qreal pushButtonDefaultHeight[3] = {
-    32, 28, 24
+    32, 28, 16
+};
+
+static const qreal popupButtonDefaultHeight[3] = {
+    26, 22, 15
 };
 
 static const int toolButtonArrowSize = 7;
@@ -1561,26 +1569,46 @@ QSizeF QMacStylePrivate::CocoaControl::defaultFrameSize() const
     // has a reasonable frame set. IOW, it's a chicken and egg problem.
     // These values are as observed in Xcode 9's Interface Builder.
 
-    if (type == Button_PushButton) {
-        if (size == QStyleHelper::SizeLarge)
-            return QSizeF(-1, 32);
-        if (size == QStyleHelper::SizeSmall)
-            return QSizeF(-1, 28);
-        if (size == QStyleHelper::SizeMini)
-            return QSizeF(-1, 16);
-    }
+    if (type == Button_PushButton)
+        return QSizeF(-1, pushButtonDefaultHeight[size]);
 
     if (type == Button_PopupButton
-            || type == Button_PullDown) {
-        if (size == QStyleHelper::SizeLarge)
-            return QSizeF(-1, 26);
-        if (size == QStyleHelper::SizeSmall)
-            return QSizeF(-1, 22);
-        if (size == QStyleHelper::SizeMini)
-            return QSizeF(-1, 15);
-    }
+            || type == Button_PullDown)
+        return QSizeF(-1, popupButtonDefaultHeight[size]);
 
     return QSizeF();
+}
+
+QRectF QMacStylePrivate::CocoaControl::adjustedControlFrame(const QRectF &rect) const
+{
+    QRectF frameRect;
+    if (type == QMacStylePrivate::Button_SquareButton) {
+        frameRect = rect.adjusted(3, 1, -3, -5)
+                .adjusted(focusRingWidth, focusRingWidth, -focusRingWidth, -focusRingWidth);
+    } else {
+        const auto frameSize = defaultFrameSize();
+        if (type == QMacStylePrivate::Button_PullDown) {
+            // Center in the style option's rect.
+            frameRect = QRectF(QPointF(0, (rect.height() - frameSize.height()) / 2.0),
+                               QSizeF(rect.width(), frameSize.height()));
+            if (size == QStyleHelper::SizeLarge)
+                frameRect = frameRect.adjusted(0, 0, -6, 0).translated(3, -1);
+            else if (size == QStyleHelper::SizeSmall)
+                frameRect = frameRect.adjusted(0, 0, -4, 0).translated(2, 1);
+            else if (size == QStyleHelper::SizeMini)
+                frameRect = frameRect.adjusted(0, 0, -9, 0).translated(5, 0);
+        } else if (type == QMacStylePrivate::Button_PushButton) {
+            // Start from the style option's top-left corner.
+            frameRect = QRectF(rect.topLeft(),
+                               QSizeF(rect.width(), frameSize.height()));
+            if (size == QStyleHelper::SizeSmall)
+                frameRect = frameRect.translated(0, 1.5);
+            else if (size == QStyleHelper::SizeMini)
+                frameRect = frameRect.adjusted(0, 0, -8, 0).translated(4, 4);
+        }
+    }
+
+    return frameRect;
 }
 
 bool QMacStylePrivate::CocoaControl::getCocoaButtonTypeAndBezelStyle(NSButtonType *buttonType, NSBezelStyle *bezelStyle) const
@@ -3949,33 +3977,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             // Ensure same size and location as we used to have with HITheme.
             // This is more convoluted than we initialy thought. See for example
             // differences between plain and menu button frames.
-            QRectF frameRect;
-            if (cw.type == QMacStylePrivate::Button_SquareButton) {
-                frameRect = btn->rect
-                        .adjusted(3, 1, -3, -5)
-                        .adjusted(focusRingWidth, focusRingWidth, -focusRingWidth, -focusRingWidth);
-            } else {
-                const auto frameSize = cw.defaultFrameSize();
-                if (hasMenu) {
-                    // Center in the style option's rect.
-                    frameRect = QRectF(QPointF(0, (btn->rect.height() - frameSize.height()) / 2.0),
-                                       QSizeF(btn->rect.width(), frameSize.height()));
-                    if (cw.size == QStyleHelper::SizeLarge)
-                        frameRect = frameRect.adjusted(0, 0, -6, 0).translated(3, -1);
-                    else if (cw.size == QStyleHelper::SizeSmall)
-                        frameRect = frameRect.adjusted(0, 0, -4, 0).translated(2, 1);
-                    else if (cw.size == QStyleHelper::SizeMini)
-                        frameRect = frameRect.adjusted(0, 0, -9, 0).translated(5, 0);
-                } else if (cw.type == QMacStylePrivate::Button_PushButton) {
-                    // Start from the style option's top-left corner.
-                    frameRect = QRectF(btn->rect.topLeft(),
-                                       QSizeF(btn->rect.width(), frameSize.height()));
-                    if (cw.size == QStyleHelper::SizeSmall)
-                        frameRect = frameRect.translated(0, 1.5);
-                    else if (cw.size == QStyleHelper::SizeMini)
-                        frameRect = frameRect.adjusted(0, 0, -8, 0).translated(4, 4);
-                }
-            }
+            const QRectF frameRect = cw.adjustedControlFrame(btn->rect);
             pb.frame = frameRect.toCGRect();
 
             pb.enabled = isEnabled;
