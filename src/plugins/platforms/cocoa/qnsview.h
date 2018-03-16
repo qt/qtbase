@@ -52,7 +52,7 @@ QT_END_NAMESPACE
 
 Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 
-@interface QT_MANGLE_NAMESPACE(QNSView) : NSView <NSTextInputClient>
+@interface QT_MANGLE_NAMESPACE(QNSView) : NSView
 
 @property (nonatomic, retain) NSCursor *cursor;
 
@@ -63,18 +63,22 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 #endif
 
 - (void)convertFromScreen:(NSPoint)mouseLocation toWindowPoint:(QPointF *)qtWindowPoint andScreenPoint:(QPointF *)qtScreenPoint;
-
 - (void)requestUpdate;
 
-- (void)mouseMovedImpl:(NSEvent *)theEvent;
-- (void)mouseEnteredImpl:(NSEvent *)theEvent;
-- (void)mouseExitedImpl:(NSEvent *)theEvent;
+@end
+
+@interface QT_MANGLE_NAMESPACE(QNSView) (MouseAPI)
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent;
 - (void)resetMouseButtons;
+@end
 
+@interface QT_MANGLE_NAMESPACE(QNSView) (KeysAPI)
 + (Qt::KeyboardModifiers)convertKeyModifiers:(ulong)modifierFlags;
-- (void)cancelComposingText;
+@end
 
+@interface QT_MANGLE_NAMESPACE(QNSView) (ComplexTextAPI)
+- (void)unmarkText;
+- (void)cancelComposingText;
 @end
 
 @interface QT_MANGLE_NAMESPACE(QNSView) (QtExtras)
