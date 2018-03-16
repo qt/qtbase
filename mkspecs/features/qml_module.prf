@@ -35,9 +35,10 @@ qml1_target {
 
 builtin_resources {
     URITARGET = $$replace(URI, "\\.", "_")
-    # Ensure the QML files are included in the resources. In static builds,
-    # the QML engine reads also the qmldir file from the resources.
-    $${URITARGET}.files = $$qmldir_file $$fq_qml_files
+    # In static builds, the QML engine reads also the qmldir file from the resources.
+    static: $${URITARGET}.files = $$qmldir_file
+    # Ensure the QML files are included in the resources.
+    $${URITARGET}.files += $$fq_qml_files
     # qt-project.org/imports is the path used for locating imports inside the resources
     $${URITARGET}.prefix = /qt-project.org/imports/$$TARGETPATH
     RESOURCES += $${URITARGET}
