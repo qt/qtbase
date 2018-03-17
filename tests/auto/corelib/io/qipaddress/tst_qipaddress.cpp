@@ -288,9 +288,6 @@ void tst_QIpAddress::parseIp6_data()
             << "ffee:ddcc:bbaa:9988:7766:5544:3322:1100"
             << Ip6(0xffee, 0xddcc, 0xbbaa, 0x9988, 0x7766, 0x5544, 0x3322, 0x1100);
 
-    // too many zeroes
-    QTest::newRow("0:0:0:0:0:0:0:00103") << "0:0:0:0:0:0:0:00103" << Ip6(0,0,0,0,0,0,0,0x103);
-
     // double-colon
     QTest::newRow("::1:2:3:4:5:6:7") << "::1:2:3:4:5:6:7" << Ip6(0,1,2,3,4,5,6,7);
     QTest::newRow("1:2:3:4:5:6:7::") << "1:2:3:4:5:6:7::" << Ip6(1,2,3,4,5,6,7,0);
@@ -382,6 +379,9 @@ void tst_QIpAddress::invalidParseIp6_data()
     // too big number
     QTest::newRow("0:0:0:0:0:0:0:10103") << "0:0:0:0:0:0:0:10103";
 
+    // too many zeroes
+    QTest::newRow("0:0:0:0:0:0:0:00103") << "0:0:0:0:0:0:0:00103";
+
     // too short
     QTest::newRow("0:0:0:0:0:0:0:") << "0:0:0:0:0:0:0:";
     QTest::newRow("0:0:0:0:0:0:0") << "0:0:0:0:0:0:0";
@@ -438,6 +438,8 @@ void tst_QIpAddress::invalidParseIp6()
 #if defined(__GLIBC__) && defined(AF_INET6)
     Ip6 inet_result;
     bool inet_ok = inet_pton(AF_INET6, address.toLatin1(), &inet_result.u8);
+    if (__GLIBC_MINOR__ < 26)
+        QEXPECT_FAIL("0:0:0:0:0:0:0:00103", "Bug fixed in glibc 2.26", Continue);
     QVERIFY(!inet_ok);
 #endif
 
