@@ -888,7 +888,11 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
                 // However, this doesn't work for German, therefore only do it for English,
                 // I suppose it would be better to do some sort of lookups for languages
                 // that like to have really long words.
-                ret.setWidth(77 - 8);
+                // FIXME This is not exactly true. Out of context, OK buttons have their
+                // implicit size calculated the same way as any other button. Inside a
+                // QDialogButtonBox, their size should be calculated such that the action
+                // or accept button (i.e., rightmost) and cancel button have the same width.
+                ret.setWidth(69);
             }
         } else {
             // The only sensible thing to do is to return whatever the style suggests...
@@ -6419,16 +6423,33 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         }
         break;
 #endif
-    case QStyle::CT_PushButton:
+    case QStyle::CT_PushButton: {
+        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt))
+            if (btn->features & QStyleOptionButton::CommandLinkButton)
+                return QCommonStyle::sizeFromContents(ct, opt, sz, widget);
+
         // By default, we fit the contents inside a normal rounded push button.
         // Do this by add enough space around the contents so that rounded
         // borders (including highlighting when active) will show.
-        sz.rwidth() += QMacStylePrivate::PushButtonLeftOffset + QMacStylePrivate::PushButtonRightOffset + 12;
-        if (opt->state & QStyle::State_Small)
-            sz.rheight() += 14;
+        // TODO Use QFocusFrame and get rid of these horrors.
+        QSize macsz;
+        const auto controlSize = d->effectiveAquaSizeConstrain(opt, widget, CT_PushButton, sz, &macsz);
+        // FIXME See comment in CT_PushButton case in qt_aqua_get_known_size().
+        if (macsz.width() != -1)
+            sz.setWidth(macsz.width());
         else
-            sz.rheight() += 4;
+            sz.rwidth() += QMacStylePrivate::PushButtonLeftOffset + QMacStylePrivate::PushButtonRightOffset + 12;
+        // All values as measured from HIThemeGetButtonBackgroundBounds()
+        if (controlSize != QStyleHelper::SizeMini)
+            sz.rwidth() += 12; // We like 12 over here.
+        if (controlSize == QStyleHelper::SizeLarge && sz.height() > 16)
+            sz.rheight() += pushButtonDefaultHeight[QStyleHelper::SizeLarge] - 16;
+        else if (controlSize == QStyleHelper::SizeMini)
+            sz.setHeight(24); // FIXME Our previous HITheme-based logic returned this.
+        else
+            sz.setHeight(pushButtonDefaultHeight[controlSize]);
         break;
+    }
     case QStyle::CT_MenuItem:
         if (const QStyleOptionMenuItem *mi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
             int maxpmw = mi->maxIconWidth;
@@ -6535,7 +6556,8 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
     }
 
-    if (useAquaGuideline){
+    if (useAquaGuideline && ct != CT_PushButton) {
+        // TODO Probably going away at some point
         QSize macsz;
         if (d->aquaSizeConstrain(opt, widget, ct, sz, &macsz) != QStyleHelper::SizeDefault) {
             if (macsz.width() != -1)
@@ -6555,42 +6577,17 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         const CGRect diffRect = QMacStylePrivate::comboboxInnerBounds(CGRectZero, cw);
         sz.rwidth() -= qRound(diffRect.size.width);
         sz.rheight() -= qRound(diffRect.size.height);
-    } else if (ct == CT_PushButton || ct == CT_ToolButton){
+    } else if (ct == CT_ToolButton){
         ThemeButtonKind bkind;
         QStyleHelper::WidgetSizePolicy widgetSize = d->aquaSizeConstrain(opt, widget);
-        switch (ct) {
-        default:
-        case CT_PushButton:
-            if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
-                if (btn->features & QStyleOptionButton::CommandLinkButton) {
-                    return QCommonStyle::sizeFromContents(ct, opt, sz, widget);
-                }
-            }
-
-            switch (widgetSize) {
-            case QStyleHelper::SizeDefault:
-            case QStyleHelper::SizeLarge:
-                bkind = kThemePushButton;
-                break;
-            case QStyleHelper::SizeSmall:
-                bkind = kThemePushButtonSmall;
-                break;
-            case QStyleHelper::SizeMini:
-                bkind = kThemePushButtonMini;
-                break;
-            }
+        switch (widgetSize) {
+        case QStyleHelper::SizeDefault:
+        case QStyleHelper::SizeLarge:
+            bkind = kThemeLargeBevelButton;
             break;
-        case CT_ToolButton:
-            switch (widgetSize) {
-            case QStyleHelper::SizeDefault:
-            case QStyleHelper::SizeLarge:
-                bkind = kThemeLargeBevelButton;
-                break;
-            case QStyleHelper::SizeMini:
-            case QStyleHelper::SizeSmall:
-                bkind = kThemeSmallBevelButton;
-            }
-            break;
+        case QStyleHelper::SizeMini:
+        case QStyleHelper::SizeSmall:
+            bkind = kThemeSmallBevelButton;
         }
 
         HIThemeButtonDrawInfo bdi;
