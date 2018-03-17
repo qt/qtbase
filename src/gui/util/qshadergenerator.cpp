@@ -61,6 +61,8 @@ namespace
                 return ""; // Although fragment shaders for <=2 only have fixed outputs
             case QShaderLanguage::Uniform:
                 return "uniform";
+            case QShaderLanguage::BuiltIn:
+                return "//";
             }
         } else {
             switch (qualifier) {
@@ -72,6 +74,8 @@ namespace
                 return "out";
             case QShaderLanguage::Uniform:
                 return "uniform";
+            case QShaderLanguage::BuiltIn:
+                return "//";
             }
         }
 
