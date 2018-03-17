@@ -151,6 +151,8 @@ void *QEglFSKmsIntegration::nativeResourceForScreen(const QByteArray &resource, 
     if (s) {
         if (resource == QByteArrayLiteral("dri_crtcid"))
             return (void *) (qintptr) s->output().crtc_id;
+        if (resource == QByteArrayLiteral("dri_connectorid"))
+            return (void *) (qintptr) s->output().connector_id;
     }
     return nullptr;
 }
