@@ -409,9 +409,6 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     qCDebug(qLcKmsDebug, "Output %s can use %d planes: %s",
             connectorName.constData(), output.available_planes.count(), qPrintable(planeListStr));
 
-    if (output.eglfs_plane)
-        qCDebug(qLcKmsDebug, "Output eglfs plane is: %d", output.eglfs_plane->id);
-
     // This is for the EGLDevice/EGLStream backend. On some of those devices one
     // may want to target a pre-configured plane. It is probably useless for
     // eglfs_kms and others. Do not confuse with generic plane support (available_planes).
@@ -427,6 +424,12 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
                     output.forced_plane_id = plane->plane_id;
                     qCDebug(qLcKmsDebug, "Forcing plane index %d, plane id %u (belongs to crtc id %u)",
                             idx, plane->plane_id, plane->crtc_id);
+
+                    for (const QKmsPlane &kmsplane : qAsConst(m_planes)) {
+                        if (kmsplane.id == output.forced_plane_id)
+                            output.eglfs_plane = (QKmsPlane*)&kmsplane;
+                    }
+
                     drmModeFreePlane(plane);
                 }
             } else {
@@ -434,6 +437,9 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
             }
         }
     }
+
+    if (output.eglfs_plane)
+        qCDebug(qLcKmsDebug, "Output eglfs plane is: %d", output.eglfs_plane->id);
 
     m_crtc_allocator |= (1 << output.crtc_index);
 
