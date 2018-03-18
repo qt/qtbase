@@ -112,6 +112,19 @@ class QWindowsTabletSupport
     explicit QWindowsTabletSupport(HWND window, HCTX context);
 
 public:
+    enum Mode
+    {
+        PenMode,
+        MouseMode
+    };
+
+    enum State
+    {
+        PenUp,
+        PenProximity,
+        PenDown
+    };
+
     ~QWindowsTabletSupport();
 
     static QWindowsTabletSupport *create();
@@ -137,6 +150,8 @@ private:
     QVector<QWindowsTabletDeviceData> m_devices;
     int m_currentDevice;
     QPointF m_oldGlobalPosF;
+    Mode m_mode = PenMode;
+    State m_state = PenUp;
 };
 
 QT_END_NAMESPACE
