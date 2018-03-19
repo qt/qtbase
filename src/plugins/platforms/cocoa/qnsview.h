@@ -58,13 +58,15 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 
 - (instancetype)initWithCocoaWindow:(QCocoaWindow *)platformWindow;
 
+- (void)convertFromScreen:(NSPoint)mouseLocation toWindowPoint:(QPointF *)qtWindowPoint andScreenPoint:(QPointF *)qtScreenPoint;
+
+@end
+
+@interface QT_MANGLE_NAMESPACE(QNSView) (DrawingAPI)
+- (void)requestUpdate;
 #ifndef QT_NO_OPENGL
 - (void)setQCocoaGLContext:(QCocoaGLContext *)context;
 #endif
-
-- (void)convertFromScreen:(NSPoint)mouseLocation toWindowPoint:(QPointF *)qtWindowPoint andScreenPoint:(QPointF *)qtScreenPoint;
-- (void)requestUpdate;
-
 @end
 
 @interface QT_MANGLE_NAMESPACE(QNSView) (MouseAPI)

@@ -74,6 +74,9 @@
 - (BOOL)isTransparentForUserInput;
 @end
 
+@interface QT_MANGLE_NAMESPACE(QNSView) (Drawing)
+@end
+
 @interface QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) : NSObject
 - (instancetype)initWithView:(QNSView *)theView;
 - (void)mouseMoved:(NSEvent *)theEvent;
@@ -231,18 +234,6 @@
     return description;
 }
 
-#ifndef QT_NO_OPENGL
-- (void)setQCocoaGLContext:(QCocoaGLContext *)context
-{
-    m_glContext = context;
-    [m_glContext->nsOpenGLContext() setView:self];
-    if (![m_glContext->nsOpenGLContext() view]) {
-        //was unable to set view
-        m_shouldSetGLContextinDrawRect = true;
-    }
-}
-#endif
-
 - (void)viewDidMoveToSuperview
 {
     if (!m_platformWindow)
@@ -294,107 +285,6 @@
 {
     QMacAutoReleasePool pool;
     [super removeFromSuperview];
-}
-
-- (BOOL)isOpaque
-{
-    if (!m_platformWindow)
-        return true;
-    return m_platformWindow->isOpaque();
-}
-
-- (void)requestUpdate
-{
-    if (self.needsDisplay) {
-        // If the view already has needsDisplay set it means that there may be code waiting for
-        // a real expose event, so we can't issue setNeedsDisplay now as a way to trigger an
-        // update request. We will re-trigger requestUpdate from drawRect.
-        return;
-    }
-
-    [self setNeedsDisplay:YES];
-    m_updateRequested = true;
-}
-
-- (void)setNeedsDisplayInRect:(NSRect)rect
-{
-    [super setNeedsDisplayInRect:rect];
-    m_updateRequested = false;
-}
-
-- (void)drawRect:(NSRect)dirtyRect
-{
-    Q_UNUSED(dirtyRect);
-
-    if (!m_platformWindow)
-        return;
-
-    QRegion exposedRegion;
-    const NSRect *dirtyRects;
-    NSInteger numDirtyRects;
-    [self getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
-    for (int i = 0; i < numDirtyRects; ++i)
-        exposedRegion += QRectF::fromCGRect(dirtyRects[i]).toRect();
-
-    qCDebug(lcQpaDrawing) << "[QNSView drawRect:]" << m_platformWindow->window() << exposedRegion;
-    [self updateRegion:exposedRegion];
-}
-
-- (void)updateRegion:(QRegion)dirtyRegion
-{
-#ifndef QT_NO_OPENGL
-    if (m_glContext && m_shouldSetGLContextinDrawRect) {
-        [m_glContext->nsOpenGLContext() setView:self];
-        m_shouldSetGLContextinDrawRect = false;
-    }
-#endif
-
-    QWindowPrivate *windowPrivate = qt_window_private(m_platformWindow->window());
-
-    if (m_updateRequested) {
-        Q_ASSERT(windowPrivate->updateRequestPending);
-        qCDebug(lcQpaWindow) << "Delivering update request to" << m_platformWindow->window();
-        windowPrivate->deliverUpdateRequest();
-        m_updateRequested = false;
-    } else {
-        m_platformWindow->handleExposeEvent(dirtyRegion);
-    }
-
-    if (windowPrivate->updateRequestPending) {
-        // A call to QWindow::requestUpdate was issued during event delivery above,
-        // but AppKit will reset the needsDisplay state of the view after completing
-        // the current display cycle, so we need to defer the request to redisplay.
-        // FIXME: Perhaps this should be a trigger to enable CADisplayLink?
-        qCDebug(lcQpaDrawing) << "[QNSView drawRect:] issuing deferred setNeedsDisplay due to pending update request";
-        dispatch_async(dispatch_get_main_queue (), ^{ [self requestUpdate]; });
-    }
-}
-
-- (BOOL)wantsUpdateLayer
-{
-    return YES;
-}
-
-- (void)updateLayer
-{
-    if (!m_platformWindow)
-        return;
-
-    qCDebug(lcQpaDrawing) << "[QNSView updateLayer]" << m_platformWindow->window();
-
-    // FIXME: Find out if there's a way to resolve the dirty rect like in drawRect:
-    [self updateRegion:QRectF::fromCGRect(self.bounds).toRect()];
-}
-
-- (void)viewDidChangeBackingProperties
-{
-    if (self.layer)
-        self.layer.contentsScale = self.window.backingScaleFactor;
-}
-
-- (BOOL)isFlipped
-{
-    return YES;
 }
 
 - (BOOL)isTransparentForUserInput
@@ -470,6 +360,7 @@
 
 @end
 
+#include "qnsview_drawing.mm"
 #include "qnsview_mouse.mm"
 #include "qnsview_touch.mm"
 #include "qnsview_gestures.mm"
