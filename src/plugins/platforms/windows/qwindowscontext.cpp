@@ -1075,7 +1075,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::LeaveEvent:
         {
             QWindow *window = platformWindow->window();
-            while (window->flags() & Qt::WindowTransparentForInput)
+            while (window && (window->flags() & Qt::WindowTransparentForInput))
                 window = window->parent();
             if (!window)
                 return false;
