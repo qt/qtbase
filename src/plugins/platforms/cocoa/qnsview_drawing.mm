@@ -136,6 +136,18 @@
     }
 }
 
+- (BOOL)wantsLayer
+{
+    Q_ASSERT(m_platformWindow);
+
+    // Toggling the private QWindow property or the environment variable
+    // on and off is not a supported use-case, so this code is effectively
+    // returning a constant for the lifetime of our QSNSView, which means
+    // we don't care about emitting KVO signals for @"wantsLayer".
+    return qt_mac_resolveOption(false, m_platformWindow->window(),
+        "_q_mac_wantsLayer", "QT_MAC_WANTS_LAYER");
+}
+
 - (void)displayLayer:(CALayer *)layer
 {
     Q_ASSERT(layer == self.layer);

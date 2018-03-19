@@ -195,9 +195,6 @@ void QCocoaWindow::initialize()
             [m_view setWantsBestResolutionOpenGLSurface:enable];
             // See also QCocoaGLContext::makeCurrent for software renderer workarounds.
         }
-        BOOL enable = qt_mac_resolveOption(NO, window(), "_q_mac_wantsLayer",
-                                                     "QT_MAC_WANTS_LAYER");
-        [m_view setWantsLayer:enable];
     }
 
     setGeometry(initialGeometry(window(), windowGeometry(), defaultWindowWidth, defaultWindowHeight));
