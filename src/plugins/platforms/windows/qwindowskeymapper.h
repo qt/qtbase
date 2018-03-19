@@ -90,7 +90,7 @@ public:
     QList<int> possibleKeys(const QKeyEvent *e) const;
 
 private:
-    bool translateKeyEventInternal(QWindow *receiver, const MSG &msg, bool grab);
+    bool translateKeyEventInternal(QWindow *receiver, const MSG &msg, bool grab, LRESULT *lResult);
     bool translateMultimediaKeyEventInternal(QWindow *receiver, const MSG &msg);
     void updateKeyMap(const MSG &msg);
 

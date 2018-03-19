@@ -830,7 +830,7 @@ bool QWindowsKeyMapper::translateKeyEvent(QWindow *widget, HWND hwnd,
     if (PeekMessage(&peekedMsg, hwnd, 0, 0, PM_NOREMOVE) && peekedMsg.message == WM_DEADCHAR)
         return true;
 
-    return translateKeyEventInternal(widget, msg, false);
+    return translateKeyEventInternal(widget, msg, false, result);
 }
 
 bool QWindowsKeyMapper::translateMultimediaKeyEventInternal(QWindow *window, const MSG &msg)
@@ -862,7 +862,7 @@ bool QWindowsKeyMapper::translateMultimediaKeyEventInternal(QWindow *window, con
 #endif
 }
 
-bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &msg, bool /* grab */)
+bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &msg, bool /* grab */, LRESULT *lResult)
 {
     const UINT msgType = msg.message;
 
@@ -1056,6 +1056,10 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
 
         QChar uch;
         if (PeekMessage(&wm_char, 0, charType, charType, PM_REMOVE)) {
+            if (QWindowsContext::filterNativeEvent(&wm_char, lResult))
+                return true;
+            if (receiver && QWindowsContext::filterNativeEvent(receiver, &wm_char, lResult))
+                return true;
             // Found a ?_CHAR
             uch = QChar(ushort(wm_char.wParam));
             if (uch.isHighSurrogate()) {
