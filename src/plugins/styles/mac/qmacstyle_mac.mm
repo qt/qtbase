@@ -3958,8 +3958,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             // takes precedence over a normal default button
             if ((btn->features & QStyleOptionButton::AutoDefaultButton)
                 && isActive && hasFocus)
-                d->autoDefaultButton = opt->styleObject;
-            else if (d->autoDefaultButton == opt->styleObject)
+                d->autoDefaultButton = btn->styleObject;
+            else if (d->autoDefaultButton == btn->styleObject)
                 d->autoDefaultButton = nullptr;
 
             const bool isEnabled = btn->state & State_Enabled;
@@ -3971,7 +3971,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                          && d->autoDefaultButton == btn->styleObject));
             const bool hasMenu = btn->features & QStyleOptionButton::HasMenu;
             const auto ct = cocoaControlType(btn, w);
-            const auto cs = d->effectiveAquaSizeConstrain(opt, w);
+            const auto cs = d->effectiveAquaSizeConstrain(btn, w);
             const auto cw = QMacStylePrivate::CocoaControl(ct, cs);
             auto *pb = static_cast<NSButton *>(d->cocoaControl(cw));
             // Ensure same size and location as we used to have with HITheme.
@@ -4041,7 +4041,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             const bool isActive = btn.state & State_Active;
             const bool isPressed = btn.state & State_Sunken;
 
-            if (!hasMenu) {
+            const auto ct = cocoaControlType(&btn, w);
+
+            if (!hasMenu && ct != QMacStylePrivate::Button_SquareButton) {
                 if (isPressed
                     || (isActive
                         && ((btn.features & QStyleOptionButton::DefaultButton && !d->autoDefaultButton)
