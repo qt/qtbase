@@ -911,7 +911,7 @@ void tst_QWidget_window::setWindowState()
     // Minimizing keeps other states
     w.showMinimized();
     QCOMPARE(w.windowState(), state | Qt::WindowMinimized);
-    QTest::qWait(100);
+    QTest::qWait(200);
     QCOMPARE(w.windowState(), state | Qt::WindowMinimized);
     QCOMPARE(w.windowHandle()->windowStates(), state | Qt::WindowMinimized);
 }
