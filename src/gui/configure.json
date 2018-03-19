@@ -1659,7 +1659,7 @@
             "label": "QClipboard",
             "purpose": "Provides cut and paste operations.",
             "section": "Kernel",
-            "condition": "!config.integrity && !config.qnx",
+            "condition": "!config.integrity && !config.qnx && !config.rtems",
             "output": [ "publicFeature", "feature" ]
         },
         "wheelevent": {
@@ -1803,7 +1803,7 @@
             "label": "Multi process",
             "purpose": "Provides support for detecting the desktop environment, launching external processes and opening URLs.",
             "section": "Utilities",
-            "condition": "!config.integrity",
+            "condition": "!config.integrity && !config.rtems",
             "output": [ "privateFeature" ]
         },
         "whatsthis": {
