@@ -137,17 +137,14 @@
     }
 }
 
-- (BOOL)wantsUpdateLayer
+- (void)displayLayer:(CALayer *)layer
 {
-    return YES;
-}
+    Q_ASSERT(layer == self.layer);
 
-- (void)updateLayer
-{
     if (!m_platformWindow)
         return;
 
-    qCDebug(lcQpaDrawing) << "[QNSView updateLayer]" << m_platformWindow->window();
+    qCDebug(lcQpaDrawing) << "[QNSView displayLayer]" << m_platformWindow->window();
 
     // FIXME: Find out if there's a way to resolve the dirty rect like in drawRect:
     [self updateRegion:QRectF::fromCGRect(self.bounds).toRect()];

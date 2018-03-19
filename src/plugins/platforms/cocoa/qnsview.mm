@@ -74,7 +74,7 @@
 - (BOOL)isTransparentForUserInput;
 @end
 
-@interface QT_MANGLE_NAMESPACE(QNSView) (Drawing)
+@interface QT_MANGLE_NAMESPACE(QNSView) (Drawing) <CALayerDelegate>
 @end
 
 @interface QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) : NSObject
