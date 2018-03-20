@@ -3,10 +3,17 @@
  * Edit at your peril.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stddef.h>  /* for offsetof() */
 #include "xcbext.h"
 #include "render.h"
+
+#define ALIGNOF(type) offsetof(struct { char dummy; type member; }, member)
 #include "xproto.h"
 
 xcb_extension_t xcb_render_id = { "RENDER", 0 };
@@ -315,6 +322,35 @@ xcb_render_pictvisual_end (xcb_render_pictvisual_iterator_t i  /**< */)
     return ret;
 }
 
+int
+xcb_render_pictdepth_sizeof (const void  *_buffer  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    const xcb_render_pictdepth_t *_aux = (xcb_render_pictdepth_t *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_pictdepth_t);
+    xcb_tmp += xcb_block_len;
+    /* visuals */
+    xcb_block_len += _aux->num_visuals * sizeof(xcb_render_pictvisual_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_pictvisual_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
+}
+
 
 /*****************************************************************************
  **
@@ -381,10 +417,11 @@ void
 xcb_render_pictdepth_next (xcb_render_pictdepth_iterator_t *i  /**< */)
 {
     xcb_render_pictdepth_t *R = i->data;
-    xcb_generic_iterator_t child = xcb_render_pictvisual_end(xcb_render_pictdepth_visuals_iterator(R));
+    xcb_generic_iterator_t child;
+    child.data = (xcb_render_pictdepth_t *)(((char *)R) + xcb_render_pictdepth_sizeof(R));
+    i->index = (char *) child.data - (char *) i->data;
     --i->rem;
     i->data = (xcb_render_pictdepth_t *) child.data;
-    i->index = child.index;
 }
 
 
@@ -407,6 +444,40 @@ xcb_render_pictdepth_end (xcb_render_pictdepth_iterator_t i  /**< */)
     ret.rem = i.rem;
     ret.index = i.index;
     return ret;
+}
+
+int
+xcb_render_pictscreen_sizeof (const void  *_buffer  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    const xcb_render_pictscreen_t *_aux = (xcb_render_pictscreen_t *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+    unsigned int i;
+    unsigned int xcb_tmp_len;
+
+    xcb_block_len += sizeof(xcb_render_pictscreen_t);
+    xcb_tmp += xcb_block_len;
+    /* depths */
+    for(i=0; i<_aux->num_depths; i++) {
+        xcb_tmp_len = xcb_render_pictdepth_sizeof(xcb_tmp);
+        xcb_block_len += xcb_tmp_len;
+        xcb_tmp += xcb_tmp_len;
+    }
+    xcb_align_to = ALIGNOF(xcb_render_pictdepth_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -459,10 +530,11 @@ void
 xcb_render_pictscreen_next (xcb_render_pictscreen_iterator_t *i  /**< */)
 {
     xcb_render_pictscreen_t *R = i->data;
-    xcb_generic_iterator_t child = xcb_render_pictdepth_end(xcb_render_pictscreen_depths_iterator(R));
+    xcb_generic_iterator_t child;
+    child.data = (xcb_render_pictscreen_t *)(((char *)R) + xcb_render_pictscreen_sizeof(R));
+    i->index = (char *) child.data - (char *) i->data;
     --i->rem;
     i->data = (xcb_render_pictscreen_t *) child.data;
-    i->index = child.index;
 }
 
 
@@ -788,6 +860,7 @@ xcb_render_query_version (xcb_connection_t *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -827,6 +900,7 @@ xcb_render_query_version_unchecked (xcb_connection_t *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -849,6 +923,64 @@ xcb_render_query_version_reply (xcb_connection_t                   *c  /**< */,
                                 xcb_generic_error_t               **e  /**< */)
 {
     return (xcb_render_query_version_reply_t *) xcb_wait_for_reply(c, cookie.sequence, e);
+}
+
+int
+xcb_render_query_pict_formats_sizeof (const void  *_buffer  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    const xcb_render_query_pict_formats_reply_t *_aux = (xcb_render_query_pict_formats_reply_t *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+    unsigned int i;
+    unsigned int xcb_tmp_len;
+
+    xcb_block_len += sizeof(xcb_render_query_pict_formats_reply_t);
+    xcb_tmp += xcb_block_len;
+    /* formats */
+    xcb_block_len += _aux->num_formats * sizeof(xcb_render_pictforminfo_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_pictforminfo_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+    /* screens */
+    for(i=0; i<_aux->num_screens; i++) {
+        xcb_tmp_len = xcb_render_pictscreen_sizeof(xcb_tmp);
+        xcb_block_len += xcb_tmp_len;
+        xcb_tmp += xcb_tmp_len;
+    }
+    xcb_align_to = ALIGNOF(xcb_render_pictscreen_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+    /* subpixels */
+    xcb_block_len += _aux->num_subpixel * sizeof(uint32_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(uint32_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -880,6 +1012,7 @@ xcb_render_query_pict_formats (xcb_connection_t *c  /**< */)
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -913,6 +1046,7 @@ xcb_render_query_pict_formats_unchecked (xcb_connection_t *c  /**< */)
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -1080,6 +1214,35 @@ xcb_render_query_pict_formats_reply (xcb_connection_t                        *c 
     return (xcb_render_query_pict_formats_reply_t *) xcb_wait_for_reply(c, cookie.sequence, e);
 }
 
+int
+xcb_render_query_pict_index_values_sizeof (const void  *_buffer  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    const xcb_render_query_pict_index_values_reply_t *_aux = (xcb_render_query_pict_index_values_reply_t *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_query_pict_index_values_reply_t);
+    xcb_tmp += xcb_block_len;
+    /* values */
+    xcb_block_len += _aux->num_values * sizeof(xcb_render_indexvalue_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_indexvalue_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
+}
+
 
 /*****************************************************************************
  **
@@ -1112,6 +1275,7 @@ xcb_render_query_pict_index_values (xcb_connection_t        *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -1148,6 +1312,7 @@ xcb_render_query_pict_index_values_unchecked (xcb_connection_t        *c  /**< *
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -1224,6 +1389,35 @@ xcb_render_query_pict_index_values_reply (xcb_connection_t                      
     return (xcb_render_query_pict_index_values_reply_t *) xcb_wait_for_reply(c, cookie.sequence, e);
 }
 
+int
+xcb_render_create_picture_sizeof (const void  *_buffer  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    const xcb_render_create_picture_request_t *_aux = (xcb_render_create_picture_request_t *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_create_picture_request_t);
+    xcb_tmp += xcb_block_len;
+    /* value_list */
+    xcb_block_len += xcb_popcount(_aux->value_mask) * sizeof(uint32_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(uint32_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
+}
+
 
 /*****************************************************************************
  **
@@ -1267,10 +1461,12 @@ xcb_render_create_picture_checked (xcb_connection_t        *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* uint32_t value_list */
     xcb_parts[4].iov_base = (char *) value_list;
     xcb_parts[4].iov_len = xcb_popcount(value_mask) * sizeof(uint32_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -1318,12 +1514,43 @@ xcb_render_create_picture (xcb_connection_t        *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* uint32_t value_list */
     xcb_parts[4].iov_base = (char *) value_list;
     xcb_parts[4].iov_len = xcb_popcount(value_mask) * sizeof(uint32_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
+}
+
+int
+xcb_render_change_picture_sizeof (const void  *_buffer  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    const xcb_render_change_picture_request_t *_aux = (xcb_render_change_picture_request_t *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_change_picture_request_t);
+    xcb_tmp += xcb_block_len;
+    /* value_list */
+    xcb_block_len += xcb_popcount(_aux->value_mask) * sizeof(uint32_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(uint32_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -1363,10 +1590,12 @@ xcb_render_change_picture_checked (xcb_connection_t     *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* uint32_t value_list */
     xcb_parts[4].iov_base = (char *) value_list;
     xcb_parts[4].iov_len = xcb_popcount(value_mask) * sizeof(uint32_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -1408,12 +1637,43 @@ xcb_render_change_picture (xcb_connection_t     *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* uint32_t value_list */
     xcb_parts[4].iov_base = (char *) value_list;
     xcb_parts[4].iov_len = xcb_popcount(value_mask) * sizeof(uint32_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
+}
+
+int
+xcb_render_set_picture_clip_rectangles_sizeof (const void  *_buffer  /**< */,
+                                               uint32_t     rectangles_len  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_set_picture_clip_rectangles_request_t);
+    xcb_tmp += xcb_block_len;
+    /* rectangles */
+    xcb_block_len += rectangles_len * sizeof(xcb_rectangle_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_rectangle_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -1458,10 +1718,12 @@ xcb_render_set_picture_clip_rectangles_checked (xcb_connection_t      *c  /**< *
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_rectangle_t rectangles */
     xcb_parts[4].iov_base = (char *) rectangles;
     xcb_parts[4].iov_len = rectangles_len * sizeof(xcb_rectangle_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -1508,10 +1770,12 @@ xcb_render_set_picture_clip_rectangles (xcb_connection_t      *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_rectangle_t rectangles */
     xcb_parts[4].iov_base = (char *) rectangles;
     xcb_parts[4].iov_len = rectangles_len * sizeof(xcb_rectangle_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -1548,6 +1812,7 @@ xcb_render_free_picture_checked (xcb_connection_t     *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -1584,6 +1849,7 @@ xcb_render_free_picture (xcb_connection_t     *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -1654,6 +1920,7 @@ xcb_render_composite_checked (xcb_connection_t     *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -1724,8 +1991,38 @@ xcb_render_composite (xcb_connection_t     *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
+}
+
+int
+xcb_render_trapezoids_sizeof (const void  *_buffer  /**< */,
+                              uint32_t     traps_len  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_trapezoids_request_t);
+    xcb_tmp += xcb_block_len;
+    /* traps */
+    xcb_block_len += traps_len * sizeof(xcb_render_trapezoid_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_trapezoid_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -1780,10 +2077,12 @@ xcb_render_trapezoids_checked (xcb_connection_t             *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_trapezoid_t traps */
     xcb_parts[4].iov_base = (char *) traps;
     xcb_parts[4].iov_len = traps_len * sizeof(xcb_render_trapezoid_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -1840,12 +2139,43 @@ xcb_render_trapezoids (xcb_connection_t             *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_trapezoid_t traps */
     xcb_parts[4].iov_base = (char *) traps;
     xcb_parts[4].iov_len = traps_len * sizeof(xcb_render_trapezoid_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
+}
+
+int
+xcb_render_triangles_sizeof (const void  *_buffer  /**< */,
+                             uint32_t     triangles_len  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_triangles_request_t);
+    xcb_tmp += xcb_block_len;
+    /* triangles */
+    xcb_block_len += triangles_len * sizeof(xcb_render_triangle_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_triangle_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -1900,10 +2230,12 @@ xcb_render_triangles_checked (xcb_connection_t            *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_triangle_t triangles */
     xcb_parts[4].iov_base = (char *) triangles;
     xcb_parts[4].iov_len = triangles_len * sizeof(xcb_render_triangle_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -1960,12 +2292,43 @@ xcb_render_triangles (xcb_connection_t            *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_triangle_t triangles */
     xcb_parts[4].iov_base = (char *) triangles;
     xcb_parts[4].iov_len = triangles_len * sizeof(xcb_render_triangle_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
+}
+
+int
+xcb_render_tri_strip_sizeof (const void  *_buffer  /**< */,
+                             uint32_t     points_len  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_tri_strip_request_t);
+    xcb_tmp += xcb_block_len;
+    /* points */
+    xcb_block_len += points_len * sizeof(xcb_render_pointfix_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_pointfix_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -2020,10 +2383,12 @@ xcb_render_tri_strip_checked (xcb_connection_t            *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_pointfix_t points */
     xcb_parts[4].iov_base = (char *) points;
     xcb_parts[4].iov_len = points_len * sizeof(xcb_render_pointfix_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -2080,12 +2445,43 @@ xcb_render_tri_strip (xcb_connection_t            *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_pointfix_t points */
     xcb_parts[4].iov_base = (char *) points;
     xcb_parts[4].iov_len = points_len * sizeof(xcb_render_pointfix_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
+}
+
+int
+xcb_render_tri_fan_sizeof (const void  *_buffer  /**< */,
+                           uint32_t     points_len  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_tri_fan_request_t);
+    xcb_tmp += xcb_block_len;
+    /* points */
+    xcb_block_len += points_len * sizeof(xcb_render_pointfix_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_pointfix_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -2140,10 +2536,12 @@ xcb_render_tri_fan_checked (xcb_connection_t            *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_pointfix_t points */
     xcb_parts[4].iov_base = (char *) points;
     xcb_parts[4].iov_len = points_len * sizeof(xcb_render_pointfix_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -2200,10 +2598,12 @@ xcb_render_tri_fan (xcb_connection_t            *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_pointfix_t points */
     xcb_parts[4].iov_base = (char *) points;
     xcb_parts[4].iov_len = points_len * sizeof(xcb_render_pointfix_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -2243,6 +2643,7 @@ xcb_render_create_glyph_set_checked (xcb_connection_t        *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -2282,6 +2683,7 @@ xcb_render_create_glyph_set (xcb_connection_t        *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -2321,6 +2723,7 @@ xcb_render_reference_glyph_set_checked (xcb_connection_t      *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -2360,6 +2763,7 @@ xcb_render_reference_glyph_set (xcb_connection_t      *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -2396,6 +2800,7 @@ xcb_render_free_glyph_set_checked (xcb_connection_t      *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -2432,8 +2837,63 @@ xcb_render_free_glyph_set (xcb_connection_t      *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
+}
+
+int
+xcb_render_add_glyphs_sizeof (const void  *_buffer  /**< */,
+                              uint32_t     data_len  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    const xcb_render_add_glyphs_request_t *_aux = (xcb_render_add_glyphs_request_t *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_add_glyphs_request_t);
+    xcb_tmp += xcb_block_len;
+    /* glyphids */
+    xcb_block_len += _aux->glyphs_len * sizeof(uint32_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(uint32_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+    /* glyphs */
+    xcb_block_len += _aux->glyphs_len * sizeof(xcb_render_glyphinfo_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_glyphinfo_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+    /* data */
+    xcb_block_len += data_len * sizeof(uint8_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(uint8_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -2479,18 +2939,22 @@ xcb_render_add_glyphs_checked (xcb_connection_t             *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* uint32_t glyphids */
     xcb_parts[4].iov_base = (char *) glyphids;
     xcb_parts[4].iov_len = glyphs_len * sizeof(uint32_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    /* xcb_render_glyphinfo_t glyphs */
     xcb_parts[6].iov_base = (char *) glyphs;
     xcb_parts[6].iov_len = glyphs_len * sizeof(xcb_render_glyphinfo_t);
     xcb_parts[7].iov_base = 0;
     xcb_parts[7].iov_len = -xcb_parts[6].iov_len & 3;
+    /* uint8_t data */
     xcb_parts[8].iov_base = (char *) data;
     xcb_parts[8].iov_len = data_len * sizeof(uint8_t);
     xcb_parts[9].iov_base = 0;
     xcb_parts[9].iov_len = -xcb_parts[8].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -2538,20 +3002,53 @@ xcb_render_add_glyphs (xcb_connection_t             *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* uint32_t glyphids */
     xcb_parts[4].iov_base = (char *) glyphids;
     xcb_parts[4].iov_len = glyphs_len * sizeof(uint32_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    /* xcb_render_glyphinfo_t glyphs */
     xcb_parts[6].iov_base = (char *) glyphs;
     xcb_parts[6].iov_len = glyphs_len * sizeof(xcb_render_glyphinfo_t);
     xcb_parts[7].iov_base = 0;
     xcb_parts[7].iov_len = -xcb_parts[6].iov_len & 3;
+    /* uint8_t data */
     xcb_parts[8].iov_base = (char *) data;
     xcb_parts[8].iov_len = data_len * sizeof(uint8_t);
     xcb_parts[9].iov_base = 0;
     xcb_parts[9].iov_len = -xcb_parts[8].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
+}
+
+int
+xcb_render_free_glyphs_sizeof (const void  *_buffer  /**< */,
+                               uint32_t     glyphs_len  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_free_glyphs_request_t);
+    xcb_tmp += xcb_block_len;
+    /* glyphs */
+    xcb_block_len += glyphs_len * sizeof(xcb_render_glyph_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_glyph_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -2590,10 +3087,12 @@ xcb_render_free_glyphs_checked (xcb_connection_t         *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_glyph_t glyphs */
     xcb_parts[4].iov_base = (char *) glyphs;
     xcb_parts[4].iov_len = glyphs_len * sizeof(xcb_render_glyph_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -2634,12 +3133,43 @@ xcb_render_free_glyphs (xcb_connection_t         *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_glyph_t glyphs */
     xcb_parts[4].iov_base = (char *) glyphs;
     xcb_parts[4].iov_len = glyphs_len * sizeof(xcb_render_glyph_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
+}
+
+int
+xcb_render_composite_glyphs_8_sizeof (const void  *_buffer  /**< */,
+                                      uint32_t     glyphcmds_len  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_composite_glyphs_8_request_t);
+    xcb_tmp += xcb_block_len;
+    /* glyphcmds */
+    xcb_block_len += glyphcmds_len * sizeof(uint8_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(uint8_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -2697,10 +3227,12 @@ xcb_render_composite_glyphs_8_checked (xcb_connection_t        *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* uint8_t glyphcmds */
     xcb_parts[4].iov_base = (char *) glyphcmds;
     xcb_parts[4].iov_len = glyphcmds_len * sizeof(uint8_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -2760,12 +3292,43 @@ xcb_render_composite_glyphs_8 (xcb_connection_t        *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* uint8_t glyphcmds */
     xcb_parts[4].iov_base = (char *) glyphcmds;
     xcb_parts[4].iov_len = glyphcmds_len * sizeof(uint8_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
+}
+
+int
+xcb_render_composite_glyphs_16_sizeof (const void  *_buffer  /**< */,
+                                       uint32_t     glyphcmds_len  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_composite_glyphs_16_request_t);
+    xcb_tmp += xcb_block_len;
+    /* glyphcmds */
+    xcb_block_len += glyphcmds_len * sizeof(uint8_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(uint8_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -2823,10 +3386,12 @@ xcb_render_composite_glyphs_16_checked (xcb_connection_t        *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* uint8_t glyphcmds */
     xcb_parts[4].iov_base = (char *) glyphcmds;
     xcb_parts[4].iov_len = glyphcmds_len * sizeof(uint8_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -2886,12 +3451,43 @@ xcb_render_composite_glyphs_16 (xcb_connection_t        *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* uint8_t glyphcmds */
     xcb_parts[4].iov_base = (char *) glyphcmds;
     xcb_parts[4].iov_len = glyphcmds_len * sizeof(uint8_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
+}
+
+int
+xcb_render_composite_glyphs_32_sizeof (const void  *_buffer  /**< */,
+                                       uint32_t     glyphcmds_len  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_composite_glyphs_32_request_t);
+    xcb_tmp += xcb_block_len;
+    /* glyphcmds */
+    xcb_block_len += glyphcmds_len * sizeof(uint8_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(uint8_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -2949,10 +3545,12 @@ xcb_render_composite_glyphs_32_checked (xcb_connection_t        *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* uint8_t glyphcmds */
     xcb_parts[4].iov_base = (char *) glyphcmds;
     xcb_parts[4].iov_len = glyphcmds_len * sizeof(uint8_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -3012,12 +3610,43 @@ xcb_render_composite_glyphs_32 (xcb_connection_t        *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* uint8_t glyphcmds */
     xcb_parts[4].iov_base = (char *) glyphcmds;
     xcb_parts[4].iov_len = glyphcmds_len * sizeof(uint8_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
+}
+
+int
+xcb_render_fill_rectangles_sizeof (const void  *_buffer  /**< */,
+                                   uint32_t     rects_len  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_fill_rectangles_request_t);
+    xcb_tmp += xcb_block_len;
+    /* rects */
+    xcb_block_len += rects_len * sizeof(xcb_rectangle_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_rectangle_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -3063,10 +3692,12 @@ xcb_render_fill_rectangles_checked (xcb_connection_t      *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_rectangle_t rects */
     xcb_parts[4].iov_base = (char *) rects;
     xcb_parts[4].iov_len = rects_len * sizeof(xcb_rectangle_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -3114,10 +3745,12 @@ xcb_render_fill_rectangles (xcb_connection_t      *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_rectangle_t rects */
     xcb_parts[4].iov_base = (char *) rects;
     xcb_parts[4].iov_len = rects_len * sizeof(xcb_rectangle_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -3163,6 +3796,7 @@ xcb_render_create_cursor_checked (xcb_connection_t     *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -3208,6 +3842,7 @@ xcb_render_create_cursor (xcb_connection_t     *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -3285,6 +3920,7 @@ xcb_render_set_picture_transform_checked (xcb_connection_t       *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -3324,8 +3960,55 @@ xcb_render_set_picture_transform (xcb_connection_t       *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
+}
+
+int
+xcb_render_query_filters_sizeof (const void  *_buffer  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    const xcb_render_query_filters_reply_t *_aux = (xcb_render_query_filters_reply_t *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+    unsigned int i;
+    unsigned int xcb_tmp_len;
+
+    xcb_block_len += sizeof(xcb_render_query_filters_reply_t);
+    xcb_tmp += xcb_block_len;
+    /* aliases */
+    xcb_block_len += _aux->num_aliases * sizeof(uint16_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(uint16_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+    /* filters */
+    for(i=0; i<_aux->num_filters; i++) {
+        xcb_tmp_len = xcb_str_sizeof(xcb_tmp);
+        xcb_block_len += xcb_tmp_len;
+        xcb_tmp += xcb_tmp_len;
+    }
+    xcb_align_to = ALIGNOF(xcb_str_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -3360,6 +4043,7 @@ xcb_render_query_filters (xcb_connection_t *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -3396,6 +4080,7 @@ xcb_render_query_filters_unchecked (xcb_connection_t *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -3509,6 +4194,48 @@ xcb_render_query_filters_reply (xcb_connection_t                   *c  /**< */,
     return (xcb_render_query_filters_reply_t *) xcb_wait_for_reply(c, cookie.sequence, e);
 }
 
+int
+xcb_render_set_picture_filter_sizeof (const void  *_buffer  /**< */,
+                                      uint32_t     values_len  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    const xcb_render_set_picture_filter_request_t *_aux = (xcb_render_set_picture_filter_request_t *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_set_picture_filter_request_t);
+    xcb_tmp += xcb_block_len;
+    /* filter */
+    xcb_block_len += _aux->filter_len * sizeof(char);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(char);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+    /* values */
+    xcb_block_len += values_len * sizeof(xcb_render_fixed_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_fixed_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
+}
+
 
 /*****************************************************************************
  **
@@ -3551,14 +4278,17 @@ xcb_render_set_picture_filter_checked (xcb_connection_t         *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* char filter */
     xcb_parts[4].iov_base = (char *) filter;
     xcb_parts[4].iov_len = filter_len * sizeof(char);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    /* xcb_render_fixed_t values */
     xcb_parts[6].iov_base = (char *) values;
     xcb_parts[6].iov_len = values_len * sizeof(xcb_render_fixed_t);
     xcb_parts[7].iov_base = 0;
     xcb_parts[7].iov_len = -xcb_parts[6].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -3605,14 +4335,17 @@ xcb_render_set_picture_filter (xcb_connection_t         *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* char filter */
     xcb_parts[4].iov_base = (char *) filter;
     xcb_parts[4].iov_len = filter_len * sizeof(char);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    /* xcb_render_fixed_t values */
     xcb_parts[6].iov_base = (char *) values;
     xcb_parts[6].iov_len = values_len * sizeof(xcb_render_fixed_t);
     xcb_parts[7].iov_base = 0;
     xcb_parts[7].iov_len = -xcb_parts[6].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -3655,6 +4388,35 @@ xcb_render_animcursorelt_end (xcb_render_animcursorelt_iterator_t i  /**< */)
     return ret;
 }
 
+int
+xcb_render_create_anim_cursor_sizeof (const void  *_buffer  /**< */,
+                                      uint32_t     cursors_len  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_create_anim_cursor_request_t);
+    xcb_tmp += xcb_block_len;
+    /* cursors */
+    xcb_block_len += cursors_len * sizeof(xcb_render_animcursorelt_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_animcursorelt_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
+}
+
 
 /*****************************************************************************
  **
@@ -3691,10 +4453,12 @@ xcb_render_create_anim_cursor_checked (xcb_connection_t                 *c  /**<
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_animcursorelt_t cursors */
     xcb_parts[4].iov_base = (char *) cursors;
     xcb_parts[4].iov_len = cursors_len * sizeof(xcb_render_animcursorelt_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -3735,10 +4499,12 @@ xcb_render_create_anim_cursor (xcb_connection_t                 *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_animcursorelt_t cursors */
     xcb_parts[4].iov_base = (char *) cursors;
     xcb_parts[4].iov_len = cursors_len * sizeof(xcb_render_animcursorelt_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -3819,6 +4585,35 @@ xcb_render_trap_end (xcb_render_trap_iterator_t i  /**< */)
     return ret;
 }
 
+int
+xcb_render_add_traps_sizeof (const void  *_buffer  /**< */,
+                             uint32_t     traps_len  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_add_traps_request_t);
+    xcb_tmp += xcb_block_len;
+    /* traps */
+    xcb_block_len += traps_len * sizeof(xcb_render_trap_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_trap_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
+}
+
 
 /*****************************************************************************
  **
@@ -3861,10 +4656,12 @@ xcb_render_add_traps_checked (xcb_connection_t        *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_trap_t traps */
     xcb_parts[4].iov_base = (char *) traps;
     xcb_parts[4].iov_len = traps_len * sizeof(xcb_render_trap_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -3911,10 +4708,12 @@ xcb_render_add_traps (xcb_connection_t        *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_trap_t traps */
     xcb_parts[4].iov_base = (char *) traps;
     xcb_parts[4].iov_len = traps_len * sizeof(xcb_render_trap_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -3954,6 +4753,7 @@ xcb_render_create_solid_fill_checked (xcb_connection_t     *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -3993,8 +4793,50 @@ xcb_render_create_solid_fill (xcb_connection_t     *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
+}
+
+int
+xcb_render_create_linear_gradient_sizeof (const void  *_buffer  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    const xcb_render_create_linear_gradient_request_t *_aux = (xcb_render_create_linear_gradient_request_t *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_create_linear_gradient_request_t);
+    xcb_tmp += xcb_block_len;
+    /* stops */
+    xcb_block_len += _aux->num_stops * sizeof(xcb_render_fixed_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_fixed_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+    /* colors */
+    xcb_block_len += _aux->num_stops * sizeof(xcb_render_color_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_color_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -4042,14 +4884,17 @@ xcb_render_create_linear_gradient_checked (xcb_connection_t         *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_fixed_t stops */
     xcb_parts[4].iov_base = (char *) stops;
     xcb_parts[4].iov_len = num_stops * sizeof(xcb_render_fixed_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    /* xcb_render_color_t colors */
     xcb_parts[6].iov_base = (char *) colors;
     xcb_parts[6].iov_len = num_stops * sizeof(xcb_render_color_t);
     xcb_parts[7].iov_base = 0;
     xcb_parts[7].iov_len = -xcb_parts[6].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -4099,16 +4944,60 @@ xcb_render_create_linear_gradient (xcb_connection_t         *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_fixed_t stops */
     xcb_parts[4].iov_base = (char *) stops;
     xcb_parts[4].iov_len = num_stops * sizeof(xcb_render_fixed_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    /* xcb_render_color_t colors */
     xcb_parts[6].iov_base = (char *) colors;
     xcb_parts[6].iov_len = num_stops * sizeof(xcb_render_color_t);
     xcb_parts[7].iov_base = 0;
     xcb_parts[7].iov_len = -xcb_parts[6].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
+}
+
+int
+xcb_render_create_radial_gradient_sizeof (const void  *_buffer  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    const xcb_render_create_radial_gradient_request_t *_aux = (xcb_render_create_radial_gradient_request_t *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_create_radial_gradient_request_t);
+    xcb_tmp += xcb_block_len;
+    /* stops */
+    xcb_block_len += _aux->num_stops * sizeof(xcb_render_fixed_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_fixed_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+    /* colors */
+    xcb_block_len += _aux->num_stops * sizeof(xcb_render_color_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_color_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -4162,14 +5051,17 @@ xcb_render_create_radial_gradient_checked (xcb_connection_t         *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_fixed_t stops */
     xcb_parts[4].iov_base = (char *) stops;
     xcb_parts[4].iov_len = num_stops * sizeof(xcb_render_fixed_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    /* xcb_render_color_t colors */
     xcb_parts[6].iov_base = (char *) colors;
     xcb_parts[6].iov_len = num_stops * sizeof(xcb_render_color_t);
     xcb_parts[7].iov_base = 0;
     xcb_parts[7].iov_len = -xcb_parts[6].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -4225,16 +5117,60 @@ xcb_render_create_radial_gradient (xcb_connection_t         *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_fixed_t stops */
     xcb_parts[4].iov_base = (char *) stops;
     xcb_parts[4].iov_len = num_stops * sizeof(xcb_render_fixed_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    /* xcb_render_color_t colors */
     xcb_parts[6].iov_base = (char *) colors;
     xcb_parts[6].iov_len = num_stops * sizeof(xcb_render_color_t);
     xcb_parts[7].iov_base = 0;
     xcb_parts[7].iov_len = -xcb_parts[6].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
+}
+
+int
+xcb_render_create_conical_gradient_sizeof (const void  *_buffer  /**< */)
+{
+    char *xcb_tmp = (char *)_buffer;
+    const xcb_render_create_conical_gradient_request_t *_aux = (xcb_render_create_conical_gradient_request_t *)_buffer;
+    unsigned int xcb_buffer_len = 0;
+    unsigned int xcb_block_len = 0;
+    unsigned int xcb_pad = 0;
+    unsigned int xcb_align_to;
+
+
+    xcb_block_len += sizeof(xcb_render_create_conical_gradient_request_t);
+    xcb_tmp += xcb_block_len;
+    /* stops */
+    xcb_block_len += _aux->num_stops * sizeof(xcb_render_fixed_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_fixed_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+    /* colors */
+    xcb_block_len += _aux->num_stops * sizeof(xcb_render_color_t);
+    xcb_tmp += xcb_block_len;
+    xcb_align_to = ALIGNOF(xcb_render_color_t);
+    /* insert padding */
+    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+    xcb_buffer_len += xcb_block_len + xcb_pad;
+    if (0 != xcb_pad) {
+        xcb_tmp += xcb_pad;
+        xcb_pad = 0;
+    }
+    xcb_block_len = 0;
+
+    return xcb_buffer_len;
 }
 
 
@@ -4282,14 +5218,17 @@ xcb_render_create_conical_gradient_checked (xcb_connection_t         *c  /**< */
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_fixed_t stops */
     xcb_parts[4].iov_base = (char *) stops;
     xcb_parts[4].iov_len = num_stops * sizeof(xcb_render_fixed_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    /* xcb_render_color_t colors */
     xcb_parts[6].iov_base = (char *) colors;
     xcb_parts[6].iov_len = num_stops * sizeof(xcb_render_color_t);
     xcb_parts[7].iov_base = 0;
     xcb_parts[7].iov_len = -xcb_parts[6].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, XCB_REQUEST_CHECKED, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }
@@ -4339,14 +5278,17 @@ xcb_render_create_conical_gradient (xcb_connection_t         *c  /**< */,
     xcb_parts[2].iov_len = sizeof(xcb_out);
     xcb_parts[3].iov_base = 0;
     xcb_parts[3].iov_len = -xcb_parts[2].iov_len & 3;
+    /* xcb_render_fixed_t stops */
     xcb_parts[4].iov_base = (char *) stops;
     xcb_parts[4].iov_len = num_stops * sizeof(xcb_render_fixed_t);
     xcb_parts[5].iov_base = 0;
     xcb_parts[5].iov_len = -xcb_parts[4].iov_len & 3;
+    /* xcb_render_color_t colors */
     xcb_parts[6].iov_base = (char *) colors;
     xcb_parts[6].iov_len = num_stops * sizeof(xcb_render_color_t);
     xcb_parts[7].iov_base = 0;
     xcb_parts[7].iov_len = -xcb_parts[6].iov_len & 3;
+    
     xcb_ret.sequence = xcb_send_request(c, 0, xcb_parts + 2, &xcb_req);
     return xcb_ret;
 }

@@ -439,18 +439,18 @@
             ]
         },
         "xcb": {
-            "label": "XCB >= 1.5 (core)",
+            "label": "XCB >= 1.9 (core)",
             "test": {
                 "include": "xcb/xcb.h",
                 "main": [
                     "int primaryScreen = 0;",
                     "(void)xcb_connect(\"\", &primaryScreen);",
-                    "// This won't compile unless libxcb >= 1.5 which defines XCB_ATOM_PRIMARY.",
-                    "int xcbAtomPrimary = XCB_ATOM_PRIMARY;"
+                    "// This won't compile unless libxcb >= 1.9 which defines XCB_CONN_CLOSED_INVALID_SCREEN.",
+                    "int xcbScreenError = XCB_CONN_CLOSED_INVALID_SCREEN;"
                 ]
             },
             "sources": [
-                { "type": "pkgConfig", "args": "xcb >= 1.5" },
+                { "type": "pkgConfig", "args": "xcb >= 1.9" },
                 "-lxcb"
             ]
         },

@@ -18,15 +18,6 @@
 
 xcb_extension_t xcb_xkb_id = { "XKEYBOARD", 0 };
 
-int qt_xcb_sumof(uint8_t *list, int len)
-{
-    int i, s = 0;
-    for(i=0; i<len; i++) {
-        s += *list;
-        list++;
-    }
-    return s;
-}
 
 /*****************************************************************************
  **
@@ -9034,7 +9025,7 @@ int
 xcb_xkb_get_names_value_list_kt_level_names_length (const xcb_xkb_get_names_reply_t *R  /**< */,
                                                     const xcb_xkb_get_names_value_list_t *S  /**< */)
 {
-    return qt_xcb_sumof(/* valueList */ S->nLevelsPerType, R->nTypes);
+    return xcb_sumof(/* valueList */ S->nLevelsPerType, R->nTypes);
 }
 
 
@@ -9052,7 +9043,7 @@ xcb_xkb_get_names_value_list_kt_level_names_end (const xcb_xkb_get_names_reply_t
                                                  const xcb_xkb_get_names_value_list_t *S  /**< */)
 {
     xcb_generic_iterator_t i;
-    i.data = /* valueList */ S->ktLevelNames + qt_xcb_sumof(/* valueList */ S->nLevelsPerType, R->nTypes);
+    i.data = /* valueList */ S->ktLevelNames + xcb_sumof(/* valueList */ S->nLevelsPerType, R->nTypes);
     i.rem = 0;
     i.index = (char *) i.data - (char *) S;
     return i;
@@ -9517,8 +9508,8 @@ xcb_xkb_get_names_value_list_serialize (void                                 **_
         xcb_block_len = 0;
         /* ktLevelNames */
         xcb_parts[xcb_parts_idx].iov_base = (char *) _aux->ktLevelNames;
-        xcb_block_len += qt_xcb_sumof(_aux->nLevelsPerType, nTypes) * sizeof(xcb_atom_t);
-        xcb_parts[xcb_parts_idx].iov_len = qt_xcb_sumof(_aux->nLevelsPerType, nTypes) * sizeof(xcb_atom_t);
+        xcb_block_len += xcb_sumof(_aux->nLevelsPerType, nTypes) * sizeof(xcb_atom_t);
+        xcb_parts[xcb_parts_idx].iov_len = xcb_sumof(_aux->nLevelsPerType, nTypes) * sizeof(xcb_atom_t);
         xcb_parts_idx++;
         xcb_align_to = ALIGNOF(xcb_atom_t);
     }
@@ -9771,7 +9762,7 @@ xcb_xkb_get_names_value_list_unpack (const void                      *_buffer  /
         xcb_block_len = 0;
         /* ktLevelNames */
         _aux->ktLevelNames = (xcb_atom_t *)xcb_tmp;
-        xcb_block_len += qt_xcb_sumof(_aux->nLevelsPerType, nTypes) * sizeof(xcb_atom_t);
+        xcb_block_len += xcb_sumof(_aux->nLevelsPerType, nTypes) * sizeof(xcb_atom_t);
         xcb_tmp += xcb_block_len;
         xcb_align_to = ALIGNOF(xcb_atom_t);
     }
@@ -10148,7 +10139,7 @@ int
 xcb_xkb_set_names_values_kt_level_names_length (const xcb_xkb_set_names_request_t *R  /**< */,
                                                 const xcb_xkb_set_names_values_t *S  /**< */)
 {
-    return qt_xcb_sumof(/* values */ S->nLevelsPerType, R->nKTLevels);
+    return xcb_sumof(/* values */ S->nLevelsPerType, R->nKTLevels);
 }
 
 
@@ -10166,7 +10157,7 @@ xcb_xkb_set_names_values_kt_level_names_end (const xcb_xkb_set_names_request_t *
                                              const xcb_xkb_set_names_values_t *S  /**< */)
 {
     xcb_generic_iterator_t i;
-    i.data = /* values */ S->ktLevelNames + qt_xcb_sumof(/* values */ S->nLevelsPerType, R->nKTLevels);
+    i.data = /* values */ S->ktLevelNames + xcb_sumof(/* values */ S->nLevelsPerType, R->nKTLevels);
     i.rem = 0;
     i.index = (char *) i.data - (char *) S;
     return i;
@@ -10616,8 +10607,8 @@ xcb_xkb_set_names_values_serialize (void                             **_buffer  
         xcb_block_len = 0;
         /* ktLevelNames */
         xcb_parts[xcb_parts_idx].iov_base = (char *) _aux->ktLevelNames;
-        xcb_block_len += qt_xcb_sumof(_aux->nLevelsPerType, nKTLevels) * sizeof(xcb_atom_t);
-        xcb_parts[xcb_parts_idx].iov_len = qt_xcb_sumof(_aux->nLevelsPerType, nKTLevels) * sizeof(xcb_atom_t);
+        xcb_block_len += xcb_sumof(_aux->nLevelsPerType, nKTLevels) * sizeof(xcb_atom_t);
+        xcb_parts[xcb_parts_idx].iov_len = xcb_sumof(_aux->nLevelsPerType, nKTLevels) * sizeof(xcb_atom_t);
         xcb_parts_idx++;
         xcb_align_to = ALIGNOF(xcb_atom_t);
     }
@@ -10858,7 +10849,7 @@ xcb_xkb_set_names_values_unpack (const void                  *_buffer  /**< */,
         xcb_block_len = 0;
         /* ktLevelNames */
         _aux->ktLevelNames = (xcb_atom_t *)xcb_tmp;
-        xcb_block_len += qt_xcb_sumof(_aux->nLevelsPerType, nKTLevels) * sizeof(xcb_atom_t);
+        xcb_block_len += xcb_sumof(_aux->nLevelsPerType, nKTLevels) * sizeof(xcb_atom_t);
         xcb_tmp += xcb_block_len;
         xcb_align_to = ALIGNOF(xcb_atom_t);
     }
@@ -12881,7 +12872,7 @@ int
 xcb_xkb_get_kbd_by_name_replies_key_names_value_list_kt_level_names_length (const xcb_xkb_get_kbd_by_name_reply_t *R  /**< */,
                                                                             const xcb_xkb_get_kbd_by_name_replies_t *S  /**< */)
 {
-    return qt_xcb_sumof(/* replies */ S->key_names.valueList.nLevelsPerType, /* replies */ S->key_names.nKTLevels);
+    return xcb_sumof(/* replies */ S->key_names.valueList.nLevelsPerType, /* replies */ S->key_names.nKTLevels);
 }
 
 
@@ -12899,7 +12890,7 @@ xcb_xkb_get_kbd_by_name_replies_key_names_value_list_kt_level_names_end (const x
                                                                          const xcb_xkb_get_kbd_by_name_replies_t *S  /**< */)
 {
     xcb_generic_iterator_t i;
-    i.data = /* replies */ S->key_names.valueList.ktLevelNames + qt_xcb_sumof(/* replies */ S->key_names.valueList.nLevelsPerType, /* replies */ S->key_names.nKTLevels);
+    i.data = /* replies */ S->key_names.valueList.ktLevelNames + xcb_sumof(/* replies */ S->key_names.valueList.nLevelsPerType, /* replies */ S->key_names.nKTLevels);
     i.rem = 0;
     i.index = (char *) i.data - (char *) S;
     return i;
@@ -13349,8 +13340,8 @@ xcb_xkb_get_kbd_by_name_replies_key_names_value_list_serialize (void            
         xcb_block_len = 0;
         /* ktLevelNames */
         xcb_parts[xcb_parts_idx].iov_base = (char *) _aux->ktLevelNames;
-        xcb_block_len += qt_xcb_sumof(_aux->nLevelsPerType, nKTLevels) * sizeof(xcb_atom_t);
-        xcb_parts[xcb_parts_idx].iov_len = qt_xcb_sumof(_aux->nLevelsPerType, nKTLevels) * sizeof(xcb_atom_t);
+        xcb_block_len += xcb_sumof(_aux->nLevelsPerType, nKTLevels) * sizeof(xcb_atom_t);
+        xcb_parts[xcb_parts_idx].iov_len = xcb_sumof(_aux->nLevelsPerType, nKTLevels) * sizeof(xcb_atom_t);
         xcb_parts_idx++;
         xcb_align_to = ALIGNOF(xcb_atom_t);
     }
@@ -13591,7 +13582,7 @@ xcb_xkb_get_kbd_by_name_replies_key_names_value_list_unpack (const void         
         xcb_block_len = 0;
         /* ktLevelNames */
         _aux->ktLevelNames = (xcb_atom_t *)xcb_tmp;
-        xcb_block_len += qt_xcb_sumof(_aux->nLevelsPerType, nKTLevels) * sizeof(xcb_atom_t);
+        xcb_block_len += xcb_sumof(_aux->nLevelsPerType, nKTLevels) * sizeof(xcb_atom_t);
         xcb_tmp += xcb_block_len;
         xcb_align_to = ALIGNOF(xcb_atom_t);
     }

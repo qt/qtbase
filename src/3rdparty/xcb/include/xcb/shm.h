@@ -255,7 +255,7 @@ xcb_generic_iterator_t
 xcb_shm_seg_end (xcb_shm_seg_iterator_t i  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -276,7 +276,7 @@ xcb_shm_query_version_cookie_t
 xcb_shm_query_version (xcb_connection_t *c  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -331,7 +331,7 @@ xcb_shm_query_version_reply (xcb_connection_t                *c  /**< */,
                              xcb_generic_error_t            **e  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -361,7 +361,7 @@ xcb_shm_attach_checked (xcb_connection_t *c  /**< */,
                         uint8_t           read_only  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -388,7 +388,7 @@ xcb_shm_attach (xcb_connection_t *c  /**< */,
                 uint8_t           read_only  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -414,7 +414,7 @@ xcb_shm_detach_checked (xcb_connection_t *c  /**< */,
                         xcb_shm_seg_t     shmseg  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -437,7 +437,7 @@ xcb_shm_detach (xcb_connection_t *c  /**< */,
                 xcb_shm_seg_t     shmseg  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -491,7 +491,7 @@ xcb_shm_put_image_checked (xcb_connection_t *c  /**< */,
                            uint32_t          offset  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -542,7 +542,7 @@ xcb_shm_put_image (xcb_connection_t *c  /**< */,
                    uint32_t          offset  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -581,7 +581,7 @@ xcb_shm_get_image (xcb_connection_t *c  /**< */,
                    uint32_t          offset  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -654,7 +654,7 @@ xcb_shm_get_image_reply (xcb_connection_t            *c  /**< */,
                          xcb_generic_error_t        **e  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -692,7 +692,7 @@ xcb_shm_create_pixmap_checked (xcb_connection_t *c  /**< */,
                                uint32_t          offset  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *

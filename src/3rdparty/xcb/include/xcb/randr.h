@@ -1379,6 +1379,9 @@ xcb_randr_screen_size_next (xcb_randr_screen_size_iterator_t *i  /**< */);
 xcb_generic_iterator_t
 xcb_randr_screen_size_end (xcb_randr_screen_size_iterator_t i  /**< */);
 
+int
+xcb_randr_refresh_rates_sizeof (const void  *_buffer  /**< */);
+
 
 /*****************************************************************************
  **
@@ -1462,7 +1465,7 @@ xcb_generic_iterator_t
 xcb_randr_refresh_rates_end (xcb_randr_refresh_rates_iterator_t i  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1487,7 +1490,7 @@ xcb_randr_query_version (xcb_connection_t *c  /**< */,
                          uint32_t          minor_version  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1546,7 +1549,7 @@ xcb_randr_query_version_reply (xcb_connection_t                  *c  /**< */,
                                xcb_generic_error_t              **e  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1579,7 +1582,7 @@ xcb_randr_set_screen_config (xcb_connection_t *c  /**< */,
                              uint16_t          rate  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1646,7 +1649,7 @@ xcb_randr_set_screen_config_reply (xcb_connection_t                      *c  /**
                                    xcb_generic_error_t                  **e  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1674,7 +1677,7 @@ xcb_randr_select_input_checked (xcb_connection_t *c  /**< */,
                                 uint16_t          enable  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1698,8 +1701,11 @@ xcb_randr_select_input (xcb_connection_t *c  /**< */,
                         xcb_window_t      window  /**< */,
                         uint16_t          enable  /**< */);
 
+int
+xcb_randr_get_screen_info_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1722,7 +1728,7 @@ xcb_randr_get_screen_info (xcb_connection_t *c  /**< */,
                            xcb_window_t      window  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1844,7 +1850,7 @@ xcb_randr_get_screen_info_reply (xcb_connection_t                    *c  /**< */
                                  xcb_generic_error_t                **e  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1867,7 +1873,7 @@ xcb_randr_get_screen_size_range (xcb_connection_t *c  /**< */,
                                  xcb_window_t      window  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1924,7 +1930,7 @@ xcb_randr_get_screen_size_range_reply (xcb_connection_t                         
                                        xcb_generic_error_t                      **e  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1958,7 +1964,7 @@ xcb_randr_set_screen_size_checked (xcb_connection_t *c  /**< */,
                                    uint32_t          mm_height  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2031,8 +2037,11 @@ xcb_randr_mode_info_next (xcb_randr_mode_info_iterator_t *i  /**< */);
 xcb_generic_iterator_t
 xcb_randr_mode_info_end (xcb_randr_mode_info_iterator_t i  /**< */);
 
+int
+xcb_randr_get_screen_resources_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2055,7 +2064,7 @@ xcb_randr_get_screen_resources (xcb_connection_t *c  /**< */,
                                 xcb_window_t      window  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2267,8 +2276,11 @@ xcb_randr_get_screen_resources_reply (xcb_connection_t                         *
                                       xcb_randr_get_screen_resources_cookie_t   cookie  /**< */,
                                       xcb_generic_error_t                     **e  /**< */);
 
+int
+xcb_randr_get_output_info_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2293,7 +2305,7 @@ xcb_randr_get_output_info (xcb_connection_t   *c  /**< */,
                            xcb_timestamp_t     config_timestamp  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2507,8 +2519,11 @@ xcb_randr_get_output_info_reply (xcb_connection_t                    *c  /**< */
                                  xcb_randr_get_output_info_cookie_t   cookie  /**< */,
                                  xcb_generic_error_t                **e  /**< */);
 
+int
+xcb_randr_list_output_properties_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2531,7 +2546,7 @@ xcb_randr_list_output_properties (xcb_connection_t   *c  /**< */,
                                   xcb_randr_output_t  output  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2626,8 +2641,11 @@ xcb_randr_list_output_properties_reply (xcb_connection_t                        
                                         xcb_randr_list_output_properties_cookie_t   cookie  /**< */,
                                         xcb_generic_error_t                       **e  /**< */);
 
+int
+xcb_randr_query_output_property_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2652,7 +2670,7 @@ xcb_randr_query_output_property (xcb_connection_t   *c  /**< */,
                                  xcb_atom_t          property  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2749,8 +2767,12 @@ xcb_randr_query_output_property_reply (xcb_connection_t                         
                                        xcb_randr_query_output_property_cookie_t   cookie  /**< */,
                                        xcb_generic_error_t                      **e  /**< */);
 
+int
+xcb_randr_configure_output_property_sizeof (const void  *_buffer  /**< */,
+                                            uint32_t     values_len  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2786,7 +2808,7 @@ xcb_randr_configure_output_property_checked (xcb_connection_t   *c  /**< */,
                                              const int32_t      *values  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2818,8 +2840,11 @@ xcb_randr_configure_output_property (xcb_connection_t   *c  /**< */,
                                      uint32_t            values_len  /**< */,
                                      const int32_t      *values  /**< */);
 
+int
+xcb_randr_change_output_property_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2857,7 +2882,7 @@ xcb_randr_change_output_property_checked (xcb_connection_t   *c  /**< */,
                                           const void         *data  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2892,7 +2917,7 @@ xcb_randr_change_output_property (xcb_connection_t   *c  /**< */,
                                   const void         *data  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2920,7 +2945,7 @@ xcb_randr_delete_output_property_checked (xcb_connection_t   *c  /**< */,
                                           xcb_atom_t          property  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2944,8 +2969,11 @@ xcb_randr_delete_output_property (xcb_connection_t   *c  /**< */,
                                   xcb_randr_output_t  output  /**< */,
                                   xcb_atom_t          property  /**< */);
 
+int
+xcb_randr_get_output_property_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2980,7 +3008,7 @@ xcb_randr_get_output_property (xcb_connection_t   *c  /**< */,
                                uint8_t             pending  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3087,8 +3115,12 @@ xcb_randr_get_output_property_reply (xcb_connection_t                        *c 
                                      xcb_randr_get_output_property_cookie_t   cookie  /**< */,
                                      xcb_generic_error_t                    **e  /**< */);
 
+int
+xcb_randr_create_mode_sizeof (const void  *_buffer  /**< */,
+                              uint32_t     name_len  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3117,7 +3149,7 @@ xcb_randr_create_mode (xcb_connection_t      *c  /**< */,
                        const char            *name  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3180,7 +3212,7 @@ xcb_randr_create_mode_reply (xcb_connection_t                *c  /**< */,
                              xcb_generic_error_t            **e  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3206,7 +3238,7 @@ xcb_randr_destroy_mode_checked (xcb_connection_t *c  /**< */,
                                 xcb_randr_mode_t  mode  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3229,7 +3261,7 @@ xcb_randr_destroy_mode (xcb_connection_t *c  /**< */,
                         xcb_randr_mode_t  mode  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3257,7 +3289,7 @@ xcb_randr_add_output_mode_checked (xcb_connection_t   *c  /**< */,
                                    xcb_randr_mode_t    mode  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3282,7 +3314,7 @@ xcb_randr_add_output_mode (xcb_connection_t   *c  /**< */,
                            xcb_randr_mode_t    mode  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3310,7 +3342,7 @@ xcb_randr_delete_output_mode_checked (xcb_connection_t   *c  /**< */,
                                       xcb_randr_mode_t    mode  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3334,8 +3366,11 @@ xcb_randr_delete_output_mode (xcb_connection_t   *c  /**< */,
                               xcb_randr_output_t  output  /**< */,
                               xcb_randr_mode_t    mode  /**< */);
 
+int
+xcb_randr_get_crtc_info_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3360,7 +3395,7 @@ xcb_randr_get_crtc_info (xcb_connection_t *c  /**< */,
                          xcb_timestamp_t   config_timestamp  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3496,8 +3531,12 @@ xcb_randr_get_crtc_info_reply (xcb_connection_t                  *c  /**< */,
                                xcb_randr_get_crtc_info_cookie_t   cookie  /**< */,
                                xcb_generic_error_t              **e  /**< */);
 
+int
+xcb_randr_set_crtc_config_sizeof (const void  *_buffer  /**< */,
+                                  uint32_t     outputs_len  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3536,7 +3575,7 @@ xcb_randr_set_crtc_config (xcb_connection_t         *c  /**< */,
                            const xcb_randr_output_t *outputs  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3609,7 +3648,7 @@ xcb_randr_set_crtc_config_reply (xcb_connection_t                    *c  /**< */
                                  xcb_generic_error_t                **e  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3632,7 +3671,7 @@ xcb_randr_get_crtc_gamma_size (xcb_connection_t *c  /**< */,
                                xcb_randr_crtc_t  crtc  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3688,8 +3727,11 @@ xcb_randr_get_crtc_gamma_size_reply (xcb_connection_t                        *c 
                                      xcb_randr_get_crtc_gamma_size_cookie_t   cookie  /**< */,
                                      xcb_generic_error_t                    **e  /**< */);
 
+int
+xcb_randr_get_crtc_gamma_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3712,7 +3754,7 @@ xcb_randr_get_crtc_gamma (xcb_connection_t *c  /**< */,
                           xcb_randr_crtc_t  crtc  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3885,8 +3927,11 @@ xcb_randr_get_crtc_gamma_reply (xcb_connection_t                   *c  /**< */,
                                 xcb_randr_get_crtc_gamma_cookie_t   cookie  /**< */,
                                 xcb_generic_error_t               **e  /**< */);
 
+int
+xcb_randr_set_crtc_gamma_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3920,7 +3965,7 @@ xcb_randr_set_crtc_gamma_checked (xcb_connection_t *c  /**< */,
                                   const uint16_t   *blue  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3950,8 +3995,11 @@ xcb_randr_set_crtc_gamma (xcb_connection_t *c  /**< */,
                           const uint16_t   *green  /**< */,
                           const uint16_t   *blue  /**< */);
 
+int
+xcb_randr_get_screen_resources_current_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -3974,7 +4022,7 @@ xcb_randr_get_screen_resources_current (xcb_connection_t *c  /**< */,
                                         xcb_window_t      window  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -4186,8 +4234,12 @@ xcb_randr_get_screen_resources_current_reply (xcb_connection_t                  
                                               xcb_randr_get_screen_resources_current_cookie_t   cookie  /**< */,
                                               xcb_generic_error_t                             **e  /**< */);
 
+int
+xcb_randr_set_crtc_transform_sizeof (const void  *_buffer  /**< */,
+                                     uint32_t     filter_params_len  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -4223,7 +4275,7 @@ xcb_randr_set_crtc_transform_checked (xcb_connection_t         *c  /**< */,
                                       const xcb_render_fixed_t *filter_params  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -4255,8 +4307,11 @@ xcb_randr_set_crtc_transform (xcb_connection_t         *c  /**< */,
                               uint32_t                  filter_params_len  /**< */,
                               const xcb_render_fixed_t *filter_params  /**< */);
 
+int
+xcb_randr_get_crtc_transform_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -4279,7 +4334,7 @@ xcb_randr_get_crtc_transform (xcb_connection_t *c  /**< */,
                               xcb_randr_crtc_t  crtc  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -4492,7 +4547,7 @@ xcb_randr_get_crtc_transform_reply (xcb_connection_t                       *c  /
                                     xcb_generic_error_t                   **e  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -4515,7 +4570,7 @@ xcb_randr_get_panning (xcb_connection_t *c  /**< */,
                        xcb_randr_crtc_t  crtc  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -4572,7 +4627,7 @@ xcb_randr_get_panning_reply (xcb_connection_t                *c  /**< */,
                              xcb_generic_error_t            **e  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -4621,7 +4676,7 @@ xcb_randr_set_panning (xcb_connection_t *c  /**< */,
                        int16_t           border_bottom  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -4704,7 +4759,7 @@ xcb_randr_set_panning_reply (xcb_connection_t                *c  /**< */,
                              xcb_generic_error_t            **e  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -4732,7 +4787,7 @@ xcb_randr_set_output_primary_checked (xcb_connection_t   *c  /**< */,
                                       xcb_randr_output_t  output  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -4757,7 +4812,7 @@ xcb_randr_set_output_primary (xcb_connection_t   *c  /**< */,
                               xcb_randr_output_t  output  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -4780,7 +4835,7 @@ xcb_randr_get_output_primary (xcb_connection_t *c  /**< */,
                               xcb_window_t      window  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *

@@ -683,7 +683,7 @@ typedef struct xcb_xfixes_show_cursor_request_t {
 } xcb_xfixes_show_cursor_request_t;
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -708,7 +708,7 @@ xcb_xfixes_query_version (xcb_connection_t *c  /**< */,
                           uint32_t          client_minor_version  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -767,7 +767,7 @@ xcb_xfixes_query_version_reply (xcb_connection_t                   *c  /**< */,
                                 xcb_generic_error_t               **e  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -799,7 +799,7 @@ xcb_xfixes_change_save_set_checked (xcb_connection_t *c  /**< */,
                                     xcb_window_t      window  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -828,7 +828,7 @@ xcb_xfixes_change_save_set (xcb_connection_t *c  /**< */,
                             xcb_window_t      window  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -858,7 +858,7 @@ xcb_xfixes_select_selection_input_checked (xcb_connection_t *c  /**< */,
                                            uint32_t          event_mask  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -885,7 +885,7 @@ xcb_xfixes_select_selection_input (xcb_connection_t *c  /**< */,
                                    uint32_t          event_mask  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -913,7 +913,7 @@ xcb_xfixes_select_cursor_input_checked (xcb_connection_t *c  /**< */,
                                         uint32_t          event_mask  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -937,8 +937,11 @@ xcb_xfixes_select_cursor_input (xcb_connection_t *c  /**< */,
                                 xcb_window_t      window  /**< */,
                                 uint32_t          event_mask  /**< */);
 
+int
+xcb_xfixes_get_cursor_image_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -959,7 +962,7 @@ xcb_xfixes_get_cursor_image_cookie_t
 xcb_xfixes_get_cursor_image (xcb_connection_t *c  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1095,8 +1098,12 @@ xcb_xfixes_region_next (xcb_xfixes_region_iterator_t *i  /**< */);
 xcb_generic_iterator_t
 xcb_xfixes_region_end (xcb_xfixes_region_iterator_t i  /**< */);
 
+int
+xcb_xfixes_create_region_sizeof (const void  *_buffer  /**< */,
+                                 uint32_t     rectangles_len  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1126,7 +1133,7 @@ xcb_xfixes_create_region_checked (xcb_connection_t      *c  /**< */,
                                   const xcb_rectangle_t *rectangles  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1153,7 +1160,7 @@ xcb_xfixes_create_region (xcb_connection_t      *c  /**< */,
                           const xcb_rectangle_t *rectangles  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1181,7 +1188,7 @@ xcb_xfixes_create_region_from_bitmap_checked (xcb_connection_t    *c  /**< */,
                                               xcb_pixmap_t         bitmap  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1206,7 +1213,7 @@ xcb_xfixes_create_region_from_bitmap (xcb_connection_t    *c  /**< */,
                                       xcb_pixmap_t         bitmap  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1236,7 +1243,7 @@ xcb_xfixes_create_region_from_window_checked (xcb_connection_t    *c  /**< */,
                                               xcb_shape_kind_t     kind  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1263,7 +1270,7 @@ xcb_xfixes_create_region_from_window (xcb_connection_t    *c  /**< */,
                                       xcb_shape_kind_t     kind  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1291,7 +1298,7 @@ xcb_xfixes_create_region_from_gc_checked (xcb_connection_t    *c  /**< */,
                                           xcb_gcontext_t       gc  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1316,7 +1323,7 @@ xcb_xfixes_create_region_from_gc (xcb_connection_t    *c  /**< */,
                                   xcb_gcontext_t       gc  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1344,7 +1351,7 @@ xcb_xfixes_create_region_from_picture_checked (xcb_connection_t     *c  /**< */,
                                                xcb_render_picture_t  picture  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1369,7 +1376,7 @@ xcb_xfixes_create_region_from_picture (xcb_connection_t     *c  /**< */,
                                        xcb_render_picture_t  picture  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1395,7 +1402,7 @@ xcb_xfixes_destroy_region_checked (xcb_connection_t    *c  /**< */,
                                    xcb_xfixes_region_t  region  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1417,8 +1424,12 @@ xcb_void_cookie_t
 xcb_xfixes_destroy_region (xcb_connection_t    *c  /**< */,
                            xcb_xfixes_region_t  region  /**< */);
 
+int
+xcb_xfixes_set_region_sizeof (const void  *_buffer  /**< */,
+                              uint32_t     rectangles_len  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1448,7 +1459,7 @@ xcb_xfixes_set_region_checked (xcb_connection_t      *c  /**< */,
                                const xcb_rectangle_t *rectangles  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1475,7 +1486,7 @@ xcb_xfixes_set_region (xcb_connection_t      *c  /**< */,
                        const xcb_rectangle_t *rectangles  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1503,7 +1514,7 @@ xcb_xfixes_copy_region_checked (xcb_connection_t    *c  /**< */,
                                 xcb_xfixes_region_t  destination  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1528,7 +1539,7 @@ xcb_xfixes_copy_region (xcb_connection_t    *c  /**< */,
                         xcb_xfixes_region_t  destination  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1558,7 +1569,7 @@ xcb_xfixes_union_region_checked (xcb_connection_t    *c  /**< */,
                                  xcb_xfixes_region_t  destination  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1585,7 +1596,7 @@ xcb_xfixes_union_region (xcb_connection_t    *c  /**< */,
                          xcb_xfixes_region_t  destination  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1615,7 +1626,7 @@ xcb_xfixes_intersect_region_checked (xcb_connection_t    *c  /**< */,
                                      xcb_xfixes_region_t  destination  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1642,7 +1653,7 @@ xcb_xfixes_intersect_region (xcb_connection_t    *c  /**< */,
                              xcb_xfixes_region_t  destination  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1672,7 +1683,7 @@ xcb_xfixes_subtract_region_checked (xcb_connection_t    *c  /**< */,
                                     xcb_xfixes_region_t  destination  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1699,7 +1710,7 @@ xcb_xfixes_subtract_region (xcb_connection_t    *c  /**< */,
                             xcb_xfixes_region_t  destination  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1729,7 +1740,7 @@ xcb_xfixes_invert_region_checked (xcb_connection_t    *c  /**< */,
                                   xcb_xfixes_region_t  destination  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1756,7 +1767,7 @@ xcb_xfixes_invert_region (xcb_connection_t    *c  /**< */,
                           xcb_xfixes_region_t  destination  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1786,7 +1797,7 @@ xcb_xfixes_translate_region_checked (xcb_connection_t    *c  /**< */,
                                      int16_t              dy  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1813,7 +1824,7 @@ xcb_xfixes_translate_region (xcb_connection_t    *c  /**< */,
                              int16_t              dy  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1841,7 +1852,7 @@ xcb_xfixes_region_extents_checked (xcb_connection_t    *c  /**< */,
                                    xcb_xfixes_region_t  destination  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1865,8 +1876,11 @@ xcb_xfixes_region_extents (xcb_connection_t    *c  /**< */,
                            xcb_xfixes_region_t  source  /**< */,
                            xcb_xfixes_region_t  destination  /**< */);
 
+int
+xcb_xfixes_fetch_region_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1889,7 +1903,7 @@ xcb_xfixes_fetch_region (xcb_connection_t    *c  /**< */,
                          xcb_xfixes_region_t  region  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -1985,7 +1999,7 @@ xcb_xfixes_fetch_region_reply (xcb_connection_t                  *c  /**< */,
                                xcb_generic_error_t              **e  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2017,7 +2031,7 @@ xcb_xfixes_set_gc_clip_region_checked (xcb_connection_t    *c  /**< */,
                                        int16_t              y_origin  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2046,7 +2060,7 @@ xcb_xfixes_set_gc_clip_region (xcb_connection_t    *c  /**< */,
                                int16_t              y_origin  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2080,7 +2094,7 @@ xcb_xfixes_set_window_shape_region_checked (xcb_connection_t    *c  /**< */,
                                             xcb_xfixes_region_t  region  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2111,7 +2125,7 @@ xcb_xfixes_set_window_shape_region (xcb_connection_t    *c  /**< */,
                                     xcb_xfixes_region_t  region  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2143,7 +2157,7 @@ xcb_xfixes_set_picture_clip_region_checked (xcb_connection_t     *c  /**< */,
                                             int16_t               y_origin  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2171,8 +2185,11 @@ xcb_xfixes_set_picture_clip_region (xcb_connection_t     *c  /**< */,
                                     int16_t               x_origin  /**< */,
                                     int16_t               y_origin  /**< */);
 
+int
+xcb_xfixes_set_cursor_name_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2202,7 +2219,7 @@ xcb_xfixes_set_cursor_name_checked (xcb_connection_t *c  /**< */,
                                     const char       *name  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2228,8 +2245,11 @@ xcb_xfixes_set_cursor_name (xcb_connection_t *c  /**< */,
                             uint16_t          nbytes  /**< */,
                             const char       *name  /**< */);
 
+int
+xcb_xfixes_get_cursor_name_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2252,7 +2272,7 @@ xcb_xfixes_get_cursor_name (xcb_connection_t *c  /**< */,
                             xcb_cursor_t      cursor  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2347,8 +2367,11 @@ xcb_xfixes_get_cursor_name_reply (xcb_connection_t                     *c  /**< 
                                   xcb_xfixes_get_cursor_name_cookie_t   cookie  /**< */,
                                   xcb_generic_error_t                 **e  /**< */);
 
+int
+xcb_xfixes_get_cursor_image_and_name_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2369,7 +2392,7 @@ xcb_xfixes_get_cursor_image_and_name_cookie_t
 xcb_xfixes_get_cursor_image_and_name (xcb_connection_t *c  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2502,7 +2525,7 @@ xcb_xfixes_get_cursor_image_and_name_reply (xcb_connection_t                    
                                             xcb_generic_error_t                           **e  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2530,7 +2553,7 @@ xcb_xfixes_change_cursor_checked (xcb_connection_t *c  /**< */,
                                   xcb_cursor_t      destination  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2554,8 +2577,11 @@ xcb_xfixes_change_cursor (xcb_connection_t *c  /**< */,
                           xcb_cursor_t      source  /**< */,
                           xcb_cursor_t      destination  /**< */);
 
+int
+xcb_xfixes_change_cursor_by_name_sizeof (const void  *_buffer  /**< */);
+
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2585,7 +2611,7 @@ xcb_xfixes_change_cursor_by_name_checked (xcb_connection_t *c  /**< */,
                                           const char       *name  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2612,7 +2638,7 @@ xcb_xfixes_change_cursor_by_name (xcb_connection_t *c  /**< */,
                                   const char       *name  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2648,7 +2674,7 @@ xcb_xfixes_expand_region_checked (xcb_connection_t    *c  /**< */,
                                   uint16_t             bottom  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2681,7 +2707,7 @@ xcb_xfixes_expand_region (xcb_connection_t    *c  /**< */,
                           uint16_t             bottom  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2707,7 +2733,7 @@ xcb_xfixes_hide_cursor_checked (xcb_connection_t *c  /**< */,
                                 xcb_window_t      window  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2730,7 +2756,7 @@ xcb_xfixes_hide_cursor (xcb_connection_t *c  /**< */,
                         xcb_window_t      window  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
@@ -2756,7 +2782,7 @@ xcb_xfixes_show_cursor_checked (xcb_connection_t *c  /**< */,
                                 xcb_window_t      window  /**< */);
 
 /**
- * Delivers a request to the X server
+ *
  * @param c The connection
  * @return A cookie
  *
