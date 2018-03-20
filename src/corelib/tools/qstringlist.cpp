@@ -98,14 +98,25 @@ QT_BEGIN_NAMESPACE
 
     \tableofcontents
 
+    \section1 Initializing
+
+    The default constructor creates an empty list. You can use the
+    initializer-list constructor to create a list with elements:
+
+    \snippet qstringlist/main.cpp 0a
+
     \section1 Adding Strings
 
     Strings can be added to a list using the \l
+    {QList::insert()}{insert()} \l
     {QList::append()}{append()}, \l
     {QList::operator+=()}{operator+=()} and \l
-    {QStringList::operator<<()}{operator<<()} functions. For example:
+    {operator<<()} functions.
 
-    \snippet qstringlist/main.cpp 0
+    \l{operator<<()} can be used to
+    conveniently add multiple elements to a list:
+
+    \snippet qstringlist/main.cpp 0b
 
     \section1 Iterating Over the Strings
 
