@@ -920,7 +920,7 @@ foreach my $lib (@modules_to_sync) {
     $allheadersprivate = 1 if $allmoduleheadersprivate{$lib};
 
     #information used after the syncing
-    my $pri_install_classes = "";
+    my $pri_install_gfiles = "";
     my $pri_install_files = "";
     my $pri_install_ifiles = "";
     my $pri_install_pfiles = "";
@@ -1086,9 +1086,9 @@ foreach my $lib (@modules_to_sync) {
 #                                   if ($class =~ m/::/) {
 #                                       $class =~ s,::,/,g;
 #                                   }
-                                    my $class_header = fixPaths("$out_basedir/include/$lib/$class", $dir) . " ";
-                                    $pri_install_classes .= $class_header
-                                                                unless($pri_install_classes =~ $class_header);
+                                    my $class_header = "$class ";
+                                    $pri_install_gfiles .= $class_header
+                                                                unless($pri_install_gfiles =~ $class_header);
                                     $injection .= ":$class";
                                 }
 
@@ -1198,7 +1198,7 @@ foreach my $lib (@modules_to_sync) {
                 }
             }
 
-            $pri_install_files .= fixPaths($header_path, $dir) . " ";
+            $pri_install_gfiles .= "$header ";
         }
         if ($verbose_level < 3) {
             print " }\n" unless ($first);
@@ -1208,8 +1208,7 @@ foreach my $lib (@modules_to_sync) {
         my $vheader = "$out_basedir/include/$lib/".lc($lib)."version.h";
         my $VHeader = "$out_basedir/include/$lib/${lib}Version";
         syncHeader($lib, $VHeader, $vheader, 0);
-        $pri_install_files .= fixPaths($vheader, $dir) . " ";
-        $pri_install_classes .= fixPaths($VHeader, $dir) . " ";
+        $pri_install_gfiles .= lc($lib)."version.h ${lib}Version ";
         my @versions = split(/\./, $module_version);
         my $modulehexstring = sprintf("0x%02X%02X%02X", $versions[0], $versions[1], $versions[2]);
         my $vhdrcont =
@@ -1225,7 +1224,7 @@ foreach my $lib (@modules_to_sync) {
         writeFile($vheader, $vhdrcont, $lib, "version header");
 
         my $master_include = "$out_basedir/include/$lib/$lib";
-        $pri_install_files .= fixPaths($master_include, $dir) . " ";
+        $pri_install_gfiles .= "$lib ";
         writeFile($master_include, $master_contents, $lib, "master header");
     }
 
@@ -1234,7 +1233,7 @@ foreach my $lib (@modules_to_sync) {
         my $headers_pri_contents = "";
         $headers_pri_contents .= "SYNCQT.HEADER_FILES = $pri_install_files\n";
         $headers_pri_contents .= "SYNCQT.INJECTED_HEADER_FILES = $pri_install_ifiles\n";
-        $headers_pri_contents .= "SYNCQT.HEADER_CLASSES = $pri_install_classes\n";
+        $headers_pri_contents .= "SYNCQT.GENERATED_HEADER_FILES = $pri_install_gfiles\n";
         $headers_pri_contents .= "SYNCQT.PRIVATE_HEADER_FILES = $pri_install_pfiles\n";
         $headers_pri_contents .= "SYNCQT.INJECTED_PRIVATE_HEADER_FILES = $pri_install_ipfiles\n";
         $headers_pri_contents .= "SYNCQT.QPA_HEADER_FILES = $pri_install_qpafiles\n";
