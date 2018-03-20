@@ -39,6 +39,10 @@
 
 #include "qcore_unix_p.h"
 
+#ifdef Q_OS_RTEMS
+#include <rtems/rtems_bsdnet_internal.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #define QT_POLL_READ_MASK   (POLLIN | POLLRDNORM)
@@ -135,6 +139,11 @@ static inline int qt_poll_sweep(struct pollfd *fds, nfds_t nfds,
 
 static inline bool qt_poll_is_bad_fd(int fd)
 {
+#ifdef Q_OS_RTEMS
+    if (!rtems_bsdnet_fdToSocket(fd))
+        return true;
+#endif
+
     int ret;
     EINTR_LOOP(ret, fcntl(fd, F_GETFD));
     return (ret == -1 && errno == EBADF);
