@@ -70,7 +70,10 @@ LanguageChooser::LanguageChooser(const QString& defaultLang, QWidget *parent)
     for (int i = 0; i < qmFiles.size(); ++i) {
         QCheckBox *checkBox = new QCheckBox(languageName(qmFiles[i]));
         qmFileForCheckBoxMap.insert(checkBox, qmFiles[i]);
-        connect(checkBox, SIGNAL(toggled(bool)), this, SLOT(checkBoxToggled()));
+        connect(checkBox,
+                QOverload<bool>::of(&QCheckBox::toggled),
+                this,
+                &LanguageChooser::checkBoxToggled);
         if (languageMatch(defaultLang, qmFiles[i]))
                 checkBox->setCheckState(Qt::Checked);
         groupBoxLayout->addWidget(checkBox, i / 2, i % 2);
@@ -84,8 +87,8 @@ LanguageChooser::LanguageChooser(const QString& defaultLang, QWidget *parent)
     hideAllButton = buttonBox->addButton("Hide All",
                                          QDialogButtonBox::ActionRole);
 
-    connect(showAllButton, SIGNAL(clicked()), this, SLOT(showAll()));
-    connect(hideAllButton, SIGNAL(clicked()), this, SLOT(hideAll()));
+    connect(showAllButton, &QAbstractButton::clicked, this, &LanguageChooser::showAll);
+    connect(hideAllButton, &QAbstractButton::clicked, this, &LanguageChooser::hideAll);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(groupBox);

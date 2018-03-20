@@ -76,7 +76,7 @@ MainWindow::MainWindow()
     centralWidget->setLayout(mainLayout);
 
     exitAction = new QAction(tr("E&xit"), this);
-    connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    connect(exitAction, &QAction::triggered, qApp, QApplication::quit);
 
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->setPalette(QPalette(Qt::red));
