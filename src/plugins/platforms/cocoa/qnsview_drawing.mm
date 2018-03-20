@@ -84,7 +84,6 @@
 
 - (void)setNeedsDisplayInRect:(NSRect)rect
 {
-    qDebug() << "setNeedsDisplayInRect" << QRectF::fromCGRect(rect);
     [super setNeedsDisplayInRect:rect];
     m_updateRequested = false;
 }
