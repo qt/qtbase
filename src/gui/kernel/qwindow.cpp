@@ -113,9 +113,10 @@ QT_BEGIN_NAMESPACE
     physical area of the screen. On windowing systems that have exposure
     notifications, the isExposed() accessor describes whether the window should
     be treated as directly visible on screen. The exposeEvent() function is
-    called whenever the windows exposure in the windowing system changes.  On
-    windowing systems that do not make this information visible to the
-    application, isExposed() will simply return the same value as isVisible().
+    called whenever an area of the window is invalidated, for example due to the
+    exposure in the windowing system changing. On windowing systems that do not
+    make this information visible to the application, isExposed() will simply
+    return the same value as isVisible().
 
     QWindow::Visibility queried through visibility() is a convenience API
     combining the functions of visible() and windowStates().
@@ -2148,8 +2149,9 @@ bool QWindow::close()
 }
 
 /*!
-    The expose event (\a ev) is sent by the window system whenever the window's
-    exposure on screen changes.
+    The expose event (\a ev) is sent by the window system whenever an area of
+    the window is invalidated, for example due to the exposure in the windowing
+    system changing.
 
     The application can start rendering into the window with QBackingStore
     and QOpenGLContext as soon as it gets an exposeEvent() such that
