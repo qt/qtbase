@@ -6487,35 +6487,6 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         const CGRect diffRect = QMacStylePrivate::comboboxInnerBounds(CGRectZero, cw);
         sz.rwidth() -= qRound(diffRect.size.width);
         sz.rheight() -= qRound(diffRect.size.height);
-    } else if (ct == CT_ToolButton){
-        ThemeButtonKind bkind;
-        QStyleHelper::WidgetSizePolicy widgetSize = d->aquaSizeConstrain(opt, widget);
-        switch (widgetSize) {
-        case QStyleHelper::SizeDefault:
-        case QStyleHelper::SizeLarge:
-            bkind = kThemeLargeBevelButton;
-            break;
-        case QStyleHelper::SizeMini:
-        case QStyleHelper::SizeSmall:
-            bkind = kThemeSmallBevelButton;
-        }
-
-        HIThemeButtonDrawInfo bdi;
-        bdi.version = qt_mac_hitheme_version;
-        bdi.state = kThemeStateActive;
-        bdi.kind = bkind;
-        bdi.value = kThemeButtonOff;
-        bdi.adornment = kThemeAdornmentNone;
-        CGRect macRect, myRect;
-        myRect = CGRectMake(0, 0, sz.width(), sz.height());
-        HIThemeGetButtonBackgroundBounds(&myRect, &bdi, &macRect);
-        // Mini buttons only return their actual size in HIThemeGetButtonBackgroundBounds, so help them out a bit (guess),
-        if (bkind == kThemePushButtonMini)
-            macRect.size.height += 8.;
-        else if (bkind == kThemePushButtonSmall)
-            macRect.size.height -= 10;
-        sz.setWidth(sz.width() + int(macRect.size.width - myRect.size.width));
-        sz.setHeight(sz.height() + int(macRect.size.height - myRect.size.height));
     }
     return sz;
 }
