@@ -812,7 +812,7 @@ void QStorageInfoPrivate::retrieveVolumeInfo()
         valid = true;
         ready = true;
 
-#if defined(Q_OS_INTEGRITY) || (defined(Q_OS_BSD4) && !defined(Q_OS_NETBSD))
+#if defined(Q_OS_INTEGRITY) || (defined(Q_OS_BSD4) && !defined(Q_OS_NETBSD)) || defined(Q_OS_RTEMS)
         bytesTotal = statfs_buf.f_blocks * statfs_buf.f_bsize;
         bytesFree = statfs_buf.f_bfree * statfs_buf.f_bsize;
         bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_bsize;
@@ -822,7 +822,7 @@ void QStorageInfoPrivate::retrieveVolumeInfo()
         bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_frsize;
 #endif
         blockSize = statfs_buf.f_bsize;
-#if defined(Q_OS_ANDROID) || defined(Q_OS_BSD4) || defined(Q_OS_INTEGRITY)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_BSD4) || defined(Q_OS_INTEGRITY) || defined(Q_OS_RTEMS)
 #if defined(_STATFS_F_FLAGS)
         readOnly = (statfs_buf.f_flags & ST_RDONLY) != 0;
 #endif
