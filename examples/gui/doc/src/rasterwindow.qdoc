@@ -99,9 +99,8 @@
 
     The resize event is guaranteed to be called prior to the window
     being shown on screen and will also be called whenever the window
-    is resized while on screen. We use this to resize the back buffer
-    and call renderNow() if we are visible to immediately update the
-    visual representation of the window on screen.
+    is resized while on screen. We use this to resize the back buffer,
+    and defer rendering to the corresponding/following expose event.
 
     \snippet rasterwindow/rasterwindow.cpp 3
 
