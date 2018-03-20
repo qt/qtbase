@@ -65,11 +65,11 @@
 
 #if QT_CONFIG(xcb_xlib)
 #include <X11/Xlib.h>
+#endif
 #if QT_CONFIG(xcb_native_painting)
 #include "qxcbnativepainting.h"
 #include "qpixmap_x11_p.h"
 #include "qbackingstore_x11_p.h"
-#endif
 #endif
 
 #include <qpa/qplatforminputcontextfactory_p.h>

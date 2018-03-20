@@ -1610,29 +1610,6 @@ xcb_window_t QXcbConnection::clientLeader()
     return m_clientLeader;
 }
 
-#if QT_CONFIG(xcb_xlib)
-void *QXcbConnection::xlib_display() const
-{
-    return m_xlib_display;
-}
-
-void *QXcbConnection::createVisualInfoForDefaultVisualId() const
-{
-    if (m_defaultVisualId == UINT_MAX)
-        return 0;
-    XVisualInfo info;
-    memset(&info, 0, sizeof info);
-    info.visualid = m_defaultVisualId;
-
-    int count = 0;
-    Display *dpy = static_cast<Display *>(connection()->xlib_display());
-    XVisualInfo *retVisual = XGetVisualInfo(dpy, VisualIDMask, &info, &count);
-    Q_ASSERT(count < 2);
-    return retVisual;
-}
-
-#endif
-
 #if QT_CONFIG(xcb_xinput)
 static inline bool isXIType(xcb_generic_event_t *event, int opCode, uint16_t type)
 {

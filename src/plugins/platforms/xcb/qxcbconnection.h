@@ -423,8 +423,7 @@ public:
     xcb_visualid_t defaultVisualId() const { return m_defaultVisualId; }
 
 #if QT_CONFIG(xcb_xlib)
-    void *xlib_display() const;
-    void *createVisualInfoForDefaultVisualId() const;
+    void *xlib_display() const { return m_xlib_display; }
 #endif
     void sync();
 
