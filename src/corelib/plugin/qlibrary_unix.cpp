@@ -157,7 +157,7 @@ bool QLibraryPrivate::load_sys()
     // Do not unload the library during dlclose(). Consequently, the
     // library's specific static variables are not reinitialized if the
     // library is reloaded with dlopen() at a later time.
-#ifdef RTLD_NODELETE
+#if defined(RTLD_NODELETE) && !defined(Q_OS_ANDROID)
     if (loadHints & QLibrary::PreventUnloadHint) {
         dlFlags |= RTLD_NODELETE;
     }
