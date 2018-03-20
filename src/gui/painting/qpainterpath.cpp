@@ -1033,7 +1033,6 @@ void QPainterPath::addRect(const QRectF &r)
 
     bool first = d_func()->elements.size() < 2;
 
-    d_func()->elements.reserve(d_func()->elements.size() + 5);
     moveTo(r.x(), r.y());
 
     Element l1 = { r.x() + r.width(), r.y(), LineToElement };
@@ -1070,8 +1069,6 @@ void QPainterPath::addPolygon(const QPolygonF &polygon)
 
     ensureData();
     detach();
-
-    d_func()->elements.reserve(d_func()->elements.size() + polygon.size());
 
     moveTo(polygon.constFirst());
     for (int i=1; i<polygon.size(); ++i) {
@@ -1115,9 +1112,7 @@ void QPainterPath::addEllipse(const QRectF &boundingRect)
     ensureData();
     detach();
 
-    Q_D(QPainterPath);
     bool first = d_func()->elements.size() < 2;
-    d->elements.reserve(d->elements.size() + 13);
 
     QPointF pts[12];
     int point_count;
@@ -1294,7 +1289,6 @@ void QPainterPath::addRegion(const QRegion &region)
     ensureData();
     detach();
 
-    d_func()->elements.reserve(region.rectCount() * 5);
     for (const QRect &rect : region)
         addRect(rect);
 }
@@ -2463,7 +2457,6 @@ QDataStream &operator>>(QDataStream &s, QPainterPath &p)
         Q_ASSERT(p.d_func()->elements.at(0).type == QPainterPath::MoveToElement);
         p.d_func()->elements.clear();
     }
-    p.d_func()->elements.reserve(p.d_func()->elements.size() + size);
     for (int i=0; i<size; ++i) {
         int type;
         double x, y;
