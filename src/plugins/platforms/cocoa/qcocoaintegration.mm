@@ -244,7 +244,7 @@ void QCocoaIntegration::updateScreens()
     uint screenCount = [screens count];
     for (uint i = 0; i < screenCount; i++) {
         NSScreen* scr = [screens objectAtIndex:i];
-        CGDirectDisplayID dpy = [[[scr deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
+        CGDirectDisplayID dpy = scr.qt_displayId;
         // If this screen is a mirror and is not the primary one of the mirror set, ignore it.
         // Exception: The NSScreen API has been observed to a return a screen list with one
         // mirrored, non-primary screen when Qt is running as a startup item. Always use the

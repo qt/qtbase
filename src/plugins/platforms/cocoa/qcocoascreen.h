@@ -104,5 +104,9 @@ QDebug operator<<(QDebug debug, const QCocoaScreen *screen);
 
 QT_END_NAMESPACE
 
+@interface NSScreen (QtExtras)
+@property(readonly) CGDirectDisplayID qt_displayId;
+@end
+
 #endif
 

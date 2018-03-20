@@ -121,8 +121,7 @@ void QCocoaScreen::updateGeometry()
     m_format = QImage::Format_RGB32;
     m_depth = NSBitsPerPixelFromDepth([nsScreen depth]);
 
-    NSDictionary *devDesc = [nsScreen deviceDescription];
-    CGDirectDisplayID dpy = [[devDesc objectForKey:@"NSScreenNumber"] unsignedIntValue];
+    CGDirectDisplayID dpy = nsScreen.qt_displayId;
     CGSize size = CGDisplayScreenSize(dpy);
     m_physicalSize = QSizeF(size.width, size.height);
     m_logicalDpi.first = 72;
@@ -310,3 +309,12 @@ QDebug operator<<(QDebug debug, const QCocoaScreen *screen)
 #endif // !QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE
+
+@implementation NSScreen (QtExtras)
+
+- (CGDirectDisplayID)qt_displayId
+{
+    return [self.deviceDescription[@"NSScreenNumber"] unsignedIntValue];
+}
+
+@end
