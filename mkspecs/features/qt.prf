@@ -2,7 +2,7 @@
 # due to required Qt modules being missing.
 !isEmpty(QMAKE_FAILED_REQUIREMENTS): return()
 
-CONFIG *= thread
+qtConfig(thread): CONFIG *= thread
 
 #handle defines
 win32 {

@@ -1199,7 +1199,7 @@
             "label": "Thread support",
             "purpose": "Provides QThread and related classes.",
             "section": "Kernel",
-            "condition": "!config.wasm",
+            "autoDetect": "!config.wasm",
             "output": [ "publicFeature" ]
         },
         "future": {
