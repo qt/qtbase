@@ -219,6 +219,7 @@ public:
 
         QSizeF defaultFrameSize() const;
         QRectF adjustedControlFrame(const QRectF &rect) const;
+        QMarginsF titleMargins() const;
 
         bool getCocoaButtonTypeAndBezelStyle(NSButtonType *buttonType, NSBezelStyle *bezelStyle) const;
     };

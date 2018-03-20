@@ -1505,47 +1505,6 @@ QStyleHelper::WidgetSizePolicy QMacStylePrivate::aquaSizeConstrain(const QStyleO
 #endif
 }
 
-/**
-    Returns the free space awailable for contents inside the
-    button (and not the size of the contents itself)
-*/
-CGRect QMacStylePrivate::pushButtonContentBounds(const QStyleOptionButton *btn,
-                                                 const HIThemeButtonDrawInfo *bdi) const
-{
-    CGRect outerBounds = btn->rect.toCGRect();
-    // Adjust the bounds to correct for
-    // carbon not calculating the content bounds fully correct
-    if (bdi->kind == kThemePushButton || bdi->kind == kThemePushButtonSmall){
-        outerBounds.origin.y += QMacStylePrivate::PushButtonTopOffset;
-        outerBounds.size.height -= QMacStylePrivate::PushButtonBottomOffset;
-    } else if (bdi->kind == kThemePushButtonMini) {
-        outerBounds.origin.y += QMacStylePrivate::PushButtonTopOffset;
-    }
-
-    CGRect contentBounds;
-    HIThemeGetButtonContentBounds(&outerBounds, bdi, &contentBounds);
-    return contentBounds;
-}
-
-/**
-    Calculates the size of the button contents.
-    This includes both the text and the icon.
-*/
-QSize QMacStylePrivate::pushButtonSizeFromContents(const QStyleOptionButton *btn) const
-{
-    Q_Q(const QMacStyle);
-    QSize csz(0, 0);
-    QSize iconSize = btn->icon.isNull() ? QSize(0, 0)
-                : (btn->iconSize + QSize(QMacStylePrivate::PushButtonContentPadding, 0));
-    QRect textRect = btn->text.isEmpty() ? QRect(0, 0, 1, 1)
-                : btn->fontMetrics.boundingRect(QRect(), Qt::AlignCenter, btn->text);
-    csz.setWidth(iconSize.width() + textRect.width()
-             + ((btn->features & QStyleOptionButton::HasMenu)
-                            ? q->proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator, btn, 0) : 0));
-    csz.setHeight(qMax(iconSize.height(), textRect.height()));
-    return csz;
-}
-
 uint qHash(const QMacStylePrivate::CocoaControl &cw, uint seed = 0)
 {
     return ((cw.type << 2) | cw.size) ^ seed;
@@ -1615,6 +1574,33 @@ QRectF QMacStylePrivate::CocoaControl::adjustedControlFrame(const QRectF &rect) 
     return frameRect;
 }
 
+QMarginsF QMacStylePrivate::CocoaControl::titleMargins() const
+{
+    if (type == QMacStylePrivate::Button_PushButton) {
+        if (size == QStyleHelper::SizeLarge)
+            return QMarginsF(12, 5, 12, 9);
+        if (size == QStyleHelper::SizeSmall)
+            return QMarginsF(12, 4, 12, 9);
+        if (size == QStyleHelper::SizeMini)
+            return QMarginsF(10, 1, 10, 2);
+    }
+
+    if (type == QMacStylePrivate::Button_PullDown) {
+        if (size == QStyleHelper::SizeLarge)
+            return QMarginsF(7.5, 2.5, 22.5, 5.5);
+        if (size == QStyleHelper::SizeSmall)
+            return QMarginsF(7.5, 2, 20.5, 4);
+        if (size == QStyleHelper::SizeMini)
+            return QMarginsF(4.5, 1, 16.5, 2);
+    }
+
+    if (type == QMacStylePrivate::Button_SquareButton)
+        return QMarginsF(6, 1, 6, 2);
+
+    return QMarginsF();
+}
+
+
 bool QMacStylePrivate::CocoaControl::getCocoaButtonTypeAndBezelStyle(NSButtonType *buttonType, NSBezelStyle *bezelStyle) const
 {
     switch (type) {
@@ -1662,89 +1648,6 @@ QMacStylePrivate::CocoaControlType cocoaControlType(const QStyleOption *opt, con
     }
 
     return QMacStylePrivate::NoControl;
-}
-
-/**
-    Checks if the actual contents of btn fits inside the free content bounds of
-    'buttonKindToCheck'. Meant as a helper function for 'initHIThemePushButton'
-    for determining which button kind to use for drawing.
-*/
-bool QMacStylePrivate::contentFitsInPushButton(const QStyleOptionButton *btn,
-                                               HIThemeButtonDrawInfo *bdi,
-                                               ThemeButtonKind buttonKindToCheck) const
-{
-    ThemeButtonKind tmp = bdi->kind;
-    bdi->kind = buttonKindToCheck;
-    QSize contentSize = pushButtonSizeFromContents(btn);
-    QRect freeContentRect = QRectF::fromCGRect(pushButtonContentBounds(btn, bdi)).toRect();
-    bdi->kind = tmp;
-    return freeContentRect.contains(QRect(freeContentRect.x(), freeContentRect.y(),
-                                    contentSize.width(), contentSize.height()));
-}
-
-/**
-    Creates a HIThemeButtonDrawInfo structure that specifies the correct button
-    kind and other details to use for drawing the given push button. Which
-    button kind depends on the size of the button, the size of the contents,
-    explicit user style settings, etc.
-*/
-void QMacStylePrivate::initHIThemePushButton(const QStyleOptionButton *btn,
-                                             const QWidget *widget,
-                                             const ThemeDrawState tds,
-                                             HIThemeButtonDrawInfo *bdi) const
-{
-    ThemeDrawState tdsModified = tds;
-    if (btn->state & QStyle::State_On)
-        tdsModified = kThemeStatePressed;
-    bdi->version = qt_mac_hitheme_version;
-    bdi->state = tdsModified;
-    bdi->value = kThemeButtonOff;
-
-    if (tds == kThemeStateInactive)
-        bdi->state = kThemeStateActive;
-    if (btn->state & QStyle::State_HasFocus)
-        bdi->adornment = kThemeAdornmentFocus;
-    else
-        bdi->adornment = kThemeAdornmentNone;
-
-
-    if (btn->features & (QStyleOptionButton::Flat)) {
-        bdi->kind = kThemeBevelButton;
-    } else {
-        switch (aquaSizeConstrain(btn, widget)) {
-        case QStyleHelper::SizeSmall:
-            bdi->kind = kThemePushButtonSmall;
-            break;
-        case QStyleHelper::SizeMini:
-            bdi->kind = kThemePushButtonMini;
-            break;
-        case QStyleHelper::SizeLarge:
-            // ... We should honor if the user is explicit about using the
-            // large button. But right now Qt will specify the large button
-            // as default rather than QStyleHelper::SizeDefault.
-            // So we treat it like QStyleHelper::SizeDefault
-            // to get the dynamic choosing of button kind.
-        case QStyleHelper::SizeDefault:
-            // Choose the button kind that closest match the button rect, but at the
-            // same time displays the button contents without clipping.
-            bdi->kind = kThemeBevelButton;
-            if (btn->rect.width() >= QMacStylePrivate::BevelButtonW && btn->rect.height() >= QMacStylePrivate::BevelButtonH){
-                if (widget && widget->testAttribute(Qt::WA_MacVariableSize)) {
-                    if (btn->rect.height() <= QMacStylePrivate::MiniButtonH){
-                        if (contentFitsInPushButton(btn, bdi, kThemePushButtonMini))
-                            bdi->kind = kThemePushButtonMini;
-                    } else if (btn->rect.height() <= QMacStylePrivate::SmallButtonH){
-                        if (contentFitsInPushButton(btn, bdi, kThemePushButtonSmall))
-                            bdi->kind = kThemePushButtonSmall;
-                    } else if (contentFitsInPushButton(btn, bdi, kThemePushButton)) {
-                        bdi->kind = kThemePushButton;
-                    }
-                } else {
-                    bdi->kind = kThemePushButton;
-                }
-            }
-        }
-    }
 }
 
 /**
@@ -4778,13 +4681,20 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         break;
     case SE_PushButtonContents:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
-            // Unlike Carbon, we want the button to always be drawn inside its bounds.
-            // Therefore, the button is a bit smaller, so that even if it got focus,
-            // the focus 'shadow' will be inside. Adjust the content rect likewise.
-            HIThemeButtonDrawInfo bdi;
-            d->initHIThemePushButton(btn, widget, d->getDrawState(opt->state), &bdi);
-            CGRect contentRect = d->pushButtonContentBounds(btn, &bdi);
-            rect = QRectF::fromCGRect(contentRect).toRect();
+            // Comment from the old HITheme days:
+            //   "Unlike Carbon, we want the button to always be drawn inside its bounds.
+            //    Therefore, the button is a bit smaller, so that even if it got focus,
+            //    the focus 'shadow' will be inside. Adjust the content rect likewise."
+            // In the future, we should consider using -[NSCell titleRectForBounds:].
+            // Since it requires configuring the NSButton fully, i.e. frame, image,
+            // title and font, we keep things more manual until we are more familiar
+            // with side effects when changing NSButton state.
+            const auto ct = cocoaControlType(btn, widget);
+            const auto cs = d->effectiveAquaSizeConstrain(btn, widget);
+            const auto cw = QMacStylePrivate::CocoaControl(ct, cs);
+            const auto frameRect = cw.adjustedControlFrame(btn->rect);
+            const auto titleMargins = cw.titleMargins();
+            rect = (frameRect - titleMargins).toRect();
         }
         break;
     case SE_HeaderLabel: {
