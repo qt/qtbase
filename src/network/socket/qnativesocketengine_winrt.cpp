@@ -1346,6 +1346,7 @@ void QNativeSocketEngine::handleConnectOpFinished(bool success, QAbstractSocket:
     if (!success) {
         d->setError(error, errorString);
         d->socketState = QAbstractSocket::UnconnectedState;
+        close();
         return;
     }
 
