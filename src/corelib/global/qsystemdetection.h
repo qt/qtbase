@@ -166,6 +166,8 @@
 #  define Q_OS_QNX
 #elif defined(__INTEGRITY)
 #  define Q_OS_INTEGRITY
+#elif defined(__rtems__)
+#  define Q_OS_RTEMS
 #elif defined(VXWORKS) /* there is no "real" VxWorks define - this has to be set in the mkspec! */
 #  define Q_OS_VXWORKS
 #elif defined(__HAIKU__)
