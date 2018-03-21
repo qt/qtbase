@@ -249,41 +249,17 @@ public:
     QStyleHelper::WidgetSizePolicy effectiveAquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
                              QStyle::ContentsType ct = QStyle::CT_CustomBase,
                              QSize szHint=QSize(-1, -1), QSize *insz = 0) const;
-    void getSliderInfo(QStyle::ComplexControl cc, const QStyleOptionSlider *slider,
-                          HIThemeTrackDrawInfo *tdi, const QWidget *needToRemoveMe) const;
     inline int animateSpeed(Animates) const { return 33; }
 
     // Utility functions
-    void drawColorlessButton(const CGRect &macRect, HIThemeButtonDrawInfo *bdi,
-                             const CocoaControl &cw,
-                             QPainter *p, const QStyleOption *opt) const;
+    static CGRect comboboxInnerBounds(const CGRect &outterBounds, const CocoaControl &cocoaWidget);
 
-    QSize pushButtonSizeFromContents(const QStyleOptionButton *btn) const;
-
-    CGRect pushButtonContentBounds(const QStyleOptionButton *btn,
-                                   const HIThemeButtonDrawInfo *bdi) const;
-
-    void initComboboxBdi(const QStyleOptionComboBox *combo, HIThemeButtonDrawInfo *bdi,
-                         CocoaControl *cw,
-                        const QWidget *widget, const ThemeDrawState &tds) const;
-
-    static CGRect comboboxInnerBounds(const CGRect &outerBounds, const CocoaControl &cocoaWidget);
-
-    static QRect comboboxEditBounds(const QRect &outerBounds, const HIThemeButtonDrawInfo &bdi);
-
-    static void drawCombobox(const CGRect &outerBounds, const HIThemeButtonDrawInfo &bdi, const CocoaControl &cw, QPainter *p);
-    bool contentFitsInPushButton(const QStyleOptionButton *btn, HIThemeButtonDrawInfo *bdi,
-                                 ThemeButtonKind buttonKindToCheck) const;
-    void initHIThemePushButton(const QStyleOptionButton *btn, const QWidget *widget,
-                               const ThemeDrawState tds,
-                               HIThemeButtonDrawInfo *bdi) const;
+    static QRectF comboboxEditBounds(const QRectF &outterBounds, const CocoaControl &cw);
 
     void setAutoDefaultButton(QObject *button) const;
 
     NSView *cocoaControl(CocoaControl widget) const;
     NSCell *cocoaCell(CocoaControl widget) const;
-
-    static CocoaControl cocoaControlFromHIThemeButtonKind(ThemeButtonKind kind);
 
     void setupNSGraphicsContext(CGContextRef cg, bool flipped) const;
     void restoreNSGraphicsContext(CGContextRef cg) const;
@@ -293,7 +269,6 @@ public:
     void drawNSViewInRect(CocoaControl widget, NSView *view, const QRectF &rect, QPainter *p, bool isQWidget = true, __attribute__((noescape)) DrawRectBlock drawRectBlock = nil) const;
     void resolveCurrentNSView(QWindow *window) const;
 
-    void drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, qreal radius = 0) const;
     void drawFocusRing(QPainter *p, const QRectF &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const;
 
     void drawToolbarButtonArrow(const QStyleOption *opt, QPainter *p) const;
