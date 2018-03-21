@@ -638,8 +638,12 @@ static bool _q_dontOverrideCtrlLMB = false;
     NSPoint screenPoint;
     if (theEvent) {
         NSPoint windowPoint = [theEvent locationInWindow];
-        NSRect screenRect = [[theEvent window] convertRectToScreen:NSMakeRect(windowPoint.x, windowPoint.y, 1, 1)];
-        screenPoint = screenRect.origin;
+        if (qIsNaN(windowPoint.x) || qIsNaN(windowPoint.y)) {
+            screenPoint = [NSEvent mouseLocation];
+        } else {
+            NSRect screenRect = [[theEvent window] convertRectToScreen:NSMakeRect(windowPoint.x, windowPoint.y, 1, 1)];
+            screenPoint = screenRect.origin;
+        }
     } else {
         screenPoint = [NSEvent mouseLocation];
     }
