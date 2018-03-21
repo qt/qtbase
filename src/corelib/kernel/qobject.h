@@ -74,7 +74,7 @@ class QWidget;
 #ifndef QT_NO_REGEXP
 class QRegExp;
 #endif
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 class QRegularExpression;
 #endif
 #ifndef QT_NO_USERDATA
@@ -187,7 +187,7 @@ public:
     }
 #endif
 
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
     template<typename T>
     inline QList<T> findChildren(const QRegularExpression &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
@@ -197,7 +197,7 @@ public:
                                 reinterpret_cast<QList<void *> *>(&list), options);
         return list;
     }
-#endif
+#endif // QT_CONFIG(regularexpression)
 
     inline const QObjectList &children() const { return d_ptr->children; }
 

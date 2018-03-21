@@ -1299,7 +1299,7 @@ QColorShower::QColorShower(QColorDialog *parent)
     lblHtml->setBuddy(htEd);
 #endif
 
-#if !defined(QT_NO_REGULAREXPRESSION)
+#if QT_CONFIG(regularexpression)
     QRegularExpression regExp(QStringLiteral("#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})"));
     QRegularExpressionValidator *validator = new QRegularExpressionValidator(regExp, this);
     htEd->setValidator(validator);

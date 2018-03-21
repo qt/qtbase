@@ -528,16 +528,8 @@ void tst_QPixmap::fill_transparent()
     QVERIFY(pixmap.hasAlphaChannel());
 }
 
-static bool isPlatformWayland()
-{
-    return QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive);
-}
-
 void tst_QPixmap::mask()
 {
-    if (isPlatformWayland())
-        QSKIP("Wayland: This fails. See QTBUG-66983.");
-
     QPixmap pm(100, 100);
     QBitmap bm(100, 100);
 
@@ -800,9 +792,6 @@ void tst_QPixmap::convertFromImageNoDetach()
 
 void tst_QPixmap::convertFromImageNoDetach2()
 {
-    if (isPlatformWayland())
-        QSKIP("Wayland: This fails. See QTBUG-66984.");
-
     QPixmap randomPixmap(10, 10);
     if (randomPixmap.handle()->classId() != QPlatformPixmap::RasterClass)
         QSKIP("Test only valid for raster pixmaps");
@@ -1477,9 +1466,6 @@ void tst_QPixmap::fromImageReaderAnimatedGif()
 
 void tst_QPixmap::task_246446()
 {
-    if (isPlatformWayland())
-        QSKIP("Wayland: This fails. See QTBUG-66985.");
-
     // This crashed without the bugfix in 246446
     QPixmap pm(10, 10);
     pm.fill(Qt::transparent); // force 32-bit depth

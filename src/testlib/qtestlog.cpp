@@ -60,7 +60,9 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QVariant>
+#if QT_CONFIG(regularexpression)
 #include <QtCore/QRegularExpression>
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -144,7 +146,7 @@ namespace QTest {
             return tp == type
                    && (pattern.type() == QVariant::String ?
                        stringsMatch(pattern.toString(), message) :
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
                        pattern.toRegularExpression().match(message).hasMatch());
 #else
                        false);
@@ -380,7 +382,7 @@ void QTestLog::printUnhandledIgnoreMessages()
         if (list->pattern.type() == QVariant::String) {
             message = QStringLiteral("Did not receive message: \"") + list->pattern.toString() + QLatin1Char('"');
         } else {
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
             message = QStringLiteral("Did not receive any message matching: \"") + list->pattern.toRegularExpression().pattern() + QLatin1Char('"');
 #endif
         }
@@ -576,14 +578,14 @@ void QTestLog::ignoreMessage(QtMsgType type, const char *msg)
     QTest::IgnoreResultList::append(QTest::ignoreResultList, type, QString::fromLocal8Bit(msg));
 }
 
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 void QTestLog::ignoreMessage(QtMsgType type, const QRegularExpression &expression)
 {
     QTEST_ASSERT(expression.isValid());
 
     QTest::IgnoreResultList::append(QTest::ignoreResultList, type, QVariant(expression));
 }
-#endif // QT_NO_REGULAREXPRESSION
+#endif // QT_CONFIG(regularexpression)
 
 void QTestLog::setMaxWarnings(int m)
 {

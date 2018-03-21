@@ -46,7 +46,6 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qvector.h>
-#include <QtCore/qregularexpression.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qcryptographichash.h>
 #include <QtCore/qcoreapplication.h>

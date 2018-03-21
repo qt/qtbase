@@ -41,8 +41,6 @@
 
 #include "qregularexpression.h"
 
-#ifndef QT_NO_REGULAREXPRESSION
-
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qreadwritelock.h>
@@ -2912,5 +2910,3 @@ static const char *pcreCompileErrorCodes[] =
 #endif // #if 0
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_REGULAREXPRESSION

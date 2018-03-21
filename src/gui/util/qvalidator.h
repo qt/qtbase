@@ -45,7 +45,9 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qregexp.h>
-#include <QtCore/qregularexpression.h>
+#if QT_CONFIG(regularexpression)
+#  include <QtCore/qregularexpression.h>
+#endif
 #include <QtCore/qlocale.h>
 
 QT_BEGIN_NAMESPACE
@@ -194,7 +196,7 @@ private:
 
 #endif // QT_NO_REGEXP
 
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 
 class QRegularExpressionValidatorPrivate;
 
@@ -223,7 +225,7 @@ private:
     Q_DECLARE_PRIVATE(QRegularExpressionValidator)
 };
 
-#endif // QT_NO_REGULAREXPRESSION
+#endif // QT_CONFIG(regularexpression)
 
 #endif // QT_NO_VALIDATOR
 

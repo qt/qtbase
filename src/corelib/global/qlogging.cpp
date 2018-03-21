@@ -91,8 +91,7 @@
 # include "private/qcore_unix_p.h"
 #endif
 
-#ifndef QT_BOOTSTRAPPED
-#if !defined QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 #  ifdef __UCLIBC__
 #    if __UCLIBC_HAS_BACKTRACE__
 #      define QLOGGING_HAVE_BACKTRACE
@@ -106,6 +105,7 @@
 extern char *__progname;
 #endif
 
+#ifndef QT_BOOTSTRAPPED
 #if defined(Q_OS_LINUX) && (defined(__GLIBC__) || QT_HAS_INCLUDE(<sys/syscall.h>))
 #  include <sys/syscall.h>
 

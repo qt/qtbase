@@ -916,7 +916,7 @@ void QRegExpValidator::setRegExp(const QRegExp& rx)
 
 #endif
 
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 
 /*!
     \class QRegularExpressionValidator
@@ -1067,7 +1067,7 @@ void QRegularExpressionValidatorPrivate::setRegularExpression(const QRegularExpr
     }
 }
 
-#endif // QT_NO_REGULAREXPRESSION
+#endif // QT_CONFIG(regularexpression)
 
 QT_END_NAMESPACE
 

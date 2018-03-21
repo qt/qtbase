@@ -123,7 +123,6 @@ class QPageLayoutPrivate : public QSharedData
 {
 public:
 
-    QPageLayoutPrivate();
     QPageLayoutPrivate(const QPageSize &pageSize, QPageLayout::Orientation orientation,
                        const QMarginsF &margins, QPageLayout::Unit units,
                        const QMarginsF &minMargins);
@@ -165,12 +164,6 @@ private:
     QMarginsF m_minMargins;
     QMarginsF m_maxMargins;
 };
-
-QPageLayoutPrivate::QPageLayoutPrivate()
-    : m_orientation(QPageLayout::Landscape),
-      m_mode(QPageLayout::StandardMode)
-{
-}
 
 QPageLayoutPrivate::QPageLayoutPrivate(const QPageSize &pageSize, QPageLayout::Orientation orientation,
                                        const QMarginsF &margins, QPageLayout::Unit units,
@@ -356,7 +349,7 @@ QRectF QPageLayoutPrivate::paintRect() const
 */
 
 QPageLayout::QPageLayout()
-    : d(new QPageLayoutPrivate())
+    : QPageLayout(QPageSize(), QPageLayout::Landscape, QMarginsF())
 {
 }
 

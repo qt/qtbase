@@ -53,12 +53,15 @@
 #include "qdatastream.h"
 #include "qmetatypeswitcher_p.h"
 
+#if QT_CONFIG(regularexpression)
+#  include "qregularexpression.h"
+#endif
+
 #ifndef QT_BOOTSTRAPPED
 #  include "qbitarray.h"
 #  include "qurl.h"
 #  include "qvariant.h"
 #  include "qabstractitemmodel.h"
-#  include "qregularexpression.h"
 #  include "qjsonvalue.h"
 #  include "qjsonobject.h"
 #  include "qjsonarray.h"
@@ -1481,12 +1484,12 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
         stream << *static_cast<const NS(QRegExp)*>(data);
         break;
 #endif
-#ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
     case QMetaType::QRegularExpression:
         stream << *static_cast<const NS(QRegularExpression)*>(data);
         break;
-#endif // QT_NO_REGULAREXPRESSION
+#endif // QT_CONFIG(regularexpression)
+#ifndef QT_BOOTSTRAPPED
     case QMetaType::QEasingCurve:
         stream << *static_cast<const NS(QEasingCurve)*>(data);
         break;
@@ -1711,12 +1714,12 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
         stream >> *static_cast< NS(QRegExp)*>(data);
         break;
 #endif
-#ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
     case QMetaType::QRegularExpression:
         stream >> *static_cast< NS(QRegularExpression)*>(data);
         break;
-#endif // QT_NO_REGULAREXPRESSION
+#endif // QT_CONFIG(regularexpression)
+#ifndef QT_BOOTSTRAPPED
     case QMetaType::QEasingCurve:
         stream >> *static_cast< NS(QEasingCurve)*>(data);
         break;

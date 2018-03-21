@@ -81,9 +81,9 @@ class QRectF;
 #ifndef QT_NO_REGEXP
 class QRegExp;
 #endif // QT_NO_REGEXP
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 class QRegularExpression;
-#endif // QT_NO_REGULAREXPRESSION
+#endif // QT_CONFIG(regularexpression)
 class QTextFormat;
 class QTextLength;
 class QUrl;
@@ -248,10 +248,10 @@ class Q_CORE_EXPORT QVariant
 #ifndef QT_NO_REGEXP
     QVariant(const QRegExp &regExp);
 #endif // QT_NO_REGEXP
-#ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
     QVariant(const QRegularExpression &re);
-#endif // QT_NO_REGULAREXPRESSION
+#endif // QT_CONFIG(regularexpression)
+#ifndef QT_BOOTSTRAPPED
     QVariant(const QUrl &url);
     QVariant(const QEasingCurve &easing);
     QVariant(const QUuid &uuid);
@@ -322,10 +322,10 @@ class Q_CORE_EXPORT QVariant
 #ifndef QT_NO_REGEXP
     QRegExp toRegExp() const;
 #endif // QT_NO_REGEXP
-#ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
     QRegularExpression toRegularExpression() const;
-#endif // QT_NO_REGULAREXPRESSION
+#endif // QT_CONFIG(regularexpression)
+#ifndef QT_BOOTSTRAPPED
     QUrl toUrl() const;
     QEasingCurve toEasingCurve() const;
     QUuid toUuid() const;

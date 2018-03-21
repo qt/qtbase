@@ -39,7 +39,9 @@
 
 #include <qstringlist.h>
 #include <qset.h>
-#include <qregularexpression.h>
+#if QT_CONFIG(regularexpression)
+#  include <qregularexpression.h>
+#endif
 
 #include <algorithm>
 
@@ -361,8 +363,7 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegExp
 }
 #endif
 
-#ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 /*!
     \fn QStringList QStringList::filter(const QRegularExpression &re) const
     \overload
@@ -380,8 +381,7 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegula
     }
     return res;
 }
-#endif // QT_NO_REGULAREXPRESSION
-#endif // QT_BOOTSTRAPPED
+#endif // QT_CONFIG(regularexpression)
 
 /*!
     \fn QStringList &QStringList::replaceInStrings(const QString &before, const QString &after, Qt::CaseSensitivity cs)
@@ -436,8 +436,7 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegExp &r
 }
 #endif
 
-#ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 /*!
     \fn QStringList &QStringList::replaceInStrings(const QRegularExpression &re, const QString &after)
     \overload
@@ -466,8 +465,7 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegularEx
     for (int i = 0; i < that->size(); ++i)
         (*that)[i].replace(re, after);
 }
-#endif // QT_NO_REGULAREXPRESSION
-#endif // QT_BOOTSTRAPPED
+#endif // QT_CONFIG(regularexpression)
 
 static int accumulatedSize(const QStringList &list, int seplen)
 {
@@ -674,8 +672,7 @@ int QtPrivate::QStringList_lastIndexOf(const QStringList *that, QRegExp &rx, int
 }
 #endif
 
-#ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 /*!
     \fn int QStringList::indexOf(const QRegularExpression &re, int from) const
     \overload
@@ -732,8 +729,7 @@ int QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QRegularEx
     }
     return -1;
 }
-#endif // QT_NO_REGULAREXPRESSION
-#endif // QT_BOOTSTRAPPED
+#endif // QT_CONFIG(regularexpression)
 
 /*!
     \fn int QStringList::removeDuplicates()

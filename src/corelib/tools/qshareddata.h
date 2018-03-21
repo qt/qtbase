@@ -115,7 +115,11 @@ public:
 #ifdef Q_COMPILER_RVALUE_REFS
     QSharedDataPointer(QSharedDataPointer &&o) Q_DECL_NOTHROW : d(o.d) { o.d = nullptr; }
     inline QSharedDataPointer<T> &operator=(QSharedDataPointer<T> &&other) Q_DECL_NOTHROW
-    { qSwap(d, other.d); return *this; }
+    {
+        QSharedDataPointer moved(std::move(other));
+        swap(moved);
+        return *this;
+    }
 #endif
 
     inline bool operator!() const { return !d; }
@@ -216,7 +220,11 @@ public:
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QExplicitlySharedDataPointer(QExplicitlySharedDataPointer &&o) Q_DECL_NOTHROW : d(o.d) { o.d = nullptr; }
     inline QExplicitlySharedDataPointer<T> &operator=(QExplicitlySharedDataPointer<T> &&other) Q_DECL_NOTHROW
-    { qSwap(d, other.d); return *this; }
+    {
+        QExplicitlySharedDataPointer moved(std::move(other));
+        swap(moved);
+        return *this;
+    }
 #endif
 
     inline bool operator!() const { return !d; }
