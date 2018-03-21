@@ -549,6 +549,9 @@ void QEventDispatcherUNIX::wakeUp()
 {
     Q_D(QEventDispatcherUNIX);
     d->threadPipe.wakeUp();
+#ifdef Q_OS_HTML5
+    processEvents();
+#endif
 }
 
 void QEventDispatcherUNIX::interrupt()

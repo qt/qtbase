@@ -126,6 +126,14 @@ QT_BEGIN_NAMESPACE
 #define GL_UNSIGNED_INT_2_10_10_10_REV    0x8368
 #endif
 
+#ifndef GL_DEPTH_STENCIL_ATTACHMENT
+#define GL_DEPTH_STENCIL_ATTACHMENT 0x821A
+#endif
+
+#ifndef GL_DEPTH_STENCIL
+#define GL_DEPTH_STENCIL 0x84F9
+#endif
+
 
 /*!
     \class QOpenGLFramebufferObjectFormat
@@ -594,10 +602,17 @@ void QOpenGLFramebufferObjectPrivate::initDepthStencilAttachments(QOpenGLContext
     const int samples = requestedSamples;
 
     // free existing attachments
+#ifdef Q_OS_HTML5
+    if (depth_buffer_guard) {
+        funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, 0);
+        depth_buffer_guard->free();
+    }
+#else
     if (depth_buffer_guard) {
         funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
         depth_buffer_guard->free();
     }
+#endif
     if (stencil_buffer_guard) {
         funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, 0);
         if (stencil_buffer_guard != depth_buffer_guard)
@@ -613,7 +628,34 @@ void QOpenGLFramebufferObjectPrivate::initDepthStencilAttachments(QOpenGLContext
     // In practice, a combined depth-stencil buffer is supported by all desktop platforms, while a
     // separate stencil buffer is not. On embedded devices however, a combined depth-stencil buffer
     // might not be supported while separate buffers are, according to QTBUG-12861.
+#ifdef Q_OS_HTML5
+ //   WebGL doesn't allow separately attach buffers to
+ //   STENCIL_ATTACHMENT and DEPTH_ATTACHMENT
+    if (attachment == QOpenGLFramebufferObject::CombinedDepthStencil) {
+        funcs.glGenRenderbuffers(1, &depth_buffer);
+        funcs.glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer);
+        Q_ASSERT(funcs.glIsRenderbuffer(depth_buffer));
 
+        GLenum storageFormat = GL_DEPTH_STENCIL;
+
+        if (samples != 0 ) {
+            funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
+                                                   storageFormat, dsSize.width(), dsSize.height());
+        } else {
+            funcs.glRenderbufferStorage(GL_RENDERBUFFER, storageFormat,
+                                        dsSize.width(), dsSize.height());
+        }
+
+        funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                                        GL_RENDERBUFFER, depth_buffer);
+
+        valid = checkFramebufferStatus(ctx);
+        if (!valid) {
+            funcs.glDeleteRenderbuffers(1, &depth_buffer);
+            depth_buffer = 0;
+        }
+    }
+#else
     if (attachment == QOpenGLFramebufferObject::CombinedDepthStencil
         && funcs.hasOpenGLExtension(QOpenGLExtensions::PackedDepthStencil))
     {
@@ -705,11 +747,16 @@ void QOpenGLFramebufferObjectPrivate::initDepthStencilAttachments(QOpenGLContext
             stencil_buffer = 0;
         }
     }
+#endif //Q_OS_HTML5
 
     // The FBO might have become valid after removing the depth or stencil buffer.
     valid = checkFramebufferStatus(ctx);
 
+#ifdef Q_OS_HTML5
+    if (depth_buffer) {
+#else
     if (depth_buffer && stencil_buffer) {
+#endif
         fbo_attachment = QOpenGLFramebufferObject::CombinedDepthStencil;
     } else if (depth_buffer) {
         fbo_attachment = QOpenGLFramebufferObject::Depth;
