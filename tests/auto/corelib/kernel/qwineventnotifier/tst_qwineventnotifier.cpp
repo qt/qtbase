@@ -125,6 +125,7 @@ public:
     HANDLE eventHandle() const { return notifier.handle(); }
     int numberOfTimesActivated() const { return activatedCount; }
     void setEnabled(bool b) { notifier.setEnabled(b); }
+    bool isEnabled() const { return notifier.isEnabled(); }
 
 signals:
     void activated();
@@ -218,8 +219,9 @@ void tst_QWinEventNotifier::disableNotifiersInActivatedSlot()
     for (int i = 0; i < count; ++i)
         events[i].reset(new EventWithNotifier);
 
-    auto isActivatedOrNull = [&events](int i) {
-        return !events.at(i) || events.at(i)->numberOfTimesActivated() > 0;
+    auto isActivatedOrDisabled = [&events](int i) {
+        return !events.at(i) || !events.at(i)->isEnabled()
+               || events.at(i)->numberOfTimesActivated() > 0;
     };
 
     for (auto &e : events) {
@@ -230,8 +232,10 @@ void tst_QWinEventNotifier::disableNotifiersInActivatedSlot()
                 else
                     events.at(i)->setEnabled(false);
             }
-            if (std::all_of(notifiersToSignal.begin(), notifiersToSignal.end(), isActivatedOrNull))
+            if (std::all_of(notifiersToSignal.begin(), notifiersToSignal.end(),
+                            isActivatedOrDisabled)) {
                 QTimer::singleShot(0, &QTestEventLoop::instance(), SLOT(exitLoop()));
+            }
         });
     }
     for (int i : notifiersToSignal)
