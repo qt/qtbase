@@ -208,8 +208,13 @@ static void stackTrace()
     if (debuggerPresent())
         return;
 
+#if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
+    const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
+    const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
+    fprintf(stderr, "\n=== Received signal at function time: %dms, total time: %dms, dumping stack ===\n",
+            msecsFunctionTime, msecsTotalTime);
+#endif
 #ifdef Q_OS_LINUX
-    fprintf(stderr, "\n========= Received signal, dumping stack ==============\n");
     char cmd[512];
     qsnprintf(cmd, 512, "gdb --pid %d 2>/dev/null <<EOF\n"
                          "set prompt\n"
@@ -221,9 +226,8 @@ static void stackTrace()
                          (int)getpid());
     if (system(cmd) == -1)
         fprintf(stderr, "calling gdb failed\n");
-    fprintf(stderr, "========= End of stack trace ==============\n");
+    fprintf(stderr, "=== End of stack trace ===\n");
 #elif defined(Q_OS_OSX)
-    fprintf(stderr, "\n========= Received signal, dumping stack ==============\n");
     char cmd[512];
     qsnprintf(cmd, 512, "lldb -p %d 2>/dev/null <<EOF\n"
                          "bt all\n"
@@ -232,7 +236,7 @@ static void stackTrace()
                          (int)getpid());
     if (system(cmd) == -1)
         fprintf(stderr, "calling lldb failed\n");
-    fprintf(stderr, "========= End of stack trace ==============\n");
+    fprintf(stderr, "=== End of stack trace ===\n");
 #endif
 }
 
