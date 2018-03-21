@@ -12,7 +12,8 @@ Contains the header and sources files from selected xcb libraries:
    libxcb-util-wm-0.3.9
 
 The 'include' directory was obtained by compiling and installing all of the modules.
-They have been tested to run also with libxcb 1.5 (the oldest version we support).
+When upgrading the bundled xcb headers, they must be tested to run also with the
+minimal supported libxcb version, which currently is 1.9.1.
 
 Use the -qt-xcb configure option to use the files instead of system xcb libraries.
 See src/plugins/platforms/xcb/README for details.
