@@ -2379,7 +2379,7 @@ inline T qVariantToHelper(const QVariant::Private &d, const HandlersManager &han
     \l QMetaType::QVariantList of a type that can be converted to QString;
     otherwise returns an empty list.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QStringList QVariant::toStringList() const
 {
@@ -2387,14 +2387,19 @@ QStringList QVariant::toStringList() const
 }
 
 /*!
-    Returns the variant as a QString if the variant has userType() \l
-    QMetaType::QString, \l QMetaType::Bool, \l QMetaType::QByteArray,
+    Returns the variant as a QString if the variant has a userType()
+    including, but not limited to:
+
+    \l QMetaType::QString, \l QMetaType::Bool, \l QMetaType::QByteArray,
     \l QMetaType::QChar, \l QMetaType::QDate, \l QMetaType::QDateTime,
     \l QMetaType::Double, \l QMetaType::Int, \l QMetaType::LongLong,
     \l QMetaType::QStringList, \l QMetaType::QTime, \l QMetaType::UInt, or
-    \l QMetaType::ULongLong; otherwise returns an empty string.
+    \l QMetaType::ULongLong.
 
-    \sa canConvert(), convert()
+    Calling QVariant::toString() on an unsupported variant returns an empty
+    string.
+
+    \sa canConvert(int targetTypeId), convert()
 */
 QString QVariant::toString() const
 {
@@ -2405,7 +2410,7 @@ QString QVariant::toString() const
     Returns the variant as a QMap<QString, QVariant> if the variant
     has type() \l QMetaType::QVariantMap; otherwise returns an empty map.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QVariantMap QVariant::toMap() const
 {
@@ -2416,7 +2421,7 @@ QVariantMap QVariant::toMap() const
     Returns the variant as a QHash<QString, QVariant> if the variant
     has type() \l QMetaType::QVariantHash; otherwise returns an empty map.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QVariantHash QVariant::toHash() const
 {
@@ -2433,7 +2438,7 @@ QVariantHash QVariant::toHash() const
     If the type() is \l QMetaType::QString, an invalid date will be returned if
     the string cannot be parsed as a Qt::ISODate format date.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QDate QVariant::toDate() const
 {
@@ -2450,7 +2455,7 @@ QDate QVariant::toDate() const
     If the type() is \l QMetaType::QString, an invalid time will be returned if
     the string cannot be parsed as a Qt::ISODate format time.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QTime QVariant::toTime() const
 {
@@ -2467,7 +2472,7 @@ QTime QVariant::toTime() const
     If the type() is \l QMetaType::QString, an invalid date/time will be
     returned if the string cannot be parsed as a Qt::ISODate format date/time.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QDateTime QVariant::toDateTime() const
 {
@@ -2481,7 +2486,7 @@ QDateTime QVariant::toDateTime() const
     Returns the variant as a QEasingCurve if the variant has userType()
     \l QMetaType::QEasingCurve; otherwise returns a default easing curve.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 #ifndef QT_BOOTSTRAPPED
 QEasingCurve QVariant::toEasingCurve() const
@@ -2497,7 +2502,7 @@ QEasingCurve QVariant::toEasingCurve() const
     \l QMetaType::QByteArray or \l QMetaType::QString (converted using
     QString::fromUtf8()); otherwise returns an empty byte array.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QByteArray QVariant::toByteArray() const
 {
@@ -2512,7 +2517,7 @@ QByteArray QVariant::toByteArray() const
     \l QMetaType::QPoint or \l QMetaType::QPointF; otherwise returns a null
     QPoint.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QPoint QVariant::toPoint() const
 {
@@ -2525,7 +2530,7 @@ QPoint QVariant::toPoint() const
     Returns the variant as a QRect if the variant has userType()
     \l QMetaType::QRect; otherwise returns an invalid QRect.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QRect QVariant::toRect() const
 {
@@ -2538,7 +2543,7 @@ QRect QVariant::toRect() const
     Returns the variant as a QSize if the variant has userType()
     \l QMetaType::QSize; otherwise returns an invalid QSize.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QSize QVariant::toSize() const
 {
@@ -2551,7 +2556,7 @@ QSize QVariant::toSize() const
     Returns the variant as a QSizeF if the variant has userType() \l
     QMetaType::QSizeF; otherwise returns an invalid QSizeF.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QSizeF QVariant::toSizeF() const
 {
@@ -2565,7 +2570,7 @@ QSizeF QVariant::toSizeF() const
     \l QMetaType::QRect or \l QMetaType::QRectF; otherwise returns an invalid
     QRectF.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QRectF QVariant::toRectF() const
 {
@@ -2578,7 +2583,7 @@ QRectF QVariant::toRectF() const
     Returns the variant as a QLineF if the variant has userType()
     \l QMetaType::QLineF; otherwise returns an invalid QLineF.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QLineF QVariant::toLineF() const
 {
@@ -2591,7 +2596,7 @@ QLineF QVariant::toLineF() const
     Returns the variant as a QLine if the variant has userType()
     \l QMetaType::QLine; otherwise returns an invalid QLine.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QLine QVariant::toLine() const
 {
@@ -2605,7 +2610,7 @@ QLine QVariant::toLine() const
     QMetaType::QPoint or \l QMetaType::QPointF; otherwise returns a null
     QPointF.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QPointF QVariant::toPointF() const
 {
@@ -2621,7 +2626,7 @@ QPointF QVariant::toPointF() const
     Returns the variant as a QUrl if the variant has userType()
     \l QMetaType::QUrl; otherwise returns an invalid QUrl.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QUrl QVariant::toUrl() const
 {
@@ -2635,7 +2640,7 @@ QUrl QVariant::toUrl() const
     Returns the variant as a QLocale if the variant has userType()
     \l QMetaType::QLocale; otherwise returns an invalid QLocale.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QLocale QVariant::toLocale() const
 {
@@ -2649,7 +2654,7 @@ QLocale QVariant::toLocale() const
     Returns the variant as a QRegExp if the variant has userType()
     \l QMetaType::QRegExp; otherwise returns an empty QRegExp.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 #ifndef QT_NO_REGEXP
 QRegExp QVariant::toRegExp() const
@@ -2666,7 +2671,7 @@ QRegExp QVariant::toRegExp() const
     Returns the variant as a QRegularExpression if the variant has userType() \l
     QRegularExpression; otherwise returns an empty QRegularExpression.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QRegularExpression QVariant::toRegularExpression() const
 {
@@ -2681,7 +2686,7 @@ QRegularExpression QVariant::toRegularExpression() const
     Returns the variant as a QModelIndex if the variant has userType() \l
     QModelIndex; otherwise returns a default constructed QModelIndex.
 
-    \sa canConvert(), convert(), toPersistentModelIndex()
+    \sa canConvert(int targetTypeId), convert(), toPersistentModelIndex()
 */
 QModelIndex QVariant::toModelIndex() const
 {
@@ -2694,7 +2699,7 @@ QModelIndex QVariant::toModelIndex() const
     Returns the variant as a QPersistentModelIndex if the variant has userType() \l
     QPersistentModelIndex; otherwise returns a default constructed QPersistentModelIndex.
 
-    \sa canConvert(), convert(), toModelIndex()
+    \sa canConvert(int targetTypeId), convert(), toModelIndex()
 */
 QPersistentModelIndex QVariant::toPersistentModelIndex() const
 {
@@ -2710,7 +2715,7 @@ QPersistentModelIndex QVariant::toPersistentModelIndex() const
     \l QMetaType::QUuid, \l QMetaType::QByteArray or \l QMetaType::QString;
     otherwise returns a default-constructed QUuid.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QUuid QVariant::toUuid() const
 {
@@ -2723,7 +2728,7 @@ QUuid QVariant::toUuid() const
     Returns the variant as a QJsonValue if the variant has userType() \l
     QJsonValue; otherwise returns a default constructed QJsonValue.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QJsonValue QVariant::toJsonValue() const
 {
@@ -2736,7 +2741,7 @@ QJsonValue QVariant::toJsonValue() const
     Returns the variant as a QJsonObject if the variant has userType() \l
     QJsonObject; otherwise returns a default constructed QJsonObject.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QJsonObject QVariant::toJsonObject() const
 {
@@ -2749,7 +2754,7 @@ QJsonObject QVariant::toJsonObject() const
     Returns the variant as a QJsonArray if the variant has userType() \l
     QJsonArray; otherwise returns a default constructed QJsonArray.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QJsonArray QVariant::toJsonArray() const
 {
@@ -2762,7 +2767,7 @@ QJsonArray QVariant::toJsonArray() const
     Returns the variant as a QJsonDocument if the variant has userType() \l
     QJsonDocument; otherwise returns a default constructed QJsonDocument.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QJsonDocument QVariant::toJsonDocument() const
 {
@@ -2777,7 +2782,7 @@ QJsonDocument QVariant::toJsonDocument() const
     \l QMetaType::QChar, \l QMetaType::Int, or \l QMetaType::UInt; otherwise
     returns an invalid QChar.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QChar QVariant::toChar() const
 {
@@ -2788,7 +2793,7 @@ QChar QVariant::toChar() const
     Returns the variant as a QBitArray if the variant has userType()
     \l QMetaType::QBitArray; otherwise returns an empty bit array.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QBitArray QVariant::toBitArray() const
 {
@@ -2831,7 +2836,7 @@ inline T qNumVariantToHelper(const QVariant::Private &d,
     will not be reflected in \a ok. A simple workaround is to use
     QString::toInt().
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 int QVariant::toInt(bool *ok) const
 {
@@ -2853,7 +2858,7 @@ int QVariant::toInt(bool *ok) const
     overflow will not be reflected in \a ok. A simple workaround is to use
     QString::toUInt().
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 uint QVariant::toUInt(bool *ok) const
 {
@@ -2870,7 +2875,7 @@ uint QVariant::toUInt(bool *ok) const
     If \a ok is non-null: \c{*}\c{ok} is set to true if the value could be
     converted to an int; otherwise \c{*}\c{ok} is set to false.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 qlonglong QVariant::toLongLong(bool *ok) const
 {
@@ -2887,7 +2892,7 @@ qlonglong QVariant::toLongLong(bool *ok) const
     If \a ok is non-null: \c{*}\a{ok} is set to true if the value could be
     converted to an int; otherwise \c{*}\a{ok} is set to false.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 qulonglong QVariant::toULongLong(bool *ok) const
 {
@@ -2904,7 +2909,7 @@ qulonglong QVariant::toULongLong(bool *ok) const
     \l QMetaType::QByteArray and its lower-case content is not one of the
     following: empty, "0" or "false"; otherwise returns \c false.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 bool QVariant::toBool() const
 {
@@ -2927,7 +2932,7 @@ bool QVariant::toBool() const
     If \a ok is non-null: \c{*}\a{ok} is set to true if the value could be
     converted to a double; otherwise \c{*}\a{ok} is set to false.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 double QVariant::toDouble(bool *ok) const
 {
@@ -2946,7 +2951,7 @@ double QVariant::toDouble(bool *ok) const
     If \a ok is non-null: \c{*}\a{ok} is set to true if the value could be
     converted to a double; otherwise \c{*}\a{ok} is set to false.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 float QVariant::toFloat(bool *ok) const
 {
@@ -2965,7 +2970,7 @@ float QVariant::toFloat(bool *ok) const
     If \a ok is non-null: \c{*}\a{ok} is set to true if the value could be
     converted to a double; otherwise \c{*}\a{ok} is set to false.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 qreal QVariant::toReal(bool *ok) const
 {
@@ -2977,7 +2982,7 @@ qreal QVariant::toReal(bool *ok) const
     \l QMetaType::QVariantList or \l QMetaType::QStringList; otherwise returns
     an empty list.
 
-    \sa canConvert(), convert()
+    \sa canConvert(int targetTypeId), convert()
 */
 QVariantList QVariant::toList() const
 {
@@ -3359,7 +3364,7 @@ bool QVariant::canConvert(int targetTypeId) const
     failed a previous conversion will always fail, changing the type, remaining null,
     and returning \c false.
 
-    \sa canConvert(), clear()
+    \sa canConvert(int targetTypeId), clear()
 */
 
 bool QVariant::convert(int targetTypeId)
