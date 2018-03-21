@@ -1839,12 +1839,27 @@ MakefileGenerator::writeExtraTargets(QTextStream &t)
     }
 }
 
+static QStringList splitDeps(const QString &indeps, bool lineMode)
+{
+    if (!lineMode)
+        return indeps.simplified().split(' ');
+    QStringList deps = indeps.split('\n', QString::SkipEmptyParts);
+#ifdef Q_OS_WIN
+    for (auto &dep : deps) {
+        if (dep.endsWith(QLatin1Char('\r')))
+            dep.chop(1);
+    }
+#endif
+    return deps;
+}
+
 void
 MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
 {
     QString clean_targets;
     const ProStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
     for (ProStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
+        const ProStringList &config = project->values(ProKey(*it + ".CONFIG"));
         QString tmp_out = fileFixify(project->first(ProKey(*it + ".output")).toQString(),
                                      FileFixifyFromOutdir);
         const QString tmp_cmd = project->values(ProKey(*it + ".commands")).join(' ');
@@ -1855,6 +1870,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                  + IoUtils::shellQuote(Option::fixPathToLocalOS(Option::output_dir, false))
                  + QLatin1String(" && ");
         }
+        const bool dep_lines = (config.indexOf("dep_lines") != -1);
         const ProStringList &vars = project->values(ProKey(*it + ".variables"));
         if(tmp_out.isEmpty() || tmp_cmd.isEmpty())
             continue;
@@ -1871,7 +1887,6 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
         }
 
         t << "compiler_" << (*it) << "_make_all:";
-        const ProStringList &config = project->values(ProKey(*it + ".CONFIG"));
         if (config.indexOf("combine") != -1) {
             // compilers with a combined input only have one output
             QString input = project->first(ProKey(*it + ".output")).toQString();
@@ -1978,8 +1993,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                         QT_PCLOSE(proc);
                         if(!indeps.isEmpty()) {
                             QDir outDir(Option::output_dir);
-                            // ### This is basically fubar. Add 'lines' flag to CONFIG?
-                            QStringList dep_cmd_deps = indeps.replace('\n', ' ').simplified().split(' ');
+                            QStringList dep_cmd_deps = splitDeps(indeps, dep_lines);
                             for(int i = 0; i < dep_cmd_deps.count(); ++i) {
                                 QString &file = dep_cmd_deps[i];
                                 QString absFile = outDir.absoluteFilePath(file);
@@ -2072,8 +2086,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                     QT_PCLOSE(proc);
                     if(!indeps.isEmpty()) {
                         QDir outDir(Option::output_dir);
-                        // ### This is basically fubar. Add 'lines' flag to CONFIG?
-                        QStringList dep_cmd_deps = indeps.replace('\n', ' ').simplified().split(' ');
+                        QStringList dep_cmd_deps = splitDeps(indeps, dep_lines);
                         for(int i = 0; i < dep_cmd_deps.count(); ++i) {
                             QString &file = dep_cmd_deps[i];
                             QString absFile = outDir.absoluteFilePath(file);

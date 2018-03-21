@@ -4522,6 +4522,11 @@
         \li The dependencies for the output only get generated from the depends
             member and from nowhere else.
     \row
+        \li dep_lines
+        \li The output from the .depend_command is interpreted to be one file
+            per line. The default is to split on whitespace and is maintained
+            only for backwards compatibility reasons.
+    \row
         \li no_link
         \li Indicates that the output should not be added to the list of objects
             to be linked in.
