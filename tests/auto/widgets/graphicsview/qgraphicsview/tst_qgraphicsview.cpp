@@ -2986,19 +2986,14 @@ void tst_QGraphicsView::acceptMousePressEvent()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QMouseEvent event(QEvent::MouseButtonPress,
-                      view.viewport()->rect().center(),
-                      view.viewport()->mapToGlobal(view.viewport()->rect().center()),
-                      Qt::LeftButton, 0, 0);
-    event.setAccepted(false);
-    QApplication::sendEvent(view.viewport(), &event);
+    QTest::mouseClick(view.viewport(), Qt::LeftButton);
     QVERIFY(!view.pressAccepted);
 
+    QSignalSpy spy(&scene, &QGraphicsScene::changed);
     scene.addRect(0, 0, 2000, 2000)->setFlag(QGraphicsItem::ItemIsMovable);
+    QVERIFY(spy.wait());
 
-    qApp->processEvents(); // ensure scene rect is updated
-
-    QApplication::sendEvent(view.viewport(), &event);
+    QTest::mouseClick(view.viewport(), Qt::LeftButton);
     QVERIFY(view.pressAccepted);
 }
 
@@ -3010,19 +3005,14 @@ void tst_QGraphicsView::acceptMouseDoubleClickEvent()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QMouseEvent event(QEvent::MouseButtonDblClick,
-                      view.viewport()->rect().center(),
-                      view.viewport()->mapToGlobal(view.viewport()->rect().center()),
-                      Qt::LeftButton, 0, 0);
-    event.setAccepted(false);
-    QApplication::sendEvent(view.viewport(), &event);
+    QTest::mouseDClick(view.viewport(), Qt::LeftButton);
     QVERIFY(!view.doubleClickAccepted);
 
+    QSignalSpy spy(&scene, &QGraphicsScene::changed);
     scene.addRect(0, 0, 2000, 2000)->setFlag(QGraphicsItem::ItemIsMovable);
+    QVERIFY(spy.wait());
 
-    qApp->processEvents(); // ensure scene rect is updated
-
-    QApplication::sendEvent(view.viewport(), &event);
+    QTest::mouseDClick(view.viewport(), Qt::LeftButton);
     QVERIFY(view.doubleClickAccepted);
 }
 
