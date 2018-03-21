@@ -53,7 +53,7 @@ public:
 
     bool output(QIODevice &outDevice, QIODevice &tempDevice, QIODevice &errorDevice);
 
-    bool readFiles(bool ignoreErrors, QIODevice &errorDevice);
+    bool readFiles(bool listMode, QIODevice &errorDevice);
 
     enum Format { Binary, C_Code, Pass1, Pass2 };
     void setFormat(Format f) { m_format = f; }
@@ -109,7 +109,7 @@ private:
     void reset();
     bool addFile(const QString &alias, const RCCFileInfo &file);
     bool interpretResourceFile(QIODevice *inputDevice, const QString &file,
-        QString currentPath = QString(), bool ignoreErrors = false);
+        QString currentPath = QString(), bool listMode = false);
     bool writeHeader();
     bool writeDataBlobs();
     bool writeDataNames();

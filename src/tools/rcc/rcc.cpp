@@ -377,7 +377,7 @@ enum RCCXmlTag {
 Q_DECLARE_TYPEINFO(RCCXmlTag, Q_PRIMITIVE_TYPE);
 
 bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
-    const QString &fname, QString currentPath, bool ignoreErrors)
+    const QString &fname, QString currentPath, bool listMode)
 {
     Q_ASSERT(m_errorDevice);
     const QChar slash = QLatin1Char('/');
@@ -527,7 +527,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                                 m_failedResources.push_back(child.fileName());
                         }
                     }
-                } else if (file.isFile()) {
+                } else if (listMode || file.isFile()) {
                     const bool arc =
                         addFile(alias,
                                 RCCFileInfo(alias.section(slash, -1),
@@ -551,8 +551,6 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                     const QString msg = QString::fromLatin1("RCC: Error in '%1': Cannot find file '%2'\n")
                                         .arg(fname, fileName);
                     m_errorDevice->write(msg.toUtf8());
-                    if (ignoreErrors)
-                        continue;
                     return false;
                 }
             }
@@ -564,8 +562,6 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
     }
 
     if (reader.hasError()) {
-        if (ignoreErrors)
-            return true;
         int errorLine = reader.lineNumber();
         int errorColumn = reader.columnNumber();
         QString errorMessage = reader.errorString();
@@ -577,7 +573,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
     if (m_root == 0) {
         const QString msg = QString::fromLatin1("RCC: Warning: No resources in '%1'.\n").arg(fname);
         m_errorDevice->write(msg.toUtf8());
-        if (!ignoreErrors && m_format == Binary) {
+        if (!listMode && m_format == Binary) {
             // create dummy entry, otherwise loading with QResource will crash
             m_root = new RCCFileInfo(QString(), QFileInfo(),
                     QLocale::C, QLocale::AnyCountry, RCCFileInfo::Directory);
@@ -645,14 +641,14 @@ void RCCResourceLibrary::reset()
 }
 
 
-bool RCCResourceLibrary::readFiles(bool ignoreErrors, QIODevice &errorDevice)
+bool RCCResourceLibrary::readFiles(bool listMode, QIODevice &errorDevice)
 {
     reset();
     m_errorDevice = &errorDevice;
     //read in data
     if (m_verbose) {
-        const QString msg = QString::fromLatin1("Processing %1 files [%2]\n")
-            .arg(m_fileNames.size()).arg(static_cast<int>(ignoreErrors));
+        const QString msg = QString::fromLatin1("Processing %1 files [listMode=%2]\n")
+            .arg(m_fileNames.size()).arg(static_cast<int>(listMode));
         m_errorDevice->write(msg.toUtf8());
     }
     for (int i = 0; i < m_fileNames.size(); ++i) {
@@ -680,7 +676,7 @@ bool RCCResourceLibrary::readFiles(bool ignoreErrors, QIODevice &errorDevice)
             m_errorDevice->write(msg.toUtf8());
         }
 
-        if (!interpretResourceFile(&fileIn, fname, pwd, ignoreErrors))
+        if (!interpretResourceFile(&fileIn, fname, pwd, listMode))
             return false;
     }
     return true;
