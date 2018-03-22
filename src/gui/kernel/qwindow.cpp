@@ -2333,7 +2333,8 @@ bool QWindow::event(QEvent *ev)
         if (static_cast<QTimerEvent *>(ev)->timerId() == d->updateTimer) {
             killTimer(d->updateTimer);
             d->updateTimer = 0;
-            d->deliverUpdateRequest();
+            if (d->platformWindow)
+                d->platformWindow->deliverUpdateRequest();
         } else {
             QObject::event(ev);
         }
@@ -2355,14 +2356,6 @@ bool QWindow::event(QEvent *ev)
         return QObject::event(ev);
     }
     return true;
-}
-
-void QWindowPrivate::deliverUpdateRequest()
-{
-    Q_Q(QWindow);
-    updateRequestPending = false;
-    QEvent request(QEvent::UpdateRequest);
-    QCoreApplication::sendEvent(q, &request);
 }
 
 /*!

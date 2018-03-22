@@ -144,6 +144,7 @@ public:
         const QRect &initialGeometry, int defaultWidth, int defaultHeight);
 
     virtual void requestUpdate();
+    virtual void deliverUpdateRequest();
 
     // Window property accessors. Platform plugins should use these
     // instead of accessing QWindow directly.

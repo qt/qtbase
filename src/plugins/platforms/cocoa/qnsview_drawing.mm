@@ -120,7 +120,7 @@
     if (m_updateRequested) {
         Q_ASSERT(windowPrivate->updateRequestPending);
         qCDebug(lcQpaWindow) << "Delivering update request to" << m_platformWindow->window();
-        windowPrivate->deliverUpdateRequest();
+        m_platformWindow->deliverUpdateRequest();
         m_updateRequested = false;
     } else {
         m_platformWindow->handleExposeEvent(dirtyRegion);

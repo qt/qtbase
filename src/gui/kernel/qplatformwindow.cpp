@@ -724,7 +724,7 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w,
 
     QPlatformWindow subclasses can re-implement this function to
     provide display refresh synchronized updates. The event
-    should be delivered using QWindowPrivate::deliverUpdateRequest()
+    should be delivered using QPlatformWindow::deliverUpdateRequest()
     to not get out of sync with the the internal state of QWindow.
 
     The default implementation posts an UpdateRequest event to the
@@ -743,9 +743,25 @@ void QPlatformWindow::requestUpdate()
     }
 
     QWindow *w = window();
-    QWindowPrivate *wp = (QWindowPrivate *) QObjectPrivate::get(w);
+    QWindowPrivate *wp = qt_window_private(w);
     Q_ASSERT(wp->updateTimer == 0);
     wp->updateTimer = w->startTimer(timeout, Qt::PreciseTimer);
+}
+
+/*!
+    Delivers an QEvent::UpdateRequest event to the window.
+
+    QPlatformWindow subclasses can re-implement this function to
+    provide e.g. logging or tracing of the delivery, but should
+    always call the base class function.
+*/
+void QPlatformWindow::deliverUpdateRequest()
+{
+    QWindow *w = window();
+    QWindowPrivate *wp = qt_window_private(w);
+    wp->updateRequestPending = false;
+    QEvent request(QEvent::UpdateRequest);
+    QCoreApplication::sendEvent(w, &request);
 }
 
 /*!

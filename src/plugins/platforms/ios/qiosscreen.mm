@@ -390,14 +390,19 @@ void QIOSScreen::deliverUpdateRequests() const
 
     QList<QWindow*> windows = QGuiApplication::allWindows();
     for (int i = 0; i < windows.size(); ++i) {
-        if (platformScreenForWindow(windows.at(i)) != this)
+        QWindow *window = windows.at(i);
+        if (platformScreenForWindow(window) != this)
             continue;
 
-        QWindowPrivate *wp = static_cast<QWindowPrivate *>(QObjectPrivate::get(windows.at(i)));
+        QWindowPrivate *wp = qt_window_private(window);
         if (!wp->updateRequestPending)
             continue;
 
-        wp->deliverUpdateRequest();
+        QPlatformWindow *platformWindow = window->handle();
+        if (!platformWindow)
+            continue;
+
+        platformWindow->deliverUpdateRequest();
 
         // Another update request was triggered, keep the display link running
         if (wp->updateRequestPending)
