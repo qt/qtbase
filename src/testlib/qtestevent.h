@@ -103,7 +103,10 @@ class QTestKeyClicksEvent: public QTestEvent
 {
 public:
     inline QTestKeyClicksEvent(const QString &keys, Qt::KeyboardModifiers modifiers, int delay)
-        : _keys(keys), _modifiers(modifiers), _delay(delay) {}
+        : _keys(keys), _modifiers(modifiers), _delay(delay)
+        {
+            Q_UNUSED(_delay) // Silence -Werror,-Wunused-private-field
+        }
     inline QTestEvent *clone() const override { return new QTestKeyClicksEvent(*this); }
 
 #ifdef QT_WIDGETS_LIB
@@ -124,7 +127,12 @@ class QTestMouseEvent: public QTestEvent
 public:
     inline QTestMouseEvent(QTest::MouseAction action, Qt::MouseButton button,
             Qt::KeyboardModifiers modifiers, QPoint position, int delay)
-        : _action(action), _button(button), _modifiers(modifiers), _pos(position), _delay(delay) {}
+        : _action(action), _button(button), _modifiers(modifiers), _pos(position), _delay(delay)
+        {
+            Q_UNUSED(_action)
+            Q_UNUSED(_button)
+            Q_UNUSED(_delay)
+        }
     inline QTestEvent *clone() const override { return new QTestMouseEvent(*this); }
 
 #ifdef QT_WIDGETS_LIB
@@ -147,7 +155,10 @@ private:
 class QTestDelayEvent: public QTestEvent
 {
 public:
-    inline QTestDelayEvent(int msecs): _delay(msecs) {}
+    inline QTestDelayEvent(int msecs): _delay(msecs)
+    {
+        Q_UNUSED(_delay)
+    }
     inline QTestEvent *clone() const override { return new QTestDelayEvent(*this); }
 
 #ifdef QT_WIDGETS_LIB
