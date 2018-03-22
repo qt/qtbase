@@ -46,6 +46,7 @@ protected slots:
 private slots:
     void simple_data();
     void simple();
+    void blockedWaiting();
     void manyNotifiers();
     void disableNotifiersInActivatedSlot_data();
     void disableNotifiersInActivatedSlot();
@@ -102,6 +103,26 @@ void tst_QWinEventNotifier::simple()
         QFAIL("Timed out");
 
     QVERIFY(simpleActivated);
+}
+
+void tst_QWinEventNotifier::blockedWaiting()
+{
+    simpleHEvent = CreateEvent(0, true, false, 0);
+    QWinEventNotifier n(simpleHEvent);
+    QObject::connect(&n, &QWinEventNotifier::activated,
+                     this, &tst_QWinEventNotifier::simple_activated);
+    simpleActivated = false;
+
+    SetEvent(simpleHEvent);
+    QCOMPARE(WaitForSingleObject(simpleHEvent, 1000), WAIT_OBJECT_0);
+
+    n.setEnabled(false);
+    ResetEvent(simpleHEvent);
+    n.setEnabled(true);
+
+    QTestEventLoop::instance().enterLoop(1);
+    QVERIFY(QTestEventLoop::instance().timeout());
+    QVERIFY(!simpleActivated);
 }
 
 class EventWithNotifier : public QObject

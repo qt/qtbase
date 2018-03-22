@@ -157,7 +157,6 @@ void QWinEventNotifier::setHandle(HANDLE hEvent)
     Q_D(QWinEventNotifier);
     setEnabled(false);
     d->handleToEvent = hEvent;
-    d->signaledCount = 0;
 }
 
 /*!
@@ -209,10 +208,12 @@ void QWinEventNotifier::setEnabled(bool enable)
         return;
     }
 
-    if (enable)
+    if (enable) {
+        d->signaledCount = 0;
         eventDispatcher->registerEventNotifier(this);
-    else
+    } else {
         eventDispatcher->unregisterEventNotifier(this);
+    }
 }
 
 /*!
