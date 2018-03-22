@@ -1291,6 +1291,21 @@ void QGuiApplicationPrivate::createPlatformIntegration()
 #ifdef QT_QPA_DEFAULT_PLATFORM_NAME
     platformName = QT_QPA_DEFAULT_PLATFORM_NAME;
 #endif
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
+    QByteArray sessionType = qgetenv("XDG_SESSION_TYPE");
+    if (!sessionType.isEmpty()) {
+        if (sessionType == QByteArrayLiteral("x11") && !platformName.contains(QByteArrayLiteral("xcb")))
+            platformName = QByteArrayLiteral("xcb");
+        else if (sessionType == QByteArrayLiteral("wayland") && !platformName.contains(QByteArrayLiteral("wayland")))
+            platformName = QByteArrayLiteral("wayland");
+    }
+#ifdef QT_QPA_DEFAULT_PLATFORM_NAME
+    // Add it as fallback in case XDG_SESSION_TYPE is something wrong
+    if (!platformName.contains(QT_QPA_DEFAULT_PLATFORM_NAME))
+        platformName += QByteArrayLiteral(";" QT_QPA_DEFAULT_PLATFORM_NAME);
+#endif
+#endif
+
     QByteArray platformNameEnv = qgetenv("QT_QPA_PLATFORM");
     if (!platformNameEnv.isEmpty()) {
         platformName = platformNameEnv;
