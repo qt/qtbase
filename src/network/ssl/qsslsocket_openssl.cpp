@@ -66,6 +66,10 @@
 #include "qsslpresharedkeyauthenticator.h"
 #include "qsslpresharedkeyauthenticator_p.h"
 
+#ifdef Q_OS_WIN
+#include "qwindowscarootfetcher_p.h"
+#endif
+
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qdir.h>
@@ -1173,119 +1177,6 @@ void QSslSocketBackendPrivate::_q_caRootLoaded(QSslCertificate cert, QSslCertifi
     }
 }
 
-class QWindowsCaRootFetcherThread : public QThread
-{
-public:
-    QWindowsCaRootFetcherThread()
-    {
-        qRegisterMetaType<QSslCertificate>();
-        setObjectName(QStringLiteral("QWindowsCaRootFetcher"));
-        start();
-    }
-    ~QWindowsCaRootFetcherThread()
-    {
-        quit();
-        wait(15500); // worst case, a running request can block for 15 seconds
-    }
-};
-
-Q_GLOBAL_STATIC(QWindowsCaRootFetcherThread, windowsCaRootFetcherThread);
-
-QWindowsCaRootFetcher::QWindowsCaRootFetcher(const QSslCertificate &certificate, QSslSocket::SslMode sslMode)
-    : cert(certificate), mode(sslMode)
-{
-    moveToThread(windowsCaRootFetcherThread());
-}
-
-QWindowsCaRootFetcher::~QWindowsCaRootFetcher()
-{
-}
-
-void QWindowsCaRootFetcher::start()
-{
-    QByteArray der = cert.toDer();
-    PCCERT_CONTEXT wincert = CertCreateCertificateContext(X509_ASN_ENCODING, (const BYTE *)der.constData(), der.length());
-    if (!wincert) {
-#ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcSsl, "QWindowsCaRootFetcher failed to convert certificate to windows form");
-#endif
-        emit finished(cert, QSslCertificate());
-        deleteLater();
-        return;
-    }
-
-    CERT_CHAIN_PARA parameters;
-    memset(&parameters, 0, sizeof(parameters));
-    parameters.cbSize = sizeof(parameters);
-    // set key usage constraint
-    parameters.RequestedUsage.dwType = USAGE_MATCH_TYPE_AND;
-    parameters.RequestedUsage.Usage.cUsageIdentifier = 1;
-    LPSTR oid = (LPSTR)(mode == QSslSocket::SslClientMode ? szOID_PKIX_KP_SERVER_AUTH : szOID_PKIX_KP_CLIENT_AUTH);
-    parameters.RequestedUsage.Usage.rgpszUsageIdentifier = &oid;
-
-#ifdef QSSLSOCKET_DEBUG
-    QElapsedTimer stopwatch;
-    stopwatch.start();
-#endif
-    PCCERT_CHAIN_CONTEXT chain;
-    BOOL result = CertGetCertificateChain(
-        0, //default engine
-        wincert,
-        0, //current date/time
-        0, //default store
-        &parameters,
-        0, //default dwFlags
-        0, //reserved
-        &chain);
-#ifdef QSSLSOCKET_DEBUG
-    qCDebug(lcSsl) << "QWindowsCaRootFetcher" << stopwatch.elapsed() << "ms to get chain";
-#endif
-
-    QSslCertificate trustedRoot;
-    if (result) {
-#ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcSsl) << "QWindowsCaRootFetcher - examining windows chains";
-        if (chain->TrustStatus.dwErrorStatus == CERT_TRUST_NO_ERROR)
-            qCDebug(lcSsl) << " - TRUSTED";
-        else
-            qCDebug(lcSsl) << " - NOT TRUSTED" << chain->TrustStatus.dwErrorStatus;
-        if (chain->TrustStatus.dwInfoStatus & CERT_TRUST_IS_SELF_SIGNED)
-            qCDebug(lcSsl) << " - SELF SIGNED";
-        qCDebug(lcSsl) << "QSslSocketBackendPrivate::fetchCaRootForCert - dumping simple chains";
-        for (unsigned int i = 0; i < chain->cChain; i++) {
-            if (chain->rgpChain[i]->TrustStatus.dwErrorStatus == CERT_TRUST_NO_ERROR)
-                qCDebug(lcSsl) << " - TRUSTED SIMPLE CHAIN" << i;
-            else
-                qCDebug(lcSsl) << " - UNTRUSTED SIMPLE CHAIN" << i << "reason:" << chain->rgpChain[i]->TrustStatus.dwErrorStatus;
-            for (unsigned int j = 0; j < chain->rgpChain[i]->cElement; j++) {
-                QSslCertificate foundCert(QByteArray((const char *)chain->rgpChain[i]->rgpElement[j]->pCertContext->pbCertEncoded
-                    , chain->rgpChain[i]->rgpElement[j]->pCertContext->cbCertEncoded), QSsl::Der);
-                qCDebug(lcSsl) << "   - " << foundCert;
-            }
-        }
-        qCDebug(lcSsl) << " - and" << chain->cLowerQualityChainContext << "low quality chains"; //expect 0, we haven't asked for them
-#endif
-
-        //based on http://msdn.microsoft.com/en-us/library/windows/desktop/aa377182%28v=vs.85%29.aspx
-        //about the final chain rgpChain[cChain-1] which must begin with a trusted root to be valid
-        if (chain->TrustStatus.dwErrorStatus == CERT_TRUST_NO_ERROR
-            && chain->cChain > 0) {
-            const PCERT_SIMPLE_CHAIN finalChain = chain->rgpChain[chain->cChain - 1];
-            // http://msdn.microsoft.com/en-us/library/windows/desktop/aa377544%28v=vs.85%29.aspx
-            // rgpElement[0] is the end certificate chain element. rgpElement[cElement-1] is the self-signed "root" certificate element.
-            if (finalChain->TrustStatus.dwErrorStatus == CERT_TRUST_NO_ERROR
-                && finalChain->cElement > 0) {
-                    trustedRoot = QSslCertificate(QByteArray((const char *)finalChain->rgpElement[finalChain->cElement - 1]->pCertContext->pbCertEncoded
-                        , finalChain->rgpElement[finalChain->cElement - 1]->pCertContext->cbCertEncoded), QSsl::Der);
-            }
-        }
-        CertFreeCertificateChain(chain);
-    }
-    CertFreeCertificateContext(wincert);
-
-    emit finished(cert, trustedRoot);
-    deleteLater();
-}
 #endif
 
 void QSslSocketBackendPrivate::disconnectFromHost()

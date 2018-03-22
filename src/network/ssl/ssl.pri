@@ -95,6 +95,10 @@ qtConfig(ssl) {
             QMAKE_USE_FOR_PRIVATE += openssl
         else: \
             QMAKE_USE_FOR_PRIVATE += openssl/nolink
-        win32: LIBS_PRIVATE += -lcrypt32
+        win32 {
+            LIBS_PRIVATE += -lcrypt32
+            HEADERS += ssl/qwindowscarootfetcher_p.h
+            SOURCES += ssl/qwindowscarootfetcher.cpp
+        }
     }
 }

@@ -161,23 +161,6 @@ public:
                              const QByteArray &passPhrase);
 };
 
-#ifdef Q_OS_WIN
-class QWindowsCaRootFetcher : public QObject
-{
-    Q_OBJECT;
-public:
-    QWindowsCaRootFetcher(const QSslCertificate &certificate, QSslSocket::SslMode sslMode);
-    ~QWindowsCaRootFetcher();
-public slots:
-    void start();
-signals:
-    void finished(QSslCertificate brokenChain, QSslCertificate caroot);
-private:
-    QSslCertificate cert;
-    QSslSocket::SslMode mode;
-};
-#endif
-
 QT_END_NAMESPACE
 
 #endif
