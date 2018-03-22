@@ -6,6 +6,3 @@ SUBDIRS = \
         qimagescale \
         qpixmap \
         qpixmapcache
-
-!qtHaveModule(widgets)|!qtHaveModule(network): SUBDIRS -= \
-        qimagereader

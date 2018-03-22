@@ -35,8 +35,6 @@
 #include <QImageWriter>
 #include <QPixmap>
 #include <QSet>
-#include <QTcpSocket>
-#include <QTcpServer>
 #include <QTimer>
 
 typedef QMap<QString, QString> QStringMap;
