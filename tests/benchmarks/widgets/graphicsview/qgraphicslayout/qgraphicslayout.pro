@@ -1,5 +1,5 @@
 TEMPLATE = app
 TARGET = tst_bench_qgraphicslayout
-QT += testlib
+QT += testlib widgets
 SOURCES += tst_qgraphicslayout.cpp
 

@@ -26,10 +26,10 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
-#include <QtGui/qgraphicslinearlayout.h>
-#include <QtGui/qgraphicswidget.h>
-#include <QtGui/qgraphicsview.h>
+#include <QtTest>
+#include <QGraphicsLinearLayout>
+#include <QGraphicsWidget>
+#include <QGraphicsView>
 
 class tst_QGraphicsLinearLayout : public QObject
 {

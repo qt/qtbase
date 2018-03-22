@@ -26,11 +26,11 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
-#include <QtGui/qgraphicslayout.h>
-#include <QtGui/qgraphicslinearlayout.h>
-#include <QtGui/qgraphicswidget.h>
-#include <QtGui/qgraphicsview.h>
+#include <QtTest>
+#include <QGraphicsLayout>
+#include <QGraphicsLinearLayout>
+#include <QGraphicsWidget>
+#include <QGraphicsView>
 
 class tst_QGraphicsLayout : public QObject
 {
@@ -84,15 +84,15 @@ public:
 void tst_QGraphicsLayout::invalidate()
 {
     QGraphicsLayout::setInstantInvalidatePropagation(true);
-    QGraphicsScene scene;
-    QGraphicsView *view = new QGraphicsView(&scene);
-    QMap<RectWidget*, QRectF> setGeometryCalls;
+    QGraphicsScene *scene = new QGraphicsScene;
+    QGraphicsView *view = new QGraphicsView(scene);
+    QMap<RectWidget*, QRectF> *setGeometryCalls = new QMap<RectWidget*, QRectF>;
 
     RectWidget *window = new RectWidget(0, Qt::Window);
-    window->setGeometryCalls = &setGeometryCalls;
+    window->setGeometryCalls = setGeometryCalls;
     window->setData(0, QString(QChar('a')));
 
-    scene.addItem(window);
+    scene->addItem(window);
     RectWidget *leaf = 0;
     const int depth = 100;
     RectWidget *parent = window;
@@ -101,7 +101,7 @@ void tst_QGraphicsLayout::invalidate()
         l->setContentsMargins(0,0,0,0);
         RectWidget *child = new RectWidget;
         child->setData(0, QString(QChar('a' + i)));
-        child->setGeometryCalls = &setGeometryCalls;
+        child->setGeometryCalls = setGeometryCalls;
         l->addItem(child);
         parent = child;
     }
@@ -110,7 +110,7 @@ void tst_QGraphicsLayout::invalidate()
 
     view->show();
 
-    QVERIFY(QTest::qWaitForWindowShown(view));
+    QVERIFY(QTest::qWaitForWindowExposed(view));
 
     // ...then measure...
 
@@ -118,11 +118,11 @@ void tst_QGraphicsLayout::invalidate()
 
     // should be as small as possible, to reduce overhead of painting
     QSizeF size(1, 1);
-    setGeometryCalls.clear();
+    setGeometryCalls->clear();
     QBENCHMARK {
         leaf->setMinimumSize(size);
         leaf->setMaximumSize(size);
-        while (setGeometryCalls.count() < depth) {
+        while (setGeometryCalls->count() < depth) {
             QApplication::sendPostedEvents();
         }
         // force a resize on each widget, this will ensure
@@ -131,8 +131,11 @@ void tst_QGraphicsLayout::invalidate()
         w^=2;
         size.setWidth(w);
     }
+    window->setGeometryCalls = nullptr;
     delete view;
+    delete scene;
     QGraphicsLayout::setInstantInvalidatePropagation(false);
+    delete setGeometryCalls;
 }
 
 QTEST_MAIN(tst_QGraphicsLayout)

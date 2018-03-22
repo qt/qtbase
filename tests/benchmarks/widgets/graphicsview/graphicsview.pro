@@ -3,8 +3,8 @@ SUBDIRS = \
         functional \
         qgraphicsanchorlayout \
         qgraphicsitem \
-        #qgraphicslayout \  # FIXME: broken
-        #qgraphicslinearlayout \  # FIXME: broken?
+        qgraphicslayout \
+        qgraphicslinearlayout \
         qgraphicsscene \
         qgraphicsview \
         qgraphicswidget
