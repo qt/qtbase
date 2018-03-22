@@ -115,17 +115,15 @@
     }
 #endif
 
-    QWindowPrivate *windowPrivate = qt_window_private(m_platformWindow->window());
-
     if (m_updateRequested) {
-        Q_ASSERT(windowPrivate->updateRequestPending);
+        Q_ASSERT(m_platformWindow->hasPendingUpdateRequest());
         m_platformWindow->deliverUpdateRequest();
         m_updateRequested = false;
     } else {
         m_platformWindow->handleExposeEvent(dirtyRegion);
     }
 
-    if (windowPrivate->updateRequestPending) {
+    if (m_platformWindow->hasPendingUpdateRequest()) {
         // A call to QWindow::requestUpdate was issued during event delivery above,
         // but AppKit will reset the needsDisplay state of the view after completing
         // the current display cycle, so we need to defer the request to redisplay.

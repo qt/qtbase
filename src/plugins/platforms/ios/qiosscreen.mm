@@ -394,18 +394,17 @@ void QIOSScreen::deliverUpdateRequests() const
         if (platformScreenForWindow(window) != this)
             continue;
 
-        QWindowPrivate *wp = qt_window_private(window);
-        if (!wp->updateRequestPending)
-            continue;
-
         QPlatformWindow *platformWindow = window->handle();
         if (!platformWindow)
+            continue;
+
+        if (!platformWindow->hasPendingUpdateRequest())
             continue;
 
         platformWindow->deliverUpdateRequest();
 
         // Another update request was triggered, keep the display link running
-        if (wp->updateRequestPending)
+        if (platformWindow->hasPendingUpdateRequest())
             pauseUpdates = false;
     }
 

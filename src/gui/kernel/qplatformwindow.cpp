@@ -749,6 +749,16 @@ void QPlatformWindow::requestUpdate()
 }
 
 /*!
+    Returns true if the window has a pending update request.
+
+    \sa requestUpdate(), deliverUpdateRequest()
+*/
+bool QPlatformWindow::hasPendingUpdateRequest() const
+{
+    return qt_window_private(window())->updateRequestPending;
+}
+
+/*!
     Delivers an QEvent::UpdateRequest event to the window.
 
     QPlatformWindow subclasses can re-implement this function to
@@ -757,6 +767,8 @@ void QPlatformWindow::requestUpdate()
 */
 void QPlatformWindow::deliverUpdateRequest()
 {
+    Q_ASSERT(hasPendingUpdateRequest());
+
     QWindow *w = window();
     QWindowPrivate *wp = qt_window_private(w);
     wp->updateRequestPending = false;

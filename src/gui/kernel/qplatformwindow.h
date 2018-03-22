@@ -144,6 +144,7 @@ public:
         const QRect &initialGeometry, int defaultWidth, int defaultHeight);
 
     virtual void requestUpdate();
+    bool hasPendingUpdateRequest() const;
     virtual void deliverUpdateRequest();
 
     // Window property accessors. Platform plugins should use these
