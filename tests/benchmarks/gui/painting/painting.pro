@@ -9,5 +9,4 @@ SUBDIRS = \
 
 !qtHaveModule(widgets): SUBDIRS -= \
     qpainter \
-    qtracebench \
     qtbench

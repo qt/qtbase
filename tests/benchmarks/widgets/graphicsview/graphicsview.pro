@@ -4,13 +4,7 @@ SUBDIRS = \
         qgraphicsanchorlayout \
         qgraphicsitem \
         #qgraphicslayout \  # FIXME: broken
+        #qgraphicslinearlayout \  # FIXME: broken?
         qgraphicsscene \
         qgraphicsview \
         qgraphicswidget
-
-!qtHaveModule(widgets): SUBDIRS -= \
-    qgraphicsanchorlayout \
-    qgraphicsitem \
-    qgraphicsscene \
-    qgraphicsview \
-    qgraphicswidget
