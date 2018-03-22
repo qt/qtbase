@@ -88,6 +88,12 @@ using namespace Microsoft::WRL::Wrappers;
 #define CoreApplicationClass RuntimeClass_Windows_ApplicationModel_Core_CoreApplication
 typedef ITypedEventHandler<CoreApplicationView *, Activation::IActivatedEventArgs *> ActivatedHandler;
 
+const quint32 resizeMessageType = QtInfoMsg + 1;
+
+const PCWSTR shmemName = L"qdebug-shmem";
+const PCWSTR eventName = L"qdebug-event";
+const PCWSTR ackEventName = L"qdebug-event-ack";
+
 static QtMessageHandler defaultMessageHandler;
 static void devMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
@@ -98,22 +104,48 @@ static void devMessageHandler(QtMsgType type, const QMessageLogContext &context,
     static QMutex messageMutex;
     QMutexLocker locker(&messageMutex);
 
+    static quint64 mappingSize = 4096;
+    const quint32 copiedMessageLength = message.length() + 1;
+    // Message format is message type + message. We need the message's length + 4 bytes for the type
+    const quint64 copiedMessageSize = copiedMessageLength * sizeof(wchar_t) + sizeof(quint32);
+    if (copiedMessageSize > mappingSize) {
+        if (!shmem)
+            shmem = CreateFileMappingFromApp(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, mappingSize, shmemName);
+        Q_ASSERT_X(shmem, Q_FUNC_INFO, "Could not create file mapping");
+
+        quint32 *data = reinterpret_cast<quint32 *>(MapViewOfFileFromApp(shmem, FILE_MAP_WRITE, 0, mappingSize));
+        Q_ASSERT_X(data, Q_FUNC_INFO, "Could not map size file");
+
+        mappingSize = copiedMessageSize;
+
+        memcpy(data, (void *)&resizeMessageType, sizeof(quint32));
+        memcpy(data + 1, (void *)&mappingSize, sizeof(quint64));
+        UnmapViewOfFile(data);
+        SetEvent(event);
+        WaitForSingleObjectEx(ackEvent, INFINITE, false);
+        if (shmem) {
+            if (!CloseHandle(shmem))
+                Q_ASSERT_X(false, Q_FUNC_INFO, "Could not close shared file handle");
+            shmem = 0;
+        }
+    }
+
     if (!shmem)
-        shmem = CreateFileMappingFromApp(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 4096, L"qdebug-shmem");
+        shmem = CreateFileMappingFromApp(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, mappingSize, shmemName);
     if (!event)
-        event = CreateEventEx(NULL, L"qdebug-event", 0, EVENT_ALL_ACCESS);
+        event = CreateEventEx(NULL, eventName, 0, EVENT_ALL_ACCESS);
     if (!ackEvent)
-        ackEvent = CreateEventEx(NULL, L"qdebug-event-ack", 0, EVENT_ALL_ACCESS);
+        ackEvent = CreateEventEx(NULL, ackEventName, 0, EVENT_ALL_ACCESS);
 
     Q_ASSERT_X(shmem, Q_FUNC_INFO, "Could not create file mapping");
     Q_ASSERT_X(event, Q_FUNC_INFO, "Could not create debug event");
 
-    void *data = MapViewOfFileFromApp(shmem, FILE_MAP_WRITE, 0, 4096);
+    void *data = MapViewOfFileFromApp(shmem, FILE_MAP_WRITE, 0, mappingSize);
     Q_ASSERT_X(data, Q_FUNC_INFO, "Could not map file");
 
     memset(data, quint32(type), sizeof(quint32));
-    memcpy_s(static_cast<quint32 *>(data) + 1, 4096 - sizeof(quint32),
-             message.data(), (message.length() + 1) * sizeof(wchar_t));
+    memcpy_s(static_cast<quint32 *>(data) + 1, mappingSize - sizeof(quint32),
+             message.data(), copiedMessageLength * sizeof(wchar_t));
     UnmapViewOfFile(data);
     SetEvent(event);
     WaitForSingleObjectEx(ackEvent, INFINITE, false);
