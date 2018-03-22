@@ -45,7 +45,7 @@
 //         containerElements : [$("container-id")];
 //     }
 //     var qtLoader = QtLoader(config);
-//     qtLoader.loadEmscriptenModule(Module);
+//     qtLoader.loadEmscriptenModule("applicationName");
 //
 // External mode.usage:
 //
@@ -61,7 +61,7 @@
 //        }
 //     }
 //     var qtLoader = QtLoader(config);
-//     qtLoader.loadEmscriptenModule(Module);
+//     qtLoader.loadEmscriptenModule("applicationName");
 //
 // Config keys
 //
@@ -99,8 +99,8 @@
 // canLoadQt : bool
 //      Reports if WebAssembly and WebGL are supported. These are requirements for
 //      running Qt applications.
-// loadEmscriptenModule(createModule)
-//      Loads the applicaton from the given emscripten module create function
+// loadEmscriptenModule(applicationName)
+//      Loads the application from the given emscripten javascript module file and wasm file
 // status
 //      One of "Created", "Loading", "Running", "Exited".
 // crashed
@@ -110,6 +110,10 @@
 //      "Exited", iff crashed is false.
 // exitText
 //      Abort/exit message.
+
+
+var Module = {}
+
 function QtLoader(config)
 {
     function webAssemblySupported() {
@@ -192,22 +196,67 @@ function QtLoader(config)
     if (config.path.length > 0 && !config.path.endsWith("/"))
         config.path = config.path.concat("/");
 
+    if (config.environment === undefined)
+        config.environment = {}
+
     var publicAPI = {};
     publicAPI.webAssemblySupported = webAssemblySupported();
     publicAPI.webGLSupported = webGLSupported();
     publicAPI.canLoadQt = canLoadQt();
     publicAPI.canLoadApplication = canLoadQt();
     publicAPI.status = undefined;
-    publicAPI.crashed = false;
-    publicAPI.exitCode = undefined;
-    publicAPI.exitText = undefined;
     publicAPI.loadEmscriptenModule = loadEmscriptenModule;
 
     restartCount = 0;
 
-    function loadEmscriptenModule(createModule) {
+    function fetchResource(filePath) {
+        var fullPath = config.path + filePath;
+        return fetch(fullPath).then(function(response) {
+            if (!response.ok) {
+                self.error = response.status + " " + response.statusText + " " + response.url;
+                setStatus("Error");
+                return Promise.reject(self.error)
+            } else {
+                return response;
+            }
+        });
+    }
 
-        // Check for Wasm & WebGL support; return early before
+    function fetchText(filePath) {
+        return fetchResource(filePath).then(function(response) {
+            return response.text();
+        });
+    }
+
+    function fetchCompileWasm(filePath) {
+        return fetchResource(filePath).then(function(response) {
+            if (typeof WebAssembly.compileStreaming !== "undefined") {
+                return WebAssembly.compileStreaming(response).catch(function(error) {
+                    // compileStreaming may/will fail if the server does not set the correct
+                    // mime type (application/wasm) for the wasm file. Fall back to fetch,
+                    // then compile in this case.
+                    return response.arrayBuffer().then(function(data) {
+                        return WebAssembly.compile(data);
+                    });
+                });
+            } else {
+                // Fall back to fetch, then compile if compileStreaming is not supported
+                return response.arrayBuffer().then(function(data) {
+                    return WebAssembly.compile(data);
+                });
+            }
+        });
+    }
+
+    function loadEmscriptenModule(applicationName) {
+
+        // Loading in qtloader.js goes through four steps:
+        // 1) Check prerequisites
+        // 2) Download resources
+        // 3) Configure the emscripten Module object
+        // 4) Start the emcripten runtime, after which emscripten takes over
+
+        // Check for Wasm & WebGL support; set error and return before downloading resources if missing
         if (!webAssemblySupported()) {
             self.error = "Error: WebAssembly is not supported"
             setStatus("Error");
@@ -219,31 +268,68 @@ function QtLoader(config)
             return;
         }
 
-        // Create module object for customization
-        var module = {};
-        self.module = module;
+        // Continue waiting if loadEmscriptenModule() is called again
+        if (publicAPI.status == "Loading")
+            return;
+        setStatus("Loading");
 
-        module.locateFile = module.locateFile || function(filename) {
+        // Fetch emscripten generated javascript runtime
+        var emscriptenModuleSource = undefined
+        var emscriptenModuleSourcePromise = fetchText(applicationName + ".js").then(function(source) {
+            emscriptenModuleSource = source
+        });
+
+        // Fetch and compile wasm module
+        var wasmModule = undefined;
+        var wasmModulePromise = fetchCompileWasm(applicationName + ".wasm").then(function (module) {
+            wasmModule = module;
+        });
+
+        // Wait for all resources ready
+        Promise.all([emscriptenModuleSourcePromise, wasmModulePromise]).then(function(){
+            completeLoadEmscriptenModule(applicationName, emscriptenModuleSource, wasmModule);
+        }).catch(function(error) {
+            self.error = error;
+            setStatus("Error");
+        });
+    }
+
+    function completeLoadEmscriptenModule(applicationName, emscriptenModuleSource, wasmModule) {
+
+        // The wasm binary has been compiled into a module during resource download,
+        // and is ready to be instantiated. Define the instantiateWasm callback which
+        // emscripten will call to create the instance.
+        Module.instantiateWasm = function(imports, successCallback) {
+            return WebAssembly.instantiate(wasmModule, imports).then(function(instance) {
+                successCallback(instance);
+                return instance;
+            }, function(error) {
+                self.error = error;
+                setStatus("Error");
+            });
+        };
+
+        Module.locateFile = Module.locateFile || function(filename) {
             return config.path + filename;
         }
 
         // Attach status callbacks
-        module.setStatus = module.setStatus || function(text) {
+        Module.setStatus = Module.setStatus || function(text) {
             // Currently the only usable status update from this function
             // is "Running..."
             if (text.startsWith("Running"))
                 setStatus("Running");
         }
-        module.monitorRunDependencies = module.monitorRunDependencies || function(left) {
+        Module.monitorRunDependencies = Module.monitorRunDependencies || function(left) {
           //  console.log("monitorRunDependencies " + left)
         }
 
         // Attach standard out/err callbacks.
-        module.print = module.print || function(text) {
+        Module.print = Module.print || function(text) {
             if (config.stdoutEnabled)
                 console.log(text)
         }
-        module.printErr = module.printErr || function(text) {
+        Module.printErr = Module.printErr || function(text) {
             // Filter out OpenGL getProcAddress warnings. Qt tries to resolve
             // all possible function/extension names at startup which causes
             // emscripten to spam the console log with warnings.
@@ -259,12 +345,12 @@ function QtLoader(config)
         // Emscripten will typically call printErr with the error text
         // as well. Note that emscripten may also throw exceptions from
         // async callbacks. These should be handled in window.onerror by user code.
-        module.onAbort = module.onAbort || function(text) {
+        Module.onAbort = Module.onAbort || function(text) {
             publicAPI.crashed = true;
             publicAPI.exitText = text;
             setStatus("Exited");
         }
-        module.quit = module.quit || function(code, exception) {
+        Module.quit = Module.quit || function(code, exception) {
             if (exception.name == "ExitStatus") {
                 // Clean exit with code
                 publicAPI.exitCode = code;
@@ -278,8 +364,8 @@ function QtLoader(config)
         // Set environment variables
         Module.preRun = Module.preRun || []
         Module.preRun.push(function() {
-            for (let [key, value] of Object.entries(config.environment)) {
-                ENV[key.toUpperCase()] = value;
+            for (var [key, value] of Object.entries(config.environment)) {
+                Module.ENV[key.toUpperCase()] = value;
             }
         });
 
@@ -298,16 +384,16 @@ function QtLoader(config)
                 setStatus("Error");
                 return;
             }
-            loadEmscriptenModule(createModule);
+            loadEmscriptenModule(applicationName);
 
         }
         publicAPI.exitCode = undefined;
-        publicAPI.exitText = undefined;
+        publicAPI.exitText = "";
         publicAPI.crashed = false;
-        setStatus("Loading");
 
-        // Finally call emscripten create with our config object
-        createModule(module);
+        // Finally evaluate the emscripten application script, which will
+        // reference the global Module object created above.
+        self.eval(emscriptenModuleSource); // ES5 indirect global scope eval
     }
 
     function setErrorContent() {
@@ -348,8 +434,8 @@ function QtLoader(config)
             firstCanvas = config.containerElements[0].firstChild;
         }
 
-        if (self.module.canvas === undefined) {
-            self.module.canvas = firstCanvas;
+        if (Module.canvas === undefined) {
+            Module.canvas = firstCanvas;
         }
     }
 

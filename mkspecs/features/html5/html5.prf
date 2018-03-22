@@ -1,42 +1,46 @@
-# Copies the given files to the destination directory
-defineTest(copyToOutDdir) {
-    files = $$1
 
-    !isEmpty(DESTDIR) {
-        DDIR = $$DESTDIR
-    } else {
-        DDIR = $$OUT_PWD
-    }
+# DESTDIR will be emtpy if not set in the app .pro file; make sure it has a value
+isEmpty(DESTDIR) : DESTDIR = $$OUT_PWD
+
+# Copies the given files to the destination directory
+defineTest(copyToDestDir) {
+    files = $$1
 
     for(FILE, files) {
         # Replace slashes in paths with backslashes for Windows
         win32:FILE ~= s,/,\\,g
         win32:DDIR ~= s,/,\\,g
 
-        QMAKE_POST_LINK += $$QMAKE_COPY $$quote($$FILE) $$quote($$DDIR) $$escape_expand(\\n\\t)
+        QMAKE_POST_LINK += $$QMAKE_COPY $$quote($$FILE) $$quote($$DESTDIR) $$escape_expand(\\n\\t)
     }
     export(QMAKE_POST_LINK)
 }
 
-# Creates an HTML + JS file, to be executed with emrun or node
+# Create js and wasm files for applications
 contains(TEMPLATE, .*app) {
-    !contains(TARGET, .html): TARGET = $${TARGET}.html
+    TARGET_BASE = $${TARGET}
+    TARGET_HTML = $${TARGET}.html
+    TARGET_JS = $${TARGET}.js
+
+    # Make the emscripten compiler generate a js file
+    TARGET = $$TARGET_JS
+
     QMAKE_INCDIR += $$(HOME)/.emscripten_ports/openssl/include
 
     CONFIG += static
-        js_file.files = $${TARGET}.js
+        js_file.files = TARGET_JS
         js_file.path += $$target.path
         isEmpty(js_file.path)
           js_file.path += ./
         INSTALLS += js_file
 
     !contains(CONFIG,config_test):!build_pass:cross_compile: {
-        QMAKE_CFLAGS += -s WASM=1 -s MODULARIZE=1 -s \"BINARYEN_METHOD=\'native-wasm\'\" -s \"BINARYEN_TRAP_MODE=\'clamp\'\"
-        QMAKE_CXXFLAGS += -s WASM=1 -s MODULARIZE=1 -s \"BINARYEN_METHOD=\'native-wasm\'\" -s \"BINARYEN_TRAP_MODE=\'clamp\'\"
-        QMAKE_LFLAGS += -s WASM=1 -s MODULARIZE=1 -s \"BINARYEN_METHOD=\'native-wasm\'\" -s \"BINARYEN_TRAP_MODE=\'clamp\'\"
+        QMAKE_CFLAGS += -s WASM=1 -s \"BINARYEN_METHOD=\'native-wasm\'\" -s \"BINARYEN_TRAP_MODE=\'clamp\'\"
+        QMAKE_CXXFLAGS += -s WASM=1 -s \"BINARYEN_METHOD=\'native-wasm\'\" -s \"BINARYEN_TRAP_MODE=\'clamp\'\"
+        QMAKE_LFLAGS += -s WASM=1 -s \"BINARYEN_METHOD=\'native-wasm\'\" -s \"BINARYEN_TRAP_MODE=\'clamp\'\"
     }
 
-    # Generate/copy hosting html and javascript to the application build directory.
+    # Copy hosting html and javascript to the application build directory.
     exists($$[QT_INSTALL_PLUGINS]/platforms/html5_shell.html) {
         # dont pass this until it's installed somewhere
         # otherwise makespec test fails during qt configure
@@ -45,8 +49,23 @@ contains(TEMPLATE, .*app) {
         ## internal build. not installed
         HTML5_PLUGIN_PATH = $$PWD/../../../src/plugins/platforms/html5
     }
-    QMAKE_LFLAGS += --shell-file $$HTML5_PLUGIN_PATH/html5_shell.html
-    copyToOutDdir($$HTML5_PLUGIN_PATH/qtloader.js)
+
+    # Copy/Generate main .html file (e.g. myapp.html) from the html5_shell.html by
+    # replacing the app name placeholder with the actual app name.
+    apphtml.target = $$DESTDIR/$$TARGET_HTML
+    apphtml.commands += sed -e s/APPNAME/$$TARGET_BASE/g $$quote($$HTML5_PLUGIN_PATH/html5_shell.html) > $$quote($$DESTDIR/$$TARGET_HTML) $$escape_expand(\\n\\t)
+
+    # Copy qtloader.js
+    appjs.target = $$DESTDIR/qtloader.js
+    appjs.commands += $$QMAKE_COPY $$quote($$HTML5_PLUGIN_PATH/qtloader.js) $$quote($$DESTDIR) $$escape_expand(\\n\\t)
+
+    QMAKE_EXTRA_TARGETS += apphtml appjs
+    POST_TARGETDEPS += $$apphtml.target $$appjs.target
+
+    # Add manual target to make "make -B shellfiles" work.
+    shellfiles.target = shellfiles
+    shellfiles.depends = $$apphtml.target $$appjs.target
+    QMAKE_EXTRA_TARGETS += shellfiles
 
     # emscripten ports are linked into the main module (this app), not the Qt
     # libs which reference them
