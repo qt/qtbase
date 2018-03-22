@@ -2952,8 +2952,10 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     d->checkReceiverThread(receiver);
 #endif
 
-    if (receiver->isWindowType())
-        QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(static_cast<QWindow *>(receiver), e);
+    if (receiver->isWindowType()) {
+        if (QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(static_cast<QWindow *>(receiver), e))
+            return true; // Platform plugin ate the event
+    }
 
     if(e->spontaneous()) {
         // Capture the current mouse and keyboard states. Doing so here is

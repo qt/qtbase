@@ -127,7 +127,7 @@ public:
 
     virtual bool setWindowModified(bool modified);
 
-    virtual void windowEvent(QEvent *event);
+    virtual bool windowEvent(QEvent *event);
 
     virtual bool startSystemResize(const QPoint &pos, Qt::Corner corner);
     virtual bool startSystemMove(const QPoint &pos);

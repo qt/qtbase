@@ -2328,19 +2328,6 @@ bool QWindow::event(QEvent *ev)
         break;
 #endif
 
-    case QEvent::Timer: {
-        Q_D(QWindow);
-        if (static_cast<QTimerEvent *>(ev)->timerId() == d->updateTimer) {
-            killTimer(d->updateTimer);
-            d->updateTimer = 0;
-            if (d->platformWindow)
-                d->platformWindow->deliverUpdateRequest();
-        } else {
-            QObject::event(ev);
-        }
-        break;
-    }
-
     case QEvent::PlatformSurface: {
         if ((static_cast<QPlatformSurfaceEvent *>(ev))->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed) {
 #ifndef QT_NO_OPENGL

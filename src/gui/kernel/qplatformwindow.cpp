@@ -461,14 +461,26 @@ bool QPlatformWindow::setWindowModified(bool modified)
 
 /*!
     Reimplement this method to be able to do any platform specific event
-    handling. All events for window() are passed to this function before being
-    sent to QWindow::event().
+    handling. All non-synthetic events for window() are passed to this
+    function before being sent to QWindow::event().
 
-    The default implementation is empty and does nothing with \a event.
+    Return true if the event should not be passed on to the QWindow.
+
+    Subclasses should always call the base class implementation.
 */
-void QPlatformWindow::windowEvent(QEvent *event)
+bool QPlatformWindow::windowEvent(QEvent *event)
 {
-    Q_UNUSED(event);
+    Q_D(QPlatformWindow);
+
+    if (event->type() == QEvent::Timer) {
+        if (static_cast<QTimerEvent *>(event)->timerId() == d->updateTimer.timerId()) {
+            d->updateTimer.stop();
+            deliverUpdateRequest();
+            return true;
+        }
+    }
+
+    return false;
 }
 
 /*!
@@ -734,18 +746,16 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w,
 */
 void QPlatformWindow::requestUpdate()
 {
-    static int timeout = -1;
-    if (timeout == -1) {
-        bool ok = false;
-        timeout = qEnvironmentVariableIntValue("QT_QPA_UPDATE_IDLE_TIME", &ok);
-        if (!ok)
-            timeout = 5;
-    }
+    Q_D(QPlatformWindow);
 
-    QWindow *w = window();
-    QWindowPrivate *wp = qt_window_private(w);
-    Q_ASSERT(wp->updateTimer == 0);
-    wp->updateTimer = w->startTimer(timeout, Qt::PreciseTimer);
+    static int updateInterval = []() {
+        bool ok = false;
+        int customUpdateInterval = qEnvironmentVariableIntValue("QT_QPA_UPDATE_IDLE_TIME", &ok);
+        return ok ? customUpdateInterval : 5;
+    }();
+
+    Q_ASSERT(!d->updateTimer.isActive());
+    d->updateTimer.start(updateInterval, Qt::PreciseTimer, window());
 }
 
 /*!

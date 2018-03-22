@@ -52,6 +52,7 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
+#include <QtCore/qbasictimer.h>
 #include <QtCore/qrect.h>
 
 QT_BEGIN_NAMESPACE
@@ -60,6 +61,7 @@ class QPlatformWindowPrivate
 {
 public:
     QRect rect;
+    QBasicTimer updateTimer;
 };
 
 QT_END_NAMESPACE

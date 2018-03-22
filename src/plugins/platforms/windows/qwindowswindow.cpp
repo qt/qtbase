@@ -2048,7 +2048,7 @@ void QWindowsWindow::setExStyle(unsigned s) const
     SetWindowLongPtr(m_data.hwnd, GWL_EXSTYLE, s);
 }
 
-void QWindowsWindow::windowEvent(QEvent *event)
+bool QWindowsWindow::windowEvent(QEvent *event)
 {
     switch (event->type()) {
     case QEvent::WindowBlocked: // Blocked by another modal window.
@@ -2064,6 +2064,8 @@ void QWindowsWindow::windowEvent(QEvent *event)
     default:
         break;
     }
+
+    return QPlatformWindow::windowEvent(event);
 }
 
 void QWindowsWindow::propagateSizeHints()

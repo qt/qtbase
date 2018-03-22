@@ -105,7 +105,7 @@ public:
 
     QSurfaceFormat format() const override;
 
-    void windowEvent(QEvent *event) override;
+    bool windowEvent(QEvent *event) override;
 
     bool startSystemResize(const QPoint &pos, Qt::Corner corner) override;
     bool startSystemMove(const QPoint &pos) override;

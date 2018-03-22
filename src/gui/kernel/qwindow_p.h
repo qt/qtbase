@@ -97,7 +97,6 @@ public:
         , modality(Qt::NonModal)
         , blockedByModalWindow(false)
         , updateRequestPending(false)
-        , updateTimer(0)
         , transientParent(0)
         , topLevelScreen(0)
 #ifndef QT_NO_CURSOR
@@ -192,7 +191,6 @@ public:
     bool blockedByModalWindow;
 
     bool updateRequestPending;
-    int updateTimer;
 
     QPointer<QWindow> transientParent;
     QPointer<QScreen> topLevelScreen;

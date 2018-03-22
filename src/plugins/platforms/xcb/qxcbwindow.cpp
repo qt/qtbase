@@ -2587,7 +2587,7 @@ bool QXcbWindow::setMouseGrabEnabled(bool grab)
     return result;
 }
 
-void QXcbWindow::windowEvent(QEvent *event)
+bool QXcbWindow::windowEvent(QEvent *event)
 {
     switch (event->type()) {
     case QEvent::FocusIn:
@@ -2613,7 +2613,7 @@ void QXcbWindow::windowEvent(QEvent *event)
     default:
         break;
     }
-    QPlatformWindow::windowEvent(event);
+    return QPlatformWindow::windowEvent(event);
 }
 
 bool QXcbWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)

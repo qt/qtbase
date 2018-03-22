@@ -252,7 +252,7 @@ public:
     void raise() override { raise_sys(); }
     void lower() override { lower_sys(); }
 
-    void windowEvent(QEvent *event) override;
+    bool windowEvent(QEvent *event) override;
 
     void propagateSizeHints() override;
     static bool handleGeometryChangingMessage(MSG *message, const QWindow *qWindow, const QMargins &marginsDp);
