@@ -154,7 +154,7 @@ void tst_QGraphicsItem::setPos()
     processEvents();
 
     QBENCHMARK {
-        rect->setPos(10, 10);
+        rect->setPos(pos);
     }
 }
 
