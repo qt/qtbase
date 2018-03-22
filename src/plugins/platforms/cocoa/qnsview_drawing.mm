@@ -119,7 +119,6 @@
 
     if (m_updateRequested) {
         Q_ASSERT(windowPrivate->updateRequestPending);
-        qCDebug(lcQpaWindow) << "Delivering update request to" << m_platformWindow->window();
         m_platformWindow->deliverUpdateRequest();
         m_updateRequested = false;
     } else {

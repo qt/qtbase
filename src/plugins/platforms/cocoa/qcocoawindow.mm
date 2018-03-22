@@ -1338,6 +1338,12 @@ void QCocoaWindow::requestUpdate()
     [qnsview_cast(m_view) requestUpdate];
 }
 
+void QCocoaWindow::deliverUpdateRequest()
+{
+    qCDebug(lcQpaDrawing) << "Delivering update request to" << window();
+    QPlatformWindow::deliverUpdateRequest();
+}
+
 void QCocoaWindow::requestActivateWindow()
 {
     NSWindow *window = [m_view window];

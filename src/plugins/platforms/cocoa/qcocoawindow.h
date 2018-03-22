@@ -125,6 +125,8 @@ public:
     bool isForeignWindow() const override;
 
     void requestUpdate() override;
+    void deliverUpdateRequest() override;
+
     void requestActivateWindow() override;
 
     WId winId() const override;
