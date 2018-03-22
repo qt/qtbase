@@ -698,6 +698,11 @@ void QRasterPaintEngine::setState(QPainterState *s)
 {
     Q_D(QRasterPaintEngine);
     QPaintEngineEx::setState(s);
+    QRasterPaintEngineState *t = state();
+    if (t->clip && t->clip->enabled != t->clipEnabled) {
+        // Since we do not "detach" clipdata when changing only enabled state, we need to resync state here
+        t->clip->enabled = t->clipEnabled;
+    }
     d->rasterBuffer->compositionMode = s->composition_mode;
 }
 
