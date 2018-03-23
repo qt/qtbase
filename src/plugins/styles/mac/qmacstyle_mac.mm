@@ -6209,7 +6209,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     case CT_SpinBox:
         if (const QStyleOptionSpinBox *vopt = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             const int buttonWidth = 20; // FIXME Use subControlRect()
-            sz += QSize(buttonWidth, -3);
+            sz += QSize(buttonWidth, 0);
         }
         break;
 #endif
