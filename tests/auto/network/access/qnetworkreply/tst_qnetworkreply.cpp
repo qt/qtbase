@@ -6145,7 +6145,6 @@ void tst_QNetworkReply::httpRecursiveCreation()
 #ifndef QT_NO_SSL
 void tst_QNetworkReply::ignoreSslErrorsList_data()
 {
-    QTest::addColumn<QString>("url");
     QTest::addColumn<QList<QSslError> >("expectedSslErrors");
     QTest::addColumn<QNetworkReply::NetworkError>("expectedNetworkError");
 
@@ -6154,20 +6153,20 @@ void tst_QNetworkReply::ignoreSslErrorsList_data()
     QSslError rightError(FLUKE_CERTIFICATE_ERROR, certs.at(0));
     QSslError wrongError(FLUKE_CERTIFICATE_ERROR);
 
-    QTest::newRow("SSL-failure-empty-list") << "https://" + QtNetworkSettings::serverName() + "/index.html" << expectedSslErrors << QNetworkReply::SslHandshakeFailedError;
+    QTest::newRow("SSL-failure-empty-list") << expectedSslErrors << QNetworkReply::SslHandshakeFailedError;
     expectedSslErrors.append(wrongError);
-    QTest::newRow("SSL-failure-wrong-error") << "https://" + QtNetworkSettings::serverName() + "/index.html" << expectedSslErrors << QNetworkReply::SslHandshakeFailedError;
+    QTest::newRow("SSL-failure-wrong-error") << expectedSslErrors << QNetworkReply::SslHandshakeFailedError;
     expectedSslErrors.append(rightError);
-    QTest::newRow("allErrorsInExpectedList1") << "https://" + QtNetworkSettings::serverName() + "/index.html" << expectedSslErrors << QNetworkReply::NoError;
+    QTest::newRow("allErrorsInExpectedList1") << expectedSslErrors << QNetworkReply::NoError;
     expectedSslErrors.removeAll(wrongError);
-    QTest::newRow("allErrorsInExpectedList2") << "https://" + QtNetworkSettings::serverName() + "/index.html" << expectedSslErrors << QNetworkReply::NoError;
+    QTest::newRow("allErrorsInExpectedList2") << expectedSslErrors << QNetworkReply::NoError;
     expectedSslErrors.removeAll(rightError);
-    QTest::newRow("SSL-failure-empty-list-again") << "https://" + QtNetworkSettings::serverName() + "/index.html" << expectedSslErrors << QNetworkReply::SslHandshakeFailedError;
+    QTest::newRow("SSL-failure-empty-list-again") << expectedSslErrors << QNetworkReply::SslHandshakeFailedError;
 }
 
 void tst_QNetworkReply::ignoreSslErrorsList()
 {
-    QFETCH(QString, url);
+    QString url(QLatin1String("https://") + QtNetworkSettings::serverName() + QLatin1String("/index.html"));
     QNetworkRequest request(url);
     QNetworkReplyPtr reply(manager.get(request));
 
@@ -6194,7 +6193,7 @@ void tst_QNetworkReply::ignoreSslErrorListSlot(QNetworkReply *reply, const QList
 // do the same as in ignoreSslErrorsList, but ignore the errors in the slot
 void tst_QNetworkReply::ignoreSslErrorsListWithSlot()
 {
-    QFETCH(QString, url);
+    QString url(QLatin1String("https://") + QtNetworkSettings::serverName() + QLatin1String("/index.html"));
     QNetworkRequest request(url);
     QNetworkReplyPtr reply(manager.get(request));
 
