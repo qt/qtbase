@@ -192,7 +192,7 @@ QList<QPair<QString,QStringList> > PaintCommands::s_enumsTable = QList<QPair<QSt
 QMultiHash<QString, int> PaintCommands::s_commandHash;
 
 #define DECL_PAINTCOMMAND(identifier, method, regexp, syntax, sample) \
-    s_commandInfoTable << PaintCommandInfos(QLatin1String(identifier), &PaintCommands::method, QRegularExpression(regexp, QRegularExpression::OptimizeOnFirstUsageOption), \
+    s_commandInfoTable << PaintCommandInfos(QLatin1String(identifier), &PaintCommands::method, QRegularExpression(regexp), \
                                             QLatin1String(syntax), QLatin1String(sample) );
 
 #define DECL_PAINTCOMMANDSECTION(title) \
@@ -615,6 +615,8 @@ void PaintCommands::staticInit()
 
     // populate the command lookup hash
     for (int i=0; i<s_commandInfoTable.size(); i++) {
+        // and pre-optimize the regexps.
+        s_commandInfoTable.at(i).regExp.optimize();
         if (s_commandInfoTable.at(i).isSectionHeader() ||
             s_commandInfoTable.at(i).identifier == QLatin1String("comment") ||
             s_commandInfoTable.at(i).identifier == QLatin1String("noop"))
@@ -682,6 +684,7 @@ void PaintCommands::insertAt(int commandIndex, const QStringList &newCommands)
 **********************************************************************************/
 void PaintCommands::runCommand(const QString &scriptLine)
 {
+    static QRegularExpression separators("\\s");
     if (scriptLine.isEmpty()) {
         command_noop(QRegularExpressionMatch());
         return;
@@ -690,7 +693,7 @@ void PaintCommands::runCommand(const QString &scriptLine)
         command_comment(QRegularExpressionMatch());
         return;
     }
-    QString firstWord = scriptLine.section(QRegularExpression("\\s"), 0, 0);
+    QString firstWord = scriptLine.section(separators, 0, 0);
     QList<int> indices = s_commandHash.values(firstWord);
     foreach(int idx, indices) {
         PaintCommandInfos command = s_commandInfoTable.at(idx);

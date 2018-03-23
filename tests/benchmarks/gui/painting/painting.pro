@@ -5,7 +5,8 @@ SUBDIRS = \
         qpainter \
         qregion \
         qtransform \
-        qtbench
+        qtbench \
+        lancebench
 
 !qtHaveModule(widgets): SUBDIRS -= \
     qpainter \
