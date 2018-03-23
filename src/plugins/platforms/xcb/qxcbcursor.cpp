@@ -301,6 +301,9 @@ QXcbCursorCacheKey::QXcbCursorCacheKey(const QCursor &c)
 QXcbCursor::QXcbCursor(QXcbConnection *conn, QXcbScreen *screen)
     : QXcbObject(conn), m_screen(screen), m_gtkCursorThemeInitialized(false)
 {
+    // see NUM_BITMAPS in libXcursor/src/xcursorint.h
+    m_bitmapCache.setMaxCost(8);
+
     if (cursorCount++)
         return;
 
@@ -351,37 +354,38 @@ QXcbCursor::~QXcbCursor()
 }
 
 #ifndef QT_NO_CURSOR
-void QXcbCursor::changeCursor(QCursor *cursor, QWindow *widget)
+void QXcbCursor::changeCursor(QCursor *cursor, QWindow *window)
 {
-    QXcbWindow *w = 0;
-    if (widget && widget->handle())
-        w = static_cast<QXcbWindow *>(widget->handle());
-    else
-        // No X11 cursor control when there is no widget under the cursor
+    if (!window || !window->handle())
         return;
 
     xcb_cursor_t c = XCB_CURSOR_NONE;
-    bool isBitmapCursor = false;
-
     if (cursor) {
+        const QXcbCursorCacheKey key(*cursor);
         const Qt::CursorShape shape = cursor->shape();
-        isBitmapCursor = shape == Qt::BitmapCursor;
 
-        if (!isBitmapCursor) {
-            const QXcbCursorCacheKey key(*cursor);
-            CursorHash::iterator it = m_cursorHash.find(key);
-            if (it == m_cursorHash.end()) {
-                it = m_cursorHash.insert(key, createFontCursor(shape));
+        if (shape == Qt::BitmapCursor) {
+            auto *bitmap = m_bitmapCache.object(key);
+            if (bitmap) {
+                c = bitmap->cursor;
+            } else {
+                c = createBitmapCursor(cursor);
+                m_bitmapCache.insert(key, new CachedCursor(xcb_connection(), c));
             }
-            c = it.value();
         } else {
-            // Do not cache bitmap cursors, as otherwise they have unclear
-            // lifetime (we effectively leak xcb_cursor_t).
-            c = createBitmapCursor(cursor);
+            auto it = m_cursorHash.find(key);
+            if (it == m_cursorHash.end()) {
+                c = createFontCursor(shape);
+                m_cursorHash.insert(key, c);
+            } else {
+                c = it.value();
+            }
         }
     }
 
-    w->setCursor(c, isBitmapCursor);
+    auto *w = static_cast<QXcbWindow *>(window->handle());
+    xcb_change_window_attributes(xcb_connection(), w->xcb_window(), XCB_CW_CURSOR, &c);
+    xcb_flush(xcb_connection());
 }
 
 static int cursorIdForShape(int cshape)
