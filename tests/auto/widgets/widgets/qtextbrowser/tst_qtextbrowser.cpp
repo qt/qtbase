@@ -29,7 +29,6 @@
 
 #include <QtTest/QtTest>
 #include <qtextbrowser.h>
-#include <qdatetime.h>
 #include <qapplication.h>
 #include <qscrollbar.h>
 
