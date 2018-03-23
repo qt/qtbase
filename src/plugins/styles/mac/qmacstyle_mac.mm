@@ -3942,6 +3942,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             // windows style if it has an icon and text, then it should be more like a
             // tab. So, cheat a little here. However, if it *is* only an icon
             // the windows style works great, so just use that implementation.
+            const bool isEnabled = btn.state & State_Enabled;
             const bool hasMenu = btn.features & QStyleOptionButton::HasMenu;
             const bool hasIcon = !btn.icon.isNull();
             const bool hasText = !btn.text.isEmpty();
@@ -3952,7 +3953,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 
             if (!hasMenu && ct != QMacStylePrivate::Button_SquareButton) {
                 if (isPressed
-                    || (isActive
+                    || (isActive && isEnabled
                         && ((btn.features & QStyleOptionButton::DefaultButton && !d->autoDefaultButton)
                             || d->autoDefaultButton == btn.styleObject)))
                 btn.palette.setColor(QPalette::ButtonText, Qt::white);
@@ -3963,7 +3964,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             } else {
                 QRect freeContentRect = btn.rect;
                 QRect textRect = itemTextRect(
-                            btn.fontMetrics, freeContentRect, Qt::AlignCenter, btn.state & State_Enabled, btn.text);
+                            btn.fontMetrics, freeContentRect, Qt::AlignCenter, isEnabled, btn.text);
                 if (hasMenu) {
                     textRect.moveTo(w ? 15 : 11, textRect.top()); // Supports Qt Quick Controls
                 }
@@ -3972,7 +3973,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     int contentW = textRect.width();
                     if (hasMenu)
                         contentW += proxy()->pixelMetric(PM_MenuButtonIndicator) + 4;
-                    QIcon::Mode mode = btn.state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
+                    QIcon::Mode mode = isEnabled ? QIcon::Normal : QIcon::Disabled;
                     if (mode == QIcon::Normal && btn.state & State_HasFocus)
                         mode = QIcon::Active;
                     // Decide if the icon is should be on or off:
@@ -3996,7 +3997,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 if (hasText) {
                     textRect = visualRect(btn.direction, freeContentRect, textRect);
                     proxy()->drawItemText(p, textRect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic, btn.palette,
-                                          (btn.state & State_Enabled), btn.text, QPalette::ButtonText);
+                                          isEnabled, btn.text, QPalette::ButtonText);
                 }
             }
         }
