@@ -163,6 +163,9 @@ QString QTextBrowserPrivate::findFile(const QUrl &name) const
             fileName = name.toLocalFile();
     }
 
+    if (fileName.isEmpty())
+        return fileName;
+
     if (QFileInfo(fileName).isAbsolute())
         return fileName;
 
@@ -1089,6 +1092,8 @@ QVariant QTextBrowser::loadResource(int /*type*/, const QUrl &name)
 
     QByteArray data;
     QString fileName = d->findFile(d->resolveUrl(name));
+    if (fileName.isEmpty())
+        return QVariant();
     QFile f(fileName);
     if (f.open(QFile::ReadOnly)) {
         data = f.readAll();
