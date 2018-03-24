@@ -229,7 +229,7 @@ void  QTipLabel::updateSize(const QPoint &pos)
         ++extra.rheight();
     QSize sh = sizeHint();
     if (wordWrap()) {
-        const QRect screenRect = QApplication::desktop()->screenGeometry(pos);
+        const QRect screenRect = QGuiApplication::screenAt(pos)->geometry();
         if (sh.width() > screenRect.width()) {
             // Try to use widely accepted 75chars max length or 80% of the screen width else.
             // See https://en.wikipedia.org/wiki/Line_length
