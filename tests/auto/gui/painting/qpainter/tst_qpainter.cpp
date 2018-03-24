@@ -31,9 +31,9 @@
 #include <qpainter.h>
 #ifndef QT_NO_WIDGETS
 #include <qdrawutil.h>
-#include <qapplication.h>
 #include <qwidget.h>
 #endif
+#include <qguiapplication.h>
 #include <qfontmetrics.h>
 #include <qbitmap.h>
 #include <qimage.h>
@@ -41,26 +41,18 @@
 #include <limits.h>
 #include <math.h>
 #include <qpaintengine.h>
-#ifndef QT_NO_WIDGETS
-#include <qdesktopwidget.h>
-#endif
 #include <qpixmap.h>
 #include <qrandom.h>
 
 #include <private/qdrawhelper_p.h>
 #include <qpainter.h>
-
-#ifndef QT_NO_WIDGETS
-#include <qlabel.h>
-#endif
-
 #include <qqueue.h>
+#include <qscreen.h>
 
 #ifndef QT_NO_WIDGETS
 #include <qgraphicsview.h>
 #include <qgraphicsscene.h>
 #include <qgraphicsproxywidget.h>
-#include <qlayout.h>
 #endif
 #include <qfontdatabase.h>
 
@@ -404,7 +396,7 @@ void tst_QPainter::cleanupTestCase()
 #ifndef QT_NO_WIDGETS
 void tst_QPainter::drawPixmap_comp_data()
 {
-    if (qApp->desktop()->depth() < 24)
+    if (QGuiApplication::primaryScreen()->depth() < 24)
         QSKIP("Test only works on 32 bit displays");
 
     QTest::addColumn<uint>("dest");

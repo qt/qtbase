@@ -416,8 +416,7 @@ private:
 
 bool tst_QWidget::ensureScreenSize(int width, int height)
 {
-    QSize available;
-    available = QDesktopWidget().availableGeometry().size();
+    const QSize available = QGuiApplication::primaryScreen()->availableGeometry().size();
     return (available.width() >= width && available.height() >= height);
 }
 
@@ -2724,7 +2723,7 @@ void tst_QWidget::setGeometry()
 
     tlw.setParent(0, Qt::Window|Qt::FramelessWindowHint);
     tr = QRect(0,0,100,100);
-    tr.moveTopLeft(QApplication::desktop()->availableGeometry().topLeft());
+    tr.moveTopLeft(QGuiApplication::primaryScreen()->availableGeometry().topLeft());
     tlw.setGeometry(tr);
     QCOMPARE(tlw.geometry(), tr);
     tlw.showNormal();
@@ -4519,8 +4518,9 @@ void tst_QWidget::scroll()
 {
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
-    const int w = qMin(500, qApp->desktop()->availableGeometry().width() / 2);
-    const int h = qMin(500, qApp->desktop()->availableGeometry().height() / 2);
+    QScreen *screen = QGuiApplication::primaryScreen();
+    const int w = qMin(500, screen->availableGeometry().width() / 2);
+    const int h = qMin(500, screen->availableGeometry().height() / 2);
 
     UpdateWidget updateWidget;
     updateWidget.resize(w, h);
@@ -4648,7 +4648,7 @@ void tst_QWidget::setWindowGeometry_data()
     QList<QList<QRect> > rects;
     const int width = m_testWidgetSize.width();
     const int height = m_testWidgetSize.height();
-    const QRect availableAdjusted = QApplication::desktop()->availableGeometry().adjusted(100, 100, -100, -100);
+    const QRect availableAdjusted = QGuiApplication::primaryScreen()->availableGeometry().adjusted(100, 100, -100, -100);
     rects << (QList<QRect>()
               << QRect(m_availableTopLeft + QPoint(100, 100), m_testWidgetSize)
               << availableAdjusted
@@ -7431,7 +7431,7 @@ void tst_QWidget::moveWindowInShowEvent_data()
     QTest::addColumn<QPoint>("initial");
     QTest::addColumn<QPoint>("position");
 
-    QPoint p = QApplication::desktop()->availableGeometry().topLeft();
+    QPoint p = QGuiApplication::primaryScreen()->availableGeometry().topLeft();
 
     QTest::newRow("1") << p << (p + QPoint(10, 10));
     QTest::newRow("2") << (p + QPoint(10,10)) << p;
@@ -7456,7 +7456,8 @@ void tst_QWidget::moveWindowInShowEvent()
     };
 
     MoveWindowInShowEventWidget widget;
-    widget.resize(QSize(qApp->desktop()->availableGeometry().size() / 3).expandedTo(QSize(1, 1)));
+    QScreen *screen = QGuiApplication::primaryScreen();
+    widget.resize(QSize(screen->availableGeometry().size() / 3).expandedTo(QSize(1, 1)));
     // move to this position in showEvent()
     widget.position = position;
 
@@ -8646,7 +8647,7 @@ void tst_QWidget::translucentWidget()
     ColorRedWidget label;
     label.setFixedSize(16,16);
     label.setAttribute(Qt::WA_TranslucentBackground);
-    const QPoint labelPos = qApp->desktop()->availableGeometry().topLeft();
+    const QPoint labelPos = QGuiApplication::primaryScreen()->availableGeometry().topLeft();
     label.move(labelPos);
     label.show();
     QVERIFY(QTest::qWaitForWindowExposed(&label));

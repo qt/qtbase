@@ -2188,8 +2188,8 @@ void tst_QComboBox::itemListPosition()
     if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
         useFullScreenForPopupMenu = theme->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool();
     const QRect screen = useFullScreenForPopupMenu ?
-                         QApplication::desktop()->screenGeometry(scrNumber) :
-                         QApplication::desktop()->availableGeometry(scrNumber);
+                         QApplication::screens().at(scrNumber)->geometry() :
+                         QApplication::screens().at(scrNumber)->availableGeometry();
 
     topLevel.move(screen.width() - topLevel.sizeHint().width() - 10, 0); //puts the combo to the top-right corner
 
@@ -2311,7 +2311,7 @@ void tst_QComboBox::task191329_size()
     setFrameless(&tableCombo);
     tableCombo.move(200, 200);
     int rows;
-    if (QApplication::desktop()->screenGeometry().height() < 480)
+    if (QApplication::primaryScreen()->geometry().height() < 480)
         rows = 8;
     else
         rows = 15;
@@ -2390,8 +2390,7 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
 
     QComboBox comboBox;
     comboBox.addItems(initialContent);
-    QDesktopWidget desktop;
-    QRect desktopSize = desktop.availableGeometry();
+    QRect desktopSize = QGuiApplication::primaryScreen()->availableGeometry();
     comboBox.view()->setMinimumWidth(desktopSize.width() / 2);
 
     comboBox.setGeometry(desktopSize.width() - (desktopSize.width() / 4), (desktopSize.width() / 4), (desktopSize.width() / 2), (desktopSize.width() / 4));
@@ -2407,6 +2406,7 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
 #if defined QT_BUILD_INTERNAL
     QFrame *container = comboBox.findChild<QComboBoxPrivateContainer *>();
     QVERIFY(container);
+    QDesktopWidget desktop;
     QTRY_VERIFY(desktop.screenGeometry(container).contains(container->geometry()));
 #endif
 }

@@ -43,7 +43,7 @@
 #include <qlabel.h>
 #include <qtextedit.h>
 #include <qstylehints.h>
-#include <qdesktopwidget.h>
+#include <qscreen.h>
 #include <private/qmainwindowlayout_p.h>
 #include <private/qdockarealayout_p.h>
 
@@ -768,7 +768,7 @@ void tst_QMainWindow::contentsMargins()
     QFETCH(int, contentsMargin);
 
     QMainWindow mw;
-    const QRect availGeometry = QApplication::desktop()->availableGeometry();
+    const QRect availGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     mw.menuBar()->addMenu("File");
     mw.setWindowTitle(QLatin1String(QTest::currentTestFunction())
                       + QLatin1Char(' ') + QLatin1String(QTest::currentDataTag()));

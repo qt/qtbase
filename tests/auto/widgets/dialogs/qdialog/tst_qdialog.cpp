@@ -554,7 +554,7 @@ void tst_QDialog::snapToDefaultButton()
     if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: Wayland does not support setting the cursor position.");
 
-    const QRect dialogGeometry(QApplication::desktop()->availableGeometry().topLeft()
+    const QRect dialogGeometry(QGuiApplication::primaryScreen()->availableGeometry().topLeft()
                                + QPoint(100, 100), QSize(200, 200));
     const QPoint startingPos = dialogGeometry.bottomRight() + QPoint(100, 100);
     QCursor::setPos(startingPos);

@@ -36,7 +36,7 @@
 #include <qmainwindow.h>
 #include <qlineedit.h>
 #include <qtabbar.h>
-#include <QDesktopWidget>
+#include <QScreen>
 #include <QtGui/QPainter>
 #include "private/qdockwidget_p.h"
 
@@ -338,7 +338,7 @@ void tst_QDockWidget::features()
 
 void tst_QDockWidget::setFloating()
 {
-    const QRect deskRect = QApplication::desktop()->availableGeometry();
+    const QRect deskRect = QGuiApplication::primaryScreen()->availableGeometry();
     QMainWindow mw;
     mw.move(deskRect.left() + deskRect.width() * 2 / 3, deskRect.top() + deskRect.height() / 3);
     QDockWidget dw;
@@ -756,7 +756,7 @@ void tst_QDockWidget::restoreStateWhileStillFloating()
     // When the dock widget is already floating then it takes a different code path
     // so this test covers the case where the restoreState() is effectively just
     // moving it back and resizing it
-    const QRect availGeom = QApplication::desktop()->availableGeometry();
+    const QRect availGeom = QGuiApplication::primaryScreen()->availableGeometry();
     const QPoint startingDockPos = availGeom.center();
     QMainWindow mw;
     QDockWidget *dock = createTestDock(mw);
@@ -784,7 +784,7 @@ void tst_QDockWidget::restoreDockWidget()
     const bool isXcb = !QGuiApplication::platformName().compare("xcb", Qt::CaseInsensitive);
 
     const QString name = QStringLiteral("main");
-    const QRect availableGeometry = QApplication::desktop()->availableGeometry();
+    const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     const QSize size = availableGeometry.size() / 5;
     const QPoint mainWindowPos = availableGeometry.bottomRight() - QPoint(size.width(), size.height()) - QPoint(100, 100);
     const QPoint dockPos = availableGeometry.center();
@@ -868,7 +868,7 @@ void tst_QDockWidget::task169808_setFloating()
     public:
         QSize sizeHint() const
         {
-            const QRect& deskRect = qApp->desktop()->availableGeometry();
+            const QRect& deskRect = QGuiApplication::primaryScreen()->availableGeometry();
             return QSize(qMin(300, deskRect.width() / 2), qMin(300, deskRect.height() / 2));
         }
 
