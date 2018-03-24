@@ -50,7 +50,8 @@
 
 #include "pathdeform.h"
 
-#include <QApplication>
+#include <QGuiApplication>
+#include <QScreen>
 #include <QtDebug>
 #include <QMouseEvent>
 #include <QTimerEvent>
@@ -247,7 +248,7 @@ void PathDeformControls::layoutForSmallScreen()
     deformSlider->setValue(80);
     fontSizeSlider->setValue(120);
 
-    QRect screen_size = QApplication::desktop()->screenGeometry();
+    QRect screen_size = QGuiApplication::primaryScreen()->geometry();
     radiusSlider->setValue(qMin(screen_size.width(), screen_size.height())/5);
 
     m_renderer->setText(tr("Qt"));
@@ -277,7 +278,7 @@ PathDeformWidget::PathDeformWidget(QWidget *parent, bool smallScreen)
 
     connect(m_renderer, SIGNAL(clicked()), this, SLOT(showControls()));
     connect(m_controls, SIGNAL(okPressed()), this, SLOT(hideControls()));
-    connect(m_controls, SIGNAL(quitPressed()), QApplication::instance(), SLOT(quit()));
+    connect(m_controls, SIGNAL(quitPressed()), QCoreApplication::instance(), SLOT(quit()));
 }
 
 

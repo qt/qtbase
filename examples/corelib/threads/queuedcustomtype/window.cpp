@@ -108,9 +108,8 @@ void Window::loadImage()
 
 void Window::loadImage(const QImage &image)
 {
-    QDesktopWidget desktop;
     QImage useImage;
-    QRect space = desktop.availableGeometry();
+    QRect space = QGuiApplication::primaryScreen()->availableGeometry();
     if (image.width() > 0.75*space.width() || image.height() > 0.75*space.height())
         useImage = image.scaled(0.75*space.width(), 0.75*space.height(),
                                 Qt::KeepAspectRatio, Qt::SmoothTransformation);
