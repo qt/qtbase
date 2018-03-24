@@ -514,7 +514,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \value BlockFormat The object formats a text block
     \value CharFormat The object formats a single character
     \value ListFormat The object formats a list
-    \omitvalue TableFormat Unused Value, a table's FormatType is FrameFormat.
+    \omitvalue TableFormat \omit Unused Value, a table's FormatType is FrameFormat. \endomit
     \value FrameFormat The object formats a frame
 
     \value UserFormat

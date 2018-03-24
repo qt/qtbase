@@ -1889,7 +1889,7 @@ bool QCoreApplication::event(QEvent *e)
 
     \value UnicodeUTF8   UTF-8.
     \omitvalue Latin1
-    \omitvalue DefaultCodec  UTF-8.
+    \omitvalue DefaultCodec \omit UTF-8. \endomit
     \omitvalue CodecForTr
 
     \sa QObject::tr(), QString::fromUtf8()

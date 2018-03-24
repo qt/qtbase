@@ -202,7 +202,7 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
 
     This enum type defines accessible event types.
 
-    \omitvalue InvalidEvent                 Internal: Used when creating subclasses of QAccessibleEvent.
+    \omitvalue InvalidEvent                 \omit Internal: Used when creating subclasses of QAccessibleEvent. \endomit
     \value AcceleratorChanged               The keyboard accelerator for an action has been changed.
     \value ActionChanged                    An action has been changed.
     \value ActiveDescendantChanged
@@ -273,27 +273,27 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     \value SelectionWithin                  Several changes to a selection has occurred in an item
                                             view.
     \value SoundPlayed                      A sound has been played by an object
-    \omitvalue StateChanged                 The QAccessible::State of an object has changed.
-                                            This value is used internally for the QAccessibleStateChangeEvent.
+    \omitvalue StateChanged                 \omit The QAccessible::State of an object has changed.
+                                            This value is used internally for the QAccessibleStateChangeEvent. \endomit
     \value TableCaptionChanged              A table caption has been changed.
     \value TableColumnDescriptionChanged    The description of a table column, typically found in
                                             the column's header, has been changed.
     \value TableColumnHeaderChanged         A table column header has been changed.
-    \omitvalue TableModelChanged                The model providing data for a table has been changed.
+    \omitvalue TableModelChanged            \omit The model providing data for a table has been changed. \endomit
     \value TableRowDescriptionChanged       The description of a table row, typically found in the
                                             row's header, has been changed.
     \value TableRowHeaderChanged            A table row header has been changed.
     \value TableSummaryChanged              The summary of a table has been changed.
     \omitvalue TextAttributeChanged
-    \omitvalue TextCaretMoved                   The caret has moved in an editable widget.
+    \omitvalue TextCaretMoved               \omit The caret has moved in an editable widget.
                                             The caret represents the cursor position in an editable
-                                            widget with the input focus.
+                                            widget with the input focus. \endomit
     \value TextColumnChanged                A text column has been changed.
-    \omitvalue TextInserted                     Text has been inserted into an editable widget.
-    \omitvalue TextRemoved                      Text has been removed from an editable widget.
-    \omitvalue TextSelectionChanged             The selected text has changed in an editable widget.
-    \omitvalue TextUpdated                      The text has been update in an editable widget.
-    \omitvalue ValueChanged                     The QAccessible::Value of an object has changed.
+    \omitvalue TextInserted                 \omit Text has been inserted into an editable widget. \endomit
+    \omitvalue TextRemoved                  \omit Text has been removed from an editable widget. \endomit
+    \omitvalue TextSelectionChanged         \omit The selected text has changed in an editable widget. \endomit
+    \omitvalue TextUpdated                  \omit The text has been update in an editable widget. \endomit
+    \omitvalue ValueChanged                 \omit The QAccessible::Value of an object has changed. \endomit
     \value VisibleDataChanged
 
     The values for this enum are defined to be the same as those defined in the
@@ -441,10 +441,10 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     \note When subclassing one of these interfaces, \l QAccessibleInterface::interface_cast() needs to be implemented.
 
     \value TextInterface            For text that supports selections or is more than one line. Simple labels do not need to implement this interface.
-    \omitvalue EditableTextInterface    For text that can be edited by the user.
+    \omitvalue EditableTextInterface    \omit For text that can be edited by the user. \endomit
     \value ValueInterface           For objects that are used to manipulate a value, for example slider or scroll bar.
     \value ActionInterface          For interactive objects that allow the user to trigger an action. Basically everything that allows for example mouse interaction.
-    \omitvalue ImageInterface       For objects that represent an image. This interface is generally less important.
+    \omitvalue ImageInterface       \omit For objects that represent an image. This interface is generally less important. \endomit
     \value TableInterface           For lists, tables and trees.
     \value TableCellInterface       For cells in a TableInterface object.
 

@@ -2104,17 +2104,17 @@ struct DDSFormat {
     would mirror the image and automatically generate mipmaps. This
     option helps preserve this default behavior.
 
-    \omitvalue CanFlipNativePixmapBindOption Used by x11 from pixmap to choose
-    whether or not it can bind the pixmap upside down or not.
+    \omitvalue CanFlipNativePixmapBindOption \omit Used by x11 from pixmap to choose
+    whether or not it can bind the pixmap upside down or not. \endomit
 
-    \omitvalue MemoryManagedBindOption Used by paint engines to
+    \omitvalue MemoryManagedBindOption \omit Used by paint engines to
     indicate that the pixmap should be memory managed along side with
     the pixmap/image that it stems from, e.g. installing destruction
-    hooks in them.
+    hooks in them. \endomit
 
-    \omitvalue TemporarilyCachedBindOption Used by paint engines on some
+    \omitvalue TemporarilyCachedBindOption \omit Used by paint engines on some
     platforms to indicate that the pixmap or image texture is possibly
-    cached only temporarily and must be destroyed immediately after the use.
+    cached only temporarily and must be destroyed immediately after the use. \endomit
 
     \omitvalue InternalBindOption
 */
