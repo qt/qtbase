@@ -66,7 +66,7 @@ MainWindow::MainWindow()
     QComboBox *monthCombo = new QComboBox;
 
     for (int month = 1; month <= 12; ++month)
-        monthCombo->addItem(QDate::longMonthName(month));
+        monthCombo->addItem(QLocale::system().monthName(month));
 
     QDateTimeEdit *yearEdit = new QDateTimeEdit;
     yearEdit->setDisplayFormat("yyyy");
@@ -168,7 +168,7 @@ void MainWindow::insertCalendar()
         QTextTableCell cell = table->cellAt(0, weekDay-1);
 //! [11] //! [12]
         QTextCursor cellCursor = cell.firstCursorPosition();
-        cellCursor.insertText(QString("%1").arg(QDate::longDayName(weekDay)), boldFormat);
+        cellCursor.insertText(QLocale::system().dayName(weekDay), boldFormat);
     }
 //! [12]
 
@@ -194,7 +194,7 @@ void MainWindow::insertCalendar()
     cursor.endEditBlock();
 //! [14]
     setWindowTitle(tr("Calendar for %1 %2"
-        ).arg(QDate::longMonthName(selectedDate.month())
+        ).arg(QLocale::system().monthName(selectedDate.month())
         ).arg(selectedDate.year()));
 }
 //! [14]
