@@ -154,7 +154,7 @@ private:
     bool anyAdvancedOptionConflict() const;
 
     QPrintDevice *m_currentPrintDevice;
-    QTextCodec *m_cupsCodec;
+    QTextCodec *m_cupsCodec = nullptr;
     QVector<QComboBox*> m_advancedOptionsCombos;
 #endif
 };
