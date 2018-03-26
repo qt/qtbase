@@ -591,6 +591,10 @@ void QQnxScreenEventHandler::handlePropertyEvent(screen_event_t event)
     case SCREEN_PROPERTY_FOCUS:
         handleKeyboardFocusPropertyEvent(window);
         break;
+    case SCREEN_PROPERTY_SIZE:
+    case SCREEN_PROPERTY_POSITION:
+        handleGeometryPropertyEvent(window);
+        break;
     default:
         // event ignored
         qScreenEventDebug() << "Ignore property event for property: " << property;
@@ -615,6 +619,28 @@ void QQnxScreenEventHandler::handleKeyboardFocusPropertyEvent(screen_window_t wi
         QWindowSystemInterface::handleWindowActivated(focusWindow);
     else if (!focus && focusWindow == QGuiApplication::focusWindow())
         m_focusLostTimer = startTimer(50);
+}
+
+void QQnxScreenEventHandler::handleGeometryPropertyEvent(screen_window_t window)
+{
+    int pos[2];
+    if (screen_get_window_property_iv(window, SCREEN_PROPERTY_POSITION, pos) != 0) {
+        qFatal("QQnx: failed to query window property, errno=%d", errno);
+    }
+
+    int size[2];
+    if (screen_get_window_property_iv(window, SCREEN_PROPERTY_SIZE, size) != 0) {
+        qFatal("QQnx: failed to query window property, errno=%d", errno);
+    }
+
+    QRect rect(pos[0], pos[1], size[0], size[1]);
+    QWindow *qtWindow = QQnxIntegration::window(window);
+    if (qtWindow) {
+        qtWindow->setGeometry(rect);
+        QWindowSystemInterface::handleGeometryChange(qtWindow, rect);
+    }
+
+    qScreenEventDebug() << qtWindow << "moved to" << rect;
 }
 
 void QQnxScreenEventHandler::timerEvent(QTimerEvent *event)
