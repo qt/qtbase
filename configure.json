@@ -259,36 +259,6 @@
             "type": "compile",
             "test": "stl"
         },
-        "c99": {
-            "label": "C99 support",
-            "type": "compile",
-            "test": {
-                "head": [
-                    "#if __STDC_VERSION__ >= 199901L",
-                    "// Compiler claims to support C99, trust it",
-                    "#else",
-                    "#  error __STDC_VERSION__ must be >= 199901L",
-                    "#endif"
-                ],
-                "lang": "c",
-                "qmake": "CONFIG += c99"
-            }
-        },
-        "c11": {
-            "label": "C11 support",
-            "type": "compile",
-            "test": {
-                "head": [
-                    "#if __STDC_VERSION__ >= 201112L",
-                    "// Compiler claims to support C11, trust it",
-                    "#else",
-                    "#  error __STDC_VERSION__ must be >= 201112L",
-                    "#endif"
-                ],
-                "lang": "c",
-                "qmake": "CONFIG += c11"
-            }
-        },
         "c++14": {
             "label": "C++14 support",
             "type": "compile",
@@ -816,19 +786,6 @@
             "condition": "features.c++14 && tests.c++1z",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
-        "c89": {
-            "label": "C89"
-        },
-        "c99": {
-            "label": "C99",
-            "condition": "tests.c99",
-            "output": [ "publicFeature" ]
-        },
-        "c11": {
-            "label": "C11",
-            "condition": "features.c99 && tests.c11",
-            "output": [ "publicFeature" ]
-        },
         "precompile_header": {
             "label": "Using precompiled headers",
             "condition": "config.msvc || tests.precompile_header",
@@ -1289,11 +1246,6 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                     "condition": "!features.debug || features.debug_and_release"
                 },
                 "shared",
-                {
-                    "message": "Using C standard",
-                    "type": "firstAvailableFeature",
-                    "args": "c11 c99 c89"
-                },
                 {
                     "message": "Using C++ standard",
                     "type": "firstAvailableFeature",
