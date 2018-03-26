@@ -1608,7 +1608,7 @@ QCocoaGLContext *QCocoaWindow::currentContext() const
 */
 bool QCocoaWindow::isChildNSWindow() const
 {
-    return m_view.window.parentWindow != nil;
+    return window()->parent() != nullptr && m_view.window.parentWindow != nil;
 }
 
 /*!
