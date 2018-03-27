@@ -1268,8 +1268,19 @@ QList<int> QWindowsKeyMapper::possibleKeys(const QKeyEvent *e) const
     for (size_t i = 1; i < NumMods; ++i) {
         Qt::KeyboardModifiers neededMods = ModsTbl[i];
         quint32 key = kbItem.qtKey[i];
-        if (key && key != baseKey && ((keyMods & neededMods) == neededMods))
-            result << int(key + (keyMods & ~neededMods));
+        if (key && key != baseKey && ((keyMods & neededMods) == neededMods)) {
+            const Qt::KeyboardModifiers missingMods = keyMods & ~neededMods;
+            const int matchedKey = int(key) + missingMods;
+            const QList<int>::iterator it =
+                std::find_if(result.begin(), result.end(),
+                             [key] (int k) { return (k & ~Qt::KeyboardModifierMask) == key; });
+            // QTBUG-67200: Use the match with the least modifiers (prefer
+            // Shift+9 over Alt + Shift + 9) resulting in more missing modifiers.
+            if (it == result.end())
+                result << matchedKey;
+            else if (missingMods > (*it & Qt::KeyboardModifierMask))
+                *it = matchedKey;
+        }
     }
 
     return result;
