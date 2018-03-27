@@ -69,6 +69,7 @@ extern "C" {
 #include <qstandardpaths.h>
 #include <qfunctions_winrt.h>
 #include <qcoreapplication.h>
+#include <qmutex.h>
 
 #include <wrl.h>
 #include <Windows.ApplicationModel.core.h>
@@ -92,6 +93,10 @@ static void devMessageHandler(QtMsgType type, const QMessageLogContext &context,
 {
     static HANDLE shmem = 0;
     static HANDLE event = 0;
+
+    static QMutex messageMutex;
+    QMutexLocker locker(&messageMutex);
+
     if (!shmem)
         shmem = CreateFileMappingFromApp(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 4096, L"qdebug-shmem");
     if (!event)
@@ -108,6 +113,7 @@ static void devMessageHandler(QtMsgType type, const QMessageLogContext &context,
              message.data(), (message.length() + 1) * sizeof(wchar_t));
     UnmapViewOfFile(data);
     SetEvent(event);
+    locker.unlock();
     defaultMessageHandler(type, context, message);
 }
 
