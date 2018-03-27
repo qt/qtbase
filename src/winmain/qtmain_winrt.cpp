@@ -93,6 +93,7 @@ static void devMessageHandler(QtMsgType type, const QMessageLogContext &context,
 {
     static HANDLE shmem = 0;
     static HANDLE event = 0;
+    static HANDLE ackEvent = 0;
 
     static QMutex messageMutex;
     QMutexLocker locker(&messageMutex);
@@ -101,6 +102,8 @@ static void devMessageHandler(QtMsgType type, const QMessageLogContext &context,
         shmem = CreateFileMappingFromApp(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 4096, L"qdebug-shmem");
     if (!event)
         event = CreateEventEx(NULL, L"qdebug-event", 0, EVENT_ALL_ACCESS);
+    if (!ackEvent)
+        ackEvent = CreateEventEx(NULL, L"qdebug-event-ack", 0, EVENT_ALL_ACCESS);
 
     Q_ASSERT_X(shmem, Q_FUNC_INFO, "Could not create file mapping");
     Q_ASSERT_X(event, Q_FUNC_INFO, "Could not create debug event");
@@ -113,6 +116,7 @@ static void devMessageHandler(QtMsgType type, const QMessageLogContext &context,
              message.data(), (message.length() + 1) * sizeof(wchar_t));
     UnmapViewOfFile(data);
     SetEvent(event);
+    WaitForSingleObjectEx(ackEvent, INFINITE, false);
     locker.unlock();
     defaultMessageHandler(type, context, message);
 }
