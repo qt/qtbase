@@ -50,6 +50,7 @@
 #include <private/qhighdpiscaling_p.h>
 #include <QtGui/QKeyEvent>
 #include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
+#include <QtCore/private/qdebug_p.h>
 
 #if defined(WM_APPCOMMAND)
 #  ifndef FAPPCOMMAND_MOUSE
@@ -544,6 +545,59 @@ static const Qt::KeyboardModifiers ModsTbl[] = {
 static const size_t NumMods = sizeof ModsTbl / sizeof *ModsTbl;
 Q_STATIC_ASSERT((NumMods == KeyboardLayoutItem::NumQtKeys));
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug d, const KeyboardLayoutItem &k)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "KeyboardLayoutItem(";
+    if (k.exists) {
+        for (size_t i = 0; i < NumMods; ++i) {
+            if (const quint32 qtKey = k.qtKey[i]) {
+                d << '[' << i << ' ';
+                QtDebugUtils::formatQFlags(d, ModsTbl[i]);
+                d << ' ' << hex << showbase << qtKey << dec << noshowbase << ' ';
+                QtDebugUtils::formatQEnum(d, Qt::Key(qtKey));
+                if (qtKey >= 32 && qtKey < 128)
+                    d << " '" << char(qtKey)  << '\'';
+                if (k.deadkeys & (1<<i))
+                    d << "  deadkey";
+                d << "] ";
+            }
+        }
+    }
+    d << ')';
+    return d;
+}
+
+// Helpers to format a list of int as Qt key sequence
+class formatKeys
+{
+public:
+    explicit formatKeys(const QList<int> &keys) : m_keys(keys) {}
+
+private:
+    friend QDebug operator<<(QDebug d, const formatKeys &keys);
+    const QList<int> &m_keys;
+};
+
+QDebug operator<<(QDebug d, const formatKeys &k)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << '(';
+    for (int i =0, size = k.m_keys.size(); i < size; ++i) {
+        if (i)
+            d << ", ";
+        d << QKeySequence(k.m_keys.at(i));
+    }
+    d << ')';
+    return d;
+}
+#else // !QT_NO_DEBUG_STREAM
+static int formatKeys(const QList<int> &) { return 0; }
+#endif // QT_NO_DEBUG_STREAM
+
 /**
   Remap return or action key to select key for windows mobile.
 */
@@ -722,21 +776,8 @@ void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
         ::ToAscii(VK_SPACE, 0, emptyBuffer, reinterpret_cast<LPWORD>(&buffer), 0);
         ::ToAscii(vk_key, scancode, kbdBuffer, reinterpret_cast<LPWORD>(&buffer), 0);
     }
-    if (QWindowsContext::verbose > 1 && lcQpaEvents().isDebugEnabled()) {
-        QString message;
-        QDebug debug(&message);
-        debug <<__FUNCTION__ << " for virtual key = 0x" << hex << vk_key << dec<< '\n';
-        for (size_t i = 0; i < NumMods; ++i) {
-            const quint32 qtKey = keyLayout[vk_key].qtKey[i];
-            debug << "    [" << i << "] (" << qtKey << ','
-                << hex << showbase << qtKey << noshowbase << dec
-                << ",'" << char(qtKey ? qtKey : 0x03) << "')";
-            if (keyLayout[vk_key].deadkeys & (1<<i))
-                debug << "  deadkey";
-            debug << '\n';
-        }
-        qCDebug(lcQpaEvents) << message;
-    }
+    qCDebug(lcQpaEvents) << __FUNCTION__ << "for virtual key="
+        << hex << showbase << vk_key << dec << noshowbase << keyLayout[vk_key];
 }
 
 static inline QString messageKeyText(const MSG &msg)
@@ -1283,7 +1324,9 @@ QList<int> QWindowsKeyMapper::possibleKeys(const QKeyEvent *e) const
                 *it = matchedKey;
         }
     }
-
+    qCDebug(lcQpaEvents) << __FUNCTION__  << e << "nativeVirtualKey="
+        << showbase << hex << e->nativeVirtualKey() << dec << noshowbase
+        << e->modifiers() << kbItem << "\n  returns" << formatKeys(result);
     return result;
 }
 
