@@ -868,7 +868,9 @@ bool tst_Selftests::compareOutput(const QString &logger, const QString &subdir,
         }
 
         if (logger.endsWith(QLatin1String("tap"))) {
-            if (expectedLine.contains(QLatin1String("at:")) || expectedLine.contains(QLatin1String("file:")))
+            if (expectedLine.contains(QLatin1String("at:"))
+                || expectedLine.contains(QLatin1String("file:"))
+                || expectedLine.contains(QLatin1String("line:")))
                 actualLine = expectedLine;
         }
 
