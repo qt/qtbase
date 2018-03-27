@@ -77,102 +77,65 @@ private slots:
     void postedEventsShouldNotStarveTimers();
 };
 
-class TimerHelper : public QObject
-{
-    Q_OBJECT
-public:
-    TimerHelper() : QObject(), count(0), remainingTime(-1)
-    {
-    }
-
-    int count;
-    int remainingTime;
-
-public slots:
-    void timeout();
-    void fetchRemainingTime();
-};
-
-void TimerHelper::timeout()
-{
-    ++count;
-}
-
-void TimerHelper::fetchRemainingTime()
-{
-    QTimer *timer = static_cast<QTimer *>(sender());
-    remainingTime = timer->remainingTime();
-}
-
 void tst_QTimer::zeroTimer()
 {
-    TimerHelper helper;
     QTimer timer;
     timer.setInterval(0);
-    timer.start();
 
-    connect(&timer, SIGNAL(timeout()), &helper, SLOT(timeout()));
+    QSignalSpy timeoutSpy(&timer, &QTimer::timeout);
+    timer.start();
 
     QCoreApplication::processEvents();
 
-    QCOMPARE(helper.count, 1);
+    QCOMPARE(timeoutSpy.count(), 1);
 }
 
 void tst_QTimer::singleShotTimeout()
 {
-    TimerHelper helper;
     QTimer timer;
     timer.setSingleShot(true);
 
-    connect(&timer, SIGNAL(timeout()), &helper, SLOT(timeout()));
+    QSignalSpy timeoutSpy(&timer, &QTimer::timeout);
     timer.start(100);
 
+    QVERIFY(timeoutSpy.wait(500));
+    QCOMPARE(timeoutSpy.count(), 1);
     QTest::qWait(500);
-    QCOMPARE(helper.count, 1);
-    QTest::qWait(500);
-    QCOMPARE(helper.count, 1);
+    QCOMPARE(timeoutSpy.count(), 1);
 }
 
 #define TIMEOUT_TIMEOUT 200
 
 void tst_QTimer::timeout()
 {
-    TimerHelper helper;
     QTimer timer;
-
-    connect(&timer, SIGNAL(timeout()), &helper, SLOT(timeout()));
+    QSignalSpy timeoutSpy(&timer, &QTimer::timeout);
     timer.start(100);
 
-    QCOMPARE(helper.count, 0);
+    QCOMPARE(timeoutSpy.count(), 0);
 
-    QTRY_VERIFY_WITH_TIMEOUT(helper.count > 0, TIMEOUT_TIMEOUT);
-    int oldCount = helper.count;
+    QTRY_VERIFY_WITH_TIMEOUT(timeoutSpy.count() > 0, TIMEOUT_TIMEOUT);
+    int oldCount = timeoutSpy.count();
 
-    QTRY_VERIFY_WITH_TIMEOUT(helper.count > oldCount, TIMEOUT_TIMEOUT);
+    QTRY_VERIFY_WITH_TIMEOUT(timeoutSpy.count() > oldCount, TIMEOUT_TIMEOUT);
 }
 
 void tst_QTimer::remainingTime()
 {
-    TimerHelper helper;
     QTimer timer;
-
-    connect(&timer, SIGNAL(timeout()), &helper, SLOT(timeout()));
+    QSignalSpy timeoutSpy(&timer, &QTimer::timeout);
     timer.setTimerType(Qt::PreciseTimer);
     timer.start(200);
 
-    QCOMPARE(helper.count, 0);
-
+    QCOMPARE(timeoutSpy.count(), 0);
     QTest::qWait(50);
-    QCOMPARE(helper.count, 0);
+    QCOMPARE(timeoutSpy.count(), 0);
 
     int remainingTime = timer.remainingTime();
     QVERIFY2(qAbs(remainingTime - 150) < 50, qPrintable(QString::number(remainingTime)));
 
-    // wait for the timer to actually fire now
-    connect(&timer, SIGNAL(timeout()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(5);
-    QVERIFY(!QTestEventLoop::instance().timeout());
-    QCOMPARE(helper.count, 1);
+    QVERIFY(timeoutSpy.wait());
+    QCOMPARE(timeoutSpy.count(), 1);
 
     // the timer is still active, so it should have a non-zero remaining time
     remainingTime = timer.remainingTime();
@@ -182,7 +145,7 @@ void tst_QTimer::remainingTime()
 void tst_QTimer::remainingTimeDuringActivation_data()
 {
     QTest::addColumn<bool>("singleShot");
-    QTest::newRow("repeating") << true;
+    QTest::newRow("repeating") << false;
     QTest::newRow("single-shot") << true;
 }
 
@@ -190,29 +153,31 @@ void tst_QTimer::remainingTimeDuringActivation()
 {
     QFETCH(bool, singleShot);
 
-    TimerHelper helper;
     QTimer timer;
-
-    const int timeout = 20;     // 20 ms is short enough and should not round down to 0 in any timer mode
-
-    connect(&timer, SIGNAL(timeout()), &helper, SLOT(fetchRemainingTime()));
-    connect(&timer, SIGNAL(timeout()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    timer.start(timeout);
     timer.setSingleShot(singleShot);
 
-    QTestEventLoop::instance().enterLoop(5);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    int remainingTime = 0; // not the expected value in either case
+    connect(&timer, &QTimer::timeout,
+            [&]() {
+                remainingTime = timer.remainingTime();
+            });
+    QSignalSpy timeoutSpy(&timer, &QTimer::timeout);
+    const int timeout = 20; // 20 ms is short enough and should not round down to 0 in any timer mode
+    timer.start(timeout);
+
+    QVERIFY(timeoutSpy.wait());
     if (singleShot)
-        QCOMPARE(helper.remainingTime, -1);     // timer not running
+        QCOMPARE(remainingTime, -1);     // timer not running
     else
-        QCOMPARE(helper.remainingTime, timeout);
+        QVERIFY2(remainingTime <= timeout && remainingTime > 0,
+                 qPrintable(QString::number(remainingTime)));
 
     if (!singleShot) {
         // do it again - see QTBUG-46940
-        helper.remainingTime = -1;
-        QTestEventLoop::instance().enterLoop(5);
-        QVERIFY(!QTestEventLoop::instance().timeout());
-        QCOMPARE(helper.remainingTime, timeout);
+        remainingTime = -1;
+        QVERIFY(timeoutSpy.wait());
+        QVERIFY2(remainingTime <= timeout && remainingTime > 0,
+                 qPrintable(QString::number(remainingTime)));
     }
 }
 
@@ -233,47 +198,44 @@ void tst_QTimer::basic_chrono()
 #else
     // duplicates zeroTimer, singleShotTimeout, interval and remainingTime
     using namespace std::chrono;
-    TimerHelper helper;
     QTimer timer;
+    QSignalSpy timeoutSpy(&timer, &QTimer::timeout);
     timer.setInterval(to_ms(nanoseconds(0)));
     timer.start();
     QCOMPARE(timer.intervalAsDuration().count(), milliseconds::rep(0));
     QCOMPARE(timer.remainingTimeAsDuration().count(), milliseconds::rep(0));
 
-    connect(&timer, SIGNAL(timeout()), &helper, SLOT(timeout()));
-
     QCoreApplication::processEvents();
 
-    QCOMPARE(helper.count, 1);
+    QCOMPARE(timeoutSpy.count(), 1);
 
-    helper.count = 0;
+    timeoutSpy.clear();
     timer.start(milliseconds(100));
-    QCOMPARE(helper.count, 0);
+    QCOMPARE(timeoutSpy.count(), 0);
 
-    QTest::qWait(TIMEOUT_TIMEOUT);
-    QVERIFY(helper.count > 0);
-    int oldCount = helper.count;
+    QVERIFY(timeoutSpy.wait(TIMEOUT_TIMEOUT));
+    QVERIFY(timeoutSpy.count() > 0);
+    int oldCount = timeoutSpy.count();
 
-    QTest::qWait(TIMEOUT_TIMEOUT);
-    QVERIFY(helper.count > oldCount);
+    QVERIFY(timeoutSpy.wait(TIMEOUT_TIMEOUT));
+    QVERIFY(timeoutSpy.count() > oldCount);
 
-    helper.count = 0;
+    timeoutSpy.clear();
     timer.start(to_ms(microseconds(200000)));
     QCOMPARE(timer.intervalAsDuration().count(), milliseconds::rep(200));
     QTest::qWait(50);
-    QCOMPARE(helper.count, 0);
+    QCOMPARE(timeoutSpy.count(), 0);
 
     milliseconds rt = timer.remainingTimeAsDuration();
     QVERIFY2(qAbs(rt.count() - 150) < 50, qPrintable(QString::number(rt.count())));
 
-    helper.count = 0;
+    timeoutSpy.clear();
     timer.setSingleShot(true);
     timer.start(milliseconds(100));
+    QVERIFY(timeoutSpy.wait(TIMEOUT_TIMEOUT));
+    QCOMPARE(timeoutSpy.count(), 1);
     QTest::qWait(500);
-    QCOMPARE(helper.count, 1);
-    QTest::qWait(500);
-    QCOMPARE(helper.count, 1);
-    helper.count = 0;
+    QCOMPARE(timeoutSpy.count(), 1);
 #endif
 }
 
@@ -448,47 +410,40 @@ signals:
 void tst_QTimer::recurringTimer_data()
 {
     QTest::addColumn<int>("interval");
-    QTest::newRow("zero timer") << 0;
-    QTest::newRow("non-zero timer") << 1;
+    QTest::addColumn<bool>("recurse");
+    // make sure that eventloop recursion doesn't affect timer recurrence
+    QTest::newRow("zero timer, don't recurse") << 0 << false;
+    QTest::newRow("zero timer, recurse") << 0 << true;
+    QTest::newRow("non-zero timer, don't recurse") << 1 << false;
+    QTest::newRow("non-zero timer, recurse") << 1 << true;
 }
 
 void tst_QTimer::recurringTimer()
 {
     const int target = 5;
     QFETCH(int, interval);
+    QFETCH(bool, recurse);
 
-    {
-        RecurringTimerObject object(target);
-        QObject::connect(&object, SIGNAL(done()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-        (void) object.startTimer(interval);
-        QTestEventLoop::instance().enterLoop(5);
+    RecurringTimerObject object(target);
+    object.recurse = recurse;
+    QSignalSpy doneSpy(&object, &RecurringTimerObject::done);
 
-        QCOMPARE(object.times, target);
-    }
+    (void) object.startTimer(interval);
+    QVERIFY(doneSpy.wait());
 
-    {
-        // make sure that eventloop recursion doesn't effect timer recurrance
-        RecurringTimerObject object(target);
-        object.recurse = true;
-
-        QObject::connect(&object, SIGNAL(done()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-        (void) object.startTimer(interval);
-        QTestEventLoop::instance().enterLoop(5);
-
-        QCOMPARE(object.times, target);
-    }
+    QCOMPARE(object.times, target);
 }
 
 void tst_QTimer::deleteLaterOnQTimer()
 {
     QTimer *timer = new QTimer;
     connect(timer, SIGNAL(timeout()), timer, SLOT(deleteLater()));
-    connect(timer, SIGNAL(destroyed()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QSignalSpy destroyedSpy(timer, &QObject::destroyed);
     timer->setInterval(1);
     timer->setSingleShot(true);
     timer->start();
     QPointer<QTimer> pointer = timer;
-    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(destroyedSpy.wait());
     QVERIFY(pointer.isNull());
 }
 
@@ -690,23 +645,34 @@ void tst_QTimer::cancelLongTimer()
     QVERIFY(!timer.isActive());
 }
 
+class TimeoutCounter : public QObject
+{
+    Q_OBJECT
+public slots:
+    void timeout() { ++count; };
+public:
+    int count = 0;
+};
+
 void tst_QTimer::singleShotStaticFunctionZeroTimeout()
 {
-    TimerHelper helper;
+    {
+        TimeoutCounter counter;
 
-    QTimer::singleShot(0, &helper, SLOT(timeout()));
-    QTest::qWait(500);
-    QCOMPARE(helper.count, 1);
-    QTest::qWait(500);
-    QCOMPARE(helper.count, 1);
+        QTimer::singleShot(0, &counter, SLOT(timeout()));
+        QTRY_COMPARE(counter.count, 1);
+        QTest::qWait(500);
+        QCOMPARE(counter.count, 1);
+    }
 
-    TimerHelper nhelper;
+    {
+        TimeoutCounter counter;
 
-    QTimer::singleShot(0, &nhelper, &TimerHelper::timeout);
-    QCoreApplication::processEvents();
-    QCOMPARE(nhelper.count, 1);
-    QCoreApplication::processEvents();
-    QCOMPARE(nhelper.count, 1);
+        QTimer::singleShot(0, &counter, &TimeoutCounter::timeout);
+        QTRY_COMPARE(counter.count, 1);
+        QTest::qWait(500);
+        QCOMPARE(counter.count, 1);
+    }
 }
 
 class RecursOnTimeoutAndStopTimerTimer : public QObject
@@ -807,8 +773,7 @@ void tst_QTimer::singleShotToFunctors()
     QCOMPARE(e.exec(), 0);
 
     QTimer::singleShot(0, &c1, CountedStruct(&count, &t1));
-    QTest::qWait(500);
-    QCOMPARE(count, 2);
+    QTRY_COMPARE(count, 2);
 
     t1.quit();
     t1.wait();
@@ -833,12 +798,11 @@ void tst_QTimer::singleShotToFunctors()
         QObject c3;
         QTimer::singleShot(500, &c3, CountedStruct(&count));
     }
-    QTest::qWait(800);
+    QTest::qWait(800); // Wait until the singleshot timer would have timed out
     QCOMPARE(count, 2);
 
     QTimer::singleShot(0, [&count] { ++count; });
-    QCoreApplication::processEvents();
-    QCOMPARE(count, 3);
+    QTRY_COMPARE(count, 3);
 
     QObject context;
     QThread thread;
@@ -849,8 +813,7 @@ void tst_QTimer::singleShotToFunctors()
     QCOMPARE(e.exec(), 0);
 
     QTimer::singleShot(0, &context, [&count, &thread] { ++count; QCOMPARE(QThread::currentThread(), &thread); });
-    QTest::qWait(500);
-    QCOMPARE(count, 4);
+    QTRY_COMPARE(count, 4);
 
     thread.quit();
     thread.wait();
@@ -861,8 +824,7 @@ void tst_QTimer::singleShotToFunctors()
         MoveOnly(int *c) : CountedStruct(c) {}
     };
     QTimer::singleShot(0, MoveOnly(&count));
-    QCoreApplication::processEvents();
-    QCOMPARE(count, 5);
+    QTRY_COMPARE(count, 5);
 
     _e.reset();
     _t = nullptr;
@@ -875,26 +837,27 @@ void tst_QTimer::singleShot_chrono()
 #else
     // duplicates singleShotStaticFunctionZeroTimeout and singleShotToFunctors
     using namespace std::chrono;
-    TimerHelper helper;
+    {
+        TimeoutCounter counter;
 
-    QTimer::singleShot(hours(0), &helper, SLOT(timeout()));
-    QTest::qWait(500);
-    QCOMPARE(helper.count, 1);
-    QTest::qWait(500);
-    QCOMPARE(helper.count, 1);
+        QTimer::singleShot(hours(0), &counter, SLOT(timeout()));
+        QTRY_COMPARE(counter.count, 1);
+        QTest::qWait(500);
+        QCOMPARE(counter.count, 1);
+    }
 
-    TimerHelper nhelper;
+    {
+        TimeoutCounter counter;
 
-    QTimer::singleShot(seconds(0), &nhelper, &TimerHelper::timeout);
-    QCoreApplication::processEvents();
-    QCOMPARE(nhelper.count, 1);
-    QCoreApplication::processEvents();
-    QCOMPARE(nhelper.count, 1);
+        QTimer::singleShot(hours(0), &counter, &TimeoutCounter::timeout);
+        QTRY_COMPARE(counter.count, 1);
+        QTest::qWait(500);
+        QCOMPARE(counter.count, 1);
+    }
 
     int count = 0;
     QTimer::singleShot(to_ms(microseconds(0)), CountedStruct(&count));
-    QCoreApplication::processEvents();
-    QCOMPARE(count, 1);
+    QTRY_COMPARE(count, 1);
 
     _e.reset(new QEventLoop);
     QTimer::singleShot(0, &StaticEventLoop::quitEventLoop);
@@ -902,12 +865,10 @@ void tst_QTimer::singleShot_chrono()
 
     QObject c3;
     QTimer::singleShot(milliseconds(500), &c3, CountedStruct(&count));
-    QTest::qWait(800);
-    QCOMPARE(count, 2);
+    QTRY_COMPARE(count, 2);
 
     QTimer::singleShot(0, [&count] { ++count; });
-    QCoreApplication::processEvents();
-    QCOMPARE(count, 3);
+    QTRY_COMPARE(count, 3);
 
     _e.reset();
 #endif
@@ -985,16 +946,14 @@ public slots:
 
 void tst_QTimer::postedEventsShouldNotStarveTimers()
 {
-    TimerHelper timerHelper;
     QTimer timer;
-    connect(&timer, SIGNAL(timeout()), &timerHelper, SLOT(timeout()));
     timer.setInterval(0);
     timer.setSingleShot(false);
+    QSignalSpy timeoutSpy(&timer, &QTimer::timeout);
     timer.start();
     SlotRepeater slotRepeater;
     slotRepeater.repeatThisSlot();
-    QTest::qWait(100);
-    QVERIFY(timerHelper.count > 5);
+    QTRY_VERIFY_WITH_TIMEOUT(timeoutSpy.count() > 5, 100);
 }
 
 struct DummyFunctor {
