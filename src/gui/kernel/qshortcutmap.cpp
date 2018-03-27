@@ -540,6 +540,19 @@ void QShortcutMap::createNewSequences(QKeyEvent *e, QVector<QKeySequence> &ksl, 
 {
     Q_D(QShortcutMap);
     QList<int> possibleKeys = QKeyMapper::possibleKeys(e);
+#if defined(DEBUG_QSHORTCUTMAP)
+    {
+        QDebug debug = qDebug().nospace();
+        debug << __FUNCTION__ << '(' << e << ", ignoredModifiers="
+            << Qt::KeyboardModifiers(ignoredModifiers) << "), possibleKeys=(";
+        for (int i = 0, size = possibleKeys.size(); i < size; ++i) {
+            if (i)
+                debug << ", ";
+            debug << QKeySequence(possibleKeys.at(i));
+        }
+        debug << ')';
+    }
+#endif // DEBUG_QSHORTCUTMAP
     int pkTotal = possibleKeys.count();
     if (!pkTotal)
         return;
