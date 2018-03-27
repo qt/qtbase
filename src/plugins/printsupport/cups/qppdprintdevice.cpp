@@ -62,7 +62,25 @@ QPpdPrintDevice::QPpdPrintDevice(const QString &id)
         m_cupsName = parts.at(0).toUtf8();
         if (parts.size() > 1)
             m_cupsInstance = parts.at(1).toUtf8();
-        loadPrinter();
+
+        // Get the print instance and PPD file
+        m_cupsDest = cupsGetNamedDest(CUPS_HTTP_DEFAULT, m_cupsName, m_cupsInstance.isNull() ? nullptr : m_cupsInstance.constData());
+        if (m_cupsDest) {
+            const char *ppdFile = cupsGetPPD(m_cupsName);
+            if (ppdFile) {
+                m_ppd = ppdOpenFile(ppdFile);
+                unlink(ppdFile);
+            }
+            if (m_ppd) {
+                ppdMarkDefaults(m_ppd);
+                cupsMarkOptions(m_ppd, m_cupsDest->num_options, m_cupsDest->options);
+                ppdLocalize(m_ppd);
+            } else {
+                cupsFreeDests(1, m_cupsDest);
+                m_cupsDest = nullptr;
+                m_ppd = nullptr;
+            }
+        }
 
         if (m_cupsDest && m_ppd) {
             m_name = printerOption("printer-info");
@@ -477,38 +495,6 @@ void QPpdPrintDevice::loadMimeTypes() const
     m_haveMimeTypes = true;
 }
 #endif
-
-void QPpdPrintDevice::loadPrinter()
-{
-    // Just to be safe, check if existing printer needs closing
-    if (m_ppd) {
-        ppdClose(m_ppd);
-        m_ppd = 0;
-    }
-    if (m_cupsDest) {
-        cupsFreeDests(1, m_cupsDest);
-        m_cupsDest = 0;
-    }
-
-    // Get the print instance and PPD file
-    m_cupsDest = cupsGetNamedDest(CUPS_HTTP_DEFAULT, m_cupsName, m_cupsInstance.isNull() ? nullptr : m_cupsInstance.constData());
-    if (m_cupsDest) {
-        const char *ppdFile = cupsGetPPD(m_cupsName);
-        if (ppdFile) {
-            m_ppd = ppdOpenFile(ppdFile);
-            unlink(ppdFile);
-        }
-        if (m_ppd) {
-            ppdMarkDefaults(m_ppd);
-            cupsMarkOptions(m_ppd, m_cupsDest->num_options, m_cupsDest->options);
-            ppdLocalize(m_ppd);
-        } else {
-            cupsFreeDests(1, m_cupsDest);
-            m_cupsDest = 0;
-            m_ppd = 0;
-        }
-    }
-}
 
 QString QPpdPrintDevice::printerOption(const QString &key) const
 {

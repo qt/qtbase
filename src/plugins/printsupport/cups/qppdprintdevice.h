@@ -104,7 +104,6 @@ protected:
 #endif
 
 private:
-    void loadPrinter();
     QString printerOption(const QString &key) const;
     cups_ptype_e printerTypeFlags() const;
 
