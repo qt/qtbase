@@ -556,6 +556,8 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \value LineHeightType
     \value BlockNonBreakableLines
     \value BlockTrailingHorizontalRulerWidth The width of a horizontal ruler element.
+    \value HeadingLevel     The level of a heading, for example 1 corresponds to an HTML H1 tag; otherwise 0.
+                            This enum value has been added in Qt 5.12.
 
     Character properties
 
@@ -2242,6 +2244,34 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     Returns the paragraph's indent.
 
     \sa setIndent()
+*/
+
+
+/*!
+    \fn void QTextBlockFormat::setHeadingLevel(int level)
+    \since 5.12
+
+    Sets the paragraph's heading level, where 1 is the highest-level heading
+    type (usually with the largest possible heading font size), and increasing
+    values are progressively deeper into the document (and usually with smaller
+    font sizes). For example when reading an HTML H1 tag, the heading level is
+    set to 1. Setting the heading level does not automatically change the font
+    size; however QTextDocumentFragment::fromHtml() sets both the heading level
+    and the font size simultaneously.
+
+    If the paragraph is not a heading, the level should be set to 0 (the default).
+
+    \sa headingLevel()
+*/
+
+
+/*!
+    \fn int QTextBlockFormat::headingLevel() const
+    \since 5.12
+
+    Returns the paragraph's heading level if it is a heading, or 0 if not.
+
+    \sa setHeadingLevel()
 */
 
 
