@@ -2855,8 +2855,8 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
     case SE_TabBarScrollLeftButton: {
         const bool vertical = opt->rect.width() < opt->rect.height();
         const Qt::LayoutDirection ld = widget->layoutDirection();
-        const int buttonWidth = qMax(pixelMetric(QStyle::PM_TabBarScrollButtonWidth, 0, widget), QApplication::globalStrut().width());
-        const int buttonOverlap = pixelMetric(QStyle::PM_TabBar_ScrollButtonOverlap, 0, widget);
+        const int buttonWidth = qMax(proxy()->pixelMetric(QStyle::PM_TabBarScrollButtonWidth, 0, widget), QApplication::globalStrut().width());
+        const int buttonOverlap = proxy()->pixelMetric(QStyle::PM_TabBar_ScrollButtonOverlap, 0, widget);
 
         r = vertical ? QRect(0, opt->rect.height() - (buttonWidth * 2) + buttonOverlap, opt->rect.width(), buttonWidth)
             : QStyle::visualRect(ld, opt->rect, QRect(opt->rect.width() - (buttonWidth * 2) + buttonOverlap, 0, buttonWidth, opt->rect.height()));
@@ -2864,7 +2864,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
     case SE_TabBarScrollRightButton: {
         const bool vertical = opt->rect.width() < opt->rect.height();
         const Qt::LayoutDirection ld = widget->layoutDirection();
-        const int buttonWidth = qMax(pixelMetric(QStyle::PM_TabBarScrollButtonWidth, 0, widget), QApplication::globalStrut().width());
+        const int buttonWidth = qMax(proxy()->pixelMetric(QStyle::PM_TabBarScrollButtonWidth, 0, widget), QApplication::globalStrut().width());
 
         r = vertical ? QRect(0, opt->rect.height() - buttonWidth, opt->rect.width(), buttonWidth)
             : QStyle::visualRect(ld, opt->rect, QRect(opt->rect.width() - buttonWidth, 0, buttonWidth, opt->rect.height()));
@@ -3079,7 +3079,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 //have all the information we need (ie. the layout's margin)
                 const QToolBar *tb = qobject_cast<const QToolBar*>(widget);
                 const int margin = tb && tb->layout() ? tb->layout()->margin() : 2;
-                const int handleExtent = pixelMetric(QStyle::PM_ToolBarHandleExtent, opt, tb);
+                const int handleExtent = proxy()->pixelMetric(QStyle::PM_ToolBarHandleExtent, opt, tb);
                 if (tbopt->state & QStyle::State_Horizontal) {
                     r = QRect(margin, margin, handleExtent, tbopt->rect.height() - 2*margin);
                     r = QStyle::visualRect(tbopt->direction, tbopt->rect, r);
