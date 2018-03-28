@@ -2430,17 +2430,19 @@ int QStyle::combinedLayoutSpacing(QSizePolicy::ControlTypes controls1,
 const QStyle * QStyle::proxy() const
 {
     Q_D(const QStyle);
-    return d->proxyStyle;
+    return d->proxyStyle == this ? this : d->proxyStyle->proxy();
 }
 
 /* \internal
 
     This function sets the base style that style calls will be
-    redirected to. Note that ownership is not transferred.
+    redirected to. Note that ownership is not transferred. \a style
+    must be a valid pointer (not nullptr).
 */
 void QStyle::setProxy(QStyle *style)
 {
     Q_D(QStyle);
+    Q_ASSERT(style);
     d->proxyStyle = style;
 }
 
