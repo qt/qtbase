@@ -132,6 +132,8 @@ public:
         DefaultStepType,
         AdaptiveDecimalStepType
     };
+    Q_ENUM(StepType)
+
 public Q_SLOTS:
     void stepUp();
     void stepDown();
