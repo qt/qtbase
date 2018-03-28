@@ -106,7 +106,7 @@ static inline void compressMouseMove(MSG *msg)
                 // Extract the x,y coordinates from the lParam as we do in the WndProc
                 msg->pt.x = GET_X_LPARAM(mouseMsg.lParam);
                 msg->pt.y = GET_Y_LPARAM(mouseMsg.lParam);
-                ClientToScreen(msg->hwnd, &(msg->pt));
+                clientToScreen(msg->hwnd, &(msg->pt));
                 // Remove the mouse move message
                 PeekMessage(&mouseMsg, msg->hwnd, WM_MOUSEMOVE,
                             WM_MOUSEMOVE, PM_REMOVE);
@@ -262,7 +262,13 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     if (et == QtWindows::MouseWheelEvent)
         return translateMouseWheelEvent(window, hwnd, msg, result);
 
-    const QPoint winEventPosition(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
+    QPoint winEventPosition(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
+    if ((et & QtWindows::NonClientEventFlag) == 0 && QWindowsBaseWindow::isRtlLayout(hwnd))  {
+        RECT clientArea;
+        GetClientRect(hwnd, &clientArea);
+        winEventPosition.setX(clientArea.right - winEventPosition.x());
+    }
+
     QPoint clientPosition;
     QPoint globalPosition;
     if (et & QtWindows::NonClientEventFlag) {

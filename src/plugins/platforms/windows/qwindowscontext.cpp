@@ -713,7 +713,7 @@ static inline bool findPlatformWindowHelper(const POINT &screenPoint, unsigned c
                                             HWND *hwnd, QWindowsWindow **result)
 {
     POINT point = screenPoint;
-    ScreenToClient(*hwnd, &point);
+    screenToClient(*hwnd, &point);
     // Returns parent if inside & none matched.
     const HWND child = ChildWindowFromPointEx(*hwnd, point, cwexFlags);
     if (!child || child == *hwnd)
@@ -1043,7 +1043,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         // For non-client-area messages, these are screen coordinates (as expected
         // in the MSG structure), otherwise they are client coordinates.
         if (!(et & QtWindows::NonClientEventFlag)) {
-            ClientToScreen(msg.hwnd, &msg.pt);
+            clientToScreen(msg.hwnd, &msg.pt);
         }
     } else {
         GetCursorPos(&msg.pt);
@@ -1134,13 +1134,11 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         case QtWindows::QuerySizeHints:
             d->m_creationContext->applyToMinMaxInfo(reinterpret_cast<MINMAXINFO *>(lParam));
             return true;
-        case QtWindows::ResizeEvent: {
-            const QSize size(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) - d->m_creationContext->menuHeight);
-            d->m_creationContext->obtainedGeometry.setSize(size);
-        }
+        case QtWindows::ResizeEvent:
+            d->m_creationContext->obtainedSize = QSize(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
             return true;
         case QtWindows::MoveEvent:
-            d->m_creationContext->obtainedGeometry.moveTo(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+            d->m_creationContext->obtainedPos = QPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
             return true;
         case QtWindows::NonClientCreate:
             if (shouldHaveNonClientDpiScaling(d->m_creationContext->window))

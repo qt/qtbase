@@ -89,7 +89,8 @@ struct QWindowCreationContext
     const QWindow *window;
     QRect requestedGeometryIn; // QWindow scaled
     QRect requestedGeometry; // after QPlatformWindow::initialGeometry()
-    QRect obtainedGeometry;
+    QPoint obtainedPos;
+    QSize obtainedSize;
     QMargins margins;
     QMargins customMargins;  // User-defined, additional frame for WM_NCCALCSIZE
     int frameX = CW_USEDEFAULT; // Passed on to CreateWindowEx(), including frame.
@@ -134,6 +135,7 @@ public:
 
     unsigned style() const   { return GetWindowLongPtr(handle(), GWL_STYLE); }
     unsigned exStyle() const { return GetWindowLongPtr(handle(), GWL_EXSTYLE); }
+    static bool isRtlLayout(HWND hwnd);
 
     static QWindowsBaseWindow *baseWindowOf(const QWindow *w);
     static HWND handleOf(const QWindow *w);
@@ -399,18 +401,38 @@ QDebug operator<<(QDebug d, const WINDOWPOS &);
 QDebug operator<<(QDebug d, const GUID &guid);
 #endif // !QT_NO_DEBUG_STREAM
 
+static inline void clientToScreen(HWND hwnd, POINT *wP)
+{
+    if (QWindowsBaseWindow::isRtlLayout(hwnd)) {
+        RECT clientArea;
+        GetClientRect(hwnd, &clientArea);
+        wP->x = clientArea.right - wP->x;
+    }
+    ClientToScreen(hwnd, wP);
+}
+
+static inline void screenToClient(HWND hwnd, POINT *wP)
+{
+    ScreenToClient(hwnd, wP);
+    if (QWindowsBaseWindow::isRtlLayout(hwnd)) {
+        RECT clientArea;
+        GetClientRect(hwnd, &clientArea);
+        wP->x = clientArea.right - wP->x;
+    }
+}
+
 // ---------- QWindowsGeometryHint inline functions.
 QPoint QWindowsGeometryHint::mapToGlobal(HWND hwnd, const QPoint &qp)
 {
     POINT p = { qp.x(), qp.y() };
-    ClientToScreen(hwnd, &p);
+    clientToScreen(hwnd, &p);
     return QPoint(p.x, p.y);
 }
 
 QPoint QWindowsGeometryHint::mapFromGlobal(const HWND hwnd, const QPoint &qp)
 {
     POINT p = { qp.x(), qp.y() };
-    ScreenToClient(hwnd, &p);
+    screenToClient(hwnd, &p);
     return QPoint(p.x, p.y);
 }
 

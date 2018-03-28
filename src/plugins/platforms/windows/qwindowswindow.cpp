@@ -134,6 +134,10 @@ static QByteArray debugWinExStyle(DWORD exStyle)
         rc += " WS_EX_LAYERED";
     if (exStyle & WS_EX_DLGMODALFRAME)
         rc += " WS_EX_DLGMODALFRAME";
+    if (exStyle & WS_EX_LAYOUTRTL)
+        rc += " WS_EX_LAYOUTRTL";
+    if (exStyle & WS_EX_NOINHERITLAYOUT)
+        rc += " WS_EX_NOINHERITLAYOUT";
     return rc;
 }
 
@@ -307,7 +311,7 @@ static inline QRect frameGeometry(HWND hwnd, bool topLevel)
         const int width = rect.right - rect.left;
         const int height = rect.bottom - rect.top;
         POINT leftTop = { rect.left, rect.top };
-        ScreenToClient(parent, &leftTop);
+        screenToClient(parent, &leftTop);
         rect.left = leftTop.x;
         rect.top = leftTop.y;
         rect.right = leftTop.x + width;
@@ -667,6 +671,17 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
     if ((flags & Qt::MSWindowsFixedSizeDialogHint))
         dialog = true;
 
+    // This causes the title bar to drawn RTL and the close button
+    // to be left. Note that this causes:
+    // - All DCs created on the Window to have RTL layout (see SetLayout)
+    // - ClientToScreen() and ScreenToClient() to work in reverse as well.
+    // - Mouse event coordinates to be mirrored.
+    // - Positioning of child Windows.
+    if (QGuiApplication::layoutDirection() == Qt::RightToLeft
+        && (QWindowsIntegration::instance()->options() & QWindowsIntegration::RtlEnabled) != 0) {
+        exStyle |= WS_EX_LAYOUTRTL | WS_EX_NOINHERITLAYOUT;
+    }
+
     // Parent: Use transient parent for top levels.
     if (popup) {
         flags |= Qt::WindowStaysOnTopHint; // a popup stays on top, no parent.
@@ -772,6 +787,16 @@ QWindowsWindowData
 
     QPoint pos = calcPosition(w, context, invMargins);
 
+    // Mirror the position when creating on a parent in RTL mode, ditto for the obtained geometry.
+    int mirrorParentWidth = 0;
+    if (!w->isTopLevel() && QWindowsBaseWindow::isRtlLayout(parentHandle)) {
+        RECT rect;
+        GetClientRect(parentHandle, &rect);
+        mirrorParentWidth = rect.right;
+    }
+    if (mirrorParentWidth != 0 && pos.x() != CW_USEDEFAULT && context->frameWidth != CW_USEDEFAULT)
+        pos.setX(mirrorParentWidth - context->frameWidth - pos.x());
+
     result.hwnd = CreateWindowEx(exStyle, classNameUtf16, titleUtf16,
                                  style,
                                  pos.x(), pos.y(),
@@ -779,14 +804,21 @@ QWindowsWindowData
                                  parentHandle, nullptr, appinst, nullptr);
     qCDebug(lcQpaWindows).nospace()
         << "CreateWindowEx: returns " << w << ' ' << result.hwnd << " obtained geometry: "
-        << context->obtainedGeometry << ' ' << context->margins;
+        << context->obtainedPos << context->obtainedSize << ' ' << context->margins;
 
     if (!result.hwnd) {
         qErrnoWarning("%s: CreateWindowEx failed", __FUNCTION__);
         return result;
     }
 
-    result.geometry = context->obtainedGeometry;
+    if (mirrorParentWidth != 0) {
+        context->obtainedPos.setX(mirrorParentWidth - context->obtainedSize.width()
+                                  -  context->obtainedPos.x());
+    }
+
+    QRect obtainedGeometry(context->obtainedPos, context->obtainedSize);
+
+    result.geometry = obtainedGeometry;
     result.fullFrameMargins = context->margins;
     result.embedded = embedded;
     result.hasFrame = hasFrame;
@@ -1031,6 +1063,11 @@ bool QWindowsGeometryHint::positionIncludesFrame(const QWindow *w)
     \ingroup qt-lighthouse-win
 */
 
+bool QWindowsBaseWindow::isRtlLayout(HWND hwnd)
+{
+    return (GetWindowLongPtrW(hwnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL) != 0;
+}
+
 QWindowsBaseWindow *QWindowsBaseWindow::baseWindowOf(const QWindow *w)
 {
     if (w) {
@@ -1193,7 +1230,9 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
                                                DWORD style, DWORD exStyle) :
     window(w),
     requestedGeometryIn(geometryIn),
-    requestedGeometry(geometry), obtainedGeometry(geometry),
+    requestedGeometry(geometry),
+    obtainedPos(geometryIn.topLeft()),
+    obtainedSize(geometryIn.size()),
     margins(QWindowsGeometryHint::frame(w, geometry, style, exStyle)),
     customMargins(cm)
 {
@@ -1321,11 +1360,12 @@ void QWindowsWindow::initialize()
     // will send the message) and screen change signals of QWindow.
     if (w->type() != Qt::Desktop) {
         const Qt::WindowState state = w->windowState();
+        const QRect obtainedGeometry(creationContext->obtainedPos, creationContext->obtainedSize);
         if (state != Qt::WindowMaximized && state != Qt::WindowFullScreen
-            && creationContext->requestedGeometryIn != creationContext->obtainedGeometry) {
-            QWindowSystemInterface::handleGeometryChange<QWindowSystemInterface::SynchronousDelivery>(w, creationContext->obtainedGeometry);
+            && creationContext->requestedGeometryIn != obtainedGeometry) {
+            QWindowSystemInterface::handleGeometryChange<QWindowSystemInterface::SynchronousDelivery>(w, obtainedGeometry);
         }
-        QPlatformScreen *obtainedScreen = screenForGeometry(creationContext->obtainedGeometry);
+        QPlatformScreen *obtainedScreen = screenForGeometry(obtainedGeometry);
         if (obtainedScreen && screen() != obtainedScreen)
             QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(w, obtainedScreen->screen());
     }
@@ -1942,7 +1982,16 @@ void QWindowsBaseWindow::setGeometry_sys(const QRect &rect) const
         windowPlacement.showCmd = windowPlacement.showCmd == SW_SHOWMINIMIZED ? SW_SHOWMINIMIZED : SW_HIDE;
         result = SetWindowPlacement(hwnd, &windowPlacement);
     } else {
-        result = MoveWindow(hwnd, frameGeometry.x(), frameGeometry.y(),
+        int x = frameGeometry.x();
+        if (!window()->isTopLevel()) {
+            const HWND parentHandle = GetParent(hwnd);
+            if (isRtlLayout(parentHandle)) {
+                RECT rect;
+                GetClientRect(parentHandle, &rect);
+                x = rect.right - frameGeometry.width() - x;
+            }
+        }
+        result = MoveWindow(hwnd, x, frameGeometry.y(),
                             frameGeometry.width(), frameGeometry.height(), true);
     }
     qCDebug(lcQpaWindows) << '<' << __FUNCTION__ << window()
@@ -1958,8 +2007,11 @@ void QWindowsBaseWindow::setGeometry_sys(const QRect &rect) const
 
 HDC QWindowsWindow::getDC()
 {
-    if (!m_hdc)
+    if (!m_hdc) {
         m_hdc = GetDC(handle());
+        if (QGuiApplication::layoutDirection() == Qt::RightToLeft)
+            SetLayout(m_hdc, 0); // Clear RTL layout
+    }
     return m_hdc;
 }
 

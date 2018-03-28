@@ -217,6 +217,8 @@ static inline unsigned parseOptions(const QStringList &paramList,
             options |= QWindowsIntegration::NoNativeMenus;
         } else if (param == QLatin1String("nowmpointer")) {
             options |= QWindowsIntegration::DontUseWMPointer;
+        } else if (param == QLatin1String("reverse")) {
+            options |= QWindowsIntegration::RtlEnabled;
         } else {
             qWarning() << "Unknown option" << param;
         }
