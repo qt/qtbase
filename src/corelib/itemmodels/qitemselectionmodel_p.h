@@ -53,6 +53,8 @@
 
 #include "private/qobject_p.h"
 
+QT_REQUIRE_CONFIG(itemmodel);
+
 QT_BEGIN_NAMESPACE
 
 class QItemSelectionModelPrivate: public QObjectPrivate

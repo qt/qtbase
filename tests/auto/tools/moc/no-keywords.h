@@ -37,16 +37,19 @@
 #define slots Baz
 #define emit Yoyodyne
 
+#include <QtCore/QtCore>
+
+#ifdef QT_CONCURRENT_LIB
 #include <QtConcurrent/QtConcurrent>
-#include <QtCore>
-#include <QtNetwork/QtNetwork>
-#include <QtSql/QtSql>
-//#include <QtSvg>
-#if defined(WITH_DBUS)
-#include <QtDBus>
 #endif
-#ifdef QT_SCRIPT_LIB
-#include <QtScript>
+#ifdef QT_NETWORK_LIB
+#include <QtNetwork/QtNetwork>
+#endif
+#ifdef QT_SQL_LIB
+#include <QtSql/QtSql>
+#endif
+#ifdef QT_DBUS_LIB
+#include <QtDBus/QtDBus>
 #endif
 
 #undef signals

@@ -47,8 +47,6 @@
 
 #include <algorithm>
 
-#ifndef QT_NO_STRINGLISTMODEL
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -329,5 +327,3 @@ Qt::DropActions QStringListModel::supportedDropActions() const
 QT_END_NAMESPACE
 
 #include "moc_qstringlistmodel.cpp"
-
-#endif // QT_NO_STRINGLISTMODEL

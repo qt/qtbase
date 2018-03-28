@@ -190,6 +190,7 @@ public:
         Button_PullDown, // QPushButton with menu
         Button_PushButton,
         Button_RadioButton,
+        Button_SquareButton, // Oversized QPushButton
         Button_WindowClose,
         Button_WindowMiniaturize,
         Button_WindowZoom,
@@ -206,7 +207,23 @@ public:
         TextField
     };
 
-    typedef QPair<CocoaControlType, QStyleHelper::WidgetSizePolicy> CocoaControl;
+
+    struct CocoaControl {
+        CocoaControl();
+        CocoaControl(CocoaControlType t, QStyleHelper::WidgetSizePolicy s);
+
+        CocoaControlType type;
+        QStyleHelper::WidgetSizePolicy size;
+
+        bool operator==(const CocoaControl &other) const;
+
+        QSizeF defaultFrameSize() const;
+        QRectF adjustedControlFrame(const QRectF &rect) const;
+        QMarginsF titleMargins() const;
+
+        bool getCocoaButtonTypeAndBezelStyle(NSButtonType *buttonType, NSBezelStyle *bezelStyle) const;
+    };
+
 
     typedef void (^DrawRectBlock)(CGContextRef, const CGRect &);
 
@@ -273,11 +290,13 @@ public:
 
     void setupVerticalInvertedXform(CGContextRef cg, bool reverse, bool vertical, const CGRect &rect) const;
 
-    void drawNSViewInRect(CocoaControl widget, NSView *view, const QRect &rect, QPainter *p, bool isQWidget = true, __attribute__((noescape)) DrawRectBlock drawRectBlock = nil) const;
+    void drawNSViewInRect(CocoaControl widget, NSView *view, const QRectF &rect, QPainter *p, bool isQWidget = true, __attribute__((noescape)) DrawRectBlock drawRectBlock = nil) const;
     void resolveCurrentNSView(QWindow *window) const;
 
     void drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, qreal radius = 0) const;
-    void drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const;
+    void drawFocusRing(QPainter *p, const QRectF &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const;
+
+    void drawToolbarButtonArrow(const QStyleOption *opt, QPainter *p) const;
 
     QPainterPath windowPanelPath(const QRectF &r) const;
 

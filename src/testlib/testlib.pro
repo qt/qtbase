@@ -12,7 +12,6 @@ unix:!embedded:QMAKE_PKGCONFIG_DESCRIPTION = Qt \
 QMAKE_DOCS = $$PWD/doc/qttestlib.qdocconf
 
 HEADERS = \
-    qabstractitemmodeltester.h \
     qbenchmark.h \
     qbenchmark_p.h \
     qbenchmarkmeasurement_p.h \
@@ -29,7 +28,6 @@ HEADERS = \
     qtestdata.h \
     qtestevent.h \
     qtesteventloop.h \
-    qtest_global.h \
     qtest_gui.h \
     qtest_network.h \
     qtest_widgets.h \
@@ -41,10 +39,10 @@ HEADERS = \
     qtesttouch.h \
     qtestblacklist_p.h \
     qtesthelpers_p.h \
+    qttestglobal.h \
     qtaptestlogger_p.h
 
 SOURCES = \
-    qabstractitemmodeltester.cpp \
     qtestcase.cpp \
     qtestlog.cpp \
     qtesttable.cpp \
@@ -70,6 +68,14 @@ SOURCES = \
     qxunittestlogger.cpp \
     qtestblacklist.cpp \
     qtaptestlogger.cpp
+
+qtConfig(itemmodeltester) {
+    HEADERS += \
+        qabstractitemmodeltester.h
+
+    SOURCES += \
+        qabstractitemmodeltester.cpp
+}
 
 DEFINES *= QT_NO_CAST_TO_ASCII \
     QT_NO_CAST_FROM_ASCII \

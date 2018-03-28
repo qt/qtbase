@@ -61,12 +61,15 @@
 #  include "qbitarray.h"
 #  include "qurl.h"
 #  include "qvariant.h"
-#  include "qabstractitemmodel.h"
 #  include "qjsonvalue.h"
 #  include "qjsonobject.h"
 #  include "qjsonarray.h"
 #  include "qjsondocument.h"
 #  include "qbytearraylist.h"
+#endif
+
+#if QT_CONFIG(itemmodel)
+#  include "qabstractitemmodel.h"
 #endif
 
 #ifndef QT_NO_GEOM_VARIANT
@@ -1349,8 +1352,10 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::Void:
     case QMetaType::VoidStar:
     case QMetaType::QObjectStar:
+#if QT_CONFIG(itemmodel)
     case QMetaType::QModelIndex:
     case QMetaType::QPersistentModelIndex:
+#endif
     case QMetaType::QJsonValue:
     case QMetaType::QJsonObject:
     case QMetaType::QJsonArray:
@@ -1573,8 +1578,10 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::Void:
     case QMetaType::VoidStar:
     case QMetaType::QObjectStar:
+#if QT_CONFIG(itemmodel)
     case QMetaType::QModelIndex:
     case QMetaType::QPersistentModelIndex:
+#endif
     case QMetaType::QJsonValue:
     case QMetaType::QJsonObject:
     case QMetaType::QJsonArray:

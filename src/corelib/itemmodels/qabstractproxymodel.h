@@ -42,10 +42,9 @@
 
 #include <QtCore/qabstractitemmodel.h>
 
+QT_REQUIRE_CONFIG(proxymodel);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_PROXYMODEL
 
 class QAbstractProxyModelPrivate;
 class QItemSelection;
@@ -111,8 +110,6 @@ private:
     Q_DISABLE_COPY(QAbstractProxyModel)
     Q_PRIVATE_SLOT(d_func(), void _q_sourceModelDestroyed())
 };
-
-#endif // QT_NO_PROXYMODEL
 
 QT_END_NAMESPACE
 

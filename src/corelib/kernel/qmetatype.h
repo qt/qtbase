@@ -89,6 +89,14 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
 #define QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(F)\
     F(VoidStar, 31, void*) \
 
+#if QT_CONFIG(itemmodel)
+#define QT_FOR_EACH_STATIC_ITEMMODEL_CLASS(F)\
+    F(QModelIndex, 42, QModelIndex) \
+    F(QPersistentModelIndex, 50, QPersistentModelIndex)
+#else
+#define QT_FOR_EACH_STATIC_ITEMMODEL_CLASS(F)
+#endif
+
 #define QT_FOR_EACH_STATIC_CORE_CLASS(F)\
     F(QChar, 7, QChar) \
     F(QString, 10, QString) \
@@ -112,13 +120,12 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(QEasingCurve, 29, QEasingCurve) \
     F(QUuid, 30, QUuid) \
     F(QVariant, 41, QVariant) \
-    F(QModelIndex, 42, QModelIndex) \
     F(QRegularExpression, 44, QRegularExpression) \
     F(QJsonValue, 45, QJsonValue) \
     F(QJsonObject, 46, QJsonObject) \
     F(QJsonArray, 47, QJsonArray) \
     F(QJsonDocument, 48, QJsonDocument) \
-    F(QPersistentModelIndex, 50, QPersistentModelIndex) \
+    QT_FOR_EACH_STATIC_ITEMMODEL_CLASS(F)
 
 #define QT_FOR_EACH_STATIC_CORE_POINTER(F)\
     F(QObjectStar, 39, QObject*)

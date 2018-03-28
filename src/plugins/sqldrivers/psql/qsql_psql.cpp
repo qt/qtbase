@@ -462,8 +462,10 @@ void QPSQLResult::cleanup()
     d->result = nullptr;
     while (!d->nextResultSets.isEmpty())
         PQclear(d->nextResultSets.takeFirst());
-    if (d->stmtId != InvalidStatementId)
-        d->drv_d_func()->finishQuery(d->stmtId);
+    if (d->stmtId != InvalidStatementId) {
+        if (d->drv_d_func())
+            d->drv_d_func()->finishQuery(d->stmtId);
+    }
     d->stmtId = InvalidStatementId;
     setAt(QSql::BeforeFirstRow);
     d->currentSize = -1;

@@ -47,6 +47,8 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qabstractitemmodel.h>
 
+QT_REQUIRE_CONFIG(itemmodel);
+
 QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QItemSelectionRange

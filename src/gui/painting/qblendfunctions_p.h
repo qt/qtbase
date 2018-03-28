@@ -137,6 +137,16 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
 
     // this bounds check here is required as floating point rounding above might in some cases lead to
     // w/h values that are one pixel too large, falling outside of the valid image area.
+    const int ystart = srcy >> 16;
+    if (ystart >= srch && iy < 0) {
+        srcy += iy;
+        --h;
+    }
+    const int xstart = basex >> 16;
+    if (xstart >=  (int)(sbpl/sizeof(SRC)) && ix < 0) {
+        basex += ix;
+        --w;
+    }
     int yend = (srcy + iy * (h - 1)) >> 16;
     if (yend < 0 || yend >= srch)
         --h;
@@ -248,6 +258,16 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
 
     // this bounds check here is required as floating point rounding above might in some cases lead to
     // w/h values that are one pixel too large, falling outside of the valid image area.
+    const int ystart = srcy >> 16;
+    if (ystart >= srch && iy < 0) {
+        srcy += iy;
+        --h;
+    }
+    const int xstart = basex >> 16;
+    if (xstart >=  (int)(sbpl/sizeof(quint32)) && ix < 0) {
+        basex += ix;
+        --w;
+    }
     int yend = (srcy + iy * (h - 1)) >> 16;
     if (yend < 0 || yend >= srch)
         --h;

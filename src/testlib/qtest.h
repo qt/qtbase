@@ -41,7 +41,7 @@
 #ifndef QTEST_H
 #define QTEST_H
 
-#include <QtTest/qtest_global.h>
+#include <QtTest/qttestglobal.h>
 #include <QtTest/qtestcase.h>
 #include <QtTest/qtestdata.h>
 #include <QtTest/qbenchmark.h>

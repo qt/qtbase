@@ -38,9 +38,6 @@
 ****************************************************************************/
 
 #include "qidentityproxymodel.h"
-
-#ifndef QT_NO_IDENTITYPROXYMODEL
-
 #include "qitemselectionmodel.h"
 #include <private/qabstractproxymodel_p.h>
 
@@ -616,5 +613,3 @@ void QIdentityProxyModelPrivate::_q_sourceRowsRemoved(const QModelIndex &parent,
 QT_END_NAMESPACE
 
 #include "moc_qidentityproxymodel.cpp"
-
-#endif // QT_NO_IDENTITYPROXYMODEL

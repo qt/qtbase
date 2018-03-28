@@ -56,8 +56,10 @@
 #include "qurl.h"
 #include "qlocale.h"
 #include "quuid.h"
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(itemmodel)
 #include "qabstractitemmodel.h"
+#endif
+#ifndef QT_BOOTSTRAPPED
 #include "qjsonvalue.h"
 #include "qjsonobject.h"
 #include "qjsonarray.h"
@@ -393,6 +395,8 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             return false;
         }
         break;
+#endif // QT_BOOTSTRAPPED
+#if QT_CONFIG(itemmodel)
     case QVariant::ModelIndex:
         switch (d->type) {
         case QVariant::PersistentModelIndex:
@@ -411,7 +415,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             return false;
         }
         break;
-#endif // QT_BOOTSTRAPPED
+#endif // QT_CONFIG(itemmodel)
     case QVariant::String: {
         QString *str = static_cast<QString *>(result);
         switch (d->type) {
@@ -1952,12 +1956,6 @@ QVariant::QVariant(const QRegularExpression &re)
 QVariant::QVariant(const QUuid &uuid)
     : d(Uuid)
 { v_construct<QUuid>(&d, uuid); }
-QVariant::QVariant(const QModelIndex &modelIndex)
-    : d(ModelIndex)
-{ v_construct<QModelIndex>(&d, modelIndex); }
-QVariant::QVariant(const QPersistentModelIndex &modelIndex)
-    : d(PersistentModelIndex)
-{ v_construct<QPersistentModelIndex>(&d, modelIndex); }
 QVariant::QVariant(const QJsonValue &jsonValue)
     : d(QMetaType::QJsonValue)
 { v_construct<QJsonValue>(&d, jsonValue); }
@@ -1971,6 +1969,14 @@ QVariant::QVariant(const QJsonDocument &jsonDocument)
     : d(QMetaType::QJsonDocument)
 { v_construct<QJsonDocument>(&d, jsonDocument); }
 #endif // QT_BOOTSTRAPPED
+#if QT_CONFIG(itemmodel)
+QVariant::QVariant(const QModelIndex &modelIndex)
+    : d(ModelIndex)
+{ v_construct<QModelIndex>(&d, modelIndex); }
+QVariant::QVariant(const QPersistentModelIndex &modelIndex)
+    : d(PersistentModelIndex)
+{ v_construct<QPersistentModelIndex>(&d, modelIndex); }
+#endif
 
 /*!
     Returns the storage type of the value stored in the variant.
@@ -2668,21 +2674,7 @@ QRegularExpression QVariant::toRegularExpression() const
 }
 #endif // QT_CONFIG(regularexpression)
 
-#ifndef QT_BOOTSTRAPPED
-/*!
-    \since 5.0
-
-    Returns the variant as a QUuid if the variant has type()
-    \l QMetaType::QUuid, \l QMetaType::QByteArray or \l QMetaType::QString;
-    otherwise returns a default-constructed QUuid.
-
-    \sa canConvert(), convert()
-*/
-QUuid QVariant::toUuid() const
-{
-    return qVariantToHelper<QUuid>(d, handlerManager);
-}
-
+#if QT_CONFIG(itemmodel)
 /*!
     \since 5.0
 
@@ -2707,6 +2699,22 @@ QModelIndex QVariant::toModelIndex() const
 QPersistentModelIndex QVariant::toPersistentModelIndex() const
 {
     return qVariantToHelper<QPersistentModelIndex>(d, handlerManager);
+}
+#endif // QT_CONFIG(itemmodel)
+
+#ifndef QT_BOOTSTRAPPED
+/*!
+    \since 5.0
+
+    Returns the variant as a QUuid if the variant has type()
+    \l QMetaType::QUuid, \l QMetaType::QByteArray or \l QMetaType::QString;
+    otherwise returns a default-constructed QUuid.
+
+    \sa canConvert(), convert()
+*/
+QUuid QVariant::toUuid() const
+{
+    return qVariantToHelper<QUuid>(d, handlerManager);
 }
 
 /*!
@@ -3182,9 +3190,11 @@ bool QVariant::canConvert(int targetTypeId) const
     if (d.type == targetTypeId)
         return true;
 
+#if QT_CONFIG(itemmodel)
     if ((targetTypeId == QMetaType::QModelIndex && d.type == QMetaType::QPersistentModelIndex)
         || (targetTypeId == QMetaType::QPersistentModelIndex && d.type == QMetaType::QModelIndex))
         return true;
+#endif
 
     if (targetTypeId == QMetaType::QVariantList
             && (d.type == QMetaType::QVariantList

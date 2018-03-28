@@ -45,6 +45,8 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qvector.h>
 
+QT_REQUIRE_CONFIG(itemmodel);
+
 QT_BEGIN_NAMESPACE
 
 

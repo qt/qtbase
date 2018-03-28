@@ -30,7 +30,7 @@
 #define QABSTRACTITEMMODELTESTER_H
 
 #include <QtCore/QObject>
-#include <QtTest/qtest_global.h>
+#include <QtTest/qttestglobal.h>
 
 #ifdef QT_GUI_LIB
 #include <QtGui/QFont>
@@ -40,6 +40,8 @@
 #include <QtGui/QImage>
 #include <QtGui/QIcon>
 #endif
+
+QT_REQUIRE_CONFIG(itemmodeltester);
 
 QT_BEGIN_NAMESPACE
 

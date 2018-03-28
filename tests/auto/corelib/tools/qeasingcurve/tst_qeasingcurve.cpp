@@ -54,6 +54,7 @@ private slots:
     void testCbrtDouble();
     void testCbrtFloat();
     void cpp11();
+    void quadraticEquation();
 };
 
 void tst_QEasingCurve::type()
@@ -802,6 +803,75 @@ void tst_QEasingCurve::cpp11()
     QCOMPARE( ec.type(), type );
     }
 #endif
+}
+
+void tst_QEasingCurve::quadraticEquation() {
+    // We find the value for a given time by solving a cubic equation.
+    //     ax^3 + bx^2 + cx + d = 0
+    // However, the solver also needs to take care of cases where a = 0,
+    // b = 0 or c = 0, and the equation becomes quadratic, linear or invalid.
+    // A naive cubic solver might divide by zero and return nan, even
+    // when the solution is a real number.
+    // This test should triggers those cases.
+
+    {
+        // If the control points are spaced 1/3 apart of the distance of the
+        // start- and endpoint, the equation becomes linear.
+        QEasingCurve test(QEasingCurve::BezierSpline);
+        const qreal p1 = 1.0 / 3.0;
+        const qreal p2 = 1.0 - 1.0 / 3.0;
+        const qreal p3 = 1.0;
+
+        test.addCubicBezierSegment(QPointF(p1, 0.0), QPointF(p2, 1.0), QPointF(p3, 1.0));
+        QVERIFY(qAbs(test.valueForProgress(0.25) - 0.15625) < 1e-6);
+        QVERIFY(qAbs(test.valueForProgress(0.5) - 0.5) < 1e-6);
+        QVERIFY(qAbs(test.valueForProgress(0.75) - 0.84375) < 1e-6);
+    }
+
+    {
+        // If both the start point and the first control point
+        // are placed a 0.0, and the second control point is
+        // placed at 1/3, we get a case where a = 0 and b != 0
+        // i.e. a quadratic equation.
+        QEasingCurve test(QEasingCurve::BezierSpline);
+        const qreal p1 = 0.0;
+        const qreal p2 = 1.0 / 3.0;
+        const qreal p3 = 1.0;
+        test.addCubicBezierSegment(QPointF(p1, 0.0), QPointF(p2, 1.0), QPointF(p3, 1.0));
+        QVERIFY(qAbs(test.valueForProgress(0.25) - 0.5) < 1e-6);
+        QVERIFY(qAbs(test.valueForProgress(0.5) - 0.792893) < 1e-6);
+        QVERIFY(qAbs(test.valueForProgress(0.75) - 0.950962) < 1e-6);
+    }
+
+    {
+        // If both the start point and the first control point
+        // are placed a 0.0, and the second control point is
+        // placed close to 1/3, we get a case where a = ~0 and b != 0.
+        // It's not truly a quadratic equation, but should be treated
+        // as one, because it causes some cubic solvers to fail.
+        QEasingCurve test(QEasingCurve::BezierSpline);
+        const qreal p1 = 0.0;
+        const qreal p2 = 1.0 / 3.0 + 1e-6;
+        const qreal p3 = 1.0;
+        test.addCubicBezierSegment(QPointF(p1, 0.0), QPointF(p2, 1.0), QPointF(p3, 1.0));
+        QVERIFY(qAbs(test.valueForProgress(0.25) - 0.499999) < 1e-6);
+        QVERIFY(qAbs(test.valueForProgress(0.5) - 0.792892) < 1e-6);
+        QVERIFY(qAbs(test.valueForProgress(0.75) - 0.950961) < 1e-6);
+    }
+
+    {
+        // A bad case, where the segment is of zero length.
+        // However, it might still happen in user code,
+        // and we should return a sensible answer.
+        QEasingCurve test(QEasingCurve::BezierSpline);
+        const qreal p0 = 0.0;
+        const qreal p1 = p0;
+        const qreal p2 = p0;
+        const qreal p3 = p0;
+        test.addCubicBezierSegment(QPointF(p1, 0.0), QPointF(p2, 1.0), QPointF(p3, 1.0));
+        test.addCubicBezierSegment(QPointF(p3, 1.0), QPointF(1.0, 1.0), QPointF(1.0, 1.0));
+        QCOMPARE(test.valueForProgress(0.0), 0.0);
+    }
 }
 
 QTEST_MAIN(tst_QEasingCurve)
