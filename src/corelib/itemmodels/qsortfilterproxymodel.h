@@ -41,10 +41,9 @@
 #define QSORTFILTERPROXYMODEL_H
 
 #include <QtCore/qabstractproxymodel.h>
-
-#ifndef QT_NO_SORTFILTERPROXYMODEL
-
 #include <QtCore/qregexp.h>
+
+QT_REQUIRE_CONFIG(sortfilterproxymodel);
 
 QT_BEGIN_NAMESPACE
 
@@ -197,7 +196,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SORTFILTERPROXYMODEL
 
 #endif // QSORTFILTERPROXYMODEL_H

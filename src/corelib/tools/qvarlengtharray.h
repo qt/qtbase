@@ -176,11 +176,11 @@ public:
     inline QVarLengthArray<T, Prealloc> &operator<<(const T &t)
     { append(t); return *this; }
     inline QVarLengthArray<T, Prealloc> &operator<<(T &&t)
-    { append(t); return *this; }
+    { append(std::move(t)); return *this; }
     inline QVarLengthArray<T, Prealloc> &operator+=(const T &t)
     { append(t); return *this; }
     inline QVarLengthArray<T, Prealloc> &operator+=(T &&t)
-    { append(t); return *this; }
+    { append(std::move(t)); return *this; }
 
     void prepend(T &&t);
     void prepend(const T &t);

@@ -242,7 +242,7 @@ public:
     static HWND getHWNDForWidget(const QWidget *widget)
     {
         if (QWindow *window = windowForWidget(widget))
-            if (window->handle())
+            if (window->handle() && QGuiApplication::platformNativeInterface())
                 return static_cast<HWND> (QGuiApplication::platformNativeInterface()->
                                           nativeResourceForWindow(QByteArrayLiteral("handle"), window));
         return 0;

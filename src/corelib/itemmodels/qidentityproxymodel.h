@@ -43,7 +43,7 @@
 
 #include <QtCore/qabstractproxymodel.h>
 
-#ifndef QT_NO_IDENTITYPROXYMODEL
+QT_REQUIRE_CONFIG(identityproxymodel);
 
 QT_BEGIN_NAMESPACE
 
@@ -109,8 +109,6 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_IDENTITYPROXYMODEL
 
 #endif // QIDENTITYPROXYMODEL_H
 

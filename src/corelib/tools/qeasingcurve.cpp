@@ -797,27 +797,60 @@ struct BezierEase : public QEasingCurveFunction
         return t3;
     }
 
-     qreal static inline findTForX(const SingleCubicBezier &singleCubicBezier, qreal x)
-     {
-         const qreal p0 = singleCubicBezier.p0x;
-         const qreal p1 = singleCubicBezier.p1x;
-         const qreal p2 = singleCubicBezier.p2x;
-         const qreal p3 = singleCubicBezier.p3x;
+    bool static inline almostZero(qreal value)
+    {
+        // 1e-3 might seem excessively fuzzy, but any smaller value will make the
+        // factors a, b, and c large enough to knock out the cubic solver.
+        return value > -1e-3 && value < 1e-3;
+    }
 
-         const qreal factorT3 = p3 - p0 + 3 * p1 - 3 * p2;
-         const qreal factorT2 = 3 * p0 - 6 * p1 + 3 * p2;
-         const qreal factorT1 = -3 * p0 + 3 * p1;
-         const qreal factorT0 = p0 - x;
+    qreal static inline findTForX(const SingleCubicBezier &singleCubicBezier, qreal x)
+    {
+        const qreal p0 = singleCubicBezier.p0x;
+        const qreal p1 = singleCubicBezier.p1x;
+        const qreal p2 = singleCubicBezier.p2x;
+        const qreal p3 = singleCubicBezier.p3x;
 
-         const qreal a = factorT2 / factorT3;
-         const qreal b = factorT1 / factorT3;
-         const qreal c = factorT0 / factorT3;
+        const qreal factorT3 = p3 - p0 + 3 * p1 - 3 * p2;
+        const qreal factorT2 = 3 * p0 - 6 * p1 + 3 * p2;
+        const qreal factorT1 = -3 * p0 + 3 * p1;
+        const qreal factorT0 = p0 - x;
 
-         return singleRealSolutionForCubic(a, b, c);
+        // Cases for quadratic, linear and invalid equations
+        if (almostZero(factorT3)) {
+            if (almostZero(factorT2)) {
+                if (almostZero(factorT1))
+                    return 0.0;
 
-         //one new iteration to increase numeric stability
-         //return newtonIteration(singleCubicBezier, t, x);
-     }
+                return -factorT0 / factorT1;
+            }
+            const qreal discriminant = factorT1 * factorT1 - 4.0 * factorT2 * factorT0;
+            if (discriminant < 0.0)
+                return 0.0;
+
+            if (discriminant == 0.0)
+                return -factorT1 / (2.0 * factorT2);
+
+            const qreal solution1 = (-factorT1 + std::sqrt(discriminant)) / (2.0 * factorT2);
+            if (solution1 >= 0.0 && solution1 <= 1.0)
+                return solution1;
+
+            const qreal solution2 = (-factorT1 - std::sqrt(discriminant)) / (2.0 * factorT2);
+            if (solution2 >= 0.0 && solution2 <= 1.0)
+                return solution2;
+
+            return 0.0;
+        }
+
+        const qreal a = factorT2 / factorT3;
+        const qreal b = factorT1 / factorT3;
+        const qreal c = factorT0 / factorT3;
+
+        return singleRealSolutionForCubic(a, b, c);
+
+        //one new iteration to increase numeric stability
+        //return newtonIteration(singleCubicBezier, t, x);
+    }
 };
 
 struct TCBEase : public BezierEase

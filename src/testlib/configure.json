@@ -1,0 +1,22 @@
+{
+    "module": "testlib",
+    "depends": [
+        "core"
+    ],
+
+    "features": {
+        "itemmodeltester": {
+            "label": "Tester for item models",
+            "purpose": "Provides a utility to test item models.",
+            "condition": "features.itemmodel",
+            "output": [ "publicFeature" ]
+        }
+    },
+
+    "summary": [
+        {
+            "section": "Qt Testlib",
+            "entries": [ "itemmodeltester" ]
+        }
+    ]
+}

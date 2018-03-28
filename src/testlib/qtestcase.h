@@ -40,7 +40,7 @@
 #ifndef QTESTCASE_H
 #define QTESTCASE_H
 
-#include <QtTest/qtest_global.h>
+#include <QtTest/qttestglobal.h>
 
 #include <QtCore/qstring.h>
 #include <QtCore/qnamespace.h>

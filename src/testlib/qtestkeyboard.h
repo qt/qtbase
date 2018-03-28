@@ -46,7 +46,7 @@
 #endif
 
 #include <QtTest/qtestassert.h>
-#include <QtTest/qtest_global.h>
+#include <QtTest/qttestglobal.h>
 #include <QtTest/qtestsystem.h>
 #include <QtTest/qtestspontaneevent.h>
 

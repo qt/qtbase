@@ -2895,12 +2895,14 @@ void tst_QVector::insertMove() const
     const int instancesCount = Movable::counter.loadAcquire();
     {
         QVector<Movable> vec;
-        vec.reserve(5);
+        vec.reserve(7);
         Movable m0;
         Movable m1;
         Movable m2;
         Movable m3;
         Movable m4;
+        Movable m5;
+        Movable m6;
 
         vec.append(std::move(m3));
         QVERIFY(m3.wasConstructedAt(nullptr));
@@ -2920,6 +2922,21 @@ void tst_QVector::insertMove() const
         QVERIFY(vec.at(1).wasConstructedAt(&m2));
         QVERIFY(vec.at(2).wasConstructedAt(&m3));
         QVERIFY(vec.at(3).wasConstructedAt(&m4));
+        vec += std::move(m5);
+        QVERIFY(m5.wasConstructedAt(nullptr));
+        QVERIFY(vec.at(0).wasConstructedAt(&m1));
+        QVERIFY(vec.at(1).wasConstructedAt(&m2));
+        QVERIFY(vec.at(2).wasConstructedAt(&m3));
+        QVERIFY(vec.at(3).wasConstructedAt(&m4));
+        QVERIFY(vec.at(4).wasConstructedAt(&m5));
+        vec << std::move(m6);
+        QVERIFY(m6.wasConstructedAt(nullptr));
+        QVERIFY(vec.at(0).wasConstructedAt(&m1));
+        QVERIFY(vec.at(1).wasConstructedAt(&m2));
+        QVERIFY(vec.at(2).wasConstructedAt(&m3));
+        QVERIFY(vec.at(3).wasConstructedAt(&m4));
+        QVERIFY(vec.at(4).wasConstructedAt(&m5));
+        QVERIFY(vec.at(5).wasConstructedAt(&m6));
         vec.push_front(std::move(m0));
         QVERIFY(m0.wasConstructedAt(nullptr));
         QVERIFY(vec.at(0).wasConstructedAt(&m0));
@@ -2927,8 +2944,10 @@ void tst_QVector::insertMove() const
         QVERIFY(vec.at(2).wasConstructedAt(&m2));
         QVERIFY(vec.at(3).wasConstructedAt(&m3));
         QVERIFY(vec.at(4).wasConstructedAt(&m4));
+        QVERIFY(vec.at(5).wasConstructedAt(&m5));
+        QVERIFY(vec.at(6).wasConstructedAt(&m6));
 
-        QCOMPARE(Movable::counter.loadAcquire(), instancesCount + 10);
+        QCOMPARE(Movable::counter.loadAcquire(), instancesCount + 14);
     }
     QCOMPARE(Movable::counter.loadAcquire(), instancesCount);
 }
