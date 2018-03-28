@@ -44,6 +44,10 @@
 #include <CoreGraphics/CoreGraphics.h>
 #endif
 
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#  include <qt_windows.h>
+#endif
+
 Q_DECLARE_METATYPE(QImage::Format)
 Q_DECLARE_METATYPE(Qt::GlobalColor)
 
@@ -222,6 +226,11 @@ private slots:
 #endif
 
     void hugeQImage();
+
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    void toWinHBITMAP_data();
+    void toWinHBITMAP();
+#endif // Q_OS_WIN && !Q_OS_WINRT
 
 private:
     const QString m_prefix;
@@ -3486,6 +3495,109 @@ void tst_QImage::hugeQImage()
     QCOMPARE(reinterpret_cast<const unsigned int *>(canvas.constScanLine(90))[50], 0xffaabbcc);
 #endif
 }
+
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+QT_BEGIN_NAMESPACE
+Q_GUI_EXPORT HBITMAP qt_imageToWinHBITMAP(const QImage &p, int hbitmapFormat = 0);
+Q_GUI_EXPORT QImage qt_imageFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
+QT_END_NAMESPACE
+
+static inline QColor COLORREFToQColor(COLORREF cr)
+{
+    return QColor(GetRValue(cr), GetGValue(cr), GetBValue(cr));
+}
+
+void tst_QImage::toWinHBITMAP_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+    QTest::addColumn<QColor>("color");
+    QTest::addColumn<QColor>("bottomRightColor");
+
+    const QColor red(Qt::red);
+    const QColor green(Qt::green);
+    const QColor blue(Qt::blue);
+    const QColor gray(Qt::gray);
+    const QColor gray555(0x5a, 0x5a, 0x5a); // Note: Interpolation 8<->5 bit occurs.
+    const QColor white(Qt::white);
+    const QColor black(Qt::black);
+
+    QTest::newRow("argb32p-red")    << QImage::Format_ARGB32_Premultiplied << red << gray;
+    QTest::newRow("argb32p-green")  << QImage::Format_ARGB32_Premultiplied << green << gray;
+    QTest::newRow("argb32p-blue")   << QImage::Format_ARGB32_Premultiplied << blue << gray;
+    QTest::newRow("rgb888-red")     << QImage::Format_RGB888 << red << gray;
+    QTest::newRow("rgb888-green")   << QImage::Format_RGB888 << green << gray;
+    QTest::newRow("rgb888-blue")    << QImage::Format_RGB888 << blue << gray;
+    QTest::newRow("indexed8-red")   << QImage::Format_Indexed8 << red << gray;
+    QTest::newRow("indexed8-green") << QImage::Format_Indexed8 << green << gray;
+    QTest::newRow("indexed8-blue")  << QImage::Format_Indexed8 << blue << gray;
+    QTest::newRow("rgb555-red")     << QImage::Format_RGB555 << red << gray555;
+    QTest::newRow("rgb555-green")   << QImage::Format_RGB555 << green << gray555;
+    QTest::newRow("rgb555-blue")    << QImage::Format_RGB555 << blue << gray555;
+    QTest::newRow("mono")           << QImage::Format_Mono << white << black;
+}
+
+// Test image filled with color, black pixel at botttom right corner.
+static inline QImage createTestImage(QImage::Format format, int width, int height,
+                                     const QColor &fillColor, const QColor &bottomRightColor)
+{
+    QImage image(QSize(width, height), format);
+    image.fill(fillColor);
+    QPainter painter(&image);
+    QPen pen = painter.pen();
+    pen.setColor(bottomRightColor);
+    painter.setPen(pen);
+    painter.drawPoint(width -1, height - 1);
+    return image;
+}
+
+void tst_QImage::toWinHBITMAP()
+{
+    static const int width = 73;
+    static const int height = 57;
+
+    QFETCH(QImage::Format, format);
+    QFETCH(QColor, color);
+    QFETCH(QColor, bottomRightColor);
+
+    // Cannot paint on indexed/mono images.
+    const QImage image = format == QImage::Format_Indexed8 || format == QImage::Format_Mono
+        ? createTestImage(QImage::Format_RGB32, width, height, color, bottomRightColor).convertToFormat(format)
+        : createTestImage(format, width, height, color, bottomRightColor);
+
+    const HBITMAP bitmap = qt_imageToWinHBITMAP(image);
+
+    QVERIFY(bitmap != 0);
+
+    // Verify size
+    BITMAP bitmapInfo;
+    memset(&bitmapInfo, 0, sizeof(BITMAP));
+
+    const int res = GetObject(bitmap, sizeof(BITMAP), &bitmapInfo);
+    QVERIFY(res);
+    QCOMPARE(width, int(bitmapInfo.bmWidth));
+    QCOMPARE(height, int(bitmapInfo.bmHeight));
+
+    const HDC displayDc = GetDC(0);
+    const HDC bitmapDc = CreateCompatibleDC(displayDc);
+
+    const HBITMAP nullBitmap = static_cast<HBITMAP>(SelectObject(bitmapDc, bitmap));
+
+    QCOMPARE(COLORREFToQColor(GetPixel(bitmapDc, 0, 0)), color);
+    QCOMPARE(COLORREFToQColor(GetPixel(bitmapDc, width - 1, 3)), color);
+    QCOMPARE(COLORREFToQColor(GetPixel(bitmapDc, 3, height - 1)), color);
+    QCOMPARE(COLORREFToQColor(GetPixel(bitmapDc, width - 1, height - 1)), bottomRightColor);
+
+    const QImage convertedBack = qt_imageFromWinHBITMAP(bitmap);
+    QCOMPARE(convertedBack.convertToFormat(QImage::Format_ARGB32_Premultiplied),
+             image.convertToFormat(QImage::Format_ARGB32_Premultiplied));
+
+    // Clean up
+    SelectObject(bitmapDc, nullBitmap);
+    DeleteObject(bitmap);
+    DeleteDC(bitmapDc);
+    ReleaseDC(0, displayDc);
+}
+#endif // Q_OS_WIN && !Q_OS_WINRT
 
 QTEST_GUILESS_MAIN(tst_QImage)
 #include "tst_qimage.moc"
