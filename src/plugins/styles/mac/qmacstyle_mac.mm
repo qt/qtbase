@@ -1198,73 +1198,6 @@ static QStyleHelper::WidgetSizePolicy qt_aqua_guess_size(const QWidget *widg, QS
 }
 #endif
 
-void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, qreal radius) const
-{
-    const qreal pixelRatio = p->device()->devicePixelRatioF();
-    static const QString keyFormat = QLatin1String("$qt_focusring%1-%2-%3-%4");
-    const QString &key = keyFormat.arg(hMargin).arg(vMargin).arg(radius).arg(pixelRatio);
-    QPixmap focusRingPixmap;
-
-    if (!QPixmapCache::find(key, focusRingPixmap)) {
-        const qreal size = radius * 2 + 5;
-        focusRingPixmap = QPixmap((QSize(size, size) + 2 * QSize(hMargin, vMargin)) * pixelRatio);
-        focusRingPixmap.fill(Qt::transparent);
-        focusRingPixmap.setDevicePixelRatio(pixelRatio);
-
-        static const qreal focusRingWidth = 3.5;
-        const auto focusRingRect = QRectF(hMargin, vMargin, size, size);
-        QPainterPath focusRingPath;
-        focusRingPath.setFillRule(Qt::OddEvenFill);
-        const auto innerRect = radius > 0 ? focusRingRect : focusRingRect.adjusted(0.5, 0.5, -0.5, -0.5);
-        if (radius > 0)
-            focusRingPath.addRoundedRect(innerRect, radius, radius);
-        else
-            focusRingPath.addRect(innerRect);
-
-        const auto outterRect = innerRect.adjusted(-focusRingWidth, -focusRingWidth, focusRingWidth, focusRingWidth);
-        const auto outterRadius = radius + focusRingWidth;
-        focusRingPath.addRoundedRect(outterRect, outterRadius, outterRadius);
-
-        QPainter pp(&focusRingPixmap);
-        pp.setOpacity(0.5);
-        pp.setRenderHint(QPainter::Antialiasing);
-        const auto focusRingColor = qt_mac_toQColor(NSColor.keyboardFocusIndicatorColor.CGColor);
-        pp.fillPath(focusRingPath, focusRingColor);
-
-        QPixmapCache::insert(key, focusRingPixmap);
-    }
-
-    // Add 2 for the actual ring tickness going inwards
-    const qreal hCornerSize = 2 + hMargin + radius;
-    const qreal vCornerSize = 2 + vMargin + radius;
-    const qreal shCornerSize = hCornerSize * pixelRatio;
-    const qreal svCornerSize = vCornerSize * pixelRatio;
-    // top-left corner
-    p->drawPixmap(QPointF(targetRect.left(), targetRect.top()), focusRingPixmap,
-                  QRectF(0, 0, shCornerSize, svCornerSize));
-    // top-right corner
-    p->drawPixmap(QPointF(targetRect.right() - hCornerSize + 1, targetRect.top()), focusRingPixmap,
-                  QRectF(focusRingPixmap.width() - shCornerSize, 0, shCornerSize, svCornerSize));
-    // bottom-left corner
-    p->drawPixmap(QPointF(targetRect.left(), targetRect.bottom() - vCornerSize + 1), focusRingPixmap,
-                  QRectF(0, focusRingPixmap.height() - svCornerSize, shCornerSize, svCornerSize));
-    // bottom-right corner
-    p->drawPixmap(QPointF(targetRect.right() - hCornerSize + 1, targetRect.bottom() - vCornerSize + 1), focusRingPixmap,
-                  QRect(focusRingPixmap.width() - shCornerSize, focusRingPixmap.height() - svCornerSize, shCornerSize, svCornerSize));
-    // top edge
-    p->drawPixmap(QRectF(targetRect.left() + hCornerSize, targetRect.top(), targetRect.width() - 2 * hCornerSize, vCornerSize), focusRingPixmap,
-                  QRect(shCornerSize, 0, focusRingPixmap.width() - 2 * shCornerSize, svCornerSize));
-    // bottom edge
-    p->drawPixmap(QRectF(targetRect.left() + hCornerSize, targetRect.bottom() - vCornerSize + 1, targetRect.width() - 2 * hCornerSize, vCornerSize), focusRingPixmap,
-                  QRect(shCornerSize, focusRingPixmap.height() - svCornerSize, focusRingPixmap.width() - 2 * shCornerSize, svCornerSize));
-    // left edge
-    p->drawPixmap(QRectF(targetRect.left(), targetRect.top() + vCornerSize, hCornerSize, targetRect.height() - 2 * vCornerSize), focusRingPixmap,
-                  QRect(0, svCornerSize, shCornerSize, focusRingPixmap.width() - 2 * svCornerSize));
-    // right edge
-    p->drawPixmap(QRectF(targetRect.right() - hCornerSize + 1, targetRect.top() + vCornerSize, hCornerSize, targetRect.height() - 2 * vCornerSize), focusRingPixmap,
-                  QRect(focusRingPixmap.width() - shCornerSize, svCornerSize, shCornerSize, focusRingPixmap.width() - 2 * svCornerSize));
-}
-
 void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const
 {
     QPainterPath focusRingPath;
@@ -1273,6 +1206,18 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
     qreal hOffset = 0.0;
     qreal vOffset = 0.0;
     switch (cw.type) {
+    case Box:
+    case Button_SquareButton:
+    case TextField: {
+        auto innerRect = targetRect;
+        if (cw.type == TextField)
+            innerRect = innerRect.adjusted(hMargin, vMargin, -hMargin, -vMargin).adjusted(0.5, 0.5, -0.5, -0.5);
+        const auto outterRect = innerRect.adjusted(-focusRingWidth, -focusRingWidth, focusRingWidth, focusRingWidth);
+        const auto outterRadius = focusRingWidth;
+        focusRingPath.addRect(innerRect);
+        focusRingPath.addRoundedRect(outterRect, outterRadius, outterRadius);
+        break;
+    }
     case Button_CheckBox: {
         const auto cbInnerRadius = (cw.size == QStyleHelper::SizeMini ? 2.0 : 3.0);
         const auto cbSize = cw.size == QStyleHelper::SizeLarge ? 13 :
@@ -3652,17 +3597,17 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 // TODO Remove and use QFocusFrame instead.
                 const int hMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin, btn, w);
                 const int vMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin, btn, w);
+                QRectF focusRect;
                 if (cw.type == QMacStylePrivate::Button_SquareButton) {
-                    const auto focusRect = frameRect.adjusted(-focusRingWidth, -focusRingWidth, focusRingWidth, focusRingWidth);
-                    d->drawFocusRing(p, focusRect.toAlignedRect(), hMargin, vMargin, 0);
+                    focusRect = frameRect;
                 } else {
-                    auto focusRect = QRectF::fromCGRect([pb alignmentRectForFrame:pb.frame]);
+                    focusRect = QRectF::fromCGRect([pb alignmentRectForFrame:pb.frame]);
                     if (cw.type == QMacStylePrivate::Button_PushButton)
                         focusRect -= pushButtonShadowMargins[cw.size];
                     else if (cw.type == QMacStylePrivate::Button_PullDown)
                         focusRect -= pullDownButtonShadowMargins[cw.size];
-                    d->drawFocusRing(p, focusRect, hMargin, vMargin, cw);
                 }
+                d->drawFocusRing(p, focusRect, hMargin, vMargin, cw);
             }
         }
         break;
@@ -3942,20 +3887,19 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     return QMacStylePrivate::Button_CheckBox;
                 if (ffw->inherits("QRadioButton"))
                     return QMacStylePrivate::Button_RadioButton;
+                if (ffw->inherits("QLineEdit") || ffw->inherits("QTextEdit"))
+                    return QMacStylePrivate::TextField;
             }
 
             return QMacStylePrivate::Box; // Not really, just make it the default
         } ();
+        const auto cs = ffw ? (ffw->testAttribute(Qt::WA_MacMiniSize) ? QStyleHelper::SizeMini :
+                               ffw->testAttribute(Qt::WA_MacSmallSize) ? QStyleHelper::SizeSmall :
+                               QStyleHelper::SizeLarge) :
+                        QStyleHelper::SizeLarge;
         const int hMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, w);
         const int vMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin, opt, w);
-        if (ct == QMacStylePrivate::Box) {
-            d->drawFocusRing(p, opt->rect, hMargin, vMargin);
-        } else if (ffw) {
-            const auto cs = ffw->testAttribute(Qt::WA_MacMiniSize) ? QStyleHelper::SizeMini :
-                            ffw->testAttribute(Qt::WA_MacSmallSize) ? QStyleHelper::SizeSmall :
-                            QStyleHelper::SizeLarge;
-            d->drawFocusRing(p, opt->rect, hMargin, vMargin, QMacStylePrivate::CocoaControl(ct, cs));
-        }
+        d->drawFocusRing(p, opt->rect, hMargin, vMargin, QMacStylePrivate::CocoaControl(ct, cs));
         break; }
     case CE_MenuEmptyArea:
         // Skip: PE_PanelMenu fills in everything
