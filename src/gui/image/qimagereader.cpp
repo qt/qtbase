@@ -1555,7 +1555,7 @@ QList<QByteArray> QImageReader::supportedMimeTypes()
 /*!
     \since 5.12
 
-    Returns the list of image formats corresponding to \mimeType.
+    Returns the list of image formats corresponding to \a mimeType.
 
     Note that the QGuiApplication instance must be created before this function is
     called.
