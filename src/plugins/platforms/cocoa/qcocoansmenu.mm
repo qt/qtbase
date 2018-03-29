@@ -70,11 +70,14 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
 }
 
 @implementation QCocoaNSMenu
+{
+    QPointer<QCocoaMenu> _platformMenu;
+}
 
-- (instancetype)initWithQPAMenu:(QCocoaMenu *)menu
+- (instancetype)initWithPlatformMenu:(QCocoaMenu *)menu
 {
     if ((self = [super initWithTitle:@"Untitled"])) {
-        _qpaMenu = menu;
+        _platformMenu = menu;
         self.autoenablesItems = YES;
         self.delegate = [QCocoaNSMenuDelegate sharedMenuDelegate];
     }
@@ -82,41 +85,35 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
     return self;
 }
 
-// Cocoa will query the menu item's target for the worksWhenModal selector.
-// So we need to implement this to allow the items to be handled correctly
-// when a modal dialog is visible. See documentation for NSMenuItem.target.
-- (BOOL)worksWhenModal
+- (QCocoaMenu *)platformMenu
 {
-    if (!QGuiApplication::modalWindow())
-        return YES;
-    if (const auto *mb = qobject_cast<QCocoaMenuBar *>(self.qpaMenu->menuParent()))
-        return QGuiApplication::modalWindow()->handle() == mb->cocoaWindow() ? YES : NO;
-    return YES;
+    return _platformMenu.data();
 }
 
-- (void)qt_itemFired:(NSMenuItem *)item
+@end
+
+@implementation QCocoaNSMenuItem
 {
-    auto *qpaItem = reinterpret_cast<QCocoaMenuItem *>(item.tag);
-    // Menu-holding items also get a target to play nicely
-    // with NSMenuValidation but should not trigger.
-    if (!qpaItem || qpaItem->menu())
-        return;
-
-    QScopedScopeLevelCounter scopeLevelCounter(QGuiApplicationPrivate::instance()->threadData);
-    QGuiApplicationPrivate::modifier_buttons = [QNSView convertKeyModifiers:[NSEvent modifierFlags]];
-
-    static QMetaMethod activatedSignal = QMetaMethod::fromSignal(&QCocoaMenuItem::activated);
-    activatedSignal.invoke(qpaItem, Qt::QueuedConnection);
+    QPointer<QCocoaMenuItem> _platformMenuItem;
 }
 
-- (BOOL)validateMenuItem:(NSMenuItem*)item
+- (instancetype)initWithPlatformMenuItem:(QCocoaMenuItem *)menuItem
 {
-    auto *qpaItem = reinterpret_cast<QCocoaMenuItem *>(item.tag);
-    // Menu-holding items are always enabled, as it's conventional in Cocoa
-    if (!qpaItem || qpaItem->menu())
-        return YES;
+    if ((self = [super initWithTitle:@"" action:nil keyEquivalent:@""])) {
+        _platformMenuItem = menuItem;
+    }
 
-    return qpaItem->isEnabled();
+    return self;
+}
+
+- (QCocoaMenuItem *)platformMenuItem
+{
+    return _platformMenuItem.data();
+}
+
+- (void)setPlatformMenuItem:(QCocoaMenuItem *)menuItem
+{
+    _platformMenuItem = menuItem;
 }
 
 @end
@@ -153,14 +150,16 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
     if (shouldCancel)
         return NO;
 
-    const auto &qpaMenu = static_cast<QCocoaNSMenu *>(menu).qpaMenu;
-    if (qpaMenu.isNull())
+    const auto &platformMenu = static_cast<QCocoaNSMenu *>(menu).platformMenu;
+    if (!platformMenu)
         return YES;
 
-    auto *menuItem = reinterpret_cast<QCocoaMenuItem *>(item.tag);
-    if (qpaMenu->items().contains(menuItem)) {
-        if (QCocoaMenu *itemSubmenu = menuItem->menu())
-            itemSubmenu->setAttachedItem(item);
+    if ([item isMemberOfClass:[QCocoaNSMenuItem class]]) {
+        auto *menuItem = static_cast<QCocoaNSMenuItem *>(item).platformMenuItem;
+        if (platformMenu->items().contains(menuItem)) {
+            if (QCocoaMenu *itemSubmenu = menuItem->menu())
+                itemSubmenu->setAttachedItem(item);
+        }
     }
 
     return YES;
@@ -169,32 +168,33 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
 - (void)menu:(NSMenu *)menu willHighlightItem:(NSMenuItem *)item
 {
     CHECK_MENU_CLASS(menu);
-    auto *qpaItem = reinterpret_cast<QCocoaMenuItem *>(item.tag);
-    if (qpaItem)
-        qpaItem->hovered();
+    if ([item isMemberOfClass:[QCocoaNSMenuItem class]]) {
+        if (auto *platformItem = static_cast<QCocoaNSMenuItem *>(item).platformMenuItem)
+            emit platformItem->hovered();
+    }
 }
 
 - (void)menuWillOpen:(NSMenu *)menu
 {
     CHECK_MENU_CLASS(menu);
-    const auto &qpaMenu = static_cast<QCocoaNSMenu *>(menu).qpaMenu;
-    if (qpaMenu.isNull())
+    auto *platformMenu = static_cast<QCocoaNSMenu *>(menu).platformMenu;
+    if (!platformMenu)
         return;
 
-    qpaMenu->setIsOpen(true);
-    emit qpaMenu->aboutToShow();
+    platformMenu->setIsOpen(true);
+    emit platformMenu->aboutToShow();
 }
 
 - (void)menuDidClose:(NSMenu *)menu
 {
     CHECK_MENU_CLASS(menu);
-    const auto &qpaMenu = static_cast<QCocoaNSMenu *>(menu).qpaMenu;
-    if (qpaMenu.isNull())
+    auto *platformMenu = static_cast<QCocoaNSMenu *>(menu).platformMenu;
+    if (!platformMenu)
         return;
 
-    qpaMenu->setIsOpen(false);
+    platformMenu->setIsOpen(false);
     // wrong, but it's the best we can do
-    emit qpaMenu->aboutToHide();
+    emit platformMenu->aboutToHide();
 }
 
 - (BOOL)menuHasKeyEquivalent:(NSMenu *)menu forEvent:(NSEvent *)event target:(id *)target action:(SEL *)action
@@ -229,19 +229,6 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
     }
 
     if (keyEquivalentItem) {
-        if (!keyEquivalentItem.target) {
-            // This item was modified by QCocoaMenuBar::redirectKnownMenuItemsToFirstResponder
-            // and it looks like we're running a modal session for NSOpenPanel/NSSavePanel.
-            // QCocoaFileDialogHelper is actually the only place we use this and we run NSOpenPanel modal
-            // (modal sheet, window modal, application modal).
-            // Whatever the current first responder is, let's give it a chance
-            // and do not touch the Qt's focusObject (which is different from some native view
-            // having a focus inside NSSave/OpenPanel.
-            *target = nil;
-            *action = keyEquivalentItem.action;
-            return YES;
-        }
-
         QObject *object = qApp->focusObject();
         if (object) {
             QChar ch;

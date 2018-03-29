@@ -65,8 +65,6 @@ public:
     inline NSMenu *nsMenu() const
         { return m_nativeMenu; }
 
-    static void redirectKnownMenuItemsToFirstResponder();
-    static void resetKnownMenuItemsToQt();
     static void updateMenuBarImmediately();
 
     QList<QCocoaMenuItem*> merged() const;

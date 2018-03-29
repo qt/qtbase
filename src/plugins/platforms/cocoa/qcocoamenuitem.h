@@ -108,6 +108,7 @@ public:
 
     QCocoaMenu *menu() const { return m_menu; }
     MenuRole effectiveRole() const;
+    void resolveTargetAction();
 
 private:
     QString mergeText();

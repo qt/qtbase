@@ -50,7 +50,6 @@
 #include <private/qguiapplication_p.h>
 #include "qt_mac_p.h"
 #include "qcocoahelpers.h"
-#include "qcocoamenubar.h"
 #include "qcocoaeventdispatcher.h"
 #include <qregexp.h>
 #include <qbuffer.h>
@@ -220,7 +219,6 @@ static QString strippedText(QString s)
             || [self panel:nil shouldEnableURL:url];
 
         [self updateProperties];
-        QCocoaMenuBar::redirectKnownMenuItemsToFirstResponder();
         [mSavePanel setNameFieldStringValue:selectable ? info.fileName().toNSString() : @""];
 
         [mOpenPanel beginWithCompletionHandler:^(NSInteger result){
@@ -250,9 +248,7 @@ static QString strippedText(QString s)
     // Make sure we don't interrupt the runModal call below.
     QCocoaEventDispatcher::clearCurrentThreadCocoaEventDispatcherInterruptFlag();
 
-    QCocoaMenuBar::redirectKnownMenuItemsToFirstResponder();
     mReturnCode = [mSavePanel runModal];
-    QCocoaMenuBar::resetKnownMenuItemsToQt();
 
     QAbstractEventDispatcher::instance()->interrupt();
     return (mReturnCode == NSModalResponseOK);
@@ -272,7 +268,6 @@ static QString strippedText(QString s)
         || [self panel:nil shouldEnableURL:url];
 
     [self updateProperties];
-    QCocoaMenuBar::redirectKnownMenuItemsToFirstResponder();
     [mSavePanel setDirectoryURL: [NSURL fileURLWithPath:mCurrentDir]];
 
     [mSavePanel setNameFieldStringValue:selectable ? info.fileName().toNSString() : @""];
@@ -594,7 +589,6 @@ void QCocoaFileDialogHelper::QNSOpenSavePanelDelegate_selectionChanged(const QSt
 
 void QCocoaFileDialogHelper::QNSOpenSavePanelDelegate_panelClosed(bool accepted)
 {
-    QCocoaMenuBar::resetKnownMenuItemsToQt();
     if (accepted) {
         emit accept();
     } else {

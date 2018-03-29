@@ -361,6 +361,7 @@
 #include "qnsview_dragging.mm"
 #include "qnsview_keys.mm"
 #include "qnsview_complextext.mm"
+#include "qnsview_menus.mm"
 
 // -----------------------------------------------------
 

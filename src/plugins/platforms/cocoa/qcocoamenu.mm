@@ -62,7 +62,7 @@ QCocoaMenu::QCocoaMenu() :
 {
     QMacAutoReleasePool pool;
 
-    m_nativeMenu = [[QCocoaNSMenu alloc] initWithQPAMenu:this];
+    m_nativeMenu = [[QCocoaNSMenu alloc] initWithPlatformMenu:this];
 }
 
 QCocoaMenu::~QCocoaMenu()
@@ -132,7 +132,7 @@ void QCocoaMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *
 
 void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
 {
-    setItemTargetAction(item);
+    item->resolveTargetAction();
     NSMenuItem *nativeItem = item->nsItem();
     // Someone's adding new items after aboutToShow() was emitted
     if (isOpen() && nativeItem && item->menu())
@@ -423,7 +423,7 @@ QPlatformMenuItem *QCocoaMenu::menuItemAt(int position) const
     if (0 <= position && position < m_menuItems.count())
         return m_menuItems.at(position);
 
-    return 0;
+    return nullptr;
 }
 
 QPlatformMenuItem *QCocoaMenu::menuItemForTag(quintptr tag) const
@@ -433,7 +433,7 @@ QPlatformMenuItem *QCocoaMenu::menuItemForTag(quintptr tag) const
             return item;
     }
 
-    return 0;
+    return nullptr;
 }
 
 QList<QCocoaMenuItem *> QCocoaMenu::items() const
@@ -491,13 +491,6 @@ void QCocoaMenu::setAttachedItem(NSMenuItem *item)
 NSMenuItem *QCocoaMenu::attachedItem() const
 {
     return m_attachedItem;
-}
-
-void QCocoaMenu::setItemTargetAction(QCocoaMenuItem *item) const
-{
-    auto *nsItem = item->nsItem();
-    nsItem.target = m_nativeMenu;
-    nsItem.action = @selector(qt_itemFired:);
 }
 
 QT_END_NAMESPACE

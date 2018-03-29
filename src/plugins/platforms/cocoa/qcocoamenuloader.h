@@ -54,17 +54,18 @@
 #import <AppKit/AppKit.h>
 #include <QtCore/private/qcore_mac_p.h>
 
-@interface QT_MANGLE_NAMESPACE(QCocoaMenuLoader) : NSResponder
+QT_FORWARD_DECLARE_CLASS(QCocoaMenuItem);
+
+@interface QT_MANGLE_NAMESPACE(QCocoaMenuLoader) : NSObject
 + (instancetype)sharedMenuLoader;
+- (NSMenu *)menu;
 - (void)ensureAppMenuInMenu:(NSMenu *)menu;
-- (void)removeActionsFromAppMenu;
 - (NSMenuItem *)quitMenuItem;
 - (NSMenuItem *)preferencesMenuItem;
 - (NSMenuItem *)aboutMenuItem;
 - (NSMenuItem *)aboutQtMenuItem;
 - (NSMenuItem *)hideMenuItem;
-- (NSMenuItem *)appSpecificMenuItem:(NSInteger)tag;
-- (void)qtDispatcherToQPAMenuItem:(id)sender;
+- (NSMenuItem *)appSpecificMenuItem:(QCocoaMenuItem *)platformItem;
 - (void)qtTranslateApplicationMenu;
 - (NSArray<NSMenuItem *> *)mergeable;
 @end

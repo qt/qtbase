@@ -41,6 +41,7 @@
 
 #include "messages.h"
 #include "qcocoahelpers.h"
+#include "qcocoansmenu.h"
 #include "qcocoamenubar.h"
 #include "qcocoamenuitem.h"
 #include "qcocoaintegration.h"
@@ -95,17 +96,19 @@
         appItem.submenu = appMenu;
 
         // About Application
-        aboutItem = [[NSMenuItem alloc] initWithTitle:[@"About " stringByAppendingString:appName]
-                                               action:@selector(orderFrontStandardAboutPanel:)
-                                        keyEquivalent:@""];
+        aboutItem = [[QCocoaNSMenuItem alloc] initWithPlatformMenuItem:nullptr];
+        aboutItem.title = [@"About " stringByAppendingString:appName];
+        // FIXME This seems useless since barely adding a QAction
+        // with AboutRole role will reset the target/action
         aboutItem.target = self;
+        aboutItem.action = @selector(orderFrontStandardAboutPanel:);
         // Disable until a QAction is associated
         aboutItem.enabled = NO;
         aboutItem.hidden = YES;
         [appMenu addItem:aboutItem];
 
         // About Qt (shameless self-promotion)
-        aboutQtItem = [[NSMenuItem alloc] init];
+        aboutQtItem = [[QCocoaNSMenuItem alloc] initWithPlatformMenuItem:nullptr];
         aboutQtItem.title = @"About Qt";
         // Disable until a QAction is associated
         aboutQtItem.enabled = NO;
@@ -115,10 +118,9 @@
         [appMenu addItem:[NSMenuItem separatorItem]];
 
         // Preferences
-        preferencesItem = [[NSMenuItem alloc] initWithTitle:@"Preferences…"
-                                                     action:@selector(qtDispatcherToQPAMenuItem:)
-                                              keyEquivalent:@","];
-        preferencesItem.target = self;
+        preferencesItem = [[QCocoaNSMenuItem alloc] initWithPlatformMenuItem:nullptr];
+        preferencesItem.title = @"Preferences…";
+        preferencesItem.keyEquivalent = @",";
         // Disable until a QAction is associated
         preferencesItem.enabled = NO;
         preferencesItem.hidden = YES;
@@ -161,10 +163,13 @@
         [appMenu addItem:[NSMenuItem separatorItem]];
 
         // Quit Application
-        quitItem = [[NSMenuItem alloc] initWithTitle:[@"Quit " stringByAppendingString:appName]
-                                              action:@selector(terminate:)
-                                       keyEquivalent:@"q"];
-        quitItem.target = self;
+        quitItem = [[QCocoaNSMenuItem alloc] initWithPlatformMenuItem:nullptr];
+        quitItem.title = [@"Quit " stringByAppendingString:appName];
+        quitItem.keyEquivalent = @"q";
+        // This will remain true until synced with a QCocoaMenuItem.
+        // This way, we will always have a functional Quit menu item
+        // even if no QAction is added.
+        quitItem.action = @selector(terminate:);
         [appMenu addItem:quitItem];
     }
 
@@ -225,12 +230,6 @@
     }
 }
 
-- (void)removeActionsFromAppMenu
-{
-    for (NSMenuItem *item in [appMenu itemArray])
-        [item setTag:0];
-}
-
 - (NSMenu *)menu
 {
     return [[theMenu retain] autorelease];
@@ -266,17 +265,18 @@
     return [[hideItem retain] autorelease];
 }
 
-- (NSMenuItem *)appSpecificMenuItem:(NSInteger)tag
+- (NSMenuItem *)appSpecificMenuItem:(QCocoaMenuItem *)platformItem
 {
-    NSMenuItem *item = [appMenu itemWithTag:tag];
-
-    // No reason to create the item if it already exists. See QTBUG-27202.
-    if (item)
-        return [[item retain] autorelease];
+    for (NSMenuItem *item in appMenu.itemArray)
+        if ([item isMemberOfClass:[QCocoaNSMenuItem class]]
+            && static_cast<QCocoaNSMenuItem *>(item).platformMenuItem == platformItem) {
+            // No reason to create the item if it already exists.
+            return [[item retain] autorelease];
+        }
 
     // Create an App-Specific menu item, insert it into the menu and return
     // it as an autorelease item.
-    item = [[NSMenuItem alloc] init];
+    QCocoaNSMenuItem *item = [[QCocoaNSMenuItem alloc] initWithPlatformMenuItem:platformItem];
 
     NSInteger location;
     if (lastAppSpecificItem == nil) {
@@ -289,16 +289,6 @@
     [appMenu insertItem:item atIndex:location + 1];
 
     return [[item retain] autorelease];
-}
-
-- (BOOL) acceptsFirstResponder
-{
-    return YES;
-}
-
-- (void)terminate:(id)sender
-{
-    [NSApp terminate:sender];
 }
 
 - (void)orderFrontStandardAboutPanel:(id)sender
@@ -335,44 +325,19 @@
 #endif
 }
 
-- (void)qtDispatcherToQPAMenuItem:(id)sender
-{
-    NSMenuItem *item = static_cast<NSMenuItem *>(sender);
-    if (item == quitItem) {
-        // We got here because someone was once the quitItem, but it has been
-        // abandoned (e.g., the menubar was deleted). In the meantime, just do
-        // normal QApplication::quit().
-        qApp->quit();
-        return;
-    }
-
-    if ([item tag]) {
-        QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>([item tag]);
-        QScopedScopeLevelCounter scopeLevelCounter(QGuiApplicationPrivate::instance()->threadData);
-        cocoaItem->activated();
-    }
-}
-
-- (void)orderFrontCharacterPalette:(id)sender
-{
-    [NSApp orderFrontCharacterPalette:sender];
-}
-
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem
 {
-    if ([menuItem action] == @selector(hideOtherApplications:)
-        || [menuItem action] == @selector(unhideAllApplications:)) {
+    if (menuItem.action == @selector(hideOtherApplications:)
+        || menuItem.action == @selector(unhideAllApplications:))
         return [NSApp validateMenuItem:menuItem];
-    } else if ([menuItem action] == @selector(hide:)) {
+
+    if (menuItem.action == @selector(hide:)) {
         if (QCocoaIntegration::instance()->activePopupWindow())
             return NO;
         return [NSApp validateMenuItem:menuItem];
-    } else if ([menuItem tag]) {
-        QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>([menuItem tag]);
-        return cocoaItem->isEnabled();
-    } else {
-        return [menuItem isEnabled];
     }
+
+    return menuItem.enabled;
 }
 
 - (NSArray<NSMenuItem *> *)mergeable
