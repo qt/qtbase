@@ -87,6 +87,7 @@ public:
     QT_DEPRECATED inline void registerTimer(int timerId, int interval, QObject *object)
     { registerTimer(timerId, interval, Qt::CoarseTimer, object); }
 #endif
+    // ### Qt6: change interval range to qint64 (or use QDeadlineTimer)
     int registerTimer(int interval, Qt::TimerType timerType, QObject *object);
     virtual void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object) = 0;
     virtual bool unregisterTimer(int timerId) = 0;
