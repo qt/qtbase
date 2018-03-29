@@ -949,7 +949,7 @@ void QCocoaWindow::windowDidBecomeKey()
         QWindowSystemInterface::handleEnterEvent(m_enterLeaveTargetWindow, windowPoint, screenPoint);
     }
 
-    if (!windowIsPopupType() && !qnsview_cast(m_view).isMenuView)
+    if (!windowIsPopupType())
         QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(window());
 }
 
@@ -967,7 +967,7 @@ void QCocoaWindow::windowDidResignKey()
     NSWindow *keyWindow = [NSApp keyWindow];
     if (!keyWindow || keyWindow == m_view.window) {
         // No new key window, go ahead and set the active window to zero
-        if (!windowIsPopupType() && !qnsview_cast(m_view).isMenuView)
+        if (!windowIsPopupType())
             QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(0);
     }
 }

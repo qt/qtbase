@@ -85,7 +85,6 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 
 @interface QT_MANGLE_NAMESPACE(QNSView) (QtExtras)
 @property (nonatomic, readonly) QCocoaWindow *platformWindow;
-@property (nonatomic, readonly) BOOL isMenuView;
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSView);

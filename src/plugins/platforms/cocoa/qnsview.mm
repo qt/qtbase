@@ -136,7 +136,6 @@
     bool m_scrolling;
     bool m_updatingDrag;
     NSEvent *m_currentlyInterpretedKeyEvent;
-    bool m_isMenuView;
     QSet<quint32> m_acceptedKeyDowns;
     bool m_updateRequested;
 }
@@ -161,7 +160,6 @@
         m_scrolling = false;
         m_updatingDrag = false;
         m_currentlyInterpretedKeyEvent = 0;
-        m_isMenuView = false;
         self.focusRingType = NSFocusRingTypeNone;
         self.cursor = nil;
         m_updateRequested = false;
@@ -296,7 +294,7 @@
         return NO;
     if ([self isTransparentForUserInput])
         return NO;
-    if (!m_platformWindow->windowIsPopupType() && !m_isMenuView)
+    if (!m_platformWindow->windowIsPopupType())
         QWindowSystemInterface::handleWindowActivated([self topLevelWindow]);
     return YES;
 }
@@ -304,8 +302,6 @@
 - (BOOL)acceptsFirstResponder
 {
     if (!m_platformWindow)
-        return NO;
-    if (m_isMenuView)
         return NO;
     if (m_platformWindow->shouldRefuseKeyWindowAndFirstResponder())
         return NO;
@@ -373,11 +369,6 @@
 - (QCocoaWindow*)platformWindow
 {
     return m_platformWindow.data();;
-}
-
-- (BOOL)isMenuView
-{
-    return m_isMenuView;
 }
 
 @end
