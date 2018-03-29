@@ -1161,23 +1161,19 @@ void QWindowsWindow::fireExpose(const QRegion &region, bool force)
     QWindowSystemInterface::handleExposeEvent(window(), region);
 }
 
-static inline QWindow *findTransientChild(const QWindow *parent)
-{
-    foreach (QWindow *w, QGuiApplication::topLevelWindows())
-        if (w->transientParent() == parent)
-            return w;
-    return 0;
-}
-
 void QWindowsWindow::destroyWindow()
 {
     qCDebug(lcQpaWindows) << __FUNCTION__ << this << window() << m_data.hwnd;
     if (m_data.hwnd) { // Stop event dispatching before Window is destroyed.
         setFlag(WithinDestroy);
         // Clear any transient child relationships as Windows will otherwise destroy them (QTBUG-35499, QTBUG-36666)
-        if (QWindow *transientChild = findTransientChild(window()))
-            if (QWindowsWindow *tw = QWindowsWindow::windowsWindowOf(transientChild))
-                tw->updateTransientParent();
+        const auto tlw = QGuiApplication::topLevelWindows();
+        for (QWindow *w : tlw) {
+            if (w->transientParent() == window()) {
+                if (QWindowsWindow *tw = QWindowsWindow::windowsWindowOf(w))
+                    tw->updateTransientParent();
+            }
+        }
         QWindowsContext *context = QWindowsContext::instance();
         if (context->windowUnderMouse() == window())
             context->clearWindowUnderMouse();
