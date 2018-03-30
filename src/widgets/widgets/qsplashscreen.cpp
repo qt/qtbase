@@ -327,7 +327,13 @@ void QSplashScreen::drawContents(QPainter *painter)
         cursor.select(QTextCursor::Document);
         QTextBlockFormat fmt;
         fmt.setAlignment(Qt::Alignment(d->currAlign));
+        fmt.setLayoutDirection(layoutDirection());
         cursor.mergeBlockFormat(fmt);
+        const QSizeF txtSize = doc.size();
+        if (d->currAlign & Qt::AlignBottom)
+            r.setTop(r.height() - txtSize.height());
+        else if (d->currAlign & Qt::AlignVCenter)
+            r.setTop(r.height() / 2 - txtSize.height() / 2);
         painter->save();
         painter->translate(r.topLeft());
         doc.drawContents(painter);
