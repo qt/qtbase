@@ -696,7 +696,6 @@ static bool qt_macWindowMainWindow(const QWidget *window)
 /*****************************************************************************
   QMacCGStyle globals
  *****************************************************************************/
-const int qt_mac_hitheme_version = 0; //the HITheme version we speak
 const int macItemFrame         = 2;    // menu item frame width
 const int macItemHMargin       = 3;    // menu item hor text margin
 const int macRightBorder       = 12;   // right border on mac
@@ -4399,23 +4398,9 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         rect = opt->rect;
         break;
     case SE_TreeViewDisclosureItem: {
-        CGRect inRect = CGRectMake(opt->rect.x(), opt->rect.y(),
-                                   opt->rect.width(), opt->rect.height());
-        HIThemeButtonDrawInfo bdi;
-        bdi.version = qt_mac_hitheme_version;
-        bdi.state = kThemeStateActive;
-        bdi.kind = kThemeDisclosureButton;
-        bdi.value = kThemeDisclosureRight;
-        bdi.adornment = kThemeAdornmentNone;
-        CGRect contentRect;
-        HIThemeGetButtonContentBounds(&inRect, &bdi, &contentRect);
-        QCFType<HIShapeRef> shape;
-        CGRect outRect;
-        HIThemeGetButtonShape(&inRect, &bdi, &shape);
-        HIShapeGetBounds(shape, &outRect);
-        rect = QRect(int(outRect.origin.x + DisclosureOffset), int(outRect.origin.y),
-                  int(contentRect.origin.x - outRect.origin.x + DisclosureOffset),
-                  int(outRect.size.height));
+        rect = opt->rect;
+        // As previously returned by HIThemeGetButtonContentBounds
+        rect.setLeft(rect.left() + 2 + DisclosureOffset);
         break;
     }
 #if QT_CONFIG(tabwidget)
