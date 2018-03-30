@@ -638,32 +638,6 @@ static inline bool isTreeView(const QWidget *widget)
 }
 #endif
 
-#if QT_CONFIG(tabbar)
-static inline ThemeTabDirection getTabDirection(QTabBar::Shape shape)
-{
-    ThemeTabDirection ttd;
-    switch (shape) {
-    case QTabBar::RoundedSouth:
-    case QTabBar::TriangularSouth:
-        ttd = kThemeTabSouth;
-        break;
-    case QTabBar::RoundedNorth:
-    case QTabBar::TriangularNorth:
-        ttd = kThemeTabNorth;
-        break;
-    case QTabBar::RoundedWest:
-    case QTabBar::TriangularWest:
-        ttd = kThemeTabWest;
-        break;
-    case QTabBar::RoundedEast:
-    case QTabBar::TriangularEast:
-        ttd = kThemeTabEast;
-        break;
-    }
-    return ttd;
-}
-#endif
-
 static QString qt_mac_removeMnemonics(const QString &original)
 {
     QString returnText(original.size(), 0);
@@ -730,10 +704,6 @@ const int macRightBorder       = 12;   // right border on mac
 /*****************************************************************************
   QMacCGStyle utility functions
  *****************************************************************************/
-static inline int qt_mac_hitheme_tab_version()
-{
-    return 1;
-}
 
 enum QAquaMetric {
     // Prepend kThemeMetric to get the HIToolBox constant.
@@ -1427,6 +1397,25 @@ void QMacStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *widg
 
     *textRect = tr;
 }
+
+QMacStylePrivate::Direction QMacStylePrivate::tabDirection(QTabBar::Shape shape)
+{
+    switch (shape) {
+    case QTabBar::RoundedSouth:
+    case QTabBar::TriangularSouth:
+        return South;
+    case QTabBar::RoundedNorth:
+    case QTabBar::TriangularNorth:
+        return North;
+    case QTabBar::RoundedWest:
+    case QTabBar::TriangularWest:
+        return West;
+    case QTabBar::RoundedEast:
+    case QTabBar::TriangularEast:
+        return East;
+    }
+}
+
 #endif // QT_CONFIG(tabbar)
 
 QStyleHelper::WidgetSizePolicy QMacStylePrivate::effectiveAquaSizeConstrain(const QStyleOption *option,
@@ -1789,6 +1778,7 @@ QMacStylePrivate::~QMacStylePrivate()
         [cell release];
 }
 
+#if 0
 ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
 {
     ThemeDrawState tds = kThemeStateActive;
@@ -1805,6 +1795,7 @@ ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
     }
     return tds;
 }
+#endif
 
 NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
 {
@@ -2904,7 +2895,6 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                               const QWidget *w) const
 {
     Q_D(const QMacStyle);
-    ThemeDrawState tds = d->getDrawState(opt->state);
     QMacCGContext cg(p);
     QWindow *window = w && w->window() ? w->window()->windowHandle() :
                      QStyleHelper::styleObjectWindow(opt->styleObject);
@@ -2973,17 +2963,17 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             QStyleOptionTabWidgetFrame twf;
             twf.QStyleOption::operator=(*tbb);
             twf.shape  = tbb->shape;
-            switch (getTabDirection(twf.shape)) {
-            case kThemeTabNorth:
+            switch (QMacStylePrivate::tabDirection(twf.shape)) {
+            case QMacStylePrivate::North:
                 twf.rect = twf.rect.adjusted(0, 0, 0, 10);
                 break;
-            case kThemeTabSouth:
+            case QMacStylePrivate::South:
                 twf.rect = twf.rect.adjusted(0, -10, 0, 0);
                 break;
-            case kThemeTabWest:
+            case QMacStylePrivate::West:
                 twf.rect = twf.rect.adjusted(0, 0, 10, 0);
                 break;
-            case kThemeTabEast:
+            case QMacStylePrivate::East:
                 twf.rect = twf.rect.adjusted(0, -10, 0, 0);
                 break;
             }
@@ -2996,20 +2986,25 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         p->fillRect(opt->rect, opt->palette.brush(QPalette::ToolTipBase));
         break;
     case PE_FrameGroupBox:
-        if (const QStyleOptionFrame *groupBox = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
+        if (const auto *groupBox = qstyleoption_cast<const QStyleOptionFrame *>(opt))
             if (groupBox->features & QStyleOptionFrame::Flat) {
                 QCommonStyle::drawPrimitive(pe, groupBox, p, w);
-            } else {
-                const auto cw = QMacStylePrivate::CocoaControl(QMacStylePrivate::Box, QStyleHelper::SizeDefault);
-                auto *box = static_cast<NSBox *>(d->cocoaControl(cw));
-                d->drawNSViewInRect(cw, box, groupBox->rect, p, w != nullptr, ^(CGContextRef ctx, const CGRect &rect) {
-                    CGContextTranslateCTM(ctx, 0, rect.origin.y + rect.size.height);
-                    CGContextScaleCTM(ctx, 1, -1);
-                    [box drawRect:rect];
-                });
+                break;
             }
-        }
+#if QT_CONFIG(tabwidget)
+        Q_FALLTHROUGH();
+    case PE_FrameTabWidget:
+#endif
+    {
+        const auto cw = QMacStylePrivate::CocoaControl(QMacStylePrivate::Box, QStyleHelper::SizeDefault);
+        auto *box = static_cast<NSBox *>(d->cocoaControl(cw));
+        d->drawNSViewInRect(cw, box, opt->rect, p, w != nullptr, ^(CGContextRef ctx, const CGRect &rect) {
+            CGContextTranslateCTM(ctx, 0, rect.origin.y + rect.size.height);
+            CGContextScaleCTM(ctx, 1, -1);
+            [box drawRect:rect];
+        });
         break;
+    }
     case PE_IndicatorToolBarSeparator: {
             QPainterPath path;
             if (opt->state & State_Horizontal) {
@@ -3242,22 +3237,6 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         }
 
         break;
-#if QT_CONFIG(tabwidget)
-    case PE_FrameTabWidget:
-        if (const QStyleOptionTabWidgetFrame *twf
-                = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(opt)) {
-            CGRect cgRect = twf->rect.toCGRect();
-            HIThemeTabPaneDrawInfo tpdi;
-            tpdi.version = qt_mac_hitheme_tab_version();
-            tpdi.state = tds;
-            tpdi.direction = getTabDirection(twf->shape);
-            tpdi.size = kHIThemeTabSizeNormal;
-            tpdi.kind = kHIThemeTabKindNormal;
-            tpdi.adornment = kHIThemeTabPaneAdornmentNormal;
-            HIThemeDrawTabPane(&cgRect, &tpdi, cg, kHIThemeOrientationNormal);
-        }
-        break;
-#endif
     case PE_PanelScrollAreaCorner: {
         const QBrush brush(opt->palette.brush(QPalette::Base));
         p->fillRect(opt->rect, brush);
@@ -3711,7 +3690,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             HIThemeTabDrawInfo tdi;
             tdi.version = 1;
             tdi.style = kThemeTabNonFront;
-            tdi.direction = getTabDirection(tabOpt->shape);
+            tdi.direction = (ThemeTabDirection)QMacStylePrivate::tabDirection(tabOpt->shape);
             switch (d->aquaSizeConstrain(opt, w)) {
             case QStyleHelper::SizeDefault:
             case QStyleHelper::SizeLarge:
@@ -4482,20 +4461,19 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         break;
     case SE_TabWidgetTabContents:
         rect = QCommonStyle::subElementRect(sr, opt, widget);
-        if (const QStyleOptionTabWidgetFrame *twf
-                = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(opt)) {
+        if (const auto *twf = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(opt)) {
             if (twf->lineWidth != 0) {
-                switch (getTabDirection(twf->shape)) {
-                case kThemeTabNorth:
+                switch (QMacStylePrivate::tabDirection(twf->shape)) {
+                case QMacStylePrivate::North:
                     rect.adjust(+1, +14, -1, -1);
                     break;
-                case kThemeTabSouth:
+                case QMacStylePrivate::South:
                     rect.adjust(+1, +1, -1, -14);
                     break;
-                case kThemeTabWest:
+                case QMacStylePrivate::West:
                     rect.adjust(+14, +1, -1, -1);
                     break;
-                case kThemeTabEast:
+                case QMacStylePrivate::East:
                     rect.adjust(+1, +1, -14, -1);
                 }
             }
@@ -5974,7 +5952,9 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             const int overlap = pixelMetric(PM_TabBarBaseOverlap, opt, widget);
             const int gapBetweenTabbarAndStackWidget = 2 + 14 - overlap;
 
-            if (getTabDirection(twf->shape) == kThemeTabNorth || getTabDirection(twf->shape) == kThemeTabSouth) {
+            const auto tabDirection = QMacStylePrivate::tabDirection(twf->shape);
+            if (tabDirection == QMacStylePrivate::North
+                    || tabDirection == QMacStylePrivate::South) {
                 extra = QSize(2, gapBetweenTabbarAndStackWidget + 1);
             } else {
                 extra = QSize(gapBetweenTabbarAndStackWidget + 1, 2);
@@ -5989,7 +5969,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             const QStyleHelper::WidgetSizePolicy AquaSize = d->aquaSizeConstrain(opt, widget);
             const bool differentFont = (widget && widget->testAttribute(Qt::WA_SetFont))
                                        || !QApplication::desktopSettingsAware();
-            ThemeTabDirection ttd = getTabDirection(tab->shape);
+            ThemeTabDirection ttd = (ThemeTabDirection)QMacStylePrivate::tabDirection(tab->shape);
             bool vertTabs = ttd == kThemeTabWest || ttd == kThemeTabEast;
             if (vertTabs)
                 sz = sz.transposed();

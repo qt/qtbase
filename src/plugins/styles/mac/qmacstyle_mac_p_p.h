@@ -181,6 +181,10 @@ class QMacStylePrivate : public QCommonStylePrivate
 {
     Q_DECLARE_PUBLIC(QMacStyle)
 public:
+    enum Direction {
+        North, South, East, West
+    };
+
     enum CocoaControlType {
         NoControl,    // For when there's no such a control in Cocoa
         Box,          // QGroupBox
@@ -206,7 +210,6 @@ public:
         Stepper,      // QSpinBox buttons
         TextField
     };
-
 
     struct CocoaControl {
         CocoaControl();
@@ -242,7 +245,6 @@ public:
     static const int PushButtonContentPadding;
 
     enum Animates { AquaPushButton, AquaProgressBar, AquaListViewItemOpen, AquaScrollBar };
-    static ThemeDrawState getDrawState(QStyle::State flags);
     QStyleHelper::WidgetSizePolicy aquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
                              QStyle::ContentsType ct = QStyle::CT_CustomBase,
                              QSize szHint=QSize(-1, -1), QSize *insz = 0) const;
@@ -279,6 +281,7 @@ public:
 
 #if QT_CONFIG(tabbar)
     void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *iconRect) const;
+    static Direction tabDirection(QTabBar::Shape shape);
 #endif
 
 public:
