@@ -120,12 +120,12 @@ using namespace QtFutex;
 
     If the system has the ability to wake up a precise number of threads, has
     Linux's FUTEX_WAKE_OP functionality, and is 64-bit, instead of using a
-    single bit indicating a contended semaphore, we'll store the total number
-    of waiters in the high word. Additionally, all multi-token waiters will be
-    waiting on that high word. So when releasing n tokens on those systems, we
-    tell the kernel to wake up n single-token threads and all of the
-    multi-token ones. Which threads get woken up is unspecified, but it's
-    likely single-token threads will get woken up first.
+    single bit indicating a contended semaphore, we'll store the number of
+    tokens *plus* total number of waiters in the high word. Additionally, all
+    multi-token waiters will be waiting on that high word. So when releasing n
+    tokens on those systems, we tell the kernel to wake up n single-token
+    threads and all of the multi-token ones. Which threads get woken up is
+    unspecified, but it's likely single-token threads will get woken up first.
  */
 
 #if defined(FUTEX_OP) && QT_POINTER_SIZE > 4
@@ -231,10 +231,14 @@ template <bool IsTimed> bool futexSemaphoreTryAcquire(QBasicAtomicInteger<quintp
 {
     // Try to acquire without waiting (we still loop because the testAndSet
     // call can fail).
+    quintptr nn = unsigned(n);
+    if (futexHasWaiterCount)
+        nn |= quint64(nn) << 32;    // token count replicated in high word
+
     quintptr curValue = u.loadAcquire();
     while (futexAvailCounter(curValue) >= n) {
         // try to acquire
-        quintptr newValue = curValue - n;
+        quintptr newValue = curValue - nn;
         if (u.testAndSetOrdered(curValue, newValue, curValue))
             return true;        // succeeded!
     }
@@ -242,7 +246,6 @@ template <bool IsTimed> bool futexSemaphoreTryAcquire(QBasicAtomicInteger<quintp
         return false;
 
     // we need to wait
-    quintptr valueToSubtract = unsigned(n);
     quintptr oneWaiter = quintptr(Q_UINT64_C(1) << 32); // zero on 32-bit
     if (futexHasWaiterCount) {
         // increase the waiter count
@@ -250,14 +253,15 @@ template <bool IsTimed> bool futexSemaphoreTryAcquire(QBasicAtomicInteger<quintp
 
         // We don't use the fetched value from above so futexWait() fails if
         // it changed after the testAndSetOrdered above.
+        if ((quint64(curValue) >> 32) == 0x7fffffff)
+            return false;       // overflow!
         curValue += oneWaiter;
 
-        // Also adjust valueToSubtract to subtract oneWaiter when we succeed in
-        // acquiring.
-        valueToSubtract += oneWaiter;
+        // Also adjust nn to subtract oneWaiter when we succeed in acquiring.
+        nn += oneWaiter;
     }
 
-    if (futexSemaphoreTryAcquire_loop<IsTimed>(u, curValue, valueToSubtract, timeout))
+    if (futexSemaphoreTryAcquire_loop<IsTimed>(u, curValue, nn, timeout))
         return true;
 
     if (futexHasWaiterCount) {
@@ -345,7 +349,10 @@ void QSemaphore::release(int n)
     Q_ASSERT_X(n >= 0, "QSemaphore::release", "parameter 'n' must be non-negative");
 
     if (futexAvailable()) {
-        quintptr prevValue = u.fetchAndAddRelease(n);
+        quintptr nn = unsigned(n);
+        if (futexHasWaiterCount)
+            nn |= quint64(nn) << 32;    // token count replicated in high word
+        quintptr prevValue = u.fetchAndAddRelease(nn);
         if (futexNeedsWake(prevValue)) {
 #ifdef FUTEX_OP
             if (!futexHasWaiterCount) {

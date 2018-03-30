@@ -60,7 +60,7 @@ IoUtils::FileType IoUtils::fileType(const QString &fileName)
     struct ::stat st;
     if (::stat(fileName.toLocal8Bit().constData(), &st))
         return FileNotFound;
-    return S_ISDIR(st.st_mode) ? FileIsDir : FileIsRegular;
+    return S_ISDIR(st.st_mode) ? FileIsDir : S_ISREG(st.st_mode) ? FileIsRegular : FileNotFound;
 #endif
 }
 
@@ -258,9 +258,8 @@ bool IoUtils::touchFile(const QString &targetFileName, const QString &referenceF
 #  endif
     return true;
 }
-#endif
 
-#ifdef Q_OS_UNIX
+#if defined(QT_BUILD_QMAKE) && defined(Q_OS_UNIX)
 bool IoUtils::readLinkTarget(const QString &symlinkPath, QString *target)
 {
     const QByteArray localSymlinkPath = QFile::encodeName(symlinkPath);
@@ -294,5 +293,7 @@ bool IoUtils::readLinkTarget(const QString &symlinkPath, QString *target)
     return true;
 }
 #endif
+
+#endif  // PROEVALUATOR_FULL
 
 QT_END_NAMESPACE

@@ -281,7 +281,7 @@ void tst_QGraphicsProxyWidget::initTestCase()
 // This will be called after every test function.
 void tst_QGraphicsProxyWidget::cleanup()
 {
-    QVERIFY(QApplication::topLevelWidgets().isEmpty());
+    QTRY_VERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 void tst_QGraphicsProxyWidget::qgraphicsproxywidget_data()
@@ -2575,6 +2575,22 @@ void tst_QGraphicsProxyWidget::changingCursor_basic()
 }
 #endif
 
+static bool findViewAndTipLabel(const QWidget *view)
+{
+    bool foundView = false;
+    bool foundTipLabel = false;
+    const QWidgetList &topLevels = QApplication::topLevelWidgets();
+    for (const QWidget *widget : topLevels) {
+        if (widget == view)
+            foundView = true;
+        if (widget->inherits("QTipLabel"))
+            foundTipLabel = true;
+        if (foundView && foundTipLabel)
+            return true;
+    }
+    return false;
+}
+
 void tst_QGraphicsProxyWidget::tooltip_basic()
 {
     QString toolTip = "Qt rocks!";
@@ -2627,18 +2643,7 @@ void tst_QGraphicsProxyWidget::tooltip_basic()
         QHelpEvent helpEvent(QEvent::ToolTip, view.mapFromScene(proxy->boundingRect().center()),
                              view.viewport()->mapToGlobal(view.mapFromScene(proxy->boundingRect().center())));
         QApplication::sendEvent(view.viewport(), &helpEvent);
-        QTest::qWait(350);
-
-        bool foundView = false;
-        bool foundTipLabel = false;
-        foreach (QWidget *widget, QApplication::topLevelWidgets()) {
-            if (widget == &view)
-                foundView = true;
-            if (widget->inherits("QTipLabel"))
-                foundTipLabel = true;
-        }
-        QVERIFY(foundView);
-        QVERIFY(foundTipLabel);
+        QTRY_VERIFY(findViewAndTipLabel(&view));
     }
 }
 

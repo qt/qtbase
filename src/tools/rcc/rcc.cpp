@@ -504,38 +504,8 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                 if (QDir::isRelativePath(absFileName))
                     absFileName.prepend(currentPath);
                 QFileInfo file(absFileName);
-                if (!file.exists()) {
-                    m_failedResources.push_back(absFileName);
-                    const QString msg = QString::fromLatin1("RCC: Error in '%1': Cannot find file '%2'\n")
-                                        .arg(fname, fileName);
-                    m_errorDevice->write(msg.toUtf8());
-                    if (ignoreErrors)
-                        continue;
-                    else
-                        return false;
-                } else if (file.isFile()) {
-                    const bool arc =
-                        addFile(alias,
-                                RCCFileInfo(alias.section(slash, -1),
-                                            file,
-                                            language,
-                                            country,
-                                            RCCFileInfo::NoFlags,
-                                            compressLevel,
-                                            compressThreshold)
-                                );
-                    if (!arc)
-                        m_failedResources.push_back(absFileName);
-                } else {
-                    QDir dir;
-                    if (file.isDir()) {
-                        dir.setPath(file.filePath());
-                    } else {
-                        dir.setPath(file.path());
-                        dir.setNameFilters(QStringList(file.fileName()));
-                        if (alias.endsWith(file.fileName()))
-                            alias = alias.left(alias.length()-file.fileName().length());
-                    }
+                if (file.isDir()) {
+                    QDir dir(file.filePath());
                     if (!alias.endsWith(slash))
                         alias += slash;
                     QDirIterator it(dir, QDirIterator::FollowSymlinks|QDirIterator::Subdirectories);
@@ -557,6 +527,33 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                                 m_failedResources.push_back(child.fileName());
                         }
                     }
+                } else if (file.isFile()) {
+                    const bool arc =
+                        addFile(alias,
+                                RCCFileInfo(alias.section(slash, -1),
+                                            file,
+                                            language,
+                                            country,
+                                            RCCFileInfo::NoFlags,
+                                            compressLevel,
+                                            compressThreshold)
+                                );
+                    if (!arc)
+                        m_failedResources.push_back(absFileName);
+                } else if (file.exists()) {
+                    m_failedResources.push_back(absFileName);
+                    const QString msg = QString::fromLatin1("RCC: Error in '%1': Entry '%2' is neither a file nor a directory\n")
+                                        .arg(fname, fileName);
+                    m_errorDevice->write(msg.toUtf8());
+                    return false;
+                } else {
+                    m_failedResources.push_back(absFileName);
+                    const QString msg = QString::fromLatin1("RCC: Error in '%1': Cannot find file '%2'\n")
+                                        .arg(fname, fileName);
+                    m_errorDevice->write(msg.toUtf8());
+                    if (ignoreErrors)
+                        continue;
+                    return false;
                 }
             }
             break;

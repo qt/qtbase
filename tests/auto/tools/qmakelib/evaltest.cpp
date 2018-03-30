@@ -2375,11 +2375,7 @@ void tst_qmakelib::addTestFunctions(const QString &qindir)
     QTest::newRow("include(): fail")
             << "include(include/nope.pri): OK = 1"
             << "OK = UNDEF"
-#ifdef Q_OS_WIN
-            << "Cannot read " + m_indir + "/include/nope.pri: The system cannot find the file specified."
-#else
             << "Cannot read " + m_indir + "/include/nope.pri: No such file or directory"
-#endif
             << true;
 
     QTest::newRow("include(): silent fail")
@@ -2873,12 +2869,12 @@ void tst_qmakelib::proEval()
     globals.environment = m_env;
     globals.setProperties(m_prop);
     globals.setDirectories(m_indir, m_outdir);
-    ProFile *outPro = parser.parsedProBlock(QStringRef(&out), "out", 1, QMakeParser::FullGrammar);
+    ProFile *outPro = parser.parsedProBlock(QStringRef(&out), 0, "out", 1, QMakeParser::FullGrammar);
     if (!outPro->isOk()) {
         qWarning("Expected output is malformed");
         verified = false;
     }
-    ProFile *pro = parser.parsedProBlock(QStringRef(&in), infile, 1, QMakeParser::FullGrammar);
+    ProFile *pro = parser.parsedProBlock(QStringRef(&in), 0, infile, 1, QMakeParser::FullGrammar);
     QMakeEvaluator visitor(&globals, &parser, &vfs, &handler);
     visitor.setOutputDir(m_outdir);
 #ifdef Q_OS_WIN

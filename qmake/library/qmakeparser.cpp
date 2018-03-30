@@ -52,12 +52,22 @@ ProFileCache::~ProFileCache()
             ent.pro->deref();
 }
 
-void ProFileCache::discardFile(const QString &fileName)
+void ProFileCache::discardFile(const QString &fileName, QMakeVfs *vfs)
+{
+    int eid = vfs->idForFileName(fileName, QMakeVfs::VfsExact | QMakeVfs::VfsAccessedOnly);
+    if (eid)
+        discardFile(eid);
+    int cid = vfs->idForFileName(fileName, QMakeVfs::VfsCumulative | QMakeVfs::VfsAccessedOnly);
+    if (cid && cid != eid)
+        discardFile(cid);
+}
+
+void ProFileCache::discardFile(int id)
 {
 #ifdef PROPARSER_THREAD_SAFE
     QMutexLocker lck(&mutex);
 #endif
-    QHash<QString, Entry>::Iterator it = parsed_files.find(fileName);
+    auto it = parsed_files.find(id);
     if (it != parsed_files.end()) {
 #ifdef PROPARSER_THREAD_SAFE
         if (it->locker) {
@@ -77,16 +87,16 @@ void ProFileCache::discardFile(const QString &fileName)
     }
 }
 
-void ProFileCache::discardFiles(const QString &prefix)
+void ProFileCache::discardFiles(const QString &prefix, QMakeVfs *vfs)
 {
 #ifdef PROPARSER_THREAD_SAFE
     QMutexLocker lck(&mutex);
 #endif
-    QHash<QString, Entry>::Iterator
-            it = parsed_files.begin(),
-            end = parsed_files.end();
-    while (it != end)
-        if (it.key().startsWith(prefix)) {
+    auto it = parsed_files.begin(), end = parsed_files.end();
+    while (it != end) {
+        // Note: this is empty for virtual files from other VFSes.
+        QString fn = vfs->fileNameForId(it.key());
+        if (fn.startsWith(prefix)) {
 #ifdef PROPARSER_THREAD_SAFE
             if (it->locker) {
                 if (!it->locker->done) {
@@ -105,6 +115,7 @@ void ProFileCache::discardFiles(const QString &prefix)
         } else {
             ++it;
         }
+    }
 }
 
 ////////// Parser ///////////
@@ -167,12 +178,15 @@ QMakeParser::QMakeParser(ProFileCache *cache, QMakeVfs *vfs, QMakeParserHandler 
 ProFile *QMakeParser::parsedProFile(const QString &fileName, ParseFlags flags)
 {
     ProFile *pro;
+    QMakeVfs::VfsFlags vfsFlags = ((flags & ParseCumulative) ? QMakeVfs::VfsCumulative
+                                                             : QMakeVfs::VfsExact);
+    int id = m_vfs->idForFileName(fileName, vfsFlags);
     if ((flags & ParseUseCache) && m_cache) {
         ProFileCache::Entry *ent;
 #ifdef PROPARSER_THREAD_SAFE
         QMutexLocker locker(&m_cache->mutex);
 #endif
-        QHash<QString, ProFileCache::Entry>::Iterator it = m_cache->parsed_files.find(fileName);
+        auto it = m_cache->parsed_files.find(id);
         if (it != m_cache->parsed_files.end()) {
             ent = &*it;
 #ifdef PROPARSER_THREAD_SAFE
@@ -190,18 +204,18 @@ ProFile *QMakeParser::parsedProFile(const QString &fileName, ParseFlags flags)
             if ((pro = ent->pro))
                 pro->ref();
         } else {
-            ent = &m_cache->parsed_files[fileName];
+            ent = &m_cache->parsed_files[id];
 #ifdef PROPARSER_THREAD_SAFE
             ent->locker = new ProFileCache::Entry::Locker;
             locker.unlock();
 #endif
-            pro = new ProFile(idForFileName(fileName), fileName);
-            if (!read(pro, flags)) {
-                delete pro;
-                pro = 0;
-            } else {
+            QString contents;
+            if (readFile(id, flags, &contents)) {
+                pro = parsedProBlock(QStringRef(&contents), id, fileName, 1, FullGrammar);
                 pro->itemsRef()->squeeze();
                 pro->ref();
+            } else {
+                pro = 0;
             }
             ent->pro = pro;
 #ifdef PROPARSER_THREAD_SAFE
@@ -216,51 +230,39 @@ ProFile *QMakeParser::parsedProFile(const QString &fileName, ParseFlags flags)
 #endif
         }
     } else {
-        pro = new ProFile(idForFileName(fileName), fileName);
-        if (!read(pro, flags)) {
-            delete pro;
+        QString contents;
+        if (readFile(id, flags, &contents))
+            pro = parsedProBlock(QStringRef(&contents), id, fileName, 1, FullGrammar);
+        else
             pro = 0;
-        }
     }
     return pro;
 }
 
 ProFile *QMakeParser::parsedProBlock(
-        const QStringRef &contents, const QString &name, int line, SubGrammar grammar)
+        const QStringRef &contents, int id, const QString &name, int line, SubGrammar grammar)
 {
-    ProFile *pro = new ProFile(0, name);
+    ProFile *pro = new ProFile(id, name);
     read(pro, contents, line, grammar);
     return pro;
 }
 
-int QMakeParser::idForFileName(const QString &fileName)
-{
-#ifdef PROPARSER_THREAD_SAFE
-    QMutexLocker lck(&fileIdMutex);
-#endif
-    int &place = fileIdMap[fileName];
-    if (!place)
-        place = ++fileIdCounter;
-    return place;
-}
-
-void QMakeParser::discardFileFromCache(const QString &fileName)
+void QMakeParser::discardFileFromCache(int id)
 {
     if (m_cache)
-        m_cache->discardFile(fileName);
+        m_cache->discardFile(id);
 }
 
-bool QMakeParser::read(ProFile *pro, ParseFlags flags)
+bool QMakeParser::readFile(int id, ParseFlags flags, QString *contents)
 {
-    QString content;
     QString errStr;
-    if (!m_vfs->readFile(pro->fileName(), &content, &errStr)) {
-        if (m_handler && ((flags & ParseReportMissing) || m_vfs->exists(pro->fileName())))
+    QMakeVfs::ReadResult result = m_vfs->readFile(id, contents, &errStr);
+    if (result != QMakeVfs::ReadOk) {
+        if (m_handler && ((flags & ParseReportMissing) || result != QMakeVfs::ReadNotFound))
             m_handler->message(QMakeParserHandler::ParserIoError,
-                               fL1S("Cannot read %1: %2").arg(pro->fileName(), errStr));
+                               fL1S("Cannot read %1: %2").arg(m_vfs->fileNameForId(id), errStr));
         return false;
     }
-    read(pro, QStringRef(&content), 1, FullGrammar);
     return true;
 }
 

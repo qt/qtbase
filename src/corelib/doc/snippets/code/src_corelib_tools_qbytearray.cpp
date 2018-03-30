@@ -395,10 +395,10 @@ QByteArray ba = QByteArray::number(12.3456, 'E', 3);
 
 //! [43]
  static const char mydata[] = {
-    0x00, 0x00, 0x03, 0x84, 0x78, 0x9c, 0x3b, 0x76,
-    0xec, 0x18, 0xc3, 0x31, 0x0a, 0xf1, 0xcc, 0x99,
+    '\x00', '\x00', '\x03', '\x84', '\x78', '\x9c', '\x3b', '\x76',
+    '\xec', '\x18', '\xc3', '\x31', '\x0a', '\xf1', '\xcc', '\x99',
     ...
-    0x6d, 0x5b
+    '\x6d', '\x5b'
 };
 
 QByteArray data = QByteArray::fromRawData(mydata, sizeof(mydata));
