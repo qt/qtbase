@@ -123,7 +123,7 @@ public:
     operator QVariant() const;
 
 private:
-    float xp, yp;
+    float v[2];
 
     friend class QVector3D;
     friend class QVector4D;
@@ -131,76 +131,76 @@ private:
 
 Q_DECLARE_TYPEINFO(QVector2D, Q_PRIMITIVE_TYPE);
 
-Q_DECL_CONSTEXPR inline QVector2D::QVector2D() : xp(0.0f), yp(0.0f) {}
+Q_DECL_CONSTEXPR inline QVector2D::QVector2D() : v{0.0f, 0.0f} {}
 
-Q_DECL_CONSTEXPR inline QVector2D::QVector2D(float xpos, float ypos) : xp(xpos), yp(ypos) {}
+Q_DECL_CONSTEXPR inline QVector2D::QVector2D(float xpos, float ypos) : v{xpos, ypos} {}
 
-Q_DECL_CONSTEXPR inline QVector2D::QVector2D(const QPoint& point) : xp(point.x()), yp(point.y()) {}
+Q_DECL_CONSTEXPR inline QVector2D::QVector2D(const QPoint& point) : v{float(point.x()), float(point.y())} {}
 
-Q_DECL_CONSTEXPR inline QVector2D::QVector2D(const QPointF& point) : xp(float(point.x())), yp(float(point.y())) {}
+Q_DECL_CONSTEXPR inline QVector2D::QVector2D(const QPointF& point) : v{float(point.x()), float(point.y())} {}
 
 inline bool QVector2D::isNull() const
 {
-    return qIsNull(xp) && qIsNull(yp);
+    return qIsNull(v[0]) && qIsNull(v[1]);
 }
 
-Q_DECL_CONSTEXPR inline float QVector2D::x() const { return xp; }
-Q_DECL_CONSTEXPR inline float QVector2D::y() const { return yp; }
+Q_DECL_CONSTEXPR inline float QVector2D::x() const { return v[0]; }
+Q_DECL_CONSTEXPR inline float QVector2D::y() const { return v[1]; }
 
-inline void QVector2D::setX(float aX) { xp = aX; }
-inline void QVector2D::setY(float aY) { yp = aY; }
+inline void QVector2D::setX(float aX) { v[0] = aX; }
+inline void QVector2D::setY(float aY) { v[1] = aY; }
 
 inline float &QVector2D::operator[](int i)
 {
     Q_ASSERT(uint(i) < 2u);
-    return *(&xp + i);
+    return v[i];
 }
 
 inline float QVector2D::operator[](int i) const
 {
     Q_ASSERT(uint(i) < 2u);
-    return *(&xp + i);
+    return v[i];
 }
 
 inline QVector2D &QVector2D::operator+=(const QVector2D &vector)
 {
-    xp += vector.xp;
-    yp += vector.yp;
+    v[0] += vector.v[0];
+    v[1] += vector.v[1];
     return *this;
 }
 
 inline QVector2D &QVector2D::operator-=(const QVector2D &vector)
 {
-    xp -= vector.xp;
-    yp -= vector.yp;
+    v[0] -= vector.v[0];
+    v[1] -= vector.v[1];
     return *this;
 }
 
 inline QVector2D &QVector2D::operator*=(float factor)
 {
-    xp *= factor;
-    yp *= factor;
+    v[0] *= factor;
+    v[1] *= factor;
     return *this;
 }
 
 inline QVector2D &QVector2D::operator*=(const QVector2D &vector)
 {
-    xp *= vector.xp;
-    yp *= vector.yp;
+    v[0] *= vector.v[0];
+    v[1] *= vector.v[1];
     return *this;
 }
 
 inline QVector2D &QVector2D::operator/=(float divisor)
 {
-    xp /= divisor;
-    yp /= divisor;
+    v[0] /= divisor;
+    v[1] /= divisor;
     return *this;
 }
 
 inline QVector2D &QVector2D::operator/=(const QVector2D &vector)
 {
-    xp /= vector.xp;
-    yp /= vector.yp;
+    v[0] /= vector.v[0];
+    v[1] /= vector.v[1];
     return *this;
 }
 
@@ -209,68 +209,68 @@ QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
 QT_WARNING_DISABLE_GCC("-Wfloat-equal")
 Q_DECL_CONSTEXPR inline bool operator==(const QVector2D &v1, const QVector2D &v2)
 {
-    return v1.xp == v2.xp && v1.yp == v2.yp;
+    return v1.v[0] == v2.v[0] && v1.v[1] == v2.v[1];
 }
 
 Q_DECL_CONSTEXPR inline bool operator!=(const QVector2D &v1, const QVector2D &v2)
 {
-    return v1.xp != v2.xp || v1.yp != v2.yp;
+    return v1.v[0] != v2.v[0] || v1.v[1] != v2.v[1];
 }
 QT_WARNING_POP
 
 Q_DECL_CONSTEXPR inline const QVector2D operator+(const QVector2D &v1, const QVector2D &v2)
 {
-    return QVector2D(v1.xp + v2.xp, v1.yp + v2.yp);
+    return QVector2D(v1.v[0] + v2.v[0], v1.v[1] + v2.v[1]);
 }
 
 Q_DECL_CONSTEXPR inline const QVector2D operator-(const QVector2D &v1, const QVector2D &v2)
 {
-    return QVector2D(v1.xp - v2.xp, v1.yp - v2.yp);
+    return QVector2D(v1.v[0] - v2.v[0], v1.v[1] - v2.v[1]);
 }
 
 Q_DECL_CONSTEXPR inline const QVector2D operator*(float factor, const QVector2D &vector)
 {
-    return QVector2D(vector.xp * factor, vector.yp * factor);
+    return QVector2D(vector.v[0] * factor, vector.v[1] * factor);
 }
 
 Q_DECL_CONSTEXPR inline const QVector2D operator*(const QVector2D &vector, float factor)
 {
-    return QVector2D(vector.xp * factor, vector.yp * factor);
+    return QVector2D(vector.v[0] * factor, vector.v[1] * factor);
 }
 
 Q_DECL_CONSTEXPR inline const QVector2D operator*(const QVector2D &v1, const QVector2D &v2)
 {
-    return QVector2D(v1.xp * v2.xp, v1.yp * v2.yp);
+    return QVector2D(v1.v[0] * v2.v[0], v1.v[1] * v2.v[1]);
 }
 
 Q_DECL_CONSTEXPR inline const QVector2D operator-(const QVector2D &vector)
 {
-    return QVector2D(-vector.xp, -vector.yp);
+    return QVector2D(-vector.v[0], -vector.v[1]);
 }
 
 Q_DECL_CONSTEXPR inline const QVector2D operator/(const QVector2D &vector, float divisor)
 {
-    return QVector2D(vector.xp / divisor, vector.yp / divisor);
+    return QVector2D(vector.v[0] / divisor, vector.v[1] / divisor);
 }
 
 Q_DECL_CONSTEXPR inline const QVector2D operator/(const QVector2D &vector, const QVector2D &divisor)
 {
-    return QVector2D(vector.xp / divisor.xp, vector.yp / divisor.yp);
+    return QVector2D(vector.v[0] / divisor.v[0], vector.v[1] / divisor.v[1]);
 }
 
 Q_DECL_CONSTEXPR inline bool qFuzzyCompare(const QVector2D& v1, const QVector2D& v2)
 {
-    return qFuzzyCompare(v1.xp, v2.xp) && qFuzzyCompare(v1.yp, v2.yp);
+    return qFuzzyCompare(v1.v[0], v2.v[0]) && qFuzzyCompare(v1.v[1], v2.v[1]);
 }
 
 Q_DECL_CONSTEXPR inline QPoint QVector2D::toPoint() const
 {
-    return QPoint(qRound(xp), qRound(yp));
+    return QPoint(qRound(v[0]), qRound(v[1]));
 }
 
 Q_DECL_CONSTEXPR inline QPointF QVector2D::toPointF() const
 {
-    return QPointF(qreal(xp), qreal(yp));
+    return QPointF(qreal(v[0]), qreal(v[1]));
 }
 
 #ifndef QT_NO_DEBUG_STREAM

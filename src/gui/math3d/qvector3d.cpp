@@ -51,6 +51,41 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_VECTOR3D
 
+Q_STATIC_ASSERT_X(std::is_standard_layout<QVector3D>::value, "QVector3D is supposed to be standard layout");
+Q_STATIC_ASSERT_X(sizeof(QVector3D) == sizeof(float) * 3, "QVector3D is not supposed to have padding at the end");
+
+// QVector3D used to be defined as class QVector3D { float x, y, z; };,
+// now instead it is defined as classs QVector3D { float v[3]; };.
+// Check that binary compatibility is preserved.
+// ### Qt 6: remove all of these checks.
+
+namespace {
+
+struct QVector3DOld
+{
+    float x, y, z;
+};
+
+struct QVector3DNew
+{
+    float v[3];
+};
+
+Q_STATIC_ASSERT_X(std::is_standard_layout<QVector3DOld>::value, "Binary compatibility break in QVector3D");
+Q_STATIC_ASSERT_X(std::is_standard_layout<QVector3DNew>::value, "Binary compatibility break in QVector3D");
+
+Q_STATIC_ASSERT_X(sizeof(QVector3DOld) == sizeof(QVector3DNew), "Binary compatibility break in QVector3D");
+
+// requires a constexpr offsetof
+#if !defined(Q_CC_MSVC) || (_MSC_VER >= 1910)
+Q_STATIC_ASSERT_X(offsetof(QVector3DOld, x) == offsetof(QVector3DNew, v) + sizeof(QVector3DNew::v[0]) * 0, "Binary compatibility break in QVector3D");
+Q_STATIC_ASSERT_X(offsetof(QVector3DOld, y) == offsetof(QVector3DNew, v) + sizeof(QVector3DNew::v[0]) * 1, "Binary compatibility break in QVector3D");
+Q_STATIC_ASSERT_X(offsetof(QVector3DOld, z) == offsetof(QVector3DNew, v) + sizeof(QVector3DNew::v[0]) * 2, "Binary compatibility break in QVector3D");
+#endif
+
+
+} // anonymous namespace
+
 /*!
     \class QVector3D
     \brief The QVector3D class represents a vector or vertex in 3D space.
@@ -112,9 +147,9 @@ QT_BEGIN_NAMESPACE
 */
 QVector3D::QVector3D(const QVector2D& vector)
 {
-    xp = vector.xp;
-    yp = vector.yp;
-    zp = 0.0f;
+    v[0] = vector.v[0];
+    v[1] = vector.v[1];
+    v[2] = 0.0f;
 }
 
 /*!
@@ -125,9 +160,9 @@ QVector3D::QVector3D(const QVector2D& vector)
 */
 QVector3D::QVector3D(const QVector2D& vector, float zpos)
 {
-    xp = vector.xp;
-    yp = vector.yp;
-    zp = zpos;
+    v[0] = vector.v[0];
+    v[1] = vector.v[1];
+    v[2] = zpos;
 }
 
 #endif
@@ -142,9 +177,9 @@ QVector3D::QVector3D(const QVector2D& vector, float zpos)
 */
 QVector3D::QVector3D(const QVector4D& vector)
 {
-    xp = vector.xp;
-    yp = vector.yp;
-    zp = vector.zp;
+    v[0] = vector.v[0];
+    v[1] = vector.v[1];
+    v[2] = vector.v[2];
 }
 
 #endif
@@ -235,16 +270,16 @@ QVector3D::QVector3D(const QVector4D& vector)
 QVector3D QVector3D::normalized() const
 {
     // Need some extra precision if the length is very small.
-    double len = double(xp) * double(xp) +
-                 double(yp) * double(yp) +
-                 double(zp) * double(zp);
+    double len = double(v[0]) * double(v[0]) +
+                 double(v[1]) * double(v[1]) +
+                 double(v[2]) * double(v[2]);
     if (qFuzzyIsNull(len - 1.0f)) {
         return *this;
     } else if (!qFuzzyIsNull(len)) {
         double sqrtLen = std::sqrt(len);
-        return QVector3D(float(double(xp) / sqrtLen),
-                         float(double(yp) / sqrtLen),
-                         float(double(zp) / sqrtLen));
+        return QVector3D(float(double(v[0]) / sqrtLen),
+                         float(double(v[1]) / sqrtLen),
+                         float(double(v[2]) / sqrtLen));
     } else {
         return QVector3D();
     }
@@ -259,17 +294,17 @@ QVector3D QVector3D::normalized() const
 void QVector3D::normalize()
 {
     // Need some extra precision if the length is very small.
-    double len = double(xp) * double(xp) +
-                 double(yp) * double(yp) +
-                 double(zp) * double(zp);
+    double len = double(v[0]) * double(v[0]) +
+                 double(v[1]) * double(v[1]) +
+                 double(v[2]) * double(v[2]);
     if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
 
     len = std::sqrt(len);
 
-    xp = float(double(xp) / len);
-    yp = float(double(yp) / len);
-    zp = float(double(zp) / len);
+    v[0] = float(double(v[0]) / len);
+    v[1] = float(double(v[1]) / len);
+    v[2] = float(double(v[2]) / len);
 }
 
 /*!
@@ -336,7 +371,7 @@ void QVector3D::normalize()
 */
 float QVector3D::dotProduct(const QVector3D& v1, const QVector3D& v2)
 {
-    return v1.xp * v2.xp + v1.yp * v2.yp + v1.zp * v2.zp;
+    return v1.v[0] * v2.v[0] + v1.v[1] * v2.v[1] + v1.v[2] * v2.v[2];
 }
 
 /*!
@@ -347,9 +382,9 @@ float QVector3D::dotProduct(const QVector3D& v1, const QVector3D& v2)
 */
 QVector3D QVector3D::crossProduct(const QVector3D& v1, const QVector3D& v2)
 {
-    return QVector3D(v1.yp * v2.zp - v1.zp * v2.yp,
-                     v1.zp * v2.xp - v1.xp * v2.zp,
-                     v1.xp * v2.yp - v1.yp * v2.xp);
+    return QVector3D(v1.v[1] * v2.v[2] - v1.v[2] * v2.v[1],
+                     v1.v[2] * v2.v[0] - v1.v[0] * v2.v[2],
+                     v1.v[0] * v2.v[1] - v1.v[1] * v2.v[0]);
 }
 
 /*!
@@ -629,7 +664,7 @@ float QVector3D::distanceToLine
 */
 QVector2D QVector3D::toVector2D() const
 {
-    return QVector2D(xp, yp);
+    return QVector2D(v[0], v[1]);
 }
 
 #endif
@@ -643,7 +678,7 @@ QVector2D QVector3D::toVector2D() const
 */
 QVector4D QVector3D::toVector4D() const
 {
-    return QVector4D(xp, yp, zp, 0.0f);
+    return QVector4D(v[0], v[1], v[2], 0.0f);
 }
 
 #endif
@@ -682,9 +717,9 @@ QVector3D::operator QVariant() const
 float QVector3D::length() const
 {
     // Need some extra precision if the length is very small.
-    double len = double(xp) * double(xp) +
-                 double(yp) * double(yp) +
-                 double(zp) * double(zp);
+    double len = double(v[0]) * double(v[0]) +
+                 double(v[1]) * double(v[1]) +
+                 double(v[2]) * double(v[2]);
     return float(std::sqrt(len));
 }
 
@@ -696,7 +731,7 @@ float QVector3D::length() const
 */
 float QVector3D::lengthSquared() const
 {
-    return xp * xp + yp * yp + zp * zp;
+    return v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
 }
 
 #ifndef QT_NO_DEBUG_STREAM
