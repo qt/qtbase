@@ -2682,7 +2682,7 @@ void QTabBarPrivate::Tab::TabBarAnimation::updateCurrentValue(const QVariant &cu
     priv->moveTab(priv->tabList.indexOf(*tab), current.toInt());
 }
 
-void QTabBarPrivate::Tab::TabBarAnimation::updateState(QAbstractAnimation::State, QAbstractAnimation::State newState)
+void QTabBarPrivate::Tab::TabBarAnimation::updateState(QAbstractAnimation::State newState, QAbstractAnimation::State)
 {
     if (newState == Stopped) priv->moveTabFinished(priv->tabList.indexOf(*tab));
 }

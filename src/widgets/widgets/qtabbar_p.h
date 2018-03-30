@@ -144,7 +144,7 @@ public:
 
             void updateCurrentValue(const QVariant &current) override;
 
-            void updateState(State, State newState) override;
+            void updateState(State newState, State) override;
         private:
             //these are needed for the callbacks
             Tab *tab;
