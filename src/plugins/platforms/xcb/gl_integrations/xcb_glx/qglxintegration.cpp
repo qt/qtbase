@@ -539,6 +539,7 @@ bool QGLXContext::makeCurrent(QPlatformSurface *surface)
         m_lost = false;
         if (m_getGraphicsResetStatus && m_getGraphicsResetStatus() != GL_NO_ERROR) {
             m_lost = true;
+            success = false;
             // Drop the surface. Will recreate on the next makeCurrent.
             window->invalidateSurface();
         }
@@ -547,6 +548,11 @@ bool QGLXContext::makeCurrent(QPlatformSurface *surface)
         QGLXPbuffer *pbuffer = static_cast<QGLXPbuffer *>(surface);
         glxDrawable = pbuffer->pbuffer();
         success = glXMakeContextCurrent(m_display, glxDrawable, glxDrawable, m_context);
+        m_lost = false;
+        if (m_getGraphicsResetStatus && m_getGraphicsResetStatus() != GL_NO_ERROR) {
+            m_lost = true;
+            success = false;
+        }
     }
 
     if (success && surfaceClass == QSurface::Window) {
