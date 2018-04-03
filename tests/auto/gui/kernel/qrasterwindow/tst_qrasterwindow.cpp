@@ -76,11 +76,7 @@ void tst_QRasterWindow::basic()
 
     w.reset();
     w.update();
-    int maxWait = 1000;
-    while (w.paintCount == 0 && --maxWait > 0)
-        QTest::qWait(10);
-
-    QVERIFY(w.paintCount >= 1);
+    QTRY_VERIFY(w.paintCount >= 1);
 }
 
 #include <tst_qrasterwindow.moc>
