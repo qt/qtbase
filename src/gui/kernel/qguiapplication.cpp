@@ -591,6 +591,12 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
                applications.
     \endlist
 
+    The following parameter is available for \c {-platform cocoa} (on macOS):
+
+    \list
+        \li \c {fontengine=freetype}, uses the FreeType font engine.
+    \endlist
+
     For more information about the platform-specific arguments available for
     embedded Linux platforms, see \l{Qt for Embedded Linux}.
 
