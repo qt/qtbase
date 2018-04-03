@@ -1008,7 +1008,7 @@ void QLabel::paintEvent(QPaintEvent *)
                                                        : layoutDirection(), QFlag(d->align));
 
 #if QT_CONFIG(movie)
-    if (d->movie) {
+    if (d->movie && !d->movie->currentPixmap().isNull()) {
         if (d->scaledcontents)
             style->drawItemPixmap(&painter, cr, align, d->movie->currentPixmap().scaled(cr.size()));
         else
