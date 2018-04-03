@@ -136,9 +136,7 @@ void tst_QDBusConnection::sendSignalToName()
 
     QVERIFY(con.send(msg));
 
-    QTest::qWait(1000);
-
-    QCOMPARE(spy.args.count(), 1);
+    QTRY_COMPARE(spy.args.count(), 1);
     QCOMPARE(spy.args.at(0).toString(), QString("ping"));
 }
 
@@ -215,8 +213,7 @@ void tst_QDBusConnection::sendAsync()
             "/org/freedesktop/DBus", "org.freedesktop.DBus", "ListNames");
     QVERIFY(con.callWithCallback(msg, &spy, SLOT(asyncReply(QDBusMessage))));
 
-    QTest::qWait(1000);
-
+    QTRY_COMPARE(spy.args.count(), 1);
     QCOMPARE(spy.args.value(0).typeName(), "QStringList");
     QVERIFY(spy.args.at(0).toStringList().contains(con.baseService()));
 }
@@ -239,9 +236,7 @@ void tst_QDBusConnection::connect()
 
     QVERIFY(con.send(msg));
 
-    QTest::qWait(1000);
-
-    QCOMPARE(spy.args.count(), 1);
+    QTRY_COMPARE(spy.args.count(), 1);
     QCOMPARE(spy.args.at(0).toString(), QString("ping"));
 }
 
@@ -1072,9 +1067,8 @@ void tst_QDBusConnection::connectSignal()
     QVERIFY(con.connect(con.baseService(), signal.path(), signal.interface(),
                         signal.member(), &recv, SLOT(oneSlot(QString))));
     QVERIFY(con.send(signal));
-    QTest::qWait(100);
+    QTRY_COMPARE(recv.signalsReceived, 1);
     QCOMPARE(recv.argumentReceived, signal.arguments().at(0).toString());
-    QCOMPARE(recv.signalsReceived, 1);
 
     // disconnect and try with a signature
     recv.argumentReceived.clear();
@@ -1084,9 +1078,8 @@ void tst_QDBusConnection::connectSignal()
     QVERIFY(con.connect(con.baseService(), signal.path(), signal.interface(),
                         signal.member(), "s", &recv, SLOT(oneSlot(QString))));
     QVERIFY(con.send(signal));
-    QTest::qWait(100);
+    QTRY_COMPARE(recv.signalsReceived, 1);
     QCOMPARE(recv.argumentReceived, signal.arguments().at(0).toString());
-    QCOMPARE(recv.signalsReceived, 1);
 
     // confirm that we are, indeed, a unique connection
     recv.argumentReceived.clear();
@@ -1094,9 +1087,8 @@ void tst_QDBusConnection::connectSignal()
     QVERIFY(!con.connect(con.baseService(), signal.path(), signal.interface(),
                         signal.member(), "s", &recv, SLOT(oneSlot(QString))));
     QVERIFY(con.send(signal));
-    QTest::qWait(100);
+    QTRY_COMPARE(recv.signalsReceived, 1);
     QCOMPARE(recv.argumentReceived, signal.arguments().at(0).toString());
-    QCOMPARE(recv.signalsReceived, 1);
 }
 
 void tst_QDBusConnection::slotsWithLessParameters()
@@ -1114,9 +1106,8 @@ void tst_QDBusConnection::slotsWithLessParameters()
     QVERIFY(con.connect(con.baseService(), signal.path(), signal.interface(),
                         signal.member(), &recv, SLOT(oneSlot())));
     QVERIFY(con.send(signal));
-    QTest::qWait(100);
+    QTRY_COMPARE(recv.signalsReceived, 1);
     QCOMPARE(recv.argumentReceived, QString());
-    QCOMPARE(recv.signalsReceived, 1);
 
     // disconnect and try with a signature
     recv.signalsReceived = 0;
@@ -1125,18 +1116,16 @@ void tst_QDBusConnection::slotsWithLessParameters()
     QVERIFY(con.connect(con.baseService(), signal.path(), signal.interface(),
                         signal.member(), "s", &recv, SLOT(oneSlot())));
     QVERIFY(con.send(signal));
-    QTest::qWait(100);
+    QTRY_COMPARE(recv.signalsReceived, 1);
     QCOMPARE(recv.argumentReceived, QString());
-    QCOMPARE(recv.signalsReceived, 1);
 
     // confirm that we are, indeed, a unique connection
     recv.signalsReceived = 0;
     QVERIFY(!con.connect(con.baseService(), signal.path(), signal.interface(),
                          signal.member(), "s", &recv, SLOT(oneSlot())));
     QVERIFY(con.send(signal));
-    QTest::qWait(100);
+    QTRY_COMPARE(recv.signalsReceived, 1);
     QCOMPARE(recv.argumentReceived, QString());
-    QCOMPARE(recv.signalsReceived, 1);
 }
 
 void SignalReceiver::secondCallWithCallback()
