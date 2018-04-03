@@ -544,6 +544,46 @@ QByteArray QCryptographicHash::hash(const QByteArray &data, Algorithm method)
     return hash.result();
 }
 
+/*!
+  Returns the size of the output of the selected hash \a method in bytes.
+
+  \since 5.12
+*/
+int QCryptographicHash::hashLength(QCryptographicHash::Algorithm method)
+{
+    switch (method) {
+    case QCryptographicHash::Sha1:
+        return 20;
+#ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+    case QCryptographicHash::Md4:
+        return 16;
+    case QCryptographicHash::Md5:
+        return 16;
+    case QCryptographicHash::Sha224:
+        return SHA224HashSize;
+    case QCryptographicHash::Sha256:
+        return SHA256HashSize;
+    case QCryptographicHash::Sha384:
+        return SHA384HashSize;
+    case QCryptographicHash::Sha512:
+        return SHA512HashSize;
+    case QCryptographicHash::RealSha3_224:
+    case QCryptographicHash::Keccak_224:
+        return 224 / 8;
+    case QCryptographicHash::RealSha3_256:
+    case QCryptographicHash::Keccak_256:
+        return 256 / 8;
+    case QCryptographicHash::RealSha3_384:
+    case QCryptographicHash::Keccak_384:
+        return 384 / 8;
+    case QCryptographicHash::RealSha3_512:
+    case QCryptographicHash::Keccak_512:
+        return 512 / 8;
+#endif
+    }
+    return 0;
+}
+
 QT_END_NAMESPACE
 
 #ifndef QT_NO_QOBJECT

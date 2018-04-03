@@ -29,6 +29,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtTest/QtTest>
+#include <QtCore/QMetaEnum>
 
 Q_DECLARE_METATYPE(QCryptographicHash::Algorithm)
 
@@ -45,6 +46,7 @@ private slots:
     void sha3();
     void files_data();
     void files();
+    void hashLength();
 };
 
 void tst_QCryptographicHash::repeated_result_data()
@@ -291,6 +293,15 @@ void tst_QCryptographicHash::files()
     }
 }
 
+void tst_QCryptographicHash::hashLength()
+{
+    auto metaEnum = QMetaEnum::fromType<QCryptographicHash::Algorithm>();
+    for (int i = 0, value = metaEnum.value(i); value != -1; value = metaEnum.value(++i)) {
+        auto algorithm = QCryptographicHash::Algorithm(value);
+        QByteArray output = QCryptographicHash::hash(QByteArrayLiteral("test"), algorithm);
+        QCOMPARE(QCryptographicHash::hashLength(algorithm), output.length());
+    }
+}
 
 QTEST_MAIN(tst_QCryptographicHash)
 #include "tst_qcryptographichash.moc"
