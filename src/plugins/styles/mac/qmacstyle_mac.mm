@@ -1177,6 +1177,7 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
     switch (cw.type) {
     case Box:
     case Button_SquareButton:
+    case SegmentedControl_Middle:
     case TextField: {
         auto innerRect = targetRect;
         if (cw.type == TextField)
@@ -1215,7 +1216,8 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
     }
     case Button_PopupButton:
     case Button_PullDown:
-    case Button_PushButton: {
+    case Button_PushButton:
+    case SegmentedControl_Single: {
         const qreal innerRadius = cw.type == Button_PushButton ? 3 : 4;
         const qreal outterRadius = innerRadius + focusRingWidth;
         hOffset = targetRect.left();
@@ -1226,7 +1228,9 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
         focusRingPath.addRoundedRect(outterRect, outterRadius, outterRadius);
         break;
     }
-    case ComboBox: {
+    case ComboBox:
+    case SegmentedControl_First:
+    case SegmentedControl_Last: {
         hOffset = targetRect.left();
         vOffset = targetRect.top();
         const qreal innerRadius = 8;
@@ -1271,6 +1275,9 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
     p->save();
     p->setRenderHint(QPainter::Antialiasing);
     p->setOpacity(0.5);
+    if (cw.type == SegmentedControl_First) {
+        // TODO Flip left-right
+    }
     p->translate(hOffset, vOffset);
     p->fillPath(focusRingPath, focusRingColor);
     p->restore();
@@ -1749,6 +1756,7 @@ QRectF QMacStylePrivate::comboboxEditBounds(const QRectF &outterBounds, const Co
             ret.adjust(13, 4, -20, -3);
             break;
         case QStyleHelper::SizeMini:
+            // FIXME Wrong
             ret.adjust(16, 5, -19, 0);
             ret.setHeight(13);
             break;
@@ -3547,6 +3555,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             d->drawNSViewInRect(cw, pb, frameRect, p, true, ^(CGContextRef __unused ctx, const CGRect &r) {
                 [pb.cell drawBezelWithFrame:r inView:pb.superview];
             });
+            [pb highlight:NO];
 
             if (hasMenu && cw.type == QMacStylePrivate::Button_SquareButton) {
                 // Using -[NSPopuButtonCell drawWithFrame:inView:] above won't do
@@ -3669,7 +3678,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 #endif // #if QT_CONFIG(combobox)
 #if QT_CONFIG(tabbar)
     case CE_TabBarTabShape:
-        if (const QStyleOptionTab *tabOpt = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
+        if (const auto *tabOpt = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
             if (tabOpt->documentMode) {
                 p->save();
                 bool isUnified = false;
@@ -3686,111 +3695,157 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 return;
             }
 
-            HIThemeTabDrawInfo tdi;
-            tdi.version = 1;
-            tdi.style = kThemeTabNonFront;
-            tdi.direction = (ThemeTabDirection)QMacStylePrivate::tabDirection(tabOpt->shape);
-            switch (d->aquaSizeConstrain(opt, w)) {
-            case QStyleHelper::SizeDefault:
-            case QStyleHelper::SizeLarge:
-                tdi.size = kHIThemeTabSizeNormal;
-                break;
-            case QStyleHelper::SizeSmall:
-                tdi.size = kHIThemeTabSizeSmall;
-                break;
-            case QStyleHelper::SizeMini:
-                tdi.size = kHIThemeTabSizeMini;
-                break;
-            }
-            bool verticalTabs = tdi.direction == kThemeTabWest || tdi.direction == kThemeTabEast;
-            QRect tabRect = tabOpt->rect;
-
-            bool selected = tabOpt->state & State_Selected;
-            if (selected) {
-                if (!(tabOpt->state & State_Active))
-                    tdi.style = kThemeTabFrontUnavailable;
-                else if (!(tabOpt->state & State_Enabled))
-                    tdi.style = kThemeTabFrontInactive;
-                else
-                    tdi.style = kThemeTabFront;
-            } else if (!(tabOpt->state & State_Active)) {
-                tdi.style = kThemeTabNonFrontUnavailable;
-            } else if (!(tabOpt->state & State_Enabled)) {
-                tdi.style = kThemeTabNonFrontInactive;
-            } else if (tabOpt->state & State_Sunken) {
-                tdi.style = kThemeTabNonFrontPressed;
-            }
-            if (tabOpt->state & State_HasFocus)
-                tdi.adornment = kHIThemeTabAdornmentFocus;
-            else
-                tdi.adornment = kHIThemeTabAdornmentNone;
-            tdi.kind = kHIThemeTabKindNormal;
+            const bool isEnabled = tabOpt->state & State_Enabled;
+            const bool isPressed = tabOpt->state & State_Sunken;
+            const bool isSelected = tabOpt->state & State_Selected;
+            const auto tabDirection = QMacStylePrivate::tabDirection(tabOpt->shape);
+            const bool verticalTabs = tabDirection == QMacStylePrivate::East
+                                   || tabDirection == QMacStylePrivate::West;
 
             QStyleOptionTab::TabPosition tp = tabOpt->position;
             QStyleOptionTab::SelectedPosition sp = tabOpt->selectedPosition;
             if (tabOpt->direction == Qt::RightToLeft && !verticalTabs) {
+                if (tp == QStyleOptionTab::Beginning)
+                    tp = QStyleOptionTab::End;
+                else if (tp == QStyleOptionTab::End)
+                    tp = QStyleOptionTab::Beginning;
+
                 if (sp == QStyleOptionTab::NextIsSelected)
                     sp = QStyleOptionTab::PreviousIsSelected;
                 else if (sp == QStyleOptionTab::PreviousIsSelected)
                     sp = QStyleOptionTab::NextIsSelected;
-                switch (tp) {
-                case QStyleOptionTab::Beginning:
-                    tp = QStyleOptionTab::End;
-                    break;
-                case QStyleOptionTab::End:
-                    tp = QStyleOptionTab::Beginning;
-                    break;
-                default:
-                    break;
-                }
             }
-            bool stretchTabs = (!verticalTabs && tabRect.height() > 22) || (verticalTabs && tabRect.width() > 22);
 
+            // Alas, NSSegmentedControl and NSSegmentedCell are letting us down.
+            // We're not able to draw it at will, either calling -[drawSegment:
+            // inFrame:withView:], -[drawRect:] or anything in between. Besides,
+            // there's no public API do draw the pressed state, AFAICS. We'll use
+            // a push NSButton instead and clip the CGContext.
+
+            const auto cs = d->effectiveAquaSizeConstrain(opt, w);
+            // Extra hack to get the proper pressed appreance when not selected
+            const auto ct = isSelected || tp == QStyleOptionTab::OnlyOneTab ?
+                    QMacStylePrivate::Button_PushButton :
+                    QMacStylePrivate::Button_PopupButton;
+            const auto cw = QMacStylePrivate::CocoaControl(ct, cs);
+            auto *pb = static_cast<NSButton *>(d->cocoaControl(cw));
+            auto vOffset = isSelected ? 2 : 1;
+            if (tabDirection == QMacStylePrivate::East)
+                vOffset -= 1;
+            const auto outterAdjust = isSelected ? 4 : 1;
+            const auto innerAdjust = isSelected ? 10 : 20;
+            QRectF frameRect = tabOpt->rect;
+            if (verticalTabs)
+                frameRect = QRectF(frameRect.y(), frameRect.x(), frameRect.height(), frameRect.width());
+            // Adjust before clipping
+            frameRect = frameRect.translated(0, vOffset);
             switch (tp) {
             case QStyleOptionTab::Beginning:
-                tdi.position = kHIThemeTabPositionFirst;
-                if (sp != QStyleOptionTab::NextIsSelected || stretchTabs)
-                    tdi.adornment |= kHIThemeTabAdornmentTrailingSeparator;
+                // Pressed state hack: tweak adjustments in preparation for flip below
+                if (!isSelected && tabDirection == QMacStylePrivate::West)
+                    frameRect = frameRect.adjusted(-innerAdjust, 0, outterAdjust, 0);
+                else
+                    frameRect = frameRect.adjusted(-outterAdjust, 0, innerAdjust, 0);
                 break;
             case QStyleOptionTab::Middle:
-                tdi.position = kHIThemeTabPositionMiddle;
-                if (selected)
-                    tdi.adornment |= kHIThemeTabAdornmentLeadingSeparator;
-                if (sp != QStyleOptionTab::NextIsSelected || stretchTabs)  // Also when we're selected.
-                    tdi.adornment |= kHIThemeTabAdornmentTrailingSeparator;
+                frameRect = frameRect.adjusted(-innerAdjust, 0, innerAdjust, 0);
                 break;
             case QStyleOptionTab::End:
-                tdi.position = kHIThemeTabPositionLast;
-                if (selected)
-                    tdi.adornment |= kHIThemeTabAdornmentLeadingSeparator;
+                // Pressed state hack: tweak adjustments in preparation for flip below
+                if (isSelected || tabDirection == QMacStylePrivate::West)
+                    frameRect = frameRect.adjusted(-innerAdjust, 0, outterAdjust, 0);
+                else
+                    frameRect = frameRect.adjusted(-outterAdjust, 0, innerAdjust, 0);
                 break;
             case QStyleOptionTab::OnlyOneTab:
-                tdi.position = kHIThemeTabPositionOnly;
+                frameRect = frameRect.adjusted(-outterAdjust, 0, outterAdjust, 0);
                 break;
             }
-            // HITheme doesn't stretch its tabs. Therefore we have to cheat and do the job ourselves.
-            if (stretchTabs) {
-                CGRect cgRect = CGRectMake(0, 0, 23, 23);
-                QPixmap pm(23, 23);
-                pm.fill(Qt::transparent);
-                {
-                    QMacCGContext pmcg(&pm);
-                    HIThemeDrawTab(&cgRect, &tdi, pmcg, kHIThemeOrientationNormal, 0);
+            pb.frame = frameRect.toCGRect();
+
+            pb.enabled = isEnabled;
+            [pb highlight:isPressed];
+            pb.state = isSelected && !isPressed ? NSOnState : NSOffState;
+            d->drawNSViewInRect(cw, pb, frameRect, p, true, ^(CGContextRef ctx, const CGRect &r) {
+                CGContextClipToRect(ctx, opt->rect.toCGRect());
+                if (!isSelected) {
+                    // Final stage of the pressed state hack: flip NSPopupButton rendering
+                    if (!verticalTabs && tp == QStyleOptionTab::End) {
+                        CGContextTranslateCTM(ctx, opt->rect.right(), 0);
+                        CGContextScaleCTM(ctx, -1, 1);
+                        CGContextTranslateCTM(ctx, -frameRect.left(), 0);
+                    } else if (tabDirection == QMacStylePrivate::West && tp == QStyleOptionTab::Beginning) {
+                        CGContextScaleCTM(ctx, 1, -1);
+                        CGContextTranslateCTM(ctx, 0, -frameRect.right());
+                    } else if (tabDirection == QMacStylePrivate::East && tp == QStyleOptionTab::End) {
+                        CGContextTranslateCTM(ctx, 0, opt->rect.bottom());
+                        CGContextScaleCTM(ctx, 1, -1);
+                        CGContextTranslateCTM(ctx, 0, -frameRect.left());
+                    }
                 }
-                QStyleHelper::drawBorderPixmap(pm, p, tabRect, 7, 7, 7, 7);
-            } else {
-                CGRect cgRect = tabRect.toCGRect();
-                HIThemeDrawTab(&cgRect, &tdi, cg, kHIThemeOrientationNormal, 0);
+
+                // Rotate and translate CTM when vertical
+                // On macOS: positive angle is CW, negative is CCW
+                if (tabDirection == QMacStylePrivate::West) {
+                    CGContextTranslateCTM(ctx, 0, frameRect.right());
+                    CGContextRotateCTM(ctx, -M_PI_2);
+                    CGContextTranslateCTM(ctx, -frameRect.left(), 0);
+                } else if (tabDirection == QMacStylePrivate::East) {
+                    CGContextTranslateCTM(ctx, opt->rect.right(), 0);
+                    CGContextRotateCTM(ctx, M_PI_2);
+                }
+
+                [pb.cell drawBezelWithFrame:r inView:pb.superview];
+            });
+
+            if (!isSelected && sp != QStyleOptionTab::NextIsSelected
+                    && tp != QStyleOptionTab::End
+                    && tp != QStyleOptionTab::OnlyOneTab) {
+                static const QPen separatorPen(Qt::black, 1.0);
+                p->save();
+                p->setOpacity(isEnabled ? 0.105 : 0.06); // As measured
+                p->setPen(separatorPen);
+                if (tabDirection == QMacStylePrivate::West) {
+                    p->drawLine(QLineF(opt->rect.left() + 1.5, opt->rect.bottom(),
+                                       opt->rect.right() - 0.5, opt->rect.bottom()));
+                } else if (tabDirection == QMacStylePrivate::East) {
+                    p->drawLine(QLineF(opt->rect.left(), opt->rect.bottom(),
+                                       opt->rect.right() - 0.5, opt->rect.bottom()));
+                } else {
+                    p->drawLine(QLineF(opt->rect.right(), opt->rect.top() + 1.0,
+                                       opt->rect.right(), opt->rect.bottom() - 0.5));
+                }
+                p->restore();
+            }
+
+            // TODO Needs size adjustment to fit the focus ring
+            if (tabOpt->state & State_HasFocus) {
+                QMacStylePrivate::CocoaControlType focusRingType;
+                switch (tp) {
+                case QStyleOptionTab::Beginning:
+                    focusRingType = verticalTabs ? QMacStylePrivate::SegmentedControl_Last
+                                                 : QMacStylePrivate::SegmentedControl_First;
+                    break;
+                case QStyleOptionTab::Middle:
+                    focusRingType = QMacStylePrivate::SegmentedControl_Middle;
+                    break;
+                case QStyleOptionTab::End:
+                    focusRingType = verticalTabs ? QMacStylePrivate::SegmentedControl_First
+                                                 : QMacStylePrivate::SegmentedControl_Last;
+                    break;
+                case QStyleOptionTab::OnlyOneTab:
+                    focusRingType = QMacStylePrivate::SegmentedControl_Single;
+                    break;
+                }
             }
         }
         break;
     case CE_TabBarTabLabel:
-        if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
+        if (const auto *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
             QStyleOptionTab myTab = *tab;
-            const bool verticalTabs = tab->shape == QTabBar::RoundedWest
-                                   || tab->shape == QTabBar::RoundedEast
-                                   || tab->shape == QTabBar::TriangularWest
-                                   || tab->shape == QTabBar::TriangularEast;
+            const auto tabDirection = QMacStylePrivate::tabDirection(tab->shape);
+            const bool verticalTabs = tabDirection == QMacStylePrivate::East
+                                   || tabDirection == QMacStylePrivate::West;
 
             // Check to see if we use have the same as the system font
             // (QComboMenuItem is internal and should never be seen by the
@@ -5951,18 +6006,17 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 #if QT_CONFIG(tabbar)
     case QStyle::CT_TabBarTab:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
-            const QStyleHelper::WidgetSizePolicy AquaSize = d->aquaSizeConstrain(opt, widget);
             const bool differentFont = (widget && widget->testAttribute(Qt::WA_SetFont))
                                        || !QApplication::desktopSettingsAware();
-            ThemeTabDirection ttd = (ThemeTabDirection)QMacStylePrivate::tabDirection(tab->shape);
-            bool vertTabs = ttd == kThemeTabWest || ttd == kThemeTabEast;
-            if (vertTabs)
+            const auto tabDirection = QMacStylePrivate::tabDirection(tab->shape);
+            const bool verticalTabs = tabDirection == QMacStylePrivate::East
+                                   || tabDirection == QMacStylePrivate::West;
+            if (verticalTabs)
                 sz = sz.transposed();
+
             int defaultTabHeight;
-            int extraHSpace = proxy()->pixelMetric(PM_TabBarTabHSpace, tab, widget);
-            QFontMetrics fm = opt->fontMetrics;
-            switch (AquaSize) {
-            case QStyleHelper::SizeDefault:
+            const auto cs = d->effectiveAquaSizeConstrain(opt, widget);
+            switch (cs) {
             case QStyleHelper::SizeLarge:
                 if (tab->documentMode)
                     defaultTabHeight = 24;
@@ -5975,19 +6029,21 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             case QStyleHelper::SizeMini:
                 defaultTabHeight = 16;
                 break;
+            default:
+                break;
             }
-            bool setWidth = false;
-            if (differentFont || !tab->icon.isNull()) {
-                sz.rheight() = qMax(defaultTabHeight, sz.height());
-            } else {
-                QSize textSize = fm.size(Qt::TextShowMnemonic, tab->text);
-                sz.rheight() = qMax(defaultTabHeight, textSize.height());
-                sz.rwidth() = textSize.width();
-                setWidth = true;
-            }
-            sz.rwidth() += extraHSpace;
 
-            if (vertTabs)
+            const bool widthSet = !differentFont && tab->icon.isNull();
+            if (widthSet) {
+                const auto textSize = opt->fontMetrics.size(Qt::TextShowMnemonic, tab->text);
+                sz.rwidth() = textSize.width();
+                sz.rheight() = qMax(defaultTabHeight, textSize.height());
+            } else {
+                sz.rheight() = qMax(defaultTabHeight, sz.height());
+            }
+            sz.rwidth() += proxy()->pixelMetric(PM_TabBarTabHSpace, tab, widget);
+
+            if (verticalTabs)
                 sz = sz.transposed();
 
             int maxWidgetHeight = qMax(tab->leftButtonSize.height(), tab->rightButtonSize.height());
@@ -6007,11 +6063,11 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 widgetHeight += tab->rightButtonSize.height();
             }
 
-            if (vertTabs) {
-                sz.setHeight(sz.height() + widgetHeight + padding);
+            if (verticalTabs) {
                 sz.setWidth(qMax(sz.width(), maxWidgetWidth));
+                sz.setHeight(sz.height() + widgetHeight + padding);
             } else {
-                if (setWidth)
+                if (widthSet)
                     sz.setWidth(sz.width() + widgetWidth + padding);
                 sz.setHeight(qMax(sz.height(), maxWidgetHeight));
             }

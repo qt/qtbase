@@ -192,7 +192,7 @@ public:
         Button_Disclosure,  // Disclosure triangle, like in QTreeView
         Button_PopupButton,  // Non-editable QComboBox
         Button_PullDown, // QPushButton with menu
-        Button_PushButton,
+        Button_PushButton, // Plain QPushButton and QTabBar buttons
         Button_RadioButton,
         Button_SquareButton, // Oversized QPushButton
         Button_WindowClose,
@@ -203,6 +203,10 @@ public:
         ProgressIndicator_Indeterminate,
         Scroller_Horizontal,
         Scroller_Vertical,
+        SegmentedControl_First, // QTabBar buttons focus ring
+        SegmentedControl_Middle,
+        SegmentedControl_Last,
+        SegmentedControl_Single,
         Slider_Horizontal,
         Slider_Vertical,
         SplitView_Horizontal,
