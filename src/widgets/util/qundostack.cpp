@@ -742,6 +742,17 @@ void QUndoStack::resetClean()
 }
 
 /*!
+    \since 5.12
+    \property QUndoStack::clean
+    \brief the clean status of this stack.
+
+    This property indicates whether or not the stack is clean. For example, a
+    stack is clean when a document has been saved.
+
+    \sa isClean(), setClean(), resetClean(), cleanIndex()
+*/
+
+/*!
     If the stack is in the clean state, returns \c true; otherwise returns \c false.
 
     \sa setClean(), cleanIndex()
@@ -940,6 +951,17 @@ void QUndoStack::setIndex(int idx)
 }
 
 /*!
+    \since 5.12
+    \property QUndoStack::canUndo
+    \brief whether this stack can undo.
+
+    This property indicates whether or not there is a command that can be
+    undone.
+
+    \sa canUndo(), index(), canRedo()
+*/
+
+/*!
     Returns \c true if there is a command available for undo; otherwise returns \c false.
 
     This function returns \c false if the stack is empty, or if the bottom command
@@ -957,6 +979,17 @@ bool QUndoStack::canUndo() const
         return false;
     return d->index > 0;
 }
+
+/*!
+    \since 5.12
+    \property QUndoStack::canRedo
+    \brief whether this stack can redo.
+
+    This property indicates whether or not there is a command that can be
+    redone.
+
+    \sa canRedo(), index(), canUndo()
+*/
 
 /*!
     Returns \c true if there is a command available for redo; otherwise returns \c false.
@@ -978,6 +1011,17 @@ bool QUndoStack::canRedo() const
 }
 
 /*!
+    \since 5.12
+    \property QUndoStack::undoText
+    \brief the undo text of the next command that is undone.
+
+    This property holds the text of the command which will be undone in the
+    next call to undo().
+
+    \sa undoText(), QUndoCommand::actionText(), redoText()
+*/
+
+/*!
     Returns the text of the command which will be undone in the next call to undo().
 
     \sa QUndoCommand::actionText(), redoText()
@@ -992,6 +1036,17 @@ QString QUndoStack::undoText() const
         return d->command_list.at(d->index - 1)->actionText();
     return QString();
 }
+
+/*!
+    \since 5.12
+    \property QUndoStack::redoText
+    \brief the redo text of the next command that is redone.
+
+    This property holds the text of the command which will be redone in the
+    next call to redo().
+
+    \sa redoText(), QUndoCommand::actionText(), undoText()
+*/
 
 /*!
     Returns the text of the command which will be redone in the next call to redo().
