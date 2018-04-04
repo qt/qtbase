@@ -93,6 +93,9 @@ void tst_QCursor::equality()
     VERIFY_DIFFERENT(bitmapCursor, pixmapCursor);
 
     // Empty pixmap
+    for (int i = 0; i < 18; ++i)
+        QTest::ignoreMessage(QtWarningMsg, "QCursor: Cannot create bitmap cursor; invalid bitmap(s)");
+
     QPixmap emptyPixmap;
     QCursor emptyPixmapCursor(emptyPixmap);
     QCOMPARE(emptyPixmapCursor.shape(), Qt::ArrowCursor);
