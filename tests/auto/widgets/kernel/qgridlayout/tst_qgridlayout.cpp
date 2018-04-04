@@ -1441,7 +1441,6 @@ void tst_QGridLayout::layoutSpacing()
 
     QLayout *layout = widget->layout();
     QVERIFY(layout);
-    //QTest::qWait(2000);
     for (int pi = 0; pi < expectedpositions.count(); ++pi) {
         QLayoutItem *item = layout->itemAt(pi);
         //qDebug()  << item->widget()->pos();

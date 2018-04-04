@@ -146,13 +146,7 @@ void tst_QWindowContainer::testExposeObscure()
 
     container->hide();
 
-    QElapsedTimer timer;
-    timer.start();
-    while (window->numberOfObscures == 0 && timer.elapsed() < 5000) {
-        QTest::qWait(10);
-    }
-
-    QVERIFY(window->numberOfObscures > 0);
+    QTRY_VERIFY(window->numberOfObscures > 0);
 }
 
 
@@ -345,11 +339,9 @@ void tst_QWindowContainer::testDockWidget()
     QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
     QCOMPARE(window->parent(), mainWindow.window()->windowHandle());
 
-    QTest::qWait(1000);
     dock->setFloating(true);
     QTRY_VERIFY(window->parent() != mainWindow.window()->windowHandle());
 
-    QTest::qWait(1000);
     dock->setFloating(false);
     QTRY_COMPARE(window->parent(), mainWindow.window()->windowHandle());
 }
