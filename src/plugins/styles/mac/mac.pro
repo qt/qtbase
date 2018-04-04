@@ -10,7 +10,7 @@ HEADERS += \
     qmacstyle_mac_p.h \
     qmacstyle_mac_p_p.h
 
-LIBS_PRIVATE += -framework AppKit -framework ApplicationServices -framework Carbon
+LIBS_PRIVATE += -framework AppKit
 
 DISTFILES += macstyle.json
 

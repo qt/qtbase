@@ -41,9 +41,6 @@
 #ifndef QMACSTYLE_MAC_P_P_H
 #define QMACSTYLE_MAC_P_P_H
 
-#include <Carbon/Carbon.h>
-#undef check
-
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtWidgets/private/qcommonstyle_p.h>
 #include "qmacstyle_mac_p.h"
