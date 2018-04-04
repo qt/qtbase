@@ -47,12 +47,12 @@
 
 QT_BEGIN_NAMESPACE
 
-const uint *QT_FASTCALL convertRGB32FromARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                      const QVector<QRgb> *, QDitherInfo *)
+void QT_FASTCALL storeRGB32FromARGB32PM_sse4(uchar *dest, const uint *src, int index, int count,
+                                             const QVector<QRgb> *, QDitherInfo *)
 {
+    uint *d = reinterpret_cast<uint *>(dest) + index;
     for (int i = 0; i < count; ++i)
-        buffer[i] = 0xff000000 | qUnpremultiply_sse4(src[i]);
-    return buffer;
+        d[i] = 0xff000000 | qUnpremultiply_sse4(src[i]);
 }
 
 void convert_ARGB_to_ARGB_PM_sse4(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)

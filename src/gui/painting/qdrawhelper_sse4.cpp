@@ -93,59 +93,55 @@ static inline void convertARGBToARGB32PM_sse4(uint *buffer, const uint *src, int
     }
 }
 
-const uint *QT_FASTCALL convertARGB32ToARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                     const QVector<QRgb> *, QDitherInfo *)
+void QT_FASTCALL convertARGB32ToARGB32PM_sse4(uint *buffer, int count, const QVector<QRgb> *)
 {
-    convertARGBToARGB32PM_sse4<false>(buffer, src, count);
-    return buffer;
+    convertARGBToARGB32PM_sse4<false>(buffer, buffer, count);
 }
 
-const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                       const QVector<QRgb> *, QDitherInfo *)
+void QT_FASTCALL convertRGBA8888ToARGB32PM_sse4(uint *buffer, int count, const QVector<QRgb> *)
 {
-    convertARGBToARGB32PM_sse4<true>(buffer, src, count);
-    return buffer;
+    convertARGBToARGB32PM_sse4<true>(buffer, buffer, count);
 }
 
-const uint *QT_FASTCALL convertARGB32FromARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                       const QVector<QRgb> *, QDitherInfo *)
+void QT_FASTCALL storeARGB32FromARGB32PM_sse4(uchar *dest, const uint *src, int index, int count,
+                                              const QVector<QRgb> *, QDitherInfo *)
 {
+    uint *d = reinterpret_cast<uint *>(dest) + index;
     for (int i = 0; i < count; ++i)
-        buffer[i] = qUnpremultiply_sse4(src[i]);
-    return buffer;
+        d[i] = qUnpremultiply_sse4(src[i]);
 }
 
-const uint *QT_FASTCALL convertRGBA8888FromARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                         const QVector<QRgb> *, QDitherInfo *)
+void QT_FASTCALL storeRGBA8888FromARGB32PM_sse4(uchar *dest, const uint *src, int index, int count,
+                                                const QVector<QRgb> *, QDitherInfo *)
 {
+    uint *d = reinterpret_cast<uint *>(dest) + index;
     for (int i = 0; i < count; ++i)
-        buffer[i] = ARGB2RGBA(qUnpremultiply_sse4(src[i]));
-    return buffer;
+        d[i] = ARGB2RGBA(qUnpremultiply_sse4(src[i]));
 }
 
-const uint *QT_FASTCALL convertRGBXFromARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                     const QVector<QRgb> *, QDitherInfo *)
+void QT_FASTCALL storeRGBXFromARGB32PM_sse4(uchar *dest, const uint *src, int index, int count,
+                                            const QVector<QRgb> *, QDitherInfo *)
 {
+    uint *d = reinterpret_cast<uint *>(dest) + index;
     for (int i = 0; i < count; ++i)
-        buffer[i] = ARGB2RGBA(0xff000000 | qUnpremultiply_sse4(src[i]));
-    return buffer;
+        d[i] = ARGB2RGBA(0xff000000 | qUnpremultiply_sse4(src[i]));
 }
 
 template<QtPixelOrder PixelOrder>
-const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                          const QVector<QRgb> *, QDitherInfo *)
+void QT_FASTCALL storeA2RGB30PMFromARGB32PM_sse4(uchar *dest, const uint *src, int index, int count,
+                                                 const QVector<QRgb> *, QDitherInfo *)
 {
+    uint *d = reinterpret_cast<uint *>(dest) + index;
     for (int i = 0; i < count; ++i)
-        buffer[i] = qConvertArgb32ToA2rgb30_sse4<PixelOrder>(src[i]);
-    return buffer;
+        d[i] = qConvertArgb32ToA2rgb30_sse4<PixelOrder>(src[i]);
 }
 
 template
-const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM_sse4<PixelOrderBGR>(uint *buffer, const uint *src, int count,
-                                                                         const QVector<QRgb> *, QDitherInfo *);
+void QT_FASTCALL storeA2RGB30PMFromARGB32PM_sse4<PixelOrderBGR>(uchar *dest, const uint *src, int index, int count,
+                                                                const QVector<QRgb> *, QDitherInfo *);
 template
-const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM_sse4<PixelOrderRGB>(uint *buffer, const uint *src, int count,
-                                                                         const QVector<QRgb> *, QDitherInfo *);
+void QT_FASTCALL storeA2RGB30PMFromARGB32PM_sse4<PixelOrderRGB>(uchar *dest, const uint *src, int index, int count,
+                                                                const QVector<QRgb> *, QDitherInfo *);
 
 QT_END_NAMESPACE
 

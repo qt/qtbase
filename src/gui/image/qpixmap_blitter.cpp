@@ -150,13 +150,7 @@ void QBlittablePlatformPixmap::fill(const QColor &color)
             m_alpha = true;
         }
 
-        uint pixel = qPremultiply(color.rgba());
-        const QPixelLayout *layout = &qPixelLayouts[blittable()->lock()->format()];
-        Q_ASSERT(layout->convertFromARGB32PM);
-        layout->convertFromARGB32PM(&pixel, &pixel, 1, 0, 0);
-
-        //so premultiplied formats are supported and ARGB32 and RGB32
-        blittable()->lock()->fill(pixel);
+        blittable()->lock()->fill(color);
     }
 
 }

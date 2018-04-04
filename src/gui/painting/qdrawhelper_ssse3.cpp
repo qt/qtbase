@@ -167,61 +167,12 @@ void qt_blend_argb32_on_argb32_ssse3(uchar *destPixels, int dbpl,
     }
 }
 
-static inline void store_uint24_ssse3(uchar *dst, const uint *src, int len)
+const uint *QT_FASTCALL fetchPixelsBPP24_ssse3(uint *buffer, const uchar *src, int index, int count)
 {
-    int i = 0;
-
-    quint24 *dst24 = reinterpret_cast<quint24*>(dst);
-    // Align dst on 16 bytes
-    for (; i < len && (reinterpret_cast<quintptr>(dst24) & 0xf); ++i)
-        *dst24++ = quint24(*src++);
-
-    // Shuffle masks for first and second half of every output, all outputs are aligned so the shuffled ends are not used.
-    const __m128i shuffleMask1 = _mm_setr_epi8(char(0x80), char(0x80), char(0x80), char(0x80), 2, 1, 0, 6, 5, 4, 10, 9, 8, 14, 13, 12);
-    const __m128i shuffleMask2 = _mm_setr_epi8(2, 1, 0, 6, 5, 4, 10, 9, 8, 14, 13, 12, char(0x80), char(0x80), char(0x80), char(0x80));
-
-    const __m128i *inVectorPtr = (const __m128i *)src;
-    __m128i *dstVectorPtr = (__m128i *)dst24;
-
-    for (; i < (len - 15); i += 16) {
-        // Load four vectors, store three.
-        // Create each output vector by combining two shuffled input vectors.
-        __m128i srcVector1 = _mm_loadu_si128(inVectorPtr);
-        ++inVectorPtr;
-        __m128i srcVector2 = _mm_loadu_si128(inVectorPtr);
-        ++inVectorPtr;
-        __m128i outputVector1 = _mm_shuffle_epi8(srcVector1, shuffleMask1);
-        __m128i outputVector2 = _mm_shuffle_epi8(srcVector2, shuffleMask2);
-        __m128i outputVector = _mm_alignr_epi8(outputVector2, outputVector1, 4);
-        _mm_store_si128(dstVectorPtr, outputVector);
-        ++dstVectorPtr;
-
-        srcVector1 = _mm_loadu_si128(inVectorPtr);
-        ++inVectorPtr;
-        outputVector1 = _mm_shuffle_epi8(srcVector2, shuffleMask1);
-        outputVector2 = _mm_shuffle_epi8(srcVector1, shuffleMask2);
-        outputVector = _mm_alignr_epi8(outputVector2, outputVector1, 8);
-        _mm_store_si128(dstVectorPtr, outputVector);
-        ++dstVectorPtr;
-
-        srcVector2 = _mm_loadu_si128(inVectorPtr);
-        ++inVectorPtr;
-        outputVector1 = _mm_shuffle_epi8(srcVector1, shuffleMask1);
-        outputVector2 = _mm_shuffle_epi8(srcVector2, shuffleMask2);
-        outputVector = _mm_alignr_epi8(outputVector2, outputVector1, 12);
-        _mm_store_si128(dstVectorPtr, outputVector);
-        ++dstVectorPtr;
-    }
-    dst24 = reinterpret_cast<quint24*>(dstVectorPtr);
-    src = reinterpret_cast<const uint*>(inVectorPtr);
-
-    SIMD_EPILOGUE(i, len, 15)
-        *dst24++ = quint24(*src++);
-}
-
-void QT_FASTCALL storePixelsBPP24_ssse3(uchar *dest, const uint *src, int index, int count)
-{
-    store_uint24_ssse3(dest + index * 3, src, count);
+    const quint24 *s = reinterpret_cast<const quint24 *>(src);
+    for (int i = 0; i < count; ++i)
+        buffer[i] = s[index + i];
+    return buffer;
 }
 
 extern void QT_FASTCALL qt_convert_rgb888_to_rgb32_ssse3(quint32 *dst, const uchar *src, int len);

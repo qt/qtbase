@@ -193,17 +193,12 @@ void QRasterPlatformPixmap::fill(const QColor &color)
         if (alpha != 255) {
             if (!image.hasAlphaChannel()) {
                 QImage::Format toFormat = qt_alphaVersionForPainting(image.format());
-                if (!image.isNull() && qt_depthForFormat(image.format()) == qt_depthForFormat(toFormat)) {
-                    image.detach();
-                    image.d->format = toFormat;
-                } else {
+                if (!image.reinterpretAsFormat(toFormat))
                     image = QImage(image.width(), image.height(), toFormat);
-                }
             }
         }
-        pixel = qPremultiply(color.rgba());
-        const QPixelLayout *layout = &qPixelLayouts[image.format()];
-        layout->convertFromARGB32PM(&pixel, &pixel, 1, 0, 0);
+        image.fill(color);
+        return;
     } else if (image.format() == QImage::Format_Alpha8) {
         pixel = qAlpha(color.rgba());
     } else if (image.format() == QImage::Format_Grayscale8) {
