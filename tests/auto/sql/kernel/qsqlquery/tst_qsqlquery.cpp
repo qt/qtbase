@@ -128,6 +128,8 @@ private slots:
     void mysql_outValues();
     void oraClob_data() { generic_data("QOCI"); }
     void oraClob();
+    void oraClobBatch_data() { generic_data("QOCI"); }
+    void oraClobBatch();
     void oraLong_data() { generic_data("QOCI"); }
     void oraLong();
     void oraOCINumber_data() { generic_data("QOCI"); }
@@ -808,6 +810,28 @@ void tst_QSqlQuery::oraClob()
     QVERIFY( q.value( 0 ).toString() == loong );
     QCOMPARE( q.value( 1 ).toByteArray().count(), loong.toLatin1().count() );
     QVERIFY( q.value( 1 ).toByteArray() == loong.toLatin1() );
+}
+
+void tst_QSqlQuery::oraClobBatch()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    const QString clobBatch(qTableName("clobBatch", __FILE__, db));
+    tst_Databases::safeDropTables(db, { clobBatch });
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec("create table " + clobBatch + "(cl clob)"));
+
+    const QString longString(USHRT_MAX + 1, QLatin1Char('A'));
+    QVERIFY_SQL(q, prepare("insert into " + clobBatch + " (cl) values(:cl)"));
+    const QVariantList vars = { longString };
+    q.addBindValue(vars);
+    QVERIFY_SQL(q, execBatch());
+
+    QVERIFY_SQL(q, exec("select cl from " + clobBatch));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toString().count(), longString.size());
+    QVERIFY(q.value(0).toString() == longString);
 }
 
 void tst_QSqlQuery::storedProceduresIBase()
