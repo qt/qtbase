@@ -124,6 +124,8 @@ public:
     bool applyCursor();
 #endif
 
+    void deliverUpdateRequest();
+
     QPoint globalPosition() const;
 
     QWindow *topLevelWindow() const;
