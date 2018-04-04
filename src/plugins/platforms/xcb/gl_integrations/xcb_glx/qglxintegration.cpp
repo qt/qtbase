@@ -302,7 +302,7 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share)
                     contextAttributes << GLX_CONTEXT_PROFILE_MASK_ARB << GLX_CONTEXT_ES2_PROFILE_BIT_EXT;
                 }
 
-                if (supportsRobustness && supportsVideoMemoryPurge) {
+                if (supportsRobustness && supportsVideoMemoryPurge && m_format.testOption(QSurfaceFormat::ResetNotification)) {
                     QVector<int> contextAttributesWithNvidiaReset = contextAttributes;
 
                     contextAttributesWithNvidiaReset << GLX_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB << GLX_LOSE_CONTEXT_ON_RESET_ARB;
