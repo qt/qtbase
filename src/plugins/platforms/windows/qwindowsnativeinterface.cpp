@@ -111,14 +111,13 @@ void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resourc
             return 0;
         }
         break;
-    case QWindow::OpenGLSurface:
-    case QWindow::OpenVGSurface:
-        break;
     case QWindow::VulkanSurface:
 #if QT_CONFIG(vulkan)
         if (type == VkSurface)
             return bw->surface(nullptr, nullptr); // returns the address of the VkSurfaceKHR, not the value, as expected
 #endif
+        break;
+    default:
         break;
     }
     qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());

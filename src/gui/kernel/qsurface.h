@@ -66,7 +66,8 @@ public:
         OpenGLSurface,
         RasterGLSurface,
         OpenVGSurface,
-        VulkanSurface
+        VulkanSurface,
+        MetalSurface
     };
 
     virtual ~QSurface();
