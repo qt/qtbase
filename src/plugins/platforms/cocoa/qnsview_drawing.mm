@@ -148,6 +148,53 @@
         "_q_mac_wantsLayer", "QT_MAC_WANTS_LAYER");
 }
 
+- (CALayer *)makeBackingLayer
+{
+    bool makeMetalLayer = false; // TODO: Add/implement enabling API
+    if (makeMetalLayer) {
+        // Check if Metal is supported. If it isn't then it's most likely
+        // too late at this point and the QWindow will be non-functional,
+        // but we can at least print a warning.
+        if (![MTLCreateSystemDefaultDevice() autorelease]) {
+            qWarning() << "QWindow initialization error: Metal is not supported";
+            return [super makeBackingLayer];
+        }
+
+        CAMetalLayer *layer = [CAMetalLayer layer];
+
+        // Set the contentsScale for the layer. This is normally done in
+        // viewDidChangeBackingProperties, however on startup that function
+        // is called before the layer is created here. The layer's drawableSize
+        // is updated from layoutSublayersOfLayer as usual.
+        layer.contentsScale = self.window.backingScaleFactor;
+
+        return layer;
+    }
+
+    return [super makeBackingLayer];
+}
+
+- (NSViewLayerContentsRedrawPolicy)layerContentsRedrawPolicy
+{
+    // We need to set this this excplicitly since the super implementation
+    // returns LayerContentsRedrawNever for custom layers like CAMetalLayer.
+    return NSViewLayerContentsRedrawDuringViewResize;
+}
+
+- (void)updateMetalLayerDrawableSize:(CAMetalLayer *)layer
+{
+    CGSize drawableSize = layer.bounds.size;
+    drawableSize.width *= layer.contentsScale;
+    drawableSize.height *= layer.contentsScale;
+    layer.drawableSize = drawableSize;
+}
+
+- (void)layoutSublayersOfLayer:(CALayer *)layer
+{
+    if ([layer isKindOfClass:CAMetalLayer.class])
+        [self updateMetalLayerDrawableSize:static_cast<CAMetalLayer* >(layer)];
+}
+
 - (void)displayLayer:(CALayer *)layer
 {
     Q_ASSERT(layer == self.layer);
@@ -163,8 +210,17 @@
 
 - (void)viewDidChangeBackingProperties
 {
-    if (self.layer)
-        self.layer.contentsScale = self.window.backingScaleFactor;
+    CALayer *layer = self.layer;
+    if (!layer)
+        return;
+
+    layer.contentsScale = self.window.backingScaleFactor;
+
+    // Metal layers must be manually updated on e.g. screen change
+    if ([layer isKindOfClass:CAMetalLayer.class]) {
+        [self updateMetalLayerDrawableSize:static_cast<CAMetalLayer* >(layer)];
+        [self setNeedsDisplay:YES];
+    }
 }
 
 @end

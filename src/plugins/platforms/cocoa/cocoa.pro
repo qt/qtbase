@@ -78,7 +78,7 @@ qtConfig(opengl.*) {
 
 RESOURCES += qcocoaresources.qrc
 
-LIBS += -framework AppKit -framework Carbon -framework IOKit -framework QuartzCore -lcups
+LIBS += -framework AppKit -framework Carbon -framework IOKit -framework QuartzCore -framework Metal -lcups
 
 QT += \
     core-private gui-private \

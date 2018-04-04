@@ -41,6 +41,7 @@
 #define QNSVIEW_H
 
 #include <AppKit/AppKit.h>
+#include <MetalKit/MetalKit.h>
 
 #include "private/qcore_mac_p.h"
 
