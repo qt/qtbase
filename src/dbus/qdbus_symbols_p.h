@@ -161,6 +161,19 @@ template <>           struct TraceReturn<void> { typedef void Type; };
         funcret DEBUGRET(ret) ptr argcall;                      \
     }
 
+# define DEFINEFUNC_CONDITIONALLY(ret, func, args, argcall, funcret, failret)  \
+    typedef ret (* _q_PTR_##func) args;                               \
+    static inline ret q_##func args                                   \
+    {                                                                 \
+        static _q_PTR_##func ptr;                                     \
+        DEBUGCALL(#func, argcall);                                    \
+        if (!ptr)                                                     \
+            ptr = (_q_PTR_##func) qdbus_resolve_conditionally(#func); \
+        if (!ptr)                                                     \
+            failret;                                                  \
+        funcret DEBUGRET(ret) ptr argcall;                            \
+    }
+
 #else // defined QT_LINKED_LIBDBUS
 
 inline bool qdbus_loadLibDBus() { return true; }
@@ -300,6 +313,26 @@ DEFINEFUNC(const char*   , dbus_message_get_signature, (DBusMessage   *message),
            (message), return)
 DEFINEFUNC(int           , dbus_message_get_type, (DBusMessage   *message),
            (message), return)
+
+#if !defined QT_LINKED_LIBDBUS
+
+DEFINEFUNC_CONDITIONALLY(dbus_bool_t   , dbus_message_get_allow_interactive_authorization, (DBusMessage   *message),
+                         (message), return, return false)
+
+#else // defined QT_LINKED_LIBDBUS
+
+static inline dbus_bool_t q_dbus_message_get_allow_interactive_authorization(DBusMessage *message)
+{
+#ifdef DBUS_HEADER_FLAG_ALLOW_INTERACTIVE_AUTHORIZATION
+    return dbus_message_get_allow_interactive_authorization(message);
+#else
+    Q_UNUSED(message);
+    return false;
+#endif
+}
+
+#endif // defined QT_LINKED_LIBDBUS
+
 DEFINEFUNC(dbus_bool_t , dbus_message_iter_append_basic, (DBusMessageIter *iter,
                                                           int              type,
                                                           const void      *value),
@@ -378,8 +411,32 @@ DEFINEFUNC(dbus_bool_t   , dbus_message_set_sender, (DBusMessage   *message,
 DEFINEFUNC(void          , dbus_message_unref, (DBusMessage   *message),
            (message), )
 
+#if !defined QT_LINKED_LIBDBUS
+
+DEFINEFUNC_CONDITIONALLY(void, dbus_message_set_allow_interactive_authorization,
+                         (DBusMessage *message, dbus_bool_t allow), (message, allow), return, return)
+
+
+#else // defined QT_LINKED_LIBDBUS
+
+static inline void q_dbus_message_set_allow_interactive_authorization(DBusMessage *message, dbus_bool_t allow)
+{
+#ifdef DBUS_HEADER_FLAG_ALLOW_INTERACTIVE_AUTHORIZATION
+    dbus_message_set_allow_interactive_authorization(message, allow);
+#else
+    Q_UNUSED(message);
+    Q_UNUSED(allow);
+#endif
+}
+
+#endif // defined QT_LINKED_LIBDBUS
+
 /* dbus-misc.h */
 DEFINEFUNC(char*         , dbus_get_local_machine_id ,  (void), (), return)
+
+DEFINEFUNC(void          , dbus_get_version          ,  (int *major_version, int *minor_version, int *micro_version)
+                                                     ,  (major_version, minor_version, micro_version)
+                                                     ,  return)
 
 
 /* dbus-pending-call.h */

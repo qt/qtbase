@@ -115,6 +115,16 @@ public slots:
         return obj.m_complexProp;
     }
 
+    bool interactiveAuthorization()
+    {
+        if (message().isInteractiveAuthorizationAllowed())
+            return true;
+
+        sendErrorReply(QStringLiteral("org.freedesktop.DBus.Error.InteractiveAuthorizationRequired"),
+                       QStringLiteral("Interactive authentication required."));
+        return false;
+    }
+
     void quit()
     {
         qApp->quit();

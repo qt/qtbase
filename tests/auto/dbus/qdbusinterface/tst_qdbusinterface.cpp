@@ -33,6 +33,7 @@
 #include <QtTest/QtTest>
 #include <QtCore/qvariant.h>
 #include <QtDBus/QtDBus>
+#include <QtDBus/private/qdbus_symbols_p.h>
 #include <qdebug.h>
 #include "../qdbusmarshall/common.h"
 #include "myobject.h"
@@ -213,6 +214,8 @@ private slots:
     void propertyWritePeer();
     void complexPropertyReadPeer();
     void complexPropertyWritePeer();
+
+    void interactiveAuthorizationRequired();
 private:
     QProcess proc;
 };
@@ -1125,6 +1128,30 @@ void tst_QDBusInterface::complexPropertyWritePeer()
     QVERIFY(iface.setProperty("complexProp", QVariant::fromValue(arg)));
     QCOMPARE(callCountPeer(), 1);
     QCOMPARE(complexPropPeer(), arg);
+}
+
+void tst_QDBusInterface::interactiveAuthorizationRequired()
+{
+    int major;
+    int minor;
+    int micro;
+    q_dbus_get_version(&major, &minor, &micro);
+
+    QVersionNumber dbusVersion(major, minor, micro);
+    if (dbusVersion < QVersionNumber(1, 9, 2))
+        QSKIP("Your DBus library is too old to support interactive authorization");
+
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "interactiveAuthorization");
+    QDBusMessage reply = QDBusConnection::sessionBus().call(req);
+
+    QCOMPARE(reply.type(), QDBusMessage::ErrorMessage);
+    QCOMPARE(reply.errorName(), QStringLiteral("org.freedesktop.DBus.Error.InteractiveAuthorizationRequired"));
+
+    req.setInteractiveAuthorizationAllowed(true);
+    reply = QDBusConnection::sessionBus().call(req);
+
+    QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
+    QVERIFY(reply.arguments().at(0).toBool());
 }
 
 QTEST_MAIN(tst_QDBusInterface)

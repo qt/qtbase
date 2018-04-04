@@ -119,6 +119,9 @@ public:
     void setAutoStartService(bool enable);
     bool autoStartService() const;
 
+    void setInteractiveAuthorizationAllowed(bool enable);
+    bool isInteractiveAuthorizationAllowed() const;
+
     void setArguments(const QList<QVariant> &arguments);
     QList<QVariant> arguments() const;
 

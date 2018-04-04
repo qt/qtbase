@@ -70,7 +70,8 @@ static inline const char *data(const QByteArray &arr)
 QDBusMessagePrivate::QDBusMessagePrivate()
     : msg(0), reply(0), localReply(0), ref(1), type(QDBusMessage::InvalidMessage),
       delayedReply(false), localMessage(false),
-      parametersValidated(false), autoStartService(true)
+      parametersValidated(false), autoStartService(true),
+      interactiveAuthorizationAllowed(false)
 {
 }
 
@@ -138,6 +139,8 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
         msg = q_dbus_message_new_method_call(data(d_ptr->service.toUtf8()), d_ptr->path.toUtf8(),
                                              data(d_ptr->interface.toUtf8()), d_ptr->name.toUtf8());
         q_dbus_message_set_auto_start( msg, d_ptr->autoStartService );
+        q_dbus_message_set_allow_interactive_authorization(msg, d_ptr->interactiveAuthorizationAllowed);
+
         break;
     case QDBusMessage::ReplyMessage:
         msg = q_dbus_message_new(DBUS_MESSAGE_TYPE_METHOD_RETURN);
@@ -242,6 +245,7 @@ QDBusMessage QDBusMessagePrivate::fromDBusMessage(DBusMessage *dmsg, QDBusConnec
                       QString::fromUtf8(q_dbus_message_get_member(dmsg));
     message.d_ptr->service = QString::fromUtf8(q_dbus_message_get_sender(dmsg));
     message.d_ptr->signature = QString::fromUtf8(q_dbus_message_get_signature(dmsg));
+    message.d_ptr->interactiveAuthorizationAllowed = q_dbus_message_get_allow_interactive_authorization(dmsg);
     message.d_ptr->msg = q_dbus_message_ref(dmsg);
 
     QDBusDemarshaller demarshaller(capabilities);
@@ -722,6 +726,44 @@ void QDBusMessage::setAutoStartService(bool enable)
 bool QDBusMessage::autoStartService() const
 {
     return d_ptr->autoStartService;
+}
+
+/*!
+    Sets the interactive authorization flag to \a enable.
+    This flag only makes sense for method call messages, where it
+    tells the D-Bus server that the caller of the method is prepared
+    to wait for interactive authorization to take place (for instance
+    via Polkit) before the actual method is processed.
+
+    By default this flag is false and the other end is expected to
+    make any authorization decisions non-interactively and promptly.
+
+    The \c org.freedesktop.DBus.Error.InteractiveAuthorizationRequired
+    error indicates that authorization failed, but could have succeeded
+    if this flag had been set.
+
+    \sa isInteractiveAuthorizationAllowed()
+
+    \since 5.12
+*/
+void QDBusMessage::setInteractiveAuthorizationAllowed(bool enable)
+{
+    d_ptr->interactiveAuthorizationAllowed = enable;
+}
+
+/*!
+    Returns the interactive authorization allowed flag, as set by
+    setInteractiveAuthorizationAllowed(). By default this flag
+    is false and the other end is expected to make any authorization
+    decisions non-interactively and promptly.
+
+    \sa setInteractiveAuthorizationAllowed()
+
+    \since 5.12
+*/
+bool QDBusMessage::isInteractiveAuthorizationAllowed() const
+{
+    return d_ptr->interactiveAuthorizationAllowed;
 }
 
 /*!
