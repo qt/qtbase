@@ -1333,14 +1333,18 @@ void dither_to_Mono(QImageData *dst, const QImageData *src,
                 } else {
                     bit--;
                 }
+                const int e7 = ((err * 7) + 8) >> 4;
+                const int e5 = ((err * 5) + 8) >> 4;
+                const int e3 = ((err * 3) + 8) >> 4;
+                const int e1 = err - (e7 + e5 + e3);
                 if (x < w)
-                    *b1 += (err*7)>>4;                // spread error to right pixel
+                    *b1 += e7;                  // spread error to right pixel
                 if (not_last_line) {
-                    b2[0] += (err*5)>>4;        // pixel below
+                    b2[0] += e5;                // pixel below
                     if (x > 1)
-                        b2[-1] += (err*3)>>4;        // pixel below left
+                        b2[-1] += e3;           // pixel below left
                     if (x < w)
-                        b2[1] += err>>4;        // pixel below right
+                        b2[1] += e1;            // pixel below right
                 }
                 b2++;
             }
