@@ -1534,12 +1534,18 @@ QBitmap QPixmap::mask() const
 
     On all platforms the depth of the primary screen will be returned.
 
+    \note QGuiApplication must be created before calling this function.
+
     \sa depth(), QColormap::depth(), {QPixmap#Pixmap Information}{Pixmap Information}
 
 */
 int QPixmap::defaultDepth()
 {
-    return QGuiApplication::primaryScreen()->depth();
+    QScreen *primary = QGuiApplication::primaryScreen();
+    if (Q_LIKELY(primary))
+        return primary->depth();
+    qWarning("QPixmap: QGuiApplication must be created before calling defaultDepth().");
+    return 0;
 }
 
 /*!
