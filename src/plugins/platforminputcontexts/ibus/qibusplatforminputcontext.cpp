@@ -254,6 +254,12 @@ void QIBusPlatformInputContext::setFocusObject(QObject *object)
     if (!d->busConnected)
         return;
 
+    // It would seem natural here to call FocusOut() on the input method if we
+    // transition from an IME accepted focus object to one that does not accept it.
+    // Mysteriously however that is not sufficient to fix bug QTBUG-63066.
+    if (!inputMethodAccepted())
+        return;
+
     if (debug)
         qDebug() << "setFocusObject" << object;
     if (object)

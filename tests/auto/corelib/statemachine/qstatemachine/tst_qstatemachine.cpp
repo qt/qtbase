@@ -4667,11 +4667,14 @@ void tst_QStateMachine::clonedSignals()
     s1->addTransition(t1);
 
     machine.setInitialState(s1);
+    QSignalSpy startedSpy(&machine, &QStateMachine::started);
     machine.start();
-    QTest::qWait(1);
+    QVERIFY(startedSpy.wait());
 
+    QSignalSpy transitionSpy(t1, &CloneSignalTransition::triggered);
     emitter.emitSignalWithDefaultArg();
-    QTest::qWait(1);
+    QTRY_COMPARE(transitionSpy.count(), 1);
+
     QCOMPARE(t1->eventSignalIndex, emitter.metaObject()->indexOfSignal("signalWithDefaultArg()"));
     TEST_ACTIVE_CHANGED(s1, 2);
     TEST_ACTIVE_CHANGED(s2, 1);

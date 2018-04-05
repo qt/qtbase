@@ -82,11 +82,11 @@ void tst_QFutureWatcher::startFinish()
     QVERIFY(finishedSpy.isValid());
 
     futureWatcher.setFuture(QtConcurrent::run(sleeper));
-    QTest::qWait(10); // spin the event loop to deliver queued signals.
+    QVERIFY(startedSpy.wait());
     QCOMPARE(startedSpy.count(), 1);
     QCOMPARE(finishedSpy.count(), 0);
     futureWatcher.future().waitForFinished();
-    QTest::qWait(10);
+    QVERIFY(finishedSpy.wait());
     QCOMPARE(startedSpy.count(), 1);
     QCOMPARE(finishedSpy.count(), 1);
 }
@@ -232,13 +232,12 @@ void tst_QFutureWatcher::resultAt()
 void tst_QFutureWatcher::resultReadyAt()
 {
     QFutureWatcher<int> futureWatcher;
-    QObject::connect(&futureWatcher, SIGNAL(resultReadyAt(int)), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
+    QSignalSpy resultSpy(&futureWatcher, &QFutureWatcher<int>::resultReadyAt);
 
     QFuture<int> future = (new IntTask())->start();
     futureWatcher.setFuture(future);
 
-    QTestEventLoop::instance().enterLoop(1);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(resultSpy.wait());
 
     // Setting the future again should give us another signal.
     // (this is to prevent the race where the task associated
@@ -246,8 +245,7 @@ void tst_QFutureWatcher::resultReadyAt()
     futureWatcher.setFuture(QFuture<int>());
     futureWatcher.setFuture(future);
 
-    QTestEventLoop::instance().enterLoop(1);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(resultSpy.wait());
 }
 
 class SignalSlotObject : public QObject
@@ -320,19 +318,17 @@ void tst_QFutureWatcher::futureSignals()
 
         const int progress = 1;
         a.setProgressValue(progress);
-        QTest::qWait(10);
-        QCOMPARE(progressSpy.count(), 2);
+        QTRY_COMPARE(progressSpy.count(), 2);
         QCOMPARE(progressSpy.takeFirst().at(0).toInt(), 0);
         QCOMPARE(progressSpy.takeFirst().at(0).toInt(), 1);
 
         const int result = 10;
         a.reportResult(&result);
-        QTest::qWait(10);
+        QVERIFY(resultReadySpy.wait());
         QCOMPARE(resultReadySpy.count(), 1);
         a.reportFinished(&result);
-        QTest::qWait(10);
 
-        QCOMPARE(resultReadySpy.count(), 2);
+        QTRY_COMPARE(resultReadySpy.count(), 2);
         QCOMPARE(resultReadySpy.takeFirst().at(0).toInt(), 0); // check the index
         QCOMPARE(resultReadySpy.takeFirst().at(0).toInt(), 1);
 
@@ -373,7 +369,7 @@ void tst_QFutureWatcher::watchFinishedFuture()
     QVERIFY(canceledSpy.isValid());
 
     watcher.setFuture(f);
-    QTest::qWait(10);
+    QVERIFY(finishedSpy.wait());
 
     QCOMPARE(startedSpy.count(), 1);
     QCOMPARE(finishedSpy.count(), 1);
@@ -407,7 +403,7 @@ void tst_QFutureWatcher::watchCanceledFuture()
     QVERIFY(canceledSpy.isValid());
 
     watcher.setFuture(f);
-    QTest::qWait(10);
+    QVERIFY(finishedSpy.wait());
 
     QCOMPARE(startedSpy.count(), 1);
     QCOMPARE(finishedSpy.count(), 1);
@@ -434,7 +430,7 @@ void tst_QFutureWatcher::disconnectRunningFuture()
 
     const int result = 10;
     a.reportResult(&result);
-    QTest::qWait(10);
+    QVERIFY(resultReadySpy.wait());
     QCOMPARE(resultReadySpy.count(), 1);
 
     delete watcher;
@@ -624,7 +620,7 @@ void tst_QFutureWatcher::changeFuture()
     QSignalSpy resultReadySpy(&watcher, &QFutureWatcher<int>::resultReadyAt);
     QVERIFY(resultReadySpy.isValid());
 
-    watcher.setFuture(a); // Watch 'a' which will genere a resultReady event.
+    watcher.setFuture(a); // Watch 'a' which will generate a resultReady event.
     watcher.setFuture(b); // But oh no! we're switching to another future
     QTest::qWait(10);     // before the event gets delivered.
 
@@ -633,7 +629,7 @@ void tst_QFutureWatcher::changeFuture()
     watcher.setFuture(a);
     watcher.setFuture(b);
     watcher.setFuture(a); // setting it back gets us one event, not two.
-    QTest::qWait(10);
+    QVERIFY(resultReadySpy.wait());
 
     QCOMPARE(resultReadySpy.count(), 1);
 }
@@ -653,13 +649,15 @@ void tst_QFutureWatcher::cancelEvents()
 
     SignalSlotObject object;
     connect(&watcher, SIGNAL(resultReadyAt(int)), &object, SLOT(resultReadyAt(int)));
+    QSignalSpy finishedSpy(&watcher, &QFutureWatcher<int>::finished);
     QSignalSpy resultReadySpy(&watcher, &QFutureWatcher<int>::resultReadyAt);
+    QVERIFY(finishedSpy.isValid());
     QVERIFY(resultReadySpy.isValid());
 
     watcher.setFuture(a);
     watcher.cancel();
 
-    QTest::qWait(10);
+    QVERIFY(finishedSpy.wait());
 
     QCOMPARE(resultReadySpy.count(), 0);
 }
@@ -730,15 +728,17 @@ void tst_QFutureWatcher::finishedState()
     iface.reportStarted();
     QFuture<int> future = iface.future();
     QFutureWatcher<int> watcher;
+    QSignalSpy startedSpy(&watcher, &QFutureWatcher<int>::started);
+    QSignalSpy finishedSpy(&watcher, &QFutureWatcher<int>::finished);
 
     watcher.setFuture(future);
-    QTest::qWait(10);
+    QVERIFY(startedSpy.wait());
 
     iface.reportFinished();
     QVERIFY(future.isFinished());
     QVERIFY(!watcher.isFinished());
 
-    QTest::qWait(10);
+    QVERIFY(finishedSpy.wait());
     QVERIFY(watcher.isFinished());
 }
 
@@ -752,18 +752,20 @@ void tst_QFutureWatcher::throttling()
     iface.reportStarted();
     QFuture<int> future = iface.future();
     QFutureWatcher<int> watcher;
+    QSignalSpy resultSpy(&watcher, &QFutureWatcher<int>::resultReadyAt);
     watcher.setFuture(future);
 
     QVERIFY(!iface.isThrottled());
 
-    for (int i = 0; i < 1000; ++i) {
+    const int resultCount = 1000;
+    for (int i = 0; i < resultCount; ++i) {
         int result = 0;
         iface.reportResult(result);
     }
 
     QVERIFY(iface.isThrottled());
 
-    QTest::qWait(100); // process events.
+    QTRY_COMPARE(resultSpy.count(), resultCount); // Process the results
 
     QVERIFY(!iface.isThrottled());
 

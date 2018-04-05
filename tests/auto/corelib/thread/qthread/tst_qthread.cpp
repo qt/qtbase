@@ -988,9 +988,7 @@ void tst_QThread::exitAndStart()
     connect(&sync2, SIGNAL(propChanged(int)), &sync1, SLOT(setProp(int)), Qt::QueuedConnection);
     connect(&sync1, SIGNAL(propChanged(int)), &thread, SLOT(quit()), Qt::QueuedConnection);
     QMetaObject::invokeMethod(&sync2, "setProp", Qt::QueuedConnection , Q_ARG(int, 89));
-    QTest::qWait(50);
-    while(!thread.wait(10))
-        QTest::qWait(10);
+    QTRY_VERIFY(thread.wait(10));
     QCOMPARE(sync2.m_prop, 89);
     QCOMPARE(sync1.m_prop, 89);
 }
@@ -1026,9 +1024,7 @@ void tst_QThread::exitAndExec()
     connect(&sync2, SIGNAL(propChanged(int)), &sync1, SLOT(setProp(int)), Qt::QueuedConnection);
     connect(&sync1, SIGNAL(propChanged(int)), &thread, SLOT(quit()), Qt::QueuedConnection);
     QMetaObject::invokeMethod(&sync2, "setProp", Qt::QueuedConnection , Q_ARG(int, 89));
-    QTest::qWait(50);
-    while(!thread.wait(10))
-        QTest::qWait(10);
+    QTRY_VERIFY(thread.wait(10));
     QCOMPARE(sync2.m_prop, 89);
     QCOMPARE(sync1.m_prop, 89);
 }
