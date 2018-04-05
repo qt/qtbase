@@ -55,12 +55,16 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_DEBUG
 #define QT_RESET_GLERROR()                                \
 {                                                         \
-    while (QOpenGLContext::currentContext()->functions()->glGetError() != GL_NO_ERROR) {} \
+    while (true) {\
+        GLenum error = QOpenGLContext::currentContext()->functions()->glGetError(); \
+        if (error == GL_NO_ERROR || error == GL_CONTEXT_LOST) \
+            break; \
+    } \
 }
 #define QT_CHECK_GLERROR()                                \
 {                                                         \
     GLenum err = QOpenGLContext::currentContext()->functions()->glGetError(); \
-    if (err != GL_NO_ERROR) {                             \
+    if (err != GL_NO_ERROR && err != GL_CONTEXT_LOST) {                             \
         qDebug("[%s line %d] OpenGL Error: %d",           \
                __FILE__, __LINE__, (int)err);             \
     }                                                     \
@@ -124,6 +128,10 @@ QT_BEGIN_NAMESPACE
 
 #ifndef GL_UNSIGNED_INT_2_10_10_10_REV
 #define GL_UNSIGNED_INT_2_10_10_10_REV    0x8368
+#endif
+
+#ifndef GL_CONTEXT_LOST
+#define GL_CONTEXT_LOST                   0x0507
 #endif
 
 
@@ -1303,8 +1311,11 @@ static QImage qt_gl_read_framebuffer(const QSize &size, GLenum internal_format, 
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
     QOpenGLFunctions *funcs = ctx->functions();
-    while (funcs->glGetError());
-
+    while (true) {
+        GLenum error = funcs->glGetError();
+        if (error == GL_NO_ERROR || error == GL_CONTEXT_LOST)
+            break;
+    }
     switch (internal_format) {
     case GL_RGB:
     case GL_RGB8:
