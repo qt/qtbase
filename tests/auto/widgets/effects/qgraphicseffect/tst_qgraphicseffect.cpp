@@ -365,9 +365,8 @@ void tst_QGraphicsEffect::draw()
 
     // Make sure we update the source when disabling/enabling the effect.
     effect->setEnabled(false);
-    QTest::qWait(50);
+    QTRY_COMPARE(item->numRepaints, 1);
     QCOMPARE(effect->numRepaints, 0);
-    QCOMPARE(item->numRepaints, 1);
     effect->reset();
     item->reset();
 

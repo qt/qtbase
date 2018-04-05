@@ -1136,7 +1136,7 @@ void tst_QStyleSheetStyle::minmaxSizes()
 
     centerOnScreen(&tabWidget);
     tabWidget.show();
-    QTest::qWait(50);
+    QVERIFY(QTest::qWaitForWindowActive(&tabWidget));
     //i allow 4px additional border from the native style (hence the -2, <=2)
     QVERIFY(qAbs(page2->maximumSize().width() - 500 - 2) <= 2);
     QVERIFY(qAbs(page2->minimumSize().width() - 250 - 2) <= 2);
@@ -1165,7 +1165,7 @@ void tst_QStyleSheetStyle::task206238_twice()
     w.setStyleSheet("background: red;");
     centerOnScreen(&w);
     w.show();
-    QTest::qWait(20);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
     QCOMPARE(BACKGROUND(w) , red);
     QCOMPARE(BACKGROUND(*tw), red);
     w.setStyleSheet("background: red;");
@@ -1366,8 +1366,7 @@ void tst_QStyleSheetStyle::proxyStyle()
     layout->addWidget(pb5);
 
     w->show();
-
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowActive(w));
 
     // Test for QTBUG-7198 - style sheet overrides custom element size
     QStyleOptionViewItem opt;
@@ -1557,9 +1556,9 @@ void tst_QStyleSheetStyle::embeddedFonts()
     box.addItems(QStringList() << "First" << "Second" << "Third");
     box.setStyleSheet("QComboBox { font-size: 32px; }");
     box.show();
+    QVERIFY(QTest::qWaitForWindowActive(&box));
     embedded = box.findChild<QLineEdit *>();
     QVERIFY(embedded);
-    QTest::qWait(20);
     QCOMPARE(box.font().pixelSize(), 32);
     QCOMPARE(embedded->font().pixelSize(), 32);
 }
@@ -1652,7 +1651,7 @@ void tst_QStyleSheetStyle::task188195_baseBackground()
     tree.setStyleSheet( "QTreeView:disabled { background-color:#ab1251; }" );
     tree.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(20, 100));
     tree.show();
-    QTest::qWait(20);
+    QVERIFY(QTest::qWaitForWindowActive(&tree));
     QImage image(tree.width(), tree.height(), QImage::Format_ARGB32);
 
     tree.render(&image);
@@ -1673,7 +1672,7 @@ void tst_QStyleSheetStyle::task188195_baseBackground()
     table.setStyleSheet( "QTableView {background-color: #ff0000}" );
     table.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(300, 100));
     table.show();
-    QTest::qWait(20);
+    QVERIFY(QTest::qWaitForWindowActive(&table));
     image = QImage(table.width(), table.height(), QImage::Format_ARGB32);
     table.render(&image);
     QVERIFY(testForColors(image, Qt::red, true));
