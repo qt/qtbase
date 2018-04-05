@@ -176,15 +176,12 @@ void tst_QFileSystemModel::indexPath()
 #if !defined(Q_OS_WIN)
     int depth = QDir::currentPath().count('/');
     model->setRootPath(QDir::currentPath());
-    QTest::qWait(WAITTIME);
     QString backPath;
     for (int i = 0; i <= depth * 2 + 1; ++i) {
         backPath += "../";
         QModelIndex idx = model->index(backPath);
         QVERIFY(i != depth - 1 ? idx.isValid() : !idx.isValid());
     }
-    QTest::qWait(WAITTIME * 3);
-    qApp->processEvents();
 #endif
 }
 
@@ -296,9 +293,7 @@ void tst_QFileSystemModel::iconProvider()
     QVERIFY(!documentPaths.isEmpty());
     const QString documentPath = documentPaths.front();
     myModel->setRootPath(documentPath);
-    //Let's wait to populate the model
-    QTest::qWait(250);
-    //We change the provider, icons must me updated
+    //We change the provider, icons must be updated
     CustomFileIconProvider *custom = new CustomFileIconProvider();
     myModel->setIconProvider(custom);
 
@@ -421,7 +416,6 @@ void tst_QFileSystemModel::rowsInserted()
     for (int i = 0; i < count; ++i)
         files.append(QLatin1Char('c') + QString::number(i));
     QVERIFY(createFiles(tmp, files, 5));
-    TRY_WAIT(model->rowCount(root) == oldCount + count);
     QTRY_COMPARE(model->rowCount(root), oldCount + count);
     int totalRowsInserted = 0;
     for (int i = 0; i < spy0.count(); ++i) {
@@ -467,7 +461,6 @@ void tst_QFileSystemModel::rowsRemoved()
     QFETCH(int, count);
     QFETCH(int, ascending);
     model->sort(0, (Qt::SortOrder)ascending);
-    QTest::qWait(WAITTIME);
 
     QSignalSpy spy0(model, SIGNAL(rowsRemoved(QModelIndex,int,int)));
     QSignalSpy spy1(model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)));
@@ -477,8 +470,6 @@ void tst_QFileSystemModel::rowsRemoved()
         QVERIFY(QFile::remove(tmp + '/' + model->index(i, 0, root).data().toString()));
     }
     for (int i = 0 ; i < 10; ++i) {
-        QTest::qWait(WAITTIME);
-        qApp->processEvents();
         if (count != 0) {
             if (i == 10 || spy0.count() != 0) {
                 QVERIFY(spy0.count() >= 1);
@@ -504,7 +495,6 @@ void tst_QFileSystemModel::rowsRemoved()
     QVERIFY(QFile::exists(tmp + '/' + QString(".a")));
     QVERIFY(QFile::remove(tmp + '/' + QString(".a")));
     QVERIFY(QFile::remove(tmp + '/' + QString(".c")));
-    QTest::qWait(WAITTIME);
 
     if (count != 0) QVERIFY(spy0.count() >= 1); else QCOMPARE(spy0.count(), 0);
     if (count != 0) QVERIFY(spy1.count() >= 1); else QCOMPARE(spy1.count(), 0);
@@ -517,10 +507,8 @@ void tst_QFileSystemModel::dataChanged_data()
 
 void tst_QFileSystemModel::dataChanged()
 {
-    // This can't be tested right now sense we don't watch files, only directories
-    return;
+    QSKIP("This can't be tested right now since we don't watch files, only directories.");
 
-    /*
     QString tmp = flatDirTestPath;
     rowCount();
     QModelIndex root = model->index(model->rootPath());
@@ -538,7 +526,6 @@ void tst_QFileSystemModel::dataChanged()
     QTest::qWait(WAITTIME);
 
     if (count != 0) QVERIFY(spy.count() >= 1); else QCOMPARE(spy.count(), 0);
-    */
 }
 
 void tst_QFileSystemModel::filters_data()
@@ -796,7 +783,7 @@ void tst_QFileSystemModel::sort()
     tree->setModel(myModel);
     tree->show();
     tree->resize(800, 800);
-    QTest::qWait(500);
+    QVERIFY(QTest::qWaitForWindowActive(tree));
     tree->header()->setSortIndicator(1,Qt::DescendingOrder);
     tree->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     QStringList dirsToOpen;
@@ -807,16 +794,15 @@ void tst_QFileSystemModel::sort()
 
     for (int i = dirsToOpen.size() -1 ; i > 0 ; --i) {
         QString path = dirsToOpen[i];
-        QTest::qWait(500);
         tree->expand(myModel->index(path, 0));
     }
     tree->expand(myModel->index(dirPath, 0));
-    QTest::qWait(500);
     QModelIndex parent = myModel->index(dirPath, 0);
     QList<QString> expectedOrder;
     expectedOrder << tempFile2.fileName() << tempFile.fileName() << dirPath + QChar('/') + ".." << dirPath + QChar('/') + ".";
 
     if (fileDialogMode) {
+        QTRY_COMPARE(myModel->rowCount(parent), expectedOrder.count());
         // File dialog Mode means sub trees are not sorted, only the current root.
         // There's no way we can check that the sub tree is "not sorted"; just check if it
         // has the same contents of the expected list
@@ -858,8 +844,8 @@ void tst_QFileSystemModel::mkdir()
     QModelIndex idx = model->mkdir(tmpDir, "NewFoldermkdirtest4");
     QVERIFY(idx.isValid());
     int oldRow = idx.row();
-    QTest::qWait(WAITTIME);
     idx = model->index(newFolderPath);
+    QVERIFY(idx.isValid());
     QVERIFY(model->remove(idx));
     QVERIFY(!bestatic.exists());
     QVERIFY(0 != idx.row());
@@ -981,7 +967,6 @@ void tst_QFileSystemModel::drives()
     foreach(const QFileInfo& driveRoot, drives)
         if (driveRoot.exists())
             driveCount++;
-    QTest::qWait(5000);
     QTRY_COMPARE(model.rowCount(), driveCount);
 }
 
@@ -989,7 +974,8 @@ void tst_QFileSystemModel::dirsBeforeFiles()
 {
     QDir dir(flatDirTestPath);
 
-    for (int i = 0; i < 3; ++i) {
+    const int itemCount = 3;
+    for (int i = 0; i < itemCount; ++i) {
         QLatin1Char c('a' + i);
         dir.mkdir(c + QLatin1String("-dir"));
         QFile file(flatDirTestPath + QLatin1Char('/') + c + QLatin1String("-file"));
@@ -998,7 +984,8 @@ void tst_QFileSystemModel::dirsBeforeFiles()
     }
 
     QModelIndex root = model->setRootPath(flatDirTestPath);
-    QTest::qWait(1000); // allow model to be notified by the file system watcher
+    // Wait for model to be notified by the file system watcher
+    QTRY_COMPARE(model->rowCount(root), 2 * itemCount);
 
     // ensure that no file occurs before a directory
     for (int i = 0; i < model->rowCount(root); ++i) {
