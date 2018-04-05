@@ -33,10 +33,13 @@
 #include "wizardpanel.h"
 #include "messageboxpanel.h"
 
+#include <QLibraryInfo>
+#include <QDialogButtonBox>
 #include <QMainWindow>
 #include <QApplication>
 #include <QMenuBar>
 #include <QTabWidget>
+#include <QFormLayout>
 #include <QMenu>
 #include <QAction>
 #include <QKeySequence>
@@ -44,10 +47,40 @@
 // Test for dialogs, allowing to play with all dialog options for implementing native dialogs.
 // Compiles with Qt 4.8 and Qt 5.
 
+class AboutDialog : public QDialog
+{
+public:
+    explicit AboutDialog(QWidget *parent = 0);
+};
+
+AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent)
+{
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    QFormLayout *mainLayout = new QFormLayout(this);
+#if QT_VERSION >= 0x050600
+    mainLayout->addRow(new QLabel(QLibraryInfo::build()));
+#else
+    mainLayout->addRow(new QLabel(QLatin1String("Qt ") + QLatin1String(QT_VERSION_STR )));
+#endif
+    mainLayout->addRow("Style:", new QLabel(qApp->style()->objectName()));
+#if QT_VERSION >= 0x050600
+    mainLayout->addRow("DPR:", new QLabel(QString::number(qApp->devicePixelRatio())));
+#endif
+    const QString resolution = QString::number(logicalDpiX()) + QLatin1Char(',')
+                               + QString::number(logicalDpiY()) + QLatin1String("dpi");
+    mainLayout->addRow("Resolution:", new QLabel(resolution));
+    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Close, Qt::Horizontal);
+    connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+    mainLayout->addRow(buttonBox);
+}
+
 class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = 0);
+
+public slots:
+    void aboutDialog();
 };
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
@@ -66,6 +99,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     action->setShortcut(QKeySequence(QKeySequence::Paste));
     action = editMenu->addAction(tr("Select All"));
     action->setShortcut(QKeySequence(QKeySequence::SelectAll));
+    QMenu *aboutMenu = menuBar()->addMenu(tr("&About"));
+    QAction *aboutAction = aboutMenu->addAction(tr("About..."), this, SLOT(aboutDialog()));
+    aboutAction->setShortcut(Qt::Key_F1);
     QTabWidget *tabWidget = new QTabWidget;
     tabWidget->addTab(new FileDialogPanel, tr("QFileDialog"));
     tabWidget->addTab(new ColorDialogPanel, tr("QColorDialog"));
@@ -76,6 +112,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     tabWidget->addTab(new PrintDialogPanel, tr("QPrintDialog"));
 #endif
     setCentralWidget(tabWidget);
+}
+
+void MainWindow::aboutDialog()
+{
+    AboutDialog dialog(this);
+    dialog.setWindowTitle(tr("About Dialogs"));
+    dialog.exec();
 }
 
 int main(int argc, char *argv[])
