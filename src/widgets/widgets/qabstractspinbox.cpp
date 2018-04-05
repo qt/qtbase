@@ -611,12 +611,11 @@ void QAbstractSpinBox::stepDown()
 }
 /*!
     Virtual function that is called whenever the user triggers a step.
-    The \a steps parameter indicates how many steps were taken, e.g.
-    Pressing Qt::Key_Down will trigger a call to stepBy(-1),
-    whereas pressing Qt::Key_Prior will trigger a call to
-    stepBy(10).
+    The \a steps parameter indicates how many steps were taken.
+    For example, pressing \c Qt::Key_Down will trigger a call to \c stepBy(-1),
+    whereas pressing \c Qt::Key_PageUp will trigger a call to \c stepBy(10).
 
-    If you subclass QAbstractSpinBox you must reimplement this
+    If you subclass \c QAbstractSpinBox you must reimplement this
     function. Note that this function is called even if the resulting
     value will be outside the bounds of minimum and maximum. It's this
     function's job to handle these situations.
