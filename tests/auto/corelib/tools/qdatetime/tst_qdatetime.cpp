@@ -2658,8 +2658,8 @@ void tst_QDateTime::zoneAtTime_data()
     ADDROW("before:NPT", "Asia/Kathmandu", QDate(1985, 12, 31), 19800); // 5:30
     ADDROW("after:NPT", "Asia/Kathmandu", QDate(1986, 1, 1), 20700); // 5:45
     // The two that have skipped a day (each):
-    ADDROW("before:LINT", "Pacific/Kiritimati", QDate(1994, 12, 31), -36000);
-    ADDROW("after:LINT", "Pacific/Kiritimati", QDate(1995, 2, 1), 14 * 3600);
+    ADDROW("before:LINT", "Pacific/Kiritimati", QDate(1994, 12, 30), -36000);
+    ADDROW("after:LINT", "Pacific/Kiritimati", QDate(1995, 1, 2), 14 * 3600);
     ADDROW("after:WST", "Pacific/Apia", QDate(2011, 12, 31), 14 * 3600);
 #endif // MS lacks ACWST, NPT; doesn't grok date-line crossings; and Windows 7 lacks LINT.
     ADDROW("before:WST", "Pacific/Apia", QDate(2011, 12, 29), -36000);
