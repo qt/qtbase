@@ -86,7 +86,17 @@ QT_BEGIN_NAMESPACE
     \sa QCache, QPixmap
 */
 
-static int cache_limit = 10240; // 10 MB cache limit
+static const int cache_limit_default = 10240; // 10 MB cache limit
+
+static inline int cost(const QPixmap &pixmap)
+{
+    // make sure to do a 64bit calculation
+    const qint64 costKb = static_cast<qint64>(pixmap.width()) *
+            pixmap.height() * pixmap.depth() / (8 * 1024);
+    const qint64 costMax = std::numeric_limits<int>::max();
+    // a small pixmap should have at least a cost of 1(kb)
+    return static_cast<int>(qBound(1LL, costKb, costMax));
+}
 
 /*!
     \class QPixmapCache::Key
@@ -237,7 +247,7 @@ uint qHash(const QPixmapCache::Key &k)
 
 QPMCache::QPMCache()
     : QObject(0),
-      QCache<QPixmapCache::Key, QPixmapCacheEntry>(cache_limit * 1024),
+      QCache<QPixmapCache::Key, QPixmapCacheEntry>(cache_limit_default),
       keyArray(0), theid(0), ps(0), keyArraySize(0), freeKey(0), t(false)
 {
 }
@@ -553,7 +563,7 @@ bool QPixmapCache::find(const Key &key, QPixmap* pixmap)
 
 bool QPixmapCache::insert(const QString &key, const QPixmap &pixmap)
 {
-    return pm_cache()->insert(key, pixmap, pixmap.width() * pixmap.height() * pixmap.depth() / 8);
+    return pm_cache()->insert(key, pixmap, cost(pixmap));
 }
 
 /*!
@@ -573,7 +583,7 @@ bool QPixmapCache::insert(const QString &key, const QPixmap &pixmap)
 */
 QPixmapCache::Key QPixmapCache::insert(const QPixmap &pixmap)
 {
-    return pm_cache()->insert(pixmap, pixmap.width() * pixmap.height() * pixmap.depth() / 8);
+    return pm_cache()->insert(pixmap, cost(pixmap));
 }
 
 /*!
@@ -590,7 +600,7 @@ bool QPixmapCache::replace(const Key &key, const QPixmap &pixmap)
     //The key is not valid anymore, a flush happened before probably
     if (!key.d || !key.d->isValid)
         return false;
-    return pm_cache()->replace(key, pixmap, pixmap.width() * pixmap.height() * pixmap.depth() / 8);
+    return pm_cache()->replace(key, pixmap, cost(pixmap));
 }
 
 /*!
@@ -603,7 +613,7 @@ bool QPixmapCache::replace(const Key &key, const QPixmap &pixmap)
 
 int QPixmapCache::cacheLimit()
 {
-    return cache_limit;
+    return pm_cache()->maxCost();
 }
 
 /*!
@@ -616,8 +626,7 @@ int QPixmapCache::cacheLimit()
 
 void QPixmapCache::setCacheLimit(int n)
 {
-    cache_limit = n;
-    pm_cache()->setMaxCost(1024 * cache_limit);
+    pm_cache()->setMaxCost(n);
 }
 
 /*!

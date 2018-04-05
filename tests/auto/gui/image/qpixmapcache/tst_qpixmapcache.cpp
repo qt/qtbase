@@ -92,6 +92,9 @@ void tst_QPixmapCache::cacheLimit()
     // it was between 2048 and 10240 last time I looked at it
     QVERIFY(originalCacheLimit >= 1024 && originalCacheLimit <= 20480);
 
+    QPixmapCache::setCacheLimit(std::numeric_limits<int>::max());
+    QCOMPARE(QPixmapCache::cacheLimit(), std::numeric_limits<int>::max());
+
     QPixmapCache::setCacheLimit(100);
     QCOMPARE(QPixmapCache::cacheLimit(), 100);
 
