@@ -2864,7 +2864,7 @@ Q_GUI_EXPORT QStringList qt_sort_families_by_writing_system(QChar::Script script
         uint order = i;
         if (testFamily == nullptr
               || (testFamily->writingSystems[writingSystem] & QtFontFamily::Supported) == 0) {
-            order |= 1 << 31;
+            order |= 1u << 31;
         }
 
         supported.insert(order, family);
