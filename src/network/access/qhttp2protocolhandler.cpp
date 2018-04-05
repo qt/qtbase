@@ -917,10 +917,11 @@ void QHttp2ProtocolHandler::handleContinuedHEADERS()
         if (activeStreams.contains(streamID)) {
             Stream &stream = activeStreams[streamID];
             if (stream.state != Stream::halfClosedLocal
-                && stream.state != Stream::remoteReserved) {
+                && stream.state != Stream::remoteReserved
+                && stream.state != Stream::open) {
                 // We can receive HEADERS on streams initiated by our requests
-                // (these streams are in halfClosedLocal state) or remote-reserved
-                // streams from a server's PUSH_PROMISE.
+                // (these streams are in halfClosedLocal or open state) or
+                // remote-reserved streams from a server's PUSH_PROMISE.
                 finishStreamWithError(stream, QNetworkReply::ProtocolFailure,
                                       QLatin1String("HEADERS on invalid stream"));
                 sendRST_STREAM(streamID, CANCEL);
