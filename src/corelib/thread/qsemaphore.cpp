@@ -291,10 +291,14 @@ public:
 QSemaphore::QSemaphore(int n)
 {
     Q_ASSERT_X(n >= 0, "QSemaphore", "parameter 'n' must be non-negative");
-    if (futexAvailable())
-        u.store(n);
-    else
+    if (futexAvailable()) {
+        quintptr nn = unsigned(n);
+        if (futexHasWaiterCount)
+            nn |= quint64(nn) << 32;    // token count replicated in high word
+        u.store(nn);
+    } else {
         d = new QSemaphorePrivate(n);
+    }
 }
 
 /*!
