@@ -608,7 +608,7 @@ void tst_QTouchEvent::basicRawEventTranslation()
     touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);
     touchWidget.setGeometry(100, 100, 400, 300);
     touchWidget.show();
-    QVERIFY(QTest::qWaitForWindowActive(&touchWidget));
+    QVERIFY(QTest::qWaitForWindowExposed(&touchWidget));
 
     QPointF pos = touchWidget.rect().center();
     QPointF screenPos = touchWidget.mapToGlobal(pos.toPoint());
@@ -741,7 +741,7 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchScreen()
     rightWidget.setGeometry(300, 100, 100, 100);
 
     touchWidget.show();
-    QVERIFY(QTest::qWaitForWindowActive(&touchWidget));
+    QVERIFY(QTest::qWaitForWindowExposed(&touchWidget));
 
     QPointF leftPos = leftWidget.rect().center();
     QPointF rightPos = rightWidget.rect().center();
@@ -968,7 +968,7 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
     rightWidget.setGeometry(300, 100, 100, 100);
 
     touchWidget.show();
-    QVERIFY(QTest::qWaitForWindowActive(&touchWidget));
+    QVERIFY(QTest::qWaitForWindowExposed(&touchWidget));
 
     QPointF leftPos = leftWidget.rect().center();
     QPointF rightPos = rightWidget.rect().center();
@@ -1184,7 +1184,7 @@ void tst_QTouchEvent::basicRawEventTranslationOfIds()
     touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);
     touchWidget.setGeometry(100, 100, 400, 300);
     touchWidget.show();
-    QVERIFY(QTest::qWaitForWindowActive(&touchWidget));
+    QVERIFY(QTest::qWaitForWindowExposed(&touchWidget));
 
     QVarLengthArray<QPointF, 2> pos;
     QVarLengthArray<QPointF, 2> screenPos;
