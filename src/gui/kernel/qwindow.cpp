@@ -2358,12 +2358,6 @@ bool QWindow::event(QEvent *ev)
     return true;
 }
 
-void QWindowPrivate::deliverUpdateRequest()
-{
-    if (platformWindow)
-        platformWindow->deliverUpdateRequest();
-}
-
 /*!
     Schedules a QEvent::UpdateRequest event to be delivered to this window.
 
