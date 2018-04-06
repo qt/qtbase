@@ -83,6 +83,7 @@ void tst_QCheckBox::initTestCase()
     testWidget->setObjectName("testObject");
     testWidget->resize( 200, 200 );
     testWidget->show();
+    QVERIFY(QTest::qWaitForWindowActive(testWidget));
 }
 
 void tst_QCheckBox::cleanupTestCase()
@@ -240,13 +241,11 @@ void tst_QCheckBox::pressed()
     QVERIFY( !testWidget->isChecked() );
 
     QTest::keyPress( testWidget, Qt::Key_Space );
-    QTest::qWait(100);
     QVERIFY( press_count == 1 );
     QVERIFY( release_count == 0 );
     QVERIFY( !testWidget->isChecked() );
 
     QTest::keyRelease( testWidget, Qt::Key_Space );
-    QTest::qWait(100);
     QVERIFY( press_count == 1 );
     QVERIFY( release_count == 1 );
     QVERIFY( testWidget->isChecked() );

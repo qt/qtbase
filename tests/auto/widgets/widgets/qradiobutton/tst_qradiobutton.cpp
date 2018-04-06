@@ -70,15 +70,13 @@ void tst_QRadioButton::task190739_focus()
 
     widget.show();
     widget.activateWindow();
-    QApplication::setActiveWindow(&widget);
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
 
     QVERIFY(edit.hasFocus());
     QVERIFY(!radio1.isChecked());
 
     QTest::keyClick(&edit, Qt::Key_O, Qt::ControlModifier, 20);
-    QTest::qWait(200);
-    QVERIFY(radio1.isChecked());
+    QTRY_VERIFY(radio1.isChecked());
     QVERIFY(edit.hasFocus());
     QVERIFY(!radio1.hasFocus());
 }

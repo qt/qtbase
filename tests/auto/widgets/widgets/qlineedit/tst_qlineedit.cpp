@@ -3573,18 +3573,15 @@ void tst_QLineEdit::task174640_editingFinished()
     QSignalSpy editingFinishedSpy(le1, SIGNAL(editingFinished()));
 
     le1->setFocus();
-    QTest::qWait(20);
     QTRY_VERIFY(le1->hasFocus());
     QCOMPARE(editingFinishedSpy.count(), 0);
 
     le2->setFocus();
-    QTest::qWait(20);
     QTRY_VERIFY(le2->hasFocus());
     QCOMPARE(editingFinishedSpy.count(), 1);
     editingFinishedSpy.clear();
 
     le1->setFocus();
-    QTest::qWait(20);
     QTRY_VERIFY(le1->hasFocus());
 
     QMenu *testMenu1 = new QMenu(le1);
@@ -3680,7 +3677,6 @@ void tst_QLineEdit::task229938_dontEmitChangedWhenTextIsNotChanged()
     QVERIFY(QTest::qWaitForWindowExposed(&lineEdit)); // to be safe and avoid failing setFocus with window managers
     lineEdit.setFocus();
     QSignalSpy changedSpy(&lineEdit, SIGNAL(textChanged(QString)));
-    QTest::qWait(200);
     QTest::keyPress(&lineEdit, 'a');
     QTest::keyPress(&lineEdit, 'b');
     QTest::keyPress(&lineEdit, 'c');

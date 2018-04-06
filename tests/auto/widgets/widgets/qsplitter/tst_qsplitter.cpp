@@ -287,7 +287,7 @@ void tst_QSplitter::saveAndRestoreStateOfNotYetShownSplitter()
     QByteArray ba = spl->saveState();
     spl->restoreState(ba);
     spl->show();
-    QTest::qWait(500);
+    QVERIFY(QTest::qWaitForWindowActive(spl));
 
     QCOMPARE(l1->geometry().isValid(), true);
     QCOMPARE(l2->geometry().isValid(), true);
@@ -607,8 +607,7 @@ void tst_QSplitter::testShowHide()
     lay->addWidget(split);
     widget.setLayout(lay);
     topLevel.show();
-
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
 
     widget.hide();
     split->widget(0)->setHidden(hideWidget1);
@@ -976,14 +975,13 @@ void tst_QSplitter::task169702_sizes()
 
     outerSplitter->setGeometry(100, 100, 500, 500);
     topLevel.show();
+    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
 
-    QTest::qWait(100);
     testW->m_iFactor++;
     testW->updateGeometry();
-    QTest::qWait(500);
 
     //Make sure the minimimSizeHint is respected
-    QCOMPARE(testW->size().height(), testW->minimumSizeHint().height());
+    QTRY_COMPARE(testW->size().height(), testW->minimumSizeHint().height());
 }
 
 void tst_QSplitter::taskQTBUG_4101_ensureOneNonCollapsedWidget_data()
@@ -1012,8 +1010,7 @@ void tst_QSplitter::taskQTBUG_4101_ensureOneNonCollapsedWidget()
         l->hide();
     else
         delete l;
-    QTest::qWait(100);
-    QVERIFY(s.sizes().at(0) > 0);
+    QTRY_VERIFY(s.sizes().at(0) > 0);
 }
 
 void tst_QSplitter::setLayout()

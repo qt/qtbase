@@ -141,8 +141,7 @@ void tst_QToolButton::triggered()
     timer->start();
     QTimer::singleShot(10000, &mainWidget, SLOT(close())); // Emergency bail-out
     toolButton->showMenu();
-    QTest::qWait(20);
-    QCOMPARE(spy.count(),2);
+    QTRY_COMPARE(spy.count(),2);
     QCOMPARE(qvariant_cast<QAction *>(spy.at(1).at(0)), one);
 }
 

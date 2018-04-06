@@ -1745,17 +1745,15 @@ void tst_QMainWindow::setCursor()
     QCOMPARE(cur.shape(), mw.cursor().shape());
     mw.resize(200,200);
     mw.show();
-    QTest::qWait(50);
+    QVERIFY(QTest::qWaitForWindowActive(&mw));
     QCOMPARE(cur.shape(), mw.cursor().shape());
 
     QHoverEvent enterE(QEvent::HoverEnter, QPoint(10,10), QPoint());
     mw.event(&enterE);
-    QTest::qWait(50);
     QCOMPARE(cur.shape(), mw.cursor().shape());
 
     QHoverEvent leaveE(QEvent::HoverLeave, QPoint(), QPoint());
     mw.event(&leaveE);
-    QTest::qWait(50);
     QCOMPARE(cur.shape(), mw.cursor().shape());
 }
 #endif
@@ -1844,7 +1842,7 @@ void tst_QMainWindow::dockWidgetSize()
     mainWindow.addDockWidget(Qt::TopDockWidgetArea, &dock);
 
     mainWindow.show();
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowActive(&mainWindow));
     if (mainWindow.size() == mainWindow.sizeHint()) {
         QCOMPARE(widget.size(), widget.sizeHint());
         QCOMPARE(dock.widget()->size(), dock.widget()->sizeHint());

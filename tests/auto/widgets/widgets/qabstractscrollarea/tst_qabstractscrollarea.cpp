@@ -346,6 +346,7 @@ void tst_QAbstractScrollArea::patternBackground()
     widget.resize(600, 600);
     scrollArea.setWidget(&widget);
     topLevel.show();
+    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
 
     QLinearGradient linearGrad(QPointF(250, 250), QPointF(300, 300));
     linearGrad.setColorAt(0, Qt::yellow);
@@ -354,7 +355,6 @@ void tst_QAbstractScrollArea::patternBackground()
     scrollArea.viewport()->setPalette(QPalette(Qt::black, bg, bg, bg, bg, bg, bg, bg, bg));
     widget.setPalette(Qt::transparent);
 
-    QTest::qWait(50);
 
     QImage image(200, 200, QImage::Format_ARGB32);
     scrollArea.render(&image);
@@ -366,7 +366,6 @@ void tst_QAbstractScrollArea::patternBackground()
     QScrollBar *vbar = scrollArea.verticalScrollBar();
     vbar->setValue(vbar->maximum());
 
-    QTest::qWait(50);
 
     scrollArea.render(&image);
     QCOMPARE(image.pixel(QPoint(20,20)) , QColor(Qt::red).rgb());
