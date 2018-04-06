@@ -135,7 +135,8 @@ QLibInputKeyboard::QLibInputKeyboard()
 #ifndef QT_NO_XKBCOMMON_EVDEV
     : m_ctx(0),
       m_keymap(0),
-      m_state(0)
+      m_state(0),
+      m_mods(Qt::NoModifier)
 #endif
 {
 #ifndef QT_NO_XKBCOMMON_EVDEV
@@ -203,22 +204,27 @@ void QLibInputKeyboard::processKey(libinput_event_keyboard *e)
     Qt::KeyboardModifiers mods = Qt::NoModifier;
     const int qtkey = keysymToQtKey(sym, &mods, text);
 
-    xkb_state_component modtype = xkb_state_component(XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LATCHED);
-    if (xkb_state_mod_index_is_active(m_state, m_modindex[0], modtype) && (qtkey != Qt::Key_Control || !pressed))
+    if (qtkey == Qt::Key_Control)
         mods |= Qt::ControlModifier;
-    if (xkb_state_mod_index_is_active(m_state, m_modindex[1], modtype) && (qtkey != Qt::Key_Alt || !pressed))
+    if (qtkey == Qt::Key_Alt)
         mods |= Qt::AltModifier;
-    if (xkb_state_mod_index_is_active(m_state, m_modindex[2], modtype) && (qtkey != Qt::Key_Shift || !pressed))
+    if (qtkey == Qt::Key_Shift)
         mods |= Qt::ShiftModifier;
-    if (xkb_state_mod_index_is_active(m_state, m_modindex[3], modtype) && (qtkey != Qt::Key_Meta || !pressed))
+    if (qtkey == Qt::Key_Meta)
         mods |= Qt::MetaModifier;
-
     xkb_state_update_key(m_state, k, pressed ? XKB_KEY_DOWN : XKB_KEY_UP);
 
-    QGuiApplicationPrivate::inputDeviceManager()->setKeyboardModifiers(mods, qtkey);
+    if (mods != Qt::NoModifier) {
+        if (pressed)
+            m_mods |= mods;
+        else
+            m_mods &= ~mods;
+
+        QGuiApplicationPrivate::inputDeviceManager()->setKeyboardModifiers(m_mods);
+    }
     QWindowSystemInterface::handleExtendedKeyEvent(nullptr,
                                                    pressed ? QEvent::KeyPress : QEvent::KeyRelease,
-                                                   qtkey, mods, k, sym, mods, text);
+                                                   qtkey, m_mods, k, sym, m_mods, text);
 
     if (pressed && xkb_keymap_key_repeats(m_keymap, k)) {
         m_repeatData.qtkey = qtkey;
