@@ -121,6 +121,15 @@ public:
         QSocketNotifier *write;
     };
 
+    struct ArgMatchRules {
+        QStringList args;
+        QString arg0namespace;
+        bool operator==(const ArgMatchRules &other) const {
+            return args == other.args &&
+                   arg0namespace == other.arg0namespace;
+        }
+    };
+
     struct SignalHook
     {
         inline SignalHook() : obj(0), midx(-1) { }
@@ -128,7 +137,7 @@ public:
         QObject* obj;
         int midx;
         QVector<int> params;
-        QStringList argumentMatch;
+        ArgMatchRules argumentMatch;
         QByteArray matchRule;
     };
 
@@ -207,11 +216,18 @@ public:
     QDBusMessage sendWithReplyLocal(const QDBusMessage &message);
     QDBusPendingCallPrivate *sendWithReplyAsync(const QDBusMessage &message, QObject *receiver,
                                                 const char *returnMethod, const char *errorMethod,int timeout = -1);
+
     bool connectSignal(const QString &service, const QString &path, const QString& interface,
                        const QString &name, const QStringList &argumentMatch, const QString &signature,
                        QObject *receiver, const char *slot);
     bool disconnectSignal(const QString &service, const QString &path, const QString& interface,
                           const QString &name, const QStringList &argumentMatch, const QString &signature,
+                          QObject *receiver, const char *slot);
+    bool connectSignal(const QString &service, const QString &path, const QString& interface,
+                       const QString &name, const ArgMatchRules &argumentMatch, const QString &signature,
+                       QObject *receiver, const char *slot);
+    bool disconnectSignal(const QString &service, const QString &path, const QString& interface,
+                          const QString &name, const ArgMatchRules &argumentMatch, const QString &signature,
                           QObject *receiver, const char *slot);
     void registerObject(const ObjectTreeNode *node);
     void unregisterObject(const QString &path, QDBusConnection::UnregisterMode mode);
@@ -332,7 +348,7 @@ public:
     static bool prepareHook(QDBusConnectionPrivate::SignalHook &hook, QString &key,
                             const QString &service,
                             const QString &path, const QString &interface, const QString &name,
-                            const QStringList &argMatch,
+                            const ArgMatchRules &argMatch,
                             QObject *receiver, const char *signal, int minMIdx,
                             bool buildSignature);
     static DBusHandlerResult messageFilter(DBusConnection *, DBusMessage *, void *);
