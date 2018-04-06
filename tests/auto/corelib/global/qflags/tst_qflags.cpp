@@ -39,6 +39,7 @@ private slots:
     void classEnum();
     void initializerLists();
     void testSetFlags();
+    void adl();
 };
 
 void tst_QFlags::testFlag() const
@@ -302,6 +303,27 @@ void tst_QFlags::testSetFlags()
     QVERIFY(flags.testFlag(MyStrictEnum::StrictOne));
     QVERIFY(!flags.testFlag(MyStrictEnum::StrictTwo));
     QVERIFY(!flags.testFlag(MyStrictEnum::StrictFour));
+}
+
+namespace SomeNS {
+enum Foo { Foo_A = 1 << 0, Foo_B = 1 << 1, Foo_C = 1 << 2 };
+
+Q_DECLARE_FLAGS(Foos, Foo)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Foos);
+
+Qt::Alignment alignment()
+{
+    // Checks that the operator| works, despite there is another operator| in this namespace.
+    return Qt::AlignLeft | Qt::AlignTop;
+}
+}
+
+void tst_QFlags::adl()
+{
+    SomeNS::Foos fl = SomeNS::Foo_B | SomeNS::Foo_C;
+    QVERIFY(fl & SomeNS::Foo_B);
+    QVERIFY(!(fl & SomeNS::Foo_A));
+    QCOMPARE(SomeNS::alignment(), Qt::AlignLeft | Qt::AlignTop);
 }
 
 // (statically) check QTypeInfo for QFlags instantiations:

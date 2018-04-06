@@ -107,6 +107,7 @@ public:
         KeyboardModifierMask = 0xfe000000
     };
     Q_DECLARE_FLAGS(KeyboardModifiers, KeyboardModifier)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(KeyboardModifiers)
 
     //shorter names for shortcuts
     // The use of all-caps identifiers has the potential for clashing with
@@ -163,6 +164,7 @@ public:
         MouseButtonMask  = 0xffffffff
     };
     Q_DECLARE_FLAGS(MouseButtons, MouseButton)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(MouseButtons)
 
     enum Orientation {
         Horizontal = 0x1,
@@ -170,6 +172,7 @@ public:
     };
 
     Q_DECLARE_FLAGS(Orientations, Orientation)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(Orientations)
 
     enum FocusPolicy {
         NoFocus = 0,
@@ -225,6 +228,7 @@ public:
     };
 
     Q_DECLARE_FLAGS(Alignment, AlignmentFlag)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(Alignment)
 
     enum TextFlag {
         TextSingleLine = 0x0100,
@@ -308,6 +312,7 @@ public:
     };
 
     Q_DECLARE_FLAGS(WindowFlags, WindowType)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(WindowFlags)
 
     enum WindowState {
         WindowNoState    = 0x00000000,
@@ -318,6 +323,7 @@ public:
     };
 
     Q_DECLARE_FLAGS(WindowStates, WindowState)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(WindowStates)
 
     enum ApplicationState {
         ApplicationSuspended    = 0x00000000,
@@ -337,6 +343,7 @@ public:
     };
 
     Q_DECLARE_FLAGS(ScreenOrientations, ScreenOrientation)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(ScreenOrientations)
 
     enum WidgetAttribute {
         WA_Disabled = 0,
@@ -553,6 +560,7 @@ public:
         NoFormatConversion      = 0x00000200
     };
     Q_DECLARE_FLAGS(ImageConversionFlags, ImageConversionFlag)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(ImageConversionFlags)
 
     enum BGMode {
         TransparentMode,
@@ -1210,6 +1218,7 @@ public:
     };
 
     Q_DECLARE_FLAGS(DockWidgetAreas, DockWidgetArea)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(DockWidgetAreas)
 
     enum ToolBarArea {
         LeftToolBarArea = 0x1,
@@ -1227,6 +1236,7 @@ public:
     };
 
     Q_DECLARE_FLAGS(ToolBarAreas, ToolBarArea)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(ToolBarAreas)
 
     enum DateFormat {
         TextDate,      // default Qt
@@ -1285,6 +1295,7 @@ public:
     };
 
     Q_DECLARE_FLAGS(Edges, Edge)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(Edges)
 
     enum ConnectionType {
         AutoConnection,
@@ -1387,6 +1398,7 @@ public:
         ImQueryAll = 0xffffffff
     };
     Q_DECLARE_FLAGS(InputMethodQueries, InputMethodQuery)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(InputMethodQueries)
 
     enum InputMethodHint {
         ImhNone = 0x0,
@@ -1421,6 +1433,7 @@ public:
         ImhExclusiveInputMask = 0xffff0000
     };
     Q_DECLARE_FLAGS(InputMethodHints, InputMethodHint)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(InputMethodHints)
 
     enum EnterKeyType {
         EnterKeyDefault,
@@ -1471,6 +1484,7 @@ public:
         IgnoreAction = 0x0
     };
     Q_DECLARE_FLAGS(DropActions, DropAction)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(DropActions)
 
     enum CheckState {
         Unchecked,
@@ -1525,6 +1539,7 @@ public:
         ItemIsUserTristate = 256
     };
     Q_DECLARE_FLAGS(ItemFlags, ItemFlag)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(ItemFlags)
 
     enum MatchFlag {
         MatchExactly = 0,
@@ -1539,6 +1554,7 @@ public:
         MatchRecursive = 64
     };
     Q_DECLARE_FLAGS(MatchFlags, MatchFlag)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(MatchFlags)
 
     typedef void * HANDLE;
 #if QT_DEPRECATED_SINCE(5, 0)
@@ -1563,6 +1579,7 @@ public:
         TextBrowserInteraction    = TextSelectableByMouse | LinksAccessibleByMouse | LinksAccessibleByKeyboard
     };
     Q_DECLARE_FLAGS(TextInteractionFlags, TextInteractionFlag)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(TextInteractionFlags)
 
     enum EventPriority {
         HighEventPriority = 1,
@@ -1614,6 +1631,7 @@ public:
         TouchPointReleased   = 0x08
     };
     Q_DECLARE_FLAGS(TouchPointStates, TouchPointState)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(TouchPointStates)
 
 #ifndef QT_NO_GESTURES
     enum GestureState
@@ -1645,6 +1663,7 @@ public:
         IgnoredGesturesPropagateToParent = 0x04
     };
     Q_DECLARE_FLAGS(GestureFlags, GestureFlag)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(GestureFlags)
 
     enum NativeGestureType
     {
@@ -1698,6 +1717,7 @@ public:
         MouseEventFlagMask = 0xFF
     };
     Q_DECLARE_FLAGS(MouseEventFlags, MouseEventFlag)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(MouseEventFlags)
 
     enum ChecksumType {
         ChecksumIso3309,
@@ -1799,29 +1819,6 @@ public:
 
 #undef QT_Q_ENUM
 #undef QT_Q_FLAG
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MouseButtons)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::Orientations)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::KeyboardModifiers)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::WindowFlags)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::Alignment)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::Edges)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ImageConversionFlags)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::DockWidgetAreas)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ToolBarAreas)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::WindowStates)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ScreenOrientations)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::DropActions)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ItemFlags)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MatchFlags)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TextInteractionFlags)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::InputMethodQueries)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::InputMethodHints)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TouchPointStates)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MouseEventFlags)
-#ifndef QT_NO_GESTURES
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::GestureFlags)
-#endif
 
 typedef bool (*qInternalCallback)(void **);
 
