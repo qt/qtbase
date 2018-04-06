@@ -209,7 +209,7 @@ QMultiMap<QSsl::AlternativeNameEntryType, QString> QSslCertificate::subjectAlter
                 result.insert(QSsl::EmailEntry, altName);
         }
 
-        q_OPENSSL_sk_pop_free((OPENSSL_STACK*)altNames, reinterpret_cast<void(*)(void*)>(q_OPENSSL_sk_free));
+        q_OPENSSL_sk_pop_free((OPENSSL_STACK*)altNames, reinterpret_cast<void(*)(void*)>(q_GENERAL_NAME_free));
     }
 
     return result;
