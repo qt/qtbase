@@ -1315,7 +1315,7 @@
         },
         "opengles3": {
             "label": "OpenGL ES 3.0",
-            "condition": "features.opengles2 && !features.angle && tests.opengles3 && !config.wasm",
+            "condition": "features.opengles2 && !features.angle && tests.opengles3",
             "output": [
                 "publicFeature",
                 { "type": "define", "name": "QT_OPENGL_ES_3" }
