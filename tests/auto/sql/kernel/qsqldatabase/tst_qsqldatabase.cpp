@@ -2374,6 +2374,9 @@ public slots:
             "QSqlDatabasePrivate::database: requested database does not belong to the calling thread.");
         QSqlDatabase db = QSqlDatabase::database(dbName);
         QVERIFY(!db.isValid());
+
+        QSqlDatabase invalidDb = QSqlDatabase::database("invalid");
+        QVERIFY(!invalidDb.isValid());
         QThread::currentThread()->exit();
     }
 private:
