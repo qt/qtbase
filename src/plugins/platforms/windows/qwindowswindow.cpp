@@ -2410,6 +2410,8 @@ static inline bool applyNewCursor(const QWindow *w)
 
 void QWindowsWindow::applyCursor()
 {
+    if (static_cast<const QWindowsCursor *>(screen()->cursor())->hasOverrideCursor())
+        return;
 #ifndef QT_NO_CURSOR
     if (m_cursor->isNull()) { // Recurse up to parent with non-null cursor. Set default for toplevel.
         if (const QWindow *p = window()->parent()) {

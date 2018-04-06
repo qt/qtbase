@@ -3944,7 +3944,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             if (!hasMenu && ct != QMacStylePrivate::Button_SquareButton) {
                 if (isPressed
                     || (isActive && isEnabled
-                        && ((btn.features & QStyleOptionButton::DefaultButton && !d->autoDefaultButton)
+                        && ((btn.state & State_On)
+                            || ((btn.features & QStyleOptionButton::DefaultButton) && !d->autoDefaultButton)
                             || d->autoDefaultButton == btn.styleObject)))
                 btn.palette.setColor(QPalette::ButtonText, Qt::white);
             }

@@ -50,6 +50,7 @@ private slots:
     {
         // ensure a clean environment
         QStandardPaths::setTestModeEnabled(true);
+        qputenv("XDG_CONFIG_DIRS", "/does/not/exist");
         qunsetenv("QT_LOGGING_CONF");
         qunsetenv("QT_LOGGING_RULES");
     }
