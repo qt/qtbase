@@ -2166,8 +2166,12 @@ void QTabBar::mouseReleaseEvent(QMouseEvent *event)
     QStyleOptionTabBarBase optTabBase;
     optTabBase.initFrom(this);
     optTabBase.documentMode = d->documentMode;
-    if (style()->styleHint(QStyle::SH_TabBar_SelectMouseType, &optTabBase, this) == QEvent::MouseButtonRelease)
+    const bool selectOnRelease =
+            (style()->styleHint(QStyle::SH_TabBar_SelectMouseType, &optTabBase, this) == QEvent::MouseButtonRelease);
+    if (selectOnRelease)
         setCurrentIndex(i);
+    if (!selectOnRelease || !d->validIndex(i) || d->currentIndex == i)
+        repaint(tabRect(i));
 }
 
 /*!\reimp

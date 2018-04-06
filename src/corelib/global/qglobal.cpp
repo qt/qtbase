@@ -4439,7 +4439,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     Calls the message handler with the critical message \a message. If no
     message handler has been installed, the message is printed to
     stderr. Under Windows, the message is sent to the debugger.
-    On QNX the message is sent to slogger2
+    On QNX the message is sent to slogger2.
 
     It exits if the environment variable QT_FATAL_CRITICALS is not empty.
 
@@ -4472,7 +4472,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     Calls the message handler with the fatal message \a message. If no
     message handler has been installed, the message is printed to
     stderr. Under Windows, the message is sent to the debugger.
-    On QNX the message is sent to slogger2
+    On QNX the message is sent to slogger2.
 
     If you are using the \b{default message handler} this function will
     abort to create a core dump. On Windows, for debug builds,

@@ -302,7 +302,7 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share)
                     contextAttributes << GLX_CONTEXT_PROFILE_MASK_ARB << GLX_CONTEXT_ES2_PROFILE_BIT_EXT;
                 }
 
-                if (supportsRobustness && supportsVideoMemoryPurge) {
+                if (supportsRobustness && supportsVideoMemoryPurge && m_format.testOption(QSurfaceFormat::ResetNotification)) {
                     QVector<int> contextAttributesWithNvidiaReset = contextAttributes;
 
                     contextAttributesWithNvidiaReset << GLX_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB << GLX_LOSE_CONTEXT_ON_RESET_ARB;
@@ -539,6 +539,7 @@ bool QGLXContext::makeCurrent(QPlatformSurface *surface)
         m_lost = false;
         if (m_getGraphicsResetStatus && m_getGraphicsResetStatus() != GL_NO_ERROR) {
             m_lost = true;
+            success = false;
             // Drop the surface. Will recreate on the next makeCurrent.
             window->invalidateSurface();
         }
@@ -547,6 +548,11 @@ bool QGLXContext::makeCurrent(QPlatformSurface *surface)
         QGLXPbuffer *pbuffer = static_cast<QGLXPbuffer *>(surface);
         glxDrawable = pbuffer->pbuffer();
         success = glXMakeContextCurrent(m_display, glxDrawable, glxDrawable, m_context);
+        m_lost = false;
+        if (m_getGraphicsResetStatus && m_getGraphicsResetStatus() != GL_NO_ERROR) {
+            m_lost = true;
+            success = false;
+        }
     }
 
     if (success && surfaceClass == QSurface::Window) {
