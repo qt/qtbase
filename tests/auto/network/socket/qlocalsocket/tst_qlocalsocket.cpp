@@ -42,6 +42,10 @@
 #include <unistd.h> // for unlink()
 #endif
 
+#ifdef Q_OS_WIN
+#include <QtCore/qt_windows.h>
+#endif
+
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketError)
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketState)
 Q_DECLARE_METATYPE(QLocalServer::SocketOption)
@@ -629,6 +633,14 @@ void tst_QLocalSocket::readBufferOverflow()
     QCOMPARE(client.bytesAvailable(), 0);
 
 #ifdef Q_OS_WIN
+    serverSocket->write(buffer, readBufferSize);
+    QVERIFY(serverSocket->waitForBytesWritten());
+
+    // ensure the read completion routine is called
+    SleepEx(100, true);
+    QVERIFY(client.waitForReadyRead());
+    QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
+
     // Test overflow caused by an asynchronous pipe operation.
     client.setReadBufferSize(1);
     serverSocket->write(buffer, 2);
