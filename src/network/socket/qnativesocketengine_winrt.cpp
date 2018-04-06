@@ -547,9 +547,12 @@ QNativeSocketEngine::QNativeSocketEngine(QObject *parent)
         d->sslSocket = qobject_cast<QSslSocket *>(parent->parent());
 #endif
 
-    connect(this, SIGNAL(connectionReady()), SLOT(connectionNotification()), Qt::QueuedConnection);
-    connect(this, SIGNAL(readReady()), SLOT(readNotification()), Qt::QueuedConnection);
-    connect(this, SIGNAL(writeReady()), SLOT(writeNotification()), Qt::QueuedConnection);
+    connect(this, &QNativeSocketEngine::connectionReady,
+            this, &QNativeSocketEngine::connectionNotification, Qt::QueuedConnection);
+    connect(this, &QNativeSocketEngine::readReady,
+            this, &QNativeSocketEngine::processReadReady, Qt::QueuedConnection);
+    connect(this, &QNativeSocketEngine::writeReady,
+            this, &QNativeSocketEngine::writeNotification, Qt::QueuedConnection);
     connect(d->worker, &SocketEngineWorker::connectOpFinished,
             this, &QNativeSocketEngine::handleConnectOpFinished, Qt::QueuedConnection);
     connect(d->worker, &SocketEngineWorker::newDataReceived, this, &QNativeSocketEngine::handleNewData, Qt::QueuedConnection);
@@ -872,12 +875,15 @@ void QNativeSocketEngine::close()
     if (d->closingDown)
         return;
 
-    d->closingDown = true;
+    if (d->pendingReadNotification)
+        processReadReady();
 
+    d->closingDown = true;
 
     d->notifyOnRead = false;
     d->notifyOnWrite = false;
     d->notifyOnException = false;
+    d->emitReadReady = false;
 
     HRESULT hr;
     if (d->socketType == QAbstractSocket::TcpSocket) {
@@ -1019,8 +1025,10 @@ qint64 QNativeSocketEngine::read(char *data, qint64 maxlen)
             << copyLength << "of" << d->worker->pendingData.length() << "bytes";
         readData = d->worker->pendingData.left(maxlen);
         d->worker->pendingData.remove(0, maxlen);
-        if (d->notifyOnRead)
+        if (d->notifyOnRead) {
+            d->pendingReadNotification = true;
             emit readReady();
+        }
     }
     mutexLocker.unlock();
 
@@ -1341,6 +1349,7 @@ void QNativeSocketEngine::handleConnectOpFinished(bool success, QAbstractSocket:
     if (!success) {
         d->setError(error, errorString);
         d->socketState = QAbstractSocket::UnconnectedState;
+        close();
         return;
     }
 
@@ -1369,6 +1378,7 @@ void QNativeSocketEngine::handleNewData()
         if (d->socketType == QAbstractSocket::UdpSocket && !d->worker->emitDataReceived)
             return;
         qCDebug(lcNetworkSocketVerbose) << this << Q_FUNC_INFO << "Emitting readReady";
+        d->pendingReadNotification = true;
         emit readReady();
         d->worker->emitDataReceived = false;
         d->emitReadReady = false;
@@ -1389,9 +1399,17 @@ void QNativeSocketEngine::handleTcpError(QAbstractSocket::SocketError error)
     }
 
     d->setError(error, errorString);
-    d->socketState = QAbstractSocket::UnconnectedState;
-    if (d->notifyOnRead)
-        emit readReady();
+    close();
+}
+
+void QNativeSocketEngine::processReadReady()
+{
+    Q_D(QNativeSocketEngine);
+    if (d->closingDown)
+        return;
+
+    d->pendingReadNotification = false;
+    readNotification();
 }
 
 bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType socketType, QAbstractSocket::NetworkLayerProtocol &socketProtocol)

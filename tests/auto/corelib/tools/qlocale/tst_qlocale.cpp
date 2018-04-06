@@ -137,6 +137,7 @@ private slots:
     void formattedDataSize();
     void bcp47Name();
 
+    void systemLocale_data();
     void systemLocale();
 
     // *** ORDER-DEPENDENCY *** (This Is Bad.)
@@ -2682,27 +2683,31 @@ private:
     const QLocale m_locale;
 };
 
+void tst_QLocale::systemLocale_data()
+{
+    QTest::addColumn<QString>("name");
+    QTest::addColumn<QLocale::Language>("language");
+    QTest::addRow("catalan") << QString("ca") << QLocale::Catalan;
+    QTest::addRow("ukrainian") << QString("uk") << QLocale::Ukrainian;
+    QTest::addRow("german") << QString("de") << QLocale::German;
+}
+
 void tst_QLocale::systemLocale()
 {
     QLocale originalLocale;
+    QLocale originalSystemLocale = QLocale::system();
 
-    MySystemLocale *sLocale = new MySystemLocale(QLocale("uk"));
-    QCOMPARE(QLocale().language(), QLocale::Ukrainian);
-    QCOMPARE(QLocale::system().language(), QLocale::Ukrainian);
-    delete sLocale;
+    QFETCH(QString, name);
+    QFETCH(QLocale::Language, language);
 
-    sLocale = new MySystemLocale(QLocale("ca"));
-    QCOMPARE(QLocale().language(), QLocale::Catalan);
-    QCOMPARE(QLocale::system().language(), QLocale::Catalan);
-    delete sLocale;
-
-    sLocale = new MySystemLocale(QLocale("de"));
-    QCOMPARE(QLocale().language(), QLocale::German);
-    QCOMPARE(QLocale::system().language(), QLocale::German);
-    delete sLocale;
+    {
+        MySystemLocale sLocale(name);
+        QCOMPARE(QLocale().language(), language);
+        QCOMPARE(QLocale::system().language(), language);
+    }
 
     QCOMPARE(QLocale(), originalLocale);
-    QCOMPARE(QLocale::system(), originalLocale);
+    QCOMPARE(QLocale::system(), originalSystemLocale);
 }
 
 QTEST_MAIN(tst_QLocale)

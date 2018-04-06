@@ -34,6 +34,7 @@
 #include <qscopedpointer.h>
 #include <qstringlist.h>
 #include <qfileinfo.h>
+#include <qversionnumber.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -618,17 +619,30 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         << tagValue("RootNamespace", tool.Name)
         << tagValue("Keyword", tool.Keyword);
 
+    QString windowsTargetPlatformVersion;
     if (isWinRT) {
         xml << tagValue("MinimumVisualStudioVersion", tool.Version)
             << tagValue("DefaultLanguage", "en")
             << tagValue("AppContainerApplication", "true")
             << tagValue("ApplicationType", "Windows Store")
             << tagValue("ApplicationTypeRevision", tool.SdkVersion);
-        if (tool.SdkVersion == "10.0") {
-            const QString ucrtVersion = qgetenv("UCRTVERSION");
-            xml << tagValue("WindowsTargetPlatformVersion", ucrtVersion)
-                << tagValue("WindowsTargetPlatformMinVersion", ucrtVersion);
-        }
+        if (tool.SdkVersion == "10.0")
+            windowsTargetPlatformVersion = qgetenv("UCRTVERSION");
+    } else {
+        QByteArray winSDKVersionStr = qgetenv("WindowsSDKVersion").trimmed();
+
+        // This environment variable might end with a backslash due to a VS bug.
+        if (winSDKVersionStr.endsWith('\\'))
+            winSDKVersionStr.chop(1);
+
+        QVersionNumber winSDKVersion = QVersionNumber::fromString(
+                    QString::fromLocal8Bit(winSDKVersionStr));
+        if (!winSDKVersion.isNull())
+            windowsTargetPlatformVersion = winSDKVersionStr;
+    }
+    if (!windowsTargetPlatformVersion.isEmpty()) {
+        xml << tagValue("WindowsTargetPlatformVersion", windowsTargetPlatformVersion)
+            << tagValue("WindowsTargetPlatformMinVersion", windowsTargetPlatformVersion);
     }
 
     xml << closetag();

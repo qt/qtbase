@@ -229,12 +229,14 @@ QSqlDatabase QSqlDatabasePrivate::database(const QString& name, bool open)
     dict->lock.lockForRead();
     QSqlDatabase db = dict->value(name);
     dict->lock.unlock();
-    if (db.driver() && db.driver()->thread() != QThread::currentThread()) {
+    if (!db.isValid())
+        return db;
+    if (db.driver()->thread() != QThread::currentThread()) {
         qWarning("QSqlDatabasePrivate::database: requested database does not belong to the calling thread.");
         return QSqlDatabase();
     }
 
-    if (db.isValid() && !db.isOpen() && open) {
+    if (open && !db.isOpen()) {
         if (!db.open())
             qWarning() << "QSqlDatabasePrivate::database: unable to open database:" << db.lastError().text();
 
