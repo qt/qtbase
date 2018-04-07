@@ -311,6 +311,10 @@ void QEglFSKmsGbmScreen::flip()
                                      m_output.modes[m_output.mode].hdisplay);
             drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->crtcheightPropertyId,
                                      m_output.modes[m_output.mode].vdisplay);
+
+            static int zpos = qEnvironmentVariableIntValue("QT_QPA_EGLFS_KMS_ZPOS");
+            if (zpos)
+                drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->zposPropertyId, zpos);
         }
 #endif
     } else {
