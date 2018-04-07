@@ -169,6 +169,10 @@ struct QKmsPlane
     uint32_t rotationPropertyId = 0;
     uint32_t crtcPropertyId = 0;
     uint32_t framebufferPropertyId = 0;
+    uint32_t srcXPropertyId = 0;
+    uint32_t srcYPropertyId = 0;
+    uint32_t crtcXPropertyId = 0;
+    uint32_t crtcYPropertyId = 0;
     uint32_t srcwidthPropertyId = 0;
     uint32_t srcheightPropertyId = 0;
     uint32_t crtcwidthPropertyId = 0;

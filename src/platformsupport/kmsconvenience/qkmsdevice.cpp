@@ -816,6 +816,14 @@ void QKmsDevice::discoverPlanes()
                 plane.crtcwidthPropertyId = prop->prop_id;
             } else if (!strcasecmp(prop->name, "crtc_h")) {
                 plane.crtcheightPropertyId = prop->prop_id;
+            } else if (!strcasecmp(prop->name, "src_x")) {
+                plane.srcXPropertyId = prop->prop_id;
+            } else if (!strcasecmp(prop->name, "src_y")) {
+                plane.srcYPropertyId = prop->prop_id;
+            } else if (!strcasecmp(prop->name, "crtc_x")) {
+                plane.crtcXPropertyId = prop->prop_id;
+            } else if (!strcasecmp(prop->name, "crtc_y")) {
+                plane.crtcYPropertyId = prop->prop_id;
             }
         });
 
