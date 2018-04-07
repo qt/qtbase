@@ -2815,6 +2815,8 @@ bool QIconModeViewBase::filterStartDrag(Qt::DropActions supportedActions)
         drag->setHotSpot(dd->pressedPosition - rect.topLeft());
         Qt::DropAction action = drag->exec(supportedActions, dd->defaultDropAction);
         draggedItems.clear();
+        // for internal moves the action was set to Qt::CopyAction in
+        // filterDropEvent() to avoid the deletion here
         if (action == Qt::MoveAction)
             dd->clearOrRemove();
     }
@@ -2851,6 +2853,8 @@ bool QIconModeViewBase::filterDropEvent(QDropEvent *e)
     dd->stopAutoScroll();
     draggedItems.clear();
     dd->emitIndexesMoved(indexes);
+    // do not delete item on internal move, see filterStartDrag()
+    e->setDropAction(Qt::CopyAction);
     e->accept(); // we have handled the event
     // if the size has not grown, we need to check if it has shrinked
     if (contentsSize != contents) {
