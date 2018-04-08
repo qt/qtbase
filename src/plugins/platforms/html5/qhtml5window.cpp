@@ -54,6 +54,7 @@ QHtml5Window::QHtml5Window(QWindow *w, QHtml5Compositor* compositor, QHtml5Backi
       mCompositor(compositor),
       mBackingStore(backingStore)
 {
+    needsCompositor = w->surfaceType() != QSurface::OpenGLSurface;
     //globalHtml5Window = this;
     static int serialNo = 0;
     m_winid  = ++serialNo;
@@ -130,7 +131,7 @@ void QHtml5Window::setVisible(bool visible)
         bool convOk = false;
         static bool envDisableForceFullScreen = qEnvironmentVariableIntValue("QT_QPA_HTML5_FORCE_FULLSCREEN", &convOk) == 0 && convOk;
 
-        const bool forceFullScreen = !envDisableForceFullScreen && mCompositor->windowCount() == 0;
+        const bool forceFullScreen = /*!envDisableForceFullScreen && */!needsCompositor;//make gl apps fullscreen for now
 
         if (forceFullScreen || (mWindowState & Qt::WindowFullScreen))
             newGeom = platformScreen()->geometry();

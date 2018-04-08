@@ -118,6 +118,7 @@ protected:
     QHtml5Compositor::SubControls mActiveControl = QHtml5Compositor::SC_None;
     WId m_winid = 0;
     bool hasTitle = false;
+    bool needsCompositor = false;
 };
 QT_END_NAMESPACE
 #endif // QHTML5WINDOW_H
