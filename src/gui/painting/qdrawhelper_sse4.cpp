@@ -103,6 +103,14 @@ void QT_FASTCALL convertRGBA8888ToARGB32PM_sse4(uint *buffer, int count, const Q
     convertARGBToARGB32PM_sse4<true>(buffer, buffer, count);
 }
 
+void QT_FASTCALL storeRGB32FromARGB32PM_sse4(uchar *dest, const uint *src, int index, int count,
+                                             const QVector<QRgb> *, QDitherInfo *)
+{
+    uint *d = reinterpret_cast<uint *>(dest) + index;
+    for (int i = 0; i < count; ++i)
+        d[i] = 0xff000000 | qUnpremultiply_sse4(src[i]);
+}
+
 void QT_FASTCALL storeARGB32FromARGB32PM_sse4(uchar *dest, const uint *src, int index, int count,
                                               const QVector<QRgb> *, QDitherInfo *)
 {
