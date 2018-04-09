@@ -129,4 +129,10 @@ const char *q_OpenSSL_version(int type);
 
 unsigned long q_SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *session);
 
+#define q_SSL_CTX_set_min_proto_version(ctx, version) \
+        q_SSL_CTX_ctrl(ctx, SSL_CTRL_SET_MIN_PROTO_VERSION, version, nullptr)
+
+#define q_SSL_CTX_set_max_proto_version(ctx, version) \
+        q_SSL_CTX_ctrl(ctx, SSL_CTRL_SET_MAX_PROTO_VERSION, version, nullptr)
+
 #endif

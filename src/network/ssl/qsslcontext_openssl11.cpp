@@ -100,6 +100,68 @@ init_context:
         return;
     }
 
+    long minVersion = TLS_ANY_VERSION;
+    long maxVersion = TLS_ANY_VERSION;
+    switch (sslContext->sslConfiguration.protocol()) {
+    // The single-protocol versions first:
+    case QSsl::SslV3:
+        minVersion = SSL3_VERSION;
+        maxVersion = SSL3_VERSION;
+        break;
+    case QSsl::TlsV1_0:
+        minVersion = TLS1_VERSION;
+        maxVersion = TLS1_VERSION;
+        break;
+    case QSsl::TlsV1_1:
+        minVersion = TLS1_1_VERSION;
+        maxVersion = TLS1_1_VERSION;
+        break;
+    case QSsl::TlsV1_2:
+        minVersion = TLS1_2_VERSION;
+        maxVersion = TLS1_2_VERSION;
+        break;
+    // Ranges:
+    case QSsl::TlsV1SslV3:
+    case QSsl::AnyProtocol:
+        minVersion = SSL3_VERSION;
+        maxVersion = TLS_MAX_VERSION;
+        break;
+    case QSsl::SecureProtocols:
+    case QSsl::TlsV1_0OrLater:
+        minVersion = TLS1_VERSION;
+        maxVersion = TLS_MAX_VERSION;
+        break;
+    case QSsl::TlsV1_1OrLater:
+        minVersion = TLS1_1_VERSION;
+        maxVersion = TLS_MAX_VERSION;
+        break;
+    case QSsl::TlsV1_2OrLater:
+        minVersion = TLS1_2_VERSION;
+        maxVersion = TLS_MAX_VERSION;
+        break;
+    case QSsl::SslV2:
+        // This protocol is not supported by OpenSSL 1.1 and we handle
+        // it as an error (see the code above).
+        Q_UNREACHABLE();
+        break;
+    case QSsl::UnknownProtocol:
+        break;
+    }
+
+    if (minVersion != TLS_ANY_VERSION
+        && !q_SSL_CTX_set_min_proto_version(sslContext->ctx, minVersion)) {
+        sslContext->errorStr = QSslSocket::tr("Error while setting the minimal protocol version");
+        sslContext->errorCode = QSslError::UnspecifiedError;
+        return;
+    }
+
+    if (maxVersion != TLS_ANY_VERSION
+        && !q_SSL_CTX_set_max_proto_version(sslContext->ctx, maxVersion)) {
+        sslContext->errorStr = QSslSocket::tr("Error while setting the maximum protocol version");
+        sslContext->errorCode = QSslError::UnspecifiedError;
+        return;
+    }
+
     // Enable bug workarounds.
     long options = QSslSocketBackendPrivate::setupOpenSslOptions(configuration.protocol(), configuration.d->sslOptions);
     q_SSL_CTX_set_options(sslContext->ctx, options);
