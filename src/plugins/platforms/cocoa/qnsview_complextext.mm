@@ -257,6 +257,7 @@
 {
     Q_UNUSED(aRange)
     Q_UNUSED(actualRange)
+
     QObject *fo = m_platformWindow->window()->focusObject();
     if (!fo)
         return NSZeroRect;
@@ -265,9 +266,6 @@
     if (!QCoreApplication::sendEvent(fo, &queryEvent))
         return NSZeroRect;
     if (!queryEvent.value(Qt::ImEnabled).toBool())
-        return NSZeroRect;
-
-    if (!m_platformWindow->window())
         return NSZeroRect;
 
     // The returned rect is always based on the internal cursor.
