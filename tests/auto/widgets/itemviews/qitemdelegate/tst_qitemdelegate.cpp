@@ -1276,7 +1276,7 @@ void tst_QItemDelegate::enterKey()
     view.show();
     QApplication::setActiveWindow(&view);
     view.setFocus();
-    QTest::qWait(30);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     struct TestDelegate : public QItemDelegate
     {
@@ -1306,7 +1306,6 @@ void tst_QItemDelegate::enterKey()
     QModelIndex index = model.index(0, 0);
     view.setCurrentIndex(index); // the editor will only selectAll on the current index
     view.edit(index);
-    QTest::qWait(30);
 
     QList<QWidget*> lineEditors = view.viewport()->findChildren<QWidget *>(QString::fromLatin1("TheEditor"));
     QCOMPARE(lineEditors.count(), 1);
@@ -1315,7 +1314,6 @@ void tst_QItemDelegate::enterKey()
     QCOMPARE(editor->hasFocus(), true);
 
     QTest::keyClick(editor, Qt::Key(key));
-    QApplication::processEvents();
 
     if (expectedFocus) {
         QVERIFY(!editor.isNull());
@@ -1335,11 +1333,10 @@ void tst_QItemDelegate::task257859_finalizeEdit()
     view.show();
     QApplication::setActiveWindow(&view);
     view.setFocus();
-    QTest::qWait(30);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QModelIndex index = model.index(0, 0);
     view.edit(index);
-    QTest::qWait(30);
 
     QList<QLineEdit *> lineEditors = view.viewport()->findChildren<QLineEdit *>();
     QCOMPARE(lineEditors.count(), 1);
@@ -1454,28 +1451,26 @@ void tst_QItemDelegate::testLineEditValidation()
     QApplication::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
-    QList<QLineEdit *> lineEditors;
     QPointer<QLineEdit> editor;
     QPersistentModelIndex index = model.indexFromItem(item);
 
     view.setCurrentIndex(index);
     view.edit(index);
-    QTest::qWait(30);
 
-    lineEditors = view.findChildren<QLineEdit *>(QStringLiteral("TheEditor"));
-    QCOMPARE(lineEditors.count(), 1);
-    editor = lineEditors.at(0);
+    const auto findEditors = [&]() {
+        return view.findChildren<QLineEdit *>(QStringLiteral("TheEditor"));
+    };
+    QCOMPARE(findEditors().count(), 1);
+    editor = findEditors().at(0);
     editor->clear();
 
     // first try to set a valid text
     QTest::keyClicks(editor, QStringLiteral("foo,bar"));
-    QTest::qWait(30);
 
     // close the editor
     QTest::keyClick(editor, Qt::Key(key));
-    QTest::qWait(30);
 
-    QVERIFY(editor.isNull());
+    QTRY_VERIFY(editor.isNull());
     if (key != Qt::Key_Escape)
         QCOMPARE(item->data(Qt::DisplayRole).toString(), QStringLiteral("foo,bar"));
     else
@@ -1484,20 +1479,16 @@ void tst_QItemDelegate::testLineEditValidation()
     // now an invalid (but partially matching) text
     view.setCurrentIndex(index);
     view.edit(index);
-    QTest::qWait(30);
 
-    lineEditors = view.findChildren<QLineEdit *>(QStringLiteral("TheEditor"));
-    QCOMPARE(lineEditors.count(), 1);
-    editor = lineEditors.at(0);
+    QTRY_COMPARE(findEditors().count(), 1);
+    editor = findEditors().at(0);
     editor->clear();
 
     // edit
     QTest::keyClicks(editor, QStringLiteral("foobar"));
-    QTest::qWait(30);
 
     // try to close the editor
     QTest::keyClick(editor, Qt::Key(key));
-    QTest::qWait(30);
 
     if (key != Qt::Key_Escape) {
         QVERIFY(!editor.isNull());
@@ -1505,33 +1496,29 @@ void tst_QItemDelegate::testLineEditValidation()
         QCOMPARE(editor->text(), QStringLiteral("foobar"));
         QCOMPARE(item->data(Qt::DisplayRole).toString(), QStringLiteral("foo,bar"));
     } else {
-        QVERIFY(editor.isNull());
+        QTRY_VERIFY(editor.isNull());
         QCOMPARE(item->data(Qt::DisplayRole).toString(), QStringLiteral("abc,def"));
     }
 
     // reset the view to forcibly close the editor
     view.reset();
-    QTest::qWait(30);
+    QTRY_COMPARE(findEditors().count(), 0);
 
     // set a valid text again
     view.setCurrentIndex(index);
     view.edit(index);
-    QTest::qWait(30);
 
-    lineEditors = view.findChildren<QLineEdit *>(QStringLiteral("TheEditor"));
-    QCOMPARE(lineEditors.count(), 1);
-    editor = lineEditors.at(0);
+    QTRY_COMPARE(findEditors().count(), 1);
+    editor = findEditors().at(0);
     editor->clear();
 
     // set a valid text
     QTest::keyClicks(editor, QStringLiteral("gender,bender"));
-    QTest::qWait(30);
 
     // close the editor
     QTest::keyClick(editor, Qt::Key(key));
-    QTest::qWait(30);
 
-    QVERIFY(editor.isNull());
+    QTRY_VERIFY(editor.isNull());
     if (key != Qt::Key_Escape)
         QCOMPARE(item->data(Qt::DisplayRole).toString(), QStringLiteral("gender,bender"));
     else
