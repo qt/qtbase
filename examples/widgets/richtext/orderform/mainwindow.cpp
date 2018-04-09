@@ -75,8 +75,8 @@ MainWindow::MainWindow()
 
     letters = new QTabWidget;
 
-    connect(newAction, SIGNAL(triggered()), this, SLOT(openDialog()));
-    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
+    connect(newAction, &QAction::triggered, this, &MainWindow::openDialog);
+    connect(quitAction, &QAction::triggered, this, &MainWindow::close);
 
     setCentralWidget(letters);
     setWindowTitle(tr("Order Form"));

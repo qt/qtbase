@@ -71,8 +71,8 @@ DetailsDialog::DetailsDialog(const QString &title, QWidget *parent)
     buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok
                                      | QDialogButtonBox::Cancel);
 
-    connect(buttonBox, SIGNAL(accepted()), this, SLOT(verify()));
-    connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+    connect(buttonBox, &QDialogButtonBox::accepted, this, &DetailsDialog::verify);
+    connect(buttonBox, &QDialogButtonBox::rejected, this, &DetailsDialog::reject);
 //! [0]
 
 //! [1]
