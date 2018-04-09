@@ -214,10 +214,7 @@ QPlatformOffscreenSurface *QIOSIntegration::createPlatformOffscreenSurface(QOffs
 
 QAbstractEventDispatcher *QIOSIntegration::createEventDispatcher() const
 {
-    if (isQtApplication())
-        return new QIOSEventDispatcher;
-    else
-        return new QEventDispatcherCoreFoundation;
+    return QIOSEventDispatcher::create();
 }
 
 QPlatformFontDatabase * QIOSIntegration::fontDatabase() const
