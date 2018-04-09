@@ -427,15 +427,15 @@ QString qt_readEscapedFormatString(const QString &format, int *idx);
 bool qt_splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry);
 int qt_repeatCount(const QString &s, int i);
 
-enum { AsciiSpaceMask = (1 << (' ' - 1)) |
-                        (1 << ('\t' - 1)) |   // 9: HT - horizontal tab
-                        (1 << ('\n' - 1)) |   // 10: LF - line feed
-                        (1 << ('\v' - 1)) |   // 11: VT - vertical tab
-                        (1 << ('\f' - 1)) |   // 12: FF - form feed
-                        (1 << ('\r' - 1)) };  // 13: CR - carriage return
+enum { AsciiSpaceMask = (1u << (' ' - 1)) |
+                        (1u << ('\t' - 1)) |   // 9: HT - horizontal tab
+                        (1u << ('\n' - 1)) |   // 10: LF - line feed
+                        (1u << ('\v' - 1)) |   // 11: VT - vertical tab
+                        (1u << ('\f' - 1)) |   // 12: FF - form feed
+                        (1u << ('\r' - 1)) };  // 13: CR - carriage return
 Q_DECL_CONSTEXPR inline bool ascii_isspace(uchar c)
 {
-    return c >= 1U && c <= 32U && (uint(AsciiSpaceMask) >> uint(c - 1)) & 1U;
+    return c >= 1u && c <= 32u && (AsciiSpaceMask >> uint(c - 1)) & 1u;
 }
 
 #if defined(Q_COMPILER_CONSTEXPR)
