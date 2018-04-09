@@ -190,6 +190,13 @@ void QPainterPrivate::checkEmulation()
     if (pg && pg->coordinateMode() > QGradient::LogicalMode)
         doEmulation = true;
 
+    if (state->brush.style() == Qt::TexturePattern) {
+        if (qHasPixmapTexture(state->brush))
+            doEmulation |= !qFuzzyCompare(state->brush.texture().devicePixelRatioF(), 1.0);
+        else
+            doEmulation |= !qFuzzyCompare(state->brush.textureImage().devicePixelRatioF(), 1.0);
+    }
+
     if (doEmulation && extended->flags() & QPaintEngineEx::DoNotEmulate)
         return;
 

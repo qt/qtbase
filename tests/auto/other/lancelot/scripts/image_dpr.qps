@@ -1,0 +1,43 @@
+
+setRenderHint Antialiasing true
+setRenderHint SmoothPixmapTransform true
+
+image_load sign.png img1
+pixmap_load sign.png pix1
+
+begin_block drawIt
+save
+
+drawImage img1 20 20 -1 -1
+drawRect 17.5 17.5 85 85
+
+setBrush img1
+setPen NoPen
+drawRect 20 120 120 120
+
+brushRotate 45
+drawRect 20 260 120 120
+
+setBrush NoBrush
+drawTiledPixmap pix1 20 400 120 120
+
+restore
+end_block
+
+save
+translate 150 0
+rotate -5
+repeat_block drawIt
+restore
+
+image_setDevicePixelRatio img1 2.0
+pixmap_setDevicePixelRatio pix1 2.0
+translate 400 0
+repeat_block drawIt
+
+save
+translate 150 0
+rotate -5
+repeat_block drawIt
+restore
+

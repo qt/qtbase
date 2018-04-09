@@ -561,6 +561,10 @@ void PaintCommands::staticInit()
                       "^bitmap_load\\s+([\\w.:\\/]*)\\s*([\\w.:\\/]*)$",
                       "bitmap_load <bitmap filename> <bitmapName>\n  - note that the image is stored as a pixmap",
                       "bitmap_load :/images/bitmap.png myBitmap");
+    DECL_PAINTCOMMAND("pixmap_setDevicePixelRatio", command_pixmap_setDevicePixelRatio,
+                      "^pixmap_setDevicePixelRatio\\s+([\\w.:\\/]*)\\s+([.0-9]*)$",
+                      "pixmap_setDevicePixelRatio <pixmapName> <dpr>",
+                      "pixmap_setDevicePixelRatio myPixmap 2.0");
     DECL_PAINTCOMMAND("image_convertToFormat", command_image_convertToFormat,
                       "^image_convertToFormat\\s+([\\w.:\\/]*)\\s+([\\w.:\\/]+)\\s+([\\w0-9_]*)$",
                       "image_convertToFormat <sourceImageName> <destImageName> <image format enum>",
@@ -577,6 +581,10 @@ void PaintCommands::staticInit()
                       "^image_setColorCount\\s+([\\w.:\\/]*)\\s+([0-9]*)$",
                       "image_setColorCount <imageName> <nbColors>",
                       "image_setColorCount myImage 128");
+    DECL_PAINTCOMMAND("image_setDevicePixelRatio", command_image_setDevicePixelRatio,
+                      "^image_setDevicePixelRatio\\s+([\\w.:\\/]*)\\s+([.0-9]*)$",
+                      "image_setDevicePixelRatio <imageName> <dpr>",
+                      "image_setDevicePixelRatio myImage 2.0");
 
     DECL_PAINTCOMMANDSECTION("transformations");
     DECL_PAINTCOMMAND("resetMatrix", command_resetMatrix,
@@ -1761,7 +1769,9 @@ void PaintCommands::command_setBrush(QRegularExpressionMatch re)
 {
     QStringList caps = re.capturedTexts();
 
-    QImage img = image_load<QImage>(caps.at(1));
+    QImage img = m_imageMap[caps.at(1)]; // try cache first
+    if (img.isNull())
+        img = image_load<QImage>(caps.at(1));
     if (!img.isNull()) { // Assume image brush
         if (m_verboseMode)
             printf(" -(lance) setBrush(image=%s, width=%d, height=%d)\n",
@@ -2132,6 +2142,20 @@ void PaintCommands::command_bitmap_load(QRegularExpressionMatch re)
     m_pixmapMap[name] = bm;
 }
 
+void PaintCommands::command_pixmap_setDevicePixelRatio(QRegularExpressionMatch re)
+{
+    QStringList caps = re.capturedTexts();
+
+    QString name = caps.at(1);
+    double dpr = convertToDouble(caps.at(2));
+
+    if (m_verboseMode)
+        printf(" -(lance) pixmap_setDevicePixelRatio(%s), %.1f -> %.1f\n",
+               qPrintable(name), m_pixmapMap[name].devicePixelRatioF(), dpr);
+
+    m_pixmapMap[name].setDevicePixelRatio(dpr);
+}
+
 /***************************************************************************************************/
 void PaintCommands::command_pixmap_setMask(QRegularExpressionMatch re)
 {
@@ -2194,6 +2218,21 @@ void PaintCommands::command_image_setColor(QRegularExpressionMatch re)
         printf(" -(lance) image_setColor(%s), %d = %08x\n", qPrintable(name), index, color.rgba());
 
     m_imageMap[name].setColor(index, color.rgba());
+}
+
+/***************************************************************************************************/
+void PaintCommands::command_image_setDevicePixelRatio(QRegularExpressionMatch re)
+{
+    QStringList caps = re.capturedTexts();
+
+    QString name = caps.at(1);
+    double dpr = convertToDouble(caps.at(2));
+
+    if (m_verboseMode)
+        printf(" -(lance) image_setDevicePixelRatio(%s), %.1f -> %.1f\n",
+               qPrintable(name), m_imageMap[name].devicePixelRatioF(), dpr);
+
+    m_imageMap[name].setDevicePixelRatio(dpr);
 }
 
 /***************************************************************************************************/
