@@ -592,10 +592,14 @@ void tst_QPrinter::printDialogCompleter()
 {
     QPrintDialog dialog;
     dialog.printer()->setOutputFileName(testPdfFileName(QLatin1String("file")));
+#if defined(Q_OS_WIN) || defined(Q_OS_DARWIN)
+    if (dialog.printer()->outputFormat() != QPrinter::NativeFormat)
+        QSKIP("Dialog cannot be used with non-native formats");
+#endif
     dialog.setEnabledOptions(QAbstractPrintDialog::PrintToFile);
     dialog.show();
 
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowActive(&dialog));
 
     QTest::keyClick(&dialog, Qt::Key_Tab);
     QTest::keyClick(&dialog, 'P');

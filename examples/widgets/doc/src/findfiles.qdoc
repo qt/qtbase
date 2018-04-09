@@ -30,43 +30,74 @@
     \title Find Files Example
     \ingroup examples-dialogs
 
-    \brief The Find Files example shows how to use QProgressDialog to provide
-    feedback on the progress of a slow operation. The example also
-    shows how to use QFileDialog to facilitate browsing, how to use
-    QTextStream's streaming operators to read a file, and how to use
-    QTableWidget to provide standard table display facilities for
-    applications. In addition, files can be opened using the
-    QDesktopServices class.
+    \brief A dialog for finding files in a specified folder
+
+    The Find Files application allows the user to search for files in a
+    specified directory, matching a given file name or wildcard,
+    and containing a specified string (if filled in). The search
+    result is displayed in a table containing the names of the files
+    and their sizes. The application also shows the number of files found.
+
+    The Find Files example illustrates the use of several classes:
+
+    \table
+    \row
+       \li QProgressDialog
+       \li Provide feedback on the progress of a search operation
+    \row
+       \li QFileDialog
+       \li Browse through a file list
+    \row
+       \li QTextStream
+       \li Use stream operators to read a file
+    \row
+       \li QTableWidget
+       \li Browse through the search results in a table
+    \row
+       \li QDesktopServices
+       \li Open files in the result list in a suitable application
+    \endtable
 
     \image findfiles-example.png Screenshot of the Find Files example
 
-    With the Find Files application the user can search for files in a
-    specified directory, matching a specified file name (using wild
-    cards if appropriate) and containing a specified text.
-
-    The user is provided with a \uicontrol Browse option, and the result of
-    the search is displayed in a table with the names of the files
-    found and their sizes. In addition the application provides a
-    total count of the files found.
 
     \section1 Window Class Definition
 
     The \c Window class inherits QWidget, and is the main application
-    widget. It shows the search options, and displays the search
+    widget. It shows the search options and displays the search
     results.
 
     \snippet dialogs/findfiles/window.h 0
 
-    We need two private slots: The \c browse() slot is called whenever
-    the user wants to browse for a directory to search in, and the \c
-    find() slot is called whenever the user requests a search to be
-    performed by pressing the \uicontrol Find button.
+    The application has two private slots:
+    \table
+    \row
+        \li The \c browse() slot
+        \li Called whenever the user wants to browse for a directory to search in
+    \row
+        \li The \c find() slot
+        \li Called whenever the user launches a search with the \uicontrol Find button
+    \endtable
 
-    In addition we declare several private functions: We use the \c
-    findFiles() function to search for files matching the user's
-    specifications, we call the \c showFiles() function to display the
-    results, and we use \c createButton(), \c createComboBox() and \c
-    createFilesTable() when we are constructing the widget.
+    In addition we declare several private functions:
+
+    \table
+        \row
+            \li findFiles()
+            \li Search for files matching the search parameters
+        \row
+            \li showFiles()
+            \li Display the search result
+        \row
+            \li ceateButton()
+            \li Construct the widget
+        \row
+            \li createComboBox()
+            \li Construct the widget
+        \row
+            \li createFilesTable()
+            \li Construct the widget
+    \endtable
 
     \section1 Window Class Implementation
 
@@ -103,11 +134,11 @@
     Here we use the static QFileDialog::getExistingDirectory()
     function which returns an existing directory selected by the
     user. Then we display the directory in the directory combobox
-    using the QComboBox::addItem() function, and updates the current
+    using the QComboBox::addItem() function and update the current
     index.
 
     QComboBox::addItem() adds an item to the combobox with the given
-    text (if it is not already present in the list), and containing
+    text (if not already present in the list), and containing
     the specified userData. The item is appended to the list of
     existing items.
 
@@ -118,13 +149,13 @@
 
     First we eliminate any previous search results by setting the
     table widgets row count to zero. Then we retrieve the
-    specified file name, text and directory path from the respective
+    specified file name, text, and directory path from the respective
     comboboxes.
 
     \snippet dialogs/findfiles/window.cpp 4
 
     We use the directory's path to create a QDir; the QDir class
-    provides access to directory structures and their contents.
+    provides access to the directory structure and its contents.
 
     We use QDirIterator to iterate over the files that match the
     specified file name and build a QStringList of paths.
@@ -144,15 +175,11 @@
     In the private \c findFiles() function we search through a list of
     files, looking for the ones that contain a specified text. This
     can be a very slow operation depending on the number of files as
-    well as their sizes. In case there are a large number of files, or
-    there exists some large files on the list, we provide a
-    QProgressDialog.
-
-    The QProgressDialog class provides feedback on the progress of a
-    slow operation. It is used to give the user an indication of how
-    long an operation is going to take, and to demonstrate that the
-    application has not frozen. It can also give the user an
-    opportunity to abort the operation.
+    well as their sizes. QProgressDialog displays a progress dialog
+    if the application has to search through a large number of files,
+    or if some of the files have a large size. QProgressDialog can
+    also allow the user to abort the operation if it takes too much
+    time.
 
     \snippet dialogs/findfiles/window.cpp 6
 
