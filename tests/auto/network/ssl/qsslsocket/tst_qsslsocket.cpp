@@ -3974,12 +3974,7 @@ void tst_QSslSocket::signatureAlgorithm_data()
         << QSsl::AnyProtocol
         << QAbstractSocket::ConnectedState;
 
-#if !QT_CONFIG(opensslv11)
-    // Signature algorithms do not match, but are ignored because the tls version
-    // is not v1.2. Note, with OpenSSL 1.1 backend we use generic TLS_client_method
-    // and TLS_server_method, so both client and server sockets will enable
-    // protocol version 1.2 and thus handshake will fail (no shared signature
-    // algorithms).
+    // signature algorithms do not match, but are ignored because the tls version is not v1.2
     QTest::newRow("client_ignore_TlsV1_1")
         << QByteArrayList({rsaSha256})
         << QSsl::TlsV1_1
@@ -4004,7 +3999,6 @@ void tst_QSslSocket::signatureAlgorithm_data()
         << QByteArrayList({rsaSha512})
         << QSsl::TlsV1_0
         << QAbstractSocket::ConnectedState;
-#endif // opensslv11
 }
 
 void tst_QSslSocket::signatureAlgorithm()
