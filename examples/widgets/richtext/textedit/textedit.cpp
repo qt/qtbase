@@ -141,7 +141,9 @@ TextEdit::TextEdit(QWidget *parent)
 
 #ifndef QT_NO_CLIPBOARD
     actionCut->setEnabled(false);
+    connect(textEdit, &QTextEdit::copyAvailable, actionCut, &QAction::setEnabled);
     actionCopy->setEnabled(false);
+    connect(textEdit, &QTextEdit::copyAvailable, actionCopy, &QAction::setEnabled);
 
     connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &TextEdit::clipboardDataChanged);
 #endif
