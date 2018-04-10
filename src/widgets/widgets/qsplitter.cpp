@@ -874,10 +874,8 @@ QSplitterLayoutStruct *QSplitterPrivate::insertWidget(int index, QWidget *w)
     } else {
         QSplitterHandle *newHandle = 0;
         sls = new QSplitterLayoutStruct;
-        QString tmp = QLatin1String("qt_splithandle_");
-        tmp += w->objectName();
         newHandle = q->createHandle();
-        newHandle->setObjectName(tmp);
+        newHandle->setObjectName(QLatin1String("qt_splithandle_") + w->objectName());
         sls->handle = newHandle;
         sls->widget = w;
         w->lower();
