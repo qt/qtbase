@@ -2559,6 +2559,7 @@ void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
                 dropTo->show();
                 dropTo->d_func()->plug(QRect());
                 w = floatingTabs;
+                widget->raise(); // raise, as our newly created drop target is now on top
             }
             Q_ASSERT(qobject_cast<QDockWidgetGroupWindow *>(w));
             auto group = static_cast<QDockWidgetGroupWindow *>(w);
