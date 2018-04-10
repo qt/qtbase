@@ -100,7 +100,6 @@ my $remove_stale = 1;
 my $force_win = 0;
 my $check_includes = 0;
 my $copy_headers = 0;
-my $create_private_headers = 1;
 my $minimal = 0;
 my $module_version = 0;
 my @modules_to_sync ;
@@ -134,7 +133,6 @@ sub showUsage
     print "  -separate-module <NAME>:<PROFILEDIR>:<HEADERDIR>\n";
     print "                        Create headers for <NAME> with original headers in\n";
     print "                        <HEADERDIR> relative to <PROFILEDIR> \n";
-    print "  -private              Force copy private headers         (default: " . ($create_private_headers ? "yes" : "no") . ")\n";
     print "  -help                 This help\n";
     exit 0;
 }
@@ -779,9 +777,6 @@ while ( @ARGV ) {
     } elsif($arg eq "-minimal") {
         $var = "minimal";
         $val = "yes";
-    } elsif($arg eq "-private") {
-        $var = "create_private_headers";
-        $val = "yes";
     } elsif($arg eq "-version") {
         $var = "version";
         $val = shift @ARGV;
@@ -1075,9 +1070,9 @@ foreach my $lib (@modules_to_sync) {
 
                                     $header_copies++ if (!$shadow && syncHeader($lib, "$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$header", 0, $ts));
                                 }
-                            } elsif ($create_private_headers && !$qpa_header) {
+                            } elsif (!$qpa_header) {
                                 $oheader = "$out_basedir/include/$lib/$module_version/$lib/private/$header";
-                            } elsif ($create_private_headers) {
+                            } else {
                                 $oheader = "$out_basedir/include/$lib/$module_version/$lib/qpa/$header";
                             }
                             $header_copies++ if (!$shadow && syncHeader($lib, $oheader, $iheader, $copy_headers, $ts));
@@ -1168,7 +1163,6 @@ foreach my $lib (@modules_to_sync) {
         while (my ($header, $include) = each %{$deprecatedheaders{$lib}}) {
             my $public_header = 0;
             $public_header = 1 unless ($allheadersprivate || ($header =~ /_p\.h$/));
-            next unless ($public_header || $create_private_headers);
 
             my $header_path = "$out_basedir/include/$lib/";
             unless ($public_header) {
