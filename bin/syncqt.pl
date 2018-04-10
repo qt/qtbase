@@ -1161,15 +1161,10 @@ foreach my $lib (@modules_to_sync) {
         # create deprecated headers
         my $first = 1;
         while (my ($header, $include) = each %{$deprecatedheaders{$lib}}) {
-            my $public_header = 0;
-            $public_header = 1 unless ($allheadersprivate || ($header =~ /_p\.h$/));
+            die "Attempting unsupported aliasing of private header $header.\n"
+                if ($allheadersprivate || ($header =~ /_p\.h$/));
 
-            my $header_path = "$out_basedir/include/$lib/";
-            unless ($public_header) {
-                $header_path .= "$module_version/$lib/private/";
-            }
-            $header_path .= "$header";
-
+            my $header_path = "$out_basedir/include/$lib/$header";
             unless (-e $header_path) {
                 my $guard = "DEPRECATED_HEADER_" . $lib . "_" . $header;
                 $guard =~ s/([^a-zA-Z0-9_])/_/g;
@@ -1177,26 +1172,19 @@ foreach my $lib (@modules_to_sync) {
                 my $header_dir = dirname($header_path);
                 make_path($header_dir, $lib, $verbose_level);
 
+                my $warning = "Header <$lib/$header> is deprecated. Please include <$include> instead.";
                 my $hdrcont =
                     "#ifndef $guard\n" .
-                    "#define $guard\n";
-                my $warning = "Header <$lib/";
-                $warning .= "private/" unless ($public_header);
-                $warning .= "$header> is deprecated. Please include <$include> instead.";
-                $hdrcont .=
+                    "#define $guard\n" .
                     "#if defined(__GNUC__)\n" .
                     "#  warning $warning\n" .
                     "#elif defined(_MSC_VER)\n" .
                     "#  pragma message (\"$warning\")\n" .
                     "#endif\n" .
-                    "#include <$include>\n";
-                if ($public_header) {
-                    $hdrcont .=
-                        "#if 0\n" .
-                        "#pragma qt_no_master_include\n" .
-                        "#endif\n";
-                }
-                $hdrcont .=
+                    "#include <$include>\n" .
+                    "#if 0\n" .
+                    "#pragma qt_no_master_include\n" .
+                    "#endif\n" .
                     "#endif\n";
                 if (writeFile($header_path, $hdrcont)) {
                     if ($verbose_level < 3) {
@@ -1210,12 +1198,7 @@ foreach my $lib (@modules_to_sync) {
                 }
             }
 
-            my $addendum = fixPaths($header_path, $dir) . " ";
-            if ($public_header) {
-                $pri_install_files .=  $addendum;
-            } else {
-                $pri_install_pfiles .=  $addendum;
-            }
+            $pri_install_files .= fixPaths($header_path, $dir) . " ";
         }
         if ($verbose_level < 3) {
             print " }\n" unless ($first);
