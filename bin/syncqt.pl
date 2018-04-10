@@ -98,14 +98,12 @@ my $showonly = 0;
 my $verbose_level = 1;
 my $remove_stale = 1;
 my $force_win = 0;
-my $force_relative = 0;
 my $check_includes = 0;
 my $copy_headers = 0;
 my $create_private_headers = 1;
 my $minimal = 0;
 my $module_version = 0;
 my @modules_to_sync ;
-$force_relative = 1 if ( -d "/System/Library/Frameworks" );
 
 
 # functions ----------------------------------------------------------
@@ -124,7 +122,6 @@ sub showUsage
 
     print "  -copy                 Copy headers instead of include-fwd(default: " . ($copy_headers ? "yes" : "no") . ")\n";
     print "  -remove-stale         Removes stale headers              (default: " . ($remove_stale ? "yes" : "no") . ")\n";
-    print "  -relative             Force relative symlinks            (default: " . ($force_relative ? "yes" : "no") . ")\n";
     print "  -windows              Force platform to Windows          (default: " . ($force_win ? "yes" : "no") . ")\n";
     print "  -showonly             Show action but not perform        (default: " . ($showonly ? "yes" : "no") . ")\n";
     print "  -minimal              Do not create CamelCase headers    (default: " . ($minimal ? "yes" : "no") . ")\n";
@@ -840,12 +837,6 @@ while ( @ARGV ) {
             $force_win++;
         } elsif($force_win) {
             $force_win--;
-        }
-    } elsif ($var eq "relative") {
-        if($val eq "yes") {
-            $force_relative++;
-        } elsif($force_relative) {
-            $force_relative--;
         }
     } elsif ($var eq "minimal") {
         if($val eq "yes") {
