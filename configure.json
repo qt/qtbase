@@ -80,6 +80,7 @@
             "force-debug-info": { "type": "boolean", "name": "force_debug_info" },
             "force-pkg-config": { "type": "void", "name": "pkg-config" },
             "framework": "boolean",
+            "gc-binaries": { "type": "boolean", "name": "gc_binaries" },
             "gdb-index": { "type": "boolean", "name": "gdb_index" },
             "gcc-sysroot": "boolean",
             "gcov": "boolean",
@@ -397,6 +398,17 @@
                 ]
             }
         },
+        "gc_binaries": {
+            "label": "support for split sections and linker garbage collection",
+            "type": "compile",
+            "test": {
+                "qmake": [
+                    "isEmpty(QMAKE_CFLAGS_SPLIT_SECTIONS): error(\"Nope\")",
+                    "isEmpty(QMAKE_CXXFLAGS_SPLIT_SECTIONS): error(\"Nope\")",
+                    "isEmpty(QMAKE_LFLAGS_GCSECTIONS): error(\"Nope\")"
+                ]
+            }
+        },
         "sse2": {
             "label": "SSE2 instructions",
             "type": "x86Simd"
@@ -591,6 +603,10 @@
         },
         "compiler-flags": {
             "output": [ "compilerFlags" ]
+        },
+        "gc_binaries": {
+            "condition": "!features.shared && tests.gc_binaries",
+            "output": [ "privateFeature" ]
         },
         "gcc-sysroot": {
             "output": [ "gccSysroot" ],

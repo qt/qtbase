@@ -98,6 +98,9 @@ Build options:
   -gdb-index ........... Index the debug info to speed up GDB
                          [no; auto if -developer-build with debug info]
   -strip ............... Strip release binaries of unneeded symbols [yes]
+  -gc-binaries ......... Place each function or data item into its own section
+                         and enable linker garbage collection of unused
+                         sections. [auto for static builds, otherwise no]
   -force-asserts ....... Enable Q_ASSERT even in release builds [no]
   -developer-build ..... Compile and link Qt for developing Qt itself
                          (exports for auto-tests, extra checks, etc.) [no]

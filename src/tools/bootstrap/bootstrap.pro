@@ -2,7 +2,7 @@ option(host_build)
 
 TARGET = QtBootstrap
 QT =
-CONFIG += minimal_syncqt internal_module force_bootstrap
+CONFIG += minimal_syncqt internal_module force_bootstrap gc_binaries
 
 MODULE_INCNAME = QtCore QtXml
 MODULE_DEFINES = \
@@ -12,6 +12,7 @@ MODULE_DEFINES = \
         QT_VERSION_PATCH=$$QT_PATCH_VERSION \
         QT_BOOTSTRAPPED \
         QT_NO_CAST_TO_ASCII
+MODULE_CONFIG = gc_binaries
 
 DEFINES += \
     $$MODULE_DEFINES \
