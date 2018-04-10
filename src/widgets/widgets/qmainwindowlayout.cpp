@@ -467,6 +467,8 @@ void QDockWidgetGroupWindow::adjustFlags()
     }
 
     if (oldFlags != flags) {
+        if (!windowHandle())
+            create(); // The desired geometry is forgotten if we call setWindowFlags before having a window
         setWindowFlags(flags);
         const bool gainedNativeDecos = (oldFlags & Qt::FramelessWindowHint) && !(flags & Qt::FramelessWindowHint);
         const bool lostNativeDecos = !(oldFlags & Qt::FramelessWindowHint) && (flags & Qt::FramelessWindowHint);
