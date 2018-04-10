@@ -601,12 +601,19 @@ xcb_cursor_t QXcbCursor::createFontCursor(int cshape)
 
 xcb_cursor_t QXcbCursor::createBitmapCursor(QCursor *cursor)
 {
-    xcb_connection_t *conn = xcb_connection();
     QPoint spot = cursor->hotSpot();
     xcb_cursor_t c = XCB_NONE;
-    if (cursor->pixmap().depth() > 1)
-        c = qt_xcb_createCursorXRender(m_screen, cursor->pixmap().toImage(), spot);
-    if (!c) {
+    if (cursor->pixmap().depth() > 1) {
+#if QT_CONFIG(xcb_render)
+        if (connection()->hasXRender(0, 5))
+            c = qt_xcb_createCursorXRender(m_screen, cursor->pixmap().toImage(), spot);
+        else
+            qCWarning(lcQpaXcb, "xrender >= 0.5 required to create pixmap cursors");
+#else
+        qCWarning(lcQpaXcb, "This build of Qt does not support pixmap cursors");
+#endif
+    } else {
+        xcb_connection_t *conn = xcb_connection();
         xcb_pixmap_t cp = qt_xcb_XPixmapFromBitmap(m_screen, cursor->bitmap()->toImage());
         xcb_pixmap_t mp = qt_xcb_XPixmapFromBitmap(m_screen, cursor->mask()->toImage());
         c = xcb_generate_id(conn);
