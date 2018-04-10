@@ -5593,21 +5593,23 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             if (renderToTexture) {
                 // This widget renders into a texture which is composed later. We just need to
                 // punch a hole in the backingstore, so the texture will be visible.
-                if (!q->testAttribute(Qt::WA_AlwaysStackOnTop)) {
-                    beginBackingStorePainting();
-                    if (backingStore) {
-                        QPainter p(q);
-                        p.setCompositionMode(QPainter::CompositionMode_Source);
-                        p.fillRect(q->rect(), Qt::transparent);
-                    } else {
-                        QImage img = grabFramebuffer();
-                        QPainter p(q);
-                        // We are not drawing to a backingstore: fall back to QImage
-                        p.drawImage(q->rect(), img);
-                        skipPaintEvent = true;
-                    }
-                    endBackingStorePainting();
+                beginBackingStorePainting();
+                if (!q->testAttribute(Qt::WA_AlwaysStackOnTop) && backingStore) {
+                    QPainter p(q);
+                    p.setCompositionMode(QPainter::CompositionMode_Source);
+                    p.fillRect(q->rect(), Qt::transparent);
+                } else if (!backingStore) {
+                    // We are not drawing to a backingstore: fall back to QImage
+                    QImage img = grabFramebuffer();
+                    // grabFramebuffer() always sets the format to RGB32
+                    // regardless of whether it is transparent or not.
+                    if (img.format() == QImage::Format_RGB32)
+                        img.reinterpretAsFormat(QImage::Format_ARGB32_Premultiplied);
+                    QPainter p(q);
+                    p.drawImage(q->rect(), img);
+                    skipPaintEvent = true;
                 }
+                endBackingStorePainting();
                 if (renderToTextureReallyDirty)
                     renderToTextureReallyDirty = 0;
                 else
