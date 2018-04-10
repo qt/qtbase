@@ -1200,8 +1200,8 @@ QWidget *QSplitter::replaceWidget(int index, QWidget *widget)
 /*!
     \fn int QSplitter::indexOf(QWidget *widget) const
 
-    Returns the index in the splitter's layout of the specified \a widget. This
-    also works for handles.
+    Returns the index in the splitter's layout of the specified \a widget,
+    or -1 if \a widget is not found. This also works for handles.
 
     Handles are numbered from 0. There are as many handles as there
     are child widgets, but the handle at position 0 is always hidden.
