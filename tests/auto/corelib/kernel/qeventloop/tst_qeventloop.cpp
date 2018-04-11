@@ -586,7 +586,6 @@ void tst_QEventLoop::deliverInDefinedOrder()
         }
     }
 
-    QTest::qWait(30);
     for (int o = 0; o < NbObject; o++) {
         QTRY_COMPARE(objects[o].count, int(NbEvent));
     }

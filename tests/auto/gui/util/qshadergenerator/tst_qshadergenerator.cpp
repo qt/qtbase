@@ -372,6 +372,8 @@ namespace {
                 return "const";
             case QShaderLanguage::Input:
                 return "varying";
+            case QShaderLanguage::BuiltIn:
+                return "//";
             case QShaderLanguage::Output:
                 return ""; // Although fragment shaders for <=2 only have fixed outputs
             case QShaderLanguage::Uniform:
@@ -383,6 +385,8 @@ namespace {
                 return "const";
             case QShaderLanguage::Input:
                 return "in";
+            case QShaderLanguage::BuiltIn:
+                return "//";
             case QShaderLanguage::Output:
                 return "out";
             case QShaderLanguage::Uniform:

@@ -68,6 +68,7 @@
 #include <qstack.h>
 #include <qmap.h>
 #include <qtimer.h>
+#include <qpointer.h>
 
 #ifndef QT_NO_DEBUG_STREAM
 #  include <qdebug.h>
@@ -1654,7 +1655,7 @@ void QMainWindowLayout::keepSize(QDockWidget *w)
 class QMainWindowTabBar : public QTabBar
 {
     QMainWindow *mainWindow;
-    QDockWidget *draggingDock; // Currently dragging (detached) dock widget
+    QPointer<QDockWidget> draggingDock; // Currently dragging (detached) dock widget
 public:
     QMainWindowTabBar(QMainWindow *parent);
 protected:
@@ -1665,7 +1666,7 @@ protected:
 };
 
 QMainWindowTabBar::QMainWindowTabBar(QMainWindow *parent)
-    : QTabBar(parent), mainWindow(parent), draggingDock(0)
+    : QTabBar(parent), mainWindow(parent)
 {
     setExpanding(false);
 }

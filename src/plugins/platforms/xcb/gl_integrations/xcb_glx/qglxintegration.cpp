@@ -639,6 +639,8 @@ QFunctionPointer QGLXContext::getProcAddress(const char *procName)
                 extern const QString qt_gl_library_name();
 //                QLibrary lib(qt_gl_library_name());
                 QLibrary lib(QLatin1String("GL"));
+                if (!lib.load())
+                    lib.setFileNameAndVersion(QLatin1String("GL"), 1);
                 glXGetProcAddressARB = (qt_glXGetProcAddressARB) lib.resolve("glXGetProcAddressARB");
 #endif
             }

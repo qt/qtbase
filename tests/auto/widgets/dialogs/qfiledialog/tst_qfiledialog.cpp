@@ -471,6 +471,9 @@ void tst_QFiledialog::completer()
         for (int i = 0; i < 10; ++i) {
             TemporaryFilePtr file(new QTemporaryFile(startPath + QStringLiteral("/rXXXXXX")));
             QVERIFY2(file->open(), qPrintable(file->errorString()));
+            // Force the temporary file to materialize with the requested name
+            (void) file->fileName();
+            QVERIFY(file->exists());
             files.append(file);
         }
     }
