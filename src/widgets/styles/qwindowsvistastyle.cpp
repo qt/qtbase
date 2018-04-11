@@ -2159,12 +2159,12 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
         if (const QStyleOptionTitleBar *tb = qstyleoption_cast<const QStyleOptionTitleBar *>(option)) {
             if (!buttonVisible(subControl, tb))
                 return rect;
+            const qreal factor = QWindowsStylePrivate::nativeMetricScaleFactor(widget);
             const bool isToolTitle = false;
             const int height = tb->rect.height();
             const int width = tb->rect.width();
             const int buttonWidth =
-                qRound(qreal(GetSystemMetrics(SM_CXSIZE)) * QWindowsStylePrivate::nativeMetricScaleFactor(widget)
-                       - QStyleHelper::dpiScaled(4));
+                qRound(qreal(GetSystemMetrics(SM_CXSIZE)) * factor - QStyleHelper::dpiScaled(4));
 
             const int frameWidth = proxy()->pixelMetric(PM_MdiSubWindowFrameWidth, option, widget);
             const bool sysmenuHint  = (tb->titleBarFlags & Qt::WindowSystemMenuHint) != 0;
@@ -2178,31 +2178,31 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
                 rect = QRect(frameWidth, 0, width - (buttonWidth + frameWidth + 10), height);
                 if (isToolTitle) {
                     if (sysmenuHint) {
-                        rect.adjust(0, 0, -buttonWidth - 3, 0);
+                        rect.adjust(0, 0, int(-buttonWidth - 3 * factor), 0);
                     }
                     if (minimizeHint || maximizeHint)
-                        rect.adjust(0, 0, -buttonWidth - 2, 0);
+                        rect.adjust(0, 0, int(-buttonWidth - 2 * factor), 0);
                 } else {
                     if (sysmenuHint) {
-                        const int leftOffset = height - 8;
-                        rect.adjust(leftOffset, 0, 0, 4);
+                        const int leftOffset = int(height - 8 * factor);
+                        rect.adjust(leftOffset, 0, 0, int(4 * factor));
                     }
                     if (minimizeHint)
-                        rect.adjust(0, 0, -buttonWidth - 2, 0);
+                        rect.adjust(0, 0, int(-buttonWidth - 2 * factor), 0);
                     if (maximizeHint)
-                        rect.adjust(0, 0, -buttonWidth - 2, 0);
+                        rect.adjust(0, 0, int(-buttonWidth - 2 * factor), 0);
                     if (contextHint)
-                        rect.adjust(0, 0, -buttonWidth - 2, 0);
+                        rect.adjust(0, 0, int(-buttonWidth - 2 * factor), 0);
                     if (shadeHint)
-                        rect.adjust(0, 0, -buttonWidth - 2, 0);
+                        rect.adjust(0, 0, int(-buttonWidth - 2 * factor), 0);
                 }
-                rect.translate(0, 2);
+                rect.translate(0, int(2 * factor));
                 rect = visualRect(option->direction, option->rect, rect);
                 break;
             case SC_TitleBarSysMenu:
                 {
-                    const int controlTop = 6;
-                    const int controlHeight = height - controlTop - 3;
+                    const int controlTop = int(6 * factor);
+                    const int controlHeight = int(height - controlTop - 3 * factor);
                     int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
                     QSize iconSize = tb->icon.actualSize(QSize(iconExtent, iconExtent));
                     if (tb->icon.isNull())
@@ -2210,7 +2210,7 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
                     int hPad = (controlHeight - iconSize.height())/2;
                     int vPad = (controlHeight - iconSize.width())/2;
                     rect = QRect(frameWidth + hPad, controlTop + vPad, iconSize.width(), iconSize.height());
-                    rect.translate(0, 3);
+                    rect.translate(0, int(3 * factor));
                     rect = visualRect(option->direction, option->rect, rect);
                 }
                 break;
