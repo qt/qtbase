@@ -208,6 +208,7 @@ static bool isDefaultCategory(const char *category)
 /*!
     Returns true if writing to \c stderr is supported.
 
+    \internal
     \sa stderrHasConsoleAttached()
 */
 static bool systemHasStderr()
@@ -236,6 +237,7 @@ static bool systemHasStderr()
     the output might still end up visible to the user. For this reason, we don't guard
     the stderr output in the default message handler with stderrHasConsoleAttached().
 
+    \internal
     \sa systemHasStderr()
 */
 bool stderrHasConsoleAttached()
@@ -288,6 +290,7 @@ namespace QtPrivate {
     This is normally the case if \c stderr has a console attached, but may be overridden
     by the user by setting the QT_FORCE_STDERR_LOGGING environment variable to \c 1.
 
+    \internal
     \sa stderrHasConsoleAttached()
 */
 bool shouldLogToStderr()
