@@ -481,8 +481,9 @@ void tst_QTimeZone::transitionEachZone_data()
     };
 
     QString name;
+    const auto zones = QTimeZone::availableTimeZoneIds();
     for (int k = sizeof(table) / sizeof(table[0]); k-- > 0; ) {
-        foreach (QByteArray zone, QTimeZone::availableTimeZoneIds()) {
+        for (const QByteArray &zone : zones) {
             name.sprintf("%s@%d", zone.constData(), table[k].year);
             QTest::newRow(name.toUtf8().constData())
                 << zone
@@ -907,7 +908,7 @@ void tst_QTimeZone::tzTest()
     QLocale enUS("en_US");
     // Only test names in debug mode, names used can vary by ICU version installed
     if (debug) {
-#ifdef QT_CONFIG(icu)
+#if QT_CONFIG(icu)
         QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::LongName, enUS),
                 QString("Central European Standard Time"));
         QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::ShortName, enUS),
