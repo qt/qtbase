@@ -317,6 +317,9 @@ bool QDockWidgetGroupWindow::event(QEvent *e)
         // We might need to show the widget again
         destroyOrHideIfEmpty();
         break;
+    case QEvent::Resize:
+        updateCurrentGapRect();
+        emit resized();
     default:
         break;
     }
@@ -548,10 +551,16 @@ bool QDockWidgetGroupWindow::hover(QLayoutItem *widgetItem, const QPoint &mouseP
     currentGapPos = newGapPos;
     newState.insertGap(currentGapPos, widgetItem);
     newState.fitItems();
-    currentGapRect = newState.info(currentGapPos)->itemRect(currentGapPos.last(), true);
     *layoutInfo() = std::move(newState);
+    updateCurrentGapRect();
     layoutInfo()->apply(opts & QMainWindow::AnimatedDocks);
     return true;
+}
+
+void QDockWidgetGroupWindow::updateCurrentGapRect()
+{
+    if (!currentGapPos.isEmpty())
+        currentGapRect = layoutInfo()->info(currentGapPos)->itemRect(currentGapPos.last(), true);
 }
 
 /*
@@ -1979,6 +1988,8 @@ void QMainWindowLayout::setCurrentHoveredFloat(QDockWidgetGroupWindow *w)
         if (currentHoveredFloat) {
             disconnect(currentHoveredFloat.data(), &QObject::destroyed,
                        this, &QMainWindowLayout::updateGapIndicator);
+            disconnect(currentHoveredFloat.data(), &QDockWidgetGroupWindow::resized,
+                       this, &QMainWindowLayout::updateGapIndicator);
             if (currentHoveredFloat)
                 currentHoveredFloat->restore();
         } else if (w) {
@@ -1989,6 +2000,8 @@ void QMainWindowLayout::setCurrentHoveredFloat(QDockWidgetGroupWindow *w)
 
         if (w) {
             connect(w, &QObject::destroyed,
+                    this, &QMainWindowLayout::updateGapIndicator, Qt::UniqueConnection);
+            connect(w, &QDockWidgetGroupWindow::resized,
                     this, &QMainWindowLayout::updateGapIndicator, Qt::UniqueConnection);
         }
 
