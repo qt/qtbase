@@ -3602,6 +3602,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 return;
             }
 
+            const bool isActive = tabOpt->state & State_Active;
             const bool isEnabled = tabOpt->state & State_Enabled;
             const bool isPressed = tabOpt->state & State_Sunken;
             const bool isSelected = tabOpt->state & State_Selected;
@@ -3630,17 +3631,20 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             // a push NSButton instead and clip the CGContext.
 
             const auto cs = d->effectiveAquaSizeConstrain(opt, w);
-            // Extra hack to get the proper pressed appreance when not selected
-            const auto ct = isSelected || tp == QStyleOptionTab::OnlyOneTab ?
+            // Extra hacks to get the proper pressed appreance when not selected or selected and inactive
+            const bool needsInactiveHack = (!isActive && isSelected);
+            const auto ct = !needsInactiveHack && (isSelected || tp == QStyleOptionTab::OnlyOneTab) ?
                     QMacStylePrivate::Button_PushButton :
                     QMacStylePrivate::Button_PopupButton;
+            const bool isPopupButton = ct == QMacStylePrivate::Button_PopupButton;
             const auto cw = QMacStylePrivate::CocoaControl(ct, cs);
             auto *pb = static_cast<NSButton *>(d->cocoaControl(cw));
-            auto vOffset = isSelected ? 2 : 1;
+
+            auto vOffset = isPopupButton ? 1 : 2;
             if (tabDirection == QMacStylePrivate::East)
                 vOffset -= 1;
-            const auto outerAdjust = isSelected ? 4 : 1;
-            const auto innerAdjust = isSelected ? 10 : 20;
+            const auto outerAdjust = isPopupButton ? 1 : 4;
+            const auto innerAdjust = isPopupButton ? 20 : 10;
             QRectF frameRect = tabOpt->rect;
             if (verticalTabs)
                 frameRect = QRectF(frameRect.y(), frameRect.x(), frameRect.height(), frameRect.width());
@@ -3672,10 +3676,12 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 
             pb.enabled = isEnabled;
             [pb highlight:isPressed];
-            pb.state = isSelected && !isPressed ? NSOnState : NSOffState;
-            d->drawNSViewInRect(pb, frameRect, p, ^(CGContextRef ctx, const CGRect &r) {
+            // Set off state when inactive. See needsInactiveHack for when it's selected
+            pb.state = (isActive && isSelected && !isPressed) ? NSOnState : NSOffState;
+
+            const auto drawBezelBlock = ^(CGContextRef ctx, const CGRect &r) {
                 CGContextClipToRect(ctx, opt->rect.toCGRect());
-                if (!isSelected) {
+                if (!isSelected || needsInactiveHack) {
                     // Final stage of the pressed state hack: flip NSPopupButton rendering
                     if (!verticalTabs && tp == QStyleOptionTab::End) {
                         CGContextTranslateCTM(ctx, opt->rect.right(), 0);
@@ -3703,7 +3709,42 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 }
 
                 [pb.cell drawBezelWithFrame:r inView:pb.superview];
-            });
+            };
+
+            if (needsInactiveHack) {
+                // First, render tab as non-selected tab on a pixamp
+                const qreal pixelRatio = p->device()->devicePixelRatioF();
+                QImage tabPixmap(opt->rect.size() * pixelRatio, QImage::Format_ARGB32_Premultiplied);
+                tabPixmap.setDevicePixelRatio(pixelRatio);
+                tabPixmap.fill(Qt::transparent);
+                QPainter tabPainter(&tabPixmap);
+                d->drawNSViewInRect(pb, frameRect, &tabPainter, ^(CGContextRef ctx, const CGRect &r) {
+                    CGContextTranslateCTM(ctx, -opt->rect.left(), -opt->rect.top());
+                    drawBezelBlock(ctx, r);
+                });
+                tabPainter.end();
+
+                // Then, darken it with the proper shade of gray
+                const qreal inactiveGray = 0.898; // As measured
+                const int inactiveGray8 = qRound(inactiveGray * 255.0);
+                const QRgb inactiveGrayRGB = qRgb(inactiveGray8, inactiveGray8, inactiveGray8);
+                for (int l = 0; l < tabPixmap.height(); ++l) {
+                    auto *line = reinterpret_cast<QRgb*>(tabPixmap.scanLine(l));
+                    for (int i = 0; i < tabPixmap.width(); ++i) {
+                        if (qAlpha(line[i]) == 255) {
+                            line[i] = inactiveGrayRGB;
+                        } else if (qAlpha(line[i]) > 128) {
+                            const int g = qRound(inactiveGray * qRed(line[i]));
+                            line[i] = qRgba(g, g, g, qAlpha(line[i]));
+                        }
+                    }
+                }
+
+                // Finally, draw the tab pixmap on the current painter
+                p->drawImage(opt->rect, tabPixmap);
+            } else {
+                d->drawNSViewInRect(pb, frameRect, p, drawBezelBlock);
+            }
 
             if (!isSelected && sp != QStyleOptionTab::NextIsSelected
                     && tp != QStyleOptionTab::End
