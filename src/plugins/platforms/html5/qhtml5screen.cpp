@@ -41,10 +41,6 @@
 #include <QGuiApplication>
 #include <private/qhighdpiscaling_p.h>
 
-#ifdef Q_OPENKODE
-#include <KD/kd.h>
-#include <KD/NV_initialize.h>
-#endif //Q_OPENKODE
 
 QT_BEGIN_NAMESPACE
 

@@ -121,7 +121,6 @@ QHtml5Integration::QHtml5Integration()
 
 QHtml5Integration::~QHtml5Integration()
 {
-    qDebug() << Q_FUNC_INFO;
     delete mCompositor;
     destroyScreen(mScreen);
     delete mFontDb;

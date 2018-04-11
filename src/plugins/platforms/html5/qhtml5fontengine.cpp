@@ -29,10 +29,6 @@
 
 #include "qhtml5fontengine.h"
 
-//#ifdef QT_HTML5_USE_HTML5_FONT_ENGINE
-
-//#include <ppapi/cpp/dev/font_dev.h>
-
 static inline unsigned int getChar(const QChar *str, int &i, const int len)
 {
     unsigned int uc = str[i].unicode();
@@ -58,36 +54,6 @@ QFontEngineHtml5::QFontEngineHtml5(const QFontDef &fontDef)
     qDebug() << "QFontEngineHtml5 done";
 }
 
-//bool QFontEngineHtml5::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,
-//                                     QTextEngine::ShaperFlags flags) const
-//{
-//    if (*nglyphs < len) {
-//        *nglyphs = len;
-//        return false;
-//    }
-//    *nglyphs = 0;
-
-//    bool mirrored = flags & QTextEngine::RightToLeft;
-//    for (int i = 0; i < len; i++) {
-//        unsigned int uc = getChar(str, i, len);
-//        if (mirrored)
-//            uc = QChar::mirroredChar(uc);
-//        glyphs->glyphs[*nglyphs] = uc < 0x10000 ? uc : 0;
-//        ++*nglyphs;
-//    }
-
-//    glyphs->numGlyphs = *nglyphs;
-
-//    if (flags & QTextEngine::GlyphIndicesOnly)
-//        return true;
-
-//    qDebug() << "recalc advances";
-
-//    //    recalcAdvances(glyphs, flags);
-
-//    return true;
-//}
-
 glyph_metrics_t QFontEngineHtml5::boundingBox(const QGlyphLayout &glyphLayout) {}
 
 glyph_metrics_t QFontEngineHtml5::boundingBox(glyph_t glyph) {}
@@ -106,4 +72,4 @@ bool QFontEngineHtml5::canRender(const QChar *, int) { return true; }
 
 QFontEngine::Type QFontEngineHtml5::type() const { return QFontEngine::TestFontEngine; }
 
-//#endif // QT_html5_USE_html5_FONT_ENGINE
+

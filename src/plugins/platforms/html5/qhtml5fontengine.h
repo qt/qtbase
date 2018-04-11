@@ -32,18 +32,12 @@
 
 #include <private/qfontengine_p.h>
 
-//#ifdef QT_HTML5_USE_HTML5_FONT_ENGINE
-
-//#include <ppapi/cpp/dev/font_dev.h>
-
 QT_BEGIN_NAMESPACE
 
 class QFontEngineHtml5: public QFontEngine
 {
 public:
     QFontEngineHtml5(const QFontDef &fontDef);
-//    bool stringToCMap(const QChar *, int, QGlyphLayout *, int *,
-//                      QFlags<QTextEngine::ShaperFlag>) const;
     glyph_metrics_t boundingBox(const QGlyphLayout &);
     glyph_metrics_t boundingBox(glyph_t);
     QFixed ascent() const;
@@ -57,13 +51,8 @@ public:
 private:
     QString m_fontName;
     QFontDef m_fontDef;
-//    pp::FontDescription_Dev m_html5RequestedFontDescription;
-//    pp::FontDescription_Dev m_html5ActualFontDescription;
-//    pp::Font_Dev m_html5Font;
-//    PP_FontMetrics_Dev m_html5FontMetrics;
 };
 
 QT_END_NAMESPACE
 
-//#endif
 #endif

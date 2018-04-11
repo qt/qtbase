@@ -86,7 +86,6 @@ EMSCRIPTEN_WEBGL_CONTEXT_HANDLE QHtml5OpenGLContext::createEmscriptenContext(con
     attributes.failIfMajorPerformanceCaveat = false;
     attributes.antialias = true;
     attributes.enableExtensionsByDefault = true;
-    attributes.enableExtensionsByDefault = true;
 
     if (format.majorVersion() == 3) {
         attributes.majorVersion = 2;

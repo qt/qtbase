@@ -68,41 +68,6 @@ void QHtml5BackingStore::flush(QWindow *window, const QRegion &region, const QPo
 
     mDirty |= region;
     mCompositor->requestRedraw();
-
-    /*
-    auto* screen = static_cast<QHtml5Screen *>(window->screen()->handle());
-
-    mContext->makeCurrent(window);
-
-    int dx = window->handle()->winId() == 1 ? 100 : 0;
-    int dy = window->handle()->winId() == 1 ? 100 : 0;
-
-    //glViewport(0, 0, screen->geometry().width(), screen->geometry().height());
-    glViewport(offset.x() + dx, window->screen()->geometry().height() - offset.y() - window->height() - dy, window->width(), window->height());
-
-
-    updateTexture();
-
-    if (!mBlitter->isCreated())
-        mBlitter->create();
-
-    float x = (float)window->x() / (float)screen->geometry().width();
-    float y = 1.0f - (float)window->y() / (float)screen->geometry().height();
-
-    QMatrix4x4 m;
-    //m.translate(offset.x(), offset.y());
-    //m.translate(-0.5f + 1.0f * (float)(window->handle()->winId() - 1), 0.0f);
-    //m.translate(x, y);
-    //m.translate(0, y);
-    //m.scale(0.5f, 0.5f);
-
-    mBlitter->bind();
-    mBlitter->setRedBlueSwizzle(true);
-    mBlitter->blit(mTexture->textureId(), m, QOpenGLTextureBlitter::OriginTopLeft);
-    mBlitter->release();
-
-    mContext->swapBuffers(window);
-    */
 }
 
 void QHtml5BackingStore::updateTexture()
@@ -158,7 +123,6 @@ void QHtml5BackingStore::updateTexture()
 void QHtml5BackingStore::beginPaint(const QRegion &region)
 {
     mDirty |= region;
-    //mContext->makeCurrent(window());
     // Keep backing store device pixel ratio in sync with window
     if (mImage.devicePixelRatio() != window()->devicePixelRatio())
         resize(backingStore()->size(), backingStore()->staticContents());
@@ -176,8 +140,6 @@ void QHtml5BackingStore::resize(const QSize &size, const QRegion &staticContents
 
     mImage = QImage(size * window()->devicePixelRatio(), QImage::Format_RGB32);
     mImage.setDevicePixelRatio(window()->devicePixelRatio());
-
-    //mContext->makeCurrent(window());
 
     if (mTexture->isCreated())
         mTexture->destroy();

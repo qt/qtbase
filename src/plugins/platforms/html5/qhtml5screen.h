@@ -63,23 +63,11 @@ public:
     QWindow *topWindow() const;
     QWindow *topLevelAt(const QPoint & p) const override;
 
-    //virtual void addWindow(QHtml5Window *window);
-    //virtual void removeWindow(QHtml5Window *window);
-    //virtual void raise(QHtml5Window *window);
-    //virtual void lower(QHtml5Window *window);
-    //virtual void topWindowChanged(QWindow *) {}
-    //virtual int windowCount() const;
-
-    //void scheduleUpdate();
-
     void invalidateSize();
 
 public slots:
-    //virtual void setDirty(const QRect &rect);
     void setGeometry(const QRect &rect);
 protected:
-    //QList<QHtml5Window *> mWindowStack;
-    //QRegion mRepaintRegion;
 
 private:
     bool mUpdatePending;
@@ -92,7 +80,6 @@ private:
     QImage::Format m_format;
     QHtml5Cursor m_cursor;
 };
-//Q_DECLARE_OPERATORS_FOR_FLAGS(QHtml5Screen::Flags)
 
 QT_END_NAMESPACE
 #endif // QHTML5SCREEN_H

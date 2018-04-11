@@ -40,13 +40,9 @@
 
 #include <iostream>
 
-//#include "qhtml5compositor.h"
 Q_GUI_EXPORT int qt_defaultDpiX();
 
 QT_BEGIN_NAMESPACE
-
-//static QHtml5Window *globalHtml5Window;
-//QHtml5Window *QHtml5Window::get() { return globalHtml5Window; }
 
 QHtml5Window::QHtml5Window(QWindow *w, QHtml5Compositor* compositor, QHtml5BackingStore *backingStore)
     : QPlatformWindow(w),
@@ -55,12 +51,11 @@ QHtml5Window::QHtml5Window(QWindow *w, QHtml5Compositor* compositor, QHtml5Backi
       mBackingStore(backingStore)
 {
     needsCompositor = w->surfaceType() != QSurface::OpenGLSurface;
-    //globalHtml5Window = this;
     static int serialNo = 0;
     m_winid  = ++serialNo;
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglWindow %p: %p 0x%x\n", this, w, uint(m_winid));
-#endif
+    qWarning("QHtml5Window %p: %p 0x%x\n", this, w, uint(m_winid));
+
+    qDebug() << "Surfacetype" << w->surfaceType();
 
     mCompositor->addWindow(this);
 
