@@ -964,6 +964,8 @@ bool QLabel::event(QEvent *e)
         QShortcutEvent *se = static_cast<QShortcutEvent *>(e);
         if (se->shortcutId() == d->shortcutId) {
             QWidget * w = d->buddy;
+            if (!w)
+                return QFrame::event(e);
             if (w->focusPolicy() != Qt::NoFocus)
                 w->setFocus(Qt::ShortcutFocusReason);
 #if QT_CONFIG(abstractbutton)

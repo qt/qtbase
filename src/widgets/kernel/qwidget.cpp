@@ -5520,11 +5520,11 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 setSystemClip(pdev, rgn.translated(offset));
                 QPainter p(pdev);
                 p.translate(offset);
-                context.painter = context.sharedPainter = &p;
+                context.painter = &p;
                 graphicsEffect->draw(&p);
                 setSystemClip(pdev, QRegion());
             } else {
-                context.painter = context.sharedPainter = sharedPainter;
+                context.painter = sharedPainter;
                 if (sharedPainter->worldTransform() != sourced->lastEffectTransform) {
                     sourced->invalidateCache();
                     sourced->lastEffectTransform = sharedPainter->worldTransform();
