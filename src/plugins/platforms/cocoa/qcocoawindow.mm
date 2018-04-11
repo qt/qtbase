@@ -1336,7 +1336,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
 void QCocoaWindow::requestUpdate()
 {
     qCDebug(lcQpaCocoaDrawing) << "QCocoaWindow::requestUpdate" << window();
-    [qnsview_cast(m_view) requestUpdate];
+    QPlatformWindow::requestUpdate();
 }
 
 void QCocoaWindow::requestActivateWindow()
