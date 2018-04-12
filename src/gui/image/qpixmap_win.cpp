@@ -111,7 +111,7 @@ static inline uchar *getDiBits(HDC hdc, HBITMAP bitmap, int width, int height, b
     if (!GetDIBits(hdc, bitmap, 0, UINT(height), result, &bmi, DIB_RGB_COLORS)) {
         delete [] result;
         qErrnoWarning("%s: GetDIBits() failed to get bitmap bits.", __FUNCTION__);
-        return 0;
+        return nullptr;
     }
     return result;
 }
@@ -196,7 +196,7 @@ static QImage copyImageData(const BITMAPINFOHEADER &header, const RGBQUAD *color
     case 8:
     case 16:
     case 24:
-        Q_ASSERT(DWORD(image.byteCount()) == header.biSizeImage);
+        Q_ASSERT(DWORD(image.sizeInBytes()) == header.biSizeImage);
         memcpy(image.bits(), data, header.biSizeImage);
         if (format == QImage::Format_RGB888)
             image = image.rgbSwapped();
@@ -212,8 +212,8 @@ class DisplayHdc
 {
     Q_DISABLE_COPY(DisplayHdc)
 public:
-    DisplayHdc() : m_displayDc(GetDC(0)) {}
-    ~DisplayHdc() { ReleaseDC(0, m_displayDc); }
+    DisplayHdc() : m_displayDc(GetDC(nullptr)) {}
+    ~DisplayHdc() { ReleaseDC(nullptr, m_displayDc); }
 
     operator HDC() const { return m_displayDc; }
 
@@ -234,10 +234,10 @@ Q_GUI_EXPORT HBITMAP qt_createIconMask(const QBitmap &bitmap)
     const int w = bm.width();
     const int h = bm.height();
     const int bpl = ((w+15)/16)*2; // bpl, 16 bit alignment
-    QScopedArrayPointer<uchar> bits(new uchar[bpl * h]);
+    QScopedArrayPointer<uchar> bits(new uchar[size_t(bpl * h)]);
     bm.invertPixels();
     for (int y = 0; y < h; ++y)
-        memcpy(bits.data() + y * bpl, bm.constScanLine(y), bpl);
+        memcpy(bits.data() + y * bpl, bm.constScanLine(y), size_t(bpl));
     HBITMAP hbm = CreateBitmap(w, h, 1, 1, bits.data());
     return hbm;
 }
@@ -258,7 +258,7 @@ static inline QImage::Format format32(int hbitmapFormat)
 Q_GUI_EXPORT HBITMAP qt_imageToWinHBITMAP(const QImage &imageIn, int hbitmapFormat = 0)
 {
     if (imageIn.isNull())
-        return 0;
+        return nullptr;
 
     // Define the header
     DWORD compression = 0;
@@ -327,15 +327,15 @@ Q_GUI_EXPORT HBITMAP qt_imageToWinHBITMAP(const QImage &imageIn, int hbitmapForm
 
     // Create the pixmap
     uchar *pixels = nullptr;
-    const HBITMAP bitmap = CreateDIBSection(0, &bmi, DIB_RGB_COLORS,
-                                            reinterpret_cast<void **>(&pixels), 0, 0);
+    const HBITMAP bitmap = CreateDIBSection(nullptr, &bmi, DIB_RGB_COLORS,
+                                            reinterpret_cast<void **>(&pixels), nullptr, 0);
     if (!bitmap) {
         qErrnoWarning("%s, failed to create dibsection", __FUNCTION__);
-        return 0;
+        return nullptr;
     }
     if (!pixels) {
         qErrnoWarning("%s, did not allocate pixel data", __FUNCTION__);
-        return 0;
+        return nullptr;
     }
     memcpy(pixels, image.constBits(), bmi.bmiHeader.biSizeImage);
     if (image.format() == QImage::Format_RGB888)
@@ -346,7 +346,7 @@ Q_GUI_EXPORT HBITMAP qt_imageToWinHBITMAP(const QImage &imageIn, int hbitmapForm
 Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0)
 {
     if (p.isNull())
-        return 0;
+        return nullptr;
 
     QPlatformPixmap *platformPixmap = p.handle();
     if (platformPixmap->classId() != QPlatformPixmap::RasterClass) {
@@ -456,7 +456,7 @@ Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat =
 Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &p)
 {
     if (p.isNull())
-        return 0;
+        return nullptr;
 
     QBitmap maskBitmap = p.mask();
     if (maskBitmap.isNull()) {
@@ -499,7 +499,7 @@ static QImage qt_imageFromWinIconHBITMAP(HDC hdc, HBITMAP bitmap, int w, int h)
     QScopedArrayPointer<uchar> data(getDiBits(hdc, bitmap, w, h, true));
     if (data.isNull())
         return QImage();
-    memcpy(image.bits(), data.data(), image.byteCount());
+    memcpy(image.bits(), data.data(), size_t(image.sizeInBytes()));
     return image;
 }
 
@@ -519,9 +519,9 @@ static inline bool hasAlpha(const QImage &image)
 
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon)
 {
-    HDC screenDevice = GetDC(0);
+    HDC screenDevice = GetDC(nullptr);
     HDC hdc = CreateCompatibleDC(screenDevice);
-    ReleaseDC(0, screenDevice);
+    ReleaseDC(nullptr, screenDevice);
 
     ICONINFO iconinfo;
     const bool result = GetIconInfo(icon, &iconinfo); //x and y Hotspot describes the icon center
@@ -531,25 +531,27 @@ Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon)
         return QPixmap();
     }
 
-    const int w = iconinfo.xHotspot * 2;
-    const int h = iconinfo.yHotspot * 2;
+    const int w = int(iconinfo.xHotspot) * 2;
+    const int h = int(iconinfo.yHotspot) * 2;
 
     BITMAPINFOHEADER bitmapInfo;
     initBitMapInfoHeader(w, h, false, BI_RGB, 32u, &bitmapInfo);
     DWORD* bits;
 
-    HBITMAP winBitmap = CreateDIBSection(hdc, (BITMAPINFO*)&bitmapInfo, DIB_RGB_COLORS, (VOID**)&bits, NULL, 0);
-    HGDIOBJ oldhdc = (HBITMAP)SelectObject(hdc, winBitmap);
-    DrawIconEx( hdc, 0, 0, icon, iconinfo.xHotspot * 2, iconinfo.yHotspot * 2, 0, 0, DI_NORMAL);
+    HBITMAP winBitmap = CreateDIBSection(hdc, reinterpret_cast<BITMAPINFO *>(&bitmapInfo),
+                                         DIB_RGB_COLORS, reinterpret_cast<VOID **>(&bits),
+                                         nullptr, 0);
+    HGDIOBJ oldhdc = static_cast<HBITMAP>(SelectObject(hdc, winBitmap));
+    DrawIconEx(hdc, 0, 0, icon, w, h, 0, nullptr, DI_NORMAL);
     QImage image = qt_imageFromWinIconHBITMAP(hdc, winBitmap, w, h);
 
     if (!image.isNull() && !hasAlpha(image)) { //If no alpha was found, we use the mask to set alpha values
-        DrawIconEx( hdc, 0, 0, icon, w, h, 0, 0, DI_MASK);
+        DrawIconEx( hdc, 0, 0, icon, w, h, 0, nullptr, DI_MASK);
         const QImage mask = qt_imageFromWinIconHBITMAP(hdc, winBitmap, w, h);
 
         for (int y = 0 ; y < h ; y++){
             QRgb *scanlineImage = reinterpret_cast<QRgb *>(image.scanLine(y));
-            const QRgb *scanlineMask = mask.isNull() ? 0 : reinterpret_cast<const QRgb *>(mask.scanLine(y));
+            const QRgb *scanlineMask = mask.isNull() ? nullptr : reinterpret_cast<const QRgb *>(mask.scanLine(y));
             for (int x = 0; x < w ; x++){
                 if (scanlineMask && qRed(scanlineMask[x]) != 0)
                     scanlineImage[x] = 0; //mask out this pixel
