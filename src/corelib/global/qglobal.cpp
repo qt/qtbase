@@ -648,10 +648,10 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
     compiler or platform specific code to their application.
 
     The remaining macros are convenience macros for larger operations:
-    The QT_TRANSLATE_NOOP() and QT_TR_NOOP() macros provide the
-    possibility of marking text for dynamic translation,
-    i.e. translation without changing the stored source text. The
-    Q_ASSERT() and Q_ASSERT_X() enables warning messages of various
+    The QT_TR_NOOP(), QT_TRANSLATE_NOOP(), and QT_TRANSLATE_NOOP3()
+    macros provide the possibility of marking strings for delayed
+    translation.
+    The Q_ASSERT() and Q_ASSERT_X() enables warning messages of various
     level of refinement. The Q_FOREACH() and foreach() macros
     implement Qt's foreach loop.
 
@@ -662,11 +662,11 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
     memory, if the pointer is 0. The qPrintable() and qUtf8Printable()
     macros represent an easy way of printing text.
 
-    Finally, the QT_POINTER_SIZE macro expands to the size of a
-    pointer in bytes, and the QT_VERSION and QT_VERSION_STR macros
-    expand to a numeric value or a string, respectively, specifying
-    Qt's version number, i.e the version the application is compiled
-    against.
+    The QT_POINTER_SIZE macro expands to the size of a pointer in bytes.
+
+    The macros QT_VERSION and QT_VERSION_STR expand to a numeric value
+    or a string, respectively, that specifies the version of Qt that the
+    application is compiled against.
 
     \sa <QtAlgorithms>, QSysInfo
 */
@@ -3676,19 +3676,18 @@ bool qunsetenv(const char *varName)
     \macro QT_TR_NOOP(sourceText)
     \relates <QtGlobal>
 
-    Marks the string literal \a sourceText for dynamic translation in
-    the current context (class), i.e the stored \a sourceText will not
-    be altered.
+    Marks the UTF-8 encoded string literal \a sourceText for delayed
+    translation in the current context (class).
 
-    The macro expands to \a sourceText.
+    The macro tells lupdate to collect the string, and expands to
+    \a sourceText itself.
 
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 34
 
-    The macro QT_TR_NOOP_UTF8() is identical except that it tells lupdate
-    that the source string is encoded in UTF-8. Corresponding variants
-    exist in the QT_TRANSLATE_NOOP() family of macros, too.
+    The macro QT_TR_NOOP_UTF8() is identical and obsolete; this applies
+    to all other _UTF8 macros as well.
 
     \sa QT_TRANSLATE_NOOP(), {Internationalization with Qt}
 */
@@ -3697,12 +3696,12 @@ bool qunsetenv(const char *varName)
     \macro QT_TRANSLATE_NOOP(context, sourceText)
     \relates <QtGlobal>
 
-    Marks the string literal \a sourceText for dynamic translation in
-    the given \a context; i.e, the stored \a sourceText will not be
-    altered. The \a context is typically a class and also needs to
-    be specified as string literal.
+    Marks the UTF-8 encoded string literal \a sourceText for delayed
+    translation in the given \a context. The \a context is typically
+    a class name and also needs to be specified as a string literal.
 
-    The macro expands to \a sourceText.
+    The macro tells lupdate to collect the string, and expands to
+    \a sourceText itself.
 
     Example:
 
@@ -3712,18 +3711,19 @@ bool qunsetenv(const char *varName)
 */
 
 /*!
-    \macro QT_TRANSLATE_NOOP3(context, sourceText, comment)
+    \macro QT_TRANSLATE_NOOP3(context, sourceText, disambiguation)
     \relates <QtGlobal>
     \since 4.4
 
-    Marks the string literal \a sourceText for dynamic translation in the
-    given \a context and with \a comment, i.e the stored \a sourceText will
-    not be altered. The \a context is typically a class and also needs to
-    be specified as string literal. The string literal \a comment
-    will be available for translators using e.g. Qt Linguist.
+    Marks the UTF-8 encoded string literal \a sourceText for delayed
+    translation in the given \a context with the given \a disambiguation.
+    The \a context is typically a class and also needs to be specified
+    as a string literal. The string literal \a disambiguation should be
+    a short semantic tag to tell apart otherwise identical strings.
 
-    The macro expands to anonymous struct of the two string
-    literals passed as \a sourceText and \a comment.
+    The macro tells lupdate to collect the string, and expands to an
+    anonymous struct of the two string literals passed as \a sourceText
+    and \a disambiguation.
 
     Example:
 

@@ -1062,7 +1062,7 @@ template <typename Wrapper> static inline typename Wrapper::pointer qGetPtrHelpe
 #define QT_TRANSLATE_NOOP3(scope, x, comment) {x, comment}
 #define QT_TRANSLATE_NOOP3_UTF8(scope, x, comment) {x, comment}
 
-#ifndef QT_NO_TRANSLATION // ### This should enclose the NOOPs above
+#ifndef QT_NO_TRANSLATION // ### Qt6: This should enclose the NOOPs above
 
 // Defined in qcoreapplication.cpp
 // The better name qTrId() is reserved for an upcoming function which would
