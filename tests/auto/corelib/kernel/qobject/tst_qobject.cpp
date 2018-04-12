@@ -145,6 +145,7 @@ private slots:
     void disconnectDoesNotLeakFunctor();
     void contextDoesNotLeakFunctor();
     void connectBase();
+    void connectWarnings();
     void qmlConnect();
     void exceptions();
     void noDeclarativeParentChangedOnDestruction();
@@ -6683,6 +6684,26 @@ void tst_QObject::connectBase()
     QCOMPARE( r1.count_slot1, 1 );
     QCOMPARE( r1.count_slot2, 1 );
     QCOMPARE( r1.count_slot3, 1 );
+}
+
+void tst_QObject::connectWarnings()
+{
+    SubSender sub;
+    SenderObject obj;
+    ReceiverObject r1;
+    r1.reset();
+
+    QTest::ignoreMessage(QtWarningMsg, "QObject::connect(SenderObject, ReceiverObject): invalid null parameter");
+    connect(nullptr, &SubSender::signal1, &r1, &ReceiverObject::slot1);
+
+    QTest::ignoreMessage(QtWarningMsg, "QObject::connect(SubSender, Unknown): invalid null parameter");
+    connect(&sub, &SubSender::signal1, nullptr, &ReceiverObject::slot1);
+
+    QTest::ignoreMessage(QtWarningMsg, "QObject::connect(SenderObject, ReceiverObject): invalid null parameter");
+    connect(nullptr, &SenderObject::signal1, &r1, &ReceiverObject::slot1);
+
+    QTest::ignoreMessage(QtWarningMsg, "QObject::connect(SenderObject, Unknown): invalid null parameter");
+    connect(&obj, &SenderObject::signal1, nullptr, &ReceiverObject::slot1);
 }
 
 struct QmlReceiver : public QtPrivate::QSlotObjectBase

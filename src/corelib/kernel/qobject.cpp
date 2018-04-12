@@ -4802,7 +4802,12 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
                                              const int *types, const QMetaObject *senderMetaObject)
 {
     if (!sender || !receiver || !slotObj || !senderMetaObject) {
-        qWarning("QObject::connect: invalid null parameter");
+        const char *senderString = sender ? sender->metaObject()->className()
+                                          : senderMetaObject ? senderMetaObject->className()
+                                          : "Unknown";
+        const char *receiverString = receiver ? receiver->metaObject()->className()
+                                              : "Unknown";
+        qWarning("QObject::connect(%s, %s): invalid null parameter", senderString, receiverString);
         if (slotObj)
             slotObj->destroyIfLastRef();
         return QMetaObject::Connection();
