@@ -338,11 +338,15 @@ public:
     bool hasNativeDecos() const;
 
     bool hover(QLayoutItem *widgetItem, const QPoint &mousePos);
+    void updateCurrentGapRect();
     void restore();
     void apply();
 
     QRect currentGapRect;
     QList<int> currentGapPos;
+
+signals:
+    void resized();
 
 protected:
     bool event(QEvent *) override;

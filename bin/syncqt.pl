@@ -98,14 +98,11 @@ my $showonly = 0;
 my $verbose_level = 1;
 my $remove_stale = 1;
 my $force_win = 0;
-my $force_relative = 0;
 my $check_includes = 0;
 my $copy_headers = 0;
-my $create_private_headers = 1;
 my $minimal = 0;
 my $module_version = 0;
 my @modules_to_sync ;
-$force_relative = 1 if ( -d "/System/Library/Frameworks" );
 
 
 # functions ----------------------------------------------------------
@@ -124,7 +121,6 @@ sub showUsage
 
     print "  -copy                 Copy headers instead of include-fwd(default: " . ($copy_headers ? "yes" : "no") . ")\n";
     print "  -remove-stale         Removes stale headers              (default: " . ($remove_stale ? "yes" : "no") . ")\n";
-    print "  -relative             Force relative symlinks            (default: " . ($force_relative ? "yes" : "no") . ")\n";
     print "  -windows              Force platform to Windows          (default: " . ($force_win ? "yes" : "no") . ")\n";
     print "  -showonly             Show action but not perform        (default: " . ($showonly ? "yes" : "no") . ")\n";
     print "  -minimal              Do not create CamelCase headers    (default: " . ($minimal ? "yes" : "no") . ")\n";
@@ -137,7 +133,6 @@ sub showUsage
     print "  -separate-module <NAME>:<PROFILEDIR>:<HEADERDIR>\n";
     print "                        Create headers for <NAME> with original headers in\n";
     print "                        <HEADERDIR> relative to <PROFILEDIR> \n";
-    print "  -private              Force copy private headers         (default: " . ($create_private_headers ? "yes" : "no") . ")\n";
     print "  -help                 This help\n";
     exit 0;
 }
@@ -782,9 +777,6 @@ while ( @ARGV ) {
     } elsif($arg eq "-minimal") {
         $var = "minimal";
         $val = "yes";
-    } elsif($arg eq "-private") {
-        $var = "create_private_headers";
-        $val = "yes";
     } elsif($arg eq "-version") {
         $var = "version";
         $val = shift @ARGV;
@@ -840,12 +832,6 @@ while ( @ARGV ) {
             $force_win++;
         } elsif($force_win) {
             $force_win--;
-        }
-    } elsif ($var eq "relative") {
-        if($val eq "yes") {
-            $force_relative++;
-        } elsif($force_relative) {
-            $force_relative--;
         }
     } elsif ($var eq "minimal") {
         if($val eq "yes") {
@@ -934,7 +920,7 @@ foreach my $lib (@modules_to_sync) {
     $allheadersprivate = 1 if $allmoduleheadersprivate{$lib};
 
     #information used after the syncing
-    my $pri_install_classes = "";
+    my $pri_install_gfiles = "";
     my $pri_install_files = "";
     my $pri_install_ifiles = "";
     my $pri_install_pfiles = "";
@@ -1084,9 +1070,9 @@ foreach my $lib (@modules_to_sync) {
 
                                     $header_copies++ if (!$shadow && syncHeader($lib, "$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$header", 0, $ts));
                                 }
-                            } elsif ($create_private_headers && !$qpa_header) {
+                            } elsif (!$qpa_header) {
                                 $oheader = "$out_basedir/include/$lib/$module_version/$lib/private/$header";
-                            } elsif ($create_private_headers) {
+                            } else {
                                 $oheader = "$out_basedir/include/$lib/$module_version/$lib/qpa/$header";
                             }
                             $header_copies++ if (!$shadow && syncHeader($lib, $oheader, $iheader, $copy_headers, $ts));
@@ -1100,9 +1086,9 @@ foreach my $lib (@modules_to_sync) {
 #                                   if ($class =~ m/::/) {
 #                                       $class =~ s,::,/,g;
 #                                   }
-                                    my $class_header = fixPaths("$out_basedir/include/$lib/$class", $dir) . " ";
-                                    $pri_install_classes .= $class_header
-                                                                unless($pri_install_classes =~ $class_header);
+                                    my $class_header = "$class ";
+                                    $pri_install_gfiles .= $class_header
+                                                                unless($pri_install_gfiles =~ $class_header);
                                     $injection .= ":$class";
                                 }
 
@@ -1175,16 +1161,10 @@ foreach my $lib (@modules_to_sync) {
         # create deprecated headers
         my $first = 1;
         while (my ($header, $include) = each %{$deprecatedheaders{$lib}}) {
-            my $public_header = 0;
-            $public_header = 1 unless ($allheadersprivate || ($header =~ /_p\.h$/));
-            next unless ($public_header || $create_private_headers);
+            die "Attempting unsupported aliasing of private header $header.\n"
+                if ($allheadersprivate || ($header =~ /_p\.h$/));
 
-            my $header_path = "$out_basedir/include/$lib/";
-            unless ($public_header) {
-                $header_path .= "$module_version/$lib/private/";
-            }
-            $header_path .= "$header";
-
+            my $header_path = "$out_basedir/include/$lib/$header";
             unless (-e $header_path) {
                 my $guard = "DEPRECATED_HEADER_" . $lib . "_" . $header;
                 $guard =~ s/([^a-zA-Z0-9_])/_/g;
@@ -1192,26 +1172,19 @@ foreach my $lib (@modules_to_sync) {
                 my $header_dir = dirname($header_path);
                 make_path($header_dir, $lib, $verbose_level);
 
+                my $warning = "Header <$lib/$header> is deprecated. Please include <$include> instead.";
                 my $hdrcont =
                     "#ifndef $guard\n" .
-                    "#define $guard\n";
-                my $warning = "Header <$lib/";
-                $warning .= "private/" unless ($public_header);
-                $warning .= "$header> is deprecated. Please include <$include> instead.";
-                $hdrcont .=
+                    "#define $guard\n" .
                     "#if defined(__GNUC__)\n" .
                     "#  warning $warning\n" .
                     "#elif defined(_MSC_VER)\n" .
                     "#  pragma message (\"$warning\")\n" .
                     "#endif\n" .
-                    "#include <$include>\n";
-                if ($public_header) {
-                    $hdrcont .=
-                        "#if 0\n" .
-                        "#pragma qt_no_master_include\n" .
-                        "#endif\n";
-                }
-                $hdrcont .=
+                    "#include <$include>\n" .
+                    "#if 0\n" .
+                    "#pragma qt_no_master_include\n" .
+                    "#endif\n" .
                     "#endif\n";
                 if (writeFile($header_path, $hdrcont)) {
                     if ($verbose_level < 3) {
@@ -1225,12 +1198,7 @@ foreach my $lib (@modules_to_sync) {
                 }
             }
 
-            my $addendum = fixPaths($header_path, $dir) . " ";
-            if ($public_header) {
-                $pri_install_files .=  $addendum;
-            } else {
-                $pri_install_pfiles .=  $addendum;
-            }
+            $pri_install_gfiles .= "$header ";
         }
         if ($verbose_level < 3) {
             print " }\n" unless ($first);
@@ -1240,8 +1208,7 @@ foreach my $lib (@modules_to_sync) {
         my $vheader = "$out_basedir/include/$lib/".lc($lib)."version.h";
         my $VHeader = "$out_basedir/include/$lib/${lib}Version";
         syncHeader($lib, $VHeader, $vheader, 0);
-        $pri_install_files .= fixPaths($vheader, $dir) . " ";
-        $pri_install_classes .= fixPaths($VHeader, $dir) . " ";
+        $pri_install_gfiles .= lc($lib)."version.h ${lib}Version ";
         my @versions = split(/\./, $module_version);
         my $modulehexstring = sprintf("0x%02X%02X%02X", $versions[0], $versions[1], $versions[2]);
         my $vhdrcont =
@@ -1257,7 +1224,7 @@ foreach my $lib (@modules_to_sync) {
         writeFile($vheader, $vhdrcont, $lib, "version header");
 
         my $master_include = "$out_basedir/include/$lib/$lib";
-        $pri_install_files .= fixPaths($master_include, $dir) . " ";
+        $pri_install_gfiles .= "$lib ";
         writeFile($master_include, $master_contents, $lib, "master header");
     }
 
@@ -1266,7 +1233,7 @@ foreach my $lib (@modules_to_sync) {
         my $headers_pri_contents = "";
         $headers_pri_contents .= "SYNCQT.HEADER_FILES = $pri_install_files\n";
         $headers_pri_contents .= "SYNCQT.INJECTED_HEADER_FILES = $pri_install_ifiles\n";
-        $headers_pri_contents .= "SYNCQT.HEADER_CLASSES = $pri_install_classes\n";
+        $headers_pri_contents .= "SYNCQT.GENERATED_HEADER_FILES = $pri_install_gfiles\n";
         $headers_pri_contents .= "SYNCQT.PRIVATE_HEADER_FILES = $pri_install_pfiles\n";
         $headers_pri_contents .= "SYNCQT.INJECTED_PRIVATE_HEADER_FILES = $pri_install_ipfiles\n";
         $headers_pri_contents .= "SYNCQT.QPA_HEADER_FILES = $pri_install_qpafiles\n";

@@ -128,12 +128,12 @@ void tst_QMacStyle::sizeHints()
     QComboBox comboBox1(&w);
     comboBox1.setEditable(false);
     comboBox1.addItem("Foo");
-    QCOMPARE(sh(&comboBox1).height(), SIZE(20, 17, 15));
+    QCOMPARE(sh(&comboBox1).height(), SIZE(26, 17, 15));
 
     QComboBox comboBox2(&w);
     comboBox2.setEditable(true);
     comboBox2.addItem("Foo");
-    QCOMPARE(sh(&comboBox2).height(), SIZE(22, 17, 15));
+    QCOMPARE(sh(&comboBox2).height(), SIZE(26, 17, 15));
 
     // Combos in toolbars use the actual widget rect to
     // avoid faulty clipping:
@@ -141,7 +141,7 @@ void tst_QMacStyle::sizeHints()
     setSize(&tb, size);
     QComboBox comboBox3(&tb);
     comboBox3.addItem("Foo");
-    QCOMPARE(sh(&comboBox3).height(), SIZE(26, -1, -1));
+    QCOMPARE(sh(&comboBox3).height(), SIZE(32, -1, -1));
 
     QSlider slider1(Qt::Horizontal, &w);
     QCOMPARE(sh(&slider1).height(), SIZE(15, 12, 10));

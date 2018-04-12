@@ -117,7 +117,7 @@ Q_LOGGING_CATEGORY(lcSsl, "qt.network.ssl");
     Describes the protocol of the cipher.
 
     \value SslV3 SSLv3. When using the WinRT backend this option will also enable TLSv1.0
-    \value SslV2 SSLv2
+    \value SslV2 SSLv2. Note, SSLv2 support was removed in OpenSSL 1.1.
     \value TlsV1_0 TLSv1.0
     \value TlsV1_0OrLater TLSv1.0 and later versions. This option is not available when using the WinRT backend due to platform limitations.
     \value TlsV1 Obsolete, means the same as TlsV1_0
@@ -129,8 +129,8 @@ Q_LOGGING_CATEGORY(lcSsl, "qt.network.ssl");
     \value DtlsV1_2 DTLSv1.2
     \value DtlsV1_2OrLater DTLSv1.2 and later versions.
     \value UnknownProtocol The cipher's protocol cannot be determined.
-    \value AnyProtocol The socket understands SSLv2, SSLv3, and TLSv1.0. This
-    value is used by QSslSocket only.
+    \value AnyProtocol The socket understands SSLv2, SSLv3, TLSv1.0 and all
+    supported later versions of TLS. This value is used by QSslSocket only.
     \value TlsV1SslV3 On the client side, this will send
     a TLS 1.0 Client Hello, enabling TLSv1_0 and SSLv3 connections.
     On the server side, this will enable both SSLv3 and TLSv1_0 connections.

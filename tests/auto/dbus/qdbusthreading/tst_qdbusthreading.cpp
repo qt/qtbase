@@ -414,8 +414,7 @@ void tst_QDBusThreading::registerObjectInOtherThread()
     QCOMPARE(functionSpy, Object_method);
     QCOMPARE(threadSpy, th);
 
-    QTest::qWait(100);
-    QCOMPARE(signalSpy, 1);
+    QTRY_COMPARE(signalSpy, 1);
 
     sem2.acquire();             // the object is gone
     functionSpy = NoMethod;
@@ -462,8 +461,7 @@ void tst_QDBusThreading::registerAdaptorInOtherThread()
     QCOMPARE(functionSpy, Adaptor_method);
     QCOMPARE(threadSpy, th);
 
-    QTest::qWait(100);
-    QCOMPARE(signalSpy, 1);
+    QTRY_COMPARE(signalSpy, 1);
 
     functionSpy = NoMethod;
     threadSpy = 0;

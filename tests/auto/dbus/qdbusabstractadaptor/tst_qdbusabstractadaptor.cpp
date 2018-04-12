@@ -768,9 +768,8 @@ void tst_QDBusAbstractAdaptor::scriptableSignalOrNot()
         con.connect(con.baseService(), "/p2", "local.MyObject", "nonScriptableSignalVoid", &spy, SLOT(slot(QDBusMessage)));
         obj.emitSignal("scriptableSignalVoid", QVariant());
         obj.emitSignal("nonScriptableSignalVoid", QVariant());
-        QTest::qWait(200);
 
-        QCOMPARE(spy.count, 1);     // only /p1 must have emitted
+        QTRY_COMPARE(spy.count, 1);     // only /p1 must have emitted
         QCOMPARE(spy.interface, QString("local.MyObject"));
         QCOMPARE(spy.name, QString("scriptableSignalVoid"));
         QCOMPARE(spy.path, QString("/p1"));
@@ -788,9 +787,8 @@ void tst_QDBusAbstractAdaptor::scriptableSignalOrNot()
         con.connect(con.baseService(), "/p1", "local.MyObject", "nonScriptableSignalVoid", &spy, SLOT(slot(QDBusMessage)));
         con.connect(con.baseService(), "/p2", "local.MyObject", "nonScriptableSignalVoid", &spy, SLOT(slot(QDBusMessage)));
         obj.emitSignal("nonScriptableSignalVoid", QVariant());
-        QTest::qWait(200);
 
-        QCOMPARE(spy.count, 1);     // only /p2 must have emitted now
+        QTRY_COMPARE(spy.count, 1);     // only /p2 must have emitted now
         QCOMPARE(spy.interface, QString("local.MyObject"));
         QCOMPARE(spy.name, QString("nonScriptableSignalVoid"));
         QCOMPARE(spy.path, QString("/p2"));
@@ -1306,9 +1304,8 @@ void tst_QDBusAbstractAdaptor::scriptableSignalOrNotPeer()
         con.connect(QString(), "/p2", "local.MyObject", "nonScriptableSignalVoid", &spy, SLOT(slot(QDBusMessage)));
         emitSignalPeer("local.MyObject", "scriptableSignalVoid", QVariant());
         emitSignalPeer("local.MyObject", "nonScriptableSignalVoid", QVariant());
-        QTest::qWait(200);
 
-        QCOMPARE(spy.count, 1);     // only /p1 must have emitted
+        QTRY_COMPARE(spy.count, 1);     // only /p1 must have emitted
         QCOMPARE(spy.interface, QString("local.MyObject"));
         QCOMPARE(spy.name, QString("scriptableSignalVoid"));
         QCOMPARE(spy.path, QString("/p1"));
@@ -1327,9 +1324,8 @@ void tst_QDBusAbstractAdaptor::scriptableSignalOrNotPeer()
         con.connect(QString(), "/p1", "local.MyObject", "nonScriptableSignalVoid", &spy, SLOT(slot(QDBusMessage)));
         con.connect(QString(), "/p2", "local.MyObject", "nonScriptableSignalVoid", &spy, SLOT(slot(QDBusMessage)));
         emitSignalPeer("local.MyObject", "nonScriptableSignalVoid", QVariant());
-        QTest::qWait(200);
 
-        QCOMPARE(spy.count, 1);     // only /p2 must have emitted now
+        QTRY_COMPARE(spy.count, 1);     // only /p2 must have emitted now
         QCOMPARE(spy.interface, QString("local.MyObject"));
         QCOMPARE(spy.name, QString("nonScriptableSignalVoid"));
         QCOMPARE(spy.path, QString("/p2"));
