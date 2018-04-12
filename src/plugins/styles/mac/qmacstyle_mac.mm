@@ -1682,8 +1682,7 @@ QRectF QMacStylePrivate::comboboxEditBounds(const QRectF &outerBounds, const Coc
             ret.adjust(13, 4, -20, -3);
             break;
         case QStyleHelper::SizeMini:
-            // FIXME Wrong
-            ret.adjust(16, 5, -19, 0);
+            ret.adjust(12, 0, -19, 0);
             ret.setHeight(13);
             break;
         default:
