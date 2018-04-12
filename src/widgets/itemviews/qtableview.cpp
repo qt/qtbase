@@ -74,7 +74,7 @@ void QSpanCollection::addSpan(QSpanCollection::Span *span)
             //the previouslist is the list of spans that sarts _before_ the row of the span.
             // and which may intersect this row.
             const SubIndex previousList = it_y.value();
-            foreach(Span *s, previousList) {
+            for (Span *s : previousList) {
                 //If a subspans intersect the row, we need to split it into subspans
                 if(s->bottom() >= span->top())
                     sub_index.insert(-s->left(), s);
@@ -817,7 +817,7 @@ void QTableViewPrivate::drawAndClipSpans(const QRegion &area, QPainter *painter,
         visibleSpans = set.toList();
     }
 
-    foreach (QSpanCollection::Span *span, visibleSpans) {
+    for (QSpanCollection::Span *span : qAsConst(visibleSpans)) {
         int row = span->top();
         int col = span->left();
         QModelIndex index = model->index(row, col, root);

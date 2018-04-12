@@ -2601,7 +2601,7 @@ int QListModeViewBase::perItemScrollingPageSteps(int length, int bounds, bool wr
         positions = segmentPositions;
     else if (!flowPositions.isEmpty()) {
         positions.reserve(scrollValueMap.size());
-        foreach (int itemShown, scrollValueMap)
+        for (int itemShown : scrollValueMap)
             positions.append(flowPositions.at(itemShown));
     }
     if (positions.isEmpty() || bounds <= length)
@@ -2782,7 +2782,7 @@ bool QIconModeViewBase::filterDropEvent(QDropEvent *e)
     if (qq->acceptDrops()) {
         const Qt::ItemFlags dropableFlags = Qt::ItemIsDropEnabled|Qt::ItemIsEnabled;
         const QVector<QModelIndex> &dropIndices = intersectingSet(QRect(end, QSize(1, 1)));
-        foreach (const QModelIndex &index, dropIndices)
+        for (const QModelIndex &index : dropIndices)
             if ((index.flags() & dropableFlags) == dropableFlags)
                 return false;
     }

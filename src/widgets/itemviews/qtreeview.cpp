@@ -1411,7 +1411,7 @@ QItemViewPaintPairs QTreeViewPrivate::draggablePaintPairs(const QModelIndexList 
     if (spanningIndexes.isEmpty())
         return QAbstractItemViewPrivate::draggablePaintPairs(indexes, r);
     QModelIndexList list;
-    foreach (const QModelIndex &idx, indexes) {
+    for (const QModelIndex &idx : indexes) {
         if (idx.column() > 0 && q->isFirstColumnSpanned(idx.row(), idx.parent()))
             continue;
         list << idx;

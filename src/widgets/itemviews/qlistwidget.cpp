@@ -1844,7 +1844,7 @@ QMimeData *QListWidget::mimeData(const QList<QListWidgetItem*> items) const
     // if non empty, it's called from the model's own mimeData
     if (cachedIndexes.isEmpty()) {
         cachedIndexes.reserve(items.count());
-        foreach (QListWidgetItem *item, items)
+        for (QListWidgetItem *item : items)
             cachedIndexes << indexFromItem(item);
 
         QMimeData *result = d->listModel()->internalMimeData();
