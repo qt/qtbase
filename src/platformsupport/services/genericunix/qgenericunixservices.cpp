@@ -177,6 +177,39 @@ static inline bool checkRunningUnderFlatpak()
     return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, QLatin1String("flatpak-info")).isEmpty();
 }
 
+static inline bool flatpakOpenFile(const QUrl &url)
+{
+    // DBus signature:
+    // OpenFile (IN   s      parent_window,
+    //           IN   h      fd,
+    //           IN   a{sv}  options,
+    //           OUT  o      handle)
+    // Options:
+    // handle_token (s) -  A string that will be used as the last element of the @handle.
+    // writable (b) - Whether to allow the chosen application to write to the file.
+
+#ifdef O_PATH
+    const int fd = qt_safe_open(QFile::encodeName(url.toLocalFile()), O_PATH);
+    if (fd != -1) {
+        QDBusMessage message = QDBusMessage::createMethodCall(QLatin1String("org.freedesktop.portal.Desktop"),
+                                                              QLatin1String("/org/freedesktop/portal/desktop"),
+                                                              QLatin1String("org.freedesktop.portal.OpenURI"),
+                                                              QLatin1String("OpenFile"));
+
+        QDBusUnixFileDescriptor descriptor(fd);
+        qt_safe_close(fd);
+
+        // FIXME parent_window_id and handle writable option
+        message << QString() << QVariant::fromValue(descriptor) << QVariantMap();
+
+        QDBusPendingReply<QDBusObjectPath> reply = QDBusConnection::sessionBus().call(message);
+        return !reply.isError();
+    }
+#endif
+
+    return false;
+}
+
 static inline bool flatpakOpenUrl(const QUrl &url)
 {
     // DBus signature:
@@ -185,6 +218,7 @@ static inline bool flatpakOpenUrl(const QUrl &url)
     //          IN   a{sv}  options,
     //          OUT  o      handle)
     // Options:
+    // handle_token (s) -  A string that will be used as the last element of the @handle.
     // writable (b) - Whether to allow the chosen application to write to the file.
     //                This key only takes effect the uri points to a local file that is exported in the document portal,
     //                and the chosen application is sandboxed itself.
@@ -278,6 +312,11 @@ bool QGenericUnixServices::openUrl(const QUrl &url)
 
 bool QGenericUnixServices::openDocument(const QUrl &url)
 {
+#if QT_CONFIG(dbus)
+    if (checkRunningUnderFlatpak())
+        return flatpakOpenFile(url);
+#endif
+
     if (m_documentLauncher.isEmpty() && !detectWebBrowser(desktopEnvironment(), false, &m_documentLauncher)) {
         qWarning("Unable to detect a launcher for '%s'", qPrintable(url.toString()));
         return false;
