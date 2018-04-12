@@ -3637,7 +3637,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     break;
                 w = w->parentWidget();
             }
-            foreach (QGesture *g, allGestures)
+            for (QGesture *g : qAsConst(allGestures))
                 gestureEvent->setAccepted(g, false);
             gestureEvent->m_accept = false; // to make sure we check individual gestures
         } else {

@@ -169,7 +169,7 @@ QString QTextBrowserPrivate::findFile(const QUrl &name) const
     if (QFileInfo(fileName).isAbsolute())
         return fileName;
 
-    foreach (QString path, searchPaths) {
+    for (QString path : qAsConst(searchPaths)) {
         if (!path.endsWith(QLatin1Char('/')))
             path.append(QLatin1Char('/'));
         path.append(fileName);

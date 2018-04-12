@@ -1894,7 +1894,7 @@ qreal QScrollerPrivate::nextSnapPos(qreal p, int dir, Qt::Orientation orientatio
 
     if (orientation == Qt::Horizontal) {
         // the snap points in the list
-        foreach (qreal snapPos, snapPositionsX) {
+        for (qreal snapPos : snapPositionsX) {
             qreal snapPosDist = snapPos - p;
             if ((dir > 0 && snapPosDist < 0) ||
                 (dir < 0 && snapPosDist > 0))
@@ -1941,7 +1941,7 @@ qreal QScrollerPrivate::nextSnapPos(qreal p, int dir, Qt::Orientation orientatio
 
     } else { // (orientation == Qt::Vertical)
         // the snap points in the list
-        foreach (qreal snapPos, snapPositionsY) {
+        for (qreal snapPos : snapPositionsY) {
             qreal snapPosDist = snapPos - p;
             if ((dir > 0 && snapPosDist < 0) ||
                 (dir < 0 && snapPosDist > 0))

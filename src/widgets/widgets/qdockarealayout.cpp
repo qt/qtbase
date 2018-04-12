@@ -2628,8 +2628,9 @@ void QDockAreaLayout::removePlaceHolder(const QString &name)
     QList<int> index = indexOfPlaceHolder(name);
     if (!index.isEmpty())
         remove(index);
-    foreach (QDockWidgetGroupWindow *dwgw, mainWindow->findChildren<QDockWidgetGroupWindow *>(
-                                               QString(), Qt::FindDirectChildrenOnly)) {
+    const auto groups =
+            mainWindow->findChildren<QDockWidgetGroupWindow *>(QString(), Qt::FindDirectChildrenOnly);
+    for (QDockWidgetGroupWindow *dwgw : groups) {
         index = dwgw->layoutInfo()->indexOfPlaceHolder(name);
         if (!index.isEmpty()) {
             dwgw->layoutInfo()->remove(index);
@@ -3064,8 +3065,9 @@ QRect QDockAreaLayout::constrainedRect(QRect rect, QWidget* widget)
 bool QDockAreaLayout::restoreDockWidget(QDockWidget *dockWidget)
 {
     QDockAreaLayoutItem *item = 0;
-    foreach (QDockWidgetGroupWindow *dwgw, mainWindow->findChildren<QDockWidgetGroupWindow *>(
-                                               QString(), Qt::FindDirectChildrenOnly)) {
+    const auto groups =
+            mainWindow->findChildren<QDockWidgetGroupWindow *>(QString(), Qt::FindDirectChildrenOnly);
+    for (QDockWidgetGroupWindow *dwgw : groups) {
         QList<int> index = dwgw->layoutInfo()->indexOfPlaceHolder(dockWidget->objectName());
         if (!index.isEmpty()) {
             dockWidget->setParent(dwgw);
@@ -3174,7 +3176,7 @@ void QDockAreaLayout::resizeDocks(const QList<QDockWidget *> &docks,
             if (!info->tabbed && info->o == o) {
                 info->item_list[path.constLast()].size = size;
                 int totalSize = 0;
-                foreach (const QDockAreaLayoutItem &item, info->item_list) {
+                for (const QDockAreaLayoutItem &item : qAsConst(info->item_list)) {
                     if (!item.skip()) {
                         if (totalSize != 0)
                             totalSize += sep;

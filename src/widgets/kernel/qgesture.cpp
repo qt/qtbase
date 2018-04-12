@@ -916,7 +916,7 @@ QGesture *QGestureEvent::gesture(Qt::GestureType type) const
 QList<QGesture *> QGestureEvent::activeGestures() const
 {
     QList<QGesture *> gestures;
-    foreach (QGesture *gesture, m_gestures) {
+    for (QGesture *gesture : m_gestures) {
         if (gesture->state() != Qt::GestureCanceled)
             gestures.append(gesture);
     }
@@ -929,7 +929,7 @@ QList<QGesture *> QGestureEvent::activeGestures() const
 QList<QGesture *> QGestureEvent::canceledGestures() const
 {
     QList<QGesture *> gestures;
-    foreach (QGesture *gesture, m_gestures) {
+    for (QGesture *gesture : m_gestures) {
         if (gesture->state() == Qt::GestureCanceled)
             gestures.append(gesture);
     }
