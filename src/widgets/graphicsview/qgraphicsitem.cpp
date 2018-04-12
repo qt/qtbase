@@ -7308,7 +7308,7 @@ void QGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             selectedItems = d_ptr->scene->selectedItems();
             initialPositions = d_ptr->scene->d_func()->movingItemsInitialPositions;
             if (initialPositions.isEmpty()) {
-                foreach (QGraphicsItem *item, selectedItems)
+                for (QGraphicsItem *item : qAsConst(selectedItems))
                     initialPositions[item] = item->pos();
                 initialPositions[this] = pos();
             }

@@ -6391,7 +6391,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
         ev.setWidget(event->widget());
         sendEvent(receiver.data(), &ev);
         QSet<QGesture *> ignoredGestures;
-        foreach (QGesture *g, gestures) {
+        for (QGesture *g : qAsConst(gestures)) {
             if (!ev.isAccepted() && !ev.isAccepted(g)) {
                 // if the gesture was ignored by its target, we will update the
                 // targetItems list with a possible target items (items that

@@ -2526,7 +2526,7 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
 
             // Check if this constraint have some overlap with current
             // trunk variables...
-            foreach (QSimplexVariable *ad, trunkVariables) {
+            for (QSimplexVariable *ad : qAsConst(trunkVariables)) {
                 if (c->variables.contains(ad)) {
                     match = true;
                     break;

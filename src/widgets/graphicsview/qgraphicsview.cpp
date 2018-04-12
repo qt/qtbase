@@ -2703,7 +2703,7 @@ void QGraphicsView::updateScene(const QList<QRectF> &rects)
         dirtyViewportRects << xrect;
     }
 
-    foreach (const QRect &rect, dirtyViewportRects) {
+    for (const QRect &rect : qAsConst(dirtyViewportRects)) {
         // Add the exposed rect to the update region. In rect update
         // mode, we only count the bounding rect of items.
         if (!boundingRectUpdate) {
