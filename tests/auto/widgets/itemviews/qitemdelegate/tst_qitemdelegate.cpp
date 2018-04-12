@@ -1389,13 +1389,12 @@ void tst_QItemDelegate::comboBox()
     QTableWidget widget(1, 1);
     widget.setItem(0, 0, item1);
     widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
     widget.editItem(item1);
 
-    QTestEventLoop::instance().enterLoop(1);
-
-    QComboBox *boolEditor = widget.viewport()->findChild<QComboBox*>();
-    QVERIFY(boolEditor);
+    QComboBox *boolEditor = nullptr;
+    QTRY_VERIFY( (boolEditor = widget.viewport()->findChild<QComboBox*>()) );
     QCOMPARE(boolEditor->currentIndex(), 1); // True is selected initially.
     // The data must actually be different in order for the model
     // to be updated.

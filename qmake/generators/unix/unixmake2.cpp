@@ -943,7 +943,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     QString fn = files.at(file).toQString();
                     QString src = fileFixify(fn, FileFixifyAbsolute);
                     if (!QFile::exists(src))
-                        src = fn;
+                        src = fileFixify(fn, FileFixifyFromOutdir);
+                    else
+                        src = fileFixify(fn);
                     QString dst = path + Option::dir_sep + fileInfo(fn).fileName();
                     bundledFiles << dst;
                     alldeps << dst;

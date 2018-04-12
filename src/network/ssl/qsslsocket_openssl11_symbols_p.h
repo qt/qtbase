@@ -168,4 +168,10 @@ void q_BIO_set_init(BIO *a, int init);
 int q_BIO_get_shutdown(BIO *a);
 void q_BIO_set_shutdown(BIO *a, int shut);
 
+#define q_SSL_CTX_set_min_proto_version(ctx, version) \
+        q_SSL_CTX_ctrl(ctx, SSL_CTRL_SET_MIN_PROTO_VERSION, version, nullptr)
+
+#define q_SSL_CTX_set_max_proto_version(ctx, version) \
+        q_SSL_CTX_ctrl(ctx, SSL_CTRL_SET_MAX_PROTO_VERSION, version, nullptr)
+
 #endif

@@ -74,6 +74,7 @@ public:
     void enablePushPromise(bool enabled, const QByteArray &path = QByteArray());
     void setResponseBody(const QByteArray &body);
     void emulateGOAWAY(int timeout);
+    void redirectOpenStream(quint16 targetPort);
 
     // Invokables, since we can call them from the main thread,
     // but server (can) work on its own thread.
@@ -186,6 +187,10 @@ private:
     // We need it for PUSH_PROMISE, with the correct port number appended,
     // when replying to essentially 1.1 request.
     QByteArray authority;
+    // Redirect, with status code 308, as soon as we've seen headers, while client
+    // may still be sending DATA frames.  See tst_Http2::earlyResponse().
+    bool redirectWhileReading = false;
+    quint16 targetPort = 0;
 protected slots:
     void ignoreErrorSlot();
 };

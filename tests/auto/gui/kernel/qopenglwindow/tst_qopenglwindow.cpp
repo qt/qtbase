@@ -156,10 +156,7 @@ void tst_QOpenGLWindow::resize()
 
     // Check that a future resize triggers resizeGL.
     w.resize(800, 600);
-    int maxWait = 1000;
-    while (w.resizeCount == resCount && maxWait-- >= 0)
-        QTest::qWait(10);
-    QVERIFY(w.resizeCount > resCount);
+    QTRY_VERIFY(w.resizeCount > resCount);
 }
 
 class PainterWindow : public QOpenGLWindow
@@ -239,9 +236,7 @@ void tst_QOpenGLWindow::partial()
     for (int i = 0; i < 10; ++i) {
         w.paintCount = 0;
         w.update();
-        int maxWait = 1000;
-        while (w.paintCount == 0 && maxWait-- >= 0)
-            QTest::qWait(10);
+        QTRY_VERIFY(w.paintCount > 0);
     }
 
     // Now since the painting went to an extra framebuffer, all the rects should

@@ -2295,17 +2295,13 @@ static void QT_FASTCALL fetchTransformedBilinearARGB32PM_downscale_helper(uint *
 #endif
         while (b < boundedEnd) {
             int x = (fx >> 16);
-#if defined(__SSE2__) || defined(__ARM_NEON__)
-            int distx8 = (fx & 0x0000ffff) >> 8;
-            *b = interpolate_4_pixels(s1 + x, s2 + x, distx8, disty8);
-#else
-            uint tl = s1[x];
-            uint tr = s1[x + 1];
-            uint bl = s2[x];
-            uint br = s2[x + 1];
-            int distx4 = ((fx & 0x0000ffff) + 0x0800) >> 12;
-            *b = interpolate_4_pixels_16(tl, tr, bl, br, distx4, disty4);
-#endif
+            if (hasFastInterpolate4()) {
+                int distx8 = (fx & 0x0000ffff) >> 8;
+                *b = interpolate_4_pixels(s1 + x, s2 + x, distx8, disty8);
+            } else {
+                int distx4 = ((fx & 0x0000ffff) + 0x0800) >> 12;
+                *b = interpolate_4_pixels_16(s1[x], s1[x + 1], s2[x], s2[x + 1], distx4, disty4);
+            }
             fx += fdx;
             ++b;
         }
@@ -2319,14 +2315,13 @@ static void QT_FASTCALL fetchTransformedBilinearARGB32PM_downscale_helper(uint *
         uint tr = s1[x2];
         uint bl = s2[x1];
         uint br = s2[x2];
-#if defined(__SSE2__) || defined(__ARM_NEON__)
-        // The optimized interpolate_4_pixels are faster than interpolate_4_pixels_16.
-        int distx8 = (fx & 0x0000ffff) >> 8;
-        *b = interpolate_4_pixels(tl, tr, bl, br, distx8, disty8);
-#else
-        int distx4 = ((fx & 0x0000ffff) + 0x0800) >> 12;
-        *b = interpolate_4_pixels_16(tl, tr, bl, br, distx4, disty4);
-#endif
+        if (hasFastInterpolate4()) {
+            int distx8 = (fx & 0x0000ffff) >> 8;
+            *b = interpolate_4_pixels(tl, tr, bl, br, distx8, disty8);
+        } else {
+            int distx4 = ((fx & 0x0000ffff) + 0x0800) >> 12;
+            *b = interpolate_4_pixels_16(tl, tr, bl, br, distx4, disty4);
+        }
         fx += fdx;
         ++b;
     }
@@ -2391,15 +2386,15 @@ static void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper(uint
             uint tr = s1[x2];
             uint bl = s2[x1];
             uint br = s2[x2];
-#if defined(__SSE2__) || defined(__ARM_NEON__)
-            int distx = (fx & 0x0000ffff) >> 8;
-            int disty = (fy & 0x0000ffff) >> 8;
-            *b = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
-#else
-            int distx = ((fx & 0x0000ffff) + 0x0800) >> 12;
-            int disty = ((fy & 0x0000ffff) + 0x0800) >> 12;
-            *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty);
-#endif
+            if (hasFastInterpolate4()) {
+                int distx = (fx & 0x0000ffff) >> 8;
+                int disty = (fy & 0x0000ffff) >> 8;
+                *b = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
+            } else {
+                int distx = ((fx & 0x0000ffff) + 0x0800) >> 12;
+                int disty = ((fy & 0x0000ffff) + 0x0800) >> 12;
+                *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty);
+            }
             fx += fdx;
             fy += fdy;
             ++b;
@@ -2541,19 +2536,15 @@ static void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper(uint
             const uint *s1 = (const uint *)image.scanLine(y);
             const uint *s2 = (const uint *)image.scanLine(y + 1);
 
-#if defined(__SSE2__) || defined(__ARM_NEON__)
-            int distx = (fx & 0x0000ffff) >> 8;
-            int disty = (fy & 0x0000ffff) >> 8;
-            *b = interpolate_4_pixels(s1 + x, s2 + x, distx, disty);
-#else
-            uint tl = s1[x];
-            uint tr = s1[x + 1];
-            uint bl = s2[x];
-            uint br = s2[x + 1];
-            int distx = ((fx & 0x0000ffff) + 0x0800) >> 12;
-            int disty = ((fy & 0x0000ffff) + 0x0800) >> 12;
-            *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty);
-#endif
+            if (hasFastInterpolate4()) {
+                int distx = (fx & 0x0000ffff) >> 8;
+                int disty = (fy & 0x0000ffff) >> 8;
+                *b = interpolate_4_pixels(s1 + x, s2 + x, distx, disty);
+            } else {
+                int distx = ((fx & 0x0000ffff) + 0x0800) >> 12;
+                int disty = ((fy & 0x0000ffff) + 0x0800) >> 12;
+                *b = interpolate_4_pixels_16(s1[x], s1[x + 1], s2[x], s2[x + 1], distx, disty);
+            }
 
             fx += fdx;
             fy += fdy;
@@ -2578,16 +2569,15 @@ static void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper(uint
         uint bl = s2[x1];
         uint br = s2[x2];
 
-#if defined(__SSE2__) || defined(__ARM_NEON__)
-        // The optimized interpolate_4_pixels are faster than interpolate_4_pixels_16.
-        int distx = (fx & 0x0000ffff) >> 8;
-        int disty = (fy & 0x0000ffff) >> 8;
-        *b = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
-#else
-        int distx = ((fx & 0x0000ffff) + 0x0800) >> 12;
-        int disty = ((fy & 0x0000ffff) + 0x0800) >> 12;
-        *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty);
-#endif
+        if (hasFastInterpolate4()) {
+            int distx = (fx & 0x0000ffff) >> 8;
+            int disty = (fy & 0x0000ffff) >> 8;
+            *b = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
+        } else {
+            int distx = ((fx & 0x0000ffff) + 0x0800) >> 12;
+            int disty = ((fy & 0x0000ffff) + 0x0800) >> 12;
+            *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty);
+        }
 
         fx += fdx;
         fy += fdy;
@@ -2981,7 +2971,7 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                     layout->convertToARGB32PM(buf1, buf1, len * 2, clut, 0);
                     layout->convertToARGB32PM(buf2, buf2, len * 2, clut, 0);
 
-                    if (qAbs(data->m22) < qreal(1./8.)) { // scale up more than 8x (on Y)
+                    if (hasFastInterpolate4() || qAbs(data->m22) < qreal(1./8.)) { // scale up more than 8x (on Y)
                         int disty = (fy & 0x0000ffff) >> 8;
                         for (int i = 0; i < len; ++i) {
                             int distx = (fx & 0x0000ffff) >> 8;
@@ -3016,7 +3006,7 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                 layout->convertToARGB32PM(buf1, buf1, len * 2, clut, 0);
                 layout->convertToARGB32PM(buf2, buf2, len * 2, clut, 0);
 
-                if (qAbs(data->m11) < qreal(1./8.)|| qAbs(data->m22) < qreal(1./8.)) {
+                if (hasFastInterpolate4() || qAbs(data->m11) < qreal(1./8.) || qAbs(data->m22) < qreal(1./8.)) {
                     // If we are zooming more than 8 times, we use 8bit precision for the position.
                     for (int i = 0; i < len; ++i) {
                         int distx = (fx & 0x0000ffff) >> 8;

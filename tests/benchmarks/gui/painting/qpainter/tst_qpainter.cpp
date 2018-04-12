@@ -127,7 +127,7 @@ QPixmap rasterPixmap(const QImage &image)
     QPlatformPixmap *data =
         new QRasterPlatformPixmap(QPlatformPixmap::PixmapType);
 
-    data->fromImage(image, Qt::AutoColor);
+    data->fromImage(image, Qt::AutoColor | Qt::NoFormatConversion);
 
     return QPixmap(data);
 }
@@ -613,9 +613,7 @@ void tst_QPainter::drawPixmapImage_data_helper(bool pixmaps)
     QTest::addColumn<int>("type"); // 0 = circle, 1 = diag line, 2 = solid rect, 3 = alpharect
 
     QList<QSize> sizes;
-    sizes << QSize(1, 1)
-          << QSize(10, 10)
-          << QSize(100, 100)
+    sizes << QSize(10, 10)
           << QSize(1000, 1000);
 
     const char *typeNames[] = {
@@ -657,7 +655,6 @@ void tst_QPainter::drawPixmapImage_data_helper(bool pixmaps)
         QImage::Format_RGB32,
         QImage::Format_ARGB32_Premultiplied,
         QImage::Format_RGB16,
-        QImage::Format_ARGB8565_Premultiplied,
         QImage::Format_BGR30,
         QImage::Format_Invalid
     };
@@ -682,12 +679,9 @@ void tst_QPainter::drawPixmapImage_data_helper(bool pixmaps)
         QImage::Format_ARGB32,
         QImage::Format_ARGB32_Premultiplied,
         QImage::Format_RGB16,
-        QImage::Format_ARGB8565_Premultiplied,
         QImage::Format_RGB888,
         QImage::Format_RGBX8888,
         QImage::Format_RGBA8888,
-        QImage::Format_RGBA8888_Premultiplied,
-        QImage::Format_A2BGR30_Premultiplied,
         QImage::Format_RGB30,
         QImage::Format_Grayscale8,
         QImage::Format_Invalid

@@ -317,6 +317,9 @@ bool QDockWidgetGroupWindow::event(QEvent *e)
         // We might need to show the widget again
         destroyOrHideIfEmpty();
         break;
+    case QEvent::Resize:
+        updateCurrentGapRect();
+        emit resized();
     default:
         break;
     }
@@ -467,6 +470,8 @@ void QDockWidgetGroupWindow::adjustFlags()
     }
 
     if (oldFlags != flags) {
+        if (!windowHandle())
+            create(); // The desired geometry is forgotten if we call setWindowFlags before having a window
         setWindowFlags(flags);
         const bool gainedNativeDecos = (oldFlags & Qt::FramelessWindowHint) && !(flags & Qt::FramelessWindowHint);
         const bool lostNativeDecos = !(oldFlags & Qt::FramelessWindowHint) && (flags & Qt::FramelessWindowHint);
@@ -546,10 +551,16 @@ bool QDockWidgetGroupWindow::hover(QLayoutItem *widgetItem, const QPoint &mouseP
     currentGapPos = newGapPos;
     newState.insertGap(currentGapPos, widgetItem);
     newState.fitItems();
-    currentGapRect = newState.info(currentGapPos)->itemRect(currentGapPos.last(), true);
     *layoutInfo() = std::move(newState);
+    updateCurrentGapRect();
     layoutInfo()->apply(opts & QMainWindow::AnimatedDocks);
     return true;
+}
+
+void QDockWidgetGroupWindow::updateCurrentGapRect()
+{
+    if (!currentGapPos.isEmpty())
+        currentGapRect = layoutInfo()->info(currentGapPos)->itemRect(currentGapPos.last(), true);
 }
 
 /*
@@ -1977,6 +1988,8 @@ void QMainWindowLayout::setCurrentHoveredFloat(QDockWidgetGroupWindow *w)
         if (currentHoveredFloat) {
             disconnect(currentHoveredFloat.data(), &QObject::destroyed,
                        this, &QMainWindowLayout::updateGapIndicator);
+            disconnect(currentHoveredFloat.data(), &QDockWidgetGroupWindow::resized,
+                       this, &QMainWindowLayout::updateGapIndicator);
             if (currentHoveredFloat)
                 currentHoveredFloat->restore();
         } else if (w) {
@@ -1987,6 +2000,8 @@ void QMainWindowLayout::setCurrentHoveredFloat(QDockWidgetGroupWindow *w)
 
         if (w) {
             connect(w, &QObject::destroyed,
+                    this, &QMainWindowLayout::updateGapIndicator, Qt::UniqueConnection);
+            connect(w, &QDockWidgetGroupWindow::resized,
                     this, &QMainWindowLayout::updateGapIndicator, Qt::UniqueConnection);
         }
 
@@ -2559,6 +2574,7 @@ void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
                 dropTo->show();
                 dropTo->d_func()->plug(QRect());
                 w = floatingTabs;
+                widget->raise(); // raise, as our newly created drop target is now on top
             }
             Q_ASSERT(qobject_cast<QDockWidgetGroupWindow *>(w));
             auto group = static_cast<QDockWidgetGroupWindow *>(w);

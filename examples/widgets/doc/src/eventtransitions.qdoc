@@ -46,7 +46,7 @@
 
     The \c Window class's constructors begins by creating a button.
     This button is added to  \c layout, which is a QVBoxLayout object.
-    Then two states are created: \s1 is the state
+    Then two states are created: \c s1 is the state
     "Outside", and \c s2 is the state "Inside".
 
     \snippet statemachine/eventtransitions/main.cpp 1

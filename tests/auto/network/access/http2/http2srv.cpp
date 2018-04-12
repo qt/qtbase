@@ -123,6 +123,12 @@ void Http2Server::emulateGOAWAY(int timeout)
     goawayTimeout = timeout;
 }
 
+void Http2Server::redirectOpenStream(quint16 port)
+{
+    redirectWhileReading = true;
+    targetPort = port;
+}
+
 void Http2Server::startServer()
 {
 #ifdef QT_NO_SSL
@@ -775,7 +781,19 @@ void Http2Server::sendResponse(quint32 streamID, bool emptyBody)
     if (emptyBody)
         writer.addFlag(FrameFlag::END_STREAM);
 
-    HttpHeader header = {{":status", "200"}};
+    HttpHeader header;
+    if (redirectWhileReading) {
+        qDebug("server received HEADERS frame (followed by DATA frames), redirecting ...");
+        Q_ASSERT(targetPort);
+        header.push_back({":status", "308"});
+        const QString url("%1://localhost:%2/");
+        header.push_back({"location", url.arg(clearTextHTTP2 ? QStringLiteral("http") : QStringLiteral("https"),
+                                              QString::number(targetPort)).toLatin1()});
+
+    } else {
+        header.push_back({":status", "200"});
+    }
+
     if (!emptyBody) {
         header.push_back(HPack::HeaderField("content-length",
                          QString("%1").arg(responseBody.size()).toLatin1()));
@@ -871,7 +889,13 @@ void Http2Server::processRequest()
     activeRequests[streamID] = decoder.decodedHeader();
     if (headersFrame.flags().testFlag(FrameFlag::END_STREAM))
         emit receivedRequest(streamID);
-    // else - we're waiting for incoming DATA frames ...
+
+    if (redirectWhileReading) {
+        sendResponse(streamID, true);
+        // Don't try to read any DATA frames ...
+        socket->disconnect();
+    } // else - we're waiting for incoming DATA frames ...
+
     continuedRequest.clear();
 }
 

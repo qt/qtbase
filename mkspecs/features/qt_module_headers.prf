@@ -96,12 +96,26 @@ MODULE_PRIVATE_INCLUDES += $$MODULE_PRIVATE_AUX_INCLUDES
 
 minimal_syncqt: return()
 
+defineTest(syncQtResolve) {
+    out =
+    for (f, SYNCQT.$$1): \
+        out += $$absolute_path($$f, $$2)
+    SYNCQT.$$1 = $$out
+    export(SYNCQT.$$1)
+}
+
 #load up the headers info
 git_build: \
     INC_PATH = $$MODULE_BASE_OUTDIR
 else: \
     INC_PATH = $$MODULE_BASE_INDIR
 include($$INC_PATH/include/$$MODULE_INCNAME/headers.pri, "", true)
+syncQtResolve(HEADER_FILES, $$_PRO_FILE_PWD_)
+syncQtResolve(PRIVATE_HEADER_FILES, $$_PRO_FILE_PWD_)
+syncQtResolve(QPA_HEADER_FILES, $$_PRO_FILE_PWD_)
+syncQtResolve(GENERATED_HEADER_FILES, $$INC_PATH/include/$$MODULE_INCNAME)
+syncQtResolve(INJECTED_HEADER_FILES, $$OUT_PWD)
+syncQtResolve(INJECTED_PRIVATE_HEADER_FILES, $$OUT_PWD)
 !lib_bundle: \  # Headers are embedded into the bundle, so don't install them separately.
     CONFIG += qt_install_headers
 
@@ -114,9 +128,8 @@ exists($$OUT_PWD/qt$${MODULE}-config.h) {
     SYNCQT.INJECTIONS += \
         $$fwd_rel/qt$${MODULE}-config.h:qt$${MODULE}-config.h \
         $$fwd_rel/qt$${MODULE}-config_p.h:$$MODULE_VERSION/$$MODULE_INCNAME/private/qt$${MODULE}-config_p.h
-    inst_rel = $$relative_path($$OUT_PWD, $$_PRO_FILE_PWD_)
-    SYNCQT.HEADER_FILES += $$inst_rel/qt$${MODULE}-config.h
-    SYNCQT.INJECTED_PRIVATE_HEADER_FILES += $$inst_rel/qt$${MODULE}-config_p.h
+    SYNCQT.INJECTED_HEADER_FILES += $$OUT_PWD/qt$${MODULE}-config.h
+    SYNCQT.INJECTED_PRIVATE_HEADER_FILES += $$OUT_PWD/qt$${MODULE}-config_p.h
 }
 
 for (injection, SYNCQT.INJECTIONS) {
