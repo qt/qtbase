@@ -88,7 +88,7 @@ static gboolean socketNotifierSourceCheck(GSource *source)
             p->socketNotifier->setEnabled(false);
             i--;
         } else {
-            pending = ((p->pollfd.revents & p->pollfd.events) != 0);
+            pending = pending || ((p->pollfd.revents & p->pollfd.events) != 0);
         }
     }
 
