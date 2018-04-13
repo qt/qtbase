@@ -45,8 +45,11 @@
 #include <qpa/qplatformtheme.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>
+
+#if QT_CONFIG(draganddrop)
 #include <private/qdnd_p.h>
 #include <private/qsimpledrag_p.h>
+#endif
 
 #ifndef QT_NO_SESSIONMANAGER
 # include <qpa/qplatformsessionmanager.h>
@@ -92,7 +95,7 @@ QPlatformClipboard *QPlatformIntegration::clipboard() const
 
 #endif
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 /*!
     Accessor for the platform integration's drag object.
 
@@ -107,7 +110,7 @@ QPlatformDrag *QPlatformIntegration::drag() const
     }
     return drag;
 }
-#endif
+#endif // QT_CONFIG(draganddrop)
 
 QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 {

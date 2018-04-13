@@ -143,7 +143,7 @@ public:
     virtual void removeHiddenRow(int row);
     virtual void setPositionForIndex(const QPoint &, const QModelIndex &) { }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     virtual void paintDragDrop(QPainter *painter);
     virtual bool filterDragMoveEvent(QDragMoveEvent *) { return false; }
     virtual bool filterDragLeaveEvent(QDragLeaveEvent *) { return false; }
@@ -228,7 +228,7 @@ public:
     void updateHorizontalScrollBar(const QSize &step) override;
     void updateVerticalScrollBar(const QSize &step) override;
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     // The next two methods are to be used on LefToRight flow only.
     // WARNING: Plenty of duplicated code from QAbstractItemView{,Private}.
     QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
@@ -274,7 +274,7 @@ public:
     void removeHiddenRow(int row) override;
     void setPositionForIndex(const QPoint &position, const QModelIndex &index) override;
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     bool filterDragMoveEvent(QDragMoveEvent *) override;
     bool filterDragLeaveEvent(QDragLeaveEvent *) override;
     bool filterDropEvent(QDropEvent *e) override;
@@ -358,7 +358,7 @@ public:
     QItemSelection selection(const QRect &rect) const;
     void selectAll(QItemSelectionModel::SelectionFlags command) override;
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const override;
     bool dropOn(QDropEvent *event, int *row, int *col, QModelIndex *index) override;
 #endif

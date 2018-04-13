@@ -40,7 +40,7 @@
 #include "qwindowsmime.h"
 #include "qwindowscontext.h"
 
-#include <QtGui/private/qdnd_p.h>
+#include <QtGui/private/qinternalmimedata_p.h>
 #include <QtCore/QByteArrayMatcher>
 #include <QtCore/QTextCodec>
 #include <QtCore/QMap>
@@ -1255,7 +1255,7 @@ bool QBuiltInMimes::convertFromMime(const FORMATETC &formatetc, const QMimeData 
         } else {
 #if QT_CONFIG(draganddrop)
             data = QInternalMimeData::renderDataHelper(outFormats.value(getCf(formatetc)), mimeData);
-#endif //QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
         }
         return setData(data, pmedium);
     }
@@ -1363,7 +1363,7 @@ bool QLastResortMimes::canConvertFromMime(const FORMATETC &formatetc, const QMim
     Q_UNUSED(formatetc);
     return formatetc.tymed & TYMED_HGLOBAL
         && formats.contains(formatetc.cfFormat);
-#endif //QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 }
 
 bool QLastResortMimes::convertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData, STGMEDIUM * pmedium) const
@@ -1376,7 +1376,7 @@ bool QLastResortMimes::convertFromMime(const FORMATETC &formatetc, const QMimeDa
     Q_UNUSED(formatetc);
     Q_UNUSED(pmedium);
     return false;
-#endif //QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 }
 
 QVector<FORMATETC> QLastResortMimes::formatsForMime(const QString &mimeType, const QMimeData * /*mimeData*/) const
@@ -1484,7 +1484,7 @@ QString QLastResortMimes::mimeForFormat(const FORMATETC &formatetc) const
                     format = clipFormat;
             }
         }
-#endif //QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
     }
 
     return format;
@@ -1559,7 +1559,7 @@ QVector<FORMATETC> QWindowsMimeConverter::allFormatsForMime(const QMimeData *mim
 {
     ensureInitialized();
     QVector<FORMATETC> formatics;
-#ifdef QT_NO_DRAGANDDROP
+#if !QT_CONFIG(draganddrop)
     Q_UNUSED(mimeData);
 #else
     formatics.reserve(20);
@@ -1568,7 +1568,7 @@ QVector<FORMATETC> QWindowsMimeConverter::allFormatsForMime(const QMimeData *mim
         for (int i = m_mimes.size() - 1; i >= 0; --i)
             formatics += m_mimes.at(i)->formatsForMime(formats.at(f), mimeData);
     }
-#endif //QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
     return formatics;
 }
 

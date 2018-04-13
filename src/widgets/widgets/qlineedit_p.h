@@ -211,7 +211,7 @@ public:
     void _q_completionHighlighted(const QString &);
 #endif
     QPoint mousePressPos;
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     QBasicTimer dndTimer;
     void drag();
 #endif

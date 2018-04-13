@@ -62,41 +62,16 @@
 #include "QtCore/qpoint.h"
 #include "private/qobject_p.h"
 #include "QtGui/qbackingstore.h"
+
+// ### Remove the following include, once everybody includes
+//     qinternalmimedata_p.h for QInternalMimeData.
+#include "qinternalmimedata_p.h"
+
+QT_REQUIRE_CONFIG(draganddrop);
+
 QT_BEGIN_NAMESPACE
 
-class QEventLoop;
-class QMouseEvent;
 class QPlatformDrag;
-
-#if !(defined(QT_NO_DRAGANDDROP) && defined(QT_NO_CLIPBOARD))
-
-class Q_GUI_EXPORT QInternalMimeData : public QMimeData
-{
-    Q_OBJECT
-public:
-    QInternalMimeData();
-    ~QInternalMimeData();
-
-    bool hasFormat(const QString &mimeType) const override;
-    QStringList formats() const override;
-    static bool canReadData(const QString &mimeType);
-
-
-    static QStringList formatsHelper(const QMimeData *data);
-    static bool hasFormatHelper(const QString &mimeType, const QMimeData *data);
-    static QByteArray renderDataHelper(const QString &mimeType, const QMimeData *data);
-
-protected:
-    QVariant retrieveData(const QString &mimeType, QVariant::Type type) const override;
-
-    virtual bool hasFormat_sys(const QString &mimeType) const = 0;
-    virtual QStringList formats_sys() const = 0;
-    virtual QVariant retrieveData_sys(const QString &mimeType, QVariant::Type type) const = 0;
-};
-
-#endif // !(defined(QT_NO_DRAGANDDROP) && defined(QT_NO_CLIPBOARD))
-
-#ifndef QT_NO_DRAGANDDROP
 
 class QDragPrivate : public QObjectPrivate
 {
@@ -141,10 +116,6 @@ private:
     static QDragManager *m_instance;
     Q_DISABLE_COPY(QDragManager)
 };
-
-
-#endif // !QT_NO_DRAGANDDROP
-
 
 QT_END_NAMESPACE
 

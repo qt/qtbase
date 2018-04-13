@@ -142,7 +142,7 @@ public:
           visualCursor(QPoint())
  {
     wrapItemText = true;
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     overwrite = true;
 #endif
  }

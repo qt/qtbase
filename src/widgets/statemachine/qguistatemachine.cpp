@@ -136,7 +136,7 @@ static QEvent *cloneEvent(QEvent *e)
         return new QEvent(*e);
     case QEvent::DeferredDelete:
         return new QEvent(*e);
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
    case QEvent::DragEnter:
         return new QDragEnterEvent(*static_cast<QDragEnterEvent*>(e));
     case QEvent::DragMove:

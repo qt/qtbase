@@ -41,7 +41,9 @@
 #define QOFFSCREENCOMMON_H
 
 #include <qpa/qplatformbackingstore.h>
+#if QT_CONFIG(draganddrop)
 #include <qpa/qplatformdrag.h>
+#endif
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformwindow.h>
@@ -71,7 +73,7 @@ public:
     QScopedPointer<QPlatformCursor> m_cursor;
 };
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 class QOffscreenDrag : public QPlatformDrag
 {
 public:

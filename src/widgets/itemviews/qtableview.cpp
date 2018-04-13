@@ -1512,7 +1512,7 @@ void QTableView::paintEvent(QPaintEvent *event)
         }
     }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     // Paint the dropIndicator
     d->paintDropIndicator(&painter);
 #endif

@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,50 +37,57 @@
 **
 ****************************************************************************/
 
-#ifndef QSHAPEDPIXMAPDNDWINDOW_H
-#define QSHAPEDPIXMAPDNDWINDOW_H
+#ifndef QINTERNALMIMEDATA_P_H
+#define QINTERNALMIMEDATA_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
+#include <QtCore/qbytearray.h>
+#include <QtCore/qmimedata.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qstringlist.h>
+#include <QtCore/qvariant.h>
 #include <QtGui/private/qtguiglobal_p.h>
-#include <QtGui/QRasterWindow>
-#include <QtGui/QPixmap>
-
-QT_REQUIRE_CONFIG(draganddrop);
 
 QT_BEGIN_NAMESPACE
 
-class QShapedPixmapWindow : public QRasterWindow
+class QEventLoop;
+class QMouseEvent;
+class QPlatformDrag;
+
+class Q_GUI_EXPORT QInternalMimeData : public QMimeData
 {
     Q_OBJECT
 public:
-    explicit QShapedPixmapWindow(QScreen *screen = 0);
-    ~QShapedPixmapWindow();
+    QInternalMimeData();
+    ~QInternalMimeData();
 
-    void setUseCompositing(bool on) { m_useCompositing = on; }
-    void setPixmap(const QPixmap &pixmap);
-    void setHotspot(const QPoint &hotspot);
+    bool hasFormat(const QString &mimeType) const override;
+    QStringList formats() const override;
+    static bool canReadData(const QString &mimeType);
 
-    void updateGeometry(const QPoint &pos);
+
+    static QStringList formatsHelper(const QMimeData *data);
+    static bool hasFormatHelper(const QString &mimeType, const QMimeData *data);
+    static QByteArray renderDataHelper(const QString &mimeType, const QMimeData *data);
 
 protected:
-    void paintEvent(QPaintEvent *) override;
+    QVariant retrieveData(const QString &mimeType, QVariant::Type type) const override;
 
-private:
-    QPixmap m_pixmap;
-    QPoint m_hotSpot;
-    bool m_useCompositing;
+    virtual bool hasFormat_sys(const QString &mimeType) const = 0;
+    virtual QStringList formats_sys() const = 0;
+    virtual QVariant retrieveData_sys(const QString &mimeType, QVariant::Type type) const = 0;
 };
 
 QT_END_NAMESPACE
 
-#endif // QSHAPEDPIXMAPDNDWINDOW_H
+#endif // QINTERNALMIMEDATA_P_H

@@ -139,7 +139,7 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     , m_clipboard(0)
 #endif
     , m_navigator(0)
-#if !defined(QT_NO_DRAGANDDROP)
+#if QT_CONFIG(draganddrop)
     , m_drag(new QSimpleDrag())
 #endif
 {
@@ -212,7 +212,7 @@ QQnxIntegration::~QQnxIntegration()
     qIntegrationDebug("platform plugin shutdown begin");
     delete m_nativeInterface;
 
-#if !defined(QT_NO_DRAGANDDROP)
+#if QT_CONFIG(draganddrop)
     // Destroy the drag object
     delete m_drag;
 #endif
@@ -419,7 +419,7 @@ QPlatformClipboard *QQnxIntegration::clipboard() const
 }
 #endif
 
-#if !defined(QT_NO_DRAGANDDROP)
+#if QT_CONFIG(draganddrop)
 QPlatformDrag *QQnxIntegration::drag() const
 {
     return m_drag;

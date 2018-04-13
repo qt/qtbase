@@ -130,7 +130,7 @@ public:
     }
     void stopAutoScroll() { autoScrollTimer.stop(); autoScrollCount = 0;}
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     virtual bool dropOn(QDropEvent *event, int *row, int *col, QModelIndex *index);
 #endif
     bool droppingOnItself(QDropEvent *event, const QModelIndex &index);
@@ -162,7 +162,7 @@ public:
         }
     }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     virtual QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
 
     inline bool canDrop(QDropEvent *event) {
@@ -400,7 +400,7 @@ public:
 
     bool tabKeyNavigation;
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     bool showDropIndicator;
     QRect dropIndicatorRect;
     bool dragEnabled;

@@ -113,7 +113,7 @@ public:
 #if !defined(QT_NO_CLIPBOARD)
     QPlatformClipboard *clipboard() const override;
 #endif
-#if !defined(QT_NO_DRAGANDDROP)
+#if QT_CONFIG(draganddrop)
     QPlatformDrag *drag() const override;
 #endif
     QVariant styleHint(StyleHint hint) const override;
@@ -158,7 +158,7 @@ private:
     mutable QQnxClipboard* m_clipboard;
 #endif
     QQnxAbstractNavigator *m_navigator;
-#if !defined(QT_NO_DRAGANDDROP)
+#if QT_CONFIG(draganddrop)
     QSimpleDrag *m_drag;
 #endif
     static QQnxWindowMapper ms_windowMapper;

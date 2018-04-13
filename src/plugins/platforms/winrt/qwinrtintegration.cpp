@@ -47,7 +47,7 @@
 #include "qwinrteglcontext.h"
 #include "qwinrttheme.h"
 #include "qwinrtclipboard.h"
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 #include "qwinrtdrag.h"
 #endif
 
@@ -308,12 +308,12 @@ QPlatformClipboard *QWinRTIntegration::clipboard() const
     return d->clipboard;
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 QPlatformDrag *QWinRTIntegration::drag() const
 {
     return QWinRTDrag::instance();
 }
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 Qt::KeyboardModifiers QWinRTIntegration::queryKeyboardModifiers() const
 {
