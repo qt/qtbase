@@ -60,6 +60,7 @@ public:
 
     QSurfaceFormat format() const override;
     QFunctionPointer getProcAddress(const char *procName) override;
+    bool isValid() const override;
 
     static EGLDisplay display();
 private:

@@ -1099,6 +1099,8 @@ void tst_QGuiApplication::staticFunctions()
     QGuiApplication::setQuitOnLastWindowClosed(true);
     QGuiApplication::quitOnLastWindowClosed();
     QGuiApplication::applicationState();
+
+    QPixmap::defaultDepth();
 }
 
 void tst_QGuiApplication::settableStyleHints_data()

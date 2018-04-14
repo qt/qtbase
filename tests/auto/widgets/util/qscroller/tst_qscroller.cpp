@@ -394,8 +394,7 @@ void tst_QScroller::scroll()
     // wait until finished, check that no further first scroll is sent
     sw->receivedFirst = false;
     sw->receivedScroll = false;
-    while (s1->state() == QScroller::Scrolling)
-        QTest::qWait(100);
+    QTRY_VERIFY(s1->state() != QScroller::Scrolling);
 
     QCOMPARE( sw->receivedFirst, false );
     QCOMPARE( sw->receivedScroll, true );
@@ -409,8 +408,7 @@ void tst_QScroller::scroll()
     sw->scrollArea = QRectF(0, 0, 0, 1000);
     kineticScrollNoTest(sw, QPointF(0, 500), QPoint(0, 0), QPoint(100, 0), QPoint(200, 0));
 
-    while (s1->state() != QScroller::Inactive)
-        QTest::qWait(20);
+    QTRY_COMPARE(s1->state(), QScroller::Inactive);
 
     QCOMPARE(sw->currentPos.x(), 0.0);
     QCOMPARE(sw->currentPos.y(), 500.0);
@@ -443,8 +441,7 @@ void tst_QScroller::overshoot()
     s1->setScrollerProperties(sp1);
     kineticScrollNoTest(sw, QPointF(500, 500), QPoint(0, 0), QPoint(400, 0), QPoint(490, 0));
 
-    while (s1->state() != QScroller::Inactive)
-        QTest::qWait(20);
+    QTRY_COMPARE(s1->state(), QScroller::Inactive);
 
     //qDebug() << "Overshoot fuzzy: "<<sw->currentPos;
     QVERIFY(qFuzzyCompare( sw->currentPos.x(), 0 ));
@@ -459,8 +456,7 @@ void tst_QScroller::overshoot()
     s1->setScrollerProperties(sp1);
     kineticScrollNoTest(sw, QPointF(0, 500), QPoint(0, 0), QPoint(400, 0), QPoint(490, 0));
 
-    while (s1->state() != QScroller::Inactive)
-        QTest::qWait(20);
+    QTRY_COMPARE(s1->state(), QScroller::Inactive);
 
     //qDebug() << "Overshoot fuzzy: "<<sw->currentPos;
     QVERIFY(qFuzzyCompare( sw->currentPos.x(), 0 ));
@@ -475,8 +471,7 @@ void tst_QScroller::overshoot()
     s1->setScrollerProperties(sp1);
     kineticScrollNoTest(sw, QPointF(0, 500), QPoint(0, 0), QPoint(400, 0), QPoint(490, 0));
 
-    while (s1->state() != QScroller::Inactive)
-        QTest::qWait(20);
+    QTRY_COMPARE(s1->state(), QScroller::Inactive);
 
     //qDebug() << "Overshoot fuzzy: "<<sw->currentPos;
 
@@ -492,8 +487,7 @@ void tst_QScroller::overshoot()
     s1->setScrollerProperties(sp1);
     kineticScrollNoTest(sw, QPointF(500, 500), QPoint(0, 0), QPoint(400, 0), QPoint(490, 0));
 
-    while (s1->state() != QScroller::Inactive)
-        QTest::qWait(20);
+    QTRY_COMPARE(s1->state(), QScroller::Inactive);
 
     QVERIFY(qFuzzyCompare( sw->currentPos.x(), 0 ));
     QVERIFY(qFuzzyCompare( sw->currentPos.y(), 500 ));
@@ -509,8 +503,7 @@ void tst_QScroller::overshoot()
     s1->setScrollerProperties(sp1);
     kineticScrollNoTest(sw, QPointF(500, 500), QPoint(0, 0), QPoint(400, 0), QPoint(490, 0));
 
-    while (s1->state() != QScroller::Inactive)
-        QTest::qWait(20);
+    QTRY_COMPARE(s1->state(), QScroller::Inactive);
 
     QVERIFY(qFuzzyCompare( sw->currentPos.x(), 0 ));
     QVERIFY(qFuzzyCompare( sw->currentPos.y(), 500 ));

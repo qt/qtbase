@@ -316,14 +316,14 @@ void QWindowsPipeReader::emitPendingReadyRead()
  */
 bool QWindowsPipeReader::waitForReadyRead(int msecs)
 {
-    if (!readSequenceStarted)
-        return false;
-
     if (readyReadPending) {
         if (!inReadyRead)
             emitPendingReadyRead();
         return true;
     }
+
+    if (!readSequenceStarted)
+        return false;
 
     if (!waitForNotification(msecs))
         return false;

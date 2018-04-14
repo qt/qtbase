@@ -354,6 +354,12 @@ QFunctionPointer QWinRTEGLContext::getProcAddress(const char *procName)
     return eglGetProcAddress(procName);
 }
 
+bool QWinRTEGLContext::isValid() const
+{
+    Q_D(const QWinRTEGLContext);
+    return d->eglContext != EGL_NO_CONTEXT;
+}
+
 EGLDisplay QWinRTEGLContext::display()
 {
     return g->eglDisplay;
