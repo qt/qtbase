@@ -90,7 +90,7 @@ void QHtml5Window::create()
     setWindowState(window()->windowStates());
     setWindowFlags(window()->flags());
     setWindowTitle(window()->title());
-    hasTitle = window()->flags().testFlag(Qt::WindowTitleHint);
+    hasTitle = window()->flags().testFlag(Qt::WindowTitleHint) && needsCompositor;
 
     if (window()->isTopLevel())
         setWindowIcon(window()->icon());
@@ -105,12 +105,12 @@ QHtml5Screen *QHtml5Window::platformScreen() const
 void QHtml5Window::setGeometry(const QRect &rect)
 {
     QRect r = rect;
+    if (needsCompositor) {
+        int yMin = window()->geometry().top() - window()->frameGeometry().top();
 
-    int yMin = window()->geometry().top() - window()->frameGeometry().top();
-
-    if (r.y() < yMin)
-        r.moveTop(yMin);
-
+        if (r.y() < yMin)
+            r.moveTop(yMin);
+    }
     QWindowSystemInterface::handleGeometryChange(window(), r);
     QPlatformWindow::setGeometry(r);
 
