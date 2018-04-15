@@ -51,6 +51,7 @@
 #include <private/qcoreapplication_p.h>
 #include <private/qcore_unix_p.h>
 
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -540,9 +541,6 @@ void QEventDispatcherUNIX::wakeUp()
 {
     Q_D(QEventDispatcherUNIX);
     d->threadPipe.wakeUp();
-#ifdef Q_OS_HTML5
-    processEvents();
-#endif
 }
 
 void QEventDispatcherUNIX::interrupt()
