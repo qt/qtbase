@@ -92,8 +92,9 @@ public:
                            const QString &title = QString(),
                            ColorDialogOptions options = ColorDialogOptions());
 
-    // obsolete
-    static QRgb getRgba(QRgb rgba = 0xffffffff, bool *ok = nullptr, QWidget *parent = nullptr);
+#if QT_DEPRECATED_SINCE(5, 12)
+    QT_DEPRECATED_X("Use getColor()") static QRgb getRgba(QRgb rgba = 0xffffffff, bool *ok = nullptr, QWidget *parent = nullptr);
+#endif
 
     static int customCount();
     static QColor customColor(int index);

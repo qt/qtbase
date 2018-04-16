@@ -2160,6 +2160,7 @@ QColor QColorDialog::getColor(const QColor &initial, QWidget *parent, const QStr
     return dlg.selectedColor();
 }
 
+#if QT_DEPRECATED_SINCE(5, 12)
 /*!
     \obsolete
 
@@ -2185,6 +2186,7 @@ QRgb QColorDialog::getRgba(QRgb initial, bool *ok, QWidget *parent)
         *ok = color.isValid();
     return result;
 }
+#endif
 
 /*!
     Destroys the color dialog.
