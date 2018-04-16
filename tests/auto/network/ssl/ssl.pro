@@ -1,5 +1,5 @@
 TEMPLATE=subdirs
-QT_FOR_CONFIG += network
+QT_FOR_CONFIG += network-private
 
 SUBDIRS=\
    qpassworddigestor \
@@ -14,7 +14,11 @@ qtConfig(ssl) {
         SUBDIRS += \
             qsslsocket \
             qsslsocket_onDemandCertificates_member \
-            qsslsocket_onDemandCertificates_static \
+            qsslsocket_onDemandCertificates_static
+        qtConfig(openssl) {
+            SUBDIRS += \
+                qdtlscookie
+        }
     }
 }
 
