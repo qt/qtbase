@@ -73,6 +73,13 @@ void QSslContext::initSslContext(QSslContext *sslContext, QSslSocket::SslMode mo
     bool unsupportedProtocol = false;
 init_context:
     switch (sslContext->sslConfiguration.protocol()) {
+    case QSsl::DtlsV1_0:
+    case QSsl::DtlsV1_0OrLater:
+    case QSsl::DtlsV1_2:
+    case QSsl::DtlsV1_2OrLater:
+        sslContext->ctx = 0;
+        unsupportedProtocol = true;
+        break;
     case QSsl::SslV2:
 #ifndef OPENSSL_NO_SSL2
         sslContext->ctx = q_SSL_CTX_new(client ? q_SSLv2_client_method() : q_SSLv2_server_method());

@@ -92,6 +92,7 @@ namespace QSsl {
         TlsV1_2OrLater,
 
         DtlsV1_0,
+        DtlsV1_0OrLater,
         DtlsV1_2,
         DtlsV1_2OrLater,
 

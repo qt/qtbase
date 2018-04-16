@@ -139,6 +139,13 @@ init_context:
         minVersion = TLS1_2_VERSION;
         maxVersion = TLS_MAX_VERSION;
         break;
+    case QSsl::DtlsV1_0:
+    case QSsl::DtlsV1_0OrLater:
+    case QSsl::DtlsV1_2:
+    case QSsl::DtlsV1_2OrLater:
+        sslContext->errorStr = QSslSocket::tr("unsupported protocol");
+        sslContext->errorCode = QSslError::UnspecifiedError;
+        return;
     case QSsl::SslV2:
         // This protocol is not supported by OpenSSL 1.1 and we handle
         // it as an error (see the code above).
