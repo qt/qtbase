@@ -567,9 +567,12 @@ int QDialog::exec()
 }
 
 /*!
-  Closes the dialog and sets its result code to \a r. If this dialog
-  is shown with exec(), done() causes the local event loop to finish,
-  and exec() to return \a r.
+  Closes the dialog and sets its result code to \a r. The finished() signal
+  will emit \a r; if \a r is QDialog::Accepted or QDialog::Rejected, the
+  accepted() or the rejected() signals will also be emitted, respectively.
+
+  If this dialog is shown with exec(), done() also causes the local event loop
+  to finish, and exec() to return \a r.
 
   As with QWidget::close(), done() deletes the dialog if the
   Qt::WA_DeleteOnClose flag is set. If the dialog is the application's
