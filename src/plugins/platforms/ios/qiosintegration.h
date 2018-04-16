@@ -62,6 +62,8 @@ public:
     QIOSIntegration();
     ~QIOSIntegration();
 
+    void initialize() override;
+
     bool hasCapability(Capability cap) const override;
 
     QPlatformWindow *createPlatformWindow(QWindow *window) const override;
