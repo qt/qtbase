@@ -517,15 +517,6 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     return (nevents > 0);
 }
 
-void QEventDispatcherUNIX::processEvents()
-{
-    Q_D(QEventDispatcherUNIX);
-    // we are awake, broadcast it
-    emit awake();
-    QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
-    d->activateTimers();
-}
-
 bool QEventDispatcherUNIX::hasPendingEvents()
 {
     extern uint qGlobalPostedEventsCount(); // from qapplication.cpp

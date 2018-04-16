@@ -271,7 +271,7 @@ void QEventLoop::processEvents_emscripten()
     Q_D(QEventLoop);
     if (!d->threadData->eventDispatcher.load())
         return;
-    d->threadData->eventDispatcher.load()->processEvents();
+    d->threadData->eventDispatcher.load()->processEvents(EventLoopExec);
 }
 #endif
 
