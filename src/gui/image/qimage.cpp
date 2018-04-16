@@ -2775,6 +2775,13 @@ QMatrix QImage::trueMatrix(const QMatrix &matrix, int w, int h)
     Returns a copy of the image that is transformed using the given
     transformation \a matrix and transformation \a mode.
 
+    The returned image will normally have the same {Image Formats}{format} as
+    the original image. However, a complex transformation may result in an
+    image where not all pixels are covered by the transformed pixels of the
+    original image. In such cases, those background pixels will be assigned a
+    transparent color value, and the transformed image will be given a format
+    with an alpha channel, even if the orginal image did not have that.
+
     The transformation \a matrix is internally adjusted to compensate
     for unwanted translation; i.e. the image produced is the smallest
     image that contains all the transformed points of the original
@@ -4569,6 +4576,13 @@ static QImage rotated270(const QImage &image)
 /*!
     Returns a copy of the image that is transformed using the given
     transformation \a matrix and transformation \a mode.
+
+    The returned image will normally have the same {Image Formats}{format} as
+    the original image. However, a complex transformation may result in an
+    image where not all pixels are covered by the transformed pixels of the
+    original image. In such cases, those background pixels will be assigned a
+    transparent color value, and the transformed image will be given a format
+    with an alpha channel, even if the orginal image did not have that.
 
     The transformation \a matrix is internally adjusted to compensate
     for unwanted translation; i.e. the image produced is the smallest
