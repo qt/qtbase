@@ -117,10 +117,9 @@ QAccessibleInterface *QAccessibleMenu::child(int index) const
 QAccessibleInterface *QAccessibleMenu::parent() const
 {
     if (QAction *menuAction = menu()->menuAction()) {
-        QList<QWidget *> parentCandidates;
-        parentCandidates << menu()->parentWidget();
-        parentCandidates << menuAction->associatedWidgets();
-        foreach (QWidget *w, parentCandidates) {
+        const QList<QWidget*> parentCandidates =
+                QList<QWidget*>() << menu()->parentWidget() << menuAction->associatedWidgets();
+        for (QWidget *w : parentCandidates) {
             if (qobject_cast<QMenu*>(w)
 #if QT_CONFIG(menubar)
                 || qobject_cast<QMenuBar*>(w)

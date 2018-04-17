@@ -569,7 +569,7 @@ QCalendarWidget *QAccessibleCalendarWidget::calendarWidget() const
 
 QAbstractItemView *QAccessibleCalendarWidget::calendarView() const
 {
-    foreach (QObject *child, calendarWidget()->children()) {
+    for (QObject *child : calendarWidget()->children()) {
         if (child->objectName() == QLatin1String("qt_calendar_calendarview"))
             return static_cast<QAbstractItemView *>(child);
     }
@@ -578,7 +578,7 @@ QAbstractItemView *QAccessibleCalendarWidget::calendarView() const
 
 QWidget *QAccessibleCalendarWidget::navigationBar() const
 {
-    foreach (QObject *child, calendarWidget()->children()) {
+    for (QObject *child : calendarWidget()->children()) {
         if (child->objectName() == QLatin1String("qt_calendar_navigationbar"))
             return static_cast<QWidget *>(child);
     }
