@@ -627,15 +627,15 @@ defineReplace(qtConfLibraryArgs) {
     qmake_args =
     libs = $$eval($${1}.libs)
     !isEmpty(libs): \
-        qmake_args += $$system_quote(LIBS += $$libs)
+        qmake_args += "LIBS += $$libs"
     for (b, $${1}.builds._KEYS_): \
-        qmake_args += $$system_quote(LIBS_$$upper($$b) += $$eval($${1}.builds.$${b}))
+        qmake_args += "LIBS_$$upper($$b) += $$eval($${1}.builds.$${b})"
     includedir = $$eval($${1}.includedir)
     !isEmpty(includedir): \
-        qmake_args += $$system_quote(INCLUDEPATH *= $$includedir)
+        qmake_args += "INCLUDEPATH *= $$includedir"
     cflags = $$eval($${1}.cflags)
     !isEmpty(cflags): \
-        qmake_args += $$system_quote(QMAKE_CFLAGS += $$cflags) $$system_quote(QMAKE_CXXFLAGS += $$cflags)
+        qmake_args += "QMAKE_CFLAGS += $$cflags" "QMAKE_CXXFLAGS += $$cflags"
     return($$qmake_args)
 }
 
@@ -992,7 +992,9 @@ defineTest(qtConfTest_compile) {
     write_file($$test_base_out_dir/.qmake.cache)|error()
 
     # add possible command line args
-    qmake_args += $$qtConfPrepareArgs($$eval($${1}.args)) $$eval($${1}.literal_args)
+    qmake_args += \
+        $$qtConfPrepareArgs($$eval($${1}.args)) \
+        $$qtSystemQuote($$eval($${1}.literal_args))
 
     qtRunLoggedCommand("$$test_cmd_base $$qmake_args $$system_quote($$test_dir)") {
         qtRunLoggedCommand("$$test_cmd_base $$QMAKE_MAKE"): \

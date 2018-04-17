@@ -408,7 +408,7 @@ defineTest(qtConfTest_x86SimdAlways) {
         qtConfCheckFeature($$f)
         equals($${fpfx}.$${f}.available, true): configs += $$f
     }
-    $${1}.literal_args = $$system_quote(SIMD=$$join(configs, " "))
+    $${1}.literal_args = SIMD=$$join(configs, " ")
     qtConfTest_compile($${1})
 }
 
