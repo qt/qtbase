@@ -272,18 +272,21 @@
 
 - (NSMenuItem *)appSpecificMenuItem:(QCocoaMenuItem *)platformItem
 {
+    // No reason to create the item if it already exists.
     for (NSMenuItem *item in appMenu.itemArray)
         if ([item isMemberOfClass:[QCocoaNSMenuItem class]]
-            && static_cast<QCocoaNSMenuItem *>(item).platformMenuItem == platformItem) {
-            // No reason to create the item if it already exists.
+            && static_cast<QCocoaNSMenuItem *>(item).platformMenuItem == platformItem)
             return [[item retain] autorelease];
-        }
 
     // Create an App-Specific menu item, insert it into the menu and return
     // it as an autorelease item.
-    QCocoaNSMenuItem *item = [[QCocoaNSMenuItem alloc] initWithPlatformMenuItem:platformItem];
+    QCocoaNSMenuItem *item;
+    if (platformItem->isSeparator())
+        item = [[QCocoaNSMenuItem separatorItemWithPlatformMenuItem:platformItem] retain];
+    else
+        item = [[QCocoaNSMenuItem alloc] initWithPlatformMenuItem:platformItem];
 
-    NSInteger location = [appMenu indexOfItem:lastAppSpecificItem];
+    const auto location = [appMenu indexOfItem:lastAppSpecificItem];
 
     if (!lastAppSpecificItem.separatorItem)
         [lastAppSpecificItem release];

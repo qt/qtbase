@@ -205,7 +205,7 @@ void QCocoaMenu::removeMenuItem(QPlatformMenuItem *menuItem)
 QCocoaMenuItem *QCocoaMenu::itemOrNull(int index) const
 {
     if ((index < 0) || (index >= m_menuItems.size()))
-        return 0;
+        return nullptr;
 
     return m_menuItems.at(index);
 }

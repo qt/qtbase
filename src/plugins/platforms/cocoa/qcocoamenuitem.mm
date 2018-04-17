@@ -219,12 +219,11 @@ void QCocoaMenuItem::setNativeContents(WId item)
 
 NSMenuItem *QCocoaMenuItem::sync()
 {
-    if (m_isSeparator != [m_native isSeparatorItem]) {
+    if (m_isSeparator != m_native.separatorItem) {
         [m_native release];
-        if (m_isSeparator) {
-            m_native = [[NSMenuItem separatorItem] retain];
-            [m_native setTag:reinterpret_cast<NSInteger>(this)];
-        } else
+        if (m_isSeparator)
+            m_native = [[QCocoaNSMenuItem separatorItemWithPlatformMenuItem:this] retain];
+        else
             m_native = nil;
     }
 
@@ -435,6 +434,9 @@ void QCocoaMenuItem::setIconSize(int size)
 
 void QCocoaMenuItem::resolveTargetAction()
 {
+    if (m_native.separatorItem)
+        return;
+
     // Some items created by QCocoaMenuLoader are not
     // instances of QCocoaNSMenuItem and have their
     // target/action set as Interface Builder would.

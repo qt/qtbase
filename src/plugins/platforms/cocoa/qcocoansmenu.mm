@@ -97,6 +97,19 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
     QPointer<QCocoaMenuItem> _platformMenuItem;
 }
 
++ (instancetype)separatorItemWithPlatformMenuItem:(QCocoaMenuItem *)menuItem
+{
+    // Safe because +[NSMenuItem separatorItem] invokes [[self alloc] init]
+    auto *item = static_cast<QCocoaNSMenuItem *>([self separatorItem]);
+    Q_ASSERT_X([item isMemberOfClass:[QCocoaNSMenuItem class]],
+               qPrintable(__FUNCTION__),
+               "Did +[NSMenuItem separatorItem] not invoke [[self alloc] init]?");
+    if (item)
+        item.platformMenuItem = menuItem;
+
+    return item;
+}
+
 - (instancetype)initWithPlatformMenuItem:(QCocoaMenuItem *)menuItem
 {
     if ((self = [super initWithTitle:@"" action:nil keyEquivalent:@""])) {
