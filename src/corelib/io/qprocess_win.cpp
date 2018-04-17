@@ -499,8 +499,13 @@ void QProcessPrivate::startProcess()
 
     if (!openChannel(stdinChannel) ||
         !openChannel(stdoutChannel) ||
-        !openChannel(stderrChannel))
+        !openChannel(stderrChannel)) {
+        QString errorString = QProcess::tr("Process failed to start: %1").arg(qt_error_string());
+        cleanup();
+        setErrorAndEmit(QProcess::FailedToStart, errorString);
+        q->setProcessState(QProcess::NotRunning);
         return;
+    }
 
     const QString args = qt_create_commandline(program, arguments, nativeArguments);
     QByteArray envlist;
