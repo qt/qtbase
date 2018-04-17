@@ -126,6 +126,11 @@
         preferencesItem.hidden = YES;
         [appMenu addItem:preferencesItem];
 
+        // We'll be adding app specific items after this. The macOS HIG state that,
+        // "In general, a Preferences menu item should be the first app-specific menu item."
+        // https://developer.apple.com/macos/human-interface-guidelines/menus/menu-bar-menus/
+        lastAppSpecificItem = preferencesItem;
+
         [appMenu addItem:[NSMenuItem separatorItem]];
 
         // Services item and menu
@@ -278,14 +283,12 @@
     // it as an autorelease item.
     QCocoaNSMenuItem *item = [[QCocoaNSMenuItem alloc] initWithPlatformMenuItem:platformItem];
 
-    NSInteger location;
-    if (lastAppSpecificItem == nil) {
-        location = [appMenu indexOfItem:aboutQtItem];
-    } else {
-        location = [appMenu indexOfItem:lastAppSpecificItem];
+    NSInteger location = [appMenu indexOfItem:lastAppSpecificItem];
+
+    if (!lastAppSpecificItem.separatorItem)
         [lastAppSpecificItem release];
-    }
     lastAppSpecificItem = item;  // Keep track of this for later (i.e., don't release it)
+
     [appMenu insertItem:item atIndex:location + 1];
 
     return [[item retain] autorelease];
