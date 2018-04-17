@@ -130,6 +130,7 @@ QT_BEGIN_NAMESPACE
     }
 
 Q_CORE_EXPORT void qt_call_post_routines();
+Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods, const QString &text = QString(), bool autorep = false, ushort count = 1);
 
 QApplicationPrivate *QApplicationPrivate::self = 0;
 
@@ -3068,8 +3069,19 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
     switch (e->type()) {
         case QEvent::KeyPress: {
-                int key = static_cast<QKeyEvent*>(e)->key();
-                qt_in_tab_key_event = (key == Qt::Key_Backtab
+            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
+            const int key = keyEvent->key();
+            // When a key press is received which is not spontaneous then it needs to
+            // be manually sent as a shortcut override event to ensure that any
+            // matching shortcut is triggered first. This enables emulation/playback
+            // of recorded events to still have the same effect.
+            if (!e->spontaneous() && receiver->isWidgetType()) {
+                if (qt_sendShortcutOverrideEvent(qobject_cast<QWidget *>(receiver), keyEvent->timestamp(),
+                                                 key, keyEvent->modifiers(), keyEvent->text(),
+                                                 keyEvent->isAutoRepeat(), keyEvent->count()))
+                    return true;
+            }
+            qt_in_tab_key_event = (key == Qt::Key_Backtab
                         || key == Qt::Key_Tab
                         || key == Qt::Key_Left
                         || key == Qt::Key_Up
