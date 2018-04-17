@@ -69,9 +69,14 @@
 //      One or more HTML elements. QtLoader will display loader elements
 //      on these while loading the applicaton, and replace the loader with a
 //      canvas on load complete.
-//  showLoader : function(containerElement)
+//  showLoader : function(status, containerElement)
 //      Optional loading element constructor function. Implement to create
-//      a custom loading "screen".
+//      a custom loading screen. This function may be called multiple times,
+//      while preparing the application binary. "status" is a string
+//      containing the loading sub-status, and may be either "Downloading",
+//      or "Compiling". The browser may be using streaming compilation, in
+//      which case the wasm module is compiled during downloading and the
+//      there is no separate compile step.
 //  showCanvas : function(containerElement)
 //      Optional canvas constructor function. Implement to create custom
 //      canvas elements.
@@ -151,11 +156,11 @@ function QtLoader(config)
             return errorTextElement;
         }
 
-        config.showLoader = config.showLoader || function(container) {
+        config.showLoader = config.showLoader || function(loadingState, container) {
             removeChildren(container);
             var loadingText = document.createElement("text");
             loadingText.className = "QtLoading"
-            loadingText.innerHTML = "<p><center>Loading Qt ...</center><p>";
+            loadingText.innerHTML = '<p><center> ${loadingState}...</center><p>';
             return loadingText;
         };
 
@@ -228,6 +233,14 @@ function QtLoader(config)
         });
     }
 
+    function fetchThenCompileWasm(response) {
+        return response.arrayBuffer().then(function(data) {
+            self.loaderSubState = "Compiling";
+            setStatus("Loading") // trigger loaderSubState udpate
+            return WebAssembly.compile(data);
+        });
+    }
+
     function fetchCompileWasm(filePath) {
         return fetchResource(filePath).then(function(response) {
             if (typeof WebAssembly.compileStreaming !== "undefined") {
@@ -235,15 +248,11 @@ function QtLoader(config)
                     // compileStreaming may/will fail if the server does not set the correct
                     // mime type (application/wasm) for the wasm file. Fall back to fetch,
                     // then compile in this case.
-                    return response.arrayBuffer().then(function(data) {
-                        return WebAssembly.compile(data);
-                    });
+                    return fetchThenCompileWasm(response);
                 });
             } else {
                 // Fall back to fetch, then compile if compileStreaming is not supported
-                return response.arrayBuffer().then(function(data) {
-                    return WebAssembly.compile(data);
-                });
+                return fetchThenCompileWasm(response);
             }
         });
     }
@@ -271,6 +280,7 @@ function QtLoader(config)
         // Continue waiting if loadEmscriptenModule() is called again
         if (publicAPI.status == "Loading")
             return;
+        self.loaderSubState = "Downloading";
         setStatus("Loading");
 
         // Fetch emscripten generated javascript runtime
@@ -412,12 +422,12 @@ function QtLoader(config)
     function setLoaderContent() {
         if (config.containerElements === undefined) {
             if (config.showLoader !== undefined)
-                config.showLoader();
+                config.showLoader(self.loaderSubState);
             return;
         }
 
         for (container of config.containerElements) {
-            var loaderElement = config.showLoader(container);
+            var loaderElement = config.showLoader(self.loaderSubState, container);
             container.appendChild(loaderElement);
         }
     }
@@ -464,7 +474,7 @@ function QtLoader(config)
 
     var committedStatus = undefined;
     function handleStatusChange() {
-        if (committedStatus == publicAPI.status)
+        if (publicAPI.status != "Loading" && committedStatus == publicAPI.status)
             return;
         committedStatus = publicAPI.status;
 
@@ -490,7 +500,7 @@ function QtLoader(config)
     }
 
     function setStatus(status) {
-        if (publicAPI.status == status)
+        if (status != "Loading" && publicAPI.status == status)
             return;
         publicAPI.status = status;
 

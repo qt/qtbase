@@ -62,7 +62,7 @@
       <div class="spinner"></div>
       <center style="margin-top:0.5em">
         <strong>Qt for WebAssembly</strong>
-        <div class="emscripten" id="status">Downloading...</div>
+        <div class="emscripten" id="status"></div>
         <progress class="emscripten" value="0" max="100" id="progress" hidden=1></progress>
       </center>
     </figure>
@@ -74,33 +74,34 @@
 
     <script type='text/javascript'>
         function init() {
-          var spininer = document.getElementById('spinner');
+          var spinner = document.getElementById('spinner');
           var canvas = document.getElementById('canvas');
           var error = document.getElementById('error');
+          var status = document.getElementById('status')
 
           var qtLoader = QtLoader({
-              showLoader: function(errorText) {
-                  spininer.style.display = 'block';
-                  canvas.style.display = 'none'
-                  error.style.display = 'none'
+              showLoader: function(loaderStatus) {
+                  spinner.style.display = 'block';
+                  canvas.style.display = 'none';
+                  error.style.display = 'none';
+                  status.innerHTML = loaderStatus + "...";
               },
               showError: function(errorText) {
                   error.innerHTML = errorText;
-                  spininer.style.display = 'none';
-                  canvas.style.display = 'none'
-                  error.style.display = 'block'
+                  spinner.style.display = 'none';
+                  canvas.style.display = 'none';
+                  error.style.display = 'block';
               },
               showExit: function() {
                   error.innerHTML = "Exit: " + qtLoader.exitCode + " " + qtLoader.exitText;
-                  spininer.style.display = 'none';
-                  canvas.style.display = 'none'
-                  error.style.display = 'block'
+                  spinner.style.display = 'none';
+                  canvas.style.display = 'none';
+                  error.style.display = 'block';
               },
-
               showCanvas: function() {
-                  spininer.style.display = 'none';
-                  canvas.style.display = 'block'
-                  error.style.display = 'none'
+                  spinner.style.display = 'none';
+                  canvas.style.display = 'block';
+                  error.style.display = 'none';
                   return canvas;
               },
           });
