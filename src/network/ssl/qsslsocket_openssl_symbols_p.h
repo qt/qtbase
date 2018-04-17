@@ -485,6 +485,9 @@ void q_PKCS12_free(PKCS12 *pkcs12);
 #define q_SSL_CTX_set_mode(ctx,op) q_SSL_CTX_ctrl((ctx),SSL_CTRL_MODE,(op),NULL)
 #define q_sk_GENERAL_NAME_num(st) q_SKM_sk_num(GENERAL_NAME, (st))
 #define q_sk_GENERAL_NAME_value(st, i) q_SKM_sk_value(GENERAL_NAME, (st), (i))
+
+void q_GENERAL_NAME_free(GENERAL_NAME *a);
+
 #define q_sk_X509_num(st) q_SKM_sk_num(X509, (st))
 #define q_sk_X509_value(st, i) q_SKM_sk_value(X509, (st), (i))
 #define q_sk_SSL_CIPHER_num(st) q_SKM_sk_num(SSL_CIPHER, (st))

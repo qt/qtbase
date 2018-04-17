@@ -1387,6 +1387,9 @@ void tst_QDir::absoluteFilePath_data()
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     QTest::newRow("UNC") << "//machine" << "share" << "//machine/share";
     QTest::newRow("Drive") << "c:/side/town" << "/my/way/home" << "c:/my/way/home";
+#endif
+
+#ifdef Q_OS_WIN
 #define DRIVE "Q:"
 #else
 #define DRIVE
