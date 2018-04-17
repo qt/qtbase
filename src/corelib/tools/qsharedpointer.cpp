@@ -309,7 +309,7 @@
 
     \endomit
 
-    \sa QSharedDataPointer, QWeakPointer, QScopedPointer
+    \sa QSharedDataPointer, QWeakPointer, QScopedPointer, QEnableSharedFromThis
 */
 
 /*!
