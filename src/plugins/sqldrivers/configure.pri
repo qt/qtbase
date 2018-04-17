@@ -19,9 +19,9 @@ defineTest(qtConfLibrary_psqlConfig) {
         libs =
         !isEmpty(libdir): libs += "-L$$libdir"
         libs += "-lpq"
-        $${1}.libs = "$$val_escape(libs)"
+        $${1}.libs = $$libs
         includedir -= $$QMAKE_DEFAULT_INCDIRS
-        $${1}.includedir = "$$val_escape(includedir)"
+        $${1}.includedir = $$includedir
         export($${1}.libs)
         export($${1}.includedir)
         return(true)
@@ -34,7 +34,7 @@ defineTest(qtConfLibrary_psqlEnv) {
     # Respect PSQL_LIBS if set
     PSQL_LIBS = $$getenv(PSQL_LIBS)
     !isEmpty(PSQL_LIBS) {
-        $${1}.libs = $$PSQL_LIBS
+        eval($${1}.libs = $$PSQL_LIBS)
         export($${1}.libs)
     } else {
         !qtConfLibrary_inline($$1, $$2): \
@@ -69,14 +69,14 @@ defineTest(qtConfLibrary_mysqlConfig) {
             }
             libs = $$cleanlibs
         }
-        $${1}.libs = "$$val_escape(libs)"
+        $${1}.libs = $$libs
         eval(rawincludedir = $$includedir)
         rawincludedir ~= s/^-I//g
         includedir =
         for (id, rawincludedir): \
             includedir += $$clean_path($$id)
         includedir -= $$QMAKE_DEFAULT_INCDIRS
-        $${1}.includedir = "$$val_escape(includedir)"
+        $${1}.includedir = $$includedir
         export($${1}.libs)
         export($${1}.includedir)
         return(true)
@@ -90,9 +90,9 @@ defineTest(qtConfLibrary_sybaseEnv) {
     sybase = $$getenv(SYBASE)
     !isEmpty(sybase): \
         libs += "-L$${sybase}/lib"
-    libs += $$getenv(SYBASE_LIBS)
+    eval(libs += $$getenv(SYBASE_LIBS))
     !isEmpty(libs) {
-        $${1}.libs = "$$val_escape(libs)"
+        $${1}.libs = $$libs
         export($${1}.libs)
     }
     return(true)

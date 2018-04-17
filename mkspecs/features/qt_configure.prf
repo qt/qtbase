@@ -495,6 +495,15 @@ defineTest(qtConfLibrary_inline) {
     !defined($${1}.libs, var):isEmpty($${1}.builds._KEYS_): \
         error("'inline' source in library '$$lib' specifies neither 'libs' nor 'builds'.")
 
+    # library lists are specified as strings in the json sources for
+    # readability, but it's a pain to work with that, so expand it now.
+    eval($${1}.libs = $$eval($${1}.libs))
+    export($${1}.libs)
+    for (b, $${1}.builds._KEYS_) {
+        eval($${1}.builds.$${b} = $$eval($${1}.builds.$${b}))
+        export($${1}.builds.$${b})
+    }
+
     # if multiple libraries provide the same export, it makes sense
     # to make them recognize the same input variables.
     input = $$eval($${2}.alias)
@@ -507,7 +516,7 @@ defineTest(qtConfLibrary_inline) {
         iv = $${input}.libs.$${b}
         vars += $$eval(config.commandline.rev_assignments.$${iv})
         defined(config.input.$${iv}, var) {
-            $${1}.builds.$${b} = $$eval(config.input.$${iv})
+            eval($${1}.builds.$${b} = $$eval(config.input.$${iv}))
             export($${1}.builds.$${b})
             $${1}.builds._KEYS_ *= $${b}
             any = true
@@ -528,28 +537,28 @@ defineTest(qtConfLibrary_inline) {
 
     # direct libs. overwrites inline libs.
     defined(config.input.$${input}.libs, var) {
-        $${1}.libs = $$eval(config.input.$${input}.libs)
+        eval($${1}.libs = $$eval(config.input.$${input}.libs))
         export($${1}.libs)
     }
 
     # prefix. prepends to (possibly overwritten) inline libs.
-    prefix = $$val_escape(config.input.$${input}.prefix)
+    prefix = $$eval(config.input.$${input}.prefix)
     !isEmpty(prefix) {
         $${1}.includedir = $$prefix/include
         export($${1}.includedir)
-        $${1}.libs = "-L$$prefix/lib $$eval($${1}.libs)"
+        $${1}.libs = -L$$prefix/lib $$eval($${1}.libs)
         export($${1}.libs)
     }
 
-    incdir = $$val_escape(config.input.$${input}.incdir)
+    incdir = $$eval(config.input.$${input}.incdir)
     !isEmpty(incdir) {
         $${1}.includedir = $$incdir
         export($${1}.includedir)
     }
 
-    libdir = $$val_escape(config.input.$${input}.libdir)
+    libdir = $$eval(config.input.$${input}.libdir)
     !isEmpty(libdir) {
-        $${1}.libs = "-L$$libdir $$eval($${1}.libs)"
+        $${1}.libs = -L$$libdir $$eval($${1}.libs)
         export($${1}.libs)
     }
 
@@ -563,13 +572,12 @@ defineTest(qtConfLibrary_makeSpec) {
     isEmpty(spec): \
         error("makeSpec source in library '$$eval($${1}.library)' does not specify 'spec'.")
 
-    $${1}.includedir = "$$val_escape(QMAKE_INCDIR_$$spec)"
+    $${1}.includedir = $$eval(QMAKE_INCDIR_$$spec)
     export($${1}.includedir)
-    libs =
+    $${1}.libs =
     for (l, QMAKE_LIBDIR_$$spec): \
-        libs += -L$$l
-    libs += $$eval(QMAKE_LIBS_$$spec)
-    $${1}.libs = "$$val_escape(libs)"
+        $${1}.libs += -L$$l
+    $${1}.libs += $$eval(QMAKE_LIBS_$$spec)
     export($${1}.libs)
 
     # the library definition is always in scope, so no point in exporting it.
@@ -600,8 +608,7 @@ defineTest(qtConfLibrary_pkgConfig) {
     version ~= s/[^0-9.].*$//
     $${1}.version = $$first(version)
     export($${1}.version)
-    libpaths += $$libs
-    $${1}.libs = "$$libpaths"
+    eval($${1}.libs = $$libpaths $$libs)
     export($${1}.libs)
     return(true)
 }
@@ -625,12 +632,12 @@ defineTest(qtConfTest_getPkgConfigVariable) {
 
 defineReplace(qtConfLibraryArgs) {
     NAME = $$upper($$eval($${1}.library))
-    qmake_args = "QMAKE_LIBS_$${NAME} = $$eval($${1}.libs)"
+    qmake_args = "QMAKE_LIBS_$${NAME} = $$val_escape($${1}.libs)"
     for (b, $${1}.builds._KEYS_): \
-        qmake_args += "QMAKE_LIBS_$${NAME}_$$upper($$b) = $$eval($${1}.builds.$${b})"
+        qmake_args += "QMAKE_LIBS_$${NAME}_$$upper($$b) = $$val_escape($${1}.builds.$${b})"
     includedir = $$eval($${1}.includedir)
     !isEmpty(includedir): \
-        qmake_args += "QMAKE_INCDIR_$${NAME} = $$includedir"
+        qmake_args += "QMAKE_INCDIR_$${NAME} = $$val_escape(includedir)"
     cflags = $$eval($${1}.cflags)
     !isEmpty(cflags): \
         qmake_args += "QMAKE_CFLAGS += $$cflags" "QMAKE_CXXFLAGS += $$cflags"
@@ -665,9 +672,9 @@ defineTest(qtConfExportLibrary) {
 
     output = privatePro
 
-    eval(libs = $$eval($${spfx}.libs))
+    libs = $$eval($${spfx}.libs)
+    includes = $$eval($${spfx}.includedir)
     eval(cflags = $$eval($${spfx}.cflags))
-    eval(includes = $$eval($${spfx}.includedir))
 
     # Split $$cflags into stuff that goes into DEFINES, INCLUDEPATH, and other stuff.
     defines =
@@ -692,7 +699,7 @@ defineTest(qtConfExportLibrary) {
     # LIBS is emitted even if empty, as this allows the library to be "seen".
     qtConfOutputVar(assign, $$output, QMAKE_LIBS_$$NAME, $$libs)
     for (b, $${spfx}.builds._KEYS_) {
-        eval(blibs = $$eval($${spfx}.builds.$${b}))
+        blibs = $$eval($${spfx}.builds.$${b})
         qtConfOutputVar(assign, $$output, QMAKE_LIBS_$${NAME}_$$upper($$b), $$blibs)
     }
     !isEmpty(defines): qtConfOutputVar(assign, $$output, QMAKE_DEFINES_$$NAME, $$defines)

@@ -7,7 +7,7 @@ defineTest(qtConfLibrary_freetype) {
     for (p, TRY_INCLUDEPATHS) {
         includedir = $$p/freetype2
         exists($$includedir) {
-            $${1}.includedir = "$$val_escape(includedir)"
+            $${1}.includedir = $$includedir
             export($${1}.includedir)
             return(true)
         }
