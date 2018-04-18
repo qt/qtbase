@@ -75,7 +75,7 @@
 #endif
 #endif
 
-#include <Carbon/Carbon.h>
+#include <CoreServices/CoreServices.h>
 
 @interface QT_MANGLE_NAMESPACE(QCocoaThemeNotificationReceiver) : NSObject
 @end
