@@ -461,10 +461,24 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                             opt = (*++it).toQString();
                         else
                             opt = opt.mid(10).trimmed();
+                        static const QChar suffixMarker = ',';
+                        const int suffixPosition = opt.indexOf(suffixMarker);
+                        const bool hasSuffix = suffixPosition >= 0;
+                        QString frameworkName = opt;
+                        if (hasSuffix) {
+                            frameworkName.truncate(suffixPosition);
+                            opt.remove(suffixMarker); // Apply suffix by removing marker
+                        }
                         for (const QMakeLocalFileName &dir : qAsConst(frameworkdirs)) {
-                            QString prl = dir.local() + "/" + opt + ".framework/" + opt + Option::prl_ext;
-                            if (processPrlFile(prl))
+                            QString frameworkDirectory = dir.local() + "/" + frameworkName + + ".framework/";
+                            QString suffixedPrl = frameworkDirectory + opt + Option::prl_ext;
+                            if (processPrlFile(suffixedPrl))
                                 break;
+                            if (hasSuffix) {
+                                QString unsuffixedPrl = frameworkDirectory + frameworkName + Option::prl_ext;
+                                if (processPrlFile(unsuffixedPrl))
+                                    break;
+                            }
                         }
                     } else {
                         if (opt.length() == 10)
