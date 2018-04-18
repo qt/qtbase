@@ -2878,10 +2878,6 @@ void tst_QFile::nativeHandleLeaks()
 #endif
 
     QCOMPARE( fd2, fd1 );
-
-#ifdef Q_OS_WIN
-    QCOMPARE( handle2, handle1 );
-#endif
 }
 
 void tst_QFile::readEof_data()
