@@ -6,70 +6,22 @@
     <title>Qt for WebAssembly</title>
     <style>
       html, body { padding: 0; margin : 0; overflow:hidden; height: 100% }
-      div#status.emscripten { margin : 0; display: block;  float: none }
-      progress#progress.emscripten { margin : 0; display: block; float: none; visibility: hidden }
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
-      canvas.emscripten { border: 0px none; background-color: white; height:100%; width:100%; }
-
-      .spinner {
-        height: 250px;
-        width: 250px;
-        margin: 0px auto;
-        -webkit-animation: rotation .8s linear infinite;
-        -moz-animation: rotation .8s linear infinite;
-        -o-animation: rotation .8s linear infinite;
-        animation: rotation 0.8s linear infinite;
-        border-left: 10px solid rgb(9,16,43);
-        border-right: 10px solid rgb(9,16,43);
-        border-bottom: 10px solid rgb(9,16,43);
-        border-top: 10px solid rgb(65,205,82);
-        border-radius: 100%;
-        background-color: rgb(23,168,26);
-      }
-      @-webkit-keyframes rotation {
-        from {-webkit-transform: rotate(0deg);}
-        to {-webkit-transform: rotate(360deg);}
-      }
-      @-moz-keyframes rotation {
-        from {-moz-transform: rotate(0deg);}
-        to {-moz-transform: rotate(360deg);}
-      }
-      @-o-keyframes rotation {
-        from {-o-transform: rotate(0deg);}
-        to {-o-transform: rotate(360deg);}
-      }
-      @keyframes rotation {
-        from {transform: rotate(0deg);}
-        to {transform: rotate(360deg);}
-      }
-      #status {
-             display: inline-block;
-             vertical-align: top;
-             margin-top: 30px;
-             margin-left: 20px;
-             font-weight: bold;
-             color: rgb(132,136,149);
-           }
-
-      #progress {
-            height: 20px;
-            width: 30px;
-          }
+      canvas { border: 0px none; background-color: white; height:100%; width:100%; }
     </style>
   </head>
   <body onload="init()">
     <figure style="overflow:visible;" id="spinner">
-      <div class="spinner"></div>
-      <center style="margin-top:0.5em">
+      <center style="margin-top:1.5em; line-height:150%">
+        <img src="qtlogo.svg"; width=320; height=200; style="display:block"> </img>
         <strong>Qt for WebAssembly</strong>
-        <div class="emscripten" id="status"></div>
-        <progress class="emscripten" value="0" max="100" id="progress" hidden=1></progress>
+        <div id="status"></div>
       </center>
     </figure>
     <center >
-      <div class="emscripten" id="error" style="margin-top:5em"></div>
+      <div id="error" style="margin-top:5em"></div>
     </center>
-    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+    <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
 
 
     <script type='text/javascript'>

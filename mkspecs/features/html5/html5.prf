@@ -59,12 +59,16 @@ contains(TEMPLATE, .*app) {
     appjs.target = $$DESTDIR/qtloader.js
     appjs.commands += $$QMAKE_COPY $$quote($$HTML5_PLUGIN_PATH/qtloader.js) $$quote($$DESTDIR) $$escape_expand(\\n\\t)
 
-    QMAKE_EXTRA_TARGETS += apphtml appjs
-    POST_TARGETDEPS += $$apphtml.target $$appjs.target
+    # Copy qtlogo.svg
+    qtlogo.target = $$DESTDIR/qtlogo.svg
+    qtlogo.commands += $$QMAKE_COPY $$quote($$HTML5_PLUGIN_PATH/qtlogo.svg) $$quote($$DESTDIR) $$escape_expand(\\n\\t)
+
+    QMAKE_EXTRA_TARGETS += apphtml appjs qtlogo
+    POST_TARGETDEPS += $$apphtml.target $$appjs.target $$qtlogo.target
 
     # Add manual target to make "make -B shellfiles" work.
     shellfiles.target = shellfiles
-    shellfiles.depends = $$apphtml.target $$appjs.target
+    shellfiles.depends = $$apphtml.target $$appjs.target $$qtlogo.target
     QMAKE_EXTRA_TARGETS += shellfiles
 
     # emscripten ports are linked into the main module (this app), not the Qt
