@@ -16,44 +16,36 @@
         <img src="qtlogo.svg"; width=320; height=200; style="display:block"> </img>
         <strong>Qt for WebAssembly</strong>
         <div id="status"></div>
+        <noscript>JavaScript is disabled. Please enable JavaScript to use this application.</noscript>
       </center>
     </figure>
-    <center >
-      <div id="error" style="margin-top:5em"></div>
-    </center>
     <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-
 
     <script type='text/javascript'>
         function init() {
           var spinner = document.getElementById('spinner');
           var canvas = document.getElementById('canvas');
-          var error = document.getElementById('error');
           var status = document.getElementById('status')
 
           var qtLoader = QtLoader({
               showLoader: function(loaderStatus) {
                   spinner.style.display = 'block';
                   canvas.style.display = 'none';
-                  error.style.display = 'none';
                   status.innerHTML = loaderStatus + "...";
               },
               showError: function(errorText) {
-                  error.innerHTML = errorText;
-                  spinner.style.display = 'none';
+                  status.innerHTML = errorText;
+                  spinner.style.display = 'block';
                   canvas.style.display = 'none';
-                  error.style.display = 'block';
               },
               showExit: function() {
-                  error.innerHTML = "Exit: " + qtLoader.exitCode + " " + qtLoader.exitText;
-                  spinner.style.display = 'none';
+                  status.innerHTML = "Application exit with code: " + qtLoader.exitCode + " " + qtLoader.exitText;
+                  spinner.style.display = 'block';
                   canvas.style.display = 'none';
-                  error.style.display = 'block';
               },
               showCanvas: function() {
                   spinner.style.display = 'none';
                   canvas.style.display = 'block';
-                  error.style.display = 'none';
                   return canvas;
               },
           });
