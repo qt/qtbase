@@ -105,7 +105,7 @@ QT_BEGIN_NAMESPACE
 const char *QCocoaTheme::name = "cocoa";
 
 QCocoaTheme::QCocoaTheme()
-    :m_systemPalette(0)
+    : m_systemPalette(nullptr)
 {
     m_notificationReceiver = [[QT_MANGLE_NAMESPACE(QCocoaThemeNotificationReceiver) alloc] initWithPrivate:this];
     [[NSNotificationCenter defaultCenter] addObserver:m_notificationReceiver
@@ -145,7 +145,7 @@ bool QCocoaTheme::usePlatformNativeDialog(DialogType dialogType) const
     return false;
 }
 
-QPlatformDialogHelper * QCocoaTheme::createPlatformDialogHelper(DialogType dialogType) const
+QPlatformDialogHelper *QCocoaTheme::createPlatformDialogHelper(DialogType dialogType) const
 {
     switch (dialogType) {
 #if defined(QT_WIDGETS_LIB) && QT_CONFIG(filedialog)
@@ -161,7 +161,7 @@ QPlatformDialogHelper * QCocoaTheme::createPlatformDialogHelper(DialogType dialo
         return new QCocoaFontDialogHelper();
 #endif
     default:
-        return 0;
+        return nullptr;
     }
 }
 
@@ -181,9 +181,9 @@ const QPalette *QCocoaTheme::palette(Palette type) const
     } else {
         if (m_palettes.isEmpty())
             m_palettes = qt_mac_createRolePalettes();
-        return m_palettes.value(type, 0);
+        return m_palettes.value(type, nullptr);
     }
-    return 0;
+    return nullptr;
 }
 
 QHash<QPlatformTheme::Font, QFont *> qt_mac_createRoleFonts()
@@ -197,7 +197,7 @@ const QFont *QCocoaTheme::font(Font type) const
     if (m_fonts.isEmpty()) {
         m_fonts = qt_mac_createRoleFonts();
     }
-    return m_fonts.value(type, 0);
+    return m_fonts.value(type, nullptr);
 }
 
 //! \internal

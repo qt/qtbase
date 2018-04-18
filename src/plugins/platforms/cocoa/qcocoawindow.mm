@@ -143,7 +143,7 @@ const int QCocoaWindow::NoAlertRequest = -1;
 QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
     : QPlatformWindow(win)
     , m_view(nil)
-    , m_nsWindow(0)
+    , m_nsWindow(nil)
     , m_lastReportedWindowState(Qt::WindowNoState)
     , m_windowModality(Qt::NonModal)
     , m_windowUnderMouse(false)
@@ -152,9 +152,9 @@ QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
     , m_inSetGeometry(false)
     , m_inSetStyleMask(false)
 #ifndef QT_NO_OPENGL
-    , m_glContext(0)
+    , m_glContext(nullptr)
 #endif
-    , m_menubar(0)
+    , m_menubar(nullptr)
     , m_needsInvalidateShadow(false)
     , m_hasModalSession(false)
     , m_frameStrutEventsEnabled(false)
@@ -316,7 +316,7 @@ void QCocoaWindow::setVisible(bool visible)
     m_inSetVisible = true;
 
     QMacAutoReleasePool pool;
-    QCocoaWindow *parentCocoaWindow = 0;
+    QCocoaWindow *parentCocoaWindow = nullptr;
     if (window()->transientParent())
         parentCocoaWindow = static_cast<QCocoaWindow *>(window()->transientParent()->handle());
 
@@ -368,13 +368,13 @@ void QCocoaWindow::setVisible(bool visible)
                 } else if (window()->modality() != Qt::NonModal) {
                     // show the window as application modal
                     QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
-                    Q_ASSERT(cocoaEventDispatcher != 0);
+                    Q_ASSERT(cocoaEventDispatcher);
                     QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
                     cocoaEventDispatcherPrivate->beginModalSession(window());
                     m_hasModalSession = true;
                 } else if ([m_view.window canBecomeKeyWindow]) {
                     QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
-                    QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = 0;
+                    QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = nullptr;
                     if (cocoaEventDispatcher)
                         cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
 
@@ -413,7 +413,7 @@ void QCocoaWindow::setVisible(bool visible)
             m_glContext->windowWasHidden();
 #endif
         QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
-        QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = 0;
+        QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = nullptr;
         if (cocoaEventDispatcher)
             cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
         if (isContentView()) {
@@ -481,7 +481,8 @@ NSInteger QCocoaWindow::windowLevel(Qt::WindowFlags flags)
     // Any "special" window should be in at least the same level as its parent.
     if (type != Qt::Window) {
         const QWindow * const transientParent = window()->transientParent();
-        const QCocoaWindow * const transientParentWindow = transientParent ? static_cast<QCocoaWindow *>(transientParent->handle()) : 0;
+        const QCocoaWindow * const transientParentWindow = transientParent ?
+                    static_cast<QCocoaWindow *>(transientParent->handle()) : nullptr;
         if (transientParentWindow)
             windowLevel = qMax([transientParentWindow->nativeWindow() level], windowLevel);
     }
@@ -1276,18 +1277,13 @@ void QCocoaWindow::recreateWindowIfNeeded()
                 // with a NSWindow contentView pointing to a deallocated NSView.
                 m_view.window.contentView = nil;
             }
-            m_nsWindow = 0;
+            m_nsWindow = nil;
         }
     }
 
-    if (shouldBeContentView) {
-        bool noPreviousWindow = m_nsWindow == 0;
-        QCocoaNSWindow *newWindow = nullptr;
-        if (noPreviousWindow)
-            newWindow = createNSWindow(shouldBePanel);
-
+    if (shouldBeContentView && !m_nsWindow) {
         // Move view to new NSWindow if needed
-        if (newWindow) {
+        if (auto *newWindow = createNSWindow(shouldBePanel)) {
             qCDebug(lcQpaWindow) << "Ensuring that" << m_view << "is content view for" << newWindow;
             [m_view setPostsFrameChangedNotifications:NO];
             [newWindow setContentView:m_view];

@@ -98,8 +98,8 @@ CGImageRef qt_mac_create_imagemask(const QPixmap &pixmap, const QRectF &sr)
         for (int x = sx; x < sw; ++x)
             *(dptr+(offset++)) = (*(srow+x) & mask) ? 255 : 0;
     }
-    QCFType<CGDataProviderRef> provider = CGDataProviderCreateWithData(0, dptr, nbytes, qt_mac_cgimage_data_free);
-    return CGImageMaskCreate(sw, sh, 8, 8, nbytes / sh, provider, 0, 0);
+    QCFType<CGDataProviderRef> provider = CGDataProviderCreateWithData(nullptr, dptr, nbytes, qt_mac_cgimage_data_free);
+    return CGImageMaskCreate(sw, sh, 8, 8, nbytes / sh, provider, nullptr, false);
 }
 
 //conversion
@@ -287,16 +287,16 @@ static void qt_mac_draw_pattern(void *info, CGContextRef c)
             Q_ASSERT(pat->data.bytes);
             w = h = 8;
 #if (QMACPATTERN_MASK_MULTIPLIER == 1)
-            CGDataProviderRef provider = CGDataProviderCreateWithData(0, pat->data.bytes, w*h, 0);
-            pat->image = CGImageMaskCreate(w, h, 1, 1, 1, provider, 0, false);
+            CGDataProviderRef provider = CGDataProviderCreateWithData(nullptr, pat->data.bytes, w*h, nullptr);
+            pat->image = CGImageMaskCreate(w, h, 1, 1, 1, provider, nullptr, false);
             CGDataProviderRelease(provider);
 #else
             const int numBytes = (w*h)/sizeof(uchar);
             uchar xor_bytes[numBytes];
             for (int i = 0; i < numBytes; ++i)
                 xor_bytes[i] = pat->data.bytes[i] ^ 0xFF;
-            CGDataProviderRef provider = CGDataProviderCreateWithData(0, xor_bytes, w*h, 0);
-            CGImageRef swatch = CGImageMaskCreate(w, h, 1, 1, 1, provider, 0, false);
+            CGDataProviderRef provider = CGDataProviderCreateWithData(nullptr, xor_bytes, w*h, nullptr);
+            CGImageRef swatch = CGImageMaskCreate(w, h, 1, 1, 1, provider, nullptr, false);
             CGDataProviderRelease(provider);
 
             const QColor c0(0, 0, 0, 0), c1(255, 255, 255, 255);
@@ -399,9 +399,9 @@ QCoreGraphicsPaintEngine::begin(QPaintDevice *pdev)
         d->orig_xform = CGContextGetCTM(d->hd);
         if (d->shading) {
             CGShadingRelease(d->shading);
-            d->shading = 0;
+            d->shading = nullptr;
         }
-        d->setClip(0);  //clear the context's clipping
+        d->setClip(nullptr);  //clear the context's clipping
     }
 
     setActive(true);
@@ -445,12 +445,12 @@ QCoreGraphicsPaintEngine::end()
         CGShadingRelease(d->shading);
         d->shading = 0;
     }
-    d->pdev = 0;
+    d->pdev = nullptr;
     if (d->hd) {
         d->restoreGraphicsState();
         CGContextSynchronize(d->hd);
         CGContextRelease(d->hd);
-        d->hd = 0;
+        d->hd = nullptr;
     }
     return true;
 }
@@ -545,7 +545,7 @@ QCoreGraphicsPaintEngine::updateBrush(const QBrush &brush, const QPointF &brushO
 
     if (d->shading) {
         CGShadingRelease(d->shading);
-        d->shading = 0;
+        d->shading = nullptr;
     }
     d->setFillBrush(brushOrigin);
 }
@@ -592,7 +592,7 @@ QCoreGraphicsPaintEngine::updateClipPath(const QPainterPath &p, Qt::ClipOperatio
         if (d->current.clipEnabled) {
             d->current.clipEnabled = false;
             d->current.clip = QRegion();
-            d->setClip(0);
+            d->setClip(nullptr);
         }
     } else {
         if (!d->current.clipEnabled)
@@ -601,7 +601,7 @@ QCoreGraphicsPaintEngine::updateClipPath(const QPainterPath &p, Qt::ClipOperatio
         QRegion clipRegion(p.toFillPolygon().toPolygon(), p.fillRule());
         if (op == Qt::ReplaceClip) {
             d->current.clip = clipRegion;
-            d->setClip(0);
+            d->setClip(nullptr);
             if (p.isEmpty()) {
                 CGRect rect = CGRectMake(0, 0, 0, 0);
                 CGContextClipToRect(d->hd, rect);
@@ -630,7 +630,7 @@ QCoreGraphicsPaintEngine::updateClipRegion(const QRegion &clipRegion, Qt::ClipOp
     if (op == Qt::NoClip) {
         d->current.clipEnabled = false;
         d->current.clip = QRegion();
-        d->setClip(0);
+        d->setClip(nullptr);
     } else {
         if (!d->current.clipEnabled)
             op = Qt::ReplaceClip;
@@ -676,7 +676,7 @@ QCoreGraphicsPaintEngine::drawRects(const QRectF *rects, int rectCount)
         QRectF r = rects[i];
 
         CGMutablePathRef path = CGPathCreateMutable();
-        CGPathAddRect(path, 0, qt_mac_compose_rect(r));
+        CGPathAddRect(path, nullptr, qt_mac_compose_rect(r));
         d->drawPath(QCoreGraphicsPaintEnginePrivate::CGFill|QCoreGraphicsPaintEnginePrivate::CGStroke,
                 path);
         CGPathRelease(path);
@@ -698,8 +698,8 @@ QCoreGraphicsPaintEngine::drawPoints(const QPointF *points, int pointCount)
     CGMutablePathRef path = CGPathCreateMutable();
     for (int i=0; i < pointCount; i++) {
         float x = points[i].x(), y = points[i].y();
-        CGPathMoveToPoint(path, 0, x, y);
-        CGPathAddLineToPoint(path, 0, x+0.001, y);
+        CGPathMoveToPoint(path, nullptr, x, y);
+        CGPathAddLineToPoint(path, nullptr, x+0.001, y);
     }
 
     bool doRestore = false;
@@ -745,11 +745,11 @@ QCoreGraphicsPaintEngine::drawPolygon(const QPointF *points, int pointCount, Pol
         return;
 
     CGMutablePathRef path = CGPathCreateMutable();
-    CGPathMoveToPoint(path, 0, points[0].x(), points[0].y());
+    CGPathMoveToPoint(path, nullptr, points[0].x(), points[0].y());
     for (int x = 1; x < pointCount; ++x)
-        CGPathAddLineToPoint(path, 0, points[x].x(), points[x].y());
+        CGPathAddLineToPoint(path, nullptr, points[x].x(), points[x].y());
     if (mode != PolylineMode && points[0] != points[pointCount-1])
-        CGPathAddLineToPoint(path, 0, points[0].x(), points[0].y());
+        CGPathAddLineToPoint(path, nullptr, points[0].x(), points[0].y());
     uint op = QCoreGraphicsPaintEnginePrivate::CGStroke;
     if (mode != PolylineMode)
         op |= mode == OddEvenMode ? QCoreGraphicsPaintEnginePrivate::CGEOFill
@@ -770,8 +770,8 @@ QCoreGraphicsPaintEngine::drawLines(const QLineF *lines, int lineCount)
     CGMutablePathRef path = CGPathCreateMutable();
     for (int i = 0; i < lineCount; i++) {
         const QPointF start = lines[i].p1(), end = lines[i].p2();
-        CGPathMoveToPoint(path, 0, start.x(), start.y());
-        CGPathAddLineToPoint(path, 0, end.x(), end.y());
+        CGPathMoveToPoint(path, nullptr, start.x(), start.y());
+        CGPathAddLineToPoint(path, nullptr, end.x(), end.y());
     }
     d->drawPath(QCoreGraphicsPaintEnginePrivate::CGStroke, path);
     CGPathRelease(path);
@@ -870,7 +870,7 @@ QCoreGraphicsPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap
     CGPatternRef pat = CGPatternCreate(qpattern, CGRectMake(0, 0, width, height),
             trans, width, height,
             kCGPatternTilingNoDistortion, true, &callbks);
-    CGColorSpaceRef cs = CGColorSpaceCreatePattern(0);
+    CGColorSpaceRef cs = CGColorSpaceCreatePattern(nullptr);
     CGContextSetFillColorSpace(d->hd, cs);
     CGFloat component = 1.0; //just one
     CGContextSetFillPattern(d->hd, pat, &component);
@@ -1198,9 +1198,9 @@ void QCoreGraphicsPaintEnginePrivate::setFillBrush(const QPointF &offset)
             Q_ASSERT(grad->spread() == QGradient::PadSpread);
 
             static const CGFloat domain[] = { 0.0f, +1.0f };
-            static const CGFunctionCallbacks callbacks = { 0, qt_mac_color_gradient_function, 0 };
+            static const CGFunctionCallbacks callbacks = { 0, qt_mac_color_gradient_function, nullptr };
             CGFunctionRef fill_func = CGFunctionCreate(reinterpret_cast<void *>(&current.brush),
-                    1, domain, 4, 0, &callbacks);
+                    1, domain, 4, nullptr, &callbacks);
 
             CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB)
             if (bs == Qt::LinearGradientPattern) {
@@ -1233,7 +1233,7 @@ void QCoreGraphicsPaintEnginePrivate::setFillBrush(const QPointF &offset)
         QMacPattern *qpattern = new QMacPattern;
         qpattern->pdev = pdev;
         CGFloat components[4] = { 1.0, 1.0, 1.0, 1.0 };
-        CGColorSpaceRef base_colorspace = 0;
+        CGColorSpaceRef base_colorspace = nullptr;
         if (bs == Qt::TexturePattern) {
             qpattern->data.pixmap = current.brush.texture();
             if (qpattern->data.pixmap.isQBitmap()) {
@@ -1291,7 +1291,7 @@ QCoreGraphicsPaintEnginePrivate::setClip(const QRegion *rgn)
         if (!sysClip.isEmpty())
             qt_mac_clip_cg(hd, sysClip, &orig_xform);
         if (rgn)
-            qt_mac_clip_cg(hd, *rgn, 0);
+            qt_mac_clip_cg(hd, *rgn, nullptr);
     }
 }
 
@@ -1404,7 +1404,7 @@ void QCoreGraphicsPaintEnginePrivate::drawPath(uchar ops, CGMutablePathRef path)
             t.transform = qt_mac_convert_transform_to_cg(current.transform);
             t.path = CGPathCreateMutable();
             CGPathApply(path, &t, qt_mac_cg_transform_path_apply); //transform the path
-            setTransform(0); //unset the context transform
+            setTransform(nullptr); //unset the context transform
             CGContextSetLineWidth(hd,  cosmeticPenSize);
             CGContextAddPath(hd, t.path);
             CGPathRelease(t.path);

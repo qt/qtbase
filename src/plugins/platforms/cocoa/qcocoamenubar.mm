@@ -79,7 +79,7 @@ QCocoaMenuBar::~QCocoaMenuBar()
     static_menubars.removeOne(this);
 
     if (!m_window.isNull() && m_window->menubar() == this) {
-        m_window->setMenubar(0);
+        m_window->setMenubar(nullptr);
 
         // Delete the children first so they do not cause
         // the native menu items to be hidden after
@@ -229,7 +229,7 @@ void QCocoaMenuBar::handleReparent(QWindow *newParentWindow)
     if (!m_window.isNull())
         m_window->setMenubar(nullptr);
 
-    if (newParentWindow == nullptr) {
+    if (!newParentWindow) {
         m_window.clear();
     } else {
         newParentWindow->create();
@@ -264,7 +264,7 @@ void QCocoaMenuBar::updateMenuBarImmediately()
     QCocoaMenuBar *mb = findGlobalMenubar();
     QCocoaWindow *cw = findWindowForMenubar();
 
-    QWindow *win = cw ? cw->window() : 0;
+    QWindow *win = cw ? cw->window() : nullptr;
     if (win && (win->flags() & Qt::Popup) == Qt::Popup) {
         // context menus, comboboxes, etc. don't need to update the menubar,
         // but if an application has only Qt::Tool window(s) on start,

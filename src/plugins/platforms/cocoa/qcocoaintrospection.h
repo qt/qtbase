@@ -76,7 +76,7 @@
 
 QT_BEGIN_NAMESPACE
 
-void qt_cocoa_change_implementation(Class baseClass, SEL originalSel, Class proxyClass, SEL replacementSel = 0, SEL backupSel = 0);
+void qt_cocoa_change_implementation(Class baseClass, SEL originalSel, Class proxyClass, SEL replacementSel = nil, SEL backupSel = nil);
 void qt_cocoa_change_back_implementation(Class baseClass, SEL originalSel, SEL backupSel);
 
 QT_END_NAMESPACE

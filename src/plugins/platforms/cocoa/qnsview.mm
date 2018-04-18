@@ -148,18 +148,18 @@
         m_frameStrutButtons = Qt::NoButton;
         m_sendKeyEvent = false;
 #ifndef QT_NO_OPENGL
-        m_glContext = 0;
+        m_glContext = nullptr;
         m_shouldSetGLContextinDrawRect = false;
 #endif
-        currentCustomDragTypes = 0;
+        currentCustomDragTypes = nullptr;
         m_dontOverrideCtrlLMB = false;
         m_sendUpAsRightButton = false;
-        m_inputSource = 0;
+        m_inputSource = nil;
         m_mouseMoveHelper = [[QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) alloc] initWithView:self];
         m_resendKeyEvent = false;
         m_scrolling = false;
         m_updatingDrag = false;
-        m_currentlyInterpretedKeyEvent = 0;
+        m_currentlyInterpretedKeyEvent = nil;
         self.focusRingType = NSFocusRingTypeNone;
         self.cursor = nil;
         m_updateRequested = false;

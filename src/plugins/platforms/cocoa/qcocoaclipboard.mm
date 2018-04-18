@@ -56,13 +56,13 @@ QMimeData *QCocoaClipboard::mimeData(QClipboard::Mode mode)
         pasteBoard->sync();
         return pasteBoard->mimeData();
     }
-    return 0;
+    return nullptr;
 }
 
 void QCocoaClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
 {
     if (QMacPasteboard *pasteBoard = pasteboardForMode(mode)) {
-        if (data == 0) {
+        if (!data) {
             pasteBoard->clear();
         }
 
@@ -90,7 +90,7 @@ QMacPasteboard *QCocoaClipboard::pasteboardForMode(QClipboard::Mode mode) const
     else if (mode == QClipboard::FindBuffer)
         return m_find.data();
     else
-        return 0;
+        return nullptr;
 }
 
 void QCocoaClipboard::handleApplicationStateChanged(Qt::ApplicationState state)

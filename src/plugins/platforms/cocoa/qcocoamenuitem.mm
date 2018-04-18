@@ -113,7 +113,7 @@ QCocoaMenuItem::~QCocoaMenuItem()
     QMacAutoReleasePool pool;
 
     if (m_menu && m_menu->menuParent() == this)
-        m_menu->setMenuParent(0);
+        m_menu->setMenuParent(nullptr);
     if (m_merged) {
         [m_native setHidden:YES];
     } else {
@@ -141,7 +141,7 @@ void QCocoaMenuItem::setMenu(QPlatformMenu *menu)
         return;
 
     if (m_menu && m_menu->menuParent() == this) {
-        m_menu->setMenuParent(0);
+        m_menu->setMenuParent(nullptr);
         // Free the menu from its parent's influence
         m_menu->propagateEnabledState(true);
         if (m_native && m_menu->attachedItem() == m_native)

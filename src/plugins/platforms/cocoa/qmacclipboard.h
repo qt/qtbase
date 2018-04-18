@@ -54,7 +54,7 @@ public:
     enum DataRequestType { EagerRequest, LazyRequest };
 private:
     struct Promise {
-        Promise() : itemId(0), convertor(0) { }
+        Promise() : itemId(0), convertor(nullptr) { }
 
         static Promise eagerPromise(int itemId, QMacInternalPasteboardMime *c, QString m, QMacMimeData *d, int o = 0);
         static Promise lazyPromise(int itemId, QMacInternalPasteboardMime *c, QString m, QMacMimeData *d, int o = 0);
@@ -79,7 +79,7 @@ private:
 public:
     QMacPasteboard(PasteboardRef p, uchar mime_type=0);
     QMacPasteboard(uchar mime_type);
-    QMacPasteboard(CFStringRef name=0, uchar mime_type=0);
+    QMacPasteboard(CFStringRef name=nullptr, uchar mime_type=0);
     ~QMacPasteboard();
 
     bool hasFlavor(QString flavor) const;

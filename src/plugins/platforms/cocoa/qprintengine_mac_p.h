@@ -134,7 +134,7 @@ public:
 
     QMacPrintEnginePrivate() : mode(QPrinter::ScreenResolution), state(QPrinter::Idle),
                                m_pageLayout(QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0, 0, 0, 0))),
-                               printInfo(0), paintEngine(0), embedFonts(true) {}
+                               printInfo(nullptr), paintEngine(nullptr), embedFonts(true) {}
     ~QMacPrintEnginePrivate();
 
     void initialize();

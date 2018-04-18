@@ -110,8 +110,8 @@ class QCocoaEventDispatcher : public QAbstractEventDispatcher
     Q_DECLARE_PRIVATE(QCocoaEventDispatcher)
 
 public:
-    QCocoaEventDispatcher(QAbstractEventDispatcherPrivate &priv, QObject *parent = 0);
-    explicit QCocoaEventDispatcher(QObject *parent = 0);
+    QCocoaEventDispatcher(QAbstractEventDispatcherPrivate &priv, QObject *parent = nullptr);
+    explicit QCocoaEventDispatcher(QObject *parent = nullptr);
     ~QCocoaEventDispatcher();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags);

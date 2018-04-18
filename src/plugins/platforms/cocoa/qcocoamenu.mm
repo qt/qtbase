@@ -53,7 +53,7 @@
 QT_BEGIN_NAMESPACE
 
 QCocoaMenu::QCocoaMenu() :
-    m_attachedItem(0),
+    m_attachedItem(nil),
     m_updateTimer(0),
     m_enabled(true),
     m_parentEnabled(true),
@@ -69,7 +69,7 @@ QCocoaMenu::~QCocoaMenu()
 {
     foreach (QCocoaMenuItem *item, m_menuItems) {
         if (item->menuParent() == this)
-            item->setMenuParent(0);
+            item->setMenuParent(nullptr);
     }
 
     [m_nativeMenu release];
@@ -187,7 +187,7 @@ void QCocoaMenu::removeMenuItem(QPlatformMenuItem *menuItem)
     }
 
     if (cocoaItem->menuParent() == this)
-        cocoaItem->setMenuParent(0);
+        cocoaItem->setMenuParent(nullptr);
 
     // Ignore any parent enabled state
     cocoaItem->setParentEnabled(true);
@@ -335,11 +335,11 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect,
     QMacAutoReleasePool pool;
 
     QPoint pos =  QPoint(targetRect.left(), targetRect.top() + targetRect.height());
-    QCocoaWindow *cocoaWindow = parentWindow ? static_cast<QCocoaWindow *>(parentWindow->handle()) : 0;
+    QCocoaWindow *cocoaWindow = parentWindow ? static_cast<QCocoaWindow *>(parentWindow->handle()) : nullptr;
     NSView *view = cocoaWindow ? cocoaWindow->view() : nil;
     NSMenuItem *nsItem = item ? ((QCocoaMenuItem *)item)->nsItem() : nil;
 
-    QScreen *screen = 0;
+    QScreen *screen = nullptr;
     if (parentWindow)
         screen = parentWindow->screen();
     if (!screen && !QGuiApplication::screens().isEmpty())
@@ -403,7 +403,7 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect,
                                           pressure:1.0];
             [NSMenu popUpContextMenu:m_nativeMenu withEvent:menuEvent forView:view];
         } else {
-            [m_nativeMenu popUpMenuPositioningItem:nsItem atLocation:nsPos inView:0];
+            [m_nativeMenu popUpMenuPositioningItem:nsItem atLocation:nsPos inView:nil];
         }
     }
 

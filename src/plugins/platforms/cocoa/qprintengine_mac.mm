@@ -117,7 +117,7 @@ bool QMacPrintEngine::end()
     if (d->paintEngine->type() == QPaintEngine::CoreGraphics) {
         // We don't need the paint engine to call restoreGraphicsState()
         static_cast<QCoreGraphicsPaintEngine*>(d->paintEngine)->d_func()->stackCount = 0;
-        static_cast<QCoreGraphicsPaintEngine*>(d->paintEngine)->d_func()->hd = 0;
+        static_cast<QCoreGraphicsPaintEngine*>(d->paintEngine)->d_func()->hd = nullptr;
     }
     d->paintEngine->end();
     if (d->state != QPrinter::Idle)
@@ -271,7 +271,7 @@ void QMacPrintEnginePrivate::releaseSession()
     PMSessionEndPageNoDialog(session());
     PMSessionEndDocumentNoDialog(session());
     [printInfo release];
-    printInfo = 0;
+    printInfo = nil;
 }
 
 bool QMacPrintEnginePrivate::newPage_helper()
@@ -291,7 +291,7 @@ bool QMacPrintEnginePrivate::newPage_helper()
     while (cgEngine->d_func()->stackCount > 0)
         cgEngine->d_func()->restoreGraphicsState();
 
-    OSStatus status = PMSessionBeginPageNoDialog(session(), format(), 0);
+    OSStatus status = PMSessionBeginPageNoDialog(session(), format(), nullptr);
     if (status != noErr) {
         state = QPrinter::Error;
         return false;
@@ -318,7 +318,7 @@ bool QMacPrintEnginePrivate::newPage_helper()
     if (m_pageLayout.mode() != QPageLayout::FullPageMode)
         CGContextTranslateCTM(cgContext, page.x() - paper.x(), page.y() - paper.y());
     cgEngine->d_func()->orig_xform = CGContextGetCTM(cgContext);
-    cgEngine->d_func()->setClip(0);
+    cgEngine->d_func()->setClip(nullptr);
     cgEngine->state->dirtyFlags = QPaintEngine::DirtyFlag(QPaintEngine::AllDirty
                                                           & ~(QPaintEngine::DirtyClipEnabled
                                                               | QPaintEngine::DirtyClipRegion
@@ -340,7 +340,7 @@ void QMacPrintEnginePrivate::setPageSize(const QPageSize &pageSize)
 
     // Get the PMPaper and check it is valid
     PMPaper macPaper = m_printDevice->macPaper(usePageSize);
-    if (macPaper == 0) {
+    if (!macPaper) {
         qWarning() << "QMacPrintEngine: Invalid PMPaper returned for " << pageSize;
         return;
     }

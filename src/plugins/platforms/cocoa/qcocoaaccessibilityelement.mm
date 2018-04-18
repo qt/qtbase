@@ -569,7 +569,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         return NSAccessibilityUnignoredAncestor(self);
 
     // find the deepest child at the point
-    QAccessibleInterface *childOfChildInterface = 0;
+    QAccessibleInterface *childOfChildInterface = nullptr;
     do {
         childOfChildInterface = childInterface->childAt(screenPoint.x(), screenPoint.y());
         if (childOfChildInterface && childOfChildInterface->isValid())

@@ -113,7 +113,7 @@ static const QByteArray q_macLocalEventType = QByteArrayLiteral("mac_generic_NSE
 static bool qt_filterEvent(NSEvent *event)
 {
     if (qApp && qApp->eventDispatcher()->
-            filterNativeEvent(q_macLocalEventType, static_cast<void*>(event), 0))
+            filterNativeEvent(q_macLocalEventType, static_cast<void*>(event), nullptr))
         return true;
 
     if ([event type] == NSApplicationDefined) {

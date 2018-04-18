@@ -164,7 +164,7 @@ QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
     // belowWindowWithWindowNumber] may return windows that are not interesting
     // to Qt. The search iterates until a suitable window or no window is found.
     NSInteger topWindowNumber = 0;
-    QWindow *window = 0;
+    QWindow *window = nullptr;
     do {
         // Get the top-most window, below any previously rejected window.
         topWindowNumber = [NSWindow windowNumberAtPoint:screenPoint
@@ -172,7 +172,7 @@ QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
 
         // Continue the search if the window does not belong to this process.
         NSWindow *nsWindow = [NSApp windowWithWindowNumber:topWindowNumber];
-        if (nsWindow == 0)
+        if (!nsWindow)
             continue;
 
         // Continue the search if the window does not belong to Qt.

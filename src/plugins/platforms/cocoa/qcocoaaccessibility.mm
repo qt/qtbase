@@ -311,7 +311,7 @@ NSString *getTranslatedAction(const QString &qtAction)
     //      NSAccessibilityCancelAction;
     //      NSAccessibilityDeleteAction;
 
-    return 0;
+    return nil;
 }
 
 

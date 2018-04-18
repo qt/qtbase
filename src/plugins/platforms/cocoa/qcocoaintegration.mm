@@ -94,11 +94,11 @@ static QCocoaIntegration::Options parseOptions(const QStringList &paramList)
     return options;
 }
 
-QCocoaIntegration *QCocoaIntegration::mInstance = 0;
+QCocoaIntegration *QCocoaIntegration::mInstance = nullptr;
 
 QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
     : mOptions(parseOptions(paramList))
-    , mFontDb(0)
+    , mFontDb(nullptr)
 #ifndef QT_NO_ACCESSIBILITY
     , mAccessibility(new QCocoaAccessibility)
 #endif
@@ -110,7 +110,7 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
     , mServices(new QCocoaServices)
     , mKeyboardMapper(new QCocoaKeyMapper)
 {
-    if (mInstance != 0)
+    if (mInstance)
         qWarning("Creating multiple Cocoa platform integrations is not supported");
     mInstance = this;
 
@@ -186,7 +186,7 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
 
 QCocoaIntegration::~QCocoaIntegration()
 {
-    mInstance = 0;
+    mInstance = nullptr;
 
     qt_resetNSApplicationSendEvent();
 
@@ -296,7 +296,7 @@ QCocoaScreen *QCocoaIntegration::screenForNSScreen(NSScreen *nsScreen)
 {
     NSUInteger index = [[NSScreen screens] indexOfObject:nsScreen];
     if (index == NSNotFound)
-        return 0;
+        return nullptr;
 
     if (index >= unsigned(mScreens.count()))
         updateScreens();
@@ -306,7 +306,7 @@ QCocoaScreen *QCocoaIntegration::screenForNSScreen(NSScreen *nsScreen)
             return screen;
     }
 
-    return 0;
+    return nullptr;
 }
 
 bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -480,14 +480,14 @@ void QCocoaIntegration::pushPopupWindow(QCocoaWindow *window)
 QCocoaWindow *QCocoaIntegration::popPopupWindow()
 {
     if (m_popupWindowStack.isEmpty())
-        return 0;
+        return nullptr;
     return m_popupWindowStack.takeLast();
 }
 
 QCocoaWindow *QCocoaIntegration::activePopupWindow() const
 {
     if (m_popupWindowStack.isEmpty())
-        return 0;
+        return nullptr;
     return m_popupWindowStack.front();
 }
 

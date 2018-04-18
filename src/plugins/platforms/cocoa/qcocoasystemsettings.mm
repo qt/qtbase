@@ -129,7 +129,7 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
     QColor qc;
     for (int i = 0; i < mac_widget_colors_count; i++) {
         QPalette &pal = *qt_mac_createSystemPalette();
-        if (mac_widget_colors[i].active != 0) {
+        if (mac_widget_colors[i].active) {
             qc = qt_mac_toQColor(mac_widget_colors[i].active);
             pal.setColor(QPalette::Active, QPalette::Text, qc);
             pal.setColor(QPalette::Inactive, QPalette::Text, qc);

@@ -50,10 +50,10 @@ QT_BEGIN_NAMESPACE
 static const int dragImageMaxChars = 26;
 
 QCocoaDrag::QCocoaDrag() :
-    m_drag(0)
+    m_drag(nullptr)
 {
-    m_lastEvent = 0;
-    m_lastView = 0;
+    m_lastEvent = nil;
+    m_lastView = nil;
 }
 
 QCocoaDrag::~QCocoaDrag()
@@ -73,7 +73,7 @@ QMimeData *QCocoaDrag::dragMimeData()
     if (m_drag)
         return m_drag->mimeData();
 
-    return 0;
+    return nullptr;
 }
 
 Qt::DropAction QCocoaDrag::defaultAction(Qt::DropActions possibleActions,
@@ -140,7 +140,7 @@ Qt::DropAction QCocoaDrag::drag(QDrag *o)
 
     NSPoint event_location = [m_lastEvent locationInWindow];
     NSWindow *theWindow = [m_lastEvent window];
-    Q_ASSERT(theWindow != nil);
+    Q_ASSERT(theWindow);
     event_location.x -= hotSpot.x();
     CGFloat flippedY = pmDeviceIndependentSize.height() - hotSpot.y();
     event_location.y -= flippedY;
@@ -157,7 +157,7 @@ Qt::DropAction QCocoaDrag::drag(QDrag *o)
 
     [nsimage release];
 
-    m_drag = 0;
+    m_drag = nullptr;
     return m_executed_drop_action;
 }
 

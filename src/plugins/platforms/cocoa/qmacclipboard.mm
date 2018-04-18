@@ -75,7 +75,7 @@ QMacPasteboard::Promise::Promise(int itemId, QMacInternalPasteboardMime *c, QStr
     // Request the data from the application immediately for eager requests.
     if (dataRequestType == QMacPasteboard::EagerRequest) {
         variantData = md->variantData(m);
-        mimeData = 0;
+        mimeData = nullptr;
     } else {
         mimeData = md;
     }
@@ -94,8 +94,8 @@ QMacPasteboard::QMacPasteboard(uchar mt)
 {
     mac_mime_source = false;
     mime_type = mt ? mt : uchar(QMacInternalPasteboardMime::MIME_ALL);
-    paste = 0;
-    OSStatus err = PasteboardCreate(0, &paste);
+    paste = nullptr;
+    OSStatus err = PasteboardCreate(nullptr, &paste);
     if (err == noErr) {
         PasteboardSetPromiseKeeper(paste, promiseKeeper, this);
     } else {
@@ -108,7 +108,7 @@ QMacPasteboard::QMacPasteboard(CFStringRef name, uchar mt)
 {
     mac_mime_source = false;
     mime_type = mt ? mt : uchar(QMacInternalPasteboardMime::MIME_ALL);
-    paste = 0;
+    paste = nullptr;
     OSStatus err = PasteboardCreate(name, &paste);
     if (err == noErr) {
         PasteboardSetPromiseKeeper(paste, promiseKeeper, this);
@@ -165,7 +165,7 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
         // we have promised this data, but won't be able to convert, so return null data.
         // This helps in making the application/x-qt-mime-type-name hidden from normal use.
         QByteArray ba;
-        QCFType<CFDataRef> data = CFDataCreate(0, (UInt8*)ba.constData(), ba.size());
+        QCFType<CFDataRef> data = CFDataCreate(nullptr, (UInt8*)ba.constData(), ba.size());
         PasteboardPutItemFlavor(paste, id, flavor, data, kPasteboardFlavorNoFlags);
         return noErr;
     }
@@ -196,7 +196,7 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
     if (md.size() <= promise.offset)
         return cantGetFlavorErr;
     const QByteArray &ba = md[promise.offset];
-    QCFType<CFDataRef> data = CFDataCreate(0, (UInt8*)ba.constData(), ba.size());
+    QCFType<CFDataRef> data = CFDataCreate(nullptr, (UInt8*)ba.constData(), ba.size());
     PasteboardPutItemFlavor(paste, id, flavor, data, kPasteboardFlavorNoFlags);
     return noErr;
 }
@@ -553,7 +553,7 @@ QMacPasteboard::sync() const
     const bool fromGlobal = PasteboardSynchronize(paste) & kPasteboardModified;
 
     if (fromGlobal)
-        const_cast<QMacPasteboard *>(this)->setMimeData(0);
+        const_cast<QMacPasteboard *>(this)->setMimeData(nullptr);
 
 #ifdef DEBUG_PASTEBOARD
     if (fromGlobal)

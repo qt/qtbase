@@ -60,7 +60,7 @@ QPlatformIntegration * QCocoaIntegrationPlugin::create(const QString& system, co
     if (system.compare(QLatin1String("cocoa"), Qt::CaseInsensitive) == 0)
         return new QCocoaIntegration(paramList);
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

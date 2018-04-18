@@ -129,7 +129,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSOpenSavePanelDelegate);
     } else {
         mSavePanel = [NSSavePanel savePanel];
         [mSavePanel setCanSelectHiddenExtension:YES];
-        mOpenPanel = 0;
+        mOpenPanel = nil;
     }
 
     if ([mSavePanel respondsToSelector:@selector(setLevel:)])
@@ -569,7 +569,7 @@ static QString strippedText(QString s)
 QT_BEGIN_NAMESPACE
 
 QCocoaFileDialogHelper::QCocoaFileDialogHelper()
-    :mDelegate(0)
+    : mDelegate(nil)
 {
 }
 
@@ -579,7 +579,7 @@ QCocoaFileDialogHelper::~QCocoaFileDialogHelper()
         return;
     QMacAutoReleasePool pool;
     [mDelegate release];
-    mDelegate = 0;
+    mDelegate = nil;
 }
 
 void QCocoaFileDialogHelper::QNSOpenSavePanelDelegate_selectionChanged(const QString &newPath)

@@ -357,17 +357,17 @@ Qt::KeyboardModifiers QCocoaKeyMapper::queryKeyboardModifiers()
 
 bool QCocoaKeyMapper::updateKeyboard()
 {
-    const UCKeyboardLayout *uchrData = 0;
+    const UCKeyboardLayout *uchrData = nullptr;
     QCFType<TISInputSourceRef> source = TISCopyInputMethodKeyboardLayoutOverride();
     if (!source)
         source = TISCopyCurrentKeyboardInputSource();
     if (keyboard_mode != NullMode && source == currentInputSource) {
         return false;
     }
-    Q_ASSERT(source != 0);
+    Q_ASSERT(source);
     CFDataRef data = static_cast<CFDataRef>(TISGetInputSourceProperty(source,
                                                                  kTISPropertyUnicodeKeyLayoutData));
-    uchrData = data ? reinterpret_cast<const UCKeyboardLayout *>(CFDataGetBytePtr(data)) : 0;
+    uchrData = data ? reinterpret_cast<const UCKeyboardLayout *>(CFDataGetBytePtr(data)) : nullptr;
 
     keyboard_kind = LMGetKbdType();
     if (uchrData) {
@@ -386,7 +386,7 @@ void QCocoaKeyMapper::deleteLayouts()
     for (int i = 0; i < 255; ++i) {
         if (keyLayout[i]) {
             delete keyLayout[i];
-            keyLayout[i] = 0;
+            keyLayout[i] = nullptr;
         }
     }
 }
