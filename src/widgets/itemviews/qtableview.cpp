@@ -1383,12 +1383,12 @@ void QTableView::paintEvent(QPaintEvent *event)
     //firstVisualRow is the visual index of the first visible row.  lastVisualRow is the visual index of the last visible Row.
     //same goes for ...VisualColumn
     int firstVisualRow = qMax(verticalHeader->visualIndexAt(0),0);
-    int lastVisualRow = verticalHeader->visualIndexAt(verticalHeader->viewport()->height());
+    int lastVisualRow = verticalHeader->visualIndexAt(verticalHeader->height());
     if (lastVisualRow == -1)
         lastVisualRow = d->model->rowCount(d->root) - 1;
 
     int firstVisualColumn = horizontalHeader->visualIndexAt(0);
-    int lastVisualColumn = horizontalHeader->visualIndexAt(horizontalHeader->viewport()->width());
+    int lastVisualColumn = horizontalHeader->visualIndexAt(horizontalHeader->width());
     if (rightToLeft)
         qSwap(firstVisualColumn, lastVisualColumn);
     if (firstVisualColumn == -1)
