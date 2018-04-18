@@ -110,8 +110,7 @@ private:
     QThread *workerThread = nullptr;
     QNetworkAccessManager manager;
 
-    QEventLoop eventLoop;
-    QTimer timer;
+    QTestEventLoop eventLoop;
 
     int nRequests = 0;
     int nSentRequests = 0;
@@ -146,11 +145,6 @@ tst_Http2::tst_Http2()
     : workerThread(new QThread)
 {
     workerThread->start();
-
-    timer.setInterval(10000);
-    timer.setSingleShot(true);
-
-    connect(&timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
 }
 
 tst_Http2::~tst_Http2()
@@ -497,15 +491,12 @@ void tst_Http2::clearHTTP2State()
 
 void tst_Http2::runEventLoop(int ms)
 {
-    timer.setInterval(ms);
-    timer.start();
-    eventLoop.exec();
+    eventLoop.enterLoopMSecs(ms);
 }
 
 void tst_Http2::stopEventLoop()
 {
-    timer.stop();
-    eventLoop.quit();
+    eventLoop.exitLoop();
 }
 
 Http2Server *tst_Http2::newServer(const Http2::RawSettings &serverSettings,
