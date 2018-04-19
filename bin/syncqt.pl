@@ -922,9 +922,7 @@ foreach my $lib (@modules_to_sync) {
     #information used after the syncing
     my $pri_install_gfiles = "";
     my $pri_install_files = "";
-    my $pri_install_ifiles = "";
     my $pri_install_pfiles = "";
-    my $pri_install_ipfiles = "";
     my $pri_install_qpafiles = "";
     my $pri_injections = "";
     my $pri_clean_files = "";
@@ -1092,9 +1090,7 @@ foreach my $lib (@modules_to_sync) {
                                     $injection .= ":$class";
                                 }
 
-                                if ($shadow) {
-                                    $pri_install_ifiles .= "$pri_install_iheader ";
-                                } else {
+                                if (!$shadow) {
                                     # put it into the master file
                                     $master_contents{$public_header} = $requires if (shouldMasterInclude($iheader));
 
@@ -1106,10 +1102,7 @@ foreach my $lib (@modules_to_sync) {
                             elsif ($qpa_header) {
                                 $pri_install_qpafiles.= "$pri_install_iheader ";;
                             }
-                            elsif ($shadow) {
-                                $pri_install_ipfiles .= "$pri_install_iheader ";
-                            }
-                            else {
+                            elsif (!$shadow) {
                                 $pri_install_pfiles.= "$pri_install_iheader ";;
                             }
                             $pri_injections .= fixPaths($iheader, "$out_basedir/include/$lib")
@@ -1232,10 +1225,8 @@ foreach my $lib (@modules_to_sync) {
         #handle the headers.pri for each module
         my $headers_pri_contents = "";
         $headers_pri_contents .= "SYNCQT.HEADER_FILES = $pri_install_files\n";
-        $headers_pri_contents .= "SYNCQT.INJECTED_HEADER_FILES = $pri_install_ifiles\n";
         $headers_pri_contents .= "SYNCQT.GENERATED_HEADER_FILES = $pri_install_gfiles\n";
         $headers_pri_contents .= "SYNCQT.PRIVATE_HEADER_FILES = $pri_install_pfiles\n";
-        $headers_pri_contents .= "SYNCQT.INJECTED_PRIVATE_HEADER_FILES = $pri_install_ipfiles\n";
         $headers_pri_contents .= "SYNCQT.QPA_HEADER_FILES = $pri_install_qpafiles\n";
         $headers_pri_contents .= "SYNCQT.CLEAN_HEADER_FILES = $pri_clean_files\n";
         $headers_pri_contents .= "SYNCQT.INJECTIONS = $pri_injections\n";
