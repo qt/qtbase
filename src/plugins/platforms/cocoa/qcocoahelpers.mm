@@ -160,10 +160,7 @@ Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions)
 */
 QNSView *qnsview_cast(NSView *view)
 {
-    if (![view isKindOfClass:[QNSView class]])
-        return nil;
-
-    return static_cast<QNSView *>(view);
+    return qt_objc_cast<QNSView *>(view);
 }
 
 //
