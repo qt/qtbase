@@ -667,6 +667,8 @@ void QT_FASTCALL intermediate_adder_avx2(uint *b, uint *end, const IntermediateB
 
     const __m128i v_fdx = _mm_set1_epi32(fdx * 4);
     const __m128i v_blend = _mm_set1_epi32(0x00800080);
+    const __m128i vdx_shuffle = _mm_set_epi8(char(0x80), 13, char(0x80), 13, char(0x80), 9, char(0x80), 9,
+                                             char(0x80),  5, char(0x80),  5, char(0x80), 1, char(0x80), 1);
     __m128i v_fx = _mm_setr_epi32(fx, fx + fdx, fx + fdx + fdx, fx + fdx + fdx + fdx);
 
     while (b < end - 3) {
@@ -674,14 +676,13 @@ void QT_FASTCALL intermediate_adder_avx2(uint *b, uint *end, const IntermediateB
         __m256i vrb = _mm256_i32gather_epi64((const long long *)intermediate.buffer_rb, offset, 4);
         __m256i vag = _mm256_i32gather_epi64((const long long *)intermediate.buffer_ag, offset, 4);
 
-        __m128i vdx = _mm_and_si128(v_fx, _mm_set1_epi32(0x0000ffff));
-        vdx = _mm_srli_epi16(vdx, 8);
-        __m128i vidx = _mm_sub_epi32(_mm_set1_epi32(256), vdx);
+        __m128i vdx = _mm_shuffle_epi8(v_fx, vdx_shuffle);
+        __m128i vidx = _mm_sub_epi16(_mm_set1_epi16(256), vdx);
         __m256i vmulx = _mm256_castsi128_si256(_mm_unpacklo_epi32(vidx, vdx));
         vmulx = _mm256_inserti128_si256(vmulx, _mm_unpackhi_epi32(vidx, vdx), 1);
 
-        vrb = _mm256_mullo_epi32(vrb, vmulx);
-        vag = _mm256_mullo_epi32(vag, vmulx);
+        vrb = _mm256_mullo_epi16(vrb, vmulx);
+        vag = _mm256_mullo_epi16(vag, vmulx);
 
         __m256i vrbag = _mm256_hadd_epi32(vrb, vag);
         vrbag = _mm256_permute4x64_epi64(vrbag, _MM_SHUFFLE(3, 1, 2, 0));
@@ -693,9 +694,9 @@ void QT_FASTCALL intermediate_adder_avx2(uint *b, uint *end, const IntermediateB
         _mm_storeu_si128((__m128i*)b, _mm_blendv_epi8(ag, rb, v_blend));
 
         b += 4;
-        fx += 4 * fdx;
         v_fx = _mm_add_epi32(v_fx, v_fdx);
     }
+    fx = _mm_cvtsi128_si32(v_fx);
     while (b < end) {
         const int x = (fx >> 16);
 
