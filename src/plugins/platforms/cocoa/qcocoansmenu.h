@@ -82,6 +82,7 @@ QT_FORWARD_DECLARE_CLASS(QCocoaMenuItem);
 
 + (instancetype)separatorItemWithPlatformMenuItem:(QCocoaMenuItem *)menuItem;
 - (instancetype)initWithPlatformMenuItem:(QCocoaMenuItem *)menuItem;
+- (instancetype)init;
 
 @end
 

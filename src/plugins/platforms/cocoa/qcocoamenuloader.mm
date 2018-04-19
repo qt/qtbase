@@ -96,7 +96,7 @@
         appItem.submenu = appMenu;
 
         // About Application
-        aboutItem = [[QCocoaNSMenuItem alloc] initWithPlatformMenuItem:nullptr];
+        aboutItem = [[QCocoaNSMenuItem alloc] init];
         aboutItem.title = [@"About " stringByAppendingString:appName];
         // FIXME This seems useless since barely adding a QAction
         // with AboutRole role will reset the target/action
@@ -108,7 +108,7 @@
         [appMenu addItem:aboutItem];
 
         // About Qt (shameless self-promotion)
-        aboutQtItem = [[QCocoaNSMenuItem alloc] initWithPlatformMenuItem:nullptr];
+        aboutQtItem = [[QCocoaNSMenuItem alloc] init];
         aboutQtItem.title = @"About Qt";
         // Disable until a QAction is associated
         aboutQtItem.enabled = NO;
@@ -118,7 +118,7 @@
         [appMenu addItem:[NSMenuItem separatorItem]];
 
         // Preferences
-        preferencesItem = [[QCocoaNSMenuItem alloc] initWithPlatformMenuItem:nullptr];
+        preferencesItem = [[QCocoaNSMenuItem alloc] init];
         preferencesItem.title = @"Preferences…";
         preferencesItem.keyEquivalent = @",";
         // Disable until a QAction is associated
@@ -168,7 +168,7 @@
         [appMenu addItem:[NSMenuItem separatorItem]];
 
         // Quit Application
-        quitItem = [[QCocoaNSMenuItem alloc] initWithPlatformMenuItem:nullptr];
+        quitItem = [[QCocoaNSMenuItem alloc] init];
         quitItem.title = [@"Quit " stringByAppendingString:appName];
         quitItem.keyEquivalent = @"q";
         // This will remain true until synced with a QCocoaMenuItem.
@@ -319,7 +319,6 @@
 
 - (void)qtTranslateApplicationMenu
 {
-
 #ifndef QT_NO_TRANSLATION
     [servicesItem setTitle:qt_mac_applicationmenu_string(ServicesAppMenuItem).toNSString()];
     [hideItem setTitle:qt_mac_applicationmenu_string(HideAppMenuItem).arg(qt_mac_applicationName()).toNSString()];

@@ -119,6 +119,11 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
     return self;
 }
 
+- (instancetype)init
+{
+    return [self initWithPlatformMenuItem:nullptr];
+}
+
 - (QCocoaMenuItem *)platformMenuItem
 {
     return _platformMenuItem.data();
