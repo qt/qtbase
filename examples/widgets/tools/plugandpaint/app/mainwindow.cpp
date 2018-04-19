@@ -85,7 +85,7 @@ MainWindow::MainWindow() :
     if (!brushActionGroup->actions().isEmpty())
         brushActionGroup->actions().first()->trigger();
 
-    QTimer::singleShot(500, this, SLOT(aboutPlugins()));
+    QTimer::singleShot(500, this, &MainWindow::aboutPlugins);
 }
 
 void MainWindow::open()
@@ -189,32 +189,32 @@ void MainWindow::createActions()
 {
     openAct = new QAction(tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
-    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+    connect(openAct, &QAction::triggered, this, &MainWindow::open);
 
     saveAsAct = new QAction(tr("&Save As..."), this);
     saveAsAct->setShortcuts(QKeySequence::SaveAs);
-    connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
+    connect(saveAsAct, &QAction::triggered, this, &MainWindow::saveAs);
 
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcuts(QKeySequence::Quit);
-    connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
+    connect(exitAct, &QAction::triggered, this, &MainWindow::close);
 
     brushColorAct = new QAction(tr("&Brush Color..."), this);
-    connect(brushColorAct, SIGNAL(triggered()), this, SLOT(brushColor()));
+    connect(brushColorAct, &QAction::triggered, this, &MainWindow::brushColor);
 
     brushWidthAct = new QAction(tr("&Brush Width..."), this);
-    connect(brushWidthAct, SIGNAL(triggered()), this, SLOT(brushWidth()));
+    connect(brushWidthAct, &QAction::triggered, this, &MainWindow::brushWidth);
 
     brushActionGroup = new QActionGroup(this);
 
     aboutAct = new QAction(tr("&About"), this);
-    connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+    connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
 
     aboutQtAct = new QAction(tr("About &Qt"), this);
-    connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+    connect(aboutQtAct, &QAction::triggered, qApp, &QApplication::aboutQt);
 
     aboutPluginsAct = new QAction(tr("About &Plugins"), this);
-    connect(aboutPluginsAct, SIGNAL(triggered()), this, SLOT(aboutPlugins()));
+    connect(aboutPluginsAct, &QAction::triggered, this, &MainWindow::aboutPlugins);
 }
 
 void MainWindow::createMenus()
@@ -289,26 +289,26 @@ void MainWindow::populateMenus(QObject *plugin)
 {
     BrushInterface *iBrush = qobject_cast<BrushInterface *>(plugin);
     if (iBrush)
-        addToMenu(plugin, iBrush->brushes(), brushMenu, SLOT(changeBrush()),
+        addToMenu(plugin, iBrush->brushes(), brushMenu, &MainWindow::changeBrush,
                   brushActionGroup);
 
     ShapeInterface *iShape = qobject_cast<ShapeInterface *>(plugin);
     if (iShape)
-        addToMenu(plugin, iShape->shapes(), shapesMenu, SLOT(insertShape()));
+        addToMenu(plugin, iShape->shapes(), shapesMenu, &MainWindow::insertShape);
 
     FilterInterface *iFilter = qobject_cast<FilterInterface *>(plugin);
     if (iFilter)
-        addToMenu(plugin, iFilter->filters(), filterMenu, SLOT(applyFilter()));
+        addToMenu(plugin, iFilter->filters(), filterMenu, &MainWindow::applyFilter);
 }
 //! [10]
 
 void MainWindow::addToMenu(QObject *plugin, const QStringList &texts,
-                           QMenu *menu, const char *member,
+                           QMenu *menu, Member member,
                            QActionGroup *actionGroup)
 {
     foreach (QString text, texts) {
         QAction *action = new QAction(text, plugin);
-        connect(action, SIGNAL(triggered()), this, member);
+        connect(action, &QAction::triggered, this, member);
         menu->addAction(action);
 
         if (actionGroup) {

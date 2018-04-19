@@ -77,7 +77,7 @@ PluginDialog::PluginDialog(const QString &path, const QStringList &fileNames,
 
     okButton->setDefault(true);
 
-    connect(okButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(okButton, &QAbstractButton::clicked, this, &QWidget::close);
 
     QGridLayout *mainLayout = new QGridLayout;
     mainLayout->setColumnStretch(0, 1);
