@@ -1086,7 +1086,7 @@ foreach my $lib (@modules_to_sync) {
 #                                   }
                                     my $class_header = "$class ";
                                     $pri_install_gfiles .= $class_header
-                                                                unless($pri_install_gfiles =~ $class_header);
+                                        unless ($shadow || $pri_install_gfiles =~ $class_header);
                                     $injection .= ":$class";
                                 }
 

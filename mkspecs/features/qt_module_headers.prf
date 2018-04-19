@@ -149,6 +149,7 @@ for (injection, SYNCQT.INJECTIONS) {
         write_file($$CLASS_FWD, CLASS_FWD_CONT)|error()
         touch($$CLASS_FWD, $$MAIN_FWD)
         !git_build: QMAKE_DISTCLEAN += $$CLASS_FWD
+        SYNCQT.INJECTED_HEADER_FILES += $$CLASS_FWD
     }
 }
 
