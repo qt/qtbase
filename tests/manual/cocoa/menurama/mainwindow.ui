@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>486</width>
-    <height>288</height>
+    <height>376</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -58,7 +58,7 @@ Click on &quot;Dynamic Stuff&quot; then move left and right to other menus. Disa
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
+      <item alignment="Qt::AlignTop">
        <widget class="QPushButton" name="addManyButton">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -71,7 +71,7 @@ Click on &quot;Dynamic Stuff&quot; then move left and right to other menus. Disa
         </property>
        </widget>
       </item>
-      <item>
+      <item alignment="Qt::AlignTop">
        <widget class="QLabel" name="label_2">
         <property name="text">
          <string>Adding hundreds of items should not block the UI for noticeable periods of time. Odd numbered items should be disabled, those with 2nd LSB on should be hidden.</string>
@@ -82,6 +82,16 @@ Click on &quot;Dynamic Stuff&quot; then move left and right to other menus. Disa
        </widget>
       </item>
      </layout>
+    </item>
+    <item alignment="Qt::AlignTop">
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>Check out the dock menu. You can close this window to verify that its actions will trigger in the absence of any window. And you can add more windows from there too.</string>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

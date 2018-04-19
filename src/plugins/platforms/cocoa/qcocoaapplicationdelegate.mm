@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -73,8 +73,12 @@
 
 
 #import "qcocoaapplicationdelegate.h"
-#import "qcocoamenuloader.h"
 #include "qcocoaintegration.h"
+#include "qcocoamenu.h"
+#include "qcocoamenuloader.h"
+#include "qcocoamenuitem.h"
+#include "qcocoansmenu.h"
+
 #include <qevent.h>
 #include <qurl.h>
 #include <qdebug.h>
@@ -87,7 +91,6 @@ QT_USE_NAMESPACE
 
 @implementation QCocoaApplicationDelegate {
     bool startedQuit;
-    NSMenu *dockMenu;
     NSObject <NSApplicationDelegate> *reflectionDelegate;
     bool inLaunch;
 }
@@ -129,7 +132,7 @@ QT_USE_NAMESPACE
 
 - (void)dealloc
 {
-    [dockMenu release];
+    [_dockMenu release];
     if (reflectionDelegate) {
         [[NSApplication sharedApplication] setDelegate:reflectionDelegate];
         [reflectionDelegate release];
@@ -139,20 +142,13 @@ QT_USE_NAMESPACE
     [super dealloc];
 }
 
-- (void)setDockMenu:(NSMenu*)newMenu
-{
-    [newMenu retain];
-    [dockMenu release];
-    dockMenu = newMenu;
-}
-
 - (NSMenu *)applicationDockMenu:(NSApplication *)sender
 {
     Q_UNUSED(sender);
     // Manually invoke the delegate's -menuWillOpen: method.
     // See QTBUG-39604 (and its fix) for details.
-    [[dockMenu delegate] menuWillOpen:dockMenu];
-    return [[dockMenu retain] autorelease];
+    [self.dockMenu.delegate menuWillOpen:self.dockMenu];
+    return [[self.dockMenu retain] autorelease];
 }
 
 - (BOOL)canQuit
@@ -441,6 +437,51 @@ QT_USE_NAMESPACE
     Q_UNUSED(event);
     Q_UNUSED(replyEvent);
     [NSApp terminate:self];
+}
+
+@end
+
+@implementation QCocoaApplicationDelegate (Menus)
+
+- (BOOL)validateMenuItem:(NSMenuItem*)item
+{
+    auto *nativeItem = qt_objc_cast<QCocoaNSMenuItem *>(item);
+    if (!nativeItem)
+        return item.enabled; // FIXME Test with with Qt as plugin or embedded QWindow.
+
+    auto *platformItem = nativeItem.platformMenuItem;
+    if (!platformItem) // Try a bit harder with orphan menu itens
+        return item.hasSubmenu || (item.enabled && (item.action != @selector(qt_itemFired:)));
+
+    // Menu-holding items are always enabled, as it's conventional in Cocoa
+    if (platformItem->menu())
+        return YES;
+
+    return platformItem->isEnabled();
+}
+
+@end
+
+@implementation QCocoaApplicationDelegate (MenuAPI)
+
+- (void)qt_itemFired:(QCocoaNSMenuItem *)item
+{
+    if (item.hasSubmenu)
+        return;
+
+    auto *nativeItem = qt_objc_cast<QCocoaNSMenuItem *>(item);
+    Q_ASSERT_X(nativeItem, qPrintable(__FUNCTION__), "Triggered menu item is not a QCocoaNSMenuItem.");
+    auto *platformItem = nativeItem.platformMenuItem;
+    // Menu-holding items also get a target to play nicely
+    // with NSMenuValidation but should not trigger.
+    if (!platformItem || platformItem->menu())
+        return;
+
+    QScopedScopeLevelCounter scopeLevelCounter(QGuiApplicationPrivate::instance()->threadData);
+    QGuiApplicationPrivate::modifier_buttons = [QNSView convertKeyModifiers:[NSEvent modifierFlags]];
+
+    static QMetaMethod activatedSignal = QMetaMethod::fromSignal(&QCocoaMenuItem::activated);
+    activatedSignal.invoke(platformItem, Qt::QueuedConnection);
 }
 
 @end

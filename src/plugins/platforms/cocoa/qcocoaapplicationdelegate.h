@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -90,14 +90,18 @@
 #include <qglobal.h>
 #include <private/qcore_mac_p.h>
 
-@class QT_MANGLE_NAMESPACE(QCocoaMenuLoader);
+Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QCocoaNSMenuItem));
 
 @interface QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) : NSObject <NSApplicationDelegate>
+@property (nonatomic, retain) NSMenu *dockMenu;
 + (instancetype)sharedDelegate;
-- (void)setDockMenu:(NSMenu *)newMenu;
 - (void)setReflectionDelegate:(NSObject<NSApplicationDelegate> *)oldDelegate;
 - (void)removeAppleEventHandlers;
 - (bool)inLaunch;
+@end
+
+@interface QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) (MenuAPI)
+- (void)qt_itemFired:(QT_MANGLE_NAMESPACE(QCocoaNSMenuItem) *)item;
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaApplicationDelegate);

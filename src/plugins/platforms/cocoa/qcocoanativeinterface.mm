@@ -265,7 +265,7 @@ void QCocoaNativeInterface::setDockMenu(QPlatformMenu *platformMenu)
     QMacAutoReleasePool pool;
     QCocoaMenu *cocoaPlatformMenu = static_cast<QCocoaMenu *>(platformMenu);
     NSMenu *menu = cocoaPlatformMenu->nsMenu();
-    [[QCocoaApplicationDelegate sharedDelegate] setDockMenu:menu];
+    [QCocoaApplicationDelegate sharedDelegate].dockMenu = menu;
 }
 
 void *QCocoaNativeInterface::qMenuToNSMenu(QPlatformMenu *platformMenu)

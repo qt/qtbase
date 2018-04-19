@@ -39,6 +39,7 @@
 
 // This file is included from qnsview.mm, and only used to organize the code
 
+#include <qcocoaapplicationdelegate.h>
 #include <qcocoansmenu.h>
 #include <qcocoamenuitem.h>
 #include <qcocoamenu.h>
@@ -101,19 +102,8 @@ static bool selectorIsCutCopyPaste(SEL selector)
 
 - (void)qt_itemFired:(QCocoaNSMenuItem *)item
 {
-    auto *nativeItem = qt_objc_cast<QCocoaNSMenuItem *>(item);
-    Q_ASSERT_X(nativeItem, qPrintable(__FUNCTION__), "Triggered menu item is not a QCocoaNSMenuItem.");
-    auto *platformItem = nativeItem.platformMenuItem;
-    // Menu-holding items also get a target to play nicely
-    // with NSMenuValidation but should not trigger.
-    if (!platformItem || platformItem->menu())
-        return;
-
-    QScopedScopeLevelCounter scopeLevelCounter(QGuiApplicationPrivate::instance()->threadData);
-    QGuiApplicationPrivate::modifier_buttons = [QNSView convertKeyModifiers:[NSEvent modifierFlags]];
-
-    static QMetaMethod activatedSignal = QMetaMethod::fromSignal(&QCocoaMenuItem::activated);
-    activatedSignal.invoke(platformItem, Qt::QueuedConnection);
+    auto *appDelegate = [QCocoaApplicationDelegate sharedDelegate];
+    [appDelegate qt_itemFired:item];
 }
 
 - (NSMethodSignature *)methodSignatureForSelector:(SEL)selector
