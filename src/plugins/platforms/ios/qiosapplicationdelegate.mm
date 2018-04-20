@@ -50,11 +50,10 @@
 
 @implementation QIOSApplicationDelegate
 
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options
 {
     Q_UNUSED(application);
-    Q_UNUSED(sourceApplication);
-    Q_UNUSED(annotation);
+    Q_UNUSED(options);
 
     if (!QGuiApplication::instance())
         return NO;

@@ -187,8 +187,15 @@ static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidge
         active_window = active_window->parentWidget()->window();
     }
 
-    if (active_window  != tlw)
+    if (active_window != tlw) {
+#if QT_CONFIG(menubar)
+        // If the tlw is a QMenuBar then we allow it to proceed as this indicates that
+        // the QMenuBar is a parentless one and is therefore used for multiple top level
+        // windows in the application. This is common on macOS platforms for example.
+        if (!qobject_cast<QMenuBar *>(tlw))
+#endif
         return false;
+    }
 
     /* if we live in a MDI subwindow, ignore the event if we are
        not the active document window */

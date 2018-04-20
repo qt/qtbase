@@ -172,9 +172,10 @@ QFuture<QImage> thumbNails =
 
 //! [13]
 QList<QImage> images = ...;
-QFuture<QImage> thumbnails = QtConcurrent::mapped(images, [](const QImage &img) {
+std::function<QImage(const QImage &)> scale = [](const QImage &img) {
     return img.scaledToWidth(100, Qt::SmoothTransformation);
-});
+};
+QFuture<QImage> thumbnails = QtConcurrent::mapped(images, scale);
 //! [13]
 
 //! [14]

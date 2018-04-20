@@ -301,29 +301,34 @@ bool QIOSContext::verifyGraphicsHardwareAvailability()
     static dispatch_once_t onceToken = 0;
     dispatch_once(&onceToken, ^{
         QIOSApplicationState *applicationState = &QIOSIntegration::instance()->applicationState;
-        connect(applicationState, &QIOSApplicationState::applicationStateWillChange, [](Qt::ApplicationState state) {
-            if (applicationBackgrounded && state != Qt::ApplicationSuspended) {
-                qCDebug(lcQpaGLContext) << "app no longer backgrounded, rendering enabled";
-                applicationBackgrounded = false;
+        connect(applicationState, &QIOSApplicationState::applicationStateWillChange,
+            [](Qt::ApplicationState oldState, Qt::ApplicationState newState) {
+                Q_UNUSED(oldState);
+                if (applicationBackgrounded && newState != Qt::ApplicationSuspended) {
+                    qCDebug(lcQpaGLContext) << "app no longer backgrounded, rendering enabled";
+                    applicationBackgrounded = true;
+                }
             }
-        });
-        connect(applicationState, &QIOSApplicationState::applicationStateDidChange, [](Qt::ApplicationState state) {
-            if (state != Qt::ApplicationSuspended)
-                return;
+        );
+        connect(applicationState, &QIOSApplicationState::applicationStateDidChange,
+            [](Qt::ApplicationState oldState, Qt::ApplicationState newState) {
+                Q_UNUSED(oldState);
+                if (newState != Qt::ApplicationSuspended)
+                    return;
 
-            qCDebug(lcQpaGLContext) << "app backgrounded, rendering disabled";
-            applicationBackgrounded = true;
+                qCDebug(lcQpaGLContext) << "app backgrounded, rendering disabled";
 
-            // By the time we receive this signal the application has moved into
-            // Qt::ApplactionStateSuspended, and all windows have been obscured,
-            // which should stop all rendering. If there's still an active GL context,
-            // we follow Apple's advice and call glFinish before making it inactive.
-            if (QOpenGLContext *currentContext = QOpenGLContext::currentContext()) {
-                qCWarning(lcQpaGLContext) << "explicitly glFinishing and deactivating" << currentContext;
-                glFinish();
-                currentContext->doneCurrent();
+                // By the time we receive this signal the application has moved into
+                // Qt::ApplactionStateSuspended, and all windows have been obscured,
+                // which should stop all rendering. If there's still an active GL context,
+                // we follow Apple's advice and call glFinish before making it inactive.
+                if (QOpenGLContext *currentContext = QOpenGLContext::currentContext()) {
+                    qCWarning(lcQpaGLContext) << "explicitly glFinishing and deactivating" << currentContext;
+                    glFinish();
+                    currentContext->doneCurrent();
+                }
             }
-        });
+        );
     });
 
     if (applicationBackgrounded) {

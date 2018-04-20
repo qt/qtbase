@@ -236,13 +236,7 @@ public:
 
     // Ideally these wouldn't exist, but since they already exist we need some accessors.
     static const int PushButtonLeftOffset;
-    static const int PushButtonTopOffset;
     static const int PushButtonRightOffset;
-    static const int PushButtonBottomOffset;
-    static const int MiniButtonH;
-    static const int SmallButtonH;
-    static const int BevelButtonW;
-    static const int BevelButtonH;
     static const int PushButtonContentPadding;
 
     enum Animates { AquaPushButton, AquaProgressBar, AquaListViewItemOpen, AquaScrollBar };
@@ -269,7 +263,7 @@ public:
 
     void setupVerticalInvertedXform(CGContextRef cg, bool reverse, bool vertical, const CGRect &rect) const;
 
-    void drawNSViewInRect(CocoaControl widget, NSView *view, const QRectF &rect, QPainter *p, bool isQWidget = true, __attribute__((noescape)) DrawRectBlock drawRectBlock = nil) const;
+    void drawNSViewInRect(NSView *view, const QRectF &rect, QPainter *p, __attribute__((noescape)) DrawRectBlock drawRectBlock = nil) const;
     void resolveCurrentNSView(QWindow *window) const;
 
     void drawFocusRing(QPainter *p, const QRectF &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const;
@@ -283,6 +277,7 @@ public:
 #if QT_CONFIG(tabbar)
     void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *iconRect) const;
     static Direction tabDirection(QTabBar::Shape shape);
+    static bool verticalTabs(QMacStylePrivate::Direction tabDirection);
 #endif
 
 public:
