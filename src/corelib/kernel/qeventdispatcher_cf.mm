@@ -58,6 +58,24 @@
 
 QT_USE_NAMESPACE
 
+/*!
+    During scroll view panning, and possibly other gestures, UIKit will
+    request a switch to UITrackingRunLoopMode via GSEventPushRunLoopMode,
+    which records the new runloop mode and stops the current runloop.
+
+    Unfortunately the runloop mode is just stored on an internal stack, used
+    when UIKit itself is running the runloop, and is not available through e.g.
+    CFRunLoopCopyCurrentMode, which only knows about the current running
+    runloop mode, not the requested future runloop mode.
+
+    To ensure that we pick up this new runloop mode and use it when calling
+    CFRunLoopRunInMode from processEvents, we listen for the notification
+    emitted by [UIApplication pushRunLoopMode:requester:].
+
+    Without this workaround we end up always running in the default runloop
+    mode, resulting in missing momentum-phases in UIScrollViews such as the
+    emoji keyboard.
+*/
 @interface QT_MANGLE_NAMESPACE(RunLoopModeTracker) : NSObject
 @end
 
