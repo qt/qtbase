@@ -411,7 +411,7 @@ QPrint::ColorMode QCocoaPrintDevice::defaultColorMode() const
         ppd_option_t *colorModel = ppdFindOption(m_ppd, "DefaultColorModel");
         if (!colorModel)
             colorModel = ppdFindOption(m_ppd, "ColorModel");
-        if (!colorModel || (colorModel && !qstrcmp(colorModel->defchoice, "Gray")))
+        if (!colorModel || qstrcmp(colorModel->defchoice, "Gray") != 0)
             return QPrint::Color;
     }
     return QPrint::GrayScale;
