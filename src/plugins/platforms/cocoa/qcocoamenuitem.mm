@@ -51,7 +51,6 @@
 #include "qcocoaapplication.h" // for custom application category
 #include "qcocoamenuloader.h"
 #include <QtGui/private/qcoregraphics_p.h>
-#include <QtCore/qregularexpression.h>
 
 #include <QtCore/QDebug>
 
@@ -229,74 +228,68 @@ NSMenuItem *QCocoaMenuItem::sync()
     }
 
     if ((m_role != NoRole && !m_textSynced) || m_merged) {
-        NSMenuItem *mergeItem = nil;
-        QCocoaMenuLoader *loader = [QCocoaMenuLoader sharedMenuLoader];
-        switch (m_role) {
-        case ApplicationSpecificRole:
-            mergeItem = [loader appSpecificMenuItem:this];
-            break;
-        case AboutRole:
-            mergeItem = [loader aboutMenuItem];
-            break;
-        case AboutQtRole:
-            mergeItem = [loader aboutQtMenuItem];
-            break;
-        case QuitRole:
-            mergeItem = [loader quitMenuItem];
-            break;
-        case PreferencesRole:
-            mergeItem = [loader preferencesMenuItem];
-            break;
-        case TextHeuristicRole: {
+        QCocoaMenuBar *menubar = nullptr;
+        if (m_role == TextHeuristicRole) {
+            // Recognized menu roles are only found in the first menus below the menubar
             QObject *p = menuParent();
             int depth = 1;
-            QCocoaMenuBar *menubar = nullptr;
             while (depth < 3 && p && !(menubar = qobject_cast<QCocoaMenuBar *>(p))) {
                 ++depth;
                 QCocoaMenuObject *menuObject = dynamic_cast<QCocoaMenuObject *>(p);
                 Q_ASSERT(menuObject);
                 p = menuObject->menuParent();
             }
-            if (depth == 3 || !menubar)
-                break; // Menu item too deep in the hierarchy, or not connected to any menubar
 
-            m_detectedRole = detectMenuRole(m_text);
-            switch (m_detectedRole) {
-            case QPlatformMenuItem::AboutRole:
-                if (m_text.indexOf(QRegularExpression(QString::fromLatin1("qt$"),
-                                                      QRegularExpression::CaseInsensitiveOption)) == -1)
-                    mergeItem = [loader aboutMenuItem];
-                else
-                    mergeItem = [loader aboutQtMenuItem];
-                break;
-            case QPlatformMenuItem::PreferencesRole:
-                mergeItem = [loader preferencesMenuItem];
-                break;
-            case QPlatformMenuItem::QuitRole:
-                mergeItem = [loader quitMenuItem];
-                break;
-            default:
-                if (m_detectedRole >= CutRole && m_detectedRole < RoleCount && menubar)
-                    mergeItem = menubar->itemForRole(m_detectedRole);
-                if (!m_text.isEmpty())
-                    m_textSynced = true;
-                break;
-            }
-            break;
+            if (menubar && depth < 3)
+                m_detectedRole = detectMenuRole(m_text);
+            else
+                m_detectedRole = NoRole;
         }
 
+        QCocoaMenuLoader *loader = [QCocoaMenuLoader sharedMenuLoader];
+        NSMenuItem *mergeItem = nil;
+        const auto role = effectiveRole();
+        switch (role) {
+        case AboutRole:
+            mergeItem = [loader aboutMenuItem];
+            break;
+        case AboutQtRole:
+            mergeItem = [loader aboutQtMenuItem];
+            break;
+        case PreferencesRole:
+            mergeItem = [loader preferencesMenuItem];
+            break;
+        case ApplicationSpecificRole:
+            mergeItem = [loader appSpecificMenuItem:this];
+            break;
+        case QuitRole:
+            mergeItem = [loader quitMenuItem];
+            break;
+        case CutRole:
+        case CopyRole:
+        case PasteRole:
+        case SelectAllRole:
+            if (menubar)
+                mergeItem = menubar->itemForRole(role);
+            break;
+        case NoRole:
+            // The heuristic couldn't resolve the menu role
+            m_textSynced = false;
+            break;
         default:
-            qWarning() << "Menu item" << m_text << "has unsupported role" << m_role;
+            if (!m_text.isEmpty())
+                m_textSynced = true;
+            break;
         }
 
         if (mergeItem) {
             m_textSynced = true;
             m_merged = true;
             [mergeItem retain];
-            if ([mergeItem isMemberOfClass:[QCocoaNSMenuItem class]])
-                static_cast<QCocoaNSMenuItem *>(mergeItem).platformMenuItem = this;
             [m_native release];
             m_native = mergeItem;
+            if (auto *nativeItem = qt_objc_cast<QCocoaNSMenuItem *>(m_native))
+                nativeItem.platformMenuItem = this;
         } else if (m_merged) {
             // was previously merged, but no longer
             [m_native release];

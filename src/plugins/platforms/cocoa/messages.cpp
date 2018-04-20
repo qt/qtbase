@@ -39,7 +39,8 @@
 
 #include "messages.h"
 
-#include <QCoreApplication>
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qregularexpression.h>
 
 // Translatable messages should go into this .cpp file for them to be picked up by lupdate.
 
@@ -77,8 +78,13 @@ QPlatformMenuItem::MenuRole detectMenuRole(const QString &caption)
     QString captionNoAmpersand(caption);
     captionNoAmpersand.remove(QLatin1Char('&'));
     const QString aboutString = QCoreApplication::translate("QCocoaMenuItem", "About");
-    if (captionNoAmpersand.startsWith(aboutString, Qt::CaseInsensitive) || caption.endsWith(aboutString, Qt::CaseInsensitive))
+    if (captionNoAmpersand.startsWith(aboutString, Qt::CaseInsensitive)
+        || captionNoAmpersand.endsWith(aboutString, Qt::CaseInsensitive)) {
+        static const QRegularExpression qtRegExp(QLatin1String("qt$"), QRegularExpression::CaseInsensitiveOption);
+        if (captionNoAmpersand.contains(qtRegExp))
+            return QPlatformMenuItem::AboutQtRole;
         return QPlatformMenuItem::AboutRole;
+    }
     if (captionNoAmpersand.startsWith(QCoreApplication::translate("QCocoaMenuItem", "Config"), Qt::CaseInsensitive)
         || captionNoAmpersand.startsWith(QCoreApplication::translate("QCocoaMenuItem", "Preference"), Qt::CaseInsensitive)
         || captionNoAmpersand.startsWith(QCoreApplication::translate("QCocoaMenuItem", "Options"), Qt::CaseInsensitive)
