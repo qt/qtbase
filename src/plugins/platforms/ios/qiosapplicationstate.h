@@ -56,8 +56,8 @@ public:
     static Qt::ApplicationState toQtApplicationState(UIApplicationState state);
 
 Q_SIGNALS:
-    void applicationStateWillChange(Qt::ApplicationState);
-    void applicationStateDidChange(Qt::ApplicationState);
+    void applicationStateWillChange(Qt::ApplicationState oldState, Qt::ApplicationState newState);
+    void applicationStateDidChange(Qt::ApplicationState oldState, Qt::ApplicationState newState);
 };
 
 QT_END_NAMESPACE

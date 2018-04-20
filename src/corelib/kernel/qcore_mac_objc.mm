@@ -347,15 +347,15 @@ Qt::Key qt_mac_cocoaKey2QtKey(QChar keyCode)
 
 void qt_apple_check_os_version()
 {
-#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
-    const char *os = "iOS";
-    const int version = __IPHONE_OS_VERSION_MIN_REQUIRED;
+#if defined(__WATCH_OS_VERSION_MIN_REQUIRED)
+    const char *os = "watchOS";
+    const int version = __WATCH_OS_VERSION_MIN_REQUIRED;
 #elif defined(__TV_OS_VERSION_MIN_REQUIRED)
     const char *os = "tvOS";
     const int version = __TV_OS_VERSION_MIN_REQUIRED;
-#elif defined(__WATCH_OS_VERSION_MIN_REQUIRED)
-    const char *os = "watchOS";
-    const int version = __WATCH_OS_VERSION_MIN_REQUIRED;
+#elif defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
+    const char *os = "iOS";
+    const int version = __IPHONE_OS_VERSION_MIN_REQUIRED;
 #elif defined(__MAC_OS_X_VERSION_MIN_REQUIRED)
     const char *os = "macOS";
     const int version = __MAC_OS_X_VERSION_MIN_REQUIRED;

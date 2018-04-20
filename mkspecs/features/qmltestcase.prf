@@ -1,7 +1,6 @@
 !isEmpty(SOURCES) {
     QT += qml qmltest
     load(testcase)
-    CONFIG -= app_bundle
     DEFINES += QUICK_TEST_SOURCE_DIR=\"\\\"$$_PRO_FILE_PWD_\\\"\"
 } else {
     # Allow a project to run tests without a CPP stub

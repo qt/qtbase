@@ -95,7 +95,10 @@ QIOSIntegration::QIOSIntegration()
 
     // Set current directory to app bundle folder
     QDir::setCurrent(QString::fromUtf8([[[NSBundle mainBundle] bundlePath] UTF8String]));
+}
 
+void QIOSIntegration::initialize()
+{
     UIScreen *mainScreen = [UIScreen mainScreen];
     NSMutableArray<UIScreen *> *screens = [[[UIScreen screens] mutableCopy] autorelease];
     if (![screens containsObject:mainScreen]) {

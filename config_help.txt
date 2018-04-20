@@ -292,6 +292,7 @@ Gui, printing, widget options:
                          (-qt-xcb still uses system version of libxcb itself)
 
   Input backends:
+    -libudev............ Enable udev support [auto]
     -evdev ............. Enable evdev support [auto]
     -imf ............... Enable IMF support [auto] (QNX only)
     -libinput .......... Enable libinput support [auto]

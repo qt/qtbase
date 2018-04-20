@@ -87,18 +87,18 @@ QIOSApplicationState::QIOSApplicationState()
 
 void QIOSApplicationState::handleApplicationStateChanged(UIApplicationState uiState, const QString &reason)
 {
-    Qt::ApplicationState state = toQtApplicationState(uiState);
-    qCDebug(lcQpaApplication) << qPrintable(reason)
-        << "- moving from" << QGuiApplication::applicationState() << "to" << state;
+    Qt::ApplicationState oldState = QGuiApplication::applicationState();
+    Qt::ApplicationState newState = toQtApplicationState(uiState);
+    qCDebug(lcQpaApplication) << qPrintable(reason) << "- moving from" << oldState << "to" << newState;
 
     if (QIOSIntegration *integration = QIOSIntegration::instance()) {
-        emit integration->applicationState.applicationStateWillChange(state);
-        QWindowSystemInterface::handleApplicationStateChanged(state);
-        emit integration->applicationState.applicationStateDidChange(state);
-        qCDebug(lcQpaApplication) << "done moving to" << state;
+        emit integration->applicationState.applicationStateWillChange(oldState, newState);
+        QWindowSystemInterface::handleApplicationStateChanged(newState);
+        emit integration->applicationState.applicationStateDidChange(oldState, newState);
+        qCDebug(lcQpaApplication) << "done moving to" << newState;
     } else {
         qCDebug(lcQpaApplication) << "no platform integration yet, setting state directly";
-        QGuiApplicationPrivate::applicationState = state;
+        QGuiApplicationPrivate::applicationState = newState;
     }
 }
 
