@@ -254,7 +254,7 @@ void QCocoaIntegration::updateScreens()
             if (primary != kCGNullDirectDisplay && primary != dpy)
                 continue;
         }
-        QCocoaScreen* screen = NULL;
+        QCocoaScreen* screen = nullptr;
         foreach (QCocoaScreen* existingScr, mScreens)
             // NSScreen documentation says do not cache the array returned from [NSScreen screens].
             // However in practice, we can identify a screen by its pointer: if resolution changes,

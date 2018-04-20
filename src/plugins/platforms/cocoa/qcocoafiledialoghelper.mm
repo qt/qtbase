@@ -285,7 +285,7 @@ static QString strippedText(QString s)
     BOOL hidden = NO;
     if (url) {
         CFBooleanRef isHiddenProperty;
-        if (CFURLCopyResourcePropertyForKey((__bridge CFURLRef)url, kCFURLIsHiddenKey, &isHiddenProperty, NULL)) {
+        if (CFURLCopyResourcePropertyForKey((__bridge CFURLRef)url, kCFURLIsHiddenKey, &isHiddenProperty, nullptr)) {
             hidden = CFBooleanGetValue(isHiddenProperty);
             CFRelease(isHiddenProperty);
         }

@@ -93,9 +93,9 @@ NSUInteger keySequenceModifierMask(const QKeySequence &accel)
 #endif
 
 QCocoaMenuItem::QCocoaMenuItem() :
-    m_native(NULL),
+    m_native(nil),
     m_itemView(nil),
-    m_menu(NULL),
+    m_menu(nullptr),
     m_role(NoRole),
     m_iconSize(16),
     m_textSynced(false),
