@@ -238,7 +238,8 @@ qCalculateGrowingBlockSize(size_t elementCount, size_t elementSize, size_t heade
     Returns a duplicate string.
 
     Allocates space for a copy of \a src, copies it, and returns a
-    pointer to the copy. If \a src is 0, it immediately returns 0.
+    pointer to the copy. If \a src is nullptr, it immediately returns
+    nullptr.
 
     Ownership is passed to the caller, so the returned string must be
     deleted using \c delete[].
@@ -247,7 +248,7 @@ qCalculateGrowingBlockSize(size_t elementCount, size_t elementSize, size_t heade
 char *qstrdup(const char *src)
 {
     if (!src)
-        return 0;
+        return nullptr;
     char *dst = new char[strlen(src) + 1];
     return qstrcpy(dst, src);
 }
@@ -255,8 +256,8 @@ char *qstrdup(const char *src)
 /*! \relates QByteArray
 
     Copies all the characters up to and including the '\\0' from \a
-    src into \a dst and returns a pointer to \a dst. If \a src is 0,
-    it immediately returns 0.
+    src into \a dst and returns a pointer to \a dst. If \a src is
+    nullptr, it immediately returns nullptr.
 
     This function assumes that \a dst is large enough to hold the
     contents of \a src.
@@ -269,14 +270,14 @@ char *qstrdup(const char *src)
 char *qstrcpy(char *dst, const char *src)
 {
     if (!src)
-        return 0;
+        return nullptr;
 #ifdef Q_CC_MSVC
     const int len = int(strlen(src));
     // This is actually not secure!!! It will be fixed
     // properly in a later release!
     if (len >= 0 && strcpy_s(dst, len+1, src) == 0)
         return dst;
-    return 0;
+    return nullptr;
 #else
     return strcpy(dst, src);
 #endif
@@ -289,7 +290,7 @@ char *qstrcpy(char *dst, const char *src)
     Copies at most \a len bytes from \a src (stopping at \a len or the
     terminating '\\0' whichever comes first) into \a dst and returns a
     pointer to \a dst. Guarantees that \a dst is '\\0'-terminated. If
-    \a src or \a dst is 0, returns 0 immediately.
+    \a src or \a dst is nullptr, returns nullptr immediately.
 
     This function assumes that \a dst is at least \a len characters
     long.
@@ -306,7 +307,7 @@ char *qstrcpy(char *dst, const char *src)
 char *qstrncpy(char *dst, const char *src, uint len)
 {
     if (!src || !dst)
-        return 0;
+        return nullptr;
     if (len > 0) {
 #ifdef Q_CC_MSVC
         strncpy_s(dst, len, src, len - 1);
@@ -324,7 +325,7 @@ char *qstrncpy(char *dst, const char *src, uint len)
     A safe \c strlen() function.
 
     Returns the number of characters that precede the terminating '\\0',
-    or 0 if \a str is 0.
+    or 0 if \a str is nullptr.
 
     \sa qstrnlen()
 */
@@ -336,7 +337,7 @@ char *qstrncpy(char *dst, const char *src, uint len)
     A safe \c strnlen() function.
 
     Returns the number of characters that precede the terminating '\\0', but
-    at most \a maxlen. If \a str is 0, returns 0.
+    at most \a maxlen. If \a str is nullptr, returns 0.
 
     \sa qstrlen()
 */
@@ -350,10 +351,10 @@ char *qstrncpy(char *dst, const char *src, uint len)
     is less than \a str2, 0 if \a str1 is equal to \a str2 or a
     positive value if \a str1 is greater than \a str2.
 
-    Special case 1: Returns 0 if \a str1 and \a str2 are both 0.
+    Special case 1: Returns 0 if \a str1 and \a str2 are both nullptr.
 
-    Special case 2: Returns an arbitrary non-zero value if \a str1 is 0
-    or \a str2 is 0 (but not both).
+    Special case 2: Returns an arbitrary non-zero value if \a str1 is
+    nullptr or \a str2 is nullptr (but not both).
 
     \sa qstrncmp(), qstricmp(), qstrnicmp(), {8-bit Character Comparisons}
 */
@@ -375,10 +376,10 @@ int qstrcmp(const char *str1, const char *str2)
     str1 is equal to \a str2 or a positive value if \a str1 is greater
     than \a str2.
 
-    Special case 1: Returns 0 if \a str1 and \a str2 are both 0.
+    Special case 1: Returns 0 if \a str1 and \a str2 are both nullptr.
 
-    Special case 2: Returns a random non-zero value if \a str1 is 0
-    or \a str2 is 0 (but not both).
+    Special case 2: Returns a random non-zero value if \a str1 is nullptr
+    or \a str2 is nullptr (but not both).
 
     \sa qstrcmp(), qstricmp(), qstrnicmp(), {8-bit Character Comparisons}
 */
@@ -394,10 +395,10 @@ int qstrcmp(const char *str1, const char *str2)
     str1 is equal to \a str2 or a positive value if \a str1 is greater
     than \a str2.
 
-    Special case 1: Returns 0 if \a str1 and \a str2 are both 0.
+    Special case 1: Returns 0 if \a str1 and \a str2 are both nullptr.
 
-    Special case 2: Returns a random non-zero value if \a str1 is 0
-    or \a str2 is 0 (but not both).
+    Special case 2: Returns a random non-zero value if \a str1 is nullptr
+    or \a str2 is nullptr (but not both).
 
     \sa qstrcmp(), qstrncmp(), qstrnicmp(), {8-bit Character Comparisons}
 */
@@ -428,10 +429,10 @@ int qstricmp(const char *str1, const char *str2)
     is equal to \a str2 or a positive value if \a str1 is greater than \a
     str2.
 
-    Special case 1: Returns 0 if \a str1 and \a str2 are both 0.
+    Special case 1: Returns 0 if \a str1 and \a str2 are both nullptr.
 
-    Special case 2: Returns a random non-zero value if \a str1 is 0
-    or \a str2 is 0 (but not both).
+    Special case 2: Returns a random non-zero value if \a str1 is nullptr
+    or \a str2 is nullptr (but not both).
 
     \sa qstrcmp(), qstrncmp(), qstricmp(), {8-bit Character Comparisons}
 */
