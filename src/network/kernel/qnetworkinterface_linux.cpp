@@ -41,6 +41,8 @@
 #include "qnetworkinterface_p.h"
 #include "qnetworkinterface_unix_p.h"
 
+#ifndef QT_NO_NETWORKINTERFACE
+
 #include <qendian.h>
 #include <qobjectdefs.h>
 #include <qvarlengtharray.h>
@@ -448,3 +450,5 @@ QList<QNetworkInterfacePrivate *> QNetworkInterfaceManager::scan()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_NETWORKINTERFACE

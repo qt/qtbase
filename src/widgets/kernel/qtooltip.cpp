@@ -327,15 +327,13 @@ void QTipLabel::timerEvent(QTimerEvent *e)
 bool QTipLabel::eventFilter(QObject *o, QEvent *e)
 {
     switch (e->type()) {
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
+#ifdef Q_OS_MACOS
     case QEvent::KeyPress:
     case QEvent::KeyRelease: {
-        int key = static_cast<QKeyEvent *>(e)->key();
-        Qt::KeyboardModifiers mody = static_cast<QKeyEvent *>(e)->modifiers();
-        if (!(mody & Qt::KeyboardModifierMask)
-            && key != Qt::Key_Shift && key != Qt::Key_Control
-            && key != Qt::Key_Alt && key != Qt::Key_Meta)
-            hideTip();
+        const int key = static_cast<QKeyEvent *>(e)->key();
+        // Anything except key modifiers or caps-lock, etc.
+        if (key < Qt::Key_Shift || key > Qt::Key_ScrollLock)
+            hideTipImmediately();
         break;
     }
 #endif
