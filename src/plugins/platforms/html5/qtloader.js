@@ -122,7 +122,7 @@ var Module = {}
 function QtLoader(config)
 {
     function webAssemblySupported() {
-        return typeof WebAssembly !== undefined
+        return typeof WebAssembly !== "undefined"
     }
 
     function webGLSupported() {
