@@ -261,6 +261,8 @@ char *qstrdup(const char *src)
     This function assumes that \a dst is large enough to hold the
     contents of \a src.
 
+    \note If \a dst and \a src overlap, the behavior is undefined.
+
     \sa qstrncpy()
 */
 
@@ -291,6 +293,8 @@ char *qstrcpy(char *dst, const char *src)
 
     This function assumes that \a dst is at least \a len characters
     long.
+
+    \note If \a dst and \a src overlap, the behavior is undefined.
 
     \note When compiling with Visual C++ compiler version 14.00
     (Visual C++ 2005) or later, internally the function strncpy_s
