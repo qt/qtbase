@@ -70,17 +70,15 @@ class QTextCursor;
 
 template<typename T> class QVector;
 
-#ifndef Q_CLANG_QDOC
 namespace Qt
 {
     Q_GUI_EXPORT bool mightBeRichText(const QString&);
     Q_GUI_EXPORT QString convertFromPlainText(const QString &plain, WhiteSpaceMode mode = WhiteSpacePre);
 
-#ifndef QT_NO_TEXTCODEC
+#if !defined(QT_NO_TEXTCODEC) || defined(Q_CLANG_QDOC)
     Q_GUI_EXPORT QTextCodec *codecForHtml(const QByteArray &ba);
 #endif
 }
-#endif
 
 class Q_GUI_EXPORT QAbstractUndoItem
 {

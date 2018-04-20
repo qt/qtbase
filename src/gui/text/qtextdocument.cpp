@@ -75,6 +75,18 @@ QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION unsigned int qt_int_sqrt(unsigned int n);
 
+
+/*!
+    Returns \c true if the string \a text is likely to be rich text;
+    otherwise returns \c false.
+
+    This function uses a fast and therefore simple heuristic. It
+    mainly checks whether there is something that looks like a tag
+    before the first line break. Although the result may be correct
+    for common cases, there is no guarantee.
+
+    This function is defined in the \c <QTextDocument> header file.
+*/
 bool Qt::mightBeRichText(const QString& text)
 {
     if (text.isEmpty())
@@ -133,6 +145,16 @@ bool Qt::mightBeRichText(const QString& text)
     return false;
 }
 
+/*!
+    Converts the plain text string \a plain to an HTML-formatted
+    paragraph while preserving most of its look.
+
+    \a mode defines how whitespace is handled.
+
+    This function is defined in the \c <QTextDocument> header file.
+
+    \sa escape(), mightBeRichText()
+*/
 QString Qt::convertFromPlainText(const QString &plain, Qt::WhiteSpaceMode mode)
 {
     int col = 0;
@@ -181,6 +203,12 @@ QString Qt::convertFromPlainText(const QString &plain, Qt::WhiteSpaceMode mode)
     return rich;
 }
 
+/*!
+    \fn QTextCodec *Qt::codecForHtml(const QByteArray &ba)
+    \internal
+
+    This function is defined in the \c <QTextDocument> header file.
+*/
 #ifndef QT_NO_TEXTCODEC
 QTextCodec *Qt::codecForHtml(const QByteArray &ba)
 {
