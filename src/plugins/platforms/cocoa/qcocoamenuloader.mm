@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -206,18 +206,18 @@
     // windows with different menu bars), we never recreate this menu, but
     // instead pull it out the current menu bar and place into the new one:
     NSMenu *mainMenu = [NSApp mainMenu];
-    if ([NSApp mainMenu] == menu)
+    if (mainMenu == menu)
         return; // nothing to do (menu is the current menu bar)!
 
 #ifndef QT_NAMESPACE
     Q_ASSERT(mainMenu);
 #endif
     // Grab the app menu out of the current menu.
-    int numItems = [mainMenu numberOfItems];
+    const int numItems = mainMenu.numberOfItems;
     NSMenuItem *oldAppMenuItem = nil;
     for (int i = 0; i < numItems; ++i) {
         NSMenuItem *item = [mainMenu itemAtIndex:i];
-        if ([item submenu] == appMenu) {
+        if (item.submenu == appMenu) {
             oldAppMenuItem = item;
             [oldAppMenuItem retain];
             [mainMenu removeItemAtIndex:i];
@@ -226,11 +226,11 @@
     }
 
     if (oldAppMenuItem) {
-        [oldAppMenuItem setSubmenu:nil];
+        oldAppMenuItem.submenu = nil;
         [oldAppMenuItem release];
         NSMenuItem *appMenuItem = [[NSMenuItem alloc] initWithTitle:@"Apple"
-            action:nil keyEquivalent:@""];
-        [appMenuItem setSubmenu:appMenu];
+                                                      action:nil keyEquivalent:@""];
+        appMenuItem.submenu = appMenu;
         [menu insertItem:appMenuItem atIndex:0];
     }
 }
@@ -274,8 +274,7 @@
 {
     // No reason to create the item if it already exists.
     for (NSMenuItem *item in appMenu.itemArray)
-        if ([item isMemberOfClass:[QCocoaNSMenuItem class]]
-            && static_cast<QCocoaNSMenuItem *>(item).platformMenuItem == platformItem)
+        if (qt_objc_cast<QCocoaNSMenuItem *>(item).platformMenuItem == platformItem)
             return [[item retain] autorelease];
 
     // Create an App-Specific menu item, insert it into the menu and return
@@ -320,13 +319,13 @@
 - (void)qtTranslateApplicationMenu
 {
 #ifndef QT_NO_TRANSLATION
-    [servicesItem setTitle:qt_mac_applicationmenu_string(ServicesAppMenuItem).toNSString()];
-    [hideItem setTitle:qt_mac_applicationmenu_string(HideAppMenuItem).arg(qt_mac_applicationName()).toNSString()];
-    [hideAllOthersItem setTitle:qt_mac_applicationmenu_string(HideOthersAppMenuItem).toNSString()];
-    [showAllItem setTitle:qt_mac_applicationmenu_string(ShowAllAppMenuItem).toNSString()];
-    [preferencesItem setTitle:qt_mac_applicationmenu_string(PreferencesAppMenuItem).toNSString()];
-    [quitItem setTitle:qt_mac_applicationmenu_string(QuitAppMenuItem).arg(qt_mac_applicationName()).toNSString()];
-    [aboutItem setTitle:qt_mac_applicationmenu_string(AboutAppMenuItem).arg(qt_mac_applicationName()).toNSString()];
+    aboutItem.title = qt_mac_applicationmenu_string(AboutAppMenuItem).arg(qt_mac_applicationName()).toNSString();
+    preferencesItem.title = qt_mac_applicationmenu_string(PreferencesAppMenuItem).toNSString();
+    servicesItem.title = qt_mac_applicationmenu_string(ServicesAppMenuItem).toNSString();
+    hideItem.title = qt_mac_applicationmenu_string(HideAppMenuItem).arg(qt_mac_applicationName()).toNSString();
+    hideAllOthersItem.title = qt_mac_applicationmenu_string(HideOthersAppMenuItem).toNSString();
+    showAllItem.title = qt_mac_applicationmenu_string(ShowAllAppMenuItem).toNSString();
+    quitItem.title = qt_mac_applicationmenu_string(QuitAppMenuItem).arg(qt_mac_applicationName()).toNSString();
 #endif
 }
 

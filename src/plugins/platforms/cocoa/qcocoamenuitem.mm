@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author James Turner <james.turner@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -115,7 +116,7 @@ QCocoaMenuItem::~QCocoaMenuItem()
     if (m_menu && m_menu->menuParent() == this)
         m_menu->setMenuParent(nullptr);
     if (m_merged) {
-        [m_native setHidden:YES];
+        m_native.hidden = YES;
     } else {
         if (m_menu && m_menu->attachedItem() == m_native)
             m_menu->setAttachedItem(nil);
@@ -211,10 +212,10 @@ void QCocoaMenuItem::setNativeContents(WId item)
         return;
     [m_itemView release];
     m_itemView = [itemView retain];
-    [m_itemView setAutoresizesSubviews:YES];
-    [m_itemView setAutoresizingMask:NSViewWidthSizable];
-    [m_itemView setHidden:NO];
-    [m_itemView setNeedsDisplay:YES];
+    m_itemView.autoresizesSubviews = YES;
+    m_itemView.autoresizingMask = NSViewWidthSizable;
+    m_itemView.hidden = NO;
+    m_itemView.needsDisplay = YES;
 }
 
 NSMenuItem *QCocoaMenuItem::sync()
@@ -313,8 +314,8 @@ NSMenuItem *QCocoaMenuItem::sync()
 
     resolveTargetAction();
 
-    [m_native setHidden: !m_isVisible];
-    [m_native setView:m_itemView];
+    m_native.hidden = !m_isVisible;
+    m_native.view = m_itemView;
 
     QString text = mergeText();
 #ifndef QT_NO_SHORTCUT
@@ -334,34 +335,33 @@ NSMenuItem *QCocoaMenuItem::sync()
         if (customMenuFont) {
             NSAttributedString *str = [[[NSAttributedString alloc] initWithString:finalString.toNSString()
                                      attributes:@{NSFontAttributeName: customMenuFont}] autorelease];
-            [m_native setAttributedTitle:str];
+            m_native.attributedTitle = str;
             useAttributedTitle = true;
         }
     }
-    if (!useAttributedTitle) {
-       [m_native setTitle:finalString.toNSString()];
-    }
+    if (!useAttributedTitle)
+       m_native.title = finalString.toNSString();
 
 #ifndef QT_NO_SHORTCUT
     if (accel.count() == 1) {
-        [m_native setKeyEquivalent:keySequenceToKeyEqivalent(accel)];
-        [m_native setKeyEquivalentModifierMask:keySequenceModifierMask(accel)];
+        m_native.keyEquivalent = keySequenceToKeyEqivalent(accel);
+        m_native.keyEquivalentModifierMask = keySequenceModifierMask(accel);
     } else
 #endif
     {
-        [m_native setKeyEquivalent:@""];
-        [m_native setKeyEquivalentModifierMask:NSCommandKeyMask];
+        m_native.keyEquivalent = @"";
+        m_native.keyEquivalentModifierMask = NSCommandKeyMask;
     }
 
     NSImage *img = nil;
     if (!m_icon.isNull()) {
         img = qt_mac_create_nsimage(m_icon, m_iconSize);
-        [img setSize:NSMakeSize(m_iconSize, m_iconSize)];
+        img.size = CGSizeMake(m_iconSize, m_iconSize);
     }
-    [m_native setImage:img];
+    m_native.image = img;
     [img release];
 
-    [m_native setState:m_checked ?  NSOnState : NSOffState];
+    m_native.state = m_checked ?  NSOnState : NSOffState;
     return m_native;
 }
 
@@ -406,8 +406,8 @@ void QCocoaMenuItem::syncMerged()
         qWarning("Trying to sync a non-merged item");
         return;
     }
-    [m_native setTag:reinterpret_cast<NSInteger>(this)];
-    [m_native setHidden: !m_isVisible];
+
+    m_native.hidden = !m_isVisible;
 }
 
 void QCocoaMenuItem::setParentEnabled(bool enabled)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -44,17 +44,15 @@
 #include "qcocoawindow.h"
 #import "qnsview.h"
 
-#include <QtCore/qmetaobject.h>
-#include <QtCore/private/qthread_p.h>
-#include <QtGui/private/qguiapplication_p.h>
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qcoreevent.h>
 
-static NSString *qt_mac_removePrivateUnicode(NSString* string)
+static NSString *qt_mac_removePrivateUnicode(NSString *string)
 {
-    int len = [string length];
-    if (len) {
-        QVarLengthArray <unichar, 10> characters(len);
+    if (const int len = string.length) {
+        QVarLengthArray<unichar, 10> characters(len);
         bool changed = false;
-        for (int i = 0; i<len; i++) {
+        for (int i = 0; i < len; i++) {
             characters[i] = [string characterAtIndex:i];
             // check if they belong to key codes in private unicode range
             // currently we need to handle only the NSDeleteFunctionKey
@@ -100,9 +98,8 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
 + (instancetype)separatorItemWithPlatformMenuItem:(QCocoaMenuItem *)menuItem
 {
     // Safe because +[NSMenuItem separatorItem] invokes [[self alloc] init]
-    auto *item = static_cast<QCocoaNSMenuItem *>([self separatorItem]);
-    Q_ASSERT_X([item isMemberOfClass:[QCocoaNSMenuItem class]],
-               qPrintable(__FUNCTION__),
+    auto *item = qt_objc_cast<QCocoaNSMenuItem *>([self separatorItem]);
+    Q_ASSERT_X(item, qPrintable(__FUNCTION__),
                "Did +[NSMenuItem separatorItem] not invoke [[self alloc] init]?");
     if (item)
         item.platformMenuItem = menuItem;
@@ -136,7 +133,8 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
 
 @end
 
-#define CHECK_MENU_CLASS(menu) Q_ASSERT([menu isMemberOfClass:[QCocoaNSMenu class]])
+#define CHECK_MENU_CLASS(menu) Q_ASSERT_X([menu isMemberOfClass:[QCocoaNSMenu class]], \
+                                          __FUNCTION__, "Menu is not a QCocoaNSMenu")
 
 @implementation QCocoaNSMenuDelegate
 
@@ -172,10 +170,9 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
     if (!platformMenu)
         return YES;
 
-    if ([item isMemberOfClass:[QCocoaNSMenuItem class]]) {
-        auto *menuItem = static_cast<QCocoaNSMenuItem *>(item).platformMenuItem;
-        if (platformMenu->items().contains(menuItem)) {
-            if (QCocoaMenu *itemSubmenu = menuItem->menu())
+    if (auto *platformItem = qt_objc_cast<QCocoaNSMenuItem *>(item).platformMenuItem) {
+        if (platformMenu->items().contains(platformItem)) {
+            if (auto *itemSubmenu = platformItem->menu())
                 itemSubmenu->setAttachedItem(item);
         }
     }
@@ -186,10 +183,8 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
 - (void)menu:(NSMenu *)menu willHighlightItem:(NSMenuItem *)item
 {
     CHECK_MENU_CLASS(menu);
-    if ([item isMemberOfClass:[QCocoaNSMenuItem class]]) {
-        if (auto *platformItem = static_cast<QCocoaNSMenuItem *>(item).platformMenuItem)
-            emit platformItem->hovered();
-    }
+    if (auto *platformItem = qt_objc_cast<QCocoaNSMenuItem *>(item).platformMenuItem)
+        emit platformItem->hovered();
 }
 
 - (void)menuWillOpen:(NSMenu *)menu
@@ -251,13 +246,13 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
         if (object) {
             QChar ch;
             int keyCode;
-            ulong nativeModifiers = [event modifierFlags];
-            Qt::KeyboardModifiers modifiers = [QNSView convertKeyModifiers: nativeModifiers];
-            NSString *charactersIgnoringModifiers = [event charactersIgnoringModifiers];
-            NSString *characters = [event characters];
+            ulong nativeModifiers = event.modifierFlags;
+            Qt::KeyboardModifiers modifiers = [QNSView convertKeyModifiers:nativeModifiers];
+            NSString *charactersIgnoringModifiers = event.charactersIgnoringModifiers;
+            NSString *characters = event.characters;
 
-            if ([charactersIgnoringModifiers length] > 0) { // convert the first character into a key code
-                if ((modifiers & Qt::ControlModifier) && ([characters length] != 0)) {
+            if (charactersIgnoringModifiers.length > 0) { // convert the first character into a key code
+                if ((modifiers & Qt::ControlModifier) && characters.length > 0) {
                     ch = QChar([characters characterAtIndex:0]);
                 } else {
                     ch = QChar([charactersIgnoringModifiers characterAtIndex:0]);
@@ -274,7 +269,7 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
             accel_ev.ignore();
             QCoreApplication::sendEvent(object, &accel_ev);
             if (accel_ev.isAccepted()) {
-                [[NSApp keyWindow] sendEvent: event];
+                [[NSApp keyWindow] sendEvent:event];
                 *target = nil;
                 *action = nil;
                 return YES;

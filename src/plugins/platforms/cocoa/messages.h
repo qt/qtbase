@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -46,13 +46,13 @@
 QT_BEGIN_NAMESPACE
 
 enum {
-    ServicesAppMenuItem = 0,
+    AboutAppMenuItem = 0,
+    PreferencesAppMenuItem,
+    ServicesAppMenuItem,
     HideAppMenuItem,
     HideOthersAppMenuItem,
     ShowAllAppMenuItem,
-    PreferencesAppMenuItem,
-    QuitAppMenuItem,
-    AboutAppMenuItem
+    QuitAppMenuItem
 };
 
 

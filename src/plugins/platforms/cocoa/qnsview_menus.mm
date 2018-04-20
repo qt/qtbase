@@ -60,10 +60,11 @@ static bool selectorIsCutCopyPaste(SEL selector)
 
 - (BOOL)validateMenuItem:(NSMenuItem*)item
 {
-    if (![item isMemberOfClass:[QCocoaNSMenuItem class]])
+    auto *nativeItem = qt_objc_cast<QCocoaNSMenuItem *>(item);
+    if (!nativeItem)
         return item.enabled; // FIXME Test with with Qt as plugin or embedded QWindow.
 
-    auto *platformItem = static_cast<QCocoaNSMenuItem *>(item).platformMenuItem;
+    auto *platformItem = nativeItem.platformMenuItem;
     if (!platformItem)
         return NO;
 
@@ -100,8 +101,9 @@ static bool selectorIsCutCopyPaste(SEL selector)
 
 - (void)qt_itemFired:(QCocoaNSMenuItem *)item
 {
-    Q_ASSERT([item isMemberOfClass:[QCocoaNSMenuItem class]]);
-    auto *platformItem = static_cast<QCocoaNSMenuItem *>(item).platformMenuItem;
+    auto *nativeItem = qt_objc_cast<QCocoaNSMenuItem *>(item);
+    Q_ASSERT_X(nativeItem, qPrintable(__FUNCTION__), "Triggered menu item is not a QCocoaNSMenuItem.");
+    auto *platformItem = nativeItem.platformMenuItem;
     // Menu-holding items also get a target to play nicely
     // with NSMenuValidation but should not trigger.
     if (!platformItem || platformItem->menu())
@@ -129,8 +131,8 @@ static bool selectorIsCutCopyPaste(SEL selector)
     if (selectorIsCutCopyPaste(invocation.selector)) {
         NSObject *sender;
         [invocation getArgument:&sender atIndex:2];
-        if ([sender isMemberOfClass:[QCocoaNSMenuItem class]]) {
-            [self qt_itemFired:static_cast<QCocoaNSMenuItem *>(sender)];
+        if (auto *nativeItem = qt_objc_cast<QCocoaNSMenuItem *>(sender)) {
+            [self qt_itemFired:nativeItem];
             return;
         }
     }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -52,13 +52,13 @@ QString msgAboutQt()
 
 static const char *application_menu_strings[] =
 {
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","About %1"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Preferences..."),
     QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Services"),
     QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide %1"),
     QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide Others"),
     QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Show All"),
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Preferences..."),
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Quit %1"),
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","About %1")
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Quit %1")
 };
 
 QString qt_mac_applicationmenu_string(int type)

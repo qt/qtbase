@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author James Turner <james.turner@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -67,7 +68,7 @@ QCocoaMenuBar::~QCocoaMenuBar()
 #ifdef QT_COCOA_ENABLE_MENU_DEBUG
     qDebug() << "~QCocoaMenuBar" << this;
 #endif
-    foreach (QCocoaMenu *menu, m_menus) {
+    for (auto menu : qAsConst(m_menus)) {
         if (!menu)
             continue;
         NSMenuItem *item = nativeItemForMenu(menu);
@@ -198,8 +199,8 @@ void QCocoaMenuBar::syncMenu_helper(QPlatformMenu *menu, bool menubarUpdate)
         // If the NSMenu has no visble items, or only separators, we should hide it
         // on the menubar. This can happen after syncing the menu items since they
         // can be moved to other menus.
-        for (NSMenuItem *item in [cocoaMenu->nsMenu() itemArray])
-            if (![item isSeparatorItem] && ![item isHidden]) {
+        for (NSMenuItem *item in cocoaMenu->nsMenu().itemArray)
+            if (!item.separatorItem && !item.hidden) {
                 shouldHide = NO;
                 break;
             }
@@ -245,17 +246,17 @@ QCocoaWindow *QCocoaMenuBar::findWindowForMenubar()
     if (qApp->focusWindow())
         return static_cast<QCocoaWindow*>(qApp->focusWindow()->handle());
 
-    return NULL;
+    return nullptr;
 }
 
 QCocoaMenuBar *QCocoaMenuBar::findGlobalMenubar()
 {
-    foreach (QCocoaMenuBar *mb, static_menubars) {
-        if (mb->m_window.isNull())
-            return mb;
+    for (auto *menubar : qAsConst(static_menubars)) {
+        if (menubar->m_window.isNull())
+            return menubar;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void QCocoaMenuBar::updateMenuBarImmediately()
@@ -292,7 +293,7 @@ void QCocoaMenuBar::updateMenuBarImmediately()
 #endif
     bool disableForModal = mb->shouldDisable(cw);
 
-    foreach (QCocoaMenu *menu, mb->m_menus) {
+    for (auto menu : qAsConst(mb->m_menus)) {
         if (!menu)
             continue;
         NSMenuItem *item = mb->nativeItemForMenu(menu);
@@ -307,16 +308,16 @@ void QCocoaMenuBar::updateMenuBarImmediately()
     [loader ensureAppMenuInMenu:mb->nsMenu()];
 
     NSMutableSet *mergedItems = [[NSMutableSet setWithCapacity:mb->merged().count()] retain];
-    foreach (QCocoaMenuItem *m, mb->merged()) {
-        [mergedItems addObject:m->nsItem()];
-        m->syncMerged();
+    for (auto mergedItem : mb->merged()) {
+        [mergedItems addObject:mergedItem->nsItem()];
+        mergedItem->syncMerged();
     }
 
     // hide+disable all mergeable items we're not currently using
     for (NSMenuItem *mergeable in [loader mergeable]) {
         if (![mergedItems containsObject:mergeable]) {
-            [mergeable setHidden:YES];
-            [mergeable setEnabled:NO];
+            mergeable.hidden = YES;
+            mergeable.enabled = NO;
         }
     }
 
@@ -328,7 +329,7 @@ void QCocoaMenuBar::updateMenuBarImmediately()
 QList<QCocoaMenuItem*> QCocoaMenuBar::merged() const
 {
     QList<QCocoaMenuItem*> r;
-    foreach (QCocoaMenu* menu, m_menus)
+    for (auto menu : qAsConst(m_menus))
         r.append(menu->merged());
 
     return r;
@@ -348,11 +349,11 @@ bool QCocoaMenuBar::shouldDisable(QCocoaWindow *active) const
     // When there is an application modal window on screen, the entries of
     // the menubar should be disabled. The exception in Qt is that if the
     // modal window is the only window on screen, then we enable the menu bar.
-    foreach (QWindow *w, topWindows) {
-        if (w->isVisible() && w->modality() == Qt::ApplicationModal) {
+    for (auto *window : qAsConst(topWindows)) {
+        if (window->isVisible() && window->modality() == Qt::ApplicationModal) {
             // check for other visible windows
-            foreach (QWindow *other, topWindows) {
-                if ((w != other) && (other->isVisible())) {
+            for (auto *other : qAsConst(topWindows)) {
+                if ((window != other) && (other->isVisible())) {
                     // INVARIANT: we found another visible window
                     // on screen other than our modalWidget. We therefore
                     // disable the menu bar to follow normal modality logic:
@@ -372,21 +373,21 @@ bool QCocoaMenuBar::shouldDisable(QCocoaWindow *active) const
 
 QPlatformMenu *QCocoaMenuBar::menuForTag(quintptr tag) const
 {
-    foreach (QCocoaMenu *menu, m_menus) {
+    for (auto menu : qAsConst(m_menus))
         if (menu->tag() ==  tag)
             return menu;
-    }
 
     return nullptr;
 }
 
-NSMenuItem *QCocoaMenuBar::itemForRole(QPlatformMenuItem::MenuRole r)
+NSMenuItem *QCocoaMenuBar::itemForRole(QPlatformMenuItem::MenuRole role)
 {
-    foreach (QCocoaMenu *m, m_menus)
-        foreach (QCocoaMenuItem *i, m->items())
-            if (i->effectiveRole() == r)
-                return i->nsItem();
-    return nullptr;
+    for (auto menu : qAsConst(m_menus))
+        for (auto *item : menu->items())
+            if (item->effectiveRole() == role)
+                return item->nsItem();
+
+    return nil;
 }
 
 QCocoaWindow *QCocoaMenuBar::cocoaWindow() const
