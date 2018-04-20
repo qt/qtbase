@@ -73,8 +73,6 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     return newFont;
 }
 
-@class QT_MANGLE_NAMESPACE(QNSFontPanelDelegate);
-
 @interface QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) : NSObject<NSWindowDelegate, QNSPanelDelegate>
 {
     @public
@@ -110,7 +108,8 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
 
     [mFontPanel setRestorable:NO];
     [mFontPanel setDelegate:self];
-    [[NSFontManager sharedFontManager] setDelegate:self];
+
+    [NSFontManager sharedFontManager].target = self; // Action is changeFont:
 
     [mFontPanel retain];
     return self;
@@ -120,7 +119,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
 {
     [mStolenContentView release];
     [mFontPanel setDelegate:nil];
-    [[NSFontManager sharedFontManager] setDelegate:nil];
+    [NSFontManager sharedFontManager].target = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 
     [super dealloc];
