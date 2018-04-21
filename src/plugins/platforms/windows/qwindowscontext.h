@@ -212,6 +212,9 @@ public:
 
     QTouchDevice *touchDevice() const;
 
+    static bool filterNativeEvent(MSG *msg, LRESULT *result);
+    static bool filterNativeEvent(QWindow *window, MSG *msg, LRESULT *result);
+
 private:
     void handleFocusEvent(QtWindows::WindowsEventType et, QWindowsWindow *w);
 #ifndef QT_NO_CONTEXTMENU
