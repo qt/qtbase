@@ -820,8 +820,8 @@ bool QTimeZone::isTimeZoneIdAvailable(const QByteArray &ianaId)
     // IDs as availableTimeZoneIds() may be slow
     if (!QTimeZonePrivate::isValidId(ianaId))
         return false;
-    const QList<QByteArray> tzIds = availableTimeZoneIds();
-    return std::binary_search(tzIds.begin(), tzIds.end(), ianaId);
+    return QUtcTimeZonePrivate().isTimeZoneIdAvailable(ianaId) ||
+           global_tz->backend->isTimeZoneIdAvailable(ianaId);
 }
 
 static QList<QByteArray> set_union(const QList<QByteArray> &l1, const QList<QByteArray> &l2)

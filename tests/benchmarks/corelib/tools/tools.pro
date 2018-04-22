@@ -15,6 +15,7 @@ SUBDIRS = \
         qstring \
         qstringbuilder \
         qstringlist \
+        qtimezone \
         qvector \
         qalgorithms
 

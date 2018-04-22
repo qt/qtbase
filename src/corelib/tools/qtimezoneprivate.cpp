@@ -486,6 +486,13 @@ QByteArray QTimeZonePrivate::systemTimeZoneId() const
     return QByteArray();
 }
 
+bool QTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray& ianaId) const
+{
+    // Fall-back implementation, can be made faster in subclasses
+    const QList<QByteArray> tzIds = availableTimeZoneIds();
+    return std::binary_search(tzIds.begin(), tzIds.end(), ianaId);
+}
+
 QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds() const
 {
     return QList<QByteArray>();
@@ -862,6 +869,17 @@ qint32 QUtcTimeZonePrivate::daylightTimeOffset(qint64 atMSecsSinceEpoch) const
 QByteArray QUtcTimeZonePrivate::systemTimeZoneId() const
 {
     return utcQByteArray();
+}
+
+bool QUtcTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray &ianaId) const
+{
+    for (int i = 0; i < utcDataTableSize; ++i) {
+        const QUtcData *data = utcData(i);
+        if (utcId(data) == ianaId) {
+            return true;
+        }
+    }
+    return false;
 }
 
 QList<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds() const

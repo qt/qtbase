@@ -1098,6 +1098,11 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
     return ianaId;
 }
 
+bool QTzTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray &ianaId) const
+{
+    return tzZones->contains(ianaId);
+}
+
 QList<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds() const
 {
     QList<QByteArray> result = tzZones->keys();
