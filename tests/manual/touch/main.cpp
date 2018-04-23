@@ -34,6 +34,7 @@
 #include <QAction>
 #include <QMainWindow>
 #include <QSplitter>
+#include <QStatusBar>
 #include <QToolBar>
 #include <QVector>
 #include <QCommandLineOption>
@@ -43,12 +44,15 @@
 #include <QPainterPath>
 #include <QPaintEvent>
 #include <QScreen>
+#include <QWindow>
 #include <QSharedPointer>
 #include <QDebug>
 #include <QTextStream>
 
 static bool optIgnoreTouch = false;
 static QVector<Qt::GestureType> optGestures;
+
+static QWidgetList mainWindows;
 
 static inline void drawEllipse(const QPointF &center, qreal hDiameter, qreal vDiameter, const QColor &color, QPainter &painter)
 {
@@ -191,6 +195,7 @@ typedef QSharedPointer<Gesture> GesturePtr;
 typedef QVector<GesturePtr> GesturePtrs;
 
 typedef QVector<QEvent::Type> EventTypeVector;
+static EventTypeVector eventTypes;
 
 class EventFilter : public QObject {
     Q_OBJECT
@@ -205,6 +210,8 @@ signals:
 private:
     const EventTypeVector m_types;
 };
+
+static EventFilter *globalEventFilter = nullptr;
 
 bool EventFilter::eventFilter(QObject *o, QEvent *e)
 {
@@ -406,29 +413,67 @@ void TouchTestWidget::paintEvent(QPaintEvent *)
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-public:
     MainWindow();
+public:
+    static MainWindow *createMainWindow();
+
     QWidget *touchWidget() const { return m_touchWidget; }
+
+    void setVisible(bool visible) override;
 
 public slots:
     void appendToLog(const QString &text) { m_logTextEdit->appendPlainText(text); }
     void dumpTouchDevices();
 
 private:
+    void updateScreenLabel();
+    void newWindow() { MainWindow::createMainWindow(); }
+
     TouchTestWidget *m_touchWidget;
     QPlainTextEdit *m_logTextEdit;
+    QLabel *m_screenLabel;
 };
+
+MainWindow *MainWindow::createMainWindow()
+{
+    MainWindow *result = new MainWindow;
+    const QSize screenSize = QGuiApplication::primaryScreen()->availableGeometry().size();
+    result->resize(screenSize / 2);
+    const QSize sizeDiff = screenSize - result->size();
+    const QPoint pos = QPoint(sizeDiff.width() / 2, sizeDiff.height() / 2)
+                       + mainWindows.size() * QPoint(30, 10);
+    result->move(pos);
+    result->show();
+
+    EventFilter *eventFilter = globalEventFilter;
+    if (!eventFilter) {
+        eventFilter = new EventFilter(eventTypes, result->touchWidget());
+        result->touchWidget()->installEventFilter(eventFilter);
+    }
+    QObject::connect(eventFilter, &EventFilter::eventReceived, result, &MainWindow::appendToLog);
+
+    mainWindows.append(result);
+    return result;
+}
 
 MainWindow::MainWindow()
     : m_touchWidget(new TouchTestWidget)
     , m_logTextEdit(new QPlainTextEdit)
+    , m_screenLabel(new QLabel)
 {
-    setWindowTitle(QStringLiteral("Touch Event Tester ") + QT_VERSION_STR);
+    QString title;
+    QTextStream(&title) << "Touch Event Tester " << QT_VERSION_STR << ' '
+        << qApp->platformName() << " #" << (mainWindows.size() + 1);
+    setWindowTitle(title);
 
     setObjectName("MainWin");
     QToolBar *toolBar = new QToolBar(this);
     addToolBar(Qt::TopToolBarArea, toolBar);
     QMenu *fileMenu = menuBar()->addMenu("File");
+    QAction *newWindowAction = fileMenu->addAction(QStringLiteral("New Window"), this, &MainWindow::newWindow);
+    newWindowAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_N));
+    toolBar->addAction(newWindowAction);
+    fileMenu->addSeparator();
     QAction *dumpDeviceAction = fileMenu->addAction(QStringLiteral("Dump devices"));
     dumpDeviceAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
     connect(dumpDeviceAction, &QAction::triggered, this, &MainWindow::dumpTouchDevices);
@@ -461,7 +506,30 @@ MainWindow::MainWindow()
     mainSplitter->addWidget(m_logTextEdit);
     setCentralWidget(mainSplitter);
 
+    statusBar()->addPermanentWidget(m_screenLabel);
+
     dumpTouchDevices();
+}
+
+void MainWindow::setVisible(bool visible)
+{
+    QMainWindow::setVisible(visible);
+    connect(windowHandle(), &QWindow::screenChanged, this, &MainWindow::updateScreenLabel);
+    updateScreenLabel();
+}
+
+void MainWindow::updateScreenLabel()
+{
+    QString text;
+    QTextStream str(&text);
+    const QScreen *screen = windowHandle()->screen();
+    const QRect geometry = screen->geometry();
+    const qreal dpr = screen->devicePixelRatio();
+    str << '"' << screen->name() << "\" " << geometry.width() << 'x' << geometry.height()
+        << forcesign << geometry.x() << geometry.y() << noforcesign;
+    if (!qFuzzyCompare(dpr, qreal(1)))
+        str << ", dpr=" << dpr;
+    m_screenLabel->setText(text);
 }
 
 void MainWindow::dumpTouchDevices()
@@ -522,14 +590,6 @@ int main(int argc, char *argv[])
     if (parser.isSet(swipeGestureOption))
         optGestures.append(Qt::SwipeGesture);
 
-    MainWindow w;
-    const QSize screenSize = QGuiApplication::primaryScreen()->availableGeometry().size();
-    w.resize(screenSize / 2);
-    const QSize sizeDiff = screenSize - w.size();
-    w.move(sizeDiff.width() / 2, sizeDiff.height() / 2);
-    w.show();
-
-    EventTypeVector eventTypes;
     if (!parser.isSet(noMouseLogOption))
         eventTypes << QEvent::MouseButtonPress << QEvent::MouseButtonRelease << QEvent::MouseButtonDblClick;
     if (parser.isSet(mouseMoveOption))
@@ -538,14 +598,16 @@ int main(int argc, char *argv[])
         eventTypes << QEvent::TouchBegin << QEvent::TouchUpdate << QEvent::TouchEnd;
     if (!optGestures.isEmpty())
         eventTypes << QEvent::Gesture << QEvent::GestureOverride;
-    QObject *filterTarget = parser.isSet(globalFilterOption)
-            ? static_cast<QObject *>(&a)
-            : static_cast<QObject *>(w.touchWidget());
-    EventFilter *filter = new EventFilter(eventTypes, filterTarget);
-    filterTarget->installEventFilter(filter);
-    QObject::connect(filter, &EventFilter::eventReceived, &w, &MainWindow::appendToLog);
+    if (parser.isSet(globalFilterOption)) {
+        globalEventFilter = new EventFilter(eventTypes, &a);
+        a.installEventFilter(globalEventFilter);
+    }
 
-    return a.exec();
+    MainWindow::createMainWindow();
+
+    const int exitCode = a.exec();
+    qDeleteAll(mainWindows);
+    return exitCode;
 }
 
 #include "main.moc"
