@@ -127,9 +127,10 @@ os_log_type_t AppleUnifiedLogger::logTypeForMessageType(QtMsgType msgType)
 
 os_log_t AppleUnifiedLogger::cachedLog(const QString &subsystem, const QString &category)
 {
+#ifndef QT_NO_THREAD
     static QBasicMutex mutex;
     QMutexLocker locker(&mutex);
-
+#endif
     static QHash<QPair<QString, QString>, os_log_t> logs;
     const auto cacheKey = qMakePair(subsystem, category);
     os_log_t log = logs.value(cacheKey);
