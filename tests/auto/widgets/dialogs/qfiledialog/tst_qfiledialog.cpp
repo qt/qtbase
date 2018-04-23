@@ -1049,12 +1049,12 @@ void tst_QFiledialog::setMimeTypeFilters_data()
     QTest::addColumn<QString>("expectedSelectedMimeTypeFilter");
 
     const auto headerMime = QStringLiteral("text/x-chdr");
-    const auto jsonMime = QStringLiteral("application/json");
+    const auto pdfMime = QStringLiteral("application/pdf");
     const auto zipMime = QStringLiteral("application/zip");
 
     QTest::newRow("single mime filter (C header file)") << QStringList {headerMime} << headerMime << headerMime;
-    QTest::newRow("single mime filter (JSON file)") << QStringList {jsonMime} << jsonMime << jsonMime;
-    QTest::newRow("multiple mime filters") << QStringList {jsonMime, zipMime} << jsonMime << jsonMime;
+    QTest::newRow("single mime filter (JSON file)") << QStringList {pdfMime} << pdfMime << pdfMime;
+    QTest::newRow("multiple mime filters") << QStringList {pdfMime, zipMime} << pdfMime << pdfMime;
 }
 
 void tst_QFiledialog::setMimeTypeFilters()
@@ -1068,6 +1068,10 @@ void tst_QFiledialog::setMimeTypeFilters()
     fd.selectMimeTypeFilter(targetMimeTypeFilter);
 
     QCOMPARE(fd.selectedMimeTypeFilter(), expectedSelectedMimeTypeFilter);
+
+    auto *filters = fd.findChild<QComboBox*>("fileTypeCombo");
+    filters->setCurrentIndex(filters->count() - 1);
+    QCOMPARE(fd.selectedMimeTypeFilter(), mimeTypeFilters.last());
 }
 
 void tst_QFiledialog::setEmptyNameFilter()
