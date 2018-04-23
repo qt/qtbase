@@ -4996,11 +4996,13 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                     if (!subRule.hasGeometry()) {
                         QSize nativeContentsSize;
                         bool nullIcon = hdr->icon.isNull();
+                        const int margin = pixelMetric(QStyle::PM_HeaderMargin, hdr, w);
                         int iconSize = nullIcon ? 0 : pixelMetric(QStyle::PM_SmallIconSize, hdr, w);
                         const QSize txt = subRule.hasFont ? QFontMetrics(subRule.font).size(0, hdr->text)
                                                           : hdr->fontMetrics.size(0, hdr->text);
-                        nativeContentsSize.setHeight(qMax(iconSize, txt.height()));
-                        nativeContentsSize.setWidth(iconSize + txt.width());
+                        nativeContentsSize.setHeight(margin + qMax(iconSize, txt.height()) + margin);
+                        nativeContentsSize.setWidth((nullIcon ? 0 : margin) + iconSize
+                                                    + (hdr->text.isNull() ? 0 : margin) + txt.width() + margin);
                         sz = sz.expandedTo(nativeContentsSize);
                     }
                     return subRule.size(sz);

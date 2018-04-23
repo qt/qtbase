@@ -3268,14 +3268,15 @@ QByteArray qgetenv(const char *varName)
 
 
 /*!
-    QString qEnvironmentVariable(const char *varName, const QString &defaultValue);
+    \fn QString qEnvironmentVariable(const char *varName, const QString &defaultValue)
+    \fn QString qEnvironmentVariable(const char *varName)
 
     \relates <QtGlobal>
     \since 5.10
 
-    Returns the value of the environment variable with name \a varName as a
-    QString. If no variable by that name is found in the environment, this
-    function returns \a defaultValue.
+    These functions return the value of the environment variable, \a varName, as a
+    QString. If no variable \a varName is found in the environment and \a defaultValue
+    is provided, \a defaultValue is returned. Otherwise QString() is returned.
 
     The Qt environment manipulation functions are thread-safe, but this
     requires that the C library equivalent functions like getenv and putenv are
@@ -3344,9 +3345,6 @@ QString qEnvironmentVariable(const char *varName, const QString &defaultValue)
 #endif
 }
 
-/*!
-  \internal
-*/
 QString qEnvironmentVariable(const char *varName)
 {
     return qEnvironmentVariable(varName, QString());

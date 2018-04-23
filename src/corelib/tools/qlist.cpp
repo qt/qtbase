@@ -408,15 +408,20 @@ void **QListData::erase(void **xi)
     from strings.
 
     QList stores a list of items. The default constructor creates an
-    empty list. To insert items into the list, you can use
-    operator<<():
+    empty list. You can use the initializer-list constructor to create
+    a list with elements:
 
-    \snippet code/src_corelib_tools_qlistdata.cpp 1
+    \snippet code/src_corelib_tools_qlistdata.cpp 1a
 
     QList provides these basic functions to add, move, and remove
     items: insert(), replace(), removeAt(), move(), and swap(). In
     addition, it provides the following convenience functions:
-    append(), prepend(), removeFirst(), and removeLast().
+    append(), \l{operator<<()}, \l{operator+=()}, prepend(), removeFirst(),
+    and removeLast().
+
+    \l{operator<<()} allows to conveniently add multiple elements to a list:
+
+    \snippet code/src_corelib_tools_qlistdata.cpp 1b
 
     QList uses 0-based indexes, just like C++ arrays. To access the
     item at a particular index position, you can use operator[](). On
