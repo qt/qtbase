@@ -520,7 +520,12 @@ public:
         const typename Simd::Float32x4 v_r0 = Simd::v_dup(data->gradient.radial.focal.radius);
         const typename Simd::Float32x4 v_dr = Simd::v_dup(op->radial.dr);
 
+#if defined(__ARM_NEON__)
+        // NEON doesn't have SIMD sqrt, but uses rsqrt instead that can't be taken of 0.
+        const typename Simd::Float32x4 v_min = Simd::v_dup(std::numeric_limits<float>::epsilon());
+#else
         const typename Simd::Float32x4 v_min = Simd::v_dup(0.0f);
+#endif
         const typename Simd::Float32x4 v_max = Simd::v_dup(float(GRADIENT_STOPTABLE_SIZE-1));
         const typename Simd::Float32x4 v_half = Simd::v_dup(0.5f);
 
