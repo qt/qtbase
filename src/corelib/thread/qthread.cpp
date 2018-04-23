@@ -752,7 +752,7 @@ QThreadPrivate::QThreadPrivate(QThreadData *d) : data(d ? d : new QThreadData)
 
 QThreadPrivate::~QThreadPrivate()
 {
-    delete data;
+    data->deref();
 }
 
 QThread::QThread(QObject *parent)
