@@ -54,7 +54,7 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include <QtCore/qhash.h>
-#include <QtCore/QWaitCondition>
+#include <QtCore/qwaitcondition.h>
 
 #ifndef QT_NO_THREAD
 
