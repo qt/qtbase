@@ -1045,7 +1045,10 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         clearWinStatData(data);
         WIN32_FIND_DATA findData;
         // The memory structure for WIN32_FIND_DATA is same as WIN32_FILE_ATTRIBUTE_DATA
-        // for all members used by fillFindData().
+        // for all members used by fillFindData(), except for dwReserved0. So we zero the
+        // whole struct to be extra safe. This also clears all internal FILETIME which for
+        // umounted drives has shown to be wrong.
+        ZeroMemory(&findData, sizeof(findData));
         bool ok = ::GetFileAttributesEx((wchar_t*)fname.nativeFilePath().utf16(), GetFileExInfoStandard,
                                         reinterpret_cast<WIN32_FILE_ATTRIBUTE_DATA *>(&findData));
         if (ok) {
