@@ -15,9 +15,11 @@ qtConfig(ssl) {
             qsslsocket \
             qsslsocket_onDemandCertificates_member \
             qsslsocket_onDemandCertificates_static
+
         qtConfig(openssl) {
             SUBDIRS += \
-                qdtlscookie
+                qdtlscookie \
+                qdtls
         }
     }
 }
