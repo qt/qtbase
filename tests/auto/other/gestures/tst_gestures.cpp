@@ -331,6 +331,9 @@ private slots:
     void graphicsViewParentPropagation();
     void panelPropagation();
     void panelStacksBehindParent();
+#ifdef Q_OS_MACOS
+    void deleteMacPanGestureRecognizerTargetWidget();
+#endif
     void deleteGestureTargetWidget();
     void deleteGestureTargetItem_data();
     void deleteGestureTargetItem();
@@ -1806,6 +1809,31 @@ void tst_Gestures::panelStacksBehindParent()
     QCOMPARE(panel->gestureEventsReceived, TotalGestureEventsCount);
     QCOMPARE(panel->gestureOverrideEventsReceived, 0);
 }
+
+#ifdef Q_OS_MACOS
+void tst_Gestures::deleteMacPanGestureRecognizerTargetWidget()
+{
+    QWidget window;
+    window.resize(400,400);
+    QGraphicsScene scene;
+    QGraphicsView *view = new QGraphicsView(&scene, &window);
+    view->resize(400, 400);
+    window.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    QTouchDevice *device = QTest::createTouchDevice();
+    // QMacOSPenGestureRecognizer will start a timer on a touch press event
+    QTest::touchEvent(&window, device).press(1, QPoint(100, 100), &window);
+    delete view;
+
+    // wait until after that the QMacOSPenGestureRecognizer timer (300ms) is triggered.
+    // This is needed so that the whole test does not finish before the timer triggers
+    // and to make sure it crashes while executing *this* function. (otherwise it might give the
+    // impression that some of the subsequent test function caused the crash...)
+
+    QTest::qWait(400);  // DO NOT CRASH while waiting
+}
+#endif
 
 void tst_Gestures::deleteGestureTargetWidget()
 {

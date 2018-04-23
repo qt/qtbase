@@ -55,6 +55,7 @@
 #include "qtimer.h"
 #include "qpoint.h"
 #include "qgesturerecognizer.h"
+#include <QtCore/qpointer.h>
 
 #ifndef QT_NO_GESTURES
 
@@ -88,10 +89,13 @@ public:
     QGesture *create(QObject *target);
     QGestureRecognizer::Result recognize(QGesture *gesture, QObject *watched, QEvent *event);
     void reset(QGesture *gesture);
+protected:
+    void timerEvent(QTimerEvent *ev) override;
 private:
     QPointF _startPos;
     QBasicTimer _panTimer;
     bool _panCanceled;
+    QPointer<QObject> _target;
 };
 
 QT_END_NAMESPACE
