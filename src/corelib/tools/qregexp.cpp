@@ -3813,60 +3813,57 @@ struct QRegExpPrivate
 };
 
 #if !defined(QT_NO_REGEXP_OPTIM)
-typedef QHash<QRegExpEngineKey, QRegExpEngine *> EngineCache;
-Q_GLOBAL_STATIC(EngineCache, globalEngineCache)
-typedef QCache<QRegExpEngineKey, QRegExpEngine> UnusedEngineCache;
-Q_GLOBAL_STATIC(UnusedEngineCache, globalUnusedEngineCache)
-static QBasicMutex globalEngineCacheMutex;
+struct QRECache
+{
+    typedef QHash<QRegExpEngineKey, QRegExpEngine *> EngineCache;
+    typedef QCache<QRegExpEngineKey, QRegExpEngine> UnusedEngineCache;
+    EngineCache usedEngines;
+    UnusedEngineCache unusedEngines;
+};
+Q_GLOBAL_STATIC(QRECache, engineCache)
+static QBasicMutex engineCacheMutex;
 #endif // QT_NO_REGEXP_OPTIM
 
 static void derefEngine(QRegExpEngine *eng, const QRegExpEngineKey &key)
 {
-    if (!eng->ref.deref()) {
 #if !defined(QT_NO_REGEXP_OPTIM)
-        if (globalUnusedEngineCache()) {
-            QMutexLocker locker(&globalEngineCacheMutex);
-            QT_TRY {
-                globalUnusedEngineCache()->insert(key, eng, 4 + key.pattern.length() / 4);
-            } QT_CATCH(const std::bad_alloc &) {
-                // in case of an exception (e.g. oom), just delete the engine
-                delete eng;
-            }
-            if (globalEngineCache())
-                globalEngineCache()->remove(key);
+    QMutexLocker locker(&engineCacheMutex);
+    if (!eng->ref.deref()) {
+        if (QRECache *c = engineCache()) {
+            c->unusedEngines.insert(key, eng, 4 + key.pattern.length() / 4);
+            c->usedEngines.remove(key);
         } else {
             delete eng;
         }
+    }
 #else
-        Q_UNUSED(key);
+    Q_UNUSED(key);
+    if (!eng->ref.deref())
         delete eng;
 #endif
-    }
 }
 
 static void prepareEngine_helper(QRegExpPrivate *priv)
 {
-    bool initMatchState = !priv->eng;
+    Q_ASSERT(!priv->eng);
+
 #if !defined(QT_NO_REGEXP_OPTIM)
-    if (!priv->eng && globalUnusedEngineCache()) {
-        QMutexLocker locker(&globalEngineCacheMutex);
-        priv->eng = globalUnusedEngineCache()->take(priv->engineKey);
-        if (!priv->eng && globalEngineCache())
-            priv->eng = globalEngineCache()->value(priv->engineKey);
-        if (priv->eng != 0)
+    QMutexLocker locker(&engineCacheMutex);
+    if (QRECache *c = engineCache()) {
+        priv->eng = c->unusedEngines.take(priv->engineKey);
+        if (!priv->eng)
+            priv->eng = c->usedEngines.value(priv->engineKey);
+        if (!priv->eng)
+            priv->eng = new QRegExpEngine(priv->engineKey);
+        else
             priv->eng->ref.ref();
+
+        c->usedEngines.insert(priv->engineKey, priv->eng);
+        return;
     }
 #endif // QT_NO_REGEXP_OPTIM
 
-    if (!priv->eng)
-        priv->eng = new QRegExpEngine(priv->engineKey);
-#if !defined(QT_NO_REGEXP_OPTIM)
-    if (globalEngineCache())
-        globalEngineCache()->insert(priv->engineKey, priv->eng);
-#endif
-
-    if (initMatchState)
-        priv->matchState.prepareForMatch(priv->eng);
+    priv->eng = new QRegExpEngine(priv->engineKey);
 }
 
 inline static void prepareEngine(QRegExpPrivate *priv)
@@ -3874,6 +3871,7 @@ inline static void prepareEngine(QRegExpPrivate *priv)
     if (priv->eng)
         return;
     prepareEngine_helper(priv);
+    priv->matchState.prepareForMatch(priv->eng);
 }
 
 static void prepareEngineForMatch(QRegExpPrivate *priv, const QString &str)
