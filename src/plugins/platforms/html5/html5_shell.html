@@ -39,7 +39,11 @@
                   canvas.style.display = 'none';
               },
               showExit: function() {
-                  status.innerHTML = "Application exit with code: " + qtLoader.exitCode + " " + qtLoader.exitText;
+                  status.innerHTML = "Application exit";
+                  if (qtLoader.exitCode !== undefined)
+                      status.innerHTML += " with code " + qtLoader.exitCode;
+                  if (qtLoader.exitText !== undefined)
+                      status.innerHTML += " (" + qtLoader.exitText + ")";
                   spinner.style.display = 'block';
                   canvas.style.display = 'none';
               },

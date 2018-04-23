@@ -363,6 +363,7 @@ function QtLoader(config)
         Module.quit = Module.quit || function(code, exception) {
             if (exception.name == "ExitStatus") {
                 // Clean exit with code
+                publicAPI.exitText = undefined
                 publicAPI.exitCode = code;
             } else {
                 publicAPI.exitText = exception.toString();
@@ -398,7 +399,7 @@ function QtLoader(config)
 
         }
         publicAPI.exitCode = undefined;
-        publicAPI.exitText = "";
+        publicAPI.exitText = undefined;
         publicAPI.crashed = false;
 
         // Finally evaluate the emscripten application script, which will
