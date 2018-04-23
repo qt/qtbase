@@ -244,6 +244,8 @@ function QtLoader(config)
     function fetchCompileWasm(filePath) {
         return fetchResource(filePath).then(function(response) {
             if (typeof WebAssembly.compileStreaming !== "undefined") {
+                self.loaderSubState = "Downloading/Compiling";
+                setStatus("Loading");
                 return WebAssembly.compileStreaming(response).catch(function(error) {
                     // compileStreaming may/will fail if the server does not set the correct
                     // mime type (application/wasm) for the wasm file. Fall back to fetch,
