@@ -115,6 +115,7 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "float", Float },
     { "font", Font },
     { "font-family", FontFamily },
+    { "font-kerning", FontKerning },
     { "font-size", FontSize },
     { "font-style", FontStyle },
     { "font-variant", FontVariant },
@@ -368,6 +369,7 @@ static inline bool isInheritable(Property propertyId)
 {
     switch (propertyId) {
     case Font:
+    case FontKerning:
     case FontFamily:
     case FontSize:
     case FontStyle:
@@ -1142,6 +1144,19 @@ static bool setFontStyleFromValue(const QCss::Value &value, QFont *font)
     return false;
 }
 
+static bool setFontKerningFromValue(const QCss::Value &value, QFont *font)
+{
+    if (value.type != Value::KnownIdentifier)
+        return false ;
+    switch (value.variant.toInt()) {
+        case Value_Normal: font->setKerning(true); return true;
+        case Value_None: font->setKerning(false); return true;
+        case Value_Auto: return true;
+        default: break;
+    }
+    return false;
+}
+
 static bool setFontWeightFromValue(const QCss::Value &value, QFont *font)
 {
     if (value.type == Value::KnownIdentifier) {
@@ -1274,6 +1289,7 @@ bool ValueExtractor::extractFont(QFont *font, int *fontSizeAdjustment)
             case FontStyle: setFontStyleFromValue(val, font); break;
             case FontWeight: setFontWeightFromValue(val, font); break;
             case FontFamily: setFontFamilyFromValues(decl.d->values, font); break;
+            case FontKerning: setFontKerningFromValue(val, font); break;
             case TextDecoration: setTextDecorationFromValues(decl.d->values, font); break;
             case Font: parseShorthandFontProperty(decl.d->values, font, fontSizeAdjustment); break;
             case FontVariant: setFontVariantFromValue(val, font); break;

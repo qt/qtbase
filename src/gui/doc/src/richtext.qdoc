@@ -1197,6 +1197,9 @@
     \row    \li \c text-transform
             \li [ uppercase | lowercase ]
             \li Select the transformation that will be performed on the text prior to displaying it.
+    \row    \li \c font-kerning
+            \li [ normal | none ]
+            \li Enables or disables kerning between text characters.
     \row    \li \c font-variant
             \li small-caps
             \li Perform the smallcaps transformation on the text prior to displaying it.
