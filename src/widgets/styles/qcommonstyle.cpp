@@ -1667,8 +1667,9 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                         alignment |= Qt::AlignLeft | Qt::AlignVCenter;
                     }
                     tr.translate(shiftX, shiftY);
+                    const QString text = toolbutton->fontMetrics.elidedText(toolbutton->text, Qt::ElideMiddle, tr.width());
                     proxy()->drawItemText(p, QStyle::visualRect(opt->direction, rect, tr), alignment, toolbutton->palette,
-                                 toolbutton->state & State_Enabled, toolbutton->text,
+                                 toolbutton->state & State_Enabled, text,
                                  QPalette::ButtonText);
                 } else {
                     rect.translate(shiftX, shiftY);
