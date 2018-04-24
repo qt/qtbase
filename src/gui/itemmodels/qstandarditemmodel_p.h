@@ -114,7 +114,7 @@ public:
           rows(0),
           columns(0),
           q_ptr(0),
-          lastIndexOf(2)
+          lastIndexOf(-1)
         { }
 
     inline int childIndex(int row, int column) const {
@@ -124,11 +124,33 @@ public:
         }
         return (row * columnCount()) + column;
     }
-    inline int childIndex(const QStandardItem *child) {
-        int start = qMax(0, lastIndexOf -2);
-        lastIndexOf = children.indexOf(const_cast<QStandardItem*>(child), start);
-        if (lastIndexOf == -1 && start != 0)
-            lastIndexOf = children.lastIndexOf(const_cast<QStandardItem*>(child), start);
+    inline int childIndex(const QStandardItem *child) const {
+        const int lastChild = children.size() - 1;
+        if (lastIndexOf == -1)
+            lastIndexOf = lastChild / 2;
+        // assuming the item is in the vicinity of the last search, iterate forwards and
+        // backwards through the children
+        int backwardIter = lastIndexOf - 1;
+        int forwardIter = lastIndexOf;
+        Q_FOREVER {
+            if (forwardIter <= lastChild) {
+                if (children.at(forwardIter) == child) {
+                    lastIndexOf = forwardIter;
+                    break;
+                }
+                ++forwardIter;
+            } else if (backwardIter < 0) {
+                lastIndexOf = -1;
+                break;
+            }
+            if (backwardIter >= 0) {
+                if (children.at(backwardIter) == child) {
+                    lastIndexOf = backwardIter;
+                    break;
+                }
+                --backwardIter;
+            }
+        }
         return lastIndexOf;
     }
     QPair<int, int> position() const;
@@ -170,7 +192,7 @@ public:
 
     QStandardItem *q_ptr;
 
-    int lastIndexOf;
+    mutable int lastIndexOf;
 };
 
 class QStandardItemModelPrivate : public QAbstractItemModelPrivate
