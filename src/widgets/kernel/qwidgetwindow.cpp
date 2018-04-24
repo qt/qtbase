@@ -237,6 +237,7 @@ bool QWidgetWindow::event(QEvent *event)
     switch (event->type()) {
     case QEvent::Close:
         handleCloseEvent(static_cast<QCloseEvent *>(event));
+        QWindow::event(event);
         return true;
 
     case QEvent::Enter:

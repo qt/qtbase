@@ -401,6 +401,8 @@ private slots:
 
     void tabletTracking();
 
+    void closeEvent();
+
 private:
     bool ensureScreenSize(int width, int height);
 
@@ -10796,6 +10798,32 @@ void tst_QWidget::tabletTracking()
                                               QTabletEvent::Stylus, QTabletEvent::Pen, Qt::NoButton, 0, 0, 0, 0, 0, 0, uid, Qt::NoModifier);
     QCoreApplication::processEvents();
     QTRY_COMPARE(widget.moveEventCount, 3);
+}
+
+class CloseCountingWidget : public QWidget
+{
+public:
+    int closeCount = 0;
+    void closeEvent(QCloseEvent *ev) override;
+};
+
+void CloseCountingWidget::closeEvent(QCloseEvent *ev)
+{
+    ++closeCount;
+    ev->accept();
+}
+
+void tst_QWidget::closeEvent()
+{
+    CloseCountingWidget widget;
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    // Yes we call the close() function twice. This mimics the behavior of QTBUG-43344 where
+    // QApplication first closes all windows and then QCocoaApplication flushes window system
+    // events, triggering more close events.
+    widget.windowHandle()->close();
+    widget.windowHandle()->close();
+    QCOMPARE(widget.closeCount, 1);
 }
 
 QTEST_MAIN(tst_QWidget)
