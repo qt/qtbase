@@ -2251,7 +2251,8 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
 #if QT_CONFIG(dockwidget)
         parentWidget()->update(layoutState.dockAreaLayout.separatorRegion());
 #if QT_CONFIG(tabbar)
-        for (QTabBar *tab_bar : qAsConst(usedTabBars))
+        const auto usedTabBarsCopy = usedTabBars; // list potentially modified by animations
+        for (QTabBar *tab_bar : usedTabBarsCopy)
             tab_bar->show();
 #endif // QT_CONFIG(tabbar)
 #endif // QT_CONFIG(dockwidget)
