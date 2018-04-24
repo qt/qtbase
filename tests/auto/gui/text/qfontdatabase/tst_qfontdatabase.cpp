@@ -65,6 +65,7 @@ private slots:
     void fallbackFonts();
 
     void condensedFontWidth();
+    void condensedFontWidthNoFontMerging();
     void condensedFontMatching();
 
     void rasterFonts();
@@ -296,6 +297,29 @@ static QString testString()
 {
     return QStringLiteral("foo bar");
 }
+
+void tst_QFontDatabase::condensedFontWidthNoFontMerging()
+{
+    int regularFontId = QFontDatabase::addApplicationFont(m_testFont);
+    int condensedFontId = QFontDatabase::addApplicationFont(m_testFontCondensed);
+
+    QVERIFY(!QFontDatabase::applicationFontFamilies(regularFontId).isEmpty());
+    QVERIFY(!QFontDatabase::applicationFontFamilies(condensedFontId).isEmpty());
+
+    QString regularFontName = QFontDatabase::applicationFontFamilies(regularFontId).first();
+    QString condensedFontName = QFontDatabase::applicationFontFamilies(condensedFontId).first();
+
+    QFont condensedFont1(condensedFontName);
+    if (regularFontName == condensedFontName)
+        condensedFont1.setStyleName(QStringLiteral("Condensed"));
+    condensedFont1.setStyleStrategy(QFont::PreferMatch);
+
+    QFont condensedFont2 = condensedFont1;
+    condensedFont2.setStyleStrategy(QFont::StyleStrategy(QFont::NoFontMerging | QFont::PreferMatch));
+
+    QCOMPARE(QFontMetricsF(condensedFont2).horizontalAdvance(QStringLiteral("foobar")),
+             QFontMetricsF(condensedFont1).horizontalAdvance(QStringLiteral("foobar")));
+ }
 
 void tst_QFontDatabase::condensedFontWidth()
 {

@@ -689,7 +689,6 @@ static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDe
     if (!multi)
         fontDef->style     = desc.style->key.style;
     fontDef->fixedPitch    = desc.family->fixedPitch;
-    fontDef->stretch       = desc.style->key.stretch;
     fontDef->ignorePitch   = false;
 }
 
