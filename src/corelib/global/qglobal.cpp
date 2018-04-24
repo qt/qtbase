@@ -2856,7 +2856,7 @@ enum {
 };
 
 /*!
-    \since 5.10
+    \since 5.11
 
     Returns a unique ID for this machine, if one can be determined. If no
     unique ID could be determined, this function returns an empty byte array.
@@ -2929,7 +2929,7 @@ QByteArray QSysInfo::machineUniqueId()
 }
 
 /*!
-    \since 5.10
+    \since 5.11
 
     Returns a unique ID for this machine's boot, if one can be determined. If
     no unique ID could be determined, this function returns an empty byte
