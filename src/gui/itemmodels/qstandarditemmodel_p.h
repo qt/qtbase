@@ -114,7 +114,7 @@ public:
           rows(0),
           columns(0),
           q_ptr(0),
-          lastIndexOf(-1)
+          lastKnownIndex(-1)
         { }
 
     inline int childIndex(int row, int column) const {
@@ -126,32 +126,38 @@ public:
     }
     inline int childIndex(const QStandardItem *child) const {
         const int lastChild = children.size() - 1;
-        if (lastIndexOf == -1)
-            lastIndexOf = lastChild / 2;
-        // assuming the item is in the vicinity of the last search, iterate forwards and
+        int &childsLastIndexInParent = child->d_func()->lastKnownIndex;
+        if (childsLastIndexInParent != -1 && childsLastIndexInParent <= lastChild) {
+            if (children.at(childsLastIndexInParent) == child)
+                return childsLastIndexInParent;
+        } else {
+            childsLastIndexInParent = lastChild / 2;
+        }
+
+        // assuming the item is in the vicinity of the previous index, iterate forwards and
         // backwards through the children
-        int backwardIter = lastIndexOf - 1;
-        int forwardIter = lastIndexOf;
+        int backwardIter = childsLastIndexInParent - 1;
+        int forwardIter = childsLastIndexInParent;
         Q_FOREVER {
             if (forwardIter <= lastChild) {
                 if (children.at(forwardIter) == child) {
-                    lastIndexOf = forwardIter;
+                    childsLastIndexInParent = forwardIter;
                     break;
                 }
                 ++forwardIter;
             } else if (backwardIter < 0) {
-                lastIndexOf = -1;
+                childsLastIndexInParent = -1;
                 break;
             }
             if (backwardIter >= 0) {
                 if (children.at(backwardIter) == child) {
-                    lastIndexOf = backwardIter;
+                    childsLastIndexInParent = backwardIter;
                     break;
                 }
                 --backwardIter;
             }
         }
-        return lastIndexOf;
+        return childsLastIndexInParent;
     }
     QPair<int, int> position() const;
     void setChild(int row, int column, QStandardItem *item,
@@ -192,7 +198,7 @@ public:
 
     QStandardItem *q_ptr;
 
-    mutable int lastIndexOf;
+    mutable int lastKnownIndex; // this is a cached value
 };
 
 class QStandardItemModelPrivate : public QAbstractItemModelPrivate

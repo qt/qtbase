@@ -142,6 +142,8 @@ void QStandardItemPrivate::setChild(int row, int column, QStandardItem *item,
         oldItem->d_func()->setModel(0);
     delete oldItem;
     children.replace(index, item);
+    if (item)
+        item->d_func()->lastKnownIndex = index;
 
     if (model && emitChanged)
         emit model->layoutChanged();
@@ -475,6 +477,8 @@ bool QStandardItemPrivate::insertRows(int row, const QList<QStandardItem*> &item
         item->d_func()->parent = q;
         int index = childIndex(i + row, 0);
         children.replace(index, item);
+        if (item)
+            item->d_func()->lastKnownIndex = index;
     }
     if (model)
         model->d_func()->rowsInserted(q, row, count);
@@ -512,6 +516,8 @@ bool QStandardItemPrivate::insertRows(int row, int count, const QList<QStandardI
                 }
             }
             children.replace(index, item);
+            if (item)
+                item->d_func()->lastKnownIndex = index;
             ++index;
         }
     }
@@ -558,6 +564,8 @@ bool QStandardItemPrivate::insertColumns(int column, int count, const QList<QSta
             int c = column + (i % count);
             int index = childIndex(r, c);
             children.replace(index, item);
+            if (item)
+                item->d_func()->lastKnownIndex = index;
         }
     }
     if (model)
