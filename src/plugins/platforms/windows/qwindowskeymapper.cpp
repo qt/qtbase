@@ -102,6 +102,7 @@ QWindowsKeyMapper::QWindowsKeyMapper()
     QGuiApplication *app = static_cast<QGuiApplication *>(QGuiApplication::instance());
     QObject::connect(app, &QGuiApplication::applicationStateChanged,
                      app, clearKeyRecorderOnApplicationInActive);
+    changeKeyboard();
 }
 
 QWindowsKeyMapper::~QWindowsKeyMapper()
@@ -810,7 +811,7 @@ bool QWindowsKeyMapper::translateKeyEvent(QWindow *widget, HWND hwnd,
 
     // Reset layout map when system keyboard layout is changed
     if (msg.message == WM_INPUTLANGCHANGE) {
-        deleteLayouts();
+        changeKeyboard();
         return true;
     }
 
