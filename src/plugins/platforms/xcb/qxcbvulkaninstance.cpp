@@ -46,8 +46,7 @@ QT_BEGIN_NAMESPACE
 QXcbVulkanInstance::QXcbVulkanInstance(QVulkanInstance *instance)
     : m_instance(instance),
       m_getPhysDevPresSupport(nullptr),
-      m_createSurface(nullptr),
-      m_destroySurface(nullptr)
+      m_createSurface(nullptr)
 {
     if (qEnvironmentVariableIsSet("QT_VULKAN_LIB"))
         m_lib.setFileName(QString::fromUtf8(qgetenv("QT_VULKAN_LIB")));
@@ -114,14 +113,6 @@ VkSurfaceKHR QXcbVulkanInstance::createSurface(QXcbWindow *window)
         qWarning("Failed to find vkCreateXcbSurfaceKHR");
         return surface;
     }
-    if (!m_destroySurface) {
-        m_destroySurface = reinterpret_cast<PFN_vkDestroySurfaceKHR>(
-                    m_vkGetInstanceProcAddr(m_vkInst, "vkDestroySurfaceKHR"));
-    }
-    if (!m_destroySurface) {
-        qWarning("Failed to find vkDestroySurfaceKHR");
-        return surface;
-    }
 
     VkXcbSurfaceCreateInfoKHR surfaceInfo;
     memset(&surfaceInfo, 0, sizeof(surfaceInfo));
@@ -133,12 +124,6 @@ VkSurfaceKHR QXcbVulkanInstance::createSurface(QXcbWindow *window)
         qWarning("Failed to create Vulkan surface: %d", err);
 
     return surface;
-}
-
-void QXcbVulkanInstance::destroySurface(VkSurfaceKHR surface)
-{
-    if (m_destroySurface && surface)
-        m_destroySurface(m_vkInst, surface, nullptr);
 }
 
 void QXcbVulkanInstance::presentQueued(QWindow *window)

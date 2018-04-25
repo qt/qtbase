@@ -64,14 +64,12 @@ public:
     void presentQueued(QWindow *window) override;
 
     VkSurfaceKHR createSurface(QXcbWindow *window);
-    void destroySurface(VkSurfaceKHR surface);
 
 private:
     QVulkanInstance *m_instance;
     QLibrary m_lib;
     PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR m_getPhysDevPresSupport;
     PFN_vkCreateXcbSurfaceKHR m_createSurface;
-    PFN_vkDestroySurfaceKHR m_destroySurface;
 };
 
 QT_END_NAMESPACE

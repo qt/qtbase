@@ -86,14 +86,6 @@ VkSurfaceKHR QCocoaVulkanInstance::createSurface(NSView *view)
         qWarning("Failed to find vkCreateMacOSSurfaceMVK");
         return m_nullSurface;
     }
-    if (!m_destroySurface) {
-        m_destroySurface = reinterpret_cast<PFN_vkDestroySurfaceKHR>(
-                    m_vkGetInstanceProcAddr(m_vkInst, "vkDestroySurfaceKHR"));
-    }
-    if (!m_destroySurface) {
-        qWarning("Failed to find vkDestroySurfaceKHR");
-        return m_nullSurface;
-    }
 
     VkMacOSSurfaceCreateInfoMVK surfaceInfo;
     surfaceInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
@@ -107,12 +99,6 @@ VkSurfaceKHR QCocoaVulkanInstance::createSurface(NSView *view)
         qWarning("Failed to create Vulkan surface: %d", err);
 
     return surface;
-}
-
-void QCocoaVulkanInstance::destroySurface(VkSurfaceKHR surface)
-{
-    if (m_destroySurface && surface)
-        m_destroySurface(m_vkInst, surface, nullptr);
 }
 
 

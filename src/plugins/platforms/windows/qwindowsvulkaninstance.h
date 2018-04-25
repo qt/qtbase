@@ -61,14 +61,12 @@ public:
     bool supportsPresent(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, QWindow *window) override;
 
     VkSurfaceKHR createSurface(HWND win);
-    void destroySurface(VkSurfaceKHR surface);
 
 private:
     QVulkanInstance *m_instance;
     QLibrary m_lib;
     PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR m_getPhysDevPresSupport;
     PFN_vkCreateWin32SurfaceKHR m_createSurface;
-    PFN_vkDestroySurfaceKHR m_destroySurface;
 };
 
 QT_END_NAMESPACE

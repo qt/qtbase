@@ -60,13 +60,11 @@ public:
 
     VkSurfaceKHR *createSurface(QWindow *window);
     VkSurfaceKHR createSurface(NSView *view);
-    void destroySurface(VkSurfaceKHR surface);
 private:
     QVulkanInstance *m_instance = nullptr;
     QLibrary m_lib;
     VkSurfaceKHR m_nullSurface = nullptr;
     PFN_vkCreateMacOSSurfaceMVK m_createSurface = nullptr;
-    PFN_vkDestroySurfaceKHR m_destroySurface = nullptr;
 };
 
 QT_END_NAMESPACE

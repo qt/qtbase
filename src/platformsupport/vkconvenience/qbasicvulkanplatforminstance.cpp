@@ -256,6 +256,11 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
     if (!m_getPhysDevSurfaceSupport)
         qWarning("Failed to find vkGetPhysicalDeviceSurfaceSupportKHR");
 
+    m_destroySurface = reinterpret_cast<PFN_vkDestroySurfaceKHR>(
+                m_vkGetInstanceProcAddr(m_vkInst, "vkDestroySurfaceKHR"));
+    if (!m_destroySurface)
+        qWarning("Failed to find vkDestroySurfaceKHR");
+
     if (!flags.testFlag(QVulkanInstance::NoDebugOutputRedirect))
         setupDebugOutput();
 }
@@ -308,6 +313,12 @@ bool QBasicPlatformVulkanInstance::supportsPresent(VkPhysicalDevice physicalDevi
     m_getPhysDevSurfaceSupport(physicalDevice, queueFamilyIndex, surface, &supported);
 
     return supported;
+}
+
+void QBasicPlatformVulkanInstance::destroySurface(VkSurfaceKHR surface) const
+{
+    if (m_destroySurface && surface)
+        m_destroySurface(m_vkInst, surface, nullptr);
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL defaultDebugCallbackFunc(VkDebugReportFlagsEXT flags,

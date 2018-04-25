@@ -44,8 +44,7 @@ QT_BEGIN_NAMESPACE
 QWindowsVulkanInstance::QWindowsVulkanInstance(QVulkanInstance *instance)
     : m_instance(instance),
       m_getPhysDevPresSupport(nullptr),
-      m_createSurface(nullptr),
-      m_destroySurface(nullptr)
+      m_createSurface(nullptr)
 {
     if (qEnvironmentVariableIsSet("QT_VULKAN_LIB"))
         m_lib.setFileName(QString::fromUtf8(qgetenv("QT_VULKAN_LIB")));
@@ -106,14 +105,6 @@ VkSurfaceKHR QWindowsVulkanInstance::createSurface(HWND win)
         qWarning("Failed to find vkCreateWin32SurfaceKHR");
         return surface;
     }
-    if (!m_destroySurface) {
-        m_destroySurface = reinterpret_cast<PFN_vkDestroySurfaceKHR>(
-                    m_vkGetInstanceProcAddr(m_vkInst, "vkDestroySurfaceKHR"));
-    }
-    if (!m_destroySurface) {
-        qWarning("Failed to find vkDestroySurfaceKHR");
-        return surface;
-    }
 
     VkWin32SurfaceCreateInfoKHR surfaceInfo;
     memset(&surfaceInfo, 0, sizeof(surfaceInfo));
@@ -125,12 +116,6 @@ VkSurfaceKHR QWindowsVulkanInstance::createSurface(HWND win)
         qWarning("Failed to create Vulkan surface: %d", err);
 
     return surface;
-}
-
-void QWindowsVulkanInstance::destroySurface(VkSurfaceKHR surface)
-{
-    if (m_destroySurface && surface)
-        m_destroySurface(m_vkInst, surface, nullptr);
 }
 
 QT_END_NAMESPACE

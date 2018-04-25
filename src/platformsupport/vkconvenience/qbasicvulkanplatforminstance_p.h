@@ -72,6 +72,7 @@ public:
     QByteArrayList enabledExtensions() const override;
     PFN_vkVoidFunction getInstanceProcAddr(const char *name) override;
     bool supportsPresent(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, QWindow *window) override;
+    void destroySurface(VkSurfaceKHR surface) const;
 
 protected:
     void init(QLibrary *lib);
@@ -80,6 +81,7 @@ protected:
     VkInstance m_vkInst;
     PFN_vkGetInstanceProcAddr m_vkGetInstanceProcAddr;
     PFN_vkGetPhysicalDeviceSurfaceSupportKHR m_getPhysDevSurfaceSupport;
+    PFN_vkDestroySurfaceKHR m_destroySurface;
 
 private:
     void setupDebugOutput();
