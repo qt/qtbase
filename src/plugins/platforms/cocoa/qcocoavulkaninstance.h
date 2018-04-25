@@ -40,7 +40,6 @@
 #ifndef QCOCOAVULKANINSTANCE_H
 #define QCOCOAVULKANINSTANCE_H
 
-#include <QtCore/QLibrary>
 #include <QtCore/QHash>
 #include <QtVulkanSupport/private/qbasicvulkanplatforminstance_p.h>
 

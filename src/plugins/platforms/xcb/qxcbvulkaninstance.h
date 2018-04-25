@@ -67,7 +67,6 @@ public:
 
 private:
     QVulkanInstance *m_instance;
-    QLibrary m_lib;
     PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR m_getPhysDevPresSupport;
     PFN_vkCreateXcbSurfaceKHR m_createSurface;
 };

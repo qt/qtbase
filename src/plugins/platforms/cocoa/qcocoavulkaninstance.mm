@@ -45,17 +45,7 @@ QT_BEGIN_NAMESPACE
 QCocoaVulkanInstance::QCocoaVulkanInstance(QVulkanInstance *instance)
     : m_instance(instance)
 {
-    if (qEnvironmentVariableIsSet("QT_VULKAN_LIB"))
-        m_lib.setFileName(QString::fromUtf8(qgetenv("QT_VULKAN_LIB")));
-    else
-        m_lib.setFileName(QStringLiteral("vulkan"));
-
-    if (!m_lib.load()) {
-        qWarning("Failed to load %s: %s", qPrintable(m_lib.fileName()), qPrintable(m_lib.errorString()));
-        return;
-    }
-
-    init(&m_lib);
+    loadVulkanLibrary(QStringLiteral("vulkan"));
 }
 
 QCocoaVulkanInstance::~QCocoaVulkanInstance()

@@ -82,6 +82,21 @@ QBasicPlatformVulkanInstance::~QBasicPlatformVulkanInstance()
         m_vkDestroyInstance(m_vkInst, nullptr);
 }
 
+void QBasicPlatformVulkanInstance::loadVulkanLibrary(const QString &defaultLibraryName)
+{
+    if (qEnvironmentVariableIsSet("QT_VULKAN_LIB"))
+        m_vulkanLib.setFileName(QString::fromUtf8(qgetenv("QT_VULKAN_LIB")));
+    else
+        m_vulkanLib.setFileName(defaultLibraryName);
+
+    if (!m_vulkanLib.load()) {
+        qWarning("Failed to load %s: %s", qPrintable(m_vulkanLib.fileName()), qPrintable(m_vulkanLib.errorString()));
+        return;
+    }
+
+    init(&m_vulkanLib);
+}
+
 void QBasicPlatformVulkanInstance::init(QLibrary *lib)
 {
     if (m_vkGetInstanceProcAddr)

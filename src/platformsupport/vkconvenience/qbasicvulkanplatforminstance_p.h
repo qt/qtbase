@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtCore/QLibrary>
 #include <qpa/qplatformvulkaninstance.h>
 
 QT_BEGIN_NAMESPACE
@@ -75,6 +76,7 @@ public:
     void destroySurface(VkSurfaceKHR surface) const;
 
 protected:
+    void loadVulkanLibrary(const QString &defaultLibraryName);
     void init(QLibrary *lib);
     void initInstance(QVulkanInstance *instance, const QByteArrayList &extraExts);
 
@@ -85,6 +87,8 @@ protected:
 
 private:
     void setupDebugOutput();
+
+    QLibrary m_vulkanLib;
 
     bool m_ownsVkInst;
     VkResult m_errorCode;

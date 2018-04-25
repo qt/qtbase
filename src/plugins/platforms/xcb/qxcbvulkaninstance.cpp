@@ -48,17 +48,7 @@ QXcbVulkanInstance::QXcbVulkanInstance(QVulkanInstance *instance)
       m_getPhysDevPresSupport(nullptr),
       m_createSurface(nullptr)
 {
-    if (qEnvironmentVariableIsSet("QT_VULKAN_LIB"))
-        m_lib.setFileName(QString::fromUtf8(qgetenv("QT_VULKAN_LIB")));
-    else
-        m_lib.setFileName(QStringLiteral("vulkan"));
-
-    if (!m_lib.load()) {
-        qWarning("Failed to load %s: %s", qPrintable(m_lib.fileName()), qPrintable(m_lib.errorString()));
-        return;
-    }
-
-    init(&m_lib);
+    loadVulkanLibrary(QStringLiteral("vulkan"));
 }
 
 QXcbVulkanInstance::~QXcbVulkanInstance()
