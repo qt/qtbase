@@ -317,9 +317,9 @@ static const uint KeyTbl[] = { // Keyboard mapping table
     Qt::Key_9,          // 105   0x69   VK_NUMPAD9          | Numeric keypad 9 key
     Qt::Key_Asterisk,   // 106   0x6A   VK_MULTIPLY         | Multiply key
     Qt::Key_Plus,       // 107   0x6B   VK_ADD              | Add key
-    Qt::Key_Comma,      // 108   0x6C   VK_SEPARATOR        | Separator key
+    Qt::Key_unknown,    // 108   0x6C   VK_SEPARATOR        | Separator key (locale-dependent)
     Qt::Key_Minus,      // 109   0x6D   VK_SUBTRACT         | Subtract key
-    Qt::Key_Period,     // 110   0x6E   VK_DECIMAL          | Decimal key
+    Qt::Key_unknown,    // 110   0x6E   VK_DECIMAL          | Decimal key (locale-dependent)
     Qt::Key_Slash,      // 111   0x6F   VK_DIVIDE           | Divide key
     Qt::Key_F1,         // 112   0x70   VK_F1               | F1 key
     Qt::Key_F2,         // 113   0x71   VK_F2               | F2 key
