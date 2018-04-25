@@ -5224,7 +5224,7 @@ static QLatin1String propertyNameForStandardPixmap(QStyle::StandardPixmap sp)
         case QStyle::SP_DialogCloseButton: return QLatin1String("dialog-close-icon");
         case QStyle::SP_DialogApplyButton: return QLatin1String("dialog-apply-icon");
         case QStyle::SP_DialogResetButton: return QLatin1String("dialog-reset-icon");
-        case QStyle::SP_DialogDiscardButton: return QLatin1String("discard-icon");
+        case QStyle::SP_DialogDiscardButton: return QLatin1String("dialog-discard-icon");
         case QStyle::SP_DialogYesButton: return QLatin1String("dialog-yes-icon");
         case QStyle::SP_DialogNoButton: return QLatin1String("dialog-no-icon");
         case QStyle::SP_ArrowUp: return QLatin1String("uparrow-icon");
