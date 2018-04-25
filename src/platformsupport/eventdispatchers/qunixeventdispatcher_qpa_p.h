@@ -65,12 +65,18 @@ class QUnixEventDispatcherQPA : public QEventDispatcherUNIX
 
 public:
     explicit QUnixEventDispatcherQPA(QObject *parent = 0);
+    QUnixEventDispatcherQPA(QUnixEventDispatcherQPAPrivate &dd, QObject *parent);
     ~QUnixEventDispatcherQPA();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
     bool hasPendingEvents();
 
     void flush();
+};
+
+class QUnixEventDispatcherQPAPrivate : public QEventDispatcherUNIXPrivate
+{
+
 };
 
 QT_END_NAMESPACE

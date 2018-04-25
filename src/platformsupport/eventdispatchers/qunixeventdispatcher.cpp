@@ -57,7 +57,11 @@ QT_USE_NAMESPACE
 
 
 QUnixEventDispatcherQPA::QUnixEventDispatcherQPA(QObject *parent)
-    : QEventDispatcherUNIX(parent)
+    : QEventDispatcherUNIX(*new QEventDispatcherUNIXPrivate, parent)
+{ }
+
+QUnixEventDispatcherQPA::QUnixEventDispatcherQPA(QUnixEventDispatcherQPAPrivate &dd, QObject *parent)
+    : QEventDispatcherUNIX(dd, parent)
 { }
 
 QUnixEventDispatcherQPA::~QUnixEventDispatcherQPA()
