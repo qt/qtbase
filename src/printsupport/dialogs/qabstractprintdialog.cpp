@@ -45,11 +45,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// hack
-class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
-{
-};
-
 /*!
     \class QAbstractPrintDialog
     \brief The QAbstractPrintDialog class provides a base implementation for
@@ -145,7 +140,7 @@ QAbstractPrintDialog::~QAbstractPrintDialog()
 */
 void QPrintDialog::setOption(PrintDialogOption option, bool on)
 {
-    Q_D(QPrintDialog);
+    auto *d = static_cast<QAbstractPrintDialogPrivate *>(d_ptr.data());
     if (!(d->options & option) != !on)
         setOptions(d->options ^ option);
 }
@@ -158,7 +153,7 @@ void QPrintDialog::setOption(PrintDialogOption option, bool on)
 */
 bool QPrintDialog::testOption(PrintDialogOption option) const
 {
-    Q_D(const QPrintDialog);
+    auto *d = static_cast<const QAbstractPrintDialogPrivate *>(d_ptr.data());
     return (d->options & option) != 0;
 }
 
@@ -177,7 +172,7 @@ bool QPrintDialog::testOption(PrintDialogOption option) const
 */
 void QPrintDialog::setOptions(PrintDialogOptions options)
 {
-    Q_D(QPrintDialog);
+    auto *d = static_cast<QAbstractPrintDialogPrivate *>(d_ptr.data());
 
     PrintDialogOptions changed = (options ^ d->options);
     if (!changed)
@@ -188,7 +183,7 @@ void QPrintDialog::setOptions(PrintDialogOptions options)
 
 QPrintDialog::PrintDialogOptions QPrintDialog::options() const
 {
-    Q_D(const QPrintDialog);
+    auto *d = static_cast<const QAbstractPrintDialogPrivate *>(d_ptr.data());
     return d->options;
 }
 
@@ -464,7 +459,7 @@ void QAbstractPrintDialog::setOptionTabs(const QList<QWidget*> &tabs)
 */
 void QPrintDialog::done(int result)
 {
-    Q_D(QPrintDialog);
+    auto *d = static_cast<QAbstractPrintDialogPrivate *>(d_ptr.data());
     QDialog::done(result);
     if (result == Accepted)
         emit accepted(printer());
@@ -487,7 +482,7 @@ void QPrintDialog::done(int result)
 */
 void QPrintDialog::open(QObject *receiver, const char *member)
 {
-    Q_D(QPrintDialog);
+    auto *d = static_cast<QAbstractPrintDialogPrivate *>(d_ptr.data());
     connect(this, SIGNAL(accepted(QPrinter*)), receiver, member);
     d->receiverToDisconnectOnClose = receiver;
     d->memberToDisconnectOnClose = member;
