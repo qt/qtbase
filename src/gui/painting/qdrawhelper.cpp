@@ -1605,17 +1605,26 @@ static const QRgba64 *QT_FASTCALL fetchUntransformed64(QRgba64 *buffer, const Op
     }
 }
 
-template<TextureBlendType blendType, QPixelLayout::BPP bpp>
-static const uint *QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, const QSpanData *data,
-                                         int y, int x, int length)
+template<TextureBlendType blendType>
+inline void fetchTransformed_pixelBounds(int max, int l1, int l2, int &v)
 {
     Q_STATIC_ASSERT(blendType == BlendTransformed || blendType == BlendTransformedTiled);
-    const int image_width = data->texture.width;
-    const int image_height = data->texture.height;
-    const int image_x1 = data->texture.x1;
-    const int image_y1 = data->texture.y1;
-    const int image_x2 = data->texture.x2 - 1;
-    const int image_y2 = data->texture.y2 - 1;
+    if (blendType == BlendTransformedTiled) {
+        if (v < 0 || v >= max) {
+            v %= max;
+            if (v < 0) v += max;
+        }
+    } else {
+        v = qBound(l1, v, l2);
+    }
+}
+
+template<TextureBlendType blendType, QPixelLayout::BPP bpp>
+static void QT_FASTCALL fetchTransformed_fetcher(uint *buffer, const QSpanData *data,
+                                                 int y, int x, int length)
+{
+    Q_STATIC_ASSERT(blendType == BlendTransformed || blendType == BlendTransformedTiled);
+    const QTextureData &image = data->texture;
 
     const qreal cx = x + qreal(0.5);
     const qreal cy = y + qreal(0.5);
@@ -1626,8 +1635,6 @@ static const uint *QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, 
     // When templated 'fetch' should be inlined at compile time:
     const FetchPixelFunc fetch = (bpp == QPixelLayout::BPPNone) ? qFetchPixel[layout->bpp] : FetchPixelFunc(fetchPixel<bpp>);
 
-    uint *const end = buffer + length;
-    uint *b = buffer;
     if (data->fast_matrix) {
         // The increment pr x in the scanline
         int fdx = (int)(data->m11 * fixed_scale);
@@ -1638,24 +1645,87 @@ static const uint *QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, 
         int fy = int((data->m22 * cy
                       + data->m12 * cx + data->dy) * fixed_scale);
 
-        while (b < end) {
-            int px = fx >> 16;
-            int py = fy >> 16;
+        if (fdy == 0) { // simple scale, no rotation or shear
+            int py = (fy >> 16);
+            fetchTransformed_pixelBounds<blendType>(image.height, image.y1, image.y2 - 1, py);
+            const uchar *src = image.scanLine(py);
 
-            if (blendType == BlendTransformedTiled) {
-                px %= image_width;
-                py %= image_height;
-                if (px < 0) px += image_width;
-                if (py < 0) py += image_height;
-            } else {
-                px = qBound(image_x1, px, image_x2);
-                py = qBound(image_y1, py, image_y2);
+            int i = 0;
+            if (blendType == BlendTransformed) {
+                int fastLen = length;
+                if (fdx > 0)
+                    fastLen = qMin(fastLen, int((qint64(image.x2 - 1) * fixed_scale - fx) / fdx));
+                else if (fdx < 0)
+                    fastLen = qMin(fastLen, int((qint64(image.x1) * fixed_scale - fx) / fdx));
+
+                for (; i < fastLen; ++i) {
+                    int x1 = (fx >> 16);
+                    int x2 = x1;
+                    fetchTransformed_pixelBounds<blendType>(image.width, image.x1, image.x2 - 1, x1);
+                    if (x1 == x2)
+                        break;
+                    buffer[i] = fetch(src, x1);
+                    fx += fdx;
+                }
+
+                for (; i < fastLen; ++i) {
+                    int px = (fx >> 16);
+                    buffer[i] = fetch(src, px);
+                    fx += fdx;
+                }
             }
-            *b = fetch(data->texture.scanLine(py), px);
 
-            fx += fdx;
-            fy += fdy;
-            ++b;
+            for (; i < length; ++i) {
+                int px = (fx >> 16);
+                fetchTransformed_pixelBounds<blendType>(image.width, image.x1, image.x2 - 1, px);
+                buffer[i] = fetch(src, px);
+                fx += fdx;
+            }
+        } else { // rotation or shear
+            int i = 0;
+            if (blendType == BlendTransformed) {
+                int fastLen = length;
+                if (fdx > 0)
+                    fastLen = qMin(fastLen, int((qint64(image.x2 - 1) * fixed_scale - fx) / fdx));
+                else if (fdx < 0)
+                    fastLen = qMin(fastLen, int((qint64(image.x1) * fixed_scale - fx) / fdx));
+                if (fdy > 0)
+                    fastLen = qMin(fastLen, int((qint64(image.y2 - 1) * fixed_scale - fy) / fdy));
+                else if (fdy < 0)
+                    fastLen = qMin(fastLen, int((qint64(image.y1) * fixed_scale - fy) / fdy));
+
+                for (; i < fastLen; ++i) {
+                    int x1 = (fx >> 16);
+                    int y1 = (fy >> 16);
+                    int x2 = x1;
+                    int y2 = y1;
+                    fetchTransformed_pixelBounds<blendType>(image.width, image.x1, image.x2 - 1, x1);
+                    fetchTransformed_pixelBounds<blendType>(image.height, image.y1, image.y2 - 1, y1);
+                    if (x1 == x2 && y1 == y2)
+                        break;
+                    buffer[i] = fetch(image.scanLine(y1), x1);
+                    fx += fdx;
+                    fy += fdy;
+                }
+
+                for (; i < fastLen; ++i) {
+                    int px = (fx >> 16);
+                    int py = (fy >> 16);
+                    buffer[i] = fetch(image.scanLine(py), px);
+                    fx += fdx;
+                    fy += fdy;
+                }
+            }
+
+            for (; i < length; ++i) {
+                int px = (fx >> 16);
+                int py = (fy >> 16);
+                fetchTransformed_pixelBounds<blendType>(image.width, image.x1, image.x2 - 1, px);
+                fetchTransformed_pixelBounds<blendType>(image.height, image.y1, image.y2 - 1, py);
+                buffer[i] = fetch(image.scanLine(py), px);
+                fx += fdx;
+                fy += fdy;
+            }
         }
     } else {
         const qreal fdx = data->m11;
@@ -1666,23 +1736,18 @@ static const uint *QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, 
         qreal fy = data->m22 * cy + data->m12 * cx + data->dy;
         qreal fw = data->m23 * cy + data->m13 * cx + data->m33;
 
+        uint *const end = buffer + length;
+        uint *b = buffer;
         while (b < end) {
             const qreal iw = fw == 0 ? 1 : 1 / fw;
             const qreal tx = fx * iw;
             const qreal ty = fy * iw;
-            int px = int(tx) - (tx < 0);
-            int py = int(ty) - (ty < 0);
+            int px = qFloor(tx);
+            int py = qFloor(ty);
 
-            if (blendType == BlendTransformedTiled) {
-                px %= image_width;
-                py %= image_height;
-                if (px < 0) px += image_width;
-                if (py < 0) py += image_height;
-            } else {
-                px = qBound(image_x1, px, image_x2);
-                py = qBound(image_y1, py, image_y2);
-            }
-            *b = fetch(data->texture.scanLine(py), px);
+            fetchTransformed_pixelBounds<blendType>(image.height, image.y1, image.y2 - 1, py);
+            fetchTransformed_pixelBounds<blendType>(image.width, image.x1, image.x2 - 1, px);
+            *b = fetch(image.scanLine(py), px);
 
             fx += fdx;
             fy += fdy;
@@ -1694,116 +1759,31 @@ static const uint *QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, 
             ++b;
         }
     }
+}
+
+template<TextureBlendType blendType, QPixelLayout::BPP bpp>
+static const uint *QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, const QSpanData *data,
+                                                int y, int x, int length)
+{
+    Q_STATIC_ASSERT(blendType == BlendTransformed || blendType == BlendTransformedTiled);
+    const QPixelLayout *layout = &qPixelLayouts[data->texture.format];
+    fetchTransformed_fetcher<blendType, bpp>(buffer, data, y, x, length);
     layout->convertToARGB32PM(buffer, length, data->texture.colorTable);
     return buffer;
 }
 
-template<TextureBlendType blendType>  /* either BlendTransformed or BlendTransformedTiled */
+template<TextureBlendType blendType>
 static const QRgba64 *QT_FASTCALL fetchTransformed64(QRgba64 *buffer, const Operator *, const QSpanData *data,
                                                      int y, int x, int length)
 {
-    const int image_width = data->texture.width;
-    const int image_height = data->texture.height;
-    const int image_x1 = data->texture.x1;
-    const int image_y1 = data->texture.y1;
-    const int image_x2 = data->texture.x2 - 1;
-    const int image_y2 = data->texture.y2 - 1;
-
-    const qreal cx = x + qreal(0.5);
-    const qreal cy = y + qreal(0.5);
-
+    Q_STATIC_ASSERT(blendType == BlendTransformed || blendType == BlendTransformedTiled);
     const QPixelLayout *layout = &qPixelLayouts[data->texture.format];
-    FetchPixelFunc fetch = qFetchPixel[layout->bpp];
-    const QVector<QRgb> *clut = data->texture.colorTable;
-
     uint buffer32[BufferSize];
-    QRgba64 *b = buffer;
-    if (data->fast_matrix) {
-        // The increment pr x in the scanline
-        int fdx = (int)(data->m11 * fixed_scale);
-        int fdy = (int)(data->m12 * fixed_scale);
-
-        int fx = int((data->m21 * cy
-                      + data->m11 * cx + data->dx) * fixed_scale);
-        int fy = int((data->m22 * cy
-                      + data->m12 * cx + data->dy) * fixed_scale);
-
-        int i = 0,  j = 0;
-        while (i < length) {
-            if (j == BufferSize) {
-                layout->convertToARGB64PM(b, buffer32, BufferSize, clut, 0);
-                b += BufferSize;
-                j = 0;
-            }
-            int px = fx >> 16;
-            int py = fy >> 16;
-
-            if (blendType == BlendTransformedTiled) {
-                px %= image_width;
-                py %= image_height;
-                if (px < 0) px += image_width;
-                if (py < 0) py += image_height;
-            } else {
-                px = qBound(image_x1, px, image_x2);
-                py = qBound(image_y1, py, image_y2);
-            }
-            buffer32[j] = fetch(data->texture.scanLine(py), px);
-
-            fx += fdx;
-            fy += fdy;
-            ++i; ++j;
-        }
-        if (j > 0) {
-            layout->convertToARGB64PM(b, buffer32, j, clut, 0);
-            b += j;
-        }
-    } else {
-        const qreal fdx = data->m11;
-        const qreal fdy = data->m12;
-        const qreal fdw = data->m13;
-
-        qreal fx = data->m21 * cy + data->m11 * cx + data->dx;
-        qreal fy = data->m22 * cy + data->m12 * cx + data->dy;
-        qreal fw = data->m23 * cy + data->m13 * cx + data->m33;
-
-        int i = 0,  j = 0;
-        while (i < length) {
-            if (j == BufferSize) {
-                layout->convertToARGB64PM(b, buffer32, BufferSize, clut, 0);
-                b += BufferSize;
-                j = 0;
-            }
-            const qreal iw = fw == 0 ? 1 : 1 / fw;
-            const qreal tx = fx * iw;
-            const qreal ty = fy * iw;
-            int px = int(tx) - (tx < 0);
-            int py = int(ty) - (ty < 0);
-
-            if (blendType == BlendTransformedTiled) {
-                px %= image_width;
-                py %= image_height;
-                if (px < 0) px += image_width;
-                if (py < 0) py += image_height;
-            } else {
-                px = qBound(image_x1, px, image_x2);
-                py = qBound(image_y1, py, image_y2);
-            }
-            buffer32[j] = fetch(data->texture.scanLine(py), px);
-
-            fx += fdx;
-            fy += fdy;
-            fw += fdw;
-            //force increment to avoid /0
-            if (!fw) {
-                fw += fdw;
-            }
-            ++i; ++j;
-        }
-        if (j > 0) {
-            layout->convertToARGB64PM(b, buffer32, j, clut, 0);
-            b += j;
-        }
-    }
+    if (layout->bpp == QPixelLayout::BPP32)
+        fetchTransformed_fetcher<blendType, QPixelLayout::BPP32>(buffer32, data, y, x, length);
+    else
+        fetchTransformed_fetcher<blendType, QPixelLayout::BPPNone>(buffer32, data, y, x, length);
+    layout->convertToARGB64PM(buffer, buffer32, length, data->texture.colorTable, nullptr);
     return buffer;
 }
 
@@ -4607,530 +4587,12 @@ static void blend_tiled_rgb565(int count, const QSpan *spans, void *userData)
     }
 }
 
-static void blend_transformed_argb(int count, const QSpan *spans, void *userData)
-{
-    QSpanData *data = reinterpret_cast<QSpanData *>(userData);
-    if (data->texture.format != QImage::Format_ARGB32_Premultiplied
-        && data->texture.format != QImage::Format_RGB32) {
-        blend_src_generic(count, spans, userData);
-        return;
-    }
-
-    CompositionFunction func = functionForMode[data->rasterBuffer->compositionMode];
-    uint buffer[BufferSize];
-    quint32 mask = (data->texture.format == QImage::Format_RGB32) ? 0xff000000 : 0;
-
-    const int image_x1 = data->texture.x1;
-    const int image_y1 = data->texture.y1;
-    const int image_x2 = data->texture.x2 - 1;
-    const int image_y2 = data->texture.y2 - 1;
-
-    if (data->fast_matrix) {
-        // The increment pr x in the scanline
-        int fdx = (int)(data->m11 * fixed_scale);
-        int fdy = (int)(data->m12 * fixed_scale);
-
-        while (count--) {
-            void *t = data->rasterBuffer->scanLine(spans->y);
-
-            uint *target = ((uint *)t) + spans->x;
-
-            const qreal cx = spans->x + qreal(0.5);
-            const qreal cy = spans->y + qreal(0.5);
-
-            int x = int((data->m21 * cy
-                         + data->m11 * cx + data->dx) * fixed_scale);
-            int y = int((data->m22 * cy
-                         + data->m12 * cx + data->dy) * fixed_scale);
-
-            int length = spans->len;
-            const int coverage = (spans->coverage * data->texture.const_alpha) >> 8;
-            while (length) {
-                int l = qMin(length, BufferSize);
-                const uint *end = buffer + l;
-                uint *b = buffer;
-                while (b < end) {
-                    int px = qBound(image_x1, x >> 16, image_x2);
-                    int py = qBound(image_y1, y >> 16, image_y2);
-                    *b = reinterpret_cast<const uint *>(data->texture.scanLine(py))[px] | mask;
-
-                    x += fdx;
-                    y += fdy;
-                    ++b;
-                }
-                func(target, buffer, l, coverage);
-                target += l;
-                length -= l;
-            }
-            ++spans;
-        }
-    } else {
-        const qreal fdx = data->m11;
-        const qreal fdy = data->m12;
-        const qreal fdw = data->m13;
-        while (count--) {
-            void *t = data->rasterBuffer->scanLine(spans->y);
-
-            uint *target = ((uint *)t) + spans->x;
-
-            const qreal cx = spans->x + qreal(0.5);
-            const qreal cy = spans->y + qreal(0.5);
-
-            qreal x = data->m21 * cy + data->m11 * cx + data->dx;
-            qreal y = data->m22 * cy + data->m12 * cx + data->dy;
-            qreal w = data->m23 * cy + data->m13 * cx + data->m33;
-
-            int length = spans->len;
-            const int coverage = (spans->coverage * data->texture.const_alpha) >> 8;
-            while (length) {
-                int l = qMin(length, BufferSize);
-                const uint *end = buffer + l;
-                uint *b = buffer;
-                while (b < end) {
-                    const qreal iw = w == 0 ? 1 : 1 / w;
-                    const qreal tx = x * iw;
-                    const qreal ty = y * iw;
-                    const int px = qBound(image_x1, int(tx) - (tx < 0), image_x2);
-                    const int py = qBound(image_y1, int(ty) - (ty < 0), image_y2);
-
-                    *b = reinterpret_cast<const uint *>(data->texture.scanLine(py))[px] | mask;
-                    x += fdx;
-                    y += fdy;
-                    w += fdw;
-
-                    ++b;
-                }
-                func(target, buffer, l, coverage);
-                target += l;
-                length -= l;
-            }
-            ++spans;
-        }
-    }
-}
-
-static void blend_transformed_rgb565(int count, const QSpan *spans, void *userData)
-{
-    QSpanData *data = reinterpret_cast<QSpanData*>(userData);
-    QPainter::CompositionMode mode = data->rasterBuffer->compositionMode;
-
-    if (data->texture.format != QImage::Format_RGB16
-            || (mode != QPainter::CompositionMode_SourceOver
-                && mode != QPainter::CompositionMode_Source))
-    {
-        blend_src_generic(count, spans, userData);
-        return;
-    }
-
-    quint16 buffer[BufferSize];
-    const int image_x1 = data->texture.x1;
-    const int image_y1 = data->texture.y1;
-    const int image_x2 = data->texture.x2 - 1;
-    const int image_y2 = data->texture.y2 - 1;
-
-    if (data->fast_matrix) {
-        // The increment pr x in the scanline
-        const int fdx = (int)(data->m11 * fixed_scale);
-        const int fdy = (int)(data->m12 * fixed_scale);
-
-        while (count--) {
-            const quint8 coverage = (data->texture.const_alpha * spans->coverage) >> 8;
-            const quint8 alpha = (coverage + 1) >> 3;
-            const quint8 ialpha = 0x20 - alpha;
-            if (alpha == 0) {
-                ++spans;
-                continue;
-            }
-
-            quint16 *dest = (quint16 *)data->rasterBuffer->scanLine(spans->y) + spans->x;
-            const qreal cx = spans->x + qreal(0.5);
-            const qreal cy = spans->y + qreal(0.5);
-            int x = int((data->m21 * cy
-                         + data->m11 * cx + data->dx) * fixed_scale);
-            int y = int((data->m22 * cy
-                         + data->m12 * cx + data->dy) * fixed_scale);
-            int length = spans->len;
-
-            while (length) {
-                int l;
-                quint16 *b;
-                if (ialpha == 0) {
-                    l = length;
-                    b = dest;
-                } else {
-                    l = qMin(length, BufferSize);
-                    b = buffer;
-                }
-                const quint16 *end = b + l;
-
-                while (b < end) {
-                    const int px = qBound(image_x1, x >> 16, image_x2);
-                    const int py = qBound(image_y1, y >> 16, image_y2);
-
-                    *b = ((const quint16 *)data->texture.scanLine(py))[px];
-                    ++b;
-
-                    x += fdx;
-                    y += fdy;
-                }
-
-                if (ialpha != 0)
-                    blend_sourceOver_rgb16_rgb16(dest, buffer, l, alpha, ialpha);
-
-                dest += l;
-                length -= l;
-            }
-            ++spans;
-        }
-    } else {
-        const qreal fdx = data->m11;
-        const qreal fdy = data->m12;
-        const qreal fdw = data->m13;
-
-        while (count--) {
-            const quint8 coverage = (data->texture.const_alpha * spans->coverage) >> 8;
-            const quint8 alpha = (coverage + 1) >> 3;
-            const quint8 ialpha = 0x20 - alpha;
-            if (alpha == 0) {
-                ++spans;
-                continue;
-            }
-
-            quint16 *dest = (quint16 *)data->rasterBuffer->scanLine(spans->y) + spans->x;
-
-            const qreal cx = spans->x + qreal(0.5);
-            const qreal cy = spans->y + qreal(0.5);
-
-            qreal x = data->m21 * cy + data->m11 * cx + data->dx;
-            qreal y = data->m22 * cy + data->m12 * cx + data->dy;
-            qreal w = data->m23 * cy + data->m13 * cx + data->m33;
-
-            int length = spans->len;
-            while (length) {
-                int l;
-                quint16 *b;
-                if (ialpha == 0) {
-                    l = length;
-                    b = dest;
-                } else {
-                    l = qMin(length, BufferSize);
-                    b = buffer;
-                }
-                const quint16 *end = b + l;
-
-                while (b < end) {
-                    const qreal iw = w == 0 ? 1 : 1 / w;
-                    const qreal tx = x * iw;
-                    const qreal ty = y * iw;
-
-                    const int px = qBound(image_x1, int(tx) - (tx < 0), image_x2);
-                    const int py = qBound(image_y1, int(ty) - (ty < 0), image_y2);
-
-                    *b = ((const quint16 *)data->texture.scanLine(py))[px];
-                    ++b;
-
-                    x += fdx;
-                    y += fdy;
-                    w += fdw;
-                }
-
-                if (ialpha != 0)
-                    blend_sourceOver_rgb16_rgb16(dest, buffer, l, alpha, ialpha);
-
-                dest += l;
-                length -= l;
-            }
-            ++spans;
-        }
-    }
-}
-
-static void blend_transformed_tiled_argb(int count, const QSpan *spans, void *userData)
-{
-    QSpanData *data = reinterpret_cast<QSpanData *>(userData);
-    if (data->texture.format != QImage::Format_ARGB32_Premultiplied
-        && data->texture.format != QImage::Format_RGB32) {
-        blend_src_generic(count, spans, userData);
-        return;
-    }
-
-    CompositionFunction func = functionForMode[data->rasterBuffer->compositionMode];
-    uint buffer[BufferSize];
-
-    int image_width = data->texture.width;
-    int image_height = data->texture.height;
-    const qsizetype scanline_offset = data->texture.bytesPerLine / 4;
-
-    if (data->fast_matrix) {
-        // The increment pr x in the scanline
-        int fdx = (int)(data->m11 * fixed_scale);
-        int fdy = (int)(data->m12 * fixed_scale);
-
-        while (count--) {
-            void *t = data->rasterBuffer->scanLine(spans->y);
-
-            uint *target = ((uint *)t) + spans->x;
-            const uint *image_bits = (const uint *)data->texture.imageData;
-
-            const qreal cx = spans->x + qreal(0.5);
-            const qreal cy = spans->y + qreal(0.5);
-
-            int x = int((data->m21 * cy
-                         + data->m11 * cx + data->dx) * fixed_scale);
-            int y = int((data->m22 * cy
-                         + data->m12 * cx + data->dy) * fixed_scale);
-
-            const int coverage = (spans->coverage * data->texture.const_alpha) >> 8;
-            int length = spans->len;
-            while (length) {
-                int l = qMin(length, BufferSize);
-                const uint *end = buffer + l;
-                uint *b = buffer;
-                int px16 = x % (image_width << 16);
-                int py16 = y % (image_height << 16);
-                int px_delta = fdx % (image_width << 16);
-                int py_delta = fdy % (image_height << 16);
-                while (b < end) {
-                    if (px16 < 0) px16 += image_width << 16;
-                    if (py16 < 0) py16 += image_height << 16;
-                    int px = px16 >> 16;
-                    int py = py16 >> 16;
-                    int y_offset = py * scanline_offset;
-
-                    Q_ASSERT(px >= 0 && px < image_width);
-                    Q_ASSERT(py >= 0 && py < image_height);
-
-                    *b = image_bits[y_offset + px];
-                    x += fdx;
-                    y += fdy;
-                    px16 += px_delta;
-                    if (px16 >= image_width << 16)
-                        px16 -= image_width << 16;
-                    py16 += py_delta;
-                    if (py16 >= image_height << 16)
-                        py16 -= image_height << 16;
-                    ++b;
-                }
-                func(target, buffer, l, coverage);
-                target += l;
-                length -= l;
-            }
-            ++spans;
-        }
-    } else {
-        const qreal fdx = data->m11;
-        const qreal fdy = data->m12;
-        const qreal fdw = data->m13;
-        while (count--) {
-            void *t = data->rasterBuffer->scanLine(spans->y);
-
-            uint *target = ((uint *)t) + spans->x;
-            const uint *image_bits = (const uint *)data->texture.imageData;
-
-            const qreal cx = spans->x + qreal(0.5);
-            const qreal cy = spans->y + qreal(0.5);
-
-            qreal x = data->m21 * cy + data->m11 * cx + data->dx;
-            qreal y = data->m22 * cy + data->m12 * cx + data->dy;
-            qreal w = data->m23 * cy + data->m13 * cx + data->m33;
-
-            const int coverage = (spans->coverage * data->texture.const_alpha) >> 8;
-            int length = spans->len;
-            while (length) {
-                int l = qMin(length, BufferSize);
-                const uint *end = buffer + l;
-                uint *b = buffer;
-                while (b < end) {
-                    const qreal iw = w == 0 ? 1 : 1 / w;
-                    const qreal tx = x * iw;
-                    const qreal ty = y * iw;
-                    int px = int(tx) - (tx < 0);
-                    int py = int(ty) - (ty < 0);
-
-                    px %= image_width;
-                    py %= image_height;
-                    if (px < 0) px += image_width;
-                    if (py < 0) py += image_height;
-                    int y_offset = py * scanline_offset;
-
-                    Q_ASSERT(px >= 0 && px < image_width);
-                    Q_ASSERT(py >= 0 && py < image_height);
-
-                    *b = image_bits[y_offset + px];
-                    x += fdx;
-                    y += fdy;
-                    w += fdw;
-                    //force increment to avoid /0
-                    if (!w) {
-                        w += fdw;
-                    }
-                    ++b;
-                }
-                func(target, buffer, l, coverage);
-                target += l;
-                length -= l;
-            }
-            ++spans;
-        }
-    }
-}
-
-static void blend_transformed_tiled_rgb565(int count, const QSpan *spans, void *userData)
-{
-    QSpanData *data = reinterpret_cast<QSpanData*>(userData);
-    QPainter::CompositionMode mode = data->rasterBuffer->compositionMode;
-
-    if (data->texture.format != QImage::Format_RGB16
-            || (mode != QPainter::CompositionMode_SourceOver
-                && mode != QPainter::CompositionMode_Source))
-    {
-        blend_src_generic(count, spans, userData);
-        return;
-    }
-
-    quint16 buffer[BufferSize];
-    const int image_width = data->texture.width;
-    const int image_height = data->texture.height;
-
-    if (data->fast_matrix) {
-        // The increment pr x in the scanline
-        const int fdx = (int)(data->m11 * fixed_scale);
-        const int fdy = (int)(data->m12 * fixed_scale);
-
-        while (count--) {
-            const quint8 coverage = (data->texture.const_alpha * spans->coverage) >> 8;
-            const quint8 alpha = (coverage + 1) >> 3;
-            const quint8 ialpha = 0x20 - alpha;
-            if (alpha == 0) {
-                ++spans;
-                continue;
-            }
-
-            quint16 *dest = (quint16 *)data->rasterBuffer->scanLine(spans->y) + spans->x;
-            const qreal cx = spans->x + qreal(0.5);
-            const qreal cy = spans->y + qreal(0.5);
-            int x = int((data->m21 * cy
-                         + data->m11 * cx + data->dx) * fixed_scale);
-            int y = int((data->m22 * cy
-                         + data->m12 * cx + data->dy) * fixed_scale);
-            int length = spans->len;
-
-            while (length) {
-                int l;
-                quint16 *b;
-                if (ialpha == 0) {
-                    l = length;
-                    b = dest;
-                } else {
-                    l = qMin(length, BufferSize);
-                    b = buffer;
-                }
-                const quint16 *end = b + l;
-
-                while (b < end) {
-                    int px = (x >> 16) % image_width;
-                    int py = (y >> 16) % image_height;
-
-                    if (px < 0)
-                        px += image_width;
-                    if (py < 0)
-                        py += image_height;
-
-                    *b = ((const quint16 *)data->texture.scanLine(py))[px];
-                    ++b;
-
-                    x += fdx;
-                    y += fdy;
-                }
-
-                if (ialpha != 0)
-                    blend_sourceOver_rgb16_rgb16(dest, buffer, l, alpha, ialpha);
-
-                dest += l;
-                length -= l;
-            }
-            ++spans;
-        }
-    } else {
-        const qreal fdx = data->m11;
-        const qreal fdy = data->m12;
-        const qreal fdw = data->m13;
-
-        while (count--) {
-            const quint8 coverage = (data->texture.const_alpha * spans->coverage) >> 8;
-            const quint8 alpha = (coverage + 1) >> 3;
-            const quint8 ialpha = 0x20 - alpha;
-            if (alpha == 0) {
-                ++spans;
-                continue;
-            }
-
-            quint16 *dest = (quint16 *)data->rasterBuffer->scanLine(spans->y) + spans->x;
-
-            const qreal cx = spans->x + qreal(0.5);
-            const qreal cy = spans->y + qreal(0.5);
-
-            qreal x = data->m21 * cy + data->m11 * cx + data->dx;
-            qreal y = data->m22 * cy + data->m12 * cx + data->dy;
-            qreal w = data->m23 * cy + data->m13 * cx + data->m33;
-
-            int length = spans->len;
-            while (length) {
-                int l;
-                quint16 *b;
-                if (ialpha == 0) {
-                    l = length;
-                    b = dest;
-                } else {
-                    l = qMin(length, BufferSize);
-                    b = buffer;
-                }
-                const quint16 *end = b + l;
-
-                while (b < end) {
-                    const qreal iw = w == 0 ? 1 : 1 / w;
-                    const qreal tx = x * iw;
-                    const qreal ty = y * iw;
-
-                    int px = int(tx) - (tx < 0);
-                    int py = int(ty) - (ty < 0);
-
-                    px %= image_width;
-                    py %= image_height;
-                    if (px < 0)
-                        px += image_width;
-                    if (py < 0)
-                        py += image_height;
-
-                    *b = ((const quint16 *)data->texture.scanLine(py))[px];
-                    ++b;
-
-                    x += fdx;
-                    y += fdy;
-                    w += fdw;
-                    // force increment to avoid /0
-                    if (!w)
-                        w += fdw;
-                }
-
-                if (ialpha != 0)
-                    blend_sourceOver_rgb16_rgb16(dest, buffer, l, alpha, ialpha);
-
-                dest += l;
-                length -= l;
-            }
-            ++spans;
-        }
-    }
-}
-
-
 /* Image formats here are target formats */
 static const ProcessSpans processTextureSpansARGB32PM[NBlendTypes] = {
     blend_untransformed_argb,           // Untransformed
     blend_tiled_argb,                   // Tiled
-    blend_transformed_argb,             // Transformed
-    blend_transformed_tiled_argb,       // TransformedTiled
+    blend_src_generic,                  // Transformed
+    blend_src_generic,                  // TransformedTiled
     blend_src_generic,                  // TransformedBilinear
     blend_src_generic                   // TransformedBilinearTiled
 };
@@ -5138,8 +4600,8 @@ static const ProcessSpans processTextureSpansARGB32PM[NBlendTypes] = {
 static const ProcessSpans processTextureSpansRGB16[NBlendTypes] = {
     blend_untransformed_rgb565,         // Untransformed
     blend_tiled_rgb565,                 // Tiled
-    blend_transformed_rgb565,           // Transformed
-    blend_transformed_tiled_rgb565,     // TransformedTiled
+    blend_src_generic,                  // Transformed
+    blend_src_generic,                  // TransformedTiled
     blend_src_generic,                  // TransformedBilinear
     blend_src_generic                   // TransformedBilinearTiled
 };
