@@ -120,6 +120,22 @@ static inline QQnxIntegration::Options parseOptions(const QStringList &paramList
     return options;
 }
 
+static inline int getContextCapabilities(const QStringList &paramList)
+{
+    QString contextCapabilitiesPrefix = QStringLiteral("screen-context-capabilities=");
+    int contextCapabilities = SCREEN_APPLICATION_CONTEXT;
+    for (const QString &param : paramList) {
+        if (param.startsWith(contextCapabilitiesPrefix)) {
+            QStringRef value = param.midRef(contextCapabilitiesPrefix.length());
+            bool ok = false;
+            contextCapabilities = value.toInt(&ok, 0);
+            if (!ok)
+                contextCapabilities = SCREEN_APPLICATION_CONTEXT;
+        }
+    }
+    return contextCapabilities;
+}
+
 QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     : QPlatformIntegration()
     , m_screenEventThread(0)
@@ -145,9 +161,12 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
 {
     ms_options = parseOptions(paramList);
     qIntegrationDebug();
+
     // Open connection to QNX composition manager
-    Q_SCREEN_CRITICALERROR(screen_create_context(&ms_screenContext, SCREEN_APPLICATION_CONTEXT),
-                           "Failed to create screen context");
+    if (screen_create_context(&ms_screenContext, getContextCapabilities(paramList))) {
+        qFatal("%s - Screen: Failed to create screen context - Error: %s (%i)",
+               Q_FUNC_INFO, strerror(errno), errno);
+    }
 
 #if QT_CONFIG(qqnx_pps)
     // Create/start navigator event notifier
