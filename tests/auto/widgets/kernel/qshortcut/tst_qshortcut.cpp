@@ -604,7 +604,7 @@ void tst_QShortcut::disabledItems()
 {
     clearAllShortcuts();
     mainW->activateWindow();
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowActive(mainW));
 
     /* Testing Disabled Shortcuts
        Qt::Key_M          on slot1

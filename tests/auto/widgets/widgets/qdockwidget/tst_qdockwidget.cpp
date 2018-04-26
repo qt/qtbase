@@ -579,8 +579,7 @@ void tst_QDockWidget::visibilityChanged()
     QCOMPARE(spy.count(), 0);
 
     mw.addDockWidget(Qt::RightDockWidgetArea, &dw2);
-    QTest::qWait(200);
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(spy.at(0).at(0).toBool(), true);
 }
 
@@ -672,8 +671,7 @@ void tst_QDockWidget::dockLocationChanged()
     dw.setFloating(true);
     QTest::qWait(100);
     dw.setFloating(false);
-    QTest::qWait(100);
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
              Qt::TopDockWidgetArea);
     spy.clear();
@@ -936,8 +934,7 @@ void tst_QDockWidget::task248604_infiniteResize()
     d.setContentsMargins(2, 2, 2, 2);
     d.setMinimumSize(320, 240);
     d.showNormal();
-    QTest::qWait(400);
-    QCOMPARE(d.size(), QSize(320, 240));
+    QTRY_COMPARE(d.size(), QSize(320, 240));
 }
 
 
@@ -950,7 +947,7 @@ void tst_QDockWidget::task258459_visibilityChanged()
     QSignalSpy spy1(&dock1, SIGNAL(visibilityChanged(bool)));
     QSignalSpy spy2(&dock2, SIGNAL(visibilityChanged(bool)));
     win.show();
-    QTest::qWait(200);
+    QVERIFY(QTest::qWaitForWindowActive(&win));
     QCOMPARE(spy1.count(), 1);
     QCOMPARE(spy1.first().first().toBool(), false); //dock1 is invisible
     QCOMPARE(spy2.count(), 1);

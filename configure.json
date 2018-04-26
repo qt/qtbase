@@ -552,11 +552,11 @@
             "output": [ "prepareSpec", "prepareOptions", "preparePaths", "reloadSpec" ]
         },
         "machineTuple": {
-            "condition": "!config.linux || config.android || tests.machineTuple",
+            "condition": "config.linux && !config.android && tests.machineTuple",
             "output": [ "machineTuple" ]
         },
         "commit": {
-            "condition": "features.machineTuple",
+            "condition": "features.machineTuple || true",
             "output": [ "commitOptions" ]
         },
         "android-style-assets": {

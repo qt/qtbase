@@ -1038,11 +1038,9 @@ void tst_QToolBar::accel()
 
     mw.show();
     QApplication::setActiveWindow(&mw);
-    QTest::qWait(100);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&mw));
+    QVERIFY(QTest::qWaitForWindowActive(&mw));
 
     QTest::keyClick(&mw, Qt::Key_T, Qt::AltModifier);
-    QTest::qWait(300);
 
     QTRY_COMPARE(spy.count(), 1);
 #ifdef Q_OS_MAC
@@ -1085,19 +1083,19 @@ void tst_QToolBar::task197996_visibility()
     pAction->setVisible(true);
 
     mw.show();
+    QVERIFY(QTest::qWaitForWindowActive(&mw));
 
     QVERIFY(toolBar->widgetForAction(pAction)->isVisible());
 
     toolBar->setVisible(false);
     pAction->setVisible(false);
 
+    QVERIFY(!toolBar->widgetForAction(pAction)->isVisible());
+
     toolBar->setVisible(true);
     pAction->setVisible(true);
 
-    QTest::qWait(100);
-
-    QVERIFY(toolBar->widgetForAction(pAction)->isVisible());
-
+    QTRY_VERIFY(toolBar->widgetForAction(pAction)->isVisible());
 }
 
 QTEST_MAIN(tst_QToolBar)

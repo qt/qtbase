@@ -48,6 +48,7 @@
 #include <QMdiSubWindow>
 #endif
 #include <QAbstractScrollArea>
+#include <QPainter>
 
 QT_BEGIN_NAMESPACE
 

@@ -37,6 +37,10 @@
 
     \borderedimage dirview-example.png
 
+    \quotefromfile itemviews/dirview/main.cpp
+    \skipto QCommandLineParser parser
+    \printuntil parser.positionalArguments
+
     The example supports a number of command line options.
     These options include:
     \list
@@ -47,22 +51,17 @@
             use custom directory options
     \endlist
 
-    \quotefromfile itemviews/dirview/main.cpp
-    \skipto QCommandLineParser parser
-    \printuntil parser.positionalArguments
-
-    Declares a QFileSystemModel as data model for viewing
-    the local file system. QFileSystem works with a cache, that is,
-    it is updated continually with QFileSystemWatcher on that folder.
-
     \skipto QFileSystemModel
     \printuntil tree.setModel
 
-    Creates a model/view implementation called \c tree
-    for viewing the filesystem.
+    Declares \c model as data model for reading the local filesystem.
+    \c model.setRootPath("") sets the current folder as the folder from
+    which \c model will start reading.
+    QTreeView object \c tree visualizes the filesystem in a tree structure.
 
     \skipto tree.setAnimated(false)
     \printuntil tree.setWindowTitle
 
-    Sets some formatting options for \c tree.
+    Sets layout options for animation, indentation, sorting, and sizing of the
+    filesystem tree.
 */

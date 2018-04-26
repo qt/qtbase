@@ -589,6 +589,9 @@ void tst_QWindow::childWindowPositioning_data()
 
 void tst_QWindow::childWindowPositioning()
 {
+    if (isPlatformWayland())
+        QSKIP("Wayland: This is flaky (protocol errors for xdg-shell v6). See QTBUG-67648.");
+
     const QPoint topLeftOrigin(0, 0);
 
     ColoredWindow topLevelWindowFirst(Qt::green);
