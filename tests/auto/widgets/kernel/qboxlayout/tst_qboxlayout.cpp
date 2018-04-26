@@ -227,15 +227,13 @@ void tst_QBoxLayout::setStyleShouldChangeSpacing()
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
 
-    int spacing = pb2->geometry().left() - pb1->geometry().right() - 1;
-    QCOMPARE(spacing, 6);
+    auto spacing = [&]() { return pb2->geometry().left() - pb1->geometry().right() - 1; };
+    QCOMPARE(spacing(), 6);
 
     QScopedPointer<CustomLayoutStyle> style2(new CustomLayoutStyle());
     style2->hspacing = 10;
     window.setStyle(style2.data());
-    QTest::qWait(100);
-    spacing = pb2->geometry().left() - pb1->geometry().right() - 1;
-    QCOMPARE(spacing, 10);
+    QTRY_COMPARE(spacing(), 10);
 }
 
 void tst_QBoxLayout::taskQTBUG_7103_minMaxWidthNotRespected()

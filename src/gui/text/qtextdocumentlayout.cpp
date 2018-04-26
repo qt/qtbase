@@ -2474,7 +2474,7 @@ void QTextDocumentLayoutPrivate::layoutFlow(QTextFrame::Iterator it, QTextLayout
                     QTextTableData *td = static_cast<QTextTableData *>(data(lastIt.currentFrame()));
                     QTextLayout *layout = block.layout();
 
-                    QFixed height = QFixed::fromReal(layout->lineAt(0).height());
+                    QFixed height = layout->lineCount() > 0 ? QFixed::fromReal(layout->lineAt(0).height()) : QFixed();
 
                     if (layoutStruct->pageBottom == origPageBottom) {
                         layoutStruct->y -= height;
@@ -2486,10 +2486,12 @@ void QTextDocumentLayoutPrivate::layoutFlow(QTextFrame::Iterator it, QTextLayout
                         layoutBlock(block, docPos, blockFormat, layoutStruct, layoutFrom, layoutTo, previousBlockFormatPtr);
                     }
 
-                    QPointF linePos((td->position.x + td->size.width).toReal(),
-                                    (td->position.y + td->size.height - height).toReal());
+                    if (layout->lineCount() > 0) {
+                        QPointF linePos((td->position.x + td->size.width).toReal(),
+                                        (td->position.y + td->size.height - height).toReal());
 
-                    layout->lineAt(0).setPosition(linePos - layout->position());
+                        layout->lineAt(0).setPosition(linePos - layout->position());
+                    }
                 }
 
                 if (blockFormat.pageBreakPolicy() & QTextFormat::PageBreak_AlwaysAfter)

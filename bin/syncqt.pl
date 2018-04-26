@@ -882,7 +882,6 @@ die "The -version argument is mandatory" if (!$module_version);
 $build_basedir = $out_basedir if (!defined($build_basedir));
 
 our @ignore_headers = ();
-our @ignore_for_master_contents = ();
 our @ignore_for_include_check = ();
 our @ignore_for_qt_begin_namespace_check = ();
 our @ignore_for_qt_module_check = ();
@@ -1026,10 +1025,6 @@ foreach my $lib (@modules_to_sync) {
                             $qpa_header = 1;
                         } elsif ($allheadersprivate || $thisprivate || $public_header =~ /_p(ch)?\.h$/) {
                             $public_header = 0;
-                        } else {
-                            foreach (@ignore_for_master_contents) {
-                                $public_header = 0 if($header eq $_);
-                            }
                         }
 
                         my $clean_header;

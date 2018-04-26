@@ -963,8 +963,6 @@ void tst_QMdiSubWindow::setSystemMenu()
     mainWindow.menuBar()->setNativeMenuBar(false);
     mainWindow.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
-    QTest::qWait(60);
-
 
     QTRY_VERIFY(subWindow->isVisible());
     QPoint globalPopupPos;
@@ -972,7 +970,6 @@ void tst_QMdiSubWindow::setSystemMenu()
     // Show system menu
     QVERIFY(!qApp->activePopupWidget());
     subWindow->showSystemMenu();
-    QTest::qWait(25);
     QTRY_COMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
     QTRY_COMPARE(systemMenu->mapToGlobal(QPoint(0, 0)),
                  (globalPopupPos = subWindow->mapToGlobal(subWindow->contentsRect().topLeft())) );
@@ -997,7 +994,6 @@ void tst_QMdiSubWindow::setSystemMenu()
     // Show the new system menu
     QVERIFY(!qApp->activePopupWidget());
     subWindow->showSystemMenu();
-    QTest::qWait(25);
     QTRY_COMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
     QTRY_COMPARE(systemMenu->mapToGlobal(QPoint(0, 0)), globalPopupPos);
 
@@ -1011,7 +1007,6 @@ void tst_QMdiSubWindow::setSystemMenu()
     QWidget *menuLabel = subWindow->maximizedSystemMenuIconWidget();
     QVERIFY(menuLabel);
     subWindow->showSystemMenu();
-    QTest::qWait(25);
     QTRY_COMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
      QCOMPARE(systemMenu->mapToGlobal(QPoint(0, 0)),
               (globalPopupPos = menuLabel->mapToGlobal(QPoint(0, menuLabel->y() + menuLabel->height()))));
@@ -1027,7 +1022,6 @@ void tst_QMdiSubWindow::setSystemMenu()
     QTest::qWait(150);
 
     subWindow->showSystemMenu();
-    QTest::qWait(250);
     QTRY_COMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
     // + QPoint(1, 0) because topRight() == QPoint(left() + width() -1, top())
     globalPopupPos = subWindow->mapToGlobal(subWindow->contentsRect().topRight()) + QPoint(1, 0);
@@ -1044,7 +1038,6 @@ void tst_QMdiSubWindow::setSystemMenu()
     menuLabel = subWindow->maximizedSystemMenuIconWidget();
     QVERIFY(menuLabel);
     subWindow->showSystemMenu();
-    QTest::qWait(250);
     QTRY_COMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
     globalPopupPos = menuLabel->mapToGlobal(QPoint(menuLabel->width(), menuLabel->y() + menuLabel->height()));
     globalPopupPos -= QPoint(systemMenu->sizeHint().width(), 0);
@@ -1648,8 +1641,6 @@ void tst_QMdiSubWindow::resizeTimer()
     QMdiSubWindow *subWindow = mdiArea.addSubWindow(new QWidget);
     mdiArea.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
-    QTest::qWait(300);
-
 
     EventSpy timerEventSpy(subWindow, QEvent::Timer);
     QCOMPARE(timerEventSpy.count(), 0);
@@ -1809,10 +1800,9 @@ void tst_QMdiSubWindow::closeOnDoubleClick()
     QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     subWindow->showSystemMenu();
-    QTest::qWait(200);
 
-    QPointer<QMenu> systemMenu = subWindow->systemMenu();
-    QVERIFY(systemMenu);
+    QPointer<QMenu> systemMenu;
+    QTRY_VERIFY( (systemMenu = subWindow->systemMenu()) );
     QVERIFY(systemMenu->isVisible());
 
     const QRect actionGeometry = systemMenu->actionGeometry(systemMenu->actions().at(actionIndex));

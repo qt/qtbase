@@ -183,9 +183,7 @@ void tst_QPushButton::autoRepeat()
     testWidget->setAutoRepeat( false );
     QTest::keyPress( testWidget, Qt::Key_Space );
 
-    QTest::qWait( 300 );
-
-    QVERIFY( testWidget->isDown() );
+    QTRY_VERIFY( testWidget->isDown() );
     QVERIFY( toggle_count == 0 );
     QVERIFY( press_count == 1 );
     QVERIFY( release_count == 0 );
@@ -200,13 +198,12 @@ void tst_QPushButton::autoRepeat()
     testWidget->setDown( false );
     testWidget->setAutoRepeat( true );
     QTest::keyPress( testWidget, Qt::Key_Space );
-    QTest::qWait(900);
+    QTRY_VERIFY(press_count > 3);
     QVERIFY( testWidget->isDown() );
     QVERIFY( toggle_count == 0 );
     QTest::keyRelease( testWidget, Qt::Key_Space );
     QCOMPARE(press_count, release_count);
     QCOMPARE(release_count, click_count);
-    QVERIFY(press_count > 1);
 
     // #### shouldn't I check here to see if multiple signals have been fired???
 
@@ -241,23 +238,19 @@ void tst_QPushButton::autoRepeat()
 void tst_QPushButton::pressed()
 {
     QTest::keyPress( testWidget, ' ' );
-//    QTest::qWait( 300 );
     QCOMPARE( press_count, (uint)1 );
     QCOMPARE( release_count, (uint)0 );
 
     QTest::keyRelease( testWidget, ' ' );
-//    QTest::qWait( 300 );
     QCOMPARE( press_count, (uint)1 );
     QCOMPARE( release_count, (uint)1 );
 
     QTest::keyPress( testWidget,Qt::Key_Enter );
-//    QTest::qWait( 300 );
     QCOMPARE( press_count, (uint)1 );
     QCOMPARE( release_count, (uint)1 );
 
     testWidget->setAutoDefault(true);
     QTest::keyPress( testWidget,Qt::Key_Enter );
-//    QTest::qWait( 300 );
     QCOMPARE( press_count, (uint)2 );
     QCOMPARE( release_count, (uint)2 );
     testWidget->setAutoDefault(false);
@@ -340,14 +333,8 @@ void tst_QPushButton::setAccel()
     // window and has focus
     QApplication::setActiveWindow(testWidget);
     testWidget->setFocus();
-    for (int i = 0; !testWidget->isActiveWindow() && i < 1000; ++i) {
-        testWidget->activateWindow();
-        QApplication::instance()->processEvents();
-        QTest::qWait(100);
-    }
-    QVERIFY(testWidget->isActiveWindow());
+    QVERIFY(QTest::qWaitForWindowActive(testWidget));
     QTest::keyClick( testWidget, 'A', Qt::AltModifier );
-    QTest::qWait( 50 );
     QTRY_VERIFY( click_count == 1 );
     QVERIFY( press_count == 1 );
     QVERIFY( release_count == 1 );
@@ -576,10 +563,8 @@ void tst_QPushButton::sizeHint()
         dialog->showNormal();
         tabWidget->setCurrentWidget(tab2);
         tabWidget->setCurrentWidget(tab1);
-        QTest::qWait(100);
-        QApplication::processEvents();
 
-        QCOMPARE(button1_2->size(), button2_2->size());
+        QTRY_COMPARE(button1_2->size(), button2_2->size());
     }
 }
 

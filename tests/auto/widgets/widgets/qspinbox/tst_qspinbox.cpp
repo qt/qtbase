@@ -854,12 +854,11 @@ void tst_QSpinBox::editingFinished()
     testFocusWidget.hide();
     QCOMPARE(editingFinishedSpy1.count(), 4);
     QCOMPARE(editingFinishedSpy2.count(), 4);
-    QTest::qWait(100);
 
     //task203285
     editingFinishedSpy1.clear();
     testFocusWidget.show();
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowActive(&testFocusWidget));
     box->setKeyboardTracking(false);
     qApp->setActiveWindow(&testFocusWidget);
     testFocusWidget.activateWindow();

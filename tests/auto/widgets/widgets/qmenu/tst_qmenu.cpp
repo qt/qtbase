@@ -988,18 +988,14 @@ void tst_QMenu::task258920_mouseBorder()
     const QPoint center = QApplication::desktop()->availableGeometry().center();
     menu.popup(center);
     QVERIFY(QTest::qWaitForWindowExposed(&menu));
-    QTest::qWait(100);
     QRect actionRect = menu.actionGeometry(action);
     const QPoint actionCenter = actionRect.center();
     QTest::mouseMove(&menu, actionCenter - QPoint(-10, 0));
-    QTest::qWait(30);
     QTest::mouseMove(&menu, actionCenter);
-    QTest::qWait(30);
     QTest::mouseMove(&menu, actionCenter + QPoint(10, 0));
     QTRY_COMPARE(action, menu.activeAction());
     menu.painted = false;
     QTest::mouseMove(&menu, QPoint(actionRect.center().x(), actionRect.bottom() + 1));
-    QTest::qWait(30);
     QTRY_COMPARE(static_cast<QAction*>(0), menu.activeAction());
     QTRY_VERIFY(menu.painted);
 }
@@ -1106,7 +1102,6 @@ void tst_QMenu::QTBUG7907_submenus_autoselect()
     menu.show();
     QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QTest::mouseClick(&menu, Qt::LeftButton, Qt::NoModifier, QPoint(5,5) );
-    QTest::qWait(500);
     QVERIFY(!subset.isVisible());
 }
 
@@ -1401,7 +1396,6 @@ void tst_QMenu::QTBUG_56917_wideMenuSize()
     menu.addAction(longString);
     QSize menuSizeHint = menu.sizeHint();
     menu.popup(QPoint());
-    QTest::qWait(100);
     QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QVERIFY(menu.isVisible());
     QVERIFY(menu.height() <= menuSizeHint.height());
@@ -1419,7 +1413,6 @@ void tst_QMenu::QTBUG_56917_wideMenuScreenNumber()
         QMenu menu;
         menu.addAction(longString);
         menu.popup(QApplication::desktop()->screen(i)->geometry().center());
-        QTest::qWait(100);
         QVERIFY(QTest::qWaitForWindowExposed(&menu));
         QVERIFY(menu.isVisible());
         QCOMPARE(QApplication::desktop()->screenNumber(&menu), i);

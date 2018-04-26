@@ -3850,7 +3850,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
         if(hasStyleRule(w, PseudoElement_HeaderViewSection)) {
             QRenderRule subRule = renderRule(w, opt, PseudoElement_HeaderViewSection);
             if (!subRule.hasNativeBorder() || !subRule.baseStyleCanDraw()
-                || subRule.hasBackground() || subRule.hasPalette()) {
+                || subRule.hasBackground() || subRule.hasPalette() || subRule.hasFont) {
                 ParentStyle::drawControl(ce, opt, p, w);
                 return;
             }
@@ -3887,12 +3887,14 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             QStyleOptionHeader hdr(*header);
             QRenderRule subRule = renderRule(w, opt, PseudoElement_HeaderViewSection);
             subRule.configurePalette(&hdr.palette, QPalette::ButtonText, QPalette::Button);
-            QFont oldFont = p->font();
-            if (subRule.hasFont)
+            if (subRule.hasFont) {
+                QFont oldFont = p->font();
                 p->setFont(subRule.font.resolve(p->font()));
-            baseStyle()->drawControl(ce, &hdr, p, w);
-            if (subRule.hasFont)
+                ParentStyle::drawControl(ce, &hdr, p, w);
                 p->setFont(oldFont);
+            } else {
+                baseStyle()->drawControl(ce, &hdr, p, w);
+            }
             return;
         }
         break;

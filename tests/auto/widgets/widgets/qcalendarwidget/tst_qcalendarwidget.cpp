@@ -174,12 +174,10 @@ void tst_QCalendarWidget::buttonClickCheck()
     QTest::mouseClick(button, Qt::LeftButton, Qt::NoModifier, button->rect().center(), 2);
     QVERIFY(!button->isVisible());
     QSpinBox *spinbox = object.findChild<QSpinBox *>("qt_calendar_yearedit");
-    QTest::qWait(500);
     QTest::keyClick(spinbox, '2');
     QTest::keyClick(spinbox, '0');
     QTest::keyClick(spinbox, '0');
     QTest::keyClick(spinbox, '6');
-    QTest::qWait(500);
     QWidget *widget = object.findChild<QWidget *>("qt_calendar_calendarview");
     QTest::mouseMove(widget);
     QTest::mouseClick(widget, Qt::LeftButton);
@@ -305,7 +303,6 @@ void tst_QCalendarWidget::showPrevNext()
     QCOMPARE(calWidget.monthShown(), expectedDate.month());
 
     // QTBUG-4058
-    QTest::qWait(20);
     QToolButton *button = calWidget.findChild<QToolButton *>("qt_calendar_prevmonth");
     QTest::mouseClick(button, Qt::LeftButton);
     expectedDate = expectedDate.addMonths(-1);
