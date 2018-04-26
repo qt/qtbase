@@ -74,7 +74,7 @@ protected:
     void timerEvent(QTimerEvent *event) override;
 
 private Q_SLOTS:
-    void processEventsFromScreenThread();
+    void processEvents();
 
 private:
     void handleKeyboardEvent(screen_event_t event);

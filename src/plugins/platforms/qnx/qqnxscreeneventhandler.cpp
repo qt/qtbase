@@ -197,36 +197,39 @@ void QQnxScreenEventHandler::injectKeyboardEvent(int flags, int sym, int modifie
 void QQnxScreenEventHandler::setScreenEventThread(QQnxScreenEventThread *eventThread)
 {
     m_eventThread = eventThread;
+    connect(m_eventThread, &QQnxScreenEventThread::eventsPending,
+            this, &QQnxScreenEventHandler::processEvents);
 }
 
-void QQnxScreenEventHandler::processEventsFromScreenThread()
+void QQnxScreenEventHandler::processEvents()
 {
     if (!m_eventThread)
         return;
 
-    QQnxScreenEventArray *events = m_eventThread->lock();
+    screen_event_t event = nullptr;
+    if (screen_create_event(&event) != 0)
+        return;
 
-    for (int i = 0; i < events->size(); ++i) {
-        screen_event_t event = events->at(i);
-        if (!event)
-            continue;
-        (*events)[i] = 0;
+    int count = 0;
+    for (;;) {
+        if (screen_get_event(m_eventThread->context(), event, 0) != 0)
+            break;
 
-        m_eventThread->unlock();
+        int type = SCREEN_EVENT_NONE;
+        screen_get_event_property_iv(event, SCREEN_PROPERTY_TYPE, &type);
+        if (type == SCREEN_EVENT_NONE)
+            break;
 
+        ++count;
         long result = 0;
         QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
         bool handled = dispatcher && dispatcher->filterNativeEvent(QByteArrayLiteral("screen_event_t"), event, &result);
         if (!handled)
             handleEvent(event);
-        screen_destroy_event(event);
-
-        m_eventThread->lock();
     }
 
-    events->clear();
-
-    m_eventThread->unlock();
+    m_eventThread->armEventsPending(count);
+    screen_destroy_event(event);
 }
 
 void QQnxScreenEventHandler::handleKeyboardEvent(screen_event_t event)

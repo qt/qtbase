@@ -1,5 +1,6 @@
 /***************************************************************************
 **
+** Copyright (C) 2017 QNX Software Systems. All rights reserved.
 ** Copyright (C) 2011 - 2012 Research In Motion
 ** Contact: https://www.qt.io/licensing/
 **
@@ -55,116 +56,101 @@
 #define qScreenEventThreadDebug QT_NO_QDEBUG_MACRO
 #endif
 
-QQnxScreenEventThread::QQnxScreenEventThread(screen_context_t context, QQnxScreenEventHandler *screenEventHandler)
-    : QThread(),
-      m_screenContext(context),
-      m_screenEventHandler(screenEventHandler),
-      m_quit(false)
+static const int c_screenCode = _PULSE_CODE_MINAVAIL + 0;
+static const int c_armCode = _PULSE_CODE_MINAVAIL + 1;
+static const int c_quitCode = _PULSE_CODE_MINAVAIL + 2;
+
+QQnxScreenEventThread::QQnxScreenEventThread(screen_context_t context)
+    : QThread()
+    , m_screenContext(context)
 {
-    screenEventHandler->setScreenEventThread(this);
-    connect(this, SIGNAL(eventPending()), screenEventHandler, SLOT(processEventsFromScreenThread()), Qt::QueuedConnection);
-    connect(this, SIGNAL(finished()), screenEventHandler, SLOT(processEventsFromScreenThread()), Qt::QueuedConnection);
+    m_channelId = ChannelCreate(_NTO_CHF_DISCONNECT | _NTO_CHF_UNBLOCK | _NTO_CHF_PRIVATE);
+    if (m_channelId == -1) {
+        qFatal("QQnxScreenEventThread: Can't continue without a channel");
+    }
+
+    m_connectionId = ConnectAttach(0, 0, m_channelId, _NTO_SIDE_CHANNEL, 0);
+    if (m_connectionId == -1) {
+        ChannelDestroy(m_channelId);
+        qFatal("QQnxScreenEventThread: Can't continue without a channel connection");
+    }
+
+    struct sigevent screenEvent;
+    SIGEV_PULSE_INIT(&screenEvent, m_connectionId, SIGEV_PULSE_PRIO_INHERIT, c_screenCode, 0);
+
+    screen_notify(m_screenContext, SCREEN_NOTIFY_EVENT, nullptr, &screenEvent);
 }
 
 QQnxScreenEventThread::~QQnxScreenEventThread()
 {
     // block until thread terminates
     shutdown();
-}
 
-void QQnxScreenEventThread::injectKeyboardEvent(int flags, int sym, int mod, int scan, int cap)
-{
-    QQnxScreenEventHandler::injectKeyboardEvent(flags, sym, mod, scan, cap);
-}
-
-QQnxScreenEventArray *QQnxScreenEventThread::lock()
-{
-    m_mutex.lock();
-    return &m_events;
-}
-
-void QQnxScreenEventThread::unlock()
-{
-    m_mutex.unlock();
+    ConnectDetach(m_connectionId);
+    ChannelDestroy(m_channelId);
 }
 
 void QQnxScreenEventThread::run()
 {
     qScreenEventThreadDebug("screen event thread started");
 
-    int errorCounter = 0;
-    // loop indefinitely
-    while (!m_quit) {
-        screen_event_t event;
-
-        // create screen event
-        Q_SCREEN_CHECKERROR(screen_create_event(&event), "Failed to create screen event");
-
-        // block until screen event is available
-        const int error = screen_get_event(m_screenContext, event, -1);
-        Q_SCREEN_CRITICALERROR(error, "Failed to get screen event");
-        // Only allow 50 consecutive errors before we exit the thread
-        if (error) {
-            errorCounter++;
-            if (errorCounter > 50)
-                m_quit = true;
-
-            screen_destroy_event(event);
-            continue;
-        } else {
-            errorCounter = 0;
-        }
-
-        // process received event
-        // get the event type
-        int qnxType;
-        Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_TYPE, &qnxType),
-                            "Failed to query screen event type");
-
-        if (qnxType == SCREEN_EVENT_USER) {
-            // treat all user events as shutdown requests
-            qScreenEventThreadDebug("QNX user screen event");
-            m_quit = true;
-        } else {
-            m_mutex.lock();
-            m_events << event;
-            m_mutex.unlock();
-            emit eventPending();
-        }
+    while (1) {
+        struct _pulse msg;
+        memset(&msg, 0, sizeof(msg));
+        int receiveId = MsgReceive(m_channelId, &msg, sizeof(msg), nullptr);
+        if (receiveId == 0 && msg.code == c_quitCode)
+            break;
+        else if (receiveId == 0)
+            handlePulse(msg);
+        else if (receiveId > 0)
+            qWarning() << "Unexpected message" << msg.code;
+        else
+            qWarning() << "MsgReceive error" << strerror(errno);
     }
 
     qScreenEventThreadDebug("screen event thread stopped");
+}
 
-    // cleanup
-    m_mutex.lock();
-    Q_FOREACH (screen_event_t event, m_events) {
-        screen_destroy_event(event);
+void QQnxScreenEventThread::armEventsPending(int count)
+{
+    MsgSendPulse(m_connectionId, SIGEV_PULSE_PRIO_INHERIT, c_armCode, count);
+}
+
+void QQnxScreenEventThread::handleScreenPulse(const struct _pulse &msg)
+{
+    Q_UNUSED(msg);
+
+    ++m_screenPulsesSinceLastArmPulse;
+    if (m_emitNeededOnNextScreenPulse) {
+        m_emitNeededOnNextScreenPulse = false;
+        Q_EMIT eventsPending();
     }
-    m_events.clear();
-    m_mutex.unlock();
+}
+
+void QQnxScreenEventThread::handleArmPulse(const struct _pulse &msg)
+{
+    if (msg.value.sival_int == 0 && m_screenPulsesSinceLastArmPulse == 0) {
+        m_emitNeededOnNextScreenPulse = true;
+    } else {
+        m_screenPulsesSinceLastArmPulse = 0;
+        m_emitNeededOnNextScreenPulse = false;
+        Q_EMIT eventsPending();
+    }
+}
+
+void QQnxScreenEventThread::handlePulse(const struct _pulse &msg)
+{
+    if (msg.code == c_screenCode)
+        handleScreenPulse(msg);
+    else if (msg.code == c_armCode)
+        handleArmPulse(msg);
+    else
+        qWarning() << "Unexpected pulse" << msg.code;
 }
 
 void QQnxScreenEventThread::shutdown()
 {
-    screen_event_t event;
-
-    // create screen event
-    Q_SCREEN_CHECKERROR(screen_create_event(&event),
-                        "Failed to create screen event");
-
-    // set the event type as user
-    int type = SCREEN_EVENT_USER;
-    Q_SCREEN_CHECKERROR(screen_set_event_property_iv(event, SCREEN_PROPERTY_TYPE, &type),
-                        "Failed to set screen type");
-
-    // NOTE: ignore SCREEN_PROPERTY_USER_DATA; treat all user events as shutdown events
-
-    // post event to event loop so it will wake up and die
-    Q_SCREEN_CHECKERROR(screen_send_event(m_screenContext, event, getpid()),
-                        "Failed to set screen event type");
-
-    // cleanup
-    screen_destroy_event(event);
+    MsgSendPulse(m_connectionId, SIGEV_PULSE_PRIO_INHERIT, c_quitCode, 0);
 
     qScreenEventThreadDebug("screen event thread shutdown begin");
 

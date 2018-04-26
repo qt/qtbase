@@ -164,7 +164,8 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
 #endif
 
     // Create/start event thread
-    m_screenEventThread = new QQnxScreenEventThread(ms_screenContext, m_screenEventHandler);
+    m_screenEventThread = new QQnxScreenEventThread(ms_screenContext);
+    m_screenEventHandler->setScreenEventThread(m_screenEventThread);
     m_screenEventThread->start();
 
 #if QT_CONFIG(qqnx_pps)
