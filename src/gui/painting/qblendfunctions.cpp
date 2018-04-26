@@ -430,28 +430,28 @@ struct Blend_RGB32_on_RGB32_ConstAlpha {
 };
 
 struct Blend_ARGB32_on_ARGB32_SourceAlpha {
-    inline void write(quint32 *dst, quint32 src) {
-        *dst = src + BYTE_MUL(*dst, qAlpha(~src));
+    inline void write(quint32 *dst, quint32 src)
+    {
+        blend_pixel(*dst, src);
     }
 
     inline void flush(void *) {}
 };
 
 struct Blend_ARGB32_on_ARGB32_SourceAndConstAlpha {
-    inline Blend_ARGB32_on_ARGB32_SourceAndConstAlpha(quint32 alpha) {
+    inline Blend_ARGB32_on_ARGB32_SourceAndConstAlpha(quint32 alpha)
+    {
         m_alpha = (alpha * 255) >> 8;
-        m_ialpha = 255 - m_alpha;
     }
 
-    inline void write(quint32 *dst, quint32 src) {
-        src = BYTE_MUL(src, m_alpha);
-        *dst = src + BYTE_MUL(*dst, qAlpha(~src));
+    inline void write(quint32 *dst, quint32 src)
+    {
+        blend_pixel(*dst, src, m_alpha);
     }
 
     inline void flush(void *) {}
 
     quint32 m_alpha;
-    quint32 m_ialpha;
 };
 
 void qt_scale_image_rgb32_on_rgb32(uchar *destPixels, int dbpl,
