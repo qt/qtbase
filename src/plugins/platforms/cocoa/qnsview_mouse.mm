@@ -201,9 +201,14 @@
     QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
     nativeDrag->setLastMouseEvent(theEvent, self);
 
-    Qt::KeyboardModifiers keyboardModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
-    QWindowSystemInterface::handleMouseEvent(targetView->m_platformWindow->window(), timestamp, qtWindowPoint, qtScreenPoint,
-                                             m_buttons, keyboardModifiers, Qt::MouseEventNotSynthesized);
+    const auto modifiers = [QNSView convertKeyModifiers:theEvent.modifierFlags];
+    const auto buttons = currentlyPressedMouseButtons();
+    const auto button = cocoaButton2QtButton(theEvent);
+    const auto eventType = cocoaEvent2QtMouseEvent(theEvent);
+
+    QWindowSystemInterface::handleMouseEvent(targetView->m_platformWindow->window(),
+                                             timestamp, qtWindowPoint, qtScreenPoint,
+                                             buttons, button, eventType, modifiers);
 }
 
 - (bool)handleMouseDownEvent:(NSEvent *)theEvent withButton:(int)buttonNumber
