@@ -174,7 +174,9 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, bool needRootW
 
     // If a qnxInitialWindowGroup property is set on the window we'll take this as an
     // indication that we want to create a child window and join that window group.
-    const QVariant windowGroup = window->property("qnxInitialWindowGroup");
+    QVariant windowGroup = window->property("qnxInitialWindowGroup");
+    if (!windowGroup.isValid())
+        windowGroup = window->property("_q_platform_qnxParentGroup");
 
     if (window->type() == Qt::CoverWindow) {
         // Cover windows have to be top level to be accessible to window delegate (i.e. navigator)
@@ -194,7 +196,12 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, bool needRootW
     if (window->type() == Qt::Desktop)  // A desktop widget does not need a libscreen window
         return;
 
-    if (m_isTopLevel) {
+    QVariant type = window->property("_q_platform_qnxWindowType");
+    if (type.isValid() && type.canConvert<int>()) {
+        Q_SCREEN_CHECKERROR(
+                screen_create_window_type(&m_window, m_screenContext, type.value<int>()),
+                "Could not create window");
+    } else if (m_isTopLevel) {
         Q_SCREEN_CRITICALERROR(screen_create_window(&m_window, m_screenContext),
                             "Could not create top level window"); // Creates an application window
         if (window->type() != Qt::CoverWindow) {
@@ -212,7 +219,9 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, bool needRootW
     // If the window has a qnxWindowId property, set this as the string id property. This generally
     // needs to be done prior to joining any group as it might be used by the owner of the
     // group to identify the window.
-    const QVariant windowId = window->property("qnxWindowId");
+    QVariant windowId = window->property("qnxWindowId");
+    if (!windowId.isValid())
+        windowId = window->property("_q_platform_qnxWindowId");
     if (windowId.isValid() && windowId.canConvert<QByteArray>()) {
         QByteArray id = windowId.toByteArray();
         Q_SCREEN_CHECKERROR(screen_set_window_property_cv(m_window, SCREEN_PROPERTY_ID_STRING,
