@@ -1492,10 +1492,28 @@ void tst_QColor::unpremultiply_sse4()
     // Tests that qUnpremultiply_sse4 returns the same as qUnpremultiply.
 #if QT_COMPILER_SUPPORTS_HERE(SSE4_1)
     if (qCpuHasFeature(SSE4_1)) {
+        int minorDifferences = 0;
+        for (uint a = 0; a < 256; a++) {
+            for (uint c = 0; c <= a; c++) {
+                const QRgb p = qRgba(c, a-c, c/2, a);
+                const uint u = qUnpremultiply(p);
+                const uint usse4 = qUnpremultiply_sse4(p);
+                if (u != usse4) {
+                    QCOMPARE(qAlpha(u), qAlpha(usse4));
+                    QVERIFY(qAbs(qRed(u) - qRed(usse4)) <= 1);
+                    QVERIFY(qAbs(qGreen(u) - qGreen(usse4)) <= 1);
+                    QVERIFY(qAbs(qBlue(u) - qBlue(usse4)) <= 1);
+                    ++minorDifferences;
+                }
+            }
+        }
+        // Allow a few rounding differences as long as it still obeys
+        // the qPremultiply(qUnpremultiply(x)) == x invariant
+        QVERIFY(minorDifferences <= 16 * 255);
         for (uint a = 0; a < 256; a++) {
             for (uint c = 0; c <= a; c++) {
                 QRgb p = qRgba(c, a-c, c, a);
-                QCOMPARE(qUnpremultiply(p), qUnpremultiply_sse4(p));
+                QCOMPARE(p, qPremultiply(qUnpremultiply_sse4(p)));
             }
         }
         return;

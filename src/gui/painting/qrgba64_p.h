@@ -186,7 +186,8 @@ inline QRgba64 addWithSaturation(QRgba64 a, QRgba64 b)
                                qMin(a.alpha() + b.alpha(), 65535));
 }
 
-#if defined __SSE2__
+#if QT_COMPILER_SUPPORTS_HERE(SSE2)
+QT_FUNCTION_TARGET(SSE2)
 Q_ALWAYS_INLINE uint toArgb32(__m128i v)
 {
     v = _mm_unpacklo_epi16(v, _mm_setzero_si128());

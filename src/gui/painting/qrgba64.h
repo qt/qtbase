@@ -127,6 +127,10 @@ public:
 
     Q_DECL_RELAXED_CONSTEXPR QRgba64 premultiplied() const
     {
+        if (isOpaque())
+            return *this;
+        if (isTransparent())
+            return QRgba64::fromRgba64(0);
         const quint32 a = alpha();
         const quint16 r = div_65535(red()   * a);
         const quint16 g = div_65535(green() * a);

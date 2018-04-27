@@ -43,6 +43,7 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include <private/qsimd_p.h>
 #include "qdrawhelper_p.h"
+#include "qrgba64_p.h"
 
 #ifdef __SSE2__
 
@@ -230,21 +231,31 @@ QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 #if QT_COMPILER_SUPPORTS_HERE(SSE4_1)
+QT_FUNCTION_TARGET(SSE2)
+Q_ALWAYS_INLINE void reciprocal_mul_ss(__m128 &ia, const __m128 a, float mul)
+{
+    ia = _mm_rcp_ss(a); // Approximate 1/a
+    // Improve precision of ia using Newton-Raphson
+    ia = _mm_sub_ss(_mm_add_ss(ia, ia), _mm_mul_ss(ia, _mm_mul_ss(ia, a)));
+    ia = _mm_mul_ss(ia, _mm_set_ss(mul));
+    ia = _mm_shuffle_ps(ia, ia, _MM_SHUFFLE(0,0,0,0));
+}
+
 QT_FUNCTION_TARGET(SSE4_1)
 inline QRgb qUnpremultiply_sse4(QRgb p)
 {
     const uint alpha = qAlpha(p);
-    if (alpha == 255 || alpha == 0)
+    if (alpha == 255)
         return p;
-    const uint invAlpha = qt_inv_premul_factor[alpha];
-    const __m128i via = _mm_set1_epi32(invAlpha);
-    const __m128i vr = _mm_set1_epi32(0x8000);
+    if (alpha == 0)
+        return 0;
+    const __m128 va = _mm_set1_ps(alpha);
+    __m128 via;
+    reciprocal_mul_ss(via, va, 255.0f); // Approximate 1/a
     __m128i vl = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(p));
-    vl = _mm_mullo_epi32(vl, via);
-    vl = _mm_add_epi32(vl, vr);
-    vl = _mm_srai_epi32(vl, 16);
-    vl = _mm_insert_epi32(vl, alpha, 3);
+    vl = _mm_cvtps_epi32(_mm_mul_ps(_mm_cvtepi32_ps(vl), via));
     vl = _mm_packus_epi32(vl, vl);
+    vl = _mm_insert_epi16(vl, alpha, 3);
     vl = _mm_packus_epi16(vl, vl);
     return _mm_cvtsi128_si32(vl);
 }
@@ -258,21 +269,14 @@ inline uint qConvertArgb32ToA2rgb30_sse4(QRgb p)
         return qConvertRgb32ToRgb30<PixelOrder>(p);
     if (alpha == 0)
         return 0;
-    Q_CONSTEXPR  uint mult = 255 / (255 >> 6);
-    const uint invAlpha = qt_inv_premul_factor[alpha];
+    Q_CONSTEXPR float mult = 1023.0f / (255 >> 6);
     const uint newalpha = (alpha >> 6);
-    const __m128i via = _mm_set1_epi32(invAlpha);
-    const __m128i vna = _mm_set1_epi32(mult * newalpha);
-    const __m128i vr1 = _mm_set1_epi32(0x1000);
-    const __m128i vr2 = _mm_set1_epi32(0x80);
-    __m128i vl = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(p));
-    vl = _mm_mullo_epi32(vl, via);
-    vl = _mm_add_epi32(vl, vr1);
-    vl = _mm_srli_epi32(vl, 14);
-    vl = _mm_mullo_epi32(vl, vna);
-    vl = _mm_add_epi32(vl, _mm_srli_epi32(vl, 8));
-    vl = _mm_add_epi32(vl, vr2);
-    vl = _mm_srli_epi32(vl, 8);
+    const __m128 va = _mm_set1_ps(alpha);
+    __m128 via;
+    reciprocal_mul_ss(via, va, mult * newalpha);
+    __m128i vl = _mm_cvtsi32_si128(p);
+    vl = _mm_cvtepu8_epi32(vl);
+    vl = _mm_cvtps_epi32(_mm_mul_ps(_mm_cvtepi32_ps(vl), via));
     vl = _mm_packus_epi32(vl, vl);
     uint rgb30 = (newalpha << 30);
     rgb30 |= ((uint)_mm_extract_epi16(vl, 1)) << 10;
@@ -284,6 +288,27 @@ inline uint qConvertArgb32ToA2rgb30_sse4(QRgb p)
         rgb30 |= ((uint)_mm_extract_epi16(vl, 2));
     }
     return rgb30;
+}
+
+template<enum QtPixelOrder PixelOrder>
+QT_FUNCTION_TARGET(SSE4_1)
+inline uint qConvertRgba64ToRgb32_sse4(QRgba64 p)
+{
+    if (p.isTransparent())
+        return 0;
+    __m128i vl = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&p));
+    if (!p.isOpaque()) {
+        const __m128 va = _mm_set1_ps(p.alpha());
+        __m128 via;
+        reciprocal_mul_ss(via, va, 65535.0f);
+        vl = _mm_unpacklo_epi16(vl, _mm_setzero_si128());
+        vl = _mm_cvtps_epi32(_mm_mul_ps(_mm_cvtepi32_ps(vl) , via));
+        vl = _mm_packus_epi32(vl, vl);
+        vl = _mm_insert_epi16(vl, p.alpha(), 3);
+    }
+    if (PixelOrder == PixelOrderBGR)
+        vl = _mm_shufflelo_epi16(vl, _MM_SHUFFLE(3, 0, 1, 2));
+    return toArgb32(vl);
 }
 #endif
 QT_END_NAMESPACE
