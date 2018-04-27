@@ -118,7 +118,7 @@ void DoubleToStringConverter::CreateDecimalRepresentation(
     StringBuilder* result_builder) const {
   // Create a representation that is padded with zeros if needed.
   if (decimal_point <= 0) {
-      // "0.00000decimal_rep".
+      // "0.00000decimal_rep" or "0.000decimal_rep00".
     result_builder->AddCharacter('0');
     if (digits_after_point > 0) {
       result_builder->AddCharacter('.');
@@ -129,7 +129,7 @@ void DoubleToStringConverter::CreateDecimalRepresentation(
       result_builder->AddPadding('0', remaining_digits);
     }
   } else if (decimal_point >= length) {
-    // "decimal_rep0000.00000" or "decimal_rep.0000"
+    // "decimal_rep0000.00000" or "decimal_rep.0000".
     result_builder->AddSubstring(decimal_digits, length);
     result_builder->AddPadding('0', decimal_point - length);
     if (digits_after_point > 0) {
@@ -137,7 +137,7 @@ void DoubleToStringConverter::CreateDecimalRepresentation(
       result_builder->AddPadding('0', digits_after_point);
     }
   } else {
-    // "decima.l_rep000"
+    // "decima.l_rep000".
     ASSERT(digits_after_point > 0);
     result_builder->AddSubstring(decimal_digits, decimal_point);
     result_builder->AddCharacter('.');
@@ -494,10 +494,17 @@ static double SignedZero(bool sign) {
 // because it constant-propagated the radix and concluded that the last
 // condition was always true. By moving it into a separate function the
 // compiler wouldn't warn anymore.
+#if _MSC_VER
+#pragma optimize("",off)
 static bool IsDecimalDigitForRadix(int c, int radix) {
   return '0' <= c && c <= '9' && (c - '0') < radix;
 }
-
+#pragma optimize("",on)
+#else
+static bool inline IsDecimalDigitForRadix(int c, int radix) {
+	return '0' <= c && c <= '9' && (c - '0') < radix;
+}
+#endif
 // Returns true if 'c' is a character digit that is valid for the given radix.
 // The 'a_character' should be 'a' or 'A'.
 //
@@ -852,9 +859,9 @@ double StringToDoubleConverter::StringToIeee(
         return junk_string_value_;
       }
     }
-    char sign = '+';
+    char exponen_sign = '+';
     if (*current == '+' || *current == '-') {
-      sign = static_cast<char>(*current);
+      exponen_sign = static_cast<char>(*current);
       ++current;
       if (current == end) {
         if (allow_trailing_junk) {
@@ -888,7 +895,7 @@ double StringToDoubleConverter::StringToIeee(
       ++current;
     } while (current != end && *current >= '0' && *current <= '9');
 
-    exponent += (sign == '-' ? -num : num);
+    exponent += (exponen_sign == '-' ? -num : num);
   }
 
   if (!(allow_trailing_spaces || allow_trailing_junk) && (current != end)) {

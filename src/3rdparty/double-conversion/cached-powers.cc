@@ -131,7 +131,6 @@ static const CachedPower kCachedPowers[] = {
   {UINT64_2PART_C(0xaf87023b, 9bf0ee6b), 1066, 340},
 };
 
-static const int kCachedPowersLength = ARRAY_SIZE(kCachedPowers);
 static const int kCachedPowersOffset = 348;  // -1 * the first decimal_exponent.
 static const double kD_1_LOG2_10 = 0.30102999566398114;  //  1 / lg(10)
 // Difference between the decimal exponents in the table above.
@@ -144,14 +143,12 @@ void PowersOfTenCache::GetCachedPowerForBinaryExponentRange(
     int max_exponent,
     DiyFp* power,
     int* decimal_exponent) {
-  (void)max_exponent; // Silence unused parameter warning in release builds
-  (void)kCachedPowersLength; // Silence unused parameter warning in release builds
   int kQ = DiyFp::kSignificandSize;
   double k = ceil((min_exponent + kQ - 1) * kD_1_LOG2_10);
   int foo = kCachedPowersOffset;
   int index =
       (foo + static_cast<int>(k) - 1) / kDecimalExponentDistance + 1;
-  ASSERT(0 <= index && index < kCachedPowersLength);
+  ASSERT(0 <= index && index < static_cast<int>(ARRAY_SIZE(kCachedPowers)));
   CachedPower cached_power = kCachedPowers[index];
   ASSERT(min_exponent <= cached_power.binary_exponent);
   (void) max_exponent;  // Mark variable as used.

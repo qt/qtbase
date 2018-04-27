@@ -33,19 +33,29 @@
 
 #include <assert.h>
 #ifndef ASSERT
-# if defined(WINCE) || defined(_WIN32_WCE)
-#  define ASSERT(condition)
-# else
-#  define ASSERT(condition)         \
+#define ASSERT(condition)         \
     assert(condition);
-# endif
 #endif
 #ifndef UNIMPLEMENTED
-# define UNIMPLEMENTED() (exit(-1))
+#define UNIMPLEMENTED() (abort())
+#endif
+#ifndef DOUBLE_CONVERSION_NO_RETURN
+#ifdef _MSC_VER
+#define DOUBLE_CONVERSION_NO_RETURN __declspec(noreturn)
+#else
+#define DOUBLE_CONVERSION_NO_RETURN __attribute__((noreturn))
+#endif
 #endif
 #ifndef UNREACHABLE
-# define UNREACHABLE()   (exit(-1))
+#ifdef _MSC_VER
+void DOUBLE_CONVERSION_NO_RETURN abort_noreturn();
+inline void abort_noreturn() { abort(); }
+#define UNREACHABLE()   (abort_noreturn())
+#else
+#define UNREACHABLE()   (abort())
 #endif
+#endif
+
 
 // Double operations detection based on target architecture.
 // Linux uses a 80bit wide floating point stack on x86. This induces double
@@ -62,11 +72,15 @@
     defined(__hppa__) || defined(__ia64__) || \
     defined(__mips__) || \
     defined(__powerpc__) || defined(__ppc__) || defined(__ppc64__) || \
+    defined(_POWER) || defined(_ARCH_PPC) || defined(_ARCH_PPC64) || \
     defined(__sparc__) || defined(__sparc) || defined(__s390__) || \
     defined(__SH4__) || defined(__alpha__) || \
     defined(_MIPS_ARCH_MIPS32R2) || \
-    defined(__AARCH64EL__)
+    defined(__AARCH64EL__) || defined(__aarch64__) || \
+    defined(__riscv)
 #define DOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS 1
+#elif defined(__mc68000__)
+#undef DOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS
 #elif defined(_M_IX86) || defined(__i386__) || defined(__i386)
 #if defined(_WIN32)
 // Windows uses a 64bit wide floating point stack.
@@ -172,8 +186,8 @@ template <typename T>
 class Vector {
  public:
   Vector() : start_(NULL), length_(0) {}
-  Vector(T* data, int length) : start_(data), length_(length) {
-    ASSERT(length == 0 || (length > 0 && data != NULL));
+  Vector(T* data, int len) : start_(data), length_(len) {
+    ASSERT(len == 0 || (len > 0 && data != NULL));
   }
 
   // Returns a vector using the same backing storage as this one,
@@ -215,8 +229,8 @@ class Vector {
 // buffer bounds on all operations in debug mode.
 class StringBuilder {
  public:
-  StringBuilder(char* buffer, int size)
-      : buffer_(buffer, size), position_(0) { }
+  StringBuilder(char* buffer, int buffer_size)
+      : buffer_(buffer, buffer_size), position_(0) { }
 
   ~StringBuilder() { if (!is_finalized()) Finalize(); }
 

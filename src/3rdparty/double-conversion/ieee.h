@@ -99,7 +99,7 @@ class Double {
   }
 
   double PreviousDouble() const {
-    if (d64_ == (kInfinity | kSignMask)) return -Double::Infinity();
+    if (d64_ == (kInfinity | kSignMask)) return -Infinity();
     if (Sign() < 0) {
       return Double(d64_ + 1).value();
     } else {
