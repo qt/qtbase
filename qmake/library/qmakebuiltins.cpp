@@ -1644,9 +1644,8 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                 }
                 for (ProValueMap::ConstIterator it = symbols.constBegin();
                      it != symbols.constEnd(); ++it) {
-                    const QString &ky = it.key().toQString(m_tmp1);
-                    if (!ky.startsWith(QLatin1Char('.')))
-                        newMap.insert(ProKey(parseInto + ky), it.value());
+                    if (!it.key().startsWith(QLatin1Char('.')))
+                        newMap.insert(ProKey(parseInto + it.key()), it.value());
                 }
                 m_valuemapStack.top() = newMap;
             }
@@ -1802,7 +1801,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                     } else if (opt == QLatin1String("exe")) {
                         flags |= QMakeVfs::VfsExecutable;
                     } else {
-                        evalError(fL1S("write_file(): invalid flag %1.").arg(opt.toQString(m_tmp3)));
+                        evalError(fL1S("write_file(): invalid flag %1.").arg(opt.toQStringView()));
                         return ReturnFalse;
                     }
                 }
@@ -1853,7 +1852,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                 } else if (opt == QLatin1String("sub")) {
                     mode = CacheSub;
                 } else {
-                    evalError(fL1S("cache(): invalid flag %1.").arg(opt.toQString(m_tmp3)));
+                    evalError(fL1S("cache(): invalid flag %1.").arg(opt.toQStringView()));
                     return ReturnFalse;
                 }
             }
