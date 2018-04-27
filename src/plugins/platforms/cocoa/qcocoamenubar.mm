@@ -241,6 +241,12 @@ void QCocoaMenuBar::handleReparent(QWindow *newParentWindow)
     updateMenuBarImmediately();
 }
 
+QWindow *QCocoaMenuBar::parentWindow() const
+{
+    return m_window ? m_window->window() : nullptr;
+}
+
+
 QCocoaWindow *QCocoaMenuBar::findWindowForMenubar()
 {
     if (qApp->focusWindow())

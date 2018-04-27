@@ -149,8 +149,16 @@ static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidge
     bool visible = w->isVisible();
 #if QT_CONFIG(menubar)
     if (QMenuBar *menuBar = qobject_cast<QMenuBar *>(w)) {
-        if (menuBar->isNativeMenuBar())
-            visible = true;
+        if (auto *pmb = menuBar->platformMenuBar()) {
+            if (menuBar->parentWidget()) {
+                visible = true;
+            } else {
+                if (auto *ww = qobject_cast<QWidgetWindow *>(pmb->parentWindow()))
+                    w = ww->widget(); // Good enough since we only care about the window
+                else
+                    return false; // This is not a QWidget window. We won't deliver
+            }
+        }
     }
 #endif
 

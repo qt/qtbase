@@ -60,6 +60,7 @@ public:
     void removeMenu(QPlatformMenu *menu) override;
     void syncMenu(QPlatformMenu *menuItem) override;
     void handleReparent(QWindow *newParentWindow) override;
+    QWindow *parentWindow() const override;
     QPlatformMenu *menuForTag(quintptr tag) const override;
 
     inline NSMenu *nsMenu() const
