@@ -1559,8 +1559,6 @@ QFormLayout::TakeRowResult QFormLayout::takeRow(int row)
     QFormLayoutItem *label = d->m_matrix(row, 0);
     QFormLayoutItem *field = d->m_matrix(row, 1);
 
-    Q_ASSERT(field);
-
     d->m_things.removeOne(label);
     d->m_things.removeOne(field);
     d->m_matrix.removeRow(row);
