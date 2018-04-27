@@ -45,6 +45,14 @@
 #include "QtCore/qdatetime.h"
 #if QT_CONFIG(topleveldomain)
 #include "private/qtldurl_p.h"
+#else
+QT_BEGIN_NAMESPACE
+static bool qIsEffectiveTLD(QString domain)
+{
+    // provide minimal checking by not accepting cookies on real TLDs
+    return !domain.contains(QLatin1Char('.'));
+}
+QT_END_NAMESPACE
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -356,19 +364,12 @@ bool QNetworkCookieJar::validateCookie(const QNetworkCookie &cookie, const QUrl 
     // https://tools.ietf.org/html/rfc6265#section-5.3 step 5
     if (host == domain)
         return true;
-#if QT_CONFIG(topleveldomain)
     // the check for effective TLDs makes the "embedded dot" rule from RFC 2109 section 4.3.2
     // redundant; the "leading dot" rule has been relaxed anyway, see QNetworkCookie::normalize()
     // we remove the leading dot for this check if it's present
-    if (qIsEffectiveTLD(domain))
-        return false; // not accepted
-#else
-    // provide minimal checking by not accepting cookies on real TLDs
-    if (!domain.contains(QLatin1Char('.')))
-        return false;
-#endif
-
-    return true;
+    // Normally defined in qtldurl_p.h, but uses fall-back in this file when topleveldomain isn't
+    // configured:
+    return !qIsEffectiveTLD(domain);
 }
 
 QT_END_NAMESPACE
