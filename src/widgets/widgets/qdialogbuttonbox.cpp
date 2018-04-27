@@ -858,7 +858,7 @@ void QDialogButtonBoxPrivate::_q_handleButtonClicked()
         if (!guard)
             return;
 
-        switch (buttonRole) {
+        switch (QPlatformDialogHelper::ButtonRole(buttonRole)) {
         case QPlatformDialogHelper::AcceptRole:
         case QPlatformDialogHelper::YesRole:
             emit q->accepted();
