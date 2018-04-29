@@ -347,7 +347,7 @@ inline bool QStorageIterator::next()
         data = line.split(' ');
     } while (data.count() < 3 && !file.atEnd());
 
-    if (file.atEnd())
+    if (file.atEnd() && data.count() <= 3)
         return false;
     m_device = data.at(0);
     m_rootPath = data.at(1);
