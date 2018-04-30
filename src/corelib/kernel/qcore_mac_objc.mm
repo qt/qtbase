@@ -161,6 +161,12 @@ QDebug operator<<(QDebug debug, const QMacAutoReleasePool *pool)
 }
 #endif // !QT_NO_DEBUG_STREAM
 
+bool qt_apple_isApplicationExtension()
+{
+    static bool isExtension = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSExtension"];
+    return isExtension;
+}
+
 #ifdef Q_OS_MACOS
 /*
     Ensure that Objective-C objects auto-released in main(), directly or indirectly,
