@@ -1754,7 +1754,6 @@ void tst_QMenuBar::QTBUG_57404_existingMenuItemException()
     mb->addMenu(editMenu);
     QAction *copyAction = editMenu->addAction("&Copy");
     copyAction->setShortcut(QKeySequence("Ctrl+C"));
-    QTest::ignoreMessage(QtWarningMsg, "Menu item \"&Copy\" has unsupported role QPlatformMenuItem::MenuRole(NoRole)");
     copyAction->setMenuRole(QAction::NoRole);
 
     QVERIFY(QTest::qWaitForWindowExposed(&mw2));
