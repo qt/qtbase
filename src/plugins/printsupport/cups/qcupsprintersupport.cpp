@@ -47,6 +47,13 @@
 
 #include <QtPrintSupport/QPrinterInfo>
 
+#include <QGuiApplication>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QFormLayout>
+#include <QLabel>
+#include <QLineEdit>
+
 #include <cups/ppd.h>
 #ifndef QT_LINUXBASE // LSB merges everything into cups.h
 # include <cups/language.h>
@@ -54,9 +61,74 @@
 
 QT_BEGIN_NAMESPACE
 
+static const char *getPasswordCB(const char */*prompt*/, http_t *http, const char */*method*/, const char *resource, void */*user_data*/)
+{
+    // cups doesn't free the const char * we return so keep around
+    // the last password so we don't leak memory if called multiple times.
+    static QByteArray password;
+
+    // prompt is always "Password for %s on %s? " but we can't use it since we allow the user to change the user.
+    // That is fine because cups always calls cupsUser after calling this callback.
+    // We build our own prompt with the hostname (if not localhost) and the resource that is being used
+
+    char hostname[HTTP_MAX_HOST];
+    httpGetHostname(http, hostname, HTTP_MAX_HOST);
+
+    const QString username = QString::fromLocal8Bit(cupsUser());
+
+    QDialog dialog;
+    dialog.setWindowTitle(QCoreApplication::translate("QCupsPrinterSupport", "Authentication Needed"));
+
+    QFormLayout *layout = new QFormLayout(&dialog);
+    layout->setSizeConstraint(QLayout::SetFixedSize);
+
+    QLineEdit *usernameLE = new QLineEdit();
+    usernameLE->setText(username);
+
+    QLineEdit *passwordLE = new QLineEdit();
+    passwordLE->setEchoMode(QLineEdit::Password);
+
+    QString resourceString = QString::fromLocal8Bit(resource);
+    if (resourceString.startsWith(QStringLiteral("/printers/")))
+        resourceString = resourceString.mid(QStringLiteral("/printers/").length());
+
+    QLabel *label = new QLabel();
+    if (hostname == QStringLiteral("localhost")) {
+        label->setText(QCoreApplication::translate("QCupsPrinterSupport", "Authentication needed to use %1.").arg(resourceString));
+    } else {
+        label->setText(QCoreApplication::translate("QCupsPrinterSupport", "Authentication needed to use %1 on %2.").arg(resourceString).arg(hostname));
+        label->setWordWrap(true);
+    }
+
+    layout->addRow(label);
+    layout->addRow(new QLabel(QCoreApplication::translate("QCupsPrinterSupport", "Username:")), usernameLE);
+    layout->addRow(new QLabel(QCoreApplication::translate("QCupsPrinterSupport", "Password:")), passwordLE);
+
+    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    layout->addRow(buttonBox);
+
+    QObject::connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    QObject::connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    passwordLE->setFocus();
+
+    if (dialog.exec() != QDialog::Accepted)
+        return nullptr;
+
+    if (usernameLE->text() != username)
+        cupsSetUser(usernameLE->text().toLocal8Bit().constData());
+
+    password = passwordLE->text().toLocal8Bit();
+
+    return password.constData();
+}
+
 QCupsPrinterSupport::QCupsPrinterSupport()
     : QPlatformPrinterSupport()
 {
+    // Only show password dialog if GUI application
+    if (qobject_cast<QGuiApplication*>(QCoreApplication::instance()))
+        cupsSetPasswordCB2(getPasswordCB, nullptr /* user_data */ );
 }
 
 QCupsPrinterSupport::~QCupsPrinterSupport()
