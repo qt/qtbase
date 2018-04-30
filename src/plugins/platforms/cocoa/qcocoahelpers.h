@@ -80,7 +80,7 @@ QColor qt_mac_toQColor(CGColorRef color);
 // Creates a mutable shape, it's the caller's responsibility to release.
 HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region);
 
-OSStatus qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage);
+void qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage);
 
 NSDragOperation qt_mac_mapDropAction(Qt::DropAction action);
 NSDragOperation qt_mac_mapDropActions(Qt::DropActions actions);

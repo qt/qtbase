@@ -91,13 +91,14 @@ class QTornOffMenu : public QMenu
         void setMenuSize(const QRect &screen) {
             Q_Q(QTornOffMenu);
             QSize size = q->sizeHint();
-            if (scroll && (size.height() > screen.height() - titleBarHeight || size.width() > screen.width())) {
+            const int frameAddedHeight = q->frameGeometry().height() - q->geometry().height();
+            if (scroll && (size.height() + frameAddedHeight > screen.height() || size.width() > screen.width())) {
                 const int desktopFrame = q->style()->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, 0, q);
                 const int fw = q->style()->pixelMetric(QStyle::PM_MenuPanelWidth, 0, q);
                 const int hmargin = q->style()->pixelMetric(QStyle::PM_MenuHMargin, 0, q);
                 scroll->scrollFlags |= uint(QMenuPrivate::QMenuScroller::ScrollDown);
                 size.setWidth(qMin(actionRects.at(getLastVisibleAction()).right() + fw + hmargin + rightmargin + 1, screen.width()));
-                size.setHeight(screen.height() - desktopFrame * 2 - titleBarHeight);
+                size.setHeight(screen.height() - desktopFrame * 2 - frameAddedHeight);
             }
             q->setFixedSize(size);
         }
@@ -106,7 +107,6 @@ class QTornOffMenu : public QMenu
         QPointer<QMenu> causedMenu;
         QVector<QPointer<QWidget> > causedStack;
         bool initialized;
-        int titleBarHeight;
     };
 
 public:
@@ -125,10 +125,6 @@ public:
         setStyleSheet(p->styleSheet());
         if (style() != p->style())
             setStyle(p->style());
-
-        QStyleOption opt;
-        opt.init(this);
-        d->titleBarHeight = style()->pixelMetric(QStyle::PM_TitleBarHeight, &opt, this);
 
         int leftMargin, topMargin, rightMargin, bottomMargin;
         p->getContentsMargins(&leftMargin, &topMargin, &rightMargin, &bottomMargin);
@@ -292,7 +288,8 @@ int QMenuPrivate::scrollerHeight() const
 //Windows and KDE allows menus to cover the taskbar, while GNOME and Mac don't
 QRect QMenuPrivate::popupGeometry(const QWidget *widget) const
 {
-    if (QGuiApplicationPrivate::platformTheme() &&
+    if ((widget->windowFlags() & Qt::Tool) != Qt::Tool && // Torn-off menus are different
+            QGuiApplicationPrivate::platformTheme() &&
             QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool()) {
         return QApplication::desktop()->screenGeometry(widget);
     } else {
@@ -359,11 +356,11 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
 
     // Torn off menu windows should be adjusted by their frame height, otherwise some
     // window managers may behave unexpectedly if the window is taller than the screen.
-    int frameHeight = 0;
+    int frameAddedHeight = 0;
     if (!tearoff && (q->windowFlags() & Qt::WindowType_Mask) == Qt::Tool)
-        frameHeight = q->geometry().top() - q->frameGeometry().top();
+        frameAddedHeight = q->frameGeometry().height() - q->geometry().height();
 
-    const int column_max_y = screen.height() - 2 * deskFw - (vmargin + bottommargin + fw + frameHeight);
+    const int column_max_y = screen.height() - 2 * deskFw - (vmargin + bottommargin + fw + frameAddedHeight);
     int max_column_width = 0;
     int y = base_y;
 
@@ -1289,7 +1286,10 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
             if (e->type() == QEvent::MouseButtonRelease) {
                 if (!tornPopup)
                     tornPopup = new QTornOffMenu(q);
-                tornPopup->setGeometry(q->geometry());
+
+                // The torn-off menu should be of the right size. Make sure its titlebar is within the screen's bounds.
+                const auto frameOffset = tornPopup->geometry().topLeft() - tornPopup->frameGeometry().topLeft();
+                tornPopup->setGeometry(q->geometry().translated(frameOffset));
                 tornPopup->show();
                 hideUpToMenuBar();
             }
