@@ -306,6 +306,8 @@ bool QFileInfoPrivate::isConnected() const {
     refreshes the file information: refresh(). If you want to switch
     off a QFileInfo's caching and force it to access the file system
     every time you request information from it call setCaching(false).
+    For Windows, getAllMetadata() can be used to improve performance
+    of searching file information.
 
     \sa QDir, QFile
 */
@@ -1408,6 +1410,24 @@ void QFileInfo::setCaching(bool enable)
 {
     Q_D(QFileInfo);
     d->cache_enabled = enable;
+}
+
+/*!
+    Returns all the supported file information internally. Currently, it is only
+    supported on Windows.
+*/
+bool QFileInfo::getAllMetadata() const
+{
+    Q_D(const QFileInfo);
+
+    if (d->fileEngine == 0) {
+#if defined(Q_OS_WIN)
+        return QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData,
+                                               QFileSystemMetaData::Permissions |
+                                               QFileSystemMetaData::LinkType);
+#endif
+    }
+    return false;
 }
 
 /*!

@@ -37,12 +37,14 @@
 #include "qxcbimage.h"
 #include "qnamespace.h"
 #include "qxcbxsettings.h"
+#include "qxcbintegration.h"
 
 #include <stdio.h>
 
 #include <QDebug>
 
 #include <qpa/qwindowsysteminterface.h>
+#include <qpa/qplatformservices.h>
 #include <private/qmath_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 
@@ -121,6 +123,23 @@ void QXcbVirtualDesktop::subscribeToXFixesSelectionNotify()
     }
 }
 
+/*! \internal
+
+    Using _NET_WORKAREA to calculate the available desktop geometry on multi-head systems (systems
+    with more than one monitor) is unreliable. Different WMs have different interpretations of what
+    _NET_WORKAREA means with multiple attached monitors. This gets worse when monitors have
+    different dimensions and/or screens are not virtually aligned. In Qt we want the available
+    geometry per monitor (QScreen), not desktop (represented by _NET_WORKAREA). WM specification
+    does not have an atom for this. Thus, QScreen is limted by the lack of support from underlying
+    system.
+
+    One option could be that Qt does WM's job of calculating this by subtracting geometries of
+    _NET_WM_STRUT_PARTIAL and windows where _NET_WM_WINDOW_TYPE(ATOM) = _NET_WM_WINDOW_TYPE_DOCK.
+    But this won't work on Gnome 3 shell, as it seems that on this desktop environment tool panel
+    is painted directly on the root window. Maybe there is some Gnome/GTK API that could be used
+    to get height of the panel, but I did not find one. Maybe other WMs have their own tricks, so
+    the reliability of this approach is questionable.
+ */
 QRect QXcbVirtualDesktop::getWorkArea() const
 {
     QRect r;
@@ -393,6 +412,20 @@ quint8 QXcbScreen::depthOfVisual(xcb_visualid_t visualid) const
     if (it == m_visualDepths.constEnd())
         return 0;
     return *it;
+}
+
+QRect QXcbScreen::availableGeometry() const
+{
+    static bool isGnome = [this]() {
+        QXcbIntegration *integration = QXcbIntegration::instance();
+        QByteArray desktopEnvironment = integration->services()->desktopEnvironment();
+        return desktopEnvironment.toUpper().contains("GNOME");
+    }();
+    static bool enforceNetWorkarea = !qEnvironmentVariableIsEmpty("QT_RELY_ON_NET_WORKAREA_ATOM");
+    bool isMultiHeadSystem = virtualSiblings().length() > 1;
+    // FIXME: workaround for QTBUG-60513.
+    bool useScreenGeometry = isGnome && isMultiHeadSystem && !enforceNetWorkarea;
+    return useScreenGeometry ? m_geometry : m_availableGeometry;
 }
 
 QImage::Format QXcbScreen::format() const

@@ -341,6 +341,9 @@ QRect QScreen::geometry() const
 
   The available geometry is the geometry excluding window manager reserved areas
   such as task bars and system menus.
+
+  Note, on X11 this value currently can not always be trusted as window managers don't
+  expose the available geometry in a reliable way on systems with multiple screens.
 */
 QRect QScreen::availableGeometry() const
 {

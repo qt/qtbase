@@ -4826,6 +4826,8 @@ void tst_QWidget::windowMoveResize_data()
 
 void tst_QWidget::windowMoveResize()
 {
+    qDebug() << "platform" << m_platform;
+    qDebug() << "XDG_CURRENT_DESKTOP" << qgetenv("XDG_CURRENT_DESKTOP");
     if (m_platform == QStringLiteral("xcb"))
          QSKIP("X11: Skip this test due to Window manager positioning issues.");
     if (m_platform == QStringLiteral("wayland"))
