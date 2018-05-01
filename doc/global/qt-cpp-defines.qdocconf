@@ -221,7 +221,7 @@ Cpp.ignoredirectives    += \
 
 # Qt 6: Remove
 falsehoods              += \
-                          "QT_VERSION >= QT_VERSION_CHECK\\(6,0,0\\)"
+                          "QT_VERSION >= QT_VERSION_CHECK\\(\\s*6\\s*,\\s*0\\s*,\\s*0\\s*\\)"
 
 
 excludefiles += \
