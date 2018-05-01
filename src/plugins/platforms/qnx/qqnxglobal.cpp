@@ -45,9 +45,9 @@ QT_BEGIN_NAMESPACE
 
 void qScreenCheckError(int rc, const char *funcInfo, const char *message, bool critical)
 {
-    if (!rc && (QQnxIntegration::options() & QQnxIntegration::AlwaysFlushScreenContext)
-            && QQnxIntegration::screenContext() != 0) {
-        rc = screen_flush_context(QQnxIntegration::screenContext(), 0);
+    if (!rc && (QQnxIntegration::instance()->options() & QQnxIntegration::AlwaysFlushScreenContext)
+            && QQnxIntegration::instance()->screenContext() != 0) {
+        rc = screen_flush_context(QQnxIntegration::instance()->screenContext(), 0);
     }
 
     if (Q_UNLIKELY(rc)) {

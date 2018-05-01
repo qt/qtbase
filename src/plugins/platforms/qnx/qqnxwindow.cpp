@@ -271,7 +271,7 @@ QQnxWindow::~QQnxWindow()
     Q_ASSERT(m_childWindows.size() == 0);
 
     // Remove from plugin's window mapper
-    QQnxIntegration::removeWindow(m_window);
+    QQnxIntegration::instance()->removeWindow(m_window);
 
     // Remove from parent's Hierarchy.
     removeFromParent();
@@ -480,7 +480,7 @@ void QQnxWindow::setScreen(QQnxScreen *platformScreen)
         qWindowDebug("Moving window to different screen");
         m_screen->removeWindow(this);
 
-        if ((QQnxIntegration::options() & QQnxIntegration::RootWindow)) {
+        if ((QQnxIntegration::instance()->options() & QQnxIntegration::RootWindow)) {
             screen_leave_window_group(m_window);
         }
     }
@@ -735,7 +735,7 @@ void QQnxWindow::initWindow()
         m_exposed = false;
 
     // Add window to plugin's window mapper
-    QQnxIntegration::addWindow(m_window, window());
+    QQnxIntegration::instance()->addWindow(m_window, window());
 
     // Qt never calls these setters after creating the window, so we need to do that ourselves here
     setWindowState(window()->windowState());
@@ -832,7 +832,7 @@ void QQnxWindow::windowPosted()
 bool QQnxWindow::shouldMakeFullScreen() const
 {
     return ((static_cast<QQnxScreen *>(screen())->rootWindow() == this)
-            && (QQnxIntegration::options() & QQnxIntegration::FullScreenApplication));
+            && (QQnxIntegration::instance()->options() & QQnxIntegration::FullScreenApplication));
 }
 
 QT_END_NAMESPACE
