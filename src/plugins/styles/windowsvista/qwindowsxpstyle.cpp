@@ -79,7 +79,9 @@
 #if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
 #endif
+#if QT_CONFIG(toolbar)
 #include <qtoolbar.h>
+#endif
 #include <qlabel.h>
 #include <qvarlengtharray.h>
 #include <qdebug.h>
@@ -3315,12 +3317,12 @@ int QWindowsXPStyle::pixelMetric(PixelMetric pm, const QStyleOption *option, con
         res = 160;
         break;
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     case PM_ToolBarHandleExtent:
         res = int(QStyleHelper::dpiScaled(8.));
         break;
 
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
     case PM_DockWidgetSeparatorExtent:
     case PM_DockWidgetTitleMargin:
         res = int(QStyleHelper::dpiScaled(4.));

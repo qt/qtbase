@@ -324,10 +324,8 @@ public:
 public slots:
     void cleanup();
 private slots:
-#ifndef Q_CC_HPACC
     void fromStdString();
     void toStdString();
-#endif
     void check_QTextIOStream();
     void check_QTextStream();
     void check_QDataStream();
@@ -4098,8 +4096,6 @@ void tst_QString::setRawData()
     QVERIFY(cstr.data_ptr() != csd);
 }
 
-#ifndef Q_CC_HPACC
-// This test crashes on HP-UX with aCC (not supported)
 void tst_QString::fromStdString()
 {
     std::string stroustrup = "foo";
@@ -4110,10 +4106,7 @@ void tst_QString::fromStdString()
     QString qtnull = QString::fromStdString( stdnull );
     QCOMPARE( qtnull.size(), int(stdnull.size()) );
 }
-#endif
 
-#ifndef Q_CC_HPACC
-// This test crashes on HP-UX with aCC (not supported)
 void tst_QString::toStdString()
 {
     QString nord = "foo";
@@ -4130,7 +4123,6 @@ void tst_QString::toStdString()
     std::string stdnull = qtnull.toStdString();
     QCOMPARE( int(stdnull.size()), qtnull.size() );
 }
-#endif
 
 void tst_QString::utf8()
 {

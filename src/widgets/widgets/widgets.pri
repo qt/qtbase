@@ -3,25 +3,16 @@
 HEADERS += \
         widgets/qframe.h \
         widgets/qframe_p.h \
-        widgets/qtoolbar.h \
-        widgets/qtoolbar_p.h \
-        widgets/qtoolbarlayout_p.h \
-        widgets/qtoolbarseparator_p.h \
         widgets/qabstractscrollarea.h \
         widgets/qabstractscrollarea_p.h \
         widgets/qfocusframe.h \
-        widgets/qwidgetanimator_p.h \
-        widgets/qtoolbararealayout_p.h
+        widgets/qwidgetanimator_p.h
 
 SOURCES += \
         widgets/qframe.cpp \
-        widgets/qtoolbar.cpp \
-        widgets/qtoolbarlayout.cpp \
-        widgets/qtoolbarseparator.cpp \
         widgets/qabstractscrollarea.cpp \
         widgets/qfocusframe.cpp \
-        widgets/qwidgetanimator.cpp \
-        widgets/qtoolbararealayout.cpp
+        widgets/qwidgetanimator.cpp
 
 qtConfig(abstractbutton) {
     HEADERS += \
@@ -324,6 +315,21 @@ qtConfig(textbrowser) {
 qtConfig(tabwidget) {
     HEADERS += widgets/qtabwidget.h
     SOURCES += widgets/qtabwidget.cpp
+}
+
+qtConfig(toolbar) {
+    HEADERS += \
+        widgets/qtoolbar.h \
+        widgets/qtoolbar_p.h \
+        widgets/qtoolbararealayout_p.h \
+        widgets/qtoolbarlayout_p.h \
+        widgets/qtoolbarseparator_p.h
+
+    SOURCES += \
+        widgets/qtoolbar.cpp \
+        widgets/qtoolbarlayout.cpp \
+        widgets/qtoolbararealayout.cpp \
+        widgets/qtoolbarseparator.cpp
 }
 
 qtConfig(toolbox) {

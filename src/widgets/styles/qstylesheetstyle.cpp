@@ -111,7 +111,9 @@
 #include "qdrawutil.h"
 
 #include <limits.h>
+#if QT_CONFIG(toolbar)
 #include <QtWidgets/qtoolbar.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -1979,7 +1981,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
             if (frm->features & QStyleOptionFrame::Flat)
                 extraClass |= PseudoClass_Flat;
         }
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
         else if (const QStyleOptionToolBar *tb = qstyleoption_cast<const QStyleOptionToolBar *>(opt)) {
             if (tb->toolBarArea == Qt::LeftToolBarArea)
                 extraClass |= PseudoClass_Left;
@@ -1999,7 +2001,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
             else if (tb->positionWithinLine == QStyleOptionToolBar::OnlyOne)
                 extraClass |= PseudoClass_OnlyOne;
         }
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 #if QT_CONFIG(toolbox)
         else if (const QStyleOptionToolBox *tb = qstyleoption_cast<const QStyleOptionToolBox *>(opt)) {
             if (tb->position == QStyleOptionToolBox::OnlyOneTab)
@@ -3594,13 +3596,13 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
         if (rule.hasBorder()) {
             rule.drawBorder(p, rule.borderRect(opt->rect));
         } else {
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
             if (const QStyleOptionToolBar *tb = qstyleoption_cast<const QStyleOptionToolBar *>(opt)) {
                 QStyleOptionToolBar newTb(*tb);
                 newTb.rect = rule.borderRect(opt->rect);
                 baseStyle()->drawControl(ce, &newTb, p, w);
             }
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
         }
         return;
 
@@ -5946,12 +5948,12 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
         return positionRect(w, subRule, subRule2, pe, opt->rect, opt->direction);
                                    }
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     case SE_ToolBarHandle:
         if (hasStyleRule(w, PseudoElement_ToolBarHandle))
             return ParentStyle::subElementRect(se, opt, w);
         break;
-#endif //QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 
     // On mac we make pixel adjustments to layouts which are not
     // desireable when you have custom style sheets on them

@@ -59,8 +59,6 @@
 #include "qtoolbarlayout_p.h"
 #include "qtoolbarseparator_p.h"
 
-#ifndef QT_NO_TOOLBAR
-
 QT_BEGIN_NAMESPACE
 
 // qmainwindow.cpp
@@ -753,5 +751,3 @@ QToolBarItem *QToolBarLayout::createItem(QAction *action)
 QT_END_NAMESPACE
 
 #include "moc_qtoolbarlayout_p.cpp"
-
-#endif // QT_NO_TOOLBAR

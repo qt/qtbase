@@ -45,7 +45,9 @@
 #if QT_CONFIG(dockwidget)
 #include "qdockwidget.h"
 #endif
+#if QT_CONFIG(toolbar)
 #include "qtoolbar.h"
+#endif
 
 #include <qapplication.h>
 #include <qmenu.h>
@@ -61,7 +63,9 @@
 #include <qpainter.h>
 
 #include <private/qwidget_p.h>
+#if QT_CONFIG(toolbar)
 #include "qtoolbar_p.h"
+#endif
 #include "qwidgetanimator_p.h"
 #ifdef Q_OS_OSX
 #include <qpa/qplatformnativeinterface.h>
@@ -706,7 +710,7 @@ Qt::DockWidgetArea QMainWindow::corner(Qt::Corner corner) const
 { return d_func()->layout->corner(corner); }
 #endif
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
 
 static bool checkToolBarArea(Qt::ToolBarArea area, const char *where)
 {
@@ -874,7 +878,7 @@ bool QMainWindow::toolBarBreak(QToolBar *toolbar) const
     return d_func()->layout->toolBarBreak(toolbar);
 }
 
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 
 #if QT_CONFIG(dockwidget)
 
@@ -1312,7 +1316,7 @@ bool QMainWindow::event(QEvent *event)
         return true;
     switch (event->type()) {
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
         case QEvent::ToolBarChange: {
             d->layout->toggleToolBarsVisible();
             return true;
@@ -1344,7 +1348,7 @@ bool QMainWindow::event(QEvent *event)
     return QWidget::event(event);
 }
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
 
 /*!
     \property QMainWindow::unifiedTitleAndToolBarOnMac
@@ -1389,7 +1393,7 @@ bool QMainWindow::unifiedTitleAndToolBarOnMac() const
     return false;
 }
 
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 
 /*!
     \internal
@@ -1435,7 +1439,7 @@ void QMainWindow::contextMenuEvent(QContextMenuEvent *event)
             break;
         }
 #endif // QT_CONFIG(dockwidget)
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
         if (QToolBar *tb = qobject_cast<QToolBar *>(child)) {
             if (tb->parentWidget() != this)
                 return;
@@ -1506,7 +1510,7 @@ QMenu *QMainWindow::createPopupMenu()
         menu->addSeparator();
     }
 #endif // QT_CONFIG(dockwidget)
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     QList<QToolBar *> toolbars = findChildren<QToolBar *>();
     if (toolbars.size()) {
         if (!menu)

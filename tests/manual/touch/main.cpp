@@ -47,8 +47,8 @@
 #include <QDebug>
 #include <QTextStream>
 
-bool optIgnoreTouch = false;
-QVector<Qt::GestureType> optGestures;
+static bool optIgnoreTouch = false;
+static QVector<Qt::GestureType> optGestures;
 
 static inline void drawEllipse(const QPointF &center, qreal hDiameter, qreal vDiameter, const QColor &color, QPainter &painter)
 {
@@ -275,10 +275,10 @@ class TouchTestWidget : public QWidget {
     Q_OBJECT
     Q_PROPERTY(bool drawPoints READ drawPoints WRITE setDrawPoints)
 public:
-    explicit TouchTestWidget(QWidget *parent = 0) : QWidget(parent), m_drawPoints(true)
+    explicit TouchTestWidget(QWidget *parent = nullptr) : QWidget(parent), m_drawPoints(true)
     {
         setAttribute(Qt::WA_AcceptTouchEvents);
-        foreach (Qt::GestureType t, optGestures)
+        for (Qt::GestureType t : optGestures)
             grabGesture(t);
     }
 
@@ -337,10 +337,11 @@ bool TouchTestWidget::event(QEvent *event)
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
         if (m_drawPoints) {
-            foreach (const QTouchEvent::TouchPoint &p, static_cast<const QTouchEvent *>(event)->touchPoints())
+            for (const QTouchEvent::TouchPoint &p : static_cast<const QTouchEvent *>(event)->touchPoints())
                 m_points.append(Point(p.pos(), TouchPoint, Qt::MouseEventNotSynthesized, p.ellipseDiameters()));
             update();
         }
+        Q_FALLTHROUGH();
     case QEvent::TouchEnd:
         if (optIgnoreTouch)
             event->ignore();
@@ -358,7 +359,8 @@ bool TouchTestWidget::event(QEvent *event)
 
 void TouchTestWidget::handleGestureEvent(QGestureEvent *gestureEvent)
 {
-    foreach (QGesture *gesture, gestureEvent->gestures()) {
+    const auto gestures = gestureEvent->gestures();
+    for (QGesture *gesture : gestures) {
         if (optGestures.contains(gesture->gestureType())) {
             switch (gesture->state()) {
             case Qt::NoGesture:
@@ -389,7 +391,7 @@ void TouchTestWidget::paintEvent(QPaintEvent *)
     const QRectF geom = QRectF(QPointF(0, 0), QSizeF(size()));
     painter.fillRect(geom, Qt::white);
     painter.drawRect(QRectF(geom.topLeft(), geom.bottomRight() - QPointF(1, 1)));
-    foreach (const Point &point, m_points) {
+    for (const Point &point : qAsConst(m_points)) {
         if (geom.contains(point.pos)) {
             if (point.type == MouseRelease)
                 drawEllipse(point.pos, point.horizontalDiameter, point.verticalDiameter, point.color(), painter);
@@ -397,7 +399,7 @@ void TouchTestWidget::paintEvent(QPaintEvent *)
                 fillEllipse(point.pos, point.horizontalDiameter, point.verticalDiameter, point.color(), painter);
         }
     }
-    foreach (const GesturePtr &gp, m_gestures)
+    for (const GesturePtr &gp : qAsConst(m_gestures))
         gp->draw(geom, painter);
 }
 
@@ -429,24 +431,24 @@ MainWindow::MainWindow()
     QMenu *fileMenu = menuBar()->addMenu("File");
     QAction *dumpDeviceAction = fileMenu->addAction(QStringLiteral("Dump devices"));
     dumpDeviceAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
-    connect(dumpDeviceAction, SIGNAL(triggered()), this, SLOT(dumpTouchDevices()));
+    connect(dumpDeviceAction, &QAction::triggered, this, &MainWindow::dumpTouchDevices);
     toolBar->addAction(dumpDeviceAction);
     QAction *clearLogAction = fileMenu->addAction(QStringLiteral("Clear Log"));
     clearLogAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L));
-    connect(clearLogAction, SIGNAL(triggered()), m_logTextEdit, SLOT(clear()));
+    connect(clearLogAction, &QAction::triggered, m_logTextEdit, &QPlainTextEdit::clear);
     toolBar->addAction(clearLogAction);
     QAction *toggleDrawPointAction = fileMenu->addAction(QStringLiteral("Draw Points"));
     toggleDrawPointAction->setCheckable(true);
     toggleDrawPointAction->setChecked(m_touchWidget->drawPoints());
-    connect(toggleDrawPointAction, SIGNAL(toggled(bool)), m_touchWidget, SLOT(setDrawPoints(bool)));
+    connect(toggleDrawPointAction, &QAction::toggled, m_touchWidget, &TouchTestWidget::setDrawPoints);
     toolBar->addAction(toggleDrawPointAction);
     QAction *clearPointAction = fileMenu->addAction(QStringLiteral("Clear Points"));
     clearPointAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_P));
-    connect(clearPointAction, SIGNAL(triggered()), m_touchWidget, SLOT(clearPoints()));
+    connect(clearPointAction, &QAction::triggered, m_touchWidget, &TouchTestWidget::clearPoints);
     toolBar->addAction(clearPointAction);
     QAction *quitAction = fileMenu->addAction(QStringLiteral("Quit"));
     quitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
-    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
+    connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
     toolBar->addAction(quitAction);
 
     QSplitter *mainSplitter = new QSplitter(Qt::Vertical, this);
@@ -541,7 +543,7 @@ int main(int argc, char *argv[])
             : static_cast<QObject *>(w.touchWidget());
     EventFilter *filter = new EventFilter(eventTypes, filterTarget);
     filterTarget->installEventFilter(filter);
-    QObject::connect(filter, SIGNAL(eventReceived(QString)), &w, SLOT(appendToLog(QString)));
+    QObject::connect(filter, &EventFilter::eventReceived, &w, &MainWindow::appendToLog);
 
     return a.exec();
 }

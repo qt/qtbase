@@ -311,9 +311,9 @@ static inline bool isTextFile(const QByteArray &data)
     if (data.startsWith(bigEndianBOM) || data.startsWith(littleEndianBOM))
         return true;
 
-    // Check the first 32 bytes (see shared-mime spec)
+    // Check the first 128 bytes (see shared-mime spec)
     const char *p = data.constData();
-    const char *e = p + qMin(32, data.size());
+    const char *e = p + qMin(128, data.size());
     for ( ; p < e; ++p) {
         if ((unsigned char)(*p) < 32 && *p != 9 && *p !=10 && *p != 13)
             return false;

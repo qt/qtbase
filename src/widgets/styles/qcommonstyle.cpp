@@ -81,7 +81,9 @@
 #if QT_CONFIG(tabwidget)
 #include <qtabwidget.h>
 #endif
+#if QT_CONFIG(toolbar)
 #include <qtoolbar.h>
+#endif
 #if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
 #endif
@@ -276,7 +278,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             }
         }
         break;
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     case PE_PanelMenuBar:
         if (widget && qobject_cast<QToolBar *>(widget->parentWidget()))
             break;
@@ -295,7 +297,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         break;
     case PE_PanelToolBar:
        break;
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 #if QT_CONFIG(progressbar)
     case PE_IndicatorProgressChunk:
         {
@@ -477,7 +479,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         }
         break;
 #endif // QT_CONFIG(dockwidget)
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     case PE_IndicatorToolBarHandle:
         p->save();
         p->translate(opt->rect.x(), opt->rect.y());
@@ -515,7 +517,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             qDrawShadeLine(p, p1, p2, opt->palette, 1, 1, 0);
             break;
         }
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 #if QT_CONFIG(spinbox)
     case PE_IndicatorSpinPlus:
     case PE_IndicatorSpinMinus: {
@@ -2153,7 +2155,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         }
         break;
 #endif // QT_CONFIG(combobox)
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     case CE_ToolBar:
         if (const QStyleOptionToolBar *toolBar = qstyleoption_cast<const QStyleOptionToolBar *>(opt)) {
             // Compatibility with styles that use PE_PanelToolBar
@@ -2169,7 +2171,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                             &toolBar->palette.brush(QPalette::Button));
         }
         break;
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
     case CE_ColumnViewGrip: {
         // draw background gradients
         QLinearGradient g(0, 0, opt->rect.width(), 0);
@@ -3072,7 +3074,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                                }
         break;
 #endif // QT_CONFIG(itemviews)
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     case SE_ToolBarHandle:
         if (const QStyleOptionToolBar *tbopt = qstyleoption_cast<const QStyleOptionToolBar *>(opt)) {
             if (tbopt->features & QStyleOptionToolBar::Movable) {
@@ -3090,7 +3092,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             }
         }
         break;
-#endif //QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
     default:
         break;
     }
@@ -4570,7 +4572,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         ret = 0;
         break;
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     case PM_ToolBarFrameWidth:
         ret = 1;
         break;
@@ -4594,7 +4596,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
     case PM_ToolBarExtensionExtent:
         ret = int(QStyleHelper::dpiScaled(12.));
         break;
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 
 #if QT_CONFIG(tabbar)
     case PM_TabBarTabOverlap:

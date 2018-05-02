@@ -69,7 +69,9 @@
 #if QT_CONFIG(dockwidget)
 #include "qdockarealayout_p.h"
 #endif
+#if QT_CONFIG(toolbar)
 #include "qtoolbararealayout_p.h"
+#endif
 
 QT_REQUIRE_CONFIG(mainwindow);
 
@@ -385,7 +387,7 @@ public:
 
     QMainWindowLayoutState(QMainWindow *win);
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     QToolBarAreaLayout toolBarAreaLayout;
 #endif
 
@@ -462,7 +464,7 @@ public:
 
     // toolbars
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     void addToolBarBreak(Qt::ToolBarArea area);
     void insertToolBarBreak(QToolBar *before);
     void removeToolBarBreak(QToolBar *before);

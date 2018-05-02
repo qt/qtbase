@@ -53,7 +53,9 @@
 #if QT_CONFIG(mainwindow)
 #include <qmainwindow.h>
 #endif
+#if QT_CONFIG(toolbar)
 #include <qtoolbar.h>
+#endif
 #include <qvariant.h>
 #include <qstylepainter.h>
 #include <private/qabstractbutton_p.h>
@@ -201,7 +203,7 @@ void QToolButtonPrivate::init()
 {
     Q_Q(QToolButton);
     defaultAction = 0;
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     if (qobject_cast<QToolBar*>(parent))
         autoRaise = true;
     else
@@ -245,13 +247,13 @@ void QToolButton::initStyleOption(QStyleOptionToolButton *option) const
     bool forceNoText = false;
     option->iconSize = iconSize(); //default value
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     if (parentWidget()) {
         if (QToolBar *toolBar = qobject_cast<QToolBar *>(parentWidget())) {
             option->iconSize = toolBar->iconSize();
         }
     }
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 
     if (!forceNoText)
         option->text = d->text;
@@ -571,7 +573,7 @@ void QToolButton::timerEvent(QTimerEvent *e)
 */
 void QToolButton::changeEvent(QEvent *e)
 {
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     Q_D(QToolButton);
     if (e->type() == QEvent::ParentChange) {
         if (qobject_cast<QToolBar*>(parentWidget()))
@@ -743,7 +745,7 @@ void QToolButtonPrivate::popupTimerDone()
     repeat = q->autoRepeat();
     q->setAutoRepeat(false);
     bool horizontal = true;
-#if !defined(QT_NO_TOOLBAR)
+#if QT_CONFIG(toolbar)
     QToolBar *tb = qobject_cast<QToolBar*>(parent);
     if (tb && tb->orientation() == Qt::Vertical)
         horizontal = false;

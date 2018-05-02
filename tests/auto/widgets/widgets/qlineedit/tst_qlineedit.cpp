@@ -319,6 +319,7 @@ private:
     void psKeyClick(QWidget *target, Qt::Key key, Qt::KeyboardModifiers pressState = 0);
     void psKeyClick(QTestEventList &keys, Qt::Key key, Qt::KeyboardModifiers pressState = 0);
     bool unselectingWithLeftOrRightChangesCursorPosition();
+    void addKeySequenceStandardKey(QTestEventList &keys, QKeySequence::StandardKey);
     QLineEdit *ensureTestWidget();
 
     bool validInput;
@@ -724,7 +725,7 @@ void tst_QLineEdit::keypress_inputMask_data()
     {
         QTestEventList keys;
         // inserting 'A1.2B'
-        keys.addKeyClick(Qt::Key_Home);
+        addKeySequenceStandardKey(keys, QKeySequence::MoveToStartOfLine);
         keys.addKeyClick(Qt::Key_A);
         keys.addKeyClick(Qt::Key_1);
         keys.addKeyClick(Qt::Key_Period);
@@ -735,7 +736,7 @@ void tst_QLineEdit::keypress_inputMask_data()
     {
         QTestEventList keys;
         // inserting 'A1.2B'
-        keys.addKeyClick(Qt::Key_Home);
+        addKeySequenceStandardKey(keys, QKeySequence::MoveToStartOfLine);
         keys.addKeyClick(Qt::Key_0);
         keys.addKeyClick(Qt::Key_Exclam);
         keys.addKeyClick('P');
@@ -745,22 +746,24 @@ void tst_QLineEdit::keypress_inputMask_data()
     {
         QTestEventList keys;
         // pressing delete
-        keys.addKeyClick(Qt::Key_Home);
+        addKeySequenceStandardKey(keys, QKeySequence::MoveToStartOfLine);
         keys.addKeyClick(Qt::Key_Delete);
         QTest::newRow("delete") << QString("000.000;_") << keys << QString(".") << QString("___.___");
     }
     {
         QTestEventList keys;
         // selecting all and delete
-        keys.addKeyClick(Qt::Key_Home);
-        keys.addKeyClick(Qt::Key_End, Qt::ShiftModifier);
+        keys.addKeyClick(Qt::Key_1);
+        keys.addKeyClick(Qt::Key_2);
+        addKeySequenceStandardKey(keys, QKeySequence::MoveToStartOfLine);
+        addKeySequenceStandardKey(keys, QKeySequence::SelectEndOfLine);
         keys.addKeyClick(Qt::Key_Delete);
         QTest::newRow("deleting all") << QString("000.000;_") << keys << QString(".") << QString("___.___");
     }
     {
         QTestEventList keys;
         // inserting '12.12' then two backspaces
-        keys.addKeyClick(Qt::Key_Home);
+        addKeySequenceStandardKey(keys, QKeySequence::MoveToStartOfLine);
         keys.addKeyClick(Qt::Key_1);
         keys.addKeyClick(Qt::Key_2);
         keys.addKeyClick(Qt::Key_Period);
@@ -773,7 +776,7 @@ void tst_QLineEdit::keypress_inputMask_data()
     {
         QTestEventList keys;
         // inserting '12ab'
-        keys.addKeyClick(Qt::Key_Home);
+        addKeySequenceStandardKey(keys, QKeySequence::MoveToStartOfLine);
         keys.addKeyClick(Qt::Key_1);
         keys.addKeyClick(Qt::Key_2);
         keys.addKeyClick(Qt::Key_A);
@@ -1969,6 +1972,13 @@ void tst_QLineEdit::psKeyClick(QTestEventList &keys, Qt::Key key, Qt::KeyboardMo
 {
     figureOutProperKey(key, pressState);
     keys.addKeyClick(key, pressState);
+}
+
+void tst_QLineEdit::addKeySequenceStandardKey(QTestEventList &keys, QKeySequence::StandardKey key)
+{
+    QKeySequence keyseq = QKeySequence(key);
+    for (int i = 0; i < keyseq.count(); ++i)
+        keys.addKeyClick( Qt::Key( keyseq[i] & ~Qt::KeyboardModifierMask), Qt::KeyboardModifier(keyseq[i] & Qt::KeyboardModifierMask) );
 }
 
 void tst_QLineEdit::cursorPosition()
