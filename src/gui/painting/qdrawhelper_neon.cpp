@@ -84,20 +84,20 @@ void qt_memfill32(quint32 *dest, quint32 value, int count)
 
     switch (epilogueSize)
     {
-    case 15:     *dest++ = value;
-    case 14:     *dest++ = value;
-    case 13:     *dest++ = value;
-    case 12:     *dest++ = value;
-    case 11:     *dest++ = value;
-    case 10:     *dest++ = value;
-    case 9:      *dest++ = value;
-    case 8:      *dest++ = value;
-    case 7:      *dest++ = value;
-    case 6:      *dest++ = value;
-    case 5:      *dest++ = value;
-    case 4:      *dest++ = value;
-    case 3:      *dest++ = value;
-    case 2:      *dest++ = value;
+    case 15:     *dest++ = value; Q_FALLTHROUGH();
+    case 14:     *dest++ = value; Q_FALLTHROUGH();
+    case 13:     *dest++ = value; Q_FALLTHROUGH();
+    case 12:     *dest++ = value; Q_FALLTHROUGH();
+    case 11:     *dest++ = value; Q_FALLTHROUGH();
+    case 10:     *dest++ = value; Q_FALLTHROUGH();
+    case 9:      *dest++ = value; Q_FALLTHROUGH();
+    case 8:      *dest++ = value; Q_FALLTHROUGH();
+    case 7:      *dest++ = value; Q_FALLTHROUGH();
+    case 6:      *dest++ = value; Q_FALLTHROUGH();
+    case 5:      *dest++ = value; Q_FALLTHROUGH();
+    case 4:      *dest++ = value; Q_FALLTHROUGH();
+    case 3:      *dest++ = value; Q_FALLTHROUGH();
+    case 2:      *dest++ = value; Q_FALLTHROUGH();
     case 1:      *dest++ = value;
     }
 }
