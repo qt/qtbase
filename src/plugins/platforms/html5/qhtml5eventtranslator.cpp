@@ -121,7 +121,8 @@ int QHtml5EventTranslator::keyboard_cb(int eventType, const EmscriptenKeyboardEv
         return 0;
 
     QString keyText = alphanumeric ? QString(keyEvent->key) : QString();
-    QWindowSystemInterface::handleKeyEvent(0, keyType, qtKey, translateKeyModifier(keyEvent), keyText);
+    QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
+        0, keyType, qtKey, translateKeyModifier(keyEvent), keyText);
     QCoreApplication::processEvents();
     return 0;
 }
@@ -368,8 +369,8 @@ void QHtml5EventTranslator::processMouse(int eventType, const EmscriptenMouseEve
     };
 
     if (window2 && !onFrame) {
-        QWindowSystemInterface::handleMouseEvent(window2, timestamp, localPoint, point,
-                                                 pressedButtons, modifiers);
+        QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(
+            window2, timestamp, localPoint, point, pressedButtons, modifiers);
     }
 
     QCoreApplication::processEvents(); // probably not the best way
