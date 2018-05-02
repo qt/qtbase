@@ -121,10 +121,10 @@ int QHtml5EventTranslator::keyboard_cb(int eventType, const EmscriptenKeyboardEv
         return 0;
 
     QString keyText = alphanumeric ? QString(keyEvent->key) : QString();
-    QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
+    bool accepted = QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
         0, keyType, qtKey, translateKeyModifier(keyEvent), keyText);
     QCoreApplication::processEvents();
-    return 0;
+    return accepted ? 1 : 0;
 }
 
 Qt::Key QHtml5EventTranslator::translateEmscriptKey(const EmscriptenKeyboardEvent *emscriptKey, bool *outAlphanumeric)
