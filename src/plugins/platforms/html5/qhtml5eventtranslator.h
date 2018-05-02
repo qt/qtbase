@@ -181,8 +181,10 @@ Q_SIGNALS:
     void getWindowAt(const QPoint &point, QWindow **window);
 private:
     static Qt::Key translateEmscriptKey(const EmscriptenKeyboardEvent *emscriptKey, bool *outAlphanumretic);
-    static QFlags<Qt::KeyboardModifier> translateKeyModifier(const EmscriptenKeyboardEvent *keyEvent);
-    static QFlags<Qt::KeyboardModifier> translateMouseModifier(const EmscriptenMouseEvent *mouseEvent);
+    template <typename Event>
+    static QFlags<Qt::KeyboardModifier> translatKeyModifier(const Event *event);
+    static QFlags<Qt::KeyboardModifier> translateKeyboardEventModifier(const EmscriptenKeyboardEvent *keyEvent);
+    static QFlags<Qt::KeyboardModifier> translateMouseEventModifier(const EmscriptenMouseEvent *mouseEvent);
     static Qt::MouseButton translateMouseButton(unsigned short button);
 
     void processMouse(int eventType, const EmscriptenMouseEvent *mouseEvent);

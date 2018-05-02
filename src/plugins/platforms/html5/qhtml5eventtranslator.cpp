@@ -57,21 +57,28 @@ QHtml5EventTranslator::QHtml5EventTranslator(QObject *parent)
     emscripten_set_focus_callback(0,(void *)this, 1, &focus_cb);
 }
 
-QFlags<Qt::KeyboardModifier> QHtml5EventTranslator::translateKeyModifier(const EmscriptenKeyboardEvent *keyEvent)
+template <typename Event>
+QFlags<Qt::KeyboardModifier> QHtml5EventTranslator::translatKeyModifier(const Event *event)
 {
     QFlags<Qt::KeyboardModifier> keyModifier = Qt::NoModifier;
-    if (keyEvent->shiftKey) {
+    if (event->shiftKey) {
         keyModifier |= Qt::ShiftModifier;
     }
-    if (keyEvent->ctrlKey) {
-        keyModifier = Qt::ControlModifier;
+    if (event->ctrlKey) {
+        keyModifier |= Qt::ControlModifier;
     }
-    if (keyEvent->altKey) {
+    if (event->altKey) {
         keyModifier |= Qt::AltModifier;
     }
-    if (keyEvent->metaKey) {
+    if (event->metaKey) {
         keyModifier |= Qt::MetaModifier;
     }
+    return keyModifier;
+}
+
+QFlags<Qt::KeyboardModifier> QHtml5EventTranslator::translateKeyboardEventModifier(const EmscriptenKeyboardEvent *keyEvent)
+{
+    QFlags<Qt::KeyboardModifier> keyModifier = translatKeyModifier(keyEvent);
     if (keyEvent->location == DOM_KEY_LOCATION_NUMPAD) {
         keyModifier |= Qt::KeypadModifier;
     }
@@ -79,22 +86,9 @@ QFlags<Qt::KeyboardModifier> QHtml5EventTranslator::translateKeyModifier(const E
     return keyModifier;
 }
 
-QFlags<Qt::KeyboardModifier> QHtml5EventTranslator::translateMouseModifier(const EmscriptenMouseEvent *mouseEvent)
+QFlags<Qt::KeyboardModifier> QHtml5EventTranslator::translateMouseEventModifier(const EmscriptenMouseEvent *mouseEvent)
 {
-    QFlags<Qt::KeyboardModifier> keyModifier = Qt::NoModifier;
-    if (mouseEvent->ctrlKey) {
-        keyModifier = Qt::ControlModifier;
-    }
-    if (mouseEvent->shiftKey) {
-        keyModifier |= Qt::ShiftModifier;
-    }
-    if (mouseEvent->altKey) {
-        keyModifier |= Qt::AltModifier;
-    }
-    if (mouseEvent->metaKey) {
-        keyModifier |= Qt::MetaModifier;
-    }
-    return keyModifier;
+    return translatKeyModifier(mouseEvent);
 }
 
 int QHtml5EventTranslator::keyboard_cb(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
@@ -122,7 +116,7 @@ int QHtml5EventTranslator::keyboard_cb(int eventType, const EmscriptenKeyboardEv
 
     QString keyText = alphanumeric ? QString(keyEvent->key) : QString();
     bool accepted = QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
-        0, keyType, qtKey, translateKeyModifier(keyEvent), keyText);
+        0, keyType, qtKey, translateKeyboardEventModifier(keyEvent), keyText);
     QCoreApplication::processEvents();
     return accepted ? 1 : 0;
 }
@@ -296,7 +290,7 @@ void QHtml5EventTranslator::processMouse(int eventType, const EmscriptenMouseEve
     QPoint point(mouseEvent->canvasX, mouseEvent->canvasY);
 
     Qt::MouseButton button = translateMouseButton(mouseEvent->button);
-    Qt::KeyboardModifiers modifiers = translateMouseModifier(mouseEvent);
+    Qt::KeyboardModifiers modifiers = translateMouseEventModifier(mouseEvent);
 
     QWindow *window2 = QHtml5Integration::get()->compositor()->windowAt(point, 5);
     QHtml5Window *htmlWindow = static_cast<QHtml5Window*>(window2->handle());
