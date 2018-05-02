@@ -241,6 +241,17 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
         if ((*it).isSecure() && !isEncrypted)
             continue;
 
+        QString domain = it->domain();
+        if (domain.startsWith(QLatin1Char('.'))) /// Qt6?: remove when compliant with RFC6265
+            domain = domain.mid(1);
+#if QT_CONFIG(topleveldomain)
+        if (qIsEffectiveTLD(domain) && url.host() != domain)
+            continue;
+#else
+        if (!domain.contains(QLatin1Char('.')) && url.host() != domain)
+            continue;
+#endif // topleveldomain
+
         // insert this cookie into result, sorted by path
         QList<QNetworkCookie>::Iterator insertIt = result.begin();
         while (insertIt != result.end()) {
@@ -340,6 +351,11 @@ bool QNetworkCookieJar::validateCookie(const QNetworkCookie &cookie, const QUrl 
     if (domain.startsWith(QLatin1Char('.')))
         domain = domain.mid(1);
 
+    // We shouldn't reject if:
+    // "[...] the domain-attribute is identical to the canonicalized request-host"
+    // https://tools.ietf.org/html/rfc6265#section-5.3 step 5
+    if (host == domain)
+        return true;
 #if QT_CONFIG(topleveldomain)
     // the check for effective TLDs makes the "embedded dot" rule from RFC 2109 section 4.3.2
     // redundant; the "leading dot" rule has been relaxed anyway, see QNetworkCookie::normalize()

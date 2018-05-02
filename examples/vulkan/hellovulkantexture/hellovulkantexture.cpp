@@ -768,7 +768,7 @@ void VulkanRenderer::startNextFrame()
     // Add the necessary barriers and do the host-linear -> device-optimal copy, if not yet done.
     ensureTexture();
 
-    VkClearColorValue clearColor = { 0, 0, 0, 1 };
+    VkClearColorValue clearColor = {{ 0, 0, 0, 1 }};
     VkClearDepthStencilValue clearDS = { 1, 0 };
     VkClearValue clearValues[2];
     memset(clearValues, 0, sizeof(clearValues));

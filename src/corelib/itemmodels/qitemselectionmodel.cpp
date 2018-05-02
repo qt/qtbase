@@ -1502,30 +1502,40 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
                         && d->currentSelection.at(i).intersected(d->ranges.at(j)).isValid())
                         return false;
     }
+
+    auto isSelectable = [&](int row, int column) {
+        Qt::ItemFlags flags = d->model->index(row, column, parent).flags();
+        return (flags & Qt::ItemIsSelectable);
+    };
+
+    const int colCount = d->model->columnCount(parent);
+    int unselectable = 0;
     // add ranges and currentSelection and check through them all
     QList<QItemSelectionRange>::const_iterator it;
     QList<QItemSelectionRange> joined = d->ranges;
     if (d->currentSelection.count())
         joined += d->currentSelection;
-    int colCount = d->model->columnCount(parent);
     for (int column = 0; column < colCount; ++column) {
+        if (!isSelectable(row, column)) {
+            ++unselectable;
+            continue;
+        }
+
         for (it = joined.constBegin(); it != joined.constEnd(); ++it) {
             if ((*it).contains(row, column, parent)) {
-                bool selectable = false;
-                for (int i = column; !selectable && i <= (*it).right(); ++i) {
-                    Qt::ItemFlags flags = d->model->index(row, i, parent).flags();
-                    selectable = flags & Qt::ItemIsSelectable;
+                for (int i = column; i <= (*it).right(); ++i) {
+                    if (!isSelectable(row, i))
+                        ++unselectable;
                 }
-                if (selectable){
-                    column = qMax(column, (*it).right());
-                    break;
-                }
+
+                column = qMax(column, (*it).right());
+                break;
             }
         }
         if (it == joined.constEnd())
             return false;
     }
-    return colCount > 0; // no columns means no selected items
+    return unselectable < colCount;
 }
 
 /*!
@@ -1568,26 +1578,39 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
             }
         }
     }
+
+    auto isSelectable = [&](int row, int column) {
+        Qt::ItemFlags flags = d->model->index(row, column, parent).flags();
+        return (flags & Qt::ItemIsSelectable);
+    };
+    const int rowCount = d->model->rowCount(parent);
+    int unselectable = 0;
+
     // add ranges and currentSelection and check through them all
     QList<QItemSelectionRange>::const_iterator it;
     QList<QItemSelectionRange> joined = d->ranges;
     if (d->currentSelection.count())
         joined += d->currentSelection;
-    int rowCount = d->model->rowCount(parent);
     for (int row = 0; row < rowCount; ++row) {
-         for (it = joined.constBegin(); it != joined.constEnd(); ++it) {
-             if ((*it).contains(row, column, parent)) {
-                 Qt::ItemFlags flags = d->model->index(row, column, parent).flags();
-                 if ((flags & Qt::ItemIsSelectable) && (flags & Qt::ItemIsEnabled)) {
-                     row = qMax(row, (*it).bottom());
-                     break;
-                 }
-             }
-         }
-         if (it == joined.constEnd())
-             return false;
+        if (!isSelectable(row, column)) {
+            ++unselectable;
+            continue;
+        }
+        for (it = joined.constBegin(); it != joined.constEnd(); ++it) {
+            if ((*it).contains(row, column, parent)) {
+                for (int i = row; i <= (*it).bottom(); ++i) {
+                    if (!isSelectable(i, column)) {
+                        ++unselectable;
+                    }
+                }
+                row = qMax(row, (*it).bottom());
+                break;
+            }
+        }
+        if (it == joined.constEnd())
+            return false;
     }
-    return rowCount > 0; // no rows means no selected items
+    return unselectable < rowCount;
 }
 
 /*!

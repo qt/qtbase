@@ -314,6 +314,7 @@ NSCursor *QCocoaCursor::createCursorFromPixmap(const QPixmap pixmap, const QPoin
     if (pixmap.devicePixelRatio() > 1.0) {
         QSize layoutSize = pixmap.size() / pixmap.devicePixelRatio();
         QPixmap scaledPixmap = pixmap.scaled(layoutSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        scaledPixmap.setDevicePixelRatio(1.0);
         nsimage = static_cast<NSImage *>(qt_mac_create_nsimage(scaledPixmap));
         CGImageRef cgImage = qt_mac_toCGImage(pixmap.toImage());
         NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithCGImage:cgImage];

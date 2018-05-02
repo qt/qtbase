@@ -53,8 +53,6 @@
 ** QToolBarAreaLayoutItem
 */
 
-#ifndef QT_NO_TOOLBAR
-
 QT_BEGIN_NAMESPACE
 
 // qmainwindow.cpp
@@ -1391,5 +1389,3 @@ bool QToolBarAreaLayout::isEmpty() const
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_TOOLBAR

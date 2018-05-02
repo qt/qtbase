@@ -95,6 +95,9 @@ private slots:
     void QTBUG58851_data();
     void QTBUG58851();
 
+    void QTBUG18001_data();
+    void QTBUG18001();
+
 private:
     QAbstractItemModel *model;
     QItemSelectionModel *selection;
@@ -2920,6 +2923,99 @@ void tst_QItemSelectionModel::QTBUG58851()
     for (const QPersistentModelIndex &i : expectedSelectedIndexes) {
         QVERIFY(selections.isSelected(i));
     }
+}
+
+void tst_QItemSelectionModel::QTBUG18001_data()
+{
+    using IntPair = std::pair<int, int>;
+    using IntPairList = QList<IntPair>;
+    using IntList = QList<int>;
+    using BoolList = QList<bool>;
+
+    QTest::addColumn<IntPairList>("indexesToSelect");
+    QTest::addColumn<IntList>("selectionCommands");
+    QTest::addColumn<BoolList>("expectedSelectedRows");
+    QTest::addColumn<BoolList>("expectedSelectedColums");
+
+    int colSelect = QItemSelectionModel::Select | QItemSelectionModel::Columns;
+    int rowSelect = QItemSelectionModel::Select | QItemSelectionModel::Rows;
+
+    QTest::newRow("Select column 1")
+          << IntPairList { {0, 1} }
+          << IntList{ colSelect }
+          << BoolList{ false, false, false, false, false }
+          << BoolList{ false, true, false, false, false };
+
+    QTest::newRow("Select row 1")
+          << IntPairList { {1, 0} }
+          << IntList{ rowSelect }
+          << BoolList{ false, true, false, false, false }
+          << BoolList{ false, false, false, false, false };
+
+    QTest::newRow("Select column 1+2, row 1+2")
+          << IntPairList { {0, 1}, {0, 2}, {1, 0}, {2, 0} }
+          << IntList{ colSelect, colSelect, rowSelect, rowSelect }
+          << BoolList{ false, true, true, false, false }
+          << BoolList{ false, true, true, false, false };
+
+    QTest::newRow("Select row 1+2, col 1+2")
+          << IntPairList { {1, 0}, {2, 0}, {0, 1}, {0, 2} }
+          << IntList{ rowSelect, rowSelect, colSelect, colSelect }
+          << BoolList{ false, true, true, false, false }
+          << BoolList{ false, true, true, false, false };
+}
+
+void tst_QItemSelectionModel::QTBUG18001()
+{
+    using IntPair = std::pair<int, int>;
+    using IntPairList = QList<IntPair>;
+    using IntList = QList<int>;
+    using BoolList = QList<bool>;
+
+    QFETCH(IntPairList, indexesToSelect);
+    QFETCH(IntList, selectionCommands);
+    QFETCH(BoolList, expectedSelectedRows);
+    QFETCH(BoolList, expectedSelectedColums);
+
+    QStandardItemModel model(5, 5);
+    for (int row = 0; row < model.rowCount(); ++row) {
+        for (int column = 0; column < model.columnCount(); ++column) {
+            QStandardItem *item = new QStandardItem(QString("%0x%1").arg(row).arg(column));
+            model.setItem(row, column, item);
+
+            const bool oddRow = row % 2;
+            const bool oddCol = column % 2;
+
+            if (oddRow == oddCol)
+               item->setSelectable(false);
+        }
+    }
+
+    QItemSelectionModel selectionModel(&model);
+
+    for (int i = 0; i < indexesToSelect.count(); ++i) {
+       QModelIndex idx = model.index( indexesToSelect.at(i).first, indexesToSelect.at(i).second );
+       selectionModel.select(idx, QItemSelectionModel::SelectionFlag(selectionCommands.at(i)));
+    }
+
+    for (int i = 0; i < expectedSelectedRows.count(); ++i) {
+       const bool expected = expectedSelectedRows.at(i);
+       const bool actual = selectionModel.isRowSelected(i, QModelIndex());
+       QByteArray description =  QByteArray("Row ") + QByteArray::number(i)
+             + " Expected " + QByteArray::number(expected)
+             + " Actual " + QByteArray::number(actual);
+       QVERIFY2(expected == actual, description.data());
+    }
+
+    for (int i = 0; i < expectedSelectedColums.count(); ++i) {
+       const bool expected = expectedSelectedColums.at(i);
+       const bool actual =  selectionModel.isColumnSelected(i, QModelIndex());
+       QByteArray description =  QByteArray("Col ") + QByteArray::number(i)
+             + " Expected " + QByteArray::number(expected)
+             + " Actual " + QByteArray::number(actual);
+       QVERIFY2(expected == actual, description.data());
+    }
+
 }
 
 QTEST_MAIN(tst_QItemSelectionModel)

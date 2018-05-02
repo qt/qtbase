@@ -304,6 +304,7 @@ void tst_QFocusEvent::checkReason_focusWidget()
     frame1.setLayout(&leftLayout);
     frame2.setLayout(&rightLayout);
     window1.show();
+    QVERIFY(QTest::qWaitForWindowActive(&window1));
 
     edit1.setFocus();
     QTRY_VERIFY(edit1.hasFocus());

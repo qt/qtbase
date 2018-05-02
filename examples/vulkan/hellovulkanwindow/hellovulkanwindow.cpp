@@ -94,7 +94,7 @@ void VulkanRenderer::startNextFrame()
     if (m_green > 1.0f)
         m_green = 0.0f;
 
-    VkClearColorValue clearColor = { 0.0f, m_green, 0.0f, 1.0f };
+    VkClearColorValue clearColor = {{ 0.0f, m_green, 0.0f, 1.0f }};
     VkClearDepthStencilValue clearDS = { 1.0f, 0 };
     VkClearValue clearValues[2];
     memset(clearValues, 0, sizeof(clearValues));

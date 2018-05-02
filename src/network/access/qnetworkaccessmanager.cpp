@@ -178,7 +178,9 @@ static void ensureInitialized()
     it sends. It contains the proxy and cache configuration, as well as the
     signals related to such issues, and reply signals that can be used to
     monitor the progress of a network operation. One QNetworkAccessManager
-    should be enough for the whole Qt application.
+    instance should be enough for the whole Qt application. Since
+    QNetworkAccessManager is based on QObject, it can only be used from the
+    thread it belongs to.
 
     Once a QNetworkAccessManager object has been created, the application can
     use it to send requests over the network. A group of standard functions
