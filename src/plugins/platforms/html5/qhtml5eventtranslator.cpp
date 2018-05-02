@@ -104,7 +104,7 @@ int QHtml5EventTranslator::keyboard_cb(int eventType, const EmscriptenKeyboardEv
     bool alphanumeric;
     Qt::Key qtKey = translateEmscriptKey(keyEvent, &alphanumeric);
 
-    QEvent::Type keyType;
+    QEvent::Type keyType = QEvent::None;
     switch (eventType) {
     case EMSCRIPTEN_EVENT_KEYPRESS:
     case EMSCRIPTEN_EVENT_KEYDOWN: //down
@@ -116,6 +116,9 @@ int QHtml5EventTranslator::keyboard_cb(int eventType, const EmscriptenKeyboardEv
     default:
         break;
     };
+
+    if (keyType == QEvent::None)
+        return 0;
 
     QString keyText = alphanumeric ? QString(keyEvent->key) : QString();
     QWindowSystemInterface::handleKeyEvent(0, keyType, qtKey, translateKeyModifier(keyEvent), keyText);
