@@ -121,11 +121,12 @@ alien_syncqt: return()
 
 MODULE_INC_OUTDIR = $$MODULE_BASE_OUTDIR/include/$$MODULE_INCNAME
 
-exists($$OUT_PWD/qt$${MODULE}-config.h) {
+isEmpty(MODULE_CFG_FILE): MODULE_CFG_FILE = qt$${MODULE}-config
+exists($$OUT_PWD/$${MODULE_CFG_FILE}.h) {
     fwd_rel = $$relative_path($$OUT_PWD, $$MODULE_INC_OUTDIR)
     SYNCQT.INJECTIONS += \
-        $$fwd_rel/qt$${MODULE}-config.h:qt$${MODULE}-config.h \
-        $$fwd_rel/qt$${MODULE}-config_p.h:$$MODULE_VERSION/$$MODULE_INCNAME/private/qt$${MODULE}-config_p.h
+        $$fwd_rel/$${MODULE_CFG_FILE}.h:$${MODULE_CFG_FILE}.h \
+        $$fwd_rel/$${MODULE_CFG_FILE}_p.h:$$MODULE_VERSION/$$MODULE_INCNAME/private/$${MODULE_CFG_FILE}_p.h
 }
 
 for (injection, SYNCQT.INJECTIONS) {

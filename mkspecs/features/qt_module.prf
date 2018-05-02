@@ -13,8 +13,9 @@ isEmpty(MODULE):MODULE = $$section($$list($$basename(_PRO_FILE_)), ., 0, 0)
 isEmpty(VERSION): VERSION = $$MODULE_VERSION
 isEmpty(VERSION): error("Module does not define version.")
 
-exists($$OUT_PWD/qt$${MODULE}-config.pri) {
-    include($$OUT_PWD/qt$${MODULE}-config.pri)
+isEmpty(MODULE_CFG_FILE): MODULE_CFG_FILE = qt$${MODULE}-config
+exists($$OUT_PWD/$${MODULE_CFG_FILE}.pri) {
+    include($$OUT_PWD/$${MODULE_CFG_FILE}.pri)
     CONFIG += generated_privates
 }
 
