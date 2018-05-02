@@ -358,7 +358,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         m_platformWindow->handleExposeEvent(dirtyRegion);
     }
 
-    if (windowPrivate->updateRequestPending) {
+    if (m_updateRequested && windowPrivate->updateRequestPending) {
         // A call to QWindow::requestUpdate was issued during event delivery above,
         // but AppKit will reset the needsDisplay state of the view after completing
         // the current display cycle, so we need to defer the request to redisplay.
