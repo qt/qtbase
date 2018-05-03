@@ -578,7 +578,7 @@ static inline void copyString(char *dest, const QString &str, bool compress)
 
 
 /*
- Base is the base class for both Object and Array. Both classe work more or less the same way.
+ Base is the base class for both Object and Array. Both classes work more or less the same way.
  The class starts with a header (defined by the struct below), then followed by data (the data for
  values in the Array case and Entry's (see below) for objects.
 
