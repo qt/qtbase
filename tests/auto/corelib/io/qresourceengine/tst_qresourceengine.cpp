@@ -125,9 +125,19 @@ void tst_QResourceEngine::checkStructure_data()
     rootContents.insert(1, QLatin1String("android_testdata"));
 #endif
 
+#if defined(BUILTIN_TESTDATA)
+    rootContents.insert(8, QLatin1String("testqrc"));
+#endif
+
+
     QTest::newRow("root dir")          << QString(":/")
                                        << QString()
-                                       << (QStringList() << "search_file.txt")
+                                       << (QStringList()
+#if defined(BUILTIN_TESTDATA)
+                                           << "parentdir.txt"
+                                           << "runtime_resource.rcc"
+#endif
+                                           << "search_file.txt")
                                        << rootContents
                                        << QLocale::c()
                                        << qlonglong(0);
