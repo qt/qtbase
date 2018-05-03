@@ -77,9 +77,12 @@
                 },
                 {
                     "libs": "-llibssl -llibcrypto",
-                    "condition": "config.win32"
+                    "condition": "config.msvc"
                 },
-                { "libs": "-lssl -lcrypto", "condition": "!config.win32" }
+                {
+                    "libs": "-lssl -lcrypto",
+                    "condition": "!config.msvc"
+                }
             ]
         }
     },
