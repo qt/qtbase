@@ -173,4 +173,45 @@ public:
        return result.toLocal8Bit();
     }
 #endif // QT_NETWORK_LIB
+
+    static QString ftpServerName()
+    {
+#ifdef QT_TEST_SERVER
+        return QString("vsftpd.") % serverDomainName();
+#else
+        return serverName();
+#endif
+    }
+    static QString ftpProxyServerName()
+    {
+#ifdef QT_TEST_SERVER
+        return QString("ftp-proxy.") % serverDomainName();
+#else
+        return serverName();
+#endif
+    }
+    static QString httpServerName()
+    {
+#ifdef QT_TEST_SERVER
+        return QString("apache2.") % serverDomainName();
+#else
+        return serverName();
+#endif
+    }
+    static QString httpProxyServerName()
+    {
+#ifdef QT_TEST_SERVER
+        return QString("squid.") % serverDomainName();
+#else
+        return serverName();
+#endif
+    }
+    static QString socksProxyServerName()
+    {
+#ifdef QT_TEST_SERVER
+        return QString("danted.") % serverDomainName();
+#else
+        return serverName();
+#endif
+    }
 };

@@ -14,3 +14,6 @@ TESTDATA += ../empty ../rfc3252.txt ../resource ../bigfile ../*.jpg ../certs \
             ../index.html ../smb-file.txt
 
 !android:!winrt: TEST_HELPER_INSTALLS = ../echo/echo
+
+QT_TEST_SERVER_LIST = vsftpd apache2 ftp-proxy danted squid
+include($$dirname(_QMAKE_CONF_)/tests/auto/testserver.pri)
