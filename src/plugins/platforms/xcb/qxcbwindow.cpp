@@ -490,6 +490,13 @@ void QXcbWindow::create()
                         atom(QXcbAtom::_NET_WM_PID), XCB_ATOM_CARDINAL, 32,
                         1, &pid);
 
+    const QByteArray clientMachine = QSysInfo::machineHostName().toLocal8Bit();
+    if (!clientMachine.isEmpty()) {
+        xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                            atom(QXcbAtom::WM_CLIENT_MACHINE), XCB_ATOM_STRING, 8,
+                            clientMachine.size(), clientMachine.constData());
+    }
+
     xcb_wm_hints_t hints;
     memset(&hints, 0, sizeof(hints));
     xcb_wm_hints_set_normal(&hints);

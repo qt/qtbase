@@ -119,6 +119,7 @@ namespace QXcbAtom {
         WM_CLIENT_LEADER,
         WM_WINDOW_ROLE,
         SM_CLIENT_ID,
+        WM_CLIENT_MACHINE,
 
         // Clipboard
         CLIPBOARD,

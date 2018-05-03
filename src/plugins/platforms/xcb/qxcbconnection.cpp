@@ -1821,6 +1821,7 @@ static const char * xcb_atomnames = {
     "WM_CLIENT_LEADER\0"
     "WM_WINDOW_ROLE\0"
     "SM_CLIENT_ID\0"
+    "WM_CLIENT_MACHINE\0"
 
     // Clipboard
     "CLIPBOARD\0"
