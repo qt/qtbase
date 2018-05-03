@@ -1381,7 +1381,7 @@ void tst_QTableWidget::itemData()
 
 void tst_QTableWidget::setItemData()
 {
-    QTableWidget table(10, 10);
+    QTableWidgetDataChanged table(10, 10);
     table.setSortingEnabled(false);
     QSignalSpy dataChangedSpy(table.model(), SIGNAL(dataChanged(QModelIndex,QModelIndex)));
 
@@ -1394,6 +1394,7 @@ void tst_QTableWidget::setItemData()
     data.insert(Qt::DisplayRole, QLatin1String("Display"));
     data.insert(Qt::ToolTipRole, QLatin1String("ToolTip"));
     table.model()->setItemData(idx, data);
+    QCOMPARE(table.currentRoles, QVector<int>({Qt::DisplayRole, Qt::EditRole, Qt::ToolTipRole}));
 
     QCOMPARE(table.model()->data(idx, Qt::DisplayRole).toString(), QLatin1String("Display"));
     QCOMPARE(table.model()->data(idx, Qt::ToolTipRole).toString(), QLatin1String("ToolTip"));

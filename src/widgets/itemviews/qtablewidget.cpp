@@ -456,9 +456,12 @@ bool QTableModel::setItemData(const QModelIndex &index, const QMap<int, QVariant
         itm->view = nullptr; // prohibits item from calling itemChanged()
         QVector<int> rolesVec;
         for (QMap<int, QVariant>::ConstIterator it = roles.constBegin(); it != roles.constEnd(); ++it) {
-            if (itm->data(it.key()) != it.value()) {
-                itm->setData(it.key(), it.value());
-                rolesVec += it.key();
+            const int role = (it.key() == Qt::EditRole ? Qt::DisplayRole : it.key());
+            if (itm->data(role) != it.value()) {
+                itm->setData(role, it.value());
+                rolesVec += role;
+                if (role == Qt::DisplayRole)
+                    rolesVec += Qt::EditRole;
             }
         }
         itm->view = view;
