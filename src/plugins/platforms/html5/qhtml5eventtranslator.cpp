@@ -41,6 +41,10 @@
 
 QT_BEGIN_NAMESPACE
 
+// macOS CTRL <-> META switching. We most likely want to enable
+// the existing switching code in QtGui, but for now do it here.
+static bool g_usePlatformMacCtrlMetaSwitching = false;
+
 QHtml5EventTranslator::QHtml5EventTranslator(QObject *parent)
     : QObject(parent)
     , draggedWindow(nullptr)
@@ -55,6 +59,16 @@ QHtml5EventTranslator::QHtml5EventTranslator(QObject *parent)
     emscripten_set_mousemove_callback(0,(void *)this,1,&mouse_cb);
 
     emscripten_set_focus_callback(0,(void *)this, 1, &focus_cb);
+
+    // The Platform Detect: expand coverage and move as needed
+    enum Platform {
+        GenericPlatform,
+        MacOSPlatform
+    };
+    Platform platform =
+        Platform(EM_ASM_INT("if (navigator.platform.includes(\"Mac\")) return 1; return 0;"));
+
+    g_usePlatformMacCtrlMetaSwitching = (platform == MacOSPlatform);
 }
 
 template <typename Event>
@@ -65,13 +79,19 @@ QFlags<Qt::KeyboardModifier> QHtml5EventTranslator::translatKeyModifier(const Ev
         keyModifier |= Qt::ShiftModifier;
     }
     if (event->ctrlKey) {
-        keyModifier |= Qt::ControlModifier;
+        if (g_usePlatformMacCtrlMetaSwitching)
+            keyModifier |= Qt::MetaModifier;
+        else
+            keyModifier |= Qt::ControlModifier;
     }
     if (event->altKey) {
         keyModifier |= Qt::AltModifier;
     }
     if (event->metaKey) {
-        keyModifier |= Qt::MetaModifier;
+        if (g_usePlatformMacCtrlMetaSwitching)
+            keyModifier |= Qt::ControlModifier;
+        else
+            keyModifier |= Qt::MetaModifier;
     }
     return keyModifier;
 }
@@ -213,6 +233,14 @@ Qt::Key QHtml5EventTranslator::translateEmscriptKey(const EmscriptenKeyboardEven
         qtKey = Qt::Key_Meta;
         *outAlphanumeric = false;
     }
+
+    if (g_usePlatformMacCtrlMetaSwitching) {
+        if (qtKey == Qt::Key_Meta)
+            qtKey = Qt::Key_Control;
+        else if (qtKey == Qt::Key_Control)
+            qtKey = Qt::Key_Meta;
+    }
+
     return qtKey;
 }
 
