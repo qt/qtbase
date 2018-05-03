@@ -453,17 +453,17 @@ bool QTableModel::setItemData(const QModelIndex &index, const QMap<int, QVariant
     QTableWidget *view = qobject_cast<QTableWidget*>(QObject::parent());
     QTableWidgetItem *itm = item(index);
     if (itm) {
-        itm->view = 0; // prohibits item from calling itemChanged()
-        bool changed = false;
+        itm->view = nullptr; // prohibits item from calling itemChanged()
+        QVector<int> rolesVec;
         for (QMap<int, QVariant>::ConstIterator it = roles.constBegin(); it != roles.constEnd(); ++it) {
             if (itm->data(it.key()) != it.value()) {
                 itm->setData(it.key(), it.value());
-                changed = true;
+                rolesVec += it.key();
             }
         }
         itm->view = view;
-        if (changed)
-            itemChanged(itm);
+        if (!rolesVec.isEmpty())
+            itemChanged(itm, rolesVec);
         return true;
     }
 
@@ -771,7 +771,7 @@ void QTableModel::clearContents()
     endResetModel();
 }
 
-void QTableModel::itemChanged(QTableWidgetItem *item)
+void QTableModel::itemChanged(QTableWidgetItem *item, const QVector<int> &roles)
 {
     if (!item)
         return;
@@ -787,7 +787,7 @@ void QTableModel::itemChanged(QTableWidgetItem *item)
     } else {
         QModelIndex idx = index(item);
         if (idx.isValid())
-            emit dataChanged(idx, idx);
+            emit dataChanged(idx, idx, roles);
     }
 }
 
@@ -1386,8 +1386,13 @@ void QTableWidgetItem::setData(int role, const QVariant &value)
     }
     if (!found)
         values.append(QWidgetItemData(role, value));
-    if (QTableModel *model = (view ? qobject_cast<QTableModel*>(view->model()) : 0))
-        model->itemChanged(this);
+    if (QTableModel *model = (view ? qobject_cast<QTableModel*>(view->model()) : nullptr))
+    {
+        const QVector<int> roles((role == Qt::DisplayRole) ?
+                                    QVector<int>({Qt::DisplayRole, Qt::EditRole}) :
+                                    QVector<int>({role}));
+        model->itemChanged(this, roles);
+    }
 }
 
 /*!

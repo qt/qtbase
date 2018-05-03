@@ -157,7 +157,7 @@ public:
 
     void clear();
     void clearContents();
-    void itemChanged(QTableWidgetItem *item);
+    void itemChanged(QTableWidgetItem *item, const QVector<int> &roles = QVector<int>());
 
     QTableWidgetItem *createItem() const;
     const QTableWidgetItem *itemPrototype() const;
