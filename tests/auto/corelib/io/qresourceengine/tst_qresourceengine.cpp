@@ -29,6 +29,7 @@
 
 #include <QtTest/QtTest>
 #include <QtCore/QCoreApplication>
+#include <QtCore/QMimeDatabase>
 
 class tst_QResourceEngine: public QObject
 {
@@ -343,6 +344,11 @@ void tst_QResourceEngine::checkStructure()
     QFETCH(QStringList, containedDirs);
     QFETCH(QLocale, locale);
     QFETCH(qlonglong, contentsSize);
+
+    // We rely on the existence of the root "qt-project.org" in resources. For
+    // static builds on MSVC these resources are only added if they are used.
+    QMimeDatabase db;
+    Q_UNUSED(db);
 
     bool directory = (containedDirs.size() + containedFiles.size() > 0);
     QLocale::setDefault(locale);
