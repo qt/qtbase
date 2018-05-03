@@ -206,6 +206,13 @@ Qt::Key QHtml5EventTranslator::translateEmscriptKey(const EmscriptenKeyboardEven
         qtKey = static_cast<Qt::Key>(emscriptKey->keyCode);
         break;
     }
+
+    // Handle Mac command key. Using event->keyCode as above is
+    // no reliable since the codes differ between browsers.
+    if (qstrncmp(emscriptKey->key, "Meta", 4) == 0) {
+        qtKey = Qt::Key_Meta;
+        *outAlphanumeric = false;
+    }
     return qtKey;
 }
 
