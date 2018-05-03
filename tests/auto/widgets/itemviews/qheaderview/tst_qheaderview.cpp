@@ -3326,7 +3326,7 @@ void tst_QHeaderView::testMinMaxSectionSize(bool stretchLastSection)
     header.resizeSection(0, sectionSizeMax);
     QCOMPARE(header.sectionSize(0), sectionSizeMax);
     header.setMaximumSectionSize(defaultSectionSize);
-    waitFor([this, &header, defaultSectionSize]() { return header.sectionSize(0) == defaultSectionSize; });
+    waitFor([&header, defaultSectionSize]() { return header.sectionSize(0) == defaultSectionSize; });
     QCOMPARE(header.sectionSize(0), defaultSectionSize);
 
     // change section size on min change
@@ -3335,7 +3335,7 @@ void tst_QHeaderView::testMinMaxSectionSize(bool stretchLastSection)
     header.resizeSection(0, sectionSizeMin);
     QCOMPARE(header.sectionSize(0), sectionSizeMin);
     header.setMinimumSectionSize(defaultSectionSize);
-    waitFor([this, &header, defaultSectionSize]() { return header.sectionSize(0) == defaultSectionSize; });
+    waitFor([&header, defaultSectionSize]() { return header.sectionSize(0) == defaultSectionSize; });
     QCOMPARE(header.sectionSize(0), defaultSectionSize);
 }
 

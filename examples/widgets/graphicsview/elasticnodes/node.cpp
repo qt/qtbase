@@ -138,7 +138,7 @@ void Node::calculateForces()
 //! [6]
 
 //! [7]
-bool Node::advanceNext()
+bool Node::advancePosition()
 {
     if (newPos == pos())
         return false;

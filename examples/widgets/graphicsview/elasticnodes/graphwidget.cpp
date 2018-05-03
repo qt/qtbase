@@ -174,7 +174,7 @@ void GraphWidget::timerEvent(QTimerEvent *event)
 
     bool itemsMoved = false;
     foreach (Node *node, nodes) {
-        if (node->advanceNext())
+        if (node->advancePosition())
             itemsMoved = true;
     }
 

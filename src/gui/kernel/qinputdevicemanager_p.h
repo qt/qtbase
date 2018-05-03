@@ -79,7 +79,7 @@ public:
     void setCursorPos(const QPoint &pos);
 
     Qt::KeyboardModifiers keyboardModifiers() const;
-    void setKeyboardModifiers(Qt::KeyboardModifiers modsBeforeEvent, int key);
+    void setKeyboardModifiers(Qt::KeyboardModifiers mods);
 
 signals:
     void deviceListChanged(QInputDeviceManager::DeviceType type);

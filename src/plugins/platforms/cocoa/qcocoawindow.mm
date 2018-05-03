@@ -394,10 +394,10 @@ void QCocoaWindow::setVisible(bool visible)
                         removeMonitor();
                         monitor = [NSEvent addGlobalMonitorForEventsMatchingMask:NSLeftMouseDownMask|NSRightMouseDownMask|NSOtherMouseDownMask|NSMouseMovedMask handler:^(NSEvent *e) {
                             QPointF localPoint = QCocoaScreen::mapFromNative([NSEvent mouseLocation]);
-                            const auto eventType = e.type == NSMouseMoved ? QEvent::MouseMove : QEvent::MouseButtonPress;
+                            const auto button = e.type == NSEventTypeMouseMoved ? Qt::NoButton : cocoaButton2QtButton([e buttonNumber]);
+                            const auto eventType = e.type == NSEventTypeMouseMoved ? QEvent::MouseMove : QEvent::MouseButtonPress;
                             QWindowSystemInterface::handleMouseEvent(window(), window()->mapFromGlobal(localPoint.toPoint()), localPoint,
-                                                                     Qt::MouseButtons(uint(NSEvent.pressedMouseButtons & 0xFFFF)),
-                                                                     cocoaButton2QtButton(e.buttonNumber), eventType);
+                                                                     Qt::MouseButtons(uint(NSEvent.pressedMouseButtons & 0xFFFF)), button, eventType);
                         }];
                     }
                 }

@@ -109,30 +109,9 @@ Qt::KeyboardModifiers QInputDeviceManager::keyboardModifiers() const
     return d->keyboardModifiers;
 }
 
-void QInputDeviceManager::setKeyboardModifiers(Qt::KeyboardModifiers modsBeforeEvent, int key)
+void QInputDeviceManager::setKeyboardModifiers(Qt::KeyboardModifiers mods)
 {
     Q_D(QInputDeviceManager);
-    Qt::KeyboardModifiers mods;
-    switch (key) {
-    case Qt::Key_Shift:
-        mods = Qt::KeyboardModifiers(modsBeforeEvent ^ Qt::ShiftModifier);
-        break;
-    case Qt::Key_Control:
-        mods = Qt::KeyboardModifiers(modsBeforeEvent ^ Qt::ControlModifier);
-        break;
-    case Qt::Key_Alt:
-        mods = Qt::KeyboardModifiers(modsBeforeEvent ^ Qt::AltModifier);
-        break;
-    case Qt::Key_Meta:
-        mods = Qt::KeyboardModifiers(modsBeforeEvent ^ Qt::MetaModifier);
-        break;
-    case Qt::Key_AltGr:
-        mods = Qt::KeyboardModifiers(modsBeforeEvent ^ Qt::GroupSwitchModifier);
-        break;
-    default:
-        mods = modsBeforeEvent;
-        break;
-    }
     d->keyboardModifiers = mods;
 }
 

@@ -43,6 +43,7 @@
 #include "qevent.h"
 #include "qwidget.h"
 #include "qdebug.h"
+#include <QtCore/qcoreapplication.h>
 
 #ifndef QT_NO_GESTURES
 
@@ -181,6 +182,16 @@ QGesture *QMacPanGestureRecognizer::create(QObject *target)
     return 0;
 }
 
+void QMacPanGestureRecognizer::timerEvent(QTimerEvent *ev)
+{
+    if (ev->timerId() == _panTimer.timerId()) {
+        if (_panTimer.isActive())
+           _panTimer.stop();
+        if (_target)
+            QCoreApplication::sendEvent(_target, ev);
+    }
+}
+
 QGestureRecognizer::Result
 QMacPanGestureRecognizer::recognize(QGesture *gesture, QObject *target, QEvent *event)
 {
@@ -195,7 +206,8 @@ QMacPanGestureRecognizer::recognize(QGesture *gesture, QObject *target, QEvent *
         if (ev->touchPoints().size() == 1) {
             reset(gesture);
             _startPos = QCursor::pos();
-            _panTimer.start(panBeginDelay, target);
+            _target = target;
+            _panTimer.start(panBeginDelay, this);
             _panCanceled = false;
             return QGestureRecognizer::MayBeGesture;
         }
@@ -242,7 +254,6 @@ QMacPanGestureRecognizer::recognize(QGesture *gesture, QObject *target, QEvent *
     case QEvent::Timer: {
         QTimerEvent *ev = static_cast<QTimerEvent *>(event);
         if (ev->timerId() == _panTimer.timerId()) {
-            _panTimer.stop();
             if (_panCanceled)
                 break;
             // Begin new pan session!

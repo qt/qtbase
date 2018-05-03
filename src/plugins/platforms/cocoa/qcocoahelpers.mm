@@ -261,6 +261,16 @@ QRectF qt_mac_flip(const QRectF &rect, const QRectF &reference)
 
 // -------------------------------------------------------------------------
 
+/*!
+  \fn Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
+
+  Returns the Qt::Button that corresponds to an NSEvent.buttonNumber.
+
+  \note AppKit will use buttonNumber 0 to indicate both "left button"
+  and "no button". Only NSEvents that describes mouse press/release
+  events (e.g NSEventTypeOtherMouseDown) will contain a valid
+  button number.
+*/
 Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
 {
     if (buttonNum >= 0 && buttonNum <= 31)
