@@ -211,6 +211,7 @@ void QContiguousCache<T>::detach_helper()
 template <typename T>
 void QContiguousCache<T>::setCapacity(int asize)
 {
+    Q_ASSERT(asize >= 0);
     if (asize == d->alloc)
         return;
     detach();
@@ -285,6 +286,7 @@ inline QContiguousCacheData *QContiguousCache<T>::allocateData(int aalloc)
 template <typename T>
 QContiguousCache<T>::QContiguousCache(int cap)
 {
+    Q_ASSERT(cap >= 0);
     d = allocateData(cap);
     d->ref.store(1);
     d->alloc = cap;
