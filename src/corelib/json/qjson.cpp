@@ -358,8 +358,6 @@ bool Value::isValid(const Base *b) const
         return false;
 
     int s = usedStorage(b);
-    if (!s)
-        return true;
     if (s < 0 || s > (int)b->tableOffset - offset)
         return false;
     if (type == QJsonValue::Array)
