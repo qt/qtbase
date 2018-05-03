@@ -2283,7 +2283,7 @@ void tst_QHeaderView::QTBUG6058_reset()
     QHeaderView view(Qt::Vertical);
     view.setModel(&proxy);
     view.show();
-    QTest::qWait(20);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     proxy.setSourceModel(&model1);
     QApplication::processEvents();
@@ -3294,16 +3294,6 @@ void tst_QHeaderView::testMinMaxSectionSizeNotStretched()
     testMinMaxSectionSize(false);
 }
 
-static void waitFor(const std::function<bool()> &func)
-{
-    for (int i = 0; i < 100; i++)
-    {
-        if (func())
-          return;
-        QTest::qWait(10);
-    }
-}
-
 void tst_QHeaderView::testMinMaxSectionSize(bool stretchLastSection)
 {
     QStandardItemModel m(5, 5);
@@ -3341,7 +3331,7 @@ void tst_QHeaderView::testMinMaxSectionSize(bool stretchLastSection)
     header.resizeSection(0, sectionSizeMax);
     QCOMPARE(header.sectionSize(0), sectionSizeMax);
     header.setMaximumSectionSize(defaultSectionSize);
-    waitFor([&header, defaultSectionSize]() { return header.sectionSize(0) == defaultSectionSize; });
+    QVERIFY(QTest::qWaitFor([&header, defaultSectionSize]() { return header.sectionSize(0) == defaultSectionSize; }));
     QCOMPARE(header.sectionSize(0), defaultSectionSize);
 
     // change section size on min change
@@ -3350,7 +3340,7 @@ void tst_QHeaderView::testMinMaxSectionSize(bool stretchLastSection)
     header.resizeSection(0, sectionSizeMin);
     QCOMPARE(header.sectionSize(0), sectionSizeMin);
     header.setMinimumSectionSize(defaultSectionSize);
-    waitFor([&header, defaultSectionSize]() { return header.sectionSize(0) == defaultSectionSize; });
+    QVERIFY(QTest::qWaitFor([&header, defaultSectionSize]() { return header.sectionSize(0) == defaultSectionSize; }));
     QCOMPARE(header.sectionSize(0), defaultSectionSize);
 }
 
