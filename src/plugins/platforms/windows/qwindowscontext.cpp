@@ -1093,6 +1093,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::ExitSizeMoveEvent:
         platformWindow->clearFlag(QWindowsWindow::ResizeMoveActive);
         platformWindow->checkForScreenChanged();
+        QWindowsMouseHandler::handleExitSizeMove(platformWindow->window());
         return true;
     case QtWindows::ScrollEvent:
         return sessionManagerInteractionBlocked() || d->m_mouseHandler.translateScrollEvent(platformWindow->window(), hwnd, msg, result);

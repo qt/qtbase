@@ -178,6 +178,30 @@ Qt::MouseButtons QWindowsMouseHandler::queryMouseButtons()
     return result;
 }
 
+void QWindowsMouseHandler::handleExitSizeMove(QWindow *window)
+{
+    // When moving a window by dragging the title bar, no WM_NCLBUTTONUP is
+    // received after WM_NCLBUTTONDOWN, WM_NCMOUSEMOVE (due to internal
+    // mouse capture), which can leave the left mouse button 'pressed'
+    // in QGuiApplication's state. Intercept WM_EXITSIZEMOVE to sync the buttons.
+    const Qt::MouseButtons currentButtons = QWindowsMouseHandler::queryMouseButtons();
+    const Qt::MouseButtons appButtons = QGuiApplication::mouseButtons();
+    if (currentButtons == appButtons)
+        return;
+    const Qt::KeyboardModifiers keyboardModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
+    const QPoint globalPos = QWindowsCursor::mousePosition();
+    const QPoint localPos = window->handle()->mapFromGlobal(globalPos);
+    for (Qt::MouseButton button : {Qt::LeftButton, Qt::RightButton, Qt::MiddleButton}) {
+        if (appButtons.testFlag(button) && !currentButtons.testFlag(button)) {
+            QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos,
+                                                     currentButtons, button,
+                                                     QEvent::NonClientAreaMouseButtonRelease,
+                                                     keyboardModifiers,
+                                                     Qt::MouseEventNotSynthesized);
+        }
+    }
+}
+
 static QPoint lastMouseMovePos;
 
 namespace {

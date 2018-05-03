@@ -80,6 +80,8 @@ public:
     QWindow *windowUnderMouse() const { return m_windowUnderMouse.data(); }
     void clearWindowUnderMouse() { m_windowUnderMouse = 0; }
 
+    static void handleExitSizeMove(QWindow *window);
+
 private:
     inline bool translateMouseWheelEvent(QWindow *window, HWND hwnd,
                                          MSG msg, LRESULT *result);
