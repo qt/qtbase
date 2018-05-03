@@ -1517,7 +1517,7 @@ bool QSslSocketBackendPrivate::importPkcs12(QIODevice *device,
     if (!key->d->fromEVP_PKEY(pkey)) {
         qCWarning(lcSsl, "Unable to convert private key");
         q_OPENSSL_sk_pop_free(reinterpret_cast<OPENSSL_STACK *>(ca),
-                              reinterpret_cast<void (*)(void *)>(q_OPENSSL_sk_free));
+                              reinterpret_cast<void (*)(void *)>(q_X509_free));
         q_X509_free(x509);
         q_EVP_PKEY_free(pkey);
         q_PKCS12_free(p12);
@@ -1532,8 +1532,6 @@ bool QSslSocketBackendPrivate::importPkcs12(QIODevice *device,
         *caCertificates = QSslSocketBackendPrivate::STACKOFX509_to_QSslCertificates(ca);
 
     // Clean up
-    // TODO: verify ASAP, in the past we had sk_pop_free with q_OPENSSL_sk_free
-    // which seems to be blatantly wrong and even crashes with 1.1.
     q_OPENSSL_sk_pop_free(reinterpret_cast<OPENSSL_STACK *>(ca),
                           reinterpret_cast<void (*)(void *)>(q_X509_free));
 
