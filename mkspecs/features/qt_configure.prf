@@ -982,7 +982,7 @@ defineTest(qtConfHandleLibrary) {
         export($${lpfx}.source)
 
         # if the library defines a test, use it to verify the source.
-        !isEmpty($${lpfx}.test)|!isEmpty($${lpfx}.test._KEYS_) {
+        defined($${lpfx}.test, var)|defined($${lpfx}.test._KEYS_, var) {
             $${lpfx}.resolved_uses = $$currentConfig:$$1
             $${lpfx}.host = $$eval($${spfx}.host)
             !qtConfTest_compile($$lpfx) {
