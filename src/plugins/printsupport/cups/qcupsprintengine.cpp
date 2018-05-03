@@ -285,7 +285,10 @@ void QCupsPrintEnginePrivate::changePrinter(const QString &newPrinter)
         grayscale = m_printDevice.defaultColorMode() == QPrint::GrayScale;
 
     // Get the equivalent page size for this printer as supported names may be different
-    setPageSize(m_pageLayout.pageSize());
+    if (m_printDevice.supportedPageSize(m_pageLayout.pageSize()).isValid())
+        setPageSize(m_pageLayout.pageSize());
+    else
+        setPageSize(QPageSize(m_pageLayout.pageSize().size(QPageSize::Point), QPageSize::Point));
 }
 
 void QCupsPrintEnginePrivate::setPageSize(const QPageSize &pageSize)

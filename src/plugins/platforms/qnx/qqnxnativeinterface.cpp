@@ -91,6 +91,9 @@ void *QQnxNativeInterface::nativeResourceForScreen(const QByteArray &resource, Q
 
 void *QQnxNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
 {
+    if (resource == "screenContext")
+        return m_integration->screenContext();
+
     return 0;
 }
 

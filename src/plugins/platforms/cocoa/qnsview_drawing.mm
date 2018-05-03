@@ -123,7 +123,7 @@
         m_platformWindow->handleExposeEvent(dirtyRegion);
     }
 
-    if (m_platformWindow->hasPendingUpdateRequest()) {
+    if (m_updateRequested && m_platformWindow->hasPendingUpdateRequest()) {
         // A call to QWindow::requestUpdate was issued during event delivery above,
         // but AppKit will reset the needsDisplay state of the view after completing
         // the current display cycle, so we need to defer the request to redisplay.

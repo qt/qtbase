@@ -125,7 +125,7 @@ void QLibInputPointer::processAxis(libinput_event_pointer *e)
 #endif
     const int factor = 8;
     angleDelta *= -factor;
-    Qt::KeyboardModifiers mods = QGuiApplication::keyboardModifiers();
+    Qt::KeyboardModifiers mods = QGuiApplicationPrivate::inputDeviceManager()->keyboardModifiers();
     QWindowSystemInterface::handleWheelEvent(nullptr, m_pos, m_pos, QPoint(), angleDelta, mods);
 }
 

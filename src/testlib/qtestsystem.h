@@ -110,23 +110,7 @@ namespace QTest
 #ifdef QT_GUI_LIB
     Q_REQUIRED_RESULT inline static bool qWaitForWindowActive(QWindow *window, int timeout = 5000)
     {
-        bool becameActive = qWaitFor([&]() { return window->isActive(); }, timeout);
-
-        // Try ensuring the platform window receives the real position.
-        // (i.e. that window->pos() reflects reality)
-        // isActive() ( == FocusIn in case of X) does not guarantee this. It seems some WMs randomly
-        // send the final ConfigureNotify (the one with the non-bogus 0,0 position) after the FocusIn.
-        // If we just let things go, every mapTo/FromGlobal call the tests perform directly after
-        // qWaitForWindowShown() will generate bogus results.
-        if (becameActive) {
-            int waitNo = 0; // 0, 0 might be a valid position after all, so do not wait for ever
-            while (window->position().isNull()) {
-                if (waitNo++ > timeout / 10)
-                    break;
-                qWait(10);
-            }
-        }
-        return window->isActive();
+        return qWaitFor([&]() { return window->isActive(); }, timeout);
     }
 
     Q_REQUIRED_RESULT inline static bool qWaitForWindowExposed(QWindow *window, int timeout = 5000)

@@ -55,10 +55,6 @@
 #include <QStandardItem>
 #include "mainwindow.h"
 
-
-const int ROWS = 2;
-const int COLUMNS = 3;
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {

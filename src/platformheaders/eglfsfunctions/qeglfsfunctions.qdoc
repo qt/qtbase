@@ -91,6 +91,12 @@
 */
 
 /*!
+    \fn bool QEglFSFunctions::vsp2SetLayerAlpha(const QScreen *screen, int id, qreal alpha)
+    \internal
+    \preliminary
+*/
+
+/*!
     \fn void QEglFSFunctions::vsp2AddBlendListener(const QScreen *screen, void(*callback)())
     \internal
     \preliminary
@@ -121,6 +127,11 @@
     \internal
 */
 
+/*!
+    \typedef QEglFSFunctions::Vsp2SetLayerAlphaType
+    \internal
+*/
+
 /*! \fn QByteArray QEglFSFunctions::vsp2AddBlendListenerTypeIdentifier()
     \internal
  */
@@ -138,5 +149,9 @@
  */
 
 /*! \fn QByteArray QEglFSFunctions::vsp2SetLayerPositionTypeIdentifier()
+    \internal
+ */
+
+/*! \fn QByteArray QEglFSFunctions::vsp2SetLayerAlphaTypeIdentifier()
     \internal
  */

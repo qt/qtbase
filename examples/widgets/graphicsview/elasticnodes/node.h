@@ -73,7 +73,7 @@ public:
     int type() const override { return Type; }
 
     void calculateForces();
-    bool advanceNext();
+    bool advancePosition();
 
     QRectF boundingRect() const override;
     QPainterPath shape() const override;
