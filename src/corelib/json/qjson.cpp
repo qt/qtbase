@@ -299,7 +299,7 @@ int Value::usedStorage(const Base *b) const
 
 bool Value::isValid(const Base *b) const
 {
-    int offset = 0;
+    int offset = -1;
     switch (type) {
     case QJsonValue::Double:
         if (latinOrIntValue)
@@ -316,9 +316,9 @@ bool Value::isValid(const Base *b) const
         break;
     }
 
-    if (!offset)
+    if (offset == -1)
         return true;
-    if (offset + sizeof(uint) > b->tableOffset)
+    if (offset + sizeof(uint) > b->tableOffset || offset < (int)sizeof(Base))
         return false;
 
     int s = usedStorage(b);
