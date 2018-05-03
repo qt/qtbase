@@ -294,8 +294,6 @@ public:
     void _q_fileSystemChanged(const QString &path, const QVector<QPair<QString, QFileInfo> > &);
     void _q_resolvedName(const QString &fileName, const QString &resolvedName);
 
-    static int naturalCompare(const QString &s1, const QString &s2, Qt::CaseSensitivity cs);
-
     QDir rootDir;
 #if QT_CONFIG(filesystemwatcher)
 #  ifdef Q_OS_WIN
