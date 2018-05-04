@@ -33,6 +33,7 @@ QT += \
 
 SOURCES =   main.cpp \
             qqnxbuffer.cpp \
+            qqnxforeignwindow.cpp \
             qqnxintegration.cpp \
             qqnxscreen.cpp \
             qqnxwindow.cpp \
@@ -50,6 +51,7 @@ SOURCES =   main.cpp \
 
 HEADERS =   main.h \
             qqnxbuffer.h \
+            qqnxforeignwindow.h \
             qqnxkeytranslator.h \
             qqnxintegration.h \
             qqnxscreen.h \
