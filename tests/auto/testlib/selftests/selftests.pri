@@ -30,6 +30,7 @@ SUBPROGRAMS = \
      keyboard \
      longstring \
      maxwarnings \
+     mouse \
      multiexec \
      pairdiagnostics \
      printdatatags \
@@ -48,8 +49,7 @@ SUBPROGRAMS = \
      verbose2 \
      verifyexceptionthrown \
      warnings \
-     xunit \
-     mouse
+     xunit
 
 INCLUDEPATH += ../../../../shared/
 HEADERS += ../../../../shared/emulationdetector.h
