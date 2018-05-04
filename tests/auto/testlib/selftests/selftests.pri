@@ -27,6 +27,7 @@ SUBPROGRAMS = \
      findtestdata \
      float \
      globaldata \
+     keyboard \
      longstring \
      maxwarnings \
      multiexec \

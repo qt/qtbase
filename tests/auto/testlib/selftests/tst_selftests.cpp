@@ -477,6 +477,7 @@ void tst_Selftests::runSubTest_data()
         << "findtestdata"
         << "float"
         << "globaldata"
+        << "keyboard"
         << "longstring"
         << "maxwarnings"
         << "multiexec"

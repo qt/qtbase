@@ -1,0 +1,8 @@
+##teamcity[testSuiteStarted name='tst_Keyboard' flowId='tst_Keyboard']
+##teamcity[testStarted name='initTestCase()' flowId='tst_Keyboard']
+##teamcity[testFinished name='initTestCase()' flowId='tst_Keyboard']
+##teamcity[testStarted name='keyPressAndRelease()' flowId='tst_Keyboard']
+##teamcity[testFinished name='keyPressAndRelease()' flowId='tst_Keyboard']
+##teamcity[testStarted name='cleanupTestCase()' flowId='tst_Keyboard']
+##teamcity[testFinished name='cleanupTestCase()' flowId='tst_Keyboard']
+##teamcity[testSuiteFinished name='tst_Keyboard' flowId='tst_Keyboard']
