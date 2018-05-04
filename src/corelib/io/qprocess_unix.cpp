@@ -925,6 +925,8 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         closeChannel(&stdinChannel);
         closeChannel(&stdoutChannel);
         closeChannel(&stderrChannel);
+        qt_safe_close(pidPipe[0]);
+        qt_safe_close(pidPipe[1]);
         qt_safe_close(startedPipe[0]);
         qt_safe_close(startedPipe[1]);
         return false;
