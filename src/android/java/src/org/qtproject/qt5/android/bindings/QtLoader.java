@@ -355,12 +355,21 @@ public abstract class QtLoader {
         destinationFile.createNewFile();
 
         AssetManager assetsManager = m_context.getAssets();
-        InputStream inputStream = assetsManager.open(source);
-        OutputStream outputStream = new FileOutputStream(destinationFile);
-        copyFile(inputStream, outputStream);
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+        try {
+            inputStream = assetsManager.open(source);
+            outputStream = new FileOutputStream(destinationFile);
+            copyFile(inputStream, outputStream);
+        catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (inputStream != null)
+                inputStream.close();
 
-        inputStream.close();
-        outputStream.close();
+            if (outputStream != null)
+                outputStream.close();
+        }
     }
 
     private static void createBundledBinary(String source, String destination)
@@ -377,12 +386,21 @@ public abstract class QtLoader {
 
         destinationFile.createNewFile();
 
-        InputStream inputStream = new FileInputStream(source);
-        OutputStream outputStream = new FileOutputStream(destinationFile);
-        copyFile(inputStream, outputStream);
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+        try {
+            inputStream = new FileInputStream(source);
+            outputStream = new FileOutputStream(destinationFile);
+            copyFile(inputStream, outputStream);
+        catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (inputStream != null)
+                inputStream.close();
 
-        inputStream.close();
-        outputStream.close();
+            if (outputStream != null)
+                outputStream.close();
+        }
     }
 
     private boolean cleanCacheIfNecessary(String pluginsPrefix, long packageVersion)
@@ -391,12 +409,15 @@ public abstract class QtLoader {
 
         long cacheVersion = 0;
         if (versionFile.exists() && versionFile.canRead()) {
+            DataInputStream inputStream = null;
             try {
-                DataInputStream inputStream = new DataInputStream(new FileInputStream(versionFile));
+                inputStream = new DataInputStream(new FileInputStream(versionFile));
                 cacheVersion = inputStream.readLong();
-                inputStream.close();
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                if (inputStream != null)
+                    inputStream.close();
             }
         }
 
@@ -431,9 +452,16 @@ public abstract class QtLoader {
 
             versionFile.createNewFile();
 
-            DataOutputStream outputStream = new DataOutputStream(new FileOutputStream(versionFile));
-            outputStream.writeLong(packageVersion);
-            outputStream.close();
+            DataOutputStream outputStream = null;
+            try {
+                outputStream = new DataOutputStream(new FileOutputStream(versionFile));
+                outputStream.writeLong(packageVersion);
+            catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (outputStream != null)
+                    outputStream.close();
+            }
         }
 
         {
