@@ -37,9 +37,7 @@
 # it to the output of each test, ignoring various boring changes.
 # This script canonicalises the parts that would exhibit those boring
 # changes, so as to avoid noise in git (and conflicts in merges) for
-# the saved copies of the output.  If you add or remove any files, be
-# sure to update selftests.qrc to match; the selftest only sees files
-# listed there.
+# the saved copies of the output.
 
 import os
 import subprocess
