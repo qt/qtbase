@@ -442,35 +442,48 @@ bool QPrintPropertiesDialog::createAdvancedOptionsWidget()
                     if (!isBlacklistedOption(option->keyword)) {
                         QComboBox *choicesCb = new QComboBox();
 
-                        bool foundMarkedOption = false;
+                        const auto setPpdOptionFromCombo = [this, choicesCb, option] {
+                            // We can't use choicesCb->currentIndex() to know the index of the option in the choices[] array
+                            // because some of them may not be present in the list because they conflict with the
+                            // installable options so use the index passed on addItem
+                            const int selectedChoiceIndex = choicesCb->currentData().toInt();
+                            const auto values = QStringList{} << QString::fromLatin1(option->keyword)
+                                                                << QString::fromLatin1(option->choices[selectedChoiceIndex].choice);
+                            m_currentPrintDevice->setProperty(PDPK_PpdOption, values);
+                            widget.conflictsLabel->setVisible(anyPpdOptionConflict());
+                        };
+
+                        bool foundMarkedChoice = false;
+                        bool markedChoiceNotAvailable = false;
                         for (int i = 0; i < option->num_choices; ++i) {
                             const ppd_choice_t *choice = &option->choices[i];
                             const auto values = QStringList{} << QString::fromLatin1(option->keyword) << QString::fromLatin1(choice->choice);
-                            if (!m_currentPrintDevice->isFeatureAvailable(PDPK_PpdChoiceIsInstallableConflict, values)) {
+                            const bool choiceIsInstallableConflict = m_currentPrintDevice->isFeatureAvailable(PDPK_PpdChoiceIsInstallableConflict, values);
+                            if (choiceIsInstallableConflict && static_cast<int>(choice->marked) == 1) {
+                                markedChoiceNotAvailable = true;
+                            } else if (!choiceIsInstallableConflict) {
                                 choicesCb->addItem(m_cupsCodec->toUnicode(choice->text), i);
                                 if (static_cast<int>(choice->marked) == 1) {
                                     choicesCb->setCurrentIndex(choicesCb->count() - 1);
                                     choicesCb->setProperty(ppdOriginallySelectedChoiceProperty, QVariant(i));
-                                    foundMarkedOption = true;
-                                } else if (!foundMarkedOption && qstrcmp(choice->choice, option->defchoice) == 0) {
+                                    foundMarkedChoice = true;
+                                } else if (!foundMarkedChoice && qstrcmp(choice->choice, option->defchoice) == 0) {
                                     choicesCb->setCurrentIndex(choicesCb->count() - 1);
                                     choicesCb->setProperty(ppdOriginallySelectedChoiceProperty, QVariant(i));
                                 }
                             }
                         }
 
+                        if (markedChoiceNotAvailable) {
+                            // If the user default option is not available because of it conflicting with
+                            // the installed options, we need to set the internal ppd value to the value
+                            // being shown in the combo
+                            setPpdOptionFromCombo();
+                        }
+
                         if (choicesCb->count() > 1) {
 
-                            connect(choicesCb, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this, choicesCb, option] {
-                                // We can't use choicesCb->currentIndex() to know the index of the option in the choices[] array
-                                // because some of them may not be present in the list because they conflict with the
-                                // installable options so use the index passed on addItem
-                                const int selectedChoiceIndex = choicesCb->currentData().toInt();
-                                const auto values = QStringList{} << QString::fromLatin1(option->keyword)
-                                                                  << QString::fromLatin1(option->choices[selectedChoiceIndex].choice);
-                                m_currentPrintDevice->setProperty(PDPK_PpdOption, values);
-                                widget.conflictsLabel->setVisible(anyPpdOptionConflict());
-                            });
+                            connect(choicesCb, QOverload<int>::of(&QComboBox::currentIndexChanged), this, setPpdOptionFromCombo);
 
                             // We need an extra label at the end to show the conflict warning
                             QWidget *choicesCbWithLabel = new QWidget();
