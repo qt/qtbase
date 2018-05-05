@@ -101,6 +101,8 @@ public:
 protected:
     void timerEvent(QTimerEvent* e) override;
 
+    bool findXdndAwareTarget(const QPoint &globalPos, xcb_window_t *target_out);
+
 private:
     friend class QXcbDropData;
 

@@ -116,6 +116,7 @@ Q_LOGGING_CATEGORY(lcQpaEvents, "qt.qpa.events")
 Q_LOGGING_CATEGORY(lcQpaXcb, "qt.qpa.xcb") // for general (uncategorized) XCB logging
 Q_LOGGING_CATEGORY(lcQpaPeeker, "qt.qpa.peeker")
 Q_LOGGING_CATEGORY(lcQpaKeyboard, "qt.qpa.xkeyboard")
+Q_LOGGING_CATEGORY(lcQpaXDnd, "qt.qpa.xdnd")
 
 // this event type was added in libxcb 1.10,
 // but we support also older version
