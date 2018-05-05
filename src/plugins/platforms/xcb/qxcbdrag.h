@@ -143,6 +143,9 @@ private:
     bool dropped;
     bool canceled;
 
+    // A window from Unity DnD Manager, which does not respect the XDnD spec
+    xcb_window_t xdndCollectionWindow = XCB_NONE;
+
     // top-level window we sent position to last.
     xcb_window_t current_target;
     // window to send events to (always valid if current_target)

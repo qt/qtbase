@@ -2839,6 +2839,15 @@ QString QXcbWindow::windowTitle(const QXcbConnection *conn, xcb_window_t window)
         const char *name = reinterpret_cast<const char *>(xcb_get_property_value(reply.get()));
         return QString::fromUtf8(name, xcb_get_property_value_length(reply.get()));
     }
+
+    reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, conn->xcb_connection(),
+                                  false, window, conn->atom(QXcbAtom::WM_NAME),
+                                  XCB_ATOM_STRING, 0, 1024);
+    if (reply && reply->format == 8 && reply->type == XCB_ATOM_STRING) {
+        const char *name = reinterpret_cast<const char *>(xcb_get_property_value(reply.get()));
+        return QString::fromLatin1(name, xcb_get_property_value_length(reply.get()));
+    }
+
     return QString();
 }
 

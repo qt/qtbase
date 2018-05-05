@@ -155,6 +155,8 @@ void QXcbDrag::init()
 
     dropped = false;
     canceled = false;
+
+    source_sameanswer = QRect();
 }
 
 bool QXcbDrag::eventFilter(QObject *o, QEvent *e)
@@ -470,6 +472,17 @@ void QXcbDrag::move(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardMod
             handle_xdnd_position(w, &move, b, mods);
         else
             xcb_send_event(xcb_connection(), false, proxy_target, XCB_EVENT_MASK_NO_EVENT, (const char *)&move);
+    }
+
+    static const bool isUnity = qgetenv("XDG_CURRENT_DESKTOP").toLower() == "unity";
+    if (isUnity && xdndCollectionWindow == XCB_NONE) {
+        QString name = QXcbWindow::windowTitle(connection(), target);
+        if (name == QStringLiteral("XdndCollectionWindowImp"))
+            xdndCollectionWindow = target;
+    }
+    if (target == xdndCollectionWindow) {
+        setCanDrop(false);
+        updateCursor(Qt::IgnoreAction);
     }
 }
 
