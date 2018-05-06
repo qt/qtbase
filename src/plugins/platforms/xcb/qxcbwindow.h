@@ -182,6 +182,7 @@ public:
     virtual void create();
     virtual void destroy();
 
+    static void setWindowTitle(const QXcbConnection *conn, xcb_window_t window, const QString &title);
     static QString windowTitle(const QXcbConnection *conn, xcb_window_t window);
 
 public Q_SLOTS:

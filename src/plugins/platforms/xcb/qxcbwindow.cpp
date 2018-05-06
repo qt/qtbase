@@ -1360,17 +1360,10 @@ void QXcbWindow::updateNetWmUserTime(xcb_timestamp_t timestamp)
             xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window, atom(QXcbAtom::_NET_WM_USER_TIME_WINDOW),
                                 XCB_ATOM_WINDOW, 32, 1, &m_netWmUserTimeWindow);
             xcb_delete_property(xcb_connection(), m_window, atom(QXcbAtom::_NET_WM_USER_TIME));
-#ifndef QT_NO_DEBUG
-            QByteArray ba("Qt NET_WM user time window");
-            xcb_change_property(xcb_connection(),
-                                XCB_PROP_MODE_REPLACE,
-                                m_netWmUserTimeWindow,
-                                atom(QXcbAtom::_NET_WM_NAME),
-                                atom(QXcbAtom::UTF8_STRING),
-                                8,
-                                ba.length(),
-                                ba.constData());
-#endif
+
+            QXcbWindow::setWindowTitle(connection(), m_netWmUserTimeWindow,
+                                       QStringLiteral("Qt NET_WM User Time Window"));
+
         } else if (!isSupportedByWM) {
             // WM no longer supports it, then we should remove the
             // _NET_WM_USER_TIME_WINDOW atom.
@@ -1448,24 +1441,7 @@ void QXcbWindow::setParent(const QPlatformWindow *parent)
 
 void QXcbWindow::setWindowTitle(const QString &title)
 {
-    QString fullTitle = formatWindowTitle(title, QString::fromUtf8(" \xe2\x80\x94 ")); // unicode character U+2014, EM DASH
-    const QByteArray ba = std::move(fullTitle).toUtf8();
-    xcb_change_property(xcb_connection(),
-                                   XCB_PROP_MODE_REPLACE,
-                                   m_window,
-                                   atom(QXcbAtom::_NET_WM_NAME),
-                                   atom(QXcbAtom::UTF8_STRING),
-                                   8,
-                                   ba.length(),
-                                   ba.constData());
-
-#if QT_CONFIG(xcb_xlib)
-    Display *dpy = static_cast<Display *>(connection()->xlib_display());
-    XTextProperty *text = qstringToXTP(dpy, title);
-    if (text)
-        XSetWMName(dpy, m_window, text);
-#endif
-    xcb_flush(xcb_connection());
+    setWindowTitle(connection(), m_window, title);
 }
 
 void QXcbWindow::setWindowIconText(const QString &title)
@@ -2827,6 +2803,28 @@ void QXcbWindow::postSyncWindowRequest()
 QXcbScreen *QXcbWindow::xcbScreen() const
 {
     return static_cast<QXcbScreen *>(screen());
+}
+
+void QXcbWindow::setWindowTitle(const QXcbConnection *conn, xcb_window_t window, const QString &title)
+{
+    QString fullTitle = formatWindowTitle(title, QString::fromUtf8(" \xe2\x80\x94 ")); // unicode character U+2014, EM DASH
+    const QByteArray ba = std::move(fullTitle).toUtf8();
+    xcb_change_property(conn->xcb_connection(),
+                        XCB_PROP_MODE_REPLACE,
+                        window,
+                        conn->atom(QXcbAtom::_NET_WM_NAME),
+                        conn->atom(QXcbAtom::UTF8_STRING),
+                        8,
+                        ba.length(),
+                        ba.constData());
+
+#if QT_CONFIG(xcb_xlib)
+    Display *dpy = static_cast<Display *>(conn->xlib_display());
+    XTextProperty *text = qstringToXTP(dpy, title);
+    if (text)
+        XSetWMName(dpy, window, text);
+#endif
+    xcb_flush(conn->xcb_connection());
 }
 
 QString QXcbWindow::windowTitle(const QXcbConnection *conn, xcb_window_t window)

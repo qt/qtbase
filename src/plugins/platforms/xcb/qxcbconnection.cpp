@@ -1552,6 +1552,9 @@ xcb_window_t QXcbConnection::getQtSelectionOwner()
                           xcbScreen->root_visual,             // visual
                           0,                                  // value mask
                           0);                                 // value list
+
+        QXcbWindow::setWindowTitle(connection(), m_qtSelectionOwner,
+                               QStringLiteral("Qt Selection Window"));
     }
     return m_qtSelectionOwner;
 }
@@ -1576,17 +1579,11 @@ xcb_window_t QXcbConnection::clientLeader()
                           XCB_WINDOW_CLASS_INPUT_OUTPUT,
                           screen->screen()->root_visual,
                           0, 0);
-#ifndef QT_NO_DEBUG
-        QByteArray ba("Qt client leader window");
-        xcb_change_property(xcb_connection(),
-                            XCB_PROP_MODE_REPLACE,
-                            m_clientLeader,
-                            atom(QXcbAtom::_NET_WM_NAME),
-                            atom(QXcbAtom::UTF8_STRING),
-                            8,
-                            ba.length(),
-                            ba.constData());
-#endif
+
+
+        QXcbWindow::setWindowTitle(connection(), m_clientLeader,
+                                   QStringLiteral("Qt Client Leader Window"));
+
         xcb_change_property(xcb_connection(),
                             XCB_PROP_MODE_REPLACE,
                             m_clientLeader,

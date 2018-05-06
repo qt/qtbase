@@ -42,6 +42,7 @@
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
 #include "qxcbmime.h"
+#include "qxcbwindow.h"
 
 #include <private/qguiapplication_p.h>
 #include <QElapsedTimer>
@@ -276,18 +277,6 @@ QXcbClipboard::QXcbClipboard(QXcbConnection *c)
     m_timestamp[QClipboard::Selection] = XCB_CURRENT_TIME;
     m_owner = connection()->getQtSelectionOwner();
 
-#ifndef QT_NO_DEBUG
-    QByteArray ba("Qt clipboard window");
-    xcb_change_property(xcb_connection(),
-                        XCB_PROP_MODE_REPLACE,
-                        m_owner,
-                        atom(QXcbAtom::_NET_WM_NAME),
-                        atom(QXcbAtom::UTF8_STRING),
-                        8,
-                        ba.length(),
-                        ba.constData());
-#endif
-
     if (connection()->hasXFixes()) {
         const uint32_t mask = XCB_XFIXES_SELECTION_EVENT_MASK_SET_SELECTION_OWNER |
                 XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_WINDOW_DESTROY |
@@ -467,17 +456,9 @@ xcb_window_t QXcbClipboard::requestor() const
                           platformScreen->screen()->root_visual, // visual
                           0,                                     // value mask
                           0);                                    // value list
-#ifndef QT_NO_DEBUG
-        QByteArray ba("Qt clipboard requestor window");
-        xcb_change_property(xcb_connection(),
-                            XCB_PROP_MODE_REPLACE,
-                            window,
-                            atom(QXcbAtom::_NET_WM_NAME),
-                            atom(QXcbAtom::UTF8_STRING),
-                            8,
-                            ba.length(),
-                            ba.constData());
-#endif
+
+        QXcbWindow::setWindowTitle(connection(), window,
+                                   QStringLiteral("Qt Clipboard Requestor Window"));
 
         uint32_t mask = XCB_EVENT_MASK_PROPERTY_CHANGE;
         xcb_change_window_attributes(xcb_connection(), window, XCB_CW_EVENT_MASK, &mask);
