@@ -160,6 +160,19 @@ QDebug operator<<(QDebug debug, const QMacAutoReleasePool *pool);
 Q_CORE_EXPORT void qt_apple_check_os_version();
 Q_CORE_EXPORT bool qt_apple_isApplicationExtension();
 
+#if !defined(QT_BOOTSTRAPPED) && !defined(Q_OS_WATCHOS)
+QT_END_NAMESPACE
+# if defined(Q_OS_MACOS)
+Q_FORWARD_DECLARE_OBJC_CLASS(NSApplication);
+using AppleApplication = NSApplication;
+# else
+Q_FORWARD_DECLARE_OBJC_CLASS(UIApplication);
+using AppleApplication = UIApplication;
+# endif
+QT_BEGIN_NAMESPACE
+Q_CORE_EXPORT AppleApplication *qt_apple_sharedApplication();
+#endif
+
 // --------------------------------------------------------------------------
 
 #if !defined(QT_BOOTSTRAPPED) && (QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_12) || !defined(Q_OS_MACOS))
