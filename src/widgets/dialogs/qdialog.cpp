@@ -514,6 +514,13 @@ void QDialog::open()
     interaction with the parent window is blocked while the dialog is open.
     By default, the dialog is application modal.
 
+    \note Avoid using this function; instead, use \c{open()}. Unlike exec(),
+    open() is asynchronous, and does not spin an additional event loop. This
+    prevents a series of dangerous bugs from happening (e.g. deleting the
+    dialog's parent while the dialog is open via exec()). When using open() you
+    can connect to the finished() signal of QDialog to be notified when the
+    dialog is closed.
+
     \sa open(), show(), result(), setWindowModality()
 */
 
