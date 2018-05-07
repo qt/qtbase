@@ -1,6 +1,7 @@
 [positioning:default]
 linux
 osx-10.12 ci
+winrt
 [positioning:fake]
 osx-10.12 ci
 [modalWithChildWindow]
