@@ -55,7 +55,9 @@
 #include <qcache.h>
 #include <qregularexpression.h>
 #endif
+#if QT_CONFIG(timezone)
 #include <QTimeZone>
+#endif
 #include <QScopedValueRollback>
 
 #if defined Q_OS_WIN
@@ -438,8 +440,10 @@ static QString timespecToString(const QDateTime &dateTime)
         return QStringLiteral("Z");
     case Qt::OffsetFromUTC:
         return secondsToOffset(dateTime.offsetFromUtc());
+#if QT_CONFIG(timezone)
     case Qt::TimeZone:
         return secondsToOffset(dateTime.timeZone().offsetFromUtc(dateTime));
+#endif
     default:
         return QString();
     }

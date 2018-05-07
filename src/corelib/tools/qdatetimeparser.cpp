@@ -44,7 +44,9 @@
 #include "qset.h"
 #include "qlocale.h"
 #include "qdatetime.h"
+#if QT_CONFIG(timezone)
 #include "qtimezone.h"
+#endif
 #include "qregexp.h"
 #include "qdebug.h"
 
