@@ -862,6 +862,8 @@ void QWinRTScreen::removeWindow(QWindow *window)
     Q_D(QWinRTScreen);
     qCDebug(lcQpaWindows) << __FUNCTION__ << window;
 
+    handleExpose();
+
     const bool wasTopWindow = window == topWindow();
     if (!d->visibleWindows.removeAll(window))
         return;
@@ -869,7 +871,6 @@ void QWinRTScreen::removeWindow(QWindow *window)
     const Qt::WindowType type = window->type();
     if (wasTopWindow && type != Qt::Popup && type != Qt::ToolTip && type != Qt::Tool)
         QWindowSystemInterface::handleWindowActivated(nullptr, Qt::OtherFocusReason);
-    handleExpose();
     QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 #ifndef QT_NO_DRAGANDDROP
     if (wasTopWindow)
