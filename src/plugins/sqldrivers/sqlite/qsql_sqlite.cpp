@@ -51,7 +51,9 @@
 #include <qstringlist.h>
 #include <qvector.h>
 #include <qdebug.h>
+#if QT_CONFIG(timezone)
 #include <QTimeZone>
+#endif
 
 #if defined Q_OS_WIN
 # include <qt_windows.h>
@@ -430,8 +432,10 @@ static QString timespecToString(const QDateTime &dateTime)
         return QStringLiteral("Z");
     case Qt::OffsetFromUTC:
         return secondsToOffset(dateTime.offsetFromUtc());
+#if QT_CONFIG(timezone)
     case Qt::TimeZone:
         return secondsToOffset(dateTime.timeZone().offsetFromUtc(dateTime));
+#endif
     default:
         return QString();
     }
