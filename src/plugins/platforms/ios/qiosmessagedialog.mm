@@ -43,6 +43,8 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
 
+#include <QtCore/private/qcore_mac_p.h>
+
 #include "qiosglobal.h"
 #include "quiview.h"
 #include "qiosmessagedialog.h"
@@ -126,7 +128,7 @@ bool QIOSMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality win
         [m_alertController addAction:createAction(NoButton)];
     }
 
-    UIWindow *window = parent ? reinterpret_cast<UIView *>(parent->winId()).window : [UIApplication sharedApplication].keyWindow;
+    UIWindow *window = parent ? reinterpret_cast<UIView *>(parent->winId()).window : qt_apple_sharedApplication().keyWindow;
     [window.rootViewController presentViewController:m_alertController animated:YES completion:nil];
     return true;
 }

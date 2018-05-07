@@ -41,6 +41,7 @@
 
 #include <QtCore/QStringList>
 #include <QtCore/QVariant>
+#include <QtCore/private/qcore_mac_p.h>
 
 #include <QtGui/QFont>
 
@@ -103,7 +104,7 @@ bool QIOSTheme::usePlatformNativeDialog(QPlatformTheme::DialogType type) const
     switch (type) {
     case FileDialog:
     case MessageDialog:
-        return true;
+        return !qt_apple_isApplicationExtension();
     default:
         return false;
     }
