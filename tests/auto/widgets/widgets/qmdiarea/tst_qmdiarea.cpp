@@ -1400,6 +1400,7 @@ void tst_QMdiArea::subWindowList()
     QMdiArea workspace;
     workspace.show();
     qApp->setActiveWindow(&workspace);
+    QVERIFY(QTest::qWaitForWindowActive(&workspace));
 
     QList<QMdiSubWindow *> activationOrder;
     QVector<QMdiSubWindow *> windows;
@@ -1418,8 +1419,7 @@ void tst_QMdiArea::subWindowList()
 
     windows[staysOnTop1]->setWindowFlags(windows[staysOnTop1]->windowFlags() | Qt::WindowStaysOnTopHint);
     workspace.setActiveSubWindow(windows[activeSubWindow]);
-    qApp->processEvents();
-    QCOMPARE(workspace.activeSubWindow(), windows[activeSubWindow]);
+    QTRY_COMPARE(workspace.activeSubWindow(), windows[activeSubWindow]);
     activationOrder.move(activationOrder.indexOf(windows[activeSubWindow]), windowCount - 1);
 
     QList<QMdiSubWindow *> subWindows = workspace.subWindowList(windowOrder);
@@ -1441,13 +1441,11 @@ void tst_QMdiArea::subWindowList()
 
     windows[staysOnTop2]->setWindowFlags(windows[staysOnTop2]->windowFlags() | Qt::WindowStaysOnTopHint);
     workspace.setActiveSubWindow(windows[staysOnTop2]);
-    qApp->processEvents();
-    QCOMPARE(workspace.activeSubWindow(), windows[staysOnTop2]);
+    QTRY_COMPARE(workspace.activeSubWindow(), windows[staysOnTop2]);
     activationOrder.move(activationOrder.indexOf(windows[staysOnTop2]), windowCount - 1);
 
     workspace.setActiveSubWindow(windows[activeSubWindow]);
-    qApp->processEvents();
-    QCOMPARE(workspace.activeSubWindow(), windows[activeSubWindow]);
+    QTRY_COMPARE(workspace.activeSubWindow(), windows[activeSubWindow]);
     activationOrder.move(activationOrder.indexOf(windows[activeSubWindow]), windowCount - 1);
 
     QList<QMdiSubWindow *> widgets = workspace.subWindowList(windowOrder);
