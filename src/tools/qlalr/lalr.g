@@ -261,7 +261,7 @@ int Recognizer::nextToken()
       if (ch == QLatin1Char ('"'))
         inp ();
       else
-        qerr << _M_input_file << ":" << _M_line << ": Warning. Expected `\"'" << endl;
+        qerr() << _M_input_file << ":" << _M_line << ": Warning. Expected `\"'" << endl;
 
       _M_current_value = text;
       return (token = STRING_LITERAL);
@@ -314,7 +314,7 @@ int Recognizer::nextToken()
         return (token = PREC);
       else
         {
-          qerr << _M_input_file << ":" << _M_line << ": Unknown keyword `" << text << "'" << endl;
+          qerr() << _M_input_file << ":" << _M_line << ": Unknown keyword `" << text << "'" << endl;
           exit (EXIT_FAILURE);
           return (token = ERROR);
         }
@@ -439,7 +439,7 @@ bool Recognizer::parse (const QString &input_file)
   QFile file(_M_input_file);
   if (! file.open(QFile::ReadOnly))
     {
-      qerr << "qlalr: no input file\n";
+      qerr() << "qlalr: no input file\n";
       return false;
     }
 
@@ -659,7 +659,7 @@ case $rule_number: {
 
   if (_M_grammar->terminals.find (_M_current_rule->lhs) != _M_grammar->terminals.end ())
     {
-      qerr << _M_input_file << ":" << _M_line << ": Invalid non terminal `" << *_M_current_rule->lhs << "'" << endl;
+      qerr() << _M_input_file << ":" << _M_line << ": Invalid non terminal `" << *_M_current_rule->lhs << "'" << endl;
       return false;
     }
 
@@ -683,7 +683,7 @@ case $rule_number: {
 
   if (_M_grammar->terminals.find (_M_current_rule->lhs) != _M_grammar->terminals.end ())
     {
-      qerr << _M_input_file << ":" << _M_line << ": Invalid non terminal `" << *_M_current_rule->lhs << "'" << endl;
+      qerr() << _M_input_file << ":" << _M_line << ": Invalid non terminal `" << *_M_current_rule->lhs << "'" << endl;
       return false;
     }
 
@@ -712,7 +712,7 @@ case $rule_number: {
   Name tok = _M_grammar->intern (sym(2));
   if (! _M_grammar->isTerminal (tok))
     {
-      qerr << _M_input_file << ":" << _M_line << ": `" << *tok << " is not a terminal symbol" << endl;
+      qerr() << _M_input_file << ":" << _M_line << ": `" << *tok << " is not a terminal symbol" << endl;
       _M_current_rule->prec = _M_grammar->names.end ();
     }
   else
@@ -758,7 +758,7 @@ case $rule_number: {
         }
     }
 
-  qerr << _M_input_file << ":" << _M_line << ": Syntax error" << endl;
+  qerr() << _M_input_file << ":" << _M_line << ": Syntax error" << endl;
   return false;
 }
 

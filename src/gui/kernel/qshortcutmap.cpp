@@ -661,10 +661,16 @@ void QShortcutMap::dispatchEvent(QKeyEvent *e)
     // Find next
     const QShortcutEntry *current = 0, *next = 0;
     int i = 0, enabledShortcuts = 0;
+#if defined(DEBUG_QSHORTCUTMAP)
+    QVector<const QShortcutEntry*> ambiguousShortcuts;
+#endif
     while(i < d->identicals.size()) {
         current = d->identicals.at(i);
         if (current->enabled || !next){
             ++enabledShortcuts;
+#if defined(DEBUG_QSHORTCUTMAP)
+            ambiguousShortcuts.append(current);
+#endif
             if (enabledShortcuts > d->ambigCount + 1)
                 break;
             next = current;
@@ -678,6 +684,13 @@ void QShortcutMap::dispatchEvent(QKeyEvent *e)
         return;
     // Dispatch next enabled
 #if defined(DEBUG_QSHORTCUTMAP)
+    if (ambiguousShortcuts.size() > 1) {
+        qDebug() << "The following shortcuts are about to be activated ambiguously:";
+        for (const QShortcutEntry *entry : qAsConst(ambiguousShortcuts)) {
+            qDebug().nospace() << "- " << entry->keyseq << " (belonging to " << entry->owner << ")";
+        }
+    }
+
     qDebug().nospace()
         << "QShortcutMap::dispatchEvent(): Sending QShortcutEvent(\""
         << next->keyseq.toString() << "\", " << next->id << ", "

@@ -29,3 +29,5 @@ win32 {
     LIBS += -Lstaticplugin
 }
 LIBS += -lmoctestplugin
+
+builtin_testdata: DEFINES += BUILTIN_TESTDATA

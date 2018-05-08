@@ -390,6 +390,7 @@ void QWindowsMenuItem::setChecked(bool isChecked)
     menuItemSetChangeState(parentMenuHandle(), m_id, FALSE, m_checked, MF_CHECKED, MF_UNCHECKED);
 }
 
+#if QT_CONFIG(shortcut)
 void QWindowsMenuItem::setShortcut(const QKeySequence &shortcut)
 {
     qCDebug(lcQpaMenus) << __FUNCTION__ << '(' << shortcut << ')' << this;
@@ -399,6 +400,7 @@ void QWindowsMenuItem::setShortcut(const QKeySequence &shortcut)
     if (m_parentMenu != nullptr)
         updateText();
 }
+#endif
 
 void QWindowsMenuItem::setEnabled(bool enabled)
 {
@@ -441,10 +443,12 @@ UINT QWindowsMenuItem::state() const
 QString QWindowsMenuItem::nativeText() const
 {
     QString result = m_text;
+#if QT_CONFIG(shortcut)
     if (!m_shortcut.isEmpty()) {
         result += QLatin1Char('\t');
         result += m_shortcut.toString(QKeySequence::NativeText);
     }
+#endif
     return result;
 }
 
@@ -894,8 +898,10 @@ void QWindowsMenuItem::formatDebug(QDebug &d) const
         d << ", subMenu=" << static_cast<const void *>(m_subMenu);
     d << ", tag=" << showbase << hex
       << tag() << noshowbase << dec << ", id=" << m_id;
+#if QT_CONFIG(shortcut)
     if (!m_shortcut.isEmpty())
         d << ", shortcut=" << m_shortcut;
+#endif
     if (m_visible)
         d << " [visible]";
     if (m_enabled)
