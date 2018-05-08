@@ -1225,12 +1225,13 @@ public:
         socket.write("testing\n");
         exec();
     }
+signals:
+    void bytesWrittenReceived();
 public slots:
-   void bytesWritten(qint64) {
+    void bytesWritten(qint64) {
+        emit bytesWrittenReceived();
         exit();
-   }
-
-private:
+    }
 };
 
 /*
@@ -1248,11 +1249,12 @@ void tst_QLocalSocket::bytesWrittenSignal()
     QLocalServer server;
     QVERIFY(server.listen("qlocalsocket_readyread"));
     WriteThread writeThread;
+    QSignalSpy receivedSpy(&writeThread, &WriteThread::bytesWrittenReceived);
     writeThread.start();
     bool timedOut = false;
     QVERIFY(server.waitForNewConnection(3000, &timedOut));
     QVERIFY(!timedOut);
-    QTest::qWait(2000);
+    QVERIFY(receivedSpy.wait(2000));
     QVERIFY(writeThread.wait(2000));
 }
 

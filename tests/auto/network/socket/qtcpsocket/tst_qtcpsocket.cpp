@@ -2048,11 +2048,7 @@ void tst_QTcpSocket::connectToLocalHostNoService()
     // port with no service listening.
     QTcpSocket *socket = newSocket();
     socket->connectToHost("localhost", 31415); // no service running here, one suspects
-
-    while(socket->state() == QTcpSocket::HostLookupState || socket->state() == QTcpSocket::ConnectingState) {
-        QTest::qWait(100);
-    }
-    QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
+    QTRY_COMPARE(socket->state(), QTcpSocket::UnconnectedState);
     delete socket;
 }
 #endif

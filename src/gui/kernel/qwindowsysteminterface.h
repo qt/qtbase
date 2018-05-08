@@ -206,6 +206,7 @@ public:
 
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleWindowStateChanged(QWindow *window, Qt::WindowStates newState, int oldState = -1);
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleWindowScreenChanged(QWindow *window, QScreen *newScreen);
 
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>

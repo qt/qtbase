@@ -55,7 +55,6 @@
 #include <qcache.h>
 #include <qregularexpression.h>
 #endif
-#include <QTimeZone>
 #include <QScopedValueRollback>
 
 #if defined Q_OS_WIN
