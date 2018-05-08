@@ -202,6 +202,9 @@ private slots:
     void verifyDepth();
     void disconnectFromHostWhenConnecting();
     void disconnectFromHostWhenConnected();
+#ifndef QT_NO_OPENSSL
+    void closeWhileEmittingSocketError();
+#endif
     void resetProxy();
     void ignoreSslErrorsList_data();
     void ignoreSslErrorsList();
@@ -2335,6 +2338,66 @@ void tst_QSslSocket::disconnectFromHostWhenConnected()
     QVERIFY(socket->waitForDisconnected(5000));
     QCOMPARE(socket->bytesToWrite(), qint64(0));
 }
+
+#ifndef QT_NO_OPENSSL
+
+class BrokenPskHandshake : public QTcpServer
+{
+public:
+    void socketError(QAbstractSocket::SocketError error)
+    {
+        Q_UNUSED(error);
+        QSslSocket *clientSocket = qobject_cast<QSslSocket *>(sender());
+        Q_ASSERT(clientSocket);
+        clientSocket->close();
+        QTestEventLoop::instance().exitLoop();
+    }
+private:
+
+    void incomingConnection(qintptr handle) override
+    {
+        if (!socket.setSocketDescriptor(handle))
+            return;
+
+        QSslConfiguration serverConfig(QSslConfiguration::defaultConfiguration());
+        serverConfig.setPreSharedKeyIdentityHint("abcdefghijklmnop");
+        socket.setSslConfiguration(serverConfig);
+        socket.startServerEncryption();
+    }
+
+    QSslSocket socket;
+};
+
+void tst_QSslSocket::closeWhileEmittingSocketError()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    BrokenPskHandshake handshake;
+    if (!handshake.listen())
+        QSKIP("failed to start TLS server");
+
+    QSslSocket clientSocket;
+    QSslConfiguration clientConfig(QSslConfiguration::defaultConfiguration());
+    clientConfig.setPeerVerifyMode(QSslSocket::VerifyNone);
+    clientSocket.setSslConfiguration(clientConfig);
+
+    QSignalSpy socketErrorSpy(&clientSocket, SIGNAL(error(QAbstractSocket::SocketError)));
+    void (QSslSocket::*errorSignal)(QAbstractSocket::SocketError) = &QSslSocket::error;
+    connect(&clientSocket, errorSignal, &handshake, &BrokenPskHandshake::socketError);
+
+    clientSocket.connectToHostEncrypted(QStringLiteral("127.0.0.1"), handshake.serverPort());
+    // Make sure we have some data buffered so that close will try to flush:
+    clientSocket.write(QByteArray(1000000, Qt::Uninitialized));
+
+    QTestEventLoop::instance().enterLoopMSecs(1000);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(socketErrorSpy.count(), 1);
+}
+
+#endif // QT_NO_OPENSSL
 
 void tst_QSslSocket::resetProxy()
 {

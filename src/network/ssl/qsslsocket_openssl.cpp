@@ -81,6 +81,7 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/qscopedvaluerollback.h>
 
 #include <string.h>
 
@@ -644,6 +645,11 @@ void QSslSocketBackendPrivate::transmit()
 {
     Q_Q(QSslSocket);
 
+    using ScopedBool = QScopedValueRollback<bool>;
+
+    if (inSetAndEmitError)
+        return;
+
     // If we don't have any SSL context, don't bother transmitting.
     if (!ssl)
         return;
@@ -671,6 +677,7 @@ void QSslSocketBackendPrivate::transmit()
                         break;
                     } else {
                         // ### Better error handling.
+                        const ScopedBool bg(inSetAndEmitError, true);
                         setErrorAndEmit(QAbstractSocket::SslInternalError,
                                         QSslSocket::tr("Unable to write data: %1").arg(
                                             getErrorsFromOpenSsl()));
@@ -716,6 +723,7 @@ void QSslSocketBackendPrivate::transmit()
 #endif
             if (actualWritten < 0) {
                 //plain socket write fails if it was in the pending close state.
+                const ScopedBool bg(inSetAndEmitError, true);
                 setErrorAndEmit(plainSocket->error(), plainSocket->errorString());
                 return;
             }
@@ -741,6 +749,7 @@ void QSslSocketBackendPrivate::transmit()
                     plainSocket->skip(writtenToBio);
                 } else {
                     // ### Better error handling.
+                    const ScopedBool bg(inSetAndEmitError, true);
                     setErrorAndEmit(QAbstractSocket::SslInternalError,
                                     QSslSocket::tr("Unable to decrypt data: %1").arg(
                                         getErrorsFromOpenSsl()));
@@ -818,15 +827,21 @@ void QSslSocketBackendPrivate::transmit()
                 qCDebug(lcSsl) << "QSslSocketBackendPrivate::transmit: remote disconnect";
 #endif
                 shutdown = true; // the other side shut down, make sure we do not send shutdown ourselves
-                setErrorAndEmit(QAbstractSocket::RemoteHostClosedError,
-                                QSslSocket::tr("The TLS/SSL connection has been closed"));
+                {
+                    const ScopedBool bg(inSetAndEmitError, true);
+                    setErrorAndEmit(QAbstractSocket::RemoteHostClosedError,
+                                    QSslSocket::tr("The TLS/SSL connection has been closed"));
+                }
                 return;
             case SSL_ERROR_SYSCALL: // some IO error
             case SSL_ERROR_SSL: // error in the SSL library
                 // we do not know exactly what the error is, nor whether we can recover from it,
                 // so just return to prevent an endless loop in the outer "while" statement
-                setErrorAndEmit(QAbstractSocket::SslInternalError,
-                                QSslSocket::tr("Error while reading: %1").arg(getErrorsFromOpenSsl()));
+                {
+                    const ScopedBool bg(inSetAndEmitError, true);
+                    setErrorAndEmit(QAbstractSocket::SslInternalError,
+                                    QSslSocket::tr("Error while reading: %1").arg(getErrorsFromOpenSsl()));
+                }
                 return;
             default:
                 // SSL_ERROR_WANT_CONNECT, SSL_ERROR_WANT_ACCEPT: can only happen with a
@@ -834,8 +849,11 @@ void QSslSocketBackendPrivate::transmit()
                 // SSL_ERROR_WANT_X509_LOOKUP: can only happen with a
                 // SSL_CTX_set_client_cert_cb(), which we do not call.
                 // So this default case should never be triggered.
-                setErrorAndEmit(QAbstractSocket::SslInternalError,
-                                QSslSocket::tr("Error while reading: %1").arg(getErrorsFromOpenSsl()));
+                {
+                    const ScopedBool bg(inSetAndEmitError, true);
+                    setErrorAndEmit(QAbstractSocket::SslInternalError,
+                                    QSslSocket::tr("Error while reading: %1").arg(getErrorsFromOpenSsl()));
+                }
                 break;
             }
         } while (ssl && readBytes > 0);
@@ -903,6 +921,12 @@ bool QSslSocketBackendPrivate::startHandshake()
 
     // Check if the connection has been established. Get all errors from the
     // verification stage.
+
+    using ScopedBool = QScopedValueRollback<bool>;
+
+    if (inSetAndEmitError)
+        return false;
+
     QMutexLocker locker(&_q_sslErrorList()->mutex);
     _q_sslErrorList()->errors.clear();
     int result = (mode == QSslSocket::SslClientMode) ? q_SSL_connect(ssl) : q_SSL_accept(ssl);
@@ -936,7 +960,10 @@ bool QSslSocketBackendPrivate::startHandshake()
 #ifdef QSSLSOCKET_DEBUG
             qCDebug(lcSsl) << "QSslSocketBackendPrivate::startHandshake: error!" << errorString;
 #endif
-            setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError, errorString);
+            {
+                const ScopedBool bg(inSetAndEmitError, true);
+                setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError, errorString);
+            }
             q->abort();
         }
         return false;
