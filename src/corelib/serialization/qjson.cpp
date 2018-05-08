@@ -326,38 +326,35 @@ int Value::usedStorage(const Base *b) const
     return alignedSize(s);
 }
 
+inline bool isValidValueOffset(uint offset, uint tableOffset)
+{
+    return offset >= sizeof(Base)
+        && offset + sizeof(uint) <= tableOffset;
+}
+
 bool Value::isValid(const Base *b) const
 {
-    int offset = -1;
     switch (type) {
-    case QJsonValue::Double:
-        if (latinOrIntValue)
-            break;
-        Q_FALLTHROUGH();
-    case QJsonValue::String:
-    case QJsonValue::Array:
-    case QJsonValue::Object:
-        offset = value;
-        break;
     case QJsonValue::Null:
     case QJsonValue::Bool:
-    default:
-        break;
-    }
-
-    if (offset == -1)
         return true;
-    if (offset + sizeof(uint) > b->tableOffset || offset < (int)sizeof(Base))
+    case QJsonValue::Double:
+        return latinOrIntValue || isValidValueOffset(value, b->tableOffset);
+    case QJsonValue::String:
+        if (!isValidValueOffset(value, b->tableOffset))
+            return false;
+        if (latinOrIntValue)
+            return asLatin1String(b).isValid(b->tableOffset - value);
+        return asString(b).isValid(b->tableOffset - value);
+    case QJsonValue::Array:
+        return isValidValueOffset(value, b->tableOffset)
+            && static_cast<Array *>(base(b))->isValid(b->tableOffset - value);
+    case QJsonValue::Object:
+        return isValidValueOffset(value, b->tableOffset)
+            && static_cast<Object *>(base(b))->isValid(b->tableOffset - value);
+    default:
         return false;
-
-    int s = usedStorage(b);
-    if (s < 0 || s > (int)b->tableOffset - offset)
-        return false;
-    if (type == QJsonValue::Array)
-        return static_cast<Array *>(base(b))->isValid(s);
-    if (type == QJsonValue::Object)
-        return static_cast<Object *>(base(b))->isValid(s);
-    return true;
+    }
 }
 
 /*!
