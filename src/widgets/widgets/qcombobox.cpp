@@ -73,7 +73,9 @@
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractscrollarea_p.h>
 #include <private/qlineedit_p.h>
+#if QT_CONFIG(completer)
 #include <private/qcompleter_p.h>
+#endif
 #include <qdebug.h>
 #if QT_CONFIG(effects)
 # include <private/qeffects_p.h>
