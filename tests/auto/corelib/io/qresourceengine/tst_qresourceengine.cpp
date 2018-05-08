@@ -129,7 +129,7 @@ void tst_QResourceEngine::checkStructure_data()
 #endif
 
 #if defined(BUILTIN_TESTDATA)
-    rootContents.insert(8, QLatin1String("testqrc"));
+    rootContents.insert(9, QLatin1String("testqrc"));
 #endif
 
 
