@@ -39,7 +39,7 @@ SUBDIRS=\
    qaccessibilitylinux \
    qaccessibilitymac \
 
-!qtHaveModule(network): SUBDIRS -= \
+winrt|!qtHaveModule(network): SUBDIRS -= \
    lancelot \
    networkselftest \
    qnetworkaccessmanager_and_qprogressdialog \
