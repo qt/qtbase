@@ -91,13 +91,15 @@ public:
     QList<int> hoverSeparator;
     QPoint hoverPos;
 
-#if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
+#if QT_CONFIG(dockwidget)
+#if QT_CONFIG(cursor)
     QCursor separatorCursor(const QList<int> &path);
     void adjustCursor(const QPoint &pos);
     QCursor oldCursor;
     QCursor adjustedCursor;
     bool hasOldCursor = false;
     bool cursorAdjusted = false;
+#endif // QT_CONFIG(cursor)
 
     QList<int> movingSeparator;
     QPoint movingSeparatorOrigin, movingSeparatorPos;
@@ -107,12 +109,12 @@ public:
     bool separatorMove(const QPoint &pos);
     bool endSeparatorMove(const QPoint &pos);
 
-#endif
+#endif // QT_CONFIG(dockwidget)
 
     bool windowEvent(QEvent *e);
 };
 
-#if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
+#if QT_CONFIG(dockwidget) && QT_CONFIG(cursor)
 template <typename Layout>
 QCursor QMainWindowLayoutSeparatorHelper<Layout>::separatorCursor(const QList<int> &path)
 {
@@ -185,12 +187,14 @@ void QMainWindowLayoutSeparatorHelper<Layout>::adjustCursor(const QPoint &pos)
         }
     }
 }
+#endif // QT_CONFIG(cursor) && QT_CONFIG(dockwidget)
 
 template <typename Layout>
 bool QMainWindowLayoutSeparatorHelper<Layout>::windowEvent(QEvent *event)
 {
     QWidget *w = window();
     switch (event->type()) {
+#if QT_CONFIG(dockwidget)
     case QEvent::Paint: {
         QPainter p(w);
         QRegion r = static_cast<QPaintEvent *>(event)->region();
@@ -198,7 +202,7 @@ bool QMainWindowLayoutSeparatorHelper<Layout>::windowEvent(QEvent *event)
         break;
     }
 
-#ifndef QT_NO_CURSOR
+#if QT_CONFIG(cursor)
     case QEvent::HoverMove: {
         adjustCursor(static_cast<QHoverEvent *>(event)->pos());
         break;
@@ -214,7 +218,7 @@ bool QMainWindowLayoutSeparatorHelper<Layout>::windowEvent(QEvent *event)
     case QEvent::ShortcutOverride: // when a menu pops up
         adjustCursor(QPoint(0, 0));
         break;
-#endif // QT_NO_CURSOR
+#endif // QT_CONFIG(cursor)
 
     case QEvent::MouseButtonPress: {
         QMouseEvent *e = static_cast<QMouseEvent *>(event);
@@ -229,7 +233,7 @@ bool QMainWindowLayoutSeparatorHelper<Layout>::windowEvent(QEvent *event)
     case QEvent::MouseMove: {
         QMouseEvent *e = static_cast<QMouseEvent *>(event);
 
-#ifndef QT_NO_CURSOR
+#if QT_CONFIG(cursor)
         adjustCursor(e->pos());
 #endif
         if (e->buttons() & Qt::LeftButton) {
@@ -253,7 +257,7 @@ bool QMainWindowLayoutSeparatorHelper<Layout>::windowEvent(QEvent *event)
         break;
     }
 
-#if !defined(QT_NO_CURSOR)
+#if QT_CONFIG(cursor)
     case QEvent::CursorChange:
         // CursorChange events are triggered as mouse moves to new widgets even
         // if the cursor doesn't actually change, so do not change oldCursor if
@@ -266,7 +270,7 @@ bool QMainWindowLayoutSeparatorHelper<Layout>::windowEvent(QEvent *event)
             w->setCursor(adjustedCursor);
         }
         break;
-#endif
+#endif // QT_CONFIG(cursor)
     case QEvent::Timer:
         if (static_cast<QTimerEvent *>(event)->timerId() == separatorMoveTimer.timerId()) {
             // let's move the separators
@@ -286,12 +290,14 @@ bool QMainWindowLayoutSeparatorHelper<Layout>::windowEvent(QEvent *event)
             return true;
         }
         break;
+#endif // QT_CONFIG(dockwidget)
     default:
         break;
     }
     return false;
 }
 
+#if QT_CONFIG(dockwidget)
 template <typename Layout>
 bool QMainWindowLayoutSeparatorHelper<Layout>::startSeparatorMove(const QPoint &pos)
 {
@@ -323,9 +329,7 @@ bool QMainWindowLayoutSeparatorHelper<Layout>::endSeparatorMove(const QPoint &)
     layout()->savedState.clear();
     return true;
 }
-#endif
 
-#if QT_CONFIG(dockwidget)
 class QDockWidgetGroupWindow : public QWidget
 {
     Q_OBJECT
@@ -371,7 +375,7 @@ public:
 private:
     QLayout *lay() const { return const_cast<QDockWidgetGroupWindowItem *>(this)->widget()->layout(); }
 };
-#endif
+#endif // QT_CONFIG(dockwidget)
 
 /* This data structure represents the state of all the tool-bars and dock-widgets. It's value based
    so it can be easilly copied into a temporary variable. All operations are performed without moving
