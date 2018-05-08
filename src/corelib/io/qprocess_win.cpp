@@ -149,7 +149,26 @@ static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
     }
 
     // Wait until connection is in place.
-    ConnectNamedPipe(hServer, NULL);
+    OVERLAPPED overlapped;
+    ZeroMemory(&overlapped, sizeof(overlapped));
+    overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+    if (ConnectNamedPipe(hServer, &overlapped) == 0) {
+        DWORD dwError = GetLastError();
+        switch (dwError) {
+        case ERROR_PIPE_CONNECTED:
+            break;
+        case ERROR_IO_PENDING:
+            WaitForSingleObject(overlapped.hEvent, INFINITE);
+            break;
+        default:
+            qErrnoWarning(dwError, "QProcess: ConnectNamedPipe failed.");
+            CloseHandle(overlapped.hEvent);
+            CloseHandle(hClient);
+            CloseHandle(hServer);
+            return;
+        }
+    }
+    CloseHandle(overlapped.hEvent);
 
     if (isInputPipe) {
         pipe[0] = hClient;
