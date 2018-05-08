@@ -242,8 +242,9 @@ void Grammar::buildExtendedGrammar ()
   non_terminals.insert (accept_symbol);
 }
 
-struct Nullable: public std::unary_function<Name, bool>
+struct Nullable
 {
+  typedef Name argument_type;
   Automaton *_M_automaton;
 
   Nullable (Automaton *aut):
