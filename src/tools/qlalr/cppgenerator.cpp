@@ -186,7 +186,7 @@ void CppGenerator::operator () ()
               else if (u < 0)
                 {
                   if (verbose)
-                    qout << "*** Warning. Found a reduce/reduce conflict in state " << q << " on token ``" << s << "'' between rule "
+                    qout() << "*** Warning. Found a reduce/reduce conflict in state " << q << " on token ``" << s << "'' between rule "
                          << r << " and " << -u << endl;
 
                   ++reduce_reduce_conflict_count;
@@ -194,7 +194,7 @@ void CppGenerator::operator () ()
                   u = qMax (u, -r);
 
                   if (verbose)
-                    qout << "\tresolved using rule " << -u << endl;
+                    qout() << "\tresolved using rule " << -u << endl;
                 }
 
               else if (u > 0)
@@ -227,7 +227,7 @@ void CppGenerator::operator () ()
                       ++shift_reduce_conflict_count;
 
                       if (verbose)
-                        qout << "*** Warning. Found a shift/reduce conflict in state " << q << " on token ``" << s << "'' with rule " << r << endl;
+                        qout() << "*** Warning. Found a shift/reduce conflict in state " << q << " on token ``" << s << "'' with rule " << r << endl;
                     }
                 }
             }
@@ -238,10 +238,10 @@ void CppGenerator::operator () ()
     {
       if (shift_reduce_conflict_count != grammar.expected_shift_reduce
           || reduce_reduce_conflict_count != grammar.expected_reduce_reduce)
-        qerr << "*** Conflicts: " << shift_reduce_conflict_count << " shift/reduce, " << reduce_reduce_conflict_count << " reduce/reduce" << endl;
+        qerr() << "*** Conflicts: " << shift_reduce_conflict_count << " shift/reduce, " << reduce_reduce_conflict_count << " reduce/reduce" << endl;
 
       if (verbose)
-        qout << endl << "*** Conflicts: " << shift_reduce_conflict_count << " shift/reduce, " << reduce_reduce_conflict_count << " reduce/reduce" << endl
+        qout() << endl << "*** Conflicts: " << shift_reduce_conflict_count << " shift/reduce, " << reduce_reduce_conflict_count << " reduce/reduce" << endl
              << endl;
     }
 
@@ -266,7 +266,7 @@ void CppGenerator::operator () ()
           RulePointer rule = grammar.rules.begin () + i;
 
           if (rule != grammar.goal)
-            qerr << "*** Warning: Rule ``" << *rule << "'' is useless!" << endl;
+            qerr() << "*** Warning: Rule ``" << *rule << "'' is useless!" << endl;
         }
     }
 

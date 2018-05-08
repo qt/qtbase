@@ -44,7 +44,7 @@
 
 static void help_me ()
 {
-  qerr << "Usage: qlalr [options] [input file name]" << endl
+  qerr() << "Usage: qlalr [options] [input file name]" << endl
        << endl
        << "  --help, -h\t\tdisplay this help and exit" << endl
        << "  --verbose, -v\t\tverbose output" << endl
@@ -91,7 +91,7 @@ int main (int argc, char *argv[])
         file_name = arg;
 
       else
-        qerr << "*** Warning. Ignore argument `" << arg << "'" << endl;
+        qerr() << "*** Warning. Ignore argument `" << arg << "'" << endl;
     }
 
   if (file_name.isEmpty ())
@@ -108,13 +108,13 @@ int main (int argc, char *argv[])
 
   if (grammar.rules.isEmpty ())
     {
-      qerr << "*** Fatal. No rules!" << endl;
+      qerr() << "*** Fatal. No rules!" << endl;
       exit (EXIT_FAILURE);
     }
 
   else if (grammar.start == grammar.names.end ())
     {
-      qerr << "*** Fatal. No start symbol!" << endl;
+      qerr() << "*** Fatal. No start symbol!" << endl;
       exit (EXIT_FAILURE);
     }
 
@@ -131,13 +131,13 @@ int main (int argc, char *argv[])
 
   if (generate_dot)
     {
-      DotGraph genDotFile (qout);
+      DotGraph genDotFile (qout());
       genDotFile (&aut);
     }
 
   else if (generate_report)
     {
-      ParseTable genParseTable (qout);
+      ParseTable genParseTable (qout());
       genParseTable(&aut);
     }
 

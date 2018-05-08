@@ -40,8 +40,17 @@
 #define QLALR_NO_DEBUG_LOOKAHEADS
 
 QT_BEGIN_NAMESPACE
-QTextStream qerr (stderr, QIODevice::WriteOnly);
-QTextStream qout (stdout, QIODevice::WriteOnly);
+QTextStream &qerr()
+{
+    static QTextStream result(stderr, QIODevice::WriteOnly);
+    return result;
+}
+
+QTextStream &qout()
+{
+    static QTextStream result(stdout, QIODevice::WriteOnly);
+    return result;
+}
 
 bool operator < (Name a, Name b)
 {
@@ -303,7 +312,7 @@ void Automaton::buildNullables ()
     }
 
 #ifndef QLALR_NO_DEBUG_NULLABLES
-  qerr << "nullables = {" << nullables << endl;
+  qerr() << "nullables = {" << nullables << endl;
 #endif
 }
 
@@ -446,7 +455,7 @@ void Automaton::buildLookbackSets ()
               lookbacks.insert (item, Lookback (p, A));
 
 #ifndef QLALR_NO_DEBUG_LOOKBACKS
-              qerr << "*** (" << id (q) << ", " << *rule << ") lookback (" << id (p) << ", " << *A << ")" << endl;
+              qerr() << "*** (" << id (q) << ", " << *rule << ") lookback (" << id (p) << ", " << *A << ")" << endl;
 #endif
             }
         }
@@ -477,7 +486,7 @@ void Automaton::buildDirectReads ()
 
 #ifndef QLALR_NO_DEBUG_DIRECT_READS
       for (QMap<Name, NameSet>::iterator dr = q->reads.begin (); dr != q->reads.end (); ++dr)
-        qerr << "*** DR(" << id (q) << ", " << dr.key () << ") = " << dr.value () << endl;
+        qerr() << "*** DR(" << id (q) << ", " << dr.key () << ") = " << dr.value () << endl;
 #endif
     }
 }
@@ -506,11 +515,11 @@ void Automaton::buildReadsDigraph ()
               source->insertEdge (target);
 
 #ifndef QLALR_NO_DEBUG_READS
-              qerr << "*** ";
-              dump (qerr, source);
-              qerr << " reads ";
-              dump (qerr, target);
-              qerr << endl;
+              qerr() << "*** ";
+              dump (qerr(), source);
+              qerr() << " reads ";
+              dump (qerr(), target);
+              qerr() << endl;
 #endif
             }
         }
@@ -545,7 +554,7 @@ void Automaton::visitReadNode (ReadNode node)
   _M_reads_stack.push (node);
 
 #ifndef QLALR_NO_DEBUG_INCLUDES
-  // qerr << "*** Debug. visit node (" << id (node->data.state) << ", " << node->data.nt << ")  N = " << N << endl;
+  // qerr() << "*** Debug. visit node (" << id (node->data.state) << ", " << node->data.nt << ")  N = " << N << endl;
 #endif
 
   for (ReadsGraph::edge_iterator edge = node->begin (); edge != node->end (); ++edge)
@@ -625,7 +634,7 @@ void Automaton::buildIncludesDigraph ()
                       source->insertEdge (target);
 
 #ifndef QLALR_NO_DEBUG_INCLUDES
-                      qerr << "*** (" << id (p) << ", " << *A << ") includes (" << id (pp) << ", " << *name << ")" << endl;
+                      qerr() << "*** (" << id (p) << ", " << *A << ") includes (" << id (pp) << ", " << *name << ")" << endl;
 #endif // QLALR_NO_DEBUG_INCLUDES
 
                       continue;
@@ -647,7 +656,7 @@ void Automaton::buildIncludesDigraph ()
                   source->insertEdge (target);
 
 #ifndef QLALR_NO_DEBUG_INCLUDES
-                  qerr << "*** (" << id (p) << ", " << *A << ") includes (" << id (pp) << ", " << *name << ")" << endl;
+                  qerr() << "*** (" << id (p) << ", " << *A << ") includes (" << id (pp) << ", " << *name << ")" << endl;
 #endif // QLALR_NO_DEBUG_INCLUDES
                 }
             }
@@ -664,7 +673,7 @@ void Automaton::visitIncludeNode (IncludeNode node)
   _M_includes_stack.push (node);
 
 #ifndef QLALR_NO_DEBUG_INCLUDES
-  // qerr << "*** Debug. visit node (" << id (node->data.state) << ", " << node->data.nt << ")  N = " << N << endl;
+  // qerr() << "*** Debug. visit node (" << id (node->data.state) << ", " << node->data.nt << ")  N = " << N << endl;
 #endif
 
   for (IncludesGraph::edge_iterator edge = node->begin (); edge != node->end (); ++edge)
@@ -676,11 +685,11 @@ void Automaton::visitIncludeNode (IncludeNode node)
       node->dfn = qMin (N, r->dfn);
 
 #ifndef QLALR_NO_DEBUG_INCLUDES
-      qerr << "*** Merge. follows";
-      dump (qerr, node);
-      qerr << " += follows";
-      dump (qerr, r);
-      qerr << endl;
+      qerr() << "*** Merge. follows";
+      dump (qerr(), node);
+      qerr() << " += follows";
+      dump (qerr(), r);
+      qerr() << endl;
 #endif
 
       NameSet &dst = node->data.state->follows [node->data.nt];
@@ -714,9 +723,9 @@ void Automaton::buildLookaheads ()
               StatePointer q = lookback.state;
 
 #ifndef QLALR_NO_DEBUG_LOOKAHEADS
-              qerr << "(" << id (p) << ", " << *item->rule << ") lookbacks ";
-              dump (qerr, lookback);
-              qerr << " with follows (" << id (q) << ", " << lookback.nt << ") = " << q->follows [lookback.nt] << endl;
+              qerr() << "(" << id (p) << ", " << *item->rule << ") lookbacks ";
+              dump (qerr(), lookback);
+              qerr() << " with follows (" << id (q) << ", " << lookback.nt << ") = " << q->follows [lookback.nt] << endl;
 #endif
 
               lookaheads [item].insert (q->follows [lookback.nt].begin (), q->follows [lookback.nt].end ());
