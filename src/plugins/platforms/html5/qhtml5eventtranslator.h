@@ -177,6 +177,8 @@ public:
     static int mouse_cb(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
     static int focus_cb(int eventType, const EmscriptenFocusEvent *focusEvent, void *userData);
 
+    void processEvents();
+
 Q_SIGNALS:
     void getWindowAt(const QPoint &point, QWindow **window);
 private:

@@ -71,12 +71,10 @@ QNetworkReplyEmscriptenImpl::~QNetworkReplyEmscriptenImpl()
 {
 }
 
-QNetworkReplyEmscriptenImpl::QNetworkReplyEmscriptenImpl(QObject *parent/*QNetworkAccessManager *manager, const QNetworkRequest &req, const QNetworkAccessManager::Operation op*/)
+QNetworkReplyEmscriptenImpl::QNetworkReplyEmscriptenImpl(QObject *parent)
     : QNetworkReply(*new QNetworkReplyEmscriptenImplPrivate(), parent)
 {
-//qDebug() << req.rawHeaderList();
 }
-
 
 void QNetworkReplyEmscriptenImpl::connectionFinished()
 {
@@ -105,8 +103,6 @@ QByteArray QNetworkReplyEmscriptenImpl::methodName() const
 
 void QNetworkReplyEmscriptenImpl::close()
 {
-    qDebug() << Q_FUNC_INFO;
- //   Q_D(QNetworkReplyEmscriptenImpl);
     QNetworkReply::close();
 }
 
@@ -118,12 +114,6 @@ void QNetworkReplyEmscriptenImpl::abort()
 qint64 QNetworkReplyEmscriptenImpl::bytesAvailable() const
 {
     Q_D(const QNetworkReplyEmscriptenImpl);
-
-    qDebug() << Q_FUNC_INFO
-             << d->isFinished
-             << QNetworkReply::bytesAvailable()
-             << d->downloadBufferCurrentSize
-             << d->downloadBufferReadPosition;
 
     if (!d->isFinished)
         return QNetworkReply::bytesAvailable();
@@ -149,12 +139,7 @@ qint64 QNetworkReplyEmscriptenImpl::readData(char *data, qint64 maxlen)
     Q_D(QNetworkReplyEmscriptenImpl);
 
     qint64 howMuch = qMin(maxlen, (d->downloadBuffer.size()- d->downloadBufferReadPosition));
-
-    qDebug() << Q_FUNC_INFO << "howMuch"<< howMuch
-             << "d->downloadBufferReadPosition" << d->downloadBufferReadPosition;
-
     memcpy(data, d->downloadBuffer.constData(), howMuch);
-
     d->downloadBufferReadPosition += howMuch;
 
     return howMuch;
@@ -162,20 +147,15 @@ qint64 QNetworkReplyEmscriptenImpl::readData(char *data, qint64 maxlen)
 
 void QNetworkReplyEmscriptenImpl::emitReplyError(QNetworkReply::NetworkError errorCode)
 {
-    qDebug() << Q_FUNC_INFO << this<< errorCode;
-
     setFinished(true);
     emit error(errorCode);
     QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
-    //qApp->processEvents();
 }
 
 void QNetworkReplyEmscriptenImplPrivate::setup(QNetworkAccessManager::Operation op, const QNetworkRequest &req,
                                      QIODevice *data)
 {
     Q_Q(QNetworkReplyEmscriptenImpl);
-
-    qDebug() << Q_FUNC_INFO;
 
     outgoingData = data;
     request = req;
@@ -220,14 +200,7 @@ void QNetworkReplyEmscriptenImplPrivate::setup(QNetworkAccessManager::Operation 
 void QNetworkReplyEmscriptenImplPrivate::onLoadCallback(void *data, int statusCode, int readyState, int buffer, int bufferSize)
 {
     QNetworkReplyEmscriptenImplPrivate *handler = reinterpret_cast<QNetworkReplyEmscriptenImplPrivate*>(data);
-
-    std::cout << "onLoad: " << statusCode << std::endl;
-    /*std::cout << "--- DATA ---" << std::endl
-        << ((char *)buffer) << std::endl
-        << "--- END DATA ---" << std::endl;*/
-
     // FIXME TODO do something with null termination lines ??
-    qDebug() << Q_FUNC_INFO << (int)readyState << bufferSize;
 
     switch(readyState) {
     case 0://unsent
@@ -254,8 +227,9 @@ void QNetworkReplyEmscriptenImplPrivate::onProgressCallback(void* data, int done
 
 void QNetworkReplyEmscriptenImplPrivate::onRequestErrorCallback(void* data, int state, int status)
 {
+    Q_UNUSED(state)
+    Q_UNUSED(status)
     QNetworkReplyEmscriptenImplPrivate *handler = reinterpret_cast<QNetworkReplyEmscriptenImplPrivate*>(data);
-    qDebug() << Q_FUNC_INFO << state << status;
     handler->emitReplyError(QNetworkReply::UnknownNetworkError);
 }
 
@@ -269,7 +243,7 @@ void QNetworkReplyEmscriptenImplPrivate::doSendRequest()
 {
     Q_Q(QNetworkReplyEmscriptenImpl);
     totalDownloadSize = 0;
-    jsRequest(q->methodName(), // GET POST
+    jsRequest(QString::fromUtf8(q->methodName()), // GET POST
               request.url().toString(),
               (void *)&onLoadCallback,
               (void *)&onProgressCallback,
@@ -281,17 +255,12 @@ void QNetworkReplyEmscriptenImplPrivate::doSendRequest()
 /* const QString &body, const QList<QPair<QByteArray, QByteArray> > &headers ,*/
 void QNetworkReplyEmscriptenImplPrivate::jsRequest(const QString &verb, const QString &url, void *loadCallback, void *progressCallback, void *errorCallback, void *onResponseHeadersCallback)
 {
-    qDebug() << Q_FUNC_INFO << verb;
     QString extraData;
     if (outgoingData)
-        extraData = outgoingData->readAll();
+        extraData.fromUtf8(outgoingData->readAll());
 
-    if (verb == "POST" && extraData.startsWith("?"))
-        extraData.remove("?");
-
-    qDebug() << Q_FUNC_INFO << verb << url
-             << outgoingDataBuffer.data()
-             << extraData;
+    if (verb == QStringLiteral("POST") && extraData.startsWith(QStringLiteral("?")))
+        extraData.remove(QStringLiteral("?"));
 
     // Probably a good idea to save any shared pointers as members in C++
     // so the objects they point to survive as long as you need them
@@ -299,17 +268,8 @@ void QNetworkReplyEmscriptenImplPrivate::jsRequest(const QString &verb, const QS
     QList<QByteArray> headersData = request.rawHeaderList();
     QStringList headersList;
     for (int i = 0; i < headersData.size(); ++i) {
-        qDebug()  << i
-            << headersData.at(i)
-            << request.rawHeader(headersData.at(i));
-
-        headersList << QString(headersData.at(i)+":"+ request.rawHeader(headersData.at(i)));
+        headersList << QString::fromUtf8(headersData.at(i) + ":" + request.rawHeader(headersData.at(i)));
     }
-
-    //         qDebug() << Q_FUNC_INFO << headersData;
-
-    //QTimer::singleShot(200, [verb, url, loadCallback, progressCallback, errorCallback, onResponseHeadersCallback, extraData, headersList]() {
-
 
     EM_ASM_ARGS({
         var verb = Pointer_stringify($0);
@@ -346,27 +306,16 @@ void QNetworkReplyEmscriptenImplPrivate::jsRequest(const QString &verb, const QS
         }
 
         xhr.onprogress = function(e) {
+
             switch(xhr.status) {
               case 200:
               case 206:
               case 300:
               case 301:
               case 302: {
-                 var date = xhr.getResponseHeader('Last-Modified');
-                 date = ((date != null) ? new Date(date).getTime() / 1000 : 0);
-                 //Runtime.dynCall('viii', onProgressCallbackPointer, [e.loaded, e.total, date]);
-
-                 if (window.progressUpdates == undefined)
-                     window.progressUpdates = [];
-
-                 var update = {};
-                 update.handler = handler;
-                 update.cb = onProgressCallbackPointer;
-                 update.loaded = e.loaded;
-                 update.total = e.total;
-                 update.date = date;
-
-                 window.progressUpdates.push(update);
+                var date = xhr.getResponseHeader('Last-Modified');
+                date = ((date != null) ? new Date(date).getTime() / 1000 : 0);
+                Runtime.dynCall('viiii', onProgressCallbackPointer, [handler, e.loaded, e.total, date]);
               }
              break;
            }
@@ -374,44 +323,29 @@ void QNetworkReplyEmscriptenImplPrivate::jsRequest(const QString &verb, const QS
 
         xhr.onreadystatechange = function() {
             if (xhr.readyState == xhr.DONE) {
-
-               var responseStr = xhr.getAllResponseHeaders();
-
-               var response = {};
-               response.handler = handler;
-               response.cb = onHeadersCallback;
-               response.data = responseStr;
-
-               if (window.responseHeaders == undefined)
-                   window.responseHeaders = [];
-
-               window.responseHeaders.push(response);
+              var responseStr = xhr.getAllResponseHeaders();
+              var ptr = allocate(intArrayFromString(responseStr), 'i8', ALLOC_NORMAL);
+              Runtime.dynCall('vii', onHeadersCallback, [handler, ptr]);
+              _free(ptr);
               }
         };
 
         xhr.onload = function(e) {
-            var byteArray = new Uint8Array(this.response);
-            var response = {};
-            response.handler = handler;
-            response.cb = onLoadCallbackPointer;
-            response.data = byteArray;
-            response.readyState = this.readyState;
-            response.statusCode = this.status;
-
-            if (window.responses == undefined)
-                window.responses = [];
-
-            window.responses.push(response);
+             var byteArray  = new Uint8Array( this.response);
+             var buffer = _malloc(byteArray.length);
+             HEAPU8.set(byteArray, buffer);
+             Runtime.dynCall('viiiii', onLoadCallbackPointer, [handler, this.status, this.readyState, buffer, byteArray.length]);
+            _free(buffer);
         };
 
-        // error
-        xhr.onerror = function(e) {
-            Runtime.dynCall('vii', onErrorCallbackPointer, [xhr.readyState, xhr.status]);
+        xhr.error = function(e) {
+            Runtime.dynCall('viii', onErrorCallbackPointer, [handler, xhr.readyState, xhr.status]);
 
-                            var responseStr = xhr.getAllResponseHeaders();
-                            var ptr = allocate(intArrayFromString(responseStr), 'i8', ALLOC_STACK);
-                            Runtime.dynCall('vi', onHeadersCallback, [ptr]);
-                            _free(ptr);
+            var responseStr = xhr.getAllResponseHeaders();
+            var ptr = allocate(intArrayFromString(responseStr), 'i8', ALLOC_NORMAL);
+            Runtime.dynCall('vii', onHeadersCallback, [handler, ptr]);
+            _free(ptr);
+
         };
         Module.print("Send xhr: " + verb + ": " + url);
         //TODO other operations, handle user/pass, handle binary data
@@ -425,20 +359,18 @@ void QNetworkReplyEmscriptenImplPrivate::jsRequest(const QString &verb, const QS
                     errorCallback,
                     onResponseHeadersCallback,
                     extraData.toLatin1().data(),
-                    headersList.join("&").toLatin1().data(),
+                    headersList.join(QString::fromUtf8("&")).data(),
                     this
                     );
 }
 
 void QNetworkReplyEmscriptenImplPrivate::emitReplyError(QNetworkReply::NetworkError errorCode)
 {
-    qDebug() << Q_FUNC_INFO << this << errorCode;
-
+    Q_UNUSED(errorCode)
     Q_Q(QNetworkReplyEmscriptenImpl);
     emit q->error(QNetworkReply::UnknownNetworkError);
 
     emit q->finished();
-    //qApp->processEvents();
 }
 
 void QNetworkReplyEmscriptenImplPrivate::emitDataReadProgress(qint64 bytesReceived, qint64 bytesTotal)
@@ -446,14 +378,11 @@ void QNetworkReplyEmscriptenImplPrivate::emitDataReadProgress(qint64 bytesReceiv
     totalDownloadSize = bytesTotal;
 
     percentFinished = (bytesReceived / bytesTotal) * 100;
-    qDebug() << Q_FUNC_INFO << bytesReceived << bytesTotal << percentFinished << "%";
 }
 
 void QNetworkReplyEmscriptenImplPrivate::dataReceived(char *buffer, int bufferSize)
 {
     Q_Q(QNetworkReplyEmscriptenImpl);
-
-    //int bufferSize = strlen(buffer);
 
     if (bufferSize > 0)
         q->setReadBufferSize(bufferSize);
@@ -468,10 +397,6 @@ void QNetworkReplyEmscriptenImplPrivate::dataReceived(char *buffer, int bufferSi
     totalDownloadSize = downloadBufferCurrentSize;
 
     emit q->downloadProgress(bytesDownloaded, totalDownloadSize);
-    //qApp->processEvents();
-
-    qDebug() << Q_FUNC_INFO <<"current size" << downloadBufferCurrentSize;
-    qDebug() << Q_FUNC_INFO <<"total size" << totalDownloadSize;// /*<< (int)state*/ << (char *)buffer;
 
     downloadBuffer.append(buffer, bufferSize);
 
@@ -482,8 +407,6 @@ void QNetworkReplyEmscriptenImplPrivate::dataReceived(char *buffer, int bufferSi
      }
 
     emit q->metaDataChanged();
-
-    //qApp->processEvents();
 }
 
 //taken from qnetworkrequest.cpp
@@ -530,14 +453,13 @@ void QNetworkReplyEmscriptenImplPrivate::headersReceived(char *buffer)
 {
     Q_Q(QNetworkReplyEmscriptenImpl);
 
-    QStringList headers = QString(buffer).split("\r\n", QString::SkipEmptyParts);
+    QStringList headers = QString::fromUtf8(buffer).split(QString::fromUtf8("\r\n"), QString::SkipEmptyParts);
 
     for (int i = 0; i < headers.size(); i++) {
-        QString headerName = headers.at(i).split(": ").at(0);
-        QString headersValue = headers.at(i).split(": ").at(1);
+        QString headerName = headers.at(i).split(QString::fromUtf8(": ")).at(0);
+        QString headersValue = headers.at(i).split(QString::fromUtf8(": ")).at(1);
         if (headerName.isEmpty() || headersValue.isEmpty())
             continue;
-qDebug() << Q_FUNC_INFO << headerName << headersValue;
 
         int headerIndex = parseHeaderName(headerName.toLocal8Bit());
 
@@ -552,7 +474,6 @@ void QNetworkReplyEmscriptenImplPrivate::_q_bufferOutgoingDataFinished()
 {
     Q_Q(QNetworkReplyEmscriptenImpl);
 
-    qDebug() << Q_FUNC_INFO << "readChannelFinished";
     // make sure this is only called once, ever.
     //_q_bufferOutgoingData may call it or the readChannelFinished emission
     if (state != Buffering)
@@ -569,8 +490,6 @@ void QNetworkReplyEmscriptenImplPrivate::_q_bufferOutgoingDataFinished()
 void QNetworkReplyEmscriptenImplPrivate::_q_bufferOutgoingData()
 {
     Q_Q(QNetworkReplyEmscriptenImpl);
-
-    qDebug() << Q_FUNC_INFO <<"readyRead";
 
     if (!outgoingDataBuffer) {
         // first call, create our buffer
@@ -592,9 +511,6 @@ void QNetworkReplyEmscriptenImplPrivate::_q_bufferOutgoingData()
 
         char *dst = outgoingDataBuffer->reserve(bytesToBuffer);
         bytesBuffered = outgoingData->read(dst, bytesToBuffer);
-
-        qDebug() << Q_FUNC_INFO << "bytesToBuffer" << bytesToBuffer
-                 << "bytesBuffered" << bytesBuffered;
 
         if (bytesBuffered == -1) {
             // EOF has been reached.

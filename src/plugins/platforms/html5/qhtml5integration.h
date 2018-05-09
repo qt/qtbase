@@ -72,6 +72,8 @@ public:
     static QHtml5Integration *get();
     QHtml5Screen *screen() { return mScreen; }
     QHtml5Compositor *compositor() { return mCompositor; }
+    QHtml5EventTranslator *eventTranslator() { return m_eventTranslator; }
+
     static void QHtml5BrowserExit();
     static void updateQScreenAndCanvasRenderSize();
 
