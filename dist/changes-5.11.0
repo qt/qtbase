@@ -1,0 +1,399 @@
+Qt 5.11 introduces many new features and improvements as well as bugfixes
+over the 5.10.x series. For more details, refer to the online documentation
+included in this distribution. The documentation is also available online:
+
+http://doc.qt.io/qt-5/index.html
+
+The Qt version 5.11 series is binary compatible with the 5.10.x series.
+Applications compiled for 5.10 will continue to run with 5.11.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                        Important Behavior Changes                        *
+****************************************************************************
+
+ - [QTBUG-63150] Characters invalid in XML, such as 0x0 or 0xfffe, as well
+   as strings containing unmatched UTF-16 surrogates are now suppressed
+   from the output of QXmlStreamWriter and cause the error flag to be set.
+
+ - Logging (including qDebug and qWarning):
+   * The QT_LOGGING_TO_CONSOLE environment variable has been deprecated.
+     Use the more specific QT_ASSUME_STDERR_HAS_CONSOLE or
+     QT_FORCE_STDERR_LOGGING, depending on your usecase.
+
+****************************************************************************
+*                               General Notes                              *
+****************************************************************************
+
+Deprecation Notices
+-------------------
+
+ - Microsoft Visual Studio 2013 (compiler version 12.0) is no longer
+   supported with this Qt version.
+ - macOS 10.10 is no longer supported with this Qt version.
+
+Third-Party Code
+----------------
+
+ - Removed attribution for QTemporaryFile: The original code got rewritten.
+ - Documented use of "Unicode Character Database (UCD)" in Qt Core.
+ - Clarified use of "Unicode Common Local Data Repository (CLDR)" in the
+   documentation. Also updated SPDX license name / ID.
+ - Sqlite was updated to version 3.23.1
+ - Libdbus-1 code in Qt D-Bus is now properly documented. The code is
+   licensed under AFL-2.1 OR GPL-2.0-or-later.
+ - Bundled HarfBuzz-NG copy updated to 1.7.4.
+
+****************************************************************************
+*                                  Library                                 *
+****************************************************************************
+
+QtCore
+------
+
+ - [QTBUG-38156] Apple Unified Logging is now supported on Apple platforms.
+
+ - QAbstractItemModel:
+   * Added QAbstractItemModel::checkIndex(), a debugging function for
+     QAbstractItemModel subclasses.
+
+ - QBitArray:
+   * Added fromBits(), which creates a QBitArray from a dense bit array,
+     and bits(), which returns that.
+
+ - QDateTime:
+   * [QTBUG-64401] Years up to 9999 can now be parsed without error
+     (previously 8000 and beyond were treated as invalid) in all formats
+     (not only in ISO format). Widgets handling dates now support dates to
+     9999, likewise.
+   * [QTBUG-63072] When parsing dates and times from strings, fixed-width
+     date-time fields, such as a "dd" for day, QDateTime now rejects all
+     values that should be padded, rather than only doing so when the value
+     is a prefix of some value that would fill the field-width. Use a
+     single letter for the field, e.g. "d" for day, if you want to accept
+     short values. (QDateTimeEdit is not affected.)
+
+ - QJsonValue:
+   * fromVariant() conversion now converts from QUrl and QUuid using
+     special encoding forms to ensure best JSON compatibility.
+
+ - QLockFile:
+   * [QTBUG-63425] QLockFile can now properly conclude that a lock file
+     from a previous boot of the same device is stale and can be removed.
+     This is implemented only for Linux and Apple operating systems.
+
+ - QMetaObject:
+   * [QTBUG-66744] It is now possible to use template class instances
+     inheriting from a Q_GADGET in Qml.
+
+ - QSaveFile:
+   * [QTBUG-66268] Fixed an issue that would cause QSaveFile::commit() to
+     fail if Unix signals were delivered at the same time.
+
+ - QScopedPointer:
+   * Added get(), for compatibility with std::shared_ptr.
+
+ - QSharedPointer:
+   * Added get(), for compatibility with std::shared_ptr.
+
+ - QString:
+   * Added remove() overload taking QLatin1String.
+
+ - QStringBuilder:
+   * Added support for char16_t characters and strings.
+   * Added support for QStringView.
+
+ - QSysInfo:
+   * [QTBUG-63425] Added machineUniqueId() and bootUniqueId().
+
+ - QThread:
+   * [QTBUG-53357] Changed how Qt thread priorities are mapped to QNX
+     system thread priorities.
+
+ - QUrl:
+   * Fixed a bug in parsing IPv6 addresses with more than 4 hex digits in a
+     component.
+
+ - QUuid:
+   * Added a parameter to both toString() and toByteArray() to allow
+     controlling the use or not of the braces and dashes in the string
+     form.
+
+ - QVarLengthArray:
+   * Added rvalue overloads of prepend and insert.
+   * QVarLengthArray can now contain movable but non-copyable types, such as
+     std::unique_ptr.
+   * Added missing rvalue overload of operator+=() and operator<<().
+
+ - QVariant:
+   * Conversions of QDateTime to strings now contain the millisecond
+     components.
+
+ - QVector:
+   * Added rvalue overloads of prepend and insert.
+   * Added missing rvalue overload of operator+=() and operator<<()
+
+QtGui
+-----
+
+ - [QTBUG-59762] The QT_QPA_PLATFORM environment variable and the -platform
+   argument now support a list of platform plugins in prioritized
+   order. Platforms are separated by semicolons.
+
+ - QGuiApplication:
+   * Added fontChanged() signal.
+
+ - QIcon:
+   * [QTBUG-33123] Added fallbackSearchPaths() that will be used to find
+     icons missing in the current icon theme.
+
+ - QStaticText:
+   * [QTBUG-65836] Fixed explicitly set width not being respected.
+
+ - Text:
+   * [QTBUG-45957] Fixed a bug where QStaticText would not use the
+     QPainter's pen color for text when other text colors were also in use.
+     Internally this reserves QColor(0, 0, 0, 0) for use with QStaticText.
+   * Added QFontMetrics::horizontalAdvance() and
+     QFontMetricsF::horizontalAdvance() to replace the confusingly named
+     width() function. The latter has now been deprecated.
+   * [QTBUG-65345] Fixed an issue where changing the letter spacing type of
+     a QTextCharFormat would not cause its font to update.
+
+QtNetwork
+---------
+
+ - QHostAddress:
+   * Added isGlobal(), isLinkLocal(), isSiteLocal(),
+     isUniqueLocalUnicast(), and isBroadcast() classification functions to
+     complement isLoopback() and isMulticast().
+   * Fixed a bug in parsing IPv6 addresses with more than 4 hex digits in a
+     component.
+
+- QNetworkAccessManager:
+   * [QTBUG-61397] Added Http2DirectAttribute to enable 'direct' HTTP/2
+     protocol without ALPN/NPN and without protocol upgrade negotiations.
+   * [QTBUG-66913] Fixed a crash in HTTP/2 protocol handler (when server
+     responds with redirect or some error status code early, not wating
+     for a stream to be closed on client side).
+
+ - QNetworkInterface:
+   * Added type().
+   * Added maximumTransmissionUnit().
+   * Added preferredLifetime() and validityLifetime() to
+     QNetworkAddressEntry that report the remaining lifetime of the address
+     in the network interface.
+   * Added dnsEligibility() to QNetworkAddressEntry to indicate whether the
+     address is eligible or not for publication in DNS or similar
+     mechanisms.
+   * [QTBUG-67226] Fixed a regression in reporting the local address of a
+     point-to-point tunnel network interface.
+
+ - QSslSocket:
+   * [QTBUG-67584] When using OpenSSL 1.1, it now correctly sets protocol
+     version for QSsl::TlsV1_0, QSsl::TlsV1_1 and QSsl::TlsV1_2.
+   * [QTBUG-67112] On WinRT QSsl::SecureProtocols (default) now enables
+     TLSv1.1 and TLSv1.2.
+   * On WinRT QSsl::TlsV1SslV3 now enables SSLv3 and not just TLSv1.
+
+QtPrintSupport
+--------------
+
+ - Larger improvements to the CUPS print dialog.
+   * Added an advanced options tab in the printer properties, containing
+     all the printer options exposed through the CUPS API.
+   * Implemented support for installable options (add-ons to the printer).
+   * Added support for storing the selected settings between application runs.
+   * Added support for localized options in the advanced tab.
+   * The CUPS print dialog now supports printing of arbitrary ranges.
+
+ - QPrintDialog
+   * [QTBUG-58733] Fixed handling of custom page sizes.
+
+QtSql
+-----
+
+ - OCI support:
+   * [QTBUG-23] Added support for the TIMESTAMP data type.
+
+ - PostgreSQL support:
+   * [QTBUG-63714] Added support for forward-only queries (requires libpq
+     version 9.2 or later).
+   * Added support for multiple result sets.
+
+ - QSqlDatabase:
+   * [QTBUG-216] QSqlDatabase::database() will return an invalid
+     QSqlDatabase if the calling thread does not own the requested
+     QSqlDatabase.
+
+QtTest
+------
+
+ - The qtest_global.h header is now deprecated. Include qttestglobal.h
+   instead.
+ - Added QAbstractItemModelTester, a class to help testing item models.
+
+QtWidgets
+---------
+
+ - [QTBUG-62094] QDesktopWidget has been deprecated. Use the corresponding
+   QScreen functions instead.
+ - [QTBUG-49374][QTBUG-65237][QTBUG-49374] Fixed several issues related
+   to HiDPI support in QStyle.
+
+ - Item views:
+   * [QTBUG-48725] QTreeView now calls canFetchMore() and fetchMore() when
+     the bottom of the QTreeView is scrolled to.
+   * [QTBUG-65082] Add ability to show QJsonValue::Bool/Double to
+     QTreeView, QTableView and QListView.
+
+ - QAbstractItemModel:
+   * Implemented improved support for the optional "role" parameter in the
+     "dataChanged" signal.
+
+ - QColorDialog:
+   * [QTBUG-64500] Fixed persistence of custom colors when relaunching an
+     application.
+
+ - QHeaderView:
+   * Flat treeviews can now allow the user to move the first column (like
+     in Qt 4.x) using the new method QHeaderView::setFirstSectionMovable().
+   * MinimumSectionSize/MaximumSectionSize is now respected when calling
+     resizeSection().
+
+ - QLineEdit:
+   * Implemented quick text selection by mouse in QLineEdit.
+   * Placeholder text is now used as accessible description if the latter
+     has not been set.
+
+ - QListView:
+   * QListView now honors css :first/:middle/:last Pseudo-States.
+
+ - QMenu:
+   * [QTBUG-25669] Fixed a bug in QMenu that caused QMenuBar::triggered() to
+     be fired multiple times.
+
+ - QMenuBar:
+   * Added overloads of addAction() using Qt 5 signals and slots.
+
+ - QStandardItemModel:
+   * [QTBUG-45114][QTBUG-10872] Fixed setItemData() incorrectly deleting
+     unmodified data. That behavior is not following QAbstractItemModel's
+     documented behavior which is no modification of data not provided in
+     parameter.
+
+ - QStyle:
+   * [QTBUG-53094] Added SH_ComboBox_AllowWheelScrolling as a style hint to
+     enable/disable the use of the mouse wheel in a QComboBox. This
+     defaults to true in all styles except the macOS one so there is no
+     change in existing behavior.
+
+ - QTextEdit/QPlainTextEdit
+   * [QTBUG-63868] context menus will now open on right mouse click even if
+     the focus policy is Qt::NoFcous (allowing text copy).
+
+ - QTreeWidgetItem:
+   * QTreeWidgetItem::insertChildren now ignores insertions happening at
+     invalid indices, for consistency with QTreeWidgetItem::insertChild.
+
+****************************************************************************
+*                         Platform-specific Changes                        *
+****************************************************************************
+
+Android
+-------
+
+ - The application and dependent Qt libraries are now loaded on the same
+   thread as main() is run on, ensuring that global static initializers,
+   constructor functions, and main() are all run on the same thread. The
+   same applies during application shutdown, for destructors of global
+   objects, and destructor functions.
+
+Linux/EGLFS
+-----------
+
+ - [QTBUG-63088] The DRM+GBM backend now exposes the DRM/GBM device handle
+   under the key "dri_fd", queriable via nativeResourceForIntegration().
+
+Linux/XCB
+---------
+
+ - [QTBUG-56452] Added missing dead key symbols, enabling their use with
+   the "compose" input module.
+ - Added support for flatpak portals. Flatpak is a software utility for
+   software deployment and package management. It provides a sandbox
+   environment in which users can run applications in isolation from the
+   rest of the system. To communicate with the system flatpak uses portals,
+   which are designed to be a bridge between sandboxed applications and
+   desktop/system running on user's computer. Flatpak runs automatically
+   this as service, called xdg-desktop-portal, which exports portals on DBus
+   and which are by default visible to all applications running under
+   Flatpak.
+ - [QTBUG-44938] Qt now falls back to X11 core keycode information if an XKB
+   keymap could not be determined through the connection.
+
+ - ibus:
+   * Support ForwardKeyEvent signal
+
+Windows
+-------
+
+ - [QTPM-487][QTBUG-53024][QTBUG-43190][QTBUG-61926][QTBUG-38499]
+   [QTBUG-38337][QTBUG-38501][QTBUG-38502][QTBUG-38504][QTBUG-38505]
+   [QTBUG-38507] The Windows Accessibility back end, formerly based on
+   Microsoft Active Accessibility, was replaced with a new implementation
+   based on Microsoft UI Automation.
+
+ - [QTBUG-44594] Added support for End-User Defined Characters in Qt.
+
+iOS
+---
+
+ - [QTBUG-59042] The Apple Pencil now generates QTabletEvents, with the
+   complete feature set (tilt, rotation, pressure).
+
+macOS
+-----
+
+ - QMacStyle does no longer depend on HITheme — or Carbon for that matter.
+   Its implementation now relies exclusively on AppKit and custom code for
+   rendering and pixel metrics.
+
+****************************************************************************
+*                                Tools                                     *
+****************************************************************************
+
+configure & build system
+------------------------
+
+ - [QTBUG-61260] Fixed build with -sanitize address.
+ - [QTBUG-61373][Windows] Restored default -prefix to C:\Qt\Qt-<version>\.
+ - [QTBUG-66355] pkg-config is now tried first to find system pcre2-16.
+ - [QTBUG-66675] Fixed -debug-and-release builds with qtquickcompiler.
+ - [Windows] OpenSSL 1.1 detection is now automatic.
+ - [X11] The -xkb-config-root command line switch has been removed as it
+   is no longer needed when configuring with -qt-xkbcommon-x11.
+ - Added the -gdb-index option to speed up debugging with GDB.
+ - More Qt features were made optional as part of the Qt Lite project.
+ - Removed compatibility of the modules with CMake < 3.1.
+
+qmake
+-----
+
+ - [QTBUG-35131][Xcode] Fixed build breakage when an extra compiler's
+   output directory (OBJECTS_DIR, MOC_DIR, etc.) contains "/../".
+ - [QTBUG-45211][iOS] Fixed building of QML based test cases.
+ - [QTBUG-66265][VS2017] Fixed building projects with Windows 8.1 SDK.
+ - [QTBUG-66770][Android][x86] The clang makespec now adds -mstackrealign.
+ - [QTBUG-67011] Fixed immediate RESOURCES when using an absolute RCC_DIR.
+ - [QTBUG-67286][Darwin] Fixed error messages when SDK cannot be resolved.
+ - [Darwin] Fixed the selected SDK's compilers not being used for plain C
+   sources.
+ - [Darwin] Fixed QMAKE_BUNDLE_DATA with extra compiler generated files.
