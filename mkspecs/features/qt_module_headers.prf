@@ -114,8 +114,6 @@ syncQtResolve(HEADER_FILES, $$_PRO_FILE_PWD_)
 syncQtResolve(PRIVATE_HEADER_FILES, $$_PRO_FILE_PWD_)
 syncQtResolve(QPA_HEADER_FILES, $$_PRO_FILE_PWD_)
 syncQtResolve(GENERATED_HEADER_FILES, $$INC_PATH/include/$$MODULE_INCNAME)
-syncQtResolve(INJECTED_HEADER_FILES, $$OUT_PWD)
-syncQtResolve(INJECTED_PRIVATE_HEADER_FILES, $$OUT_PWD)
 !lib_bundle: \  # Headers are embedded into the bundle, so don't install them separately.
     CONFIG += qt_install_headers
 
@@ -128,8 +126,6 @@ exists($$OUT_PWD/qt$${MODULE}-config.h) {
     SYNCQT.INJECTIONS += \
         $$fwd_rel/qt$${MODULE}-config.h:qt$${MODULE}-config.h \
         $$fwd_rel/qt$${MODULE}-config_p.h:$$MODULE_VERSION/$$MODULE_INCNAME/private/qt$${MODULE}-config_p.h
-    SYNCQT.INJECTED_HEADER_FILES += $$OUT_PWD/qt$${MODULE}-config.h
-    SYNCQT.INJECTED_PRIVATE_HEADER_FILES += $$OUT_PWD/qt$${MODULE}-config_p.h
 }
 
 for (injection, SYNCQT.INJECTIONS) {
@@ -142,6 +138,10 @@ for (injection, SYNCQT.INJECTIONS) {
     write_file($$MAIN_FWD, MAIN_FWD_CONT)|error()
     equals(fwd_hdr, ofwd_hdr): touch($$MAIN_FWD, $$dst_hdr)
     !git_build: QMAKE_DISTCLEAN += $$MAIN_FWD
+    !contains(ofwd_hdr, .*/private/.*): \
+        SYNCQT.INJECTED_HEADER_FILES += $$dst_hdr
+    else: \
+        SYNCQT.INJECTED_PRIVATE_HEADER_FILES += $$dst_hdr
     injects = $$member(injects, 2, -1)
     for (inject, injects) {
         CLASS_FWD = $$MODULE_INC_OUTDIR/$$inject
@@ -149,6 +149,7 @@ for (injection, SYNCQT.INJECTIONS) {
         write_file($$CLASS_FWD, CLASS_FWD_CONT)|error()
         touch($$CLASS_FWD, $$MAIN_FWD)
         !git_build: QMAKE_DISTCLEAN += $$CLASS_FWD
+        SYNCQT.INJECTED_HEADER_FILES += $$CLASS_FWD
     }
 }
 
