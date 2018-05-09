@@ -44,6 +44,8 @@
 
 #include "qbasicatomic.h"
 
+#include <qtcore_tracepoints_p.h>
+
 #include <limits>
 
 QT_BEGIN_NAMESPACE
@@ -288,7 +290,9 @@ QT_BEGIN_NAMESPACE
 */
 QEvent::QEvent(Type type)
     : d(0), t(type), posted(false), spont(false), m_accept(true)
-{}
+{
+    Q_TRACE(QEvent_ctor, this, t);
+}
 
 /*!
     \internal
@@ -301,6 +305,7 @@ QEvent::QEvent(const QEvent &other)
     : d(other.d), t(other.t), posted(other.posted), spont(other.spont),
       m_accept(other.m_accept)
 {
+    Q_TRACE(QEvent_ctor, this, t);
     // if QEventPrivate becomes available, make sure to implement a
     // virtual QEventPrivate *clone() const; function so we can copy here
     Q_ASSERT_X(!d, "QEvent", "Impossible, this can't happen: QEventPrivate isn't defined anywhere");
@@ -333,6 +338,7 @@ QEvent &QEvent::operator=(const QEvent &other)
 
 QEvent::~QEvent()
 {
+    Q_TRACE(QEvent_dtor, this, t);
     if (posted && QCoreApplication::instance())
         QCoreApplicationPrivate::removePostedEvent(this);
     Q_ASSERT_X(!d, "QEvent", "Impossible, this can't happen: QEventPrivate isn't defined anywhere");

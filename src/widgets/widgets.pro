@@ -6,6 +6,9 @@ CONFIG += $$MODULE_CONFIG
 DEFINES   += QT_NO_USING_NAMESPACE
 msvc:equals(QT_ARCH, i386): QMAKE_LFLAGS += /BASE:0x65000000
 
+TRACEPOINT_PROVIDER = $$PWD/qtwidgets.tracepoints
+CONFIG += qt_tracepoints
+
 QMAKE_DOCS = $$PWD/doc/qtwidgets.qdocconf
 
 #platforms

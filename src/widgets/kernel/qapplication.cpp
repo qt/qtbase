@@ -110,6 +110,8 @@
 
 #include <qpa/qplatformwindow.h>
 
+#include <qtwidgets_tracepoints_p.h>
+
 //#define ALIEN_DEBUG
 
 static void initResources()
@@ -3707,11 +3709,19 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
 bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 {
+    // These tracepoints (and the whole function, actually) are very similar
+    // to the ones in QCoreApplicationPrivate::notify_helper; the reason for their
+    // duplication is because tracepoint symbols are not exported by QtCore.
+    // If you adjust the tracepoints here, consider adjusting QCoreApplicationPrivate too.
+    Q_TRACE(QApplication_notify_entry, receiver, e, e->type());
+
     // send to all application event filters
     if (threadRequiresCoreApplication()
         && receiver->d_func()->threadData->thread == mainThread()
-        && sendThroughApplicationEventFilters(receiver, e))
+        && sendThroughApplicationEventFilters(receiver, e)) {
+        Q_TRACE(QApplication_notify_event_filtered, receiver, e, e->type());
         return true;
+    }
 
     if (receiver->isWidgetType()) {
         QWidget *widget = static_cast<QWidget *>(receiver);
@@ -3731,11 +3741,18 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
     }
 
     // send to all receiver event filters
-    if (sendThroughObjectEventFilters(receiver, e))
+    if (sendThroughObjectEventFilters(receiver, e)) {
+        Q_TRACE(QApplication_notify_event_filtered, receiver, e, e->type());
         return true;
+    }
+
+    Q_TRACE(QApplication_notify_before_delivery, receiver, e, e->type());
 
     // deliver the event
-    bool consumed = receiver->event(e);
+    const bool consumed = receiver->event(e);
+
+    Q_TRACE(QApplication_notify_after_delivery, receiver, e, e->type(), consumed);
+
     QCoreApplicationPrivate::setEventSpontaneous(e, false);
     return consumed;
 }

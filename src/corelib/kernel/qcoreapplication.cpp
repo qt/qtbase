@@ -1185,16 +1185,31 @@ bool QCoreApplicationPrivate::sendThroughObjectEventFilters(QObject *receiver, Q
  */
 bool QCoreApplicationPrivate::notify_helper(QObject *receiver, QEvent * event)
 {
+    // Note: when adjusting the tracepoints in here
+    // consider adjusting QApplicationPrivate::notify_helper too.
+    Q_TRACE(QCoreApplication_notify_entry, receiver, event, event->type());
+
     // send to all application event filters (only does anything in the main thread)
     if (QCoreApplication::self
             && receiver->d_func()->threadData->thread == mainThread()
-            && QCoreApplication::self->d_func()->sendThroughApplicationEventFilters(receiver, event))
+            && QCoreApplication::self->d_func()->sendThroughApplicationEventFilters(receiver, event)) {
+        Q_TRACE(QCoreApplication_notify_event_filtered, receiver, event, event->type());
         return true;
+    }
     // send to all receiver event filters
-    if (sendThroughObjectEventFilters(receiver, event))
+    if (sendThroughObjectEventFilters(receiver, event)) {
+        Q_TRACE(QCoreApplication_notify_event_filtered, receiver, event, event->type());
         return true;
+    }
+
+    Q_TRACE(QCoreApplication_notify_before_delivery, receiver, event, event->type());
+
     // deliver the event
-    return receiver->event(event);
+    const bool consumed = receiver->event(event);
+
+    Q_TRACE(QCoreApplication_notify_after_delivery, receiver, event, event->type(), consumed);
+
+    return consumed;
 }
 
 /*!
@@ -1416,6 +1431,8 @@ void QCoreApplication::exit(int returnCode)
 */
 bool QCoreApplication::sendEvent(QObject *receiver, QEvent *event)
 {
+    Q_TRACE(QCoreApplication_sendEvent, receiver, event, event->type());
+
     if (event)
         event->spont = false;
     return notifyInternal2(receiver, event);
@@ -1426,6 +1443,8 @@ bool QCoreApplication::sendEvent(QObject *receiver, QEvent *event)
 */
 bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *event)
 {
+    Q_TRACE(QCoreApplication_sendSpontaneousEvent, receiver, event, event->type());
+
     if (event)
         event->spont = true;
     return notifyInternal2(receiver, event);
@@ -1460,6 +1479,8 @@ bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *event)
 */
 void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
 {
+    Q_TRACE(QCoreApplication_postEvent_entry, receiver, event, event->type());
+
     if (receiver == 0) {
         qWarning("QCoreApplication::postEvent: Unexpected null receiver");
         delete event;
@@ -1496,6 +1517,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
     // if this is one of the compressible events, do compression
     if (receiver->d_func()->postedEvents
         && self && self->compressEvent(event, receiver, &data->postEventList)) {
+        Q_TRACE(QCoreApplication_postEvent_event_compressed, receiver, event);
         return;
     }
 
@@ -1527,6 +1549,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
     // delete the event on exceptions to protect against memory leaks till the event is
     // properly owned in the postEventList
     QScopedPointer<QEvent> eventDeleter(event);
+    Q_TRACE(QCoreApplication_postEvent_event_posted, receiver, event, event->type());
     data->postEventList.addEvent(QPostEvent(receiver, event, priority));
     eventDeleter.take();
     event->posted = true;
