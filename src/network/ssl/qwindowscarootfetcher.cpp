@@ -42,6 +42,11 @@
 #include <QtCore/QThread>
 #include <QtGlobal>
 
+#ifdef QSSLSOCKET_DEBUG
+#include "qssl_p.h" // for debug categories
+#include <QtCore/QElapsedTimer>
+#endif
+
 #include "qsslsocket_p.h" // Transitively includes Wincrypt.h
 
 QT_BEGIN_NAMESPACE
