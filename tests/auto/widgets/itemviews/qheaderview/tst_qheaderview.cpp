@@ -817,11 +817,9 @@ void tst_QHeaderView::offset()
 
 void tst_QHeaderView::sectionSizeHint()
 {
-    // Test bad arguments
-    view->sectionSizeHint(-1);
-    view->sectionSizeHint(99999);
-
-    // TODO how to test the return value?
+    QCOMPARE(view->sectionSizeHint(-1), -1);
+    QCOMPARE(view->sectionSizeHint(99999), -1);
+    QVERIFY(view->sectionSizeHint(0) >= 0);
 }
 
 void tst_QHeaderView::logicalIndex()
