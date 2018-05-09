@@ -374,6 +374,9 @@ public:
 
 void tst_QGuiApplication::changeFocusWindow()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRt does not support multiple native windows.");
+#endif
     int argc = 0;
     QGuiApplication app(argc, 0);
 
@@ -594,6 +597,9 @@ public:
 
 void tst_QGuiApplication::modalWindow()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRt does not support multiple native windows.");
+#endif
     int argc = 0;
     QGuiApplication app(argc, 0);
     const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
