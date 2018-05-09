@@ -69,6 +69,10 @@ static void writeCtfMacro(QTextStream &stream, const Tracepoint::Field &field)
     case Tracepoint::Field::Integer:
         stream << "ctf_integer(" << paramType << ", " << name << ", " << name << ")";
         return;
+    case Tracepoint::Field::IntegerHex:
+    case Tracepoint::Field::Pointer:
+        stream << "ctf_integer_hex(" << paramType << ", " << name << ", " << name << ")";
+        return;
     case Tracepoint::Field::Float:
         stream << "ctf_float(" << paramType << ", " << name << ", " << name << ")";
         return;

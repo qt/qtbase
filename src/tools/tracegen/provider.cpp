@@ -157,10 +157,13 @@ static Tracepoint::Field::BackendType backendType(QString rawType)
         { "signed_long_long_int",   Tracepoint::Field::Integer },
         { "unsigned_long_long",     Tracepoint::Field::Integer },
         { "char",                   Tracepoint::Field::Integer },
+        { "intptr_t",               Tracepoint::Field::IntegerHex },
+        { "uintptr_t",              Tracepoint::Field::IntegerHex },
+        { "std::intptr_t",          Tracepoint::Field::IntegerHex },
+        { "std::uintptr_t",         Tracepoint::Field::IntegerHex },
         { "float",                  Tracepoint::Field::Float },
         { "double",                 Tracepoint::Field::Float },
         { "long_double",            Tracepoint::Field::Float },
-        { "char_ptr",               Tracepoint::Field::String },
         { "QString",                Tracepoint::Field::QtString },
         { "QByteArray",             Tracepoint::Field::QtByteArray },
         { "QUrl",                   Tracepoint::Field::QtUrl },
@@ -168,7 +171,6 @@ static Tracepoint::Field::BackendType backendType(QString rawType)
     };
 
     auto backendType = [](const QString &rawType) {
-
         static const size_t tableSize = sizeof (typeTable) / sizeof (typeTable[0]);
 
         for (size_t i = 0; i < tableSize; ++i) {
@@ -194,7 +196,13 @@ static Tracepoint::Field::BackendType backendType(QString rawType)
     rawType = rawType.trimmed();
     rawType.replace(QStringLiteral(" "), QStringLiteral("_"));
 
-    return backendType(rawType.trimmed());
+    if (rawType == QLatin1String("char_ptr"))
+        return Tracepoint::Field::String;
+
+    if (rawType.endsWith(QLatin1String("_ptr")))
+        return Tracepoint::Field::Pointer;
+
+    return backendType(rawType);
 }
 
 static Tracepoint parseTracepoint(const QString &name, const QStringList &args,
