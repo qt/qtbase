@@ -1836,9 +1836,7 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
     }
 
     locker.unlock();
-    for (int i = 0; i < events.count(); ++i) {
-        delete events[i];
-    }
+    qDeleteAll(events);
 }
 
 /*!
