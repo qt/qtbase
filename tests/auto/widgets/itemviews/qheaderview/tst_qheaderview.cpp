@@ -243,6 +243,7 @@ private slots:
     void testMinMaxSectionSizeStretched();
     void testMinMaxSectionSizeNotStretched();
     void sizeHintCrash();
+    void testResetCachedSizeHint();
 
 protected:
     void setupTestData(bool use_reset_model = false);
@@ -265,13 +266,21 @@ Q_OBJECT
 
 public:
     QtTestModel(QObject *parent = 0): QAbstractTableModel(parent),
-       cols(0), rows(0), wrongIndex(false) {}
-    int rowCount(const QModelIndex&) const { return rows; }
-    int columnCount(const QModelIndex&) const { return cols; }
+       cols(0), rows(0), wrongIndex(false), m_bMultiLine(false) {}
+    int rowCount(const QModelIndex&) const override { return rows; }
+    int columnCount(const QModelIndex&) const override { return cols; }
     bool isEditable(const QModelIndex &) const { return true; }
 
-    QVariant data(const QModelIndex &idx, int) const
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override
     {
+        if (role == Qt::DisplayRole)
+            return m_bMultiLine ? QString("%1\n%1").arg(section) : QString::number(section);
+        return QAbstractTableModel::headerData(section, orientation, role);
+    }
+    QVariant data(const QModelIndex &idx, int role = Qt::DisplayRole) const override
+    {
+        if (role != Qt::DisplayRole)
+            return QVariant();
         if (idx.row() < 0 || idx.column() < 0 || idx.column() >= cols || idx.row() >= rows) {
             wrongIndex = true;
             qWarning("Invalid modelIndex [%d,%d,%p]", idx.row(), idx.column(), idx.internalPointer());
@@ -354,8 +363,16 @@ public:
         emit layoutChanged();
     }
 
+    void setMultiLineHeader(bool bEnable)
+    {
+        beginResetModel();
+        m_bMultiLine = bEnable;
+        endResetModel();
+    }
+
     int cols, rows;
     mutable bool wrongIndex;
+    bool m_bMultiLine;
 };
 
 // Testing get/set functions
@@ -3335,6 +3352,25 @@ void tst_QHeaderView::testMinMaxSectionSize(bool stretchLastSection)
     header.setMinimumSectionSize(defaultSectionSize);
     waitFor([&header, defaultSectionSize]() { return header.sectionSize(0) == defaultSectionSize; });
     QCOMPARE(header.sectionSize(0), defaultSectionSize);
+}
+
+void tst_QHeaderView::testResetCachedSizeHint()
+{
+    QtTestModel model;
+    model.rows = model.cols = 10;
+
+    QTableView tv;
+    tv.setModel(&model);
+    tv.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&tv));
+
+    QSize s1 = tv.horizontalHeader()->sizeHint();
+    model.setMultiLineHeader(true);
+    QSize s2 = tv.horizontalHeader()->sizeHint();
+    model.setMultiLineHeader(false);
+    QSize s3 = tv.horizontalHeader()->sizeHint();
+    QCOMPARE(s1, s3);
+    QVERIFY(s1 != s2);
 }
 
 

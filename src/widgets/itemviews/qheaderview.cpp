@@ -1853,11 +1853,13 @@ bool QHeaderView::restoreState(const QByteArray &state)
 */
 void QHeaderView::reset()
 {
+    Q_D(QHeaderView);
     QAbstractItemView::reset();
     // it would be correct to call clear, but some apps rely
     // on the header keeping the sections, even after calling reset
     //d->clear();
     initializeSections();
+    d->invalidateCachedSizeHint();
 }
 
 /*!
