@@ -1459,10 +1459,6 @@ QThread *QObject::thread() const
 void QObject::moveToThread(QThread *targetThread)
 {
     Q_D(QObject);
-#ifdef QT_NO_THREAD
-    Q_UNUSED(targetThread)
-    return;
-#endif
     if (d->threadData->thread == targetThread) {
         // object is already in this thread
         return;
