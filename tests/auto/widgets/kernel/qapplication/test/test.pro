@@ -9,7 +9,7 @@ TARGET = ../tst_qapplication
 
 TESTDATA = ../test/test.pro ../tmp/README
 
-!winrt {
+!android:!winrt {
   SUBPROGRAMS = desktopsettingsaware modal
   win32:SUBPROGRAMS += wincmdline
 

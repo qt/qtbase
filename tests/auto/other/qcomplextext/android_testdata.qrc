@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/android_testdata">
+        <file>data/BidiCharacterTest.txt</file>
+        <file>data/BidiTest.txt</file>
+    </qresource>
+</RCC>

@@ -5,5 +5,5 @@ CONFIG += console
 QT = core testlib
 SOURCES = ../tst_qthreadstorage.cpp
 
-!winrt: TEST_HELPER_INSTALLS = ../crashonexit/crashonexit
+!android:!winrt: TEST_HELPER_INSTALLS = ../crashonexit/crashonexit
 

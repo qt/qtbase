@@ -15,4 +15,4 @@ CONFIG(debug_and_release) {
   DESTDIR = ..
 }
 
-!winrt: TEST_HELPER_INSTALLS = ../lackey/lackey
+!android:!winrt: TEST_HELPER_INSTALLS = ../lackey/lackey

@@ -85,6 +85,12 @@ QT_END_NAMESPACE
 #include <stdio.h>
 #include <errno.h>
 
+#ifdef Q_OS_ANDROID
+// Android introduces a braindamaged fileno macro that isn't
+// compatible with the POSIX fileno or its own FILE type.
+#  undef fileno
+#endif
+
 #if defined(Q_OS_WIN)
 #include "../../../network-settings.h"
 #endif

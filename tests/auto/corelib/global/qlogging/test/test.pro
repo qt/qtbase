@@ -7,5 +7,5 @@ QT = core testlib
 SOURCES = ../tst_qlogging.cpp
 
 DEFINES += QT_MESSAGELOGCONTEXT
-!winrt: TEST_HELPER_INSTALLS = ../app/app
+!android:!winrt: TEST_HELPER_INSTALLS = ../app/app
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

@@ -15,5 +15,5 @@ win32 {
 RESOURCES += ../selftests.qrc
 
 include(../selftests.pri)
-!winrt: for(file, SUBPROGRAMS): TEST_HELPER_INSTALLS += "../$${file}/$${file}"
+!android:!winrt: for(file, SUBPROGRAMS): TEST_HELPER_INSTALLS += "../$${file}/$${file}"
 

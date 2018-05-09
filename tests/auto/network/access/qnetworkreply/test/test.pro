@@ -13,4 +13,4 @@ RESOURCES += ../qnetworkreply.qrc
 TESTDATA += ../empty ../rfc3252.txt ../resource ../bigfile ../*.jpg ../certs \
             ../index.html ../smb-file.txt
 
-!winrt: TEST_HELPER_INSTALLS = ../echo/echo
+!android:!winrt: TEST_HELPER_INSTALLS = ../echo/echo

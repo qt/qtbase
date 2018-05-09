@@ -882,7 +882,7 @@ void tst_QTimeZone::icuTest()
 
 void tst_QTimeZone::tzTest()
 {
-#if defined QT_BUILD_INTERNAL && defined Q_OS_UNIX && !defined Q_OS_DARWIN
+#if defined QT_BUILD_INTERNAL && defined Q_OS_UNIX && !defined Q_OS_DARWIN && !defined Q_OS_ANDROID
     // Known datetimes
     qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
     qint64 dst = QDateTime(QDate(2012, 6, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();

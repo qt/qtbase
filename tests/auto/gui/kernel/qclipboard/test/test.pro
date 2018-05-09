@@ -13,6 +13,6 @@ win32 {
   }
 }
 
-!winrt: TEST_HELPER_INSTALLS = \
+!android:!winrt: TEST_HELPER_INSTALLS = \
     ../copier/copier \
     ../paster/paster
