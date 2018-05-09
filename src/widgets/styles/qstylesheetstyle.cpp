@@ -530,6 +530,8 @@ public:
     const QStyleSheetGeometryData *geometry() const { return geo; }
     const QStyleSheetPositionData *position() const { return p; }
 
+    bool hasModification() const;
+
     bool hasPalette() const { return pal != 0; }
     bool hasBackground() const { return bg != 0 && (!bg->pixmap.isNull() || bg->brush.style() != Qt::NoBrush); }
     bool hasGradientBackground() const { return bg && bg->brush.style() >= Qt::LinearGradientPattern
@@ -1442,6 +1444,21 @@ void QRenderRule::configurePalette(QPalette *p, QPalette::ColorGroup cg, const Q
         p->setBrush(cg, QPalette::HighlightedText, pal->selectionForeground);
     if (pal->alternateBackground.style() != Qt::NoBrush)
         p->setBrush(cg, QPalette::AlternateBase, pal->alternateBackground);
+}
+
+bool QRenderRule::hasModification() const
+{
+    return hasPalette() ||
+           hasBackground() ||
+           hasGradientBackground() ||
+           !hasNativeBorder() ||
+           !hasNativeOutline() ||
+           hasBox() ||
+           hasPosition() ||
+           hasGeometry() ||
+           hasImage() ||
+           hasFont ||
+           !styleHints.isEmpty();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2823,6 +2840,9 @@ void QStyleSheetStyle::polish(QWidget *w)
 #endif
 
     QRenderRule rule = renderRule(w, PseudoElement_None, PseudoClass_Any);
+
+    w->setAttribute(Qt::WA_StyleSheetTarget, rule.hasModification());
+
     if (rule.hasDrawable() || rule.hasBox()) {
         if (w->metaObject() == &QWidget::staticMetaObject
 #if QT_CONFIG(itemviews)
@@ -2909,6 +2929,7 @@ void QStyleSheetStyle::unpolish(QWidget *w)
     w->setProperty("_q_stylesheet_minh", QVariant());
     w->setProperty("_q_stylesheet_maxw", QVariant());
     w->setProperty("_q_stylesheet_maxh", QVariant());
+    w->setAttribute(Qt::WA_StyleSheetTarget, false);
     w->setAttribute(Qt::WA_StyleSheet, false);
     QObject::disconnect(w, 0, this, 0);
 #if QT_CONFIG(scrollarea)

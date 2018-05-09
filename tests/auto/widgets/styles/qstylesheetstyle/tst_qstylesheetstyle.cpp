@@ -98,6 +98,8 @@ private slots:
     void widgetStyle();
     void appStyle();
     void QTBUG11658_cachecrash();
+    void styleSheetTargetAttribute();
+
 private:
     QColor COLOR(const QWidget& w) {
         w.ensurePolished();
@@ -1997,6 +1999,59 @@ void tst_QStyleSheetStyle::widgetStylePropagation()
     QCOMPARE(FONTSIZE(childLabel), childExpectedSize);
     QCOMPARE(COLOR(parentLabel), parentExpectedColor);
     QCOMPARE(COLOR(childLabel), childExpectedColor);
+}
+
+void tst_QStyleSheetStyle::styleSheetTargetAttribute()
+{
+    QGroupBox gb;
+    QLabel lb(&gb);
+    QPushButton pb(&lb);
+
+    gb.ensurePolished(); lb.ensurePolished(); pb.ensurePolished();
+    QCOMPARE(gb.testAttribute(Qt::WA_StyleSheetTarget), false);
+    QCOMPARE(lb.testAttribute(Qt::WA_StyleSheetTarget), false);
+    QCOMPARE(pb.testAttribute(Qt::WA_StyleSheetTarget), false);
+
+    qApp->setStyleSheet("QPushButton { background-color: blue; }");
+
+    gb.ensurePolished(); lb.ensurePolished(); pb.ensurePolished();
+    QCOMPARE(gb.testAttribute(Qt::WA_StyleSheetTarget), false);
+    QCOMPARE(lb.testAttribute(Qt::WA_StyleSheetTarget), false);
+    QCOMPARE(pb.testAttribute(Qt::WA_StyleSheetTarget), true);
+
+    qApp->setStyleSheet("QGroupBox { background-color: blue; }");
+
+    gb.ensurePolished(); lb.ensurePolished(); pb.ensurePolished();
+    QCOMPARE(gb.testAttribute(Qt::WA_StyleSheetTarget), true);
+    QCOMPARE(lb.testAttribute(Qt::WA_StyleSheetTarget), false);
+    QCOMPARE(pb.testAttribute(Qt::WA_StyleSheetTarget), false);
+
+    qApp->setStyleSheet("QGroupBox * { background-color: blue; }");
+
+    gb.ensurePolished(); lb.ensurePolished(); pb.ensurePolished();
+    QCOMPARE(gb.testAttribute(Qt::WA_StyleSheetTarget), false);
+    QCOMPARE(lb.testAttribute(Qt::WA_StyleSheetTarget), true);
+    QCOMPARE(pb.testAttribute(Qt::WA_StyleSheetTarget), true);
+
+    qApp->setStyleSheet("* { background-color: blue; }");
+    gb.ensurePolished(); lb.ensurePolished(); pb.ensurePolished();
+    QCOMPARE(gb.testAttribute(Qt::WA_StyleSheetTarget), true);
+    QCOMPARE(lb.testAttribute(Qt::WA_StyleSheetTarget), true);
+    QCOMPARE(pb.testAttribute(Qt::WA_StyleSheetTarget), true);
+
+    qApp->setStyleSheet("QLabel { font-size: 32pt; }");
+
+    gb.ensurePolished(); lb.ensurePolished(); pb.ensurePolished();
+    QCOMPARE(gb.testAttribute(Qt::WA_StyleSheetTarget), false);
+    QCOMPARE(lb.testAttribute(Qt::WA_StyleSheetTarget), true);
+    QCOMPARE(pb.testAttribute(Qt::WA_StyleSheetTarget), false);
+
+    qApp->setStyleSheet("");
+
+    gb.ensurePolished(); lb.ensurePolished(); pb.ensurePolished();
+    QCOMPARE(gb.testAttribute(Qt::WA_StyleSheetTarget), false);
+    QCOMPARE(lb.testAttribute(Qt::WA_StyleSheetTarget), false);
+    QCOMPARE(pb.testAttribute(Qt::WA_StyleSheetTarget), false);
 }
 
 QTEST_MAIN(tst_QStyleSheetStyle)

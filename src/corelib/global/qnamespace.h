@@ -486,6 +486,8 @@ public:
 
         WA_ContentsMarginsRespectsSafeArea = 130,
 
+        WA_StyleSheetTarget = 131,
+
         // Add new attributes before this line
         WA_AttributeCount
     };
