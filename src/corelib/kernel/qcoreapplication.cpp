@@ -1785,8 +1785,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
     If \a receiver is null, the events of \a eventType are removed for
     all objects. If \a eventType is 0, all the events are removed for
     \a receiver. You should never call this function with \a eventType
-    of 0. If you do call it in this way, be aware that killing events
-    may cause \a receiver to break one or more invariants.
+    of 0.
 
     \threadsafe
 */
