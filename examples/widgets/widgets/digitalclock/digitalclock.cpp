@@ -59,7 +59,7 @@ DigitalClock::DigitalClock(QWidget *parent)
     setSegmentStyle(Filled);
 
     QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(showTime()));
+    connect(timer, &QTimer::timeout, this, &DigitalClock::showTime);
     timer->start(1000);
 
     showTime();
