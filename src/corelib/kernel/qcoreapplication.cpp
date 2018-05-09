@@ -1399,6 +1399,7 @@ void QCoreApplication::exit(int returnCode)
   QCoreApplication management of posted events
  *****************************************************************************/
 
+#ifndef QT_NO_QOBJECT
 /*!
     \fn bool QCoreApplication::sendEvent(QObject *receiver, QEvent *event)
 
@@ -1413,6 +1414,24 @@ void QCoreApplication::exit(int returnCode)
 
     \sa postEvent(), notify()
 */
+bool QCoreApplication::sendEvent(QObject *receiver, QEvent *event)
+{
+    if (event)
+        event->spont = false;
+    return notifyInternal2(receiver, event);
+}
+
+/*!
+    \internal
+*/
+bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *event)
+{
+    if (event)
+        event->spont = true;
+    return notifyInternal2(receiver, event);
+}
+
+#endif // QT_NO_QOBJECT
 
 /*!
     \since 4.3

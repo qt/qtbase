@@ -229,14 +229,6 @@ private:
     friend class QClassFactory;
 };
 
-#ifndef QT_NO_QOBJECT
-inline bool QCoreApplication::sendEvent(QObject *receiver, QEvent *event)
-{  if (event) event->spont = false; return notifyInternal2(receiver, event); }
-
-inline bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *event)
-{ if (event) event->spont = true; return notifyInternal2(receiver, event); }
-#endif
-
 #ifdef QT_NO_DEPRECATED
 #  define QT_DECLARE_DEPRECATED_TR_FUNCTIONS(context)
 #else
