@@ -254,20 +254,44 @@ inline RetType UnrollTailLoop<0>::exec(Number, RetType returnIfExited, Functor1,
 #endif
 
 #ifdef __SSE2__
+// Scans from \a ptr to \a end until \a maskval is non-zero. Returns true if
+// the no non-zero was found. Returns false and updates \a ptr to point to the
+// first 16-bit word that has any bit set (note: if the input is 8-bit, \a ptr
+// may be updated to one byte short).
 static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
 {
-#  if defined(__AVX2__)
+    auto updatePtr = [&](uint result) {
+        // found a character matching the mask
+        uint idx = qCountTrailingZeroBits(~result);
+        ptr += idx;
+        return false;
+    };
+
+#  if defined(__SSE4_1__)
+    __m128i mask;
+    auto updatePtrSimd = [&](__m128i data) {
+        __m128i masked = _mm_and_si128(mask, data);
+        __m128i comparison = _mm_cmpeq_epi16(masked, _mm_setzero_si128());
+        uint result = _mm_movemask_epi8(comparison);
+        return updatePtr(result);
+    };
+
+#    if defined(__AVX2__)
     // AVX2 implementation: test 32 bytes at a time
     const __m256i mask256 = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(maskval));
     while (ptr + 32 <= end) {
         __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(ptr));
-        if (!_mm256_testz_si256(mask256, data))
-            return false;
+        if (!_mm256_testz_si256(mask256, data)) {
+            // found a character matching the mask
+            __m256i masked256 = _mm256_and_si256(mask256, data);
+            __m256i comparison256 = _mm256_cmpeq_epi16(masked256, _mm256_setzero_si256());
+            return updatePtr(_mm256_movemask_epi8(comparison256));
+        }
         ptr += 32;
     }
 
-    const __m128i mask = _mm256_castsi256_si128(mask256);
-#  elif defined(__SSE4_1__)
+    mask = _mm256_castsi256_si128(mask256);
+#    else
     // SSE 4.1 implementation: test 32 bytes at a time (two 16-byte
     // comparisons, unrolled)
     const __m128i mask = _mm_set1_epi32(maskval);
@@ -275,18 +299,20 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
         __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
         __m128i data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr + 16));
         if (!_mm_testz_si128(mask, data1))
-            return false;
+            return updatePtrSimd(data1);
+
+        ptr += 16;
         if (!_mm_testz_si128(mask, data2))
-            return false;
-        ptr += 32;
+            return updatePtrSimd(data2);
+        ptr += 16;
     }
-#  endif
-#  if defined(__SSE4_1__)
+#    endif
+
     // AVX2 and SSE4.1: final 16-byte comparison
     if (ptr + 16 <= end) {
         __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
         if (!_mm_testz_si128(mask, data1))
-            return false;
+            return updatePtrSimd(data1);
         ptr += 16;
     }
 #  else
@@ -294,10 +320,11 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
     const __m128i mask = _mm_set1_epi32(maskval);
     while (ptr + 16 < end) {
         __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
-        __m128i masked = _mm_andnot_si128(mask, data);
+        __m128i masked = _mm_and_si128(mask, data);
         __m128i comparison = _mm_cmpeq_epi16(masked, _mm_setzero_si128());
-        if (quint16(_mm_movemask_epi8(comparison)) != 0xffff)
-            return false;
+        quint16 result = _mm_movemask_epi8(comparison);
+        if (result != 0xffff)
+            return updatePtr(result);
         ptr += 16;
     }
 #  endif
@@ -333,8 +360,28 @@ bool QtPrivate::isAscii(QLatin1String s) Q_DECL_NOTHROW
     }
 
     while (ptr != end) {
-        if (quint8(*ptr++) & 0x80)
+        if (quint8(*ptr) & 0x80)
             return false;
+        ++ptr;
+    }
+    return true;
+}
+
+static bool isAscii(const QChar *&ptr, const QChar *end)
+{
+#ifdef __SSE2__
+    const char *ptr8 = reinterpret_cast<const char *>(ptr);
+    const char *end8 = reinterpret_cast<const char *>(end);
+    bool ok = simdTestMask(ptr8, end8, 0xff80ff80);
+    ptr = reinterpret_cast<const QChar *>(ptr8);
+    if (!ok)
+        return false;
+#endif
+
+    while (ptr != end) {
+        if (ptr->unicode() & 0xff80)
+            return false;
+        ++ptr;
     }
     return true;
 }
@@ -344,19 +391,7 @@ bool QtPrivate::isAscii(QStringView s) Q_DECL_NOTHROW
     const QChar *ptr = s.begin();
     const QChar *end = s.end();
 
-#ifdef __SSE2__
-    const char *ptr8 = reinterpret_cast<const char *>(ptr);
-    const char *end8 = reinterpret_cast<const char *>(end);
-    if (!simdTestMask(ptr8, end8, 0xff80ff80))
-        return false;
-    ptr = reinterpret_cast<const QChar *>(ptr8);
-#endif
-
-    while (ptr != end) {
-        if ((*ptr++).unicode() & 0xff80)
-            return false;
-    }
-    return true;
+    return isAscii(ptr, end);
 }
 
 bool QtPrivate::isLatin1(QStringView s) Q_DECL_NOTHROW
@@ -7773,19 +7808,11 @@ QString QString::repeated(int times) const
 
 void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::UnicodeVersion version, int from)
 {
-    bool simple = true;
-    const QChar *p = data->constData();
-    int len = data->length();
-    for (int i = from; i < len; ++i) {
-        if (p[i].unicode() >= 0x80) {
-            simple = false;
-            if (i > from)
-                from = i - 1;
-            break;
-        }
-    }
-    if (simple)
+    const QChar *p = data->constData() + from;
+    if (isAscii(p, p + data->length()))
         return;
+    if (p > data->constData() + from)
+        from = p - data->constData() - 1;   // need one before the non-ASCII to perform NFC
 
     if (version == QChar::Unicode_Unassigned) {
         version = QChar::currentUnicodeVersion();
