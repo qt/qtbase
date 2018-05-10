@@ -333,11 +333,10 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
 }
 #endif
 
-bool QtPrivate::isAscii(QLatin1String s) Q_DECL_NOTHROW
+// Note: ptr on output may be off by one and point to a preceding US-ASCII
+// character. Usually harmless.
+bool qt_is_ascii(const char *&ptr, const char *end) Q_DECL_NOTHROW
 {
-    const char *ptr = s.begin();
-    const char *end = s.end();
-
 #if defined(__AVX2__)
     if (!simdTestMask(ptr, end, 0x80808080))
         return false;
@@ -346,16 +345,22 @@ bool QtPrivate::isAscii(QLatin1String s) Q_DECL_NOTHROW
     while (ptr + 16 < end) {
         __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
         quint32 mask = _mm_movemask_epi8(data);
-        if (mask)
+        if (mask) {
+            uint idx = qCountTrailingZeroBits(mask);
+            ptr += idx;
             return false;
+        }
         ptr += 16;
     }
 #endif
 
     while (ptr + 4 <= end) {
         quint32 data = qFromUnaligned<quint32>(ptr);
-        if (data & 0x80808080U)
+        if (data &= 0x80808080U) {
+            uint idx = qCountTrailingZeroBits(data);
+            ptr += idx / 8;
             return false;
+        }
         ptr += 4;
     }
 
@@ -365,6 +370,14 @@ bool QtPrivate::isAscii(QLatin1String s) Q_DECL_NOTHROW
         ++ptr;
     }
     return true;
+}
+
+bool QtPrivate::isAscii(QLatin1String s) Q_DECL_NOTHROW
+{
+    const char *ptr = s.begin();
+    const char *end = s.end();
+
+    return qt_is_ascii(ptr, end);
 }
 
 static bool isAscii(const QChar *&ptr, const QChar *end)

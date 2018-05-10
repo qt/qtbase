@@ -603,6 +603,9 @@ qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
                   encoding, actionTable, false);
 }
 
+// qstring.cpp
+bool qt_is_ascii(const char *&ptr, const char *end) Q_DECL_NOTHROW;
+
 /*!
     \internal
     \since 5.0
@@ -623,12 +626,7 @@ QString qt_urlRecodeByteArray(const QByteArray &ba)
     // control points below 0x20 are fine in QString
     const char *in = ba.constData();
     const char *const end = ba.constEnd();
-    for ( ; in < end; ++in) {
-        if (*in & 0x80)
-            break;
-    }
-
-    if (in == end) {
+    if (qt_is_ascii(in, end)) {
         // no non-ASCII found, we're safe to convert to QString
         return QString::fromLatin1(ba, ba.size());
     }
