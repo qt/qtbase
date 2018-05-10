@@ -155,6 +155,28 @@ static inline bool simdDecodeAscii(ushort *&dst, const uchar *&nextAscii, const 
 
 static inline const uchar *simdFindNonAscii(const uchar *src, const uchar *end, const uchar *&nextAscii)
 {
+#ifdef __AVX2__
+    // do 32 characters at a time
+    // (this is similar to simdTestMask in qstring.cpp)
+    const __m256i mask = _mm256_set1_epi8(0x80);
+    for ( ; end - src >= 32; src += 32) {
+        __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src));
+        if (_mm256_testz_si256(mask, data))
+            continue;
+
+        uint n = _mm256_movemask_epi8(data);
+        Q_ASSUME(n);
+
+        // find the next probable ASCII character
+        // we don't want to load 32 bytes again in this loop if we know there are non-ASCII
+        // characters still coming
+        nextAscii = src + qBitScanReverse(n) + 1;
+
+        // return the non-ASCII character
+        return src + qCountTrailingZeroBits(n);
+    }
+#endif
+
     // do sixteen characters at a time
     for ( ; end - src >= 16; src += 16) {
         __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i*>(src));
