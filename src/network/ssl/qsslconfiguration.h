@@ -150,9 +150,9 @@ public:
     QSslDiffieHellmanParameters diffieHellmanParameters() const;
     void setDiffieHellmanParameters(const QSslDiffieHellmanParameters &dhparams);
 
-    QMap<QByteArray, QVariant> backendConfig() const;
-    void setBackendConfigOption(const QByteArray &name, const QVariant &value);
-    void setBackendConfig(const QMap<QByteArray, QVariant> &backendConfig = QMap<QByteArray, QVariant>());
+    QMap<QByteArray, QVariant> backendConfiguration() const;
+    void setBackendConfigurationOption(const QByteArray &name, const QVariant &value);
+    void setBackendConfiguration(const QMap<QByteArray, QVariant> &backendConfiguration = QMap<QByteArray, QVariant>());
 
     static QSslConfiguration defaultConfiguration();
     static void setDefaultConfiguration(const QSslConfiguration &configuration);

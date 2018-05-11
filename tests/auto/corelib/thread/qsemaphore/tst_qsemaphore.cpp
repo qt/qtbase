@@ -37,6 +37,8 @@ class tst_QSemaphore : public QObject
     Q_OBJECT
 private slots:
     void acquire();
+    void multiRelease();
+    void multiAcquireRelease();
     void tryAcquire();
     void tryAcquireWithTimeout_data();
     void tryAcquireWithTimeout();
@@ -147,6 +149,73 @@ void tst_QSemaphore::acquire()
     QCOMPARE(semaphore.available(), 10);
     semaphore.acquire(10);
     QCOMPARE(semaphore.available(), 0);
+}
+
+void tst_QSemaphore::multiRelease()
+{
+    class Thread : public QThread
+    {
+    public:
+        QSemaphore &sem;
+        Thread(QSemaphore &sem) : sem(sem) {}
+
+        void run() override
+        {
+            sem.acquire();
+        }
+    };
+
+    QSemaphore sem;
+    QVector<Thread *> threads;
+    threads.resize(4);
+
+    for (Thread *&t : threads)
+        t = new Thread(sem);
+    for (Thread *&t : threads)
+        t->start();
+
+    // wait for all threads to reach the sem.acquire() and then
+    // release them all
+    QTest::qSleep(1);
+    sem.release(threads.size());
+
+    for (Thread *&t : threads)
+        t->wait();
+    qDeleteAll(threads);
+}
+
+void tst_QSemaphore::multiAcquireRelease()
+{
+    class Thread : public QThread
+    {
+    public:
+        QSemaphore &sem;
+        Thread(QSemaphore &sem) : sem(sem) {}
+
+        void run() override
+        {
+            sem.acquire();
+            sem.release();
+        }
+    };
+
+    QSemaphore sem;
+    QVector<Thread *> threads;
+    threads.resize(4);
+
+    for (Thread *&t : threads)
+        t = new Thread(sem);
+    for (Thread *&t : threads)
+        t->start();
+
+    // wait for all threads to reach the sem.acquire() and then
+    // release them all
+    QTest::qSleep(1);
+    sem.release();
+
+    for (Thread *&t : threads)
+        t->wait();
+    qDeleteAll(threads);
 }
 
 void tst_QSemaphore::tryAcquire()

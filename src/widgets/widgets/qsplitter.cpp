@@ -1200,8 +1200,8 @@ QWidget *QSplitter::replaceWidget(int index, QWidget *widget)
 /*!
     \fn int QSplitter::indexOf(QWidget *widget) const
 
-    Returns the index in the splitter's layout of the specified \a widget. This
-    also works for handles.
+    Returns the index in the splitter's layout of the specified \a widget,
+    or -1 if \a widget is not found. This also works for handles.
 
     Handles are numbered from 0. There are as many handles as there
     are child widgets, but the handle at position 0 is always hidden.
@@ -1234,9 +1234,9 @@ QSplitterHandle *QSplitter::createHandle()
 }
 
 /*!
-    Returns the handle to the left (or above) for the item in the
-    splitter's layout at the given \a index. The handle at index 0 is
-    always hidden.
+    Returns the handle to the left of (or above) the item in the
+    splitter's layout at the given \a index, or \c nullptr if there is no such item.
+    The handle at index 0 is always hidden.
 
     For right-to-left languages such as Arabic and Hebrew, the layout
     of horizontal splitters is reversed. The handle will be to the
@@ -1253,7 +1253,8 @@ QSplitterHandle *QSplitter::handle(int index) const
 }
 
 /*!
-    Returns the widget at the given \a index in the splitter's layout.
+    Returns the widget at the given \a index in the splitter's layout,
+    or \c nullptr if there is no such widget.
 
     \sa count(), handle(), indexOf(), insertWidget()
 */

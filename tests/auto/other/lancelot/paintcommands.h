@@ -32,13 +32,13 @@
 #include <qmap.h>
 #include <qpainterpath.h>
 #include <qregion.h>
+#include <qregularexpression.h>
 #include <qstringlist.h>
 #include <qpixmap.h>
 #include <qbrush.h>
 #include <qhash.h>
 
 QT_FORWARD_DECLARE_CLASS(QPainter)
-QT_FORWARD_DECLARE_CLASS(QRegExp)
 #ifndef QT_NO_OPENGL
 QT_FORWARD_DECLARE_CLASS(QOpenGLFramebufferObject)
 QT_FORWARD_DECLARE_CLASS(QOpenGLPaintDevice)
@@ -128,121 +128,121 @@ private:
     QColor convertToColor(const QString &str);
 
     // commands: comments
-    void command_comment(QRegExp re);
+    void command_comment(QRegularExpressionMatch re);
 
     // commands: importer
-    void command_import(QRegExp re);
+    void command_import(QRegularExpressionMatch re);
 
     // commands: blocks
-    void command_begin_block(QRegExp re);
-    void command_end_block(QRegExp re);
-    void command_repeat_block(QRegExp re);
+    void command_begin_block(QRegularExpressionMatch re);
+    void command_end_block(QRegularExpressionMatch re);
+    void command_repeat_block(QRegularExpressionMatch re);
 
     // commands: misc
-    void command_textlayout_draw(QRegExp re);
-    void command_abort(QRegExp re);
+    void command_textlayout_draw(QRegularExpressionMatch re);
+    void command_abort(QRegularExpressionMatch re);
 
     // commands: noops
-    void command_noop(QRegExp re);
+    void command_noop(QRegularExpressionMatch re);
 
     // commands: setters
-    void command_setBgMode(QRegExp re);
-    void command_setBackground(QRegExp re);
-    void command_setOpacity(QRegExp re);
-    void command_path_setFillRule(QRegExp re);
-    void command_setBrush(QRegExp re);
-    void command_setBrushOrigin(QRegExp re);
-    void command_brushTranslate(QRegExp re);
-    void command_brushRotate(QRegExp re);
-    void command_brushScale(QRegExp re);
-    void command_brushShear(QRegExp re);
-    void command_setClipPath(QRegExp re);
-    void command_setClipRect(QRegExp re);
-    void command_setClipRectangle(QRegExp re);
-    void command_setClipRegion(QRegExp re);
-    void command_setClipping(QRegExp re);
-    void command_setCompositionMode(QRegExp re);
-    void command_setFont(QRegExp re);
-    void command_setPen(QRegExp re);
-    void command_setPen2(QRegExp re);
-    void command_pen_setDashOffset(QRegExp re);
-    void command_pen_setDashPattern(QRegExp re);
-    void command_pen_setCosmetic(QRegExp re);
-    void command_setRenderHint(QRegExp re);
-    void command_clearRenderHint(QRegExp re);
-    void command_gradient_appendStop(QRegExp re);
-    void command_gradient_clearStops(QRegExp re);
-    void command_gradient_setConical(QRegExp re);
-    void command_gradient_setLinear(QRegExp re);
-    void command_gradient_setRadial(QRegExp re);
-    void command_gradient_setRadialExtended(QRegExp re);
-    void command_gradient_setLinearPen(QRegExp re);
-    void command_gradient_setSpread(QRegExp re);
-    void command_gradient_setCoordinateMode(QRegExp re);
+    void command_setBgMode(QRegularExpressionMatch re);
+    void command_setBackground(QRegularExpressionMatch re);
+    void command_setOpacity(QRegularExpressionMatch re);
+    void command_path_setFillRule(QRegularExpressionMatch re);
+    void command_setBrush(QRegularExpressionMatch re);
+    void command_setBrushOrigin(QRegularExpressionMatch re);
+    void command_brushTranslate(QRegularExpressionMatch re);
+    void command_brushRotate(QRegularExpressionMatch re);
+    void command_brushScale(QRegularExpressionMatch re);
+    void command_brushShear(QRegularExpressionMatch re);
+    void command_setClipPath(QRegularExpressionMatch re);
+    void command_setClipRect(QRegularExpressionMatch re);
+    void command_setClipRectangle(QRegularExpressionMatch re);
+    void command_setClipRegion(QRegularExpressionMatch re);
+    void command_setClipping(QRegularExpressionMatch re);
+    void command_setCompositionMode(QRegularExpressionMatch re);
+    void command_setFont(QRegularExpressionMatch re);
+    void command_setPen(QRegularExpressionMatch re);
+    void command_setPen2(QRegularExpressionMatch re);
+    void command_pen_setDashOffset(QRegularExpressionMatch re);
+    void command_pen_setDashPattern(QRegularExpressionMatch re);
+    void command_pen_setCosmetic(QRegularExpressionMatch re);
+    void command_setRenderHint(QRegularExpressionMatch re);
+    void command_clearRenderHint(QRegularExpressionMatch re);
+    void command_gradient_appendStop(QRegularExpressionMatch re);
+    void command_gradient_clearStops(QRegularExpressionMatch re);
+    void command_gradient_setConical(QRegularExpressionMatch re);
+    void command_gradient_setLinear(QRegularExpressionMatch re);
+    void command_gradient_setRadial(QRegularExpressionMatch re);
+    void command_gradient_setRadialExtended(QRegularExpressionMatch re);
+    void command_gradient_setLinearPen(QRegularExpressionMatch re);
+    void command_gradient_setSpread(QRegularExpressionMatch re);
+    void command_gradient_setCoordinateMode(QRegularExpressionMatch re);
 
     // commands: drawing ops
-    void command_drawArc(QRegExp re);
-    void command_drawChord(QRegExp re);
-    void command_drawConvexPolygon(QRegExp re);
-    void command_drawEllipse(QRegExp re);
-    void command_drawImage(QRegExp re);
-    void command_drawLine(QRegExp re);
-    void command_drawPath(QRegExp re);
-    void command_drawPie(QRegExp re);
-    void command_drawPixmap(QRegExp re);
-    void command_drawPoint(QRegExp re);
-    void command_drawPolygon(QRegExp re);
-    void command_drawPolyline(QRegExp re);
-    void command_drawRect(QRegExp re);
-    void command_drawRoundedRect(QRegExp re);
-    void command_drawRoundRect(QRegExp re);
-    void command_drawText(QRegExp re);
-    void command_drawStaticText(QRegExp re);
-    void command_drawTiledPixmap(QRegExp re);
-    void command_path_addEllipse(QRegExp re);
-    void command_path_addPolygon(QRegExp re);
-    void command_path_addRect(QRegExp re);
-    void command_path_addText(QRegExp re);
-    void command_path_arcTo(QRegExp re);
-    void command_path_closeSubpath(QRegExp re);
-    void command_path_createOutline(QRegExp re);
-    void command_path_cubicTo(QRegExp re);
-    void command_path_debugPrint(QRegExp re);
-    void command_path_lineTo(QRegExp re);
-    void command_path_moveTo(QRegExp re);
-    void command_region_addEllipse(QRegExp re);
-    void command_region_addRect(QRegExp re);
+    void command_drawArc(QRegularExpressionMatch re);
+    void command_drawChord(QRegularExpressionMatch re);
+    void command_drawConvexPolygon(QRegularExpressionMatch re);
+    void command_drawEllipse(QRegularExpressionMatch re);
+    void command_drawImage(QRegularExpressionMatch re);
+    void command_drawLine(QRegularExpressionMatch re);
+    void command_drawPath(QRegularExpressionMatch re);
+    void command_drawPie(QRegularExpressionMatch re);
+    void command_drawPixmap(QRegularExpressionMatch re);
+    void command_drawPoint(QRegularExpressionMatch re);
+    void command_drawPolygon(QRegularExpressionMatch re);
+    void command_drawPolyline(QRegularExpressionMatch re);
+    void command_drawRect(QRegularExpressionMatch re);
+    void command_drawRoundedRect(QRegularExpressionMatch re);
+    void command_drawRoundRect(QRegularExpressionMatch re);
+    void command_drawText(QRegularExpressionMatch re);
+    void command_drawStaticText(QRegularExpressionMatch re);
+    void command_drawTiledPixmap(QRegularExpressionMatch re);
+    void command_path_addEllipse(QRegularExpressionMatch re);
+    void command_path_addPolygon(QRegularExpressionMatch re);
+    void command_path_addRect(QRegularExpressionMatch re);
+    void command_path_addText(QRegularExpressionMatch re);
+    void command_path_arcTo(QRegularExpressionMatch re);
+    void command_path_closeSubpath(QRegularExpressionMatch re);
+    void command_path_createOutline(QRegularExpressionMatch re);
+    void command_path_cubicTo(QRegularExpressionMatch re);
+    void command_path_debugPrint(QRegularExpressionMatch re);
+    void command_path_lineTo(QRegularExpressionMatch re);
+    void command_path_moveTo(QRegularExpressionMatch re);
+    void command_region_addEllipse(QRegularExpressionMatch re);
+    void command_region_addRect(QRegularExpressionMatch re);
 
     // getters
-    void command_region_getClipRegion(QRegExp re);
-    void command_path_getClipPath(QRegExp re);
+    void command_region_getClipRegion(QRegularExpressionMatch re);
+    void command_path_getClipPath(QRegularExpressionMatch re);
 
     // commands: surface begin/end
-    void command_surface_begin(QRegExp re);
-    void command_surface_end(QRegExp re);
+    void command_surface_begin(QRegularExpressionMatch re);
+    void command_surface_end(QRegularExpressionMatch re);
 
     // commands: save/restore painter state
-    void command_restore(QRegExp re);
-    void command_save(QRegExp re);
+    void command_restore(QRegularExpressionMatch re);
+    void command_save(QRegularExpressionMatch re);
 
     // commands: pixmap/image
-    void command_pixmap_load(QRegExp re);
-    void command_pixmap_setMask(QRegExp re);
-    void command_bitmap_load(QRegExp re);
-    void command_image_convertToFormat(QRegExp re);
-    void command_image_load(QRegExp re);
-    void command_image_setColor(QRegExp re);
-    void command_image_setColorCount(QRegExp re);
+    void command_pixmap_load(QRegularExpressionMatch re);
+    void command_pixmap_setMask(QRegularExpressionMatch re);
+    void command_bitmap_load(QRegularExpressionMatch re);
+    void command_image_convertToFormat(QRegularExpressionMatch re);
+    void command_image_load(QRegularExpressionMatch re);
+    void command_image_setColor(QRegularExpressionMatch re);
+    void command_image_setColorCount(QRegularExpressionMatch re);
 
     // commands: transformation
-    void command_resetMatrix(QRegExp re);
-    void command_translate(QRegExp re);
-    void command_rotate(QRegExp re);
-    void command_rotate_x(QRegExp re);
-    void command_rotate_y(QRegExp re);
-    void command_scale(QRegExp re);
-    void command_mapQuadToQuad(QRegExp re);
-    void command_setMatrix(QRegExp re);
+    void command_resetMatrix(QRegularExpressionMatch re);
+    void command_translate(QRegularExpressionMatch re);
+    void command_rotate(QRegularExpressionMatch re);
+    void command_rotate_x(QRegularExpressionMatch re);
+    void command_rotate_y(QRegularExpressionMatch re);
+    void command_scale(QRegularExpressionMatch re);
+    void command_mapQuadToQuad(QRegularExpressionMatch re);
+    void command_setMatrix(QRegularExpressionMatch re);
 
     // attributes
     QPainter *m_painter;
@@ -302,7 +302,7 @@ private:
 public:
     struct PaintCommandInfos
     {
-        PaintCommandInfos(QString id, void (PaintCommands::*p)(QRegExp), QRegExp r, QString sy, QString sa)
+        PaintCommandInfos(QString id, void (PaintCommands::*p)(QRegularExpressionMatch), QRegularExpression r, QString sy, QString sa)
             : identifier(id)
             , regExp(r)
             , syntax(sy)
@@ -313,10 +313,10 @@ public:
             : identifier(title), paintMethod(0) {}
         bool isSectionHeader() const { return paintMethod == 0; }
         QString identifier;
-        QRegExp regExp;
+        QRegularExpression regExp;
         QString syntax;
         QString sample;
-        void (PaintCommands::*paintMethod)(QRegExp);
+        void (PaintCommands::*paintMethod)(QRegularExpressionMatch);
     };
 
     static PaintCommandInfos *findCommandById(const QString &identifier) {

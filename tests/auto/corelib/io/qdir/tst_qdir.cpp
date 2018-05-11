@@ -1384,16 +1384,25 @@ void tst_QDir::absoluteFilePath_data()
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<QString>("expectedFilePath");
 
-    QTest::newRow("0") << "/etc" << "/passwd" << "/passwd";
-    QTest::newRow("1") << "/etc" << "passwd" << "/etc/passwd";
-    QTest::newRow("2") << "/" << "passwd" << "/passwd";
-    QTest::newRow("3") << "relative" << "path" << QDir::currentPath() + "/relative/path";
-    QTest::newRow("4") << "" << "" << QDir::currentPath();
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-    QTest::newRow("5") << "//machine" << "share" << "//machine/share";
+    QTest::newRow("UNC") << "//machine" << "share" << "//machine/share";
+    QTest::newRow("Drive") << "c:/side/town" << "/my/way/home" << "c:/my/way/home";
 #endif
 
+#ifdef Q_OS_WIN
+#define DRIVE "Q:"
+#else
+#define DRIVE
+#endif
+
+    QTest::newRow("0") << DRIVE "/etc" << "/passwd" << DRIVE "/passwd";
+    QTest::newRow("1") << DRIVE "/etc" << "passwd" << DRIVE "/etc/passwd";
+    QTest::newRow("2") << DRIVE "/" << "passwd" << DRIVE "/passwd";
+    QTest::newRow("3") << "relative" << "path" << QDir::currentPath() + "/relative/path";
+    QTest::newRow("4") << "" << "" << QDir::currentPath();
+
     QTest::newRow("resource") << ":/prefix" << "foo.bar" << ":/prefix/foo.bar";
+#undef DRIVE
 }
 
 void tst_QDir::absoluteFilePath()

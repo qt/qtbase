@@ -242,8 +242,13 @@ typedef unsigned int quint32;      /* 32 bit unsigned */
 typedef __int64 qint64;            /* 64 bit signed */
 typedef unsigned __int64 quint64;  /* 64 bit unsigned */
 #else
+#ifdef __cplusplus
 #  define Q_INT64_C(c) static_cast<long long>(c ## LL)     /* signed 64 bit constant */
 #  define Q_UINT64_C(c) static_cast<unsigned long long>(c ## ULL) /* unsigned 64 bit constant */
+#else
+#  define Q_INT64_C(c) ((long long)(c ## LL))               /* signed 64 bit constant */
+#  define Q_UINT64_C(c) ((unsigned long long)(c ## ULL))    /* unsigned 64 bit constant */
+#endif
 typedef long long qint64;           /* 64 bit signed */
 typedef unsigned long long quint64; /* 64 bit unsigned */
 #endif
@@ -742,12 +747,13 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qSharedBuild() Q_DECL_NOTHROW;
 #  define QT_DEBUG
 #endif
 
+// QtPrivate::asString defined in qstring.h
 #ifndef qPrintable
-#  define qPrintable(string) QString(string).toLocal8Bit().constData()
+#  define qPrintable(string) QtPrivate::asString(string).toLocal8Bit().constData()
 #endif
 
 #ifndef qUtf8Printable
-#  define qUtf8Printable(string) QString(string).toUtf8().constData()
+#  define qUtf8Printable(string) QtPrivate::asString(string).toUtf8().constData()
 #endif
 
 /*

@@ -340,6 +340,7 @@ public:
     static QString formatWindowTitle(const QString &title);
 
     static const char *embeddedNativeParentHandleProperty;
+    static const char *hasBorderInFullScreenProperty;
 
 private:
     inline void show_sys() const;

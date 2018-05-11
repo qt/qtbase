@@ -64,6 +64,7 @@ namespace QShaderLanguage
     enum StorageQualifier : char {
         Const = 1,
         Input,
+        BuiltIn,
         Output,
         Uniform
     };

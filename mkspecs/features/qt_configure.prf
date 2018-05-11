@@ -710,13 +710,14 @@ defineTest(qtConfHandleLibrary) {
     }
     use_args = $$eval($${lpfx}.literal_args)
 
-    qtConfLoadResult($${lpfx}, $$1) {
+    qtConfLoadResult($${lpfx}, $$1, "library") {
         $$eval($${lpfx}.result): \
             qtConfExportLibrary($$1)
         return()
     }
 
     qtLogTestIntro($${lpfx}, "looking for library $${1}")
+    qtPersistLog()
 
     result = false
     for (s, $${lpfx}.sources._KEYS_) {
@@ -767,6 +768,9 @@ defineTest(qtConfHandleLibrary) {
         result = true
         break()
     }
+
+    $${lpfx}.msgs = $$qtPersistedLog()
+    export($${lpfx}.msgs)
 
     qtLogTestResult($${lpfx}, $$result)
 
@@ -1024,7 +1028,7 @@ defineTest(qtLogTestIntro) {
     label = $$eval($${1}.label)
     isEmpty(label): return()
 
-    log("Checking for $${label}... ")
+    isEmpty(3): log("Checking for $${label}... ")
     $$QMAKE_CONFIG_VERBOSE: log("$$escape_expand(\\n)")
     write_file($$QMAKE_CONFIG_LOG, 2, append)
 }
@@ -1044,14 +1048,14 @@ defineTest(qtLogTestResult) {
         msg = "test $$1 FAILED"
     }
     $$QMAKE_CONFIG_VERBOSE: log_msg = $$msg
-    logn("$$log_msg")
+    isEmpty(3): logn("$$log_msg")
     write_file($$QMAKE_CONFIG_LOG, msg, append)
 }
 
 defineTest(qtConfSaveResult) {
     equals($${1}.cache, -): \
         return()
-    keys = result $$eval($${1}.cache)
+    keys = result msgs $$eval($${1}.cache)
     cont = "cache.$${2}._KEYS_ = $$keys"
     cache.$${2}._KEYS_ = $$keys
     export(cache.$${2}._KEYS_)
@@ -1074,6 +1078,12 @@ defineTest(qtConfLoadResult) {
         $${1}.$${k} = $$eval(cache.$${2}.$${k})
         export($${1}.$${k})
     }
+    # we could print the cached result, but that's basically just noise -
+    # the explicitly generated summary is supposed to contain all relevant
+    # information.
+    qtLogTestIntro($$1, "loaded result for $$3 $$1", false)
+    qtLog($$eval($${1}.msgs))
+    qtLogTestResult($$1, $$eval($${1}.result), false)
     return(true)
 }
 
@@ -1154,13 +1164,17 @@ defineTest(qtRunSingleTest) {
     # note: we do this only after resolving the dependencies and the
     # preparation (which may resolve libraries), so that caching does
     # not alter the execution order (and thus the output).
-    qtConfLoadResult($${tpfx}, $$1): \
+    qtConfLoadResult($${tpfx}, $$1, "config test"): \
         return()
 
     qtLogTestIntro($${tpfx}, "executing config test $${1}")
+    qtPersistLog()
 
     result = false
     $${call}($${tpfx}): result = true
+
+    $${tpfx}.msgs = $$qtPersistedLog()
+    export($${tpfx}.msgs)
 
     qtLogTestResult($${tpfx}, $$result)
 

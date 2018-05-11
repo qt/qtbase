@@ -51,6 +51,7 @@
 #include <QMetaType>
 #include <QMimeType>
 #include <QMimeDatabase>
+#include <QRandomGenerator>
 #include <QWindow>
 
 QT_BEGIN_NAMESPACE
@@ -230,6 +231,8 @@ void QFlatpakFileDialog::openPortal()
 
     if (!filterList.isEmpty())
         options.insert(QLatin1String("filters"), QVariant::fromValue(filterList));
+
+    options.insert(QLatin1String("handle_token"), QStringLiteral("qt%1").arg(QRandomGenerator::global()->generate()));
 
     // TODO choices a(ssa(ss)s)
     // List of serialized combo boxes to add to the file chooser.

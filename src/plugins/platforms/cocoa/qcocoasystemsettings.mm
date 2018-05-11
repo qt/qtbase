@@ -90,7 +90,9 @@ QPalette * qt_mac_createSystemPalette()
     palette->setColor(QPalette::Disabled, QPalette::Text, qc);
     palette->setColor(QPalette::Disabled, QPalette::WindowText, qc);
     palette->setColor(QPalette::Disabled, QPalette::HighlightedText, qc);
-    palette->setBrush(QPalette::ToolTipBase, QColor(255, 255, 199));
+
+    palette->setBrush(QPalette::ToolTipBase, qt_mac_toQBrush([NSColor controlColor]));
+
     return palette;
 }
 

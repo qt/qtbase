@@ -32,7 +32,6 @@ ANDROID_PERMISSIONS = \
 freebsd|openbsd: QMAKE_LFLAGS_NOUNDEF =
 
 include(animation/animation.pri)
-include(arch/arch.pri)
 include(global/global.pri)
 include(thread/thread.pri)
 include(tools/tools.pri)

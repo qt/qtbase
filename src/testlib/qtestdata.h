@@ -40,7 +40,7 @@
 #ifndef QTESTDATA_H
 #define QTESTDATA_H
 
-#include <QtTest/qtest_global.h>
+#include <QtTest/qttestglobal.h>
 
 #include <QtCore/qmetatype.h>
 #include <QtCore/qstring.h>

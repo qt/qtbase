@@ -42,7 +42,9 @@
 #include <qfile.h>
 #include <qhash.h>
 #include <qtextstream.h>
+#if QT_CONFIG(regularexpression)
 #include <qregularexpression.h>
+#endif
 #include <private/qfilesystemengine_p.h>
 #include <errno.h>
 #include <stdlib.h>

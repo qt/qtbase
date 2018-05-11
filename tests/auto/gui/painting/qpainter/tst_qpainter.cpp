@@ -153,6 +153,7 @@ private slots:
     void setEqualClipRegionAndPath();
 
     void clipRectSaveRestore();
+    void clipStateSaveRestore();
 
     void clippedFillPath_data();
     void clippedFillPath();
@@ -3423,6 +3424,35 @@ void tst_QPainter::clipRectSaveRestore()
     p.end();
 
     QCOMPARE(img.pixel(0, 0), QColor(Qt::black).rgba());
+}
+
+void tst_QPainter::clipStateSaveRestore()
+{
+    QImage img(16, 16, QImage::Format_RGB32);
+    img.fill(Qt::blue);
+    {
+        QPainter p(&img);
+        p.setClipRect(QRect(5, 5, 10, 10));
+        p.save();
+        p.setClipping(false);
+        p.restore();
+        p.fillRect(0, 0, 16, 16, Qt::red);
+        p.end();
+        QCOMPARE(img.pixel(0, 0), QColor(Qt::blue).rgb());
+    }
+
+    img.fill(Qt::blue);
+    {
+        QPainter p(&img);
+        p.setClipRect(QRect(5, 5, 10, 10));
+        p.setClipping(false);
+        p.save();
+        p.setClipping(true);
+        p.restore();
+        p.fillRect(0, 0, 16, 16, Qt::red);
+        p.end();
+        QCOMPARE(img.pixel(0, 0), QColor(Qt::red).rgb());
+    }
 }
 
 void tst_QPainter::clippedImage()

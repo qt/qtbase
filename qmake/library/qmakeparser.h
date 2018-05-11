@@ -30,6 +30,7 @@
 #define QMAKEPARSER_H
 
 #include "qmake_global.h"
+#include "qmakevfs.h"
 #include "proitems.h"
 
 #include <qhash.h>
@@ -78,7 +79,12 @@ public:
     enum ParseFlag {
         ParseDefault = 0,
         ParseUseCache = 1,
-        ParseReportMissing = 4
+        ParseReportMissing = 4,
+#ifdef PROEVALUATOR_DUAL_VFS
+        ParseCumulative = 8
+#else
+        ParseCumulative = 0
+#endif
     };
     Q_DECLARE_FLAGS(ParseFlags, ParseFlag)
 
@@ -87,12 +93,10 @@ public:
     enum SubGrammar { FullGrammar, TestGrammar, ValueGrammar };
     // fileName is expected to be absolute and cleanPath()ed.
     ProFile *parsedProFile(const QString &fileName, ParseFlags flags = ParseDefault);
-    ProFile *parsedProBlock(const QStringRef &contents, const QString &name, int line = 0,
+    ProFile *parsedProBlock(const QStringRef &contents, int id, const QString &name, int line = 0,
                             SubGrammar grammar = FullGrammar);
 
-    int idForFileName(const QString &fileName);
-
-    void discardFileFromCache(const QString &fileName);
+    void discardFileFromCache(int id);
 
 #ifdef PROPARSER_DEBUG
     static QString formatProBlock(const QString &block);
@@ -131,7 +135,7 @@ private:
         ushort terminator; // '}' if replace function call is braced, ':' if test function
     };
 
-    bool read(ProFile *pro, ParseFlags flags);
+    bool readFile(int id, QMakeParser::ParseFlags flags, QString *contents);
     void read(ProFile *pro, const QStringRef &content, int line, SubGrammar grammar);
 
     ALWAYS_INLINE void putTok(ushort *&tokPtr, ushort tok);
@@ -182,12 +186,6 @@ private:
 
     QString m_tmp; // Temporary for efficient toQString
 
-    QHash<QString, int> fileIdMap;
-#ifdef PROEVALUATOR_THREAD_SAFE
-    QMutex fileIdMutex;
-#endif
-    int fileIdCounter = 0;
-
     ProFileCache *m_cache;
     QMakeParserHandler *m_handler;
     QMakeVfs *m_vfs;
@@ -206,8 +204,9 @@ public:
     ProFileCache() {}
     ~ProFileCache();
 
-    void discardFile(const QString &fileName);
-    void discardFiles(const QString &prefix);
+    void discardFile(int id);
+    void discardFile(const QString &fileName, QMakeVfs *vfs);
+    void discardFiles(const QString &prefix, QMakeVfs *vfs);
 
 private:
     struct Entry {
@@ -223,7 +222,7 @@ private:
 #endif
     };
 
-    QHash<QString, Entry> parsed_files;
+    QHash<int, Entry> parsed_files;
 #ifdef PROPARSER_THREAD_SAFE
     QMutex mutex;
 #endif

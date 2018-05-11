@@ -259,8 +259,7 @@ void tst_QSignalSpy::wait_signalEmittedTooLate()
     QTimer::singleShot(500, this, SIGNAL(sigFoo()));
     QSignalSpy spy(this, SIGNAL(sigFoo()));
     QVERIFY(!spy.wait(200));
-    QTest::qWait(400);
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
 }
 
 void tst_QSignalSpy::wait_signalEmittedMultipleTimes()

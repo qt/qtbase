@@ -43,6 +43,8 @@
 #include <qpa/qplatformcursor.h>
 #include "qxcbscreen.h"
 
+#include <QtCore/QCache>
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_CURSOR
@@ -76,7 +78,7 @@ public:
     QXcbCursor(QXcbConnection *conn, QXcbScreen *screen);
     ~QXcbCursor();
 #ifndef QT_NO_CURSOR
-    void changeCursor(QCursor *cursor, QWindow *widget) override;
+    void changeCursor(QCursor *cursor, QWindow *window) override;
 #endif
     QPoint pos() const override;
     void setPos(const QPoint &pos) override;
@@ -89,8 +91,19 @@ public:
 #endif
 
 private:
+
 #ifndef QT_NO_CURSOR
     typedef QHash<QXcbCursorCacheKey, xcb_cursor_t> CursorHash;
+
+    struct CachedCursor
+    {
+        explicit CachedCursor(xcb_connection_t *conn, xcb_cursor_t c)
+            : cursor(c), connection(conn) {}
+        ~CachedCursor() { xcb_free_cursor(connection, cursor); }
+        xcb_cursor_t cursor;
+        xcb_connection_t *connection;
+    };
+    typedef QCache<QXcbCursorCacheKey, CachedCursor> BitmapCursorCache;
 
     xcb_cursor_t createFontCursor(int cshape);
     xcb_cursor_t createBitmapCursor(QCursor *cursor);
@@ -100,6 +113,7 @@ private:
     QXcbScreen *m_screen;
 #ifndef QT_NO_CURSOR
     CursorHash m_cursorHash;
+    BitmapCursorCache m_bitmapCache;
 #endif
 #if QT_CONFIG(xcb_xlib) && QT_CONFIG(library)
     static void cursorThemePropertyChanged(QXcbVirtualDesktop *screen,

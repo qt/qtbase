@@ -676,8 +676,11 @@ QFile::rename(const QString &newName)
                 return !error;
             }
             close();
+            d->setError(QFile::RenameError,
+                        tr("Cannot open destination file: %1").arg(out.errorString()));
+        } else {
+            d->setError(QFile::RenameError, errorString());
         }
-        d->setError(QFile::RenameError, out.isOpen() ? errorString() : out.errorString());
     }
     return false;
 }

@@ -236,10 +236,9 @@ void QSslSocketBackendPrivate::startClientEncryption()
     switch (q->protocol()) {
     case QSsl::AnyProtocol:
     case QSsl::SslV3:
+    case QSsl::TlsV1SslV3:
         protectionLevel = SocketProtectionLevel_Ssl; // Only use this value if weak cipher support is required
         break;
-    case QSsl::SecureProtocols:
-    case QSsl::TlsV1SslV3:
     case QSsl::TlsV1_0:
         protectionLevel = SocketProtectionLevel_Tls10;
         break;
@@ -257,6 +256,11 @@ void QSslSocketBackendPrivate::startClientEncryption()
         setErrorAndEmit(QAbstractSocket::SslInvalidUserDataError,
                         QStringLiteral("unsupported protocol"));
         return;
+    case QSsl::SecureProtocols:
+        // SocketProtectionLevel_Tls12 actually means "use TLS1.0, 1.1 or 1.2"
+        // https://docs.microsoft.com/en-us/uwp/api/windows.networking.sockets.socketprotectionlevel
+        protectionLevel = SocketProtectionLevel_Tls12;
+        break;
     default:
         protectionLevel = SocketProtectionLevel_Tls12; // default to highest
         protocol = QSsl::TlsV1_2;

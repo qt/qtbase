@@ -693,7 +693,7 @@ QT_WARNING_DISABLE_GCC("-Wunused-local-typedefs")
 [[noreturn]] void attribute_f1();
 void attribute_f2 [[noreturn]] ();
 #  if (defined(__cpp_namespace_attributes) && __cpp_namespace_attributes >= 201411) && __has_cpp_attribute(deprecated)
-namespace NS [[deprecated]] { }
+namespace [[deprecated]] NS { }
 #  endif
 #endif
 

@@ -89,7 +89,7 @@ QRasterPlatformPixmap::~QRasterPlatformPixmap()
 {
 }
 
-QImage::Format QRasterPlatformPixmap::systemOpaqueFormat()
+QImage::Format QRasterPlatformPixmap::systemNativeFormat()
 {
     if (!QGuiApplication::primaryScreen())
         return QImage::Format_RGB32;
@@ -107,7 +107,7 @@ void QRasterPlatformPixmap::resize(int width, int height)
     if (pixelType() == BitmapType)
         format = QImage::Format_MonoLSB;
     else
-        format = systemOpaqueFormat();
+        format = systemNativeFormat();
 
     image = QImage(width, height, format);
     w = width;
@@ -314,8 +314,9 @@ void QRasterPlatformPixmap::createPixmapForImage(QImage sourceImage, Qt::ImageCo
                     ? QImage::Format_ARGB32_Premultiplied
                     : QImage::Format_RGB32;
         } else {
-            QImage::Format opaqueFormat = systemOpaqueFormat();
-            QImage::Format alphaFormat = qt_alphaVersionForPainting(opaqueFormat);
+            QImage::Format nativeFormat = systemNativeFormat();
+            QImage::Format opaqueFormat = qt_opaqueVersionForPainting(nativeFormat);
+            QImage::Format alphaFormat = qt_alphaVersionForPainting(nativeFormat);
 
             if (!sourceImage.hasAlphaChannel()) {
                 format = opaqueFormat;

@@ -153,7 +153,7 @@ public:
     bool isValid() const;
 
     int index() const;
-    int maxTransmissionUnit() const;
+    int maximumTransmissionUnit() const;
     QString name() const;
     QString humanReadableName() const;
     InterfaceFlags flags() const;

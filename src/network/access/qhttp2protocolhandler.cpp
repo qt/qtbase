@@ -212,6 +212,9 @@ QHttp2ProtocolHandler::QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *chan
 
 void QHttp2ProtocolHandler::_q_uploadDataReadyRead()
 {
+    if (!sender()) // QueuedConnection, firing after sender (byte device) was deleted.
+        return;
+
     auto data = qobject_cast<QNonContiguousByteDevice *>(sender());
     Q_ASSERT(data);
     const qint32 streamID = data->property("HTTP2StreamID").toInt();
@@ -917,10 +920,11 @@ void QHttp2ProtocolHandler::handleContinuedHEADERS()
         if (activeStreams.contains(streamID)) {
             Stream &stream = activeStreams[streamID];
             if (stream.state != Stream::halfClosedLocal
-                && stream.state != Stream::remoteReserved) {
+                && stream.state != Stream::remoteReserved
+                && stream.state != Stream::open) {
                 // We can receive HEADERS on streams initiated by our requests
-                // (these streams are in halfClosedLocal state) or remote-reserved
-                // streams from a server's PUSH_PROMISE.
+                // (these streams are in halfClosedLocal or open state) or
+                // remote-reserved streams from a server's PUSH_PROMISE.
                 finishStreamWithError(stream, QNetworkReply::ProtocolFailure,
                                       QLatin1String("HEADERS on invalid stream"));
                 sendRST_STREAM(streamID, CANCEL);
@@ -1108,6 +1112,17 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
 
     if (QHttpNetworkReply::isHttpRedirect(statusCode) && redirectUrl.isValid())
         httpReply->setRedirectUrl(redirectUrl);
+
+    if (QHttpNetworkReply::isHttpRedirect(statusCode)
+        || statusCode == 401 || statusCode == 407) {
+        // These are the status codes that can trigger uploadByteDevice->reset()
+        // in QHttpNetworkConnectionChannel::handleStatus. Alas, we have no
+        // single request/reply, we multiplex several requests and thus we never
+        // simply call 'handleStatus'. If we have byte-device - we try to reset
+        // it here, we don't (and can't) handle any error during reset operation.
+        if (stream.data())
+            stream.data()->reset();
+    }
 
     if (connectionType == Qt::DirectConnection)
         emit httpReply->headerChanged();

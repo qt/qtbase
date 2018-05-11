@@ -49,7 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QXcbShmImage;
+class QXcbBackingStoreImage;
 
 class QXcbBackingStore : public QXcbObject, public QPlatformBackingStore
 {
@@ -75,7 +75,7 @@ public:
     void endPaint() override;
 
 private:
-    QXcbShmImage *m_image;
+    QXcbBackingStoreImage *m_image = nullptr;
     QStack<QRegion> m_paintRegions;
     QImage m_rgbImage;
 };

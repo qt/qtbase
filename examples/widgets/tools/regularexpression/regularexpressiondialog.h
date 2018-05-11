@@ -74,13 +74,13 @@ public:
 
 private:
     void refresh();
-    void copyEscapedPatternToClipboard();
     void setupUi();
     QWidget *setupLeftUi();
     QWidget *setupRightUi();
     void setResultUiEnabled(bool enabled);
 
     QLineEdit *patternLineEdit;
+    QLineEdit *rawStringLiteralLineEdit;
     QLineEdit *escapedPatternLineEdit;
 
     QPlainTextEdit *subjectTextEdit;

@@ -201,8 +201,6 @@ template<> struct TypeDefinition<QJsonArray> { static const bool IsAvailable = f
 template<> struct TypeDefinition<QJsonDocument> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QJsonObject> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QJsonValue> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QModelIndex> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QPersistentModelIndex> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QUrl> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QByteArrayList> { static const bool IsAvailable = false; };
 #endif
@@ -219,7 +217,7 @@ template<> struct TypeDefinition<QPointF> { static const bool IsAvailable = fals
 #ifdef QT_NO_REGEXP
 template<> struct TypeDefinition<QRegExp> { static const bool IsAvailable = false; };
 #endif
-#if defined(QT_BOOTSTRAPPED) || defined(QT_NO_REGULAREXPRESSION)
+#if !QT_CONFIG(regularexpression)
 template<> struct TypeDefinition<QRegularExpression> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_SHORTCUT

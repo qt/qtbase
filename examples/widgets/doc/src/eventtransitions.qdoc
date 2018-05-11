@@ -29,17 +29,29 @@
     \example statemachine/eventtransitions
     \title Event Transitions Example
 
-    \brief The Event Transitions example shows how to use event transitions, a
-    feature of \l{The State Machine Framework}.
+    \brief The Event Transitions example shows how to use event transitions,
+    a feature of \l{The State Machine Framework}.
+
+    The Event Transitions Example illustrates how states change when a
+    user enters or leaves the area of a button. The states are handled by
+    a QStateMachine object. The screen consists of a QVBoxLayout with a
+    central button.
+
+    When the mouse is outside the button, the text in the button displays
+    "Outside". When the mouse enters the button, it displays "Inside".
+
+    \borderedimage transitions.png
 
     \snippet statemachine/eventtransitions/main.cpp 0
 
     The \c Window class's constructors begins by creating a button.
+    This button is added to  \c layout, which is a QVBoxLayout object.
+    Then two states are created: \c s1 is the state
+    "Outside", and \c s2 is the state "Inside".
 
     \snippet statemachine/eventtransitions/main.cpp 1
 
-    Two states, \c s1 and \c s2, are created; upon entry they will assign
-    "Outside" and "Inside" to the button's text, respectively.
+    State \c s1 is the state "Outside" and state \c s2 is state "Inside".
 
     \snippet statemachine/eventtransitions/main.cpp 2
 
@@ -54,11 +66,11 @@
 
     \snippet statemachine/eventtransitions/main.cpp 4
 
-    Next, the state \c s3 is created. \c s3 will be entered when the button
+    Next, state \c s3 is created. \c s3 will be entered when the button
     receives an event of type QEvent::MouseButtonPress and the state machine
     is in state \c s2. When the button receives an event of type
     QEvent::MouseButtonRelease and the state machine is in state \c s3, the
-    machine will transition back to state \c s2.
+    machine will revert to state \c s2.
 
     \snippet statemachine/eventtransitions/main.cpp 5
 
@@ -67,6 +79,7 @@
 
     \snippet statemachine/eventtransitions/main.cpp 6
 
-    The main() function constructs a Window object and shows it.
+    The main() function constructs a Window object that displays the QVBoxLayout
+    object \c layout with its \c button.
 
 */

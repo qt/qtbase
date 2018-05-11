@@ -41,9 +41,6 @@
 #ifndef QMACSTYLE_MAC_P_P_H
 #define QMACSTYLE_MAC_P_P_H
 
-#include <Carbon/Carbon.h>
-#undef check
-
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtWidgets/private/qcommonstyle_p.h>
 #include "qmacstyle_mac_p.h"
@@ -181,6 +178,10 @@ class QMacStylePrivate : public QCommonStylePrivate
 {
     Q_DECLARE_PUBLIC(QMacStyle)
 public:
+    enum Direction {
+        North, South, East, West
+    };
+
     enum CocoaControlType {
         NoControl,    // For when there's no such a control in Cocoa
         Box,          // QGroupBox
@@ -188,8 +189,9 @@ public:
         Button_Disclosure,  // Disclosure triangle, like in QTreeView
         Button_PopupButton,  // Non-editable QComboBox
         Button_PullDown, // QPushButton with menu
-        Button_PushButton,
+        Button_PushButton, // Plain QPushButton and QTabBar buttons
         Button_RadioButton,
+        Button_SquareButton, // Oversized QPushButton
         Button_WindowClose,
         Button_WindowMiniaturize,
         Button_WindowZoom,
@@ -198,6 +200,10 @@ public:
         ProgressIndicator_Indeterminate,
         Scroller_Horizontal,
         Scroller_Vertical,
+        SegmentedControl_First, // QTabBar buttons focus ring
+        SegmentedControl_Middle,
+        SegmentedControl_Last,
+        SegmentedControl_Single,
         Slider_Horizontal,
         Slider_Vertical,
         SplitView_Horizontal,
@@ -206,7 +212,22 @@ public:
         TextField
     };
 
-    typedef QPair<CocoaControlType, QStyleHelper::WidgetSizePolicy> CocoaControl;
+    struct CocoaControl {
+        CocoaControl();
+        CocoaControl(CocoaControlType t, QStyleHelper::WidgetSizePolicy s);
+
+        CocoaControlType type;
+        QStyleHelper::WidgetSizePolicy size;
+
+        bool operator==(const CocoaControl &other) const;
+
+        QSizeF defaultFrameSize() const;
+        QRectF adjustedControlFrame(const QRectF &rect) const;
+        QMarginsF titleMargins() const;
+
+        bool getCocoaButtonTypeAndBezelStyle(NSButtonType *buttonType, NSBezelStyle *bezelStyle) const;
+    };
+
 
     typedef void (^DrawRectBlock)(CGContextRef, const CGRect &);
 
@@ -215,69 +236,39 @@ public:
 
     // Ideally these wouldn't exist, but since they already exist we need some accessors.
     static const int PushButtonLeftOffset;
-    static const int PushButtonTopOffset;
     static const int PushButtonRightOffset;
-    static const int PushButtonBottomOffset;
-    static const int MiniButtonH;
-    static const int SmallButtonH;
-    static const int BevelButtonW;
-    static const int BevelButtonH;
     static const int PushButtonContentPadding;
 
     enum Animates { AquaPushButton, AquaProgressBar, AquaListViewItemOpen, AquaScrollBar };
-    static ThemeDrawState getDrawState(QStyle::State flags);
     QStyleHelper::WidgetSizePolicy aquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
                              QStyle::ContentsType ct = QStyle::CT_CustomBase,
                              QSize szHint=QSize(-1, -1), QSize *insz = 0) const;
     QStyleHelper::WidgetSizePolicy effectiveAquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
                              QStyle::ContentsType ct = QStyle::CT_CustomBase,
                              QSize szHint=QSize(-1, -1), QSize *insz = 0) const;
-    void getSliderInfo(QStyle::ComplexControl cc, const QStyleOptionSlider *slider,
-                          HIThemeTrackDrawInfo *tdi, const QWidget *needToRemoveMe) const;
     inline int animateSpeed(Animates) const { return 33; }
 
     // Utility functions
-    void drawColorlessButton(const CGRect &macRect, HIThemeButtonDrawInfo *bdi,
-                             const CocoaControl &cw,
-                             QPainter *p, const QStyleOption *opt) const;
+    static CGRect comboboxInnerBounds(const CGRect &outterBounds, const CocoaControl &cocoaWidget);
 
-    QSize pushButtonSizeFromContents(const QStyleOptionButton *btn) const;
-
-    CGRect pushButtonContentBounds(const QStyleOptionButton *btn,
-                                   const HIThemeButtonDrawInfo *bdi) const;
-
-    void initComboboxBdi(const QStyleOptionComboBox *combo, HIThemeButtonDrawInfo *bdi,
-                         CocoaControl *cw,
-                        const QWidget *widget, const ThemeDrawState &tds) const;
-
-    static CGRect comboboxInnerBounds(const CGRect &outerBounds, const CocoaControl &cocoaWidget);
-
-    static QRect comboboxEditBounds(const QRect &outerBounds, const HIThemeButtonDrawInfo &bdi);
-
-    static void drawCombobox(const CGRect &outerBounds, const HIThemeButtonDrawInfo &bdi, const CocoaControl &cw, QPainter *p);
-    bool contentFitsInPushButton(const QStyleOptionButton *btn, HIThemeButtonDrawInfo *bdi,
-                                 ThemeButtonKind buttonKindToCheck) const;
-    void initHIThemePushButton(const QStyleOptionButton *btn, const QWidget *widget,
-                               const ThemeDrawState tds,
-                               HIThemeButtonDrawInfo *bdi) const;
+    static QRectF comboboxEditBounds(const QRectF &outterBounds, const CocoaControl &cw);
 
     void setAutoDefaultButton(QObject *button) const;
 
     NSView *cocoaControl(CocoaControl widget) const;
     NSCell *cocoaCell(CocoaControl widget) const;
 
-    static CocoaControl cocoaControlFromHIThemeButtonKind(ThemeButtonKind kind);
-
     void setupNSGraphicsContext(CGContextRef cg, bool flipped) const;
     void restoreNSGraphicsContext(CGContextRef cg) const;
 
     void setupVerticalInvertedXform(CGContextRef cg, bool reverse, bool vertical, const CGRect &rect) const;
 
-    void drawNSViewInRect(CocoaControl widget, NSView *view, const QRect &rect, QPainter *p, bool isQWidget = true, __attribute__((noescape)) DrawRectBlock drawRectBlock = nil) const;
+    void drawNSViewInRect(NSView *view, const QRectF &rect, QPainter *p, __attribute__((noescape)) DrawRectBlock drawRectBlock = nil) const;
     void resolveCurrentNSView(QWindow *window) const;
 
-    void drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, qreal radius = 0) const;
-    void drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const;
+    void drawFocusRing(QPainter *p, const QRectF &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const;
+
+    void drawToolbarButtonArrow(const QStyleOption *opt, QPainter *p) const;
 
     QPainterPath windowPanelPath(const QRectF &r) const;
 
@@ -285,6 +276,8 @@ public:
 
 #if QT_CONFIG(tabbar)
     void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *iconRect) const;
+    static Direction tabDirection(QTabBar::Shape shape);
+    static bool verticalTabs(QMacStylePrivate::Direction tabDirection);
 #endif
 
 public:

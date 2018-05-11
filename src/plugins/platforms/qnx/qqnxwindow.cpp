@@ -63,6 +63,18 @@
 
 QT_BEGIN_NAMESPACE
 
+#define DECLARE_DEBUG_VAR(variable) \
+    static bool debug_ ## variable() \
+    { static bool value = qgetenv("QNX_SCREEN_DEBUG").contains(QT_STRINGIFY(variable)); return value; }
+DECLARE_DEBUG_VAR(fps)
+DECLARE_DEBUG_VAR(posts)
+DECLARE_DEBUG_VAR(blits)
+DECLARE_DEBUG_VAR(updates)
+DECLARE_DEBUG_VAR(cpu_time)
+DECLARE_DEBUG_VAR(gpu_time)
+DECLARE_DEBUG_VAR(statistics)
+#undef DECLARE_DEBUG_VAR
+
 /*!
     \class QQnxWindow
     \brief The QQnxWindow is the base class of the various classes used as instances of
@@ -211,6 +223,35 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, bool needRootW
     // it'll cause us not to join a group (the app will presumably join at some future time).
     if (windowGroup.isValid() && windowGroup.canConvert<QByteArray>())
         joinWindowGroup(windowGroup.toByteArray());
+
+    int debug = 0;
+    if (Q_UNLIKELY(debug_fps())) {
+        debug |= SCREEN_DEBUG_GRAPH_FPS;
+    }
+    if (Q_UNLIKELY(debug_posts())) {
+        debug |= SCREEN_DEBUG_GRAPH_POSTS;
+    }
+    if (Q_UNLIKELY(debug_blits())) {
+        debug |= SCREEN_DEBUG_GRAPH_BLITS;
+    }
+    if (Q_UNLIKELY(debug_updates())) {
+        debug |= SCREEN_DEBUG_GRAPH_UPDATES;
+    }
+    if (Q_UNLIKELY(debug_cpu_time())) {
+        debug |= SCREEN_DEBUG_GRAPH_CPU_TIME;
+    }
+    if (Q_UNLIKELY(debug_gpu_time())) {
+        debug |= SCREEN_DEBUG_GRAPH_GPU_TIME;
+    }
+    if (Q_UNLIKELY(debug_statistics())) {
+        debug = SCREEN_DEBUG_STATISTICS;
+    }
+
+    if (debug > 0) {
+        Q_SCREEN_CHECKERROR(screen_set_window_property_iv(nativeHandle(), SCREEN_PROPERTY_DEBUG, &debug),
+                            "Could not set SCREEN_PROPERTY_DEBUG");
+        qWindowDebug() << "window SCREEN_PROPERTY_DEBUG= " << debug;
+    }
 }
 
 QQnxWindow::~QQnxWindow()

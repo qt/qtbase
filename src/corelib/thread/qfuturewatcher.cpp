@@ -580,7 +580,7 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
     This signal is emitted when the watched future reports a ready result at
     \a index. If the future reports multiple results, the index will indicate
     which one it is. Results can be reported out-of-order. To get the result,
-    call future().result(index);
+    call resultAt(index);
 */
 
 /*!

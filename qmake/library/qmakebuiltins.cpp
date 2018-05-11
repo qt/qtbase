@@ -443,15 +443,18 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::parseJsonInto(const QByteArray &json
 
 QMakeEvaluator::VisitReturn
 QMakeEvaluator::writeFile(const QString &ctx, const QString &fn, QIODevice::OpenMode mode,
-                          bool exe, const QString &contents)
+                          QMakeVfs::VfsFlags flags, const QString &contents)
 {
+    int oldId = m_vfs->idForFileName(fn, flags | QMakeVfs::VfsAccessedOnly);
+    int id = m_vfs->idForFileName(fn, flags | QMakeVfs::VfsCreate);
     QString errStr;
-    if (!m_vfs->writeFile(fn, mode, exe, contents, &errStr)) {
+    if (!m_vfs->writeFile(id, mode, flags, contents, &errStr)) {
         evalError(fL1S("Cannot write %1file %2: %3")
                   .arg(ctx, QDir::toNativeSeparators(fn), errStr));
         return ReturnFalse;
     }
-    m_parser->discardFileFromCache(fn);
+    if (oldId)
+        m_parser->discardFileFromCache(oldId);
     return ReturnTrue;
 }
 
@@ -1178,7 +1181,9 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
             evalError(fL1S("absolute_path(path[, base]) requires one or two arguments."));
         } else {
             QString arg = args.at(0).toQString(m_tmp1);
-            QString baseDir = args.count() > 1 ? args.at(1).toQString(m_tmp2) : currentDirectory();
+            QString baseDir = args.count() > 1
+                    ? IoUtils::resolvePath(currentDirectory(), args.at(1).toQString(m_tmp2))
+                    : currentDirectory();
             QString rstr = arg.isEmpty() ? baseDir : IoUtils::resolvePath(baseDir, arg);
             ret << (rstr.isSharedWith(m_tmp1)
                         ? args.at(0)
@@ -1192,7 +1197,9 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
             evalError(fL1S("relative_path(path[, base]) requires one or two arguments."));
         } else {
             QString arg = args.at(0).toQString(m_tmp1);
-            QString baseDir = args.count() > 1 ? args.at(1).toQString(m_tmp2) : currentDirectory();
+            QString baseDir = args.count() > 1
+                    ? IoUtils::resolvePath(currentDirectory(), args.at(1).toQString(m_tmp2))
+                    : currentDirectory();
             QString absArg = arg.isEmpty() ? baseDir : IoUtils::resolvePath(baseDir, arg);
             QString rstr = QDir(baseDir).relativeFilePath(absArg);
             ret << (rstr.isSharedWith(m_tmp1) ? args.at(0) : ProString(rstr).setSource(args.at(0)));
@@ -1339,7 +1346,8 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             return ReturnFalse;
         }
         QString fn = resolvePath(args.at(0).toQString(m_tmp1));
-        int pro = m_parser->idForFileName(fn);
+        QMakeVfs::VfsFlags flags = (m_cumulative ? QMakeVfs::VfsCumulative : QMakeVfs::VfsExact);
+        int pro = m_vfs->idForFileName(fn, flags | QMakeVfs::VfsAccessedOnly);
         if (!pro)
             return ReturnFalse;
         ProValueMap &vmap = m_valuemapStack.first();
@@ -1412,7 +1420,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             VisitReturn ret = ReturnFalse;
             QString contents = args.join(statics.field_sep);
             ProFile *pro = m_parser->parsedProBlock(QStringRef(&contents),
-                                                    m_current.pro->fileName(), m_current.line);
+                                                    0, m_current.pro->fileName(), m_current.line);
             if (m_cumulative || pro->isOk()) {
                 m_locationStack.push(m_current);
                 visitProBlock(pro, pro->tokPtr());
@@ -1780,7 +1788,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             return ReturnFalse;
         }
         QIODevice::OpenMode mode = QIODevice::Truncate;
-        bool exe = false;
+        QMakeVfs::VfsFlags flags = (m_cumulative ? QMakeVfs::VfsCumulative : QMakeVfs::VfsExact);
         QString contents;
         if (args.count() >= 2) {
             const ProStringList &vals = values(args.at(1).toKey());
@@ -1792,7 +1800,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                     if (opt == QLatin1String("append")) {
                         mode = QIODevice::Append;
                     } else if (opt == QLatin1String("exe")) {
-                        exe = true;
+                        flags |= QMakeVfs::VfsExecutable;
                     } else {
                         evalError(fL1S("write_file(): invalid flag %1.").arg(opt.toQString(m_tmp3)));
                         return ReturnFalse;
@@ -1802,7 +1810,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         }
         QString path = resolvePath(args.at(0).toQString(m_tmp1));
         path.detach(); // make sure to not leak m_tmp1 into the map of written files.
-        return writeFile(QString(), path, mode, exe, contents);
+        return writeFile(QString(), path, mode, flags, contents);
     }
     case T_TOUCH: {
         if (args.count() != 2) {
@@ -1956,6 +1964,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             varstr += QLatin1Char('\n');
         }
         QString fn;
+        QMakeVfs::VfsFlags flags = (m_cumulative ? QMakeVfs::VfsCumulative : QMakeVfs::VfsExact);
         if (target == TargetSuper) {
             if (m_superfile.isEmpty()) {
                 m_superfile = QDir::cleanPath(m_outputDir + QLatin1String("/.qmake.super"));
@@ -1979,12 +1988,12 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             fn = m_stashfile;
             if (fn.isEmpty())
                 fn = QDir::cleanPath(m_outputDir + QLatin1String("/.qmake.stash"));
-            if (!m_vfs->exists(fn)) {
+            if (!m_vfs->exists(fn, flags)) {
                 printf("Info: creating stash file %s\n", qPrintable(QDir::toNativeSeparators(fn)));
                 valuesRef(ProKey("_QMAKE_STASH_")) << ProString(fn);
             }
         }
-        return writeFile(fL1S("cache "), fn, QIODevice::Append, false, varstr);
+        return writeFile(fL1S("cache "), fn, QIODevice::Append, flags, varstr);
     }
     case T_RELOAD_PROPERTIES:
 #ifdef QT_BUILD_QMAKE

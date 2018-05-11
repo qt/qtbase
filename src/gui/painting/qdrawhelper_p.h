@@ -685,6 +685,9 @@ static inline uint interpolate_4_pixels(const uint t[], const uint b[], uint dis
     __m128i vb = _mm_loadl_epi64((const __m128i*)b);
     return interpolate_4_pixels_sse2(vt, vb, distx, disty);
 }
+
+static constexpr inline bool hasFastInterpolate4() { return true; }
+
 #elif defined(__ARM_NEON__)
 static Q_ALWAYS_INLINE uint interpolate_4_pixels_neon(uint32x2_t vt32, uint32x2_t vb32, uint distx, uint disty)
 {
@@ -717,6 +720,9 @@ static inline uint interpolate_4_pixels(const uint t[], const uint b[], uint dis
     uint32x2_t vb32 = vld1_u32(b);
     return interpolate_4_pixels_neon(vt32, vb32, distx, disty);
 }
+
+static constexpr inline bool hasFastInterpolate4() { return true; }
+
 #else
 static inline uint interpolate_4_pixels(uint tl, uint tr, uint bl, uint br, uint distx, uint disty)
 {
@@ -731,6 +737,9 @@ static inline uint interpolate_4_pixels(const uint t[], const uint b[], uint dis
 {
     return interpolate_4_pixels(t[0], t[1], b[0], b[1], distx, disty);
 }
+
+static constexpr inline bool hasFastInterpolate4() { return false; }
+
 #endif
 
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN

@@ -73,6 +73,9 @@
     },
     "QtDBus" => {
         "qdbusmacros.h" => "QtDbus/qtdbusglobal.h"
+    },
+    "QtTest" => {
+        "qtest_global.h" => "QtTest/qttestglobal.h"
     }
 );
 

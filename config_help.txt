@@ -95,6 +95,8 @@ Build options:
   -optimized-tools ..... Build optimized host tools even in debug build [no]
   -force-debug-info .... Create symbol files for release builds [no]
   -separate-debug-info . Split off debug information to separate files [no]
+  -gdb-index ........... Index the debug info to speed up GDB
+                         [no; auto if -developer-build with debug info]
   -strip ............... Strip release binaries of unneeded symbols [yes]
   -force-asserts ....... Enable Q_ASSERT even in release builds [no]
   -developer-build ..... Compile and link Qt for developing Qt itself

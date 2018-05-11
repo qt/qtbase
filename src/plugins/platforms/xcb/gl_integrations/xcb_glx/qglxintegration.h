@@ -89,6 +89,8 @@ private:
     bool m_isPBufferCurrent;
     int m_swapInterval;
     bool m_ownsContext;
+    GLenum (APIENTRY * m_getGraphicsResetStatus)();
+    bool m_lost;
     static bool m_queriedDummyContext;
     static bool m_supportsThreading;
 };

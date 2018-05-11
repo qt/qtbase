@@ -317,9 +317,6 @@ void tst_QTouchEvent::touchDisabledByDefault()
 
 void tst_QTouchEvent::touchEventAcceptedByDefault()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     // QWidget
     {
         // enabling touch events should automatically accept touch events
@@ -606,15 +603,12 @@ QPointF normalized(const QPointF &pos, const QRectF &rect)
 
 void tst_QTouchEvent::basicRawEventTranslation()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     tst_QTouchEventWidget touchWidget;
     touchWidget.setWindowTitle(QTest::currentTestFunction());
     touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);
     touchWidget.setGeometry(100, 100, 400, 300);
     touchWidget.show();
-    QVERIFY(QTest::qWaitForWindowActive(&touchWidget));
+    QVERIFY(QTest::qWaitForWindowExposed(&touchWidget));
 
     QPointF pos = touchWidget.rect().center();
     QPointF screenPos = touchWidget.mapToGlobal(pos.toPoint());
@@ -733,9 +727,6 @@ void tst_QTouchEvent::basicRawEventTranslation()
 
 void tst_QTouchEvent::multiPointRawEventTranslationOnTouchScreen()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     tst_QTouchEventWidget touchWidget;
     touchWidget.setWindowTitle(QTest::currentTestFunction());
     touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);
@@ -750,7 +741,7 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchScreen()
     rightWidget.setGeometry(300, 100, 100, 100);
 
     touchWidget.show();
-    QVERIFY(QTest::qWaitForWindowActive(&touchWidget));
+    QVERIFY(QTest::qWaitForWindowExposed(&touchWidget));
 
     QPointF leftPos = leftWidget.rect().center();
     QPointF rightPos = rightWidget.rect().center();
@@ -962,9 +953,6 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchScreen()
 
 void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     tst_QTouchEventWidget touchWidget;
     touchWidget.setWindowTitle(QTest::currentTestFunction());
     touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);
@@ -980,7 +968,7 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
     rightWidget.setGeometry(300, 100, 100, 100);
 
     touchWidget.show();
-    QVERIFY(QTest::qWaitForWindowActive(&touchWidget));
+    QVERIFY(QTest::qWaitForWindowExposed(&touchWidget));
 
     QPointF leftPos = leftWidget.rect().center();
     QPointF rightPos = rightWidget.rect().center();
@@ -1191,15 +1179,12 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
 
 void tst_QTouchEvent::basicRawEventTranslationOfIds()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     tst_QTouchEventWidget touchWidget;
     touchWidget.setWindowTitle(QTest::currentTestFunction());
     touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);
     touchWidget.setGeometry(100, 100, 400, 300);
     touchWidget.show();
-    QVERIFY(QTest::qWaitForWindowActive(&touchWidget));
+    QVERIFY(QTest::qWaitForWindowExposed(&touchWidget));
 
     QVarLengthArray<QPointF, 2> pos;
     QVarLengthArray<QPointF, 2> screenPos;
@@ -1311,9 +1296,6 @@ void tst_QTouchEvent::basicRawEventTranslationOfIds()
 
 void tst_QTouchEvent::deleteInEventHandler()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     // QWidget
     {
         QWidget window;
@@ -1463,9 +1445,6 @@ void tst_QTouchEvent::deleteInEventHandler()
 
 void tst_QTouchEvent::deleteInRawEventTranslation()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     tst_QTouchEventWidget touchWidget;
     touchWidget.setWindowTitle(QTest::currentTestFunction());
     touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);

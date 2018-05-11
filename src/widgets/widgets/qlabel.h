@@ -158,6 +158,9 @@ private:
 #endif
     Q_PRIVATE_SLOT(d_func(), void _q_linkHovered(const QString &))
 
+#ifndef QT_NO_SHORTCUT
+    Q_PRIVATE_SLOT(d_func(), void _q_buddyDeleted())
+#endif
     friend class QTipLabel;
     friend class QMessageBoxPrivate;
     friend class QBalloonTip;

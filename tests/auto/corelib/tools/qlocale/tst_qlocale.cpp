@@ -79,9 +79,7 @@ private slots:
 
     void ctor();
     void emptyCtor();
-    void legacyNames();
     void consistentC();
-    void unixLocaleName();
     void matchingLocales();
     void stringToDouble_data();
     void stringToDouble();
@@ -108,8 +106,6 @@ private slots:
     void toDateTime();
     void negativeNumbers();
     void numberOptions();
-    void testNames_data();
-    void testNames();
     void dayName_data();
     void dayName();
     void standaloneDayName_data();
@@ -141,8 +137,18 @@ private slots:
     void formattedDataSize();
     void bcp47Name();
 
+    void systemLocale_data();
     void systemLocale();
 
+    // *** ORDER-DEPENDENCY *** (This Is Bad.)
+    // Test order is determined by order of declaration here: *all* tests that
+    // QLocale::setDefault() *must* appear *after* all other tests !
+    void defaulted_ctor(); // This one must be the first of these.
+    void legacyNames();
+    void unixLocaleName();
+    void testNames_data();
+    void testNames();
+    // DO NOT add tests here unless they QLocale::setDefault(); see above.
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
     QString m_sysapp;
@@ -232,6 +238,23 @@ void tst_QLocale::ctor()
     TEST_CTOR(Chinese, LatinScript, UnitedStates, QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
 
 #undef TEST_CTOR
+}
+
+void tst_QLocale::defaulted_ctor()
+{
+    QLocale default_locale = QLocale::system();
+    QLocale::Language default_lang = default_locale.language();
+    QLocale::Country default_country = default_locale.country();
+
+    qDebug("Default: %s/%s", QLocale::languageToString(default_lang).toLatin1().constData(),
+            QLocale::countryToString(default_country).toLatin1().constData());
+
+    {
+        QLocale l(QLocale::C, QLocale::AnyCountry);
+        QCOMPARE(l.language(), QLocale::C);
+        QCOMPARE(l.country(), QLocale::AnyCountry);
+    }
+
 #define TEST_CTOR(req_lang, req_country, exp_lang, exp_country) \
     { \
         QLocale l(QLocale::req_lang, QLocale::req_country); \
@@ -239,11 +262,6 @@ void tst_QLocale::ctor()
         QCOMPARE((int)l.country(), (int)exp_country); \
     }
 
-    {
-        QLocale l(QLocale::C, QLocale::AnyCountry);
-        QCOMPARE(l.language(), QLocale::C);
-        QCOMPARE(l.country(), QLocale::AnyCountry);
-    }
     TEST_CTOR(AnyLanguage, AnyCountry, default_lang, default_country)
     TEST_CTOR(C, AnyCountry, QLocale::C, QLocale::AnyCountry)
     TEST_CTOR(Aymara, AnyCountry, default_lang, default_country)
@@ -1961,9 +1979,10 @@ void tst_QLocale::testNames_data()
     QTest::addColumn<int>("language");
     QTest::addColumn<int>("country");
 
+    QLocale::setDefault(QLocale(QLocale::C)); // Ensures predictable fall-backs
+
     for (int i = 0; i < locale_data_count; ++i) {
         const QLocaleData &item = locale_data[i];
-
 
         const QString testName = QLatin1String("data_") + QString::number(i) + QLatin1String(" (")
             + QLocale::languageToString((QLocale::Language)item.m_language_id)
@@ -2664,27 +2683,31 @@ private:
     const QLocale m_locale;
 };
 
+void tst_QLocale::systemLocale_data()
+{
+    QTest::addColumn<QString>("name");
+    QTest::addColumn<QLocale::Language>("language");
+    QTest::addRow("catalan") << QString("ca") << QLocale::Catalan;
+    QTest::addRow("ukrainian") << QString("uk") << QLocale::Ukrainian;
+    QTest::addRow("german") << QString("de") << QLocale::German;
+}
+
 void tst_QLocale::systemLocale()
 {
     QLocale originalLocale;
+    QLocale originalSystemLocale = QLocale::system();
 
-    MySystemLocale *sLocale = new MySystemLocale(QLocale("uk"));
-    QCOMPARE(QLocale().language(), QLocale::Ukrainian);
-    QCOMPARE(QLocale::system().language(), QLocale::Ukrainian);
-    delete sLocale;
+    QFETCH(QString, name);
+    QFETCH(QLocale::Language, language);
 
-    sLocale = new MySystemLocale(QLocale("ca"));
-    QCOMPARE(QLocale().language(), QLocale::Catalan);
-    QCOMPARE(QLocale::system().language(), QLocale::Catalan);
-    delete sLocale;
-
-    sLocale = new MySystemLocale(QLocale("de"));
-    QCOMPARE(QLocale().language(), QLocale::German);
-    QCOMPARE(QLocale::system().language(), QLocale::German);
-    delete sLocale;
+    {
+        MySystemLocale sLocale(name);
+        QCOMPARE(QLocale().language(), language);
+        QCOMPARE(QLocale::system().language(), language);
+    }
 
     QCOMPARE(QLocale(), originalLocale);
-    QCOMPARE(QLocale::system(), originalLocale);
+    QCOMPARE(QLocale::system(), originalSystemLocale);
 }
 
 QTEST_MAIN(tst_QLocale)

@@ -420,11 +420,7 @@ void tst_QObjectRace::disconnectRace()
             threads[i]->start();
         }
 
-        QTime timeLimiter;
-        timeLimiter.start();
-
-        while (timeLimiter.elapsed() < TimeLimit)
-            QTest::qWait(10);
+        QTest::qWait(TimeLimit);
 
         for (int i = 0; i < ThreadCount; ++i) {
             threads[i]->requestInterruption();
@@ -450,11 +446,7 @@ void tst_QObjectRace::disconnectRace()
             threads[i]->start();
         }
 
-        QTime timeLimiter;
-        timeLimiter.start();
-
-        while (timeLimiter.elapsed() < TimeLimit)
-            QTest::qWait(10);
+        QTest::qWait(TimeLimit);
 
         senderThread->requestInterruption();
         QVERIFY(senderThread->wait(300));

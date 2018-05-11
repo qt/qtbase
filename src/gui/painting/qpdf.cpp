@@ -2045,7 +2045,6 @@ void QPdfEnginePrivate::printString(const QString &string)
 }
 
 
-// For strings up to 10000 bytes only !
 void QPdfEnginePrivate::xprintf(const char* fmt, ...)
 {
     if (!stream)
@@ -2057,12 +2056,18 @@ void QPdfEnginePrivate::xprintf(const char* fmt, ...)
     va_list args;
     va_start(args, fmt);
     int bufsize = qvsnprintf(buf, msize, fmt, args);
-
-    Q_ASSERT(bufsize<msize);
-
     va_end(args);
 
-    stream->writeRawData(buf, bufsize);
+    if (Q_LIKELY(bufsize < msize)) {
+        stream->writeRawData(buf, bufsize);
+    } else {
+        // Fallback for abnormal cases
+        QScopedArrayPointer<char> tmpbuf(new char[bufsize + 1]);
+        va_start(args, fmt);
+        bufsize = qvsnprintf(tmpbuf.data(), bufsize + 1, fmt, args);
+        va_end(args);
+        stream->writeRawData(tmpbuf.data(), bufsize);
+    }
     streampos += bufsize;
 }
 

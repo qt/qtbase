@@ -14,7 +14,8 @@
         "src/xml",
         "src/widgets",
         "src/printsupport",
-        "src/plugins/sqldrivers"
+        "src/plugins/sqldrivers",
+        "src/testlib"
     ],
 
     "commandline": {
@@ -78,6 +79,7 @@
             "force-debug-info": { "type": "boolean", "name": "force_debug_info" },
             "force-pkg-config": { "type": "void", "name": "pkg-config" },
             "framework": "boolean",
+            "gdb-index": { "type": "boolean", "name": "gdb_index" },
             "gcc-sysroot": "boolean",
             "gcov": "boolean",
             "gnumake": { "type": "boolean", "name": "GNUmake" },

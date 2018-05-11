@@ -40,7 +40,7 @@
 #ifndef QTESTEVENTLOOP_H
 #define QTESTEVENTLOOP_H
 
-#include <QtTest/qtest_global.h>
+#include <QtTest/qttestglobal.h>
 
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qeventloop.h>

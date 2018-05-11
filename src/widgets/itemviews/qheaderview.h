@@ -53,6 +53,7 @@ class QStyleOptionHeader;
 class Q_WIDGETS_EXPORT QHeaderView : public QAbstractItemView
 {
     Q_OBJECT
+    Q_PROPERTY(bool firstSectionMovable READ isFirstSectionMovable WRITE setFirstSectionMovable)
     Q_PROPERTY(bool showSortIndicator READ isSortIndicatorShown WRITE setSortIndicatorShown)
     Q_PROPERTY(bool highlightSections READ highlightSections WRITE setHighlightSections)
     Q_PROPERTY(bool stretchLastSection READ stretchLastSection WRITE setStretchLastSection)
@@ -119,7 +120,7 @@ public:
     inline QT_DEPRECATED bool isMovable() const { return sectionsMovable(); }
 #endif
     void setFirstSectionMovable(bool movable);
-    bool firstSectionMovable() const;
+    bool isFirstSectionMovable() const;
 
     void setSectionsClickable(bool clickable);
     bool sectionsClickable() const;

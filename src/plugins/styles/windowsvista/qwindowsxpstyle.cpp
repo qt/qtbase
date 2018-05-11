@@ -122,7 +122,8 @@ static inline HDC hdcForWidgetBackingStore(const QWidget *widget)
 {
     if (QBackingStore *backingStore = backingStoreForWidget(widget)) {
         QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-        return static_cast<HDC>(nativeInterface->nativeResourceForBackingStore(QByteArrayLiteral("getDC"), backingStore));
+        if (nativeInterface)
+            return static_cast<HDC>(nativeInterface->nativeResourceForBackingStore(QByteArrayLiteral("getDC"), backingStore));
     }
     return 0;
 }

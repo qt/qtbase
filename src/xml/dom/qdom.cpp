@@ -2544,7 +2544,7 @@ QDomNode QDomNode::insertAfter(const QDomNode& newChild, const QDomNode& refChil
     If \a newChild is a QDomDocumentFragment, then \a oldChild is
     replaced by all of the children of the fragment.
 
-    Returns a new reference to \a oldChild on success or a \l{isNull()}{null node} an failure.
+    Returns a new reference to \a oldChild on success or a \l{isNull()}{null node} on failure.
 
     \sa insertBefore(), insertAfter(), removeChild(), appendChild()
 */

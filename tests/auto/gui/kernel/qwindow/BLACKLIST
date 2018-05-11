@@ -13,7 +13,6 @@ opensuse
 [modalWindowEnterEventOnHide_QTBUG35109]
 ubuntu-16.04
 osx ci
-windows ci
 [modalDialogClosingOneOfTwoModal]
 osx
 [modalWindowModallity]
@@ -24,5 +23,6 @@ osx-10.12 ci
 
 [testInputEvents]
 rhel-7.4
-# QTBUG-66798
-windows
+[isActive]
+# QTBUG-67768
+ubuntu

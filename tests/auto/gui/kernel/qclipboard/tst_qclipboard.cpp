@@ -41,10 +41,8 @@ class tst_QClipboard : public QObject
 {
     Q_OBJECT
 private slots:
-#ifdef QT_NO_CLIPBOARD
     void initTestCase();
-    void cleanupTestCase();
-#else
+#if QT_CONFIG(clipboard)
     void init();
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(Q_OS_QNX)
     void copy_exit_paste();
@@ -58,19 +56,16 @@ private slots:
 #endif
 };
 
-#ifdef QT_NO_CLIPBOARD
 void tst_QClipboard::initTestCase()
 {
+#if !QT_CONFIG(clipboard)
     QSKIP("This test requires clipboard support");
+#endif
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: Manipulating the clipboard requires real input events. Can't auto test.");
 }
 
-void tst_QClipboard::cleanupTestCase()
-{
-    QSKIP("This test requires clipboard support");
-}
-
-#else
-
+#if QT_CONFIG(clipboard)
 void tst_QClipboard::init()
 {
 #if QT_CONFIG(process)
@@ -436,7 +431,7 @@ void tst_QClipboard::clearBeforeSetText()
     QCOMPARE(QGuiApplication::clipboard()->text(), text);
 }
 
-#endif
+#endif // QT_CONFIG(clipboard)
 
 QTEST_MAIN(tst_QClipboard)
 

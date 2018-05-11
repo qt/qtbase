@@ -1604,6 +1604,12 @@ void tst_qmakelib::addReplaceFunctions(const QString &qindir)
             << ""
             << true;
 
+    QTest::newRow("$$absolute_path(): relative file & relative path")
+            << "VAR = $$absolute_path(dir/file.ext, some/where)"
+            << "VAR = " + qindir + "/some/where/dir/file.ext"
+            << ""
+            << true;
+
     QTest::newRow("$$absolute_path(): file & path")
             << "VAR = $$absolute_path(dir/file.ext, " EVAL_DRIVE "/root/sub)"
             << "VAR = " EVAL_DRIVE "/root/sub/dir/file.ext"
@@ -1638,6 +1644,12 @@ void tst_qmakelib::addReplaceFunctions(const QString &qindir)
 
     QTest::newRow("$$relative_path(): relative file")
             << "VAR = $$relative_path(dir/file.ext)"
+            << "VAR = dir/file.ext"
+            << ""
+            << true;
+
+    QTest::newRow("$$relative_path(): relative file & relative path")
+            << "VAR = $$relative_path(dir/file.ext, some/where)"
             << "VAR = dir/file.ext"
             << ""
             << true;
@@ -2363,11 +2375,7 @@ void tst_qmakelib::addTestFunctions(const QString &qindir)
     QTest::newRow("include(): fail")
             << "include(include/nope.pri): OK = 1"
             << "OK = UNDEF"
-#ifdef Q_OS_WIN
-            << "Cannot read " + m_indir + "/include/nope.pri: The system cannot find the file specified."
-#else
             << "Cannot read " + m_indir + "/include/nope.pri: No such file or directory"
-#endif
             << true;
 
     QTest::newRow("include(): silent fail")
@@ -2752,9 +2760,9 @@ void tst_qmakelib::proEval_data()
 
     // Raw data leak with empty file name. Verify with Valgrind or asan.
     QTest::newRow("QTBUG-54550")
-            << "FULL = /there/is\n"
+            << "FULL = " EVAL_DRIVE "/there/is\n"
                "VAR = $$absolute_path(, $$FULL/nothing/here/really)"
-            << "VAR = /there/is/nothing/here/really"
+            << "VAR = " EVAL_DRIVE "/there/is/nothing/here/really"
             << ""
             << true;
 }
@@ -2861,12 +2869,12 @@ void tst_qmakelib::proEval()
     globals.environment = m_env;
     globals.setProperties(m_prop);
     globals.setDirectories(m_indir, m_outdir);
-    ProFile *outPro = parser.parsedProBlock(QStringRef(&out), "out", 1, QMakeParser::FullGrammar);
+    ProFile *outPro = parser.parsedProBlock(QStringRef(&out), 0, "out", 1, QMakeParser::FullGrammar);
     if (!outPro->isOk()) {
         qWarning("Expected output is malformed");
         verified = false;
     }
-    ProFile *pro = parser.parsedProBlock(QStringRef(&in), infile, 1, QMakeParser::FullGrammar);
+    ProFile *pro = parser.parsedProBlock(QStringRef(&in), 0, infile, 1, QMakeParser::FullGrammar);
     QMakeEvaluator visitor(&globals, &parser, &vfs, &handler);
     visitor.setOutputDir(m_outdir);
 #ifdef Q_OS_WIN

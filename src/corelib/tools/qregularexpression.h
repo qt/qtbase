@@ -43,12 +43,12 @@
 
 #include <QtCore/qglobal.h>
 
-#ifndef QT_NO_REGULAREXPRESSION
-
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qvariant.h>
+
+QT_REQUIRE_CONFIG(regularexpression);
 
 QT_BEGIN_NAMESPACE
 
@@ -276,7 +276,5 @@ private:
 Q_DECLARE_SHARED(QRegularExpressionMatchIterator)
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_REGULAREXPRESSION
 
 #endif // QREGULAREXPRESSION_H

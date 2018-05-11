@@ -2913,7 +2913,8 @@
     Returns the absolute path of \c path.
 
     If \c base is not specified, uses the current directory as the base
-    directory.
+    directory.  If it is a relative path, it is resolved relative to the current
+    directory before use.
 
     For example, the following call returns the string
     \c {"/home/johndoe/myproject/readme.txt"}:
@@ -3152,9 +3153,15 @@
 
     \section2 relative_path(filePath[, base])
 
-    Returns the path to \c filePath relative to \c base. If \c base is not
-    specified, it is the current project directory. This function is a wrapper
-    around QDir::relativeFilePath.
+    Returns the path to \c filePath relative to \c base.
+
+    If \c base is not specified, it is the current project
+    directory. If it is relative, it is resolved relative to the
+    current project directory before use.
+
+    If \c filePath is relative, it is first resolved against the base
+    directory; in that case, this function effectively acts as
+    $$clean_path().
 
     See also \l{absolute_path(path[, base])}{absolute_path()},
     \l{clean_path(path)}{clean_path()}.

@@ -172,6 +172,31 @@ inline int qt_depthForFormat(QImage::Format format)
 #pragma optimize("", on)
 #endif
 
+inline QImage::Format qt_opaqueVersion(QImage::Format format)
+{
+    switch (format) {
+    case QImage::Format_ARGB8565_Premultiplied:
+        return  QImage::Format_RGB16;
+    case QImage::Format_ARGB8555_Premultiplied:
+        return QImage::Format_RGB555;
+    case QImage::Format_ARGB6666_Premultiplied:
+        return  QImage::Format_RGB666;
+    case QImage::Format_ARGB4444_Premultiplied:
+        return QImage::Format_RGB444;
+    case QImage::Format_RGBA8888:
+    case QImage::Format_RGBA8888_Premultiplied:
+        return QImage::Format_RGBX8888;
+    case QImage::Format_A2BGR30_Premultiplied:
+        return QImage::Format_BGR30;
+    case QImage::Format_A2RGB30_Premultiplied:
+        return QImage::Format_RGB30;
+    case QImage::Format_ARGB32_Premultiplied:
+    case QImage::Format_ARGB32:
+    default:
+        return QImage::Format_RGB32;
+    }
+}
+
 inline QImage::Format qt_alphaVersion(QImage::Format format)
 {
     switch (format) {
@@ -199,6 +224,11 @@ inline QImage::Format qt_maybeAlphaVersionWithSameDepth(QImage::Format format)
 {
     const QImage::Format toFormat = qt_alphaVersion(format);
     return qt_depthForFormat(format) == qt_depthForFormat(toFormat) ? toFormat : format;
+}
+
+inline QImage::Format qt_opaqueVersionForPainting(QImage::Format format)
+{
+    return qt_opaqueVersion(format);
 }
 
 inline QImage::Format qt_alphaVersionForPainting(QImage::Format format)

@@ -135,7 +135,7 @@ public:
     QString executedQuery;
     QHash<int, QSql::ParamType> types;
     QVector<QVariant> values;
-    typedef QHash<QString, QList<int> > IndexMap;
+    typedef QHash<QString, QVector<int> > IndexMap;
     IndexMap indexes;
 
     typedef QVector<QHolder> QHolderVector;

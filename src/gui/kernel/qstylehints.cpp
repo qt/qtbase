@@ -551,7 +551,7 @@ void QStyleHints::setMouseQuickSelectionThreshold(int threshold)
     if (d->m_mouseQuickSelectionThreshold == threshold)
         return;
     d->m_mouseQuickSelectionThreshold = threshold;
-    emit mouseDoubleClickIntervalChanged(threshold);
+    emit mouseQuickSelectionThresholdChanged(threshold);
 }
 
 /*!

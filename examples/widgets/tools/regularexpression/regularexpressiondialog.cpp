@@ -77,6 +77,13 @@
 
 Q_DECLARE_METATYPE(QRegularExpression::MatchType)
 
+static QString rawStringLiteral(QString pattern)
+{
+    pattern.prepend(QLatin1String("R\"RX("));
+    pattern.append(QLatin1String(")RX\""));
+    return pattern;
+}
+
 static QString patternToCode(QString pattern)
 {
     pattern.replace(QLatin1String("\\"), QLatin1String("\\\\"));
@@ -173,6 +180,29 @@ void PatternLineEdit::contextMenuEvent(QContextMenuEvent *event)
     menu->popup(event->globalPos());
 }
 
+class DisplayLineEdit : public QLineEdit
+{
+public:
+    explicit DisplayLineEdit(QWidget *parent = nullptr);
+};
+
+DisplayLineEdit::DisplayLineEdit(QWidget *parent) : QLineEdit(parent)
+{
+    setReadOnly(true);
+    QPalette disabledPalette = palette();
+    disabledPalette.setBrush(QPalette::Base, disabledPalette.brush(QPalette::Disabled, QPalette::Base));
+    setPalette(disabledPalette);
+
+#if QT_CONFIG(clipboard)
+    QAction *copyAction = new QAction(this);
+    copyAction->setText(RegularExpressionDialog::tr("Copy to clipboard"));
+    copyAction->setIcon(QIcon(QStringLiteral(":/images/copy.png")));
+    connect(copyAction, &QAction::triggered, this,
+            [this] () { QGuiApplication::clipboard()->setText(text()); });
+    addAction(copyAction, QLineEdit::TrailingPosition);
+#endif
+}
+
 RegularExpressionDialog::RegularExpressionDialog(QWidget *parent)
     : QDialog(parent)
 {
@@ -230,6 +260,7 @@ void RegularExpressionDialog::refresh()
     offsetSpinBox->setMaximum(qMax(0, text.length() - 1));
 
     escapedPatternLineEdit->setText(patternToCode(pattern));
+    rawStringLiteralLineEdit->setText(rawStringLiteral(pattern));
 
     setTextColor(patternLineEdit, subjectTextEdit->palette().color(QPalette::Text));
     matchDetailsTreeWidget->clear();
@@ -322,15 +353,6 @@ void RegularExpressionDialog::refresh()
     setUpdatesEnabled(true);
 }
 
-void RegularExpressionDialog::copyEscapedPatternToClipboard()
-{
-#if QT_CONFIG(clipboard)
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    if (clipboard)
-        clipboard->setText(escapedPatternLineEdit->text());
-#endif
-}
-
 void RegularExpressionDialog::setupUi()
 {
     QWidget *leftHalfContainer = setupLeftUi();
@@ -363,20 +385,9 @@ QWidget *RegularExpressionDialog::setupLeftUi()
     patternLineEdit->setClearButtonEnabled(true);
     layout->addRow(tr("&Pattern:"), patternLineEdit);
 
-    escapedPatternLineEdit = new QLineEdit;
-    escapedPatternLineEdit->setReadOnly(true);
-    QPalette palette = escapedPatternLineEdit->palette();
-    palette.setBrush(QPalette::Base, palette.brush(QPalette::Disabled, QPalette::Base));
-    escapedPatternLineEdit->setPalette(palette);
-
-#if QT_CONFIG(clipboard)
-    QAction *copyEscapedPatternAction = new QAction(this);
-    copyEscapedPatternAction->setText(tr("Copy to clipboard"));
-    copyEscapedPatternAction->setIcon(QIcon(QStringLiteral(":/images/copy.png")));
-    connect(copyEscapedPatternAction, &QAction::triggered, this, &RegularExpressionDialog::copyEscapedPatternToClipboard);
-    escapedPatternLineEdit->addAction(copyEscapedPatternAction, QLineEdit::TrailingPosition);
-#endif
-
+    rawStringLiteralLineEdit = new DisplayLineEdit;
+    layout->addRow(tr("&Raw string literal:"), rawStringLiteralLineEdit);
+    escapedPatternLineEdit = new DisplayLineEdit;
     layout->addRow(tr("&Escaped pattern:"), escapedPatternLineEdit);
 
     subjectTextEdit = new QPlainTextEdit;

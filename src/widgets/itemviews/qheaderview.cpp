@@ -1175,9 +1175,10 @@ bool QHeaderView::sectionsMovable() const
 */
 
 /*!
-    \since 5.10
+    \property QHeaderView::firstSectionMovable
+    \brief Whether the first column can be moved by the user
 
-    If \a movable is true, the first column can be moved by the user.
+    This property controls whether the first column can be moved by the user.
     In a QTreeView, the first column holds the tree structure and is
     therefore non-movable by default, even after setSectionsMovable(true).
 
@@ -1186,8 +1187,11 @@ bool QHeaderView::sectionsMovable() const
     In such a scenario, it is recommended to call QTreeView::setRootIsDecorated(false)
     as well.
 
-    This method has no effect unless setSectionsMovable(true) is called as well.
+    Setting it to true has no effect unless setSectionsMovable(true) is called
+    as well.
+
     \sa setSectionsMovable()
+    \since 5.11
 */
 void QHeaderView::setFirstSectionMovable(bool movable)
 {
@@ -1195,13 +1199,7 @@ void QHeaderView::setFirstSectionMovable(bool movable)
     d->allowUserMoveOfSection0 = movable;
 }
 
-/*!
-    \since 5.10
-
-    Returns \c true if the first column can be moved by the user,
-    when this header is used in a QTreeView.
-*/
-bool QHeaderView::firstSectionMovable() const
+bool QHeaderView::isFirstSectionMovable() const
 {
     Q_D(const QHeaderView);
     return d->allowUserMoveOfSection0;

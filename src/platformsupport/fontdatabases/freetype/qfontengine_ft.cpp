@@ -2095,10 +2095,7 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition, const
     if (!cacheEnabled && glyph != &emptyGlyph)
         delete glyph;
 
-    if (!img.isNull())
-        return img;
-
-    return QFontEngine::alphaMapForGlyph(g, subPixelPosition, t);
+    return img;
 }
 
 QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, const QTransform &t)

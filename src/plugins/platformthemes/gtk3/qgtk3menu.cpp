@@ -426,9 +426,9 @@ QPoint QGtk3Menu::targetPos() const
 
 void QGtk3Menu::showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item)
 {
-    int index = m_items.indexOf(static_cast<QGtk3MenuItem *>(const_cast<QPlatformMenuItem *>(item)));
-    if (index != -1)
-        gtk_menu_set_active(GTK_MENU(m_menu), index);
+    const QGtk3MenuItem *menuItem = static_cast<const QGtk3MenuItem *>(item);
+    if (menuItem)
+        gtk_menu_shell_select_item(GTK_MENU_SHELL(m_menu), menuItem->handle());
 
     m_targetPos = QPoint(targetRect.x(), targetRect.y() + targetRect.height());
 

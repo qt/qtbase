@@ -31,8 +31,38 @@
     \ingroup examples-itemviews
     \brief This example demonstrates the usage of a tree view.
 
-    \brief The Dir View example shows a tree view onto the local filing system. It uses the
-    QFileSystemModel class to provide file and directory information.
+    The Dir View example shows a tree view of the local file
+    system. It uses the QFileSystemModel class to provide file
+    and directory information.
 
-    \image dirview-example.png
+    \borderedimage dirview-example.png
+
+    The example supports a number of command line options.
+    These options include:
+    \list
+        \li Application description
+        \li -help option
+        \li -version option
+        \li if the optionc {-c} is specified, the application will not
+            use custom directory options
+    \endlist
+
+    \quotefromfile itemviews/dirview/main.cpp
+    \skipto QCommandLineParser parser
+    \printuntil parser.positionalArguments
+
+    Declares a QFileSystemModel as data model for viewing
+    the local file system. QFileSystem works with a cache, that is,
+    it is updated continually with QFileSystemWatcher on that folder.
+
+    \skipto QFileSystemModel
+    \printuntil tree.setModel
+
+    Creates a model/view implementation called \c tree
+    for viewing the filesystem.
+
+    \skipto tree.setAnimated(false)
+    \printuntil tree.setWindowTitle
+
+    Sets some formatting options for \c tree.
 */

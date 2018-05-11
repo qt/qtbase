@@ -60,7 +60,7 @@ IoUtils::FileType IoUtils::fileType(const QString &fileName)
     struct ::stat st;
     if (::stat(fileName.toLocal8Bit().constData(), &st))
         return FileNotFound;
-    return S_ISDIR(st.st_mode) ? FileIsDir : FileIsRegular;
+    return S_ISDIR(st.st_mode) ? FileIsDir : S_ISREG(st.st_mode) ? FileIsRegular : FileNotFound;
 #endif
 }
 
@@ -103,7 +103,7 @@ QString IoUtils::resolvePath(const QString &baseDir, const QString &fileName)
         return QDir::cleanPath(fileName);
 #ifdef Q_OS_WIN // Add drive to otherwise-absolute path:
     if (fileName.at(0).unicode() == '/' || fileName.at(0).unicode() == '\\') {
-        Q_ASSERT(isAbsolutePath(baseDir));
+        Q_ASSERT_X(isAbsolutePath(baseDir), "IoUtils::resolvePath", qUtf8Printable(baseDir));
         return QDir::cleanPath(baseDir.left(2) + fileName);
     }
 #endif // Q_OS_WIN
@@ -258,9 +258,8 @@ bool IoUtils::touchFile(const QString &targetFileName, const QString &referenceF
 #  endif
     return true;
 }
-#endif
 
-#ifdef Q_OS_UNIX
+#if defined(QT_BUILD_QMAKE) && defined(Q_OS_UNIX)
 bool IoUtils::readLinkTarget(const QString &symlinkPath, QString *target)
 {
     const QByteArray localSymlinkPath = QFile::encodeName(symlinkPath);
@@ -294,5 +293,7 @@ bool IoUtils::readLinkTarget(const QString &symlinkPath, QString *target)
     return true;
 }
 #endif
+
+#endif  // PROEVALUATOR_FULL
 
 QT_END_NAMESPACE

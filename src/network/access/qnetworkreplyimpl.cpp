@@ -1125,6 +1125,7 @@ QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
     setRequest(req);
     setUrl(req.url());
     setOperation(op);
+    setFinished(true);
 
     qRegisterMetaType<QNetworkReply::NetworkError>();
 

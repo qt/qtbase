@@ -88,7 +88,7 @@ protected:
     void createPixmapForImage(QImage sourceImage, Qt::ImageConversionFlags flags);
     void setImage(const QImage &image);
     QImage image;
-    static QImage::Format systemOpaqueFormat();
+    static QImage::Format systemNativeFormat();
 
 private:
     friend class QPixmap;

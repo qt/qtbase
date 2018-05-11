@@ -54,7 +54,7 @@
 
 #include "private/qabstractitemmodel_p.h"
 
-#ifndef QT_NO_PROXYMODEL
+QT_REQUIRE_CONFIG(proxymodel);
 
 QT_BEGIN_NAMESPACE
 
@@ -70,7 +70,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_PROXYMODEL
 
 #endif // QABSTRACTPROXYMODEL_P_H

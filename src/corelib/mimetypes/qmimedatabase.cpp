@@ -214,6 +214,8 @@ QMimeGlobMatchResult QMimeDatabasePrivate::findByFileName(const QString &fileNam
 void QMimeDatabasePrivate::loadMimeTypePrivate(QMimeTypePrivate &mimePrivate)
 {
     QMutexLocker locker(&mutex);
+    if (mimePrivate.name.isEmpty())
+        return; // invalid mimetype
     if (!mimePrivate.loaded) { // XML provider sets loaded=true, binary provider does this on demand
         Q_ASSERT(mimePrivate.fromCache);
         QMimeBinaryProvider::loadMimeTypePrivate(mimePrivate);

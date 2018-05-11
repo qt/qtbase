@@ -562,10 +562,6 @@ void QXcbWindow::create()
 
 QXcbWindow::~QXcbWindow()
 {
-    if (m_currentBitmapCursor != XCB_CURSOR_NONE) {
-        xcb_free_cursor(xcb_connection(), m_currentBitmapCursor);
-    }
-
     destroy();
 }
 
@@ -2333,7 +2329,7 @@ void QXcbWindow::handleMotionNotifyEvent(const xcb_motion_notify_event_t *event)
 #if QT_CONFIG(xinput2)
 static inline int fixed1616ToInt(FP1616 val)
 {
-    return int((qreal(val >> 16)) + (val & 0xFFFF) / (qreal)0xFFFF);
+    return int(qreal(val) / 0x10000);
 }
 
 void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event, Qt::MouseEventSource source)
@@ -2589,24 +2585,6 @@ bool QXcbWindow::setMouseGrabEnabled(bool grab)
     if (result)
         connection()->setMouseGrabber(this);
     return result;
-}
-
-void QXcbWindow::setCursor(xcb_cursor_t cursor, bool isBitmapCursor)
-{
-    xcb_connection_t *conn = xcb_connection();
-
-    xcb_change_window_attributes(conn, m_window, XCB_CW_CURSOR, &cursor);
-    xcb_flush(conn);
-
-    if (m_currentBitmapCursor != XCB_CURSOR_NONE) {
-        xcb_free_cursor(conn, m_currentBitmapCursor);
-    }
-
-    if (isBitmapCursor) {
-        m_currentBitmapCursor = cursor;
-    } else {
-        m_currentBitmapCursor = XCB_CURSOR_NONE;
-    }
 }
 
 void QXcbWindow::windowEvent(QEvent *event)

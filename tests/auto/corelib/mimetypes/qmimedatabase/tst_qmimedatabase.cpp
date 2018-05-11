@@ -214,6 +214,8 @@ void tst_QMimeDatabase::mimeTypeForName()
 
     QMimeType doesNotExist = db.mimeTypeForName(QString::fromLatin1("foobar/x-doesnot-exist"));
     QVERIFY(!doesNotExist.isValid());
+    QCOMPARE(doesNotExist.comment(), QString());
+    QCOMPARE(doesNotExist.aliases(), QStringList());
 
     // TODO move to findByFile
 #ifdef Q_OS_LINUX

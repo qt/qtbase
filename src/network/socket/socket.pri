@@ -73,7 +73,7 @@ qtConfig(localserver) {
     SOURCES += socket/qlocalsocket.cpp \
                socket/qlocalserver.cpp
 
-    intergrity|winrt {
+    integrity|winrt {
         SOURCES += socket/qlocalsocket_tcp.cpp \
                    socket/qlocalserver_tcp.cpp
         DEFINES += QT_LOCALSOCKET_TCP

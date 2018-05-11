@@ -1318,7 +1318,7 @@ struct QOCIBatchColumn
     ub4 maxLen;
     ub4 recordCount;
     char* data;
-    ub2* lengths;
+    ub4* lengths;
     sb2* indicators;
     ub4 maxarr_len;
     ub4 curelep;
@@ -1392,7 +1392,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
         QOCIBatchColumn &col = columns[i];
         col.recordCount = boundValues.at(i).toList().count();
 
-        col.lengths = new ub2[col.recordCount];
+        col.lengths = new ub4[col.recordCount];
         col.indicators = new sb2[col.recordCount];
         col.maxarr_len = col.recordCount;
         col.curelep = col.recordCount;
@@ -1556,7 +1556,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
 
 
         // binding the column
-        r = OCIBindByPos(
+        r = OCIBindByPos2(
                 d->sql, &bindColumn.bindh, d->err, i + 1,
                 bindColumn.data,
                 bindColumn.maxLen,

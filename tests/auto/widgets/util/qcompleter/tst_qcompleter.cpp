@@ -1099,8 +1099,8 @@ void tst_QCompleter::multipleWidgets()
     comboBox->show();
     window.activateWindow();
     QApplication::setActiveWindow(&window);
-    QTest::qWait(50);
-    QTRY_COMPARE(QApplication::focusWidget(), comboBox);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QCOMPARE(QApplication::focusWidget(), comboBox);
     comboBox->lineEdit()->setText("it");
     QCOMPARE(comboBox->currentText(), QString("it")); // should not complete with setText
     QTest::keyPress(comboBox, 'e');
@@ -1112,7 +1112,6 @@ void tst_QCompleter::multipleWidgets()
     lineEdit->setCompleter(&completer);
     lineEdit->show();
     lineEdit->setFocus();
-    QTest::qWait(50);
     QTRY_COMPARE(QApplication::focusWidget(), lineEdit);
     lineEdit->setText("it");
     QCOMPARE(lineEdit->text(), QString("it")); // should not completer with setText

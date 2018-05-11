@@ -1077,6 +1077,7 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
 */
 
 const char *QWindowsWindow::embeddedNativeParentHandleProperty = "_q_embedded_native_parent_handle";
+const char *QWindowsWindow::hasBorderInFullScreenProperty = "_q_has_border_in_fullscreen";
 
 QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data) :
     QWindowsBaseWindow(aWindow),
@@ -1106,7 +1107,6 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
     updateDropSite(window()->isTopLevel());
 
     registerTouchWindow();
-    setWindowState(aWindow->windowStates());
     const qreal opacity = qt_window_private(aWindow)->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
         setOpacity(opacity);
@@ -1115,6 +1115,8 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
 
     if (aWindow->isTopLevel())
         setWindowIcon(aWindow->icon());
+    if (aWindow->property(hasBorderInFullScreenProperty).toBool())
+        setFlag(HasBorderInFullScreen);
     clearFlag(WithinCreate);
 }
 
@@ -1133,9 +1135,11 @@ void QWindowsWindow::initialize()
     QWindowCreationContextPtr creationContext =
         QWindowsContext::instance()->setWindowCreationContext(QWindowCreationContextPtr());
 
+    QWindow *w = window();
+    setWindowState(w->windowStates());
+
     // Trigger geometry change (unless it has a special state in which case setWindowState()
     // will send the message) and screen change signals of QWindow.
-    QWindow *w = window();
     if (w->type() != Qt::Desktop) {
         const Qt::WindowState state = w->windowState();
         if (state != Qt::WindowMaximized && state != Qt::WindowFullScreen
@@ -1157,23 +1161,19 @@ void QWindowsWindow::fireExpose(const QRegion &region, bool force)
     QWindowSystemInterface::handleExposeEvent(window(), region);
 }
 
-static inline QWindow *findTransientChild(const QWindow *parent)
-{
-    foreach (QWindow *w, QGuiApplication::topLevelWindows())
-        if (w->transientParent() == parent)
-            return w;
-    return 0;
-}
-
 void QWindowsWindow::destroyWindow()
 {
     qCDebug(lcQpaWindows) << __FUNCTION__ << this << window() << m_data.hwnd;
     if (m_data.hwnd) { // Stop event dispatching before Window is destroyed.
         setFlag(WithinDestroy);
         // Clear any transient child relationships as Windows will otherwise destroy them (QTBUG-35499, QTBUG-36666)
-        if (QWindow *transientChild = findTransientChild(window()))
-            if (QWindowsWindow *tw = QWindowsWindow::windowsWindowOf(transientChild))
-                tw->updateTransientParent();
+        const auto tlw = QGuiApplication::topLevelWindows();
+        for (QWindow *w : tlw) {
+            if (w->transientParent() == window()) {
+                if (QWindowsWindow *tw = QWindowsWindow::windowsWindowOf(w))
+                    tw->updateTransientParent();
+            }
+        }
         QWindowsContext *context = QWindowsContext::instance();
         if (context->windowUnderMouse() == window())
             context->clearWindowUnderMouse();
@@ -2410,6 +2410,8 @@ static inline bool applyNewCursor(const QWindow *w)
 
 void QWindowsWindow::applyCursor()
 {
+    if (static_cast<const QWindowsCursor *>(screen()->cursor())->hasOverrideCursor())
+        return;
 #ifndef QT_NO_CURSOR
     if (m_cursor->isNull()) { // Recurse up to parent with non-null cursor. Set default for toplevel.
         if (const QWindow *p = window()->parent()) {
@@ -2662,15 +2664,26 @@ void QWindowsWindow::setHasBorderInFullScreenStatic(QWindow *window, bool border
     if (QPlatformWindow *handle = window->handle())
         static_cast<QWindowsWindow *>(handle)->setHasBorderInFullScreen(border);
     else
-        qWarning("%s invoked without window handle; call has no effect.", Q_FUNC_INFO);
+        window->setProperty(hasBorderInFullScreenProperty, QVariant(border));
 }
 
 void QWindowsWindow::setHasBorderInFullScreen(bool border)
 {
+    if (testFlag(HasBorderInFullScreen) == border)
+        return;
     if (border)
         setFlag(HasBorderInFullScreen);
     else
         clearFlag(HasBorderInFullScreen);
+    // Directly apply the flag in case we are fullscreen.
+    if (m_windowState == Qt::WindowFullScreen) {
+        LONG_PTR style = GetWindowLongPtr(handle(), GWL_STYLE);
+        if (border)
+            style |= WS_BORDER;
+        else
+            style &= ~WS_BORDER;
+        SetWindowLongPtr(handle(), GWL_STYLE, style);
+    }
 }
 
 QString QWindowsWindow::formatWindowTitle(const QString &title)

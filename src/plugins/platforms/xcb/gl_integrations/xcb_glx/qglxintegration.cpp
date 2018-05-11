@@ -86,6 +86,30 @@ typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXC
 #define GL_CONTEXT_FLAG_DEBUG_BIT 0x00000002
 #endif
 
+#ifndef GLX_CONTEXT_ROBUST_ACCESS_BIT_ARB
+#define GLX_CONTEXT_ROBUST_ACCESS_BIT_ARB 0x00000004
+#endif
+
+#ifndef GL_RESET_NOTIFICATION_STRATEGY_ARB
+#define GL_RESET_NOTIFICATION_STRATEGY_ARB 0x8256
+#endif
+
+#ifndef GLX_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB
+#define GLX_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB 0x8256
+#endif
+
+#ifndef GL_LOSE_CONTEXT_ON_RESET_ARB
+#define GL_LOSE_CONTEXT_ON_RESET_ARB 0x8252
+#endif
+
+#ifndef GLX_LOSE_CONTEXT_ON_RESET_ARB
+#define GLX_LOSE_CONTEXT_ON_RESET_ARB 0x8252
+#endif
+
+#ifndef GLX_GENERATE_RESET_ON_VIDEO_MEMORY_PURGE_NV
+#define GLX_GENERATE_RESET_ON_VIDEO_MEMORY_PURGE_NV 0x20F7
+#endif
+
 static Window createDummyWindow(Display *dpy, XVisualInfo *visualInfo, int screenNumber, Window rootWin)
 {
     Colormap cmap = XCreateColormap(dpy, rootWin, visualInfo->visual, AllocNone);
@@ -141,6 +165,11 @@ static void updateFormatFromContext(QSurfaceFormat &format)
         format.setOption(QSurfaceFormat::StereoBuffers);
 
     if (format.renderableType() == QSurfaceFormat::OpenGL) {
+        GLint value = 0;
+        glGetIntegerv(GL_RESET_NOTIFICATION_STRATEGY_ARB, &value);
+        if (value == GL_LOSE_CONTEXT_ON_RESET_ARB)
+            format.setOption(QSurfaceFormat::ResetNotification);
+
         if (format.version() < qMakePair(3, 0)) {
             format.setOption(QSurfaceFormat::DeprecatedFunctions);
             return;
@@ -148,7 +177,7 @@ static void updateFormatFromContext(QSurfaceFormat &format)
 
         // Version 3.0 onwards - check if it includes deprecated functionality or is
         // a debug context
-        GLint value = 0;
+        value = 0;
         glGetIntegerv(GL_CONTEXT_FLAGS, &value);
         if (!(value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT))
             format.setOption(QSurfaceFormat::DeprecatedFunctions);
@@ -179,6 +208,8 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
     , m_isPBufferCurrent(false)
     , m_swapInterval(-1)
     , m_ownsContext(nativeHandle.isNull())
+    , m_getGraphicsResetStatus(0)
+    , m_lost(false)
 {
     if (nativeHandle.isNull())
         init(screen, share);
@@ -214,6 +245,8 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share)
             glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc) glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
 
         const bool supportsProfiles = glxExt.contains("GLX_ARB_create_context_profile");
+        const bool supportsRobustness = glxExt.contains("GLX_ARB_create_context_robustness");
+        const bool supportsVideoMemoryPurge = glxExt.contains("GLX_NV_robustness_video_memory_purge");
 
         // Use glXCreateContextAttribsARB if available
         // Also, GL ES context creation requires GLX_EXT_create_context_es2_profile
@@ -266,6 +299,9 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share)
 
                     int flags = 0;
 
+                    if (supportsRobustness)
+                        flags |= GLX_CONTEXT_ROBUST_ACCESS_BIT_ARB;
+
                     if (m_format.testOption(QSurfaceFormat::DebugContext))
                         flags |= GLX_CONTEXT_DEBUG_BIT_ARB;
 
@@ -279,14 +315,30 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share)
                     contextAttributes << GLX_CONTEXT_PROFILE_MASK_ARB << GLX_CONTEXT_ES2_PROFILE_BIT_EXT;
                 }
 
-                contextAttributes << None;
+                if (supportsRobustness && m_format.testOption(QSurfaceFormat::ResetNotification)) {
+                    QVector<int> contextAttributesWithRobustness = contextAttributes;
+                    contextAttributesWithRobustness << GLX_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB << GLX_LOSE_CONTEXT_ON_RESET_ARB;
+                    if (supportsVideoMemoryPurge)
+                        contextAttributesWithRobustness << GLX_GENERATE_RESET_ON_VIDEO_MEMORY_PURGE_NV << GL_TRUE;
 
-                m_context = glXCreateContextAttribsARB(m_display, config, m_shareContext, true, contextAttributes.data());
-                if (!m_context && m_shareContext) {
-                    // re-try without a shared glx context
-                    m_context = glXCreateContextAttribsARB(m_display, config, 0, true, contextAttributes.data());
-                    if (m_context)
-                        m_shareContext = 0;
+                    contextAttributesWithRobustness << None;
+                    m_context = glXCreateContextAttribsARB(m_display, config, m_shareContext, true,
+                                                           contextAttributesWithRobustness.data());
+                    // Context creation against a shared context may fail specifically due to this request, so try
+                    // without before dropping sharing.
+                }
+
+                if (m_context) {
+                    m_getGraphicsResetStatus = reinterpret_cast<GLenum (QOPENGLF_APIENTRYP)()>(getProcAddress("glGetGraphicsResetStatusARB"));
+                } else {
+                    contextAttributes << None;
+                    m_context = glXCreateContextAttribsARB(m_display, config, m_shareContext, true, contextAttributes.data());
+                    if (!m_context && m_shareContext) {
+                        // re-try without a shared glx context
+                        m_context = glXCreateContextAttribsARB(m_display, config, 0, true, contextAttributes.data());
+                        if (m_context)
+                            m_shareContext = 0;
+                    }
                 }
             }
         }
@@ -494,11 +546,23 @@ bool QGLXContext::makeCurrent(QPlatformSurface *surface)
         QXcbWindow *window = static_cast<QXcbWindow *>(surface);
         glxDrawable = window->xcb_window();
         success = glXMakeCurrent(m_display, glxDrawable, m_context);
+        m_lost = false;
+        if (m_getGraphicsResetStatus && m_getGraphicsResetStatus() != GL_NO_ERROR) {
+            m_lost = true;
+            success = false;
+            // Drop the surface. Will recreate on the next makeCurrent.
+            window->invalidateSurface();
+        }
     } else if (surfaceClass == QSurface::Offscreen) {
         m_isPBufferCurrent = true;
         QGLXPbuffer *pbuffer = static_cast<QGLXPbuffer *>(surface);
         glxDrawable = pbuffer->pbuffer();
         success = glXMakeContextCurrent(m_display, glxDrawable, glxDrawable, m_context);
+        m_lost = false;
+        if (m_getGraphicsResetStatus && m_getGraphicsResetStatus() != GL_NO_ERROR) {
+            m_lost = true;
+            success = false;
+        }
     }
 
     if (success && surfaceClass == QSurface::Window) {
@@ -585,6 +649,8 @@ QFunctionPointer QGLXContext::getProcAddress(const char *procName)
                 extern const QString qt_gl_library_name();
 //                QLibrary lib(qt_gl_library_name());
                 QLibrary lib(QLatin1String("GL"));
+                if (!lib.load())
+                    lib.setFileNameAndVersion(QLatin1String("GL"), 1);
                 glXGetProcAddressARB = (qt_glXGetProcAddressARB) lib.resolve("glXGetProcAddressARB");
 #endif
             }
@@ -609,7 +675,7 @@ bool QGLXContext::isSharing() const
 
 bool QGLXContext::isValid() const
 {
-    return m_context != 0;
+    return m_context != 0 && !m_lost;
 }
 
 bool QGLXContext::m_queriedDummyContext = false;

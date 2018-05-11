@@ -10,6 +10,8 @@ HEADERS += thread/qmutex.h \
            thread/qthreadstorage.h \
            thread/qwaitcondition.h \
            thread/qatomic.h \
+           thread/qatomic_bootstrap.h \
+           thread/qatomic_cxx11.h \
            thread/qbasicatomic.h \
            thread/qgenericatomic.h
 
@@ -67,3 +69,5 @@ win32 {
         thread/qthread_unix.cpp \
         thread/qwaitcondition_unix.cpp
 }
+
+qtConfig(std-atomic64): QMAKE_USE += libatomic

@@ -890,10 +890,10 @@ void tst_QSqlDatabase::recordMySQL()
 
     static QDateTime dt(QDate::currentDate(), QTime(1, 2, 3, 0));
     static const FieldDef fieldDefs[] = {
-        FieldDef("tinyint", QVariant::Int,               127),
-        FieldDef("tinyint unsigned", QVariant::UInt,     255),
-        FieldDef("smallint", QVariant::Int,              32767),
-        FieldDef("smallint unsigned", QVariant::UInt,    65535),
+        FieldDef("tinyint", static_cast<QVariant::Type>(QMetaType::Char), 127),
+        FieldDef("tinyint unsigned", static_cast<QVariant::Type>(QMetaType::UChar), 255),
+        FieldDef("smallint", static_cast<QVariant::Type>(QMetaType::Short), 32767),
+        FieldDef("smallint unsigned", static_cast<QVariant::Type>(QMetaType::UShort), 65535),
         FieldDef("mediumint", QVariant::Int,             8388607),
         FieldDef("mediumint unsigned", QVariant::UInt,   16777215),
         FieldDef("integer", QVariant::Int,               2147483647),
@@ -2374,6 +2374,9 @@ public slots:
             "QSqlDatabasePrivate::database: requested database does not belong to the calling thread.");
         QSqlDatabase db = QSqlDatabase::database(dbName);
         QVERIFY(!db.isValid());
+
+        QSqlDatabase invalidDb = QSqlDatabase::database("invalid");
+        QVERIFY(!invalidDb.isValid());
         QThread::currentThread()->exit();
     }
 private:

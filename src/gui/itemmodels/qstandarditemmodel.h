@@ -49,10 +49,9 @@
 #include <QtCore/qdatastream.h>
 #endif
 
+QT_REQUIRE_CONFIG(standarditemmodel);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_STANDARDITEMMODEL
 
 template <class T> class QList;
 
@@ -453,8 +452,6 @@ inline bool QStandardItemModel::insertColumn(int acolumn, const QModelIndex &apa
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &in, QStandardItem &item);
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &out, const QStandardItem &item);
 #endif
-
-#endif // QT_NO_STANDARDITEMMODEL
 
 QT_END_NAMESPACE
 

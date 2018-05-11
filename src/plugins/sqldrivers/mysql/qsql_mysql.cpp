@@ -1160,14 +1160,14 @@ static void qLibraryInit()
 # endif // MYSQL_VERSION_ID
 #endif // Q_NO_MYSQL_EMBEDDED
 
-#ifdef MARIADB_BASE_VERSION
+#if defined(MARIADB_BASE_VERSION) || defined(MARIADB_VERSION_ID)
     qAddPostRoutine([]() { mysql_server_end(); });
 #endif
 }
 
 static void qLibraryEnd()
 {
-#if !defined(MARIADB_BASE_VERSION)
+#if !defined(MARIADB_BASE_VERSION) && !defined(MARIADB_VERSION_ID)
 # if !defined(Q_NO_MYSQL_EMBEDDED)
 #  if MYSQL_VERSION_ID > 40000
 #   if (MYSQL_VERSION_ID >= 40110 && MYSQL_VERSION_ID < 50000) || MYSQL_VERSION_ID >= 50003

@@ -75,6 +75,7 @@
 #include <QtTest/private/qtestutil_macos_p.h>
 #endif
 
+#include <cmath>
 #include <numeric>
 #include <algorithm>
 
@@ -208,8 +209,13 @@ static void stackTrace()
     if (debuggerPresent())
         return;
 
+#if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
+    const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
+    const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
+    fprintf(stderr, "\n=== Received signal at function time: %dms, total time: %dms, dumping stack ===\n",
+            msecsFunctionTime, msecsTotalTime);
+#endif
 #ifdef Q_OS_LINUX
-    fprintf(stderr, "\n========= Received signal, dumping stack ==============\n");
     char cmd[512];
     qsnprintf(cmd, 512, "gdb --pid %d 2>/dev/null <<EOF\n"
                          "set prompt\n"
@@ -221,9 +227,8 @@ static void stackTrace()
                          (int)getpid());
     if (system(cmd) == -1)
         fprintf(stderr, "calling gdb failed\n");
-    fprintf(stderr, "========= End of stack trace ==============\n");
+    fprintf(stderr, "=== End of stack trace ===\n");
 #elif defined(Q_OS_OSX)
-    fprintf(stderr, "\n========= Received signal, dumping stack ==============\n");
     char cmd[512];
     qsnprintf(cmd, 512, "lldb -p %d 2>/dev/null <<EOF\n"
                          "bt all\n"
@@ -232,7 +237,7 @@ static void stackTrace()
                          (int)getpid());
     if (system(cmd) == -1)
         fprintf(stderr, "calling lldb failed\n");
-    fprintf(stderr, "========= End of stack trace ==============\n");
+    fprintf(stderr, "=== End of stack trace ===\n");
 #endif
 }
 
@@ -1973,7 +1978,7 @@ void QTest::ignoreMessage(QtMsgType type, const char *message)
     QTestLog::ignoreMessage(type, message);
 }
 
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 /*!
     \overload
 
@@ -1993,7 +1998,7 @@ void QTest::ignoreMessage(QtMsgType type, const QRegularExpression &messagePatte
 {
     QTestLog::ignoreMessage(type, messagePattern);
 }
-#endif // QT_NO_REGULAREXPRESSION
+#endif // QT_CONFIG(regularexpression)
 
 /*! \internal
  */
@@ -2441,7 +2446,16 @@ bool QTest::qCompare(float const &t1, float const &t2, const char *actual, const
 bool QTest::qCompare(double const &t1, double const &t2, const char *actual, const char *expected,
                     const char *file, int line)
 {
-    return compare_helper(qFuzzyCompare(t1, t2), "Compared doubles are not the same (fuzzy compare)",
+    bool equal = false;
+    int cl1 = std::fpclassify(t1);
+    int cl2 = std::fpclassify(t2);
+    if (cl1 == FP_INFINITE)
+        equal = ((t1 < 0) == (t2 < 0)) && cl2 == FP_INFINITE;
+    else if (cl1 == FP_NAN)
+        equal = (cl2 == FP_NAN);
+    else
+        equal = qFuzzyCompare(t1, t2);
+    return compare_helper(equal, "Compared doubles are not the same (fuzzy compare)",
                           toString(t1), toString(t2), actual, expected, file, line);
 }
 

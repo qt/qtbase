@@ -253,12 +253,15 @@ template <typename BaseClass> struct QGenericAtomicOps
         return BaseClass::fetchAndAddRelaxed(_q_value, valueToAdd);
     }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_MSVC(4146)   // unary minus operator applied to unsigned type, result still unsigned
     template <typename T> static Q_ALWAYS_INLINE
     T fetchAndSubRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT operand) Q_DECL_NOTHROW
     {
         // implement fetchAndSub on top of fetchAndAdd
         return fetchAndAddRelaxed(_q_value, -operand);
     }
+QT_WARNING_POP
 
     template <typename T> static Q_ALWAYS_INLINE
     T fetchAndSubAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT operand) Q_DECL_NOTHROW

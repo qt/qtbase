@@ -36,5 +36,17 @@
 
     \image graphicsflowlayout-example.png
 
-    See the \l{Flow Layout Example} for a corresponding widget-based example.
+    This example uses a Graphics View to display the widget, which is a more
+    customizable approach than displaying the flow layout in the application
+    window (See \l {Flow Layout Example}).
+
+    Graphics View Flow Layout snippet:
+
+    \snippet graphicsview/flowlayout/main.cpp 1
+
+    Flow Layout Example snippet:
+
+    \snippet layouts/flowlayout/main.cpp 1
+
+
 */

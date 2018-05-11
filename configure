@@ -305,7 +305,7 @@ UNAME_RELEASE=`(uname -r) 2>/dev/null` || UNAME_RELEASE=unknown
 UNAME_SYSTEM=`(uname -s) 2>/dev/null`  || UNAME_SYSTEM=unknown
 
 BUILD_ON_MAC=no
-if [ -d /System/Library/Frameworks/Carbon.framework ]; then
+if [ -d /System/Library/Frameworks/Cocoa.framework ]; then
     BUILD_ON_MAC=yes
 fi
 if [ "$OSTYPE" = "msys" ]; then

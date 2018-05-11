@@ -128,6 +128,8 @@ private slots:
     void mysql_outValues();
     void oraClob_data() { generic_data("QOCI"); }
     void oraClob();
+    void oraClobBatch_data() { generic_data("QOCI"); }
+    void oraClobBatch();
     void oraLong_data() { generic_data("QOCI"); }
     void oraLong();
     void oraOCINumber_data() { generic_data("QOCI"); }
@@ -176,6 +178,8 @@ private slots:
     void emptyTableNavigate();
     void timeStampParsing_data() { generic_data(); }
     void timeStampParsing();
+    void sqliteVirtualTable_data() { generic_data("QSQLITE"); }
+    void sqliteVirtualTable();
 
 #ifdef NOT_READY_YET
     void task_229811();
@@ -357,7 +361,6 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName("more_results", __FILE__, db)
                << qTableName("blobstest", __FILE__, db)
                << qTableName("oraRowId", __FILE__, db)
-               << qTableName("qtest_batch", __FILE__, db)
                << qTableName("bug43874", __FILE__, db)
                << qTableName("bug6421", __FILE__, db).toUpper()
                << qTableName("bug5765", __FILE__, db)
@@ -807,6 +810,28 @@ void tst_QSqlQuery::oraClob()
     QVERIFY( q.value( 0 ).toString() == loong );
     QCOMPARE( q.value( 1 ).toByteArray().count(), loong.toLatin1().count() );
     QVERIFY( q.value( 1 ).toByteArray() == loong.toLatin1() );
+}
+
+void tst_QSqlQuery::oraClobBatch()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    const QString clobBatch(qTableName("clobBatch", __FILE__, db));
+    tst_Databases::safeDropTables(db, { clobBatch });
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec("create table " + clobBatch + "(cl clob)"));
+
+    const QString longString(USHRT_MAX + 1, QLatin1Char('A'));
+    QVERIFY_SQL(q, prepare("insert into " + clobBatch + " (cl) values(:cl)"));
+    const QVariantList vars = { longString };
+    q.addBindValue(vars);
+    QVERIFY_SQL(q, execBatch());
+
+    QVERIFY_SQL(q, exec("select cl from " + clobBatch));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toString().count(), longString.size());
+    QVERIFY(q.value(0).toString() == longString);
 }
 
 void tst_QSqlQuery::storedProceduresIBase()
@@ -2437,76 +2462,103 @@ void tst_QSqlQuery::batchExec()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
 
-    if ( !db.driver()->hasFeature( QSqlDriver::BatchOperations ) )
-        QSKIP( "Database can't do BatchOperations");
-
     QSqlQuery q( db );
     const QString tableName = qTableName("qtest_batch", __FILE__, db);
+    tst_Databases::safeDropTable(db, tableName);
+    QVERIFY_SQL(q, exec(QStringLiteral("create table ") + tableName +
+                        QStringLiteral(" (id int, name varchar(20), dt date, num numeric(8, 4), "
+                                       "dtstamp TIMESTAMP(3), extraId int, extraName varchar(20))")));
 
-    QVERIFY_SQL(q, exec("create table " + tableName + " (id int, name varchar(20), dt date, num numeric(8, 4), dtstamp TIMESTAMP(3))"));
-    QVERIFY_SQL(q, prepare("insert into " + tableName + " (id, name, dt, num, dtstamp) values (?, ?, ?, ?, ?)"));
+    const QVariantList intCol = { 1, 2, QVariant(QVariant::Int) };
+    const QVariantList charCol = { QStringLiteral("harald"), QStringLiteral("boris"),
+                                   QVariant(QVariant::String) };
+    const QDateTime currentDateTime = QDateTime(QDateTime::currentDateTime());
+    const QVariantList dateCol = { currentDateTime.date(), currentDateTime.date().addDays(-1),
+                                   QVariant(QVariant::Date) };
+    const QVariantList numCol = { 2.3, 3.4, QVariant(QVariant::Double) };
+    const QVariantList timeStampCol = { currentDateTime, currentDateTime.addDays(-1),
+                                        QVariant(QVariant::DateTime) };
 
-    QVariantList intCol;
-    intCol << 1 << 2 << QVariant( QVariant::Int );
-
-    QVariantList charCol;
-    charCol << QLatin1String( "harald" ) << QLatin1String( "boris" ) << QVariant( QVariant::String );
-
-    QVariantList dateCol;
-    QDateTime dt = QDateTime( QDate::currentDate(), QTime( 1, 2, 3 ) );
-    dateCol << dt << dt.addDays( -1 ) << QVariant( QVariant::DateTime );
-
-    QVariantList numCol;
-    numCol << 2.3 << 3.4 << QVariant( QVariant::Double );
-
-    QVariantList timeStampCol;
-    const QDateTime dtStamp = QDateTime(QDate::currentDate(), QTime(1, 2, 3, 4));
-    timeStampCol << dtStamp << dtStamp.addDays(-1) << QVariant(QVariant::DateTime);
-
+    // Test with positional placeholders
+    QVERIFY_SQL(q, prepare(QStringLiteral("insert into ") + tableName +
+                           QStringLiteral(" (id, name, dt, num, dtstamp, extraId, extraName) values "
+                                          "(?, ?, ?, ?, ?, ?, ?)")));
     q.addBindValue(intCol);
     q.addBindValue( charCol );
     q.addBindValue( dateCol );
     q.addBindValue( numCol );
     q.addBindValue(timeStampCol);
+    q.addBindValue(intCol);
+    q.addBindValue(charCol);
 
     QVERIFY_SQL( q, execBatch() );
-    QVERIFY_SQL(q, exec("select id, name, dt, num, dtstamp from " + tableName + " order by id"));
+    QVERIFY_SQL(q, exec(QStringLiteral("select id, name, dt, num, dtstamp, "
+                                       "extraId, extraName from ") + tableName));
 
-    QVERIFY( q.next() );
-    QCOMPARE( q.value( 0 ).toInt(), 1 );
-    QCOMPARE( q.value( 1 ).toString(), QString( "harald" ) );
-    QCOMPARE( q.value( 2 ).toDateTime(), dt );
-    QCOMPARE( q.value( 3 ).toDouble(), 2.3 );
-    QCOMPARE(q.value(4).toDateTime(), dtStamp);
+    for (int i = 0; i < intCol.size(); ++i) {
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), intCol.at(i));
+        QCOMPARE(q.value(1).toString(), charCol.at(i));
+        QCOMPARE(q.value(2).toDate(), dateCol.at(i));
+        QCOMPARE(q.value(3).toDouble(), numCol.at(i));
+        if (tst_Databases::getDatabaseType(db) == QSqlDriver::MySqlServer && timeStampCol.at(i).isNull()) {
+            QEXPECT_FAIL("", "This appears to be a bug in MySQL as it converts null datetimes to the "
+                         "current datetime for a timestamp field", Continue);
+        }
+        QCOMPARE(q.value(4).toDateTime(), timeStampCol.at(i));
+        QCOMPARE(q.value(5).toInt(), intCol.at(i));
+        QCOMPARE(q.value(6).toString(), charCol.at(i));
+    }
 
-    QVERIFY( q.next() );
-    QCOMPARE( q.value( 0 ).toInt(), 2 );
-    QCOMPARE( q.value( 1 ).toString(), QString( "boris" ) );
-    QCOMPARE( q.value( 2 ).toDateTime(), dt.addDays( -1 ) );
-    QCOMPARE( q.value( 3 ).toDouble(), 3.4 );
-    QCOMPARE(q.value(4).toDateTime(), dtStamp.addDays(-1));
+    // Empty table ready for retesting with duplicated named placeholders
+    QVERIFY_SQL(q, exec(QStringLiteral("delete from ") + tableName));
+    QVERIFY_SQL(q, prepare(QStringLiteral("insert into ") + tableName +
+                           QStringLiteral(" (id, name, dt, num, dtstamp, extraId, extraName) "
+                                          "values (:id, :name, :dt, :num, :dtstamp, :id, :name)")));
+    q.bindValue(":id", intCol);
+    q.bindValue(":name", charCol);
+    q.bindValue(":dt", dateCol);
+    q.bindValue(":num", numCol);
+    q.bindValue(":dtstamp", timeStampCol);
 
-    QVERIFY( q.next() );
-    QVERIFY( q.value( 0 ).isNull() );
-    QVERIFY( q.value( 1 ).isNull() );
-    QVERIFY( q.value( 2 ).isNull() );
-    QVERIFY( q.value( 3 ).isNull() );
-    QVERIFY(q.value(4).isNull());
-
-    const QString procName = qTableName("qtest_batch_proc", __FILE__, db);
-    QVERIFY_SQL(q, exec("create or replace procedure " + procName + " (x in timestamp, y out timestamp) is\n"
-        "begin\n"
-        "    y := x;\n"
-        "end;\n"));
-    QVERIFY(q.prepare("call " + procName + "(?, ?)"));
-    q.addBindValue(timeStampCol, QSql::In);
-    QVariantList emptyDateTimes;
-    emptyDateTimes.reserve(timeStampCol.size());
-    for (int i = 0; i < timeStampCol.size(); i++)
-        emptyDateTimes << QVariant(QDateTime());
-    q.addBindValue(emptyDateTimes, QSql::Out);
     QVERIFY_SQL(q, execBatch());
-    QCOMPARE(q.boundValue(1).toList(), timeStampCol);
+    QVERIFY_SQL(q, exec(QStringLiteral("select id, name, dt, num, dtstamp, extraId, extraName from ") +
+                        tableName));
+
+    for (int i = 0; i < intCol.size(); ++i) {
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), intCol.at(i));
+        QCOMPARE(q.value(1).toString(), charCol.at(i));
+        QCOMPARE(q.value(2).toDate(), dateCol.at(i));
+        QCOMPARE(q.value(3).toDouble(), numCol.at(i));
+        if (tst_Databases::getDatabaseType(db) == QSqlDriver::MySqlServer && timeStampCol.at(i).isNull()) {
+            QEXPECT_FAIL("", "This appears to be a bug in MySQL as it converts null datetimes to the "
+                             "current datetime for a timestamp field", Continue);
+        }
+        QCOMPARE(q.value(4).toDateTime(), timeStampCol.at(i));
+        QCOMPARE(q.value(5).toInt(), intCol.at(i));
+        QCOMPARE(q.value(6).toString(), charCol.at(i));
+    }
+
+    // Only test the prepared stored procedure approach where the driver has support
+    // for batch operations as this will not work without it
+    if (db.driver()->hasFeature(QSqlDriver::BatchOperations)) {
+        const QString procName = qTableName("qtest_batch_proc", __FILE__, db);
+        QVERIFY_SQL(q, exec("create or replace procedure " + procName +
+                            " (x in timestamp, y out timestamp) is\n"
+                            "begin\n"
+                            "    y := x;\n"
+                            "end;\n"));
+        QVERIFY(q.prepare("call " + procName + "(?, ?)"));
+        q.addBindValue(timeStampCol, QSql::In);
+        QVariantList emptyDateTimes;
+        emptyDateTimes.reserve(timeStampCol.size());
+        for (int i = 0; i < timeStampCol.size(); i++)
+            emptyDateTimes << QVariant(QDateTime());
+        q.addBindValue(emptyDateTimes, QSql::Out);
+        QVERIFY_SQL(q, execBatch());
+        QCOMPARE(q.boundValue(1).toList(), timeStampCol);
+    }
 }
 
 void tst_QSqlQuery::QTBUG_43874()
@@ -3033,11 +3085,7 @@ void tst_QSqlQuery::nextResult()
     QCOMPARE( q.record().field( 0 ).type(), QVariant::String );
 
     QCOMPARE( q.record().field( 1 ).name().toUpper(), QString( "NUM" ) );
-
-    if (dbType == QSqlDriver::MySqlServer)
-        QCOMPARE( q.record().field( 1 ).type(), QVariant::String );
-    else
-        QCOMPARE( q.record().field( 1 ).type(), QVariant::Double );
+    QCOMPARE(q.record().field(1).type(), QVariant::Double);
 
     QVERIFY( q.next() );                    // Move to first row of the second result set
 
@@ -3286,6 +3334,10 @@ void tst_QSqlQuery::timeStampParsing()
     if (dbType == QSqlDriver::PostgreSQL) {
         QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName + QStringLiteral("("
                             "id serial NOT NULL, "
+                            "datefield timestamp, primary key(id));")));
+    } else if (dbType == QSqlDriver::MySqlServer) {
+        QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName + QStringLiteral("("
+                            "id integer NOT NULL AUTO_INCREMENT,"
                             "datefield timestamp, primary key(id));")));
     } else {
         QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName + QStringLiteral("("
@@ -4621,6 +4673,45 @@ void tst_QSqlQuery::dateTime()
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toDateTime(), dt);
     }
+}
+
+void tst_QSqlQuery::sqliteVirtualTable()
+{
+    // Virtual tables can behave differently when it comes to prepared
+    // queries, so we need to check these explicitly
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    const auto tableName = qTableName("sqliteVirtual", __FILE__, db);
+    QSqlQuery qry(db);
+    QVERIFY_SQL(qry, exec("create virtual table " + tableName + " using fts3(id, name)"));
+
+    // Delibrately malform the query to try and provoke a potential crash situation
+    QVERIFY_SQL(qry, prepare("select * from " + tableName + " where name match '?'"));
+    qry.addBindValue("Andy");
+    QVERIFY(!qry.exec());
+
+    QVERIFY_SQL(qry, prepare("insert into " + tableName + "(id, name) VALUES (?, ?)"));
+    qry.addBindValue(1);
+    qry.addBindValue("Andy");
+    QVERIFY_SQL(qry, exec());
+
+    QVERIFY_SQL(qry, exec("select * from " + tableName));
+    QVERIFY(qry.next());
+    QCOMPARE(qry.value(0).toInt(), 1);
+    QCOMPARE(qry.value(1).toString(), "Andy");
+
+    QVERIFY_SQL(qry, prepare("insert into " + tableName + "(id, name) values (:id, :name)"));
+    qry.bindValue(":id", 2);
+    qry.bindValue(":name", "Peter");
+    QVERIFY_SQL(qry, exec());
+
+    QVERIFY_SQL(qry, prepare("select * from " + tableName + " where name match ?"));
+    qry.addBindValue("Peter");
+    QVERIFY_SQL(qry, exec());
+    QVERIFY(qry.next());
+    QCOMPARE(qry.value(0).toInt(), 2);
+    QCOMPARE(qry.value(1).toString(), "Peter");
 }
 
 QTEST_MAIN( tst_QSqlQuery )

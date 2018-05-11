@@ -41,6 +41,8 @@
 #include "qnetworkinterface_p.h"
 #include "qnetworkinterface_unix_p.h"
 
+#ifndef QT_NO_NETWORKINTERFACE
+
 #include <qendian.h>
 #include <qobjectdefs.h>
 #include <qvarlengtharray.h>
@@ -382,7 +384,14 @@ static void getAddresses(int sock, char *buf, QList<QNetworkInterfacePrivate *> 
             auto payloadPtr = reinterpret_cast<uchar *>(RTA_DATA(rta));
 
             switch (rta->rta_type) {
-            case IFA_ADDRESS:           // address
+            case IFA_ADDRESS:
+                // Local address (all interfaces except for point-to-point)
+                if (entry.ip().isNull())
+                    entry.setIp(makeAddress(payloadPtr, payloadLen));
+                break;
+
+            case IFA_LOCAL:
+                // Override the local address (point-to-point interfaces)
                 entry.setIp(makeAddress(payloadPtr, payloadLen));
                 break;
 
@@ -441,3 +450,5 @@ QList<QNetworkInterfacePrivate *> QNetworkInterfaceManager::scan()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_NETWORKINTERFACE

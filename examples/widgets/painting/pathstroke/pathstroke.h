@@ -92,6 +92,7 @@ public slots:
 
     void setBevelJoin() { m_joinStyle = Qt::BevelJoin; update(); }
     void setMiterJoin() { m_joinStyle = Qt::MiterJoin; update(); }
+    void setSvgMiterJoin() { m_joinStyle = Qt::SvgMiterJoin; update(); }
     void setRoundJoin() { m_joinStyle = Qt::RoundJoin; update(); }
 
     void setCurveMode() { m_pathMode = CurveMode; update(); }
