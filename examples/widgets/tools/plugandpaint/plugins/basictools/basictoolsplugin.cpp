@@ -48,18 +48,17 @@
 **
 ****************************************************************************/
 
+#include "basictoolsplugin.h"
+
+#include <QtMath>
 #include <QtWidgets>
 
-#include <qmath.h>
 #include <stdlib.h>
-
-#include "basictoolsplugin.h"
 
 //! [0]
 QStringList BasicToolsPlugin::brushes() const
 {
-    return QStringList() << tr("Pencil") << tr("Air Brush")
-                         << tr("Random Letters");
+    return {tr("Pencil"), tr("Air Brush"), tr("Random Letters")};
 }
 //! [0]
 
@@ -132,7 +131,7 @@ QRect BasicToolsPlugin::mouseRelease(const QString & /* brush */,
 //! [5]
 QStringList BasicToolsPlugin::shapes() const
 {
-    return QStringList() << tr("Circle") << tr("Star") << tr("Text...");
+    return {tr("Circle"), tr("Star"), tr("Text...")};
 }
 //! [5]
 
@@ -169,8 +168,7 @@ QPainterPath BasicToolsPlugin::generateShape(const QString &shape,
 //! [7]
 QStringList BasicToolsPlugin::filters() const
 {
-    return QStringList() << tr("Invert Pixels") << tr("Swap RGB")
-                         << tr("Grayscale");
+    return {tr("Invert Pixels"), tr("Swap RGB"), tr("Grayscale")};
 }
 //! [7]
 
@@ -187,7 +185,7 @@ QImage BasicToolsPlugin::filterImage(const QString &filter, const QImage &image,
     } else if (filter == tr("Grayscale")) {
         for (int y = 0; y < result.height(); ++y) {
             for (int x = 0; x < result.width(); ++x) {
-                int pixel = result.pixel(x, y);
+                QRgb pixel = result.pixel(x, y);
                 int gray = qGray(pixel);
                 int alpha = qAlpha(pixel);
                 result.setPixel(x, y, qRgba(gray, gray, gray, alpha));

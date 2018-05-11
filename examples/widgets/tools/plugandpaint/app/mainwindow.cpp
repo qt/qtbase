@@ -54,19 +54,18 @@
 #include "paintarea.h"
 #include "plugindialog.h"
 
-#include <QPluginLoader>
-#include <QTimer>
-
-#include <QScrollArea>
-#include <QMessageBox>
-#include <QActionGroup>
 #include <QAction>
+#include <QActionGroup>
+#include <QApplication>
+#include <QColorDialog>
+#include <QFileDialog>
+#include <QInputDialog>
 #include <QMenu>
 #include <QMenuBar>
-#include <QFileDialog>
-#include <QColorDialog>
-#include <QInputDialog>
-#include <QApplication>
+#include <QMessageBox>
+#include <QPluginLoader>
+#include <QScrollArea>
+#include <QTimer>
 
 MainWindow::MainWindow() :
     paintArea(new PaintArea),
@@ -109,11 +108,10 @@ bool MainWindow::saveAs()
 
     const QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"),
                                                           initialPath);
-    if (fileName.isEmpty()) {
+    if (fileName.isEmpty())
         return false;
-    } else {
-        return paintArea->saveImage(fileName, "png");
-    }
+
+    return paintArea->saveImage(fileName, "png");
 }
 
 void MainWindow::brushColor()
@@ -137,8 +135,8 @@ void MainWindow::brushWidth()
 //! [0]
 void MainWindow::changeBrush()
 {
-    QAction *action = qobject_cast<QAction *>(sender());
-    BrushInterface *iBrush = qobject_cast<BrushInterface *>(action->parent());
+    auto action = qobject_cast<QAction *>(sender());
+    auto iBrush = qobject_cast<BrushInterface *>(action->parent());
     const QString brush = action->text();
 
     paintArea->setBrush(iBrush, brush);
@@ -148,8 +146,8 @@ void MainWindow::changeBrush()
 //! [1]
 void MainWindow::insertShape()
 {
-    QAction *action = qobject_cast<QAction *>(sender());
-    ShapeInterface *iShape = qobject_cast<ShapeInterface *>(action->parent());
+    auto action = qobject_cast<QAction *>(sender());
+    auto iShape = qobject_cast<ShapeInterface *>(action->parent());
 
     const QPainterPath path = iShape->generateShape(action->text(), this);
     if (!path.isEmpty())
@@ -160,9 +158,8 @@ void MainWindow::insertShape()
 //! [2]
 void MainWindow::applyFilter()
 {
-    QAction *action = qobject_cast<QAction *>(sender());
-    FilterInterface *iFilter =
-            qobject_cast<FilterInterface *>(action->parent());
+    auto action = qobject_cast<QAction *>(sender());
+    auto iFilter = qobject_cast<FilterInterface *>(action->parent());
 
     const QImage image = iFilter->filterImage(action->text(), paintArea->image(),
                                               this);
@@ -245,7 +242,8 @@ void MainWindow::createMenus()
 //! [4]
 void MainWindow::loadPlugins()
 {
-    foreach (QObject *plugin, QPluginLoader::staticInstances())
+    const auto staticInstances = QPluginLoader::staticInstances();
+    for (QObject *plugin : staticInstances)
         populateMenus(plugin);
 //! [4] //! [5]
 
@@ -265,7 +263,8 @@ void MainWindow::loadPlugins()
 //! [5]
 
 //! [6]
-    foreach (QString fileName, pluginsDir.entryList(QDir::Files)) {
+    const auto entryList = pluginsDir.entryList(QDir::Files);
+    for (const QString &fileName : entryList) {
         QPluginLoader loader(pluginsDir.absoluteFilePath(fileName));
         QObject *plugin = loader.instance();
         if (plugin) {
@@ -287,16 +286,16 @@ void MainWindow::loadPlugins()
 //! [10]
 void MainWindow::populateMenus(QObject *plugin)
 {
-    BrushInterface *iBrush = qobject_cast<BrushInterface *>(plugin);
+    auto iBrush = qobject_cast<BrushInterface *>(plugin);
     if (iBrush)
         addToMenu(plugin, iBrush->brushes(), brushMenu, &MainWindow::changeBrush,
                   brushActionGroup);
 
-    ShapeInterface *iShape = qobject_cast<ShapeInterface *>(plugin);
+    auto iShape = qobject_cast<ShapeInterface *>(plugin);
     if (iShape)
         addToMenu(plugin, iShape->shapes(), shapesMenu, &MainWindow::insertShape);
 
-    FilterInterface *iFilter = qobject_cast<FilterInterface *>(plugin);
+    auto iFilter = qobject_cast<FilterInterface *>(plugin);
     if (iFilter)
         addToMenu(plugin, iFilter->filters(), filterMenu, &MainWindow::applyFilter);
 }
@@ -306,8 +305,8 @@ void MainWindow::addToMenu(QObject *plugin, const QStringList &texts,
                            QMenu *menu, Member member,
                            QActionGroup *actionGroup)
 {
-    foreach (QString text, texts) {
-        QAction *action = new QAction(text, plugin);
+    for (const QString &text : texts) {
+        auto action = new QAction(text, plugin);
         connect(action, &QAction::triggered, this, member);
         menu->addAction(action);
 
