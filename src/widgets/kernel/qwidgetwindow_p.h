@@ -96,7 +96,8 @@ protected:
     void handleWheelEvent(QWheelEvent *);
 #endif
 #if QT_CONFIG(draganddrop)
-    void handleDragEnterMoveEvent(QDragMoveEvent *);
+    void handleDragEnterEvent(QDragEnterEvent *, QWidget *widget = nullptr);
+    void handleDragMoveEvent(QDragMoveEvent *);
     void handleDragLeaveEvent(QDragLeaveEvent *);
     void handleDropEvent(QDropEvent *);
 #endif
