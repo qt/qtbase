@@ -41,16 +41,11 @@ class QHtml5EventDispatcher : public QUnixEventDispatcherQPA
 public:
     explicit QHtml5EventDispatcher(QObject *parent = 0);
     ~QHtml5EventDispatcher();
-    void processEvents_emscripten();
-    static void processEvents(void *eventloop);
+
 protected:
-
-    bool processEvents(QEventLoop::ProcessEventsFlags flags
-                       = QEventLoop::EventLoopExec) override;
-    bool hasPendingEvents() override;
-
+    bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
 private:
-    bool m_hasPendingProcessEvents;
+    bool m_hasMainLoop = false;
 };
 
 QT_END_NAMESPACE

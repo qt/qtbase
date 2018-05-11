@@ -49,7 +49,6 @@
 #include <private/qthread_p.h>
 #include <QDebug>
 
-
 #ifdef Q_OS_HTML5
     #include <emscripten.h>
 #endif
@@ -176,7 +175,6 @@ int QEventLoop::exec(ProcessEventsFlags flags)
         return -1;
     }
 
-#ifndef Q_OS_HTML5
     //we need to protect from race condition with QThread::exit
 #ifndef QT_NO_THREAD
     QMutexLocker locker(&static_cast<QThreadPrivate *>(QObjectPrivate::get(d->threadData->thread))->mutex);
@@ -220,60 +218,21 @@ int QEventLoop::exec(ProcessEventsFlags flags)
     if (app && app->thread() == thread())
         QCoreApplication::removePostedEvents(app, QEvent::Quit);
 
+#ifdef Q_OS_HTML5
+    // Partial support for nested event loops: Make the runtime throw a JavaSrcript
+    // exception, which returns control to the browser while preserving the C++ stack.
+    // Event processing then continues as normal. The sleep call below newer returns.
+    if (d->threadData->loopLevel > 1)
+        emscripten_sleep(1);
+#endif
+
     while (!d->exit.loadAcquire())
         processEvents(flags | WaitForMoreEvents | EventLoopExec);
 
     ref.exceptionCaught = false;
 
-#else // Q_OS_HTML5
-    Q_UNUSED(flags)
-    d->inExec = true;
-    d->exit.storeRelease(false);
-    int oldLoopLevel = d->threadData->loopLevel;
-    ++d->threadData->loopLevel;
-    d->threadData->eventLoops.push(d->q_func());
-
-    // remove posted quit events when entering a new event loop
-    QCoreApplication *app = QCoreApplication::instance();
-    if (app && app->thread() == thread())
-        QCoreApplication::removePostedEvents(app, QEvent::Quit);
-
-    if (oldLoopLevel == 0 && d->threadData->loopLevel == 1) {
-        // main loop. can be only one
-        emscripten_set_main_loop_arg(QEventLoop::processEvents, (void*)this, 0, 1);
-    } else {
-        // child loops
-        while (!d->exit.loadAcquire()) {
-            emscripten_sleep(10);
-            processEvents((void *)this);
-        }
-    }
-
-    QEventLoop *eventLoop = d->threadData->eventLoops.pop();
-    Q_ASSERT_X(eventLoop == d->q_func(), "QEventLoop::exec()", "internal error");
-    Q_UNUSED(eventLoop); // --release warning
-    d->inExec = false;
-    --d->threadData->loopLevel;
-#endif // Q_OS_HTML5
-
     return d->returnCode.load();
 }
-
-#ifdef Q_OS_HTML5
-void QEventLoop::processEvents(void *eventloop)
-{
-    QEventLoop *currentEventloop = (QEventLoop*)eventloop;
-    currentEventloop->processEvents_emscripten();
-}
-
-void QEventLoop::processEvents_emscripten()
-{
-    Q_D(QEventLoop);
-    if (!d->threadData->eventDispatcher.load())
-        return;
-    d->threadData->eventDispatcher.load()->processEvents(EventLoopExec);
-}
-#endif
 
 /*!
     Process pending events that match \a flags for a maximum of \a
@@ -331,39 +290,15 @@ void QEventLoop::exit(int returnCode)
     d->threadData->eventDispatcher.load()->interrupt();
 
 #ifdef Q_OS_HTML5
-
+    // QEventLoop::exec() never returns. We implement opproximate behavior here.
     if (d->threadData->loopLevel == 1) {
-        emscripten_cancel_main_loop();
         emscripten_force_exit(returnCode);
     } else {
-        cleanup();
-        d->threadData->eventLoops.at(0)->switchLoop_emscripten( d->threadData->eventLoops.at(0));
+        d->inExec = false;
+        --d->threadData->loopLevel;
     }
 #endif
-
 }
-
-
-#ifdef Q_OS_HTML5
-void QEventLoop::switchLoop_emscripten(void *userData)
-{
-   emscripten_cancel_main_loop();
-   emscripten_set_main_loop_arg(QEventLoop::processEvents, userData, 0, 1);
-}
-
-void QEventLoop::cleanup()
-{
-    Q_D(QEventLoop);
-    if (!d->threadData->eventDispatcher.load())
-        return;
-
-    QEventLoop *eventLoop = d->threadData->eventLoops.pop();
-    Q_ASSERT_X(eventLoop == d->q_func(), "QEventLoop::exec()", "internal error");
-    Q_UNUSED(eventLoop); // --release warning
-    d->inExec = false;
-    --d->threadData->loopLevel;
-}
-#endif
 
 
 /*!
