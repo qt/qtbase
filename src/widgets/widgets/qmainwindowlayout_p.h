@@ -91,13 +91,16 @@ public:
     QList<int> hoverSeparator;
     QPoint hoverPos;
 
-#if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
+#if QT_CONFIG(dockwidget)
+
+#if QT_CONFIG(cursor)
     QCursor separatorCursor(const QList<int> &path);
     void adjustCursor(const QPoint &pos);
     QCursor oldCursor;
     QCursor adjustedCursor;
     bool hasOldCursor = false;
     bool cursorAdjusted = false;
+#endif
 
     QList<int> movingSeparator;
     QPoint movingSeparatorOrigin, movingSeparatorPos;
@@ -106,13 +109,14 @@ public:
     bool startSeparatorMove(const QPoint &pos);
     bool separatorMove(const QPoint &pos);
     bool endSeparatorMove(const QPoint &pos);
-
+    bool windowEvent(QEvent *e);
 #endif
 
-    bool windowEvent(QEvent *e);
 };
 
-#if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
+#if QT_CONFIG(dockwidget)
+
+#if QT_CONFIG(cursor)
 template <typename Layout>
 QCursor QMainWindowLayoutSeparatorHelper<Layout>::separatorCursor(const QList<int> &path)
 {
@@ -185,6 +189,7 @@ void QMainWindowLayoutSeparatorHelper<Layout>::adjustCursor(const QPoint &pos)
         }
     }
 }
+#endif // QT_CONFIG(cursor)
 
 template <typename Layout>
 bool QMainWindowLayoutSeparatorHelper<Layout>::windowEvent(QEvent *event)
@@ -323,9 +328,7 @@ bool QMainWindowLayoutSeparatorHelper<Layout>::endSeparatorMove(const QPoint &)
     layout()->savedState.clear();
     return true;
 }
-#endif
 
-#if QT_CONFIG(dockwidget)
 class QDockWidgetGroupWindow : public QWidget
 {
     Q_OBJECT

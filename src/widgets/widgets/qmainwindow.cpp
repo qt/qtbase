@@ -1312,8 +1312,12 @@ bool QMainWindow::restoreState(const QByteArray &state, int version)
 bool QMainWindow::event(QEvent *event)
 {
     Q_D(QMainWindow);
+
+#if QT_CONFIG(dockwidget)
     if (d->layout && d->layout->windowEvent(event))
         return true;
+#endif
+
     switch (event->type()) {
 
 #if QT_CONFIG(toolbar)
