@@ -459,7 +459,6 @@ void QHtml5Compositor::drawFrameWindow(QHtml5FrameOptions options, QPainter *pai
 
     const qreal devicePixelRatio = painter->device()->devicePixelRatioF();
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
-        painter->save();
         const qreal inverseScale = qreal(1) / devicePixelRatio;
         painter->scale(inverseScale, inverseScale);
         x = qRound(devicePixelRatio * x);
