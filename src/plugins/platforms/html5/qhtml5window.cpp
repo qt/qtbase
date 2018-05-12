@@ -30,11 +30,13 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qguiapplication_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
+#include <QtGui/private/qwindow_p.h>
 #include <QtGui/QOpenGLContext>
 
 #include "qhtml5window.h"
 #include "qhtml5screen.h"
 #include "qhtml5compositor.h"
+#include "qhtml5eventdispatcher.h"
 
 #include <QDebug>
 
@@ -391,6 +393,21 @@ QRect QHtml5Window::normalGeometry() const
 qreal QHtml5Window::devicePixelRatio() const
 {
     return screen()->devicePixelRatio();
+}
+
+void QHtml5Window::requestUpdate()
+{
+    QPointer<QWindow> windowPointer(window());
+    bool registered = QHtml5EventDispatcher::registerRequestUpdateCallback([=](){
+        if (windowPointer.isNull())
+            return;
+
+        QWindowPrivate *wp = static_cast<QWindowPrivate *>(QObjectPrivate::get(windowPointer));
+        wp->deliverUpdateRequest();
+    });
+
+    if (!registered)
+        QPlatformWindow::requestUpdate();
 }
 
 QT_END_NAMESPACE

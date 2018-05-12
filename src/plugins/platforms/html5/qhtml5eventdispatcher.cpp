@@ -53,6 +53,16 @@ QHtml5EventDispatcher::~QHtml5EventDispatcher()
     g_htmlEventDispatcher = nullptr;
 }
 
+bool QHtml5EventDispatcher::registerRequestUpdateCallback(std::function<void(void)> callback)
+{
+    if (!g_htmlEventDispatcher || !g_htmlEventDispatcher->m_hasMainLoop)
+        return false;
+
+    g_htmlEventDispatcher->m_requestUpdateCallbacks.append(callback);
+    emscripten_resume_main_loop();
+    return true;
+}
+
 void QHtml5EventDispatcher::maintainTimers()
 {
     if (!g_htmlEventDispatcher || !g_htmlEventDispatcher->m_hasMainLoop)
@@ -90,7 +100,20 @@ bool QHtml5EventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
     // return control to the browser without unwinding the C++ stack.
     auto callback = [](void *eventDispatcher) {
         QHtml5EventDispatcher *that = static_cast<QHtml5EventDispatcher *>(eventDispatcher);
-        that->processEvents(QEventLoop::AllEvents);
+
+        // Save and clear updateRequest callbacks so we can register new ones
+        auto requestUpdateCallbacksCopy = that->m_requestUpdateCallbacks;
+        that->m_requestUpdateCallbacks.clear();
+
+        // Repaint all windows
+        for (auto callback : qAsConst(requestUpdateCallbacksCopy))
+            callback();
+
+        // Pause main loop if no updates were requested. Updates will be
+        // restarted again by registerRequestUpdateCallback().
+        if (that->m_requestUpdateCallbacks.isEmpty())
+            emscripten_pause_main_loop();
+
         that->doMaintainTimers();
     };
     int fps = 0; // update using requestAnimationFrame
