@@ -36,16 +36,25 @@
 
 QT_BEGIN_NAMESPACE
 
+class QHtml5EventDispatcherPrivate;
+
 class QHtml5EventDispatcher : public QUnixEventDispatcherQPA
 {
+    Q_DECLARE_PRIVATE(QHtml5EventDispatcher)
 public:
     explicit QHtml5EventDispatcher(QObject *parent = 0);
     ~QHtml5EventDispatcher();
 
+    static void maintainTimers();
+
 protected:
     bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
+    void doMaintainTimers();
+
 private:
     bool m_hasMainLoop = false;
+    bool m_hasZeroTimer = false;
+    uint64_t m_currentTargetTime = std::numeric_limits<uint64_t>::max();
 };
 
 QT_END_NAMESPACE

@@ -28,6 +28,7 @@
 ****************************************************************************/
 
 #include "qhtml5eventtranslator.h"
+#include "qhtml5eventdispatcher.h"
 #include "qhtml5compositor.h"
 #include "qhtml5integration.h"
 
@@ -139,7 +140,7 @@ int QHtml5EventTranslator::keyboard_cb(int eventType, const EmscriptenKeyboardEv
     QString keyText = alphanumeric ? QString(keyEvent->key) : QString();
     bool accepted = QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
         0, keyType, qtKey, translateKeyboardEventModifier(keyEvent), keyText);
-    QCoreApplication::processEvents();
+    QHtml5EventDispatcher::maintainTimers();
     return accepted ? 1 : 0;
 }
 
@@ -262,6 +263,7 @@ int QHtml5EventTranslator::mouse_cb(int eventType, const EmscriptenMouseEvent *m
 {
     QHtml5EventTranslator *translator = (QHtml5EventTranslator*)userData;
     translator->processMouse(eventType,mouseEvent);
+    QHtml5EventDispatcher::maintainTimers();
     return 0;
 }
 
@@ -403,8 +405,6 @@ void QHtml5EventTranslator::processMouse(int eventType, const EmscriptenMouseEve
         QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(
             window2, timestamp, localPoint, point, pressedButtons, modifiers);
     }
-
-    QCoreApplication::processEvents(); // probably not the best way
 }
 
 int QHtml5EventTranslator::focus_cb(int /*eventType*/, const EmscriptenFocusEvent */*focusEvent*/, void */*userData*/)
