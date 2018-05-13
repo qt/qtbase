@@ -69,6 +69,9 @@
 
 QT_BEGIN_NAMESPACE
 
+// in qstring.cpp
+void qt_to_latin1_unchecked(uchar *dst, const ushort *uc, qsizetype len);
+
 /*
   This defines a binary data structure for Json data. The data structure is optimised for fast reading
   and minimum allocations. The whole data structure can be mmap'ed and used directly.
@@ -294,31 +297,10 @@ public:
         int len = d->length = str.length();
         uchar *l = (uchar *)d->latin1;
         const ushort *uc = (const ushort *)str.unicode();
-        int i = 0;
-#ifdef __SSE2__
-        for ( ; i + 16 <= len; i += 16) {
-            __m128i chunk1 = _mm_loadu_si128((__m128i*)&uc[i]); // load
-            __m128i chunk2 = _mm_loadu_si128((__m128i*)&uc[i + 8]); // load
-            // pack the two vector to 16 x 8bits elements
-            const __m128i result = _mm_packus_epi16(chunk1, chunk2);
-            _mm_storeu_si128((__m128i*)&l[i], result); // store
-        }
-#  ifdef Q_PROCESSOR_X86_64
-        // we can do one more round, of 8 characters
-        if (i + 8 <= len) {
-            __m128i chunk = _mm_loadu_si128((__m128i*)&uc[i]); // load
-            // pack with itself, we'll discard the high part anyway
-            chunk = _mm_packus_epi16(chunk, chunk);
-            // unaligned 64-bit store
-            qToUnaligned(_mm_cvtsi128_si64(chunk), l + i);
-            i += 8;
-        }
-#  endif
-#endif
-        for ( ; i < len; ++i)
-            l[i] = uc[i];
-        for ( ; (quintptr)(l+i) & 0x3; ++i)
-            l[i] = 0;
+        qt_to_latin1_unchecked(l, uc, len);
+
+        for ( ; (quintptr)(l+len) & 0x3; ++len)
+            l[len] = 0;
         return *this;
     }
 

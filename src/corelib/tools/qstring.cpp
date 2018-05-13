@@ -591,7 +591,8 @@ static inline __m128i mergeQuestionMarks(__m128i chunk)
 }
 #endif
 
-static void qt_to_latin1(uchar *dst, const ushort *src, int length)
+template <bool Checked>
+static void qt_to_latin1_internal(uchar *dst, const ushort *src, qsizetype length)
 {
 #if defined(__SSE2__)
     uchar *e = dst + length;
@@ -600,10 +601,12 @@ static void qt_to_latin1(uchar *dst, const ushort *src, int length)
     // we're going to write to dst[offset..offset+15] (16 bytes)
     for ( ; dst + offset + 15 < e; offset += 16) {
         __m128i chunk1 = _mm_loadu_si128((const __m128i*)(src + offset)); // load
-        chunk1 = mergeQuestionMarks(chunk1);
+        if (Checked)
+            chunk1 = mergeQuestionMarks(chunk1);
 
         __m128i chunk2 = _mm_loadu_si128((const __m128i*)(src + offset + 8)); // load
-        chunk2 = mergeQuestionMarks(chunk2);
+        if (Checked)
+            chunk2 = mergeQuestionMarks(chunk2);
 
         // pack the two vector to 16 x 8bits elements
         const __m128i result = _mm_packus_epi16(chunk1, chunk2);
@@ -614,7 +617,8 @@ static void qt_to_latin1(uchar *dst, const ushort *src, int length)
     // we're going to write to dst[offset..offset+7] (8 bytes)
     if (dst + offset + 7 < e) {
         __m128i chunk = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src + offset));
-        chunk = mergeQuestionMarks(chunk);
+        if (Checked)
+            chunk = mergeQuestionMarks(chunk);
 
         // pack, where the upper half is ignored
         const __m128i result = _mm_packus_epi16(chunk, chunk);
@@ -625,7 +629,8 @@ static void qt_to_latin1(uchar *dst, const ushort *src, int length)
     // we're going to write to dst[offset..offset+3] (4 bytes)
     if (dst + offset + 3 < e) {
         __m128i chunk = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(src + offset));
-        chunk = mergeQuestionMarks(chunk);
+        if (Checked)
+            chunk = mergeQuestionMarks(chunk);
 
         // pack, we'll the upper three quarters
         const __m128i result = _mm_packus_epi16(chunk, chunk);
@@ -637,7 +642,12 @@ static void qt_to_latin1(uchar *dst, const ushort *src, int length)
     dst += offset;
     src += offset;
 
-    return UnrollTailLoop<3>::exec(length, [=](int i) { dst[i] = (src[i]>0xff) ? '?' : (uchar) src[i]; });
+    return UnrollTailLoop<3>::exec(length, [=](int i) {
+        if (Checked)
+            dst[i] = (src[i]>0xff) ? '?' : (uchar) src[i];
+        else
+            dst[i] = src[i];
+    });
 #  endif
 #elif defined(__ARM_NEON__)
     // Refer to the documentation of the SSE2 implementation
@@ -652,10 +662,12 @@ static void qt_to_latin1(uchar *dst, const ushort *src, int length)
             uint16x8_t chunk = vld1q_u16((uint16_t *)src); // load
             src += 8;
 
-            const uint16x8_t offLimitMask = vcgtq_u16(chunk, thresholdMask); // chunk > thresholdMask
-            const uint16x8_t offLimitQuestionMark = vandq_u16(offLimitMask, questionMark); // offLimitMask & questionMark
-            const uint16x8_t correctBytes = vbicq_u16(chunk, offLimitMask); // !offLimitMask & chunk
-            chunk = vorrq_u16(correctBytes, offLimitQuestionMark); // correctBytes | offLimitQuestionMark
+            if (Checked) {
+                const uint16x8_t offLimitMask = vcgtq_u16(chunk, thresholdMask); // chunk > thresholdMask
+                const uint16x8_t offLimitQuestionMark = vandq_u16(offLimitMask, questionMark); // offLimitMask & questionMark
+                const uint16x8_t correctBytes = vbicq_u16(chunk, offLimitMask); // !offLimitMask & chunk
+                chunk = vorrq_u16(correctBytes, offLimitQuestionMark); // correctBytes | offLimitQuestionMark
+            }
             const uint8x8_t result = vmovn_u16(chunk); // narrowing move->packing
             vst1_u8(dst, result); // store
             dst += 8;
@@ -667,10 +679,23 @@ static void qt_to_latin1(uchar *dst, const ushort *src, int length)
     qt_toLatin1_mips_dsp_asm(dst, src, length);
 #else
     while (length--) {
-        *dst++ = (*src>0xff) ? '?' : (uchar) *src;
+        if (Checked)
+            *dst++ = (*src>0xff) ? '?' : (uchar) *src;
+        else
+            *dst++ = *src;
         ++src;
     }
 #endif
+}
+
+static void qt_to_latin1(uchar *dst, const ushort *src, qsizetype length)
+{
+    qt_to_latin1_internal<true>(dst, src, length);
+}
+
+void qt_to_latin1_unchecked(uchar *dst, const ushort *src, qsizetype length)
+{
+    qt_to_latin1_internal<false>(dst, src, length);
 }
 
 // Unicode case-insensitive comparison
