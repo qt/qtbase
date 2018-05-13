@@ -40,6 +40,7 @@
 #include "qurl.h"
 #include "private/qutfcodec_p.h"
 #include "private/qtools_p.h"
+#include "private/qsimd_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -474,6 +475,100 @@ non_trivial:
     return 0;
 }
 
+/*
+ * Returns true if the input it checked (if it checked anything) is not
+ * encoded. A return of false indicates there's a percent at \a input that
+ * needs to be decoded.
+ */
+#ifdef __SSE2__
+static bool simdCheckNonEncoded(ushort *&output, const ushort *&input, const ushort *end)
+{
+#  ifdef __AVX2__
+    const __m256i percents256 = _mm256_broadcastw_epi16(_mm_cvtsi32_si128('%'));
+    const __m128i percents = _mm256_castsi256_si128(percents256);
+#  else
+    const __m128i percents = _mm_set1_epi16('%');
+#  endif
+
+    uint idx = 0;
+    quint32 mask = 0;
+    if (input + 16 <= end) {
+        qptrdiff offset = 0;
+        for ( ; input + offset + 16 <= end; offset += 16) {
+#  ifdef __AVX2__
+            // do 32 bytes at a time using AVX2
+            __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(input + offset));
+            __m256i comparison = _mm256_cmpeq_epi16(data, percents256);
+            mask = _mm256_movemask_epi8(comparison);
+
+            if (output)
+                _mm256_storeu_si256(reinterpret_cast<__m256i *>(output + offset), data);
+#  else
+            // do 32 bytes at a time using unrolled SSE2
+            __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(input + offset));
+            __m128i data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(input + offset + 8));
+            __m128i comparison1 = _mm_cmpeq_epi16(data1, percents);
+            __m128i comparison2 = _mm_cmpeq_epi16(data2, percents);
+            uint mask1 = _mm_movemask_epi8(comparison1);
+            uint mask2 = _mm_movemask_epi8(comparison2);
+
+            if (output) {
+                _mm_storeu_si128(reinterpret_cast<__m128i *>(output + offset), data1);
+                if (!mask1)
+                    _mm_storeu_si128(reinterpret_cast<__m128i *>(output + offset + 8), data2);
+            }
+            mask = mask1 | (mask2 << 16);
+#  endif
+
+            if (mask) {
+                idx = qCountTrailingZeroBits(mask) / 2;
+                break;
+            }
+        }
+
+        input += offset;
+        if (output)
+            output += offset;
+    } else if (input + 8 <= end) {
+        // do 16 bytes at a time
+        __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(input));
+        __m128i comparison = _mm_cmpeq_epi16(data, percents);
+        mask = _mm_movemask_epi8(comparison);
+
+        // speculatively store everything
+        if (output)
+            _mm_storeu_si128(reinterpret_cast<__m128i *>(output), data);
+
+        idx = qCountTrailingZeroBits(quint16(mask)) / 2;
+    } else if (input + 4 <= end) {
+        // do 8 bytes only
+        __m128i data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(input));
+        __m128i comparison = _mm_cmpeq_epi16(data, percents);
+        mask = _mm_movemask_epi8(comparison) & 0xffu;
+
+        if (output)
+            _mm_storel_epi64(reinterpret_cast<__m128i *>(output), data);
+
+        idx = qCountTrailingZeroBits(quint8(mask)) / 2;
+    } else {
+        // no percents found (because we didn't check)
+        return true;
+    }
+
+    // advance to the next non-encoded
+    input += idx;
+    if (output)
+        output += idx;
+
+    return !mask;
+}
+#else
+static bool simdCheckNonEncoded(...)
+{
+    return true;
+}
+#endif
+
 /*!
     \since 5.0
     \internal
@@ -501,13 +596,22 @@ static int decode(QString &appendTo, const ushort *begin, const ushort *end)
     const ushort *input = begin;
     ushort *output = 0;
     while (input != end) {
-        if (*input != '%') {
-            if (output)
-                *output++ = *input;
-            ++input;
-            continue;
+        if (simdCheckNonEncoded(output, input, end)) {
+            ushort uc = 0;
+            while (input != end) {
+                uc = *input;
+                if (uc == '%')
+                    break;
+                if (output)
+                    *output++ = uc;
+                ++input;
+            }
+
+            if (uc != '%')
+                break;      // we're done
         }
 
+        // something was encoded
         if (Q_UNLIKELY(end - input < 3 || !isHex(input[1]) || !isHex(input[2]))) {
             // badly-encoded data
             appendTo.resize(origSize + (end - begin));
