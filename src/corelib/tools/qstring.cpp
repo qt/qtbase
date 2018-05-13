@@ -315,10 +315,19 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
             return updatePtrSimd(data1);
         ptr += 16;
     }
+
+    // and final 8-byte comparison
+    if (ptr + 8 <= end) {
+        __m128i data1 = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(ptr));
+        if (!_mm_testz_si128(mask, data1))
+            return updatePtrSimd(data1);
+        ptr += 8;
+    }
+
 #  else
     // SSE2 implementation: test 16 bytes at a time.
     const __m128i mask = _mm_set1_epi32(maskval);
-    while (ptr + 16 < end) {
+    while (ptr + 16 <= end) {
         __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
         __m128i masked = _mm_and_si128(mask, data);
         __m128i comparison = _mm_cmpeq_epi16(masked, _mm_setzero_si128());
@@ -326,6 +335,17 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
         if (result != 0xffff)
             return updatePtr(result);
         ptr += 16;
+    }
+
+    // and one 8-byte comparison
+    if (ptr + 8 <= end) {
+        __m128i data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(ptr));
+        __m128i masked = _mm_and_si128(mask, data);
+        __m128i comparison = _mm_cmpeq_epi16(masked, _mm_setzero_si128());
+        quint8 result = _mm_movemask_epi8(comparison);
+        if (result != 0xff)
+            return updatePtr(result);
+        ptr += 8;
     }
 #  endif
 
@@ -342,7 +362,7 @@ bool qt_is_ascii(const char *&ptr, const char *end) Q_DECL_NOTHROW
         return false;
 #elif defined(__SSE2__)
     // Testing for the high bit can be done efficiently with just PMOVMSKB
-    while (ptr + 16 < end) {
+    while (ptr + 16 <= end) {
         __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
         quint32 mask = _mm_movemask_epi8(data);
         if (mask) {
@@ -351,6 +371,16 @@ bool qt_is_ascii(const char *&ptr, const char *end) Q_DECL_NOTHROW
             return false;
         }
         ptr += 16;
+    }
+    if (ptr + 8 <= end) {
+        __m128i data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(ptr));
+        quint8 mask = _mm_movemask_epi8(data);
+        if (mask) {
+            uint idx = qCountTrailingZeroBits(mask);
+            ptr += idx;
+            return false;
+        }
+        ptr += 8;
     }
 #endif
 
@@ -480,11 +510,19 @@ void qt_from_latin1(ushort *dst, const char *str, size_t size) Q_DECL_NOTHROW
 #endif
     }
 
-    size = size % 16;
+    // we're going to read str[offset..offset+7] (8 bytes)
+    if (str + offset + 7 < e) {
+        const __m128i chunk = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(str + offset));
+        const __m128i unpacked = _mm_unpacklo_epi8(chunk, _mm_setzero_si128());
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(dst + offset), unpacked);
+        offset += 8;
+    }
+
+    size = size % 8;
     dst += offset;
     str += offset;
 #  if defined(Q_COMPILER_LAMBDA) && !defined(__OPTIMIZE_SIZE__)
-    return UnrollTailLoop<15>::exec(int(size), [=](int i) { dst[i] = (uchar)str[i]; });
+    return UnrollTailLoop<7>::exec(int(size), [=](int i) { dst[i] = (uchar)str[i]; });
 #  endif
 #endif
 #if defined(__mips_dsp)
@@ -572,12 +610,34 @@ static void qt_to_latin1(uchar *dst, const ushort *src, int length)
         _mm_storeu_si128((__m128i*)(dst + offset), result); // store
     }
 
-    length = length % 16;
+#  if !defined(__OPTIMIZE_SIZE__)
+    // we're going to write to dst[offset..offset+7] (8 bytes)
+    if (dst + offset + 7 < e) {
+        __m128i chunk = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src + offset));
+        chunk = mergeQuestionMarks(chunk);
+
+        // pack, where the upper half is ignored
+        const __m128i result = _mm_packus_epi16(chunk, chunk);
+        _mm_storel_epi64(reinterpret_cast<__m128i *>(dst + offset), result);
+        offset += 8;
+    }
+
+    // we're going to write to dst[offset..offset+3] (4 bytes)
+    if (dst + offset + 3 < e) {
+        __m128i chunk = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(src + offset));
+        chunk = mergeQuestionMarks(chunk);
+
+        // pack, we'll the upper three quarters
+        const __m128i result = _mm_packus_epi16(chunk, chunk);
+        qToUnaligned(_mm_cvtsi128_si32(result), dst + offset);
+        offset += 4;
+    }
+
+    length = length % 4;
     dst += offset;
     src += offset;
 
-#  if defined(Q_COMPILER_LAMBDA) && !defined(__OPTIMIZE_SIZE__)
-    return UnrollTailLoop<15>::exec(length, [=](int i) { dst[i] = (src[i]>0xff) ? '?' : (uchar) src[i]; });
+    return UnrollTailLoop<3>::exec(length, [=](int i) { dst[i] = (src[i]>0xff) ? '?' : (uchar) src[i]; });
 #  endif
 #elif defined(__ARM_NEON__)
     // Refer to the documentation of the SSE2 implementation
@@ -837,12 +897,11 @@ static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
         }
     }
 
-#  ifdef Q_PROCESSOR_X86_64
-    enum { MaxTailLength = 7 };
+#  if !defined(__OPTIMIZE_SIZE__)
     // we'll read uc[offset..offset+7] (16 bytes) and c[offset..offset+7] (8 bytes)
     if (uc + offset + 7 < e) {
         // same, but we're using an 8-byte load
-        __m128i chunk = _mm_cvtsi64_si128(qFromUnaligned<long long>(c + offset));
+        __m128i chunk = _mm_loadl_epi64((const __m128i*)(c + offset));
         __m128i secondHalf = _mm_unpacklo_epi8(chunk, nullmask);
 
         __m128i ucdata = _mm_loadu_si128((const __m128i*)(uc + offset));
@@ -857,17 +916,30 @@ static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
         // still matched
         offset += 8;
     }
-#  else
-    // 32-bit, we can't do MOVQ to load 8 bytes
-    Q_UNUSED(nullmask);
-    enum { MaxTailLength = 15 };
-#  endif
+
+    enum { MaxTailLength = 3 };
+    // we'll read uc[offset..offset+3] (8 bytes) and c[offset..offset+3] (4 bytes)
+    if (uc + offset + 3 < e) {
+        __m128i chunk = _mm_cvtsi32_si128(qFromUnaligned<int>(c + offset));
+        __m128i secondHalf = _mm_unpacklo_epi8(chunk, nullmask);
+
+        __m128i ucdata = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(uc + offset));
+        __m128i result = _mm_cmpeq_epi8(secondHalf, ucdata);
+        uint mask = ~_mm_movemask_epi8(result);
+        if (uchar(mask)) {
+            // found a different character
+            uint idx = qCountTrailingZeroBits(mask);
+            return uc[offset + idx / 2] - c[offset + idx / 2];
+        }
+
+        // still matched
+        offset += 4;
+    }
 
     // reset uc and c
     uc += offset;
     c += offset;
 
-#  if !defined(__OPTIMIZE_SIZE__)
     const auto lambda = [=](size_t i) { return uc[i] - ushort(c[i]); };
     return UnrollTailLoop<MaxTailLength>::exec(e - uc, 0, lambda, lambda);
 #  endif
@@ -1056,8 +1128,23 @@ static int findChar(const QChar *str, int len, QChar ch, int from,
                 }
             }
 
-#  if defined(Q_COMPILER_LAMBDA) && !defined(__OPTIMIZE_SIZE__)
-            return UnrollTailLoop<7>::exec(e - n, -1,
+#  if !defined(__OPTIMIZE_SIZE__)
+            // we're going to read n[0..3] (8 bytes)
+            if (e - n > 3) {
+                __m128i data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(n));
+                __m128i result = _mm_cmpeq_epi16(data, mch);
+                uint mask = _mm_movemask_epi8(result);
+                if (uchar(mask)) {
+                    // found a match
+                    // same as: return n - s + _bit_scan_forward(mask) / 2
+                    return (reinterpret_cast<const char *>(n) - reinterpret_cast<const char *>(s)
+                            + qCountTrailingZeroBits(mask)) >> 1;
+                }
+
+                n += 4;
+            }
+
+            return UnrollTailLoop<3>::exec(e - n, -1,
                                            [=](int i) { return n[i] == c; },
                                            [=](int i) { return n - s + i; });
 #  endif
