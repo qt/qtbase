@@ -543,8 +543,15 @@ static void qt_to_latin1_internal(uchar *dst, const ushort *src, qsizetype lengt
     uchar *e = dst + length;
     qptrdiff offset = 0;
 
+#  ifdef __AVX2__
+    const __m256i questionMark256 = _mm256_broadcastw_epi16(_mm_cvtsi32_si128('?'));
+    const __m256i outOfRange256 = _mm256_broadcastw_epi16(_mm_cvtsi32_si128(0x100));
+    const __m128i questionMark = _mm256_castsi256_si128(questionMark256);
+    const __m128i outOfRange = _mm256_castsi256_si128(outOfRange256);
+#  else
     const __m128i questionMark = _mm_set1_epi16('?');
     const __m128i outOfRange = _mm_set1_epi16(0x100);
+#  endif
 
     auto mergeQuestionMarks = [=](__m128i chunk) {
         // SSE has no compare instruction for unsigned comparison.
@@ -579,6 +586,18 @@ static void qt_to_latin1_internal(uchar *dst, const ushort *src, qsizetype lengt
 
     // we're going to write to dst[offset..offset+15] (16 bytes)
     for ( ; dst + offset + 15 < e; offset += 16) {
+#  if defined(__AVX2__)
+        __m256i chunk = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src + offset));
+        if (Checked) {
+            // See mergeQuestionMarks lambda above for details
+            chunk = _mm256_min_epu16(chunk, outOfRange256);
+            const __m256i offLimitMask = _mm256_cmpeq_epi16(chunk, outOfRange256);
+            chunk = _mm256_blendv_epi8(chunk, questionMark256, offLimitMask);
+        }
+
+        const __m128i chunk2 = _mm256_extracti128_si256(chunk, 1);
+        const __m128i chunk1 = _mm256_castsi256_si128(chunk);
+#  else
         __m128i chunk1 = _mm_loadu_si128((const __m128i*)(src + offset)); // load
         if (Checked)
             chunk1 = mergeQuestionMarks(chunk1);
@@ -586,6 +605,7 @@ static void qt_to_latin1_internal(uchar *dst, const ushort *src, qsizetype lengt
         __m128i chunk2 = _mm_loadu_si128((const __m128i*)(src + offset + 8)); // load
         if (Checked)
             chunk2 = mergeQuestionMarks(chunk2);
+#  endif
 
         // pack the two vector to 16 x 8bits elements
         const __m128i result = _mm_packus_epi16(chunk1, chunk2);
