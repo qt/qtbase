@@ -1181,7 +1181,7 @@ void tst_QFileDialog2::QTBUG4419_lineEditSelectAll()
     fd.setFileMode(QFileDialog::AnyFile);
 
     fd.show();
-    QApplication::setActiveWindow(&fd);
+    fd.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&fd));
     QCOMPARE(fd.isVisible(), true);
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
