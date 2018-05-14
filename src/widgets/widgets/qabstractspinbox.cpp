@@ -1651,7 +1651,7 @@ void QAbstractSpinBox::initStyleOption(QStyleOptionSpinBox *option) const
     option->activeSubControls = QStyle::SC_None;
     option->buttonSymbols = d->buttonSymbols;
     option->subControls = QStyle::SC_SpinBoxEditField;
-    if (!style()->styleHint(QStyle::SH_SpinBox_ButtonsInsideFrame, nullptr, this))
+    if (style()->styleHint(QStyle::SH_SpinBox_ButtonsInsideFrame, nullptr, this))
         option->subControls |= QStyle::SC_SpinBoxFrame;
     if (d->buttonSymbols != QAbstractSpinBox::NoButtons) {
         option->subControls |= QStyle::SC_SpinBoxUp | QStyle::SC_SpinBoxDown;
