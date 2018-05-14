@@ -2838,11 +2838,19 @@ void tst_QSslSocket::qtbug18498_peek()
     client->setObjectName("client");
     client->ignoreSslErrors();
 
-    connect(client, SIGNAL(encrypted()), this, SLOT(exitLoop()));
+    int encryptedCounter = 2;
+    connect(client, &QSslSocket::encrypted, this, [&encryptedCounter, this](){
+        if (!--encryptedCounter)
+            exitLoop();
+    });
+    WebSocket *serversocket = server.socket;
+    connect(serversocket, &QSslSocket::encrypted, this, [&encryptedCounter, this](){
+        if (!--encryptedCounter)
+            exitLoop();
+    });
     connect(client, SIGNAL(disconnected()), this, SLOT(exitLoop()));
 
     client->startClientEncryption();
-    WebSocket *serversocket = server.socket;
     QVERIFY(serversocket);
     serversocket->setObjectName("server");
 

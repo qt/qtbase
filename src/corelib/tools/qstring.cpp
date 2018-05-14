@@ -259,7 +259,7 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
 #  if defined(__AVX2__)
     // AVX2 implementation: test 32 bytes at a time
     const __m256i mask256 = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(maskval));
-    while (ptr + 32 < end) {
+    while (ptr + 32 <= end) {
         __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(ptr));
         if (!_mm256_testz_si256(mask256, data))
             return false;
@@ -271,7 +271,7 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
     // SSE 4.1 implementation: test 32 bytes at a time (two 16-byte
     // comparisons, unrolled)
     const __m128i mask = _mm_set1_epi32(maskval);
-    while (ptr + 32 < end) {
+    while (ptr + 32 <= end) {
         __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
         __m128i data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr + 16));
         if (!_mm_testz_si128(mask, data1))
@@ -283,7 +283,7 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
 #  endif
 #  if defined(__SSE4_1__)
     // AVX2 and SSE4.1: final 16-byte comparison
-    if (ptr + 16 < end) {
+    if (ptr + 16 <= end) {
         __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
         if (!_mm_testz_si128(mask, data1))
             return false;
@@ -325,7 +325,7 @@ bool QtPrivate::isAscii(QLatin1String s) Q_DECL_NOTHROW
     }
 #endif
 
-    while (ptr + 4 < end) {
+    while (ptr + 4 <= end) {
         quint32 data = qFromUnaligned<quint32>(ptr);
         if (data & 0x80808080U)
             return false;

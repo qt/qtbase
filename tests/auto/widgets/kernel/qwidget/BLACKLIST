@@ -15,6 +15,9 @@ rhel-7.4
 osx
 [focusProxyAndInputMethods]
 linux
+[raise]
+# QTBUG-68175
+opensuse
 [setWindowGeometry]
 osx
 [windowMoveResize]

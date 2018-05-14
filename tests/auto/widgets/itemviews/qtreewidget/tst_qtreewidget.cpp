@@ -2041,7 +2041,6 @@ void tst_QTreeWidget::setHeaderItem()
     headerItem->setText(0, "0");
     headerItem->setText(1, "1");
     testWidget->setHeaderItem(headerItem);
-    QTest::qWait(100);
     QCOMPARE(testWidget->headerItem(), headerItem);
     QCOMPARE(headerItem->treeWidget(), static_cast<QTreeWidget *>(testWidget));
 
@@ -2996,7 +2995,7 @@ void tst_QTreeWidget::task191552_rtl()
     item->setCheckState(0, Qt::Checked);
     QCOMPARE(item->checkState(0), Qt::Checked);
     tw.show();
-    QTest::qWait(50);
+    QVERIFY(QTest::qWaitForWindowActive(&tw));
     QStyleOptionViewItem opt;
     opt.initFrom(&tw);
     opt.rect = tw.visualItemRect(item);
@@ -3006,7 +3005,6 @@ void tst_QTreeWidget::task191552_rtl()
     opt.widget = &tw;
     const QRect checkRect = tw.style()->subElementRect(QStyle::SE_ViewItemCheckIndicator, &opt, &tw);
     QTest::mouseClick(tw.viewport(), Qt::LeftButton, Qt::NoModifier, checkRect.center());
-    QTest::qWait(200);
     QCOMPARE(item->checkState(0), Qt::Unchecked);
 
     qApp->setLayoutDirection(oldDir);
@@ -3103,7 +3101,7 @@ void tst_QTreeWidget::task253109_itemHeight()
     QTreeWidget treeWidget;
     treeWidget.setColumnCount(1);
     treeWidget.show();
-    QTest::qWait(200);
+    QVERIFY(QTest::qWaitForWindowActive(&treeWidget));
 
     QTreeWidgetItem item(&treeWidget);
     class MyWidget : public QWidget
@@ -3112,9 +3110,7 @@ void tst_QTreeWidget::task253109_itemHeight()
     } w;
     treeWidget.setItemWidget(&item, 0, &w);
 
-    QTest::qWait(200);
-    QCOMPARE(w.geometry(), treeWidget.visualItemRect(&item));
-
+    QTRY_COMPARE(w.geometry(), treeWidget.visualItemRect(&item));
 }
 
 void tst_QTreeWidget::task206367_duplication()
@@ -3321,16 +3317,15 @@ void tst_QTreeWidget::setTextUpdate()
 
     treeWidget.setItemDelegate(&delegate);
     treeWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&treeWidget));
     QStringList strList;
     strList << "variable1" << "0";
     QTreeWidgetItem *item = new QTreeWidgetItem(strList);
     treeWidget.insertTopLevelItem(0, item);
-    QTest::qWait(50);
     QTRY_VERIFY(delegate.numPaints > 0);
     delegate.numPaints = 0;
 
     item->setText(1, "42");
-    QApplication::processEvents();
     QTRY_VERIFY(delegate.numPaints > 0);
 }
 
@@ -3371,34 +3366,30 @@ void tst_QTreeWidget::setChildIndicatorPolicy()
 
     treeWidget.setItemDelegate(&delegate);
     treeWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&treeWidget));
 
     QTreeWidgetItem *item = new QTreeWidgetItem(QStringList("Hello"));
     treeWidget.insertTopLevelItem(0, item);
-    QTest::qWait(50);
     QTRY_VERIFY(delegate.numPaints > 0);
 
     delegate.numPaints = 0;
     delegate.expectChildren = true;
     item->setChildIndicatorPolicy(QTreeWidgetItem::ShowIndicator);
-    QApplication::processEvents();
     QTRY_COMPARE(delegate.numPaints, 1);
 
     delegate.numPaints = 0;
     delegate.expectChildren = false;
     item->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicatorWhenChildless);
-    QApplication::processEvents();
     QTRY_COMPARE(delegate.numPaints, 1);
 
     delegate.numPaints = 0;
     delegate.expectChildren = true;
     new QTreeWidgetItem(item);
-    QApplication::processEvents();
     QTRY_COMPARE(delegate.numPaints, 1);
 
     delegate.numPaints = 0;
     delegate.expectChildren = false;
     item->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-    QApplication::processEvents();
     QTRY_COMPARE(delegate.numPaints, 1);
 }
 
