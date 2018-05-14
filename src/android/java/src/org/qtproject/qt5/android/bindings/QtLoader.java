@@ -361,7 +361,7 @@ public abstract class QtLoader {
             inputStream = assetsManager.open(source);
             outputStream = new FileOutputStream(destinationFile);
             copyFile(inputStream, outputStream);
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             if (inputStream != null)
@@ -392,7 +392,7 @@ public abstract class QtLoader {
             inputStream = new FileInputStream(source);
             outputStream = new FileOutputStream(destinationFile);
             copyFile(inputStream, outputStream);
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             if (inputStream != null)
@@ -416,8 +416,13 @@ public abstract class QtLoader {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                if (inputStream != null)
-                    inputStream.close();
+                if (inputStream != null) {
+                    try {
+                        inputStream.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
 
@@ -456,7 +461,7 @@ public abstract class QtLoader {
             try {
                 outputStream = new DataOutputStream(new FileOutputStream(versionFile));
                 outputStream.writeLong(packageVersion);
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             } finally {
                 if (outputStream != null)
