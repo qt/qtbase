@@ -146,6 +146,7 @@ public:
     uint ignoreUpdateEdit : 1;
     QAbstractSpinBox::CorrectionMode correctionMode;
     QAbstractSpinBox::StepType stepType = QAbstractSpinBox::StepType::DefaultStepType;
+    Qt::KeyboardModifier stepModifier = Qt::ControlModifier;
     int acceleration;
     QStyle::SubControl hoverControl;
     QRect hoverRect;
