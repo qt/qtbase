@@ -99,6 +99,7 @@ inline int qstrncmp(const char *str1, const char *str2, uint len)
 }
 Q_CORE_EXPORT int qstricmp(const char *, const char *);
 Q_CORE_EXPORT int qstrnicmp(const char *, const char *, uint len);
+Q_CORE_EXPORT int qstrnicmp(const char *, qsizetype, const char *, qsizetype = -1);
 
 // implemented in qvsnprintf.cpp
 Q_CORE_EXPORT int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap);
@@ -230,6 +231,9 @@ public:
     int count(char c) const;
     int count(const char *a) const;
     int count(const QByteArray &a) const;
+
+    inline int compare(const char *c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline int compare(const QByteArray &a, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
     Q_REQUIRED_RESULT QByteArray left(int len) const;
     Q_REQUIRED_RESULT QByteArray right(int len) const;
@@ -603,6 +607,16 @@ inline bool QByteArray::contains(const QByteArray &a) const
 { return indexOf(a) != -1; }
 inline bool QByteArray::contains(char c) const
 { return indexOf(c) != -1; }
+inline int QByteArray::compare(const char *c, Qt::CaseSensitivity cs) const
+{
+    return cs == Qt::CaseSensitive ? qstrcmp(*this, c) :
+                                     qstrnicmp(data(), size(), c, -1);
+}
+inline int QByteArray::compare(const QByteArray &a, Qt::CaseSensitivity cs) const
+{
+    return cs == Qt::CaseSensitive ? qstrcmp(*this, a) :
+                                     qstrnicmp(data(), size(), a.data(), a.size());
+}
 inline bool operator==(const QByteArray &a1, const QByteArray &a2) Q_DECL_NOTHROW
 { return (a1.size() == a2.size()) && (memcmp(a1.constData(), a2.constData(), a1.size())==0); }
 inline bool operator==(const QByteArray &a1, const char *a2) Q_DECL_NOTHROW

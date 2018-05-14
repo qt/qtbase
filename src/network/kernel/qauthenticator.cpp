@@ -412,7 +412,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
     QByteArray headerVal;
     for (int i = 0; i < values.size(); ++i) {
         const QPair<QByteArray, QByteArray> &current = values.at(i);
-        if (current.first.toLower() != search)
+        if (current.first.compare(search, Qt::CaseInsensitive) != 0)
             continue;
         QByteArray str = current.second.toLower();
         if (method < Basic && str.startsWith("basic")) {
@@ -443,7 +443,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
         break;
     case DigestMd5: {
         this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
-        if (options.value("stale").toLower() == "true")
+        if (options.value("stale").compare("true", Qt::CaseInsensitive) == 0)
             phase = Start;
         if (user.isEmpty() && password.isEmpty())
             phase = Done;
@@ -630,7 +630,7 @@ static QByteArray digestMd5ResponseHelper(
     hash.addData(":", 1);
     hash.addData(password);
     QByteArray ha1 = hash.result();
-    if (alg.toLower() == "md5-sess") {
+    if (alg.compare("md5-sess", Qt::CaseInsensitive) == 0) {
         hash.reset();
         // RFC 2617 contains an error, it was:
         // hash.addData(ha1);
@@ -650,7 +650,7 @@ static QByteArray digestMd5ResponseHelper(
     hash.addData(method);
     hash.addData(":", 1);
     hash.addData(digestUri);
-    if (qop.toLower() == "auth-int") {
+    if (qop.compare("auth-int", Qt::CaseInsensitive) == 0) {
         hash.addData(":", 1);
         hash.addData(hEntity);
     }

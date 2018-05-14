@@ -97,16 +97,18 @@ HPack::HttpHeader build_headers(const QHttpNetworkRequest &request, quint32 maxH
         if (size.second > maxHeaderListSize)
             break;
 
-        QByteArray key(field.first.toLower());
-        if (key == "connection" || key == "host" || key == "keep-alive"
-            || key == "proxy-connection" || key == "transfer-encoding")
+        if (field.first.compare("connection", Qt::CaseInsensitive) == 0 ||
+                field.first.compare("host", Qt::CaseInsensitive) == 0 ||
+                field.first.compare("keep-alive", Qt::CaseInsensitive) == 0 ||
+                field.first.compare("proxy-connection", Qt::CaseInsensitive) == 0 ||
+                field.first.compare("transfer-encoding", Qt::CaseInsensitive) == 0)
             continue; // Those headers are not valid (section 3.2.1) - from QSpdyProtocolHandler
         // TODO: verify with specs, which fields are valid to send ....
         // toLower - 8.1.2 .... "header field names MUST be converted to lowercase prior
         // to their encoding in HTTP/2.
         // A request or response containing uppercase header field names
         // MUST be treated as malformed (Section 8.1.2.6)".
-        header.push_back(HeaderField(key, field.second));
+        header.push_back(HeaderField(field.first.toLower(), field.second));
     }
 
     return header;
@@ -1404,8 +1406,9 @@ bool QHttp2ProtocolHandler::tryReserveStream(const Http2::Frame &pushPromiseFram
         return false;
     }
 
-    const auto method = pseudoHeaders[":method"].toLower();
-    if (method != "get" && method != "head")
+    const QByteArray method = pseudoHeaders[":method"];
+    if (method.compare("get", Qt::CaseInsensitive) != 0 &&
+            method.compare("head", Qt::CaseInsensitive) != 0)
         return false;
 
     QUrl url;

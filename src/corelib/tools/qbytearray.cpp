@@ -356,7 +356,8 @@ char *qstrncpy(char *dst, const char *src, uint len)
     Special case 2: Returns an arbitrary non-zero value if \a str1 is
     nullptr or \a str2 is nullptr (but not both).
 
-    \sa qstrncmp(), qstricmp(), qstrnicmp(), {8-bit Character Comparisons}
+    \sa qstrncmp(), qstricmp(), qstrnicmp(), {8-bit Character Comparisons},
+        QByteArray::compare()
 */
 int qstrcmp(const char *str1, const char *str2)
 {
@@ -381,7 +382,8 @@ int qstrcmp(const char *str1, const char *str2)
     Special case 2: Returns a random non-zero value if \a str1 is nullptr
     or \a str2 is nullptr (but not both).
 
-    \sa qstrcmp(), qstricmp(), qstrnicmp(), {8-bit Character Comparisons}
+    \sa qstrcmp(), qstricmp(), qstrnicmp(), {8-bit Character Comparisons},
+        QByteArray::compare()
 */
 
 /*! \relates QByteArray
@@ -400,7 +402,8 @@ int qstrcmp(const char *str1, const char *str2)
     Special case 2: Returns a random non-zero value if \a str1 is nullptr
     or \a str2 is nullptr (but not both).
 
-    \sa qstrcmp(), qstrncmp(), qstrnicmp(), {8-bit Character Comparisons}
+    \sa qstrcmp(), qstrncmp(), qstrnicmp(), {8-bit Character Comparisons},
+        QByteArray::compare()
 */
 
 int qstricmp(const char *str1, const char *str2)
@@ -434,7 +437,8 @@ int qstricmp(const char *str1, const char *str2)
     Special case 2: Returns a random non-zero value if \a str1 is nullptr
     or \a str2 is nullptr (but not both).
 
-    \sa qstrcmp(), qstrncmp(), qstricmp(), {8-bit Character Comparisons}
+    \sa qstrcmp(), qstrncmp(), qstricmp(), {8-bit Character Comparisons},
+        QByteArray::compare()
 */
 
 int qstrnicmp(const char *str1, const char *str2, uint len)
@@ -456,6 +460,55 @@ int qstrnicmp(const char *str1, const char *str2, uint len)
 
 /*!
     \internal
+    \since 5.12
+
+    A helper for QByteArray::compare. Compares \a len1 bytes from \a str1 to \a
+    len2 bytes from \a str2. If \a len2 is -1, then \a str2 is expected to be
+    null-terminated.
+ */
+int qstrnicmp(const char *str1, qsizetype len1, const char *str2, qsizetype len2)
+{
+    Q_ASSERT(str1);
+    Q_ASSERT(len1 >= 0);
+    Q_ASSERT(len2 >= -1);
+    const uchar *s1 = reinterpret_cast<const uchar *>(str1);
+    const uchar *s2 = reinterpret_cast<const uchar *>(str2);
+    if (!s2)
+        return len1 == 0 ? 0 : 1;
+
+    int res;
+    uchar c;
+    if (len2 == -1) {
+        // null-terminated str2
+        qsizetype i;
+        for (i = 0; i < len1; ++i) {
+            c = latin1_lowercased[s2[i]];
+            if (!c)
+                return 1;
+
+            res = latin1_lowercased[s1[i]] - c;
+            if (res)
+                return res;
+        }
+        c = latin1_lowercased[s2[i]];
+        return c ? -1 : 0;
+    } else {
+        // not null-terminated
+        for (qsizetype i = 0; i < qMin(len1, len2); ++i) {
+            c = latin1_lowercased[s2[i]];
+            res = latin1_lowercased[s1[i]] - c;
+            if (res)
+                return res;
+        }
+        if (len1 == len2)
+            return 0;
+        return len1 < len2 ? -1 : 1;
+    }
+}
+
+/*!
+    \internal
+    ### Qt6: replace the QByteArray parameter with [pointer,len] pair
  */
 int qstrcmp(const QByteArray &str1, const char *str2)
 {
@@ -483,6 +536,7 @@ int qstrcmp(const QByteArray &str1, const char *str2)
 
 /*!
     \internal
+    ### Qt6: replace the QByteArray parameter with [pointer,len] pair
  */
 int qstrcmp(const QByteArray &str1, const QByteArray &str2)
 {
@@ -2864,6 +2918,31 @@ int QByteArray::count(char ch) const
 */
 
 /*!
+    \fn int QByteArray::compare(const char *c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \since 5.12
+
+    Returns an integer less than, equal to, or greater than zero depending on
+    whether this QByteArray sorts before, at the same position, or after the
+    string pointed to by \a c. The comparison is performed according to case
+    sensitivity \a cs.
+
+    \sa operator==
+*/
+
+/*!
+    \fn int QByteArray::compare(const QByteArray &a, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \overload
+    \since 5.12
+
+    Returns an integer less than, equal to, or greater than zero depending on
+    whether this QByteArray sorts before, at the same position, or after the
+    QByteArray \a a. The comparison is performed according to case sensitivity
+    \a cs.
+
+    \sa operator==
+*/
+
+/*!
     Returns \c true if this byte array starts with byte array \a ba;
     otherwise returns \c false.
 
@@ -3367,6 +3446,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if byte array \a a1 is equal to byte array \a a2;
     otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn bool operator==(const QByteArray &a1, const char *a2)
@@ -3376,6 +3457,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if byte array \a a1 is equal to string \a a2;
     otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn bool operator==(const char *a1, const QByteArray &a2)
@@ -3385,6 +3468,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if string \a a1 is equal to byte array \a a2;
     otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn bool operator!=(const QByteArray &a1, const QByteArray &a2)
@@ -3394,6 +3479,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if byte array \a a1 is not equal to byte array \a a2;
     otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn bool operator!=(const QByteArray &a1, const char *a2)
@@ -3403,6 +3490,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if byte array \a a1 is not equal to string \a a2;
     otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn bool operator!=(const char *a1, const QByteArray &a2)
@@ -3412,6 +3501,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if string \a a1 is not equal to byte array \a a2;
     otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn bool operator<(const QByteArray &a1, const QByteArray &a2)
@@ -3421,6 +3512,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if byte array \a a1 is lexically less than byte array
     \a a2; otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn inline bool operator<(const QByteArray &a1, const char *a2)
@@ -3430,6 +3523,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if byte array \a a1 is lexically less than string
     \a a2; otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn bool operator<(const char *a1, const QByteArray &a2)
@@ -3439,6 +3534,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if string \a a1 is lexically less than byte array
     \a a2; otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn bool operator<=(const QByteArray &a1, const QByteArray &a2)
@@ -3448,6 +3545,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if byte array \a a1 is lexically less than or equal
     to byte array \a a2; otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn bool operator<=(const QByteArray &a1, const char *a2)
@@ -3457,6 +3556,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if byte array \a a1 is lexically less than or equal
     to string \a a2; otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn bool operator<=(const char *a1, const QByteArray &a2)
@@ -3466,6 +3567,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if string \a a1 is lexically less than or equal
     to byte array \a a2; otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn bool operator>(const QByteArray &a1, const QByteArray &a2)
@@ -3475,6 +3578,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if byte array \a a1 is lexically greater than byte
     array \a a2; otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn bool operator>(const QByteArray &a1, const char *a2)
@@ -3484,6 +3589,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if byte array \a a1 is lexically greater than string
     \a a2; otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn bool operator>(const char *a1, const QByteArray &a2)
@@ -3493,6 +3600,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if string \a a1 is lexically greater than byte array
     \a a2; otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn bool operator>=(const QByteArray &a1, const QByteArray &a2)
@@ -3502,6 +3611,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if byte array \a a1 is lexically greater than or
     equal to byte array \a a2; otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn bool operator>=(const QByteArray &a1, const char *a2)
@@ -3511,6 +3622,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if byte array \a a1 is lexically greater than or
     equal to string \a a2; otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn bool operator>=(const char *a1, const QByteArray &a2)
@@ -3520,6 +3633,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     Returns \c true if string \a a1 is lexically greater than or
     equal to byte array \a a2; otherwise returns \c false.
+
+    \sa QByteArray::compare()
 */
 
 /*! \fn const QByteArray operator+(const QByteArray &a1, const QByteArray &a2)

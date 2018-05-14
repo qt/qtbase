@@ -453,8 +453,7 @@ bool QHstsHeaderParser::processDirective(const QByteArray &name, const QByteArra
 {
     Q_ASSERT(name.size());
     // RFC6797 6.1/3 Directive names are case-insensitive
-    const auto lcName = name.toLower();
-    if (lcName == "max-age") {
+    if (name.compare("max-age", Qt::CaseInsensitive) == 0) {
         // RFC 6797, 6.1.1
         // The syntax of the max-age directive's REQUIRED value (after
         // quoted-string unescaping, if necessary) is defined as:
@@ -477,7 +476,7 @@ bool QHstsHeaderParser::processDirective(const QByteArray &name, const QByteArra
 
         maxAge = age;
         maxAgeFound = true;
-    } else if (lcName == "includesubdomains") {
+    } else if (name.compare("includesubdomains", Qt::CaseInsensitive) == 0) {
         // RFC 6797, 6.1.2.  The includeSubDomains Directive.
         // The OPTIONAL "includeSubDomains" directive is a valueless directive.
 

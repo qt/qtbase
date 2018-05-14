@@ -1694,10 +1694,10 @@ bool QConfFileSettingsPrivate::readIniFile(const QByteArray &data,
 
             iniSection = iniSection.trimmed();
 
-            if (qstricmp(iniSection.constData(), "general") == 0) {
+            if (iniSection.compare("general", Qt::CaseInsensitive) == 0) {
                 currentSection.clear();
             } else {
-                if (qstricmp(iniSection.constData(), "%general") == 0) {
+                if (iniSection.compare("%general", Qt::CaseInsensitive) == 0) {
                     currentSection = QLatin1String(iniSection.constData() + 1);
                 } else {
                     currentSection.clear();
@@ -1857,7 +1857,7 @@ bool QConfFileSettingsPrivate::writeIniFile(QIODevice &device, const ParsedSetti
 
         if (realSection.isEmpty()) {
             realSection = "[General]";
-        } else if (qstricmp(realSection.constData(), "general") == 0) {
+        } else if (realSection.compare("general", Qt::CaseInsensitive) == 0) {
             realSection = "[%General]";
         } else {
             realSection.prepend('[');

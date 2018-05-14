@@ -244,7 +244,8 @@ static inline bool usePixelDensity()
         return false;
     return QCoreApplication::testAttribute(Qt::AA_EnableHighDpiScaling)
         || (screenEnvValueOk && screenEnvValue > 0)
-        || (qEnvironmentVariableIsSet(legacyDevicePixelEnvVar) && qgetenv(legacyDevicePixelEnvVar).toLower() == "auto");
+        || (qEnvironmentVariableIsSet(legacyDevicePixelEnvVar) &&
+            qgetenv(legacyDevicePixelEnvVar).compare("auto", Qt::CaseInsensitive) == 0);
 }
 
 void QHighDpiScaling::initHighDpiScaling()

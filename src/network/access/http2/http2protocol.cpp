@@ -287,7 +287,8 @@ bool is_protocol_upgraded(const QHttpNetworkReply &reply)
         // Do some minimal checks here - we expect 'Upgrade: h2c' to be found.
         const auto &header = reply.header();
         for (const QPair<QByteArray, QByteArray> &field : header) {
-            if (field.first.toLower() == "upgrade" && field.second.toLower() == "h2c")
+            if (field.first.compare("upgrade", Qt::CaseInsensitive) == 0 &&
+                    field.second.compare("h2c", Qt::CaseInsensitive) == 0)
                 return true;
         }
     }

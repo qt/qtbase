@@ -858,15 +858,32 @@ void tst_QByteArray::qstricmp()
     if ( actual != 0 ) {
         actual = (actual < 0 ? -1 : 1);
     }
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual, expected);
+
+    actual = str1.toLatin1().compare(str2.toLatin1(), Qt::CaseInsensitive);
+    if ( actual != 0 ) {
+        actual = (actual < 0 ? -1 : 1);
+    }
+    QCOMPARE(actual, expected);
+
+    actual = str1.toLatin1().compare(str2.toLatin1().constData(), Qt::CaseInsensitive);
+    if ( actual != 0 ) {
+        actual = (actual < 0 ? -1 : 1);
+    }
+    QCOMPARE(actual, expected);
 }
 
 void tst_QByteArray::qstricmp_singularities()
 {
     QCOMPARE(::qstricmp(0, 0), 0);
-    QVERIFY(::qstricmp(0, "a") != 0);
-    QVERIFY(::qstricmp("a", 0) != 0);
+    QVERIFY(::qstricmp(0, "a") < 0);
+    QVERIFY(::qstricmp("a", 0) > 0);
     QCOMPARE(::qstricmp("", ""), 0);
+    QCOMPARE(QByteArray().compare(nullptr, Qt::CaseInsensitive), 0);
+    QCOMPARE(QByteArray().compare("", Qt::CaseInsensitive), 0);
+    QVERIFY(QByteArray("a").compare(nullptr, Qt::CaseInsensitive) > 0);
+    QVERIFY(QByteArray("a").compare("", Qt::CaseInsensitive) > 0);
+    QVERIFY(QByteArray().compare("a", Qt::CaseInsensitive) < 0);
 }
 
 void tst_QByteArray::qstrnicmp_singularities()
@@ -876,6 +893,9 @@ void tst_QByteArray::qstrnicmp_singularities()
     QVERIFY(::qstrnicmp("a", 0, 123) != 0);
     QCOMPARE(::qstrnicmp("", "", 123), 0);
     QCOMPARE(::qstrnicmp("a", "B", 0), 0);
+    QCOMPARE(QByteArray().compare(QByteArray(), Qt::CaseInsensitive), 0);
+    QVERIFY(QByteArray().compare(QByteArray("a"), Qt::CaseInsensitive) < 0);
+    QVERIFY(QByteArray("a").compare(QByteArray(), Qt::CaseInsensitive) > 0);
 }
 
 void tst_QByteArray::chop_data()
@@ -1758,6 +1778,12 @@ void tst_QByteArray::compare()
     const bool isEqual   = result == 0;
     const bool isLess    = result < 0;
     const bool isGreater = result > 0;
+
+    int cmp = str1.compare(str2);
+    if (cmp)
+        cmp = (cmp < 0 ? -1 : 1);
+
+    QCOMPARE(cmp, result);
 
     // basic tests:
     QCOMPARE(str1 == str2, isEqual);

@@ -415,8 +415,7 @@ static void *eglContextForContext(QOpenGLContext *context)
 QPlatformNativeInterface::NativeResourceForContextFunction QEglFSIntegration::nativeResourceFunctionForContext(const QByteArray &resource)
 {
 #ifndef QT_NO_OPENGL
-    QByteArray lowerCaseResource = resource.toLower();
-    if (lowerCaseResource == "get_egl_context")
+    if (resource.compare("get_egl_context", Qt::CaseInsensitive) == 0)
         return NativeResourceForContextFunction(eglContextForContext);
 #else
     Q_UNUSED(resource);

@@ -528,7 +528,7 @@ QUrl QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socke
     QUrl redirectUrl;
     const QList<QPair<QByteArray, QByteArray> > fields = reply->header();
     for (const QNetworkReply::RawHeaderPair &header : fields) {
-        if (header.first.toLower() == "location") {
+        if (header.first.compare("location", Qt::CaseInsensitive) == 0) {
             redirectUrl = QUrl::fromEncoded(header.second);
             break;
         }

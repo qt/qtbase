@@ -1318,7 +1318,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
         if (!value.isEmpty()) {
             // Why are we appending values for headers which are already
             // present?
-            if (qstricmp(it->first.constData(), "set-cookie") == 0)
+            if (it->first.compare("set-cookie", Qt::CaseInsensitive) == 0)
                 value += '\n';
             else
                 value += ", ";
@@ -1584,7 +1584,7 @@ bool QNetworkReplyHttpImplPrivate::sendCacheContents(const QNetworkCacheMetaData
     QUrl redirectUrl;
     for ( ; it != end; ++it) {
         if (httpRequest.isFollowRedirects() &&
-            !qstricmp(it->first.toLower().constData(), "location"))
+            !it->first.compare("location", Qt::CaseInsensitive))
             redirectUrl = QUrl::fromEncoded(it->second);
         setRawHeader(it->first, it->second);
     }
