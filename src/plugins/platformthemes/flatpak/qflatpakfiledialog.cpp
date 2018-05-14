@@ -210,7 +210,7 @@ void QFlatpakFileDialog::openPortal()
             QRegularExpressionMatch match = regexp.match(filter);
             if (match.hasMatch()) {
                 QString userVisibleName = match.captured(1);
-                QStringList filterStrings = match.captured(2).split(QLatin1String(" "));
+                QStringList filterStrings = match.captured(2).split(QLatin1Char(' '), QString::SkipEmptyParts);
 
                 FilterConditionList filterConditions;
                 for (const QString &filterString : filterStrings) {
