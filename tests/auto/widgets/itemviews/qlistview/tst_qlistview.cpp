@@ -293,7 +293,7 @@ public:
 
 void tst_QListView::cleanup()
 {
-    QVERIFY(QApplication::topLevelWidgets().isEmpty());
+    QTRY_VERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 void tst_QListView::noDelegate()
@@ -779,7 +779,6 @@ void tst_QListView::hideFirstRow()
     view.setRowHidden(0,true);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QTest::qWait(10);
 }
 
 static int modelIndexCount(const QAbstractItemView *view)
@@ -857,7 +856,6 @@ void tst_QListView::setCurrentIndex()
                     QCOMPARE(sb->value(), offset + 1);
                     ++offset;
                 }
-                //QTest::qWait(50);
             }
 
             --i;    // item 20 does not exist
@@ -870,7 +868,6 @@ void tst_QListView::setCurrentIndex()
                     QCOMPARE(sb->value(), offset - 1);
                     --offset;
                 }
-                //QTest::qWait(50);
             }
         }
     }
@@ -1397,20 +1394,16 @@ void tst_QListView::scrollBarAsNeeded()
     lv.setModel(&model);
     lv.resize(size);
     topLevel.show();
+    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
 
     for (uint r = 0; r < sizeof(rowCounts)/sizeof(int); ++r) {
         QStringList list;
-        int i;
-        for (i = 0; i < rowCounts[r]; ++i)
+        for (int i = 0; i < rowCounts[r]; ++i)
             list << QLatin1String("Item ") + QString::number(i);
 
         model.setStringList(list);
-        QApplication::processEvents();
-        QTest::qWait(50);
 
         model.setStringList(generateList(QLatin1String("Item "), itemCount));
-
-        QApplication::processEvents();
 
         QTRY_COMPARE(lv.horizontalScrollBar()->isVisible(), horizontalScrollBarVisible);
         QTRY_COMPARE(lv.verticalScrollBar()->isVisible(), verticalScrollBarVisible);
@@ -1577,14 +1570,14 @@ void tst_QListView::task228566_infiniteRelayout()
 
     view.setFixedHeight(itemHeight * 12);
     view.show();
+    QVERIFY(QTest::qWaitForWindowActive(&view));
     QTest::qWait(100); //make sure the layout is done once
 
     QSignalSpy spy(view.horizontalScrollBar(), SIGNAL(rangeChanged(int,int)));
 
-    QTest::qWait(200);
     //the layout should already have been done
     //so there should be no change made to the scrollbar
-    QCOMPARE(spy.count(), 0);
+    QVERIFY(!spy.wait(200));
 }
 
 void tst_QListView::task248430_crashWith0SizedItem()
@@ -1619,7 +1612,7 @@ void tst_QListView::task250446_scrollChanged()
     QTRY_COMPARE(view.currentIndex(), index);
 
     view.showNormal();
-    QTest::qWait(50);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_COMPARE(view.verticalScrollBar()->value(), scrollValue);
     QTRY_COMPARE(view.currentIndex(), index);
 }
@@ -1709,19 +1702,14 @@ void tst_QListView::keyboardSearch()
     qApp->setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
-//    QCOMPARE(view.currentIndex() , model.index(0,0));
-
     QTest::keyClick(&view, Qt::Key_K);
-    QTest::qWait(10);
-    QCOMPARE(view.currentIndex() , model.index(5,0)); //KAFEINE
+    QTRY_COMPARE(view.currentIndex() , model.index(5,0)); //KAFEINE
 
     QTest::keyClick(&view, Qt::Key_O);
-    QTest::qWait(10);
-    QCOMPARE(view.currentIndex() , model.index(6,0)); //KONQUEROR
+    QTRY_COMPARE(view.currentIndex() , model.index(6,0)); //KONQUEROR
 
     QTest::keyClick(&view, Qt::Key_N);
-    QTest::qWait(10);
-    QCOMPARE(view.currentIndex() , model.index(6,0)); //KONQUEROR
+    QTRY_COMPARE(view.currentIndex() , model.index(6,0)); //KONQUEROR
 }
 
 void tst_QListView::shiftSelectionWithNonUniformItemSizes()
@@ -1751,8 +1739,7 @@ void tst_QListView::shiftSelectionWithNonUniformItemSizes()
         QCOMPARE(view.currentIndex(), index);
 
         QTest::keyClick(&view, Qt::Key_Up, Qt::ShiftModifier);
-        QTest::qWait(10);
-        QCOMPARE(view.currentIndex(), model.index(1, 0));
+        QTRY_COMPARE(view.currentIndex(), model.index(1, 0));
 
         QModelIndexList selected = view.selectionModel()->selectedIndexes();
         QCOMPARE(selected.count(), 3);
@@ -1781,8 +1768,7 @@ void tst_QListView::shiftSelectionWithNonUniformItemSizes()
         QCOMPARE(view.currentIndex(), index);
 
         QTest::keyClick(&view, Qt::Key_Left, Qt::ShiftModifier);
-        QTest::qWait(10);
-        QCOMPARE(view.currentIndex(), model.index(1, 0));
+        QTRY_COMPARE(view.currentIndex(), model.index(1, 0));
 
         QModelIndexList selected = view.selectionModel()->selectedIndexes();
         QCOMPARE(selected.count(), 3);
@@ -1833,10 +1819,8 @@ void tst_QListView::task262152_setModelColumnNavigate()
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(static_cast<QWidget *>(&view), QApplication::activeWindow());
     QTest::keyClick(&view, Qt::Key_Down);
-    QTest::qWait(30);
     QTRY_COMPARE(view.currentIndex(), model.index(1,1));
     QTest::keyClick(&view, Qt::Key_Down);
-    QTest::qWait(30);
     QTRY_COMPARE(view.currentIndex(), model.index(2,1));
 }
 
@@ -1888,14 +1872,11 @@ void tst_QListView::taskQTBUG_2233_scrollHiddenItems()
     int nbVisibleItem = rowCount / 2 - bar->maximum();
 
     bar->setValue(bar->maximum());
-    QApplication::processEvents();
     for (int i = rowCount; i > rowCount / 2; i--) {
         view.setRowHidden(i, true);
     }
-    QApplication::processEvents();
-    QTest::qWait(50);
+    QTRY_COMPARE(bar->maximum(), rowCount/4 - nbVisibleItem);
     QCOMPARE(bar->value(), bar->maximum());
-    QCOMPARE(bar->maximum(), rowCount/4 - nbVisibleItem);
 }
 
 void tst_QListView::taskQTBUG_633_changeModelData()
@@ -1911,10 +1892,12 @@ void tst_QListView::taskQTBUG_633_changeModelData()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     model.setData( model.index(1, 0), QLatin1String("long long text"));
-    QTest::qWait(100); //leave time for relayouting the items
-    QRect rectLongText = view.visualRect(model.index(1,0));
-    QRect rect2 = view.visualRect(model.index(2,0));
-    QVERIFY( ! rectLongText.intersects(rect2) );
+    const auto longTextDoesNotIntersectNextItem = [&]() {
+        QRect rectLongText = view.visualRect(model.index(1,0));
+        QRect rect2 = view.visualRect(model.index(2,0));
+        return !rectLongText.intersects(rect2);
+    };
+    QTRY_VERIFY(longTextDoesNotIntersectNextItem());
 }
 
 void tst_QListView::taskQTBUG_435_deselectOnViewportClick()

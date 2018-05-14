@@ -3066,8 +3066,6 @@ void tst_QGraphicsAnchorLayout1::testComplexCases()
     widget->resize(size);
     QCOMPARE(widget->size(), size);
 
-//    QTest::qWait(500); // layouting is asynchronous..
-
     // Validate
     for (int i = 0; i < result.count(); ++i) {
         const BasicLayoutTestResult item = result[i];

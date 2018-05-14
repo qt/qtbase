@@ -703,7 +703,7 @@ void tst_QColumnView::moveGrip()
     view.setCurrentIndex(home);
     view.resize(640, 200);
     topLevel.show();
-    QTest::qWait(ANIMATION_DELAY);
+    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
 
     int columnNum = view.createdColumns.count() - 2;
     QVERIFY(columnNum >= 0);
@@ -934,7 +934,6 @@ void tst_QColumnView::parentCurrentIndex()
     QVERIFY(second.isValid());
     QVERIFY(third.isValid());
     view.setCurrentIndex(third);
-    QTest::qWait(ANIMATION_DELAY);
     QTRY_COMPARE(view.createdColumns[0]->currentIndex(), first);
     QTRY_COMPARE(view.createdColumns[1]->currentIndex(), second);
     QTRY_COMPARE(view.createdColumns[2]->currentIndex(), third);
@@ -946,7 +945,6 @@ void tst_QColumnView::parentCurrentIndex()
     QVERIFY(second.isValid());
     QVERIFY(third.isValid());
     view.setCurrentIndex(third);
-    QTest::qWait(ANIMATION_DELAY);
     QTRY_COMPARE(view.createdColumns[0]->currentIndex(), first);
     QTRY_COMPARE(view.createdColumns[1]->currentIndex(), second);
 

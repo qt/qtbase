@@ -876,7 +876,7 @@ void QSslConfiguration::setDiffieHellmanParameters(const QSslDiffieHellmanParame
 
     Returns the backend-specific configuration.
 
-    Only options set by addBackendConfiguration() or setBackendConfiguration() will be
+    Only options set by setBackendConfigurationOption() or setBackendConfiguration() will be
     returned. The internal standard configuration of the backend is not reported.
 
     \sa setBackendConfigurationOption(), setBackendConfiguration()
@@ -916,13 +916,13 @@ void QSslConfiguration::setBackendConfigurationOption(const QByteArray &name, co
 
     Without a \a backendConfiguration parameter this function will clear the
     backend-specific configuration. More information about the supported
-    options is available in the documentation of addBackendConfiguration().
+    options is available in the documentation of setBackendConfigurationOption().
 
     \sa backendConfiguration(), setBackendConfigurationOption()
  */
-void QSslConfiguration::setBackendConfiguration(const QMap<QByteArray, QVariant> &backendConfig)
+void QSslConfiguration::setBackendConfiguration(const QMap<QByteArray, QVariant> &backendConfiguration)
 {
-    d->backendConfig = backendConfig;
+    d->backendConfig = backendConfiguration;
 }
 
 /*!

@@ -1565,7 +1565,7 @@ void tst_QListWidget::task217070_scrollbarsAdjusted()
     v.setResizeMode(QListView::Adjust);
     v.setUniformItemSizes(true);
     v.resize(160,100);
-    QTest::qWait(50);
+    QVERIFY(QTest::qWaitForWindowActive(&v));
     QScrollBar *hbar = v.horizontalScrollBar();
     QScrollBar *vbar = v.verticalScrollBar();
     QVERIFY(hbar && vbar);

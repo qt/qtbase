@@ -2781,15 +2781,14 @@ void tst_QTableView::scrollTo()
     for (int c = 0; c < columnCount; ++c)
         view.setColumnWidth(c, columnWidth);
 
-    QTest::qWait(150); // ### needed to pass the test
     view.horizontalScrollBar()->setValue(horizontalScroll);
     view.verticalScrollBar()->setValue(verticalScroll);
 
     QModelIndex index = model.index(row, column);
     QVERIFY(index.isValid());
     view.scrollTo(index, (QAbstractItemView::ScrollHint)scrollHint);
-    QCOMPARE(view.verticalScrollBar()->value(), expectedVerticalScroll);
-    QCOMPARE(view.horizontalScrollBar()->value(), expectedHorizontalScroll);
+    QTRY_COMPARE(view.verticalScrollBar()->value(), expectedVerticalScroll);
+    QTRY_COMPARE(view.horizontalScrollBar()->value(), expectedHorizontalScroll);
 }
 
 void tst_QTableView::indexAt_data()
@@ -2936,14 +2935,12 @@ void tst_QTableView::indexAt()
     for (int c = 0; c < columnCount; ++c)
         view.setColumnWidth(c, columnWidth);
 
-    QTest::qWait(20);
     view.horizontalScrollBar()->setValue(horizontalScroll);
     view.verticalScrollBar()->setValue(verticalScroll);
-    QTest::qWait(20);
 
     QModelIndex index = view.indexAt(QPoint(x, y));
-    QCOMPARE(index.row(), expectedRow);
-    QCOMPARE(index.column(), expectedColumn);
+    QTRY_COMPARE(index.row(), expectedRow);
+    QTRY_COMPARE(index.column(), expectedColumn);
 }
 
 void tst_QTableView::span_data()
@@ -3261,7 +3258,7 @@ void tst_QTableView::spansAfterRowInsertion()
     view.setModel(&model);
     view.setSpan(3, 3, 3, 3);
     view.show();
-    QTest::qWait(50);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     // Insertion before the span only shifts the span.
     view.model()->insertRows(0, 2);
@@ -3297,7 +3294,7 @@ void tst_QTableView::spansAfterColumnInsertion()
     view.setModel(&model);
     view.setSpan(3, 3, 3, 3);
     view.show();
-    QTest::qWait(50);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     // Insertion before the span only shifts the span.
     view.model()->insertColumns(0, 2);
@@ -3345,7 +3342,7 @@ void tst_QTableView::spansAfterRowRemoval()
         view.setSpan(span.top(), span.left(), span.height(), span.width());
 
     view.show();
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
     view.model()->removeRows(3, 3);
 
     QList<QRect> expectedSpans;
@@ -3385,7 +3382,7 @@ void tst_QTableView::spansAfterColumnRemoval()
         view.setSpan(span.left(), span.top(), span.width(), span.height());
 
     view.show();
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
     view.model()->removeColumns(3, 3);
 
     QList<QRect> expectedSpans;
@@ -4083,7 +4080,6 @@ void tst_QTableView::task259308_scrollVerticalHeaderSwappedSections()
     QTRY_COMPARE(tv.currentIndex().row(), newRow);
 
     tv.setCurrentIndex(model.index(0, 0));
-    QTest::qWait(60);
     QTest::keyClick(&tv, Qt::Key_PageDown); // PageDown won't scroll when at the bottom
     QTRY_COMPARE(tv.rowAt(tv.viewport()->height() - 1), tv.verticalHeader()->logicalIndex(model.rowCount() - 1));
 }
@@ -4104,7 +4100,7 @@ void tst_QTableView::task191545_dragSelectRows()
     table.setSelectionMode(QAbstractItemView::ExtendedSelection);
     table.setMinimumSize(1000, 400);
     table.show();
-    QTest::qWait(200);
+    QVERIFY(QTest::qWaitForWindowActive(&table));
 
     ValueSaver<Qt::KeyboardModifiers> saver(QApplicationPrivate::modifier_buttons);
     QApplicationPrivate::modifier_buttons = Qt::ControlModifier;
@@ -4214,27 +4210,22 @@ void tst_QTableView::task234926_setHeaderSorting()
     QTableView view;
     view.setModel(&model);
 //    view.show();
-    QTest::qWait(20);
-    QCOMPARE(model.stringList(), data);
+    QTRY_COMPARE(model.stringList(), data);
     view.setSortingEnabled(true);
     view.sortByColumn(0, Qt::AscendingOrder);
-    QApplication::processEvents();
-    QCOMPARE(model.stringList() , sortedDataA);
+    QTRY_COMPARE(model.stringList() , sortedDataA);
 
     view.horizontalHeader()->setSortIndicator(0, Qt::DescendingOrder);
-    QApplication::processEvents();
-    QCOMPARE(model.stringList() , sortedDataD);
+    QTRY_COMPARE(model.stringList() , sortedDataD);
 
     QHeaderView *h = new QHeaderView(Qt::Horizontal);
     h->setModel(&model);
     view.setHorizontalHeader(h);
     h->setSortIndicator(0, Qt::AscendingOrder);
-    QApplication::processEvents();
-    QCOMPARE(model.stringList() , sortedDataA);
+    QTRY_COMPARE(model.stringList() , sortedDataA);
 
     h->setSortIndicator(0, Qt::DescendingOrder);
-    QApplication::processEvents();
-    QCOMPARE(model.stringList() , sortedDataD);
+    QTRY_COMPARE(model.stringList() , sortedDataD);
 }
 
 void tst_QTableView::taskQTBUG_5062_spansInconsistency()
@@ -4288,9 +4279,8 @@ void tst_QTableView::changeHeaderData()
     QVERIFY(view.verticalHeader()->width() < textWidth);
 
     model.setHeaderData(2, Qt::Vertical, text);
-    QTest::qWait(100); //leave time for layout
 
-    QVERIFY(view.verticalHeader()->width() > textWidth);
+    QTRY_VERIFY(view.verticalHeader()->width() > textWidth);
 }
 
 #if QT_CONFIG(wheelevent)

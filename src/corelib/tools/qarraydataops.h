@@ -65,7 +65,7 @@ struct QPodArrayOps
         Q_ASSERT(newSize > uint(this->size));
         Q_ASSERT(newSize <= this->alloc);
 
-        ::memset(this->end(), 0, (newSize - this->size) * sizeof(T));
+        ::memset(static_cast<void *>(this->end()), 0, (newSize - this->size) * sizeof(T));
         this->size = int(newSize);
     }
 
@@ -121,8 +121,9 @@ struct QPodArrayOps
         Q_ASSERT(e <= where || b > this->end()); // No overlap
         Q_ASSERT(size_t(e - b) <= this->alloc - uint(this->size));
 
-        ::memmove(where + (e - b), where, (static_cast<const T*>(this->end()) - where) * sizeof(T));
-        ::memcpy(where, b, (e - b) * sizeof(T));
+        ::memmove(static_cast<void *>(where + (e - b)), static_cast<void *>(where),
+                  (static_cast<const T*>(this->end()) - where) * sizeof(T));
+        ::memcpy(static_cast<void *>(where), static_cast<const void *>(b), (e - b) * sizeof(T));
         this->size += (e - b);
     }
 
@@ -133,7 +134,8 @@ struct QPodArrayOps
         Q_ASSERT(b >= this->begin() && b < this->end());
         Q_ASSERT(e > this->begin() && e < this->end());
 
-        ::memmove(b, e, (static_cast<T *>(this->end()) - e) * sizeof(T));
+        ::memmove(static_cast<void *>(b), static_cast<void *>(e),
+                  (static_cast<T *>(this->end()) - e) * sizeof(T));
         this->size -= (e - b);
     }
 };

@@ -782,19 +782,6 @@ QByteArray qUncompress(const uchar* data, int nbytes)
 }
 #endif
 
-static inline bool qIsUpper(char c)
-{
-    return c >= 'A' && c <= 'Z';
-}
-
-static inline char qToLower(char c)
-{
-    if (c >= 'A' && c <= 'Z')
-        return c - 'A' + 'a';
-    else
-        return c;
-}
-
 /*!
     \class QByteArray
     \inmodule QtCore
@@ -4208,9 +4195,10 @@ QByteArray &QByteArray::setNum(double n, char f, int prec)
     QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
     uint flags = QLocaleData::ZeroPadExponent;
 
-    if (qIsUpper(f))
+    char lower = latin1_lowercased[uchar(f)];
+    if (f != lower)
         flags |= QLocaleData::CapitalEorX;
-    f = qToLower(f);
+    f = lower;
 
     switch (f) {
         case 'f':

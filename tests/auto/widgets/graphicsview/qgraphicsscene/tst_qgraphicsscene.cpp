@@ -3108,7 +3108,6 @@ void tst_QGraphicsScene::tabFocus_sceneWithFocusableItems()
 
     // Check that everyone loses focus when the widget is hidden.
     widget.hide();
-    QTest::qWait(15);
     QTRY_VERIFY(!view->hasFocus());
     QVERIFY(!view->viewport()->hasFocus());
     QVERIFY(!scene.hasFocus());
@@ -4056,7 +4055,6 @@ void tst_QGraphicsScene::isActive()
         QVERIFY(!scene2.hasFocus());
 
         toplevel1.hide();
-        QTest::qWait(50);
         QTRY_VERIFY(!scene1.isActive());
         QTRY_VERIFY(!scene2.isActive());
         QVERIFY(!scene1.hasFocus());
@@ -4381,7 +4379,6 @@ void tst_QGraphicsScene::taskQT657_paintIntoCacheWithTransparentParts()
     QVERIFY(QTest::qWaitForWindowExposed(view));
     view->repaints = 0;
     proxy->update(10, 10, 10, 10);
-    QTest::qWait(50);
     QTRY_VERIFY(view->repaints > 0);
 
     QPixmap pix;
@@ -4427,7 +4424,6 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
         QVERIFY(QTest::qWaitForWindowExposed(view));
         view->repaints = 0;
         rectItem->update(10, 10, 10, 10);
-        QTest::qWait(50);
         QTRY_VERIFY(view->repaints > 0);
 
         QPixmap pix;
@@ -4469,7 +4465,6 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
         QVERIFY(QTest::qWaitForWindowExposed(view));
         view->repaints = 0;
         rectItem->update(10, 10, 10, 10);
-        QTest::qWait(50);
         QTRY_VERIFY(view->repaints > 0);
 
         QPixmap pix;
@@ -4510,7 +4505,6 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
         QVERIFY(QTest::qWaitForWindowExposed(view));
         view->repaints = 0;
         rectItem->update(10, 10, 10, 10);
-        QTest::qWait(50);
         QTRY_VERIFY(view->repaints > 0);
 
         QPixmap pix;

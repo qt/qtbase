@@ -1826,7 +1826,7 @@ void tst_QGraphicsGridLayout::removeLayout()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWait(20);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QRectF r1 = textEdit->geometry();
     QRectF r2 = pushButton->geometry();
