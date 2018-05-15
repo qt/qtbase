@@ -55,7 +55,7 @@ QT_REQUIRE_CONFIG(sqlmodel);
 #endif
 #include <QtSql/qsqldriver.h>
 #include <QtSql/qsqlrelationaltablemodel.h>
-
+#include <QtCore/qmetaobject.h>
 QT_BEGIN_NAMESPACE
 
 
@@ -98,6 +98,27 @@ QWidget *createEditor(QWidget *aParent,
 
     return combo;
 }
+
+    void setEditorData(QWidget *editor, const QModelIndex &index) const override
+    {
+        if (!index.isValid())
+            return;
+
+        if (qobject_cast<QComboBox *>(editor)) {
+            // Taken from QItemDelegate::setEditorData() as we need
+            // to present the DisplayRole and not the EditRole which
+            // is the id reference to the related model
+            QVariant v = index.data(Qt::DisplayRole);
+            QByteArray n = editor->metaObject()->userProperty().name();
+            if (!n.isEmpty()) {
+                if (!v.isValid())
+                    v = QVariant(editor->property(n).userType(), nullptr);
+                editor->setProperty(n, v);
+                return;
+            }
+        }
+        QItemDelegate::setEditorData(editor, index);
+    }
 
 void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override
 {
