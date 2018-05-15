@@ -860,6 +860,12 @@ void tst_QByteArray::qstricmp()
     }
     QCOMPARE(actual, expected);
 
+    actual = ::qstricmp("012345679abcd" + str1.toLatin1(), "012345679AbCd" + str2.toLatin1());
+    if ( actual != 0 ) {
+        actual = (actual < 0 ? -1 : 1);
+    }
+    QCOMPARE(actual, expected);
+
     actual = str1.toLatin1().compare(str2.toLatin1(), Qt::CaseInsensitive);
     if ( actual != 0 ) {
         actual = (actual < 0 ? -1 : 1);

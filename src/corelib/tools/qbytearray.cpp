@@ -47,6 +47,7 @@
 #include "qlocale_p.h"
 #include "qlocale_tools_p.h"
 #include "private/qnumeric_p.h"
+#include "private/qsimd_p.h"
 #include "qstringalgorithms_p.h"
 #include "qscopedpointer.h"
 #include "qbytearray_p.h"
@@ -410,14 +411,72 @@ int qstricmp(const char *str1, const char *str2)
 {
     const uchar *s1 = reinterpret_cast<const uchar *>(str1);
     const uchar *s2 = reinterpret_cast<const uchar *>(str2);
-    int res;
-    uchar c;
-    if (!s1 || !s2)
-        return s1 ? 1 : (s2 ? -1 : 0);
-    for (; !(res = (c = latin1_lowercased[*s1]) - latin1_lowercased[*s2]); s1++, s2++)
-        if (!c)                                // strings are equal
-            break;
-    return res;
+    if (!s1)
+        return s2 ? -1 : 0;
+    if (!s2)
+        return 1;
+
+    enum { Incomplete = 256 };
+    qptrdiff offset = 0;
+    auto innerCompare = [=, &offset](qptrdiff max, bool unlimited) {
+        max += offset;
+        do {
+            uchar c = latin1_lowercased[s1[offset]];
+            int res = c - latin1_lowercased[s2[offset]];
+            if (Q_UNLIKELY(res))
+                return res;
+            if (Q_UNLIKELY(!c))
+                return 0;
+            ++offset;
+        } while (unlimited || offset < max);
+        return int(Incomplete);
+    };
+
+#ifdef __SSE4_1__
+    enum { PageSize = 4096, PageMask = PageSize - 1 };
+    const __m128i zero = _mm_setzero_si128();
+    forever {
+        // Calculate how many bytes we can load until we cross a page boundary
+        // for either source. This isn't an exact calculation, just something
+        // very quick.
+        quintptr u1 = quintptr(s1 + offset);
+        quintptr u2 = quintptr(s2 + offset);
+        uint n = PageSize - ((u1 | u2) & PageMask);
+
+        qptrdiff maxoffset = offset + n;
+        for ( ; offset + 16 <= maxoffset; offset += sizeof(__m128i)) {
+            // load 16 bytes from either source
+            __m128i a = _mm_loadu_si128(reinterpret_cast<const __m128i *>(s1 + offset));
+            __m128i b = _mm_loadu_si128(reinterpret_cast<const __m128i *>(s2 + offset));
+
+            // compare the two against each oher
+            __m128i cmp = _mm_cmpeq_epi8(a, b);
+
+            // find NUL terminators too
+            cmp = _mm_min_epu8(cmp, a);
+            cmp = _mm_cmpeq_epi8(cmp, zero);
+
+            // was there any difference or a NUL?
+            uint mask = _mm_movemask_epi8(cmp);
+            if (mask) {
+                // yes, find out where
+                uint start = qCountTrailingZeroBits(mask);
+                uint end = sizeof(mask) * 8 - qCountLeadingZeroBits(mask);
+                Q_ASSUME(end >= start);
+                offset += start;
+                n = end - start;
+                break;
+            }
+        }
+
+        // using SIMD could cause a page fault, so iterate byte by byte
+        int res = innerCompare(n, false);
+        if (res != Incomplete)
+            return res;
+    }
+#endif
+
+    return innerCompare(-1, true);
 }
 
 /*! \relates QByteArray
