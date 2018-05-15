@@ -35,7 +35,6 @@
 
 void QHtml5Cursor::changeCursor(QCursor *windowCursor, QWindow *window)
 {
-    qDebug() << "change cursor!" << windowCursor;
     if (windowCursor == nullptr)
         return;
 

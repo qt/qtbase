@@ -45,7 +45,6 @@ void QHtml5FontDatabase::populateFontDatabase()
     foreach (const QString &fontFileName, fontFileNames) {
         QFile theFont(fontFileName);
         if (!theFont.open(QIODevice::ReadOnly)) {
-            qDebug() << "could not open font file" << fontFileName;
             break;
         }
 

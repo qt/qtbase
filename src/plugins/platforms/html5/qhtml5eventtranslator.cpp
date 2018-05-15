@@ -407,7 +407,6 @@ void QHtml5EventTranslator::processMouse(int eventType, const EmscriptenMouseEve
 
 int QHtml5EventTranslator::focus_cb(int /*eventType*/, const EmscriptenFocusEvent */*focusEvent*/, void */*userData*/)
 {
-//    qDebug() << Q_FUNC_INFO << eventType << focusEvent;
     return 0;
 }
 

@@ -55,8 +55,6 @@ QHtml5Window::QHtml5Window(QWindow *w, QHtml5Compositor* compositor, QHtml5Backi
     m_winid  = ++serialNo;
     qWarning("QHtml5Window %p: %p 0x%x\n", this, w, uint(m_winid));
 
-    qDebug() << "Surfacetype" << w->surfaceType();
-
     mCompositor->addWindow(this);
 
     // Pure OpenGL windows draw directly using egl, disable the compositor.
@@ -189,7 +187,6 @@ void QHtml5Window::injectMousePressed(const QPoint &local, const QPoint &global,
     Q_UNUSED(local);
     Q_UNUSED(mods);
 
-    qDebug() << Q_FUNC_INFO << local << global;
     if (!hasTitle || button != Qt::LeftButton)
         return;
 
