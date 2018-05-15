@@ -227,10 +227,8 @@ template <uint MaxCount> struct UnrollTailLoop
             return returnIfExited;
 
         bool check = loopCheck(i);
-        if (check) {
-            const RetType &retval = returnIfFailed(i);
-            return retval;
-        }
+        if (check)
+            return returnIfFailed(i);
 
         return UnrollTailLoop<MaxCount - 1>::exec(count - 1, returnIfExited, loopCheck, returnIfFailed, i + 1);
     }
@@ -252,6 +250,72 @@ inline RetType UnrollTailLoop<0>::exec(Number, RetType returnIfExited, Functor1,
 }
 }
 #endif
+
+/*!
+ * \internal
+ *
+ * Searches for character \a \c in the string \a str and returns a pointer to
+ * it. Unlike strchr() and wcschr() (but like glibc's strchrnul()), if the
+ * character is not found, this function returns a pointer to the end of the
+ * string -- that is, \c{str.end()}.
+ */
+const ushort *QtPrivate::qustrchr(QStringView str, ushort c) noexcept
+{
+    const ushort *n = reinterpret_cast<const ushort *>(str.begin());
+    const ushort *e = reinterpret_cast<const ushort *>(str.end());
+
+#ifdef __SSE2__
+    __m128i mch = _mm_set1_epi32(c | (c << 16));
+
+    // we're going to read n[0..7] (16 bytes)
+    for (const ushort *next = n + 8; next <= e; n = next, next += 8) {
+        __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(n));
+        __m128i result = _mm_cmpeq_epi16(data, mch);
+        uint mask = _mm_movemask_epi8(result);
+        if (ushort(mask)) {
+            // found a match
+            return n + (qCountTrailingZeroBits(mask) >> 1);
+        }
+    }
+
+#  if !defined(__OPTIMIZE_SIZE__)
+    // we're going to read n[0..3] (8 bytes)
+    if (e - n > 3) {
+        __m128i data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(n));
+        __m128i result = _mm_cmpeq_epi16(data, mch);
+        uint mask = _mm_movemask_epi8(result);
+        if (uchar(mask)) {
+            // found a match
+            return n + (qCountTrailingZeroBits(mask) >> 1);
+        }
+
+        n += 4;
+    }
+
+    return UnrollTailLoop<3>::exec(e - n, e,
+                                   [=](int i) { return n[i] == c; },
+                                   [=](int i) { return n + i; });
+#  endif
+#elif defined(__ARM_NEON__) && defined(Q_PROCESSOR_ARM_64) // vaddv is only available on Aarch64
+    const uint16x8_t vmask = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
+    const uint16x8_t ch_vec = vdupq_n_u16(c);
+    for (const ushort *next = n + 8; next <= e; n = next, next += 8) {
+        uint16x8_t data = vld1q_u16(n);
+        uint mask = vaddvq_u16(vandq_u16(vceqq_u16(data, ch_vec), vmask));
+        if (ushort(mask)) {
+            // found a match
+            return n + qCountTrailingZeroBits(mask);
+        }
+    }
+#endif // aarch64
+
+    --n;
+    while (++n != e)
+        if (*n == c)
+            return n;
+
+    return n;
+}
 
 #ifdef __SSE2__
 // Scans from \a ptr to \a end until \a maskval is non-zero. Returns true if
@@ -1183,59 +1247,9 @@ static int findChar(const QChar *str, int len, QChar ch, int from,
         const ushort *n = s + from;
         const ushort *e = s + len;
         if (cs == Qt::CaseSensitive) {
-#ifdef __SSE2__
-            __m128i mch = _mm_set1_epi32(c | (c << 16));
-
-            // we're going to read n[0..7] (16 bytes)
-            for (const ushort *next = n + 8; next <= e; n = next, next += 8) {
-                __m128i data = _mm_loadu_si128((const __m128i*)n);
-                __m128i result = _mm_cmpeq_epi16(data, mch);
-                uint mask = _mm_movemask_epi8(result);
-                if (ushort(mask)) {
-                    // found a match
-                    // same as: return n - s + _bit_scan_forward(mask) / 2
-                    return (reinterpret_cast<const char *>(n) - reinterpret_cast<const char *>(s)
-                            + qCountTrailingZeroBits(mask)) >> 1;
-                }
-            }
-
-#  if !defined(__OPTIMIZE_SIZE__)
-            // we're going to read n[0..3] (8 bytes)
-            if (e - n > 3) {
-                __m128i data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(n));
-                __m128i result = _mm_cmpeq_epi16(data, mch);
-                uint mask = _mm_movemask_epi8(result);
-                if (uchar(mask)) {
-                    // found a match
-                    // same as: return n - s + _bit_scan_forward(mask) / 2
-                    return (reinterpret_cast<const char *>(n) - reinterpret_cast<const char *>(s)
-                            + qCountTrailingZeroBits(mask)) >> 1;
-                }
-
-                n += 4;
-            }
-
-            return UnrollTailLoop<3>::exec(e - n, -1,
-                                           [=](int i) { return n[i] == c; },
-                                           [=](int i) { return n - s + i; });
-#  endif
-#endif
-#if defined(__ARM_NEON__) && defined(Q_PROCESSOR_ARM_64) // vaddv is only available on Aarch64
-            const uint16x8_t vmask = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
-            const uint16x8_t ch_vec = vdupq_n_u16(c);
-            for (const ushort *next = n + 8; next <= e; n = next, next += 8) {
-                uint16x8_t data = vld1q_u16(n);
-                uint mask = vaddvq_u16(vandq_u16(vceqq_u16(data, ch_vec), vmask));
-                if (ushort(mask)) {
-                    // found a match
-                    return n - s + qCountTrailingZeroBits(mask);
-                }
-            }
-#endif // aarch64
-            --n;
-            while (++n != e)
-                if (*n == c)
-                    return  n - s;
+            n = QtPrivate::qustrchr(QStringView(n, e), c);
+            if (n != e)
+                return n - s;
         } else {
             c = foldCase(c);
             --n;
