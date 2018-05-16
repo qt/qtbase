@@ -45,7 +45,7 @@
 QT_BEGIN_NAMESPACE
 
 template<bool RGBA>
-static inline void convertARGBToARGB32PM_sse4(uint *buffer, const uint *src, int count)
+static void convertARGBToARGB32PM_sse4(uint *buffer, const uint *src, int count)
 {
     int i = 0;
     const __m128i alphaMask = _mm_set1_epi32(0xff000000);
@@ -83,7 +83,7 @@ static inline void convertARGBToARGB32PM_sse4(uint *buffer, const uint *src, int
                     _mm_storeu_si128((__m128i *)&buffer[i], srcVector);
             }
         } else {
-            _mm_storeu_si128((__m128i *)&buffer[i], _mm_setzero_si128());
+            _mm_storeu_si128((__m128i *)&buffer[i], zero);
         }
     }
 
@@ -101,6 +101,20 @@ void QT_FASTCALL convertARGB32ToARGB32PM_sse4(uint *buffer, int count, const QVe
 void QT_FASTCALL convertRGBA8888ToARGB32PM_sse4(uint *buffer, int count, const QVector<QRgb> *)
 {
     convertARGBToARGB32PM_sse4<true>(buffer, buffer, count);
+}
+
+const uint *QT_FASTCALL fetchARGB32ToARGB32PM_sse4(uint *buffer, const uchar *src, int index, int count,
+                                                  const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToARGB32PM_sse4<false>(buffer, reinterpret_cast<const uint *>(src) + index, count);
+    return buffer;
+}
+
+const uint *QT_FASTCALL fetchRGBA8888ToARGB32PM_sse4(uint *buffer, const uchar *src, int index, int count,
+                                                     const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToARGB32PM_sse4<true>(buffer, reinterpret_cast<const uint *>(src) + index, count);
+    return buffer;
 }
 
 void QT_FASTCALL storeRGB32FromARGB32PM_sse4(uchar *dest, const uint *src, int index, int count,
