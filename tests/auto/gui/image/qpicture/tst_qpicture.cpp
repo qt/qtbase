@@ -33,10 +33,8 @@
 #include <qpainter.h>
 #include <qimage.h>
 #include <qpaintengine.h>
-#ifndef QT_NO_WIDGETS
-#include <qdesktopwidget.h>
-#include <qapplication.h>
-#endif
+#include <qguiapplication.h>
+#include <qscreen.h>
 #include <limits.h>
 
 class tst_QPicture : public QObject
@@ -53,11 +51,7 @@ private slots:
     void boundingRect();
     void swap();
     void serialization();
-
-#ifndef QT_NO_WIDGETS
     void save_restore();
-#endif
-
     void boundaryValues_data();
     void boundaryValues();
 };
@@ -244,30 +238,23 @@ void tst_QPicture::serialization()
     }
 }
 
-
-#ifndef QT_NO_WIDGETS
-static QPointF scalePoint(const QPointF &point, QPaintDevice *sourceDevice, QPaintDevice *destDevice)
+static QRectF scaleRect(const QRectF &rect, qreal xf, qreal yf)
 {
-    return QPointF(point.x() * qreal(destDevice->logicalDpiX()) / qreal(sourceDevice->logicalDpiX()),
-                   point.y() * qreal(destDevice->logicalDpiY()) / qreal(sourceDevice->logicalDpiY()));
-}
-
-static QRectF scaleRect(const QRectF &rect, QPaintDevice *sourceDevice, QPaintDevice *destDevice)
-{
-    return QRectF(rect.left() * qreal(destDevice->logicalDpiX()) / qreal(sourceDevice->logicalDpiX()),
-                  rect.top() * qreal(destDevice->logicalDpiY()) / qreal(sourceDevice->logicalDpiY()),
-                  rect.width() * qreal(destDevice->logicalDpiX()) / qreal(sourceDevice->logicalDpiX()),
-                  rect.height() * qreal(destDevice->logicalDpiY()) / qreal(sourceDevice->logicalDpiY()));
+    return QRectF(rect.left() * xf, rect.top() * yf, rect.width() * xf, rect.height() * yf);
 }
 
 static void paintStuff(QPainter *p)
 {
-    QPaintDevice *screenDevice = QApplication::desktop();
-    p->drawRect(scaleRect(QRectF(100, 100, 100, 100), screenDevice, p->device()));
+    const QScreen *screen = QGuiApplication::primaryScreen();
+    // Calculate factors from the screen resolution against QPicture's 96DPI
+    // (enforced by Qt::AA_Use96Dpi as set by QTEST_MAIN).
+    const qreal xf = qreal(p->device()->logicalDpiX()) / screen->logicalDotsPerInchX();
+    const qreal yf = qreal(p->device()->logicalDpiY()) / screen->logicalDotsPerInchY();
+    p->drawRect(scaleRect(QRectF(100, 100, 100, 100), xf, yf));
     p->save();
-    p->translate(scalePoint(QPointF(10, 10), screenDevice, p->device()));
+    p->translate(10 * xf, 10 * yf);
     p->restore();
-    p->drawRect(scaleRect(QRectF(100, 100, 100, 100), screenDevice, p->device()));
+    p->drawRect(scaleRect(QRectF(100, 100, 100, 100), xf, yf));
 }
 
 /* See task: 41469
@@ -298,7 +285,6 @@ void tst_QPicture::save_restore()
 
     QVERIFY( pix1.toImage() == pix2.toImage() );
 }
-#endif
 
 void tst_QPicture::boundaryValues_data()
 {
