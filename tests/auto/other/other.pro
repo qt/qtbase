@@ -48,7 +48,7 @@ cross_compile: SUBDIRS -= \
    atwrapper \
    compiler
 
-!qtConfig(accessibility): SUBDIRS -= qaccessibility
+winrt|!qtConfig(accessibility): SUBDIRS -= qaccessibility
 
 !qtConfig(accessibility-atspi-bridge): SUBDIRS -= qaccessibilitylinux
 
