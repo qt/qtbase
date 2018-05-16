@@ -266,6 +266,7 @@
         "networkinterface": {
             "label": "QNetworkInterface",
             "purpose": "Supports enumerating a host's IP addresses and network interfaces.",
+            "condition": "!config.emscripten",
             "section": "Networking",
             "output": [ "publicFeature", "feature" ]
         },
