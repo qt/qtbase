@@ -448,6 +448,12 @@ void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port, O
         return;
     }
 
+    if (!supportsSsl()) {
+        qCWarning(lcSsl, "QSslSocket::connectToHostEncrypted: TLS initialization failed");
+        d->setErrorAndEmit(QAbstractSocket::SslInternalError, tr("TLS initialization failed"));
+        return;
+    }
+
     d->init();
     d->autoStartHandshake = true;
     d->initialized = true;
@@ -476,6 +482,12 @@ void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port,
     if (d->state == ConnectedState || d->state == ConnectingState) {
         qCWarning(lcSsl,
                   "QSslSocket::connectToHostEncrypted() called when already connecting/connected");
+        return;
+    }
+
+    if (!supportsSsl()) {
+        qCWarning(lcSsl, "QSslSocket::connectToHostEncrypted: TLS initialization failed");
+        d->setErrorAndEmit(QAbstractSocket::SslInternalError, tr("TLS initialization failed"));
         return;
     }
 
@@ -1823,6 +1835,12 @@ void QSslSocket::startClientEncryption()
                   "QSslSocket::startClientEncryption: cannot start handshake when not connected");
         return;
     }
+
+    if (!supportsSsl()) {
+        qCWarning(lcSsl, "QSslSocket::startClientEncryption: TLS initialization failed");
+        d->setErrorAndEmit(QAbstractSocket::SslInternalError, tr("TLS initialization failed"));
+        return;
+    }
 #ifdef QSSLSOCKET_DEBUG
     qCDebug(lcSsl) << "QSslSocket::startClientEncryption()";
 #endif
@@ -1861,6 +1879,11 @@ void QSslSocket::startServerEncryption()
 #ifdef QSSLSOCKET_DEBUG
     qCDebug(lcSsl) << "QSslSocket::startServerEncryption()";
 #endif
+    if (!supportsSsl()) {
+        qCWarning(lcSsl, "QSslSocket::startServerEncryption: TLS initialization failed");
+        d->setErrorAndEmit(QAbstractSocket::SslInternalError, tr("TLS initialization failed"));
+        return;
+    }
     d->mode = SslServerMode;
     emit modeChanged(d->mode);
     d->startServerEncryption();
