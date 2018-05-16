@@ -14,6 +14,6 @@ SUBDIRS = \
     util \
     itemmodels \
 
-!qtConfig(opengl): SUBDIRS -= qopengl qopenglconfig
+!qtConfig(opengl)|winrt: SUBDIRS -= qopengl qopenglconfig
 
 !qtConfig(vulkan): SUBDIRS -= qvulkan
