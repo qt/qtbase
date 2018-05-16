@@ -2070,8 +2070,6 @@ void tst_QSqlQuery::prepare_bind_exec()
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     const QString qtest_prepare(qTableName("qtest_prepare", __FILE__, db));
 
-    if (dbType == QSqlDriver::Interbase && (db.databaseName() == "silence.nokia.troll.no:c:\\ibase\\testdb_ascii" || db.databaseName() == "/opt/interbase/qttest.gdb"))
-        QSKIP("Can't transliterate extended unicode to ascii");
     if (dbType == QSqlDriver::DB2)
         QSKIP("Needs someone with more Unicode knowledge than I have to fix");
 
