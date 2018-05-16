@@ -311,12 +311,19 @@ bool QtPrivate::isAscii(QLatin1String s) Q_DECL_NOTHROW
     const char *ptr = s.begin();
     const char *end = s.end();
 
-#if defined(__AVX2__)
-    if (!simdTestMask(ptr, end, 0x80808080))
-        return false;
-#elif defined(__SSE2__)
+#if defined(__SSE2__)
     // Testing for the high bit can be done efficiently with just PMOVMSKB
-    while (ptr + 16 < end) {
+#  if defined(__AVX2__)
+    while (ptr + 32 <= end) {
+        __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(ptr));
+        quint32 mask = _mm256_movemask_epi8(data);
+        if (mask)
+            return false;
+        ptr += 32;
+    }
+#  endif
+
+    while (ptr + 16 <= end) {
         __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
         quint32 mask = _mm_movemask_epi8(data);
         if (mask)
