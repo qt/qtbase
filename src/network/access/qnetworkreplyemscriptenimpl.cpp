@@ -300,8 +300,7 @@ void QNetworkReplyEmscriptenImplPrivate::jsRequest(const QString &verb, const QS
         if (headersData) {
             var headers = headersData.split("&");
             for (var i = 0; i < headers.length; i++) {
-                 //xhr.setRequestHeader(headers[i].split(":")[0],headers[i].split(":")[1]);
-                 Module.print(headers[i].split(":")[0]);
+                 xhr.setRequestHeader(headers[i].split(":")[0], headers[i].split(":")[1]);
             }
         }
 
@@ -347,9 +346,7 @@ void QNetworkReplyEmscriptenImplPrivate::jsRequest(const QString &verb, const QS
             _free(ptr);
 
         };
-        Module.print("Send xhr: " + verb + ": " + url);
         //TODO other operations, handle user/pass, handle binary data
-       //xhr.setRequestHeader(header, value);
         xhr.send(formData);
 
       }, verb.toLatin1().data(),
@@ -359,7 +356,7 @@ void QNetworkReplyEmscriptenImplPrivate::jsRequest(const QString &verb, const QS
                     errorCallback,
                     onResponseHeadersCallback,
                     extraData.toLatin1().data(),
-                    headersList.join(QString::fromUtf8("&")).data(),
+                    headersList.join(QString::QLatin1String("&")).toLatin1().data(),
                     this
                     );
 }
