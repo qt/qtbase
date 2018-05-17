@@ -156,6 +156,9 @@ void tst_QWidget_window::tst_move_show()
     QWidget w;
     w.move(100, 100);
     w.show();
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Winrt does not support move", Abort);
+#endif
     QCOMPARE(w.pos(), QPoint(100, 100));
 //    QCoreApplication::processEvents(QEventLoop::AllEvents, 3000);
 }
@@ -185,6 +188,9 @@ void tst_QWidget_window::tst_resize_show()
     QWidget w;
     w.resize(200, 200);
     w.show();
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Winrt does not support resize", Abort);
+#endif
     QCOMPARE(w.size(), QSize(200, 200));
 //    QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
 }
@@ -704,6 +710,9 @@ void tst_QWidget_window::tst_resize_count()
         ResizeWidget resize;
         resize.show();
         QVERIFY(QTest::qWaitForWindowExposed(&resize));
+#ifdef Q_OS_WINRT
+        QEXPECT_FAIL("", "Winrt does not support resize", Abort);
+#endif
         QCOMPARE(resize.resizeCount, 1);
         resize.resizeCount = 0;
         QSize size = resize.size();
@@ -901,6 +910,11 @@ void tst_QWidget_window::setWindowState()
     w.setWindowState(state);
     QCOMPARE(w.windowState(), state);
     w.show();
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("0", "Winrt windows are maximized by default", Abort);
+    QEXPECT_FAIL("Qt::WindowMinimized", "Winrt windows are maximized by default", Abort);
+    QEXPECT_FAIL("Qt::WindowFullScreen", "Winrt windows are maximized by default", Abort);
+#endif
     QCOMPARE(w.windowState(), state);
     QCOMPARE(w.windowHandle()->windowStates(), state);
     if (!(state & Qt::WindowMinimized))

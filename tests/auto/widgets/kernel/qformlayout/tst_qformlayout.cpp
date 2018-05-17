@@ -273,6 +273,9 @@ void tst_QFormLayout::wrapping()
     w.setWindowTitle(QTest::currentTestFunction());
     w.show();
 
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "setFixedWidth does not work on WinRT", Abort);
+#endif
     QCOMPARE(le->geometry().y() > lbl->geometry().y(), true);
 
     //TODO: additional tests covering different wrapping cases

@@ -279,6 +279,9 @@ public:
 
 void tst_QApplication::alert()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT does not support more than 1 native widget at the same time");
+#endif
     int argc = 0;
     QApplication app(argc, 0);
     app.alert(0, 0);
@@ -822,6 +825,9 @@ public:
 
 void tst_QApplication::closeAllWindows()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("PromptOnCloseWidget does not work on WinRT - QTBUG-68297");
+#endif
     int argc = 0;
     QApplication app(argc, 0);
 
@@ -927,6 +933,9 @@ void tst_QApplication::libraryPaths()
         QStringList expected = QSet<QString>::fromList((QStringList() << installPathPlugins << appDirPath)).toList();
         expected.sort();
 
+#ifdef Q_OS_WINRT
+        QEXPECT_FAIL("", "On WinRT PluginsPath is outside of sandbox. QTBUG-68297", Abort);
+#endif
         QVERIFY2(isPathListIncluded(actual, expected),
                  qPrintable("actual:\n - " + actual.join("\n - ") +
                             "\nexpected:\n - " + expected.join("\n - ")));
@@ -1046,6 +1055,9 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
             << QDir(app.applicationDirPath()).canonicalPath()
             << QDir(QDir::fromNativeSeparators(QString::fromLatin1(validPath))).canonicalPath();
 
+#ifdef Q_OS_WINRT
+        QEXPECT_FAIL("", "On WinRT PluginsPath is outside of sandbox. QTBUG-68297", Abort);
+#endif
         QVERIFY2(isPathListIncluded(app.libraryPaths(), expected),
                  qPrintable("actual:\n - " + app.libraryPaths().join("\n - ") +
                             "\nexpected:\n - " + expected.join("\n - ")));
@@ -1750,6 +1762,9 @@ void tst_QApplication::focusMouseClick()
     QSpontaneKeyEvent::setSpontaneous(&ev);
     QVERIFY(ev.spontaneous());
     qApp->notify(&w2, &ev);
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Fails on WinRT - QTBUG-68297", Abort);
+#endif
     QTRY_COMPARE(QApplication::focusWidget(), &w2);
 
     // now back to tab focus and click again (it already had focus) -> focus should stay
