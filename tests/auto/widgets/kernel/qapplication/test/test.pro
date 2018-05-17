@@ -7,7 +7,9 @@ QT += core-private gui-private
 SOURCES += ../tst_qapplication.cpp
 TARGET = ../tst_qapplication
 
-TESTDATA = ../test/test.pro ../tmp/README
+builtin_testdata: DEFINES += BUILTIN_TESTDATA
+
+TESTDATA = ../test/test.pro ../tmp/README ../modal
 
 !winrt {
   SUBPROGRAMS = desktopsettingsaware modal

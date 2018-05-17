@@ -888,7 +888,11 @@ bool isPathListIncluded(const QStringList &l, const QStringList &r)
 #define QT_TST_QAPP_DEBUG
 void tst_QApplication::libraryPaths()
 {
+#ifndef BUILTIN_TESTDATA
         const QString testDir = QFileInfo(QFINDTESTDATA("test/test.pro")).absolutePath();
+#else
+        const QString testDir = QFileInfo(QFINDTESTDATA("test.pro")).absolutePath();
+#endif
         QVERIFY(!testDir.isEmpty());
     {
         QApplication::setLibraryPaths(QStringList() << testDir);
