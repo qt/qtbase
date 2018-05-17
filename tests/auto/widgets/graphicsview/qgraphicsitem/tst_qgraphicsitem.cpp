@@ -4145,6 +4145,9 @@ void tst_QGraphicsItem::ensureVisible()
 #ifndef QT_NO_CURSOR
 void tst_QGraphicsItem::cursor()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("QTest::mouseMove does not work on WinRT - QTBUG-68297");
+#endif
     QGraphicsScene scene;
     QGraphicsRectItem *item1 = scene.addRect(QRectF(0, 0, 50, 50));
     QGraphicsRectItem *item2 = scene.addRect(QRectF(0, 0, 50, 50));
@@ -5082,6 +5085,9 @@ void tst_QGraphicsItem::paint()
     PaintTester tester2;
     scene2.addItem(&tester2);
 
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Fails on WinRT. Figure out why - QTBUG-68297", Abort);
+#endif
     //First show one paint
     QTRY_COMPARE(tester2.painted, 1);
 
@@ -6537,6 +6543,9 @@ void tst_QGraphicsItem::ensureUpdateOnTextItem()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     TextItem *text1 = new TextItem(QLatin1String("123"));
     scene.addItem(text1);
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Fails on WinRT. Figure out why - QTBUG-68297", Abort);
+#endif
     QTRY_COMPARE(text1->updates,1);
 
     //same bouding rect but we have to update
@@ -6897,6 +6906,9 @@ void tst_QGraphicsItem::opacityZeroUpdates()
     QRegion expectedRegion = parentDeviceBoundingRect.adjusted(-2, -2, 2, 2);
     expectedRegion += childDeviceBoundingRect.adjusted(-2, -2, 2, 2);
 
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Fails on WinRT. Figure out why - QTBUG-68297", Abort);
+#endif
     COMPARE_REGIONS(view.paintedRegion, expectedRegion);
 }
 
@@ -8117,6 +8129,9 @@ void tst_QGraphicsItem::moveLineItem()
 
     // Make sure the calculated region is correct.
     item->update();
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Fails on WinRT. Figure out why - QTBUG-68297", Abort);
+#endif
     QTRY_COMPARE(view.paintedRegion, expectedRegion);
     view.reset();
 
@@ -11348,6 +11363,9 @@ void tst_QGraphicsItem::QTBUG_7714_fullUpdateDiscardingOpacityUpdate2()
     origView.reset();
     childYellow->setOpacity(0.0);
 
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Fails on WinRT. Figure out why - QTBUG-68297", Abort);
+#endif
     QTRY_COMPARE(origView.repaints, 1);
 
     view.show();

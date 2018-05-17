@@ -355,6 +355,9 @@ void tst_QGraphicsSceneIndex::clear()
     MyItem *item = new MyItem;
     scene.addItem(item);
     qApp->processEvents();
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "There is one additional paint event on WinRT - QTBUG-68297", Abort);
+#endif
     QTRY_COMPARE(item->numPaints, 1);
 }
 

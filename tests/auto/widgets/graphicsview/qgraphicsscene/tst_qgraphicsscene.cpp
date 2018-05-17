@@ -2657,7 +2657,7 @@ void tst_QGraphicsScene::render()
 
 void tst_QGraphicsScene::renderItemsWithNegativeWidthOrHeight()
 {
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED) || defined(Q_OS_WINRT)
     QSKIP("Test only works on platforms with resizable windows");
 #endif
 

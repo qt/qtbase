@@ -30,3 +30,5 @@ SUBDIRS=\
 !contains(styles, fusion):SUBDIRS -= \
     qgraphicsproxywidget \
     qgraphicswidget \
+
+winrt: SUBDIRS -= qgraphicsview # QTBUG-68297
