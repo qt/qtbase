@@ -1463,6 +1463,9 @@ void tst_QListView::wordWrap()
     QApplication::processEvents();
 
     QTRY_COMPARE(lv.horizontalScrollBar()->isVisible(), false);
+#ifdef Q_OS_WINRT
+QSKIP("setFixedSize does not work on WinRT. Vertical scroll bar will not be visible.");
+#endif
     QTRY_COMPARE(lv.verticalScrollBar()->isVisible(), true);
 }
 
@@ -2084,6 +2087,9 @@ void tst_QListView::taskQTBUG_21115_scrollToAndHiddenItems_data()
 void tst_QListView::taskQTBUG_21115_scrollToAndHiddenItems()
 {
     QFETCH(int, flow);
+#ifdef Q_OS_WINRT
+    QSKIP("Fails on WinRT - QTBUG-68297");
+#endif
 
     ScrollPerItemListView lv;
     lv.setUniformItemSizes(true);
@@ -2294,6 +2300,9 @@ void tst_QListView::testScrollToWithHidden()
 
     lv.scrollTo(model.index(26, 0));
     int expectedScrollBarValue = lv.verticalScrollBar()->value();
+#ifdef Q_OS_WINRT
+    QSKIP("Might fail on WinRT - QTBUG-68297");
+#endif
     QVERIFY(expectedScrollBarValue != 0);
 
     lv.scrollTo(model.index(25, 0));

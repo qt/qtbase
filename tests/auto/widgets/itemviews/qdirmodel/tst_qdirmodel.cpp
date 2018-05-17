@@ -314,6 +314,9 @@ void tst_QDirModel::mkdir()
     model.setReadOnly(false);
 
     QModelIndex parent = model.index(SRCDIR "dirtest");
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Sandboxed applications cannot access SRCDIR - QTBUG-68297", Abort);
+#endif
     QVERIFY(parent.isValid());
     QCOMPARE(model.rowCount(parent), 1); // start out with only 'test1' - in's in the depot
 
@@ -351,6 +354,9 @@ void tst_QDirModel::rmdir()
     model.setReadOnly(false);
 
     QModelIndex parent = model.index(SRCDIR  "/dirtest");
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Sandboxed applications cannot access SRCDIR - QTBUG-68297", Abort);
+#endif
     QVERIFY(parent.isValid());
     QCOMPARE(model.rowCount(parent), 1); // start out with only 'test1' - in's in the depot
 
@@ -460,6 +466,9 @@ bool tst_QDirModel::rowsAboutToBeRemoved_cleanup(const QString &test_path)
 
 void tst_QDirModel::rowsAboutToBeRemoved()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Test fails on WinRT - QTBUG-68297");
+#endif
     QFETCH(QString, test_path);
     QFETCH(QStringList, initial_files);
     QFETCH(int, remove_row);
@@ -571,6 +580,9 @@ void tst_QDirModel::unreadable()
 void tst_QDirModel::filePath()
 {
     QFile::remove(SRCDIR "test.lnk");
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Sandboxed applications cannot access SRCDIR - QTBUG-68297", Abort);
+#endif
     QVERIFY(QFile(SRCDIR "tst_qdirmodel.cpp").link(SRCDIR "test.lnk"));
     QDirModel model;
     model.setResolveSymlinks(false);
@@ -629,6 +641,9 @@ void tst_QDirModel::filter()
     QDirModel model;
     model.setNameFilters(QStringList() << "*.nada");
     QModelIndex index = model.index(SRCDIR "test");
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Sandboxed applications cannot access SRCDIR - QTBUG-68297", Abort);
+#endif
     QCOMPARE(model.rowCount(index), 0);
     QModelIndex index2 = model.index(SRCDIR "test/file01.tst");
     QVERIFY(!index2.isValid());
@@ -638,6 +653,9 @@ void tst_QDirModel::filter()
 void tst_QDirModel::task244669_remove()
 {
     QFile f1(SRCDIR "dirtest/f1.txt");
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Sandboxed applications cannot access SRCDIR - QTBUG-68297", Abort);
+#endif
     QVERIFY(f1.open(QIODevice::WriteOnly));
     f1.close();
     QFile f2(SRCDIR "dirtest/f2.txt");

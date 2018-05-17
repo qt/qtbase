@@ -1217,6 +1217,9 @@ void tst_QAbstractItemView::task250754_fontChange()
 
     font.setPixelSize(60);
     tree.setFont(font);
+#ifdef Q_OS_WINRT
+    QSKIP("Resizing the widget does not work as expected for WinRT, so the scroll bar might not be visible");
+#endif
     //now with the huge items, the scrollbar must be visible
     QTRY_VERIFY(tree.verticalScrollBar()->isVisible());
 
@@ -1235,6 +1238,9 @@ void tst_QAbstractItemView::task200665_itemEntered()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QCursor::setPos(view.geometry().center());
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "QCursor::setPos does not work on WinRT", Abort);
+#endif
     QTRY_COMPARE(QCursor::pos(), view.geometry().center());
     QSignalSpy spy(&view, SIGNAL(entered(QModelIndex)));
     view.verticalScrollBar()->setValue(view.verticalScrollBar()->maximum());
@@ -1534,6 +1540,9 @@ void tst_QAbstractItemView::testClickedSignal()
     QSignalSpy clickedSpy(&view, SIGNAL(clicked(QModelIndex)));
 
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, p);
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Fails on WinRT - QTBUG-68297", Abort);
+#endif
     QCOMPARE(clickedSpy.count(), 1);
 
     QTest::mouseClick(view.viewport(), Qt::RightButton, 0, p);
@@ -2257,6 +2266,9 @@ void tst_QAbstractItemView::QTBUG46785_mouseout_hover_state()
 
     QTest::mouseMove(table.viewport(), QPoint(-50, 0));
 
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "QTest::mouseMove does not work on WinRT", Abort);
+#endif
     QTRY_VERIFY(delegate.m_paintedWithoutHover);
 }
 

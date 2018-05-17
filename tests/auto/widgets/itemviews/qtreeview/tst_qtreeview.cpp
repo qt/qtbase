@@ -839,6 +839,9 @@ void tst_QTreeView::horizontalScrollMode()
 
     QCOMPARE(view.horizontalScrollMode(), QAbstractItemView::ScrollPerPixel);
     QCOMPARE(view.horizontalScrollBar()->minimum(), 0);
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "setFixedSize does not work on WinRT - QTBUG-68297", Abort);
+#endif
     QVERIFY(view.horizontalScrollBar()->maximum() > 2);
 
     view.setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
@@ -1975,6 +1978,10 @@ void tst_QTreeView::setSelection()
     QVERIFY(selectionModel);
 
     QModelIndexList selectedIndexes = selectionModel->selectedIndexes();
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("(0,-20,20,50),rows", "Fails on WinRT - QTBUG-68297", Abort);
+    QEXPECT_FAIL("(0,-50,20,90),rows", "Fails on WinRT - QTBUG-68297", Abort);
+#endif
     QCOMPARE(selectedIndexes.count(), expectedItems.count());
     for (int i = 0; i < selectedIndexes.count(); ++i) {
         QModelIndex idx = selectedIndexes.at(i);
