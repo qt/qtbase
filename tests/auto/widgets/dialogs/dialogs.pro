@@ -18,3 +18,4 @@ SUBDIRS=\
 
 mac:qinputdialog.CONFIG += no_check_target # QTBUG-25496
 mingw: SUBDIRS -= qfilesystemmodel # QTBUG-29403
+winrt: SUBDIRS -= qfiledialog qfiledialog2 qmessagebox # QTBUG-68297
