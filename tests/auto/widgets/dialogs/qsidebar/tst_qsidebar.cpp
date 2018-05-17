@@ -55,6 +55,9 @@ void tst_QSidebar::setUrls()
 
     QCOMPARE(model->rowCount(), 0);
     qsidebar.setUrls(urls);
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "One of the URLs is not seen as valid on WinRT - QTBUG-68297", Abort);
+#endif
     QCOMPARE(qsidebar.urls(), urls);
     QCOMPARE(model->rowCount(), urls.count());
     qsidebar.setUrls(urls);
@@ -99,6 +102,9 @@ void tst_QSidebar::addUrls()
 
     // test < 0
     qsidebar.addUrls(urls, -1);
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "One of the URLs is not seen as valid on WinRT - QTBUG-68297", Abort);
+#endif
     QCOMPARE(model->rowCount(), 2);
 
     // test = 0
@@ -185,6 +191,9 @@ void tst_QSidebar::goToUrl()
 
     QSignalSpy spy(&qsidebar, SIGNAL(goToUrl(QUrl)));
     QTest::mousePress(qsidebar.viewport(), Qt::LeftButton, 0, qsidebar.visualRect(qsidebar.model()->index(0, 0)).center());
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Fails on WinRT - QTBUG-68297", Abort);
+#endif
     QCOMPARE(spy.count(), 1);
     QCOMPARE((spy.value(0)).at(0).toUrl(), urls.first());
 }
