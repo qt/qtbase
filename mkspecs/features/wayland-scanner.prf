@@ -34,25 +34,32 @@ defineReplace(waylandScannerHeaderFiles) {
     return($$wayland_header_files_for_side)
 }
 
-qt_install_headers {
+# 1) if we are a module, we need to create the headers in our private inc dir in qtbase
+# 2) if also qt_install_headers is set, we need to generate INSTALLS rules in addition
+# 3) if we are not a module, we just generate the headers in the current directory
+!isEmpty(MODULE) {
     header_dest = $$MODULE_BASE_OUTDIR/include/$$MODULE_INCNAME/$$VERSION/$$MODULE_INCNAME/private
 
     header_files_client = $$waylandScannerHeaderFiles(client, $$header_dest)
     !isEmpty(header_files_client) {
-        wayland_generated_client_headers.files = $$header_files_client
-        wayland_generated_client_headers.path = $$private_headers.path
-        wayland_generated_client_headers.CONFIG = no_check_exist
-        INSTALLS += wayland_generated_client_headers
+        qt_install_headers {
+            wayland_generated_client_headers.files = $$header_files_client
+            wayland_generated_client_headers.path = $$private_headers.path
+            wayland_generated_client_headers.CONFIG = no_check_exist
+            INSTALLS += wayland_generated_client_headers
+        }
         WAYLAND_CLIENT_HEADER_DEST = $$header_dest/
         WAYLAND_CLIENT_INCLUDE_DIR = $$MODULE_INCNAME/private
     }
 
     header_files_server = $$waylandScannerHeaderFiles(server, $$header_dest)
     !isEmpty(header_files_server) {
-        wayland_generated_server_headers.files = $$header_files_server
-        wayland_generated_server_headers.path = $$private_headers.path
-        wayland_generated_server_headers.CONFIG = no_check_exist
-        INSTALLS += wayland_generated_server_headers
+        qt_install_headers {
+            wayland_generated_server_headers.files = $$header_files_server
+            wayland_generated_server_headers.path = $$private_headers.path
+            wayland_generated_server_headers.CONFIG = no_check_exist
+            INSTALLS += wayland_generated_server_headers
+        }
         WAYLAND_SERVER_HEADER_DEST = $$header_dest/
         WAYLAND_SERVER_INCLUDE_DIR = $$MODULE_INCNAME/private
     }
