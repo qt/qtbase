@@ -193,6 +193,16 @@ QByteArray QSslKeyPrivate::toPem(const QByteArray &passPhrase) const
     if (!QSslSocket::supportsSsl() || isNull || algorithm == QSsl::Opaque)
         return QByteArray();
 
+    // ### the cipher should be selectable in the API:
+    const EVP_CIPHER *cipher = nullptr;
+    if (type == QSsl::PrivateKey && !passPhrase.isEmpty()) {
+#ifndef OPENSSL_NO_DES
+        cipher = q_EVP_des_ede3_cbc();
+#else
+        return QByteArray();
+#endif
+    }
+
     BIO *bio = q_BIO_new(q_BIO_s_mem());
     if (!bio)
         return QByteArray();
@@ -205,9 +215,7 @@ QByteArray QSslKeyPrivate::toPem(const QByteArray &passPhrase) const
                 fail = true;
         } else {
             if (!q_PEM_write_bio_RSAPrivateKey(
-                    bio, rsa,
-                    // ### the cipher should be selectable in the API:
-                    passPhrase.isEmpty() ? (const EVP_CIPHER *)0 : q_EVP_des_ede3_cbc(),
+                    bio, rsa, cipher,
                     const_cast<uchar *>((const uchar *)passPhrase.data()), passPhrase.size(), 0, 0)) {
                 fail = true;
             }
@@ -218,9 +226,7 @@ QByteArray QSslKeyPrivate::toPem(const QByteArray &passPhrase) const
                 fail = true;
         } else {
             if (!q_PEM_write_bio_DSAPrivateKey(
-                    bio, dsa,
-                    // ### the cipher should be selectable in the API:
-                    passPhrase.isEmpty() ? (const EVP_CIPHER *)0 : q_EVP_des_ede3_cbc(),
+                    bio, dsa, cipher,
                     const_cast<uchar *>((const uchar *)passPhrase.data()), passPhrase.size(), 0, 0)) {
                 fail = true;
             }
@@ -232,9 +238,7 @@ QByteArray QSslKeyPrivate::toPem(const QByteArray &passPhrase) const
                 fail = true;
         } else {
             if (!q_PEM_write_bio_ECPrivateKey(
-                    bio, ec,
-                    // ### the cipher should be selectable in the API:
-                    passPhrase.isEmpty() ? (const EVP_CIPHER *)0 : q_EVP_des_ede3_cbc(),
+                    bio, ec, cipher,
                     const_cast<uchar *>((const uchar *)passPhrase.data()), passPhrase.size(), 0, 0)) {
                 fail = true;
             }
@@ -274,34 +278,39 @@ Qt::HANDLE QSslKeyPrivate::handle() const
 
 static QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv, int enc)
 {
-#if QT_CONFIG(opensslv11)
-    EVP_CIPHER_CTX *ctx = q_EVP_CIPHER_CTX_new();
-#else
-    EVP_CIPHER_CTX evpCipherContext;
-    EVP_CIPHER_CTX *ctx = &evpCipherContext;
-#endif
-
     const EVP_CIPHER* type = 0;
     int i = 0, len = 0;
 
     switch (cipher) {
     case QSslKeyPrivate::DesCbc:
+#ifndef OPENSSL_NO_DES
         type = q_EVP_des_cbc();
+#endif
         break;
     case QSslKeyPrivate::DesEde3Cbc:
+#ifndef OPENSSL_NO_DES
         type = q_EVP_des_ede3_cbc();
+#endif
         break;
     case QSslKeyPrivate::Rc2Cbc:
+#ifndef OPENSSL_NO_RC2
         type = q_EVP_rc2_cbc();
+#endif
         break;
     }
+
+    if (type == nullptr)
+        return QByteArray();
 
     QByteArray output;
     output.resize(data.size() + EVP_MAX_BLOCK_LENGTH);
 
 #if QT_CONFIG(opensslv11)
+    EVP_CIPHER_CTX *ctx = q_EVP_CIPHER_CTX_new();
     q_EVP_CIPHER_CTX_reset(ctx);
 #else
+    EVP_CIPHER_CTX evpCipherContext;
+    EVP_CIPHER_CTX *ctx = &evpCipherContext;
     q_EVP_CIPHER_CTX_init(ctx);
 #endif
 
