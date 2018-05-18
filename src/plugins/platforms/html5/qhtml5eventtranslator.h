@@ -176,6 +176,7 @@ public:
     static int keyboard_cb(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData);
     static int mouse_cb(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
     static int focus_cb(int eventType, const EmscriptenFocusEvent *focusEvent, void *userData);
+    static int wheel_cb(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData);
 
     void processEvents();
 

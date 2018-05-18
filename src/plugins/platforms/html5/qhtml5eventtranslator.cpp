@@ -60,6 +60,8 @@ QHtml5EventTranslator::QHtml5EventTranslator(QObject *parent)
 
     emscripten_set_focus_callback(0,(void *)this, 1, &focus_cb);
 
+    emscripten_set_wheel_callback(0, (void *)this, 1, &wheel_cb);
+
     // The Platform Detect: expand coverage and move as needed
     enum Platform {
         GenericPlatform,
@@ -410,4 +412,38 @@ int QHtml5EventTranslator::focus_cb(int /*eventType*/, const EmscriptenFocusEven
     return 0;
 }
 
-QT_END_NAMESPACE
+int QHtml5EventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData)
+{
+    EmscriptenMouseEvent mouseEvent = wheelEvent->mouse;
+
+    int scrollFactor = 0;
+    switch (wheelEvent->deltaMode) {
+    case DOM_DELTA_PIXEL://chrome safari
+        scrollFactor = 1;
+        break;
+    case DOM_DELTA_LINE: //firefox
+        scrollFactor = 12;
+        break;
+    case DOM_DELTA_PAGE:
+        scrollFactor = 20;
+        break;
+    };
+
+    Qt::KeyboardModifiers modifiers = translateMouseEventModifier(&mouseEvent);
+    auto timestamp = mouseEvent.timestamp;
+    QPoint globalPoint(mouseEvent.canvasX, mouseEvent.canvasY);
+
+    QWindow *window2 = QHtml5Integration::get()->compositor()->windowAt(globalPoint, 5);
+
+    QPoint localPoint(globalPoint.x() - window2->geometry().x(), globalPoint.y() - window2->geometry().y());
+
+    QPoint pixelDelta;
+
+    if (wheelEvent->deltaY != 0) pixelDelta.setY(wheelEvent->deltaY * scrollFactor);
+    if (wheelEvent->deltaX != 0) pixelDelta.setX(wheelEvent->deltaX * scrollFactor);
+
+    QWindowSystemInterface::handleWheelEvent(window2, timestamp, localPoint, globalPoint, QPoint(), pixelDelta, modifiers);
+
+}
+
+    QT_END_NAMESPACE
