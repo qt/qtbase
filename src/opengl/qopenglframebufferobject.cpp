@@ -152,6 +152,25 @@ QT_BEGIN_NAMESPACE
 #define GL_DEPTH_STENCIL                  0x84F9
 #endif
 
+#ifndef GL_HALF_FLOAT
+#define GL_HALF_FLOAT                     0x140B
+#endif
+
+#ifndef GL_RGBA32F
+#define GL_RGBA32F                        0x8814
+#endif
+
+#ifndef GL_RGB32F
+#define GL_RGB32F                         0x8815
+#endif
+
+#ifndef GL_RGBA16F
+#define GL_RGBA16F                        0x881A
+#endif
+
+#ifndef GL_RGB16F
+#define GL_RGB16F                         0x881B
+#endif
 
 
 /*!
@@ -554,6 +573,8 @@ void QOpenGLFramebufferObjectPrivate::initTexture(int idx)
         pixelType = GL_UNSIGNED_INT_2_10_10_10_REV;
     else if (color.internalFormat == GL_RGB16  || color.internalFormat == GL_RGBA16)
         pixelType = GL_UNSIGNED_SHORT;
+    else if (color.internalFormat == GL_RGB16F  || color.internalFormat == GL_RGBA16F)
+        pixelType = GL_HALF_FLOAT;
 
     funcs.glTexImage2D(target, 0, color.internalFormat, color.size.width(), color.size.height(), 0,
                        GL_RGBA, pixelType, nullptr);
@@ -1379,6 +1400,21 @@ static inline QImage qt_gl_read_framebuffer_rgba16(const QSize &size, bool inclu
     return img;
 }
 
+static inline QImage qt_gl_read_framebuffer_rgba16f(const QSize &size, bool include_alpha, QOpenGLContext *context)
+{
+    // We assume OpenGL (ES) 3.0+ here.
+    QImage img(size, include_alpha ? QImage::Format_RGBA16FPx4_Premultiplied : QImage::Format_RGBX16FPx4);
+    context->functions()->glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_HALF_FLOAT, img.bits());
+    return img;
+}
+
+static inline QImage qt_gl_read_framebuffer_rgba32f(const QSize &size, bool include_alpha, QOpenGLContext *context)
+{
+    QImage img(size, include_alpha ? QImage::Format_RGBA32FPx4_Premultiplied : QImage::Format_RGBX32FPx4);
+    context->functions()->glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_FLOAT, img.bits());
+    return img;
+}
+
 static QImage qt_gl_read_framebuffer(const QSize &size, GLenum internal_format, bool include_alpha, bool flip)
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
@@ -1400,6 +1436,14 @@ static QImage qt_gl_read_framebuffer(const QSize &size, GLenum internal_format, 
         return qt_gl_read_framebuffer_rgba16(size, false, ctx).mirrored(false, flip);
     case GL_RGBA16:
         return qt_gl_read_framebuffer_rgba16(size, include_alpha, ctx).mirrored(false, flip);
+    case GL_RGB16F:
+        return qt_gl_read_framebuffer_rgba16f(size, false, ctx).mirrored(false, flip);
+    case GL_RGBA16F:
+        return qt_gl_read_framebuffer_rgba16f(size, include_alpha, ctx).mirrored(false, flip);
+    case GL_RGB32F:
+        return qt_gl_read_framebuffer_rgba32f(size, false, ctx).mirrored(false, flip);
+    case GL_RGBA32F:
+        return qt_gl_read_framebuffer_rgba32f(size, include_alpha, ctx).mirrored(false, flip);
     case GL_RGBA:
     case GL_RGBA8:
     default:

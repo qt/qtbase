@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -47,6 +47,7 @@
 #include <private/qimage_p.h>
 
 #include <qendian.h>
+#include <qrgbaf.h>
 #if QT_CONFIG(thread)
 #include <qsemaphore.h>
 #include <qthreadpool.h>
@@ -313,6 +314,61 @@ void convert_generic_over_rgb64(QImageData *dest, const QImageData *src, Qt::Ima
 #endif
 }
 
+#if QT_CONFIG(raster_fp)
+void convert_generic_over_rgba32f(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
+{
+    Q_ASSERT(dest->format >= QImage::Format_RGBX16FPx4);
+    Q_ASSERT(src->format >= QImage::Format_RGBX16FPx4);
+
+    const FetchAndConvertPixelsFuncFP fetch = qFetchToRGBA32F[src->format];
+    const ConvertAndStorePixelsFuncFP store = qStoreFromRGBA32F[dest->format];
+
+    auto convertSegment = [=](int yStart, int yEnd) {
+        QRgba32F buf[BufferSize];
+        QRgba32F *buffer = buf;
+        const uchar *srcData = src->data + yStart * src->bytes_per_line;
+        uchar *destData = dest->data + yStart * dest->bytes_per_line;
+        for (int y = yStart; y < yEnd; ++y) {
+            int x = 0;
+            while (x < src->width) {
+                int l = src->width - x;
+                if (dest->depth == 128)
+                    buffer = reinterpret_cast<QRgba32F *>(destData) + x;
+                else
+                    l = qMin(l, BufferSize);
+                const QRgba32F *ptr = fetch(buffer, srcData, x, l, nullptr, nullptr);
+                store(destData, ptr, x, l, nullptr, nullptr);
+                x += l;
+            }
+            srcData += src->bytes_per_line;
+            destData += dest->bytes_per_line;
+        }
+    };
+#ifdef QT_USE_THREAD_PARALLEL_IMAGE_CONVERSIONS
+    int segments = (qsizetype(src->width) * src->height) >> 16;
+    segments = std::min(segments, src->height);
+
+    QThreadPool *threadPool = QThreadPool::globalInstance();
+    if (segments <= 1 || !threadPool || threadPool->contains(QThread::currentThread()))
+        return convertSegment(0, src->height);
+
+    QSemaphore semaphore;
+    int y = 0;
+    for (int i = 0; i < segments; ++i) {
+        int yn = (src->height - y) / (segments - i);
+        threadPool->start([&, y, yn]() {
+            convertSegment(y, y + yn);
+            semaphore.release(1);
+        });
+        y += yn;
+    }
+    semaphore.acquire(segments);
+#else
+    convertSegment(0, src->height);
+#endif
+}
+#endif
+
 bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::ImageConversionFlags flags)
 {
     // Cannot be used with indexed formats or between formats with different pixel depths.
@@ -337,7 +393,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
             return false;
     }
 
-    Q_ASSERT(destLayout->bpp != QPixelLayout::BPP64);
+    Q_ASSERT(destLayout->bpp < QPixelLayout::BPP64);
     FetchAndConvertPixelsFunc fetch = srcLayout->fetchToARGB32PM;
     ConvertAndStorePixelsFunc store = destLayout->storeFromARGB32PM;
     if (!srcLayout->hasAlphaChannel && destLayout->storeFromRGB32) {
@@ -534,6 +590,102 @@ bool convert_generic_inplace_over_rgb64(QImageData *data, QImage::Format dst_for
     data->format = dst_format;
     return true;
 }
+
+#if QT_CONFIG(raster_fp)
+bool convert_generic_inplace_over_rgba32f(QImageData *data, QImage::Format dst_format, Qt::ImageConversionFlags)
+{
+    Q_ASSERT(data->format >= QImage::Format_RGBX16FPx4);
+    Q_ASSERT(dst_format >= QImage::Format_RGBX16FPx4);
+    const int destDepth = qt_depthForFormat(dst_format);
+    if (data->depth < destDepth)
+        return false;
+
+    const QPixelLayout *srcLayout = &qPixelLayouts[data->format];
+    const QPixelLayout *destLayout = &qPixelLayouts[dst_format];
+
+    QImageData::ImageSizeParameters params = { data->bytes_per_line, data->nbytes };
+    if (data->depth != destDepth) {
+        params = QImageData::calculateImageParameters(data->width, data->height, destDepth);
+        if (!params.isValid())
+            return false;
+    }
+
+    FetchAndConvertPixelsFuncFP fetch = qFetchToRGBA32F[data->format];
+    ConvertAndStorePixelsFuncFP store = qStoreFromRGBA32F[dst_format];
+    if (srcLayout->hasAlphaChannel && !srcLayout->premultiplied &&
+        destLayout->hasAlphaChannel && !destLayout->premultiplied) {
+        // Avoid unnecessary premultiply and unpremultiply when converting between two unpremultiplied formats.
+        // This abuses the fact unpremultiplied formats are always before their premultiplied counterparts.
+        fetch = qFetchToRGBA32F[data->format + 1];
+        store = qStoreFromRGBA32F[dst_format + 1];
+    }
+
+    auto convertSegment = [=](int yStart, int yEnd) {
+        QRgba32F buf[BufferSize];
+        QRgba32F *buffer = buf;
+        uchar *srcData = data->data + yStart * data->bytes_per_line;
+        uchar *destData = srcData;
+        for (int y = yStart; y < yEnd; ++y) {
+            int x = 0;
+            while (x < data->width) {
+                int l = data->width - x;
+                if (srcLayout->bpp == QPixelLayout::BPP32FPx4)
+                    buffer = reinterpret_cast<QRgba32F *>(srcData) + x;
+                else
+                    l = qMin(l, BufferSize);
+                const QRgba32F *ptr = fetch(buffer, srcData, x, l, nullptr, nullptr);
+                store(destData, ptr, x, l, nullptr, nullptr);
+                x += l;
+            }
+            srcData += data->bytes_per_line;
+            destData += params.bytesPerLine;
+        }
+    };
+#ifdef QT_USE_THREAD_PARALLEL_IMAGE_CONVERSIONS
+    int segments = (qsizetype(data->width) * data->height) >> 16;
+    segments = std::min(segments, data->height);
+    QThreadPool *threadPool = QThreadPool::globalInstance();
+    if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) {
+        QSemaphore semaphore;
+        int y = 0;
+        for (int i = 0; i < segments; ++i) {
+            int yn = (data->height - y) / (segments - i);
+            threadPool->start([&, y, yn]() {
+                convertSegment(y, y + yn);
+                semaphore.release(1);
+            });
+            y += yn;
+        }
+        semaphore.acquire(segments);
+        if (data->bytes_per_line != params.bytesPerLine) {
+            // Compress segments to a continuous block
+            y = 0;
+            for (int i = 0; i < segments; ++i) {
+                int yn = (data->height - y) / (segments - i);
+                uchar *srcData = data->data + data->bytes_per_line * y;
+                uchar *destData = data->data + params.bytesPerLine * y;
+                if (srcData != destData)
+                    memmove(destData, srcData, params.bytesPerLine * yn);
+                y += yn;
+            }
+        }
+    } else
+#endif
+        convertSegment(0, data->height);
+    if (params.totalSize != data->nbytes) {
+        Q_ASSERT(params.totalSize < data->nbytes);
+        void *newData = realloc(data->data, params.totalSize);
+        if (newData) {
+            data->data = (uchar *)newData;
+            data->nbytes = params.totalSize;
+        }
+        data->bytes_per_line = params.bytesPerLine;
+    }
+    data->depth = destDepth;
+    data->format = dst_format;
+    return true;
+}
+#endif
 
 static void convert_passthrough(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
@@ -1422,6 +1574,55 @@ static void convert_RGBA64_to_gray16(QImageData *dest, const QImageData *src, Qt
         src_data += sbpl;
         dest_data += dbpl;
     }
+}
+
+template<bool MaskAlpha>
+static void convert_RGBA16FPM_to_RGBA16F(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
+{
+    Q_ASSERT(src->format == QImage::Format_RGBA16FPx4_Premultiplied);
+    Q_ASSERT(dest->format == QImage::Format_RGBA16FPx4 || dest->format == QImage::Format_RGBX16FPx4);
+    Q_ASSERT(src->width == dest->width);
+    Q_ASSERT(src->height == dest->height);
+
+    const int src_pad = (src->bytes_per_line >> 3) - src->width;
+    const int dest_pad = (dest->bytes_per_line >> 3) - dest->width;
+    const QRgba16F *src_data = reinterpret_cast<const QRgba16F *>(src->data);
+    QRgba16F *dest_data = reinterpret_cast<QRgba16F *>(dest->data);
+
+    for (int i = 0; i < src->height; ++i) {
+        const QRgba16F *end = src_data + src->width;
+        while (src_data < end) {
+            *dest_data = src_data->unpremultiplied();
+            if (MaskAlpha)
+                dest_data->setAlpha(1.0f);
+            ++src_data;
+            ++dest_data;
+        }
+        src_data += src_pad;
+        dest_data += dest_pad;
+    }
+}
+
+template<bool MaskAlpha>
+static bool convert_RGBA16FPM_to_RGBA16F_inplace(QImageData *data, Qt::ImageConversionFlags)
+{
+    Q_ASSERT(data->format == QImage::Format_RGBA16FPx4_Premultiplied);
+
+    const int pad = (data->bytes_per_line >> 3) - data->width;
+    QRgba16F *rgb_data = reinterpret_cast<QRgba16F *>(data->data);
+
+    for (int i = 0; i < data->height; ++i) {
+        const QRgba16F *end = rgb_data + data->width;
+        while (rgb_data < end) {
+            *rgb_data = rgb_data->unpremultiplied();
+            if (MaskAlpha)
+                rgb_data->setAlpha(1.0f);
+            ++rgb_data;
+        }
+        rgb_data += pad;
+    }
+    data->format = MaskAlpha ? QImage::Format_RGBX16FPx4 : QImage::Format_RGBA16FPx4;
+    return true;
 }
 
 static QList<QRgb> fix_color_table(const QList<QRgb> &ctbl, QImage::Format format)
@@ -2421,6 +2622,12 @@ static void qInitImageConversions()
     qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBA8888_Premultiplied] = convert_RGB888_to_RGB<false>;
 #endif
 
+    qimage_converter_map[QImage::Format_RGBX16FPx4][QImage::Format_RGBA16FPx4] = convert_passthrough;
+    qimage_converter_map[QImage::Format_RGBX16FPx4][QImage::Format_RGBA16FPx4_Premultiplied] = convert_passthrough;
+
+    qimage_converter_map[QImage::Format_RGBX32FPx4][QImage::Format_RGBA32FPx4] = convert_passthrough;
+    qimage_converter_map[QImage::Format_RGBX32FPx4][QImage::Format_RGBA32FPx4_Premultiplied] = convert_passthrough;
+
     // Inline converters:
     qimage_inplace_converter_map[QImage::Format_Indexed8][QImage::Format_Grayscale8] =
             convert_Indexed8_to_Grayscale8_inplace;
@@ -2525,6 +2732,16 @@ static void qInitImageConversions()
 
     qimage_inplace_converter_map[QImage::Format_BGR888][QImage::Format_RGB888] =
             convert_rgbswap_generic_inplace;
+
+    qimage_inplace_converter_map[QImage::Format_RGBX16FPx4][QImage::Format_RGBA16FPx4] =
+            convert_passthrough_inplace<QImage::Format_RGBA16FPx4>;
+    qimage_inplace_converter_map[QImage::Format_RGBX16FPx4][QImage::Format_RGBA16FPx4_Premultiplied] =
+            convert_passthrough_inplace<QImage::Format_RGBA16FPx4_Premultiplied>;
+
+    qimage_inplace_converter_map[QImage::Format_RGBX32FPx4][QImage::Format_RGBA32FPx4] =
+            convert_passthrough_inplace<QImage::Format_RGBA32FPx4>;
+    qimage_inplace_converter_map[QImage::Format_RGBX32FPx4][QImage::Format_RGBA32FPx4_Premultiplied] =
+            convert_passthrough_inplace<QImage::Format_RGBA32FPx4_Premultiplied>;
 
     // Now architecture specific conversions:
 #if defined(__SSE2__) && defined(QT_COMPILER_SUPPORTS_SSSE3)

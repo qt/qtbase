@@ -1154,6 +1154,11 @@ qt_feature("raster-64bit" PRIVATE
     LABEL "QPainter - 64 bit raster"
     PURPOSE "Internal painting support for 64 bit (16 bpc) rasterization."
 )
+qt_feature("raster-fp" PRIVATE
+    SECTION "Painting"
+    LABEL "QPainter - floating point raster"
+    PURPOSE "Internal painting support for floating point rasterization."
+)
 qt_feature("undocommand" PUBLIC
     SECTION "Utilities"
     LABEL "QUndoCommand"

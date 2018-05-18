@@ -45,6 +45,10 @@
 #include <private/qopenglcontext_p.h>
 #include <private/qopenglextensions_p.h>
 
+#ifndef GL_HALF_FLOAT
+#define GL_HALF_FLOAT                     0x140B
+#endif
+
 #ifndef GL_RED
 #define GL_RED                            0x1903
 #endif
@@ -79,6 +83,14 @@
 
 #ifndef GL_UNSIGNED_INT_2_10_10_10_REV
 #define GL_UNSIGNED_INT_2_10_10_10_REV    0x8368
+#endif
+
+#ifndef GL_RGBA16F
+#define GL_RGBA16F                        0x881A
+#endif
+
+#ifndef GL_RGBA32F
+#define GL_RGBA32F                        0x8814
 #endif
 
 #ifndef GL_TEXTURE_SWIZZLE_R
@@ -236,6 +248,25 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
         pixelType = GL_UNSIGNED_SHORT;
         targetFormat =  image.format();
         break;
+    case QImage::Format_RGBX16FPx4:
+    case QImage::Format_RGBA16FPx4:
+    case QImage::Format_RGBA16FPx4_Premultiplied:
+        if (context->format().majorVersion() >= 3) {
+            externalFormat = GL_RGBA;
+            internalFormat = GL_RGBA16F;
+            pixelType = GL_HALF_FLOAT;
+            targetFormat =  image.format();
+        }
+        break;
+    case QImage::Format_RGBX32FPx4:
+    case QImage::Format_RGBA32FPx4:
+    case QImage::Format_RGBA32FPx4_Premultiplied:
+        externalFormat = internalFormat = GL_RGBA;
+        if (context->format().majorVersion() >= 3)
+            internalFormat = GL_RGBA32F;
+        pixelType = GL_FLOAT;
+        targetFormat =  image.format();
+        break;
     case QImage::Format_Indexed8:
         if (sRgbBinding) {
             // Always needs conversion
@@ -333,6 +364,10 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
             targetFormat = QImage::Format_RGBA8888_Premultiplied;
         else if (targetFormat == QImage::Format_RGBA64)
             targetFormat = QImage::Format_RGBA64_Premultiplied;
+        else if (targetFormat == QImage::Format_RGBA16FPx4)
+            targetFormat = QImage::Format_RGBA16FPx4_Premultiplied;
+        else if (targetFormat == QImage::Format_RGBA32FPx4)
+            targetFormat = QImage::Format_RGBA32FPx4_Premultiplied;
     } else {
         if (targetFormat == QImage::Format_ARGB32_Premultiplied)
             targetFormat = QImage::Format_ARGB32;
@@ -340,6 +375,10 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
             targetFormat = QImage::Format_RGBA8888;
         else if (targetFormat == QImage::Format_RGBA64_Premultiplied)
             targetFormat = QImage::Format_RGBA64;
+        else if (targetFormat == QImage::Format_RGBA16FPx4_Premultiplied)
+            targetFormat = QImage::Format_RGBA16FPx4;
+        else if (targetFormat == QImage::Format_RGBA32FPx4_Premultiplied)
+            targetFormat = QImage::Format_RGBA32FPx4;
     }
 
     if (sRgbBinding) {

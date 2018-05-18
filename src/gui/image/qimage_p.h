@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -161,6 +161,10 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
 void convert_generic_over_rgb64(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
 bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::ImageConversionFlags);
 bool convert_generic_inplace_over_rgb64(QImageData *data, QImage::Format dst_format, Qt::ImageConversionFlags);
+#if QT_CONFIG(raster_fp)
+void convert_generic_over_rgba32f(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
+bool convert_generic_inplace_over_rgba32f(QImageData *data, QImage::Format dst_format, Qt::ImageConversionFlags);
+#endif
 
 void dither_to_Mono(QImageData *dst, const QImageData *src, Qt::ImageConversionFlags flags, bool fromalpha);
 
@@ -216,7 +220,15 @@ inline int qt_depthForFormat(QImage::Format format)
     case QImage::Format_RGBX64:
     case QImage::Format_RGBA64:
     case QImage::Format_RGBA64_Premultiplied:
+    case QImage::Format_RGBX16FPx4:
+    case QImage::Format_RGBA16FPx4:
+    case QImage::Format_RGBA16FPx4_Premultiplied:
         depth = 64;
+        break;
+    case QImage::Format_RGBX32FPx4:
+    case QImage::Format_RGBA32FPx4:
+    case QImage::Format_RGBA32FPx4_Premultiplied:
+        depth = 128;
         break;
     }
     return depth;
@@ -247,6 +259,12 @@ inline QImage::Format qt_opaqueVersion(QImage::Format format)
     case QImage::Format_RGBA64:
     case QImage::Format_RGBA64_Premultiplied:
         return QImage::Format_RGBX64;
+    case QImage::Format_RGBA16FPx4:
+    case QImage::Format_RGBA16FPx4_Premultiplied:
+        return QImage::Format_RGBX16FPx4;
+    case QImage::Format_RGBA32FPx4:
+    case QImage::Format_RGBA32FPx4_Premultiplied:
+        return QImage::Format_RGBX32FPx4;
     case QImage::Format_ARGB32_Premultiplied:
     case QImage::Format_ARGB32:
         return QImage::Format_RGB32;
@@ -261,6 +279,8 @@ inline QImage::Format qt_opaqueVersion(QImage::Format format)
     case QImage::Format_BGR30:
     case QImage::Format_RGB30:
     case QImage::Format_RGBX64:
+    case QImage::Format_RGBX16FPx4:
+    case QImage::Format_RGBX32FPx4:
     case QImage::Format_Grayscale8:
     case QImage::Format_Grayscale16:
         return format;
@@ -300,6 +320,12 @@ inline QImage::Format qt_alphaVersion(QImage::Format format)
     case QImage::Format_RGBA64:
     case QImage::Format_Grayscale16:
         return QImage::Format_RGBA64_Premultiplied;
+    case QImage::Format_RGBX16FPx4:
+    case QImage::Format_RGBA16FPx4:
+        return QImage::Format_RGBA16FPx4_Premultiplied;
+    case QImage::Format_RGBX32FPx4:
+    case QImage::Format_RGBA32FPx4:
+        return QImage::Format_RGBA32FPx4_Premultiplied;
     case QImage::Format_ARGB32_Premultiplied:
     case QImage::Format_ARGB8565_Premultiplied:
     case QImage::Format_ARGB8555_Premultiplied:
@@ -309,6 +335,8 @@ inline QImage::Format qt_alphaVersion(QImage::Format format)
     case QImage::Format_A2BGR30_Premultiplied:
     case QImage::Format_A2RGB30_Premultiplied:
     case QImage::Format_RGBA64_Premultiplied:
+    case QImage::Format_RGBA16FPx4_Premultiplied:
+    case QImage::Format_RGBA32FPx4_Premultiplied:
         return format;
     case QImage::Format_Mono:
     case QImage::Format_MonoLSB:
@@ -339,6 +367,12 @@ inline bool qt_highColorPrecision(QImage::Format format, bool opaque = false)
     case QImage::Format_RGBA64:
     case QImage::Format_RGBA64_Premultiplied:
     case QImage::Format_Grayscale16:
+    case QImage::Format_RGBX16FPx4:
+    case QImage::Format_RGBA16FPx4:
+    case QImage::Format_RGBA16FPx4_Premultiplied:
+    case QImage::Format_RGBX32FPx4:
+    case QImage::Format_RGBA32FPx4:
+    case QImage::Format_RGBA32FPx4_Premultiplied:
         return true;
     default:
         break;
@@ -346,6 +380,21 @@ inline bool qt_highColorPrecision(QImage::Format format, bool opaque = false)
     return false;
 }
 
+inline bool qt_fpColorPrecision(QImage::Format format)
+{
+    switch (format) {
+    case QImage::Format_RGBX16FPx4:
+    case QImage::Format_RGBA16FPx4:
+    case QImage::Format_RGBA16FPx4_Premultiplied:
+    case QImage::Format_RGBX32FPx4:
+    case QImage::Format_RGBA32FPx4:
+    case QImage::Format_RGBA32FPx4_Premultiplied:
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
 
 inline QImage::Format qt_maybeAlphaVersionWithSameDepth(QImage::Format format)
 {

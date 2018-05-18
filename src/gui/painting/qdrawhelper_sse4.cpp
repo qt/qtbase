@@ -502,6 +502,13 @@ void QT_FASTCALL storeA2RGB30PMFromARGB32PM_sse4(uchar *dest, const uint *src, i
         d[i] = qConvertArgb32ToA2rgb30_sse4<PixelOrder>(src[i]);
 }
 
+template
+void QT_FASTCALL storeA2RGB30PMFromARGB32PM_sse4<PixelOrderBGR>(uchar *dest, const uint *src, int index, int count,
+                                                                const QList<QRgb> *, QDitherInfo *);
+template
+void QT_FASTCALL storeA2RGB30PMFromARGB32PM_sse4<PixelOrderRGB>(uchar *dest, const uint *src, int index, int count,
+                                                                const QList<QRgb> *, QDitherInfo *);
+
 #if QT_CONFIG(raster_64bit)
 void QT_FASTCALL destStore64ARGB32_sse4(QRasterBuffer *rasterBuffer, int x, int y, const QRgba64 *buffer, int length)
 {
@@ -544,12 +551,68 @@ void QT_FASTCALL storeRGBx64FromRGBA64PM_sse4(uchar *dest, const QRgba64 *src, i
     convertRGBA64FromRGBA64PM_sse4<true>(d, src, count);
 }
 
-template
-void QT_FASTCALL storeA2RGB30PMFromARGB32PM_sse4<PixelOrderBGR>(uchar *dest, const uint *src, int index, int count,
-                                                                const QList<QRgb> *, QDitherInfo *);
-template
-void QT_FASTCALL storeA2RGB30PMFromARGB32PM_sse4<PixelOrderRGB>(uchar *dest, const uint *src, int index, int count,
-                                                                const QList<QRgb> *, QDitherInfo *);
+#if QT_CONFIG(raster_fp)
+const QRgba32F *QT_FASTCALL fetchRGBA32FToRGBA32F_sse4(QRgba32F *buffer, const uchar *src, int index, int count,
+                                                       const QList<QRgb> *, QDitherInfo *)
+{
+    const QRgba32F *s = reinterpret_cast<const QRgba32F *>(src) + index;
+    for (int i = 0; i < count; ++i) {
+        __m128 vsf = _mm_load_ps(reinterpret_cast<const float *>(s + i));
+        __m128 vsa = _mm_shuffle_ps(vsf, vsf, _MM_SHUFFLE(3, 3, 3, 3));
+        vsf = _mm_mul_ps(vsf, vsa);
+        vsf = _mm_insert_ps(vsf, vsa, 0x30);
+        _mm_store_ps(reinterpret_cast<float *>(buffer + i), vsf);
+    }
+    return buffer;
+}
+
+void QT_FASTCALL storeRGBX32FFromRGBA32F_sse4(uchar *dest, const QRgba32F *src, int index, int count,
+                                              const QList<QRgb> *, QDitherInfo *)
+{
+    QRgba32F *d = reinterpret_cast<QRgba32F *>(dest) + index;
+    const __m128 zero = _mm_set_ps(1.0f, 0.0f, 0.0f, 0.0f);
+    for (int i = 0; i < count; ++i) {
+        __m128 vsf = _mm_load_ps(reinterpret_cast<const float *>(src + i));
+        const __m128 vsa = _mm_shuffle_ps(vsf, vsf, _MM_SHUFFLE(3, 3, 3, 3));
+        const float a = _mm_cvtss_f32(vsa);
+        if (a == 1.0f)
+        { }
+        else if (a == 0.0f)
+            vsf = zero;
+        else {
+            __m128 vsr = _mm_rcp_ps(vsa);
+            vsr = _mm_sub_ps(_mm_add_ps(vsr, vsr), _mm_mul_ps(vsr, _mm_mul_ps(vsr, vsa)));
+            vsf = _mm_mul_ps(vsf, vsr);
+            vsf = _mm_insert_ps(vsf, _mm_set_ss(1.0f), 0x30);
+        }
+        _mm_store_ps(reinterpret_cast<float *>(d + i), vsf);
+    }
+}
+
+void QT_FASTCALL storeRGBA32FFromRGBA32F_sse4(uchar *dest, const QRgba32F *src, int index, int count,
+                                              const QList<QRgb> *, QDitherInfo *)
+{
+    QRgba32F *d = reinterpret_cast<QRgba32F *>(dest) + index;
+    const __m128 zero = _mm_set1_ps(0.0f);
+    for (int i = 0; i < count; ++i) {
+        __m128 vsf = _mm_load_ps(reinterpret_cast<const float *>(src + i));
+        const __m128 vsa = _mm_shuffle_ps(vsf, vsf, _MM_SHUFFLE(3, 3, 3, 3));
+        const float a = _mm_cvtss_f32(vsa);
+        if (a == 1.0f)
+        { }
+        else if (a == 0.0f)
+            vsf = zero;
+        else {
+            __m128 vsr = _mm_rcp_ps(vsa);
+            vsr = _mm_sub_ps(_mm_add_ps(vsr, vsr), _mm_mul_ps(vsr, _mm_mul_ps(vsr, vsa)));
+            vsr = _mm_insert_ps(vsr, _mm_set_ss(1.0f), 0x30);
+            vsf = _mm_mul_ps(vsf, vsr);
+        }
+        _mm_store_ps(reinterpret_cast<float *>(d + i), vsf);
+    }
+}
+#endif
+
 
 QT_END_NAMESPACE
 

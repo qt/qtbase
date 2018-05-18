@@ -323,6 +323,18 @@ static QLatin1String formatToString(QImage::Format format)
         return QLatin1String("Grayscale16");
     case QImage::Format_BGR888:
         return QLatin1String("BGR888");
+    case QImage::Format_RGBX16FPx4:
+        return QLatin1String("RGBx16FPx4");
+    case QImage::Format_RGBA16FPx4:
+        return QLatin1String("RGBA16FPx4");
+    case QImage::Format_RGBA16FPx4_Premultiplied:
+        return QLatin1String("RGBA16FPx4pm");
+    case QImage::Format_RGBX32FPx4:
+        return QLatin1String("RGBx32FPx4");
+    case QImage::Format_RGBA32FPx4:
+        return QLatin1String("RGBA32FPx4");
+    case QImage::Format_RGBA32FPx4_Premultiplied:
+        return QLatin1String("RGBA32FPx4pm");
     default:
         break;
     };
@@ -1765,7 +1777,17 @@ void tst_QImage::smoothScale2_data()
     QTest::addColumn<int>("size");
 
     int sizes[] = { 2, 3, 4, 6, 7, 8, 10, 16, 20, 32, 40, 64, 100, 101, 128, 0 };
-    QImage::Format formats[] = { QImage::Format_RGB32, QImage::Format_ARGB32_Premultiplied, QImage::Format_RGBX64, QImage::Format_RGBA64_Premultiplied, QImage::Format_Invalid };
+    QImage::Format formats[] = { QImage::Format_RGB32,
+                                 QImage::Format_ARGB32_Premultiplied,
+#if QT_CONFIG(raster_64bit)
+                                 QImage::Format_RGBX64,
+                                 QImage::Format_RGBA64_Premultiplied,
+#endif
+#if QT_CONFIG(raster_fp)
+                                 QImage::Format_RGBX32FPx4,
+                                 QImage::Format_RGBA32FPx4_Premultiplied,
+#endif
+                                 QImage::Format_Invalid };
     for (int j = 0; formats[j] != QImage::Format_Invalid; ++j) {
         QString formatstr = formatToString(formats[j]);
         for (int i = 0; sizes[i] != 0; ++i) {
@@ -1780,11 +1802,9 @@ void tst_QImage::smoothScale2()
     QFETCH(QImage::Format, format);
     QFETCH(int, size);
 
-    bool opaque = (format == QImage::Format_RGB32 || format == QImage::Format_RGBX64);
-
-    QRgb expected = opaque ? qRgb(63, 127, 255) : qRgba(31, 63, 127, 127);
-
     QImage img(size, size, format);
+    bool opaque = !img.hasAlphaChannel();
+    QRgb expected = opaque ? qRgb(63, 127, 255) : qRgba(31, 63, 127, 127);
     img.fill(expected);
 
     // scale x down, y down
@@ -1928,6 +1948,9 @@ void tst_QImage::smoothScale4_data()
     QTest::newRow("RGB32") << QImage::Format_RGB32;
 #if QT_CONFIG(raster_64bit)
     QTest::newRow("RGBx64") << QImage::Format_RGBX64;
+#endif
+#if QT_CONFIG(raster_fp)
+    QTest::newRow("RGBx32FP") << QImage::Format_RGBX32FPx4;
 #endif
 }
 
@@ -2356,6 +2379,8 @@ void tst_QImage::fillColor_data()
         QImage::Format_RGBA8888_Premultiplied,
         QImage::Format_BGR30,
         QImage::Format_A2RGB30_Premultiplied,
+        QImage::Format_RGBX16FPx4,
+        QImage::Format_RGBA32FPx4_Premultiplied,
     };
 
     for (int i=0; names[i] != 0; ++i) {
@@ -2678,7 +2703,6 @@ void tst_QImage::inplaceRgbSwapped_data()
 
 void tst_QImage::inplaceRgbSwapped()
 {
-#if defined(Q_COMPILER_REF_QUALIFIERS)
     QFETCH(QImage::Format, format);
 
     QImage image(64, 1, format);
@@ -2686,7 +2710,7 @@ void tst_QImage::inplaceRgbSwapped()
 
     QList<QRgb> testColor(image.width());
     for (int i = 0; i < image.width(); ++i)
-        testColor[i] = qRgb(i * 2, i * 3, 255 - i * 4);
+        testColor[i] = qRgb(i * 2, i * 3, std::min(255 - i * 4, 0));
 
     if (format == QImage::Format_Indexed8) {
         for (int i = 0; i < image.width(); ++i) {
@@ -2739,7 +2763,6 @@ void tst_QImage::inplaceRgbSwapped()
         QCOMPARE(dataSwapped, orig.rgbSwapped());
     }
 
-#endif
 }
 
 
@@ -3006,6 +3029,7 @@ void tst_QImage::inplaceRgbConversion_data()
 
 void tst_QImage::inplaceRgbConversion()
 {
+    // Test that conversions between RGB formats of the same bitwidth can be done inplace.
     QFETCH(QImage::Format, format);
     QFETCH(QImage::Format, dest_format);
 

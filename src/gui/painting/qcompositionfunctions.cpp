@@ -38,8 +38,10 @@
 ****************************************************************************/
 
 #include <qglobal.h>
+
 #include "qdrawhelper_p.h"
 #include "qrgba64_p.h"
+#include "qrgbaf.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -116,6 +118,8 @@ struct Argb32OperationsC
 };
 
 const Argb32OperationsC::Type Argb32OperationsC::clear = 0;
+
+typedef Argb32OperationsC Argb32Operations;
 
 struct Rgba64OperationsBase
 {
@@ -319,9 +323,188 @@ typedef Rgba64OperationsNEON Rgba64Operations;
 #else
 typedef Rgba64OperationsC Rgba64Operations;
 #endif
+
 #endif // QT_CONFIG(raster_64bit)
 
-typedef Argb32OperationsC Argb32Operations;
+#if QT_CONFIG(raster_fp)
+
+static inline QRgba32F qRgba32f(float r, float g, float b, float a)
+{
+    return QRgba32F{r, g, b, a};
+}
+
+struct RgbaFPOperationsBase
+{
+    typedef QRgba32F Type;
+    typedef float Scalar;
+
+    static inline constexpr Type clear = { 0, 0, 0, 0 };
+
+    static bool isOpaque(Type val)
+    { return val.a >= 1.0f; }
+    static bool isTransparent(Type val)
+    { return val.a <= 0.0f; }
+    static Scalar scalarFrom8bit(uint8_t a)
+    { return a * (1.0f / 255.0f); }
+
+    static void memfill(Type *ptr, Type value, qsizetype len)
+    {
+        for (qsizetype i = 0; i < len; ++i)
+            ptr[i] = value;
+    }
+    static void memcpy(Type *Q_DECL_RESTRICT dest, const Type *Q_DECL_RESTRICT src, qsizetype len)
+    { ::memcpy(dest, src, len * sizeof(Type)); }
+};
+
+struct RgbaFPOperationsC : RgbaFPOperationsBase
+{
+    typedef QRgba32F OptimalType;
+    typedef float OptimalScalar;
+
+    static OptimalType load(const Type *ptr)
+    {
+        return QRgba32F { ptr->r, ptr->g, ptr->b, ptr->a };
+    }
+    static OptimalType convert(const Type &val)
+    {
+        return QRgba32F { val.r, val.g, val.b, val.a };
+    }
+    static void store(Type *ptr, OptimalType value)
+    {
+        ptr->r = value.r;
+        ptr->g = value.g;
+        ptr->b = value.b;
+        ptr->a = value.a;
+    }
+    static OptimalType add(OptimalType a, OptimalType b)
+    {
+        a.r += b.r;
+        a.g += b.g;
+        a.b += b.b;
+        a.a += b.a;
+        return a;
+    }
+    static OptimalScalar add(OptimalScalar a, OptimalScalar b)
+    { return a + b; }
+    static OptimalType plus(OptimalType a, OptimalType b)
+    {
+        a = add(a, b); // no saturation on color values
+        if (a.a < 0.0f) a.a = 0.0f;
+        else if (a.a > 1.0f) a.a = 1.0f;
+        return a;
+    }
+    static OptimalScalar alpha(OptimalType val)
+    { return val.a; }
+    static OptimalScalar invAlpha(OptimalScalar c)
+    { return 1.0f - c; }
+    static OptimalScalar invAlpha(OptimalType val)
+    { return 1.0f - val.a; }
+    static OptimalScalar scalar(Scalar v)
+    { return v; }
+    static OptimalType multiplyAlpha(OptimalType val, OptimalScalar a)
+    {
+        val.r *= a;
+        val.g *= a;
+        val.b *= a;
+        val.a *= a;
+        return val;
+    }
+    static OptimalScalar multiplyAlpha8bit(OptimalScalar val, uint8_t a)
+    {
+        return val * a * (1.0f / 255.0f);
+    }
+    static OptimalType interpolate(OptimalType x, OptimalScalar a1, OptimalType y, OptimalScalar a2)
+    {
+        return add(multiplyAlpha(x, a1), multiplyAlpha(y, a2));
+    }
+    static OptimalType multiplyAlpha8bit(OptimalType val, uint8_t a)
+    {
+        return multiplyAlpha(val, a  * (1.0f / 255.0f));
+    }
+    static OptimalType interpolate8bit(OptimalType x, uint8_t a1, OptimalType y, uint8_t a2)
+    {
+        return add(multiplyAlpha8bit(x, a1), multiplyAlpha8bit(y, a2));
+    }
+};
+
+#if defined(__SSE2__)
+struct RgbaFPOperationsSSE2 : public RgbaFPOperationsBase
+{
+    typedef __m128 OptimalType;
+    typedef __m128 OptimalScalar;
+
+    static OptimalType load(const Type *ptr)
+    {
+        return _mm_load_ps(reinterpret_cast<const float *>(ptr));
+    }
+    static OptimalType convert(const Type &value)
+    {
+        return load(&value);
+    }
+    static void store(Type *ptr, OptimalType value)
+    {
+        _mm_store_ps(reinterpret_cast<float *>(ptr), value);
+    }
+    static OptimalType add(OptimalType a, OptimalType b)
+    {
+        return _mm_add_ps(a, b);
+    }
+//    same as above:
+//    static OptimalScalar add(OptimalScalar a, OptimalScalar b)
+    static OptimalType plus(OptimalType a, OptimalType b)
+    {
+        a = _mm_add_ps(a, b);
+        __m128 aa = _mm_min_ps(a, _mm_set1_ps(1.0f));
+        aa = _mm_max_ps(aa, _mm_set1_ps(0.0f));
+        // An indirect insert using only SSE2:
+        aa = _mm_shuffle_ps(aa, a, _MM_SHUFFLE(2, 2, 3, 3));
+        a = _mm_shuffle_ps(a, aa, _MM_SHUFFLE(0, 2, 1, 0));
+        return a;
+    }
+    static OptimalScalar alpha(OptimalType c)
+    {
+        return _mm_shuffle_ps(c, c, _MM_SHUFFLE(3, 3, 3, 3));
+    }
+    static OptimalScalar invAlpha(Scalar c)
+    {
+        return _mm_set1_ps(1.0f - float(c));
+    }
+    static OptimalScalar invAlpha(OptimalType c)
+    {
+        return _mm_sub_ps(_mm_set1_ps(1.0f), alpha(c));
+    }
+    static OptimalScalar scalar(Scalar n)
+    {
+        return _mm_set1_ps(float(n));
+    }
+    static OptimalType multiplyAlpha(OptimalType val, OptimalScalar a)
+    {
+        return _mm_mul_ps(val, a);
+    }
+    static OptimalType interpolate(OptimalType x, OptimalScalar a1, OptimalType y, OptimalScalar a2)
+    {
+        return add(multiplyAlpha(x, a1), multiplyAlpha(y, a2));
+    }
+    static OptimalType multiplyAlpha8bit(OptimalType val, uint8_t a)
+    {
+        return multiplyAlpha(val, _mm_set1_ps(a  * (1.0f / 255.0f)));
+    }
+//    same as above:
+//    static OptimalScalar multiplyAlpha8bit(OptimalScalar a, uint8_t a)
+    static OptimalType interpolate8bit(OptimalType x, uint8_t a1, OptimalType y, uint8_t a2)
+    {
+        return add(multiplyAlpha8bit(x, a1), multiplyAlpha8bit(y, a2));
+    }
+};
+#endif
+
+#if defined(__SSE2__)
+typedef RgbaFPOperationsSSE2 RgbaFPOperations;
+#else
+typedef RgbaFPOperationsC RgbaFPOperations;
+#endif
+
+#endif // QT_CONFIG(raster_fp)
 
 /*
   result = 0
@@ -362,6 +545,17 @@ void QT_FASTCALL comp_func_Clear_rgb64(QRgba64 *dest, const QRgba64 *, int lengt
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+void QT_FASTCALL comp_func_solid_Clear_rgbafp(QRgba32F *dest, int length, QRgba32F, uint const_alpha)
+{
+    comp_func_Clear_template<RgbaFPOperations>(dest, length, const_alpha);
+}
+
+void QT_FASTCALL comp_func_Clear_rgbafp(QRgba32F *dest, const QRgba32F *, int length, uint const_alpha)
+{
+    comp_func_Clear_template<RgbaFPOperations>(dest, length, const_alpha);
+}
+#endif
 
 /*
   result = s
@@ -421,6 +615,18 @@ void QT_FASTCALL comp_func_Source_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRg
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+void QT_FASTCALL comp_func_solid_Source_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    comp_func_solid_Source_template<RgbaFPOperations>(dest, length, color, const_alpha);
+}
+
+void QT_FASTCALL comp_func_Source_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    comp_func_Source_template<RgbaFPOperations>(dest, src, length, const_alpha);
+}
+#endif
+
 void QT_FASTCALL comp_func_solid_Destination(uint *, int, uint, uint)
 {
 }
@@ -435,6 +641,16 @@ void QT_FASTCALL comp_func_solid_Destination_rgb64(QRgba64 *, int, QRgba64, uint
 }
 
 void QT_FASTCALL comp_func_Destination_rgb64(QRgba64 *, const QRgba64 *, int, uint)
+{
+}
+#endif
+
+#if QT_CONFIG(raster_fp)
+void QT_FASTCALL comp_func_solid_Destination_rgbafp(QRgba32F *, int, QRgba32F, uint)
+{
+}
+
+void QT_FASTCALL comp_func_Destination_rgbafp(QRgba32F *, const QRgba32F *, int, uint)
 {
 }
 #endif
@@ -509,6 +725,19 @@ void QT_FASTCALL comp_func_SourceOver_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+void QT_FASTCALL comp_func_solid_SourceOver_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    comp_func_solid_SourceOver_template<RgbaFPOperations>(dest, length, color, const_alpha);
+}
+
+
+void QT_FASTCALL comp_func_SourceOver_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    comp_func_SourceOver_template<RgbaFPOperations>(dest, src, length, const_alpha);
+}
+#endif
+
 /*
   result = d + s * dia
   dest = (d + s * dia) * ca + d * cia
@@ -567,6 +796,18 @@ void QT_FASTCALL comp_func_solid_DestinationOver_rgb64(QRgba64 *dest, int length
 void QT_FASTCALL comp_func_DestinationOver_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     comp_func_DestinationOver_template<Rgba64Operations>(dest, src, length, const_alpha);
+}
+#endif
+
+#if QT_CONFIG(raster_fp)
+void QT_FASTCALL comp_func_solid_DestinationOver_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    comp_func_solid_DestinationOver_template<RgbaFPOperations>(dest, length, color, const_alpha);
+}
+
+void QT_FASTCALL comp_func_DestinationOver_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    comp_func_DestinationOver_template<RgbaFPOperations>(dest, src, length, const_alpha);
 }
 #endif
 
@@ -636,6 +877,18 @@ void QT_FASTCALL comp_func_SourceIn_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const Q
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+void QT_FASTCALL comp_func_solid_SourceIn_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    comp_func_solid_SourceIn_template<RgbaFPOperations>(dest, length, color, const_alpha);
+}
+
+void QT_FASTCALL comp_func_SourceIn_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    comp_func_SourceIn_template<RgbaFPOperations>(dest, src, length, const_alpha);
+}
+#endif
+
 /*
   result = d * sa
   dest = d * sa * ca + d * cia
@@ -694,6 +947,18 @@ void QT_FASTCALL comp_func_solid_DestinationIn_rgb64(QRgba64 *dest, int length, 
 void QT_FASTCALL comp_func_DestinationIn_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     comp_func_DestinationIn_template<Rgba64Operations>(dest, src, length, const_alpha);
+}
+#endif
+
+#if QT_CONFIG(raster_fp)
+void QT_FASTCALL comp_func_solid_DestinationIn_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    comp_func_solid_DestinationIn_template<RgbaFPOperations>(dest, length, color, const_alpha);
+}
+
+void QT_FASTCALL comp_func_DestinationIn_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    comp_func_DestinationIn_template<RgbaFPOperations>(dest, src, length, const_alpha);
 }
 #endif
 
@@ -761,6 +1026,18 @@ void QT_FASTCALL comp_func_SourceOut_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const 
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+void QT_FASTCALL comp_func_solid_SourceOut_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    comp_func_solid_SourceOut_template<RgbaFPOperations>(dest, length, color, const_alpha);
+}
+
+void QT_FASTCALL comp_func_SourceOut_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    comp_func_SourceOut_template<RgbaFPOperations>(dest, src, length, const_alpha);
+}
+#endif
+
 /*
   result = d * sia
   dest = d * sia * ca + d * cia
@@ -822,6 +1099,18 @@ void QT_FASTCALL comp_func_DestinationOut_rgb64(QRgba64 *Q_DECL_RESTRICT dest, c
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+void QT_FASTCALL comp_func_solid_DestinationOut_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    comp_func_solid_DestinationOut_template<RgbaFPOperations>(dest, length, color, const_alpha);
+}
+
+void QT_FASTCALL comp_func_DestinationOut_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    comp_func_DestinationOut_template<RgbaFPOperations>(dest, src, length, const_alpha);
+}
+#endif
+
 /*
   result = s*da + d*sia
   dest = s*da*ca + d*sia*ca + d *cia
@@ -880,6 +1169,18 @@ void QT_FASTCALL comp_func_solid_SourceAtop_rgb64(QRgba64 *dest, int length, QRg
 void QT_FASTCALL comp_func_SourceAtop_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     comp_func_SourceAtop_template<Rgba64Operations>(dest, src, length, const_alpha);
+}
+#endif
+
+#if QT_CONFIG(raster_fp)
+void QT_FASTCALL comp_func_solid_SourceAtop_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    comp_func_solid_SourceAtop_template<RgbaFPOperations>(dest, length, color, const_alpha);
+}
+
+void QT_FASTCALL comp_func_SourceAtop_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    comp_func_SourceAtop_template<RgbaFPOperations>(dest, src, length, const_alpha);
 }
 #endif
 
@@ -949,6 +1250,18 @@ void QT_FASTCALL comp_func_DestinationAtop_rgb64(QRgba64 *Q_DECL_RESTRICT dest, 
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+void QT_FASTCALL comp_func_solid_DestinationAtop_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    comp_func_solid_DestinationAtop_template<RgbaFPOperations>(dest, length, color, const_alpha);
+}
+
+void QT_FASTCALL comp_func_DestinationAtop_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    comp_func_DestinationAtop_template<RgbaFPOperations>(dest, src, length, const_alpha);
+}
+#endif
+
 /*
   result = d*sia + s*dia
   dest = d*sia*ca + s*dia*ca + d *cia
@@ -1011,15 +1324,35 @@ void QT_FASTCALL comp_func_XOR_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba6
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+void QT_FASTCALL comp_func_solid_XOR_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    comp_func_solid_XOR_template<RgbaFPOperations>(dest, length, color, const_alpha);
+}
+
+void QT_FASTCALL comp_func_XOR_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    comp_func_XOR_template<RgbaFPOperations>(dest, src, length, const_alpha);
+}
+#endif
+
 struct QFullCoverage {
     inline void store(uint *dest, const uint src) const
     {
         *dest = src;
     }
+#if QT_CONFIG(raster_64bit)
     inline void store(QRgba64 *dest, const QRgba64 src) const
     {
         *dest = src;
     }
+#endif
+#if QT_CONFIG(raster_fp)
+    inline void store(QRgba32F *dest, const QRgba32F src) const
+    {
+        *dest = src;
+    }
+#endif
 };
 
 struct QPartialCoverage {
@@ -1029,14 +1362,27 @@ struct QPartialCoverage {
     {
     }
 
+    template<typename Op>
+    inline void store_template(typename Op::Type *dest, const typename Op::Type src) const
+    {
+        Op::store(dest, Op::interpolate8bit(Op::convert(src), ca, Op::load(dest), ica));
+    }
     inline void store(uint *dest, const uint src) const
     {
-        *dest = INTERPOLATE_PIXEL_255(src, ca, *dest, ica);
+        store_template<Argb32Operations>(dest, src);
     }
+#if QT_CONFIG(raster_64bit)
     inline void store(QRgba64 *dest, const QRgba64 src) const
     {
-        *dest = interpolate255(src, ca, *dest, ica);
+        store_template<Rgba64Operations>(dest, src);
     }
+#endif
+#if QT_CONFIG(raster_fp)
+    inline void store(QRgba32F *dest, const QRgba32F src) const
+    {
+        store_template<RgbaFPOperations>(dest, src);
+    }
+#endif
 
 private:
     const uint ca;
@@ -1048,10 +1394,19 @@ static inline int mix_alpha(int da, int sa)
     return 255 - ((255 - sa) * (255 - da) >> 8);
 }
 
+#if QT_CONFIG(raster_64bit)
 static inline uint mix_alpha_rgb64(uint da, uint sa)
 {
     return 65535U - ((65535U - sa) * (65535U - da) >> 16);
 }
+#endif
+
+#if QT_CONFIG(raster_fp)
+static inline float mix_alpha_rgbafp(float da, float sa)
+{
+    return 1.0f - (1.0f - sa) * (1.0f - da);
+}
+#endif
 
 /*
     Dca' = Sca.Da + Dca.Sa + Sca.(1 - Da) + Dca.(1 - Sa)
@@ -1119,6 +1474,18 @@ void QT_FASTCALL comp_func_solid_Plus_rgb64(QRgba64 *dest, int length, QRgba64 c
 void QT_FASTCALL comp_func_Plus_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     comp_func_Plus_template<Rgba64Operations>(dest, src, length, const_alpha);
+}
+#endif
+
+#if QT_CONFIG(raster_fp)
+void QT_FASTCALL comp_func_solid_Plus_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    comp_func_solid_Plus_template<RgbaFPOperations>(dest, length, color, const_alpha);
+}
+
+void QT_FASTCALL comp_func_Plus_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    comp_func_Plus_template<RgbaFPOperations>(dest, src, length, const_alpha);
 }
 #endif
 
@@ -1199,6 +1566,45 @@ void QT_FASTCALL comp_func_solid_Multiply_rgb64(QRgba64 *dest, int length, QRgba
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+static inline float multiply_op_rgbafp(float dst, float src, float da, float sa)
+{
+    return src * dst + src * (1.0f - da) + dst * (1.0f - sa);
+}
+
+template <typename T>
+static inline void comp_func_solid_Multiply_impl(QRgba32F *dest, int length, QRgba32F color, const T &coverage)
+{
+    float sa = color.alpha();
+    float sr = color.red();
+    float sg = color.green();
+    float sb = color.blue();
+
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        float da = d.alpha();
+
+#define OP(a, b) multiply_op_rgbafp(a, b, da, sa)
+        float r = OP(  d.red(), sr);
+        float b = OP( d.blue(), sb);
+        float g = OP(d.green(), sg);
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_solid_Multiply_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_solid_Multiply_impl(dest, length, color, QFullCoverage());
+    else
+        comp_func_solid_Multiply_impl(dest, length, color, QPartialCoverage(const_alpha));
+}
+#endif
+
+
 template <typename T>
 static inline void comp_func_Multiply_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
@@ -1251,6 +1657,37 @@ static inline void comp_func_Multiply_impl(QRgba64 *Q_DECL_RESTRICT dest, const 
 }
 
 void QT_FASTCALL comp_func_Multiply_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_Multiply_impl(dest, src, length, QFullCoverage());
+    else
+        comp_func_Multiply_impl(dest, src, length, QPartialCoverage(const_alpha));
+}
+#endif
+
+#if QT_CONFIG(raster_fp)
+template <typename T>
+static inline void comp_func_Multiply_impl(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, const T &coverage)
+{
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        QRgba32F s = src[i];
+
+        float da = d.alpha();
+        float sa = s.alpha();
+
+#define OP(a, b) multiply_op_rgbafp(a, b, da, sa)
+        float r = OP(  d.red(),   s.red());
+        float b = OP( d.blue(),  s.blue());
+        float g = OP(d.green(), s.green());
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_Multiply_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     if (const_alpha == 255)
         comp_func_Multiply_impl(dest, src, length, QFullCoverage());
@@ -1327,6 +1764,39 @@ void QT_FASTCALL comp_func_solid_Screen_rgb64(QRgba64 *dest, int length, QRgba64
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+template <typename T>
+static inline void comp_func_solid_Screen_impl(QRgba32F *dest, int length, QRgba32F color, const T &coverage)
+{
+    float sa = color.alpha();
+    float sr = color.red();
+    float sg = color.green();
+    float sb = color.blue();
+
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        float da = d.alpha();
+
+#define OP(a, b) (1.0f - ((1.0f - a) * (1.0f - b)))
+        float r = OP(  d.red(), sr);
+        float b = OP( d.blue(), sb);
+        float g = OP(d.green(), sg);
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_solid_Screen_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_solid_Screen_impl(dest, length, color, QFullCoverage());
+    else
+        comp_func_solid_Screen_impl(dest, length, color, QPartialCoverage(const_alpha));
+}
+#endif
+
 template <typename T>
 static inline void comp_func_Screen_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
@@ -1379,6 +1849,37 @@ static inline void comp_func_Screen_impl(QRgba64 *Q_DECL_RESTRICT dest, const QR
 }
 
 void QT_FASTCALL comp_func_Screen_rgb64(QRgba64 *dest, const QRgba64 *src, int length, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_Screen_impl(dest, src, length, QFullCoverage());
+    else
+        comp_func_Screen_impl(dest, src, length, QPartialCoverage(const_alpha));
+}
+#endif
+
+#if QT_CONFIG(raster_fp)
+template <typename T>
+static inline void comp_func_Screen_impl(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, const T &coverage)
+{
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        QRgba32F s = src[i];
+
+        float da = d.alpha();
+        float sa = s.alpha();
+
+#define OP(a, b) (1.0f - ((1.0f - a) * (1.0f - b)))
+        float r = OP(  d.red(),   s.red());
+        float b = OP( d.blue(),  s.blue());
+        float g = OP(d.green(), s.green());
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_Screen_rgbafp(QRgba32F *dest, const QRgba32F *src, int length, uint const_alpha)
 {
     if (const_alpha == 255)
         comp_func_Screen_impl(dest, src, length, QFullCoverage());
@@ -1475,6 +1976,48 @@ void QT_FASTCALL comp_func_solid_Overlay_rgb64(QRgba64 *dest, int length, QRgba6
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+static inline float overlay_op_rgbafp(float dst, float src, float da, float sa)
+{
+    const float temp = src * (1.0f - da) + dst * (1.0f - sa);
+    if (2 * dst < da)
+        return 2 * src * dst + temp;
+    else
+        return sa * da - 2 * (da - dst) * (sa - src) + temp;
+}
+
+template <typename T>
+static inline void comp_func_solid_Overlay_impl(QRgba32F *dest, int length, QRgba32F color, const T &coverage)
+{
+    float sa = color.alpha();
+    float sr = color.red();
+    float sg = color.green();
+    float sb = color.blue();
+
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        float da = d.alpha();
+
+#define OP(a, b) overlay_op_rgbafp(a, b, da, sa)
+        float r = OP(  d.red(), sr);
+        float b = OP( d.blue(), sb);
+        float g = OP(d.green(), sg);
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_solid_Overlay_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_solid_Overlay_impl(dest, length, color, QFullCoverage());
+    else
+        comp_func_solid_Overlay_impl(dest, length, color, QPartialCoverage(const_alpha));
+}
+#endif
+
 template <typename T>
 static inline void comp_func_Overlay_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
@@ -1527,6 +2070,37 @@ static inline void comp_func_Overlay_impl(QRgba64 *Q_DECL_RESTRICT dest, const Q
 }
 
 void QT_FASTCALL comp_func_Overlay_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_Overlay_impl(dest, src, length, QFullCoverage());
+    else
+        comp_func_Overlay_impl(dest, src, length, QPartialCoverage(const_alpha));
+}
+#endif
+
+#if QT_CONFIG(raster_fp)
+template <typename T>
+static inline void comp_func_Overlay_impl(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, const T &coverage)
+{
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        QRgba32F s = src[i];
+
+        float da = d.alpha();
+        float sa = s.alpha();
+
+#define OP(a, b) overlay_op_rgbafp(a, b, da, sa)
+        float r = OP(  d.red(),   s.red());
+        float b = OP( d.blue(),  s.blue());
+        float g = OP(d.green(), s.green());
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_Overlay_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     if (const_alpha == 255)
         comp_func_Overlay_impl(dest, src, length, QFullCoverage());
@@ -1613,6 +2187,44 @@ void QT_FASTCALL comp_func_solid_Darken_rgb64(QRgba64 *dest, int length, QRgba64
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+static inline float darken_op_rgbafp(float dst, float src, float da, float sa)
+{
+    return qMin(src * da, dst * sa) + src * (1.0f - da) + dst * (1.0f - sa);
+}
+
+template <typename T>
+static inline void comp_func_solid_Darken_impl(QRgba32F *dest, int length, QRgba32F color, const T &coverage)
+{
+    float sa = color.alpha();
+    float sr = color.red();
+    float sg = color.green();
+    float sb = color.blue();
+
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        float da = d.alpha();
+
+#define OP(a, b) darken_op_rgbafp(a, b, da, sa)
+        float r = OP(  d.red(), sr);
+        float b = OP( d.blue(), sb);
+        float g = OP(d.green(), sg);
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_solid_Darken_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_solid_Darken_impl(dest, length, color, QFullCoverage());
+    else
+        comp_func_solid_Darken_impl(dest, length, color, QPartialCoverage(const_alpha));
+}
+#endif
+
 template <typename T>
 static inline void comp_func_Darken_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
@@ -1665,6 +2277,37 @@ static inline void comp_func_Darken_impl(QRgba64 *Q_DECL_RESTRICT dest, const QR
 }
 
 void QT_FASTCALL comp_func_Darken_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_Darken_impl(dest, src, length, QFullCoverage());
+    else
+        comp_func_Darken_impl(dest, src, length, QPartialCoverage(const_alpha));
+}
+#endif
+
+#if QT_CONFIG(raster_fp)
+template <typename T>
+static inline void comp_func_Darken_impl(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, const T &coverage)
+{
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        QRgba32F s = src[i];
+
+        float da = d.alpha();
+        float sa = s.alpha();
+
+#define OP(a, b) darken_op_rgbafp(a, b, da, sa)
+        float r = OP(  d.red(),   s.red());
+        float b = OP( d.blue(),  s.blue());
+        float g = OP(d.green(), s.green());
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_Darken_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     if (const_alpha == 255)
         comp_func_Darken_impl(dest, src, length, QFullCoverage());
@@ -1752,6 +2395,44 @@ void QT_FASTCALL comp_func_solid_Lighten_rgb64(QRgba64 *dest, int length, QRgba6
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+static inline float lighten_op_rgbafp(float dst, float src, float da, float sa)
+{
+    return qMax(src * da, dst * sa) + src * (1.0f - da) + dst * (1.0f - sa);
+}
+
+template <typename T>
+static inline void comp_func_solid_Lighten_impl(QRgba32F *dest, int length, QRgba32F color, const T &coverage)
+{
+    float sa = color.alpha();
+    float sr = color.red();
+    float sg = color.green();
+    float sb = color.blue();
+
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        float da = d.alpha();
+
+#define OP(a, b) lighten_op_rgbafp(a, b, da, sa)
+        float r = OP(  d.red(), sr);
+        float b = OP( d.blue(), sb);
+        float g = OP(d.green(), sg);
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_solid_Lighten_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_solid_Lighten_impl(dest, length, color, QFullCoverage());
+    else
+        comp_func_solid_Lighten_impl(dest, length, color, QPartialCoverage(const_alpha));
+}
+#endif
+
 template <typename T>
 static inline void comp_func_Lighten_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
@@ -1804,6 +2485,37 @@ static inline void comp_func_Lighten_impl(QRgba64 *Q_DECL_RESTRICT dest, const Q
 }
 
 void QT_FASTCALL comp_func_Lighten_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_Lighten_impl(dest, src, length, QFullCoverage());
+    else
+        comp_func_Lighten_impl(dest, src, length, QPartialCoverage(const_alpha));
+}
+#endif
+
+#if QT_CONFIG(raster_fp)
+template <typename T>
+static inline void comp_func_Lighten_impl(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, const T &coverage)
+{
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        QRgba32F s = src[i];
+
+        float da = d.alpha();
+        float sa = s.alpha();
+
+#define OP(a, b) lighten_op_rgbafp(a, b, da, sa)
+        float r = OP(  d.red(),   s.red());
+        float b = OP( d.blue(),  s.blue());
+        float g = OP(d.green(), s.green());
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_Lighten_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     if (const_alpha == 255)
         comp_func_Lighten_impl(dest, src, length, QFullCoverage());
@@ -1914,6 +2626,54 @@ void QT_FASTCALL comp_func_solid_ColorDodge_rgb64(QRgba64 *dest, int length, QRg
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+static inline float color_dodge_op_rgbafp(float dst, float src, float da, float sa)
+{
+    const float sa_da = sa * da;
+    const float dst_sa = dst * sa;
+    const float src_da = src * da;
+
+    const float temp = src * (1.0f - da) + dst * (1.0f - sa);
+    if (src_da + dst_sa > sa_da)
+        return sa_da + temp;
+    else if (src == sa || sa == 0.0f)
+        return temp;
+    else
+        return dst_sa / (1.0f - src / sa) + temp;
+}
+
+template <typename T>
+static inline void comp_func_solid_ColorDodge_impl(QRgba32F *dest, int length, QRgba32F color, const T &coverage)
+{
+    float sa = color.alpha();
+    float sr = color.red();
+    float sg = color.green();
+    float sb = color.blue();
+
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        float da = d.alpha();
+
+#define OP(a,b) color_dodge_op_rgbafp(a, b, da, sa)
+        float r = OP(  d.red(), sr);
+        float b = OP( d.blue(), sb);
+        float g = OP(d.green(), sg);
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_solid_ColorDodge_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_solid_ColorDodge_impl(dest, length, color, QFullCoverage());
+    else
+        comp_func_solid_ColorDodge_impl(dest, length, color, QPartialCoverage(const_alpha));
+}
+#endif
+
 template <typename T>
 static inline void comp_func_ColorDodge_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
@@ -1966,6 +2726,37 @@ static inline void comp_func_ColorDodge_impl(QRgba64 *Q_DECL_RESTRICT dest, cons
 }
 
 void QT_FASTCALL comp_func_ColorDodge_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_ColorDodge_impl(dest, src, length, QFullCoverage());
+    else
+        comp_func_ColorDodge_impl(dest, src, length, QPartialCoverage(const_alpha));
+}
+#endif
+
+#if QT_CONFIG(raster_fp)
+template <typename T>
+static inline void comp_func_ColorDodge_impl(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, const T &coverage)
+{
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        QRgba32F s = src[i];
+
+        float da = d.alpha();
+        float sa = s.alpha();
+
+#define OP(a, b) color_dodge_op_rgbafp(a, b, da, sa)
+        float r = OP(  d.red(),   s.red());
+        float b = OP( d.blue(),  s.blue());
+        float g = OP(d.green(), s.green());
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_ColorDodge_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     if (const_alpha == 255)
         comp_func_ColorDodge_impl(dest, src, length, QFullCoverage());
@@ -2076,6 +2867,54 @@ void QT_FASTCALL comp_func_solid_ColorBurn_rgb64(QRgba64 *dest, int length, QRgb
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+static inline float color_burn_op_rgbafp(float dst, float src, float da, float sa)
+{
+    const float src_da = src * da;
+    const float dst_sa = dst * sa;
+    const float sa_da = sa * da;
+
+    const float temp = src * (1.0f - da) + dst * (1.0f - sa);
+
+    if (src_da + dst_sa < sa_da)
+        return temp;
+    else if (src == 0)
+        return dst_sa + temp;
+    return sa * (src_da + dst_sa - sa_da) / src + temp;
+}
+
+template <typename T>
+static inline void comp_func_solid_ColorBurn_impl(QRgba32F *dest, int length, QRgba32F color, const T &coverage)
+{
+    float sa = color.alpha();
+    float sr = color.red();
+    float sg = color.green();
+    float sb = color.blue();
+
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        float da = d.alpha();
+
+#define OP(a, b) color_burn_op_rgbafp(a, b, da, sa)
+        float r =  OP(  d.red(), sr);
+        float b =  OP( d.blue(), sb);
+        float g =  OP(d.green(), sg);
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_solid_ColorBurn_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_solid_ColorBurn_impl(dest, length, color, QFullCoverage());
+    else
+        comp_func_solid_ColorBurn_impl(dest, length, color, QPartialCoverage(const_alpha));
+}
+#endif
+
 template <typename T>
 static inline void comp_func_ColorBurn_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
@@ -2128,6 +2967,37 @@ static inline void comp_func_ColorBurn_impl(QRgba64 *Q_DECL_RESTRICT dest, const
 }
 
 void QT_FASTCALL comp_func_ColorBurn_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_ColorBurn_impl(dest, src, length, QFullCoverage());
+    else
+        comp_func_ColorBurn_impl(dest, src, length, QPartialCoverage(const_alpha));
+}
+#endif
+
+#if QT_CONFIG(raster_fp)
+template <typename T>
+static inline void comp_func_ColorBurn_impl(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, const T &coverage)
+{
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        QRgba32F s = src[i];
+
+        float da = d.alpha();
+        float sa = s.alpha();
+
+#define OP(a, b) color_burn_op_rgbafp(a, b, da, sa)
+        float r = OP(  d.red(),   s.red());
+        float b = OP( d.blue(),  s.blue());
+        float g = OP(d.green(), s.green());
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_ColorBurn_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     if (const_alpha == 255)
         comp_func_ColorBurn_impl(dest, src, length, QFullCoverage());
@@ -2226,6 +3096,49 @@ void QT_FASTCALL comp_func_solid_HardLight_rgb64(QRgba64 *dest, int length, QRgb
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+static inline float hardlight_op_rgbafp(float dst, float src, float da, float sa)
+{
+    const float temp = src * (1.0f - da) + dst * (1.0f - sa);
+
+    if (2 * src < sa)
+        return 2 * src * dst + temp;
+    else
+        return sa * da - 2 * (da - dst) * (sa - src) + temp;
+}
+
+template <typename T>
+static inline void comp_func_solid_HardLight_impl(QRgba32F *dest, int length, QRgba32F color, const T &coverage)
+{
+    float sa = color.alpha();
+    float sr = color.red();
+    float sg = color.green();
+    float sb = color.blue();
+
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        float da = d.alpha();
+
+#define OP(a, b) hardlight_op_rgbafp(a, b, da, sa)
+        float r =  OP(  d.red(), sr);
+        float b =  OP( d.blue(), sb);
+        float g =  OP(d.green(), sg);
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_solid_HardLight_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_solid_HardLight_impl(dest, length, color, QFullCoverage());
+    else
+        comp_func_solid_HardLight_impl(dest, length, color, QPartialCoverage(const_alpha));
+}
+#endif
+
 template <typename T>
 static inline void comp_func_HardLight_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
@@ -2286,6 +3199,37 @@ void QT_FASTCALL comp_func_HardLight_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const 
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+template <typename T>
+static inline void comp_func_HardLight_impl(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, const T &coverage)
+{
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        QRgba32F s = src[i];
+
+        float da = d.alpha();
+        float sa = s.alpha();
+
+#define OP(a, b) hardlight_op_rgbafp(a, b, da, sa)
+        float r = OP(  d.red(),   s.red());
+        float b = OP( d.blue(),  s.blue());
+        float g = OP(d.green(), s.green());
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_HardLight_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_HardLight_impl(dest, src, length, QFullCoverage());
+    else
+        comp_func_HardLight_impl(dest, src, length, QPartialCoverage(const_alpha));
+}
+#endif
+
 /*
     if 2.Sca <= Sa
         Dca' = Dca.(Sa + (2.Sca - Sa).(1 - Dca/Da)) + Sca.(1 - Da) + Dca.(1 - Sa)
@@ -2332,6 +3276,14 @@ static inline void comp_func_solid_SoftLight_impl(uint *dest, int length, uint c
     }
 }
 
+void QT_FASTCALL comp_func_solid_SoftLight(uint *dest, int length, uint color, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_solid_SoftLight_impl(dest, length, color, QFullCoverage());
+    else
+        comp_func_solid_SoftLight_impl(dest, length, color, QPartialCoverage(const_alpha));
+}
+
 #if QT_CONFIG(raster_64bit)
 static inline uint soft_light_op_rgb64(qint64 dst, qint64 src, qint64 da, qint64 sa)
 {
@@ -2371,15 +3323,64 @@ static inline void comp_func_solid_SoftLight_impl(QRgba64 *dest, int length, QRg
         coverage.store(&dest[i], qRgba64(r, g, b, a));
     }
 }
-#endif
 
-void QT_FASTCALL comp_func_solid_SoftLight(uint *dest, int length, uint color, uint const_alpha)
+void QT_FASTCALL comp_func_solid_SoftLight_rgb64(QRgba64 *dest, int length, QRgba64 color, uint const_alpha)
 {
     if (const_alpha == 255)
         comp_func_solid_SoftLight_impl(dest, length, color, QFullCoverage());
     else
         comp_func_solid_SoftLight_impl(dest, length, color, QPartialCoverage(const_alpha));
 }
+
+#endif
+
+#if QT_CONFIG(raster_fp)
+static inline float soft_light_op_rgbafp(float dst, float src, float da, float sa)
+{
+    const float src2 = src * 2;
+    const float dst_np = da != 0.0f ? (dst / da) : 0.0f;
+    const float temp = src * (1.0f - da) + dst * (1.0f - sa);
+
+    if (src2 < sa)
+        return dst * (sa + (src2 - sa) * (1.0f - dst_np)) + temp;
+    else if (4 * dst <= da)
+        return dst * sa + da * (src2 - sa) * (((16 * dst_np - 12) * dst_np + 3) * dst_np) + temp;
+    else {
+        return dst * sa + da * (src2 - sa) * (qSqrt(qreal(dst_np)) - dst_np) + temp;
+    }
+}
+
+template <typename T>
+static inline void comp_func_solid_SoftLight_impl(QRgba32F *dest, int length, QRgba32F color, const T &coverage)
+{
+    float sa = color.alpha();
+    float sr = color.red();
+    float sg = color.green();
+    float sb = color.blue();
+
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        float da = d.alpha();
+
+#define OP(a, b) soft_light_op_rgbafp(a, b, da, sa)
+        float r =  OP(  d.red(), sr);
+        float b =  OP( d.blue(), sb);
+        float g =  OP(d.green(), sg);
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_solid_SoftLight_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_solid_SoftLight_impl(dest, length, color, QFullCoverage());
+    else
+        comp_func_solid_SoftLight_impl(dest, length, color, QPartialCoverage(const_alpha));
+}
+#endif
 
 template <typename T>
 static inline void comp_func_SoftLight_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
@@ -2411,14 +3412,6 @@ void QT_FASTCALL comp_func_SoftLight(uint *Q_DECL_RESTRICT dest, const uint *Q_D
 }
 
 #if QT_CONFIG(raster_64bit)
-void QT_FASTCALL comp_func_solid_SoftLight_rgb64(QRgba64 *dest, int length, QRgba64 color, uint const_alpha)
-{
-    if (const_alpha == 255)
-        comp_func_solid_SoftLight_impl(dest, length, color, QFullCoverage());
-    else
-        comp_func_solid_SoftLight_impl(dest, length, color, QPartialCoverage(const_alpha));
-}
-
 template <typename T>
 static inline void comp_func_SoftLight_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
@@ -2441,6 +3434,37 @@ static inline void comp_func_SoftLight_impl(QRgba64 *Q_DECL_RESTRICT dest, const
 }
 
 void QT_FASTCALL comp_func_SoftLight_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_SoftLight_impl(dest, src, length, QFullCoverage());
+    else
+        comp_func_SoftLight_impl(dest, src, length, QPartialCoverage(const_alpha));
+}
+#endif
+
+#if QT_CONFIG(raster_fp)
+template <typename T>
+static inline void comp_func_SoftLight_impl(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, const T &coverage)
+{
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        QRgba32F s = src[i];
+
+        float da = d.alpha();
+        float sa = s.alpha();
+
+#define OP(a, b) soft_light_op_rgbafp(a, b, da, sa)
+        float r = OP(  d.red(),   s.red());
+        float b = OP( d.blue(),  s.blue());
+        float g = OP(d.green(), s.green());
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_SoftLight_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     if (const_alpha == 255)
         comp_func_SoftLight_impl(dest, src, length, QFullCoverage());
@@ -2527,6 +3551,44 @@ void QT_FASTCALL comp_func_solid_Difference_rgb64(QRgba64 *dest, int length, QRg
 }
 #endif
 
+#if QT_CONFIG(raster_fp)
+static inline float difference_op_rgbafp(float dst, float src, float da, float sa)
+{
+    return src + dst - (2 * qMin(src * da, dst * sa));
+}
+
+template <typename T>
+static inline void comp_func_solid_Difference_impl(QRgba32F *dest, int length, QRgba32F color, const T &coverage)
+{
+    float sa = color.alpha();
+    float sr = color.red();
+    float sg = color.green();
+    float sb = color.blue();
+
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        float da = d.alpha();
+
+#define OP(a, b) difference_op_rgbafp(a, b, da, sa)
+        float r =  OP(  d.red(), sr);
+        float b =  OP( d.blue(), sb);
+        float g =  OP(d.green(), sg);
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_solid_Difference_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_solid_Difference_impl(dest, length, color, QFullCoverage());
+    else
+        comp_func_solid_Difference_impl(dest, length, color, QPartialCoverage(const_alpha));
+}
+#endif
+
 template <typename T>
 static inline void comp_func_Difference_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
@@ -2579,6 +3641,37 @@ static inline void comp_func_Difference_impl(QRgba64 *Q_DECL_RESTRICT dest, cons
 }
 
 void QT_FASTCALL comp_func_Difference_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_Difference_impl(dest, src, length, QFullCoverage());
+    else
+        comp_func_Difference_impl(dest, src, length, QPartialCoverage(const_alpha));
+}
+#endif
+
+#if QT_CONFIG(raster_fp)
+template <typename T>
+static inline void comp_func_Difference_impl(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, const T &coverage)
+{
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        QRgba32F s = src[i];
+
+        float da = d.alpha();
+        float sa = s.alpha();
+
+#define OP(a, b) difference_op_rgbafp(a, b, da, sa)
+        float r = OP(  d.red(),   s.red());
+        float b = OP( d.blue(),  s.blue());
+        float g = OP(d.green(), s.green());
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_Difference_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     if (const_alpha == 255)
         comp_func_Difference_impl(dest, src, length, QFullCoverage());
@@ -2645,8 +3738,40 @@ static inline void QT_FASTCALL comp_func_solid_Exclusion_impl(QRgba64 *dest, int
     }
 }
 
-
 void QT_FASTCALL comp_func_solid_Exclusion_rgb64(QRgba64 *dest, int length, QRgba64 color, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_solid_Exclusion_impl(dest, length, color, QFullCoverage());
+    else
+        comp_func_solid_Exclusion_impl(dest, length, color, QPartialCoverage(const_alpha));
+}
+#endif
+
+#if QT_CONFIG(raster_fp)
+template <typename T>
+static inline void QT_FASTCALL comp_func_solid_Exclusion_impl(QRgba32F *dest, int length, QRgba32F color, const T &coverage)
+{
+    float sa = color.alpha();
+    float sr = color.red();
+    float sg = color.green();
+    float sb = color.blue();
+
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        float da = d.alpha();
+
+#define OP(a, b) (a + b - (2.0f * a * b))
+        float r =  OP(  d.red(), sr);
+        float b =  OP( d.blue(), sb);
+        float g =  OP(d.green(), sg);
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_solid_Exclusion_rgbafp(QRgba32F *dest, int length, QRgba32F color, uint const_alpha)
 {
     if (const_alpha == 255)
         comp_func_solid_Exclusion_impl(dest, length, color, QFullCoverage());
@@ -2707,6 +3832,37 @@ static inline void comp_func_Exclusion_impl(QRgba64 *Q_DECL_RESTRICT dest, const
 }
 
 void QT_FASTCALL comp_func_Exclusion_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255)
+        comp_func_Exclusion_impl(dest, src, length, QFullCoverage());
+    else
+        comp_func_Exclusion_impl(dest, src, length, QPartialCoverage(const_alpha));
+}
+#endif
+
+#if QT_CONFIG(raster_fp)
+template <typename T>
+static inline void comp_func_Exclusion_impl(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, const T &coverage)
+{
+    for (int i = 0; i < length; ++i) {
+        QRgba32F d = dest[i];
+        QRgba32F s = src[i];
+
+        float da = d.alpha();
+        float sa = s.alpha();
+
+#define OP(a, b) (a + b - (2.0f * a * b))
+        float r = OP(  d.red(),   s.red());
+        float b = OP( d.blue(),  s.blue());
+        float g = OP(d.green(), s.green());
+        float a = mix_alpha_rgbafp(da, sa);
+#undef OP
+
+        coverage.store(&dest[i], qRgba32f(r, g, b, a));
+    }
+}
+
+void QT_FASTCALL comp_func_Exclusion_rgbafp(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     if (const_alpha == 255)
         comp_func_Exclusion_impl(dest, src, length, QFullCoverage());
@@ -3097,6 +4253,40 @@ CompositionFunctionSolid64 qt_functionForModeSolid64_C[] = {
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
 };
 
+CompositionFunctionSolidFP qt_functionForModeSolidFP_C[] = {
+#if QT_CONFIG(raster_fp)
+        comp_func_solid_SourceOver_rgbafp,
+        comp_func_solid_DestinationOver_rgbafp,
+        comp_func_solid_Clear_rgbafp,
+        comp_func_solid_Source_rgbafp,
+        comp_func_solid_Destination_rgbafp,
+        comp_func_solid_SourceIn_rgbafp,
+        comp_func_solid_DestinationIn_rgbafp,
+        comp_func_solid_SourceOut_rgbafp,
+        comp_func_solid_DestinationOut_rgbafp,
+        comp_func_solid_SourceAtop_rgbafp,
+        comp_func_solid_DestinationAtop_rgbafp,
+        comp_func_solid_XOR_rgbafp,
+        comp_func_solid_Plus_rgbafp,
+        comp_func_solid_Multiply_rgbafp,
+        comp_func_solid_Screen_rgbafp,
+        comp_func_solid_Overlay_rgbafp,
+        comp_func_solid_Darken_rgbafp,
+        comp_func_solid_Lighten_rgbafp,
+        comp_func_solid_ColorDodge_rgbafp,
+        comp_func_solid_ColorBurn_rgbafp,
+        comp_func_solid_HardLight_rgbafp,
+        comp_func_solid_SoftLight_rgbafp,
+        comp_func_solid_Difference_rgbafp,
+        comp_func_solid_Exclusion_rgbafp,
+#else
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+#endif
+        0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0
+};
+
 CompositionFunction qt_functionForMode_C[] = {
         comp_func_SourceOver,
         comp_func_DestinationOver,
@@ -3171,6 +4361,40 @@ CompositionFunction64 qt_functionForMode64_C[] = {
 #endif
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
+};
+
+CompositionFunctionFP qt_functionForModeFP_C[] = {
+#if QT_CONFIG(raster_fp)
+        comp_func_SourceOver_rgbafp,
+        comp_func_DestinationOver_rgbafp,
+        comp_func_Clear_rgbafp,
+        comp_func_Source_rgbafp,
+        comp_func_Destination_rgbafp,
+        comp_func_SourceIn_rgbafp,
+        comp_func_DestinationIn_rgbafp,
+        comp_func_SourceOut_rgbafp,
+        comp_func_DestinationOut_rgbafp,
+        comp_func_SourceAtop_rgbafp,
+        comp_func_DestinationAtop_rgbafp,
+        comp_func_XOR_rgbafp,
+        comp_func_Plus_rgbafp,
+        comp_func_Multiply_rgbafp,
+        comp_func_Screen_rgbafp,
+        comp_func_Overlay_rgbafp,
+        comp_func_Darken_rgbafp,
+        comp_func_Lighten_rgbafp,
+        comp_func_ColorDodge_rgbafp,
+        comp_func_ColorBurn_rgbafp,
+        comp_func_HardLight_rgbafp,
+        comp_func_SoftLight_rgbafp,
+        comp_func_Difference_rgbafp,
+        comp_func_Exclusion_rgbafp,
+#else
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+#endif
+        0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0
 };
 
 QT_END_NAMESPACE

@@ -4517,7 +4517,7 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
 
             auto cacheInfo = qt_gradient_cache()->getBuffer(*g, alpha);
             gradient.colorTable32 = cacheInfo->buffer32;
-#if QT_CONFIG(raster_64bit)
+#if QT_CONFIG(raster_64bit) || QT_CONFIG(raster_fp)
             gradient.colorTable64 = cacheInfo->buffer64;
 #endif
             cachedGradient = std::move(cacheInfo);
@@ -4541,7 +4541,7 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
 
             auto cacheInfo = qt_gradient_cache()->getBuffer(*g, alpha);
             gradient.colorTable32 = cacheInfo->buffer32;
-#if QT_CONFIG(raster_64bit)
+#if QT_CONFIG(raster_64bit) || QT_CONFIG(raster_fp)
             gradient.colorTable64 = cacheInfo->buffer64;
 #endif
             cachedGradient = std::move(cacheInfo);
@@ -4569,7 +4569,7 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
 
             auto cacheInfo = qt_gradient_cache()->getBuffer(*g, alpha);
             gradient.colorTable32 = cacheInfo->buffer32;
-#if QT_CONFIG(raster_64bit)
+#if QT_CONFIG(raster_64bit) || QT_CONFIG(raster_fp)
             gradient.colorTable64 = cacheInfo->buffer64;
 #endif
             cachedGradient = std::move(cacheInfo);

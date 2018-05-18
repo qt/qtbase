@@ -1060,6 +1060,7 @@ void tst_QPainter::fillRect_data()
     QTest::newRow("argb32pm") << QImage::Format_ARGB32_Premultiplied;
     QTest::newRow("rgba8888pm") << QImage::Format_RGBA8888_Premultiplied;
     QTest::newRow("rgba64pm") << QImage::Format_RGBA64_Premultiplied;
+    QTest::newRow("rgbaFP16pm") << QImage::Format_RGBA16FPx4_Premultiplied;
 }
 
 void tst_QPainter::fillRect()
@@ -1558,6 +1559,8 @@ void tst_QPainter::qimageFormats_data()
     QTest::newRow("Qimage::Format_BGR888") << QImage::Format_BGR888;
     QTest::newRow("Qimage::Format_A2RGB30_Premultiplied") << QImage::Format_A2RGB30_Premultiplied;
     QTest::newRow("Qimage::Format_RGB30") << QImage::Format_RGB30;
+    QTest::newRow("QImage::Format_RGBX16FPx4") << QImage::Format_RGBX16FPx4;
+    QTest::newRow("QImage::Format_RGBA32FPx4_Premultiplied") << QImage::Format_RGBA32FPx4_Premultiplied;
 }
 
 /*

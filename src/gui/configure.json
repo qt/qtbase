@@ -1663,6 +1663,12 @@
             "section": "Painting",
             "output": [ "privateFeature" ]
         },
+        "raster-fp": {
+            "label": "QPainter - floating point raster",
+            "purpose": "Internal painting support for floating point rasterization.",
+            "section": "Painting",
+            "output": [ "privateFeature" ]
+        },
         "undocommand": {
             "label": "QUndoCommand",
             "purpose": "Applies (redo or) undo of a single change in a document.",

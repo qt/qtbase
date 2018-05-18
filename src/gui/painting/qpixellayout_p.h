@@ -54,6 +54,7 @@
 #include <QtCore/qlist.h>
 #include <QtGui/qimage.h>
 #include <QtGui/qrgba64.h>
+#include <QtGui/qrgbaf.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -217,6 +218,16 @@ inline unsigned int qConvertRgb64ToRgb30<PixelOrderRGB>(QRgba64 c)
     return (a << 30) | (r << 20) | (g << 10) | b;
 }
 
+inline constexpr QRgba16F qConvertRgb64ToRgbaF16(QRgba64 c)
+{
+    return QRgba16F::fromRgba64(c.red(), c.green(), c.blue(), c.alpha());
+}
+
+inline constexpr QRgba32F qConvertRgb64ToRgbaF32(QRgba64 c)
+{
+    return QRgba32F::fromRgba64(c.red(), c.green(), c.blue(), c.alpha());
+}
+
 inline uint qRgbSwapRgb30(uint c)
 {
     const uint ag = c & 0xc00ffc00;
@@ -296,10 +307,19 @@ typedef void(QT_FASTCALL *ConvertAndStorePixelsFunc64)(uchar *dest, const QRgba6
                                                        int count, const QList<QRgb> *clut,
                                                        QDitherInfo *dither);
 
-typedef void(QT_FASTCALL *ConvertFunc)(uint *buffer, int count, const QList<QRgb> *clut);
-typedef void(QT_FASTCALL *Convert64Func)(quint64 *buffer, int count, const QList<QRgb> *clut);
+typedef const QRgba32F *(QT_FASTCALL *FetchAndConvertPixelsFuncFP)(QRgba32F *buffer, const uchar *src, int index, int count,
+                                                                   const QList<QRgb> *clut, QDitherInfo *dither);
+typedef void (QT_FASTCALL *ConvertAndStorePixelsFuncFP)(uchar *dest, const QRgba32F *src, int index, int count,
+                                                        const QList<QRgb> *clut, QDitherInfo *dither);
+typedef void (QT_FASTCALL *ConvertFunc)(uint *buffer, int count, const QList<QRgb> *clut);
+typedef void (QT_FASTCALL *Convert64Func)(QRgba64 *buffer, int count);
+typedef void (QT_FASTCALL *ConvertFPFunc)(QRgba32F *buffer, int count);
+typedef void (QT_FASTCALL *Convert64ToFPFunc)(QRgba32F *buffer, const quint64 *src, int count);
+
 typedef const QRgba64 *(QT_FASTCALL *ConvertTo64Func)(QRgba64 *buffer, const uint *src, int count,
                                                       const QList<QRgb> *clut, QDitherInfo *dither);
+typedef const QRgba32F *(QT_FASTCALL *ConvertToFPFunc)(QRgba32F *buffer, const uint *src, int count,
+                                                       const QList<QRgb> *clut, QDitherInfo *dither);
 typedef void (QT_FASTCALL *RbSwapFunc)(uchar *dst, const uchar *src, int count);
 
 typedef void (*MemRotateFunc)(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl);
@@ -316,6 +336,8 @@ struct QPixelLayout
         BPP24,
         BPP32,
         BPP64,
+        BPP16FPx4,
+        BPP32FPx4,
         BPPCount
     };
 
@@ -332,6 +354,12 @@ struct QPixelLayout
 };
 
 extern ConvertAndStorePixelsFunc64 qStoreFromRGBA64PM[QImage::NImageFormats];
+
+#if QT_CONFIG(raster_fp)
+extern ConvertToFPFunc qConvertToRGBA32F[QImage::NImageFormats];
+extern FetchAndConvertPixelsFuncFP qFetchToRGBA32F[QImage::NImageFormats];
+extern ConvertAndStorePixelsFuncFP qStoreFromRGBA32F[QImage::NImageFormats];
+#endif
 
 extern QPixelLayout qPixelLayouts[QImage::NImageFormats];
 

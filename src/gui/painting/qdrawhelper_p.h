@@ -108,6 +108,9 @@ class QRasterBuffer;
 class QClipData;
 class QRasterPaintEngineState;
 
+template<typename F> class QRgbaF;
+typedef QRgbaF<float> QRgba32F;
+
 typedef QT_FT_SpanFunc ProcessSpans;
 typedef void (*BitmapBlitFunc)(QRasterBuffer *rasterBuffer,
                                int x, int y, const QRgba64 &color,
@@ -194,8 +197,10 @@ extern void qt_memfill16(quint16 *dest, quint16 value, qsizetype count);
 
 typedef void (QT_FASTCALL *CompositionFunction)(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, uint const_alpha);
 typedef void (QT_FASTCALL *CompositionFunction64)(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha);
+typedef void (QT_FASTCALL *CompositionFunctionFP)(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha);
 typedef void (QT_FASTCALL *CompositionFunctionSolid)(uint *dest, int length, uint color, uint const_alpha);
 typedef void (QT_FASTCALL *CompositionFunctionSolid64)(QRgba64 *dest, int length, QRgba64 color, uint const_alpha);
+typedef void (QT_FASTCALL *CompositionFunctionSolidFP)(QRgba32F *dest, int length, QRgba32F color, uint const_alpha);
 
 struct LinearGradientValues
 {
@@ -219,10 +224,13 @@ struct RadialGradientValues
 struct Operator;
 typedef uint* (QT_FASTCALL *DestFetchProc)(uint *buffer, QRasterBuffer *rasterBuffer, int x, int y, int length);
 typedef QRgba64* (QT_FASTCALL *DestFetchProc64)(QRgba64 *buffer, QRasterBuffer *rasterBuffer, int x, int y, int length);
+typedef QRgba32F* (QT_FASTCALL *DestFetchProcFP)(QRgba32F *buffer, QRasterBuffer *rasterBuffer, int x, int y, int length);
 typedef void (QT_FASTCALL *DestStoreProc)(QRasterBuffer *rasterBuffer, int x, int y, const uint *buffer, int length);
 typedef void (QT_FASTCALL *DestStoreProc64)(QRasterBuffer *rasterBuffer, int x, int y, const QRgba64 *buffer, int length);
+typedef void (QT_FASTCALL *DestStoreProcFP)(QRasterBuffer *rasterBuffer, int x, int y, const QRgba32F *buffer, int length);
 typedef const uint* (QT_FASTCALL *SourceFetchProc)(uint *buffer, const Operator *o, const QSpanData *data, int y, int x, int length);
 typedef const QRgba64* (QT_FASTCALL *SourceFetchProc64)(QRgba64 *buffer, const Operator *o, const QSpanData *data, int y, int x, int length);
+typedef const QRgba32F* (QT_FASTCALL *SourceFetchProcFP)(QRgba32F *buffer, const Operator *o, const QSpanData *data, int y, int x, int length);
 
 struct Operator
 {
@@ -238,6 +246,12 @@ struct Operator
     SourceFetchProc64 srcFetch64;
     CompositionFunctionSolid64 funcSolid64;
     CompositionFunction64 func64;
+
+    DestFetchProcFP destFetchFP;
+    DestStoreProcFP destStoreFP;
+    SourceFetchProcFP srcFetchFP;
+    CompositionFunctionSolidFP funcSolidFP;
+    CompositionFunctionFP funcFP;
 
     union {
         LinearGradientValues linear;
@@ -295,7 +309,7 @@ struct QGradientData
 #define GRADIENT_STOPTABLE_SIZE 1024
 #define GRADIENT_STOPTABLE_SIZE_SHIFT 10
 
-#if QT_CONFIG(raster_64bit)
+#if QT_CONFIG(raster_64bit) || QT_CONFIG(raster_fp)
     const QRgba64 *colorTable64; //[GRADIENT_STOPTABLE_SIZE];
 #endif
     const QRgb *colorTable32; //[GRADIENT_STOPTABLE_SIZE];
@@ -473,7 +487,7 @@ const BlendType * QT_FASTCALL qt_fetch_radial_gradient_template(BlendType *buffe
 
         while (buffer < end) {
             if (rw == 0) {
-                *buffer = 0;
+                *buffer = RadialFetchFunc::null();
             } else {
                 qreal invRw = 1 / rw;
                 qreal gx = rx * invRw - data->gradient.radial.focal.x;
@@ -845,6 +859,57 @@ static inline QRgba64 interpolate_4_pixels_rgb64(const QRgba64 t[], const QRgba6
 }
 #endif // __SSE2__
 
+#if QT_CONFIG(raster_fp)
+static inline QRgba32F multiplyAlpha_rgba32f(QRgba32F c, float a)
+{
+    return QRgba32F { c.r * a, c.g * a, c.b * a, c.a * a };
+}
+
+static inline QRgba32F interpolate_rgba32f(QRgba32F x, float alpha1, QRgba32F y, float alpha2)
+{
+    x = multiplyAlpha_rgba32f(x, alpha1);
+    y = multiplyAlpha_rgba32f(y, alpha2);
+    return QRgba32F { x.r + y.r, x.g + y.g, x.b + y.b, x.a + y.a };
+}
+#ifdef __SSE2__
+static inline __m128 Q_DECL_VECTORCALL interpolate_rgba32f(__m128 x, __m128 alpha1, __m128 y, __m128 alpha2)
+{
+    return _mm_add_ps(_mm_mul_ps(x, alpha1), _mm_mul_ps(y, alpha2));
+}
+#endif
+
+static inline QRgba32F interpolate_4_pixels_rgba32f(const QRgba32F t[], const QRgba32F b[], uint distx, uint disty)
+{
+    constexpr float f = 1.0f / 65536.0f;
+    const float dx = distx * f;
+    const float dy = disty * f;
+    const float idx = 1.0f - dx;
+    const float idy = 1.0f - dy;
+#ifdef __SSE2__
+    const __m128 vtl = _mm_load_ps((const float *)&t[0]);
+    const __m128 vtr = _mm_load_ps((const float *)&t[1]);
+    const __m128 vbl = _mm_load_ps((const float *)&b[0]);
+    const __m128 vbr = _mm_load_ps((const float *)&b[1]);
+
+    const __m128 vdx = _mm_set1_ps(dx);
+    const __m128 vidx = _mm_set1_ps(idx);
+    __m128 vt = interpolate_rgba32f(vtl, vidx, vtr, vdx);
+    __m128 vb = interpolate_rgba32f(vbl, vidx, vbr, vdx);
+    const __m128 vdy = _mm_set1_ps(dy);
+    const __m128 vidy = _mm_set1_ps(idy);
+    vt = interpolate_rgba32f(vt, vidy, vb, vdy);
+    QRgba32F res;
+    _mm_store_ps((float*)&res, vt);
+    return res;
+#else
+    QRgba32F xtop = interpolate_rgba32f(t[0], idx, t[1], dx);
+    QRgba32F xbot = interpolate_rgba32f(b[0], idx, b[1], dx);
+    xtop = interpolate_rgba32f(xtop, idy, xbot, dy);
+    return xtop;
+#endif
+}
+#endif // QT_CONFIG(raster_fp)
+
 static inline uint BYTE_MUL_RGB16(uint x, uint a) {
     a += 1;
     uint t = (((x & 0x07e0)*a) >> 8) & 0x07e0;
@@ -1022,70 +1087,6 @@ struct IntermediateBuffer
     // +1 for the last pixel to interpolate with, and +1 for rounding errors.
     quint32 buffer_rb[BufferSize+2];
     quint32 buffer_ag[BufferSize+2];
-};
-
-template <QPixelLayout::BPP bpp>
-inline uint QT_FASTCALL qFetchPixel(const uchar *, int)
-{
-    Q_UNREACHABLE();
-    return 0;
-}
-
-template <>
-inline uint QT_FASTCALL qFetchPixel<QPixelLayout::BPP1LSB>(const uchar *src, int index)
-{
-    return (src[index >> 3] >> (index & 7)) & 1;
-}
-
-template <>
-inline uint QT_FASTCALL qFetchPixel<QPixelLayout::BPP1MSB>(const uchar *src, int index)
-{
-    return (src[index >> 3] >> (~index & 7)) & 1;
-}
-
-template <>
-inline uint QT_FASTCALL qFetchPixel<QPixelLayout::BPP8>(const uchar *src, int index)
-{
-    return src[index];
-}
-
-template <>
-inline uint QT_FASTCALL qFetchPixel<QPixelLayout::BPP16>(const uchar *src, int index)
-{
-    return reinterpret_cast<const quint16 *>(src)[index];
-}
-
-template <>
-inline uint QT_FASTCALL qFetchPixel<QPixelLayout::BPP24>(const uchar *src, int index)
-{
-    return reinterpret_cast<const quint24 *>(src)[index];
-}
-
-template <>
-inline uint QT_FASTCALL qFetchPixel<QPixelLayout::BPP32>(const uchar *src, int index)
-{
-    return reinterpret_cast<const uint *>(src)[index];
-}
-
-template <>
-inline uint QT_FASTCALL qFetchPixel<QPixelLayout::BPP64>(const uchar *src, int index)
-{
-    // We have to do the conversion in fetch to fit into a 32bit uint
-    QRgba64 c = reinterpret_cast<const QRgba64 *>(src)[index];
-    return c.toArgb32();
-}
-
-typedef uint (QT_FASTCALL *FetchPixelFunc)(const uchar *src, int index);
-
-constexpr FetchPixelFunc qFetchPixelTable[QPixelLayout::BPPCount] = {
-    nullptr, // BPPNone
-    qFetchPixel<QPixelLayout::BPP1MSB>,
-    qFetchPixel<QPixelLayout::BPP1LSB>,
-    qFetchPixel<QPixelLayout::BPP8>,
-    qFetchPixel<QPixelLayout::BPP16>,
-    qFetchPixel<QPixelLayout::BPP24>,
-    qFetchPixel<QPixelLayout::BPP32>,
-    qFetchPixel<QPixelLayout::BPP64>,
 };
 
 QT_END_NAMESPACE

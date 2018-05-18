@@ -1,0 +1,248 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \class QRgbaF
+    \brief The QRgbaF struct contains a four part RGBA floating-point color.
+    \since 6.2
+
+    \ingroup painting
+    \inmodule QtGui
+
+    QRgba16F is a 64-bit data-structure containing four 16-bit floating point color channels: Red, green, blue and alpha.
+    QRgba32F is a 128-bit data-structure containing four 32-bit floating point color channels: Red, green, blue and alpha.
+
+    \sa QRgb, QRgba64, QColor
+*/
+
+/*!
+    \fn static QRgbaF QRgbaF::fromRgba64(quint16 r, quint16 g, quint16 b, quint16 a)
+
+    Constructs a QRgbaF value from the four 16-bit integer color channels \a red, \a green, \a blue and \a alpha.
+
+    \sa fromRgba()
+*/
+
+/*!
+    \fn static QRgbaF QRgbaF::fromRgba(quint8 red, quint8 green, quint8 blue, quint8 alpha)
+
+    Constructs a QRgbaF value from the four 8-bit color channels \a red, \a green, \a blue and \a alpha.
+
+    \sa fromArgb32()
+*/
+
+/*!
+    \fn static QRgbaF QRgbaF::fromArgb32(uint rgb)
+
+    Constructs a QRgbaF value from the 32bit ARGB value \a rgb.
+
+    \sa fromRgba(), toArgb32()
+*/
+
+/*!
+    \fn bool QRgbaF::isOpaque() const
+
+    Returns whether the color is fully opaque.
+
+    \sa isTransparent(), alpha()
+*/
+
+/*!
+    \fn bool QRgbaF::isTransparent() const
+
+    Returns whether the color is fully transparent.
+
+    \sa isOpaque(), alpha()
+*/
+
+/*!
+    \fn float QRgbaF::red() const
+
+    Returns the red color component.
+
+    \sa setRed()
+*/
+
+/*!
+    \fn void QRgbaF::setRed(float red)
+
+    Sets the red color component of this color to \a red.
+
+    \sa red()
+*/
+
+/*!
+    \fn float QRgbaF::green() const
+
+    Returns the green color component.
+
+    \sa setGreen()
+*/
+
+/*!
+    \fn void QRgbaF::setGreen(float green)
+
+    Sets the green color component of this color to \a green.
+
+    \sa green()
+*/
+
+/*!
+    \fn float QRgbaF::blue() const
+
+    Returns the blue color component.
+
+    \sa setBlue()
+*/
+
+/*!
+    \fn void QRgbaF::setBlue(float blue)
+
+    Sets the blue color component of this color to \a blue.
+
+    \sa blue()
+*/
+
+/*!
+    \fn float QRgbaF::alpha() const
+
+    Returns the alpha channel.
+
+    \sa setAlpha()
+*/
+
+/*!
+    \fn void QRgbaF::setAlpha(float alpha)
+
+    Sets the alpha of this color to \a alpha.
+
+    \sa alpha()
+*/
+
+/*!
+    \fn float QRgbaF::redNormalized() const
+
+    Returns the red color component normalized to values between \c 0.0f and \c 1.0f.
+
+    \sa setRed()
+*/
+
+/*!
+    \fn float QRgbaF::greenNormalized() const
+
+    Returns the green color component normalized to values between \c 0.0f and \c 1.0f.
+
+    \sa setGreen()
+*/
+
+/*!
+    \fn float QRgbaF::blueNormalized() const
+
+    Returns the blue color component normalized to values between \c 0.0f and \c 1.0f.
+
+    \sa setBlue()
+*/
+
+/*!
+    \fn float QRgbaF::alphaNormalized() const
+
+    Returns the alpha channel normalized to values between \c 0.0f and \c 1.0f.
+
+    \sa alpha()
+*/
+
+/*!
+    \fn quint8 QRgbaF::red8() const
+
+    Returns the red color component as an 8-bit.
+*/
+
+/*!
+    \fn quint8 QRgbaF::green8() const
+
+    Returns the green color component as an 8-bit.
+*/
+
+/*!
+    \fn quint8 QRgbaF::blue8() const
+
+    Returns the blue color component as an 8-bit.
+*/
+
+/*!
+    \fn quint8 QRgbaF::alpha8() const
+
+    Returns the alpha channel as an 8-bit.
+*/
+
+/*!
+    \fn uint QRgbaF::toArgb32() const
+
+    Returns the color as a 32-bit ARGB value.
+
+    \sa fromArgb32()
+*/
+
+/*!
+    \fn quint16 QRgbaF::red16() const
+
+    Returns the red color component as a 16-bit integer.
+*/
+
+/*!
+    \fn quint16 QRgbaF::green16() const
+
+    Returns the green color component as a 16-bit integer.
+*/
+
+/*!
+    \fn quint16 QRgbaF::blue16() const
+
+    Returns the blue color component as a 16-bit integer.
+*/
+
+/*!
+    \fn quint16 QRgbaF::alpha16() const
+
+    Returns the alpha channel as a 16-bit integer.
+*/
+
+/*!
+    \fn QRgbaF QRgbaF::premultiplied() const
+
+    Returns the color with the alpha premultiplied.
+
+    \sa unpremultiplied()
+*/
+
+/*!
+    \fn QRgbaF QRgbaF::unpremultiplied() const
+
+    Returns the color with the alpha unpremultiplied.
+
+    \sa premultiplied()
+*/

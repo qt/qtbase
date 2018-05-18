@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -104,6 +104,12 @@ public:
         Format_RGBA64_Premultiplied,
         Format_Grayscale16,
         Format_BGR888,
+        Format_RGBX16FPx4,
+        Format_RGBA16FPx4,
+        Format_RGBA16FPx4_Premultiplied,
+        Format_RGBX32FPx4,
+        Format_RGBA32FPx4,
+        Format_RGBA32FPx4_Premultiplied,
 #ifndef Q_QDOC
         NImageFormats
 #endif
