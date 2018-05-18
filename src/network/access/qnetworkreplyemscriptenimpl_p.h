@@ -88,13 +88,10 @@ public:
 
     Q_DECLARE_PRIVATE(QNetworkReplyEmscriptenImpl)
 
-    Q_PRIVATE_SLOT(d_func(), void emitReplyError(QNetworkReply::NetworkError errorCode))
+    Q_PRIVATE_SLOT(d_func(), void emitReplyError(QNetworkReply::NetworkError errorCode, const QString &errorString))
     Q_PRIVATE_SLOT(d_func(), void emitDataReadProgress(qint64 done, qint64 total))
     Q_PRIVATE_SLOT(d_func(), void dataReceived(char *buffer, int bufferSize))
 
-public Q_SLOTS:
-    void emitReplyError(QNetworkReply::NetworkError errorCode);
-    void connectionFinished();
 
 private:
     QByteArray methodName() const;
@@ -112,13 +109,13 @@ public:
 
     void jsRequest(const QString &verb, const QString &url, void *, void *, void *, void *);
 
-    static void onLoadCallback(void *data, int statusCode, int readyState, int textBuffer, int size);
+    static void onLoadCallback(void *data, int statusCode, int statusReason, int readyState, int textBuffer, int size);
     static void onProgressCallback(void *data, int done, int bytesTotal, uint timestamp);
-    static void onRequestErrorCallback(void *data, int e, int status);
+    static void onRequestErrorCallback(void *data, int statusCode, int statusReason);
     static void onStateChangedCallback(int status);
     static void onResponseHeadersCallback(void *data, int headers);
 
-    void emitReplyError(QNetworkReply::NetworkError errorCode);
+    void emitReplyError(QNetworkReply::NetworkError errorCode, const QString &);
     void emitDataReadProgress(qint64 done, qint64 total);
     void dataReceived(char *buffer, int bufferSize);
     void headersReceived(char *buffer);
@@ -146,6 +143,7 @@ public:
     QIODevice *outgoingData;
     QSharedPointer<QRingBuffer> outgoingDataBuffer;
 
+    static QNetworkReply::NetworkError  statusCodeFromHttp(int httpStatusCode, const QUrl &url);
     Q_DECLARE_PUBLIC(QNetworkReplyEmscriptenImpl)
 };
 

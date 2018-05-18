@@ -76,10 +76,6 @@ QNetworkReplyEmscriptenImpl::QNetworkReplyEmscriptenImpl(QObject *parent)
 {
 }
 
-void QNetworkReplyEmscriptenImpl::connectionFinished()
-{
-}
-
 QByteArray QNetworkReplyEmscriptenImpl::methodName() const
 {
     switch (operation()) {
@@ -145,13 +141,6 @@ qint64 QNetworkReplyEmscriptenImpl::readData(char *data, qint64 maxlen)
     return howMuch;
 }
 
-void QNetworkReplyEmscriptenImpl::emitReplyError(QNetworkReply::NetworkError errorCode)
-{
-    setFinished(true);
-    emit error(errorCode);
-    QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
-}
-
 void QNetworkReplyEmscriptenImplPrivate::setup(QNetworkAccessManager::Operation op, const QNetworkRequest &req,
                                      QIODevice *data)
 {
@@ -197,10 +186,11 @@ void QNetworkReplyEmscriptenImplPrivate::setup(QNetworkAccessManager::Operation 
     doSendRequest();
 }
 
-void QNetworkReplyEmscriptenImplPrivate::onLoadCallback(void *data, int statusCode, int readyState, int buffer, int bufferSize)
+void QNetworkReplyEmscriptenImplPrivate::onLoadCallback(void *data, int statusCode, int statusReason, int readyState, int buffer, int bufferSize)
 {
     QNetworkReplyEmscriptenImplPrivate *handler = reinterpret_cast<QNetworkReplyEmscriptenImplPrivate*>(data);
-    // FIXME TODO do something with null termination lines ??
+
+    QString reasonStr = QString::fromUtf8((char *)statusReason);
 
     switch(readyState) {
     case 0://unsent
@@ -211,10 +201,19 @@ void QNetworkReplyEmscriptenImplPrivate::onLoadCallback(void *data, int statusCo
         break;
     case 3://loading
         break;
-    case 4://done
+    case 4: {//done
         handler->q_func()->setAttribute(QNetworkRequest::HttpStatusCodeAttribute, statusCode);
-        handler->dataReceived((char *)buffer, bufferSize);
-        break;
+        if (!reasonStr.isEmpty())
+            handler->q_func()->setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, reasonStr);
+
+        if (statusCode >= 400) {
+            if (!reasonStr.isEmpty())
+                handler->emitReplyError(handler->statusCodeFromHttp(statusCode, handler->request.url()), reasonStr);
+        } else {
+            handler->dataReceived((char *)buffer, bufferSize);
+        }
+    }
+     break;
     };
  }
 
@@ -225,12 +224,20 @@ void QNetworkReplyEmscriptenImplPrivate::onProgressCallback(void* data, int done
     handler->emitDataReadProgress(done, total);
 }
 
-void QNetworkReplyEmscriptenImplPrivate::onRequestErrorCallback(void* data, int state, int status)
+void QNetworkReplyEmscriptenImplPrivate::onRequestErrorCallback(void* data, int statusCode, int statusReason)
 {
-    Q_UNUSED(state)
-    Q_UNUSED(status)
+    QString reasonStr = QString::fromUtf8((char *)statusReason);
+
     QNetworkReplyEmscriptenImplPrivate *handler = reinterpret_cast<QNetworkReplyEmscriptenImplPrivate*>(data);
-    handler->emitReplyError(QNetworkReply::UnknownNetworkError);
+
+    handler->q_func()->setAttribute(QNetworkRequest::HttpStatusCodeAttribute, statusCode);
+    if (!reasonStr.isEmpty())
+        handler->q_func()->setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, reasonStr);
+
+    if (statusCode >= 400) {
+        if (!reasonStr.isEmpty())
+            handler->emitReplyError(handler->statusCodeFromHttp(statusCode, handler->request.url()), reasonStr);
+    }
 }
 
 void QNetworkReplyEmscriptenImplPrivate::onResponseHeadersCallback(void* data, int headers)
@@ -250,7 +257,6 @@ void QNetworkReplyEmscriptenImplPrivate::doSendRequest()
               (void *)&onRequestErrorCallback,
               (void *)&onResponseHeadersCallback);
 }
-
 
 /* const QString &body, const QList<QPair<QByteArray, QByteArray> > &headers ,*/
 void QNetworkReplyEmscriptenImplPrivate::jsRequest(const QString &verb, const QString &url, void *loadCallback, void *progressCallback, void *errorCallback, void *onResponseHeadersCallback)
@@ -287,7 +293,6 @@ void QNetworkReplyEmscriptenImplPrivate::jsRequest(const QString &verb, const QS
         if (extraData) {
             var extra = extraData.split("&");
             for (var i = 0; i < extra.length; i++) {
-                console.log(extra[i].split("=")[0]);
                 formData.append(extra[i].split("=")[0],extra[i].split("=")[1]);
             }
         }
@@ -305,7 +310,7 @@ void QNetworkReplyEmscriptenImplPrivate::jsRequest(const QString &verb, const QS
         }
 
         xhr.onprogress = function(e) {
-
+//console.log("onprogress "+ xhr.status + " "+xhr.statusText);
             switch(xhr.status) {
               case 200:
               case 206:
@@ -321,32 +326,47 @@ void QNetworkReplyEmscriptenImplPrivate::jsRequest(const QString &verb, const QS
         };
 
         xhr.onreadystatechange = function() {
-            if (xhr.readyState == xhr.DONE) {
-              var responseStr = xhr.getAllResponseHeaders();
-              var ptr = allocate(intArrayFromString(responseStr), 'i8', ALLOC_NORMAL);
-              Runtime.dynCall('vii', onHeadersCallback, [handler, ptr]);
-              _free(ptr);
-              }
-        };
+            if (xhr.readyState == xhr.UNSENT) console.log("UNSENT: Client has been created. open() not called yet."); //0
+            if (xhr.readyState == xhr.OPENED) console.log("OPENED: open() has been called."); //1
+            if (xhr.readyState == xhr.HEADERS_RECEIVED) {
+                    var responseStr = xhr.getAllResponseHeaders();
+                    if (responseStr.length > 0) {
+                        var ptr = allocate(intArrayFromString(responseStr), 'i8', ALLOC_NORMAL);
+                        Runtime.dynCall('vii', onHeadersCallback, [handler, ptr]);
+                        _free(ptr);
+                    }
+                }
+         if (xhr.readyState == xhr.LOADING) console.log("LOADING: Downloading; responseText holds partial data.");//3
+             if (xhr.readyState == xhr.DONE) console.log("DONE: The operation is complete.");//4
+
+                    };
 
         xhr.onload = function(e) {
-             var byteArray  = new Uint8Array( this.response);
-             var buffer = _malloc(byteArray.length);
-             HEAPU8.set(byteArray, buffer);
-             Runtime.dynCall('viiiii', onLoadCallbackPointer, [handler, this.status, this.readyState, buffer, byteArray.length]);
-            _free(buffer);
+                        if (xhr.status < 300) {
+                            var byteArray = 0;
+                            var buffer;
+
+                            byteArray  = new Uint8Array( xhr.response);
+                            buffer = _malloc(byteArray.length);
+                            HEAPU8.set(byteArray, buffer);
+                            var reasonPtr = allocate(intArrayFromString(xhr.statusText), 'i8', ALLOC_NORMAL);
+
+                            Runtime.dynCall('viiiiii', onLoadCallbackPointer, [handler, this.status, reasonPtr, this.readyState, buffer, byteArray.length]);
+                            _free(buffer);
+                            _free(reasonPtr);
+                        } else if (xhr.status >= 300) {
+                            var errorPtr = allocate(intArrayFromString(xhr.statusText), 'i8', ALLOC_NORMAL);
+                            Runtime.dynCall('viii', onErrorCallbackPointer, [handler, xhr.status, errorPtr]);
+                            _free(errorPtr);
+                        }
+                };
+
+        xhr.onerror = function(e) {
+            var errorPtr = allocate(intArrayFromString(xhr.statusText), 'i8', ALLOC_NORMAL);
+            Runtime.dynCall('viii', onErrorCallbackPointer, [handler, xhr.status, errorPtr]);
+            _free(errorPtr);
         };
-
-        xhr.error = function(e) {
-            Runtime.dynCall('viii', onErrorCallbackPointer, [handler, xhr.readyState, xhr.status]);
-
-            var responseStr = xhr.getAllResponseHeaders();
-            var ptr = allocate(intArrayFromString(responseStr), 'i8', ALLOC_NORMAL);
-            Runtime.dynCall('vii', onHeadersCallback, [handler, ptr]);
-            _free(ptr);
-
-        };
-        //TODO other operations, handle user/pass, handle binary data
+        //TODO other operations, handle user/pass, handle binary data, data streaming
         xhr.send(formData);
 
       }, verb.toLatin1().data(),
@@ -361,12 +381,15 @@ void QNetworkReplyEmscriptenImplPrivate::jsRequest(const QString &verb, const QS
                     );
 }
 
-void QNetworkReplyEmscriptenImplPrivate::emitReplyError(QNetworkReply::NetworkError errorCode)
+void QNetworkReplyEmscriptenImplPrivate::emitReplyError(QNetworkReply::NetworkError errorCode, const QString &errorString)
 {
     Q_UNUSED(errorCode)
     Q_Q(QNetworkReplyEmscriptenImpl);
-    emit q->error(QNetworkReply::UnknownNetworkError);
 
+    q->setError(errorCode, errorString);
+    emit q->error(errorCode);
+
+    q->setFinished(true);
     emit q->finished();
 }
 
@@ -399,11 +422,8 @@ void QNetworkReplyEmscriptenImplPrivate::dataReceived(char *buffer, int bufferSi
 
      if (downloadBufferCurrentSize == totalDownloadSize) {
          q->setFinished(true);
-         emit q->readyRead();
          emit q->finished();
      }
-
-    emit q->metaDataChanged();
 }
 
 //taken from qnetworkrequest.cpp
@@ -450,21 +470,25 @@ void QNetworkReplyEmscriptenImplPrivate::headersReceived(char *buffer)
 {
     Q_Q(QNetworkReplyEmscriptenImpl);
 
-    QStringList headers = QString::fromUtf8(buffer).split(QString::fromUtf8("\r\n"), QString::SkipEmptyParts);
+    QString bufferString = QString::fromUtf8(buffer);
+    if (!bufferString.isEmpty()) {
+        QStringList headers = bufferString.split(QString::fromUtf8("\r\n"), QString::SkipEmptyParts);
 
-    for (int i = 0; i < headers.size(); i++) {
-        QString headerName = headers.at(i).split(QString::fromUtf8(": ")).at(0);
-        QString headersValue = headers.at(i).split(QString::fromUtf8(": ")).at(1);
-        if (headerName.isEmpty() || headersValue.isEmpty())
-            continue;
+        for (int i = 0; i < headers.size(); i++) {
+            QString headerName = headers.at(i).split(QString::fromUtf8(": ")).at(0);
+            QString headersValue = headers.at(i).split(QString::fromUtf8(": ")).at(1);
+            if (headerName.isEmpty() || headersValue.isEmpty())
+                continue;
 
-        int headerIndex = parseHeaderName(headerName.toLocal8Bit());
+            int headerIndex = parseHeaderName(headerName.toLocal8Bit());
 
-        if (headerIndex == -1)
-            q->setRawHeader(headerName.toLocal8Bit(), headersValue.toLocal8Bit());
-        else
-            q->setHeader(static_cast<QNetworkRequest::KnownHeaders>(headerIndex), (QVariant)headersValue);
+            if (headerIndex == -1)
+                q->setRawHeader(headerName.toLocal8Bit(), headersValue.toLocal8Bit());
+            else
+                q->setHeader(static_cast<QNetworkRequest::KnownHeaders>(headerIndex), (QVariant)headersValue);
+        }
     }
+    emit q->metaDataChanged();
 }
 
 void QNetworkReplyEmscriptenImplPrivate::_q_bufferOutgoingDataFinished()
@@ -526,6 +550,78 @@ void QNetworkReplyEmscriptenImplPrivate::_q_bufferOutgoingData()
         }
     }
 }
+
+//taken from qhttpthreaddelegate.cpp
+QNetworkReply::NetworkError QNetworkReplyEmscriptenImplPrivate::statusCodeFromHttp(int httpStatusCode, const QUrl &url)
+{
+    QNetworkReply::NetworkError code;
+    // we've got an error
+    switch (httpStatusCode) {
+    case 400:               // Bad Request
+        code = QNetworkReply::ProtocolInvalidOperationError;
+        break;
+
+    case 401:               // Authorization required
+        code = QNetworkReply::AuthenticationRequiredError;
+        break;
+
+    case 403:               // Access denied
+        code = QNetworkReply::ContentAccessDenied;
+        break;
+
+    case 404:               // Not Found
+        code = QNetworkReply::ContentNotFoundError;
+        break;
+
+    case 405:               // Method Not Allowed
+        code = QNetworkReply::ContentOperationNotPermittedError;
+        break;
+
+    case 407:
+        code = QNetworkReply::ProxyAuthenticationRequiredError;
+        break;
+
+    case 409:               // Resource Conflict
+        code = QNetworkReply::ContentConflictError;
+        break;
+
+    case 410:               // Content no longer available
+        code = QNetworkReply::ContentGoneError;
+        break;
+
+    case 418:               // I'm a teapot
+        code = QNetworkReply::ProtocolInvalidOperationError;
+        break;
+
+    case 500:               // Internal Server Error
+        code = QNetworkReply::InternalServerError;
+        break;
+
+    case 501:               // Server does not support this functionality
+        code = QNetworkReply::OperationNotImplementedError;
+        break;
+
+    case 503:               // Service unavailable
+        code = QNetworkReply::ServiceUnavailableError;
+        break;
+
+    default:
+        if (httpStatusCode > 500) {
+            // some kind of server error
+            code = QNetworkReply::UnknownServerError;
+        } else if (httpStatusCode >= 400) {
+            // content error we did not handle above
+            code = QNetworkReply::UnknownContentError;
+        } else {
+            qWarning("QNetworkAccess: got HTTP status code %d which is not expected from url: \"%s\"",
+                     httpStatusCode, qPrintable(url.toString()));
+            code = QNetworkReply::ProtocolFailure;
+        }
+    }
+
+    return code;
+}
+
 
 QT_END_NAMESPACE
 
