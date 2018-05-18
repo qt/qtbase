@@ -1,0 +1,8 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+   <file>data/data-2.txt</file>
+   <file>data/data-0.txt</file>
+   <file>data/data-35.txt</file>
+   <file>data/data-1.txt</file>
+</qresource>
+</RCC>
