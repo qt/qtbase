@@ -146,6 +146,7 @@ endif()
 
 expect_pass(test_interface_link_libraries)
 expect_pass(test_moc_macro_target)
+expect_pass(test_add_big_resource)
 
 if (NOT CMAKE_VERSION VERSION_LESS 3.8)
     # With earlier CMake versions, this test would simply run moc multiple times and lead to:

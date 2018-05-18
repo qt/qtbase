@@ -293,6 +293,49 @@ function(QT5_ADD_RESOURCES outfiles )
     set(${outfiles} ${${outfiles}} PARENT_SCOPE)
 endfunction()
 
+# qt5_add_big_resources(outfiles inputfile ... )
+
+function(QT5_ADD_BIG_RESOURCES outfiles )
+
+    set(options)
+    set(oneValueArgs)
+    set(multiValueArgs OPTIONS)
+
+    cmake_parse_arguments(_RCC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    set(rcc_files ${_RCC_UNPARSED_ARGUMENTS})
+    set(rcc_options ${_RCC_OPTIONS})
+
+    if("${rcc_options}" MATCHES "-binary")
+        message(WARNING "Use qt5_add_binary_resources for binary option")
+    endif()
+
+    foreach(it ${rcc_files})
+        get_filename_component(outfilename ${it} NAME_WE)
+        get_filename_component(infile ${it} ABSOLUTE)
+        set(tmpoutfile ${CMAKE_CURRENT_BINARY_DIR}/qrc_${outfilename}tmp.cpp)
+        set(outfile ${CMAKE_CURRENT_BINARY_DIR}/qrc_${outfilename}.o)
+
+        _QT5_PARSE_QRC_FILE(${infile} _out_depends _rc_depends)
+        set_source_files_properties(${infile} PROPERTIES SKIP_AUTORCC ON)
+        add_custom_command(OUTPUT ${tmpoutfile}
+                           COMMAND ${Qt5Core_RCC_EXECUTABLE} ${rcc_options} --name ${outfilename} --pass 1 --output ${tmpoutfile} ${infile}
+                           DEPENDS ${infile} ${_rc_depends} "${out_depends}" VERBATIM)
+        set_source_files_properties(${tmpoutfile} PROPERTIES SKIP_AUTOMOC ON)
+        set_source_files_properties(${tmpoutfile} PROPERTIES SKIP_AUTOUIC ON)
+        add_custom_target(big_resources_${outfilename} ALL DEPENDS ${tmpoutfile})
+        add_library(rcc_object_${outfilename} OBJECT ${tmpoutfile})
+        add_dependencies(rcc_object_${outfilename} big_resources_${outfilename})
+        add_custom_command(OUTPUT ${outfile}
+                           COMMAND ${Qt5Core_RCC_EXECUTABLE}
+                           ARGS ${rcc_options} --name ${outfilename} --pass 2 --temp $<TARGET_OBJECTS:rcc_object_${outfilename}> --output ${outfile} ${infile}
+                           DEPENDS rcc_object_${outfilename}
+                           VERBATIM)
+       list(APPEND ${outfiles} ${outfile})
+    endforeach()
+    set(${outfiles} ${${outfiles}} PARENT_SCOPE)
+endfunction()
+
 set(_Qt5_COMPONENT_PATH "${CMAKE_CURRENT_LIST_DIR}/..")
 
 if (NOT CMAKE_VERSION VERSION_LESS 2.8.9)
