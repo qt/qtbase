@@ -5306,6 +5306,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_SpinBox_ButtonsInsideFrame:
         ret = true;
         break;
+    case SH_SpinBox_StepModifier:
+        ret = Qt::ControlModifier;
+        break;
     default:
         ret = 0;
         break;

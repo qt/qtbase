@@ -741,6 +741,7 @@ public:
         SH_Widget_Animation_Duration,
         SH_ComboBox_AllowWheelScrolling,
         SH_SpinBox_ButtonsInsideFrame,
+        SH_SpinBox_StepModifier,
         // Add new style hint values here
 
         SH_CustomBase = 0xf0000000

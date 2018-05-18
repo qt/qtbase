@@ -2001,6 +2001,13 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
            Determnines if the spin box buttons are inside the line edit frame.
            This enum value has been introduced in Qt 5.11.
 
+    \value SH_SpinBox_StepModifier
+           Determines which Qt::KeyboardModifier increases the step rate of
+           QAbstractSpinBox. Possible values are Qt::NoModifier,
+           Qt::ControlModifier (default) or Qt::ShiftModifier. Qt::NoModifier
+           disables this feature.
+           This enum value has been introduced in Qt 5.12.
+
     \sa styleHint()
 */
 

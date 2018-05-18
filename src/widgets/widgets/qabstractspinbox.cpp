@@ -106,6 +106,10 @@ QT_BEGIN_NAMESPACE
     the spinbox buttons. Note that on macOS, Control corresponds to the
     Command key.
 
+    Since Qt 5.12, QStyle::SH_SpinBox_StepModifier can be used to select
+    which Qt::KeyboardModifier increases the step rate. Qt::NoModifier
+    disables this feature.
+
     QAbstractSpinBox also provide a virtual function stepEnabled() to
     determine whether stepping up/down is allowed at any point. This
     function returns a bitset of StepEnabled.
@@ -840,6 +844,7 @@ void QAbstractSpinBox::changeEvent(QEvent *event)
                 style()->styleHint(QStyle::SH_SpinBox_ClickAutoRepeatThreshold, 0, this);
             if (d->edit)
                 d->edit->setFrame(!style()->styleHint(QStyle::SH_SpinBox_ButtonsInsideFrame, nullptr, this));
+            d->stepModifier = static_cast<Qt::KeyboardModifier>(style()->styleHint(QStyle::SH_SpinBox_StepModifier, nullptr, this));
             d->reset();
             d->updateEditFieldGeometry();
             break;

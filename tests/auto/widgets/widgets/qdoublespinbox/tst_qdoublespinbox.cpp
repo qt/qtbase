@@ -103,6 +103,26 @@ public:
     }
 };
 
+class StepModifierStyle : public QProxyStyle
+{
+    Q_OBJECT
+public:
+    using QProxyStyle::QProxyStyle;
+
+    int styleHint(QStyle::StyleHint hint, const QStyleOption *option = nullptr,
+                  const QWidget *widget = nullptr, QStyleHintReturn *returnData = nullptr) const override
+    {
+        switch (hint) {
+        case QStyle::SH_SpinBox_StepModifier:
+            return stepModifier;
+        default:
+            return QProxyStyle::styleHint(hint, option, widget, returnData);
+        }
+    }
+
+    Qt::KeyboardModifier stepModifier = Qt::ControlModifier;
+};
+
 
 class tst_QDoubleSpinBox : public QObject
 {
@@ -208,6 +228,12 @@ static QLatin1String modifierToName(Qt::KeyboardModifier modifier)
         break;
     case Qt::ShiftModifier:
         return QLatin1Literal("Shift");
+        break;
+    case Qt::AltModifier:
+        return QLatin1Literal("Alt");
+        break;
+    case Qt::MetaModifier:
+        return QLatin1Literal("Meta");
         break;
     default:
         qFatal("Unexpected keyboard modifier");
@@ -1338,6 +1364,7 @@ void tst_QDoubleSpinBox::wheelEvents_data()
 #if QT_CONFIG(wheelevent)
     QTest::addColumn<QPoint>("angleDelta");
     QTest::addColumn<int>("qt4Delta");
+    QTest::addColumn<int>("stepModifier");
     QTest::addColumn<Qt::KeyboardModifiers>("modifier");
     QTest::addColumn<Qt::MouseEventSource>("source");
     QTest::addColumn<double>("start");
@@ -1348,8 +1375,14 @@ void tst_QDoubleSpinBox::wheelEvents_data()
     const auto directions = {true, false};
 
     const auto modifierList = {Qt::NoModifier,
+                               Qt::ShiftModifier,
                                Qt::ControlModifier,
-                               Qt::ShiftModifier};
+                               Qt::AltModifier,
+                               Qt::MetaModifier};
+
+    const auto validStepModifierList = {Qt::NoModifier,
+                                        Qt::ControlModifier,
+                                        Qt::ShiftModifier};
 
     const auto sources = {Qt::MouseEventNotSynthesized,
                           Qt::MouseEventSynthesizedBySystem,
@@ -1371,62 +1404,71 @@ void tst_QDoubleSpinBox::wheelEvents_data()
                 if (modifierName.isEmpty())
                     continue;
 
-                const int steps = (modifier & Qt::ControlModifier ? 10 : 1)
-                        * (up ? 1 : -1);
+                for (auto stepModifier : validStepModifierList) {
 
-                for (auto source : sources) {
+                    const auto stepModifierName = modifierToName(stepModifier);
+                    if (stepModifierName.isEmpty())
+                        continue;
+
+                    const int steps = (modifier & stepModifier ? 10 : 1)
+                            * (up ? 1 : -1);
+
+                    for (auto source : sources) {
 
 #ifdef Q_OS_MACOS
-                    QPoint angleDelta;
-                    if ((modifier & Qt::ShiftModifier) &&
-                            source == Qt::MouseEventNotSynthesized) {
-                        // On macOS the Shift modifier converts vertical
-                        // mouse wheel events to horizontal.
-                        angleDelta = { units, 0 };
-                    } else {
-                        // However, this is not the case for trackpad scroll
-                        // events.
-                        angleDelta = { 0, units };
-                    }
+                        QPoint angleDelta;
+                        if ((modifier & Qt::ShiftModifier) &&
+                                source == Qt::MouseEventNotSynthesized) {
+                            // On macOS the Shift modifier converts vertical
+                            // mouse wheel events to horizontal.
+                            angleDelta = { units, 0 };
+                        } else {
+                            // However, this is not the case for trackpad scroll
+                            // events.
+                            angleDelta = { 0, units };
+                        }
 #else
-                    const QPoint angleDelta(0, units);
+                        const QPoint angleDelta(0, units);
 #endif
 
-                    QLatin1String sourceName;
-                    switch (source) {
-                    case Qt::MouseEventNotSynthesized:
-                        sourceName = QLatin1Literal("NotSynthesized");
-                        break;
-                    case Qt::MouseEventSynthesizedBySystem:
-                        sourceName = QLatin1Literal("SynthesizedBySystem");
-                        break;
-                    case Qt::MouseEventSynthesizedByQt:
-                        sourceName = QLatin1Literal("SynthesizedByQt");
-                        break;
-                    case Qt::MouseEventSynthesizedByApplication:
-                        sourceName = QLatin1Literal("SynthesizedByApplication");
-                        break;
-                    default:
-                        qFatal("Unexpected wheel event source");
-                        continue;
+                        QLatin1String sourceName;
+                        switch (source) {
+                        case Qt::MouseEventNotSynthesized:
+                            sourceName = QLatin1Literal("NotSynthesized");
+                            break;
+                        case Qt::MouseEventSynthesizedBySystem:
+                            sourceName = QLatin1Literal("SynthesizedBySystem");
+                            break;
+                        case Qt::MouseEventSynthesizedByQt:
+                            sourceName = QLatin1Literal("SynthesizedByQt");
+                            break;
+                        case Qt::MouseEventSynthesizedByApplication:
+                            sourceName = QLatin1Literal("SynthesizedByApplication");
+                            break;
+                        default:
+                            qFatal("Unexpected wheel event source");
+                            continue;
+                        }
+
+                        DoubleList expectedValues;
+                        if (fraction)
+                            expectedValues << startValue;
+                        expectedValues << startValue + steps;
+
+                        QTest::addRow("%s%s%sWith%sKeyboardModifier%s",
+                                      fraction ? "half" : "full",
+                                      up ? "Up" : "Down",
+                                      stepModifierName.latin1(),
+                                      modifierName.latin1(),
+                                      sourceName.latin1())
+                                << angleDelta
+                                << units
+                                << static_cast<int>(stepModifier)
+                                << modifiers
+                                << source
+                                << startValue
+                                << expectedValues;
                     }
-
-                    DoubleList expectedValues;
-                    if (fraction)
-                        expectedValues << startValue;
-                    expectedValues << startValue + steps;
-
-                    QTest::addRow("%s%sWith%sKeyboardModifier%s",
-                                  fraction ? "half" : "full",
-                                  up ? "Up" : "Down",
-                                  modifierName.latin1(),
-                                  sourceName.latin1())
-                            << angleDelta
-                            << units
-                            << modifiers
-                            << source
-                            << startValue
-                            << expectedValues;
                 }
             }
         }
@@ -1441,6 +1483,7 @@ void tst_QDoubleSpinBox::wheelEvents()
 #if QT_CONFIG(wheelevent)
     QFETCH(QPoint, angleDelta);
     QFETCH(int, qt4Delta);
+    QFETCH(int, stepModifier);
     QFETCH(Qt::KeyboardModifiers, modifier);
     QFETCH(Qt::MouseEventSource, source);
     QFETCH(double, start);
@@ -1449,6 +1492,11 @@ void tst_QDoubleSpinBox::wheelEvents()
     DoubleSpinBox spinBox;
     spinBox.setRange(-20, 20);
     spinBox.setValue(start);
+
+    QScopedPointer<StepModifierStyle, QScopedPointerDeleteLater> style(
+                new StepModifierStyle);
+    style->stepModifier = static_cast<Qt::KeyboardModifier>(stepModifier);
+    spinBox.setStyle(style.data());
 
     QWheelEvent event(QPointF(), QPointF(), QPoint(), angleDelta, qt4Delta,
                       Qt::Vertical, Qt::NoButton, modifier, Qt::NoScrollPhase,
@@ -1465,14 +1513,22 @@ void tst_QDoubleSpinBox::wheelEvents()
 void tst_QDoubleSpinBox::stepModifierKeys_data()
 {
     QTest::addColumn<double>("startValue");
+    QTest::addColumn<int>("stepModifier");
     QTest::addColumn<QTestEventList>("keys");
     QTest::addColumn<double>("expectedValue");
 
     const auto keyList = {Qt::Key_Up, Qt::Key_Down};
 
     const auto modifierList = {Qt::NoModifier,
+                               Qt::ShiftModifier,
                                Qt::ControlModifier,
-                               Qt::ShiftModifier};
+                               Qt::AltModifier,
+                               Qt::MetaModifier};
+
+    const auto validStepModifierList = {Qt::NoModifier,
+                                        Qt::ControlModifier,
+                                        Qt::ShiftModifier};
+
 
     for (auto key : keyList) {
 
@@ -1490,17 +1546,26 @@ void tst_QDoubleSpinBox::stepModifierKeys_data()
             if (modifierName.isEmpty())
                 continue;
 
-            const int steps = (modifier & Qt::ControlModifier ? 10 : 1)
-                    * (up ? 1 : -1);
+            for (auto stepModifier : validStepModifierList) {
 
-            const double expectedValue = startValue + steps;
+                const auto stepModifierName = modifierToName(stepModifier);
+                if (stepModifierName.isEmpty())
+                    continue;
 
-            QTest::addRow("%sWith%sKeyboardModifier",
-                          up ? "up" : "down",
-                          modifierName.latin1())
-                    << startValue
-                    << keys
-                    << expectedValue;
+                const int steps = (modifier & stepModifier ? 10 : 1)
+                        * (up ? 1 : -1);
+
+                const double expectedValue = startValue + steps;
+
+                QTest::addRow("%s%sWith%sKeyboardModifier",
+                              up ? "up" : "down",
+                              stepModifierName.latin1(),
+                              modifierName.latin1())
+                        << startValue
+                        << static_cast<int>(stepModifier)
+                        << keys
+                        << expectedValue;
+            }
         }
     }
 }
@@ -1508,11 +1573,18 @@ void tst_QDoubleSpinBox::stepModifierKeys_data()
 void tst_QDoubleSpinBox::stepModifierKeys()
 {
     QFETCH(double, startValue);
+    QFETCH(int, stepModifier);
     QFETCH(QTestEventList, keys);
     QFETCH(double, expectedValue);
 
     QDoubleSpinBox spin(0);
     spin.setValue(startValue);
+
+    QScopedPointer<StepModifierStyle, QScopedPointerDeleteLater> style(
+                new StepModifierStyle);
+    style->stepModifier = static_cast<Qt::KeyboardModifier>(stepModifier);
+    spin.setStyle(style.data());
+
     spin.show();
     QVERIFY(QTest::qWaitForWindowActive(&spin));
 
@@ -1524,6 +1596,7 @@ void tst_QDoubleSpinBox::stepModifierKeys()
 void tst_QDoubleSpinBox::stepModifierButtons_data()
 {
     QTest::addColumn<QStyle::SubControl>("subControl");
+    QTest::addColumn<int>("stepModifier");
     QTest::addColumn<Qt::KeyboardModifiers>("modifiers");
     QTest::addColumn<double>("startValue");
     QTest::addColumn<double>("expectedValue");
@@ -1531,8 +1604,14 @@ void tst_QDoubleSpinBox::stepModifierButtons_data()
     const auto subControls = {QStyle::SC_SpinBoxUp, QStyle::SC_SpinBoxDown};
 
     const auto modifierList = {Qt::NoModifier,
-                               Qt::ControlModifier,
-                               Qt::ShiftModifier};
+                                   Qt::ShiftModifier,
+                                   Qt::ControlModifier,
+                                   Qt::AltModifier,
+                                   Qt::MetaModifier};
+
+    const auto validStepModifierList = {Qt::NoModifier,
+                                        Qt::ControlModifier,
+                                        Qt::ShiftModifier};
 
     for (auto subControl : subControls) {
 
@@ -1549,18 +1628,27 @@ void tst_QDoubleSpinBox::stepModifierButtons_data()
             if (modifierName.isEmpty())
                 continue;
 
-            const int steps = (modifier & Qt::ControlModifier ? 10 : 1)
-                    * (up ? 1 : -1);
+            for (auto stepModifier : validStepModifierList) {
 
-            const double expectedValue = startValue + steps;
+                const auto stepModifierName = modifierToName(stepModifier);
+                if (stepModifierName.isEmpty())
+                    continue;
 
-            QTest::addRow("%sWith%sKeyboardModifier",
-                          up ? "up" : "down",
-                          modifierName.latin1())
-                    << subControl
-                    << modifiers
-                    << startValue
-                    << expectedValue;
+                const int steps = (modifier & stepModifier ? 10 : 1)
+                        * (up ? 1 : -1);
+
+                const double expectedValue = startValue + steps;
+
+                QTest::addRow("%s%sWith%sKeyboardModifier",
+                              up ? "up" : "down",
+                              stepModifierName.latin1(),
+                              modifierName.latin1())
+                        << subControl
+                        << static_cast<int>(stepModifier)
+                        << modifiers
+                        << startValue
+                        << expectedValue;
+            }
         }
     }
 }
@@ -1568,6 +1656,7 @@ void tst_QDoubleSpinBox::stepModifierButtons_data()
 void tst_QDoubleSpinBox::stepModifierButtons()
 {
     QFETCH(QStyle::SubControl, subControl);
+    QFETCH(int, stepModifier);
     QFETCH(Qt::KeyboardModifiers, modifiers);
     QFETCH(double, startValue);
     QFETCH(double, expectedValue);
@@ -1575,6 +1664,12 @@ void tst_QDoubleSpinBox::stepModifierButtons()
     DoubleSpinBox spin(0);
     spin.setRange(-20, 20);
     spin.setValue(startValue);
+
+    QScopedPointer<StepModifierStyle, QScopedPointerDeleteLater> style(
+                new StepModifierStyle);
+    style->stepModifier = static_cast<Qt::KeyboardModifier>(stepModifier);
+    spin.setStyle(style.data());
+
     spin.show();
     QVERIFY(QTest::qWaitForWindowActive(&spin));
 
@@ -1592,14 +1687,21 @@ void tst_QDoubleSpinBox::stepModifierButtons()
 void tst_QDoubleSpinBox::stepModifierPressAndHold_data()
 {
     QTest::addColumn<QStyle::SubControl>("subControl");
+    QTest::addColumn<int>("stepModifier");
     QTest::addColumn<Qt::KeyboardModifiers>("modifiers");
     QTest::addColumn<int>("expectedStepModifier");
 
     const auto subControls = {QStyle::SC_SpinBoxUp, QStyle::SC_SpinBoxDown};
 
     const auto modifierList = {Qt::NoModifier,
+                               Qt::ShiftModifier,
                                Qt::ControlModifier,
-                               Qt::ShiftModifier};
+                               Qt::AltModifier,
+                               Qt::MetaModifier};
+
+    const auto validStepModifierList = {Qt::NoModifier,
+                                        Qt::ControlModifier,
+                                        Qt::ShiftModifier};
 
     for (auto subControl : subControls) {
 
@@ -1614,15 +1716,24 @@ void tst_QDoubleSpinBox::stepModifierPressAndHold_data()
             if (modifierName.isEmpty())
                 continue;
 
-            const int steps = (modifier & Qt::ControlModifier ? 10 : 1)
-                    * (up ? 1 : -1);
+            for (auto stepModifier : validStepModifierList) {
 
-            QTest::addRow("%sWith%sKeyboardModifier",
-                          up ? "up" : "down",
-                          modifierName.latin1())
-                    << subControl
-                    << modifiers
-                    << steps;
+                const auto stepModifierName = modifierToName(stepModifier);
+                if (stepModifierName.isEmpty())
+                    continue;
+
+                const int steps = (modifier & stepModifier ? 10 : 1)
+                        * (up ? 1 : -1);
+
+                QTest::addRow("%s%sWith%sKeyboardModifier",
+                              up ? "up" : "down",
+                              stepModifierName.latin1(),
+                              modifierName.latin1())
+                        << subControl
+                        << static_cast<int>(stepModifier)
+                        << modifiers
+                        << steps;
+            }
         }
     }
 }
@@ -1630,15 +1741,18 @@ void tst_QDoubleSpinBox::stepModifierPressAndHold_data()
 void tst_QDoubleSpinBox::stepModifierPressAndHold()
 {
     QFETCH(QStyle::SubControl, subControl);
+    QFETCH(int, stepModifier);
     QFETCH(Qt::KeyboardModifiers, modifiers);
     QFETCH(int, expectedStepModifier);
 
     DoubleSpinBox spin(0);
-    QScopedPointer<PressAndHoldStyle, QScopedPointerDeleteLater> pressAndHoldStyle(
-                new PressAndHoldStyle);
-    spin.setStyle(pressAndHoldStyle.data());
     spin.setRange(-100.0, 100.0);
     spin.setValue(0.0);
+
+    QScopedPointer<StepModifierStyle, QScopedPointerDeleteLater> stepModifierStyle(
+                new StepModifierStyle(new PressAndHoldStyle));
+    stepModifierStyle->stepModifier = static_cast<Qt::KeyboardModifier>(stepModifier);
+    spin.setStyle(stepModifierStyle.data());
 
     QSignalSpy spy(&spin, QOverload<double>::of(&DoubleSpinBox::valueChanged));
 
