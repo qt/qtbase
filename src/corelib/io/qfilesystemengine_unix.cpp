@@ -114,6 +114,8 @@ static int renameat2(int oldfd, const char *oldpath, int newfd, const char *newp
 #    if !QT_CONFIG(statx) && defined(SYS_statx)
 static int statx(int dirfd, const char *pathname, int flag, unsigned mask, struct statx *statxbuf)
 { return syscall(SYS_statx, dirfd, pathname, flag, mask, statxbuf); }
+#    elif !QT_CONFIG(statx) && !defined(SYS_statx)
+#      undef STATX_BASIC_STATS
 #    endif
 #  endif // !Q_OS_ANDROID
 #endif
