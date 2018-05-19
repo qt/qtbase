@@ -543,12 +543,12 @@ QT_BEGIN_NAMESPACE
     Returns true if this QCborValue is of the tag type. The tag value can be
     retrieved using tag() and the tagged value using taggedValue().
 
-    This function does not return true for extended types that the API
+    This function also returns true for extended types that the API
     recognizes. For code that handles extended types directly before the Qt API
     is updated to support them, it is possible to recreate the tag + tagged
-    value pair by using reinterpretAsTag().
+    value pair by using taggedValue().
 
-    \sa type(), tag(), taggedValue(), reinterpretAsTag()
+    \sa type(), tag(), taggedValue(), taggedValue()
  */
 
 /*!
@@ -862,7 +862,7 @@ static void writeDoubleToCbor(QCborStreamWriter &writer, double d, QCborValue::E
 static inline int typeOrder(Element e1, Element e2)
 {
     auto comparable = [](Element e) {
-        if (e.type >= 0x10000)
+        if (e.type >= 0x10000)      // see QCborValue::isTag_helper()
             return QCborValue::Tag;
         return e.type;
     };
@@ -976,17 +976,6 @@ QString DiagnosticNotation::createFromValue(const QCborValue &v)
         return QLatin1Char('[') + createFromArray(v.toArray()) + indent + QLatin1Char(']');
     case QCborValue::Map:
         return QLatin1Char('{') + createFromMap(v.toMap()) + indent + QLatin1Char('}');
-    case QCborValue::Tag: {
-        bool byteArrayFormat = opts & QCborValue::ExtendedFormat && isByteArrayEncodingTag(v.tag());
-        if (byteArrayFormat)
-            byteArrayFormatStack.push(int(v.tag()));
-        QString result = QString::fromLatin1("%1(%2)").arg(quint64(v.tag())).arg(createFromValue(v.taggedValue()));
-        if (byteArrayFormat)
-            byteArrayFormatStack.pop();
-        return result;
-    }
-    case QCborValue::SimpleType:
-        break;
     case QCborValue::False:
         return QStringLiteral("false");
     case QCborValue::True:
@@ -997,13 +986,23 @@ QString DiagnosticNotation::createFromValue(const QCborValue &v)
         return QStringLiteral("undefined");
     case QCborValue::Double:
         return makeFpString(v.toDouble());
-    case QCborValue::DateTime:
-    case QCborValue::Url:
-    case QCborValue::RegularExpression:
-    case QCborValue::Uuid:
-        return createFromValue(v.reinterpretAsTag());
     case QCborValue::Invalid:
         return QStringLiteral("<invalid>");
+
+    case QCborValue::Tag:
+    case QCborValue::SimpleType:
+    default:    // tags and other simple types that are recognized
+        break;  // are all handled below
+    }
+
+    if (v.isTag()) {
+        bool byteArrayFormat = opts & QCborValue::ExtendedFormat && isByteArrayEncodingTag(v.tag());
+        if (byteArrayFormat)
+            byteArrayFormatStack.push(int(v.tag()));
+        QString result = QString::fromLatin1("%1(%2)").arg(quint64(v.tag())).arg(createFromValue(v.taggedValue()));
+        if (byteArrayFormat)
+            byteArrayFormatStack.pop();
+        return result;
     }
 
     // must be a simple type
@@ -1912,7 +1911,7 @@ QCborValue::QCborValue(const QCborValue &other)
     \l{QCborKnownTags}{UnixTime_t}. When parsing CBOR streams, QCborValue will
     convert \l{QCborKnownTags}{UnixTime_t} to the string-based type.
 
-    \sa toDateTime(), isDateTime(), reinterpretAsTag()
+    \sa toDateTime(), isDateTime(), taggedValue()
  */
 QCborValue::QCborValue(const QDateTime &dt)
     : QCborValue(QCborKnownTags::DateTimeString, dt.toString(Qt::ISODateWithMs).toLatin1())
@@ -1929,7 +1928,7 @@ QCborValue::QCborValue(const QDateTime &dt)
     The CBOR URL type is an extended type represented by a string tagged as an
     \l{QCborKnownTags}{Url}.
 
-    \sa toUrl(), isUrl(), reinterpretAsTag()
+    \sa toUrl(), isUrl(), taggedValue()
  */
 QCborValue::QCborValue(const QUrl &url)
     : QCborValue(QCborKnownTags::Url, url.toString(QUrl::DecodeReserved).toUtf8())
@@ -1949,7 +1948,7 @@ QCborValue::QCborValue(const QUrl &url)
     regular expressions only store the patterns, so any flags that the
     QRegularExpression object may carry will be lost.
 
-    \sa toRegularExpression(), isRegularExpression(), reinterpretAsTag()
+    \sa toRegularExpression(), isRegularExpression(), taggedValue()
  */
 QCborValue::QCborValue(const QRegularExpression &rx)
     : QCborValue(QCborKnownTags::RegularExpression, rx.pattern())
@@ -1966,7 +1965,7 @@ QCborValue::QCborValue(const QRegularExpression &rx)
     The CBOR UUID type is an extended type represented by a byte array tagged
     as an \l{QCborKnownTags}{Uuid}.
 
-    \sa toUuid(), isUuid(), reinterpretAsTag()
+    \sa toUuid(), isUuid(), taggedValue()
  */
 QCborValue::QCborValue(const QUuid &uuid)
     : QCborValue(QCborKnownTags::Uuid, uuid.toRfc4122())
@@ -2005,12 +2004,7 @@ QCborValue &QCborValue::operator=(const QCborValue &other)
     stored representation. This function returns that number. To retrieve the
     representation, use taggedValue().
 
-    This function does not directly return the tag associated with extended
-    types. In order to do that, first convert the extended type to tag type
-    using reinterpretAsTag().
-
-    \sa isTag(), taggedValue(), reinterpretAsTag(),
-        isDateTime(), isUrl(), isRegularExpression(), isUuid()
+    \sa isTag(), taggedValue(), isDateTime(), isUrl(), isRegularExpression(), isUuid()
  */
 QCborTag QCborValue::tag(QCborTag defaultValue) const
 {
@@ -2026,35 +2020,12 @@ QCborTag QCborValue::tag(QCborTag defaultValue) const
     stored representation. This function returns that representation. To
     retrieve the tag, use tag().
 
-    This function does not directly return the representation associated with
-    extended types. In order to do that, first convert the extended type to tag
-    type using reinterpretAsTag().
-
-    \sa isTag(), tag(), reinterpretAsTag(),
-        isDateTime(), isUrl(), isRegularExpression(), isUuid()
+    \sa isTag(), tag(), isDateTime(), isUrl(), isRegularExpression(), isUuid()
  */
 QCborValue QCborValue::taggedValue(const QCborValue &defaultValue) const
 {
     return isTag() && container && container->elements.size() == 2 ?
                 container->valueAt(1) : defaultValue;
-}
-
-/*!
-    Returns the equivalent representation of a QCborValue extended type, in the
-    form of a tag object. If this object is not an extended type, this function
-    returns an invalid QCborValue object (not undefined).
-
-    \sa isTag(), tag(), taggedValue(), isInvalid(),
-        isDateTime(), isUrl(), isRegularExpression(), isUuid()
- */
-QCborValue QCborValue::reinterpretAsTag() const
-{
-    QCborValue result = *this;
-    if (t >= 0x10000)
-        result.t = Tag;
-    else
-        result.t = Invalid;
-    return result;
 }
 
 /*!

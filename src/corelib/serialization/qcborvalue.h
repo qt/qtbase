@@ -192,7 +192,7 @@ public:
     bool isString() const       { return type() == String; }
     bool isArray() const        { return type() == Array; }
     bool isMap() const          { return type() == Map; }
-    bool isTag() const          { return type() == Tag; }
+    bool isTag() const          { return isTag_helper(type()); }
     bool isFalse() const        { return type() == False; }
     bool isTrue() const         { return type() == True; }
     bool isBool() const         { return isFalse() || isTrue(); }
@@ -228,7 +228,6 @@ public:
 
     QCborTag tag(QCborTag defaultValue = QCborTag(-1)) const;
     QCborValue taggedValue(const QCborValue &defaultValue = QCborValue()) const;
-    QCborValue reinterpretAsTag() const;
 
     QByteArray toByteArray(const QByteArray &defaultValue = {}) const;
     QString toString(const QString &defaultValue = {}) const;
@@ -311,6 +310,11 @@ private:
     {
         return Type(quint8(st) | SimpleType);
     }
+
+    Q_DECL_CONSTEXPR static bool isTag_helper(Type t)
+    {
+        return t == Tag || t >= 0x10000;
+    }
 };
 Q_DECLARE_SHARED(QCborValue)
 
@@ -328,7 +332,7 @@ public:
     bool isString() const           { return type() == QCborValue::String; }
     bool isArray() const            { return type() == QCborValue::Array; }
     bool isMap() const              { return type() == QCborValue::Map; }
-    bool isTag() const              { return type() == QCborValue::Tag; }
+    bool isTag() const              { return QCborValue::isTag_helper(type()); }
     bool isFalse() const            { return type() == QCborValue::False; }
     bool isTrue() const             { return type() == QCborValue::True; }
     bool isBool() const             { return isFalse() || isTrue(); }

@@ -308,12 +308,13 @@ void tst_QCborValue::extendedTypes()
 {
     QFETCH(QCborValue, extended);
     QFETCH(QCborValue, tagged);
-    QVERIFY(!extended.isTag());
+    QVERIFY(extended.isTag());
     QVERIFY(tagged.isTag());
-
-    // despite that, they actually compare equal
     QVERIFY(extended == tagged);
     QVERIFY(tagged == extended);
+
+    QCOMPARE(extended.tag(), tagged.tag());
+    QCOMPARE(extended.taggedValue(), tagged.taggedValue());
 }
 
 void tst_QCborValue::copyCompare()
