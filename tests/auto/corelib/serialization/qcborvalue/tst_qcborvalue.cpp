@@ -781,6 +781,7 @@ void tst_QCborValue::arrayPrepend()
     a.prepend(nullptr);
     QCOMPARE(a.at(1), QCborValue(0));
     QCOMPARE(a.at(0), QCborValue(nullptr));
+    QCOMPARE(a.size(), 2);
 }
 
 void tst_QCborValue::arrayInsertRemove()
@@ -808,6 +809,11 @@ void tst_QCborValue::arrayInsertRemove()
     it = a.erase(it);
     QVERIFY(a.isEmpty());
     QCOMPARE(it, a.end());
+
+    // reinsert the element so we can take it
+    a.append(v);
+    QCOMPARE(a.takeAt(0), v);
+    QVERIFY(a.isEmpty());
 }
 
 void tst_QCborValue::arrayStringElements()
@@ -836,6 +842,10 @@ void tst_QCborValue::arrayStringElements()
     v2 = a.at(1);
     QCOMPARE(v2.toString(), "World");
     QCOMPARE(v2, QCborValue("World"));
+
+    QCOMPARE(a.takeAt(1).toString(), "World");
+    QCOMPARE(a.takeAt(0).toString(), "Hello");
+    QVERIFY(a.isEmpty());
 }
 
 void tst_QCborValue::mapStringValues()
@@ -862,6 +872,10 @@ void tst_QCborValue::mapStringValues()
     v2 = (m.begin() + 1).value();
     QCOMPARE(v2.toString(), "World");
     QCOMPARE(v2, QCborValue("World"));
+
+    QCOMPARE(m.extract(m.begin() + 1).toString(), "World");
+    QCOMPARE(m.take(0).toString(), "Hello");
+    QVERIFY(m.isEmpty());
 }
 
 void tst_QCborValue::mapStringKeys()
@@ -914,6 +928,14 @@ void tst_QCborValue::mapInsertRemove()
     QVERIFY(v == it.value());
     QVERIFY(it.value() == r);
     QVERIFY(r == it.value());
+
+    QCOMPARE(m.extract(it), v);
+    QVERIFY(!m.contains(42));
+
+    m[2] = v;
+    QCOMPARE(m.take(2), v);
+    QVERIFY(m.take(2).isUndefined());
+    QVERIFY(m.isEmpty());
 }
 
 void tst_QCborValue::arrayInsertTagged()
@@ -930,6 +952,9 @@ void tst_QCborValue::arrayInsertTagged()
     QCOMPARE(a.at(1), tagged);
     QCOMPARE(a.at(0).taggedValue(), v);
     QCOMPARE(a.at(1).taggedValue(), v);
+    QCOMPARE(a.takeAt(0).taggedValue(), v);
+    QCOMPARE(a.takeAt(0).taggedValue(), v);
+    QVERIFY(a.isEmpty());
 }
 
 void tst_QCborValue::mapInsertTagged()
@@ -946,6 +971,10 @@ void tst_QCborValue::mapInsertTagged()
     QCOMPARE(m.value(-21), tagged);
     QCOMPARE(m.value(11).taggedValue(), v);
     QCOMPARE((m.end() - 1).value().taggedValue(), v);
+    QCOMPARE(m.extract(m.end() - 1).taggedValue(), v);
+    QVERIFY(!m.contains(-21));
+    QCOMPARE(m.take(11).taggedValue(), v);
+    QVERIFY(m.isEmpty());
 }
 
 void tst_QCborValue::arraySelfAssign()
@@ -1109,6 +1138,8 @@ void tst_QCborValue::mapComplexKeys()
     QVERIFY(m.contains(tagged));
     r = 47;
     QCOMPARE(m[tagged].toInteger(), 47);
+    QCOMPARE(m.take(tagged).toInteger(), 47);
+    QVERIFY(!m.contains(tagged));
 }
 
 void tst_QCborValue::sorting()

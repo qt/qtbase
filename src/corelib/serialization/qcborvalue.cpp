@@ -1101,6 +1101,29 @@ Q_NEVER_INLINE void QCborContainerPrivate::appendAsciiString(const QString &s)
     qt_to_latin1_unchecked(l, uc, len);
 }
 
+QCborValue QCborContainerPrivate::extractAt_complex(Element e)
+{
+    // create a new container for the returned value, containing the byte data
+    // from this element, if it's worth it
+    Q_ASSERT(e.flags & Element::HasByteData);
+    auto b = byteData(e);
+    auto container = new QCborContainerPrivate;
+
+    if (b->len + qsizetype(sizeof(*b)) < data.size() / 4) {
+        // make a shallow copy of the byte data
+        container->appendByteData(b->byte(), b->len, e.type, e.flags);
+        usedData -= b->len + qsizetype(sizeof(*b));
+        compact(elements.size());
+    } else {
+        // just share with the original byte data
+        container->data = data;
+        container->elements.reserve(1);
+        container->elements.append(e);
+    }
+
+    return makeValue(e.type, 0, container);
+}
+
 QT_WARNING_DISABLE_MSVC(4146)   // unary minus operator applied to unsigned type, result still unsigned
 static int compareContainer(const QCborContainerPrivate *c1, const QCborContainerPrivate *c2);
 static int compareElementNoData(const Element &e1, const Element &e2)

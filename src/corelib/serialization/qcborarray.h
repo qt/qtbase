@@ -192,8 +192,9 @@ public:
     void insert(qsizetype i, const QCborValue &value);
     void prepend(const QCborValue &value) { insert(0, value); }
     void append(const QCborValue &value) { insert(-1, value); }
+    QCborValue extract(Iterator it);
     void removeAt(qsizetype i);
-    QCborValue takeAt(qsizetype i) { QCborValue v = at(i); removeAt(i); return v; }
+    QCborValue takeAt(qsizetype i) { Q_ASSERT(i < size()); return extract(begin() + i); }
     void removeFirst() { removeAt(0); }
     void removeLast() { removeAt(size() - 1); }
     QCborValue takeFirst() { return takeAt(0); }

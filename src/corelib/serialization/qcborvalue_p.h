@@ -124,6 +124,8 @@ class QCborContainerPrivate : public QSharedData
     ~QCborContainerPrivate();
 
 public:
+    enum ContainerDisposition { CopyContainer, MoveContainer };
+
     QByteArray::size_type usedData = 0;
     QByteArray data;
     QVector<QtCbor::Element> elements;
@@ -275,12 +277,13 @@ public:
         return data->toUtf8String();
     }
 
-    static QCborValue makeValue(QCborValue::Type type, qint64 n, QCborContainerPrivate *d = nullptr)
+    static QCborValue makeValue(QCborValue::Type type, qint64 n, QCborContainerPrivate *d = nullptr,
+                                ContainerDisposition disp = CopyContainer)
     {
         QCborValue result(type);
         result.n = n;
         result.container = d;
-        if (d)
+        if (d && disp == CopyContainer)
             d->ref.ref();
         return result;
     }
@@ -297,6 +300,24 @@ public:
             return makeValue(e.type, -1, e.container);
         } else if (e.flags & QtCbor::Element::HasByteData) {
             return makeValue(e.type, idx, const_cast<QCborContainerPrivate *>(this));
+        }
+        return makeValue(e.type, e.value);
+    }
+    QCborValue extractAt_complex(QtCbor::Element e);
+    QCborValue extractAt(qsizetype idx)
+    {
+        QtCbor::Element e;
+        qSwap(e, elements[idx]);
+
+        if (e.flags & QtCbor::Element::IsContainer) {
+            if (e.type == QCborValue::Tag && e.container->elements.size() != 2) {
+                // invalid tags can be created due to incomplete parsing
+                e.container->deref();
+                return makeValue(QCborValue::Invalid, 0, nullptr);
+            }
+            return makeValue(e.type, -1, e.container, MoveContainer);
+        } else if (e.flags & QtCbor::Element::HasByteData) {
+            return extractAt_complex(e);
         }
         return makeValue(e.type, e.value);
     }

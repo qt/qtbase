@@ -42,6 +42,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace QtCbor;
+
 /*!
     \class QCborArray
     \inmodule QtCore
@@ -300,7 +302,7 @@ QCborValue QCborArray::at(qsizetype i) const
     must have at least \a i elements before the insertion.
 
     \sa at(), operator[](), first(), last(), prepend(), append(),
-        removeAt(), takeAt()
+        removeAt(), takeAt(), extract()
  */
 void QCborArray::insert(qsizetype i, const QCborValue &value)
 {
@@ -309,6 +311,21 @@ void QCborArray::insert(qsizetype i, const QCborValue &value)
         i = size();
     detach(qMax(i + 1, size()));
     d->insertAt(i, value);
+}
+
+/*!
+    Extracts a value from the array at the position indicated by iterator \a it
+    and returns the value so extracted.
+
+    \sa insert(), erase(), takeAt(), removeAt()
+ */
+QCborValue QCborArray::extract(iterator it)
+{
+    detach();
+
+    QCborValue v = d->extractAt(it.item.i);
+    d->removeAt(it.item.i);
+    return v;
 }
 
 /*!

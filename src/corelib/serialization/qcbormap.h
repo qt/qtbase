@@ -207,6 +207,14 @@ public:
     QCborValueRef operator[](const QString & key);
     QCborValueRef operator[](const QCborValue &key);
 
+    QCborValue take(qint64 key)
+    { iterator it = find(key); if (it != end()) return extract(it); return QCborValue(); }
+    QCborValue take(QLatin1String key)
+    { iterator it = find(key); if (it != end()) return extract(it); return QCborValue(); }
+    QCborValue take(const QString &key)
+    { iterator it = find(key); if (it != end()) return extract(it); return QCborValue(); }
+    QCborValue take(const QCborValue &key)
+    { iterator it = find(key); if (it != end()) return extract(it); return QCborValue(); }
     void remove(qint64 key)
     { iterator it = find(key); if (it != end()) erase(it); }
     void remove(QLatin1String key)
@@ -254,6 +262,8 @@ public:
     const_iterator cend() const { return constEnd(); }
     iterator erase(iterator it);
     iterator erase(const_iterator it) { return erase(iterator{ it.item.d, it.item.i }); }
+    QCborValue extract(iterator it);
+    QCborValue extract(const_iterator it) { return extract(iterator{ it.item.d, it.item.i }); }
     bool empty() const { return isEmpty(); }
 
     iterator find(qint64 key);
