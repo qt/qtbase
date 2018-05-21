@@ -75,6 +75,7 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QLibraryInfo>
+#include <QtCore/qoperatingsystemversion.h>
 
 #include <dwmapi.h>
 
