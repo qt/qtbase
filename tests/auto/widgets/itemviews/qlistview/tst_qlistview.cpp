@@ -2419,6 +2419,7 @@ void tst_QListView::taskQTBUG_39902_mutualScrollBars()
 
 void tst_QListView::horizontalScrollingByVerticalWheelEvents()
 {
+#if QT_CONFIG(wheelevent)
     QListView lv;
     lv.setWrapping(true);
 
@@ -2460,6 +2461,9 @@ void tst_QListView::horizontalScrollingByVerticalWheelEvents()
     int vValue = lv.verticalScrollBar()->value();
     QApplication::sendEvent(lv.viewport(), &wheelDownEvent);
     QVERIFY(lv.verticalScrollBar()->value() > vValue);
+#else
+    QSKIP("Built with --no-feature-wheelevent");
+#endif
 }
 
 void tst_QListView::taskQTBUG_7232_AllowUserToControlSingleStep()
