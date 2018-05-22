@@ -42,11 +42,11 @@
 #include "qwindowswindow.h"
 #include "qwindowsintegration.h"
 
-#include <QtCore/QDebug>
-#include <QtCore/QSysInfo>
-#include <QtGui/QGuiApplication>
+#include <QtCore/qdebug.h>
+#include <QtCore/qsysinfo.h>
+#include <QtGui/qguiapplication.h>
 #include <qpa/qplatformnativeinterface.h>
-#include <QtPlatformHeaders/QWGLNativeContext>
+#include <QtPlatformHeaders/qwglnativecontext.h>
 
 #include <algorithm>
 

@@ -40,7 +40,7 @@
 #ifndef QWINDOWSUIAACCESSIBILITY_H
 #define QWINDOWSUIAACCESSIBILITY_H
 
-#include <QtCore/QtConfig>
+#include <QtCore/qconfig.h>
 #ifndef QT_NO_ACCESSIBILITY
 
 #include "qwindowscontext.h"

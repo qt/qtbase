@@ -42,8 +42,8 @@
 
 #include <QtCore/qt_windows.h>
 
-#include <QtCore/QLocale>
-#include <QtCore/QPointer>
+#include <QtCore/qlocale.h>
+#include <QtCore/qpointer.h>
 #include <qpa/qplatforminputcontext.h>
 
 QT_BEGIN_NAMESPACE

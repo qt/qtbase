@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QtConfig>
+#include <QtCore/qconfig.h>
 #ifndef QT_NO_ACCESSIBILITY
 
 #include "qwindowsuiamainprovider.h"
@@ -57,10 +57,10 @@
 #include "qwindowsuiautils.h"
 #include "qwindowsuiaprovidercache.h"
 
-#include <QtCore/QDebug>
-#include <QtGui/QAccessible>
-#include <QtGui/QGuiApplication>
-#include <QtGui/QWindow>
+#include <QtCore/qdebug.h>
+#include <QtGui/qaccessible.h>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qwindow.h>
 
 #if !defined(Q_CC_BOR) && !defined (Q_CC_GNU)
 #include <comdef.h>

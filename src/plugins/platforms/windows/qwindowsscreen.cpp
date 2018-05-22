@@ -45,14 +45,14 @@
 
 #include <QtCore/qt_windows.h>
 
-#include <QtCore/QSettings>
-#include <QtGui/QPixmap>
-#include <QtGui/QGuiApplication>
+#include <QtCore/qsettings.h>
+#include <QtGui/qpixmap.h>
+#include <QtGui/qguiapplication.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qhighdpiscaling_p.h>
-#include <QtGui/QScreen>
+#include <QtGui/qscreen.h>
 
-#include <QtCore/QDebug>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 

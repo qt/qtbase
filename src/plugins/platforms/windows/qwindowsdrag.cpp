@@ -50,18 +50,18 @@
 #include "qwindowsmousehandler.h"
 #include "qwindowscursor.h"
 
-#include <QtGui/QMouseEvent>
-#include <QtGui/QPixmap>
-#include <QtGui/QPainter>
-#include <QtGui/QRasterWindow>
-#include <QtGui/QGuiApplication>
+#include <QtGui/qevent.h>
+#include <QtGui/qpixmap.h>
+#include <QtGui/qpainter.h>
+#include <QtGui/qrasterwindow.h>
+#include <QtGui/qguiapplication.h>
 #include <qpa/qwindowsysteminterface_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 
-#include <QtCore/QDebug>
-#include <QtCore/QBuffer>
-#include <QtCore/QPoint>
+#include <QtCore/qdebug.h>
+#include <QtCore/qbuffer.h>
+#include <QtCore/qpoint.h>
 
 #include <shlobj.h>
 

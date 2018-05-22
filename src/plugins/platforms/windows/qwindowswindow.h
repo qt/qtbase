@@ -41,7 +41,7 @@
 #define QWINDOWSWINDOW_H
 
 #include <QtCore/qt_windows.h>
-#include <QtCore/QPointer>
+#include <QtCore/qpointer.h>
 #include "qwindowscursor.h"
 
 #include <qpa/qplatformwindow.h>

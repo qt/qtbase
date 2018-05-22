@@ -48,9 +48,9 @@
 #include "qwindowsmime.h"
 #include "qwin10helpers.h"
 
-#include <QtGui/QWindow>
-#include <QtGui/QOpenGLContext>
-#include <QtGui/QScreen>
+#include <QtGui/qwindow.h>
+#include <QtGui/qopenglcontext.h>
+#include <QtGui/qscreen.h>
 #include <qpa/qplatformscreen.h>
 #include <QtFontDatabaseSupport/private/qwindowsfontdatabase_p.h>
 

@@ -43,7 +43,7 @@
 #include <QtCore/qt_windows.h>
 
 #include <qpa/qplatformbackingstore.h>
-#include <QtCore/QScopedPointer>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_NAMESPACE
 

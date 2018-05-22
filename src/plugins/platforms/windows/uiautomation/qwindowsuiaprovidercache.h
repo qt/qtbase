@@ -40,14 +40,13 @@
 #ifndef QWINDOWSUIAPROVIDERCACHE_H
 #define QWINDOWSUIAPROVIDERCACHE_H
 
-#include <QtCore/QtConfig>
+#include <QtCore/qconfig.h>
 #ifndef QT_NO_ACCESSIBILITY
 
 #include "qwindowsuiabaseprovider.h"
 
-#include <QtCore/QHash>
-#include <QtGui/QAccessible>
-#include <QtGui/QAccessibleInterface>
+#include <QtCore/qhash.h>
+#include <QtGui/qaccessible.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -40,12 +40,11 @@
 #ifndef QWINDOWSUIABASEPROVIDER_H
 #define QWINDOWSUIABASEPROVIDER_H
 
-#include <QtCore/QtConfig>
+#include <QtCore/qconfig.h>
 #ifndef QT_NO_ACCESSIBILITY
 
-#include <QtGui/QAccessible>
-#include <QtGui/QAccessibleInterface>
-#include <QtCore/QPointer>
+#include <QtGui/qaccessible.h>
+#include <QtCore/qpointer.h>
 
 #include <qwindowscombase.h>
 #include <QtWindowsUIAutomationSupport/private/qwindowsuiawrapper_p.h>

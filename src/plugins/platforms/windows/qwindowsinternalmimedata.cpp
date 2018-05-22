@@ -40,7 +40,7 @@
 #include "qwindowsinternalmimedata.h"
 #include "qwindowscontext.h"
 #include "qwindowsmime.h"
-#include <QDebug>
+#include <QtCore/qdebug.h>
 /*!
     \class QWindowsInternalMimeDataBase
     \brief Base for implementations of QInternalMimeData using a IDataObject COM object.

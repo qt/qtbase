@@ -37,14 +37,14 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QtConfig>
+#include <QtCore/qconfig.h>
 #ifndef QT_NO_ACCESSIBILITY
 
 #include "qwindowsuiaprovidercache.h"
 #include "qwindowsuiautils.h"
 #include "qwindowscontext.h"
 
-#include <QtCore/QDebug>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -40,8 +40,8 @@
 #ifndef QWINDOWSOPENGLTESTER_H
 #define QWINDOWSOPENGLTESTER_H
 
-#include <QtCore/QByteArray>
-#include <QtCore/QFlags>
+#include <QtCore/qbytearray.h>
+#include <QtCore/qflags.h>
 #include <QtCore/qversionnumber.h>
 
 QT_BEGIN_NAMESPACE

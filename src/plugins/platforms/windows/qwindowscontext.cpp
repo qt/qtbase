@@ -62,20 +62,19 @@
 #include "qwindowsscreen.h"
 #include "qwindowstheme.h"
 
-#include <QtGui/qtguiglobal.h>
-#include <QtGui/QWindow>
+#include <QtGui/qwindow.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformnativeinterface.h>
-#include <QtGui/QGuiApplication>
-#include <QtGui/QOpenGLContext>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qopenglcontext.h>
 
-#include <QtCore/QSet>
-#include <QtCore/QHash>
-#include <QtCore/QStringList>
-#include <QtCore/QDebug>
-#include <QtCore/QOperatingSystemVersion>
-#include <QtCore/QSysInfo>
-#include <QtCore/QScopedArrayPointer>
+#include <QtCore/qset.h>
+#include <QtCore/qhash.h>
+#include <QtCore/qstringlist.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qoperatingsystemversion.h>
+#include <QtCore/qsysinfo.h>
+#include <QtCore/qscopedpointer.h>
 #include <QtCore/private/qsystemlibrary_p.h>
 
 #include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>

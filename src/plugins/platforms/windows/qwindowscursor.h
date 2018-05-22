@@ -43,8 +43,8 @@
 #include <QtCore/qt_windows.h>
 
 #include <qpa/qplatformcursor.h>
-#include <QtCore/QSharedPointer>
-#include <QtCore/QHash>
+#include <QtCore/qsharedpointer.h>
+#include <QtCore/qhash.h>
 
 QT_BEGIN_NAMESPACE
 

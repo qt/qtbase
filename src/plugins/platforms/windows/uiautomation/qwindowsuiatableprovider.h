@@ -40,7 +40,7 @@
 #ifndef QWINDOWSUIATABLEPROVIDER_H
 #define QWINDOWSUIATABLEPROVIDER_H
 
-#include <QtCore/QtConfig>
+#include <QtCore/qconfig.h>
 #ifndef QT_NO_ACCESSIBILITY
 
 #include "qwindowsuiabaseprovider.h"

@@ -39,7 +39,7 @@
 
 
 #include <qpa/qplatformintegrationplugin.h>
-#include <QtCore/QStringList>
+#include <QtCore/qstringlist.h>
 
 #include "qwindowsgdiintegration.h"
 

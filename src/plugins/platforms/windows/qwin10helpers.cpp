@@ -39,8 +39,8 @@
 
 #include "qwin10helpers.h"
 
-#include <QtCore/QDebug>
-#include <QtCore/QOperatingSystemVersion>
+#include <QtCore/qdebug.h>
+#include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/private/qsystemlibrary_p.h>
 
 #if defined(Q_CC_MINGW) || defined(Q_CC_CLANG)

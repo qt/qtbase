@@ -42,8 +42,8 @@
 
 #include <qpa/qplatformtheme.h>
 
-#include <QtCore/QSharedPointer>
-#include <QtCore/QVariant>
+#include <QtCore/qsharedpointer.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 

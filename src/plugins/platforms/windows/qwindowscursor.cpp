@@ -43,16 +43,16 @@
 #include "qwindowswindow.h"
 #include "qwindowsscreen.h"
 
-#include <QtGui/QBitmap>
-#include <QtGui/QImage>
-#include <QtGui/QBitmap>
-#include <QtGui/QGuiApplication>
-#include <QtGui/QScreen>
+#include <QtGui/qbitmap.h>
+#include <QtGui/qimage.h>
+#include <QtGui/qbitmap.h>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qscreen.h>
 #include <QtGui/private/qguiapplication_p.h> // getPixmapCursor()
 #include <QtGui/private/qhighdpiscaling_p.h>
 
-#include <QtCore/QDebug>
-#include <QtCore/QScopedArrayPointer>
+#include <QtCore/qdebug.h>
+#include <QtCore/qscopedpointer.h>
 
 static bool initResources()
 {

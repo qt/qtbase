@@ -40,15 +40,15 @@
 #include "qwindowsopengltester.h"
 #include "qwindowscontext.h"
 
-#include <QtCore/QVariantMap>
-#include <QtCore/QDebug>
-#include <QtCore/QTextStream>
-#include <QtCore/QCoreApplication>
-#include <QtCore/QFile>
-#include <QtCore/QFileInfo>
-#include <QtCore/QStandardPaths>
-#include <QtCore/QLibraryInfo>
-#include <QtCore/QHash>
+#include <QtCore/qvariant.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qtextstream.h>
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qfile.h>
+#include <QtCore/qfileinfo.h>
+#include <QtCore/qstandardpaths.h>
+#include <QtCore/qlibraryinfo.h>
+#include <QtCore/qhash.h>
 
 #ifndef QT_NO_OPENGL
 #include <private/qopengl_p.h>

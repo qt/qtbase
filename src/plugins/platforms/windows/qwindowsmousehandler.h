@@ -43,8 +43,8 @@
 #include "qtwindowsglobal.h"
 #include <QtCore/qt_windows.h>
 
-#include <QtCore/QPointer>
-#include <QtCore/QHash>
+#include <QtCore/qpointer.h>
+#include <QtCore/qhash.h>
 
 QT_BEGIN_NAMESPACE
 

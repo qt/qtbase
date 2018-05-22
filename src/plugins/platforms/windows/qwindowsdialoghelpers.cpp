@@ -51,24 +51,23 @@
 #include "qwindowsintegration.h"
 #include "qwindowstheme.h" // Color conversion helpers
 
-#include <QtGui/QGuiApplication>
-#include <QtGui/QColor>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qcolor.h>
 
-#include <QtCore/QDebug>
-#include <QtCore/QRegularExpression>
-#include <QtCore/QTimer>
-#include <QtCore/QDir>
-#include <QtCore/QScopedArrayPointer>
-#include <QtCore/QSharedPointer>
-#include <QtCore/QObject>
-#include <QtCore/QThread>
-#include <QtCore/QSysInfo>
-#include <QtCore/QSharedData>
-#include <QtCore/QExplicitlySharedDataPointer>
-#include <QtCore/QMutex>
-#include <QtCore/QMutexLocker>
-#include <QtCore/QUuid>
-#include <QtCore/QTemporaryFile>
+#include <QtCore/qdebug.h>
+#include <QtCore/qregularexpression.h>
+#include <QtCore/qtimer.h>
+#include <QtCore/qdir.h>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qsharedpointer.h>
+#include <QtCore/qobject.h>
+#include <QtCore/qthread.h>
+#include <QtCore/qsysinfo.h>
+#include <QtCore/qshareddata.h>
+#include <QtCore/qshareddata.h>
+#include <QtCore/qmutex.h>
+#include <QtCore/quuid.h>
+#include <QtCore/qtemporaryfile.h>
 #include <QtCore/private/qsystemlibrary_p.h>
 
 #include <algorithm>

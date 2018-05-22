@@ -43,7 +43,7 @@
 #include <QtCore/qt_windows.h>
 #include "qwindowsopenglcontext.h"
 
-#include <QtGui/QOpenGLContext>
+#include <QtGui/qopenglcontext.h>
 
 #include <vector>
 

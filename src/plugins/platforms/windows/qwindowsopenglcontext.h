@@ -40,7 +40,7 @@
 #ifndef QWINDOWSOPENGLCONTEXT_H
 #define QWINDOWSOPENGLCONTEXT_H
 
-#include <QtGui/QOpenGLContext>
+#include <QtGui/qopenglcontext.h>
 #include <qpa/qplatformopenglcontext.h>
 
 QT_BEGIN_NAMESPACE

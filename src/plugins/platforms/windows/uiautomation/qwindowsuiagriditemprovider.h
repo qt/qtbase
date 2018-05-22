@@ -40,7 +40,7 @@
 #ifndef QWINDOWSUIAGRIDITEMPROVIDER_H
 #define QWINDOWSUIAGRIDITEMPROVIDER_H
 
-#include <QtCore/QtConfig>
+#include <QtCore/qconfig.h>
 #ifndef QT_NO_ACCESSIBILITY
 
 #include "qwindowsuiabaseprovider.h"

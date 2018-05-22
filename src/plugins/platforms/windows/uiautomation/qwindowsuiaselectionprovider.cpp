@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QtConfig>
+#include <QtCore/qconfig.h>
 #ifndef QT_NO_ACCESSIBILITY
 
 #include "qwindowsuiaselectionprovider.h"
@@ -45,11 +45,10 @@
 #include "qwindowsuiautils.h"
 #include "qwindowscontext.h"
 
-#include <QtGui/QAccessible>
-#include <QtGui/QAccessibleInterface>
-#include <QtCore/QDebug>
-#include <QtCore/QString>
-#include <QList>
+#include <QtGui/qaccessible.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 

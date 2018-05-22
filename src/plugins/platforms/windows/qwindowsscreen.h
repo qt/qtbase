@@ -42,10 +42,10 @@
 
 #include "qtwindowsglobal.h"
 
-#include <QtCore/QList>
-#include <QtCore/QVector>
-#include <QtCore/QPair>
-#include <QtCore/QScopedPointer>
+#include <QtCore/qlist.h>
+#include <QtCore/qvector.h>
+#include <QtCore/qpair.h>
+#include <QtCore/qscopedpointer.h>
 #include <qpa/qplatformscreen.h>
 
 QT_BEGIN_NAMESPACE

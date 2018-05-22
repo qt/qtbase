@@ -42,7 +42,7 @@
 #define QWINDOWSINTEGRATION_H
 
 #include <qpa/qplatformintegration.h>
-#include <QtCore/QScopedPointer>
+#include <QtCore/qscopedpointer.h>
 #include <QtFontDatabaseSupport/private/qwindowsfontdatabase_p.h>
 
 QT_BEGIN_NAMESPACE

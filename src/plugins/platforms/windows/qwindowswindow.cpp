@@ -62,19 +62,19 @@
 #  include "qwindowscursor.h"
 #endif
 
-#include <QtGui/QGuiApplication>
-#include <QtGui/QScreen>
-#include <QtGui/QWindow>
-#include <QtGui/QRegion>
-#include <QtGui/QOpenGLContext>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qscreen.h>
+#include <QtGui/qwindow.h>
+#include <QtGui/qregion.h>
+#include <QtGui/qopenglcontext.h>
 #include <private/qsystemlibrary_p.h>
 #include <private/qwindow_p.h> // QWINDOWSIZE_MAX
 #include <private/qguiapplication_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <qpa/qwindowsysteminterface.h>
 
-#include <QtCore/QDebug>
-#include <QtCore/QLibraryInfo>
+#include <QtCore/qdebug.h>
+#include <QtCore/qlibraryinfo.h>
 #include <QtCore/qoperatingsystemversion.h>
 
 #include <dwmapi.h>

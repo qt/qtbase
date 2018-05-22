@@ -42,7 +42,7 @@
 
 #include <QtCore/qt_windows.h>
 
-#include <QtCore/QLocale>
+#include <QtCore/qlocale.h>
 
 QT_BEGIN_NAMESPACE
 

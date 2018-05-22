@@ -37,14 +37,14 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QtConfig>
+#include <QtCore/qconfig.h>
 #ifndef QT_NO_ACCESSIBILITY
 
 #include "qwindowsuiautils.h"
 #include "qwindowscontext.h"
 #include "qwindowswindow.h"
 
-#include <QtGui/QWindow>
+#include <QtGui/qwindow.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <cmath>
 

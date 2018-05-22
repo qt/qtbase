@@ -46,13 +46,13 @@
 
 #include <qpa/qwindowsysteminterface.h>
 
-#include <QtGui/QTabletEvent>
-#include <QtGui/QScreen>
-#include <QtGui/QGuiApplication>
-#include <QtGui/QWindow>
-#include <QtCore/QDebug>
-#include <QtCore/QVarLengthArray>
-#include <QtCore/QtMath>
+#include <QtGui/qevent.h>
+#include <QtGui/qscreen.h>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qwindow.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qvarlengtharray.h>
+#include <QtCore/qmath.h>
 
 #include <private/qguiapplication_p.h>
 #include <QtCore/private/qsystemlibrary_p.h>

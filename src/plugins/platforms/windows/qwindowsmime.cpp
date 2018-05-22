@@ -41,15 +41,15 @@
 #include "qwindowscontext.h"
 
 #include <QtGui/private/qdnd_p.h>
-#include <QtCore/QByteArrayMatcher>
-#include <QtCore/QTextCodec>
-#include <QtCore/QMap>
-#include <QtCore/QUrl>
-#include <QtCore/QDir>
-#include <QtCore/QDebug>
-#include <QtCore/QBuffer>
-#include <QtGui/QImageReader>
-#include <QtGui/QImageWriter>
+#include <QtCore/qbytearraymatcher.h>
+#include <QtCore/qtextcodec.h>
+#include <QtCore/qmap.h>
+#include <QtCore/qurl.h>
+#include <QtCore/qdir.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qbuffer.h>
+#include <QtGui/qimagereader.h>
+#include <QtGui/qimagewriter.h>
 
 #include <shlobj.h>
 #include <algorithm>

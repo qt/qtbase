@@ -43,7 +43,7 @@
 #include <QtCore/qt_windows.h>
 
 #include <QtGui/private/qdnd_p.h> // QInternalMime
-#include <QtCore/QVariant>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 

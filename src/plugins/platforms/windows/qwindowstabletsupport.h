@@ -43,8 +43,8 @@
 #include "qtwindowsglobal.h"
 #include <QtGui/qtguiglobal.h>
 
-#include <QtCore/QVector>
-#include <QtCore/QPointF>
+#include <QtCore/qvector.h>
+#include <QtCore/qpoint.h>
 
 #include <wintab.h>
 

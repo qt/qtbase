@@ -41,13 +41,13 @@
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
 
-#include <QtGui/QWindow>
-#include <QtGui/QPainter>
+#include <QtGui/qwindow.h>
+#include <QtGui/qpainter.h>
 #include <QtFontDatabaseSupport/private/qwindowsnativeimage_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <private/qimage_p.h>
 
-#include <QtCore/QDebug>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 

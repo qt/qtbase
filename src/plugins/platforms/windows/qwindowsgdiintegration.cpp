@@ -42,7 +42,7 @@
 #include "qwindowsbackingstore.h"
 #include "qwindowsgdinativeinterface.h"
 
-#include <QtCore/QDebug>
+#include <QtCore/qdebug.h>
 #include <QtGui/private/qpixmap_raster_p.h>
 
 QT_BEGIN_NAMESPACE

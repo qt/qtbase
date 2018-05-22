@@ -40,15 +40,15 @@
 #ifndef QWINDOWSUIAMAINPROVIDER_H
 #define QWINDOWSUIAMAINPROVIDER_H
 
-#include <QtCore/QtConfig>
+#include <QtCore/qconfig.h>
 #ifndef QT_NO_ACCESSIBILITY
 
 #include "qwindowsuiabaseprovider.h"
 
-#include <QtCore/QPointer>
-#include <QtCore/QSharedPointer>
+#include <QtCore/qpointer.h>
+#include <QtCore/qsharedpointer.h>
 #include <QtCore/qt_windows.h>
-#include <QtGui/QAccessible>
+#include <QtGui/qaccessible.h>
 
 QT_BEGIN_NAMESPACE
 

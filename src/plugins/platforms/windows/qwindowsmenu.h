@@ -44,8 +44,8 @@
 
 #include <qpa/qplatformmenu.h>
 
-#include <QtCore/QVector>
-#include <QtCore/QPair>
+#include <QtCore/qvector.h>
+#include <QtCore/qpair.h>
 
 QT_BEGIN_NAMESPACE
 

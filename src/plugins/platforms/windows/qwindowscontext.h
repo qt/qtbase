@@ -43,9 +43,9 @@
 #include "qtwindowsglobal.h"
 #include <QtCore/qt_windows.h>
 
-#include <QtCore/QScopedPointer>
-#include <QtCore/QSharedPointer>
-#include <QtCore/QLoggingCategory>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qsharedpointer.h>
+#include <QtCore/qloggingcategory.h>
 
 #define STRICT_TYPED_ITEMIDS
 #include <shlobj.h>

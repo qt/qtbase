@@ -39,8 +39,8 @@
 
 #include "qwindowsdropdataobject.h"
 
-#include <QtCore/QUrl>
-#include <QtCore/QMimeData>
+#include <QtCore/qurl.h>
+#include <QtCore/qmimedata.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -37,16 +37,16 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QtConfig>
+#include <QtCore/qconfig.h>
 #ifndef QT_NO_ACCESSIBILITY
 
 #include "qwindowsuiaaccessibility.h"
 #include "qwindowsuiamainprovider.h"
 #include "qwindowsuiautils.h"
 
-#include <QtGui/QAccessible>
-#include <QtGui/QWindow>
-#include <QtGui/QGuiApplication>
+#include <QtGui/qaccessible.h>
+#include <QtGui/qwindow.h>
+#include <QtGui/qguiapplication.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtCore/qt_windows.h>
 #include <qpa/qplatformintegration.h>

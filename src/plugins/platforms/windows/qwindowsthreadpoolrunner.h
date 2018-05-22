@@ -40,10 +40,10 @@
 #ifndef QWINDOWSTHREADPOOLRUNNER_H
 #define QWINDOWSTHREADPOOLRUNNER_H
 
-#include <QtCore/QMutex>
-#include <QtCore/QRunnable>
-#include <QtCore/QThreadPool>
-#include <QtCore/QWaitCondition>
+#include <QtCore/qmutex.h>
+#include <QtCore/qrunnable.h>
+#include <QtCore/qthreadpool.h>
+#include <QtCore/qwaitcondition.h>
 
 QT_BEGIN_NAMESPACE
 

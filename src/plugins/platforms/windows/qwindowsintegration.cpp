@@ -76,8 +76,8 @@
 
 #include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
 
-#include <QtCore/QDebug>
-#include <QtCore/QVariant>
+#include <QtCore/qdebug.h>
+#include <QtCore/qvariant.h>
 
 #include <limits.h>
 

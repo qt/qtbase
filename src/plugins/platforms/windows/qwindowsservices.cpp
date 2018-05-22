@@ -41,9 +41,9 @@
 #include "qwindowsservices.h"
 #include <QtCore/qt_windows.h>
 
-#include <QtCore/QUrl>
-#include <QtCore/QDebug>
-#include <QtCore/QDir>
+#include <QtCore/qurl.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qdir.h>
 
 #include <shlobj.h>
 #include <intshcut.h>

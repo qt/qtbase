@@ -45,14 +45,14 @@
 #include "qwindowsscreen.h"
 
 #include <qpa/qwindowsysteminterface.h>
-#include <QtGui/QGuiApplication>
-#include <QtGui/QScreen>
-#include <QtGui/QTouchDevice>
-#include <QtGui/QWindow>
-#include <QtGui/QCursor>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qscreen.h>
+#include <QtGui/qtouchdevice.h>
+#include <QtGui/qwindow.h>
+#include <QtGui/qcursor.h>
 
-#include <QtCore/QDebug>
-#include <QtCore/QScopedArrayPointer>
+#include <QtCore/qdebug.h>
+#include <QtCore/qscopedpointer.h>
 
 #include <windowsx.h>
 

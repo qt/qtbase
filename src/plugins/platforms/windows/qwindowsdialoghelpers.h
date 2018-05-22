@@ -43,8 +43,8 @@
 #include <QtCore/qt_windows.h>
 #include <qpa/qplatformdialoghelper.h>
 #include <qpa/qplatformtheme.h>
-#include <QtCore/QStringList>
-#include <QtCore/QSharedPointer>
+#include <QtCore/qstringlist.h>
+#include <QtCore/qsharedpointer.h>
 
 QT_BEGIN_NAMESPACE
 

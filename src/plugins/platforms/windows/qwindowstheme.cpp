@@ -59,20 +59,20 @@
 #endif
 #include <shellapi.h>
 
-#include <QtCore/QVariant>
-#include <QtCore/QCoreApplication>
-#include <QtCore/QDebug>
-#include <QtCore/QTextStream>
-#include <QtCore/QSysInfo>
-#include <QtCore/QCache>
-#include <QtCore/QThread>
-#include <QtCore/QMutex>
-#include <QtCore/QWaitCondition>
-#include <QtGui/QColor>
-#include <QtGui/QPalette>
-#include <QtGui/QGuiApplication>
-#include <QtGui/QPainter>
-#include <QtGui/QPixmapCache>
+#include <QtCore/qvariant.h>
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qtextstream.h>
+#include <QtCore/qsysinfo.h>
+#include <QtCore/qcache.h>
+#include <QtCore/qthread.h>
+#include <QtCore/qmutex.h>
+#include <QtCore/qwaitcondition.h>
+#include <QtGui/qcolor.h>
+#include <QtGui/qpalette.h>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qpainter.h>
+#include <QtGui/qpixmapcache.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtThemeSupport/private/qabstractfileiconengine_p.h>
 #include <QtFontDatabaseSupport/private/qwindowsfontdatabase_p.h>

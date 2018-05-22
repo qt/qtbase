@@ -40,7 +40,7 @@
 #ifndef QWIN10HELPERS_H
 #define QWIN10HELPERS_H
 
-#include <QtCore/QtGlobal>
+#include <QtCore/qglobal.h>
 #include <QtCore/qt_windows.h>
 
 QT_BEGIN_NAMESPACE

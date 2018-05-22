@@ -42,16 +42,16 @@
 #include "qwindowsole.h"
 #include "qwindowsmime.h"
 
-#include <QtGui/QGuiApplication>
-#include <QtGui/QClipboard>
-#include <QtGui/QColor>
-#include <QtGui/QImage>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qclipboard.h>
+#include <QtGui/qcolor.h>
+#include <QtGui/qimage.h>
 
-#include <QtCore/QDebug>
-#include <QtCore/QMimeData>
-#include <QtCore/QStringList>
-#include <QtCore/QVariant>
-#include <QtCore/QUrl>
+#include <QtCore/qdebug.h>
+#include <QtCore/qmimedata.h>
+#include <QtCore/qstringlist.h>
+#include <QtCore/qvariant.h>
+#include <QtCore/qurl.h>
 
 #include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
 

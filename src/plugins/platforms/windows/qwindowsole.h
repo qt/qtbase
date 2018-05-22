@@ -43,9 +43,9 @@
 #include "qwindowscombase.h"
 #include <QtCore/qt_windows.h>
 
-#include <QtCore/QMap>
-#include <QtCore/QPointer>
-#include <QtCore/QVector>
+#include <QtCore/qmap.h>
+#include <QtCore/qpointer.h>
+#include <QtCore/qvector.h>
 
 #include <objidl.h>
 

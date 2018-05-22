@@ -43,12 +43,12 @@
 #include "qwindowswindow.h"
 #include "qwindowsinputcontext.h"
 
-#include <QtGui/QGuiApplication>
-#include <QtGui/QWindow>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qwindow.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qguiapplication_p.h>
 #include <private/qhighdpiscaling_p.h>
-#include <QtGui/QKeyEvent>
+#include <QtGui/qevent.h>
 #include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
 #include <QtCore/private/qdebug_p.h>
 

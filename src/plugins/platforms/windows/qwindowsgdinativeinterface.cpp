@@ -40,7 +40,7 @@
 #include "qwindowsgdinativeinterface.h"
 #include "qwindowsbackingstore.h"
 
-#include <QtGui/QBackingStore>
+#include <QtGui/qbackingstore.h>
 
 QT_BEGIN_NAMESPACE
 
