@@ -715,6 +715,37 @@ QString QDir::dirName() const
     return d->dirEntry.fileName();
 }
 
+
+#ifdef Q_OS_WIN
+static int drivePrefixLength(const QString &path)
+{
+    // Used to extract path's drive for use as prefix for an "absolute except for drive" path
+    const int size = path.length();
+    int drive = 2; // length of drive prefix
+    if (size > 1 && path.at(1).unicode() == ':') {
+        if (Q_UNLIKELY(!path.at(0).isLetter()))
+            return 0;
+    } else if (path.startsWith(QLatin1String("//"))) {
+        // UNC path; use its //server/share part as "drive" - it's as sane a
+        // thing as we can do.
+        for (int i = 2; i-- > 0; ) { // Scan two "path fragments":
+            while (drive < size && path.at(drive).unicode() == '/')
+                drive++;
+            if (drive >= size) {
+                qWarning("Base directory starts with neither a drive nor a UNC share: %s",
+                         qUtf8Printable(QDir::toNativeSeparators(path)));
+                return 0;
+            }
+            while (drive < size && path.at(drive).unicode() != '/')
+                drive++;
+        }
+    } else {
+        return 0;
+    }
+    return drive;
+}
+#endif // Q_OS_WIN
+
 /*!
     Returns the path name of a file in the directory. Does \e not
     check if the file actually exists in the directory; but see
@@ -727,16 +758,27 @@ QString QDir::dirName() const
 QString QDir::filePath(const QString &fileName) const
 {
     const QDirPrivate* d = d_ptr.constData();
-    if (isAbsolutePath(fileName))
+    // Mistrust our own isAbsolutePath() for real files; Q_OS_WIN needs a drive.
+    if (fileName.startsWith(QLatin1Char(':')) // i.e. resource path
+        ? isAbsolutePath(fileName) : QFileSystemEntry(fileName).isAbsolute()) {
         return fileName;
+    }
 
     QString ret = d->dirEntry.filePath();
-    if (!fileName.isEmpty()) {
-        if (!ret.isEmpty() && ret[(int)ret.length()-1] != QLatin1Char('/') && fileName[0] != QLatin1Char('/'))
-            ret += QLatin1Char('/');
-        ret += fileName;
+    if (fileName.isEmpty())
+        return ret;
+
+#ifdef Q_OS_WIN
+    if (fileName.startsWith(QLatin1Char('/')) || fileName.startsWith(QLatin1Char('\\'))) {
+        // Handle the "absolute except for drive" case (i.e. \blah not c:\blah):
+        const int drive = drivePrefixLength(ret);
+        return drive > 0 ? ret.leftRef(drive) % fileName : fileName;
     }
-    return ret;
+#endif // Q_OS_WIN
+
+    if (ret.isEmpty() || ret.endsWith(QLatin1Char('/')))
+        return ret % fileName;
+    return ret % QLatin1Char('/') % fileName;
 }
 
 /*!
@@ -750,9 +792,11 @@ QString QDir::filePath(const QString &fileName) const
 QString QDir::absoluteFilePath(const QString &fileName) const
 {
     const QDirPrivate* d = d_ptr.constData();
-    // Don't trust our own isAbsolutePath(); Q_OS_WIN needs a drive.
-    if (QFileSystemEntry(fileName).isAbsolute())
+    // Mistrust our own isAbsolutePath() for real files; Q_OS_WIN needs a drive.
+    if (fileName.startsWith(QLatin1Char(':')) // i.e. resource path
+        ? isAbsolutePath(fileName) : QFileSystemEntry(fileName).isAbsolute()) {
         return fileName;
+    }
 
     d->resolveAbsoluteEntry();
     const QString absoluteDirPath = d->absoluteDirEntry.filePath();
@@ -760,35 +804,15 @@ QString QDir::absoluteFilePath(const QString &fileName) const
         return absoluteDirPath;
 #ifdef Q_OS_WIN
     // Handle the "absolute except for drive" case (i.e. \blah not c:\blah):
-    int size = absoluteDirPath.length();
-    if ((fileName.startsWith(QLatin1Char('/'))
-         || fileName.startsWith(QLatin1Char('\\')))
-        && size > 1) {
+    if (fileName.startsWith(QLatin1Char('/')) || fileName.startsWith(QLatin1Char('\\'))) {
         // Combine absoluteDirPath's drive with fileName
-        int drive = 2; // length of drive prefix
-        if (Q_UNLIKELY(absoluteDirPath.at(1).unicode() != ':')) {
-            // Presumably, absoluteDirPath is an UNC path; use its //server/share
-            // part as "drive" - it's as sane a thing as we can do.
-            for (int i = 2; i-- > 0; ) { // Scan two "path fragments":
-                while (drive < size && absoluteDirPath.at(drive).unicode() == '/')
-                    drive++;
-                if (drive >= size) {
-                    qWarning("Base directory starts with neither a drive nor a UNC share: %s",
-                             qPrintable(QDir::toNativeSeparators(absoluteDirPath)));
-                    return QString();
-                }
-                while (drive < size && absoluteDirPath.at(drive).unicode() != '/')
-                    drive++;
-            }
-            // We'll append fileName, which starts with a slash; so omit trailing slash:
-            if (absoluteDirPath.at(drive).unicode() == '/')
-                drive--;
-        } else if (!absoluteDirPath.at(0).isLetter()) {
-            qWarning("Base directory's drive is not a letter: %s",
-                     qPrintable(QDir::toNativeSeparators(absoluteDirPath)));
-            return QString();
-        }
-        return absoluteDirPath.leftRef(drive) % fileName;
+        const int drive = drivePrefixLength(absoluteDirPath);
+        if (Q_LIKELY(drive))
+            return absoluteDirPath.leftRef(drive) % fileName;
+
+        qWarning("Base directory's drive is not a letter: %s",
+                 qUtf8Printable(QDir::toNativeSeparators(absoluteDirPath)));
+        return QString();
     }
 #endif // Q_OS_WIN
     if (!absoluteDirPath.endsWith(QLatin1Char('/')))
