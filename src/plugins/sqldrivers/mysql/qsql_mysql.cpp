@@ -305,7 +305,9 @@ static QVariant::Type qDecodeMYSQLType(int mysqltype, uint flags)
         type = QVariant::Date;
         break;
     case FIELD_TYPE_TIME :
-        type = QVariant::Time;
+        // A time field can be within the range '-838:59:59' to '838:59:59' so
+        // use QString instead of QTime since QTime is limited to 24 hour clock
+        type = QVariant::String;
         break;
     case FIELD_TYPE_DATETIME :
     case FIELD_TYPE_TIMESTAMP :
