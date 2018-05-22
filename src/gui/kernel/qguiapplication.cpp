@@ -143,6 +143,8 @@ Qt::ApplicationState QGuiApplicationPrivate::applicationState = Qt::ApplicationI
 
 bool QGuiApplicationPrivate::highDpiScalingUpdated = false;
 
+QPointer<QWindow> QGuiApplicationPrivate::currentDragWindow;
+
 QVector<QGuiApplicationPrivate::TabletPointData> QGuiApplicationPrivate::tabletDevicePoints;
 
 QPlatformIntegration *QGuiApplicationPrivate::platform_integration = 0;
@@ -668,6 +670,7 @@ QGuiApplication::~QGuiApplication()
     QGuiApplicationPrivate::currentMousePressWindow = QGuiApplicationPrivate::currentMouseWindow = nullptr;
     QGuiApplicationPrivate::applicationState = Qt::ApplicationInactive;
     QGuiApplicationPrivate::highDpiScalingUpdated = false;
+    QGuiApplicationPrivate::currentDragWindow = nullptr;
     QGuiApplicationPrivate::tabletDevicePoints.clear();
 #ifndef QT_NO_SESSIONMANAGER
     QGuiApplicationPrivate::is_fallback_session_management_enabled = true;
@@ -3092,7 +3095,6 @@ QPlatformDragQtResponse QGuiApplicationPrivate::processDrag(QWindow *w, const QM
 {
     updateMouseAndModifierButtonState(buttons, modifiers);
 
-    static QPointer<QWindow> currentDragWindow;
     static Qt::DropAction lastAcceptedDropAction = Qt::IgnoreAction;
     QPlatformDrag *platformDrag = platformIntegration()->drag();
     if (!platformDrag || (w && w->d_func()->blockedByModalWindow)) {
@@ -3101,8 +3103,7 @@ QPlatformDragQtResponse QGuiApplicationPrivate::processDrag(QWindow *w, const QM
     }
 
     if (!dropData) {
-        if (currentDragWindow.data() == w)
-            currentDragWindow = 0;
+        currentDragWindow = nullptr;
         QDragLeaveEvent e;
         QGuiApplication::sendEvent(w, &e);
         lastAcceptedDropAction = Qt::IgnoreAction;
@@ -3140,6 +3141,8 @@ QPlatformDropQtResponse QGuiApplicationPrivate::processDrop(QWindow *w, const QM
                                                             Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
 {
     updateMouseAndModifierButtonState(buttons, modifiers);
+
+    currentDragWindow = nullptr;
 
     QDropEvent de(p, supportedActions, dropData, buttons, modifiers);
     QGuiApplication::sendEvent(w, &de);

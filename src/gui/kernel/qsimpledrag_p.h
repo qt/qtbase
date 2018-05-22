@@ -55,13 +55,14 @@
 #include <qpa/qplatformdrag.h>
 
 #include <QtCore/QObject>
+#include <QtCore/QPointer>
+#include <QtGui/QWindow>
 
 QT_REQUIRE_CONFIG(draganddrop);
 
 QT_BEGIN_NAMESPACE
 
 class QMouseEvent;
-class QWindow;
 class QEventLoop;
 class QDropData;
 class QShapedPixmapWindow;
@@ -106,7 +107,8 @@ protected:
     QDrag *drag() const { return m_drag; }
 
 protected:
-    QWindow *m_current_window;
+    QWindow *m_sourceWindow = nullptr;
+    QPointer<QWindow> m_windowUnderCursor = nullptr;
 
 private:
     void enableEventFilter();
@@ -114,14 +116,16 @@ private:
     void restoreCursor();
     void exitDndEventLoop();
 
-    bool m_restoreCursor;
-    QEventLoop *m_eventLoop;
-    Qt::DropAction m_executed_drop_action;
-    bool m_can_drop;
-    QDrag *m_drag;
-    QShapedPixmapWindow *m_drag_icon_window;
-    bool m_useCompositing;
-    QScreen *m_screen;
+#ifndef QT_NO_CURSOR
+    bool m_dndHasSetOverrideCursor = false;
+#endif
+    QEventLoop *m_eventLoop = nullptr;
+    Qt::DropAction m_executed_drop_action = Qt::IgnoreAction;
+    bool m_can_drop = false;
+    QDrag *m_drag = nullptr;
+    QShapedPixmapWindow *m_drag_icon_window = nullptr;
+    bool m_useCompositing = true;
+    QScreen *m_screen = nullptr;
 };
 
 class Q_GUI_EXPORT QSimpleDrag : public QBasicDrag

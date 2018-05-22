@@ -379,8 +379,17 @@ QPlatformClipboard *QXcbIntegration::clipboard() const
 #endif
 
 #if QT_CONFIG(draganddrop)
+#include <private/qsimpledrag_p.h>
 QPlatformDrag *QXcbIntegration::drag() const
 {
+    static const bool useSimpleDrag = qEnvironmentVariableIsSet("QT_XCB_USE_SIMPLE_DRAG");
+    if (Q_UNLIKELY(useSimpleDrag)) { // This is useful for testing purposes
+        static QSimpleDrag *simpleDrag = nullptr;
+        if (!simpleDrag)
+            simpleDrag = new QSimpleDrag();
+        return simpleDrag;
+    }
+
     return m_connections.at(0)->drag();
 }
 #endif

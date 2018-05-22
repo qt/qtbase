@@ -99,8 +99,8 @@ QPlatformClipboard *QPlatformIntegration::clipboard() const
 /*!
     Accessor for the platform integration's drag object.
 
-    Default implementation returns 0, implying no drag and drop support.
-
+    Default implementation returns QSimpleDrag. This class supports only drag
+    and drop operations within the same Qt application.
 */
 QPlatformDrag *QPlatformIntegration::drag() const
 {

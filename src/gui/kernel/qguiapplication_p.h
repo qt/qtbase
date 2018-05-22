@@ -217,6 +217,7 @@ public:
     static QWindow *currentMousePressWindow;
     static Qt::ApplicationState applicationState;
     static bool highDpiScalingUpdated;
+    static QPointer<QWindow> currentDragWindow;
 
     struct TabletPointData {
         TabletPointData(qint64 devId = 0) : deviceId(devId), state(Qt::NoButton), target(nullptr) {}

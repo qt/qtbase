@@ -94,11 +94,7 @@ static QWindow* topLevelAt(const QPoint &pos)
     (within the Qt application or outside) accepts the drag and sets the state accordingly.
 */
 
-QBasicDrag::QBasicDrag() :
-    m_current_window(nullptr), m_restoreCursor(false), m_eventLoop(nullptr),
-    m_executed_drop_action(Qt::IgnoreAction), m_can_drop(false),
-    m_drag(nullptr), m_drag_icon_window(nullptr), m_useCompositing(true),
-    m_screen(nullptr)
+QBasicDrag::QBasicDrag()
 {
 }
 
@@ -181,9 +177,9 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
             // make the event relative to the window where the drag started. (QTBUG-66103)
             const QMouseEvent *release = static_cast<QMouseEvent *>(e);
             const QWindow *releaseWindow = topLevelAt(release->globalPos());
-            qCDebug(lcDnd) << "mouse released over" << releaseWindow << "after drag from" << m_current_window << "globalPos" << release->globalPos();
+            qCDebug(lcDnd) << "mouse released over" << releaseWindow << "after drag from" << m_sourceWindow << "globalPos" << release->globalPos();
             if (!releaseWindow)
-                releaseWindow = m_current_window;
+                releaseWindow = m_sourceWindow;
             QPoint releaseWindowPos = (releaseWindow ? releaseWindow->mapFromGlobal(release->globalPos()) : release->globalPos());
             QMouseEvent *newRelease = new QMouseEvent(release->type(),
                 releaseWindowPos, releaseWindowPos, release->screenPos(),
@@ -206,18 +202,15 @@ Qt::DropAction QBasicDrag::drag(QDrag *o)
     m_drag = o;
     m_executed_drop_action = Qt::IgnoreAction;
     m_can_drop = false;
-    m_restoreCursor = true;
-#ifndef QT_NO_CURSOR
-    qApp->setOverrideCursor(Qt::DragCopyCursor);
-    updateCursor(m_executed_drop_action);
-#endif
+
     startDrag();
     m_eventLoop = new QEventLoop;
     m_eventLoop->exec();
     delete m_eventLoop;
-    m_eventLoop = 0;
-    m_drag = 0;
+    m_eventLoop = nullptr;
+    m_drag = nullptr;
     endDrag();
+
     return m_executed_drop_action;
 }
 
@@ -226,16 +219,6 @@ void QBasicDrag::cancelDrag()
     if (m_eventLoop) {
         cancel();
         m_eventLoop->quit();
-    }
-}
-
-void QBasicDrag::restoreCursor()
-{
-    if (m_restoreCursor) {
-#ifndef QT_NO_CURSOR
-        QGuiApplication::restoreOverrideCursor();
-#endif
-        m_restoreCursor = false;
     }
 }
 
@@ -320,25 +303,34 @@ void QBasicDrag::updateCursor(Qt::DropAction action)
         }
     }
 
-    QCursor *cursor = QGuiApplication::overrideCursor();
     QPixmap pixmap = m_drag->dragCursor(action);
-    if (!cursor) {
-        QGuiApplication::changeOverrideCursor((pixmap.isNull()) ? QCursor(cursorShape) : QCursor(pixmap));
+
+    if (!m_dndHasSetOverrideCursor) {
+        QCursor newCursor = !pixmap.isNull() ? QCursor(pixmap) : QCursor(cursorShape);
+        QGuiApplication::setOverrideCursor(newCursor);
+        m_dndHasSetOverrideCursor = true;
     } else {
+        QCursor *cursor = QGuiApplication::overrideCursor();
         if (!pixmap.isNull()) {
-            if ((cursor->pixmap().cacheKey() != pixmap.cacheKey())) {
+            if (cursor->pixmap().cacheKey() != pixmap.cacheKey())
                 QGuiApplication::changeOverrideCursor(QCursor(pixmap));
-            }
-        } else {
-            if (cursorShape != cursor->shape()) {
-                QGuiApplication::changeOverrideCursor(QCursor(cursorShape));
-            }
+        } else if (cursorShape != cursor->shape()) {
+            QGuiApplication::changeOverrideCursor(QCursor(cursorShape));
         }
     }
 #endif
     updateAction(action);
 }
 
+void QBasicDrag::restoreCursor()
+{
+#ifndef QT_NO_CURSOR
+    if (m_dndHasSetOverrideCursor) {
+        QGuiApplication::restoreOverrideCursor();
+        m_dndHasSetOverrideCursor = false;
+    }
+#endif
+}
 
 static inline QPoint fromNativeGlobalPixels(const QPoint &point)
 {
@@ -376,35 +368,38 @@ QSimpleDrag::QSimpleDrag()
 
 void QSimpleDrag::startDrag()
 {
+    setExecutedDropAction(Qt::IgnoreAction);
+
     QBasicDrag::startDrag();
     // Here we can be fairly sure that QGuiApplication::mouseButtons/keyboardModifiers() will
     // contain sensible values as startDrag() normally is called from mouse event handlers
     // by QDrag::exec(). A better API would be if we could pass something like "input device
     // pointer" to QDrag::exec(). My guess is that something like that might be required for
     // QTBUG-52430.
-    m_current_window = topLevelAt(QCursor::pos());
-    if (m_current_window) {
-        auto nativePixelPos = QHighDpi::toNativePixels(QCursor::pos(), m_current_window);
-        QPlatformDragQtResponse response = QWindowSystemInterface::handleDrag(
-                    m_current_window, drag()->mimeData(), nativePixelPos,
-                    drag()->supportedActions(), QGuiApplication::mouseButtons(),
-                    QGuiApplication::keyboardModifiers());
-        setCanDrop(response.isAccepted());
-        updateCursor(response.acceptedAction());
+    m_sourceWindow = topLevelAt(QCursor::pos());
+    m_windowUnderCursor = m_sourceWindow;
+    if (m_sourceWindow) {
+        auto nativePixelPos = QHighDpi::toNativePixels(QCursor::pos(), m_sourceWindow);
+        move(nativePixelPos, QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
     } else {
         setCanDrop(false);
         updateCursor(Qt::IgnoreAction);
     }
-    setExecutedDropAction(Qt::IgnoreAction);
-    qCDebug(lcDnd) << "drag began from" << m_current_window<< "cursor pos" << QCursor::pos() << "can drop?" << canDrop();
+
+    qCDebug(lcDnd) << "drag began from" << m_sourceWindow << "cursor pos" << QCursor::pos() << "can drop?" << canDrop();
+}
+
+static void sendDragLeave(QWindow *window)
+{
+    QWindowSystemInterface::handleDrag(window, nullptr, QPoint(), Qt::IgnoreAction, 0, 0);
 }
 
 void QSimpleDrag::cancel()
 {
     QBasicDrag::cancel();
-    if (drag() && m_current_window) {
-        QWindowSystemInterface::handleDrag(m_current_window, nullptr, QPoint(), Qt::IgnoreAction, 0, 0);
-        m_current_window = nullptr;
+    if (drag() && m_sourceWindow) {
+        sendDragLeave(m_sourceWindow);
+        m_sourceWindow = nullptr;
     }
 }
 
@@ -414,16 +409,26 @@ void QSimpleDrag::move(const QPoint &nativeGlobalPos, Qt::MouseButtons buttons,
     QPoint globalPos = fromNativeGlobalPixels(nativeGlobalPos);
     moveShapedPixmapWindow(globalPos);
     QWindow *window = topLevelAt(globalPos);
-    if (!window)
-        return;
+
+    if (!window || window != m_windowUnderCursor) {
+        if (m_windowUnderCursor)
+            sendDragLeave(m_windowUnderCursor);
+        m_windowUnderCursor = window;
+        if (!window) {
+            // QSimpleDrag supports only in-process dnd, we can't drop anywhere else.
+            setCanDrop(false);
+            updateCursor(Qt::IgnoreAction);
+            return;
+        }
+    }
 
     const QPoint pos = nativeGlobalPos - window->handle()->geometry().topLeft();
     const QPlatformDragQtResponse qt_response = QWindowSystemInterface::handleDrag(
                 window, drag()->mimeData(), pos, drag()->supportedActions(),
                 buttons, modifiers);
 
-    updateCursor(qt_response.acceptedAction());
     setCanDrop(qt_response.isAccepted());
+    updateCursor(qt_response.acceptedAction());
 }
 
 void QSimpleDrag::drop(const QPoint &nativeGlobalPos, Qt::MouseButtons buttons,
