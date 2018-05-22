@@ -10,3 +10,5 @@ osx ci
 osx
 [tearOff]
 osx
+[activeSubMenuPosition]
+winrt

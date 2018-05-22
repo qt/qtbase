@@ -843,6 +843,10 @@ private:
 
 void tst_QMenu::activeSubMenuPositionExec()
 {
+
+#ifdef Q_OS_WINRT
+    QSKIP("Broken on WinRT - QTBUG-68297");
+#endif
     SubMenuPositionExecMenu menu;
     menu.exec(QGuiApplication::primaryScreen()->availableGeometry().center());
 }
@@ -1079,6 +1083,9 @@ void tst_QMenu::pushButtonPopulateOnAboutToShow()
 
     QTimer::singleShot(300, buttonMenu, SLOT(hide()));
     QTest::mouseClick(&b, Qt::LeftButton, Qt::NoModifier, b.rect().center());
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "WinRT does not support QTest::mouseClick", Abort);
+#endif
     QVERIFY2(!buttonMenu->geometry().intersects(b.geometry()), msgGeometryIntersects(buttonMenu->geometry(), b.geometry()));
 
     // note: we're assuming that, if we previously got the desired geometry, we'll get it here too
@@ -1177,6 +1184,9 @@ void tst_QMenu::click_while_dismissing_submenu()
     //this opens the submenu, move two times to emulate user interaction (d->motions > 0 in QMenu)
     QTest::mouseMove(menuWindow, menu.rect().center() + QPoint(0,2));
     QTest::mouseMove(menuWindow, menu.rect().center() + QPoint(1,3), 60);
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "WinRT does not support QTest::mouseMove", Abort);
+#endif
     QVERIFY(menuShownSpy.wait());
     QVERIFY(sub.isVisible());
     QVERIFY(QTest::qWaitForWindowExposed(&sub));
@@ -1273,6 +1283,9 @@ void tst_QMenu::QTBUG47515_widgetActionEnterLeave()
         QTest::mouseMove(topLevelWindow, w1Center);
         QVERIFY(w1->isVisible());
         QTRY_COMPARE(w1->leave, 0);
+#ifdef Q_OS_WINRT
+        QEXPECT_FAIL("", "WinRT does not support QTest::mouseMove", Abort);
+#endif
         QTRY_COMPARE(w1->enter, 1);
 
         // Check whether leave event is not delivered on mouse move
@@ -1398,6 +1411,9 @@ void tst_QMenu::QTBUG_56917_wideMenuSize()
     menu.popup(QPoint());
     QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QVERIFY(menu.isVisible());
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Broken on WinRT - QTBUG-68297", Abort);
+#endif
     QVERIFY(menu.height() <= menuSizeHint.height());
 }
 
@@ -1533,6 +1549,9 @@ void tst_QMenu::menuSize_Scrolling()
             getContentsMargins(&leftMargin, &topMargin, &rightMargin, &bottomMargin);
             QRect lastItem = actionGeometry(actions().at(actions().length() - 1));
             QSize s = size();
+#ifdef Q_OS_WINRT
+            QEXPECT_FAIL("", "Broken on WinRT - QTBUG-68297", Abort);
+#endif
             QCOMPARE( s.width(), lastItem.right() + fw + hmargin + rightMargin + 1);
             QMenu::showEvent(e);
         }
@@ -1601,6 +1620,12 @@ void tst_QMenu::menuSize_Scrolling()
         return;
 
     QTest::keyClick(&menu, Qt::Key_End);
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("data8", "Broken on WinRT - QTBUG-68297", Abort);
+    QEXPECT_FAIL("data9", "Broken on WinRT - QTBUG-68297", Abort);
+    QEXPECT_FAIL("data10", "Broken on WinRT - QTBUG-68297", Abort);
+    QEXPECT_FAIL("data11", "Broken on WinRT - QTBUG-68297", Abort);
+#endif
     QTRY_COMPARE(menu.actionGeometry(actions.last()).right(),
                  menu.width() - mm.fw - mm.hmargin - leftMargin - 1);
     QCOMPARE(menu.actionGeometry(actions.last()).bottom(),

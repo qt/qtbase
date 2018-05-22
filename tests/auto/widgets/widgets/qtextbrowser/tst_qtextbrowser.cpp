@@ -198,6 +198,9 @@ void tst_QTextBrowser::forwardButton()
 
     browser->setSource(QUrl("pagewithoutbg.html"));
 
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Fails on WinRT - QTBUG-68297", Abort);
+#endif
     QVERIFY(!forwardEmissions.isEmpty());
     val = forwardEmissions.takeLast()[0];
     QCOMPARE(val.type(), QVariant::Bool);

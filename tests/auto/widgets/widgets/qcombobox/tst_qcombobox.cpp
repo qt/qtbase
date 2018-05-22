@@ -1672,6 +1672,9 @@ void tst_QComboBox::setCustomModelAndView()
     const QRect subItemRect = view->visualRect(model->indexFromItem(subItem));
     QWidget *window = view->window();
     QTest::mouseClick(window->windowHandle(), Qt::LeftButton, 0, view->mapTo(window, subItemRect.center()));
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Fails on WinRT - QTBUG-68297", Abort);
+#endif
     QTRY_COMPARE(combo.currentText(), subItem21Text);
 }
 
@@ -2376,6 +2379,9 @@ void tst_QComboBox::task190205_setModelAdjustToContents()
     correctBox.addItems(finalContent);
     correctBox.showNormal();
 
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "WinRT does not support more than 1 native top level widget", Abort);
+#endif
     QVERIFY(QTest::qWaitForWindowExposed(&box));
     QVERIFY(QTest::qWaitForWindowExposed(&correctBox));
 
@@ -3310,6 +3316,9 @@ void tst_QComboBox::task_QTBUG_56693_itemFontFromModel()
     QVERIFY(container);
     QVERIFY(QTest::qWaitForWindowExposed(container));
 
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Fails on WinRT - QTBUG-68297", Abort);
+#endif
     QCOMPARE(proxyStyle->italicItemsNo, 5);
 
     box.hidePopup();
