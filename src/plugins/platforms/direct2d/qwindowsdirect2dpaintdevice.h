@@ -40,8 +40,8 @@
 #ifndef QWINDOWSDIRECT2DPAINTDEVICE_H
 #define QWINDOWSDIRECT2DPAINTDEVICE_H
 
-#include <QtCore/QScopedPointer>
-#include <QtGui/QPaintDevice>
+#include <QtCore/qscopedpointer.h>
+#include <QtGui/qpaintdevice.h>
 #include "qwindowsdirect2dpaintengine.h"
 
 QT_BEGIN_NAMESPACE

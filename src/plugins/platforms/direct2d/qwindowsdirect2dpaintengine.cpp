@@ -49,9 +49,9 @@
 #include <QtFontDatabaseSupport/private/qwindowsfontengine_p.h>
 #include "qwindowsintegration.h"
 
-#include <QtCore/QtMath>
-#include <QtCore/QStack>
-#include <QtCore/QSettings>
+#include <QtCore/qmath.h>
+#include <QtCore/qstack.h>
+#include <QtCore/qsettings.h>
 #include <QtGui/private/qpaintengine_p.h>
 #include <QtGui/private/qtextengine_p.h>
 #include <QtGui/private/qfontengine_p.h>

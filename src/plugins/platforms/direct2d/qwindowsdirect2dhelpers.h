@@ -40,11 +40,11 @@
 #ifndef QWINDOWSDIRECT2DHELPERS_H
 #define QWINDOWSDIRECT2DHELPERS_H
 
-#include <QtCore/QRectF>
-#include <QtCore/QSizeF>
-#include <QtCore/QPointF>
-#include <QtGui/QColor>
-#include <QtGui/QTransform>
+#include <QtCore/qrect.h>
+#include <QtCore/qsize.h>
+#include <QtCore/qpoint.h>
+#include <QtGui/qcolor.h>
+#include <QtGui/qtransform.h>
 
 #ifdef Q_CC_MINGW
 #  include <qt_windows.h>

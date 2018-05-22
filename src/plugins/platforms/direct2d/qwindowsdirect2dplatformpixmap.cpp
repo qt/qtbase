@@ -43,10 +43,10 @@
 #include "qwindowsdirect2dbitmap.h"
 #include "qwindowsdirect2dhelpers.h"
 
-#include <QtGui/QPainter>
-#include <QtGui/QImage>
-#include <QtGui/QPaintDevice>
-#include <QtGui/QPaintEngine>
+#include <QtGui/qpainter.h>
+#include <QtGui/qimage.h>
+#include <QtGui/qpaintdevice.h>
+#include <QtGui/qpaintengine.h>
 
 QT_BEGIN_NAMESPACE
 

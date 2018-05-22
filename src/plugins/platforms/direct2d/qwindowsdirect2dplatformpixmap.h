@@ -42,7 +42,7 @@
 
 #include "qwindowsdirect2dpaintengine.h"
 #include <QtGui/qpa/qplatformpixmap.h>
-#include <QtCore/QScopedPointer>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -41,8 +41,8 @@
 #define QWINDOWSDIRECT2DBITMAP_H
 
 #include <QtCore/qnamespace.h>
-#include <QtCore/QRect>
-#include <QtCore/QScopedPointer>
+#include <QtCore/qrect.h>
+#include <QtCore/qscopedpointer.h>
 
 struct ID2D1DeviceContext;
 struct ID2D1Bitmap1;

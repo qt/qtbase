@@ -42,8 +42,8 @@
 #include "qwindowsdirect2dhelpers.h"
 #include "qwindowsdirect2ddevicecontext.h"
 
-#include <QtGui/QImage>
-#include <QtGui/QColor>
+#include <QtGui/qimage.h>
+#include <QtGui/qcolor.h>
 
 #include <wrl.h>
 

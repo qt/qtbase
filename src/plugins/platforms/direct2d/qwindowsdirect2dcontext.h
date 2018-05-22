@@ -40,7 +40,7 @@
 #ifndef QWINDOWSDIRECT2DCONTEXT_H
 #define QWINDOWSDIRECT2DCONTEXT_H
 
-#include <QtCore/QScopedPointer>
+#include <QtCore/qscopedpointer.h>
 
 struct ID3D11Device;
 struct ID2D1Device;

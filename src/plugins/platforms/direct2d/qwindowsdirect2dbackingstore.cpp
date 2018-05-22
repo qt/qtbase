@@ -48,9 +48,9 @@
 
 #include "qwindowscontext.h"
 
-#include <QtGui/QPainter>
-#include <QtGui/QWindow>
-#include <QtCore/QDebug>
+#include <QtGui/qpainter.h>
+#include <QtGui/qwindow.h>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 

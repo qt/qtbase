@@ -40,7 +40,7 @@
 #include "qwindowsdirect2dintegration.h"
 
 #include <QtGui/qpa/qplatformintegrationplugin.h>
-#include <QtCore/QStringList>
+#include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -47,8 +47,8 @@
 #include "qwindowscontext.h"
 
 #include <qplatformdefs.h>
-#include <QtCore/QCoreApplication>
-#include <QtCore/QVersionNumber>
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qversionnumber.h>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/qpa/qwindowsysteminterface.h>
 #include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>

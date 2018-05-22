@@ -40,7 +40,7 @@
 #ifndef QWINDOWSDIRECT2DPAINTENGINE_H
 #define QWINDOWSDIRECT2DPAINTENGINE_H
 
-#include <QtCore/QScopedPointer>
+#include <QtCore/qscopedpointer.h>
 #include <QtGui/private/qpaintengineex_p.h>
 
 struct ID2D1Geometry;
