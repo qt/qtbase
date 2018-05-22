@@ -552,9 +552,9 @@ void QVncClientCursor::write(QVncClient *client) const
     {
         const quint16 tmp[6] = { htons(0),
                                  htons(1),
-                                 htons(hotspot.x()), htons(hotspot.y()),
-                                 htons(cursor.width()),
-                                 htons(cursor.height()) };
+                                 htons(uint16_t(hotspot.x())), htons(uint16_t(hotspot.y())),
+                                 htons(uint16_t(cursor.width())),
+                                 htons(uint16_t(cursor.height())) };
         socket->write((char*)tmp, sizeof(tmp));
 
         const qint32 encoding = qToBigEndian(-239);
