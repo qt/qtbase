@@ -621,6 +621,9 @@ void tst_QCompleter::directoryModel_data()
 
 void tst_QCompleter::directoryModel()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT cannot access directories outside of the application's sandbox");
+#endif
     filter();
 }
 
@@ -667,6 +670,9 @@ void tst_QCompleter::fileSystemModel_data()
 
 void tst_QCompleter::fileSystemModel()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT cannot access directories outside of the application's sandbox");
+#endif
     //QFileSystemModel is assync.
     filter(true);
 }
@@ -1696,6 +1702,9 @@ void tst_QCompleter::QTBUG_14292_filesystem()
 
     // Wait for all file system model slots/timers to trigger
     // until the model sees the subdirectories.
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Fails on WinRT - QTBUG-68297", Abort);
+#endif
     QTRY_VERIFY(testFileSystemReady(model));
     // But this should not cause the combo to pop up.
     QVERIFY(!comp.popup()->isVisible());
