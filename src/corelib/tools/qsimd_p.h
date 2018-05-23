@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -232,7 +232,48 @@
 #    define __RDRND__                       1
 #  endif
 
+#  if defined(__BMI__) && !defined(__BMI2__) && defined(Q_CC_INTEL)
+// BMI2 instructions:
+// All processors that support BMI support BMI2 (and AVX2)
+// (but neither MSVC nor the Intel compiler define this macro)
+#    define __BMI2__                        1
+#  endif
+
 #  include "qsimd_x86_p.h"
+
+// Haswell sub-architecture
+//
+// The Intel Core 4th generation was codenamed "Haswell" and introduced AVX2,
+// BMI1, BMI2, FMA, LZCNT, MOVBE, which makes it a good divider for a
+// sub-target for us. The first AMD processor with AVX2 support (Zen) has the
+// same features.
+//
+// macOS's fat binaries support the "x86_64h" sub-architecture and the GNU libc
+// ELF loader also supports a "haswell/" subdir (e.g., /usr/lib/haswell).
+#  define QT_FUNCTION_TARGET_STRING_ARCH_HASWELL    "arch=haswell"
+#  if defined(__AVX2__) && defined(__BMI__) && defined(__BMI2__) && defined(__F16C__) && \
+    defined(__FMA__) && defined(__LZCNT__) && defined(__RDRND__)
+#    define __haswell__       1
+#  endif
+
+// This constant does not include all CPU features found in a Haswell, only
+// those that we'd have optimized code for.
+// Note: must use Q_CONSTEXPR here, as this file may be compiled in C mode.
+QT_BEGIN_NAMESPACE
+static const quint64 CpuFeatureArchHaswell    = 0
+        | CpuFeatureSSE2
+        | CpuFeatureSSE3
+        | CpuFeatureSSSE3
+        | CpuFeatureSSE4_1
+        | CpuFeatureSSE4_2
+        | CpuFeatureFMA
+        | CpuFeaturePOPCNT
+        | CpuFeatureAVX
+        | CpuFeatureF16C
+        | CpuFeatureAVX2
+        | CpuFeatureBMI
+        | CpuFeatureBMI2;
+QT_END_NAMESPACE
 
 #endif  /* Q_PROCESSOR_X86 */
 

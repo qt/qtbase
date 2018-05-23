@@ -127,7 +127,7 @@ SSE2_SOURCES += painting/qdrawhelper_sse2.cpp
 SSSE3_SOURCES += painting/qdrawhelper_ssse3.cpp
 SSE4_1_SOURCES += painting/qdrawhelper_sse4.cpp \
                   painting/qimagescale_sse4.cpp
-AVX2_SOURCES += painting/qdrawhelper_avx2.cpp
+ARCH_HASWELL_SOURCES += painting/qdrawhelper_avx2.cpp
 
 NEON_SOURCES += painting/qdrawhelper_neon.cpp painting/qimagescale_neon.cpp
 NEON_HEADERS += painting/qdrawhelper_neon_p.h

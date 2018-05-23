@@ -5772,7 +5772,7 @@ static void qInitDrawhelperFunctions()
 #endif
 
 #if defined(QT_COMPILER_SUPPORTS_AVX2)
-    if (qCpuHasFeature(AVX2)) {
+    if (qCpuHasFeature(ArchHaswell)) {
         extern void qt_blend_rgb32_on_rgb32_avx2(uchar *destPixels, int dbpl,
                                                  const uchar *srcPixels, int sbpl,
                                                  int w, int h, int const_alpha);

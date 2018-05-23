@@ -141,6 +141,28 @@ addSimdCompiler(neon)
 addSimdCompiler(mips_dsp)
 addSimdCompiler(mips_dspr2)
 
+# Haswell sub-architecture
+defineTest(addSimdArch) {
+    name = arch_$$1
+    dependencies = $$2
+    upname = $$upper($$name)
+
+    cpu_features_missing =
+    for(part, dependencies) {
+        !contains(QT_CPU_FEATURES, $$part): cpu_features_missing = 1
+    }
+
+    CONFIG += $$name
+    isEmpty(cpu_features_missing): QT_CPU_FEATURES += $$name
+
+    export(QT_CPU_FEATURES)
+    export(CONFIG)
+    addSimdCompiler($$name)
+}
+
+isEmpty(QMAKE_CFLAGS_ARCH_HASWELL): QMAKE_CFLAGS_ARCH_HASWELL = $$QMAKE_CFLAGS_AVX2
+avx2: addSimdArch(haswell, avx2 bmi bmi2 f16c fma lzcnt popcnt)
+
 # Follow the Intel compiler's lead and define profiles of AVX512 instructions
 defineTest(addAvx512Profile) {
     name = $$1
@@ -149,7 +171,7 @@ defineTest(addAvx512Profile) {
     varname = QMAKE_CFLAGS_$$upname
 
     cpu_features_missing =
-    cflags = $$QMAKE_CFLAGS_AVX512F
+    cflags = $$QMAKE_CFLAGS_ARCH_HASWELL $$QMAKE_CFLAGS_AVX512F
     for(part, dependencies) {
         !CONFIG($$part): return()           # Profile isn't supported by the compiler
 
