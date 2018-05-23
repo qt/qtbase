@@ -132,8 +132,10 @@ struct ServerDeleter
 {
     static void cleanup(Http2Server *srv)
     {
-        if (srv)
+        if (srv) {
+            srv->stopSendingDATAFrames();
             QMetaObject::invokeMethod(srv, "deleteLater", Qt::QueuedConnection);
+        }
     }
 };
 

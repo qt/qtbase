@@ -40,6 +40,7 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtNetwork/qtcpserver.h>
 #include <QtCore/qbytearray.h>
+#include <QtCore/qatomic.h>
 #include <QtCore/qglobal.h>
 
 #include <vector>
@@ -95,6 +96,8 @@ public:
     Q_INVOKABLE void handleWINDOW_UPDATE();
 
     Q_INVOKABLE void sendResponse(quint32 streamID, bool emptyBody);
+
+    void stopSendingDATAFrames();
 
 private:
     void processRequest();
@@ -191,6 +194,7 @@ private:
     // may still be sending DATA frames.  See tst_Http2::earlyResponse().
     bool redirectWhileReading = false;
     quint16 targetPort = 0;
+    QAtomicInt interrupted;
 protected slots:
     void ignoreErrorSlot();
 };

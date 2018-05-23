@@ -212,13 +212,30 @@ void Http2Server::sendDATA(quint32 streamID, quint32 windowSize)
     const quint32 offset = it->second;
     Q_ASSERT(offset < quint32(responseBody.size()));
 
-    const quint32 bytes = std::min<quint32>(windowSize, responseBody.size() - offset);
+    quint32 bytesToSend = std::min<quint32>(windowSize, responseBody.size() - offset);
+    quint32 bytesSent = 0;
     const quint32 frameSizeLimit(clientSetting(Settings::MAX_FRAME_SIZE_ID, Http2::maxFrameSize));
     const uchar *src = reinterpret_cast<const uchar *>(responseBody.constData() + offset);
-    const bool last = offset + bytes == quint32(responseBody.size());
+    const bool last = offset + bytesToSend == quint32(responseBody.size());
 
-    writer.start(FrameType::DATA, FrameFlag::EMPTY, streamID);
-    writer.writeDATA(*socket, frameSizeLimit, src, bytes);
+    // The payload can significantly exceed frameSizeLimit. Internally, writer
+    // will do needed fragmentation, but if some test failed, there is no need
+    // to wait for writer to send all DATA frames, we check 'interrupted' and
+    // stop early instead.
+    const quint32 framesInChunk = 10;
+    while (bytesToSend) {
+        if (interrupted.loadAcquire())
+            return;
+        const quint32 chunkSize = std::min<quint32>(framesInChunk * frameSizeLimit, bytesToSend);
+        writer.start(FrameType::DATA, FrameFlag::EMPTY, streamID);
+        writer.writeDATA(*socket, frameSizeLimit, src, chunkSize);
+        src += chunkSize;
+        bytesToSend -= chunkSize;
+        bytesSent += chunkSize;
+    }
+
+    if (interrupted.loadAcquire())
+        return;
 
     if (last) {
         writer.start(FrameType::DATA, FrameFlag::END_STREAM, streamID);
@@ -230,7 +247,7 @@ void Http2Server::sendDATA(quint32 streamID, quint32 windowSize)
         Q_ASSERT(closedStreams.find(streamID) == closedStreams.end());
         closedStreams.insert(streamID);
     } else {
-        it->second += bytes;
+        it->second += bytesSent;
     }
 }
 
@@ -817,6 +834,11 @@ void Http2Server::sendResponse(quint32 streamID, bool emptyBody)
         activeRequests.erase(streamID);
         closedStreams.insert(streamID);
     }
+}
+
+void Http2Server::stopSendingDATAFrames()
+{
+    interrupted.storeRelease(1);
 }
 
 void Http2Server::processRequest()
