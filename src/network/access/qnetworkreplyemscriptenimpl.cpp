@@ -262,12 +262,17 @@ void QNetworkReplyEmscriptenImplPrivate::doSendRequest()
 /* const QString &body, const QList<QPair<QByteArray, QByteArray> > &headers ,*/
 void QNetworkReplyEmscriptenImplPrivate::jsRequest(const QString &verb, const QString &url, void *loadCallback, void *progressCallback, void *errorCallback, void *onResponseHeadersCallback)
 {
-    QString extraData;
-    if (outgoingData)
-        extraData.fromUtf8(outgoingData->readAll());
+    QString extraDataString;
 
-    if (verb == QStringLiteral("POST") && extraData.startsWith(QStringLiteral("?")))
-        extraData.remove(QStringLiteral("?"));
+    QByteArray extraData;
+    if (outgoingData)
+        extraData = outgoingData->readAll();
+
+    if (extraData.size() > 0)
+        extraDataString.fromUtf8(extraData);
+
+    if (extraDataString.size() >= 0 && verb == QStringLiteral("POST") && extraDataString.startsWith(QStringLiteral("?")))
+        extraDataString.remove(QStringLiteral("?"));
 
     // Probably a good idea to save any shared pointers as members in C++
     // so the objects they point to survive as long as you need them
@@ -287,31 +292,49 @@ void QNetworkReplyEmscriptenImplPrivate::jsRequest(const QString &verb, const QS
         var onHeadersCallback = $5;
         var handler = $8;
 
-        var formData = new FormData();
-        var extraData = Pointer_stringify($6); // request parameters
+        var dataToSend;
+        var extraRequestData = Pointer_stringify($6); // request parameters
         var headersData = Pointer_stringify($7);
 
-        if (extraData) {
-            var extra = extraData.split("&");
-            for (var i = 0; i < extra.length; i++) {
-                formData.append(extra[i].split("=")[0],extra[i].split("=")[1]);
-            }
-        }
         var xhr;
         xhr = new XMLHttpRequest();
-        xhr.responseType = "arraybuffer";
+        xhr.responseType = 'arraybuffer';
 
         xhr.open(verb, url, true); //async
+
+        function handleError(xhrStatusCode, xhrStatusText) {
+            var errorPtr = allocate(intArrayFromString(xhrStatusText), 'i8', ALLOC_NORMAL);
+            Runtime.dynCall('viii', onErrorCallbackPointer, [handler, xhrStatusCode, errorPtr]);
+            _free(errorPtr);
+        }
 
         if (headersData) {
             var headers = headersData.split("&");
             for (var i = 0; i < headers.length; i++) {
-                 xhr.setRequestHeader(headers[i].split(":")[0], headers[i].split(":")[1]);
+                var header = headers[i].split(":")[0];
+                var value =  headers[i].split(":")[1];
+
+                if (verb === 'POST' && value.toLowerCase().includes('json')) {
+                    if (extraRequestData) {
+                        xhr.responseType = 'json';
+                        dataToSend = extraRequestData;
+                    }
+                }
+                if (verb === 'POST' && value.toLowerCase().includes('form')) {
+                    if (extraRequestData) {
+                        var formData = new FormData();
+                        var extra = extraRequestData.split("&");
+                        for (var i = 0; i < extra.length; i++) {
+                            formData.append(extra[i].split("=")[0],extra[i].split("=")[1]);
+                        }
+                        dataToSend = formData;
+                    }
+                }
+             xhr.setRequestHeader(header, value);
             }
         }
 
         xhr.onprogress = function(e) {
-//console.log("onprogress "+ xhr.status + " "+xhr.statusText);
             switch(xhr.status) {
               case 200:
               case 206:
@@ -327,48 +350,62 @@ void QNetworkReplyEmscriptenImplPrivate::jsRequest(const QString &verb, const QS
         };
 
         xhr.onreadystatechange = function() {
-            if (xhr.readyState == xhr.UNSENT) console.log("UNSENT: Client has been created. open() not called yet."); //0
-            if (xhr.readyState == xhr.OPENED) console.log("OPENED: open() has been called."); //1
-            if (xhr.readyState == xhr.HEADERS_RECEIVED) {
-                    var responseStr = xhr.getAllResponseHeaders();
+            if (this.readyState == this.UNSENT) console.log("UNSENT: Client has been created. open() not called yet."); //0
+            if (this.readyState == this.OPENED) console.log("OPENED: open() has been called."); //1
+            if (this.readyState == this.HEADERS_RECEIVED) {
+                    var responseStr = this.getAllResponseHeaders();
                     if (responseStr.length > 0) {
                         var ptr = allocate(intArrayFromString(responseStr), 'i8', ALLOC_NORMAL);
                         Runtime.dynCall('vii', onHeadersCallback, [handler, ptr]);
                         _free(ptr);
                     }
                 }
-         if (xhr.readyState == xhr.LOADING) console.log("LOADING: Downloading; responseText holds partial data.");//3
-             if (xhr.readyState == xhr.DONE) console.log("DONE: The operation is complete.");//4
+         if (this.readyState == this.LOADING) console.log("LOADING: Downloading; responseText holds partial data.");//3
+             if (this.readyState == this.DONE) {
+                            console.log("DONE: The operation is complete.");//4
 
+                        if (this.status < 300) { //success
+                           if (this.status == 200 || this.status == 203) {
+                                var datalength;
+                                var byteArray = 0;
+                                var buffer;
+
+                                if (this.responseType.length === 0 || this.responseType === 'document') {
+                                   console.log("xhr.responseText " + this.responseText);
+                                   byteArray = new Uint8Array(this.responseText);
+                                } else  if (this.responseType === 'json') {
+
+                                   var jsonResponse = JSON.stringify(this.response);
+                                   buffer = allocate(intArrayFromString(jsonResponse), 'i8', ALLOC_NORMAL);
+                                   datalength = jsonResponse.length;
+                                } else  if (this.responseType === 'arraybuffer') {
+                                    byteArray  = new Uint8Array(xhr.response);
+                                }
+                                if (byteArray != 0 ) {
+                                    datalength = byteArray.length;
+                                    buffer = _malloc(datalength);
+                                    HEAPU8.set(byteArray, buffer);
+                                }
+                                var reasonPtr = allocate(intArrayFromString(this.statusText), 'i8', ALLOC_NORMAL);
+                                Runtime.dynCall('viiiiii', onLoadCallbackPointer, [handler, this.status, reasonPtr, this.readyState, buffer, datalength]);
+                                _free(buffer);
+                                _free(reasonPtr);
+                               }
+                            }
+                        }
                     };
 
         xhr.onload = function(e) {
-                        if (xhr.status < 300) {
-                            var byteArray = 0;
-                            var buffer;
-
-                            byteArray  = new Uint8Array( xhr.response);
-                            buffer = _malloc(byteArray.length);
-                            HEAPU8.set(byteArray, buffer);
-                            var reasonPtr = allocate(intArrayFromString(xhr.statusText), 'i8', ALLOC_NORMAL);
-
-                            Runtime.dynCall('viiiiii', onLoadCallbackPointer, [handler, this.status, reasonPtr, this.readyState, buffer, byteArray.length]);
-                            _free(buffer);
-                            _free(reasonPtr);
-                        } else if (xhr.status >= 300) {
-                            var errorPtr = allocate(intArrayFromString(xhr.statusText), 'i8', ALLOC_NORMAL);
-                            Runtime.dynCall('viii', onErrorCallbackPointer, [handler, xhr.status, errorPtr]);
-                            _free(errorPtr);
-                        }
-                };
+            if (xhr.status >= 300) { //error
+                    handleError(xhr.status, xhr.statusText);
+                }
+        };
 
         xhr.onerror = function(e) {
-            var errorPtr = allocate(intArrayFromString(xhr.statusText), 'i8', ALLOC_NORMAL);
-            Runtime.dynCall('viii', onErrorCallbackPointer, [handler, xhr.status, errorPtr]);
-            _free(errorPtr);
+            handleError(xhr.status, xhr.statusText);
         };
         //TODO other operations, handle user/pass, handle binary data, data streaming
-        xhr.send(formData);
+        xhr.send(dataToSend);
 
       }, verb.toLatin1().data(),
                     url.toLatin1().data(),
@@ -376,8 +413,8 @@ void QNetworkReplyEmscriptenImplPrivate::jsRequest(const QString &verb, const QS
                     progressCallback,
                     errorCallback,
                     onResponseHeadersCallback,
-                    extraData.toLatin1().data(),
-                    headersList.join(QString::QLatin1String("&")).toLatin1().data(),
+                    extraDataString.size() > 0 ? extraDataString.toLatin1().data() : extraData.data(),
+                    headersList.join(QStringLiteral("&")).toLatin1().data(),
                     this
                     );
 }
@@ -423,7 +460,7 @@ void QNetworkReplyEmscriptenImplPrivate::dataReceived(char *buffer, int bufferSi
 
     downloadBuffer.append(buffer, bufferSize);
 
-     if (downloadBufferCurrentSize == totalDownloadSize) {
+    if (downloadBufferCurrentSize == totalDownloadSize) {
          q->setFinished(true);
          emit q->finished();
      }

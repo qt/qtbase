@@ -1345,7 +1345,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 
     bool isLocalFile = req.url().isLocalFile();
     QString scheme = req.url().scheme();
-    qDebug() << Q_FUNC_INFO << scheme;
 #ifdef Q_OS_HTML5
     if (scheme == QLatin1String("http") || scheme == QLatin1String("https")) {
         //        return new QNetworkReplyEmscriptenImpl(this, req, op);
