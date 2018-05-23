@@ -587,11 +587,8 @@ void QWin32PrintEngine::drawPixmap(const QRectF &targetRect,
             QPixmap p = QPixmap::fromImage(img);
 
             HBITMAP hbitmap = qt_pixmapToWinHBITMAP(p, HBitmapNoAlpha);
-            HDC display_dc = GetDC(0);
-            HDC hbitmap_hdc = CreateCompatibleDC(display_dc);
+            HDC hbitmap_hdc = CreateCompatibleDC(d->hdc);
             HGDIOBJ null_bitmap = SelectObject(hbitmap_hdc, hbitmap);
-
-            ReleaseDC(0, display_dc);
 
             if (!StretchBlt(d->hdc, qRound(tposx - xform_offset_x), qRound(tposy - xform_offset_y), width, height,
                             hbitmap_hdc, 0, 0, p.width(), p.height(), SRCCOPY))
@@ -620,12 +617,9 @@ void QWin32PrintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, cons
     } else {
         int dc_state = SaveDC(d->hdc);
 
-        HDC display_dc = GetDC(0);
         HBITMAP hbitmap = qt_pixmapToWinHBITMAP(pm, HBitmapNoAlpha);
-        HDC hbitmap_hdc = CreateCompatibleDC(display_dc);
+        HDC hbitmap_hdc = CreateCompatibleDC(d->hdc);
         HGDIOBJ null_bitmap = SelectObject(hbitmap_hdc, hbitmap);
-
-        ReleaseDC(0, display_dc);
 
         QRectF trect = d->painterMatrix.mapRect(r);
         int tx = int(trect.left() * d->stretch_x + d->origin_x);
