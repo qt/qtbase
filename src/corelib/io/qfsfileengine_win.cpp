@@ -591,7 +591,6 @@ bool QFSFileEnginePrivate::doStat(QFileSystemMetaData::MetaDataFlags flags) cons
 bool QFSFileEngine::link(const QString &newName)
 {
 #if !defined(Q_OS_WINRT)
-#  if QT_CONFIG(library)
     bool ret = false;
 
     QString linkName = newName;
@@ -600,23 +599,27 @@ bool QFSFileEngine::link(const QString &newName)
     IShellLink *psl;
     bool neededCoInit = false;
 
-    HRESULT hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
+    HRESULT hres = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_IShellLink,
+                                    reinterpret_cast<void **>(&psl));
 
     if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
         neededCoInit = true;
-        CoInitialize(NULL);
-        hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
+        CoInitialize(nullptr);
+        hres = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_IShellLink,
+                                reinterpret_cast<void **>(&psl));
     }
 
     if (SUCCEEDED(hres)) {
-        hres = psl->SetPath((wchar_t *)fileName(AbsoluteName).replace(QLatin1Char('/'), QLatin1Char('\\')).utf16());
+        const QString nativeAbsoluteName = fileName(AbsoluteName).replace(QLatin1Char('/'), QLatin1Char('\\'));
+        hres = psl->SetPath(reinterpret_cast<const wchar_t *>(nativeAbsoluteName.utf16()));
         if (SUCCEEDED(hres)) {
-            hres = psl->SetWorkingDirectory((wchar_t *)fileName(AbsolutePathName).replace(QLatin1Char('/'), QLatin1Char('\\')).utf16());
+            const QString nativeAbsolutePathName = fileName(AbsolutePathName).replace(QLatin1Char('/'), QLatin1Char('\\'));
+            hres = psl->SetWorkingDirectory(reinterpret_cast<const wchar_t *>(nativeAbsolutePathName.utf16()));
             if (SUCCEEDED(hres)) {
                 IPersistFile *ppf;
-                hres = psl->QueryInterface(IID_IPersistFile, (void **)&ppf);
+                hres = psl->QueryInterface(IID_IPersistFile, reinterpret_cast<void **>(&ppf));
                 if (SUCCEEDED(hres)) {
-                    hres = ppf->Save((wchar_t*)linkName.utf16(), TRUE);
+                    hres = ppf->Save(reinterpret_cast<const wchar_t *>(linkName.utf16()), TRUE);
                     if (SUCCEEDED(hres))
                          ret = true;
                     ppf->Release();
@@ -632,10 +635,6 @@ bool QFSFileEngine::link(const QString &newName)
         CoUninitialize();
 
     return ret;
-#  else // QT_CONFIG(library)
-    Q_UNUSED(newName);
-    return false;
-#  endif // QT_CONFIG(library)
 #else // !Q_OS_WINRT
     Q_UNUSED(newName);
     Q_UNIMPLEMENTED();
