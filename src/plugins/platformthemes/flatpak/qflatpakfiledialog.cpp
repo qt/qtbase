@@ -101,6 +101,10 @@ const QDBusArgument &operator >>(const QDBusArgument &arg, QFlatpakFileDialog::F
 class QFlatpakFileDialogPrivate
 {
 public:
+    QFlatpakFileDialogPrivate(QPlatformFileDialogHelper *nativeFileDialog)
+        : nativeFileDialog(nativeFileDialog)
+    { }
+
     WId winId = 0;
     bool modal = false;
     bool multipleFiles = false;
@@ -111,12 +115,19 @@ public:
     QStringList nameFilters;
     QStringList mimeTypesFilters;
     QStringList selectedFiles;
+    QPlatformFileDialogHelper *nativeFileDialog = nullptr;
 };
 
-QFlatpakFileDialog::QFlatpakFileDialog()
+QFlatpakFileDialog::QFlatpakFileDialog(QPlatformFileDialogHelper *nativeFileDialog)
     : QPlatformFileDialogHelper()
-    , d_ptr(new QFlatpakFileDialogPrivate)
+    , d_ptr(new QFlatpakFileDialogPrivate(nativeFileDialog))
 {
+    Q_D(QFlatpakFileDialog);
+
+    if (d->nativeFileDialog) {
+        connect(d->nativeFileDialog, SIGNAL(accept()), this, SIGNAL(accept()));
+        connect(d->nativeFileDialog, SIGNAL(reject()), this, SIGNAL(reject()));
+    }
 }
 
 QFlatpakFileDialog::~QFlatpakFileDialog()
@@ -126,6 +137,9 @@ QFlatpakFileDialog::~QFlatpakFileDialog()
 void QFlatpakFileDialog::initializeDialog()
 {
     Q_D(QFlatpakFileDialog);
+
+    if (d->nativeFileDialog)
+        d->nativeFileDialog->setOptions(options());
 
     if (options()->fileMode() == QFileDialogOptions::ExistingFiles)
         d->multipleFiles = true;
@@ -265,12 +279,18 @@ void QFlatpakFileDialog::setDirectory(const QUrl &directory)
 {
     Q_D(QFlatpakFileDialog);
 
+    if (d->nativeFileDialog)
+        d->nativeFileDialog->setDirectory(directory);
+
     d->directory = directory.path();
 }
 
 QUrl QFlatpakFileDialog::directory() const
 {
     Q_D(const QFlatpakFileDialog);
+
+    if (d->nativeFileDialog && options()->fileMode() == QFileDialogOptions::Directory)
+        return d->nativeFileDialog->directory();
 
     return d->directory;
 }
@@ -279,12 +299,18 @@ void QFlatpakFileDialog::selectFile(const QUrl &filename)
 {
     Q_D(QFlatpakFileDialog);
 
+    if (d->nativeFileDialog)
+        d->nativeFileDialog->selectFile(filename);
+
     d->selectedFiles << filename.path();
 }
 
 QList<QUrl> QFlatpakFileDialog::selectedFiles() const
 {
     Q_D(const QFlatpakFileDialog);
+
+    if (d->nativeFileDialog && options()->fileMode() == QFileDialogOptions::Directory)
+        return d->nativeFileDialog->selectedFiles();
 
     QList<QUrl> files;
     for (const QString &file : d->selectedFiles) {
@@ -295,13 +321,18 @@ QList<QUrl> QFlatpakFileDialog::selectedFiles() const
 
 void QFlatpakFileDialog::setFilter()
 {
-    // TODO
+    Q_D(QFlatpakFileDialog);
+
+    if (d->nativeFileDialog)
+        d->nativeFileDialog->setFilter();
 }
 
 void QFlatpakFileDialog::selectNameFilter(const QString &filter)
 {
-    Q_UNUSED(filter);
-    // TODO
+    Q_D(QFlatpakFileDialog);
+
+    if (d->nativeFileDialog)
+        d->nativeFileDialog->selectNameFilter(filter);
 }
 
 QString QFlatpakFileDialog::selectedNameFilter() const
@@ -312,6 +343,13 @@ QString QFlatpakFileDialog::selectedNameFilter() const
 
 void QFlatpakFileDialog::exec()
 {
+    Q_D(QFlatpakFileDialog);
+
+    if (d->nativeFileDialog && options()->fileMode() == QFileDialogOptions::Directory) {
+        d->nativeFileDialog->exec();
+        return;
+    }
+
     // HACK we have to avoid returning until we emit that the dialog was accepted or rejected
     QEventLoop loop;
     loop.connect(this, SIGNAL(accept()), SLOT(quit()));
@@ -321,17 +359,23 @@ void QFlatpakFileDialog::exec()
 
 void QFlatpakFileDialog::hide()
 {
+    Q_D(QFlatpakFileDialog);
+
+    if (d->nativeFileDialog)
+        d->nativeFileDialog->hide();
 }
 
 bool QFlatpakFileDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent)
 {
     Q_D(QFlatpakFileDialog);
-    Q_UNUSED(windowFlags);
 
     initializeDialog();
 
     d->modal = windowModality != Qt::NonModal;
     d->winId = parent ? parent->winId() : 0;
+
+    if (d->nativeFileDialog && options()->fileMode() == QFileDialogOptions::Directory)
+        return d->nativeFileDialog->show(windowFlags, windowModality, parent);
 
     openPortal();
 

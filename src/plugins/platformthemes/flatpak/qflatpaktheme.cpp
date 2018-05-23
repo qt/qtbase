@@ -130,8 +130,12 @@ QPlatformDialogHelper* QFlatpakTheme::createPlatformDialogHelper(DialogType type
 {
     Q_D(const QFlatpakTheme);
 
-    if (type == FileDialog)
+    if (type == FileDialog) {
+        if (d->baseTheme->usePlatformNativeDialog(type))
+            return new QFlatpakFileDialog(static_cast<QPlatformFileDialogHelper*>(d->baseTheme->createPlatformDialogHelper(type)));
+
         return new QFlatpakFileDialog;
+    }
 
     return d->baseTheme->createPlatformDialogHelper(type);
 }

@@ -69,7 +69,7 @@ public:
     };
     typedef QVector<Filter> FilterList;
 
-    QFlatpakFileDialog();
+    QFlatpakFileDialog(QPlatformFileDialogHelper *nativeFileDialog = nullptr);
     ~QFlatpakFileDialog();
 
     bool defaultNameFilterDisables() const override;
