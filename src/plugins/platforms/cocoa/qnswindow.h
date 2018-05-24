@@ -67,6 +67,7 @@ QT_FORWARD_DECLARE_CLASS(QCocoaWindow)
 - (void)dealloc;
 - (BOOL)isOpaque;
 - (NSColor *)backgroundColor;
+- (NSString *)description;
 @property (nonatomic, readonly) QCocoaWindow *platformWindow;
 @end
 
