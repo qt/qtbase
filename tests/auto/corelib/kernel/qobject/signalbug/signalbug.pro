@@ -1,6 +1,15 @@
-CONFIG -= app_bundle debug_and_release
+CONFIG -= app_bundle
 CONFIG += console
-DESTDIR = ./
+debug_and_release {
+    CONFIG(debug, debug|release) {
+        TARGET = ../../debug/signalbug_helper
+    } else {
+        TARGET = ../../release/signalbug_helper
+    }
+} else {
+    TARGET = ../signalbug_helper
+}
+
 QT = core
 
 HEADERS += signalbug.h
