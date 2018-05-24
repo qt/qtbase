@@ -217,11 +217,12 @@ void QNetworkReplyEmscriptenImplPrivate::onLoadCallback(void *data, int statusCo
     };
  }
 
-void QNetworkReplyEmscriptenImplPrivate::onProgressCallback(void* data, int done, int total, uint timestamp)
+void QNetworkReplyEmscriptenImplPrivate::onProgressCallback(void* data, int bytesWritten, int total, uint timestamp)
 {
     Q_UNUSED(timestamp);
+
     QNetworkReplyEmscriptenImplPrivate *handler = reinterpret_cast<QNetworkReplyEmscriptenImplPrivate*>(data);
-    handler->emitDataReadProgress(done, total);
+    handler->emitDataReadProgress(bytesWritten, total);
 }
 
 void QNetworkReplyEmscriptenImplPrivate::onRequestErrorCallback(void* data, int statusCode, int statusReason)
@@ -395,9 +396,13 @@ void QNetworkReplyEmscriptenImplPrivate::emitReplyError(QNetworkReply::NetworkEr
 
 void QNetworkReplyEmscriptenImplPrivate::emitDataReadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
+    Q_Q(QNetworkReplyEmscriptenImpl);
+
     totalDownloadSize = bytesTotal;
 
     percentFinished = (bytesReceived / bytesTotal) * 100;
+
+    emit q->downloadProgress(bytesReceived, totalDownloadSize);
 }
 
 void QNetworkReplyEmscriptenImplPrivate::dataReceived(char *buffer, int bufferSize)
@@ -415,8 +420,6 @@ void QNetworkReplyEmscriptenImplPrivate::dataReceived(char *buffer, int bufferSi
         downloadBufferCurrentSize = bufferSize;
     }
     totalDownloadSize = downloadBufferCurrentSize;
-
-    emit q->downloadProgress(bytesDownloaded, totalDownloadSize);
 
     downloadBuffer.append(buffer, bufferSize);
 
