@@ -167,6 +167,12 @@ void tst_QCommandLinkButton::onReleased()
 
 void tst_QCommandLinkButton::setAutoRepeat()
 {
+    // Give the last tests time to finish - i.e., wait for the window close and
+    // deactivate to avoid a race condition here. We can't add this to the end
+    // of the defaultAndAutoDefault test, since any failure in that test will
+    // return out of that function.
+    QTest::qWait(1000);
+
     // If this changes, this test must be completely revised.
     QVERIFY( !testWidget->isCheckable() );
 
@@ -421,8 +427,7 @@ void tst_QCommandLinkButton::defaultAndAutoDefault()
     QVERIFY(dialog.isVisible());
 
     QObject::connect(&button1, SIGNAL(clicked()), &dialog, SLOT(hide()));
-    QKeyEvent event(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
-    QApplication::sendEvent(&dialog, &event);
+    QTest::keyClick(&dialog, Qt::Key_Return);
     QVERIFY(!dialog.isVisible());
     }
 
@@ -462,8 +467,7 @@ void tst_QCommandLinkButton::defaultAndAutoDefault()
     QVERIFY(dialog.isVisible());
 
     QObject::connect(&button1, SIGNAL(clicked()), &dialog, SLOT(hide()));
-    QKeyEvent event(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
-    QApplication::sendEvent(&dialog, &event);
+    QTest::keyClick(&dialog, Qt::Key_Return);
     QVERIFY(!dialog.isVisible());
     }
 
@@ -478,8 +482,7 @@ void tst_QCommandLinkButton::defaultAndAutoDefault()
     // No default button is set, and button2 is the first autoDefault button
     // that is next in the tab order
     QObject::connect(&button2, SIGNAL(clicked()), &dialog, SLOT(hide()));
-    QKeyEvent event(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
-    QApplication::sendEvent(&dialog, &event);
+    QTest::keyClick(&dialog, Qt::Key_Return);
     QVERIFY(!dialog.isVisible());
 
     // Reparenting

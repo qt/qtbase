@@ -469,6 +469,9 @@ void tst_QNetworkRequest::rawHeaderParsing_data()
                                  << QVariant::fromValue(QList<QNetworkCookie>() << cookie << cookie2)
                                  << true << "Set-Cookie"
                                  << "a=b; path=/\nc=d";
+    QTest::newRow("Content-Disposition") << QNetworkRequest::ContentDispositionHeader
+                                         << QVariant("attachment; filename=\"test.txt\"") << true
+                                         << "Content-Disposition" << "attachment; filename=\"test.txt\"";
 }
 
 void tst_QNetworkRequest::rawHeaderParsing()

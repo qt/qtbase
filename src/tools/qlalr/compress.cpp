@@ -37,7 +37,7 @@
 
 #define QLALR_NO_CHECK_SORTED_TABLE
 
-struct _Fit: public std::binary_function<int, int, bool>
+struct _Fit
 {
   inline bool operator () (int a, int b) const
   {
@@ -45,7 +45,7 @@ struct _Fit: public std::binary_function<int, int, bool>
   }
 };
 
-struct _PerfectMatch: public std::binary_function<int, int, bool>
+struct _PerfectMatch
 {
   inline bool operator () (int a, int b) const
   { return a == b; }
@@ -135,7 +135,7 @@ private:
   const_iterator _M_endNonZeros;
 };
 
-struct _SortUncompressedRow: public std::binary_function<UncompressedRow, UncompressedRow, bool>
+struct _SortUncompressedRow
 {
   inline bool operator () (const UncompressedRow &a, const UncompressedRow &b) const
   { return a.count (0) > b.count (0); }

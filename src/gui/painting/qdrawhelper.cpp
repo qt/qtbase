@@ -3231,13 +3231,13 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
                 const qreal px = fx * iw - qreal(0.5);
                 const qreal py = fy * iw - qreal(0.5);
 
-                int x1 = int(px) - (px < 0);
+                int x1 = qFloor(px);
                 int x2;
-                int y1 = int(py) - (py < 0);
+                int y1 = qFloor(py);
                 int y2;
 
-                distxs[i] = int((px - x1) * (1<<16));
-                distys[i] = int((py - y1) * (1<<16));
+                distxs[i] = qFloor((px - x1) * (1<<16));
+                distys[i] = qFloor((py - y1) * (1<<16));
 
                 fetchTransformedBilinear_pixelBounds<blendType>(image.width, image.x1, image.x2 - 1, x1, x2);
                 fetchTransformedBilinear_pixelBounds<blendType>(image.height, image.y1, image.y2 - 1, y1, y2);

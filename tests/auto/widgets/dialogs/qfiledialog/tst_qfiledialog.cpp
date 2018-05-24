@@ -494,9 +494,6 @@ void tst_QFiledialog::completer()
     QAbstractItemModel *cModel = completer->completionModel();
     QVERIFY(cModel);
 
-    //wait a bit
-    QTest::qWait(500);
-
     // path C:\depot\qt\examples\dialogs\standarddialogs
     // files
     //       [debug] [release] [tmp] dialog dialog main makefile makefile.debug makefile.release standarddialgos
@@ -509,7 +506,7 @@ void tst_QFiledialog::completer()
     // \      -> \_viminfo
     // c:\depot  -> 'nothing'
     // c:\depot\ -> C:\depot\devtools, C:\depot\dteske
-    QCOMPARE(model->index(fd.directory().path()), model->index(startPath));
+    QTRY_COMPARE(model->index(fd.directory().path()), model->index(startPath));
 
     if (input.isEmpty()) {
         // Try to find a suitable directory under root that does not
@@ -1330,7 +1327,6 @@ void tst_QFiledialog::clearLineEdit()
     // saving a file the text shouldn't be cleared
     fd.setDirectory(QDir::home());
 
-    QTest::qWait(1000);
 #ifdef QT_KEYPAD_NAVIGATION
     list->setEditFocus(true);
 #endif
@@ -1341,8 +1337,7 @@ void tst_QFiledialog::clearLineEdit()
     QTest::keyClick(list, Qt::Key_O, Qt::ControlModifier);
 #endif
 
-    QTest::qWait(2000);
-    QVERIFY(fd.directory().absolutePath() != QDir::home().absolutePath());
+    QTRY_VERIFY(fd.directory().absolutePath() != QDir::home().absolutePath());
     QVERIFY(!lineEdit->text().isEmpty());
 
     // selecting a dir the text should be cleared so one can just hit ok
@@ -1350,7 +1345,6 @@ void tst_QFiledialog::clearLineEdit()
     fd.setFileMode(QFileDialog::Directory);
     fd.setDirectory(QDir::home());
 
-    QTest::qWait(1000);
     QTest::keyClick(list, Qt::Key_Down);
 #ifndef Q_OS_MAC
     QTest::keyClick(list, Qt::Key_Return);
@@ -1358,8 +1352,7 @@ void tst_QFiledialog::clearLineEdit()
     QTest::keyClick(list, Qt::Key_O, Qt::ControlModifier);
 #endif
 
-    QTest::qWait(2000);
-    QVERIFY(fd.directory().absolutePath() != QDir::home().absolutePath());
+    QTRY_VERIFY(fd.directory().absolutePath() != QDir::home().absolutePath());
     QVERIFY(lineEdit->text().isEmpty());
 
     //remove the dir

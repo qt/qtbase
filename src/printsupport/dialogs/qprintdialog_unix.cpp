@@ -141,7 +141,9 @@ private:
     void showEvent(QShowEvent *event) override;
 
     friend class QUnixPrintWidgetPrivate;
+#if QT_CONFIG(cups)
     QPrinter *m_printer;
+#endif
     Ui::QPrintPropertiesWidget widget;
     QDialogButtonBox *m_buttons;
 #if QT_CONFIG(cupsjobwidget)
@@ -271,7 +273,9 @@ QPrintPropertiesDialog::QPrintPropertiesDialog(QPrinter *printer, QPrintDevice *
                                                QPrinter::OutputFormat outputFormat, const QString &printerName,
                                                QAbstractPrintDialog *parent)
     : QDialog(parent)
+#if QT_CONFIG(cups)
     , m_printer(printer)
+#endif
 {
     setWindowTitle(tr("Printer Properties"));
     QVBoxLayout *lay = new QVBoxLayout(this);

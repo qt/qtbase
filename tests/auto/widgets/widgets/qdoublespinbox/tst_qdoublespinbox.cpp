@@ -814,6 +814,7 @@ void tst_QDoubleSpinBox::setReadOnly()
     QDoubleSpinBox spin(0);
     spin.setValue(0.2);
     spin.show();
+    QVERIFY(QTest::qWaitForWindowActive(&spin));
     QCOMPARE(spin.value(), 0.2);
     QTest::keyClick(&spin, Qt::Key_Up);
     QCOMPARE(spin.value(), 1.2);
@@ -836,7 +837,7 @@ void tst_QDoubleSpinBox::editingFinished()
     layout->addWidget(box2);
 
     testFocusWidget->show();
-    QApplication::setActiveWindow(testFocusWidget);
+    testFocusWidget->activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(testFocusWidget));
     box->setFocus();
     QTRY_VERIFY(box->hasFocus());
@@ -844,7 +845,6 @@ void tst_QDoubleSpinBox::editingFinished()
     QSignalSpy editingFinishedSpy1(box, SIGNAL(editingFinished()));
     QSignalSpy editingFinishedSpy2(box2, SIGNAL(editingFinished()));
 
-    box->setFocus();
     QTest::keyClick(box, Qt::Key_Up);
     QTest::keyClick(box, Qt::Key_Up);
 

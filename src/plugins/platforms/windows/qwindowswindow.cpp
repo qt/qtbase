@@ -1174,11 +1174,11 @@ void QWindowsWindow::initialize()
         const Qt::WindowState state = w->windowState();
         if (state != Qt::WindowMaximized && state != Qt::WindowFullScreen
             && creationContext->requestedGeometryIn != creationContext->obtainedGeometry) {
-            QWindowSystemInterface::handleGeometryChange(w, creationContext->obtainedGeometry);
+            QWindowSystemInterface::handleGeometryChange<QWindowSystemInterface::SynchronousDelivery>(w, creationContext->obtainedGeometry);
         }
         QPlatformScreen *obtainedScreen = screenForGeometry(creationContext->obtainedGeometry);
         if (obtainedScreen && screen() != obtainedScreen)
-            QWindowSystemInterface::handleWindowScreenChanged(w, obtainedScreen->screen());
+            QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(w, obtainedScreen->screen());
     }
 }
 

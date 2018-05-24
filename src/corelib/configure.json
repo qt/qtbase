@@ -562,7 +562,8 @@
         },
         "linkat": {
             "label": "linkat()",
-            "autoDetect": "config.linux",
+            "comment": "Currently only used by QTemporaryFile; linkat() exists on Android, but hardlink creation fails due to security rules",
+            "autoDetect": "config.linux && !config.android",
             "condition": "tests.linkat",
             "output": [ "privateFeature" ]
         },

@@ -924,6 +924,8 @@ static int parseHeaderName(const QByteArray &headerName)
             return QNetworkRequest::ContentLengthHeader;
         else if (qstricmp(headerName.constData(), "cookie") == 0)
             return QNetworkRequest::CookieHeader;
+        else if (qstricmp(headerName.constData(), "content-disposition") == 0)
+            return QNetworkRequest::ContentDispositionHeader;
         break;
 
     case 'e':
@@ -1048,6 +1050,7 @@ static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QBy
     case QNetworkRequest::UserAgentHeader:
     case QNetworkRequest::ServerHeader:
     case QNetworkRequest::ContentTypeHeader:
+    case QNetworkRequest::ContentDispositionHeader:
         // copy exactly, convert to QString
         return QString::fromLatin1(value);
 

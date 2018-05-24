@@ -246,7 +246,8 @@ namespace QtSharedPointer {
     struct ExternalRefCountWithContiguousData: public ExternalRefCountData
     {
         typedef ExternalRefCountData Parent;
-        T data;
+        typedef typename std::remove_cv<T>::type NoCVType;
+        NoCVType data;
 
         static void deleter(ExternalRefCountData *self)
         {
@@ -262,7 +263,7 @@ namespace QtSharedPointer {
         }
         static void noDeleter(ExternalRefCountData *) { }
 
-        static inline ExternalRefCountData *create(T **ptr, DestroyerFn destroy)
+        static inline ExternalRefCountData *create(NoCVType **ptr, DestroyerFn destroy)
         {
             ExternalRefCountWithContiguousData *d =
                 static_cast<ExternalRefCountWithContiguousData *>(::operator new(sizeof(ExternalRefCountWithContiguousData)));
@@ -437,10 +438,12 @@ public:
 # endif
         typename Private::DestroyerFn noDestroy = &Private::noDeleter;
         QSharedPointer result(Qt::Uninitialized);
-        result.d = Private::create(&result.value, noDestroy);
+        typename std::remove_cv<T>::type *ptr;
+        result.d = Private::create(&ptr, noDestroy);
 
         // now initialize the data
-        new (result.data()) T(std::forward<Args>(arguments)...);
+        new (ptr) T(std::forward<Args>(arguments)...);
+        result.value = ptr;
         result.d->destroyer = destroy;
         result.d->setQObjectShared(result.value, true);
 # ifdef QT_SHAREDPOINTER_TRACK_POINTERS

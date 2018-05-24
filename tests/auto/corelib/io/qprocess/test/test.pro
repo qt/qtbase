@@ -2,6 +2,8 @@ CONFIG += testcase
 CONFIG -= debug_and_release_target
 QT = core-private testlib network
 SOURCES = ../tst_qprocess.cpp
+INCLUDEPATH += ../../../../../shared
+HEADERS += ../../../../../shared/emulationdetector.h
 
 TARGET = ../tst_qprocess
 

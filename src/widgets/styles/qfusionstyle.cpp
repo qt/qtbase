@@ -3513,7 +3513,7 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
             int frameWidth = 2;
             rect = visualRect(option->direction, option->rect, rect);
             rect.setRect(option->rect.left() + frameWidth, option->rect.top() + frameWidth,
-                         option->rect.width() - 19 - 2 * frameWidth,
+                         option->rect.width() - int(QStyleHelper::dpiScaled(19)) - 2 * frameWidth,
                          option->rect.height() - 2 * frameWidth);
             if (const QStyleOptionComboBox *box = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
                 if (!box->editable) {

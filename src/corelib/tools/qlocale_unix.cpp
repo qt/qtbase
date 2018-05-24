@@ -107,8 +107,36 @@ Q_GLOBAL_STATIC(QSystemLocaleData, qSystemLocaleData)
 
 #ifndef QT_NO_SYSTEMLOCALE
 
+static bool contradicts(const QByteArray &maybe, const QByteArray &known)
+{
+    if (maybe.isEmpty())
+        return false;
+
+    /*
+      If \a known (our current best shot at deciding which language to use)
+      provides more information (e.g. script, country) than \a maybe (a
+      candidate to replace \a known) and \a maybe agrees with \a known in what
+      it does provide, we keep \a known; this happens when \a maybe comes from
+      LANGUAGE (usually a simple language code) and LANG includes script and/or
+      country.  A textual comparison won't do because, for example, bn (Bengali)
+      isn't a prefix of ben_IN, but the latter is a refinement of the former.
+      (Meanwhile, bn is a prefix of bnt, Bantu; and a prefix of ben is be,
+      Belarusian.  There are many more such prefixings between two- and
+      three-letter codes.)
+     */
+    QLocale::Language langm, langk;
+    QLocale::Script scriptm, scriptk;
+    QLocale::Country landm, landk;
+    QLocalePrivate::getLangAndCountry(maybe, langm, scriptm, landm);
+    QLocalePrivate::getLangAndCountry(known, langk, scriptk, landk);
+    return (langm != QLocale::AnyLanguage && langm != langk)
+        || (scriptm != QLocale::AnyScript && scriptm != scriptk)
+        || (landm != QLocale::AnyCountry && landm != landk);
+}
+
 QLocale QSystemLocale::fallbackUiLocale() const
 {
+    // See man 7 locale for precedence - LC_ALL beats LC_MESSAGES beats LANG:
     QByteArray lang = qgetenv("LC_ALL");
     if (lang.isEmpty())
         lang = qgetenv("LC_MESSAGES");
@@ -118,12 +146,12 @@ QLocale QSystemLocale::fallbackUiLocale() const
     if (lang.isEmpty() || lang == QByteArray("C") || lang == QByteArray("POSIX"))
         return QLocale(QString::fromLatin1(lang));
 
-    // if the locale is not the "C" locale and LANGUAGE is not empty, return
-    // the first part of LANGUAGE if LANGUAGE is set and has a first part:
+    // ... otherwise, if the first part of LANGUAGE says more than or
+    // contradicts what we have, use that:
     QByteArray language = qgetenv("LANGUAGE");
     if (!language.isEmpty()) {
         language = language.split(':').constFirst();
-        if (!language.isEmpty())
+        if (contradicts(language, lang))
             return QLocale(QString::fromLatin1(language));
     }
 

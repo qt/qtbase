@@ -301,8 +301,10 @@ QXcbCursorCacheKey::QXcbCursorCacheKey(const QCursor &c)
 QXcbCursor::QXcbCursor(QXcbConnection *conn, QXcbScreen *screen)
     : QXcbObject(conn), m_screen(screen), m_gtkCursorThemeInitialized(false)
 {
+#if QT_CONFIG(cursor)
     // see NUM_BITMAPS in libXcursor/src/xcursorint.h
     m_bitmapCache.setMaxCost(8);
+#endif
 
     if (cursorCount++)
         return;

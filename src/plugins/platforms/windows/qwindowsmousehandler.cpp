@@ -520,11 +520,25 @@ static bool isValidWheelReceiver(QWindow *candidate)
 static void redirectWheelEvent(QWindow *window, const QPoint &globalPos, int delta,
                                Qt::Orientation orientation, Qt::KeyboardModifiers mods)
 {
+    // Redirect wheel event to one of the following, in order of preference:
+    // 1) The window under mouse
+    // 2) The window receiving the event
     // If a window is blocked by modality, it can't get the event.
-    if (isValidWheelReceiver(window)) {
+
+    QWindow *receiver = QWindowsScreen::windowAt(globalPos, CWP_SKIPINVISIBLE);
+    while (receiver && receiver->flags().testFlag(Qt::WindowTransparentForInput))
+        receiver = receiver->parent();
+    bool handleEvent = true;
+    if (!isValidWheelReceiver(receiver)) {
+        receiver = window;
+        if (!isValidWheelReceiver(receiver))
+            handleEvent = false;
+    }
+
+    if (handleEvent) {
         const QPoint point = (orientation == Qt::Vertical) ? QPoint(0, delta) : QPoint(delta, 0);
-        QWindowSystemInterface::handleWheelEvent(window,
-                                                 QWindowsGeometryHint::mapFromGlobal(window, globalPos),
+        QWindowSystemInterface::handleWheelEvent(receiver,
+                                                 QWindowsGeometryHint::mapFromGlobal(receiver, globalPos),
                                                  globalPos, QPoint(), point, mods);
     }
 }

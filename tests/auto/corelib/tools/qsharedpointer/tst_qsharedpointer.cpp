@@ -93,6 +93,7 @@ private slots:
     void lambdaCustomDeleter();
 #endif
     void creating();
+    void creatingCvQualified();
     void creatingVariadic();
     void creatingQObject();
     void mixTrackingPointerCode();
@@ -1769,6 +1770,13 @@ void tst_QSharedPointer::creating()
         QCOMPARE(baseptr->classLevel(), 4);
     }
     safetyCheck();
+}
+
+void tst_QSharedPointer::creatingCvQualified()
+{
+    auto cptr = QSharedPointer<const Data>::create();
+    auto vptr = QSharedPointer<volatile Data>::create();
+    auto cvptr = QSharedPointer<const volatile Data>::create();
 }
 
 void tst_QSharedPointer::creatingVariadic()
