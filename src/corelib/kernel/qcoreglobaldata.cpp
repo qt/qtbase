@@ -55,7 +55,10 @@ QCoreGlobalData::~QCoreGlobalData()
 {
 #if QT_CONFIG(textcodec)
     codecForLocale = 0;
-    for (QList<QTextCodec *>::const_iterator it = allCodecs.constBegin(); it != allCodecs.constEnd(); ++it)
+    QList<QTextCodec *> tmp = allCodecs;
+    allCodecs.clear();
+    codecCache.clear();
+    for (QList<QTextCodec *>::const_iterator it = tmp.constBegin(); it != tmp.constEnd(); ++it)
         delete *it;
 #endif
 }

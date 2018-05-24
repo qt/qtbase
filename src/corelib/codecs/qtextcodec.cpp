@@ -492,6 +492,24 @@ QTextCodec::QTextCodec()
 */
 QTextCodec::~QTextCodec()
 {
+    QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    if (!globalData)
+        return;
+
+    globalData->codecForLocale.testAndSetRelaxed(this, nullptr);
+
+    QMutexLocker locker(textCodecsMutex());
+
+    globalData->allCodecs.removeOne(this);
+
+    auto it = globalData->codecCache.cbegin();
+
+    while (it != globalData->codecCache.cend()) {
+        if (it.value() == this)
+            it = globalData->codecCache.erase(it);
+        else
+            ++it;
+    }
 }
 
 /*!

@@ -2429,7 +2429,7 @@ void tst_QTextCodec::userCodec()
     QVERIFY(!QTextCodec::availableCodecs().contains("UserCodec"));
     QVERIFY(!QTextCodec::codecForName("UserCodec"));
 
-    QTextCodec *codec = new UserCodec;
+    UserCodec *codec = new UserCodec;
     executedOnce = true;
 
     QList<QByteArray> availableCodecs = QTextCodec::availableCodecs();
@@ -2448,6 +2448,11 @@ void tst_QTextCodec::userCodec()
 
     pcodec = QTextCodec::codecForMib(5000);
     QCOMPARE(pcodec, codec);
+
+    delete codec;
+
+    pcodec = QTextCodec::codecForName("UserCodec");
+    QCOMPARE(pcodec, nullptr);
 }
 
 struct DontCrashAtExit {
