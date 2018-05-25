@@ -497,6 +497,8 @@ void QLineEdit::setClearButtonEnabled(bool enable)
         d->removeAction(clearAction);
         delete clearAction;
     }
+#else
+    Q_UNUSED(enable);
 #endif // QT_CONFIG(action)
 }
 

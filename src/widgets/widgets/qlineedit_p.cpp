@@ -465,6 +465,8 @@ void QLineEditPrivate::setClearButtonEnabled(bool enabled)
             break;
         }
     }
+#else
+    Q_UNUSED(enabled);
 #endif
 }
 
@@ -482,6 +484,8 @@ void QLineEditPrivate::positionSideWidgets()
 #if QT_CONFIG(action)
             if (e.action->isVisible())
                 widgetGeometry.moveLeft(widgetGeometry.left() + delta);
+#else
+            Q_UNUSED(delta);
 #endif
         }
         widgetGeometry.moveLeft(contentRect.width() - p.widgetWidth - p.margin);
@@ -595,6 +599,8 @@ void QLineEditPrivate::removeAction(QAction *action)
      if (!hasSideWidgets()) // Last widget, remove connection
          QObject::disconnect(q, SIGNAL(textChanged(QString)), q, SLOT(_q_textChanged(QString)));
      q->update();
+#else
+    Q_UNUSED(action);
 #endif // QT_CONFIG(action)
 }
 

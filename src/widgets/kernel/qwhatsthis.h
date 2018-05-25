@@ -48,7 +48,9 @@ QT_REQUIRE_CONFIG(whatsthis);
 
 QT_BEGIN_NAMESPACE
 
+#if QT_CONFIG(action)
 class QAction;
+#endif // QT_CONFIG(action)
 
 class Q_WIDGETS_EXPORT QWhatsThis
 {
@@ -62,7 +64,9 @@ public:
     static void showText(const QPoint &pos, const QString &text, QWidget *w = nullptr);
     static void hideText();
 
+#if QT_CONFIG(action)
     static QAction *createAction(QObject *parent = nullptr);
+#endif // QT_CONFIG(action)
 
 };
 

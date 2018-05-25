@@ -100,6 +100,10 @@ static inline int themeDialogType(const QDialog *dialog)
     if (qobject_cast<const QErrorMessage *>(dialog))
         return QPlatformTheme::MessageDialog;
 #endif
+#if !QT_CONFIG(filedialog) && !QT_CONFIG(colordialog) && !QT_CONFIG(fontdialog) && \
+    !QT_CONFIG(messagebox) && !QT_CONFIG(errormessage)
+    Q_UNUSED(dialog);
+#endif
     return -1;
 }
 

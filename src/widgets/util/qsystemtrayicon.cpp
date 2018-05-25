@@ -523,6 +523,8 @@ QBalloonTip::QBalloonTip(const QIcon &icon, const QString &title,
     closeButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     closeButton->setFixedSize(closeButtonSize, closeButtonSize);
     QObject::connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
+#else
+    Q_UNUSED(closeButtonSize);
 #endif
 
 #if QT_CONFIG(label)
