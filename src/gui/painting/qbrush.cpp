@@ -46,9 +46,13 @@
 #include "qvariant.h"
 #include "qline.h"
 #include "qdebug.h"
+#include <QtCore/qjsondocument.h>
+#include <QtCore/qjsonarray.h>
 #include <QtCore/qcoreapplication.h>
 #include "private/qhexstring_p.h"
 #include <QtCore/qnumeric.h>
+#include <QtCore/qfile.h>
+#include <QtCore/qmutex.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1330,6 +1334,72 @@ QGradient::QGradient()
 {
 }
 
+/*!
+    \enum QGradient::Preset
+    \since 5.12
+
+    This enum specifies a set of predefined presets for QGradient,
+    based on the gradients from https://webgradients.com/.
+*/
+
+/*!
+    \fn QGradient::QGradient(QGradient::Preset preset)
+    \since 5.12
+
+    Constructs a gradient based on a predefined \a preset.
+
+    The coordinate mode of the resulting gradient is
+    QGradient::ObjectBoundingMode, allowing the preset
+    to be applied to arbitrary object sizes.
+*/
+QGradient::QGradient(Preset preset)
+    : QGradient()
+{
+    static QHash<int, QGradient> cachedPresets;
+    static QMutex cacheMutex;
+    QMutexLocker locker(&cacheMutex);
+    if (cachedPresets.contains(preset)) {
+        const QGradient &cachedPreset = cachedPresets.value(preset);
+        m_type = cachedPreset.m_type;
+        m_data = cachedPreset.m_data;
+        m_stops = cachedPreset.m_stops;
+        m_spread = cachedPreset.m_spread;
+        dummy = cachedPreset.dummy;
+    } else {
+        static QJsonDocument jsonPresets = []() {
+            QFile webGradients(QLatin1String(":/qgradient/webgradients.binaryjson"));
+            webGradients.open(QFile::ReadOnly);
+            return QJsonDocument::fromBinaryData(webGradients.readAll());
+        }();
+
+        const QJsonValue presetData = jsonPresets[preset - 1];
+        if (!presetData.isObject())
+            return;
+
+        m_type = LinearGradient;
+        setCoordinateMode(ObjectBoundingMode);
+        setSpread(PadSpread);
+
+        const QJsonValue start = presetData[QLatin1Literal("start")];
+        const QJsonValue end = presetData[QLatin1Literal("end")];
+        m_data.linear.x1 = start[QLatin1Literal("x")].toDouble();
+        m_data.linear.y1 = start[QLatin1Literal("y")].toDouble();
+        m_data.linear.x2 = end[QLatin1Literal("x")].toDouble();
+        m_data.linear.y2 = end[QLatin1Literal("y")].toDouble();
+
+        for (const QJsonValue &stop : presetData[QLatin1String("stops")].toArray()) {
+            setColorAt(stop[QLatin1Literal("stop")].toDouble(),
+                QColor(QRgb(stop[QLatin1Literal("color")].toInt())));
+        }
+
+        cachedPresets.insert(preset, *this);
+    }
+}
+
+QT_END_NAMESPACE
+static void initGradientPresets() { Q_INIT_RESOURCE(qmake_webgradients); }
+Q_CONSTRUCTOR_FUNCTION(initGradientPresets);
+QT_BEGIN_NAMESPACE
 
 /*!
     \enum QGradient::Type

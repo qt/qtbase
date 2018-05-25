@@ -7085,6 +7085,37 @@ void QPainter::fillRect(const QRectF &r, const QColor &color)
 */
 
 /*!
+    \fn void QPainter::fillRect(int x, int y, int width, int height, QGradient::Preset preset)
+
+    \overload
+
+    Fills the rectangle beginning at (\a{x}, \a{y}) with the given \a
+    width and \a height, using the given gradient \a preset.
+
+    \since 5.12
+*/
+
+/*!
+    \fn void QPainter::fillRect(const QRect &rectangle, QGradient::Preset preset);
+
+    \overload
+
+    Fills the given \a rectangle with the specified gradient \a preset.
+
+    \since 5.12
+*/
+
+/*!
+    \fn void QPainter::fillRect(const QRectF &rectangle, QGradient::Preset preset);
+
+    \overload
+
+    Fills the given \a rectangle with the specified gradient \a preset.
+
+    \since 5.12
+*/
+
+/*!
     Sets the given render \a hint on the painter if \a on is true;
     otherwise clears the render hint.
 

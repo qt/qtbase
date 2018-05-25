@@ -1,0 +1,909 @@
+/*001 Warm Flame*/
+.warm_flame{
+    background-image: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+}
+
+/*002 Night Fade*/
+.night_fade{
+    background-image: linear-gradient(to top, #a18cd1 0%, #fbc2eb 100%);
+}
+
+/*003 Spring Warmth*/
+.spring_warmth{
+    background-image: linear-gradient(to top, #fad0c4 0%, #fad0c4 1%, #ffd1ff 100%);
+}
+
+/*004 Juicy Peach*/
+.juicy_peach{
+    background-image: linear-gradient(to right, #ffecd2 0%, #fcb69f 100%);
+}
+
+/*005 Young Passion*/
+.young_passion{
+    background-image: linear-gradient(to right, #ff8177 0%, #ff867a 0%, #ff8c7f 21%, #f99185 52%, #cf556c 78%, #b12a5b 100%);
+}
+
+/*006 Lady Lips*/
+.lady_lips{
+    background-image: linear-gradient(to top, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+}
+
+/*007 Sunny Morning*/
+.sunny_morning{
+    background-image: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+}
+
+/*008 Rainy Ashville*/
+.rainy_ashville{
+    background-image: linear-gradient(to top, #fbc2eb 0%, #a6c1ee 100%);
+}
+
+/*009 Frozen Dreams*/
+.frozen_dreams{
+    background-image: linear-gradient(to top, #fdcbf1 0%, #fdcbf1 1%, #e6dee9 100%);
+}
+
+/*010 Winter Neva*/
+.winter_neva{
+    background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+}
+
+/*011 Dusty Grass*/
+.dusty_grass{
+    background-image: linear-gradient(120deg, #d4fc79 0%, #96e6a1 100%);
+}
+
+/*012 Tempting Azure*/
+.tempting_azure{
+    background-image: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+}
+
+/*013 Heavy Rain*/
+.heavy_rain{
+    background-image: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);
+}
+
+/*014 Amy Crisp*/
+.amy_crisp{
+    background-image: linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);
+}
+
+/*015 Mean Fruit*/
+.mean_fruit{
+    background-image: linear-gradient(120deg, #fccb90 0%, #d57eeb 100%);
+}
+
+/*016 Deep Blue*/
+.deep_blue{
+    background-image: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
+}
+
+/*017 Ripe Malinka*/
+.ripe_malinka{
+    background-image: linear-gradient(120deg, #f093fb 0%, #f5576c 100%);
+}
+
+/*018 Cloudy Knoxville*/
+.cloudy_knoxville{
+    background-image: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+}
+
+/*019 Malibu Beach*/
+.malibu_beach{
+    background-image: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+}
+
+/*020 New Life*/
+.new_life{
+    background-image: linear-gradient(to right, #43e97b 0%, #38f9d7 100%);
+}
+
+/*021 True Sunset*/
+.true_sunset{
+    background-image: linear-gradient(to right, #fa709a 0%, #fee140 100%);
+}
+
+/*022 Morpheus Den*/
+.morpheus_den{
+    background-image: linear-gradient(to top, #30cfd0 0%, #330867 100%);
+}
+
+/*023 Rare Wind*/
+.rare_wind{
+    background-image: linear-gradient(to top, #a8edea 0%, #fed6e3 100%);
+}
+
+/*024 Near Moon*/
+.near_moon{
+    background-image: linear-gradient(to top, #5ee7df 0%, #b490ca 100%);
+}
+
+/*025 Wild Apple*/
+.wild_apple{
+    background-image: linear-gradient(to top, #d299c2 0%, #fef9d7 100%);
+}
+
+/*026 Saint Petersburg*/
+.saint_petersburg{
+    background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/*027 Arielle's Smile*/
+.arielles_smile{
+    background-image: radial-gradient(circle 248px at center, #16d9e3 0%, #30c7ec 47%, #46aef7 100%);
+}
+
+/*028 Plum Plate*/
+.plum_plate{
+    background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/*029 Everlasting Sky*/
+.everlasting_sky{
+    background-image: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+}
+
+/*030 Happy Fisher*/
+.happy_fisher{
+    background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
+}
+
+/*031 Blessing*/
+.blessing{
+    background-image: linear-gradient(to top, #fddb92 0%, #d1fdff 100%);
+}
+
+/*032 Sharpeye Eagle*/
+.sharpeye_eagle{
+    background-image: linear-gradient(to top, #9890e3 0%, #b1f4cf 100%);
+}
+
+/*033 Ladoga Bottom*/
+.ladoga_bottom{
+    background-image: linear-gradient(to top, #ebc0fd 0%, #d9ded8 100%);
+}
+
+/*034 Lemon Gate*/
+.lemon_gate{
+    background-image: linear-gradient(to top, #96fbc4 0%, #f9f586 100%);
+}
+
+/*035 Itmeo Branding*/
+.itmeo_branding{
+    background-image: linear-gradient(180deg, #2af598 0%, #009efd 100%);
+}
+
+/*036 Zeus Miracle*/
+.zeus_miracle{
+    background-image: linear-gradient(to top, #cd9cf2 0%, #f6f3ff 100%);
+}
+
+/*037 Old Hat*/
+.old_hat{
+    background-image: linear-gradient(to right, #e4afcb 0%, #b8cbb8 0%, #b8cbb8 0%, #e2c58b 30%, #c2ce9c 64%, #7edbdc 100%);
+}
+
+/*038 Star Wine*/
+.star_wine{
+    background-image: linear-gradient(to right, #b8cbb8 0%, #b8cbb8 0%, #b465da 0%, #cf6cc9 33%, #ee609c 66%, #ee609c 100%);
+}
+
+/*039 Deep Blue*/
+.deep_blue{
+    background-image: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
+}
+
+/*040 Coup de Grace*/
+.coup_de_grace{
+    background: #DCD9D4 linear-gradient(to bottom, rgba(255, 255, 255, 0.50) 0%, rgba(0, 0, 0, 0.50) 100%), radial-gradient(at 50% 0%, rgba(255, 255, 255, 0.10) 0%, rgba(0, 0, 0, 0.50) 50%);
+    background-blend-mode: soft-light,screen;
+}
+
+/*041 Happy Acid*/
+.happy_acid{
+    background-image: linear-gradient(to top, #37ecba 0%, #72afd3 100%);
+}
+
+/*042 Awesome Pine*/
+.awesome_pine{
+    background-image: linear-gradient(to top, #ebbba7 0%, #cfc7f8 100%);
+}
+
+/*043 New York*/
+.new_york{
+    background-image: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%);
+}
+
+/*044 Shy Rainbow*/
+.shy_rainbow{
+    background-image: linear-gradient(to right, #eea2a2 0%, #bbc1bf 19%, #57c6e1 42%, #b49fda 79%, #7ac5d8 100%);
+}
+
+/*045 Loon Crest*/
+.loon_crest{
+    background: linear-gradient(to bottom, rgba(255,255,255,0.15) 0%, rgba(0,0,0,0.15) 100%), radial-gradient(at top center, rgba(255,255,255,0.40) 0%, rgba(0,0,0,0.40) 120%) #989898;
+    background-blend-mode: multiply,multiply;
+}
+
+/*046 Mixed Hopes*/
+.mixed_hopes{
+    background-image: linear-gradient(to top, #c471f5 0%, #fa71cd 100%);
+}
+
+/*047 Fly High*/
+.fly_high{
+    background-image: linear-gradient(to top, #48c6ef 0%, #6f86d6 100%);
+}
+
+/*048 Strong Bliss*/
+.strong_bliss{
+    background-image: linear-gradient(to right, #f78ca0 0%, #f9748f 19%, #fd868c 60%, #fe9a8b 100%);
+}
+
+/*049 Fresh Milk*/
+.fresh_milk{
+    background-image: linear-gradient(to top, #feada6 0%, #f5efef 100%);
+}
+
+/*050 Snow Again*/
+.snow_again{
+    background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);
+}
+
+/*051 February Ink*/
+.february_ink{
+    background-image: linear-gradient(to top, #accbee 0%, #e7f0fd 100%);
+}
+
+/*052 Kind Steel*/
+.kind_steel{
+    background-image: linear-gradient(-20deg, #e9defa 0%, #fbfcdb 100%);
+}
+
+/*053 Soft Grass*/
+.soft_grass{
+    background-image: linear-gradient(to top, #c1dfc4 0%, #deecdd 100%);
+}
+
+/*054 Grown Early*/
+.grown_early{
+    background-image: linear-gradient(to top, #0ba360 0%, #3cba92 100%);
+}
+
+/*055 Sharp Blues*/
+.sharp_blues{
+    background-image: linear-gradient(to top, #00c6fb 0%, #005bea 100%);
+}
+
+/*056 Shady Water*/
+.shady_water{
+    background-image: linear-gradient(to right, #74ebd5 0%, #9face6 100%);
+}
+
+/*057 Dirty Beauty*/
+.dirty_beauty{
+    background-image: linear-gradient(to top, #6a85b6 0%, #bac8e0 100%);
+}
+
+/*058 Great Whale*/
+.great_whale{
+    background-image: linear-gradient(to top, #a3bded 0%, #6991c7 100%);
+}
+
+/*059 Teen Notebook*/
+.teen_notebook{
+    background-image: linear-gradient(to top, #9795f0 0%, #fbc8d4 100%);
+}
+
+/*060 Polite Rumors*/
+.polite_rumors{
+    background-image: linear-gradient(to top, #a7a6cb 0%, #8989ba 52%, #8989ba 100%);
+}
+
+/*061 Sweet Period*/
+.sweet_period{
+    background-image: linear-gradient(to top, #3f51b1 0%, #5a55ae 13%, #7b5fac 25%, #8f6aae 38%, #a86aa4 50%, #cc6b8e 62%, #f18271 75%, #f3a469 87%, #f7c978 100%);
+}
+
+/*062 Wide Matrix*/
+.wide_matrix{
+    background-image: linear-gradient(to top, #fcc5e4 0%, #fda34b 15%, #ff7882 35%, #c8699e 52%, #7046aa 71%, #0c1db8 87%, #020f75 100%);
+}
+
+/*063 Soft Cherish*/
+.soft_cherish{
+    background-image: linear-gradient(to top, #dbdcd7 0%, #dddcd7 24%, #e2c9cc 30%, #e7627d 46%, #b8235a 59%, #801357 71%, #3d1635 84%, #1c1a27 100%);
+}
+
+/*064 Red Salvation*/
+.red_salvation{
+    background-image: linear-gradient(to top, #f43b47 0%, #453a94 100%);
+}
+
+/*065 Burning Spring*/
+.burning_spring{
+    background-image: linear-gradient(to top, #4fb576 0%, #44c489 30%, #28a9ae 46%, #28a2b7 59%, #4c7788 71%, #6c4f63 86%, #432c39 100%);
+}
+
+/*066 Night Party*/
+.night_party{
+    background-image: linear-gradient(to top, #0250c5 0%, #d43f8d 100%);
+}
+
+/*067 Sky Glider*/
+.sky_glider{
+    background-image: linear-gradient(to top, #88d3ce 0%, #6e45e2 100%);
+}
+
+/*068 Heaven Peach*/
+.heaven_peach{
+    background-image: linear-gradient(to top, #d9afd9 0%, #97d9e1 100%);
+}
+
+/*069 Purple Division*/
+.purple_division{
+    background-image: linear-gradient(to top, #7028e4 0%, #e5b2ca 100%);
+}
+
+/*070 Aqua Splash*/
+.aqua_splash{
+    background-image: linear-gradient(15deg, #13547a 0%, #80d0c7 100%);
+}
+
+/*071 Above Clouds*/
+.above_clouds{
+    background-image: linear-gradient(to left, #BDBBBE 0%, #9D9EA3 100%), radial-gradient(88% 271%, rgba(255, 255, 255, 0.25) 0%, rgba(254, 254, 254, 0.25) 1%, rgba(0, 0, 0, 0.25) 100%), radial-gradient(50% 100%, rgba(255, 255, 255, 0.30) 0%, rgba(0, 0, 0, 0.30) 100%);
+    background-blend-mode: normal, lighten, soft-light;
+}
+
+/*072 Spiky Naga*/
+.spiky_naga{
+    background-image: linear-gradient(to top, #505285 0%, #585e92 12%, #65689f 25%, #7474b0 37%, #7e7ebb 50%, #8389c7 62%, #9795d4 75%, #a2a1dc 87%, #b5aee4 100%);
+}
+
+/*073 Love Kiss*/
+.love_kiss{
+    background-image: linear-gradient(to top, #ff0844 0%, #ffb199 100%);
+}
+
+/*074 Sharp Glass*/
+.sharp_glass{
+    background: #C9CCD3 linear-gradient(-180deg, rgba(255, 255, 255, 0.50) 0%, rgba(0, 0, 0, 0.50) 100%);
+    background-blend-mode: lighten;
+}
+
+/*075 Clean Mirror*/
+.clean_mirror{
+    background-image: linear-gradient(45deg, #93a5cf 0%, #e4efe9 100%);
+}
+
+/*076 Premium Dark*/
+.premium_dark{
+    background-image: linear-gradient(to right, #434343 0%, black 100%);
+}
+
+/*077 Cold Evening*/
+.cold_evening{
+    background-image: linear-gradient(to top, #0c3483 0%, #a2b6df 100%, #6b8cce 100%, #a2b6df 100%);
+}
+
+/*078 Cochiti Lake*/
+.cochiti_lake{
+    background-image: linear-gradient(45deg, #93a5cf 0%, #e4efe9 100%);
+}
+
+/*079 Summer Games*/
+.summer_games{
+    background-image: linear-gradient(to right, #92fe9d 0%, #00c9ff 100%);
+}
+
+/*080 Passionate Bed*/
+.passionate_bed{
+    background-image: linear-gradient(to right, #ff758c 0%, #ff7eb3 100%);
+}
+
+/*081 Mountain Rock*/
+.mountain_rock{
+    background-image: linear-gradient(to right, #868f96 0%, #596164 100%);
+}
+
+/*082 Desert Hump*/
+.desert_hump{
+    background-image: linear-gradient(to top, #c79081 0%, #dfa579 100%);
+}
+
+/*083 Jungle Day*/
+.jungle_day{
+    background-image: linear-gradient(45deg, #8baaaa 0%, #ae8b9c 100%);
+}
+
+/*084 Phoenix Start*/
+.phoenix_start{
+    background-image: linear-gradient(to right, #f83600 0%, #f9d423 100%);
+}
+
+/*085 October Silence*/
+.october_silence{
+    background-image: linear-gradient(-20deg, #b721ff 0%, #21d4fd 100%);
+}
+
+/*086 Faraway River*/
+.faraway_river{
+    background-image: linear-gradient(-20deg, #6e45e2 0%, #88d3ce 100%);
+}
+
+/*087 Alchemist Lab*/
+.alchemist_lab{
+    background-image: linear-gradient(-20deg, #d558c8 0%, #24d292 100%);
+}
+
+/*088 Over Sun*/
+.over_sun{
+    background-image: linear-gradient(60deg, #abecd6 0%, #fbed96 100%);
+}
+
+/*089 Premium White*/
+.premium_white{
+    background-image: linear-gradient(to top, #d5d4d0 0%, #d5d4d0 1%, #eeeeec 31%, #efeeec 75%, #e9e9e7 100%);
+}
+
+/*090 Mars Party*/
+.mars_party{
+    background-image: linear-gradient(to top, #5f72bd 0%, #9b23ea 100%);
+}
+
+/*091 Eternal Constance*/
+.eternal_constance{
+    background-image: linear-gradient(to top, #09203f 0%, #537895 100%);
+}
+
+/*092 Japan Blush*/
+.japan_blush{
+    background-image: linear-gradient(-20deg, #ddd6f3 0%, #faaca8 100%, #faaca8 100%);
+}
+
+/*093 Smiling Rain*/
+.smiling_rain{
+    background-image: linear-gradient(-20deg, #dcb0ed 0%, #99c99c 100%);
+}
+
+/*094 Cloudy Apple*/
+.cloudy_apple{
+    background-image: linear-gradient(to top, #f3e7e9 0%, #e3eeff 99%, #e3eeff 100%);
+}
+
+/*095 Big Mango*/
+.big_mango{
+    background-image: linear-gradient(to top, #c71d6f 0%, #d09693 100%);
+}
+
+/*096 Healthy Water*/
+.healthy_water{
+    background-image: linear-gradient(60deg, #96deda 0%, #50c9c3 100%);
+}
+
+/*097 Amour Amour*/
+.amour_amour{
+    background-image: linear-gradient(to top, #f77062 0%, #fe5196 100%);
+}
+
+/*098 Risky Concrete*/
+.risky_concrete{
+    background-image: linear-gradient(to top, #c4c5c7 0%, #dcdddf 52%, #ebebeb 100%);
+}
+
+/*099 Strong Stick*/
+.strong_stick{
+    background-image: linear-gradient(to right, #a8caba 0%, #5d4157 100%);
+}
+
+/*100 Vicious Stance*/
+.vicious_stance{
+    background-image: linear-gradient(60deg, #29323c 0%, #485563 100%);
+}
+
+/*101 Palo Alto*/
+.palo_alto{
+    background-image: linear-gradient(-60deg, #16a085 0%, #f4d03f 100%);
+}
+
+/*102 Happy Memories*/
+.happy_memories{
+    background-image: linear-gradient(-60deg, #ff5858 0%, #f09819 100%);
+}
+
+/*103 Midnight Bloom*/
+.midnight_bloom{
+    background-image: linear-gradient(-20deg, #2b5876 0%, #4e4376 100%);
+}
+
+/*104 Crystalline*/
+.crystalline{
+    background-image: linear-gradient(-20deg, #00cdac 0%, #8ddad5 100%);
+}
+
+/*105 Raccoon Back*/
+.raccoon_back{
+    background: linear-gradient(-180deg, #BCC5CE 0%, #929EAD 98%), radial-gradient(at top left, rgba(255,255,255,0.30) 0%, rgba(0,0,0,0.30) 100%);
+    background-blend-mode: screen;
+}
+
+/*106 Party Bliss*/
+.party_bliss{
+    background-image: linear-gradient(to top, #4481eb 0%, #04befe 100%);
+}
+
+/*107 Confident Cloud*/
+.confident_cloud{
+    background-image: linear-gradient(to top, #dad4ec 0%, #dad4ec 1%, #f3e7e9 100%);
+}
+
+/*108 Le Cocktail*/
+.le_cocktail{
+    background-image: linear-gradient(45deg, #874da2 0%, #c43a30 100%);
+}
+
+/*109 River City*/
+.river_city{
+    background-image: linear-gradient(to top, #4481eb 0%, #04befe 100%);
+}
+
+/*110 Frozen Berry*/
+.frozen_berry{
+    background-image: linear-gradient(to top, #e8198b 0%, #c7eafd 100%);
+}
+
+/*111 Elegance*/
+.elegance{
+    background-image: radial-gradient(73% 147%, #EADFDF 59%, #ECE2DF 100%), radial-gradient(91% 146%, rgba(255,255,255,0.50) 47%, rgba(0,0,0,0.50) 100%);
+    background-blend-mode: screen;
+}
+
+/*112 Child Care*/
+.child_care{
+    background-image: linear-gradient(-20deg, #f794a4 0%, #fdd6bd 100%);
+}
+
+/*113 Flying Lemon*/
+.flying_lemon{
+    background-image: linear-gradient(60deg, #64b3f4 0%, #c2e59c 100%);
+}
+
+/*114 New Retrowave*/
+.new_retrowave{
+    background-image: linear-gradient(to top, #3b41c5 0%, #a981bb 49%, #ffc8a9 100%);
+}
+
+/*115 Hidden Jaguar*/
+.hidden_jaguar{
+    background-image: linear-gradient(to top, #0fd850 0%, #f9f047 100%);
+}
+
+/*116 Above The Sky*/
+.above_the_sky{
+    background-image: linear-gradient(to top, lightgrey 0%, lightgrey 1%, #e0e0e0 26%, #efefef 48%, #d9d9d9 75%, #bcbcbc 100%);
+}
+
+/*117 Nega*/
+.nega{
+    background-image: linear-gradient(45deg, #ee9ca7 0%, #ffdde1 100%);
+}
+
+/*118 Dense Water*/
+.dense_water{
+    background-image: linear-gradient(to right, #3ab5b0 0%, #3d99be 31%, #56317a 100%);
+}
+
+/*119 Chemic Aqua*/
+.chemic_aqua{
+    background: #CDDCDC radial-gradient(at 50% 100%, rgba(255, 255, 255, 0.50) 0%, rgba(0, 0, 0, 0.50) 100%), linear-gradient(to bottom, rgba(255, 255, 255, 0.25) 0%, rgba(0, 0, 0, 0.25) 100%);
+    background-blend-mode: screen, overlay;
+}
+
+/*120 Seashore*/
+.seashore{
+    background-image: linear-gradient(to top, #209cff 0%, #68e0cf 100%);
+}
+
+/*121 Marble Wall*/
+.marble_wall{
+    background-image: linear-gradient(to top, #bdc2e8 0%, #bdc2e8 1%, #e6dee9 100%);
+}
+
+/*122 Cheerful Caramel*/
+.cheerful_caramel{
+    background-image: linear-gradient(to top, #e6b980 0%, #eacda3 100%);
+}
+
+/*123 Night Sky*/
+.night_sky{
+    background-image: linear-gradient(to top, #1e3c72 0%, #1e3c72 1%, #2a5298 100%);
+}
+
+/*124 Magic Lake*/
+.magic_lake{
+    background-image: linear-gradient(to top, #d5dee7 0%, #ffafbd 0%, #c9ffbf 100%);
+}
+
+/*125 Young Grass*/
+.young_grass{
+    background-image: linear-gradient(to top, #9be15d 0%, #00e3ae 100%);
+}
+
+/*126 Colorful Peach*/
+.colorful_peach{
+    background-image: linear-gradient(to right, #ed6ea0 0%, #ec8c69 100%);
+}
+
+/*127 Gentle Care*/
+.gentle_care{
+    background-image: linear-gradient(to right, #ffc3a0 0%, #ffafbd 100%);
+}
+
+/*128 Plum Bath*/
+.plum_bath{
+    background-image: linear-gradient(to top, #cc208e 0%, #6713d2 100%);
+}
+
+/*129 Happy Unicorn*/
+.happy_unicorn{
+    background-image: linear-gradient(to top, #b3ffab 0%, #12fff7 100%);
+}
+
+/*130 Full Metal*/
+.full_metal{
+    background: linear-gradient(to bottom, #D5DEE7 0%, #E8EBF2 50%, #E2E7ED 100%), linear-gradient(to bottom, rgba(0,0,0,0.02) 50%, rgba(255,255,255,0.02) 61%, rgba(0,0,0,0.02) 73%), linear-gradient(33deg, rgba(255,255,255,0.20) 0%, rgba(0,0,0,0.20) 100%);
+    background-blend-mode: normal,color-burn;
+}
+
+/*131 African Field*/
+.african_field{
+    background-image: linear-gradient(to top, #65bd60 0%, #5ac1a8 25%, #3ec6ed 50%, #b7ddb7 75%, #fef381 100%);
+}
+
+/*132 Solid Stone*/
+.solid_stone{
+    background-image: linear-gradient(to right, #243949 0%, #517fa4 100%);
+}
+
+/*133 Orange Juice*/
+.orange_juice{
+    background-image: linear-gradient(-20deg, #fc6076 0%, #ff9a44 100%);
+}
+
+/*134 Glass Water*/
+.glass_water{
+    background-image: linear-gradient(to top, #dfe9f3 0%, white 100%);
+}
+
+/*135 Slick Carbon*/
+.slick_carbon{
+    background: linear-gradient(to bottom, #323232 0%, #3F3F3F 40%, #1C1C1C 150%), linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(0,0,0,0.25) 200%);
+    background-blend-mode: multiply;
+}
+
+/*136 North Miracle*/
+.north_miracle{
+    background-image: linear-gradient(to right, #00dbde 0%, #fc00ff 100%);
+}
+
+/*137 Fruit Blend*/
+.fruit_blend{
+    background-image: linear-gradient(to right, #f9d423 0%, #ff4e50 100%);
+}
+
+/*138 Millennium Pine*/
+.millennium_pine{
+    background-image: linear-gradient(to top, #50cc7f 0%, #f5d100 100%);
+}
+
+/*139 High Flight*/
+.high_flight{
+    background-image: linear-gradient(to right, #0acffe 0%, #495aff 100%);
+}
+
+/*140 Mole Hall*/
+.mole_hall{
+    background-image: linear-gradient(-20deg, #616161 0%, #9bc5c3 100%);
+}
+
+/*141 Earl Gray*/
+.earl_gray{
+    background: #E4E4E1 radial-gradient(at top center, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.03) 100%), linear-gradient(to top, rgba(255, 255, 255, 0.1) 0%, rgba(143, 152, 157, 0.60) 100%);
+    background-blend-mode: normal, multiply;
+}
+
+/*142 Space Shift*/
+.space_shift{
+    background-image: linear-gradient(60deg, #3d3393 0%, #2b76b9 37%, #2cacd1 65%, #35eb93 100%);
+}
+
+/*143 Forest Inei*/
+.forest_inei{
+    background-image: linear-gradient(to top, #df89b5 0%, #bfd9fe 100%);
+}
+
+/*144 Royal Garden*/
+.royal_garden{
+    background-image: linear-gradient(to right, #ed6ea0 0%, #ec8c69 100%);
+}
+
+/*145 Rich Metal*/
+.rich_metal{
+    background-image: linear-gradient(to right, #d7d2cc 0%, #304352 100%);
+}
+
+/*146 Juicy Cake*/
+.juicy_cake{
+    background-image: linear-gradient(to top, #e14fad 0%, #f9d423 100%);
+}
+
+/*147 Smart Indigo*/
+.smart_indigo{
+    background-image: linear-gradient(to top, #b224ef 0%, #7579ff 100%);
+}
+
+/*148 Sand Strike*/
+.sand_strike{
+    background-image: linear-gradient(to right, #c1c161 0%, #c1c161 0%, #d4d4b1 100%);
+}
+
+/*149 Norse Beauty*/
+.norse_beauty{
+    background-image: linear-gradient(to right, #ec77ab 0%, #7873f5 100%);
+}
+
+/*150 Aqua Guidance*/
+.aqua_guidance{
+    background-image: linear-gradient(to top, #007adf 0%, #00ecbc 100%);
+}
+
+/*151 Sun Veggie*/
+.sun_veggie{
+    background-image: linear-gradient(-225deg, #20E2D7 0%, #F9FEA5 100%);
+}
+
+/*152 Sea Lord*/
+.sea_lord{
+    background-image: linear-gradient(-225deg, #2CD8D5 0%, #C5C1FF 56%, #FFBAC3 100%);
+}
+
+/*153 Black Sea*/
+.black_sea{
+    background-image: linear-gradient(-225deg, #2CD8D5 0%, #6B8DD6 48%, #8E37D7 100%);
+}
+
+/*154 Grass Shampoo*/
+.grass_shampoo{
+    background-image: linear-gradient(-225deg, #DFFFCD 0%, #90F9C4 48%, #39F3BB 100%);
+}
+
+/*155 Landing Aircraft*/
+.landing_aircraft{
+    background-image: linear-gradient(-225deg, #5D9FFF 0%, #B8DCFF 48%, #6BBBFF 100%);
+}
+
+/*156 Witch Dance*/
+.witch_dance{
+    background-image: linear-gradient(-225deg, #A8BFFF 0%, #884D80 100%);
+}
+
+/*157 Sleepless Night*/
+.sleepless_night{
+    background-image: linear-gradient(-225deg, #5271C4 0%, #B19FFF 48%, #ECA1FE 100%);
+}
+
+/*158 Angel Care*/
+.angel_care{
+    background-image: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #FF719A 100%);
+}
+
+/*159 Crystal River*/
+.crystal_river{
+    background-image: linear-gradient(-225deg, #22E1FF 0%, #1D8FE1 48%, #625EB1 100%);
+}
+
+/*160 Soft Lipstick*/
+.soft_lipstick{
+    background-image: linear-gradient(-225deg, #B6CEE8 0%, #F578DC 100%);
+}
+
+/*161 Salt Mountain*/
+.salt_mountain{
+    background-image: linear-gradient(-225deg, #FFFEFF 0%, #D7FFFE 100%);
+}
+
+/*162 Perfect White*/
+.perfect_white{
+    background-image: linear-gradient(-225deg, #E3FDF5 0%, #FFE6FA 100%);
+}
+
+/*163 Fresh Oasis*/
+.fresh_oasis{
+    background-image: linear-gradient(-225deg, #7DE2FC 0%, #B9B6E5 100%);
+}
+
+/*164 Strict November*/
+.strict_november{
+    background-image: linear-gradient(-225deg, #CBBACC 0%, #2580B3 100%);
+}
+
+/*165 Morning Salad*/
+.morning_salad{
+    background-image: linear-gradient(-225deg, #B7F8DB 0%, #50A7C2 100%);
+}
+
+/*166 Deep Relief*/
+.deep_relief{
+    background-image: linear-gradient(-225deg, #7085B6 0%, #87A7D9 50%, #DEF3F8 100%);
+}
+
+/*167 Sea Strike*/
+.sea_strike{
+    background-image: linear-gradient(-225deg, #77FFD2 0%, #6297DB 48%, #1EECFF 100%);
+}
+
+/*168 Night Call*/
+.night_call{
+    background-image: linear-gradient(-225deg, #AC32E4 0%, #7918F2 48%, #4801FF 100%);
+}
+
+/*169 Supreme Sky*/
+.supreme_sky{
+    background-image: linear-gradient(-225deg, #D4FFEC 0%, #57F2CC 48%, #4596FB 100%);
+}
+
+/*170 Light Blue*/
+.light_blue{
+    background-image: linear-gradient(-225deg, #9EFBD3 0%, #57E9F2 48%, #45D4FB 100%);
+}
+
+/*171 Mind Crawl*/
+.mind_crawl{
+    background-image: linear-gradient(-225deg, #473B7B 0%, #3584A7 51%, #30D2BE 100%);
+}
+
+/*172 Lily Meadow*/
+.lily_meadow{
+    background-image: linear-gradient(-225deg, #65379B 0%, #886AEA 53%, #6457C6 100%);
+}
+
+/*173 Sugar Lollipop*/
+.sugar_lollipop{
+    background-image: linear-gradient(-225deg, #A445B2 0%, #D41872 52%, #FF0066 100%);
+}
+
+/*174 Sweet Dessert*/
+.sweet_dessert{
+    background-image: linear-gradient(-225deg, #7742B2 0%, #F180FF 52%, #FD8BD9 100%);
+}
+
+/*175 Magic Ray*/
+.magic_ray{
+    background-image: linear-gradient(-225deg, #FF3CAC 0%, #562B7C 52%, #2B86C5 100%);
+}
+
+/*176 Teen Party*/
+.teen_party{
+    background-image: linear-gradient(-225deg, #FF057C 0%, #8D0B93 50%, #321575 100%);
+}
+
+/*177 Frozen Heat*/
+.frozen_heat{
+    background-image: linear-gradient(-225deg, #FF057C 0%, #7C64D5 48%, #4CC3FF 100%);
+}
+
+/*178 Gagarin View*/
+.gagarin_view{
+    background-image: linear-gradient(-225deg, #69EACB 0%, #EACCF8 48%, #6654F1 100%);
+}
+
+/*179 Fabled Sunset*/
+.fabled_sunset{
+    background-image: linear-gradient(-225deg, #231557 0%, #44107A 29%, #FF1361 67%, #FFF800 100%);
+}
+
+/*180 Perfect Blue*/
+.perfect_blue{
+    background-image: linear-gradient(-225deg, #3D4E81 0%, #5753C9 48%, #6E7FF3 100%);
+}

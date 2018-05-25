@@ -107,7 +107,7 @@ void RasterWindow::renderNow()
     QPaintDevice *device = m_backingStore->paintDevice();
     QPainter painter(device);
 
-    painter.fillRect(0, 0, width(), height(), Qt::white);
+    painter.fillRect(0, 0, width(), height(), QGradient::NightFade);
     render(&painter);
     painter.end();
 

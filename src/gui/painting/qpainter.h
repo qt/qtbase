@@ -448,6 +448,10 @@ public:
     inline void fillRect(const QRect &r, Qt::BrushStyle style);
     inline void fillRect(const QRectF &r, Qt::BrushStyle style);
 
+    inline void fillRect(int x, int y, int w, int h, QGradient::Preset preset);
+    inline void fillRect(const QRect &r, QGradient::Preset preset);
+    inline void fillRect(const QRectF &r, QGradient::Preset preset);
+
     void eraseRect(const QRectF &);
     inline void eraseRect(int x, int y, int w, int h);
     inline void eraseRect(const QRect &);
@@ -746,6 +750,20 @@ inline void QPainter::fillRect(const QRectF &r, Qt::BrushStyle style)
     fillRect(r, QBrush(style));
 }
 
+inline void QPainter::fillRect(int x, int y, int w, int h, QGradient::Preset p)
+{
+    fillRect(QRect(x, y, w, h), QGradient(p));
+}
+
+inline void QPainter::fillRect(const QRect &r, QGradient::Preset p)
+{
+    fillRect(r, QGradient(p));
+}
+
+inline void QPainter::fillRect(const QRectF &r, QGradient::Preset p)
+{
+    fillRect(r, QGradient(p));
+}
 
 inline void QPainter::setBrushOrigin(int x, int y)
 {
