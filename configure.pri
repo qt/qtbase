@@ -68,7 +68,7 @@ defineReplace(qtConfFunc_crossCompile) {
 }
 
 defineReplace(qtConfFunc_licenseCheck) {
-    exists($$QT_SOURCE_TREE/LICENSE.LGPL3)|exists($$QT_SOURCE_TREE/LICENSE.GPL2): \
+    exists($$QT_SOURCE_TREE/LICENSE.LGPL3)|exists($$QT_SOURCE_TREE/LICENSE.GPL2)|exists($$QT_SOURCE_TREE/LICENSE.GPL3): \
         hasOpenSource = true
     else: \
         hasOpenSource = false
@@ -180,10 +180,27 @@ defineReplace(qtConfFunc_licenseCheck) {
 
     affix = the
     equals(commercial, no) {
-        theLicense = "GNU Lesser General Public License (LGPL) version 3"
-        showWhat = "Type 'L' to view the GNU Lesser General Public License version 3 (LGPLv3)."
+
+        # Select primary open source license: GPL3 or LGPL3.
+        emscripten {
+            gpl3Ok = true
+        } else {
+            gpl3Ok = false
+        }
+        $$gpl3Ok {
+            theLicense = "GNU General Public License (GPL) version 3"
+            showWhat = "Type 'G' to view the GNU General Public License version 3 (GPLv3)."
+        } else {
+            theLicense = "GNU Lesser General Public License (LGPL) version 3"
+            showWhat = "Type 'L' to view the GNU Lesser General Public License version 3 (LGPLv3)."
+        }
+
+        # Add secondary open source license. If the main license is LGPL3 then GPL2 is generally
+        # an option (with some exceptions). If the main license is GPL3 then that is the only option.
         gpl2Ok = false
-        winrt {
+        $$gpl3Ok {
+            notTheLicense = "Note: GPL version 2 or LGPL version 3 are not available for this platform."
+        } else: winrt {
             notTheLicense = "Note: GPL version 2 is not available on WinRT."
         } else: $$qtConfEvaluate("features.android-style-assets") {
             notTheLicense = "Note: GPL version 2 is not available due to using Android style assets."
@@ -222,10 +239,14 @@ defineReplace(qtConfFunc_licenseCheck) {
                 return(false)
             } else: equals(commercial, yes):equals(val, ?) {
                 licenseFile = $$QT_SOURCE_TREE/LICENSE.PREVIEW.COMMERCIAL
-            } else: equals(commercial, no):equals(val, l) {
+            } else: equals(commercial, no):equals(val, l):!$$gpl3Ok {
                 licenseFile = $$QT_SOURCE_TREE/LICENSE.LGPL3
-            } else: equals(commercial, no):equals(val, g):$$gpl2Ok {
-                licenseFile = $$QT_SOURCE_TREE/LICENSE.GPL2
+            } else: equals(commercial, no):equals(val, g) {
+                $$gpl3Ok {
+                    licenseFile = $$QT_SOURCE_TREE/LICENSE.GPL3
+                } else: $$gpl2Ok {
+                    licenseFile = $$QT_SOURCE_TREE/LICENSE.GPL2
+                }
             } else {
                 next()
             }
