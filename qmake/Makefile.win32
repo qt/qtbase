@@ -83,6 +83,7 @@ QTOBJS= \
 	qfsfileengine_win.obj \
 	qsystemlibrary.obj \
 	qfileinfo.obj \
+	qendian.obj \
 	qglobal.obj \
 	qhash.obj \
 	qiodevice.obj \

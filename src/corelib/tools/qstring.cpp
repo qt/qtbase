@@ -9946,11 +9946,7 @@ QDataStream &operator<<(QDataStream &out, const QString &str)
                 out.writeBytes(reinterpret_cast<const char *>(str.unicode()), sizeof(QChar) * str.length());
             } else {
                 QVarLengthArray<ushort> buffer(str.length());
-                const ushort *data = reinterpret_cast<const ushort *>(str.constData());
-                for (int i = 0; i < str.length(); i++) {
-                    buffer[i] = qbswap(*data);
-                    ++data;
-                }
+                qbswap<sizeof(ushort)>(str.constData(), str.length(), buffer.data());
                 out.writeBytes(reinterpret_cast<const char *>(buffer.data()), sizeof(ushort) * buffer.size());
             }
         } else {
@@ -10007,10 +10003,7 @@ QDataStream &operator>>(QDataStream &in, QString &str)
             if ((in.byteOrder() == QDataStream::BigEndian)
                     != (QSysInfo::ByteOrder == QSysInfo::BigEndian)) {
                 ushort *data = reinterpret_cast<ushort *>(str.data());
-                while (len--) {
-                    *data = qbswap(*data);
-                    ++data;
-                }
+                qbswap<sizeof(*data)>(data, len, data);
             }
         } else {
             str = QString(QLatin1String(""));

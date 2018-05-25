@@ -52,7 +52,9 @@
 #include "qendian.h"
 #include <qshareddata.h>
 #include <qplatformdefs.h>
+#include <qendian.h>
 #include "private/qabstractfileengine_p.h"
+#include "private/qsimd_p.h"
 #include "private/qsystemerror_p.h"
 
 #ifdef Q_OS_UNIX
@@ -629,17 +631,13 @@ inline QString QResourceRoot::name(int node) const
 
     QString ret;
     qint32 name_offset = qFromBigEndian<qint32>(tree + offset);
-    const qint16 name_length = qFromBigEndian<qint16>(names + name_offset);
+    quint16 name_length = qFromBigEndian<qint16>(names + name_offset);
     name_offset += 2;
     name_offset += 4; //jump past hash
 
     ret.resize(name_length);
     QChar *strData = ret.data();
-    for(int i = 0; i < name_length*2; i+=2) {
-        QChar c(names[name_offset+i+1], names[name_offset+i]);
-        *strData = c;
-        ++strData;
-    }
+    qFromBigEndian<ushort>(names + name_offset, name_length, strData);
     return ret;
 }
 

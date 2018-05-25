@@ -49,6 +49,7 @@
 #include "qcoreapplication.h"
 #include "qcoreapplication_p.h"
 #include "qdatastream.h"
+#include "qendian.h"
 #include "qfile.h"
 #include "qmap.h"
 #include "qalgorithms.h"
@@ -957,8 +958,8 @@ end:
         return QString();
     QString str = QString((const QChar *)tn, tn_length/2);
     if (QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
-        for (int i = 0; i < str.length(); ++i)
-            str[i] = QChar((str.at(i).unicode() >> 8) + ((str.at(i).unicode() << 8) & 0xff00));
+        QChar *data = str.data();
+        qbswap<sizeof(QChar)>(data, str.length(), data);
     }
     return str;
 }

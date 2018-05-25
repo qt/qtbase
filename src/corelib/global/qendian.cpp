@@ -1,11 +1,12 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:FDL$
+** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
@@ -14,16 +15,35 @@
 ** and conditions see https://www.qt.io/terms-conditions. For further
 ** information use the contact form at https://www.qt.io/contact-us.
 **
-** GNU Free Documentation License Usage
-** Alternatively, this file may be used under the terms of the GNU Free
-** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of
-** this file. Please review the following information to ensure
-** the GNU Free Documentation License version 1.3 requirements
-** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
+** packaging of this file. Please review the following information to
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#include "qendian.h"
+
+#include "qalgorithms.h"
+#include <private/qsimd_p.h>
+
+QT_BEGIN_NAMESPACE
 
 /*!
     \headerfile <QtEndian>
@@ -90,6 +110,32 @@
     unmodified.
 */
 /*!
+    \fn template <typename T> T qFromBigEndian(const void *src, qsizetype count, void *dest)
+    \since 5.12
+    \relates <QtEndian>
+
+    Reads \a count big-endian numbers from memory location \a src and stores
+    them in the host byte order representation at \a dest. On CPU architectures
+    where the host byte order is little-endian (such as x86) this will swap the
+    byte order; otherwise it will just perform a \c memcpy from \a src to \a
+    dest.
+
+    \note Template type \c{T} can either be a quint16, qint16, quint32, qint32,
+    quint64, or qint64. Other types of integers, e.g., qlong, are not
+    applicable.
+
+    There are no data alignment constraints for \a src. However, \a dest is
+    expected to be naturally aligned for type \c{T}.
+
+    If \a src and \a dest can be the same pointer, this function will perform
+    an in-place swap (if necessary). If they are not the same, the memory
+    regions must not overlap.
+
+    \sa qFromLittleEndian()
+    \sa qToBigEndian()
+    \sa qToLittleEndian()
+*/
+/*!
     \fn template <typename T> T qFromLittleEndian(const void *src)
     \since 4.3
     \relates <QtEndian>
@@ -123,6 +169,32 @@
     unmodified.
 */
 /*!
+    \fn template <typename T> T qFromLittleEndian(const void *src, qsizetype count, void *dest)
+    \since 5.12
+    \relates <QtEndian>
+
+    Reads \a count little-endian numbers from memory location \a src and stores
+    them in the host byte order representation at \a dest. On CPU architectures
+    where the host byte order is big-endian (such as PowerPC) this will swap the
+    byte order; otherwise it will just perform a \c memcpy from \a src to \a
+    dest.
+
+    \note Template type \c{T} can either be a quint16, qint16, quint32, qint32,
+    quint64, or qint64. Other types of integers, e.g., qlong, are not
+    applicable.
+
+    There are no data alignment constraints for \a src. However, \a dest is
+    expected to be naturally aligned for type \c{T}.
+
+    If \a src and \a dest can be the same pointer, this function will perform
+    an in-place swap (if necessary). If they are not the same, the memory
+    regions must not overlap.
+
+    \sa qFromLittleEndian()
+    \sa qToBigEndian()
+    \sa qToLittleEndian()
+*/
+/*!
     \fn template <typename T> void qToBigEndian(T src, void *dest)
     \since 4.3
     \relates <QtEndian>
@@ -153,6 +225,32 @@
     unmodified.
 */
 /*!
+    \fn template <typename T> T qToBigEndian(const void *src, qsizetype count, void *dest)
+    \since 5.12
+    \relates <QtEndian>
+
+    Reads \a count numbers from memory location \a src in the host byte order
+    and stores them in big-endian representation at \a dest. On CPU
+    architectures where the host byte order is little-endian (such as x86) this
+    will swap the byte order; otherwise it will just perform a \c memcpy from
+    \a src to \a dest.
+
+    \note Template type \c{T} can either be a quint16, qint16, quint32, qint32,
+    quint64, or qint64. Other types of integers, e.g., qlong, are not
+    applicable.
+
+    There are no data alignment constraints for \a dest. However, \a src is
+    expected to be naturally aligned for type \c{T}.
+
+    If \a src and \a dest can be the same pointer, this function will perform
+    an in-place swap (if necessary). If they are not the same, the memory
+    regions must not overlap.
+
+    \sa qFromLittleEndian()
+    \sa qToBigEndian()
+    \sa qToLittleEndian()
+*/
+/*!
     \fn template <typename T> void qToLittleEndian(T src, void *dest)
     \since 4.3
     \relates <QtEndian>
@@ -181,6 +279,32 @@
     On CPU architectures where the host byte order is big-endian (such as PowerPC) this
     will return \a src with the byte order swapped; otherwise it will return \a src
     unmodified.
+*/
+/*!
+    \fn template <typename T> T qToLittleEndian(const void *src, qsizetype count, void *dest)
+    \since 5.12
+    \relates <QtEndian>
+
+    Reads \a count numbers from memory location \a src in the host byte order
+    and stores them in little-endian representation at \a dest. On CPU
+    architectures where the host byte order is big-endian (such as PowerPC)
+    this will swap the byte order; otherwise it will just perform a \c memcpy
+    from \a src to \a dest.
+
+    \note Template type \c{T} can either be a quint16, qint16, quint32, qint32,
+    quint64, or qint64. Other types of integers, e.g., qlong, are not
+    applicable.
+
+    There are no data alignment constraints for \a dest. However, \a src is
+    expected to be naturally aligned for type \c{T}.
+
+    If \a src and \a dest can be the same pointer, this function will perform
+    an in-place swap (if necessary). If they are not the same, the memory
+    regions must not overlap.
+
+    \sa qFromLittleEndian()
+    \sa qToBigEndian()
+    \sa qToLittleEndian()
 */
 
 /*!
@@ -552,3 +676,158 @@
 
     \sa qint64
 */
+
+#if defined(__SSSE3__)
+using ShuffleMask = uchar[16];
+Q_DECL_ALIGN(16) static const ShuffleMask shuffleMasks[3] = {
+    // 16-bit
+    {1, 0, 3, 2,  5, 4, 7, 6,  9, 8, 11, 10,  13, 12, 15, 14},
+    // 32-bit
+    {3, 2, 1, 0,  7, 6, 5, 4,  11, 10, 9, 8,  15, 14, 13, 12},
+    // 64-bit
+    {7, 6, 5, 4, 3, 2, 1, 0,   15, 14, 13, 12, 11, 10, 9, 8}
+};
+
+static size_t sseSwapLoop(const uchar *src, size_t bytes, uchar *dst,
+                          const __m128i *shuffleMaskPtr) noexcept
+{
+    size_t i = 0;
+    const __m128i shuffleMask = _mm_load_si128(shuffleMaskPtr);
+
+#  ifdef __AVX2__
+    const __m256i shuffleMask256 = _mm256_inserti128_si256(_mm256_castsi128_si256(shuffleMask), shuffleMask, 1);
+    for ( ; i + sizeof(__m256i) <= bytes; i += sizeof(__m256i)) {
+        __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src + i));
+        data = _mm256_shuffle_epi8(data, shuffleMask256);
+        _mm256_storeu_si256(reinterpret_cast<__m256i *>(dst + i), data);
+    }
+#  else
+    for ( ; i + 2 * sizeof(__m128i) <= bytes; i += 2 * sizeof(__m128i)) {
+        __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src + i));
+        __m128i data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src + i) + 1);
+        data1 = _mm_shuffle_epi8(data1, shuffleMask);
+        data2 = _mm_shuffle_epi8(data2, shuffleMask);
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(dst + i), data1);
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(dst + i) + 1, data2);
+    }
+#  endif
+
+    if (i + sizeof(__m128i) <= bytes) {
+        __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src + i));
+        data = _mm_shuffle_epi8(data, shuffleMask);
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(dst + i), data);
+        i += sizeof(__m128i);
+    }
+
+    return i;
+}
+
+template <typename T> static Q_ALWAYS_INLINE
+size_t simdSwapLoop(const uchar *src, size_t bytes, uchar *dst) noexcept
+{
+    auto shuffleMaskPtr = reinterpret_cast<const __m128i *>(shuffleMasks[0]);
+    shuffleMaskPtr += qCountTrailingZeroBits(sizeof(T)) - 1;
+    size_t i = sseSwapLoop(src, bytes, dst, shuffleMaskPtr);
+
+    // epilogue
+    for (size_t _i = 0 ; i < bytes && _i < sizeof(__m128i); i += sizeof(T), _i += sizeof(T))
+        qbswap(qFromUnaligned<T>(src + i), dst + i);
+
+    // return the total, so the bswapLoop below does nothing
+    return bytes;
+}
+#elif defined(__SSE2__)
+template <typename T> static
+size_t simdSwapLoop(const uchar *, size_t, uchar *) noexcept
+{
+    // no generic version: we can't do 32- and 64-bit swaps easily,
+    // so we won't try
+    return 0;
+}
+
+template <> size_t simdSwapLoop<quint16>(const uchar *src, size_t bytes, uchar *dst) noexcept
+{
+    auto swapEndian = [](__m128i &data) {
+        __m128i lows = _mm_srli_epi16(data, 8);
+        __m128i highs = _mm_slli_epi16(data, 8);
+        data = _mm_xor_si128(lows, highs);
+    };
+
+    size_t i = 0;
+    for ( ; i + 2 * sizeof(__m128i) <= bytes; i += 2 * sizeof(__m128i)) {
+        __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src + i));
+        __m128i data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src + i) + 1);
+        swapEndian(data1);
+        swapEndian(data2);
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(dst + i), data1);
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(dst + i) + 1, data2);
+    }
+
+    if (i + sizeof(__m128i) <= bytes) {
+        __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src + i));
+        swapEndian(data);
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(dst + i), data);
+        i += sizeof(__m128i);
+    }
+
+    // epilogue
+    for (size_t _i = 0 ; i < bytes && _i < sizeof(__m128i); i += sizeof(quint16), _i += sizeof(quint16))
+        qbswap(qFromUnaligned<quint16>(src + i), dst + i);
+
+    // return the total, so the bswapLoop below does nothing
+    return bytes;
+}
+#else
+template <typename T> static Q_ALWAYS_INLINE
+size_t simdSwapLoop(const uchar *, size_t, uchar *) noexcept
+{
+    return 0;
+}
+#endif
+
+template <typename T> static Q_ALWAYS_INLINE
+void *bswapLoop(const uchar *src, size_t n, uchar *dst) noexcept
+{
+    // Buffers cannot partially overlap: either they're identical or totally
+    // disjoint (note: they can be adjacent).
+    if (src != dst) {
+        quintptr s = quintptr(src);
+        quintptr d = quintptr(dst);
+        if (s < d)
+            Q_ASSERT(s + n <= d);
+        else
+            Q_ASSERT(d + n <= s);
+    }
+
+    size_t i = simdSwapLoop<T>(src, n, dst);
+
+    for ( ; i < n; i += sizeof(T))
+        qbswap(qFromUnaligned<T>(src + i), dst + i);
+    return dst + i;
+}
+
+template <> void *qbswap<2>(const void *source, qsizetype n, void *dest) noexcept
+{
+    const uchar *src = reinterpret_cast<const uchar *>(source);
+    uchar *dst = reinterpret_cast<uchar *>(dest);
+
+    return bswapLoop<quint16>(src, n << 1, dst);
+}
+
+template <> void *qbswap<4>(const void *source, qsizetype n, void *dest) noexcept
+{
+    const uchar *src = reinterpret_cast<const uchar *>(source);
+    uchar *dst = reinterpret_cast<uchar *>(dest);
+
+    return bswapLoop<quint32>(src, n << 2, dst);
+}
+
+template <> void *qbswap<8>(const void *source, qsizetype n, void *dest) noexcept
+{
+    const uchar *src = reinterpret_cast<const uchar *>(source);
+    uchar *dst = reinterpret_cast<uchar *>(dest);
+
+    return bswapLoop<quint64>(src, n << 3, dst);
+}
+
+QT_END_NAMESPACE

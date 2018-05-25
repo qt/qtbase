@@ -25,6 +25,7 @@ SOURCES += \
            ../../corelib/codecs/qlatincodec.cpp \
            ../../corelib/codecs/qtextcodec.cpp \
            ../../corelib/codecs/qutfcodec.cpp \
+           ../../corelib/global/qendian.cpp \
            ../../corelib/global/qglobal.cpp \
            ../../corelib/global/qlogging.cpp \
            ../../corelib/global/qmalloc.cpp \

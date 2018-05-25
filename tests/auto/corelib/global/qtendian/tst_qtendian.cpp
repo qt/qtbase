@@ -39,9 +39,17 @@ class tst_QtEndian: public QObject
 private slots:
     void fromBigEndian();
     void fromLittleEndian();
+    void fromBigEndianRegion_data();
+    void fromBigEndianRegion();
+    void fromLittleEndianRegion_data() { fromBigEndianRegion_data(); }
+    void fromLittleEndianRegion();
 
     void toBigEndian();
     void toLittleEndian();
+    void toBigEndianRegion_data() { fromBigEndianRegion_data(); }
+    void toBigEndianRegion();
+    void toLittleEndianRegion_data() { fromBigEndianRegion_data(); }
+    void toLittleEndianRegion();
 
     void endianIntegers_data();
     void endianIntegers();
@@ -58,6 +66,12 @@ struct TestData
 
     quint8 reserved;
 };
+
+template <typename T> T getData(const TestData &d);
+template <> quint8 getData(const TestData &d) { return d.data8; }
+template <> quint16 getData(const TestData &d) { return d.data16; }
+template <> quint32 getData(const TestData &d) { return d.data32; }
+template <> quint64 getData(const TestData &d) { return d.data64; }
 
 union RawTestData
 {
@@ -108,6 +122,106 @@ void tst_QtEndian::fromLittleEndian()
 
 #undef ENDIAN_TEST
 
+template <typename T>
+void transformRegion_template(T (*transformOne)(T), void (*transformRegion)(const void *, qsizetype, void *))
+{
+    enum { Size = 64 };
+    T source[Size];
+    T dest[Size];
+    T expected = transformOne(getData<T>(inNativeEndian));
+    std::fill_n(source, +Size, getData<T>(inNativeEndian));
+    memset(dest, 0, sizeof(dest));
+
+    auto checkBounds = [&](int from) {
+        for ( ; from < Size; ++from)
+            QCOMPARE(dest[from], 0);
+    };
+
+    transformRegion(source, 1, dest);
+    QCOMPARE(dest[0], expected);
+    checkBounds(1);
+    memset(dest, 0, sizeof(T));
+
+    transformRegion(source, 2, dest);
+    QCOMPARE(dest[0], expected);
+    QCOMPARE(dest[1], expected);
+    checkBounds(2);
+    memset(dest, 0, sizeof(T) * 2);
+
+    transformRegion(source, 3, dest);
+    QCOMPARE(dest[0], expected);
+    QCOMPARE(dest[1], expected);
+    QCOMPARE(dest[2], expected);
+    checkBounds(3);
+    memset(dest, 0, sizeof(T) * 3);
+
+    transformRegion(source, 4, dest);
+    QCOMPARE(dest[0], expected);
+    QCOMPARE(dest[1], expected);
+    QCOMPARE(dest[2], expected);
+    QCOMPARE(dest[3], expected);
+    checkBounds(4);
+    memset(dest, 0, sizeof(T) * 4);
+
+    transformRegion(source, 8, dest);
+    for (int i = 0; i < 8; ++i)
+        QCOMPARE(dest[i], expected);
+    checkBounds(8);
+    memset(dest, 0, sizeof(T) * 8);
+
+    transformRegion(source, 16, dest);
+    for (int i = 0; i < 16; ++i)
+        QCOMPARE(dest[i], expected);
+    checkBounds(16);
+    memset(dest, 0, sizeof(T) * 16);
+
+    transformRegion(source, 32, dest);
+    for (int i = 0; i < 32; ++i)
+        QCOMPARE(dest[i], expected);
+    checkBounds(32);
+    memset(dest, 0, sizeof(T) * 32);
+
+    transformRegion(source, 64, dest);
+    for (int i = 0; i < 64; ++i)
+        QCOMPARE(dest[i], expected);
+
+    // check transforming in-place
+    memcpy(dest, source, sizeof(dest));
+    transformRegion(dest, 64, dest);
+    for (int i = 0; i < 64; ++i)
+        QCOMPARE(dest[i], expected);
+}
+
+void tst_QtEndian::fromBigEndianRegion_data()
+{
+    QTest::addColumn<int>("size");
+    QTest::newRow("1") << 1;
+    QTest::newRow("2") << 2;
+    QTest::newRow("4") << 4;
+    QTest::newRow("8") << 8;
+}
+
+void tst_QtEndian::fromBigEndianRegion()
+{
+    QFETCH(int, size);
+    switch (size) {
+    case 1: return transformRegion_template<quint8>(qFromBigEndian<quint8>, qFromBigEndian<quint8>);
+    case 2: return transformRegion_template<quint16>(qFromBigEndian<quint16>, qFromBigEndian<quint16>);
+    case 4: return transformRegion_template<quint32>(qFromBigEndian<quint32>, qFromBigEndian<quint32>);
+    case 8: return transformRegion_template<quint64>(qFromBigEndian<quint64>, qFromBigEndian<quint64>);
+    }
+}
+
+void tst_QtEndian::fromLittleEndianRegion()
+{
+    QFETCH(int, size);
+    switch (size) {
+    case 1: return transformRegion_template<quint8>(qFromLittleEndian<quint8>, qFromLittleEndian<quint8>);
+    case 2: return transformRegion_template<quint16>(qFromLittleEndian<quint16>, qFromLittleEndian<quint16>);
+    case 4: return transformRegion_template<quint32>(qFromLittleEndian<quint32>, qFromLittleEndian<quint32>);
+    case 8: return transformRegion_template<quint64>(qFromLittleEndian<quint64>, qFromLittleEndian<quint64>);
+    }
+}
 
 #define ENDIAN_TEST(endian, type, size)                                                 \
     do {                                                                                \
@@ -134,6 +248,28 @@ void tst_QtEndian::toLittleEndian()
 }
 
 #undef ENDIAN_TEST
+
+void tst_QtEndian::toBigEndianRegion()
+{
+    QFETCH(int, size);
+    switch (size) {
+    case 1: return transformRegion_template<quint8>(qToBigEndian<quint8>, qToBigEndian<quint8>);
+    case 2: return transformRegion_template<quint16>(qToBigEndian<quint16>, qToBigEndian<quint16>);
+    case 4: return transformRegion_template<quint32>(qToBigEndian<quint32>, qToBigEndian<quint32>);
+    case 8: return transformRegion_template<quint64>(qToBigEndian<quint64>, qToBigEndian<quint64>);
+    }
+}
+
+void tst_QtEndian::toLittleEndianRegion()
+{
+    QFETCH(int, size);
+    switch (size) {
+    case 1: return transformRegion_template<quint8>(qToLittleEndian<quint8>, qToLittleEndian<quint8>);
+    case 2: return transformRegion_template<quint16>(qToLittleEndian<quint16>, qToLittleEndian<quint16>);
+    case 4: return transformRegion_template<quint32>(qToLittleEndian<quint32>, qToLittleEndian<quint32>);
+    case 8: return transformRegion_template<quint64>(qToLittleEndian<quint64>, qToLittleEndian<quint64>);
+    }
+}
 
 void tst_QtEndian::endianIntegers_data()
 {
