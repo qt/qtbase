@@ -57,7 +57,7 @@
     optional and usually dependent on how the compiler was invoked. Variants
     that are a superset of another should have a define for the superset.
 
-    In addition to the procesor family, variants, and revisions, we also set
+    In addition to the processor family, variants, and revisions, we also set
     Q_BYTE_ORDER appropriately for the target processor. For bi-endian
     processors, we try to auto-detect the byte order using the __BIG_ENDIAN__,
     __LITTLE_ENDIAN__, or __BYTE_ORDER__ preprocessor macros.
