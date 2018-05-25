@@ -66,7 +66,8 @@ public:
         DontUseDirectWriteFonts = QWindowsFontDatabase::DontUseDirectWriteFonts,
         DontUseColorFonts = QWindowsFontDatabase::DontUseColorFonts,
         AlwaysUseNativeMenus = 0x100,
-        NoNativeMenus = 0x200
+        NoNativeMenus = 0x200,
+        DontUseWMPointer = 0x400,
     };
 
     explicit QWindowsIntegration(const QStringList &paramList);

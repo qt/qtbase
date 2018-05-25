@@ -212,6 +212,8 @@ static inline unsigned parseOptions(const QStringList &paramList,
             options |= QWindowsIntegration::AlwaysUseNativeMenus;
         } else if (param == QLatin1String("menus=none")) {
             options |= QWindowsIntegration::NoNativeMenus;
+        } else if (param == QLatin1String("nowmpointer")) {
+            options |= QWindowsIntegration::DontUseWMPointer;
         } else {
             qWarning() << "Unknown option" << param;
         }
@@ -230,8 +232,13 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
     QtWindows::ProcessDpiAwareness dpiAwareness = QtWindows::ProcessPerMonitorDpiAware;
     m_options = parseOptions(paramList, &tabletAbsoluteRange, &dpiAwareness);
     QWindowsFontDatabase::setFontOptions(m_options);
-    if (tabletAbsoluteRange >= 0)
-        m_context.setTabletAbsoluteRange(tabletAbsoluteRange);
+
+    if (!m_context.initPointer(m_options)) {
+        m_context.initTablet(m_options);
+        if (tabletAbsoluteRange >= 0)
+            m_context.setTabletAbsoluteRange(tabletAbsoluteRange);
+    }
+
     if (!dpiAwarenessSet) { // Set only once in case of repeated instantiations of QGuiApplication.
         if (!QCoreApplication::testAttribute(Qt::AA_PluginApplication)) {
             m_context.setProcessDpiAwareness(dpiAwareness);

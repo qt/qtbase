@@ -85,7 +85,14 @@ class QTouchDevice;
 struct QWindowsUser32DLL
 {
     inline void init();
+    inline bool supportsPointerApi();
 
+    typedef BOOL (WINAPI *EnableMouseInPointer)(BOOL);
+    typedef BOOL (WINAPI *GetPointerType)(UINT32, PVOID);
+    typedef BOOL (WINAPI *GetPointerInfo)(UINT32, PVOID);
+    typedef BOOL (WINAPI *GetPointerTouchInfo)(UINT32, PVOID);
+    typedef BOOL (WINAPI *GetPointerFrameTouchInfo)(UINT32, UINT32 *, PVOID);
+    typedef BOOL (WINAPI *GetPointerPenInfo)(UINT32, PVOID);
     typedef BOOL (WINAPI *SetProcessDPIAware)();
     typedef BOOL (WINAPI *AddClipboardFormatListener)(HWND);
     typedef BOOL (WINAPI *RemoveClipboardFormatListener)(HWND);
@@ -94,6 +101,14 @@ struct QWindowsUser32DLL
     typedef BOOL (WINAPI *EnableNonClientDpiScaling)(HWND);
     typedef int  (WINAPI *GetWindowDpiAwarenessContext)(HWND);
     typedef int  (WINAPI *GetAwarenessFromDpiAwarenessContext)(int);
+
+    // Windows pointer functions (Windows 8 or later).
+    EnableMouseInPointer enableMouseInPointer = nullptr;
+    GetPointerType getPointerType = nullptr;
+    GetPointerInfo getPointerInfo = nullptr;
+    GetPointerTouchInfo getPointerTouchInfo = nullptr;
+    GetPointerFrameTouchInfo getPointerFrameTouchInfo = nullptr;
+    GetPointerPenInfo getPointerPenInfo = nullptr;
 
     // Windows Vista onwards
     SetProcessDPIAware setProcessDPIAware = nullptr;
@@ -134,7 +149,8 @@ public:
     enum SystemInfoFlags
     {
         SI_RTL_Extensions = 0x1,
-        SI_SupportsTouch = 0x2
+        SI_SupportsTouch = 0x2,
+        SI_SupportsPointer = 0x4,
     };
 
     // Verbose flag set by environment variable QT_QPA_VERBOSE
@@ -145,6 +161,8 @@ public:
 
     bool initTouch();
     bool initTouch(unsigned integrationOptions); // For calls from QWindowsIntegration::QWindowsIntegration() only.
+    bool initTablet(unsigned integrationOptions);
+    bool initPointer(unsigned integrationOptions);
 
     int defaultDPI() const;
 
@@ -220,6 +238,7 @@ private:
 #ifndef QT_NO_CONTEXTMENU
     bool handleContextMenuEvent(QWindow *window, const MSG &msg);
 #endif
+    void handleExitSizeMove(QWindow *window);
     void unregisterWindowClasses();
 
     QScopedPointer<QWindowsContextPrivate> d;

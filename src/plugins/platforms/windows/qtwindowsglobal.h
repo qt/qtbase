@@ -60,6 +60,21 @@
 #  define WM_DPICHANGED 0x02E0
 #endif
 
+// WM_POINTER support from Windows 8 onwards (WINVER >= 0x0602)
+#ifndef WM_POINTERUPDATE
+#  define WM_NCPOINTERUPDATE 0x0241
+#  define WM_NCPOINTERDOWN   0x0242
+#  define WM_NCPOINTERUP     0x0243
+#  define WM_POINTERUPDATE   0x0245
+#  define WM_POINTERDOWN     0x0246
+#  define WM_POINTERUP       0x0247
+#  define WM_POINTERENTER    0x0249
+#  define WM_POINTERLEAVE    0x024A
+#  define WM_POINTERACTIVATE 0x024B
+#  define WM_POINTERWHEEL    0x024E
+#  define WM_POINTERHWHEEL   0x024F
+#endif // WM_POINTERUPDATE
+
 QT_BEGIN_NAMESPACE
 
 namespace QtWindows
@@ -78,6 +93,7 @@ enum
     ApplicationEventFlag = 0x1000000,
     ThemingEventFlag = 0x2000000,
     GenericEventFlag = 0x4000000, // Misc
+    PointerEventFlag = 0x8000000,
 };
 
 enum WindowsEventType // Simplify event types
@@ -103,13 +119,16 @@ enum WindowsEventType // Simplify event types
     DpiChangedEvent = WindowEventFlag + 21,
     EnterSizeMoveEvent = WindowEventFlag + 22,
     ExitSizeMoveEvent = WindowEventFlag + 23,
+    PointerActivateWindowEvent = WindowEventFlag + 24,
     MouseEvent = MouseEventFlag + 1,
     MouseWheelEvent = MouseEventFlag + 2,
     CursorEvent = MouseEventFlag + 3,
     TouchEvent = TouchEventFlag + 1,
+    PointerEvent = PointerEventFlag + 1,
     NonClientMouseEvent = NonClientEventFlag + MouseEventFlag + 1,
     NonClientHitTest = NonClientEventFlag + 2,
     NonClientCreate = NonClientEventFlag + 3,
+    NonClientPointerEvent = NonClientEventFlag + PointerEventFlag + 4,
     KeyEvent = KeyEventFlag + 1,
     KeyDownEvent = KeyEventFlag + KeyDownEventFlag + 1,
     KeyboardLayoutChangeEvent = KeyEventFlag + 2,
@@ -167,6 +186,8 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
         QtWindows::ActivateApplicationEvent : QtWindows::DeactivateApplicationEvent;
     case WM_MOUSEACTIVATE:
         return QtWindows::MouseActivateWindowEvent;
+    case WM_POINTERACTIVATE:
+        return QtWindows::PointerActivateWindowEvent;
     case WM_ACTIVATE:
         return  LOWORD(wParamIn) == WA_INACTIVE ?
             QtWindows::DeactivateWindowEvent : QtWindows::ActivateWindowEvent;
@@ -297,6 +318,10 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
     if ((message >= WM_MOUSEFIRST && message <= WM_MOUSELAST)
          || (message >= WM_XBUTTONDOWN && message <= WM_XBUTTONDBLCLK))
         return QtWindows::MouseEvent;
+    if (message >= WM_NCPOINTERUPDATE && message <= WM_NCPOINTERUP)
+        return QtWindows::NonClientPointerEvent;
+    if (message >= WM_POINTERUPDATE && message <= WM_POINTERHWHEEL)
+        return QtWindows::PointerEvent;
     return QtWindows::UnknownEvent;
 }
 

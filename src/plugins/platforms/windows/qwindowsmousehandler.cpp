@@ -119,20 +119,16 @@ static inline void compressMouseMove(MSG *msg)
 
 static inline QTouchDevice *createTouchDevice()
 {
-    enum { QT_SM_TABLETPC = 86, QT_SM_DIGITIZER = 94, QT_SM_MAXIMUMTOUCHES = 95,
-           QT_NID_INTEGRATED_TOUCH = 0x1, QT_NID_EXTERNAL_TOUCH = 0x02,
-           QT_NID_MULTI_INPUT = 0x40, QT_NID_READY = 0x80 };
-
-    const int digitizers = GetSystemMetrics(QT_SM_DIGITIZER);
-    if (!(digitizers & (QT_NID_INTEGRATED_TOUCH | QT_NID_EXTERNAL_TOUCH)))
+    const int digitizers = GetSystemMetrics(SM_DIGITIZER);
+    if (!(digitizers & (NID_INTEGRATED_TOUCH | NID_EXTERNAL_TOUCH)))
         return 0;
-    const int tabletPc = GetSystemMetrics(QT_SM_TABLETPC);
-    const int maxTouchPoints = GetSystemMetrics(QT_SM_MAXIMUMTOUCHES);
-    qCDebug(lcQpaEvents) << "Digitizers:" << hex << showbase << (digitizers & ~QT_NID_READY)
-        << "Ready:" << (digitizers & QT_NID_READY) << dec << noshowbase
+    const int tabletPc = GetSystemMetrics(SM_TABLETPC);
+    const int maxTouchPoints = GetSystemMetrics(SM_MAXIMUMTOUCHES);
+    qCDebug(lcQpaEvents) << "Digitizers:" << hex << showbase << (digitizers & ~NID_READY)
+        << "Ready:" << (digitizers & NID_READY) << dec << noshowbase
         << "Tablet PC:" << tabletPc << "Max touch points:" << maxTouchPoints;
     QTouchDevice *result = new QTouchDevice;
-    result->setType(digitizers & QT_NID_INTEGRATED_TOUCH
+    result->setType(digitizers & NID_INTEGRATED_TOUCH
                     ? QTouchDevice::TouchScreen : QTouchDevice::TouchPad);
     QTouchDevice::Capabilities capabilities = QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::NormalizedPosition;
     if (result->type() == QTouchDevice::TouchPad)
@@ -176,37 +172,6 @@ Qt::MouseButtons QWindowsMouseHandler::queryMouseButtons()
     if (GetAsyncKeyState(VK_XBUTTON2) < 0)
         result |= Qt::XButton2;
     return result;
-}
-
-void QWindowsMouseHandler::handleExitSizeMove(QWindow *window)
-{
-    // Windows can be moved/resized by:
-    // 1) User moving a window by dragging the title bar: Causes a sequence
-    //    of WM_NCLBUTTONDOWN, WM_NCMOUSEMOVE but no WM_NCLBUTTONUP,
-    //    leaving the left mouse button 'pressed'
-    // 2) User choosing Resize/Move from System menu and using mouse/cursor keys:
-    //    No mouse events are received
-    // 3) Programmatically via QSizeGrip calling QPlatformWindow::startSystemResize/Move():
-    //    Mouse is left in pressed state after press on size grip (inside window),
-    //    no further mouse events are received
-    // For cases 1,3, intercept WM_EXITSIZEMOVE to sync the buttons.
-    const Qt::MouseButtons currentButtons = QWindowsMouseHandler::queryMouseButtons();
-    const Qt::MouseButtons appButtons = QGuiApplication::mouseButtons();
-    if (currentButtons == appButtons)
-        return;
-    const Qt::KeyboardModifiers keyboardModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
-    const QPoint globalPos = QWindowsCursor::mousePosition();
-    const QPlatformWindow *platWin = window->handle();
-    const QPoint localPos = platWin->mapFromGlobal(globalPos);
-    const QEvent::Type type = platWin->geometry().contains(globalPos)
-        ? QEvent::MouseButtonRelease : QEvent::NonClientAreaMouseButtonRelease;
-    for (Qt::MouseButton button : {Qt::LeftButton, Qt::RightButton, Qt::MiddleButton}) {
-        if (appButtons.testFlag(button) && !currentButtons.testFlag(button)) {
-            QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos,
-                                                     currentButtons, button, type,
-                                                     keyboardModifiers);
-        }
-    }
 }
 
 static QPoint lastMouseMovePos;
