@@ -201,7 +201,7 @@ template <typename Lambda> struct ProcessNetlinkRequest
             }
 
 #ifndef QT_NO_DEBUG
-            if (NLMSG_OK(hdr, len))
+            if (NLMSG_OK(hdr, quint32(len)))
                 qWarning("QNetworkInterface/AF_NETLINK: received unknown packet type (%d) or too short (%u)",
                          hdr->nlmsg_type, hdr->nlmsg_len);
             else
