@@ -211,12 +211,12 @@
                                              buttons, button, eventType, modifiers);
 }
 
-- (bool)handleMouseDownEvent:(NSEvent *)theEvent withButton:(int)buttonNumber
+- (bool)handleMouseDownEvent:(NSEvent *)theEvent
 {
     if ([self isTransparentForUserInput])
         return false;
 
-    Qt::MouseButton button = cocoaButton2QtButton(buttonNumber);
+    const auto button = cocoaButton2QtButton(theEvent);
 
     QPointF qtWindowPoint;
     QPointF qtScreenPoint;
@@ -241,12 +241,12 @@
     return true;
 }
 
-- (bool)handleMouseDraggedEvent:(NSEvent *)theEvent withButton:(int)buttonNumber
+- (bool)handleMouseDraggedEvent:(NSEvent *)theEvent
 {
     if ([self isTransparentForUserInput])
         return false;
 
-    Qt::MouseButton button = cocoaButton2QtButton(buttonNumber);
+    const auto button = cocoaButton2QtButton(theEvent);
 
     // Forward the event to the next responder if Qt did not accept the
     // corresponding mouse down for this button
@@ -257,12 +257,12 @@
     return true;
 }
 
-- (bool)handleMouseUpEvent:(NSEvent *)theEvent withButton:(int)buttonNumber
+- (bool)handleMouseUpEvent:(NSEvent *)theEvent
 {
     if ([self isTransparentForUserInput])
         return false;
 
-    Qt::MouseButton button = cocoaButton2QtButton(buttonNumber);
+    auto button = cocoaButton2QtButton(theEvent);
 
     // Forward the event to the next responder if Qt did not accept the
     // corresponding mouse down for this button
@@ -353,59 +353,56 @@
 
 - (void)mouseDragged:(NSEvent *)theEvent
 {
-    const bool accepted = [self handleMouseDraggedEvent:theEvent withButton:[theEvent buttonNumber]];
+    const bool accepted = [self handleMouseDraggedEvent:theEvent];
     if (!accepted)
         [super mouseDragged:theEvent];
 }
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-    const bool accepted = [self handleMouseUpEvent:theEvent withButton:[theEvent buttonNumber]];
+    const bool accepted = [self handleMouseUpEvent:theEvent];
     if (!accepted)
         [super mouseUp:theEvent];
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
-    // Wacom tablet might not return the correct button number for NSEvent buttonNumber
-    // on right clicks. Decide here that the button is the "right" button and forward
-    // the button number to the mouse (and tablet) handler.
-    const bool accepted = [self handleMouseDownEvent:theEvent withButton:1];
+    const bool accepted = [self handleMouseDownEvent:theEvent];
     if (!accepted)
         [super rightMouseDown:theEvent];
 }
 
 - (void)rightMouseDragged:(NSEvent *)theEvent
 {
-    const bool accepted = [self handleMouseDraggedEvent:theEvent withButton:1];
+    const bool accepted = [self handleMouseDraggedEvent:theEvent];
     if (!accepted)
         [super rightMouseDragged:theEvent];
 }
 
 - (void)rightMouseUp:(NSEvent *)theEvent
 {
-    const bool accepted = [self handleMouseUpEvent:theEvent withButton:1];
+    const bool accepted = [self handleMouseUpEvent:theEvent];
     if (!accepted)
         [super rightMouseUp:theEvent];
 }
 
 - (void)otherMouseDown:(NSEvent *)theEvent
 {
-    const bool accepted = [self handleMouseDownEvent:theEvent withButton:[theEvent buttonNumber]];
+    const bool accepted = [self handleMouseDownEvent:theEvent];
     if (!accepted)
         [super otherMouseDown:theEvent];
 }
 
 - (void)otherMouseDragged:(NSEvent *)theEvent
 {
-    const bool accepted = [self handleMouseDraggedEvent:theEvent withButton:[theEvent buttonNumber]];
+    const bool accepted = [self handleMouseDraggedEvent:theEvent];
     if (!accepted)
         [super otherMouseDragged:theEvent];
 }
 
 - (void)otherMouseUp:(NSEvent *)theEvent
 {
-    const bool accepted = [self handleMouseUpEvent:theEvent withButton:[theEvent buttonNumber]];
+    const bool accepted = [self handleMouseUpEvent:theEvent];
     if (!accepted)
         [super otherMouseUp:theEvent];
 }

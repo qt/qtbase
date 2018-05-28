@@ -296,7 +296,7 @@ QT_END_NAMESPACE
     [self setNeedsDisplay:YES];
 }
 
-- (void)mousePressed:(NSEvent *)mouseEvent button:(Qt::MouseButton)mouseButton
+- (void)mousePressed:(NSEvent *)mouseEvent
 {
     down = YES;
     int clickCount = [mouseEvent clickCount];
@@ -306,13 +306,13 @@ QT_END_NAMESPACE
         [self menuTrackingDone:nil];
         [parent doubleClickSelector:self];
     } else {
-        [parent triggerSelector:self button:mouseButton];
+        [parent triggerSelector:self button:cocoaButton2QtButton(mouseEvent)];
     }
 }
 
 - (void)mouseDown:(NSEvent *)mouseEvent
 {
-    [self mousePressed:mouseEvent button:Qt::LeftButton];
+    [self mousePressed:mouseEvent];
 }
 
 - (void)mouseUp:(NSEvent *)mouseEvent
@@ -323,7 +323,7 @@ QT_END_NAMESPACE
 
 - (void)rightMouseDown:(NSEvent *)mouseEvent
 {
-    [self mousePressed:mouseEvent button:Qt::RightButton];
+    [self mousePressed:mouseEvent];
 }
 
 - (void)rightMouseUp:(NSEvent *)mouseEvent
@@ -334,7 +334,7 @@ QT_END_NAMESPACE
 
 - (void)otherMouseDown:(NSEvent *)mouseEvent
 {
-    [self mousePressed:mouseEvent button:cocoaButton2QtButton([mouseEvent buttonNumber])];
+    [self mousePressed:mouseEvent];
 }
 
 - (void)otherMouseUp:(NSEvent *)mouseEvent

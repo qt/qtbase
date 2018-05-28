@@ -287,11 +287,24 @@ Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
   and "no button". Only NSEvents that describes mouse press/release/dragging
   events (e.g NSEventTypeOtherMouseDown) will contain a valid
   button number.
+
+  \note Wacom tablet might not return the correct button number for NSEvent buttonNumber
+  on right clicks. Decide here that the button is the "right" button.
 */
 Qt::MouseButton cocoaButton2QtButton(NSEvent *event)
 {
-    if (event.type == NSMouseMoved)
+    switch (event.type) {
+    case NSMouseMoved:
         return Qt::NoButton;
+
+    case NSRightMouseUp:
+    case NSRightMouseDown:
+    case NSRightMouseDragged:
+        return Qt::RightButton;
+
+    default:
+        break;
+    }
 
     return cocoaButton2QtButton(event.buttonNumber);
 }
