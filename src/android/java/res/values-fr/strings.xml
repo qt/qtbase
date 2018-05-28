@@ -3,4 +3,5 @@
     <string name="ministro_not_found_msg">Le service Ministro est introuvable.\nL\'application ne peut pas démarrer.</string>
     <string name="ministro_needed_msg">Cette application requiert le service Ministro. Voulez-vous l\'installer?</string>
     <string name="fatal_error_msg">Votre application a rencontré une erreur fatale et ne peut pas continuer.</string>
+    <string name="unsupported_android_version">Cette version d\'Android n\'est pas supportée.</string>
 </resources>

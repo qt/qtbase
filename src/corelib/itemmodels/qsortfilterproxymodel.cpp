@@ -1923,7 +1923,10 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     disconnect(d->model, SIGNAL(modelAboutToBeReset()), this, SLOT(_q_sourceAboutToBeReset()));
     disconnect(d->model, SIGNAL(modelReset()), this, SLOT(_q_sourceReset()));
 
-    d->_q_sourceModelDestroyed();
+    // same as in _q_sourceReset()
+    d->invalidatePersistentIndexes();
+    d->_q_clearMapping();
+
     QAbstractProxyModel::setSourceModel(sourceModel);
 
     connect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),

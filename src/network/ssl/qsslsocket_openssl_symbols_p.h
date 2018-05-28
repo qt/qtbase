@@ -267,9 +267,13 @@ int q_EVP_CipherInit(EVP_CIPHER_CTX *ctx, const EVP_CIPHER *type, const unsigned
 int q_EVP_CipherInit_ex(EVP_CIPHER_CTX *ctx, const EVP_CIPHER *cipher, ENGINE *impl, const unsigned char *key, const unsigned char *iv, int enc);
 int q_EVP_CipherUpdate(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl, const unsigned char *in, int inl);
 int q_EVP_CipherFinal(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl);
+#ifndef OPENSSL_NO_DES
 const EVP_CIPHER *q_EVP_des_cbc();
 const EVP_CIPHER *q_EVP_des_ede3_cbc();
+#endif
+#ifndef OPENSSL_NO_RC2
 const EVP_CIPHER *q_EVP_rc2_cbc();
+#endif
 const EVP_MD *q_EVP_sha1();
 int q_EVP_PKEY_assign(EVP_PKEY *a, int b, char *c);
 Q_AUTOTEST_EXPORT int q_EVP_PKEY_set1_RSA(EVP_PKEY *a, RSA *b);

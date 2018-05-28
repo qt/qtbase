@@ -4650,15 +4650,25 @@ void tst_QSortFilterProxyModel::checkSetNewModel()
     QTreeView tv;
     StepTreeModel model1;
     model1.setDepth(4);
-    StepTreeModel model2;
-    model2.setDepth(4);
 
     QSortFilterProxyModel proxy;
     proxy.setSourceModel(&model1);
     tv.setModel(&proxy);
     tv.show();
-    tv.expandAll(); // create persistent indexes
-    proxy.setSourceModel(&model2);
+    QVERIFY(QTest::qWaitForWindowExposed(&tv));
+    tv.expandAll();
+    {
+        StepTreeModel model2;
+        model2.setDepth(4);
+        proxy.setSourceModel(&model2);
+        tv.expandAll();
+        proxy.setSourceModel(&model1);
+        tv.expandAll();
+        // the destruction of model2 here caused a proxy model reset due to
+        // missing disconnect in setSourceModel()
+    }
+    // handle repaint events, will assert when qsortfilterproxymodel is in wrong state
+    QCoreApplication::processEvents();
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)

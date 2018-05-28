@@ -344,9 +344,13 @@ DEFINEFUNC5(int, EVP_CipherInit, EVP_CIPHER_CTX *ctx, ctx, const EVP_CIPHER *typ
 DEFINEFUNC6(int, EVP_CipherInit_ex, EVP_CIPHER_CTX *ctx, ctx, const EVP_CIPHER *cipher, cipher, ENGINE *impl, impl, const unsigned char *key, key, const unsigned char *iv, iv, int enc, enc, return 0, return)
 DEFINEFUNC5(int, EVP_CipherUpdate, EVP_CIPHER_CTX *ctx, ctx, unsigned char *out, out, int *outl, outl, const unsigned char *in, in, int inl, inl, return 0, return)
 DEFINEFUNC3(int, EVP_CipherFinal, EVP_CIPHER_CTX *ctx, ctx, unsigned char *out, out, int *outl, outl, return 0, return)
+#ifndef OPENSSL_NO_DES
 DEFINEFUNC(const EVP_CIPHER *, EVP_des_cbc, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(const EVP_CIPHER *, EVP_des_ede3_cbc, DUMMYARG, DUMMYARG, return 0, return)
+#endif
+#ifndef OPENSSL_NO_RC2
 DEFINEFUNC(const EVP_CIPHER *, EVP_rc2_cbc, DUMMYARG, DUMMYARG, return 0, return)
+#endif
 DEFINEFUNC(const EVP_MD *, EVP_sha1, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC3(int, EVP_PKEY_assign, EVP_PKEY *a, a, int b, b, char *c, c, return -1, return)
 DEFINEFUNC2(int, EVP_PKEY_set1_RSA, EVP_PKEY *a, a, RSA *b, b, return -1, return)
@@ -1108,9 +1112,13 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(EVP_CipherInit_ex)
     RESOLVEFUNC(EVP_CipherUpdate)
     RESOLVEFUNC(EVP_CipherFinal)
+#ifndef OPENSSL_NO_DES
     RESOLVEFUNC(EVP_des_cbc)
     RESOLVEFUNC(EVP_des_ede3_cbc)
+#endif
+#ifndef OPENSSL_NO_RC2
     RESOLVEFUNC(EVP_rc2_cbc)
+#endif
     RESOLVEFUNC(EVP_sha1)
     RESOLVEFUNC(EVP_PKEY_assign)
     RESOLVEFUNC(EVP_PKEY_set1_RSA)

@@ -34,9 +34,11 @@
 
     \image fetchmore-example.png
 
-    The user of the example can enter a directory in the \uicontrol
-    Directory line edit. The contents of the directory will
-    be listed in the list view below.
+
+    This example consists of a dialog where you can enter a directory
+    name in the \uicontrol Directory edit field. The application loads and
+    visualizes all files it finds as you are typing. It is not required
+    to press [Enter] to launch the search.
 
     When you have large - or perhaps even infinite - data sets, you
     will need to add items to the model in batches, and preferably only
