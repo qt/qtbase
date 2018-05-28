@@ -291,7 +291,7 @@ QUrl QFlatpakFileDialog::directory() const
 {
     Q_D(const QFlatpakFileDialog);
 
-    if (d->nativeFileDialog && options()->fileMode() == QFileDialogOptions::Directory)
+    if (d->nativeFileDialog && (options()->fileMode() == QFileDialogOptions::Directory || options()->fileMode() == QFileDialogOptions::DirectoryOnly))
         return d->nativeFileDialog->directory();
 
     return d->directory;
@@ -313,7 +313,7 @@ QList<QUrl> QFlatpakFileDialog::selectedFiles() const
 {
     Q_D(const QFlatpakFileDialog);
 
-    if (d->nativeFileDialog && options()->fileMode() == QFileDialogOptions::Directory)
+    if (d->nativeFileDialog && (options()->fileMode() == QFileDialogOptions::Directory || options()->fileMode() == QFileDialogOptions::DirectoryOnly))
         return d->nativeFileDialog->selectedFiles();
 
     QList<QUrl> files;
@@ -353,7 +353,7 @@ void QFlatpakFileDialog::exec()
 {
     Q_D(QFlatpakFileDialog);
 
-    if (d->nativeFileDialog && options()->fileMode() == QFileDialogOptions::Directory) {
+    if (d->nativeFileDialog && (options()->fileMode() == QFileDialogOptions::Directory || options()->fileMode() == QFileDialogOptions::DirectoryOnly)) {
         d->nativeFileDialog->exec();
         return;
     }
@@ -382,7 +382,7 @@ bool QFlatpakFileDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality wi
     d->modal = windowModality != Qt::NonModal;
     d->winId = parent ? parent->winId() : 0;
 
-    if (d->nativeFileDialog && options()->fileMode() == QFileDialogOptions::Directory)
+    if (d->nativeFileDialog && (options()->fileMode() == QFileDialogOptions::Directory || options()->fileMode() == QFileDialogOptions::DirectoryOnly))
         return d->nativeFileDialog->show(windowFlags, windowModality, parent);
 
     openPortal();
