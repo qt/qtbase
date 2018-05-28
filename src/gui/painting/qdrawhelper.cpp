@@ -3198,8 +3198,8 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
                 int y1 = qFloor(py);
                 int y2;
 
-                distxs[i] = qFloor((px - x1) * (1<<16));
-                distys[i] = qFloor((py - y1) * (1<<16));
+                distxs[i] = int((px - x1) * (1<<16));
+                distys[i] = int((py - y1) * (1<<16));
 
                 fetchTransformedBilinear_pixelBounds<blendType>(image.width, image.x1, image.x2 - 1, x1, x2);
                 fetchTransformedBilinear_pixelBounds<blendType>(image.height, image.y1, image.y2 - 1, y1, y2);
