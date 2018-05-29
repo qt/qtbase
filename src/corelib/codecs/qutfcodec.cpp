@@ -756,26 +756,16 @@ QByteArray QUtf16::convertFromUnicode(const QChar *uc, int len, QTextCodec::Conv
     char *data = d.data();
     if (!state || !(state->flags & QTextCodec::IgnoreHeader)) {
         QChar bom(QChar::ByteOrderMark);
-        if (endian == BigEndianness) {
-            data[0] = bom.row();
-            data[1] = bom.cell();
-        } else {
-            data[0] = bom.cell();
-            data[1] = bom.row();
-        }
+        if (endian == BigEndianness)
+            qToBigEndian(bom.unicode(), data);
+        else
+            qToLittleEndian(bom.unicode(), data);
         data += 2;
     }
-    if (endian == BigEndianness) {
-        for (int i = 0; i < len; ++i) {
-            *(data++) = uc[i].row();
-            *(data++) = uc[i].cell();
-        }
-    } else {
-        for (int i = 0; i < len; ++i) {
-            *(data++) = uc[i].cell();
-            *(data++) = uc[i].row();
-        }
-    }
+    if (endian == BigEndianness)
+        qToBigEndian<ushort>(uc, len, data);
+    else
+        qToLittleEndian<ushort>(uc, len, data);
 
     if (state) {
         state->remainingChars = 0;
@@ -891,20 +881,14 @@ QByteArray QUtf32::convertFromUnicode(const QChar *uc, int len, QTextCodec::Conv
     if (endian == BigEndianness) {
         while (i.hasNext()) {
             uint cp = i.next();
-
-            *(data++) = cp >> 24;
-            *(data++) = (cp >> 16) & 0xff;
-            *(data++) = (cp >> 8) & 0xff;
-            *(data++) = cp & 0xff;
+            qToBigEndian(cp, data);
+            data += 4;
         }
     } else {
         while (i.hasNext()) {
             uint cp = i.next();
-
-            *(data++) = cp & 0xff;
-            *(data++) = (cp >> 8) & 0xff;
-            *(data++) = (cp >> 16) & 0xff;
-            *(data++) = cp >> 24;
+            qToLittleEndian(cp, data);
+            data += 4;
         }
     }
 
