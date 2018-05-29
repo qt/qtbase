@@ -157,8 +157,7 @@
 
 - (CALayer *)makeBackingLayer
 {
-    bool makeMetalLayer = [self shouldUseMetalLayer:m_platformWindow->window()->surfaceType()];
-    if (makeMetalLayer) {
+    if ([self shouldUseMetalLayer:m_platformWindow->window()->surfaceType()]) {
         // Check if Metal is supported. If it isn't then it's most likely
         // too late at this point and the QWindow will be non-functional,
         // but we can at least print a warning.
@@ -183,7 +182,7 @@
 
 - (NSViewLayerContentsRedrawPolicy)layerContentsRedrawPolicy
 {
-    // We need to set this this excplicitly since the super implementation
+    // We need to set this explicitly since the super implementation
     // returns LayerContentsRedrawNever for custom layers like CAMetalLayer.
     return NSViewLayerContentsRedrawDuringViewResize;
 }
