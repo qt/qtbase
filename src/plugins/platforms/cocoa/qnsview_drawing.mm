@@ -147,12 +147,12 @@
     // on and off is not a supported use-case, so this code is effectively
     // returning a constant for the lifetime of our QSNSView, which means
     // we don't care about emitting KVO signals for @"wantsLayer".
-    bool layerRequested = qt_mac_resolveOption(false, m_platformWindow->window(),
+    bool wantsLayer = qt_mac_resolveOption(true, m_platformWindow->window(),
         "_q_mac_wantsLayer", "QT_MAC_WANTS_LAYER");
 
     bool layerForSurfaceType = [self shouldUseMetalLayer:m_platformWindow->window()->surfaceType()];
 
-    return layerRequested || layerForSurfaceType;
+    return wantsLayer || layerForSurfaceType;
 }
 
 - (CALayer *)makeBackingLayer
