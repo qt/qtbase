@@ -32,6 +32,7 @@
 #include <qlist.h>
 #include <qpair.h>
 #include <qheaderview.h>
+#include <qlineedit.h>
 
 #include <qtablewidget.h>
 
@@ -81,6 +82,7 @@ private slots:
     void itemData();
     void setItemData();
     void cellWidget();
+    void cellWidgetGeometry();
     void task231094();
     void task219380_removeLastRow();
     void task262056_sortDuplicate();
@@ -1421,6 +1423,28 @@ void tst_QTableWidget::cellWidget()
     QCOMPARE(table.cellWidget(5, 5), &widget);
     table.removeCellWidget(5, 5);
     QCOMPARE(table.cellWidget(5, 5), static_cast<QWidget*>(0));
+}
+
+void tst_QTableWidget::cellWidgetGeometry()
+{
+    QTableWidget tw(3,2);
+    tw.show();
+    // make sure the next row added is not completely visibile
+    tw.resize(300, tw.rowHeight(0) * 3 + tw.rowHeight(0) / 2);
+    QVERIFY(QTest::qWaitForWindowExposed(&tw));
+
+    tw.scrollToBottom();
+    tw.setRowCount(tw.rowCount() + 1);
+    auto item = new QTableWidgetItem("Hello");
+    tw.setItem(0,0,item);
+    auto le = new QLineEdit("world");
+    tw.setCellWidget(0,1,le);
+    // process delayedPendingLayout triggered by setting the row count
+    tw.doItemsLayout();
+    // so y pos is 0 for the first row
+    tw.scrollToTop();
+    // check if updateEditorGeometries has set the correct y pos for the editors
+    QCOMPARE(tw.visualItemRect(item).top(), le->geometry().top());
 }
 
 void tst_QTableWidget::task231094()

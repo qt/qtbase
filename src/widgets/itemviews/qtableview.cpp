@@ -1176,7 +1176,6 @@ void QTableView::doItemsLayout()
 {
     Q_D(QTableView);
     QAbstractItemView::doItemsLayout();
-    d->verticalHeader->d_func()->setScrollOffset(verticalScrollBar(), verticalScrollMode());
     if (!d->verticalHeader->updatesEnabled())
         d->verticalHeader->setUpdatesEnabled(true);
 }
@@ -2223,6 +2222,7 @@ void QTableView::updateGeometries()
         verticalScrollBar()->setRange(0, verticalLength - vsize.height());
         verticalScrollBar()->d_func()->itemviewChangeSingleStep(qMax(vsize.height() / (rowsInViewport + 1), 2));
     }
+    d->verticalHeader->d_func()->setScrollOffset(verticalScrollBar(), verticalScrollMode());
 
     d->geometryRecursionBlock = false;
     QAbstractItemView::updateGeometries();
