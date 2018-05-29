@@ -34,6 +34,7 @@ HEADERS +=  \
         tools/qlocale_p.h \
         tools/qlocale_tools_p.h \
         tools/qlocale_data_p.h \
+        tools/qmakearray_p.h \
         tools/qmap.h \
         tools/qmargins.h \
         tools/qmessageauthenticationcode.h \
