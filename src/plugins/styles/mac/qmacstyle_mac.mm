@@ -1675,13 +1675,13 @@ QRectF QMacStylePrivate::comboboxEditBounds(const QRectF &outerBounds, const Coc
     } else if (cw.type == Button_PopupButton) {
         switch (cw.size) {
         case QStyleHelper::SizeLarge:
-            ret.adjust(14, 1, -23, -4);
+            ret.adjust(10, 1, -23, -4);
             break;
         case QStyleHelper::SizeSmall:
-            ret.adjust(13, 4, -20, -3);
+            ret.adjust(10, 4, -20, -3);
             break;
         case QStyleHelper::SizeMini:
-            ret.adjust(12, 0, -19, 0);
+            ret.adjust(9, 0, -19, 0);
             ret.setHeight(13);
             break;
         default:
