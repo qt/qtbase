@@ -1001,7 +1001,6 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
 */
 
 /*!
-  \fn void QTreeWidgetItem::setHidden(bool hide)
   \since 4.2
 
   Hides the item if \a hide is true, otherwise shows the item.
@@ -1012,6 +1011,14 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
   \sa isHidden()
 */
 
+void QTreeWidgetItem::setHidden(bool ahide)
+{
+    if (view) {
+        view->setItemHidden(this, ahide);
+        d->hidden = ahide;
+    }
+}
+
 /*!
   \fn bool QTreeWidgetItem::isHidden() const
   \since 4.2
@@ -1020,6 +1027,11 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
 
   \sa setHidden()
 */
+
+bool QTreeWidgetItem::isHidden() const
+{
+    return (view ? d->hidden : false);
+}
 
 /*!
   \fn void QTreeWidgetItem::setExpanded(bool expand)
@@ -1648,6 +1660,25 @@ void QTreeWidgetItem::setFlags(Qt::ItemFlags flags)
     itemChanged();
 }
 
+void QTreeWidgetItemPrivate::updateHiddenStatus(QTreeWidgetItem *item, bool inserting)
+{
+    QTreeModel *model = (item->view ? qobject_cast<QTreeModel*>(item->view->model()) : 0);
+    if (!model)
+        return;
+    QStack<QTreeWidgetItem *> parents;
+    parents.push(item);
+    while (!parents.isEmpty()) {
+        QTreeWidgetItem *parent = parents.pop();
+        QModelIndex index = model->index(parent, 0);
+        if (parent->d->hidden)
+            item->view->setRowHidden(index.row(), index.parent(), inserting);
+        for (int i = 0; i < parent->children.count(); ++i) {
+            QTreeWidgetItem *child = parent->children.at(i);
+            parents.push(child);
+        }
+    }
+}
+
 void QTreeWidgetItemPrivate::propagateDisabled(QTreeWidgetItem *item)
 {
     Q_ASSERT(item);
@@ -1937,6 +1968,7 @@ void QTreeWidgetItem::insertChild(int index, QTreeWidgetItem *child)
                 stack.push(i->children.at(c));
         }
         children.insert(index, child);
+        d->updateHiddenStatus(child, true);
         model->endInsertItems();
         model->skipPendingSort = wasSkipSort;
     } else {
@@ -1974,6 +2006,7 @@ QTreeWidgetItem *QTreeWidgetItem::takeChild(int index)
     }
     if (index >= 0 && index < children.count()) {
         if (model) model->beginRemoveItems(this, index, 1);
+        d->updateHiddenStatus(children.at(index), false);
         QTreeWidgetItem *item = children.takeAt(index);
         item->par = 0;
         QStack<QTreeWidgetItem*> stack;
@@ -2052,6 +2085,7 @@ void QTreeWidgetItem::insertChildren(int index, const QList<QTreeWidgetItem*> &c
             this->children.insert(index + n, child);
             if (child->par)
                 d->propagateDisabled(child);
+            d->updateHiddenStatus(child, true);
         }
         if (model) model->endInsertItems();
     }
@@ -3099,6 +3133,8 @@ bool QTreeWidget::isItemHidden(const QTreeWidgetItem *item) const
 */
 void QTreeWidget::setItemHidden(const QTreeWidgetItem *item, bool hide)
 {
+    if (!item)
+        return;
     Q_D(QTreeWidget);
     if (item == d->treeModel()->headerItem) {
         header()->setHidden(hide);
@@ -3106,6 +3142,7 @@ void QTreeWidget::setItemHidden(const QTreeWidgetItem *item, bool hide)
         const QModelIndex index = d->index(item);
         setRowHidden(index.row(), index.parent(), hide);
     }
+    item->d->hidden = hide;
 }
 
 /*!

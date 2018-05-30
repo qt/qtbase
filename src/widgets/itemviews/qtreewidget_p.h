@@ -187,13 +187,16 @@ class QTreeWidgetItemPrivate
 {
 public:
     QTreeWidgetItemPrivate(QTreeWidgetItem *item)
-        : q(item), disabled(false), selected(false), rowGuess(-1), policy(QTreeWidgetItem::DontShowIndicatorWhenChildless) {}
+        : q(item), disabled(false), selected(false), hidden(false), rowGuess(-1),
+          policy(QTreeWidgetItem::DontShowIndicatorWhenChildless) {}
     void propagateDisabled(QTreeWidgetItem *item);
+    void updateHiddenStatus(QTreeWidgetItem *item, bool inserting);
     void sortChildren(int column, Qt::SortOrder order, bool climb);
     QTreeWidgetItem *q;
     QVariantList display;
     uint disabled : 1;
     uint selected : 1;
+    uint hidden : 1;
     int rowGuess;
     QTreeWidgetItem::ChildIndicatorPolicy policy;
 };

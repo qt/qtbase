@@ -160,6 +160,7 @@ private slots:
     void task20345_sortChildren();
     void getMimeDataWithInvalidItem();
     void testVisualItemRect();
+    void reparentHiddenItem();
 
 public slots:
     void itemSelectionChanged();
@@ -3496,6 +3497,35 @@ void tst_QTreeWidget::testVisualItemRect()
     tw.hideColumn(0);
     r = tw.visualItemRect(item);
     QCOMPARE(r.width(), sectionSize);
+}
+
+void tst_QTreeWidget::reparentHiddenItem()
+{
+    QTreeWidgetItem *parent = new QTreeWidgetItem(testWidget);
+    parent->setText(0, "parent");
+    QTreeWidgetItem *otherParent = new QTreeWidgetItem(testWidget);
+    otherParent->setText(0, "other parent");
+    QTreeWidgetItem *child = new QTreeWidgetItem(parent);
+    child->setText(0, "child");
+    QTreeWidgetItem *grandChild = new QTreeWidgetItem(child);
+    grandChild->setText(0, "grandchild");
+    QVERIFY(child->parent());
+    QVERIFY(grandChild->parent());
+
+    testWidget->expandItem(parent);
+    testWidget->expandItem(otherParent);
+    testWidget->expandItem(child);
+
+    QVERIFY(!parent->isHidden());
+    QVERIFY(!child->isHidden());
+    QVERIFY(!grandChild->isHidden());
+
+    grandChild->setHidden(true);
+
+    QVERIFY(grandChild->isHidden());
+    parent->removeChild(child);
+    otherParent->addChild(child);
+    QVERIFY(grandChild->isHidden());
 }
 
 QTEST_MAIN(tst_QTreeWidget)
