@@ -207,6 +207,7 @@ Q_SIGNALS:
     void returnPressed();
     void editingFinished();
     void selectionChanged();
+    void inputRejected();
 
 protected:
     void mousePressEvent(QMouseEvent *) override;

@@ -1674,6 +1674,16 @@ void QLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
 */
 
 /*!
+    \fn void QLineEdit::inputRejected()
+
+    This signal is emitted when the user presses a key that is not
+    considered to be acceptable input. For example, if a key press
+    results in a validator's validate() call to return Invalid.
+    Another case is when trying to enter in more characters beyond the
+    maximum length of the line edit.
+*/
+
+/*!
     Converts the given key press \a event into a line edit action.
 
     If Return or Enter is pressed and the current text is valid (or

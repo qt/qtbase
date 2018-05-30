@@ -545,6 +545,7 @@ Q_SIGNALS:
     void accepted();
     void editingFinished();
     void updateNeeded(const QRect &);
+    void inputRejected();
 
 #ifdef QT_KEYPAD_NAVIGATION
     void editFocusChange(bool);

@@ -304,7 +304,7 @@ private slots:
     void QTBUG59957_clearButtonLeftmostAction();
     void QTBUG_60319_setInputMaskCheckImSurroundingText();
     void testQuickSelectionWithMouse();
-
+    void inputRejected();
 protected slots:
     void editingFinished();
 
@@ -4818,6 +4818,45 @@ void tst_QLineEdit::testQuickSelectionWithMouse()
     QTest::mousePress(lineEdit.windowHandle(), Qt::LeftButton, Qt::NoModifier, center);
     QTest::mouseMove(lineEdit.windowHandle(), center + QPoint(1, -offset));
     QVERIFY(lineEdit.selectedText().endsWith(suffix));
+}
+
+void tst_QLineEdit::inputRejected()
+{
+    QLineEdit *testWidget = ensureTestWidget();
+    QSignalSpy spyInputRejected(testWidget, SIGNAL(inputRejected()));
+
+    QTest::keyClicks(testWidget, "abcde");
+    QCOMPARE(spyInputRejected.count(), 0);
+    testWidget->setText("fghij");
+    QCOMPARE(spyInputRejected.count(), 0);
+    testWidget->insert("k");
+    QCOMPARE(spyInputRejected.count(), 0);
+
+    testWidget->clear();
+    testWidget->setMaxLength(5);
+    QTest::keyClicks(testWidget, "abcde");
+    QCOMPARE(spyInputRejected.count(), 0);
+    QTest::keyClicks(testWidget, "fgh");
+    QCOMPARE(spyInputRejected.count(), 3);
+
+    testWidget->setMaxLength(INT_MAX);
+    testWidget->clear();
+    spyInputRejected.clear();
+    QIntValidator intValidator(1, 100);
+    testWidget->setValidator(&intValidator);
+    QTest::keyClicks(testWidget, "11");
+    QCOMPARE(spyInputRejected.count(), 0);
+    QTest::keyClicks(testWidget, "a#");
+    QCOMPARE(spyInputRejected.count(), 2);
+
+    testWidget->clear();
+    testWidget->setValidator(0);
+    spyInputRejected.clear();
+    testWidget->setInputMask("999.999.999.999;_");
+    QTest::keyClicks(testWidget, "11");
+    QCOMPARE(spyInputRejected.count(), 0);
+    QTest::keyClicks(testWidget, "a#");
+    QCOMPARE(spyInputRejected.count(), 2);
 }
 
 QTEST_MAIN(tst_QLineEdit)

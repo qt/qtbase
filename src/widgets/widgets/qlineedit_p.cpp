@@ -214,6 +214,7 @@ void QLineEditPrivate::init(const QString& txt)
 
     QObject::connect(control, SIGNAL(updateNeeded(QRect)),
             q, SLOT(_q_updateNeeded(QRect)));
+    QObject::connect(control, SIGNAL(inputRejected()), q, SIGNAL(inputRejected()));
 
     QStyleOptionFrame opt;
     q->initStyleOption(&opt);
