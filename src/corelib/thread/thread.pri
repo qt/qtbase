@@ -53,6 +53,8 @@ qtConfig(future) {
 }
 
 win32 {
+    HEADERS += thread/qatomic_msvc.h
+
     SOURCES += \
         thread/qmutex_win.cpp \
         thread/qthread_win.cpp \

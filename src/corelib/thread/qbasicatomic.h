@@ -45,8 +45,20 @@
 
 #if defined(QT_BOOTSTRAPPED)
 #  include <QtCore/qatomic_bootstrap.h>
-#else
+
+// If C++11 atomics are supported, use them!
+// Note that constexpr support is sometimes disabled in QNX builds but its
+// library has <atomic>.
+#elif defined(Q_COMPILER_ATOMICS) && (defined(Q_COMPILER_CONSTEXPR) || defined(Q_OS_QNX))
 #  include <QtCore/qatomic_cxx11.h>
+
+// We only support one fallback: MSVC, because even on version 2015, it lacks full constexpr support
+#elif defined(Q_CC_MSVC)
+#  include <QtCore/qatomic_msvc.h>
+
+// No fallback
+#else
+#  error "Qt requires C++11 support"
 #endif
 
 QT_WARNING_PUSH
