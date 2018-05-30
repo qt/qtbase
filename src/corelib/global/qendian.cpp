@@ -86,8 +86,9 @@ QT_BEGIN_NAMESPACE
     On CPU architectures where the host byte order is little-endian (such as x86) this
     will swap the byte order; otherwise it will just read from \a src.
 
-    \note Template type \c{T} can either be a qint16, qint32 or qint64. Other types of
-    integers, e.g., qlong, are not applicable.
+    \note Template type \c{T} can either be a quint16, qint16, quint32, qint32,
+    quint64, or qint64. Other types of integers, e.g., qlong, are not
+    applicable.
 
     \note Since Qt 5.7, the type of the \a src parameter is a void pointer.
 
@@ -145,8 +146,9 @@ QT_BEGIN_NAMESPACE
     On CPU architectures where the host byte order is big-endian (such as PowerPC) this
     will swap the byte order; otherwise it will just read from \a src.
 
-    \note Template type \c{T} can either be a qint16, qint32 or qint64. Other types of
-    integers, e.g., qlong, are not applicable.
+    \note Template type \c{T} can either be a quint16, qint16, quint32, qint32,
+    quint64, or qint64. Other types of integers, e.g., qlong, are not
+    applicable.
 
     \note Since Qt 5.7, the type of the \a src parameter is a void pointer.
 
@@ -202,7 +204,9 @@ QT_BEGIN_NAMESPACE
     Writes the number \a src with template type \c{T} to the memory location at \a dest
     in big-endian byte order.
 
-    Note that template type \c{T} can only be an integer data type (signed or unsigned).
+    \note Template type \c{T} can either be a quint16, qint16, quint32, qint32,
+    quint64, or qint64. Other types of integers, e.g., qlong, are not
+    applicable.
 
     There are no data alignment constraints for \a dest.
 
@@ -258,7 +262,9 @@ QT_BEGIN_NAMESPACE
     Writes the number \a src with template type \c{T} to the memory location at \a dest
     in little-endian byte order.
 
-    Note that template type \c{T} can only be an integer data type (signed or unsigned).
+    \note Template type \c{T} can either be a quint16, qint16, quint32, qint32,
+    quint64, or qint64. Other types of integers, e.g., qlong, are not
+    applicable.
 
     There are no data alignment constraints for \a dest.
 
@@ -324,7 +330,7 @@ QT_BEGIN_NAMESPACE
     \endlist
 
     \note Using this class may be slower than using native integers, so only use it when
-    an exact endian is needed.
+    an exact endianness is needed.
 */
 
 /*! \fn template <typename T> QLEInteger<T>::QLEInteger(T value)
@@ -443,7 +449,7 @@ QT_BEGIN_NAMESPACE
     \endlist
 
     \note Using this class may be slower than using native integers, so only use it when
-    an exact endian is needed.
+    an exact endianness is needed.
 */
 
 /*! \fn template <typename T> QBEInteger<T>::QBEInteger(T value)
