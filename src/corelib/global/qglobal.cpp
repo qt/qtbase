@@ -939,6 +939,8 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
 
     Rounds \a d to the nearest integer.
 
+    Rounds half up (e.g. 0.5 -> 1, -0.5 -> 0).
+
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 11A
@@ -948,6 +950,8 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
     \relates <QtGlobal>
 
     Rounds \a d to the nearest integer.
+
+    Rounds half up (e.g. 0.5f -> 1, -0.5f -> 0).
 
     Example:
 
@@ -959,6 +963,8 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
 
     Rounds \a d to the nearest 64-bit integer.
 
+    Rounds half up (e.g. 0.5 -> 1, -0.5 -> 0).
+
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 12A
@@ -968,6 +974,8 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
     \relates <QtGlobal>
 
     Rounds \a d to the nearest 64-bit integer.
+
+    Rounds half up (e.g. 0.5f -> 1, -0.5f -> 0).
 
     Example:
 
