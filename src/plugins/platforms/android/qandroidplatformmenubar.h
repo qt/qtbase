@@ -61,7 +61,7 @@ public:
     void handleReparent(QWindow *newParentWindow) override;
     QPlatformMenu *menuForTag(quintptr tag) const override;
 
-    QWindow *parentWindow() const;
+    QWindow *parentWindow() const override;
     PlatformMenusType menus() const;
     QMutex *menusListMutex();
 
