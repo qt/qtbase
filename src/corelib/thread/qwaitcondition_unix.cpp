@@ -206,7 +206,7 @@ void QWaitCondition::wakeAll()
 
 bool QWaitCondition::wait(QMutex *mutex, unsigned long time)
 {
-    if (time > std::numeric_limits<qint64>::max())
+    if (quint64(time) > quint64(std::numeric_limits<qint64>::max()))
         return wait(mutex, QDeadlineTimer(QDeadlineTimer::Forever));
     return wait(mutex, QDeadlineTimer(time));
 }
