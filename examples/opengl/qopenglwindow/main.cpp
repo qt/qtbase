@@ -92,7 +92,6 @@ private:
     QMatrix4x4 m_view;
     QMatrix4x4 m_model_triangle;
     QMatrix4x4 m_model_text;
-    QBrush m_brush;
 
     FragmentToy m_fragment_toy;
     QStaticText m_text_layout;
@@ -111,15 +110,11 @@ OpenGLWindow::OpenGLWindow()
     , m_text_layout("The triangle and this text is rendered with QPainter")
     , m_animate(true)
 {
+    setGeometry(300, 300, 500, 500);
+
     m_view.lookAt(QVector3D(3,1,1),
                   QVector3D(0,0,0),
                   QVector3D(0,1,0));
-
-    QLinearGradient gradient(QPointF(-1,-1), QPointF(1,1));
-    gradient.setColorAt(0, Qt::red);
-    gradient.setColorAt(1, Qt::green);
-
-    m_brush = QBrush(gradient);
 
     setAnimating(m_animate);
 }
@@ -134,11 +129,11 @@ void OpenGLWindow::paintGL()
     QMatrix4x4 mvp = m_projection * m_view * m_model_triangle;
     p.setTransform(mvp.toTransform(), true);
 
-    p.fillPath(painterPathForTriangle(), m_brush);
+    p.fillPath(painterPathForTriangle(), QBrush(QGradient(QGradient::NightFade)));
 
     QTransform text_transform = (m_window_painter_matrix * m_view * m_model_text).toTransform();
     p.setTransform(text_transform, false);
-    p.setPen(QPen(Qt::white));
+    p.setPen(QPen(Qt::black));
     m_text_layout.prepare(text_transform);
     qreal x = - (m_text_layout.size().width() / 2);
     qreal y = 0;
@@ -197,7 +192,7 @@ int main(int argc, char **argv)
     fmt.setDepthBufferSize(24);
     fmt.setStencilBufferSize(8);
     window.setFormat(fmt);
-    window.showMaximized();
+    window.show();
 
     return app.exec();
 }
