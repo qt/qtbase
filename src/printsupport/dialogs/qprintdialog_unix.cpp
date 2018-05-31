@@ -711,7 +711,7 @@ void QPrintDialogPrivate::selectPrinter(const QPrinter::OutputFormat outputForma
         case QPrint::DuplexNone:
             options.noDuplex->setChecked(true); break;
         case QPrint::DuplexLongSide:
-        case QPrinter::DuplexAuto:
+        case QPrint::DuplexAuto:
             options.duplexLong->setChecked(true); break;
         case QPrint::DuplexShortSide:
             options.duplexShort->setChecked(true); break;
