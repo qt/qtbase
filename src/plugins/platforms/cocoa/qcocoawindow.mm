@@ -1080,7 +1080,7 @@ void QCocoaWindow::windowDidChangeScreen()
         return;
 
     if (QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenForNSScreen(m_view.window.screen))
-        QWindowSystemInterface::handleWindowScreenChanged(window(), cocoaScreen->screen());
+        QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(window(), cocoaScreen->screen());
 }
 
 void QCocoaWindow::windowWillClose()
@@ -1419,7 +1419,7 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
     }
 
     if (targetScreen != window()->screen())
-        QWindowSystemInterface::handleWindowScreenChanged(window(), targetScreen);
+        QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(window(), targetScreen);
 
     nsWindow.restorable = NO;
     nsWindow.level = windowLevel(flags);
