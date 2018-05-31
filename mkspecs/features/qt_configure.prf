@@ -1951,7 +1951,8 @@ for(ever) {
     isEmpty(configsToProcess): \
         break()
 
-    currentConfig = config.$$take_first(configsToProcess)
+    thisConfig = $$take_first(configsToProcess)
+    currentConfig = config.$$thisConfig
     thisDir = $$eval($${currentConfig}.dir)
     jsonFile = $$thisDir/configure.json
     priFile = $$thisDir/configure.pri
@@ -1982,7 +1983,7 @@ for(ever) {
     subconfigs =
     for(n, $${currentConfig}.subconfigs._KEYS_) {
         subconfig = $$eval($${currentConfig}.subconfigs.$${n})
-        name = $$basename(subconfig)
+        name = $${thisConfig}_$$basename(subconfig)
         ex = $$eval(config.$${name}.dir)
         !isEmpty(ex): \
             error("Basename clash between $$thisDir/$$subconfig and $${ex}.")
