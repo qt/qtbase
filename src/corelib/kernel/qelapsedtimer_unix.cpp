@@ -48,7 +48,6 @@
 #include <time.h>
 #endif
 #include <unistd.h>
-#include <QDebug>
 
 #include <qatomic.h>
 #include "private/qcore_unix_p.h"

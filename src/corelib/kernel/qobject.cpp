@@ -1459,6 +1459,7 @@ QThread *QObject::thread() const
 void QObject::moveToThread(QThread *targetThread)
 {
     Q_D(QObject);
+
     if (d->threadData->thread == targetThread) {
         // object is already in this thread
         return;

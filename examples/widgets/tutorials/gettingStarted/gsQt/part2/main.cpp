@@ -49,7 +49,6 @@
 ****************************************************************************/
 
 #include <QtWidgets>
-#include <QtPlugin>
 
 int main(int argc, char *argv[])
 {
@@ -61,7 +60,7 @@ int main(int argc, char *argv[])
     QObject::connect(quitButton, SIGNAL(clicked()), qApp, SLOT(quit()));
 
     QVBoxLayout *layout = new QVBoxLayout;
-    //layout->addWidget(textEdit);
+    layout->addWidget(textEdit);
     layout->addWidget(quitButton);
 
     QWidget window;

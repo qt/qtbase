@@ -582,7 +582,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
         funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                                      GL_RENDERBUFFER, depth_buffer);
         funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
-                                        GL_RENDERBUFFER, stencil_buffer);
+                                     GL_RENDERBUFFER, stencil_buffer);
 #else
         if (samples != 0) {
             funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,

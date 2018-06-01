@@ -120,8 +120,6 @@
 
 #include <QtPlatformHeaders/qxcbwindowfunctions.h>
 
-#include <iostream>
-
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
 //#define ALIEN_DEBUG
@@ -1957,9 +1955,9 @@ void QWidgetPrivate::syncBackingStore()
 
 void QWidgetPrivate::syncBackingStore(const QRegion &region)
 {
-    if (paintOnScreen()) {
+    if (paintOnScreen())
         repaint_sys(region);
-    } else if (QWidgetBackingStore *bs = maybeBackingStore()) {
+    else if (QWidgetBackingStore *bs = maybeBackingStore()) {
         bs->sync(q_func(), region);
     }
 }
