@@ -778,7 +778,9 @@ QThreadData *QThreadData::current(bool createIfNecessary)
     if (!data && createIfNecessary) {
         data = new QThreadData;
         data->thread = new QAdoptedThread(data);
+        data->threadId.store(Qt::HANDLE(data->thread));
         data->deref();
+        data->isAdopted = true;
         if (!QCoreApplicationPrivate::theMainThread)
             QCoreApplicationPrivate::theMainThread = data->thread.load();
     }
