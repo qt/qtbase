@@ -322,6 +322,11 @@ private:
 
 Q_DECLARE_SHARED(QCborMap)
 
+inline QCborValue::QCborValue(QCborMap &&m)
+    : n(-1), container(m.d.take()), t(Map)
+{
+}
+
 inline QCborMap QCborValueRef::toMap() const
 {
     return concrete().toMap();

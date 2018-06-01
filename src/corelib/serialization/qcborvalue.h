@@ -139,7 +139,9 @@ public:
     QT_ASCII_CAST_WARN QCborValue(const char *s) : QCborValue(QString::fromUtf8(s)) {}
 #endif
     QCborValue(const QCborArray &a);
+    QCborValue(QCborArray &&a);
     QCborValue(const QCborMap &m);
+    QCborValue(QCborMap &&m);
     QCborValue(QCborTag tag, const QCborValue &taggedValue = QCborValue());
     QCborValue(QCborKnownTags t_, const QCborValue &tv = QCborValue())
         : QCborValue(QCborTag(t_), tv)

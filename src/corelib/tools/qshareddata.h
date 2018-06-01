@@ -159,6 +159,7 @@ public:
     inline T *operator->() const { return d; }
     inline T *data() const { return d; }
     inline const T *constData() const { return d; }
+    inline T *take() { T *x = d; d = nullptr; return x; }
 
     inline void detach() { if (d && d->ref.load() != 1) detach_helper(); }
 

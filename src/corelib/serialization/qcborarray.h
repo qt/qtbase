@@ -264,6 +264,11 @@ private:
 
 Q_DECLARE_SHARED(QCborArray)
 
+inline QCborValue::QCborValue(QCborArray &&a)
+    : n(-1), container(a.d.take()), t(Array)
+{
+}
+
 inline QCborArray QCborValueRef::toArray() const
 {
     return concrete().toArray();
