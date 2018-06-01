@@ -118,6 +118,10 @@
 #  include <taskLib.h>
 #endif
 
+#ifdef Q_OS_WASM
+#include <emscripten.h>
+#endif
+
 #ifdef QT_BOOTSTRAPPED
 #include <private/qtrace_p.h>
 #else
@@ -486,6 +490,13 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
 
 QCoreApplicationPrivate::~QCoreApplicationPrivate()
 {
+#ifdef Q_OS_WASM
+    EM_ASM(
+        // unmount persistent directory as IDBFS
+        // see also QTBUG-70002
+        FS.unmount('/home/web_user');
+    );
+#endif
 #ifndef QT_NO_QOBJECT
     cleanupThreadData();
 #endif
@@ -776,6 +787,17 @@ void QCoreApplicationPrivate::init()
 
     Q_ASSERT_X(!QCoreApplication::self, "QCoreApplication", "there should be only one application object");
     QCoreApplication::self = q;
+
+#ifdef Q_OS_WASM
+    EM_ASM(
+        // mount and sync persistent filesystem to sandbox
+        FS.mount(IDBFS, {}, '/home/web_user');
+        FS.syncfs(true, function(err) {
+            if (err)
+                Module.print(err);
+        });
+    );
+#endif
 
     // Store app name/version (so they're still available after QCoreApplication is destroyed)
     if (!coreappdata()->applicationNameSet)

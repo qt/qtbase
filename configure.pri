@@ -68,7 +68,7 @@ defineReplace(qtConfFunc_crossCompile) {
 }
 
 defineReplace(qtConfFunc_licenseCheck) {
-    exists($$QT_SOURCE_TREE/LICENSE.LGPL3)|exists($$QT_SOURCE_TREE/LICENSE.GPL2): \
+    exists($$QT_SOURCE_TREE/LICENSE.LGPL3)|exists($$QT_SOURCE_TREE/LICENSE.GPL2)|exists($$QT_SOURCE_TREE/LICENSE.GPL3): \
         hasOpenSource = true
     else: \
         hasOpenSource = false
@@ -187,8 +187,13 @@ defineReplace(qtConfFunc_licenseCheck) {
         theLicense = "GNU Lesser General Public License (LGPL) version 3"
         showWhat = "Type 'L' to view the GNU Lesser General Public License version 3 (LGPLv3)."
         gpl2Ok = false
+        gpl3Ok = false
         winrt {
             notTheLicense = "Note: GPL version 2 is not available on WinRT."
+        } else: wasm {
+            gpl3Ok = true
+            theLicense = "GNU General Public License (GPL) version 3"
+            showWhat = "Type 'G' to view the GNU General Public License version 3 (GPLv3)."
         } else: $$qtConfEvaluate("features.android-style-assets") {
             notTheLicense = "Note: GPL version 2 is not available due to using Android style assets."
         } else {
@@ -230,6 +235,8 @@ defineReplace(qtConfFunc_licenseCheck) {
                 licenseFile = $$QT_SOURCE_TREE/LICENSE.LGPL3
             } else: equals(commercial, no):equals(val, g):$$gpl2Ok {
                 licenseFile = $$QT_SOURCE_TREE/LICENSE.GPL2
+            } else: equals(commercial, no):equals(val, g):$$gpl3Ok {
+                licenseFile = $$QT_SOURCE_TREE/LICENSE.GPL3
             } else {
                 next()
             }
@@ -268,6 +275,8 @@ defineTest(qtConfTest_architecture) {
         content = $$cat($$test_out_dir/arch.exe, blob)
     else: android:exists($$test_out_dir/libarch.so): \
         content = $$cat($$test_out_dir/libarch.so, blob)
+    else: wasm:exists($$test_out_dir/arch.wasm): \
+        content = $$cat($$test_out_dir/arch.wasm, blob)
     else: \
         error("$$eval($${1}.label) detection binary not found.")
 

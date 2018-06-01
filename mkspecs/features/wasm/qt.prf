@@ -1,0 +1,12 @@
+
+qt_depends = $$resolve_depends(QT, "QT.")
+equals(TEMPLATE, app):contains(qt_depends, gui(-private)?) {
+    LIBS *= -L$$[QT_INSTALL_PLUGINS/get]/platforms
+
+    lib_name = wasm
+    lib_path_and_base = $$[QT_INSTALL_PLUGINS/get]/platforms/lib$${lib_name}$$qtPlatformTargetSuffix()
+    LIBS += -l$${lib_name}$$qtPlatformTargetSuffix() $$fromfile($${lib_path_and_base}.prl, QMAKE_PRL_LIBS)
+}
+
+load(qt)
+

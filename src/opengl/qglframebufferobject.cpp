@@ -103,6 +103,14 @@ extern QImage qt_gl_read_frame_buffer(const QSize&, bool, bool);
 #define GL_DRAW_FRAMEBUFFER 0x8CA9
 #endif
 
+#ifndef GL_DEPTH_STENCIL_ATTACHMENT
+#define GL_DEPTH_STENCIL_ATTACHMENT 0x821A
+#endif
+
+#ifndef GL_DEPTH_STENCIL
+#define GL_DEPTH_STENCIL 0x84F9
+#endif
+
 /*!
     \class QGLFramebufferObjectFormat
     \inmodule QtOpenGL
@@ -562,6 +570,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
         funcs.glGenRenderbuffers(1, &depth_buffer);
         funcs.glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer);
         Q_ASSERT(funcs.glIsRenderbuffer(depth_buffer));
+#ifndef Q_OS_WASM
         if (samples != 0 && funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample))
             funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
                 GL_DEPTH24_STENCIL8, size.width(), size.height());
@@ -574,6 +583,19 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
                                      GL_RENDERBUFFER, depth_buffer);
         funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
                                      GL_RENDERBUFFER, stencil_buffer);
+#else
+        // webgl does not allow separate depth and stencil attachments
+        if (samples != 0) {
+            funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
+                                                   GL_DEPTH_STENCIL, size.width(), size.height());
+        } else {
+            funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_STENCIL,
+                                        size.width(), size.height());
+        }
+        stencil_buffer = depth_buffer;
+        funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                                        GL_RENDERBUFFER, depth_buffer);
+#endif
 
         valid = checkFramebufferStatus();
         if (!valid) {

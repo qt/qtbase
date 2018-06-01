@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>APPNAME</title>
+    <style>
+      html, body { padding: 0; margin : 0; overflow:hidden; height: 100% }
+      /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+      canvas { border: 0px none; background-color: white; height:100%; width:100%; }
+    </style>
+  </head>
+  <body onload="init()">
+    <figure style="overflow:visible;" id="spinner">
+      <center style="margin-top:1.5em; line-height:150%">
+        <img src="qtlogo.svg"; width=320; height=200; style="display:block"> </img>
+        <strong>Qt for WebAssembly: APPNAME</strong>
+        <div id="status"></div>
+        <noscript>JavaScript is disabled. Please enable JavaScript to use this application.</noscript>
+      </center>
+    </figure>
+    <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+
+    <script type='text/javascript'>
+        function init() {
+          var spinner = document.getElementById('spinner');
+          var canvas = document.getElementById('canvas');
+          var status = document.getElementById('status')
+
+          var qtLoader = QtLoader({
+              showLoader: function(loaderStatus) {
+                  spinner.style.display = 'block';
+                  canvas.style.display = 'none';
+                  status.innerHTML = loaderStatus + "...";
+              },
+              showError: function(errorText) {
+                  status.innerHTML = errorText;
+                  spinner.style.display = 'block';
+                  canvas.style.display = 'none';
+              },
+              showExit: function() {
+                  status.innerHTML = "Application exit";
+                  if (qtLoader.exitCode !== undefined)
+                      status.innerHTML += " with code " + qtLoader.exitCode;
+                  if (qtLoader.exitText !== undefined)
+                      status.innerHTML += " (" + qtLoader.exitText + ")";
+                  spinner.style.display = 'block';
+                  canvas.style.display = 'none';
+              },
+              showCanvas: function() {
+                  spinner.style.display = 'none';
+                  canvas.style.display = 'block';
+                  return canvas;
+              },
+          });
+          qtLoader.loadEmscriptenModule("APPNAME");
+      }
+    </script>
+    <script type="text/javascript" src="qtloader.js"></script>
+  </body>
+</html>

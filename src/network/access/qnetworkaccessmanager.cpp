@@ -82,6 +82,9 @@
 #include <SystemConfiguration/SystemConfiguration.h>
 #include <Security/SecKeychain.h>
 #endif
+#ifdef Q_OS_WASM
+#include "qnetworkreplywasmimpl_p.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -1343,6 +1346,16 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 
     bool isLocalFile = req.url().isLocalFile();
     QString scheme = req.url().scheme();
+
+#ifdef Q_OS_WASM
+    if (scheme == QLatin1String("http") || scheme == QLatin1String("https")) {
+        QNetworkReplyWasmImpl *reply = new QNetworkReplyWasmImpl(this);
+        QNetworkReplyWasmImplPrivate *priv = reply->d_func();
+        priv->manager = this;
+        priv->setup(op, req, outgoingData);
+        return reply;
+    }
+#endif
 
     // fast path for GET on file:// URLs
     // The QNetworkAccessFileBackend will right now only be used for PUT

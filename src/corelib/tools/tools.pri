@@ -220,7 +220,7 @@ qtConfig(system-doubleconversion) {
 }
 
 # Note: libm should be present by default becaue this is C++
-unix:!macx-icc:!vxworks:!haiku:!integrity: LIBS_PRIVATE += -lm
+unix:!macx-icc:!vxworks:!haiku:!integrity:!wasm: LIBS_PRIVATE += -lm
 
 TR_EXCLUDE += ../3rdparty/*
 

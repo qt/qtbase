@@ -164,7 +164,8 @@
             },
             "sources": [
                 { "type": "pkgConfig", "args": "freetype2" },
-                { "type": "freetype", "libs": "-lfreetype" }
+                { "type": "freetype", "libs": "-lfreetype", "condition": "!config.wasm" },
+                { "type": "freetype", "libs": "-s USE_FREETYPE=1", "condition": "config.wasm" }
             ]
         },
         "fontconfig": {
@@ -308,7 +309,8 @@
                 { "libs": "-llibpng16", "condition": "config.msvc" },
                 { "libs": "-llibpng", "condition": "config.msvc" },
                 { "libs": "-lpng16", "condition": "!config.msvc" },
-                { "libs": "-lpng", "condition": "!config.msvc" }
+                { "libs": "-lpng", "condition": "!config.msvc" },
+                { "libs": "-s USE_LIBPNG=1", "condition": "config.wasm" }
             ],
             "use": [
                 { "lib": "zlib", "condition": "features.system-zlib" }
@@ -1111,7 +1113,7 @@
         },
         "opengles3": {
             "label": "OpenGL ES 3.0",
-            "condition": "features.opengles2 && !features.angle && tests.opengles3",
+            "condition": "features.opengles2 && !features.angle && tests.opengles3 && !config.wasm",
             "output": [
                 "publicFeature",
                 { "type": "define", "name": "QT_OPENGL_ES_3" }
@@ -1138,7 +1140,7 @@
             "enable": "input.opengl == 'desktop'",
             "disable": "input.opengl == 'es2' || input.opengl == 'dynamic' || input.opengl == 'no'",
             "condition": "(config.win32 && !config.winrt && !features.opengles2 && (config.msvc || libs.opengl))
-                          || (!config.watchos && !config.win32 && libs.opengl)"
+                          || (!config.watchos && !config.win32 && !config.wasm && libs.opengl)"
         },
         "opengl-dynamic": {
             "label": "Dynamic OpenGL",
