@@ -63,10 +63,6 @@
 #include "private/qobject_p.h"
 #include "QtGui/qbackingstore.h"
 
-// ### Remove the following include, once everybody includes
-//     qinternalmimedata_p.h for QInternalMimeData.
-#include "qinternalmimedata_p.h"
-
 QT_REQUIRE_CONFIG(draganddrop);
 
 QT_BEGIN_NAMESPACE
