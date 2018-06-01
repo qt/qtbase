@@ -45,8 +45,6 @@
 #include <qpoint.h>
 #include "qdnd_p.h"
 
-#ifndef QT_NO_DRAGANDDROP
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -420,5 +418,3 @@ void QDrag::cancel()
 */
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_DRAGANDDROP

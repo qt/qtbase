@@ -4430,6 +4430,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 
 /*!
     \macro Q_NAMESPACE
+    \relates QObject
     \since 5.8
 
     The Q_NAMESPACE macro can be used to add QMetaObject capabilities

@@ -7816,13 +7816,14 @@ void tst_QNetworkReply::closeDuringDownload()
     QFETCH(QUrl, url);
     QNetworkRequest request(url);
     QNetworkReply* reply = manager.get(request);
-    connect(reply, SIGNAL(readyRead()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QSignalSpy readyReadSpy(reply, &QNetworkReply::readyRead);
+    QVERIFY(readyReadSpy.wait(10000));
+    QSignalSpy destroySpy(reply, &QObject::destroyed);
     reply->close();
     reply->deleteLater();
-    QTest::qWait(1000); //cancelling ftp takes some time, this avoids a warning caused by test's cleanup() destroying the connection cache before the abort is finished
+    // Wait for destruction to avoid a warning caused by test's cleanup()
+    // destroying the connection cache before the abort is finished
+    QVERIFY(destroySpy.wait());
 }
 
 void tst_QNetworkReply::ftpAuthentication_data()

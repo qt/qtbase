@@ -118,7 +118,7 @@ QMimeData *QUrlModel::mimeData(const QModelIndexList &indexes) const
     return data;
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 
 /*!
     Decide based upon the data if it should be accepted or not
@@ -154,7 +154,7 @@ bool QUrlModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
     return true;
 }
 
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 /*!
     \reimp
@@ -391,7 +391,7 @@ void QSidebar::setModelAndUrls(QFileSystemModel *model, const QList<QUrl> &newUr
 
     connect(selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
             this, SLOT(clicked(QModelIndex)));
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     setDragDropMode(QAbstractItemView::DragDrop);
 #endif
     setContextMenuPolicy(Qt::CustomContextMenu);
@@ -405,13 +405,13 @@ QSidebar::~QSidebar()
 {
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 void QSidebar::dragEnterEvent(QDragEnterEvent *event)
 {
     if (urlModel->canDrop(event))
         QListView::dragEnterEvent(event);
 }
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 QSize QSidebar::sizeHint() const
 {

@@ -3,8 +3,6 @@ linux
 osx-10.12 ci
 [positioning:fake]
 osx-10.12 ci
-[modalWindowPosition]
-ubuntu-16.04
 [modalWithChildWindow]
 ubuntu-16.04
 # QTBUG-66851

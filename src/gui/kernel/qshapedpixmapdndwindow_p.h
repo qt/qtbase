@@ -55,6 +55,8 @@
 #include <QtGui/QRasterWindow>
 #include <QtGui/QPixmap>
 
+QT_REQUIRE_CONFIG(draganddrop);
+
 QT_BEGIN_NAMESPACE
 
 class QShapedPixmapWindow : public QRasterWindow

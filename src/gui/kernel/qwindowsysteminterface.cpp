@@ -43,11 +43,14 @@
 #include "private/qevent_p.h"
 #include "private/qtouchdevice_p.h"
 #include <QAbstractEventDispatcher>
-#include <qpa/qplatformdrag.h>
 #include <qpa/qplatformintegration.h>
 #include <qdebug.h>
 #include "qhighdpiscaling_p.h"
 #include <QtCore/qscopedvaluerollback.h>
+
+#if QT_CONFIG(draganddrop)
+#include <qpa/qplatformdrag.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -258,11 +261,12 @@ QT_DEFINE_QPA_EVENT_HANDLER(void, handleWindowStateChanged, QWindow *window, Qt:
     QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
-void QWindowSystemInterface::handleWindowScreenChanged(QWindow *window, QScreen *screen)
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleWindowScreenChanged, QWindow *window, QScreen *screen)
 {
+
     QWindowSystemInterfacePrivate::WindowScreenChangedEvent *e =
         new QWindowSystemInterfacePrivate::WindowScreenChangedEvent(window, screen);
-    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
 QT_DEFINE_QPA_EVENT_HANDLER(void, handleSafeAreaMarginsChanged, QWindow *window)
@@ -790,7 +794,7 @@ void QWindowSystemInterface::handleThemeChange(QWindow *window)
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 QPlatformDragQtResponse QWindowSystemInterface::handleDrag(QWindow *window, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
     return QGuiApplicationPrivate::processDrag(window, dropData, QHighDpi::fromNativeLocalPosition(p, window) ,supportedActions);
@@ -800,7 +804,7 @@ QPlatformDropQtResponse QWindowSystemInterface::handleDrop(QWindow *window, cons
 {
     return QGuiApplicationPrivate::processDrop(window, dropData, QHighDpi::fromNativeLocalPosition(p, window),supportedActions);
 }
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 /*!
     \fn static QWindowSystemInterface::handleNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result)

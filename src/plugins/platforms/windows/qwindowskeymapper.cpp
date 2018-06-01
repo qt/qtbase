@@ -102,6 +102,7 @@ QWindowsKeyMapper::QWindowsKeyMapper()
     QGuiApplication *app = static_cast<QGuiApplication *>(QGuiApplication::instance());
     QObject::connect(app, &QGuiApplication::applicationStateChanged,
                      app, clearKeyRecorderOnApplicationInActive);
+    changeKeyboard();
 }
 
 QWindowsKeyMapper::~QWindowsKeyMapper()
@@ -317,9 +318,9 @@ static const uint KeyTbl[] = { // Keyboard mapping table
     Qt::Key_9,          // 105   0x69   VK_NUMPAD9          | Numeric keypad 9 key
     Qt::Key_Asterisk,   // 106   0x6A   VK_MULTIPLY         | Multiply key
     Qt::Key_Plus,       // 107   0x6B   VK_ADD              | Add key
-    Qt::Key_Comma,      // 108   0x6C   VK_SEPARATOR        | Separator key
+    Qt::Key_unknown,    // 108   0x6C   VK_SEPARATOR        | Separator key (locale-dependent)
     Qt::Key_Minus,      // 109   0x6D   VK_SUBTRACT         | Subtract key
-    Qt::Key_Period,     // 110   0x6E   VK_DECIMAL          | Decimal key
+    Qt::Key_unknown,    // 110   0x6E   VK_DECIMAL          | Decimal key (locale-dependent)
     Qt::Key_Slash,      // 111   0x6F   VK_DIVIDE           | Divide key
     Qt::Key_F1,         // 112   0x70   VK_F1               | F1 key
     Qt::Key_F2,         // 113   0x71   VK_F2               | F2 key
@@ -810,7 +811,7 @@ bool QWindowsKeyMapper::translateKeyEvent(QWindow *widget, HWND hwnd,
 
     // Reset layout map when system keyboard layout is changed
     if (msg.message == WM_INPUTLANGCHANGE) {
-        deleteLayouts();
+        changeKeyboard();
         return true;
     }
 
@@ -830,7 +831,7 @@ bool QWindowsKeyMapper::translateKeyEvent(QWindow *widget, HWND hwnd,
     if (PeekMessage(&peekedMsg, hwnd, 0, 0, PM_NOREMOVE) && peekedMsg.message == WM_DEADCHAR)
         return true;
 
-    return translateKeyEventInternal(widget, msg, false);
+    return translateKeyEventInternal(widget, msg, false, result);
 }
 
 bool QWindowsKeyMapper::translateMultimediaKeyEventInternal(QWindow *window, const MSG &msg)
@@ -854,15 +855,19 @@ bool QWindowsKeyMapper::translateMultimediaKeyEventInternal(QWindow *window, con
     sendExtendedPressRelease(receiver, qtKey, Qt::KeyboardModifier(state), 0, 0, 0);
     // QTBUG-43343: Make sure to return false if Qt does not handle the key, otherwise,
     // the keys are not passed to the active media player.
+# if QT_CONFIG(shortcut)
     const QKeySequence sequence(Qt::Modifier(state) + qtKey);
     return QGuiApplicationPrivate::instance()->shortcutMap.hasShortcutForKeySequence(sequence);
+# else
+    return false;
+# endif
 #else
     Q_UNREACHABLE();
     return false;
 #endif
 }
 
-bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &msg, bool /* grab */)
+bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &msg, bool /* grab */, LRESULT *lResult)
 {
     const UINT msgType = msg.message;
 
@@ -1056,6 +1061,10 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
 
         QChar uch;
         if (PeekMessage(&wm_char, 0, charType, charType, PM_REMOVE)) {
+            if (QWindowsContext::filterNativeEvent(&wm_char, lResult))
+                return true;
+            if (receiver && QWindowsContext::filterNativeEvent(receiver, &wm_char, lResult))
+                return true;
             // Found a ?_CHAR
             uch = QChar(ushort(wm_char.wParam));
             if (uch.isHighSurrogate()) {
@@ -1264,8 +1273,19 @@ QList<int> QWindowsKeyMapper::possibleKeys(const QKeyEvent *e) const
     for (size_t i = 1; i < NumMods; ++i) {
         Qt::KeyboardModifiers neededMods = ModsTbl[i];
         quint32 key = kbItem.qtKey[i];
-        if (key && key != baseKey && ((keyMods & neededMods) == neededMods))
-            result << int(key + (keyMods & ~neededMods));
+        if (key && key != baseKey && ((keyMods & neededMods) == neededMods)) {
+            const Qt::KeyboardModifiers missingMods = keyMods & ~neededMods;
+            const int matchedKey = int(key) + missingMods;
+            const QList<int>::iterator it =
+                std::find_if(result.begin(), result.end(),
+                             [key] (int k) { return (k & ~Qt::KeyboardModifierMask) == key; });
+            // QTBUG-67200: Use the match with the least modifiers (prefer
+            // Shift+9 over Alt + Shift + 9) resulting in more missing modifiers.
+            if (it == result.end())
+                result << matchedKey;
+            else if (missingMods > (*it & Qt::KeyboardModifierMask))
+                *it = matchedKey;
+        }
     }
 
     return result;

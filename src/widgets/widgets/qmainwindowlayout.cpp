@@ -45,10 +45,12 @@
 #include "qdockwidget.h"
 #include "qdockwidget_p.h"
 #endif
+#if QT_CONFIG(toolbar)
 #include "qtoolbar_p.h"
-#include "qmainwindow.h"
 #include "qtoolbar.h"
 #include "qtoolbarlayout_p.h"
+#endif
+#include "qmainwindow.h"
 #include "qwidgetanimator_p.h"
 #if QT_CONFIG(rubberband)
 #include "qrubberband.h"
@@ -75,6 +77,7 @@
 #  include <qtextstream.h>
 #endif
 
+#include <private/qmenu_p.h>
 #include <private/qapplication_p.h>
 #include <private/qlayoutengine_p.h>
 #include <private/qwidgetresizehandler_p.h>
@@ -604,7 +607,7 @@ void QDockWidgetGroupWindow::apply()
 
 QMainWindowLayoutState::QMainWindowLayoutState(QMainWindow *win)
     :
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     toolBarAreaLayout(win),
 #endif
 #if QT_CONFIG(dockwidget)
@@ -629,9 +632,9 @@ QSize QMainWindowLayoutState::sizeHint() const
         result = centralWidgetItem->sizeHint();
 #endif
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     result = toolBarAreaLayout.sizeHint(result);
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 
     return result;
 }
@@ -647,16 +650,16 @@ QSize QMainWindowLayoutState::minimumSize() const
         result = centralWidgetItem->minimumSize();
 #endif
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     result = toolBarAreaLayout.minimumSize(result);
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 
     return result;
 }
 
 void QMainWindowLayoutState::apply(bool animated)
 {
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     toolBarAreaLayout.apply(animated);
 #endif
 
@@ -675,12 +678,12 @@ void QMainWindowLayoutState::apply(bool animated)
 void QMainWindowLayoutState::fitLayout()
 {
     QRect r;
-#ifdef QT_NO_TOOLBAR
+#if !QT_CONFIG(toolbar)
     r = rect;
 #else
     toolBarAreaLayout.rect = rect;
     r = toolBarAreaLayout.fitLayout();
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 
 #if QT_CONFIG(dockwidget)
     dockAreaLayout.rect = r;
@@ -692,7 +695,7 @@ void QMainWindowLayoutState::fitLayout()
 
 void QMainWindowLayoutState::deleteAllLayoutItems()
 {
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     toolBarAreaLayout.deleteAllLayoutItems();
 #endif
 
@@ -714,7 +717,7 @@ void QMainWindowLayoutState::deleteCentralWidgetItem()
 
 QLayoutItem *QMainWindowLayoutState::itemAt(int index, int *x) const
 {
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     if (QLayoutItem *ret = toolBarAreaLayout.itemAt(x, index))
         return ret;
 #endif
@@ -732,7 +735,7 @@ QLayoutItem *QMainWindowLayoutState::itemAt(int index, int *x) const
 
 QLayoutItem *QMainWindowLayoutState::takeAt(int index, int *x)
 {
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     if (QLayoutItem *ret = toolBarAreaLayout.takeAt(x, index))
         return ret;
 #endif
@@ -755,7 +758,7 @@ QList<int> QMainWindowLayoutState::indexOf(QWidget *widget) const
 {
     QList<int> result;
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     // is it a toolbar?
     if (QToolBar *toolBar = qobject_cast<QToolBar*>(widget)) {
         result = toolBarAreaLayout.indexOf(toolBar);
@@ -790,7 +793,7 @@ bool QMainWindowLayoutState::contains(QWidget *widget) const
         return true;
 #endif
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     if (!toolBarAreaLayout.indexOf(widget).isEmpty())
         return true;
 #endif
@@ -833,7 +836,7 @@ QList<int> QMainWindowLayoutState::gapIndex(QWidget *widget,
 {
     QList<int> result;
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     // is it a toolbar?
     if (qobject_cast<QToolBar*>(widget) != 0) {
         result = toolBarAreaLayout.gapIndex(pos);
@@ -871,7 +874,7 @@ bool QMainWindowLayoutState::insertGap(const QList<int> &path, QLayoutItem *item
 
     int i = path.first();
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     if (i == 0) {
         Q_ASSERT(qobject_cast<QToolBar*>(item->widget()) != 0);
         return toolBarAreaLayout.insertGap(path.mid(1), item);
@@ -892,7 +895,7 @@ void QMainWindowLayoutState::remove(const QList<int> &path)
 {
     int i = path.first();
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     if (i == 0)
         toolBarAreaLayout.remove(path.mid(1));
 #endif
@@ -905,7 +908,7 @@ void QMainWindowLayoutState::remove(const QList<int> &path)
 
 void QMainWindowLayoutState::remove(QLayoutItem *item)
 {
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     toolBarAreaLayout.remove(item);
 #endif
 
@@ -921,7 +924,7 @@ void QMainWindowLayoutState::remove(QLayoutItem *item)
 
 void QMainWindowLayoutState::clear()
 {
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     toolBarAreaLayout.clear();
 #endif
 
@@ -943,7 +946,7 @@ QLayoutItem *QMainWindowLayoutState::item(const QList<int> &path)
 {
     int i = path.first();
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     if (i == 0) {
         const QToolBarAreaLayoutItem *tbItem = toolBarAreaLayout.item(path.mid(1));
         Q_ASSERT(tbItem);
@@ -963,7 +966,7 @@ QRect QMainWindowLayoutState::itemRect(const QList<int> &path) const
 {
     int i = path.first();
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     if (i == 0)
         return toolBarAreaLayout.itemRect(path.mid(1));
 #endif
@@ -980,7 +983,7 @@ QRect QMainWindowLayoutState::gapRect(const QList<int> &path) const
 {
     int i = path.first();
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     if (i == 0)
         return toolBarAreaLayout.itemRect(path.mid(1));
 #endif
@@ -997,7 +1000,7 @@ QLayoutItem *QMainWindowLayoutState::plug(const QList<int> &path)
 {
     int i = path.first();
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     if (i == 0)
         return toolBarAreaLayout.plug(path.mid(1));
 #endif
@@ -1014,7 +1017,7 @@ QLayoutItem *QMainWindowLayoutState::unplug(const QList<int> &path, QMainWindowL
 {
     int i = path.first();
 
-#ifdef QT_NO_TOOLBAR
+#if !QT_CONFIG(toolbar)
     Q_UNUSED(other);
 #else
     if (i == 0)
@@ -1045,7 +1048,7 @@ void QMainWindowLayoutState::saveState(QDataStream &stream) const
     }
 #endif
 #endif
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     toolBarAreaLayout.saveState(stream);
 #endif
 }
@@ -1092,7 +1095,7 @@ bool QMainWindowLayoutState::checkFormat(QDataStream &stream)
         stream >> marker;
         switch(marker)
         {
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
             case QToolBarAreaLayout::ToolBarStateMarker:
             case QToolBarAreaLayout::ToolBarStateMarkerEx:
                 {
@@ -1102,7 +1105,7 @@ bool QMainWindowLayoutState::checkFormat(QDataStream &stream)
                     }
                 }
                 break;
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 
 #if QT_CONFIG(dockwidget)
             case QDockAreaLayout::DockWidgetStateMarker:
@@ -1211,7 +1214,7 @@ bool QMainWindowLayoutState::restoreState(QDataStream &_stream,
 #endif // QT_CONFIG(tabwidget)
 #endif // QT_CONFIG(dockwidget)
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
             case QToolBarAreaLayout::ToolBarStateMarker:
             case QToolBarAreaLayout::ToolBarStateMarkerEx:
                 {
@@ -1232,7 +1235,7 @@ bool QMainWindowLayoutState::restoreState(QDataStream &_stream,
                     }
                 }
                 break;
-#endif //QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
             default:
                 return false;
         }// switch
@@ -1246,7 +1249,7 @@ bool QMainWindowLayoutState::restoreState(QDataStream &_stream,
 ** QMainWindowLayoutState - toolbars
 */
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
 
 static inline void validateToolBarArea(Qt::ToolBarArea &area)
 {
@@ -1421,7 +1424,7 @@ void QMainWindowLayout::toggleToolBarsVisible()
     }
 }
 
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 
 /******************************************************************************
 ** QMainWindowLayoutState - dock areas
@@ -1904,7 +1907,7 @@ QLayoutItem *QMainWindowLayout::takeAt(int index)
             layoutState.remove(ret);
         }
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
         if (!currentGapPos.isEmpty() && currentGapPos.constFirst() == 0) {
             currentGapPos = layoutState.toolBarAreaLayout.currentGapIndex();
             if (!currentGapPos.isEmpty()) {
@@ -2016,7 +2019,7 @@ void QMainWindowLayout::setCurrentHoveredFloat(QDockWidgetGroupWindow *w)
 
 static void fixToolBarOrientation(QLayoutItem *item, int dockPos)
 {
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     QToolBar *toolBar = qobject_cast<QToolBar*>(item->widget());
     if (toolBar == 0)
         return;
@@ -2143,7 +2146,7 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
 {
     //this function is called from within the Widget Animator whenever an animation is finished
     //on a certain widget
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     if (QToolBar *tb = qobject_cast<QToolBar*>(widget)) {
         QToolBarLayout *tbl = qobject_cast<QToolBarLayout*>(tb->layout());
         if (tbl->animating) {
@@ -2214,7 +2217,7 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
             dw->d_func()->plug(currentGapRect);
         }
 #endif
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
         if (QToolBar *tb = qobject_cast<QToolBar*>(widget))
             tb->d_func()->plug(currentGapRect);
 #endif
@@ -2460,7 +2463,7 @@ QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, bool group)
         }
     }
 #endif // QT_CONFIG(dockwidget)
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     if (QToolBar *tb = qobject_cast<QToolBar*>(widget)) {
         tb->d_func()->unplug(r);
     }
@@ -2606,7 +2609,7 @@ void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
         if (qobject_cast<QDockWidgetGroupWindow *>(widget))
             allowed = true;
 #endif
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
         if (QToolBar *tb = qobject_cast<QToolBar*>(widget))
             allowed = tb->isAreaAllowed(toToolBarArea(path.at(1)));
 #endif

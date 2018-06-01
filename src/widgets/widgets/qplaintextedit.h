@@ -247,7 +247,7 @@ protected:
 #ifndef QT_NO_CONTEXTMENU
     virtual void contextMenuEvent(QContextMenuEvent *e) override;
 #endif
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     virtual void dragEnterEvent(QDragEnterEvent *e) override;
     virtual void dragLeaveEvent(QDragLeaveEvent *e) override;
     virtual void dragMoveEvent(QDragMoveEvent *e) override;

@@ -850,7 +850,7 @@ void QGraphicsViewPrivate::storeDragDropEvent(const QGraphicsSceneDragDropEvent 
 void QGraphicsViewPrivate::populateSceneDragDropEvent(QGraphicsSceneDragDropEvent *dest,
                                                       QDropEvent *source)
 {
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     Q_Q(QGraphicsView);
     dest->setScenePos(q->mapToScene(source->pos()));
     dest->setScreenPos(q->mapToGlobal(source->pos()));

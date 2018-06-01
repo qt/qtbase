@@ -53,7 +53,9 @@
 #include "qpushbutton.h"
 #include "qstyle.h"
 #include "qstyleoption.h"
+#if QT_CONFIG(toolbar)
 #include "qtoolbar.h"
+#endif
 #include "qdebug.h"
 #include "qlayoutitem.h"
 #if QT_CONFIG(dialogbuttonbox)
@@ -596,7 +598,7 @@ QPoint QPushButtonPrivate::adjustedMenuPosition()
     Q_Q(QPushButton);
 
     bool horizontal = true;
-#if !defined(QT_NO_TOOLBAR)
+#if QT_CONFIG(toolbar)
     QToolBar *tb = qobject_cast<QToolBar*>(parent);
     if (tb && tb->orientation() == Qt::Vertical)
         horizontal = false;

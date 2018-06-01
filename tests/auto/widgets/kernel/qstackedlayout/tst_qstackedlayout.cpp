@@ -103,7 +103,7 @@ void tst_QStackedLayout::init()
     // make sure the tests work with focus follows mouse
     QCursor::setPos(testWidget->geometry().center());
     testWidget->activateWindow();
-    QTest::qWait(250);
+    QVERIFY(QTest::qWaitForWindowActive(testWidget));
 }
 
 void tst_QStackedLayout::cleanup()
@@ -251,24 +251,13 @@ void tst_QStackedLayout::removeWidget()
     testLayout->addWidget(w2);
     vbox->addLayout(testLayout);
     top->setFocus();
-    QTest::qWait(100);
     top->activateWindow();
-    QTest::qWait(100);
-    int i =0;
-    for (;;) {
-        if (QApplication::focusWidget() == top)
-            break;
-        else if (i >= 5)
-            QSKIP("Can't get focus");
-        QTest::qWait(100);
-        ++i;
-    }
-    QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(top));
+    QTRY_COMPARE(QApplication::focusWidget(), top);
 
     // focus should stay at the 'top' widget
     testLayout->removeWidget(w1);
 
-    QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(top));
+    QCOMPARE(QApplication::focusWidget(), top);
 }
 
 class LineEdit : public QLineEdit

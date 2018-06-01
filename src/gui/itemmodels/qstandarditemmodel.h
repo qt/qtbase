@@ -179,7 +179,7 @@ public:
     QT_DEPRECATED void setTristate(bool tristate);
 #endif
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     inline bool isDragEnabled() const {
         return (flags() & Qt::ItemIsDragEnabled) != 0;
     }
@@ -189,7 +189,7 @@ public:
         return (flags() & Qt::ItemIsDropEnabled) != 0;
     }
     void setDropEnabled(bool dropEnabled);
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
     QStandardItem *parent() const;
     int row() const;

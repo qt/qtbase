@@ -549,7 +549,8 @@ void tst_QTabWidget::paintEventCount()
     QCOMPARE(tw->currentIndex(), 0);
 
     tw->show();
-
+    QVERIFY(QTest::qWaitForWindowExposed(tw));
+    // Wait for extra paint events that happen at least on macOS
     QTest::qWait(1000);
 
     // Mac, Windows and Windows CE get multiple repaints on the first show, so use those as a starting point.

@@ -84,7 +84,7 @@ public:
 #ifndef QT_NO_CLIPBOARD
     QPlatformClipboard *clipboard() const override;
 #endif
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     QPlatformDrag *drag() const override;
 #endif
 

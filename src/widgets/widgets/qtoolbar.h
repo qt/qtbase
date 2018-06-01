@@ -44,10 +44,9 @@
 #include <QtWidgets/qaction.h>
 #include <QtWidgets/qwidget.h>
 
+QT_REQUIRE_CONFIG(toolbar);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_TOOLBAR
 
 class QToolBarPrivate;
 
@@ -210,8 +209,6 @@ private:
 
 inline QAction *QToolBar::actionAt(int ax, int ay) const
 { return actionAt(QPoint(ax, ay)); }
-
-#endif // QT_NO_TOOLBAR
 
 QT_END_NAMESPACE
 

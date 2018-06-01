@@ -1953,11 +1953,12 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                         }
                         QT_PCLOSE(proc);
                         if(!indeps.isEmpty()) {
+                            QDir outDir(Option::output_dir);
                             // ### This is basically fubar. Add 'lines' flag to CONFIG?
                             QStringList dep_cmd_deps = indeps.replace('\n', ' ').simplified().split(' ');
                             for(int i = 0; i < dep_cmd_deps.count(); ++i) {
                                 QString &file = dep_cmd_deps[i];
-                                QString absFile = QDir(Option::output_dir).absoluteFilePath(file);
+                                QString absFile = outDir.absoluteFilePath(file);
                                 if (exists(absFile)) {
                                     file = absFile;
                                 } else {
@@ -1965,8 +1966,9 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                                     QList<QMakeLocalFileName> depdirs = QMakeSourceFileInfo::dependencyPaths();
                                     for (QList<QMakeLocalFileName>::Iterator dit = depdirs.begin();
                                         dit != depdirs.end(); ++dit) {
-                                        if (exists((*dit).local() + '/' + file)) {
-                                            localFile = (*dit).local() + '/' + file;
+                                        QString lf = outDir.absoluteFilePath((*dit).local() + '/' + file);
+                                        if (exists(lf)) {
+                                            localFile = lf;
                                             break;
                                         }
                                     }
@@ -2045,11 +2047,12 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                     }
                     QT_PCLOSE(proc);
                     if(!indeps.isEmpty()) {
+                        QDir outDir(Option::output_dir);
                         // ### This is basically fubar. Add 'lines' flag to CONFIG?
                         QStringList dep_cmd_deps = indeps.replace('\n', ' ').simplified().split(' ');
                         for(int i = 0; i < dep_cmd_deps.count(); ++i) {
                             QString &file = dep_cmd_deps[i];
-                            QString absFile = QDir(Option::output_dir).absoluteFilePath(file);
+                            QString absFile = outDir.absoluteFilePath(file);
                             if (exists(absFile)) {
                                 file = absFile;
                             } else {
@@ -2057,8 +2060,9 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                                 QList<QMakeLocalFileName> depdirs = QMakeSourceFileInfo::dependencyPaths();
                                 for (QList<QMakeLocalFileName>::Iterator dit = depdirs.begin();
                                     dit != depdirs.end(); ++dit) {
-                                    if (exists((*dit).local() + '/' + file)) {
-                                        localFile = (*dit).local() + '/' + file;
+                                    QString lf = outDir.absoluteFilePath((*dit).local() + '/' + file);
+                                    if (exists(lf)) {
+                                        localFile = lf;
                                         break;
                                     }
                                 }

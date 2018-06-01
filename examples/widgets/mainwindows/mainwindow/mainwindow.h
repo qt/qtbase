@@ -77,6 +77,8 @@ public slots:
     void createDockWidget();
     void destroyDockWidget(QAction *action);
 
+    void about();
+
 private:
     void setupToolBar();
     void setupMenuBar();

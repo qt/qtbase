@@ -111,7 +111,9 @@
 #include "qdrawutil.h"
 
 #include <limits.h>
+#if QT_CONFIG(toolbar)
 #include <QtWidgets/qtoolbar.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -1979,7 +1981,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
             if (frm->features & QStyleOptionFrame::Flat)
                 extraClass |= PseudoClass_Flat;
         }
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
         else if (const QStyleOptionToolBar *tb = qstyleoption_cast<const QStyleOptionToolBar *>(opt)) {
             if (tb->toolBarArea == Qt::LeftToolBarArea)
                 extraClass |= PseudoClass_Left;
@@ -1999,7 +2001,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
             else if (tb->positionWithinLine == QStyleOptionToolBar::OnlyOne)
                 extraClass |= PseudoClass_OnlyOne;
         }
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 #if QT_CONFIG(toolbox)
         else if (const QStyleOptionToolBox *tb = qstyleoption_cast<const QStyleOptionToolBox *>(opt)) {
             if (tb->position == QStyleOptionToolBox::OnlyOneTab)
@@ -3594,13 +3596,13 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
         if (rule.hasBorder()) {
             rule.drawBorder(p, rule.borderRect(opt->rect));
         } else {
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
             if (const QStyleOptionToolBar *tb = qstyleoption_cast<const QStyleOptionToolBar *>(opt)) {
                 QStyleOptionToolBar newTb(*tb);
                 newTb.rect = rule.borderRect(opt->rect);
                 baseStyle()->drawControl(ce, &newTb, p, w);
             }
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
         }
         return;
 
@@ -3837,7 +3839,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
         if(hasStyleRule(w, PseudoElement_HeaderViewSection)) {
             QRenderRule subRule = renderRule(w, opt, PseudoElement_HeaderViewSection);
             if (!subRule.hasNativeBorder() || !subRule.baseStyleCanDraw()
-                || subRule.hasBackground() || subRule.hasPalette()) {
+                || subRule.hasBackground() || subRule.hasPalette() || subRule.hasFont) {
                 ParentStyle::drawControl(ce, opt, p, w);
                 return;
             }
@@ -3874,12 +3876,14 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             QStyleOptionHeader hdr(*header);
             QRenderRule subRule = renderRule(w, opt, PseudoElement_HeaderViewSection);
             subRule.configurePalette(&hdr.palette, QPalette::ButtonText, QPalette::Button);
-            QFont oldFont = p->font();
-            if (subRule.hasFont)
+            if (subRule.hasFont) {
+                QFont oldFont = p->font();
                 p->setFont(subRule.font.resolve(p->font()));
-            baseStyle()->drawControl(ce, &hdr, p, w);
-            if (subRule.hasFont)
+                ParentStyle::drawControl(ce, &hdr, p, w);
                 p->setFont(oldFont);
+            } else {
+                baseStyle()->drawControl(ce, &hdr, p, w);
+            }
             return;
         }
         break;
@@ -4983,11 +4987,13 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                     if (!subRule.hasGeometry()) {
                         QSize nativeContentsSize;
                         bool nullIcon = hdr->icon.isNull();
+                        const int margin = pixelMetric(QStyle::PM_HeaderMargin, hdr, w);
                         int iconSize = nullIcon ? 0 : pixelMetric(QStyle::PM_SmallIconSize, hdr, w);
                         const QSize txt = subRule.hasFont ? QFontMetrics(subRule.font).size(0, hdr->text)
                                                           : hdr->fontMetrics.size(0, hdr->text);
-                        nativeContentsSize.setHeight(qMax(iconSize, txt.height()));
-                        nativeContentsSize.setWidth(iconSize + txt.width());
+                        nativeContentsSize.setHeight(margin + qMax(iconSize, txt.height()) + margin);
+                        nativeContentsSize.setWidth((nullIcon ? 0 : margin) + iconSize
+                                                    + (hdr->text.isNull() ? 0 : margin) + txt.width() + margin);
                         sz = sz.expandedTo(nativeContentsSize);
                     }
                     return subRule.size(sz);
@@ -5919,12 +5925,12 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
         return positionRect(w, subRule, subRule2, pe, opt->rect, opt->direction);
                                    }
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     case SE_ToolBarHandle:
         if (hasStyleRule(w, PseudoElement_ToolBarHandle))
             return ParentStyle::subElementRect(se, opt, w);
         break;
-#endif //QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 
     // On mac we make pixel adjustments to layouts which are not
     // desireable when you have custom style sheets on them

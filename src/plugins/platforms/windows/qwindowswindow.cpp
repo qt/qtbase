@@ -1144,11 +1144,11 @@ void QWindowsWindow::initialize()
         const Qt::WindowState state = w->windowState();
         if (state != Qt::WindowMaximized && state != Qt::WindowFullScreen
             && creationContext->requestedGeometryIn != creationContext->obtainedGeometry) {
-            QWindowSystemInterface::handleGeometryChange(w, creationContext->obtainedGeometry);
+            QWindowSystemInterface::handleGeometryChange<QWindowSystemInterface::SynchronousDelivery>(w, creationContext->obtainedGeometry);
         }
         QPlatformScreen *obtainedScreen = screenForGeometry(creationContext->obtainedGeometry);
         if (obtainedScreen && screen() != obtainedScreen)
-            QWindowSystemInterface::handleWindowScreenChanged(w, obtainedScreen->screen());
+            QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(w, obtainedScreen->screen());
     }
 }
 
@@ -1248,7 +1248,7 @@ void QWindowsWindow::setDropSiteEnabled(bool dropEnabled)
         RevokeDragDrop(m_data.hwnd);
         m_dropTarget = 0;
     }
-#endif // !QT_NO_CLIPBOARD && !QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(clipboard) && QT_CONFIG(draganddrop)
 }
 
 // Returns topmost QWindowsWindow ancestor even if there are embedded windows in the chain.

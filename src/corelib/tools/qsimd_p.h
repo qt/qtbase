@@ -219,9 +219,8 @@
 // AVX intrinsics
 #  if defined(__AVX__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS) && (defined(Q_CC_INTEL) || defined(Q_CC_MSVC))
 // AES, PCLMULQDQ instructions:
-// All processors that support AVX support AES, PCLMULQDQ
-// (but neither MSVC nor the Intel compiler define these macros)
-#    define __AES__                         1
+// All processors that support AVX support PCLMULQDQ
+// (but neither MSVC nor the Intel compiler define this macro)
 #    define __PCLMUL__                      1
 #  endif
 

@@ -83,10 +83,10 @@ warnings_are_errors:warning_clean {
     # compiler.
     clang {
         # Apple clang 4.0-4.2,5.0-5.1,6.0-6.4,7.0-7.3
-        # Regular clang 3.x-5.0
+        # Regular clang 3.x-6.0
         apple_ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
         reg_ver = $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}
-        contains(apple_ver, "4\\.[012]|5\\.[01]|6\\.[01234]|7\\.[0123]")|contains(reg_ver, "[34]\\.|5\\.0") {
+        contains(apple_ver, "4\\.[012]|5\\.[01]|6\\.[01234]|7\\.[0123]")|contains(reg_ver, "[345]\\.|6\\.0") {
             QMAKE_CXXFLAGS_WARN_ON += -Werror -Wno-error=\\$${LITERAL_HASH}warnings -Wno-error=deprecated-declarations $$WERROR
         }
     } else:intel_icc:linux {

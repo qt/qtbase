@@ -296,7 +296,7 @@ typedef Q_DECL_DEPRECATED QStyleOptionTab QStyleOptionTabV3;
 #endif // QT_CONFIG(tabbar)
 
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
 
 class Q_WIDGETS_EXPORT QStyleOptionToolBar : public QStyleOption
 {
@@ -321,7 +321,7 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionToolBar::ToolBarFeatures)
 
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 
 class Q_WIDGETS_EXPORT QStyleOptionProgressBar : public QStyleOption
 {

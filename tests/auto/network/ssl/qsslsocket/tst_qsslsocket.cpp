@@ -2838,11 +2838,19 @@ void tst_QSslSocket::qtbug18498_peek()
     client->setObjectName("client");
     client->ignoreSslErrors();
 
-    connect(client, SIGNAL(encrypted()), this, SLOT(exitLoop()));
+    int encryptedCounter = 2;
+    connect(client, &QSslSocket::encrypted, this, [&encryptedCounter, this](){
+        if (!--encryptedCounter)
+            exitLoop();
+    });
+    WebSocket *serversocket = server.socket;
+    connect(serversocket, &QSslSocket::encrypted, this, [&encryptedCounter, this](){
+        if (!--encryptedCounter)
+            exitLoop();
+    });
     connect(client, SIGNAL(disconnected()), this, SLOT(exitLoop()));
 
     client->startClientEncryption();
-    WebSocket *serversocket = server.socket;
     QVERIFY(serversocket);
     serversocket->setObjectName("server");
 
@@ -2908,10 +2916,7 @@ void tst_QSslSocket::qtbug18498_peek2()
     QScopedPointer<QSslSocket> server(listener.socket);
 
     QVERIFY(server->write("HELLO\r\n", 7));
-    QElapsedTimer stopwatch;
-    stopwatch.start();
-    while (client->bytesAvailable() < 7 && stopwatch.elapsed() < 5000)
-        QTest::qWait(100);
+    QTRY_COMPARE(client->bytesAvailable(), 7);
     char c;
     QCOMPARE(client->peek(&c,1), 1);
     QCOMPARE(c, 'H');
@@ -2930,8 +2935,7 @@ void tst_QSslSocket::qtbug18498_peek2()
     bigblock.fill('#', QIODEVICE_BUFFERSIZE + 1024);
     QVERIFY(client->write(QByteArray("head")));
     QVERIFY(client->write(bigblock));
-    while (server->bytesAvailable() < bigblock.length() + 4 && stopwatch.elapsed() < 5000)
-        QTest::qWait(100);
+    QTRY_COMPARE(server->bytesAvailable(), bigblock.length() + 4);
     QCOMPARE(server->read(4), QByteArray("head"));
     QCOMPARE(server->peek(bigblock.length()), bigblock);
     b.reserve(bigblock.length());
@@ -2947,10 +2951,7 @@ void tst_QSslSocket::qtbug18498_peek2()
     QCOMPARE(server->readAll(), bigblock);
 
     QVERIFY(client->write("STARTTLS\r\n"));
-    stopwatch.start();
-    // ### Qt5 use QTRY_VERIFY
-    while (server->bytesAvailable() < 10 && stopwatch.elapsed() < 5000)
-        QTest::qWait(100);
+    QTRY_COMPARE(server->bytesAvailable(), 10);
     QCOMPARE(server->peek(&c,1), 1);
     QCOMPARE(c, 'S');
     b = server->peek(3);
@@ -2983,9 +2984,7 @@ void tst_QSslSocket::qtbug18498_peek2()
     client->startClientEncryption();
 
     QVERIFY(server->write("hello\r\n", 7));
-    stopwatch.start();
-    while (client->bytesAvailable() < 7 && stopwatch.elapsed() < 5000)
-        QTest::qWait(100);
+    QTRY_COMPARE(client->bytesAvailable(), 7);
     QVERIFY(server->mode() == QSslSocket::SslServerMode && client->mode() == QSslSocket::SslClientMode);
     QCOMPARE(client->peek(&c,1), 1);
     QCOMPARE(c, 'h');
@@ -2996,9 +2995,7 @@ void tst_QSslSocket::qtbug18498_peek2()
     QCOMPARE(client->readAll(), QByteArray("ello\r\n"));
 
     QVERIFY(client->write("goodbye\r\n"));
-    stopwatch.start();
-    while (server->bytesAvailable() < 9 && stopwatch.elapsed() < 5000)
-        QTest::qWait(100);
+    QTRY_COMPARE(server->bytesAvailable(), 9);
     QCOMPARE(server->peek(&c,1), 1);
     QCOMPARE(c, 'g');
     QCOMPARE(server->readAll(), QByteArray("goodbye\r\n"));

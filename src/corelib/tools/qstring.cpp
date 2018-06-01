@@ -259,7 +259,7 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
 #  if defined(__AVX2__)
     // AVX2 implementation: test 32 bytes at a time
     const __m256i mask256 = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(maskval));
-    while (ptr + 32 < end) {
+    while (ptr + 32 <= end) {
         __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(ptr));
         if (!_mm256_testz_si256(mask256, data))
             return false;
@@ -271,7 +271,7 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
     // SSE 4.1 implementation: test 32 bytes at a time (two 16-byte
     // comparisons, unrolled)
     const __m128i mask = _mm_set1_epi32(maskval);
-    while (ptr + 32 < end) {
+    while (ptr + 32 <= end) {
         __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
         __m128i data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr + 16));
         if (!_mm_testz_si128(mask, data1))
@@ -283,7 +283,7 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
 #  endif
 #  if defined(__SSE4_1__)
     // AVX2 and SSE4.1: final 16-byte comparison
-    if (ptr + 16 < end) {
+    if (ptr + 16 <= end) {
         __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
         if (!_mm_testz_si128(mask, data1))
             return false;
@@ -311,12 +311,19 @@ bool QtPrivate::isAscii(QLatin1String s) Q_DECL_NOTHROW
     const char *ptr = s.begin();
     const char *end = s.end();
 
-#if defined(__AVX2__)
-    if (!simdTestMask(ptr, end, 0x80808080))
-        return false;
-#elif defined(__SSE2__)
+#if defined(__SSE2__)
     // Testing for the high bit can be done efficiently with just PMOVMSKB
-    while (ptr + 16 < end) {
+#  if defined(__AVX2__)
+    while (ptr + 32 <= end) {
+        __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(ptr));
+        quint32 mask = _mm256_movemask_epi8(data);
+        if (mask)
+            return false;
+        ptr += 32;
+    }
+#  endif
+
+    while (ptr + 16 <= end) {
         __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
         quint32 mask = _mm_movemask_epi8(data);
         if (mask)
@@ -325,7 +332,7 @@ bool QtPrivate::isAscii(QLatin1String s) Q_DECL_NOTHROW
     }
 #endif
 
-    while (ptr + 4 < end) {
+    while (ptr + 4 <= end) {
         quint32 data = qFromUnaligned<quint32>(ptr);
         if (data & 0x80808080U)
             return false;
@@ -646,30 +653,70 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
     }
 #endif // __mips_dsp
 #ifdef __SSE2__
-    const char *ptr = reinterpret_cast<const char*>(a);
-    qptrdiff distance = reinterpret_cast<const char*>(b) - ptr;
-    a += l & ~7;
-    b += l & ~7;
-    l &= 7;
+    const QChar *end = a + l;
+    qptrdiff offset = 0;
 
-    // we're going to read ptr[0..15] (16 bytes)
-    for ( ; ptr + 15 < reinterpret_cast<const char *>(a); ptr += 16) {
-        __m128i a_data = _mm_loadu_si128((const __m128i*)ptr);
-        __m128i b_data = _mm_loadu_si128((const __m128i*)(ptr + distance));
+    // we're going to read a[0..15] and b[0..15] (32 bytes)
+    for ( ; a + offset + 16 <= end; offset += 16) {
+#ifdef __AVX2__
+        __m256i a_data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(a + offset));
+        __m256i b_data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(b + offset));
+        __m256i result = _mm256_cmpeq_epi16(a_data, b_data);
+        uint mask = _mm256_movemask_epi8(result);
+#else
+        __m128i a_data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(a + offset));
+        __m128i a_data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(a + offset + 8));
+        __m128i b_data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(b + offset));
+        __m128i b_data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(b + offset + 8));
+        __m128i result1 = _mm_cmpeq_epi16(a_data1, b_data1);
+        __m128i result2 = _mm_cmpeq_epi16(a_data2, b_data2);
+        uint mask = _mm_movemask_epi8(result1) | (_mm_movemask_epi8(result2) << 16);
+#endif
+        mask = ~mask;
+        if (mask) {
+            // found a different character
+            uint idx = qCountTrailingZeroBits(mask);
+            return a[offset + idx / 2].unicode() - b[offset + idx / 2].unicode();
+        }
+    }
+
+    // we're going to read a[0..7] and b[0..7] (16 bytes)
+    if (a + offset + 8 <= end) {
+        __m128i a_data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(a + offset));
+        __m128i b_data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(b + offset));
         __m128i result = _mm_cmpeq_epi16(a_data, b_data);
         uint mask = ~_mm_movemask_epi8(result);
         if (ushort(mask)) {
-            // found a different byte
+            // found a different character
             uint idx = qCountTrailingZeroBits(mask);
-            return reinterpret_cast<const QChar *>(ptr + idx)->unicode()
-                    - reinterpret_cast<const QChar *>(ptr + distance + idx)->unicode();
+            return a[offset + idx / 2].unicode() - b[offset + idx / 2].unicode();
         }
+
+        offset += 8;
     }
+
+    // we're going to read a[0..3] and b[0..3] (8 bytes)
+    if (a + offset + 4 <= end) {
+        __m128i a_data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(a + offset));
+        __m128i b_data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(b + offset));
+        __m128i result = _mm_cmpeq_epi16(a_data, b_data);
+        uint mask = ~_mm_movemask_epi8(result);
+        if (uchar(mask)) {
+            // found a different character
+            uint idx = qCountTrailingZeroBits(mask);
+            return a[offset + idx / 2].unicode() - b[offset + idx / 2].unicode();
+        }
+
+        offset += 4;
+    }
+
+    // reset l
+    l &= 3;
+
     const auto lambda = [=](size_t i) -> int {
-        return reinterpret_cast<const QChar *>(ptr)[i].unicode()
-                - reinterpret_cast<const QChar *>(ptr + distance)[i].unicode();
+        return a[offset + i].unicode() - b[offset + i].unicode();
     };
-    return UnrollTailLoop<7>::exec(l, 0, lambda, lambda);
+    return UnrollTailLoop<3>::exec(l, 0, lambda, lambda);
 #endif
 #if defined(__ARM_NEON__) && defined(Q_PROCESSOR_ARM_64) // vaddv is only available on Aarch64
     if (l >= 8) {

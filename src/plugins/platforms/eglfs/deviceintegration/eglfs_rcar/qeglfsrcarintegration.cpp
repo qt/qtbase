@@ -52,12 +52,28 @@ QT_BEGIN_NAMESPACE
 
 void QEglFSRcarIntegration::platformInit()
 {
+    bool ok;
+
     QEglFSDeviceIntegration::platformInit();
 
     PVRGrfxServerInit();
 
     mScreenSize = q_screenSizeFromFb(0);
     mNativeDisplay = (NativeDisplayType)EGL_DEFAULT_DISPLAY;
+
+    mNativeDisplayID = qEnvironmentVariableIntValue("QT_QPA_WM_DISP_ID", &ok);
+    if (!ok)
+        mNativeDisplayID = RCAR_DEFAULT_DISPLAY;
+
+    r_wm_Error_t wm_err = R_WM_DevInit(mNativeDisplayID);
+    if (wm_err != R_WM_ERR_OK)
+        qFatal("Failed to init WM Dev: %d, error: %d", mNativeDisplayID, wm_err);
+    wm_err = R_WM_ScreenBgColorSet(mNativeDisplayID, 0x20, 0x20, 0x20); // Grey
+    if (wm_err != R_WM_ERR_OK)
+        qFatal("Failed to set screen background: %d", wm_err);
+    wm_err = R_WM_ScreenEnable(mNativeDisplayID);
+    if (wm_err != R_WM_ERR_OK)
+        qFatal("Failed to enable screen: %d", wm_err);
 }
 
 QSize QEglFSRcarIntegration::screenSize() const
@@ -104,14 +120,6 @@ EGLNativeWindowType QEglFSRcarIntegration::createNativeWindow(QPlatformWindow *w
 {
     bool ok;
 
-    mNativeDisplayID = qEnvironmentVariableIntValue("QT_QPA_WM_DISP_ID", &ok);
-    if (!ok)
-        mNativeDisplayID = RCAR_DEFAULT_DISPLAY;
-
-    r_wm_Error_t wm_err = R_WM_DevInit(mNativeDisplayID);
-    if (wm_err != R_WM_ERR_OK)
-        qFatal("Failed to init WM Dev: %d, error: %d", mNativeDisplayID, wm_err);
-
     mNativeWindow = (EGLNativeWindowTypeREL*)malloc(sizeof(EGLNativeWindowTypeREL));
     memset(mNativeWindow, 0, sizeof(EGLNativeWindowTypeREL));
 
@@ -134,7 +142,7 @@ EGLNativeWindowType QEglFSRcarIntegration::createNativeWindow(QPlatformWindow *w
     mNativeWindow->Surface.Type = R_WM_SURFACE_FB;
     mNativeWindow->Surface.BufMode = R_WM_WINBUF_ALLOC_INTERNAL;
 
-    wm_err = R_WM_WindowCreate(mNativeDisplayID, mNativeWindow);
+    r_wm_Error_t wm_err = R_WM_WindowCreate(mNativeDisplayID, mNativeWindow);
     if (wm_err != R_WM_ERR_OK)
         qFatal("Failed to create window layer: %d", wm_err);
     wm_err = R_WM_DevEventRegister(mNativeDisplayID, R_WM_EVENT_VBLANK, 0);

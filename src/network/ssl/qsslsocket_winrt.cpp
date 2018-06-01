@@ -647,6 +647,10 @@ HRESULT QSslSocketBackendPrivate::onSslUpgrade(IAsyncAction *action, AsyncStatus
     connectionEncrypted = true;
     emit q->encrypted();
 
+    // The write buffer may already have data written to it, so we need to call transmit.
+    // This has to be done in 'q's thread, and not in the current thread (the XAML thread).
+    QMetaObject::invokeMethod(q, [this](){ transmit(); });
+
     if (pendingClose) {
         pendingClose = false;
         q->disconnectFromHost();

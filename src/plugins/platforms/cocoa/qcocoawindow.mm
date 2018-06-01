@@ -404,8 +404,10 @@ void QCocoaWindow::setVisible(bool visible)
                         removeMonitor();
                         monitor = [NSEvent addGlobalMonitorForEventsMatchingMask:NSLeftMouseDownMask|NSRightMouseDownMask|NSOtherMouseDownMask|NSMouseMovedMask handler:^(NSEvent *e) {
                             QPointF localPoint = QCocoaScreen::mapFromNative([NSEvent mouseLocation]);
+                            const auto button = e.type == NSEventTypeMouseMoved ? Qt::NoButton : cocoaButton2QtButton([e buttonNumber]);
+                            const auto eventType = e.type == NSEventTypeMouseMoved ? QEvent::MouseMove : QEvent::MouseButtonPress;
                             QWindowSystemInterface::handleMouseEvent(window(), window()->mapFromGlobal(localPoint.toPoint()), localPoint,
-                                                                     cocoaButton2QtButton([e buttonNumber]));
+                                                                     Qt::MouseButtons(uint(NSEvent.pressedMouseButtons & 0xFFFF)), button, eventType);
                         }];
                     }
                 }
@@ -571,7 +573,7 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
         Qt::WindowType type = window()->type();
         if ((type & Qt::Popup) != Qt::Popup && (type & Qt::Dialog) != Qt::Dialog) {
             NSWindowCollectionBehavior behavior = m_view.window.collectionBehavior;
-            if (flags & Qt::WindowFullscreenButtonHint) {
+            if ((flags & Qt::WindowFullscreenButtonHint) || m_view.window.qt_fullScreen) {
                 behavior |= NSWindowCollectionBehaviorFullScreenPrimary;
                 behavior &= ~NSWindowCollectionBehaviorFullScreenAuxiliary;
             } else {
@@ -1334,7 +1336,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
 void QCocoaWindow::requestUpdate()
 {
     qCDebug(lcQpaCocoaDrawing) << "QCocoaWindow::requestUpdate" << window();
-    [qnsview_cast(m_view) requestUpdate];
+    QPlatformWindow::requestUpdate();
 }
 
 void QCocoaWindow::requestActivateWindow()

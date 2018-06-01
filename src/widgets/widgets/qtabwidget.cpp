@@ -376,7 +376,8 @@ QTabWidget::~QTabWidget()
     \fn int QTabWidget::addTab(QWidget *page, const QString &label)
 
     Adds a tab with the given \a page and \a label to the tab widget,
-    and returns the index of the tab in the tab bar.
+    and returns the index of the tab in the tab bar. Ownership of \a page
+    is passed on to the QTabWidget.
 
     If the tab's \a label contains an ampersand, the letter following
     the ampersand is used as a shortcut for the tab, e.g. if the
@@ -403,7 +404,8 @@ int QTabWidget::addTab(QWidget *child, const QString &label)
     \overload
 
     Adds a tab with the given \a page, \a icon, and \a label to the tab
-    widget, and returns the index of the tab in the tab bar.
+    widget, and returns the index of the tab in the tab bar. Ownership
+    of \a page is passed on to the QTabWidget.
 
     This function is the same as addTab(), but with an additional \a
     icon.
@@ -419,7 +421,8 @@ int QTabWidget::addTab(QWidget *child, const QIcon& icon, const QString &label)
 
     Inserts a tab with the given \a label and \a page into the tab
     widget at the specified \a index, and returns the index of the
-    inserted tab in the tab bar.
+    inserted tab in the tab bar. Ownership of \a page is passed on to the
+    QTabWidget.
 
     The label is displayed in the tab and may vary in appearance depending
     on the configuration of the tab widget.
@@ -458,7 +461,8 @@ int QTabWidget::insertTab(int index, QWidget *w, const QString &label)
 
     Inserts a tab with the given \a label, \a page, and \a icon into
     the tab widget at the specified \a index, and returns the index of the
-    inserted tab in the tab bar.
+    inserted tab in the tab bar. Ownership of \a page is passed on to the
+    QTabWidget.
 
     This function is the same as insertTab(), but with an additional
     \a icon.

@@ -121,7 +121,6 @@
 #include <qwizard.h>
 #endif
 #include <qdebug.h>
-#include <qlibrary.h>
 #if QT_CONFIG(datetimeedit)
 #include <qdatetimeedit.h>
 #endif

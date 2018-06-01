@@ -238,7 +238,7 @@ void tst_QAbstractItemView::getSetCheck()
 
     // bool QAbstractItemView::dragEnabled()
     // void QAbstractItemView::setDragEnabled(bool)
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     obj1->setDragEnabled(false);
     QCOMPARE(false, obj1->dragEnabled());
     obj1->setDragEnabled(true);
@@ -415,7 +415,7 @@ void tst_QAbstractItemView::basic_tests(QAbstractItemView *view)
     view->setTabKeyNavigation(true);
     QCOMPARE(view->tabKeyNavigation(), true);
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     // setDropIndicatorShown
     view->setDropIndicatorShown(false);
     QCOMPARE(view->showDropIndicator(), false);
@@ -527,7 +527,7 @@ void tst_QAbstractItemView::basic_tests(QAbstractItemView *view)
 
     view->selectionCommand(QModelIndex(), 0);
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     if (!view->model())
         view->startDrag(Qt::CopyAction);
 
@@ -1168,8 +1168,7 @@ void tst_QAbstractItemView::task221955_selectedEditor()
 
     //We set the focus to the button, the index need to be selected
     button->setFocus();
-    QTest::qWait(100);
-    QVERIFY(tree.selectionModel()->selectedIndexes().contains(tree.model()->index(3,0)));
+    QTRY_VERIFY(tree.selectionModel()->selectedIndexes().contains(tree.model()->index(3,0)));
 
     tree.setCurrentIndex(tree.model()->index(1,0));
     QVERIFY(! tree.selectionModel()->selectedIndexes().contains(tree.model()->index(3,0)));
@@ -1179,7 +1178,6 @@ void tst_QAbstractItemView::task221955_selectedEditor()
     tree.setSelectionMode(QAbstractItemView::NoSelection);
     tree.clearSelection();
     QVERIFY(tree.selectionModel()->selectedIndexes().isEmpty());
-    QTest::qWait(10);
     button->setFocus();
     QTest::qWait(50);
     QVERIFY(tree.selectionModel()->selectedIndexes().isEmpty());
@@ -1267,14 +1265,10 @@ void tst_QAbstractItemView::task257481_emptyEditor()
     QCOMPARE(lineEditors.count(), 1);
     QVERIFY(!lineEditors.first()->size().isEmpty());
 
-    QTest::qWait(30);
-
     treeView.edit(model.index(1,0));
     lineEditors = treeView.viewport()->findChildren<QLineEdit *>();
     QCOMPARE(lineEditors.count(), 1);
     QVERIFY(!lineEditors.first()->size().isEmpty());
-
-    QTest::qWait(30);
 
     treeView.edit(model.index(2,0));
     lineEditors = treeView.viewport()->findChildren<QLineEdit *>();
@@ -1462,7 +1456,6 @@ void tst_QAbstractItemView::QTBUG6407_extendedSelection()
     QCOMPARE(static_cast<QWidget *>(&view), QApplication::activeWindow());
 
     view.verticalScrollBar()->setValue(view.verticalScrollBar()->maximum());
-    QTest::qWait(20);
 
     QModelIndex index49 = view.model()->index(49,0);
     QPoint p = view.visualRect(index49).center();
@@ -1506,7 +1499,6 @@ void tst_QAbstractItemView::QTBUG6753_selectOnSelection()
     QRect itemRect = table.visualRect(item);
     QTest::mouseMove(table.viewport(), itemRect.center());
     QTest::mouseClick(table.viewport(), Qt::LeftButton, Qt::NoModifier, itemRect.center());
-    QTest::qWait(20);
 
     QCOMPARE(table.selectedItems().count(), 1);
     QCOMPARE(table.selectedItems().first(), table.item(item.row(), item.column()));

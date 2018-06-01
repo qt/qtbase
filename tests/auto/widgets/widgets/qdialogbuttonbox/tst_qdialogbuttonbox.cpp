@@ -838,10 +838,9 @@ void tst_QDialogButtonBox::task191642_default()
     bb->addButton(QDialogButtonBox::Help);
 
     dlg.show();
-    QTest::qWait(10);
+    QVERIFY(QTest::qWaitForWindowActive(&dlg));
     QVERIFY(def->isDefault());
     QTest::keyPress( &dlg, Qt::Key_Enter );
-    QTest::qWait(100);
     QCOMPARE(clicked.count(), 1);
 }
 

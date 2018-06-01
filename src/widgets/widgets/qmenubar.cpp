@@ -52,7 +52,9 @@
 #if QT_CONFIG(mainwindow)
 #include <qmainwindow.h>
 #endif
+#if QT_CONFIG(toolbar)
 #include <qtoolbar.h>
+#endif
 #if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
 #endif

@@ -29,8 +29,12 @@
 #ifndef EMULATIONDETECTOR_H
 #define EMULATIONDETECTOR_H
 
+#include <QtCore/qglobal.h>
+
 #if defined(Q_OS_LINUX) && defined(Q_PROCESSOR_ARM)
 #define SHOULD_CHECK_ARM_ON_X86
+
+#include <QFileInfo>
 
 #if QT_CONFIG(process) && QT_CONFIG(regularexpression)
 #include <QProcess>

@@ -77,6 +77,8 @@ private slots:
     void toPoint_data();
     void toPoint();
 
+    void compare();
+
 #ifndef QT_NO_DATASTREAM
     void stream_data();
     void stream();
@@ -412,6 +414,43 @@ void tst_QPointF::stream()
     QCOMPARE(pointFromStream, point);
 }
 #endif
+
+void tst_QPointF::compare()
+{
+    // First test we can scale and maintain difference.
+    QPointF p1(2.0, 2.0);
+    QPointF p2(3.0, 3.0);
+
+    QVERIFY(p1 != p2);
+
+    p1 /= 1e5;
+    p2 /= 1e5;
+
+    QVERIFY(!(p1 == p2));
+
+    p1 /= 1e5;
+    p2 /= 1e5;
+
+    QVERIFY(p1 != p2);
+
+    p1 /= 1e5;
+    p2 /= 1e5;
+
+    QVERIFY(!(p1 == p2));
+
+    p1 /= 2;
+    p2 /= 3;
+
+    QVERIFY(p1 == p2);
+
+    // Test we can compare with zero after inexact math
+    QPointF p3(3.0, 3.0);
+    p3 *= 0.1;
+    p3 /= 3;
+    p3 -= QPointF(0.1, 0.1);
+
+    QVERIFY(p3 == QPointF());
+}
 
 QTEST_MAIN(tst_QPointF)
 #include "tst_qpointf.moc"

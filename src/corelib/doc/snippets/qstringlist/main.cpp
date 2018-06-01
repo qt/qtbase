@@ -61,10 +61,13 @@ public:
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
 {
-//! [0]
-    QStringList fonts;
-    fonts << "Arial" << "Helvetica" << "Times" << "Courier";
-//! [0]
+//! [0a]
+    QStringList fonts = { "Arial", "Helvetica", "Times" };
+//! [0a]
+
+//! [0b]
+    fonts << "Courier" << "Verdana";
+//! [0b]
 
 //! [1]
     for (int i = 0; i < fonts.size(); ++i)

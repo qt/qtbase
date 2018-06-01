@@ -169,7 +169,7 @@ template <typename Lambda> struct ProcessNetlinkRequest
         forever {
             qsizetype len = recv(sock, buf, bufsize, 0);
             hdr = reinterpret_cast<struct nlmsghdr *>(buf);
-            if (!NLMSG_OK(hdr, len))
+            if (!NLMSG_OK(hdr, quint32(len)))
                 return;
 
             auto arg = reinterpret_cast<FirstArgument>(NLMSG_DATA(hdr));
@@ -194,14 +194,14 @@ template <typename Lambda> struct ProcessNetlinkRequest
                     hdr = NLMSG_NEXT(hdr, len);
                     arg = reinterpret_cast<FirstArgument>(NLMSG_DATA(hdr));
                     payloadLen = NLMSG_PAYLOAD(hdr, 0);
-                } while (NLMSG_OK(hdr, len));
+                } while (NLMSG_OK(hdr, quint32(len)));
 
                 if (len == 0)
                     continue;       // get new datagram
             }
 
 #ifndef QT_NO_DEBUG
-            if (NLMSG_OK(hdr, len))
+            if (NLMSG_OK(hdr, quint32(len)))
                 qWarning("QNetworkInterface/AF_NETLINK: received unknown packet type (%d) or too short (%u)",
                          hdr->nlmsg_type, hdr->nlmsg_len);
             else

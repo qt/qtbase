@@ -40,7 +40,7 @@
 #ifndef QXCBMIME_H
 #define QXCBMIME_H
 
-#include <private/qdnd_p.h>
+#include <QtGui/private/qinternalmimedata_p.h>
 
 #include <QtGui/QClipboard>
 
@@ -48,8 +48,6 @@
 #include "qxcbconnection.h"
 
 QT_BEGIN_NAMESPACE
-
-#if !(defined(QT_NO_DRAGANDDROP) && defined(QT_NO_CLIPBOARD))
 
 class QXcbMime : public QInternalMimeData {
     Q_OBJECT
@@ -66,9 +64,6 @@ public:
     static xcb_atom_t mimeAtomForFormat(QXcbConnection *connection, const QString &format, QVariant::Type requestedType,
                                         const QVector<xcb_atom_t> &atoms, QByteArray *requestedEncoding);
 };
-
-#endif // !(defined(QT_NO_DRAGANDDROP) && defined(QT_NO_CLIPBOARD))
-
 
 QT_END_NAMESPACE
 

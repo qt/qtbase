@@ -48,6 +48,7 @@
 #include <QMdiSubWindow>
 #endif
 #include <QAbstractScrollArea>
+#include <QPainter>
 
 QT_BEGIN_NAMESPACE
 
@@ -328,7 +329,7 @@ bool QWindowContainer::event(QEvent *e)
             }
         }
         break;
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     case QEvent::Drop:
     case QEvent::DragMove:
     case QEvent::DragLeave:

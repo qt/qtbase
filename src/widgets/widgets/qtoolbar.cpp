@@ -39,8 +39,6 @@
 
 #include "qtoolbar.h"
 
-#ifndef QT_NO_TOOLBAR
-
 #include <qapplication.h>
 #if QT_CONFIG(combobox)
 #include <qcombobox.h>
@@ -1288,5 +1286,3 @@ void QToolBar::initStyleOption(QStyleOptionToolBar *option) const
 QT_END_NAMESPACE
 
 #include "moc_qtoolbar.cpp"
-
-#endif // QT_NO_TOOLBAR

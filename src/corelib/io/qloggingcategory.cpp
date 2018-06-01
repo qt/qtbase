@@ -147,9 +147,15 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
     Rules are evaluated in text order, from first to last. That is, if two rules
     apply to a category/type, the rule that comes later is applied.
 
-    Rules can be set via \l setFilterRules(). Since Qt 5.3, logging rules can also
-    be set in the \c QT_LOGGING_RULES environment variable, and
-    are automatically loaded from the \c [Rules] section of a logging
+    Rules can be set via \l setFilterRules():
+
+    \code
+    QLoggingCategory::setFilterRules("*.debug=false\n"
+                                     "driver.usb.debug=true");
+    \endcode
+
+    Since Qt 5.3, logging rules are also
+    automatically loaded from the \c [Rules] section of a logging
     configuration file. Such configuration files are looked up in the QtProject
     configuration directory, or explicitly set in a \c QT_LOGGING_CONF
     environment variable:
@@ -160,19 +166,18 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
     driver.usb.debug=true
     \endcode
 
-    Rules set by \l setFilterRules() take precedence over rules specified
-    in the QtProject configuration directory, and can, in turn, be
-    overwritten by rules from the configuration file specified by
-    \c QT_LOGGING_CONF, and rules set by \c QT_LOGGING_RULES.
-
-
-    Since Qt 5.6, \c QT_LOGGING_RULES may contain multiple rules separated
-    by semicolons:
+    Since Qt 5.3, logging rules can also be specified in a \c QT_LOGGING_RULES
+    environment variable. And since Qt 5.6, multiple rules can also be
+    separated by semicolons:
 
     \code
     QT_LOGGING_RULES="*.debug=false;driver.usb.debug=true"
     \endcode
 
+    Rules set by \l setFilterRules() take precedence over rules specified
+    in the QtProject configuration directory, and can, in turn, be
+    overwritten by rules from the configuration file specified by
+    \c QT_LOGGING_CONF, and rules set by \c QT_LOGGING_RULES.
 
     Order of evaluation:
     \list

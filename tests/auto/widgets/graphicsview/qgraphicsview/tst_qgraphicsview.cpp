@@ -206,7 +206,7 @@ private slots:
     void resizeAnchor();
     void viewportUpdateMode();
     void viewportUpdateMode2();
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     void acceptDrops();
 #endif
     void optimizationFlags();
@@ -507,10 +507,8 @@ void tst_QGraphicsView::setScene()
 
     view.setScene(0);
 
-    QTest::qWait(25);
-
-    QVERIFY(!view.horizontalScrollBar()->isVisible());
-    QVERIFY(!view.verticalScrollBar()->isVisible());
+    QTRY_VERIFY(!view.horizontalScrollBar()->isVisible());
+    QTRY_VERIFY(!view.verticalScrollBar()->isVisible());
     QVERIFY(!view.horizontalScrollBar()->isHidden());
     QVERIFY(!view.verticalScrollBar()->isHidden());
 
@@ -572,12 +570,11 @@ void tst_QGraphicsView::sceneRect_growing()
     QGraphicsView view(&scene, &toplevel);
     view.setFixedSize(200, 200);
     toplevel.show();
+    QVERIFY(QTest::qWaitForWindowActive(&toplevel));
 
     int size = 200;
     scene.setSceneRect(-size, -size, size * 2, size * 2);
     QCOMPARE(view.sceneRect(), scene.sceneRect());
-
-    QTest::qWait(25);
 
     QPointF topLeft = view.mapToScene(0, 0);
 
@@ -641,14 +638,14 @@ void tst_QGraphicsView::viewport()
     QVERIFY(view.viewport() != 0);
 
     view.show();
-    QTest::qWait(25);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QPointer<QWidget> widget = new QWidget;
     view.setViewport(widget);
     QCOMPARE(view.viewport(), (QWidget *)widget);
 
     view.show();
-    QTest::qWait(25);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     view.setViewport(0);
     QVERIFY(widget.isNull());
@@ -656,7 +653,7 @@ void tst_QGraphicsView::viewport()
     QVERIFY(view.viewport() != widget);
 
     view.show();
-    QTest::qWait(25);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 }
 
 #ifndef QT_NO_OPENGL
@@ -888,8 +885,6 @@ void tst_QGraphicsView::dragMode_rubberBand()
         // We don't use QRubberBand as of 4.3; the band is drawn internally.
         QVERIFY(!view.findChild<QRubberBand *>());
 
-        QTest::qWait(25);
-
         {
             // Move
             QMouseEvent event(QEvent::MouseMove,
@@ -901,8 +896,6 @@ void tst_QGraphicsView::dragMode_rubberBand()
         }
         QCOMPARE(view.horizontalScrollBar()->value(), horizontalScrollBarValue);
         QCOMPARE(view.verticalScrollBar()->value(), verticalScrollBarValue);
-
-        QTest::qWait(25);
 
         {
             // Release
@@ -918,8 +911,6 @@ void tst_QGraphicsView::dragMode_rubberBand()
 #ifndef QT_NO_CURSOR
         QCOMPARE(view.viewport()->cursor().shape(), cursorShape);
 #endif
-
-        QTest::qWait(25);
 
         if (view.scene())
             QCOMPARE(scene.selectedItems().size(), 1);
@@ -1074,7 +1065,7 @@ void tst_QGraphicsView::backgroundBrush()
     QCOMPARE(scene.backgroundBrush(), QBrush(Qt::blue));
 
     view.show();
-    QTest::qWait(25);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     scene.setBackgroundBrush(QBrush());
     QCOMPARE(scene.backgroundBrush(), QBrush());
@@ -1096,7 +1087,7 @@ void tst_QGraphicsView::foregroundBrush()
     QCOMPARE(scene.foregroundBrush(), QBrush(Qt::blue));
 
     view.show();
-    QTest::qWait(25);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     scene.setForegroundBrush(QBrush());
     QCOMPARE(scene.foregroundBrush(), QBrush());
@@ -2052,7 +2043,7 @@ void tst_QGraphicsView::mapFromSceneRect()
     view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     topLevel.show();
-    QTest::qWait(25);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QPolygon polygon;
     polygon << QPoint(98, 98);
@@ -2459,7 +2450,6 @@ void tst_QGraphicsView::viewportUpdateMode()
     // Issue two scene updates.
     scene.update(QRectF(0, 0, 10, 10));
     scene.update(QRectF(20, 0, 10, 10));
-    QTest::qWait(50);
 
     // The view gets two updates for the update scene updates.
     QTRY_VERIFY(!view.lastUpdateRegions.isEmpty());
@@ -2565,14 +2555,13 @@ void tst_QGraphicsView::viewportUpdateMode2()
 
     view.lastUpdateRegions.clear();
     viewPrivate->processPendingUpdates();
-    QTest::qWait(50);
-    QCOMPARE(view.lastUpdateRegions.size(), 1);
+    QTRY_COMPARE(view.lastUpdateRegions.size(), 1);
     // Note that we adjust by 2 for antialiasing.
     QCOMPARE(view.lastUpdateRegions.at(0), QRegion(boundingRect.adjusted(-2, -2, 2, 2) & viewportRect));
 #endif
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 void tst_QGraphicsView::acceptDrops()
 {
     QGraphicsView view;
@@ -2763,8 +2752,7 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState2()
 
     // Make sure the view is repainted; otherwise the tests below will fail.
     view.viewport()->repaint();
-    QTest::qWait(200);
-    QVERIFY(view.painted);
+    QTRY_VERIFY(view.painted);
 
     // Make sure the painter's world transform is preserved after drawItems.
     QTransform expectedTransform = view.viewportTransform();
@@ -3676,15 +3664,12 @@ void tst_QGraphicsView::centerOnDirtyItem()
 
     toplevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&toplevel));
-    QTest::qWait(50);
 
     QImage before(view.viewport()->size(), QImage::Format_ARGB32);
     view.viewport()->render(&before);
 
     item->setPos(20, 0);
     view.centerOn(item);
-
-    QTest::qWait(50);
 
     QImage after(view.viewport()->size(), QImage::Format_ARGB32);
     view.viewport()->render(&after);
@@ -4279,8 +4264,6 @@ void tst_QGraphicsView::update_ancestorClipsChildrenToShape2()
     QCOMPARE(view.lastUpdateRegions.at(0), QRegion(expected.toAlignedRect()));
 #endif
 
-    QTest::qWait(50);
-
     view.lastUpdateRegions.clear();
     view.painted = false;
 
@@ -4478,7 +4461,7 @@ void tst_QGraphicsView::indirectPainting()
     view.setOptimizationFlag(QGraphicsView::IndirectPainting);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QTest::qWait(100);
+    QTRY_VERIFY(scene.drawCount > 0);
 
     scene.drawCount = 0;
     item->setPos(20, 20);

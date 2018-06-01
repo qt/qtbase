@@ -138,7 +138,7 @@ QTestData *QTestTable::testData(int index) const
     return size_t(index) < d->dataList.size() ? d->dataList[index] : nullptr;
 }
 
-class NamePredicate : public std::unary_function<QTestTablePrivate::Element, bool>
+class NamePredicate
 {
 public:
     explicit NamePredicate(const char *needle) : m_needle(needle) {}

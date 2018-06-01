@@ -501,9 +501,8 @@ QTextStream &operator << (QTextStream &out, const Item &item);
 QTextStream &operator << (QTextStream &out, const NameSet &ns);
 
 QT_BEGIN_NAMESPACE
-// ... hmm
-extern QTextStream qerr;
-extern QTextStream qout;
+QTextStream &qerr();
+QTextStream &qout();
 QT_END_NAMESPACE
 
 #endif // LALR_H

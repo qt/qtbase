@@ -288,7 +288,6 @@ void tst_QApplication::alert()
     widget2.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QVERIFY(QTest::qWaitForWindowExposed(&widget2));
-    QTest::qWait(100);
     app.alert(&widget, -1);
     app.alert(&widget, 250);
     widget2.activateWindow();
@@ -1711,6 +1710,7 @@ void tst_QApplication::focusOut()
     le2->setStyleSheet("background: #fee");
     le2->move(100, 100);
     w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
 
     QTest::qWait(2000);
     le2->setFocus();

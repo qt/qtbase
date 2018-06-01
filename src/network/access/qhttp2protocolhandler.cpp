@@ -1150,7 +1150,6 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const Frame &frame,
         auto &httpRequest = stream.request();
         auto replyPrivate = httpReply->d_func();
 
-        replyPrivate->compressedData.append(data, length);
         replyPrivate->totalProgress += length;
 
         const QByteArray wrapped(data, length);

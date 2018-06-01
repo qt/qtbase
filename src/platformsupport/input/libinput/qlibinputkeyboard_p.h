@@ -93,6 +93,7 @@ private:
         QString unicodeText;
         int repeatCount;
     } m_repeatData;
+    Qt::KeyboardModifiers m_mods;
 #endif
 };
 

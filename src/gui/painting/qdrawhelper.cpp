@@ -3193,9 +3193,9 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
                 const qreal px = fx * iw - qreal(0.5);
                 const qreal py = fy * iw - qreal(0.5);
 
-                int x1 = int(px) - (px < 0);
+                int x1 = qFloor(px);
                 int x2;
-                int y1 = int(py) - (py < 0);
+                int y1 = qFloor(py);
                 int y2;
 
                 distxs[i] = int((px - x1) * (1<<16));

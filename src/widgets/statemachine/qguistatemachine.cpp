@@ -136,7 +136,7 @@ static QEvent *cloneEvent(QEvent *e)
         return new QEvent(*e);
     case QEvent::DeferredDelete:
         return new QEvent(*e);
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
    case QEvent::DragEnter:
         return new QDragEnterEvent(*static_cast<QDragEnterEvent*>(e));
     case QEvent::DragMove:
@@ -251,10 +251,10 @@ static QEvent *cloneEvent(QEvent *e)
         return new QWhatsThisClickedEvent(*static_cast<QWhatsThisClickedEvent*>(e));
 #endif // QT_CONFIG(whatsthis)
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     case QEvent::ToolBarChange:
         return new QToolBarChangeEvent(*static_cast<QToolBarChangeEvent*>(e));
-#endif //QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 
     case QEvent::ApplicationActivate:
         return new QEvent(*e);

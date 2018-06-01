@@ -574,6 +574,11 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         d->setPageSize(QPageSize(QPageSize::id(value.toInt())));
         break;
     case PPK_PrinterName: {
+        QVariant pageSize = QVariant::fromValue(d->m_pageLayout.pageSize());
+        const bool isFullPage = d->m_pageLayout.mode() == QPageLayout::FullPageMode;
+        QVariant orientation = QVariant::fromValue(d->m_pageLayout.orientation());
+        QVariant margins = QVariant::fromValue(QPair<QMarginsF, QPageLayout::Unit>(d->m_pageLayout.margins(),
+                                                                                   d->m_pageLayout.units()));
         QString id = value.toString();
         if (id.isEmpty())
             id = QCocoaPrinterSupport().defaultPrintDeviceId();
@@ -583,7 +588,14 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         PMPrinter printer = d->m_printDevice->macPrinter();
         PMRetain(printer);
         PMSessionSetCurrentPMPrinter(d->session(), printer);
-        // TODO Do we need to check if the page size, etc, are valid on new printer?
+        // Ensure the settings are up to date and valid
+        if (d->m_printDevice->supportedPageSize(pageSize.value<QPageSize>()).isValid())
+            setProperty(PPK_QPageSize, pageSize);
+        else
+            setProperty(PPK_CustomPaperSize, pageSize.value<QPageSize>().size(QPageSize::Point));
+        setProperty(PPK_FullPage, QVariant(isFullPage));
+        setProperty(PPK_Orientation, orientation);
+        setProperty(PPK_QPageMargins, margins);
         break;
     }
     case PPK_CustomPaperSize:

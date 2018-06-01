@@ -246,14 +246,12 @@ struct QWindowsContextPrivate {
     QScopedPointer<QWindowsTabletSupport> m_tabletSupport;
 #endif
     const HRESULT m_oleInitializeResult;
-    const QByteArray m_eventType;
     QWindow *m_lastActiveWindow = nullptr;
     bool m_asyncExpose = false;
 };
 
 QWindowsContextPrivate::QWindowsContextPrivate()
     : m_oleInitializeResult(OleInitialize(NULL))
-    , m_eventType(QByteArrayLiteral("windows_generic_MSG"))
 {
     QWindowsContext::user32dll.init();
     QWindowsContext::shcoredll.init();
@@ -866,6 +864,33 @@ static bool shouldHaveNonClientDpiScaling(const QWindow *window)
        ;
 }
 
+static inline bool isInputMessage(UINT m)
+{
+    switch (m) {
+    case WM_IME_STARTCOMPOSITION:
+    case WM_IME_ENDCOMPOSITION:
+    case WM_IME_COMPOSITION:
+    case WM_TOUCH:
+    case WM_MOUSEHOVER:
+    case WM_MOUSELEAVE:
+    case WM_NCHITTEST:
+    case WM_NCMOUSEHOVER:
+    case WM_NCMOUSELEAVE:
+    case WM_SIZING:
+    case WM_MOVING:
+    case WM_SYSCOMMAND:
+    case WM_COMMAND:
+    case WM_DWMNCRENDERINGCHANGED:
+    case WM_PAINT:
+        return true;
+    default:
+        break;
+    }
+    return (m >= WM_MOUSEFIRST && m <= WM_MOUSELAST)
+        || (m >= WM_NCMOUSEMOVE && m <= WM_NCXBUTTONDBLCLK)
+        || (m >= WM_KEYFIRST && m <= WM_KEYLAST);
+}
+
 /*!
      \brief Main windows procedure registered for windows.
 
@@ -901,21 +926,14 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     QWindowsWindow *platformWindow = findPlatformWindow(hwnd);
     *platformWindowPtr = platformWindow;
 
-    // Run the native event filters.
-    long filterResult = 0;
-    QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
-    if (dispatcher && dispatcher->filterNativeEvent(d->m_eventType, &msg, &filterResult)) {
-        *result = LRESULT(filterResult);
+    // Run the native event filters. QTBUG-67095: Exclude input messages which are sent
+    // by QEventDispatcherWin32::processEvents()
+    if (!isInputMessage(msg.message) && filterNativeEvent(&msg, result))
         return true;
-    }
 
-    if (platformWindow) {
-        filterResult = 0;
-        if (QWindowSystemInterface::handleNativeEvent(platformWindow->window(), d->m_eventType, &msg, &filterResult)) {
-            *result = LRESULT(filterResult);
-            return true;
-        }
-    }
+    if (platformWindow && filterNativeEvent(platformWindow->window(), &msg, result))
+        return true;
+
     if (et & QtWindows::InputMethodEventFlag) {
         QWindowsInputContext *windowsInputContext = ::windowsInputContext();
         // Disable IME assuming this is a special implementation hooking into keyboard input.
@@ -1391,6 +1409,32 @@ extern "C" LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND hwnd, UINT message, WPAR
         }
     }
     return result;
+}
+
+
+static inline QByteArray nativeEventType() { return QByteArrayLiteral("windows_generic_MSG"); }
+
+// Send to QAbstractEventDispatcher
+bool QWindowsContext::filterNativeEvent(MSG *msg, LRESULT *result)
+{
+    QAbstractEventDispatcher *dispatcher = QAbstractEventDispatcher::instance();
+    long filterResult = 0;
+    if (dispatcher && dispatcher->filterNativeEvent(nativeEventType(), msg, &filterResult)) {
+        *result = LRESULT(filterResult);
+        return true;
+    }
+    return false;
+}
+
+// Send to QWindowSystemInterface
+bool QWindowsContext::filterNativeEvent(QWindow *window, MSG *msg, LRESULT *result)
+{
+    long filterResult = 0;
+    if (QWindowSystemInterface::handleNativeEvent(window, nativeEventType(), &msg, &filterResult)) {
+        *result = LRESULT(filterResult);
+        return true;
+    }
+    return false;
 }
 
 QT_END_NAMESPACE

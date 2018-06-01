@@ -1995,19 +1995,16 @@ void tst_QComboBox::flaggedItems()
     QApplication::setActiveWindow(&comboBox);
     comboBox.activateWindow();
     comboBox.setFocus();
+    QVERIFY(QTest::qWaitForWindowActive(&comboBox));
     QTRY_VERIFY(comboBox.isVisible());
     QTRY_VERIFY(comboBox.hasFocus());
 
     if (editable)
         comboBox.lineEdit()->selectAll();
 
-    QSignalSpy indexChangedInt(&comboBox, SIGNAL(currentIndexChanged(int)));
     for (int i = 0; i < keyMovementList.count(); ++i) {
         Qt::Key key = keyMovementList[i];
         QTest::keyClick(&comboBox, key);
-        if (indexChangedInt.count() != i + 1) {
-            QTest::qWait(400);
-        }
     }
 
     QCOMPARE(comboBox.currentIndex() , expectedIndex);
@@ -2447,7 +2444,7 @@ void tst_QComboBox::task220195_keyBoardSelection2()
     combo.addItem( QLatin1String("foo3"));
     combo.show();
     QApplication::setActiveWindow(&combo);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
+    QVERIFY(QTest::qWaitForWindowActive(&combo));
 
     combo.setCurrentIndex(-1);
     QVERIFY(combo.currentText().isNull());

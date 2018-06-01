@@ -2070,8 +2070,6 @@ void tst_QSqlQuery::prepare_bind_exec()
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     const QString qtest_prepare(qTableName("qtest_prepare", __FILE__, db));
 
-    if (dbType == QSqlDriver::Interbase && (db.databaseName() == "silence.nokia.troll.no:c:\\ibase\\testdb_ascii" || db.databaseName() == "/opt/interbase/qttest.gdb"))
-        QSKIP("Can't transliterate extended unicode to ascii");
     if (dbType == QSqlDriver::DB2)
         QSKIP("Needs someone with more Unicode knowledge than I have to fix");
 
@@ -2347,6 +2345,16 @@ void tst_QSqlQuery::prepare_bind_exec()
         QCOMPARE(q.value(0).toInt(), 107);
         QCOMPARE(q.value(1).toString(), QString("name"));
         QCOMPARE(q.value(2).toString(), QString("107"));
+
+        // Test just duplicated placeholders
+        QVERIFY(q.prepare("insert into " + qtest_prepare + " (id, name, name2) values (110, :name, :name)"));
+        q.bindValue(":name", "name");
+        QVERIFY_SQL(q, exec());
+        QVERIFY(q.exec("select * from " + qtest_prepare + " where id > 109 order by id"));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 110);
+        QCOMPARE(q.value(1).toString(), QString("name"));
+        QCOMPARE(q.value(2).toString(), QString("name"));
     } // end of SQLite scope
 }
 

@@ -53,6 +53,7 @@
 #include "qmainwindow.h"
 #include "qwidgetanimator_p.h"
 #include "qmainwindowlayout_p.h"
+#include "qmenu_p.h"
 #include "qdockwidget_p.h"
 #include <private/qlayoutengine_p.h>
 

@@ -37,7 +37,7 @@
 
 using namespace QTestPrivate;
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 Q_DECLARE_METATYPE(QAbstractItemView::DragDropMode)
 #endif
 Q_DECLARE_METATYPE(QAbstractItemView::EditTriggers)
@@ -76,7 +76,7 @@ private slots:
     void alternatingRowColors();
     void currentIndex_data();
     void currentIndex();
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     void dragDropMode_data();
     void dragDropMode();
     void dragDropModeFromDragEnabledAndAcceptDrops_data();
@@ -440,7 +440,7 @@ void tst_QTreeView::construction()
     // QAbstractItemView properties
     QVERIFY(!view.alternatingRowColors());
     QCOMPARE(view.currentIndex(), QModelIndex());
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     QCOMPARE(view.dragDropMode(), QAbstractItemView::NoDragDrop);
     QVERIFY(!view.dragDropOverwriteMode());
     QVERIFY(!view.dragEnabled());
@@ -463,7 +463,7 @@ void tst_QTreeView::construction()
     QCOMPARE(view.selectionBehavior(), QAbstractItemView::SelectRows);
     QCOMPARE(view.selectionMode(), QAbstractItemView::SingleSelection);
     QVERIFY(!view.selectionModel());
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     QVERIFY(view.showDropIndicator());
 #endif
     QCOMPARE(view.QAbstractItemView::sizeHintForColumn(-1), -1); // <- protected in QTreeView
@@ -573,7 +573,7 @@ void tst_QTreeView::currentIndex()
     // ### Test child and grandChild indexes.
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 
 void tst_QTreeView::dragDropMode_data()
 {
@@ -3464,6 +3464,7 @@ void tst_QTreeView::addRowsWhileSectionsAreHidden()
         QStandardItemModel *model = new QStandardItemModel(6, pass, &view);
         view.setModel(model);
         view.show();
+        QVERIFY(QTest::qWaitForWindowActive(&view));
 
         int i;
         for (i = 0; i < 3; ++i)
@@ -3487,12 +3488,15 @@ void tst_QTreeView::addRowsWhileSectionsAreHidden()
         }
         for (col = 0; col < pass; ++col)
             view.setColumnHidden(col, false);
-        QTest::qWait(250);
 
-        for (i = 0; i < 6; ++i) {
-            QRect rect = view.visualRect(model->index(i, 0));
-            QCOMPARE(rect.isValid(), true);
-        }
+        auto allVisualRectsValid = [](QTreeView *view, QStandardItemModel *model) {
+            for (int i = 0; i < 6; ++i) {
+                if (!view->visualRect(model->index(i, 0)).isValid())
+                    return false;
+            }
+            return true;
+        };
+        QTRY_VERIFY(allVisualRectsValid(&view, model));
 
         delete model;
     }
@@ -3515,11 +3519,9 @@ void tst_QTreeView::task216717_updateChildren()
     tree.refreshed = false;
     QTreeWidgetItem *parent = new QTreeWidgetItem(QStringList() << "parent");
     tree.addTopLevelItem(parent);
-    QTest::qWait(10);
     QTRY_VERIFY(tree.refreshed);
     tree.refreshed = false;
     parent->addChild(new QTreeWidgetItem(QStringList() << "child"));
-    QTest::qWait(10);
     QTRY_VERIFY(tree.refreshed);
 
 }
@@ -3553,11 +3555,10 @@ void tst_QTreeView::task220298_selectColumns()
     Model model;
     view.setModel(&model);
     view.show();
-    QTest::qWait(50);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0,
                       view.visualRect(view.model()->index(1, 1)).center());
-    QTest::qWait(50);
-    QVERIFY(view.selectedIndexes().contains(view.model()->index(1, 2)));
+    QTRY_VERIFY(view.selectedIndexes().contains(view.model()->index(1, 2)));
     QVERIFY(view.selectedIndexes().contains(view.model()->index(1, 1)));
     QVERIFY(view.selectedIndexes().contains(view.model()->index(1, 0)));
 }
@@ -3575,14 +3576,13 @@ void tst_QTreeView::task224091_appendColumns()
     qApp->setActiveWindow(topLevel);
     QVERIFY(QTest::qWaitForWindowActive(topLevel));
 
+    QVERIFY(!treeView->verticalScrollBar()->isVisible());
+
     QList<QStandardItem *> projlist;
     for (int k = 0; k < 10; ++k)
         projlist.append(new QStandardItem(QLatin1String("Top Level ") + QString::number(k)));
     model->appendColumn(projlist);
     model->invisibleRootItem()->appendRow(new QStandardItem("end"));
-
-    QTest::qWait(50);
-    qApp->processEvents();
 
     QTRY_VERIFY(treeView->verticalScrollBar()->isVisible());
 
@@ -3741,11 +3741,10 @@ void tst_QTreeView::task238873_avoidAutoReopening()
     view.setModel(&model);
     view.show();
     view.expandAll();
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.visualRect(child.index()).center());
-    QTest::qWait(20);
-    QCOMPARE(view.currentIndex(), child.index());
+    QTRY_COMPARE(view.currentIndex(), child.index());
 
     view.setExpanded(item1.index(), false);
 
@@ -3810,7 +3809,6 @@ void tst_QTreeView::task246536_scrollbarsNotWorking()
     QTest::qWait(100);
     o.count = 0;
     tree.verticalScrollBar()->setValue(50);
-    QTest::qWait(100);
     QTRY_VERIFY(o.count > 0);
 }
 
@@ -3826,7 +3824,7 @@ void tst_QTreeView::task250683_wrongSectionSize()
     treeView.setColumnHidden(3, true);
 
     treeView.show();
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowActive(&treeView));
 
     QCOMPARE(treeView.header()->sectionSize(0) + treeView.header()->sectionSize(1), treeView.viewport()->width());
 }
@@ -3863,7 +3861,6 @@ void tst_QTreeView::task239271_addRowsWithFirstColumnHidden()
     QStandardItem sub1("sub1"), sub11("sub11");
     root0.appendRow(QList<QStandardItem*>() << &sub1 << &sub11);
 
-    QTest::qWait(20);
     //items in the 2nd column should have been painted
     QTRY_VERIFY(!delegate.paintedIndexes.isEmpty());
     QVERIFY(delegate.paintedIndexes.contains(sub00.index()));
@@ -3976,7 +3973,6 @@ void tst_QTreeView::doubleClickedWithSpans()
 
     //end the previous edition
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, p);
-    QTest::qWait(150);
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0, p);
     QTest::mouseDClick(view.viewport(), Qt::LeftButton, 0, p);
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, p);
@@ -4041,7 +4037,6 @@ void tst_QTreeView::taskQTBUG_9216_setSizeAndUniformRowHeightsWrongRepaint()
     view.painted = 0;
     view.doCompare = true;
     model.setData(model.index(0, 0), QVariant(QSize(50, 50)), Qt::SizeHintRole);
-    QTest::qWait(100);
     QTRY_VERIFY(view.painted > 0);
 }
 
@@ -4249,7 +4244,6 @@ void tst_QTreeView::taskQTBUG_11466_keyboardNavigationRegression()
     QVERIFY(QTest::qWaitForWindowExposed(&treeView));
 
     QTest::keyPress(treeView.viewport(), Qt::Key_Down);
-    QTest::qWait(10);
     QTRY_COMPARE(treeView.currentIndex(), treeView.selectionModel()->selection().indexes().first());
 }
 
@@ -4269,8 +4263,7 @@ void tst_QTreeView::taskQTBUG_13567_removeLastItemRegression()
 
     view.setCurrentIndex(model.index(199, 0));
     model.removeLastRow();
-    QTest::qWait(10);
-    QCOMPARE(view.currentIndex(), model.index(198, 0));
+    QTRY_COMPARE(view.currentIndex(), model.index(198, 0));
     CHECK_VISIBLE(198, 0);
 }
 

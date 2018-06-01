@@ -237,6 +237,7 @@ bool QWidgetWindow::event(QEvent *event)
     switch (event->type()) {
     case QEvent::Close:
         handleCloseEvent(static_cast<QCloseEvent *>(event));
+        QWindow::event(event);
         return true;
 
     case QEvent::Enter:
@@ -308,7 +309,7 @@ bool QWidgetWindow::event(QEvent *event)
         return true;
 #endif
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     case QEvent::DragEnter:
     case QEvent::DragMove:
         handleDragEnterMoveEvent(static_cast<QDragMoveEvent *>(event));
@@ -845,7 +846,7 @@ void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
 
 #endif // QT_CONFIG(wheelevent)
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 
 void QWidgetWindow::handleDragEnterMoveEvent(QDragMoveEvent *event)
 {
@@ -921,7 +922,7 @@ void QWidgetWindow::handleDropEvent(QDropEvent *event)
     m_dragTarget = 0;
 }
 
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
 {

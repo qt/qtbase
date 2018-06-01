@@ -21,3 +21,5 @@ GENERATED_TESTDATA = $${runtime_resource.target}
 android:!android-embedded {
     RESOURCES += android_testdata.qrc
 }
+
+builtin_testdata: DEFINES += BUILTIN_TESTDATA

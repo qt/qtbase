@@ -83,10 +83,10 @@ void EchoWindow::createGUI()
     label->setFrameStyle(QFrame::Box | QFrame::Plain);
     button = new QPushButton(tr("Send Message"));
 
-    connect(lineEdit, SIGNAL(editingFinished()),
-            this, SLOT(sendEcho()));
-    connect(button, SIGNAL(clicked()),
-            this, SLOT(sendEcho()));
+    connect(lineEdit, &QLineEdit::editingFinished,
+            this, &EchoWindow::sendEcho);
+    connect(button, &QPushButton::clicked,
+            this, &EchoWindow::sendEcho);
 
     layout = new QGridLayout;
     layout->addWidget(new QLabel(tr("Message:")), 0, 0);

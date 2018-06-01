@@ -63,7 +63,9 @@
 #include "qtranslator.h"
 #include "qvariant.h"
 #include "qwidget.h"
-#include "private/qdnd_p.h"
+#if QT_CONFIG(draganddrop)
+#include <private/qdnd_p.h>
+#endif
 #include "private/qguiapplication_p.h"
 #include "qcolormap.h"
 #include "qdebug.h"
@@ -130,6 +132,7 @@ QT_BEGIN_NAMESPACE
     }
 
 Q_CORE_EXPORT void qt_call_post_routines();
+Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods, const QString &text = QString(), bool autorep = false, ushort count = 1);
 
 QApplicationPrivate *QApplicationPrivate::self = 0;
 
@@ -831,7 +834,7 @@ QApplication::~QApplication()
     delete QApplicationPrivate::app_style;
     QApplicationPrivate::app_style = 0;
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     if (qt_is_gui_used)
         delete QDragManager::self();
 #endif
@@ -3068,8 +3071,19 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
     switch (e->type()) {
         case QEvent::KeyPress: {
-                int key = static_cast<QKeyEvent*>(e)->key();
-                qt_in_tab_key_event = (key == Qt::Key_Backtab
+            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
+            const int key = keyEvent->key();
+            // When a key press is received which is not spontaneous then it needs to
+            // be manually sent as a shortcut override event to ensure that any
+            // matching shortcut is triggered first. This enables emulation/playback
+            // of recorded events to still have the same effect.
+            if (!e->spontaneous() && receiver->isWidgetType()) {
+                if (qt_sendShortcutOverrideEvent(qobject_cast<QWidget *>(receiver), keyEvent->timestamp(),
+                                                 key, keyEvent->modifiers(), keyEvent->text(),
+                                                 keyEvent->isAutoRepeat(), keyEvent->count()))
+                    return true;
+            }
+            qt_in_tab_key_event = (key == Qt::Key_Backtab
                         || key == Qt::Key_Tab
                         || key == Qt::Key_Left
                         || key == Qt::Key_Up
@@ -3417,7 +3431,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         break;
 #endif
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     case QEvent::DragEnter: {
             QWidget* w = static_cast<QWidget *>(receiver);
             QDragEnterEvent *dragEvent = static_cast<QDragEnterEvent *>(e);
@@ -4465,7 +4479,7 @@ void QApplicationPrivate::notifyThemeChanged()
     qt_init_tooltip_palette();
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 void QApplicationPrivate::notifyDragStarted(const QDrag *drag)
 {
     QGuiApplicationPrivate::notifyDragStarted(drag);
@@ -4476,7 +4490,7 @@ void QApplicationPrivate::notifyDragStarted(const QDrag *drag)
     if (qt_button_down && !qt_button_down->inherits("QQuickWidget"))
         qt_button_down = nullptr;
 }
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 #ifndef QT_NO_GESTURES
 QGestureManager* QGestureManager::instance()

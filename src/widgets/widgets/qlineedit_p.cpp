@@ -44,7 +44,9 @@
 #if QT_CONFIG(itemviews)
 #include "qabstractitemview.h"
 #endif
+#if QT_CONFIG(draganddrop)
 #include "qdrag.h"
+#endif
 #include "qwidgetaction.h"
 #include "qclipboard.h"
 #ifndef QT_NO_ACCESSIBILITY
@@ -310,7 +312,7 @@ bool QLineEditPrivate::sendMouseEventToInputContext( QMouseEvent *e )
     return false;
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 void QLineEditPrivate::drag()
 {
     Q_Q(QLineEdit);
@@ -323,8 +325,7 @@ void QLineEditPrivate::drag()
     if (action == Qt::MoveAction && !control->isReadOnly() && drag->target() != q)
         control->removeSelection();
 }
-
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 
 #if QT_CONFIG(toolbutton)

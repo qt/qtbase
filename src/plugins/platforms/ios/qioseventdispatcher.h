@@ -49,18 +49,29 @@ class QIOSEventDispatcher : public QEventDispatcherCoreFoundation
     Q_OBJECT
 
 public:
-    explicit QIOSEventDispatcher(QObject *parent = 0);
-
-    bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
+    static QIOSEventDispatcher* create();
     bool processPostedEvents() override;
 
+protected:
+    explicit QIOSEventDispatcher(QObject *parent = 0);
+};
+
+class QIOSJumpingEventDispatcher : public QIOSEventDispatcher
+{
+    Q_OBJECT
+
+public:
+    QIOSJumpingEventDispatcher(QObject *parent = 0);
+    bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
+
+    // Public since we can't friend Objective-C methods
     void handleRunLoopExit(CFRunLoopActivity activity);
 
     void interruptEventLoopExec();
 
 private:
     uint m_processEventLevel;
-    RunLoopObserver<QIOSEventDispatcher> m_runLoopExitObserver;
+    RunLoopObserver<QIOSJumpingEventDispatcher> m_runLoopExitObserver;
 };
 
 QT_END_NAMESPACE

@@ -44,6 +44,7 @@
 #include "qwindowsinternalmimedata.h"
 
 #include <qpa/qplatformdrag.h>
+#include <QtGui/qdrag.h>
 #include <QtGui/QPixmap>
 
 struct IDropTargetHelper;

@@ -58,6 +58,37 @@
 #define qScreenEventDebug QT_NO_QDEBUG_MACRO
 #endif
 
+static int qtKey(int virtualKey, QChar::Category category)
+{
+    if (Q_UNLIKELY(category == QChar::Other_NotAssigned))
+        return virtualKey;
+    else if (category == QChar::Other_PrivateUse)
+        return qtKeyForPrivateUseQnxKey(virtualKey);
+    else
+        return QChar::toUpper(virtualKey);
+}
+
+static QString keyString(int sym, QChar::Category category)
+{
+    if (Q_UNLIKELY(category == QChar::Other_NotAssigned)) {
+        return QString();
+    } else if (category == QChar::Other_PrivateUse) {
+        return keyStringForPrivateUseQnxKey(sym);
+    } else {
+        uint ucs4_sym = sym;
+        return QString::fromUcs4(&ucs4_sym, 1);
+    }
+}
+
+static QString capKeyString(int cap, int modifiers, int key)
+{
+    if (cap >= 0x20 && cap <= 0x0ff) {
+        if (modifiers & KEYMOD_CTRL)
+            return QChar((int)(key & 0x3f));
+    }
+    return QString();
+}
+
 QT_BEGIN_NAMESPACE
 
 QQnxScreenEventHandler::QQnxScreenEventHandler(QQnxIntegration *integration)
@@ -154,6 +185,13 @@ void QQnxScreenEventHandler::injectKeyboardEvent(int flags, int sym, int modifie
 {
     Q_UNUSED(scan);
 
+    if (!(flags & KEY_CAP_VALID))
+        return;
+
+    // Correct erroneous information.
+    if ((flags & KEY_SYM_VALID) && sym == static_cast<int>(0xFFFFFFFF))
+        flags &= ~(KEY_SYM_VALID);
+
     Qt::KeyboardModifiers qtMod = Qt::NoModifier;
     if (modifiers & KEYMOD_SHIFT)
         qtMod |= Qt::ShiftModifier;
@@ -161,37 +199,20 @@ void QQnxScreenEventHandler::injectKeyboardEvent(int flags, int sym, int modifie
         qtMod |= Qt::ControlModifier;
     if (modifiers & KEYMOD_ALT)
         qtMod |= Qt::AltModifier;
+    if (isKeypadKey(cap))
+        qtMod |= Qt::KeypadModifier;
 
-    // determine event type
     QEvent::Type type = (flags & KEY_DOWN) ? QEvent::KeyPress : QEvent::KeyRelease;
 
-    // Check if the key cap is valid
-    if (flags & KEY_CAP_VALID) {
-        Qt::Key key;
-        QString keyStr;
+    int virtualKey = (flags & KEY_SYM_VALID) ? sym : cap;
+    QChar::Category category = QChar::category(virtualKey);
+    int key = qtKey(virtualKey, category);
+    QString keyStr = (flags & KEY_SYM_VALID) ? keyString(sym, category) :
+                                               capKeyString(cap, modifiers, key);
 
-        if (cap >= 0x20 && cap <= 0x0ff) {
-            key = Qt::Key(std::toupper(cap));   // Qt expects the CAP to be upper case.
-
-            if ( qtMod & Qt::ControlModifier ) {
-                keyStr = QChar((int)(key & 0x3f));
-            } else {
-                if (flags & KEY_SYM_VALID)
-                    keyStr = QChar(sym);
-            }
-        } else if ((cap > 0x0ff && cap < UNICODE_PRIVATE_USE_AREA_FIRST) || cap > UNICODE_PRIVATE_USE_AREA_LAST) {
-            key = (Qt::Key)cap;
-            keyStr = QChar(sym);
-        } else {
-            if (isKeypadKey(cap))
-                qtMod |= Qt::KeypadModifier; // Is this right?
-            key = keyTranslator(cap);
-        }
-
-        QWindowSystemInterface::handleExtendedKeyEvent(QGuiApplication::focusWindow(), type, key, qtMod,
-                scan, sym, modifiers, keyStr);
-        qScreenEventDebug() << "Qt key t=" << type << ", k=" << key << ", s=" << keyStr;
-    }
+    QWindowSystemInterface::handleExtendedKeyEvent(QGuiApplication::focusWindow(), type, key, qtMod,
+            scan, virtualKey, modifiers, keyStr);
+    qScreenEventDebug() << "Qt key t=" << type << ", k=" << key << ", s=" << keyStr;
 }
 
 void QQnxScreenEventHandler::setScreenEventThread(QQnxScreenEventThread *eventThread)
@@ -591,6 +612,10 @@ void QQnxScreenEventHandler::handlePropertyEvent(screen_event_t event)
     case SCREEN_PROPERTY_FOCUS:
         handleKeyboardFocusPropertyEvent(window);
         break;
+    case SCREEN_PROPERTY_SIZE:
+    case SCREEN_PROPERTY_POSITION:
+        handleGeometryPropertyEvent(window);
+        break;
     default:
         // event ignored
         qScreenEventDebug() << "Ignore property event for property: " << property;
@@ -615,6 +640,28 @@ void QQnxScreenEventHandler::handleKeyboardFocusPropertyEvent(screen_window_t wi
         QWindowSystemInterface::handleWindowActivated(focusWindow);
     else if (!focus && focusWindow == QGuiApplication::focusWindow())
         m_focusLostTimer = startTimer(50);
+}
+
+void QQnxScreenEventHandler::handleGeometryPropertyEvent(screen_window_t window)
+{
+    int pos[2];
+    if (screen_get_window_property_iv(window, SCREEN_PROPERTY_POSITION, pos) != 0) {
+        qFatal("QQnx: failed to query window property, errno=%d", errno);
+    }
+
+    int size[2];
+    if (screen_get_window_property_iv(window, SCREEN_PROPERTY_SIZE, size) != 0) {
+        qFatal("QQnx: failed to query window property, errno=%d", errno);
+    }
+
+    QRect rect(pos[0], pos[1], size[0], size[1]);
+    QWindow *qtWindow = QQnxIntegration::window(window);
+    if (qtWindow) {
+        qtWindow->setGeometry(rect);
+        QWindowSystemInterface::handleGeometryChange(qtWindow, rect);
+    }
+
+    qScreenEventDebug() << qtWindow << "moved to" << rect;
 }
 
 void QQnxScreenEventHandler::timerEvent(QTimerEvent *event)

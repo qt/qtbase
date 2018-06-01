@@ -29,6 +29,7 @@
 
 #include <QtTest/QtTest>
 #include <QtCore/QCoreApplication>
+#include <QtCore/QMimeDatabase>
 
 class tst_QResourceEngine: public QObject
 {
@@ -125,9 +126,19 @@ void tst_QResourceEngine::checkStructure_data()
     rootContents.insert(1, QLatin1String("android_testdata"));
 #endif
 
+#if defined(BUILTIN_TESTDATA)
+    rootContents.insert(8, QLatin1String("testqrc"));
+#endif
+
+
     QTest::newRow("root dir")          << QString(":/")
                                        << QString()
-                                       << (QStringList() << "search_file.txt")
+                                       << (QStringList()
+#if defined(BUILTIN_TESTDATA)
+                                           << "parentdir.txt"
+                                           << "runtime_resource.rcc"
+#endif
+                                           << "search_file.txt")
                                        << rootContents
                                        << QLocale::c()
                                        << qlonglong(0);
@@ -333,6 +344,11 @@ void tst_QResourceEngine::checkStructure()
     QFETCH(QStringList, containedDirs);
     QFETCH(QLocale, locale);
     QFETCH(qlonglong, contentsSize);
+
+    // We rely on the existence of the root "qt-project.org" in resources. For
+    // static builds on MSVC these resources are only added if they are used.
+    QMimeDatabase db;
+    Q_UNUSED(db);
 
     bool directory = (containedDirs.size() + containedFiles.size() > 0);
     QLocale::setDefault(locale);

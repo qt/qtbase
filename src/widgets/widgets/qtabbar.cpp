@@ -1668,7 +1668,7 @@ bool QTabBar::event(QEvent *event)
         d->updateMacBorderMetrics();
         return QWidget::event(event);
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     } else if (event->type() == QEvent::DragEnter) {
         if (d->changeCurrentOnDrag)
             event->accept();

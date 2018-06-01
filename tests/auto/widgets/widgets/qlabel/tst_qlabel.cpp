@@ -398,7 +398,6 @@ void tst_QLabel::task226479_movieResize()
     label.paintedRegion = QRegion();
     movie->setFileName(QFINDTESTDATA("green.png"));
     movie->start();
-    QTest::qWait(50);
 
     QTRY_COMPARE(label.paintedRegion , QRegion(label.rect()) );
 }

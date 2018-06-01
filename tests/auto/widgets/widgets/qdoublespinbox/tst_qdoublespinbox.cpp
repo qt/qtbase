@@ -164,6 +164,7 @@ void tst_QDoubleSpinBox::initTestCase()
     testFocusWidget = new QWidget(0);
     testFocusWidget->resize(200, 100);
     testFocusWidget->show();
+    QVERIFY(QTest::qWaitForWindowActive(testFocusWidget));
 }
 
 void tst_QDoubleSpinBox::cleanupTestCase()
@@ -747,6 +748,7 @@ void tst_QDoubleSpinBox::setReadOnly()
     QDoubleSpinBox spin(0);
     spin.setValue(0.2);
     spin.show();
+    QVERIFY(QTest::qWaitForWindowActive(&spin));
     QCOMPARE(spin.value(), 0.2);
     QTest::keyClick(&spin, Qt::Key_Up);
     QCOMPARE(spin.value(), 1.2);
@@ -769,16 +771,14 @@ void tst_QDoubleSpinBox::editingFinished()
     layout->addWidget(box2);
 
     testFocusWidget->show();
-    QApplication::setActiveWindow(testFocusWidget);
-    QTest::qWait(10);
-    QTRY_VERIFY(testFocusWidget->isActiveWindow());
+    testFocusWidget->activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(testFocusWidget));
     box->setFocus();
     QTRY_VERIFY(box->hasFocus());
 
     QSignalSpy editingFinishedSpy1(box, SIGNAL(editingFinished()));
     QSignalSpy editingFinishedSpy2(box2, SIGNAL(editingFinished()));
 
-    box->setFocus();
     QTest::keyClick(box, Qt::Key_Up);
     QTest::keyClick(box, Qt::Key_Up);
 
@@ -997,7 +997,7 @@ void tst_QDoubleSpinBox::task224497_fltMax()
     dspin->setMinimum(3);
     dspin->setMaximum(FLT_MAX);
     dspin->show();
-    QTest::qWait(1000);
+    QVERIFY(QTest::qWaitForWindowActive(dspin));
     dspin->lineEdit()->selectAll();
     QTest::keyClick(dspin->lineEdit(), Qt::Key_Delete);
     QTest::keyClick(dspin->lineEdit(), Qt::Key_1);

@@ -109,7 +109,7 @@ QOffscreenIntegration::QOffscreenIntegration()
     m_fontDatabase.reset(new QFreeTypeFontDatabase());
 #endif
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     m_drag.reset(new QOffscreenDrag);
 #endif
     m_services.reset(new QPlatformServices);
@@ -204,7 +204,7 @@ QPlatformFontDatabase *QOffscreenIntegration::fontDatabase() const
     return m_fontDatabase.data();
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 QPlatformDrag *QOffscreenIntegration::drag() const
 {
     return m_drag.data();

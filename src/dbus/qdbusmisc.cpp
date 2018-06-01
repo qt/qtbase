@@ -181,6 +181,13 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QVector<in
         }
 
         int id = QMetaType::type(type);
+#ifdef QT_BOOTSTRAPPED
+        // in bootstrap mode QDBusMessage isn't included, thus we need to resolve it manually here
+        if (type == "QDBusMessage") {
+            id = QDBusMetaTypeId::message();
+        }
+#endif
+
         if (id == QMetaType::UnknownType) {
             errorMsg = QLatin1String("Unregistered input type in parameter list: ") + QLatin1String(type);
             return -1;

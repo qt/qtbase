@@ -20,6 +20,8 @@ osx
 [setGeometry]
 osx
 [raise]
+# QTBUG-68175
+opensuse
 osx
 [resizeEvent]
 osx

@@ -2078,8 +2078,6 @@ void tst_QFtp::doneSignal()
     if (QTestEventLoop::instance().timeout())
         QFAIL("Network operation timed out");
 
-    QTest::qWait(200);
-
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.first().first().toBool(), false);
 }

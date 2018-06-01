@@ -75,7 +75,9 @@
 #if QT_CONFIG(spinbox)
 #include <qspinbox.h>
 #endif
+#if QT_CONFIG(toolbar)
 #include <qtoolbar.h>
+#endif
 #if QT_CONFIG(combobox)
 #include <qcombobox.h>
 #endif

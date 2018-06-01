@@ -166,9 +166,6 @@ void tst_QLine::testIntersection_data()
                                    << 100.1599256468622
                                    << 50.0;
 
-    QLineF baseA(0, -50, 0, 50);
-    QLineF baseB(-50, 0, 50, 0);
-
     for (int i = 0; i < 1000; ++i) {
         QLineF a = QLineF::fromPolar(50, i);
         a.setP1(-a.p2());

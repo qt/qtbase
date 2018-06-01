@@ -34,6 +34,7 @@
 #include <QAction>
 #include <QMainWindow>
 #include <QSplitter>
+#include <QStatusBar>
 #include <QToolBar>
 #include <QVector>
 #include <QCommandLineOption>
@@ -43,12 +44,15 @@
 #include <QPainterPath>
 #include <QPaintEvent>
 #include <QScreen>
+#include <QWindow>
 #include <QSharedPointer>
 #include <QDebug>
 #include <QTextStream>
 
-bool optIgnoreTouch = false;
-QVector<Qt::GestureType> optGestures;
+static bool optIgnoreTouch = false;
+static QVector<Qt::GestureType> optGestures;
+
+static QWidgetList mainWindows;
 
 static inline void drawEllipse(const QPointF &center, qreal hDiameter, qreal vDiameter, const QColor &color, QPainter &painter)
 {
@@ -191,6 +195,7 @@ typedef QSharedPointer<Gesture> GesturePtr;
 typedef QVector<GesturePtr> GesturePtrs;
 
 typedef QVector<QEvent::Type> EventTypeVector;
+static EventTypeVector eventTypes;
 
 class EventFilter : public QObject {
     Q_OBJECT
@@ -205,6 +210,8 @@ signals:
 private:
     const EventTypeVector m_types;
 };
+
+static EventFilter *globalEventFilter = nullptr;
 
 bool EventFilter::eventFilter(QObject *o, QEvent *e)
 {
@@ -275,10 +282,10 @@ class TouchTestWidget : public QWidget {
     Q_OBJECT
     Q_PROPERTY(bool drawPoints READ drawPoints WRITE setDrawPoints)
 public:
-    explicit TouchTestWidget(QWidget *parent = 0) : QWidget(parent), m_drawPoints(true)
+    explicit TouchTestWidget(QWidget *parent = nullptr) : QWidget(parent), m_drawPoints(true)
     {
         setAttribute(Qt::WA_AcceptTouchEvents);
-        foreach (Qt::GestureType t, optGestures)
+        for (Qt::GestureType t : optGestures)
             grabGesture(t);
     }
 
@@ -337,10 +344,11 @@ bool TouchTestWidget::event(QEvent *event)
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
         if (m_drawPoints) {
-            foreach (const QTouchEvent::TouchPoint &p, static_cast<const QTouchEvent *>(event)->touchPoints())
+            for (const QTouchEvent::TouchPoint &p : static_cast<const QTouchEvent *>(event)->touchPoints())
                 m_points.append(Point(p.pos(), TouchPoint, Qt::MouseEventNotSynthesized, p.ellipseDiameters()));
             update();
         }
+        Q_FALLTHROUGH();
     case QEvent::TouchEnd:
         if (optIgnoreTouch)
             event->ignore();
@@ -358,7 +366,8 @@ bool TouchTestWidget::event(QEvent *event)
 
 void TouchTestWidget::handleGestureEvent(QGestureEvent *gestureEvent)
 {
-    foreach (QGesture *gesture, gestureEvent->gestures()) {
+    const auto gestures = gestureEvent->gestures();
+    for (QGesture *gesture : gestures) {
         if (optGestures.contains(gesture->gestureType())) {
             switch (gesture->state()) {
             case Qt::NoGesture:
@@ -389,7 +398,7 @@ void TouchTestWidget::paintEvent(QPaintEvent *)
     const QRectF geom = QRectF(QPointF(0, 0), QSizeF(size()));
     painter.fillRect(geom, Qt::white);
     painter.drawRect(QRectF(geom.topLeft(), geom.bottomRight() - QPointF(1, 1)));
-    foreach (const Point &point, m_points) {
+    for (const Point &point : qAsConst(m_points)) {
         if (geom.contains(point.pos)) {
             if (point.type == MouseRelease)
                 drawEllipse(point.pos, point.horizontalDiameter, point.verticalDiameter, point.color(), painter);
@@ -397,56 +406,94 @@ void TouchTestWidget::paintEvent(QPaintEvent *)
                 fillEllipse(point.pos, point.horizontalDiameter, point.verticalDiameter, point.color(), painter);
         }
     }
-    foreach (const GesturePtr &gp, m_gestures)
+    for (const GesturePtr &gp : qAsConst(m_gestures))
         gp->draw(geom, painter);
 }
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-public:
     MainWindow();
+public:
+    static MainWindow *createMainWindow();
+
     QWidget *touchWidget() const { return m_touchWidget; }
+
+    void setVisible(bool visible) override;
 
 public slots:
     void appendToLog(const QString &text) { m_logTextEdit->appendPlainText(text); }
     void dumpTouchDevices();
 
 private:
+    void updateScreenLabel();
+    void newWindow() { MainWindow::createMainWindow(); }
+
     TouchTestWidget *m_touchWidget;
     QPlainTextEdit *m_logTextEdit;
+    QLabel *m_screenLabel;
 };
+
+MainWindow *MainWindow::createMainWindow()
+{
+    MainWindow *result = new MainWindow;
+    const QSize screenSize = QGuiApplication::primaryScreen()->availableGeometry().size();
+    result->resize(screenSize / 2);
+    const QSize sizeDiff = screenSize - result->size();
+    const QPoint pos = QPoint(sizeDiff.width() / 2, sizeDiff.height() / 2)
+                       + mainWindows.size() * QPoint(30, 10);
+    result->move(pos);
+    result->show();
+
+    EventFilter *eventFilter = globalEventFilter;
+    if (!eventFilter) {
+        eventFilter = new EventFilter(eventTypes, result->touchWidget());
+        result->touchWidget()->installEventFilter(eventFilter);
+    }
+    QObject::connect(eventFilter, &EventFilter::eventReceived, result, &MainWindow::appendToLog);
+
+    mainWindows.append(result);
+    return result;
+}
 
 MainWindow::MainWindow()
     : m_touchWidget(new TouchTestWidget)
     , m_logTextEdit(new QPlainTextEdit)
+    , m_screenLabel(new QLabel)
 {
-    setWindowTitle(QStringLiteral("Touch Event Tester ") + QT_VERSION_STR);
+    QString title;
+    QTextStream(&title) << "Touch Event Tester " << QT_VERSION_STR << ' '
+        << qApp->platformName() << " #" << (mainWindows.size() + 1);
+    setWindowTitle(title);
 
     setObjectName("MainWin");
     QToolBar *toolBar = new QToolBar(this);
     addToolBar(Qt::TopToolBarArea, toolBar);
     QMenu *fileMenu = menuBar()->addMenu("File");
+    QAction *newWindowAction = fileMenu->addAction(QStringLiteral("New Window"), this, &MainWindow::newWindow);
+    newWindowAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_N));
+    toolBar->addAction(newWindowAction);
+    fileMenu->addSeparator();
     QAction *dumpDeviceAction = fileMenu->addAction(QStringLiteral("Dump devices"));
     dumpDeviceAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
-    connect(dumpDeviceAction, SIGNAL(triggered()), this, SLOT(dumpTouchDevices()));
+    connect(dumpDeviceAction, &QAction::triggered, this, &MainWindow::dumpTouchDevices);
     toolBar->addAction(dumpDeviceAction);
     QAction *clearLogAction = fileMenu->addAction(QStringLiteral("Clear Log"));
     clearLogAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L));
-    connect(clearLogAction, SIGNAL(triggered()), m_logTextEdit, SLOT(clear()));
+    connect(clearLogAction, &QAction::triggered, m_logTextEdit, &QPlainTextEdit::clear);
     toolBar->addAction(clearLogAction);
     QAction *toggleDrawPointAction = fileMenu->addAction(QStringLiteral("Draw Points"));
     toggleDrawPointAction->setCheckable(true);
     toggleDrawPointAction->setChecked(m_touchWidget->drawPoints());
-    connect(toggleDrawPointAction, SIGNAL(toggled(bool)), m_touchWidget, SLOT(setDrawPoints(bool)));
+    connect(toggleDrawPointAction, &QAction::toggled, m_touchWidget, &TouchTestWidget::setDrawPoints);
     toolBar->addAction(toggleDrawPointAction);
     QAction *clearPointAction = fileMenu->addAction(QStringLiteral("Clear Points"));
     clearPointAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_P));
-    connect(clearPointAction, SIGNAL(triggered()), m_touchWidget, SLOT(clearPoints()));
+    connect(clearPointAction, &QAction::triggered, m_touchWidget, &TouchTestWidget::clearPoints);
     toolBar->addAction(clearPointAction);
     QAction *quitAction = fileMenu->addAction(QStringLiteral("Quit"));
     quitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
-    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
+    connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
     toolBar->addAction(quitAction);
 
     QSplitter *mainSplitter = new QSplitter(Qt::Vertical, this);
@@ -459,7 +506,30 @@ MainWindow::MainWindow()
     mainSplitter->addWidget(m_logTextEdit);
     setCentralWidget(mainSplitter);
 
+    statusBar()->addPermanentWidget(m_screenLabel);
+
     dumpTouchDevices();
+}
+
+void MainWindow::setVisible(bool visible)
+{
+    QMainWindow::setVisible(visible);
+    connect(windowHandle(), &QWindow::screenChanged, this, &MainWindow::updateScreenLabel);
+    updateScreenLabel();
+}
+
+void MainWindow::updateScreenLabel()
+{
+    QString text;
+    QTextStream str(&text);
+    const QScreen *screen = windowHandle()->screen();
+    const QRect geometry = screen->geometry();
+    const qreal dpr = screen->devicePixelRatio();
+    str << '"' << screen->name() << "\" " << geometry.width() << 'x' << geometry.height()
+        << forcesign << geometry.x() << geometry.y() << noforcesign;
+    if (!qFuzzyCompare(dpr, qreal(1)))
+        str << ", dpr=" << dpr;
+    m_screenLabel->setText(text);
 }
 
 void MainWindow::dumpTouchDevices()
@@ -520,14 +590,6 @@ int main(int argc, char *argv[])
     if (parser.isSet(swipeGestureOption))
         optGestures.append(Qt::SwipeGesture);
 
-    MainWindow w;
-    const QSize screenSize = QGuiApplication::primaryScreen()->availableGeometry().size();
-    w.resize(screenSize / 2);
-    const QSize sizeDiff = screenSize - w.size();
-    w.move(sizeDiff.width() / 2, sizeDiff.height() / 2);
-    w.show();
-
-    EventTypeVector eventTypes;
     if (!parser.isSet(noMouseLogOption))
         eventTypes << QEvent::MouseButtonPress << QEvent::MouseButtonRelease << QEvent::MouseButtonDblClick;
     if (parser.isSet(mouseMoveOption))
@@ -536,14 +598,16 @@ int main(int argc, char *argv[])
         eventTypes << QEvent::TouchBegin << QEvent::TouchUpdate << QEvent::TouchEnd;
     if (!optGestures.isEmpty())
         eventTypes << QEvent::Gesture << QEvent::GestureOverride;
-    QObject *filterTarget = parser.isSet(globalFilterOption)
-            ? static_cast<QObject *>(&a)
-            : static_cast<QObject *>(w.touchWidget());
-    EventFilter *filter = new EventFilter(eventTypes, filterTarget);
-    filterTarget->installEventFilter(filter);
-    QObject::connect(filter, SIGNAL(eventReceived(QString)), &w, SLOT(appendToLog(QString)));
+    if (parser.isSet(globalFilterOption)) {
+        globalEventFilter = new EventFilter(eventTypes, &a);
+        a.installEventFilter(globalEventFilter);
+    }
 
-    return a.exec();
+    MainWindow::createMainWindow();
+
+    const int exitCode = a.exec();
+    qDeleteAll(mainWindows);
+    return exitCode;
 }
 
 #include "main.moc"

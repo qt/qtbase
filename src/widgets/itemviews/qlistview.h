@@ -158,12 +158,12 @@ protected:
 
     void timerEvent(QTimerEvent *e) override;
     void resizeEvent(QResizeEvent *e) override;
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     void dragMoveEvent(QDragMoveEvent *e) override;
     void dragLeaveEvent(QDragLeaveEvent *e) override;
     void dropEvent(QDropEvent *e) override;
     void startDrag(Qt::DropActions supportedActions) override;
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
     QStyleOptionViewItem viewOptions() const override;
     void paintEvent(QPaintEvent *e) override;

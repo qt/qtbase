@@ -54,9 +54,9 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "QtWidgets/qwidget.h"
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(toolbar);
 
-#ifndef QT_NO_TOOLBAR
+QT_BEGIN_NAMESPACE
 
 class QStyleOption;
 class QToolBar;
@@ -79,8 +79,6 @@ public:
 public Q_SLOTS:
     void setOrientation(Qt::Orientation orientation);
 };
-
-#endif // QT_NO_TOOLBAR
 
 QT_END_NAMESPACE
 

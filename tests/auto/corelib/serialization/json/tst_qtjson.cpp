@@ -1863,6 +1863,7 @@ void tst_QtJson::invalidBinaryData()
         QFile file(files.at(i).filePath());
         file.open(QIODevice::ReadOnly);
         QByteArray bytes = file.readAll();
+        bytes.squeeze();
         QJsonDocument document = QJsonDocument::fromRawData(bytes.constData(), bytes.size());
         QVERIFY(document.isNull());
     }

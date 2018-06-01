@@ -205,6 +205,7 @@ public:
 
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleWindowStateChanged(QWindow *window, Qt::WindowStates newState, int oldState = -1);
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleWindowScreenChanged(QWindow *window, QScreen *newScreen);
 
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
@@ -213,7 +214,7 @@ public:
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleApplicationStateChanged(Qt::ApplicationState newState, bool forcePropagate = false);
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     // Drag and drop. These events are sent immediately.
     static QPlatformDragQtResponse handleDrag(QWindow *window, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
     static QPlatformDropQtResponse handleDrop(QWindow *window, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);

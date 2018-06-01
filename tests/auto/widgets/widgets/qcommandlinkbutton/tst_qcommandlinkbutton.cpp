@@ -110,6 +110,7 @@ void tst_QCommandLinkButton::initTestCase()
     testWidget->setObjectName("testWidget");
     testWidget->resize( 200, 200 );
     testWidget->show();
+    QVERIFY(QTest::qWaitForWindowActive(testWidget));
 
     connect( testWidget, SIGNAL(clicked()), this, SLOT(onClicked()) );
     connect( testWidget, SIGNAL(pressed()), this, SLOT(onPressed()) );
@@ -166,11 +167,11 @@ void tst_QCommandLinkButton::onReleased()
 
 void tst_QCommandLinkButton::setAutoRepeat()
 {
-    // Give the last tests time to finish - i.e., wait for the window close
-    // and deactivate to avoid a race condition here. We can't add this to the
-    // end of the defaultAndAutoDefault test, since any failure in that test
-    // will return out of that function.
-    QTest::qWait( 1000 );
+    // Give the last tests time to finish - i.e., wait for the window close and
+    // deactivate to avoid a race condition here. We can't add this to the end
+    // of the defaultAndAutoDefault test, since any failure in that test will
+    // return out of that function.
+    QTest::qWait(1000);
 
     // If this changes, this test must be completely revised.
     QVERIFY( !testWidget->isCheckable() );
@@ -194,8 +195,6 @@ void tst_QCommandLinkButton::setAutoRepeat()
     testWidget->setAutoRepeat( false );
     QTest::keyPress( testWidget, Qt::Key_Space );
 
-    QTest::qWait( 300 );
-
     QVERIFY( testWidget->isDown() );
     QVERIFY( toggle_count == 0 );
     QVERIFY( press_count == 1 );
@@ -206,18 +205,16 @@ void tst_QCommandLinkButton::setAutoRepeat()
     resetCounters();
 
     // check that the button is down if we press space while in autorepeat
-    // we can't actually confirm how many times it is fired, more than 1 is enough.
 
     testWidget->setDown( false );
     testWidget->setAutoRepeat( true );
     QTest::keyPress( testWidget, Qt::Key_Space );
-    QTest::qWait(900);
+    QTRY_VERIFY(press_count > 10);
     QVERIFY( testWidget->isDown() );
     QVERIFY( toggle_count == 0 );
     QTest::keyRelease( testWidget, Qt::Key_Space );
     QCOMPARE(press_count, release_count);
     QCOMPARE(release_count, click_count);
-    QVERIFY(press_count > 1);
 
     // #### shouldn't I check here to see if multiple signals have been fired???
 
@@ -226,8 +223,6 @@ void tst_QCommandLinkButton::setAutoRepeat()
     testWidget->setDown( false );
     testWidget->setAutoRepeat( false );
     QTest::keyPress( testWidget, Qt::Key_Enter );
-
-    QTest::qWait( 300 );
 
     QVERIFY( !testWidget->isDown() );
     QVERIFY( toggle_count == 0 );
@@ -241,7 +236,6 @@ void tst_QCommandLinkButton::setAutoRepeat()
     testWidget->setDown( false );
     testWidget->setAutoRepeat( true );
     QTest::keyClick( testWidget, Qt::Key_Enter );
-    QTest::qWait( 300 );
     QVERIFY( !testWidget->isDown() );
     QVERIFY( toggle_count == 0 );
     QVERIFY( press_count == 0 );
@@ -252,23 +246,19 @@ void tst_QCommandLinkButton::setAutoRepeat()
 void tst_QCommandLinkButton::pressed()
 {
     QTest::keyPress( testWidget, ' ' );
-//    QTest::qWait( 300 );
     QCOMPARE( press_count, (uint)1 );
     QCOMPARE( release_count, (uint)0 );
 
     QTest::keyRelease( testWidget, ' ' );
-//    QTest::qWait( 300 );
     QCOMPARE( press_count, (uint)1 );
     QCOMPARE( release_count, (uint)1 );
 
     QTest::keyPress( testWidget,Qt::Key_Enter );
-//    QTest::qWait( 300 );
     QCOMPARE( press_count, (uint)1 );
     QCOMPARE( release_count, (uint)1 );
 
     testWidget->setAutoDefault(true);
     QTest::keyPress( testWidget,Qt::Key_Enter );
-//    QTest::qWait( 300 );
     QCOMPARE( press_count, (uint)2 );
     QCOMPARE( release_count, (uint)2 );
     testWidget->setAutoDefault(false);
@@ -349,19 +339,7 @@ void tst_QCommandLinkButton::setAccel()
     // The shortcut will not be activated unless the button is in a active
     // window and has focus
     testWidget->setFocus();
-
-    // QWidget::isActiveWindow() can report window active before application
-    // has handled the asynchronous activation event on platforms that have
-    // implemented QPlatformWindow::isActive(), so process events to sync up.
-    QApplication::instance()->processEvents();
-
-    for (int i = 0; !testWidget->isActiveWindow() && i < 1000; ++i) {
-        testWidget->activateWindow();
-        QApplication::instance()->processEvents();
-        QTest::qWait(100);
-    }
-
-    QVERIFY(testWidget->isActiveWindow());
+    QVERIFY(QTest::qWaitForWindowActive(testWidget));
 
     QTest::keyClick( testWidget, 'A', Qt::AltModifier );
     QTest::qWait( 500 );
@@ -449,8 +427,7 @@ void tst_QCommandLinkButton::defaultAndAutoDefault()
     QVERIFY(dialog.isVisible());
 
     QObject::connect(&button1, SIGNAL(clicked()), &dialog, SLOT(hide()));
-    QKeyEvent event(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
-    QApplication::sendEvent(&dialog, &event);
+    QTest::keyClick(&dialog, Qt::Key_Return);
     QVERIFY(!dialog.isVisible());
     }
 
@@ -490,8 +467,7 @@ void tst_QCommandLinkButton::defaultAndAutoDefault()
     QVERIFY(dialog.isVisible());
 
     QObject::connect(&button1, SIGNAL(clicked()), &dialog, SLOT(hide()));
-    QKeyEvent event(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
-    QApplication::sendEvent(&dialog, &event);
+    QTest::keyClick(&dialog, Qt::Key_Return);
     QVERIFY(!dialog.isVisible());
     }
 
@@ -506,8 +482,7 @@ void tst_QCommandLinkButton::defaultAndAutoDefault()
     // No default button is set, and button2 is the first autoDefault button
     // that is next in the tab order
     QObject::connect(&button2, SIGNAL(clicked()), &dialog, SLOT(hide()));
-    QKeyEvent event(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
-    QApplication::sendEvent(&dialog, &event);
+    QTest::keyClick(&dialog, Qt::Key_Return);
     QVERIFY(!dialog.isVisible());
 
     // Reparenting

@@ -188,6 +188,12 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
     TexBufferRange = 0;
     TextureView = 0;
 
+    // OpenGL ES 3.1+ has TexStorage2DMultisample
+    if (ctx->format().version() >= qMakePair(3, 1)) {
+        QOpenGLExtraFunctionsPrivate *extra = static_cast<QOpenGLExtensions *>(context->extraFunctions())->d();
+        TexStorage2DMultisample = extra->f.TexStorage2DMultisample;
+    }
+
 #endif
 
     if (context->isOpenGLES() && context->hasExtension(QByteArrayLiteral("GL_OES_texture_3D"))) {

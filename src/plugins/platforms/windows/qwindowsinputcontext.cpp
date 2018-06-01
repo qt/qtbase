@@ -530,6 +530,14 @@ bool QWindowsInputContext::endComposition(HWND hwnd)
     if (m_compositionContext.focusObject.isNull())
         return false;
 
+    // QTBUG-58300: Ignore WM_IME_ENDCOMPOSITION when CTRL is pressed to prevent
+    // for example the text being cleared when pressing CTRL+A
+    if (m_locale.language() == QLocale::Korean
+        && QGuiApplication::queryKeyboardModifiers().testFlag(Qt::ControlModifier)) {
+        reset();
+        return true;
+    }
+
     m_endCompositionRecursionGuard = true;
 
     imeNotifyCancelComposition(m_compositionContext.hwnd);

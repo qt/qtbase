@@ -55,7 +55,9 @@
 #include <qcache.h>
 #include <qregularexpression.h>
 #endif
+#if QT_CONFIG(timezone)
 #include <QTimeZone>
+#endif
 #include <QScopedValueRollback>
 
 #if defined Q_OS_WIN
@@ -438,8 +440,10 @@ static QString timespecToString(const QDateTime &dateTime)
         return QStringLiteral("Z");
     case Qt::OffsetFromUTC:
         return secondsToOffset(dateTime.offsetFromUtc());
+#if QT_CONFIG(timezone)
     case Qt::TimeZone:
         return secondsToOffset(dateTime.timeZone().offsetFromUtc(dateTime));
+#endif
     default:
         return QString();
     }
@@ -492,10 +496,10 @@ bool QSQLiteResult::exec()
 
 #if (SQLITE_VERSION_NUMBER >= 3003011)
     // In the case of the reuse of a named placeholder
-    // We need to check explicitly that paramCount is greater than 1, as sqlite
+    // We need to check explicitly that paramCount is greater than or equal to 1, as sqlite
     // can end up in a case where for virtual tables it returns 0 even though it
     // has parameters
-    if (paramCount > 1 && paramCount < values.count()) {
+    if (paramCount >= 1 && paramCount < values.count()) {
         const auto countIndexes = [](int counter, const QVector<int> &indexList) {
                                       return counter + indexList.length();
                                   };
