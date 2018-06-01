@@ -323,8 +323,14 @@ class Q_CORE_EXPORT QCborValueRef
 public:
     operator QCborValue() const     { return concrete(); }
 
-    QCborValueRef &operator=(const QCborValue &other);
-    QCborValueRef &operator=(const QCborValueRef &other);
+    QCborValueRef(const QCborValueRef &) Q_DECL_NOTHROW = default;
+    QCborValueRef(QCborValueRef &&) Q_DECL_NOTHROW = default;
+    QCborValueRef &operator=(const QCborValue &other)
+    { assign(*this, other); return *this; }
+    QCborValueRef &operator=(QCborValue &&other)
+    { assign(*this, std::move(other)); other.container = nullptr; return *this; }
+    QCborValueRef &operator=(const QCborValueRef &other)
+    { assign(*this, other); return *this; }
 
     QCborValue::Type type() const   { return concreteType(); }
     bool isInteger() const          { return type() == QCborValue::Integer; }
@@ -426,6 +432,9 @@ private:
     friend class QCborValueRefPtr;
 
     // static so we can pass this by value
+    static void assign(QCborValueRef that, const QCborValue &other);
+    static void assign(QCborValueRef that, QCborValue &&other);
+    static void assign(QCborValueRef that, const QCborValueRef other);
     static QCborValue concrete(QCborValueRef that) Q_DECL_NOTHROW;
     QCborValue concrete() const Q_DECL_NOTHROW  { return concrete(*this); }
 

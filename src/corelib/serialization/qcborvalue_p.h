@@ -187,18 +187,18 @@ public:
         return e.container;
     }
 
-    void replaceAt_complex(QtCbor::Element &e, const QCborValue &value);
-    void replaceAt_internal(QtCbor::Element &e, const QCborValue &value)
+    void replaceAt_complex(QtCbor::Element &e, const QCborValue &value, ContainerDisposition disp);
+    void replaceAt_internal(QtCbor::Element &e, const QCborValue &value, ContainerDisposition disp)
     {
         if (value.container)
-            return replaceAt_complex(e, value);
+            return replaceAt_complex(e, value, disp);
 
         e.value = value.value_helper();
         e.type = value.type();
         if (value.isContainer())
             e.container = nullptr;
     }
-    void replaceAt(qsizetype idx, const QCborValue &value)
+    void replaceAt(qsizetype idx, const QCborValue &value, ContainerDisposition disp = CopyContainer)
     {
         QtCbor::Element &e = elements[idx];
         if (e.flags & QtCbor::Element::IsContainer) {
@@ -208,11 +208,11 @@ public:
         } else if (e.flags & QtCbor::Element::HasByteData) {
             usedData -= byteData(idx)->len + sizeof(QtCbor::ByteData);
         }
-        replaceAt_internal(e, value);
+        replaceAt_internal(e, value, disp);
     }
-    void insertAt(qsizetype idx, const QCborValue &value)
+    void insertAt(qsizetype idx, const QCborValue &value, ContainerDisposition disp = CopyContainer)
     {
-        replaceAt_internal(*elements.insert(elements.begin() + idx, {}), value);
+        replaceAt_internal(*elements.insert(elements.begin() + idx, {}), value, disp);
     }
 
     void append(QtCbor::Undefined)
@@ -275,6 +275,11 @@ public:
         if (e.flags & QtCbor::Element::StringIsAscii)
             return data->asLatin1();
         return data->toUtf8String();
+    }
+
+    static void resetValue(QCborValue &v)
+    {
+        v.container = nullptr;
     }
 
     static QCborValue makeValue(QCborValue::Type type, qint64 n, QCborContainerPrivate *d = nullptr,

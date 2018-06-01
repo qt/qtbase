@@ -190,8 +190,11 @@ public:
     QCborValueRef operator[](qsizetype i) { Q_ASSERT(i < size()); return begin()[i]; }
 
     void insert(qsizetype i, const QCborValue &value);
+    void insert(qsizetype i, QCborValue &&value);
     void prepend(const QCborValue &value) { insert(0, value); }
+    void prepend(QCborValue &&value) { insert(0, std::move(value)); }
     void append(const QCborValue &value) { insert(-1, value); }
+    void append(QCborValue &&value) { insert(-1, std::move(value)); }
     QCborValue extract(Iterator it);
     void removeAt(qsizetype i);
     QCborValue takeAt(qsizetype i) { Q_ASSERT(i < size()); return extract(begin() + i); }

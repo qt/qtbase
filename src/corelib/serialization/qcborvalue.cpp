@@ -1053,7 +1053,12 @@ QCborContainerPrivate *QCborContainerPrivate::detach(QCborContainerPrivate *d, q
     return d;
 }
 
-void QCborContainerPrivate::replaceAt_complex(Element &e, const QCborValue &value)
+// Copies or moves \a value into element at position \a e. If \a disp is
+// CopyContainer, then this function increases the reference count of the
+// container, but otherwise leaves it unmodified. If \a disp is MoveContainer,
+// then it transfers ownership (move semantics) and the caller must set
+// value.container back to nullptr.
+void QCborContainerPrivate::replaceAt_complex(Element &e, const QCborValue &value, ContainerDisposition disp)
 {
     if (value.n < 0) {
         // This QCborValue is an array, map, or tagged value (container points
@@ -1062,14 +1067,18 @@ void QCborContainerPrivate::replaceAt_complex(Element &e, const QCborValue &valu
         // detect self-assignment
         if (Q_UNLIKELY(this == value.container)) {
             Q_ASSERT(ref.load() >= 2);
+            if (disp == MoveContainer)
+                ref.deref();    // not deref() because it can't drop to 0
             QCborContainerPrivate *d = QCborContainerPrivate::clone(this);
             d->elements.detach();
+            d->ref.store(1);
             e.container = d;
         } else {
             e.container = value.container;
+            if (disp == CopyContainer)
+                e.container->ref.ref();
         }
 
-        e.container->ref.ref();
         e.type = value.type();
         e.flags = Element::IsContainer;
     } else {
@@ -1079,6 +1088,9 @@ void QCborContainerPrivate::replaceAt_complex(Element &e, const QCborValue &valu
         // Copy string data, if any
         if (const ByteData *b = value.container->byteData(value.n))
             e.value = addByteData(b->byte(), b->len);
+
+        if (disp == MoveContainer)
+            value.container->deref();
     }
 }
 
@@ -1847,6 +1859,9 @@ QCborValue::QCborValue(QLatin1String s)
 }
 
 /*!
+    \fn QCborValue::QCborValue(const QCborArray &a)
+    \fn QCborValue::QCborValue(QCborArray &&a)
+
     Creates a QCborValue with the array \a a. The array can later be retrieved
     using toArray().
 
@@ -1860,6 +1875,9 @@ QCborValue::QCborValue(const QCborArray &a)
 }
 
 /*!
+    \fn QCborValue::QCborValue(const QCborMap &m)
+    \fn QCborValue::QCborValue(QCborMap &&m)
+
     Creates a QCborValue with the map \a m. The map can later be retrieved
     using toMap().
 
@@ -2526,16 +2544,20 @@ void QCborValueRef::toCbor(QCborStreamWriter &writer, QCborValue::EncodingOption
     concrete().toCbor(writer, opt);
 }
 
-QCborValueRef &QCborValueRef::operator=(const QCborValue &other)
+void QCborValueRef::assign(QCborValueRef that, const QCborValue &other)
 {
-    d->replaceAt(i, other);
-    return *this;
+    that.d->replaceAt(that.i, other);
 }
 
-QCborValueRef &QCborValueRef::operator=(const QCborValueRef &other)
+void QCborValueRef::assign(QCborValueRef that, QCborValue &&other)
+{
+    that.d->replaceAt(that.i, other, QCborContainerPrivate::MoveContainer);
+}
+
+void QCborValueRef::assign(QCborValueRef that, const QCborValueRef other)
 {
     // ### optimize?
-    return *this = other.concrete();
+    assign(that, other.concrete());
 }
 
 QCborValue QCborValueRef::concrete(QCborValueRef self) Q_DECL_NOTHROW

@@ -298,6 +298,9 @@ QCborValue QCborArray::at(qsizetype i) const
  */
 
 /*!
+    \fn void QCborArray::insert(qsizetype i, const QCborValue &value)
+    \fn void QCborArray::insert(qsizetype i, QCborValue &&value)
+
     Inserts \a value into the array at position \a i in this array. The array
     must have at least \a i elements before the insertion.
 
@@ -311,6 +314,16 @@ void QCborArray::insert(qsizetype i, const QCborValue &value)
         i = size();
     detach(qMax(i + 1, size()));
     d->insertAt(i, value);
+}
+
+void QCborArray::insert(qsizetype i, QCborValue &&value)
+{
+    Q_ASSERT(size_t(i) <= size_t(size()) || i == -1);
+    if (i < 0)
+        i = size();
+    detach(qMax(i + 1, size()));
+    d->insertAt(i, value, QCborContainerPrivate::MoveContainer);
+    QCborContainerPrivate::resetValue(value);
 }
 
 /*!
@@ -330,6 +343,7 @@ QCborValue QCborArray::extract(iterator it)
 
 /*!
     \fn void QCborArray::prepend(const QCborValue &value)
+    \fn void QCborArray::prepend(QCborValue &&value)
 
     Prepends \a value into the array before any other elements it may already
     contain.
@@ -340,6 +354,7 @@ QCborValue QCborArray::extract(iterator it)
 
 /*!
     \fn void QCborArray::append(const QCborValue &value)
+    \fn void QCborArray::append(QCborValue &&value)
 
     Appends \a value into the array after all other elements it may already
     contain.
