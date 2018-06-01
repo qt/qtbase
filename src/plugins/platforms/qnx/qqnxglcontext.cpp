@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qqnxglcontext.h"
+#include "qqnxintegration.h"
 #include "qqnxscreen.h"
 #include "qqnxeglwindow.h"
 
@@ -59,8 +60,18 @@ QT_BEGIN_NAMESPACE
 
 EGLDisplay QQnxGLContext::ms_eglDisplay = EGL_NO_DISPLAY;
 
+static QEGLPlatformContext::Flags makeFlags()
+{
+    QEGLPlatformContext::Flags result = 0;
+
+    if (!QQnxIntegration::options().testFlag(QQnxIntegration::SurfacelessEGLContext))
+        result |= QEGLPlatformContext::NoSurfaceless;
+
+    return result;
+}
+
 QQnxGLContext::QQnxGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share)
-    : QEGLPlatformContext(format, share, ms_eglDisplay)
+    : QEGLPlatformContext(format, share, ms_eglDisplay, 0, QVariant(), makeFlags())
 {
 }
 

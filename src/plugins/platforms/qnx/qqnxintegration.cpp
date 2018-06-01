@@ -117,6 +117,10 @@ static inline QQnxIntegration::Options parseOptions(const QStringList &paramList
         options |= QQnxIntegration::RootWindow;
     }
 
+    if (!paramList.contains(QLatin1String("disable-EGL_KHR_surfaceless_context"))) {
+        options |= QQnxIntegration::SurfacelessEGLContext;
+    }
+
     return options;
 }
 
