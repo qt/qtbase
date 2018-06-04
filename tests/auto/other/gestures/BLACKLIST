@@ -4,3 +4,5 @@ rhel-7.4
 # QTBUG-67254
 ubuntu
 opensuse
+[graphicsItemGesture]
+ubuntu-18.04
