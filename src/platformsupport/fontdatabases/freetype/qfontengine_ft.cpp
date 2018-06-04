@@ -141,22 +141,16 @@ QtFreetypeData::~QtFreetypeData()
 
 #ifdef QT_NO_THREAD
 Q_GLOBAL_STATIC(QtFreetypeData, theFreetypeData)
-
-QtFreetypeData *qt_getFreetypeData()
-{
-    QtFreetypeData *freetypeData = theFreetypeData();
-    if (!freetypeData->library) {
-        FT_Init_FreeType(&freetypeData->library);
-    }
-
-    return freetypeData;
-}
 #else
 Q_GLOBAL_STATIC(QThreadStorage<QtFreetypeData *>, theFreetypeData)
-
+#endif
 QtFreetypeData *qt_getFreetypeData()
 {
+#ifndef QT_NO_THREAD
     QtFreetypeData *&freetypeData = theFreetypeData()->localData();
+#else
+    QtFreetypeData *freetypeData = theFreetypeData();
+#endif
     if (!freetypeData)
         freetypeData = new QtFreetypeData;
     if (!freetypeData->library) {
@@ -174,7 +168,7 @@ QtFreetypeData *qt_getFreetypeData()
     }
     return freetypeData;
 }
-#endif
+
 
 FT_Library qt_getFreetype()
 {
