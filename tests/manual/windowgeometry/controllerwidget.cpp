@@ -256,7 +256,7 @@ private:
 
 WidgetWindowControl::WidgetWindowControl(QWidget *w )
     : BaseWindowControl(w)
-    , m_statesControl(new WindowStatesControl(WindowStatesControl::WantVisibleCheckBox | WindowStatesControl::WantActiveCheckBox))
+    , m_statesControl(new WindowStatesControl)
 {
     setTitle(w->windowTitle());
     m_layout->addWidget(m_statesControl, 2, 0);
@@ -354,34 +354,34 @@ private:
     virtual void setObjectWindowFlags(QObject *o, Qt::WindowFlags f)
         { static_cast<QWindow *>(o)->setFlags(f); }
 
-    WindowStateControl *m_stateControl;
+    WindowStatesControl *m_statesControl;
 };
 
 WindowControl::WindowControl(QWindow *w )
     : BaseWindowControl(w)
-    , m_stateControl(new WindowStateControl(WindowStateControl::WantVisibleCheckBox | WindowStateControl::WantMinimizeRadioButton))
+    , m_statesControl(new WindowStatesControl)
 {
     setTitle(w->title());
     QGroupBox *stateGroupBox = new QGroupBox(tr("State"));
     QVBoxLayout *l = new QVBoxLayout(stateGroupBox);
-    l->addWidget(m_stateControl);
+    l->addWidget(m_statesControl);
     m_layout->addWidget(stateGroupBox, 2, 0);
-    connect(m_stateControl, SIGNAL(changed()), this, SLOT(stateChanged()));
+    connect(m_statesControl, SIGNAL(changed()), this, SLOT(stateChanged()));
 }
 
 void WindowControl::refresh()
 {
     const QWindow *w = static_cast<const QWindow *>(m_object);
     BaseWindowControl::refresh();
-    m_stateControl->setVisibleValue(w->isVisible());
-    m_stateControl->setState(w->windowState());
+    m_statesControl->setVisibleValue(w->isVisible());
+    m_statesControl->setStates(w->windowStates());
 }
 
 void WindowControl::stateChanged()
 {
     QWindow *w = static_cast<QWindow *>(m_object);
-    w->setVisible(m_stateControl->visibleValue());
-    w->setWindowState(m_stateControl->state());
+    w->setVisible(m_statesControl->visibleValue());
+    w->setWindowStates(m_statesControl->states());
 }
 
 #endif

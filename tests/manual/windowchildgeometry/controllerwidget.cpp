@@ -236,7 +236,7 @@ private:
 
 WidgetWindowControl::WidgetWindowControl(QWidget *w )
     : BaseWindowControl(w)
-    , m_statesControl(new WindowStatesControl(WindowStatesControl::WantVisibleCheckBox | WindowStatesControl::WantActiveCheckBox))
+    , m_statesControl(new WindowStatesControl)
 {
     setTitle(w->windowTitle());
     m_layout->addWidget(m_statesControl, 2, 0);
@@ -364,14 +364,14 @@ private:
     virtual void setObjectWindowFlags(QObject *o, Qt::WindowFlags f)
         { static_cast<QWindow *>(o)->setFlags(f); }
 
-    WindowStateControl *m_stateControl;
+    WindowStatesControl *m_statesControl;
     QWindow *m_window;
     QWindow *m_detachedParent; // set when this window is detached. This is the window we should re-attach to.
 };
 
 WindowControl::WindowControl(QWindow *w )
     : BaseWindowControl(w)
-    , m_stateControl(new WindowStateControl(WindowStateControl::WantVisibleCheckBox | WindowStateControl::WantMinimizeRadioButton))
+    , m_statesControl(new WindowStatesControl)
     , m_window(w)
     , m_detachedParent(0)
 {
