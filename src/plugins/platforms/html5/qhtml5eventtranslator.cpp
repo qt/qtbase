@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -150,7 +150,6 @@ Qt::Key QHtml5EventTranslator::translateEmscriptKey(const EmscriptenKeyboardEven
     if (outAlphanumeric)
         *outAlphanumeric = false;
 
-    //TODO handle extended alphanumeric keys e.g. EU accents, etc
     switch (emscriptKey->keyCode) {
     case KeyMultiply: qtKey = Qt::Key_Asterisk; *outAlphanumeric = true; break;
     case KeyAdd: qtKey = Qt::Key_Plus; *outAlphanumeric = true; break;
@@ -384,7 +383,7 @@ void QHtml5EventTranslator::processMouse(int eventType, const EmscriptenMouseEve
             oldWindow->injectMouseReleased(localPoint, point, button, modifiers);
     }
         break;
-    case 8://move //drag event?
+    case 8://move //drag event
     {
         if (resizeMode == QHtml5Window::ResizeNone && draggedWindow) {
             draggedWindow->setX(draggedWindow->x() + mouseEvent->movementX);

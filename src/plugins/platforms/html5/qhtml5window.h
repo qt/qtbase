@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -56,7 +56,7 @@ public:
         ResizeLeft
     };
 
-    QHtml5Window(QWindow *w, QHtml5Compositor* compositor, QHtml5BackingStore *backingStore);
+    QHtml5Window(QWindow *w, QHtml5Compositor *compositor, QHtml5BackingStore *backingStore);
     ~QHtml5Window();
 
     void create();

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -46,7 +46,6 @@ class QHtml5Screen;
 class QOpenGLContext;
 class QOpenGLTextureBlitter;
 
-//
 class QHtml5CompositedWindow
 {
 public:
@@ -93,8 +92,6 @@ public:
         QPalette palette;
         QString titleBarOptionsString;
         QHtml5Compositor::SubControls subControls;
-    //    QFontMetrics fontMetrics;
-        // Qt::LayoutDirection direction; ??
     };
 
     struct QHtml5FrameOptions {
@@ -105,7 +102,7 @@ public:
 
     void setEnabled(bool enabled);
 
-    void addWindow(QHtml5Window *window, QHtml5Window *parentWindow = 0);
+    void addWindow(QHtml5Window *window, QHtml5Window *parentWindow = nullptr);
     void removeWindow(QHtml5Window *window);
     void setScreen(QHtml5Screen *screen);
 
@@ -158,8 +155,6 @@ private:
     bool m_isEnabled;
     QSize m_targetSize;
     qreal m_targetDevicePixelRatio;
-
-////////////////////////
 
     static QPalette makeWindowPalette();
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -52,14 +52,14 @@ Q_GUI_EXPORT int qt_defaultDpiX();
 
 QHtml5CompositedWindow::QHtml5CompositedWindow()
     : window(0)
-    , parentWindow(0)
+    , parentWindow(nullptr)
     , flushPending(false)
     , visible(false)
 {
 }
 
 QHtml5Compositor::QHtml5Compositor()
-    : m_frameBuffer(0)
+    : m_frameBuffer(nullptr)
     , mBlitter(new QOpenGLTextureBlitter)
     , m_needComposit(false)
     , m_inFlush(false)
@@ -316,7 +316,6 @@ QRect QHtml5Compositor::titlebarRect(QHtml5TitleBarOptions tb, QHtml5Compositor:
         else if (isMaximized && (tb.flags & Qt::WindowMaximizeButtonHint))
             ret.adjust(0, 0, -delta*2, 0);
             offset += (delta +delta);
-//            offset += delta;
         break;
     case SC_TitleBarSysMenu:
         if (tb.flags & Qt::WindowSystemMenuHint) {
@@ -359,50 +358,37 @@ QHtml5Compositor::QHtml5TitleBarOptions QHtml5Compositor::makeTitleBarOptions(co
     titleBarOptions.flags = window->window()->flags();
     titleBarOptions.state = window->window()->windowState();
 
-   // bool isMinimized = titleBarOptions.flags & Qt::WindowMinimized;
     bool isMaximized = titleBarOptions.state & Qt::WindowMaximized; // this gets reset when maximized
 
     if (titleBarOptions.flags & (Qt::WindowTitleHint))
         titleBarOptions.subControls |= SC_TitleBarLabel;
     if (titleBarOptions.flags & Qt::WindowMaximizeButtonHint) {
-        if (isMaximized) {
+        if (isMaximized)
             titleBarOptions.subControls |= SC_TitleBarNormalButton;
-        } else {
+        else
             titleBarOptions.subControls |= SC_TitleBarMaxButton;
-        }
     }
     if (titleBarOptions.flags & Qt::WindowSystemMenuHint) {
         titleBarOptions.subControls |= SC_TitleBarCloseButton;
         titleBarOptions.subControls |= SC_TitleBarSysMenu;
     }
 
-    // Disable minimize button
-    //   titleBarOptions.flags.setFlag(Qt::WindowMinimizeButtonHint, false);
 
     titleBarOptions.palette = QHtml5Compositor::makeWindowPalette();
 
     if (window->window()->isActive()) {
-        //  titleBarOptions.state |= QHtml5Compositor::State_Active;
-        //  titleBarOptions.state |= QHtml5Compositor::State_Active;
         titleBarOptions.palette.setCurrentColorGroup(QPalette::Active);
     } else {
-        //        titleBarOptions.state &= ~QHtml5Compositor::State_Active;
         titleBarOptions.palette.setCurrentColorGroup(QPalette::Inactive);
     }
 
         if (window->activeSubControl() != QHtml5Compositor::SC_None) {
             titleBarOptions.subControls = window->activeSubControl();
-       //     titleBarOptions.state |= QHtml5Compositor::State_Sunken;
         }
 
     if (!window->window()->title().isEmpty()) {
 
         titleBarOptions.titleBarOptionsString = window->window()->title();
-
-#warning FIXME QFontMetrics
-//        QFont font = QApplication::font("QMdiSubWindowTitleBar");
-//        QFontMetrics fontMetrics = QFontMetrics(font);
-//        fontMetrics.elidedText(window->window()->title(), Qt::ElideRight, titleWidth);
     }
 
     return titleBarOptions;
@@ -568,128 +554,25 @@ void QHtml5Compositor::drawTitlebarWindow(QHtml5TitleBarOptions tb, QPainter *pa
         drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
     } //SC_TitleBarMaxButton
 
-//    QHtml5TitleBarOptions tool = tb;
-//    tool.rect = ir;
-//    tool.state = down ? State_Sunken : State_Raised;
+    bool drawNormalButton = (tb.subControls & SC_TitleBarNormalButton)
+            && (((tb.flags & Qt::WindowMinimizeButtonHint)
+                 && (tb.flags & Qt::WindowMinimized))
+                || ((tb.flags & Qt::WindowMaximizeButtonHint)
+                    && (tb.flags & Qt::WindowMaximized)));
 
-    // FIXME
+    if (drawNormalButton) {
+        ir = titlebarRect(tb, SC_TitleBarNormalButton);
+        down = tb.subControls & SC_TitleBarNormalButton && (tb.state & State_Sunken);
+        pixmap = cachedPixmapFromXPM(qt_normalizeup_xpm).scaled( QSize(10, 10));
 
-    //        painter->save();
-    //        if (down)
-    //            painter->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
-    //                         proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
+        drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
+    } // SC_TitleBarNormalButton
 
-    //        painter->restore();
-    //    }
-
-    //    if (tb->subControls & SC_TitleBarMinButton
-    //            && tb->titleBarFlags & Qt::WindowMinimizeButtonHint
-    //            && !(tb->titleBarState & Qt::WindowMinimized)) {
-    //        ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarMinButton, widget);
-    //        down = tb->activeSubControls & SC_TitleBarMinButton && (opt->state & State_Sunken);
-    //        pm = proxy()->standardIcon(SP_TitleBarMinButton, &tool, widget).pixmap(qt_getWindow(widget), QSize(10, 10));
-    //        tool.rect = ir;
-    //        tool.state = down ? State_Sunken : State_Raised;
-    //        proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
-
-    //        painter->save();
-    //        if (down)
-    //            painter->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
-    //                         proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
-    //        proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
-    //        painter->restore();
-    //    }
-
-        bool drawNormalButton = (tb.subControls & SC_TitleBarNormalButton)
-                                && (((tb.flags & Qt::WindowMinimizeButtonHint)
-                                && (tb.flags & Qt::WindowMinimized))
-                                || ((tb.flags & Qt::WindowMaximizeButtonHint)
-                                && (tb.flags & Qt::WindowMaximized)));
-
-        if (drawNormalButton) {
-            ir = titlebarRect(tb, SC_TitleBarNormalButton);
-            down = tb.subControls & SC_TitleBarNormalButton && (tb.state & State_Sunken);
-            pixmap = cachedPixmapFromXPM(qt_normalizeup_xpm).scaled( QSize(10, 10));
-
-//            tool.rect = ir;
-//            tool.state = down ? State_Sunken : State_Raised;
-            drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
-
-            //        painter->save();
-            //        if (down)
-            //            painter->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
-            //                         proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
-
-            //      painter->restore();
-        } // SC_TitleBarNormalButton
-
-    //    if (tb->subControls & SC_TitleBarShadeButton
-    //            && tb->titleBarFlags & Qt::WindowShadeButtonHint
-    //            && !(tb->titleBarState & Qt::WindowMinimized)) {
-    //        ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarShadeButton, widget);
-    //        down = (tb->activeSubControls & SC_TitleBarShadeButton && (opt->state & State_Sunken));
-    //        pm = proxy()->standardIcon(SP_TitleBarShadeButton, &tool, widget).pixmap(qt_getWindow(widget), QSize(10, 10));
-    //        tool.rect = ir;
-    //        tool.state = down ? State_Sunken : State_Raised;
-    //        proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
-    //        painter->save();
-    //        if (down)
-    //            painter->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
-    //                         proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
-    //        proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
-    //        painter->restore();
-    //    }
-
-    //    if (tb->subControls & SC_TitleBarUnshadeButton
-    //            && tb->titleBarFlags & Qt::WindowShadeButtonHint
-    //            && tb->titleBarState & Qt::WindowMinimized) {
-    //        ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarUnshadeButton, widget);
-
-    //        down = tb->activeSubControls & SC_TitleBarUnshadeButton  && (opt->state & State_Sunken);
-    //        pm = proxy()->standardIcon(SP_TitleBarUnshadeButton, &tool, widget).pixmap(qt_getWindow(widget), QSize(10, 10));
-    //        tool.rect = ir;
-    //        tool.state = down ? State_Sunken : State_Raised;
-    //        proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
-    //        painter->save();
-    //        if (down)
-    //            painter->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
-    //                         proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
-    //        proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
-    //        painter->restore();
-    //    }
-
-
-    //    if (tb->subControls & SC_TitleBarContextHelpButton
-    //            && tb->titleBarFlags & Qt::WindowContextHelpButtonHint) {
-    //        ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarContextHelpButton, widget);
-
-    //        down = tb->activeSubControls & SC_TitleBarContextHelpButton  && (opt->state & State_Sunken);
-    //        pm = proxy()->standardIcon(SP_TitleBarContextHelpButton, &tool, widget).pixmap(qt_getWindow(widget), QSize(10, 10));
-    //        tool.rect = ir;
-    //        tool.state = down ? State_Sunken : State_Raised;
-    //        proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
-    //        painter->save();
-    //        if (down)
-    //            painter->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
-    //                         proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
-    //        proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
-    //        painter->restore();
-    //    }
-
-        if (tb.subControls & SC_TitleBarSysMenu && tb.flags & Qt::WindowSystemMenuHint) {
-            ir = titlebarRect(tb, SC_TitleBarSysMenu);
-//            if (!tb.icon.isNull()) {
-//                tb.icon.paint(p, ir);
-//            } else {
-          //      int iconSize = proxy()->pixelMetric(PM_SmallIconSize, tb, widget);
-                pixmap = cachedPixmapFromXPM(qt_menu_xpm).scaled(QSize(10, 10));
-        //        tool.rect = ir;
-            //    painter->save();
-                drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
-              //  painter->restore();
-//            }
-        }
-    //}
+    if (tb.subControls & SC_TitleBarSysMenu && tb.flags & Qt::WindowSystemMenuHint) {
+        ir = titlebarRect(tb, SC_TitleBarSysMenu);
+        pixmap = cachedPixmapFromXPM(qt_menu_xpm).scaled(QSize(10, 10));
+        drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
+    }
 }
 
 void QHtml5Compositor::drawShadePanel(QHtml5TitleBarOptions options, QPainter *painter)
@@ -705,7 +588,6 @@ void QHtml5Compositor::drawShadePanel(QHtml5TitleBarOptions options, QPainter *p
 
     const qreal devicePixelRatio = painter->device()->devicePixelRatioF();
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
-        //  painter->save();
         const qreal inverseScale = qreal(1) / devicePixelRatio;
         painter->scale(inverseScale, inverseScale);
 
@@ -725,32 +607,26 @@ void QHtml5Compositor::drawShadePanel(QHtml5TitleBarOptions options, QPainter *p
         if (fill->color() == light)
             light = palette.midlight().color();
     }
-    QPen oldPen = painter->pen();                        // save pen
+    QPen oldPen = painter->pen();
     QVector<QLineF> lines;
     lines.reserve(2*lineWidth);
 
-    //    if (sunken)
-    //        painter->setPen(shade);
-    //    else
     painter->setPen(light);
     int x1, y1, x2, y2;
     int i;
     x1 = x;
     y1 = y2 = y;
-    x2 = x+w-2;
-    for (i=0; i<lineWidth; i++) {                // top shadow
+    x2 = x + w - 2;
+    for (i = 0; i < lineWidth; i++)                // top shadow
         lines << QLineF(x1, y1++, x2--, y2++);
-    }
+
     x2 = x1;
-    y1 = y+h-2;
-    for (i=0; i<lineWidth; i++) {                // left shado
+    y1 = y + h - 2;
+    for (i = 0; i < lineWidth; i++)               // left shado
         lines << QLineF(x1++, y1, x2++, y2--);
-    }
+
     painter->drawLines(lines);
     lines.clear();
-    //    if (sunken)
-    //        painter->setPen(light);
-    //    else
     painter->setPen(shade);
     x1 = x;
     y1 = y2 = y+h-1;
@@ -760,10 +636,10 @@ void QHtml5Compositor::drawShadePanel(QHtml5TitleBarOptions options, QPainter *p
     }
     x1 = x2;
     y1 = y;
-    y2 = y+h-lineWidth-1;
-    for (i=0; i<lineWidth; i++) {                // right shadow
+    y2 = y + h - lineWidth - 1;
+    for (i = 0; i < lineWidth; i++)                // right shadow
         lines << QLineF(x1--, y1++, x2--, y2);
-    }
+
     painter->drawLines(lines);
     if (fill)                                // fill with fill color
         painter->fillRect(x+lineWidth, y+lineWidth, w-lineWidth*2, h-lineWidth*2, *fill);
@@ -846,9 +722,6 @@ void QHtml5Compositor::notifyTopWindowChanged(QHtml5Window* window)
         raise(static_cast<QHtml5Window*>(modalWindow->handle()));
         return;
     }
-
-    //if (keyWindow()->handle() == window)
-    //return;
 
     requestRedraw();
     QWindowSystemInterface::handleWindowActivated(window->window());

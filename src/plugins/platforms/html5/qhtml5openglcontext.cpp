@@ -34,7 +34,7 @@
 QT_BEGIN_NAMESPACE
 
 QHtml5OpenGLContext::QHtml5OpenGLContext(const QSurfaceFormat &format)
-    :m_requestedFormat(format)
+    : m_requestedFormat(format)
 {
     m_requestedFormat.setRenderableType(QSurfaceFormat::OpenGLES);
 }

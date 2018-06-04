@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -94,13 +94,13 @@ void emscriptenOutput(QtMsgType type, const QMessageLogContext &context, const Q
 }
 
 QHtml5Integration::QHtml5Integration()
-    : mFontDb(0),
+    : mFontDb(nullptr),
       mCompositor(new QHtml5Compositor),
       mScreen(new QHtml5Screen(mCompositor)),
-      m_eventDispatcher(0)
+      m_eventDispatcher(nullptr)
 {
     qSetMessagePattern(QString("(%{function}:%{line}) - %{message}"));
-   // qInstallMessageHandler(emscriptenOutput);
+    qInstallMessageHandler(emscriptenOutput);
 
     globalHtml5Integration = this;
 
@@ -109,9 +109,7 @@ QHtml5Integration::QHtml5Integration()
     emscripten_set_resize_callback(0, (void *)this, 1, uiEvent_cb);
 
     m_eventTranslator = new QHtml5EventTranslator();
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QHtml5Integration\n");
-#endif
+
     EM_ASM(// exit app if browser closes
            window.onbeforeunload = function () {
            Module.browserBeforeUnload();
@@ -148,10 +146,6 @@ bool QHtml5Integration::hasCapability(QPlatformIntegration::Capability cap) cons
 
 QPlatformWindow *QHtml5Integration::createPlatformWindow(QWindow *window) const
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QHtml5Integration::createPlatformWindow %p\n",window);
-#endif
-
     QHtml5Window *w = new QHtml5Window(window, mCompositor, m_backingStores.value(window));
     w->create();
 
@@ -160,9 +154,6 @@ QPlatformWindow *QHtml5Integration::createPlatformWindow(QWindow *window) const
 
 QPlatformBackingStore *QHtml5Integration::createPlatformBackingStore(QWindow *window) const
 {
-//#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QHtml5Integration::createWindowSurface %p\n", window);
-//#endif
 #ifndef QT_NO_OPENGL
     QHtml5BackingStore *backingStore = new QHtml5BackingStore(mCompositor, window);
     m_backingStores.insert(window, backingStore);

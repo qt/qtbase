@@ -43,10 +43,10 @@ public:
 QPlatformIntegration* QHtml5IntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    if (!system.compare(QLatin1String("html5"), Qt::CaseInsensitive))
+    if (!system.compare(QStringLiteral("html5"), Qt::CaseInsensitive))
         return new QHtml5Integration;
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

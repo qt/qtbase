@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -80,11 +80,6 @@ void QHtml5Window::create()
         rect.setHeight(qBound(1, rect.height(), 2000));
     } else if (minimumSize.width() > 0 || minimumSize.height() > 0) {
         rect.setSize(minimumSize);
-    } else {
-        /*
-        rect.setWidth(QHighDpi::toNativePixels(int(defaultWindowWidth), platformScreen->QPlatformScreen::screen()));
-        rect.setHeight(QHighDpi::toNativePixels(int(defaultWindowHeight), platformScreen->QPlatformScreen::screen()));
-        */
     }
 
     setWindowState(window()->windowStates());
@@ -377,12 +372,10 @@ void QHtml5Window::setWindowState(Qt::WindowStates states)
     mWindowState = Qt::WindowNoState;
     if (states & Qt::WindowMinimized)
         mWindowState = Qt::WindowMinimized;
-#warning FIXME ShowFullScreen
-    else if (states & Qt::WindowFullScreen) // someone sets this initially as default
+    else if (states & Qt::WindowFullScreen)
         mWindowState = Qt::WindowFullScreen;
     else if (states & Qt::WindowMaximized)
         mWindowState = Qt::WindowMaximized;
-// update?
 }
 
 QRect QHtml5Window::normalGeometry() const
