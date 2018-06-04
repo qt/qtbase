@@ -51,7 +51,6 @@
 #include <private/qcoreapplication_p.h>
 #include <private/qcore_unix_p.h>
 
-
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>

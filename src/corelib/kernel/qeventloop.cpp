@@ -180,6 +180,7 @@ int QEventLoop::exec(ProcessEventsFlags flags)
     struct LoopReference {
         QEventLoopPrivate *d;
         QMutexLocker &locker;
+
         bool exceptionCaught;
         LoopReference(QEventLoopPrivate *d, QMutexLocker &locker) : d(d), locker(locker), exceptionCaught(true)
         {
@@ -226,7 +227,6 @@ int QEventLoop::exec(ProcessEventsFlags flags)
         processEvents(flags | WaitForMoreEvents | EventLoopExec);
 
     ref.exceptionCaught = false;
-
     return d->returnCode.load();
 }
 

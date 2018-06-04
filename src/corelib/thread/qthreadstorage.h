@@ -42,7 +42,6 @@
 
 #include <QtCore/qglobal.h>
 
-//#ifndef QT_NO_THREAD
 
 QT_BEGIN_NAMESPACE
 
@@ -152,6 +151,5 @@ public:
 
 QT_END_NAMESPACE
 
-//#endif // QT_NO_THREAD
 
 #endif // QTHREADSTORAGE_H

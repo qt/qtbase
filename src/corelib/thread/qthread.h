@@ -42,7 +42,6 @@
 #define QTHREAD_H
 
 #include <QtCore/qobject.h>
-#include <QDebug>
 
 // For QThread::create. The configure-time test just checks for the availability
 // of std::future and std::async; for the C++17 codepath we perform some extra
@@ -277,9 +276,9 @@ public:
     void exit(int retcode = 0);
 
 public Q_SLOTS:
-    void start(Priority = InheritPriority){ m_running = true; }
-    void terminate(){ m_running = false;}
-    void quit() {m_running = false;}
+    void start(Priority = InheritPriority) { m_running = true; }
+    void terminate() { m_running = false; }
+    void quit() { m_running = false; }
 
 Q_SIGNALS:
     void started(QPrivateSignal);

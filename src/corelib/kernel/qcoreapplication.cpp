@@ -127,7 +127,6 @@
 #endif
 
 #include <algorithm>
-#include <iostream>
 
 QT_BEGIN_NAMESPACE
 
@@ -803,16 +802,15 @@ void QCoreApplicationPrivate::init()
     QCoreApplication::self = q;
 
 #ifdef Q_OS_HTML5
-        EM_ASM(
-              Module.print("mount persistent directory as IDBFS");
-              FS.mount(IDBFS,{},'/home/web_user');
-              FS.syncfs(true, function(err) {
+    EM_ASM(
+          Module.print("mount persistent directory as IDBFS");
+          FS.mount(IDBFS, {}, '/home/web_user');
+          FS.syncfs(true, function(err) {
               if (err)
-                Module.print(err);
+                  Module.print(err);
               Module.print("end persisted to mem file sync..");
-              });
-         );
-
+          });
+     );
 #endif
 
     // Store app name/version (so they're still available after QCoreApplication is destroyed)
@@ -1413,7 +1411,6 @@ void QCoreApplication::exit(int returnCode)
     if (!self)
         return;
     QThreadData *data = self->d_func()->threadData;
-    std::cout << "QCoreApplication::exit(int returnCode)" << std::endl;
     data->quitNow = true;
     for (int i = 0; i < data->eventLoops.size(); ++i) {
         QEventLoop *eventLoop = data->eventLoops.at(i);
