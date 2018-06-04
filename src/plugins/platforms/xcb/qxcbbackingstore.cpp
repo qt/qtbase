@@ -95,6 +95,9 @@ public:
     void put(xcb_drawable_t dst, const QRegion &region, const QPoint &offset);
     void preparePaint(const QRegion &region);
 
+    static bool createSystemVShmSegment(QXcbConnection *c, size_t segmentSize = 1,
+                                        xcb_shm_segment_info_t *shm_info = nullptr);
+
 private:
     void createShmSegment(size_t segmentSize);
     void destroyShmSegment(size_t segmentSize);
@@ -325,15 +328,16 @@ void QXcbBackingStoreImage::createShmSegment(size_t segmentSize)
 #ifdef XCB_USE_SHM_FD
     if (connection()->hasShmFd()) {
         if (Q_UNLIKELY(segmentSize > std::numeric_limits<uint32_t>::max())) {
-            qWarning("QXcbShmImage: xcb_shm_create_segment() can't be called for size %zu, maximum allowed size is %u",
-                     segmentSize, std::numeric_limits<uint32_t>::max());
+            qCWarning(lcQpaXcb, "xcb_shm_create_segment() can't be called for size %zu, maximum"
+                      "allowed size is %u", segmentSize, std::numeric_limits<uint32_t>::max());
             return;
         }
+
         const auto seg = xcb_generate_id(xcb_connection());
         auto reply = Q_XCB_REPLY(xcb_shm_create_segment,
                                  xcb_connection(), seg, segmentSize, false);
         if (!reply) {
-            qWarning("QXcbShmImage: xcb_shm_create_segment() failed for size %zu", segmentSize);
+            qCWarning(lcQpaXcb, "xcb_shm_create_segment() failed for size %zu", segmentSize);
             return;
         }
 
@@ -342,13 +346,13 @@ void QXcbBackingStoreImage::createShmSegment(size_t segmentSize)
             for (int i = 0; i < reply->nfd; i++)
                 close(fds[i]);
 
-            qWarning("QXcbShmImage: failed to get file descriptor for shm segment of size %zu", segmentSize);
+            qCWarning(lcQpaXcb, "failed to get file descriptor for shm segment of size %zu", segmentSize);
             return;
         }
 
         void *addr = mmap(nullptr, segmentSize, PROT_READ|PROT_WRITE, MAP_SHARED, fds[0], 0);
         if (addr == MAP_FAILED) {
-            qWarning("QXcbShmImage: failed to mmap segment from X server (%d: %s) for size %zu",
+            qCWarning(lcQpaXcb, "failed to mmap segment from X server (%d: %s) for size %zu",
                      errno, strerror(errno), segmentSize);
             close(fds[0]);
             xcb_shm_detach(xcb_connection(), seg);
@@ -358,47 +362,54 @@ void QXcbBackingStoreImage::createShmSegment(size_t segmentSize)
         close(fds[0]);
         m_shm_info.shmseg = seg;
         m_shm_info.shmaddr = static_cast<quint8 *>(addr);
-
         m_segmentSize = segmentSize;
     } else
 #endif
     {
-        const int id = shmget(IPC_PRIVATE, segmentSize, IPC_CREAT | 0600);
-        if (id == -1) {
-            qWarning("QXcbShmImage: shmget() failed (%d: %s) for size %zu",
-                     errno, strerror(errno), segmentSize);
-            return;
-        }
-
-        void *addr = shmat(id, 0, 0);
-        if (addr == (void *)-1) {
-            qWarning("QXcbShmImage: shmat() failed (%d: %s) for id %d",
-                     errno, strerror(errno), id);
-            return;
-        }
-
-        if (shmctl(id, IPC_RMID, 0) == -1)
-            qWarning("QXcbBackingStore: Error while marking the shared memory segment to be destroyed");
-
-        const auto seg = xcb_generate_id(xcb_connection());
-        auto cookie = xcb_shm_attach_checked(xcb_connection(), seg, id, false);
-        auto *error = xcb_request_check(xcb_connection(), cookie);
-        if (error) {
-            connection()->printXcbError("QXcbShmImage: xcb_shm_attach() failed with error", error);
-            free(error);
-            if (shmdt(addr) == -1) {
-                qWarning("QXcbShmImage: shmdt() failed (%d: %s) for %p",
-                         errno, strerror(errno), addr);
-            }
-            return;
-        }
-
-        m_shm_info.shmseg = seg;
-        m_shm_info.shmid = id; // unused
-        m_shm_info.shmaddr = static_cast<quint8 *>(addr);
-
-        m_segmentSize = segmentSize;
+        if (createSystemVShmSegment(connection(), segmentSize, &m_shm_info))
+            m_segmentSize = segmentSize;
     }
+}
+
+bool QXcbBackingStoreImage::createSystemVShmSegment(QXcbConnection *c, size_t segmentSize,
+                                                    xcb_shm_segment_info_t *shmInfo)
+{
+    const int id = shmget(IPC_PRIVATE, segmentSize, IPC_CREAT | 0600);
+    if (id == -1) {
+        qCWarning(lcQpaXcb, "shmget() failed (%d: %s) for size %zu", errno, strerror(errno), segmentSize);
+        return false;
+    }
+
+    void *addr = shmat(id, 0, 0);
+    if (addr == (void *)-1) {
+        qCWarning(lcQpaXcb, "shmat() failed (%d: %s) for id %d", errno, strerror(errno), id);
+        return false;
+    }
+
+    if (shmctl(id, IPC_RMID, 0) == -1)
+        qCWarning(lcQpaXcb, "Error while marking the shared memory segment to be destroyed");
+
+    const auto seg = xcb_generate_id(c->xcb_connection());
+    auto cookie = xcb_shm_attach_checked(c->xcb_connection(), seg, id, false);
+    auto *error = xcb_request_check(c->xcb_connection(), cookie);
+    if (error) {
+        c->printXcbError("xcb_shm_attach() failed with error", error);
+        free(error);
+        if (shmdt(addr) == -1)
+            qCWarning(lcQpaXcb, "shmdt() failed (%d: %s) for %p", errno, strerror(errno), addr);
+        return false;
+    } else if (!shmInfo) { // this was a test run, free the allocated test segment
+        xcb_shm_detach(c->xcb_connection(), seg);
+        auto shmaddr = static_cast<quint8 *>(addr);
+        if (shmdt(shmaddr) == -1)
+            qCWarning(lcQpaXcb, "shmdt() failed (%d: %s) for %p", errno, strerror(errno), shmaddr);
+    }
+    if (shmInfo) {
+        shmInfo->shmseg = seg;
+        shmInfo->shmid = id; // unused
+        shmInfo->shmaddr = static_cast<quint8 *>(addr);
+    }
+    return true;
 }
 
 void QXcbBackingStoreImage::destroyShmSegment(size_t segmentSize)
@@ -409,21 +420,21 @@ void QXcbBackingStoreImage::destroyShmSegment(size_t segmentSize)
     auto cookie = xcb_shm_detach_checked(xcb_connection(), m_shm_info.shmseg);
     xcb_generic_error_t *error = xcb_request_check(xcb_connection(), cookie);
     if (error)
-        connection()->printXcbError("QXcbShmImage: xcb_shm_detach() failed with error", error);
+        connection()->printXcbError("xcb_shm_detach() failed with error", error);
     m_shm_info.shmseg = 0;
 
 #ifdef XCB_USE_SHM_FD
     if (connection()->hasShmFd()) {
         if (munmap(m_shm_info.shmaddr, segmentSize) == -1) {
-            qWarning("QXcbShmImage: munmap() failed (%d: %s) for %p with size %zu",
-                     errno, strerror(errno), m_shm_info.shmaddr, segmentSize);
+            qCWarning(lcQpaXcb, "munmap() failed (%d: %s) for %p with size %zu",
+                      errno, strerror(errno), m_shm_info.shmaddr, segmentSize);
         }
     } else
 #endif
     {
         if (shmdt(m_shm_info.shmaddr) == -1) {
-            qWarning("QXcbShmImage: shmdt() failed (%d: %s) for %p",
-                     errno, strerror(errno), m_shm_info.shmaddr);
+            qCWarning(lcQpaXcb, "shmdt() failed (%d: %s) for %p",
+                      errno, strerror(errno), m_shm_info.shmaddr);
         }
         m_shm_info.shmid = 0; // unused
     }
@@ -718,6 +729,12 @@ void QXcbBackingStoreImage::preparePaint(const QRegion &region)
     m_pendingFlush |= region;
 }
 
+bool QXcbBackingStore::createSystemVShmSegment(QXcbConnection *c, size_t segmentSize, void *shmInfo)
+{
+    auto info = reinterpret_cast<xcb_shm_segment_info_t *>(shmInfo);
+    return QXcbBackingStoreImage::createSystemVShmSegment(c, segmentSize, info);
+}
+
 QXcbBackingStore::QXcbBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
 {
@@ -757,7 +774,7 @@ void QXcbBackingStore::beginPaint(const QRegion &region)
 void QXcbBackingStore::endPaint()
 {
     if (Q_UNLIKELY(m_paintRegions.isEmpty())) {
-        qWarning("%s: paint regions empty!", Q_FUNC_INFO);
+        qCWarning(lcQpaXcb, "%s: paint regions empty!", Q_FUNC_INFO);
         return;
     }
 
@@ -811,7 +828,7 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
 
     QXcbWindow *platformWindow = static_cast<QXcbWindow *>(window->handle());
     if (!platformWindow) {
-        qWarning("QXcbBackingStore::flush: QWindow has no platform window (QTBUG-32681)");
+        qCWarning(lcQpaXcb, "%s QWindow has no platform window, see QTBUG-32681", Q_FUNC_INFO);
         return;
     }
 
