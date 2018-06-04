@@ -52,14 +52,6 @@
 
 #include "wigglywidget.h"
 
-#include <chrono>
-#include <iostream>
-#include <sstream>
-
-std::chrono::steady_clock::time_point tp;
-int frames = 0;
-float fps = -1.0;
-
 //! [0]
 WigglyWidget::WigglyWidget(QWidget *parent)
     : QWidget(parent)
@@ -73,8 +65,6 @@ WigglyWidget::WigglyWidget(QWidget *parent)
 
     step = 0;
     timer.start(60, this);
-
-    tp = std::chrono::steady_clock::now();
 }
 //! [0]
 
@@ -82,20 +72,6 @@ WigglyWidget::WigglyWidget(QWidget *parent)
 void WigglyWidget::paintEvent(QPaintEvent * /* event */)
 //! [1] //! [2]
 {
-    auto dt = std::chrono::steady_clock::now() - tp;
-
-    auto const interval = std::chrono::seconds(1);
-    if (dt > interval)
-    {
-        float const seconds = std::chrono::duration_cast<std::chrono::duration<float>>(interval).count();
-        fps = (float)frames/seconds;
-        std::cout << "Rendered " << frames << " in " << seconds << " seconds. Fps: " << fps << std::endl;
-        frames = 0;
-        tp = std::chrono::steady_clock::now();
-    }
-    else
-        ++frames;
-
     static const int sineTable[16] = {
         0, 38, 71, 92, 100, 92, 71, 38, 0, -38, -71, -92, -100, -92, -71, -38
     };
@@ -117,14 +93,6 @@ void WigglyWidget::paintEvent(QPaintEvent * /* event */)
                          QString(text[i]));
         x += metrics.horizontalAdvance(text[i]);
     }
-
-    std::ostringstream ss;
-    if (fps > 0.0f)
-        ss << "Fps: " << fps;
-    else
-        ss << "Fps: --";
-
-    painter.drawText(10, 40, QString(ss.str().c_str()));
 }
 //! [4]
 
