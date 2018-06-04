@@ -6,8 +6,6 @@ QT += \
 
 #DEFINES += QEGL_EXTRA_DEBUG
 
-#DEFINES += Q_OPENKODE
-
 # Avoid X11 header collision, use generic EGL native types
 DEFINES += QT_EGL_NO_X11
 

@@ -1,9 +1,8 @@
 TEMPLATE      = subdirs
 
-SUBDIRS = paintedwindow \
+SUBDIRS = hellowindow \
+          paintedwindow \
           qopenglwindow
-!emscripten: SUBDIRS +=  \
-          hellowindow
 
 qtHaveModule(widgets) {
     SUBDIRS += contextinfo \

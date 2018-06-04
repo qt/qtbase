@@ -1,9 +1,7 @@
 TEMPLATE      = subdirs
-SUBDIRS       = \
 
-!emscripten: SUBDIRS += \
-                factorial \
-                pingpong
+SUBDIRS += factorial \
+           pingpong
 
 qtHaveModule(widgets) {
     SUBDIRS +=  \

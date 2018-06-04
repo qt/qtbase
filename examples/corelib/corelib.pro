@@ -8,5 +8,5 @@ SUBDIRS = \
     tools
 
 !emscripten: SUBDIRS += \
-   threads \
+   threads
 
