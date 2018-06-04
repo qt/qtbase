@@ -67,6 +67,15 @@
     To disable SSL support in a Qt build, configure Qt with the \c{-no-openssl}
     option.
 
+    \section1 Datagram Transport Layer Security
+
+    Datagram Transport Layer Security (DTLS) is a protocol that enables security
+    for datagram-based applications, providing them with protection against
+    eavesdropping, tampering, or message forgery. The DTLS protocol is based on the
+    stream-oriented Transport Layer Security (TLS) protocol. QtNetwork enables
+    the use of DTLS with User Datagram Protocol (UDP), as defined by
+    \l {https://tools.ietf.org/html/rfc6347}{RFC 6347}.
+
     \section1 Import and Export Restrictions
 
     Due to import and export restrictions in some parts of the world, we

@@ -79,13 +79,10 @@ public:
 
     explicit QDtlsClientVerifier(QObject *parent = nullptr);
 
-    struct GeneratorParameters
+    struct Q_NETWORK_EXPORT GeneratorParameters
     {
-        GeneratorParameters() = default;
-        GeneratorParameters(QCryptographicHash::Algorithm a, const QByteArray &s)
-            : hash(a), secret(s)
-        {
-        }
+        GeneratorParameters();
+        GeneratorParameters(QCryptographicHash::Algorithm a, const QByteArray &s);
         QCryptographicHash::Algorithm hash = QCryptographicHash::Sha1;
         QByteArray secret;
     };
