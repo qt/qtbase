@@ -264,11 +264,7 @@ static bool checkRunningUnderFlatpak()
 }
 
 // Using aggregate initialization instead of ctor so we can have a POD global static
-#ifdef Q_OS_HTML5 //this keeps the screen on screen for whatever reason
-#define Q_WINDOW_GEOMETRY_SPECIFICATION_INITIALIZER { Qt::TopLeftCorner, 4, 0, -1, -1 }
-#else
 #define Q_WINDOW_GEOMETRY_SPECIFICATION_INITIALIZER { Qt::TopLeftCorner, -1, -1, -1, -1 }
-#endif
 // Geometry specification for top level windows following the convention of the
 // -geometry command line arguments in X11 (see XParseGeometry).
 struct QWindowGeometrySpecification
