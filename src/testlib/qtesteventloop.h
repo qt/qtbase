@@ -83,7 +83,7 @@ protected:
     inline void timerEvent(QTimerEvent *e) override;
 
 private:
-    bool inLoop;
+    Q_DECL_UNUSED_MEMBER bool inLoop; // ### Qt 6: remove
     bool _timeout;
     int timerId;
 
@@ -96,7 +96,6 @@ inline void QTestEventLoop::enterLoopMSecs(int ms)
 
     QEventLoop l;
 
-    inLoop = true;
     _timeout = false;
 
     timerId = startTimer(ms);
@@ -120,8 +119,6 @@ inline void QTestEventLoop::exitLoop()
 
     if (loop)
         loop->exit();
-
-    inLoop = false;
 }
 
 inline void QTestEventLoop::timerEvent(QTimerEvent *e)
