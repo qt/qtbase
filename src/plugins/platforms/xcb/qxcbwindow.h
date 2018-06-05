@@ -177,7 +177,7 @@ public:
     QXcbScreen *xcbScreen() const;
 
     bool startSystemMoveResize(const QPoint &pos, int corner);
-    bool doStartSystemMoveResize(const QPoint &globalPos, int corner);
+    void doStartSystemMoveResize(const QPoint &globalPos, int corner);
 
     virtual void create();
     virtual void destroy();

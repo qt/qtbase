@@ -586,6 +586,8 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
 
     m_setup = xcb_get_setup(xcb_connection());
 
+    m_xdgCurrentDesktop = qgetenv("XDG_CURRENT_DESKTOP").toLower();
+
     initializeAllAtoms();
 
     if (!qEnvironmentVariableIsSet("QT_XCB_NO_MITSHM"))
@@ -1716,7 +1718,8 @@ bool QXcbConnection::compressEvent(xcb_generic_event_t *event, int currentIndex,
                     continue;
                 if (isXIType(next, m_xiOpCode, XI_TouchUpdate)) {
                     xXIDeviceEvent *xiDeviceNextEvent = reinterpret_cast<xXIDeviceEvent *>(next);
-                    if (id == xiDeviceNextEvent->detail % INT_MAX)
+                    if (id == xiDeviceNextEvent->detail % INT_MAX &&
+                        xiDeviceNextEvent->deviceid == xiDeviceEvent->deviceid)
                         return true;
                 }
             }

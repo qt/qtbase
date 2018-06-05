@@ -127,7 +127,7 @@ void QXcbConnection::xi2SelectDeviceEvents(xcb_window_t window)
     XIEventMask mask;
     mask.mask_len = sizeof(bitMask);
     mask.mask = xiBitMask;
-    mask.deviceid = XIAllMasterDevices;
+    mask.deviceid = XIAllDevices;
     Display *dpy = static_cast<Display *>(m_xlib_display);
     Status result = XISelectEvents(dpy, window, &mask, 1);
     if (result == Success)
@@ -315,6 +315,7 @@ void QXcbConnection::xi2SetupDevices()
 #endif
     m_scrollingDevices.clear();
     m_touchDevices.clear();
+    m_floatingSlaveDevices.clear();
 
     Display *xDisplay = static_cast<Display *>(m_xlib_display);
     int deviceCount = 0;
@@ -322,6 +323,10 @@ void QXcbConnection::xi2SetupDevices()
     m_xiMasterPointerIds.clear();
     for (int i = 0; i < deviceCount; ++i) {
         XIDeviceInfo deviceInfo = devices[i];
+        if (deviceInfo.use == XIFloatingSlave) {
+            m_floatingSlaveDevices.append(deviceInfo.deviceid);
+            continue;
+        }
         if (deviceInfo.use == XIMasterPointer) {
             m_xiMasterPointerIds.append(deviceInfo.deviceid);
             continue;
@@ -550,6 +555,72 @@ static inline qreal fixed1616ToReal(FP1616 val)
 }
 #endif // defined(XCB_USE_XINPUT21) || QT_CONFIG(tabletevent)
 
+namespace {
+
+/*! \internal
+
+    Qt listens for XIAllDevices to avoid losing mouse events. This function
+    ensures that we don't process the same event twice: from a slave device and
+    then again from a master device.
+
+    In a normal use case (e.g. mouse press and release inside a window), we will
+    drop events from master devices as duplicates. Other advantage of processing
+    events from slave devices is that they don't share button state. All buttons
+    on a master device share the state.
+
+    Examples of special cases:
+
+    - During system move/resize, window manager (_NET_WM_MOVERESIZE) grabs the
+      master pointer, in this case we process the matching release from the slave
+      device. A master device event is not sent by the server, hence no duplicate
+      event to drop. If we listened for XIAllMasterDevices instead, we would never
+      see a release event in this case.
+
+    - If we dismiss a context menu by clicking somewhere outside a Qt application,
+      we will process the mouse press from the master pointer as that is the
+      device we are grabbing. We are not grabbing slave devices (grabbing on the
+      slave device is buggy according to 19d289ab1b5bde3e136765e5432b5c7d004df3a4).
+      And since the event occurs outside our window, the slave device event is
+      not sent to us by the server, hence no duplicate event to drop.
+*/
+bool isDuplicateEvent(xcb_ge_event_t *event)
+{
+    struct qXIEvent {
+        bool isValid = false;
+        uint16_t sourceid;
+        uint8_t evtype;
+        uint32_t detail;
+        int32_t root_x;
+        int32_t root_y;
+    };
+    static qXIEvent lastSeenEvent;
+
+    bool isDuplicate = false;
+    auto xiDeviceEvent = reinterpret_cast<xXIDeviceEvent *>(event);
+    if (lastSeenEvent.isValid) {
+        isDuplicate = lastSeenEvent.sourceid == xiDeviceEvent->sourceid &&
+                      lastSeenEvent.evtype == xiDeviceEvent->evtype &&
+                      lastSeenEvent.detail == xiDeviceEvent->detail &&
+                      lastSeenEvent.root_x == xiDeviceEvent->root_x &&
+                      lastSeenEvent.root_y == xiDeviceEvent->root_y;
+    } else {
+        lastSeenEvent.isValid = true;
+    }
+    lastSeenEvent.sourceid = xiDeviceEvent->sourceid;
+    lastSeenEvent.evtype = xiDeviceEvent->evtype;
+    lastSeenEvent.detail = xiDeviceEvent->detail;
+    lastSeenEvent.root_x = xiDeviceEvent->root_x;
+    lastSeenEvent.root_y = xiDeviceEvent->root_y;
+
+    if (isDuplicate)
+        // This sanity check ensures that special cases like QTBUG-59277 keep working.
+        lastSeenEvent.isValid = false; // An event can be a duplicate only once.
+
+    return isDuplicate;
+}
+
+} // namespace
+
 void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
 {
     xi2PrepareXIGenericDeviceEvent(event);
@@ -559,10 +630,14 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
     xXIEnterEvent *xiEnterEvent = 0;
     QXcbWindowEventListener *eventListener = 0;
 
+    bool isTouchEvent = true;
     switch (xiEvent->evtype) {
     case XI_ButtonPress:
     case XI_ButtonRelease:
     case XI_Motion:
+        isTouchEvent = false;
+        if (!xi2MouseEventsDisabled() && isDuplicateEvent(event))
+            return;
 #ifdef XCB_USE_XINPUT22
     case XI_TouchBegin:
     case XI_TouchUpdate:
@@ -570,6 +645,18 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
 #endif
     {
         xiDeviceEvent = reinterpret_cast<xXIDeviceEvent *>(event);
+
+        if (m_floatingSlaveDevices.contains(xiDeviceEvent->sourceid))
+            return; // Not interested in floating slave device events, only in attached slaves.
+
+        bool isSlaveEvent = xiDeviceEvent->deviceid == xiDeviceEvent->sourceid;
+        if (!xi2MouseEventsDisabled() && isTouchEvent && isSlaveEvent) {
+            // For touch events we want events only from master devices, at least
+            // currently there is no apparent reason why we would need to consider
+            // events from slave devices.
+            return;
+        }
+
         eventListener = windowEventListenerFromId(xiDeviceEvent->event);
         sourceDeviceId = xiDeviceEvent->sourceid; // use the actual device id instead of the master
         break;
@@ -844,6 +931,11 @@ bool QXcbConnection::startSystemMoveResizeForTouchBegin(xcb_window_t window, con
         }
     }
     return false;
+}
+
+void QXcbConnection::abortSystemMoveResizeForTouch()
+{
+    m_startSystemMoveResizeInfo.window = XCB_NONE;
 }
 #endif // XCB_USE_XINPUT22
 
