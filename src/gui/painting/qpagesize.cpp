@@ -762,7 +762,7 @@ QPageSizePrivate::QPageSizePrivate(QPageSize::PageSizeId pageSizeId)
       m_windowsId(0),
       m_units(QPageSize::Point)
 {
-    if (pageSizeId >= QPageSize::PageSizeId(0) && pageSizeId <= QPageSize::LastPageSize)
+    if (unsigned(pageSizeId) <= unsigned(QPageSize::LastPageSize))
         init(pageSizeId, QString());
 }
 
@@ -1478,7 +1478,7 @@ QRect QPageSize::rectPixels(int resolution) const
 
 QString QPageSize::key(PageSizeId pageSizeId)
 {
-    if (pageSizeId < PageSizeId(0) || pageSizeId > LastPageSize)
+    if (unsigned(pageSizeId) > unsigned(LastPageSize))
         return QString();
     return QString::fromUtf8(qt_pageSizes[pageSizeId].mediaOption);
 }
@@ -1497,7 +1497,7 @@ static QString msgImperialPageSizeInch(int width, int height)
 
 QString QPageSize::name(PageSizeId pageSizeId)
 {
-    if (pageSizeId < PageSizeId(0) || pageSizeId > LastPageSize)
+    if (unsigned(pageSizeId) > unsigned(LastPageSize))
         return QString();
 
     switch (pageSizeId) {

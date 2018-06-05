@@ -664,18 +664,18 @@ QStringList QFileDialogOptions::history() const
 
 void QFileDialogOptions::setLabelText(QFileDialogOptions::DialogLabel label, const QString &text)
 {
-    if (label >= 0 && label < DialogLabelCount)
+    if (unsigned(label) < unsigned(DialogLabelCount))
         d->labels[label] = text;
 }
 
 QString QFileDialogOptions::labelText(QFileDialogOptions::DialogLabel label) const
 {
-    return (label >= 0 && label < DialogLabelCount) ? d->labels[label] : QString();
+    return (unsigned(label) < unsigned(DialogLabelCount)) ? d->labels[label] : QString();
 }
 
 bool QFileDialogOptions::isLabelExplicitlySet(DialogLabel label)
 {
-    return label >= 0 && label < DialogLabelCount && !d->labels[label].isEmpty();
+    return unsigned(label) < unsigned(DialogLabelCount) && !d->labels[label].isEmpty();
 }
 
 QUrl QFileDialogOptions::initialDirectory() const

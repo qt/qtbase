@@ -64,8 +64,6 @@ HeaderSize entry_size(const QByteArray &name, const QByteArray &value)
     const unsigned sum = unsigned(name.size()) + value.size();
     if (std::numeric_limits<unsigned>::max() - 32 < sum)
         return HeaderSize();
-    if (sum + 32 > std::numeric_limits<quint32>::max())
-        return HeaderSize();
     return HeaderSize(true, quint32(sum + 32));
 }
 

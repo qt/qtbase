@@ -139,7 +139,7 @@ static const int NumEntries = sizeof(entries) / sizeof(entries[0]);
  */
 const char * QTest::benchmarkMetricName(QBenchmarkMetric metric)
 {
-    if (metric >= 0 && metric < QTest::NumEntries)
+    if (unsigned(metric) < unsigned(QTest::NumEntries))
         return entries[metric].name;
 
     return "";
@@ -151,7 +151,7 @@ const char * QTest::benchmarkMetricName(QBenchmarkMetric metric)
  */
 const char * QTest::benchmarkMetricUnit(QBenchmarkMetric metric)
 {
-    if (metric >= 0 && metric < QTest::NumEntries)
+    if (unsigned(metric) < unsigned(QTest::NumEntries))
         return entries[metric].unit;
 
     return "";
