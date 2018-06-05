@@ -8,7 +8,8 @@ dita.metadata.default.copyrholder = The Qt Company Ltd
 dita.metadata.default.audience = programmer
 
 #Set the main Qt index.html
-navigation.homepage = "Qt $QT_VER"
+navigation.homepage = index.html
+navigation.hometitle = "Qt $QT_VER"
 
 sourcedirs += includes $$BUILDDIR
 
