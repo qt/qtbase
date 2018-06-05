@@ -352,8 +352,6 @@ QTransform QTransform::transposed() const
     QTransform t(affine._m11, affine._m21, affine._dx,
                  affine._m12, affine._m22, affine._dy,
                  m_13, m_23, m_33, true);
-    t.m_type = m_type;
-    t.m_dirty = m_dirty;
     return t;
 }
 
