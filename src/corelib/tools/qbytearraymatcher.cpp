@@ -366,6 +366,11 @@ int qFindByteArray(
     Since this class is designed to do all the up-front calculations at compile-time,
     it does not offer a setPattern() method.
 
+    \note Qt detects the necessary C++14 compiler support by way of the feature
+    test recommendations from
+    \l{https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations}
+    {C++ Committee's Standing Document 6}.
+
     \sa QByteArrayMatcher, QStringMatcher
 */
 
