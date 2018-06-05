@@ -1060,7 +1060,7 @@
         },
         "system-zlib": {
             "label": "Using system zlib",
-            "condition": "libs.zlib && config.emscripten",
+            "condition": "libs.zlib",
             "output": [ "privateFeature" ]
         },
         "future": {
