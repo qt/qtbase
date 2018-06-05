@@ -74,7 +74,7 @@ public:
                      const QModelIndex &index) override;
 
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
-                                        const QModelIndex &index) const override;
+                          const QModelIndex &index) const override;
 
 private:
     QPixmap star;
