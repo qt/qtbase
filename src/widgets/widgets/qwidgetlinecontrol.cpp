@@ -872,9 +872,9 @@ void QWidgetLineControl::internalInsert(const QString &s)
             for (int i = 0; i < (int) s.left(remaining).length(); ++i)
                addCommand(Command(Insert, m_cursor++, s.at(i), -1, -1));
             m_textDirty = true;
-        } else {
-            emit inputRejected();
         }
+        if (s.length() > remaining)
+            emit inputRejected();
     }
 }
 

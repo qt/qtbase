@@ -1681,6 +1681,11 @@ void QLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
     results in a validator's validate() call to return Invalid.
     Another case is when trying to enter in more characters beyond the
     maximum length of the line edit.
+
+    Note: This signal will still be emitted in a case where part of
+    the text is accepted but not all of it is. For example, if there
+    is a maximum length set and the clipboard text is longer than the
+    maximum length when it is pasted.
 */
 
 /*!
