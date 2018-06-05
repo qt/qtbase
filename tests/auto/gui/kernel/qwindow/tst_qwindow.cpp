@@ -480,7 +480,7 @@ void tst_QWindow::positioning()
     }
 
     if (isPlatformWayland())
-        QSKIP("Wayland: This fails. Figure out why.");
+        QSKIP("Wayland: This fails. See QTBUG-68660.");
 
     // Some platforms enforce minimum widths for windows, which can cause extra resize
     // events, so set the width to suitably large value to avoid those.
@@ -1846,7 +1846,7 @@ void tst_QWindow::mask()
 void tst_QWindow::initialSize()
 {
     if (isPlatformWayland())
-        QSKIP("Wayland: This fails. Figure out why.");
+        QSKIP("Wayland: This fails. See QTBUG-66818.");
 
     QSize defaultSize(0,0);
     {
