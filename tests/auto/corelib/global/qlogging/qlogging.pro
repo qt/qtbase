@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-!android:!winrt {
+!winrt {
     test.depends = app
     SUBDIRS += app
 }

@@ -101,7 +101,11 @@ tst_qmessagehandler::tst_qmessagehandler()
 void tst_qmessagehandler::initTestCase()
 {
 #if QT_CONFIG(process)
+#  ifdef Q_OS_ANDROID
+    m_appDir = QCoreApplication::applicationDirPath();
+#  else // !android
     m_appDir = QFINDTESTDATA("app");
+#  endif
     QVERIFY2(!m_appDir.isEmpty(), qPrintable(
         QString::fromLatin1("Couldn't find helper app dir starting from %1.").arg(QDir::currentPath())));
 
@@ -818,12 +822,19 @@ void tst_qmessagehandler::qMessagePattern()
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #else
+#ifdef Q_OS_ANDROID
+    QSKIP("This test crashes on Android");
+#endif
     QFETCH(QString, pattern);
     QFETCH(bool, valid);
     QFETCH(QList<QByteArray>, expected);
 
     QProcess process;
+#ifdef Q_OS_ANDROID
+    const QString appExe = m_appDir + "/libapp.so";
+#else // !android
     const QString appExe = m_appDir + "/app";
+#endif
 
     //
     // test QT_MESSAGE_PATTERN
@@ -860,13 +871,20 @@ void tst_qmessagehandler::setMessagePattern()
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #else
+#ifdef Q_OS_ANDROID
+    QSKIP("This test crashes on Android");
+#endif
 
     //
     // test qSetMessagePattern
     //
 
     QProcess process;
+#ifdef Q_OS_ANDROID
+    const QString appExe = m_appDir + "/libapp.so";
+#else // !android
     const QString appExe = m_appDir + "/app";
+#endif
 
     // make sure there is no QT_MESSAGE_PATTERN in the environment
     QStringList environment = m_baseEnvironment;
