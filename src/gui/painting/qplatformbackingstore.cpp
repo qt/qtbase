@@ -344,7 +344,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
     QWindowPrivate::get(window)->lastComposeTime.start();
 
     QOpenGLFunctions *funcs = d_ptr->context->functions();
-    funcs->glViewport(0, 0, window->width() * window->devicePixelRatio(), window->height() * window->devicePixelRatio());
+    funcs->glViewport(0, 0, qRound(window->width() * window->devicePixelRatio()), qRound(window->height() * window->devicePixelRatio()));
     funcs->glClearColor(0, 0, 0, translucentBackground ? 0 : 1);
     funcs->glClear(GL_COLOR_BUFFER_BIT);
 
