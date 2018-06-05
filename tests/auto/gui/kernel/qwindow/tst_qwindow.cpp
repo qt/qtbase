@@ -788,9 +788,6 @@ void tst_QWindow::isExposed()
 
     window.hide();
 
-    if (isPlatformWayland())
-        QSKIP("Wayland: This is flaky. Figure out why.");
-
     QCoreApplication::processEvents();
     QTRY_VERIFY(window.received(QEvent::Expose) > 1);
     QTRY_VERIFY(!window.isExposed());
