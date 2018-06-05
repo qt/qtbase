@@ -2201,6 +2201,15 @@ void QWindowsWindow::requestActivateWindow()
                 foregroundThread = GetWindowThreadProcessId(foregroundWindow, NULL);
                 if (foregroundThread && foregroundThread != currentThread)
                     attached = AttachThreadInput(foregroundThread, currentThread, TRUE) == TRUE;
+                if (attached) {
+                    if (!window()->flags().testFlag(Qt::WindowStaysOnBottomHint)
+                        && !window()->flags().testFlag(Qt::WindowStaysOnTopHint)
+                        && window()->type() != Qt::ToolTip) {
+                        const UINT swpFlags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER;
+                        SetWindowPos(m_data.hwnd, HWND_TOPMOST, 0, 0, 0, 0, swpFlags);
+                        SetWindowPos(m_data.hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, swpFlags);
+                    }
+                }
             }
         }
         SetForegroundWindow(m_data.hwnd);
