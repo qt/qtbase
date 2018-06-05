@@ -228,6 +228,7 @@ public:
     void deref() {}
     bool exited;
     int returnCode;
+    mutable QMutex mutex;
 
     Q_DECLARE_PUBLIC(QThread)
 };

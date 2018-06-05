@@ -176,11 +176,7 @@ int QEventLoop::exec(ProcessEventsFlags flags)
     }
 
     //we need to protect from race condition with QThread::exit
-#ifndef QT_NO_THREAD
     QMutexLocker locker(&static_cast<QThreadPrivate *>(QObjectPrivate::get(d->threadData->thread))->mutex);
-#else
-    QMutexLocker locker(0);
-#endif
     struct LoopReference {
         QEventLoopPrivate *d;
         QMutexLocker &locker;
