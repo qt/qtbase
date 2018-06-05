@@ -2180,8 +2180,6 @@ void tst_QWidget::showFullScreen()
     QSKIP("QTBUG-52974");
 #endif
 
-    if (m_platform == QStringLiteral("wayland"))
-        QSKIP("Wayland: This fails. Figure out why.");
     QWidget plain;
     QHBoxLayout *layout;
     QWidget layouted;
@@ -6186,8 +6184,6 @@ QByteArray EventRecorder::msgEventListMismatch(const EventList &expected, const 
 
 void tst_QWidget::childEvents()
 {
-    if (m_platform == QStringLiteral("wayland"))
-        QSKIP("Wayland: This fails. Figure out why.");
     EventRecorder::EventList expected;
 
     // Move away the cursor; otherwise it might result in an enter event if it's
@@ -9972,9 +9968,6 @@ public:
 
 void tst_QWidget::touchEventSynthesizedMouseEvent()
 {
-    if (m_platform == QStringLiteral("wayland"))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     {
         // Simple case, we ignore the touch events, we get mouse events instead
         TouchMouseWidget widget;
