@@ -193,6 +193,43 @@ AppleApplication *qt_apple_sharedApplication()
 }
 #endif
 
+#if defined(Q_OS_MACOS) && !defined(QT_BOOTSTRAPPED)
+bool qt_apple_isSandboxed()
+{
+    static bool isSandboxed = []() {
+        QCFType<SecStaticCodeRef> staticCode = nullptr;
+        NSURL *bundleUrl = [[NSBundle mainBundle] bundleURL];
+        if (SecStaticCodeCreateWithPath((__bridge CFURLRef)bundleUrl,
+            kSecCSDefaultFlags, &staticCode) != errSecSuccess)
+            return false;
+
+        QCFType<SecRequirementRef> sandboxRequirement;
+        if (SecRequirementCreateWithString(CFSTR("entitlement[\"com.apple.security.app-sandbox\"] exists"),
+            kSecCSDefaultFlags, &sandboxRequirement) != errSecSuccess)
+            return false;
+
+        if (SecStaticCodeCheckValidityWithErrors(staticCode,
+            kSecCSBasicValidateOnly, sandboxRequirement, nullptr) != errSecSuccess)
+            return false;
+
+        return true;
+    }();
+    return isSandboxed;
+}
+
+QT_END_NAMESPACE
+@implementation NSObject (QtSandboxHelpers)
+- (id)qt_valueForPrivateKey:(NSString *)key
+{
+    if (qt_apple_isSandboxed())
+        return nil;
+
+    return [self valueForKey:key];
+}
+@end
+QT_BEGIN_NAMESPACE
+#endif
+
 #ifdef Q_OS_MACOS
 /*
     Ensure that Objective-C objects auto-released in main(), directly or indirectly,

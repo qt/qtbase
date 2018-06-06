@@ -248,24 +248,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QVerticalSplitView);
 }
 @end
 
-#if !QT_CONFIG(appstore_compliant)
-
-// This API was requested to Apple in rdar #36197888.
-// We know it's safe to use up to macOS 10.13.3.
-// See drawComplexControl(CC_ComboBox) for its usage.
-
-@interface NSComboBoxCell (QtButtonCell)
-@property (readonly) NSButtonCell *qt_buttonCell;
-@end
-
-@implementation NSComboBoxCell (QtButtonCell)
-- (NSButtonCell *)qt_buttonCell {
-    return self->_buttonCell;
-}
-@end
-
-#endif
-
 QT_BEGIN_NAMESPACE
 
 // The following constants are used for adjusting the size
@@ -5215,11 +5197,14 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 auto *cb = static_cast<NSComboBox *>(cc);
                 const auto frameRect = cw.adjustedControlFrame(combo->rect);
                 cb.frame = frameRect.toCGRect();
-#if !QT_CONFIG(appstore_compliant)
-                static_cast<NSComboBoxCell *>(cc.cell).qt_buttonCell.highlighted = isPressed;
-#else
-                // TODO Render to pixmap and darken the button manually
-#endif
+
+                // This API was requested to Apple in rdar #36197888. We know it's safe to use up to macOS 10.13.3
+                if (NSButtonCell *cell = static_cast<NSButtonCell *>([cc.cell qt_valueForPrivateKey:@"_buttonCell"])) {
+                    cell.highlighted = isPressed;
+                } else {
+                    // TODO Render to pixmap and darken the button manually
+                }
+
                 d->drawNSViewInRect(cb, frameRect, p, ^(CGContextRef __unused ctx, const CGRect &r) {
                     // FIXME This is usually drawn in the control's superview, but we wouldn't get inactive look in this case
                     [cb.cell drawWithFrame:r inView:cb];
