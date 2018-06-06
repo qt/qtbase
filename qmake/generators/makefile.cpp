@@ -3328,6 +3328,10 @@ MakefileGenerator::writePkgConfigFile()
          ;
     if (!project->values("QMAKE_DEFAULT_INCDIRS").contains(includeDir))
         t << "-I${includedir}";
+    if (target_mode == TARG_MAC_MODE && project->isActiveConfig("lib_bundle")
+        && libDir != QLatin1String("/Library/Frameworks")) {
+            t << " -F${libdir}";
+    }
     t << endl;
 
     // requires
