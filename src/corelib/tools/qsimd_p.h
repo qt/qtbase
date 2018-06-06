@@ -297,26 +297,29 @@ static const quint64 qCompilerCpuFeatures = 0
         ;
 #endif
 
-#ifdef QT_BOOTSTRAPPED
-static inline quint64 qCpuFeatures()
-{
-    return QSimdInitialized;
-}
-#else
+#ifdef Q_ATOMIC_INT64_IS_SUPPORTED
 extern Q_CORE_EXPORT QBasicAtomicInteger<quint64> qt_cpu_features[1];
+#else
+extern Q_CORE_EXPORT QBasicAtomicInteger<unsigned> qt_cpu_features[2];
+#endif
 Q_CORE_EXPORT void qDetectCpuFeatures();
 
 static inline quint64 qCpuFeatures()
 {
     quint64 features = qt_cpu_features[0].load();
+#ifndef Q_ATOMIC_INT64_IS_SUPPORTED
+    features |= quint64(qt_cpu_features[1].load()) << 32;
+#endif
     if (Q_UNLIKELY(features == 0)) {
         qDetectCpuFeatures();
         features = qt_cpu_features[0].load();
+#ifndef Q_ATOMIC_INT64_IS_SUPPORTED
+        features |= quint64(qt_cpu_features[1].load()) << 32;
+#endif
         Q_ASSUME(features != 0);
     }
     return features;
 }
-#endif
 
 #define qCpuHasFeature(feature)     ((qCompilerCpuFeatures & (Q_UINT64_C(1) << CpuFeature ## feature)) \
                                      || (qCpuFeatures() & (Q_UINT64_C(1) << CpuFeature ## feature)))

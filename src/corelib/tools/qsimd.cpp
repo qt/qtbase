@@ -522,7 +522,11 @@ static const int features_count = (sizeof features_indices) / (sizeof features_i
 // record what CPU features were enabled by default in this Qt build
 static const quint64 minFeature = qCompilerCpuFeatures;
 
+#ifdef Q_ATOMIC_INT64_IS_SUPPORTED
 Q_CORE_EXPORT QBasicAtomicInteger<quint64> qt_cpu_features[1] = { Q_BASIC_ATOMIC_INITIALIZER(0) };
+#else
+Q_CORE_EXPORT QBasicAtomicInteger<unsigned> qt_cpu_features[2] = { Q_BASIC_ATOMIC_INITIALIZER(0), Q_BASIC_ATOMIC_INITIALIZER(0) };
+#endif
 
 void qDetectCpuFeatures()
 {
@@ -555,6 +559,9 @@ void qDetectCpuFeatures()
     }
 
     qt_cpu_features[0].store(f | quint32(QSimdInitialized));
+#ifndef Q_ATOMIC_INT64_IS_SUPPORTED
+    qt_cpu_features[1].store(f >> 32);
+#endif
 }
 
 void qDumpCPUFeatures()
