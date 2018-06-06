@@ -3858,7 +3858,7 @@ void tst_QWidget::setMinimumSize()
     QSize nonDefaultSize = defaultSize + QSize(5,5);
     w.setMinimumSize(nonDefaultSize);
     w.showNormal();
-    QVERIFY(QTest::qWaitForWindowActive(&w));
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     QVERIFY2(w.height() >= nonDefaultSize.height(),
              msgComparisonFailed(w.height(), ">=", nonDefaultSize.height()));
     QVERIFY2(w.width() >= nonDefaultSize.width(),
@@ -3910,7 +3910,7 @@ void tst_QWidget::setFixedSize()
 
     w.setFixedSize(defaultSize + QSize(150, 150));
     w.showNormal();
-    QVERIFY(QTest::qWaitForWindowActive(&w));
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     if (m_platform == QStringLiteral("xcb"))
         QSKIP("QTBUG-26424");
     QCOMPARE(w.size(), defaultSize + QSize(150,150));
@@ -8103,7 +8103,7 @@ void tst_QWidget::resizeInPaintEvent()
     window.resize(200, 200);
     window.show();
     qApp->setActiveWindow(&window);
-    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
     QTRY_VERIFY(widget.numPaintEvents > 0);
 
     widget.reset();
@@ -8702,7 +8702,7 @@ void tst_QWidget::setClearAndResizeMask()
     centerOnScreen(&topLevel);
     topLevel.show();
     qApp->setActiveWindow(&topLevel);
-    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
     QTRY_VERIFY(topLevel.numPaintEvents > 0);
     topLevel.reset();
 
@@ -10549,7 +10549,7 @@ void tst_QWidget::keyboardModifiers()
     KeyboardWidget w;
     w.resize(300, 300);
     w.show();
-    QVERIFY(QTest::qWaitForWindowActive(&w));
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     QTest::mouseClick(&w, Qt::LeftButton, Qt::ControlModifier);
     QCOMPARE(w.m_eventCounter, 1);
     QCOMPARE(int(w.m_modifiers), int(Qt::ControlModifier));
