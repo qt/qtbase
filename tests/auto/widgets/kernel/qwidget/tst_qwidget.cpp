@@ -2418,8 +2418,8 @@ void tst_QWidget::showMinimizedKeepsFocus()
 {
     if (m_platform == QStringLiteral("xcb"))
         QSKIP("QTBUG-26424");
-    if (m_platform == QStringLiteral("wayland"))
-        QSKIP("Wayland: This fails. Figure out why.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported.");
     if (m_platform == QStringLiteral("offscreen"))
         QSKIP("Platform offscreen does not support showMinimized()");
 
@@ -2625,8 +2625,8 @@ void tst_QWidget::icon()
 
 void tst_QWidget::hideWhenFocusWidgetIsChild()
 {
-    if (m_platform == QStringLiteral("wayland"))
-        QSKIP("Wayland: This fails. Figure out why.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported.");
 
     QScopedPointer<QWidget> testWidget(new QWidget);
     testWidget->setWindowTitle(__FUNCTION__);
@@ -5433,8 +5433,8 @@ void tst_QWidget::multipleToplevelFocusCheck()
     QSKIP("QTBUG-52974");
 #endif
 
-    if (m_platform == QStringLiteral("wayland"))
-        QSKIP("Wayland: This fails. Figure out why.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
     else if (m_platform == QStringLiteral("winrt"))
         QSKIP("Winrt: Sometimes crashes in QTextLayout. - QTBUG-68297");
     TopLevelFocusCheck w1;
@@ -9535,8 +9535,8 @@ void tst_QWidget::setGraphicsEffect()
 
 void tst_QWidget::activateWindow()
 {
-    if (m_platform == QStringLiteral("wayland"))
-        QSKIP("Wayland: This fails. Figure out why.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported.");
 
     // Test case for QTBUG-26711
 
@@ -9603,8 +9603,8 @@ void tst_QWidget::openModal_taskQTBUG_5804()
 
 void tst_QWidget::focusProxyAndInputMethods()
 {
-    if (m_platform == QStringLiteral("wayland"))
-        QSKIP("Wayland: This fails. Figure out why.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported.");
     QScopedPointer<QWidget> toplevel(new QWidget(0, Qt::X11BypassWindowManagerHint));
     toplevel->resize(200, 200);
     toplevel->setAttribute(Qt::WA_InputMethodEnabled, true);
