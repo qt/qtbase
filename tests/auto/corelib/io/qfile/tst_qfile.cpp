@@ -379,6 +379,12 @@ private:
     QString m_noEndOfLineFile;
 };
 
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+  #define STDINPROCESS_NAME "libstdinprocess.so"
+#else // !android || android_embedded
+  #define STDINPROCESS_NAME "stdinprocess"
+#endif // android && !android_embededd
+
 static const char noReadFile[] = "noreadfile";
 static const char readOnlyFile[] = "readonlyfile";
 
@@ -448,7 +454,11 @@ void tst_QFile::initTestCase()
 {
     QVERIFY2(m_temporaryDir.isValid(), qPrintable(m_temporaryDir.errorString()));
 #if QT_CONFIG(process)
+#if defined(Q_OS_ANDROID)
+    m_stdinProcessDir = QCoreApplication::applicationDirPath();
+#else
     m_stdinProcessDir = QFINDTESTDATA("stdinprocess");
+#endif
     QVERIFY(!m_stdinProcessDir.isEmpty());
 #endif
     m_testLogFile = QFINDTESTDATA("testlog.txt");
@@ -964,11 +974,14 @@ void tst_QFile::readAllStdin()
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
+#if defined(Q_OS_ANDROID)
+    QSKIP("This test crashes when doing nanosleep. See QTBUG-69034.");
+#endif
     QByteArray lotsOfData(1024, '@'); // 10 megs
 
     QProcess process;
     StdinReaderProcessGuard processGuard(&process);
-    process.start(m_stdinProcessDir + QStringLiteral("/stdinprocess"), QStringList(QStringLiteral("all")));
+    process.start(m_stdinProcessDir + QStringLiteral("/" STDINPROCESS_NAME), QStringList(QStringLiteral("all")));
     QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
     for (int i = 0; i < 5; ++i) {
         QTest::qWait(1000);
@@ -987,6 +1000,9 @@ void tst_QFile::readLineStdin()
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
+#if defined(Q_OS_ANDROID)
+    QSKIP("This test crashes when doing nanosleep. See QTBUG-69034.");
+#endif
     QByteArray lotsOfData(1024, '@'); // 10 megs
     for (int i = 0; i < lotsOfData.size(); ++i) {
         if ((i % 32) == 31)
@@ -998,7 +1014,7 @@ void tst_QFile::readLineStdin()
     for (int i = 0; i < 2; ++i) {
         QProcess process;
         StdinReaderProcessGuard processGuard(&process);
-        process.start(m_stdinProcessDir + QStringLiteral("/stdinprocess"),
+        process.start(m_stdinProcessDir + QStringLiteral("/" STDINPROCESS_NAME),
                       QStringList() << QStringLiteral("line") << QString::number(i),
                       QIODevice::Text | QIODevice::ReadWrite);
         QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
@@ -1028,10 +1044,13 @@ void tst_QFile::readLineStdin_lineByLine()
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
+#if defined(Q_OS_ANDROID)
+    QSKIP("This test crashes when calling ::poll. See QTBUG-69034.");
+#endif
     for (int i = 0; i < 2; ++i) {
         QProcess process;
         StdinReaderProcessGuard processGuard(&process);
-        process.start(m_stdinProcessDir + QStringLiteral("/stdinprocess"),
+        process.start(m_stdinProcessDir + QStringLiteral("/" STDINPROCESS_NAME),
                       QStringList() << QStringLiteral("line") << QString::number(i),
                       QIODevice::Text | QIODevice::ReadWrite);
         QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
