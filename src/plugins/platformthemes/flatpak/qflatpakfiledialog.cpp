@@ -279,8 +279,10 @@ void QFlatpakFileDialog::setDirectory(const QUrl &directory)
 {
     Q_D(QFlatpakFileDialog);
 
-    if (d->nativeFileDialog)
+    if (d->nativeFileDialog) {
+        d->nativeFileDialog->setOptions(options());
         d->nativeFileDialog->setDirectory(directory);
+    }
 
     d->directory = directory.path();
 }
@@ -299,8 +301,10 @@ void QFlatpakFileDialog::selectFile(const QUrl &filename)
 {
     Q_D(QFlatpakFileDialog);
 
-    if (d->nativeFileDialog)
+    if (d->nativeFileDialog) {
+        d->nativeFileDialog->setOptions(options());
         d->nativeFileDialog->selectFile(filename);
+    }
 
     d->selectedFiles << filename.path();
 }
@@ -323,16 +327,20 @@ void QFlatpakFileDialog::setFilter()
 {
     Q_D(QFlatpakFileDialog);
 
-    if (d->nativeFileDialog)
+    if (d->nativeFileDialog) {
+        d->nativeFileDialog->setOptions(options());
         d->nativeFileDialog->setFilter();
+    }
 }
 
 void QFlatpakFileDialog::selectNameFilter(const QString &filter)
 {
     Q_D(QFlatpakFileDialog);
 
-    if (d->nativeFileDialog)
+    if (d->nativeFileDialog) {
+        d->nativeFileDialog->setOptions(options());
         d->nativeFileDialog->selectNameFilter(filter);
+    }
 }
 
 QString QFlatpakFileDialog::selectedNameFilter() const
