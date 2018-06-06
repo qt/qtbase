@@ -4533,6 +4533,11 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     invoked using QMetaObject::invokeMethod().
     Since \c normalMethod() function is not registered in this way, it cannot
     be invoked using QMetaObject::invokeMethod().
+
+    If an invokable member function returns a pointer to a QObject or a
+    subclass of QObject and it is invoked from QML, special ownership rules
+    apply. See \l{qtqml-cppintegration-data.html}{Data Type Conversion Between QML and C++}
+    for more information.
 */
 
 /*!
