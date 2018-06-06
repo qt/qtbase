@@ -1109,8 +1109,9 @@ void QPdfEngine::updateState(const QPaintEngineState &state)
         d->hasPen = d->pen.style() != Qt::NoPen;
         d->stroker.setPen(d->pen, state.renderHints());
         QBrush penBrush = d->pen.brush();
+        bool cosmeticPen = qt_pen_is_cosmetic(d->pen, state.renderHints());
         bool oldSimple = d->simplePen;
-        d->simplePen = (d->hasPen && (penBrush.style() == Qt::SolidPattern) && penBrush.isOpaque() && d->opacity == 1.0);
+        d->simplePen = (d->hasPen && !cosmeticPen && (penBrush.style() == Qt::SolidPattern) && penBrush.isOpaque() && d->opacity == 1.0);
         if (oldSimple != d->simplePen)
             flags |= DirtyTransform;
     } else if (flags & DirtyHints) {
