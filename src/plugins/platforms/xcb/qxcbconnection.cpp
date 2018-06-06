@@ -1683,12 +1683,14 @@ bool QXcbConnection::compressEvent(xcb_generic_event_t *event, int currentIndex,
         if (!hasXInput2())
             return false;
 
-        // compress XI_Motion, but not from tablet devices
+        // compress XI_Motion
         if (isXIType(event, m_xiOpCode, XI_Motion)) {
 #if QT_CONFIG(tabletevent)
             xXIDeviceEvent *xdev = reinterpret_cast<xXIDeviceEvent *>(event);
+            // Xlib's XI2 events need memmove, see xi2PrepareXIGenericDeviceEvent()
+            auto sourceId = *reinterpret_cast<uint16_t *>(reinterpret_cast<char *>(&xdev->sourceid) + 4);
             if (!QCoreApplication::testAttribute(Qt::AA_CompressTabletEvents) &&
-                    const_cast<QXcbConnection *>(this)->tabletDataForDevice(xdev->sourceid))
+                    const_cast<QXcbConnection *>(this)->tabletDataForDevice(sourceId))
                 return false;
 #endif // QT_CONFIG(tabletevent)
             for (int j = nextIndex; j < eventqueue->size(); ++j) {
