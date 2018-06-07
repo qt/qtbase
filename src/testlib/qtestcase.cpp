@@ -2135,8 +2135,9 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
             srcdir.setFile(QFile::decodeName(builddir) + QLatin1String("/") + srcdir.filePath());
         }
 
-        QString candidate = QString::fromLatin1("%1/%2").arg(srcdir.canonicalFilePath(), base);
-        if (QFileInfo::exists(candidate)) {
+        const QString canonicalPath = srcdir.canonicalFilePath();
+        QString candidate = QString::fromLatin1("%1/%2").arg(canonicalPath, base);
+        if (!canonicalPath.isEmpty() && QFileInfo::exists(candidate)) {
             found = candidate;
         }
         else if (QTestLog::verboseLevel() >= 2) {
