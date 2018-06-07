@@ -302,7 +302,8 @@ QStringList QInotifyFileSystemWatcherEngine::addPaths(const QStringList &paths,
                                        | IN_DELETE_SELF
                                        )));
         if (wd < 0) {
-            qWarning().nospace() << "inotify_add_watch(" << path << ") failed: " << QSystemError(errno, QSystemError::NativeError).toString();
+            if (errno != ENOENT)
+                qErrnoWarning("inotify_add_watch(%ls) failed:", path.constData());
             continue;
         }
 
