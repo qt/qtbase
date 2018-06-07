@@ -1143,8 +1143,16 @@ void tst_QMenu::QTBUG7411_submenus_activate()
     QTRY_VERIFY(sub1.isVisible());
 }
 
+static bool isPlatformWayland()
+{
+    return !QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive);
+}
+
 void tst_QMenu::QTBUG30595_rtl_submenu()
 {
+    if (isPlatformWayland())
+        QSKIP("Creating xdg_popups on Wayland requires real input events. Positions would be off.");
+
     QMenu menu("Test Menu");
     menu.setLayoutDirection(Qt::RightToLeft);
     QMenu sub("&sub");
@@ -1179,6 +1187,9 @@ void tst_QMenu::QTBUG20403_nested_popup_on_shortcut_trigger()
 #ifndef Q_OS_MACOS
 void tst_QMenu::click_while_dismissing_submenu()
 {
+    if (isPlatformWayland())
+        QSKIP("Wayland: Creating (grabbing) popups requires real mouse events.");
+
     QMenu menu("Test Menu");
     QAction *action = menu.addAction("action");
     QMenu sub("&sub");
