@@ -1,12 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>images/copy.png</file>
-        <file>images/create.png</file>
-        <file>images/cut.png</file>
-        <file>images/edit_redo.png</file>
-        <file>images/edit_undo.png</file>
-        <file>images/exit.png</file>
-        <file>images/font.png</file>
         <file>images/info.png</file>
         <file>images/new.png</file>
         <file>images/open.png</file>
@@ -15,5 +8,15 @@
         <file>images/print.png</file>
         <file>images/save.png</file>
         <file>images/save_as.png</file>
+        <file>images/exit.png</file>
+        <file>images/font.png</file>
+        <file>images/copy.png</file>
+        <file>images/create.png</file>
+        <file>images/cut.png</file>
+        <file>images/edit_redo.png</file>
+        <file>images/edit_undo.png</file>
+        <file>images/bold.png</file>
+        <file>images/italic.png</file>
+        <file>images/underline.png</file>
     </qresource>
 </RCC>

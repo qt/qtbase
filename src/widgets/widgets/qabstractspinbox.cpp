@@ -619,6 +619,8 @@ void QAbstractSpinBox::stepDown()
     function. Note that this function is called even if the resulting
     value will be outside the bounds of minimum and maximum. It's this
     function's job to handle these situations.
+
+    \sa stepUp(), stepDown(), keyPressEvent()
 */
 
 void QAbstractSpinBox::stepBy(int steps)
@@ -970,6 +972,8 @@ void QAbstractSpinBox::paintEvent(QPaintEvent *)
     \row \li Page down
          \li This will invoke stepBy(-10)
     \endtable
+
+    \sa stepBy()
 */
 
 

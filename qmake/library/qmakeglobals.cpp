@@ -261,7 +261,7 @@ QStringList QMakeGlobals::splitPathList(const QString &val) const
     QStringList ret;
     if (!val.isEmpty()) {
         QString cwd(QDir::currentPath());
-        const QStringList vals = val.split(dirlist_sep);
+        const QStringList vals = val.split(dirlist_sep, QString::SkipEmptyParts);
         ret.reserve(vals.length());
         for (const QString &it : vals)
             ret << IoUtils::resolvePath(cwd, it);

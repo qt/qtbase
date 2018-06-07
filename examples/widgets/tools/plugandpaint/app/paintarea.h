@@ -63,7 +63,7 @@ class PaintArea : public QWidget
     Q_OBJECT
 
 public:
-    PaintArea(QWidget *parent = 0);
+    PaintArea(QWidget *parent = nullptr);
 
     bool openImage(const QString &fileName);
     bool saveImage(const QString &fileName, const char *fileFormat);
@@ -87,13 +87,13 @@ protected:
 private:
     void setupPainter(QPainter &painter);
 
-    QImage theImage;
-    QColor color;
-    int thickness;
+    QImage theImage = {500, 400, QImage::Format_RGB32};
+    QColor color = Qt::blue;
+    int thickness = 3;
 
-    BrushInterface *brushInterface;
+    BrushInterface *brushInterface = nullptr;
     QString brush;
-    QPoint lastPos;
+    QPoint lastPos = {-1, -1};
 
     QPainterPath pendingPath;
 };
