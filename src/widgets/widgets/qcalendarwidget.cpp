@@ -1005,7 +1005,7 @@ Qt::DayOfWeek QCalendarModel::dayOfWeekForColumn(int column) const
 
 int QCalendarModel::columnForDayOfWeek(Qt::DayOfWeek day) const
 {
-    if (day < 1 || day > 7)
+    if (day < 1 || unsigned(day) > unsigned(7))
         return -1;
     int column = (int)day - (int)m_firstDay;
     if (column < 0)

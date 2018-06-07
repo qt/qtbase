@@ -55,7 +55,9 @@
 #  include "qaccessible.h"
 #endif
 #include "qhighdpiscaling_p.h"
+#if QT_CONFIG(draganddrop)
 #include "qshapedpixmapdndwindow_p.h"
+#endif // QT_CONFIG(draganddrop)
 
 #include <private/qevent_p.h>
 
@@ -383,7 +385,11 @@ void QWindowPrivate::setVisible(bool visible)
             QGuiApplicationPrivate::hideModalWindow(q);
     // QShapedPixmapWindow is used on some platforms for showing a drag pixmap, so don't block
     // input to this window as it is performing a drag - QTBUG-63846
-    } else if (visible && QGuiApplication::modalWindow() && !qobject_cast<QShapedPixmapWindow *>(q)) {
+    } else if (visible && QGuiApplication::modalWindow()
+#if QT_CONFIG(draganddrop)
+               && !qobject_cast<QShapedPixmapWindow *>(q)
+#endif // QT_CONFIG(draganddrop)
+              ) {
         QGuiApplicationPrivate::updateBlockedStatus(q);
     }
 

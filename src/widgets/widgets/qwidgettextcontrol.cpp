@@ -46,7 +46,9 @@
 #include <qpainter.h>
 #include <qevent.h>
 #include <qdebug.h>
+#if QT_CONFIG(draganddrop)
 #include <qdrag.h>
+#endif
 #include <qclipboard.h>
 #if QT_CONFIG(menu)
 #include <qmenu.h>
@@ -129,7 +131,7 @@ QWidgetTextControlPrivate::QWidgetTextControlPrivate()
       interactionFlags(Qt::TextEditable | Qt::TextSelectableByKeyboard),
 #endif
       dragEnabled(true),
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
       mousePressed(false), mightStartDrag(false),
 #endif
       lastSelectionPosition(0), lastSelectionAnchor(0),
@@ -514,7 +516,7 @@ void QWidgetTextControlPrivate::setContent(Qt::TextFormat format, const QString 
 
 void QWidgetTextControlPrivate::startDrag()
 {
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     Q_Q(QWidgetTextControl);
     mousePressed = false;
     if (!contextWidget)
@@ -1066,7 +1068,7 @@ void QWidgetTextControl::processEvent(QEvent *e, const QMatrix &matrix, QWidget 
         }
 #endif // QT_NO_TOOLTIP
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
         case QEvent::DragEnter: {
             QDragEnterEvent *ev = static_cast<QDragEnterEvent *>(e);
             if (d->dragEnterEvent(e, ev->mimeData()))
@@ -1545,7 +1547,7 @@ void QWidgetTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton butto
 
     mousePressPos = pos.toPoint();
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     mightStartDrag = false;
 #endif
 
@@ -1615,7 +1617,7 @@ void QWidgetTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton butto
                 && cursorPos >= cursor.selectionStart()
                 && cursorPos <= cursor.selectionEnd()
                 && q->hitTest(pos, Qt::ExactHit) != -1) {
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
                 mightStartDrag = true;
 #endif
                 return;
@@ -1744,7 +1746,7 @@ void QWidgetTextControlPrivate::mouseReleaseEvent(QEvent *e, Qt::MouseButton but
 
     const int oldCursorPos = cursor.position();
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     if (mightStartDrag && (button & Qt::LeftButton)) {
         mousePressed = false;
         setCursorPosition(pos);
@@ -1807,7 +1809,7 @@ void QWidgetTextControlPrivate::mouseDoubleClickEvent(QEvent *e, Qt::MouseButton
     if (button == Qt::LeftButton
         && (interactionFlags & Qt::TextSelectableByMouse)) {
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
         mightStartDrag = false;
 #endif
         commitPreedit();

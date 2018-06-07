@@ -256,7 +256,7 @@ void tst_QStandardItem::getSetFlags()
     item.setAutoTristate(true);
     QVERIFY(item.isAutoTristate());
     QVERIFY(item.flags() & Qt::ItemIsAutoTristate);
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     item.setDragEnabled(true);
     QVERIFY(item.isDragEnabled());
     QVERIFY(item.flags() & Qt::ItemIsDragEnabled);
@@ -287,7 +287,7 @@ void tst_QStandardItem::getSetFlags()
     item.setAutoTristate(false);
     QVERIFY(!item.isAutoTristate());
     QVERIFY(!(item.flags() & Qt::ItemIsAutoTristate));
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     QVERIFY(item.isDragEnabled());
     item.setDragEnabled(false);
     QVERIFY(!item.isDragEnabled());

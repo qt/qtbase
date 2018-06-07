@@ -49,6 +49,8 @@ private slots:
     void matrix();
     void testOffset();
     void types();
+    void types2_data();
+    void types2();
     void scalarOps();
     void transform();
     void mapEmptyPath();
@@ -65,6 +67,7 @@ private:
 };
 
 Q_DECLARE_METATYPE(QTransform)
+Q_DECLARE_METATYPE(QTransform::TransformationType)
 
 void tst_QTransform::mapRect_data()
 {
@@ -568,6 +571,38 @@ void tst_QTransform::types()
     QCOMPARE(m5.type(), QTransform::TxScale);
 }
 
+void tst_QTransform::types2_data()
+{
+    QTest::addColumn<QTransform>("t1");
+    QTest::addColumn<QTransform::TransformationType>("type");
+
+    QTest::newRow( "identity" ) << QTransform() << QTransform::TxNone;
+    QTest::newRow( "translate" ) << QTransform().translate(10, -0.1) << QTransform::TxTranslate;
+    QTest::newRow( "scale" ) << QTransform().scale(10, -0.1) << QTransform::TxScale;
+    QTest::newRow( "rotate" ) << QTransform().rotate(10) << QTransform::TxRotate;
+    QTest::newRow( "shear" ) << QTransform().shear(10, -0.1) << QTransform::TxShear;
+    QTest::newRow( "project" ) << QTransform().rotate(10, Qt::XAxis) << QTransform::TxProject;
+    QTest::newRow( "combined" ) << QTransform().translate(10, -0.1).scale(10, -0.1).rotate(10, Qt::YAxis) << QTransform::TxProject;
+}
+
+void tst_QTransform::types2()
+{
+#define CHECKTXTYPE(func) { QTransform t2(func); \
+                            QTransform t3(t2.m11(), t2.m12(), t2.m13(), t2.m21(), t2.m22(), t2.m23(), t2.m31(), t2.m32(), t2.m33()); \
+                            QVERIFY2(t3.type() == t2.type(), #func); \
+                          }
+
+    QFETCH( QTransform, t1 );
+    QFETCH( QTransform::TransformationType, type );
+
+    Q_ASSERT(t1.type() == type);
+
+    CHECKTXTYPE(t1.adjoint());
+    CHECKTXTYPE(t1.inverted());
+    CHECKTXTYPE(t1.transposed());
+
+#undef CHECKTXTYPE
+}
 
 void tst_QTransform::scalarOps()
 {

@@ -52,16 +52,15 @@
 #include "interfaces.h"
 #include "plugindialog.h"
 
-#include <QPluginLoader>
-#include <QStringList>
 #include <QDir>
-
-#include <QLabel>
 #include <QGridLayout>
+#include <QHeaderView>
+#include <QLabel>
+#include <QPluginLoader>
 #include <QPushButton>
+#include <QStringList>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
-#include <QHeaderView>
 
 PluginDialog::PluginDialog(const QString &path, const QStringList &fileNames,
                            QWidget *parent) :
@@ -77,7 +76,7 @@ PluginDialog::PluginDialog(const QString &path, const QStringList &fileNames,
 
     okButton->setDefault(true);
 
-    connect(okButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(okButton, &QAbstractButton::clicked, this, &QWidget::close);
 
     QGridLayout *mainLayout = new QGridLayout;
     mainLayout->setColumnStretch(0, 1);
@@ -107,11 +106,12 @@ void PluginDialog::findPlugins(const QString &path,
 
     const QDir dir(path);
 
-    foreach (QObject *plugin, QPluginLoader::staticInstances())
+    const auto staticInstances = QPluginLoader::staticInstances();
+    for (QObject *plugin : staticInstances)
         populateTreeWidget(plugin, tr("%1 (Static Plugin)")
                                    .arg(plugin->metaObject()->className()));
 
-    foreach (QString fileName, fileNames) {
+    for (const QString &fileName : fileNames) {
         QPluginLoader loader(dir.absoluteFilePath(fileName));
         QObject *plugin = loader.instance();
         if (plugin)
@@ -123,7 +123,7 @@ void PluginDialog::findPlugins(const QString &path,
 //! [1]
 void PluginDialog::populateTreeWidget(QObject *plugin, const QString &text)
 {
-    QTreeWidgetItem *pluginItem = new QTreeWidgetItem(treeWidget);
+    auto pluginItem = new QTreeWidgetItem(treeWidget);
     pluginItem->setText(0, text);
     treeWidget->setItemExpanded(pluginItem, true);
 
@@ -132,16 +132,15 @@ void PluginDialog::populateTreeWidget(QObject *plugin, const QString &text)
     pluginItem->setFont(0, boldFont);
 
     if (plugin) {
-        BrushInterface *iBrush = qobject_cast<BrushInterface *>(plugin);
+        auto iBrush = qobject_cast<BrushInterface *>(plugin);
         if (iBrush)
             addItems(pluginItem, "BrushInterface", iBrush->brushes());
 
-        ShapeInterface *iShape = qobject_cast<ShapeInterface *>(plugin);
+        auto iShape = qobject_cast<ShapeInterface *>(plugin);
         if (iShape)
             addItems(pluginItem, "ShapeInterface", iShape->shapes());
 
-        FilterInterface *iFilter =
-                qobject_cast<FilterInterface *>(plugin);
+        auto iFilter = qobject_cast<FilterInterface *>(plugin);
         if (iFilter)
             addItems(pluginItem, "FilterInterface", iFilter->filters());
     }
@@ -152,14 +151,14 @@ void PluginDialog::addItems(QTreeWidgetItem *pluginItem,
                             const char *interfaceName,
                             const QStringList &features)
 {
-    QTreeWidgetItem *interfaceItem = new QTreeWidgetItem(pluginItem);
+    auto interfaceItem = new QTreeWidgetItem(pluginItem);
     interfaceItem->setText(0, interfaceName);
     interfaceItem->setIcon(0, interfaceIcon);
 
-    foreach (QString feature, features) {
+    for (QString feature : features) {
         if (feature.endsWith("..."))
             feature.chop(3);
-        QTreeWidgetItem *featureItem = new QTreeWidgetItem(interfaceItem);
+        auto featureItem = new QTreeWidgetItem(interfaceItem);
         featureItem->setText(0, feature);
         featureItem->setIcon(0, featureIcon);
     }

@@ -177,9 +177,9 @@ public:
 
 protected:
     void notifyThemeChanged() override;
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     void notifyDragStarted(const QDrag *) override;
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 public:
     static QFont *sys_font;

@@ -97,7 +97,7 @@ public:
     QPlatformInputContext *inputContext() const override;
     QPlatformServices *services() const override;
     QPlatformClipboard *clipboard() const override;
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     QPlatformDrag *drag() const override;
 #endif
 #if QT_CONFIG(accessibility)

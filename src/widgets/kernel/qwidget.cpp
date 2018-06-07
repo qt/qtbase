@@ -1322,7 +1322,7 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
              << "Alien?" << !testAttribute(Qt::WA_NativeWindow);
 #endif
 
-#if 0 /* Used to be included in Qt4 for Q_WS_WIN */ && !defined(QT_NO_DRAGANDDROP)
+#if 0 /* Used to be included in Qt4 for Q_WS_WIN */ && QT_CONFIG(draganddrop)
     // Unregister the dropsite (if already registered) before we
     // re-create the widget with a native window.
     if (testAttribute(Qt::WA_WState_Created) && !internalWinId() && testAttribute(Qt::WA_NativeWindow)
@@ -5574,21 +5574,23 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             if (renderToTexture) {
                 // This widget renders into a texture which is composed later. We just need to
                 // punch a hole in the backingstore, so the texture will be visible.
-                if (!q->testAttribute(Qt::WA_AlwaysStackOnTop)) {
-                    beginBackingStorePainting();
-                    if (backingStore) {
-                        QPainter p(q);
-                        p.setCompositionMode(QPainter::CompositionMode_Source);
-                        p.fillRect(q->rect(), Qt::transparent);
-                    } else {
-                        QImage img = grabFramebuffer();
-                        QPainter p(q);
-                        // We are not drawing to a backingstore: fall back to QImage
-                        p.drawImage(q->rect(), img);
-                        skipPaintEvent = true;
-                    }
-                    endBackingStorePainting();
+                beginBackingStorePainting();
+                if (!q->testAttribute(Qt::WA_AlwaysStackOnTop) && backingStore) {
+                    QPainter p(q);
+                    p.setCompositionMode(QPainter::CompositionMode_Source);
+                    p.fillRect(q->rect(), Qt::transparent);
+                } else if (!backingStore) {
+                    // We are not drawing to a backingstore: fall back to QImage
+                    QImage img = grabFramebuffer();
+                    // grabFramebuffer() always sets the format to RGB32
+                    // regardless of whether it is transparent or not.
+                    if (img.format() == QImage::Format_RGB32)
+                        img.reinterpretAsFormat(QImage::Format_ARGB32_Premultiplied);
+                    QPainter p(q);
+                    p.drawImage(q->rect(), img);
+                    skipPaintEvent = true;
                 }
+                endBackingStorePainting();
                 if (renderToTextureReallyDirty)
                     renderToTextureReallyDirty = 0;
                 else
@@ -9075,7 +9077,7 @@ bool QWidget::event(QEvent *event)
         break;
 #endif // QT_NO_CONTEXTMENU
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     case QEvent::Drop:
         dropEvent((QDropEvent*) event);
         break;
@@ -9957,7 +9959,7 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
 }
 
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 
 /*!
     \fn void QWidget::dragEnterEvent(QDragEnterEvent *event)
@@ -10026,7 +10028,7 @@ void QWidget::dropEvent(QDropEvent *)
 {
 }
 
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 /*!
     \fn void QWidget::showEvent(QShowEvent *event)
@@ -11175,7 +11177,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 
     switch (attribute) {
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     case Qt::WA_AcceptDrops:  {
         if (on && !testAttribute(Qt::WA_DropSiteRegistered))
             setAttribute(Qt::WA_DropSiteRegistered, true);

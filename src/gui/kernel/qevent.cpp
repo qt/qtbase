@@ -42,15 +42,18 @@
 #include "private/qguiapplication_p.h"
 #include "private/qtouchdevice_p.h"
 #include "qpa/qplatformintegration.h"
-#include "qpa/qplatformdrag.h"
 #include "private/qevent_p.h"
 #include "qfile.h"
 #include "qhashfunctions.h"
 #include "qmetaobject.h"
 #include "qmimedata.h"
-#include "private/qdnd_p.h"
 #include "qevent_p.h"
 #include "qmath.h"
+
+#if QT_CONFIG(draganddrop)
+#include <qpa/qplatformdrag.h>
+#include <private/qdnd_p.h>
+#endif
 
 #include <private/qdebug_p.h>
 
@@ -2920,7 +2923,7 @@ const QTouchDevice *QNativeGestureEvent::device() const
 */
 #endif // QT_NO_GESTURES
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 /*!
     Creates a QDragMoveEvent of the required \a type indicating
     that the mouse is at position \a pos given within a widget.
@@ -3264,7 +3267,7 @@ QDragLeaveEvent::QDragLeaveEvent()
 QDragLeaveEvent::~QDragLeaveEvent()
 {
 }
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 /*!
     \class QHelpEvent
@@ -3939,7 +3942,7 @@ static const char *eventClassName(QEvent::Type t)
     return "QEvent";
 }
 
-#  ifndef QT_NO_DRAGANDDROP
+#  if QT_CONFIG(draganddrop)
 
 static void formatDropEvent(QDebug d, const QDropEvent *e)
 {
@@ -3960,7 +3963,7 @@ static void formatDropEvent(QDebug d, const QDropEvent *e)
     QtDebugUtils::formatQFlags(d, e->mouseButtons());
 }
 
-#  endif // !QT_NO_DRAGANDDROP
+#  endif // QT_CONFIG(draganddrop)
 
 #  if QT_CONFIG(tabletevent)
 
@@ -4123,13 +4126,13 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         dbg << ')';
     }
         break;
-#  ifndef QT_NO_DRAGANDDROP
+#  if QT_CONFIG(draganddrop)
     case QEvent::DragEnter:
     case QEvent::DragMove:
     case QEvent::Drop:
         formatDropEvent(dbg, static_cast<const QDropEvent *>(e));
         break;
-#  endif // !QT_NO_DRAGANDDROP
+#  endif // QT_CONFIG(draganddrop)
     case QEvent::InputMethod:
         formatInputMethodEvent(dbg, static_cast<const QInputMethodEvent *>(e));
         break;

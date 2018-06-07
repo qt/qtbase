@@ -46,7 +46,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_DRAGANDDROP
 #ifdef QDND_DEBUG
 #  include <QtCore/QDebug>
 #endif
@@ -221,7 +220,5 @@ bool QPlatformDrag::ownsDragObject() const
 {
     return false;
 }
-
-#endif // QT_NO_DRAGANDDROP
 
 QT_END_NAMESPACE

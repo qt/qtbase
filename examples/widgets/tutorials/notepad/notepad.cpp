@@ -191,3 +191,27 @@ void Notepad::on_actionFont_triggered()
     if (fontSelected)
         ui->textEdit->setFont(font);
 }
+
+void Notepad::on_actionUnderline_triggered()
+{
+    ui->textEdit->setFontUnderline(ui->actionUnderline->isChecked());
+}
+
+void Notepad::on_actionItalic_triggered()
+{
+    ui->textEdit->setFontItalic(ui->actionItalic->isChecked());
+}
+
+void Notepad::on_actionBold_triggered()
+{
+    ui->actionBold->isChecked() ? ui->textEdit->setFontWeight(QFont::Bold) :
+                                  ui->textEdit->setFontWeight(QFont::Normal);
+}
+
+void Notepad::on_actionAbout_triggered()
+{
+   QMessageBox::about(this, tr("About MDI"),
+                tr("The <b>Notepad</b> example demonstrates how to code a basic "
+                   "text editor using QtWidgets"));
+
+}

@@ -567,7 +567,7 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
     Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
     if ((type & Qt::Popup) != Qt::Popup && (type & Qt::Dialog) != Qt::Dialog) {
         NSWindowCollectionBehavior behavior = m_view.window.collectionBehavior;
-        if (flags & Qt::WindowFullscreenButtonHint) {
+        if ((flags & Qt::WindowFullscreenButtonHint) || m_view.window.qt_fullScreen) {
             behavior |= NSWindowCollectionBehaviorFullScreenPrimary;
             behavior &= ~NSWindowCollectionBehaviorFullScreenAuxiliary;
         } else {

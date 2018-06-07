@@ -37,7 +37,7 @@
 
 using namespace QTestPrivate;
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 Q_DECLARE_METATYPE(QAbstractItemView::DragDropMode)
 #endif
 Q_DECLARE_METATYPE(QAbstractItemView::EditTriggers)
@@ -76,7 +76,7 @@ private slots:
     void alternatingRowColors();
     void currentIndex_data();
     void currentIndex();
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     void dragDropMode_data();
     void dragDropMode();
     void dragDropModeFromDragEnabledAndAcceptDrops_data();
@@ -440,7 +440,7 @@ void tst_QTreeView::construction()
     // QAbstractItemView properties
     QVERIFY(!view.alternatingRowColors());
     QCOMPARE(view.currentIndex(), QModelIndex());
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     QCOMPARE(view.dragDropMode(), QAbstractItemView::NoDragDrop);
     QVERIFY(!view.dragDropOverwriteMode());
     QVERIFY(!view.dragEnabled());
@@ -463,7 +463,7 @@ void tst_QTreeView::construction()
     QCOMPARE(view.selectionBehavior(), QAbstractItemView::SelectRows);
     QCOMPARE(view.selectionMode(), QAbstractItemView::SingleSelection);
     QVERIFY(!view.selectionModel());
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     QVERIFY(view.showDropIndicator());
 #endif
     QCOMPARE(view.QAbstractItemView::sizeHintForColumn(-1), -1); // <- protected in QTreeView
@@ -573,7 +573,7 @@ void tst_QTreeView::currentIndex()
     // ### Test child and grandChild indexes.
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 
 void tst_QTreeView::dragDropMode_data()
 {

@@ -44,7 +44,9 @@
 #include <qclipboard.h>
 #include <qpainter.h>
 #include <qstyle.h>
+#if QT_CONFIG(draganddrop)
 #include <qdrag.h>
+#endif
 #include <qevent.h>
 #include <qscrollbar.h>
 #include <qtooltip.h>
@@ -90,7 +92,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         editTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed),
         lastTrigger(QAbstractItemView::NoEditTriggers),
         tabKeyNavigation(false),
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
         showDropIndicator(true),
         dragEnabled(false),
         dragDropMode(QAbstractItemView::NoDragDrop),
@@ -1325,7 +1327,7 @@ void QAbstractItemView::resetHorizontalScrollMode()
     d_func()->horizontalScrollModeSet = false;
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 /*!
     \since 4.2
     \property QAbstractItemView::dragDropOverwriteMode
@@ -1432,7 +1434,7 @@ QSize QAbstractItemView::viewportSizeHint() const
     return QAbstractScrollArea::viewportSizeHint();
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 /*!
     \property QAbstractItemView::showDropIndicator
     \brief whether the drop indicator is shown when dragging items and dropping.
@@ -1551,7 +1553,7 @@ Qt::DropAction QAbstractItemView::defaultDropAction() const
     return d->defaultDropAction;
 }
 
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 /*!
     \property QAbstractItemView::alternatingRowColors
@@ -1828,7 +1830,7 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
     if (state() == ExpandingState || state() == CollapsingState)
         return;
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     if (state() == DraggingState) {
         topLeft = d->pressedPosition - d->offset();
         if ((topLeft - bottomRight).manhattanLength() > QApplication::startDragDistance()) {
@@ -1839,7 +1841,7 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
         }
         return;
     }
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
     QPersistentModelIndex index = indexAt(bottomRight);
     QModelIndex buddy = d->model->buddy(d->pressedIndex);
@@ -1854,7 +1856,7 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
 
     d->checkMouseMove(index);
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     if (d->pressedIndex.isValid()
         && d->dragEnabled
         && (state() != DragSelectingState)
@@ -1962,7 +1964,7 @@ void QAbstractItemView::mouseDoubleClickEvent(QMouseEvent *event)
         emit activated(persistent);
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 
 /*!
     This function is called with the given \a event when a drag and drop operation enters
@@ -2216,7 +2218,7 @@ QAbstractItemViewPrivate::position(const QPoint &pos, const QRect &rect, const Q
     return r;
 }
 
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 /*!
     This function is called with the given \a event when the widget obtains the focus.
@@ -2567,7 +2569,7 @@ void QAbstractItemView::inputMethodEvent(QInputMethodEvent *event)
     }
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 /*!
     \enum QAbstractItemView::DropIndicatorPosition
 
@@ -3667,7 +3669,7 @@ void QAbstractItemView::currentChanged(const QModelIndex &current, const QModelI
     setAttribute(Qt::WA_InputMethodEnabled, (current.isValid() && (current.flags() & Qt::ItemIsEditable)));
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 /*!
     Starts a drag by calling drag->exec() using the given \a supportedActions.
 */
@@ -3698,7 +3700,7 @@ void QAbstractItemView::startDrag(Qt::DropActions supportedActions)
         d->dropIndicatorPosition = OnItem;
     }
 }
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 /*!
     Returns a QStyleOptionViewItem structure populated with the view's
@@ -3911,7 +3913,7 @@ void QAbstractItemView::doAutoScroll()
     if (verticalUnchanged && horizontalUnchanged) {
         stopAutoScroll();
     } else {
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
         d->dropIndicatorRect = QRect();
         d->dropIndicatorPosition = QAbstractItemView::OnViewport;
 #endif
@@ -4286,7 +4288,7 @@ void QAbstractItemViewPrivate::updateEditorData(const QModelIndex &tl, const QMo
 */
 void QAbstractItemViewPrivate::clearOrRemove()
 {
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     const QItemSelection selection = selectionModel->selection();
     QList<QItemSelectionRange>::const_iterator it = selection.constBegin();
 

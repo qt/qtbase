@@ -68,7 +68,7 @@ class PluginDialog : public QDialog
 
 public:
     PluginDialog(const QString &path, const QStringList &fileNames,
-                 QWidget *parent = 0);
+                 QWidget *parent = nullptr);
 
 private:
     void findPlugins(const QString &path, const QStringList &fileNames);
@@ -76,9 +76,9 @@ private:
     void addItems(QTreeWidgetItem *pluginItem, const char *interfaceName,
                   const QStringList &features);
 
-    QLabel *label;
-    QTreeWidget *treeWidget;
-    QPushButton *okButton;
+    QLabel *label = nullptr;
+    QTreeWidget *treeWidget = nullptr;
+    QPushButton *okButton = nullptr;
     QIcon interfaceIcon;
     QIcon featureIcon;
 };

@@ -107,7 +107,7 @@ Q_GLOBAL_STATIC(QSystemLocaleData, qSystemLocaleData)
 
 #ifndef QT_NO_SYSTEMLOCALE
 
-static bool contradicts(const QByteArray &maybe, const QByteArray &known)
+static bool contradicts(const QString &maybe, const QString &known)
 {
     if (maybe.isEmpty())
         return false;
@@ -137,25 +137,25 @@ static bool contradicts(const QByteArray &maybe, const QByteArray &known)
 QLocale QSystemLocale::fallbackUiLocale() const
 {
     // See man 7 locale for precedence - LC_ALL beats LC_MESSAGES beats LANG:
-    QByteArray lang = qgetenv("LC_ALL");
+    QString lang = qEnvironmentVariable("LC_ALL");
     if (lang.isEmpty())
-        lang = qgetenv("LC_MESSAGES");
+        lang = qEnvironmentVariable("LC_MESSAGES");
     if (lang.isEmpty())
-        lang = qgetenv("LANG");
+        lang = qEnvironmentVariable("LANG");
     // if the locale is the "C" locale, then we can return the language we found here:
-    if (lang.isEmpty() || lang == QByteArray("C") || lang == QByteArray("POSIX"))
-        return QLocale(QString::fromLatin1(lang));
+    if (lang.isEmpty() || lang == QLatin1String("C") || lang == QLatin1String("POSIX"))
+        return QLocale(lang);
 
     // ... otherwise, if the first part of LANGUAGE says more than or
     // contradicts what we have, use that:
-    QByteArray language = qgetenv("LANGUAGE");
+    QString language = qEnvironmentVariable("LANGUAGE");
     if (!language.isEmpty()) {
-        language = language.split(':').constFirst();
+        language = language.split(QLatin1Char(':')).constFirst();
         if (contradicts(language, lang))
-            return QLocale(QString::fromLatin1(language));
+            return QLocale(language);
     }
 
-    return QLocale(QString::fromLatin1(lang));
+    return QLocale(lang);
 }
 
 QVariant QSystemLocale::query(QueryType type, QVariant in) const

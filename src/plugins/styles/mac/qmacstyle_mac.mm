@@ -1665,13 +1665,13 @@ QRectF QMacStylePrivate::comboboxEditBounds(const QRectF &outerBounds, const Coc
     } else if (cw.type == Button_PopupButton) {
         switch (cw.size) {
         case QStyleHelper::SizeLarge:
-            ret.adjust(14, 1, -23, -4);
+            ret.adjust(10, 1, -23, -4);
             break;
         case QStyleHelper::SizeSmall:
-            ret.adjust(13, 4, -20, -3);
+            ret.adjust(10, 4, -20, -3);
             break;
         case QStyleHelper::SizeMini:
-            ret.adjust(12, 0, -19, 0);
+            ret.adjust(9, 0, -19, 0);
             ret.setHeight(13);
             break;
         default:
@@ -2816,7 +2816,8 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
 #if QT_CONFIG(toolbutton)
         if (const QToolButton *tb = qobject_cast<const QToolButton *>(w)) {
             // When stroking the arrow, make sure it fits in the tool button
-            if (tb->arrowType() != Qt::NoArrow)
+            if (tb->arrowType() != Qt::NoArrow
+                    || tb->popupMode() == QToolButton::MenuButtonPopup)
                 halfSize -= penWidth;
         }
 #endif
@@ -5855,11 +5856,11 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
 #endif
     case CC_ToolButton:
         ret = QCommonStyle::subControlRect(cc, opt, sc, widget);
-        if (sc == SC_ToolButtonMenu
+        if (sc == SC_ToolButtonMenu) {
 #ifndef QT_NO_ACCESSIBILITY
-                && !QStyleHelper::hasAncestor(opt->styleObject, QAccessible::ToolBar)
+            if (QStyleHelper::hasAncestor(opt->styleObject, QAccessible::ToolBar))
+                ret.adjust(-toolButtonArrowMargin, 0, 0, 0);
 #endif
-        ) {
             ret.adjust(-1, 0, 0, 0);
         }
         break;
@@ -6097,6 +6098,9 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     case CT_ToolButton:
         sz.rwidth() += 10;
         sz.rheight() += 10;
+        if (const auto *tb = qstyleoption_cast<const QStyleOptionToolButton *>(opt))
+            if (tb->features & QStyleOptionToolButton::Menu)
+                sz.rwidth() += toolButtonArrowMargin;
         return sz;
     case CT_ComboBox:
         if (const auto *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {

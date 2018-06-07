@@ -63,8 +63,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_DRAGANDDROP
-
 //#define DND_DEBUG
 #ifdef DND_DEBUG
 #define DEBUG qDebug
@@ -1320,7 +1318,5 @@ QStringList QXcbDropData::formats_sys() const
     }
     return formats;
 }
-
-#endif // QT_NO_DRAGANDDROP
 
 QT_END_NAMESPACE

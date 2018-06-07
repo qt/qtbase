@@ -45,6 +45,7 @@
 
 #include <qpa/qplatformdrag.h>
 #include <QtGui/qpixmap.h>
+#include <QtGui/qdrag.h>
 
 struct IDropTargetHelper;
 

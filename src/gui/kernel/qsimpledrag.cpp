@@ -68,8 +68,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_DRAGANDDROP
-
 Q_LOGGING_CATEGORY(lcDnd, "qt.gui.dnd")
 
 static QWindow* topLevelAt(const QPoint &pos)
@@ -448,7 +446,5 @@ void QSimpleDrag::drop(const QPoint &nativeGlobalPos, Qt::MouseButtons buttons,
         setExecutedDropAction(Qt::IgnoreAction);
     }
 }
-
-#endif // QT_NO_DRAGANDDROP
 
 QT_END_NAMESPACE

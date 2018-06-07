@@ -552,7 +552,7 @@ QPlatformDrag *QWindowsIntegration::drag() const
 {
     return &d->m_drag;
 }
-#  endif // !QT_NO_DRAGANDDROP
+#  endif // QT_CONFIG(draganddrop)
 #endif // !QT_NO_CLIPBOARD
 
 QPlatformInputContext * QWindowsIntegration::inputContext() const

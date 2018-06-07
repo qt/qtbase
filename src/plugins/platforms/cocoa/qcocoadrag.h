@@ -46,6 +46,7 @@
 #include <private/qsimpledrag_p.h>
 
 #include <QtGui/private/qdnd_p.h>
+#include <QtGui/private/qinternalmimedata_p.h>
 
 QT_BEGIN_NAMESPACE
 

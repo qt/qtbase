@@ -327,7 +327,7 @@ void tst_QItemView::nonDestructiveBasicTest()
     QCOMPARE(view->tabKeyNavigation(), false);
     view->setTabKeyNavigation(true);
     QCOMPARE(view->tabKeyNavigation(), true);
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     // setDropIndicatorShown
     view->setDropIndicatorShown(false);
     QCOMPARE(view->showDropIndicator(), false);

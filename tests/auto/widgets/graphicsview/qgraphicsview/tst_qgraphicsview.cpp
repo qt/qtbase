@@ -205,7 +205,7 @@ private slots:
     void resizeAnchor();
     void viewportUpdateMode();
     void viewportUpdateMode2();
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     void acceptDrops();
 #endif
     void optimizationFlags();
@@ -2566,7 +2566,7 @@ void tst_QGraphicsView::viewportUpdateMode2()
 #endif
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 void tst_QGraphicsView::acceptDrops()
 {
     QGraphicsView view;

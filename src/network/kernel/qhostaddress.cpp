@@ -260,7 +260,7 @@ bool QNetmask::setAddress(const QHostAddress &address)
     int netmask = 0;
     quint8 *ptr = ip.v6;
     quint8 *end;
-    length = -1;
+    length = 255;
 
     if (address.protocol() == QAbstractSocket::IPv4Protocol) {
         ip.v4 = qToBigEndian(address.toIPv4Address());

@@ -215,7 +215,7 @@ public:
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleApplicationStateChanged(Qt::ApplicationState newState, bool forcePropagate = false);
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 #if QT_DEPRECATED_SINCE(5, 11)
     QT_DEPRECATED static QPlatformDragQtResponse handleDrag(QWindow *window, const QMimeData *dropData,
                                               const QPoint &p, Qt::DropActions supportedActions);
@@ -228,7 +228,7 @@ public:
     static QPlatformDropQtResponse handleDrop(QWindow *window, const QMimeData *dropData,
                                               const QPoint &p, Qt::DropActions supportedActions,
                                               Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
     static bool handleNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result);
 

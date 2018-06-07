@@ -1050,13 +1050,13 @@ void QGraphicsProxyWidget::contextMenuEvent(QGraphicsSceneContextMenuEvent *even
 }
 #endif // QT_NO_CONTEXTMENU
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 /*!
     \reimp
 */
 void QGraphicsProxyWidget::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 {
-#ifdef QT_NO_DRAGANDDROP
+#if !QT_CONFIG(draganddrop)
     Q_UNUSED(event);
 #else
     Q_D(QGraphicsProxyWidget);
@@ -1077,7 +1077,7 @@ void QGraphicsProxyWidget::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 void QGraphicsProxyWidget::dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
 {
     Q_UNUSED(event);
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     Q_D(QGraphicsProxyWidget);
     if (!d->widget || !d->dragDropWidget)
         return;
@@ -1092,7 +1092,7 @@ void QGraphicsProxyWidget::dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
 */
 void QGraphicsProxyWidget::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
 {
-#ifdef QT_NO_DRAGANDDROP
+#if !QT_CONFIG(draganddrop)
     Q_UNUSED(event);
 #else
     Q_D(QGraphicsProxyWidget);
@@ -1158,7 +1158,7 @@ void QGraphicsProxyWidget::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
 */
 void QGraphicsProxyWidget::dropEvent(QGraphicsSceneDragDropEvent *event)
 {
-#ifdef QT_NO_DRAGANDDROP
+#if !QT_CONFIG(draganddrop)
     Q_UNUSED(event);
 #else
     Q_D(QGraphicsProxyWidget);

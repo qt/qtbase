@@ -82,32 +82,34 @@ private slots:
     void aboutPlugins();
 
 private:
+    typedef void (MainWindow::*Member)();
+
     void createActions();
     void createMenus();
     void loadPlugins();
     void populateMenus(QObject *plugin);
     void addToMenu(QObject *plugin, const QStringList &texts, QMenu *menu,
-                   const char *member, QActionGroup *actionGroup = 0);
+                   Member member, QActionGroup *actionGroup = nullptr);
 
-    PaintArea *paintArea;
-    QScrollArea *scrollArea;
+    PaintArea *paintArea = nullptr;
+    QScrollArea *scrollArea = nullptr;
     QDir pluginsDir;
     QStringList pluginFileNames;
 
-    QMenu *fileMenu;
-    QMenu *brushMenu;
-    QMenu *shapesMenu;
-    QMenu *filterMenu;
-    QMenu *helpMenu;
-    QActionGroup *brushActionGroup;
-    QAction *openAct;
-    QAction *saveAsAct;
-    QAction *exitAct;
-    QAction *brushWidthAct;
-    QAction *brushColorAct;
-    QAction *aboutAct;
-    QAction *aboutQtAct;
-    QAction *aboutPluginsAct;
+    QMenu *fileMenu = nullptr;
+    QMenu *brushMenu = nullptr;
+    QMenu *shapesMenu = nullptr;
+    QMenu *filterMenu = nullptr;
+    QMenu *helpMenu = nullptr;
+    QActionGroup *brushActionGroup = nullptr;
+    QAction *openAct = nullptr;
+    QAction *saveAsAct = nullptr;
+    QAction *exitAct = nullptr;
+    QAction *brushWidthAct = nullptr;
+    QAction *brushColorAct = nullptr;
+    QAction *aboutAct = nullptr;
+    QAction *aboutQtAct = nullptr;
+    QAction *aboutPluginsAct = nullptr;
 };
 
 #endif

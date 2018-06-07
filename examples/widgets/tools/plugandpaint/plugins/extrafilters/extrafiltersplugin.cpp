@@ -48,17 +48,17 @@
 **
 ****************************************************************************/
 
+#include "extrafiltersplugin.h"
+
 #include <QtWidgets>
 
 #include <math.h>
 #include <stdlib.h>
 
-#include "extrafiltersplugin.h"
-
 QStringList ExtraFiltersPlugin::filters() const
 {
-    return QStringList() << tr("Flip Horizontally") << tr("Flip Vertically")
-                         << tr("Smudge...") << tr("Threshold...");
+    return {tr("Flip Horizontally"), tr("Flip Vertically"),
+            tr("Smudge..."), tr("Threshold...")};
 }
 
 QImage ExtraFiltersPlugin::filterImage(const QString &filter,
@@ -70,14 +70,14 @@ QImage ExtraFiltersPlugin::filterImage(const QString &filter,
     if (filter == tr("Flip Horizontally")) {
         for (int y = 0; y < original.height(); ++y) {
             for (int x = 0; x < original.width(); ++x) {
-                int pixel = original.pixel(original.width() - x - 1, y);
+                QRgb pixel = original.pixel(original.width() - x - 1, y);
                 result.setPixel(x, y, pixel);
             }
         }
     } else if (filter == tr("Flip Vertically")) {
         for (int y = 0; y < original.height(); ++y) {
             for (int x = 0; x < original.width(); ++x) {
-                int pixel = original.pixel(x, original.height() - y - 1);
+                QRgb pixel = original.pixel(x, original.height() - y - 1);
                 result.setPixel(x, y, pixel);
             }
         }
@@ -90,11 +90,11 @@ QImage ExtraFiltersPlugin::filterImage(const QString &filter,
             for (int i = 0; i < numIters; ++i) {
                 for (int y = 1; y < original.height() - 1; ++y) {
                     for (int x = 1; x < original.width() - 1; ++x) {
-                        int p1 = original.pixel(x, y);
-                        int p2 = original.pixel(x, y + 1);
-                        int p3 = original.pixel(x, y - 1);
-                        int p4 = original.pixel(x + 1, y);
-                        int p5 = original.pixel(x - 1, y);
+                        QRgb p1 = original.pixel(x, y);
+                        QRgb p2 = original.pixel(x, y + 1);
+                        QRgb p3 = original.pixel(x, y - 1);
+                        QRgb p4 = original.pixel(x + 1, y);
+                        QRgb p5 = original.pixel(x - 1, y);
 
                         int red = (qRed(p1) + qRed(p2) + qRed(p3) + qRed(p4)
                                    + qRed(p5)) / 5;
@@ -119,7 +119,7 @@ QImage ExtraFiltersPlugin::filterImage(const QString &filter,
             int factor = 256 / threshold;
             for (int y = 0; y < original.height(); ++y) {
                 for (int x = 0; x < original.width(); ++x) {
-                    int pixel = original.pixel(x, y);
+                    QRgb pixel = original.pixel(x, y);
                     result.setPixel(x, y, qRgba(qRed(pixel) / factor * factor,
                                                 qGreen(pixel) / factor * factor,
                                                 qBlue(pixel) / factor * factor,

@@ -441,7 +441,7 @@ QMimeData *QListModel::mimeData(const QModelIndexList &indexes) const
     return mimeData;
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 bool QListModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
                               int row, int column, const QModelIndex &index)
 {
@@ -460,7 +460,7 @@ Qt::DropActions QListModel::supportedDropActions() const
     const QListWidget *view = qobject_cast<const QListWidget*>(QObject::parent());
     return view->supportedDropActions();
 }
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 /*!
     \class QListWidgetItem
@@ -1856,7 +1856,7 @@ QMimeData *QListWidget::mimeData(const QList<QListWidgetItem*> items) const
     return d->listModel()->internalMimeData();
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 /*!
     Handles \a data supplied by an external drag and drop operation that ended
     with the given \a action in the given \a index. Returns \c true if \a data and
@@ -1931,7 +1931,7 @@ Qt::DropActions QListWidget::supportedDropActions() const
     Q_D(const QListWidget);
     return d->listModel()->QAbstractListModel::supportedDropActions() | Qt::MoveAction;
 }
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 /*!
     Returns a list of pointers to the items contained in the \a data object. If

@@ -46,7 +46,9 @@
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
 #include "qxcbclipboard.h"
+#if QT_CONFIG(draganddrop)
 #include "qxcbdrag.h"
+#endif
 #include "qxcbwmsupport.h"
 #include "qxcbnativeinterface.h"
 #include "qxcbintegration.h"
@@ -608,7 +610,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
 #ifndef QT_NO_CLIPBOARD
     m_clipboard = new QXcbClipboard(this);
 #endif
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     m_drag = new QXcbDrag(this);
 #endif
 
@@ -652,7 +654,7 @@ QXcbConnection::~QXcbConnection()
 #ifndef QT_NO_CLIPBOARD
     delete m_clipboard;
 #endif
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     delete m_drag;
 #endif
     if (m_reader && m_reader->isRunning()) {
@@ -1143,7 +1145,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 #if QT_CONFIG(draganddrop) || QT_CONFIG(clipboard)
             xcb_selection_request_event_t *sr = reinterpret_cast<xcb_selection_request_event_t *>(event);
 #endif
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
             if (sr->selection == atom(QXcbAtom::XdndSelection))
                 m_drag->handleSelectionRequest(sr);
             else
@@ -1779,7 +1781,7 @@ void QXcbConnection::handleClientMessageEvent(const xcb_client_message_event_t *
     if (event->format != 32)
         return;
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     if (event->type == atom(QXcbAtom::XdndStatus)) {
         drag()->handleStatus(event);
     } else if (event->type == atom(QXcbAtom::XdndFinished)) {

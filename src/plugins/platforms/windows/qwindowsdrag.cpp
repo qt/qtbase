@@ -56,6 +56,7 @@
 #include <QtGui/qrasterwindow.h>
 #include <QtGui/qguiapplication.h>
 #include <qpa/qwindowsysteminterface_p.h>
+#include <QtGui/private/qdnd_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 

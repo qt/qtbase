@@ -90,17 +90,12 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(RunLoopModeTracker);
     if ((self = [super init])) {
         m_runLoopModes.push(kCFRunLoopDefaultMode);
 
-        [[NSNotificationCenter defaultCenter]
-            addObserver:self
-            selector:@selector(receivedNotification:)
-            name:nil
-#ifdef Q_OS_OSX
-            object:NSApplication.sharedApplication];
-#elif defined(Q_OS_WATCHOS)
-            object:WKExtension.sharedExtension];
-#else
-            // Use performSelector so this can work in an App Extension
-            object:[UIApplication.class performSelector:@selector(sharedApplication)]];
+#if !defined(Q_OS_WATCHOS)
+        if (!qt_apple_isApplicationExtension()) {
+            [[NSNotificationCenter defaultCenter]
+                addObserver:self selector:@selector(receivedNotification:)
+                name:nil object:qt_apple_sharedApplication()];
+        }
 #endif
     }
 

@@ -52,9 +52,9 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/QPixmap>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(draganddrop);
 
-#ifndef QT_NO_DRAGANDDROP
+QT_BEGIN_NAMESPACE
 
 class QMimeData;
 class QMouseEvent;
@@ -111,8 +111,6 @@ private:
 
     Q_DISABLE_COPY(QPlatformDrag)
 };
-
-#endif // QT_NO_DRAGANDDROP
 
 QT_END_NAMESPACE
 

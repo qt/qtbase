@@ -43,11 +43,14 @@
 #include "private/qevent_p.h"
 #include "private/qtouchdevice_p.h"
 #include <QAbstractEventDispatcher>
-#include <qpa/qplatformdrag.h>
 #include <qpa/qplatformintegration.h>
 #include <qdebug.h>
 #include "qhighdpiscaling_p.h"
 #include <QtCore/qscopedvaluerollback.h>
+
+#if QT_CONFIG(draganddrop)
+#include <qpa/qplatformdrag.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -791,7 +794,7 @@ void QWindowSystemInterface::handleThemeChange(QWindow *window)
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 #if QT_DEPRECATED_SINCE(5, 11)
 QPlatformDragQtResponse QWindowSystemInterface::handleDrag(QWindow *window, const QMimeData *dropData,
                                                            const QPoint &p, Qt::DropActions supportedActions)
@@ -831,7 +834,7 @@ QPlatformDropQtResponse QWindowSystemInterface::handleDrop(QWindow *window, cons
     auto pos = QHighDpi::fromNativeLocalPosition(p, window);
     return QGuiApplicationPrivate::processDrop(window, dropData, pos, supportedActions, buttons, modifiers);
 }
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 /*!
     \fn static QWindowSystemInterface::handleNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result)

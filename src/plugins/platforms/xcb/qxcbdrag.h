@@ -55,9 +55,9 @@
 
 #include <QtCore/QDebug>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(draganddrop);
 
-#ifndef QT_NO_DRAGANDDROP
+QT_BEGIN_NAMESPACE
 
 class QWindow;
 class QPlatformWindow;
@@ -174,8 +174,6 @@ private:
     xcb_window_t findRealWindow(const QPoint & pos, xcb_window_t w, int md, bool ignoreNonXdndAwareWindows);
 };
 Q_DECLARE_TYPEINFO(QXcbDrag::Transaction, Q_MOVABLE_TYPE);
-
-#endif // QT_NO_DRAGANDDROP
 
 QT_END_NAMESPACE
 

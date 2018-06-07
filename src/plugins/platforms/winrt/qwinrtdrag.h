@@ -41,7 +41,8 @@
 
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QMimeData>
-#include <QtGui/private/qdnd_p.h> // QInternalMime
+#include <QtGui/private/qdnd_p.h>
+#include <QtGui/private/qinternalmimedata_p.h>
 
 #include <wrl.h>
 
