@@ -29,6 +29,7 @@
 #include <QtTest/QtTest>
 #include <QtTest/private/qtesthelpers_p.h>
 #include <qapplication.h>
+#include <private/qguiapplication_p.h>
 #include <QPushButton>
 #include <QMainWindow>
 #include <QMenuBar>
@@ -48,6 +49,7 @@
 #include <qdebug.h>
 
 #include <qpa/qplatformtheme.h>
+#include <qpa/qplatformintegration.h>
 
 using namespace QTestPrivate;
 
@@ -459,6 +461,9 @@ void tst_QMenu::focus()
 
 void tst_QMenu::overrideMenuAction()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     //test the override menu action by first creating an action to which we set its menu
     QMainWindow w;
     w.resize(300, 200);
@@ -614,6 +619,9 @@ static QMenu *getTornOffMenu()
 
 void tst_QMenu::tearOff()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     QWidget widget;
     QScopedPointer<QMenu> menu(new QMenu(&widget));
     QVERIFY(!menu->isTearOffEnabled()); //default value
@@ -686,6 +694,9 @@ void tst_QMenu::tearOff()
 
 void tst_QMenu::submenuTearOffDontClose()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     QWidget widget;
     QMenu *menu = new QMenu(&widget);
     QVERIFY(!menu->isTearOffEnabled()); //default value
@@ -1236,6 +1247,8 @@ public:
 
 void tst_QMenu::QTBUG47515_widgetActionEnterLeave()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
     if (QGuiApplication::platformName() == QLatin1String("cocoa"))
         QSKIP("See QTBUG-63031");
 
@@ -1634,6 +1647,8 @@ void tst_QMenu::menuSize_Scrolling()
 
 void tst_QMenu::tearOffMenuNotDisplayed()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
     QWidget widget;
     QScopedPointer<QMenu> menu(new QMenu(&widget));
     menu->setTearOffEnabled(true);
@@ -1669,6 +1684,9 @@ void tst_QMenu::tearOffMenuNotDisplayed()
 
 void tst_QMenu::QTBUG_61039_menu_shortcuts()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     QAction *actionKamen = new QAction("Action Kamen");
     actionKamen->setShortcut(QKeySequence(QLatin1String("K")));
 
