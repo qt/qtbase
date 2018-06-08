@@ -2823,6 +2823,19 @@ MakefileGenerator::escapeFilePaths(const ProStringList &paths) const
     return ret;
 }
 
+QString
+MakefileGenerator::escapeDependencyPath(const QString &path) const
+{
+    QString ret = path;
+    if (!ret.isEmpty()) {
+        // Unix make semantics, to be inherited by unix and mingw generators.
+        static const QRegExp criticalChars(QStringLiteral("([\t :#])"));
+        ret.replace(criticalChars, QStringLiteral("\\\\1"));
+        debug_msg(2, "escapeDependencyPath: %s -> %s", path.toLatin1().constData(), ret.toLatin1().constData());
+    }
+    return ret;
+}
+
 ProString
 MakefileGenerator::escapeDependencyPath(const ProString &path) const
 {

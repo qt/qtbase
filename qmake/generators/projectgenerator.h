@@ -42,6 +42,9 @@ class ProjectGenerator : public MakefileGenerator
 protected:
     virtual void init();
     virtual bool writeMakefile(QTextStream &);
+
+    virtual QString escapeFilePath(const QString &path) const { Q_ASSERT(false); return QString(); }
+
 public:
     ProjectGenerator();
     ~ProjectGenerator();
