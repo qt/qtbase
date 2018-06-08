@@ -7414,13 +7414,12 @@ QString QString::number(qulonglong n, int base)
 QString QString::number(double n, char f, int prec)
 {
     QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
-    uint flags = 0;
+    uint flags = QLocaleData::ZeroPadExponent;
 
     if (qIsUpper(f))
-        flags = QLocaleData::CapitalEorX;
-    f = qToLower(f);
+        flags |= QLocaleData::CapitalEorX;
 
-    switch (f) {
+    switch (qToLower(f)) {
         case 'f':
             form = QLocaleData::DFDecimal;
             break;
@@ -8487,14 +8486,13 @@ QString QString::arg(double a, int fieldWidth, char fmt, int prec, QChar fillCha
 
     unsigned flags = QLocaleData::NoFlags;
     if (fillChar == QLatin1Char('0'))
-        flags = QLocaleData::ZeroPadded;
+        flags |= QLocaleData::ZeroPadded;
 
     if (qIsUpper(fmt))
         flags |= QLocaleData::CapitalEorX;
-    fmt = qToLower(fmt);
 
     QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
-    switch (fmt) {
+    switch (qToLower(fmt)) {
     case 'f':
         form = QLocaleData::DFDecimal;
         break;
@@ -8513,7 +8511,7 @@ QString QString::arg(double a, int fieldWidth, char fmt, int prec, QChar fillCha
 
     QString arg;
     if (d.occurrences > d.locale_occurrences)
-        arg = QLocaleData::c()->doubleToString(a, prec, form, fieldWidth, flags);
+        arg = QLocaleData::c()->doubleToString(a, prec, form, fieldWidth, flags | QLocaleData::ZeroPadExponent);
 
     QString locale_arg;
     if (d.locale_occurrences > 0) {

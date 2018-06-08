@@ -516,6 +516,7 @@ private slots:
     void toUcs4();
     void arg();
     void number();
+    void doubleOut();
     void arg_fillChar_data();
     void arg_fillChar();
     void capacity_data();
@@ -4880,6 +4881,28 @@ void tst_QString::number()
     QCOMPARE( QString::number(12.05, 'f', 1), QString("12.1") );
     QCOMPARE( QString::number(12.5, 'f', 0), QString("13") );
 #endif
+}
+
+void tst_QString::doubleOut()
+{
+    // Regression test for QTBUG-63620; the first two paths lost the exponent's
+    // leading 0 at 5.7; C's printf() family guarantee a two-digit exponent (in
+    // contrast with ECMAScript, which forbids leading zeros).
+    const QString expect(QStringLiteral("1e-06"));
+    const double micro = 1e-6;
+    QCOMPARE(QString::number(micro), expect);
+    QCOMPARE(QString("%1").arg(micro), expect);
+    {
+        QString text;
+        text.sprintf("%g", micro);
+        QCOMPARE(text, expect);
+    }
+    {
+        QString text;
+        QTextStream stream(&text);
+        stream << micro;
+        QCOMPARE(text, expect);
+    }
 }
 
 void tst_QString::capacity_data()
