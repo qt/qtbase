@@ -286,7 +286,7 @@ protected:
 #else
     virtual QMimeData *mimeData(const QList<QListWidgetItem*> items) const;
 #endif
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     virtual bool dropMimeData(int index, const QMimeData *data, Qt::DropAction action);
     virtual Qt::DropActions supportedDropActions() const;
 #endif

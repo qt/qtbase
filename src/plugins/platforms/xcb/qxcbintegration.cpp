@@ -46,7 +46,9 @@
 #include "qxcbbackingstore.h"
 #include "qxcbnativeinterface.h"
 #include "qxcbclipboard.h"
+#if QT_CONFIG(draganddrop)
 #include "qxcbdrag.h"
+#endif
 #include "qxcbglintegration.h"
 
 #ifndef QT_NO_SESSIONMANAGER
@@ -376,7 +378,7 @@ QPlatformClipboard *QXcbIntegration::clipboard() const
 }
 #endif
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 QPlatformDrag *QXcbIntegration::drag() const
 {
     return m_connections.at(0)->drag();

@@ -602,7 +602,7 @@ Q_DECLARE_TYPEINFO(QInputMethodQueryEvent::QueryPair, Q_MOVABLE_TYPE);
 
 #endif // QT_NO_INPUTMETHOD
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 
 class QMimeData;
 
@@ -675,7 +675,7 @@ public:
     QDragLeaveEvent();
     ~QDragLeaveEvent();
 };
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 
 class Q_GUI_EXPORT QHelpEvent : public QEvent

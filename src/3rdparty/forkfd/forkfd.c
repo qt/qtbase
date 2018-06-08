@@ -283,6 +283,7 @@ static void notifyAndFreeInfo(Header *header, ProcessInfo *entry,
     freeInfo(header, entry);
 }
 
+static void reapChildProcesses();
 static void sigchld_handler(int signum, siginfo_t *handler_info, void *handler_context)
 {
     /*
@@ -307,19 +308,25 @@ static void sigchld_handler(int signum, siginfo_t *handler_info, void *handler_c
     }
 
     if (ffd_atomic_load(&forkfd_status, FFD_ATOMIC_RELAXED) == 1) {
-        /* is this one of our children? */
-        BigArray *array;
-        siginfo_t info;
-        struct pipe_payload payload;
-        int i;
+        int saved_errno = errno;
+        reapChildProcesses();
+        errno = saved_errno;
+    }
+}
 
-        memset(&info, 0, sizeof info);
-        memset(&payload, 0, sizeof payload);
+static inline void reapChildProcesses()
+{
+    /* is this one of our children? */
+    BigArray *array;
+    siginfo_t info;
+    struct pipe_payload payload;
+    int i;
+
+    memset(&info, 0, sizeof info);
+    memset(&payload, 0, sizeof payload);
 
 #ifdef HAVE_WAITID
-        if (!waitid_works)
-            goto search_arrays;
-
+    if (waitid_works) {
         /* be optimistic: try to see if we can get the child that exited */
 search_next_child:
         /* waitid returns -1 ECHILD if there are no further children at all;
@@ -371,12 +378,34 @@ search_next_child:
          * belongs to one of the chained SIGCHLD handlers. However, there might be another
          * child that exited and does belong to us, so we need to check each one individually.
          */
-
-search_arrays:
+    }
 #endif
 
-        for (i = 0; i < (int)sizeofarray(children.entries); ++i) {
-            int pid = ffd_atomic_load(&children.entries[i].pid, FFD_ATOMIC_ACQUIRE);
+    for (i = 0; i < (int)sizeofarray(children.entries); ++i) {
+        int pid = ffd_atomic_load(&children.entries[i].pid, FFD_ATOMIC_ACQUIRE);
+        if (pid <= 0)
+            continue;
+#ifdef HAVE_WAITID
+        if (waitid_works) {
+            /* The child might have been reaped by the block above in another thread,
+             * so first check if it's ready and, if it is, lock it */
+            if (!isChildReady(pid, &info) ||
+                    !ffd_atomic_compare_exchange(&children.entries[i].pid, &pid, -1,
+                                                 FFD_ATOMIC_RELAXED, FFD_ATOMIC_RELAXED))
+                continue;
+        }
+#endif
+        if (tryReaping(pid, &payload)) {
+            /* this is our child, send notification and free up this entry */
+            notifyAndFreeInfo(&children.header, &children.entries[i], &payload);
+        }
+    }
+
+    /* try the arrays */
+    array = ffd_atomic_load(&children.header.nextArray, FFD_ATOMIC_ACQUIRE);
+    while (array != NULL) {
+        for (i = 0; i < (int)sizeofarray(array->entries); ++i) {
+            int pid = ffd_atomic_load(&array->entries[i].pid, FFD_ATOMIC_ACQUIRE);
             if (pid <= 0)
                 continue;
 #ifdef HAVE_WAITID
@@ -384,42 +413,18 @@ search_arrays:
                 /* The child might have been reaped by the block above in another thread,
                  * so first check if it's ready and, if it is, lock it */
                 if (!isChildReady(pid, &info) ||
-                        !ffd_atomic_compare_exchange(&children.entries[i].pid, &pid, -1,
+                        !ffd_atomic_compare_exchange(&array->entries[i].pid, &pid, -1,
                                                      FFD_ATOMIC_RELAXED, FFD_ATOMIC_RELAXED))
                     continue;
             }
 #endif
             if (tryReaping(pid, &payload)) {
                 /* this is our child, send notification and free up this entry */
-                notifyAndFreeInfo(&children.header, &children.entries[i], &payload);
+                notifyAndFreeInfo(&array->header, &array->entries[i], &payload);
             }
         }
 
-        /* try the arrays */
-        array = ffd_atomic_load(&children.header.nextArray, FFD_ATOMIC_ACQUIRE);
-        while (array != NULL) {
-            for (i = 0; i < (int)sizeofarray(array->entries); ++i) {
-                int pid = ffd_atomic_load(&array->entries[i].pid, FFD_ATOMIC_ACQUIRE);
-                if (pid <= 0)
-                    continue;
-#ifdef HAVE_WAITID
-                if (waitid_works) {
-                    /* The child might have been reaped by the block above in another thread,
-                     * so first check if it's ready and, if it is, lock it */
-                    if (!isChildReady(pid, &info) ||
-                            !ffd_atomic_compare_exchange(&array->entries[i].pid, &pid, -1,
-                                                         FFD_ATOMIC_RELAXED, FFD_ATOMIC_RELAXED))
-                        continue;
-                }
-#endif
-                if (tryReaping(pid, &payload)) {
-                    /* this is our child, send notification and free up this entry */
-                    notifyAndFreeInfo(&array->header, &array->entries[i], &payload);
-                }
-            }
-
-            array = ffd_atomic_load(&array->header.nextArray, FFD_ATOMIC_ACQUIRE);
-        }
+        array = ffd_atomic_load(&array->header.nextArray, FFD_ATOMIC_ACQUIRE);
     }
 }
 

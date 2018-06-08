@@ -940,6 +940,8 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
 
     Rounds \a d to the nearest integer.
 
+    Rounds half up (e.g. 0.5 -> 1, -0.5 -> 0).
+
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 11A
@@ -949,6 +951,8 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
     \relates <QtGlobal>
 
     Rounds \a d to the nearest integer.
+
+    Rounds half up (e.g. 0.5f -> 1, -0.5f -> 0).
 
     Example:
 
@@ -960,6 +964,8 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
 
     Rounds \a d to the nearest 64-bit integer.
 
+    Rounds half up (e.g. 0.5 -> 1, -0.5 -> 0).
+
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 12A
@@ -969,6 +975,8 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
     \relates <QtGlobal>
 
     Rounds \a d to the nearest 64-bit integer.
+
+    Rounds half up (e.g. 0.5f -> 1, -0.5f -> 0).
 
     Example:
 
@@ -4048,7 +4056,7 @@ Q_GLOBAL_STATIC(QInternal_CallBackTable, global_callback_table)
 
 bool QInternal::registerCallback(Callback cb, qInternalCallback callback)
 {
-    if (cb >= 0 && cb < QInternal::LastCallback) {
+    if (unsigned(cb) < unsigned(QInternal::LastCallback)) {
         QInternal_CallBackTable *cbt = global_callback_table();
         cbt->callbacks.resize(cb + 1);
         cbt->callbacks[cb].append(callback);
@@ -4059,7 +4067,7 @@ bool QInternal::registerCallback(Callback cb, qInternalCallback callback)
 
 bool QInternal::unregisterCallback(Callback cb, qInternalCallback callback)
 {
-    if (cb >= 0 && cb < QInternal::LastCallback) {
+    if (unsigned(cb) < unsigned(QInternal::LastCallback)) {
         if (global_callback_table.exists()) {
             QInternal_CallBackTable *cbt = global_callback_table();
             return (bool) cbt->callbacks[cb].removeAll(callback);

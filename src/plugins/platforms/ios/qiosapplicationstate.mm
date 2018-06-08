@@ -44,6 +44,7 @@
 
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/private/qcore_mac_p.h>
 
 #include <QtGui/private/qguiapplication_p.h>
 
@@ -57,7 +58,13 @@ static void qRegisterApplicationStateNotifications()
     // Map between notifications and corresponding application state. Note that
     // there's no separate notification for moving to UIApplicationStateInactive,
     // so we use UIApplicationWillResignActiveNotification as an intermediate.
-    static QMap<NSNotificationName, UIApplicationState> notifications {
+    using NotificationMap = QMap<NSNotificationName, UIApplicationState>;
+    static auto notifications = qt_apple_isApplicationExtension() ? NotificationMap{
+        { NSExtensionHostWillEnterForegroundNotification, UIApplicationStateInactive },
+        { NSExtensionHostDidBecomeActiveNotification, UIApplicationStateActive },
+        { NSExtensionHostWillResignActiveNotification, UIApplicationStateInactive },
+        { NSExtensionHostDidEnterBackgroundNotification, UIApplicationStateBackground },
+    } : NotificationMap{
         { UIApplicationWillEnterForegroundNotification, UIApplicationStateInactive },
         { UIApplicationDidBecomeActiveNotification, UIApplicationStateActive },
         { UIApplicationWillResignActiveNotification, UIApplicationStateInactive },
@@ -73,16 +80,24 @@ static void qRegisterApplicationStateNotifications()
         }];
     }
 
-    // Initialize correct startup state, which may not be the Qt default (inactive)
-    UIApplicationState startupState = [UIApplication sharedApplication].applicationState;
-    QIOSApplicationState::handleApplicationStateChanged(startupState, QLatin1String("Application loaded"));
+    if (qt_apple_isApplicationExtension()) {
+        // Extensions are not allowed to access UIApplication, so we assume the state is active
+        QIOSApplicationState::handleApplicationStateChanged(UIApplicationStateActive,
+            QLatin1String("Extension loaded, assuming state is active"));
+    } else {
+        // Initialize correct startup state, which may not be the Qt default (inactive)
+        UIApplicationState startupState = [UIApplication sharedApplication].applicationState;
+        QIOSApplicationState::handleApplicationStateChanged(startupState, QLatin1String("Application loaded"));
+    }
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterApplicationStateNotifications)
 
 QIOSApplicationState::QIOSApplicationState()
 {
-    UIApplicationState startupState = [UIApplication sharedApplication].applicationState;
-    QIOSApplicationState::handleApplicationStateChanged(startupState, QLatin1String("Application launched"));
+    if (!qt_apple_isApplicationExtension()) {
+        UIApplicationState startupState = [UIApplication sharedApplication].applicationState;
+        QIOSApplicationState::handleApplicationStateChanged(startupState, QLatin1String("Application launched"));
+    }
 }
 
 void QIOSApplicationState::handleApplicationStateChanged(UIApplicationState uiState, const QString &reason)

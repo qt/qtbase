@@ -2626,7 +2626,7 @@ QMimeData *QTableWidget::mimeData(const QList<QTableWidgetItem*> items) const
 bool QTableWidget::dropMimeData(int row, int column, const QMimeData *data, Qt::DropAction action)
 {
     QModelIndex idx;
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     if (dropIndicatorPosition() == QAbstractItemView::OnItem) {
         // QAbstractTableModel::dropMimeData will overwrite on the index if row == -1 and column == -1
         idx = model()->index(row, column);
@@ -2709,7 +2709,7 @@ bool QTableWidget::event(QEvent *e)
     return QTableView::event(e);
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 /*! \reimp */
 void QTableWidget::dropEvent(QDropEvent *event) {
     Q_D(QTableWidget);

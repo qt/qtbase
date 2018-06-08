@@ -56,9 +56,9 @@
 
 #include <QtCore/QObject>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(draganddrop);
 
-#ifndef QT_NO_DRAGANDDROP
+QT_BEGIN_NAMESPACE
 
 class QMouseEvent;
 class QWindow;
@@ -135,8 +135,6 @@ protected:
     virtual void move(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardModifiers mods) override;
     virtual void drop(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardModifiers mods) override;
 };
-
-#endif // QT_NO_DRAGANDDROP
 
 QT_END_NAMESPACE
 

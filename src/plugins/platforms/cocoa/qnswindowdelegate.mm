@@ -40,6 +40,7 @@
 #include "qnswindowdelegate.h"
 #include "qcocoahelpers.h"
 #include "qcocoawindow.h"
+#include "qcocoascreen.h"
 
 #include <QDebug>
 #include <QtCore/private/qcore_mac_p.h>
@@ -72,15 +73,24 @@ static QRegExp whitespaceRegex = QRegExp(QStringLiteral("\\s*"));
     Overridden to ensure that the zoomed state always results in a maximized
     window, which would otherwise not be the case for borderless windows.
 */
-- (NSRect)windowWillUseStandardFrame:(NSWindow *)window defaultFrame:(NSRect)newFrame
+- (NSRect)windowWillUseStandardFrame:(NSWindow *)window defaultFrame:(NSRect)proposedFrame
 {
-    Q_UNUSED(newFrame);
-
-    // We explicitly go through the QScreen API here instead of just using
-    // window.screen.visibleFrame directly, as that ensures we have the same
-    // behavior for both use-cases/APIs.
+    Q_UNUSED(proposedFrame);
     Q_ASSERT(window == m_cocoaWindow->nativeWindow());
-    return NSRectFromCGRect(m_cocoaWindow->screen()->availableGeometry().toCGRect());
+
+    // We compute the maximized state based on the maximum size, and
+    // the current position of the window. This may result in the window
+    // geometry falling outside of the current screen's available geometry,
+    // e.g. when there is not maximize size set, but this is okey, AppKit
+    // will then shift and possibly clip the geometry for us.
+    const QWindow *w = m_cocoaWindow->window();
+    QRect maximizedRect = QRect(w->framePosition(), w->maximumSize());
+
+    // QWindow::maximumSize() refers to the client size,
+    // but AppKit expects the full frame size.
+    maximizedRect.adjust(0, 0, 0, w->frameMargins().top());
+
+    return QCocoaScreen::mapToNative(maximizedRect);
 }
 
 - (BOOL)window:(NSWindow *)window shouldPopUpDocumentPathMenu:(NSMenu *)menu

@@ -411,7 +411,7 @@ public:
 #ifndef QT_NO_CLIPBOARD
     QXcbClipboard *clipboard() const { return m_clipboard; }
 #endif
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     QXcbDrag *drag() const { return m_drag; }
 #endif
 
@@ -653,7 +653,7 @@ private:
 #ifndef QT_NO_CLIPBOARD
     QXcbClipboard *m_clipboard = nullptr;
 #endif
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     QXcbDrag *m_drag = nullptr;
 #endif
     QScopedPointer<QXcbWMSupport> m_wmSupport;

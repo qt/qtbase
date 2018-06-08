@@ -50,7 +50,6 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformintegration.h>
-#include <qpa/qplatformdrag.h>
 
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/QStandardPaths>
@@ -87,8 +86,12 @@
 #include "private/qinputdevicemanager_p.h"
 #include "private/qtouchdevice_p.h"
 
-#include "private/qdnd_p.h"
 #include <qpa/qplatformthemefactory_p.h>
+
+#if QT_CONFIG(draganddrop)
+#include <qpa/qplatformdrag.h>
+#include <private/qdnd_p.h>
+#endif
 
 #ifndef QT_NO_CURSOR
 #include <qpa/qplatformcursor.h>
@@ -3037,7 +3040,7 @@ void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::E
     QCoreApplication::sendSpontaneousEvent(window, &exposeEvent);
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 
 /*! \internal
 
@@ -3146,7 +3149,7 @@ QPlatformDropQtResponse QGuiApplicationPrivate::processDrop(QWindow *w, const QM
     return response;
 }
 
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 #ifndef QT_NO_CLIPBOARD
 /*!
@@ -3962,7 +3965,7 @@ void QGuiApplicationPrivate::notifyThemeChanged()
     }
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 void QGuiApplicationPrivate::notifyDragStarted(const QDrag *drag)
 {
     Q_UNUSED(drag)

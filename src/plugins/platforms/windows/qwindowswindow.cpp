@@ -1278,7 +1278,7 @@ void QWindowsWindow::setDropSiteEnabled(bool dropEnabled)
         RevokeDragDrop(m_data.hwnd);
         m_dropTarget = 0;
     }
-#endif // !QT_NO_CLIPBOARD && !QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(clipboard) && QT_CONFIG(draganddrop)
 }
 
 // Returns topmost QWindowsWindow ancestor even if there are embedded windows in the chain.
@@ -2241,6 +2241,15 @@ void QWindowsWindow::requestActivateWindow()
                 foregroundThread = GetWindowThreadProcessId(foregroundWindow, NULL);
                 if (foregroundThread && foregroundThread != currentThread)
                     attached = AttachThreadInput(foregroundThread, currentThread, TRUE) == TRUE;
+                if (attached) {
+                    if (!window()->flags().testFlag(Qt::WindowStaysOnBottomHint)
+                        && !window()->flags().testFlag(Qt::WindowStaysOnTopHint)
+                        && window()->type() != Qt::ToolTip) {
+                        const UINT swpFlags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER;
+                        SetWindowPos(m_data.hwnd, HWND_TOPMOST, 0, 0, 0, 0, swpFlags);
+                        SetWindowPos(m_data.hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, swpFlags);
+                    }
+                }
             }
         }
         SetForegroundWindow(m_data.hwnd);

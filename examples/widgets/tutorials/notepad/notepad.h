@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -102,6 +102,14 @@ private slots:
     void on_actionRedo_triggered();
 
     void on_actionFont_triggered();
+
+    void on_actionBold_triggered();
+
+    void on_actionUnderline_triggered();
+
+    void on_actionItalic_triggered();
+
+    void on_actionAbout_triggered();
 
 //! [6]
 private:

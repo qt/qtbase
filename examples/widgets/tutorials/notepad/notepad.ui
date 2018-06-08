@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>524</width>
-    <height>300</height>
+    <width>800</width>
+    <height>400</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>524</width>
+     <width>800</width>
      <height>25</height>
     </rect>
    </property>
@@ -74,7 +74,13 @@
    <addaction name="actionPaste"/>
    <addaction name="actionUndo"/>
    <addaction name="actionRedo"/>
+   <addaction name="separator"/>
    <addaction name="actionFont"/>
+   <addaction name="actionBold"/>
+   <addaction name="actionItalic"/>
+   <addaction name="actionUnderline"/>
+   <addaction name="separator"/>
+   <addaction name="actionAbout"/>
    <addaction name="separator"/>
    <addaction name="actionExit"/>
   </widget>
@@ -87,104 +93,223 @@
    <property name="text">
     <string>New</string>
    </property>
+   <property name="toolTip">
+    <string>New text document</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
   </action>
   <action name="actionOpen">
    <property name="icon">
-    <iconset>
+    <iconset resource="notepad.qrc">
      <normaloff>:/images/open.png</normaloff>:/images/open.png</iconset>
    </property>
    <property name="text">
     <string>Open</string>
    </property>
+   <property name="toolTip">
+    <string>Open file</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset>
+    <iconset resource="notepad.qrc">
      <normaloff>:/images/save.png</normaloff>:/images/save.png</iconset>
    </property>
    <property name="text">
     <string>Save</string>
    </property>
+   <property name="toolTip">
+    <string>Save file</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
   </action>
   <action name="actionSave_as">
    <property name="icon">
-    <iconset>
+    <iconset resource="notepad.qrc">
      <normaloff>:/images/save_as.png</normaloff>:/images/save_as.png</iconset>
    </property>
    <property name="text">
     <string>Save as</string>
    </property>
+   <property name="toolTip">
+    <string>Save file as</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+S</string>
+   </property>
   </action>
   <action name="actionPrint">
    <property name="icon">
-    <iconset>
+    <iconset resource="notepad.qrc">
      <normaloff>:/images/print.png</normaloff>:/images/print.png</iconset>
    </property>
    <property name="text">
     <string>Print</string>
    </property>
+   <property name="toolTip">
+    <string>Print file</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
   </action>
   <action name="actionExit">
    <property name="icon">
-    <iconset>
+    <iconset theme="exit.png" resource="notepad.qrc">
      <normaloff>:/images/exit.png</normaloff>:/images/exit.png</iconset>
    </property>
    <property name="text">
     <string>Exit</string>
    </property>
+   <property name="toolTip">
+    <string>Exit notepad</string>
+   </property>
+   <property name="shortcut">
+   </property>
   </action>
   <action name="actionCopy">
    <property name="icon">
-    <iconset>
+    <iconset resource="notepad.qrc">
      <normaloff>:/images/copy.png</normaloff>:/images/copy.png</iconset>
    </property>
    <property name="text">
     <string>Copy</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
   </action>
   <action name="actionCut">
    <property name="icon">
-    <iconset>
+    <iconset resource="notepad.qrc">
      <normaloff>:/images/cut.png</normaloff>:/images/cut.png</iconset>
    </property>
    <property name="text">
     <string>Cut</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
+   </property>
   </action>
   <action name="actionPaste">
    <property name="icon">
-    <iconset>
+    <iconset resource="notepad.qrc">
      <normaloff>:/images/paste.png</normaloff>:/images/paste.png</iconset>
    </property>
    <property name="text">
     <string>Paste</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
   </action>
   <action name="actionUndo">
    <property name="icon">
-    <iconset>
+    <iconset resource="notepad.qrc">
      <normaloff>:/images/edit_undo.png</normaloff>:/images/edit_undo.png</iconset>
    </property>
    <property name="text">
     <string>Undo</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
   </action>
   <action name="actionRedo">
    <property name="icon">
-    <iconset>
+    <iconset resource="notepad.qrc">
      <normaloff>:/images/edit_redo.png</normaloff>:/images/edit_redo.png</iconset>
    </property>
    <property name="text">
     <string>Redo</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
+   </property>
   </action>
   <action name="actionFont">
    <property name="icon">
-    <iconset>
+    <iconset resource="notepad.qrc">
      <normaloff>:/images/font.png</normaloff>:/images/font.png</iconset>
    </property>
    <property name="text">
     <string>Font</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionItalic">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="notepad.qrc">
+     <normaloff>:/images/italic.png</normaloff>:/images/italic.png</iconset>
+   </property>
+   <property name="text">
+    <string>Italic</string>
+   </property>
+   <property name="toolTip">
+    <string>Italic font</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
+   </property>
+  </action>
+  <action name="actionBold">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="notepad.qrc">
+     <normaloff>:/images/bold.png</normaloff>:/images/bold.png</iconset>
+   </property>
+   <property name="text">
+    <string>actionBold</string>
+   </property>
+   <property name="toolTip">
+    <string>Bold</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+B</string>
+   </property>
+  </action>
+  <action name="actionUnderline">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="notepad.qrc">
+     <normaloff>:/images/underline.png</normaloff>:/images/underline.png</iconset>
+   </property>
+   <property name="text">
+    <string>Underline</string>
+   </property>
+   <property name="toolTip">
+    <string>Underline</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+U</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="notepad.qrc">
+     <normaloff>:/images/info.png</normaloff>:/images/info.png</iconset>
+   </property>
+   <property name="text">
+    <string>About</string>
+   </property>
+   <property name="toolTip">
+    <string>About Notepad</string>
    </property>
   </action>
  </widget>

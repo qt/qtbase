@@ -219,14 +219,17 @@ QThreadPrivate::~QThreadPrivate()
     It is important to remember that a QThread instance \l{QObject#Thread
     Affinity}{lives in} the old thread that instantiated it, not in the
     new thread that calls run(). This means that all of QThread's queued
-    slots will execute in the old thread. Thus, a developer who wishes to
-    invoke slots in the new thread must use the worker-object approach; new
-    slots should not be implemented directly into a subclassed QThread.
+    slots and \l {QMetaObject::invokeMethod()}{invoked methods} will execute
+    in the old thread. Thus, a developer who wishes to invoke slots in the
+    new thread must use the worker-object approach; new slots should not be
+    implemented directly into a subclassed QThread.
 
-    When subclassing QThread, keep in mind that the constructor executes in
-    the old thread while run() executes in the new thread. If a member
-    variable is accessed from both functions, then the variable is accessed
-    from two different threads. Check that it is safe to do so.
+    Unlike queued slots or invoked methods, methods called directly on the
+    QThread object will execute in the thread that calls the method. When
+    subclassing QThread, keep in mind that the constructor executes in the
+    old thread while run() executes in the new thread. If a member variable
+    is accessed from both functions, then the variable is accessed from two
+    different threads. Check that it is safe to do so.
 
     \note Care must be taken when interacting with objects across different
     threads. See \l{Synchronizing Threads} for details.

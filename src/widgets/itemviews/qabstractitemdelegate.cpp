@@ -63,9 +63,11 @@
 #include <private/qabstractitemdelegate_p.h>
 
 #include <qpa/qplatformintegration.h>
+#if QT_CONFIG(draganddrop)
 #include <qpa/qplatformdrag.h>
-#include <private/qguiapplication_p.h>
 #include <private/qdnd_p.h>
+#endif
+#include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -515,7 +517,7 @@ bool QAbstractItemDelegatePrivate::editorEventFilter(QObject *object, QEvent *ev
                     return false;
                 w = w->parentWidget();
             }
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
             // The window may lose focus during an drag operation.
             // i.e when dragging involves the taskbar on Windows.
             QPlatformDrag *platformDrag = QGuiApplicationPrivate::instance()->platformIntegration()->drag();

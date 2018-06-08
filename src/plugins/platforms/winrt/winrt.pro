@@ -16,7 +16,6 @@ SOURCES = \
     qwinrtcanvas.cpp \
     qwinrtclipboard.cpp \
     qwinrtcursor.cpp \
-    qwinrtdrag.cpp \
     qwinrteglcontext.cpp \
     qwinrteventdispatcher.cpp \
     qwinrtfiledialoghelper.cpp \
@@ -35,7 +34,6 @@ HEADERS = \
     qwinrtcanvas.h \
     qwinrtclipboard.h \
     qwinrtcursor.h \
-    qwinrtdrag.h \
     qwinrteglcontext.h \
     qwinrteventdispatcher.h \
     qwinrtfiledialoghelper.h \
@@ -55,9 +53,9 @@ WINRT_SDK_VERSION = $$member($$list($$split(WINRT_SDK_VERSION_STRING, .)), 2)
 lessThan(WINRT_SDK_VERSION, 14322): DEFINES += QT_WINRT_LIMITED_DRAGANDDROP
 greaterThan(WINRT_SDK_VERSION, 14393): DEFINES += QT_WINRT_DISABLE_PHONE_COLORS
 
-contains(DEFINES, QT_NO_DRAGANDDROP) {
-    SOURCES -= qwinrtdrag.cpp
-    HEADERS -= qwinrtdrag.h
+qtConfig(draganddrop) {
+    SOURCES += qwinrtdrag.cpp
+    HEADERS += qwinrtdrag.h
 }
 
 qtConfig(accessibility): include($$PWD/uiautomation/uiautomation.pri)

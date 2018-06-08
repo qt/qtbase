@@ -42,7 +42,7 @@
 #include "qwinrtbackingstore.h"
 #include "qwinrtinputcontext.h"
 #include "qwinrtcursor.h"
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 #include "qwinrtdrag.h"
 #endif
 #include "qwinrtwindow.h"
@@ -568,7 +568,7 @@ QWinRTScreen::QWinRTScreen()
     hr = d->canvas.As(&uiElement);
     Q_ASSERT_SUCCEEDED(hr);
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     QWinRTDrag::instance()->setUiElement(uiElement);
 #endif
     hr = window->put_Content(uiElement.Get());
@@ -852,7 +852,7 @@ void QWinRTScreen::addWindow(QWindow *window)
     handleExpose();
     QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     QWinRTDrag::instance()->setDropTarget(window);
 #endif
 }
@@ -872,7 +872,7 @@ void QWinRTScreen::removeWindow(QWindow *window)
     if (wasTopWindow && type != Qt::Popup && type != Qt::ToolTip && type != Qt::Tool)
         QWindowSystemInterface::handleWindowActivated(nullptr, Qt::OtherFocusReason);
     QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     if (wasTopWindow)
         QWinRTDrag::instance()->setDropTarget(topWindow());
 #endif

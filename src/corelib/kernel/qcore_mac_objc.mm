@@ -162,6 +162,34 @@ QDebug operator<<(QDebug debug, const QMacAutoReleasePool *pool)
 }
 #endif // !QT_NO_DEBUG_STREAM
 
+bool qt_apple_isApplicationExtension()
+{
+    static bool isExtension = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSExtension"];
+    return isExtension;
+}
+
+#if !defined(QT_BOOTSTRAPPED) && !defined(Q_OS_WATCHOS)
+AppleApplication *qt_apple_sharedApplication()
+{
+    // Application extensions are not allowed to access the shared application
+    if (qt_apple_isApplicationExtension()) {
+        qWarning() << "accessing the shared" << [AppleApplication class]
+            << "is not allowed in application extensions";
+
+        // In practice the application is actually available, but the the App
+        // review process will likely catch uses of it, so we return nil just
+        // in case, unless we don't care about being App Store compliant.
+#if QT_CONFIG(appstore_compliant)
+        return nil;
+#endif
+    }
+
+    // We use performSelector so that building with -fapplication-extension will
+    // not mistakenly think we're using the shared application in extensions.
+    return [[AppleApplication class] performSelector:@selector(sharedApplication)];
+}
+#endif
+
 #ifdef Q_OS_MACOS
 /*
     Ensure that Objective-C objects auto-released in main(), directly or indirectly,

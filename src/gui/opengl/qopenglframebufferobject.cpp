@@ -1424,14 +1424,17 @@ QImage QOpenGLFramebufferObject::toImage(bool flipped, int colorAttachmentIndex)
     // qt_gl_read_framebuffer doesn't work on a multisample FBO
     if (format().samples() != 0) {
         QRect rect(QPoint(0, 0), size());
+        QOpenGLFramebufferObjectFormat fmt;
         if (extraFuncs->hasOpenGLFeature(QOpenGLFunctions::MultipleRenderTargets)) {
-            QOpenGLFramebufferObject temp(d->colorAttachments[colorAttachmentIndex].size, QOpenGLFramebufferObjectFormat());
+            fmt.setInternalTextureFormat(d->colorAttachments[colorAttachmentIndex].internalFormat);
+            QOpenGLFramebufferObject temp(d->colorAttachments[colorAttachmentIndex].size, fmt);
             blitFramebuffer(&temp, rect, const_cast<QOpenGLFramebufferObject *>(this), rect,
                             GL_COLOR_BUFFER_BIT, GL_NEAREST,
                             colorAttachmentIndex, 0);
             image = temp.toImage(flipped);
         } else {
-            QOpenGLFramebufferObject temp(size(), QOpenGLFramebufferObjectFormat());
+            fmt.setInternalTextureFormat(d->colorAttachments[0].internalFormat);
+            QOpenGLFramebufferObject temp(size(), fmt);
             blitFramebuffer(&temp, rect, const_cast<QOpenGLFramebufferObject *>(this), rect);
             image = temp.toImage(flipped);
         }

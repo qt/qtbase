@@ -63,7 +63,9 @@
 #include "qtranslator.h"
 #include "qvariant.h"
 #include "qwidget.h"
-#include "private/qdnd_p.h"
+#if QT_CONFIG(draganddrop)
+#include <private/qdnd_p.h>
+#endif
 #include "private/qguiapplication_p.h"
 #include "qcolormap.h"
 #include "qdebug.h"
@@ -832,7 +834,7 @@ QApplication::~QApplication()
     delete QApplicationPrivate::app_style;
     QApplicationPrivate::app_style = 0;
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     if (qt_is_gui_used)
         delete QDragManager::self();
 #endif
@@ -3440,7 +3442,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         break;
 #endif
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     case QEvent::DragEnter: {
             QWidget* w = static_cast<QWidget *>(receiver);
             QDragEnterEvent *dragEvent = static_cast<QDragEnterEvent *>(e);
@@ -4488,7 +4490,7 @@ void QApplicationPrivate::notifyThemeChanged()
     qt_init_tooltip_palette();
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 void QApplicationPrivate::notifyDragStarted(const QDrag *drag)
 {
     QGuiApplicationPrivate::notifyDragStarted(drag);
@@ -4499,7 +4501,7 @@ void QApplicationPrivate::notifyDragStarted(const QDrag *drag)
     if (qt_button_down && !qt_button_down->inherits("QQuickWidget"))
         qt_button_down = nullptr;
 }
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 #ifndef QT_NO_GESTURES
 QGestureManager* QGestureManager::instance()

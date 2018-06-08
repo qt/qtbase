@@ -772,7 +772,7 @@ void QColumnView::initializeColumn(QAbstractItemView *column) const
     column->setMinimumWidth(100);
     column->setAttribute(Qt::WA_MacShowFocusRect, false);
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     column->setDragDropMode(dragDropMode());
     column->setDragDropOverwriteMode(dragDropOverwriteMode());
     column->setDropIndicatorShown(showDropIndicator());

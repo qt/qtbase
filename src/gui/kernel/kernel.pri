@@ -13,7 +13,6 @@ HEADERS += \
         kernel/qwindowsysteminterface.h \
         kernel/qwindowsysteminterface_p.h \
         kernel/qplatformintegration.h \
-        kernel/qplatformdrag.h \
         kernel/qplatformscreen.h \
         kernel/qplatformscreen_p.h \
         kernel/qplatforminputcontext.h \
@@ -33,8 +32,6 @@ HEADERS += \
         kernel/qplatformclipboard.h \
         kernel/qplatformnativeinterface.h \
         kernel/qplatformmenu.h \
-        kernel/qshapedpixmapdndwindow_p.h \
-        kernel/qsimpledrag_p.h \
         kernel/qsurfaceformat.h \
         kernel/qguiapplication.h \
         kernel/qguiapplication_p.h \
@@ -46,12 +43,11 @@ HEADERS += \
         kernel/qclipboard.h \
         kernel/qcursor.h \
         kernel/qcursor_p.h \
-        kernel/qdrag.h \
-        kernel/qdnd_p.h \
         kernel/qevent.h \
         kernel/qevent_p.h \
         kernel/qinputmethod.h \
         kernel/qinputmethod_p.h \
+        kernel/qinternalmimedata_p.h \
         kernel/qkeysequence.h \
         kernel/qkeysequence_p.h \
         kernel/qkeymapper_p.h \
@@ -89,7 +85,6 @@ SOURCES += \
         kernel/qplatforminputcontextplugin.cpp \
         kernel/qplatforminputcontext.cpp \
         kernel/qplatformintegration.cpp \
-        kernel/qplatformdrag.cpp \
         kernel/qplatformscreen.cpp \
         kernel/qplatformintegrationfactory.cpp \
         kernel/qplatformintegrationplugin.cpp \
@@ -102,8 +97,6 @@ SOURCES += \
         kernel/qplatformclipboard.cpp \
         kernel/qplatformnativeinterface.cpp \
         kernel/qsessionmanager.cpp \
-        kernel/qshapedpixmapdndwindow.cpp \
-        kernel/qsimpledrag.cpp \
         kernel/qsurfaceformat.cpp \
         kernel/qguiapplication.cpp \
         kernel/qwindow.cpp \
@@ -112,10 +105,9 @@ SOURCES += \
         kernel/qsurface.cpp \
         kernel/qclipboard.cpp \
         kernel/qcursor.cpp \
-        kernel/qdrag.cpp \
-        kernel/qdnd.cpp \
         kernel/qevent.cpp \
         kernel/qinputmethod.cpp \
+        kernel/qinternalmimedata.cpp \
         kernel/qkeysequence.cpp \
         kernel/qkeymapper.cpp \
         kernel/qpalette.cpp \
@@ -138,6 +130,21 @@ SOURCES += \
         kernel/qinputdevicemanager.cpp \
         kernel/qhighdpiscaling.cpp
 
+qtConfig(draganddrop) {
+    HEADERS += \
+        kernel/qdnd_p.h \
+        kernel/qdrag.h \
+        kernel/qplatformdrag.h \
+        kernel/qshapedpixmapdndwindow_p.h \
+        kernel/qsimpledrag_p.h
+
+    SOURCES += \
+        kernel/qdnd.cpp \
+        kernel/qdrag.cpp \
+        kernel/qplatformdrag.cpp \
+        kernel/qshapedpixmapdndwindow.cpp \
+        kernel/qsimpledrag.cpp
+}
 
 qtConfig(opengl) {
     HEADERS += \

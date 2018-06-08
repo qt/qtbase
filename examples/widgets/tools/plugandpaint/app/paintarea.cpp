@@ -52,16 +52,11 @@
 #include "interfaces.h"
 #include "paintarea.h"
 
-#include <QPainter>
 #include <QMouseEvent>
+#include <QPainter>
 
 PaintArea::PaintArea(QWidget *parent) :
-    QWidget(parent),
-    theImage(500, 400, QImage::Format_RGB32),
-    color(Qt::blue),
-    thickness(3),
-    brushInterface(0),
-    lastPos(-1, -1)
+    QWidget(parent)
 {
     setAttribute(Qt::WA_StaticContents);
     setAttribute(Qt::WA_NoBackground);

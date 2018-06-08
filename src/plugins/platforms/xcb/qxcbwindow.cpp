@@ -49,7 +49,9 @@
 #include "qxcbintegration.h"
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
+#if QT_CONFIG(draganddrop)
 #include "qxcbdrag.h"
+#endif
 #include "qxcbkeyboard.h"
 #include "qxcbimage.h"
 #include "qxcbwmsupport.h"
@@ -539,7 +541,7 @@ void QXcbWindow::create()
     XSync(static_cast<Display*>(platformScreen->connection()->xlib_display()), false);
 #endif
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     connection()->drag()->dndEnable(this, true);
 #endif
 
@@ -1981,7 +1983,7 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
             qCWarning(lcQpaXcb, "Unhandled WM_PROTOCOLS (%s)",
                       connection()->atomName(protocolAtom).constData());
         }
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     } else if (event->type == atom(QXcbAtom::XdndEnter)) {
         connection()->drag()->handleEnter(this, event);
     } else if (event->type == atom(QXcbAtom::XdndPosition)) {

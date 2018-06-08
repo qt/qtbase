@@ -201,7 +201,7 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     void dragMoveEvent(QDragMoveEvent *event) override;
 #endif
     bool viewportEvent(QEvent *event) override;

@@ -268,7 +268,7 @@ struct QWExtra {
 
     // *************************** Platform specific values (bit fields first) **********
 #if 0 /* Used to be included in Qt4 for Q_WS_WIN */ // <----------------------------------------------------------- WIN
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     QOleDropTarget *dropTarget; // drop target
     QList<QPointer<QWidget> > oleDropWidgets;
 #endif
@@ -800,7 +800,7 @@ public:
     bool shouldShowMaximizeButton();
     void winUpdateIsOpaque();
     void reparentChildren();
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     QOleDropTarget *registerOleDnd(QWidget *widget);
     void unregisterOleDnd(QWidget *widget, QOleDropTarget *target);
 #endif

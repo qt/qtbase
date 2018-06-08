@@ -345,15 +345,23 @@ Q_DECL_RELAXED_CONSTEXPR inline QPointF &QPointF::operator*=(qreal c)
     xp*=c; yp*=c; return *this;
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
+QT_WARNING_DISABLE_GCC("-Wfloat-equal")
+
 Q_DECL_CONSTEXPR inline bool operator==(const QPointF &p1, const QPointF &p2)
 {
-    return qFuzzyIsNull(p1.xp - p2.xp) && qFuzzyIsNull(p1.yp - p2.yp);
+    return ((!p1.xp && !p1.yp) || (!p2.xp && !p2.yp))
+         ? (qFuzzyIsNull(p1.xp - p2.xp) && qFuzzyIsNull(p1.yp - p2.yp))
+         : (qFuzzyCompare(p1.xp, p2.xp) && qFuzzyCompare(p1.yp, p2.yp));
 }
 
 Q_DECL_CONSTEXPR inline bool operator!=(const QPointF &p1, const QPointF &p2)
 {
-    return !qFuzzyIsNull(p1.xp - p2.xp) || !qFuzzyIsNull(p1.yp - p2.yp);
+    return !(p1 == p2);
 }
+
+QT_WARNING_POP
 
 Q_DECL_CONSTEXPR inline const QPointF operator+(const QPointF &p1, const QPointF &p2)
 {

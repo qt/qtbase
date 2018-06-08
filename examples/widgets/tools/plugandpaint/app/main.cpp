@@ -50,8 +50,9 @@
 
 //! [0]
 #include "mainwindow.h"
-#include <QtPlugin>
+
 #include <QApplication>
+#include <QtPlugin>
 
 Q_IMPORT_PLUGIN(BasicToolsPlugin)
 

@@ -377,7 +377,7 @@ QStringList QFseventsFileSystemWatcherEngine::addPaths(const QStringList &paths,
 
         for (PathRefCounts::const_iterator i = watchingState.watchedPaths.begin(),
                 ei = watchingState.watchedPaths.end(); i != ei; ++i) {
-            if (watchedPath.startsWith(i.key())) {
+            if (watchedPath.startsWith(i.key() % QDir::separator())) {
                 watchedPath = i.key();
                 break;
             }

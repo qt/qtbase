@@ -162,6 +162,7 @@
 #if QT_CONFIG(lineedit)
 #include "QtWidgets/qlineedit.h"
 #endif
+#include "QtCore/qdir.h"
 
 QT_BEGIN_NAMESPACE
 

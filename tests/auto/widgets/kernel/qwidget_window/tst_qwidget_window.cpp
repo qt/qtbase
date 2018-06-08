@@ -81,7 +81,7 @@ private slots:
     void tst_paintEventOnSecondShow();
     void tst_paintEventOnResize_QTBUG50796();
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     void tst_dnd();
 #endif
 
@@ -393,7 +393,7 @@ void tst_QWidget_window::tst_paintEventOnResize_QTBUG50796()
     QTRY_COMPARE(native->paintEventCount, 1); // Only one paint event must occur
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 
 /* DnD test for QWidgetWindow (handleDrag*Event() functions).
  * Simulates a drop onto a QWidgetWindow of a top level widget

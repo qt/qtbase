@@ -50,7 +50,7 @@ private slots:
     void basicTest_data();
     void basicTest();
 
-    void watchDirectory_data() { basicTest_data(); }
+    void watchDirectory_data();
     void watchDirectory();
 
     void addPath();
@@ -250,6 +250,16 @@ void tst_QFileSystemWatcher::basicTest()
     QVERIFY(testFile.remove());
 }
 
+void tst_QFileSystemWatcher::watchDirectory_data()
+{
+    QTest::addColumn<QString>("backend");
+    QTest::addColumn<QStringList>("testDirNames");
+    const QStringList testDirNames = {QStringLiteral("testdir"), QStringLiteral("testdir2")};
+
+    QTest::newRow("native backend") << "native" << testDirNames;
+    QTest::newRow("poller backend") << "poller" << testDirNames;
+}
+
 void tst_QFileSystemWatcher::watchDirectory()
 {
     QFETCH(QString, backend);
@@ -257,18 +267,25 @@ void tst_QFileSystemWatcher::watchDirectory()
     QTemporaryDir temporaryDirectory(m_tempDirPattern);
     QVERIFY2(temporaryDirectory.isValid(), qPrintable(temporaryDirectory.errorString()));
 
-    QDir temporaryDir(temporaryDirectory.path());
-    const QString testDirName = QStringLiteral("testDir");
-    QVERIFY(temporaryDir.mkdir(testDirName));
-    QDir testDir = temporaryDir;
-    QVERIFY(testDir.cd(testDirName));
+    QFETCH(QStringList, testDirNames);
 
-    QString testFileName = testDir.filePath("testFile.txt");
-    QFile::remove(testFileName);
+    QDir temporaryDir(temporaryDirectory.path());
+    QStringList testDirs;
+    QStringList testFiles;
+
+    for (const auto &testDirName : testDirNames) {
+        QVERIFY(temporaryDir.mkdir(testDirName));
+        QDir testDir = temporaryDir;
+        QVERIFY(testDir.cd(testDirName));
+
+        testFiles.append(testDir.filePath("testFile.txt"));
+        QFile::remove(testFiles.last());
+        testDirs.append(testDir.absolutePath());
+    }
 
     QFileSystemWatcher watcher;
     watcher.setObjectName(QLatin1String("_qt_autotest_force_engine_") + backend);
-    QVERIFY(watcher.addPath(testDir.absolutePath()));
+    QVERIFY(watcher.addPaths(testDirs).isEmpty());
 
     QSignalSpy changedSpy(&watcher, &QFileSystemWatcher::directoryChanged);
     QVERIFY(changedSpy.isValid());
@@ -280,13 +297,13 @@ void tst_QFileSystemWatcher::watchDirectory()
     // the polling engine. From what I know, FAT32 has a 2 second resolution. So we have to
     // wait before modifying the directory...
     QTest::qWait(2000);
-    QFile testFile(testFileName);
-    QString fileName;
-
     // remove the watch, should not get notification of a new file
-    QVERIFY(watcher.removePath(testDir.absolutePath()));
-    QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Truncate));
-    testFile.close();
+    QVERIFY(watcher.removePaths(testDirs).isEmpty());
+    for (const auto &testFileName : testFiles) {
+        QFile testFile(testFileName);
+        QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Truncate));
+        testFile.close();
+    }
 
     // waiting max 5 seconds for notification for file recreationg to trigger
     timer.start(5000);
@@ -294,26 +311,37 @@ void tst_QFileSystemWatcher::watchDirectory()
 
     QCOMPARE(changedSpy.count(), 0);
 
-    QVERIFY(watcher.addPath(testDir.absolutePath()));
+    QVERIFY(watcher.addPaths(testDirs).isEmpty());
 
     // remove the file again, should get a signal from the watcher
-    QVERIFY(testFile.remove());
+    for (const auto &testFileName : testFiles)
+        QVERIFY(QFile::remove(testFileName));
 
     timer.start(5000);
     eventLoop.exec();
 
     // remove the directory, should get a signal from the watcher
-    QVERIFY(temporaryDir.rmdir(testDirName));
+    for (const auto &testDirName : testDirs)
+        QVERIFY(temporaryDir.rmdir(testDirName));
+
+    QMap<QString, int> signalCounter;
+    for (const auto &testDirName : testDirs)
+        signalCounter[testDirName] = 0;
 
     // waiting max 5 seconds for notification for directory removal to trigger
-    QTRY_COMPARE(changedSpy.count(), 2);
-    QCOMPARE(changedSpy.at(0).count(), 1);
-    QCOMPARE(changedSpy.at(1).count(), 1);
+    QTRY_COMPARE(changedSpy.count(), testDirs.size() * 2);
+    for (int i = 0; i < changedSpy.count(); i++) {
+        const auto &signal = changedSpy.at(i);
+        QCOMPARE(signal.count(), 1);
 
-    fileName = changedSpy.at(0).at(0).toString();
-    QCOMPARE(fileName, testDir.absolutePath());
-    fileName = changedSpy.at(1).at(0).toString();
-    QCOMPARE(fileName, testDir.absolutePath());
+        auto it = signalCounter.find(signal.at(0).toString());
+        QVERIFY(it != signalCounter.end());
+        QVERIFY(it.value() < 2);
+        it.value()++;
+    }
+
+    for (const auto &count : signalCounter)
+        QCOMPARE(count, 2);
 
     // flush pending signals (like the one from the rmdir above)
     timer.start(5000);
@@ -321,9 +349,12 @@ void tst_QFileSystemWatcher::watchDirectory()
     changedSpy.clear();
 
     // recreate the file, we should not get any notification
-    if (!temporaryDir.mkdir(testDirName))
-        QSKIP(qPrintable(QString::fromLatin1("Failed to recreate directory '%1' under '%2', skipping final test.").
-                         arg(testDirName, temporaryDir.absolutePath())));
+    for (const auto &testDirName : testDirNames) {
+        if (!temporaryDir.mkdir(testDirName)) {
+            QSKIP(qPrintable(QString::fromLatin1("Failed to recreate directory '%1' under '%2', skipping final test.").
+                             arg(testDirName, temporaryDir.absolutePath())));
+        }
+    }
 
     // waiting max 5 seconds for notification for dir recreation to trigger
     timer.start(5000);
@@ -331,7 +362,8 @@ void tst_QFileSystemWatcher::watchDirectory()
 
     QCOMPARE(changedSpy.count(), 0);
 
-    QVERIFY(temporaryDir.rmdir(testDirName));
+    for (const auto &testDirName : testDirs)
+        QVERIFY(temporaryDir.rmdir(testDirName));
 }
 
 void tst_QFileSystemWatcher::addPath()

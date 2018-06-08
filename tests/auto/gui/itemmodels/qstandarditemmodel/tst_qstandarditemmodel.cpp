@@ -1426,7 +1426,7 @@ void tst_QStandardItemModel::rootItemFlags()
     QCOMPARE(model.invisibleRootItem()->flags() , f);
     QCOMPARE(model.invisibleRootItem()->flags() , model.flags(QModelIndex()));
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     model.invisibleRootItem()->setDropEnabled(false);
 #endif
     QCOMPARE(model.invisibleRootItem()->flags() , Qt::ItemIsEnabled);
@@ -1560,7 +1560,7 @@ void tst_QStandardItemModel::treeDragAndDrop()
     view.setModel(&model);
     view.expandAll();
     view.show();
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     view.setDragDropMode(QAbstractItemView::InternalMove);
 #endif
     view.setSelectionMode(QAbstractItemView::ExtendedSelection);

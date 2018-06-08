@@ -70,9 +70,9 @@ class QColorProfile;
 class QPlatformIntegration;
 class QPlatformTheme;
 class QPlatformDragQtResponse;
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 class QDrag;
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 class QInputDeviceManager;
 
 class Q_GUI_EXPORT QGuiApplicationPrivate : public QCoreApplicationPrivate
@@ -162,7 +162,7 @@ public:
     static void processContextMenuEvent(QWindowSystemInterfacePrivate::ContextMenuEvent *e);
 #endif
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     static QPlatformDragQtResponse processDrag(QWindow *w, const QMimeData *dropData,
                                                const QPoint &p, Qt::DropActions supportedActions,
                                                Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
@@ -313,9 +313,9 @@ public:
 protected:
     virtual void notifyThemeChanged();
     bool tryCloseRemainingWindows(QWindowList processedWindows);
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     virtual void notifyDragStarted(const QDrag *);
-#endif // QT_NO_DRAGANDDROP
+#endif // QT_CONFIG(draganddrop)
 
 private:
     friend class QDragManager;

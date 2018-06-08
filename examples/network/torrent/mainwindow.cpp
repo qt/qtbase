@@ -62,7 +62,7 @@ class TorrentView : public QTreeWidget
 public:
     TorrentView(QWidget *parent = 0);
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 signals:
     void fileDropped(const QString &fileName);
 
@@ -702,12 +702,12 @@ void MainWindow::closeEvent(QCloseEvent *)
 TorrentView::TorrentView(QWidget *parent)
     : QTreeWidget(parent)
 {
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     setAcceptDrops(true);
 #endif
 }
 
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 void TorrentView::dragMoveEvent(QDragMoveEvent *event)
 {
     // Accept file actions with a '.torrent' extension.

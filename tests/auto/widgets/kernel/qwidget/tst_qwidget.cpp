@@ -171,7 +171,7 @@ private slots:
     void enabledPropagation();
     void ignoreKeyEventsWhenDisabled_QTBUG27417();
     void properTabHandlingWhenDisabled_QTBUG27417();
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     void acceptDropsPropagation();
 #endif
     void isEnabledTo();
@@ -1047,7 +1047,7 @@ void tst_QWidget::properTabHandlingWhenDisabled_QTBUG27417()
 }
 
 // Drag'n drop disabled in this build.
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
 void tst_QWidget::acceptDropsPropagation()
 {
     QScopedPointer<QWidget> testWidget(new QWidget);
