@@ -11,7 +11,7 @@ CONFIG = \
     testcase_targets import_plugins import_qpa_plugin \
     $$CONFIG
 
-!build_pass:defined(QT_EDITION, var):!equals(QT_EDITION, "OpenSource"):!equals(QT_EDITION, "Preview") {
+!build_pass:!isEmpty(QT_LICHECK) {
     #
     # call license checker (but cache result for one day)
     #
