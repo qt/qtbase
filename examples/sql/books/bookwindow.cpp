@@ -115,6 +115,11 @@ BookWindow::BookWindow()
     ui.genreEdit->setModelColumn(
                 model->relationModel(genreIdx)->fieldIndex("name"));
 
+    // Lock and prohibit resizing of the width of the rating column:
+    ui.bookTable->horizontalHeader()->setSectionResizeMode(
+                model->fieldIndex("rating"),
+                QHeaderView::ResizeToContents);
+
     QDataWidgetMapper *mapper = new QDataWidgetMapper(this);
     mapper->setModel(model);
     mapper->setItemDelegate(new BookDelegate(this));
