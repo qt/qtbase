@@ -44,6 +44,10 @@
 #include <AppKit/NSText.h>
 #endif
 
+#if defined(QT_PLATFORM_UIKIT)
+#include <UIKit/UIKit.h>
+#endif
+
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
