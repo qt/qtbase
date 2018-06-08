@@ -165,13 +165,13 @@ void MingwMakefileGenerator::writeMingwParts(QTextStream &t)
         QString header = project->first("PRECOMPILED_HEADER").toQString();
         QString cHeader = preCompHeaderOut + Option::dir_sep + "c";
         t << escapeDependencyPath(cHeader) << ": " << escapeDependencyPath(header) << " "
-          << escapeDependencyPaths(findDependencies(header)).join(" \\\n\t\t")
+          << finalizeDependencyPaths(findDependencies(header)).join(" \\\n\t\t")
           << "\n\t" << mkdir_p_asstring(preCompHeaderOut)
           << "\n\t$(CC) -x c-header -c $(CFLAGS) $(INCPATH) -o " << escapeFilePath(cHeader)
           << ' ' << escapeFilePath(header) << endl << endl;
         QString cppHeader = preCompHeaderOut + Option::dir_sep + "c++";
         t << escapeDependencyPath(cppHeader) << ": " << escapeDependencyPath(header) << " "
-          << escapeDependencyPaths(findDependencies(header)).join(" \\\n\t\t")
+          << finalizeDependencyPaths(findDependencies(header)).join(" \\\n\t\t")
           << "\n\t" << mkdir_p_asstring(preCompHeaderOut)
           << "\n\t$(CXX) -x c++-header -c $(CXXFLAGS) $(INCPATH) -o " << escapeFilePath(cppHeader)
           << ' ' << escapeFilePath(header) << endl << endl;

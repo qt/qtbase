@@ -139,6 +139,8 @@ protected:
     QStringList escapeDependencyPaths(const QStringList &paths) const;
     ProStringList escapeDependencyPaths(const ProStringList &paths) const;
 
+    QStringList finalizeDependencyPaths(const QStringList &paths) const;
+
     //initialization
     void verifyCompilers();
     virtual void init();

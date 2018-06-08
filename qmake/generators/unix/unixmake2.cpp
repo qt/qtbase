@@ -375,7 +375,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                             QStringList deps = findDependencies((*it).toQString()).filter(QRegExp(
                                         "((^|/)" + Option::h_moc_mod + "|" + Option::cpp_moc_ext + "$)"));
                             if(!deps.isEmpty())
-                                t << d_file_d << ": " << escapeDependencyPaths(deps).join(' ') << endl;
+                                t << d_file_d << ": " << finalizeDependencyPaths(deps).join(' ') << endl;
                             t << "-include " << d_file_d << endl;
                             project->values("QMAKE_DISTCLEAN") += d_file;
                         }
@@ -1191,7 +1191,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                       << "EXPORT_QMAKE_XARCH_LFLAGS = $(EXPORT_QMAKE_XARCH_LFLAGS_" << arch << ")" << "\n\n";
                 }
                 t << pchFilePath_d << ": " << escapeDependencyPath(pchInput) << ' '
-                  << escapeDependencyPaths(findDependencies(pchInput)).join(" \\\n\t\t");
+                  << finalizeDependencyPaths(findDependencies(pchInput)).join(" \\\n\t\t");
                 if (project->isActiveConfig("icc_pch_style")) {
                     QString sourceFile = pchArchOutput + Option::cpp_ext.first();
                     QString sourceFile_f = escapeFilePath(sourceFile);
