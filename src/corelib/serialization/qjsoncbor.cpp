@@ -869,6 +869,7 @@ QVariantMap QCborMap::toVariantMap() const
 QVariantHash QCborMap::toVariantHash() const
 {
     QVariantHash retval;
+    retval.reserve(size());
     for (qsizetype i = 0; i < 2 * size(); i += 2)
         retval.insert(makeString(d.data(), i), d->valueAt(i + 1).toVariant());
     return retval;
