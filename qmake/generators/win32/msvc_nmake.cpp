@@ -619,6 +619,8 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                 }
             } else {
                 manifest = fileFixify(manifest);
+                if (linkerSupportsEmbedding)
+                    extraLFlags = "/MANIFEST:embed /MANIFESTINPUT:" + escapeFilePath(manifest);
             }
 
             const QString resourceId = (templateName == "app") ? "1" : "2";
