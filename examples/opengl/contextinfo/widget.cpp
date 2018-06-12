@@ -252,7 +252,7 @@ Widget::Widget(QWidget *parent)
     if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
         str << " Qt::AA_UseSoftwareOpenGL";
     if (QCoreApplication::testAttribute(Qt::AA_UseDesktopOpenGL))
-        str << " Qt::AA_UseSoftwareOpenGL";
+        str << " Qt::AA_UseDesktopOpenGL";
     layout->addWidget(new QLabel(description));
 
     setLayout(layout);
