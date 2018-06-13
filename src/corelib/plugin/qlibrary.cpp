@@ -550,7 +550,7 @@ bool QLibraryPrivate::load()
     if (fileName.isEmpty())
         return false;
 
-    Q_TRACE(qlibraryprivate_load_entry, fileName);
+    Q_TRACE(QLibraryPrivate_load_entry, fileName);
 
     bool ret = load_sys();
     if (qt_debug_component()) {
@@ -568,7 +568,7 @@ bool QLibraryPrivate::load()
         installCoverageTool(this);
     }
 
-    Q_TRACE(qlibraryprivate_load_exit, ret);
+    Q_TRACE(QLibraryPrivate_load_exit, ret);
 
     return ret;
 }

@@ -1,8 +1,10 @@
-qfontdatabase_addapplicationfont(const QString &filename)
-qfontdatabase_load(const QString &family, int pointSize)
-qfontdatabase_loadengine(const QString &family, int pointSize)
-qfontdatabaseprivate_addappfont(const QString &fileName)
-qguiapplicationprivate_init_entry()
-qguiapplicationprivate_init_exit()
-qguiapplicationprivate_processwsevents_entry(int type)
-qguiapplicationprivate_processwsevents_exit(int type)
+QGuiApplicationPrivate_init_entry()
+QGuiApplicationPrivate_init_exit()
+
+QGuiApplicationPrivate_processWindowSystemEvent_entry(int type)
+QGuiApplicationPrivate_processWindowSystemEvent_exit(int type)
+
+QFontDatabase_addApplicationFont(const QString &filename)
+QFontDatabase_load(const QString &family, int pointSize)
+QFontDatabase_loadEngine(const QString &family, int pointSize)
+QFontDatabasePrivate_addAppFont(const QString &fileName)

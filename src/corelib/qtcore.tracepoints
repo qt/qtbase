@@ -1,8 +1,10 @@
-qcoreapplicationprivate_init_entry()
-qcoreapplicationprivate_init_exit()
-qfactoryloader_update(const QString &fileName)
-qlibraryprivate_load_entry(const QString &fileName)
-qlibraryprivate_load_exit(bool success)
+QCoreApplicationPrivate_init_entry()
+QCoreApplicationPrivate_init_exit()
+
+QFactoryLoader_update(const QString &fileName)
+
+QLibraryPrivate_load_entry(const QString &fileName)
+QLibraryPrivate_load_exit(bool success)
 
 QEvent_ctor(QEvent *event, int type)
 QEvent_dtor(QEvent *event, int type)

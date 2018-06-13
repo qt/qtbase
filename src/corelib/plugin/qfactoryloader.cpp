@@ -138,7 +138,7 @@ void QFactoryLoader::update()
                 qDebug() << "QFactoryLoader::QFactoryLoader() looking at" << fileName;
             }
 
-            Q_TRACE(qfactoryloader_update, fileName);
+            Q_TRACE(QFactoryLoader_update, fileName);
 
             library = QLibraryPrivate::findOrCreate(QFileInfo(fileName).canonicalFilePath());
             if (!library->isPlugin()) {
