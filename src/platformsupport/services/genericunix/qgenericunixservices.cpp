@@ -205,6 +205,8 @@ static inline bool flatpakOpenFile(const QUrl &url)
         QDBusPendingReply<QDBusObjectPath> reply = QDBusConnection::sessionBus().call(message);
         return !reply.isError();
     }
+#else
+    Q_UNUSED(url)
 #endif
 
     return false;
