@@ -55,6 +55,7 @@
 #include "private/qcore_mac_p.h"
 #endif
 #include "private/qgregoriancalendar_p.h"
+#include "private/qnumeric_p.h"
 #include "private/qstringiterator_p.h"
 #if QT_CONFIG(timezone)
 #include "private/qtimezoneprivate_p.h"
@@ -2977,10 +2978,20 @@ static void setDateTime(QDateTimeData &d, QDate date, QTime time)
         ds = useTime.msecsSinceStartOfDay();
         newStatus |= QDateTimePrivate::ValidTime;
     }
+    Q_ASSERT(ds < MSECS_PER_DAY);
+    // Only the later parts of the very first day are representable - its start
+    // would overflow - so get ds the same side of 0 as days:
+    if (days < 0 && ds > 0) {
+        days++;
+        ds -= MSECS_PER_DAY;
+    }
 
-    // Set msecs serial value
-    qint64 msecs = (days * MSECS_PER_DAY) + ds;
-    if (d.isShort()) {
+    // Check in representable range:
+    qint64 msecs = 0;
+    if (mul_overflow(days, std::integral_constant<qint64, MSECS_PER_DAY>(), &msecs)
+        || add_overflow(msecs, qint64(ds), &msecs)) {
+        newStatus = QDateTimePrivate::StatusFlags{};
+    } else if (d.isShort()) {
         // let's see if we can keep this short
         if (msecsCanBeSmall(msecs)) {
             // yes, we can
@@ -3905,8 +3916,8 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
             status = mergeDaylightStatus(status, QDateTimePrivate::StandardTime);
             d->m_offsetFromUtc = d->m_timeZone.d->standardTimeOffset(msecs);
         }
-        msecs = msecs + (d->m_offsetFromUtc * 1000);
-        status |= QDateTimePrivate::ValidWhenMask;
+        if (!add_overflow(msecs, qint64(d->m_offsetFromUtc * 1000), &msecs))
+            status |= QDateTimePrivate::ValidWhenMask;
 #endif // timezone
         break;
     case Qt::LocalTime: {

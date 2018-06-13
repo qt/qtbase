@@ -755,16 +755,21 @@ void tst_QDateTime::fromMSecsSinceEpoch()
 void tst_QDateTime::fromSecsSinceEpoch()
 {
     const qint64 maxSeconds = std::numeric_limits<qint64>::max() / 1000;
+    const QDateTime early = QDateTime::fromSecsSinceEpoch(-maxSeconds, Qt::UTC);
+    const QDateTime late = QDateTime::fromSecsSinceEpoch(maxSeconds, Qt::UTC);
 
-    QVERIFY(QDateTime::fromSecsSinceEpoch(maxSeconds).isValid());
-    QVERIFY(!QDateTime::fromSecsSinceEpoch(maxSeconds + 1).isValid());
-    QVERIFY(QDateTime::fromSecsSinceEpoch(-maxSeconds).isValid());
-    QVERIFY(!QDateTime::fromSecsSinceEpoch(-maxSeconds - 1).isValid());
-
-    QVERIFY(QDateTime::fromSecsSinceEpoch(maxSeconds, Qt::UTC).isValid());
+    QVERIFY(late.isValid());
     QVERIFY(!QDateTime::fromSecsSinceEpoch(maxSeconds + 1, Qt::UTC).isValid());
-    QVERIFY(QDateTime::fromSecsSinceEpoch(-maxSeconds, Qt::UTC).isValid());
+    QVERIFY(early.isValid());
     QVERIFY(!QDateTime::fromSecsSinceEpoch(-maxSeconds - 1, Qt::UTC).isValid());
+
+    // Local time: need to adjust for its zone offset
+    const qint64 last = maxSeconds - qMax(late.addYears(-1).toLocalTime().offsetFromUtc(), 0);
+    QVERIFY(QDateTime::fromSecsSinceEpoch(last).isValid());
+    QVERIFY(!QDateTime::fromSecsSinceEpoch(last + 1).isValid());
+    const qint64 first = -maxSeconds - qMin(early.addYears(1).toLocalTime().offsetFromUtc(), 0);
+    QVERIFY(QDateTime::fromSecsSinceEpoch(first).isValid());
+    QVERIFY(!QDateTime::fromSecsSinceEpoch(first - 1).isValid());
 
     // Use an offset for which .toUTC()'s return would flip the validity:
     QVERIFY(QDateTime::fromSecsSinceEpoch(maxSeconds, Qt::OffsetFromUTC, 7200).isValid());
@@ -775,10 +780,10 @@ void tst_QDateTime::fromSecsSinceEpoch()
 #if QT_CONFIG(timezone)
     // As for offset, use zones each side of UTC:
     const QTimeZone west("UTC-02:00"), east("UTC+02:00");
-    QVERIFY(QDateTime::fromSecsSinceEpoch(maxSeconds, east).isValid());
-    QVERIFY(!QDateTime::fromSecsSinceEpoch(maxSeconds + 1, west).isValid());
-    QVERIFY(QDateTime::fromSecsSinceEpoch(-maxSeconds, west).isValid());
-    QVERIFY(!QDateTime::fromSecsSinceEpoch(-maxSeconds - 1, east).isValid());
+    QVERIFY(QDateTime::fromSecsSinceEpoch(maxSeconds, west).isValid());
+    QVERIFY(!QDateTime::fromSecsSinceEpoch(maxSeconds + 1, east).isValid());
+    QVERIFY(QDateTime::fromSecsSinceEpoch(-maxSeconds, east).isValid());
+    QVERIFY(!QDateTime::fromSecsSinceEpoch(-maxSeconds - 1, west).isValid());
 #endif // timezone
 }
 
@@ -3759,6 +3764,21 @@ void tst_QDateTime::range() const
              int(QDateTime::YearRange::First));
     QCOMPARE(QDateTime::fromMSecsSinceEpoch(Bounds::max() - 1, Qt::UTC).date().year(),
              int(QDateTime::YearRange::Last));
+    constexpr qint64 millisPerDay = 24 * 3600 * 1000;
+    constexpr qint64 wholeDays = Bounds::max() / millisPerDay;
+    constexpr qint64 millisRemainder = Bounds::max() % millisPerDay;
+    QVERIFY(QDateTime(QDate(1970, 1, 1).addDays(wholeDays),
+                      QTime::fromMSecsSinceStartOfDay(millisRemainder),
+                      Qt::UTC).isValid());
+    QVERIFY(!QDateTime(QDate(1970, 1, 1).addDays(wholeDays),
+                       QTime::fromMSecsSinceStartOfDay(millisRemainder + 1),
+                       Qt::UTC).isValid());
+    QVERIFY(QDateTime(QDate(1970, 1, 1).addDays(-wholeDays - 1),
+                      QTime::fromMSecsSinceStartOfDay(3600 * 24000 - millisRemainder - 1),
+                      Qt::UTC).isValid());
+    QVERIFY(!QDateTime(QDate(1970, 1, 1).addDays(-wholeDays - 1),
+                       QTime::fromMSecsSinceStartOfDay(3600 * 24000 - millisRemainder - 2),
+                       Qt::UTC).isValid());
 }
 
 void tst_QDateTime::macTypes()
