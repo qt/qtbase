@@ -90,8 +90,6 @@ public:
     int indexOfChild(const QAccessibleInterface *child) const override;
     bool isValid() const override;
     QAccessibleInterface *childAt(int x, int y) const override;
-
-//protected:
     QAbstractScrollArea *abstractScrollArea() const;
 
 private:
