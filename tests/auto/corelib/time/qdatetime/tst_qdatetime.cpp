@@ -1095,6 +1095,11 @@ void tst_QDateTime::addDays()
     QCOMPARE(dt2.timeSpec(), Qt::OffsetFromUTC);
     QCOMPARE(dt2.offsetFromUtc(), 60 * 60);
 
+    // test last second of 1969 *is* valid (despite being time_t(-1))
+    dt1 = QDateTime(QDate(1970, 1, 1), QTime(23, 59, 59));
+    dt2 = dt1.addDays(-1);
+    QVERIFY(dt2.isValid());
+
     // ### test invalid QDateTime()
 }
 
@@ -1286,6 +1291,13 @@ void tst_QDateTime::addSecs_data()
                              << 60 * 60
                              << QDateTime(QDate(2013, 1, 1), QTime(2, 2, 3),
                                           Qt::OffsetFromUTC, 60 * 60);
+    // Check last second of 1969
+    QTest::newRow("epoch-1s-utc")
+        << QDateTime(QDate(1970, 1, 1), QTime(0, 0, 0), Qt::UTC) << -1
+        << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59), Qt::UTC);
+    QTest::newRow("epoch-1s-local")
+        << QDateTime(QDate(1970, 1, 1), QTime(0, 0, 0)) << -1
+        << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59));
 }
 
 void tst_QDateTime::addSecs()

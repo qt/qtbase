@@ -2441,24 +2441,26 @@ static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStat
             local.tm_isdst = 1;
         }
 #endif // Q_OS_WIN
-        if (local.tm_isdst >= 1) {
+        if (local.tm_isdst > 0) {
             if (daylightStatus)
                 *daylightStatus = QDateTimePrivate::DaylightTime;
             if (abbreviation)
                 *abbreviation = qt_tzname(QDateTimePrivate::DaylightTime);
-        } else if (local.tm_isdst == 0) {
-            if (daylightStatus)
-                *daylightStatus = QDateTimePrivate::StandardTime;
-            if (abbreviation)
-                *abbreviation = qt_tzname(QDateTimePrivate::StandardTime);
         } else {
-            if (daylightStatus)
-                *daylightStatus = QDateTimePrivate::UnknownDaylightTime;
+            if (daylightStatus) {
+                *daylightStatus = (local.tm_isdst == 0
+                                   ? QDateTimePrivate::StandardTime
+                                   : QDateTimePrivate::UnknownDaylightTime);
+            }
             if (abbreviation)
                 *abbreviation = qt_tzname(QDateTimePrivate::StandardTime);
         }
-        if (ok)
-            *ok = true;
+    } else if (yy == 1969 && mm == 12 && dd == 31
+               && time->second() == MSECS_PER_DAY - 1) {
+        // There was, of course, a last second in 1969, at time_t(-1); we won't
+        // rescue it if it's not in normalised form, and we don't know its DST
+        // status (unless we did already), but let's not wantonly declare it
+        // invalid.
     } else {
         *date = QDate();
         *time = QTime();
@@ -2468,9 +2470,12 @@ static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStat
             *abbreviation = QString();
         if (ok)
             *ok = false;
+        return 0;
     }
+    if (ok)
+        *ok = true;
 
-    return ((qint64)secsSinceEpoch * 1000) + msec;
+    return qint64(secsSinceEpoch) * 1000 + msec;
 }
 
 // Calls the platform variant of localtime for the given msecs, and updates
