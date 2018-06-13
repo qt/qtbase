@@ -63,11 +63,16 @@ class BookWindow: public QMainWindow
 public:
     BookWindow();
 
+private slots:
+    void about();
+
 private:
     void showError(const QSqlError &err);
     Ui::BookWindow ui;
     QSqlRelationalTableModel *model;
     int authorIdx, genreIdx;
+
+    void createMenuBar();
 };
 
 #endif
