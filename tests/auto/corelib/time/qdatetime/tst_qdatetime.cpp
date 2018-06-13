@@ -83,6 +83,7 @@ private Q_SLOTS:
     void toString_strformat();
 #endif
     void addDays();
+    void addInvalid();
     void addMonths();
     void addMonths_data();
     void addYears();
@@ -1095,10 +1096,51 @@ void tst_QDateTime::addDays()
     dt1 = QDateTime(QDate(1970, 1, 1), QTime(23, 59, 59));
     dt2 = dt1.addDays(-1);
     QVERIFY(dt2.isValid());
-
-    // ### test invalid QDateTime()
 }
 
+void tst_QDateTime::addInvalid()
+{
+    QDateTime bad;
+    QVERIFY(!bad.isValid());
+    QVERIFY(bad.isNull());
+
+    QDateTime offset = bad.addDays(2);
+    QVERIFY(offset.isNull());
+    offset = bad.addMonths(-1);
+    QVERIFY(offset.isNull());
+    offset = bad.addYears(23);
+    QVERIFY(offset.isNull());
+    offset = bad.addSecs(73);
+    QVERIFY(offset.isNull());
+    offset = bad.addMSecs(73);
+    QVERIFY(offset.isNull());
+
+    QDateTime bound = QDateTime::fromMSecsSinceEpoch(std::numeric_limits<qint64>::min(), Qt::UTC);
+    QVERIFY(bound.isValid());
+    offset = bound.addMSecs(-1);
+    QVERIFY(!offset.isValid());
+    offset = bound.addSecs(-1);
+    QVERIFY(!offset.isValid());
+    offset = bound.addDays(-1);
+    QVERIFY(!offset.isValid());
+    offset = bound.addMonths(-1);
+    QVERIFY(!offset.isValid());
+    offset = bound.addYears(-1);
+    QVERIFY(!offset.isValid());
+
+    bound.setMSecsSinceEpoch(std::numeric_limits<qint64>::max());
+    QVERIFY(bound.isValid());
+    offset = bound.addMSecs(1);
+    QVERIFY(!offset.isValid());
+    offset = bound.addSecs(1);
+    QVERIFY(!offset.isValid());
+    offset = bound.addDays(1);
+    QVERIFY(!offset.isValid());
+    offset = bound.addMonths(1);
+    QVERIFY(!offset.isValid());
+    offset = bound.addYears(1);
+    QVERIFY(!offset.isValid());
+}
 
 void tst_QDateTime::addMonths_data()
 {

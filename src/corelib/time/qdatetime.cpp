@@ -4154,6 +4154,9 @@ static inline void massageAdjustedDateTime(QDateTimeData &d, QDate date, QTime t
 
 QDateTime QDateTime::addDays(qint64 ndays) const
 {
+    if (isNull())
+        return QDateTime();
+
     QDateTime dt(*this);
     QPair<QDate, QTime> p = getDateTime(d);
     massageAdjustedDateTime(dt.d, p.first.addDays(ndays), p.second);
@@ -4176,6 +4179,9 @@ QDateTime QDateTime::addDays(qint64 ndays) const
 
 QDateTime QDateTime::addMonths(int nmonths) const
 {
+    if (isNull())
+        return QDateTime();
+
     QDateTime dt(*this);
     QPair<QDate, QTime> p = getDateTime(d);
     massageAdjustedDateTime(dt.d, p.first.addMonths(nmonths), p.second);
@@ -4198,6 +4204,9 @@ QDateTime QDateTime::addMonths(int nmonths) const
 
 QDateTime QDateTime::addYears(int nyears) const
 {
+    if (isNull())
+        return QDateTime();
+
     QDateTime dt(*this);
     QPair<QDate, QTime> p = getDateTime(d);
     massageAdjustedDateTime(dt.d, p.first.addYears(nyears), p.second);
