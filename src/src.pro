@@ -53,6 +53,10 @@ src_tools_qdbuscpp2xml.target = sub-qdbuscpp2xml
 force_bootstrap: src_tools_qdbuscpp2xml.depends = src_tools_bootstrap_dbus
 else: src_tools_qdbuscpp2xml.depends = src_dbus
 
+src_tools_androiddeployqt.subdir = tools/androiddeployqt
+src_tools_androiddeployqt.target = sub-androiddeployqt
+src_tools_androiddeployqt.depends = src_corelib
+
 src_tools_qvkgen.subdir = tools/qvkgen
 src_tools_qvkgen.target = sub-qvkgen
 force_bootstrap: src_tools_qvkgen.depends = src_tools_bootstrap
@@ -183,6 +187,12 @@ qtConfig(dbus) {
         src_platformsupport.depends += src_dbus src_tools_qdbusxml2cpp
     src_plugins.depends += src_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
 }
+
+android {
+    SUBDIRS += src_tools_androiddeployqt
+    TOOLS += src_tools_androiddeployqt
+}
+
 qtConfig(concurrent): SUBDIRS += src_concurrent
 qtConfig(gui) {
     qtConfig(harfbuzz):!qtConfig(system-harfbuzz) {
