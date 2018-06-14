@@ -2699,27 +2699,35 @@ void tst_QDateTime::timeZoneAbbreviation()
 #ifdef Q_OS_WIN
         QEXPECT_FAIL("", "Windows only reports long name (QTBUG-32759)", Continue);
 #endif
-        QCOMPARE(dt4.timeZoneAbbreviation(), QString("CET"));
+        QCOMPARE(dt4.timeZoneAbbreviation(), QStringLiteral("CET"));
         // Time definitely in Daylight Time
         QDateTime dt5(QDate(2013, 6, 1), QTime(0, 0, 0), Qt::LocalTime);
 #ifdef Q_OS_WIN
         QEXPECT_FAIL("", "Windows only reports long name (QTBUG-32759)", Continue);
 #endif
-        QCOMPARE(dt5.timeZoneAbbreviation(), QString("CEST"));
+        QCOMPARE(dt5.timeZoneAbbreviation(), QStringLiteral("CEST"));
     } else {
         QSKIP("You must test using Central European (CET/CEST) time zone, e.g. TZ=Europe/Oslo");
     }
+
+#ifdef Q_OS_ANDROID // Only reports (general) zones as offsets (QTBUG-68837)
+    const QString cet(QStringLiteral("GMT+01:00"));
+    const QString cest(QStringLiteral("GMT+02:00"));
+#else
+    const QString cet(QStringLiteral("CET"));
+    const QString cest(QStringLiteral("CEST"));
+#endif
 
     QDateTime dt5(QDate(2013, 1, 1), QTime(0, 0, 0), QTimeZone("Europe/Berlin"));
 #ifdef Q_OS_WIN
     QEXPECT_FAIL("", "Windows only reports long names (QTBUG-32759)", Continue);
 #endif
-    QCOMPARE(dt5.timeZoneAbbreviation(), QString("CET"));
+    QCOMPARE(dt5.timeZoneAbbreviation(), cet);
     QDateTime dt6(QDate(2013, 6, 1), QTime(0, 0, 0), QTimeZone("Europe/Berlin"));
 #ifdef Q_OS_WIN
     QEXPECT_FAIL("", "Windows only reports long names (QTBUG-32759)", Continue);
 #endif
-    QCOMPARE(dt6.timeZoneAbbreviation(), QString("CEST"));
+    QCOMPARE(dt6.timeZoneAbbreviation(), cest);
 }
 
 void tst_QDateTime::getDate()
