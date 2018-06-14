@@ -2697,14 +2697,14 @@ void tst_QDateTime::timeZoneAbbreviation()
         // Time definitely in Standard Time
         QDateTime dt4(QDate(2013, 1, 1), QTime(0, 0, 0), Qt::LocalTime);
 #ifdef Q_OS_WIN
-        QEXPECT_FAIL("", "Windows only returns long name (QTBUG-32759)", Continue);
-#endif // Q_OS_WIN
+        QEXPECT_FAIL("", "Windows only reports long name (QTBUG-32759)", Continue);
+#endif
         QCOMPARE(dt4.timeZoneAbbreviation(), QString("CET"));
         // Time definitely in Daylight Time
         QDateTime dt5(QDate(2013, 6, 1), QTime(0, 0, 0), Qt::LocalTime);
 #ifdef Q_OS_WIN
-        QEXPECT_FAIL("", "Windows only returns long name (QTBUG-32759)", Continue);
-#endif // Q_OS_WIN
+        QEXPECT_FAIL("", "Windows only reports long name (QTBUG-32759)", Continue);
+#endif
         QCOMPARE(dt5.timeZoneAbbreviation(), QString("CEST"));
     } else {
         QSKIP("You must test using Central European (CET/CEST) time zone, e.g. TZ=Europe/Oslo");
@@ -2712,12 +2712,12 @@ void tst_QDateTime::timeZoneAbbreviation()
 
     QDateTime dt5(QDate(2013, 1, 1), QTime(0, 0, 0), QTimeZone("Europe/Berlin"));
 #ifdef Q_OS_WIN
-    QEXPECT_FAIL("", "QTimeZone windows backend only returns long name", Continue);
+    QEXPECT_FAIL("", "Windows only reports long names (QTBUG-32759)", Continue);
 #endif
     QCOMPARE(dt5.timeZoneAbbreviation(), QString("CET"));
     QDateTime dt6(QDate(2013, 6, 1), QTime(0, 0, 0), QTimeZone("Europe/Berlin"));
 #ifdef Q_OS_WIN
-    QEXPECT_FAIL("", "QTimeZone windows backend only returns long name", Continue);
+    QEXPECT_FAIL("", "Windows only reports long names (QTBUG-32759)", Continue);
 #endif
     QCOMPARE(dt6.timeZoneAbbreviation(), QString("CEST"));
 }
