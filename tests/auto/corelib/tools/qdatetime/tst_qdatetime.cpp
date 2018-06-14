@@ -924,12 +924,16 @@ void tst_QDateTime::toString_textDate_extra()
     else
         QCOMPARE(dt.toString(), QLatin1String("Thu Jan 1 00:00:00 1970"));
 #if QT_CONFIG(timezone)
+# if defined Q_OS_UNIX && !defined Q_OS_DARWIN && !defined Q_OS_ANDROID
+#  define CORRECT_ZONE_ABBREV
+# endif // QTBUG-57320, QTBUG-57298, QTBUG-68833
+
     QTimeZone PST("America/Vancouver");
     if (PST.isValid()) {
         dt = QDateTime::fromMSecsSinceEpoch(0, PST);
-# if defined Q_OS_UNIX && !defined Q_OS_DARWIN
+# ifdef CORRECT_ZONE_ABBREV
         QCOMPARE(dt.toString(), QLatin1String("Wed Dec 31 16:00:00 1969 PST"));
-# else // QTBUG-57320, QTBUG-57298
+# else
         QVERIFY(dt.toString().startsWith(QLatin1String("Wed Dec 31 16:00:00 1969 ")));
 # endif
         dt = dt.toLocalTime();
@@ -940,9 +944,9 @@ void tst_QDateTime::toString_textDate_extra()
     QTimeZone CET("Europe/Berlin");
     if (CET.isValid()) {
         dt = QDateTime::fromMSecsSinceEpoch(0, CET);
-# if defined Q_OS_UNIX && !defined Q_OS_DARWIN
+# ifdef CORRECT_ZONE_ABBREV
         QCOMPARE(dt.toString(), QLatin1String("Thu Jan 1 01:00:00 1970 CET"));
-# else // QTBUG-57320, QTBUG-57298
+# else
         QVERIFY(dt.toString().startsWith(QLatin1String("Thu Jan 1 01:00:00 1970 ")));
 # endif
         dt = dt.toLocalTime();
