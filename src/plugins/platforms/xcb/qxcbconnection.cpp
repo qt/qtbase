@@ -586,7 +586,8 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
 
     initializeAllAtoms();
 
-    initializeShm();
+    if (!qEnvironmentVariableIsSet("QT_XCB_NO_MITSHM"))
+        initializeShm();
     if (!qEnvironmentVariableIsSet("QT_XCB_NO_XRANDR"))
         initializeXRandr();
     if (!has_randr_extension)
