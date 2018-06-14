@@ -2661,14 +2661,20 @@ void tst_QDateTime::zoneAtTime_data()
         ADDROW("summer70:EST", "America/New_York", summer70, -4 * 3600);
     }
 
+#ifdef Q_OS_ANDROID // QTBUG-68835; gets offset 0 for the affected tests.
+# define NONANDROIDROW(name, zone, date, offset)
+#else
+# define NONANDROIDROW(name, zone, date, offset) ADDROW(name, zone, date, offset)
+#endif
+
 #ifndef Q_OS_WIN
     // Bracket a few noteworthy transitions:
     ADDROW("before:ACWST", "Australia/Eucla", QDate(1974, 10, 26), 31500); // 8:45
-    ADDROW("after:ACWST", "Australia/Eucla", QDate(1974, 10, 27), 35100); // 9:45
-    ADDROW("before:NPT", "Asia/Kathmandu", QDate(1985, 12, 31), 19800); // 5:30
+    NONANDROIDROW("after:ACWST", "Australia/Eucla", QDate(1974, 10, 27), 35100); // 9:45
+    NONANDROIDROW("before:NPT", "Asia/Kathmandu", QDate(1985, 12, 31), 19800); // 5:30
     ADDROW("after:NPT", "Asia/Kathmandu", QDate(1986, 1, 1), 20700); // 5:45
     // The two that have skipped a day (each):
-    ADDROW("before:LINT", "Pacific/Kiritimati", QDate(1994, 12, 30), -36000);
+    NONANDROIDROW("before:LINT", "Pacific/Kiritimati", QDate(1994, 12, 30), -36000);
     ADDROW("after:LINT", "Pacific/Kiritimati", QDate(1995, 1, 2), 14 * 3600);
     ADDROW("after:WST", "Pacific/Apia", QDate(2011, 12, 31), 14 * 3600);
 #endif // MS lacks ACWST, NPT; doesn't grok date-line crossings; and Windows 7 lacks LINT.
