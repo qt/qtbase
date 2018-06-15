@@ -43,7 +43,7 @@
 #include <QtCore/QHash>
 #include <qpa/qplatformtheme.h>
 
-Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QCocoaThemeNotificationReceiver));
+Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QCocoaThemeAppAppearanceObserver));
 
 QT_BEGIN_NAMESPACE
 
@@ -78,11 +78,13 @@ public:
 
     static const char *name;
 
+    void handleSystemThemeChange();
+
 private:
     mutable QPalette *m_systemPalette;
     mutable QHash<QPlatformTheme::Palette, QPalette*> m_palettes;
     mutable QHash<QPlatformTheme::Font, QFont*> m_fonts;
-    mutable QT_MANGLE_NAMESPACE(QCocoaThemeNotificationReceiver) *m_notificationReceiver;
+    QT_MANGLE_NAMESPACE(QCocoaThemeAppAppearanceObserver) *m_appearanceObserver;
 };
 
 QT_END_NAMESPACE

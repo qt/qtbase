@@ -42,6 +42,7 @@
 #include "qcocoatheme.h"
 #include "messages.h"
 
+#include <QtCore/QOperatingSystemVersion>
 #include <QtCore/QVariant>
 
 #include "qcocoasystemsettings.h"
@@ -77,26 +78,48 @@
 
 #include <CoreServices/CoreServices.h>
 
-@interface QT_MANGLE_NAMESPACE(QCocoaThemeNotificationReceiver) : NSObject
+#if !QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+@interface NSApplication (MojaveForwardDeclarations)
+@property (readonly, strong) NSAppearance *effectiveAppearance NS_AVAILABLE_MAC(10_14);
+@end
+#endif
+
+@interface QT_MANGLE_NAMESPACE(QCocoaThemeAppAppearanceObserver) : NSObject
+@property (readonly, nonatomic) QCocoaTheme *theme;
+- (instancetype)initWithTheme:(QCocoaTheme *)theme;
 @end
 
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaThemeNotificationReceiver);
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaThemeAppAppearanceObserver);
 
-@implementation QCocoaThemeNotificationReceiver {
-    QCocoaTheme *mPrivate;
-}
-
-- (instancetype)initWithPrivate:(QCocoaTheme *)priv
+@implementation QCocoaThemeAppAppearanceObserver
+- (instancetype)initWithTheme:(QCocoaTheme *)theme
 {
-    if ((self = [self init]))
-        mPrivate = priv;
+    if ((self = [super init])) {
+        _theme = theme;
+        [NSApp addObserver:self forKeyPath:@"effectiveAppearance" options:NSKeyValueObservingOptionNew context:nullptr];
+    }
     return self;
 }
 
-- (void)systemColorsDidChange:(NSNotification *)__unused notification
+- (void)dealloc
 {
-    mPrivate->reset();
-    QWindowSystemInterface::handleThemeChange(nullptr);
+    [NSApp removeObserver:self forKeyPath:@"effectiveAppearance"];
+    [super dealloc];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object
+        change:(NSDictionary<NSKeyValueChangeKey, id> *)change context:(void *)context
+{
+    Q_UNUSED(change);
+    Q_UNUSED(context);
+
+    Q_ASSERT(object == NSApp);
+    Q_ASSERT([keyPath isEqualToString:@"effectiveAppearance"]);
+
+    if (__builtin_available(macOS 10.14, *))
+        NSAppearance.currentAppearance = NSApp.effectiveAppearance;
+
+    self.theme->handleSystemThemeChange();
 }
 @end
 
@@ -105,19 +128,22 @@ QT_BEGIN_NAMESPACE
 const char *QCocoaTheme::name = "cocoa";
 
 QCocoaTheme::QCocoaTheme()
-    : m_systemPalette(nullptr)
+    : m_systemPalette(nullptr), m_appearanceObserver(nil)
 {
-    m_notificationReceiver = [[QT_MANGLE_NAMESPACE(QCocoaThemeNotificationReceiver) alloc] initWithPrivate:this];
-    [[NSNotificationCenter defaultCenter] addObserver:m_notificationReceiver
-                                             selector:@selector(systemColorsDidChange:)
-                                                 name:NSSystemColorsDidChangeNotification
-                                               object:nil];
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave)
+        m_appearanceObserver = [[QCocoaThemeAppAppearanceObserver alloc] initWithTheme:this];
+
+    [[NSNotificationCenter defaultCenter] addObserverForName:NSSystemColorsDidChangeNotification
+        object:nil queue:nil usingBlock:^(NSNotification *) {
+            handleSystemThemeChange();
+        }];
 }
 
 QCocoaTheme::~QCocoaTheme()
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:m_notificationReceiver];
-    [m_notificationReceiver release];
+    if (m_appearanceObserver)
+        [m_appearanceObserver release];
+
     reset();
     qDeleteAll(m_fonts);
 }
@@ -128,6 +154,15 @@ void QCocoaTheme::reset()
     m_systemPalette = nullptr;
     qDeleteAll(m_palettes);
     m_palettes.clear();
+}
+
+void QCocoaTheme::handleSystemThemeChange()
+{
+    reset();
+    m_systemPalette = qt_mac_createSystemPalette();
+    m_palettes = qt_mac_createRolePalettes();
+
+    QWindowSystemInterface::handleThemeChange(nullptr);
 }
 
 bool QCocoaTheme::usePlatformNativeDialog(DialogType dialogType) const
