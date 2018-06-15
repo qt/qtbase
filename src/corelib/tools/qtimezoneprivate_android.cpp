@@ -82,7 +82,24 @@ void QAndroidTimeZonePrivate::init(const QByteArray &ianaId)
     QJNIObjectPrivate jo_ianaId = QJNIObjectPrivate::fromString( QString::fromUtf8(ianaId) );
     androidTimeZone = QJNIObjectPrivate::callStaticObjectMethod( "java.util.TimeZone", "getTimeZone", "(Ljava/lang/String;)Ljava/util/TimeZone;",  static_cast<jstring>(jo_ianaId.object()) );
 
-    if (ianaId.isEmpty())
+    // Painfully, JNI gives us back a default zone object if it doesn't
+    // recognize the name; so check for whether ianaId is a recognized name of
+    // the zone object we got and ignore the zone if not.
+    bool found = false;
+    // Try checking ianaId against getID(), getDisplayName():
+    QJNIObjectPrivate jname = androidTimeZone.callObjectMethod("getID", "()Ljava/lang/String;");
+    found = (jname.toString().toUtf8() == ianaId);
+    for (int style = 1; !found && style-- > 0;) {
+        for (int dst = 1; !found && dst-- > 0;) {
+            jname = androidTimeZone.callObjectMethod("getDisplayName", "(ZI;)Ljava/lang/String;",
+                                                     bool(dst), style);
+            found = (jname.toString().toUtf8() == ianaId);
+        }
+    }
+
+    if (!found)
+        m_id.clear();
+    else if (ianaId.isEmpty())
         m_id = systemTimeZoneId();
     else
         m_id = ianaId;
