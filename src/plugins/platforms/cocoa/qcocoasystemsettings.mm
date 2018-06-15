@@ -45,6 +45,9 @@
 #include <QtGui/qfont.h>
 #include <QtGui/private/qcoregraphics_p.h>
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wobjc-method-access")
+
 QT_BEGIN_NAMESPACE
 
 QPalette * qt_mac_createSystemPalette()
@@ -65,18 +68,25 @@ QPalette * qt_mac_createSystemPalette()
     palette->setBrush(QPalette::Disabled, QPalette::Text, dark);
     palette->setBrush(QPalette::Disabled, QPalette::ButtonText, dark);
     palette->setBrush(QPalette::Disabled, QPalette::Base, backgroundBrush);
+    palette->setBrush(QPalette::Active, QPalette::Base, backgroundBrush);
+    palette->setBrush(QPalette::Inactive, QPalette::Base, backgroundBrush);
     palette->setColor(QPalette::Disabled, QPalette::Dark, QColor(191, 191, 191));
     palette->setColor(QPalette::Active, QPalette::Dark, QColor(191, 191, 191));
     palette->setColor(QPalette::Inactive, QPalette::Dark, QColor(191, 191, 191));
 
     // System palette initialization:
-    palette->setBrush(QPalette::Active, QPalette::Highlight,
-        qt_mac_toQBrush([NSColor selectedControlColor]));
-    QBrush br = qt_mac_toQBrush([NSColor secondarySelectedControlColor]);
-    palette->setBrush(QPalette::Inactive, QPalette::Highlight, br);
-    palette->setBrush(QPalette::Disabled, QPalette::Highlight, br);
+    QBrush br = qt_mac_toQBrush([NSColor selectedControlColor]);
+    palette->setBrush(QPalette::Active, QPalette::Highlight, br);
+    if (__builtin_available(macOS 10.14, *)) {
+        const auto inactiveHighlight = qt_mac_toQBrush([NSColor unemphasizedSelectedContentBackgroundColor]);
+        palette->setBrush(QPalette::Inactive, QPalette::Highlight, inactiveHighlight);
+        palette->setBrush(QPalette::Disabled, QPalette::Highlight, inactiveHighlight);
+    } else {
+        palette->setBrush(QPalette::Inactive, QPalette::Highlight, br);
+        palette->setBrush(QPalette::Disabled, QPalette::Highlight, br);
+    }
 
-    palette->setBrush(QPalette::Shadow, background.darker(170));
+    palette->setBrush(QPalette::Shadow, qt_mac_toQColor([NSColor shadowColor]));
 
     qc = qt_mac_toQColor([NSColor controlTextColor]);
     palette->setColor(QPalette::Active, QPalette::Text, qc);
@@ -98,10 +108,11 @@ QPalette * qt_mac_createSystemPalette()
 
 struct QMacPaletteMap {
     inline QMacPaletteMap(QPlatformTheme::Palette p, NSColor *a, NSColor *i) :
-        paletteRole(p), active(a), inactive(i) { }
+        active(a), inactive(i), paletteRole(p) { }
 
+    NSColor *active;
+    NSColor *inactive;
     QPlatformTheme::Palette paletteRole;
-    NSColor *active, *inactive;
 };
 
 #define MAC_PALETTE_ENTRY(pal, active, inactive) \
@@ -146,7 +157,14 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
         }
         if (mac_widget_colors[i].paletteRole == QPlatformTheme::MenuPalette
                 || mac_widget_colors[i].paletteRole == QPlatformTheme::MenuBarPalette) {
-            pal.setBrush(QPalette::Highlight, qt_mac_toQColor([NSColor selectedMenuItemColor]));
+            NSColor *selectedMenuItemColor = nil;
+            if (__builtin_available(macOS 10.14, *)) {
+                // Cheap approximation for NSVisualEffectView (see deprecation note for selectedMenuItemTextColor)
+                selectedMenuItemColor = [[NSColor selectedContentBackgroundColor] highlightWithLevel:0.4];
+            } else {
+                selectedMenuItemColor = [NSColor selectedMenuItemTextColor];
+            }
+            pal.setBrush(QPalette::Highlight, qt_mac_toQColor(selectedMenuItemColor));
             qc = qt_mac_toQColor([NSColor labelColor]);
             pal.setBrush(QPalette::ButtonText, qc);
             pal.setBrush(QPalette::Text, qc);
@@ -164,20 +182,36 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
             pal.setColor(QPalette::Active, QPalette::ButtonText,
                          pal.color(QPalette::Active, QPalette::Text));
         } else if (mac_widget_colors[i].paletteRole == QPlatformTheme::ItemViewPalette) {
+            NSArray<NSColor *> *baseColors = nil;
+            NSColor *activeHighlightColor = nil;
+            if (__builtin_available(macOS 10.14, *)) {
+                baseColors = [NSColor alternatingContentBackgroundColors];
+                activeHighlightColor = [NSColor selectedContentBackgroundColor];
+                pal.setBrush(QPalette::Inactive, QPalette::HighlightedText,
+                             qt_mac_toQBrush([NSColor unemphasizedSelectedTextColor]));
+            } else {
+                baseColors = [NSColor controlAlternatingRowBackgroundColors];
+                activeHighlightColor = [NSColor selectedControlColor];
+                pal.setBrush(QPalette::Inactive, QPalette::HighlightedText,
+                             pal.brush(QPalette::Active, QPalette::Text));
+            }
+            pal.setBrush(QPalette::Base, qt_mac_toQBrush(baseColors[0]));
+            pal.setBrush(QPalette::AlternateBase, qt_mac_toQBrush(baseColors[1]));
             pal.setBrush(QPalette::Active, QPalette::Highlight,
-                         qt_mac_toQBrush([NSColor alternateSelectedControlColor]));
+                         qt_mac_toQBrush(activeHighlightColor));
             pal.setBrush(QPalette::Active, QPalette::HighlightedText,
                          qt_mac_toQBrush([NSColor alternateSelectedControlTextColor]));
             pal.setBrush(QPalette::Inactive, QPalette::Text,
-                          pal.brush(QPalette::Active, QPalette::Text));
-            pal.setBrush(QPalette::Inactive, QPalette::HighlightedText,
-                          pal.brush(QPalette::Active, QPalette::Text));
+                         pal.brush(QPalette::Active, QPalette::Text));
         } else if (mac_widget_colors[i].paletteRole == QPlatformTheme::TextEditPalette) {
+            pal.setBrush(QPalette::Active, QPalette::Base, qt_mac_toQColor([NSColor textBackgroundColor]));
             pal.setBrush(QPalette::Inactive, QPalette::Text,
                           pal.brush(QPalette::Active, QPalette::Text));
             pal.setBrush(QPalette::Inactive, QPalette::HighlightedText,
                           pal.brush(QPalette::Active, QPalette::Text));
-        } else if (mac_widget_colors[i].paletteRole == QPlatformTheme::TextLineEditPalette) {
+        } else if (mac_widget_colors[i].paletteRole == QPlatformTheme::TextLineEditPalette
+                   || mac_widget_colors[i].paletteRole == QPlatformTheme::ComboBoxPalette) {
+            pal.setBrush(QPalette::Active, QPalette::Base, qt_mac_toQColor([NSColor textBackgroundColor]));
             pal.setBrush(QPalette::Disabled, QPalette::Base,
                          pal.brush(QPalette::Active, QPalette::Base));
         }
@@ -187,3 +221,5 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
 }
 
 QT_END_NAMESPACE
+
+QT_WARNING_POP
