@@ -70,6 +70,12 @@
 
 #include <IOKit/graphics/IOGraphicsLib.h>
 
+#if !QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+@interface NSApplication (MojaveForwardDeclarations)
+@property (strong) NSAppearance *appearance NS_AVAILABLE_MAC(10_14);
+@end
+#endif
+
 static void initResources()
 {
     Q_INIT_RESOURCE(qcocoaresources);
@@ -130,6 +136,21 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
 
     NSApplication *cocoaApplication = [QNSApplication sharedApplication];
     qt_redirectNSApplicationSendEvent();
+
+    if (__builtin_available(macOS 10.14, *)) {
+        // Disable dark appearance, unless the Info.plist or environment requests that it should be enabled
+        bool plistEnablesDarkAppearance = [[[NSBundle mainBundle] objectForInfoDictionaryKey:
+            @"NSRequiresAquaSystemAppearance"] boolValue];
+
+        bool hasEnvironmentRequiresAquaAppearance;
+        int environmentRequiresAquaAppearance = qEnvironmentVariableIntValue(
+            "QT_MAC_REQUIRES_AQUA_SYSTEM_APPEARANCE", &hasEnvironmentRequiresAquaAppearance);
+        bool environmentEnablesDarkAppearance = hasEnvironmentRequiresAquaAppearance
+            && environmentRequiresAquaAppearance == 0;
+
+        if (!(plistEnablesDarkAppearance || environmentEnablesDarkAppearance))
+            NSApp.appearance = [NSAppearance appearanceNamed:NSAppearanceNameAqua];
+    }
 
     if (qEnvironmentVariableIsEmpty("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM")) {
         // Applications launched from plain executables (without an app
