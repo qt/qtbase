@@ -97,7 +97,7 @@ public:
 
     void insertAction(int index, QAction *action);
     int indexOf(QAction *action) const;
-    int indexOf(QWidget *widget) const override { return QLayout::indexOf(widget); }
+    using QLayout::indexOf; // bring back the hidden members
 
     bool layoutActions(const QSize &size);
     QSize expandedSize(const QSize &size) const;
