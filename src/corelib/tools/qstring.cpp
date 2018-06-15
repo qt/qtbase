@@ -5142,11 +5142,6 @@ QByteArray QString::toLatin1_helper(const QString &string)
     return qt_convert_to_latin1(string);
 }
 
-QByteArray QString::toLatin1_helper(const QChar *data, int length)
-{
-    return qt_convert_to_latin1(QStringView(data, length));
-}
-
 /*!
     \since 5.10
     \internal
