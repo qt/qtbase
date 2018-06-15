@@ -294,7 +294,7 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
 #    else
     // SSE 4.1 implementation: test 32 bytes at a time (two 16-byte
     // comparisons, unrolled)
-    const __m128i mask = _mm_set1_epi32(maskval);
+    mask = _mm_set1_epi32(maskval);
     while (ptr + 32 <= end) {
         __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
         __m128i data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr + 16));
