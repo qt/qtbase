@@ -85,10 +85,9 @@ void QAndroidTimeZonePrivate::init(const QByteArray &ianaId)
     // Painfully, JNI gives us back a default zone object if it doesn't
     // recognize the name; so check for whether ianaId is a recognized name of
     // the zone object we got and ignore the zone if not.
-    bool found = false;
     // Try checking ianaId against getID(), getDisplayName():
     QJNIObjectPrivate jname = androidTimeZone.callObjectMethod("getID", "()Ljava/lang/String;");
-    found = (jname.toString().toUtf8() == ianaId);
+    bool found = (jname.toString().toUtf8() == ianaId);
     for (int style = 1; !found && style-- > 0;) {
         for (int dst = 1; !found && dst-- > 0;) {
             jname = androidTimeZone.callObjectMethod("getDisplayName", "(ZI;)Ljava/lang/String;",
