@@ -1840,9 +1840,11 @@ bool QIBaseDriver::subscribeToNotification(const QString &name)
                    eBuffer->bufferLength,
                    eBuffer->eventBuffer,
 #if defined (FB_API_VER) && FB_API_VER >= 20
-                   (ISC_EVENT_CALLBACK)qEventCallback,
+                   reinterpret_cast<ISC_EVENT_CALLBACK>(reinterpret_cast<void *>
+                                                                     (&qEventCallback)),
 #else
-                   (isc_callback)qEventCallback,
+                   reinterpret_cast<isc_callback>(reinterpret_cast<void *>
+                                                        (&qEventCallback)),
 #endif
                    eBuffer->resultBuffer);
 
@@ -1920,9 +1922,11 @@ void QIBaseDriver::qHandleEventNotification(void *updatedResultBuffer)
                            eBuffer->bufferLength,
                            eBuffer->eventBuffer,
 #if defined (FB_API_VER) && FB_API_VER >= 20
-                                    (ISC_EVENT_CALLBACK)qEventCallback,
+                           reinterpret_cast<ISC_EVENT_CALLBACK>(reinterpret_cast<void *>
+                                                                (&qEventCallback)),
 #else
-                                    (isc_callback)qEventCallback,
+                           reinterpret_cast<isc_callback>(reinterpret_cast<void *>
+                                                          (&qEventCallback)),
 #endif
                                    eBuffer->resultBuffer);
             if (Q_UNLIKELY(status[0] == 1 && status[1])) {
