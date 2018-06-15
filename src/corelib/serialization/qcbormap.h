@@ -269,28 +269,28 @@ public:
     const_iterator find(const QString & key) const { return constFind(key); }
     const_iterator find(const QCborValue &key) const { return constFind(key); }
 
-    iterator insert(qint64 key, const QCborValue &value)
+    iterator insert(qint64 key, const QCborValue &value_)
     {
         QCborValueRef v = operator[](key);  // detaches
-        v = value;
+        v = value_;
         return { d.data(), v.i };
     }
-    iterator insert(QLatin1String key, const QCborValue &value)
+    iterator insert(QLatin1String key, const QCborValue &value_)
     {
         QCborValueRef v = operator[](key);  // detaches
-        v = value;
+        v = value_;
         return { d.data(), v.i };
     }
-    iterator insert(const QString &key, const QCborValue &value)
+    iterator insert(const QString &key, const QCborValue &value_)
     {
         QCborValueRef v = operator[](key);  // detaches
-        v = value;
+        v = value_;
         return { d.data(), v.i };
     }
-    iterator insert(const QCborValue &key, const QCborValue &value)
+    iterator insert(const QCborValue &key, const QCborValue &value_)
     {
         QCborValueRef v = operator[](key);  // detaches
-        v = value;
+        v = value_;
         return { d.data(), v.i };
     }
     iterator insert(value_type v) { return insert(v.first, v.second); }

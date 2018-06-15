@@ -1832,17 +1832,20 @@ QCborValue::QCborValue(const QCborMap &m)
 }
 
 /*!
+    \fn QCborValue::QCborValue(QCborTag t, const QCborValue &tv)
+    \fn QCborValue::QCborValue(QCborKnownTags t, const QCborValue &tv)
+
     Creates a QCborValue for the extended type represented by the tag value \a
-    tag, tagging value \a tv. The tag can later be retrieved using tag() and
+    t, tagging value \a tv. The tag can later be retrieved using tag() and
     the tagged value using taggedValue().
 
     \sa isTag(), tag(), taggedValue(), QCborKnownTags
  */
-QCborValue::QCborValue(QCborTag tag, const QCborValue &tv)
+QCborValue::QCborValue(QCborTag t, const QCborValue &tv)
     : n(-1), container(new QCborContainerPrivate), t(Tag)
 {
     container->ref.store(1);
-    container->append(tag);
+    container->append(t);
     container->append(tv);
 }
 

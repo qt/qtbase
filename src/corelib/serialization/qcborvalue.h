@@ -141,8 +141,8 @@ public:
     QCborValue(const QCborArray &a);
     QCborValue(const QCborMap &m);
     QCborValue(QCborTag tag, const QCborValue &taggedValue = QCborValue());
-    QCborValue(QCborKnownTags tag, const QCborValue &taggedValue = QCborValue())
-        : QCborValue(QCborTag(tag), taggedValue)
+    QCborValue(QCborKnownTags t_, const QCborValue &tv = QCborValue())
+        : QCborValue(QCborTag(t_), tv)
     {}
 
     explicit QCborValue(const QDateTime &dt);
@@ -342,8 +342,8 @@ public:
         return type() == QCborValue::type_helper(st);
     }
 
-    QCborTag tag(QCborTag tag = QCborTag(-1)) const
-    { return concrete().tag(tag); }
+    QCborTag tag(QCborTag defaultValue = QCborTag(-1)) const
+    { return concrete().tag(defaultValue); }
     QCborValue taggedValue(const QCborValue &defaultValue = QCborValue()) const
     { return concrete().taggedValue(defaultValue); }
 
