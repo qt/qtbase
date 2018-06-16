@@ -796,7 +796,8 @@ QWidgetBackingStore::~QWidgetBackingStore()
 
 static QVector<QRect> getSortedRectsToScroll(const QRegion &region, int dx, int dy)
 {
-    QVector<QRect> rects = region.rects();
+    QVector<QRect> rects;
+    std::copy(region.begin(), region.end(), std::back_inserter(rects));
     if (rects.count() > 1) {
         std::sort(rects.begin(), rects.end(), [=](const QRect &r1, const QRect &r2) {
             if (r1.y() == r2.y()) {
