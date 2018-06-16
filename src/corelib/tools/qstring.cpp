@@ -7207,13 +7207,22 @@ double QString::toDouble(bool *ok) const
 /*!
     Returns the string converted to a \c float value.
 
-    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
-    *\a{ok} is set to \c true. Returns 0.0 if the conversion fails.
+    Returns 0.0 if the conversion fails.
 
-    This function ignores leading and trailing whitespace.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true.
+
+    \warning The QString content may only contain valid numerical characters
+    which includes the plus/minus sign, the characters g and e used in scientific
+    notation, and the decimal point. Including the unit or additional characters
+    leads to a conversion error.
 
     The string conversion will always happen in the 'C' locale. For locale
     dependent conversion use QLocale::toFloat()
+
+    For historical reasons, this function does not handle
+    thousands group separators. If you need to convert such numbers,
+    use QLocale::toFloat().
 
     Example:
 
@@ -7221,7 +7230,7 @@ double QString::toDouble(bool *ok) const
 
     This function ignores leading and trailing whitespace.
 
-    \sa number(), toDouble(), toInt(), QLocale::toFloat()
+    \sa number(), toDouble(), toInt(), QLocale::toFloat(), trimmed()
 */
 
 float QString::toFloat(bool *ok) const
