@@ -2769,7 +2769,7 @@ QCborStreamReader::readStringChunk(char *ptr, qsizetype maxlen)
 {
     CborError err;
     size_t len;
-    const void *content;
+    const void *content = nullptr;
     QCborStreamReader::StringResult<qsizetype> result;
     result.data = 0;
     result.status = Error;
