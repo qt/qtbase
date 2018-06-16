@@ -1359,6 +1359,9 @@ qulonglong QLocale::toULongLong(const QString &s, bool *ok) const
     If \a ok is not 0, reports failure by setting
     *ok to false and success by setting *ok to true.
 
+    This function does not fall back to the 'C' locale if the string
+    cannot be interpreted in this locale.
+
     This function ignores leading and trailing whitespace.
 
     \sa toDouble(), toInt(), toString()
@@ -1376,9 +1379,8 @@ float QLocale::toFloat(const QString &s, bool *ok) const
     If \a ok is not 0, reports failure by setting
     *ok to false and success by setting *ok to true.
 
-    Unlike QString::toDouble(), this function does not use
-    the 'C' locale if the string cannot be interpreted in this
-    locale.
+    This function does not fall back to the 'C' locale if the string
+    cannot be interpreted in this locale.
 
     \snippet code/src_corelib_tools_qlocale.cpp 3
 
@@ -1524,6 +1526,9 @@ qulonglong QLocale::toULongLong(const QStringRef &s, bool *ok) const
     If \a ok is not null, reports failure by setting
     *ok to false and success by setting *ok to true.
 
+    This function does not fall back to the 'C' locale if the string
+    cannot be interpreted in this locale.
+
     This function ignores leading and trailing whitespace.
 
     \sa toDouble(), toInt(), toString()
@@ -1543,9 +1548,8 @@ float QLocale::toFloat(const QStringRef &s, bool *ok) const
     If \a ok is not null, reports failure by setting
     *ok to false and success by setting *ok to true.
 
-    Unlike QString::toDouble(), this function does not fall back to
-    the "C" locale if the string cannot be interpreted in this
-    locale.
+    This function does not fall back to the 'C' locale if the string
+    cannot be interpreted in this locale.
 
     \snippet code/src_corelib_tools_qlocale.cpp 3
 
