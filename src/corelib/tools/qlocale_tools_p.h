@@ -72,13 +72,14 @@
 
 QT_BEGIN_NAMESPACE
 
-enum TrailingJunkMode {
+enum StrayCharacterMode {
     TrailingJunkProhibited,
-    TrailingJunkAllowed
+    TrailingJunkAllowed,
+    WhitespacesAllowed
 };
 
 double asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
-                     TrailingJunkMode trailingJunkMode = TrailingJunkProhibited);
+                     StrayCharacterMode strayCharMode = TrailingJunkProhibited);
 void doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *buf, int bufSize,
                    bool &sign, int &length, int &decpt);
 

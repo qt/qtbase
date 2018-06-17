@@ -160,8 +160,10 @@ void tst_QGetPutEnv::intValue_data()
 
     // some repetition from what is tested in getSetCheck()
     QTest::newRow("empty") << QByteArray() << 0 << false;
-    QTest::newRow("spaces-heading") << QByteArray(" 1") << 1 << true;
-    QTest::newRow("spaces-trailing") << QByteArray("1 ") << 0 << false;
+    QTest::newRow("spaces-heading") << QByteArray(" \n\r\t1") << 1 << true;
+    QTest::newRow("spaces-trailing") << QByteArray("1 \n\r\t") << 1 << true;
+    QTest::newRow("junk-heading") << QByteArray("x1") << 0 << false;
+    QTest::newRow("junk-trailing") << QByteArray("1x") << 0 << false;
 
 #define ROW(x, i, b) \
     QTest::newRow(#x) << QByteArray(#x) << (i) << (b)

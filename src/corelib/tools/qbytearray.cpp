@@ -4135,7 +4135,8 @@ double QByteArray::toDouble(bool *ok) const
     QByteArray nulled = nulTerminated();
     bool nonNullOk = false;
     int processed = 0;
-    double d = asciiToDouble(nulled.constData(), nulled.length(), nonNullOk, processed);
+    double d = asciiToDouble(nulled.constData(), nulled.length(),
+                             nonNullOk, processed, WhitespacesAllowed);
     if (ok)
         *ok = nonNullOk;
     return d;

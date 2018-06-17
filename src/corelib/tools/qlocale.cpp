@@ -3646,6 +3646,11 @@ qlonglong QLocaleData::bytearrayToLongLong(const char *num, int base, bool *ok)
     }
 
     if (*endptr != '\0') {
+        while (ascii_isspace(*endptr))
+            ++endptr;
+    }
+
+    if (*endptr != '\0') {
         // we stopped at a non-digit character after converting some digits
         if (ok != 0)
             *ok = false;
@@ -3663,8 +3668,19 @@ qulonglong QLocaleData::bytearrayToUnsLongLong(const char *num, int base, bool *
     const char *endptr;
     qulonglong l = qstrtoull(num, &endptr, base, &_ok);
 
-    if (!_ok || *endptr != '\0') {
+    if (!_ok) {
         if (ok != 0)
+            *ok = false;
+        return 0;
+    }
+
+    if (*endptr != '\0') {
+        while (ascii_isspace(*endptr))
+            ++endptr;
+    }
+
+    if (*endptr != '\0') {
+        if (ok != nullptr)
             *ok = false;
         return 0;
     }

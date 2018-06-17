@@ -3442,7 +3442,27 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
     bool ok_ = true;
     const char *endptr;
     const qlonglong value = qstrtoll(buffer, &endptr, 0, &ok_);
-    if (int(value) != value || *endptr != '\0') { // this is the check in QByteArray::toInt(), keep it in sync
+
+    // Keep the following checks in sync with QByteArray::toInt()
+    if (!ok_) {
+        if (ok)
+            *ok = false;
+        return 0;
+    }
+
+    if (*endptr != '\0') {
+        while (ascii_isspace(*endptr))
+            ++endptr;
+    }
+
+    if (*endptr != '\0') {
+        // we stopped at a non-digit character after converting some digits
+        if (ok)
+            *ok = false;
+        return 0;
+    }
+
+    if (int(value) != value) {
         if (ok)
             *ok = false;
         return 0;
