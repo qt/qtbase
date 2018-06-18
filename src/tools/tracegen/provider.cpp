@@ -272,35 +272,28 @@ Provider parseProvider(const QString &filename)
 
     static const QRegExp tracedef(QStringLiteral("([A-Za-z][A-Za-z0-9_]*)\\((.*)\\)"));
 
-    int lineNumber = 0;
-
     Provider provider;
     provider.name = QFileInfo(filename).baseName();
 
-    for (;;) {
+    for (int lineNumber = 1; !s.atEnd(); ++lineNumber) {
         QString line = s.readLine().trimmed();
 
-        if (line.isNull())
-            break;
-
-        if (line.isEmpty() || line.startsWith(QStringLiteral("#"))) {
-            ++lineNumber;
+        if (line.isEmpty() || line.startsWith(QLatin1Char('#')))
             continue;
-        }
 
         if (tracedef.exactMatch(line)) {
             const QString name = tracedef.cap(1);
-            QStringList args = tracedef.cap(2).split(QStringLiteral(","), QString::SkipEmptyParts);
-
-            if (args.at(0).isNull())
-                args.clear();
+            const QString argsString = tracedef.cap(2);
+            const QStringList args = argsString.split(QLatin1Char(','),
+                                                      QString::SkipEmptyParts);
 
             provider.tracepoints << parseTracepoint(name, args, filename, lineNumber);
         } else {
-            panic("Syntax error whilre processing %s on line %d", qPrintable(filename), lineNumber);
+            panic("Syntax error while processing '%s' line %d:\n"
+                  "    '%s' does not look like a tracepoint definition",
+                  qPrintable(filename), lineNumber,
+                  qPrintable(line));
         }
-
-        ++lineNumber;
     }
 
 #ifdef TRACEGEN_DEBUG
