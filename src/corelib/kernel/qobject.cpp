@@ -64,6 +64,7 @@
 
 #include <private/qorderedmutexlocker_p.h>
 #include <private/qhooks_p.h>
+#include <qtcore_tracepoints_p.h>
 
 #include <new>
 
@@ -820,6 +821,7 @@ QObject::QObject(QObject *parent)
 #endif
     if (Q_UNLIKELY(qtHookData[QHooks::AddQObject]))
         reinterpret_cast<QHooks::AddQObjectCallback>(qtHookData[QHooks::AddQObject])(this);
+    Q_TRACE(QObject_ctor, this);
 }
 
 /*!
@@ -855,6 +857,7 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
 #endif
     if (Q_UNLIKELY(qtHookData[QHooks::AddQObject]))
         reinterpret_cast<QHooks::AddQObjectCallback>(qtHookData[QHooks::AddQObject])(this);
+    Q_TRACE(QObject_ctor, this);
 }
 
 /*!
@@ -1029,6 +1032,8 @@ QObject::~QObject()
 #endif
     if (Q_UNLIKELY(qtHookData[QHooks::RemoveQObject]))
         reinterpret_cast<QHooks::RemoveQObjectCallback>(qtHookData[QHooks::RemoveQObject])(this);
+
+    Q_TRACE(QObject_dtor, this);
 
     if (d->parent)        // remove it from parent object
         d->setParent_helper(0);

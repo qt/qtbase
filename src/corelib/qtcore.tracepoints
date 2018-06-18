@@ -20,3 +20,6 @@ QCoreApplication_notify_entry(QObject *receiver, QEvent *event, int type)
 QCoreApplication_notify_event_filtered(QObject *receiver, QEvent *event, int type)
 QCoreApplication_notify_before_delivery(QObject *receiver, QEvent *event, int type)
 QCoreApplication_notify_after_delivery(QObject *receiver, QEvent *event, int type, bool consumed)
+
+QObject_ctor(QObject *object)
+QObject_dtor(QObject *object)
