@@ -23,3 +23,12 @@ QCoreApplication_notify_after_delivery(QObject *receiver, QEvent *event, int typ
 
 QObject_ctor(QObject *object)
 QObject_dtor(QObject *object)
+
+QMetaObject_activate_begin_signal(QObject *sender, int signalIndex)
+QMetaObject_activate_end_signal(QObject *sender, int signalIndex)
+QMetaObject_activate_begin_slot(QObject *receiver, int slotIndex)
+QMetaObject_activate_end_slot(QObject *receiver, int slotIndex)
+QMetaObject_activate_begin_slot_functor(void *slotObject)
+QMetaObject_activate_end_slot_functor(void *slotObject)
+QMetaObject_activate_begin_declarative_signal(QObject *sender, int signalIndex)
+QMetaObject_activate_end_declarative_signal(QObject *sender, int signalIndex)
