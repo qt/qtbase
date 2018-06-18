@@ -29,7 +29,7 @@
     \example graphicsview/anchorlayout
     \title Anchor Layout Example
     \ingroup examples-graphicsview-layout
-    \brief Demonstrates anchor layout in a graphics view scene
+    \brief Demonstrates anchor layout in a graphics view scene.
 
     The Anchor Layout example demonstrates the use of the QGraphicsAnchorLayout
     class.

@@ -28,7 +28,7 @@
 /*!
     \example draganddrop/draggabletext
     \title Draggable Text Example
-    \brief Illustrates how to drag and drop text between widgets
+    \brief Illustrates how to drag and drop text between widgets.
 
     \brief The Draggable Text example shows how to drag and drop textual data between widgets
     in the same application, and between different applications.

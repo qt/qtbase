@@ -908,7 +908,7 @@ QSize QPageSizePrivate::sizePixels(int resolution) const
     \class QPageSize
     \inmodule QtGui
     \since 5.3
-    \brief The QPageSize class describes the size and name of a defined page size
+    \brief The QPageSize class describes the size and name of a defined page size.
 
     This class implements support for the set of standard page sizes as defined
     in the Adobe Postscript PPD Standard v4.3. It defines the standard set of

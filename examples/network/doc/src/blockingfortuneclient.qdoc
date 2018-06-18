@@ -29,7 +29,7 @@
     \example blockingfortuneclient
     \title Blocking Fortune Client Example
     \ingroup examples-network
-    \brief Demonstrates how to create a client for a network service
+    \brief Demonstrates how to create a client for a network service.
 
     \image blockingfortuneclient-example.png
 

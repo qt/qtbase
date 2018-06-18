@@ -29,7 +29,7 @@
     \example hellovulkanwindow
     \title Hello Vulkan Window Example
     \ingroup examples-vulkan
-    \brief Shows the basics of using QVulkanWindow
+    \brief Shows the basics of using QVulkanWindow.
 
     The \e{Hello Vulkan Window Example} shows the basics of using QVulkanWindow
     in order to display rendering with the Vulkan graphics API on systems that

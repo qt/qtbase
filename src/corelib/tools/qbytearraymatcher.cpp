@@ -334,7 +334,7 @@ int qFindByteArray(
     \class QStaticByteArrayMatcher
     \since 5.9
     \inmodule QtCore
-    \brief The QStaticByteArrayMatcher class is a compile-time version of QByteArrayMatcher
+    \brief The QStaticByteArrayMatcher class is a compile-time version of QByteArrayMatcher.
 
     \ingroup tools
     \ingroup string-processing

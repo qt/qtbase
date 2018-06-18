@@ -109,7 +109,7 @@ public:
 
 /*! \class QPlainTextDocumentLayout
     \since 4.4
-    \brief The QPlainTextDocumentLayout class implements a plain text layout for QTextDocument
+    \brief The QPlainTextDocumentLayout class implements a plain text layout for QTextDocument.
 
     \ingroup richtext-processing
     \inmodule QtWidgets

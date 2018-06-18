@@ -30,7 +30,7 @@
   \inmodule QtPlatformHeaders
   \since 5.4
 
-  \brief A class encapsulating a WGL context on Windows with desktop OpenGL (opengl32.dll)
+  \brief A class encapsulating a WGL context on Windows with desktop OpenGL (opengl32.dll).
 
   \note There is no binary compatibility guarantee for this class,
   meaning that an application using it is only guaranteed to work with the Qt

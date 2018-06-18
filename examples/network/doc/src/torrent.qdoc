@@ -29,7 +29,7 @@
     \example torrent
     \title Torrent Example
     \ingroup examples-network
-    \brief Demonstrates complex TCP/IP operations
+    \brief Demonstrates complex TCP/IP operations.
 
     This example demonstrates some of the complex TCP/IP operations
     supported by the Qt Network APIs.

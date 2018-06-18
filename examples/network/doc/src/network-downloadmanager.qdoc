@@ -28,7 +28,7 @@
 /*!
     \example downloadmanager
     \title Network Download Manager Example
-    \brief Demonstrates how to use the networking APIs for multiple downloads
+    \brief Demonstrates how to use the networking APIs for multiple downloads.
     \ingroup examples-network
 
     The Network Download example shows how to implement a queue for multiple

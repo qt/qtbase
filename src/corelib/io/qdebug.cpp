@@ -842,7 +842,7 @@ QDebug &QDebug::resetFormat()
 /*!
     \class QDebugStateSaver
     \inmodule QtCore
-    \brief Convenience class for custom QDebug operators
+    \brief Convenience class for custom QDebug operators.
 
     Saves the settings used by QDebug, and restores them upon destruction,
     then calls \l {QDebug::maybeSpace()}{maybeSpace()}, to separate arguments with a space if

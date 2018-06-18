@@ -2049,7 +2049,7 @@ void QTextEdit::setAcceptRichText(bool accept)
     \inmodule QtWidgets
 
     \brief The QTextEdit::ExtraSelection structure provides a way of specifying a
-           character format for a given selection in a document
+           character format for a given selection in a document.
 */
 
 /*!

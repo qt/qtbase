@@ -336,7 +336,7 @@
     \threadsafe
     \inmodule QtCore
     \since 5.1
-    \brief The QGlobalStatic class is used to implement a global static object
+    \brief The QGlobalStatic class is used to implement a global static object.
 
     The QGlobalStatic class is the front-end API exported when
     Q_GLOBAL_STATIC() is used. See the documentation for the macro for a

@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
   \class QRasterWindow
   \inmodule QtGui
   \since 5.4
-  \brief QRasterWindow is a convenience class for using QPainter on a QWindow
+  \brief QRasterWindow is a convenience class for using QPainter on a QWindow.
 
   QRasterWindow is a QWindow with a raster-based, non-OpenGL surface. On top of
   the functionality offered by QWindow, QRasterWindow adds a virtual

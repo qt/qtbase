@@ -61,7 +61,7 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     \class QNetworkReply
     \since 4.4
     \brief The QNetworkReply class contains the data and headers for a request
-    sent with QNetworkAccessManager
+    sent with QNetworkAccessManager.
 
     \reentrant
     \ingroup network

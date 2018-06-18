@@ -29,7 +29,7 @@
     \example http
     \title HTTP Example
     \ingroup examples-network
-    \brief Demonstrates a simple HTTP client
+    \brief Demonstrates a simple HTTP client.
 
     This example demonstrates how a simple HTTP client can fetch files
     from remote hosts.

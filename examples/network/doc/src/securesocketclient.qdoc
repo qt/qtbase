@@ -29,7 +29,7 @@
     \example securesocketclient
     \title Secure Socket Client Example
     \ingroup examples-network
-    \brief Demonstrates how to communicate over an encrypted (SSL) connection
+    \brief Demonstrates how to communicate over an encrypted (SSL) connection.
 
     This example uses QSslSocket to demonstrate how to communicate over an
     encrypted connection, deal with authenticity problems, and display security

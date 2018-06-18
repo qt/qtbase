@@ -29,7 +29,7 @@
     \example network-chat
     \title Network Chat Example
     \ingroup examples-network
-    \brief Demonstrates a stateful peer-to-peer Chat client
+    \brief Demonstrates a stateful peer-to-peer Chat client.
 
     This example uses broadcasting with QUdpSocket and QNetworkInterface to
     discover its peers.

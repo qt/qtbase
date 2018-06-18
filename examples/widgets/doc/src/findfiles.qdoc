@@ -30,7 +30,7 @@
     \title Find Files Example
     \ingroup examples-dialogs
 
-    \brief A dialog for finding files in a specified folder
+    \brief A dialog for finding files in a specified folder.
 
     The Find Files application allows the user to search for files in a
     specified directory, matching a given file name or wildcard,

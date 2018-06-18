@@ -29,7 +29,7 @@
     \example multicastreceiver
     \title Multicast Receiver Example
     \ingroup examples-network
-    \brief Demonstrates how to receive information sent to a multicast group
+    \brief Demonstrates how to receive information sent to a multicast group.
 
     This example demonstrates how to receive messages sent to a multicast group
     \image multicastreceiver-example.png

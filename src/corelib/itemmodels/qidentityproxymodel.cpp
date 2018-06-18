@@ -83,7 +83,7 @@ class QIdentityProxyModelPrivate : public QAbstractProxyModelPrivate
     \since 4.8
     \class QIdentityProxyModel
     \inmodule QtCore
-    \brief The QIdentityProxyModel class proxies its source model unmodified
+    \brief The QIdentityProxyModel class proxies its source model unmodified.
 
     \ingroup model-view
 

@@ -503,7 +503,7 @@ bool QSemaphore::tryAcquire(int n, int timeout)
 
 /*!
     \class QSemaphoreReleaser
-    \brief The QSemaphoreReleaser class provides exception-safe deferral of a QSemaphore::release() call
+    \brief The QSemaphoreReleaser class provides exception-safe deferral of a QSemaphore::release() call.
     \since 5.10
     \ingroup thread
     \inmodule QtCore

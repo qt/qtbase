@@ -29,7 +29,7 @@
     \example hellovulkancubes
     \title Hello Vulkan Cubes Example
     \ingroup examples-vulkan
-    \brief Shows the basics of using QVulkanWindow
+    \brief Shows the basics of using QVulkanWindow.
 
     The \e{Hello Vulkan Cubes Example} shows more advanced usage of QVulkanWindow.
 

@@ -59,7 +59,7 @@ const char QSslConfiguration::NextProtocolHttp1_1[] = "http/1.1";
 
 /*!
     \class QSslConfiguration
-    \brief The QSslConfiguration class holds the configuration and state of an SSL connection
+    \brief The QSslConfiguration class holds the configuration and state of an SSL connection.
     \since 4.4
 
     \reentrant

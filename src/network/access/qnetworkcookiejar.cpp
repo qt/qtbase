@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
     \since 4.4
     \inmodule QtNetwork
 
-    \brief The QNetworkCookieJar class implements a simple jar of QNetworkCookie objects
+    \brief The QNetworkCookieJar class implements a simple jar of QNetworkCookie objects.
 
     Cookies are small bits of information that stateless protocols
     like HTTP use to maintain some persistent information across

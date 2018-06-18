@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtGui
     \since 5.1
     \wrapper
-    \brief The QOpenGLFunctions_ES2 class provides all functions for OpenGL ES 2
+    \brief The QOpenGLFunctions_ES2 class provides all functions for OpenGL ES 2.
 
     This class is a wrapper for OpenGL ES 2 functions. See reference pages on
     \l {http://www.khronos.org/opengles/sdk/docs/man/}{khronos.org} for

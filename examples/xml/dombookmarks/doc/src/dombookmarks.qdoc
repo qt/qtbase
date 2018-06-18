@@ -29,7 +29,7 @@
     \example dombookmarks
     \title DOM Bookmarks Example
     \ingroup xml-examples
-    \brief Provides a reader for XML Bookmark Exchange Language files
+    \brief Provides a reader for XML Bookmark Exchange Language files.
 
     The DOM Bookmarks example provides a reader for XML Bookmark Exchange Language (XBEL)
     files that uses Qt's DOM-based XML API to read and parse the files. The SAX Bookmarks

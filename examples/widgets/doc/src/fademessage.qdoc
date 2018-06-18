@@ -29,7 +29,7 @@
     \example effects/fademessage
     \title Fade Message Effect Example
     \ingroup examples-graphicsview-graphicseffects
-    \brief Demonstrates how to apply effects on items in the view
+    \brief Demonstrates how to apply effects on items in the view.
 
     \div { style="text-align: left"}
     \inlineimage fademessageeffect-example.png
