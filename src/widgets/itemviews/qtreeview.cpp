@@ -1991,19 +1991,21 @@ void QTreeView::keyPressEvent(QKeyEvent *event)
     if (d->isIndexValid(current) && d->model && d->itemsExpandable) {
         switch (event->key()) {
         case Qt::Key_Asterisk: {
+            // do layouting only once after expanding is done
+            d->doDelayedItemsLayout();
             QStack<QModelIndex> parents;
             parents.push(current);
-                while (!parents.isEmpty()) {
-                    QModelIndex parent = parents.pop();
-                    for (int row = 0; row < d->model->rowCount(parent); ++row) {
-                        QModelIndex child = d->model->index(row, 0, parent);
-                        if (!d->isIndexValid(child))
-                            break;
-                        parents.push(child);
-                        expand(child);
-                    }
+            while (!parents.isEmpty()) {
+                QModelIndex parent = parents.pop();
+                for (int row = 0; row < d->model->rowCount(parent); ++row) {
+                    QModelIndex child = d->model->index(row, 0, parent);
+                    if (!d->isIndexValid(child))
+                        break;
+                    parents.push(child);
+                    expand(child);
                 }
-                expand(current);
+            }
+            expand(current);
             break; }
         case Qt::Key_Plus:
             expand(current);
