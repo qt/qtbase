@@ -368,7 +368,7 @@ QEvdevTouchScreenHandler::~QEvdevTouchScreenHandler()
 
 bool QEvdevTouchScreenHandler::isFiltered() const
 {
-    return d->m_filtered;
+    return d && d->m_filtered;
 }
 
 QTouchDevice *QEvdevTouchScreenHandler::touchDevice() const
