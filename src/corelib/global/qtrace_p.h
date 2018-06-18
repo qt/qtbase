@@ -109,6 +109,8 @@
  * qcoreapplication_baz above.
  */
 
+#include <QtCore/qglobal.h>
+
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_TRACEPOINT) && !defined(QT_BOOTSTRAPPED)
