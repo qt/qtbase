@@ -1152,6 +1152,11 @@
 #  define Q_REQUIRED_RESULT [[nodiscard]]
 #endif
 
+#if defined(__cpp_enumerator_attributes) && __cpp_enumerator_attributes >= 201411
+#  define Q_DECL_ENUMERATOR_DEPRECATED Q_DECL_DEPRECATED
+#  define Q_DECL_ENUMERATOR_DEPRECATED_X(x) Q_DECL_DEPRECATED_X(x)
+#endif
+
 /*
  * Fallback macros to certain compiler features
  */
@@ -1185,6 +1190,12 @@
 #endif
 #ifndef Q_DECL_DEPRECATED_X
 #  define Q_DECL_DEPRECATED_X(text) Q_DECL_DEPRECATED
+#endif
+#ifndef Q_DECL_ENUMERATOR_DEPRECATED
+#  define Q_DECL_ENUMERATOR_DEPRECATED
+#endif
+#ifndef Q_DECL_ENUMERATOR_DEPRECATED_X
+#  define Q_DECL_ENUMERATOR_DEPRECATED_X(x)
 #endif
 #ifndef Q_DECL_EXPORT
 #  define Q_DECL_EXPORT
