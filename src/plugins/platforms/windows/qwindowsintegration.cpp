@@ -184,7 +184,7 @@ static inline unsigned parseOptions(const QStringList &paramList,
                                     QtWindows::ProcessDpiAwareness *dpiAwareness)
 {
     unsigned options = 0;
-    foreach (const QString &param, paramList) {
+    for (const QString &param : paramList) {
         if (param.startsWith(QLatin1String("fontengine="))) {
             if (param.endsWith(QLatin1String("freetype"))) {
                 options |= QWindowsIntegration::FontDatabaseFreeType;

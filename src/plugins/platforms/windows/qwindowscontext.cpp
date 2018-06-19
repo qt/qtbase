@@ -547,7 +547,7 @@ void QWindowsContext::unregisterWindowClasses()
 {
     const HINSTANCE appInstance = static_cast<HINSTANCE>(GetModuleHandle(0));
 
-    foreach (const QString &name,  d->m_registeredWindowClassNames) {
+    for (const QString &name : qAsConst(d->m_registeredWindowClassNames)) {
         if (!UnregisterClass(reinterpret_cast<LPCWSTR>(name.utf16()), appInstance) && QWindowsContext::verbose)
             qErrnoWarning("UnregisterClass failed for '%s'", qPrintable(name));
     }

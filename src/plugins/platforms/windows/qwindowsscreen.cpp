@@ -274,9 +274,12 @@ QList<QPlatformScreen *> QWindowsScreen::virtualSiblings() const
 {
     QList<QPlatformScreen *> result;
     if (m_data.flags & QWindowsScreenData::VirtualDesktop) {
-        foreach (QWindowsScreen *screen, QWindowsContext::instance()->screenManager().screens())
+        const QWindowsScreenManager::WindowsScreenList screens
+            = QWindowsContext::instance()->screenManager().screens();
+        for (QWindowsScreen *screen : screens) {
             if (screen->data().flags & QWindowsScreenData::VirtualDesktop)
                 result.push_back(screen);
+        }
     } else {
         result.push_back(const_cast<QWindowsScreen *>(this));
     }
@@ -505,7 +508,8 @@ void QWindowsScreenManager::removeScreen(int index)
     // move those manually.
     if (screen != primaryScreen) {
         unsigned movedWindowCount = 0;
-        foreach (QWindow *w, QGuiApplication::topLevelWindows()) {
+        const QWindowList tlws = QGuiApplication::topLevelWindows();
+        for (QWindow *w : tlws) {
             if (w->screen() == screen && w->handle() && w->type() != Qt::Desktop) {
                 if (w->isVisible() && w->windowState() != Qt::WindowMinimized
                     && (QWindowsWindow::baseWindowOf(w)->exStyle() & WS_EX_TOOLWINDOW)) {
@@ -530,9 +534,9 @@ void QWindowsScreenManager::removeScreen(int index)
 bool QWindowsScreenManager::handleScreenChanges()
 {
     // Look for changed monitors, add new ones
-    WindowsScreenDataList newDataList = monitorData();
+    const WindowsScreenDataList newDataList = monitorData();
     const bool lockScreen = newDataList.size() == 1 && (newDataList.front().flags & QWindowsScreenData::LockScreen);
-    foreach (const QWindowsScreenData &newData, newDataList) {
+    for (const QWindowsScreenData &newData : newDataList) {
         const int existingIndex = indexOfMonitor(m_screens, newData.name);
         if (existingIndex != -1) {
             m_screens.at(existingIndex)->handleChanges(newData);
@@ -564,7 +568,7 @@ void QWindowsScreenManager::clearScreens()
 
 const QWindowsScreen *QWindowsScreenManager::screenAtDp(const QPoint &p) const
 {
-    foreach (QWindowsScreen *scr, m_screens) {
+    for (QWindowsScreen *scr : m_screens) {
         if (scr->geometry().contains(p))
             return scr;
     }

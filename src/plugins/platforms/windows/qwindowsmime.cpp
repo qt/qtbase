@@ -107,7 +107,8 @@ static inline QByteArray msgConversionError(const char *func, const char *format
     msg += ": Unable to convert DIB image. The image converter plugin for '";
     msg += format;
     msg += "' is not available. Available formats: ";
-    foreach (const QByteArray &af, QImageReader::supportedImageFormats()) {
+    const QList<QByteArray> &formats = QImageReader::supportedImageFormats();
+    for (const QByteArray &af : formats) {
         msg += af;
         msg += ' ';
     }
@@ -1598,7 +1599,7 @@ QVariant QWindowsMimeConverter::convertToMime(const QStringList &mimeTypes,
                                               QVariant::Type preferredType,
                                               QString *formatIn /* = 0 */) const
 {
-    foreach (const QString &format, mimeTypes) {
+    for (const QString &format : mimeTypes) {
         if (const QWindowsMime *converter = converterToMime(format, pDataObj)) {
             if (converter->canConvertToMime(format, pDataObj)) {
                 const QVariant dataV = converter->convertToMime(format, pDataObj, preferredType);

@@ -9,7 +9,7 @@ mingw: LIBS *= -luuid
 # For the dialog helpers:
 LIBS += -lshlwapi -lshell32 -ladvapi32
 
-DEFINES *= QT_NO_CAST_FROM_ASCII
+DEFINES *= QT_NO_CAST_FROM_ASCII QT_NO_FOREACH
 
 SOURCES += \
     $$PWD/qwindowswindow.cpp \

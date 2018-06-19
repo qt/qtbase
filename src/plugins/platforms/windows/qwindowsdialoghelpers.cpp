@@ -1026,7 +1026,7 @@ static QList<FilterSpec> filterSpecs(const QStringList &filters,
     Q_ASSERT(filterSeparatorRE.isValid());
     // Split filter specification as 'Texts (*.txt[;] *.doc)', '*.txt[;] *.doc'
     // into description and filters specification as '*.txt;*.doc'
-    foreach (const QString &filterString, filters) {
+    for (const QString &filterString : filters) {
         const int openingParenPos = filterString.lastIndexOf(QLatin1Char('('));
         const int closingParenPos = openingParenPos != -1 ?
             filterString.indexOf(QLatin1Char(')'), openingParenPos + 1) : -1;
@@ -1321,7 +1321,7 @@ void QWindowsNativeSaveFileDialog::setNameFilters(const QStringList &f)
     // filter only if a default suffix is set (see docs). Set the first available
     // suffix unless we have a defaultSuffix.
     if (!hasDefaultSuffix()) {
-        foreach (const QString &filter, f) {
+        for (const QString &filter : f) {
             const QString suffix = suffixFromFilter(filter);
             if (!suffix.isEmpty()) {
                 setDefaultSuffixSys(suffix);
@@ -1780,12 +1780,12 @@ void QWindowsXpNativeFileDialog::populateOpenFileName(OPENFILENAME *ofn, HWND ow
 
     // Create a buffer with the filter strings.
     int totalStringLength = 0;
-    QList<FilterSpec> specs =
+    const QList<FilterSpec> specs =
         filterSpecs(m_options->nameFilters(), m_options->options() & QFileDialogOptions::HideNameFilterDetails, &totalStringLength);
     const int size = specs.size();
     wchar_t *ptr = new wchar_t[totalStringLength + 2 * size + 1];
     ofn->lpstrFilter = ptr;
-    foreach (const FilterSpec &spec, specs) {
+    for (const FilterSpec &spec : specs) {
         ptr += spec.description.toWCharArray(ptr);
         *ptr++ = 0;
         ptr += spec.filter.toWCharArray(ptr);

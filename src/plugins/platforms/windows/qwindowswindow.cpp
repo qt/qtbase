@@ -1886,7 +1886,8 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowStates state)
             fireExpose(QRegion(0, 0, w->width(), w->height()));
             exposeEventsSent = true;
         }
-        foreach (QWindow *child, QGuiApplication::allWindows()) {
+        const QWindowList allWindows = QGuiApplication::allWindows();
+        for (QWindow *child : allWindows) {
             if (child != w && child->isVisible() && child->transientParent() == w) {
                 QWindowsWindow *platformWindow = QWindowsWindow::windowsWindowOf(child);
                 if (platformWindow && platformWindow->isLayered()) {
