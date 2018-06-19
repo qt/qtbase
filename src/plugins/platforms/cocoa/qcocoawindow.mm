@@ -522,6 +522,8 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
             styleMask |= NSClosableWindowMask;
         if (flags & Qt::WindowMinimizeButtonHint)
             styleMask |= NSMiniaturizableWindowMask;
+        if (flags & Qt::WindowMaximizeButtonHint)
+            styleMask |= NSResizableWindowMask;
     } else {
         styleMask |= NSClosableWindowMask | NSTitledWindowMask;
 
