@@ -43,7 +43,7 @@
 
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qhashfunctions.h>
-#include <QtCore/qreadwritelock.h>
+#include <QtCore/qmutex.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qdebug.h>
@@ -720,21 +720,14 @@ QT_BEGIN_NAMESPACE
         to the \c{/u} modifier in Perl regular expressions.
 
     \value OptimizeOnFirstUsageOption
-        The regular expression will be optimized (and possibly
-        JIT-compiled) on its first usage, instead of after a certain (undefined)
-        number of usages. See also \l{QRegularExpression::}{optimize()}.
-        This enum value has been introduced in Qt 5.4.
+        This option is ignored. A regular expression is automatically optimized
+        (including JIT compiling) the first time it is used. This enum value
+        was introduced in Qt 5.4.
 
     \value DontAutomaticallyOptimizeOption
-        Regular expressions are automatically optimized after a
-        certain number of usages; setting this option prevents such
-        optimizations, therefore avoiding possible unpredictable spikes in
-        CPU and memory usage. If both this option and the
-        \c{OptimizeOnFirstUsageOption} option are set, then this option takes
-        precedence. Note: this option will still let the regular expression
-        to be optimized by manually calling
-        \l{QRegularExpression::}{optimize()}. This enum value has been
-        introduced in Qt 5.4.
+        This option is ignored. A regular expression is automatically optimized
+        (including JIT compiling) the first time it is used. This enum value
+        was introduced in Qt 5.4.
 */
 
 /*!
@@ -790,14 +783,6 @@ QT_BEGIN_NAMESPACE
         constitute a security issue. This enum value has been introduced in
         Qt 5.4.
 */
-
-// after how many usages we optimize the regexp
-#ifdef QT_BUILD_INTERNAL
-Q_AUTOTEST_EXPORT unsigned int qt_qregularexpression_optimize_after_use_count = 10;
-#else
-static const unsigned int qt_qregularexpression_optimize_after_use_count = 10;
-#endif // QT_BUILD_INTERNAL
-
 
 namespace QtPrivate {
 /*!
@@ -924,13 +909,7 @@ struct QRegularExpressionPrivate : QSharedData
     void cleanCompiledPattern();
     void compilePattern();
     void getPatternInfo();
-
-    enum OptimizePatternOption {
-        LazyOptimizeOption,
-        ImmediateOptimizeOption
-    };
-
-    void optimizePattern(OptimizePatternOption option);
+    void optimizePattern();
 
     enum CheckSubjectStringOption {
         CheckSubjectString,
@@ -955,7 +934,7 @@ struct QRegularExpressionPrivate : QSharedData
     // *All* of the following members are managed while holding this mutex,
     // except for isDirty which is set to true by QRegularExpression setters
     // (right after a detach happened).
-    mutable QReadWriteLock mutex;
+    mutable QMutex mutex;
 
     // The PCRE code pointer is reference-counted by the QRegularExpressionPrivate
     // objects themselves; when the private is copied (i.e. a detach happened)
@@ -964,7 +943,6 @@ struct QRegularExpressionPrivate : QSharedData
     int errorCode;
     int errorOffset;
     int capturingCount;
-    unsigned int usedCount;
     bool usingCrLfNewlines;
     bool isDirty;
 };
@@ -1033,7 +1011,6 @@ QRegularExpressionPrivate::QRegularExpressionPrivate()
       errorCode(0),
       errorOffset(-1),
       capturingCount(0),
-      usedCount(0),
       usingCrLfNewlines(false),
       isDirty(true)
 {
@@ -1065,7 +1042,6 @@ QRegularExpressionPrivate::QRegularExpressionPrivate(const QRegularExpressionPri
       errorCode(0),
       errorOffset(-1),
       capturingCount(0),
-      usedCount(0),
       usingCrLfNewlines(false),
       isDirty(true)
 {
@@ -1081,7 +1057,6 @@ void QRegularExpressionPrivate::cleanCompiledPattern()
     errorCode = 0;
     errorOffset = -1;
     capturingCount = 0;
-    usedCount = 0;
     usingCrLfNewlines = false;
 }
 
@@ -1090,7 +1065,7 @@ void QRegularExpressionPrivate::cleanCompiledPattern()
 */
 void QRegularExpressionPrivate::compilePattern()
 {
-    const QWriteLocker lock(&mutex);
+    const QMutexLocker lock(&mutex);
 
     if (!isDirty)
         return;
@@ -1117,6 +1092,7 @@ void QRegularExpressionPrivate::compilePattern()
         errorCode = 0;
     }
 
+    optimizePattern();
     getPatternInfo();
 }
 
@@ -1217,26 +1193,16 @@ static bool isJitEnabled()
     The purpose of the function is to call pcre2_jit_compile_16, which
     JIT-compiles the pattern.
 
-    It gets called by doMatch() every time a match is performed.
-
-    As of now, the optimizations on the pattern are performed after a certain
-    number of usages (i.e. the qt_qregularexpression_optimize_after_use_count
-    constant) unless the DontAutomaticallyOptimizeOption option is set on the
-    QRegularExpression object, or anyhow by calling optimize() (which will pass
-    ImmediateOptimizeOption).
+    It gets called when a pattern is recompiled by us (in compilePattern()),
+    under mutex protection.
 */
-void QRegularExpressionPrivate::optimizePattern(OptimizePatternOption option)
+void QRegularExpressionPrivate::optimizePattern()
 {
     Q_ASSERT(compiledPattern);
 
     static const bool enableJit = isJitEnabled();
 
     if (!enableJit)
-        return;
-
-    const QWriteLocker lock(&mutex);
-
-    if ((option == LazyOptimizeOption) && (++usedCount != qt_qregularexpression_optimize_after_use_count))
         return;
 
     pcre2_jit_compile_16(compiledPattern, PCRE2_JIT_COMPLETE | PCRE2_JIT_PARTIAL_SOFT | PCRE2_JIT_PARTIAL_HARD);
@@ -1344,20 +1310,10 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
         return priv;
     }
 
-    // skip optimizing and doing the actual matching if NoMatch type was requested
+    // skip doing the actual matching if NoMatch type was requested
     if (matchType == QRegularExpression::NoMatch) {
         priv->isValid = true;
         return priv;
-    }
-
-    if (!(patternOptions & QRegularExpression::DontAutomaticallyOptimizeOption)) {
-        const OptimizePatternOption optimizePatternOption =
-                (patternOptions & QRegularExpression::OptimizeOnFirstUsageOption)
-                    ? ImmediateOptimizeOption
-                    : LazyOptimizeOption;
-
-        // this is mutex protected
-        const_cast<QRegularExpressionPrivate *>(this)->optimizePattern(optimizePatternOption);
     }
 
     int pcreOptions = convertToPcreOptions(matchOptions);
@@ -1383,8 +1339,6 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
     const unsigned short * const subjectUtf16 = subject.utf16() + subjectStart;
 
     int result;
-
-    QReadLocker lock(&mutex);
 
     if (!previousMatchWasEmpty) {
         result = safe_pcre2_match_16(compiledPattern,
@@ -1416,8 +1370,6 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
                                          matchData, matchContext);
         }
     }
-
-    lock.unlock();
 
 #ifdef QREGULAREXPRESSION_DEBUG
     qDebug() << "Matching" <<  pattern << "against" << subject
@@ -1928,22 +1880,14 @@ QRegularExpressionMatchIterator QRegularExpression::globalMatch(const QStringRef
 /*!
     \since 5.4
 
-    Forces an immediate optimization of the pattern, including
-    JIT-compiling it (if the JIT compiler is enabled).
+    Compiles the pattern immediately, including JIT compiling it (if
+    the JIT is enabled) for optimization.
 
-    Patterns are normally optimized only after a certain number of usages.
-    If you can predict that this QRegularExpression object is going to be
-    used for several matches, it may be convenient to optimize it in
-    advance by calling this function.
-
-    \sa QRegularExpression::OptimizeOnFirstUsageOption
+    \sa isValid(), {Debugging Code that Uses QRegularExpression}
 */
 void QRegularExpression::optimize() const
 {
-    if (!isValid()) // will compile the pattern
-        return;
-
-    d->optimizePattern(QRegularExpressionPrivate::ImmediateOptimizeOption);
+    d.data()->compilePattern();
 }
 
 /*!

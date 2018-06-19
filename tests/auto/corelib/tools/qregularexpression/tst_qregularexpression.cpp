@@ -33,11 +33,60 @@
 #include <qstringlist.h>
 #include <qhash.h>
 
-#include "tst_qregularexpression.h"
+#include <qobject.h>
+#include <qregularexpression.h>
+#include <qthread.h>
 
-#ifndef forceOptimize
-#define forceOptimize false
-#endif
+Q_DECLARE_METATYPE(QRegularExpression::PatternOptions)
+Q_DECLARE_METATYPE(QRegularExpression::MatchType)
+Q_DECLARE_METATYPE(QRegularExpression::MatchOptions)
+
+class tst_QRegularExpression : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void defaultConstructors();
+    void gettersSetters_data();
+    void gettersSetters();
+    void escape_data();
+    void escape();
+    void validity_data();
+    void validity();
+    void patternOptions_data();
+    void patternOptions();
+    void normalMatch_data();
+    void normalMatch();
+    void partialMatch_data();
+    void partialMatch();
+    void globalMatch_data();
+    void globalMatch();
+    void serialize_data();
+    void serialize();
+    void operatoreq_data();
+    void operatoreq();
+    void captureCount_data();
+    void captureCount();
+    void captureNames_data();
+    void captureNames();
+    void pcreJitStackUsage_data();
+    void pcreJitStackUsage();
+    void regularExpressionMatch_data();
+    void regularExpressionMatch();
+    void JOptionUsage_data();
+    void JOptionUsage();
+    void QStringAndQStringRefEquivalence();
+    void threadSafety_data();
+    void threadSafety();
+
+    void wildcard_data();
+    void wildcard();
+    void testInvalidWildcard_data();
+    void testInvalidWildcard();
+
+private:
+    void provideRegularExpressions();
+};
 
 struct Match
 {
@@ -292,9 +341,6 @@ static void testMatch(const QRegularExpression &regexp,
                       QRegularExpression::MatchOptions matchOptions,
                       const Result &result)
 {
-    if (forceOptimize)
-        regexp.optimize();
-
     // test with QString as subject type
     testMatchImpl<QREMatch>(regexp, matchingMethodForString, subject, offset, matchType, matchOptions, result);
 
@@ -401,30 +447,22 @@ void tst_QRegularExpression::gettersSetters()
     {
         QRegularExpression re;
         re.setPattern(pattern);
-        if (forceOptimize)
-            re.optimize();
         QCOMPARE(re.pattern(), pattern);
         QCOMPARE(re.patternOptions(), QRegularExpression::NoPatternOption);
     }
     {
         QRegularExpression re;
         re.setPatternOptions(patternOptions);
-        if (forceOptimize)
-            re.optimize();
         QCOMPARE(re.pattern(), QString());
         QCOMPARE(re.patternOptions(), patternOptions);
     }
     {
         QRegularExpression re(pattern);
-        if (forceOptimize)
-            re.optimize();
         QCOMPARE(re.pattern(), pattern);
         QCOMPARE(re.patternOptions(), QRegularExpression::NoPatternOption);
     }
     {
         QRegularExpression re(pattern, patternOptions);
-        if (forceOptimize)
-            re.optimize();
         QCOMPARE(re.pattern(), pattern);
         QCOMPARE(re.patternOptions(), patternOptions);
     }
@@ -465,8 +503,6 @@ void tst_QRegularExpression::escape()
     QFETCH(QString, escaped);
     QCOMPARE(QRegularExpression::escape(string), escaped);
     QRegularExpression re(escaped);
-    if (forceOptimize)
-        re.optimize();
     QCOMPARE(re.isValid(), true);
 }
 
@@ -497,8 +533,6 @@ void tst_QRegularExpression::validity()
     QFETCH(QString, pattern);
     QFETCH(bool, validity);
     QRegularExpression re(pattern);
-    if (forceOptimize)
-        re.optimize();
     QCOMPARE(re.isValid(), validity);
     if (!validity)
         QTest::ignoreMessage(QtWarningMsg, "QRegularExpressionPrivate::doMatch(): called on an invalid QRegularExpression object");
@@ -584,9 +618,6 @@ void tst_QRegularExpression::patternOptions()
     QFETCH(QRegularExpression, regexp);
     QFETCH(QString, subject);
     QFETCH(Match, match);
-
-    if (forceOptimize)
-        regexp.optimize();
 
     QRegularExpressionMatch m = regexp.match(subject);
     consistencyCheck(m);
@@ -1403,9 +1434,6 @@ void tst_QRegularExpression::serialize()
     QFETCH(QRegularExpression::PatternOptions, patternOptions);
     QRegularExpression outRe(pattern, patternOptions);
 
-    if (forceOptimize)
-        outRe.optimize();
-
     QByteArray buffer;
     {
         QDataStream out(&buffer, QIODevice::WriteOnly);
@@ -1468,32 +1496,17 @@ void tst_QRegularExpression::operatoreq()
         QRegularExpression re1(pattern);
         QRegularExpression re2(pattern);
 
-        if (forceOptimize)
-            re1.optimize();
-        if (forceOptimize)
-            re2.optimize();
-
         verifyEquality(re1, re2);
     }
     {
         QRegularExpression re1(QString(), patternOptions);
         QRegularExpression re2(QString(), patternOptions);
 
-        if (forceOptimize)
-            re1.optimize();
-        if (forceOptimize)
-            re2.optimize();
-
         verifyEquality(re1, re2);
     }
     {
         QRegularExpression re1(pattern, patternOptions);
         QRegularExpression re2(pattern, patternOptions);
-
-        if (forceOptimize)
-            re1.optimize();
-        if (forceOptimize)
-            re2.optimize();
 
         verifyEquality(re1, re2);
     }
@@ -1523,9 +1536,6 @@ void tst_QRegularExpression::captureCount()
 {
     QFETCH(QString, pattern);
     QRegularExpression re(pattern);
-
-    if (forceOptimize)
-        re.optimize();
 
     QTEST(re.captureCount(), "captureCount");
     if (!re.isValid())
@@ -1595,9 +1605,6 @@ void tst_QRegularExpression::captureNames()
 
     QRegularExpression re(pattern);
 
-    if (forceOptimize)
-        re.optimize();
-
     QStringList namedCaptureGroups = re.namedCaptureGroups();
     int namedCaptureGroupsCount = namedCaptureGroups.size();
 
@@ -1633,9 +1640,6 @@ void tst_QRegularExpression::pcreJitStackUsage()
 
     QRegularExpression re(pattern);
 
-    if (forceOptimize)
-        re.optimize();
-
     QVERIFY(re.isValid());
     QRegularExpressionMatch match = re.match(subject);
     consistencyCheck(match);
@@ -1662,9 +1666,6 @@ void tst_QRegularExpression::regularExpressionMatch()
     QFETCH(QString, subject);
 
     QRegularExpression re(pattern);
-
-    if (forceOptimize)
-        re.optimize();
 
     QVERIFY(re.isValid());
     QRegularExpressionMatch match = re.match(subject);
@@ -1705,8 +1706,6 @@ void tst_QRegularExpression::JOptionUsage()
     QRegularExpression re(pattern);
     if (isValid && JOptionUsed)
         QTest::ignoreMessage(QtWarningMsg, qPrintable(warningMessage.arg(pattern)));
-    if (forceOptimize)
-        re.optimize();
     QCOMPARE(re.isValid(), isValid);
 }
 
@@ -2067,6 +2066,92 @@ void tst_QRegularExpression::QStringAndQStringRefEquivalence()
     }
 }
 
+class MatcherThread : public QThread
+{
+public:
+    explicit MatcherThread(const QRegularExpression &re, const QString &subject, QObject *parent = nullptr)
+        : QThread(parent),
+          m_re(re),
+          m_subject(subject)
+    {
+    }
+
+private:
+    static const int MATCH_ITERATIONS = 50;
+
+    void run() override
+    {
+        yieldCurrentThread();
+        for (int i = 0; i < MATCH_ITERATIONS; ++i)
+            m_re.match(m_subject);
+    }
+
+    const QRegularExpression &m_re;
+    const QString &m_subject;
+};
+
+void tst_QRegularExpression::threadSafety_data()
+{
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<QString>("subject");
+
+    int i = 0;
+    QTest::addRow("pattern%d", ++i) << "ab.*cd" << "abcd";
+    QTest::addRow("pattern%d", ++i) << "ab.*cd" << "abd";
+    QTest::addRow("pattern%d", ++i) << "ab.*cd" << "abbbbcccd";
+    QTest::addRow("pattern%d", ++i) << "ab.*cd" << "abababcd";
+    QTest::addRow("pattern%d", ++i) << "ab.*cd" << "abcabcd";
+    QTest::addRow("pattern%d", ++i) << "ab.*cd" << "abccccccababd";
+
+    {
+        QString subject(512*1024, QLatin1Char('x'));
+        QTest::addRow("pattern%d", ++i) << "ab.*cd" << subject;
+    }
+
+    {
+        QString subject = "ab";
+        subject.append(QString(512*1024, QLatin1Char('x')));
+        subject.append("c");
+        QTest::addRow("pattern%d", ++i) << "ab.*cd" << subject;
+    }
+
+    {
+        QString subject = "ab";
+        subject.append(QString(512*1024, QLatin1Char('x')));
+        subject.append("cd");
+        QTest::addRow("pattern%d", ++i) << "ab.*cd" << subject;
+    }
+
+    QTest::addRow("pattern%d", ++i) << "(?(R)a*(?1)|((?R))b)" << "aaaabcde";
+    QTest::addRow("pattern%d", ++i) << "(?(R)a*(?1)|((?R))b)" << "aaaaaaabcde";
+}
+
+void tst_QRegularExpression::threadSafety()
+{
+    QFETCH(QString, pattern);
+    QFETCH(QString, subject);
+
+    static const int THREAD_SAFETY_ITERATIONS = 50;
+
+    const int threadCount = qMax(QThread::idealThreadCount(), 4);
+
+    for (int threadSafetyIteration = 0; threadSafetyIteration < THREAD_SAFETY_ITERATIONS; ++threadSafetyIteration) {
+        QRegularExpression re(pattern);
+
+        QVector<MatcherThread *> threads;
+        for (int i = 0; i < threadCount; ++i) {
+            MatcherThread *thread = new MatcherThread(re, subject);
+            thread->start();
+            threads.push_back(thread);
+        }
+
+        for (int i = 0; i < threadCount; ++i)
+            threads[i]->wait();
+
+        qDeleteAll(threads);
+    }
+}
+
 void tst_QRegularExpression::wildcard_data()
 {
     QTest::addColumn<QString>("pattern");
@@ -2108,8 +2193,6 @@ void tst_QRegularExpression::wildcard()
 
     QRegularExpression re;
     re.setWildcardPattern(pattern);
-    if (forceOptimize)
-        re.optimize();
 
     QRegularExpressionMatch match = re.match(string);
 
@@ -2137,9 +2220,11 @@ void tst_QRegularExpression::testInvalidWildcard()
 
     QRegularExpression re;
     re.setWildcardPattern(pattern);
-    if (forceOptimize)
-        re.optimize();
 
     QFETCH(bool, isValid);
     QCOMPARE(re.isValid(), isValid);
 }
+
+QTEST_APPLESS_MAIN(tst_QRegularExpression)
+
+#include "tst_qregularexpression.moc"
