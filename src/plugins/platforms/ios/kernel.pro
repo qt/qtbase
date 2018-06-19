@@ -5,8 +5,6 @@ TARGET = qios
 # application's main() when the plugin is a shared library.
 qtConfig(shared): CONFIG += static
 
-CONFIG += no_app_extension_api_only
-
 QT += \
     core-private gui-private \
     clipboard_support-private fontdatabase_support-private graphics_support-private

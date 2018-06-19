@@ -1613,7 +1613,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 // The configuration build dir however is not treated as excluded,
                 // so we can safely point it to the root output dir.
                 t << "\t\t\t\t" << writeSettings("CONFIGURATION_BUILD_DIR",
-                    Option::output_dir + Option::dir_sep + "$(CONFIGURATION)") << ";\n";
+                    Option::output_dir + Option::dir_sep + "$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)") << ";\n";
 
                 if (!project->isEmpty("DESTDIR")) {
                     ProString dir = project->first("DESTDIR");

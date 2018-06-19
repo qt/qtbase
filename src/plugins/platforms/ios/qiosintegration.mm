@@ -86,7 +86,7 @@ QIOSIntegration::QIOSIntegration()
     , m_accessibility(0)
     , m_optionalPlugins(new QFactoryLoader(QIosOptionalPluginInterface_iid, QLatin1String("/platforms/darwin")))
 {
-    if (Q_UNLIKELY(![UIApplication sharedApplication])) {
+    if (Q_UNLIKELY(!qt_apple_isApplicationExtension() && !qt_apple_sharedApplication())) {
         qFatal("Error: You are creating QApplication before calling UIApplicationMain.\n" \
                "If you are writing a native iOS application, and only want to use Qt for\n" \
                "parts of the application, a good place to create QApplication is from within\n" \

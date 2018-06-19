@@ -43,6 +43,7 @@
 #include <qtreewidget.h>
 #include <qdebug.h>
 #include <qscreen.h>
+#include <qdesktopwidget.h>
 
 typedef QList<int> IntList;
 
@@ -243,7 +244,7 @@ private slots:
     void testMinMaxSectionSize_data();
     void testMinMaxSectionSize();
     void sizeHintCrash();
-
+    void statusTips();
 protected:
     void setupTestData(bool use_reset_model = false);
     void additionalInit();
@@ -269,7 +270,19 @@ public:
     int rowCount(const QModelIndex&) const { return rows; }
     int columnCount(const QModelIndex&) const { return cols; }
     bool isEditable(const QModelIndex &) const { return true; }
-
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const
+    {
+        if (section < 0 || (role != Qt::DisplayRole && role != Qt::StatusTipRole))
+            return QVariant();
+        const int row = (orientation == Qt::Vertical ? section : 0);
+        const int col = (orientation == Qt::Horizontal ? section : 0);
+        if (orientation == Qt::Vertical && row >= rows)
+            return QVariant();
+        if (orientation == Qt::Horizontal && col >= cols)
+            return QVariant();
+        return QLatin1Char('[') + QString::number(row) + QLatin1Char(',')
+            + QString::number(col) + QLatin1String(",0] -- Header");
+    }
     QVariant data(const QModelIndex &idx, int) const
     {
         if (idx.row() < 0 || idx.column() < 0 || idx.column() >= cols || idx.row() >= rows) {
@@ -3325,6 +3338,54 @@ void tst_QHeaderView::testMinMaxSectionSize()
     QTRY_COMPARE(header.sectionSize(0), defaultSectionSize);
 }
 
+class StatusTipHeaderView : public QHeaderView
+{
+public:
+    StatusTipHeaderView(Qt::Orientation orientation = Qt::Horizontal, QWidget *parent = 0) :
+        QHeaderView(orientation, parent), gotStatusTipEvent(false) {}
+    bool gotStatusTipEvent;
+    QString statusTipText;
+protected:
+    bool event(QEvent *e)
+    {
+        if (e->type() == QEvent::StatusTip) {
+            gotStatusTipEvent = true;
+            statusTipText = static_cast<QStatusTipEvent *>(e)->tip();
+        }
+        return QHeaderView::event(e);
+    }
+};
+
+void tst_QHeaderView::statusTips()
+{
+    StatusTipHeaderView headerView;
+    QtTestModel model;
+    model.rows = model.cols = 5;
+    headerView.setModel(&model);
+    headerView.viewport()->setMouseTracking(true);
+    headerView.setGeometry(QRect(QPoint(QApplication::desktop()->geometry().center() - QPoint(250, 250)),
+                           QSize(500, 500)));
+    headerView.show();
+    qApp->setActiveWindow(&headerView);
+    QVERIFY(QTest::qWaitForWindowActive(&headerView));
+
+    // Ensure it is moved away first and then moved to the relevant section
+    QTest::mouseMove(QApplication::desktop(),
+                     headerView.rect().bottomLeft() + QPoint(20, 20));
+    QPoint centerPoint = QRect(headerView.sectionPosition(0), headerView.y(),
+                               headerView.sectionSize(0), headerView.height()).center();
+    QTest::mouseMove(headerView.windowHandle(), centerPoint);
+    QTRY_VERIFY(headerView.gotStatusTipEvent);
+    QCOMPARE(headerView.statusTipText, QLatin1String("[0,0,0] -- Header"));
+
+    headerView.gotStatusTipEvent = false;
+    headerView.statusTipText.clear();
+    centerPoint = QRect(headerView.sectionPosition(1), headerView.y(),
+                        headerView.sectionSize(1), headerView.height()).center();
+    QTest::mouseMove(headerView.windowHandle(), centerPoint);
+    QTRY_VERIFY(headerView.gotStatusTipEvent);
+    QCOMPARE(headerView.statusTipText, QLatin1String("[0,1,0] -- Header"));
+}
 
 QTEST_MAIN(tst_QHeaderView)
 #include "tst_qheaderview.moc"

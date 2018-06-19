@@ -74,6 +74,9 @@ public:
     void beginPaint(const QRegion &) override;
     void endPaint() override;
 
+    static bool createSystemVShmSegment(QXcbConnection *c, size_t segmentSize = 1,
+                                        void *shmInfo = nullptr);
+
 private:
     QXcbBackingStoreImage *m_image = nullptr;
     QStack<QRegion> m_paintRegions;
