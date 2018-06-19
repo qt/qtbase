@@ -245,18 +245,12 @@ void QEvdevMouseHandler::readMouseData()
                 m_y += data->value;
                 posChanged = true;
             } else if (data->code == ABS_WHEEL) { // vertical scroll
-                // data->value: 1 == up, -1 == down
-                if (data->value == 1)
-                    delta.setY(120);
-                else
-                    delta.setY(-120);
+                // data->value: positive == up, negative == down
+                delta.setY(120 * data->value);
                 emit handleWheelEvent(delta);
             } else if (data->code == ABS_THROTTLE) { // horizontal scroll
-                // data->value: 1 == right, -1 == left
-                if (data->value == 1)
-                    delta.setX(-120);
-                else
-                    delta.setX(120);
+                // data->value: positive == right, negative == left
+                delta.setX(-120 * data->value);
                 emit handleWheelEvent(delta);
             }
         } else if (data->type == EV_KEY && data->code == BTN_TOUCH) {
