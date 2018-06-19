@@ -505,7 +505,10 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
 {
     const Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
     const bool frameless = (flags & Qt::FramelessWindowHint) || windowIsPopupType(type);
-    const bool resizeable = !(flags & Qt::CustomizeWindowHint); // Remove zoom button by disabling resize
+
+    // Remove zoom button by disabling resize for CustomizeWindowHint windows, except for
+    // Qt::Tool windows (e.g. dock windows) which should always be resizeable.
+    const bool resizeable = !(flags & Qt::CustomizeWindowHint) || (type == Qt::Tool);
 
     // Select base window type. Note that the value of NSBorderlessWindowMask is 0.
     NSUInteger styleMask = (frameless || !resizeable) ? NSBorderlessWindowMask : NSResizableWindowMask;
