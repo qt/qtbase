@@ -35,6 +35,7 @@
 #include <QtCore/QPoint>
 #include <emscripten/html5.h>
 #include "qhtml5window.h"
+#include <QTouchDevice>
 
 QT_BEGIN_NAMESPACE
 
@@ -178,6 +179,8 @@ public:
     static int focus_cb(int eventType, const EmscriptenFocusEvent *focusEvent, void *userData);
     static int wheel_cb(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData);
 
+    static int touchCallback(int eventType, const EmscriptenTouchEvent *ev, void *userData);
+
     void processEvents();
 
 Q_SIGNALS:
@@ -200,6 +203,8 @@ private:
     QHtml5Window::ResizeMode resizeMode;
     QPoint resizePoint;
     QRect resizeStartRect;
+    QTouchDevice* touchDevice;
+    quint64 getTimestamp();
 };
 
 QT_END_NAMESPACE

@@ -37,6 +37,9 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QCoreApplication>
 #include <QtGlobal>
+#include <QObject>
+
+#include <QtCore/qdeadlinetimer.h>
 
 #include <iostream>
 
@@ -62,6 +65,16 @@ QHtml5EventTranslator::QHtml5EventTranslator(QObject *parent)
     emscripten_set_focus_callback(0,(void *)this, 1, &focus_cb);
 
     emscripten_set_wheel_callback(0, (void *)this, 1, &wheel_cb);
+
+    touchDevice = new QTouchDevice;
+    touchDevice->setType(QTouchDevice::TouchScreen);
+    touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::NormalizedPosition);
+    QWindowSystemInterface::registerTouchDevice(touchDevice);
+
+    emscripten_set_touchstart_callback("#canvas", (void *)this, 1, &touchCallback);
+    emscripten_set_touchend_callback("#canvas", (void *)this, 1, &touchCallback);
+    emscripten_set_touchmove_callback("#canvas", (void *)this, 1, &touchCallback);
+    emscripten_set_touchcancel_callback("#canvas", (void *)this, 1, &touchCallback);
 
     // The Platform Detect: expand coverage and move as needed
     enum Platform {
@@ -442,7 +455,63 @@ int QHtml5EventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *w
     if (wheelEvent->deltaX != 0) pixelDelta.setX(wheelEvent->deltaX * scrollFactor);
 
     QWindowSystemInterface::handleWheelEvent(window2, timestamp, localPoint, globalPoint, QPoint(), pixelDelta, modifiers);
-
 }
 
-    QT_END_NAMESPACE
+int QHtml5EventTranslator::touchCallback(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
+{
+    QList<QWindowSystemInterface::TouchPoint> touchPointList;
+    touchPointList.reserve(touchEvent->numTouches);
+    QWindow *window2;
+
+    for (int i = 0; i < touchEvent->numTouches; i++) {
+
+        const EmscriptenTouchPoint *touches = &touchEvent->touches[i];
+
+        QPoint point(touches->canvasX, touches->canvasY);
+        window2 = QHtml5Integration::get()->compositor()->windowAt(point, 5);
+
+        QWindowSystemInterface::TouchPoint touchPoint;
+
+        auto cX = point.x();
+        auto cY = point.y();
+        touchPoint.area = QRect(0, 0, 8, 8);
+        touchPoint.area.moveCenter(QPointF(cX,cY)); // simulate area
+
+        touchPoint.id = touches->identifier;
+        touchPoint.normalPosition = QPointF(cX / window2->width(), cY / window2->height());
+
+        switch (eventType) {
+        case EMSCRIPTEN_EVENT_TOUCHSTART:
+            touchPoint.state = Qt::TouchPointPressed;
+            break;
+        case EMSCRIPTEN_EVENT_TOUCHEND:
+            touchPoint.state = Qt::TouchPointReleased;
+            break;
+        case EMSCRIPTEN_EVENT_TOUCHMOVE:
+            touchPoint.state = Qt::TouchPointMoved;
+            break;
+        default:
+            Q_UNREACHABLE();
+        }
+
+        touchPointList.append(touchPoint);
+    }
+
+    QHtml5EventTranslator *html5EventTranslator = (QHtml5EventTranslator*)userData;
+    QFlags<Qt::KeyboardModifier> keyModifier = translatKeyModifier(touchEvent);
+
+    if (eventType != EMSCRIPTEN_EVENT_TOUCHCANCEL)
+        QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(window2, html5EventTranslator->getTimestamp(), html5EventTranslator->touchDevice, touchPointList, keyModifier);
+    else
+        QWindowSystemInterface::handleTouchCancelEvent(window2, html5EventTranslator->getTimestamp(), html5EventTranslator->touchDevice, keyModifier);
+
+    QCoreApplication::processEvents();
+    return 1;
+}
+
+quint64 QHtml5EventTranslator::getTimestamp()
+{
+    return QDeadlineTimer::current().deadlineNSecs() / 1000;
+}
+
+QT_END_NAMESPACE
