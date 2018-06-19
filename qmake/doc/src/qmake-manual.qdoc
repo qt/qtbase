@@ -3611,7 +3611,7 @@
     \section2 mkpath(dirPath)
 
     Creates the directory path \c dirPath. This function is a wrapper around the
-    QDir::makepath function.
+    QDir::mkpath function.
 
     \section2 requires(condition)
 
