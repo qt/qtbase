@@ -3282,10 +3282,8 @@ MakefileGenerator::writePkgConfigFile()
     t << "Libs: ";
     QString pkgConfiglibName;
     if (target_mode == TARG_MAC_MODE && project->isActiveConfig("lib_bundle")) {
-        if (libDir != QLatin1String("/System/Library/Frameworks")
-            && libDir != QLatin1String("/Library/Frameworks")) {
+        if (libDir != QLatin1String("/Library/Frameworks"))
             t << "-F${libdir} ";
-        }
         ProString bundle;
         if (!project->isEmpty("QMAKE_FRAMEWORK_BUNDLE_NAME"))
             bundle = project->first("QMAKE_FRAMEWORK_BUNDLE_NAME");
