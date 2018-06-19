@@ -938,7 +938,7 @@ struct QRegularExpressionPrivate : QSharedData
 
     // The PCRE code pointer is reference-counted by the QRegularExpressionPrivate
     // objects themselves; when the private is copied (i.e. a detach happened)
-    // they are set to 0
+    // it is set to nullptr
     pcre2_code_16 *compiledPattern;
     int errorCode;
     int errorOffset;
@@ -1007,7 +1007,7 @@ QRegularExpressionPrivate::QRegularExpressionPrivate()
       patternOptions(0),
       pattern(),
       mutex(),
-      compiledPattern(0),
+      compiledPattern(nullptr),
       errorCode(0),
       errorOffset(-1),
       capturingCount(0),
@@ -1028,8 +1028,8 @@ QRegularExpressionPrivate::~QRegularExpressionPrivate()
     \internal
 
     Copies the private, which means copying only the pattern and the pattern
-    options. The compiledPattern and the studyData pointers are NOT copied (we
-    do not own them any more), and in general all the members set when
+    options. The compiledPattern pointer is NOT copied (we
+    do not own it any more), and in general all the members set when
     compiling a pattern are set to default values. isDirty is set back to true
     so that the pattern has to be recompiled again.
 */
@@ -1038,7 +1038,7 @@ QRegularExpressionPrivate::QRegularExpressionPrivate(const QRegularExpressionPri
       patternOptions(other.patternOptions),
       pattern(other.pattern),
       mutex(),
-      compiledPattern(0),
+      compiledPattern(nullptr),
       errorCode(0),
       errorOffset(-1),
       capturingCount(0),
@@ -1053,7 +1053,7 @@ QRegularExpressionPrivate::QRegularExpressionPrivate(const QRegularExpressionPri
 void QRegularExpressionPrivate::cleanCompiledPattern()
 {
     pcre2_code_free_16(compiledPattern);
-    compiledPattern = 0;
+    compiledPattern = nullptr;
     errorCode = 0;
     errorOffset = -1;
     capturingCount = 0;
