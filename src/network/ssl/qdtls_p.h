@@ -68,6 +68,8 @@
 // We mean it.
 //
 
+QT_REQUIRE_CONFIG(dtls);
+
 QT_BEGIN_NAMESPACE
 
 class QHostAddress;

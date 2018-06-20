@@ -44,8 +44,6 @@
 
 #include <QtCore/qglobal.h>
 
-QT_REQUIRE_CONFIG(openssl);
-
 #include <openssl/ossl_typ.h>
 
 #include "qdtls_p.h"
@@ -71,6 +69,9 @@ QT_REQUIRE_CONFIG(openssl);
 //
 // We mean it.
 //
+
+QT_REQUIRE_CONFIG(openssl);
+QT_REQUIRE_CONFIG(dtls);
 
 QT_BEGIN_NAMESPACE
 

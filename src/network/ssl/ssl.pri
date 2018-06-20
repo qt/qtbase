@@ -56,13 +56,17 @@ qtConfig(ssl) {
                    ssl/qsslellipticcurve_dummy.cpp
     }
 
+    qtConfig(dtls) {
+        HEADERS += ssl/qdtls.h \
+                   ssl/qdtls_p.h
+
+        SOURCES += ssl/qdtls.cpp
+    }
+
     qtConfig(openssl) {
         HEADERS += ssl/qsslcontext_openssl_p.h \
                    ssl/qsslsocket_openssl_p.h \
-                   ssl/qsslsocket_openssl_symbols_p.h \
-                   ssl/qdtls.h \
-                   ssl/qdtls_p.h \
-                   ssl/qdtls_openssl_p.h
+                   ssl/qsslsocket_openssl_symbols_p.h
         SOURCES += ssl/qsslsocket_openssl_symbols.cpp \
                    ssl/qssldiffiehellmanparameters_openssl.cpp \
                    ssl/qsslcertificate_openssl.cpp \
@@ -70,8 +74,11 @@ qtConfig(ssl) {
                    ssl/qsslkey_openssl.cpp \
                    ssl/qsslsocket_openssl.cpp \
                    ssl/qsslcontext_openssl.cpp \
-                   ssl/qdtls.cpp \
-                   ssl/qdtls_openssl.cpp
+
+        qtConfig(dtls) {
+            HEADERS += ssl/qdtls_openssl_p.h
+            SOURCES += ssl/qdtls_openssl.cpp
+        }
 
         qtConfig(opensslv11) {
             HEADERS += ssl/qsslsocket_openssl11_symbols_p.h

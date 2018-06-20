@@ -216,6 +216,13 @@
             "condition": "config.winrt || features.securetransport || features.openssl",
             "output": [ "publicFeature", "feature" ]
         },
+        "dtls": {
+            "label": "DTLS",
+            "purpose": "Provides a DTLS implementation",
+            "section": "Networking",
+            "condition": "features.openssl",
+            "output": [ "publicFeature" ]
+        },
         "opensslv11": {
             "label": "OpenSSL 1.1",
             "condition": "features.openssl && tests.openssl11",
