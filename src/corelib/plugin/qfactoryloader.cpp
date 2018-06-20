@@ -133,6 +133,11 @@ void QFactoryLoader::update()
             // versions of the same Qt libraries (due to the plugin's dependencies).
             if (isDebugPlugin != isDebugLibrary)
                 continue;
+#elif defined(Q_PROCESSOR_X86)
+            if (fileName.endsWith(QLatin1String(".avx2")) || fileName.endsWith(QLatin1String(".avx512"))) {
+                // ignore AVX2-optimized file, we'll do a bait-and-switch to it later
+                continue;
+            }
 #endif
             if (qt_debug_component()) {
                 qDebug() << "QFactoryLoader::QFactoryLoader() looking at" << fileName;
