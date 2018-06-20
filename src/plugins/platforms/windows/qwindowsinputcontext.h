@@ -58,12 +58,10 @@ class QWindowsInputContext : public QPlatformInputContext
     struct CompositionContext
     {
         HWND hwnd = 0;
-        bool haveCaret = false;
         QString composition;
         int position = 0;
         bool isComposing = false;
         QPointer<QObject> focusObject;
-        qreal factor = 1;
     };
 public:
     explicit QWindowsInputContext();
@@ -81,6 +79,8 @@ public:
 
     QRectF keyboardRect() const override;
     bool isInputPanelVisible() const override;
+    void showInputPanel() override;
+    void hideInputPanel() override;
 
     bool startComposition(HWND hwnd);
     bool composition(HWND hwnd, LPARAM lParam);
@@ -96,7 +96,7 @@ private slots:
     void cursorRectChanged();
 
 private:
-    void initContext(HWND hwnd, qreal factor, QObject *focusObject);
+    void initContext(HWND hwnd, QObject *focusObject);
     void doneContext();
     void startContextComposition();
     void endContextComposition();
@@ -104,7 +104,8 @@ private:
     HWND getVirtualKeyboardWindowHandle() const;
 
     const DWORD m_WM_MSIME_MOUSE;
-    static HIMC m_defaultContext;
+    bool m_caretCreated = false;
+    HBITMAP m_transparentBitmap;
     CompositionContext m_compositionContext;
     bool m_endCompositionRecursionGuard = false;
     LCID m_languageId;

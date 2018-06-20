@@ -164,19 +164,22 @@ Q_CORE_EXPORT QLocale qt_localeFromLCID(LCID id); // from qlocale_win.cpp
 */
 
 
-HIMC QWindowsInputContext::m_defaultContext = 0;
-
 QWindowsInputContext::QWindowsInputContext() :
     m_WM_MSIME_MOUSE(RegisterWindowMessage(L"MSIMEMouseOperation")),
     m_languageId(currentInputLanguageId()),
     m_locale(qt_localeFromLCID(m_languageId))
 {
+    const quint32 bmpData = 0;
+    m_transparentBitmap = CreateBitmap(2, 2, 1, 1, &bmpData);
+
     connect(QGuiApplication::inputMethod(), &QInputMethod::cursorRectangleChanged,
             this, &QWindowsInputContext::cursorRectChanged);
 }
 
 QWindowsInputContext::~QWindowsInputContext()
 {
+    if (m_transparentBitmap)
+        DeleteObject(m_transparentBitmap);
 }
 
 bool QWindowsInputContext::hasCapability(Capability capability) const
@@ -243,6 +246,43 @@ bool QWindowsInputContext::isInputPanelVisible() const
     return hwnd && ::IsWindowEnabled(hwnd) && ::IsWindowVisible(hwnd);
 }
 
+void QWindowsInputContext::showInputPanel()
+{
+    if (!inputMethodAccepted())
+        return;
+
+    QWindow *window = QGuiApplication::focusWindow();
+    if (!window)
+        return;
+
+    QWindowsWindow *platformWindow = QWindowsWindow::windowsWindowOf(window);
+    if (!platformWindow)
+        return;
+
+    // Create an invisible 2x2 caret, which will be kept at the microfocus position.
+    // It is important for triggering the on-screen keyboard in touch-screen devices,
+    // for some Chinese input methods, and for Magnifier's "follow keyboard" feature.
+    if (!m_caretCreated && m_transparentBitmap)
+        m_caretCreated = CreateCaret(platformWindow->handle(), m_transparentBitmap, 0, 0);
+
+    // For some reason, the on-screen keyboard is only triggered on the Surface
+    // with Windows 10 if the Windows IME is (re)enabled _after_ the caret is shown.
+    if (m_caretCreated) {
+        cursorRectChanged();
+        ShowCaret(platformWindow->handle());
+        setWindowsImeEnabled(platformWindow, false);
+        setWindowsImeEnabled(platformWindow, true);
+    }
+}
+
+void QWindowsInputContext::hideInputPanel()
+{
+    if (m_caretCreated) {
+        DestroyCaret();
+        m_caretCreated = false;
+    }
+}
+
 void QWindowsInputContext::updateEnabled()
 {
     if (!QGuiApplication::focusObject())
@@ -257,18 +297,14 @@ void QWindowsInputContext::updateEnabled()
 
 void QWindowsInputContext::setWindowsImeEnabled(QWindowsWindow *platformWindow, bool enabled)
 {
-    if (!platformWindow || platformWindow->testFlag(QWindowsWindow::InputMethodDisabled) == !enabled)
+    if (!platformWindow)
         return;
     if (enabled) {
-        // Re-enable Windows IME by associating default context saved on first disabling.
-        ImmAssociateContext(platformWindow->handle(), QWindowsInputContext::m_defaultContext);
-        platformWindow->clearFlag(QWindowsWindow::InputMethodDisabled);
+        // Re-enable Windows IME by associating default context.
+        ImmAssociateContextEx(platformWindow->handle(), 0, IACE_DEFAULT);
     } else {
-        // Disable Windows IME by associating 0 context. Store context first time.
-        const HIMC oldImC = ImmAssociateContext(platformWindow->handle(), 0);
-        platformWindow->setFlag(QWindowsWindow::InputMethodDisabled);
-        if (!QWindowsInputContext::m_defaultContext && oldImC)
-            QWindowsInputContext::m_defaultContext = oldImC;
+        // Disable Windows IME by associating 0 context.
+        ImmAssociateContext(platformWindow->handle(), 0);
     }
 }
 
@@ -285,15 +321,25 @@ void QWindowsInputContext::update(Qt::InputMethodQueries queries)
 
 void QWindowsInputContext::cursorRectChanged()
 {
-    if (!m_compositionContext.hwnd)
+    QWindow *window = QGuiApplication::focusWindow();
+    if (!window)
         return;
+
+    qreal factor = QHighDpiScaling::factor(window);
+
     const QInputMethod *inputMethod = QGuiApplication::inputMethod();
     const QRectF cursorRectangleF = inputMethod->cursorRectangle();
     if (!cursorRectangleF.isValid())
         return;
+
     const QRect cursorRectangle =
-        QRectF(cursorRectangleF.topLeft() * m_compositionContext.factor,
-               cursorRectangleF.size() * m_compositionContext.factor).toRect();
+        QRectF(cursorRectangleF.topLeft() * factor, cursorRectangleF.size() * factor).toRect();
+
+    if (m_caretCreated)
+        SetCaretPos(cursorRectangle.x(), cursorRectangle.y());
+
+    if (!m_compositionContext.hwnd)
+        return;
 
     qCDebug(lcQpaInputMethods) << __FUNCTION__<< cursorRectangle;
 
@@ -316,9 +362,6 @@ void QWindowsInputContext::cursorRectChanged()
     candf.rcArea.top = cursorRectangle.y();
     candf.rcArea.right = cursorRectangle.x() + cursorRectangle.width();
     candf.rcArea.bottom = cursorRectangle.y() + cursorRectangle.height();
-
-    if (m_compositionContext.haveCaret)
-        SetCaretPos(cursorRectangle.x(), cursorRectangle.y());
 
     ImmSetCompositionWindow(himc, &cf);
     ImmSetCandidateWindow(himc, &candf);
@@ -411,7 +454,7 @@ bool QWindowsInputContext::startComposition(HWND hwnd)
     qCDebug(lcQpaInputMethods) << __FUNCTION__ << fo << window << "language=" << m_languageId;
     if (!fo || QWindowsWindow::handleOf(window) != hwnd)
         return false;
-    initContext(hwnd, QHighDpiScaling::factor(window), fo);
+    initContext(hwnd, fo);
     startContextComposition();
     return true;
 }
@@ -551,18 +594,13 @@ bool QWindowsInputContext::endComposition(HWND hwnd)
     return true;
 }
 
-void QWindowsInputContext::initContext(HWND hwnd, qreal factor, QObject *focusObject)
+void QWindowsInputContext::initContext(HWND hwnd, QObject *focusObject)
 {
     if (m_compositionContext.hwnd)
         doneContext();
     m_compositionContext.hwnd = hwnd;
     m_compositionContext.focusObject = focusObject;
-    m_compositionContext.factor = factor;
-    // Create a hidden caret which is kept at the microfocus
-    // position in update(). This is important for some
-    // Chinese input methods.
-    m_compositionContext.haveCaret = CreateCaret(hwnd, 0, 1, 1);
-    HideCaret(hwnd);
+
     update(Qt::ImQueryAll);
     m_compositionContext.isComposing = false;
     m_compositionContext.position = 0;
@@ -572,12 +610,10 @@ void QWindowsInputContext::doneContext()
 {
     if (!m_compositionContext.hwnd)
         return;
-    if (m_compositionContext.haveCaret)
-        DestroyCaret();
     m_compositionContext.hwnd = 0;
     m_compositionContext.composition.clear();
     m_compositionContext.position = 0;
-    m_compositionContext.isComposing = m_compositionContext.haveCaret = false;
+    m_compositionContext.isComposing = false;
     m_compositionContext.focusObject = 0;
 }
 

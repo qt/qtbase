@@ -214,12 +214,11 @@ public:
         WithinCreate = 0x20000,
         WithinMaximize = 0x40000,
         MaximizeToFullScreen = 0x80000,
-        InputMethodDisabled = 0x100000,
-        Compositing = 0x200000,
-        HasBorderInFullScreen = 0x400000,
-        WithinDpiChanged = 0x800000,
-        VulkanSurface = 0x1000000,
-        ResizeMoveActive = 0x2000000
+        Compositing = 0x100000,
+        HasBorderInFullScreen = 0x200000,
+        WithinDpiChanged = 0x400000,
+        VulkanSurface = 0x800000,
+        ResizeMoveActive = 0x1000000
     };
 
     QWindowsWindow(QWindow *window, const QWindowsWindowData &data);
