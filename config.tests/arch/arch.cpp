@@ -80,19 +80,19 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 " avx2"
 #endif
 #ifdef __AVX512F__
-// AVX512 Foundation, Intel Xeon Phi codename "Knights Landing" and Intel Xeon codename "Skylake"
+// AVX512 Foundation, Intel Xeon Scalable ("Skylake" server), some Intel Core 7th generation ("Skylake")
 " avx512f"
 #endif
 #ifdef __AVX512CD__
-// AVX512 Conflict Detection, Intel Xeon Phi codename "Knights Landing" and Intel Xeon codename "Skylake"
+// AVX512 Conflict Detection, Intel Xeon Scalable ("Skylake" server), some Intel Core 7th generation ("Skylake")
 " avx512cd"
 #endif
 #ifdef __AVX512DQ__
-// AVX512 Double & Quadword, Intel Xeon processor codename "Skylake"
+// AVX512 Double & Quadword, Intel Xeon Scalable ("Skylake" server), some Intel Core 7th generation ("Skylake")
 " avx512dq"
 #endif
 #ifdef __AVX512BW__
-// AVX512 Byte & Word, Intel Xeon processor codename "Skylake"
+// AVX512 Byte & Word, Intel Xeon Scalable ("Skylake" server), some Intel Core 7th generation ("Skylake")
 " avx512bw"
 #endif
 #ifdef __AVX512ER__
@@ -104,7 +104,7 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 " avx512pf"
 #endif
 #ifdef __AVX512VL__
-// AVX512 Vector Length, Intel Xeon processor codename "Skylake"
+// AVX512 Vector Length, Intel Xeon Scalable ("Skylake" server), some Intel Core 7th generation ("Skylake")
 " avx512vl"
 #endif
 #ifdef __AVX512IFMA__

@@ -168,7 +168,4 @@ defineTest(addAvx512Profile) {
     addSimdCompiler($$name)
 }
 addAvx512Profile(avx512common, avx512cd)
-addAvx512Profile(avx512mic, avx512cd avx512er avx512pf)
 addAvx512Profile(avx512core, avx512cd avx512bw avx512dq avx512vl)
-addAvx512Profile(avx512ifmavl, avx512ifma avx512vl)
-addAvx512Profile(avx512vbmivl, avx512vbmi avx512vl)
