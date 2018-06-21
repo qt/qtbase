@@ -151,7 +151,7 @@ public:
     QDataStream &operator>>(qint16 &i);
     QDataStream &operator>>(quint16 &i);
     QDataStream &operator>>(qint32 &i);
-    QDataStream &operator>>(quint32 &i);
+    inline QDataStream &operator>>(quint32 &i);
     QDataStream &operator>>(qint64 &i);
     QDataStream &operator>>(quint64 &i);
     QDataStream &operator>>(std::nullptr_t &ptr) { ptr = nullptr; return *this; }
@@ -167,7 +167,7 @@ public:
     QDataStream &operator<<(qint16 i);
     QDataStream &operator<<(quint16 i);
     QDataStream &operator<<(qint32 i);
-    QDataStream &operator<<(quint32 i);
+    inline QDataStream &operator<<(quint32 i);
     QDataStream &operator<<(qint64 i);
     QDataStream &operator<<(quint64 i);
     QDataStream &operator<<(std::nullptr_t) { return *this; }
