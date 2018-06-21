@@ -2251,15 +2251,15 @@ void QXcbWindow::handleEnterNotifyEvent(int event_x, int event_y, int root_x, in
                                         quint8 mode, quint8 detail, xcb_timestamp_t timestamp)
 {
     connection()->setTime(timestamp);
-#ifdef XCB_USE_XINPUT21
-    // Updates scroll valuators, as user might have done some scrolling outside our X client.
-    connection()->xi2UpdateScrollingDevices();
-#endif
 
     const QPoint global = QPoint(root_x, root_y);
 
     if (ignoreEnterEvent(mode, detail, connection()) || connection()->mousePressWindow())
         return;
+#ifdef XCB_USE_XINPUT21
+    // Updates scroll valuators, as user might have done some scrolling outside our X client.
+    connection()->xi2UpdateScrollingDevices();
+#endif
 
     const QPoint local(event_x, event_y);
     QWindowSystemInterface::handleEnterEvent(window(), local, global);
