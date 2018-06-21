@@ -772,18 +772,11 @@ struct QStdFreeDeleter {
         call##_reply(Q_XCB_REPLY_CONNECTION_ARG(__VA_ARGS__), call##_unchecked(__VA_ARGS__), nullptr) \
     )
 
-template <typename T>
-union q_padded_xcb_event {
-  T event;
-  char padding[32];
-};
-
 // The xcb_send_event() requires all events to have 32 bytes. It calls memcpy() on the
 // passed in event. If the passed in event is less than 32 bytes, memcpy() reaches into
 // unrelated memory.
-#define Q_DECLARE_XCB_EVENT(event_var, event_type) \
-    q_padded_xcb_event<event_type> store = {}; \
-    auto &event_var = store.event;
+template <typename T>
+struct alignas(32) q_padded_xcb_event : T { };
 
 QT_END_NAMESPACE
 

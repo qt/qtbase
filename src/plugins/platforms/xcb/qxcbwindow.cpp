@@ -800,7 +800,7 @@ void QXcbWindow::hide()
     xcb_unmap_window(xcb_connection(), m_window);
 
     // send synthetic UnmapNotify event according to icccm 4.1.4
-    Q_DECLARE_XCB_EVENT(event, xcb_unmap_notify_event_t);
+    q_padded_xcb_event<xcb_unmap_notify_event_t> event = {};
     event.response_type = XCB_UNMAP_NOTIFY;
     event.event = xcbScreen()->root();
     event.window = m_window;
