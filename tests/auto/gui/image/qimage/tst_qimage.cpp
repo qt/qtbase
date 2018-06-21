@@ -120,6 +120,7 @@ private slots:
     void smoothScale2();
     void smoothScale3_data();
     void smoothScale3();
+    void smoothScale4_data();
     void smoothScale4();
 
     void smoothScaleBig();
@@ -1681,29 +1682,30 @@ void tst_QImage::smoothScale()
 // test area sampling
 void tst_QImage::smoothScale2_data()
 {
-    QTest::addColumn<int>("format");
+    QTest::addColumn<QImage::Format>("format");
     QTest::addColumn<int>("size");
 
     int sizes[] = { 2, 3, 4, 6, 7, 8, 10, 16, 20, 32, 40, 64, 100, 101, 128, 0 };
-    QImage::Format formats[] = { QImage::Format_RGB32, QImage::Format_ARGB32_Premultiplied, QImage::Format_Invalid };
+    QImage::Format formats[] = { QImage::Format_RGB32, QImage::Format_ARGB32_Premultiplied, QImage::Format_RGBX64, QImage::Format_RGBA64_Premultiplied, QImage::Format_Invalid };
     for (int j = 0; formats[j] != QImage::Format_Invalid; ++j) {
-        QByteArray formatstr = formats[j] == QImage::Format_RGB32 ? QByteArrayLiteral("rgb32") : QByteArrayLiteral("argb32pm");
+        QString formatstr = formatToString(formats[j]);
         for (int i = 0; sizes[i] != 0; ++i) {
             const QByteArray sizeB = QByteArray::number(sizes[i]);
-            QTest::newRow((formatstr + ' ' + sizeB + 'x' + sizeB).constData())
-                << (int)formats[j] << sizes[i];
+            QTest::newRow(QString("%1 %2x%2").arg(formatstr).arg(sizes[i]).toUtf8()) << formats[j] << sizes[i];
         }
     }
 }
 
 void tst_QImage::smoothScale2()
 {
-    QFETCH(int, format);
+    QFETCH(QImage::Format, format);
     QFETCH(int, size);
 
-    QRgb expected = format == QImage::Format_RGB32 ? qRgb(63, 127, 255) : qRgba(31, 63, 127, 127);
+    bool opaque = (format == QImage::Format_RGB32 || format == QImage::Format_RGBX64);
 
-    QImage img(size, size, (QImage::Format)format);
+    QRgb expected = opaque ? qRgb(63, 127, 255) : qRgba(31, 63, 127, 127);
+
+    QImage img(size, size, format);
     img.fill(expected);
 
     // scale x down, y down
@@ -1840,21 +1842,31 @@ void tst_QImage::smoothScale3()
 }
 
 // Tests smooth upscale is smooth
+void tst_QImage::smoothScale4_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+
+    QTest::newRow("RGB32") << QImage::Format_RGB32;
+    QTest::newRow("RGBx64") << QImage::Format_RGBX64;
+}
+
 void tst_QImage::smoothScale4()
 {
-    QImage img(4, 4, QImage::Format_RGB32);
+    QFETCH(QImage::Format, format);
+    QImage img(4, 4, format);
     for (int y = 0; y < 4; ++y) {
         for (int x = 0; x < 4; ++x) {
             img.setPixel(x, y, qRgb(x * 255 / 3, y * 255 / 3, 0));
         }
     }
     QImage scaled = img.scaled(37, 23, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    QCOMPARE(scaled.format(), format);
     for (int y = 0; y < scaled.height(); ++y) {
         for (int x = 0; x < scaled.width(); ++x) {
             if (x > 0)
-                QVERIFY(qRed(scaled.pixel(x, y)) >= qRed(scaled.pixel(x - 1, y)));
+                QVERIFY(scaled.pixelColor(x, y).redF() >= scaled.pixelColor(x - 1, y).redF());
             if (y > 0)
-                QVERIFY(qGreen(scaled.pixel(x, y)) >= qGreen(scaled.pixel(x, y - 1)));
+                QVERIFY(scaled.pixelColor(x, y).greenF() >= scaled.pixelColor(x, y - 1).greenF());
         }
     }
 }

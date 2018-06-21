@@ -1829,7 +1829,14 @@ void QImage::fill(const QColor &color)
         else
             fill((uint) 0);
         break;
-    case QImage::Format_RGBX64:
+    case QImage::Format_RGBX64: {
+        QRgba64 c = color.rgba64();
+        c.setAlpha(65535);
+        qt_rectfill<quint64>(reinterpret_cast<quint64*>(d->data), c,
+                             0, 0, d->width, d->height, d->bytes_per_line);
+        break;
+
+    }
     case QImage::Format_RGBA64:
     case QImage::Format_RGBA64_Premultiplied:
         qt_rectfill<quint64>(reinterpret_cast<quint64*>(d->data), color.rgba64(),
@@ -4616,6 +4623,11 @@ QImage QImage::smoothScaled(int w, int h) const {
     case QImage::Format_RGBX8888:
 #endif
     case QImage::Format_RGBA8888_Premultiplied:
+    case QImage::Format_RGBX64:
+    case QImage::Format_RGBA64_Premultiplied:
+        break;
+    case QImage::Format_RGBA64:
+        src = src.convertToFormat(QImage::Format_RGBA64_Premultiplied);
         break;
     default:
         if (src.hasAlphaChannel())
