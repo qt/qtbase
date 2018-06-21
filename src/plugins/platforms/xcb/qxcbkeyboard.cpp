@@ -138,6 +138,13 @@ static const unsigned int KeyTbl[] = {
     XKB_KEY_KP_Decimal,              Qt::Key_Period,
     XKB_KEY_KP_Divide,               Qt::Key_Slash,
 
+    // special non-XF86 function keys
+
+    XKB_KEY_Undo,                    Qt::Key_Undo,
+    XKB_KEY_Redo,                    Qt::Key_Redo,
+    XKB_KEY_Find,                    Qt::Key_Find,
+    XKB_KEY_Cancel,                  Qt::Key_Cancel,
+
     // International input method support keys
 
     // International & multi-key character composition
