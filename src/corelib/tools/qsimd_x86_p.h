@@ -59,169 +59,166 @@ QT_BEGIN_NAMESPACE
 #define QT_FUNCTION_TARGET_STRING_AVX5124NNIW       "avx5124nniw"
 #define QT_FUNCTION_TARGET_STRING_AVX5124FMAPS      "avx5124fmaps"
 
-enum CPUFeatures {
-    // in CPUID Leaf 1, EDX:
-    CpuFeatureSSE2          = 1,
+// used only to indicate that the CPU detection was initialized
+static const quint64 QSimdInitialized        = Q_UINT64_C(1) << 0;
 
-    // in CPUID Leaf 1, ECX:
-    CpuFeatureSSE3          = 2,
-    CpuFeatureSSSE3         = 3,
-    CpuFeatureFMA           = 4,
-    CpuFeatureSSE4_1        = 5,
-    CpuFeatureSSE4_2        = 6,
-    CpuFeatureMOVBE         = 7,
-    CpuFeaturePOPCNT        = 8,
-    CpuFeatureAES           = 9,
-    CpuFeatureAVX           = 10,
-    CpuFeatureF16C          = 11,
-    CpuFeatureRDRND         = 12,
+// in CPUID Leaf 1, EDX:
+static const quint64 CpuFeatureSSE2          = Q_UINT64_C(1) << 1;
 
-    // in CPUID Leaf 7, Sub-leaf 0, EBX:
-    CpuFeatureBMI           = 13,
-    CpuFeatureHLE           = 14,
-    CpuFeatureAVX2          = 15,
-    CpuFeatureBMI2          = 16,
-    CpuFeatureRTM           = 17,
-    CpuFeatureAVX512F       = 18,
-    CpuFeatureAVX512DQ      = 19,
-    CpuFeatureRDSEED        = 20,
-    CpuFeatureAVX512IFMA    = 21,
-    CpuFeatureAVX512PF      = 22,
-    CpuFeatureAVX512ER      = 23,
-    CpuFeatureAVX512CD      = 24,
-    CpuFeatureSHA           = 25,
-    CpuFeatureAVX512BW      = 26,
-    CpuFeatureAVX512VL      = 27,
+// in CPUID Leaf 1, ECX:
+static const quint64 CpuFeatureSSE3          = Q_UINT64_C(1) << 2;
+static const quint64 CpuFeatureSSSE3         = Q_UINT64_C(1) << 3;
+static const quint64 CpuFeatureFMA           = Q_UINT64_C(1) << 4;
+static const quint64 CpuFeatureSSE4_1        = Q_UINT64_C(1) << 5;
+static const quint64 CpuFeatureSSE4_2        = Q_UINT64_C(1) << 6;
+static const quint64 CpuFeatureMOVBE         = Q_UINT64_C(1) << 7;
+static const quint64 CpuFeaturePOPCNT        = Q_UINT64_C(1) << 8;
+static const quint64 CpuFeatureAES           = Q_UINT64_C(1) << 9;
+static const quint64 CpuFeatureAVX           = Q_UINT64_C(1) << 10;
+static const quint64 CpuFeatureF16C          = Q_UINT64_C(1) << 11;
+static const quint64 CpuFeatureRDRND         = Q_UINT64_C(1) << 12;
 
-    // in CPUID Leaf 7, Sub-leaf 0, ECX:
-    CpuFeatureAVX512VBMI    = 28,
-    CpuFeatureAVX512VBMI2   = 29,
-    CpuFeatureGFNI          = 30,
-    CpuFeatureVAES          = 31,
-    CpuFeatureAVX512VNNI    = 32,
-    CpuFeatureAVX512BITALG  = 33,
-    CpuFeatureAVX512VPOPCNTDQ = 34,
+// in CPUID Leaf 7, Sub-leaf 0, EBX:
+static const quint64 CpuFeatureBMI           = Q_UINT64_C(1) << 13;
+static const quint64 CpuFeatureHLE           = Q_UINT64_C(1) << 14;
+static const quint64 CpuFeatureAVX2          = Q_UINT64_C(1) << 15;
+static const quint64 CpuFeatureBMI2          = Q_UINT64_C(1) << 16;
+static const quint64 CpuFeatureRTM           = Q_UINT64_C(1) << 17;
+static const quint64 CpuFeatureAVX512F       = Q_UINT64_C(1) << 18;
+static const quint64 CpuFeatureAVX512DQ      = Q_UINT64_C(1) << 19;
+static const quint64 CpuFeatureRDSEED        = Q_UINT64_C(1) << 20;
+static const quint64 CpuFeatureAVX512IFMA    = Q_UINT64_C(1) << 21;
+static const quint64 CpuFeatureAVX512PF      = Q_UINT64_C(1) << 22;
+static const quint64 CpuFeatureAVX512ER      = Q_UINT64_C(1) << 23;
+static const quint64 CpuFeatureAVX512CD      = Q_UINT64_C(1) << 24;
+static const quint64 CpuFeatureSHA           = Q_UINT64_C(1) << 25;
+static const quint64 CpuFeatureAVX512BW      = Q_UINT64_C(1) << 26;
+static const quint64 CpuFeatureAVX512VL      = Q_UINT64_C(1) << 27;
 
-    // in CPUID Leaf 7, Sub-leaf 0, EDX:
-    CpuFeatureAVX5124NNIW   = 35,
-    CpuFeatureAVX5124FMAPS  = 36,
+// in CPUID Leaf 7, Sub-leaf 0, ECX:
+static const quint64 CpuFeatureAVX512VBMI    = Q_UINT64_C(1) << 28;
+static const quint64 CpuFeatureAVX512VBMI2   = Q_UINT64_C(1) << 29;
+static const quint64 CpuFeatureGFNI          = Q_UINT64_C(1) << 30;
+static const quint64 CpuFeatureVAES          = Q_UINT64_C(1) << 31;
+static const quint64 CpuFeatureAVX512VNNI    = Q_UINT64_C(1) << 32;
+static const quint64 CpuFeatureAVX512BITALG  = Q_UINT64_C(1) << 33;
+static const quint64 CpuFeatureAVX512VPOPCNTDQ = Q_UINT64_C(1) << 34;
 
-    // used only to indicate that the CPU detection was initialized
-    QSimdInitialized = 1
-};
+// in CPUID Leaf 7, Sub-leaf 0, EDX:
+static const quint64 CpuFeatureAVX5124NNIW   = Q_UINT64_C(1) << 35;
+static const quint64 CpuFeatureAVX5124FMAPS  = Q_UINT64_C(1) << 36;
 
 static const quint64 qCompilerCpuFeatures = 0
 #ifdef __SSE2__
-         | (Q_UINT64_C(1) << CpuFeatureSSE2)
+         | (Q_UINT64_C(1) << 1)         // CpuFeatureSSE2
 #endif
 #ifdef __SSE3__
-         | (Q_UINT64_C(1) << CpuFeatureSSE3)
+         | (Q_UINT64_C(1) << 2)         // CpuFeatureSSE3
 #endif
 #ifdef __SSSE3__
-         | (Q_UINT64_C(1) << CpuFeatureSSSE3)
+         | (Q_UINT64_C(1) << 3)         // CpuFeatureSSSE3
 #endif
 #ifdef __FMA__
-         | (Q_UINT64_C(1) << CpuFeatureFMA)
+         | (Q_UINT64_C(1) << 4)         // CpuFeatureFMA
 #endif
 #ifdef __SSE4_1__
-         | (Q_UINT64_C(1) << CpuFeatureSSE4_1)
+         | (Q_UINT64_C(1) << 5)         // CpuFeatureSSE4_1
 #endif
 #ifdef __SSE4_2__
-         | (Q_UINT64_C(1) << CpuFeatureSSE4_2)
+         | (Q_UINT64_C(1) << 6)         // CpuFeatureSSE4_2
 #endif
 #ifdef __MOVBE__
-         | (Q_UINT64_C(1) << CpuFeatureMOVBE)
+         | (Q_UINT64_C(1) << 7)         // CpuFeatureMOVBE
 #endif
 #ifdef __POPCNT__
-         | (Q_UINT64_C(1) << CpuFeaturePOPCNT)
+         | (Q_UINT64_C(1) << 8)         // CpuFeaturePOPCNT
 #endif
 #ifdef __AES__
-         | (Q_UINT64_C(1) << CpuFeatureAES)
+         | (Q_UINT64_C(1) << 9)         // CpuFeatureAES
 #endif
 #ifdef __AVX__
-         | (Q_UINT64_C(1) << CpuFeatureAVX)
+         | (Q_UINT64_C(1) << 10)        // CpuFeatureAVX
 #endif
 #ifdef __F16C__
-         | (Q_UINT64_C(1) << CpuFeatureF16C)
+         | (Q_UINT64_C(1) << 11)        // CpuFeatureF16C
 #endif
 #ifdef __RDRND__
-         | (Q_UINT64_C(1) << CpuFeatureRDRND)
+         | (Q_UINT64_C(1) << 12)        // CpuFeatureRDRND
 #endif
 #ifdef __BMI__
-         | (Q_UINT64_C(1) << CpuFeatureBMI)
+         | (Q_UINT64_C(1) << 13)        // CpuFeatureBMI
 #endif
 #ifdef __HLE__
-         | (Q_UINT64_C(1) << CpuFeatureHLE)
+         | (Q_UINT64_C(1) << 14)        // CpuFeatureHLE
 #endif
 #ifdef __AVX2__
-         | (Q_UINT64_C(1) << CpuFeatureAVX2)
+         | (Q_UINT64_C(1) << 15)        // CpuFeatureAVX2
 #endif
 #ifdef __BMI2__
-         | (Q_UINT64_C(1) << CpuFeatureBMI2)
+         | (Q_UINT64_C(1) << 16)        // CpuFeatureBMI2
 #endif
 #ifdef __RTM__
-         | (Q_UINT64_C(1) << CpuFeatureRTM)
+         | (Q_UINT64_C(1) << 17)        // CpuFeatureRTM
 #endif
 #ifdef __AVX512F__
-         | (Q_UINT64_C(1) << CpuFeatureAVX512F)
+         | (Q_UINT64_C(1) << 18)        // CpuFeatureAVX512F
 #endif
 #ifdef __AVX512DQ__
-         | (Q_UINT64_C(1) << CpuFeatureAVX512DQ)
+         | (Q_UINT64_C(1) << 19)        // CpuFeatureAVX512DQ
 #endif
 #ifdef __RDSEED__
-         | (Q_UINT64_C(1) << CpuFeatureRDSEED)
+         | (Q_UINT64_C(1) << 20)        // CpuFeatureRDSEED
 #endif
 #ifdef __AVX512IFMA__
-         | (Q_UINT64_C(1) << CpuFeatureAVX512IFMA)
+         | (Q_UINT64_C(1) << 21)        // CpuFeatureAVX512IFMA
 #endif
 #ifdef __AVX512PF__
-         | (Q_UINT64_C(1) << CpuFeatureAVX512PF)
+         | (Q_UINT64_C(1) << 22)        // CpuFeatureAVX512PF
 #endif
 #ifdef __AVX512ER__
-         | (Q_UINT64_C(1) << CpuFeatureAVX512ER)
+         | (Q_UINT64_C(1) << 23)        // CpuFeatureAVX512ER
 #endif
 #ifdef __AVX512CD__
-         | (Q_UINT64_C(1) << CpuFeatureAVX512CD)
+         | (Q_UINT64_C(1) << 24)        // CpuFeatureAVX512CD
 #endif
 #ifdef __SHA__
-         | (Q_UINT64_C(1) << CpuFeatureSHA)
+         | (Q_UINT64_C(1) << 25)        // CpuFeatureSHA
 #endif
 #ifdef __AVX512BW__
-         | (Q_UINT64_C(1) << CpuFeatureAVX512BW)
+         | (Q_UINT64_C(1) << 26)        // CpuFeatureAVX512BW
 #endif
 #ifdef __AVX512VL__
-         | (Q_UINT64_C(1) << CpuFeatureAVX512VL)
+         | (Q_UINT64_C(1) << 27)        // CpuFeatureAVX512VL
 #endif
 #ifdef __AVX512VBMI__
-         | (Q_UINT64_C(1) << CpuFeatureAVX512VBMI)
+         | (Q_UINT64_C(1) << 28)        // CpuFeatureAVX512VBMI
 #endif
 #ifdef __AVX512VBMI2__
-         | (Q_UINT64_C(1) << CpuFeatureAVX512VBMI2)
+         | (Q_UINT64_C(1) << 29)        // CpuFeatureAVX512VBMI2
 #endif
 #ifdef __GFNI__
-         | (Q_UINT64_C(1) << CpuFeatureGFNI)
+         | (Q_UINT64_C(1) << 30)        // CpuFeatureGFNI
 #endif
 #ifdef __VAES__
-         | (Q_UINT64_C(1) << CpuFeatureVAES)
+         | (Q_UINT64_C(1) << 31)        // CpuFeatureVAES
 #endif
 #ifdef __AVX512VNNI__
-         | (Q_UINT64_C(1) << CpuFeatureAVX512VNNI)
+         | (Q_UINT64_C(1) << 32)        // CpuFeatureAVX512VNNI
 #endif
 #ifdef __AVX512BITALG__
-         | (Q_UINT64_C(1) << CpuFeatureAVX512BITALG)
+         | (Q_UINT64_C(1) << 33)        // CpuFeatureAVX512BITALG
 #endif
 #ifdef __AVX512VPOPCNTDQ__
-         | (Q_UINT64_C(1) << CpuFeatureAVX512VPOPCNTDQ)
+         | (Q_UINT64_C(1) << 34)        // CpuFeatureAVX512VPOPCNTDQ
 #endif
 #ifdef __AVX5124NNIW__
-         | (Q_UINT64_C(1) << CpuFeatureAVX5124NNIW)
+         | (Q_UINT64_C(1) << 35)        // CpuFeatureAVX5124NNIW
 #endif
 #ifdef __AVX5124FMAPS__
-         | (Q_UINT64_C(1) << CpuFeatureAVX5124FMAPS)
+         | (Q_UINT64_C(1) << 36)        // CpuFeatureAVX5124FMAPS
 #endif
         ;
 
 QT_END_NAMESPACE
 
 #endif // QSIMD_X86_P_H
-

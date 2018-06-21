@@ -1,6 +1,6 @@
 // This is a generated file. DO NOT EDIT.
 // Please see util/x86simdgen/generate.pl
-#include <qglobal.h>
+#include "qsimd_p.h"
 
 static const char features_string[] =
     " sse2\0"
@@ -96,3 +96,21 @@ static const quint8 x86_locators[] = {
     Leaf7_0EDX*32 +  2, // avx5124nniw
     Leaf7_0EDX*32 +  3  // avx5124fmaps
 };
+
+// List of AVX512 features (see detectProcessorFeatures())
+static const quint64 AllAVX512 = 0
+        | CpuFeatureAVX512F
+        | CpuFeatureAVX512DQ
+        | CpuFeatureAVX512IFMA
+        | CpuFeatureAVX512PF
+        | CpuFeatureAVX512ER
+        | CpuFeatureAVX512CD
+        | CpuFeatureAVX512BW
+        | CpuFeatureAVX512VL
+        | CpuFeatureAVX512VBMI
+        | CpuFeatureAVX512VBMI2
+        | CpuFeatureAVX512VNNI
+        | CpuFeatureAVX512BITALG
+        | CpuFeatureAVX512VPOPCNTDQ
+        | CpuFeatureAVX5124NNIW
+        | CpuFeatureAVX5124FMAPS;

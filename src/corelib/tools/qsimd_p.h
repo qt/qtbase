@@ -270,30 +270,30 @@ QT_BEGIN_NAMESPACE
 #ifndef Q_PROCESSOR_X86
 enum CPUFeatures {
 #if defined(Q_PROCESSOR_ARM)
-    CpuFeatureNEON          = 0,
+    CpuFeatureNEON          = 2,
     CpuFeatureARM_NEON      = CpuFeatureNEON,
-    CpuFeatureCRC32         = 1,
+    CpuFeatureCRC32         = 4,
 #elif defined(Q_PROCESSOR_MIPS)
-    CpuFeatureDSP           = 0,
-    CpuFeatureDSPR2         = 1,
+    CpuFeatureDSP           = 2,
+    CpuFeatureDSPR2         = 4,
 #endif
 
     // used only to indicate that the CPU detection was initialised
-    QSimdInitialized = 0x80000000
+    QSimdInitialized        = 1
 };
 
 static const quint64 qCompilerCpuFeatures = 0
 #if defined __ARM_NEON__
-        | (Q_UINT64_C(1) << CpuFeatureNEON)
+        | CpuFeatureNEON
 #endif
 #if defined __ARM_FEATURE_CRC32
-        | (Q_UINT64_C(1) << CpuFeatureCRC32)
+        | CpuFeatureCRC32
 #endif
 #if defined __mips_dsp
-        | (Q_UINT64_C(1) << CpuFeatureDSP)
+        | CpuFeatureDSP
 #endif
 #if defined __mips_dspr2
-        | (Q_UINT64_C(1) << CpuFeatureDSPR2)
+        | CpuFeatureDSPR2
 #endif
         ;
 #endif
@@ -322,8 +322,8 @@ static inline quint64 qCpuFeatures()
     return features;
 }
 
-#define qCpuHasFeature(feature)     ((qCompilerCpuFeatures & (Q_UINT64_C(1) << CpuFeature ## feature)) \
-                                     || (qCpuFeatures() & (Q_UINT64_C(1) << CpuFeature ## feature)))
+#define qCpuHasFeature(feature)     (((qCompilerCpuFeatures & CpuFeature ## feature) == CpuFeature ## feature) \
+                                     || ((qCpuFeatures() & CpuFeature ## feature) == CpuFeature ## feature))
 
 #define ALIGNMENT_PROLOGUE_16BYTES(ptr, i, length) \
     for (; i < static_cast<int>(qMin(static_cast<quintptr>(length), ((4 - ((reinterpret_cast<quintptr>(ptr) >> 2) & 0x3)) & 0x3))); ++i)

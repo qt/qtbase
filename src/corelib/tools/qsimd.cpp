@@ -322,16 +322,8 @@ static quint64 detectProcessorFeatures()
         AVXState        = XMM0_15 | YMM0_15Hi128,
         AVX512State     = AVXState | OpMask | ZMM0_15Hi256 | ZMM16_31
     };
-    static const quint64 AllAVX512 = (Q_UINT64_C(1) << CpuFeatureAVX512F) | (Q_UINT64_C(1) << CpuFeatureAVX512CD) |
-            (Q_UINT64_C(1) << CpuFeatureAVX512ER) | (Q_UINT64_C(1) << CpuFeatureAVX512PF) |
-            (Q_UINT64_C(1) << CpuFeatureAVX512BW) | (Q_UINT64_C(1) << CpuFeatureAVX512DQ) |
-            (Q_UINT64_C(1) << CpuFeatureAVX512VL) | (Q_UINT64_C(1) << CpuFeatureAVX512IFMA) |
-            (Q_UINT64_C(1) << CpuFeatureAVX512VBMI) | (Q_UINT64_C(1) << CpuFeatureAVX512VBMI2) |
-            (Q_UINT64_C(1) << CpuFeatureAVX512VNNI) | (Q_UINT64_C(1) << CpuFeatureAVX512BITALG) |
-            (Q_UINT64_C(1) << CpuFeatureAVX512VPOPCNTDQ) |
-            (Q_UINT64_C(1) << CpuFeatureAVX5124NNIW) | (Q_UINT64_C(1) << CpuFeatureAVX5124FMAPS);
-    static const quint64 AllAVX2 = (Q_UINT64_C(1) << CpuFeatureAVX2) | AllAVX512;
-    static const quint64 AllAVX = (Q_UINT64_C(1) << CpuFeatureAVX) | AllAVX2;
+    static const quint64 AllAVX2 = CpuFeatureAVX2 | AllAVX512;
+    static const quint64 AllAVX = CpuFeatureAVX | AllAVX2;
 
     quint64 features = 0;
     int cpuidLevel = maxBasicCpuidSupported();
