@@ -943,7 +943,7 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
         if (!isCached) {
             // SHORTCUT: If the part's state has no data, cache it for NOOP later
             if (!stateHasData) {
-                memset(&data, 0, sizeof(data));
+                memset(static_cast<void *>(&data), 0, sizeof(data));
                 data.dataValid = true;
                 alphaCache.insert(key, data);
                 return true;
@@ -1050,7 +1050,7 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
 
     // Add to theme part cache
     if (!isCached) {
-        memset(&data, 0, sizeof(data));
+        memset(static_cast<void *>(&data), 0, sizeof(data));
         data.dataValid = true;
         data.partIsTransparent = partIsTransparent;
         data.alphaType = alphaType;

@@ -1000,7 +1000,7 @@ static QChar *createFontFile(const QString &faceName)
     if (!faceName.isEmpty()) {
         const int nameLength = qMin(faceName.length(), LF_FACESIZE - 1);
         faceNamePtr = new QChar[nameLength + 1];
-        memcpy(faceNamePtr, faceName.utf16(), sizeof(wchar_t) * nameLength);
+        memcpy(static_cast<void *>(faceNamePtr), faceName.utf16(), sizeof(wchar_t) * nameLength);
         faceNamePtr[nameLength] = 0;
     }
     return faceNamePtr;
