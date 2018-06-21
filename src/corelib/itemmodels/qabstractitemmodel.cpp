@@ -182,8 +182,8 @@ QPersistentModelIndex::~QPersistentModelIndex()
   Returns \c{true} if this persistent model index is equal to the \a other
   persistent model index; otherwise returns \c{false}.
 
-  All values in the persistent model index are used when comparing
-  with another persistent model index.
+  The internal data pointer, row, column, and model values in the persistent
+  model index are used when comparing with another persistent model index.
 */
 
 bool QPersistentModelIndex::operator==(const QPersistentModelIndex &other) const
@@ -199,8 +199,8 @@ bool QPersistentModelIndex::operator==(const QPersistentModelIndex &other) const
     Returns \c{true} if this persistent model index is smaller than the \a other
     persistent model index; otherwise returns \c{false}.
 
-    All values in the persistent model index are used when comparing
-    with another persistent model index.
+    The internal data pointer, row, column, and model values in the persistent
+    model index are used when comparing with another persistent model index.
 */
 
 bool QPersistentModelIndex::operator<(const QPersistentModelIndex &other) const
@@ -275,13 +275,11 @@ QPersistentModelIndex::operator const QModelIndex&() const
 }
 
 /*!
-    \fn bool QPersistentModelIndex::operator==(const QModelIndex &other) const
-
     Returns \c{true} if this persistent model index refers to the same location as
     the \a other model index; otherwise returns \c{false}.
 
-    All values in the persistent model index are used when comparing with
-    another model index.
+    The internal data pointer, row, column, and model values in the persistent
+    model index are used when comparing with another model index.
 */
 
 bool QPersistentModelIndex::operator==(const QModelIndex &other) const
@@ -1167,8 +1165,8 @@ void QAbstractItemModel::resetInternalData()
     Returns \c{true} if this model index refers to the same location as the
     \a other model index; otherwise returns \c{false}.
 
-    All values in the model index are used when comparing with another model
-    index.
+    The internal data pointer, row, column, and model values are used when
+    comparing with another model index.
 */
 
 
