@@ -2159,7 +2159,7 @@ void tst_QRegularExpression::wildcard_data()
     QTest::addColumn<int>("foundIndex");
 
     auto addRow = [](const char *pattern, const char *string, int foundIndex) {
-        QTest::addRow(pattern) << pattern << string << foundIndex;
+        QTest::newRow(pattern) << pattern << string << foundIndex;
     };
 
     addRow("*.html", "test.html", 0);
