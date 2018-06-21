@@ -642,7 +642,7 @@ static void _q_regexp(sqlite3_context* context, int argc, sqlite3_value** argv)
     const bool wasCached = regexp;
 
     if (!wasCached)
-        regexp = new QRegularExpression(pattern, QRegularExpression::DontCaptureOption | QRegularExpression::OptimizeOnFirstUsageOption);
+        regexp = new QRegularExpression(pattern, QRegularExpression::DontCaptureOption);
 
     const bool found = subject.contains(*regexp);
 
