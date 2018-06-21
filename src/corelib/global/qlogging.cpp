@@ -1298,8 +1298,7 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
     // The offset and function name are optional.
     // This regexp tries to extract the library name (without the path) and the function name.
     // This code is protected by QMessagePattern::mutex so it is thread safe on all compilers
-    static QRegularExpression rx(QStringLiteral("^(?:[^(]*/)?([^(/]+)\\(([^+]*)(?:[\\+[a-f0-9x]*)?\\) \\[[a-f0-9x]*\\]$"),
-                                 QRegularExpression::OptimizeOnFirstUsageOption);
+    static QRegularExpression rx(QStringLiteral("^(?:[^(]*/)?([^(/]+)\\(([^+]*)(?:[\\+[a-f0-9x]*)?\\) \\[[a-f0-9x]*\\]$"));
 
     QVarLengthArray<void*, 32> buffer(8 + frameCount);
     int n = backtrace(buffer.data(), buffer.size());
