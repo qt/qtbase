@@ -41,6 +41,7 @@
 #import "qiosviewcontroller.h"
 
 #include <QtCore/qscopedvaluerollback.h>
+#include <QtCore/private/qcore_mac_p.h>
 
 #include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
@@ -307,15 +308,17 @@
 {
     [super viewDidLoad];
 
+    Q_ASSERT(!qt_apple_isApplicationExtension());
+
 #ifndef Q_OS_TVOS
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
     [center addObserver:self selector:@selector(willChangeStatusBarFrame:)
             name:UIApplicationWillChangeStatusBarFrameNotification
-            object:[UIApplication sharedApplication]];
+            object:qt_apple_sharedApplication()];
 
     [center addObserver:self selector:@selector(didChangeStatusBarOrientation:)
             name:UIApplicationDidChangeStatusBarOrientationNotification
-            object:[UIApplication sharedApplication]];
+            object:qt_apple_sharedApplication()];
 #endif
 }
 
@@ -455,7 +458,6 @@
     focusWindow = qt_window_private(focusWindow)->topLevelWindow();
 
 #ifndef Q_OS_TVOS
-    UIApplication *uiApplication = [UIApplication sharedApplication];
 
     // -------------- Status bar style and visbility ---------------
 
@@ -478,6 +480,8 @@
 
 
     // -------------- Content orientation ---------------
+
+    UIApplication *uiApplication = qt_apple_sharedApplication();
 
     static BOOL kAnimateContentOrientationChanges = YES;
 

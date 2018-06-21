@@ -43,6 +43,8 @@
 #include <QtGui/qwindow.h>
 #include <QDebug>
 
+#include <QtCore/private/qcore_mac_p.h>
+
 #include "qiosfiledialog.h"
 #include "qiosintegration.h"
 #include "qiosoptionalplugininterface.h"
@@ -94,7 +96,7 @@ bool QIOSFileDialog::showImagePickerDialog(QWindow *parent)
     }
 
     UIWindow *window = parent ? reinterpret_cast<UIView *>(parent->winId()).window
-        : [UIApplication sharedApplication].keyWindow;
+        : qt_apple_sharedApplication().keyWindow;
     [window.rootViewController presentViewController:m_viewController animated:YES completion:nil];
 
     return true;

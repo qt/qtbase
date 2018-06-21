@@ -42,6 +42,8 @@
 #include "qiosviewcontroller.h"
 #include "qiosscreen.h"
 
+#include <QtCore/private/qcore_mac_p.h>
+
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaApplication, "qt.qpa.application");
@@ -50,13 +52,16 @@ Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window");
 
 bool isQtApplication()
 {
+    if (qt_apple_isApplicationExtension())
+        return false;
+
     // Returns \c true if the plugin is in full control of the whole application. This means
     // that we control the application delegate and the top view controller, and can take
     // actions that impacts all parts of the application. The opposite means that we are
     // embedded inside a native iOS application, and should be more focused on playing along
     // with native UIControls, and less inclined to change structures that lies outside the
     // scope of our QWindows/UIViews.
-    static bool isQt = ([[UIApplication sharedApplication].delegate isKindOfClass:[QIOSApplicationDelegate class]]);
+    static bool isQt = ([qt_apple_sharedApplication().delegate isKindOfClass:[QIOSApplicationDelegate class]]);
     return isQt;
 }
 
@@ -152,8 +157,13 @@ QT_END_NAMESPACE
 
 + (id)currentFirstResponder
 {
+    if (qt_apple_isApplicationExtension()) {
+        qWarning() << "can't get first responder in application extensions!";
+        return nil;
+    }
+
     QtFirstResponderEvent *event = [[[QtFirstResponderEvent alloc] init] autorelease];
-    [[UIApplication sharedApplication] sendAction:@selector(qt_findFirstResponder:event:) to:nil from:nil forEvent:event];
+    [qt_apple_sharedApplication() sendAction:@selector(qt_findFirstResponder:event:) to:nil from:nil forEvent:event];
     return event.firstResponder;
 }
 

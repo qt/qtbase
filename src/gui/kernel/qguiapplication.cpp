@@ -1297,10 +1297,18 @@ void QGuiApplicationPrivate::createPlatformIntegration()
 #if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
     QByteArray sessionType = qgetenv("XDG_SESSION_TYPE");
     if (!sessionType.isEmpty()) {
-        if (sessionType == QByteArrayLiteral("x11") && !platformName.contains(QByteArrayLiteral("xcb")))
+        if (sessionType == QByteArrayLiteral("x11") && !platformName.contains(QByteArrayLiteral("xcb"))) {
             platformName = QByteArrayLiteral("xcb");
-        else if (sessionType == QByteArrayLiteral("wayland") && !platformName.contains(QByteArrayLiteral("wayland")))
-            platformName = QByteArrayLiteral("wayland");
+        } else if (sessionType == QByteArrayLiteral("wayland") && !platformName.contains(QByteArrayLiteral("wayland"))) {
+            QByteArray currentDesktop = qgetenv("XDG_CURRENT_DESKTOP").toLower();
+            QByteArray sessionDesktop = qgetenv("XDG_SESSION_DESKTOP").toLower();
+            if (currentDesktop.contains("gnome") || sessionDesktop.contains("gnome")) {
+                qInfo() << "Warning: Ignoring XDG_SESSION_TYPE=wayland on Gnome."
+                        << "Use QT_QPA_PLATFORM=wayland to run on Wayland anyway.";
+            } else {
+                platformName = QByteArrayLiteral("wayland");
+            }
+        }
     }
 #ifdef QT_QPA_DEFAULT_PLATFORM_NAME
     // Add it as fallback in case XDG_SESSION_TYPE is something wrong

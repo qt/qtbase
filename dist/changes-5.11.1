@@ -1,0 +1,144 @@
+Qt 5.11.1 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.11.0.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+http://doc.qt.io/qt-5/index.html
+
+The Qt version 5.11 series is binary compatible with the 5.10.x series.
+Applications compiled for 5.10 will continue to run with 5.11.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                        Important Behavior Changes                        *
+****************************************************************************
+
+ - [QTBUG-68619] In Qt 5.11.0, support for selecting a platform plugin
+   based on the XDG_SESSION_TYPE environment variable was added. On
+   gnome-shell, however, bugs—in both Qt and gnome-shell—made many
+   widget applications almost unusable. So until those bugs are fixed
+   XDG_SESSION_TYPE=wayland is now ignored on gnome-shell.
+
+****************************************************************************
+*                                  Library                                 *
+****************************************************************************
+
+QtCore
+------
+
+ - Item Models:
+   * [QTBUG-18001] Fixed a bug that made selecting or deselecting a column if
+     some flags are applied to certain items.
+   * [QTBUG-44962][QTBUG-67948][QTBUG-68427] Fixed issues with the replacing
+     of the source model in QSortFilterProxyModel that could lead to empty
+     views or failed assertions.
+
+ - QJsonDocument
+   * [QTBUG-61969] Fixed a number of bugs in the parsing of binary data
+     (QJson::fromRawData) that could lead to crashes or out-of-bounds access.
+
+ - QLocale:
+   * On Unix, when using LANGUAGE would lose information about script or
+     country, without changing language, use the locale implied by LC_ALL,
+     LC_MESSAGES or LANG.
+
+ - QPointF/QRectF:
+   * [QTBUG-60359][QTBUG-62161] Fixed an issue that led to inconsistent
+     comparison results for the different edges of a rectangle.
+
+ - QProcess:
+   * [QTBUG-68472] On Unix, the QProcess SIGCHLD handler now restores errno
+     on exit.
+   * [QTBUG-67744] QProcess now properly reports an error state if it failed
+     to create the communication pipes.
+
+ - QSharedPointer:
+   * [QTBUG-68300] Fixed a problem that made create() on a type with const
+     qualification fail to compile.
+
+QtNetwork
+---------
+
+ - QNetworkCookieJar:
+   * [QTBUG-52040] Cookies will no longer be rejected when the domain
+     matches a TLD. However (to avoid problems with TLDs), such cookies are
+     only accepted, or sent, when the host name matches exactly.
+
+QtWidgets
+---------
+
+ - [QTBUG-48325] Sending a key press event with sendEvent() now sends a
+   ShortCutOverride event first to the widget to trigger any shortcuts set
+   first.
+ - [QTBUG-67533] QOpenGLWidget/QQuickWidget is now respecting AlwaysStackOnTop.
+ - [QTBUG-60404] Fixed crash in QMacPanGestureRecognizer.
+ - [QTBUG-67836] Fixed input method commits that end with newline.
+ - [QTBUG-33855] Fixed issue with fonts in QHeaderViews
+ - [QTBUG-56457] Fixed margin issue related to sections in QHeaderView.
+
+****************************************************************************
+*                         Platform-specific Changes                        *
+****************************************************************************
+
+Android
+-------
+
+ - [QTBUG-68344] QTemporaryFile does not try to use O_TMPFILE any more,
+   to work around outdated sandbox restrictions of linkat(). This also fixes
+   use of QSettings and QFile::copy().
+
+Linux
+-----
+
+ - [QTBUG-68586] Fixed a bug that caused QFileSystemWatcher to print a warning
+   if the file being watched did not exist. The class is documented to return
+   the list of files that it could not watch.
+
+macOS
+-----
+
+ - [QTBUG-60676] Fixed a bug in using QFileSystemWatcher to watch different
+   file paths that shared a common prefix.
+
+Windows
+-------
+
+ - [QTBUG-68514] Reverted a change that caused static binaries compiled
+   with Visual Studio 2015 to crash on start-up. Note that this does not
+   apply to Visual Studio 2017 static binaries, even though the crash stack
+   traces are very similar: with 2017, the problem is compiler regression
+   and requires updating to version 15.8 for the fix.
+
+****************************************************************************
+*                                Tools                                     *
+****************************************************************************
+
+configure & build system
+------------------------
+
+ - [QTBUG-68478] Fixed parallel build of examples in some modules.
+
+qmake
+-----
+
+ - [QTBUG-37417][CMake] Fixed missing include paths in private modules.
+ - [QTBUG-47325] Fixed crash when $QMAKEFEATURES contains empty paths
+   (e.g., due to a trailing colon).
+ - [QTBUG-52474][Xcode] Fixed sources being excluded from Time Machine
+   backups.
+ - [QTBUG-66462][Darwin] Fixed overriding QMAKE_TARGET_BUNDLE_PREFIX in
+   project files.
+ - [QTBUG-68705][Xcode] Fixed build directory location of app bundles.
+ - [Xcode] Fixed compatibility with Xcode 10 by opting out from the new
+   build system.
+ - [Darwin] Fixed .prl file lookup for suffixed frameworks.
+ - Fixed look-up of relative files from extra compilers' .depend_command
+   in shadow builds.
