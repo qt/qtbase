@@ -179,7 +179,6 @@
 
 #ifdef Q_PROCESSOR_X86
 /* -- x86 intrinsic support -- */
-#  include "qsimd_x86_p.h"
 
 #  if defined(Q_CC_MSVC) && (defined(_M_X64) || _M_IX86_FP >= 2)
 // MSVC doesn't define __SSE2__, so do it ourselves
@@ -232,6 +231,8 @@
 #    define __F16C__                        1
 #    define __RDRND__                       1
 #  endif
+
+#  include "qsimd_x86_p.h"
 
 #endif  /* Q_PROCESSOR_X86 */
 
