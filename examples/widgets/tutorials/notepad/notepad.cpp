@@ -73,6 +73,17 @@ Notepad::Notepad(QWidget *parent) :
 {
     ui->setupUi(this);
     this->setCentralWidget(ui->textEdit);
+
+// Disable menu actions for unavailable features
+#if !QT_CONFIG(printer)
+    ui->actionPrint->setEnabled(false);
+#endif
+
+#if !QT_CONFIG(clipboard)
+    ui->actionCut->setEnabled(false);
+    ui->actionCopy->setEnabled(false);
+    ui->actionPaste->setEnabled(false);
+#endif
 }
 
 Notepad::~Notepad()
@@ -161,17 +172,23 @@ void Notepad::on_actionExit_triggered()
 
 void Notepad::on_actionCopy_triggered()
 {
+#if QT_CONFIG(clipboard)
     ui->textEdit->copy();
+#endif
 }
 
 void Notepad::on_actionCut_triggered()
 {
+#if QT_CONFIG(clipboard)
     ui->textEdit->cut();
+#endif
 }
 
 void Notepad::on_actionPaste_triggered()
 {
+#if QT_CONFIG(clipboard)
     ui->textEdit->paste();
+#endif
 }
 
 void Notepad::on_actionUndo_triggered()
