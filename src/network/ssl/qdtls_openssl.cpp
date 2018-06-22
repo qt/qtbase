@@ -1020,17 +1020,16 @@ bool QDtlsPrivateOpenSSL::continueHandshake(QUdpSocket *socket, const QByteArray
             // SSL_get_state can provide more information about state
             // machine and we can switch to NotStarted (since we have not
             // replied with our hello ...)
-            if (mode == QSslSocket::SslClientMode) {
-                if (!timeoutHandler.data()) {
-                    timeoutHandler.reset(new TimeoutHandler);
-                    timeoutHandler->dtlsConnection = this;
-                } else {
-                    // Back to 1s.
-                    timeoutHandler->resetTimeout();
-                }
-
-                timeoutHandler->start();
+            if (!timeoutHandler.data()) {
+                timeoutHandler.reset(new TimeoutHandler);
+                timeoutHandler->dtlsConnection = this;
+            } else {
+                // Back to 1s.
+                timeoutHandler->resetTimeout();
             }
+
+            timeoutHandler->start();
+
             return true; // The handshake is not yet complete.
         default:
             storePeerCertificates();

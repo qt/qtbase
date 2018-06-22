@@ -398,12 +398,6 @@ bool QDtls::handleTimeout(QUdpSocket *socket)
         return false;
     }
 
-    if (sslMode() == QSslSocket::SslServerMode) {
-        d->setDtlsError(QDtlsError::InvalidOperation,
-                        tr("DTLS server connection does not have/handle timeouts"));
-        return false;
-    }
-
     return d->handleTimeout(socket);
 }
 

@@ -217,6 +217,8 @@ void tst_QDtls::init()
 
     connect(clientCrypto.data(), &QDtls::handshakeTimeout,
             this, &tst_QDtls::handleHandshakeTimeout);
+    connect(serverCrypto.data(), &QDtls::handshakeTimeout,
+            this, &tst_QDtls::handleHandshakeTimeout);
 }
 
 void tst_QDtls::construction_data()
@@ -1209,7 +1211,10 @@ void tst_QDtls::pskRequested(QSslPreSharedKeyAuthenticator *auth)
 
 void tst_QDtls::handleHandshakeTimeout()
 {
-    if (!clientCrypto->handleTimeout(&clientSocket))
+    auto crypto = qobject_cast<QDtls *>(sender());
+    Q_ASSERT(crypto);
+
+    if (!crypto->handleTimeout(&clientSocket))
         testLoop.exitLoop();
 }
 
