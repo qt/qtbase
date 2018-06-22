@@ -1603,8 +1603,10 @@ DebugSymbolResolver::DebugSymbolResolver(HANDLE process)
     bool success = false;
     m_dbgHelpLib = LoadLibraryW(L"dbghelp.dll");
     if (m_dbgHelpLib) {
-        SymInitializeType symInitialize = (SymInitializeType)(GetProcAddress(m_dbgHelpLib, "SymInitialize"));
-        m_symFromAddr = (SymFromAddrType)(GetProcAddress(m_dbgHelpLib, "SymFromAddr"));
+        SymInitializeType symInitialize = reinterpret_cast<SymInitializeType>(
+            reinterpret_cast<QFunctionPointer>(GetProcAddress(m_dbgHelpLib, "SymInitialize")));
+        m_symFromAddr = reinterpret_cast<SymFromAddrType>(
+            reinterpret_cast<QFunctionPointer>(GetProcAddress(m_dbgHelpLib, "SymFromAddr")));
         success = symInitialize && m_symFromAddr && symInitialize(process, NULL, TRUE);
     }
     if (!success)

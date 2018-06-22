@@ -97,7 +97,7 @@ static inline OSVERSIONINFOEX determineWinOsVersion()
     // because linking to it at load time will not pass the Windows App Certification Kit
     // https://msdn.microsoft.com/en-us/library/windows/hardware/ff561910.aspx
     RtlGetVersionFunction pRtlGetVersion = reinterpret_cast<RtlGetVersionFunction>(
-        GetProcAddressA(ntdll, "RtlGetVersion"));
+        reinterpret_cast<QFunctionPointer>(GetProcAddressA(ntdll, "RtlGetVersion")));
     if (Q_UNLIKELY(!pRtlGetVersion))
         return result;
 
