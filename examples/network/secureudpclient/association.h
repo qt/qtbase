@@ -76,6 +76,7 @@ signals:
 
 private slots:
 
+    void udpSocketConnected();
     void readyRead();
     void handshakeTimeout();
     void pskRequired(QSslPreSharedKeyAuthenticator *auth);
