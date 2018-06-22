@@ -122,7 +122,7 @@ struct QWindowsOpengl32DLL
     void (APIENTRY * glGetIntegerv)(GLenum pname, GLint* params);
     const GLubyte * (APIENTRY * glGetString)(GLenum name);
 
-    FARPROC resolve(const char *name);
+    QFunctionPointer resolve(const char *name);
 private:
     HMODULE m_lib;
     bool m_nonOpengl32;
@@ -217,6 +217,8 @@ public:
     void *nativeContext() const override { return m_renderingContext; }
 
 private:
+    typedef GLenum (APIENTRY *GlGetGraphicsResetStatusArbType)();
+
     inline void releaseDCs();
     bool updateObtainedParams(HDC hdc, int *obtainedSwapInterval = 0);
 
@@ -230,7 +232,7 @@ private:
     bool m_extensionsUsed;
     int m_swapInterval;
     bool m_ownsContext;
-    GLenum (APIENTRY * m_getGraphicsResetStatus)();
+    GlGetGraphicsResetStatusArbType m_getGraphicsResetStatus;
     bool m_lost;
 };
 #endif
