@@ -835,15 +835,14 @@ void QMetaType::registerStreamOperators(int idx, SaveOperator saveOp,
 }
 #endif // QT_NO_DATASTREAM
 
-#if defined(Q_COMPILER_CONSTEXPR) || (defined(Q_CC_MSVC) && Q_CC_MSVC >= 1900)
 // We don't officially support constexpr in MSVC 2015, but the limited support it
 // has is enough for the code below.
 
-#  define STRINGIFY_TYPE_NAME(MetaTypeName, TypeId, RealName) \
+#define STRINGIFY_TYPE_NAME(MetaTypeName, TypeId, RealName) \
     #RealName "\0"
-#  define CALCULATE_TYPE_LEN(MetaTypeName, TypeId, RealName) \
+#define CALCULATE_TYPE_LEN(MetaTypeName, TypeId, RealName) \
     short(sizeof(#RealName)),
-#  define MAP_TYPE_ID_TO_IDX(MetaTypeName, TypeId, RealName) \
+#define MAP_TYPE_ID_TO_IDX(MetaTypeName, TypeId, RealName) \
     TypeId,
 
 namespace {
@@ -911,10 +910,9 @@ template <int... TypeIds> struct MetaTypeOffsets<QtPrivate::IndexesList<TypeIds.
 } // anonymous namespace
 
 constexpr MetaTypeOffsets<QtPrivate::Indexes<QMetaType::HighestInternalId + 1>::Value> metaTypeNames {};
-#  undef STRINGIFY_TYPE_NAME
-#  undef CALCULATE_TYPE_LEN
-#  undef MAP_TYPE_ID_TO_IDX
-#endif
+#undef STRINGIFY_TYPE_NAME
+#undef CALCULATE_TYPE_LEN
+#undef MAP_TYPE_ID_TO_IDX
 
 /*!
     Returns the type name associated with the given \a typeId, or a null
@@ -926,20 +924,8 @@ constexpr MetaTypeOffsets<QtPrivate::Indexes<QMetaType::HighestInternalId + 1>::
 const char *QMetaType::typeName(int typeId)
 {
     const uint type = typeId;
-#define QT_METATYPE_TYPEID_TYPENAME_CONVERTER(MetaTypeName, TypeId, RealName) \
-        case QMetaType::MetaTypeName: return #RealName; break;
-
     if (Q_LIKELY(type <= QMetaType::HighestInternalId)) {
-#if defined(Q_COMPILER_CONSTEXPR) || (defined(Q_CC_MSVC) && Q_CC_MSVC >= 1900)
         return metaTypeNames[typeId];
-#else
-        switch (QMetaType::Type(type)) {
-        QT_FOR_EACH_STATIC_TYPE(QT_METATYPE_TYPEID_TYPENAME_CONVERTER)
-        case QMetaType::UnknownType:
-        case QMetaType::User:
-            break;
-        }
-#endif
     } else if (Q_UNLIKELY(type < QMetaType::User)) {
         return nullptr; // It can happen when someone cast int to QVariant::Type, we should not crash...
     }
