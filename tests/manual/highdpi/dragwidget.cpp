@@ -42,7 +42,7 @@ public:
 };
 
 DragWidget::DragWidget(QString text, QWidget *parent)
-    : QWidget(parent), otherWindow(0)
+    : QWidget(parent), otherWindow(nullptr)
 {
     int x = 5;
     int y = 5;

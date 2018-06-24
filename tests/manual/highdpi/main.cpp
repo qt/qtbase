@@ -61,7 +61,7 @@
 class DemoContainerBase
 {
 public:
-    DemoContainerBase() : m_widget(0) {}
+    DemoContainerBase() : m_widget(nullptr) {}
     virtual ~DemoContainerBase() {}
     QString name() { return option().names().first(); }
     virtual QCommandLineOption &option() = 0;
@@ -157,7 +157,7 @@ static qreal getScreenFactorWithoutPixelDensity(const QScreen *screen)
 
 static inline qreal getGlobalScaleFactor()
 {
-    QScreen *noScreen = 0;
+    QScreen *noScreen = nullptr;
     return QHighDpiScaling::factor(noScreen);
 }
 
@@ -356,6 +356,7 @@ TiledPixmapPainter::TiledPixmapPainter()
 
 void TiledPixmapPainter::paintEvent(QPaintEvent *event)
 {
+    Q_UNUSED(event);
     QPainter p(this);
 
     int xoff = 10;
@@ -634,7 +635,7 @@ template <typename T>
 void apiTestdevicePixelRatioGetter()
 {
     if (0) {
-        T *t = 0;
+        T *t = nullptr;
         t->devicePixelRatio();
     }
 }
@@ -643,7 +644,7 @@ template <typename T>
 void apiTestdevicePixelRatioSetter()
 {
     if (0) {
-        T *t = 0;
+        T *t = nullptr;
         t->setDevicePixelRatio(2.0);
     }
 }
@@ -846,7 +847,7 @@ class CursorTester : public QWidget
 {
 public:
     CursorTester()
-        :moveLabel(0), moving(false)
+        :moveLabel(nullptr), moving(false)
     {
     }
 
@@ -944,7 +945,7 @@ class ScreenDisplayer : public QWidget
 {
 public:
     ScreenDisplayer()
-        : QWidget(), moveLabel(0), scaleFactor(1.0)
+        : QWidget(), moveLabel(nullptr), scaleFactor(1.0)
     {
     }
 
@@ -1159,9 +1160,7 @@ public:
     GraphicsViewCaching() {
         QGraphicsScene *scene = new QGraphicsScene(0, 0, 400, 400);
 
-        QGraphicsTextItem *item = 0;
-
-        item = scene->addText("NoCache");
+        QGraphicsTextItem *item = scene->addText("NoCache");
         item->setCacheMode(QGraphicsItem::NoCache);
         item->setPos(10, 10);
 
