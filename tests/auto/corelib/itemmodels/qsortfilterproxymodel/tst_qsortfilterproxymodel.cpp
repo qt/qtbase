@@ -1900,6 +1900,8 @@ void tst_QSortFilterProxyModel::changeSourceData_data()
     QTest::addColumn<QString>("newValue");
     QTest::addColumn<IntPairList>("removeIntervals");
     QTest::addColumn<IntPairList>("insertIntervals");
+    QTest::addColumn<int>("expectedDataChangedRow"); // -1 if no dataChanged signal expected
+    QTest::addColumn<bool>("expectedLayoutChanged");
     QTest::addColumn<QStringList>("proxyItems");
 
     QTest::newRow("move_to_end_ascending")
@@ -1912,6 +1914,8 @@ void tst_QSortFilterProxyModel::changeSourceData_data()
         << "z" // newValue
         << IntPairList() // removeIntervals
         << IntPairList() // insertIntervals
+        << 2 // dataChanged(row 2) is emitted, see comment "Make sure we also emit dataChanged for the rows" in the source code (unclear why, though)
+        << true // layoutChanged
         << (QStringList() << "b" << "c" << "z") // proxyItems
         ;
 
@@ -1925,6 +1929,8 @@ void tst_QSortFilterProxyModel::changeSourceData_data()
         << "a" // newValue
         << IntPairList() // removeIntervals
         << IntPairList() // insertIntervals
+        << 2 // dataChanged(row 2) is emitted, see comment "Make sure we also emit dataChanged for the rows" in the source code (unclear why, though)
+        << true // layoutChanged
         << (QStringList() << "z" << "b" << "a") // proxyItems
         ;
 
@@ -1938,7 +1944,24 @@ void tst_QSortFilterProxyModel::changeSourceData_data()
         << "a" // newValue
         << IntPairList() // removeIntervals
         << IntPairList() // insertIntervals
+        << -1 // no dataChanged signal
+        << false // layoutChanged
         << (QStringList() << "b" << "a") // proxyItems
+        ;
+
+    QTest::newRow("no_effect_on_filtering")
+        << (QStringList() << "a" << "b") // sourceItems
+        << static_cast<int>(Qt::AscendingOrder) // sortOrder
+        << "" // filter
+        << (QStringList() << "a" << "b") // expectedInitialProxyItems
+        << true // dynamic
+        << 1 // row
+        << "z" // newValue
+        << IntPairList() // removeIntervals
+        << IntPairList() // insertIntervals
+        << 1 // expectedDataChangedRow
+        << false // layoutChanged
+        << (QStringList() << "a" << "z") // proxyItems
         ;
 
     QTest::newRow("filtered_out_value_stays_out")
@@ -1951,6 +1974,8 @@ void tst_QSortFilterProxyModel::changeSourceData_data()
         << "x" // newValue
         << IntPairList() // removeIntervals
         << IntPairList() // insertIntervals
+        << -1 // no dataChanged signal
+        << false // layoutChanged
         << (QStringList() << "a" << "c") // proxyItems
         ;
 
@@ -1964,6 +1989,8 @@ void tst_QSortFilterProxyModel::changeSourceData_data()
         << "x" // newValue
         << IntPairList() // removeIntervals
         << (IntPairList() << IntPair(2, 2)) // insertIntervals
+        << -1 // no dataChanged signal
+        << false // layoutChanged
         << (QStringList() << "a" << "c" << "x") // proxyItems
         ;
 
@@ -1977,6 +2004,8 @@ void tst_QSortFilterProxyModel::changeSourceData_data()
         << "x" // newValue
         << (IntPairList() << IntPair(1, 1)) // removeIntervals
         << IntPairList() // insertIntervals
+        << -1 // no dataChanged signal
+        << false // layoutChanged
         << (QStringList() << "a") // proxyItems
         ;
 
@@ -1990,6 +2019,8 @@ void tst_QSortFilterProxyModel::changeSourceData_data()
         << "x" // newValue
         << IntPairList() // removeIntervals
         << IntPairList() // insertIntervals
+        << 0 // expectedDataChangedRow
+        << false // layoutChanged
         << (QStringList() << "x" << "b" << "c") // proxyItems
         ;
 }
@@ -2005,6 +2036,8 @@ void tst_QSortFilterProxyModel::changeSourceData()
     QFETCH(QString, newValue);
     QFETCH(IntPairList, removeIntervals);
     QFETCH(IntPairList, insertIntervals);
+    QFETCH(int, expectedDataChangedRow);
+    QFETCH(bool, expectedLayoutChanged);
     QFETCH(QStringList, proxyItems);
 
     QStandardItemModel model;
@@ -2033,9 +2066,13 @@ void tst_QSortFilterProxyModel::changeSourceData()
 
     QSignalSpy removeSpy(&proxy, &QSortFilterProxyModel::rowsRemoved);
     QSignalSpy insertSpy(&proxy, &QSortFilterProxyModel::rowsInserted);
+    QSignalSpy dataChangedSpy(&proxy, &QSortFilterProxyModel::dataChanged);
+    QSignalSpy layoutChangedSpy(&proxy, &QSortFilterProxyModel::layoutChanged);
 
     QVERIFY(removeSpy.isValid());
     QVERIFY(insertSpy.isValid());
+    QVERIFY(dataChangedSpy.isValid());
+    QVERIFY(layoutChangedSpy.isValid());
 
     {
         QModelIndex index = model.index(row, 0, QModelIndex());
@@ -2065,6 +2102,17 @@ void tst_QSortFilterProxyModel::changeSourceData()
         QModelIndex index = proxy.index(i, 0, QModelIndex());
         QCOMPARE(proxy.data(index, Qt::DisplayRole).toString(), proxyItems.at(i));
     }
+
+    if (expectedDataChangedRow == -1) {
+        QCOMPARE(dataChangedSpy.count(), 0);
+    } else {
+        QCOMPARE(dataChangedSpy.count(), 1);
+        const QModelIndex idx = dataChangedSpy.at(0).at(0).value<QModelIndex>();
+        QCOMPARE(idx.row(), expectedDataChangedRow);
+        QCOMPARE(idx.column(), 0);
+    }
+
+    QCOMPARE(layoutChangedSpy.count(), expectedLayoutChanged ? 1 : 0);
 }
 
 // Checks that the model is a table, and that each and every row is like this:
