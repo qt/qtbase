@@ -1609,7 +1609,10 @@ bool QAbstractSocketPrivate::bind(const QHostAddress &address, quint16 port, QAb
     localPort = socketEngine->localPort();
 
     emit q->stateChanged(state);
-    if (socketType == QAbstractSocket::UdpSocket)
+    // A slot attached to stateChanged() signal can break our invariant:
+    // by closing the socket it will reset its socket engine - thus we
+    // have additional check (isValid()) ...
+    if (q->isValid() && socketType == QAbstractSocket::UdpSocket)
         socketEngine->setReadNotificationEnabled(true);
     return true;
 }
