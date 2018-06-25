@@ -370,9 +370,9 @@ Qt::MouseButton QWasmEventTranslator::translateMouseButton(unsigned short button
 int QWasmEventTranslator::mouse_cb(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     QWasmEventTranslator *translator = (QWasmEventTranslator*)userData;
-    translator->processMouse(eventType,mouseEvent);
+    bool accepted = translator->processMouse(eventType,mouseEvent);
     QWasmEventDispatcher::maintainTimers();
-    return 0;
+    return accepted;
 }
 
 void resizeWindow(QWindow *window, QWasmWindow::ResizeMode mode,
@@ -431,7 +431,7 @@ void resizeWindow(QWindow *window, QWasmWindow::ResizeMode mode,
     window->setGeometry(x1, y1, w, h);
 }
 
-void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEvent *mouseEvent)
+bool QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEvent *mouseEvent)
 {
     QPoint targetPoint(mouseEvent->targetX, mouseEvent->targetY);
     QPoint globalPoint = screen()->geometry().topLeft() + targetPoint;
@@ -533,10 +533,12 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
         lastWindow = nullptr;
         interior = true;
     }
+    bool accepted = true;
     if (window2 && interior) {
-        QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(
+        accepted = QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(
             window2, getTimestamp(), localPoint, globalPoint, pressedButtons, button, buttonEventType, modifiers);
     }
+    return accepted;
 }
 
 int QWasmEventTranslator::focus_cb(int /*eventType*/, const EmscriptenFocusEvent */*focusEvent*/, void */*userData*/)
@@ -582,11 +584,10 @@ int QWasmEventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *wh
     if (wheelEvent->deltaY != 0) pixelDelta.setY(wheelEvent->deltaY * scrollFactor);
     if (wheelEvent->deltaX != 0) pixelDelta.setX(wheelEvent->deltaX * scrollFactor);
 
-    QWindowSystemInterface::handleWheelEvent(window2, getTimestamp(), localPoint,
+    bool accepted = QWindowSystemInterface::handleWheelEvent(window2, getTimestamp(), localPoint,
                                              globalPoint, QPoint(), pixelDelta, modifiers);
     QWasmEventDispatcher::maintainTimers();
-
-    return 1;
+    return static_cast<int>(accepted);
 }
 
 int QWasmEventTranslator::touchCallback(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
@@ -663,14 +664,15 @@ int QWasmEventTranslator::handleTouch(int eventType, const EmscriptenTouchEvent 
 
     QFlags<Qt::KeyboardModifier> keyModifier = translatKeyModifier(touchEvent);
 
-    QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(
+    bool accepted = QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(
                 window2, getTimestamp(), touchDevice, touchPointList, keyModifier);
 
     if (eventType == EMSCRIPTEN_EVENT_TOUCHCANCEL)
-        QWindowSystemInterface::handleTouchCancelEvent(window2, getTimestamp(), touchDevice, keyModifier);
+        accepted = QWindowSystemInterface::handleTouchCancelEvent(window2, getTimestamp(), touchDevice, keyModifier);
 
     QWasmEventDispatcher::maintainTimers();
-    return 1;
+
+    return static_cast<int>(accepted);
 }
 
 quint64 QWasmEventTranslator::getTimestamp()
