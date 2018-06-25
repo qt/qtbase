@@ -3,10 +3,7 @@
 ubuntu-16.04
 [saveRestoreGeometry]
 b2qt
-# QTBUG-66708
-xcb
 [restoreVersion1Geometry]
-xcb
 osx
 [updateWhileMinimized]
 ubuntu-16.04

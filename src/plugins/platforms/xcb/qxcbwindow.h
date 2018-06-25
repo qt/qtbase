@@ -253,8 +253,6 @@ protected:
 
     Qt::WindowStates m_windowState = Qt::WindowNoState;
 
-    xcb_gravity_t m_gravity = XCB_GRAVITY_STATIC;
-
     bool m_mapped = false;
     bool m_transparent = false;
     bool m_usingSyncProtocol = false;

@@ -196,11 +196,6 @@ void QXcbWindow::setImageFormatForVisual(const xcb_visualtype_t *visual)
     }
 }
 
-static inline bool positionIncludesFrame(QWindow *w)
-{
-    return qt_window_private(w)->positionPolicy == QWindowPrivate::WindowFrameInclusive;
-}
-
 #if QT_CONFIG(xcb_xlib)
 static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
 {
@@ -330,9 +325,6 @@ void QXcbWindow::create()
         return;
     }
 
-    // Parameters to XCreateWindow() are frame corner + inner size.
-    // This fits in case position policy is frame inclusive. There is
-    // currently no way to implement it for frame-exclusive geometries.
     QPlatformWindow::setGeometry(rect);
 
     if (platformScreen != currentScreen)
@@ -619,25 +611,23 @@ void QXcbWindow::setGeometry(const QRect &rect)
     if (!newScreen)
         newScreen = xcbScreen();
 
-    const QRect wmGeometry = windowToWmGeometry(rect);
-
     if (newScreen != currentScreen)
         QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->QPlatformScreen::screen());
 
     if (qt_window_private(window())->positionAutomatic) {
         const quint32 mask = XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
         const qint32 values[] = {
-            qBound<qint32>(1,           wmGeometry.width(),  XCOORD_MAX),
-            qBound<qint32>(1,           wmGeometry.height(), XCOORD_MAX),
+            qBound<qint32>(1,           rect.width(),  XCOORD_MAX),
+            qBound<qint32>(1,           rect.height(), XCOORD_MAX),
         };
         xcb_configure_window(xcb_connection(), m_window, mask, reinterpret_cast<const quint32*>(values));
     } else {
         const quint32 mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
         const qint32 values[] = {
-            qBound<qint32>(-XCOORD_MAX, wmGeometry.x(),      XCOORD_MAX),
-            qBound<qint32>(-XCOORD_MAX, wmGeometry.y(),      XCOORD_MAX),
-            qBound<qint32>(1,           wmGeometry.width(),  XCOORD_MAX),
-            qBound<qint32>(1,           wmGeometry.height(), XCOORD_MAX),
+            qBound<qint32>(-XCOORD_MAX, rect.x(),      XCOORD_MAX),
+            qBound<qint32>(-XCOORD_MAX, rect.y(),      XCOORD_MAX),
+            qBound<qint32>(1,           rect.width(),  XCOORD_MAX),
+            qBound<qint32>(1,           rect.height(), XCOORD_MAX),
         };
         xcb_configure_window(xcb_connection(), m_window, mask, reinterpret_cast<const quint32*>(values));
         if (window()->parent() && !window()->transientParent()) {
@@ -759,9 +749,6 @@ void QXcbWindow::show()
         xcb_wm_hints_set_input(&hints, !(window()->flags() & Qt::WindowDoesNotAcceptFocus));
 
         xcb_set_wm_hints(xcb_connection(), m_window, &hints);
-
-        m_gravity = positionIncludesFrame(window()) ?
-                    XCB_GRAVITY_NORTH_WEST : XCB_GRAVITY_STATIC;
 
         // update WM_NORMAL_HINTS
         propagateSizeHints();
@@ -1513,38 +1500,28 @@ void QXcbWindow::lower()
     xcb_configure_window(xcb_connection(), m_window, mask, values);
 }
 
-// Adapt the geometry to match the WM expection with regards
-// to gravity.
-QRect QXcbWindow::windowToWmGeometry(QRect r) const
-{
-    if (m_dirtyFrameMargins || m_frameMargins.isNull())
-        return r;
-    const bool frameInclusive = positionIncludesFrame(window());
-    // XCB_GRAVITY_STATIC requires the inner geometry, whereas
-    // XCB_GRAVITY_NORTH_WEST requires the frame geometry
-    if (frameInclusive && m_gravity == XCB_GRAVITY_STATIC) {
-        r.translate(m_frameMargins.left(), m_frameMargins.top());
-    } else if (!frameInclusive && m_gravity == XCB_GRAVITY_NORTH_WEST) {
-        r.translate(-m_frameMargins.left(), -m_frameMargins.top());
-    }
-    return r;
-}
-
 void QXcbWindow::propagateSizeHints()
 {
     // update WM_NORMAL_HINTS
     xcb_size_hints_t hints;
     memset(&hints, 0, sizeof(hints));
 
-    const QRect xRect = windowToWmGeometry(geometry());
+    const QRect rect = geometry();
+    QWindowPrivate *win = qt_window_private(window());
 
-    QWindow *win = window();
+    if (!win->positionAutomatic)
+        xcb_size_hints_set_position(&hints, true, rect.x(), rect.y());
+    if (rect.width() < QWINDOWSIZE_MAX || rect.height() < QWINDOWSIZE_MAX)
+        xcb_size_hints_set_size(&hints, true, rect.width(), rect.height());
 
-    if (!qt_window_private(win)->positionAutomatic)
-        xcb_size_hints_set_position(&hints, true, xRect.x(), xRect.y());
-    if (xRect.width() < QWINDOWSIZE_MAX || xRect.height() < QWINDOWSIZE_MAX)
-        xcb_size_hints_set_size(&hints, true, xRect.width(), xRect.height());
-    xcb_size_hints_set_win_gravity(&hints, m_gravity);
+    /* Gravity describes how to interpret x and y values the next time
+       window needs to be positioned on a screen.
+       XCB_GRAVITY_STATIC     : the left top corner of the client window
+       XCB_GRAVITY_NORTH_WEST : the left top corner of the frame window */
+    auto gravity = win->positionPolicy == QWindowPrivate::WindowFrameInclusive
+                   ? XCB_GRAVITY_NORTH_WEST : XCB_GRAVITY_STATIC;
+
+    xcb_size_hints_set_win_gravity(&hints, gravity);
 
     QSize minimumSize = windowMinimumSize();
     QSize maximumSize = windowMaximumSize();
