@@ -712,8 +712,17 @@ void QAbstractItemModelTesterPrivate::rowsAboutToBeRemoved(const QModelIndex &pa
     Changing c;
     c.parent = parent;
     c.oldSize = model->rowCount(parent);
-    c.last = model->data(model->index(start - 1, 0, parent));
-    c.next = model->data(model->index(end + 1, 0, parent));
+    if (start > 0) {
+        const QModelIndex startIndex = model->index(start - 1, 0, parent);
+        MODELTESTER_VERIFY(startIndex.isValid());
+        c.last = model->data(startIndex);
+    }
+    if (end < c.oldSize - 1) {
+        const QModelIndex endIndex = model->index(end + 1, 0, parent);
+        MODELTESTER_VERIFY(endIndex.isValid());
+        c.next = model->data(endIndex);
+    }
+
     remove.push(c);
 }
 
@@ -732,8 +741,10 @@ void QAbstractItemModelTesterPrivate::rowsRemoved(const QModelIndex &parent, int
     Changing c = remove.pop();
     MODELTESTER_COMPARE(parent, c.parent);
     MODELTESTER_COMPARE(model->rowCount(parent), c.oldSize - (end - start + 1));
-    MODELTESTER_COMPARE(model->data(model->index(start - 1, 0, c.parent)), c.last);
-    MODELTESTER_COMPARE(model->data(model->index(start, 0, c.parent)), c.next);
+    if (start > 0)
+        MODELTESTER_COMPARE(model->data(model->index(start - 1, 0, c.parent)), c.last);
+    if (end < c.oldSize - 1)
+        MODELTESTER_COMPARE(model->data(model->index(start, 0, c.parent)), c.next);
 }
 
 void QAbstractItemModelTesterPrivate::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
