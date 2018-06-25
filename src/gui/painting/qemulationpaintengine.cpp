@@ -75,10 +75,10 @@ QPainterState *QEmulationPaintEngine::createState(QPainterState *orig) const
 static inline void combineXForm(QBrush *brush, const QRectF &r)
 {
     QTransform t(r.width(), 0, 0, r.height(), r.x(), r.y());
-    if (brush->gradient()->coordinateMode() == QGradient::ObjectMode)
-        brush->setTransform(brush->transform() * t);
+    if (brush->gradient() && brush->gradient()->coordinateMode() != QGradient::ObjectMode)
+        brush->setTransform(t * brush->transform()); // compat mode
     else
-        brush->setTransform(t * brush->transform());
+        brush->setTransform(brush->transform() * t);
 }
 
 void QEmulationPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
