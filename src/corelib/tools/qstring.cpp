@@ -6393,11 +6393,10 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
                                Qt::CaseSensitive);
 
 #if defined(Q_OS_WIN)
-#  ifndef Q_OS_WINRT
-    int res = CompareString(GetUserDefaultLCID(), 0, (wchar_t*)data1, length1, (wchar_t*)data2, length2);
-#  else
-    int res = CompareStringEx(LOCALE_NAME_USER_DEFAULT, 0, (LPCWSTR)data1, length1, (LPCWSTR)data2, length2, NULL, NULL, 0);
-#  endif
+    QString lhs = QString::fromRawData(data1, length1).normalized(QString::NormalizationForm_C);
+    QString rhs = QString::fromRawData(data2, length2).normalized(QString::NormalizationForm_C);
+
+    int res = CompareStringEx(LOCALE_NAME_USER_DEFAULT, 0, (LPWSTR)lhs.constData(), lhs.length(), (LPWSTR)rhs.constData(), rhs.length(), NULL, NULL, 0);
 
     switch (res) {
     case CSTR_LESS_THAN:

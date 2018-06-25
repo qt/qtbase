@@ -530,10 +530,8 @@ private slots:
     void integer_conversion();
     void tortureSprintfDouble();
     void toNum();
-#if !defined(Q_OS_WIN)
     void localeAwareCompare_data();
     void localeAwareCompare();
-#endif
     void reverseIterators();
     void split_data();
     void split();
@@ -5487,8 +5485,6 @@ void tst_QString::tortureSprintfDouble()
 
 #include <locale.h>
 
-#if !defined(Q_OS_WIN)
-// On Q_OS_WIN, we cannot set the system or user locale
 void tst_QString::localeAwareCompare_data()
 {
     QTest::addColumn<QString>("locale");
@@ -5496,6 +5492,15 @@ void tst_QString::localeAwareCompare_data()
     QTest::addColumn<QString>("s2");
     QTest::addColumn<int>("result");
 
+    // Compare decomposed and composed form
+    {
+        // From ES6 test262 test suite (built-ins/String/prototype/localeCompare/15.5.4.9_CE.js), addressing from Unicode 5.0, chapter 3.12. Boils
+        // down to this one-liner: console.log("\u1111\u1171\u11B6".localeCompare("\ud4db")
+        QTest::newRow("normalize") << QString() << QString::fromUtf8("\xED\x93\x9B") << QString::fromUtf8("\xE1\x84\x91\xE1\x85\xB1\xE1\x86\xB6") << 0;
+    }
+
+#if !defined(Q_OS_WIN)
+// On Q_OS_WIN, we cannot set the system or user locale
     /*
         The C locale performs pure byte comparisons for
         Latin-1-specific characters (I think). Compare with Swedish
@@ -5556,6 +5561,7 @@ void tst_QString::localeAwareCompare_data()
     QTest::newRow("german2") << QString("de_DE") << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1;
     QTest::newRow("german3") << QString("de_DE") << QString::fromLatin1("z") << QString::fromLatin1("\xf6") << 1;
 #endif
+#endif //!defined(Q_OS_WIN)
 }
 
 void tst_QString::localeAwareCompare()
@@ -5568,17 +5574,17 @@ void tst_QString::localeAwareCompare()
     QStringRef r1(&s1, 0, s1.length());
     QStringRef r2(&s2, 0, s2.length());
 
-#if defined (Q_OS_DARWIN) || defined(QT_USE_ICU)
-    QSKIP("Setting the locale is not supported on OS X or ICU (you can set the C locale, but that won't affect localeAwareCompare)");
-#else
     if (!locale.isEmpty()) {
+#if defined (Q_OS_DARWIN) || defined(QT_USE_ICU)
+        QSKIP("Setting the locale is not supported on OS X or ICU (you can set the C locale, but that won't affect localeAwareCompare)");
+#else
         const char *newLocale = setlocale(LC_ALL, locale.toLatin1());
         if (!newLocale) {
             setlocale(LC_ALL, "");
             QSKIP("Please install the proper locale on this machine to test properly");
         }
-    }
 #endif
+    }
 
 #ifdef QT_USE_ICU
     // ### for c1, ICU disagrees with libc on how to compare
@@ -5633,7 +5639,6 @@ void tst_QString::localeAwareCompare()
     if (!locale.isEmpty())
             setlocale(LC_ALL, "");
 }
-#endif //!defined(Q_OS_WIN)
 
 void tst_QString::reverseIterators()
 {
