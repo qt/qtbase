@@ -74,7 +74,7 @@ private:
     QFlags<Qt::KeyboardModifier> translateMouseEventModifier(const EmscriptenMouseEvent *mouseEvent);
     Qt::MouseButton translateMouseButton(unsigned short button);
 
-    void processMouse(int eventType, const EmscriptenMouseEvent *mouseEvent);
+    bool processMouse(int eventType, const EmscriptenMouseEvent *mouseEvent);
     bool processKeyboard(int eventType, const EmscriptenKeyboardEvent *keyEvent);
 
     Qt::Key translateDeadKey(Qt::Key deadKey, Qt::Key accentBaseKey);
