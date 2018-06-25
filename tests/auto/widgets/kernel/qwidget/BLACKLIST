@@ -2,10 +2,9 @@
 [normalGeometry]
 ubuntu-16.04
 [saveRestoreGeometry]
-ubuntu-16.04
 b2qt
 # QTBUG-66708
-opensuse
+xcb
 [restoreVersion1Geometry]
 xcb
 osx

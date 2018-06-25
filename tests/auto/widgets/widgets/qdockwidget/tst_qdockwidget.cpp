@@ -781,8 +781,6 @@ void tst_QDockWidget::restoreDockWidget()
     QByteArray geometry;
     QByteArray state;
 
-    const bool isXcb = !QGuiApplication::platformName().compare("xcb", Qt::CaseInsensitive);
-
     const QString name = QStringLiteral("main");
     const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     const QSize size = availableGeometry.size() / 5;
@@ -815,8 +813,7 @@ void tst_QDockWidget::restoreDockWidget()
         dock->show();
         QVERIFY(QTest::qWaitForWindowExposed(dock));
         QTRY_VERIFY(dock->isFloating());
-        if (!isXcb) // Avoid Window manager positioning issues
-            QTRY_COMPARE(dock->pos(), dockPos);
+        QTRY_COMPARE(dock->pos(), dockPos);
     }
 
     QVERIFY(!geometry.isEmpty());
@@ -837,8 +834,6 @@ void tst_QDockWidget::restoreDockWidget()
         restoreWindow.show();
         QVERIFY(QTest::qWaitForWindowExposed(&restoreWindow));
         QTRY_VERIFY(dock->isFloating());
-        if (isXcb)
-            QSKIP("Skip due to Window manager positioning issues", Abort);
         QTRY_COMPARE(dock->pos(), dockPos);
     }
 }

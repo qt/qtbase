@@ -3356,6 +3356,7 @@ void tst_QWidget::restoreVersion1Geometry()
     QFETCH(QString, fileName);
     QFETCH(uint, expectedWindowState);
     QFETCH(QPoint, expectedPosition);
+    Q_UNUSED(expectedPosition);
     QFETCH(QSize, expectedSize);
     QFETCH(QRect, expectedNormalGeometry);
 
@@ -3375,9 +3376,10 @@ void tst_QWidget::restoreVersion1Geometry()
 
     QCOMPARE(uint(widget.windowState() & WindowStateMask), expectedWindowState);
     if (expectedWindowState == Qt::WindowNoState) {
-        QCOMPARE(widget.pos(), expectedPosition);
+        QTRY_COMPARE(widget.geometry(), expectedNormalGeometry);
         QCOMPARE(widget.size(), expectedSize);
     }
+
     widget.showNormal();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QTest::qWait(100);
@@ -3386,20 +3388,16 @@ void tst_QWidget::restoreVersion1Geometry()
         QEXPECT_FAIL("", "WinRT does not support restoreGeometry", Abort);
 
     if (expectedWindowState == Qt::WindowNoState) {
-        QTRY_COMPARE(widget.pos(), expectedPosition);
         QTRY_COMPARE(widget.size(), expectedSize);
+        QCOMPARE(widget.geometry(), expectedNormalGeometry);
     }
 
     widget.showNormal();
     QTest::qWait(10);
 
-    if (expectedWindowState != Qt::WindowNoState) {
-        // restoring from maximized or fullscreen, we can only restore to the normal geometry
-        QTRY_COMPARE(widget.geometry(), expectedNormalGeometry);
-    } else {
-        QTRY_COMPARE(widget.pos(), expectedPosition);
-        QTRY_COMPARE(widget.size(), expectedSize);
-    }
+    QTRY_COMPARE(widget.geometry(), expectedNormalGeometry);
+    if (expectedWindowState == Qt::WindowNoState)
+        QCOMPARE(widget.size(), expectedSize);
 
 #if 0
     // Code for saving a new geometry*.dat files
