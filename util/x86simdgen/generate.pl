@@ -88,20 +88,10 @@ print q{// This is a generated file. DO NOT EDIT.
 
 QT_BEGIN_NAMESPACE
 
-// Macros for QT_FUNCTION_TARGET (for Clang and GCC)};
-
-# #Define the feature string names for Clang and GCC
-for my $feature (@features) {
-    my $str = $feature->{name};
-    $str .= ",$feature->{depends}" if defined($feature->{depends});
-    printf "#define QT_FUNCTION_TARGET_STRING_%-17s \"%s\"\n",
-        $feature->{id}, $str;
-}
+// used only to indicate that the CPU detection was initialized
+#define QSimdInitialized                            (Q_UINT64_C(1) << 0)};
 
 # Print the enum
-print q{
-// used only to indicate that the CPU detection was initialized
-static const quint64 QSimdInitialized        = Q_UINT64_C(1) << 0;};
 my $lastleaf;
 for (my $i = 0; $i < scalar @features; ++$i) {
     my $feature = $features[$i];
@@ -111,7 +101,13 @@ for (my $i = 0; $i < scalar @features; ++$i) {
     $lastleaf = $feature->{leaf};
 
     # Feature
-    printf "static const quint64 CpuFeature%-13s = Q_UINT64_C(1) << %d;\n", $feature->{id}, $i + 1;
+    printf "#define CpuFeature%-33s (Q_UINT64_C(1) << %d)\n", $feature->{id}, $i + 1;
+
+    # Feature string names for Clang and GCC
+    my $str = $feature->{name};
+    $str .= ",$feature->{depends}" if defined($feature->{depends});
+    printf "#define QT_FUNCTION_TARGET_STRING_%-17s \"%s\"\n",
+        $feature->{id}, $str;
 }
 
 print q{
@@ -122,9 +118,9 @@ for (my $i = 0; $i < scalar @features; ++$i) {
     my $feature = $features[$i];
     printf
         "#ifdef __%s__\n" .
-        "         | (Q_UINT64_C(1) << %d) \t// CpuFeature%s\n" .
+        "         | CpuFeature%s\n" .
         "#endif\n",
-        $feature->{id}, $i + 1, $feature->{id};
+        $feature->{id}, $feature->{id};
 }
 
 print q{        ;
