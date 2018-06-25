@@ -344,7 +344,7 @@ defineReplace(qtConfToolchainSupportsFlag) {
     conftest = "int main() { return 0; }"
     write_file("$$test_out_dir/conftest.cpp", conftest)|error()
 
-    qtRunLoggedCommand("$$test_cmd_base $$QMAKE_CXX $${1} -o conftest-out conftest.cpp"): \
+    qtRunLoggedCommand("$$test_cmd_base $$QMAKE_CXX $$QMAKE_CXXFLAGS $${1} -o conftest-out conftest.cpp"): \
         return(true)
     return(false)
 }

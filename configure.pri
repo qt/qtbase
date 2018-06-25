@@ -1069,6 +1069,10 @@ defineTest(qtConfOutput_gccSysroot) {
         "\"QMAKE_LFLAGS += --sysroot=$$config.input.sysroot\""
     export(EXTRA_QMAKE_ARGS)
 
+    # This one is for qtConfToolchainSupportsFlag().
+    QMAKE_CXXFLAGS += --sysroot=$$config.input.sysroot
+    export(QMAKE_CXXFLAGS)
+
     output = \
         "!host_build {" \
         "    QMAKE_CFLAGS    += --sysroot=\$\$[QT_SYSROOT]" \

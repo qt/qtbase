@@ -211,7 +211,7 @@
 
     "testTypeDependencies": {
         "linkerSupportsFlag": [ "use_gold_linker" ],
-        "verifySpec": [ "shared", "use_gold_linker", "compiler-flags", "gcc-sysroot", "qmakeargs", "commit" ],
+        "verifySpec": [ "shared", "use_gold_linker", "compiler-flags", "qmakeargs", "commit" ],
         "compile": [ "verifyspec" ],
         "detectPkgConfig": [ "cross_compile", "machineTuple" ],
         "library": [ "pkg-config" ],
@@ -518,6 +518,7 @@
 
     "features": {
         "prepare": {
+            "condition": "features.gcc-sysroot || true",
             "output": [ "prepareSpec", "prepareOptions", "preparePaths", "reloadSpec" ]
         },
         "machineTuple": {
