@@ -14,6 +14,7 @@
             "openssl": { "type": "optionalString", "values": [ "no", "yes", "linked", "runtime" ] },
             "openssl-linked": { "type": "void", "name": "openssl", "value": "linked" },
             "openssl-runtime": { "type": "void", "name": "openssl", "value": "runtime" },
+            "dtls": "boolean",
             "sctp": "boolean",
             "securetransport": "boolean",
             "ssl": "boolean",
@@ -149,6 +150,19 @@
             "type": "compile",
             "test": "unix/openssl11",
             "use": "openssl"
+        },
+        "dtls": {
+            "label": "DTLS support in OpenSSL",
+            "type": "compile",
+            "test": {
+                "include": "openssl/ssl.h",
+                "tail": [
+                    "#if defined(OPENSSL_NO_DTLS) || !defined(DTLS1_2_VERSION)",
+                    "#  error OpenSSL without DTLS support",
+                    "#endif"
+                ]
+            },
+            "use": "openssl"
         }
     },
 
@@ -220,7 +234,7 @@
             "label": "DTLS",
             "purpose": "Provides a DTLS implementation",
             "section": "Networking",
-            "condition": "features.openssl",
+            "condition": "features.openssl && tests.dtls",
             "output": [ "publicFeature" ]
         },
         "opensslv11": {
@@ -353,6 +367,7 @@ For example:
                 "openssl",
                 "openssl-linked",
                 "opensslv11",
+                "dtls",
                 "sctp",
                 "system-proxies"
             ]

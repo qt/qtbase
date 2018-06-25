@@ -179,6 +179,8 @@ DEFINEFUNC(const char *, OpenSSL_version, int a, a, return 0, return)
 DEFINEFUNC(unsigned long, SSL_SESSION_get_ticket_lifetime_hint, const SSL_SESSION *session, session, return 0, return)
 DEFINEFUNC4(void, DH_get0_pqg, const DH *dh, dh, const BIGNUM **p, p, const BIGNUM **q, q, const BIGNUM **g, g, return, DUMMYARG)
 DEFINEFUNC(int, DH_bits, DH *dh, dh, return 0, return)
+
+#if QT_CONFIG(dtls)
 DEFINEFUNC2(int, DTLSv1_listen, SSL *s, s, BIO_ADDR *c, c, return -1, return)
 DEFINEFUNC(BIO_ADDR *, BIO_ADDR_new, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC(void, BIO_ADDR_free, BIO_ADDR *ap, ap, return, DUMMYARG)
@@ -190,6 +192,8 @@ DEFINEFUNC2(int, BIO_meth_set_puts, BIO_METHOD *biom, biom, DgramPutsCallback pu
 DEFINEFUNC2(int, BIO_meth_set_ctrl, BIO_METHOD *biom, biom, DgramCtrlCallback ctrl, ctrl, return 0, return)
 DEFINEFUNC2(int, BIO_meth_set_create, BIO_METHOD *biom, biom, DgramCreateCallback crt, crt, return 0, return)
 DEFINEFUNC2(int, BIO_meth_set_destroy, BIO_METHOD *biom, biom, DgramDestroyCallback dtr, dtr, return 0, return)
+#endif // dtls
+
 DEFINEFUNC2(void, BIO_set_data, BIO *a, a, void *ptr, ptr, return, DUMMYARG)
 DEFINEFUNC(void *, BIO_get_data, BIO *a, a, return nullptr, return)
 DEFINEFUNC2(void, BIO_set_init, BIO *a, a, int init, init, return, DUMMYARG)
@@ -304,10 +308,12 @@ DEFINEFUNC3(EC_KEY *, d2i_ECPrivateKey, EC_KEY **a, a, unsigned char **b, b, lon
 #endif
 #endif
 
+#if QT_CONFIG(dtls)
 DEFINEFUNC(const SSL_METHOD *, DTLSv1_server_method, void, DUMMYARG, return nullptr, return)
 DEFINEFUNC(const SSL_METHOD *, DTLSv1_client_method, void, DUMMYARG, return nullptr, return)
 DEFINEFUNC(const SSL_METHOD *, DTLSv1_2_server_method, void, DUMMYARG, return nullptr, return)
 DEFINEFUNC(const SSL_METHOD *, DTLSv1_2_client_method, void, DUMMYARG, return nullptr, return)
+#endif // dtls
 
 DEFINEFUNC(char *, CONF_get1_default_config_file, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(void, OPENSSL_add_all_algorithms_noconf, void, DUMMYARG, return, DUMMYARG)
@@ -555,10 +561,12 @@ DEFINEFUNC3(void, SSL_get0_alpn_selected, const SSL *s, s, const unsigned char *
 #endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
 
 // DTLS:
+#if QT_CONFIG(dtls)
 DEFINEFUNC2(void, SSL_CTX_set_cookie_generate_cb, SSL_CTX *ctx, ctx, CookieGenerateCallback cb, cb, return, DUMMYARG)
 DEFINEFUNC2(void, SSL_CTX_set_cookie_verify_cb, SSL_CTX *ctx, ctx, CookieVerifyCallback cb, cb, return, DUMMYARG)
 DEFINEFUNC(const SSL_METHOD *, DTLS_server_method, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC(const SSL_METHOD *, DTLS_client_method, DUMMYARG, DUMMYARG, return nullptr, return)
+#endif // dtls
 DEFINEFUNC2(void, BIO_set_flags, BIO *b, b, int flags, flags, return, DUMMYARG)
 DEFINEFUNC2(void, BIO_clear_flags, BIO *b, b, int flags, flags, return, DUMMYARG)
 DEFINEFUNC2(void *, BIO_get_ex_data, BIO *b, b, int idx, idx, return nullptr, return)
@@ -963,6 +971,8 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_SESSION_get_ticket_lifetime_hint)
     RESOLVEFUNC(DH_bits)
     RESOLVEFUNC(DSA_bits)
+
+#if QT_CONFIG(dtls)
     RESOLVEFUNC(DTLSv1_listen)
     RESOLVEFUNC(BIO_ADDR_new)
     RESOLVEFUNC(BIO_ADDR_free)
@@ -974,6 +984,8 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(BIO_meth_set_ctrl)
     RESOLVEFUNC(BIO_meth_set_create)
     RESOLVEFUNC(BIO_meth_set_destroy)
+#endif // dtls
+
     RESOLVEFUNC(BIO_set_data)
     RESOLVEFUNC(BIO_get_data)
     RESOLVEFUNC(BIO_set_init)
@@ -1044,10 +1056,12 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(d2i_RSAPrivateKey)
 #endif
 
+#if QT_CONFIG(dtls)
     RESOLVEFUNC(DTLSv1_server_method)
     RESOLVEFUNC(DTLSv1_client_method)
     RESOLVEFUNC(DTLSv1_2_server_method)
     RESOLVEFUNC(DTLSv1_2_client_method)
+#endif // dtls
 
     RESOLVEFUNC(CONF_get1_default_config_file)
     RESOLVEFUNC(OPENSSL_add_all_algorithms_noconf)
@@ -1290,10 +1304,12 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_CTX_set_alpn_select_cb)
     RESOLVEFUNC(SSL_get0_alpn_selected)
 #endif // OPENSSL_VERSION_NUMBER >= 0x10002000L ...
+#if QT_CONFIG(dtls)
     RESOLVEFUNC(SSL_CTX_set_cookie_generate_cb)
     RESOLVEFUNC(SSL_CTX_set_cookie_verify_cb)
     RESOLVEFUNC(DTLS_server_method)
     RESOLVEFUNC(DTLS_client_method)
+#endif // dtls
     RESOLVEFUNC(DH_new)
     RESOLVEFUNC(DH_free)
     RESOLVEFUNC(d2i_DHparams)

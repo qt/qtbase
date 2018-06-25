@@ -487,9 +487,9 @@ void QSslSocketPrivate::resetDefaultCiphers()
     setDefaultSupportedCiphers(ciphers);
     setDefaultCiphers(defaultCiphers);
 
+#if QT_CONFIG(dtls)
     ciphers.clear();
     defaultCiphers.clear();
-
     myCtx = q_SSL_CTX_new(q_DTLS_client_method());
     if (myCtx) {
         mySsl = q_SSL_new(myCtx);
@@ -500,6 +500,7 @@ void QSslSocketPrivate::resetDefaultCiphers()
         }
         q_SSL_CTX_free(myCtx);
     }
+#endif // dtls
 }
 
 void QSslSocketPrivate::resetDefaultEllipticCurves()

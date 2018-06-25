@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
 extern int q_X509Callback(int ok, X509_STORE_CTX *ctx);
 extern QString getErrorsFromOpenSsl();
 
+#if QT_CONFIG(dtls)
 // defined in qdtls_openssl.cpp:
 namespace dtlscallbacks
 {
@@ -65,6 +66,7 @@ extern "C" int q_generate_cookie_callback(SSL *ssl, unsigned char *dst,
 extern "C" int q_verify_cookie_callback(SSL *ssl, const unsigned char *cookie,
                                         unsigned cookieLength);
 }
+#endif // dtls
 
 static inline QString msgErrorSettingEllipticCurves(const QString &why)
 {
@@ -86,6 +88,7 @@ void QSslContext::initSslContext(QSslContext *sslContext, QSslSocket::SslMode mo
     bool isDtls = false;
 init_context:
     switch (sslContext->sslConfiguration.protocol()) {
+#if QT_CONFIG(dtls)
     case QSsl::DtlsV1_0:
         isDtls = true;
         sslContext->ctx = q_SSL_CTX_new(client ? q_DTLSv1_client_method() : q_DTLSv1_server_method());
@@ -101,6 +104,7 @@ init_context:
         isDtls = true;
         sslContext->ctx = q_SSL_CTX_new(client ? q_DTLS_client_method() : q_DTLS_server_method());
         break;
+#endif // dtls
     case QSsl::SslV2:
 #ifndef OPENSSL_NO_SSL2
         sslContext->ctx = q_SSL_CTX_new(client ? q_SSLv2_client_method() : q_SSLv2_server_method());
@@ -313,13 +317,18 @@ init_context:
         q_SSL_CTX_set_verify(sslContext->ctx, SSL_VERIFY_NONE, 0);
     } else {
         q_SSL_CTX_set_verify(sslContext->ctx, SSL_VERIFY_PEER,
-                             isDtls ? dtlscallbacks::q_X509DtlsCallback : q_X509Callback);
+#if QT_CONFIG(dtls)
+                             isDtls ? dtlscallbacks::q_X509DtlsCallback :
+#endif // dtls
+                             q_X509Callback);
     }
 
+#if QT_CONFIG(dtls)
     if (mode == QSslSocket::SslServerMode && isDtls && configuration.dtlsCookieVerificationEnabled()) {
         q_SSL_CTX_set_cookie_generate_cb(sslContext->ctx, dtlscallbacks::q_generate_cookie_callback);
         q_SSL_CTX_set_cookie_verify_cb(sslContext->ctx, CookieVerifyCallback(dtlscallbacks::q_verify_cookie_callback));
     }
+#endif // dtls
 
     // Set verification depth.
     if (sslContext->sslConfiguration.peerVerifyDepth() != 0)

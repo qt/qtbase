@@ -227,16 +227,19 @@ void q_OPENSSL_add_all_algorithms_conf();
 long q_SSLeay();
 const char *q_SSLeay_version(int type);
 
+#if QT_CONFIG(dtls)
 // DTLS:
 extern "C"
 {
 typedef int (*CookieVerifyCallback)(SSL *, unsigned char *, unsigned);
 }
+
 #define q_DTLSv1_listen(ssl, peer) q_SSL_ctrl(ssl, DTLS_CTRL_LISTEN, 0, (void *)peer)
 
 const SSL_METHOD *q_DTLSv1_server_method();
 const SSL_METHOD *q_DTLSv1_client_method();
 const SSL_METHOD *q_DTLSv1_2_server_method();
 const SSL_METHOD *q_DTLSv1_2_client_method();
+#endif // dtls
 
 #endif // QSSLSOCKET_OPENSSL_PRE11_SYMBOLS_P_H

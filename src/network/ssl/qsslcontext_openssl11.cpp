@@ -59,6 +59,7 @@ QT_BEGIN_NAMESPACE
 extern int q_X509Callback(int ok, X509_STORE_CTX *ctx);
 extern QString getErrorsFromOpenSsl();
 
+#if QT_CONFIG(dtls)
 // defined in qdtls_openssl.cpp:
 namespace dtlscallbacks
 {
@@ -68,6 +69,7 @@ extern "C" int q_generate_cookie_callback(SSL *ssl, unsigned char *dst,
 extern "C" int q_verify_cookie_callback(SSL *ssl, const unsigned char *cookie,
                                         unsigned cookieLength);
 }
+#endif // dtls
 
 static inline QString msgErrorSettingEllipticCurves(const QString &why)
 {
@@ -95,6 +97,7 @@ init_context:
         unsupportedProtocol = true;
     } else {
         switch (sslContext->sslConfiguration.protocol()) {
+#if QT_CONFIG(dtls)
         case QSsl::DtlsV1_0:
         case QSsl::DtlsV1_0OrLater:
         case QSsl::DtlsV1_2:
@@ -102,6 +105,7 @@ init_context:
             isDtls = true;
             sslContext->ctx = q_SSL_CTX_new(client ? q_DTLS_client_method() : q_DTLS_server_method());
             break;
+#endif // dtls
         default:
             // The ssl options will actually control the supported methods
             sslContext->ctx = q_SSL_CTX_new(client ? q_TLS_client_method() : q_TLS_server_method());
@@ -124,7 +128,12 @@ init_context:
         return;
     }
 
-    const long anyVersion = isDtls ? DTLS_ANY_VERSION : TLS_ANY_VERSION;
+    const long anyVersion =
+#if QT_CONFIG(dtls)
+                            isDtls ? DTLS_ANY_VERSION : TLS_ANY_VERSION;
+#else
+                            TLS_ANY_VERSION;
+#endif // dtls
     long minVersion = anyVersion;
     long maxVersion = anyVersion;
 
@@ -165,6 +174,7 @@ init_context:
         minVersion = TLS1_2_VERSION;
         maxVersion = TLS_MAX_VERSION;
         break;
+#if QT_CONFIG(dtls)
     case QSsl::DtlsV1_0:
         minVersion = DTLS1_VERSION;
         maxVersion = DTLS1_VERSION;
@@ -181,6 +191,7 @@ init_context:
         minVersion = DTLS1_2_VERSION;
         maxVersion = DTLS_MAX_VERSION;
         break;
+#endif // dtls
     case QSsl::SslV2:
         // This protocol is not supported by OpenSSL 1.1 and we handle
         // it as an error (see the code above).
@@ -326,13 +337,18 @@ init_context:
         q_SSL_CTX_set_verify(sslContext->ctx, SSL_VERIFY_NONE, nullptr);
     } else {
         q_SSL_CTX_set_verify(sslContext->ctx, SSL_VERIFY_PEER,
-                             isDtls ? dtlscallbacks::q_X509DtlsCallback : q_X509Callback);
+#if QT_CONFIG(dtls)
+                             isDtls ? dtlscallbacks::q_X509DtlsCallback :
+#endif // dtls
+                             q_X509Callback);
     }
 
+#if QT_CONFIG(dtls)
     if (mode == QSslSocket::SslServerMode && isDtls && configuration.dtlsCookieVerificationEnabled()) {
         q_SSL_CTX_set_cookie_generate_cb(sslContext->ctx, dtlscallbacks::q_generate_cookie_callback);
         q_SSL_CTX_set_cookie_verify_cb(sslContext->ctx, dtlscallbacks::q_verify_cookie_callback);
     }
+#endif // dtls
 
     // Set verification depth.
     if (sslContext->sslConfiguration.peerVerifyDepth() != 0)

@@ -91,10 +91,12 @@ namespace QSsl {
         TlsV1_1OrLater,
         TlsV1_2OrLater,
 
+#if QT_CONFIG(dtls)
         DtlsV1_0,
         DtlsV1_0OrLater,
         DtlsV1_2,
         DtlsV1_2OrLater,
+#endif
 
         UnknownProtocol = -1
     };

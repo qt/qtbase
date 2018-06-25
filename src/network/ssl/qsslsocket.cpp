@@ -340,7 +340,9 @@ public:
         : config(new QSslConfigurationPrivate),
           dtlsConfig(new QSslConfigurationPrivate)
     {
+#if QT_CONFIG(dtls)
         dtlsConfig->protocol = QSsl::DtlsV1_2OrLater;
+#endif // dtls
     }
 
     QMutex mutex;
@@ -2316,6 +2318,9 @@ void QSslConfigurationPrivate::deepCopyDefaultConfiguration(QSslConfigurationPri
     ptr->sslOptions = global->sslOptions;
     ptr->ellipticCurves = global->ellipticCurves;
     ptr->backendConfig = global->backendConfig;
+#if QT_CONFIG(dtls)
+    ptr->dtlsCookieEnabled = global->dtlsCookieEnabled;
+#endif
 }
 
 /*!
