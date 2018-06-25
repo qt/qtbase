@@ -322,9 +322,10 @@ void QAbstractItemModelTesterPrivate::nonDestructiveBasicTest()
     Qt::ItemFlags flags = model->flags(QModelIndex());
     MODELTESTER_VERIFY(flags == Qt::ItemIsDropEnabled || flags == 0);
     model->hasChildren(QModelIndex());
-    model->hasIndex(0, 0);
+    const bool hasRow = model->hasIndex(0, 0);
     QVariant cache;
-    model->match(QModelIndex(), -1, cache);
+    if (hasRow)
+        model->match(model->index(0, 0), -1, cache);
     model->mimeTypes();
     MODELTESTER_VERIFY(!model->parent(QModelIndex()).isValid());
     MODELTESTER_VERIFY(model->rowCount() >= 0);
