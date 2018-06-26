@@ -40,8 +40,8 @@
 #ifndef QWINDOWSUIAMAINPROVIDER_H
 #define QWINDOWSUIAMAINPROVIDER_H
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiabaseprovider.h"
 
@@ -71,27 +71,27 @@ public:
     static void notifyTextChange(QAccessibleEvent *event);
 
     // IUnknown
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, LPVOID *iface);
-    ULONG STDMETHODCALLTYPE AddRef();
-    ULONG STDMETHODCALLTYPE Release();
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, LPVOID *iface) override;
+    ULONG STDMETHODCALLTYPE AddRef() override;
+    ULONG STDMETHODCALLTYPE Release() override;
 
     // IRawElementProviderSimple methods
-    HRESULT STDMETHODCALLTYPE get_ProviderOptions(ProviderOptions *pRetVal);
-    HRESULT STDMETHODCALLTYPE GetPatternProvider(PATTERNID idPattern, IUnknown **pRetVal);
-    HRESULT STDMETHODCALLTYPE GetPropertyValue(PROPERTYID idProp, VARIANT *pRetVal);
-    HRESULT STDMETHODCALLTYPE get_HostRawElementProvider(IRawElementProviderSimple **pRetVal);
+    HRESULT STDMETHODCALLTYPE get_ProviderOptions(ProviderOptions *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE GetPatternProvider(PATTERNID idPattern, IUnknown **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE GetPropertyValue(PROPERTYID idProp, VARIANT *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_HostRawElementProvider(IRawElementProviderSimple **pRetVal) override;
 
     // IRawElementProviderFragment methods
-    HRESULT STDMETHODCALLTYPE Navigate(NavigateDirection direction, IRawElementProviderFragment **pRetVal);
-    HRESULT STDMETHODCALLTYPE GetRuntimeId(SAFEARRAY **pRetVal);
-    HRESULT STDMETHODCALLTYPE get_BoundingRectangle(UiaRect *pRetVal);
-    HRESULT STDMETHODCALLTYPE GetEmbeddedFragmentRoots(SAFEARRAY **pRetVal);
+    HRESULT STDMETHODCALLTYPE Navigate(NavigateDirection direction, IRawElementProviderFragment **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE GetRuntimeId(SAFEARRAY **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_BoundingRectangle(UiaRect *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE GetEmbeddedFragmentRoots(SAFEARRAY **pRetVal) override;
     HRESULT STDMETHODCALLTYPE SetFocus();
-    HRESULT STDMETHODCALLTYPE get_FragmentRoot(IRawElementProviderFragmentRoot **pRetVal);
+    HRESULT STDMETHODCALLTYPE get_FragmentRoot(IRawElementProviderFragmentRoot **pRetVal) override;
 
     // IRawElementProviderFragmentRoot methods
-    HRESULT STDMETHODCALLTYPE ElementProviderFromPoint(double x, double y, IRawElementProviderFragment **pRetVal);
-    HRESULT STDMETHODCALLTYPE GetFocus(IRawElementProviderFragment **pRetVal);
+    HRESULT STDMETHODCALLTYPE ElementProviderFromPoint(double x, double y, IRawElementProviderFragment **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE GetFocus(IRawElementProviderFragment **pRetVal) override;
 
 private:
     QString automationIdForAccessible(const QAccessibleInterface *accessible);
@@ -100,6 +100,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 #endif // QWINDOWSUIAMAINPROVIDER_H

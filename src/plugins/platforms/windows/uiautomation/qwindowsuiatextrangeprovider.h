@@ -40,8 +40,8 @@
 #ifndef QWINDOWSUIATEXTRANGEPROVIDER_H
 #define QWINDOWSUIATEXTRANGEPROVIDER_H
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiabaseprovider.h"
 
@@ -56,24 +56,25 @@ public:
     explicit QWindowsUiaTextRangeProvider(QAccessible::Id id, int startOffset, int endOffset);
     virtual ~QWindowsUiaTextRangeProvider();
 
-    HRESULT STDMETHODCALLTYPE AddToSelection();
-    HRESULT STDMETHODCALLTYPE Clone(ITextRangeProvider **pRetVal);
-    HRESULT STDMETHODCALLTYPE Compare(ITextRangeProvider *range, BOOL *pRetVal);
-    HRESULT STDMETHODCALLTYPE CompareEndpoints(TextPatternRangeEndpoint endpoint, ITextRangeProvider *targetRange, TextPatternRangeEndpoint targetEndpoint, int *pRetVal);
-    HRESULT STDMETHODCALLTYPE ExpandToEnclosingUnit(TextUnit unit);
-    HRESULT STDMETHODCALLTYPE FindAttribute(TEXTATTRIBUTEID attributeId, VARIANT val, BOOL backward, ITextRangeProvider **pRetVal);
-    HRESULT STDMETHODCALLTYPE FindText(BSTR text, BOOL backward, BOOL ignoreCase, ITextRangeProvider **pRetVal);
-    HRESULT STDMETHODCALLTYPE GetAttributeValue(TEXTATTRIBUTEID attributeId, VARIANT *pRetVal);
-    HRESULT STDMETHODCALLTYPE GetBoundingRectangles(SAFEARRAY **pRetVal);
-    HRESULT STDMETHODCALLTYPE GetChildren(SAFEARRAY **pRetVal);
-    HRESULT STDMETHODCALLTYPE GetEnclosingElement(IRawElementProviderSimple **pRetVal);
-    HRESULT STDMETHODCALLTYPE GetText(int maxLength, BSTR *pRetVal);
-    HRESULT STDMETHODCALLTYPE Move(TextUnit unit, int count, int *pRetVal);
-    HRESULT STDMETHODCALLTYPE MoveEndpointByRange(TextPatternRangeEndpoint endpoint, ITextRangeProvider *targetRange, TextPatternRangeEndpoint targetEndpoint);
-    HRESULT STDMETHODCALLTYPE MoveEndpointByUnit(TextPatternRangeEndpoint endpoint, TextUnit unit, int count, int *pRetVal);
-    HRESULT STDMETHODCALLTYPE RemoveFromSelection();
-    HRESULT STDMETHODCALLTYPE ScrollIntoView(BOOL alignToTop);
-    HRESULT STDMETHODCALLTYPE Select();
+    // ITextRangeProvider
+    HRESULT STDMETHODCALLTYPE AddToSelection() override;
+    HRESULT STDMETHODCALLTYPE Clone(ITextRangeProvider **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE Compare(ITextRangeProvider *range, BOOL *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE CompareEndpoints(TextPatternRangeEndpoint endpoint, ITextRangeProvider *targetRange, TextPatternRangeEndpoint targetEndpoint, int *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE ExpandToEnclosingUnit(TextUnit unit) override;
+    HRESULT STDMETHODCALLTYPE FindAttribute(TEXTATTRIBUTEID attributeId, VARIANT val, BOOL backward, ITextRangeProvider **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE FindText(BSTR text, BOOL backward, BOOL ignoreCase, ITextRangeProvider **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE GetAttributeValue(TEXTATTRIBUTEID attributeId, VARIANT *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE GetBoundingRectangles(SAFEARRAY **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE GetChildren(SAFEARRAY **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE GetEnclosingElement(IRawElementProviderSimple **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE GetText(int maxLength, BSTR *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE Move(TextUnit unit, int count, int *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE MoveEndpointByRange(TextPatternRangeEndpoint endpoint, ITextRangeProvider *targetRange, TextPatternRangeEndpoint targetEndpoint) override;
+    HRESULT STDMETHODCALLTYPE MoveEndpointByUnit(TextPatternRangeEndpoint endpoint, TextUnit unit, int count, int *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE RemoveFromSelection() override;
+    HRESULT STDMETHODCALLTYPE ScrollIntoView(BOOL alignToTop) override;
+    HRESULT STDMETHODCALLTYPE Select() override;
 
 private:
     HRESULT unselect();
@@ -83,6 +84,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 #endif // QWINDOWSUIATEXTRANGEPROVIDER_H

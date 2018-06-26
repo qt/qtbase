@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiamainprovider.h"
 #include "qwindowsuiavalueprovider.h"
@@ -57,7 +57,7 @@
 #include "qwindowsuiautils.h"
 #include "qwindowsuiaprovidercache.h"
 
-#include <QtCore/qdebug.h>
+#include <QtCore/qloggingcategory.h>
 #include <QtGui/qaccessible.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qwindow.h>
@@ -391,9 +391,8 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
         break;
     case UIA_NamePropertyId: {
         QString name = accessible->text(QAccessible::Name);
-        if (name.isEmpty() && clientTopLevel) {
+        if (name.isEmpty() && clientTopLevel)
            name = QCoreApplication::applicationName();
-        }
         setVariantString(name, pRetVal);
         break;
     }
@@ -635,4 +634,4 @@ HRESULT QWindowsUiaMainProvider::GetFocus(IRawElementProviderFragment **pRetVal)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

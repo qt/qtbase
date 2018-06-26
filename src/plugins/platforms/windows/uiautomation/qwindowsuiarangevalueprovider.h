@@ -40,8 +40,8 @@
 #ifndef QWINDOWSUIARANGEVALUEPROVIDER_H
 #define QWINDOWSUIARANGEVALUEPROVIDER_H
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiabaseprovider.h"
 
@@ -57,17 +57,17 @@ public:
     virtual ~QWindowsUiaRangeValueProvider();
 
     // IRangeValueProvider
-    HRESULT STDMETHODCALLTYPE SetValue(double val);
-    HRESULT STDMETHODCALLTYPE get_Value(double *pRetVal);
-    HRESULT STDMETHODCALLTYPE get_IsReadOnly(BOOL *pRetVal);
-    HRESULT STDMETHODCALLTYPE get_Maximum(double *pRetVal);
-    HRESULT STDMETHODCALLTYPE get_Minimum(double *pRetVal);
-    HRESULT STDMETHODCALLTYPE get_LargeChange(double *pRetVal);
-    HRESULT STDMETHODCALLTYPE get_SmallChange(double *pRetVal);
+    HRESULT STDMETHODCALLTYPE SetValue(double val) override;
+    HRESULT STDMETHODCALLTYPE get_Value(double *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_IsReadOnly(BOOL *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_Maximum(double *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_Minimum(double *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_LargeChange(double *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_SmallChange(double *pRetVal) override;
 };
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 #endif // QWINDOWSUIARANGEVALUEPROVIDER_H

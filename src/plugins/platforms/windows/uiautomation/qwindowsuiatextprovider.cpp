@@ -37,15 +37,15 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiatextprovider.h"
 #include "qwindowsuiautils.h"
 #include "qwindowscontext.h"
 
 #include <QtGui/qaccessible.h>
-#include <QtCore/qdebug.h>
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE
@@ -257,4 +257,4 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaTextProvider::GetCaretRange(BOOL *isActive,
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

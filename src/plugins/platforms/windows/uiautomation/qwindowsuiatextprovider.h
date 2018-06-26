@@ -40,8 +40,8 @@
 #ifndef QWINDOWSUIATEXTPROVIDER_H
 #define QWINDOWSUIATEXTPROVIDER_H
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiabaseprovider.h"
 #include "qwindowsuiatextrangeprovider.h"
@@ -58,23 +58,23 @@ public:
     ~QWindowsUiaTextProvider();
 
     // IUnknown overrides
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, LPVOID *iface);
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, LPVOID *iface) override;
 
     // ITextProvider
-    HRESULT STDMETHODCALLTYPE GetSelection(SAFEARRAY **pRetVal);
-    HRESULT STDMETHODCALLTYPE GetVisibleRanges(SAFEARRAY **pRetVal);
-    HRESULT STDMETHODCALLTYPE RangeFromChild(IRawElementProviderSimple *childElement, ITextRangeProvider **pRetVal);
-    HRESULT STDMETHODCALLTYPE RangeFromPoint(UiaPoint point, ITextRangeProvider **pRetVal);
-    HRESULT STDMETHODCALLTYPE get_DocumentRange(ITextRangeProvider **pRetVal);
-    HRESULT STDMETHODCALLTYPE get_SupportedTextSelection(SupportedTextSelection *pRetVal);
+    HRESULT STDMETHODCALLTYPE GetSelection(SAFEARRAY **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE GetVisibleRanges(SAFEARRAY **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE RangeFromChild(IRawElementProviderSimple *childElement, ITextRangeProvider **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE RangeFromPoint(UiaPoint point, ITextRangeProvider **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_DocumentRange(ITextRangeProvider **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_SupportedTextSelection(SupportedTextSelection *pRetVal) override;
 
     // ITextProvider2
-    HRESULT STDMETHODCALLTYPE RangeFromAnnotation(IRawElementProviderSimple *annotationElement, ITextRangeProvider **pRetVal);
-    HRESULT STDMETHODCALLTYPE GetCaretRange(BOOL *isActive, ITextRangeProvider **pRetVal);
+    HRESULT STDMETHODCALLTYPE RangeFromAnnotation(IRawElementProviderSimple *annotationElement, ITextRangeProvider **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE GetCaretRange(BOOL *isActive, ITextRangeProvider **pRetVal) override;
 };
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 #endif // QWINDOWSUIATEXTPROVIDER_H

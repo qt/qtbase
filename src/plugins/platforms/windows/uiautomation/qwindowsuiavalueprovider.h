@@ -40,8 +40,8 @@
 #ifndef QWINDOWSUIAVALUEPROVIDER_H
 #define QWINDOWSUIAVALUEPROVIDER_H
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiabaseprovider.h"
 
@@ -58,13 +58,13 @@ public:
     virtual ~QWindowsUiaValueProvider();
 
     // IValueProvider
-    HRESULT STDMETHODCALLTYPE SetValue(LPCWSTR val);
-    HRESULT STDMETHODCALLTYPE get_IsReadOnly(BOOL *pRetVal);
-    HRESULT STDMETHODCALLTYPE get_Value(BSTR *pRetVal);
+    HRESULT STDMETHODCALLTYPE SetValue(LPCWSTR val) override;
+    HRESULT STDMETHODCALLTYPE get_IsReadOnly(BOOL *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_Value(BSTR *pRetVal) override;
 };
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 #endif // QWINDOWSUIAVALUEPROVIDER_H

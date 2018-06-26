@@ -40,8 +40,8 @@
 #ifndef QWINDOWSUIATABLEPROVIDER_H
 #define QWINDOWSUIATABLEPROVIDER_H
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiabaseprovider.h"
 
@@ -57,13 +57,13 @@ public:
     virtual ~QWindowsUiaTableProvider();
 
     // ITableProvider
-    HRESULT STDMETHODCALLTYPE GetRowHeaders(SAFEARRAY **pRetVal);
-    HRESULT STDMETHODCALLTYPE GetColumnHeaders(SAFEARRAY **pRetVal);
-    HRESULT STDMETHODCALLTYPE get_RowOrColumnMajor(enum RowOrColumnMajor *pRetVal);
+    HRESULT STDMETHODCALLTYPE GetRowHeaders(SAFEARRAY **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE GetColumnHeaders(SAFEARRAY **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_RowOrColumnMajor(enum RowOrColumnMajor *pRetVal) override;
 };
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 #endif // QWINDOWSUIATABLEPROVIDER_H

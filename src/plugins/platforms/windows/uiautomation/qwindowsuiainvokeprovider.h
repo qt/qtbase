@@ -40,8 +40,8 @@
 #ifndef QWINDOWSUIAINVOKEPROVIDER_H
 #define QWINDOWSUIAINVOKEPROVIDER_H
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiabaseprovider.h"
 
@@ -57,11 +57,11 @@ public:
     virtual ~QWindowsUiaInvokeProvider();
 
     // IInvokeProvider
-    HRESULT STDMETHODCALLTYPE Invoke();
+    HRESULT STDMETHODCALLTYPE Invoke() override;
 };
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 #endif // QWINDOWSUIAINVOKEPROVIDER_H

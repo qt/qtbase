@@ -52,7 +52,7 @@
 #endif
 #include "qwindowstheme.h"
 #include <private/qguiapplication_p.h>
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #  include "uiautomation/qwindowsuiaaccessibility.h"
 #endif
 #if QT_CONFIG(sessionmanager)
@@ -974,7 +974,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::UnknownEvent:
         return false;
     case QtWindows::AccessibleObjectFromWindowRequest:
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         return QWindowsUiaAccessibility::handleWmGetObject(hwnd, wParam, lParam, result);
 #else
         return false;

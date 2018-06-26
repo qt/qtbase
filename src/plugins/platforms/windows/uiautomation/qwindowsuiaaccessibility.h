@@ -40,15 +40,15 @@
 #ifndef QWINDOWSUIAACCESSIBILITY_H
 #define QWINDOWSUIAACCESSIBILITY_H
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowscontext.h"
 #include <qpa/qplatformaccessibility.h>
 
 QT_BEGIN_NAMESPACE
 
-// Windows plataform accessibility implemented over UI Automation.
+// Windows platform accessibility implemented over UI Automation.
 class QWindowsUiaAccessibility : public QPlatformAccessibility
 {
 public:
@@ -60,6 +60,6 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 #endif // QWINDOWSUIAACCESSIBILITY_H

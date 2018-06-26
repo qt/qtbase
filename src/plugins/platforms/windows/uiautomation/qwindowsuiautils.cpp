@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiautils.h"
 #include "qwindowscontext.h"
@@ -218,4 +218,4 @@ bool isTextUnitSeparator(TextUnit unit, const QChar &ch)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiagridprovider.h"
 #include "qwindowsuiamainprovider.h"
@@ -46,7 +46,7 @@
 #include "qwindowscontext.h"
 
 #include <QtGui/qaccessible.h>
-#include <QtCore/qdebug.h>
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE
@@ -132,4 +132,4 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaGridProvider::get_ColumnCount(int *pRetVal)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

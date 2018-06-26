@@ -37,14 +37,12 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiaprovidercache.h"
 #include "qwindowsuiautils.h"
 #include "qwindowscontext.h"
-
-#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,7 +64,7 @@ QWindowsUiaProviderCache *QWindowsUiaProviderCache::instance()
 // Returns the provider instance associated with the ID, or nullptr.
 QWindowsUiaBaseProvider *QWindowsUiaProviderCache::providerForId(QAccessible::Id id) const
 {
-    return providerTable.value(id);
+    return m_providerTable.value(id);
 }
 
 // Inserts a provider in the cache and associates it with an accessibility ID.
@@ -74,8 +72,8 @@ void QWindowsUiaProviderCache::insert(QAccessible::Id id, QWindowsUiaBaseProvide
 {
     remove(id);
     if (provider) {
-        providerTable[id] = provider;
-        inverseTable[provider] = id;
+        m_providerTable[id] = provider;
+        m_inverseTable[provider] = id;
         // Connects the destroyed signal to our slot, to remove deleted objects from the cache.
         QObject::connect(provider, &QObject::destroyed, this, &QWindowsUiaProviderCache::objectDestroyed);
     }
@@ -87,20 +85,20 @@ void QWindowsUiaProviderCache::objectDestroyed(QObject *obj)
     // We have to use the inverse table to map the object address back to its ID,
     // since at this point (called from QObject destructor), it has already been
     // partially destroyed and we cannot treat it as a provider.
-    auto it = inverseTable.find(obj);
-    if (it != inverseTable.end()) {
-        providerTable.remove(*it);
-        inverseTable.remove(obj);
+    auto it = m_inverseTable.find(obj);
+    if (it != m_inverseTable.end()) {
+        m_providerTable.remove(*it);
+        m_inverseTable.remove(obj);
     }
 }
 
 // Removes a provider with a given id from the cache.
 void QWindowsUiaProviderCache::remove(QAccessible::Id id)
 {
-    inverseTable.remove(providerTable.value(id));
-    providerTable.remove(id);
+    m_inverseTable.remove(m_providerTable.value(id));
+    m_providerTable.remove(id);
 }
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

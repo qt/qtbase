@@ -40,8 +40,8 @@
 #ifndef QWINDOWSUIAGRIDITEMPROVIDER_H
 #define QWINDOWSUIAGRIDITEMPROVIDER_H
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiabaseprovider.h"
 
@@ -57,15 +57,15 @@ public:
     virtual ~QWindowsUiaGridItemProvider();
 
     // IGridItemProvider
-    HRESULT STDMETHODCALLTYPE get_Row(int *pRetVal);
-    HRESULT STDMETHODCALLTYPE get_Column(int *pRetVal);
-    HRESULT STDMETHODCALLTYPE get_RowSpan(int *pRetVal);
-    HRESULT STDMETHODCALLTYPE get_ColumnSpan(int *pRetVal);
-    HRESULT STDMETHODCALLTYPE get_ContainingGrid(IRawElementProviderSimple **pRetVal);
+    HRESULT STDMETHODCALLTYPE get_Row(int *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_Column(int *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_RowSpan(int *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_ColumnSpan(int *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_ContainingGrid(IRawElementProviderSimple **pRetVal) override;
 };
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 #endif // QWINDOWSUIAGRIDITEMPROVIDER_H

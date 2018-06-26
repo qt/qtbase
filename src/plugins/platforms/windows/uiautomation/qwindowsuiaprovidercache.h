@@ -40,8 +40,8 @@
 #ifndef QWINDOWSUIAPROVIDERCACHE_H
 #define QWINDOWSUIAPROVIDERCACHE_H
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiabaseprovider.h"
 
@@ -65,12 +65,12 @@ private Q_SLOTS:
     void objectDestroyed(QObject *obj);
 
 private:
-    QHash<QAccessible::Id, QWindowsUiaBaseProvider *> providerTable;
-    QHash<QObject *, QAccessible::Id> inverseTable;
+    QHash<QAccessible::Id, QWindowsUiaBaseProvider *> m_providerTable;
+    QHash<QObject *, QAccessible::Id> m_inverseTable;
 };
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 #endif // QWINDOWSUIAPROVIDERCACHE_H

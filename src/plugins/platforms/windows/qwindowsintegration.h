@@ -90,7 +90,7 @@ public:
 #  endif
 #endif // !QT_NO_CLIPBOARD
     QPlatformInputContext *inputContext() const override;
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QPlatformAccessibility *accessibility() const override;
 #endif
     QPlatformFontDatabase *fontDatabase() const override;

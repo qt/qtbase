@@ -59,7 +59,7 @@
 #endif
 #include "qwindowsinputcontext.h"
 #include "qwindowskeymapper.h"
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #  include "uiautomation/qwindowsuiaaccessibility.h"
 #endif
 
@@ -150,7 +150,7 @@ struct QWindowsIntegrationPrivate
     QScopedPointer<QWindowsStaticOpenGLContext> m_staticOpenGLContext;
 #endif // QT_NO_OPENGL
     QScopedPointer<QPlatformInputContext> m_inputContext;
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
    QWindowsUiaAccessibility m_accessibility;
 #endif
     QWindowsServices m_services;
@@ -560,7 +560,7 @@ QPlatformInputContext * QWindowsIntegration::inputContext() const
     return d->m_inputContext.data();
 }
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 QPlatformAccessibility *QWindowsIntegration::accessibility() const
 {
     return &d->m_accessibility;

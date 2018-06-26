@@ -40,8 +40,8 @@
 #ifndef QWINDOWSUIASELECTIONITEMPROVIDER_H
 #define QWINDOWSUIASELECTIONITEMPROVIDER_H
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiabaseprovider.h"
 
@@ -57,15 +57,15 @@ public:
     virtual ~QWindowsUiaSelectionItemProvider();
 
     // ISelectionItemProvider
-    HRESULT STDMETHODCALLTYPE Select();
-    HRESULT STDMETHODCALLTYPE AddToSelection();
-    HRESULT STDMETHODCALLTYPE RemoveFromSelection();
-    HRESULT STDMETHODCALLTYPE get_IsSelected(BOOL *pRetVal);
-    HRESULT STDMETHODCALLTYPE get_SelectionContainer(IRawElementProviderSimple **pRetVal);
+    HRESULT STDMETHODCALLTYPE Select() override;
+    HRESULT STDMETHODCALLTYPE AddToSelection() override;
+    HRESULT STDMETHODCALLTYPE RemoveFromSelection() override;
+    HRESULT STDMETHODCALLTYPE get_IsSelected(BOOL *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_SelectionContainer(IRawElementProviderSimple **pRetVal) override;
 };
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 #endif // QWINDOWSUIASELECTIONITEMPROVIDER_H

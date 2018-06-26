@@ -40,8 +40,8 @@
 #ifndef QWINDOWSUIATOGGLEPROVIDER_H
 #define QWINDOWSUIATOGGLEPROVIDER_H
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiabaseprovider.h"
 
@@ -57,12 +57,12 @@ public:
     virtual ~QWindowsUiaToggleProvider();
 
     // IToggleProvider
-    HRESULT STDMETHODCALLTYPE Toggle();
-    HRESULT STDMETHODCALLTYPE get_ToggleState(ToggleState *pRetVal);
+    HRESULT STDMETHODCALLTYPE Toggle() override;
+    HRESULT STDMETHODCALLTYPE get_ToggleState(ToggleState *pRetVal) override;
 };
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 #endif // QWINDOWSUIATOGGLEPROVIDER_H

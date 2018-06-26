@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiaaccessibility.h"
 #include "qwindowsuiamainprovider.h"
@@ -107,19 +107,15 @@ void QWindowsUiaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event
         return;
 
     switch (event->type()) {
-
     case QAccessible::Focus:
         QWindowsUiaMainProvider::notifyFocusChange(event);
         break;
-
     case QAccessible::StateChanged:
         QWindowsUiaMainProvider::notifyStateChange(static_cast<QAccessibleStateChangeEvent *>(event));
         break;
-
     case QAccessible::ValueChanged:
         QWindowsUiaMainProvider::notifyValueChange(static_cast<QAccessibleValueChangeEvent *>(event));
         break;
-
     case QAccessible::TextAttributeChanged:
     case QAccessible::TextColumnChanged:
     case QAccessible::TextInserted:
@@ -129,7 +125,6 @@ void QWindowsUiaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event
     case QAccessible::TextCaretMoved:
         QWindowsUiaMainProvider::notifyTextChange(event);
         break;
-
     default:
         break;
     }
@@ -137,4 +132,4 @@ void QWindowsUiaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

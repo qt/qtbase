@@ -40,8 +40,8 @@
 #ifndef QWINDOWSUIASELECTIONPROVIDER_H
 #define QWINDOWSUIASELECTIONPROVIDER_H
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiabaseprovider.h"
 
@@ -57,13 +57,13 @@ public:
     virtual ~QWindowsUiaSelectionProvider();
 
     // ISelectionProvider
-    HRESULT STDMETHODCALLTYPE GetSelection(SAFEARRAY **pRetVal);
-    HRESULT STDMETHODCALLTYPE get_CanSelectMultiple(BOOL *pRetVal);
-    HRESULT STDMETHODCALLTYPE get_IsSelectionRequired(BOOL *pRetVal);
+    HRESULT STDMETHODCALLTYPE GetSelection(SAFEARRAY **pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_CanSelectMultiple(BOOL *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_IsSelectionRequired(BOOL *pRetVal) override;
 };
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 #endif // QWINDOWSUIASELECTIONPROVIDER_H

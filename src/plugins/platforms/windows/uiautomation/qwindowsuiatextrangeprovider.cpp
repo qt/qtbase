@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiatextrangeprovider.h"
 #include "qwindowsuiamainprovider.h"
@@ -46,7 +46,7 @@
 #include "qwindowscontext.h"
 
 #include <QtGui/qaccessible.h>
-#include <QtCore/qdebug.h>
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE
@@ -237,12 +237,12 @@ HRESULT QWindowsUiaTextRangeProvider::GetBoundingRectangles(SAFEARRAY **pRetVal)
             int endRange = qMin(end, m_endOffset);
             if (startRange < endRange) {
                 // Calculates a bounding rectangle for the line and adds it to the list.
-                QRect startRect = textInterface->characterRect(startRange);
-                QRect endRect = textInterface->characterRect(endRange - 1);
-                QRect lineRect(qMin(startRect.x(), endRect.x()),
-                               qMin(startRect.y(), endRect.y()),
-                               qMax(startRect.x() + startRect.width(), endRect.x() + endRect.width()) - qMin(startRect.x(), endRect.x()),
-                               qMax(startRect.y() + startRect.height(), endRect.y() + endRect.height()) - qMin(startRect.y(), endRect.y()));
+                const QRect startRect = textInterface->characterRect(startRange);
+                const QRect endRect = textInterface->characterRect(endRange - 1);
+                const QRect lineRect(qMin(startRect.x(), endRect.x()),
+                                     qMin(startRect.y(), endRect.y()),
+                                     qMax(startRect.x() + startRect.width(), endRect.x() + endRect.width()) - qMin(startRect.x(), endRect.x()),
+                                     qMax(startRect.y() + startRect.height(), endRect.y() + endRect.height()) - qMin(startRect.y(), endRect.y()));
                 rectList.append(lineRect);
             }
             if (end >= len) break;
@@ -518,9 +518,9 @@ HRESULT QWindowsUiaTextRangeProvider::Select()
 }
 
 // Not supported.
-HRESULT QWindowsUiaTextRangeProvider::FindTextW(BSTR /* text */, BOOL /* backward */,
-                                                BOOL /* ignoreCase */,
-                                                ITextRangeProvider **pRetVal)
+HRESULT QWindowsUiaTextRangeProvider::FindText(BSTR /* text */, BOOL /* backward */,
+                                               BOOL /* ignoreCase */,
+                                               ITextRangeProvider **pRetVal)
 {
     if (!pRetVal)
         return E_INVALIDARG;
@@ -550,4 +550,4 @@ HRESULT QWindowsUiaTextRangeProvider::unselect()
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

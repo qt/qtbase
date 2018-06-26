@@ -37,15 +37,14 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qconfig.h>
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include "qwindowsuiabaseprovider.h"
 #include "qwindowsuiautils.h"
 #include "qwindowscontext.h"
 
 #include <QtGui/qaccessible.h>
-#include <QtCore/qdebug.h>
 #include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE
@@ -77,4 +76,4 @@ QAccessible::Id QWindowsUiaBaseProvider::id() const
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
