@@ -164,9 +164,14 @@ public slots:
     void setDefault2() { setDefault(2); }
     void setDefault3() { setDefault(3); }
     void setDefault4() { setDefault(4); }
+    void setPreset()     { changePresetBy(0); }
+    void setPrevPreset() { changePresetBy(-1); }
+    void setNextPreset() { changePresetBy(1); }
 
 private:
     void setDefault(int i);
+    void updatePresetName();
+    void changePresetBy(int indexOffset);
 
     GradientRenderer *m_renderer;
     GradientEditor *m_editor;
@@ -177,7 +182,9 @@ private:
     QRadioButton *m_padSpreadButton;
     QRadioButton *m_reflectSpreadButton;
     QRadioButton *m_repeatSpreadButton;
+    QPushButton *m_presetButton;
 
+    int m_presetIndex = 0;
 };
 
 #endif // GRADIENTS_H
