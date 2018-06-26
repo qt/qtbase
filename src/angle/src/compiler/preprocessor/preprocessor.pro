@@ -3,7 +3,10 @@ include($$OUT_PWD/../../../../gui/qtgui-config.pri)
 qtConfig(dynamicgl): CONFIG += not_installed
 include(../../config.pri)
 
-INCLUDEPATH = $$ANGLE_DIR/src/compiler/preprocessor
+INCLUDEPATH = \
+    $$ANGLE_DIR/src \
+    $$ANGLE_DIR/src/common/third_party/base \
+    $$ANGLE_DIR/src/compiler/preprocessor
 
 DEFINES += _SECURE_SCL=0
 
@@ -20,12 +23,10 @@ HEADERS += \
     $$ANGLE_DIR/src/compiler/preprocessor/DirectiveParser.h \
     $$ANGLE_DIR/src/compiler/preprocessor/ExpressionParser.h \
     $$ANGLE_DIR/src/compiler/preprocessor/Input.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/length_limits.h \
     $$ANGLE_DIR/src/compiler/preprocessor/Lexer.h \
     $$ANGLE_DIR/src/compiler/preprocessor/Macro.h \
     $$ANGLE_DIR/src/compiler/preprocessor/MacroExpander.h \
     $$ANGLE_DIR/src/compiler/preprocessor/numeric_lex.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/pp_utils.h \
     $$ANGLE_DIR/src/compiler/preprocessor/Preprocessor.h \
     $$ANGLE_DIR/src/compiler/preprocessor/SourceLocation.h \
     $$ANGLE_DIR/src/compiler/preprocessor/Token.h \

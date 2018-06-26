@@ -58,9 +58,26 @@ Config::Config()
       transparentRedValue(0),
       transparentGreenValue(0),
       transparentBlueValue(0),
-      optimalOrientation(0)
+      optimalOrientation(0),
+      colorComponentType(EGL_COLOR_COMPONENT_TYPE_FIXED_EXT)
 {
 }
+
+Config::~Config()
+{
+}
+
+Config::Config(const Config &other) = default;
+
+Config &Config::operator=(const Config &other) = default;
+
+ConfigSet::ConfigSet() = default;
+
+ConfigSet::ConfigSet(const ConfigSet &other) = default;
+
+ConfigSet &ConfigSet::operator=(const ConfigSet &other) = default;
+
+ConfigSet::~ConfigSet() = default;
 
 EGLint ConfigSet::add(const Config &config)
 {
@@ -134,6 +151,10 @@ class ConfigSorter
         static_assert(EGL_NONE < EGL_SLOW_CONFIG && EGL_SLOW_CONFIG < EGL_NON_CONFORMANT_CONFIG, "Unexpected EGL enum value.");
         SORT(configCaveat);
 
+        static_assert(EGL_COLOR_COMPONENT_TYPE_FIXED_EXT < EGL_COLOR_COMPONENT_TYPE_FLOAT_EXT,
+                      "Unexpected order of EGL enums.");
+        SORT(colorComponentType);
+
         static_assert(EGL_RGB_BUFFER < EGL_LUMINANCE_BUFFER, "Unexpected EGL enum value.");
         SORT(colorBufferType);
 
@@ -160,6 +181,7 @@ class ConfigSorter
     }
 
   private:
+
     void scanForWantedComponents(const AttributeMap &attributeMap)
     {
         // [EGL 1.5] section 3.4.1.2 page 30
@@ -215,8 +237,13 @@ std::vector<const Config*> ConfigSet::filter(const AttributeMap &attributeMap) c
 
         for (auto attribIter = attributeMap.begin(); attribIter != attributeMap.end(); attribIter++)
         {
-            EGLint attributeKey = attribIter->first;
-            EGLint attributeValue = attribIter->second;
+            EGLAttrib attributeKey   = attribIter->first;
+            EGLAttrib attributeValue = attribIter->second;
+
+            if (attributeValue == EGL_DONT_CARE)
+            {
+                continue;
+            }
 
             switch (attributeKey)
             {
@@ -254,6 +281,9 @@ std::vector<const Config*> ConfigSet::filter(const AttributeMap &attributeMap) c
               case EGL_MAX_PBUFFER_PIXELS:        match = config.maxPBufferPixels >= attributeValue;                  break;
               case EGL_OPTIMAL_SURFACE_ORIENTATION_ANGLE:
                   match = config.optimalOrientation == attributeValue;
+                  break;
+              case EGL_COLOR_COMPONENT_TYPE_EXT:
+                  match = config.colorComponentType == static_cast<EGLenum>(attributeValue);
                   break;
               default: UNREACHABLE();
             }

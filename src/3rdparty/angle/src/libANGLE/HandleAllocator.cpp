@@ -49,9 +49,10 @@ GLuint HandleAllocator::allocate()
 {
     ASSERT(!mUnallocatedList.empty() || !mReleasedList.empty());
 
-    // Allocate from released list, constant time.
+    // Allocate from released list, logarithmic time for pop_heap.
     if (!mReleasedList.empty())
     {
+        std::pop_heap(mReleasedList.begin(), mReleasedList.end());
         GLuint reusedHandle = mReleasedList.back();
         mReleasedList.pop_back();
         return reusedHandle;
@@ -63,10 +64,13 @@ GLuint HandleAllocator::allocate()
     GLuint freeListHandle = listIt->begin;
     ASSERT(freeListHandle > 0);
 
-    listIt->begin++;
     if (listIt->begin == listIt->end)
     {
         mUnallocatedList.erase(listIt);
+    }
+    else
+    {
+        listIt->begin++;
     }
 
     return freeListHandle;
@@ -74,8 +78,9 @@ GLuint HandleAllocator::allocate()
 
 void HandleAllocator::release(GLuint handle)
 {
-    // Add to released list, constant time.
+    // Add to released list, logarithmic time for push_heap.
     mReleasedList.push_back(handle);
+    std::push_heap(mReleasedList.begin(), mReleasedList.end());
 }
 
 void HandleAllocator::reserve(GLuint handle)
@@ -101,7 +106,7 @@ void HandleAllocator::reserve(GLuint handle)
 
     if (handle == begin || handle == end)
     {
-        if (begin + 1 == end)
+        if (begin == end)
         {
             mUnallocatedList.erase(boundIt);
         }
@@ -117,18 +122,21 @@ void HandleAllocator::reserve(GLuint handle)
         return;
     }
 
+    ASSERT(begin < handle && handle < end);
+
     // need to split the range
     auto placementIt = mUnallocatedList.erase(boundIt);
+    placementIt      = mUnallocatedList.insert(placementIt, HandleRange(handle + 1, end));
+    mUnallocatedList.insert(placementIt, HandleRange(begin, handle - 1));
+}
 
-    if (handle + 1 != end)
-    {
-        placementIt = mUnallocatedList.insert(placementIt, HandleRange(handle + 1, end));
-    }
-    if (begin != handle)
-    {
-        ASSERT(begin < handle);
-        mUnallocatedList.insert(placementIt, HandleRange(begin, handle));
-    }
+void HandleAllocator::reset()
+{
+    mUnallocatedList.clear();
+    mUnallocatedList.push_back(HandleRange(1, std::numeric_limits<GLuint>::max()));
+    mReleasedList.clear();
+    mBaseValue = 1;
+    mNextValue = 1;
 }
 
 }  // namespace gl

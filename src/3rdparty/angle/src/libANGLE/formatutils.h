@@ -9,16 +9,32 @@
 #ifndef LIBANGLE_FORMATUTILS_H_
 #define LIBANGLE_FORMATUTILS_H_
 
-#include "libANGLE/Caps.h"
-#include "libANGLE/angletypes.h"
+#include <cstddef>
+#include <ostream>
+#include <stdint.h>
 
 #include "angle_gl.h"
-
-#include <cstddef>
-#include <stdint.h>
+#include "libANGLE/Caps.h"
+#include "libANGLE/Error.h"
+#include "libANGLE/Version.h"
+#include "libANGLE/angletypes.h"
 
 namespace gl
 {
+struct VertexAttribute;
+
+struct FormatType final
+{
+    FormatType();
+    FormatType(GLenum format_, GLenum type_);
+    FormatType(const FormatType &other) = default;
+    FormatType &operator=(const FormatType &other) = default;
+
+    bool operator<(const FormatType &other) const;
+
+    GLenum format;
+    GLenum type;
+};
 
 struct Type
 {
@@ -30,9 +46,58 @@ struct Type
 };
 const Type &GetTypeInfo(GLenum type);
 
+// Information about an OpenGL internal format.  Can be keyed on the internalFormat and type
+// members.
 struct InternalFormat
 {
     InternalFormat();
+    InternalFormat(const InternalFormat &other);
+
+    GLuint computePixelBytes(GLenum formatType) const;
+
+    ErrorOrResult<GLuint> computeRowPitch(GLenum formatType,
+                                          GLsizei width,
+                                          GLint alignment,
+                                          GLint rowLength) const;
+    ErrorOrResult<GLuint> computeDepthPitch(GLsizei height,
+                                            GLint imageHeight,
+                                            GLuint rowPitch) const;
+    ErrorOrResult<GLuint> computeDepthPitch(GLenum formatType,
+                                            GLsizei width,
+                                            GLsizei height,
+                                            GLint alignment,
+                                            GLint rowLength,
+                                            GLint imageHeight) const;
+
+    ErrorOrResult<GLuint> computeCompressedImageSize(const Extents &size) const;
+
+    ErrorOrResult<GLuint> computeSkipBytes(GLuint rowPitch,
+                                           GLuint depthPitch,
+                                           const PixelStoreStateBase &state,
+                                           bool is3D) const;
+
+    ErrorOrResult<GLuint> computePackUnpackEndByte(GLenum formatType,
+                                                       const Extents &size,
+                                                       const PixelStoreStateBase &state,
+                                                       bool is3D) const;
+
+    bool isLUMA() const;
+    GLenum getReadPixelsFormat() const;
+    GLenum getReadPixelsType(const Version &version) const;
+
+    // Return true if the format is a required renderbuffer format in the given version of the core
+    // spec. Note that it isn't always clear whether all the rules that apply to core required
+    // renderbuffer formats also apply to additional formats added by extensions. Because of this
+    // extension formats are conservatively not included.
+    bool isRequiredRenderbufferFormat(const Version &version) const;
+
+    bool operator==(const InternalFormat &other) const;
+    bool operator!=(const InternalFormat &other) const;
+
+    GLenum internalFormat;
+
+    bool sized;
+    GLenum sizedInternalFormat;
 
     GLuint redBits;
     GLuint greenBits;
@@ -60,28 +125,45 @@ struct InternalFormat
     GLenum componentType;
     GLenum colorEncoding;
 
-    typedef bool (*SupportCheckFunction)(GLuint, const Extensions &);
+    typedef bool (*SupportCheckFunction)(const Version &, const Extensions &);
     SupportCheckFunction textureSupport;
     SupportCheckFunction renderSupport;
     SupportCheckFunction filterSupport;
-
-    GLuint computeRowPitch(GLenum formatType, GLsizei width, GLint alignment, GLint rowLength) const;
-    GLuint computeDepthPitch(GLenum formatType,
-                             GLsizei width,
-                             GLsizei height,
-                             GLint alignment,
-                             GLint rowLength,
-                             GLint imageHeight) const;
-    GLuint computeBlockSize(GLenum formatType, GLsizei width, GLsizei height) const;
-    GLuint computeSkipPixels(GLint rowPitch,
-                             GLint depthPitch,
-                             GLint skipImages,
-                             GLint skipRows,
-                             GLint skipPixels) const;
 };
-const InternalFormat GetInternalFormatInfo(GLenum internalFormat);
 
-GLenum GetSizedInternalFormat(GLenum internalFormat, GLenum type);
+// A "Format" wraps an InternalFormat struct, querying it from either a sized internal format or
+// unsized internal format and type.
+// TODO(geofflang): Remove this, it doesn't add any more information than the InternalFormat object.
+struct Format
+{
+    // Sized types only.
+    explicit Format(GLenum internalFormat);
+
+    // Sized or unsized types.
+    explicit Format(const InternalFormat &internalFormat);
+    Format(GLenum internalFormat, GLenum type);
+
+    Format(const Format &other);
+    Format &operator=(const Format &other);
+
+    bool valid() const;
+
+    static Format Invalid();
+    static bool SameSized(const Format &a, const Format &b);
+    static bool EquivalentForBlit(const Format &a, const Format &b);
+
+    friend std::ostream &operator<<(std::ostream &os, const Format &fmt);
+
+    // This is the sized info.
+    const InternalFormat *info;
+};
+
+const InternalFormat &GetSizedInternalFormatInfo(GLenum internalFormat);
+const InternalFormat &GetInternalFormatInfo(GLenum internalFormat, GLenum type);
+
+// Strip sizing information from an internal format.  Doesn't necessarily validate that the internal
+// format is valid.
+GLenum GetUnsizedFormat(GLenum internalFormat);
 
 typedef std::set<GLenum> FormatSet;
 const FormatSet &GetAllSizedInternalFormats();
@@ -212,9 +294,9 @@ enum VertexFormatType
     VERTEX_FORMAT_UINT210_INT,
 };
 
-typedef std::vector<gl::VertexFormatType> InputLayout;
+typedef std::vector<VertexFormatType> InputLayout;
 
-struct VertexFormat : angle::NonCopyable
+struct VertexFormat : private angle::NonCopyable
 {
     VertexFormat(GLenum typeIn, GLboolean normalizedIn, GLuint componentsIn, bool pureIntegerIn);
 
@@ -228,6 +310,19 @@ VertexFormatType GetVertexFormatType(GLenum type, GLboolean normalized, GLuint c
 VertexFormatType GetVertexFormatType(const VertexAttribute &attrib);
 VertexFormatType GetVertexFormatType(const VertexAttribute &attrib, GLenum currentValueType);
 const VertexFormat &GetVertexFormatFromType(VertexFormatType vertexFormatType);
+size_t GetVertexFormatTypeSize(VertexFormatType vertexFormatType);
+
+// Check if an internal format is ever valid in ES3.  Makes no checks about support for a specific
+// context.
+bool ValidES3InternalFormat(GLenum internalFormat);
+
+// Implemented in format_map_autogen.cpp
+bool ValidES3Format(GLenum format);
+bool ValidES3Type(GLenum type);
+bool ValidES3FormatCombination(GLenum format, GLenum type, GLenum internalFormat);
+
+// Implemented in es3_copy_conversion_table_autogen.cpp
+bool ValidES3CopyConversion(GLenum textureFormat, GLenum framebufferFormat);
 
 }  // namespace gl
 

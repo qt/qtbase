@@ -8,6 +8,8 @@
 
 #include "libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.h"
 
+#include <windows.graphics.display.h>
+
 using namespace ABI::Windows::Foundation::Collections;
 
 namespace rx
@@ -19,7 +21,6 @@ CoreWindowNativeWindow::~CoreWindowNativeWindow()
 
 bool CoreWindowNativeWindow::initialize(EGLNativeWindowType window, IPropertySet *propertySet)
 {
-    mOrientationChangedEventToken.value = 0;
     ComPtr<IPropertySet> props = propertySet;
     ComPtr<IInspectable> win = window;
     SIZE swapChainSize = {};
@@ -63,7 +64,8 @@ bool CoreWindowNativeWindow::initialize(EGLNativeWindowType window, IPropertySet
         // A EGLRenderSurfaceSizeProperty and a EGLRenderResolutionScaleProperty can't both be specified
         if (mSwapChainScaleSpecified && mSwapChainSizeSpecified)
         {
-            ERR("It is invalid to specify both an EGLRenderSurfaceSizeProperty and a EGLRenderResolutionScaleProperty.");
+            ERR() << "It is invalid to specify both an EGLRenderSurfaceSizeProperty and a "
+                     "EGLRenderResolutionScaleProperty.";
             return false;
         }
     }
@@ -87,23 +89,13 @@ bool CoreWindowNativeWindow::initialize(EGLNativeWindowType window, IPropertySet
         }
         else
         {
-            SIZE coreWindowSize;
+            Size coreWindowSize;
             result = GetCoreWindowSizeInPixels(mCoreWindow, &coreWindowSize);
 
             if (SUCCEEDED(result))
             {
-                mClientRect = { 0, 0, static_cast<long>(coreWindowSize.cx * mSwapChainScale), static_cast<long>(coreWindowSize.cy * mSwapChainScale) };
+                mClientRect = clientRect(coreWindowSize);
             }
-        }
-    }
-
-    if (SUCCEEDED(result))
-    {
-        ComPtr<ABI::Windows::Graphics::Display::IDisplayInformationStatics> displayInformation;
-        result = GetActivationFactory(HStringReference(RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(), &displayInformation);
-        if (SUCCEEDED(result))
-        {
-            result = displayInformation->GetForCurrentView(&mDisplayInformation);
         }
     }
 
@@ -126,16 +118,6 @@ bool CoreWindowNativeWindow::registerForSizeChangeEvents()
         result = mCoreWindow->add_SizeChanged(sizeChangedHandler.Get(), &mSizeChangedEventToken);
     }
 
-#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-    ComPtr<IDisplayOrientationEventHandler> orientationChangedHandler;
-    result = sizeChangedHandler.As(&orientationChangedHandler);
-    if (SUCCEEDED(result))
-    {
-        result = mDisplayInformation->add_OrientationChanged(orientationChangedHandler.Get(), &mOrientationChangedEventToken);
-        orientationChangedHandler->Invoke(mDisplayInformation.Get(), nullptr);
-    }
-#endif
-
     if (SUCCEEDED(result))
     {
         return true;
@@ -150,34 +132,26 @@ void CoreWindowNativeWindow::unregisterForSizeChangeEvents()
     {
         (void)mCoreWindow->remove_SizeChanged(mSizeChangedEventToken);
     }
-
-#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-    if (mDisplayInformation)
-    {
-        (void)mDisplayInformation->remove_OrientationChanged(mOrientationChangedEventToken);
-    }
-#endif
-
     mSizeChangedEventToken.value = 0;
-    mOrientationChangedEventToken.value = 0;
 }
 
 HRESULT CoreWindowNativeWindow::createSwapChain(ID3D11Device *device,
-                                                DXGIFactory *factory,
+                                                IDXGIFactory2 *factory,
                                                 DXGI_FORMAT format,
                                                 unsigned int width,
                                                 unsigned int height,
                                                 bool containsAlpha,
-                                                DXGISwapChain **swapChain)
+                                                IDXGISwapChain1 **swapChain)
 {
-    if (device == NULL || factory == NULL || swapChain == NULL || width == 0 || height == 0)
+    if (device == nullptr || factory == nullptr || swapChain == nullptr || width == 0 ||
+        height == 0)
     {
         return E_INVALIDARG;
     }
 
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { 0 };
-    swapChainDesc.Width = mRotationFlags ? height : width;
-    swapChainDesc.Height = mRotationFlags ? width : height;
+    swapChainDesc.Width = width;
+    swapChainDesc.Height = height;
     swapChainDesc.Format = format;
     swapChainDesc.Stereo = FALSE;
     swapChainDesc.SampleDesc.Count = 1;
@@ -195,17 +169,6 @@ HRESULT CoreWindowNativeWindow::createSwapChain(ID3D11Device *device,
     HRESULT result = factory->CreateSwapChainForCoreWindow(device, mCoreWindow.Get(), &swapChainDesc, nullptr, newSwapChain.ReleaseAndGetAddressOf());
     if (SUCCEEDED(result))
     {
-
-#if 0 //(WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP) // Qt: allow Windows Phone to resize, but don't modify the backing texture in the swap chain.
-        // Test if swapchain supports resize.  On Windows Phone devices, this will return DXGI_ERROR_UNSUPPORTED.  On
-        // other devices DXGI_ERROR_INVALID_CALL should be returned because the combination of flags passed
-        // (DXGI_SWAP_CHAIN_FLAG_NONPREROTATED | DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE) are invalid flag combinations.
-        if (newSwapChain->ResizeBuffers(swapChainDesc.BufferCount, swapChainDesc.Width, swapChainDesc.Height, swapChainDesc.Format, DXGI_SWAP_CHAIN_FLAG_NONPREROTATED | DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE) == DXGI_ERROR_UNSUPPORTED)
-        {
-            mSupportsSwapChainResize = false;
-        }
-#endif // (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-
         result = newSwapChain.CopyTo(swapChain);
     }
 
@@ -222,14 +185,16 @@ HRESULT CoreWindowNativeWindow::createSwapChain(ID3D11Device *device,
     return result;
 }
 
-inline HRESULT CoreWindowNativeWindow::scaleSwapChain(const Size &windowSize, const RECT &clientRect)
+inline HRESULT CoreWindowNativeWindow::scaleSwapChain(const Size &windowSize,
+                                                      const RECT &clientRect)
 {
     // We don't need to do any additional work to scale CoreWindow swapchains.
     // Using DXGI_SCALING_STRETCH to create the swapchain above does all the necessary work.
     return S_OK;
 }
 
-HRESULT GetCoreWindowSizeInPixels(const ComPtr<ABI::Windows::UI::Core::ICoreWindow>& coreWindow, SIZE *windowSize)
+HRESULT GetCoreWindowSizeInPixels(const ComPtr<ABI::Windows::UI::Core::ICoreWindow> &coreWindow,
+                                  Size *windowSize)
 {
     ABI::Windows::Foundation::Rect bounds;
     HRESULT result = coreWindow->get_Bounds(&bounds);

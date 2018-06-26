@@ -20,12 +20,55 @@
 #include "common/angleutils.h"
 #include "libANGLE/Constants.h"
 #include "libANGLE/Error.h"
+#include "libANGLE/SizedMRUCache.h"
 #include "libANGLE/formatutils.h"
+#include "libANGLE/renderer/d3d/RendererD3D.h"
+#include "libANGLE/renderer/d3d/d3d11/ResourceManager11.h"
+
+namespace rx
+{
+class DrawCallVertexParams;
+struct PackedAttributeLayout
+{
+    PackedAttributeLayout();
+    PackedAttributeLayout(const PackedAttributeLayout &other);
+
+    void addAttributeData(GLenum glType,
+                          UINT semanticIndex,
+                          gl::VertexFormatType vertexFormatType,
+                          unsigned int divisor);
+
+    bool operator==(const PackedAttributeLayout &other) const;
+
+    enum Flags
+    {
+        FLAG_USES_INSTANCED_SPRITES     = 0x1,
+        FLAG_INSTANCED_SPRITES_ACTIVE   = 0x2,
+        FLAG_INSTANCED_RENDERING_ACTIVE = 0x4,
+    };
+
+    uint32_t numAttributes;
+    uint32_t flags;
+    std::array<uint32_t, gl::MAX_VERTEX_ATTRIBS> attributeData;
+};
+}  // namespace rx
+
+namespace std
+{
+template <>
+struct hash<rx::PackedAttributeLayout>
+{
+    size_t operator()(const rx::PackedAttributeLayout &value) const
+    {
+        return angle::ComputeGenericHash(value);
+    }
+};
+}  // namespace std
 
 namespace gl
 {
 class Program;
-}
+}  // namespace gl
 
 namespace rx
 {
@@ -33,91 +76,58 @@ struct TranslatedAttribute;
 struct TranslatedIndexData;
 struct SourceIndexData;
 class ProgramD3D;
-
-using SortedAttribArray = std::array<const TranslatedAttribute *, gl::MAX_VERTEX_ATTRIBS>;
-using SortedIndexArray  = std::array<int, gl::MAX_VERTEX_ATTRIBS>;
+class Renderer11;
 
 class InputLayoutCache : angle::NonCopyable
 {
   public:
     InputLayoutCache();
-    virtual ~InputLayoutCache();
+    ~InputLayoutCache();
 
-    void initialize(ID3D11Device *device, ID3D11DeviceContext *context);
     void clear();
-    void markDirty();
 
-    gl::Error applyVertexBuffers(const std::vector<TranslatedAttribute> &attributes,
+    gl::Error applyVertexBuffers(const gl::Context *context,
+                                 const std::vector<const TranslatedAttribute *> &currentAttributes,
                                  GLenum mode,
-                                 gl::Program *program,
-                                 TranslatedIndexData *indexInfo,
-                                 GLsizei numIndicesPerInstance);
+                                 GLint start,
+                                 bool isIndexedRendering);
 
-    gl::Error updateVertexOffsetsForPointSpritesEmulation(GLsizei emulatedInstanceId);
+    gl::Error updateVertexOffsetsForPointSpritesEmulation(
+        Renderer11 *renderer,
+        const std::vector<const TranslatedAttribute *> &currentAttributes,
+        GLint startVertex,
+        GLsizei emulatedInstanceId);
 
     // Useful for testing
-    void setCacheSize(unsigned int cacheSize) { mCacheSize = cacheSize; }
+    void setCacheSize(size_t newCacheSize);
+
+    gl::Error updateInputLayout(Renderer11 *renderer,
+                                const gl::State &state,
+                                const std::vector<const TranslatedAttribute *> &currentAttributes,
+                                GLenum mode,
+                                const AttribIndexArray &sortedSemanticIndices,
+                                const DrawCallVertexParams &vertexParams);
 
   private:
-    struct PackedAttributeLayout
-    {
-        PackedAttributeLayout()
-            : numAttributes(0),
-              flags(0)
-        {
-        }
-
-        void addAttributeData(GLenum glType,
-                              UINT semanticIndex,
-                              gl::VertexFormatType vertexFormatType,
-                              unsigned int divisor);
-
-        bool operator<(const PackedAttributeLayout &other) const;
-
-        enum Flags
-        {
-            FLAG_USES_INSTANCED_SPRITES     = 0x1,
-            FLAG_INSTANCED_SPRITES_ACTIVE   = 0x2,
-            FLAG_INSTANCED_RENDERING_ACTIVE = 0x4,
-        };
-
-        size_t numAttributes;
-        unsigned int flags;
-        uint32_t attributeData[gl::MAX_VERTEX_ATTRIBS];
-    };
-
-    gl::Error updateInputLayout(gl::Program *program,
-                                GLenum mode,
-                                const SortedAttribArray &sortedAttributes,
-                                const SortedIndexArray &sortedSemanticIndices,
-                                size_t attribCount,
-                                GLsizei numIndicesPerInstance);
-    gl::Error createInputLayout(const SortedAttribArray &sortedAttributes,
-                                const SortedIndexArray &sortedSemanticIndices,
-                                size_t attribCount,
+    gl::Error createInputLayout(Renderer11 *renderer,
+                                const AttribIndexArray &sortedSemanticIndices,
+                                const std::vector<const TranslatedAttribute *> &currentAttributes,
                                 GLenum mode,
                                 gl::Program *program,
-                                GLsizei numIndicesPerInstance,
-                                ID3D11InputLayout **inputLayoutOut);
+                                const DrawCallVertexParams &vertexParams,
+                                d3d11::InputLayout *inputLayoutOut);
 
-    std::map<PackedAttributeLayout, ID3D11InputLayout *> mLayoutMap;
+    // Starting cache size.
+    static constexpr size_t kDefaultCacheSize = 1024;
 
-    ID3D11InputLayout *mCurrentIL;
-    ID3D11Buffer *mCurrentBuffers[gl::MAX_VERTEX_ATTRIBS];
-    UINT mCurrentVertexStrides[gl::MAX_VERTEX_ATTRIBS];
-    UINT mCurrentVertexOffsets[gl::MAX_VERTEX_ATTRIBS];
-    SortedAttribArray mSortedAttributes;
-    size_t mUnsortedAttributesCount;
+    // The cache tries to clean up this many states at once.
+    static constexpr size_t kGCLimit = 128;
 
-    ID3D11Buffer *mPointSpriteVertexBuffer;
-    ID3D11Buffer *mPointSpriteIndexBuffer;
+    using LayoutCache = angle::base::HashingMRUCache<PackedAttributeLayout, d3d11::InputLayout>;
+    LayoutCache mLayoutCache;
 
-    unsigned int mCacheSize;
-    unsigned long long mCounter;
-
-    ID3D11Device *mDevice;
-    ID3D11DeviceContext *mDeviceContext;
-    D3D_FEATURE_LEVEL mFeatureLevel;
+    d3d11::Buffer mPointSpriteVertexBuffer;
+    d3d11::Buffer mPointSpriteIndexBuffer;
 };
 
 }  // namespace rx

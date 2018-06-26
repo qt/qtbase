@@ -3,6 +3,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
+// Scalarize vector and matrix constructor args, so that vectors built from components don't have
+// matrix arguments, and matrices built from components don't have vector arguments. This avoids
+// driver bugs around vector and matrix constructors.
+//
 
 #include "common/debug.h"
 #include "compiler/translator/ScalarizeVecAndMatConstructorArgs.h"
@@ -11,6 +15,11 @@
 
 #include "angle_gl.h"
 #include "common/angleutils.h"
+#include "compiler/translator/IntermNode_util.h"
+#include "compiler/translator/IntermTraverse.h"
+
+namespace sh
+{
 
 namespace
 {
@@ -37,140 +46,93 @@ bool ContainsVectorNode(const TIntermSequence &sequence)
     return false;
 }
 
-TIntermConstantUnion *ConstructIndexNode(int index)
-{
-    TConstantUnion *u = new TConstantUnion[1];
-    u[0].setIConst(index);
-
-    TType type(EbtInt, EbpUndefined, EvqConst, 1);
-    TIntermConstantUnion *node = new TIntermConstantUnion(u, type);
-    return node;
-}
-
 TIntermBinary *ConstructVectorIndexBinaryNode(TIntermSymbol *symbolNode, int index)
 {
-    TIntermBinary *binary = new TIntermBinary(EOpIndexDirect);
-    binary->setLeft(symbolNode);
-    TIntermConstantUnion *indexNode = ConstructIndexNode(index);
-    binary->setRight(indexNode);
-    return binary;
+    return new TIntermBinary(EOpIndexDirect, symbolNode, CreateIndexNode(index));
 }
 
-TIntermBinary *ConstructMatrixIndexBinaryNode(
-    TIntermSymbol *symbolNode, int colIndex, int rowIndex)
+TIntermBinary *ConstructMatrixIndexBinaryNode(TIntermSymbol *symbolNode, int colIndex, int rowIndex)
 {
-    TIntermBinary *colVectorNode =
-        ConstructVectorIndexBinaryNode(symbolNode, colIndex);
+    TIntermBinary *colVectorNode = ConstructVectorIndexBinaryNode(symbolNode, colIndex);
 
-    TIntermBinary *binary = new TIntermBinary(EOpIndexDirect);
-    binary->setLeft(colVectorNode);
-    TIntermConstantUnion *rowIndexNode = ConstructIndexNode(rowIndex);
-    binary->setRight(rowIndexNode);
-    return binary;
+    return new TIntermBinary(EOpIndexDirect, colVectorNode, CreateIndexNode(rowIndex));
 }
 
-}  // namespace anonymous
-
-bool ScalarizeVecAndMatConstructorArgs::visitAggregate(Visit visit, TIntermAggregate *node)
+class ScalarizeArgsTraverser : public TIntermTraverser
 {
-    if (visit == PreVisit)
+  public:
+    ScalarizeArgsTraverser(sh::GLenum shaderType,
+                           bool fragmentPrecisionHigh,
+                           TSymbolTable *symbolTable)
+        : TIntermTraverser(true, false, false, symbolTable),
+          mShaderType(shaderType),
+          mFragmentPrecisionHigh(fragmentPrecisionHigh)
     {
-        switch (node->getOp())
-        {
-          case EOpSequence:
-            mSequenceStack.push_back(TIntermSequence());
-            {
-                for (TIntermSequence::const_iterator iter = node->getSequence()->begin();
-                     iter != node->getSequence()->end(); ++iter)
-                {
-                    TIntermNode *child = *iter;
-                    ASSERT(child != NULL);
-                    child->traverse(this);
-                    mSequenceStack.back().push_back(child);
-                }
-            }
-            if (mSequenceStack.back().size() > node->getSequence()->size())
-            {
-                node->getSequence()->clear();
-                *(node->getSequence()) = mSequenceStack.back();
-            }
-            mSequenceStack.pop_back();
-            return false;
-          case EOpConstructVec2:
-          case EOpConstructVec3:
-          case EOpConstructVec4:
-          case EOpConstructBVec2:
-          case EOpConstructBVec3:
-          case EOpConstructBVec4:
-          case EOpConstructIVec2:
-          case EOpConstructIVec3:
-          case EOpConstructIVec4:
-            if (ContainsMatrixNode(*(node->getSequence())))
-                scalarizeArgs(node, false, true);
-            break;
-          case EOpConstructMat2:
-          case EOpConstructMat2x3:
-          case EOpConstructMat2x4:
-          case EOpConstructMat3x2:
-          case EOpConstructMat3:
-          case EOpConstructMat3x4:
-          case EOpConstructMat4x2:
-          case EOpConstructMat4x3:
-          case EOpConstructMat4:
-            if (ContainsVectorNode(*(node->getSequence())))
-                scalarizeArgs(node, true, false);
-            break;
-          default:
-            break;
-        }
+    }
+
+  protected:
+    bool visitAggregate(Visit visit, TIntermAggregate *node) override;
+    bool visitBlock(Visit visit, TIntermBlock *node) override;
+
+  private:
+    void scalarizeArgs(TIntermAggregate *aggregate, bool scalarizeVector, bool scalarizeMatrix);
+
+    // If we have the following code:
+    //   mat4 m(0);
+    //   vec4 v(1, m);
+    // We will rewrite to:
+    //   mat4 m(0);
+    //   mat4 s0 = m;
+    //   vec4 v(1, s0[0][0], s0[0][1], s0[0][2]);
+    // This function is to create nodes for "mat4 s0 = m;" and insert it to the code sequence. This
+    // way the possible side effects of the constructor argument will only be evaluated once.
+    void createTempVariable(TIntermTyped *original);
+
+    std::vector<TIntermSequence> mBlockStack;
+
+    sh::GLenum mShaderType;
+    bool mFragmentPrecisionHigh;
+};
+
+bool ScalarizeArgsTraverser::visitAggregate(Visit visit, TIntermAggregate *node)
+{
+    if (visit == PreVisit && node->getOp() == EOpConstruct)
+    {
+        if (node->getType().isVector() && ContainsMatrixNode(*(node->getSequence())))
+            scalarizeArgs(node, false, true);
+        else if (node->getType().isMatrix() && ContainsVectorNode(*(node->getSequence())))
+            scalarizeArgs(node, true, false);
     }
     return true;
 }
 
-void ScalarizeVecAndMatConstructorArgs::scalarizeArgs(
-    TIntermAggregate *aggregate, bool scalarizeVector, bool scalarizeMatrix)
+bool ScalarizeArgsTraverser::visitBlock(Visit visit, TIntermBlock *node)
+{
+    mBlockStack.push_back(TIntermSequence());
+    {
+        for (TIntermNode *child : *node->getSequence())
+        {
+            ASSERT(child != nullptr);
+            child->traverse(this);
+            mBlockStack.back().push_back(child);
+        }
+    }
+    if (mBlockStack.back().size() > node->getSequence()->size())
+    {
+        node->getSequence()->clear();
+        *(node->getSequence()) = mBlockStack.back();
+    }
+    mBlockStack.pop_back();
+    return false;
+}
+
+void ScalarizeArgsTraverser::scalarizeArgs(TIntermAggregate *aggregate,
+                                           bool scalarizeVector,
+                                           bool scalarizeMatrix)
 {
     ASSERT(aggregate);
-    int size = 0;
-    switch (aggregate->getOp())
-    {
-      case EOpConstructVec2:
-      case EOpConstructBVec2:
-      case EOpConstructIVec2:
-        size = 2;
-        break;
-      case EOpConstructVec3:
-      case EOpConstructBVec3:
-      case EOpConstructIVec3:
-        size = 3;
-        break;
-      case EOpConstructVec4:
-      case EOpConstructBVec4:
-      case EOpConstructIVec4:
-      case EOpConstructMat2:
-        size = 4;
-        break;
-      case EOpConstructMat2x3:
-      case EOpConstructMat3x2:
-        size = 6;
-        break;
-      case EOpConstructMat2x4:
-      case EOpConstructMat4x2:
-        size = 8;
-        break;
-      case EOpConstructMat3:
-        size = 9;
-        break;
-      case EOpConstructMat3x4:
-      case EOpConstructMat4x3:
-        size = 12;
-        break;
-      case EOpConstructMat4:
-        size = 16;
-        break;
-      default:
-        break;
-    }
+    ASSERT(!aggregate->isArray());
+    int size                  = static_cast<int>(aggregate->getType().getObjectSize());
     TIntermSequence *sequence = aggregate->getSequence();
     TIntermSequence original(*sequence);
     sequence->clear();
@@ -179,12 +141,10 @@ void ScalarizeVecAndMatConstructorArgs::scalarizeArgs(
         ASSERT(size > 0);
         TIntermTyped *node = original[ii]->getAsTyped();
         ASSERT(node);
-        TString varName = createTempVariable(node);
+        createTempVariable(node);
         if (node->isScalar())
         {
-            TIntermSymbol *symbolNode =
-                new TIntermSymbol(-1, varName, node->getType());
-            sequence->push_back(symbolNode);
+            sequence->push_back(createTempSymbol(node->getType()));
             size--;
         }
         else if (node->isVector())
@@ -195,17 +155,14 @@ void ScalarizeVecAndMatConstructorArgs::scalarizeArgs(
                 size -= repeat;
                 for (int index = 0; index < repeat; ++index)
                 {
-                    TIntermSymbol *symbolNode =
-                        new TIntermSymbol(-1, varName, node->getType());
-                    TIntermBinary *newNode = ConstructVectorIndexBinaryNode(
-                        symbolNode, index);
+                    TIntermSymbol *symbolNode = createTempSymbol(node->getType());
+                    TIntermBinary *newNode    = ConstructVectorIndexBinaryNode(symbolNode, index);
                     sequence->push_back(newNode);
                 }
             }
             else
             {
-                TIntermSymbol *symbolNode =
-                    new TIntermSymbol(-1, varName, node->getType());
+                TIntermSymbol *symbolNode = createTempSymbol(node->getType());
                 sequence->push_back(symbolNode);
                 size -= node->getNominalSize();
             }
@@ -220,10 +177,9 @@ void ScalarizeVecAndMatConstructorArgs::scalarizeArgs(
                 size -= repeat;
                 while (repeat > 0)
                 {
-                    TIntermSymbol *symbolNode =
-                        new TIntermSymbol(-1, varName, node->getType());
-                    TIntermBinary *newNode = ConstructMatrixIndexBinaryNode(
-                        symbolNode, colIndex, rowIndex);
+                    TIntermSymbol *symbolNode = createTempSymbol(node->getType());
+                    TIntermBinary *newNode =
+                        ConstructMatrixIndexBinaryNode(symbolNode, colIndex, rowIndex);
                     sequence->push_back(newNode);
                     rowIndex++;
                     if (rowIndex >= node->getRows())
@@ -236,8 +192,7 @@ void ScalarizeVecAndMatConstructorArgs::scalarizeArgs(
             }
             else
             {
-                TIntermSymbol *symbolNode =
-                    new TIntermSymbol(-1, varName, node->getType());
+                TIntermSymbol *symbolNode = createTempSymbol(node->getType());
                 sequence->push_back(symbolNode);
                 size -= node->getCols() * node->getRows();
             }
@@ -245,51 +200,39 @@ void ScalarizeVecAndMatConstructorArgs::scalarizeArgs(
     }
 }
 
-TString ScalarizeVecAndMatConstructorArgs::createTempVariable(TIntermTyped *original)
+void ScalarizeArgsTraverser::createTempVariable(TIntermTyped *original)
 {
-    TString tempVarName = "_webgl_tmp_";
-    if (original->isScalar())
-    {
-        tempVarName += "scalar_";
-    }
-    else if (original->isVector())
-    {
-        tempVarName += "vec_";
-    }
-    else
-    {
-        ASSERT(original->isMatrix());
-        tempVarName += "mat_";
-    }
-    tempVarName += Str(mTempVarCount).c_str();
-    mTempVarCount++;
-
     ASSERT(original);
-    TType type = original->getType();
-    type.setQualifier(EvqTemporary);
+    nextTemporaryId();
+    TIntermDeclaration *decl = createTempInitDeclaration(original);
 
-    if (mShaderType == GL_FRAGMENT_SHADER &&
-        type.getBasicType() == EbtFloat &&
+    TType type = original->getType();
+    if (mShaderType == GL_FRAGMENT_SHADER && type.getBasicType() == EbtFloat &&
         type.getPrecision() == EbpUndefined)
     {
         // We use the highest available precision for the temporary variable
         // to avoid computing the actual precision using the rules defined
         // in GLSL ES 1.0 Section 4.5.2.
-        type.setPrecision(mFragmentPrecisionHigh ? EbpHigh : EbpMedium);
+        TIntermBinary *init = decl->getSequence()->at(0)->getAsBinaryNode();
+        init->getTypePointer()->setPrecision(mFragmentPrecisionHigh ? EbpHigh : EbpMedium);
+        init->getLeft()->getTypePointer()->setPrecision(mFragmentPrecisionHigh ? EbpHigh
+                                                                               : EbpMedium);
     }
 
-    TIntermBinary *init = new TIntermBinary(EOpInitialize);
-    TIntermSymbol *symbolNode = new TIntermSymbol(-1, tempVarName, type);
-    init->setLeft(symbolNode);
-    init->setRight(original);
-    init->setType(type);
-
-    TIntermAggregate *decl = new TIntermAggregate(EOpDeclaration);
-    decl->getSequence()->push_back(init);
-
-    ASSERT(mSequenceStack.size() > 0);
-    TIntermSequence &sequence = mSequenceStack.back();
+    ASSERT(mBlockStack.size() > 0);
+    TIntermSequence &sequence = mBlockStack.back();
     sequence.push_back(decl);
-
-    return tempVarName;
 }
+
+}  // namespace anonymous
+
+void ScalarizeVecAndMatConstructorArgs(TIntermBlock *root,
+                                       sh::GLenum shaderType,
+                                       bool fragmentPrecisionHigh,
+                                       TSymbolTable *symbolTable)
+{
+    ScalarizeArgsTraverser scalarizer(shaderType, fragmentPrecisionHigh, symbolTable);
+    root->traverse(&scalarizer);
+}
+
+}  // namespace sh

@@ -8,28 +8,62 @@
 
 #include <platform/Platform.h>
 
+#include <cstring>
+
 #include "common/debug.h"
 
 namespace
 {
-angle::Platform *currentPlatform = nullptr;
+// TODO(jmadill): Make methods owned by egl::Display.
+angle::PlatformMethods g_platformMethods;
+}  // anonymous namespace
+
+angle::PlatformMethods::PlatformMethods()
+{
 }
 
-// static
-angle::Platform *ANGLE_APIENTRY ANGLEPlatformCurrent()
+angle::PlatformMethods *ANGLEPlatformCurrent()
 {
-    return currentPlatform;
+    return &g_platformMethods;
 }
 
-// static
-void ANGLE_APIENTRY ANGLEPlatformInitialize(angle::Platform *platformImpl)
+bool ANGLE_APIENTRY ANGLEGetDisplayPlatform(angle::EGLDisplayType display,
+                                            const char *const methodNames[],
+                                            unsigned int methodNameCount,
+                                            void *context,
+                                            void *platformMethods)
 {
-    ASSERT(platformImpl != nullptr);
-    currentPlatform = platformImpl;
+    angle::PlatformMethods **platformMethodsOut =
+        reinterpret_cast<angle::PlatformMethods **>(platformMethods);
+
+    // We allow for a lower input count of impl platform methods if the subset is correct.
+    if (methodNameCount > angle::g_NumPlatformMethods)
+    {
+        ERR() << "Invalid platform method count: " << methodNameCount << ", expected "
+              << angle::g_NumPlatformMethods << ".";
+        return false;
+    }
+
+    for (unsigned int nameIndex = 0; nameIndex < methodNameCount; ++nameIndex)
+    {
+        const char *expectedName = angle::g_PlatformMethodNames[nameIndex];
+        const char *actualName   = methodNames[nameIndex];
+        if (strcmp(expectedName, actualName) != 0)
+        {
+            ERR() << "Invalid platform method name: " << actualName << ", expected " << expectedName
+                  << ".";
+            return false;
+        }
+    }
+
+    // TODO(jmadill): Store platform methods in display.
+    g_platformMethods.context = context;
+    *platformMethodsOut       = &g_platformMethods;
+    return true;
 }
 
-// static
-void ANGLE_APIENTRY ANGLEPlatformShutdown()
+void ANGLE_APIENTRY ANGLEResetDisplayPlatform(angle::EGLDisplayType display)
 {
-    currentPlatform = nullptr;
+    // TODO(jmadill): Store platform methods in display.
+    g_platformMethods = angle::PlatformMethods();
 }

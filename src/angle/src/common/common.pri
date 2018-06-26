@@ -10,7 +10,8 @@ include (../config.pri)
 
 INCLUDEPATH += \
     $$ANGLE_DIR/src \
-    $$ANGLE_DIR/include
+    $$ANGLE_DIR/include \
+    $$ANGLE_DIR/src/common/third_party/base
 
 LIBS_PRIVATE = $$QMAKE_LIBS_GUI
 
