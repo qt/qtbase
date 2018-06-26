@@ -61,9 +61,11 @@ Q_FORWARD_DECLARE_MUTABLE_CG_TYPE(CGImage);
 QT_BEGIN_NAMESPACE
 
 
+class QColorSpace;
+class QColorTransform;
 class QIODevice;
-class QStringList;
 class QMatrix;
+class QStringList;
 class QTransform;
 class QVariant;
 template <class T> class QList;
@@ -296,6 +298,12 @@ public:
 #endif
     void invertPixels(InvertMode = InvertRgb);
 
+    QColorSpace colorSpace() const;
+    QImage convertedToColorSpace(const QColorSpace &) const;
+    void convertToColorSpace(const QColorSpace &);
+    void setColorSpace(const QColorSpace &);
+
+    void applyColorTransform(const QColorTransform &transform);
 
     bool load(QIODevice *device, const char* format);
     bool load(const QString &fileName, const char *format = nullptr);

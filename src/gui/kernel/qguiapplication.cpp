@@ -68,7 +68,7 @@
 #include <qpalette.h>
 #include <qscreen.h>
 #include "qsessionmanager.h"
-#include <private/qcolorprofile_p.h>
+#include <private/qcolortrclut_p.h>
 #include <private/qscreen_p.h>
 
 #include <QtGui/qgenericpluginfactory.h>
@@ -1643,8 +1643,6 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     platform_theme = 0;
     delete platform_integration;
     platform_integration = 0;
-    delete m_a8ColorProfile.load();
-    delete m_a32ColorProfile.load();
 
     window_list.clear();
     screen_list.clear();
@@ -4019,32 +4017,26 @@ void QGuiApplicationPrivate::notifyDragStarted(const QDrag *drag)
 }
 #endif
 
-const QColorProfile *QGuiApplicationPrivate::colorProfileForA8Text()
+const QColorTrcLut *QGuiApplicationPrivate::colorProfileForA8Text()
 {
 #ifdef Q_OS_WIN
-    QColorProfile *result = m_a8ColorProfile.load();
-    if (!result){
-        QColorProfile *cs = QColorProfile::fromGamma(2.31); // This is a hard-coded thing for Windows text rendering
-        if (!m_a8ColorProfile.testAndSetRelease(0, cs))
-            delete cs;
-        result = m_a8ColorProfile.load();
+    if (!m_a8ColorProfile){
+        QColorTrcLut *cs = QColorTrcLut::fromGamma(2.31); // This is a hard-coded thing for Windows text rendering
+        m_a8ColorProfile.reset(cs);
     }
-    return result;
+    return m_a8ColorProfile.get();
 #else
     return colorProfileForA32Text();
 #endif
 }
 
-const QColorProfile *QGuiApplicationPrivate::colorProfileForA32Text()
+const QColorTrcLut *QGuiApplicationPrivate::colorProfileForA32Text()
 {
-    QColorProfile *result = m_a32ColorProfile.load();
-    if (!result){
-        QColorProfile *cs = QColorProfile::fromGamma(fontSmoothingGamma);
-        if (!m_a32ColorProfile.testAndSetRelease(0, cs))
-            delete cs;
-        result = m_a32ColorProfile.load();
+    if (!m_a32ColorProfile) {
+        QColorTrcLut *cs = QColorTrcLut::fromGamma(fontSmoothingGamma);
+        m_a32ColorProfile.reset(cs);
     }
-    return result;
+    return m_a32ColorProfile.get();
 }
 
 void QGuiApplicationPrivate::_q_updateFocusObject(QObject *object)

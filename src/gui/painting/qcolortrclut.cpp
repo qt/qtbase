@@ -37,14 +37,16 @@
 **
 ****************************************************************************/
 
-#include "qcolorprofile_p.h"
+#include "qcolortrclut_p.h"
+#include "qcolortransferfunction_p.h"
+#include "qcolortransfertable_p.h"
 #include <qmath.h>
 
 QT_BEGIN_NAMESPACE
 
-QColorProfile *QColorProfile::fromGamma(qreal gamma)
+QColorTrcLut *QColorTrcLut::fromGamma(qreal gamma)
 {
-    QColorProfile *cp = new QColorProfile;
+    QColorTrcLut *cp = new QColorTrcLut;
 
     for (int i = 0; i <= (255 * 16); ++i) {
         cp->m_toLinear[i] = ushort(qRound(qPow(i / qreal(255 * 16), gamma) * (255 * 256)));
@@ -54,31 +56,28 @@ QColorProfile *QColorProfile::fromGamma(qreal gamma)
     return cp;
 }
 
-static qreal srgbToLinear(qreal v)
+QColorTrcLut *QColorTrcLut::fromTransferFunction(const QColorTransferFunction &fun)
 {
-    const qreal a = 0.055;
-    if (v <= qreal(0.04045))
-        return v / qreal(12.92);
-    else
-        return qPow((v + a) / (qreal(1) + a), qreal(2.4));
-}
-
-static qreal linearToSrgb(qreal v)
-{
-    const qreal a = 0.055;
-    if (v <= qreal(0.0031308))
-        return v * qreal(12.92);
-    else
-        return (qreal(1) + a) * qPow(v, qreal(1.0 / 2.4)) - a;
-}
-
-QColorProfile *QColorProfile::fromSRgb()
-{
-    QColorProfile *cp = new QColorProfile;
+    QColorTrcLut *cp = new QColorTrcLut;
+    QColorTransferFunction inv = fun.inverted();
 
     for (int i = 0; i <= (255 * 16); ++i) {
-        cp->m_toLinear[i] = ushort(qRound(srgbToLinear(i / qreal(255 * 16)) * (255 * 256)));
-        cp->m_fromLinear[i] = ushort(qRound(linearToSrgb(i / qreal(255 * 16)) * (255 * 256)));
+        cp->m_toLinear[i] = ushort(qRound(fun.apply(i / qreal(255 * 16)) * (255 * 256)));
+        cp->m_fromLinear[i] = ushort(qRound(inv.apply(i / qreal(255 * 16)) * (255 * 256)));
+    }
+
+    return cp;
+}
+
+QColorTrcLut *QColorTrcLut::fromTransferTable(const QColorTransferTable &table)
+{
+    QColorTrcLut *cp = new QColorTrcLut;
+
+    float minInverse = 0.0f;
+    for (int i = 0; i <= (255 * 16); ++i) {
+        cp->m_toLinear[i] = ushort(qBound(0, qRound(table.apply(i / qreal(255 * 16)) * (255 * 256)), 65280));
+        minInverse = table.applyInverse(i / qreal(255 * 16), minInverse);
+        cp->m_fromLinear[i] = ushort(qBound(0, qRound(minInverse * (255 * 256)), 65280));
     }
 
     return cp;

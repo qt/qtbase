@@ -55,6 +55,7 @@
 #include <QtGui/qguiapplication.h>
 
 #include <QtCore/QPointF>
+#include <QtCore/QSharedPointer>
 #include <QtCore/private/qcoreapplication_p.h>
 
 #include <QtCore/private/qthread_p.h>
@@ -66,7 +67,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QColorProfile;
+class QColorTrcLut;
 class QPlatformIntegration;
 class QPlatformTheme;
 class QPlatformDragQtResponse;
@@ -299,8 +300,8 @@ public:
 
     static QInputDeviceManager *inputDeviceManager();
 
-    const QColorProfile *colorProfileForA8Text();
-    const QColorProfile *colorProfileForA32Text();
+    const QColorTrcLut *colorProfileForA8Text();
+    const QColorTrcLut *colorProfileForA32Text();
 
     // hook reimplemented in QApplication to apply the QStyle function on the QIcon
     virtual QPixmap applyQIconStyleHelper(QIcon::Mode, const QPixmap &basePixmap) const { return basePixmap; }
@@ -327,8 +328,8 @@ private:
     static QGuiApplicationPrivate *self;
     static QTouchDevice *m_fakeTouchDevice;
     static int m_fakeMouseSourcePointId;
-    QAtomicPointer<QColorProfile> m_a8ColorProfile;
-    QAtomicPointer<QColorProfile> m_a32ColorProfile;
+    QSharedPointer<QColorTrcLut> m_a8ColorProfile;
+    QSharedPointer<QColorTrcLut> m_a32ColorProfile;
 
     bool ownGlobalShareContext;
 

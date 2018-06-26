@@ -33,7 +33,7 @@
 
 #include <qcolor.h>
 #include <qdebug.h>
-#include <private/qcolorprofile_p.h>
+#include <private/qcolortrclut_p.h>
 #include <private/qdrawingprimitive_sse2_p.h>
 #include <qrgba64.h>
 
@@ -1632,14 +1632,13 @@ void tst_QColor::qcolorprofile_data()
     QTest::newRow("gamma=1.7") << qreal(1.7) << 2;
     QTest::newRow("gamma=2.0") << qreal(2.0) << 8;
     QTest::newRow("gamma=2.31") << qreal(2.31) << 33;
-    QTest::newRow("SRgb") << qreal(0.0) << 7;
 }
 
 void tst_QColor::qcolorprofile()
 {
     QFETCH(qreal, gammaC);
     QFETCH(int, tolerance);
-    QColorProfile *cp = (gammaC == 0) ? QColorProfile::fromSRgb(): QColorProfile::fromGamma(gammaC);
+    QColorTrcLut *cp = QColorTrcLut::fromGamma(gammaC);
 
     // Test we are accurate for most values after converting through gamma-correction.
     int error = 0;

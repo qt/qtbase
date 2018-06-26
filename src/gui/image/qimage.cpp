@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -38,8 +38,10 @@
 ****************************************************************************/
 
 #include "qimage.h"
-#include "qdatastream.h"
+
 #include "qbuffer.h"
+#include "qdatastream.h"
+#include "qcolortransform.h"
 #include "qmap.h"
 #include "qmatrix.h"
 #include "qtransform.h"
@@ -54,6 +56,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <qpa/qplatformpixmap.h>
+#include <private/qcolortransform_p.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qmemrotate_p.h>
 #include <private/qimagescale_p.h>
@@ -1098,6 +1101,7 @@ static void copyMetadata(QImageData *dst, const QImageData *src)
     dst->dpmy = src->dpmy;
     dst->devicePixelRatio = src->devicePixelRatio;
     dst->text = src->text;
+    dst->colorSpace = src->colorSpace;
 }
 
 /*!
@@ -4919,6 +4923,132 @@ QTransform QImage::trueMatrix(const QTransform &matrix, int w, int h)
     const QPoint delta = mapped.topLeft();
     return matrix * QTransform().translate(-delta.x(), -delta.y());
 }
+
+/*!
+    \since 5.14
+
+    Sets the image color space to \a colorSpace without performing any conversions on image data.
+
+    \sa colorSpace()
+*/
+void QImage::setColorSpace(const QColorSpace &colorSpace)
+{
+    if (!d)
+        return;
+    if (d->colorSpace == colorSpace)
+        return;
+    if (!isDetached()) // Detach only if shared, not for read-only data.
+        detach();
+    d->colorSpace = colorSpace;
+}
+
+/*!
+    \since 5.14
+
+    Converts the image to \a colorSpace.
+
+    If the image has no valid color space, the method does nothing.
+
+    \sa convertedToColorSpace(), setColorSpace()
+*/
+void QImage::convertToColorSpace(const QColorSpace &colorSpace)
+{
+    if (!d)
+        return;
+    if (!d->colorSpace.isValid())
+        return;
+    if (!colorSpace.isValid()) {
+        qWarning() << "QImage::convertToColorSpace: Output colorspace is not valid";
+        return;
+    }
+    detach();
+    applyColorTransform(d->colorSpace.transformationToColorSpace(colorSpace));
+    d->colorSpace = colorSpace;
+}
+
+/*!
+    \since 5.14
+
+    Returns the image converted to \a colorSpace.
+
+    If the image has no valid color space, a null QImage is returned.
+
+    \sa convertToColorSpace()
+*/
+QImage QImage::convertedToColorSpace(const QColorSpace &colorSpace) const
+{
+    if (!d || !d->colorSpace.isValid() || !colorSpace.isValid())
+        return QImage();
+    QImage image = copy();
+    image.convertToColorSpace(colorSpace);
+    return image;
+}
+
+/*!
+    \since 5.14
+
+    Returns the color space of the image if a color space is defined.
+*/
+QColorSpace QImage::colorSpace() const
+{
+    if (!d)
+        return QColorSpace::Undefined;
+    return d->colorSpace;
+}
+
+/*!
+    \since 5.14
+
+    Applies the color transformation \a transform to all pixels in the image.
+*/
+void QImage::applyColorTransform(const QColorTransform &transform)
+{
+    QImage::Format oldFormat = format();
+    if (depth() > 32) {
+        if (format() != QImage::Format_RGBX64 && format() != QImage::Format_RGBA64
+                && format() != QImage::Format_RGBA64_Premultiplied)
+            *this = std::move(*this).convertToFormat(QImage::Format_RGBA64);
+    } else if (format() != QImage::Format_ARGB32 && format() != QImage::Format_RGB32
+                && format() != QImage::Format_ARGB32_Premultiplied) {
+        if (hasAlphaChannel())
+            *this = std::move(*this).convertToFormat(QImage::Format_ARGB32);
+        else
+            *this = std::move(*this).convertToFormat(QImage::Format_RGB32);
+    }
+
+    QColorTransformPrivate::TransformFlags flags = QColorTransformPrivate::Unpremultiplied;
+    switch (format()) {
+    case Format_ARGB32_Premultiplied:
+    case Format_RGBA64_Premultiplied:
+        flags = QColorTransformPrivate::Premultiplied;
+        break;
+    case Format_RGB32:
+    case Format_RGBX64:
+        flags = QColorTransformPrivate::InputOpaque;
+        break;
+    case Format_ARGB32:
+    case Format_RGBA64:
+        break;
+    default:
+        Q_UNREACHABLE();
+    }
+
+    if (depth() > 32) {
+        for (int i = 0; i < height(); ++i) {
+            QRgba64 *scanline = reinterpret_cast<QRgba64 *>(scanLine(i));
+            transform.d_func()->apply(scanline, scanline, width(), flags);
+        }
+    } else {
+        for (int i = 0; i < height(); ++i) {
+            QRgb *scanline = reinterpret_cast<QRgb *>(scanLine(i));
+            transform.d_func()->apply(scanline, scanline, width(), flags);
+        }
+    }
+
+    if (oldFormat != format())
+        *this = std::move(*this).convertToFormat(oldFormat);
+}
+
 
 bool QImageData::convertInPlace(QImage::Format newFormat, Qt::ImageConversionFlags flags)
 {

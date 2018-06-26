@@ -42,6 +42,7 @@
 
 #ifndef QT_NO_IMAGEFORMAT_PNG
 #include <qcoreapplication.h>
+#include <qdebug.h>
 #include <qiodevice.h>
 #include <qimage.h>
 #include <qlist.h>
@@ -49,6 +50,10 @@
 #include <qvector.h>
 
 #include <private/qimage_p.h> // for qt_getImageText
+
+#include <qcolorspace.h>
+#include <private/qcolorspace_p.h>
+#include <private/qicc_p.h>
 
 #include <png.h>
 #include <pngconf.h>
@@ -96,9 +101,16 @@ public:
         ReadingEnd,
         Error
     };
+    // Defines the order of how the various ways of setting colorspace overrides eachother:
+    enum ColorSpaceState {
+        Undefined = 0,
+        GammaChrm = 1, // gAMA+cHRM chunks
+        Srgb = 2,      // sRGB chunk
+        Icc = 3        // iCCP chunk
+    };
 
     QPngHandlerPrivate(QPngHandler *qq)
-        : gamma(0.0), fileGamma(0.0), quality(50), compression(50), png_ptr(0), info_ptr(0), end_info(0), state(Ready), q(qq)
+        : gamma(0.0), fileGamma(0.0), quality(50), compression(50), colorSpaceState(Undefined), png_ptr(0), info_ptr(0), end_info(0), state(Ready), q(qq)
     { }
 
     float gamma;
@@ -108,6 +120,8 @@ public:
     QString description;
     QSize scaledSize;
     QStringList readTexts;
+    QColorSpace colorSpace;
+    ColorSpaceState colorSpaceState;
 
     png_struct *png_ptr;
     png_info *info_ptr;
@@ -226,11 +240,8 @@ void qpiw_flush_fn(png_structp /* png_ptr */)
 }
 
 static
-void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scaledSize, bool *doScaledRead, float screen_gamma=0.0, float file_gamma=0.0)
+void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scaledSize, bool *doScaledRead)
 {
-    if (screen_gamma != 0.0 && file_gamma != 0.0)
-        png_set_gamma(png_ptr, 1.0f / screen_gamma, file_gamma);
-
     png_uint_32 width;
     png_uint_32 height;
     int bit_depth;
@@ -585,10 +596,45 @@ bool QPngHandlerPrivate::readPngHeader()
 
     readPngTexts(info_ptr);
 
+#ifdef PNG_iCCP_SUPPORTED
+    if (png_get_valid(png_ptr, info_ptr, PNG_INFO_iCCP)) {
+        png_charp name = nullptr;
+        int compressionType = 0;
+#if (PNG_LIBPNG_VER < 10500)
+        png_charp profileData = nullptr;
+#else
+        png_bytep profileData = nullptr;
+#endif
+        png_uint_32 profLen;
+        png_get_iCCP(png_ptr, info_ptr, &name, &compressionType, &profileData, &profLen);
+        if (!QIcc::fromIccProfile(QByteArray::fromRawData((const char *)profileData, profLen), &colorSpace)) {
+            qWarning() << "QPngHandler: Failed to parse ICC profile";
+        } else {
+            colorSpaceState = Icc;
+        }
+    }
+#endif
+    if (png_get_valid(png_ptr, info_ptr, PNG_INFO_sRGB)) {
+        int rendering_intent = -1;
+        png_get_sRGB(png_ptr, info_ptr, &rendering_intent);
+        // We don't actually care about the rendering_intent, just that it is valid
+        if (rendering_intent >= 0 && rendering_intent <= 3 && colorSpaceState <= Srgb) {
+            colorSpace = QColorSpace::SRgb;
+            colorSpaceState = Srgb;
+        }
+    }
     if (png_get_valid(png_ptr, info_ptr, PNG_INFO_gAMA)) {
         double file_gamma = 0.0;
         png_get_gAMA(png_ptr, info_ptr, &file_gamma);
         fileGamma = file_gamma;
+        if (fileGamma > 0.0f && colorSpaceState <= GammaChrm) {
+            QColorSpacePrivate *csPrivate = colorSpace.d_func();
+            csPrivate->gamut = QColorSpace::Gamut::SRgb;
+            csPrivate->transferFunction = QColorSpace::TransferFunction::Gamma;
+            csPrivate->gamma = fileGamma;
+            csPrivate->initialize();
+            colorSpaceState = GammaChrm;
+        }
     }
 
     state = ReadHeader;
@@ -613,8 +659,19 @@ bool QPngHandlerPrivate::readPngImage(QImage *outImage)
         return false;
     }
 
+    if (gamma != 0.0 && fileGamma != 0.0) {
+        // This configuration forces gamma correction and
+        // thus changes the output colorspace
+        png_set_gamma(png_ptr, 1.0f / gamma, fileGamma);
+        QColorSpacePrivate *csPrivate = colorSpace.d_func();
+        csPrivate->transferFunction = QColorSpace::TransferFunction::Gamma;
+        csPrivate->gamma = gamma;
+        csPrivate->initialize();
+        colorSpaceState = GammaChrm;
+    }
+
     bool doScaledRead = false;
-    setup_qt(*outImage, png_ptr, info_ptr, scaledSize, &doScaledRead, gamma, fileGamma);
+    setup_qt(*outImage, png_ptr, info_ptr, scaledSize, &doScaledRead);
 
     if (outImage->isNull()) {
         png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
@@ -682,6 +739,9 @@ bool QPngHandlerPrivate::readPngImage(QImage *outImage)
 
     if (scaledSize.isValid() && outImage->size() != scaledSize)
         *outImage = outImage->scaled(scaledSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
+    if (colorSpaceState > Undefined && colorSpace.isValid())
+        outImage->setColorSpace(colorSpace);
 
     return true;
 }

@@ -3,6 +3,7 @@ SUBDIRS=\
    qpainterpath \
    qpainterpathstroker \
    qcolor \
+   qcolorspace \
    qbrush \
    qregion \
    qpagelayout \

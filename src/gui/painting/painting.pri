@@ -8,7 +8,15 @@ HEADERS += \
         painting/qbrush.h \
         painting/qcolor.h \
         painting/qcolor_p.h \
-        painting/qcolorprofile_p.h \
+        painting/qcolormatrix_p.h \
+        painting/qcolorspace.h \
+        painting/qcolorspace_p.h \
+        painting/qcolortransferfunction_p.h \
+        painting/qcolortransfertable_p.h \
+        painting/qcolortransform.h \
+        painting/qcolortransform_p.h \
+        painting/qcolortrc_p.h \
+        painting/qcolortrclut_p.h \
         painting/qcosmeticstroker_p.h \
         painting/qdatabuffer_p.h \
         painting/qdrawhelper_p.h \
@@ -17,6 +25,7 @@ HEADERS += \
         painting/qemulationpaintengine_p.h \
         painting/qfixed_p.h \
         painting/qgrayraster_p.h \
+        painting/qicc_p.h \
         painting/qmatrix.h \
         painting/qmemrotate_p.h \
         painting/qoutlinemapper_p.h \
@@ -64,12 +73,15 @@ SOURCES += \
         painting/qblittable.cpp \
         painting/qbrush.cpp \
         painting/qcolor.cpp \
-        painting/qcolorprofile.cpp \
+        painting/qcolorspace.cpp \
+        painting/qcolortransform.cpp \
+        painting/qcolortrclut.cpp \
         painting/qcompositionfunctions.cpp \
         painting/qcosmeticstroker.cpp \
         painting/qdrawhelper.cpp \
         painting/qemulationpaintengine.cpp \
         painting/qgrayraster.c \
+        painting/qicc.cpp \
         painting/qimagescale.cpp \
         painting/qmatrix.cpp \
         painting/qmemrotate.cpp \

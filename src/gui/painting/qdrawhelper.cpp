@@ -43,7 +43,7 @@
 #include <qstylehints.h>
 #include <qguiapplication.h>
 #include <qatomic.h>
-#include <private/qcolorprofile_p.h>
+#include <private/qcolortrclut_p.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <private/qpainter_p.h>
@@ -5523,7 +5523,7 @@ inline static void qt_bitmapblit_quint16(QRasterBuffer *rasterBuffer,
                                     map, mapWidth, mapHeight, mapStride);
 }
 
-static inline void alphamapblend_generic(int coverage, QRgba64 *dest, int x, const QRgba64 &srcLinear, const QRgba64 &src, const QColorProfile *colorProfile)
+static inline void alphamapblend_generic(int coverage, QRgba64 *dest, int x, const QRgba64 &srcLinear, const QRgba64 &src, const QColorTrcLut *colorProfile)
 {
     if (coverage == 0) {
         // nothing
@@ -5558,7 +5558,7 @@ static void qt_alphamapblit_generic(QRasterBuffer *rasterBuffer,
     if (color.isTransparent())
         return;
 
-    const QColorProfile *colorProfile = nullptr;
+    const QColorTrcLut *colorProfile = nullptr;
 
     if (useGammaCorrection)
         colorProfile = QGuiApplicationPrivate::instance()->colorProfileForA8Text();
@@ -5684,7 +5684,7 @@ void qt_alphamapblit_quint16(QRasterBuffer *rasterBuffer,
     }
 }
 
-static inline void rgbBlendPixel(quint32 *dst, int coverage, QRgba64 slinear, const QColorProfile *colorProfile)
+static inline void rgbBlendPixel(quint32 *dst, int coverage, QRgba64 slinear, const QColorTrcLut *colorProfile)
 {
     // Do a gammacorrected RGB alphablend...
     const QRgba64 dlinear = colorProfile ? colorProfile->toLinear64(*dst) : QRgba64::fromArgb32(*dst);
@@ -5694,7 +5694,7 @@ static inline void rgbBlendPixel(quint32 *dst, int coverage, QRgba64 slinear, co
     *dst = colorProfile ? colorProfile->fromLinear64(blend) : toArgb32(blend);
 }
 
-static inline void grayBlendPixel(quint32 *dst, int coverage, QRgba64 srcLinear, const QColorProfile *colorProfile)
+static inline void grayBlendPixel(quint32 *dst, int coverage, QRgba64 srcLinear, const QColorTrcLut *colorProfile)
 {
     // Do a gammacorrected gray alphablend...
     const QRgba64 dstLinear = colorProfile ? colorProfile->toLinear64(*dst) : QRgba64::fromArgb32(*dst);
@@ -5704,7 +5704,7 @@ static inline void grayBlendPixel(quint32 *dst, int coverage, QRgba64 srcLinear,
     *dst = colorProfile ? colorProfile->fromLinear64(blend) : toArgb32(blend);
 }
 
-static inline void alphamapblend_argb32(quint32 *dst, int coverage, QRgba64 srcLinear, quint32 src, const QColorProfile *colorProfile)
+static inline void alphamapblend_argb32(quint32 *dst, int coverage, QRgba64 srcLinear, quint32 src, const QColorTrcLut *colorProfile)
 {
     if (coverage == 0) {
         // nothing
@@ -5734,7 +5734,7 @@ static void qt_alphamapblit_argb32(QRasterBuffer *rasterBuffer,
     if (color.isTransparent())
         return;
 
-    const QColorProfile *colorProfile = nullptr;
+    const QColorTrcLut *colorProfile = nullptr;
 
     if (useGammaCorrection)
         colorProfile = QGuiApplicationPrivate::instance()->colorProfileForA8Text();
@@ -5830,7 +5830,7 @@ static inline QRgb rgbBlend(QRgb d, QRgb s, uint rgbAlpha)
 #endif
 }
 
-static inline void alphargbblend_generic(uint coverage, QRgba64 *dest, int x, const QRgba64 &srcLinear, const QRgba64 &src, const QColorProfile *colorProfile)
+static inline void alphargbblend_generic(uint coverage, QRgba64 *dest, int x, const QRgba64 &srcLinear, const QRgba64 &src, const QColorTrcLut *colorProfile)
 {
     if (coverage == 0xff000000) {
         // nothing
@@ -5852,7 +5852,7 @@ static inline void alphargbblend_generic(uint coverage, QRgba64 *dest, int x, co
     }
 }
 
-static inline void alphargbblend_argb32(quint32 *dst, uint coverage, const QRgba64 &srcLinear, quint32 src, const QColorProfile *colorProfile)
+static inline void alphargbblend_argb32(quint32 *dst, uint coverage, const QRgba64 &srcLinear, quint32 src, const QColorTrcLut *colorProfile)
 {
     if (coverage == 0xff000000) {
         // nothing
@@ -5877,7 +5877,7 @@ static void qt_alphargbblit_generic(QRasterBuffer *rasterBuffer,
     if (color.isTransparent())
         return;
 
-    const QColorProfile *colorProfile = nullptr;
+    const QColorTrcLut *colorProfile = nullptr;
 
     if (useGammaCorrection)
         colorProfile = QGuiApplicationPrivate::instance()->colorProfileForA32Text();
@@ -5954,7 +5954,7 @@ static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
 
     const quint32 c = color.toArgb32();
 
-    const QColorProfile *colorProfile = nullptr;
+    const QColorTrcLut *colorProfile = nullptr;
 
     if (useGammaCorrection)
         colorProfile = QGuiApplicationPrivate::instance()->colorProfileForA32Text();

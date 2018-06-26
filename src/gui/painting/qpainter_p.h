@@ -54,6 +54,8 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/private/qtguiglobal_p.h>
 #include "QtGui/qbrush.h"
+#include "QtGui/qcolorspace.h"
+#include "QtGui/qcolortransform.h"
 #include "QtGui/qfont.h"
 #include "QtGui/qpen.h"
 #include "QtGui/qregion.h"

@@ -39,7 +39,7 @@
 
 #include <private/qdrawhelper_p.h>
 #include <private/qguiapplication_p.h>
-#include <private/qcolorprofile_p.h>
+#include <private/qcolortrclut_p.h>
 #include <private/qendian_p.h>
 #include <private/qsimd_p.h>
 #include <private/qimage_p.h>
@@ -100,7 +100,7 @@ const uchar *qt_get_bitflip_array()
 
 void qGamma_correct_back_to_linear_cs(QImage *image)
 {
-    const QColorProfile *cp = QGuiApplicationPrivate::instance()->colorProfileForA32Text();
+    const QColorTrcLut *cp = QGuiApplicationPrivate::instance()->colorProfileForA32Text();
     if (!cp)
         return;
     // gamma correct the pixels back to linear color space...

@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QCOLORPROFILE_P_H
-#define QCOLORPROFILE_P_H
+#ifndef QCOLORTRCLUT_P_H
+#define QCOLORTRCLUT_P_H
 
 //
 //  W A R N I N G
@@ -52,21 +52,29 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
+#include <QtCore/qsharedpointer.h>
 #include <QtGui/qrgb.h>
 #include <QtGui/qrgba64.h>
+
+#include <cmath>
 
 #if defined(__SSE2__)
 #include <emmintrin.h>
 #elif defined(__ARM_NEON__) || defined(__ARM_NEON)
 #include <arm_neon.h>
 #endif
+
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QColorProfile
+class QColorTransferFunction;
+class QColorTransferTable;
+
+class Q_GUI_EXPORT QColorTrcLut : public QEnableSharedFromThis<QColorTrcLut>
 {
 public:
-    static QColorProfile *fromGamma(qreal gamma);
-    static QColorProfile *fromSRgb();
+    static QColorTrcLut *fromGamma(qreal gamma);
+    static QColorTrcLut *fromTransferFunction(const QColorTransferFunction &transfn);
+    static QColorTrcLut *fromTransferTable(const QColorTransferTable &transTable);
 
     // The following methods all convert opaque or unpremultiplied colors:
 
@@ -119,6 +127,25 @@ public:
     QRgba64 toLinear(QRgba64 rgb64) const
     {
         return convertWithTable(rgb64, m_toLinear);
+    }
+
+    float u8ToLinearF32(int c) const
+    {
+        ushort v = m_toLinear[c << 4];
+        return v * (1.0f / (255*256));
+    }
+
+    float u16ToLinearF32(int c) const
+    {
+        c -= (c >> 8);
+        ushort v = m_toLinear[c >> 4];
+        return v * (1.0f / (255*256));
+    }
+
+    float toLinear(float f) const
+    {
+        ushort v = m_toLinear[(int)(f * (255 * 16) + 0.5f)];
+        return v * (1.0f / (255*256));
     }
 
     QRgb fromLinear64(QRgba64 rgb64) const
@@ -176,8 +203,31 @@ public:
         return convertWithTable(rgb64, m_fromLinear);
     }
 
+    int u8FromLinearF32(float f) const
+    {
+        ushort v = m_fromLinear[(int)(f * (255 * 16) + 0.5f)];
+        return (v + 0x80) >> 8;
+    }
+    int u16FromLinearF32(float f) const
+    {
+        ushort v = m_fromLinear[(int)(f * (255 * 16) + 0.5f)];
+        return v + (v >> 8);
+    }
+    float fromLinear(float f) const
+    {
+        ushort v = m_fromLinear[(int)(f * (255 * 16) + 0.5f)];
+        return v * (1.0f / (255*256));
+    }
+
+    // We translate to 0-65280 (255*256) instead to 0-65535 to make simple
+    // shifting an accurate conversion.
+    // We translate from 0-4080 (255*16) for the same speed up, and to keep
+    // the tables small enough to fit in most inner caches.
+    ushort m_toLinear[(255 * 16) + 1]; // [0-4080] -> [0-65280]
+    ushort m_fromLinear[(255 * 16) + 1]; // [0-4080] -> [0-65280]
+
 private:
-    QColorProfile() { }
+    QColorTrcLut() { }
 
     Q_ALWAYS_INLINE static QRgb convertWithTable(QRgb rgb32, const ushort *table)
     {
@@ -230,16 +280,8 @@ private:
         return QRgba64::fromRgba64(r, g, b, rgb64.alpha());
 #endif
     }
-
-    // We translate to 0-65280 (255*256) instead to 0-65535 to make simple
-    // shifting an accurate conversion.
-    // We translate from 0-4080 (255*16) for the same speed up, and to keep
-    // the tables small enough to fit in most inner caches.
-    ushort m_toLinear[(255 * 16) + 1]; // [0-4080] -> [0-65280]
-    ushort m_fromLinear[(255 * 16) + 1]; // [0-4080] -> [0-65280]
-
 };
 
 QT_END_NAMESPACE
 
-#endif // QCOLORPROFILE_P_H
+#endif // QCOLORTRCLUT_P_H

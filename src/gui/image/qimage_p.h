@@ -51,7 +51,9 @@
 // We mean it.
 //
 
+#include <QtGui/qcolorspace.h>
 #include <QtGui/private/qtguiglobal_p.h>
+#include <QtGui/qimage.h>
 #include <QtCore/private/qnumeric_p.h>
 
 #include <QMap>
@@ -105,6 +107,8 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
     bool doImageIO(const QImage *image, QImageWriter* io, int quality) const;
 
     QPaintEngine *paintEngine;
+
+    QColorSpace colorSpace;
 
     struct ImageSizeParameters {
         qsizetype bytesPerLine;
