@@ -2809,13 +2809,13 @@ class SslServer4 : public QTcpServer
 {
     Q_OBJECT
 public:
-    SslServer4() : socket(0) {}
-    WebSocket *socket;
+
+    QScopedPointer<WebSocket> socket;
 
 protected:
-    void incomingConnection(qintptr socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor) override
     {
-        socket =  new WebSocket(socketDescriptor);
+        socket.reset(new WebSocket(socketDescriptor));
     }
 };
 
@@ -2829,38 +2829,36 @@ void tst_QSslSocket::qtbug18498_peek()
         return;
 
     SslServer4 server;
-    QSslSocket *client = new QSslSocket(this);
-
     QVERIFY(server.listen(QHostAddress::LocalHost));
-    client->connectToHost("127.0.0.1", server.serverPort());
-    QVERIFY(client->waitForConnected(5000));
+
+    QSslSocket client;
+    client.connectToHost("127.0.0.1", server.serverPort());
+    QVERIFY(client.waitForConnected(5000));
     QVERIFY(server.waitForNewConnection(1000));
-    client->setObjectName("client");
-    client->ignoreSslErrors();
+    client.ignoreSslErrors();
 
     int encryptedCounter = 2;
-    connect(client, &QSslSocket::encrypted, this, [&encryptedCounter, this](){
+    connect(&client, &QSslSocket::encrypted, this, [&encryptedCounter](){
         if (!--encryptedCounter)
             exitLoop();
     });
-    WebSocket *serversocket = server.socket;
-    connect(serversocket, &QSslSocket::encrypted, this, [&encryptedCounter, this](){
+    WebSocket *serversocket = server.socket.data();
+    connect(serversocket, &QSslSocket::encrypted, this, [&encryptedCounter](){
         if (!--encryptedCounter)
             exitLoop();
     });
-    connect(client, SIGNAL(disconnected()), this, SLOT(exitLoop()));
+    connect(&client, SIGNAL(disconnected()), this, SLOT(exitLoop()));
 
-    client->startClientEncryption();
+    client.startClientEncryption();
     QVERIFY(serversocket);
-    serversocket->setObjectName("server");
 
     enterLoop(1);
     QVERIFY(!timeout());
     QVERIFY(serversocket->isEncrypted());
-    QVERIFY(client->isEncrypted());
+    QVERIFY(client.isEncrypted());
 
     QByteArray data("abc123");
-    client->write(data.data());
+    client.write(data.data());
 
     connect(serversocket, SIGNAL(readyRead()), this, SLOT(exitLoop()));
     enterLoop(1);
