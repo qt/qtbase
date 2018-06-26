@@ -32,6 +32,10 @@
 #include <qstring.h>
 #include <qmutex.h>
 
+#ifdef Q_OS_UNIX
+#include <unistd.h>
+#endif
+
 typedef void (*FunctionPointer)();
 
 class FunctionPointerTask : public QRunnable
@@ -1145,6 +1149,10 @@ void tst_QThreadPool::destroyingWaitsForTasksToFinish()
 // stack size used by the native thread.
 void tst_QThreadPool::stackSize()
 {
+#if defined(Q_OS_UNIX) && !(defined(_POSIX_THREAD_ATTR_STACKSIZE) && (_POSIX_THREAD_ATTR_STACKSIZE-0 > 0))
+    QSKIP("Setting stack size is unsupported on this platform.");
+#endif
+
     uint targetStackSize = 512 * 1024;
     uint threadStackSize = 1; // impossible value
 
