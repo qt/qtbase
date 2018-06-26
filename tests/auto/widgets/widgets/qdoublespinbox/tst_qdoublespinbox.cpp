@@ -838,10 +838,6 @@ void tst_QDoubleSpinBox::editingFinished()
 
     testFocusWidget->show();
     testFocusWidget->activateWindow();
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Widget does not get another activation on WinRT as it's already visible.",
-                 Continue);
-#endif
     QVERIFY(QTest::qWaitForWindowActive(testFocusWidget));
     box->setFocus();
     QTRY_VERIFY(box->hasFocus());
@@ -883,9 +879,6 @@ void tst_QDoubleSpinBox::editingFinished()
     QCOMPARE(editingFinishedSpy2.count(), 3);
     testFocusWidget->hide();
     QCOMPARE(editingFinishedSpy1.count(), 4);
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Hide does not trigger signal on WinRT - QTBUG-68297.", Continue);
-#endif
     QCOMPARE(editingFinishedSpy2.count(), 4);
 
     // On some platforms this is our root window
