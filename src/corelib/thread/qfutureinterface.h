@@ -178,7 +178,7 @@ public:
     inline void reportResult(const T *result, int index = -1);
     inline void reportResult(const T &result, int index = -1);
     inline void reportResults(const QVector<T> &results, int beginIndex = -1, int count = -1);
-    inline void reportFinished(const T *result = 0);
+    inline void reportFinished(const T *result = nullptr);
 
     inline const T &resultReference(int index) const;
     inline const T *resultPointer(int index) const;
