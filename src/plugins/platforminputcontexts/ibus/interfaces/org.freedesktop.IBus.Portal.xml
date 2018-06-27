@@ -1,0 +1,10 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="org.freedesktop.IBus.Portal">
+    <method name="CreateInputContext">
+      <arg name="name" direction="in" type="s"/>
+      <arg name="context" direction="out" type="o"/>
+    </method>
+  </interface>
+</node>

@@ -50,6 +50,7 @@
 #include <qpa/qwindowsysteminterface.h>
 
 #include "qibusproxy.h"
+#include "qibusproxyportal.h"
 #include "qibusinputcontextproxy.h"
 #include "qibustypes.h"
 
@@ -78,19 +79,22 @@ public:
     {
         delete context;
         delete bus;
+        delete portalBus;
         delete connection;
     }
 
     static QString getSocketPath();
-    static QDBusConnection *createConnection();
 
+    QDBusConnection *createConnection();
     void initBus();
     void createBusProxy();
 
     QDBusConnection *connection;
     QIBusProxy *bus;
+    QIBusProxyPortal *portalBus; // bus and portalBus are alternative.
     QIBusInputContextProxy *context;
 
+    bool usePortal; // return value of shouldConnectIbusPortal
     bool valid;
     bool busConnected;
     QString predit;
@@ -507,6 +511,9 @@ void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *cal
 
 QLocale QIBusPlatformInputContext::locale() const
 {
+    // d->locale is not updated when IBus portal is used
+    if (d->usePortal)
+        return QPlatformInputContext::locale();
     return d->locale;
 }
 
@@ -572,15 +579,34 @@ void QIBusPlatformInputContext::connectToContextSignals()
     }
 }
 
+static inline bool checkRunningUnderFlatpak()
+{
+    return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, QLatin1String("flatpak-info")).isEmpty();
+}
+
+static bool shouldConnectIbusPortal()
+{
+    // honor the same env as ibus-gtk
+    return (checkRunningUnderFlatpak() || !qgetenv("IBUS_USE_PORTAL").isNull());
+}
+
 QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()
     : connection(0),
       bus(0),
+      portalBus(0),
       context(0),
+      usePortal(shouldConnectIbusPortal()),
       valid(false),
       busConnected(false),
       needsSurroundingText(false)
 {
-    valid = !QStandardPaths::findExecutable(QString::fromLocal8Bit("ibus-daemon"), QStringList()).isEmpty();
+    if (usePortal) {
+        valid = true;
+        if (debug)
+            qDebug() << "use IBus portal";
+    } else {
+        valid = !QStandardPaths::findExecutable(QString::fromLocal8Bit("ibus-daemon"), QStringList()).isEmpty();
+    }
     if (!valid)
         return;
     initBus();
@@ -603,21 +629,35 @@ void QIBusPlatformInputContextPrivate::createBusProxy()
     if (!connection || !connection->isConnected())
         return;
 
-    bus = new QIBusProxy(QLatin1String("org.freedesktop.IBus"),
-                         QLatin1String("/org/freedesktop/IBus"),
-                         *connection);
-    if (!bus->isValid()) {
-        qWarning("QIBusPlatformInputContext: invalid bus.");
-        return;
-    }
+    const char* ibusService = usePortal ? "org.freedesktop.portal.IBus" : "org.freedesktop.IBus";
+    QDBusReply<QDBusObjectPath> ic;
+    if (usePortal) {
+        portalBus = new QIBusProxyPortal(QLatin1String(ibusService),
+                                         QLatin1String("/org/freedesktop/IBus"),
+                                         *connection);
+        if (!portalBus->isValid()) {
+            qWarning("QIBusPlatformInputContext: invalid portal bus.");
+            return;
+        }
 
-    QDBusReply<QDBusObjectPath> ic = bus->CreateInputContext(QLatin1String("QIBusInputContext"));
+        ic = portalBus->CreateInputContext(QLatin1String("QIBusInputContext"));
+    } else {
+        bus = new QIBusProxy(QLatin1String(ibusService),
+                             QLatin1String("/org/freedesktop/IBus"),
+                             *connection);
+        if (!bus->isValid()) {
+            qWarning("QIBusPlatformInputContext: invalid bus.");
+            return;
+        }
+
+        ic = bus->CreateInputContext(QLatin1String("QIBusInputContext"));
+    }
     if (!ic.isValid()) {
         qWarning("QIBusPlatformInputContext: CreateInputContext failed.");
         return;
     }
 
-    context = new QIBusInputContextProxy(QLatin1String("org.freedesktop.IBus"), ic.value().path(), *connection);
+    context = new QIBusInputContextProxy(QLatin1String(ibusService), ic.value().path(), *connection);
 
     if (!context->isValid()) {
         qWarning("QIBusPlatformInputContext: invalid input context.");
@@ -665,6 +705,8 @@ QString QIBusPlatformInputContextPrivate::getSocketPath()
 
 QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
 {
+    if (usePortal)
+        return new QDBusConnection(QDBusConnection::connectToBus(QDBusConnection::SessionBus, QLatin1String("QIBusProxy")));
     QFile file(getSocketPath());
 
     if (!file.open(QFile::ReadOnly))
