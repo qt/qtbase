@@ -342,7 +342,6 @@ void tst_QDtlsCookie::sendClientHello(QUdpSocket *socket, QDtls *dtls,
     // We don't really care about QDtls in this auto-test, but must be
     // sure that we, indeed, sent our hello and if not - stop early without
     // running event loop:
-    QCOMPARE(socket->error(), QAbstractSocket::UnknownSocketError);
     QCOMPARE(dtls->dtlsError(), QDtlsError::NoError);
     // We never complete a handshake, so it must be 'HandshakeInProgress':
     QCOMPARE(dtls->handshakeState(), QDtls::HandshakeInProgress);
@@ -362,7 +361,6 @@ void tst_QDtlsCookie::receiveMessage(QUdpSocket *socket, QByteArray *message,
     message->resize(socket->pendingDatagramSize());
     const qint64 read = socket->readDatagram(message->data(), message->size(),
                                              address, port);
-    QCOMPARE(socket->error(), QAbstractSocket::UnknownSocketError);
     QVERIFY(read > 0);
 
     message->resize(read);
