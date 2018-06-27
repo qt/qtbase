@@ -1,6 +1,10 @@
 tst_qfile
-stdinprocess/stdinprocess
-stdinprocess/stdinprocess.exe
+stdinprocess_helper
+stdinprocess_helper.exe
+debug/stdinprocess_helper
+debug/stdinprocess_helper.exe
+release/stdinprocess_helper
+release/stdinprocess_helper.exe
 readonlyfile
 newfile.txt
 appendfile.txt

@@ -361,7 +361,7 @@ private:
 
     QTemporaryDir m_temporaryDir;
     const QString m_oldDir;
-    QString m_stdinProcessDir;
+    QString m_stdinProcess;
     QString m_testSourceFile;
     QString m_testLogFile;
     QString m_dosFile;
@@ -442,8 +442,12 @@ void tst_QFile::initTestCase()
 {
     QVERIFY2(m_temporaryDir.isValid(), qPrintable(m_temporaryDir.errorString()));
 #if QT_CONFIG(process)
-    m_stdinProcessDir = QFINDTESTDATA("stdinprocess");
-    QVERIFY(!m_stdinProcessDir.isEmpty());
+#ifndef Q_OS_WIN
+    m_stdinProcess = QFINDTESTDATA("stdinprocess_helper");
+#else
+    m_stdinProcess = QFINDTESTDATA("stdinprocess_helper.exe");
+#endif
+    QVERIFY(!m_stdinProcess.isEmpty());
 #endif
     m_testLogFile = QFINDTESTDATA("testlog.txt");
     QVERIFY(!m_testLogFile.isEmpty());
@@ -962,7 +966,7 @@ void tst_QFile::readAllStdin()
 
     QProcess process;
     StdinReaderProcessGuard processGuard(&process);
-    process.start(m_stdinProcessDir + QStringLiteral("/stdinprocess"), QStringList(QStringLiteral("all")));
+    process.start(m_stdinProcess, QStringList(QStringLiteral("all")));
     QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
     for (int i = 0; i < 5; ++i) {
         QTest::qWait(1000);
@@ -992,7 +996,7 @@ void tst_QFile::readLineStdin()
     for (int i = 0; i < 2; ++i) {
         QProcess process;
         StdinReaderProcessGuard processGuard(&process);
-        process.start(m_stdinProcessDir + QStringLiteral("/stdinprocess"),
+        process.start(m_stdinProcess,
                       QStringList() << QStringLiteral("line") << QString::number(i),
                       QIODevice::Text | QIODevice::ReadWrite);
         QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
@@ -1025,7 +1029,7 @@ void tst_QFile::readLineStdin_lineByLine()
     for (int i = 0; i < 2; ++i) {
         QProcess process;
         StdinReaderProcessGuard processGuard(&process);
-        process.start(m_stdinProcessDir + QStringLiteral("/stdinprocess"),
+        process.start(m_stdinProcess,
                       QStringList() << QStringLiteral("line") << QString::number(i),
                       QIODevice::Text | QIODevice::ReadWrite);
         QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));

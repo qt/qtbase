@@ -33,7 +33,7 @@
 int main(int argc, char *argv[])
 {
     if (argc < 2) {
-        printf("usage: stdinprocess <all|line <0|1>>\n");
+        printf("usage: stdinprocess_helper <all|line <0|1>>\n");
         printf("echos all its input to its output.\n");
         return 1;
     }

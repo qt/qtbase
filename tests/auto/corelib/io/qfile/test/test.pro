@@ -1,5 +1,4 @@
 CONFIG += testcase
-CONFIG -= debug_and_release_target
 QT = core-private core testlib
 qtHaveModule(network): QT += network
 else: DEFINES += QT_NO_NETWORK
@@ -10,7 +9,15 @@ contains(CONFIG, builtin_testdata) {
 
 TESTDATA += ../BLACKLIST
 
-TARGET = ../tst_qfile
+debug_and_release {
+    CONFIG(debug, debug|release) {
+        TARGET = ../../debug/tst_qfile
+    } else {
+        TARGET = ../../release/tst_qfile
+    }
+} else {
+    TARGET = ../tst_qfile
+}
 SOURCES = ../tst_qfile.cpp
 INCLUDEPATH += ../../../../../shared/
 HEADERS += ../../../../../shared/emulationdetector.h
