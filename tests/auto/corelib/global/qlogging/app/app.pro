@@ -1,6 +1,15 @@
 TEMPLATE = app
 
-TARGET = app
+debug_and_release {
+    CONFIG(debug, debug|release) {
+        TARGET = ../debug/helper
+    } else {
+        TARGET = ../release/helper
+    }
+} else {
+    TARGET = ../helper
+}
+
 QT = core
 
 DESTDIR = ./
