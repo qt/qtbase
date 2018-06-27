@@ -226,7 +226,7 @@ static quintptr tabId(const QDockAreaLayoutItem &item)
 static const int zero = 0;
 
 QDockAreaLayoutInfo::QDockAreaLayoutInfo()
-    : restoredSizeHint(0,0), sep(&zero), dockPos(QInternal::LeftDock), o(Qt::Horizontal), mainWindow(0)
+    : sep(&zero), dockPos(QInternal::LeftDock), o(Qt::Horizontal), mainWindow(0)
 #if QT_CONFIG(tabbar)
     , tabbed(false), tabBar(0), tabBarShape(QTabBar::RoundedSouth)
 #endif
@@ -236,7 +236,7 @@ QDockAreaLayoutInfo::QDockAreaLayoutInfo()
 QDockAreaLayoutInfo::QDockAreaLayoutInfo(const int *_sep, QInternal::DockPosition _dockPos,
                                             Qt::Orientation _o, int tbshape,
                                             QMainWindow *window)
-    : restoredSizeHint(0,0), sep(_sep), dockPos(_dockPos), o(_o), mainWindow(window)
+    : sep(_sep), dockPos(_dockPos), o(_o), mainWindow(window)
 #if QT_CONFIG(tabbar)
     , tabbed(false), tabBar(0), tabBarShape(static_cast<QTabBar::Shape>(tbshape))
 #endif
@@ -406,9 +406,6 @@ QSize QDockAreaLayoutInfo::sizeHint() const
 {
     if (isEmpty())
         return QSize(0, 0);
-
-    if (!restoredSizeHint.isNull())
-        return restoredSizeHint;
 
     int a = 0, b = 0;
     int min_perp = 0;
@@ -2376,7 +2373,6 @@ bool QDockAreaLayout::restoreState(QDataStream &stream, const QList<QDockWidget*
         stream >> size;
         if (!testing) {
             docks[pos].rect = QRect(QPoint(0, 0), size);
-            docks[pos].restoredSizeHint = size;
         }
         if (!docks[pos].restoreState(stream, dockwidgets, testing)) {
             stream.setStatus(QDataStream::ReadCorruptData);
@@ -2678,8 +2674,6 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
         center_rect.setBottom(rect.bottom() - docks[QInternal::BottomDock].rect.height() - sep);
 
     QSize left_hint = docks[QInternal::LeftDock].size();
-    if (!docks[QInternal::LeftDock].restoredSizeHint.isNull())
-        left_hint = docks[QInternal::LeftDock].restoredSizeHint;
     if (left_hint.isNull() || fallbackToSizeHints)
         left_hint = docks[QInternal::LeftDock].sizeHint();
     QSize left_min = docks[QInternal::LeftDock].minimumSize();
@@ -2687,8 +2681,6 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
     left_hint = left_hint.boundedTo(left_max).expandedTo(left_min);
 
     QSize right_hint = docks[QInternal::RightDock].size();
-    if (!docks[QInternal::RightDock].restoredSizeHint.isNull())
-        right_hint = docks[QInternal::RightDock].restoredSizeHint;
     if (right_hint.isNull() || fallbackToSizeHints)
         right_hint = docks[QInternal::RightDock].sizeHint();
     QSize right_min = docks[QInternal::RightDock].minimumSize();
@@ -2696,8 +2688,6 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
     right_hint = right_hint.boundedTo(right_max).expandedTo(right_min);
 
     QSize top_hint = docks[QInternal::TopDock].size();
-    if (!docks[QInternal::TopDock].restoredSizeHint.isNull())
-        top_hint = docks[QInternal::TopDock].restoredSizeHint;
     if (top_hint.isNull() || fallbackToSizeHints)
         top_hint = docks[QInternal::TopDock].sizeHint();
     QSize top_min = docks[QInternal::TopDock].minimumSize();
@@ -2705,8 +2695,6 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
     top_hint = top_hint.boundedTo(top_max).expandedTo(top_min);
 
     QSize bottom_hint = docks[QInternal::BottomDock].size();
-    if (!docks[QInternal::BottomDock].restoredSizeHint.isNull())
-        bottom_hint = docks[QInternal::BottomDock].restoredSizeHint;
     if (bottom_hint.isNull() || fallbackToSizeHints)
         bottom_hint = docks[QInternal::BottomDock].sizeHint();
     QSize bottom_min = docks[QInternal::BottomDock].minimumSize();
@@ -3287,10 +3275,6 @@ int QDockAreaLayout::separatorMove(const QList<int> &separator, const QPoint &or
 {
     int delta = 0;
     int index = separator.last();
-
-    for (int i = 0; i < QInternal::DockCount; ++i)
-        if (!docks[i].restoredSizeHint.isNull())
-            docks[i].restoredSizeHint = QSize(0, 0);
 
     if (separator.count() > 1) {
         QDockAreaLayoutInfo *info = this->info(separator);
