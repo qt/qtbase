@@ -151,6 +151,11 @@ QDtlsClientVerifier::GeneratorParameters QDtlsClientVerifier::cookieGeneratorPar
     return {d->hashAlgorithm, d->secret};
 }
 
+static QString msgUnsupportedMulticastAddress()
+{
+    return QDtls::tr("Multicast and broadcast addresses are not supported");
+}
+
 bool QDtlsClientVerifier::verifyClient(QUdpSocket *socket, const QByteArray &dgram,
                                        const QHostAddress &address, quint16 port)
 {
@@ -164,7 +169,7 @@ bool QDtlsClientVerifier::verifyClient(QUdpSocket *socket, const QByteArray &dgr
 
     if (address.isBroadcast() || address.isMulticast()) {
         d->setDtlsError(QDtlsError::InvalidInputParameters,
-                        tr("Multicast and broadcast addresses are not supported"));
+                        msgUnsupportedMulticastAddress());
         return false;
     }
 
@@ -222,7 +227,7 @@ bool QDtls::setRemote(const QHostAddress &address, quint16 port,
 
     if (address.isBroadcast() || address.isMulticast()) {
         d->setDtlsError(QDtlsError::InvalidInputParameters,
-                        tr("Multicast and broadcast addresses are not supported"));
+                        msgUnsupportedMulticastAddress());
         return false;
     }
 

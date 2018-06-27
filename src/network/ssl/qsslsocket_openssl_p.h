@@ -159,6 +159,8 @@ public:
                              QSslKey *key, QSslCertificate *cert,
                              QList<QSslCertificate> *caCertificates,
                              const QByteArray &passPhrase);
+
+    static QString msgErrorsDuringHandshake();
 };
 
 QT_END_NAMESPACE

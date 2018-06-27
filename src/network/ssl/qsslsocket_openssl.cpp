@@ -891,6 +891,12 @@ QSslError _q_OpenSSL_to_QSslError(int errorCode, const QSslCertificate &cert)
     return error;
 }
 
+QString QSslSocketBackendPrivate::msgErrorsDuringHandshake()
+{
+    return QSslSocket::tr("Error during SSL handshake: %1")
+                         .arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+}
+
 bool QSslSocketBackendPrivate::startHandshake()
 {
     Q_Q(QSslSocket);
@@ -926,8 +932,7 @@ bool QSslSocketBackendPrivate::startHandshake()
             // The handshake is not yet complete.
             break;
         default:
-            QString errorString
-                    = QSslSocket::tr("Error during SSL handshake: %1").arg(getErrorsFromOpenSsl());
+            QString errorString = QSslSocketBackendPrivate::msgErrorsDuringHandshake();
 #ifdef QSSLSOCKET_DEBUG
             qCDebug(lcSsl) << "QSslSocketBackendPrivate::startHandshake: error!" << errorString;
 #endif

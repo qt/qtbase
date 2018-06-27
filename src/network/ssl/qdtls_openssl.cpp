@@ -704,6 +704,12 @@ bool DtlsState::initTls(QDtlsBasePrivate *dtlsBase)
     return true;
 }
 
+static QString msgFunctionFailed(const char *function)
+{
+    //: %1: Some function
+    return QDtls::tr("%1 failed").arg(QLatin1String(function));
+}
+
 bool DtlsState::initCtxAndConnection(QDtlsBasePrivate *dtlsBase)
 {
     Q_ASSERT(dtlsBase);
@@ -727,7 +733,8 @@ bool DtlsState::initCtxAndConnection(QDtlsBasePrivate *dtlsBase)
 
     TlsConnection newConnection(newContext->createSsl(), dtlsutil::delete_connection);
     if (!newConnection.data()) {
-        dtlsBase->setDtlsError(QDtlsError::TlsInitializationError, QDtls::tr("SSL_new failed"));
+        dtlsBase->setDtlsError(QDtlsError::TlsInitializationError,
+                               msgFunctionFailed("SSL_new"));
         return false;
     }
 
@@ -736,7 +743,8 @@ bool DtlsState::initCtxAndConnection(QDtlsBasePrivate *dtlsBase)
                                       this);
 
     if (set != 1 && configurationCopy->peerVerifyMode != QSslSocket::VerifyNone) {
-        dtlsBase->setDtlsError(QDtlsError::TlsInitializationError, QDtls::tr("SSL_set_ex_data failed"));
+        dtlsBase->setDtlsError(QDtlsError::TlsInitializationError,
+                               msgFunctionFailed("SSL_set_ex_data"));
         return false;
     }
 
@@ -764,7 +772,7 @@ bool DtlsState::initBIO(QDtlsBasePrivate *dtlsBase)
                            dtlsutil::delete_bio_method);
     if (!customMethod.data()) {
         dtlsBase->setDtlsError(QDtlsError::TlsInitializationError,
-                               QDtls::tr("BIO_meth_new failed"));
+                               msgFunctionFailed("BIO_meth_new"));
         return false;
     }
 
@@ -782,7 +790,8 @@ bool DtlsState::initBIO(QDtlsBasePrivate *dtlsBase)
     QScopedPointer<BIO, dtlsutil::bio_deleter> newBio(q_BIO_new(biom));
     BIO *bio = newBio.data();
     if (!bio) {
-        dtlsBase->setDtlsError(QDtlsError::TlsInitializationError, QDtls::tr("BIO_new failed"));
+        dtlsBase->setDtlsError(QDtlsError::TlsInitializationError,
+                               msgFunctionFailed("BIO_new"));
         return false;
     }
 
@@ -1025,8 +1034,8 @@ bool QDtlsPrivateOpenSSL::continueHandshake(QUdpSocket *socket, const QByteArray
             return true; // The handshake is not yet complete.
         default:
             storePeerCertificates();
-            setDtlsError(QDtlsError::TlsFatalError, QDtls::tr("Error during SSL handshake: ")
-                                                    + QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+            setDtlsError(QDtlsError::TlsFatalError,
+                         QSslSocketBackendPrivate::msgErrorsDuringHandshake());
             dtls.reset();
             handshakeState = QDtls::HandshakeNotStarted;
             return false;
@@ -1166,8 +1175,8 @@ qint64 QDtlsPrivateOpenSSL::writeDatagramEncrypted(QUdpSocket *socket,
         if (socket->error() != QAbstractSocket::UnknownSocketError && description.isEmpty()) {
             setDtlsError(QDtlsError::UnderlyingSocketError, socket->errorString());
         } else {
-            setDtlsError(QDtlsError::TlsFatalError, QDtls::tr("Error while writing: ")
-                                                    + description);
+            setDtlsError(QDtlsError::TlsFatalError,
+                         QDtls::tr("Error while writing: %1").arg(description));
         }
     }
 
@@ -1226,8 +1235,9 @@ QByteArray QDtlsPrivateOpenSSL::decryptDatagram(QUdpSocket *socket, const QByteA
         // DTLSTODO: Apparently, some errors can be ignored, for example,
         // ECONNRESET etc. This all needs a lot of testing!!!
     default:
-        setDtlsError(QDtlsError::TlsNonFatalError, QDtls::tr("Error while reading: ")
-                                                   + QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+        setDtlsError(QDtlsError::TlsNonFatalError,
+                     QDtls::tr("Error while reading: %1")
+                               .arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl()));
         return dgram;
     }
 }
