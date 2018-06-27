@@ -117,6 +117,9 @@ static void updateFormatFromContext(QSurfaceFormat *format)
         format->setProfile(QSurfaceFormat::CompatibilityProfile);
 }
 
+ // NSOpenGLContext is not re-entrant (https://openradar.appspot.com/37064579)
+static QMutex s_contextMutex;
+
 QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share,
                                  const QVariant &nativeHandle)
     : m_context(nil),
@@ -248,6 +251,7 @@ void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
     QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
     setActiveWindow(window);
 
+    QMutexLocker locker(&s_contextMutex);
     [m_context flushBuffer];
 }
 
@@ -400,6 +404,7 @@ QFunctionPointer QCocoaGLContext::getProcAddress(const char *procName)
 
 void QCocoaGLContext::update()
 {
+    QMutexLocker locker(&s_contextMutex);
     [m_context update];
 }
 
