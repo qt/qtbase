@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -28,6 +29,7 @@
 ****************************************************************************/
 
 #include "generator.h"
+#include "cbordevice.h"
 #include "outputrevision.h"
 #include "utils.h"
 #include <QtCore/qmetatype.h>
@@ -36,9 +38,13 @@
 #include <QtCore/qjsonvalue.h>
 #include <QtCore/qjsonarray.h>
 #include <QtCore/qplugin.h>
+#include <QtCore/qstringview.h>
+
+#include <math.h>
 #include <stdio.h>
 
 #include <private/qmetaobject_p.h> //for the flags.
+#include <private/qplugin_p.h> //for the flags.
 
 QT_BEGIN_NAMESPACE
 
@@ -1560,31 +1566,56 @@ void Generator::generateSignal(FunctionDef *def,int index)
     fprintf(out, "}\n");
 }
 
-static void writePluginMetaData(FILE *out, const QJsonObject &data)
+static CborError jsonValueToCbor(CborEncoder *parent, const QJsonValue &v);
+static CborError jsonObjectToCbor(CborEncoder *parent, const QJsonObject &o)
 {
-    const QJsonDocument doc(data);
+    auto it = o.constBegin();
+    auto end = o.constEnd();
+    CborEncoder map;
+    cbor_encoder_create_map(parent, &map, o.size());
 
-    fputs("\nQT_PLUGIN_METADATA_SECTION\n"
-          "static const unsigned char qt_pluginMetaData[] = {\n"
-          "    'Q', 'T', 'M', 'E', 'T', 'A', 'D', 'A', 'T', 'A', ' ', ' ',\n   ", out);
-#if 0
-    fprintf(out, "\"%s\";\n", doc.toJson().constData());
-#else
-    const QByteArray binary = doc.toBinaryData();
-    const int last = binary.size() - 1;
-    for (int i = 0; i < last; ++i) {
-        uchar c = (uchar)binary.at(i);
-        if (c < 0x20 || c >= 0x7f)
-            fprintf(out, " 0x%02x,", c);
-        else if (c == '\'' || c == '\\')
-            fprintf(out, " '\\%c',", c);
-        else
-            fprintf(out, " '%c', ", c);
-        if (!((i + 1) % 8))
-            fputs("\n   ", out);
+    for ( ; it != end; ++it) {
+        QByteArray key = it.key().toUtf8();
+        cbor_encode_text_string(&map, key.constData(), key.size());
+        jsonValueToCbor(&map, it.value());
     }
-    fprintf(out, " 0x%02x\n};\n", (uchar)binary.at(last));
-#endif
+    return cbor_encoder_close_container(parent, &map);
+}
+
+static CborError jsonArrayToCbor(CborEncoder *parent, const QJsonArray &a)
+{
+    CborEncoder array;
+    cbor_encoder_create_array(parent, &array, a.size());
+    for (const QJsonValue &v : a)
+        jsonValueToCbor(&array, v);
+    return cbor_encoder_close_container(parent, &array);
+}
+
+static CborError jsonValueToCbor(CborEncoder *parent, const QJsonValue &v)
+{
+    switch (v.type()) {
+    case QJsonValue::Null:
+    case QJsonValue::Undefined:
+        return cbor_encode_null(parent);
+    case QJsonValue::Bool:
+        return cbor_encode_boolean(parent, v.toBool());
+    case QJsonValue::Array:
+        return jsonArrayToCbor(parent, v.toArray());
+    case QJsonValue::Object:
+        return jsonObjectToCbor(parent, v.toObject());
+    case QJsonValue::String: {
+        QByteArray s = v.toString().toUtf8();
+        return cbor_encode_text_string(parent, s.constData(), s.size());
+    }
+    case QJsonValue::Double: {
+        double d = v.toDouble();
+        if (d == floor(d) && fabs(d) <= (Q_INT64_C(1) << std::numeric_limits<double>::digits))
+            return cbor_encode_int(parent, qint64(d));
+        return cbor_encode_double(parent, d);
+    }
+    }
+    Q_UNREACHABLE();
+    return CborUnknownError;
 }
 
 void Generator::generatePluginMetaData()
@@ -1592,32 +1623,59 @@ void Generator::generatePluginMetaData()
     if (cdef->pluginData.iid.isEmpty())
         return;
 
-    // Write plugin meta data #ifdefed QT_NO_DEBUG with debug=false,
-    // true, respectively.
+    fputs("\nQT_PLUGIN_METADATA_SECTION\n"
+          "static const unsigned char qt_pluginMetaData[] = {\n"
+          "    'Q', 'T', 'M', 'E', 'T', 'A', 'D', 'A', 'T', 'A', ' ', '!',", out);
 
-    QJsonObject data;
-    const QString debugKey = QStringLiteral("debug");
-    data.insert(QStringLiteral("IID"), QLatin1String(cdef->pluginData.iid.constData()));
-    data.insert(QStringLiteral("className"), QLatin1String(cdef->classname.constData()));
-    data.insert(QStringLiteral("version"), (int)QT_VERSION);
-    data.insert(debugKey, QJsonValue(false));
-    data.insert(QStringLiteral("MetaData"), cdef->pluginData.metaData.object());
+    CborDevice dev(out);
+    CborEncoder enc;
+    cbor_encoder_init_writer(&enc, CborDevice::callback, &dev);
+
+    CborEncoder map;
+    cbor_encoder_create_map(&enc, &map, CborIndefiniteLength);
+
+    dev.nextItem("\"version\"");
+    cbor_encode_int(&map, int(QtPluginMetaDataKeys::QtVersion));
+    cbor_encode_int(&map, QT_VERSION);
+
+    fputs("\n#ifdef QT_NO_DEBUG", out);
+    dev.nextItem("\"debug\" = false");
+    cbor_encode_int(&map, int(QtPluginMetaDataKeys::Debug));
+    cbor_encode_boolean(&map, false);
+    fputs("\n#else", out);
+    dev.nextItem("\"debug\" = true");
+    cbor_encode_int(&map, int(QtPluginMetaDataKeys::Debug));
+    cbor_encode_boolean(&map, true);
+    fputs("\n#endif", out);
+
+    dev.nextItem("\"IID\"");
+    cbor_encode_int(&map, int(QtPluginMetaDataKeys::IID));
+    cbor_encode_text_string(&map, cdef->pluginData.iid.constData(), cdef->pluginData.iid.size());
+
+    dev.nextItem("\"className\"");
+    cbor_encode_int(&map, int(QtPluginMetaDataKeys::ClassName));
+    cbor_encode_text_string(&map, cdef->classname.constData(), cdef->classname.size());
+
+    QJsonObject o = cdef->pluginData.metaData.object();
+    if (!o.isEmpty()) {
+        dev.nextItem("\"MetaData\"");
+        cbor_encode_int(&map, int(QtPluginMetaDataKeys::MetaData));
+        jsonObjectToCbor(&map, o);
+    }
 
     // Add -M args from the command line:
-    for (auto it = cdef->pluginData.metaArgs.cbegin(), end = cdef->pluginData.metaArgs.cend(); it != end; ++it)
-        data.insert(it.key(), it.value());
+    for (auto it = cdef->pluginData.metaArgs.cbegin(), end = cdef->pluginData.metaArgs.cend(); it != end; ++it) {
+        const QJsonArray &a = it.value();
+        QByteArray key = it.key().toUtf8();
+        dev.nextItem(QByteArray("command-line \"" + key + "\"").constData());
+        cbor_encode_text_string(&map, key.constData(), key.size());
+        jsonArrayToCbor(&map, a);
+    }
 
-    fputs("\nQT_PLUGIN_METADATA_SECTION const uint qt_section_alignment_dummy = 42;\n\n"
-          "#ifdef QT_NO_DEBUG\n", out);
-    writePluginMetaData(out, data);
-
-    fputs("\n#else // QT_NO_DEBUG\n", out);
-
-    data.remove(debugKey);
-    data.insert(debugKey, QJsonValue(true));
-    writePluginMetaData(out, data);
-
-    fputs("#endif // QT_NO_DEBUG\n\n", out);
+    // Close the CBOR map manually
+    dev.nextItem();
+    cbor_encoder_close_container(&enc, &map);
+    fputs("\n};\n", out);
 
     // 'Use' all namespaces.
     int pos = cdef->qualified.indexOf("::");
@@ -1627,4 +1685,14 @@ void Generator::generatePluginMetaData()
             cdef->qualified.constData(), cdef->classname.constData());
 }
 
+QT_WARNING_DISABLE_GCC("-Wunused-function")
+QT_WARNING_DISABLE_CLANG("-Wunused-function")
+QT_WARNING_DISABLE_CLANG("-Wundefined-internal")
+QT_WARNING_DISABLE_MSVC(4334) // '<<': result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
+
+#define CBOR_ENCODER_WRITER_CONTROL     1
+#define CBOR_ENCODER_WRITE_FUNCTION     CborDevice::callback
+
 QT_END_NAMESPACE
+
+#include "cborencoder.c"

@@ -1,5 +1,6 @@
 
-INCLUDEPATH += $$PWD
+INCLUDEPATH += $$PWD \
+    $$PWD/../../3rdparty/tinycbor/src
 
 HEADERS =  $$PWD/moc.h \
            $$PWD/preprocessor.h \
@@ -8,7 +9,8 @@ HEADERS =  $$PWD/moc.h \
            $$PWD/token.h \
            $$PWD/utils.h \
            $$PWD/generator.h \
-           $$PWD/outputrevision.h
+           $$PWD/outputrevision.h \
+           $$PWD/cbordevice.h
 SOURCES =  $$PWD/moc.cpp \
            $$PWD/preprocessor.cpp \
            $$PWD/generator.cpp \

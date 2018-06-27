@@ -56,6 +56,7 @@
 
 #include "QtCore/qobject.h"
 #include "QtCore/qstringlist.h"
+#include "QtCore/qcborvalue.h"
 #include "QtCore/qjsonobject.h"
 #include "QtCore/qjsondocument.h"
 #include "QtCore/qmap.h"
@@ -66,7 +67,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QJsonDocument qJsonFromRawLibraryMetaData(const char *raw, qsizetype size);
+QJsonDocument qJsonFromRawLibraryMetaData(const char *raw, qsizetype size, QString *errMsg);
 
 class QFactoryLoaderPrivate;
 class Q_CORE_EXPORT QFactoryLoader : public QObject

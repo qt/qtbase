@@ -4,6 +4,7 @@ HEADERS += \
     plugin/qfactoryinterface.h \
     plugin/qpluginloader.h \
     plugin/qplugin.h \
+    plugin/qplugin_p.h \
     plugin/quuid.h \
     plugin/qfactoryloader_p.h
 

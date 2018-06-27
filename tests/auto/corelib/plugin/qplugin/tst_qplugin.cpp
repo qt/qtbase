@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -31,6 +32,8 @@
 #include <QDebug>
 #include <QDir>
 #include <QPluginLoader>
+
+#include <private/qplugin_p.h>
 
 class tst_QPlugin : public QObject
 {
@@ -124,7 +127,10 @@ void tst_QPlugin::scanInvalidPlugin_data()
 {
     QTest::addColumn<QByteArray>("metadata");
     QTest::addColumn<bool>("loads");
+    QTest::addColumn<QString>("errMsg");
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    // Binary JSON metadata
     QByteArray prefix = "QTMETADATA  ";
 
     {
@@ -138,27 +144,52 @@ void tst_QPlugin::scanInvalidPlugin_data()
         obj.insert("debug", true);
 #endif
         obj.insert("MetaData", QJsonObject());
-        QTest::newRow("control") << (prefix + QJsonDocument(obj).toBinaryData()) << true;
+        QTest::newRow("json-control") << (prefix + QJsonDocument(obj).toBinaryData()) << true << "";
     }
 
-    QTest::newRow("zeroes") << prefix << false;
+    QTest::newRow("json-zeroes") << prefix << false << "";
 
     prefix += "qbjs";
-    QTest::newRow("bad-json-version0") << prefix << false;
-    QTest::newRow("bad-json-version2") << (prefix + QByteArray("\2\0\0\0", 4)) << false;
+    QTest::newRow("bad-json-version0") << prefix << false << "";
+    QTest::newRow("bad-json-version2") << (prefix + QByteArray("\2\0\0\0", 4)) << false << "";
 
     // valid qbjs version 1
     prefix += QByteArray("\1\0\0\0");
 
     // too large for the file (100 MB)
-    QTest::newRow("bad-json-size-large1") << (prefix + QByteArray("\0\0\x40\x06")) << false;
+    QTest::newRow("bad-json-size-large1") << (prefix + QByteArray("\0\0\x40\x06")) << false << "";
 
     // too large for binary JSON (512 MB)
-    QTest::newRow("bad-json-size-large2") << (prefix + QByteArray("\0\0\0\x20")) << false;
+    QTest::newRow("bad-json-size-large2") << (prefix + QByteArray("\0\0\0\x20")) << false << "";
 
     // could overflow
-    QTest::newRow("bad-json-size-large3") << (prefix + "\xff\xff\xff\x7f") << false;
+    QTest::newRow("bad-json-size-large3") << (prefix + "\xff\xff\xff\x7f") << false << "";
+#endif
 
+    // CBOR metadata
+    QByteArray cprefix = "QTMETADATA !";
+
+    {
+        QCborMap m;
+        m.insert(int(QtPluginMetaDataKeys::IID), QLatin1String("org.qt-project.tst_qplugin"));
+        m.insert(int(QtPluginMetaDataKeys::ClassName), QLatin1String("tst"));
+        m.insert(int(QtPluginMetaDataKeys::QtVersion), int(QT_VERSION));
+#ifdef QT_NO_DEBUG
+        m.insert(int(QtPluginMetaDataKeys::Debug), false);
+#else
+        m.insert(int(QtPluginMetaDataKeys::Debug), true);
+#endif
+        m.insert(int(QtPluginMetaDataKeys::MetaData), QCborMap());
+
+        QTest::newRow("cbor-control") << (cprefix + QCborValue(m).toCbor()) << true << "";
+    }
+
+    QTest::newRow("cbor-invalid") << (cprefix + "\xff") << false
+                                  << "Metadata parsing error: Invalid CBOR stream: unexpected 'break' byte";
+    QTest::newRow("cbor-not-map1") << (cprefix + "\x01") << false
+                                   << "Unexpected metadata contents";
+    QTest::newRow("cbor-not-map2") << (cprefix + "\x81\x01") << false
+                                   << "Unexpected metadata contents";
 }
 
 static const char invalidPluginSignature[] = "qplugin testfile";
@@ -214,6 +245,11 @@ void tst_QPlugin::scanInvalidPlugin()
 
     // now try to load this
     QFETCH(bool, loads);
+    QFETCH(QString, errMsg);
+    if (!loads)
+        QTest::ignoreMessage(QtWarningMsg,
+                             "Found invalid metadata in lib " + QFile::encodeName(newName) +
+                             ": " + errMsg.toUtf8());
     QPluginLoader loader(newName);
     QCOMPARE(loader.load(), loads);
     if (loads)

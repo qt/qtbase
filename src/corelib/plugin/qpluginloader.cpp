@@ -475,10 +475,19 @@ QVector<QStaticPlugin> QPluginLoader::staticPlugins()
 */
 QJsonObject QStaticPlugin::metaData() const
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     // the data is already loaded, so this doesn't matter
     qsizetype rawMetaDataSize = INT_MAX;
+    const char *ptr = rawMetaData();
+#else
+    auto ptr = static_cast<const char *>(rawMetaData);
+#endif
 
-    return qJsonFromRawLibraryMetaData(rawMetaData(), rawMetaDataSize).object();
+    QString errMsg;
+    QJsonDocument doc = qJsonFromRawLibraryMetaData(ptr, rawMetaDataSize, &errMsg);
+    Q_ASSERT(doc.isObject());
+    Q_ASSERT(errMsg.isEmpty());
+    return doc.object();
 }
 
 QT_END_NAMESPACE
