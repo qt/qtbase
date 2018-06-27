@@ -3002,9 +3002,8 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
     // character between lines is a space and we want
     // to position the cursor to the left of that
     // character.
-    // ###### breaks with japanese for example
     if (this->index < eng->lines.count() - 1)
-        --maxPos;
+        maxPos = eng->previousLogicalPosition(maxPos);
 
     pos = qMin(pos, maxPos);
     return pos;
