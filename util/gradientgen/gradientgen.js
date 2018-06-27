@@ -44,7 +44,7 @@ if (argc < 3) {
 }
 
 const filename = process.argv[argc - 1];
-const mode = argc > 3 ? process.argv[argc - 2] : '';
+const mode = argc > 3 ? process.argv[argc - 2] : 'json';
 
 fs.readFile(filename, (err, css) => {
   postcss([minifyGradients]).process(css)
@@ -99,15 +99,22 @@ fs.readFile(filename, (err, css) => {
           const end = { x: 0.5 + x, y: 0.5 + y };
 
           let stops = []
+
+          let lastPosition = 0;
           args.slice(1).forEach((arg, index) => {
-            let [color, stop = !index ? '0%' : '100%'] = arg;
-            stop = parseInt(stop) / 100;
+            let [color, position = !index ? '0%' : '100%'] = arg;
+            position = parseInt(position) / 100;
+            if (position < lastPosition)
+              position = lastPosition;
+            lastPosition = position;
             color = parseColor(color).hex;
             color = parseInt(color.slice(1), 16)
-            stops.push({ color, stop })
+            stops.push({ color, position })
           });
 
           gradients[gradients.length - 1] = { start, end, stops };
+          if (mode == 'debug')
+            console.log(name, args, gradients[gradients.length - 1])
         });
 
         enums.push(name);
@@ -117,7 +124,7 @@ fs.readFile(filename, (err, css) => {
       });
 
       // Done walking declarations
-      if (mode != 'enums')
+      if (mode == 'json')
         console.log(JSON.stringify(gradients, undefined, 4));
     });
 });

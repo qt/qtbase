@@ -1393,7 +1393,7 @@ QGradient::QGradient(Preset preset)
         m_data.linear.y2 = end[QLatin1Literal("y")].toDouble();
 
         for (const QJsonValue &stop : presetData[QLatin1String("stops")].toArray()) {
-            setColorAt(stop[QLatin1Literal("stop")].toDouble(),
+            setColorAt(stop[QLatin1Literal("position")].toDouble(),
                 QColor(QRgb(stop[QLatin1Literal("color")].toInt())));
         }
 
