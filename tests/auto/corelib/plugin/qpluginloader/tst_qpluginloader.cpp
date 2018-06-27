@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -121,7 +121,10 @@ private slots:
     void reloadPlugin();
     void preloadedPlugin_data();
     void preloadedPlugin();
+    void staticPlugins();
 };
+
+Q_IMPORT_PLUGIN(StaticPlugin)
 
 void tst_QPluginLoader::cleanup()
 {
@@ -511,6 +514,38 @@ void tst_QPluginLoader::preloadedPlugin()
     QCOMPARE(*pluginVariable, 0xc0ffee);
     QVERIFY(lib.unload());
 }
+
+void tst_QPluginLoader::staticPlugins()
+{
+    const QObjectList instances = QPluginLoader::staticInstances();
+    QVERIFY(instances.size());
+
+    bool found = false;
+    for (QObject *obj : instances) {
+        found = obj->metaObject()->className() == QLatin1String("StaticPlugin");
+        if (found)
+            break;
+    }
+    QVERIFY(found);
+
+    const auto plugins = QPluginLoader::staticPlugins();
+    QCOMPARE(plugins.size(), instances.size());
+
+    // find the metadata
+    QJsonObject metaData;
+    for (const auto &p : plugins) {
+        metaData = p.metaData();
+        found = metaData.value("className").toString() == QLatin1String("StaticPlugin");
+        if (found)
+            break;
+    }
+    QVERIFY(found);
+
+    QCOMPARE(metaData.value("version").toInt(), QT_VERSION);
+    QCOMPARE(metaData.value("IID").toString(), "SomeIID");
+    QCOMPARE(metaData.value("ExtraMetaData"), QJsonArray({ "StaticPlugin", "foo" }));
+}
+
 
 QTEST_MAIN(tst_QPluginLoader)
 #include "tst_qpluginloader.moc"

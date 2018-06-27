@@ -8,9 +8,14 @@ HEADERS = ../theplugin/plugininterface.h
 win32 {
     CONFIG(debug, debug|release) {
         TARGET = ../../debug/tst_qpluginloader
+        LIBS += -L../staticplugin/debug
     } else {
         TARGET = ../../release/tst_qpluginloader
+        LIBS += -L../staticplugin/release
     }
+} else {
+    LIBS += -L../staticplugin
 }
+LIBS += -lstaticplugin
 
 TESTDATA += ../elftest ../machtest
