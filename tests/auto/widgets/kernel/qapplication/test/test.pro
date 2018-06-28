@@ -9,10 +9,7 @@ builtin_testdata: DEFINES += BUILTIN_TESTDATA
 
 TESTDATA = ../test/test.pro ../tmp/README ../modal
 
-!winrt {
-  SUBPROGRAMS = desktopsettingsaware modal
-  win32:SUBPROGRAMS += wincmdline
-}
+!winrt: SUBPROGRAMS = desktopsettingsaware modal
 
 debug_and_release {
     CONFIG(debug, debug|release) {
