@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS = test
+SUBDIRS = test.pro
 !winrt: SUBDIRS += stdinprocess
