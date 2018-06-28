@@ -113,13 +113,16 @@ fs.readFile(filename, (err, css) => {
           });
 
           gradients[gradients.length - 1] = { start, end, stops };
-          if (mode == 'debug')
-            console.log(name, args, gradients[gradients.length - 1])
         });
+
+        if (!gradients[gradients.length - 1])
+          return; // Not supported
 
         enums.push(name);
 
-        if (mode == 'enums')
+        if (mode == 'debug')
+          console.log(name, args, gradients[gradients.length - 1])
+        else if (mode == 'enums')
           console.log(`${name} = ${gradients.length},`)
       });
 

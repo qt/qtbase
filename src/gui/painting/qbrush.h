@@ -231,7 +231,6 @@ public:
         NearMoon = 24,
         WildApple = 25,
         SaintPetersburg = 26,
-        AriellesSmile = 27,
         PlumPlate = 28,
         EverlastingSky = 29,
         HappyFisher = 30,
@@ -373,7 +372,7 @@ public:
         FrozenHeat = 177,
         GagarinView = 178,
         FabledSunset = 179,
-        PerfectBlue = 180
+        PerfectBlue = 180,
     };
     Q_ENUM(Preset)
 
