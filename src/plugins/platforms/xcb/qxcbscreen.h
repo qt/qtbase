@@ -99,7 +99,6 @@ public:
     int antialiasingEnabled() const { return m_antialiasingEnabled; }
 
     QString windowManagerName() const { return m_windowManagerName; }
-    bool syncRequestSupported() const { return m_syncRequestSupported; }
 
     QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &format) const;
 
@@ -130,7 +129,6 @@ private:
     QFontEngine::SubpixelAntialiasingType m_subpixelType = QFontEngine::SubpixelAntialiasingType(-1);
     int m_antialiasingEnabled = -1;
     QString m_windowManagerName;
-    bool m_syncRequestSupported = false;
     QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;
     QMap<xcb_visualid_t, quint8> m_visualDepths;
 };
@@ -187,7 +185,6 @@ public:
 
     void windowShown(QXcbWindow *window);
     QString windowManagerName() const { return m_virtualDesktop->windowManagerName(); }
-    bool syncRequestSupported() const { return m_virtualDesktop->syncRequestSupported(); }
 
     QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &format) const;
 

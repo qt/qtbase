@@ -255,7 +255,6 @@ protected:
 
     bool m_mapped = false;
     bool m_transparent = false;
-    bool m_usingSyncProtocol = false;
     bool m_deferredActivation = false;
     bool m_embedded = false;
     bool m_alertState = false;

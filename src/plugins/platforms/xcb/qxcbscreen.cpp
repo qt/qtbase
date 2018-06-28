@@ -95,12 +95,6 @@ QXcbVirtualDesktop::QXcbVirtualDesktop(QXcbConnection *connection, xcb_screen_t 
             m_windowManagerName = QXcbWindow::windowTitle(connection, windowManager);
     }
 
-    const xcb_query_extension_reply_t *sync_reply = xcb_get_extension_data(xcb_connection(), &xcb_sync_id);
-    if (!sync_reply || !sync_reply->present)
-        m_syncRequestSupported = false;
-    else
-        m_syncRequestSupported = true;
-
     xcb_depth_iterator_t depth_iterator =
         xcb_screen_allowed_depths_iterator(screen);
 

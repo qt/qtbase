@@ -475,6 +475,7 @@ public:
     bool hasXInput2() const { return m_xi2Enabled; }
     bool hasShm() const { return has_shm; }
     bool hasShmFd() const { return has_shm_fd; }
+    bool hasXSync() const { return has_sync_extension; }
 
     bool threadedEventHandling() const { return m_reader->isRunning(); }
 
@@ -548,6 +549,7 @@ private:
     void initializeXinerama();
     void initializeXShape();
     void initializeXKB();
+    void initializeXSync();
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
     QXcbScreen* findScreenForCrtc(xcb_window_t rootWindow, xcb_randr_crtc_t crtc) const;
     QXcbScreen* findScreenForOutput(xcb_window_t rootWindow, xcb_randr_output_t output) const;
@@ -694,6 +696,7 @@ private:
     bool has_render_extension = false;
     bool has_shm = false;
     bool has_shm_fd = false;
+    bool has_sync_extension = false;
 
     QPair<int, int> m_xrenderVersion;
 

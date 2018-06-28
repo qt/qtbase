@@ -590,6 +590,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
 
     initializeAllAtoms();
 
+    initializeXSync();
     initializeShm();
     if (!qEnvironmentVariableIsSet("QT_XCB_NO_XRANDR"))
         initializeXRandr();
@@ -2246,6 +2247,15 @@ void QXcbConnection::initializeXKB()
         return;
     }
 #endif
+}
+
+void QXcbConnection::initializeXSync()
+{
+    const xcb_query_extension_reply_t *reply = xcb_get_extension_data(xcb_connection(), &xcb_sync_id);
+    if (!reply || !reply->present)
+        return;
+
+    has_sync_extension = true;
 }
 
 QXcbSystemTrayTracker *QXcbConnection::systemTrayTracker() const

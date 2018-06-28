@@ -446,9 +446,7 @@ void QXcbWindow::create()
     properties[propertyCount++] = atom(QXcbAtom::WM_TAKE_FOCUS);
     properties[propertyCount++] = atom(QXcbAtom::_NET_WM_PING);
 
-    m_usingSyncProtocol = platformScreen->syncRequestSupported();
-
-    if (m_usingSyncProtocol)
+    if (connection()->hasXSync())
         properties[propertyCount++] = atom(QXcbAtom::_NET_WM_SYNC_REQUEST);
 
     if (window()->flags() & Qt::WindowContextHelpButtonHint)
@@ -472,7 +470,7 @@ void QXcbWindow::create()
                             XCB_ATOM_STRING, 8, wmClass.size(), wmClass.constData());
     }
 
-    if (m_usingSyncProtocol) {
+    if (connection()->hasXSync()) {
         m_syncCounter = xcb_generate_id(xcb_connection());
         xcb_sync_create_counter(xcb_connection(), m_syncCounter, m_syncValue);
 
@@ -575,7 +573,7 @@ void QXcbWindow::destroy()
     if (connection()->mouseGrabber() == this)
         connection()->setMouseGrabber(nullptr);
 
-    if (m_syncCounter && m_usingSyncProtocol)
+    if (m_syncCounter && connection()->hasXSync())
         xcb_sync_destroy_counter(xcb_connection(), m_syncCounter);
     if (m_window) {
         if (m_netWmUserTimeWindow) {
@@ -1926,7 +1924,7 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
             connection()->setTime(event->data.data32[1]);
             m_syncValue.lo = event->data.data32[2];
             m_syncValue.hi = event->data.data32[3];
-            if (m_usingSyncProtocol)
+            if (connection()->hasXSync())
                 m_syncState = SyncReceived;
 #ifndef QT_NO_WHATSTHIS
         } else if (protocolAtom == atom(QXcbAtom::_NET_WM_CONTEXT_HELP)) {
@@ -2001,7 +1999,7 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     }
     m_oldWindowSize = actualGeometry.size();
 
-    if (m_usingSyncProtocol && m_syncState == SyncReceived)
+    if (connection()->hasXSync() && m_syncState == SyncReceived)
         m_syncState = SyncAndConfigureReceived;
 
     m_dirtyFrameMargins = true;
@@ -2474,7 +2472,7 @@ void QXcbWindow::updateSyncRequestCounter()
         // window manager does not expect a sync event yet.
         return;
     }
-    if (m_usingSyncProtocol && (m_syncValue.lo != 0 || m_syncValue.hi != 0)) {
+    if (connection()->hasXSync() && (m_syncValue.lo != 0 || m_syncValue.hi != 0)) {
         xcb_sync_set_counter(xcb_connection(), m_syncCounter, m_syncValue);
         xcb_flush(xcb_connection());
 
