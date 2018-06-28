@@ -96,7 +96,6 @@ public:
     tst_QApplication();
 
 private slots:
-    void initTestCase();
     void cleanup();
     void sendEventsOnProcessEvents(); // this must be the first test
     void staticSetup();
@@ -186,15 +185,6 @@ public:
         return false;
     }
 };
-
-void tst_QApplication::initTestCase()
-{
-#if QT_CONFIG(process)
-    // chdir to our testdata path and execute helper apps relative to that.
-    const QString testdataDir = QFileInfo(QFINDTESTDATA("desktopsettingsaware")).absolutePath();
-    QVERIFY2(QDir::setCurrent(testdataDir), qPrintable("Could not chdir to " + testdataDir));
-#endif
-}
 
 void tst_QApplication::sendEventsOnProcessEvents()
 {
@@ -1452,20 +1442,10 @@ void tst_QApplication::testDeleteLaterProcessEvents()
 void tst_QApplication::desktopSettingsAware()
 {
 #if QT_CONFIG(process)
-    QString path;
-    {
-        // We need an application object for QFINDTESTDATA to work
-        // properly in all cases.
-        int argc = 0;
-        QCoreApplication app(argc, 0);
-        path = QFINDTESTDATA("desktopsettingsaware/");
-    }
-    QVERIFY2(!path.isEmpty(), "Cannot locate desktopsettingsaware helper application");
-    path += "desktopsettingsaware";
     QProcess testProcess;
-    testProcess.start(path);
+    testProcess.start("desktopsettingsaware_helper");
     QVERIFY2(testProcess.waitForStarted(),
-             qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, testProcess.errorString())));
+             qPrintable(QString::fromLatin1("Cannot start 'desktopsettingsaware_helper': %1").arg(testProcess.errorString())));
     QVERIFY(testProcess.waitForFinished(10000));
     QCOMPARE(int(testProcess.state()), int(QProcess::NotRunning));
     QVERIFY(int(testProcess.error()) != int(QProcess::Crashed));
@@ -2133,23 +2113,12 @@ void tst_QApplication::touchEventPropagation()
 
 void tst_QApplication::qtbug_12673()
 {
-    QString path;
-    {
-        // We need an application object for QFINDTESTDATA to work
-        // properly in all cases.
-        int argc = 0;
-        QCoreApplication app(argc, 0);
-        path = QFINDTESTDATA("modal/");
-    }
-    QVERIFY2(!path.isEmpty(), "Cannot locate modal helper application");
-    path += "modal";
-
 #if QT_CONFIG(process)
     QProcess testProcess;
     QStringList arguments;
-    testProcess.start(path, arguments);
+    testProcess.start("modal_helper", arguments);
     QVERIFY2(testProcess.waitForStarted(),
-             qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, testProcess.errorString())));
+             qPrintable(QString::fromLatin1("Cannot start 'modal_helper': %1").arg(testProcess.errorString())));
     QVERIFY(testProcess.waitForFinished(20000));
     QCOMPARE(testProcess.exitStatus(), QProcess::NormalExit);
 #else
