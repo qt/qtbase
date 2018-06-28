@@ -48,7 +48,6 @@ class tst_QThreadStorage : public QObject
 {
     Q_OBJECT
 private slots:
-    void initTestCase();
     void hasLocalData();
     void localData();
     void localData_const();
@@ -60,9 +59,6 @@ private slots:
     void leakInDestructor();
     void resetInDestructor();
     void valueBased();
-
-private:
-    QString m_crashOnExit;
 };
 
 class Pointer
@@ -73,22 +69,6 @@ public:
     inline ~Pointer() { --count; }
 };
 int Pointer::count = 0;
-
-void tst_QThreadStorage::initTestCase()
-{
-#if QT_CONFIG(process)
-    const QString crashOnExitDir = QFINDTESTDATA("crashonexit");
-    QVERIFY2(!crashOnExitDir.isEmpty(),
-             qPrintable(QString::fromLatin1("Could not find 'crashonexit' starting from '%1'")
-                        .arg(QDir::toNativeSeparators(QDir::currentPath()))));
-    m_crashOnExit = crashOnExitDir + QStringLiteral("/crashonexit");
-#ifdef Q_OS_WIN
-    m_crashOnExit += QStringLiteral(".exe");
-#endif
-    QVERIFY2(QFileInfo(m_crashOnExit).isExecutable(),
-             qPrintable(QDir::toNativeSeparators(m_crashOnExit) + QStringLiteral(" does not exist or is not executable.")));
-#endif
-}
 
 void tst_QThreadStorage::hasLocalData()
 {
@@ -329,7 +309,7 @@ void tst_QThreadStorage::crashOnExit()
     QSKIP("No qprocess support", SkipAll);
 #else
     QString errorMessage;
-    QVERIFY2(runCrashOnExit(m_crashOnExit, &errorMessage),
+    QVERIFY2(runCrashOnExit("crashOnExit_helper", &errorMessage),
              qPrintable(errorMessage));
 #endif
 }
