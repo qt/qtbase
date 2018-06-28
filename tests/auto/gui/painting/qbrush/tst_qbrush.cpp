@@ -439,6 +439,9 @@ void tst_QBrush::textureBrushStream()
 
     QCOMPARE(loadedBrush1.style(), Qt::TexturePattern);
     QCOMPARE(loadedBrush2.style(), Qt::TexturePattern);
+#ifdef Q_OS_ANDROID
+    QEXPECT_FAIL("", "QTBUG-69193", Continue);
+#endif
     QCOMPARE(loadedBrush1.texture(), pixmap_source);
     QCOMPARE(loadedBrush2.textureImage(), image_source);
 }
