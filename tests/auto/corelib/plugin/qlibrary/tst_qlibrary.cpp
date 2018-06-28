@@ -88,12 +88,6 @@
 # define PREFIX         "lib"
 #endif
 
-static QString sys_qualifiedLibraryName(const QString &fileName)
-{
-    QString appDir = QCoreApplication::applicationDirPath();
-    return appDir + QLatin1Char('/') + PREFIX + fileName + SUFFIX;
-}
-
 QT_FORWARD_DECLARE_CLASS(QLibrary)
 class tst_QLibrary : public QObject
 {
@@ -106,6 +100,13 @@ enum QLibraryOperation {
     OperationMask = 7,
     DontSetFileName = 0x100
 };
+
+    QString sys_qualifiedLibraryName(const QString &fileName);
+
+    QString directory;
+#ifdef Q_OS_ANDROID
+    QSharedPointer<QTemporaryDir> temporaryDir;
+#endif
 private slots:
     void initTestCase();
 
@@ -130,19 +131,49 @@ private slots:
     void multipleInstancesForOneLibrary();
 };
 
+QString tst_QLibrary::sys_qualifiedLibraryName(const QString &fileName)
+{
+    return directory + QLatin1Char('/') + PREFIX + fileName + SUFFIX;
+}
+
 typedef int (*VersionFunction)(void);
 
 void tst_QLibrary::initTestCase()
 {
-#ifndef Q_OS_WINRT
+#ifdef Q_OS_ANDROID
+    auto tempDir = QEXTRACTTESTDATA("android_test_data");
+
+    QVERIFY2(QDir::setCurrent(tempDir->path()), qPrintable("Could not chdir to " + tempDir->path()));
+
+    // copy :/library_path into ./library_path
+    QVERIFY(QDir().mkdir("library_path"));
+    QDirIterator iterator(":/library_path", QDirIterator::Subdirectories);
+    while (iterator.hasNext()) {
+        iterator.next();
+        QFileInfo sourceFileInfo(iterator.path());
+        QFileInfo targetFileInfo("./library_path/" + sourceFileInfo.fileName());
+        if (!targetFileInfo.exists()) {
+            QDir().mkpath(targetFileInfo.path());
+            QVERIFY(QFile::copy(sourceFileInfo.filePath(), targetFileInfo.filePath()));
+        }
+    }
+    directory = tempDir->path();
+    temporaryDir = std::move(tempDir);
+#elif !defined(Q_OS_WINRT)
     // chdir to our testdata directory, and use relative paths in some tests.
     QString testdatadir = QFileInfo(QFINDTESTDATA("library_path")).absolutePath();
     QVERIFY2(QDir::setCurrent(testdatadir), qPrintable("Could not chdir to " + testdatadir));
+    directory = QCoreApplication::applicationDirPath();
+#elif defined(Q_OS_WINRT)
+    directory = QCoreApplication::applicationDirPath();
 #endif
 }
 
 void tst_QLibrary::version_data()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Versioned .so files are not generated for Android, so this test is not applicable.");
+#endif
     QTest::addColumn<QString>("lib");
     QTest::addColumn<int>("loadversion");
     QTest::addColumn<int>("resultversion");
@@ -159,7 +190,7 @@ void tst_QLibrary::version()
     QFETCH( int, resultversion );
 
 #if !defined(Q_OS_AIX) && !defined(Q_OS_WIN)
-    QString appDir = QCoreApplication::applicationDirPath();
+    QString appDir = directory;
     QLibrary library( appDir + QLatin1Char('/') + lib, loadversion );
     QVERIFY2(library.load(), qPrintable(library.errorString()));
 
@@ -179,7 +210,7 @@ void tst_QLibrary::load_data()
     QTest::addColumn<QString>("lib");
     QTest::addColumn<bool>("result");
 
-    QString appDir = QCoreApplication::applicationDirPath();
+    QString appDir = directory;
 
     QTest::newRow( "ok00" ) << appDir + "/mylib" << true;
     QTest::newRow( "notexist" ) << appDir + "/nolib" << false;
@@ -220,7 +251,7 @@ void tst_QLibrary::unload_data()
     QTest::addColumn<QString>("lib");
     QTest::addColumn<bool>("result");
 
-    QString appDir = QCoreApplication::applicationDirPath();
+    QString appDir = directory;
 
     QTest::newRow( "mylib" ) << appDir + "/mylib" << true;
     QTest::newRow( "ok01" ) << appDir + "/nolib" << false;
@@ -243,7 +274,7 @@ void tst_QLibrary::unload()
 
 void tst_QLibrary::unload_after_implicit_load()
 {
-    QLibrary library( QCoreApplication::applicationDirPath() + "/mylib" );
+    QLibrary library( directory + "/mylib" );
     QFunctionPointer p = library.resolve("mylibversion");
     QVERIFY(p); // Check if it was loaded
     QVERIFY(library.isLoaded());
@@ -257,7 +288,7 @@ void tst_QLibrary::resolve_data()
     QTest::addColumn<QString>("symbol");
     QTest::addColumn<bool>("goodPointer");
 
-    QString appDir = QCoreApplication::applicationDirPath();
+    QString appDir = directory;
 
     QTest::newRow( "ok00" ) << appDir + "/mylib" << QString("mylibversion") << true;
     QTest::newRow( "bad00" ) << appDir + "/mylib" << QString("nosym") << false;
@@ -333,7 +364,7 @@ void tst_QLibrary::errorString_data()
     QTest::addColumn<bool>("success");
     QTest::addColumn<QString>("errorString");
 
-    QString appDir = QCoreApplication::applicationDirPath();
+    QString appDir = directory;
 
     QTest::newRow("bad load()") << (int)Load << QString("nosuchlib") << false << QString("Cannot load library nosuchlib: .*");
     QTest::newRow("call errorString() on QLibrary with no d-pointer (crashtest)") << (int)(Load | DontSetFileName) << QString() << false << QString("Unknown error");
@@ -398,7 +429,7 @@ void tst_QLibrary::loadHints_data()
 
     QLibrary::LoadHints lh;
 
-    QString appDir = QCoreApplication::applicationDirPath();
+    QString appDir = directory;
 
     lh |= QLibrary::ResolveAllSymbolsHint;
 # if defined(Q_OS_WIN32) || defined(Q_OS_WINRT)
@@ -477,7 +508,7 @@ void tst_QLibrary::fileName()
 
 void tst_QLibrary::multipleInstancesForOneLibrary()
 {
-    QString lib = QCoreApplication::applicationDirPath() + "/mylib";
+    QString lib = directory + "/mylib";
 
     {
         QLibrary lib1(lib);
