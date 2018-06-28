@@ -411,13 +411,15 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
     if (buff.isEmpty())
         return Intermediate;
 
-    if (b >= 0 && buff.startsWith('-'))
+    const bool startsWithMinus(buff[0] == '-');
+    if (b >= 0 && startsWithMinus)
         return Invalid;
 
-    if (t < 0 && buff.startsWith('+'))
+    const bool startsWithPlus(buff[0] == '+');
+    if (t < 0 && startsWithPlus)
         return Invalid;
 
-    if (buff.size() == 1 && (buff.at(0) == '+' || buff.at(0) == '-'))
+    if (buff.size() == 1 && (startsWithPlus || startsWithMinus))
         return Intermediate;
 
     bool ok;
@@ -433,7 +435,15 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
     if (entered >= 0) {
         // the -entered < b condition is necessary to allow people to type
         // the minus last (e.g. for right-to-left languages)
-        return (entered > t && -entered < b) ? Invalid : Intermediate;
+        // The buffLength > tLength condition validates values consisting
+        // of a number of digits equal to or less than the max value as intermediate.
+
+        int buffLength = buff.size();
+        if (startsWithPlus)
+            buffLength--;
+        const int tLength = t != 0 ? static_cast<int>(std::log10(qAbs(t))) + 1 : 1;
+
+        return (entered > t && -entered < b && buffLength > tLength) ? Invalid : Intermediate;
     } else {
         return (entered < b) ? Invalid : Intermediate;
     }

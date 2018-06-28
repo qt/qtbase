@@ -54,7 +54,7 @@ void tst_QIntValidator::validate_data()
     QTest::addColumn<QValidator::State>("state");
 
     QTest::newRow("data0") << 0 << 100 << QString("50") << ACC;
-    QTest::newRow("data1") << 0 << 100 << QString("500") << INV;
+    QTest::newRow("data1") << 0 << 100 << QString("500") << INT;
     QTest::newRow("data1a") << 0 << 100 << QString("5000") << INV;
     QTest::newRow("data1b") << -100 << 0 << QString("50") << INT;
     QTest::newRow("data1c") << -100 << 0 << QString("500") << INV;
@@ -121,7 +121,7 @@ void tst_QIntValidator::validate_data()
 
     QTest::newRow("5.1") << 6 << 8 << QString("5") << INT;
     QTest::newRow("5.2") << 6 << 8 << QString("7") << ACC;
-    QTest::newRow("5.3") << 6 << 8 << QString("9") << INV;
+    QTest::newRow("5.3") << 6 << 8 << QString("9") << INT;
     QTest::newRow("5.3a") << 6 << 8 << QString("19") << INV;
     QTest::newRow("5.4") << -8 << -6 << QString("-5") << INT;
     QTest::newRow("5.5") << -8 << -6 << QString("-7") << ACC;
@@ -129,13 +129,13 @@ void tst_QIntValidator::validate_data()
     QTest::newRow("5.6a") << -8 << -6 << QString("-19") << INV;
     QTest::newRow("5.7") << -8 << -6 << QString("5") << INT;
     QTest::newRow("5.8") << -8 << -6 << QString("7") << INT;
-    QTest::newRow("5.9") << -8 << -6 << QString("9") << INV;
+    QTest::newRow("5.9") << -8 << -6 << QString("9") << INT;
     QTest::newRow("5.10") << -6 << 8 << QString("-5") << ACC;
     QTest::newRow("5.11") << -6 << 8 << QString("5") << ACC;
     QTest::newRow("5.12") << -6 << 8 << QString("-7") << INV;
     QTest::newRow("5.13") << -6 << 8 << QString("7") << ACC;
     QTest::newRow("5.14") << -6 << 8 << QString("-9") << INV;
-    QTest::newRow("5.15") << -6 << 8 << QString("9") << INV;
+    QTest::newRow("5.15") << -6 << 8 << QString("9") << INT;
 
     QTest::newRow("6.1") << 100 << 102 << QString("11") << INT;
     QTest::newRow("6.2") << 100 << 102 << QString("-11") << INV;
