@@ -42,6 +42,11 @@ Q_IMPORT_PLUGIN(Plugin2)
 class tst_QFactoryLoader : public QObject
 {
     Q_OBJECT
+
+#ifdef Q_OS_ANDROID
+    QSharedPointer<QTemporaryDir> directory;
+#endif
+
 public slots:
     void initTestCase();
 
@@ -53,6 +58,12 @@ static const char binFolderC[] = "bin";
 
 void tst_QFactoryLoader::initTestCase()
 {
+#ifdef Q_OS_ANDROID
+    directory = QEXTRACTTESTDATA("android_test_data");
+    QVERIFY(directory);
+    QVERIFY(directory->isValid());
+    QVERIFY2(QDir::setCurrent(directory->path()), qPrintable("Could not chdir to " + directory->path()));
+#endif
     const QString binFolder = QFINDTESTDATA(binFolderC);
     QVERIFY2(!binFolder.isEmpty(), "Unable to locate 'bin' folder");
 #if QT_CONFIG(library)
