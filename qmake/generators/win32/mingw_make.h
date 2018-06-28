@@ -42,6 +42,8 @@ protected:
     using MakefileGenerator::escapeDependencyPath;
     virtual QString escapeDependencyPath(const QString &path) const;
     virtual ProString fixLibFlag(const ProString &lib);
+    virtual bool processPrlFileBase(QString &origFile, const QStringRef &origName,
+                                    const QStringRef &fixedBase, int slashOff);
     virtual QString getManifestFileForRcFile() const;
     bool writeMakefile(QTextStream &);
     void init();

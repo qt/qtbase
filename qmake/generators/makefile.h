@@ -246,6 +246,11 @@ protected:
 
     QString installMetaFile(const ProKey &replace_rule, const QString &src, const QString &dst);
 
+    virtual bool processPrlFileBase(QString &origFile, const QStringRef &origName,
+                                    const QStringRef &fixedBase, int slashOff);
+    bool processPrlFileCore(QString &origFile, const QStringRef &origName,
+                            const QString &fixedFile);
+
 public:
     MakefileGenerator();
     virtual ~MakefileGenerator();

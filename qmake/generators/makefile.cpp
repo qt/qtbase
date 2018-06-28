@@ -878,23 +878,35 @@ MakefileGenerator::init()
 bool
 MakefileGenerator::processPrlFile(QString &file, bool baseOnly)
 {
-    bool try_replace_file = false;
     QString f = fileFixify(file, FileFixifyBackwards);
-    QString meta_file;
-    if (!baseOnly && f.endsWith(Option::prl_ext)) {
-        meta_file = QMakeMetaInfo::checkLib(f);
-        try_replace_file = true;
-    } else {
-        meta_file = QMakeMetaInfo::checkLib(f + Option::prl_ext);
-        if (!meta_file.isEmpty()) {
-            try_replace_file = true;
-        } else if (!baseOnly) {
-            int off = qMax(f.lastIndexOf('/'), f.lastIndexOf('\\')) + 1;
-            int ext = f.midRef(off).lastIndexOf('.');
-            if (ext != -1)
-                meta_file = QMakeMetaInfo::checkLib(f.leftRef(off + ext) + Option::prl_ext);
-        }
+    // Explicitly given full .prl name
+    if (!baseOnly && f.endsWith(Option::prl_ext))
+        return processPrlFileCore(file, QStringRef(), f);
+    // Explicitly given or derived (from -l) base name
+    if (processPrlFileCore(file, QStringRef(), f + Option::prl_ext))
+        return true;
+    if (!baseOnly) {
+        // Explicitly given full library name
+        int off = qMax(f.lastIndexOf('/'), f.lastIndexOf('\\')) + 1;
+        int ext = f.midRef(off).lastIndexOf('.');
+        if (ext != -1)
+            return processPrlFileBase(file, f.midRef(off), f.leftRef(off + ext), off);
     }
+    return false;
+}
+
+bool
+MakefileGenerator::processPrlFileBase(QString &origFile, const QStringRef &origName,
+                                      const QStringRef &fixedBase, int slashOff)
+{
+    return processPrlFileCore(origFile, origName, fixedBase + Option::prl_ext);
+}
+
+bool
+MakefileGenerator::processPrlFileCore(QString &origFile, const QStringRef &origName,
+                                      const QString &fixedFile)
+{
+    const QString meta_file = QMakeMetaInfo::checkLib(fixedFile);
     if (meta_file.isEmpty())
         return false;
     QMakeMetaInfo libinfo(project);
@@ -907,29 +919,37 @@ MakefileGenerator::processPrlFile(QString &file, bool baseOnly)
         debug_msg(2, "Ignored meta file %s", meta_file.toLatin1().constData());
         return false;
     }
+    ProString tgt = libinfo.first("QMAKE_PRL_TARGET");
+    if (tgt.isEmpty()) {
+        fprintf(stderr, "Error: %s does not define QMAKE_PRL_TARGET\n",
+                        meta_file.toLatin1().constData());
+        return false;
+    }
+    if (!tgt.contains('.') && !libinfo.values("QMAKE_PRL_CONFIG").contains("lib_bundle")) {
+        fprintf(stderr, "Error: %s defines QMAKE_PRL_TARGET without extension\n",
+                        meta_file.toLatin1().constData());
+        return false;
+    }
+    if (origName.isEmpty()) {
+        // We got a .prl file as input, replace it with an actual library.
+        int off = qMax(origFile.lastIndexOf('/'), origFile.lastIndexOf('\\')) + 1;
+        debug_msg(1, "  Replacing library reference %s with %s",
+                     origFile.mid(off).toLatin1().constData(),
+                     tgt.toQString().toLatin1().constData());
+        origFile.replace(off, 1000, tgt.toQString());
+    } else if (tgt != origName) {
+        // We got an actual library as input, and found the wrong .prl for it.
+        debug_msg(2, "Mismatched meta file %s (want %s, got %s)",
+                     meta_file.toLatin1().constData(),
+                     origName.toLatin1().constData(), tgt.toLatin1().constData());
+        return false;
+    }
     project->values("QMAKE_CURRENT_PRL_LIBS") = libinfo.values("QMAKE_PRL_LIBS");
     ProStringList &defs = project->values("DEFINES");
     const ProStringList &prl_defs = project->values("PRL_EXPORT_DEFINES");
     for (const ProString &def : libinfo.values("QMAKE_PRL_DEFINES"))
         if (!defs.contains(def) && prl_defs.contains(def))
             defs.append(def);
-    if (try_replace_file) {
-        ProString tgt = libinfo.first("QMAKE_PRL_TARGET");
-        if (tgt.isEmpty()) {
-            fprintf(stderr, "Error: %s does not define QMAKE_PRL_TARGET\n",
-                            meta_file.toLatin1().constData());
-        } else if (!tgt.contains('.')
-                   && !libinfo.values("QMAKE_PRL_CONFIG").contains("lib_bundle")) {
-            fprintf(stderr, "Error: %s defines QMAKE_PRL_TARGET without extension\n",
-                            meta_file.toLatin1().constData());
-        } else {
-            int off = qMax(file.lastIndexOf('/'), file.lastIndexOf('\\')) + 1;
-            debug_msg(1, "  Replacing library reference %s with %s",
-                         file.mid(off).toLatin1().constData(),
-                         tgt.toQString().toLatin1().constData());
-            file.replace(off, 1000, tgt.toQString());
-        }
-    }
     QString mf = fileFixify(meta_file);
     if (!project->values("QMAKE_PRL_INTERNAL_FILES").contains(mf))
        project->values("QMAKE_PRL_INTERNAL_FILES").append(mf);

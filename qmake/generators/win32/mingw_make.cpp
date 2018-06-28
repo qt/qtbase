@@ -73,6 +73,19 @@ MingwMakefileGenerator::parseLibFlag(const ProString &flag, ProString *arg)
     return MakefileGenerator::parseLibFlag(flag, arg);
 }
 
+bool MingwMakefileGenerator::processPrlFileBase(QString &origFile, const QStringRef &origName,
+                                                const QStringRef &fixedBase, int slashOff)
+{
+    if (origName.startsWith("lib")) {
+        QString newFixedBase = fixedBase.left(slashOff) + fixedBase.mid(slashOff + 3);
+        if (Win32MakefileGenerator::processPrlFileBase(origFile, origName,
+                                                       QStringRef(&newFixedBase), slashOff)) {
+            return true;
+        }
+    }
+    return Win32MakefileGenerator::processPrlFileBase(origFile, origName, fixedBase, slashOff);
+}
+
 bool MingwMakefileGenerator::writeMakefile(QTextStream &t)
 {
     writeHeader(t);

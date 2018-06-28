@@ -163,6 +163,23 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
     return true;
 }
 
+bool Win32MakefileGenerator::processPrlFileBase(QString &origFile, const QStringRef &origName,
+                                                const QStringRef &fixedBase, int slashOff)
+{
+    if (MakefileGenerator::processPrlFileBase(origFile, origName, fixedBase, slashOff))
+        return true;
+    for (int off = fixedBase.length(); off > slashOff; off--) {
+        if (!fixedBase.at(off - 1).isDigit()) {
+            if (off != fixedBase.length()) {
+                return MakefileGenerator::processPrlFileBase(
+                            origFile, origName, fixedBase.left(off), slashOff);
+            }
+            break;
+        }
+    }
+    return false;
+}
+
 void Win32MakefileGenerator::processVars()
 {
     if (project->first("TEMPLATE").endsWith("aux"))

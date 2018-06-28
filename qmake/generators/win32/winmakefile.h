@@ -58,6 +58,8 @@ protected:
 
     virtual LibFlagType parseLibFlag(const ProString &flag, ProString *arg);
     virtual ProString fixLibFlag(const ProString &lib);
+    virtual bool processPrlFileBase(QString &origFile, const QStringRef &origName,
+                                    const QStringRef &fixedBase, int slashOff);
 
     void processVars();
     void fixTargetExt();
