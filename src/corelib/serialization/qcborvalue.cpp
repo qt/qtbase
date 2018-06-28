@@ -2365,6 +2365,53 @@ inline QCborMap::QCborMap(QCborContainerPrivate &dd) noexcept
 {
 }
 
+uint qHash(const QCborValue &value, uint seed)
+{
+    switch (value.type()) {
+    case QCborValue::Integer:
+        return qHash(value.toInteger(), seed);
+    case QCborValue::ByteArray:
+        return qHash(value.toByteArray(), seed);
+    case QCborValue::String:
+        return qHash(value.toString(), seed);
+    case QCborValue::Array:
+        return qHash(value.toArray(), seed);
+    case QCborValue::Map:
+        return qHash(value.toMap(), seed);
+    case QCborValue::Tag: {
+        QtPrivate::QHashCombine hash;
+        seed = hash(seed, value.tag());
+        seed = hash(seed, value.taggedValue());
+        return seed;
+    }
+    case QCborValue::SimpleType:
+        break;
+    case QCborValue::False:
+        return qHash(false, seed);
+    case QCborValue::True:
+        return qHash(true, seed);
+    case QCborValue::Null:
+        return qHash(nullptr, seed);
+    case QCborValue::Undefined:
+        return seed;
+    case QCborValue::Double:
+        return qHash(value.toDouble(), seed);
+    case QCborValue::DateTime:
+        return qHash(value.toDateTime(), seed);
+    case QCborValue::Url:
+        return qHash(value.toUrl(), seed);
+    case QCborValue::RegularExpression:
+        return qHash(value.toRegularExpression(), seed);
+    case QCborValue::Uuid:
+        return qHash(value.toUuid(), seed);
+    case QCborValue::Invalid:
+        return seed;
+    }
+
+    Q_ASSERT(value.isSimpleType());
+    return qHash(value.toSimpleType(), seed);
+}
+
 #if !defined(QT_NO_DEBUG_STREAM)
 static QDebug debugContents(QDebug &dbg, const QCborValue &v)
 {

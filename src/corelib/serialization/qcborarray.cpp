@@ -1181,6 +1181,11 @@ void QCborArray::detach(qsizetype reserved)
     Returns the offset of this iterator relative to \a other.
 */
 
+uint qHash(const QCborArray &array, uint seed)
+{
+    return qHashRange(array.begin(), array.end(), seed);
+}
+
 #if !defined(QT_NO_DEBUG_STREAM)
 QDebug operator<<(QDebug dbg, const QCborArray &a)
 {

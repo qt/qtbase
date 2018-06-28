@@ -1734,6 +1734,11 @@ void QCborMap::detach(qsizetype reserved)
     \sa operator+=(), operator-()
 */
 
+uint qHash(const QCborMap &map, uint seed)
+{
+    return qHashRange(map.begin(), map.end(), seed);
+}
+
 #if !defined(QT_NO_DEBUG_STREAM)
 QDebug operator<<(QDebug dbg, const QCborMap &m)
 {

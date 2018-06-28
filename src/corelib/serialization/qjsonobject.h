@@ -262,6 +262,8 @@ private:
 
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QJsonObject)
 
+Q_CORE_EXPORT uint qHash(const QJsonObject &object, uint seed = 0);
+
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonObject &);
 #endif

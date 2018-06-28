@@ -451,6 +451,8 @@ private:
     qsizetype i;
 };
 
+Q_CORE_EXPORT uint qHash(const QCborValue &value, uint seed = 0);
+
 #if !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QCborValue &v);
 #endif

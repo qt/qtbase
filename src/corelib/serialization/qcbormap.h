@@ -337,6 +337,8 @@ inline QCborMap QCborValueRef::toMap(const QCborMap &m) const
     return concrete().toMap(m);
 }
 
+Q_CORE_EXPORT uint qHash(const QCborMap &map, uint seed = 0);
+
 #if !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QCborMap &m);
 #endif

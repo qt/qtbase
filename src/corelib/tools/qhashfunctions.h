@@ -104,6 +104,11 @@ Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QBitArray &key, uint seed = 
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(QLatin1String key, uint seed = 0) Q_DECL_NOTHROW;
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qt_hash(QStringView key, uint chained = 0) Q_DECL_NOTHROW;
 
+Q_DECL_CONST_FUNCTION inline uint qHash(std::nullptr_t, uint seed = 0) Q_DECL_NOTHROW
+{
+    return qHash(reinterpret_cast<quintptr>(nullptr), seed);
+}
+
 template <class T> inline uint qHash(const T *key, uint seed = 0) Q_DECL_NOTHROW
 {
     return qHash(reinterpret_cast<quintptr>(key), seed);
