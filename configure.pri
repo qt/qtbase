@@ -5,7 +5,7 @@ QT_BUILD_TREE = $$shadowed($$PWD)
 # custom command line handling
 
 defineTest(qtConfCommandline_qmakeArgs) {
-    contains(1, QMAKE_[A-Z_]+ *[-+]?=.*) {
+    contains(1, QMAKE_[A-Z0-9_]+ *[-+]?=.*) {
         config.input.qmakeArgs += $$1
         export(config.input.qmakeArgs)
         return(true)
