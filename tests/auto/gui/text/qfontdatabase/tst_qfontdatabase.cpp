@@ -335,6 +335,9 @@ void tst_QFontDatabase::condensedFontMatching()
     QEXPECT_FAIL("","No matching of sub-family by stretch on Windows", Continue);
 #endif
 
+#ifdef Q_OS_ANDROID
+    QEXPECT_FAIL("", "QTBUG-69216", Continue);
+#endif
     QCOMPARE(QFontMetrics(tfcByStretch).horizontalAdvance(testString()),
              QFontMetrics(tfcByStyleName).horizontalAdvance(testString()));
 
