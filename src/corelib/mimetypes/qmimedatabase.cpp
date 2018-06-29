@@ -76,7 +76,6 @@ QMimeDatabasePrivate::QMimeDatabasePrivate()
 
 QMimeDatabasePrivate::~QMimeDatabasePrivate()
 {
-    qDeleteAll(m_providers);
 }
 
 #ifdef QT_BUILD_INTERNAL
@@ -116,37 +115,37 @@ void QMimeDatabasePrivate::loadProviders()
         const QString cacheFile = mimeDir + QStringLiteral("/mime.cache");
         QFileInfo fileInfo(cacheFile);
         // Check if we already have a provider for this dir
-        const auto it = std::find_if(currentProviders.begin(), currentProviders.end(), [mimeDir](QMimeProviderBase *prov) { return prov->directory() == mimeDir; });
+        const auto predicate = [mimeDir](const std::unique_ptr<QMimeProviderBase> &prov)
+        {
+            return prov && prov->directory() == mimeDir;
+        };
+        const auto it = std::find_if(currentProviders.begin(), currentProviders.end(), predicate);
         if (it == currentProviders.end()) {
-            QMimeProviderBase *provider = nullptr;
+            std::unique_ptr<QMimeProviderBase> provider;
 #if defined(QT_USE_MMAP)
             if (qEnvironmentVariableIsEmpty("QT_NO_MIME_CACHE") && fileInfo.exists()) {
-                provider = new QMimeBinaryProvider(this, mimeDir);
+                provider.reset(new QMimeBinaryProvider(this, mimeDir));
                 //qDebug() << "Created binary provider for" << mimeDir;
                 if (!provider->isValid()) {
-                    delete provider;
-                    provider = nullptr;
+                    provider.reset();
                 }
             }
 #endif
             if (!provider) {
-                provider = new QMimeXMLProvider(this, mimeDir);
+                provider.reset(new QMimeXMLProvider(this, mimeDir));
                 //qDebug() << "Created XML provider for" << mimeDir;
             }
-            m_providers.push_back(provider);
+            m_providers.push_back(std::move(provider));
         } else {
-            QMimeProviderBase *provider = *it;
-            currentProviders.erase(it);
+            auto provider = std::move(*it); // take provider out of the vector
             provider->ensureLoaded();
             if (!provider->isValid()) {
-                delete provider;
-                provider = new QMimeXMLProvider(this, mimeDir);
+                provider.reset(new QMimeXMLProvider(this, mimeDir));
                 //qDebug() << "Created XML provider to replace binary provider for" << mimeDir;
             }
-            m_providers.push_back(provider);
+            m_providers.push_back(std::move(provider));
         }
     }
-    qDeleteAll(currentProviders);
 }
 
 const QMimeDatabasePrivate::Providers &QMimeDatabasePrivate::providers()

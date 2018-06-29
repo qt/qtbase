@@ -63,6 +63,8 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/qvector.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QIODevice;
@@ -102,7 +104,7 @@ public:
     bool mimeInherits(const QString &mime, const QString &parent);
 
 private:
-    using Providers = std::vector<QMimeProviderBase *>;
+    using Providers = std::vector<std::unique_ptr<QMimeProviderBase>>;
     const Providers &providers();
     bool shouldCheck();
     void loadProviders();
