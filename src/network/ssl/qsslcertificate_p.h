@@ -55,7 +55,9 @@
 // We mean it.
 //
 
+#ifndef QT_NO_SSL
 #include "qsslsocket_p.h"
+#endif
 #include "qsslcertificateextension.h"
 #include <QtCore/qdatetime.h>
 #include <QtCore/qmap.h>
@@ -83,7 +85,9 @@ public:
     QSslCertificatePrivate()
         : null(true), x509(0)
     {
+#ifndef QT_NO_SSL
         QSslSocketPrivate::ensureInitialized();
+#endif
     }
 
     ~QSslCertificatePrivate()

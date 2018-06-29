@@ -125,7 +125,9 @@
 #include "qssl_p.h"
 #include "qsslcertificate.h"
 #include "qsslcertificate_p.h"
+#ifndef QT_NO_SSL
 #include "qsslkey_p.h"
+#endif
 
 #include <QtCore/qdir.h>
 #include <QtCore/qdiriterator.h>
@@ -142,8 +144,12 @@ QT_BEGIN_NAMESPACE
 QSslCertificate::QSslCertificate(QIODevice *device, QSsl::EncodingFormat format)
     : d(new QSslCertificatePrivate)
 {
+#ifndef QT_NO_OPENSSL
     QSslSocketPrivate::ensureInitialized();
     if (device && QSslSocket::supportsSsl())
+#else
+    if (device)
+#endif
         d->init(device->readAll(), format);
 }
 
@@ -156,8 +162,10 @@ QSslCertificate::QSslCertificate(QIODevice *device, QSsl::EncodingFormat format)
 QSslCertificate::QSslCertificate(const QByteArray &data, QSsl::EncodingFormat format)
     : d(new QSslCertificatePrivate)
 {
+#ifndef QT_NO_OPENSSL
     QSslSocketPrivate::ensureInitialized();
     if (QSslSocket::supportsSsl())
+#endif
         d->init(data, format);
 }
 
@@ -557,6 +565,8 @@ QList<QSslCertificate> QSslCertificate::fromData(const QByteArray &data, QSsl::E
         : QSslCertificatePrivate::certificatesFromDer(data);
 }
 
+#ifndef QT_NO_SSL
+
 /*!
     Verifies a certificate chain. The chain to be verified is passed in the
     \a certificateChain parameter. The first certificate in the list should
@@ -599,6 +609,8 @@ bool QSslCertificate::importPkcs12(QIODevice *device,
 {
     return QSslSocketBackendPrivate::importPkcs12(device, key, certificate, caCertificates, passPhrase);
 }
+
+#endif
 
 // These certificates are known to be fraudulent and were created during the comodo
 // compromise. See http://www.comodo.com/Comodo-Fraud-Incident-2011-03-23.html

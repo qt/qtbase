@@ -1,11 +1,22 @@
 # OpenSSL support; compile in QSslSocket.
+
+HEADERS += ssl/qasn1element_p.h \
+           ssl/qssl.h \
+           ssl/qssl_p.h \
+           ssl/qsslcertificate.h \
+           ssl/qsslcertificate_p.h \
+           ssl/qsslcertificateextension.h \
+           ssl/qsslcertificateextension_p.h
+
+SOURCES += ssl/qasn1element.cpp \
+           ssl/qssl.cpp \
+           ssl/qsslcertificate.cpp \
+           ssl/qsslcertificateextension.cpp
+
+!qtConfig(openssl): SOURCES += ssl/qsslcertificate_qt.cpp
+
 qtConfig(ssl) {
-    HEADERS += ssl/qasn1element_p.h \
-               ssl/qssl.h \
-               ssl/qssl_p.h \
-               ssl/qsslcertificate.h \
-               ssl/qsslcertificate_p.h \
-               ssl/qsslconfiguration.h \
+    HEADERS += ssl/qsslconfiguration.h \
                ssl/qsslconfiguration_p.h \
                ssl/qsslcipher.h \
                ssl/qsslcipher_p.h \
@@ -18,26 +29,19 @@ qtConfig(ssl) {
                ssl/qsslsocket.h \
                ssl/qsslsocket_p.h \
                ssl/qsslpresharedkeyauthenticator.h \
-               ssl/qsslpresharedkeyauthenticator_p.h \
-               ssl/qsslcertificateextension.h \
-               ssl/qsslcertificateextension_p.h
-    SOURCES += ssl/qasn1element.cpp \
-               ssl/qssl.cpp \
-               ssl/qsslcertificate.cpp \
-               ssl/qsslconfiguration.cpp \
+               ssl/qsslpresharedkeyauthenticator_p.h
+    SOURCES += ssl/qsslconfiguration.cpp \
                ssl/qsslcipher.cpp \
                ssl/qssldiffiehellmanparameters.cpp \
                ssl/qsslellipticcurve.cpp \
                ssl/qsslkey_p.cpp \
                ssl/qsslerror.cpp \
                ssl/qsslsocket.cpp \
-               ssl/qsslpresharedkeyauthenticator.cpp \
-               ssl/qsslcertificateextension.cpp
+               ssl/qsslpresharedkeyauthenticator.cpp
 
     winrt {
         HEADERS += ssl/qsslsocket_winrt_p.h
-        SOURCES += ssl/qsslcertificate_qt.cpp \
-                   ssl/qsslcertificate_winrt.cpp \
+        SOURCES += ssl/qsslcertificate_winrt.cpp \
                    ssl/qssldiffiehellmanparameters_dummy.cpp \
                    ssl/qsslkey_qt.cpp \
                    ssl/qsslkey_winrt.cpp \
@@ -47,8 +51,7 @@ qtConfig(ssl) {
 
     qtConfig(securetransport) {
         HEADERS += ssl/qsslsocket_mac_p.h
-        SOURCES += ssl/qsslcertificate_qt.cpp \
-                   ssl/qssldiffiehellmanparameters_dummy.cpp \
+        SOURCES += ssl/qssldiffiehellmanparameters_dummy.cpp \
                    ssl/qsslkey_qt.cpp \
                    ssl/qsslkey_mac.cpp \
                    ssl/qsslsocket_mac_shared.cpp \
