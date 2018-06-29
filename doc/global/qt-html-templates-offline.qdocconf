@@ -3,6 +3,8 @@ include(html-config.qdocconf)
 include(html-header-offline.qdocconf)
 include(html-footer.qdocconf)
 
+defines                  += offlinedocs
+
 #uncomment if navigation bar is not wanted
 #HTML.nonavigationbar      = "true"
 
