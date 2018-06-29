@@ -1148,9 +1148,6 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                     pixmap = menuitem->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize, opt, widget), mode);
                 const int pixw = pixmap.width() / pixmap.devicePixelRatio();
                 const int pixh = pixmap.height() / pixmap.devicePixelRatio();
-                if (act && !dis && !checked)
-                    qDrawShadePanel(p, vCheckRect,  menuitem->palette, false, 1,
-                                    &menuitem->palette.brush(QPalette::Button));
                 QRect pmr(0, 0, pixw, pixh);
                 pmr.moveCenter(vCheckRect.center());
                 p->setPen(menuitem->palette.text().color());
