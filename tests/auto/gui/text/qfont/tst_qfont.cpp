@@ -300,6 +300,9 @@ void tst_QFont::resetFont()
     child->setFont(QFont()); // reset font
 
     QCOMPARE(child->font().resolve(), uint(0));
+#ifdef Q_OS_ANDROID
+    QEXPECT_FAIL("", "QTBUG-69214", Continue);
+#endif
     QCOMPARE(child->font().pointSize(), parent.font().pointSize());
     QVERIFY(parent.font().resolve() != 0);
 }
@@ -539,6 +542,9 @@ void tst_QFont::defaultFamily()
         }
     }
 
+#ifdef Q_OS_ANDROID
+    QEXPECT_FAIL("serif", "QTBUG-69215", Continue);
+#endif
     QVERIFY2(isAcceptable, msgNotAcceptableFont(familyForHint, acceptableFamilies));
 }
 
