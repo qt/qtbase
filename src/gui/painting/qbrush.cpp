@@ -1341,8 +1341,6 @@ QGradient::QGradient()
     \enum QGradient::Preset
     \since 5.12
 
-    \internal
-
     This enum specifies a set of predefined presets for QGradient,
     based on the gradients from https://webgradients.com/.
 */

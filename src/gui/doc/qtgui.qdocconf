@@ -60,3 +60,6 @@ manifestmeta.highlighted.names      = "QtGui/Analog Clock Window Example"
 
 navigation.landingpage = "Qt GUI"
 navigation.cppclassespage = "Qt GUI C++ Classes"
+
+# Ignore warnings about undocumented enum values for the QGradient presets
+spurious += "Undocumented enum item '.*' in QGradient::Preset"
