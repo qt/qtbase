@@ -46,9 +46,12 @@ OTHER_FILES += \
     html5_shell.html \
     qtloader.js
 
-shell_file.path = $$[QT_INSTALL_PLUGINS]/platforms
-shell_file.files = html5_shell.html
-INSTALLS += shell_file
+shell_files.path = $$[QT_INSTALL_PLUGINS]/platforms
+shell_files.files = html5_shell.html \
+                    qtloader.js \
+                    qtlogo.svg
+
+INSTALLS += shell_files
 
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QHtml5IntegrationPlugin
