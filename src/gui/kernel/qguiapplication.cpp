@@ -114,7 +114,7 @@
 #  include <QtCore/QLibraryInfo>
 #endif // Q_OS_WIN
 
-#ifdef Q_OS_HTML5
+#ifdef Q_OS_WASM
 #include <emscripten.h>
 #endif
 
@@ -1609,7 +1609,7 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
         qt_gl_set_global_share_context(0);
     }
 #endif
-#ifdef Q_OS_HTML5
+#ifdef Q_OS_WASM
         EM_ASM(
         //unmount persistent directory as IDBFS
               FS.unmount('/home/web_user');

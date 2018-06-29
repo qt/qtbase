@@ -602,7 +602,7 @@ void QOpenGLFramebufferObjectPrivate::initDepthStencilAttachments(QOpenGLContext
     const int samples = requestedSamples;
 
     // free existing attachments
-#ifdef Q_OS_HTML5
+#ifdef Q_OS_WASM
     if (depth_buffer_guard) {
         funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, 0);
         depth_buffer_guard->free();
@@ -628,7 +628,7 @@ void QOpenGLFramebufferObjectPrivate::initDepthStencilAttachments(QOpenGLContext
     // In practice, a combined depth-stencil buffer is supported by all desktop platforms, while a
     // separate stencil buffer is not. On embedded devices however, a combined depth-stencil buffer
     // might not be supported while separate buffers are, according to QTBUG-12861.
-#ifdef Q_OS_HTML5
+#ifdef Q_OS_WASM
  //   WebGL doesn't allow separately attach buffers to
  //   STENCIL_ATTACHMENT and DEPTH_ATTACHMENT
     if (attachment == QOpenGLFramebufferObject::CombinedDepthStencil) {
@@ -747,12 +747,12 @@ void QOpenGLFramebufferObjectPrivate::initDepthStencilAttachments(QOpenGLContext
             stencil_buffer = 0;
         }
     }
-#endif //Q_OS_HTML5
+#endif //Q_OS_WASM
 
     // The FBO might have become valid after removing the depth or stencil buffer.
     valid = checkFramebufferStatus(ctx);
 
-#ifdef Q_OS_HTML5
+#ifdef Q_OS_WASM
     if (depth_buffer) {
 #else
     if (depth_buffer && stencil_buffer) {

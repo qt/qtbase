@@ -70,7 +70,7 @@ src_xml.subdir = $$PWD/xml
 src_xml.target = sub-xml
 src_xml.depends = src_corelib
 
-!emscripten: {
+!wasm: {
     src_dbus.subdir = $$PWD/dbus
     src_dbus.target = sub-dbus
     src_dbus.depends = src_corelib
@@ -185,7 +185,7 @@ qtConfig(thread):qtConfig(dbus) {
         src_platformsupport.depends += src_dbus src_tools_qdbusxml2cpp
     src_plugins.depends += src_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
 }
-!emscripten: qtConfig(concurrent): SUBDIRS += src_concurrent
+!wasm: qtConfig(concurrent): SUBDIRS += src_concurrent
 qtConfig(gui) {
     qtConfig(harfbuzz):!qtConfig(system-harfbuzz) {
         SUBDIRS += src_3rdparty_harfbuzzng

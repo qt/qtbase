@@ -46,7 +46,7 @@ haiku {
     SUBDIRS += haiku
 }
 
-emscripten: SUBDIRS = html5
+wasm: SUBDIRS = wasm
 
 qtConfig(mirclient): SUBDIRS += mirclient
 

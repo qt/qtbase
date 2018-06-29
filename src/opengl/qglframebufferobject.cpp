@@ -570,7 +570,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
         funcs.glGenRenderbuffers(1, &depth_buffer);
         funcs.glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer);
         Q_ASSERT(funcs.glIsRenderbuffer(depth_buffer));
-#ifndef Q_OS_HTML5
+#ifndef Q_OS_WASM
         if (samples != 0 && funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample))
             funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
                 GL_DEPTH24_STENCIL8, size.width(), size.height());

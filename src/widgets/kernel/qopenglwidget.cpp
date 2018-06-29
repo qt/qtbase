@@ -906,7 +906,7 @@ void QOpenGLWidgetPrivate::invalidateFbo()
         const int gl_color_attachment0 = 0x8CE0;  // GL_COLOR_ATTACHMENT0
         const int gl_depth_attachment = 0x8D00;   // GL_DEPTH_ATTACHMENT
         const int gl_stencil_attachment = 0x8D20; // GL_STENCIL_ATTACHMENT
-#ifdef Q_OS_HTML5
+#ifdef Q_OS_WASM
         const int gl_depth_stencil_attachment = 0x821A; // GL_DEPTH_STENCIL_ATTACHMENT
 
         const GLenum attachments[] = {

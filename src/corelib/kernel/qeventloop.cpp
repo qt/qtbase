@@ -49,7 +49,7 @@
 #include <private/qthread_p.h>
 #include <QDebug>
 
-#ifdef Q_OS_HTML5
+#ifdef Q_OS_WASM
     #include <emscripten.h>
 #endif
 
@@ -215,7 +215,7 @@ int QEventLoop::exec(ProcessEventsFlags flags)
     if (app && app->thread() == thread())
         QCoreApplication::removePostedEvents(app, QEvent::Quit);
 
-#ifdef Q_OS_HTML5
+#ifdef Q_OS_WASM
     // Partial support for nested event loops: Make the runtime throw a JavaSrcript
     // exception, which returns control to the browser while preserving the C++ stack.
     // Event processing then continues as normal. The sleep call below newer returns.
@@ -285,7 +285,7 @@ void QEventLoop::exit(int returnCode)
     d->exit.storeRelease(true);
     d->threadData->eventDispatcher.load()->interrupt();
 
-#ifdef Q_OS_HTML5
+#ifdef Q_OS_WASM
     // QEventLoop::exec() never returns. We implement opproximate behavior here.
     if (d->threadData->loopLevel == 1) {
         emscripten_force_exit(returnCode);

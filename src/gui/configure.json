@@ -1081,7 +1081,7 @@
         "opengles3": {
             "label": "OpenGL ES 3.0",
             "condition": "features.opengles2 && !features.angle && tests.opengles3",
-            "disable": "config.html5",
+            "disable": "config.webassembly",
             "output": [
                 "publicFeature",
                 { "type": "define", "name": "QT_OPENGL_ES_3" }
@@ -1090,7 +1090,7 @@
         "opengles31": {
             "label": "OpenGL ES 3.1",
             "condition": "features.opengles3 && tests.opengles31",
-            "disable": "config.html5",
+            "disable": "config.webassembly",
             "output": [
                 "publicFeature",
                 { "type": "define", "name": "QT_OPENGL_ES_3_1" }
@@ -1109,7 +1109,7 @@
             "enable": "input.opengl == 'desktop'",
             "disable": "input.opengl == 'es2' || input.opengl == 'dynamic' || input.opengl == 'no'",
             "condition": "(config.win32 && !config.winrt && !features.opengles2 && (config.msvc || libs.opengl))
-                          || (!config.watchos && !config.win32 && !config.html5 && libs.opengl)"
+                          || (!config.watchos && !config.win32 && !config.webassembly && libs.opengl)"
         },
         "opengl-dynamic": {
             "label": "Dynamic OpenGL",

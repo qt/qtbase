@@ -77,7 +77,7 @@
 #  include <ioLib.h>
 #endif
 
-#ifdef Q_OS_HTML5
+#ifdef Q_OS_WASM
 #include <emscripten.h>
 #endif
 
@@ -1548,7 +1548,7 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
                     perms |= QFile::ReadGroup | QFile::ReadOther;
                 QFile(confFile->name).setPermissions(perms);
             }
-#ifdef Q_OS_HTML5
+#ifdef Q_OS_WASM
     EM_ASM(
           Module.print("Start QSettings Emscripten current data to persistent Indexed Db");
           FS.syncfs(false, function(err) {

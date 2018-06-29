@@ -17,4 +17,4 @@ PLUGIN_TYPE = imageformats
 PLUGIN_CLASS_NAME = QJpegPlugin
 load(qt_plugin)
 
-emscripten: CONFIG += static plugin
+wasm: CONFIG += static plugin

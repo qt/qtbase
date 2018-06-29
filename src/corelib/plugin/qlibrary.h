@@ -42,7 +42,7 @@
 
 #include <QtCore/qobject.h>
 
-#ifndef Q_OS_HTML5
+#ifndef Q_OS_WASM
 QT_REQUIRE_CONFIG(library);
 #endif
 

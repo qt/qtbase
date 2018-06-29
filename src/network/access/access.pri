@@ -68,11 +68,11 @@ qtConfig(networkdiskcache) {
 
 mac: LIBS_PRIVATE += -framework Security
 
-emscripten: {
+wasm: {
     SOURCES += \
-        access/qnetworkreplyemscriptenimpl.cpp
+        access/qnetworkreplywasmimpl.cpp
     HEADERS += \
-        access/qnetworkreplyemscriptenimpl_p.h
+        access/qnetworkreplywasmimpl_p.h
 }
 
 include($$PWD/../../3rdparty/zlib_dependency.pri)
