@@ -756,14 +756,14 @@ void QToolButtonPrivate::popupTimerDone()
     QSize sh = ((QToolButton*)(QMenu*)actualMenu)->receivers(SIGNAL(aboutToShow()))? QSize() : actualMenu->sizeHint();
     if (horizontal) {
         if (q->isRightToLeft()) {
-            if (q->mapToGlobal(QPoint(0, rect.bottom())).y() + sh.height() <= screen.height()) {
+            if (q->mapToGlobal(QPoint(0, rect.bottom())).y() + sh.height() <= screen.bottom()) {
                 p = q->mapToGlobal(rect.bottomRight());
             } else {
                 p = q->mapToGlobal(rect.topRight() - QPoint(0, sh.height()));
             }
             p.rx() -= sh.width();
         } else {
-            if (q->mapToGlobal(QPoint(0, rect.bottom())).y() + sh.height() <= screen.height()) {
+            if (q->mapToGlobal(QPoint(0, rect.bottom())).y() + sh.height() <= screen.bottom()) {
                 p = q->mapToGlobal(rect.bottomLeft());
             } else {
                 p = q->mapToGlobal(rect.topLeft() - QPoint(0, sh.height()));
