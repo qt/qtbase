@@ -634,6 +634,7 @@ bool QFSFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
 
 uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags)
 {
+    qint64 maxFileOffset = std::numeric_limits<QT_OFF_T>::max();
 #if (defined(Q_OS_LINUX) || defined(Q_OS_ANDROID)) && Q_PROCESSOR_WORDSIZE == 4
     // The Linux mmap2 system call on 32-bit takes a page-shifted 32-bit
     // integer so the maximum offset is 1 << (32+12) (the shift is always 12,
@@ -642,9 +643,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
     // and Bionic): all of them do the right shift, but don't confirm that the
     // result fits into the 32-bit parameter to the kernel.
 
-    static qint64 MaxFileOffset = (Q_INT64_C(1) << (32+12)) - 1;
-#else
-    static qint64 MaxFileOffset = std::numeric_limits<QT_OFF_T>::max();
+    maxFileOffset = qMin((Q_INT64_C(1) << (32+12)) - 1, maxFileOffset);
 #endif
 
     Q_Q(QFSFileEngine);
@@ -653,7 +652,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
         return 0;
     }
 
-    if (offset < 0 || offset > MaxFileOffset
+    if (offset < 0 || offset > maxFileOffset
             || size < 0 || quint64(size) > quint64(size_t(-1))) {
         q->setError(QFile::UnspecifiedError, qt_error_string(int(EINVAL)));
         return 0;
