@@ -251,6 +251,11 @@ defineTest(qtConfTest_machineTuple) {
     return(true)
 }
 
+defineTest(qtConfTest_verifySpec) {
+    qtConfTest_compile($$1): return(true)
+    qtConfFatalError("Cannot compile a minimal program. The toolchain or QMakeSpec is broken.", log)
+}
+
 defineTest(qtConfTest_architecture) {
     !qtConfTest_compile($${1}): \
         error("Could not determine $$eval($${1}.label). See config.log for details.")
