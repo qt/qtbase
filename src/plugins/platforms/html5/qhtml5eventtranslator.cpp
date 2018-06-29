@@ -340,6 +340,8 @@ void QHtml5EventTranslator::processMouse(int eventType, const EmscriptenMouseEve
     auto timestamp = mouseEvent->timestamp;
     QPoint point(mouseEvent->canvasX, mouseEvent->canvasY);
 
+    QEvent::Type buttonEventType = QEvent::None;
+
     Qt::MouseButton button = translateMouseButton(mouseEvent->button);
     Qt::KeyboardModifiers modifiers = translateMouseEventModifier(mouseEvent);
 
@@ -361,7 +363,7 @@ void QHtml5EventTranslator::processMouse(int eventType, const EmscriptenMouseEve
 
         if (mouseEvent->button == 0) {
             pressedWindow = window2;
-
+            buttonEventType = QEvent::MouseButtonPress;
             if (htmlWindow && window2->flags().testFlag(Qt::WindowTitleHint) && htmlWindow->isPointOnTitle(point))
                 draggedWindow = window2;
             else if (htmlWindow && htmlWindow->isPointOnResizeRegion(point)) {
@@ -378,7 +380,7 @@ void QHtml5EventTranslator::processMouse(int eventType, const EmscriptenMouseEve
     case 6: //up
     {
         pressedButtons.setFlag(translateMouseButton(mouseEvent->button), false);
-
+        buttonEventType = QEvent::MouseButtonRelease;
         QHtml5Window *oldWindow = nullptr;
 
         if (mouseEvent->button == 0 && pressedWindow) {
@@ -398,6 +400,7 @@ void QHtml5EventTranslator::processMouse(int eventType, const EmscriptenMouseEve
         break;
     case 8://move //drag event
     {
+        buttonEventType = QEvent::MouseMove;
         if (resizeMode == QHtml5Window::ResizeNone && draggedWindow) {
             draggedWindow->setX(draggedWindow->x() + mouseEvent->movementX);
             draggedWindow->setY(draggedWindow->y() + mouseEvent->movementY);
@@ -415,7 +418,7 @@ void QHtml5EventTranslator::processMouse(int eventType, const EmscriptenMouseEve
 
     if (window2 && !onFrame) {
         QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(
-            window2, timestamp, localPoint, point, pressedButtons, modifiers);
+            window2, timestamp, localPoint, point, pressedButtons, button, buttonEventType, modifiers);
     }
 }
 
@@ -426,6 +429,9 @@ int QHtml5EventTranslator::focus_cb(int /*eventType*/, const EmscriptenFocusEven
 
 int QHtml5EventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData)
 {
+    Q_UNUSED(eventType)
+    Q_UNUSED(userData)
+
     EmscriptenMouseEvent mouseEvent = wheelEvent->mouse;
 
     int scrollFactor = 0;
@@ -455,6 +461,7 @@ int QHtml5EventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *w
     if (wheelEvent->deltaX != 0) pixelDelta.setX(wheelEvent->deltaX * scrollFactor);
 
     QWindowSystemInterface::handleWheelEvent(window2, timestamp, localPoint, globalPoint, QPoint(), pixelDelta, modifiers);
+    return 1;
 }
 
 int QHtml5EventTranslator::touchCallback(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
