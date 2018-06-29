@@ -6392,10 +6392,11 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
         return qt_compare_strings(QStringView(data1, length1), QStringView(data2, length2),
                                Qt::CaseSensitive);
 
+#if !QT_CONFIG(icu)
+    const QString lhs = QString::fromRawData(data1, length1).normalized(QString::NormalizationForm_C);
+    const QString rhs = QString::fromRawData(data2, length2).normalized(QString::NormalizationForm_C);
+#endif
 #if defined(Q_OS_WIN)
-    QString lhs = QString::fromRawData(data1, length1).normalized(QString::NormalizationForm_C);
-    QString rhs = QString::fromRawData(data2, length2).normalized(QString::NormalizationForm_C);
-
     int res = CompareStringEx(LOCALE_NAME_USER_DEFAULT, 0, (LPWSTR)lhs.constData(), lhs.length(), (LPWSTR)rhs.constData(), rhs.length(), NULL, NULL, 0);
 
     switch (res) {
@@ -6406,17 +6407,17 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
     default:
         return 0;
     }
-#elif defined (Q_OS_MAC)
+#elif defined (Q_OS_DARWIN)
     // Use CFStringCompare for comparing strings on Mac. This makes Qt order
     // strings the same way as native applications do, and also respects
     // the "Order for sorted lists" setting in the International preferences
     // panel.
     const CFStringRef thisString =
         CFStringCreateWithCharactersNoCopy(kCFAllocatorDefault,
-            reinterpret_cast<const UniChar *>(data1), length1, kCFAllocatorNull);
+            reinterpret_cast<const UniChar *>(lhs.constData()), lhs.length(), kCFAllocatorNull);
     const CFStringRef otherString =
         CFStringCreateWithCharactersNoCopy(kCFAllocatorDefault,
-            reinterpret_cast<const UniChar *>(data2), length2, kCFAllocatorNull);
+            reinterpret_cast<const UniChar *>(rhs.constData()), rhs.length(), kCFAllocatorNull);
 
     const int result = CFStringCompare(thisString, otherString, kCFCompareLocalized);
     CFRelease(thisString);
@@ -6428,14 +6429,12 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
     return defaultCollator()->localData().compare(data1, length1, data2, length2);
 #elif defined(Q_OS_UNIX)
     // declared in <string.h>
-    int delta = strcoll(toLocal8Bit_helper(data1, length1).constData(), toLocal8Bit_helper(data2, length2).constData());
+    int delta = strcoll(lhs.toLocal8Bit().constData(), rhs.toLocal8Bit().constData());
     if (delta == 0)
-        delta = qt_compare_strings(QStringView(data1, length1), QStringView(data2, length2),
-                                Qt::CaseSensitive);
+        delta = qt_compare_strings(lhs, rhs, Qt::CaseSensitive);
     return delta;
 #else
-    return qt_compare_strings(QStringView(data1, length1), QStringView(data2, length2),
-                           Qt::CaseSensitive);
+    return qt_compare_strings(lhs, rhs, Qt::CaseSensitive);
 #endif
 }
 
