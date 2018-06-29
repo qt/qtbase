@@ -403,6 +403,9 @@ void tst_QStaticText::rotatedPainter()
 
     QVERIFY(imageDrawText.toImage() != m_whiteSquare);
 
+#ifdef Q_OS_ANDROID
+    QEXPECT_FAIL("", "QTBUG-69218", Continue);
+#endif
     if (!supportsTransformations())
       QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
@@ -560,6 +563,9 @@ void tst_QStaticText::transformationChanged()
 
     QVERIFY(imageDrawText.toImage() != m_whiteSquare);
 
+#ifdef Q_OS_ANDROID
+    QEXPECT_FAIL("", "QTBUG-69220", Continue);
+#endif
     if (!supportsTransformations())
       QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
