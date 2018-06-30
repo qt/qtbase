@@ -29,7 +29,7 @@
     \example graphicsview/boxes
     \title Boxes
     \ingroup examples-graphicsview
-    \brief Combines advanced OpenGL rendering with the Graphics View framework
+    \brief Combines advanced OpenGL rendering with the Graphics View framework.
 
     \image boxes-demo.png
 

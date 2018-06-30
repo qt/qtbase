@@ -216,18 +216,6 @@
 #  // Numerical checks are preferred to named checks, but to be safe
 #  // we define the missing version names in case Qt uses them.
 #
-#  if !defined(__MAC_10_7)
-#       define __MAC_10_7 1070
-#  endif
-#  if !defined(__MAC_10_8)
-#       define __MAC_10_8 1080
-#  endif
-#  if !defined(__MAC_10_9)
-#       define __MAC_10_9 1090
-#  endif
-#  if !defined(__MAC_10_10)
-#       define __MAC_10_10 101000
-#  endif
 #  if !defined(__MAC_10_11)
 #       define __MAC_10_11 101100
 #  endif
@@ -237,17 +225,8 @@
 #  if !defined(__MAC_10_13)
 #       define __MAC_10_13 101300
 #  endif
-#  if !defined(MAC_OS_X_VERSION_10_7)
-#       define MAC_OS_X_VERSION_10_7 1070
-#  endif
-#  if !defined(MAC_OS_X_VERSION_10_8)
-#       define MAC_OS_X_VERSION_10_8 1080
-#  endif
-#  if !defined(MAC_OS_X_VERSION_10_9)
-#       define MAC_OS_X_VERSION_10_9 1090
-#  endif
-#  if !defined(MAC_OS_X_VERSION_10_10)
-#       define MAC_OS_X_VERSION_10_10 101000
+#  if !defined(__MAC_10_14)
+#       define __MAC_10_14 101400
 #  endif
 #  if !defined(MAC_OS_X_VERSION_10_11)
 #       define MAC_OS_X_VERSION_10_11 101100
@@ -258,55 +237,10 @@
 #  if !defined(MAC_OS_X_VERSION_10_13)
 #       define MAC_OS_X_VERSION_10_13 101300
 #  endif
+#  if !defined(MAC_OS_X_VERSION_10_14)
+#       define MAC_OS_X_VERSION_10_14 101400
+#  endif
 #
-#  if !defined(__IPHONE_4_3)
-#       define __IPHONE_4_3 40300
-#  endif
-#  if !defined(__IPHONE_5_0)
-#       define __IPHONE_5_0 50000
-#  endif
-#  if !defined(__IPHONE_5_1)
-#       define __IPHONE_5_1 50100
-#  endif
-#  if !defined(__IPHONE_6_0)
-#       define __IPHONE_6_0 60000
-#  endif
-#  if !defined(__IPHONE_6_1)
-#       define __IPHONE_6_1 60100
-#  endif
-#  if !defined(__IPHONE_7_0)
-#       define __IPHONE_7_0 70000
-#  endif
-#  if !defined(__IPHONE_7_1)
-#       define __IPHONE_7_1 70100
-#  endif
-#  if !defined(__IPHONE_8_0)
-#       define __IPHONE_8_0 80000
-#  endif
-#  if !defined(__IPHONE_8_1)
-#       define __IPHONE_8_1 80100
-#  endif
-#  if !defined(__IPHONE_8_2)
-#       define __IPHONE_8_2 80200
-#  endif
-#  if !defined(__IPHONE_8_3)
-#       define __IPHONE_8_3 80300
-#  endif
-#  if !defined(__IPHONE_8_4)
-#       define __IPHONE_8_4 80400
-#  endif
-#  if !defined(__IPHONE_9_0)
-#       define __IPHONE_9_0 90000
-#  endif
-#  if !defined(__IPHONE_9_1)
-#       define __IPHONE_9_1 90100
-#  endif
-#  if !defined(__IPHONE_9_2)
-#       define __IPHONE_9_2 90200
-#  endif
-#  if !defined(__IPHONE_9_3)
-#       define __IPHONE_9_3 90300
-#  endif
 #  if !defined(__IPHONE_10_0)
 #       define __IPHONE_10_0 100000
 #  endif
@@ -321,6 +255,9 @@
 #  endif
 #  if !defined(__IPHONE_11_0)
 #       define __IPHONE_11_0 110000
+#  endif
+#  if !defined(__IPHONE_12_0)
+#       define __IPHONE_12_0 120000
 #  endif
 #endif
 

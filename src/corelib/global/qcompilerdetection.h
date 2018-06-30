@@ -629,7 +629,7 @@
 #      define Q_COMPILER_THREAD_LOCAL
 #      define Q_COMPILER_UDL
 #    endif
-#  elif defined(__STDC_VERSION__) && __STDC_VERSION__ > 199901L s
+#  elif defined(__STDC_VERSION__) && __STDC_VERSION__ > 199901L
 //   C11 features supported. Only tested with ICC 17 and up.
 #    define Q_COMPILER_STATIC_ASSERT
 #    if __has_include(<threads.h>)

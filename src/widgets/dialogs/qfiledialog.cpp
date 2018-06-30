@@ -1463,19 +1463,6 @@ void QFileDialog::selectNameFilter(const QString &filter)
 }
 
 /*!
- * \since 5.9
- * \return The mimetype of the file that the user selected in the file dialog.
- */
-QString QFileDialog::selectedMimeTypeFilter() const
-{
-    Q_D(const QFileDialog);
-    if (!d->usingWidgets())
-        return d->selectedMimeTypeFilter_sys();
-
-    return d->options->initiallySelectedMimeTypeFilter();
-}
-
-/*!
     \since 4.4
 
     Returns the filter that the user selected in the file dialog.
@@ -1610,6 +1597,36 @@ void QFileDialog::selectMimeTypeFilter(const QString &filter)
 }
 
 #endif // QT_NO_MIMETYPE
+
+/*!
+ * \since 5.9
+ * \return The mimetype of the file that the user selected in the file dialog.
+ */
+QString QFileDialog::selectedMimeTypeFilter() const
+{
+    Q_D(const QFileDialog);
+    QString mimeTypeFilter;
+    if (!d->usingWidgets())
+        mimeTypeFilter = d->selectedMimeTypeFilter_sys();
+
+#ifndef QT_NO_MIMETYPE
+    if (mimeTypeFilter.isNull() && !d->options->mimeTypeFilters().isEmpty()) {
+        const auto nameFilter = selectedNameFilter();
+        const auto mimeTypes = d->options->mimeTypeFilters();
+        for (const auto &mimeType: mimeTypes) {
+            QString filter = nameFilterForMime(mimeType);
+            if (testOption(HideNameFilterDetails))
+                filter = qt_strip_filters({ filter }).first();
+            if (filter == nameFilter) {
+                mimeTypeFilter = mimeType;
+                break;
+            }
+        }
+    }
+#endif
+
+    return mimeTypeFilter;
+}
 
 /*!
     \property QFileDialog::viewMode

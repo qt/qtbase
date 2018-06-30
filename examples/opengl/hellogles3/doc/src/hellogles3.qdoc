@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -26,11 +26,21 @@
 ****************************************************************************/
 
 /*!
-    \example complexpingpong
-    \title Complex Ping Pong Example
+    \example hellogles3
+    \title Hello GLES3 Example
+    \ingroup examples-widgets-opengl
 
-    The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
-    a more useful demonstration of D-Bus interfaces.
+    \brief The Hello GLES3 example demonstrates easy, cross-platform usage of
+    OpenGL ES 3.0 functions via QOpenGLExtraFunctions in an application that
+    works identically on desktop platforms with OpenGL 3.3 and mobile/embedded
+    devices with OpenGL ES 3.0.
 
-    \quotefile doc/src/snippets/complexpingpong-example.txt
+    The code is always the same, with the exception of two places:
+    \list
+      \li The OpenGL context creation has to have a sufficiently high version
+    number for the features that are in use.
+      \li The shader code's version directive is different.
+    \endlist
+
+    \image hellogles3-example.png
 */

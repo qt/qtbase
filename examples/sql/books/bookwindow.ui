@@ -33,7 +33,7 @@
     <item>
      <widget class="QGroupBox" name="groupBox">
       <property name="title">
-       <string>Books</string>
+       <string/>
       </property>
       <layout class="QVBoxLayout">
        <property name="spacing">

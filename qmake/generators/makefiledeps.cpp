@@ -1050,7 +1050,7 @@ void QMakeSourceFileInfo::saveCache(const QString &cf)
     QFile file(QMakeLocalFileName(cf).local());
     if(file.open(QIODevice::WriteOnly)) {
         QTextStream stream(&file);
-        stream << qmake_version() << endl << endl; //version
+        stream << QMAKE_VERSION_STR << endl << endl; //version
         { //cache verification
             QMap<QString, QStringList> verify = getCacheVerification();
              stream << verify.count() << endl;
@@ -1105,11 +1105,11 @@ void QMakeSourceFileInfo::loadCache(const QString &cf)
         return;
 
     QFile file;
-    if(!file.open(QIODevice::ReadOnly, fd))
+    if (!file.open(fd, QIODevice::ReadOnly))
         return;
     QTextStream stream(&file);
 
-    if(stream.readLine() == qmake_version()) { //version check
+    if (stream.readLine() == QMAKE_VERSION_STR) { //version check
         stream.skipWhiteSpace();
 
         bool verified = true;

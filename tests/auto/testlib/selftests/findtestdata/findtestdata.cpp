@@ -134,6 +134,30 @@ void FindTestData::paths()
 #endif
     QVERIFY(QFile(testfile_path3).remove());
 
+#if !defined(Q_OS_WIN)
+    struct ChdirOnReturn
+    {
+        ~ChdirOnReturn() { QDir::setCurrent(dir); }
+        QString dir;
+    };
+
+    // When cross-compiling from Windows to a *nix system the __FILE__ path's canonical path is an
+    // empty string, which, when used as a prefix, would cause QFINDTESTDATA to look for files in
+    // root ('/') when trying to look for files relative to the test source.
+    QString usrPath = app_path + "/temp/usr/";
+    QVERIFY(QDir().mkpath(usrPath));
+    {
+        ChdirOnReturn chdirObject{QDir::currentPath()};
+        QDir::setCurrent(app_path + "/temp");
+        QCOMPARE(QTest::qFindTestData("usr/",
+                                      "C:\\path\\to\\source\\source.cpp",
+                                      __LINE__,
+                                      "C:\\path\\to\\build\\").toLower(),
+                usrPath.toLower());
+    }
+    QVERIFY(QDir().rmpath(usrPath));
+#endif
+
     // Note, this is expected to generate a warning.
     // We can't use ignoreMessage, because the warning comes from testlib,
     // not via a "normal" qWarning.  But it's OK, our caller (tst_selftests)

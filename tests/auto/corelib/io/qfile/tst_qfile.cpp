@@ -85,6 +85,12 @@ QT_END_NAMESPACE
 #include <stdio.h>
 #include <errno.h>
 
+#ifdef Q_OS_ANDROID
+// Android introduces a braindamaged fileno macro that isn't
+// compatible with the POSIX fileno or its own FILE type.
+#  undef fileno
+#endif
+
 #if defined(Q_OS_WIN)
 #include "../../../network-settings.h"
 #endif
@@ -442,10 +448,12 @@ void tst_QFile::initTestCase()
 {
     QVERIFY2(m_temporaryDir.isValid(), qPrintable(m_temporaryDir.errorString()));
 #if QT_CONFIG(process)
-#ifndef Q_OS_WIN
-    m_stdinProcess = QFINDTESTDATA("stdinprocess_helper");
-#else
+#if defined(Q_OS_ANDROID)
+    m_stdinProcess = QCoreApplication::applicationDirPath() + QLatin1String("/libstdinprocess_helper.so");
+#elif defined(Q_OS_WIN)
     m_stdinProcess = QFINDTESTDATA("stdinprocess_helper.exe");
+#else
+    m_stdinProcess = QFINDTESTDATA("stdinprocess_helper");
 #endif
     QVERIFY(!m_stdinProcess.isEmpty());
 #endif
@@ -962,6 +970,9 @@ void tst_QFile::readAllStdin()
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
+#if defined(Q_OS_ANDROID)
+    QSKIP("This test crashes when doing nanosleep. See QTBUG-69034.");
+#endif
     QByteArray lotsOfData(1024, '@'); // 10 megs
 
     QProcess process;
@@ -985,6 +996,9 @@ void tst_QFile::readLineStdin()
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
+#if defined(Q_OS_ANDROID)
+    QSKIP("This test crashes when doing nanosleep. See QTBUG-69034.");
+#endif
     QByteArray lotsOfData(1024, '@'); // 10 megs
     for (int i = 0; i < lotsOfData.size(); ++i) {
         if ((i % 32) == 31)
@@ -1026,6 +1040,9 @@ void tst_QFile::readLineStdin_lineByLine()
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
+#if defined(Q_OS_ANDROID)
+    QSKIP("This test crashes when calling ::poll. See QTBUG-69034.");
+#endif
     for (int i = 0; i < 2; ++i) {
         QProcess process;
         StdinReaderProcessGuard processGuard(&process);

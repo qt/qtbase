@@ -72,25 +72,38 @@ static QRegExp whitespaceRegex = QRegExp(QStringLiteral("\\s*"));
 /*!
     Overridden to ensure that the zoomed state always results in a maximized
     window, which would otherwise not be the case for borderless windows.
+
+    We also keep the window on the same screen as before; something AppKit
+    sometimes fails to do using its built in logic.
 */
 - (NSRect)windowWillUseStandardFrame:(NSWindow *)window defaultFrame:(NSRect)proposedFrame
 {
     Q_UNUSED(proposedFrame);
     Q_ASSERT(window == m_cocoaWindow->nativeWindow());
-
-    // We compute the maximized state based on the maximum size, and
-    // the current position of the window. This may result in the window
-    // geometry falling outside of the current screen's available geometry,
-    // e.g. when there is not maximize size set, but this is okey, AppKit
-    // will then shift and possibly clip the geometry for us.
     const QWindow *w = m_cocoaWindow->window();
-    QRect maximizedRect = QRect(w->framePosition(), w->maximumSize());
 
-    // QWindow::maximumSize() refers to the client size,
-    // but AppKit expects the full frame size.
-    maximizedRect.adjust(0, 0, 0, w->frameMargins().top());
+    // maximumSize() refers to the client size, but AppKit expects the full frame size
+    QSizeF maximumSize = w->maximumSize() + QSize(0, w->frameMargins().top());
 
-    return QCocoaScreen::mapToNative(maximizedRect);
+    // The window should never be larger than the current screen geometry
+    const QRectF screenGeometry = m_cocoaWindow->screen()->geometry();
+    maximumSize = maximumSize.boundedTo(screenGeometry.size());
+
+    // Use the current frame position for the initial maximized frame,
+    // so that the window stays put and just expand, in case its maximum
+    // size is within the screen bounds.
+    QRectF maximizedFrame = QRectF(w->framePosition(), maximumSize);
+
+    // But constrain the frame to the screen bounds in case the frame
+    // extends beyond the screen bounds as a result of starting out
+    // with the current frame position.
+    maximizedFrame.translate(QPoint(
+        qMax(screenGeometry.left() - maximizedFrame.left(), 0.0) +
+        qMin(screenGeometry.right() - maximizedFrame.right(), 0.0),
+        qMax(screenGeometry.top() - maximizedFrame.top(), 0.0) +
+        qMin(screenGeometry.bottom() - maximizedFrame.bottom(), 0.0)));
+
+    return QCocoaScreen::mapToNative(maximizedFrame);
 }
 
 - (BOOL)window:(NSWindow *)window shouldPopUpDocumentPathMenu:(NSMenu *)menu

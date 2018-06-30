@@ -1696,11 +1696,21 @@ public:
     Q_ENUM(MyEnum)
 };
 
+class MyQObjectFromGadget : public QObject, public MyGadget
+{
+    Q_OBJECT
+public:
+    MyQObjectFromGadget(QObject *parent = 0)
+        : QObject(parent)
+    {}
+};
+
 Q_DECLARE_METATYPE(MyGadget);
 Q_DECLARE_METATYPE(MyGadget*);
 Q_DECLARE_METATYPE(const QMetaObject *);
 Q_DECLARE_METATYPE(Qt::ScrollBarPolicy);
 Q_DECLARE_METATYPE(MyGadget::MyEnum);
+Q_DECLARE_METATYPE(MyQObjectFromGadget*);
 
 void tst_QMetaType::metaObject_data()
 {
@@ -1719,6 +1729,7 @@ void tst_QMetaType::metaObject_data()
     QTest::newRow("MyGadget*") << ::qMetaTypeId<MyGadget*>() << &MyGadget::staticMetaObject << false << true << false;
     QTest::newRow("MyEnum") << ::qMetaTypeId<MyGadget::MyEnum>() <<  &MyGadget::staticMetaObject << false << false << false;
     QTest::newRow("Qt::ScrollBarPolicy") << ::qMetaTypeId<Qt::ScrollBarPolicy>() <<  &QObject::staticQtMetaObject << false << false << false;
+    QTest::newRow("MyQObjectFromGadget*") << ::qMetaTypeId<MyQObjectFromGadget*>() << &MyQObjectFromGadget::staticMetaObject << false << false << true;
 
     QTest::newRow("GadgetDerivedAndTyped<int>") << ::qMetaTypeId<GadgetDerivedAndTyped<int>>() <<  &GadgetDerivedAndTyped<int>::staticMetaObject << true << false << false;
     QTest::newRow("GadgetDerivedAndTyped<int>*") << ::qMetaTypeId<GadgetDerivedAndTyped<int>*>() <<  &GadgetDerivedAndTyped<int>::staticMetaObject << false << true << false;

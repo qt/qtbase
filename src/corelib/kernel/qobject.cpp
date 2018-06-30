@@ -511,7 +511,7 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
 
 /*!
     \class QSignalBlocker
-    \brief Exception-safe wrapper around QObject::blockSignals()
+    \brief Exception-safe wrapper around QObject::blockSignals().
     \since 5.3
     \ingroup objectmodel
     \inmodule QtCore

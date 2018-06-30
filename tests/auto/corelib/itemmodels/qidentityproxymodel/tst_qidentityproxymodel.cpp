@@ -26,9 +26,12 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
-#include <QtCore/QCoreApplication>
-#include <QtGui/QStandardItemModel>
+#include <QAbstractItemModelTester>
+#include <QCoreApplication>
+#include <QSignalSpy>
+#include <QStandardItemModel>
+#include <QStringListModel>
+#include <QTest>
 
 #include "dynamictreemodel.h"
 #include "qidentityproxymodel.h"
@@ -76,6 +79,7 @@ protected:
 private:
     QStandardItemModel *m_model;
     QIdentityProxyModel *m_proxy;
+    QAbstractItemModelTester *m_modelTest;
 };
 
 tst_QIdentityProxyModel::tst_QIdentityProxyModel()
@@ -88,12 +92,14 @@ void tst_QIdentityProxyModel::initTestCase()
     qRegisterMetaType<QVector<int> >();
     m_model = new QStandardItemModel(0, 1);
     m_proxy = new QIdentityProxyModel();
+    m_modelTest = new QAbstractItemModelTester(m_proxy, this);
 }
 
 void tst_QIdentityProxyModel::cleanupTestCase()
 {
     delete m_proxy;
     delete m_model;
+    delete m_modelTest;
 }
 
 void tst_QIdentityProxyModel::cleanup()

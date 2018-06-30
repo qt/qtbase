@@ -243,7 +243,8 @@ void GLWindow::initializeGL()
     f->glEnableVertexAttribArray(0);
     f->glEnableVertexAttribArray(1);
     f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), 0);
-    f->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), reinterpret_cast<void *>(3 * sizeof(GLfloat)));
+    f->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat),
+                             reinterpret_cast<void *>(3 * sizeof(GLfloat)));
     m_vbo->release();
 
     f->glEnable(GL_DEPTH_TEST);

@@ -305,7 +305,7 @@ int QDBusAbstractInterfaceBase::qt_metacall(QMetaObject::Call _c, int _id, void 
     \inmodule QtDBus
     \since 4.2
 
-    \brief The QDBusAbstractInterface class is the base class for all D-Bus interfaces in the Qt D-Bus binding, allowing access to remote interfaces
+    \brief The QDBusAbstractInterface class is the base class for all D-Bus interfaces in the Qt D-Bus binding, allowing access to remote interfaces.
 
     Generated-code classes also derive from QDBusAbstractInterface,
     all methods described here are also valid for generated-code

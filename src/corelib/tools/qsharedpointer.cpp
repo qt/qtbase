@@ -46,7 +46,7 @@
 /*!
     \class QSharedPointer
     \inmodule QtCore
-    \brief The QSharedPointer class holds a strong reference to a shared pointer
+    \brief The QSharedPointer class holds a strong reference to a shared pointer.
     \since 4.5
 
     \reentrant
@@ -315,7 +315,7 @@
 /*!
     \class QWeakPointer
     \inmodule QtCore
-    \brief The QWeakPointer class holds a weak reference to a shared pointer
+    \brief The QWeakPointer class holds a weak reference to a shared pointer.
     \since 4.5
     \reentrant
 
@@ -373,7 +373,7 @@
 /*!
     \class QEnableSharedFromThis
     \inmodule QtCore
-    \brief A base class that allows obtaining a QSharedPointer for an object already managed by a shared pointer
+    \brief A base class that allows obtaining a QSharedPointer for an object already managed by a shared pointer.
     \since 5.4
 
     You can inherit this class when you need to create a QSharedPointer

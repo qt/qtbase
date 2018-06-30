@@ -1,0 +1,31 @@
+From 946903d23ae361ddb05d2c0f64b339eb1694311b Mon Sep 17 00:00:00 2001
+From: Corentin Wallez <cwallez@chromium.org>
+Date: Mon, 18 Apr 2016 17:30:07 -0400
+Subject: [PATCH] Remove usage of auto_ptr in MacroExpander
+
+BUG=angleproject:1269
+
+Change-Id: I1fafa102b065f6da1797e8790ec3ed498d9d8b45
+Reviewed-on: https://chromium-review.googlesource.com/339379
+Reviewed-by: Jamie Madill <jmadill@chromium.org>
+Commit-Queue: Corentin Wallez <cwallez@chromium.org>
+---
+ src/compiler/preprocessor/MacroExpander.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/compiler/preprocessor/MacroExpander.h b/src/compiler/preprocessor/MacroExpander.h
+index 3cc860d75..dc870f626 100644
+--- a/src/3rdparty/angle/src/compiler/preprocessor/MacroExpander.h
++++ b/src/3rdparty/angle/src/compiler/preprocessor/MacroExpander.h
+@@ -83,7 +83,7 @@ class MacroExpander : public Lexer
+     Diagnostics *mDiagnostics;
+     bool mParseDefined;
+ 
+-    std::auto_ptr<Token> mReserveToken;
++    std::unique_ptr<Token> mReserveToken;
+     std::vector<MacroContext *> mContextStack;
+ };
+ 
+-- 
+2.15.0.windows.1
+

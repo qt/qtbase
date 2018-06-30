@@ -28,7 +28,7 @@
 /*!
     \example saxbookmarks
     \title SAX Bookmarks Example
-    \brief Demonstrates how to read XBEL files
+    \brief Demonstrates how to read XBEL files.
     \ingroup xml-examples
 
     This example uses Qt's SAX API to read and parse the files. The DOM Bookmarks

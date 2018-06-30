@@ -344,6 +344,11 @@ void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, qint64 nsecs, Qt::Time
         deadline.setRemainingTime(250ms);
     \endcode
 
+    \note Qt detects the necessary C++14 compiler support by way of the feature
+    test recommendations from
+    \l{https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations}
+    {C++ Committee's Standing Document 6}.
+
     \sa setDeadline(), remainingTime(), hasExpired(), isForever()
 */
 

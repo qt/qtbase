@@ -42,6 +42,8 @@
 
 #include <QtCore/QObject>
 #include <QtTest/qttestglobal.h>
+#include <QtCore/QAbstractItemModel>
+#include <QtCore/QVariant>
 
 #ifdef QT_GUI_LIB
 #include <QtGui/QFont>

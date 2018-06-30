@@ -149,7 +149,7 @@
 
     For mouse press and mouse release events, we use the
     QMouseEvent::button() function to find out which button caused
-    the event. For mose move events, we use QMouseEvent::buttons()
+    the event. For mouse move events, we use QMouseEvent::buttons()
     to find which buttons are currently held down (as an OR-combination).
 
     If the users press the left mouse button, we store the position

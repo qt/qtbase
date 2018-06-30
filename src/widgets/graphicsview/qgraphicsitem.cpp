@@ -1579,6 +1579,7 @@ QGraphicsItem::~QGraphicsItem()
         QObjectPrivate *p = QObjectPrivate::get(o);
         p->wasDeleted = true;
         if (p->declarativeData) {
+            p->wasDeleted = true; // needed, so that destroying the declarative data does the right thing
             if (static_cast<QAbstractDeclarativeDataImpl*>(p->declarativeData)->ownedByQml1) {
                 if (QAbstractDeclarativeData::destroyed_qml1)
                     QAbstractDeclarativeData::destroyed_qml1(p->declarativeData, o);
@@ -1587,6 +1588,7 @@ QGraphicsItem::~QGraphicsItem()
                     QAbstractDeclarativeData::destroyed(p->declarativeData, o);
             }
             p->declarativeData = 0;
+            p->wasDeleted = false;
         }
     }
 

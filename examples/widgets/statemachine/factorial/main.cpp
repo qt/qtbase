@@ -175,7 +175,7 @@ int main(int argc, char **argv)
 
 //! [6]
     machine.setInitialState(compute);
-    QObject::connect(&machine, SIGNAL(finished()), &app, SLOT(quit()));
+    QObject::connect(&machine, &QStateMachine::finished, &app, QCoreApplication::quit);
     machine.start();
 
     return app.exec();

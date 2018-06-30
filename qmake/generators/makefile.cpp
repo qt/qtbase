@@ -1141,7 +1141,7 @@ MakefileGenerator::writeObj(QTextStream &t, const char *src)
         QString srcf = (*sit).toQString();
         QString dstf = (*oit).toQString();
         t << escapeDependencyPath(dstf) << ": " << escapeDependencyPath(srcf)
-          << " " << escapeDependencyPaths(findDependencies(srcf)).join(" \\\n\t\t");
+          << " " << finalizeDependencyPaths(findDependencies(srcf)).join(" \\\n\t\t");
 
         ProKey comp;
         for (const ProString &compiler : project->values("QMAKE_BUILTIN_COMPILERS")) {
@@ -2013,7 +2013,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             if (config.indexOf("explicit_dependencies") != -1) {
                 t << " " << valList(escapeDependencyPaths(fileFixify(tmp_dep, FileFixifyFromOutdir)));
             } else {
-                t << " " << valList(escapeDependencyPaths(inputs)) << " " << valList(escapeDependencyPaths(deps));
+                t << " " << valList(escapeDependencyPaths(inputs)) << " " << valList(finalizeDependencyPaths(deps));
             }
             t << "\n\t" << cmd << endl << endl;
             continue;
@@ -2133,7 +2133,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 else
                     ++i;
             }
-            t << escapeDependencyPath(out) << ": " << valList(escapeDependencyPaths(deps)) << "\n\t"
+            t << escapeDependencyPath(out) << ": " << valList(finalizeDependencyPaths(deps)) << "\n\t"
               << cmd << endl << endl;
         }
     }
@@ -2823,6 +2823,19 @@ MakefileGenerator::escapeFilePaths(const ProStringList &paths) const
     return ret;
 }
 
+QString
+MakefileGenerator::escapeDependencyPath(const QString &path) const
+{
+    QString ret = path;
+    if (!ret.isEmpty()) {
+        // Unix make semantics, to be inherited by unix and mingw generators.
+        static const QRegExp criticalChars(QStringLiteral("([\t :#])"));
+        ret.replace(criticalChars, QStringLiteral("\\\\1"));
+        debug_msg(2, "escapeDependencyPath: %s -> %s", path.toLatin1().constData(), ret.toLatin1().constData());
+    }
+    return ret;
+}
+
 ProString
 MakefileGenerator::escapeDependencyPath(const ProString &path) const
 {
@@ -2848,6 +2861,17 @@ MakefileGenerator::escapeDependencyPaths(const ProStringList &paths) const
     ret.reserve(size);
     for (int i = 0; i < size; ++i)
         ret.append(escapeDependencyPath(paths.at(i).toQString()));
+    return ret;
+}
+
+QStringList
+MakefileGenerator::finalizeDependencyPaths(const QStringList &paths) const
+{
+    QStringList ret;
+    const int size = paths.size();
+    ret.reserve(size);
+    for (int i = 0; i < size; ++i)
+        ret.append(escapeDependencyPath(Option::fixPathToTargetOS(paths.at(i), false)));
     return ret;
 }
 

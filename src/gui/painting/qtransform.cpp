@@ -798,15 +798,15 @@ bool QTransform::operator==(const QTransform &o) const
 uint qHash(const QTransform &key, uint seed) Q_DECL_NOTHROW
 {
     QtPrivate::QHashCombine hash;
-    seed = hash(key.m11(), seed);
-    seed = hash(key.m12(), seed);
-    seed = hash(key.m21(), seed);
-    seed = hash(key.m22(), seed);
-    seed = hash(key.dx(),  seed);
-    seed = hash(key.dy(),  seed);
-    seed = hash(key.m13(), seed);
-    seed = hash(key.m23(), seed);
-    seed = hash(key.m33(), seed);
+    seed = hash(seed, key.m11());
+    seed = hash(seed, key.m12());
+    seed = hash(seed, key.m21());
+    seed = hash(seed, key.m22());
+    seed = hash(seed, key.dx());
+    seed = hash(seed, key.dy());
+    seed = hash(seed, key.m13());
+    seed = hash(seed, key.m23());
+    seed = hash(seed, key.m33());
     return seed;
 }
 

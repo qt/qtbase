@@ -334,7 +334,7 @@ int qFindByteArray(
     \class QStaticByteArrayMatcher
     \since 5.9
     \inmodule QtCore
-    \brief The QStaticByteArrayMatcher class is a compile-time version of QByteArrayMatcher
+    \brief The QStaticByteArrayMatcher class is a compile-time version of QByteArrayMatcher.
 
     \ingroup tools
     \ingroup string-processing
@@ -365,6 +365,11 @@ int qFindByteArray(
 
     Since this class is designed to do all the up-front calculations at compile-time,
     it does not offer a setPattern() method.
+
+    \note Qt detects the necessary C++14 compiler support by way of the feature
+    test recommendations from
+    \l{https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations}
+    {C++ Committee's Standing Document 6}.
 
     \sa QByteArrayMatcher, QStringMatcher
 */

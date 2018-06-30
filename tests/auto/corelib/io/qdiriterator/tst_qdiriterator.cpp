@@ -120,7 +120,7 @@ void tst_QDirIterator::initTestCase()
 {
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     QString testdata_dir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-    QString resourceSourcePath = QStringLiteral(":/");
+    QString resourceSourcePath = QStringLiteral(":/testdata");
     QDirIterator it(resourceSourcePath, QDirIterator::Subdirectories);
     while (it.hasNext()) {
         it.next();
@@ -141,7 +141,7 @@ void tst_QDirIterator::initTestCase()
 
     testdata_dir += QStringLiteral("/entrylist");
 #elif defined(BUILTIN_TESTDATA)
-    m_dataDir = QEXTRACTTESTDATA("/");
+    m_dataDir = QEXTRACTTESTDATA("/testdata");
     QVERIFY2(!m_dataDir.isNull(), qPrintable("Could not extract test data"));
     QString testdata_dir = m_dataDir->path();
 #else
@@ -399,18 +399,18 @@ void tst_QDirIterator::iterateResource_data()
     QTest::addColumn<QStringList>("nameFilters");
     QTest::addColumn<QStringList>("entries");
 
-    QTest::newRow("invalid") << QString::fromLatin1(":/burpaburpa") << QDirIterator::IteratorFlags(0)
+    QTest::newRow("invalid") << QString::fromLatin1(":/testdata/burpaburpa") << QDirIterator::IteratorFlags(0)
                              << QDir::Filters(QDir::NoFilter) << QStringList(QLatin1String("*"))
                              << QStringList();
-    QTest::newRow(":/") << QString::fromLatin1(":/") << QDirIterator::IteratorFlags(0)
+    QTest::newRow(":/testdata") << QString::fromLatin1(":/testdata/") << QDirIterator::IteratorFlags(0)
                                << QDir::Filters(QDir::NoFilter) << QStringList(QLatin1String("*"))
-                               << QString::fromLatin1(":/entrylist").split(QLatin1String(","));
-    QTest::newRow(":/entrylist") << QString::fromLatin1(":/entrylist") << QDirIterator::IteratorFlags(0)
+                               << QString::fromLatin1(":/testdata/entrylist").split(QLatin1String(","));
+    QTest::newRow(":/testdata/entrylist") << QString::fromLatin1(":/testdata/entrylist") << QDirIterator::IteratorFlags(0)
                                << QDir::Filters(QDir::NoFilter) << QStringList(QLatin1String("*"))
-                               << QString::fromLatin1(":/entrylist/directory,:/entrylist/file").split(QLatin1String(","));
-    QTest::newRow(":/ recursive") << QString::fromLatin1(":/") << QDirIterator::IteratorFlags(QDirIterator::Subdirectories)
+                               << QString::fromLatin1(":/testdata/entrylist/directory,:/testdata/entrylist/file").split(QLatin1String(","));
+    QTest::newRow(":/testdata recursive") << QString::fromLatin1(":/testdata") << QDirIterator::IteratorFlags(QDirIterator::Subdirectories)
                                          << QDir::Filters(QDir::NoFilter) << QStringList(QLatin1String("*"))
-                                         << QString::fromLatin1(":/entrylist,:/entrylist/directory,:/entrylist/directory/dummy,:/entrylist/file").split(QLatin1String(","));
+                                         << QString::fromLatin1(":/testdata/entrylist,:/testdata/entrylist/directory,:/testdata/entrylist/directory/dummy,:/testdata/entrylist/file").split(QLatin1String(","));
 }
 
 void tst_QDirIterator::iterateResource()

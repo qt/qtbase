@@ -37,4 +37,4 @@ win32:!winrt:qtHaveModule(network): SUBDIRS += noqteventloop
 
 !qtConfig(opengl): SUBDIRS -= qopenglwindow
 
-uikit: SUBDIRS -= qclipboard
+android|uikit: SUBDIRS -= qclipboard

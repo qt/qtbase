@@ -94,7 +94,11 @@ void tst_QUuid::initTestCase()
 
 #if QT_CONFIG(process)
     // chdir to the directory containing our testdata, then refer to it with relative paths
+#ifdef Q_OS_ANDROID
+    QString testdata_dir = QCoreApplication::applicationDirPath();
+#else // !Q_OS_ANDROID
     QString testdata_dir = QFileInfo(QFINDTESTDATA("testProcessUniqueness")).absolutePath();
+#endif
     QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
 #endif
 
@@ -401,6 +405,9 @@ void tst_QUuid::processUniqueness()
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
+#ifdef Q_OS_ANDROID
+    QSKIP("This test crashes on Android");
+#endif
     QProcess process;
     QString processOneOutput;
     QString processTwoOutput;
@@ -408,6 +415,8 @@ void tst_QUuid::processUniqueness()
     // Start it once
 #ifdef Q_OS_MAC
     process.start("testProcessUniqueness/testProcessUniqueness.app");
+#elif defined(Q_OS_ANDROID)
+    process.start("libtestProcessUniqueness.so");
 #else
     process.start("testProcessUniqueness/testProcessUniqueness");
 #endif
@@ -417,6 +426,8 @@ void tst_QUuid::processUniqueness()
     // Start it twice
 #ifdef Q_OS_MAC
     process.start("testProcessUniqueness/testProcessUniqueness.app");
+#elif defined(Q_OS_ANDROID)
+    process.start("libtestProcessUniqueness.so");
 #else
     process.start("testProcessUniqueness/testProcessUniqueness");
 #endif

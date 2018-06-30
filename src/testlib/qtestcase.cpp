@@ -1634,8 +1634,10 @@ DebugSymbolResolver::DebugSymbolResolver(HANDLE process)
     bool success = false;
     m_dbgHelpLib = LoadLibraryW(L"dbghelp.dll");
     if (m_dbgHelpLib) {
-        SymInitializeType symInitialize = (SymInitializeType)(GetProcAddress(m_dbgHelpLib, "SymInitialize"));
-        m_symFromAddr = (SymFromAddrType)(GetProcAddress(m_dbgHelpLib, "SymFromAddr"));
+        SymInitializeType symInitialize = reinterpret_cast<SymInitializeType>(
+            reinterpret_cast<QFunctionPointer>(GetProcAddress(m_dbgHelpLib, "SymInitialize")));
+        m_symFromAddr = reinterpret_cast<SymFromAddrType>(
+            reinterpret_cast<QFunctionPointer>(GetProcAddress(m_dbgHelpLib, "SymFromAddr")));
         success = symInitialize && m_symFromAddr && symInitialize(process, NULL, TRUE);
     }
     if (!success)
@@ -2166,8 +2168,9 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
             srcdir.setFile(QFile::decodeName(builddir) + QLatin1String("/") + srcdir.filePath());
         }
 
-        QString candidate = QString::fromLatin1("%1/%2").arg(srcdir.canonicalFilePath(), base);
-        if (QFileInfo::exists(candidate)) {
+        const QString canonicalPath = srcdir.canonicalFilePath();
+        QString candidate = QString::fromLatin1("%1/%2").arg(canonicalPath, base);
+        if (!canonicalPath.isEmpty() && QFileInfo::exists(candidate)) {
             found = candidate;
         }
         else if (QTestLog::verboseLevel() >= 2) {

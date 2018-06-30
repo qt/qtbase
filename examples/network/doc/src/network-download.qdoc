@@ -28,7 +28,7 @@
 /*!
     \example download
     \title Network Download Example
-    \brief Demonstrates how to use networking APIs for multiple downloads
+    \brief Demonstrates how to use networking APIs for multiple downloads.
     \ingroup examples-network
 
     The Network Download example shows how to perform multiple downloads in

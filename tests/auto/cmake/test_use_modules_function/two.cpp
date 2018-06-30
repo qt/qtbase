@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2011 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Stephen Kelly <stephen.kelly@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -26,29 +26,18 @@
 **
 ****************************************************************************/
 
+#include <QtTest>
 
-#include <QtCore/QtCore>
-#include <QtNetwork/QtNetwork>
-#include <QtXml/QtXml>
-#include <QtSql/QtSql>
-
-#ifndef QT_NO_GUI
-#include <QtGui/QtGui>
-#endif
-
-#ifndef QT_NO_OPENGL
-#include <QtOpenGL/QtOpenGL>
-#endif
-
-#include <QtTest/QtTest>
-
-#if !defined(QT_NO_DBUS) && defined(Q_OS_UNIX)
-#include <QtDBus/QtDBus>
-#endif
-
-#ifndef Q_OS_MAC
-int main(int, char **)
+class Two : public QObject
 {
-    return 0;
-}
-#endif
+    Q_OBJECT
+public:
+    Two(QObject *parent = 0)
+    {
+
+    }
+};
+
+QTEST_MAIN(Two)
+
+#include "two.moc"

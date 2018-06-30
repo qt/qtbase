@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
     \ingroup shared
     \since 4.5
 
-    \brief The QDBusPendingCall class refers to one pending asynchronous call
+    \brief The QDBusPendingCall class refers to one pending asynchronous call.
 
     A QDBusPendingCall object is a reference to a method call that was
     sent over D-Bus without waiting for a reply. QDBusPendingCall is an
@@ -91,7 +91,7 @@ QT_BEGIN_NAMESPACE
     \since 4.5
 
     \brief The QDBusPendingCallWatcher class provides a convenient way for
-    waiting for asynchronous replies
+    waiting for asynchronous replies.
 
     The QDBusPendingCallWatcher provides the finished() signal that will be
     emitted when a reply arrives.

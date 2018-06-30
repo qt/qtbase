@@ -283,16 +283,21 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::supportedRenderers()
 bool QWindowsOpenGLTester::testDesktopGL()
 {
 #if !defined(QT_NO_OPENGL)
+    typedef HGLRC (WINAPI *CreateContextType)(HDC);
+    typedef BOOL (WINAPI *DeleteContextType)(HGLRC);
+    typedef BOOL (WINAPI *MakeCurrentType)(HDC, HGLRC);
+    typedef PROC (WINAPI *WglGetProcAddressType)(LPCSTR);
+
     HMODULE lib = 0;
     HWND wnd = 0;
     HDC dc = 0;
     HGLRC context = 0;
     LPCTSTR className = L"qtopengltest";
 
-    HGLRC (WINAPI * CreateContext)(HDC dc) = 0;
-    BOOL (WINAPI * DeleteContext)(HGLRC context) = 0;
-    BOOL (WINAPI * MakeCurrent)(HDC dc, HGLRC context) = 0;
-    PROC (WINAPI * WGL_GetProcAddress)(LPCSTR name) = 0;
+    CreateContextType CreateContext = nullptr;
+    DeleteContextType DeleteContext = nullptr;
+    MakeCurrentType MakeCurrent = nullptr;
+    WglGetProcAddressType WGL_GetProcAddress = nullptr;
 
     bool result = false;
 
@@ -300,16 +305,20 @@ bool QWindowsOpenGLTester::testDesktopGL()
     // This will typically fail on systems that do not have a real OpenGL driver.
     lib = LoadLibraryA("opengl32.dll");
     if (lib) {
-        CreateContext = reinterpret_cast<HGLRC (WINAPI *)(HDC)>(::GetProcAddress(lib, "wglCreateContext"));
+        CreateContext = reinterpret_cast<CreateContextType>(
+            reinterpret_cast<QFunctionPointer>(::GetProcAddress(lib, "wglCreateContext")));
         if (!CreateContext)
             goto cleanup;
-        DeleteContext = reinterpret_cast<BOOL (WINAPI *)(HGLRC)>(::GetProcAddress(lib, "wglDeleteContext"));
+        DeleteContext = reinterpret_cast<DeleteContextType>(
+            reinterpret_cast<QFunctionPointer>(::GetProcAddress(lib, "wglDeleteContext")));
         if (!DeleteContext)
             goto cleanup;
-        MakeCurrent = reinterpret_cast<BOOL (WINAPI *)(HDC, HGLRC)>(::GetProcAddress(lib, "wglMakeCurrent"));
+        MakeCurrent = reinterpret_cast<MakeCurrentType>(
+            reinterpret_cast<QFunctionPointer>(::GetProcAddress(lib, "wglMakeCurrent")));
         if (!MakeCurrent)
             goto cleanup;
-        WGL_GetProcAddress = reinterpret_cast<PROC (WINAPI *)(LPCSTR)>(::GetProcAddress(lib, "wglGetProcAddress"));
+        WGL_GetProcAddress = reinterpret_cast<WglGetProcAddressType>(
+            reinterpret_cast<QFunctionPointer>(::GetProcAddress(lib, "wglGetProcAddress")));
         if (!WGL_GetProcAddress)
             goto cleanup;
 
@@ -356,7 +365,8 @@ bool QWindowsOpenGLTester::testDesktopGL()
 
         // Check the version. If we got 1.x then it's all hopeless and we can stop right here.
         typedef const GLubyte * (APIENTRY * GetString_t)(GLenum name);
-        GetString_t GetString = reinterpret_cast<GetString_t>(::GetProcAddress(lib, "glGetString"));
+        GetString_t GetString = reinterpret_cast<GetString_t>(
+            reinterpret_cast<QFunctionPointer>(::GetProcAddress(lib, "glGetString")));
         if (GetString) {
             if (const char *versionStr = reinterpret_cast<const char *>(GetString(GL_VERSION))) {
                 const QByteArray version(versionStr);

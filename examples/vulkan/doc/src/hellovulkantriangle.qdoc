@@ -29,7 +29,7 @@
     \example hellovulkantriangle
     \ingroup examples-vulkan
     \title Hello Vulkan Triangle Example
-    \brief Shows the basics of rendering with QVulkanWindow and the Vulkan API
+    \brief Shows the basics of rendering with QVulkanWindow and the Vulkan API.
 
     The \e{Hello Vulkan Triangle Example} builds on \l hellovulkanwindow. This
     time a full graphics pipeline is created, including a vertex and fragment

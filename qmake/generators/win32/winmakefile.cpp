@@ -773,6 +773,18 @@ QString Win32MakefileGenerator::escapeFilePath(const QString &path) const
     return ret;
 }
 
+QString Win32MakefileGenerator::escapeDependencyPath(const QString &path) const
+{
+    QString ret = path;
+    if (!ret.isEmpty()) {
+        static const QRegExp criticalChars(QStringLiteral("([\t #])"));
+        if (ret.contains(criticalChars))
+            ret = "\"" + ret + "\"";
+        debug_msg(2, "EscapeDependencyPath: %s -> %s", path.toLatin1().constData(), ret.toLatin1().constData());
+    }
+    return ret;
+}
+
 QString Win32MakefileGenerator::cQuoted(const QString &str)
 {
     QString ret = str;

@@ -158,7 +158,7 @@ defineTest(qtConfCommandline_optionalString) {
     nextok = $${3}
     isEmpty(val) {
         $$nextok: val = $$qtConfPeekNextCommandlineArg()
-        contains(val, "^-.*|[A-Z_]+=.*")|isEmpty(val): \
+        contains(val, "^-.*|[A-Z0-9_]+=.*")|isEmpty(val): \
             val = "yes"
         else: \
             val = $$qtConfGetNextCommandlineArg()
@@ -233,9 +233,9 @@ defineTest(qtConfParseCommandLine) {
         $$didCustomCall: \
             next()
 
-        contains(c, "([A-Z_]+)=(.*)") {
-            opt = $$replace(c, "^([A-Z_]+)=(.*)", "\\1")
-            val = $$replace(c, "^([A-Z_]+)=(.*)", "\\2")
+        contains(c, "([A-Z0-9_]+)=(.*)") {
+            opt = $$replace(c, "^([A-Z0-9_]+)=(.*)", "\\1")
+            val = $$replace(c, "^([A-Z0-9_]+)=(.*)", "\\2")
             for (cc, allConfigs) {
                 var = $$eval($${cc}.commandline.assignments.$${opt})
                 !isEmpty(var): \

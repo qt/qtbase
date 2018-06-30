@@ -34,7 +34,7 @@
     isn't, users still dislike an application using excessive memory.
     Using QContiguousCache to manage a list, rather than loading
     the entire list into memory, allows the application to limit the amount
-    of memory it uses, regardless of the size of the data set it accesses
+    of memory it uses, regardless of the size of the data set it accesses.
 
     The simplest way to use QContiguousCache is to cache as items are requested. When
     a view requests an item at row N it is also likely to ask for items at rows near

@@ -56,6 +56,7 @@
 #include "qxcbglintegrationfactory.h"
 #include "qxcbglintegration.h"
 #include "qxcbcursor.h"
+#include "qxcbbackingstore.h"
 
 #include <QSocketNotifier>
 #include <QAbstractEventDispatcher>
@@ -591,7 +592,8 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     initializeAllAtoms();
 
     initializeXSync();
-    initializeShm();
+    if (!qEnvironmentVariableIsSet("QT_XCB_NO_MITSHM"))
+        initializeShm();
     if (!qEnvironmentVariableIsSet("QT_XCB_NO_XRANDR"))
         initializeXRandr();
     if (!has_randr_extension)
@@ -979,7 +981,7 @@ void QXcbConnection::printXcbError(const char *message, xcb_generic_error_t *err
     uint clamped_error_code = qMin<uint>(error->error_code, (sizeof(xcb_errors) / sizeof(xcb_errors[0])) - 1);
     uint clamped_major_code = qMin<uint>(error->major_code, (sizeof(xcb_protocol_request_codes) / sizeof(xcb_protocol_request_codes[0])) - 1);
 
-    qWarning("%s: %d (%s), sequence: %d, resource id: %d, major code: %d (%s), minor code: %d",
+    qCWarning(lcQpaXcb, "%s: %d (%s), sequence: %d, resource id: %d, major code: %d (%s), minor code: %d",
              message,
              int(error->error_code), xcb_errors[clamped_error_code],
              int(error->sequence), int(error->resource_id),
@@ -1661,7 +1663,7 @@ bool QXcbConnection::compressEvent(xcb_generic_event_t *event, int currentIndex,
         if (!hasXInput2())
             return false;
 
-        // compress XI_Motion, but not from tablet devices
+        // compress XI_Motion
         if (isXIType(event, m_xiOpCode, XCB_INPUT_MOTION)) {
 #if QT_CONFIG(tabletevent)
             auto *xdev = reinterpret_cast<xcb_input_motion_event_t *>(event);
@@ -2074,20 +2076,34 @@ void QXcbConnection::initializeShm()
 {
     const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection, &xcb_shm_id);
     if (!reply || !reply->present) {
-        qWarning("QXcbConnection: MIT-SHM extension is not present on the X server.");
+        qCDebug(lcQpaXcb, "MIT-SHM extension is not present on the X server");
         return;
     }
-
     has_shm = true;
 
     auto shm_query = Q_XCB_REPLY(xcb_shm_query_version, m_connection);
-    if (!shm_query) {
-        qWarning("QXcbConnection: Failed to request MIT-SHM version");
-        return;
+    if (shm_query) {
+        has_shm_fd = (shm_query->major_version == 1 && shm_query->minor_version >= 2) ||
+                      shm_query->major_version > 1;
+    } else {
+        qCWarning(lcQpaXcb, "QXcbConnection: Failed to request MIT-SHM version");
     }
 
-    has_shm_fd = (shm_query->major_version == 1 && shm_query->minor_version >= 2) ||
-                  shm_query->major_version > 1;
+    qCDebug(lcQpaXcb) << "Has MIT-SHM     :" << has_shm;
+    qCDebug(lcQpaXcb) << "Has MIT-SHM FD  :" << has_shm_fd;
+
+    // Temporary disable warnings (unless running in debug mode).
+    auto logging = const_cast<QLoggingCategory*>(&lcQpaXcb());
+    bool wasEnabled = logging->isEnabled(QtMsgType::QtWarningMsg);
+    if (!logging->isEnabled(QtMsgType::QtDebugMsg))
+        logging->setEnabled(QtMsgType::QtWarningMsg, false);
+    if (!QXcbBackingStore::createSystemVShmSegment(this)) {
+        qCDebug(lcQpaXcb, "failed to create System V shared memory segment (remote "
+                          "X11 connection?), disabling SHM");
+        has_shm = has_shm_fd = false;
+    }
+    if (wasEnabled)
+        logging->setEnabled(QtMsgType::QtWarningMsg, true);
 }
 
 void QXcbConnection::initializeXFixes()

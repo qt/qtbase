@@ -327,7 +327,7 @@ void QMenuBarPrivate::popupAction(QAction *action, bool activateFirst)
         QRect screenRect = QDesktopWidgetPrivate::screenGeometry(pos + QPoint(adjustedActionRect.width() / 2, 0));
         pos = QPoint(qMax(pos.x(), screenRect.x()), qMax(pos.y(), screenRect.y()));
 
-        const bool fitUp = (q->mapToGlobal(adjustedActionRect.topLeft()).y() >= popup_size.height());
+        const bool fitUp = (pos.y() - popup_size.height() >= screenRect.top());
         const bool fitDown = (pos.y() + popup_size.height() <= screenRect.bottom());
         const bool rtl = q->isRightToLeft();
         const int actionWidth = adjustedActionRect.width();
@@ -1209,8 +1209,15 @@ void QMenuBar::keyPressEvent(QKeyEvent *e)
 void QMenuBar::mouseMoveEvent(QMouseEvent *e)
 {
     Q_D(QMenuBar);
-    if (!(e->buttons() & Qt::LeftButton))
+    if (!(e->buttons() & Qt::LeftButton)) {
         d->mouseDown = false;
+        // We receive mouse move and mouse press on touch.
+        // Mouse move will open the menu and mouse press
+        // will close it, so ignore mouse move.
+        if (e->source() != Qt::MouseEventNotSynthesized)
+            return;
+    }
+
     bool popupState = d->popupState || d->mouseDown;
     QAction *action = d->actionAt(e->pos());
     if ((action && d->isVisible(action)) || !popupState)

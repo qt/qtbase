@@ -168,14 +168,18 @@ tst_QLocale::tst_QLocale()
 void tst_QLocale::initTestCase()
 {
 #if QT_CONFIG(process)
+#  ifdef Q_OS_ANDROID
+    m_sysapp = QCoreApplication::applicationDirPath() + "/libsyslocaleapp.so";
+#  else // !defined(Q_OS_ANDROID)
     const QString syslocaleapp_dir = QFINDTESTDATA("syslocaleapp");
     QVERIFY2(!syslocaleapp_dir.isEmpty(),
             qPrintable(QStringLiteral("Cannot find 'syslocaleapp' starting from ")
                        + QDir::toNativeSeparators(QDir::currentPath())));
     m_sysapp = syslocaleapp_dir + QStringLiteral("/syslocaleapp");
-#ifdef Q_OS_WIN
+#    ifdef Q_OS_WIN
     m_sysapp += QStringLiteral(".exe");
-#endif
+#    endif
+#  endif // Q_OS_ANDROID
     const QFileInfo fi(m_sysapp);
     QVERIFY2(fi.exists() && fi.isExecutable(),
              qPrintable(QDir::toNativeSeparators(m_sysapp)
@@ -502,6 +506,9 @@ void tst_QLocale::emptyCtor()
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
+#ifdef Q_OS_ANDROID
+    QSKIP("This test crashes on Android");
+#endif
 #define TEST_CTOR(req_lc, exp_str) \
     { \
     /* Test constructor without arguments. Needs separate process */ \
@@ -1542,17 +1549,25 @@ void tst_QLocale::formatTimeZone()
         QSKIP("You must test using Central European (CET/CEST) time zone, e.g. TZ=Europe/Oslo");
     }
 
+#ifdef Q_OS_ANDROID // Only reports (general) zones as offsets (QTBUG-68837)
+    const QString cet(QStringLiteral("GMT+01:00"));
+    const QString cest(QStringLiteral("GMT+02:00"));
+#else
+    const QString cet(QStringLiteral("CET"));
+    const QString cest(QStringLiteral("CEST"));
+#endif
+
     QDateTime dt6(QDate(2013, 1, 1), QTime(0, 0, 0), QTimeZone("Europe/Berlin"));
 #ifdef Q_OS_WIN
     QEXPECT_FAIL("", "QTimeZone windows backend only returns long name", Continue);
 #endif
-    QCOMPARE(enUS.toString(dt6, "t"), QLatin1String("CET"));
+    QCOMPARE(enUS.toString(dt6, "t"), cet);
 
     QDateTime dt7(QDate(2013, 6, 1), QTime(0, 0, 0), QTimeZone("Europe/Berlin"));
 #ifdef Q_OS_WIN
     QEXPECT_FAIL("", "QTimeZone windows backend only returns long name", Continue);
 #endif
-    QCOMPARE(enUS.toString(dt7, "t"), QLatin1String("CEST"));
+    QCOMPARE(enUS.toString(dt7, "t"), cest);
 
     // Current datetime should return current abbreviation
     QCOMPARE(enUS.toString(QDateTime::currentDateTime(), "t"),

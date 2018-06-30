@@ -68,130 +68,11 @@
       \li \l{Declaring Slots in D-Bus Adaptors}
       \li \l{Declaring Signals in D-Bus Adaptors}
       \li \l{The Qt D-Bus Type System}
-      \li \l{D-Bus Adaptor Example}
+      \li In the \l{D-Bus Complex Ping Pong Example}, \c complexpong.h and
+          \c complexpong.cpp show an implementation of QDBusAbstractAdaptor.
     \endlist
 
     \sa QDBusAbstractAdaptor
-*/
-
-/*!
-    \page qdbusadaptorexample.html
-    \title D-Bus Adaptor Example
-
-    \previouspage The Qt D-Bus Type System
-    \contentspage Using Qt D-Bus Adaptors
-
-    The following example code shows how a D-Bus interface can be implemented
-    using an adaptor.
-
-    A sample usage of QDBusAbstractAdaptor is as follows:
-    \snippet code/doc_src_qdbusadaptors.cpp 0
-
-    The code above would create an interface that could be represented more or less in the following
-    canonical representation:
-    \snippet code/doc_src_qdbusadaptors.cpp 1
-
-    This adaptor could be used in the application's main function as follows
-    \snippet code/doc_src_qdbusadaptors.cpp 2
-
-    Break-down analysis:
-    \tableofcontents
-
-    \section1 The Header
-
-    The header of the example is:
-    \snippet code/doc_src_qdbusadaptors.cpp 3
-
-    The code does the following:
-    \list
-      \li it declares the adaptor MainApplicationAdaptor, which descends from QDBusAbstractAdaptor
-      \li it declares the Qt meta-object data using the Q_OBJECT macro
-      \li it declares the name of the D-Bus interface it implements.
-    \endlist
-
-    \section1 The Properties
-
-    The properties are declared as follows:
-    \snippet code/doc_src_qdbusadaptors.cpp 4
-
-    And are implemented as follows:
-    \snippet code/doc_src_qdbusadaptors.cpp 5
-
-    The code declares three properties: one of them is a read-write property called "caption" of
-    string type. The other two are read-only, also of the string type.
-
-    The properties organizationName and organizationDomain are simple relays of the app object's
-    organizationName and organizationDomain properties. However, the caption property requires
-    verifying if the application has a main window associated with it: if there isn't any, the
-    caption property is empty. Note how it is possible to access data defined in other objects
-    through the getter/setter functions.
-
-    \section1 The Constructor
-
-    The constructor:
-    \snippet code/doc_src_qdbusadaptors.cpp 6
-
-    The constructor does the following:
-    \list
-    \li it initialises its base class (QDBusAbstractAdaptor) with the parent object it is related to.
-    \li it stores the app pointer in a member variable. Note that it would be possible to access the
-       same object using the QDBusAbstractAdaptor::object() function, but it would be necessary to
-       use \a static_cast<> to properly access the methods in QApplication that are not part of
-       QObject.
-    \li it connects the application's signal \a aboutToQuit to its own signal \a aboutToQuit.
-    \li it connects the application's signal \a focusChanged to a private slot to do some further
-       processing before emitting a D-Bus signal.
-    \endlist
-
-    Note that there is no destructor in the example. An eventual destructor could be used to emit
-    one last signal before the object is destroyed, for instance.
-
-    \section1 Slots/methods
-
-    The public slots in the example (which will be exported as D-Bus methods) are the following:
-    \snippet code/doc_src_qdbusadaptors.cpp 7
-
-    This snippet of code defines 4 methods with different properties each:
-    \list 1
-    \li \c quit: this method takes no parameters and is defined to be asynchronous. That is, callers
-      are expected to use "fire-and-forget" mechanism when calling this method, since it provides no
-      useful reply. This is represented in D-Bus by the use of the
-      org.freedesktop.DBus.Method.NoReply annotation. See \l Q_NOREPLY for more information on
-      asynchronous methods
-
-    \li \c reparseConfiguration: this simple method, with no input or output arguments simply relays
-      the call to the application's reparseConfiguration member function.
-
-    \li \c mainWindowObject: this method takes no input parameter, but returns one string output
-      argument, containing the path to the main window object (if the application has a main
-      window), or an empty string if it has no main window. Note that this method could have also
-      been written: void mainWindowObject(QString &path).
-
-    \li \c setSessionManagement: this method takes one input argument (a boolean) and, depending on
-      its value, it calls one function or another in the application.
-    \endlist
-
-    See also: \l Q_NOREPLY.
-
-    \section1 Signals
-
-    The signals in this example are defined as follows:
-    \snippet code/doc_src_qdbusadaptors.cpp 8
-
-    However, signal definition isn't enough: signals have to be emitted. One simple way of emitting
-    signals is to connect another signal to them, so that Qt's signal handling system chains them
-    automatically. This is what is done for the \a aboutToQuit signal.
-
-    When this is the case, one can use the QDBusAbstractAdaptor::setAutoRelaySignals to
-    automatically connect every signal from the real object to the adaptor.
-
-    When simple signal-to-signal connection isn't enough, one can use a private slot do do some
-    work. This is what was done for the mainWindowHasFocus signal:
-    \snippet code/doc_src_qdbusadaptors.cpp 9
-
-    This private slot (which will not be exported as a method via D-Bus) was connected to the
-    \c focusChanged signal in the adaptor's constructor. It is therefore able to shape the
-    application's signal into what the interface expects it to be.
 */
 
 /*!
@@ -230,8 +111,8 @@
     synchronize with the caller should provide its own method of synchronization.
 
     Asynchronous slots are marked by the keyword \l Q_NOREPLY in the method
-    signature, before the \c void return type and the slot name. (See the
-    \c quit() slot in the \l{D-Bus Adaptor Example}).
+    signature, before the \c void return type and the slot name. The \c quit()
+    slot in the \l {D-Bus Complex Ping Pong Example} is an example of this.
 
     \section1 Input-Only Slots
 
@@ -341,8 +222,8 @@
     However, signals must still be emitted. The easiest way to emit an adaptor
     signal is to connect another signal to it, so that Qt's signals and slots
     mechanism automatically emits the adaptor signal, too. This can be done in
-    the adaptor's constructor, as has been done in the
-    \l{D-Bus Adaptor Example}{D-Bus Adaptor example}.
+    the adaptor's constructor, as you can see in the \l {D-Bus Complex Ping
+    Pong Example}.
 
     The QDBusAbstractAdaptor::setAutoRelaySignals() convenience function can also
     be used to make and break connections between signals in the real object and
@@ -360,7 +241,6 @@
 
     \previouspage Declaring Signals in D-Bus Adaptors
     \contentspage Using Qt D-Bus Adaptors
-    \nextpage D-Bus Adaptor Example
 
     D-Bus has an extensible type system based on a few primitives and
     composition of the primitives in arrays and structures. Qt D-Bus

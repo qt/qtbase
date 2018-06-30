@@ -153,9 +153,8 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
     HMODULE hPsapi = LoadLibraryA("psapi");
     if (!hPsapi)
         return QString();
-
-    GetModuleFileNameExFunc qGetModuleFileNameEx
-            = (GetModuleFileNameExFunc)GetProcAddress(hPsapi, "GetModuleFileNameExW");
+    GetModuleFileNameExFunc qGetModuleFileNameEx = reinterpret_cast<GetModuleFileNameExFunc>(
+        reinterpret_cast<QFunctionPointer>(GetProcAddress(hPsapi, "GetModuleFileNameExW")));
     if (!qGetModuleFileNameEx) {
         FreeLibrary(hPsapi);
         return QString();

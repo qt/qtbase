@@ -39,8 +39,8 @@ public:
     MingwMakefileGenerator();
     ~MingwMakefileGenerator();
 protected:
-    QString escapeDependencyPath(const QString &path) const;
-    ProString escapeDependencyPath(const ProString &path) const { return MakefileGenerator::escapeDependencyPath(path); }
+    using MakefileGenerator::escapeDependencyPath;
+    virtual QString escapeDependencyPath(const QString &path) const;
     virtual ProString fixLibFlag(const ProString &lib);
     virtual QString getManifestFileForRcFile() const;
     bool writeMakefile(QTextStream &);

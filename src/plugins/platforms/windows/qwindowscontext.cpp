@@ -1430,7 +1430,7 @@ bool QWindowsContext::filterNativeEvent(MSG *msg, LRESULT *result)
 bool QWindowsContext::filterNativeEvent(QWindow *window, MSG *msg, LRESULT *result)
 {
     long filterResult = 0;
-    if (QWindowSystemInterface::handleNativeEvent(window, nativeEventType(), &msg, &filterResult)) {
+    if (QWindowSystemInterface::handleNativeEvent(window, nativeEventType(), msg, &filterResult)) {
         *result = LRESULT(filterResult);
         return true;
     }

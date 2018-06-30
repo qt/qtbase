@@ -90,11 +90,16 @@ static QString iconTempPath()
 
 static const QString KDEItemFormat = QStringLiteral("org.kde.StatusNotifierItem-%1-%2");
 static const QString KDEWatcherService = QStringLiteral("org.kde.StatusNotifierWatcher");
-static const QString TempFileTemplate = iconTempPath() + QLatin1String("/qt-trayicon-XXXXXX.png");
 static const QString XdgNotificationService = QStringLiteral("org.freedesktop.Notifications");
 static const QString XdgNotificationPath = QStringLiteral("/org/freedesktop/Notifications");
 static const QString DefaultAction = QStringLiteral("default");
 static int instanceCount = 0;
+
+static inline QString tempFileTemplate()
+{
+    static const QString TempFileTemplate = iconTempPath() + QLatin1String("/qt-trayicon-XXXXXX.png");
+    return TempFileTemplate;
+}
 
 /*!
     \class QDBusTrayIcon
@@ -206,7 +211,7 @@ QTemporaryFile *QDBusTrayIcon::tempIcon(const QIcon &icon)
     if (!necessary)
         return nullptr;
     qreal dpr = qGuiApp->devicePixelRatio();
-    QTemporaryFile *ret = new QTemporaryFile(TempFileTemplate, this);
+    QTemporaryFile *ret = new QTemporaryFile(tempFileTemplate(), this);
     ret->open();
     icon.pixmap(QSize(22 * dpr, 22 * dpr)).save(ret);
     ret->close();

@@ -2265,7 +2265,7 @@ QXmlStreamAttributes QXmlStreamReader::attributes() const
     \inmodule QtCore
     \since 4.3
     \reentrant
-    \brief The QXmlStreamAttribute class represents a single XML attribute
+    \brief The QXmlStreamAttribute class represents a single XML attribute.
 
     \ingroup xml-tools
 

@@ -115,6 +115,11 @@ BookWindow::BookWindow()
     ui.genreEdit->setModelColumn(
                 model->relationModel(genreIdx)->fieldIndex("name"));
 
+    // Lock and prohibit resizing of the width of the rating column:
+    ui.bookTable->horizontalHeader()->setSectionResizeMode(
+                model->fieldIndex("rating"),
+                QHeaderView::ResizeToContents);
+
     QDataWidgetMapper *mapper = new QDataWidgetMapper(this);
     mapper->setModel(model);
     mapper->setItemDelegate(new BookDelegate(this));
@@ -131,10 +136,36 @@ BookWindow::BookWindow()
             );
 
     ui.bookTable->setCurrentIndex(model->index(0, 0));
+    createMenuBar();
 }
 
 void BookWindow::showError(const QSqlError &err)
 {
     QMessageBox::critical(this, "Unable to initialize Database",
                 "Error initializing database: " + err.text());
+}
+
+void BookWindow::createMenuBar()
+{
+    QAction *quitAction = new QAction(tr("&Quit"), this);
+    QAction *aboutAction = new QAction(tr("&About"), this);
+    QAction *aboutQtAction = new QAction(tr("&About Qt"), this);
+
+    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction(quitAction);
+
+    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
+    helpMenu->addAction(aboutAction);
+    helpMenu->addAction(aboutQtAction);
+
+    connect(quitAction, &QAction::triggered, this, &BookWindow::close);
+    connect(aboutAction, &QAction::triggered, this, &BookWindow::about);
+    connect(aboutQtAction, &QAction::triggered, qApp, &QApplication::aboutQt);
+}
+
+void BookWindow::about()
+{
+    QMessageBox::about(this, tr("About Books"),
+            tr("<p>The <b>Books</b> example shows how to use Qt SQL classes "
+               "with a model/view framework."));
 }

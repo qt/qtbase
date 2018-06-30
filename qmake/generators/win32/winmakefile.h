@@ -47,8 +47,10 @@ protected:
     virtual void writeObjectsPart(QTextStream &t);
     virtual void writeImplicitRulesPart(QTextStream &t);
     virtual void writeBuildRulesPart(QTextStream &);
+    using MakefileGenerator::escapeFilePath;
     virtual QString escapeFilePath(const QString &path) const;
-    ProString escapeFilePath(const ProString &path) const { return MakefileGenerator::escapeFilePath(path); }
+    using MakefileGenerator::escapeDependencyPath;
+    virtual QString escapeDependencyPath(const QString &path) const;
 
     virtual void writeRcFilePart(QTextStream &t);
 

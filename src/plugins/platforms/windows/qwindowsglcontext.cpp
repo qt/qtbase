@@ -153,9 +153,11 @@ QT_BEGIN_NAMESPACE
 
 QWindowsOpengl32DLL QOpenGLStaticContext::opengl32;
 
-FARPROC QWindowsOpengl32DLL::resolve(const char *name)
+QFunctionPointer QWindowsOpengl32DLL::resolve(const char *name)
 {
-    return m_lib ? ::GetProcAddress(m_lib, name) : nullptr;
+    return m_lib
+        ? reinterpret_cast<QFunctionPointer>(::GetProcAddress(m_lib, name))
+        : nullptr;
 }
 
 bool QWindowsOpengl32DLL::init(bool softwareRendering)
@@ -977,12 +979,18 @@ QOpenGLStaticContext::QOpenGLStaticContext() :
     extensionNames(QOpenGLStaticContext::getGlString(GL_EXTENSIONS)),
     extensions(0),
     defaultFormat(QWindowsOpenGLContextFormat::current()),
-    wglGetPixelFormatAttribIVARB((WglGetPixelFormatAttribIVARB)QOpenGLStaticContext::opengl32.wglGetProcAddress("wglGetPixelFormatAttribivARB")),
-    wglChoosePixelFormatARB((WglChoosePixelFormatARB)QOpenGLStaticContext::opengl32.wglGetProcAddress("wglChoosePixelFormatARB")),
-    wglCreateContextAttribsARB((WglCreateContextAttribsARB)QOpenGLStaticContext::opengl32.wglGetProcAddress("wglCreateContextAttribsARB")),
-    wglSwapInternalExt((WglSwapInternalExt)QOpenGLStaticContext::opengl32.wglGetProcAddress("wglSwapIntervalEXT")),
-    wglGetSwapInternalExt((WglGetSwapInternalExt)QOpenGLStaticContext::opengl32.wglGetProcAddress("wglGetSwapIntervalEXT")),
-    wglGetExtensionsStringARB((WglGetExtensionsStringARB)QOpenGLStaticContext::opengl32.wglGetProcAddress("wglGetExtensionsStringARB"))
+    wglGetPixelFormatAttribIVARB(reinterpret_cast<WglGetPixelFormatAttribIVARB>(
+        reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress("wglGetPixelFormatAttribivARB")))),
+    wglChoosePixelFormatARB(reinterpret_cast<WglChoosePixelFormatARB>(
+        reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress("wglChoosePixelFormatARB")))),
+    wglCreateContextAttribsARB(reinterpret_cast<WglCreateContextAttribsARB>(
+        reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress("wglCreateContextAttribsARB")))),
+    wglSwapInternalExt(reinterpret_cast<WglSwapInternalExt>(
+        reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress("wglSwapIntervalEXT")))),
+    wglGetSwapInternalExt(reinterpret_cast<WglGetSwapInternalExt>(
+        reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress("wglGetSwapIntervalEXT")))),
+    wglGetExtensionsStringARB(reinterpret_cast<WglGetExtensionsStringARB>(
+        reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress("wglGetExtensionsStringARB"))))
 {
     if (extensionNames.startsWith(SAMPLE_BUFFER_EXTENSION " ")
             || extensionNames.indexOf(" " SAMPLE_BUFFER_EXTENSION " ") != -1)
@@ -1231,7 +1239,8 @@ bool QWindowsGLContext::updateObtainedParams(HDC hdc, int *obtainedSwapInterval)
         hasRobustness = exts && strstr(exts, "GL_ARB_robustness");
     } else {
         typedef const GLubyte * (APIENTRY *glGetStringi_t)(GLenum, GLuint);
-        glGetStringi_t glGetStringi = (glGetStringi_t) QOpenGLStaticContext::opengl32.wglGetProcAddress("glGetStringi");
+        glGetStringi_t glGetStringi = reinterpret_cast<glGetStringi_t>(
+            reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress("glGetStringi")));
         if (glGetStringi) {
             GLint n = 0;
             QOpenGLStaticContext::opengl32.glGetIntegerv(GL_NUM_EXTENSIONS, &n);
@@ -1244,8 +1253,10 @@ bool QWindowsGLContext::updateObtainedParams(HDC hdc, int *obtainedSwapInterval)
             }
         }
     }
-    if (hasRobustness)
-        m_getGraphicsResetStatus = (GLenum (APIENTRY *)()) QOpenGLStaticContext::opengl32.wglGetProcAddress("glGetGraphicsResetStatusARB");
+    if (hasRobustness) {
+        m_getGraphicsResetStatus = reinterpret_cast<GlGetGraphicsResetStatusArbType>(
+            reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress("glGetGraphicsResetStatusARB")));
+    }
 
     QOpenGLStaticContext::opengl32.wglMakeCurrent(prevSurface, prevContext);
     return true;
@@ -1369,16 +1380,17 @@ QFunctionPointer QWindowsGLContext::getProcAddress(const char *procName)
     // Even though we use QFunctionPointer, it does not mean the function can be called.
     // It will need to be cast to the proper function type with the correct calling
     // convention. QFunctionPointer is nothing more than a glorified void* here.
-    PROC procAddress = QOpenGLStaticContext::opengl32.wglGetProcAddress(procName);
+    QFunctionPointer procAddress = reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress(procName));
 
     // We support AllGLFunctionsQueryable, which means this function must be able to
     // return a function pointer even for functions that are in GL.h and exported
     // normally from opengl32.dll. wglGetProcAddress() is not guaranteed to work for such
     // functions, however in QT_OPENGL_DYNAMIC builds QOpenGLFunctions will just blindly
     // call into here for _any_ OpenGL function.
-    if (!procAddress || procAddress == reinterpret_cast<PROC>(0x1) || procAddress == reinterpret_cast<PROC>(0x2)
-        || procAddress == reinterpret_cast<PROC>(0x3) || procAddress == reinterpret_cast<PROC>(-1))
+    if (procAddress == nullptr || reinterpret_cast<quintptr>(procAddress) < 4u
+        || procAddress == reinterpret_cast<QFunctionPointer>(-1)) {
         procAddress = QOpenGLStaticContext::opengl32.resolve(procName);
+    }
 
     if (QWindowsContext::verbose > 1)
         qCDebug(lcQpaGl) << __FUNCTION__ <<  procName << QOpenGLStaticContext::opengl32.wglGetCurrentContext() << "returns" << procAddress;

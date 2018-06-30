@@ -29,7 +29,7 @@
     \example graphicsview/weatheranchorlayout
     \title Weather Anchor Layout Example
     \ingroup examples-graphicsview-layout
-    \brief Demonstrates anchor layout on a graphics view scene
+    \brief Demonstrates anchor layout on a graphics view scene.
 
     The Weather Anchor Layout example shows more complex use of the
     QGraphicsAnchorLayout class to create a real-world window layout.

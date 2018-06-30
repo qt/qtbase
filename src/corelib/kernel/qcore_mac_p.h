@@ -192,6 +192,17 @@ QDebug operator<<(QDebug debug, const QMacAutoReleasePool *pool);
 Q_CORE_EXPORT void qt_apple_check_os_version();
 Q_CORE_EXPORT bool qt_apple_isApplicationExtension();
 
+#if defined(Q_OS_MACOS) && !defined(QT_BOOTSTRAPPED)
+Q_CORE_EXPORT bool qt_apple_isSandboxed();
+# ifdef __OBJC__
+QT_END_NAMESPACE
+@interface NSObject (QtSandboxHelpers)
+- (id)qt_valueForPrivateKey:(NSString *)key;
+@end
+QT_BEGIN_NAMESPACE
+# endif
+#endif
+
 #if !defined(QT_BOOTSTRAPPED) && !defined(Q_OS_WATCHOS)
 QT_END_NAMESPACE
 # if defined(Q_OS_MACOS)

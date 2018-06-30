@@ -125,9 +125,12 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
 #if defined(Q_OS_WIN)
     HINSTANCE hLib = LoadLibraryW(L"Crypt32");
     if (hLib) {
-        ptrCertOpenSystemStoreW = (PtrCertOpenSystemStoreW)GetProcAddress(hLib, "CertOpenSystemStoreW");
-        ptrCertFindCertificateInStore = (PtrCertFindCertificateInStore)GetProcAddress(hLib, "CertFindCertificateInStore");
-        ptrCertCloseStore = (PtrCertCloseStore)GetProcAddress(hLib, "CertCloseStore");
+        ptrCertOpenSystemStoreW = reinterpret_cast<PtrCertOpenSystemStoreW>(
+            reinterpret_cast<QFunctionPointer>(GetProcAddress(hLib, "CertOpenSystemStoreW")));
+        ptrCertFindCertificateInStore = reinterpret_cast<PtrCertFindCertificateInStore>(
+            reinterpret_cast<QFunctionPointer>(GetProcAddress(hLib, "CertFindCertificateInStore")));
+        ptrCertCloseStore = reinterpret_cast<PtrCertCloseStore>(
+            reinterpret_cast<QFunctionPointer>(GetProcAddress(hLib, "CertCloseStore")));
         if (!ptrCertOpenSystemStoreW || !ptrCertFindCertificateInStore || !ptrCertCloseStore)
             qCWarning(lcSsl, "could not resolve symbols in crypt32 library"); // should never happen
     } else {

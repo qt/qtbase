@@ -1413,8 +1413,8 @@ namespace QtPrivate
         static char checkType(void (X::*)());
         static void *checkType(void (T::*)());
         enum {
-            IsRealGadget = sizeof(checkType(&T::qt_check_for_QGADGET_macro)) == sizeof(void *),
-            IsGadgetOrDerivedFrom = true
+            IsRealGadget = !IsPointerToTypeDerivedFromQObject<T*>::Value && sizeof(checkType(&T::qt_check_for_QGADGET_macro)) == sizeof(void *),
+            IsGadgetOrDerivedFrom = !IsPointerToTypeDerivedFromQObject<T*>::Value
         };
     };
 

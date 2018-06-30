@@ -513,6 +513,10 @@ void tst_QTimeZone::transitionEachZone()
             continue;
         }
 #endif
+#ifdef Q_OS_ANDROID
+        if (zone == "America/Mazatlan" || zone == "Mexico/BajaSur")
+            QSKIP("Crashes on Android, see QTBUG-69132");
+#endif
         qint64 here = secs + i * 3600;
         QDateTime when = QDateTime::fromMSecsSinceEpoch(here * 1000, named);
         qint64 stamp = when.toMSecsSinceEpoch();
@@ -887,7 +891,7 @@ void tst_QTimeZone::icuTest()
 
 void tst_QTimeZone::tzTest()
 {
-#if defined QT_BUILD_INTERNAL && defined Q_OS_UNIX && !defined Q_OS_DARWIN
+#if defined QT_BUILD_INTERNAL && defined Q_OS_UNIX && !defined Q_OS_DARWIN && !defined Q_OS_ANDROID
     // Known datetimes
     qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
     qint64 dst = QDateTime(QDate(2012, 6, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();

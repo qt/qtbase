@@ -8,5 +8,7 @@ TESTDATA += data
 
 android {
     RESOURCES += \
-        testdata.qrc
+        android_testdata.qrc
 }
+
+builtin_testdata: DEFINES += BUILTIN_TESTDATA

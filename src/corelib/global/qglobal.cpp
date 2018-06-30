@@ -1038,6 +1038,11 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
 
     \snippet code/src_corelib_global_qglobal.cpp 53
 
+    \note Qt detects the necessary C++14 compiler support by way of the feature
+    test recommendations from
+    \l{https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations}
+    {C++ Committee's Standing Document 6}.
+
     \sa qConstOverload(), qNonConstOverload(), {Differences between String-Based
     and Functor-Based Connections}
 */

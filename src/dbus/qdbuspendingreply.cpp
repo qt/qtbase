@@ -49,7 +49,7 @@
     \inmodule QtDBus
     \since 4.5
 
-    \brief The QDBusPendingReply class contains the reply to an asynchronous method call
+    \brief The QDBusPendingReply class contains the reply to an asynchronous method call.
 
     The QDBusPendingReply is a template class with up to 8 template
     parameters. Those parameters are the types that will be used to

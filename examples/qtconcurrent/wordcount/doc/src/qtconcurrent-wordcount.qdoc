@@ -28,7 +28,7 @@
 /*!
     \example wordcount
     \title QtConcurrent Word Count Example
-    \brief Demonstrates how to use the map-reduce algorithm
+    \brief Demonstrates how to use the map-reduce algorithm.
     \ingroup qtconcurrentexamples
 
     The QtConcurrent Word Count example demonstrates the use of the map-reduce

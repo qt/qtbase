@@ -1232,6 +1232,8 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxL
             // it is ok the buffer was to small if bytesRead is larger than
             // maxLength then assume bytes read is really maxLenth
             ret = qint64(bytesRead) > maxLength ? maxLength : qint64(bytesRead);
+            if (options & QNativeSocketEngine::WantDatagramSender)
+                qt_socket_getPortAndAddress(socketDescriptor, &aa, &header->senderPort, &header->senderAddress);
         } else {
             WS_ERROR_DEBUG(err);
             switch (err) {

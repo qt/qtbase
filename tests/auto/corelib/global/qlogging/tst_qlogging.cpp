@@ -813,12 +813,19 @@ void tst_qmessagehandler::qMessagePattern()
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #else
+#ifdef Q_OS_ANDROID
+    QSKIP("This test crashes on Android");
+#endif
     QFETCH(QString, pattern);
     QFETCH(bool, valid);
     QFETCH(QList<QByteArray>, expected);
 
     QProcess process;
+#ifndef Q_OS_ANDROID
     const QString appExe(QLatin1String("helper"));
+#else
+    const QString appExe(QCoreApplication::applicationDirPath() + QLatin1String("/libhelper.so"));
+#endif
 
     //
     // test QT_MESSAGE_PATTERN
@@ -855,13 +862,20 @@ void tst_qmessagehandler::setMessagePattern()
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #else
+#ifdef Q_OS_ANDROID
+    QSKIP("This test crashes on Android");
+#endif
 
     //
     // test qSetMessagePattern
     //
 
     QProcess process;
+#ifndef Q_OS_ANDROID
     const QString appExe(QLatin1String("helper"));
+#else
+    const QString appExe(QCoreApplication::applicationDirPath() + QLatin1String("/libhelper.so"));
+#endif
 
     // make sure there is no QT_MESSAGE_PATTERN in the environment
     QStringList environment = m_baseEnvironment;

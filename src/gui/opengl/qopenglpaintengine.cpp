@@ -864,20 +864,18 @@ void QOpenGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 
             if (data) {
                 cache = (QOpenGL2PEVectorPathCache *) data->data;
-                // Check if scale factor is exceeded for curved paths and generate curves if so...
-                if (path.isCurved()) {
-                    qreal scaleFactor = cache->iscale / inverseScale;
-                    if (scaleFactor < 0.5 || scaleFactor > 2.0) {
+                // Check if scale factor is exceeded and regenerate if so...
+                qreal scaleFactor = cache->iscale / inverseScale;
+                if (scaleFactor < 0.5 || scaleFactor > 2.0) {
 #ifdef QT_OPENGL_CACHE_AS_VBOS
-                        glDeleteBuffers(1, &cache->vbo);
-                        cache->vbo = 0;
-                        Q_ASSERT(cache->ibo == 0);
+                    glDeleteBuffers(1, &cache->vbo);
+                    cache->vbo = 0;
+                    Q_ASSERT(cache->ibo == 0);
 #else
-                        free(cache->vertices);
-                        Q_ASSERT(cache->indices == 0);
+                    free(cache->vertices);
+                    Q_ASSERT(cache->indices == 0);
 #endif
-                        updateCache = true;
-                    }
+                    updateCache = true;
                 }
             } else {
                 cache = new QOpenGL2PEVectorPathCache;
@@ -946,19 +944,17 @@ void QOpenGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 
             if (data) {
                 cache = (QOpenGL2PEVectorPathCache *) data->data;
-                // Check if scale factor is exceeded for curved paths and generate curves if so...
-                if (path.isCurved()) {
-                    qreal scaleFactor = cache->iscale / inverseScale;
-                    if (scaleFactor < 0.5 || scaleFactor > 2.0) {
+                // Check if scale factor is exceeded and regenerate if so...
+                qreal scaleFactor = cache->iscale / inverseScale;
+                if (scaleFactor < 0.5 || scaleFactor > 2.0) {
 #ifdef QT_OPENGL_CACHE_AS_VBOS
-                        glDeleteBuffers(1, &cache->vbo);
-                        glDeleteBuffers(1, &cache->ibo);
+                    glDeleteBuffers(1, &cache->vbo);
+                    glDeleteBuffers(1, &cache->ibo);
 #else
-                        free(cache->vertices);
-                        free(cache->indices);
+                    free(cache->vertices);
+                    free(cache->indices);
 #endif
-                        updateCache = true;
-                    }
+                    updateCache = true;
                 }
             } else {
                 cache = new QOpenGL2PEVectorPathCache;

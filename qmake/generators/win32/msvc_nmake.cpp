@@ -321,7 +321,7 @@ void NmakeMakefileGenerator::writeNmakeParts(QTextStream &t)
         QString precompRule = QString("-c -Yc -Fp%1 -Fo%2")
                 .arg(escapeFilePath(precompPch), escapeFilePath(precompObj));
         t << escapeDependencyPath(precompObj) << ": " << escapeDependencyPath(precompH) << ' '
-          << escapeDependencyPaths(findDependencies(precompH)).join(" \\\n\t\t")
+          << finalizeDependencyPaths(findDependencies(precompH)).join(" \\\n\t\t")
           << "\n\t$(CXX) " + precompRule +" $(CXXFLAGS) $(INCPATH) -TP "
           << escapeFilePath(precompH) << endl << endl;
     }
@@ -329,7 +329,7 @@ void NmakeMakefileGenerator::writeNmakeParts(QTextStream &t)
         QString precompRuleC = QString("-c -Yc -Fp%1 -Fo%2")
                 .arg(escapeFilePath(precompPchC), escapeFilePath(precompObjC));
         t << escapeDependencyPath(precompObjC) << ": " << escapeDependencyPath(precompH) << ' '
-          << escapeDependencyPaths(findDependencies(precompH)).join(" \\\n\t\t")
+          << finalizeDependencyPaths(findDependencies(precompH)).join(" \\\n\t\t")
           << "\n\t$(CC) " + precompRuleC +" $(CFLAGS) $(INCPATH) -TC "
           << escapeFilePath(precompH) << endl << endl;
     }
@@ -619,6 +619,8 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                 }
             } else {
                 manifest = fileFixify(manifest);
+                if (linkerSupportsEmbedding)
+                    extraLFlags = "/MANIFEST:embed /MANIFESTINPUT:" + escapeFilePath(manifest);
             }
 
             const QString resourceId = (templateName == "app") ? "1" : "2";

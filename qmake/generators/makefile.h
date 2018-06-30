@@ -130,14 +130,16 @@ protected:
     QMakeProject *project;
 
     //escape
-    virtual QString escapeFilePath(const QString &path) const { return path; }
+    virtual QString escapeFilePath(const QString &path) const = 0;
     ProString escapeFilePath(const ProString &path) const;
     QStringList escapeFilePaths(const QStringList &paths) const;
     ProStringList escapeFilePaths(const ProStringList &paths) const;
-    virtual QString escapeDependencyPath(const QString &path) const { return escapeFilePath(path); }
+    virtual QString escapeDependencyPath(const QString &path) const;
     ProString escapeDependencyPath(const ProString &path) const;
     QStringList escapeDependencyPaths(const QStringList &paths) const;
     ProStringList escapeDependencyPaths(const ProStringList &paths) const;
+
+    QStringList finalizeDependencyPaths(const QStringList &paths) const;
 
     //initialization
     void verifyCompilers();

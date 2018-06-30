@@ -30,7 +30,7 @@
   \inmodule QtPlatformHeaders
   \since 5.4
 
-  \brief A class encapsulating an EGL context and display handle
+  \brief A class encapsulating an EGL context and display handle.
 
   \note There is no binary compatibility guarantee for this class, meaning
   that an application using it is only guaranteed to work with the Qt version it was

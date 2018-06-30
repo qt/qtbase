@@ -28,7 +28,7 @@
 /*!
     \example streambookmarks
     \title QXmlStream Bookmarks Example
-    \brief Demonstrates how to read and write to XBEL files
+    \brief Demonstrates how to read and write to XBEL files.
     \ingroup xml-examples
 
     The QXmlStream Bookmarks example provides a reader for XML Bookmark

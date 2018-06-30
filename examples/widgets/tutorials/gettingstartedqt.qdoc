@@ -28,7 +28,7 @@
 /*!
     \example tutorials/notepad
     \title Getting Started Programming with Qt Widgets
-    \brief A tutorial for Qt Widgets based on a notepad application
+    \brief A tutorial for Qt Widgets based on a notepad application.
 
     In this topic, we teach basic Qt knowledge by implementing a simple
     Notepad application using C++ and the \l{Qt Widgets} module. The

@@ -84,7 +84,7 @@ $INPUT_RECORD_SEPARATOR = "\r\n" if ($^O eq "msys");
 
 # will be defined based on the modules sync.profile
 our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %deprecatedheaders);
-our @qpa_headers = ();
+our (@qpa_headers, @private_headers);
 
 # will be derived from sync.profile
 our %reverse_classnames = ();
@@ -659,6 +659,8 @@ sub loadSyncProfile {
             $reverse_classnames{$cn} = $fn;
         }
     }
+
+    push @private_headers, qr/_p(ch)?\.h$/;
 }
 
 sub basePrettify {
@@ -697,6 +699,15 @@ sub isQpaHeader
     my ($header) = @_;
     foreach my $qpa_header (@qpa_headers) {
         return 1 if ($header =~ $qpa_header);
+    }
+    return 0;
+}
+
+sub isPrivateHeader
+{
+    my ($header) = @_;
+    foreach my $private_header (@private_headers) {
+        return 1 if ($header =~ $private_header);
     }
     return 0;
 }
@@ -1021,7 +1032,7 @@ foreach my $lib (@modules_to_sync) {
                         if(isQpaHeader($public_header)) {
                             $public_header = 0;
                             $qpa_header = 1;
-                        } elsif ($allheadersprivate || $thisprivate || $public_header =~ /_p(ch)?\.h$/) {
+                        } elsif ($allheadersprivate || $thisprivate || isPrivateHeader($public_header)) {
                             $public_header = 0;
                         }
 

@@ -117,7 +117,7 @@ QT_BEGIN_NAMESPACE
 
     All timer types may time out later than expected if the system is busy or
     unable to provide the requested accuracy. In such a case of timeout
-    overrun, Qt will emit activated() only once, even if multiple timeouts have
+    overrun, Qt will emit timeout() only once, even if multiple timeouts have
     expired, and then will resume the original interval.
 
     \section1 Alternatives to QTimer

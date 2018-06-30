@@ -29,7 +29,7 @@
     \example hellovulkantexture
     \ingroup examples-vulkan
     \title Hello Vulkan Texture Vulkan Example
-    \brief Shows the basics of rendering with textures in a QVulkanWindow
+    \brief Shows the basics of rendering with textures in a QVulkanWindow.
 
     The \e{Hello Vulkan Texture Example} builds on \l hellovulkantriangle. Here
     instead of drawing a single triangle, a triangle strip is drawn in order to

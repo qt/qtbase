@@ -2840,7 +2840,7 @@ void QWindow::setVulkanInstance(QVulkanInstance *instance)
 }
 
 /*!
-    \return the associrated Vulkan instance or \c null if there is none.
+    \return the associated Vulkan instance or \c null if there is none.
  */
 QVulkanInstance *QWindow::vulkanInstance() const
 {

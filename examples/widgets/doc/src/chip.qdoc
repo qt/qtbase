@@ -29,7 +29,7 @@
     \example graphicsview/chip
     \title 40000 Chips
     \ingroup examples-graphicsview
-    \brief Visualizes a huge graphic view scene with 40000 chip items
+    \brief Visualizes a huge graphic view scene with 40000 chip items.
 
     This examples demonstrates Graphics View's powerful navigation
     and interaction features, allowing you to zoom and rotate each of four

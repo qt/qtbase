@@ -60,6 +60,8 @@ public:
 
     void setGeometry(const QRect &rect) override;
 
+    QSurfaceFormat format() const override { return m_format; }
+
 protected:
     int pixelFormat() const override;
     void resetBuffers() override;

@@ -120,7 +120,7 @@ mac {
 
     LIBS_PRIVATE += -framework Foundation
 
-    osx: LIBS_PRIVATE += -framework CoreServices -framework AppKit
+    osx: LIBS_PRIVATE += -framework CoreServices -framework AppKit -framework Security
 
     ios|tvos {
         # We need UIKit for UIApplication in qeventdispatcher_cf.mm

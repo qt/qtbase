@@ -57,7 +57,7 @@ defineReplace(mocCmdBase) {
     msvc: RET += --compiler-flavor=msvc
 
     isEmpty(MOC_PREDEF_FILE): RET += $$join(QMAKE_COMPILER_DEFINES, " -D", -D)
-    else: RET += --include $$shell_quote($$moc_predefs.output)
+    else: RET += --include $$shell_quote($$absolute_path($$moc_predefs.output, $$OUT_PWD))
 
     RET += $$incvar $$QMAKE_MOC_OPTIONS
     return($$RET)

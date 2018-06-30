@@ -3917,8 +3917,8 @@ T toIntegral_helper(const char *data, bool *ok, int base)
 
     Returns 0 if the conversion fails.
 
-    If \a ok is not 0: if a conversion error occurs, *\a{ok} is set to
-    false; otherwise *\a{ok} is set to true.
+    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
     irrespective of the user's locale.
@@ -3943,8 +3943,8 @@ qlonglong QByteArray::toLongLong(bool *ok, int base) const
 
     Returns 0 if the conversion fails.
 
-    If \a ok is not 0: if a conversion error occurs, *\a{ok} is set to
-    false; otherwise *\a{ok} is set to true.
+    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
     irrespective of the user's locale.
@@ -3968,8 +3968,8 @@ qulonglong QByteArray::toULongLong(bool *ok, int base) const
 
     Returns 0 if the conversion fails.
 
-    If \a ok is not 0: if a conversion error occurs, *\a{ok} is set to
-    false; otherwise *\a{ok} is set to true.
+    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
 
     \snippet code/src_corelib_tools_qbytearray.cpp 36
 
@@ -3995,8 +3995,8 @@ int QByteArray::toInt(bool *ok, int base) const
 
     Returns 0 if the conversion fails.
 
-    If \a ok is not 0: if a conversion error occurs, *\a{ok} is set to
-    false; otherwise *\a{ok} is set to true.
+    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
     irrespective of the user's locale.
@@ -4022,8 +4022,8 @@ uint QByteArray::toUInt(bool *ok, int base) const
 
     Returns 0 if the conversion fails.
 
-    If \a ok is not 0: if a conversion error occurs, *\a{ok} is set to
-    false; otherwise *\a{ok} is set to true.
+    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
 
     \snippet code/src_corelib_tools_qbytearray.cpp 37
 
@@ -4050,8 +4050,8 @@ long QByteArray::toLong(bool *ok, int base) const
 
     Returns 0 if the conversion fails.
 
-    If \a ok is not 0: if a conversion error occurs, *\a{ok} is set to
-    false; otherwise *\a{ok} is set to true.
+    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
     irrespective of the user's locale.
@@ -4074,8 +4074,8 @@ ulong QByteArray::toULong(bool *ok, int base) const
 
     Returns 0 if the conversion fails.
 
-    If \a ok is not 0: if a conversion error occurs, *\a{ok} is set to
-    false; otherwise *\a{ok} is set to true.
+    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
     irrespective of the user's locale.
@@ -4099,8 +4099,8 @@ short QByteArray::toShort(bool *ok, int base) const
 
     Returns 0 if the conversion fails.
 
-    If \a ok is not 0: if a conversion error occurs, *\a{ok} is set to
-    false; otherwise *\a{ok} is set to true.
+    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
     irrespective of the user's locale.
@@ -4119,8 +4119,8 @@ ushort QByteArray::toUShort(bool *ok, int base) const
 
     Returns 0.0 if the conversion fails.
 
-    If \a ok is not 0: if a conversion error occurs, *\a{ok} is set to
-    false; otherwise *\a{ok} is set to true.
+    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
 
     \snippet code/src_corelib_tools_qbytearray.cpp 38
 
@@ -4146,8 +4146,8 @@ double QByteArray::toDouble(bool *ok) const
 
     Returns 0.0 if the conversion fails.
 
-    If \a ok is not 0: if a conversion error occurs, *\a{ok} is set to
-    false; otherwise *\a{ok} is set to true.
+    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
     irrespective of the user's locale.
