@@ -1086,6 +1086,7 @@ void QColor::setHsvF(qreal h, qreal s, qreal v, qreal a)
         || (v < qreal(0.0) || v > qreal(1.0))
         || (a < qreal(0.0) || a > qreal(1.0))) {
         qWarning("QColor::setHsvF: HSV parameters out of range");
+        invalidate();
         return;
     }
 
@@ -1198,7 +1199,8 @@ void QColor::setHslF(qreal h, qreal s, qreal l, qreal a)
         || (s < qreal(0.0) || s > qreal(1.0))
         || (l < qreal(0.0) || l > qreal(1.0))
         || (a < qreal(0.0) || a > qreal(1.0))) {
-        qWarning("QColor::setHsvF: HSV parameters out of range");
+        qWarning("QColor::setHslF: HSL parameters out of range");
+        invalidate();
         return;
     }
 
@@ -1224,7 +1226,7 @@ void QColor::setHslF(qreal h, qreal s, qreal l, qreal a)
 void QColor::setHsl(int h, int s, int l, int a)
 {
     if (h < -1 || (uint)s > 255 || (uint)l > 255 || (uint)a > 255) {
-        qWarning("QColor::setHsv: HSV parameters out of range");
+        qWarning("QColor::setHsl: HSL parameters out of range");
         invalidate();
         return;
     }
@@ -2719,6 +2721,7 @@ void QColor::setCmyk(int c, int m, int y, int k, int a)
         || k < 0 || k > 255
         || a < 0 || a > 255) {
         qWarning("QColor::setCmyk: CMYK parameters out of range");
+        invalidate();
         return;
     }
 
@@ -2748,6 +2751,7 @@ void QColor::setCmykF(qreal c, qreal m, qreal y, qreal k, qreal a)
         || k < qreal(0.0) || k > qreal(1.0)
         || a < qreal(0.0) || a > qreal(1.0)) {
         qWarning("QColor::setCmykF: CMYK parameters out of range");
+        invalidate();
         return;
     }
 
