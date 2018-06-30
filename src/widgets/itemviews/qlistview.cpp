@@ -2246,8 +2246,8 @@ int QListModeViewBase::verticalScrollToValue(int index, QListView::ScrollHint hi
         } else {
             int scrollBarValue = verticalScrollBar()->value();
             int numHidden = 0;
-            for (int i = 0; i < flowPositions.count() - 1 && i <= scrollBarValue; ++i)
-                if (isHidden(i))
+            for (const auto &idx : qAsConst(dd->hiddenRows))
+                if (idx.row() <= scrollBarValue)
                     ++numHidden;
             value = qBound(0, scrollValueMap.at(verticalScrollBar()->value()) - numHidden, flowPositions.count() - 1);
         }
@@ -2687,21 +2687,24 @@ int QListModeViewBase::perItemScrollToValue(int index, int scrollValue, int view
         return scrollValue;
 
     itemExtent += spacing();
-    QVector<int> visibleFlowPositions;
-    visibleFlowPositions.reserve(flowPositions.count() - 1);
-    for (int i = 0; i < flowPositions.count() - 1; i++) { // flowPositions count is +1 larger than actual row count
-        if (!isHidden(i))
-            visibleFlowPositions.append(flowPositions.at(i));
-    }
-
+    QVector<int> hiddenRows = dd->hiddenRowIds();
+    std::sort(hiddenRows.begin(), hiddenRows.end());
+    int hiddenRowsBefore = 0;
+    for (int i = 0; i < hiddenRows.size() - 1; ++i)
+        if (hiddenRows.at(i) > index + hiddenRowsBefore)
+            break;
+        else
+            ++hiddenRowsBefore;
     if (!wrap) {
         int topIndex = index;
         const int bottomIndex = topIndex;
-        const int bottomCoordinate = visibleFlowPositions.at(index);
-
+        const int bottomCoordinate = flowPositions.at(index + hiddenRowsBefore);
         while (topIndex > 0 &&
-               (bottomCoordinate - visibleFlowPositions.at(topIndex - 1) + itemExtent) <= (viewportSize)) {
+               (bottomCoordinate - flowPositions.at(topIndex + hiddenRowsBefore - 1) + itemExtent) <= (viewportSize)) {
             topIndex--;
+            // will the next one be a hidden row -> skip
+            while (hiddenRowsBefore > 0 && hiddenRows.at(hiddenRowsBefore - 1) >= topIndex + hiddenRowsBefore - 1)
+                hiddenRowsBefore--;
         }
 
         const int itemCount = bottomIndex - topIndex + 1;
@@ -2720,7 +2723,7 @@ int QListModeViewBase::perItemScrollToValue(int index, int scrollValue, int view
                                            ? Qt::Horizontal : Qt::Vertical);
         if (flowOrientation == orientation) { // scrolling in the "flow" direction
             // ### wrapped scrolling in the flow direction
-            return visibleFlowPositions.at(index); // ### always pixel based for now
+            return flowPositions.at(index + hiddenRowsBefore); // ### always pixel based for now
         } else if (!segmentStartRows.isEmpty()) { // we are scrolling in the "segment" direction
             int segment = qBinarySearch<int>(segmentStartRows, index, 0, segmentStartRows.count() - 1);
             int leftSegment = segment;
@@ -3354,9 +3357,9 @@ int QListView::visualIndex(const QModelIndex &index) const
     d->executePostedLayout();
     QListViewItem itm = d->indexToListViewItem(index);
     int visualIndex = d->commonListView->itemIndex(itm);
-    for (int row = 0; row <= index.row() && visualIndex >= 0; row++) {
-        if (d->isHidden(row))
-            visualIndex--;
+    for (const auto &idx : qAsConst(d->hiddenRows)) {
+        if (idx.row() <= index.row())
+            --visualIndex;
     }
     return visualIndex;
 }

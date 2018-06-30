@@ -873,6 +873,10 @@ void tst_QListView::setCurrentIndex()
             }
         }
     }
+    while (model.rowCount()) {
+        view.setCurrentIndex(model.index(model.rowCount() - 1, 0));
+        model.removeRow(model.rowCount() - 1);
+    }
 }
 
 class PublicListView : public QListView

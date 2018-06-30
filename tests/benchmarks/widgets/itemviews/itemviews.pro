@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
 SUBDIRS = \
         qtableview \
-        qheaderview
+        qheaderview \
+        qlistview

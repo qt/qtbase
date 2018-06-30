@@ -377,6 +377,14 @@ public:
         QModelIndex idx = model->index(row, 0, root);
         return isPersistent(idx) && hiddenRows.contains(idx);
     }
+    // helper to avoid checking for isPersistent and creating persistent indexes as above in isHidden
+    QVector<int> hiddenRowIds() const {
+        QVector<int> rowIds;
+        rowIds.reserve(hiddenRows.size());
+        for (const auto &idx : hiddenRows)
+            rowIds += idx.row();
+        return rowIds;
+    }
     inline bool isHiddenOrDisabled(int row) const { return isHidden(row) || !isIndexEnabled(modelIndex(row)); }
 
     void removeCurrentAndDisabled(QVector<QModelIndex> *indexes, const QModelIndex &current) const;
