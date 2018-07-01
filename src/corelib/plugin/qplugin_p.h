@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 
 enum class QtPluginMetaDataKeys {
     QtVersion,
-    Debug,
+    Requirements,
     IID,
     ClassName,
     MetaData
@@ -66,8 +66,6 @@ enum class QtPluginMetaDataKeys {
 // F(IntKey, StringKey, Description)
 // Keep this list sorted in the order moc should output.
 #define QT_PLUGIN_FOREACH_METADATA(F) \
-    F(QtPluginMetaDataKeys::QtVersion, "version", "Qt version built against")   \
-    F(QtPluginMetaDataKeys::Debug, "debug", "Whether it is a debug build")      \
     F(QtPluginMetaDataKeys::IID, "IID", "Plugin's Interface ID")                \
     F(QtPluginMetaDataKeys::ClassName, "className", "Plugin class name")        \
     F(QtPluginMetaDataKeys::MetaData, "MetaData", "Other meta data")

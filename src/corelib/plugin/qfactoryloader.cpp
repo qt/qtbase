@@ -69,11 +69,17 @@ static inline int metaDataSignatureLength()
 
 static QJsonDocument jsonFromCborMetaData(const char *raw, qsizetype size, QString *errMsg)
 {
-    if (Q_UNLIKELY(raw[-1] != '!')) {
-        *errMsg = QStringLiteral("Invalid metadata signature");
+    // extract the keys not stored in CBOR
+    int qt_metadataVersion = quint8(raw[0]);
+    int qt_version = qFromBigEndian<quint16>(raw + 1);
+    int qt_archRequirements = quint8(raw[3]);
+    if (Q_UNLIKELY(raw[-1] != '!' || qt_metadataVersion != 0)) {
+        *errMsg = QStringLiteral("Invalid metadata version");
         return QJsonDocument();
     }
 
+    raw += 4;
+    size -= 4;
     QByteArray ba = QByteArray::fromRawData(raw, int(size));
     QCborParserError err;
     QCborValue metadata = QCborValue::fromCbor(ba, &err);
@@ -88,8 +94,12 @@ static QJsonDocument jsonFromCborMetaData(const char *raw, qsizetype size, QStri
         return QJsonDocument();
     }
 
-    // convert the top-level map integer keys
     QJsonObject o;
+    o.insert(QLatin1String("version"), qt_version << 8);
+    o.insert(QLatin1String("debug"), bool(qt_archRequirements & 1));
+    o.insert(QLatin1String("archreq"), qt_archRequirements);
+
+    // convert the top-level map integer keys
     for (auto it : metadata.toMap()) {
         QString key;
         if (it.first.isInteger()) {
@@ -98,6 +108,12 @@ static QJsonDocument jsonFromCborMetaData(const char *raw, qsizetype size, QStri
             case int(IntKey): key = QStringLiteral(StringKey); break;
                 QT_PLUGIN_FOREACH_METADATA(CONVERT_TO_STRING)
 #undef CONVERT_TO_STRING
+
+            case int(QtPluginMetaDataKeys::Requirements):
+                // special case: recreate the debug key
+                o.insert(QLatin1String("debug"), bool(it.second.toInteger() & 1));
+                key = QStringLiteral("archreq");
+                break;
             }
         } else {
             key = it.first.toString();

@@ -1624,8 +1624,11 @@ void Generator::generatePluginMetaData()
         return;
 
     fputs("\nQT_PLUGIN_METADATA_SECTION\n"
-          "static const unsigned char qt_pluginMetaData[] = {\n"
-          "    'Q', 'T', 'M', 'E', 'T', 'A', 'D', 'A', 'T', 'A', ' ', '!',", out);
+          "static constexpr unsigned char qt_pluginMetaData[] = {\n"
+          "    'Q', 'T', 'M', 'E', 'T', 'A', 'D', 'A', 'T', 'A', ' ', '!',\n"
+          "    // metadata version, Qt version, architectural requirements\n"
+          "    0, QT_VERSION_MAJOR, QT_VERSION_MINOR, qPluginArchRequirements(),", out);
+
 
     CborDevice dev(out);
     CborEncoder enc;
@@ -1633,20 +1636,6 @@ void Generator::generatePluginMetaData()
 
     CborEncoder map;
     cbor_encoder_create_map(&enc, &map, CborIndefiniteLength);
-
-    dev.nextItem("\"version\"");
-    cbor_encode_int(&map, int(QtPluginMetaDataKeys::QtVersion));
-    cbor_encode_int(&map, QT_VERSION);
-
-    fputs("\n#ifdef QT_NO_DEBUG", out);
-    dev.nextItem("\"debug\" = false");
-    cbor_encode_int(&map, int(QtPluginMetaDataKeys::Debug));
-    cbor_encode_boolean(&map, false);
-    fputs("\n#else", out);
-    dev.nextItem("\"debug\" = true");
-    cbor_encode_int(&map, int(QtPluginMetaDataKeys::Debug));
-    cbor_encode_boolean(&map, true);
-    fputs("\n#endif", out);
 
     dev.nextItem("\"IID\"");
     cbor_encode_int(&map, int(QtPluginMetaDataKeys::IID));

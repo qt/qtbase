@@ -31,6 +31,7 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
+#include <qplugin.h>
 #include <QPluginLoader>
 
 #include <private/qplugin_p.h>
@@ -147,49 +148,62 @@ void tst_QPlugin::scanInvalidPlugin_data()
         QTest::newRow("json-control") << (prefix + QJsonDocument(obj).toBinaryData()) << true << "";
     }
 
-    QTest::newRow("json-zeroes") << prefix << false << "";
+    QTest::newRow("json-zeroes") << prefix << false << " ";
 
     prefix += "qbjs";
-    QTest::newRow("bad-json-version0") << prefix << false << "";
-    QTest::newRow("bad-json-version2") << (prefix + QByteArray("\2\0\0\0", 4)) << false << "";
+    QTest::newRow("bad-json-version0") << prefix << false << " ";
+    QTest::newRow("bad-json-version2") << (prefix + QByteArray("\2\0\0\0", 4)) << false << " ";
 
     // valid qbjs version 1
     prefix += QByteArray("\1\0\0\0");
 
     // too large for the file (100 MB)
-    QTest::newRow("bad-json-size-large1") << (prefix + QByteArray("\0\0\x40\x06")) << false << "";
+    QTest::newRow("bad-json-size-large1") << (prefix + QByteArray("\0\0\x40\x06")) << false << " ";
 
     // too large for binary JSON (512 MB)
-    QTest::newRow("bad-json-size-large2") << (prefix + QByteArray("\0\0\0\x20")) << false << "";
+    QTest::newRow("bad-json-size-large2") << (prefix + QByteArray("\0\0\0\x20")) << false << " ";
 
     // could overflow
-    QTest::newRow("bad-json-size-large3") << (prefix + "\xff\xff\xff\x7f") << false << "";
+    QTest::newRow("bad-json-size-large3") << (prefix + "\xff\xff\xff\x7f") << false << " ";
 #endif
 
     // CBOR metadata
-    QByteArray cprefix = "QTMETADATA !";
+    QByteArray cprefix = "QTMETADATA !1234";
+    cprefix[12] = 0; // current version
+    cprefix[13] = QT_VERSION_MAJOR;
+    cprefix[14] = QT_VERSION_MINOR;
+    cprefix[15] = qPluginArchRequirements();
 
-    {
+    QByteArray cborValid = [] {
         QCborMap m;
         m.insert(int(QtPluginMetaDataKeys::IID), QLatin1String("org.qt-project.tst_qplugin"));
         m.insert(int(QtPluginMetaDataKeys::ClassName), QLatin1String("tst"));
-        m.insert(int(QtPluginMetaDataKeys::QtVersion), int(QT_VERSION));
-#ifdef QT_NO_DEBUG
-        m.insert(int(QtPluginMetaDataKeys::Debug), false);
-#else
-        m.insert(int(QtPluginMetaDataKeys::Debug), true);
-#endif
         m.insert(int(QtPluginMetaDataKeys::MetaData), QCborMap());
+        return QCborValue(m).toCbor();
+    }();
+    QTest::newRow("cbor-control") << (cprefix + cborValid) << true << "";
 
-        QTest::newRow("cbor-control") << (cprefix + QCborValue(m).toCbor()) << true << "";
-    }
+    cprefix[12] = 1;
+    QTest::newRow("cbor-major-too-new") << (cprefix + cborValid) << false
+                                        << " Invalid metadata version";
+
+    cprefix[12] = 0;
+    cprefix[13] = QT_VERSION_MAJOR + 1;
+    QTest::newRow("cbor-major-too-new") << (cprefix + cborValid) << false << "";
+
+    cprefix[13] = QT_VERSION_MAJOR - 1;
+    QTest::newRow("cbor-major-too-old") << (cprefix + cborValid) << false << "";
+
+    cprefix[13] = QT_VERSION_MAJOR;
+    cprefix[14] = QT_VERSION_MINOR + 1;
+    QTest::newRow("cbor-minor-too-new") << (cprefix + cborValid) << false << "";
 
     QTest::newRow("cbor-invalid") << (cprefix + "\xff") << false
-                                  << "Metadata parsing error: Invalid CBOR stream: unexpected 'break' byte";
+                                  << " Metadata parsing error: Invalid CBOR stream: unexpected 'break' byte";
     QTest::newRow("cbor-not-map1") << (cprefix + "\x01") << false
-                                   << "Unexpected metadata contents";
+                                   << " Unexpected metadata contents";
     QTest::newRow("cbor-not-map2") << (cprefix + "\x81\x01") << false
-                                   << "Unexpected metadata contents";
+                                   << " Unexpected metadata contents";
 }
 
 static const char invalidPluginSignature[] = "qplugin testfile";
@@ -246,10 +260,10 @@ void tst_QPlugin::scanInvalidPlugin()
     // now try to load this
     QFETCH(bool, loads);
     QFETCH(QString, errMsg);
-    if (!loads)
+    if (!errMsg.isEmpty())
         QTest::ignoreMessage(QtWarningMsg,
                              "Found invalid metadata in lib " + QFile::encodeName(newName) +
-                             ": " + errMsg.toUtf8());
+                             ":" + errMsg.toUtf8());
     QPluginLoader loader(newName);
     QCOMPARE(loader.load(), loads);
     if (loads)
