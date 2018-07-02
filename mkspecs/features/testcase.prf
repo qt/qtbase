@@ -89,12 +89,11 @@ isEmpty(BUILDS)|build_pass {
     # Install tests unless no_testcase_installs is set, or there is already
     # a `target' in INSTALLS.
     #
-    # Tests are installed under a directory named after the target so that each
-    # test has its own directory for testdata etc.
+    # Tests are installed under a directory named after their source folder
+    # so that each test has its own directory for testdata etc.
     #
-    load(resolve_target)
-    TARGET_BASENAME = $$basename(QMAKE_RESOLVED_TARGET)
-    target.path = $$[QT_INSTALL_TESTS]/$$TARGET_BASENAME
+    TEST_FOLDER = $$basename(_PRO_FILE_PWD_)
+    target.path = $$[QT_INSTALL_TESTS]/$$TEST_FOLDER
     INSTALLS += target
 }
 
