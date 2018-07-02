@@ -1352,7 +1352,7 @@ QGradient::QGradient()
     Constructs a gradient based on a predefined \a preset.
 
     The coordinate mode of the resulting gradient is
-    QGradient::ObjectBoundingMode, allowing the preset
+    QGradient::ObjectMode, allowing the preset
     to be applied to arbitrary object sizes.
 */
 QGradient::QGradient(Preset preset)
@@ -1380,7 +1380,7 @@ QGradient::QGradient(Preset preset)
             return;
 
         m_type = LinearGradient;
-        setCoordinateMode(ObjectBoundingMode);
+        setCoordinateMode(ObjectMode);
         setSpread(PadSpread);
 
         const QJsonValue start = presetData[QLatin1Literal("start")];

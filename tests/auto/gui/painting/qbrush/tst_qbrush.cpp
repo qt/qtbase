@@ -331,7 +331,7 @@ void tst_QBrush::gradientPresets()
 {
     QGradient gradient(QGradient::WarmFlame);
     QCOMPARE(gradient.type(), QGradient::LinearGradient);
-    QCOMPARE(gradient.coordinateMode(), QGradient::ObjectBoundingMode);
+    QCOMPARE(gradient.coordinateMode(), QGradient::ObjectMode);
 
     QLinearGradient *lg = static_cast<QLinearGradient *>(&gradient);
     QCOMPARE(lg->start(), QPointF(0, 1));
