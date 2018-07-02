@@ -222,6 +222,7 @@ public:
 
     mutable QMutex mutex;
     QThreadData *data;
+    bool running = false;
 
     static void setCurrentThread(QThread*) {}
     static QThread *threadForId(int) { return QThread::currentThread(); }

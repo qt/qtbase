@@ -765,9 +765,78 @@ QThread::QThread(QObject *parent)
     d->data->thread = this;
 }
 
+QThread::~QThread()
+{
+
+}
+
+void QThread::run()
+{
+
+}
+
+int QThread::exec()
+{
+    return 0;
+}
+
+void QThread::start(Priority priority)
+{
+    Q_D(QThread);
+    Q_UNUSED(priority);
+    d->running = true;
+}
+
+void QThread::terminate()
+{
+
+}
+
+void QThread::quit()
+{
+
+}
+
+bool QThread::wait(unsigned long time)
+{
+    Q_UNUSED(time);
+    return false;
+}
+
+bool QThread::event(QEvent* event)
+{
+    return QObject::event(event);
+}
+
+Qt::HANDLE QThread::currentThreadId() Q_DECL_NOTHROW
+{
+    return Qt::HANDLE(currentThread());
+}
+
 QThread *QThread::currentThread()
 {
     return QThreadData::current()->thread;
+}
+
+int QThread::idealThreadCount() Q_DECL_NOTHROW
+{
+    return 1;
+}
+
+void QThread::yieldCurrentThread()
+{
+
+}
+
+bool QThread::isFinished() const
+{
+    return false;
+}
+
+bool QThread::isRunning() const
+{
+    Q_D(const QThread);
+    return d->running;
 }
 
 // No threads: so we can just use static variables
