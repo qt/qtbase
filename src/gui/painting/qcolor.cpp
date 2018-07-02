@@ -39,6 +39,7 @@
 
 #include "qcolor.h"
 #include "qcolor_p.h"
+#include "qfloat16.h"
 #include "qnamespace.h"
 #include "qdatastream.h"
 #include "qvariant.h"
@@ -494,6 +495,14 @@ static QStringList get_colornames()
     with this value, a pixel value will be used that is appropriate for the
     underlying pixel format in use.
 
+    \section1 The Extended RGB Color Model
+
+    The extended RGB color model, also known as the scRGB color space,
+    is the same the RGB color model except it allows values under 0.0,
+    and over 1.0. This makes it possible to represent colors that would
+    otherwise be outside the range of the RGB colorspace but still use
+    the same values for colors inside the RGB colorspace.
+
     \section1 The HSV Color Model
 
     The RGB model is hardware-oriented. Its representation is close to
@@ -603,12 +612,13 @@ static QStringList get_colornames()
 /*!
     \enum QColor::Spec
 
-    The type of color specified, either RGB, HSV, CMYK or HSL.
+    The type of color specified, either RGB, extended RGB, HSV, CMYK or HSL.
 
     \value Rgb
     \value Hsv
     \value Cmyk
     \value Hsl
+    \value ExtendedRgb
     \value Invalid
 
     \sa spec(), convertTo()
@@ -777,6 +787,10 @@ QColor::QColor(Spec spec) noexcept
         break;
     case Hsl:
         setHsl(0, 0, 0, 0);
+        break;
+    case ExtendedRgb:
+        cspec = spec;
+        setRgbF(0, 0, 0, 0);
         break;
     }
 }
@@ -1211,6 +1225,17 @@ void QColor::setHsl(int h, int s, int l, int a)
     ct.ahsl.pad        = 0;
 }
 
+static inline qfloat16 &castF16(quint16 &v)
+{
+    // this works because qfloat16 internally is a quint16
+    return *reinterpret_cast<qfloat16 *>(&v);
+}
+
+static inline const qfloat16 &castF16(const quint16 &v)
+{
+    return *reinterpret_cast<const qfloat16 *>(&v);
+}
+
 /*!
     Sets the contents pointed to by \a r, \a g, \a b, and \a a, to the red,
     green, blue, and alpha-channel (transparency) components of the color's
@@ -1226,18 +1251,27 @@ void QColor::getRgbF(qreal *r, qreal *g, qreal *b, qreal *a) const
     if (!r || !g || !b)
         return;
 
-    if (cspec != Invalid && cspec != Rgb) {
+    if (cspec == Invalid)
+        return;
+
+    if (cspec != Rgb && cspec != ExtendedRgb) {
         toRgb().getRgbF(r, g, b, a);
         return;
     }
 
-    *r = ct.argb.red   / qreal(USHRT_MAX);
-    *g = ct.argb.green / qreal(USHRT_MAX);
-    *b = ct.argb.blue  / qreal(USHRT_MAX);
-
-    if (a)
-        *a = ct.argb.alpha / qreal(USHRT_MAX);
-
+    if (cspec == Rgb) {
+        *r = ct.argb.red   / qreal(USHRT_MAX);
+        *g = ct.argb.green / qreal(USHRT_MAX);
+        *b = ct.argb.blue  / qreal(USHRT_MAX);
+        if (a)
+            *a = ct.argb.alpha / qreal(USHRT_MAX);
+    }  else {
+        *r = castF16(ct.argbExtended.redF16);
+        *g = castF16(ct.argbExtended.greenF16);
+        *b = castF16(ct.argbExtended.blueF16);
+        if (a)
+            *a = castF16(ct.argbExtended.alphaF16);
+    }
 }
 
 /*!
@@ -1274,26 +1308,35 @@ void QColor::getRgb(int *r, int *g, int *b, int *a) const
     Sets the color channels of this color to \a r (red), \a g (green),
     \a b (blue) and \a a (alpha, transparency).
 
-    All values must be in the range 0.0-1.0.
+    The alpha value must be in the range 0.0-1.0.
+    If any of the other values are outside the range of 0.0-1.0 the
+    color model will be set as \c ExtendedRgb.
 
     \sa rgb(), getRgbF(), setRgb()
 */
 void QColor::setRgbF(qreal r, qreal g, qreal b, qreal a)
 {
-    if (r < qreal(0.0) || r > qreal(1.0)
-        || g < qreal(0.0) || g > qreal(1.0)
-        || b < qreal(0.0) || b > qreal(1.0)
-        || a < qreal(0.0) || a > qreal(1.0)) {
-        qWarning("QColor::setRgbF: RGB parameters out of range");
+    if (a < qreal(0.0) || a > qreal(1.0)) {
+        qWarning("QColor::setRgbF: Alpha parameter is out of range");
         invalidate();
         return;
     }
-
+    if (r < qreal(0.0) || r > qreal(1.0) ||
+        g < qreal(0.0) || g > qreal(1.0) ||
+        b < qreal(0.0) || b > qreal(1.0) || cspec == ExtendedRgb) {
+        cspec = ExtendedRgb;
+        castF16(ct.argbExtended.redF16)   = qfloat16(r);
+        castF16(ct.argbExtended.greenF16) = qfloat16(g);
+        castF16(ct.argbExtended.blueF16)  = qfloat16(b);
+        castF16(ct.argbExtended.alphaF16) = qfloat16(a);
+        ct.argbExtended.pad   = 0;
+        return;
+    }
     cspec = Rgb;
-    ct.argb.alpha = qRound(a * USHRT_MAX);
     ct.argb.red   = qRound(r * USHRT_MAX);
     ct.argb.green = qRound(g * USHRT_MAX);
     ct.argb.blue  = qRound(b * USHRT_MAX);
+    ct.argb.alpha = qRound(a * USHRT_MAX);
     ct.argb.pad   = 0;
 }
 
@@ -1421,7 +1464,11 @@ void QColor::setRgb(QRgb rgb) noexcept
     \sa setAlpha(), alphaF(), {QColor#Alpha-Blended Drawing}{Alpha-Blended Drawing}
 */
 int QColor::alpha() const noexcept
-{ return ct.argb.alpha >> 8; }
+{
+    if (cspec == ExtendedRgb)
+        return qRound(qreal(castF16(ct.argbExtended.alphaF16)) * 255);
+    return ct.argb.alpha >> 8;
+}
 
 
 /*!
@@ -1434,6 +1481,11 @@ int QColor::alpha() const noexcept
 void QColor::setAlpha(int alpha)
 {
     QCOLOR_INT_RANGE_CHECK("QColor::setAlpha", alpha);
+    if (cspec == ExtendedRgb) {
+        constexpr qreal f = qreal(1.0) / 255;
+        castF16(ct.argbExtended.alphaF16) = alpha * f;
+        return;
+    }
     ct.argb.alpha = alpha * 0x101;
 }
 
@@ -1443,7 +1495,11 @@ void QColor::setAlpha(int alpha)
     \sa setAlphaF(), alpha(), {QColor#Alpha-Blended Drawing}{Alpha-Blended Drawing}
 */
 qreal QColor::alphaF() const noexcept
-{ return ct.argb.alpha / qreal(USHRT_MAX); }
+{
+    if (cspec == ExtendedRgb)
+        return castF16(ct.argbExtended.alphaF16);
+    return ct.argb.alpha / qreal(USHRT_MAX);
+}
 
 /*!
     Sets the alpha of this color to \a alpha. qreal alpha is specified in the
@@ -1455,6 +1511,10 @@ qreal QColor::alphaF() const noexcept
 void QColor::setAlphaF(qreal alpha)
 {
     QCOLOR_REAL_RANGE_CHECK("QColor::setAlphaF", alpha);
+    if (cspec == ExtendedRgb) {
+        castF16(ct.argbExtended.alphaF16) = alpha;
+        return;
+    }
     qreal tmp = alpha * USHRT_MAX;
     ct.argb.alpha = qRound(tmp);
 }
@@ -1550,25 +1610,29 @@ void QColor::setBlue(int blue)
 */
 qreal QColor::redF() const noexcept
 {
-    if (cspec != Invalid && cspec != Rgb)
-        return toRgb().redF();
-    return ct.argb.red / qreal(USHRT_MAX);
+    if (cspec == Rgb || cspec == Invalid)
+        return ct.argb.red / qreal(USHRT_MAX);
+    if (cspec == ExtendedRgb)
+        return castF16(ct.argbExtended.redF16);
+
+    return toRgb().redF();
 }
 
 
 /*!
-    Sets the red color component of this color to \a red. Float components
-    are specified in the range 0.0-1.0.
+    Sets the red color component of this color to \a red. If \a red lies outside
+    the 0.0-1.0 range, the color model will be changed to \c ExtendedRgb.
 
     \sa redF(), red(), setRgbF()
 */
 void QColor::setRedF(qreal red)
 {
-    QCOLOR_REAL_RANGE_CHECK("QColor::setRedF", red);
-    if (cspec != Rgb)
-        setRgbF(red, greenF(), blueF(), alphaF());
-    else
+    if (cspec == Rgb && red >= qreal(0.0) && red <= qreal(1.0))
         ct.argb.red = qRound(red * USHRT_MAX);
+    else if (cspec == ExtendedRgb)
+        castF16(ct.argbExtended.redF16) = red;
+    else
+        setRgbF(red, greenF(), blueF(), alphaF());
 }
 
 /*!
@@ -1578,25 +1642,29 @@ void QColor::setRedF(qreal red)
 */
 qreal QColor::greenF() const noexcept
 {
-    if (cspec != Invalid && cspec != Rgb)
-        return toRgb().greenF();
-    return ct.argb.green / qreal(USHRT_MAX);
+    if (cspec == Rgb || cspec == Invalid)
+        return ct.argb.green / qreal(USHRT_MAX);
+    if (cspec == ExtendedRgb)
+        return castF16(ct.argbExtended.greenF16);
+
+    return toRgb().greenF();
 }
 
 
 /*!
-    Sets the green color component of this color to \a green. Float components
-    are specified in the range 0.0-1.0.
+    Sets the green color component of this color to \a green. If \a green lies outside
+    the 0.0-1.0 range, the color model will be changed to \c ExtendedRgb.
 
     \sa greenF(), green(), setRgbF()
 */
 void QColor::setGreenF(qreal green)
 {
-    QCOLOR_REAL_RANGE_CHECK("QColor::setGreenF", green);
-    if (cspec != Rgb)
-        setRgbF(redF(), green, blueF(), alphaF());
-    else
+    if (cspec == Rgb && green >= qreal(0.0) && green <= qreal(1.0))
         ct.argb.green = qRound(green * USHRT_MAX);
+    else if (cspec == ExtendedRgb)
+        castF16(ct.argbExtended.greenF16) = green;
+    else
+        setRgbF(redF(), green, blueF(), alphaF());
 }
 
 /*!
@@ -1606,24 +1674,27 @@ void QColor::setGreenF(qreal green)
 */
 qreal QColor::blueF() const noexcept
 {
-    if (cspec != Invalid && cspec != Rgb)
-        return toRgb().blueF();
-    return ct.argb.blue / qreal(USHRT_MAX);
+    if (cspec == Rgb || cspec == Invalid)
+        return ct.argb.blue / qreal(USHRT_MAX);
+    if (cspec == ExtendedRgb)
+        return castF16(ct.argbExtended.blueF16);
+
+    return toRgb().blueF();
 }
 
 /*!
-    Sets the blue color component of this color to \a blue. Float components
-    are specified in the range 0.0-1.0.
-
+    Sets the blue color component of this color to \a blue. If \a blue lies outside
+    the 0.0-1.0 range, the color model will be changed to \c ExtendedRgb.
     \sa blueF(), blue(), setRgbF()
 */
 void QColor::setBlueF(qreal blue)
 {
-    QCOLOR_REAL_RANGE_CHECK("QColor::setBlueF", blue);
-    if (cspec != Rgb)
-        setRgbF(redF(), greenF(), blue, alphaF());
-    else
+    if (cspec == Rgb && blue >= qreal(0.0) && blue <= qreal(1.0))
         ct.argb.blue = qRound(blue * USHRT_MAX);
+    else if (cspec == ExtendedRgb)
+        castF16(ct.argbExtended.blueF16) = blue;
+    else
+        setRgbF(redF(), greenF(), blue, alphaF());
 }
 
 /*!
@@ -1933,6 +2004,30 @@ qreal QColor::blackF() const noexcept
 }
 
 /*!
+    Create and returns an extended RGB QColor based on this color.
+    \since 5.14
+
+    \sa toRgb, convertTo()
+*/
+QColor QColor::toExtendedRgb() const noexcept
+{
+    if (!isValid() || cspec == ExtendedRgb)
+        return *this;
+    if (cspec != Rgb)
+        return toRgb().toExtendedRgb();
+
+    constexpr qreal f = qreal(1.0) / USHRT_MAX;
+    QColor color;
+    color.cspec = ExtendedRgb;
+    castF16(color.ct.argbExtended.alphaF16) = qfloat16(ct.argb.alpha * f);
+    castF16(color.ct.argbExtended.redF16)   = qfloat16(ct.argb.red   * f);
+    castF16(color.ct.argbExtended.greenF16) = qfloat16(ct.argb.green * f);
+    castF16(color.ct.argbExtended.blueF16)  = qfloat16(ct.argb.blue  * f);
+    color.ct.argbExtended.pad = 0;
+    return color;
+}
+
+/*!
     Create and returns an RGB QColor based on this color.
 
     \sa fromRgb(), convertTo(), isValid()
@@ -1944,7 +2039,8 @@ QColor QColor::toRgb() const noexcept
 
     QColor color;
     color.cspec = Rgb;
-    color.ct.argb.alpha = ct.argb.alpha;
+    if (cspec != ExtendedRgb)
+        color.ct.argb.alpha = ct.argb.alpha;
     color.ct.argb.pad = 0;
 
     switch (cspec) {
@@ -2066,6 +2162,12 @@ QColor QColor::toRgb() const noexcept
             color.ct.argb.blue  = qRound((qreal(1.0) - (y * (qreal(1.0) - k) + k)) * USHRT_MAX);
             break;
         }
+    case ExtendedRgb:
+        color.ct.argb.alpha = qRound(USHRT_MAX * qreal(castF16(ct.argbExtended.alphaF16)));
+        color.ct.argb.red   = qRound(USHRT_MAX * qBound(qreal(0.0), qreal(castF16(ct.argbExtended.redF16)),   qreal(1.0)));
+        color.ct.argb.green = qRound(USHRT_MAX * qBound(qreal(0.0), qreal(castF16(ct.argbExtended.greenF16)), qreal(1.0)));
+        color.ct.argb.blue  = qRound(USHRT_MAX * qBound(qreal(0.0), qreal(castF16(ct.argbExtended.blueF16)),  qreal(1.0)));
+        break;
     default:
         break;
     }
@@ -2238,6 +2340,8 @@ QColor QColor::convertTo(QColor::Spec colorSpec) const noexcept
     switch (colorSpec) {
     case Rgb:
         return toRgb();
+    case ExtendedRgb:
+        return toExtendedRgb();
     case Hsv:
         return toHsv();
     case Cmyk:
@@ -2317,18 +2421,30 @@ QColor QColor::fromRgb(int r, int g, int b, int a)
     color values, \a r (red), \a g (green), \a b (blue), and \a a
     (alpha-channel, i.e. transparency).
 
-    All the values must be in the range 0.0-1.0.
+    The alpha value must be in the range 0.0-1.0.
+    If any of the other values are outside the range of 0.0-1.0 the
+    color model will be set as \c ExtendedRgb.
 
     \sa fromRgb(), fromRgba64(), toRgb(), isValid()
 */
 QColor QColor::fromRgbF(qreal r, qreal g, qreal b, qreal a)
 {
-    if (r < qreal(0.0) || r > qreal(1.0)
-        || g < qreal(0.0) || g > qreal(1.0)
-        || b < qreal(0.0) || b > qreal(1.0)
-        || a < qreal(0.0) || a > qreal(1.0)) {
-        qWarning("QColor::fromRgbF: RGB parameters out of range");
+    if (a < qreal(0.0) || a > qreal(1.0)) {
+        qWarning("QColor::fromRgbF: Alpha parameter out of range");
         return QColor();
+    }
+
+    if (r < qreal(0.0) || r > qreal(1.0)
+            || g < qreal(0.0) || g > qreal(1.0)
+            || b < qreal(0.0) || b > qreal(1.0)) {
+        QColor color;
+        color.cspec = ExtendedRgb;
+        castF16(color.ct.argbExtended.alphaF16) = qfloat16(a);
+        castF16(color.ct.argbExtended.redF16)   = qfloat16(r);
+        castF16(color.ct.argbExtended.greenF16) = qfloat16(g);
+        castF16(color.ct.argbExtended.blueF16)  = qfloat16(b);
+        color.ct.argbExtended.pad   = 0;
+        return color;
     }
 
     QColor color;
@@ -2885,6 +3001,8 @@ QDebug operator<<(QDebug dbg, const QColor &c)
         dbg.nospace() << "QColor(Invalid)";
     else if (c.spec() == QColor::Rgb)
         dbg.nospace() << "QColor(ARGB " << c.alphaF() << ", " << c.redF() << ", " << c.greenF() << ", " << c.blueF() << ')';
+    else if (c.spec() == QColor::ExtendedRgb)
+        dbg.nospace() << "QColor(Ext. ARGB " << c.alphaF() << ", " << c.redF() << ", " << c.greenF() << ", " << c.blueF() << ')';
     else if (c.spec() == QColor::Hsv)
         dbg.nospace() << "QColor(AHSV " << c.alphaF() << ", " << c.hueF() << ", " << c.saturationF() << ", " << c.valueF() << ')';
     else if (c.spec() == QColor::Cmyk)

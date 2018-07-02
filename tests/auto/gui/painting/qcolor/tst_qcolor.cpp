@@ -70,6 +70,7 @@ private slots:
     void setBlue();
 
     void setRgb();
+    void setRgbF();
     void setRgba();
     void setHsv();
     void setCmyk();
@@ -187,28 +188,28 @@ void tst_QColor::getSetCheck()
     // void QColor::setRedF(qreal)
     obj1.setRedF(0.0);
     QCOMPARE(obj1.redF(), qreal(0.0));
-    obj1.setRedF(-0.2);
-    QCOMPARE(obj1.redF(), qreal(0.0)); // range<0.0, 1.0
-    obj1.setRedF(1.1);
-    QCOMPARE(obj1.redF(), qreal(1.0)); // range<0.0, 1.0
+    obj1.setRedF(-0.25);
+    QCOMPARE(obj1.redF(), qreal(-0.25));
+    obj1.setRedF(1.25);
+    QCOMPARE(obj1.redF(), qreal(1.25));
 
     // qreal QColor::greenF()
     // void QColor::setGreenF(qreal)
     obj1.setGreenF(0.0);
     QCOMPARE(obj1.greenF(), qreal(0.0));
-    obj1.setGreenF(-0.2);
-    QCOMPARE(obj1.greenF(), qreal(0.0)); // range<0.0, 1.0
-    obj1.setGreenF(1.1);
-    QCOMPARE(obj1.greenF(), qreal(1.0)); // range<0.0, 1.0
+    obj1.setGreenF(-0.25);
+    QCOMPARE(obj1.greenF(), qreal(-0.25));
+    obj1.setGreenF(1.5);
+    QCOMPARE(obj1.greenF(), qreal(1.5));
 
     // qreal QColor::blueF()
     // void QColor::setBlueF(qreal)
     obj1.setBlueF(0.0);
     QCOMPARE(obj1.blueF(), qreal(0.0));
-    obj1.setBlueF(-0.2);
-    QCOMPARE(obj1.blueF(), qreal(0.0)); // range<0.0, 1.0
-    obj1.setBlueF(1.1);
-    QCOMPARE(obj1.blueF(), qreal(1.0)); // range<0.0, 1.0
+    obj1.setBlueF(-0.5);
+    QCOMPARE(obj1.blueF(), qreal(-0.5));
+    obj1.setBlueF(2.0);
+    QCOMPARE(obj1.blueF(), qreal(2.0));
 
     // QRgb QColor::rgba()
     // void QColor::setRgba(QRgb)
@@ -677,30 +678,81 @@ void tst_QColor::setRgb()
 {
     QColor color;
 
+    for (int a = 0; a <= 255; ++a) {
+        QRgb rgb = qRgba(0, 0, 0, a);
+
+        color.setRgb(0, 0, 0, a);
+        QCOMPARE(color.alpha(), a);
+        QCOMPARE(color.rgb(),  qRgb(0, 0, 0));
+
+        color.setRgb(rgb);
+        QCOMPARE(color.alpha(), 255);
+        QCOMPARE(color.rgb(),   qRgb(0, 0, 0));
+
+        int r, g, b, a2;
+        color.setRgb(0, 0, 0, a);
+        color.getRgb(&r, &g, &b, &a2);
+        QCOMPARE(a2, a);
+
+        QColor c(0, 0, 0);
+        c.setAlpha(a);
+        QCOMPARE(c.alpha(), a);
+    }
+
+    for (int r = 0; r <= 255; ++r) {
+        QRgb rgb = qRgb(r, 0, 0);
+
+        color.setRgb(r, 0, 0);
+        QCOMPARE(color.red(), r);
+        QCOMPARE(color.rgb(), rgb);
+
+        color.setRgb(rgb);
+        QCOMPARE(color.red(), r);
+        QCOMPARE(color.rgb(), rgb);
+
+        int r2, g, b, a;
+        color.getRgb(&r2, &g, &b, &a);
+        QCOMPARE(r2, r);
+    }
+
+    for (int g = 0; g <= 255; ++g) {
+        QRgb rgb = qRgb(0, g, 0);
+
+        color.setRgb(0, g, 0);
+        QCOMPARE(color.green(), g);
+        QCOMPARE(color.rgb(),   rgb);
+
+        color.setRgb(rgb);
+        QCOMPARE(color.green(), g);
+        QCOMPARE(color.rgb(),   rgb);
+
+        int r, g2, b, a;
+        color.getRgb(&r, &g2, &b, &a);
+        QCOMPARE(g2, g);
+    }
+
+    for (int b = 0; b <= 255; ++b) {
+        QRgb rgb = qRgb(0, 0, b);
+
+        color.setRgb(0, 0, b);
+        QCOMPARE(color.blue(),  b);
+        QCOMPARE(color.rgb(),   rgb);
+
+        color.setRgb(rgb);
+        QCOMPARE(color.blue(),  b);
+        QCOMPARE(color.rgb(),   rgb);
+
+        int r, g, b2, a;
+        color.getRgb(&r, &g, &b2, &a);
+        QCOMPARE(b2, b);
+    }
+}
+
+void tst_QColor::setRgbF()
+{
+    QColor color;
+
     for (int A = 0; A <= USHRT_MAX; ++A) {
-        {
-            // 0-255
-            int a = A >> 8;
-            QRgb rgb = qRgba(0, 0, 0, a);
-
-            color.setRgb(0, 0, 0, a);
-            QCOMPARE(color.alpha(), a);
-            QCOMPARE(color.rgb(),  qRgb(0, 0, 0));
-
-            color.setRgb(rgb);
-            QCOMPARE(color.alpha(), 255);
-            QCOMPARE(color.rgb(),   qRgb(0, 0, 0));
-
-            int r, g, b, a2;
-            color.setRgb(0, 0, 0, a);
-            color.getRgb(&r, &g, &b, &a2);
-            QCOMPARE(a2, a);
-
-            QColor c(0, 0, 0);
-            c.setAlpha(a);
-            QCOMPARE(c.alpha(), a);
-        }
-
         {
             // 0.0-1.0
             qreal a = A / qreal(USHRT_MAX);
@@ -720,24 +772,6 @@ void tst_QColor::setRgb()
 
     for (int R = 0; R <= USHRT_MAX; ++R) {
         {
-            // 0-255
-            int r = R >> 8;
-            QRgb rgb = qRgb(r, 0, 0);
-
-            color.setRgb(r, 0, 0);
-            QCOMPARE(color.red(), r);
-            QCOMPARE(color.rgb(), rgb);
-
-            color.setRgb(rgb);
-            QCOMPARE(color.red(), r);
-            QCOMPARE(color.rgb(), rgb);
-
-            int r2, g, b, a;
-            color.getRgb(&r2, &g, &b, &a);
-            QCOMPARE(r2, r);
-        }
-
-        {
             // 0.0-1.0
             qreal r = R / qreal(USHRT_MAX);
             color.setRgbF(r, 0.0, 0.0);
@@ -750,24 +784,6 @@ void tst_QColor::setRgb()
     }
 
     for (int G = 0; G <= USHRT_MAX; ++G) {
-        {
-            // 0-255
-            int g = G >> 8;
-            QRgb rgb = qRgb(0, g, 0);
-
-            color.setRgb(0, g, 0);
-            QCOMPARE(color.green(), g);
-            QCOMPARE(color.rgb(),   rgb);
-
-            color.setRgb(rgb);
-            QCOMPARE(color.green(), g);
-            QCOMPARE(color.rgb(),   rgb);
-
-            int r, g2, b, a;
-            color.getRgb(&r, &g2, &b, &a);
-            QCOMPARE(g2, g);
-        }
-
         {
             // 0.0-1.0
             qreal g = G / qreal(USHRT_MAX);
@@ -782,24 +798,6 @@ void tst_QColor::setRgb()
 
     for (int B = 0; B <= USHRT_MAX; ++B) {
         {
-            // 0-255
-            int b = B >> 8;
-            QRgb rgb = qRgb(0, 0, b);
-
-            color.setRgb(0, 0, b);
-            QCOMPARE(color.blue(),  b);
-            QCOMPARE(color.rgb(),   rgb);
-
-            color.setRgb(rgb);
-            QCOMPARE(color.blue(),  b);
-            QCOMPARE(color.rgb(),   rgb);
-
-            int r, g, b2, a;
-            color.getRgb(&r, &g, &b2, &a);
-            QCOMPARE(b2, b);
-        }
-
-        {
             // 0.0-1.0
             qreal b = B / qreal(USHRT_MAX);
             color.setRgbF(0.0, 0.0, b);
@@ -808,6 +806,45 @@ void tst_QColor::setRgb()
             qreal r, g, b2, a;
             color.getRgbF(&r, &g, &b2, &a);
             QCOMPARE(b2, b);
+        }
+    }
+
+    for (int R = -128; R <= 512; ++R) {
+        {
+            // extended RGB
+            qreal r = R / qreal(256);
+            color.setRgbF(r, 0.0, 0.0);
+            QCOMPARE(qfloat16(color.redF()), qfloat16(r));
+
+            qreal r2, g, b, a;
+            color.getRgbF(&r2, &g, &b, &a);
+            QCOMPARE(qfloat16(r2), qfloat16(r));
+        }
+    }
+
+    for (int G = -128; G <= 512; ++G) {
+        {
+            // extended RGB
+            qreal g = G / qreal(256);
+            color.setRgbF(0.0, g, 0.0);
+            QCOMPARE(qfloat16(color.greenF()), qfloat16(g));
+
+            qreal r, g2, b, a;
+            color.getRgbF(&r, &g2, &b, &a);
+            QCOMPARE(qfloat16(g2), qfloat16(g));
+        }
+    }
+
+    for (int B = -128; B <= 512; ++B) {
+        {
+            // extended RGB
+            qreal b = B / qreal(256);
+            color.setRgbF(0.0, 0.0, b);
+            QCOMPARE(qfloat16(color.blueF()), qfloat16(b));
+
+            qreal r, g, b2, a;
+            color.getRgbF(&r, &g, &b2, &a);
+            QCOMPARE(qfloat16(b2), qfloat16(b));
         }
     }
 }

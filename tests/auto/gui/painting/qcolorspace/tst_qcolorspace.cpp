@@ -57,6 +57,8 @@ private slots:
     void imageConversion();
 
     void loadImage();
+
+    void gamut();
 };
 
 tst_QColorSpace::tst_QColorSpace()
@@ -232,6 +234,59 @@ void tst_QColorSpace::loadImage()
     // Test the iccProfile getter returns the ICC profile from the image
     // which since we didn't write it, isn't identical to our defaults.
     QVERIFY(defaultProPhotoRgb.iccProfile() != image.colorSpace().iccProfile());
+
+    QColorTransform transform = image.colorSpace().transformationToColorSpace(QColorSpace::SRgb);
+    qreal maxRed = 0;
+    qreal maxBlue = 0;
+    qreal maxRed2 = 0;
+    qreal maxBlue2 = 0;
+    for (int y = 0; y < image.height(); ++y) {
+        for (int x = 0; x < image.width(); ++x) {
+            QColor p = image.pixelColor(x, y);
+            maxRed = std::max(maxRed, p.redF());
+            maxBlue = std::max(maxBlue, p.blueF());
+            p = transform.map(p);
+            maxRed2 = std::max(maxRed2, p.redF());
+            maxBlue2 = std::max(maxBlue2, p.blueF());
+
+        }
+    }
+    // ProPhotoRgb can be a lot more red and blue than SRgb can, so it will have lower values.
+    QVERIFY(maxRed2 > maxRed);
+    QVERIFY(maxBlue2 > maxBlue);
+}
+
+void tst_QColorSpace::gamut()
+{
+    QColor black = QColor::fromRgbF(0.0, 0.0, 0.0);
+    QColor white = QColor::fromRgbF(1.0, 1.0, 1.0);
+    QColor red = QColor::fromRgbF(1.0, 0.0, 0.0);
+    QColor green = QColor::fromRgbF(0.0, 1.0, 0.0);
+    QColor blue = QColor::fromRgbF(0.0, 0.0, 1.0);
+
+    QColorTransform toAdobeRgb = QColorSpace(QColorSpace::SRgb).transformationToColorSpace(QColorSpace::AdobeRgb);
+
+    QColor tblack = toAdobeRgb.map(black);
+    QColor twhite = toAdobeRgb.map(white);
+    QColor tred = toAdobeRgb.map(red);
+    QColor tgreen = toAdobeRgb.map(green);
+    QColor tblue = toAdobeRgb.map(blue);
+
+    // Black is black
+    QCOMPARE(tblack, black);
+
+    // This white hasn't changed
+    QCOMPARE(twhite, white);
+
+    // Adobe's red and blue gamut corners are the same as sRGB's
+    // So, a color in the red corner, will stay in the red corner
+    // the same for blue, but not for green.
+    QVERIFY(tred.greenF() < 0.001);
+    QVERIFY(tred.blueF() < 0.001);
+    QVERIFY(tblue.redF() < 0.001);
+    QVERIFY(tblue.greenF() < 0.001);
+    QVERIFY(tgreen.redF() > 0.2);
+    QVERIFY(tgreen.blueF() > 0.2);
 }
 
 QTEST_MAIN(tst_QColorSpace)

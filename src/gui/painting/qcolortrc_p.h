@@ -91,13 +91,32 @@ public:
             return m_fun.apply(x);
         return x;
     }
-
+    float applyExtended(float x) const
+    {
+        if (x >= 0.0f && x <= 1.0f)
+            return apply(x);
+        if (m_type == Type::Function)
+            return std::copysign(m_fun.apply(std::abs(x)), x);
+        if (m_type == Type::Table)
+            return x < 0.0f ? 0.0f : 1.0f;
+        return x;
+    }
     float applyInverse(float x) const
     {
         if (m_type == Type::Table)
             return m_table.applyInverse(x);
         if (m_type == Type::Function)
             return m_fun.inverted().apply(x);
+        return x;
+    }
+    float applyInverseExtended(float x) const
+    {
+        if (x >= 0.0f && x <= 1.0f)
+            return applyInverse(x);
+        if (m_type == Type::Function)
+            return std::copysign(applyInverse(x), x);
+        if (m_type == Type::Table)
+            return x < 0.0f ? 0.0f : 1.0f;
         return x;
     }
 

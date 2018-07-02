@@ -64,7 +64,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QColor &);
 class Q_GUI_EXPORT QColor
 {
 public:
-    enum Spec { Invalid, Rgb, Hsv, Cmyk, Hsl };
+    enum Spec { Invalid, Rgb, Hsv, Cmyk, Hsl, ExtendedRgb };
     enum NameFormat { HexRgb, HexArgb };
 
     inline QColor() noexcept;
@@ -198,6 +198,7 @@ public:
     QColor toHsv() const noexcept;
     QColor toCmyk() const noexcept;
     QColor toHsl() const noexcept;
+    QColor toExtendedRgb() const noexcept;
 
     Q_REQUIRED_RESULT QColor convertTo(Spec colorSpec) const noexcept;
 
@@ -275,6 +276,13 @@ private:
             ushort lightness;
             ushort pad;
         } ahsl;
+        struct {
+            ushort alphaF16;
+            ushort redF16;
+            ushort greenF16;
+            ushort blueF16;
+            ushort pad;
+        } argbExtended;
         ushort array[5];
     } ct;
 
