@@ -149,13 +149,13 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
                     if(!qmake_setpwd(dir))
                         fprintf(stderr, "Cannot find directory: %s\n", dir.toLatin1().constData());
                 }
-                Option::output_dir = Option::globals->shadowedPath(QDir::cleanPath(fi.absoluteFilePath()));
+                Option::output_dir = Option::globals->shadowedPath(qmake_getpwd());
                 if(tmp_proj.read(fn)) {
                     if(tmp_proj.first("TEMPLATE") == "subdirs") {
                         QMakeProject *pp = new QMakeProject(&tmp_proj);
                         pb_subdirs += new ProjectBuilderSubDirs(pp, dir);
                     } else if(tmp_proj.first("TEMPLATE") == "app" || tmp_proj.first("TEMPLATE") == "lib") {
-                        QString pbxproj = qmake_getpwd() + Option::dir_sep + tmp_proj.first("TARGET") + projectSuffix();
+                        QString pbxproj = Option::output_dir + Option::dir_sep + tmp_proj.first("TARGET") + projectSuffix();
                         if(!exists(pbxproj)) {
                             warn_msg(WarnLogic, "Ignored (not found) '%s'", pbxproj.toLatin1().constData());
                             goto nextfile; // # Dirty!
