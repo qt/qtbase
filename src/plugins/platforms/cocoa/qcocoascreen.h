@@ -77,6 +77,10 @@ public:
     NSScreen *nativeScreen() const;
     void updateGeometry();
 
+    void requestUpdate();
+    void deliverUpdateRequests();
+    bool isRunningDisplayLink() const;
+
     static QCocoaScreen *primaryScreen();
 
     static CGPoint mapToNative(const QPointF &pos, QCocoaScreen *screen = QCocoaScreen::primaryScreen());
@@ -96,6 +100,10 @@ public:
     QSizeF m_physicalSize;
     QCocoaCursor *m_cursor;
     QList<QPlatformScreen *> m_siblings;
+
+    CVDisplayLinkRef m_displayLink = nullptr;
+    dispatch_source_t m_displayLinkSource = nullptr;
+    QAtomicInt m_pendingUpdates;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

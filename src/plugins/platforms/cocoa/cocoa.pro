@@ -82,7 +82,7 @@ qtConfig(vulkan) {
 
 RESOURCES += qcocoaresources.qrc
 
-LIBS += -framework AppKit -framework CoreServices -framework Carbon -framework IOKit -framework QuartzCore -framework Metal -lcups
+LIBS += -framework AppKit -framework CoreServices -framework Carbon -framework IOKit -framework QuartzCore -framework CoreVideo -framework Metal -lcups
 
 QT += \
     core-private gui-private \

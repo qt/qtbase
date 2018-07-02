@@ -1070,8 +1070,12 @@ void QCocoaWindow::windowDidChangeScreen()
     if (!window())
         return;
 
-    if (QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenForNSScreen(m_view.window.screen))
+    if (QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenForNSScreen(m_view.window.screen)) {
         QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(window(), cocoaScreen->screen());
+
+        if (hasPendingUpdateRequest() && cocoaScreen->isRunningDisplayLink())
+            requestUpdate(); // Restart display-link on new screen
+    }
 }
 
 void QCocoaWindow::windowWillClose()
@@ -1330,8 +1334,16 @@ void QCocoaWindow::recreateWindowIfNeeded()
 
 void QCocoaWindow::requestUpdate()
 {
-    qCDebug(lcQpaDrawing) << "QCocoaWindow::requestUpdate" << window();
-    QPlatformWindow::requestUpdate();
+    const int swapInterval = format().swapInterval();
+    qCDebug(lcQpaDrawing) << "QCocoaWindow::requestUpdate" << window() << "swapInterval" << swapInterval;
+
+    if (swapInterval > 0) {
+        // Vsync is enabled, deliver via CVDisplayLink
+        static_cast<QCocoaScreen *>(screen())->requestUpdate();
+    } else {
+        // Fall back to the un-throttled timer-based callback
+        QPlatformWindow::requestUpdate();
+    }
 }
 
 void QCocoaWindow::deliverUpdateRequest()
