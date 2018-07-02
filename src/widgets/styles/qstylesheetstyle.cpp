@@ -1940,11 +1940,11 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
                     break;
                 case QTabBar::RoundedEast:
                 case QTabBar::TriangularEast:
-                    extraClass |= PseudoClass_Left;
+                    extraClass |= PseudoClass_Right;
                     break;
                 case QTabBar::RoundedWest:
                 case QTabBar::TriangularWest:
-                    extraClass |= PseudoClass_Right;
+                    extraClass |= PseudoClass_Left;
                     break;
                 default:
                     break;
@@ -1977,11 +1977,11 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
                     break;
                 case QTabBar::RoundedEast:
                 case QTabBar::TriangularEast:
-                    extraClass |= PseudoClass_Left;
+                    extraClass |= PseudoClass_Right;
                     break;
                 case QTabBar::RoundedWest:
                 case QTabBar::TriangularWest:
-                    extraClass |= PseudoClass_Right;
+                    extraClass |= PseudoClass_Left;
                     break;
                 default:
                     break;
