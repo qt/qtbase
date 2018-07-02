@@ -73,7 +73,7 @@ equals(QMAKE_HOST.os, Windows)|isEmpty(TESTSERVER_VERSION) {
     isEmpty(TESTSERVER_IMAGES): error("Docker image qt-test-server-* not found")
 
     # The domain name is relevant to https keycert (qnetworkreply/crts/qt-test-net-cacert.pem).
-    DNSDOMAIN = test-net.qt
+    DNSDOMAIN = test-net.qt.local
     TEST_ENV += TESTSERVER_DOMAIN=$$DNSDOMAIN
     DEFINES += QT_TEST_SERVER QT_TEST_SERVER_DOMAIN=$$shell_quote(\"$${DNSDOMAIN}\")
 

@@ -48,5 +48,10 @@ for RUN_CMD
 do $RUN_CMD
 done
 
+# start multicast DNS service discovery (mDNS)
+sed -i "s,#domain-name=local,domain-name=test-net.qt.local," /etc/avahi/avahi-daemon.conf
+service dbus restart
+service avahi-daemon restart
+
 # keep-alive in docker detach mode
 sleep infinity
