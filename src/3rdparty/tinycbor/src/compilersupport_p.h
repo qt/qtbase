@@ -213,10 +213,11 @@ static inline unsigned short encode_half(double val)
     return _cvtss_sh((float)val, 3);
 #else
     uint64_t v;
+    int sign, exp, mant;
     memcpy(&v, &val, sizeof(v));
-    int sign = v >> 63 << 15;
-    int exp = (v >> 52) & 0x7ff;
-    int mant = v << 12 >> 12 >> (53-11);    /* keep only the 11 most significant bits of the mantissa */
+    sign = v >> 63 << 15;
+    exp = (v >> 52) & 0x7ff;
+    mant = v << 12 >> 12 >> (53-11);    /* keep only the 11 most significant bits of the mantissa */
     exp -= 1023;
     if (exp == 1024) {
         /* infinity or NaN */

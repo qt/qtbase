@@ -415,11 +415,12 @@ CborError cbor_encode_simple_value(CborEncoder *encoder, uint8_t value)
  */
 CborError cbor_encode_floating_point(CborEncoder *encoder, CborType fpType, const void *value)
 {
+    unsigned size;
     uint8_t buf[1 + sizeof(uint64_t)];
     cbor_assert(fpType == CborHalfFloatType || fpType == CborFloatType || fpType == CborDoubleType);
     buf[0] = fpType;
 
-    unsigned size = 2U << (fpType - CborHalfFloatType);
+    size = 2U << (fpType - CborHalfFloatType);
     if (size == 8)
         put64(buf + 1, *(const uint64_t*)value);
     else if (size == 4)

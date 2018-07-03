@@ -92,8 +92,8 @@ enum {
 
 static inline void copy_current_position(CborValue *dst, const CborValue *src)
 {
-    // This "if" is here for pedantry only: the two branches should perform
-    // the same memory operation.
+    /* This "if" is here for pedantry only: the two branches should perform
+     * the same memory operation. */
     if (src->parser->flags & CborParserFlag_ExternalSource)
         dst->source.token = src->source.token;
     else

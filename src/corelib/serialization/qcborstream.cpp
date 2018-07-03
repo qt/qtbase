@@ -58,11 +58,14 @@ QT_WARNING_DISABLE_GCC("-Wunused-function")
 QT_WARNING_DISABLE_CLANG("-Wunused-function")
 QT_WARNING_DISABLE_CLANG("-Wundefined-internal")
 QT_WARNING_DISABLE_MSVC(4334) // '<<': result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
+
+#define CBOR_ENCODER_NO_CHECK_USER
+
+#define CBOR_NO_VALIDATION_API  1
+#define CBOR_NO_PRETTY_API      1
 #define CBOR_API static inline
 #define CBOR_PRIVATE_API static inline
 #define CBOR_INLINE_API static inline
-
-#define CBOR_ENCODER_NO_CHECK_USER
 
 #include <cbor.h>
 
@@ -93,26 +96,6 @@ static CborError cbor_encoder_close_container_checked(CborEncoder*, const CborEn
     return CborErrorInternalError;
 }
 static CborError _cbor_value_dup_string(const CborValue *, void **, size_t *, CborValue *)
-{
-    Q_UNREACHABLE();
-    return CborErrorInternalError;
-}
-static CborError cbor_value_to_pretty_stream(CborStreamFunction, void*, CborValue*, int)
-{
-    Q_UNREACHABLE();
-    return CborErrorInternalError;
-}
-static CborError cbor_value_to_pretty_advance(FILE*, CborValue*)
-{
-    Q_UNREACHABLE();
-    return CborErrorInternalError;
-}
-static CborError cbor_value_to_pretty_advance_flags(FILE *, CborValue *, int)
-{
-    Q_UNREACHABLE();
-    return CborErrorInternalError;
-}
-static CborError cbor_value_validate(const CborValue *, int)
 {
     Q_UNREACHABLE();
     return CborErrorInternalError;
