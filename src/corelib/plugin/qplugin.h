@@ -90,7 +90,6 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
 #  define QT_PLUGIN_METADATA_SECTION \
     __declspec(allocate(".qtmetadata"))
 #else
-#  define QT_PLUGIN_VERIFICATION_SECTION
 #  define QT_PLUGIN_METADATA_SECTION
 #endif
 
