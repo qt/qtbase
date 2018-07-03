@@ -874,7 +874,9 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                                                             name.chop(librarySuffix.length());
                                                     }
                                                 } else {
-                                                    library.replace(name, name + suffixSetting);
+                                                    int pos = library.lastIndexOf(name);
+                                                    if (pos != -1)
+                                                        library.insert(pos + name.length(), suffixSetting);
                                                 }
                                             }
                                         }
