@@ -10,4 +10,4 @@ SUBDIRS= \
     qshadergraphloader \
     qshadernodes \
     qshadernodesloader \
-
+    qtexturefilereader

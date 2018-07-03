@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>texturefiles/car.ktx</file>
+        <file>texturefiles/pattern.pkm</file>
+    </qresource>
+</RCC>
