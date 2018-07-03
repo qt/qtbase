@@ -317,7 +317,7 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
     if (pos >= 0) {
         if (hasMetaData) {
             const char *data = filedata + pos;
-            QJsonDocument doc = qJsonFromRawLibraryMetaData(data);
+            QJsonDocument doc = qJsonFromRawLibraryMetaData(data, qsizetype(fdlen));
             lib->metaData = doc.object();
             if (qt_debug_component())
                 qWarning("Found metadata in lib %s, metadata=\n%s\n",
@@ -691,7 +691,8 @@ static bool qt_get_metadata(QtPluginQueryVerificationDataFunction pfn, QLibraryP
     if (!szData)
         return false;
 
-    QJsonDocument doc = qJsonFromRawLibraryMetaData(szData);
+    // the data is already loaded, so the size doesn't matter
+    QJsonDocument doc = qJsonFromRawLibraryMetaData(szData, INT_MAX);
     if (doc.isNull())
         return false;
     priv->metaData = doc.object();
