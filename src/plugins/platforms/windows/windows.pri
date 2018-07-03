@@ -7,7 +7,7 @@ qtConfig(opengl):!qtConfig(opengles2):!qtConfig(dynamicgl): LIBS *= -lopengl32
 
 mingw: LIBS *= -luuid
 # For the dialog helpers:
-LIBS += -lshlwapi -lshell32 -ladvapi32
+LIBS += -lshlwapi -lshell32 -ladvapi32 -lwtsapi32
 
 DEFINES *= QT_NO_CAST_FROM_ASCII QT_NO_FOREACH
 

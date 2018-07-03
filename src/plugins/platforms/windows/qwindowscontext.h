@@ -224,6 +224,8 @@ public:
     bool useRTLExtensions() const;
     QList<int> possibleKeys(const QKeyEvent *e) const;
 
+    static bool isSessionLocked();
+
     QWindowsMimeConverter &mimeConverter() const;
     QWindowsScreenManager &screenManager();
     QWindowsTabletSupport *tabletSupport() const;
