@@ -133,7 +133,6 @@
     bool m_updatingDrag;
     NSEvent *m_currentlyInterpretedKeyEvent;
     QSet<quint32> m_acceptedKeyDowns;
-    bool m_updateRequested;
 }
 
 - (instancetype)initWithCocoaWindow:(QCocoaWindow *)platformWindow
@@ -155,7 +154,6 @@
         m_scrolling = false;
         m_updatingDrag = false;
         m_currentlyInterpretedKeyEvent = nil;
-        m_updateRequested = false;
         m_dontOverrideCtrlLMB = qt_mac_resolveOption(false, platformWindow->window(),
             "_q_platform_MacDontOverrideCtrlLMB", "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
         m_trackingArea = nil;

@@ -41,19 +41,6 @@
 
 @implementation QT_MANGLE_NAMESPACE(QNSView) (DrawingAPI)
 
-- (void)requestUpdate
-{
-    if (self.needsDisplay) {
-        // If the view already has needsDisplay set it means that there may be code waiting for
-        // a real expose event, so we can't issue setNeedsDisplay now as a way to trigger an
-        // update request. We will re-trigger requestUpdate from drawRect.
-        return;
-    }
-
-    [self setNeedsDisplay:YES];
-    m_updateRequested = true;
-}
-
 #ifndef QT_NO_OPENGL
 - (void)setQCocoaGLContext:(QCocoaGLContext *)context
 {
@@ -80,12 +67,6 @@
 - (BOOL)isFlipped
 {
     return YES;
-}
-
-- (void)setNeedsDisplayInRect:(NSRect)rect
-{
-    [super setNeedsDisplayInRect:rect];
-    m_updateRequested = false;
 }
 
 - (void)drawRect:(NSRect)dirtyRect
@@ -115,22 +96,7 @@
     }
 #endif
 
-    if (m_updateRequested) {
-        Q_ASSERT(m_platformWindow->hasPendingUpdateRequest());
-        m_platformWindow->deliverUpdateRequest();
-        m_updateRequested = false;
-    } else {
-        m_platformWindow->handleExposeEvent(dirtyRegion);
-    }
-
-    if (m_updateRequested && m_platformWindow->hasPendingUpdateRequest()) {
-        // A call to QWindow::requestUpdate was issued during event delivery above,
-        // but AppKit will reset the needsDisplay state of the view after completing
-        // the current display cycle, so we need to defer the request to redisplay.
-        // FIXME: Perhaps this should be a trigger to enable CADisplayLink?
-        qCDebug(lcQpaDrawing) << "[QNSView drawRect:] issuing deferred setNeedsDisplay due to pending update request";
-        dispatch_async(dispatch_get_main_queue (), ^{ [self requestUpdate]; });
-    }
+    m_platformWindow->handleExposeEvent(dirtyRegion);
 }
 
 - (BOOL)shouldUseMetalLayer

@@ -65,7 +65,6 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QCocoaNSMenuItem));
 @end
 
 @interface QT_MANGLE_NAMESPACE(QNSView) (DrawingAPI)
-- (void)requestUpdate;
 #ifndef QT_NO_OPENGL
 - (void)setQCocoaGLContext:(QCocoaGLContext *)context;
 #endif
