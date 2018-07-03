@@ -599,7 +599,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
               << var("QMAKE_LINK_SHLIB_CMD");
             if(!destdir.isEmpty())
                 t << "\n\t"
-                  << "-$(MOVE) $(TARGET) " << destdir << " ";
+                  << "-$(MOVE) $(TARGET) " << destdir << "$(TARGET)";
             if(!project->isEmpty("QMAKE_POST_LINK"))
                 t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
@@ -636,16 +636,16 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             if (!destdir.isEmpty()) {
                 t << "\n\t"
                   << "-$(DEL_FILE) " << destdir << "$(TARGET)\n\t"
-                  << "-$(MOVE) $(TARGET)  " << destdir << " ";
+                  << "-$(MOVE) $(TARGET) " << destdir << "$(TARGET)";
 
                 if (!project->isActiveConfig("unversioned_libname")) {
                     t << "\n\t"
                       << "-$(DEL_FILE) " << destdir << "$(TARGET0)\n\t"
                       << "-$(DEL_FILE) " << destdir << "$(TARGET1)\n\t"
                       << "-$(DEL_FILE) " << destdir << "$(TARGET2)\n\t"
-                      << "-$(MOVE) $(TARGET0) " << destdir << " \n\t"
-                      << "-$(MOVE) $(TARGET1) " << destdir << " \n\t"
-                      << "-$(MOVE) $(TARGET2) " << destdir << " ";
+                      << "-$(MOVE) $(TARGET0) " << destdir << "$(TARGET0)\n\t"
+                      << "-$(MOVE) $(TARGET1) " << destdir << "$(TARGET1)\n\t"
+                      << "-$(MOVE) $(TARGET2) " << destdir << "$(TARGET2)";
                 }
             }
             if(!project->isEmpty("QMAKE_POST_LINK"))
@@ -660,8 +660,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t  << "\n\t"
                    << "-$(DEL_FILE) " << destdir << "$(TARGET)\n\t"
                    << "-$(DEL_FILE) " << destdir << "$(TARGET0)\n\t"
-                   << "-$(MOVE) $(TARGET)  " << destdir << " \n\t"
-                   << "-$(MOVE) $(TARGET0) " << destdir << " \n\t";
+                   << "-$(MOVE) $(TARGET) " << destdir << "$(TARGET)\n\t"
+                   << "-$(MOVE) $(TARGET0) " << destdir << "$(TARGET0)\n\t";
             if(!project->isEmpty("QMAKE_POST_LINK"))
                 t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
