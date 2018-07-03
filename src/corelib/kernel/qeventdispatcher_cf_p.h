@@ -208,6 +208,7 @@ class Q_CORE_EXPORT QEventDispatcherCoreFoundation : public QAbstractEventDispat
 
 public:
     explicit QEventDispatcherCoreFoundation(QObject *parent = 0);
+    void startingUp() override;
     ~QEventDispatcherCoreFoundation();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
@@ -239,11 +240,11 @@ protected:
          , processedPostedEvents(false), processedTimers(false)
          , deferredWakeUp(false), deferredUpdateTimers(false) {}
 
-        QEventLoop::ProcessEventsFlags flags;
-        bool wasInterrupted;
-        bool processedPostedEvents;
-        bool processedTimers;
-        bool deferredWakeUp;
+        QAtomicInt flags;
+        QAtomicInteger<char> wasInterrupted;
+        QAtomicInteger<char> processedPostedEvents;
+        QAtomicInteger<char> processedTimers;
+        QAtomicInteger<char> deferredWakeUp;
         bool deferredUpdateTimers;
     };
 
@@ -258,6 +259,7 @@ private:
     QTimerInfoList m_timerInfoList;
     CFRunLoopTimerRef m_runLoopTimer;
     CFRunLoopTimerRef m_blockedRunLoopTimer;
+    QCFType<CFRunLoopRef> m_runLoop;
     bool m_overdueTimerScheduled;
 
     QCFSocketNotifier m_cfSocketNotifier;

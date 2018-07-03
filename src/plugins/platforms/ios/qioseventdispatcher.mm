@@ -471,8 +471,9 @@ bool QIOSEventDispatcher::processPostedEvents()
         return false;
 
     QT_APPLE_SCOPED_LOG_ACTIVITY(lcEventDispatcher().isDebugEnabled(), "sendWindowSystemEvents");
-    qCDebug(lcEventDispatcher) << "Sending window system events for" << m_processEvents.flags;
-    QWindowSystemInterface::sendWindowSystemEvents(m_processEvents.flags);
+    QEventLoop::ProcessEventsFlags flags = QEventLoop::ProcessEventsFlags(m_processEvents.flags.load());
+    qCDebug(lcEventDispatcher) << "Sending window system events for" << flags;
+    QWindowSystemInterface::sendWindowSystemEvents(flags);
 
     return true;
 }

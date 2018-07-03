@@ -86,7 +86,7 @@ CFRunLoopSourceRef qt_mac_add_socket_to_runloop(const CFSocketRef socket)
     if (!loopSource)
         return 0;
 
-    CFRunLoopAddSource(CFRunLoopGetMain(), loopSource, kCFRunLoopCommonModes);
+    CFRunLoopAddSource(CFRunLoopGetCurrent(), loopSource, kCFRunLoopCommonModes);
     return loopSource;
 }
 
@@ -96,7 +96,7 @@ CFRunLoopSourceRef qt_mac_add_socket_to_runloop(const CFSocketRef socket)
 void qt_mac_remove_socket_from_runloop(const CFSocketRef socket, CFRunLoopSourceRef runloop)
 {
     Q_ASSERT(runloop);
-    CFRunLoopRemoveSource(CFRunLoopGetMain(), runloop, kCFRunLoopCommonModes);
+    CFRunLoopRemoveSource(CFRunLoopGetCurrent(), runloop, kCFRunLoopCommonModes);
     CFSocketDisableCallBacks(socket, kCFSocketReadCallBack);
     CFSocketDisableCallBacks(socket, kCFSocketWriteCallBack);
 }
@@ -188,7 +188,7 @@ void QCFSocketNotifier::registerSocketNotifier(QSocketNotifier *notifier)
         enableNotifiersObserver = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeSources,
                                                           true, 0, enableSocketNotifiers, &context);
         Q_ASSERT(enableNotifiersObserver);
-        CFRunLoopAddObserver(CFRunLoopGetMain(), enableNotifiersObserver, kCFRunLoopCommonModes);
+        CFRunLoopAddObserver(CFRunLoopGetCurrent(), enableNotifiersObserver, kCFRunLoopCommonModes);
     }
 }
 

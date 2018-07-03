@@ -209,8 +209,16 @@ QEventDispatcherCoreFoundation::QEventDispatcherCoreFoundation(QObject *parent)
     , m_blockedRunLoopTimer(0)
     , m_overdueTimerScheduled(false)
 {
-    m_cfSocketNotifier.setHostEventDispatcher(this);
+}
 
+void QEventDispatcherCoreFoundation::startingUp()
+{
+    // The following code must run on the event dispatcher thread, so that
+    // CFRunLoopGetCurrent() returns the correct run loop.
+    Q_ASSERT(QThread::currentThread() == thread());
+
+    m_runLoop = QCFType<CFRunLoopRef>::constructFromGet(CFRunLoopGetCurrent());
+    m_cfSocketNotifier.setHostEventDispatcher(this);
     m_postedEventsRunLoopSource.addToMode(kCFRunLoopCommonModes);
     m_runLoopActivityObserver.addToMode(kCFRunLoopCommonModes);
 }
@@ -252,6 +260,7 @@ QEventLoop *QEventDispatcherCoreFoundation::currentEventLoop() const
 bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     QT_APPLE_SCOPED_LOG_ACTIVITY(lcEventDispatcher().isDebugEnabled(), "processEvents");
+
     bool eventsProcessed = false;
 
     if (flags & (QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers))
@@ -413,7 +422,8 @@ bool QEventDispatcherCoreFoundation::processPostedEvents()
 
     m_processEvents.processedPostedEvents = true;
 
-    qCDebug(lcEventDispatcher) << "Sending posted events for" << m_processEvents.flags;
+    qCDebug(lcEventDispatcher) << "Sending posted events for"
+        << QEventLoop::ProcessEventsFlags(m_processEvents.flags.load());
     QCoreApplication::sendPostedEvents();
 
     return true;
@@ -496,7 +506,7 @@ bool QEventDispatcherCoreFoundation::hasPendingEvents()
     // 'maybeHasPendingEvents' in our case.
 
     extern uint qGlobalPostedEventsCount();
-    return qGlobalPostedEventsCount() || !CFRunLoopIsWaiting(CFRunLoopGetMain());
+    return qGlobalPostedEventsCount() || !CFRunLoopIsWaiting(m_runLoop);
 }
 
 void QEventDispatcherCoreFoundation::wakeUp()
@@ -516,7 +526,8 @@ void QEventDispatcherCoreFoundation::wakeUp()
     }
 
     m_postedEventsRunLoopSource.signal();
-    CFRunLoopWakeUp(CFRunLoopGetMain());
+    if (m_runLoop)
+        CFRunLoopWakeUp(m_runLoop);
 
     qCDebug(lcEventDispatcher) << "Signaled posted event run-loop source";
 }
@@ -525,7 +536,7 @@ void QEventDispatcherCoreFoundation::interrupt()
 {
     qCDebug(lcEventDispatcher) << "Marking current processEvent as interrupted";
     m_processEvents.wasInterrupted = true;
-    CFRunLoopStop(CFRunLoopGetMain());
+    CFRunLoopStop(m_runLoop);
 }
 
 void QEventDispatcherCoreFoundation::flush()
@@ -620,7 +631,7 @@ void QEventDispatcherCoreFoundation::updateTimers()
                 processTimers(timer);
             });
 
-            CFRunLoopAddTimer(CFRunLoopGetMain(), m_runLoopTimer, kCFRunLoopCommonModes);
+            CFRunLoopAddTimer(m_runLoop, m_runLoopTimer, kCFRunLoopCommonModes);
             qCDebug(lcEventDispatcherTimers) << "Created new CFRunLoopTimer" << m_runLoopTimer;
 
         } else {
