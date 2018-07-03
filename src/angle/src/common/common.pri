@@ -37,4 +37,9 @@ winrt|msvc {
     }
 }
 
+win32 {
+    VERSION = $$MODULE_VERSION
+    CONFIG += skip_target_version_ext
+}
+
 static: DEFINES *= LIBGLESV2_EXPORT_H_ ANGLE_EXPORT=
