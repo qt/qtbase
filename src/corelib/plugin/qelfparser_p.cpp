@@ -224,7 +224,7 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
                 return Corrupt;
             }
             *pos = sh.offset;
-            *sectionlen = sh.size - 1;
+            *sectionlen = sh.size;
             if (shnam[1] == 'q')
                 return QtMetaDataSection;
         }
