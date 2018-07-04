@@ -210,22 +210,22 @@ public:
     explicit QEventDispatcherCoreFoundation(QObject *parent = 0);
     ~QEventDispatcherCoreFoundation();
 
-    bool processEvents(QEventLoop::ProcessEventsFlags flags);
-    bool hasPendingEvents();
+    bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
+    bool hasPendingEvents() override;
 
-    void registerSocketNotifier(QSocketNotifier *notifier);
-    void unregisterSocketNotifier(QSocketNotifier *notifier);
+    void registerSocketNotifier(QSocketNotifier *notifier) override;
+    void unregisterSocketNotifier(QSocketNotifier *notifier) override;
 
-    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object);
-    bool unregisterTimer(int timerId);
-    bool unregisterTimers(QObject *object);
-    QList<QAbstractEventDispatcher::TimerInfo> registeredTimers(QObject *object) const;
+    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object) override;
+    bool unregisterTimer(int timerId) override;
+    bool unregisterTimers(QObject *object) override;
+    QList<QAbstractEventDispatcher::TimerInfo> registeredTimers(QObject *object) const override;
 
-    int remainingTime(int timerId);
+    int remainingTime(int timerId) override;
 
-    void wakeUp();
-    void interrupt();
-    void flush();
+    void wakeUp() override;
+    void interrupt() override;
+    void flush() override;
 
 protected:
     QEventLoop *currentEventLoop() const;
