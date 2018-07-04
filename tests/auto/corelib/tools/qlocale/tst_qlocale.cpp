@@ -1870,9 +1870,11 @@ static void setWinLocaleInfo(LCTYPE type, const QString &value)
 #  define LOCALE_SSHORTTIME 0x00000079
 #endif
 
-class RestoreLocaleHelper {
+class RestoreLocaleHelper
+{
 public:
-    RestoreLocaleHelper() {
+    RestoreLocaleHelper()
+    {
         m_decimal = getWinLocaleInfo(LOCALE_SDECIMAL);
         m_thousand = getWinLocaleInfo(LOCALE_STHOUSAND);
         m_sdate = getWinLocaleInfo(LOCALE_SSHORTDATE);
@@ -1880,7 +1882,8 @@ public:
         m_time = getWinLocaleInfo(LOCALE_SSHORTTIME);
     }
 
-    ~RestoreLocaleHelper() {
+    ~RestoreLocaleHelper()
+    {
         // restore these, or the user will get a surprise
         setWinLocaleInfo(LOCALE_SDECIMAL, m_decimal);
         setWinLocaleInfo(LOCALE_STHOUSAND, m_thousand);
@@ -1888,12 +1891,10 @@ public:
         setWinLocaleInfo(LOCALE_SLONGDATE, m_ldate);
         setWinLocaleInfo(LOCALE_SSHORTTIME, m_time);
 
-        // make sure QLocale::system() gets updated
-        QLocalePrivate::updateSystemPrivate();
+        QSystemLocale dummy; // to provoke a refresh of the system locale
     }
 
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
-
 };
 
 void tst_QLocale::windowsDefaultLocale()
@@ -1909,8 +1910,7 @@ void tst_QLocale::windowsDefaultLocale()
     const QString shortTimeFormat = QStringLiteral("h^m^s");
     setWinLocaleInfo(LOCALE_SSHORTTIME, shortTimeFormat);
 
-    // make sure QLocale::system() gets updated
-    QLocalePrivate::updateSystemPrivate();
+    QSystemLocale dummy; // to provoke a refresh of the system locale
     QLocale locale = QLocale::system();
 
     // make sure we are seeing the system's format strings

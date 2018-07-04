@@ -66,6 +66,7 @@
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SYSTEMLOCALE
+struct QLocaleData;
 class Q_CORE_EXPORT QSystemLocale
 {
 public:
@@ -126,6 +127,7 @@ public:
     virtual QVariant query(QueryType type, QVariant in) const;
     virtual QLocale fallbackUiLocale() const;
 
+    inline const QLocaleData *fallbackUiLocaleData() const;
 private:
     QSystemLocale(bool);
     friend class QSystemLocaleSingleton;
@@ -364,8 +366,6 @@ public:
 
     QLocale::MeasurementSystem measurementSystem() const;
 
-    static void updateSystemPrivate();
-
     QString dateTimeToString(QStringView format, const QDateTime &datetime,
                              const QDate &dateOnly, const QTime &timeOnly,
                              const QLocale *q) const;
@@ -374,6 +374,10 @@ public:
     QBasicAtomicInt ref;
     QLocale::NumberOptions m_numberOptions;
 };
+
+#ifndef QT_NO_SYSTEMLOCALE
+const QLocaleData *QSystemLocale::fallbackUiLocaleData() const { return fallbackUiLocale().d->m_data; }
+#endif
 
 template <>
 inline QLocalePrivate *QSharedDataPointer<QLocalePrivate>::clone()

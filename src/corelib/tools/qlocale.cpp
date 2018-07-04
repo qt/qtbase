@@ -620,13 +620,18 @@ static QLocalePrivate *c_private()
 */
 
 /*!
-  Constructs a QSystemLocale object. The constructor will automatically
-  install this object as the system locale and remove any earlier installed
-  system locales.
+  Constructs a QSystemLocale object.
+
+  The constructor will automatically install this object as the system locale,
+  if there's not one active.  It also resets the flag that'll prompt
+  QLocale::system() to re-initialize its data, so that instantiating a
+  QSystemLocale transiently (doesn't install the transient as system locale if
+  there was one already and) triggers an update to the system locale's data.
 */
 QSystemLocale::QSystemLocale()
 {
-    _systemLocale = this;
+    if (!_systemLocale)
+        _systemLocale = this;
 
     globalLocaleData.m_language_id = 0;
 }
@@ -656,15 +661,17 @@ static const QSystemLocale *systemLocale()
     return QSystemLocale_globalSystemLocale();
 }
 
-void QLocalePrivate::updateSystemPrivate()
+static void updateSystemPrivate()
 {
-    // this function is NOT thread-safe!
+    // This function is NOT thread-safe!
+    // It *should not* be called by anything but systemData()
     const QSystemLocale *sys_locale = systemLocale();
 
     // tell the object that the system locale has changed.
     sys_locale->query(QSystemLocale::LocaleChanged, QVariant());
 
-    globalLocaleData = *sys_locale->fallbackUiLocale().d->m_data;
+    // Populate global with fallback as basis:
+    globalLocaleData = *sys_locale->fallbackUiLocaleData();
 
     QVariant res = sys_locale->query(QSystemLocale::LanguageId, QVariant());
     if (!res.isNull()) {
@@ -715,7 +722,7 @@ static const QLocaleData *systemData()
         static QBasicMutex systemDataMutex;
         systemDataMutex.lock();
         if (globalLocaleData.m_language_id == 0)
-            QLocalePrivate::updateSystemPrivate();
+            updateSystemPrivate();
         systemDataMutex.unlock();
     }
 
@@ -2351,7 +2358,6 @@ QString QLocale::toString(double i, char f, int prec) const
 
 QLocale QLocale::system()
 {
-    // this function is NOT thread-safe!
     QT_PREPEND_NAMESPACE(systemData)(); // trigger updating of the system data if necessary
     return QLocale(*systemLocalePrivate->data());
 }
