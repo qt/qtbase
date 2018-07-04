@@ -47,6 +47,12 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qstringview.h>
 
+// See qcborcommon.h for why we check
+#if defined(QT_X11_DEFINES_FOUND)
+#  undef True
+#  undef False
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QIODevice;
@@ -252,5 +258,10 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#if defined(QT_X11_DEFINES_FOUND)
+#  define True  1
+#  define False 0
+#endif
 
 #endif // QCBORSTREAM_H

@@ -51,6 +51,12 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
 
+// See qcborcommon.h for why we check
+#if defined(QT_X11_DEFINES_FOUND)
+#  undef True
+#  undef False
+#endif
+
 #if QT_HAS_INCLUDE(<compare>)
 #  include <compare>
 #endif
@@ -437,5 +443,10 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QCborValue &v);
 #endif
 
 QT_END_NAMESPACE
+
+#if defined(QT_X11_DEFINES_FOUND)
+#  define True  1
+#  define False 0
+#endif
 
 #endif // QCBORVALUE_H
