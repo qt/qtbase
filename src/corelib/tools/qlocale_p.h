@@ -274,6 +274,7 @@ public:
 public:
     quint16 m_language_id, m_script_id, m_country_id;
 
+    // FIXME QTBUG-69324: not all unicode code-points map to single-token UTF-16 :-(
     quint16 m_decimal, m_group, m_list, m_percent, m_zero, m_minus, m_plus, m_exponential;
     quint16 m_quotation_start, m_quotation_end;
     quint16 m_alternate_quotation_start, m_alternate_quotation_end;
