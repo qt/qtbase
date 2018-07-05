@@ -677,7 +677,7 @@ void QKmsDevice::enumerateProperties(drmModeObjectPropertiesPtr objProps, PropCa
         } else if (propTypeIs(prop, DRM_MODE_PROP_ENUM)) {
             qCDebug(qLcKmsDebug, "  type is ENUM, value is %llu, possible values are:", value);
             for (int i = 0; i < prop->count_enums; ++i)
-                qCDebug(qLcKmsDebug, "    enum %d: %s - %llu", i, prop->enums[i].name, prop->enums[i].value);
+                qCDebug(qLcKmsDebug, "    enum %d: %s - %llu", i, prop->enums[i].name, quint64(prop->enums[i].value));
         } else if (propTypeIs(prop, DRM_MODE_PROP_BITMASK)) {
             qCDebug(qLcKmsDebug, "  type is BITMASK, value is %llu, possible bits are:", value);
             for (int i = 0; i < prop->count_enums; ++i)
