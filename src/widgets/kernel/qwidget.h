@@ -714,6 +714,7 @@ private:
     friend class QWidgetWindow;
     friend class QAccessibleWidget;
     friend class QAccessibleTable;
+    friend class QAccessibleTabButton;
 #ifndef QT_NO_GESTURES
     friend class QGestureManager;
     friend class QWinNativePanGestureRecognizer;
