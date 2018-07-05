@@ -59,8 +59,8 @@ static void cleanupAccessibleCache()
 
 QAccessibleCache::~QAccessibleCache()
 {
-    for (QAccessibleInterface *iface: idToInterface.values())
-        delete iface;
+    for (QAccessible::Id id: idToInterface.keys())
+        deleteInterface(id);
 }
 
 QAccessibleCache *QAccessibleCache::instance()
@@ -137,6 +137,8 @@ void QAccessibleCache::objectDestroyed(QObject* obj)
 void QAccessibleCache::deleteInterface(QAccessible::Id id, QObject *obj)
 {
     QAccessibleInterface *iface = idToInterface.take(id);
+    if (!iface) // the interface may be deleted already
+        return;
     interfaceToId.take(iface);
     if (!obj)
         obj = iface->object();
