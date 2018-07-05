@@ -1946,8 +1946,8 @@ void QCalendarWidgetPrivate::updateNavigationBar()
     QString monthName = q->locale().standaloneMonthName(m_model->m_shownMonth, QLocale::LongFormat);
 
     monthButton->setText(monthName);
-    yearButton->setText(QString::number(m_model->m_shownYear));
     yearEdit->setValue(m_model->m_shownYear);
+    yearButton->setText(yearEdit->text());
 }
 
 void QCalendarWidgetPrivate::update()
