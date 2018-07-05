@@ -52,7 +52,9 @@
 
 #include "qxcbglxnativeinterfacehandler.h"
 
+#define register        /* C++17 deprecated register */
 #include <X11/Xlibint.h>
+#undef register
 
 QT_BEGIN_NAMESPACE
 

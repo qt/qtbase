@@ -40,8 +40,10 @@
 #ifndef QT_X11_P_H
 #define QT_X11_P_H
 
+#define register        /* C++17 deprecated register */
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#undef register
 
 #if QT_CONFIG(xrender)
 #  include "qtessellator_p.h"

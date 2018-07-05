@@ -73,10 +73,12 @@
 #include <xcb/xinerama.h>
 
 #if QT_CONFIG(xcb_xlib)
+#define register        /* C++17 deprecated register */
 #include <X11/Xlib.h>
 #include <X11/Xlib-xcb.h>
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
+#undef register
 #endif
 
 #if QT_CONFIG(xinput2)
