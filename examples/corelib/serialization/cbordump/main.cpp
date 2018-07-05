@@ -56,6 +56,7 @@
 #include <QLocale>
 #include <QStack>
 
+#include <locale.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
