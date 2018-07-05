@@ -7165,6 +7165,12 @@ void QWidget::move(const QPoint &p)
 // move() was invoked with Qt::WA_WState_Created not set (frame geometry
 // unknown), that is, crect has a position including the frame.
 // If we can determine the frame strut, fix that and clear the flag.
+// FIXME: This does not play well with window states other than
+// Qt::WindowNoState, as we depend on calling setGeometry() on the
+// platform window after fixing up the position so that the new
+// geometry is reflected in the platform window, but when the frame
+// comes in after the window has been shown (e.g. maximized), we're
+// not in a position to do that kind of fixup.
 void QWidgetPrivate::fixPosIncludesFrame()
 {
     Q_Q(QWidget);
