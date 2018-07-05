@@ -41,13 +41,12 @@ protected:
 private slots:
     void initTestCase();
 
+    void load_data();
     void load();
-    void load2();
     void threadLoad();
     void testLanguageChange();
     void plural();
     void translate_qm_file_generated_with_msgfmt();
-    void loadFromResource();
     void loadDirectory();
     void dependencies();
     void translationInThreadWhileInstallingTranslator();
@@ -106,24 +105,45 @@ bool tst_QTranslator::eventFilter(QObject *, QEvent *event)
     return false;
 }
 
-void tst_QTranslator::load()
+void tst_QTranslator::load_data()
 {
+    QTest::addColumn<QString>("filepath");
+    QTest::addColumn<bool>("isEmpty");
+    QTest::addColumn<QString>("translation");
 
-    QTranslator tor( 0 );
-    tor.load("hellotr_la");
-    QVERIFY(!tor.isEmpty());
-    QCOMPARE(tor.translate("QPushButton", "Hello world!"), QLatin1String("Hallo Welt!"));
+    QTest::newRow("hellotr_la") << "hellotr_la.qm" << false << "Hallo Welt!";
+    QTest::newRow("hellotr_empty") << "hellotr_empty.qm" << true << "";
 }
 
-void tst_QTranslator::load2()
+void tst_QTranslator::load()
 {
-    QTranslator tor( 0 );
-    QFile file("hellotr_la.qm");
-    file.open(QFile::ReadOnly);
-    QByteArray data = file.readAll();
-    tor.load((const uchar *)data.constData(), data.length());
-    QVERIFY(!tor.isEmpty());
-    QCOMPARE(tor.translate("QPushButton", "Hello world!"), QLatin1String("Hallo Welt!"));
+    QFETCH(QString, filepath);
+    QFETCH(bool, isEmpty);
+    QFETCH(QString, translation);
+
+    {
+        QTranslator tor;
+        QVERIFY(tor.load(QFileInfo(filepath).baseName()));
+        QCOMPARE(tor.isEmpty(), isEmpty);
+        QCOMPARE(tor.translate("QPushButton", "Hello world!"), translation);
+    }
+
+    {
+        QFile file(filepath);
+        file.open(QFile::ReadOnly);
+        QByteArray data = file.readAll();
+        QTranslator tor;
+        QVERIFY(tor.load((const uchar *)data.constData(), data.length()));
+        QCOMPARE(tor.isEmpty(), isEmpty);
+        QCOMPARE(tor.translate("QPushButton", "Hello world!"), translation);
+    }
+
+    {
+        QTranslator tor;
+        QVERIFY(tor.load(QString(":/tst_qtranslator/%1").arg(filepath)));
+        QCOMPARE(tor.isEmpty(), isEmpty);
+        QCOMPARE(tor.translate("QPushButton", "Hello world!"), translation);
+    }
 }
 
 class TranslatorThread : public QThread
@@ -238,14 +258,6 @@ void tst_QTranslator::translate_qm_file_generated_with_msgfmt()
     QCOMPARE(QCoreApplication::translate("", "Intro\0x"), QLatin1String("Einleitung"));
 
     qApp->removeTranslator(&translator);
-}
-
-void tst_QTranslator::loadFromResource()
-{
-    QTranslator tor;
-    tor.load(":/tst_qtranslator/hellotr_la.qm");
-    QVERIFY(!tor.isEmpty());
-    QCOMPARE(tor.translate("QPushButton", "Hello world!"), QLatin1String("Hallo Welt!"));
 }
 
 void tst_QTranslator::loadDirectory()

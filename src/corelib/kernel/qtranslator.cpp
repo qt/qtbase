@@ -533,7 +533,7 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
         // memory, so no need to use QFile to copy it again.
         Q_ASSERT(!d->resource);
         d->resource = new QResource(realname);
-        if (resource->isValid() && !resource->isCompressed() && resource->size() > MagicLength
+        if (resource->isValid() && !resource->isCompressed() && resource->size() >= MagicLength
                 && !memcmp(resource->data(), magic, MagicLength)) {
             d->unmapLength = resource->size();
             d->unmapPointer = reinterpret_cast<char *>(const_cast<uchar *>(resource->data()));
@@ -553,7 +553,7 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
             return false;
 
         qint64 fileSize = file.size();
-        if (fileSize <= MagicLength || quint32(-1) <= fileSize)
+        if (fileSize < MagicLength || quint32(-1) <= fileSize)
             return false;
 
         {
@@ -858,8 +858,6 @@ bool QTranslatorPrivate::do_load(const uchar *data, int len, const QString &dire
         data += blockLen;
     }
 
-    if (dependencies.isEmpty() && (!offsetArray || !messageArray))
-        ok = false;
     if (ok && !isValidNumerusRules(numerusRulesArray, numerusRulesLength))
         ok = false;
     if (ok) {
@@ -1138,8 +1136,8 @@ QString QTranslator::translate(const char *context, const char *sourceText, cons
 bool QTranslator::isEmpty() const
 {
     Q_D(const QTranslator);
-    return !d->unmapPointer && !d->unmapLength && !d->messageArray &&
-           !d->offsetArray && !d->contextArray && d->subTranslators.isEmpty();
+    return !d->messageArray && !d->offsetArray && !d->contextArray
+            && d->subTranslators.isEmpty();
 }
 
 QT_END_NAMESPACE
