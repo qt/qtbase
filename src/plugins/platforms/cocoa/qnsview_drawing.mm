@@ -133,31 +133,28 @@
     }
 }
 
-- (BOOL)shouldUseMetalLayer:(QSurface::SurfaceType)surfaceType
+- (BOOL)shouldUseMetalLayer
 {
     // MetalSurface needs a layer, and so does VulkanSurface (via MoltenVK)
+    QSurface::SurfaceType surfaceType = m_platformWindow->window()->surfaceType();
     return surfaceType == QWindow::MetalSurface || surfaceType == QWindow::VulkanSurface;
 }
 
-- (BOOL)wantsLayer
+- (BOOL)wantsLayerHelper
 {
     Q_ASSERT(m_platformWindow);
 
-    // Toggling the private QWindow property or the environment variable
-    // on and off is not a supported use-case, so this code is effectively
-    // returning a constant for the lifetime of our QSNSView, which means
-    // we don't care about emitting KVO signals for @"wantsLayer".
     bool wantsLayer = qt_mac_resolveOption(true, m_platformWindow->window(),
         "_q_mac_wantsLayer", "QT_MAC_WANTS_LAYER");
 
-    bool layerForSurfaceType = [self shouldUseMetalLayer:m_platformWindow->window()->surfaceType()];
+    bool layerForSurfaceType = [self shouldUseMetalLayer];
 
     return wantsLayer || layerForSurfaceType;
 }
 
 - (CALayer *)makeBackingLayer
 {
-    if ([self shouldUseMetalLayer:m_platformWindow->window()->surfaceType()]) {
+    if ([self shouldUseMetalLayer]) {
         // Check if Metal is supported. If it isn't then it's most likely
         // too late at this point and the QWindow will be non-functional,
         // but we can at least print a warning.

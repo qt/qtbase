@@ -75,6 +75,7 @@
 @end
 
 @interface QT_MANGLE_NAMESPACE(QNSView) (Drawing) <CALayerDelegate>
+- (BOOL)wantsLayerHelper;
 @end
 
 @interface QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) : NSObject
@@ -186,6 +187,7 @@
 {
     if ((self = [self init])) {
         m_platformWindow = platformWindow;
+        self.wantsLayer = [self wantsLayerHelper];
         m_sendKeyEvent = false;
         m_dontOverrideCtrlLMB = qt_mac_resolveOption(false, platformWindow->window(), "_q_platform_MacDontOverrideCtrlLMB", "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
         m_trackingArea = nil;
