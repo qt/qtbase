@@ -125,7 +125,7 @@
     bool m_sendKeyEvent;
     bool m_dontOverrideCtrlLMB;
     bool m_sendUpAsRightButton;
-    Qt::KeyboardModifiers currentWheelModifiers;
+    Qt::KeyboardModifiers m_currentWheelModifiers;
 #ifndef QT_NO_OPENGL
     QCocoaGLContext *m_glContext;
     bool m_shouldSetGLContextinDrawRect;

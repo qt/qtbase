@@ -574,9 +574,8 @@
     // after scrolling in Qt Creator: not taking the phase into account causes
     // the end of the event stream to be interpreted as font size changes.
     NSEventPhase momentumPhase = [theEvent momentumPhase];
-    if (momentumPhase == NSEventPhaseNone) {
-        currentWheelModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
-    }
+    if (momentumPhase == NSEventPhaseNone)
+        m_currentWheelModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
 
     NSEventPhase phase = [theEvent phase];
     Qt::ScrollPhase ph = Qt::ScrollUpdate;
@@ -601,7 +600,7 @@
     bool isInverted  = [theEvent isDirectionInvertedFromDevice];
 
     qCDebug(lcQpaMouse) << "scroll wheel @ window pos" << qt_windowPoint << "delta px" << pixelDelta << "angle" << angleDelta << "phase" << ph << (isInverted ? "inverted" : "");
-    QWindowSystemInterface::handleWheelEvent(m_platformWindow->window(), qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers, ph, source, isInverted);
+    QWindowSystemInterface::handleWheelEvent(m_platformWindow->window(), qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, m_currentWheelModifiers, ph, source, isInverted);
 }
 #endif // QT_CONFIG(wheelevent)
 
