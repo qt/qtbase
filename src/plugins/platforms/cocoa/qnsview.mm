@@ -141,9 +141,10 @@
     bool m_updateRequested;
 }
 
-- (instancetype)init
+- (instancetype)initWithCocoaWindow:(QCocoaWindow *)platformWindow
 {
     if ((self = [super initWithFrame:NSZeroRect])) {
+        m_platformWindow = platformWindow;
         m_buttons = Qt::NoButton;
         m_acceptedMouseDowns = Qt::NoButton;
         m_frameStrutButtons = Qt::NoButton;
@@ -153,7 +154,6 @@
         m_shouldSetGLContextinDrawRect = false;
 #endif
         currentCustomDragTypes = nullptr;
-        m_dontOverrideCtrlLMB = false;
         m_sendUpAsRightButton = false;
         m_inputSource = nil;
         m_mouseMoveHelper = [[QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) alloc] initWithView:self];
@@ -161,36 +161,14 @@
         m_scrolling = false;
         m_updatingDrag = false;
         m_currentlyInterpretedKeyEvent = nil;
+        m_updateRequested = false;
+        m_dontOverrideCtrlLMB = qt_mac_resolveOption(false, platformWindow->window(),
+            "_q_platform_MacDontOverrideCtrlLMB", "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
+        m_trackingArea = nil;
+
         self.focusRingType = NSFocusRingTypeNone;
         self.cursor = nil;
-        m_updateRequested = false;
-    }
-    return self;
-}
-
-- (void)dealloc
-{
-    if (m_trackingArea) {
-        [self removeTrackingArea:m_trackingArea];
-        [m_trackingArea release];
-    }
-    [m_inputSource release];
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [m_mouseMoveHelper release];
-
-    delete currentCustomDragTypes;
-
-    [super dealloc];
-}
-
-- (instancetype)initWithCocoaWindow:(QCocoaWindow *)platformWindow
-{
-    if ((self = [self init])) {
-        m_platformWindow = platformWindow;
         self.wantsLayer = [self wantsLayerHelper];
-        m_sendKeyEvent = false;
-        m_dontOverrideCtrlLMB = qt_mac_resolveOption(false, platformWindow->window(), "_q_platform_MacDontOverrideCtrlLMB", "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
-        m_trackingArea = nil;
 
         // Enable high-DPI OpenGL for retina displays. Enabling has the side
         // effect that Cocoa will start calling glViewport(0, 0, width, height),
@@ -225,8 +203,22 @@
                                               name:NSTextInputContextKeyboardSelectionDidChangeNotification
                                               object:nil];
     }
-
     return self;
+}
+
+- (void)dealloc
+{
+    if (m_trackingArea) {
+        [self removeTrackingArea:m_trackingArea];
+        [m_trackingArea release];
+    }
+    [m_inputSource release];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [m_mouseMoveHelper release];
+
+    delete currentCustomDragTypes;
+
+    [super dealloc];
 }
 
 - (NSString *)description
