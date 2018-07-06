@@ -57,6 +57,7 @@
 #  include <qcoreapplication.h>
 #  include <qdir.h>
 #  include <private/qeventdispatcher_win_p.h>
+#  include <private/qthread_p.h>
 #  include <dbt.h>
 #  include <algorithm>
 #  include <vector>
@@ -308,7 +309,8 @@ void QWindowsRemovableDriveListener::addPath(const QString &p)
     notify.dbch_size = sizeof(notify);
     notify.dbch_devicetype = DBT_DEVTYP_HANDLE;
     notify.dbch_handle = volumeHandle;
-    QEventDispatcherWin32 *winEventDispatcher = static_cast<QEventDispatcherWin32 *>(QAbstractEventDispatcher::instance());
+    QThreadData *currentData = QThreadData::current();
+    QEventDispatcherWin32 *winEventDispatcher = static_cast<QEventDispatcherWin32 *>(currentData->ensureEventDispatcher());
     re.devNotify = RegisterDeviceNotification(winEventDispatcher->internalHwnd(),
                                               &notify, DEVICE_NOTIFY_WINDOW_HANDLE);
     // Empirically found: The notifications also work when the handle is immediately
