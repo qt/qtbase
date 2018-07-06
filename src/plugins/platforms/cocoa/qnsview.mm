@@ -65,10 +65,6 @@
 #endif
 #include "qcocoaintegration.h"
 
-#ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
-#include <accessibilityinspector.h>
-#endif
-
 // Private interface
 @interface QT_MANGLE_NAMESPACE(QNSView) ()
 - (BOOL)isTransparentForUserInput;
@@ -178,21 +174,6 @@
                 "_q_mac_wantsBestResolutionOpenGLSurface", "QT_MAC_WANTS_BEST_RESOLUTION_OPENGL_SURFACE");
             // See also QCocoaGLContext::makeCurrent for software renderer workarounds.
         }
-
-#ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
-        // prevent rift in space-time continuum, disable
-        // accessibility for the accessibility inspector's windows.
-        static bool skipAccessibilityForInspectorWindows = false;
-        if (!skipAccessibilityForInspectorWindows) {
-
-            // m_accessibleRoot = window->accessibleRoot();
-
-            AccessibilityInspector *inspector = new AccessibilityInspector(window);
-            skipAccessibilityForInspectorWindows = true;
-            inspector->inspectWindow(window);
-            skipAccessibilityForInspectorWindows = false;
-        }
-#endif
 
         [self registerDragTypes];
 

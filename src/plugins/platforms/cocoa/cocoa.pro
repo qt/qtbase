@@ -127,11 +127,6 @@ qtHaveModule(widgets) {
 
 OTHER_FILES += cocoa.json
 
-# Acccessibility debug support
-# DEFINES += QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
-# include ($$PWD/../../../../util/accessibilityinspector/accessibilityinspector.pri)
-
-
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QCocoaIntegrationPlugin
 !equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
