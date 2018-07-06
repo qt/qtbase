@@ -540,7 +540,7 @@ void QCoreApplicationPrivate::createEventDispatcher()
     Q_Q(QCoreApplication);
     QThreadData *data = QThreadData::current();
     Q_ASSERT(!data->hasEventDispatcher());
-    eventDispatcher = QThreadPrivate::createEventDispatcher(data);
+    eventDispatcher = data->createEventDispatcher();
     eventDispatcher->setParent(q);
 }
 

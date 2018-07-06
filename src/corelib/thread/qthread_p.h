@@ -248,7 +248,15 @@ public:
     void ref();
     void deref();
     inline bool hasEventDispatcher() const
-    { return eventDispatcher.load() != 0; }
+    { return eventDispatcher.load() != nullptr; }
+    QAbstractEventDispatcher *createEventDispatcher();
+    QAbstractEventDispatcher *ensureEventDispatcher()
+    {
+        QAbstractEventDispatcher *ed = eventDispatcher.load();
+        if (Q_LIKELY(ed))
+            return ed;
+        return createEventDispatcher();
+    }
 
     bool canWaitLocked()
     {

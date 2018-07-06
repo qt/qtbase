@@ -360,13 +360,7 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
         data->quitNow = thr->d_func()->exited;
     }
 
-    QAbstractEventDispatcher *eventDispatcher = data->eventDispatcher.load();
-    if (!eventDispatcher) {
-        eventDispatcher = createEventDispatcher(data);
-        data->eventDispatcher.storeRelease(eventDispatcher);
-    }
-
-    eventDispatcher->startingUp();
+    data->ensureEventDispatcher();
 
 #if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC) && !defined(Q_OS_WINRT)
     // sets the name of the current thread.

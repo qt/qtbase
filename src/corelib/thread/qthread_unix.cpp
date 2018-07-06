@@ -339,13 +339,7 @@ void *QThreadPrivate::start(void *arg)
             data->quitNow = thr->d_func()->exited;
         }
 
-        QAbstractEventDispatcher *eventDispatcher = data->eventDispatcher.load();
-        if (!eventDispatcher) {
-            eventDispatcher = createEventDispatcher(data);
-            data->eventDispatcher.storeRelease(eventDispatcher);
-        }
-
-        eventDispatcher->startingUp();
+        data->ensureEventDispatcher();
 
 #if (defined(Q_OS_LINUX) || defined(Q_OS_MAC) || defined(Q_OS_QNX))
         {
