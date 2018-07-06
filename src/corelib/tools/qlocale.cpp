@@ -1189,7 +1189,7 @@ T toIntegral_helper(const QLocalePrivate *d, QStringView str, bool *ok)
     // we select the right overload by the last, unused parameter
     Int64 val = toIntegral_helper(d->m_data, str, ok, d->m_numberOptions, Int64());
     if (T(val) != val) {
-        if (ok)
+        if (ok != nullptr)
             *ok = false;
         val = 0;
     }
@@ -3576,14 +3576,14 @@ double QLocaleData::stringToDouble(QStringView str, bool *ok,
 {
     CharBuff buff;
     if (!numberToCLocale(str, number_options, &buff)) {
-        if (ok != 0)
+        if (ok != nullptr)
             *ok = false;
         return 0.0;
     }
     int processed = 0;
     bool nonNullOk = false;
     double d = asciiToDouble(buff.constData(), buff.length() - 1, nonNullOk, processed);
-    if (ok)
+    if (ok != nullptr)
         *ok = nonNullOk;
     return d;
 }
@@ -3593,7 +3593,7 @@ qlonglong QLocaleData::stringToLongLong(QStringView str, int base, bool *ok,
 {
     CharBuff buff;
     if (!numberToCLocale(str, number_options, &buff)) {
-        if (ok != 0)
+        if (ok != nullptr)
             *ok = false;
         return 0;
     }
@@ -3606,7 +3606,7 @@ qulonglong QLocaleData::stringToUnsLongLong(QStringView str, int base, bool *ok,
 {
     CharBuff buff;
     if (!numberToCLocale(str, number_options, &buff)) {
-        if (ok != 0)
+        if (ok != nullptr)
             *ok = false;
         return 0;
     }
@@ -3621,7 +3621,7 @@ double QLocaleData::bytearrayToDouble(const char *num, bool *ok)
     Q_ASSERT(len >= 0);
     int processed = 0;
     double d = asciiToDouble(num, len, nonNullOk, processed);
-    if (ok)
+    if (ok != nullptr)
         *ok = nonNullOk;
     return d;
 }
@@ -3632,7 +3632,7 @@ qlonglong QLocaleData::bytearrayToLongLong(const char *num, int base, bool *ok)
     const char *endptr;
 
     if (*num == '\0') {
-        if (ok != 0)
+        if (ok != nullptr)
             *ok = false;
         return 0;
     }
@@ -3640,7 +3640,7 @@ qlonglong QLocaleData::bytearrayToLongLong(const char *num, int base, bool *ok)
     qlonglong l = qstrtoll(num, &endptr, base, &_ok);
 
     if (!_ok) {
-        if (ok != 0)
+        if (ok != nullptr)
             *ok = false;
         return 0;
     }
@@ -3652,12 +3652,12 @@ qlonglong QLocaleData::bytearrayToLongLong(const char *num, int base, bool *ok)
 
     if (*endptr != '\0') {
         // we stopped at a non-digit character after converting some digits
-        if (ok != 0)
+        if (ok != nullptr)
             *ok = false;
         return 0;
     }
 
-    if (ok != 0)
+    if (ok != nullptr)
         *ok = true;
     return l;
 }
@@ -3669,7 +3669,7 @@ qulonglong QLocaleData::bytearrayToUnsLongLong(const char *num, int base, bool *
     qulonglong l = qstrtoull(num, &endptr, base, &_ok);
 
     if (!_ok) {
-        if (ok != 0)
+        if (ok != nullptr)
             *ok = false;
         return 0;
     }
@@ -3685,7 +3685,7 @@ qulonglong QLocaleData::bytearrayToUnsLongLong(const char *num, int base, bool *
         return 0;
     }
 
-    if (ok != 0)
+    if (ok != nullptr)
         *ok = true;
     return l;
 }
