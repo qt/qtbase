@@ -199,8 +199,6 @@ void QCocoaWindow::initialize()
 
     recreateWindowIfNeeded();
     window()->setGeometry(geometry());
-    if (window()->isTopLevel())
-        setWindowIcon(window()->icon());
 
     m_initialized = true;
 }
@@ -1315,7 +1313,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
         propagateSizeHints();
         setWindowFlags(window()->flags());
         setWindowTitle(window()->title());
-        setWindowFilePath(window()->filePath());
+        setWindowFilePath(window()->filePath()); // Also sets window icon
         setWindowState(window()->windowState());
     } else {
         // Child windows have no NSWindow, link the NSViews instead.
