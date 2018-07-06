@@ -3412,7 +3412,7 @@ void tst_QHeaderView::statusTips()
     // Ensure it is moved away first and then moved to the relevant section
     QTest::mouseMove(QApplication::desktop(),
                      headerView.rect().bottomLeft() + QPoint(20, 20));
-    QPoint centerPoint = QRect(headerView.sectionPosition(0), headerView.y(),
+    QPoint centerPoint = QRect(headerView.sectionPosition(0), 0,
                                headerView.sectionSize(0), headerView.height()).center();
     QTest::mouseMove(headerView.windowHandle(), centerPoint);
     QTRY_VERIFY(headerView.gotStatusTipEvent);
@@ -3420,7 +3420,7 @@ void tst_QHeaderView::statusTips()
 
     headerView.gotStatusTipEvent = false;
     headerView.statusTipText.clear();
-    centerPoint = QRect(headerView.sectionPosition(1), headerView.y(),
+    centerPoint = QRect(headerView.sectionPosition(1), 0,
                         headerView.sectionSize(1), headerView.height()).center();
     QTest::mouseMove(headerView.windowHandle(), centerPoint);
     QTRY_VERIFY(headerView.gotStatusTipEvent);

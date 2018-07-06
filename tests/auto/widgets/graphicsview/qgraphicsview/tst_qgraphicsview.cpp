@@ -261,11 +261,11 @@ private slots:
     void QTBUG_4151_clipAndIgnore_data();
     void QTBUG_4151_clipAndIgnore();
     void QTBUG_5859_exposedRect();
+    void hoverLeave();
+    void QTBUG_16063_microFocusRect();
 #ifndef QT_NO_CURSOR
     void QTBUG_7438_cursor();
 #endif
-    void hoverLeave();
-    void QTBUG_16063_microFocusRect();
 
 public slots:
     void dummySlot() {}

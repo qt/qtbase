@@ -1275,10 +1275,10 @@ void tst_QGraphicsScene::removeItem()
     view.show();
     QApplication::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
-    QTest::mouseMove(view.viewport(), view.mapFromScene(hoverItem->scenePos() + QPointF(20, 20)), Qt::NoButton);
+    QTest::mouseMove(view.windowHandle(), view.mapFromScene(hoverItem->scenePos() + QPointF(20, 20)));
     QTRY_VERIFY(!hoverItem->isHovered);
 
-    QTest::mouseMove(view.viewport(), view.mapFromScene(hoverItem->scenePos()), Qt::NoButton);
+    QTest::mouseMove(view.windowHandle(), view.mapFromScene(hoverItem->scenePos()));
     QTRY_VERIFY(hoverItem->isHovered);
 
     scene.removeItem(hoverItem);
