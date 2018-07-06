@@ -132,6 +132,7 @@ public:
               const QString &application = QString(), QObject *parent = nullptr);
     QSettings(const QString &fileName, Format format, QObject *parent = nullptr);
     explicit QSettings(QObject *parent = nullptr);
+    explicit QSettings(Scope scope, QObject *parent = nullptr);
 #else
     explicit QSettings(const QString &organization,
                        const QString &application = QString());
@@ -140,6 +141,9 @@ public:
     QSettings(Format format, Scope scope, const QString &organization,
               const QString &application = QString());
     QSettings(const QString &fileName, Format format);
+#  ifndef QT_BUILD_QMAKE
+    explicit QSettings(Scope scope = UserScope);
+#  endif
 #endif
     ~QSettings();
 
