@@ -123,7 +123,6 @@
     QString m_composingText;
     QPointer<QObject> m_composingFocusObject;
     bool m_sendKeyEvent;
-    QStringList *currentCustomDragTypes;
     bool m_dontOverrideCtrlLMB;
     bool m_sendUpAsRightButton;
     Qt::KeyboardModifiers currentWheelModifiers;
@@ -153,7 +152,6 @@
         m_glContext = nullptr;
         m_shouldSetGLContextinDrawRect = false;
 #endif
-        currentCustomDragTypes = nullptr;
         m_sendUpAsRightButton = false;
         m_inputSource = nil;
         m_mouseMoveHelper = [[QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) alloc] initWithView:self];
@@ -215,8 +213,6 @@
     [m_inputSource release];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [m_mouseMoveHelper release];
-
-    delete currentCustomDragTypes;
 
     [super dealloc];
 }

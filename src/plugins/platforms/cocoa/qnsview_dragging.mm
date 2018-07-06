@@ -44,28 +44,24 @@
 -(void)registerDragTypes
 {
     QMacAutoReleasePool pool;
-    QStringList customTypes = qt_mac_enabledDraggedTypes();
-    if (currentCustomDragTypes == 0 || *currentCustomDragTypes != customTypes) {
-        if (currentCustomDragTypes == 0)
-            currentCustomDragTypes = new QStringList();
-        *currentCustomDragTypes = customTypes;
-        NSString * const mimeTypeGeneric = @"com.trolltech.qt.MimeTypeName";
-        NSMutableArray<NSString *> *supportedTypes = [NSMutableArray<NSString *> arrayWithArray:@[
-                       NSColorPboardType,
-                       NSFilenamesPboardType, NSStringPboardType,
-                       NSFilenamesPboardType, NSPostScriptPboardType, NSTIFFPboardType,
-                       NSRTFPboardType, NSTabularTextPboardType, NSFontPboardType,
-                       NSRulerPboardType, NSFileContentsPboardType, NSColorPboardType,
-                       NSRTFDPboardType, NSHTMLPboardType,
-                       NSURLPboardType, NSPDFPboardType, NSVCardPboardType,
-                       NSFilesPromisePboardType, NSInkTextPboardType,
-                       NSMultipleTextSelectionPboardType, mimeTypeGeneric]];
-        // Add custom types supported by the application.
-        for (int i = 0; i < customTypes.size(); i++) {
-           [supportedTypes addObject:customTypes[i].toNSString()];
-        }
-        [self registerForDraggedTypes:supportedTypes];
-    }
+
+    NSString * const mimeTypeGeneric = @"com.trolltech.qt.MimeTypeName";
+    NSMutableArray<NSString *> *supportedTypes = [NSMutableArray<NSString *> arrayWithArray:@[
+                   NSColorPboardType,
+                   NSFilenamesPboardType, NSStringPboardType,
+                   NSFilenamesPboardType, NSPostScriptPboardType, NSTIFFPboardType,
+                   NSRTFPboardType, NSTabularTextPboardType, NSFontPboardType,
+                   NSRulerPboardType, NSFileContentsPboardType, NSColorPboardType,
+                   NSRTFDPboardType, NSHTMLPboardType,
+                   NSURLPboardType, NSPDFPboardType, NSVCardPboardType,
+                   NSFilesPromisePboardType, NSInkTextPboardType,
+                   NSMultipleTextSelectionPboardType, mimeTypeGeneric]];
+
+    // Add custom types supported by the application.
+    for (const QString &customType : qt_mac_enabledDraggedTypes())
+       [supportedTypes addObject:customType.toNSString()];
+
+    [self registerForDraggedTypes:supportedTypes];
 }
 
 static QWindow *findEventTargetWindow(QWindow *candidate)
