@@ -180,20 +180,8 @@ void QCocoaWindow::initialize()
 
     QMacAutoReleasePool pool;
 
-    if (!m_view) {
+    if (!m_view)
         m_view = [[QNSView alloc] initWithCocoaWindow:this];
-        // Enable high-dpi OpenGL for retina displays. Enabling has the side
-        // effect that Cocoa will start calling glViewport(0, 0, width, height),
-        // overriding any glViewport calls in application code. This is usually not a
-        // problem, except if the appilcation wants to have a "custom" viewport.
-        // (like the hellogl example)
-        if (window()->supportsOpenGL()) {
-            BOOL enable = qt_mac_resolveOption(YES, window(), "_q_mac_wantsBestResolutionOpenGLSurface",
-                                                          "QT_MAC_WANTS_BEST_RESOLUTION_OPENGL_SURFACE");
-            [m_view setWantsBestResolutionOpenGLSurface:enable];
-            // See also QCocoaGLContext::makeCurrent for software renderer workarounds.
-        }
-    }
 
     setGeometry(initialGeometry(window(), windowGeometry(), defaultWindowWidth, defaultWindowHeight));
 

@@ -192,6 +192,17 @@
         m_dontOverrideCtrlLMB = qt_mac_resolveOption(false, platformWindow->window(), "_q_platform_MacDontOverrideCtrlLMB", "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
         m_trackingArea = nil;
 
+        // Enable high-DPI OpenGL for retina displays. Enabling has the side
+        // effect that Cocoa will start calling glViewport(0, 0, width, height),
+        // overriding any glViewport calls in application code. This is usually not a
+        // problem, except if the application wants to have a "custom" viewport.
+        // (like the hellogl example)
+        if (m_platformWindow->window()->supportsOpenGL()) {
+            self.wantsBestResolutionOpenGLSurface = qt_mac_resolveOption(YES, m_platformWindow->window(),
+                "_q_mac_wantsBestResolutionOpenGLSurface", "QT_MAC_WANTS_BEST_RESOLUTION_OPENGL_SURFACE");
+            // See also QCocoaGLContext::makeCurrent for software renderer workarounds.
+        }
+
 #ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
         // prevent rift in space-time continuum, disable
         // accessibility for the accessibility inspector's windows.
