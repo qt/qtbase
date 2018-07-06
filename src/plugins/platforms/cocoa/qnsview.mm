@@ -363,6 +363,9 @@
 #include "qnsview_keys.mm"
 #include "qnsview_complextext.mm"
 #include "qnsview_menus.mm"
+#ifndef QT_NO_ACCESSIBILITY
+#include "qnsview_accessibility.mm"
+#endif
 
 // -----------------------------------------------------
 

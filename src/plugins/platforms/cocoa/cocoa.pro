@@ -8,7 +8,6 @@ SOURCES += main.mm \
     qcocoawindow.mm \
     qnsview.mm \
     qnswindow.mm \
-    qnsviewaccessibility.mm \
     qnswindowdelegate.mm \
     qcocoanativeinterface.mm \
     qcocoaeventdispatcher.mm \

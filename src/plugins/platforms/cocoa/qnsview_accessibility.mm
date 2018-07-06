@@ -37,22 +37,20 @@
 **
 ****************************************************************************/
 
-#include "qnsview.h"
-#include "qcocoahelpers.h"
+// This file is included from qnsview.mm, and only used to organize the code
+
 #include "qcocoaaccessibility.h"
 #include "qcocoaaccessibilityelement.h"
 #include "qcocoaintegration.h"
 
 #include <QtGui/qaccessible.h>
-#include <QtCore/QDebug>
 
 #import <AppKit/NSAccessibility.h>
 
-#ifndef QT_NO_ACCESSIBILITY
+@implementation QT_MANGLE_NAMESPACE(QNSView) (Accessibility)
 
-@implementation QNSView (QNSViewAccessibility)
-
-- (id)childAccessibleElement {
+- (id)childAccessibleElement
+{
     QCocoaWindow *platformWindow = self.platformWindow;
     if (!platformWindow || !platformWindow->window()->accessibleRoot())
         return nil;
@@ -63,29 +61,30 @@
 
 // The QNSView is a container that the user does not interact directly with:
 // Remove it from the user-visible accessibility tree.
-- (BOOL)accessibilityIsIgnored {
+- (BOOL)accessibilityIsIgnored
+{
     return YES;
 }
 
-- (id)accessibilityAttributeValue:(NSString *)attribute {
+- (id)accessibilityAttributeValue:(NSString *)attribute
+{
     // activate accessibility updates
     QCocoaIntegration::instance()->accessibility()->setActive(true);
 
-    if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
+    if ([attribute isEqualToString:NSAccessibilityChildrenAttribute])
         return NSAccessibilityUnignoredChildrenForOnlyChild([self childAccessibleElement]);
-    } else {
+    else
         return [super accessibilityAttributeValue:attribute];
-    }
 }
 
-- (id)accessibilityHitTest:(NSPoint)point {
-    return [[self childAccessibleElement] accessibilityHitTest: point];
+- (id)accessibilityHitTest:(NSPoint)point
+{
+    return [[self childAccessibleElement] accessibilityHitTest:point];
 }
 
-- (id)accessibilityFocusedUIElement {
+- (id)accessibilityFocusedUIElement
+{
     return [[self childAccessibleElement] accessibilityFocusedUIElement];
 }
 
 @end
-
-#endif // QT_NO_ACCESSIBILITY
