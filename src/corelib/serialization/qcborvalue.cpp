@@ -2627,7 +2627,7 @@ static QDebug debugContents(QDebug &dbg, const QCborValue &v)
     }
     if (v.isSimpleType())
         return dbg << v.toSimpleType();
-    return dbg << "<unknown type " << hex << int(v.type()) << '>';
+    return dbg << "<unknown type " << hex << int(v.type()) << dec << '>';
 }
 QDebug operator<<(QDebug dbg, const QCborValue &v)
 {
