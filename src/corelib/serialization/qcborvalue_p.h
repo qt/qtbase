@@ -205,8 +205,8 @@ public:
             e.container->deref();
             e.container = nullptr;
             e.flags = {};
-        } else if (e.flags & QtCbor::Element::HasByteData) {
-            usedData -= byteData(idx)->len + sizeof(QtCbor::ByteData);
+        } else if (auto b = byteData(e)) {
+            usedData -= b->len + sizeof(QtCbor::ByteData);
         }
         replaceAt_internal(e, value, disp);
     }
