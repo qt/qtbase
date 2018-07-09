@@ -104,7 +104,7 @@ QList<QImage> images = ...;
 
 QFuture<QImage> thumbnails = QtConcurrent::mapped(images.constBegin(), images.constEnd(), scaled);
 
-// map in-place only works on non-const iterators
+// Map in-place only works on non-const iterators.
 QFuture<void> future = QtConcurrent::map(images.begin(), images.end(), scale);
 
 QFuture<QImage> collage = QtConcurrent::mappedReduced(images.constBegin(), images.constEnd(), scaled, addToCollage);
@@ -114,7 +114,7 @@ QFuture<QImage> collage = QtConcurrent::mappedReduced(images.constBegin(), image
 //! [7]
 QList<QImage> images = ...;
 
-// each call blocks until the entire operation is finished
+// Each call blocks until the entire operation is finished.
 QList<QImage> future = QtConcurrent::blockingMapped(images, scaled);
 
 QtConcurrent::blockingMap(images, scale);
@@ -124,29 +124,29 @@ QImage collage = QtConcurrent::blockingMappedReduced(images, scaled, addToCollag
 
 
 //! [8]
-// squeeze all strings in a QStringList
+// Squeeze all strings in a QStringList.
 QStringList strings = ...;
 QFuture<void> squeezedStrings = QtConcurrent::map(strings, &QString::squeeze);
 
-// swap the rgb values of all pixels on a list of images
+// Swap the rgb values of all pixels on a list of images.
 QList<QImage> images = ...;
 QFuture<QImage> bgrImages = QtConcurrent::mapped(images, &QImage::rgbSwapped);
 
-// create a set of the lengths of all strings in a list
+// Create a set of the lengths of all strings in a list.
 QStringList strings = ...;
-QFuture<QSet<int> > wordLengths = QtConcurrent::mappedReduced(string, &QString::length, &QSet<int>::insert);
+QFuture<QSet<int> > wordLengths = QtConcurrent::mappedReduced(strings, &QString::length, &QSet<int>::insert);
 //! [8]
 
 
 //! [9]
-// can mix normal functions and member functions with QtConcurrent::mappedReduced()
+// Can mix normal functions and member functions with QtConcurrent::mappedReduced().
 
-// compute the average length of a list of strings
+// Compute the average length of a list of strings.
 extern void computeAverage(int &average, int length);
 QStringList strings = ...;
 QFuture<int> averageWordLength = QtConcurrent::mappedReduced(strings, &QString::length, computeAverage);
 
-// create a set of the color distribution of all images in a list
+// Create a set of the color distribution of all images in a list.
 extern int colorDistribution(const QImage &string);
 QList<QImage> images = ...;
 QFuture<QSet<int> > totalColorDistribution = QtConcurrent::mappedReduced(images, colorDistribution, QSet<int>::insert);
