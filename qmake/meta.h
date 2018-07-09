@@ -48,7 +48,7 @@ public:
     QMakeMetaInfo(QMakeProject *_conf);
 
     // These functions expect the path to be normalized
-    static QString findLib(const QString &lib);
+    static QString checkLib(const QString &lib);
     bool readLib(const QString &meta_file);
 
     bool isEmpty(const ProKey &v);

@@ -60,13 +60,9 @@ QMakeMetaInfo::readLib(const QString &meta_file)
 
 
 QString
-QMakeMetaInfo::findLib(const QString &lib)
+QMakeMetaInfo::checkLib(const QString &lib)
 {
-    QString ret;
-    if (lib.endsWith(Option::prl_ext))
-        ret = QFile::exists(lib) ? lib : QString();
-    else if (QFile::exists(lib + Option::prl_ext))
-        ret = lib + Option::prl_ext;
+    QString ret = QFile::exists(lib) ? lib : QString();
     if(ret.isNull()) {
         debug_msg(2, "QMakeMetaInfo: Cannot find info file for %s", lib.toLatin1().constData());
     } else {
