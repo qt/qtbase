@@ -362,13 +362,15 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
         if (mouseEvent->button == 0) {
             pressedWindow = window2;
             buttonEventType = QEvent::MouseButtonPress;
-            if (htmlWindow && window2->flags().testFlag(Qt::WindowTitleHint) && htmlWindow->isPointOnTitle(point))
-                draggedWindow = window2;
-            else if (htmlWindow && htmlWindow->isPointOnResizeRegion(point)) {
-                draggedWindow = window2;
-                resizeMode = htmlWindow->resizeModeAtPoint(point);
-                resizePoint = point;
-                resizeStartRect = window2->geometry();
+            if (!(htmlWindow->m_windowState & Qt::WindowFullScreen) && !(htmlWindow->m_windowState & Qt::WindowMaximized)) {
+                if (htmlWindow && window2->flags().testFlag(Qt::WindowTitleHint) && htmlWindow->isPointOnTitle(point))
+                    draggedWindow = window2;
+                else if (htmlWindow && htmlWindow->isPointOnResizeRegion(point)) {
+                    draggedWindow = window2;
+                    resizeMode = htmlWindow->resizeModeAtPoint(point);
+                    resizePoint = point;
+                    resizeStartRect = window2->geometry();
+                }
             }
         }
 
@@ -399,14 +401,16 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
     case 8://move //drag event
     {
         buttonEventType = QEvent::MouseMove;
-        if (resizeMode == QWasmWindow::ResizeNone && draggedWindow) {
-            draggedWindow->setX(draggedWindow->x() + mouseEvent->movementX);
-            draggedWindow->setY(draggedWindow->y() + mouseEvent->movementY);
-        }
+        if (!(htmlWindow->m_windowState & Qt::WindowFullScreen) && !(htmlWindow->m_windowState & Qt::WindowMaximized)) {
+            if (resizeMode == QWasmWindow::ResizeNone && draggedWindow) {
+                draggedWindow->setX(draggedWindow->x() + mouseEvent->movementX);
+                draggedWindow->setY(draggedWindow->y() + mouseEvent->movementY);
+            }
 
-        if (resizeMode != QWasmWindow::ResizeNone) {
-            QPoint delta = QPoint(mouseEvent->canvasX, mouseEvent->canvasY) - resizePoint;
-            resizeWindow(draggedWindow, resizeMode, resizeStartRect, delta);
+            if (resizeMode != QWasmWindow::ResizeNone && !(htmlWindow->m_windowState & Qt::WindowFullScreen)) {
+                QPoint delta = QPoint(mouseEvent->canvasX, mouseEvent->canvasY) - resizePoint;
+                resizeWindow(draggedWindow, resizeMode, resizeStartRect, delta);
+            }
         }
         break;
     }

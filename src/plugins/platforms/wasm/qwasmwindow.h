@@ -105,6 +105,7 @@ public:
 
 protected:
     void invalidate();
+    bool hasTitleBar() const;
 
 protected:
     friend class QWasmScreen;
@@ -119,6 +120,8 @@ protected:
     WId m_winid = 0;
     bool m_hasTitle = false;
     bool m_needsCompositor = false;
+    friend class QWasmCompositor;
+    friend class QWasmEventTranslator;
 };
 QT_END_NAMESPACE
 #endif // QWASMWINDOW_H
