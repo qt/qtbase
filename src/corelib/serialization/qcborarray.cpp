@@ -186,11 +186,21 @@ qsizetype QCborArray::size() const noexcept
 }
 
 /*!
+    Empties this array.
+
+    \sa isEmpty()
+ */
+void QCborArray::clear()
+{
+    d.reset();
+}
+
+/*!
     \fn bool QCborArray::isEmpty() const
 
     Returns true if this QCborArray is empty (that is if size() is 0).
 
-    \sa size()
+    \sa size(), clear()
  */
 
 /*!
