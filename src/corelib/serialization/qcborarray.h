@@ -195,6 +195,7 @@ public:
     void prepend(QCborValue &&value) { insert(0, std::move(value)); }
     void append(const QCborValue &value) { insert(-1, value); }
     void append(QCborValue &&value) { insert(-1, std::move(value)); }
+    QCborValue extract(ConstIterator it) { return extract(Iterator{ it.item.d, it.item.i }); }
     QCborValue extract(Iterator it);
     void removeAt(qsizetype i);
     QCborValue takeAt(qsizetype i) { Q_ASSERT(i < size()); return extract(begin() + i); }
@@ -235,7 +236,10 @@ public:
     const_iterator cend() const { return constEnd(); }
     iterator insert(iterator before, const QCborValue &value)
     { insert(before.item.i, value); return iterator{d.data(), before.item.i}; }
+    iterator insert(const_iterator before, const QCborValue &value)
+    { insert(before.item.i, value); return iterator{d.data(), before.item.i}; }
     iterator erase(iterator it) { removeAt(it.item.i); return iterator{d.data(), it.item.i}; }
+    iterator erase(const_iterator it) { removeAt(it.item.i); return iterator{d.data(), it.item.i}; }
 
     void push_back(const QCborValue &t) { append(t); }
     void push_front(const QCborValue &t) { prepend(t); }

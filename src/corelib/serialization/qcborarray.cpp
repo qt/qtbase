@@ -327,6 +327,9 @@ void QCborArray::insert(qsizetype i, QCborValue &&value)
 }
 
 /*!
+    \fn QCborValue QCborArray::extract(iterator it)
+    \fn QCborValue QCborArray::extract(const_iterator it)
+
     Extracts a value from the array at the position indicated by iterator \a it
     and returns the value so extracted.
 
@@ -576,6 +579,7 @@ bool QCborArray::contains(const QCborValue &value) const
 
 /*!
     \fn QCborArray::iterator QCborArray::insert(iterator before, const QCborValue &value)
+    \fn QCborArray::iterator QCborArray::insert(const_iterator before, const QCborValue &value)
     \overload
 
     Inserts \a value into this array before element \a before and returns an
@@ -586,6 +590,7 @@ bool QCborArray::contains(const QCborValue &value) const
 
 /*!
     \fn QCborArray::iterator QCborArray::erase(iterator it)
+    \fn QCborArray::iterator QCborArray::erase(const_iterator it)
 
     Removes the element pointed to by the array iterator \a it from this array,
     then returns an iterator to the next element (the one that took the same
