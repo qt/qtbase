@@ -106,7 +106,7 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
             for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin();
                  dir_it != dirs.end(); ++dir_it) {
                 QString cand = (*dir_it).real() + Option::dir_sep + lib;
-                if (linkPrl && processPrlFile(cand)) {
+                if (linkPrl && processPrlFile(cand, true)) {
                     (*it) = cand;
                     goto found;
                 }
@@ -124,13 +124,13 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
         } else if (linkPrl && type == LibFlagFile) {
             QString lib = opt.toQString();
             if (fileInfo(lib).isAbsolute()) {
-                if (processPrlFile(lib))
+                if (processPrlFile(lib, false))
                     (*it) = lib;
             } else {
                 for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin();
                      dir_it != dirs.end(); ++dir_it) {
                     QString cand = (*dir_it).real() + Option::dir_sep + lib;
-                    if (processPrlFile(cand)) {
+                    if (processPrlFile(cand, false)) {
                         (*it) = cand;
                         break;
                     }

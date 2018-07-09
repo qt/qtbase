@@ -198,7 +198,7 @@ protected:
     //for prl
     QString prlFileName(bool fixify=true);
     void writePrlFile();
-    bool processPrlFile(QString &);
+    bool processPrlFile(QString &, bool baseOnly);
     virtual void writePrlFile(QTextStream &);
 
     //make sure libraries are found

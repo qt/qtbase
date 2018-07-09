@@ -443,7 +443,7 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                          dep_it != libdirs.end(); ++dep_it) {
                         QString libBase = (*dep_it).local() + '/'
                                 + project->first("QMAKE_PREFIX_SHLIB") + lib;
-                        if (linkPrl && processPrlFile(libBase))
+                        if (linkPrl && processPrlFile(libBase, true))
                             goto found;
                         for (ProStringList::Iterator extit = extens.begin(); extit != extens.end(); ++extit) {
                             if (exists(libBase + '.' + (*extit)))
@@ -471,12 +471,12 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                         }
                         for (const QMakeLocalFileName &dir : qAsConst(frameworkdirs)) {
                             QString frameworkDirectory = dir.local() + "/" + frameworkName + + ".framework/";
-                            QString suffixedPrl = frameworkDirectory + opt + Option::prl_ext;
-                            if (processPrlFile(suffixedPrl))
+                            QString suffixedPrl = frameworkDirectory + opt;
+                            if (processPrlFile(suffixedPrl, true))
                                 break;
                             if (hasSuffix) {
-                                QString unsuffixedPrl = frameworkDirectory + frameworkName + Option::prl_ext;
-                                if (processPrlFile(unsuffixedPrl))
+                                QString unsuffixedPrl = frameworkDirectory + frameworkName;
+                                if (processPrlFile(unsuffixedPrl, true))
                                     break;
                             }
                         }
@@ -487,7 +487,7 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                     }
                 }
             } else if (linkPrl) {
-                processPrlFile(opt);
+                processPrlFile(opt, false);
             }
 
             ProStringList &prl_libs = project->values("QMAKE_CURRENT_PRL_LIBS");

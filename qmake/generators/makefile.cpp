@@ -876,19 +876,19 @@ MakefileGenerator::init()
 }
 
 bool
-MakefileGenerator::processPrlFile(QString &file)
+MakefileGenerator::processPrlFile(QString &file, bool baseOnly)
 {
     bool try_replace_file = false;
     QString f = fileFixify(file, FileFixifyBackwards);
     QString meta_file;
-    if (f.endsWith(Option::prl_ext)) {
+    if (!baseOnly && f.endsWith(Option::prl_ext)) {
         meta_file = QMakeMetaInfo::checkLib(f);
         try_replace_file = true;
     } else {
         meta_file = QMakeMetaInfo::checkLib(f + Option::prl_ext);
         if (!meta_file.isEmpty()) {
             try_replace_file = true;
-        } else {
+        } else if (!baseOnly) {
             int ext = f.lastIndexOf('.');
             if (ext != -1)
                 meta_file = QMakeMetaInfo::checkLib(f.left(ext) + Option::prl_ext);
