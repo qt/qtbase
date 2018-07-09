@@ -617,6 +617,8 @@ void QCocoaWindow::applyWindowState(Qt::WindowStates requestedState)
     if (newState == currentState)
         return;
 
+    qCDebug(lcQpaWindow) << "Applying" << newState << "to" << window() << "in" << currentState;
+
     const NSSize contentSize = m_view.frame.size;
     if (contentSize.width <= 0 || contentSize.height <= 0) {
         // If content view width or height is 0 then the window animations will crash so
