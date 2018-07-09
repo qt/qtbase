@@ -52,10 +52,7 @@ QMakeMetaInfo::readLib(const QString &meta_file)
 
     bool ret = false;
     if(!meta_file.isNull()) {
-        if (meta_file.endsWith(Option::libtool_ext)) {
-            if((ret=readLibtoolFile(meta_file)))
-                meta_type = "libtool";
-        } else if(meta_file.endsWith(Option::prl_ext)) {
+        if (meta_file.endsWith(Option::prl_ext)) {
             QMakeProject proj;
             if (!proj.read(Option::normalizePath(meta_file), QMakeEvaluator::LoadProOnly))
                 return false;
@@ -77,7 +74,7 @@ QString
 QMakeMetaInfo::findLib(const QString &lib)
 {
     QString ret;
-    QString extns[] = { Option::prl_ext, /*Option::libtool_ext,*/ QString() };
+    QString extns[] = { Option::prl_ext, QString() };
     for(int extn = 0; !extns[extn].isNull(); extn++) {
         if(lib.endsWith(extns[extn]))
             ret = QFile::exists(lib) ? lib : QString();
@@ -96,74 +93,6 @@ QMakeMetaInfo::findLib(const QString &lib)
         debug_msg(2, "QMakeMetaInfo: Found info file %s for %s", ret.toLatin1().constData(), lib.toLatin1().constData());
     }
     return ret;
-}
-
-
-bool
-QMakeMetaInfo::readLibtoolFile(const QString &f)
-{
-    /* I can just run the .la through the .pro parser since they are compatible.. */
-    QMakeProject proj;
-    QString nf = Option::normalizePath(f);
-    if (!proj.read(nf, QMakeEvaluator::LoadProOnly))
-        return false;
-    QString dirf = nf.section(QLatin1Char('/'), 0, -2);
-    if(dirf == nf)
-        dirf = "";
-    else if(!dirf.isEmpty() && !dirf.endsWith(Option::output_dir))
-        dirf += QLatin1Char('/');
-    const ProValueMap &v = proj.variables();
-    for (ProValueMap::ConstIterator it = v.begin(); it != v.end(); ++it) {
-        ProStringList lst = it.value();
-        if(lst.count() == 1 && (lst.first().startsWith("'") || lst.first().startsWith("\"")) &&
-           lst.first().endsWith(QString(lst.first().at(0))))
-            lst = ProStringList(lst.first().mid(1, lst.first().length() - 2));
-        if(!vars.contains("QMAKE_PRL_TARGET") &&
-           (it.key() == "dlname" || it.key() == "library_names" || it.key() == "old_library")) {
-            ProString dir = v["libdir"].first();
-            if ((dir.startsWith('\'') || dir.startsWith('"')) && dir.endsWith(dir.at(0)))
-                dir = dir.mid(1, dir.length() - 2);
-            dir = dir.trimmed();
-            if(!dir.isEmpty() && !dir.endsWith(QLatin1Char('/')))
-                dir += QLatin1Char('/');
-            if(lst.count() == 1)
-                lst = ProStringList(lst.first().toQString().split(" "));
-            for (ProStringList::Iterator lst_it = lst.begin(); lst_it != lst.end(); ++lst_it) {
-                bool found = false;
-                QString dirs[] = { "", dir.toQString(), dirf, dirf + ".libs/", "(term)" };
-                for(int i = 0; !found && dirs[i] != "(term)"; i++) {
-                    if(QFile::exists(dirs[i] + (*lst_it))) {
-                        QString targ = dirs[i] + (*lst_it);
-                        if(QDir::isRelativePath(targ))
-                            targ.prepend(qmake_getpwd() + QLatin1Char('/'));
-                        vars["QMAKE_PRL_TARGET"] << targ;
-                        found = true;
-                    }
-                }
-                if(found)
-                    break;
-            }
-        } else if(it.key() == "dependency_libs") {
-            if(lst.count() == 1) {
-                ProString dep = lst.first();
-                if ((dep.startsWith('\'') || dep.startsWith('"')) && dep.endsWith(dep.at(0)))
-                    dep = dep.mid(1, dep.length() - 2);
-                lst = ProStringList(dep.trimmed().toQString().split(" "));
-            }
-            for (ProStringList::Iterator lit = lst.begin(); lit != lst.end(); ++lit) {
-                if((*lit).startsWith("-R")) {
-                    if(!conf->isEmpty("QMAKE_LFLAGS_RPATH"))
-                        (*lit) = conf->first("QMAKE_LFLAGS_RPATH") + (*lit).mid(2);
-                }
-            }
-            ProStringList &prlLibs = vars["QMAKE_PRL_LIBS"];
-            for (const ProString &s : qAsConst(lst)) {
-                prlLibs.removeAll(s);
-                prlLibs.append(s);
-            }
-        }
-    }
-    return true;
 }
 
 QT_END_NAMESPACE
