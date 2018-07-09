@@ -50,23 +50,12 @@ QMakeMetaInfo::readLib(const QString &meta_file)
         return true;
     }
 
-    bool ret = false;
-    if(!meta_file.isNull()) {
-        if (meta_file.endsWith(Option::prl_ext)) {
-            QMakeProject proj;
-            if (!proj.read(Option::normalizePath(meta_file), QMakeEvaluator::LoadProOnly))
-                return false;
-            meta_type = "qmake";
-            vars = proj.variables();
-            ret = true;
-        } else {
-            warn_msg(WarnLogic, "QMakeMetaInfo: unknown file format for %s",
-                     QDir::toNativeSeparators(meta_file).toLatin1().constData());
-        }
-    }
-    if(ret)
-        cache_vars.insert(meta_file, vars);
-    return ret;
+    QMakeProject proj;
+    if (!proj.read(Option::normalizePath(meta_file), QMakeEvaluator::LoadProOnly))
+        return false;
+    vars = proj.variables();
+    cache_vars.insert(meta_file, vars);
+    return true;
 }
 
 
@@ -74,19 +63,10 @@ QString
 QMakeMetaInfo::findLib(const QString &lib)
 {
     QString ret;
-    QString extns[] = { Option::prl_ext, QString() };
-    for(int extn = 0; !extns[extn].isNull(); extn++) {
-        if(lib.endsWith(extns[extn]))
-            ret = QFile::exists(lib) ? lib : QString();
-    }
-    if(ret.isNull()) {
-        for(int extn = 0; !extns[extn].isNull(); extn++) {
-            if(QFile::exists(lib + extns[extn])) {
-                ret = lib + extns[extn];
-                break;
-            }
-        }
-    }
+    if (lib.endsWith(Option::prl_ext))
+        ret = QFile::exists(lib) ? lib : QString();
+    else if (QFile::exists(lib + Option::prl_ext))
+        ret = lib + Option::prl_ext;
     if(ret.isNull()) {
         debug_msg(2, "QMakeMetaInfo: Cannot find info file for %s", lib.toLatin1().constData());
     } else {

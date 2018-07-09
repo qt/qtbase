@@ -898,9 +898,8 @@ MakefileGenerator::processPrlFile(QString &file)
         fprintf(stderr, "Error processing meta file %s\n", meta_file.toLatin1().constData());
         return false;
     }
-    if (project->isActiveConfig("no_read_prl_" + libinfo.type().toLower())) {
-        debug_msg(2, "Ignored meta file %s [%s]",
-                     meta_file.toLatin1().constData(), libinfo.type().toLatin1().constData());
+    if (project->isActiveConfig("no_read_prl_qmake")) {
+        debug_msg(2, "Ignored meta file %s", meta_file.toLatin1().constData());
         return false;
     }
     project->values("QMAKE_CURRENT_PRL_LIBS") = libinfo.values("QMAKE_PRL_LIBS");
