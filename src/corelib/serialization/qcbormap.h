@@ -208,21 +208,21 @@ public:
     QCborValueRef operator[](const QCborValue &key);
 
     QCborValue take(qint64 key)
-    { iterator it = find(key); if (it != end()) return extract(it); return QCborValue(); }
+    { const_iterator it = constFind(key); if (it != constEnd()) return extract(it); return QCborValue(); }
     QCborValue take(QLatin1String key)
-    { iterator it = find(key); if (it != end()) return extract(it); return QCborValue(); }
+    { const_iterator it = constFind(key); if (it != constEnd()) return extract(it); return QCborValue(); }
     QCborValue take(const QString &key)
-    { iterator it = find(key); if (it != end()) return extract(it); return QCborValue(); }
+    { const_iterator it = constFind(key); if (it != constEnd()) return extract(it); return QCborValue(); }
     QCborValue take(const QCborValue &key)
-    { iterator it = find(key); if (it != end()) return extract(it); return QCborValue(); }
+    { const_iterator it = constFind(key); if (it != constEnd()) return extract(it); return QCborValue(); }
     void remove(qint64 key)
-    { iterator it = find(key); if (it != end()) erase(it); }
+    { const_iterator it = constFind(key); if (it != constEnd()) erase(it); }
     void remove(QLatin1String key)
-    { iterator it = find(key); if (it != end()) erase(it); }
+    { const_iterator it = constFind(key); if (it != constEnd()) erase(it); }
     void remove(const QString & key)
-    { iterator it = find(key); if (it != end()) erase(it); }
+    { const_iterator it = constFind(key); if (it != constEnd()) erase(it); }
     void remove(const QCborValue &key)
-    { iterator it = find(key); if (it != end()) erase(it); }
+    { const_iterator it = constFind(key); if (it != constEnd()) erase(it); }
     bool contains(qint64 key) const
     { const_iterator it = find(key); return it != end(); }
     bool contains(QLatin1String key) const
