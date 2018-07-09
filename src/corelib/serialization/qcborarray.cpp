@@ -113,7 +113,7 @@ using namespace QtCbor;
 /*!
     Constructs an empty QCborArray.
  */
-QCborArray::QCborArray() Q_DECL_NOTHROW
+QCborArray::QCborArray() noexcept
     : d(nullptr)
 {
 }
@@ -121,7 +121,7 @@ QCborArray::QCborArray() Q_DECL_NOTHROW
 /*!
     Copies the contents of \a other into this object.
  */
-QCborArray::QCborArray(const QCborArray &other) Q_DECL_NOTHROW
+QCborArray::QCborArray(const QCborArray &other) noexcept
     : d(other.d)
 {
 }
@@ -148,7 +148,7 @@ QCborArray::~QCborArray()
     Replaces the contents of this array with that found in \a other, then
     returns a reference to this object.
  */
-QCborArray &QCborArray::operator=(const QCborArray &other) Q_DECL_NOTHROW
+QCborArray &QCborArray::operator=(const QCborArray &other) noexcept
 {
     d = other.d;
     return *this;
@@ -180,7 +180,7 @@ QCborArray &QCborArray::operator=(const QCborArray &other) Q_DECL_NOTHROW
 
     \sa isEmpty()
  */
-qsizetype QCborArray::size() const Q_DECL_NOTHROW
+qsizetype QCborArray::size() const noexcept
 {
     return d ? d->elements.size() : 0;
 }

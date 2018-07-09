@@ -2037,7 +2037,7 @@ public:
         }
     }
 
-    void handleError(CborError err) Q_DECL_NOTHROW
+    void handleError(CborError err) noexcept
     {
         Q_ASSERT(err);
 
@@ -2411,7 +2411,7 @@ QCborStreamReader::Type QCborStreamReader::parentContainerType() const
 
    \sa parentContainerType(), containerDepth(), leaveContainer()
  */
-bool QCborStreamReader::hasNext() const Q_DECL_NOTHROW
+bool QCborStreamReader::hasNext() const noexcept
 {
     return cbor_value_is_valid(&d->currentElement) &&
             !cbor_value_at_end(&d->currentElement);
@@ -2487,7 +2487,7 @@ bool QCborStreamReader::next(int maxRecursion)
 
    \sa length(), QCborStreamWriter::startArray(), QCborStreamWriter::startMap()
  */
-bool QCborStreamReader::isLengthKnown() const Q_DECL_NOTHROW
+bool QCborStreamReader::isLengthKnown() const noexcept
 {
     return cbor_value_is_length_known(&d->currentElement);
 }

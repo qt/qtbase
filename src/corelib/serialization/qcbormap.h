@@ -163,9 +163,9 @@ public:
         qsizetype operator-(ConstIterator j) const { return (item.i - j.item.i) / 2; }
     };
 
-    QCborMap()  Q_DECL_NOTHROW;
-    QCborMap(const QCborMap &other) Q_DECL_NOTHROW;
-    QCborMap &operator=(const QCborMap &other) Q_DECL_NOTHROW;
+    QCborMap()  noexcept;
+    QCborMap(const QCborMap &other) noexcept;
+    QCborMap &operator=(const QCborMap &other) noexcept;
     QCborMap(std::initializer_list<value_type> args)
         : QCborMap()
     {
@@ -175,14 +175,14 @@ public:
     }
     ~QCborMap();
 
-    void swap(QCborMap &other) Q_DECL_NOTHROW
+    void swap(QCborMap &other) noexcept
     {
         qSwap(d, other.d);
     }
 
     QCborValue toCborValue() const { return *this; }
 
-    qsizetype size() const Q_DECL_NOTHROW Q_DECL_PURE_FUNCTION;
+    qsizetype size() const noexcept Q_DECL_PURE_FUNCTION;
     bool isEmpty() const { return size() == 0; }
     QVector<QCborValue> keys() const;
 
@@ -232,7 +232,7 @@ public:
     bool contains(const QCborValue &key) const
     { const_iterator it = find(key); return it != end(); }
 
-    int compare(const QCborMap &other) const Q_DECL_NOTHROW Q_DECL_PURE_FUNCTION;
+    int compare(const QCborMap &other) const noexcept Q_DECL_PURE_FUNCTION;
 #if QT_HAS_INCLUDE(<compare>)
     std::strong_ordering operator<=>(const QCborMap &other) const
     {
@@ -242,9 +242,9 @@ public:
         return std::strong_ordering::less;
     }
 #else
-    bool operator==(const QCborMap &other) const Q_DECL_NOTHROW
+    bool operator==(const QCborMap &other) const noexcept
     { return compare(other) == 0; }
-    bool operator!=(const QCborMap &other) const Q_DECL_NOTHROW
+    bool operator!=(const QCborMap &other) const noexcept
     { return !(*this == other); }
     bool operator<(const QCborMap &other) const
     { return compare(other) < 0; }
@@ -316,7 +316,7 @@ private:
     void detach(qsizetype reserve = 0);
 
     friend QCborValue;
-    explicit QCborMap(QCborContainerPrivate &dd) Q_DECL_NOTHROW;
+    explicit QCborMap(QCborContainerPrivate &dd) noexcept;
     QExplicitlySharedDataPointer<QCborContainerPrivate> d;
 };
 

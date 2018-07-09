@@ -159,9 +159,9 @@ public:
     typedef const QCborValue &const_reference;
     typedef qsizetype difference_type;
 
-    QCborArray() Q_DECL_NOTHROW;
-    QCborArray(const QCborArray &other) Q_DECL_NOTHROW;
-    QCborArray &operator=(const QCborArray &other) Q_DECL_NOTHROW;
+    QCborArray() noexcept;
+    QCborArray(const QCborArray &other) noexcept;
+    QCborArray &operator=(const QCborArray &other) noexcept;
     QCborArray(std::initializer_list<QCborValue> args)
         : QCborArray()
     {
@@ -171,14 +171,14 @@ public:
     }
     ~QCborArray();
 
-    void swap(QCborArray &other) Q_DECL_NOTHROW
+    void swap(QCborArray &other) noexcept
     {
         qSwap(d, other.d);
     }
 
     QCborValue toCborValue() const { return *this; }
 
-    qsizetype size() const Q_DECL_NOTHROW;
+    qsizetype size() const noexcept;
     bool isEmpty() const { return size() == 0; }
 
     QCborValue at(qsizetype i) const;
@@ -205,7 +205,7 @@ public:
 
     bool contains(const QCborValue &value) const;
 
-    int compare(const QCborArray &other) const Q_DECL_NOTHROW Q_DECL_PURE_FUNCTION;
+    int compare(const QCborArray &other) const noexcept Q_DECL_PURE_FUNCTION;
 #if QT_HAS_INCLUDE(<compare>)
     std::strong_ordering operator<=>(const QCborArray &other) const
     {
@@ -215,9 +215,9 @@ public:
         return std::strong_ordering::less;
     }
 #else
-    bool operator==(const QCborArray &other) const Q_DECL_NOTHROW
+    bool operator==(const QCborArray &other) const noexcept
     { return compare(other) == 0; }
-    bool operator!=(const QCborArray &other) const Q_DECL_NOTHROW
+    bool operator!=(const QCborArray &other) const noexcept
     { return !(*this == other); }
     bool operator<(const QCborArray &other) const
     { return compare(other) < 0; }
@@ -261,7 +261,7 @@ private:
     void detach(qsizetype reserve = 0);
 
     friend QCborValue;
-    explicit QCborArray(QCborContainerPrivate &dd) Q_DECL_NOTHROW;
+    explicit QCborArray(QCborContainerPrivate &dd) noexcept;
     QExplicitlySharedDataPointer<QCborContainerPrivate> d;
 };
 

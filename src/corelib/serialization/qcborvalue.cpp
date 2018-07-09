@@ -1395,12 +1395,12 @@ int QCborValue::compare(const QCborValue &other) const
     return compareElementRecursive(container, e1, other.container, e2);
 }
 
-int QCborArray::compare(const QCborArray &other) const Q_DECL_NOTHROW
+int QCborArray::compare(const QCborArray &other) const noexcept
 {
     return compareContainer(d.data(), other.d.data());
 }
 
-int QCborMap::compare(const QCborMap &other) const Q_DECL_NOTHROW
+int QCborMap::compare(const QCborMap &other) const noexcept
 {
     return compareContainer(d.data(), other.d.data());
 }
@@ -2560,22 +2560,22 @@ void QCborValueRef::assign(QCborValueRef that, const QCborValueRef other)
     assign(that, other.concrete());
 }
 
-QCborValue QCborValueRef::concrete(QCborValueRef self) Q_DECL_NOTHROW
+QCborValue QCborValueRef::concrete(QCborValueRef self) noexcept
 {
     return self.d->valueAt(self.i);
 }
 
-QCborValue::Type QCborValueRef::concreteType(QCborValueRef self) Q_DECL_NOTHROW
+QCborValue::Type QCborValueRef::concreteType(QCborValueRef self) noexcept
 {
     return self.d->elements.at(self.i).type;
 }
 
-inline QCborArray::QCborArray(QCborContainerPrivate &dd) Q_DECL_NOTHROW
+inline QCborArray::QCborArray(QCborContainerPrivate &dd) noexcept
     : d(&dd)
 {
 }
 
-inline QCborMap::QCborMap(QCborContainerPrivate &dd) Q_DECL_NOTHROW
+inline QCborMap::QCborMap(QCborContainerPrivate &dd) noexcept
     : d(&dd)
 {
 }

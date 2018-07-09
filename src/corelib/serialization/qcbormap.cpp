@@ -199,7 +199,7 @@ using namespace QtCbor;
 
     \sa isEmpty()
  */
-QCborMap::QCborMap() Q_DECL_NOTHROW
+QCborMap::QCborMap() noexcept
     : d(nullptr)
 {
 }
@@ -207,7 +207,7 @@ QCborMap::QCborMap() Q_DECL_NOTHROW
 /*!
     Creates a QCborMap object that is a copy of \a other.
  */
-QCborMap::QCborMap(const QCborMap &other) Q_DECL_NOTHROW
+QCborMap::QCborMap(const QCborMap &other) noexcept
     : d(other.d)
 {
 }
@@ -239,7 +239,7 @@ QCborMap::~QCborMap()
     Replaces the contents of this object with a copy of \a other, then returns
     a reference to this object.
  */
-QCborMap &QCborMap::operator=(const QCborMap &other) Q_DECL_NOTHROW
+QCborMap &QCborMap::operator=(const QCborMap &other) noexcept
 {
     d = other.d;
     return *this;
@@ -278,7 +278,7 @@ QCborMap &QCborMap::operator=(const QCborMap &other) Q_DECL_NOTHROW
 
     \sa isEmpty()
  */
-qsizetype QCborMap::size() const Q_DECL_NOTHROW
+qsizetype QCborMap::size() const noexcept
 {
     return d ? d->elements.size() / 2 : 0;
 }

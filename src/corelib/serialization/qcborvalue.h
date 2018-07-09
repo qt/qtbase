@@ -164,14 +164,14 @@ public:
     QCborValue(const void *) = delete;
 
     QCborValue(const QCborValue &other);
-    QCborValue(QCborValue &&other) Q_DECL_NOTHROW
+    QCborValue(QCborValue &&other) noexcept
         : n(other.n), container(other.container), t(other.t)
     {
         other.t = Undefined;
         other.container = nullptr;
     }
     QCborValue &operator=(const QCborValue &other);
-    QCborValue &operator=(QCborValue &&other) Q_DECL_NOTHROW
+    QCborValue &operator=(QCborValue &&other) noexcept
     {
         QCborValue tmp;
         qSwap(*this, tmp);
@@ -179,7 +179,7 @@ public:
         return *this;
     }
 
-    void swap(QCborValue &other) Q_DECL_NOTHROW
+    void swap(QCborValue &other) noexcept
     {
         qSwap(n, other.n);
         qSwap(container, other.container);
@@ -261,9 +261,9 @@ public:
         return std::partial_ordering::less;
     }
 #else
-    bool operator==(const QCborValue &other) const Q_DECL_NOTHROW
+    bool operator==(const QCborValue &other) const noexcept
     { return compare(other) == 0; }
-    bool operator!=(const QCborValue &other) const Q_DECL_NOTHROW
+    bool operator!=(const QCborValue &other) const noexcept
     { return !(*this == other); }
     bool operator<(const QCborValue &other) const
     { return compare(other) < 0; }
@@ -323,8 +323,8 @@ class Q_CORE_EXPORT QCborValueRef
 public:
     operator QCborValue() const     { return concrete(); }
 
-    QCborValueRef(const QCborValueRef &) Q_DECL_NOTHROW = default;
-    QCborValueRef(QCborValueRef &&) Q_DECL_NOTHROW = default;
+    QCborValueRef(const QCborValueRef &) noexcept = default;
+    QCborValueRef(QCborValueRef &&) noexcept = default;
     QCborValueRef &operator=(const QCborValue &other)
     { assign(*this, other); return *this; }
     QCborValueRef &operator=(QCborValue &&other)
@@ -435,11 +435,11 @@ private:
     static void assign(QCborValueRef that, const QCborValue &other);
     static void assign(QCborValueRef that, QCborValue &&other);
     static void assign(QCborValueRef that, const QCborValueRef other);
-    static QCborValue concrete(QCborValueRef that) Q_DECL_NOTHROW;
-    QCborValue concrete() const Q_DECL_NOTHROW  { return concrete(*this); }
+    static QCborValue concrete(QCborValueRef that) noexcept;
+    QCborValue concrete() const noexcept  { return concrete(*this); }
 
-    static QCborValue::Type concreteType(QCborValueRef self) Q_DECL_NOTHROW Q_DECL_PURE_FUNCTION;
-    QCborValue::Type concreteType() const Q_DECL_NOTHROW { return concreteType(*this); }
+    static QCborValue::Type concreteType(QCborValueRef self) noexcept Q_DECL_PURE_FUNCTION;
+    QCborValue::Type concreteType() const noexcept { return concreteType(*this); }
 
     // this will actually be invalid...
     Q_DECL_CONSTEXPR QCborValueRef() : d(nullptr), i(0) {}
