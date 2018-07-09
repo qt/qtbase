@@ -889,9 +889,10 @@ MakefileGenerator::processPrlFile(QString &file, bool baseOnly)
         if (!meta_file.isEmpty()) {
             try_replace_file = true;
         } else if (!baseOnly) {
-            int ext = f.lastIndexOf('.');
+            int off = qMax(f.lastIndexOf('/'), f.lastIndexOf('\\')) + 1;
+            int ext = f.midRef(off).lastIndexOf('.');
             if (ext != -1)
-                meta_file = QMakeMetaInfo::checkLib(f.left(ext) + Option::prl_ext);
+                meta_file = QMakeMetaInfo::checkLib(f.leftRef(off + ext) + Option::prl_ext);
         }
     }
     if (meta_file.isEmpty())
