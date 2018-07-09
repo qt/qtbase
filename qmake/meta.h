@@ -42,7 +42,6 @@ class QMakeProject;
 class QMakeMetaInfo
 {
     bool readLibtoolFile(const QString &f);
-    bool readPkgCfgFile(const QString &f);
     QMakeProject *conf;
     ProValueMap vars;
     QString meta_type;

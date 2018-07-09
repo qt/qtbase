@@ -52,10 +52,7 @@ QMakeMetaInfo::readLib(const QString &meta_file)
 
     bool ret = false;
     if(!meta_file.isNull()) {
-        if(meta_file.endsWith(Option::pkgcfg_ext)) {
-            if((ret=readPkgCfgFile(meta_file)))
-                meta_type = "pkgcfg";
-        } else if(meta_file.endsWith(Option::libtool_ext)) {
+        if (meta_file.endsWith(Option::libtool_ext)) {
             if((ret=readLibtoolFile(meta_file)))
                 meta_type = "libtool";
         } else if(meta_file.endsWith(Option::prl_ext)) {
@@ -80,7 +77,7 @@ QString
 QMakeMetaInfo::findLib(const QString &lib)
 {
     QString ret;
-    QString extns[] = { Option::prl_ext, /*Option::pkgcfg_ext, Option::libtool_ext,*/ QString() };
+    QString extns[] = { Option::prl_ext, /*Option::libtool_ext,*/ QString() };
     for(int extn = 0; !extns[extn].isNull(); extn++) {
         if(lib.endsWith(extns[extn]))
             ret = QFile::exists(lib) ? lib : QString();
@@ -167,13 +164,6 @@ QMakeMetaInfo::readLibtoolFile(const QString &f)
         }
     }
     return true;
-}
-
-bool
-QMakeMetaInfo::readPkgCfgFile(const QString &f)
-{
-    fprintf(stderr, "Must implement reading in pkg-config files (%s)!!!\n", f.toLatin1().constData());
-    return false;
 }
 
 QT_END_NAMESPACE
