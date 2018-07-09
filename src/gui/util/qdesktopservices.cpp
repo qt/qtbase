@@ -141,6 +141,10 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
     same argument, and it will try to open the URL using the
     appropriate mechanism for the user's desktop environment.
 
+    Combined with platform specific settings, the schemes registered by the
+    openUrl() function can also be exposed to other applications, opening up
+    for application deep linking or a very basic URL-based IPC mechanism.
+
     \note Since Qt 5, storageLocation() and displayName() are replaced by functionality
     provided by the QStandardPaths class.
 
@@ -244,6 +248,24 @@ bool QDesktopServices::openUrl(const QUrl &url)
 
     The provided method must be implemented as a slot that only accepts a single QUrl
     argument.
+
+    To use this function for receiving data from other apps on iOS you also need to
+    add the custom scheme to the \c CFBundleURLSchemes list in your Info.plist file:
+
+    \code
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>myapp</string>
+            </array>
+        </dict>
+    </array>
+    \endcode
+
+    For more information, see the Apple Developer Documentation for
+    \l{https://developer.apple.com/documentation/uikit/core_app/allowing_apps_and_websites_to_link_to_your_content/communicating_with_other_apps_using_custom_urls?language=objc}{Communicating with Other Apps Using Custom URLs}.
 
     If setUrlHandler() is used to set a new handler for a scheme which already
     has a handler, the existing handler is simply replaced with the new one.
