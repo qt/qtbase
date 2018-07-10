@@ -580,7 +580,7 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
 
     t << "DIST          = " << fileVarList("DISTFILES") << ' '
       << fileVarList("HEADERS") << ' ' << fileVarList("SOURCES") << endl;
-    t << "QMAKE_TARGET  = " << fileVar("QMAKE_ORIG_TARGET") << endl;
+    t << "QMAKE_TARGET  = " << fileVar("QMAKE_ORIG_TARGET") << endl;  // unused
     // The comment is important to maintain variable compatibility with Unix
     // Makefiles, while not interpreting a trailing-slash as a linebreak
     t << "DESTDIR        = " << escapeFilePath(destDir) << " #avoid trailing-slash linebreak\n";

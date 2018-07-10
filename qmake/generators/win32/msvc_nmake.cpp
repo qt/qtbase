@@ -584,8 +584,9 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
 
     t << "first: all\n";
     t << "all: " << escapeDependencyPath(fileFixify(Option::output.fileName()))
-      << ' ' << depVar("ALL_DEPS") << " $(DESTDIR_TARGET)\n\n";
-    t << "$(DESTDIR_TARGET): " << depVar("PRE_TARGETDEPS") << " $(OBJECTS) " << depVar("POST_TARGETDEPS");
+      << ' ' << depVar("ALL_DEPS") << ' ' << depVar("DEST_TARGET") << "\n\n";
+    t << depVar("DEST_TARGET") << ": "
+      << depVar("PRE_TARGETDEPS") << " $(OBJECTS) " << depVar("POST_TARGETDEPS");
     if (templateName == "aux") {
         t << "\n\n";
         return;
