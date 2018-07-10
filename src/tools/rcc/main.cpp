@@ -151,6 +151,10 @@ int runRcc(int argc, char *argv[])
     QCommandLineOption listOption(QStringLiteral("list"), QStringLiteral("Only list .qrc file entries, do not generate code."));
     parser.addOption(listOption);
 
+    QCommandLineOption mapOption(QStringLiteral("list-mapping"),
+                                 QStringLiteral("Only output a mapping of resource paths to file system paths defined in the .qrc file, do not generate code."));
+    parser.addOption(mapOption);
+
     QCommandLineOption projectOption(QStringLiteral("project"), QStringLiteral("Output a resource file containing all files from the current directory."));
     parser.addOption(projectOption);
 
@@ -207,6 +211,7 @@ int runRcc(int argc, char *argv[])
         library.setVerbose(true);
 
     const bool list = parser.isSet(listOption);
+    const bool map = parser.isSet(mapOption);
     const bool projectRequested = parser.isSet(projectOption);
     const QStringList filenamesIn = parser.positionalArguments();
 
@@ -242,7 +247,7 @@ int runRcc(int argc, char *argv[])
 
     library.setInputFiles(filenamesIn);
 
-    if (!library.readFiles(list, errorDevice))
+    if (!library.readFiles(list || map, errorDevice))
         return 1;
 
     QFile out;
@@ -289,6 +294,17 @@ int runRcc(int argc, char *argv[])
         const QStringList data = library.dataFiles();
         for (int i = 0; i < data.size(); ++i) {
             out.write(qPrintable(QDir::cleanPath(data.at(i))));
+            out.write("\n");
+        }
+        return 0;
+    }
+
+    if (map) {
+        const RCCResourceLibrary::ResourceDataFileMap data = library.resourceDataFileMap();
+        for (auto it = data.begin(), end = data.end(); it != end; ++it) {
+            out.write(qPrintable(it.key()));
+            out.write("\t");
+            out.write(qPrintable(QDir::cleanPath(it.value())));
             out.write("\n");
         }
         return 0;
