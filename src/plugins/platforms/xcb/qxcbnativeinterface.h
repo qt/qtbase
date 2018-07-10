@@ -131,8 +131,6 @@ signals:
     void systemTrayWindowChanged(QScreen *screen);
 
 private:
-    xcb_window_t locateSystemTray(xcb_connection_t *conn, const QXcbScreen *screen);
-
     const QByteArray m_genericEventFilterType;
 
     xcb_atom_t m_sysTraySelectionAtom = XCB_ATOM_NONE;

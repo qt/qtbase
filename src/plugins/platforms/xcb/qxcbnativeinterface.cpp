@@ -105,25 +105,6 @@ static inline QXcbSystemTrayTracker *systemTrayTracker(const QScreen *s)
     return static_cast<const QXcbScreen *>(s->handle())->connection()->systemTrayTracker();
 }
 
-xcb_window_t QXcbNativeInterface::locateSystemTray(xcb_connection_t *conn, const QXcbScreen *screen)
-{
-    if (m_sysTraySelectionAtom == XCB_ATOM_NONE) {
-        const QByteArray net_sys_tray = QString::fromLatin1("_NET_SYSTEM_TRAY_S%1").arg(screen->screenNumber()).toLatin1();
-        auto intern_r = Q_XCB_REPLY_UNCHECKED(xcb_intern_atom, conn,
-                                              true, net_sys_tray.length(), net_sys_tray);
-        if (!intern_r)
-            return XCB_WINDOW_NONE;
-
-        m_sysTraySelectionAtom = intern_r->atom;
-    }
-
-    auto sel_owner_r = Q_XCB_REPLY_UNCHECKED(xcb_get_selection_owner, conn, m_sysTraySelectionAtom);
-    if (!sel_owner_r)
-        return XCB_WINDOW_NONE;
-
-    return sel_owner_r->owner;
-}
-
 void *QXcbNativeInterface::nativeResourceForIntegration(const QByteArray &resourceString)
 {
     QByteArray lowerCaseResource = resourceString.toLower();
