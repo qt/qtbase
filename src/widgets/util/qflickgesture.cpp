@@ -130,8 +130,6 @@ private:
         , mouseEventSource(Qt::MouseEventNotSynthesized)
     { }
 
-    static PressDelayHandler *inst;
-
 public:
     enum {
         UngrabMouseBefore = 1,

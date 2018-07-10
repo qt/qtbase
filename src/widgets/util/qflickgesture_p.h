@@ -77,8 +77,6 @@ public:
     friend class QFlickGestureRecognizer;
 };
 
-class PressDelayHandler;
-
 class QFlickGesturePrivate : public QGesturePrivate
 {
     Q_DECLARE_PUBLIC(QFlickGesture)
@@ -89,7 +87,6 @@ public:
     QScroller *receiverScroller;
     Qt::MouseButton button; // NoButton == Touch
     bool macIgnoreWheel;
-    static PressDelayHandler *pressDelayHandler;
 };
 
 class QFlickGestureRecognizer : public QGestureRecognizer
