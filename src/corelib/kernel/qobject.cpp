@@ -4690,7 +4690,7 @@ void qDeleteInEventHandler(QObject *o)
     The signal must be a function declared as a signal in the header.
     The slot function can be any function or functor that can be connected
     to the signal.
-    A function can be connected to a given signal if the signal as at
+    A function can be connected to a given signal if the signal has at
     least as many argument as the slot. A functor can be connected to a signal
     if they have exactly the same number of arguments. There must exist implicit
     conversion between the types of the corresponding arguments in the
@@ -4730,7 +4730,7 @@ void qDeleteInEventHandler(QObject *o)
     The signal must be a function declared as a signal in the header.
     The slot function can be any function or functor that can be connected
     to the signal.
-    A function can be connected to a given signal if the signal as at
+    A function can be connected to a given signal if the signal has at
     least as many argument as the slot. A functor can be connected to a signal
     if they have exactly the same number of arguments. There must exist implicit
     conversion between the types of the corresponding arguments in the
