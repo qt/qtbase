@@ -51,33 +51,17 @@ QT_BEGIN_NAMESPACE
 
 typedef QTypedArrayData<ushort> QStringData;
 
-#if defined(Q_OS_WIN) && !defined(Q_COMPILER_UNICODE_STRINGS)
-// fall back to wchar_t if the a Windows compiler does not
-// support Unicode string literals, assuming wchar_t is 2 bytes
-// on that platform (sanity-checked by static_assert further below)
-
-#if defined(Q_CC_MSVC)
-#    define QT_UNICODE_LITERAL_II(str) L##str
-#else
-#    define QT_UNICODE_LITERAL_II(str) L"" str
-#endif
-typedef wchar_t qunicodechar;
-
-#else
 // all our supported compilers support Unicode string literals,
 // even if their Q_COMPILER_UNICODE_STRING has been revoked due
 // to lacking stdlib support. But QStringLiteral only needs the
 // core language feature, so just use u"" here unconditionally:
 
-#define QT_UNICODE_LITERAL_II(str) u"" str
 typedef char16_t qunicodechar;
-
-#endif
 
 Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
         "qunicodechar must typedef an integral type of size 2");
 
-#define QT_UNICODE_LITERAL(str) QT_UNICODE_LITERAL_II(str)
+#define QT_UNICODE_LITERAL(str) u"" str
 #define QStringLiteral(str) \
     ([]() Q_DECL_NOEXCEPT -> QString { \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
