@@ -214,32 +214,48 @@ void tst_QLocale::ctor()
     }
 
     // Exact matches
-    TEST_CTOR(Chinese, SimplifiedHanScript, China, QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
-    TEST_CTOR(Chinese, TraditionalHanScript, Taiwan, QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
-    TEST_CTOR(Chinese, TraditionalHanScript, HongKong, QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::HongKong);
+    TEST_CTOR(Chinese, SimplifiedHanScript, China,
+              QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
+    TEST_CTOR(Chinese, TraditionalHanScript, Taiwan,
+              QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
+    TEST_CTOR(Chinese, TraditionalHanScript, HongKong,
+              QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::HongKong);
 
     // Best match for AnyCountry
-    TEST_CTOR(Chinese, SimplifiedHanScript, AnyCountry, QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
-    TEST_CTOR(Chinese, TraditionalHanScript, AnyCountry, QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
+    TEST_CTOR(Chinese, SimplifiedHanScript, AnyCountry,
+              QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
+    TEST_CTOR(Chinese, TraditionalHanScript, AnyCountry,
+              QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
 
     // Best match for AnyScript (and change country to supported one, if necessary)
-    TEST_CTOR(Chinese, AnyScript, China, QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
-    TEST_CTOR(Chinese, AnyScript, Taiwan, QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
-    TEST_CTOR(Chinese, AnyScript, HongKong, QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::HongKong);
-    TEST_CTOR(Chinese, AnyScript, UnitedStates, QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
+    TEST_CTOR(Chinese, AnyScript, China,
+              QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
+    TEST_CTOR(Chinese, AnyScript, Taiwan,
+              QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
+    TEST_CTOR(Chinese, AnyScript, HongKong,
+              QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::HongKong);
+    TEST_CTOR(Chinese, AnyScript, UnitedStates,
+              QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
 
     // Fully-specified not found; find best alternate country
-    TEST_CTOR(Chinese, SimplifiedHanScript, Taiwan, QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
-    TEST_CTOR(Chinese, SimplifiedHanScript, UnitedStates, QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
-    TEST_CTOR(Chinese, TraditionalHanScript, China, QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
-    TEST_CTOR(Chinese, TraditionalHanScript, UnitedStates, QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
+    TEST_CTOR(Chinese, SimplifiedHanScript, Taiwan,
+              QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
+    TEST_CTOR(Chinese, SimplifiedHanScript, UnitedStates,
+              QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
+    TEST_CTOR(Chinese, TraditionalHanScript, China,
+              QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
+    TEST_CTOR(Chinese, TraditionalHanScript, UnitedStates,
+              QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
 
     // Fully-specified not found; find best alternate script
-    TEST_CTOR(Chinese, LatinScript, China, QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
-    TEST_CTOR(Chinese, LatinScript, Taiwan, QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
+    TEST_CTOR(Chinese, LatinScript, China,
+              QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
+    TEST_CTOR(Chinese, LatinScript, Taiwan,
+              QLocale::Chinese, QLocale::TraditionalHanScript, QLocale::Taiwan);
 
     // Fully-specified not found; find best alternate country and script
-    TEST_CTOR(Chinese, LatinScript, UnitedStates, QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
+    TEST_CTOR(Chinese, LatinScript, UnitedStates,
+              QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China);
 
 #undef TEST_CTOR
 }
@@ -278,7 +294,8 @@ void tst_QLocale::defaulted_ctor()
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France)
     TEST_CTOR(C, France, QLocale::C, QLocale::AnyCountry)
-    TEST_CTOR(Spanish, LatinAmericaAndTheCaribbean, QLocale::Spanish, QLocale::LatinAmericaAndTheCaribbean)
+    TEST_CTOR(Spanish, LatinAmericaAndTheCaribbean, QLocale::Spanish,
+              QLocale::LatinAmericaAndTheCaribbean)
 
     QLocale::setDefault(QLocale(QLocale::English, QLocale::France));
 
@@ -371,7 +388,8 @@ void tst_QLocale::defaulted_ctor()
                 && l.country() == QLocale::exp_country, \
                 QString("requested: \"" + QString(req_lc) + "\", got: " \
                         + QLocale::languageToString(l.language())       \
-                + QLatin1Char('/') + QLocale::countryToString(l.country())).toLatin1().constData()); \
+                        + QLatin1Char('/')                              \
+                        + QLocale::countryToString(l.country())).toLatin1().constData()); \
         QCOMPARE(l, QLocale(QLocale::exp_lang, QLocale::exp_country)); \
         QCOMPARE(qHash(l), qHash(QLocale(QLocale::exp_lang, QLocale::exp_country))); \
     }
@@ -464,7 +482,8 @@ static inline bool runSysApp(const QString &binary,
     process.start(binary);
     process.closeWriteChannel();
     if (!process.waitForStarted()) {
-        *errorMessage = QString::fromLatin1("Cannot start '%1': %2").arg(binary, process.errorString());
+        *errorMessage = QLatin1String("Cannot start '") + binary
+            + QLatin1String("': ") + process.errorString();
         return false;
     }
     if (!process.waitForFinished()) {
@@ -488,13 +507,14 @@ static inline bool runSysAppTest(const QString &binary,
         return false;
 
     if (output.isEmpty()) {
-        *errorMessage = QString::fromLatin1("Empty output received for requested '%1' (expected '%2')").
-                        arg(requestedLocale, expectedOutput);
+        *errorMessage = QLatin1String("Empty output received for requested '") + requestedLocale
+            + QLatin1String("' (expected '") + expectedOutput + QLatin1String("')");
         return false;
     }
     if (output != expectedOutput) {
-        *errorMessage = QString::fromLatin1("Output mismatch for requested '%1': Expected '%2', got '%3'").
-                        arg(requestedLocale, expectedOutput, output);
+        *errorMessage = QLatin1String("Output mismatch for requested '") + requestedLocale
+            + QLatin1String("': Expected '") + expectedOutput + QLatin1String("', got '")
+            + output + QLatin1String("'");
         return false;
     }
     return true;
@@ -599,7 +619,8 @@ void tst_QLocale::legacyNames()
                 && l.country() == QLocale::exp_country, \
                 QString("requested: \"" + QString(req_lc) + "\", got: " \
                         + QLocale::languageToString(l.language())       \
-                + QLatin1Char('/') + QLocale::countryToString(l.country())).toLatin1().constData()); \
+                        + QLatin1Char('/')                              \
+                        + QLocale::countryToString(l.country())).toLatin1().constData()); \
     }
 
     TEST_CTOR("mo_MD", Romanian, Moldova)
@@ -1282,7 +1303,8 @@ void tst_QLocale::formatDate_data()
     QTest::newRow("26") << QDate(1974, 12, 1) << "\"yy\"" << "\"74\"";
     QTest::newRow("27") << QDate(1974, 12, 1) << "'\"yy\"'" << "\"yy\"";
     QTest::newRow("28") << QDate() << "'\"yy\"'" << "";
-    QTest::newRow("29") << QDate(1974, 12, 1) << "hh:mm:ss.zzz ap d'd'dd/M/yy" << "hh:mm:ss.zzz ap 1d01/12/74";
+    QTest::newRow("29")
+        << QDate(1974, 12, 1) << "hh:mm:ss.zzz ap d'd'dd/M/yy" << "hh:mm:ss.zzz ap 1d01/12/74";
 
     QTest::newRow("dd MMMM yyyy") << QDate(1, 1, 1) << "dd MMMM yyyy" << "01 January 0001";
 }
@@ -1573,7 +1595,8 @@ void tst_QLocale::formatTimeZone()
              QDateTime::currentDateTime().timeZoneAbbreviation());
 
     // Time on its own will always be current local time zone
-    QCOMPARE(enUS.toString(QTime(1, 2, 3), "t"), QDateTime::currentDateTime().timeZoneAbbreviation());
+    QCOMPARE(enUS.toString(QTime(1, 2, 3), "t"),
+             QDateTime::currentDateTime().timeZoneAbbreviation());
 }
 
 void tst_QLocale::toDateTime_data()
@@ -1610,7 +1633,8 @@ void tst_QLocale::toDateTime_data()
     QTest::newRow("bad-hour-C") << "C" << QDateTime() << "d-MMM-yy hh:m" << "4-Jun-11 1:2";
     QTest::newRow("bad-min-C") << "C" << QDateTime() << "d-MMM-yy h:mm" << "4-Jun-11 1:2";
     QTest::newRow("bad-sec-C") << "C" << QDateTime() << "d-MMM-yy h:m:ss" << "4-Jun-11 1:2:3";
-    QTest::newRow("bad-milli-C") << "C" << QDateTime() << "d-MMM-yy h:m:s.zzz" << "4-Jun-11 1:2:3.4";
+    QTest::newRow("bad-milli-C")
+        << "C" << QDateTime() << "d-MMM-yy h:m:s.zzz" << "4-Jun-11 1:2:3.4";
     QTest::newRow("ok-C") << "C" << QDateTime(QDate(1911, 6, 4), QTime(1, 2, 3, 400))
                           << "d-MMM-yy h:m:s.z" << "4-Jun-11 1:2:3.4";
 
@@ -1633,10 +1657,12 @@ void tst_QLocale::toDateTime_data()
     QTest::newRow("12no_NO") << "no_NO" << QDateTime(QDate(1974, 12, 1), QTime(15, 0, 0))
                              << "d'd'dd/M/yyh" << "1d01/12/7415";
 
-    QTest::newRow("RFC-1123") << "C" << QDateTime(QDate(2007, 11, 1), QTime(18, 8, 30))
+    QTest::newRow("RFC-1123")
+        << "C" << QDateTime(QDate(2007, 11, 1), QTime(18, 8, 30))
         << "ddd, dd MMM yyyy hh:mm:ss 'GMT'" << "Thu, 01 Nov 2007 18:08:30 GMT";
 
-    QTest::newRow("longFormat") << "en_US" << QDateTime(QDate(2009, 1, 5), QTime(11, 48, 32))
+    QTest::newRow("longFormat")
+        << "en_US" << QDateTime(QDate(2009, 1, 5), QTime(11, 48, 32))
         << "dddd, MMMM d, yyyy h:mm:ss AP " << "Monday, January 5, 2009 11:48:32 AM ";
 }
 
@@ -1712,8 +1738,10 @@ void tst_QLocale::macDefaultLocale()
 
     // To run this test make sure "Curreny" is US Dollar in System Preferences->Language & Region->Advanced.
     if (locale.currencySymbol() == QString("$")) {
-        QCOMPARE(locale.toCurrencyString(qulonglong(1234)), systemLocaleFormatNumber(QString("$1,234.00")));
-        QCOMPARE(locale.toCurrencyString(double(1234.56)), systemLocaleFormatNumber(QString("$1,234.56")));
+        QCOMPARE(locale.toCurrencyString(qulonglong(1234)),
+                 systemLocaleFormatNumber(QString("$1,234.00")));
+        QCOMPARE(locale.toCurrencyString(double(1234.56)),
+                 systemLocaleFormatNumber(QString("$1,234.56")));
     }
 
     // Depending on the configured time zone, the time string might not
@@ -1726,7 +1754,8 @@ void tst_QLocale::macDefaultLocale()
             expectedGMTSpecifierBase.append(QLatin1Char('-'));
 
         QString expectedGMTSpecifier = expectedGMTSpecifierBase + QString("%1").arg(qAbs(diff));
-        QString expectedGMTSpecifierZeroExtended = expectedGMTSpecifierBase + QString("0%1").arg(qAbs(diff));
+        QString expectedGMTSpecifierZeroExtended
+            = expectedGMTSpecifierBase + QString("0%1").arg(qAbs(diff));
 
         QVERIFY2(timeString.contains(expectedGMTSpecifier)
             || timeString.contains(expectedGMTSpecifierZeroExtended),
@@ -1740,8 +1769,10 @@ void tst_QLocale::macDefaultLocale()
     QCOMPARE(locale.dayName(7), QString("Sunday"));
     QCOMPARE(locale.monthName(1), QString("January"));
     QCOMPARE(locale.monthName(12), QString("December"));
-    QCOMPARE(locale.quoteString("string"), QString::fromUtf8("\xe2\x80\x9c" "string" "\xe2\x80\x9d"));
-    QCOMPARE(locale.quoteString("string", QLocale::AlternateQuotation), QString::fromUtf8("\xe2\x80\x98" "string" "\xe2\x80\x99"));
+    QCOMPARE(locale.quoteString("string"),
+             QString::fromUtf8("\xe2\x80\x9c" "string" "\xe2\x80\x9d"));
+    QCOMPARE(locale.quoteString("string", QLocale::AlternateQuotation),
+             QString::fromUtf8("\xe2\x80\x98" "string" "\xe2\x80\x99"));
 
     QList<Qt::DayOfWeek> days;
     days << Qt::Monday << Qt::Tuesday << Qt::Wednesday << Qt::Thursday << Qt::Friday;
@@ -1843,7 +1874,8 @@ void tst_QLocale::windowsDefaultLocale()
     QCOMPARE(locale.dateFormat(QLocale::ShortFormat), shortDateFormat);
     QCOMPARE(locale.dateFormat(QLocale::LongFormat), longDateFormat);
     QCOMPARE(locale.timeFormat(QLocale::ShortFormat), shortTimeFormat);
-    QCOMPARE(locale.dateTimeFormat(QLocale::ShortFormat), shortDateFormat + QLatin1Char(' ') + shortTimeFormat);
+    QCOMPARE(locale.dateTimeFormat(QLocale::ShortFormat),
+             shortDateFormat + QLatin1Char(' ') + shortTimeFormat);
     const QString expectedLongDateTimeFormat = longDateFormat + QLatin1Char(' ')
         + (win7OrLater ? QStringLiteral("h:mm:ss AP") : shortTimeFormat);
     QCOMPARE(locale.dateTimeFormat(QLocale::LongFormat), expectedLongDateTimeFormat);
@@ -1851,13 +1883,17 @@ void tst_QLocale::windowsDefaultLocale()
     // make sure we are using the system to parse them
     QCOMPARE(locale.toString(1234.56), QString("1?234@56"));
     QCOMPARE(locale.toString(QDate(1974, 12, 1), QLocale::ShortFormat), QString("1*12*1974"));
-    QCOMPARE(locale.toString(QDate(1974, 12, 1), QLocale::NarrowFormat), locale.toString(QDate(1974, 12, 1), QLocale::ShortFormat));
+    QCOMPARE(locale.toString(QDate(1974, 12, 1), QLocale::NarrowFormat),
+             locale.toString(QDate(1974, 12, 1), QLocale::ShortFormat));
     QCOMPARE(locale.toString(QDate(1974, 12, 1), QLocale::LongFormat), QString("1@12@1974"));
     const QString expectedFormattedShortTimeSeconds = QStringLiteral("1^2^3");
-    const QString expectedFormattedShortTime = win7OrLater ? QStringLiteral("1^2") : expectedFormattedShortTimeSeconds;
+    const QString expectedFormattedShortTime
+        = win7OrLater ? QStringLiteral("1^2") : expectedFormattedShortTimeSeconds;
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::ShortFormat), expectedFormattedShortTime);
-    QCOMPARE(locale.toString(QTime(1,2,3), QLocale::NarrowFormat), locale.toString(QTime(1,2,3), QLocale::ShortFormat));
-    const QString expectedFormattedLongTime = win7OrLater ? QStringLiteral("1:02:03 AM") : expectedFormattedShortTimeSeconds;
+    QCOMPARE(locale.toString(QTime(1,2,3), QLocale::NarrowFormat),
+             locale.toString(QTime(1,2,3), QLocale::ShortFormat));
+    const QString expectedFormattedLongTime
+        = win7OrLater ? QStringLiteral("1:02:03 AM") : expectedFormattedShortTimeSeconds;
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::LongFormat), expectedFormattedLongTime);
     QCOMPARE(locale.toString(QDateTime(QDate(1974, 12, 1), QTime(1,2,3)), QLocale::ShortFormat),
              QStringLiteral("1*12*1974 ") + expectedFormattedShortTime);
@@ -2060,9 +2096,15 @@ void tst_QLocale::dayName_data()
     QTest::newRow("C short") << QString("C") << QString("Sun") << 7 << QLocale::ShortFormat;
     QTest::newRow("C narrow") << QString("C") << QString("7") << 7 << QLocale::NarrowFormat;
 
-    QTest::newRow("ru_RU long")  << QString("ru_RU") << QString::fromUtf8("\320\262\320\276\321\201\320\272\321\200\320\265\321\201\320\265\320\275\321\214\320\265") << 7 << QLocale::LongFormat;
-    QTest::newRow("ru_RU short")  << QString("ru_RU") << QString::fromUtf8("\320\262\321\201") << 7 << QLocale::ShortFormat;
-    QTest::newRow("ru_RU narrow")  << QString("ru_RU") << QString::fromUtf8("\320\262\321\201") << 7 << QLocale::NarrowFormat;
+    QTest::newRow("ru_RU long")
+        << QString("ru_RU")
+        << QString::fromUtf8("\320\262\320\276\321\201\320\272\321\200\320"
+                             "\265\321\201\320\265\320\275\321\214\320\265")
+        << 7 << QLocale::LongFormat;
+    QTest::newRow("ru_RU short")
+        << QString("ru_RU") << QString::fromUtf8("\320\262\321\201") << 7 << QLocale::ShortFormat;
+    QTest::newRow("ru_RU narrow")
+        << QString("ru_RU") << QString::fromUtf8("\320\262\321\201") << 7 << QLocale::NarrowFormat;
 }
 
 void tst_QLocale::dayName()
@@ -2107,9 +2149,15 @@ void tst_QLocale::standaloneDayName_data()
     QTest::newRow("C short") << QString("C") << QString("Sun") << 7 << QLocale::ShortFormat;
     QTest::newRow("C narrow") << QString("C") << QString("S") << 7 << QLocale::NarrowFormat;
 
-    QTest::newRow("ru_RU long")  << QString("ru_RU") << QString::fromUtf8("\320\262\320\276\321\201\320\272\321\200\320\265\321\201\320\265\320\275\321\214\320\265") << 7 << QLocale::LongFormat;
-    QTest::newRow("ru_RU short")  << QString("ru_RU") << QString::fromUtf8("\320\262\321\201") << 7 << QLocale::ShortFormat;
-    QTest::newRow("ru_RU narrow")  << QString("ru_RU") << QString::fromUtf8("\320\222") << 7 << QLocale::NarrowFormat;
+    QTest::newRow("ru_RU long")
+        << QString("ru_RU")
+        << QString::fromUtf8("\320\262\320\276\321\201\320\272\321\200\320"
+                             "\265\321\201\320\265\320\275\321\214\320\265")
+        << 7 << QLocale::LongFormat;
+    QTest::newRow("ru_RU short")
+        << QString("ru_RU") << QString::fromUtf8("\320\262\321\201") << 7 << QLocale::ShortFormat;
+    QTest::newRow("ru_RU narrow")
+        << QString("ru_RU") << QString::fromUtf8("\320\222") << 7 << QLocale::NarrowFormat;
 }
 
 void tst_QLocale::standaloneDayName()
@@ -2125,9 +2173,7 @@ void tst_QLocale::standaloneDayName()
 
 void tst_QLocale::underflowOverflow()
 {
-    QString
-a(QLatin1String("0.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001e10"));
-
+    QString a(QLatin1String("0.") + QString(546, QLatin1Char('0')) + QLatin1String("1e10"));
     bool ok = false;
     double d = a.toDouble(&ok);
     QVERIFY(!ok);
@@ -2306,8 +2352,10 @@ void tst_QLocale::monthName()
     QCOMPARE(de.monthName(12, QLocale::NarrowFormat), QLatin1String("D"));
 
     QLocale ru("ru_RU");
-    QCOMPARE(ru.monthName(1, QLocale::LongFormat), QString::fromUtf8("\321\217\320\275\320\262\320\260\321\200\321\217"));
-    QCOMPARE(ru.monthName(1, QLocale::ShortFormat), QString::fromUtf8("\321\217\320\275\320\262\56"));
+    QCOMPARE(ru.monthName(1, QLocale::LongFormat),
+             QString::fromUtf8("\321\217\320\275\320\262\320\260\321\200\321\217"));
+    QCOMPARE(ru.monthName(1, QLocale::ShortFormat),
+             QString::fromUtf8("\321\217\320\275\320\262\56"));
     QCOMPARE(ru.monthName(1, QLocale::NarrowFormat), QString::fromUtf8("\320\257"));
 
     QLocale ir("ga_IE");
@@ -2336,13 +2384,16 @@ void tst_QLocale::standaloneMonthName()
     // For de_DE locale Unicode CLDR database doesn't contain standalone long months
     // so just checking if the return value is the same as in monthName().
     QCOMPARE(de.standaloneMonthName(12, QLocale::LongFormat), QLatin1String("Dezember"));
-    QCOMPARE(de.standaloneMonthName(12, QLocale::LongFormat), de.monthName(12, QLocale::LongFormat));
+    QCOMPARE(de.standaloneMonthName(12, QLocale::LongFormat),
+             de.monthName(12, QLocale::LongFormat));
     QCOMPARE(de.standaloneMonthName(12, QLocale::ShortFormat), QLatin1String("Dez"));
     QCOMPARE(de.standaloneMonthName(12, QLocale::NarrowFormat), QLatin1String("D"));
 
     QLocale ru("ru_RU");
-    QCOMPARE(ru.standaloneMonthName(1, QLocale::LongFormat), QString::fromUtf8("\xd1\x8f\xd0\xbd\xd0\xb2\xd0\xb0\xd1\x80\xd1\x8c"));
-    QCOMPARE(ru.standaloneMonthName(1, QLocale::ShortFormat), QString::fromUtf8("\xd1\x8f\xd0\xbd\xd0\xb2."));
+    QCOMPARE(ru.standaloneMonthName(1, QLocale::LongFormat),
+             QString::fromUtf8("\xd1\x8f\xd0\xbd\xd0\xb2\xd0\xb0\xd1\x80\xd1\x8c"));
+    QCOMPARE(ru.standaloneMonthName(1, QLocale::ShortFormat),
+             QString::fromUtf8("\xd1\x8f\xd0\xbd\xd0\xb2."));
     QCOMPARE(ru.standaloneMonthName(1, QLocale::NarrowFormat), QString::fromUtf8("\xd0\xaf"));
 }
 
@@ -2367,19 +2418,30 @@ void tst_QLocale::currency()
     QCOMPARE(en_US.toCurrencyString(double(-1234.56), NULL, 4), QString("$-1,234.5600"));
 
     const QLocale ru_RU("ru_RU");
-    QCOMPARE(ru_RU.toCurrencyString(qulonglong(1234)), QString::fromUtf8("1" "\xc2\xa0" "234\xc2\xa0\xe2\x82\xbd"));
-    QCOMPARE(ru_RU.toCurrencyString(qlonglong(-1234)), QString::fromUtf8("-1" "\xc2\xa0" "234\xc2\xa0\xe2\x82\xbd"));
-    QCOMPARE(ru_RU.toCurrencyString(double(1234.56)), QString::fromUtf8("1" "\xc2\xa0" "234,56\xc2\xa0\xe2\x82\xbd"));
-    QCOMPARE(ru_RU.toCurrencyString(double(-1234.56)), QString::fromUtf8("-1" "\xc2\xa0" "234,56\xc2\xa0\xe2\x82\xbd"));
+    QCOMPARE(ru_RU.toCurrencyString(qulonglong(1234)),
+             QString::fromUtf8("1" "\xc2\xa0" "234\xc2\xa0\xe2\x82\xbd"));
+    QCOMPARE(ru_RU.toCurrencyString(qlonglong(-1234)),
+             QString::fromUtf8("-1" "\xc2\xa0" "234\xc2\xa0\xe2\x82\xbd"));
+    QCOMPARE(ru_RU.toCurrencyString(double(1234.56)),
+             QString::fromUtf8("1" "\xc2\xa0" "234,56\xc2\xa0\xe2\x82\xbd"));
+    QCOMPARE(ru_RU.toCurrencyString(double(-1234.56)),
+             QString::fromUtf8("-1" "\xc2\xa0" "234,56\xc2\xa0\xe2\x82\xbd"));
 
     const QLocale de_DE("de_DE");
-    QCOMPARE(de_DE.toCurrencyString(qulonglong(1234)), QString::fromUtf8("1.234\xc2\xa0\xe2\x82\xac"));
-    QCOMPARE(de_DE.toCurrencyString(qulonglong(1234), QLatin1String("BAZ")), QString::fromUtf8("1.234\xc2\xa0" "BAZ"));
-    QCOMPARE(de_DE.toCurrencyString(qlonglong(-1234)), QString::fromUtf8("-1.234\xc2\xa0\xe2\x82\xac"));
-    QCOMPARE(de_DE.toCurrencyString(qlonglong(-1234), QLatin1String("BAZ")), QString::fromUtf8("-1.234\xc2\xa0" "BAZ"));
-    QCOMPARE(de_DE.toCurrencyString(double(1234.56)), QString::fromUtf8("1.234,56\xc2\xa0\xe2\x82\xac"));
-    QCOMPARE(de_DE.toCurrencyString(double(-1234.56)), QString::fromUtf8("-1.234,56\xc2\xa0\xe2\x82\xac"));
-    QCOMPARE(de_DE.toCurrencyString(double(-1234.56), QLatin1String("BAZ")), QString::fromUtf8("-1.234,56\xc2\xa0" "BAZ"));
+    QCOMPARE(de_DE.toCurrencyString(qulonglong(1234)),
+             QString::fromUtf8("1.234\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(qulonglong(1234), QLatin1String("BAZ")),
+             QString::fromUtf8("1.234\xc2\xa0" "BAZ"));
+    QCOMPARE(de_DE.toCurrencyString(qlonglong(-1234)),
+             QString::fromUtf8("-1.234\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(qlonglong(-1234), QLatin1String("BAZ")),
+             QString::fromUtf8("-1.234\xc2\xa0" "BAZ"));
+    QCOMPARE(de_DE.toCurrencyString(double(1234.56)),
+             QString::fromUtf8("1.234,56\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(double(-1234.56)),
+             QString::fromUtf8("-1.234,56\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(double(-1234.56), QLatin1String("BAZ")),
+             QString::fromUtf8("-1.234,56\xc2\xa0" "BAZ"));
 
     const QLocale system = QLocale::system();
     QVERIFY(system.toCurrencyString(1, QLatin1String("FOO")).contains(QLatin1String("FOO")));
@@ -2390,11 +2452,13 @@ void tst_QLocale::quoteString()
     const QString someText("text");
     const QLocale c(QLocale::C);
     QCOMPARE(c.quoteString(someText), QString::fromUtf8("\x22" "text" "\x22"));
-    QCOMPARE(c.quoteString(someText, QLocale::AlternateQuotation), QString::fromUtf8("\x27" "text" "\x27"));
+    QCOMPARE(c.quoteString(someText, QLocale::AlternateQuotation),
+             QString::fromUtf8("\x27" "text" "\x27"));
 
     const QLocale de_CH("de_CH");
     QCOMPARE(de_CH.quoteString(someText), QString::fromUtf8("\xe2\x80\x9e" "text" "\xe2\x80\x9c"));
-    QCOMPARE(de_CH.quoteString(someText, QLocale::AlternateQuotation), QString::fromUtf8("\xe2\x80\x9a" "text" "\xe2\x80\x98"));
+    QCOMPARE(de_CH.quoteString(someText, QLocale::AlternateQuotation),
+             QString::fromUtf8("\xe2\x80\x9a" "text" "\xe2\x80\x98"));
 
 }
 
@@ -2476,8 +2540,11 @@ void tst_QLocale::listPatterns()
     QCOMPARE(zh_CN.createSeparatedList(sl1), QString(""));
     QCOMPARE(zh_CN.createSeparatedList(sl2), QString("aaa"));
     QCOMPARE(zh_CN.createSeparatedList(sl3), QString::fromUtf8("aaa" "\xe5\x92\x8c" "bbb"));
-    QCOMPARE(zh_CN.createSeparatedList(sl4), QString::fromUtf8("aaa" "\xe3\x80\x81" "bbb" "\xe5\x92\x8c" "ccc"));
-    QCOMPARE(zh_CN.createSeparatedList(sl5), QString::fromUtf8("aaa" "\xe3\x80\x81" "bbb" "\xe3\x80\x81" "ccc" "\xe5\x92\x8c" "ddd"));
+    QCOMPARE(zh_CN.createSeparatedList(sl4),
+             QString::fromUtf8("aaa" "\xe3\x80\x81" "bbb" "\xe5\x92\x8c" "ccc"));
+    QCOMPARE(zh_CN.createSeparatedList(sl5),
+             QString::fromUtf8("aaa" "\xe3\x80\x81" "bbb" "\xe3\x80\x81"
+                               "ccc" "\xe5\x92\x8c" "ddd"));
 }
 
 void tst_QLocale::measurementSystems()
@@ -2558,7 +2625,9 @@ void tst_QLocale::textDirection_data()
         case QLocale::Uighur:
         case QLocale::Urdu:
         case QLocale::Yiddish:
-            rightToLeft = QLocale(QLocale::Language(language)).language() == QLocale::Language(language); // false if there is no locale data for language
+            // false if there is no locale data for language:
+            rightToLeft = (QLocale(QLocale::Language(language)).language()
+                           == QLocale::Language(language));
             break;
         default:
             break;
