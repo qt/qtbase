@@ -6371,7 +6371,7 @@ int QString::localeAwareCompare(const QString &other) const
     return localeAwareCompare_helper(constData(), length(), other.constData(), other.length());
 }
 
-#if QT_CONFIG(icu) && !defined(Q_OS_WIN32) && !defined(Q_OS_DARWIN)
+#if QT_CONFIG(icu)
 Q_GLOBAL_STATIC(QThreadStorage<QCollator>, defaultCollator)
 #endif
 
@@ -6392,11 +6392,14 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
         return qt_compare_strings(QStringView(data1, length1), QStringView(data2, length2),
                                Qt::CaseSensitive);
 
-#if !QT_CONFIG(icu)
+#if QT_CONFIG(icu)
+    if (!defaultCollator()->hasLocalData())
+        defaultCollator()->setLocalData(QCollator());
+    return defaultCollator()->localData().compare(data1, length1, data2, length2);
+#else
     const QString lhs = QString::fromRawData(data1, length1).normalized(QString::NormalizationForm_C);
     const QString rhs = QString::fromRawData(data2, length2).normalized(QString::NormalizationForm_C);
-#endif
-#if defined(Q_OS_WIN)
+#  if defined(Q_OS_WIN)
     int res = CompareStringEx(LOCALE_NAME_USER_DEFAULT, 0, (LPWSTR)lhs.constData(), lhs.length(), (LPWSTR)rhs.constData(), rhs.length(), NULL, NULL, 0);
 
     switch (res) {
@@ -6407,7 +6410,7 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
     default:
         return 0;
     }
-#elif defined (Q_OS_DARWIN)
+#  elif defined (Q_OS_DARWIN)
     // Use CFStringCompare for comparing strings on Mac. This makes Qt order
     // strings the same way as native applications do, and also respects
     // the "Order for sorted lists" setting in the International preferences
@@ -6423,19 +6426,17 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
     CFRelease(thisString);
     CFRelease(otherString);
     return result;
-#elif QT_CONFIG(icu)
-    if (!defaultCollator()->hasLocalData())
-        defaultCollator()->setLocalData(QCollator());
-    return defaultCollator()->localData().compare(data1, length1, data2, length2);
-#elif defined(Q_OS_UNIX)
+#  elif defined(Q_OS_UNIX)
     // declared in <string.h>
     int delta = strcoll(lhs.toLocal8Bit().constData(), rhs.toLocal8Bit().constData());
     if (delta == 0)
         delta = qt_compare_strings(lhs, rhs, Qt::CaseSensitive);
     return delta;
-#else
+#  else
+#     error "This case shouldn't happen"
     return qt_compare_strings(lhs, rhs, Qt::CaseSensitive);
-#endif
+#  endif
+#endif // !QT_CONFIG(icu)
 }
 
 
