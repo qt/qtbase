@@ -37,6 +37,7 @@ class tst_QPalette : public QObject
 private Q_SLOTS:
     void roleValues_data();
     void roleValues();
+    void resolve();
     void copySemantics();
     void moveSemantics();
     void setBrush();
@@ -78,6 +79,43 @@ void tst_QPalette::roleValues()
     QFETCH(int, role);
     QFETCH(int, value);
     QCOMPARE(role, value);
+}
+
+void tst_QPalette::resolve()
+{
+    QPalette p1;
+    p1.setBrush(QPalette::WindowText, Qt::green);
+    p1.setBrush(QPalette::Button, Qt::green);
+
+    QVERIFY(p1.isBrushSet(QPalette::Active, QPalette::WindowText));
+    QVERIFY(p1.isBrushSet(QPalette::Active, QPalette::Button));
+
+    QPalette p2;
+    p2.setBrush(QPalette::WindowText, Qt::red);
+
+    QVERIFY(p2.isBrushSet(QPalette::Active, QPalette::WindowText));
+    QVERIFY(!p2.isBrushSet(QPalette::Active, QPalette::Button));
+
+    QPalette p1ResolvedTo2 = p1.resolve(p2);
+    // p1ResolvedTo2 gets everything from p1 and nothing copied from p2 because
+    // it already has a WindowText. That is two brushes, and to the same value
+    // as p1.
+    QCOMPARE(p1ResolvedTo2, p1);
+    QVERIFY(p1ResolvedTo2.isBrushSet(QPalette::Active, QPalette::WindowText));
+    QCOMPARE(p1.windowText(), p1ResolvedTo2.windowText());
+    QVERIFY(p1ResolvedTo2.isBrushSet(QPalette::Active, QPalette::Button));
+    QCOMPARE(p1.button(), p1ResolvedTo2.button());
+
+    QPalette p2ResolvedTo1 = p2.resolve(p1);
+    // p2ResolvedTo1 gets the WindowText set, and to the same value as the
+    // original p2, however, Button gets set from p1.
+    QVERIFY(p2ResolvedTo1.isBrushSet(QPalette::Active, QPalette::WindowText));
+    QCOMPARE(p2.windowText(), p2ResolvedTo1.windowText());
+    QVERIFY(p2ResolvedTo1.isBrushSet(QPalette::Active, QPalette::Button));
+    QCOMPARE(p1.button(), p2ResolvedTo1.button());
+
+    QVERIFY(p2ResolvedTo1 != p1);
+    QVERIFY(p2ResolvedTo1 != p2);
 }
 
 void tst_QPalette::copySemantics()

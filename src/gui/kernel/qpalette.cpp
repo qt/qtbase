@@ -941,7 +941,8 @@ qint64 QPalette::cacheKey() const
 }
 
 /*!
-    Returns a new QPalette that has attributes copied from \a other.
+    Returns a new QPalette that is a union of this instance and \a other.
+    Color roles set in this instance take precedence.
 */
 QPalette QPalette::resolve(const QPalette &other) const
 {
@@ -959,6 +960,7 @@ QPalette QPalette::resolve(const QPalette &other) const
         if (!(data.resolve_mask & (1<<role)))
             for(int grp = 0; grp < (int)NColorGroups; grp++)
                 palette.d->br[grp][role] = other.d->br[grp][role];
+    palette.data.resolve_mask |= other.data.resolve_mask;
 
     return palette;
 }
