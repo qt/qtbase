@@ -74,6 +74,10 @@ Q_DECLARE_METATYPE(MYSQL_STMT*)
 #  define Q_CLIENT_MULTI_STATEMENTS 0
 #endif
 
+#if MYSQL_VERSION_ID >= 80001
+using my_bool = bool;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QMYSQLDriverPrivate : public QSqlDriverPrivate
