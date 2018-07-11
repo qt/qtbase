@@ -89,7 +89,8 @@ QCollator::QCollator(const QLocale &locale)
 QCollator::QCollator(const QCollator &other)
     : d(other.d)
 {
-    d->ref.ref();
+    if (d)
+        d->ref.ref();
 }
 
 /*!

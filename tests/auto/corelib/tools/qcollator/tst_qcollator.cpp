@@ -72,6 +72,9 @@ void tst_QCollator::moveSemantics()
     QCOMPARE(c2.locale(), de_AT);
     QVERIFY(dpointer_is_null(c1));
 
+    QCollator c3(c1);
+    QVERIFY(dpointer_is_null(c3));
+
     c1 = std::move(c2);
     QCOMPARE(c1.locale(), de_AT);
     QVERIFY(dpointer_is_null(c2));
