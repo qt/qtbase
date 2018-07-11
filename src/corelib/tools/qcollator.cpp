@@ -165,8 +165,9 @@ void QCollator::detach()
         if (!d->ref.deref())
             delete d;
         d = x;
-        d->init();
     }
+    // All callers need this, because about to modify the object:
+    d->dirty = true;
 }
 
 /*!
@@ -179,7 +180,6 @@ void QCollator::setLocale(const QLocale &locale)
 
     detach();
     d->locale = locale;
-    d->dirty = true;
 }
 
 /*!
@@ -204,7 +204,6 @@ void QCollator::setCaseSensitivity(Qt::CaseSensitivity cs)
 
     detach();
     d->caseSensitivity = cs;
-    d->dirty = true;
 }
 
 /*!
@@ -242,7 +241,6 @@ void QCollator::setNumericMode(bool on)
 
     detach();
     d->numericMode = on;
-    d->dirty = true;
 }
 
 /*!
@@ -275,7 +273,6 @@ void QCollator::setIgnorePunctuation(bool on)
 
     detach();
     d->ignorePunctuation = on;
-    d->dirty = true;
 }
 
 /*!
