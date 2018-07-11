@@ -61,7 +61,7 @@ void QCollatorPrivate::init()
     collator = ucol_open(name.constData(), &status);
     if (U_FAILURE(status)) {
         qWarning("Could not create collator: %d", status);
-        collator = 0;
+        collator = nullptr;
         dirty = false;
         return;
     }
@@ -100,7 +100,7 @@ void QCollatorPrivate::cleanup()
 {
     if (collator)
         ucol_close(collator);
-    collator = 0;
+    collator = nullptr;
 }
 
 int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const

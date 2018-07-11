@@ -68,21 +68,25 @@ QT_BEGIN_NAMESPACE
 #if QT_CONFIG(icu)
 typedef UCollator *CollatorType;
 typedef QByteArray CollatorKeyType;
+const CollatorType NoCollator = nullptr;
 
 #elif defined(Q_OS_OSX)
 typedef CollatorRef CollatorType;
 typedef QVector<UCCollationValue> CollatorKeyType;
+const CollatorType NoCollator = 0;
 
 #elif defined(Q_OS_WIN)
 typedef QString CollatorKeyType;
 typedef int CollatorType;
+const CollatorType NoCollator = 0;
 #  ifdef Q_OS_WINRT
 #    define USE_COMPARESTRINGEX
 #  endif
 
-#else //posix
+#else // posix - ignores CollatorType collator, only handles system locale
 typedef QVector<wchar_t> CollatorKeyType;
 typedef int CollatorType;
+const CollatorType NoCollator = 0;
 #endif
 
 class QCollatorPrivate
@@ -102,14 +106,14 @@ public:
     bool ignorePunctuation = false;
     bool dirty = true;
 
-    CollatorType collator = 0;
+    CollatorType collator = NoCollator;
 
     QCollatorPrivate(const QLocale &locale) : locale(locale) {}
     ~QCollatorPrivate() { cleanup(); }
 
     void clear() {
         cleanup();
-        collator = 0;
+        collator = NoCollator;
     }
 
     // Implemented by each back-end, in its own way:
