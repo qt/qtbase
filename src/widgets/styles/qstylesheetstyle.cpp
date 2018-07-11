@@ -2905,10 +2905,7 @@ void QStyleSheetStyle::unpolish(QWidget *w)
     styleSheetCaches->renderRulesCache.remove(w);
     styleSheetCaches->styleSheetCache.remove(w);
     unsetPalette(w);
-    w->setProperty("_q_stylesheet_minw", QVariant());
-    w->setProperty("_q_stylesheet_minh", QVariant());
-    w->setProperty("_q_stylesheet_maxw", QVariant());
-    w->setProperty("_q_stylesheet_maxh", QVariant());
+    setGeometry(w);
     w->setAttribute(Qt::WA_StyleSheet, false);
     QObject::disconnect(w, 0, this, 0);
 #if QT_CONFIG(scrollarea)
