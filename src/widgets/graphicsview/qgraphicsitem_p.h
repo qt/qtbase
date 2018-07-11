@@ -500,7 +500,9 @@ public:
     quint32 filtersDescendantEvents : 1;
     quint32 sceneTransformTranslateOnly : 1;
     quint32 notifyBoundingRectChanged : 1;
-
+#ifdef Q_OS_HTML5
+    unsigned char :0; //this aligns 64bit field for wasm
+#endif
     // New 32 bits
     quint32 notifyInvalidated : 1;
     quint32 mouseSetsFocus : 1;
