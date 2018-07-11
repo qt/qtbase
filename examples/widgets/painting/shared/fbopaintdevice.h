@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
@@ -48,22 +48,44 @@
 **
 ****************************************************************************/
 
-#include "composition.h"
+#ifndef QFBOPAINTDEVICE_H
+#define QFBOPAINTDEVICE_H
 
-#include <QApplication>
+#ifndef QT_NO_OPENGL
 
-int main(int argc, char *argv[])
-{
-    QApplication app(argc, argv);
+#include <QImage>
+#include <QOpenGLFramebufferObject>
+#include <QOpenGLPaintDevice>
+#include <QSurface>
 
-    CompositionWidget compWidget(nullptr);
-    QStyle *arthurStyle = new ArthurStyle();
-    compWidget.setStyle(arthurStyle);
+class QFboPaintDevice : public QOpenGLPaintDevice {
+public:
+    QFboPaintDevice(const QSize&, bool flipped = false, bool clearOnInit = true,
+        QOpenGLFramebufferObject::Attachment = QOpenGLFramebufferObject::CombinedDepthStencil);
+    ~QFboPaintDevice();
 
-    QList<QWidget *> widgets = compWidget.findChildren<QWidget *>();
-    foreach (QWidget *w, widgets)
-        w->setStyle(arthurStyle);
-    compWidget.show();
+    // QOpenGLPaintDevice:
+    void ensureActiveTarget() override;
 
-    return app.exec();
-}
+    bool isValid() const { return m_framebufferObject->isValid(); }
+    GLuint handle() const { return m_framebufferObject->handle(); }
+    GLuint takeTexture();
+    QImage toImage() const;
+
+    bool bind() { return m_framebufferObject->bind(); }
+    bool release() { return m_framebufferObject->release(); }
+    QSize size() const { return m_framebufferObject->size(); }
+
+    QOpenGLFramebufferObject* framebufferObject() { return m_framebufferObject; }
+    const QOpenGLFramebufferObject* framebufferObject() const { return m_framebufferObject; }
+
+    static bool isSupported() { return QOpenGLFramebufferObject::hasOpenGLFramebufferObjects(); }
+
+private:
+    QOpenGLFramebufferObject *m_framebufferObject;
+    QSurface* m_surface;
+};
+
+#endif // QT_NO_OPENGL
+
+#endif // QFBOPAINTDEVICE_H

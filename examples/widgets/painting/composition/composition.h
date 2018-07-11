@@ -53,6 +53,11 @@
 
 #include "arthurwidgets.h"
 
+#if QT_CONFIG(opengl)
+#include "fbopaintdevice.h"
+#include <QOpenGLTextureBlitter>
+#endif
+
 #include <QPainter>
 #include <QEvent>
 
@@ -60,10 +65,6 @@ QT_BEGIN_NAMESPACE
 class QPushButton;
 class QRadioButton;
 QT_END_NAMESPACE
-
-#ifdef QT_OPENGL_SUPPORT
-#include <QtOpenGL>
-#endif
 
 class CompositionWidget : public QWidget
 {
@@ -186,12 +187,13 @@ private:
     bool m_animation_enabled;
     int m_animationTimer;
 
-#ifdef QT_OPENGL_SUPPORT
-    QGLPixelBuffer *m_pbuffer;
-    GLuint m_base_tex;
-    GLuint m_compositing_tex;
+#if QT_CONFIG(opengl)
+    QScopedPointer<QFboPaintDevice> m_fbo;
     int m_pbuffer_size; // width==height==size of pbuffer
+    uint m_base_tex;
+    uint m_compositing_tex;
     QSize m_previous_size;
+    QOpenGLTextureBlitter m_blitter;
 #endif
 };
 

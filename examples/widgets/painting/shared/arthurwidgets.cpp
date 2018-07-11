@@ -60,6 +60,10 @@
 #include <QTextBrowser>
 #include <QBoxLayout>
 #include <QRegularExpression>
+#include <QOffscreenSurface>
+#include <QOpenGLContext>
+#include <QOpenGLPaintDevice>
+#include <QOpenGLWindow>
 
 extern QPixmap cached(const QString &img);
 
@@ -67,17 +71,12 @@ ArthurFrame::ArthurFrame(QWidget *parent)
     : QWidget(parent)
     , m_prefer_image(false)
 {
-#ifdef QT_OPENGL_SUPPORT
-    glw = 0;
+#if QT_CONFIG(opengl)
+    m_glWindow = nullptr;
+    m_glWidget = nullptr;
     m_use_opengl = false;
-    QGLFormat f = QGLFormat::defaultFormat();
-    f.setSampleBuffers(true);
-    f.setStencil(true);
-    f.setAlpha(true);
-    f.setAlphaBufferSize(8);
-    QGLFormat::setDefaultFormat(f);
 #endif
-    m_document = 0;
+    m_document = nullptr;
     m_show_doc = false;
 
     m_tile = QPixmap(128, 128);
@@ -94,37 +93,55 @@ ArthurFrame::ArthurFrame(QWidget *parent)
 }
 
 
-#ifdef QT_OPENGL_SUPPORT
+#if QT_CONFIG(opengl)
 void ArthurFrame::enableOpenGL(bool use_opengl)
 {
     if (m_use_opengl == use_opengl)
         return;
 
-    if (!glw && use_opengl) {
-        glw = new GLWidget(this);
-        glw->setAutoFillBackground(false);
-        glw->disableAutoBufferSwap();
+    m_use_opengl = use_opengl;
+
+    if (!m_glWindow && use_opengl) {
+        createGlWindow();
         QApplication::postEvent(this, new QResizeEvent(size(), size()));
     }
 
-    m_use_opengl = use_opengl;
     if (use_opengl) {
-        glw->show();
+        m_glWidget->show();
     } else {
-        if (glw)
-            glw->hide();
+        if (m_glWidget)
+            m_glWidget->hide();
     }
 
     update();
 }
+
+void ArthurFrame::createGlWindow()
+{
+    Q_ASSERT(m_use_opengl);
+
+    m_glWindow = new QOpenGLWindow();
+    QSurfaceFormat f = QSurfaceFormat::defaultFormat();
+    f.setSamples(4);
+    f.setAlphaBufferSize(8);
+    f.setStencilBufferSize(8);
+    m_glWindow->setFormat(f);
+    m_glWindow->setFlags(Qt::WindowTransparentForInput);
+    m_glWindow->resize(width() - 1, height() - 1);
+    m_glWindow->create();
+    m_glWidget = QWidget::createWindowContainer(m_glWindow, this);
+}
 #endif
+
 
 void ArthurFrame::paintEvent(QPaintEvent *e)
 {
     static QImage *static_image = 0;
+
     QPainter painter;
+
     if (preferImage()
-#ifdef QT_OPENGL_SUPPORT
+#if QT_CONFIG(opengl)
         && !m_use_opengl
 #endif
         ) {
@@ -142,10 +159,12 @@ void ArthurFrame::paintEvent(QPaintEvent *e)
         painter.fillRect(0, height() - o, o, o, bg);
         painter.fillRect(width() - o, height() - o, o, o, bg);
     } else {
-#ifdef QT_OPENGL_SUPPORT
-        if (m_use_opengl) {
-            painter.begin(glw);
-            painter.fillRect(QRectF(0, 0, glw->width(), glw->height()), palette().color(backgroundRole()));
+#if QT_CONFIG(opengl)
+        if (m_use_opengl && m_glWindow->isValid()) {
+            m_glWindow->makeCurrent();
+
+            painter.begin(m_glWindow);
+            painter.fillRect(QRectF(0, 0, m_glWindow->width(), m_glWindow->height()), palette().color(backgroundRole()));
         } else {
             painter.begin(this);
         }
@@ -196,7 +215,7 @@ void ArthurFrame::paintEvent(QPaintEvent *e)
     painter.drawPath(clipPath);
 
     if (preferImage()
-#ifdef QT_OPENGL_SUPPORT
+#if QT_CONFIG(opengl)
         && !m_use_opengl
 #endif
         ) {
@@ -204,18 +223,17 @@ void ArthurFrame::paintEvent(QPaintEvent *e)
         painter.begin(this);
         painter.drawImage(e->rect(), *static_image, e->rect());
     }
-
-#ifdef QT_OPENGL_SUPPORT
-    if (m_use_opengl && (inherits("PathDeformRenderer") || inherits("PathStrokeRenderer") || inherits("CompositionRenderer") || m_show_doc))
-        glw->swapBuffers();
+#if QT_CONFIG(opengl)
+    if (m_use_opengl)
+        m_glWindow->update();
 #endif
 }
 
 void ArthurFrame::resizeEvent(QResizeEvent *e)
 {
-#ifdef QT_OPENGL_SUPPORT
-    if (glw)
-        glw->setGeometry(0, 0, e->size().width()-1, e->size().height()-1);
+#if QT_CONFIG(opengl)
+    if (m_glWidget)
+        m_glWidget->setGeometry(0, 0, e->size().width()-1, e->size().height()-1);
 #endif
     QWidget::resizeEvent(e);
 }
