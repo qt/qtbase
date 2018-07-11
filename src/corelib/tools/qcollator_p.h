@@ -104,18 +104,17 @@ public:
 
     CollatorType collator = 0;
 
+    QCollatorPrivate(const QLocale &locale) : locale(locale) {}
+    ~QCollatorPrivate() { cleanup(); }
+
     void clear() {
         cleanup();
         collator = 0;
     }
 
+    // Implemented by each back-end, in its own way:
     void init();
     void cleanup();
-
-    QCollatorPrivate()
-    { cleanup(); }
-
-    ~QCollatorPrivate() { cleanup(); }
 
 private:
     Q_DISABLE_COPY(QCollatorPrivate)

@@ -77,9 +77,8 @@ QT_BEGIN_NAMESPACE
     \sa setLocale()
  */
 QCollator::QCollator(const QLocale &locale)
-    : d(new QCollatorPrivate)
+    : d(new QCollatorPrivate(locale))
 {
-    d->locale = locale;
     d->init();
 }
 
@@ -158,8 +157,7 @@ QCollator &QCollator::operator=(const QCollator &other)
 void QCollator::detach()
 {
     if (d->ref.load() != 1) {
-        QCollatorPrivate *x = new QCollatorPrivate;
-        x->locale = d->locale;
+        QCollatorPrivate *x = new QCollatorPrivate(d->locale);
         if (!d->ref.deref())
             delete d;
         d = x;
