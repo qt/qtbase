@@ -230,6 +230,9 @@ void RCCFileInfo::writeDataInfo(RCCResourceLibrary &lib)
         static const quint64 sourceDate = 1000 * qgetenv("QT_RCC_SOURCE_DATE_OVERRIDE").toULongLong();
         if (sourceDate != 0)
             lastmod = sourceDate;
+        static const quint64 sourceDate2 = 1000 * qgetenv("SOURCE_DATE_EPOCH").toULongLong();
+        if (sourceDate2 != 0)
+            lastmod = sourceDate2;
         lib.writeNumber8(lastmod);
         if (text || pass1)
             lib.writeChar('\n');
