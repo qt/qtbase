@@ -1814,12 +1814,6 @@ static void setWinLocaleInfo(LCTYPE type, const QString &value)
 #  define LOCALE_SSHORTTIME 0x00000079
 #endif
 
-static inline LCTYPE shortTimeType()
-{
-    return (QSysInfo::windowsVersion() & QSysInfo::WV_NT_based) && QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7 ?
-        LOCALE_SSHORTTIME : LOCALE_STIMEFORMAT;
-}
-
 class RestoreLocaleHelper {
 public:
     RestoreLocaleHelper() {
@@ -1827,7 +1821,7 @@ public:
         m_thousand = getWinLocaleInfo(LOCALE_STHOUSAND);
         m_sdate = getWinLocaleInfo(LOCALE_SSHORTDATE);
         m_ldate = getWinLocaleInfo(LOCALE_SLONGDATE);
-        m_time = getWinLocaleInfo(shortTimeType());
+        m_time = getWinLocaleInfo(LOCALE_SSHORTTIME);
     }
 
     ~RestoreLocaleHelper() {
@@ -1836,7 +1830,7 @@ public:
         setWinLocaleInfo(LOCALE_STHOUSAND, m_thousand);
         setWinLocaleInfo(LOCALE_SSHORTDATE, m_sdate);
         setWinLocaleInfo(LOCALE_SLONGDATE, m_ldate);
-        setWinLocaleInfo(shortTimeType(), m_time);
+        setWinLocaleInfo(LOCALE_SSHORTTIME, m_time);
 
         // make sure QLocale::system() gets updated
         QLocalePrivate::updateSystemPrivate();
@@ -1846,14 +1840,9 @@ public:
 
 };
 
-#endif // Q_OS_WIN
-
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-
 void tst_QLocale::windowsDefaultLocale()
 {
     RestoreLocaleHelper systemLocale;
-    const bool win7OrLater = (QSysInfo::windowsVersion() & QSysInfo::WV_NT_based) && QSysInfo::windowsVersion();
     // set weird system defaults and make sure we're using them
     setWinLocaleInfo(LOCALE_SDECIMAL, QLatin1String("@"));
     setWinLocaleInfo(LOCALE_STHOUSAND, QLatin1String("?"));
@@ -1862,7 +1851,7 @@ void tst_QLocale::windowsDefaultLocale()
     const QString longDateFormat = QStringLiteral("d@M@yyyy");
     setWinLocaleInfo(LOCALE_SLONGDATE, longDateFormat);
     const QString shortTimeFormat = QStringLiteral("h^m^s");
-    setWinLocaleInfo(shortTimeType(), shortTimeFormat);
+    setWinLocaleInfo(LOCALE_SSHORTTIME, shortTimeFormat);
 
     // make sure QLocale::system() gets updated
     QLocalePrivate::updateSystemPrivate();
@@ -1876,8 +1865,8 @@ void tst_QLocale::windowsDefaultLocale()
     QCOMPARE(locale.timeFormat(QLocale::ShortFormat), shortTimeFormat);
     QCOMPARE(locale.dateTimeFormat(QLocale::ShortFormat),
              shortDateFormat + QLatin1Char(' ') + shortTimeFormat);
-    const QString expectedLongDateTimeFormat = longDateFormat + QLatin1Char(' ')
-        + (win7OrLater ? QStringLiteral("h:mm:ss AP") : shortTimeFormat);
+    const QString expectedLongDateTimeFormat
+        = longDateFormat + QLatin1Char(' ') + QStringLiteral("h:mm:ss AP");
     QCOMPARE(locale.dateTimeFormat(QLocale::LongFormat), expectedLongDateTimeFormat);
 
     // make sure we are using the system to parse them
@@ -1887,13 +1876,11 @@ void tst_QLocale::windowsDefaultLocale()
              locale.toString(QDate(1974, 12, 1), QLocale::ShortFormat));
     QCOMPARE(locale.toString(QDate(1974, 12, 1), QLocale::LongFormat), QString("1@12@1974"));
     const QString expectedFormattedShortTimeSeconds = QStringLiteral("1^2^3");
-    const QString expectedFormattedShortTime
-        = win7OrLater ? QStringLiteral("1^2") : expectedFormattedShortTimeSeconds;
+    const QString expectedFormattedShortTime = QStringLiteral("1^2");
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::ShortFormat), expectedFormattedShortTime);
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::NarrowFormat),
              locale.toString(QTime(1,2,3), QLocale::ShortFormat));
-    const QString expectedFormattedLongTime
-        = win7OrLater ? QStringLiteral("1:02:03 AM") : expectedFormattedShortTimeSeconds;
+    const QString expectedFormattedLongTime = QStringLiteral("1:02:03 AM");
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::LongFormat), expectedFormattedLongTime);
     QCOMPARE(locale.toString(QDateTime(QDate(1974, 12, 1), QTime(1,2,3)), QLocale::ShortFormat),
              QStringLiteral("1*12*1974 ") + expectedFormattedShortTime);
@@ -1903,7 +1890,7 @@ void tst_QLocale::windowsDefaultLocale()
              QStringLiteral("1@12@1974 ") + expectedFormattedLongTime);
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::LongFormat), expectedFormattedLongTime);
 }
-#endif // #ifdef Q_OS_WIN
+#endif // Q_OS_WIN but !Q_OS_WINRT
 
 void tst_QLocale::numberOptions()
 {
