@@ -1113,7 +1113,6 @@ bool QFileSystemEngine::cloneFile(int srcfd, int dstfd, const QFileSystemMetaDat
     QT_STATBUF statBuffer;
     if (knownData.hasFlags(QFileSystemMetaData::PosixStatFlags) &&
             knownData.isFile()) {
-        statBuffer.st_size = knownData.size();
         statBuffer.st_mode = S_IFREG;
     } else if (knownData.hasFlags(QFileSystemMetaData::PosixStatFlags) &&
                knownData.isDirectory()) {
@@ -1126,29 +1125,23 @@ bool QFileSystemEngine::cloneFile(int srcfd, int dstfd, const QFileSystemMetaDat
     }
 
 #if defined(Q_OS_LINUX)
-    if (statBuffer.st_size == 0) {
-        // empty file? we're done.
-        return true;
-    }
-
     // first, try FICLONE (only works on regular files and only on certain fs)
     if (::ioctl(dstfd, FICLONE, srcfd) == 0)
         return true;
 
     // Second, try sendfile (it can send to some special types too).
     // sendfile(2) is limited in the kernel to 2G - 4k
-    auto sendfileSize = [](QT_OFF_T size) { return size_t(qMin<qint64>(0x7ffff000, size)); };
+    const size_t SendfileSize = 0x7ffff000;
 
-    ssize_t n = ::sendfile(dstfd, srcfd, NULL, sendfileSize(statBuffer.st_size));
+    ssize_t n = ::sendfile(dstfd, srcfd, NULL, SendfileSize);
     if (n == -1) {
         // if we got an error here, give up and try at an upper layer
         return false;
     }
 
-    statBuffer.st_size -= n;
-    while (statBuffer.st_size) {
-        n = ::sendfile(dstfd, srcfd, NULL, sendfileSize(statBuffer.st_size));
-        if (n == 0) {
+    while (n) {
+        n = ::sendfile(dstfd, srcfd, NULL, SendfileSize);
+        if (n == -1) {
             // uh oh, this is probably a real error (like ENOSPC), but we have
             // no way to notify QFile of partial success, so just erase any work
             // done (hopefully we won't get any errors, because there's nothing
@@ -1158,9 +1151,6 @@ bool QFileSystemEngine::cloneFile(int srcfd, int dstfd, const QFileSystemMetaDat
             n = lseek(dstfd, 0, SEEK_SET);
             return false;
         }
-        if (n == 0)
-            return true;
-        statBuffer.st_size -= n;
     }
 
     return true;
