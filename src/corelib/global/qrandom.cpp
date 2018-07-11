@@ -46,7 +46,6 @@
 #include <qendian.h>
 #include <qmutex.h>
 #include <qobjectdefs.h>
-#include <qthreadstorage.h>
 
 #include <errno.h>
 

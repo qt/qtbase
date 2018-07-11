@@ -47,7 +47,6 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qdebug.h>
-#include <QtCore/qthreadstorage.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qatomic.h>
 #include <QtCore/qdatastream.h>
@@ -962,43 +961,24 @@ void QRegularExpressionPrivate::getPatternInfo()
     Simple "smartpointer" wrapper around a pcre2_jit_stack_16, to be used with
     QThreadStorage.
 */
-class QPcreJitStackPointer
+namespace {
+struct PcreJitStackFree
 {
-    Q_DISABLE_COPY(QPcreJitStackPointer)
-
-public:
-    /*!
-        \internal
-    */
-    QPcreJitStackPointer()
-    {
-        // The default JIT stack size in PCRE is 32K,
-        // we allocate from 32K up to 512K.
-        stack = pcre2_jit_stack_create_16(32 * 1024, 512 * 1024, nullptr);
-    }
-    /*!
-        \internal
-    */
-    ~QPcreJitStackPointer()
+    void operator()(pcre2_jit_stack_16 *stack)
     {
         if (stack)
             pcre2_jit_stack_free_16(stack);
     }
-
-    pcre2_jit_stack_16 *stack;
 };
-
-Q_GLOBAL_STATIC(QThreadStorage<QPcreJitStackPointer *>, jitStacks)
+static thread_local std::unique_ptr<pcre2_jit_stack_16, PcreJitStackFree> jitStacks;
+}
 
 /*!
     \internal
 */
 static pcre2_jit_stack_16 *qtPcreCallback(void *)
 {
-    if (jitStacks()->hasLocalData())
-        return jitStacks()->localData()->stack;
-
-    return nullptr;
+    return jitStacks.get();
 }
 
 /*!
@@ -1094,9 +1074,10 @@ static int safe_pcre2_match_16(const pcre2_code_16 *code,
     int result = pcre2_match_16(code, subject, length,
                                 startOffset, options, matchData, matchContext);
 
-    if (result == PCRE2_ERROR_JIT_STACKLIMIT && !jitStacks()->hasLocalData()) {
-        QPcreJitStackPointer *p = new QPcreJitStackPointer;
-        jitStacks()->setLocalData(p);
+    if (result == PCRE2_ERROR_JIT_STACKLIMIT && !jitStacks) {
+        // The default JIT stack size in PCRE is 32K,
+        // we allocate from 32K up to 512K.
+        jitStacks.reset(pcre2_jit_stack_create_16(32 * 1024, 512 * 1024, NULL));
 
         result = pcre2_match_16(code, subject, length,
                                 startOffset, options, matchData, matchContext);

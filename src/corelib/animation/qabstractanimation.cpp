@@ -149,7 +149,6 @@
 #include "qabstractanimation_p.h"
 
 #include <QtCore/qmath.h>
-#include <QtCore/qthreadstorage.h>
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qpointer.h>
 #include <QtCore/qscopedvaluerollback.h>
@@ -214,8 +213,6 @@ typedef QList<QAbstractAnimation*>::ConstIterator AnimationListConstIt;
     QUnifiedTimer drives animations indirectly, via QAbstractAnimationTimer.
 */
 
-Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
-
 QUnifiedTimer::QUnifiedTimer() :
     QObject(), defaultDriver(this), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL),
     currentAnimationIdx(0), insideTick(false), insideRestart(false), consistentTiming(false), slowMode(false),
@@ -233,11 +230,12 @@ QUnifiedTimer::~QUnifiedTimer()
 QUnifiedTimer *QUnifiedTimer::instance(bool create)
 {
     QUnifiedTimer *inst;
-    if (create && !unifiedTimer()->hasLocalData()) {
+    static thread_local std::unique_ptr<QUnifiedTimer> unifiedTimer;
+    if (create && !unifiedTimer) {
         inst = new QUnifiedTimer;
-        unifiedTimer()->setLocalData(inst);
+        unifiedTimer.reset(inst);
     } else {
-        inst = unifiedTimer() ? unifiedTimer()->localData() : nullptr;
+        inst = unifiedTimer.get();
     }
     return inst;
 }
@@ -550,10 +548,6 @@ bool QUnifiedTimer::canUninstallAnimationDriver(QAnimationDriver *d)
     return d == driver && driver != &defaultDriver;
 }
 
-#if QT_CONFIG(thread)
-Q_GLOBAL_STATIC(QThreadStorage<QAnimationTimer *>, animationTimer)
-#endif
-
 QAnimationTimer::QAnimationTimer() :
     QAbstractAnimationTimer(), lastTick(0),
     currentAnimationIdx(0), insideTick(false),
@@ -569,11 +563,12 @@ QAnimationTimer *QAnimationTimer::instance(bool create)
 {
     QAnimationTimer *inst;
 #if QT_CONFIG(thread)
-    if (create && !animationTimer()->hasLocalData()) {
+    static thread_local std::unique_ptr<QAnimationTimer> animationTimer;
+    if (create && !animationTimer) {
         inst = new QAnimationTimer;
-        animationTimer()->setLocalData(inst);
+        animationTimer.reset(inst);
     } else {
-        inst = animationTimer() ? animationTimer()->localData() : nullptr;
+        inst = animationTimer.get();
     }
 #else
     Q_UNUSED(create);
