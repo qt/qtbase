@@ -88,7 +88,7 @@ typedef int CollatorType;
 class QCollatorPrivate
 {
 public:
-    QAtomicInt ref;
+    QAtomicInt ref = 1;
     QLocale locale;
 #if defined(Q_OS_WIN) && !QT_CONFIG(icu)
 #ifdef USE_COMPARESTRINGEX
@@ -97,12 +97,12 @@ public:
     LCID localeID;
 #endif
 #endif
-    Qt::CaseSensitivity caseSensitivity;
-    bool numericMode;
-    bool ignorePunctuation;
-    bool dirty;
+    Qt::CaseSensitivity caseSensitivity = Qt::CaseSensitive;
+    bool numericMode = false;
+    bool ignorePunctuation = false;
+    bool dirty = true;
 
-    CollatorType collator;
+    CollatorType collator = 0;
 
     void clear() {
         cleanup();
@@ -113,12 +113,6 @@ public:
     void cleanup();
 
     QCollatorPrivate()
-        : ref(1),
-          caseSensitivity(Qt::CaseSensitive),
-          numericMode(false),
-          ignorePunctuation(false),
-          dirty(true),
-          collator(0)
     { cleanup(); }
 
     ~QCollatorPrivate() { cleanup(); }
