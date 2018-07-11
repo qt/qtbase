@@ -159,9 +159,7 @@ void QCollator::detach()
 {
     if (d->ref.load() != 1) {
         QCollatorPrivate *x = new QCollatorPrivate;
-        x->ref.store(1);
         x->locale = d->locale;
-        x->collator = 0;
         if (!d->ref.deref())
             delete d;
         d = x;
