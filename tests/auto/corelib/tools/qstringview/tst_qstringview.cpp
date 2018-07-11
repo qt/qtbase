@@ -217,6 +217,8 @@ private Q_SLOTS:
 #endif
     }
 
+    void comparison();
+
 private:
     template <typename String>
     void conversion_tests(String arg) const;
@@ -613,6 +615,24 @@ void tst_QStringView::conversion_tests(String string) const
         QCOMPARE(sv2, sv);
         QCOMPARE(sv2, string);
     }
+}
+
+void tst_QStringView::comparison()
+{
+    const QStringView aa = QStringViewLiteral("aa");
+    const QStringView upperAa = QStringViewLiteral("AA");
+    const QStringView bb = QStringViewLiteral("bb");
+
+    QVERIFY(aa == aa);
+    QVERIFY(aa != bb);
+    QVERIFY(aa < bb);
+    QVERIFY(bb > aa);
+
+    QCOMPARE(aa.compare(aa), 0);
+    QVERIFY(aa.compare(upperAa) != 0);
+    QCOMPARE(aa.compare(upperAa, Qt::CaseInsensitive), 0);
+    QVERIFY(aa.compare(bb) < 0);
+    QVERIFY(bb.compare(aa) > 0);
 }
 
 QTEST_APPLESS_MAIN(tst_QStringView)
