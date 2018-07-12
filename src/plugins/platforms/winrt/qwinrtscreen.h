@@ -128,6 +128,15 @@ public:
     void setCursorRect(const QRectF &cursorRect);
     void setKeyboardRect(const QRectF &keyboardRect);
 
+    enum class MousePositionTransition {
+        MovedOut,
+        MovedIn,
+        StayedIn,
+        StayedOut
+    };
+
+    void emulateMouseMove(const QPointF &point, MousePositionTransition transition);
+
 private:
     void handleExpose();
 

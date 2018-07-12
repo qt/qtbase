@@ -491,6 +491,7 @@ public:
     QAtomicPointer<QWinRTWindow> keyboardGrabWindow;
     QWindow *currentPressWindow = nullptr;
     QWindow *currentTargetWindow = nullptr;
+    bool firstMouseMove = true;
 };
 
 // To be called from the XAML thread
@@ -850,6 +851,7 @@ void QWinRTScreen::addWindow(QWindow *window)
     }
 
     handleExpose();
+    d->firstMouseMove = true;
     QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 
 #if QT_CONFIG(draganddrop)
@@ -1091,6 +1093,7 @@ HRESULT QWinRTScreen::onPointerEntered(ICoreWindow *, IPointerEventArgs *args)
             d->currentTargetWindow = d->mouseGrabWindow.load()->window();
 
         QWindowSystemInterface::handleEnterEvent(d->currentTargetWindow, pos, pos);
+        d->firstMouseMove = false;
     }
     return S_OK;
 }
@@ -1313,6 +1316,62 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
     }
 
     return S_OK;
+}
+
+void QWinRTScreen::emulateMouseMove(const QPointF &point, MousePositionTransition transition)
+{
+    Q_D(QWinRTScreen);
+    if (transition == MousePositionTransition::StayedOut)
+        return;
+    qt_winrt_lastPointerPoint = nullptr;
+    const QPointF pos(point.x() * d->scaleFactor, point.y() * d->scaleFactor);
+    QPointF localPos = pos;
+
+    const QPoint posPoint = pos.toPoint();
+    QWindow *windowUnderPointer = windowAt(QHighDpiScaling::mapPositionFromNative(posPoint, this));
+    d->currentTargetWindow = windowUnderPointer;
+
+    if (d->mouseGrabWindow)
+        d->currentTargetWindow = d->mouseGrabWindow.load()->window();
+
+    if (d->currentTargetWindow) {
+        const QPointF globalPosDelta = pos - posPoint;
+        localPos = d->currentTargetWindow->mapFromGlobal(posPoint) + globalPosDelta;
+    }
+
+    // In case of a mouse grab we have to store the target of a press event
+    // to be able to send one additional release event to this target when the mouse
+    // button is released. This is a similar approach to AutoMouseCapture in the
+    // windows qpa backend. Otherwise the release might not be propagated and the original
+    // press event receiver considers a button to still be pressed, as in Qt Quick Controls 1
+    // menus.
+    if (d->currentPressWindow && d->mouseGrabWindow) {
+        const QPointF globalPosDelta = pos - posPoint;
+        const QPointF localPressPos = d->currentPressWindow->mapFromGlobal(posPoint) + globalPosDelta;
+
+        QWindowSystemInterface::handleMouseEvent(d->currentPressWindow, localPressPos, pos,
+                                                 Qt::NoButton, Qt::NoModifier);
+        d->currentPressWindow = nullptr;
+    }
+    // If the mouse button is released outside of a window, targetWindow is 0, but the event
+    // has to be delivered to the window, that initially received the mouse press. Do not reset
+    // d->currentTargetWindow though, as it is used (and reset) in onPointerExited.
+    if (d->currentPressWindow && !d->currentTargetWindow) {
+        d->currentTargetWindow = d->currentPressWindow;
+        d->currentPressWindow = nullptr;
+    }
+
+    if (transition == MousePositionTransition::MovedOut) {
+        QWindowSystemInterface::handleLeaveEvent(d->currentTargetWindow);
+        return;
+    }
+
+    if (transition == MousePositionTransition::MovedIn || d->firstMouseMove) {
+        QWindowSystemInterface::handleEnterEvent(d->currentTargetWindow, localPos, pos);
+        d->firstMouseMove = false;
+    }
+    QWindowSystemInterface::handleMouseEvent(d->currentTargetWindow, localPos, pos, Qt::NoButton,
+                                             Qt::NoModifier);
 }
 
 HRESULT QWinRTScreen::onActivated(ICoreWindow *, IWindowActivatedEventArgs *args)

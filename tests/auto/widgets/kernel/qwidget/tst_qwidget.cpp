@@ -9119,8 +9119,6 @@ void tst_QWidget::syntheticEnterLeave()
     QCOMPARE(child1->numLeaveEvents, 0);
 
     // This event arrives asynchronously
-    if (m_platform == QStringLiteral("winrt"))
-        QEXPECT_FAIL("", "WinRT: This fails. QTBUG-68297.", Abort);
     QTRY_COMPARE(window.numEnterEvents, 1);
     QCOMPARE(child2->numEnterEvents, 1);
     QCOMPARE(grandChild->numEnterEvents, 1);
@@ -9205,8 +9203,6 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
 
      QCursor::setPos(child.mapToGlobal(QPoint(100, 100)));
      // Make sure the cursor has entered the child.
-     if (m_platform == QStringLiteral("winrt"))
-         QEXPECT_FAIL("", "WinRT: This fails. QTBUG-68297.", Abort);
      QTRY_VERIFY(child.numEnterEvents > 0);
 
      child.hide();

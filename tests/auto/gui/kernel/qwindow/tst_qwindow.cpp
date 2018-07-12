@@ -2104,8 +2104,6 @@ void tst_QWindow::modalWindowEnterEventOnHide_QTBUG35109()
 
         // Wait for the enter event. It must be delivered here, otherwise second
         // compare can PASS because of this event even after "resetCounters()".
-        if (isPlatformWinRT())
-            QEXPECT_FAIL("", "WinRT does not support QCursor::setPos.", Abort);
         QTRY_COMPARE(root.enterEventCount, 1);
         QTRY_COMPARE(root.leaveEventCount, 0);
 
@@ -2126,6 +2124,9 @@ void tst_QWindow::modalWindowEnterEventOnHide_QTBUG35109()
         root.resetCounters();
         modal.close();
 
+        if (isPlatformWinRT())
+            QEXPECT_FAIL("", "WinRT does not trigger the enter event correctly"
+                         "- QTBUG-68297.", Abort);
         // Check for the enter event
         QTRY_COMPARE(root.enterEventCount, 1);
     }

@@ -1238,9 +1238,6 @@ void tst_QAbstractItemView::task200665_itemEntered()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QCursor::setPos(view.geometry().center());
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "QCursor::setPos does not work on WinRT", Abort);
-#endif
     QTRY_COMPARE(QCursor::pos(), view.geometry().center());
     QSignalSpy spy(&view, SIGNAL(entered(QModelIndex)));
     view.verticalScrollBar()->setValue(view.verticalScrollBar()->maximum());

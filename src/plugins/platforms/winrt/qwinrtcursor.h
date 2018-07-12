@@ -54,6 +54,7 @@ public:
     void changeCursor(QCursor * windowCursor, QWindow *window) override;
 #endif
     QPoint pos() const override;
+    void setPos(const QPoint &pos) override;
 
 private:
     QScopedPointer<QWinRTCursorPrivate> d_ptr;
