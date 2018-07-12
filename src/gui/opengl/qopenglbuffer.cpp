@@ -371,7 +371,7 @@ void QOpenGLBuffer::write(int offset, const void *data, int count)
 {
 #ifndef QT_NO_DEBUG
     if (!isCreated())
-        qWarning("QOpenGLBuffer::allocate(): buffer not created");
+        qWarning("QOpenGLBuffer::write(): buffer not created");
 #endif
     Q_D(QOpenGLBuffer);
     if (d->guard && d->guard->id())
