@@ -1200,7 +1200,7 @@ const QString::Null QString::null = { };
     \ingroup string-processing
 
     QString stores a string of 16-bit \l{QChar}s, where each QChar
-    corresponds one Unicode 4.0 character. (Unicode characters
+    corresponds to one UTF-16 code unit. (Unicode characters
     with code values above 65535 are stored using surrogate pairs,
     i.e., two consecutive \l{QChar}s.)
 
