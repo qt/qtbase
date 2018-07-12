@@ -352,7 +352,7 @@ QCocoaKeyMapper::~QCocoaKeyMapper()
 
 Qt::KeyboardModifiers QCocoaKeyMapper::queryKeyboardModifiers()
 {
-    return qt_mac_get_modifiers(GetCurrentEventKeyModifiers());
+    return qt_mac_get_modifiers(GetCurrentKeyModifiers());
 }
 
 bool QCocoaKeyMapper::updateKeyboard()
