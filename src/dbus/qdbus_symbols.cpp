@@ -126,14 +126,16 @@ bool qdbus_loadLibDBus()
 #endif
 }
 
-#if QT_CONFIG(library)
 void (*qdbus_resolve_conditionally(const char *name))()
 {
+#if QT_CONFIG(library)
     if (qdbus_loadLibDBus())
         return qdbus_libdbus->resolve(name);
+#else
+    Q_UNUSED(name);
+#endif
     return 0;
 }
-#endif
 
 void (*qdbus_resolve_me(const char *name))()
 {
