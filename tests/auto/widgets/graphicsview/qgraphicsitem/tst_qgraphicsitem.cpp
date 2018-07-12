@@ -4145,14 +4145,14 @@ void tst_QGraphicsItem::ensureVisible()
 #ifndef QT_NO_CURSOR
 void tst_QGraphicsItem::cursor()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("QTest::mouseMove does not work on WinRT - QTBUG-68297");
-#endif
     QGraphicsScene scene;
-    QGraphicsRectItem *item1 = scene.addRect(QRectF(0, 0, 50, 50));
-    QGraphicsRectItem *item2 = scene.addRect(QRectF(0, 0, 50, 50));
-    item1->setPos(-100, 0);
-    item2->setPos(50, 0);
+    QWidget topLevel;
+    QGraphicsView view(&scene,&topLevel);
+    topLevel.showMaximized();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    view.setFixedSize(topLevel.size());
+    QGraphicsRectItem *item1 = scene.addRect(QRectF(-100, 0, 50, 50));
+    QGraphicsRectItem *item2 = scene.addRect(QRectF(50, 0, 50, 50));
 
     QVERIFY(!item1->hasCursor());
     QVERIFY(!item2->hasCursor());
@@ -4177,14 +4177,6 @@ void tst_QGraphicsItem::cursor()
 
     item1->setCursor(Qt::IBeamCursor);
     item2->setCursor(Qt::PointingHandCursor);
-
-    QWidget topLevel;
-    topLevel.resize(250, 150);
-    QTestPrivate::centerOnScreen(&topLevel);
-    QGraphicsView view(&scene,&topLevel);
-    view.setFixedSize(200, 100);
-    topLevel.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
 
     QTest::mouseMove(&view, view.rect().center());
 
