@@ -120,7 +120,14 @@ private:
     bool checkSslErrors();
     bool startHandshake();
 
+    bool isHandshakeComplete() const {return connectionEncrypted && !renegotiating;}
+
+    // IO callbacks:
+    static OSStatus ReadCallback(QSslSocketBackendPrivate *socket, char *data, size_t *dataLength);
+    static OSStatus WriteCallback(QSslSocketBackendPrivate *plainSocket, const char *data, size_t *dataLength);
+
     QSecureTransportContext context;
+    bool renegotiating = false;
 
     Q_DISABLE_COPY(QSslSocketBackendPrivate)
 };

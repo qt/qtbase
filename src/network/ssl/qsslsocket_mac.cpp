@@ -48,6 +48,7 @@
 
 #include <QtCore/qmessageauthenticationcode.h>
 #include <QtCore/qoperatingsystemversion.h>
+#include <QtCore/qscopedvaluerollback.h>
 #include <QtCore/qcryptographichash.h>
 #include <QtCore/qsystemdetection.h>
 #include <QtCore/qdatastream.h>
@@ -231,11 +232,34 @@ static const uint8_t dhparam[] =
     "\x90\x0b\x35\x64\xff\xd9\xe3\xac\xf2\xf2\xeb\x3a\x63\x02\x01\x02";
 #endif
 
-static OSStatus _q_SSLRead(QTcpSocket *plainSocket, char *data, size_t *dataLength)
+OSStatus QSslSocketBackendPrivate::ReadCallback(QSslSocketBackendPrivate *socket,
+                                                char *data, size_t *dataLength)
 {
-    Q_ASSERT(plainSocket);
+    Q_ASSERT(socket);
     Q_ASSERT(data);
     Q_ASSERT(dataLength);
+
+    QTcpSocket *plainSocket = socket->plainSocket;
+    Q_ASSERT(plainSocket);
+
+    if (socket->isHandshakeComplete()) {
+        // Check if it's a renegotiation attempt, when the handshake is complete, the
+        // session state is 'kSSLConnected':
+        SSLSessionState currentState = kSSLConnected;
+        const OSStatus result = SSLGetSessionState(socket->context, &currentState);
+        if (result != noErr) {
+            *dataLength = 0;
+            return result;
+        }
+
+        if (currentState == kSSLHandshake) {
+            // Renegotiation detected, don't allow read more yet - 'transmit'
+            // will notice this and will call 'startHandshake':
+            *dataLength = 0;
+            socket->renegotiating = true;
+            return errSSLWouldBlock;
+        }
+    }
 
     const qint64 bytes = plainSocket->read(data, *dataLength);
 #ifdef QSSLSOCKET_DEBUG
@@ -252,11 +276,15 @@ static OSStatus _q_SSLRead(QTcpSocket *plainSocket, char *data, size_t *dataLeng
     return err;
 }
 
-static OSStatus _q_SSLWrite(QTcpSocket *plainSocket, const char *data, size_t *dataLength)
+OSStatus QSslSocketBackendPrivate::WriteCallback(QSslSocketBackendPrivate *socket,
+                                                 const char *data, size_t *dataLength)
 {
-    Q_ASSERT(plainSocket);
+    Q_ASSERT(socket);
     Q_ASSERT(data);
     Q_ASSERT(dataLength);
+
+    QTcpSocket *plainSocket = socket->plainSocket;
+    Q_ASSERT(plainSocket);
 
     const qint64 bytes = plainSocket->write(data, *dataLength);
 #ifdef QSSLSOCKET_DEBUG
@@ -407,7 +435,9 @@ void QSslSocketBackendPrivate::continueHandshake()
     }
 #endif // QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE
 
-    emit q->encrypted();
+    if (!renegotiating)
+        emit q->encrypted();
+
     if (autoStartHandshake && pendingClose) {
         pendingClose = false;
         q->disconnectFromHost();
@@ -505,10 +535,10 @@ void QSslSocketBackendPrivate::transmit()
     if (!context || shutdown)
         return;
 
-    if (!connectionEncrypted)
+    if (!isHandshakeComplete())
         startHandshake();
 
-    if (connectionEncrypted && !writeBuffer.isEmpty()) {
+    if (isHandshakeComplete() && !writeBuffer.isEmpty()) {
         qint64 totalBytesWritten = 0;
         while (writeBuffer.nextDataBlockSize() > 0 && context) {
             const size_t nextDataBlockSize = writeBuffer.nextDataBlockSize();
@@ -543,7 +573,7 @@ void QSslSocketBackendPrivate::transmit()
         }
     }
 
-    if (connectionEncrypted) {
+    if (isHandshakeComplete()) {
         QVarLengthArray<char, 4096> data;
         while (context && (!readBufferMaxSize || buffer.size() < readBufferMaxSize)) {
             size_t readBytes = 0;
@@ -560,6 +590,11 @@ void QSslSocketBackendPrivate::transmit()
             } else if (err != errSecSuccess && err != errSSLWouldBlock) {
                 setErrorAndEmit(QAbstractSocket::SslInternalError,
                                 QStringLiteral("SSLRead failed: %1").arg(err));
+                break;
+            }
+
+            if (err == errSSLWouldBlock && renegotiating) {
+                startHandshake();
                 break;
             }
 
@@ -845,8 +880,9 @@ bool QSslSocketBackendPrivate::initSslContext()
         return false;
     }
 
-    const OSStatus err = SSLSetIOFuncs(context, reinterpret_cast<SSLReadFunc>(&_q_SSLRead),
-                                       reinterpret_cast<SSLWriteFunc>(&_q_SSLWrite));
+    const OSStatus err = SSLSetIOFuncs(context,
+                                       reinterpret_cast<SSLReadFunc>(&QSslSocketBackendPrivate::ReadCallback),
+                                       reinterpret_cast<SSLWriteFunc>(&QSslSocketBackendPrivate::WriteCallback));
     if (err != errSecSuccess) {
         destroySslContext();
         setErrorAndEmit(QAbstractSocket::SslInternalError,
@@ -854,7 +890,7 @@ bool QSslSocketBackendPrivate::initSslContext()
         return false;
     }
 
-    SSLSetConnection(context, plainSocket);
+    SSLSetConnection(context, this);
 
     if (mode == QSslSocket::SslServerMode
         && !configuration.localCertificateChain.isEmpty()) {
@@ -1406,6 +1442,7 @@ bool QSslSocketBackendPrivate::startHandshake()
         // Failure means a real error (invalid certificate, no private key, etc).
         if (!setSessionCertificate(errorDescription, errorCode)) {
             setErrorAndEmit(errorCode, errorDescription);
+            renegotiating = false;
             return false;
         } else {
             // We try to resume a handshake, even if have no
@@ -1420,6 +1457,7 @@ bool QSslSocketBackendPrivate::startHandshake()
             return startHandshake();
         }
 
+        renegotiating = false;
         setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
                         QStringLiteral("SSLHandshake failed: %1").arg(err));
         plainSocket->disconnectFromHost();
@@ -1429,6 +1467,7 @@ bool QSslSocketBackendPrivate::startHandshake()
     // Connection aborted during handshake phase.
     if (q->state() != QAbstractSocket::ConnectedState) {
         qCDebug(lcSsl) << "connection aborted";
+        renegotiating = false;
         return false;
     }
 
@@ -1437,13 +1476,16 @@ bool QSslSocketBackendPrivate::startHandshake()
     if (!verifySessionProtocol()) {
         setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError, QStringLiteral("Protocol version mismatch"));
         plainSocket->disconnectFromHost();
+        renegotiating = false;
         return false;
     }
 
     if (verifyPeerTrust()) {
         continueHandshake();
+        renegotiating = false;
         return true;
     } else {
+        renegotiating = false;
         return false;
     }
 }
