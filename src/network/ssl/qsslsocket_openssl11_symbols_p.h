@@ -147,11 +147,6 @@ typedef int (*DgramDestroyCallback) (BIO *);
 int q_DTLSv1_listen(SSL *s, BIO_ADDR *client);
 BIO_ADDR *q_BIO_ADDR_new();
 void q_BIO_ADDR_free(BIO_ADDR *ap);
-int q_BIO_ADDR_family(const BIO_ADDR *ap);
-unsigned short q_BIO_ADDR_rawport(const BIO_ADDR *ap);
-int q_BIO_ADDR_rawaddress(const BIO_ADDR *ap, void *p, size_t *l);
-int q_BIO_ADDR_rawmake(BIO_ADDR *ap, int family, const void *where, size_t wherelen,
-                       unsigned short port);
 
 // API we need for a custom dgram BIO:
 BIO_METHOD *q_BIO_meth_new(int type, const char *name);

@@ -485,7 +485,6 @@ void q_PKCS12_free(PKCS12 *pkcs12);
 
 #define q_BIO_get_mem_data(b, pp) (int)q_BIO_ctrl(b,BIO_CTRL_INFO,0,(char *)pp)
 #define q_BIO_pending(b) (int)q_BIO_ctrl(b,BIO_CTRL_PENDING,0,NULL)
-#define q_BIO_dgram_get_peer(b, peer) (int)q_BIO_ctrl(b, BIO_CTRL_DGRAM_GET_PEER, 0, (char *)peer)
 #define q_SSL_CTX_set_mode(ctx,op) q_SSL_CTX_ctrl((ctx),SSL_CTRL_MODE,(op),NULL)
 #define q_sk_GENERAL_NAME_num(st) q_SKM_sk_num(GENERAL_NAME, (st))
 #define q_sk_GENERAL_NAME_value(st, i) q_SKM_sk_value(GENERAL_NAME, (st), (i))
@@ -547,7 +546,6 @@ const SSL_METHOD *q_DTLS_client_method();
 void *q_X509_STORE_CTX_get_ex_data(X509_STORE_CTX *ctx, int idx);
 int q_SSL_get_ex_data_X509_STORE_CTX_idx();
 
-#define q_DTLS_get_link_min_mtu(ssl) q_SSL_ctrl((ssl), DTLS_CTRL_GET_LINK_MIN_MTU, 0, nullptr)
 #define q_DTLS_set_link_mtu(ssl, mtu) q_SSL_ctrl((ssl), DTLS_CTRL_SET_LINK_MTU, (mtu), nullptr)
 #define q_DTLSv1_get_timeout(ssl, arg) q_SSL_ctrl(ssl, DTLS_CTRL_GET_TIMEOUT, 0, arg)
 #define q_DTLSv1_handle_timeout(ssl) q_SSL_ctrl(ssl, DTLS_CTRL_HANDLE_TIMEOUT, 0, nullptr)
