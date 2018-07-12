@@ -398,11 +398,12 @@ void QHttpNetworkConnectionPrivate::copyCredentials(int fromChannel, QAuthentica
 {
     Q_ASSERT(auth);
 
-    // NTLM is a multi phase authentication. Copying credentials between authenticators would mess things up.
+    // NTLM and Negotiate do multi-phase authentication.
+    // Copying credentialsbetween authenticators would mess things up.
     if (fromChannel >= 0) {
-        if (!isProxy && channels[fromChannel].authMethod == QAuthenticatorPrivate::Ntlm)
-            return;
-        if (isProxy && channels[fromChannel].proxyAuthMethod == QAuthenticatorPrivate::Ntlm)
+        const QHttpNetworkConnectionChannel &channel = channels[fromChannel];
+        const QAuthenticatorPrivate::Method method = isProxy ? channel.proxyAuthMethod : channel.authMethod;
+        if (method == QAuthenticatorPrivate::Ntlm || method == QAuthenticatorPrivate::Negotiate)
             return;
     }
 
@@ -592,7 +593,7 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
         if ((channels[i].authMethod != QAuthenticatorPrivate::Ntlm && request.headerField("Authorization").isEmpty()) || channels[i].lastStatus == 401) {
             QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(channels[i].authenticator);
             if (priv && priv->method != QAuthenticatorPrivate::None) {
-                QByteArray response = priv->calculateResponse(request.methodName(), request.uri(false));
+                QByteArray response = priv->calculateResponse(request.methodName(), request.uri(false), request.url().host());
                 request.setHeaderField("Authorization", response);
                 channels[i].authenticationCredentialsSent = true;
             }
@@ -604,7 +605,7 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
         if (!(channels[i].proxyAuthMethod == QAuthenticatorPrivate::Ntlm && channels[i].lastStatus != 407)) {
             QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(channels[i].proxyAuthenticator);
             if (priv && priv->method != QAuthenticatorPrivate::None) {
-                QByteArray response = priv->calculateResponse(request.methodName(), request.uri(false));
+                QByteArray response = priv->calculateResponse(request.methodName(), request.uri(false), networkProxy.hostName());
                 request.setHeaderField("Proxy-Authorization", response);
                 channels[i].proxyCredentialsSent = true;
             }

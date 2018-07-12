@@ -199,6 +199,15 @@
                 ]
             },
             "use": "openssl"
+        },
+        "gssapi": {
+            "label": "KRB5 GSSAPI support",
+            "type": "compile",
+            "test": {
+                "include": [ "gssapi/gssapi.h" ],
+                "main": ["gss_ctx_id_t ctx;"],
+                "qmake": "LIBS += -lgssapi_krb5"
+            }
         }
     },
 
@@ -374,6 +383,20 @@
             "purpose": "Provides API for DNS lookups.",
             "section": "Networking",
             "output": [ "publicFeature" ]
+        },
+        "gssapi": {
+            "label": "GSSAPI",
+            "purpose": "Enable SPNEGO authentication through GSSAPI",
+            "section": "Networking",
+            "condition": "!config.win32 && tests.gssapi",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "sspi": {
+            "label": "SSPI",
+            "purpose": "Enable NTLM/SPNEGO authentication through SSPI",
+            "section": "Networking",
+            "condition": "config.win32 && !config.winrt",
+            "output": [ "publicFeature", "feature" ]
         }
     },
 
@@ -433,7 +456,8 @@ For example:
                 "dtls",
                 "ocsp",
                 "sctp",
-                "system-proxies"
+                "system-proxies",
+                "gssapi"
             ]
         }
     ]

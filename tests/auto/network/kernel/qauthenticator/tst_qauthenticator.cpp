@@ -93,7 +93,7 @@ void tst_QAuthenticator::basicAuth()
 
     QCOMPARE(priv->phase, QAuthenticatorPrivate::Start);
 
-    QCOMPARE(priv->calculateResponse("GET", "/").constData(), QByteArray("Basic " + expectedReply).constData());
+    QCOMPARE(priv->calculateResponse("GET", "/", "").constData(), QByteArray("Basic " + expectedReply).constData());
 }
 
 void tst_QAuthenticator::ntlmAuth_data()
@@ -133,9 +133,9 @@ void tst_QAuthenticator::ntlmAuth()
     headers << qMakePair<QByteArray, QByteArray>("WWW-Authenticate", "NTLM");
     priv->parseHttpResponse(headers, /*isProxy = */ false);
     if (sso)
-        QVERIFY(priv->calculateResponse("GET", "/").startsWith("NTLM "));
+        QVERIFY(priv->calculateResponse("GET", "/", "").startsWith("NTLM "));
     else
-        QCOMPARE(priv->calculateResponse("GET", "/").constData(), "NTLM TlRMTVNTUAABAAAABYIIAAAAAAAAAAAAAAAAAAAAAAA=");
+        QCOMPARE(priv->calculateResponse("GET", "/", "").constData(), "NTLM TlRMTVNTUAABAAAABYIIAAAAAAAAAAAAAAAAAAAAAAA=");
 
     // NTLM phase 2: challenge
     headers.clear();
@@ -146,7 +146,7 @@ void tst_QAuthenticator::ntlmAuth()
     QEXPECT_FAIL("with-realm-sso", "NTLM authentication code doesn't extract the realm", Continue);
     QCOMPARE(auth.realm(), realm);
 
-    QVERIFY(priv->calculateResponse("GET", "/").startsWith("NTLM "));
+    QVERIFY(priv->calculateResponse("GET", "/", "").startsWith("NTLM "));
 }
 
 void tst_QAuthenticator::equalityOperators()

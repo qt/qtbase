@@ -524,7 +524,7 @@ void QHttpSocketEngine::slotSocketConnected()
     //qDebug() << "slotSocketConnected: priv=" << priv << (priv ? (int)priv->method : -1);
     if (priv && priv->method != QAuthenticatorPrivate::None) {
         d->credentialsSent = true;
-        data += "Proxy-Authorization: " + priv->calculateResponse(method, path);
+        data += "Proxy-Authorization: " + priv->calculateResponse(method, path, d->proxy.hostName());
         data += "\r\n";
     }
     data += "\r\n";
