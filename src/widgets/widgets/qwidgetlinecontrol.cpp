@@ -1840,7 +1840,8 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
     else if (event == QKeySequence::DeleteStartOfWord) {
         if (!isReadOnly()) {
             cursorWordBackward(true);
-            del();
+            if (hasSelectedText())
+                del();
         }
     } else if (event == QKeySequence::DeleteCompleteLine) {
         if (!isReadOnly()) {
