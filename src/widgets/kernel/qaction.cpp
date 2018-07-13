@@ -232,10 +232,6 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     the action. For example:
 
     \snippet mainwindows/application/mainwindow.cpp 19
-    \codeline
-    \code
-    fileMenu->addAction(openAct);
-    \endcode
 
     We recommend that actions are created as children of the window
     they are used in. In most cases actions will be children of
