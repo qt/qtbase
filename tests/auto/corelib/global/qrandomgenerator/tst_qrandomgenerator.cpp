@@ -52,7 +52,7 @@
 // values chosen at random
 static const quint32 RandomValue32 = 0x4d1169f1U;
 static const quint64 RandomValue64 = Q_UINT64_C(0x3ce63161b998aa91);
-static const double RandomValueFP = double(0.3010463714599609f);
+static const double RandomValueFP = double(0.3010463714599609);
 
 static void setRNGControl(uint v)
 {
