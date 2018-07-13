@@ -118,8 +118,8 @@ private slots:
     void monthName();
     void standaloneMonthName();
 
-    void defaultNumeringSystem_data();
-    void defaultNumeringSystem();
+    void defaultNumberingSystem_data();
+    void defaultNumberingSystem();
 
     void ampm_data();
     void ampm();
@@ -2204,7 +2204,7 @@ void tst_QLocale::underflowOverflow()
     QVERIFY(!ok);
 }
 
-void tst_QLocale::defaultNumeringSystem_data()
+void tst_QLocale::defaultNumberingSystem_data()
 {
     QTest::addColumn<QString>("expect");
 
@@ -2221,7 +2221,7 @@ void tst_QLocale::defaultNumeringSystem_data()
     QTest::newRow("kok_IN") << QStringLiteral("123");
 }
 
-void tst_QLocale::defaultNumeringSystem()
+void tst_QLocale::defaultNumberingSystem()
 {
     QFETCH(QString, expect);
     QLatin1String name(QTest::currentDataTag());
