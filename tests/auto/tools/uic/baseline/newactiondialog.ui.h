@@ -76,42 +76,42 @@ public:
     void setupUi(QDialog *qdesigner_internal__NewActionDialog)
     {
         if (qdesigner_internal__NewActionDialog->objectName().isEmpty())
-            qdesigner_internal__NewActionDialog->setObjectName(QStringLiteral("qdesigner_internal__NewActionDialog"));
+            qdesigner_internal__NewActionDialog->setObjectName(QString::fromUtf8("qdesigner_internal__NewActionDialog"));
         qdesigner_internal__NewActionDialog->resize(363, 156);
         verticalLayout = new QVBoxLayout(qdesigner_internal__NewActionDialog);
-        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
+        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         formLayout = new QFormLayout();
-        formLayout->setObjectName(QStringLiteral("formLayout"));
+        formLayout->setObjectName(QString::fromUtf8("formLayout"));
         label = new QLabel(qdesigner_internal__NewActionDialog);
-        label->setObjectName(QStringLiteral("label"));
+        label->setObjectName(QString::fromUtf8("label"));
 
         formLayout->setWidget(0, QFormLayout::LabelRole, label);
 
         editActionText = new QLineEdit(qdesigner_internal__NewActionDialog);
-        editActionText->setObjectName(QStringLiteral("editActionText"));
+        editActionText->setObjectName(QString::fromUtf8("editActionText"));
         editActionText->setMinimumSize(QSize(255, 0));
 
         formLayout->setWidget(0, QFormLayout::FieldRole, editActionText);
 
         label_3 = new QLabel(qdesigner_internal__NewActionDialog);
-        label_3->setObjectName(QStringLiteral("label_3"));
+        label_3->setObjectName(QString::fromUtf8("label_3"));
 
         formLayout->setWidget(1, QFormLayout::LabelRole, label_3);
 
         editObjectName = new QLineEdit(qdesigner_internal__NewActionDialog);
-        editObjectName->setObjectName(QStringLiteral("editObjectName"));
+        editObjectName->setObjectName(QString::fromUtf8("editObjectName"));
 
         formLayout->setWidget(1, QFormLayout::FieldRole, editObjectName);
 
         label_2 = new QLabel(qdesigner_internal__NewActionDialog);
-        label_2->setObjectName(QStringLiteral("label_2"));
+        label_2->setObjectName(QString::fromUtf8("label_2"));
 
         formLayout->setWidget(2, QFormLayout::LabelRole, label_2);
 
         horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
+        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
         iconSelector = new qdesigner_internal::IconSelector(qdesigner_internal__NewActionDialog);
-        iconSelector->setObjectName(QStringLiteral("iconSelector"));
+        iconSelector->setObjectName(QString::fromUtf8("iconSelector"));
 
         horizontalLayout->addWidget(iconSelector);
 
@@ -130,14 +130,14 @@ public:
         verticalLayout->addItem(verticalSpacer);
 
         line = new QFrame(qdesigner_internal__NewActionDialog);
-        line->setObjectName(QStringLiteral("line"));
+        line->setObjectName(QString::fromUtf8("line"));
         line->setFrameShape(QFrame::HLine);
         line->setFrameShadow(QFrame::Sunken);
 
         verticalLayout->addWidget(line);
 
         buttonBox = new QDialogButtonBox(qdesigner_internal__NewActionDialog);
-        buttonBox->setObjectName(QStringLiteral("buttonBox"));
+        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
 

@@ -50,21 +50,21 @@ public:
     void setupUi(QDialog *QtToolBarDialog)
     {
         if (QtToolBarDialog->objectName().isEmpty())
-            QtToolBarDialog->setObjectName(QStringLiteral("QtToolBarDialog"));
+            QtToolBarDialog->setObjectName(QString::fromUtf8("QtToolBarDialog"));
         QtToolBarDialog->resize(583, 508);
         gridLayout = new QGridLayout(QtToolBarDialog);
 #ifndef Q_OS_MAC
         gridLayout->setSpacing(6);
 #endif
         gridLayout->setContentsMargins(8, 8, 8, 8);
-        gridLayout->setObjectName(QStringLiteral("gridLayout"));
+        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         actionTree = new QTreeWidget(QtToolBarDialog);
-        actionTree->setObjectName(QStringLiteral("actionTree"));
+        actionTree->setObjectName(QString::fromUtf8("actionTree"));
 
         gridLayout->addWidget(actionTree, 1, 0, 3, 1);
 
         label = new QLabel(QtToolBarDialog);
-        label->setObjectName(QStringLiteral("label"));
+        label->setObjectName(QString::fromUtf8("label"));
 
         gridLayout->addWidget(label, 0, 0, 1, 1);
 
@@ -73,24 +73,24 @@ public:
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(0, 0, 0, 0);
-        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
+        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         label_2 = new QLabel(QtToolBarDialog);
-        label_2->setObjectName(QStringLiteral("label_2"));
+        label_2->setObjectName(QString::fromUtf8("label_2"));
 
         hboxLayout->addWidget(label_2);
 
         newButton = new QToolButton(QtToolBarDialog);
-        newButton->setObjectName(QStringLiteral("newButton"));
+        newButton->setObjectName(QString::fromUtf8("newButton"));
 
         hboxLayout->addWidget(newButton);
 
         removeButton = new QToolButton(QtToolBarDialog);
-        removeButton->setObjectName(QStringLiteral("removeButton"));
+        removeButton->setObjectName(QString::fromUtf8("removeButton"));
 
         hboxLayout->addWidget(removeButton);
 
         renameButton = new QToolButton(QtToolBarDialog);
-        renameButton->setObjectName(QStringLiteral("renameButton"));
+        renameButton->setObjectName(QString::fromUtf8("renameButton"));
 
         hboxLayout->addWidget(renameButton);
 
@@ -102,9 +102,9 @@ public:
         vboxLayout->setSpacing(6);
 #endif
         vboxLayout->setContentsMargins(0, 0, 0, 0);
-        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
+        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         upButton = new QToolButton(QtToolBarDialog);
-        upButton->setObjectName(QStringLiteral("upButton"));
+        upButton->setObjectName(QString::fromUtf8("upButton"));
         QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -114,21 +114,21 @@ public:
         vboxLayout->addWidget(upButton);
 
         leftButton = new QToolButton(QtToolBarDialog);
-        leftButton->setObjectName(QStringLiteral("leftButton"));
+        leftButton->setObjectName(QString::fromUtf8("leftButton"));
         sizePolicy.setHeightForWidth(leftButton->sizePolicy().hasHeightForWidth());
         leftButton->setSizePolicy(sizePolicy);
 
         vboxLayout->addWidget(leftButton);
 
         rightButton = new QToolButton(QtToolBarDialog);
-        rightButton->setObjectName(QStringLiteral("rightButton"));
+        rightButton->setObjectName(QString::fromUtf8("rightButton"));
         sizePolicy.setHeightForWidth(rightButton->sizePolicy().hasHeightForWidth());
         rightButton->setSizePolicy(sizePolicy);
 
         vboxLayout->addWidget(rightButton);
 
         downButton = new QToolButton(QtToolBarDialog);
-        downButton->setObjectName(QStringLiteral("downButton"));
+        downButton->setObjectName(QString::fromUtf8("downButton"));
         sizePolicy.setHeightForWidth(downButton->sizePolicy().hasHeightForWidth());
         downButton->setSizePolicy(sizePolicy);
 
@@ -142,22 +142,22 @@ public:
         gridLayout->addLayout(vboxLayout, 3, 1, 1, 1);
 
         currentToolBarList = new QListWidget(QtToolBarDialog);
-        currentToolBarList->setObjectName(QStringLiteral("currentToolBarList"));
+        currentToolBarList->setObjectName(QString::fromUtf8("currentToolBarList"));
 
         gridLayout->addWidget(currentToolBarList, 3, 2, 1, 1);
 
         label_3 = new QLabel(QtToolBarDialog);
-        label_3->setObjectName(QStringLiteral("label_3"));
+        label_3->setObjectName(QString::fromUtf8("label_3"));
 
         gridLayout->addWidget(label_3, 2, 1, 1, 2);
 
         toolBarList = new QListWidget(QtToolBarDialog);
-        toolBarList->setObjectName(QStringLiteral("toolBarList"));
+        toolBarList->setObjectName(QString::fromUtf8("toolBarList"));
 
         gridLayout->addWidget(toolBarList, 1, 1, 1, 2);
 
         buttonBox = new QDialogButtonBox(QtToolBarDialog);
-        buttonBox->setObjectName(QStringLiteral("buttonBox"));
+        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
         buttonBox->setStandardButtons(QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok|QDialogButtonBox::RestoreDefaults);
 
         gridLayout->addWidget(buttonBox, 5, 0, 1, 3);

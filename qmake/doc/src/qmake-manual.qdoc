@@ -2355,9 +2355,7 @@
 
     This variable is used to customize the list of options passed to the
     \l{uic}{User Interface Compiler} in each of the build rules where it is
-    used. For example, \c{-no-stringliteral} can be passed to use QLatin1String
-    instead of QStringLiteral in generated code (which is the default for
-    dynamic libraries).
+    used.
 
     \section1 QMAKE_WATCHOS_DEPLOYMENT_TARGET
 

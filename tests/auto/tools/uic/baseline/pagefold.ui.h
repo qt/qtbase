@@ -67,18 +67,18 @@ public:
     void setupUi(QMainWindow *MainWindow)
     {
         if (MainWindow->objectName().isEmpty())
-            MainWindow->setObjectName(QStringLiteral("MainWindow"));
+            MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
         MainWindow->resize(392, 412);
         exitAction = new QAction(MainWindow);
-        exitAction->setObjectName(QStringLiteral("exitAction"));
+        exitAction->setObjectName(QString::fromUtf8("exitAction"));
         aboutQtAction = new QAction(MainWindow);
-        aboutQtAction->setObjectName(QStringLiteral("aboutQtAction"));
+        aboutQtAction->setObjectName(QString::fromUtf8("aboutQtAction"));
         editStyleAction = new QAction(MainWindow);
-        editStyleAction->setObjectName(QStringLiteral("editStyleAction"));
+        editStyleAction->setObjectName(QString::fromUtf8("editStyleAction"));
         aboutAction = new QAction(MainWindow);
-        aboutAction->setObjectName(QStringLiteral("aboutAction"));
+        aboutAction->setObjectName(QString::fromUtf8("aboutAction"));
         centralwidget = new QWidget(MainWindow);
-        centralwidget->setObjectName(QStringLiteral("centralwidget"));
+        centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         vboxLayout = new QVBoxLayout(centralwidget);
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
@@ -86,9 +86,9 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
+        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         mainFrame = new QFrame(centralwidget);
-        mainFrame->setObjectName(QStringLiteral("mainFrame"));
+        mainFrame->setObjectName(QString::fromUtf8("mainFrame"));
         mainFrame->setFrameShape(QFrame::StyledPanel);
         mainFrame->setFrameShadow(QFrame::Raised);
         gridLayout = new QGridLayout(mainFrame);
@@ -98,13 +98,13 @@ public:
 #ifndef Q_OS_MAC
         gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        gridLayout->setObjectName(QStringLiteral("gridLayout"));
+        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         nameCombo = new QComboBox(mainFrame);
         nameCombo->addItem(QString());
         nameCombo->addItem(QString());
         nameCombo->addItem(QString());
         nameCombo->addItem(QString());
-        nameCombo->setObjectName(QStringLiteral("nameCombo"));
+        nameCombo->setObjectName(QString::fromUtf8("nameCombo"));
         nameCombo->setEditable(true);
 
         gridLayout->addWidget(nameCombo, 0, 1, 1, 3);
@@ -114,56 +114,56 @@ public:
         gridLayout->addItem(spacerItem, 1, 3, 1, 1);
 
         femaleRadioButton = new QRadioButton(mainFrame);
-        femaleRadioButton->setObjectName(QStringLiteral("femaleRadioButton"));
+        femaleRadioButton->setObjectName(QString::fromUtf8("femaleRadioButton"));
 
         gridLayout->addWidget(femaleRadioButton, 1, 2, 1, 1);
 
         genderLabel = new QLabel(mainFrame);
-        genderLabel->setObjectName(QStringLiteral("genderLabel"));
+        genderLabel->setObjectName(QString::fromUtf8("genderLabel"));
 
         gridLayout->addWidget(genderLabel, 1, 0, 1, 1);
 
         ageLabel = new QLabel(mainFrame);
-        ageLabel->setObjectName(QStringLiteral("ageLabel"));
+        ageLabel->setObjectName(QString::fromUtf8("ageLabel"));
 
         gridLayout->addWidget(ageLabel, 2, 0, 1, 1);
 
         maleRadioButton = new QRadioButton(mainFrame);
-        maleRadioButton->setObjectName(QStringLiteral("maleRadioButton"));
+        maleRadioButton->setObjectName(QString::fromUtf8("maleRadioButton"));
 
         gridLayout->addWidget(maleRadioButton, 1, 1, 1, 1);
 
         nameLabel = new QLabel(mainFrame);
-        nameLabel->setObjectName(QStringLiteral("nameLabel"));
+        nameLabel->setObjectName(QString::fromUtf8("nameLabel"));
 
         gridLayout->addWidget(nameLabel, 0, 0, 1, 1);
 
         passwordLabel = new QLabel(mainFrame);
-        passwordLabel->setObjectName(QStringLiteral("passwordLabel"));
+        passwordLabel->setObjectName(QString::fromUtf8("passwordLabel"));
 
         gridLayout->addWidget(passwordLabel, 3, 0, 1, 1);
 
         ageSpinBox = new QSpinBox(mainFrame);
-        ageSpinBox->setObjectName(QStringLiteral("ageSpinBox"));
+        ageSpinBox->setObjectName(QString::fromUtf8("ageSpinBox"));
         ageSpinBox->setMinimum(12);
         ageSpinBox->setValue(22);
 
         gridLayout->addWidget(ageSpinBox, 2, 1, 1, 3);
 
         buttonBox = new QDialogButtonBox(mainFrame);
-        buttonBox->setObjectName(QStringLiteral("buttonBox"));
+        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
 
         gridLayout->addWidget(buttonBox, 7, 2, 1, 2);
 
         agreeCheckBox = new QCheckBox(mainFrame);
-        agreeCheckBox->setObjectName(QStringLiteral("agreeCheckBox"));
+        agreeCheckBox->setObjectName(QString::fromUtf8("agreeCheckBox"));
 
         gridLayout->addWidget(agreeCheckBox, 6, 0, 1, 4);
 
         passwordEdit = new QLineEdit(mainFrame);
-        passwordEdit->setObjectName(QStringLiteral("passwordEdit"));
+        passwordEdit->setObjectName(QString::fromUtf8("passwordEdit"));
         passwordEdit->setEchoMode(QLineEdit::Password);
 
         gridLayout->addWidget(passwordEdit, 3, 1, 1, 3);
@@ -172,12 +172,12 @@ public:
         new QListWidgetItem(professionList);
         new QListWidgetItem(professionList);
         new QListWidgetItem(professionList);
-        professionList->setObjectName(QStringLiteral("professionList"));
+        professionList->setObjectName(QString::fromUtf8("professionList"));
 
         gridLayout->addWidget(professionList, 5, 1, 1, 3);
 
         label = new QLabel(mainFrame);
-        label->setObjectName(QStringLiteral("label"));
+        label->setObjectName(QString::fromUtf8("label"));
 
         gridLayout->addWidget(label, 5, 0, 1, 1);
 
@@ -189,12 +189,12 @@ public:
         countryCombo->addItem(QString());
         countryCombo->addItem(QString());
         countryCombo->addItem(QString());
-        countryCombo->setObjectName(QStringLiteral("countryCombo"));
+        countryCombo->setObjectName(QString::fromUtf8("countryCombo"));
 
         gridLayout->addWidget(countryCombo, 4, 1, 1, 3);
 
         countryLabel = new QLabel(mainFrame);
-        countryLabel->setObjectName(QStringLiteral("countryLabel"));
+        countryLabel->setObjectName(QString::fromUtf8("countryLabel"));
 
         gridLayout->addWidget(countryLabel, 4, 0, 1, 1);
 
@@ -203,15 +203,15 @@ public:
 
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
-        menubar->setObjectName(QStringLiteral("menubar"));
+        menubar->setObjectName(QString::fromUtf8("menubar"));
         menubar->setGeometry(QRect(0, 0, 392, 25));
         menu_File = new QMenu(menubar);
-        menu_File->setObjectName(QStringLiteral("menu_File"));
+        menu_File->setObjectName(QString::fromUtf8("menu_File"));
         menu_Help = new QMenu(menubar);
-        menu_Help->setObjectName(QStringLiteral("menu_Help"));
+        menu_Help->setObjectName(QString::fromUtf8("menu_Help"));
         MainWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(MainWindow);
-        statusbar->setObjectName(QStringLiteral("statusbar"));
+        statusbar->setObjectName(QString::fromUtf8("statusbar"));
         MainWindow->setStatusBar(statusbar);
 #ifndef QT_NO_SHORTCUT
         ageLabel->setBuddy(ageSpinBox);

@@ -45,33 +45,33 @@ public:
     void setupUi(QDialog *SignalSlotDialogClass)
     {
         if (SignalSlotDialogClass->objectName().isEmpty())
-            SignalSlotDialogClass->setObjectName(QStringLiteral("SignalSlotDialogClass"));
+            SignalSlotDialogClass->setObjectName(QString::fromUtf8("SignalSlotDialogClass"));
         SignalSlotDialogClass->resize(617, 535);
         vboxLayout = new QVBoxLayout(SignalSlotDialogClass);
         vboxLayout->setSpacing(6);
         vboxLayout->setContentsMargins(11, 11, 11, 11);
-        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
+        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         slotGroupBox = new QGroupBox(SignalSlotDialogClass);
-        slotGroupBox->setObjectName(QStringLiteral("slotGroupBox"));
+        slotGroupBox->setObjectName(QString::fromUtf8("slotGroupBox"));
         vboxLayout1 = new QVBoxLayout(slotGroupBox);
         vboxLayout1->setSpacing(6);
         vboxLayout1->setContentsMargins(11, 11, 11, 11);
-        vboxLayout1->setObjectName(QStringLiteral("vboxLayout1"));
+        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         slotListView = new QListView(slotGroupBox);
-        slotListView->setObjectName(QStringLiteral("slotListView"));
+        slotListView->setObjectName(QString::fromUtf8("slotListView"));
 
         vboxLayout1->addWidget(slotListView);
 
         hboxLayout = new QHBoxLayout();
         hboxLayout->setSpacing(6);
-        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
+        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         addSlotButton = new QToolButton(slotGroupBox);
-        addSlotButton->setObjectName(QStringLiteral("addSlotButton"));
+        addSlotButton->setObjectName(QString::fromUtf8("addSlotButton"));
 
         hboxLayout->addWidget(addSlotButton);
 
         removeSlotButton = new QToolButton(slotGroupBox);
-        removeSlotButton->setObjectName(QStringLiteral("removeSlotButton"));
+        removeSlotButton->setObjectName(QString::fromUtf8("removeSlotButton"));
 
         hboxLayout->addWidget(removeSlotButton);
 
@@ -86,26 +86,26 @@ public:
         vboxLayout->addWidget(slotGroupBox);
 
         signalGroupBox = new QGroupBox(SignalSlotDialogClass);
-        signalGroupBox->setObjectName(QStringLiteral("signalGroupBox"));
+        signalGroupBox->setObjectName(QString::fromUtf8("signalGroupBox"));
         vboxLayout2 = new QVBoxLayout(signalGroupBox);
         vboxLayout2->setSpacing(6);
         vboxLayout2->setContentsMargins(11, 11, 11, 11);
-        vboxLayout2->setObjectName(QStringLiteral("vboxLayout2"));
+        vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
         signalListView = new QListView(signalGroupBox);
-        signalListView->setObjectName(QStringLiteral("signalListView"));
+        signalListView->setObjectName(QString::fromUtf8("signalListView"));
 
         vboxLayout2->addWidget(signalListView);
 
         hboxLayout1 = new QHBoxLayout();
         hboxLayout1->setSpacing(6);
-        hboxLayout1->setObjectName(QStringLiteral("hboxLayout1"));
+        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
         addSignalButton = new QToolButton(signalGroupBox);
-        addSignalButton->setObjectName(QStringLiteral("addSignalButton"));
+        addSignalButton->setObjectName(QString::fromUtf8("addSignalButton"));
 
         hboxLayout1->addWidget(addSignalButton);
 
         removeSignalButton = new QToolButton(signalGroupBox);
-        removeSignalButton->setObjectName(QStringLiteral("removeSignalButton"));
+        removeSignalButton->setObjectName(QString::fromUtf8("removeSignalButton"));
 
         hboxLayout1->addWidget(removeSignalButton);
 
@@ -120,7 +120,7 @@ public:
         vboxLayout->addWidget(signalGroupBox);
 
         buttonBox = new QDialogButtonBox(SignalSlotDialogClass);
-        buttonBox->setObjectName(QStringLiteral("buttonBox"));
+        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
 
         vboxLayout->addWidget(buttonBox);

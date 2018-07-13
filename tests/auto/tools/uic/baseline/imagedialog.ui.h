@@ -46,8 +46,8 @@ public:
     void setupUi(QDialog *dialog)
     {
         if (dialog->objectName().isEmpty())
-            dialog->setObjectName(QStringLiteral("dialog"));
-        dialog->setObjectName(QStringLiteral("ImageDialog"));
+            dialog->setObjectName(QString::fromUtf8("dialog"));
+        dialog->setObjectName(QString::fromUtf8("ImageDialog"));
         dialog->resize(320, 180);
         vboxLayout = new QVBoxLayout(dialog);
 #ifndef Q_OS_MAC
@@ -56,17 +56,17 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
-        vboxLayout->setObjectName(QStringLiteral(""));
+        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName(QString::fromUtf8(""));
         gridLayout = new QGridLayout();
 #ifndef Q_OS_MAC
         gridLayout->setSpacing(6);
 #endif
         gridLayout->setContentsMargins(1, 1, 1, 1);
-        gridLayout->setObjectName(QStringLiteral("gridLayout"));
-        gridLayout->setObjectName(QStringLiteral(""));
+        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName(QString::fromUtf8(""));
         widthLabel = new QLabel(dialog);
-        widthLabel->setObjectName(QStringLiteral("widthLabel"));
+        widthLabel->setObjectName(QString::fromUtf8("widthLabel"));
         widthLabel->setGeometry(QRect(1, 27, 67, 22));
         widthLabel->setFrameShape(QFrame::NoFrame);
         widthLabel->setFrameShadow(QFrame::Plain);
@@ -75,7 +75,7 @@ public:
         gridLayout->addWidget(widthLabel, 1, 0, 1, 1);
 
         heightLabel = new QLabel(dialog);
-        heightLabel->setObjectName(QStringLiteral("heightLabel"));
+        heightLabel->setObjectName(QString::fromUtf8("heightLabel"));
         heightLabel->setGeometry(QRect(1, 55, 67, 22));
         heightLabel->setFrameShape(QFrame::NoFrame);
         heightLabel->setFrameShadow(QFrame::Plain);
@@ -84,7 +84,7 @@ public:
         gridLayout->addWidget(heightLabel, 2, 0, 1, 1);
 
         colorDepthCombo = new QComboBox(dialog);
-        colorDepthCombo->setObjectName(QStringLiteral("colorDepthCombo"));
+        colorDepthCombo->setObjectName(QString::fromUtf8("colorDepthCombo"));
         colorDepthCombo->setGeometry(QRect(74, 83, 227, 22));
         QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(0));
         sizePolicy.setHorizontalStretch(0);
@@ -96,7 +96,7 @@ public:
         gridLayout->addWidget(colorDepthCombo, 3, 1, 1, 1);
 
         nameLineEdit = new QLineEdit(dialog);
-        nameLineEdit->setObjectName(QStringLiteral("nameLineEdit"));
+        nameLineEdit->setObjectName(QString::fromUtf8("nameLineEdit"));
         nameLineEdit->setGeometry(QRect(74, 83, 227, 22));
         QSizePolicy sizePolicy1(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(0));
         sizePolicy1.setHorizontalStretch(1);
@@ -108,7 +108,7 @@ public:
         gridLayout->addWidget(nameLineEdit, 0, 1, 1, 1);
 
         spinBox = new QSpinBox(dialog);
-        spinBox->setObjectName(QStringLiteral("spinBox"));
+        spinBox->setObjectName(QString::fromUtf8("spinBox"));
         spinBox->setGeometry(QRect(74, 1, 227, 20));
         sizePolicy.setHeightForWidth(spinBox->sizePolicy().hasHeightForWidth());
         spinBox->setSizePolicy(sizePolicy);
@@ -120,7 +120,7 @@ public:
         gridLayout->addWidget(spinBox, 1, 1, 1, 1);
 
         spinBox_2 = new QSpinBox(dialog);
-        spinBox_2->setObjectName(QStringLiteral("spinBox_2"));
+        spinBox_2->setObjectName(QString::fromUtf8("spinBox_2"));
         spinBox_2->setGeometry(QRect(74, 27, 227, 22));
         sizePolicy.setHeightForWidth(spinBox_2->sizePolicy().hasHeightForWidth());
         spinBox_2->setSizePolicy(sizePolicy);
@@ -132,7 +132,7 @@ public:
         gridLayout->addWidget(spinBox_2, 2, 1, 1, 1);
 
         nameLabel = new QLabel(dialog);
-        nameLabel->setObjectName(QStringLiteral("nameLabel"));
+        nameLabel->setObjectName(QString::fromUtf8("nameLabel"));
         nameLabel->setGeometry(QRect(1, 1, 67, 20));
         nameLabel->setFrameShape(QFrame::NoFrame);
         nameLabel->setFrameShadow(QFrame::Plain);
@@ -141,7 +141,7 @@ public:
         gridLayout->addWidget(nameLabel, 0, 0, 1, 1);
 
         colorDepthLabel = new QLabel(dialog);
-        colorDepthLabel->setObjectName(QStringLiteral("colorDepthLabel"));
+        colorDepthLabel->setObjectName(QString::fromUtf8("colorDepthLabel"));
         colorDepthLabel->setGeometry(QRect(1, 83, 67, 22));
         colorDepthLabel->setFrameShape(QFrame::NoFrame);
         colorDepthLabel->setFrameShadow(QFrame::Plain);
@@ -161,20 +161,20 @@ public:
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(1, 1, 1, 1);
-        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
-        hboxLayout->setObjectName(QStringLiteral(""));
+        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName(QString::fromUtf8(""));
         spacerItem1 = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         hboxLayout->addItem(spacerItem1);
 
         okButton = new QPushButton(dialog);
-        okButton->setObjectName(QStringLiteral("okButton"));
+        okButton->setObjectName(QString::fromUtf8("okButton"));
         okButton->setGeometry(QRect(135, 1, 80, 24));
 
         hboxLayout->addWidget(okButton);
 
         cancelButton = new QPushButton(dialog);
-        cancelButton->setObjectName(QStringLiteral("cancelButton"));
+        cancelButton->setObjectName(QString::fromUtf8("cancelButton"));
         cancelButton->setGeometry(QRect(221, 1, 80, 24));
 
         hboxLayout->addWidget(cancelButton);

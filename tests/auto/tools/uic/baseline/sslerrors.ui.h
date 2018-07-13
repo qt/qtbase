@@ -36,25 +36,25 @@ public:
     void setupUi(QDialog *SslErrors)
     {
         if (SslErrors->objectName().isEmpty())
-            SslErrors->setObjectName(QStringLiteral("SslErrors"));
+            SslErrors->setObjectName(QString::fromUtf8("SslErrors"));
         SslErrors->resize(371, 216);
         vboxLayout = new QVBoxLayout(SslErrors);
-        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
+        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         label = new QLabel(SslErrors);
-        label->setObjectName(QStringLiteral("label"));
+        label->setObjectName(QString::fromUtf8("label"));
         label->setWordWrap(true);
 
         vboxLayout->addWidget(label);
 
         sslErrorList = new QListWidget(SslErrors);
-        sslErrorList->setObjectName(QStringLiteral("sslErrorList"));
+        sslErrorList->setObjectName(QString::fromUtf8("sslErrorList"));
 
         vboxLayout->addWidget(sslErrorList);
 
         hboxLayout = new QHBoxLayout();
-        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
+        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         certificateChainButton = new QPushButton(SslErrors);
-        certificateChainButton->setObjectName(QStringLiteral("certificateChainButton"));
+        certificateChainButton->setObjectName(QString::fromUtf8("certificateChainButton"));
         certificateChainButton->setAutoDefault(false);
 
         hboxLayout->addWidget(certificateChainButton);
@@ -64,12 +64,12 @@ public:
         hboxLayout->addItem(spacerItem);
 
         pushButton = new QPushButton(SslErrors);
-        pushButton->setObjectName(QStringLiteral("pushButton"));
+        pushButton->setObjectName(QString::fromUtf8("pushButton"));
 
         hboxLayout->addWidget(pushButton);
 
         pushButton_2 = new QPushButton(SslErrors);
-        pushButton_2->setObjectName(QStringLiteral("pushButton_2"));
+        pushButton_2->setObjectName(QString::fromUtf8("pushButton_2"));
 
         hboxLayout->addWidget(pushButton_2);
 

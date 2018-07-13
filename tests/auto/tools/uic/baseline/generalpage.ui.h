@@ -33,27 +33,27 @@ public:
     void setupUi(QWidget *GeneralPage)
     {
         if (GeneralPage->objectName().isEmpty())
-            GeneralPage->setObjectName(QStringLiteral("GeneralPage"));
+            GeneralPage->setObjectName(QString::fromUtf8("GeneralPage"));
         GeneralPage->resize(417, 243);
         gridLayout = new QGridLayout(GeneralPage);
-        gridLayout->setObjectName(QStringLiteral("gridLayout"));
+        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         label = new QLabel(GeneralPage);
-        label->setObjectName(QStringLiteral("label"));
+        label->setObjectName(QString::fromUtf8("label"));
 
         gridLayout->addWidget(label, 1, 0, 1, 1);
 
         namespaceLineEdit = new QLineEdit(GeneralPage);
-        namespaceLineEdit->setObjectName(QStringLiteral("namespaceLineEdit"));
+        namespaceLineEdit->setObjectName(QString::fromUtf8("namespaceLineEdit"));
 
         gridLayout->addWidget(namespaceLineEdit, 1, 1, 1, 1);
 
         label_2 = new QLabel(GeneralPage);
-        label_2->setObjectName(QStringLiteral("label_2"));
+        label_2->setObjectName(QString::fromUtf8("label_2"));
 
         gridLayout->addWidget(label_2, 2, 0, 1, 1);
 
         folderLineEdit = new QLineEdit(GeneralPage);
-        folderLineEdit->setObjectName(QStringLiteral("folderLineEdit"));
+        folderLineEdit->setObjectName(QString::fromUtf8("folderLineEdit"));
 
         gridLayout->addWidget(folderLineEdit, 2, 1, 1, 1);
 

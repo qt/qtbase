@@ -79,7 +79,7 @@ public:
     void setupUi(QDialog *TranslateDialog)
     {
         if (TranslateDialog->objectName().isEmpty())
-            TranslateDialog->setObjectName(QStringLiteral("TranslateDialog"));
+            TranslateDialog->setObjectName(QString::fromUtf8("TranslateDialog"));
         TranslateDialog->resize(407, 145);
         QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
         sizePolicy.setHorizontalStretch(0);
@@ -89,35 +89,35 @@ public:
         hboxLayout = new QHBoxLayout(TranslateDialog);
         hboxLayout->setSpacing(6);
         hboxLayout->setContentsMargins(11, 11, 11, 11);
-        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
+        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         hboxLayout->setContentsMargins(9, 9, 9, 9);
         vboxLayout = new QVBoxLayout();
         vboxLayout->setSpacing(6);
-        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
+        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         vboxLayout->setContentsMargins(0, 0, 0, 0);
         gridLayout = new QGridLayout();
         gridLayout->setSpacing(6);
-        gridLayout->setObjectName(QStringLiteral("gridLayout"));
+        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         gridLayout->setHorizontalSpacing(6);
         gridLayout->setVerticalSpacing(6);
         gridLayout->setContentsMargins(0, 0, 0, 0);
         ledTranslateTo = new QLineEdit(TranslateDialog);
-        ledTranslateTo->setObjectName(QStringLiteral("ledTranslateTo"));
+        ledTranslateTo->setObjectName(QString::fromUtf8("ledTranslateTo"));
 
         gridLayout->addWidget(ledTranslateTo, 1, 1, 1, 1);
 
         findWhat = new QLabel(TranslateDialog);
-        findWhat->setObjectName(QStringLiteral("findWhat"));
+        findWhat->setObjectName(QString::fromUtf8("findWhat"));
 
         gridLayout->addWidget(findWhat, 0, 0, 1, 1);
 
         translateTo = new QLabel(TranslateDialog);
-        translateTo->setObjectName(QStringLiteral("translateTo"));
+        translateTo->setObjectName(QString::fromUtf8("translateTo"));
 
         gridLayout->addWidget(translateTo, 1, 0, 1, 1);
 
         ledFindWhat = new QLineEdit(TranslateDialog);
-        ledFindWhat->setObjectName(QStringLiteral("ledFindWhat"));
+        ledFindWhat->setObjectName(QString::fromUtf8("ledFindWhat"));
 
         gridLayout->addWidget(ledFindWhat, 0, 1, 1, 1);
 
@@ -125,18 +125,18 @@ public:
         vboxLayout->addLayout(gridLayout);
 
         groupBox = new QGroupBox(TranslateDialog);
-        groupBox->setObjectName(QStringLiteral("groupBox"));
+        groupBox->setObjectName(QString::fromUtf8("groupBox"));
         vboxLayout1 = new QVBoxLayout(groupBox);
         vboxLayout1->setSpacing(6);
         vboxLayout1->setContentsMargins(11, 11, 11, 11);
-        vboxLayout1->setObjectName(QStringLiteral("vboxLayout1"));
+        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         ckMatchCase = new QCheckBox(groupBox);
-        ckMatchCase->setObjectName(QStringLiteral("ckMatchCase"));
+        ckMatchCase->setObjectName(QString::fromUtf8("ckMatchCase"));
 
         vboxLayout1->addWidget(ckMatchCase);
 
         ckMarkFinished = new QCheckBox(groupBox);
-        ckMarkFinished->setObjectName(QStringLiteral("ckMarkFinished"));
+        ckMarkFinished->setObjectName(QString::fromUtf8("ckMarkFinished"));
 
         vboxLayout1->addWidget(ckMarkFinished);
 
@@ -152,26 +152,26 @@ public:
 
         vboxLayout2 = new QVBoxLayout();
         vboxLayout2->setSpacing(6);
-        vboxLayout2->setObjectName(QStringLiteral("vboxLayout2"));
+        vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
         vboxLayout2->setContentsMargins(0, 0, 0, 0);
         findNxt = new QPushButton(TranslateDialog);
-        findNxt->setObjectName(QStringLiteral("findNxt"));
+        findNxt->setObjectName(QString::fromUtf8("findNxt"));
         findNxt->setFlat(false);
 
         vboxLayout2->addWidget(findNxt);
 
         translate = new QPushButton(TranslateDialog);
-        translate->setObjectName(QStringLiteral("translate"));
+        translate->setObjectName(QString::fromUtf8("translate"));
 
         vboxLayout2->addWidget(translate);
 
         translateAll = new QPushButton(TranslateDialog);
-        translateAll->setObjectName(QStringLiteral("translateAll"));
+        translateAll->setObjectName(QString::fromUtf8("translateAll"));
 
         vboxLayout2->addWidget(translateAll);
 
         cancel = new QPushButton(TranslateDialog);
-        cancel->setObjectName(QStringLiteral("cancel"));
+        cancel->setObjectName(QString::fromUtf8("cancel"));
 
         vboxLayout2->addWidget(cancel);
 

@@ -29,24 +29,24 @@ public:
     void setupUi(QDialog *Dialog)
     {
         if (Dialog->objectName().isEmpty())
-            Dialog->setObjectName(QStringLiteral("Dialog"));
+            Dialog->setObjectName(QString::fromUtf8("Dialog"));
         Dialog->resize(451, 322);
         gridLayout = new QGridLayout(Dialog);
-        gridLayout->setObjectName(QStringLiteral("gridLayout"));
+        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         loadFromFileButton = new QPushButton(Dialog);
-        loadFromFileButton->setObjectName(QStringLiteral("loadFromFileButton"));
+        loadFromFileButton->setObjectName(QString::fromUtf8("loadFromFileButton"));
 
         gridLayout->addWidget(loadFromFileButton, 0, 0, 1, 1);
 
         label = new QLabel(Dialog);
-        label->setObjectName(QStringLiteral("label"));
+        label->setObjectName(QString::fromUtf8("label"));
         label->setAlignment(Qt::AlignCenter);
         label->setWordWrap(true);
 
         gridLayout->addWidget(label, 1, 0, 1, 1);
 
         loadFromSharedMemoryButton = new QPushButton(Dialog);
-        loadFromSharedMemoryButton->setObjectName(QStringLiteral("loadFromSharedMemoryButton"));
+        loadFromSharedMemoryButton->setObjectName(QString::fromUtf8("loadFromSharedMemoryButton"));
 
         gridLayout->addWidget(loadFromSharedMemoryButton, 2, 0, 1, 1);
 

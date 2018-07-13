@@ -96,34 +96,34 @@ public:
     void setupUi(QDialog *qdesigner_internal__TreeWidgetEditor)
     {
         if (qdesigner_internal__TreeWidgetEditor->objectName().isEmpty())
-            qdesigner_internal__TreeWidgetEditor->setObjectName(QStringLiteral("qdesigner_internal__TreeWidgetEditor"));
+            qdesigner_internal__TreeWidgetEditor->setObjectName(QString::fromUtf8("qdesigner_internal__TreeWidgetEditor"));
         qdesigner_internal__TreeWidgetEditor->resize(619, 321);
         gridLayout_3 = new QGridLayout(qdesigner_internal__TreeWidgetEditor);
-        gridLayout_3->setObjectName(QStringLiteral("gridLayout_3"));
+        gridLayout_3->setObjectName(QString::fromUtf8("gridLayout_3"));
         itemsBox = new QGroupBox(qdesigner_internal__TreeWidgetEditor);
-        itemsBox->setObjectName(QStringLiteral("itemsBox"));
+        itemsBox->setObjectName(QString::fromUtf8("itemsBox"));
         gridLayout = new QGridLayout(itemsBox);
-        gridLayout->setObjectName(QStringLiteral("gridLayout"));
+        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         treeWidget = new QTreeWidget(itemsBox);
-        treeWidget->setObjectName(QStringLiteral("treeWidget"));
+        treeWidget->setObjectName(QString::fromUtf8("treeWidget"));
         treeWidget->setFocusPolicy(Qt::TabFocus);
 
         gridLayout->addWidget(treeWidget, 0, 0, 1, 1);
 
         horizontalLayout_4 = new QHBoxLayout();
-        horizontalLayout_4->setObjectName(QStringLiteral("horizontalLayout_4"));
+        horizontalLayout_4->setObjectName(QString::fromUtf8("horizontalLayout_4"));
         newItemButton = new QToolButton(itemsBox);
-        newItemButton->setObjectName(QStringLiteral("newItemButton"));
+        newItemButton->setObjectName(QString::fromUtf8("newItemButton"));
 
         horizontalLayout_4->addWidget(newItemButton);
 
         newSubItemButton = new QToolButton(itemsBox);
-        newSubItemButton->setObjectName(QStringLiteral("newSubItemButton"));
+        newSubItemButton->setObjectName(QString::fromUtf8("newSubItemButton"));
 
         horizontalLayout_4->addWidget(newSubItemButton);
 
         deleteItemButton = new QToolButton(itemsBox);
-        deleteItemButton->setObjectName(QStringLiteral("deleteItemButton"));
+        deleteItemButton->setObjectName(QString::fromUtf8("deleteItemButton"));
 
         horizontalLayout_4->addWidget(deleteItemButton);
 
@@ -132,22 +132,22 @@ public:
         horizontalLayout_4->addItem(spacerItem);
 
         moveItemLeftButton = new QToolButton(itemsBox);
-        moveItemLeftButton->setObjectName(QStringLiteral("moveItemLeftButton"));
+        moveItemLeftButton->setObjectName(QString::fromUtf8("moveItemLeftButton"));
 
         horizontalLayout_4->addWidget(moveItemLeftButton);
 
         moveItemRightButton = new QToolButton(itemsBox);
-        moveItemRightButton->setObjectName(QStringLiteral("moveItemRightButton"));
+        moveItemRightButton->setObjectName(QString::fromUtf8("moveItemRightButton"));
 
         horizontalLayout_4->addWidget(moveItemRightButton);
 
         moveItemUpButton = new QToolButton(itemsBox);
-        moveItemUpButton->setObjectName(QStringLiteral("moveItemUpButton"));
+        moveItemUpButton->setObjectName(QString::fromUtf8("moveItemUpButton"));
 
         horizontalLayout_4->addWidget(moveItemUpButton);
 
         moveItemDownButton = new QToolButton(itemsBox);
-        moveItemDownButton->setObjectName(QStringLiteral("moveItemDownButton"));
+        moveItemDownButton->setObjectName(QString::fromUtf8("moveItemDownButton"));
 
         horizontalLayout_4->addWidget(moveItemDownButton);
 
@@ -155,14 +155,14 @@ public:
         gridLayout->addLayout(horizontalLayout_4, 1, 0, 1, 1);
 
         horizontalLayout_2 = new QHBoxLayout();
-        horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
+        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
         label_2 = new QLabel(itemsBox);
-        label_2->setObjectName(QStringLiteral("label_2"));
+        label_2->setObjectName(QString::fromUtf8("label_2"));
 
         horizontalLayout_2->addWidget(label_2);
 
         itemIconSelector = new qdesigner_internal::IconSelector(itemsBox);
-        itemIconSelector->setObjectName(QStringLiteral("itemIconSelector"));
+        itemIconSelector->setObjectName(QString::fromUtf8("itemIconSelector"));
 
         horizontalLayout_2->addWidget(itemIconSelector);
 
@@ -177,16 +177,16 @@ public:
         gridLayout_3->addWidget(itemsBox, 0, 0, 1, 1);
 
         columnsBox = new QGroupBox(qdesigner_internal__TreeWidgetEditor);
-        columnsBox->setObjectName(QStringLiteral("columnsBox"));
+        columnsBox->setObjectName(QString::fromUtf8("columnsBox"));
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(columnsBox->sizePolicy().hasHeightForWidth());
         columnsBox->setSizePolicy(sizePolicy);
         gridLayout_2 = new QGridLayout(columnsBox);
-        gridLayout_2->setObjectName(QStringLiteral("gridLayout_2"));
+        gridLayout_2->setObjectName(QString::fromUtf8("gridLayout_2"));
         listWidget = new QListWidget(columnsBox);
-        listWidget->setObjectName(QStringLiteral("listWidget"));
+        listWidget->setObjectName(QString::fromUtf8("listWidget"));
         QSizePolicy sizePolicy1(QSizePolicy::Ignored, QSizePolicy::Expanding);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
@@ -197,14 +197,14 @@ public:
         gridLayout_2->addWidget(listWidget, 0, 0, 1, 1);
 
         horizontalLayout_3 = new QHBoxLayout();
-        horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
+        horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
         newColumnButton = new QToolButton(columnsBox);
-        newColumnButton->setObjectName(QStringLiteral("newColumnButton"));
+        newColumnButton->setObjectName(QString::fromUtf8("newColumnButton"));
 
         horizontalLayout_3->addWidget(newColumnButton);
 
         deleteColumnButton = new QToolButton(columnsBox);
-        deleteColumnButton->setObjectName(QStringLiteral("deleteColumnButton"));
+        deleteColumnButton->setObjectName(QString::fromUtf8("deleteColumnButton"));
 
         horizontalLayout_3->addWidget(deleteColumnButton);
 
@@ -213,12 +213,12 @@ public:
         horizontalLayout_3->addItem(spacerItem1);
 
         moveColumnUpButton = new QToolButton(columnsBox);
-        moveColumnUpButton->setObjectName(QStringLiteral("moveColumnUpButton"));
+        moveColumnUpButton->setObjectName(QString::fromUtf8("moveColumnUpButton"));
 
         horizontalLayout_3->addWidget(moveColumnUpButton);
 
         moveColumnDownButton = new QToolButton(columnsBox);
-        moveColumnDownButton->setObjectName(QStringLiteral("moveColumnDownButton"));
+        moveColumnDownButton->setObjectName(QString::fromUtf8("moveColumnDownButton"));
 
         horizontalLayout_3->addWidget(moveColumnDownButton);
 
@@ -226,14 +226,14 @@ public:
         gridLayout_2->addLayout(horizontalLayout_3, 1, 0, 1, 1);
 
         horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
+        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
         label = new QLabel(columnsBox);
-        label->setObjectName(QStringLiteral("label"));
+        label->setObjectName(QString::fromUtf8("label"));
 
         horizontalLayout->addWidget(label);
 
         columnIconSelector = new qdesigner_internal::IconSelector(columnsBox);
-        columnIconSelector->setObjectName(QStringLiteral("columnIconSelector"));
+        columnIconSelector->setObjectName(QString::fromUtf8("columnIconSelector"));
 
         horizontalLayout->addWidget(columnIconSelector);
 
@@ -248,7 +248,7 @@ public:
         gridLayout_3->addWidget(columnsBox, 0, 1, 1, 1);
 
         buttonBox = new QDialogButtonBox(qdesigner_internal__TreeWidgetEditor);
-        buttonBox->setObjectName(QStringLiteral("buttonBox"));
+        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
 

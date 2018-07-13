@@ -48,29 +48,29 @@ public:
     void setupUi(QWidget *Form)
     {
         if (Form->objectName().isEmpty())
-            Form->setObjectName(QStringLiteral("Form"));
+            Form->setObjectName(QString::fromUtf8("Form"));
         Form->resize(343, 320);
         vboxLayout = new QVBoxLayout(Form);
-        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
+        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         gridLayout = new QGridLayout();
-        gridLayout->setObjectName(QStringLiteral("gridLayout"));
+        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         hostNameLabel = new QLabel(Form);
-        hostNameLabel->setObjectName(QStringLiteral("hostNameLabel"));
+        hostNameLabel->setObjectName(QString::fromUtf8("hostNameLabel"));
 
         gridLayout->addWidget(hostNameLabel, 0, 0, 1, 1);
 
         hostNameEdit = new QLineEdit(Form);
-        hostNameEdit->setObjectName(QStringLiteral("hostNameEdit"));
+        hostNameEdit->setObjectName(QString::fromUtf8("hostNameEdit"));
 
         gridLayout->addWidget(hostNameEdit, 0, 1, 1, 1);
 
         portLabel = new QLabel(Form);
-        portLabel->setObjectName(QStringLiteral("portLabel"));
+        portLabel->setObjectName(QString::fromUtf8("portLabel"));
 
         gridLayout->addWidget(portLabel, 1, 0, 1, 1);
 
         portBox = new QSpinBox(Form);
-        portBox->setObjectName(QStringLiteral("portBox"));
+        portBox->setObjectName(QString::fromUtf8("portBox"));
         portBox->setMinimum(1);
         portBox->setMaximum(65535);
         portBox->setValue(993);
@@ -81,25 +81,25 @@ public:
         vboxLayout->addLayout(gridLayout);
 
         connectButton = new QPushButton(Form);
-        connectButton->setObjectName(QStringLiteral("connectButton"));
+        connectButton->setObjectName(QString::fromUtf8("connectButton"));
         connectButton->setEnabled(true);
 
         vboxLayout->addWidget(connectButton);
 
         sessionBox = new QGroupBox(Form);
-        sessionBox->setObjectName(QStringLiteral("sessionBox"));
+        sessionBox->setObjectName(QString::fromUtf8("sessionBox"));
         sessionBox->setEnabled(false);
         vboxLayout1 = new QVBoxLayout(sessionBox);
-        vboxLayout1->setObjectName(QStringLiteral("vboxLayout1"));
+        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         hboxLayout = new QHBoxLayout();
-        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
+        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         cipherText = new QLabel(sessionBox);
-        cipherText->setObjectName(QStringLiteral("cipherText"));
+        cipherText->setObjectName(QString::fromUtf8("cipherText"));
 
         hboxLayout->addWidget(cipherText);
 
         cipherLabel = new QLabel(sessionBox);
-        cipherLabel->setObjectName(QStringLiteral("cipherLabel"));
+        cipherLabel->setObjectName(QString::fromUtf8("cipherLabel"));
         cipherLabel->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
         hboxLayout->addWidget(cipherLabel);
@@ -108,7 +108,7 @@ public:
         vboxLayout1->addLayout(hboxLayout);
 
         sessionOutput = new QTextEdit(sessionBox);
-        sessionOutput->setObjectName(QStringLiteral("sessionOutput"));
+        sessionOutput->setObjectName(QString::fromUtf8("sessionOutput"));
         sessionOutput->setEnabled(false);
         sessionOutput->setFocusPolicy(Qt::NoFocus);
         sessionOutput->setReadOnly(true);
@@ -116,20 +116,20 @@ public:
         vboxLayout1->addWidget(sessionOutput);
 
         hboxLayout1 = new QHBoxLayout();
-        hboxLayout1->setObjectName(QStringLiteral("hboxLayout1"));
+        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
         sessionInputLabel = new QLabel(sessionBox);
-        sessionInputLabel->setObjectName(QStringLiteral("sessionInputLabel"));
+        sessionInputLabel->setObjectName(QString::fromUtf8("sessionInputLabel"));
 
         hboxLayout1->addWidget(sessionInputLabel);
 
         sessionInput = new QLineEdit(sessionBox);
-        sessionInput->setObjectName(QStringLiteral("sessionInput"));
+        sessionInput->setObjectName(QString::fromUtf8("sessionInput"));
         sessionInput->setEnabled(false);
 
         hboxLayout1->addWidget(sessionInput);
 
         sendButton = new QPushButton(sessionBox);
-        sendButton->setObjectName(QStringLiteral("sendButton"));
+        sendButton->setObjectName(QString::fromUtf8("sendButton"));
         sendButton->setEnabled(false);
         sendButton->setFocusPolicy(Qt::TabFocus);
 

@@ -64,39 +64,39 @@ public:
     void setupUi(QDialog *PluginDialog)
     {
         if (PluginDialog->objectName().isEmpty())
-            PluginDialog->setObjectName(QStringLiteral("PluginDialog"));
+            PluginDialog->setObjectName(QString::fromUtf8("PluginDialog"));
         PluginDialog->resize(401, 331);
         vboxLayout = new QVBoxLayout(PluginDialog);
         vboxLayout->setSpacing(6);
-        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
+        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         vboxLayout->setContentsMargins(8, 8, 8, 8);
         label = new QLabel(PluginDialog);
-        label->setObjectName(QStringLiteral("label"));
+        label->setObjectName(QString::fromUtf8("label"));
         label->setWordWrap(true);
 
         vboxLayout->addWidget(label);
 
         treeWidget = new QTreeWidget(PluginDialog);
-        treeWidget->setObjectName(QStringLiteral("treeWidget"));
+        treeWidget->setObjectName(QString::fromUtf8("treeWidget"));
         treeWidget->setTextElideMode(Qt::ElideNone);
 
         vboxLayout->addWidget(treeWidget);
 
         message = new QLabel(PluginDialog);
-        message->setObjectName(QStringLiteral("message"));
+        message->setObjectName(QString::fromUtf8("message"));
         message->setWordWrap(true);
 
         vboxLayout->addWidget(message);
 
         hboxLayout = new QHBoxLayout();
         hboxLayout->setSpacing(6);
-        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
+        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         hboxLayout->setContentsMargins(0, 0, 0, 0);
 
         vboxLayout->addLayout(hboxLayout);
 
         buttonBox = new QDialogButtonBox(PluginDialog);
-        buttonBox->setObjectName(QStringLiteral("buttonBox"));
+        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Close);
 

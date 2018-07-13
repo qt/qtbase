@@ -76,7 +76,7 @@ int runUic(int argc, char *argv[])
     parser.addOption(noImplicitIncludesOption);
 
     QCommandLineOption noStringLiteralOption(QStringList() << QStringLiteral("s") << QStringLiteral("no-stringliteral"));
-    noStringLiteralOption.setDescription(QStringLiteral("Use QLatin1String instead of QStringLiteral in generated code."));
+    noStringLiteralOption.setDescription(QStringLiteral("Deprecated. The use of this option won't take any effect."));
     parser.addOption(noStringLiteralOption);
 
     QCommandLineOption postfixOption(QStringLiteral("postfix"));
@@ -111,12 +111,14 @@ int runUic(int argc, char *argv[])
     driver.option().outputFile = parser.value(outputOption);
     driver.option().headerProtection = !parser.isSet(noProtOption);
     driver.option().implicitIncludes = !parser.isSet(noImplicitIncludesOption);
-    driver.option().stringLiteral = !parser.isSet(noStringLiteralOption);
     driver.option().idBased = parser.isSet(idBasedOption);
     driver.option().postfix = parser.value(postfixOption);
     driver.option().translateFunction = parser.value(translateOption);
     driver.option().includeFile = parser.value(includeOption);
     driver.option().generator = (parser.value(generatorOption).toLower() == QLatin1String("java")) ? Option::JavaGenerator : Option::CppGenerator;
+
+    if (parser.isSet(noStringLiteralOption))
+        fprintf(stderr, "The -s, --no-stringliteral option is deprecated and it won't take any effect.\n");
 
     QString inputFile;
     if (!parser.positionalArguments().isEmpty())

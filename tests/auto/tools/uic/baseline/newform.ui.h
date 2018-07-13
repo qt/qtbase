@@ -67,7 +67,7 @@ public:
     void setupUi(QDialog *NewForm)
     {
         if (NewForm->objectName().isEmpty())
-            NewForm->setObjectName(QStringLiteral("NewForm"));
+            NewForm->setObjectName(QString::fromUtf8("NewForm"));
         NewForm->resize(495, 319);
         vboxLayout = new QVBoxLayout(NewForm);
 #ifndef Q_OS_MAC
@@ -76,15 +76,15 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
+        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         hboxLayout = new QHBoxLayout();
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(1, 1, 1, 1);
-        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
+        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         treeWidget = new QTreeWidget(NewForm);
-        treeWidget->setObjectName(QStringLiteral("treeWidget"));
+        treeWidget->setObjectName(QString::fromUtf8("treeWidget"));
         treeWidget->setIconSize(QSize(128, 128));
         treeWidget->setRootIsDecorated(false);
         treeWidget->setColumnCount(1);
@@ -92,7 +92,7 @@ public:
         hboxLayout->addWidget(treeWidget);
 
         lblPreview = new QLabel(NewForm);
-        lblPreview->setObjectName(QStringLiteral("lblPreview"));
+        lblPreview->setObjectName(QString::fromUtf8("lblPreview"));
         QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(7), static_cast<QSizePolicy::Policy>(5));
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -108,19 +108,19 @@ public:
         vboxLayout->addLayout(hboxLayout);
 
         horizontalLine = new QFrame(NewForm);
-        horizontalLine->setObjectName(QStringLiteral("horizontalLine"));
+        horizontalLine->setObjectName(QString::fromUtf8("horizontalLine"));
         horizontalLine->setFrameShape(QFrame::HLine);
         horizontalLine->setFrameShadow(QFrame::Sunken);
 
         vboxLayout->addWidget(horizontalLine);
 
         chkShowOnStartup = new QCheckBox(NewForm);
-        chkShowOnStartup->setObjectName(QStringLiteral("chkShowOnStartup"));
+        chkShowOnStartup->setObjectName(QString::fromUtf8("chkShowOnStartup"));
 
         vboxLayout->addWidget(chkShowOnStartup);
 
         buttonBox = new QDialogButtonBox(NewForm);
-        buttonBox->setObjectName(QStringLiteral("buttonBox"));
+        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
 
         vboxLayout->addWidget(buttonBox);
 

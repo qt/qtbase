@@ -67,13 +67,13 @@ public:
     void setupUi(QDialog *SaveFormAsTemplate)
     {
         if (SaveFormAsTemplate->objectName().isEmpty())
-            SaveFormAsTemplate->setObjectName(QStringLiteral("SaveFormAsTemplate"));
+            SaveFormAsTemplate->setObjectName(QString::fromUtf8("SaveFormAsTemplate"));
         vboxLayout = new QVBoxLayout(SaveFormAsTemplate);
-        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
+        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         formLayout = new QFormLayout();
-        formLayout->setObjectName(QStringLiteral("formLayout"));
+        formLayout->setObjectName(QString::fromUtf8("formLayout"));
         label = new QLabel(SaveFormAsTemplate);
-        label->setObjectName(QStringLiteral("label"));
+        label->setObjectName(QString::fromUtf8("label"));
         label->setFrameShape(QFrame::NoFrame);
         label->setFrameShadow(QFrame::Plain);
         label->setTextFormat(Qt::AutoText);
@@ -81,14 +81,14 @@ public:
         formLayout->setWidget(0, QFormLayout::LabelRole, label);
 
         templateNameEdit = new QLineEdit(SaveFormAsTemplate);
-        templateNameEdit->setObjectName(QStringLiteral("templateNameEdit"));
+        templateNameEdit->setObjectName(QString::fromUtf8("templateNameEdit"));
         templateNameEdit->setMinimumSize(QSize(222, 0));
         templateNameEdit->setEchoMode(QLineEdit::Normal);
 
         formLayout->setWidget(0, QFormLayout::FieldRole, templateNameEdit);
 
         label_2 = new QLabel(SaveFormAsTemplate);
-        label_2->setObjectName(QStringLiteral("label_2"));
+        label_2->setObjectName(QString::fromUtf8("label_2"));
         label_2->setFrameShape(QFrame::NoFrame);
         label_2->setFrameShadow(QFrame::Plain);
         label_2->setTextFormat(Qt::AutoText);
@@ -96,7 +96,7 @@ public:
         formLayout->setWidget(1, QFormLayout::LabelRole, label_2);
 
         categoryCombo = new QComboBox(SaveFormAsTemplate);
-        categoryCombo->setObjectName(QStringLiteral("categoryCombo"));
+        categoryCombo->setObjectName(QString::fromUtf8("categoryCombo"));
 
         formLayout->setWidget(1, QFormLayout::FieldRole, categoryCombo);
 
@@ -104,14 +104,14 @@ public:
         vboxLayout->addLayout(formLayout);
 
         horizontalLine = new QFrame(SaveFormAsTemplate);
-        horizontalLine->setObjectName(QStringLiteral("horizontalLine"));
+        horizontalLine->setObjectName(QString::fromUtf8("horizontalLine"));
         horizontalLine->setFrameShape(QFrame::HLine);
         horizontalLine->setFrameShadow(QFrame::Sunken);
 
         vboxLayout->addWidget(horizontalLine);
 
         buttonBox = new QDialogButtonBox(SaveFormAsTemplate);
-        buttonBox->setObjectName(QStringLiteral("buttonBox"));
+        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
 

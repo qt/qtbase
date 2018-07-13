@@ -49,20 +49,20 @@ public:
     void setupUi(QDialog *QtResourceEditorDialog)
     {
         if (QtResourceEditorDialog->objectName().isEmpty())
-            QtResourceEditorDialog->setObjectName(QStringLiteral("QtResourceEditorDialog"));
+            QtResourceEditorDialog->setObjectName(QString::fromUtf8("QtResourceEditorDialog"));
         QtResourceEditorDialog->resize(469, 317);
         verticalLayout = new QVBoxLayout(QtResourceEditorDialog);
-        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
+        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         splitter = new QSplitter(QtResourceEditorDialog);
-        splitter->setObjectName(QStringLiteral("splitter"));
+        splitter->setObjectName(QString::fromUtf8("splitter"));
         splitter->setOrientation(Qt::Horizontal);
         layoutWidget = new QWidget(splitter);
-        layoutWidget->setObjectName(QStringLiteral("layoutWidget"));
+        layoutWidget->setObjectName(QString::fromUtf8("layoutWidget"));
         gridLayout = new QGridLayout(layoutWidget);
-        gridLayout->setObjectName(QStringLiteral("gridLayout"));
+        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         gridLayout->setContentsMargins(0, 0, 0, 0);
         qrcFileList = new QListWidget(layoutWidget);
-        qrcFileList->setObjectName(QStringLiteral("qrcFileList"));
+        qrcFileList->setObjectName(QString::fromUtf8("qrcFileList"));
         QSizePolicy sizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -72,12 +72,12 @@ public:
         gridLayout->addWidget(qrcFileList, 0, 0, 1, 4);
 
         newQrcButton = new QToolButton(layoutWidget);
-        newQrcButton->setObjectName(QStringLiteral("newQrcButton"));
+        newQrcButton->setObjectName(QString::fromUtf8("newQrcButton"));
 
         gridLayout->addWidget(newQrcButton, 1, 0, 1, 1);
 
         removeQrcButton = new QToolButton(layoutWidget);
-        removeQrcButton->setObjectName(QStringLiteral("removeQrcButton"));
+        removeQrcButton->setObjectName(QString::fromUtf8("removeQrcButton"));
 
         gridLayout->addWidget(removeQrcButton, 1, 2, 1, 1);
 
@@ -86,33 +86,33 @@ public:
         gridLayout->addItem(spacerItem, 1, 3, 1, 1);
 
         importQrcButton = new QToolButton(layoutWidget);
-        importQrcButton->setObjectName(QStringLiteral("importQrcButton"));
+        importQrcButton->setObjectName(QString::fromUtf8("importQrcButton"));
 
         gridLayout->addWidget(importQrcButton, 1, 1, 1, 1);
 
         splitter->addWidget(layoutWidget);
         widget = new QWidget(splitter);
-        widget->setObjectName(QStringLiteral("widget"));
+        widget->setObjectName(QString::fromUtf8("widget"));
         gridLayout1 = new QGridLayout(widget);
-        gridLayout1->setObjectName(QStringLiteral("gridLayout1"));
+        gridLayout1->setObjectName(QString::fromUtf8("gridLayout1"));
         gridLayout1->setContentsMargins(0, 0, 0, 0);
         resourceTreeView = new QTreeView(widget);
-        resourceTreeView->setObjectName(QStringLiteral("resourceTreeView"));
+        resourceTreeView->setObjectName(QString::fromUtf8("resourceTreeView"));
 
         gridLayout1->addWidget(resourceTreeView, 0, 0, 1, 4);
 
         newResourceButton = new QToolButton(widget);
-        newResourceButton->setObjectName(QStringLiteral("newResourceButton"));
+        newResourceButton->setObjectName(QString::fromUtf8("newResourceButton"));
 
         gridLayout1->addWidget(newResourceButton, 1, 0, 1, 1);
 
         addResourceButton = new QToolButton(widget);
-        addResourceButton->setObjectName(QStringLiteral("addResourceButton"));
+        addResourceButton->setObjectName(QString::fromUtf8("addResourceButton"));
 
         gridLayout1->addWidget(addResourceButton, 1, 1, 1, 1);
 
         removeResourceButton = new QToolButton(widget);
-        removeResourceButton->setObjectName(QStringLiteral("removeResourceButton"));
+        removeResourceButton->setObjectName(QString::fromUtf8("removeResourceButton"));
 
         gridLayout1->addWidget(removeResourceButton, 1, 2, 1, 1);
 
@@ -125,7 +125,7 @@ public:
         verticalLayout->addWidget(splitter);
 
         buttonBox = new QDialogButtonBox(QtResourceEditorDialog);
-        buttonBox->setObjectName(QStringLiteral("buttonBox"));
+        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
 
