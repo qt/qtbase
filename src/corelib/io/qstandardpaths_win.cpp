@@ -129,7 +129,7 @@ static GUID writableSpecialFolderId(QStandardPaths::StandardLocation type)
 }
 
 // Convenience for SHGetKnownFolderPath().
-static QString sHGetKnownFolderPath(const GUID &clsid, QStandardPaths::StandardLocation type, bool warn = false)
+static QString sHGetKnownFolderPath(const GUID &clsid)
 {
     QString result;
     typedef HRESULT (WINAPI *GetKnownFolderPath)(const GUID&, DWORD, HANDLE, LPWSTR*);
@@ -141,11 +141,6 @@ static QString sHGetKnownFolderPath(const GUID &clsid, QStandardPaths::StandardL
     if (Q_LIKELY(sHGetKnownFolderPath && SUCCEEDED(sHGetKnownFolderPath(clsid, KF_FLAG_DONT_VERIFY, 0, &path)))) {
         result = convertCharArray(path);
         CoTaskMemFree(path);
-    } else {
-        if (warn) {
-            qErrnoWarning("SHGetKnownFolderPath() failed for standard location \"%s\".",
-                          qPrintable(displayName(type)));
-        }
     }
     return result;
 }
@@ -155,7 +150,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     QString result;
     switch (type) {
     case DownloadLocation:
-        result = sHGetKnownFolderPath(FOLDERID_Downloads, type);
+        result = sHGetKnownFolderPath(FOLDERID_Downloads);
         if (result.isEmpty())
             result = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
         break;
@@ -164,7 +159,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         // Although Microsoft has a Cache key it is a pointer to IE's cache, not a cache
         // location for everyone.  Most applications seem to be using a
         // cache directory located in their AppData directory
-        result = sHGetKnownFolderPath(writableSpecialFolderId(AppLocalDataLocation), type, /* warn */ true);
+        result = sHGetKnownFolderPath(writableSpecialFolderId(AppLocalDataLocation));
         if (!result.isEmpty()) {
             appendTestMode(result);
             appendOrganizationAndApp(result);
@@ -173,7 +168,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         break;
 
     case GenericCacheLocation:
-        result = sHGetKnownFolderPath(writableSpecialFolderId(GenericDataLocation), type, /* warn */ true);
+        result = sHGetKnownFolderPath(writableSpecialFolderId(GenericDataLocation));
         if (!result.isEmpty()) {
             appendTestMode(result);
             result += QLatin1String("/cache");
@@ -190,7 +185,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         break;
 
     default:
-        result = sHGetKnownFolderPath(writableSpecialFolderId(type), type, /* warn */ isConfigLocation(type));
+        result = sHGetKnownFolderPath(writableSpecialFolderId(type));
         if (!result.isEmpty() && isConfigLocation(type)) {
             appendTestMode(result);
             if (!isGenericConfigLocation(type))
@@ -214,7 +209,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
 
     // type-specific handling goes here
     if (isConfigLocation(type)) {
-        QString programData = sHGetKnownFolderPath(FOLDERID_ProgramData, type);
+        QString programData = sHGetKnownFolderPath(FOLDERID_ProgramData);
         if (!programData.isEmpty()) {
             if (!isGenericConfigLocation(type))
                 appendOrganizationAndApp(programData);
