@@ -672,6 +672,7 @@ void QWindowsKeyMapper::changeKeyboard()
         bidi = true;
 
     keyboardInputDirection = bidi ? Qt::RightToLeft : Qt::LeftToRight;
+    m_seenAltGr = false;
 }
 
 // Helper function that is used when obtaining the list of characters that can be produced by one key and
@@ -906,8 +907,34 @@ bool QWindowsKeyMapper::translateMultimediaKeyEventInternal(QWindow *window, con
 #endif
 }
 
-bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &msg, bool /* grab */, LRESULT *lResult)
+// QTBUG-69317: Check for AltGr found on some keyboards
+// which is a sequence of left Ctrl (SYSKEY) + right Menu (Alt).
+static bool isAltGr(MSG *msg)
 {
+    enum : LONG_PTR { RightFlag = 0x1000000 };
+    if (msg->wParam != VK_CONTROL || (msg->lParam & RightFlag) != 0
+        || (msg->message != WM_KEYDOWN && msg->message != WM_SYSKEYUP)) {
+        return false;
+    }
+    const UINT expectedMessage = msg->message == WM_SYSKEYUP
+        ? WM_KEYUP : msg->message;
+    MSG peekedMsg;
+    if (PeekMessage(&peekedMsg, msg->hwnd, 0, 0, PM_NOREMOVE) == FALSE
+        || peekedMsg.message != expectedMessage || peekedMsg.wParam != VK_MENU
+        || (peekedMsg.lParam & RightFlag) == 0) {
+        return false;
+    }
+    *msg = peekedMsg;
+    PeekMessage(&peekedMsg, msg->hwnd, 0, 0, PM_REMOVE);
+    return true;
+}
+
+bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, MSG msg,
+                                                  bool /* grab */, LRESULT *lResult)
+{
+    const bool altGr = m_detectAltGrModifier && isAltGr(&msg);
+    if (altGr)
+        m_seenAltGr = true;
     const UINT msgType = msg.message;
 
     const quint32 scancode = (msg.lParam >> 16) & scancodeBitmask;
@@ -936,10 +963,12 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
     // Get the modifier states (may be altered later, depending on key code)
     int state = 0;
     state |= (nModifiers & ShiftAny ? int(Qt::ShiftModifier) : 0);
-    state |= (nModifiers & ControlAny ? int(Qt::ControlModifier) : 0);
-    state |= (nModifiers & AltAny ? int(Qt::AltModifier) : 0);
+    state |= (nModifiers & AltLeft ? int(Qt::AltModifier) : 0);
+    if ((nModifiers & AltRight) != 0)
+        state |= m_seenAltGr ? Qt::GroupSwitchModifier : Qt::AltModifier;
+    if ((nModifiers & ControlAny) != 0 && (state & Qt::GroupSwitchModifier) == 0)
+        state |= Qt::ControlModifier;
     state |= (nModifiers & MetaAny ? int(Qt::MetaModifier) : 0);
-
     // A multi-character key or a Input method character
     // not found by our look-ahead
     if (msgType == WM_CHAR || msgType == WM_IME_CHAR) {
@@ -1010,7 +1039,16 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
     modifiersIndex |= (nModifiers & ControlAny ? 0x2 : 0);
     modifiersIndex |= (nModifiers & AltAny ? 0x4 : 0);
 
+    // Note: For the resulting key, AltGr is equivalent to Alt + Ctrl (as
+    // opposed to Linux); hence no entry in KeyboardLayoutItem is required
     int code = keyLayout[vk_key].qtKey[modifiersIndex];
+
+    // If the bit 24 of lParm is set you received a enter,
+    // otherwise a Return. (This is the extended key bit)
+    if ((code == Qt::Key_Return) && (msg.lParam & 0x1000000))
+        code = Qt::Key_Enter;
+    else if (altGr)
+        code = Qt::Key_AltGr;
 
     // Invert state logic:
     // If the key actually pressed is a modifier key, then we remove its modifier key from the
@@ -1021,11 +1059,8 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
         state = state ^ Qt::ShiftModifier;
     else if (code == Qt::Key_Alt)
         state = state ^ Qt::AltModifier;
-
-    // If the bit 24 of lParm is set you received a enter,
-    // otherwise a Return. (This is the extended key bit)
-    if ((code == Qt::Key_Return) && (msg.lParam & 0x1000000))
-        code = Qt::Key_Enter;
+    else if (code == Qt::Key_AltGr)
+        state = state ^ Qt::GroupSwitchModifier;
 
     // All cursor keys without extended bit
     if (!(msg.lParam & 0x1000000)) {

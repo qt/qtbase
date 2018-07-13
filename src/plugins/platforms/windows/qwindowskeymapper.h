@@ -81,6 +81,9 @@ public:
     void setUseRTLExtensions(bool e) { m_useRTLExtensions = e; }
     bool useRTLExtensions() const    { return m_useRTLExtensions; }
 
+    void setDetectAltGrModifier(bool a) { m_detectAltGrModifier = a; }
+    bool detectAltGrModifier() const { return m_detectAltGrModifier; }
+
     bool translateKeyEvent(QWindow *widget, HWND hwnd, const MSG &msg, LRESULT *result);
 
     QWindow *keyGrabber() const      { return m_keyGrabber; }
@@ -90,7 +93,7 @@ public:
     QList<int> possibleKeys(const QKeyEvent *e) const;
 
 private:
-    bool translateKeyEventInternal(QWindow *receiver, const MSG &msg, bool grab, LRESULT *lResult);
+    bool translateKeyEventInternal(QWindow *receiver, MSG msg, bool grab, LRESULT *lResult);
     bool translateMultimediaKeyEventInternal(QWindow *receiver, const MSG &msg);
     void updateKeyMap(const MSG &msg);
 
@@ -106,6 +109,9 @@ private:
     QChar m_lastHighSurrogate;
     static const size_t NumKeyboardLayoutItems = 256;
     KeyboardLayoutItem keyLayout[NumKeyboardLayoutItems];
+    bool m_detectAltGrModifier =  false;
+    bool m_seenAltGr = false;
+
 };
 
 enum WindowsNativeModifiers {

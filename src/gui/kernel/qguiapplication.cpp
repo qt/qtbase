@@ -594,6 +594,9 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
                By default, they will be used if the application is not an
                instance of QApplication or for Qt Quick Controls 2
                applications.
+
+        \li \c {altgr}, detect the key \c {AltGr} found on some keyboards as
+               Qt::GroupSwitchModifier.
     \endlist
 
     The following parameter is available for \c {-platform cocoa} (on macOS):

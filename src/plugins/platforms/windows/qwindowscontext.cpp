@@ -378,6 +378,11 @@ void QWindowsContext::setTabletAbsoluteRange(int a)
 #endif
 }
 
+void QWindowsContext::setDetectAltGrModifier(bool a)
+{
+    d->m_keyMapper.setDetectAltGrModifier(a);
+}
+
 int QWindowsContext::processDpiAwareness()
 {
     int result;

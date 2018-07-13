@@ -69,6 +69,7 @@ public:
         AlwaysUseNativeMenus = 0x100,
         NoNativeMenus = 0x200,
         DontUseWMPointer = 0x400,
+        DetectAltGrModifier = 0x800
     };
 
     explicit QWindowsIntegration(const QStringList &paramList);

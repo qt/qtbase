@@ -383,7 +383,8 @@
     \value AltModifier      An Alt key on the keyboard is pressed.
     \value MetaModifier     A Meta key on the keyboard is pressed.
     \value KeypadModifier   A keypad button is pressed.
-    \value GroupSwitchModifier X11 only. A Mode_switch key on the keyboard is pressed.
+    \value GroupSwitchModifier X11 only (unless activated on Windows by a command line argument).
+                            A Mode_switch key on the keyboard is pressed.
 
     \omitvalue KeyboardModifierMask
 
