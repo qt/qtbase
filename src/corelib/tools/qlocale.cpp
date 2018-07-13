@@ -83,7 +83,6 @@ public:
 };
 
 Q_GLOBAL_STATIC(QSystemLocaleSingleton, QSystemLocale_globalSystemLocale)
-static QLocaleData *system_data = 0;
 static QLocaleData globalLocaleData;
 #endif
 
@@ -629,8 +628,7 @@ QSystemLocale::QSystemLocale()
 {
     _systemLocale = this;
 
-    if (system_data)
-        system_data->m_language_id = 0;
+    globalLocaleData.m_language_id = 0;
 }
 
 /*!
@@ -647,8 +645,7 @@ QSystemLocale::~QSystemLocale()
     if (_systemLocale == this) {
         _systemLocale = 0;
 
-        if (system_data)
-            system_data->m_language_id = 0;
+        globalLocaleData.m_language_id = 0;
     }
 }
 
@@ -663,47 +660,45 @@ void QLocalePrivate::updateSystemPrivate()
 {
     // this function is NOT thread-safe!
     const QSystemLocale *sys_locale = systemLocale();
-    if (!system_data)
-        system_data = &globalLocaleData;
 
     // tell the object that the system locale has changed.
     sys_locale->query(QSystemLocale::LocaleChanged, QVariant());
 
-    *system_data = *sys_locale->fallbackUiLocale().d->m_data;
+    globalLocaleData = *sys_locale->fallbackUiLocale().d->m_data;
 
     QVariant res = sys_locale->query(QSystemLocale::LanguageId, QVariant());
     if (!res.isNull()) {
-        system_data->m_language_id = res.toInt();
-        system_data->m_script_id = QLocale::AnyScript; // default for compatibility
+        globalLocaleData.m_language_id = res.toInt();
+        globalLocaleData.m_script_id = QLocale::AnyScript; // default for compatibility
     }
     res = sys_locale->query(QSystemLocale::CountryId, QVariant());
     if (!res.isNull()) {
-        system_data->m_country_id = res.toInt();
-        system_data->m_script_id = QLocale::AnyScript; // default for compatibility
+        globalLocaleData.m_country_id = res.toInt();
+        globalLocaleData.m_script_id = QLocale::AnyScript; // default for compatibility
     }
     res = sys_locale->query(QSystemLocale::ScriptId, QVariant());
     if (!res.isNull())
-        system_data->m_script_id = res.toInt();
+        globalLocaleData.m_script_id = res.toInt();
 
     res = sys_locale->query(QSystemLocale::DecimalPoint, QVariant());
     if (!res.isNull())
-        system_data->m_decimal = res.toString().at(0).unicode();
+        globalLocaleData.m_decimal = res.toString().at(0).unicode();
 
     res = sys_locale->query(QSystemLocale::GroupSeparator, QVariant());
     if (!res.isNull())
-        system_data->m_group = res.toString().at(0).unicode();
+        globalLocaleData.m_group = res.toString().at(0).unicode();
 
     res = sys_locale->query(QSystemLocale::ZeroDigit, QVariant());
     if (!res.isNull())
-        system_data->m_zero = res.toString().at(0).unicode();
+        globalLocaleData.m_zero = res.toString().at(0).unicode();
 
     res = sys_locale->query(QSystemLocale::NegativeSign, QVariant());
     if (!res.isNull())
-        system_data->m_minus = res.toString().at(0).unicode();
+        globalLocaleData.m_minus = res.toString().at(0).unicode();
 
     res = sys_locale->query(QSystemLocale::PositiveSign, QVariant());
     if (!res.isNull())
-        system_data->m_plus = res.toString().at(0).unicode();
+        globalLocaleData.m_plus = res.toString().at(0).unicode();
 }
 #endif // !QT_NO_SYSTEMLOCALE
 
@@ -719,12 +714,12 @@ static const QLocaleData *systemData()
     {
         static QBasicMutex systemDataMutex;
         systemDataMutex.lock();
-        if (!system_data || system_data->m_language_id == 0)
+        if (globalLocaleData.m_language_id == 0)
             QLocalePrivate::updateSystemPrivate();
         systemDataMutex.unlock();
     }
 
-    return system_data;
+    return &globalLocaleData;
 #else
     return locale_data;
 #endif
