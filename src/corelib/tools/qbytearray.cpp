@@ -4124,8 +4124,15 @@ ushort QByteArray::toUShort(bool *ok, int base) const
 
     \snippet code/src_corelib_tools_qbytearray.cpp 38
 
+    \warning The QByteArray content may only contain valid numerical characters
+    which includes the plus/minus sign, the characters g and e used in scientific
+    notation, and the decimal point. Including the unit or additional characters
+    leads to a conversion error.
+
     \note The conversion of the number is performed in the default C locale,
     irrespective of the user's locale.
+
+    This function ignores leading and trailing whitespace.
 
     \sa number()
 */
@@ -4150,8 +4157,17 @@ double QByteArray::toDouble(bool *ok) const
     If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
+    \snippet code/src_corelib_tools_qbytearray.cpp 38float
+
+    \warning The QByteArray content may only contain valid numerical characters
+    which includes the plus/minus sign, the characters g and e used in scientific
+    notation, and the decimal point. Including the unit or additional characters
+    leads to a conversion error.
+
     \note The conversion of the number is performed in the default C locale,
     irrespective of the user's locale.
+
+    This function ignores leading and trailing whitespace.
 
     \sa number()
 */

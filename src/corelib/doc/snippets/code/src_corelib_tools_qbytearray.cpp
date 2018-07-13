@@ -353,9 +353,21 @@ long dec = str.toLong(&ok, 10);   // dec == 0, ok == false
 
 //! [38]
 QByteArray string("1234.56");
-double a = string.toDouble();   // a == 1234.56
+bool ok;
+double a = string.toDouble(&ok);   // a == 1234.56, ok == true
+
+string = "1234.56 Volt";
+a = str.toDouble(&ok);             // a == 0, ok == false
 //! [38]
 
+//! [38float]
+QByteArray string("1234.56");
+bool ok;
+double a = string.toFloat(&ok);    // a == 1234.56, ok == true
+
+string = "1234.56 Volt";
+a = str.toFloat(&ok);              // a == 0, ok == false
+//! [38float]
 
 //! [39]
 QByteArray text("Qt is great!");
