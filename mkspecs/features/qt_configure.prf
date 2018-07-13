@@ -1170,6 +1170,11 @@ defineTest(qtConfPrepareCompileTestSource) {
         "}"
     write_file($$test_dir/main.$$suffix, contents)|error()
 
+    for (test, tests) {
+        for (file, $$qtConfScalarOrList($${test}.test.files._KEYS_)): \
+            write_file($$test_dir/$$file, $$qtConfScalarOrList($${test}.test.files.$${file}))|error()
+    }
+
     # Create stub .pro file
     contents = "SOURCES = main.$$suffix"
     # Custom project code

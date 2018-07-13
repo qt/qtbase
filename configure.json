@@ -324,7 +324,21 @@
         "precompile_header": {
             "label": "precompiled header support",
             "type": "compile",
-            "test": "common/pch"
+            "test": {
+                "files": {
+                    "header.h": "#define HEADER_H"
+                },
+                "tail": [
+                    "#ifndef HEADER_H",
+                    "#error no go",
+                    "#endif"
+                ],
+                "qmake": [
+                    "CONFIG += precompile_header",
+                    "PRECOMPILED_DIR = .pch",
+                    "PRECOMPILED_HEADER = header.h"
+                ]
+            }
         },
         "use_gold_linker": {
             "label": "gold linker",
