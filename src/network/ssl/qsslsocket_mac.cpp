@@ -231,11 +231,6 @@ static const uint8_t dhparam[] =
     "\x90\x0b\x35\x64\xff\xd9\xe3\xac\xf2\xf2\xeb\x3a\x63\x02\x01\x02";
 #endif
 
-// No ioErr on iOS/tvOS/watchOS. (defined in MacErrors.h on macOS)
-#if defined(QT_PLATFORM_UIKIT)
-#  define ioErr -36
-#endif
-
 static OSStatus _q_SSLRead(QTcpSocket *plainSocket, char *data, size_t *dataLength)
 {
     Q_ASSERT(plainSocket);
@@ -248,10 +243,10 @@ static OSStatus _q_SSLRead(QTcpSocket *plainSocket, char *data, size_t *dataLeng
 #endif
     if (bytes < 0) {
         *dataLength = 0;
-        return ioErr;
+        return errSecIO;
     }
 
-    const OSStatus err = (size_t(bytes) < *dataLength) ? errSSLWouldBlock : noErr;
+    const OSStatus err = (size_t(bytes) < *dataLength) ? errSSLWouldBlock : errSecSuccess;
     *dataLength = bytes;
 
     return err;
@@ -269,10 +264,10 @@ static OSStatus _q_SSLWrite(QTcpSocket *plainSocket, const char *data, size_t *d
 #endif
     if (bytes < 0) {
         *dataLength = 0;
-        return ioErr;
+        return errSecIO;
     }
 
-    const OSStatus err = (size_t(bytes) < *dataLength) ? errSSLWouldBlock : noErr;
+    const OSStatus err = (size_t(bytes) < *dataLength) ? errSSLWouldBlock : errSecSuccess;
     *dataLength = bytes;
 
     return err;
@@ -441,7 +436,7 @@ void QSslSocketBackendPrivate::disconnectFromHost()
 QSslCipher QSslSocketBackendPrivate::sessionCipher() const
 {
     SSLCipherSuite cipher = 0;
-    if (context && SSLGetNegotiatedCipher(context, &cipher) == noErr)
+    if (context && SSLGetNegotiatedCipher(context, &cipher) == errSecSuccess)
         return QSslCipher_from_SSLCipherSuite(cipher);
 
     return QSslCipher();
@@ -454,7 +449,7 @@ QSsl::SslProtocol QSslSocketBackendPrivate::sessionProtocol() const
 
     SSLProtocol protocol = kSSLProtocolUnknown;
     const OSStatus err = SSLGetNegotiatedProtocolVersion(context, &protocol);
-    if (err != noErr) {
+    if (err != errSecSuccess) {
         qCWarning(lcSsl) << "SSLGetNegotiatedProtocolVersion failed:" << err;
         return QSsl::UnknownProtocol;
     }
@@ -522,7 +517,7 @@ void QSslSocketBackendPrivate::transmit()
 #ifdef QSSLSOCKET_DEBUG
             qCDebug(lcSsl) << plainSocket << "SSLWrite returned" << err;
 #endif
-            if (err != noErr && err != errSSLWouldBlock) {
+            if (err != errSecSuccess && err != errSSLWouldBlock) {
                 setErrorAndEmit(QAbstractSocket::SslInternalError,
                                 QStringLiteral("SSLWrite failed: %1").arg(err));
                 break;
@@ -562,7 +557,7 @@ void QSslSocketBackendPrivate::transmit()
                 setErrorAndEmit(QAbstractSocket::RemoteHostClosedError,
                                 QSslSocket::tr("The TLS/SSL connection has been closed"));
                 break;
-            } else if (err != noErr && err != errSSLWouldBlock) {
+            } else if (err != errSecSuccess && err != errSSLWouldBlock) {
                 setErrorAndEmit(QAbstractSocket::SslInternalError,
                                 QStringLiteral("SSLRead failed: %1").arg(err));
                 break;
@@ -852,7 +847,7 @@ bool QSslSocketBackendPrivate::initSslContext()
 
     const OSStatus err = SSLSetIOFuncs(context, reinterpret_cast<SSLReadFunc>(&_q_SSLRead),
                                        reinterpret_cast<SSLWriteFunc>(&_q_SSLWrite));
-    if (err != noErr) {
+    if (err != errSecSuccess) {
         destroySslContext();
         setErrorAndEmit(QAbstractSocket::SslInternalError,
                         QStringLiteral("SSLSetIOFuncs failed: %1").arg(err));
@@ -911,10 +906,10 @@ bool QSslSocketBackendPrivate::initSslContext()
         SSLSetPeerDomainName(context, ace.data(), ace.size());
         // tell SecureTransport we handle peer verification ourselves
         OSStatus err = SSLSetSessionOption(context, kSSLSessionOptionBreakOnServerAuth, true);
-        if (err == noErr)
+        if (err == errSecSuccess)
             err = SSLSetSessionOption(context, kSSLSessionOptionBreakOnCertRequested, true);
 
-        if (err != noErr) {
+        if (err != errSecSuccess) {
             destroySslContext();
             setErrorAndEmit(QSslSocket::SslInternalError,
                      QStringLiteral("SSLSetSessionOption failed: %1").arg(err));
@@ -925,13 +920,13 @@ bool QSslSocketBackendPrivate::initSslContext()
         if (configuration.peerVerifyMode != QSslSocket::VerifyNone) {
             // kAlwaysAuthenticate - always fails even if we set break on client auth.
             OSStatus err = SSLSetClientSideAuthenticate(context, kTryAuthenticate);
-            if (err == noErr) {
+            if (err == errSecSuccess) {
                 // We'd like to verify peer ourselves, otherwise handshake will
                 // most probably fail before we can do anything.
                 err = SSLSetSessionOption(context, kSSLSessionOptionBreakOnClientAuth, true);
             }
 
-            if (err != noErr) {
+            if (err != errSecSuccess) {
                 destroySslContext();
                 setErrorAndEmit(QAbstractSocket::SslInternalError,
                          QStringLiteral("failed to set SSL context option in server mode: %1").arg(err));
@@ -994,7 +989,7 @@ bool QSslSocketBackendPrivate::setSessionCertificate(QString &errorDescription, 
                                                               nullptr, nullptr);
         QCFType<CFArrayRef> items;
         OSStatus err = SecPKCS12Import(pkcs12, options, &items);
-        if (err != noErr) {
+        if (err != errSecSuccess) {
 #ifdef QSSLSOCKET_DEBUG
             qCWarning(lcSsl) << plainSocket
                        << QStringLiteral("SecPKCS12Import failed: %1").arg(err);
@@ -1040,7 +1035,7 @@ bool QSslSocketBackendPrivate::setSessionCertificate(QString &errorDescription, 
         }
 
         err = SSLSetCertificate(context, certs);
-        if (err != noErr) {
+        if (err != errSecSuccess) {
 #ifdef QSSLSOCKET_DEBUG
             qCWarning(lcSsl) << plainSocket
                        << QStringLiteral("Cannot set certificate and key: %1").arg(err);
@@ -1068,35 +1063,35 @@ bool QSslSocketBackendPrivate::setSessionProtocol()
         return false;
     }
 
-    OSStatus err = noErr;
+    OSStatus err = errSecSuccess;
 
     if (configuration.protocol == QSsl::SslV3) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << plainSocket << "requesting : SSLv3";
     #endif
         err = SSLSetProtocolVersionMin(context, kSSLProtocol3);
-        if (err == noErr)
+        if (err == errSecSuccess)
             err = SSLSetProtocolVersionMax(context, kSSLProtocol3);
     } else if (configuration.protocol == QSsl::TlsV1_0) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << plainSocket << "requesting : TLSv1.0";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
-        if (err == noErr)
+        if (err == errSecSuccess)
             err = SSLSetProtocolVersionMax(context, kTLSProtocol1);
     } else if (configuration.protocol == QSsl::TlsV1_1) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << plainSocket << "requesting : TLSv1.1";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol11);
-        if (err == noErr)
+        if (err == errSecSuccess)
             err = SSLSetProtocolVersionMax(context, kTLSProtocol11);
     } else if (configuration.protocol == QSsl::TlsV1_2) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << plainSocket << "requesting : TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol12);
-        if (err == noErr)
+        if (err == errSecSuccess)
             err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
     } else if (configuration.protocol == QSsl::AnyProtocol) {
     #ifdef QSSLSOCKET_DEBUG
@@ -1104,42 +1099,42 @@ bool QSslSocketBackendPrivate::setSessionProtocol()
     #endif
         // kSSLProtocol3, since kSSLProtocol2 is disabled:
         err = SSLSetProtocolVersionMin(context, kSSLProtocol3);
-        if (err == noErr)
+        if (err == errSecSuccess)
             err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
     } else if (configuration.protocol == QSsl::TlsV1SslV3) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << plainSocket << "requesting : SSLv3 - TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kSSLProtocol3);
-        if (err == noErr)
+        if (err == errSecSuccess)
             err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
     } else if (configuration.protocol == QSsl::SecureProtocols) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << plainSocket << "requesting : TLSv1 - TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
-        if (err == noErr)
+        if (err == errSecSuccess)
             err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
     } else if (configuration.protocol == QSsl::TlsV1_0OrLater) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << plainSocket << "requesting : TLSv1 - TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
-        if (err == noErr)
+        if (err == errSecSuccess)
             err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
     } else if (configuration.protocol == QSsl::TlsV1_1OrLater) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << plainSocket << "requesting : TLSv1.1 - TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol11);
-        if (err == noErr)
+        if (err == errSecSuccess)
             err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
     } else if (configuration.protocol == QSsl::TlsV1_2OrLater) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << plainSocket << "requesting : TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol12);
-        if (err == noErr)
+        if (err == errSecSuccess)
             err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
     } else {
     #ifdef QSSLSOCKET_DEBUG
@@ -1148,7 +1143,7 @@ bool QSslSocketBackendPrivate::setSessionProtocol()
         return false;
     }
 
-    return err == noErr;
+    return err == errSecSuccess;
 }
 
 bool QSslSocketBackendPrivate::canIgnoreTrustVerificationFailure() const
@@ -1193,8 +1188,8 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
 
     QCFType<SecTrustRef> trust;
     OSStatus err = SSLCopyPeerTrust(context, &trust);
-    // !trust - SSLCopyPeerTrust can return noErr but null trust.
-    if (err != noErr || !trust) {
+    // !trust - SSLCopyPeerTrust can return errSecSuccess but null trust.
+    if (err != errSecSuccess || !trust) {
         if (!canIgnoreVerify) {
             setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
                      QStringLiteral("Failed to obtain peer trust: %1").arg(err));
@@ -1217,7 +1212,7 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
         // and evaluate again).
         SecTrustResultType res = kSecTrustResultInvalid;
         err = SecTrustEvaluate(trust, &res);
-        if (err != noErr) {
+        if (err != errSecSuccess) {
             // We can not ignore this, it's not even about trust verification
             // probably ...
             setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
