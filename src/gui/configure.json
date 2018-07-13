@@ -521,7 +521,23 @@
         },
         "vulkan": {
             "label": "Vulkan",
-            "test": "qpa/vulkan",
+            "test": {
+                "comment": "Note: Qt does not rely on linking to a Vulkan library directly.",
+                "tail": [
+                    "// The pData parameter has changed from uint32_t* to void* at some point.",
+                    "// Ensure the headers have the updated one to prevent compile errors later on.",
+                    "PFN_vkCmdUpdateBuffer cmdUpdBuf;",
+                    "void testUpdateBuffer(VkCommandBuffer commandBuffer, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize dataSize, const void* pData)",
+                    "{",
+                    "    cmdUpdBuf(commandBuffer, dstBuffer, dstOffset, dataSize, pData);",
+                    "}"
+                ],
+                "main": [
+                    "VkInstanceCreateInfo info;",
+                    "testUpdateBuffer(0, 0, 0, 0, 0);"
+                ]
+            },
+            "headers": "vulkan/vulkan.h",
             "sources": [
                 { "type": "pkgConfig", "args": "vulkan" },
                 { "type": "makeSpec", "spec": "VULKAN" }
@@ -776,7 +792,15 @@
         },
         "xrender": {
             "label": "XRender for native painting",
-            "test": "x11/xrender",
+            "test": {
+                "tail": [
+                    "#if RENDER_MAJOR == 0 && RENDER_MINOR < 5",
+                    "#  error Required Xrender version 0.6 not found.",
+                    "#endif"
+                ],
+                "main": "XRenderPictFormat *format = 0;"
+            },
+            "headers": "X11/extensions/Xrender.h",
             "sources": [
                 "-lXrender"
             ],
@@ -1030,7 +1054,10 @@
         "opengles32": {
             "label": "OpenGL ES 3.2",
             "type": "compile",
-            "test": "unix/opengles32",
+            "test": {
+                "include": "GLES3/gl32.h",
+                "main": "glFramebufferTexture(GL_TEXTURE_2D, GL_DEPTH_STENCIL_ATTACHMENT, 1, 0);"
+            },
             "use": "opengl_es2"
         },
         "qpa_default_platform": {

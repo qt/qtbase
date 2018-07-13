@@ -277,7 +277,10 @@
         "cxx11_random": {
             "label": "C++11 <random>",
             "type": "compile",
-            "test": "unix/cxx11_random"
+            "test": {
+                "include": "random",
+                "main": "std::mt19937 mt(0);"
+            }
         },
         "eventfd": {
             "label": "eventfd",
@@ -295,22 +298,43 @@
         "futimens": {
             "label": "futimens()",
             "type": "compile",
-            "test": "unix/futimens"
+            "test": {
+                "include": "sys/stat.h",
+                "main": "futimens(-1, 0);",
+                "qmake": [
+                    "# Block futimens() on Apple platforms unless it's available on ALL",
+                    "# deployment targets. This simplifies the logic at the call site",
+                    "# dramatically, as it isn't strictly needed compared to futimes().",
+                    "darwin: QMAKE_CXXFLAGS += -Werror=unguarded-availability"
+                ]
+            }
         },
         "futimes": {
             "label": "futimes()",
             "type": "compile",
-            "test": "unix/futimes"
+            "test": {
+                "include": "sys/time.h",
+                "main": "futimes(-1, 0);"
+            }
         },
         "getauxval": {
             "label": "getauxval()",
             "type": "compile",
-            "test": "unix/getauxval"
+            "test": {
+                "include": "sys/auxv.h",
+                "main": "(void) getauxval(AT_NULL);"
+            }
         },
         "getentropy": {
             "label": "getentropy()",
             "type": "compile",
-            "test": "unix/getentropy"
+            "test": {
+                "include": "unistd.h",
+                "main": [
+                    "char buf[32];",
+                    "(void) getentropy(buf, sizeof(buf));"
+                ]
+            }
         },
         "posix-iconv": {
             "label": "POSIX iconv",
