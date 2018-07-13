@@ -26,7 +26,11 @@
         "corewlan": {
             "label": "CoreWLan",
             "export": "",
-            "test": "corewlan",
+            "test": {
+                "lang": "objc++",
+                "main": "[CWInterface interfaceWithName:@\"en2\"];"
+            },
+            "headers": [ "CoreWLAN/CoreWLAN.h", "CoreWLAN/CWInterface.h" ],
             "sources": [
                 "-framework CoreWLAN -framework Foundation"
             ]
