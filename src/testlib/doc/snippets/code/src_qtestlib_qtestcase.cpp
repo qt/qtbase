@@ -177,13 +177,6 @@ namespace MyNamespace {
 }
 //! [toString-overload]
 
-//! [17]
-int i = 0;
-while (myNetworkServerNotResponding() && i++ < 50)
-    QTest::qWait(250);
-//! [17]
-
-
 //! [18]
 MyTestObject test1;
 QTest::qExec(&test1);
@@ -245,11 +238,6 @@ void MyTestClass::cleanup()
 QTest::qSleep(250);
 //! [23]
 
-//! [24]
-QWidget widget;
-widget.show();
-QTest::qWaitForWindowShown(&widget);
-//! [24]
 
 //! [25]
 QTouchDevice *dev = QTest::createTouchDevice();
@@ -305,14 +293,6 @@ QTest::keyClick(myWindow, Qt::Key_Escape);
 
 QTest::keyClick(myWindow, Qt::Key_Escape, Qt::ShiftModifier, 200);
 //! [29]
-
-//! [30]
-MyObject obj;
-obj.startup();
-QTest::qWaitFor([&]() {
-    return obj.isReady();
-}, 3000);
-//! [30]
 
 }
 

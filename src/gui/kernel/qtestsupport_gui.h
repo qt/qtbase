@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -37,21 +37,20 @@
 **
 ****************************************************************************/
 
-#ifndef QTESTSYSTEM_H
-#define QTESTSYSTEM_H
+#ifndef QTESTSUPPORT_GUI_H
+#define QTESTSUPPORT_GUI_H
 
-#include <QtTest/qtestcase.h>
-
-#include <QtCore/qtestsupport_core.h>
-#ifdef QT_GUI_LIB
-#  include <QtGui/qtestsupport_gui.h>
-#endif
-#ifdef QT_WIDGETS_LIB
-#  include <QtWidgets/qtestsupport_widgets.h>
-#endif
+#include "qtguiglobal.h"
 
 QT_BEGIN_NAMESPACE
+
+class QWindow;
+
+namespace QTest {
+Q_GUI_EXPORT Q_REQUIRED_RESULT bool qWaitForWindowActive(QWindow *window, int timeout = 5000);
+Q_GUI_EXPORT Q_REQUIRED_RESULT bool qWaitForWindowExposed(QWindow *window, int timeout = 5000);
+}
+
 QT_END_NAMESPACE
 
 #endif
-

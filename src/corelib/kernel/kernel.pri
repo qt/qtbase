@@ -43,6 +43,7 @@ HEADERS += \
         kernel/qsystemerror_p.h \
         kernel/qmetatype_p.h \
         kernel/qmetatypeswitcher_p.h \
+        kernel/qtestsupport_core.h
 
 SOURCES += \
         kernel/qabstracteventdispatcher.cpp \
@@ -69,7 +70,8 @@ SOURCES += \
         kernel/qsystemsemaphore.cpp \
         kernel/qpointer.cpp \
         kernel/qmath.cpp \
-        kernel/qsystemerror.cpp
+        kernel/qsystemerror.cpp \
+        kernel/qtestsupport_core.cpp
 
 win32 {
         SOURCES += \

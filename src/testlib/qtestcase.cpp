@@ -60,6 +60,8 @@
 #include <QtCore/qwaitcondition.h>
 #include <QtCore/qmutex.h>
 
+#include <QtCore/qtestsupport_core.h>
+
 #include <QtTest/private/qtestlog_p.h>
 #include <QtTest/private/qtesttable_p.h>
 #include <QtTest/qtestdata.h>
@@ -2411,16 +2413,9 @@ bool QTest::currentTestFailed()
 */
 void QTest::qSleep(int ms)
 {
+    // ### Qt 6, move to QtCore or remove altogether
     QTEST_ASSERT(ms > 0);
-
-#if defined(Q_OS_WINRT)
-    WaitForSingleObjectEx(GetCurrentThread(), ms, true);
-#elif defined(Q_OS_WIN)
-    Sleep(uint(ms));
-#else
-    struct timespec ts = { time_t(ms / 1000), (ms % 1000) * 1000 * 1000 };
-    nanosleep(&ts, NULL);
-#endif
+    QTestPrivate::qSleep(ms);
 }
 
 /*! \internal

@@ -74,8 +74,8 @@ HEADERS += \
         kernel/qplatformgraphicsbufferhelper.h \
         kernel/qinputdevicemanager_p.h \
         kernel/qinputdevicemanager_p_p.h \
-        kernel/qhighdpiscaling_p.h
-
+        kernel/qhighdpiscaling_p.h \
+        kernel/qtestsupport_gui.h
 
 SOURCES += \
         kernel/qgenericpluginfactory.cpp \
@@ -128,7 +128,8 @@ SOURCES += \
         kernel/qplatformgraphicsbuffer.cpp \
         kernel/qplatformgraphicsbufferhelper.cpp \
         kernel/qinputdevicemanager.cpp \
-        kernel/qhighdpiscaling.cpp
+        kernel/qhighdpiscaling.cpp \
+        kernel/qtestsupport_gui.cpp
 
 qtConfig(draganddrop) {
     HEADERS += \

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -37,21 +37,47 @@
 **
 ****************************************************************************/
 
-#ifndef QTESTSYSTEM_H
-#define QTESTSYSTEM_H
-
-#include <QtTest/qtestcase.h>
+#include "qtestsupport_gui.h"
+#include "qwindow.h"
 
 #include <QtCore/qtestsupport_core.h>
-#ifdef QT_GUI_LIB
-#  include <QtGui/qtestsupport_gui.h>
-#endif
-#ifdef QT_WIDGETS_LIB
-#  include <QtWidgets/qtestsupport_widgets.h>
-#endif
 
 QT_BEGIN_NAMESPACE
+
+/*! \fn bool qWaitForWindowActive(QWindow *window, int timeout)
+    \relates QTest
+    \since 5.0
+
+    Waits for \a timeout milliseconds or until the \a window is active.
+
+    Returns \c true if \c window is active within \a timeout milliseconds, otherwise returns \c false.
+
+    \sa QTest::qWaitForWindowExposed(), QWindow::isActive()
+*/
+Q_GUI_EXPORT bool QTest::qWaitForWindowActive(QWindow *window, int timeout)
+{
+    return QTest::qWaitFor([&]() { return window->isActive(); }, timeout);
+}
+
+/*! \fn bool qWaitForWindowExposed(QWindow *window, int timeout)
+    \relates QTest
+    \since 5.0
+
+    Waits for \a timeout milliseconds or until the \a window is exposed.
+    Returns \c true if \c window is exposed within \a timeout milliseconds, otherwise returns \c false.
+
+    This is mainly useful for asynchronous systems like X11, where a window will be mapped to screen some
+    time after being asked to show itself on the screen.
+
+    Note that a window that is mapped to screen may still not be considered exposed if the window client
+    area is completely covered by other windows, or if the window is otherwise not visible. This function
+    will then time out when waiting for such a window.
+
+    \sa QTest::qWaitForWindowActive(), QWindow::isExposed()
+*/
+Q_GUI_EXPORT bool QTest::qWaitForWindowExposed(QWindow *window, int timeout)
+{
+    return QTest::qWaitFor([&]() { return window->isExposed(); }, timeout);
+}
+
 QT_END_NAMESPACE
-
-#endif
-
