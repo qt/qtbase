@@ -24,6 +24,7 @@ HEADERS += \
 
 SOURCES += \
     serialization/qcborstream.cpp \
+    serialization/qcbordiagnostic.cpp \
     serialization/qcborvalue.cpp \
     serialization/qdatastream.cpp \
     serialization/qjson.cpp \

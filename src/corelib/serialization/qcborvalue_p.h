@@ -56,6 +56,8 @@
 #include <private/qglobal_p.h>
 #include <private/qutfcodec_p.h>
 
+#include <math.h>
+
 QT_BEGIN_NAMESPACE
 
 namespace QtCbor {

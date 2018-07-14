@@ -95,6 +95,8 @@ private slots:
     void fromCbor();
     void validation_data();
     void validation();
+    void toDiagnosticNotation_data();
+    void toDiagnosticNotation();
 };
 
 // Get the validation data from TinyCBOR (see src/3rdparty/tinycbor/tests/parser/data.cpp)
@@ -1515,6 +1517,169 @@ void tst_QCborValue::validation()
         decoded = QCborValue::fromCbor(data.mid(1), &error);
         QVERIFY(error.error != QCborError{});
     }
+}
+
+void tst_QCborValue::toDiagnosticNotation_data()
+{
+    QTest::addColumn<QCborValue>("v");
+    QTest::addColumn<int>("opts");
+    QTest::addColumn<QString>("expected");
+    QDateTime dt = QDateTime::currentDateTimeUtc();
+    QUuid uuid = QUuid::createUuid();
+
+    QMetaEnum me = QMetaEnum::fromType<QCborValue::Type>();
+    auto st = [](QCborSimpleType t) { return QVariant::fromValue<SimpleTypeWrapper>(t); };
+    auto add = [me](const QCborValue &v, const QString &exp) {
+        auto addRow = [=](const char *prefix) -> QTestData & {
+            QCborValue::Type t = v.type();
+            if (t == QCborValue::Integer)
+                return QTest::addRow("%sInteger:%lld", prefix, v.toInteger());
+            if (t == QCborValue::Double)
+                return QTest::addRow("%sDouble:%g", prefix, v.toDouble());
+            if (t == QCborValue::ByteArray)
+                return QTest::addRow("%sByteArray:%d", prefix, v.toByteArray().size());
+            if (t == QCborValue::String)
+                return QTest::addRow("%sString:%d", prefix, v.toString().size());
+
+            QByteArray typeString = me.valueToKey(t);
+            Q_ASSERT(!typeString.isEmpty());
+            return QTest::newRow(prefix + typeString);
+        };
+        addRow("") << v << int(QCborValue::DiagnosticNotationOptions{}) << exp;
+        addRow("LW:") << v << int(QCborValue::LineWrapped) << exp;
+        addRow("Array:") << QCborValue(QCborArray{v}) << int(QCborValue::DiagnosticNotationOptions{}) << '[' + exp + ']';
+        addRow("Mapped:") << QCborValue(QCborMap{{2, v}}) << int(QCborValue::DiagnosticNotationOptions{}) << "{2: " + exp + '}';
+        addRow("Mapping:") << QCborValue(QCborMap{{v, 2}}) << int(QCborValue::DiagnosticNotationOptions{}) << '{' + exp + ": 2}";
+    };
+
+    // empty arrays and maps
+    QTest::newRow("EmptyArray")
+            << QCborValue(QCborArray()) << int(QCborValue::DiagnosticNotationOptions{})
+            << "[]";
+    QTest::newRow("EmptyMap")
+            << QCborValue(QCborMap()) << int(QCborValue::DiagnosticNotationOptions{})
+            << "{}";
+
+    add(QCborValue(), "undefined");
+    add(QCborValue::Null, "null");
+    add(false, "false");
+    add(true, "true");
+    add(QCborSimpleType(0), "simple(0)");
+    QTest::newRow("SimpleType-255")
+            << QCborValue(QCborSimpleType(255)) << int(QCborValue::DiagnosticNotationOptions{})
+            << "simple(255)";
+    add(0, "0");
+    add(1, "1");
+    add(-1, "-1");
+    add(std::numeric_limits<qint64>::min(), QString::number(std::numeric_limits<qint64>::min()));
+    add(std::numeric_limits<qint64>::max(), QString::number(std::numeric_limits<qint64>::max()));
+    add(0., "0.0");
+    add(1.25, "1.25");
+    add(-1.25, "-1.25");
+    add(qInf(), "inf");
+    add(-qInf(), "-inf");
+    add(qQNaN(), "nan");
+    add(QByteArray(), "h''");
+    add(QByteArray("Hello"), "h'48656c6c6f'");
+    add(QLatin1String(), QLatin1String("\"\""));
+    add("Hello", "\"Hello\"");
+    add("\"Hello\\World\"", "\"\\\"Hello\\\\World\\\"\"");
+    add(QCborValue(dt), "0(\"" + dt.toString(Qt::ISODateWithMs) + "\")");
+    add(QCborValue(QUrl("http://example.com")), "32(\"http://example.com\")");
+    add(QCborValue(QRegularExpression("^.*$")), "35(\"^.*$\")");
+    add(QCborValue(uuid), "37(h'" + uuid.toString(QUuid::Id128) + "')");
+
+    // arrays and maps with more than one element
+    QTest::newRow("2Array")
+            << QCborValue(QCborArray{0, 1}) << int(QCborValue::DiagnosticNotationOptions{})
+            << "[0, 1]";
+    QTest::newRow("2Map")
+            << QCborValue(QCborMap{{0, 1}, {"foo", "bar"}}) << int(QCborValue::DiagnosticNotationOptions{})
+            << "{0: 1, \"foo\": \"bar\"}";
+
+    // line wrapping in arrays and maps
+    QTest::newRow("LW:EmptyArray")
+            << QCborValue(QCborArray()) << int(QCborValue::LineWrapped)
+            << "[\n]";
+    QTest::newRow("LW:EmptyMap")
+            << QCborValue(QCborMap()) << int(QCborValue::LineWrapped)
+            << "{\n}";
+    QTest::newRow("LW:Array:Integer:0")
+            << QCborValue(QCborArray{0}) << int(QCborValue::LineWrapped)
+            << "[\n    0\n]";
+    QTest::newRow("LW:Array:String:5")
+            << QCborValue(QCborArray{"Hello"}) << int(QCborValue::LineWrapped)
+            << "[\n    \"Hello\"\n]";
+    QTest::newRow("LW:Map:0-0")
+            << QCborValue(QCborMap{{0, 0}}) << int(QCborValue::LineWrapped)
+            << "{\n    0: 0\n}";
+    QTest::newRow("LW:Map:String:5")
+            << QCborValue(QCborMap{{0, "Hello"}}) << int(QCborValue::LineWrapped)
+            << "{\n    0: \"Hello\"\n}";
+    QTest::newRow("LW:2Array")
+            << QCborValue(QCborArray{0, 1}) << int(QCborValue::LineWrapped)
+            << "[\n    0,\n    1\n]";
+    QTest::newRow("LW:2Map")
+            << QCborValue(QCborMap{{0, 0}, {"foo", "bar"}}) << int(QCborValue::LineWrapped)
+            << "{\n    0: 0,\n    \"foo\": \"bar\"\n}";
+
+    // nested arrays and maps
+    QTest::newRow("Array:EmptyArray")
+            << QCborValue(QCborArray() << QCborArray()) << int(QCborValue::DiagnosticNotationOptions{})
+            << "[[]]";
+    QTest::newRow("Array:EmptyMap")
+            << QCborValue(QCborArray() << QCborMap()) << int(QCborValue::DiagnosticNotationOptions{})
+            << "[{}]";
+    QTest::newRow("LW:Array:EmptyArray")
+            << QCborValue(QCborArray() << QCborArray()) << int(QCborValue::LineWrapped)
+            << "[\n    [\n    ]\n]";
+    QTest::newRow("LW:Array:EmptyMap")
+            << QCborValue(QCborArray() << QCborMap()) << int(QCborValue::LineWrapped)
+            << "[\n    {\n    }\n]";
+    QTest::newRow("LW:Array:2Array")
+            << QCborValue(QCborArray() << QCborArray{0, 1}) << int(QCborValue::LineWrapped)
+            << "[\n    [\n        0,\n        1\n    ]\n]";
+    QTest::newRow("LW:Map:2Array")
+            << QCborValue(QCborMap{{0, QCborArray{0, 1}}}) << int(QCborValue::LineWrapped)
+            << "{\n    0: [\n        0,\n        1\n    ]\n}";
+    QTest::newRow("LW:Map:2Map")
+            << QCborValue(QCborMap{{-1, QCborMap{{0, 0}, {"foo", "bar"}}}}) << int(QCborValue::LineWrapped)
+            << "{\n    -1: {\n        0: 0,\n        \"foo\": \"bar\"\n    }\n}";
+
+    // extended formatting for byte arrays
+    QTest::newRow("Extended:ByteArray:0")
+            << QCborValue(QByteArray()) << int(QCborValue::ExtendedFormat)
+            << "h''";
+    QTest::newRow("Extended:ByteArray:5")
+            << QCborValue(QByteArray("Hello")) << int(QCborValue::ExtendedFormat)
+            << "h'48 65 6c 6c 6f'";
+    QTest::newRow("Extended:ByteArray:Base64url")
+            << QCborValue(QCborKnownTags::ExpectedBase64url, QByteArray("\xff\xef"))
+            << int(QCborValue::ExtendedFormat) << "21(b64'_-8')";
+    QTest::newRow("Extended:ByteArray:Base64")
+            << QCborValue(QCborKnownTags::ExpectedBase64, QByteArray("\xff\xef"))
+            << int(QCborValue::ExtendedFormat) << "22(b64'/+8=')";
+
+    // formatting applies through arrays too
+    QTest::newRow("Extended:Array:ByteArray:Base64url")
+            << QCborValue(QCborKnownTags::ExpectedBase64url, QCborArray{QByteArray("\xff\xef")})
+            << int(QCborValue::ExtendedFormat) << "21([b64'_-8'])";
+    // and only the innermost applies
+    QTest::newRow("ByteArray:multiple-tags")
+            << QCborValue(QCborKnownTags::ExpectedBase64url,
+                          QCborArray{QCborValue(QCborKnownTags::ExpectedBase16, QByteArray("Hello")),
+                          QByteArray("\xff\xef")})
+            << int(QCborValue::ExtendedFormat) << "21([23(h'48 65 6c 6c 6f'), b64'_-8'])";
+}
+
+void tst_QCborValue::toDiagnosticNotation()
+{
+    QFETCH(QCborValue, v);
+    QFETCH(QString, expected);
+    QFETCH(int, opts);
+
+    QString result = v.toDiagnosticNotation(QCborValue::DiagnosticNotationOptions(opts));
+    QCOMPARE(result, expected);
 }
 
 QTEST_MAIN(tst_QCborValue)

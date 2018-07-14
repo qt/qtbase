@@ -47,9 +47,7 @@
 #include <qendian.h>
 #include <qlocale.h>
 #include <private/qnumeric_p.h>
-#include <qscopedvaluerollback.h>
 #include <private/qsimd_p.h>
-#include <qstack.h>
 
 #include <new>
 
@@ -768,58 +766,6 @@ using namespace QtCbor;
 // in qcborstream.cpp
 extern void qt_cbor_stream_set_error(QCborStreamReaderPrivate *d, QCborError error);
 
-/*!
-    Returns true if the double \a v can be converted to type \c T, false if
-    it's out of range. If the conversion is successful, the converted value is
-    stored in \a value; if it was not successful, \a value will contain the
-    minimum or maximum of T, depending on the sign of \a d. If \c T is
-    unsigned, then \a value contains the absolute value of \a v.
-
-    This function works for v containing infinities, but not NaN. It's the
-    caller's responsibility to exclude that possibility before calling it.
-*/
-template <typename T> static inline bool convertDoubleTo(double v, T *value)
-{
-    Q_STATIC_ASSERT(std::numeric_limits<T>::is_integer);
-
-    // The [conv.fpint] (7.10 Floating-integral conversions) section of the C++
-    // standard says only exact conversions are guaranteed. Converting
-    // integrals to floating-point with loss of precision has implementation-
-    // defined behavior whether the next higher or next lower is returned;
-    // converting FP to integral is UB if it can't be represented.
-    //
-    // That means we can't write UINT64_MAX+1. Writing ldexp(1, 64) would be
-    // correct, but only Clang, ICC and MSVC don't realize that it's a constant
-    // and the math call stays in the compiled code.
-
-    double supremum;
-    if (std::numeric_limits<T>::is_signed) {
-        supremum = -1.0 * std::numeric_limits<T>::min();    // -1 * (-2^63) = 2^63, exact (for T = qint64)
-        *value = std::numeric_limits<T>::min();
-        if (v < std::numeric_limits<T>::min())
-            return false;
-    } else {
-        using ST = typename std::make_signed<T>::type;
-        supremum = -2.0 * std::numeric_limits<ST>::min();   // -2 * (-2^63) = 2^64, exact (for T = quint64)
-        v = fabs(v);
-    }
-
-    *value = std::numeric_limits<T>::max();
-    if (v >= supremum)
-        return false;
-
-    // Now we can convert, these two conversions cannot be UB
-    *value = T(v);
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_GCC("-Wfloat-equal")
-QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
-
-    return *value == v;
-
-QT_WARNING_POP
-}
-
 static void writeDoubleToCbor(QCborStreamWriter &writer, double d, QCborValue::EncodingOptions opt)
 {
     if (qt_is_nan(d)) {
@@ -867,146 +813,6 @@ static inline int typeOrder(Element e1, Element e2)
         return e.type;
     };
     return comparable(e1) - comparable(e2);
-}
-
-namespace  {
-class DiagnosticNotation
-{
-public:
-    static QString create(const QCborValue &v, QCborValue::DiagnosticNotationOptions opts)
-    {
-        DiagnosticNotation dn(opts);
-        return dn.createFromValue(v);
-    }
-
-private:
-    QStack<int> byteArrayFormatStack;
-    QCborValue::DiagnosticNotationOptions opts;
-    int nestingLevel = 0;
-
-    DiagnosticNotation(QCborValue::DiagnosticNotationOptions opts_)
-        : opts(opts_)
-    {
-        byteArrayFormatStack.push(int(QCborKnownTags::ExpectedBase16));
-    }
-
-    QString createFromValue(const QCborValue &v);
-};
-}
-
-QString DiagnosticNotation::createFromValue(const QCborValue &v)
-{
-    QString indent(1, QLatin1Char(' '));
-    QString indented = indent;
-    if (opts & QCborValue::LineWrapped) {
-        indent = QLatin1Char('\n') + QString(4 * nestingLevel, QLatin1Char(' '));
-        indented = indent + QLatin1String("    ");
-    }
-    QScopedValueRollback<int> rollback(nestingLevel);
-    ++nestingLevel;
-
-    auto createFromArray = [=](const QCborArray &a) {
-        QString result;
-        QLatin1String comma;
-        for (auto v : a) {
-            result += comma + indented + createFromValue(v);
-            comma = QLatin1String(",");
-        }
-        return result;
-    };
-    auto createFromMap = [=](const QCborMap &m) {
-        QString result;
-        QLatin1String comma;
-        for (auto v : m) {
-            result += comma + indented + createFromValue(v.first) +
-                    QLatin1String(": ") + createFromValue(v.second);
-            comma = QLatin1String(",");
-        }
-        return result;
-    };
-    auto makeFpString = [](double d) {
-        QString s;
-        quint64 v;
-        if (qt_is_inf(d)) {
-            s = (d < 0) ? QStringLiteral("-inf") : QStringLiteral("inf");
-        } else if (qt_is_nan(d)) {
-            s = QStringLiteral("nan");
-        } else if (convertDoubleTo(d, &v)) {
-            s = QString::fromLatin1("%1.0").arg(v);
-            if (d < 0)
-                s.prepend(QLatin1Char('-'));
-        } else {
-            s = QString::number(d, 'g', QLocale::FloatingPointShortest);
-            if (!s.contains(QLatin1Char('.')) && !s.contains('e'))
-                s += QLatin1Char('.');
-        }
-        return s;
-    };
-    auto isByteArrayEncodingTag = [](QCborTag tag) {
-        switch (quint64(tag)) {
-        case quint64(QCborKnownTags::ExpectedBase16):
-        case quint64(QCborKnownTags::ExpectedBase64):
-        case quint64(QCborKnownTags::ExpectedBase64url):
-            return true;
-        }
-        return false;
-    };
-
-    switch (v.type()) {
-    case QCborValue::Integer:
-        return QString::number(v.toInteger());
-    case QCborValue::ByteArray:
-        switch (byteArrayFormatStack.top()) {
-        case int(QCborKnownTags::ExpectedBase16):
-            return QString::fromLatin1("h'" +
-                                       v.toByteArray().toHex(opts & QCborValue::ExtendedFormat ? ' ' : '\0') +
-                                       '\'');
-        case int(QCborKnownTags::ExpectedBase64):
-            return QString::fromLatin1("b64'" + v.toByteArray().toBase64() + '\'');
-        default:
-        case int(QCborKnownTags::ExpectedBase64url):
-            return QString::fromLatin1("b64'" +
-                                       v.toByteArray().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals) +
-                                       '\'');
-        }
-    case QCborValue::String:
-        // ### TODO: Needs escaping!
-        return QLatin1Char('"') + v.toString() + QLatin1Char('"');
-    case QCborValue::Array:
-        return QLatin1Char('[') + createFromArray(v.toArray()) + indent + QLatin1Char(']');
-    case QCborValue::Map:
-        return QLatin1Char('{') + createFromMap(v.toMap()) + indent + QLatin1Char('}');
-    case QCborValue::False:
-        return QStringLiteral("false");
-    case QCborValue::True:
-        return QStringLiteral("true");
-    case QCborValue::Null:
-        return QStringLiteral("null");
-    case QCborValue::Undefined:
-        return QStringLiteral("undefined");
-    case QCborValue::Double:
-        return makeFpString(v.toDouble());
-    case QCborValue::Invalid:
-        return QStringLiteral("<invalid>");
-
-    case QCborValue::Tag:
-    case QCborValue::SimpleType:
-    default:    // tags and other simple types that are recognized
-        break;  // are all handled below
-    }
-
-    if (v.isTag()) {
-        bool byteArrayFormat = opts & QCborValue::ExtendedFormat && isByteArrayEncodingTag(v.tag());
-        if (byteArrayFormat)
-            byteArrayFormatStack.push(int(v.tag()));
-        QString result = QString::fromLatin1("%1(%2)").arg(quint64(v.tag())).arg(createFromValue(v.taggedValue()));
-        if (byteArrayFormat)
-            byteArrayFormatStack.pop();
-        return result;
-    }
-
-    // must be a simple type
-    return QString::fromLatin1("simple(%1)").arg(quint8(v.toSimpleType()));
 }
 
 QCborContainerPrivate::~QCborContainerPrivate()
@@ -2506,37 +2312,6 @@ Q_NEVER_INLINE void QCborValue::toCbor(QCborStreamWriter &writer, EncodingOption
         Q_UNREACHABLE();
         break;
     }
-}
-
-/*!
-    Creates the diagnostic notation equivalent of this CBOR object and return
-    it. The \a opts parameter controls the dialect of the notation. Diagnostic
-    notation is useful in debugging, to aid the developer in understanding what
-    value is stored in the QCborValue or in a CBOR stream. For that reason, the
-    Qt API provides no support for parsing the diagnostic back into the
-    in-memory format or CBOR stream, though the representation is unique and it
-    would be possible.
-
-    CBOR diagnostic notation is specified by
-    \l{https://tools.ietf.org/html/rfc7049#section-6}{section 6} of RFC 7049.
-    It is a text representation of the CBOR stream and it is very similar to
-    JSON, but it supports the CBOR types not found in JSON. The extended format
-    enabled by the \l{DiagnosticNotationOption}{ExtendedFormat} flag is
-    currently in some IETF drafts and its format is subject to change.
-
-    This function produces the equivalent representation of the stream that
-    toCbor() would produce, without any transformation option provided there.
-    This also implies this function may not produce a representation of the
-    stream that was used to create the object, if it was created using
-    fromCbor(), as that function may have applied transformations. For a
-    high-fidelity notation of a stream, without transformation, see the \c
-    cbordump example.
-
-    \sa toCbor(), toJsonDocument(), QJsonDocument::toJson()
- */
-QString QCborValue::toDiagnosticNotation(DiagnosticNotationOptions opts) const
-{
-    return DiagnosticNotation::create(*this, opts);
 }
 
 void QCborValueRef::toCbor(QCborStreamWriter &writer, QCborValue::EncodingOptions opt)

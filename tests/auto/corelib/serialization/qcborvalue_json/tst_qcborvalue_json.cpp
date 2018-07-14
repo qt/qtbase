@@ -300,12 +300,12 @@ void tst_QCborValue_Json::nonStringKeysInMaps_data()
     QTest::newRow("base64") << QCborValue(QCborKnownTags::ExpectedBase64, data) << "/wE=";
     QTest::newRow("hex") << QCborValue(QCborKnownTags::ExpectedBase16, data) << "ff01";
 
-    QTest::newRow("emptyarray") << QCborValue(QCborValue::Array) << "[ ]";
-    QTest::newRow("emptymap") << QCborValue(QCborValue::Map) << "{ }";
+    QTest::newRow("emptyarray") << QCborValue(QCborValue::Array) << "[]";
+    QTest::newRow("emptymap") << QCborValue(QCborValue::Map) << "{}";
     QTest::newRow("array") << QCborValue(QCborArray{1, true, 2.5, "Hello"})
-                           << "[ 1, true, 2.5, \"Hello\" ]";
+                           << "[1, true, 2.5, \"Hello\"]";
     QTest::newRow("map") << QCborValue(QCborMap{{"Hello", 0}, {0, "Hello"}})
-                         << "{ \"Hello\": 0, 0: \"Hello\" }";
+                         << "{\"Hello\": 0, 0: \"Hello\"}";
 
     QDateTime dt = QDateTime::currentDateTimeUtc();
     QUrl url("https://example.com");
