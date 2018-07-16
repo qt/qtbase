@@ -548,7 +548,7 @@ void QNetworkAccessManager::setProxy(const QNetworkProxy &proxy)
     Q_D(QNetworkAccessManager);
     delete d->proxyFactory;
     d->proxy = proxy;
-    d->proxyFactory = 0;
+    d->proxyFactory = nullptr;
 }
 
 /*!
@@ -1804,7 +1804,7 @@ void QNetworkAccessManagerPrivate::destroyThread()
             delete thread;
         else
             QObject::connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-        thread = 0;
+        thread = nullptr;
     }
 }
 
