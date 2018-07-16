@@ -1837,6 +1837,8 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
         auto *button = static_cast<NSButton *>(bv);
         button.buttonType = buttonType;
         button.bezelStyle = bezelStyle;
+        if (widget.type == Button_CheckBox)
+            button.allowsMixedState = YES;
     }
 
     return bv;
