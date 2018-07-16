@@ -244,6 +244,7 @@ QXcbXSettings::QXcbXSettings(QXcbVirtualDesktop *screen)
     if (!d_ptr->x_settings_window)
         return;
 
+    screen->connection()->addWindowEventListener(d_ptr->x_settings_window, this);
     const uint32_t event = XCB_CW_EVENT_MASK;
     const uint32_t event_mask[] = { XCB_EVENT_MASK_STRUCTURE_NOTIFY|XCB_EVENT_MASK_PROPERTY_CHANGE };
     xcb_change_window_attributes(screen->xcb_connection(),d_ptr->x_settings_window,event,event_mask);

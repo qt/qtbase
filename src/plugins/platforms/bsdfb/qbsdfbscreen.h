@@ -54,7 +54,7 @@ public:
     explicit QBsdFbScreen(const QStringList &args);
     ~QBsdFbScreen() override;
 
-    bool initialize();
+    bool initialize() override;
 
     QPixmap grabWindow(WId wid, int x, int y, int width, int height) const override;
 

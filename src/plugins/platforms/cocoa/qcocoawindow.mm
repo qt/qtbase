@@ -1503,6 +1503,15 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
 {
     QMacAutoReleasePool pool;
 
+    Qt::WindowType type = window()->type();
+    Qt::WindowFlags flags = window()->flags();
+
+    // Note: The macOS window manager has a bug, where if a screen is rotated, it will not allow
+    // a window to be created within the area of the screen that has a Y coordinate (I quadrant)
+    // higher than the height of the screen  in its non-rotated state, unless the window is
+    // created with the NSWindowStyleMaskBorderless style mask.
+    NSWindowStyleMask styleMask = windowStyleMask(flags);
+
     QRect rect = geometry();
 
     QScreen *targetScreen = nullptr;
@@ -1514,26 +1523,22 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
     }
 
     if (!targetScreen) {
-        qCWarning(lcQpaWindow) << "Window position outside any known screen, using primary screen";
+        qCWarning(lcQpaWindow) << "Window position" << rect << "outside any known screen, using primary screen";
         targetScreen = QGuiApplication::primaryScreen();
+        // AppKit will only reposition a window that's outside the target screen area if
+        // the window has a title bar. If left out, the window ends up with no screen.
+        // The style mask will be corrected to the original style mask in setWindowFlags.
+        styleMask |= NSWindowStyleMaskTitled;
     }
 
     rect.translate(-targetScreen->geometry().topLeft());
     QCocoaScreen *cocoaScreen = static_cast<QCocoaScreen *>(targetScreen->handle());
     NSRect frame = QCocoaScreen::mapToNative(rect, cocoaScreen);
 
-    // Note: The macOS window manager has a bug, where if a screen is rotated, it will not allow
-    // a window to be created within the area of the screen that has a Y coordinate (I quadrant)
-    // higher than the height of the screen  in its non-rotated state, unless the window is
-    // created with the NSWindowStyleMaskBorderless style mask.
-
-    Qt::WindowType type = window()->type();
-    Qt::WindowFlags flags = window()->flags();
-
     // Create NSWindow
     Class windowClass = shouldBePanel ? [QNSPanel class] : [QNSWindow class];
     QCocoaNSWindow *nsWindow = [[windowClass alloc] initWithContentRect:frame
-        styleMask:windowStyleMask(flags)
+        styleMask:styleMask
         // Deferring window creation breaks OpenGL (the GL context is
         // set up before the window is shown and needs a proper window)
         backing:NSBackingStoreBuffered defer:NO
@@ -1541,6 +1546,11 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
 
     Q_ASSERT_X(nsWindow.screen == cocoaScreen->nativeScreen(), "QCocoaWindow",
         "Resulting NSScreen should match the requested NSScreen");
+
+    if (targetScreen != window()->screen()) {
+        QWindowSystemInterface::handleWindowScreenChanged<
+            QWindowSystemInterface::SynchronousDelivery>(window(), targetScreen);
+    }
 
     nsWindow.delegate = [[QNSWindowDelegate alloc] initWithQCocoaWindow:this];
 
@@ -1560,9 +1570,6 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
                 name:NSApplicationWillBecomeActiveNotification object:nil];
         });
     }
-
-    if (targetScreen != window()->screen())
-        QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(window(), targetScreen);
 
     nsWindow.restorable = NO;
     nsWindow.level = windowLevel(flags);

@@ -1268,7 +1268,8 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
             it.value().id = id;
         }
 
-        if (isPressed && it.value().pressure == 0.)
+        const bool wasPressEvent = isPressed && it.value().pressure == 0.;
+        if (wasPressEvent)
             it.value().state = Qt::TouchPointPressed;
         else if (!isPressed && it.value().pressure > 0.)
             it.value().state = Qt::TouchPointReleased;
@@ -1282,6 +1283,8 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
         it.value().pressure = pressure;
 
         QWindowSystemInterface::handleTouchEvent(d->currentTargetWindow, d->touchDevice, d->touchPoints.values(), mods);
+        if (wasPressEvent)
+            it.value().state = Qt::TouchPointStationary;
 
         // Fall-through for pen to generate tablet event
         if (pointerDeviceType != PointerDeviceType_Pen)

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -186,7 +186,7 @@ QT_BEGIN_NAMESPACE
 */
 
 
-static long qt_find_pattern(const char *s, ulong s_len,
+static qsizetype qt_find_pattern(const char *s, qsizetype s_len,
                              const char *pattern, ulong p_len)
 {
     /*
@@ -201,8 +201,10 @@ static long qt_find_pattern(const char *s, ulong s_len,
       because we have to skip over all the debugging symbols first
     */
 
-    if (! s || ! pattern || p_len > s_len) return -1;
-    ulong i, hs = 0, hp = 0, delta = s_len - p_len;
+    if (!s || !pattern || qsizetype(p_len) > s_len)
+        return -1;
+
+    size_t i, hs = 0, hp = 0, delta = s_len - p_len;
 
     for (i = 0; i < p_len; ++i) {
         hs += s[delta + i];
@@ -211,7 +213,7 @@ static long qt_find_pattern(const char *s, ulong s_len,
     i = delta;
     for (;;) {
         if (hs == hp && qstrncmp(s + i, pattern, p_len) == 0)
-            return i;
+            return i;   // can't overflow, by construction
         if (i == 0)
             break;
         --i;
@@ -245,35 +247,27 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
         return false;
     }
 
+    // Files can be bigger than the virtual memory size on 32-bit systems, so
+    // we limit to 512 MB there. For 64-bit, we allow up to 2^40 bytes.
+    constexpr qint64 MaxMemoryMapSize =
+            Q_INT64_C(1) << (sizeof(qsizetype) > 4 ? 40 : 29);
+
     QByteArray data;
-    ulong fdlen = file.size();
+    qsizetype fdlen = qMin(file.size(), MaxMemoryMapSize);
     const char *filedata = reinterpret_cast<char *>(file.map(0, fdlen));
 
     if (filedata == 0) {
-        if (uchar *mapdata = file.map(0, 1)) {
-            file.unmap(mapdata);
-            // Mapping is supported, but failed for the entire file, likely due to OOM.
-            // Return false, as readAll() would cause a bad_alloc and terminate the process.
-            if (lib)
-                lib->errorString = QLibrary::tr("Out of memory while loading plugin '%1'.").arg(library);
-            if (qt_debug_component()) {
-                qWarning("%s: %s", QFile::encodeName(library).constData(),
-                    qPrintable(QSystemError::stdString(ENOMEM)));
-            }
-            return false;
-        } else {
-            // Try reading the data into memory instead.
-            data = file.readAll();
-            filedata = data.constData();
-            fdlen = data.size();
-        }
+        // Try reading the data into memory instead (up to 64 MB).
+        data = file.read(64 * 1024 * 1024);
+        filedata = data.constData();
+        fdlen = data.size();
     }
 
     /*
        ELF and Mach-O binaries with GCC have .qplugin sections.
     */
     bool hasMetaData = false;
-    long pos = 0;
+    qsizetype pos = 0;
     char pattern[] = "qTMETADATA  ";
     pattern[0] = 'Q'; // Ensure the pattern "QTMETADATA" is not found in this library should QPluginLoader ever encounter it.
     const ulong plen = qstrlen(pattern);
@@ -285,7 +279,7 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
             }
             return false;
     } else if (r == QElfParser::QtMetaDataSection) {
-        long rel = qt_find_pattern(filedata + pos, fdlen, pattern, plen);
+        qsizetype rel = qt_find_pattern(filedata + pos, fdlen, pattern, plen);
         if (rel < 0)
             pos = -1;
         else
@@ -305,7 +299,7 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
         }
         // even if the metadata section was not found, the Mach-O parser will
         // at least return the boundaries of the right architecture
-        long rel = qt_find_pattern(filedata + pos, fdlen, pattern, plen);
+        qsizetype rel = qt_find_pattern(filedata + pos, fdlen, pattern, plen);
         if (rel < 0)
             pos = -1;
         else

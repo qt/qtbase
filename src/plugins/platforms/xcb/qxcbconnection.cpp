@@ -74,10 +74,12 @@
 #include <xcb/xinerama.h>
 
 #if QT_CONFIG(xcb_xlib)
+#define register        /* C++17 deprecated register */
 #include <X11/Xlib.h>
 #include <X11/Xlib-xcb.h>
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
+#undef register
 #endif
 
 #if QT_CONFIG(xcb_xinput)
@@ -1213,10 +1215,9 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             handled = true;
         } else if (has_randr_extension && response_type == xrandr_first_event + XCB_RANDR_SCREEN_CHANGE_NOTIFY) {
             xcb_randr_screen_change_notify_event_t *change_event = reinterpret_cast<xcb_randr_screen_change_notify_event_t *>(event);
-            for (QXcbScreen *s : qAsConst(m_screens)) {
-                if (s->root() == change_event->root )
-                    s->handleScreenChange(change_event);
-            }
+            if (auto *virtualDesktop = virtualDesktopForRootWindow(change_event->root))
+                virtualDesktop->handleScreenChange(change_event);
+
             handled = true;
 #if QT_CONFIG(xkb)
         } else if (response_type == xkb_first_event) { // https://bugs.freedesktop.org/show_bug.cgi?id=51295

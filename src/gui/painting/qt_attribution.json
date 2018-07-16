@@ -11,7 +11,7 @@
         "License": "Freetype Project License or GNU General Public License v2.0 only",
         "LicenseId": "FTL or GPL-2.0",
         "LicenseFile": "../../3rdparty/freetype/docs/LICENSE.TXT",
-        "Copyright": "Copyright 2006-2015 by David Turner, Robert Wilhelm, and Werner Lemberg."
+        "Copyright": "Copyright 2000-2016 by David Turner, Robert Wilhelm, and Werner Lemberg."
     },
     {
         "Id": "smooth-scaling-algorithm",

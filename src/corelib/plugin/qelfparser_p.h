@@ -96,7 +96,7 @@ public:
     }
 
     const char *parseSectionHeader(const char* s, ElfSectionHeader *sh);
-    int parse(const char *m_s, ulong fdlen, const QString &library, QLibraryPrivate *lib, long *pos, ulong *sectionlen);
+    int parse(const char *m_s, ulong fdlen, const QString &library, QLibraryPrivate *lib, qsizetype *pos, qsizetype *sectionlen);
 };
 
 QT_END_NAMESPACE

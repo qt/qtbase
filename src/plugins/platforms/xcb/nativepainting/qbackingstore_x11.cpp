@@ -48,7 +48,9 @@
 # include <X11/extensions/Xrender.h>
 #endif
 
+#define register        /* C++17 deprecated register */
 #include <X11/Xlib.h>
+#undef register
 
 #ifndef None
 #define None 0L

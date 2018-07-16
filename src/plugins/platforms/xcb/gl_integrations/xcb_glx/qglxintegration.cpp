@@ -45,8 +45,10 @@
 #include "qxcbwindow.h"
 #include "qxcbscreen.h"
 
+#define register        /* C++17 deprecated register */
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#undef register
 #include <GL/glx.h>
 
 #include <QtGui/QOpenGLContext>

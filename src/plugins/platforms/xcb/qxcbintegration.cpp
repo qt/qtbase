@@ -66,7 +66,9 @@
 #include <QtGui/private/qguiapplication_p.h>
 
 #if QT_CONFIG(xcb_xlib)
+#define register        /* C++17 deprecated register */
 #include <X11/Xlib.h>
+#undef register
 #endif
 #if QT_CONFIG(xcb_native_painting)
 #include "qxcbnativepainting.h"

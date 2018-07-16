@@ -1039,6 +1039,9 @@ void tst_QRawFont::fallbackFontsOrder()
 
     QList<QGlyphRun> glyphRuns = layout.glyphRuns();
 
+#ifdef Q_OS_ANDROID
+    QEXPECT_FAIL("", "QTBUG-69217", Continue);
+#endif
     // Since QtBidiTestFont does not support Arabic nor the space, both should map to
     // the same font. If this fails, it is an indication that the list of fallbacks fonts
     // is not sorted by writing system support.

@@ -89,7 +89,7 @@ static int ns(const QString &reason, const QString &library, QString *errorStrin
     return QMachOParser::NotSuitable;
 }
 
-int QMachOParser::parse(const char *m_s, ulong fdlen, const QString &library, QString *errorString, long *pos, ulong *sectionlen)
+int QMachOParser::parse(const char *m_s, ulong fdlen, const QString &library, QString *errorString, qsizetype *pos, qsizetype *sectionlen)
 {
     // The minimum size of a Mach-O binary we're interested in.
     // It must have a full Mach header, at least one segment and at least one
