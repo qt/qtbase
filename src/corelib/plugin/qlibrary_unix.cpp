@@ -182,21 +182,23 @@ bool QLibraryPrivate::load_sys()
 
 #if defined(Q_PROCESSOR_X86) && !defined(Q_OS_DARWIN)
     if (qCpuHasFeature(ArchHaswell)) {
-        auto transform = [](QStringList &list, QString (*f)(QString)) {
+        auto transform = [](QStringList &list, void (*f)(QString *)) {
             QStringList tmp;
             qSwap(tmp, list);
             list.reserve(tmp.size() * 2);
             for (const QString &s : qAsConst(tmp)) {
-                list.append(f(s));
+                QString modifiedPath = s;
+                f(&modifiedPath);
+                list.append(modifiedPath);
                 list.append(s);
             }
         };
         if (pluginState == IsAPlugin) {
             // add ".avx2" to each suffix in the list
-            transform(suffixes, [](QString s) { return s.append(QLatin1String(".avx2")); });
+            transform(suffixes, [](QString *s) { s->append(QLatin1String(".avx2")); });
         } else {
             // prepend "haswell/" to each prefix in the list
-            transform(prefixes, [](QString s) { return s.prepend(QLatin1String("haswell/")); });
+            transform(prefixes, [](QString *s) { s->prepend(QLatin1String("haswell/")); });
         }
     }
 #endif
