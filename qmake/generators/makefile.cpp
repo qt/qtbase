@@ -2771,6 +2771,9 @@ MakefileGenerator::writeMakeQmake(QTextStream &t, bool noDummyQmakeAll)
             const ProStringList &included = escapeDependencyPaths(project->values("QMAKE_INTERNAL_INCLUDED_FILES"));
             t << included.join(QString(" \\\n\t\t")) << "\n\t"
               << qmake << endl;
+            const ProStringList &extraCommands = project->values("QMAKE_MAKE_QMAKE_EXTRA_COMMANDS");
+            if (!extraCommands.isEmpty())
+                t << "\t" << extraCommands.join(QString("\n\t")) << endl;
             for(int include = 0; include < included.size(); ++include) {
                 const ProString &i = included.at(include);
                 if(!i.isEmpty())

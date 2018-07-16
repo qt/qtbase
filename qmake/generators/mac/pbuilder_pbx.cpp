@@ -542,6 +542,10 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             QTextStream mkt(&mkf);
             writeHeader(mkt);
             mkt << "QMAKE    = " << var("QMAKE_QMAKE") << endl;
+            project->values("QMAKE_MAKE_QMAKE_EXTRA_COMMANDS")
+                << "@echo 'warning: Xcode project has been regenerated, custom settings have been lost. " \
+                   "Use CONFIG+=no_autoqmake to prevent this behavior in the future, " \
+                   "at the cost of requiring manual project change tracking.'";
             writeMakeQmake(mkt);
             mkt.flush();
             mkf.close();
