@@ -47,12 +47,50 @@
                 { "type": "pkgConfig", "args": "glib-2.0 gthread-2.0" }
             ]
         },
+        "posix_iconv": {
+            "label": "POSIX iconv",
+            "export": "iconv",
+            "test": {
+                "main": [
+                    "iconv_t x = iconv_open(\"\", \"\");",
+                    "char *inp, *outp;",
+                    "size_t inbytes, outbytes;",
+                    "iconv(x, &inp, &inbytes, &outp, &outbytes);",
+                    "iconv_close(x);"
+                ]
+            },
+            "headers": "iconv.h",
+            "sources": [
+                { "libs": "-liconv", "condition": "config.openbsd || config.haiku" },
+                { "libs": "", "condition": "!(config.openbsd || config.haiku)" }
+            ]
+        },
         "gnu_iconv": {
             "label": "GNU libiconv",
             "export": "iconv",
-            "test": "gnu-libiconv",
+            "test": {
+                "main": [
+                    "iconv_t x = iconv_open(\"\", \"\");",
+                    "const char *inp;",
+                    "char *outp;",
+                    "size_t inbytes, outbytes;",
+                    "iconv(x, &inp, &inbytes, &outp, &outbytes);",
+                    "iconv_close(x);"
+                ]
+            },
+            "headers": "iconv.h",
             "sources": [
                 "-liconv"
+            ]
+        },
+        "sun_iconv": {
+            "label": "SUN libiconv",
+            "export": "iconv",
+            "test": {
+                "inherit": "gnu_iconv"
+            },
+            "sources": [
+                ""
             ]
         },
         "icu": {
@@ -336,16 +374,6 @@
                 ]
             }
         },
-        "posix-iconv": {
-            "label": "POSIX iconv",
-            "type": "compile",
-            "test": "iconv"
-        },
-        "sun-iconv": {
-            "label": "SUN libiconv",
-            "type": "compile",
-            "test": "sun-libiconv"
-        },
         "inotify": {
             "label": "inotify",
             "type": "compile",
@@ -576,14 +604,14 @@
             "label": "POSIX iconv",
             "enable": "input.iconv == 'posix'",
             "disable": "input.iconv == 'sun' || input.iconv == 'gnu' || input.iconv == 'no'",
-            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && tests.posix-iconv",
+            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && libs.posix_iconv",
             "output": [ "privateFeature" ]
         },
         "sun-libiconv": {
             "label": "SUN iconv",
             "enable": "input.iconv == 'sun'",
             "disable": "input.iconv == 'posix' || input.iconv == 'gnu' || input.iconv == 'no'",
-            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && !features.posix-libiconv && tests.sun-iconv"
+            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && !features.posix-libiconv && libs.sun_iconv"
         },
         "gnu-libiconv": {
             "label": "GNU iconv",

@@ -56,8 +56,7 @@ qtConfig(textcodec) {
         qtConfig(iconv) {
             HEADERS += codecs/qiconvcodec_p.h
             SOURCES += codecs/qiconvcodec.cpp
-            qtConfig(gnu-libiconv): \
-                QMAKE_USE_PRIVATE += iconv
+            QMAKE_USE_PRIVATE += iconv
         }
 
         win32 {
