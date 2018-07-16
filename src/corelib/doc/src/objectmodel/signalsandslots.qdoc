@@ -246,18 +246,20 @@
     If you pass the Qt::UniqueConnection \a type, the connection will only
     be made if it is not a duplicate. If there is already a duplicate
     (exact same signal to the exact same slot on the same objects),
-    the connection will fail and connect will return false
+    the connection will fail and connect will return \c false.
 
     This example illustrates that objects can work together without needing to
     know any information about each other. To enable this, the objects only
     need to be connected together, and this can be achieved with some simple
-    QObject::connect() function calls, or with \c{uic}'s
-    \l{Automatic Connections}{automatic connections} feature.
+    QObject::connect() function calls, or with \l{User Interface Compiler
+    (uic)}{uic}'s \l{Automatic Connections}{automatic connections} feature.
 
 
     \section1 A Real Example
 
-    Here is a simple commented example of a widget.
+    The following is an example of the header of a simple widget class without
+    member functions. The purpose is to show how you can utilize signals and
+    slots in your own applications.
 
     \snippet signalsandslots/lcdnumber.h 0
     \snippet signalsandslots/lcdnumber.h 1
@@ -281,19 +283,13 @@
 
     \snippet signalsandslots/lcdnumber.h 6
     \snippet signalsandslots/lcdnumber.h 7
-
-    It's not obviously relevant to the moc, but if you inherit
-    QWidget you almost certainly want to have the \c parent argument
-    in your constructor and pass it to the base class's constructor.
-
-    Some destructors and member functions are omitted here; the \c
-    moc ignores member functions.
-
+    \codeline
     \snippet signalsandslots/lcdnumber.h 8
     \snippet signalsandslots/lcdnumber.h 9
 
-    \c LcdNumber emits a signal when it is asked to show an impossible
-    value.
+    After the class constructor and \c public members, we declare the class
+    \c signals. The \c LcdNumber class emits a signal, \c overflow(), when it
+    is asked to show an impossible value.
 
     If you don't care about overflow, or you know that overflow
     cannot occur, you can ignore the \c overflow() signal, i.e. don't
@@ -325,8 +321,8 @@
     callbacks, you'd have to find five different names and keep track
     of the types yourself.
 
-    Some irrelevant member functions have been omitted from this
-    example.
+    \sa QLCDNumber, QObject::connect(), {Digital Clock Example}, and
+    {Tetrix Example}.
 
     \section1 Signals And Slots With Default Arguments
 
@@ -361,16 +357,24 @@
     You can also connect to functors or C++11 lambdas:
 
     \code
-    connect(sender, &QObject::destroyed, [=](){ this->m_objects.remove(sender); });
+    connect(sender, &QObject::destroyed, this, [=](){ this->m_objects.remove(sender); });
     \endcode
+
+    In both these cases, we provide \a this as context in the call to connect().
+    The context object provides information about in which thread the receiver
+    should be executed. This is important, as providing the context ensures
+    that the receiver is executed in the context thread.
+
+    The lambda will be disconnected when the sender or context is destroyed.
+    You should take care that any objects used inside the functor are still
+    alive when the signal is emitted.
 
     The other way to connect a signal to a slot is to use QObject::connect()
     and the \c{SIGNAL} and \c{SLOT} macros.
-    The rule about whether to
-    include arguments or not in the \c{SIGNAL()} and \c{SLOT()}
-    macros, if the arguments have default values, is that the
-    signature passed to the \c{SIGNAL()} macro must \e not have fewer
-    arguments than the signature passed to the \c{SLOT()} macro.
+    The rule about whether to include arguments or not in the \c{SIGNAL()} and
+    \c{SLOT()} macros, if the arguments have default values, is that the
+    signature passed to the \c{SIGNAL()} macro must \e not have fewer arguments
+    than the signature passed to the \c{SLOT()} macro.
 
     All of these would work:
     \code
