@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 John Layt <jlayt@kde.org>
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -49,6 +49,8 @@
 QT_BEGIN_NAMESPACE
 
 QT_WARNING_DISABLE_GCC("-Wsign-compare")
+typedef QVector<QWindowsPrinterInfo> WindowsPrinterLookup;
+Q_GLOBAL_STATIC(WindowsPrinterLookup, windowsDeviceLookup);
 
 extern qreal qt_pointMultiplier(QPageLayout::Unit unit);
 
@@ -121,15 +123,39 @@ QWindowsPrintDevice::QWindowsPrintDevice(const QString &id)
                 m_makeAndModel = QString::fromWCharArray(info->pDriverName); // TODO Check is not available elsewhere
                 m_isRemote = info->Attributes & PRINTER_ATTRIBUTE_NETWORK;
             }
-            m_supportsMultipleCopies = (DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_COPIES, NULL, NULL) > 1);
-            m_supportsCollateCopies = DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_COLLATE, NULL, NULL);
-            // Min/Max custom size is in tenths of a millimeter
-            const qreal multiplier = qt_pointMultiplier(QPageLayout::Millimeter);
-            DWORD min = DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_MINEXTENT, NULL, NULL);
-            m_minimumPhysicalPageSize = QSize((LOWORD(min) / 10.0) * multiplier, (HIWORD(min) / 10.0) * multiplier);
-            DWORD max = DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_MAXEXTENT, NULL, NULL);
-            m_maximumPhysicalPageSize = QSize((LOWORD(max) / 10.0) * multiplier, (HIWORD(max) / 10.0) * multiplier);
-            m_supportsCustomPageSizes = (m_maximumPhysicalPageSize.width() > 0 && m_maximumPhysicalPageSize.height() > 0);
+            QWindowsPrinterInfo m_info;
+            m_info.m_id = m_id;
+            m_info.m_name = m_name;
+            m_info.m_location = m_location;
+            m_info.m_makeAndModel = m_makeAndModel;
+            m_info.m_isRemote = m_isRemote;
+            m_infoIndex = windowsDeviceLookup()->indexOf(m_info);
+            if (m_infoIndex != -1) {
+                m_info = windowsDeviceLookup()->at(m_infoIndex);
+                m_havePageSizes = m_info.m_havePageSizes;
+                m_pageSizes = m_info.m_pageSizes;
+                m_haveResolutions = m_info.m_haveResolutions;
+                m_resolutions = m_info.m_resolutions;
+                m_haveCopies = m_info.m_haveCopies;
+                m_supportsMultipleCopies = m_info.m_supportsMultipleCopies;
+                m_supportsCollateCopies = m_info.m_supportsCollateCopies;
+                m_haveMinMaxPageSizes = m_info.m_haveMinMaxPageSizes;
+                m_minimumPhysicalPageSize = m_info.m_minimumPhysicalPageSize;
+                m_maximumPhysicalPageSize = m_info.m_maximumPhysicalPageSize;
+                m_supportsCustomPageSizes = m_info.m_supportsCustomPageSizes;
+                m_haveInputSlots = m_info.m_haveInputSlots;
+                m_inputSlots = m_info.m_inputSlots;
+                m_haveOutputBins = m_info.m_haveOutputBins;
+                m_outputBins = m_info.m_outputBins;
+                m_haveDuplexModes = m_info.m_haveDuplexModes;
+                m_duplexModes = m_info.m_duplexModes;
+                m_haveColorModes = m_info.m_haveColorModes;
+                m_colorModes = m_info.m_colorModes;
+                m_infoIndex = windowsDeviceLookup()->indexOf(m_info);
+            } else {
+                windowsDeviceLookup()->append(m_info);
+                m_infoIndex = windowsDeviceLookup()->count() - 1;
+            }
         }
     }
 }
@@ -205,6 +231,9 @@ void QWindowsPrintDevice::loadPageSizes() const
     }
 
     m_havePageSizes = true;
+    QWindowsPrinterInfo *info = windowsDeviceLookup()->data();
+    info[m_infoIndex].m_havePageSizes = true;
+    info[m_infoIndex].m_pageSizes = m_pageSizes;
 }
 
 QPageSize QWindowsPrintDevice::defaultPageSize() const
@@ -297,6 +326,9 @@ void QWindowsPrintDevice::loadResolutions() const
         }
     }
     m_haveResolutions = true;
+    QWindowsPrinterInfo *info = windowsDeviceLookup()->data();
+    info[m_infoIndex].m_haveResolutions = true;
+    info[m_infoIndex].m_resolutions = m_resolutions;
 }
 
 int QWindowsPrintDevice::defaultResolution() const
@@ -340,6 +372,9 @@ void QWindowsPrintDevice::loadInputSlots() const
     }
 
     m_haveInputSlots = true;
+    QWindowsPrinterInfo *info = windowsDeviceLookup()->data();
+    info[m_infoIndex].m_haveInputSlots = true;
+    info[m_infoIndex].m_inputSlots = m_inputSlots;
 }
 
 QPrint::InputSlot QWindowsPrintDevice::defaultInputSlot() const
@@ -367,6 +402,9 @@ void QWindowsPrintDevice::loadOutputBins() const
 {
     m_outputBins.append(QPlatformPrintDevice::defaultOutputBin());
     m_haveOutputBins = true;
+    QWindowsPrinterInfo *info = windowsDeviceLookup()->data();
+    info[m_infoIndex].m_haveOutputBins = true;
+    info[m_infoIndex].m_outputBins = m_outputBins;
 }
 
 void QWindowsPrintDevice::loadDuplexModes() const
@@ -380,6 +418,9 @@ void QWindowsPrintDevice::loadDuplexModes() const
         m_duplexModes.append(QPrint::DuplexShortSide);
     }
     m_haveDuplexModes = true;
+    QWindowsPrinterInfo *info = windowsDeviceLookup()->data();
+    info[m_infoIndex].m_haveDuplexModes = true;
+    info[m_infoIndex].m_duplexModes = m_duplexModes;
 }
 
 QPrint::DuplexMode QWindowsPrintDevice::defaultDuplexMode() const
@@ -407,6 +448,9 @@ void QWindowsPrintDevice::loadColorModes() const
     if (int(color) == 1)
         m_colorModes.append(QPrint::Color);
     m_haveColorModes = true;
+    QWindowsPrinterInfo *info = windowsDeviceLookup()->data();
+    info[m_infoIndex].m_haveColorModes = true;
+    info[m_infoIndex].m_colorModes = m_colorModes;
 }
 
 QPrint::ColorMode QWindowsPrintDevice::defaultColorMode() const
@@ -455,6 +499,70 @@ QString QWindowsPrintDevice::defaultPrintDeviceId()
     QScopedArrayPointer<wchar_t> name(new wchar_t[size]);
     GetDefaultPrinter(name.data(), &size);
     return QString::fromWCharArray(name.data());
+}
+
+void QWindowsPrintDevice::loadCopiesSupport() const
+{
+    LPWSTR printerId = const_cast<LPWSTR>(reinterpret_cast<LPCWSTR>(m_id.utf16()));
+    m_supportsMultipleCopies = (DeviceCapabilities(printerId, NULL, DC_COPIES, NULL, NULL) > 1);
+    m_supportsCollateCopies = DeviceCapabilities(printerId, NULL, DC_COLLATE, NULL, NULL);
+    m_haveCopies = true;
+    QWindowsPrinterInfo *info = windowsDeviceLookup()->data();
+    info[m_infoIndex].m_haveCopies = true;
+    info[m_infoIndex].m_supportsMultipleCopies = m_supportsMultipleCopies;
+    info[m_infoIndex].m_supportsCollateCopies = m_supportsCollateCopies;
+}
+
+bool QWindowsPrintDevice::supportsCollateCopies() const
+{
+    if (!m_haveCopies)
+        loadCopiesSupport();
+    return m_supportsCollateCopies;
+}
+
+bool QWindowsPrintDevice::supportsMultipleCopies() const
+{
+    if (!m_haveCopies)
+        loadCopiesSupport();
+    return m_supportsMultipleCopies;
+}
+
+bool QWindowsPrintDevice::supportsCustomPageSizes() const
+{
+    if (!m_haveMinMaxPageSizes)
+        loadMinMaxPageSizes();
+    return m_supportsCustomPageSizes;
+}
+
+QSize QWindowsPrintDevice::minimumPhysicalPageSize() const
+{
+    if (!m_haveMinMaxPageSizes)
+        loadMinMaxPageSizes();
+    return m_minimumPhysicalPageSize;
+}
+
+QSize QWindowsPrintDevice::maximumPhysicalPageSize() const
+{
+    if (!m_haveMinMaxPageSizes)
+        loadMinMaxPageSizes();
+    return m_maximumPhysicalPageSize;
+}
+
+void QWindowsPrintDevice::loadMinMaxPageSizes() const
+{
+    // Min/Max custom size is in tenths of a millimeter
+    const qreal multiplier = qt_pointMultiplier(QPageLayout::Millimeter);
+    LPWSTR printerId = const_cast<LPWSTR>(reinterpret_cast<LPCWSTR>(m_id.utf16()));
+    DWORD min = DeviceCapabilities(printerId, NULL, DC_MINEXTENT, NULL, NULL);
+    m_minimumPhysicalPageSize = QSize((LOWORD(min) / 10.0) * multiplier, (HIWORD(min) / 10.0) * multiplier);
+    DWORD max = DeviceCapabilities(printerId, NULL, DC_MAXEXTENT, NULL, NULL);
+    m_maximumPhysicalPageSize = QSize((LOWORD(max) / 10.0) * multiplier, (HIWORD(max) / 10.0) * multiplier);
+    m_supportsCustomPageSizes = (m_maximumPhysicalPageSize.width() > 0 && m_maximumPhysicalPageSize.height() > 0);
+    m_haveMinMaxPageSizes = true;
+    QWindowsPrinterInfo *info = windowsDeviceLookup()->data();
+    info[m_infoIndex].m_haveCopies = true;
+    info[m_infoIndex].m_supportsMultipleCopies = m_supportsMultipleCopies;
+    info[m_infoIndex].m_supportsCollateCopies = m_supportsCollateCopies;
 }
 
 QT_END_NAMESPACE
