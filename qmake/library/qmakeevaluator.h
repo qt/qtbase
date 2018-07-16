@@ -244,6 +244,11 @@ public:
 #endif
     QByteArray getCommandOutput(const QString &args, int *exitCode) const;
 
+private:
+    // Implementation detail of evaluateBuiltinConditional():
+    VisitReturn testFunc_cache(const ProStringList &args);
+
+public:
     QMakeEvaluator *m_caller;
 #ifdef PROEVALUATOR_CUMULATIVE
     bool m_cumulative;

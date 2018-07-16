@@ -1284,6 +1284,171 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
     return ReturnTrue;
 }
 
+QMakeEvaluator::VisitReturn QMakeEvaluator::testFunc_cache(const ProStringList &args)
+{
+    bool persist = true;
+    enum { TargetStash, TargetCache, TargetSuper } target = TargetCache;
+    enum { CacheSet, CacheAdd, CacheSub } mode = CacheSet;
+    ProKey srcvar;
+    if (args.count() >= 2) {
+        const auto opts = split_value_list(args.at(1).toQStringRef());
+        for (const ProString &opt : opts) {
+            if (opt == QLatin1String("transient")) {
+                persist = false;
+            } else if (opt == QLatin1String("super")) {
+                target = TargetSuper;
+            } else if (opt == QLatin1String("stash")) {
+                target = TargetStash;
+            } else if (opt == QLatin1String("set")) {
+                mode = CacheSet;
+            } else if (opt == QLatin1String("add")) {
+                mode = CacheAdd;
+            } else if (opt == QLatin1String("sub")) {
+                mode = CacheSub;
+            } else {
+                evalError(fL1S("cache(): invalid flag %1.").arg(opt.toQString(m_tmp3)));
+                return ReturnFalse;
+            }
+        }
+        if (args.count() >= 3) {
+            srcvar = args.at(2).toKey();
+        } else if (mode != CacheSet) {
+            evalError(fL1S("cache(): modes other than 'set' require a source variable."));
+            return ReturnFalse;
+        }
+    }
+    QString varstr;
+    ProKey dstvar = args.at(0).toKey();
+    if (!dstvar.isEmpty()) {
+        if (srcvar.isEmpty())
+            srcvar = dstvar;
+        ProValueMap::Iterator srcvarIt;
+        if (!findValues(srcvar, &srcvarIt)) {
+            evalError(fL1S("Variable %1 is not defined.").arg(srcvar.toQStringView()));
+            return ReturnFalse;
+        }
+        // The caches for the host and target may differ (e.g., when we are manipulating
+        // CONFIG), so we cannot compute a common new value for both.
+        const ProStringList &diffval = *srcvarIt;
+        ProStringList newval;
+        bool changed = false;
+        for (bool hostBuild = false; ; hostBuild = true) {
+#ifdef PROEVALUATOR_THREAD_SAFE
+            m_option->mutex.lock();
+#endif
+            QMakeBaseEnv *baseEnv =
+                m_option->baseEnvs.value(QMakeBaseKey(m_buildRoot, m_stashfile, hostBuild));
+#ifdef PROEVALUATOR_THREAD_SAFE
+            // It's ok to unlock this before locking baseEnv,
+            // as we have no intention to initialize the env.
+            m_option->mutex.unlock();
+#endif
+            do {
+                if (!baseEnv)
+                    break;
+#ifdef PROEVALUATOR_THREAD_SAFE
+                QMutexLocker locker(&baseEnv->mutex);
+                if (baseEnv->inProgress && baseEnv->evaluator != this) {
+                    // The env is still in the works, but it may be already past the cache
+                    // loading. So we need to wait for completion and amend it as usual.
+                    QThreadPool::globalInstance()->releaseThread();
+                    baseEnv->cond.wait(&baseEnv->mutex);
+                    QThreadPool::globalInstance()->reserveThread();
+                }
+                if (!baseEnv->isOk)
+                    break;
+#endif
+                QMakeEvaluator *baseEval = baseEnv->evaluator;
+                const ProStringList &oldval = baseEval->values(dstvar);
+                if (mode == CacheSet) {
+                    newval = diffval;
+                } else {
+                    newval = oldval;
+                    if (mode == CacheAdd)
+                        newval += diffval;
+                    else
+                        newval.removeEach(diffval);
+                }
+                if (oldval != newval) {
+                    if (target != TargetStash || !m_stashfile.isEmpty()) {
+                        baseEval->valuesRef(dstvar) = newval;
+                        if (target == TargetSuper) {
+                            do {
+                                if (dstvar == QLatin1String("QMAKEPATH")) {
+                                    baseEval->m_qmakepath = newval.toQStringList();
+                                    baseEval->updateMkspecPaths();
+                                } else if (dstvar == QLatin1String("QMAKEFEATURES")) {
+                                    baseEval->m_qmakefeatures = newval.toQStringList();
+                                } else {
+                                    break;
+                                }
+                                baseEval->updateFeaturePaths();
+                                if (hostBuild == m_hostBuild)
+                                    m_featureRoots = baseEval->m_featureRoots;
+                            } while (false);
+                        }
+                    }
+                    changed = true;
+                }
+            } while (false);
+            if (hostBuild)
+                break;
+        }
+        // We assume that whatever got the cached value to be what it is now will do so
+        // the next time as well, so we just skip the persisting if nothing changed.
+        if (!persist || !changed)
+            return ReturnTrue;
+        varstr = dstvar.toQString();
+        if (mode == CacheAdd)
+            varstr += QLatin1String(" +=");
+        else if (mode == CacheSub)
+            varstr += QLatin1String(" -=");
+        else
+            varstr += QLatin1String(" =");
+        if (diffval.count() == 1) {
+            varstr += QLatin1Char(' ');
+            varstr += quoteValue(diffval.at(0));
+        } else if (!diffval.isEmpty()) {
+            for (const ProString &vval : diffval) {
+                varstr += QLatin1String(" \\\n    ");
+                varstr += quoteValue(vval);
+            }
+        }
+        varstr += QLatin1Char('\n');
+    }
+    QString fn;
+    QMakeVfs::VfsFlags flags = (m_cumulative ? QMakeVfs::VfsCumulative : QMakeVfs::VfsExact);
+    if (target == TargetSuper) {
+        if (m_superfile.isEmpty()) {
+            m_superfile = QDir::cleanPath(m_outputDir + QLatin1String("/.qmake.super"));
+            printf("Info: creating super cache file %s\n", qPrintable(QDir::toNativeSeparators(m_superfile)));
+            valuesRef(ProKey("_QMAKE_SUPER_CACHE_")) << ProString(m_superfile);
+        }
+        fn = m_superfile;
+    } else if (target == TargetCache) {
+        if (m_cachefile.isEmpty()) {
+            m_cachefile = QDir::cleanPath(m_outputDir + QLatin1String("/.qmake.cache"));
+            printf("Info: creating cache file %s\n", qPrintable(QDir::toNativeSeparators(m_cachefile)));
+            valuesRef(ProKey("_QMAKE_CACHE_")) << ProString(m_cachefile);
+            // We could update m_{source,build}Root and m_featureRoots here, or even
+            // "re-home" our rootEnv, but this doesn't sound too useful - if somebody
+            // wanted qmake to find something in the build directory, he could have
+            // done so "from the outside".
+            // The sub-projects will find the new cache all by themselves.
+        }
+        fn = m_cachefile;
+    } else {
+        fn = m_stashfile;
+        if (fn.isEmpty())
+            fn = QDir::cleanPath(m_outputDir + QLatin1String("/.qmake.stash"));
+        if (!m_vfs->exists(fn, flags)) {
+            printf("Info: creating stash file %s\n", qPrintable(QDir::toNativeSeparators(fn)));
+            valuesRef(ProKey("_QMAKE_STASH_")) << ProString(fn);
+        }
+    }
+    return writeFile(fL1S("cache "), fn, QIODevice::Append, flags, varstr);
+}
+
 QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         int func_t, const ProKey &function, const ProStringList &args)
 {
@@ -1831,173 +1996,12 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
 #endif
         return ReturnTrue;
     }
-    case T_CACHE: {
+    case T_CACHE:
         if (args.count() > 3) {
             evalError(fL1S("cache(var, [set|add|sub] [transient] [super|stash], [srcvar]) requires one to three arguments."));
             return ReturnFalse;
         }
-        bool persist = true;
-        enum { TargetStash, TargetCache, TargetSuper } target = TargetCache;
-        enum { CacheSet, CacheAdd, CacheSub } mode = CacheSet;
-        ProKey srcvar;
-        if (args.count() >= 2) {
-            const auto opts = split_value_list(args.at(1).toQStringRef());
-            for (const ProString &opt : opts) {
-                if (opt == QLatin1String("transient")) {
-                    persist = false;
-                } else if (opt == QLatin1String("super")) {
-                    target = TargetSuper;
-                } else if (opt == QLatin1String("stash")) {
-                    target = TargetStash;
-                } else if (opt == QLatin1String("set")) {
-                    mode = CacheSet;
-                } else if (opt == QLatin1String("add")) {
-                    mode = CacheAdd;
-                } else if (opt == QLatin1String("sub")) {
-                    mode = CacheSub;
-                } else {
-                    evalError(fL1S("cache(): invalid flag %1.").arg(opt.toQString(m_tmp3)));
-                    return ReturnFalse;
-                }
-            }
-            if (args.count() >= 3) {
-                srcvar = args.at(2).toKey();
-            } else if (mode != CacheSet) {
-                evalError(fL1S("cache(): modes other than 'set' require a source variable."));
-                return ReturnFalse;
-            }
-        }
-        QString varstr;
-        ProKey dstvar = args.at(0).toKey();
-        if (!dstvar.isEmpty()) {
-            if (srcvar.isEmpty())
-                srcvar = dstvar;
-            ProValueMap::Iterator srcvarIt;
-            if (!findValues(srcvar, &srcvarIt)) {
-                evalError(fL1S("Variable %1 is not defined.").arg(srcvar.toQStringView()));
-                return ReturnFalse;
-            }
-            // The caches for the host and target may differ (e.g., when we are manipulating
-            // CONFIG), so we cannot compute a common new value for both.
-            const ProStringList &diffval = *srcvarIt;
-            ProStringList newval;
-            bool changed = false;
-            for (bool hostBuild = false; ; hostBuild = true) {
-#ifdef PROEVALUATOR_THREAD_SAFE
-                m_option->mutex.lock();
-#endif
-                QMakeBaseEnv *baseEnv =
-                        m_option->baseEnvs.value(QMakeBaseKey(m_buildRoot, m_stashfile, hostBuild));
-#ifdef PROEVALUATOR_THREAD_SAFE
-                // It's ok to unlock this before locking baseEnv,
-                // as we have no intention to initialize the env.
-                m_option->mutex.unlock();
-#endif
-                do {
-                    if (!baseEnv)
-                        break;
-#ifdef PROEVALUATOR_THREAD_SAFE
-                    QMutexLocker locker(&baseEnv->mutex);
-                    if (baseEnv->inProgress && baseEnv->evaluator != this) {
-                        // The env is still in the works, but it may be already past the cache
-                        // loading. So we need to wait for completion and amend it as usual.
-                        QThreadPool::globalInstance()->releaseThread();
-                        baseEnv->cond.wait(&baseEnv->mutex);
-                        QThreadPool::globalInstance()->reserveThread();
-                    }
-                    if (!baseEnv->isOk)
-                        break;
-#endif
-                    QMakeEvaluator *baseEval = baseEnv->evaluator;
-                    const ProStringList &oldval = baseEval->values(dstvar);
-                    if (mode == CacheSet) {
-                        newval = diffval;
-                    } else {
-                        newval = oldval;
-                        if (mode == CacheAdd)
-                            newval += diffval;
-                        else
-                            newval.removeEach(diffval);
-                    }
-                    if (oldval != newval) {
-                        if (target != TargetStash || !m_stashfile.isEmpty()) {
-                            baseEval->valuesRef(dstvar) = newval;
-                            if (target == TargetSuper) {
-                                do {
-                                    if (dstvar == QLatin1String("QMAKEPATH")) {
-                                        baseEval->m_qmakepath = newval.toQStringList();
-                                        baseEval->updateMkspecPaths();
-                                    } else if (dstvar == QLatin1String("QMAKEFEATURES")) {
-                                        baseEval->m_qmakefeatures = newval.toQStringList();
-                                    } else {
-                                        break;
-                                    }
-                                    baseEval->updateFeaturePaths();
-                                    if (hostBuild == m_hostBuild)
-                                        m_featureRoots = baseEval->m_featureRoots;
-                                } while (false);
-                            }
-                        }
-                        changed = true;
-                    }
-                } while (false);
-                if (hostBuild)
-                    break;
-            }
-            // We assume that whatever got the cached value to be what it is now will do so
-            // the next time as well, so we just skip the persisting if nothing changed.
-            if (!persist || !changed)
-                return ReturnTrue;
-            varstr = dstvar.toQString();
-            if (mode == CacheAdd)
-                varstr += QLatin1String(" +=");
-            else if (mode == CacheSub)
-                varstr += QLatin1String(" -=");
-            else
-                varstr += QLatin1String(" =");
-            if (diffval.count() == 1) {
-                varstr += QLatin1Char(' ');
-                varstr += quoteValue(diffval.at(0));
-            } else if (!diffval.isEmpty()) {
-                for (const ProString &vval : diffval) {
-                    varstr += QLatin1String(" \\\n    ");
-                    varstr += quoteValue(vval);
-                }
-            }
-            varstr += QLatin1Char('\n');
-        }
-        QString fn;
-        QMakeVfs::VfsFlags flags = (m_cumulative ? QMakeVfs::VfsCumulative : QMakeVfs::VfsExact);
-        if (target == TargetSuper) {
-            if (m_superfile.isEmpty()) {
-                m_superfile = QDir::cleanPath(m_outputDir + QLatin1String("/.qmake.super"));
-                printf("Info: creating super cache file %s\n", qPrintable(QDir::toNativeSeparators(m_superfile)));
-                valuesRef(ProKey("_QMAKE_SUPER_CACHE_")) << ProString(m_superfile);
-            }
-            fn = m_superfile;
-        } else if (target == TargetCache) {
-            if (m_cachefile.isEmpty()) {
-                m_cachefile = QDir::cleanPath(m_outputDir + QLatin1String("/.qmake.cache"));
-                printf("Info: creating cache file %s\n", qPrintable(QDir::toNativeSeparators(m_cachefile)));
-                valuesRef(ProKey("_QMAKE_CACHE_")) << ProString(m_cachefile);
-                // We could update m_{source,build}Root and m_featureRoots here, or even
-                // "re-home" our rootEnv, but this doesn't sound too useful - if somebody
-                // wanted qmake to find something in the build directory, he could have
-                // done so "from the outside".
-                // The sub-projects will find the new cache all by themselves.
-            }
-            fn = m_cachefile;
-        } else {
-            fn = m_stashfile;
-            if (fn.isEmpty())
-                fn = QDir::cleanPath(m_outputDir + QLatin1String("/.qmake.stash"));
-            if (!m_vfs->exists(fn, flags)) {
-                printf("Info: creating stash file %s\n", qPrintable(QDir::toNativeSeparators(fn)));
-                valuesRef(ProKey("_QMAKE_STASH_")) << ProString(fn);
-            }
-        }
-        return writeFile(fL1S("cache "), fn, QIODevice::Append, flags, varstr);
-    }
+        return testFunc_cache(args);
     case T_RELOAD_PROPERTIES:
 #ifdef QT_BUILD_QMAKE
         m_option->reloadProperties();
