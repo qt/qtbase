@@ -1100,9 +1100,8 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     To avoid this problem, replace \c hash[i] with \c hash.value(i)
     in the code above.
 
-    Internally, QHash uses a hash table to perform lookups. Unlike Qt
-    3's \c QDict class, which needed to be initialized with a prime
-    number, QHash's hash table automatically grows and shrinks to
+    Internally, QHash uses a hash table to perform lookups. This
+    hash table automatically grows and shrinks to
     provide fast lookups without wasting too much memory. You can
     still control the size of the hash table by calling reserve() if
     you already know approximately how many items the QHash will
