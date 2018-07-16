@@ -1178,9 +1178,10 @@ defineTest(qtConfPrepareCompileTestSource) {
     # Create stub .pro file
     contents = "SOURCES = main.$$suffix"
     # Custom project code
+    pwd = $$val_escape($${currentConfig}.dir)
     for (test, tests): \
         for (ent, $$qtConfScalarOrList($${test}.test.qmake)): \
-            contents += $$ent
+            contents += $$replace(ent, "@PWD@", $$pwd)
     write_file($$test_dir/$$basename(test_dir).pro, contents)|error()
 }
 

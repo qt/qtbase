@@ -467,7 +467,38 @@
         "xlocalescanprint": {
             "label": "xlocale.h (or equivalents)",
             "type": "compile",
-            "test": "xlocalescanprint"
+            "test": {
+                "files": {
+                    "qglobal.h": [
+                        "#ifndef QGLOBAL_H",
+                        "#define QGLOBAL_H",
+                        "#endif"
+                    ]
+                },
+                "tail": [
+                    "#define QT_BEGIN_NAMESPACE",
+                    "#define QT_END_NAMESPACE",
+                    "",
+                    "#ifdef _MSVC_VER",
+                    "#define Q_CC_MSVC _MSVC_VER",
+                    "#endif",
+                    "",
+                    "#define QT_NO_DOUBLECONVERSION",
+                    "",
+                    "#include QDSP_P_H"
+                ],
+                "main": [
+                    "#ifdef _MSVC_VER",
+                    "_locale_t invalidLocale = NULL;",
+                    "#else",
+                    "locale_t invalidLocale = NULL;",
+                    "#endif",
+                    "double a = 3.4;",
+                    "qDoubleSnprintf(argv[0], 1, invalidLocale, \"invalid format\", a);",
+                    "qDoubleSscanf(argv[0], invalidLocale, \"invalid format\", &a, &argc);"
+                ],
+                "qmake": "DEFINES += QDSP_P_H=$$shell_quote(\\\"@PWD@/tools/qdoublescanprint_p.h\\\")"
+            }
         }
     },
 
