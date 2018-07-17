@@ -29,10 +29,6 @@
 
 #include <QtTest/QTest>
 
-#ifdef Q_OS_WIN
-#include <winsock2.h>
-#endif
-
 #include <qcoreapplication.h>
 #include <qdatastream.h>
 #include <qhostaddress.h>

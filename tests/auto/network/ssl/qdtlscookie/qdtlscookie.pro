@@ -1,7 +1,6 @@
 CONFIG += testcase
 
 SOURCES += tst_qdtlscookie.cpp
-win32:LIBS += -lws2_32
 QT = core network-private testlib
 
 TARGET = tst_qdtlscookie

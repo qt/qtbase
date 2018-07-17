@@ -6,5 +6,3 @@ QT = core core-private sql sql-private testlib
 SOURCES += tst_qsqlresult.cpp
 HEADERS += testsqldriver.h
 
-mingw: LIBS += -lws2_32
-
