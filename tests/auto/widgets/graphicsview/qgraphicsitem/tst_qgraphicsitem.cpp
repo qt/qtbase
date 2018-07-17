@@ -477,7 +477,7 @@ private:
 void tst_QGraphicsItem::construction()
 {
     for (int i = 0; i < 7; ++i) {
-        QGraphicsItem *item;
+        QGraphicsItem *item = nullptr;
         switch (i) {
         case 0:
             item = new QGraphicsEllipseItem;
