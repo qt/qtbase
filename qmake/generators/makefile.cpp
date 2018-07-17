@@ -3167,54 +3167,31 @@ MakefileGenerator::specdir()
 bool
 MakefileGenerator::openOutput(QFile &file, const QString &build) const
 {
-    {
-        QString outdir;
-        if(!file.fileName().isEmpty()) {
-            if(QDir::isRelativePath(file.fileName()))
-                file.setFileName(Option::output_dir + "/" + file.fileName()); //pwd when qmake was run
-            QFileInfo fi(fileInfo(file.fileName()));
-            if(fi.isDir())
-                outdir = file.fileName() + '/';
-        }
-        if(!outdir.isEmpty() || file.fileName().isEmpty()) {
-            QString fname = "Makefile";
-            if(!project->isEmpty("MAKEFILE"))
-               fname = project->first("MAKEFILE").toQString();
-            file.setFileName(outdir + fname);
-        }
+    debug_msg(3, "asked to open output file '%s' in %s",
+        qPrintable(file.fileName()), qPrintable(Option::output_dir));
+
+    if (file.fileName().isEmpty()) {
+        file.setFileName(!project->isEmpty("MAKEFILE")
+                         ? project->first("MAKEFILE").toQString() : "Makefile");
     }
-    if(QDir::isRelativePath(file.fileName())) {
-        QString fname = Option::output_dir;  //pwd when qmake was run
-        if(!fname.endsWith("/"))
-            fname += "/";
-        fname += file.fileName();
-        file.setFileName(fname);
-    }
-    if(!build.isEmpty())
+
+    file.setFileName(QDir(Option::output_dir).absoluteFilePath(file.fileName()));
+
+    if (!build.isEmpty())
         file.setFileName(file.fileName() + "." + build);
-    if(project->isEmpty("QMAKE_MAKEFILE"))
+
+    if (project->isEmpty("QMAKE_MAKEFILE"))
         project->values("QMAKE_MAKEFILE").append(file.fileName());
+
+    // Make required directories. Note that we do this based on the
+    // filename, not Option::output_dir, as the filename may include
+    // generator specific directories not included in output_dir.
     int slsh = file.fileName().lastIndexOf('/');
-    if(slsh != -1)
+    if (slsh != -1)
         mkdir(file.fileName().left(slsh));
-    if(file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
-        QFileInfo fi(fileInfo(Option::output.fileName()));
-        QString od;
-        if(fi.isSymLink())
-            od = fileInfo(fi.readLink()).absolutePath();
-        else
-            od = fi.path();
-        od = QDir::fromNativeSeparators(od);
-        if(QDir::isRelativePath(od)) {
-            QString dir = Option::output_dir;
-            if (!dir.endsWith('/') && !od.isEmpty())
-                dir += '/';
-            od.prepend(dir);
-        }
-        Option::output_dir = od;
-        return true;
-    }
-    return false;
+
+    debug_msg(3, "opening output file %s", qPrintable(file.fileName()));
+    return file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate);
 }
 
 QString

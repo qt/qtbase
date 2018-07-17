@@ -473,18 +473,11 @@ ProjectGenerator::getWritableVar(const char *vk, bool)
 bool
 ProjectGenerator::openOutput(QFile &file, const QString &build) const
 {
-    QString outdir;
-    if(!file.fileName().isEmpty()) {
-        QFileInfo fi(fileInfo(file.fileName()));
-        if(fi.isDir())
-            outdir = fi.path() + QDir::separator();
-    }
-    if(!outdir.isEmpty() || file.fileName().isEmpty()) {
-        QString dir = qmake_getpwd();
-        int s = dir.lastIndexOf('/');
-        if(s != -1)
-            dir = dir.right(dir.length() - (s + 1));
-        file.setFileName(outdir + dir + Option::pro_ext);
+    ProString fileName = file.fileName();
+    if (!fileName.endsWith(Option::pro_ext)) {
+        if (fileName.isEmpty())
+            fileName = fileInfo(Option::output_dir).fileName();
+        file.setFileName(fileName + Option::pro_ext);
     }
     return MakefileGenerator::openOutput(file, build);
 }

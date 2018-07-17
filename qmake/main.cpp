@@ -455,28 +455,22 @@ int runQMake(int argc, char **argv)
     QString oldpwd = qmake_getpwd();
 
     Option::output_dir = oldpwd; //for now this is the output dir
-    if(Option::output.fileName() != "-") {
+    if (!Option::output.fileName().isEmpty() && Option::output.fileName() != "-") {
+        // The output 'filename', as given by the -o option, might include one
+        // or more directories, so we may need to rebase the output directory.
         QFileInfo fi(Option::output);
-        QString dir;
-        if(fi.isDir()) {
-            dir = fi.filePath();
-        } else {
-            QString tmp_dir = fi.path();
-            if(!tmp_dir.isEmpty() && QFile::exists(tmp_dir))
-                dir = tmp_dir;
+
+        QDir dir(QDir::cleanPath(fi.isDir() ? fi.absoluteFilePath() : fi.absolutePath()));
+
+        // Don't treat Xcode project directory as part of OUT_PWD
+        if (dir.dirName().endsWith(QLatin1String(".xcodeproj"))) {
+            // Note: we're intentionally not using cdUp(), as the dir may not exist
+            dir.setPath(QDir::cleanPath(dir.filePath("..")));
         }
-#ifdef Q_OS_MAC
-        if (fi.fileName().endsWith(QLatin1String(".pbxproj"))
-            && dir.endsWith(QLatin1String(".xcodeproj")))
-            dir += QStringLiteral("/..");
-#endif
-        if(!dir.isNull() && dir != ".")
-            Option::output_dir = dir;
-        if (QDir::isRelativePath(Option::output_dir)) {
-            Option::output.setFileName(fi.fileName());
-            Option::output_dir.prepend(oldpwd + QLatin1Char('/'));
-        }
-        Option::output_dir = QDir::cleanPath(Option::output_dir);
+
+        Option::output_dir = dir.path();
+        QString absoluteFilePath = QDir::cleanPath(fi.absoluteFilePath());
+        Option::output.setFileName(absoluteFilePath.mid(Option::output_dir.length() + 1));
     }
 
     QMakeProperty prop;

@@ -1882,33 +1882,28 @@ ProjectBuilderMakefileGenerator::keyFor(const QString &block)
 bool
 ProjectBuilderMakefileGenerator::openOutput(QFile &file, const QString &build) const
 {
-    if(QDir::isRelativePath(file.fileName()))
-        file.setFileName(Option::output_dir + "/" + file.fileName()); //pwd when qmake was run
+    Q_ASSERT_X(QDir::isRelativePath(file.fileName()), "ProjectBuilderMakefileGenerator",
+        "runQMake() should have normalized the filename and made it relative");
+
     QFileInfo fi(fileInfo(file.fileName()));
-    if(fi.suffix() != "pbxproj" || file.fileName().isEmpty()) {
+    if (fi.suffix() != "pbxproj") {
         QString output = file.fileName();
-        if(fi.isDir())
-            output += QDir::separator();
-        if(!output.endsWith(projectSuffix())) {
-            if(file.fileName().isEmpty() || fi.isDir()) {
-                if(project->first("TEMPLATE") == "subdirs" || project->isEmpty("QMAKE_ORIG_TARGET"))
+        if (!output.endsWith(projectSuffix())) {
+            if (fi.fileName().isEmpty()) {
+                if (project->first("TEMPLATE") == "subdirs" || project->isEmpty("QMAKE_ORIG_TARGET"))
                     output += fileInfo(project->projectFile()).baseName();
                 else
                     output += project->first("QMAKE_ORIG_TARGET").toQString();
             }
             output += projectSuffix() + QDir::separator();
-        } else if(output[(int)output.length() - 1] != QDir::separator()) {
+        } else {
             output += QDir::separator();
         }
         output += QString("project.pbxproj");
         file.setFileName(output);
-        bool ret = UnixMakefileGenerator::openOutput(file, build);
-        ((ProjectBuilderMakefileGenerator*)this)->pbx_dir = Option::output_dir.section(Option::dir_sep, 0, -1);
-        Option::output_dir = pbx_dir.section(Option::dir_sep, 0, -2);
-        return ret;
     }
 
-    ((ProjectBuilderMakefileGenerator*)this)->pbx_dir = Option::output_dir;
+    pbx_dir = Option::output_dir + Option::dir_sep + file.fileName().section(Option::dir_sep, 0, 0);
     return UnixMakefileGenerator::openOutput(file, build);
 }
 

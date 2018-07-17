@@ -36,7 +36,7 @@ QT_BEGIN_NAMESPACE
 class ProjectBuilderMakefileGenerator : public UnixMakefileGenerator
 {
     bool writingUnixMakefileGenerator;
-    QString pbx_dir;
+    mutable QString pbx_dir;
     int pbuilderVersion() const;
     bool writeSubDirs(QTextStream &);
     bool writeMakeParts(QTextStream &);

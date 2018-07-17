@@ -1617,20 +1617,15 @@ QString VcprojGenerator::replaceExtraCompilerVariables(
 
 bool VcprojGenerator::openOutput(QFile &file, const QString &/*build*/) const
 {
-    QString outdir;
-    if(!file.fileName().isEmpty()) {
-        QFileInfo fi(fileInfo(file.fileName()));
-        if(fi.isDir())
-            outdir = file.fileName() + QDir::separator();
-    }
-    if(!outdir.isEmpty() || file.fileName().isEmpty()) {
-        ProString ext = project->first("VCPROJ_EXTENSION");
-        if(project->first("TEMPLATE") == "vcsubdirs")
-            ext = project->first("VCSOLUTION_EXTENSION");
-        ProString outputName = project->first("TARGET");
-        if (!project->first("MAKEFILE").isEmpty())
-            outputName = project->first("MAKEFILE");
-        file.setFileName(outdir + outputName + ext);
+    ProString fileName = file.fileName();
+    ProString extension = project->first("TEMPLATE") == "vcsubdirs"
+            ? project->first("VCSOLUTION_EXTENSION") : project->first("VCPROJ_EXTENSION");
+    if (!fileName.endsWith(extension)) {
+        if (fileName.isEmpty()) {
+            fileName = !project->first("MAKEFILE").isEmpty()
+                    ? project->first("MAKEFILE") : project->first("TARGET");
+        }
+        file.setFileName(fileName + extension);
     }
     return Win32MakefileGenerator::openOutput(file, QString());
 }
