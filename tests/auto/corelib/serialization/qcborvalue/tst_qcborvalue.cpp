@@ -1646,6 +1646,12 @@ void tst_QCborValue::toDiagnosticNotation_data()
             << QCborValue(QCborMap{{-1, QCborMap{{0, 0}, {"foo", "bar"}}}}) << int(QCborValue::LineWrapped)
             << "{\n    -1: {\n        0: 0,\n        \"foo\": \"bar\"\n    }\n}";
 
+    // string escaping
+    QTest::newRow("String:escaping")
+            << QCborValue("\1\a\b\t\f\r\n\v\x1f\x7f \"\xc2\xa0\xe2\x82\xac\xf0\x90\x80\x80\\\"")
+            << int(QCborValue::DiagnosticNotationOptions{})
+            << "\"\\u0001\\a\\b\\t\\f\\r\\n\\v\\u001F\\u007F \\\"\\u00A0\\u20AC\\U00010000\\\\\\\"\"";
+
     // extended formatting for byte arrays
     QTest::newRow("Extended:ByteArray:0")
             << QCborValue(QByteArray()) << int(QCborValue::ExtendedFormat)

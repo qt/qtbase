@@ -45,6 +45,7 @@
 
 #include <private/qnumeric_p.h>
 #include <qstack.h>
+#include <private/qtools_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -130,11 +131,76 @@ static bool isByteArrayEncodingTag(QCborTag tag)
 
 void DiagnosticNotation::appendString(const QString &s)
 {
-    result += QLatin1Char('"')
-            + QString(s)
-              .replace(QLatin1Char('\\'), QLatin1String("\\\\"))
-              .replace(QLatin1Char('"'), QLatin1String("\\\""))
-            + QLatin1Char('"');
+    result += QLatin1Char('"');
+
+    const QChar *begin = s.begin();
+    const QChar *end = s.end();
+    while (begin < end) {
+        // find the longest span comprising only non-escaped characters
+        const QChar *ptr = begin;
+        for ( ; ptr < end; ++ptr) {
+            ushort uc = ptr->unicode();
+            if (uc == '\\' || uc == '"' || uc < ' ' || uc >= 0x7f)
+                break;
+        }
+
+        if (ptr != begin)
+            result.append(begin, ptr - begin);
+
+        if (ptr == end)
+            break;
+
+        // there's an escaped character
+        static const char escapeMap[16] = {
+            // The C escape characters \a \b \t \n \v \f and \r indexed by
+            // their ASCII values
+            0, 0, 0, 0,
+            0, 0, 0, 'a',
+            'b', 't', 'n', 'v',
+            'f', 'r', 0, 0
+        };
+        int buflen = 2;
+        QChar buf[10];
+        buf[0] = QLatin1Char('\\');
+        buf[1] = QChar::Null;
+        char16_t uc = ptr->unicode();
+
+        if (uc < sizeof(escapeMap))
+            buf[1] = QLatin1Char(escapeMap[uc]);
+        else if (uc == '"' || uc == '\\')
+            buf[1] = QChar(uc);
+
+        if (buf[1] == QChar::Null) {
+            using QtMiscUtils::toHexUpper;
+            if (ptr->isHighSurrogate() && (ptr + 1) != end && ptr[1].isLowSurrogate()) {
+                // properly-paired surrogates
+                ++ptr;
+                char32_t ucs4 = QChar::surrogateToUcs4(uc, ptr->unicode());
+                buf[1] = 'U';
+                buf[2] = '0'; // toHexUpper(ucs4 >> 28);
+                buf[3] = '0'; // toHexUpper(ucs4 >> 24);
+                buf[4] = toHexUpper(ucs4 >> 20);
+                buf[5] = toHexUpper(ucs4 >> 16);
+                buf[6] = toHexUpper(ucs4 >> 12);
+                buf[7] = toHexUpper(ucs4 >> 8);
+                buf[8] = toHexUpper(ucs4 >> 4);
+                buf[9] = toHexUpper(ucs4);
+                buflen = 10;
+            } else {
+                buf[1] = 'u';
+                buf[2] = toHexUpper(uc >> 12);
+                buf[3] = toHexUpper(uc >> 8);
+                buf[4] = toHexUpper(uc >> 4);
+                buf[5] = toHexUpper(uc);
+                buflen = 6;
+            }
+        }
+
+        result.append(buf, buflen);
+        begin = ptr + 1;
+    }
+
+    result += QLatin1Char('"');
 }
 
 void DiagnosticNotation::appendArray(const QCborArray &a)
