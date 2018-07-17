@@ -27,6 +27,7 @@ RCC_DIR = .rcc
 UI_DIR = .uic
 TRACEGEN_DIR = .tracegen
 QMLCACHE_DIR = .qmlcache
+LRELEASE_DIR = .qm
 intel_icl {
     # ICL 14.0 has a bug that makes it not find #includes in dirs starting with .
     MOC_DIR = tmp/moc
