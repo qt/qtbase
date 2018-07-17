@@ -283,6 +283,8 @@ void tst_QNetworkInterface::interfaceFromXXX_data()
     QTest::addColumn<QNetworkInterface>("iface");
 
     QList<QNetworkInterface> allInterfaces = QNetworkInterface::allInterfaces();
+    if (allInterfaces.count() == 0)
+        QSKIP("No interfaces to test!");
     foreach (QNetworkInterface iface, allInterfaces)
         QTest::newRow(iface.name().toLocal8Bit()) << iface;
 }

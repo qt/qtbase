@@ -2723,12 +2723,15 @@ void tst_QDateTime::timeZoneAbbreviation()
 #endif
         QCOMPARE(dt5.timeZoneAbbreviation(), QStringLiteral("CEST"));
     } else {
-        QSKIP("You must test using Central European (CET/CEST) time zone, e.g. TZ=Europe/Oslo");
+        qDebug("(Skipped some CET-only tests)");
     }
 
 #ifdef Q_OS_ANDROID // Only reports (general) zones as offsets (QTBUG-68837)
     const QString cet(QStringLiteral("GMT+01:00"));
     const QString cest(QStringLiteral("GMT+02:00"));
+#elif defined Q_OS_DARWIN
+    const QString cet(QStringLiteral("GMT+1"));
+    const QString cest(QStringLiteral("GMT+2"));
 #else
     const QString cet(QStringLiteral("CET"));
     const QString cest(QStringLiteral("CEST"));

@@ -63,7 +63,7 @@ const char *QElfParser::parseSectionHeader(const char *data, ElfSectionHeader *s
     return data;
 }
 
-int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library, QLibraryPrivate *lib, long *pos, ulong *sectionlen)
+int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library, QLibraryPrivate *lib, qsizetype *pos, qsizetype *sectionlen)
 {
 #if defined(QELFPARSER_DEBUG)
     qDebug() << "QElfParser::parse " << library;
@@ -224,7 +224,7 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
                 return Corrupt;
             }
             *pos = sh.offset;
-            *sectionlen = sh.size - 1;
+            *sectionlen = sh.size;
             if (shnam[1] == 'q')
                 return QtMetaDataSection;
         }

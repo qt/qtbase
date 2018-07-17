@@ -345,8 +345,8 @@ void tst_QPluginLoader::loadMachO()
     QVERIFY(f.open(QIODevice::ReadOnly));
     QByteArray data = f.readAll();
 
-    long pos;
-    ulong len;
+    qsizetype pos;
+    qsizetype len;
     QString errorString;
     int r = QMachOParser::parse(data.constData(), data.size(), f.fileName(), &errorString, &pos, &len);
 

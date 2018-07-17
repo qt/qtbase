@@ -112,11 +112,27 @@ QXcbVirtualDesktop::QXcbVirtualDesktop(QXcbConnection *connection, xcb_screen_t 
 
         xcb_depth_next(&depth_iterator);
     }
+
+    if (connection->hasXRandr()) {
+        xcb_connection_t *conn = connection->xcb_connection();
+        auto screen_info = Q_XCB_REPLY(xcb_randr_get_screen_info, conn, screen->root);
+        if (screen_info)
+            m_rotation = screen_info->rotation;
+    }
 }
 
 QXcbVirtualDesktop::~QXcbVirtualDesktop()
 {
     delete m_xSettings;
+}
+
+QDpi QXcbVirtualDesktop::dpi() const
+{
+    const QSize virtualSize = size();
+    const QSize virtualSizeMillimeters = physicalSize();
+
+    return QDpi(Q_MM_PER_INCH * virtualSize.width() / virtualSizeMillimeters.width(),
+                Q_MM_PER_INCH * virtualSize.height() / virtualSizeMillimeters.height());
 }
 
 QXcbScreen *QXcbVirtualDesktop::screenAt(const QPoint &pos) const
@@ -171,6 +187,74 @@ void QXcbVirtualDesktop::subscribeToXFixesSelectionNotify()
                               XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_WINDOW_DESTROY |
                               XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_CLIENT_CLOSE;
         xcb_xfixes_select_selection_input_checked(xcb_connection(), connection()->getQtSelectionOwner(), m_net_wm_cm_atom, mask);
+    }
+}
+
+/*!
+    \brief handle the XCB screen change event and update properties
+
+    On a mobile device, the ideal use case is that the accelerometer would
+    drive the orientation. This could be achieved by using QSensors to read the
+    accelerometer and adjusting the rotation in QML, or by reading the
+    orientation from the QScreen object and doing the same, or in many other
+    ways. However, on X we have the XRandR extension, which makes it possible
+    to have the whole screen rotated, so that individual apps DO NOT have to
+    rotate themselves. Apps could optionally use the
+    QScreen::primaryOrientation property to optimize layout though.
+    Furthermore, there is no support in X for accelerometer events anyway. So
+    it makes more sense on a Linux system running X to just run a daemon which
+    monitors the accelerometer and runs xrandr automatically to do the rotation,
+    then apps do not have to be aware of it (but probably the window manager
+    would resize them accordingly). updateGeometry() is written with this
+    design in mind. Therefore the physical geometry, available geometry,
+    virtual geometry, orientation and primaryOrientation should all change at
+    the same time.  On a system which cannot rotate the whole screen, it would
+    be correct for only the orientation (not the primary orientation) to
+    change.
+*/
+void QXcbVirtualDesktop::handleScreenChange(xcb_randr_screen_change_notify_event_t *change_event)
+{
+    // No need to do anything when screen rotation did not change - if any
+    // xcb output geometry has changed, we will get RRCrtcChangeNotify and
+    // RROutputChangeNotify events next
+    if (change_event->rotation == m_rotation)
+        return;
+
+    m_rotation = change_event->rotation;
+    switch (m_rotation) {
+    case XCB_RANDR_ROTATION_ROTATE_0: // xrandr --rotate normal
+        m_screen->width_in_pixels = change_event->width;
+        m_screen->height_in_pixels = change_event->height;
+        m_screen->width_in_millimeters = change_event->mwidth;
+        m_screen->height_in_millimeters = change_event->mheight;
+        break;
+    case XCB_RANDR_ROTATION_ROTATE_90: // xrandr --rotate left
+        m_screen->width_in_pixels = change_event->height;
+        m_screen->height_in_pixels = change_event->width;
+        m_screen->width_in_millimeters = change_event->mheight;
+        m_screen->height_in_millimeters = change_event->mwidth;
+        break;
+    case XCB_RANDR_ROTATION_ROTATE_180: // xrandr --rotate inverted
+        m_screen->width_in_pixels = change_event->width;
+        m_screen->height_in_pixels = change_event->height;
+        m_screen->width_in_millimeters = change_event->mwidth;
+        m_screen->height_in_millimeters = change_event->mheight;
+        break;
+    case XCB_RANDR_ROTATION_ROTATE_270: // xrandr --rotate right
+        m_screen->width_in_pixels = change_event->height;
+        m_screen->height_in_pixels = change_event->width;
+        m_screen->width_in_millimeters = change_event->mheight;
+        m_screen->height_in_millimeters = change_event->mwidth;
+        break;
+    // We don't need to do anything with these, since QScreen doesn't store reflection state,
+    // and Qt-based applications probably don't need to care about it anyway.
+    case XCB_RANDR_ROTATION_REFLECT_X: break;
+    case XCB_RANDR_ROTATION_REFLECT_Y: break;
+    }
+
+    for (QPlatformScreen *platformScreen: qAsConst(m_screens)) {
+        QDpi ldpi = platformScreen->logicalDpi();
+        QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(platformScreen->screen(), ldpi.first, ldpi.second);
     }
 }
 
@@ -401,8 +485,6 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
     , m_crtc(output ? output->crtc : XCB_NONE)
     , m_outputName(getOutputName(output))
     , m_outputSizeMillimeters(output ? QSize(output->mm_width, output->mm_height) : QSize())
-    , m_virtualSize(virtualDesktop->size())
-    , m_virtualSizeMillimeters(virtualDesktop->physicalSize())
 {
     if (connection->hasXRandr()) {
         xcb_randr_select_input(xcb_connection(), screen()->root, true);
@@ -416,19 +498,19 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
         m_geometry = QRect(xineramaScreenInfo->x_org, xineramaScreenInfo->y_org,
                            xineramaScreenInfo->width, xineramaScreenInfo->height);
         m_availableGeometry = m_geometry & m_virtualDesktop->workArea();
-        m_sizeMillimeters = sizeInMillimeters(m_geometry.size(), virtualDpi());
+        m_sizeMillimeters = sizeInMillimeters(m_geometry.size(), m_virtualDesktop->dpi());
         if (xineramaScreenIdx > -1)
             m_outputName += QLatin1Char('-') + QString::number(xineramaScreenIdx);
     }
 
     if (m_geometry.isEmpty())
-        m_geometry = QRect(QPoint(), m_virtualSize);
+        m_geometry = QRect(QPoint(), virtualDesktop->size());
 
     if (m_availableGeometry.isEmpty())
         m_availableGeometry = m_geometry & m_virtualDesktop->workArea();
 
     if (m_sizeMillimeters.isEmpty())
-        m_sizeMillimeters = m_virtualSizeMillimeters;
+        m_sizeMillimeters = virtualDesktop->physicalSize();
 
     m_cursor = new QXcbCursor(connection, this);
 
@@ -583,13 +665,6 @@ QImage::Format QXcbScreen::format() const
     return format;
 }
 
-QDpi QXcbScreen::virtualDpi() const
-{
-    return QDpi(Q_MM_PER_INCH * m_virtualSize.width() / m_virtualSizeMillimeters.width(),
-                Q_MM_PER_INCH * m_virtualSize.height() / m_virtualSizeMillimeters.height());
-}
-
-
 QDpi QXcbScreen::logicalDpi() const
 {
     static const int overrideDpi = qEnvironmentVariableIntValue("QT_FONT_DPI");
@@ -600,7 +675,7 @@ QDpi QXcbScreen::logicalDpi() const
     if (forcedDpi > 0) {
         return QDpi(forcedDpi, forcedDpi);
     }
-    return virtualDpi();
+    return m_virtualDesktop->dpi();
 }
 
 qreal QXcbScreen::pixelDensity() const
@@ -631,80 +706,6 @@ int QXcbScreen::virtualDesktopNumberStatic(const QScreen *screen)
     return 0;
 }
 
-/*!
-    \brief handle the XCB screen change event and update properties
-
-    On a mobile device, the ideal use case is that the accelerometer would
-    drive the orientation. This could be achieved by using QSensors to read the
-    accelerometer and adjusting the rotation in QML, or by reading the
-    orientation from the QScreen object and doing the same, or in many other
-    ways. However, on X we have the XRandR extension, which makes it possible
-    to have the whole screen rotated, so that individual apps DO NOT have to
-    rotate themselves. Apps could optionally use the
-    QScreen::primaryOrientation property to optimize layout though.
-    Furthermore, there is no support in X for accelerometer events anyway. So
-    it makes more sense on a Linux system running X to just run a daemon which
-    monitors the accelerometer and runs xrandr automatically to do the rotation,
-    then apps do not have to be aware of it (but probably the window manager
-    would resize them accordingly). updateGeometry() is written with this
-    design in mind. Therefore the physical geometry, available geometry,
-    virtual geometry, orientation and primaryOrientation should all change at
-    the same time.  On a system which cannot rotate the whole screen, it would
-    be correct for only the orientation (not the primary orientation) to
-    change.
-*/
-void QXcbScreen::handleScreenChange(xcb_randr_screen_change_notify_event_t *change_event)
-{
-    // No need to do anything when screen rotation did not change - if any
-    // xcb output geometry has changed, we will get RRCrtcChangeNotify and
-    // RROutputChangeNotify events next
-    if (change_event->rotation == m_rotation)
-        return;
-
-    m_rotation = change_event->rotation;
-    switch (m_rotation) {
-    case XCB_RANDR_ROTATION_ROTATE_0: // xrandr --rotate normal
-        m_orientation = Qt::LandscapeOrientation;
-        m_virtualSize.setWidth(change_event->width);
-        m_virtualSize.setHeight(change_event->height);
-        m_virtualSizeMillimeters.setWidth(change_event->mwidth);
-        m_virtualSizeMillimeters.setHeight(change_event->mheight);
-        break;
-    case XCB_RANDR_ROTATION_ROTATE_90: // xrandr --rotate left
-        m_orientation = Qt::PortraitOrientation;
-        m_virtualSize.setWidth(change_event->height);
-        m_virtualSize.setHeight(change_event->width);
-        m_virtualSizeMillimeters.setWidth(change_event->mheight);
-        m_virtualSizeMillimeters.setHeight(change_event->mwidth);
-        break;
-    case XCB_RANDR_ROTATION_ROTATE_180: // xrandr --rotate inverted
-        m_orientation = Qt::InvertedLandscapeOrientation;
-        m_virtualSize.setWidth(change_event->width);
-        m_virtualSize.setHeight(change_event->height);
-        m_virtualSizeMillimeters.setWidth(change_event->mwidth);
-        m_virtualSizeMillimeters.setHeight(change_event->mheight);
-        break;
-    case XCB_RANDR_ROTATION_ROTATE_270: // xrandr --rotate right
-        m_orientation = Qt::InvertedPortraitOrientation;
-        m_virtualSize.setWidth(change_event->height);
-        m_virtualSize.setHeight(change_event->width);
-        m_virtualSizeMillimeters.setWidth(change_event->mheight);
-        m_virtualSizeMillimeters.setHeight(change_event->mwidth);
-        break;
-    // We don't need to do anything with these, since QScreen doesn't store reflection state,
-    // and Qt-based applications probably don't need to care about it anyway.
-    case XCB_RANDR_ROTATION_REFLECT_X: break;
-    case XCB_RANDR_ROTATION_REFLECT_Y: break;
-    }
-
-    updateGeometry(change_event->timestamp);
-
-    QWindowSystemInterface::handleScreenOrientationChange(QPlatformScreen::screen(), m_orientation);
-
-    QDpi ldpi = logicalDpi();
-    QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(QPlatformScreen::screen(), ldpi.first, ldpi.second);
-}
-
 void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
 {
     if (!connection()->hasXRandr())
@@ -718,6 +719,8 @@ void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
 
 void QXcbScreen::updateGeometry(const QRect &geometry, uint8_t rotation)
 {
+    const Qt::ScreenOrientation oldOrientation = m_orientation;
+
     switch (rotation) {
     case XCB_RANDR_ROTATION_ROTATE_0: // xrandr --rotate normal
         m_orientation = Qt::LandscapeOrientation;
@@ -741,13 +744,15 @@ void QXcbScreen::updateGeometry(const QRect &geometry, uint8_t rotation)
     // is known (probably back-calculated from DPI and resolution),
     // e.g. on VNC or with some hardware.
     if (m_sizeMillimeters.isEmpty())
-        m_sizeMillimeters = sizeInMillimeters(geometry.size(), virtualDpi());
+        m_sizeMillimeters = sizeInMillimeters(geometry.size(), m_virtualDesktop->dpi());
 
     qreal dpi = geometry.width() / physicalSize().width() * qreal(25.4);
     m_pixelDensity = qMax(1, qRound(dpi/96));
     m_geometry = geometry;
     m_availableGeometry = geometry & m_virtualDesktop->workArea();
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), m_geometry, m_availableGeometry);
+    if (m_orientation != oldOrientation)
+        QWindowSystemInterface::handleScreenOrientationChange(QPlatformScreen::screen(), m_orientation);
 }
 
 void QXcbScreen::updateAvailableGeometry()
@@ -943,8 +948,9 @@ QDebug operator<<(QDebug debug, const QXcbScreen *screen)
         formatSizeF(debug, screen->physicalSize());
         // TODO 5.6 if (debug.verbosity() > 2) {
         debug << ", screenNumber=" << screen->screenNumber();
-        debug << ", virtualSize=" << screen->virtualSize().width() << 'x' << screen->virtualSize().height() << " (";
-        formatSizeF(debug, screen->virtualSize());
+        const QSize virtualSize = screen->virtualDesktop()->size();
+        debug << ", virtualSize=" << virtualSize.width() << 'x' << virtualSize.height() << " (";
+        formatSizeF(debug, virtualSize);
         debug << "), orientation=" << screen->orientation();
         debug << ", depth=" << screen->depth();
         debug << ", refreshRate=" << screen->refreshRate();

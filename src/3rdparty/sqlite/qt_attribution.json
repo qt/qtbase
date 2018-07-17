@@ -5,8 +5,9 @@
     "QtUsage": "Used in Qt SQL Lite plugin. Configure Qt with -system-sqlite or -no-sqlite to avoid.",
 
     "Description": "SQLite is a small C library that implements a self-contained, embeddable, zero-configuration SQL database engine.",
-    "Homepage": "http://www.sqlite.org/",
-    "Version": "3.23.1",
+    "Homepage": "https://www.sqlite.org/",
+    "Version": "3.24.0",
+    "DownloadLocation": "https://www.sqlite.org/2018/sqlite-amalgamation-3240000.zip",
     "License": "Public Domain",
     "Copyright": "The authors disclaim copyright to the source code. However, a license can be obtained if needed."
 }

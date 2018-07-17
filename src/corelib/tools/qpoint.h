@@ -351,9 +351,8 @@ QT_WARNING_DISABLE_GCC("-Wfloat-equal")
 
 Q_DECL_CONSTEXPR inline bool operator==(const QPointF &p1, const QPointF &p2)
 {
-    return ((!p1.xp && !p1.yp) || (!p2.xp && !p2.yp))
-         ? (qFuzzyIsNull(p1.xp - p2.xp) && qFuzzyIsNull(p1.yp - p2.yp))
-         : (qFuzzyCompare(p1.xp, p2.xp) && qFuzzyCompare(p1.yp, p2.yp));
+    return ((!p1.xp || !p2.xp) ? qFuzzyIsNull(p1.xp - p2.xp) : qFuzzyCompare(p1.xp, p2.xp))
+        && ((!p1.yp || !p2.yp) ? qFuzzyIsNull(p1.yp - p2.yp) : qFuzzyCompare(p1.yp, p2.yp));
 }
 
 Q_DECL_CONSTEXPR inline bool operator!=(const QPointF &p1, const QPointF &p2)

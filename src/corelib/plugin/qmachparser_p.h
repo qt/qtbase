@@ -67,7 +67,7 @@ class Q_AUTOTEST_EXPORT QMachOParser
 {
 public:
     enum { QtMetaDataSection, NoQtSection, NotSuitable };
-    static int parse(const char *m_s, ulong fdlen, const QString &library, QString *errorString, long *pos, ulong *sectionlen);
+    static int parse(const char *m_s, ulong fdlen, const QString &library, QString *errorString, qsizetype *pos, qsizetype *sectionlen);
 };
 
 QT_END_NAMESPACE

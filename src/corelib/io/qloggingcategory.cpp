@@ -221,6 +221,8 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
     All message types for this category are enabled by default.
 
     If \a category is \c{0}, the category name is changed to \c "default".
+
+    Note that \a category must be kept valid during the lifetime of this object.
 */
 QLoggingCategory::QLoggingCategory(const char *category)
     : d(0),
@@ -234,6 +236,8 @@ QLoggingCategory::QLoggingCategory(const char *category)
     and enables all messages with types more severe or equal than \a enableForLevel.
 
     If \a category is \c{0}, the category name is changed to \c "default".
+
+    Note that \a category must be kept valid during the lifetime of this object.
 
     \since 5.4
 */

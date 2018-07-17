@@ -342,13 +342,14 @@ inline bool QStorageIterator::isValid() const
 inline bool QStorageIterator::next()
 {
     QList<QByteArray> data;
+    // If file is virtual, file.readLine() may succeed even when file.atEnd().
     do {
         const QByteArray line = file.readLine();
+        if (line.isEmpty() && file.atEnd())
+            return false;
         data = line.split(' ');
-    } while (data.count() < 3 && !file.atEnd());
+    } while (data.count() < 4);
 
-    if (file.atEnd())
-        return false;
     m_device = data.at(0);
     m_rootPath = data.at(1);
     m_fileSystemType = data.at(2);

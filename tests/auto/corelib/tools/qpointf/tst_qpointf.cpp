@@ -450,6 +450,9 @@ void tst_QPointF::compare()
     p3 -= QPointF(0.1, 0.1);
 
     QVERIFY(p3 == QPointF());
+
+    // Test we can compare one dimension with hard zero
+    QVERIFY(QPointF(1.9543e-14, -32.0) == QPointF(0.0, -32.0));
 }
 
 QTEST_MAIN(tst_QPointF)

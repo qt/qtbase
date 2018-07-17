@@ -1366,7 +1366,10 @@
     \value Key_Pause    The Pause/Break key (\b Note: Not related to pausing media)
     \value Key_Print
     \value Key_SysReq
-    \value Key_Clear
+    \value Key_Clear    Corresponds to the \b Clear key on selected Apple
+                        keyboard models. On other systems it is commonly mapped
+                        to the numeric keypad key \b 5, when \b {Num Lock} is
+                        \c off.
     \value Key_Home
     \value Key_End
     \value Key_Left

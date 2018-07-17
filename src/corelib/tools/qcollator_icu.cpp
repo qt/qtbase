@@ -116,6 +116,9 @@ int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) con
 
 int QCollator::compare(const QString &s1, const QString &s2) const
 {
+    if (d->dirty)
+        d->init();
+
     if (d->collator)
         return compare(s1.constData(), s1.size(), s2.constData(), s2.size());
 
@@ -124,6 +127,9 @@ int QCollator::compare(const QString &s1, const QString &s2) const
 
 int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
 {
+    if (d->dirty)
+        d->init();
+
     if (d->collator)
         return compare(s1.constData(), s1.size(), s2.constData(), s2.size());
 

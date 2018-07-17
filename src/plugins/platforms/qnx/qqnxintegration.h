@@ -81,7 +81,8 @@ public:
         NoOptions = 0x0,
         FullScreenApplication = 0x1,
         RootWindow = 0x2,
-        AlwaysFlushScreenContext = 0x4
+        AlwaysFlushScreenContext = 0x4,
+        SurfacelessEGLContext = 0x8
     };
     Q_DECLARE_FLAGS(Options, Option)
     explicit QQnxIntegration(const QStringList &paramList);

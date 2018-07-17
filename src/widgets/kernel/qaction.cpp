@@ -232,10 +232,6 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     the action. For example:
 
     \snippet mainwindows/application/mainwindow.cpp 19
-    \codeline
-    \code
-    fileMenu->addAction(openAct);
-    \endcode
 
     We recommend that actions are created as children of the window
     they are used in. In most cases actions will be children of
@@ -968,7 +964,10 @@ void QAction::toggle()
     Only checkable actions can be checked.  By default, this is false
     (the action is unchecked).
 
-    \sa checkable
+    \note The notifier signal for this property is toggled(). As toggling
+    a QAction changes its state, it will also emit a changed() signal.
+
+    \sa checkable, toggled()
 */
 void QAction::setChecked(bool b)
 {
@@ -1190,7 +1189,8 @@ void QAction::activate(ActionEvent event)
 
     This signal is emitted whenever a checkable action changes its
     isChecked() status. This can be the result of a user interaction,
-    or because setChecked() was called.
+    or because setChecked() was called. As setChecked() changes the
+    QAction, it emits changed() in addition to toggled().
 
     \a checked is true if the action is checked, or false if the
     action is unchecked.
