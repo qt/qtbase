@@ -1783,6 +1783,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 schemeData.replace(QLatin1String("@QMAKE_ORIG_TARGET@"), target);
                 schemeData.replace(QLatin1String("@TARGET_PBX_KEY@"), keyFor(pbx_dir + "QMAKE_PBX_TARGET"));
                 schemeData.replace(QLatin1String("@TEST_BUNDLE_PBX_KEY@"), keyFor("QMAKE_TEST_BUNDLE_REFERENCE"));
+                schemeData.replace(QLatin1String("@QMAKE_RELATIVE_PBX_DIR@"), fileFixify(pbx_dir));
 
                 QTextStream outputSchemeStream(&outputSchemeFile);
                 outputSchemeStream << schemeData;

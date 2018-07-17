@@ -17,7 +17,7 @@
                BlueprintIdentifier = "@TARGET_PBX_KEY@"
                BuildableName = "@QMAKE_ORIG_TARGET@"
                BlueprintName = "@QMAKE_ORIG_TARGET@"
-               ReferencedContainer = "container:@QMAKE_ORIG_TARGET@.xcodeproj">
+               ReferencedContainer = "container:@QMAKE_RELATIVE_PBX_DIR@">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -35,7 +35,7 @@
                BlueprintIdentifier = "@TEST_BUNDLE_PBX_KEY@"
                BuildableName = "Qt Test"
                BlueprintName = "Qt Test"
-               ReferencedContainer = "container:@QMAKE_ORIG_TARGET@.xcodeproj">
+               ReferencedContainer = "container:@QMAKE_RELATIVE_PBX_DIR@">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -45,7 +45,7 @@
             BlueprintIdentifier = "@TARGET_PBX_KEY@"
             BuildableName = "@QMAKE_ORIG_TARGET@"
             BlueprintName = "@QMAKE_ORIG_TARGET@"
-            ReferencedContainer = "container:@QMAKE_ORIG_TARGET@.xcodeproj">
+            ReferencedContainer = "container:@QMAKE_RELATIVE_PBX_DIR@">
          </BuildableReference>
       </MacroExpansion>
       <CommandLineArguments>
@@ -71,7 +71,7 @@
             BlueprintIdentifier = "@TARGET_PBX_KEY@"
             BuildableName = "@QMAKE_ORIG_TARGET@"
             BlueprintName = "@QMAKE_ORIG_TARGET@"
-            ReferencedContainer = "container:@QMAKE_ORIG_TARGET@.xcodeproj">
+            ReferencedContainer = "container:@QMAKE_RELATIVE_PBX_DIR@">
          </BuildableReference>
       </BuildableProductRunnable>
       <EnvironmentVariables>
@@ -96,7 +96,7 @@
             BlueprintIdentifier = "@TARGET_PBX_KEY@"
             BuildableName = "@QMAKE_ORIG_TARGET@"
             BlueprintName = "@QMAKE_ORIG_TARGET@"
-            ReferencedContainer = "container:@QMAKE_ORIG_TARGET@.xcodeproj">
+            ReferencedContainer = "container:@QMAKE_RELATIVE_PBX_DIR@">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
