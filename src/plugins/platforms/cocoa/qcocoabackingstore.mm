@@ -127,10 +127,11 @@ void QCocoaBackingStore::flush(QWindow *window, const QRegion &region, const QPo
         // FIXME: Figure out if there's a way to do partial updates
         view.layer.contents = (__bridge id)static_cast<CGImageRef>(cgImage);
         if (view != topLevelView) {
+            const CGSize topLevelSize = topLevelView.bounds.size;
             view.layer.contentsRect = CGRectApplyAffineTransform(
                 [view convertRect:view.bounds toView:topLevelView],
                 // The contentsRect is in unit coordinate system
-                CGAffineTransformMakeScale(1.0 / m_image.width(), 1.0 / m_image.height()));
+                CGAffineTransformMakeScale(1.0 / topLevelSize.width, 1.0 / topLevelSize.height));
         }
     } else {
         // Normally a NSView is drawn via drawRect, as part of the display cycle in the
