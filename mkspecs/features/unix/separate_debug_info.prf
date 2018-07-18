@@ -72,10 +72,12 @@ have_target:!static:if(darwin|!isEmpty(QMAKE_OBJCOPY)) {
                 debug_info_plist_target.path += $${target.path}/$${debug_info_target_rel}.$$debug_info_suffix/Contents
                 INSTALLS += debug_info_plist_target
 
-                debug_script_target.CONFIG += no_check_exist
-                debug_script_target.files = $${debug_info_target}.$$debug_info_suffix/Contents/Resources/Python/$${TARGET}.py
-                debug_script_target.path += $${target.path}/$${debug_info_target_rel}.$$debug_info_suffix/Contents/Resources/Python
-                INSTALLS += debug_script_target
+                !isEmpty(debug_script.output) {
+                    debug_script_target.CONFIG += no_check_exist
+                    debug_script_target.files = $${debug_script.output}
+                    debug_script_target.path += $${target.path}/$${debug_info_target_rel}.$$debug_info_suffix/Contents/Resources/Python
+                    INSTALLS += debug_script_target
+                }
             }
 
             debug_info_target.CONFIG += no_check_exist
