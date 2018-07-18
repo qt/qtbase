@@ -45,8 +45,15 @@
 #include <QtGui/qfont.h>
 #include <QtGui/private/qcoregraphics_p.h>
 
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_CLANG("-Wobjc-method-access")
+#if !QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+@interface NSColor (MojaveForwardDeclarations)
+@property (class, strong, readonly) NSColor *selectedContentBackgroundColor NS_AVAILABLE_MAC(10_14);
+@property (class, strong, readonly) NSColor *unemphasizedSelectedTextBackgroundColor NS_AVAILABLE_MAC(10_14);
+@property (class, strong, readonly) NSColor *unemphasizedSelectedTextColor NS_AVAILABLE_MAC(10_14);
+@property (class, strong, readonly) NSColor *unemphasizedSelectedContentBackgroundColor NS_AVAILABLE_MAC(10_14);
+@property (class, strong, readonly) NSArray<NSColor *> *alternatingContentBackgroundColors NS_AVAILABLE_MAC(10_14);
+@end
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -221,5 +228,3 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
 }
 
 QT_END_NAMESPACE
-
-QT_WARNING_POP
