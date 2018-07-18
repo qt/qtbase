@@ -315,8 +315,8 @@ public:
     //It enable a sort which is not recursive, it means
     //we sort only what we see.
     bool disableRecursiveSort;
-#ifndef QT_NO_REGEXP
-    QList<QRegExp> nameFilters;
+#if QT_CONFIG(regularexpression)
+    QStringList nameFilters;
 #endif
     QHash<QString, QString> resolvedSymLinks;
 
