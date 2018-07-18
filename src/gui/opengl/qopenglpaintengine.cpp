@@ -272,6 +272,12 @@ GLuint QOpenGL2PaintEngineExPrivate::bindTexture(const ImageWithBindOptions &ima
     return QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, imageWithOptions.image, imageWithOptions.options);
 }
 
+inline static bool isPowerOfTwo(int x)
+{
+    // Assumption: x >= 1
+    return x == (x & -x);
+}
+
 void QOpenGL2PaintEngineExPrivate::updateBrushTexture()
 {
     Q_Q(QOpenGL2PaintEngineEx);
@@ -304,16 +310,18 @@ void QOpenGL2PaintEngineExPrivate::updateBrushTexture()
         currentBrushImage = currentBrush.textureImage();
 
         int max_texture_size = ctx->d_func()->maxTextureSize();
-        if (currentBrushImage.width() > max_texture_size || currentBrushImage.height() > max_texture_size)
-            currentBrushImage = currentBrushImage.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
+        QSize newSize = currentBrushImage.size();
+        newSize = newSize.boundedTo(QSize(max_texture_size, max_texture_size));
+        if (!QOpenGLContext::currentContext()->functions()->hasOpenGLFeature(QOpenGLFunctions::NPOTTextureRepeat)) {
+            if (!isPowerOfTwo(newSize.width()) || !isPowerOfTwo(newSize.height())) {
+                newSize.setHeight(qNextPowerOfTwo(newSize.height() - 1));
+                newSize.setWidth(qNextPowerOfTwo(newSize.width() - 1));
+            }
+        }
+        if (currentBrushImage.size() != newSize)
+            currentBrushImage = currentBrushImage.scaled(newSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
         GLuint wrapMode = GL_REPEAT;
-        if (QOpenGLContext::currentContext()->isOpenGLES()) {
-            // OpenGL ES does not support GL_REPEAT wrap modes for NPOT textures. So instead,
-            // we emulate GL_REPEAT by only taking the fractional part of the texture coords
-            // in the qopenglslTextureBrushSrcFragmentShader program.
-            wrapMode = GL_CLAMP_TO_EDGE;
-        }
 
         updateTexture(QT_BRUSH_TEXTURE_UNIT, currentBrushImage, wrapMode, filterMode, ForceUpdate);
     }

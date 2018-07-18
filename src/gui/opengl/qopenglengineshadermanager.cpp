@@ -167,7 +167,7 @@ QOpenGLEngineSharedShaders::QOpenGLEngineSharedShaders(QOpenGLContext* context)
         code[CustomImageSrcFragmentShader] = qopenglslCustomSrcFragmentShader_core; // Calls "customShader", which must be appended
         code[SolidBrushSrcFragmentShader] = qopenglslSolidBrushSrcFragmentShader_core;
 
-        code[TextureBrushSrcFragmentShader] = qopenglslTextureBrushSrcFragmentShader_desktop_core;
+        code[TextureBrushSrcFragmentShader] = qopenglslTextureBrushSrcFragmentShader_core;
         code[TextureBrushSrcWithPatternFragmentShader] = qopenglslTextureBrushSrcWithPatternFragmentShader_core;
         code[PatternBrushSrcFragmentShader] = qopenglslPatternBrushSrcFragmentShader_core;
         code[LinearGradientBrushSrcFragmentShader] = qopenglslLinearGradientBrushSrcFragmentShader_core;
@@ -212,10 +212,7 @@ QOpenGLEngineSharedShaders::QOpenGLEngineSharedShaders(QOpenGLContext* context)
         code[AlphaImageSrcFragmentShader] = qopenglslAlphaImageSrcFragmentShader;
         code[CustomImageSrcFragmentShader] = qopenglslCustomSrcFragmentShader; // Calls "customShader", which must be appended
         code[SolidBrushSrcFragmentShader] = qopenglslSolidBrushSrcFragmentShader;
-        if (context->isOpenGLES())
-            code[TextureBrushSrcFragmentShader] = qopenglslTextureBrushSrcFragmentShader_ES;
-        else
-            code[TextureBrushSrcFragmentShader] = qopenglslTextureBrushSrcFragmentShader_desktop;
+        code[TextureBrushSrcFragmentShader] = qopenglslTextureBrushSrcFragmentShader;
         code[TextureBrushSrcWithPatternFragmentShader] = qopenglslTextureBrushSrcWithPatternFragmentShader;
         code[PatternBrushSrcFragmentShader] = qopenglslPatternBrushSrcFragmentShader;
         code[LinearGradientBrushSrcFragmentShader] = qopenglslLinearGradientBrushSrcFragmentShader;
