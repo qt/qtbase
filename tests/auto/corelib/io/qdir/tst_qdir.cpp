@@ -33,7 +33,6 @@
 #include <qdebug.h>
 #include <qdir.h>
 #include <qfileinfo.h>
-#include <qregexp.h>
 #include <qstringlist.h>
 
 #if defined(Q_OS_WIN)

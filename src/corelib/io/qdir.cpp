@@ -48,7 +48,9 @@
 #include "qdiriterator.h"
 #include "qdatetime.h"
 #include "qstring.h"
-#include "qregexp.h"
+#if QT_CONFIG(regularexpression)
+#  include <qregularexpression.h>
+#endif
 #include "qvector.h"
 #include "qvarlengtharray.h"
 #include "qfilesystementry_p.h"
@@ -1038,7 +1040,7 @@ QStringList QDir::nameFilters() const
     list of filters specified by \a nameFilters.
 
     Each name filter is a wildcard (globbing) filter that understands
-    \c{*} and \c{?} wildcards. (See \l{QRegExp wildcard matching}.)
+    \c{*} and \c{?} wildcards. (See \l{QRegularExpression wildcard matching}.)
 
     For example, the following code sets three name filters on a QDir
     to ensure that only files with extensions typically used for C++
@@ -2110,7 +2112,7 @@ QString QDir::rootPath()
     return QFileSystemEngine::rootPath();
 }
 
-#ifndef QT_NO_REGEXP
+#if QT_CONFIG(regularexpression)
 /*!
     \overload
 
@@ -2118,13 +2120,18 @@ QString QDir::rootPath()
     patterns in the list of \a filters; otherwise returns \c false. The
     matching is case insensitive.
 
-    \sa {QRegExp wildcard matching}, QRegExp::exactMatch(), entryList(), entryInfoList()
+    \sa {QRegularExpression Wildcard matching}, QRegularExpression::wildcardToRegularExpression(),
+      entryList(), entryInfoList()
 */
 bool QDir::match(const QStringList &filters, const QString &fileName)
 {
     for (QStringList::ConstIterator sit = filters.constBegin(); sit != filters.constEnd(); ++sit) {
-        QRegExp rx(*sit, Qt::CaseInsensitive, QRegExp::Wildcard);
-        if (rx.exactMatch(fileName))
+        QString wildcard = QRegularExpression::wildcardToRegularExpression(*sit);
+        // Insensitive exact match
+        // (see Notes for QRegExp Users in QRegularExpression's documentation)
+        QRegularExpression rx(QLatin1String("\\A(?:") + wildcard + QLatin1String(")\\z"),
+                              QRegularExpression::CaseInsensitiveOption);
+        if (rx.match(fileName).hasMatch())
             return true;
     }
     return false;
@@ -2136,13 +2143,14 @@ bool QDir::match(const QStringList &filters, const QString &fileName)
     contain multiple patterns separated by spaces or semicolons.
     The matching is case insensitive.
 
-    \sa {QRegExp wildcard matching}, QRegExp::exactMatch(), entryList(), entryInfoList()
+    \sa {QRegularExpression wildcard matching}, QRegularExpression::wildcardToRegularExpression,
+      entryList(), entryInfoList()
 */
 bool QDir::match(const QString &filter, const QString &fileName)
 {
     return match(nameFiltersFromString(filter), fileName);
 }
-#endif // QT_NO_REGEXP
+#endif // QT_CONFIG(regularexpression)
 
 /*!
     \internal
