@@ -344,6 +344,7 @@ QByteArray QJsonDocument::toJson() const
 
 /*!
     \enum QJsonDocument::JsonFormat
+    \since 5.1
 
     This value defines the format of the JSON byte array produced
     when converting to a QJsonDocument using toJson().

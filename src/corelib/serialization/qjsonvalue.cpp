@@ -558,6 +558,7 @@ bool QJsonValue::toBool(bool defaultValue) const
 }
 
 /*!
+    \since 5.2
     Converts the value to an int and returns it.
 
     If type() is not Double or the value is not a whole number,
