@@ -45,6 +45,7 @@
 #include <QtGui/private/qopengl_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformnativeinterface.h>
 
 #ifdef Q_OS_INTEGRITY
 #include <EGL/egl.h>
@@ -424,6 +425,8 @@ static int qt_gl_resolve_extensions()
         extensions |= QOpenGLExtensions::NVFloatBuffer;
     if (extensionMatcher.match("GL_ARB_pixel_buffer_object"))
         extensions |= QOpenGLExtensions::PixelBufferObject;
+    if (extensionMatcher.match("GL_ARB_texture_swizzle") || extensionMatcher.match("GL_EXT_texture_swizzle"))
+        extensions |= QOpenGLExtensions::TextureSwizzle;
 
     if (ctx->isOpenGLES()) {
         if (format.majorVersion() >= 2)
@@ -436,7 +439,8 @@ static int qt_gl_resolve_extensions()
                 | QOpenGLExtensions::MapBufferRange
                 | QOpenGLExtensions::FramebufferBlit
                 | QOpenGLExtensions::FramebufferMultisample
-                | QOpenGLExtensions::Sized8Formats;
+                | QOpenGLExtensions::Sized8Formats
+                | QOpenGLExtensions::TextureSwizzle;
         } else {
             // Recognize features by extension name.
             if (extensionMatcher.match("GL_OES_packed_depth_stencil"))
@@ -462,6 +466,17 @@ static int qt_gl_resolve_extensions()
         // We don't match GL_APPLE_texture_format_BGRA8888 here because it has different semantics.
         if (extensionMatcher.match("GL_IMG_texture_format_BGRA8888") || extensionMatcher.match("GL_EXT_texture_format_BGRA8888"))
             extensions |= QOpenGLExtensions::BGRATextureFormat;
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+        QString *deviceName =
+                static_cast<QString *>(QGuiApplication::platformNativeInterface()->nativeResourceForIntegration("AndroidDeviceName"));
+        static bool wrongfullyReportsBgra8888Support = deviceName != 0
+                                                        && (deviceName->compare(QLatin1String("samsung SM-T211"), Qt::CaseInsensitive) == 0
+                                                            || deviceName->compare(QLatin1String("samsung SM-T210"), Qt::CaseInsensitive) == 0
+                                                            || deviceName->compare(QLatin1String("samsung SM-T215"), Qt::CaseInsensitive) == 0);
+        if (wrongfullyReportsBgra8888Support)
+            extensions &= ~QOpenGLExtensions::BGRATextureFormat;
+#endif
+
         if (extensionMatcher.match("GL_EXT_discard_framebuffer"))
             extensions |= QOpenGLExtensions::DiscardFramebuffer;
         if (extensionMatcher.match("GL_EXT_texture_norm16"))
@@ -494,6 +509,9 @@ static int qt_gl_resolve_extensions()
 
         if (format.version() >= qMakePair(3, 2) || extensionMatcher.match("GL_ARB_geometry_shader4"))
             extensions |= QOpenGLExtensions::GeometryShaders;
+
+        if (format.version() >= qMakePair(3, 3))
+            extensions |= QOpenGLExtensions::TextureSwizzle;
 
         if (extensionMatcher.match("GL_ARB_map_buffer_range"))
             extensions |= QOpenGLExtensions::MapBufferRange;

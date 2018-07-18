@@ -263,7 +263,7 @@ GLuint QOpenGL2PaintEngineExPrivate::bindTexture(const QGradient &gradient)
 struct ImageWithBindOptions
 {
     const QImage &image;
-    QOpenGLTextureCache::BindOptions options;
+    QOpenGLTextureUploader::BindOptions options;
 };
 
 template<>
@@ -1554,7 +1554,7 @@ void QOpenGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, c
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
-    QOpenGLTextureCache::BindOptions bindOption = QOpenGLTextureCache::PremultipliedAlphaBindOption;
+    QOpenGLTextureUploader::BindOptions bindOption = QOpenGLTextureUploader::PremultipliedAlphaBindOption;
     // Use specialized bind for formats we have specialized shaders for.
     switch (image.format()) {
     case QImage::Format_RGBA8888:
@@ -1565,14 +1565,14 @@ void QOpenGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, c
     case QImage::Format_Alpha8:
         if (ctx->functions()->hasOpenGLFeature(QOpenGLFunctions::TextureRGFormats)) {
             d->shaderManager->setSrcPixelType(QOpenGLEngineShaderManager::AlphaImageSrc);
-            bindOption = QOpenGLTextureCache::UseRedFor8BitBindOption;
+            bindOption = QOpenGLTextureUploader::UseRedFor8BitBindOption;
         } else
             d->shaderManager->setSrcPixelType(QOpenGLEngineShaderManager::ImageSrc);
         break;
     case QImage::Format_Grayscale8:
         if (ctx->functions()->hasOpenGLFeature(QOpenGLFunctions::TextureRGFormats)) {
             d->shaderManager->setSrcPixelType(QOpenGLEngineShaderManager::GrayscaleImageSrc);
-            bindOption = QOpenGLTextureCache::UseRedFor8BitBindOption;
+            bindOption = QOpenGLTextureUploader::UseRedFor8BitBindOption;
         } else
             d->shaderManager->setSrcPixelType(QOpenGLEngineShaderManager::ImageSrc);
         break;

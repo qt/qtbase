@@ -90,7 +90,8 @@ public:
         MapBufferRange          = 0x00100000,
         Sized8Formats           = 0x00200000,
         DiscardFramebuffer      = 0x00400000,
-        Sized16Formats          = 0x00800000
+        Sized16Formats          = 0x00800000,
+        TextureSwizzle          = 0x01000000,
     };
     Q_DECLARE_FLAGS(OpenGLExtensions, OpenGLExtension)
 

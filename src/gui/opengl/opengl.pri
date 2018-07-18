@@ -32,6 +32,7 @@ qtConfig(opengl) {
                opengl/qopengltexture.h \
                opengl/qopengltexture_p.h \
                opengl/qopengltexturehelper_p.h \
+               opengl/qopengltextureuploader_p.h \
                opengl/qopenglpixeltransferoptions.h \
                opengl/qopenglextrafunctions.h \
                opengl/qopenglprogrambinarycache_p.h
@@ -56,6 +57,7 @@ qtConfig(opengl) {
                opengl/qopengltextureblitter.cpp \
                opengl/qopengltexture.cpp \
                opengl/qopengltexturehelper.cpp \
+               opengl/qopengltextureuploader.cpp \
                opengl/qopenglpixeltransferoptions.cpp \
                opengl/qopenglprogrambinarycache.cpp
 
