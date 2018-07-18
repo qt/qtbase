@@ -3098,8 +3098,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                 tf.bezeled = YES;
                 static_cast<NSTextFieldCell *>(tf.cell).bezelStyle = isRounded ? NSTextFieldRoundedBezel : NSTextFieldSquareBezel;
                 tf.frame = opt->rect.toCGRect();
-                d->drawNSViewInRect(tf, opt->rect, p, ^(CGContextRef ctx, const CGRect &rect) {
-                    Q_UNUSED(ctx);
+                d->drawNSViewInRect(tf, opt->rect, p, ^(CGContextRef, const CGRect &rect) {
                     [tf.cell drawWithFrame:rect inView:tf];
                 });
             } else {
@@ -3430,7 +3429,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             pb.enabled = isEnabled;
             [pb highlight:isPressed];
             pb.state = isHighlighted && !isPressed ? NSOnState : NSOffState;
-            d->drawNSViewInRect(pb, frameRect, p, ^(CGContextRef __unused ctx, const CGRect &r) {
+            d->drawNSViewInRect(pb, frameRect, p, ^(CGContextRef, const CGRect &r) {
                 [pb.cell drawBezelWithFrame:r inView:pb.superview];
             });
             [pb highlight:NO];
@@ -4172,7 +4171,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             const auto cw = QMacStylePrivate::CocoaControl(ct, QStyleHelper::SizeLarge);
             auto *sv = static_cast<NSSplitView *>(d->cocoaControl(cw));
             sv.frame = opt->rect.toCGRect();
-            d->drawNSViewInRect(sv, opt->rect, p, ^(CGContextRef __unused ctx, const CGRect &rect) {
+            d->drawNSViewInRect(sv, opt->rect, p, ^(CGContextRef, const CGRect &rect) {
                 [sv drawDividerInRect:rect];
             });
         } else {
@@ -5179,7 +5178,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 }
                 pb.frame = frameRect.toCGRect();
                 [pb highlight:isPressed];
-                d->drawNSViewInRect(pb, frameRect, p, ^(CGContextRef __unused ctx, const CGRect &r) {
+                d->drawNSViewInRect(pb, frameRect, p, ^(CGContextRef, const CGRect &r) {
                     [pb.cell drawBezelWithFrame:r inView:pb.superview];
                 });
             } else if (cw.type == QMacStylePrivate::ComboBox) {
@@ -5195,7 +5194,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     // TODO Render to pixmap and darken the button manually
                 }
 
-                d->drawNSViewInRect(cb, frameRect, p, ^(CGContextRef __unused ctx, const CGRect &r) {
+                d->drawNSViewInRect(cb, frameRect, p, ^(CGContextRef, const CGRect &r) {
                     // FIXME This is usually drawn in the control's superview, but we wouldn't get inactive look in this case
                     [cb.cell drawWithFrame:r inView:cb];
                 });
@@ -5267,13 +5266,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     Q_UNUSED(isHovered); // FIXME No public API for this
 
                     const auto buttonRect = proxy()->subControlRect(CC_TitleBar, titlebar, sc, widget);
-                    const auto drawBlock = ^ (CGContextRef ctx, const CGRect &rect) {
-                        Q_UNUSED(ctx);
-                        Q_UNUSED(rect);
+                    d->drawNSViewInRect(wb, buttonRect, p, ^(CGContextRef, const CGRect &rect) {
                         auto *wbCell = static_cast<NSButtonCell *>(wb.cell);
                         [wbCell drawWithFrame:rect inView:wb];
-                    };
-                    d->drawNSViewInRect(wb, buttonRect, p, drawBlock);
+                    });
                 }
             }
 
@@ -5382,8 +5378,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         pb.enabled = isEnabled;
                         [pb highlight:isPressed];
                         pb.state = isHighlighted && !isPressed ? NSOnState : NSOffState;
-                        const auto buttonRect  = proxy()->subControlRect(cc, tb, SC_ToolButton, widget);
-                        d->drawNSViewInRect(pb, buttonRect, p, ^(CGContextRef __unused ctx, const CGRect &rect) {
+                        const auto buttonRect = proxy()->subControlRect(cc, tb, SC_ToolButton, widget);
+                        d->drawNSViewInRect(pb, buttonRect, p, ^(CGContextRef, const CGRect &rect) {
                             [pb.cell drawBezelWithFrame:rect inView:pb];
                         });
                     }
