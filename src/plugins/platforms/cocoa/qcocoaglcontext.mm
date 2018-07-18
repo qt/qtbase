@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQpaOpenGLContext, "qt.qpa.openglcontext");
+
 static inline QByteArray getGlString(GLenum param)
 {
     if (const GLubyte *s = glGetString(param))
@@ -129,13 +131,13 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
 {
     if (!nativeHandle.isNull()) {
         if (!nativeHandle.canConvert<QCocoaNativeContext>()) {
-            qWarning("QCocoaGLContext: Requires a QCocoaNativeContext");
+            qCWarning(lcQpaOpenGLContext, "QOpenGLContext native handle must be a QCocoaNativeContext");
             return;
         }
         QCocoaNativeContext handle = nativeHandle.value<QCocoaNativeContext>();
         NSOpenGLContext *context = handle.context();
         if (!context) {
-            qWarning("QCocoaGLContext: No NSOpenGLContext given");
+            qCWarning(lcQpaOpenGLContext, "QCocoaNativeContext's NSOpenGLContext can not be null");
             return;
         }
         m_context = context;
@@ -186,16 +188,16 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
 
     // retry without sharing on context creation failure.
     if (!m_context && m_shareContext) {
+        qCWarning(lcQpaOpenGLContext, "Could not create NSOpenGLContext with shared context, "
+            "falling back to unshared context.");
         m_shareContext = nil;
         m_context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
-        if (m_context)
-            qWarning("QCocoaGLContext: Falling back to unshared context.");
     }
 
     // give up if we still did not get a native context
     [pixelFormat release];
     if (!m_context) {
-        qWarning("QCocoaGLContext: Failed to create context.");
+        qCWarning(lcQpaOpenGLContext, "Failed to create NSOpenGLContext");
         return;
     }
 
