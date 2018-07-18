@@ -30,7 +30,6 @@
             "libjpeg": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "libpng": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "linuxfb": "boolean",
-            "mirclient": "boolean",
             "mtdev": "boolean",
             "opengl": { "type": "optionalString", "values": [ "no", "yes", "desktop", "es2", "dynamic" ] },
             "opengl-es-2": { "type": "void", "name": "opengl", "value": "es2" },
@@ -392,20 +391,6 @@
             ],
             "use": [
                 { "lib": "zlib", "condition": "features.system-zlib" }
-            ]
-        },
-        "mirclient": {
-            "label": "Mir client libraries",
-            "test": {
-                "tail": "static void surfaceCreateCallback(MirSurface*, void*) {}",
-                "main": [
-                    "u_application_lifecycle_delegate_new();",
-                    "mir_surface_create(0, surfaceCreateCallback, 0);"
-                ]
-            },
-            "headers": [ "mir_toolkit/mir_client_library.h", "ubuntu/application/lifecycle_delegate.h", "EGL/egl.h" ],
-            "sources": [
-                { "type": "pkgConfig", "args": "egl mirclient ubuntu-platform-api libcontent-hub >= 0.2.0" }
             ]
         },
         "mtdev": {
@@ -1294,13 +1279,6 @@
             ],
             "output": [ "privateFeature" ]
         },
-        "mirclient": {
-            "label": "Mir client",
-            "section": "Platform plugins",
-            "autoDetect": false,
-            "condition": "libs.mirclient && features.xkbcommon",
-            "output": [ "privateFeature" ]
-        },
         "mtdev": {
             "label": "mtdev",
             "condition": "libs.mtdev",
@@ -1827,7 +1805,7 @@ or may depend on your system and XQuartz setup."
         },
         {
             "type": "warning",
-            "condition": "features.gui && config.linux && !config.android && !features.xcb && !features.eglfs && !features.directfb && !features.linuxfb && !features.mirclient",
+            "condition": "features.gui && config.linux && !config.android && !features.xcb && !features.eglfs && !features.directfb && !features.linuxfb",
             "message": "No QPA platform plugin enabled! This will
 produce a Qt that cannot run GUI applications.
 See \"Platform backends\" in the output of --help."
@@ -1935,7 +1913,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                         "eglfs_openwfd", "eglfs_viv", "eglfs_viv_wl", "eglfs_rcar", "eglfs_egldevice", "eglfs_gbm", "eglfs_vsp2", "eglfs_mali", "eglfs_brcm", "eglfs_x11"
                     ]
                 },
-                "linuxfb", "vnc", "mirclient",
+                "linuxfb", "vnc",
                 {
                     "type": "feature",
                     "condition": "config.integrity",
