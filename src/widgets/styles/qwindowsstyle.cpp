@@ -840,7 +840,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
                         : opt->palette.text().color());
             if (opt->state & State_NoChange)
                 p->setBrush(opt->palette.brush(QPalette::Button));
-            p->drawRect(opt->rect.x() + 1, opt->rect.y() + 1, 11, 11);
+            p->drawRect(opt->rect.x() + 1, opt->rect.y() + 1, opt->rect.width() - 2, opt->rect.height() - 2);
         }
 #endif // QT_CONFIG(itemviews)
         if (!(opt->state & State_Off)) {
