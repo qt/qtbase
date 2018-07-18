@@ -1032,12 +1032,6 @@ void QCocoaWindow::setMask(const QRegion &region)
         // time, and so would not result in an updated backingstore.
         m_needsInvalidateShadow = true;
         [m_view setNeedsDisplay:YES];
-
-        // FIXME: [NSWindow invalidateShadow] has no effect when in layer-backed mode,
-        // so if the mask is changed after the initial mask is applied, it will not
-        // result in any visual change to the shadow. This is an Apple bug, and there
-        // may be ways to work around it, such as calling setFrame on the window to
-        // trigger some internal invalidation, but that needs more research.
     }
 }
 

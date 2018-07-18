@@ -132,112 +132,113 @@ void QCocoaBackingStore::flush(QWindow *window, const QRegion &region, const QPo
                 // The contentsRect is in unit coordinate system
                 CGAffineTransformMakeScale(1.0 / m_image.width(), 1.0 / m_image.height()));
         }
-        return;
-    }
+    } else {
+        // Normally a NSView is drawn via drawRect, as part of the display cycle in the
+        // main runloop, via setNeedsDisplay and friends. AppKit will lock focus on each
+        // individual view, starting with the top level and then traversing any subviews,
+        // calling drawRect for each of them. This pull model results in expose events
+        // sent to Qt, which result in drawing to the backingstore and flushing it.
+        // Qt may also decide to paint and flush the backingstore via e.g. timers,
+        // or other events such as mouse events, in which case we're in a push model.
+        // If there is no focused view, it means we're in the latter case, and need
+        // to manually flush the NSWindow after drawing to its graphic context.
+        const bool drawingOutsideOfDisplayCycle = ![NSView focusView];
 
-    // Normally a NSView is drawn via drawRect, as part of the display cycle in the
-    // main runloop, via setNeedsDisplay and friends. AppKit will lock focus on each
-    // individual view, starting with the top level and then traversing any subviews,
-    // calling drawRect for each of them. This pull model results in expose events
-    // sent to Qt, which result in drawing to the backingstore and flushing it.
-    // Qt may also decide to paint and flush the backingstore via e.g. timers,
-    // or other events such as mouse events, in which case we're in a push model.
-    // If there is no focused view, it means we're in the latter case, and need
-    // to manually flush the NSWindow after drawing to its graphic context.
-    const bool drawingOutsideOfDisplayCycle = ![NSView focusView];
+        // We also need to ensure the flushed view has focus, so that the graphics
+        // context is set up correctly (coordinate system, clipping, etc). Outside
+        // of the normal display cycle there is no focused view, as explained above,
+        // so we have to handle it manually. There's also a corner case inside the
+        // normal display cycle due to way QWidgetBackingStore composits native child
+        // widgets, where we'll get a flush of a native child during the drawRect of
+        // its parent/ancestor, and the parent/ancestor being the one locked by AppKit.
+        // In this case we also need to lock and unlock focus manually.
+        const bool shouldHandleViewLockManually = [NSView focusView] != view;
+        if (shouldHandleViewLockManually && ![view lockFocusIfCanDraw]) {
+            qWarning() << "failed to lock focus of" << view;
+            return;
+        }
 
-    // We also need to ensure the flushed view has focus, so that the graphics
-    // context is set up correctly (coordinate system, clipping, etc). Outside
-    // of the normal display cycle there is no focused view, as explained above,
-    // so we have to handle it manually. There's also a corner case inside the
-    // normal display cycle due to way QWidgetBackingStore composits native child
-    // widgets, where we'll get a flush of a native child during the drawRect of
-    // its parent/ancestor, and the parent/ancestor being the one locked by AppKit.
-    // In this case we also need to lock and unlock focus manually.
-    const bool shouldHandleViewLockManually = [NSView focusView] != view;
-    if (shouldHandleViewLockManually && ![view lockFocusIfCanDraw]) {
-        qWarning() << "failed to lock focus of" << view;
-        return;
-    }
+        const qreal devicePixelRatio = m_image.devicePixelRatio();
 
-    const qreal devicePixelRatio = m_image.devicePixelRatio();
-
-    // If the flushed window is a content view, and not in unified toolbar mode,
-    // and is fully opaque, we can get away with copying the backingstore instead
-    // of blending.
-    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
-    const NSCompositingOperation compositingOperation = cocoaWindow->isContentView()
-            && cocoaWindow->isOpaque() && !windowHasUnifiedToolbar() ?
-            NSCompositingOperationCopy : NSCompositingOperationSourceOver;
+        // If the flushed window is a content view, and not in unified toolbar mode,
+        // and is fully opaque, we can get away with copying the backingstore instead
+        // of blending.
+        QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
+        const NSCompositingOperation compositingOperation = cocoaWindow->isContentView()
+                && cocoaWindow->isOpaque() && !windowHasUnifiedToolbar() ?
+                NSCompositingOperationCopy : NSCompositingOperationSourceOver;
 
 #ifdef QT_DEBUG
-    static bool debugBackingStoreFlush = [[NSUserDefaults standardUserDefaults]
-        boolForKey:@"QtCocoaDebugBackingStoreFlush"];
+        static bool debugBackingStoreFlush = [[NSUserDefaults standardUserDefaults]
+            boolForKey:@"QtCocoaDebugBackingStoreFlush"];
 #endif
 
-    // -------------------------------------------------------------------------
+        // -------------------------------------------------------------------------
 
-    // The current contexts is typically a NSWindowGraphicsContext, but can be
-    // NSBitmapGraphicsContext e.g. when debugging the view hierarchy in Xcode.
-    // If we need to distinguish things here in the future, we can use e.g.
-    // [NSGraphicsContext drawingToScreen], or the attributes of the context.
-    NSGraphicsContext *graphicsContext = [NSGraphicsContext currentContext];
-    Q_ASSERT_X(graphicsContext, "QCocoaBackingStore",
-        "Focusing the view should give us a current graphics context");
+        // The current contexts is typically a NSWindowGraphicsContext, but can be
+        // NSBitmapGraphicsContext e.g. when debugging the view hierarchy in Xcode.
+        // If we need to distinguish things here in the future, we can use e.g.
+        // [NSGraphicsContext drawingToScreen], or the attributes of the context.
+        NSGraphicsContext *graphicsContext = [NSGraphicsContext currentContext];
+        Q_ASSERT_X(graphicsContext, "QCocoaBackingStore",
+            "Focusing the view should give us a current graphics context");
 
-    // Create temporary image to use for blitting, without copying image data
-    NSImage *backingStoreImage = [[[NSImage alloc] initWithCGImage:cgImage size:NSZeroSize] autorelease];
+        // Create temporary image to use for blitting, without copying image data
+        NSImage *backingStoreImage = [[[NSImage alloc] initWithCGImage:cgImage size:NSZeroSize] autorelease];
 
-    QRegion clippedRegion = region;
-    for (QWindow *w = window; w; w = w->parent()) {
-        if (!w->mask().isEmpty()) {
-            clippedRegion &= w == window ? w->mask()
-                : w->mask().translated(window->mapFromGlobal(w->mapToGlobal(QPoint(0, 0))));
-        }
-    }
-
-    for (const QRect &viewLocalRect : clippedRegion) {
-        QPoint backingStoreOffset = viewLocalRect.topLeft() + offset;
-        QRect backingStoreRect(backingStoreOffset * devicePixelRatio, viewLocalRect.size() * devicePixelRatio);
-        if (graphicsContext.flipped) // Flip backingStoreRect to match graphics context
-            backingStoreRect.moveTop(m_image.height() - (backingStoreRect.y() + backingStoreRect.height()));
-
-        CGRect viewRect = viewLocalRect.toCGRect();
-
-        if (windowHasUnifiedToolbar())
-            NSDrawWindowBackground(viewRect);
-
-        [backingStoreImage drawInRect:viewRect fromRect:backingStoreRect.toCGRect()
-            operation:compositingOperation fraction:1.0 respectFlipped:YES hints:nil];
-
-#ifdef QT_DEBUG
-        if (Q_UNLIKELY(debugBackingStoreFlush)) {
-            [[NSColor colorWithCalibratedRed:drand48() green:drand48() blue:drand48() alpha:0.3] set];
-            [NSBezierPath fillRect:viewRect];
-
-            if (drawingOutsideOfDisplayCycle) {
-                [[[NSColor magentaColor] colorWithAlphaComponent:0.5] set];
-                [NSBezierPath strokeLineFromPoint:viewLocalRect.topLeft().toCGPoint()
-                    toPoint:viewLocalRect.bottomRight().toCGPoint()];
+        QRegion clippedRegion = region;
+        for (QWindow *w = window; w; w = w->parent()) {
+            if (!w->mask().isEmpty()) {
+                clippedRegion &= w == window ? w->mask()
+                    : w->mask().translated(window->mapFromGlobal(w->mapToGlobal(QPoint(0, 0))));
             }
         }
+
+        for (const QRect &viewLocalRect : clippedRegion) {
+            QPoint backingStoreOffset = viewLocalRect.topLeft() + offset;
+            QRect backingStoreRect(backingStoreOffset * devicePixelRatio, viewLocalRect.size() * devicePixelRatio);
+            if (graphicsContext.flipped) // Flip backingStoreRect to match graphics context
+                backingStoreRect.moveTop(m_image.height() - (backingStoreRect.y() + backingStoreRect.height()));
+
+            CGRect viewRect = viewLocalRect.toCGRect();
+
+            if (windowHasUnifiedToolbar())
+                NSDrawWindowBackground(viewRect);
+
+            [backingStoreImage drawInRect:viewRect fromRect:backingStoreRect.toCGRect()
+                operation:compositingOperation fraction:1.0 respectFlipped:YES hints:nil];
+
+#ifdef QT_DEBUG
+            if (Q_UNLIKELY(debugBackingStoreFlush)) {
+                [[NSColor colorWithCalibratedRed:drand48() green:drand48() blue:drand48() alpha:0.3] set];
+                [NSBezierPath fillRect:viewRect];
+
+                if (drawingOutsideOfDisplayCycle) {
+                    [[[NSColor magentaColor] colorWithAlphaComponent:0.5] set];
+                    [NSBezierPath strokeLineFromPoint:viewLocalRect.topLeft().toCGPoint()
+                        toPoint:viewLocalRect.bottomRight().toCGPoint()];
+                }
+            }
 #endif
+        }
+
+        // -------------------------------------------------------------------------
+
+        if (shouldHandleViewLockManually)
+            [view unlockFocus];
+
+        if (drawingOutsideOfDisplayCycle) {
+            redrawRoundedBottomCorners([view convertRect:region.boundingRect().toCGRect() toView:nil]);
+            [view.window flushWindow];
+        }
     }
+
+    // Done flushing to either CALayer or NSWindow backingstore
 
     QCocoaWindow *topLevelCocoaWindow = static_cast<QCocoaWindow *>(topLevelWindow->handle());
     if (Q_UNLIKELY(topLevelCocoaWindow->m_needsInvalidateShadow)) {
         [topLevelView.window invalidateShadow];
         topLevelCocoaWindow->m_needsInvalidateShadow = false;
-    }
-
-    // -------------------------------------------------------------------------
-
-    if (shouldHandleViewLockManually)
-        [view unlockFocus];
-
-    if (drawingOutsideOfDisplayCycle) {
-        redrawRoundedBottomCorners([view convertRect:region.boundingRect().toCGRect() toView:nil]);
-        [view.window flushWindow];
     }
 }
 
