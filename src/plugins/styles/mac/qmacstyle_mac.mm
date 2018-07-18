@@ -2782,8 +2782,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
 {
     Q_D(const QMacStyle);
     QMacCGContext cg(p);
-    QWindow *window = w && w->window() ? w->window()->windowHandle() :
-                     QStyleHelper::styleObjectWindow(opt->styleObject);
+    QWindow *window = w && w->window() ? w->window()->windowHandle() : nullptr;
     d->resolveCurrentNSView(window);
     switch (pe) {
     case PE_IndicatorArrowUp:
@@ -3227,8 +3226,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 {
     Q_D(const QMacStyle);
     QMacCGContext cg(p);
-    QWindow *window = w && w->window() ? w->window()->windowHandle() :
-                     QStyleHelper::styleObjectWindow(opt->styleObject);
+    QWindow *window = w && w->window() ? w->window()->windowHandle() : nullptr;
     d->resolveCurrentNSView(window);
     switch (ce) {
     case CE_HeaderSection:
@@ -4802,8 +4800,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 {
     Q_D(const QMacStyle);
     QMacCGContext cg(p);
-    QWindow *window = widget && widget->window() ? widget->window()->windowHandle() :
-                     QStyleHelper::styleObjectWindow(opt->styleObject);
+    QWindow *window = widget && widget->window() ? widget->window()->windowHandle() : nullptr;
     d->resolveCurrentNSView(window);
     switch (cc) {
     case CC_ScrollBar:
@@ -5334,12 +5331,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     d->drawToolbarButtonArrow(tb, p);
                 }
                 if (tb->state & State_On) {
-                    QWindow *window = 0;
-                    if (widget && widget->window())
-                        window = widget->window()->windowHandle();
-                    else if (opt->styleObject)
-                        window = opt->styleObject->property("_q_styleObjectWindow").value<QWindow *>();
-
                     NSView *view = window ? (NSView *)window->winId() : nil;
                     bool isKey = false;
                     if (view)

@@ -90,7 +90,6 @@ namespace QStyleHelper
     Q_WIDGETS_EXPORT bool hasAncestor(QObject *obj, QAccessible::Role role);
 #endif
     Q_WIDGETS_EXPORT QColor backgroundColor(const QPalette &pal, const QWidget* widget = 0);
-    Q_WIDGETS_EXPORT QWindow *styleObjectWindow(QObject *so);
 
     enum WidgetSizePolicy { SizeLarge = 0, SizeSmall = 1, SizeMini = 2, SizeDefault = -1 };
 

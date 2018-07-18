@@ -403,14 +403,6 @@ QColor backgroundColor(const QPalette &pal, const QWidget* widget)
     return pal.color(QPalette::Base);
 }
 
-QWindow *styleObjectWindow(QObject *so)
-{
-    if (so)
-        return so->property("_q_styleObjectWindow").value<QWindow *>();
-
-    return 0;
-}
-
 WidgetSizePolicy widgetSizePolicy(const QWidget *widget, const QStyleOption *opt)
 {
     while (widget) {
