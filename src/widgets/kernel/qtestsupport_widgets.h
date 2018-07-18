@@ -51,7 +51,8 @@ Q_WIDGETS_EXPORT Q_REQUIRED_RESULT bool qWaitForWindowActive(QWidget *widget, in
 Q_WIDGETS_EXPORT Q_REQUIRED_RESULT bool qWaitForWindowExposed(QWidget *widget, int timeout = 5000);
 
 #if QT_DEPRECATED_SINCE(5, 0)
-Q_WIDGETS_EXPORT QT_DEPRECATED Q_REQUIRED_RESULT bool qWaitForWindowShown(QWidget *widget, int timeout = 5000);
+QT_DEPRECATED Q_REQUIRED_RESULT inline static bool qWaitForWindowShown(QWidget *widget, int timeout = 5000)
+{ return QTest::qWaitForWindowExposed(widget, timeout); }
 #endif
 }
 
