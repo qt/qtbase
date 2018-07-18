@@ -1868,20 +1868,46 @@ NSCell *QMacStylePrivate::cocoaCell(CocoaControl widget) const
     return cell;
 }
 
-void QMacStylePrivate::drawNSViewInRect(NSView *view, const QRectF &qtRect, QPainter *p,
+void QMacStylePrivate::drawNSViewInRect(NSView *view, const QRectF &rect, QPainter *p,
                                         __attribute__((noescape)) DrawRectBlock drawRectBlock) const
 {
     QMacCGContext ctx(p);
     setupNSGraphicsContext(ctx, YES);
 
-    const CGRect rect = qtRect.toCGRect();
+    // FIXME: The rect that we get in is relative to the widget that we're drawing
+    // style on behalf of, and doesn't take into account the offset of that widget
+    // to the widget that owns the backingstore, which we are placing the native
+    // view into below. This means most of the views are placed in the upper left
+    // corner of backingStoreNSView, which does not map to where the actual widget
+    // is, and which may cause problems such as triggering a setNeedsDisplay of the
+    // backingStoreNSView for the wrong rect. We work around this by making the view
+    // layer-backed, which prevents triggering display of the backingStoreNSView, but
+    // but there may be other issues lurking here due to the wrong position. QTBUG-68023
+    view.wantsLayer = YES;
+
+    // FIXME: We are also setting the frame of the incoming view a lot at the call
+    // sites of this function, making it unclear who's actually responsible for
+    // maintaining the size and position of the view. In theory the call sites
+    // should ensure the _size_ of the view is correct, and then let this code
+    // take care of _positioning_ the view at the right place inside backingStoreNSView.
+    // For now we pass on the rect as is, to prevent any regressions until this
+    // can be investigated properly.
+    view.frame = rect.toCGRect();
 
     [backingStoreNSView addSubview:view];
-    view.frame = rect;
+
+    // FIXME: Based on the code below, this method isn't drawing an NSView into
+    // a rect, it's drawing _part of the NSView_, defined by the incoming clip
+    // or dirty rect, into the current graphics context. We're doing some manual
+    // translations at the call sites that would indicate that this relationship
+    // is a bit fuzzy.
+    const CGRect dirtyRect = rect.toCGRect();
+
     if (drawRectBlock)
-        drawRectBlock(ctx, rect);
+        drawRectBlock(ctx, dirtyRect);
     else
-        [view drawRect:rect];
+        [view drawRect:dirtyRect];
+
     [view removeFromSuperviewWithoutNeedingDisplay];
 
     restoreNSGraphicsContext(ctx);
