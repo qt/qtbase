@@ -559,11 +559,16 @@ void QOpenGLFramebufferObjectPrivate::initColorBuffer(int idx, GLint *samples)
 
     GLenum storageFormat = color.internalFormat;
     // ES requires a sized format. The older desktop extension does not. Correct the format on ES.
-    if (ctx->isOpenGLES() && color.internalFormat == GL_RGBA) {
-        if (funcs.hasOpenGLExtension(QOpenGLExtensions::Sized8Formats))
-            storageFormat = GL_RGBA8;
-        else
-            storageFormat = GL_RGBA4;
+    if (ctx->isOpenGLES()) {
+        if (color.internalFormat == GL_RGBA) {
+            if (funcs.hasOpenGLExtension(QOpenGLExtensions::Sized8Formats))
+                storageFormat = GL_RGBA8;
+            else
+                storageFormat = GL_RGBA4;
+        } else if (color.internalFormat == GL_RGB10) {
+            // GL_RGB10 is not allowed in ES for glRenderbufferStorage.
+            storageFormat = GL_RGB10_A2;
+        }
     }
 
     funcs.glGenRenderbuffers(1, &color_buffer);
