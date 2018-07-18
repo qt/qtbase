@@ -32,6 +32,7 @@
 #include <QtNetwork/QHostInfo>
 #include <QtNetwork/QHostAddress>
 #include <QtNetwork/QAbstractSocket>
+#include <QtNetwork/QTcpSocket>
 #endif
 
 #ifdef Q_OS_UNIX
