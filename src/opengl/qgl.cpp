@@ -4084,7 +4084,13 @@ bool QGLWidget::isSharing() const
 void QGLWidget::makeCurrent()
 {
     Q_D(QGLWidget);
-    d->glcx->makeCurrent();
+    d->makeCurrent();
+}
+
+bool QGLWidgetPrivate::makeCurrent()
+{
+    glcx->makeCurrent();
+    return QGLContext::currentContext() == glcx;
 }
 
 /*!
@@ -4422,7 +4428,8 @@ void QGLWidget::resizeEvent(QResizeEvent *e)
     QWidget::resizeEvent(e);
     if (!isValid())
         return;
-    makeCurrent();
+    if (!d->makeCurrent())
+        return;
     if (!d->glcx->initialized())
         glInit();
     const qreal scaleFactor = (window() && window()->windowHandle()) ?
@@ -4537,7 +4544,8 @@ void QGLWidget::glInit()
     Q_D(QGLWidget);
     if (!isValid())
         return;
-    makeCurrent();
+    if (!d->makeCurrent())
+        return;
     initializeGL();
     d->glcx->setInitialized(true);
 }
@@ -4555,7 +4563,8 @@ void QGLWidget::glDraw()
     Q_D(QGLWidget);
     if (!isValid())
         return;
-    makeCurrent();
+    if (!d->makeCurrent())
+        return;
 #ifndef QT_OPENGL_ES
     if (d->glcx->deviceIsPixmap() && !d->glcx->contextHandle()->isOpenGLES())
         qgl1_functions()->glDrawBuffer(GL_FRONT);

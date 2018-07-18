@@ -145,6 +145,8 @@ public:
             glcx->reset();
     }
 
+    bool makeCurrent();
+
     QGLContext *glcx;
     QGLWidgetGLPaintDevice glDevice;
     bool autoSwap;
