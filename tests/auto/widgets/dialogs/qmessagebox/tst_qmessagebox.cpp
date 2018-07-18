@@ -329,6 +329,12 @@ void tst_QMessageBox::escapeButton()
     closeHelper.start(ExecCloseHelper::CloseWindow, &msgBox2);
     msgBox2.exec();
     QVERIFY(msgBox2.clickedButton() == msgBox2.button(QMessageBox::No)); // auto detected (one No button only)
+
+    QMessageBox msgBox3;
+    msgBox3.setDetailedText("Details");
+    closeHelper.start(ExecCloseHelper::CloseWindow, &msgBox3);
+    msgBox3.exec();
+    QVERIFY(msgBox3.clickedButton() == msgBox3.button(QMessageBox::Ok)); // auto detected
 }
 
 void tst_QMessageBox::statics()
