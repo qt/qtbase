@@ -516,7 +516,7 @@ public:
         AA_SetPalette = 19,
         AA_EnableHighDpiScaling = 20,
         AA_DisableHighDpiScaling = 21,
-        AA_UseStyleSheetPropagationInWidgetStyles = 22, // ### Qt 6: remove me
+        AA_UseStyleSheetPropagationInWidgetStyles = 22,
         AA_DontUseNativeDialogs = 23,
         AA_SynthesizeMouseForUnhandledTabletEvents = 24,
         AA_CompressHighFrequencyEvents = 25,
