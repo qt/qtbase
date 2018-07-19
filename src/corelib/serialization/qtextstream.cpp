@@ -2595,6 +2595,21 @@ QTextStream &QTextStream::operator<<(const QString &string)
 
     Writes \a string to the stream, and returns a reference to the
     QTextStream.
+    \since 5.12
+*/
+QTextStream &QTextStream::operator<<(QStringView string)
+{
+    Q_D(QTextStream);
+    CHECK_VALID_STREAM(*this);
+    d->putString(string.cbegin(), int(string.size()));
+    return *this;
+}
+
+/*!
+    \overload
+
+    Writes \a string to the stream, and returns a reference to the
+    QTextStream.
 */
 QTextStream &QTextStream::operator<<(QLatin1String string)
 {

@@ -161,6 +161,7 @@ private slots:
     void string_write_operator_ToDevice();
     void latin1String_write_operator_ToDevice();
     void stringref_write_operator_ToDevice();
+    void stringview_write_operator_ToDevice();
 
     // other
     void skipWhiteSpace_data();
@@ -2571,6 +2572,17 @@ void tst_QTextStream::stringref_write_operator_ToDevice()
     stream << expected.midRef(18);
     stream.flush();
     QCOMPARE(buf.buffer().constData(), "No explicit lengthExplicit length");
+}
+
+void tst_QTextStream::stringview_write_operator_ToDevice()
+{
+    QBuffer buf;
+    buf.open(QBuffer::WriteOnly);
+    QTextStream stream(&buf);
+    const QStringView expected = QStringViewLiteral("expectedStringView");
+    stream << expected;
+    stream.flush();
+    QCOMPARE(buf.buffer().constData(), "expectedStringView");
 }
 
 // ------------------------------------------------------------------------------
