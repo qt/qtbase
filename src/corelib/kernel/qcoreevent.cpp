@@ -202,6 +202,12 @@ QT_BEGIN_NAMESPACE
     \value Scroll                           The object needs to scroll to the supplied position (QScrollEvent).
     \value Shortcut                         Key press in child for shortcut key handling (QShortcutEvent).
     \value ShortcutOverride                 Key press in child, for overriding shortcut key handling (QKeyEvent).
+                                            When a shortcut is about to trigger, \c ShortcutOverride
+                                            is sent to the active window. This allows clients (e.g. widgets)
+                                            to signal that they will handle the shortcut themselves, by
+                                            accepting the event. If the shortcut override is accepted, the
+                                            event is delivered as a normal key press to the focus widget.
+                                            Otherwise, it triggers the shortcut action, if one exists.
     \value Show                             Widget was shown on screen (QShowEvent).
     \value ShowToParent                     A child widget has been shown.
     \value SockAct                          Socket activated, used to implement QSocketNotifier.
