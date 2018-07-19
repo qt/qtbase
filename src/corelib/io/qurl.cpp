@@ -2530,7 +2530,7 @@ int QUrl::port(int defaultPort) const
     The \a path data is interpreted according to \a mode: in StrictMode,
     any '%' characters must be followed by exactly two hexadecimal characters
     and some characters (including space) are not allowed in undecoded form. In
-    TolerantMode (the default), all characters are accepted in undecoded form and the
+    TolerantMode, all characters are accepted in undecoded form and the
     tolerant parser will correct stray '%' not followed by two hex characters.
     In DecodedMode, '%' stand for themselves and encoded characters are not
     possible.
