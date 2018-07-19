@@ -63,7 +63,7 @@ class Q_GUI_EXPORT QPlatformThemePlugin : public QObject
 {
     Q_OBJECT
 public:
-    explicit QPlatformThemePlugin(QObject *parent = 0);
+    explicit QPlatformThemePlugin(QObject *parent = nullptr);
     ~QPlatformThemePlugin();
 
     virtual QPlatformTheme *create(const QString &key, const QStringList &paramList) = 0;

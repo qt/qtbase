@@ -66,7 +66,7 @@ class Q_GUI_EXPORT QPlatformInputContextPlugin : public QObject
 {
     Q_OBJECT
 public:
-    explicit QPlatformInputContextPlugin(QObject *parent = 0);
+    explicit QPlatformInputContextPlugin(QObject *parent = nullptr);
     ~QPlatformInputContextPlugin();
 
     virtual QPlatformInputContext *create(const QString &key, const QStringList &paramList) = 0;

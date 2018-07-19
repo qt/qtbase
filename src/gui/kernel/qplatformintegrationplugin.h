@@ -64,7 +64,7 @@ class Q_GUI_EXPORT QPlatformIntegrationPlugin : public QObject
 {
     Q_OBJECT
 public:
-    explicit QPlatformIntegrationPlugin(QObject *parent = 0);
+    explicit QPlatformIntegrationPlugin(QObject *parent = nullptr);
     ~QPlatformIntegrationPlugin();
 
     virtual QPlatformIntegration *create(const QString &key, const QStringList &paramList);
