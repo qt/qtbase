@@ -874,6 +874,11 @@ static bool startDetachedUacPrompt(const QString &programIn, const QStringList &
     return true;
 }
 
+static Q_PIPE pipeOrStdHandle(Q_PIPE pipe, DWORD handleNumber)
+{
+    return pipe != INVALID_Q_PIPE ? pipe : GetStdHandle(handleNumber);
+}
+
 bool QProcessPrivate::startDetached(qint64 *pid)
 {
     static const DWORD errorElevationRequired = 740;
@@ -906,15 +911,14 @@ bool QProcessPrivate::startDetached(qint64 *pid)
                                  0, 0, 0,
                                  STARTF_USESTDHANDLES,
                                  0, 0, 0,
-                                 stdinChannel.pipe[0], stdoutChannel.pipe[1], stderrChannel.pipe[1]
+                                 pipeOrStdHandle(stdinChannel.pipe[0], STD_INPUT_HANDLE),
+                                 pipeOrStdHandle(stdoutChannel.pipe[1], STD_OUTPUT_HANDLE),
+                                 pipeOrStdHandle(stderrChannel.pipe[1], STD_ERROR_HANDLE)
                                };
 
-    const bool inheritHandles = stdinChannel.type == Channel::Redirect
-            || stdoutChannel.type == Channel::Redirect
-            || stderrChannel.type == Channel::Redirect;
     QProcess::CreateProcessArguments cpargs = {
         nullptr, reinterpret_cast<wchar_t *>(const_cast<ushort *>(args.utf16())),
-        nullptr, nullptr, inheritHandles, dwCreationFlags, envPtr,
+        nullptr, nullptr, true, dwCreationFlags, envPtr,
         workingDirectory.isEmpty()
             ? nullptr : reinterpret_cast<const wchar_t *>(workingDirectory.utf16()),
         &startupInfo, &pinfo

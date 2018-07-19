@@ -2147,6 +2147,10 @@ void QProcess::start(OpenMode mode)
     \endlist
     All other properties of the QProcess object are ignored.
 
+    \note The called process inherits the console window of the calling
+    process. To suppress console output, redirect standard/error output to
+    QProcess::nullDevice().
+
     \sa start()
     \sa startDetached(const QString &program, const QStringList &arguments,
                       const QString &workingDirectory, qint64 *pid)

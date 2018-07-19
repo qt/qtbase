@@ -11,6 +11,7 @@ SUBPROGRAMS = \
           testProcessEOF \
           testExitCodes \
           testForwarding \
+          testForwardingHelper \
           testGuiProcess \
           testDetached \
           fileWriterProcess \
