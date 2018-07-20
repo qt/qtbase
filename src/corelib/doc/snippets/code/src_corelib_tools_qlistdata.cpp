@@ -131,7 +131,7 @@ list.removeAll("sun");
 QList<QString> list;
 list << "sun" << "cloud" << "sun" << "rain";
 list.removeOne("sun");
-// list: ["cloud", ,"sun", "rain"]
+// list: ["cloud", "sun", "rain"]
 //! [10]
 
 
