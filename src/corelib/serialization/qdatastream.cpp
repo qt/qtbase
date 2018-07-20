@@ -1081,7 +1081,7 @@ QDataStream &QDataStream::readBytes(char *&s, uint &l)
     Reads at most \a len bytes from the stream into \a s and returns the number of
     bytes read. If an error occurs, this function returns -1.
 
-    The buffer \a s must be preallocated. The data is \e not encoded.
+    The buffer \a s must be preallocated. The data is \e not decoded.
 
     \sa readBytes(), QIODevice::read(), writeRawData()
 */
