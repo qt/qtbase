@@ -645,10 +645,10 @@ void QNetworkRequest::setAttribute(Attribute code, const QVariant &value)
 
 #ifndef QT_NO_SSL
 /*!
-    Returns this network request's SSL configuration. By default, no
-    SSL settings are specified.
+    Returns this network request's SSL configuration. By default this is the same
+    as QSslConfiguration::defaultConfiguration().
 
-    \sa setSslConfiguration()
+    \sa setSslConfiguration(), QSslConfiguration::defaultConfiguration()
 */
 QSslConfiguration QNetworkRequest::sslConfiguration() const
 {
@@ -663,9 +663,6 @@ QSslConfiguration QNetworkRequest::sslConfiguration() const
     the SSL protocol (SSLv2, SSLv3, TLSv1.0 where applicable), the CA
     certificates and the ciphers that the SSL backend is allowed to
     use.
-
-    By default, no SSL configuration is set, which allows the backends
-    to choose freely what configuration is best for them.
 
     \sa sslConfiguration(), QSslConfiguration::defaultConfiguration()
 */
