@@ -87,7 +87,6 @@
 
 #if defined(Q_OS_LINUX)
 #include <sys/types.h>
-#include <unistd.h>
 #include <fcntl.h>
 #endif
 
@@ -101,6 +100,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <time.h>
+#include <unistd.h>
 # if !defined(Q_OS_INTEGRITY)
 #  include <sys/resource.h>
 # endif
@@ -1472,8 +1472,13 @@ void FatalSignalHandler::signal(int signum)
 {
     const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
     const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
-    if (signum != SIGINT)
+    if (signum != SIGINT) {
         stackTrace();
+        if (qEnvironmentVariableIsSet("QTEST_PAUSE_ON_CRASH")) {
+            fprintf(stderr, "Pausing process %d for debugging\n", getpid());
+            raise(SIGSTOP);
+        }
+    }
     qFatal("Received signal %d\n"
            "         Function time: %dms Total time: %dms",
            signum, msecsFunctionTime, msecsTotalTime);
