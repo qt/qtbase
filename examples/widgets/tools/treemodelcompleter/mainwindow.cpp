@@ -232,7 +232,7 @@ void MainWindow::highlight(const QModelIndex &index)
         return;
     QModelIndex sourceIndex = proxy->mapToSource(index);
     treeView->selectionModel()->select(sourceIndex, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
-    treeView->scrollTo(index);
+    treeView->scrollTo(sourceIndex);
 }
 
 //! [6]
