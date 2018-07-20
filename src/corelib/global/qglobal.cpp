@@ -525,6 +525,31 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
   made private. In that case, no error would be reported, but your
   application would probably crash when you called a member function
   of \c{w}.
+
+  \sa Q_DISABLE_COPY_MOVE, Q_DISABLE_MOVE
+*/
+
+/*!
+  \macro Q_DISABLE_MOVE(Class)
+  \relates QObject
+
+  Disables the use of move constructors and move assignment operators
+  for the given \a Class.
+
+  \sa Q_DISABLE_COPY, Q_DISABLE_COPY_MOVE
+  \since 5.13
+*/
+
+/*!
+  \macro Q_DISABLE_COPY_MOVE(Class)
+  \relates QObject
+
+  A convenience macro that disables the use of copy constructors, assignment
+  operators, move constructors and move assignment operators for the given
+  \a Class, combining Q_DISABLE_COPY and Q_DISABLE_MOVE.
+
+  \sa Q_DISABLE_COPY, Q_DISABLE_MOVE
+  \since 5.13
 */
 
 /*!
