@@ -1123,6 +1123,8 @@ public:
     QString                 SccLocalPath;
     QString                 PlatformName;
     QString                 SdkVersion;
+    QString                 WindowsTargetPlatformVersion;
+    QString                 WindowsTargetPlatformMinVersion;
 
     // Single projects
     QList<VCProjectSingleConfig>  SingleProjects;

@@ -90,6 +90,10 @@ staticlib:unix {
     QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS_STATIC_LIB
 }
 
+defined(WINDOWS_TARGET_PLATFORM_VERSION, var):isEmpty(WINDOWS_TARGET_PLATFORM_MIN_VERSION) {
+    WINDOWS_TARGET_PLATFORM_MIN_VERSION = $$WINDOWS_TARGET_PLATFORM_VERSION
+}
+
 incredibuild_xge {
     CONFIG -= incredibuild_xge
     CONFIG = incredibuild_xge $$CONFIG

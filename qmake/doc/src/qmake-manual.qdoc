@@ -2788,6 +2788,26 @@
 
     See also \l{#DEPENDPATH}{DEPENDPATH}.
 
+    \target WINDOWS_TARGET_PLATFORM_VERSION
+    \section1 WINDOWS_TARGET_PLATFORM_VERSION
+
+    Specifies the targeted Windows version; this corresponds to the tag
+    \c{WindowsTargetPlatformVersion} in vcxproj files.
+
+    On desktop Windows, the default value is the value of the environment
+    variable \c{WindowsSDKVersion}.
+
+    On WinRT, the default value is the value of the environment variable
+    \c{UCRTVERSION}.
+
+    \target WINDOWS_TARGET_PLATFORM_MIN_VERSION
+    \section1 WINDOWS_TARGET_PLATFORM_MIN_VERSION
+
+    Specifies the minimum version of the Windows target platform; this
+    corresponds to the tag \c{WindowsTargetPlatformMinVersion} in vcxproj files.
+
+    Defaults to \c{WINDOWS_TARGET_PLATFORM_VERSION}.
+
     \target WINRT_MANIFEST
     \section1 WINRT_MANIFEST
 
@@ -2921,10 +2941,12 @@
         \li The version number of the package. Defaults to \c{1.0.0.0}.
     \row
         \li minVersion
-        \li The minimum required Windows version to run the package. Defaults to the environment variable \c UCRTVersion.
+        \li The minimum required Windows version to run the package.
+            Defaults to \c{WINDOWS_TARGET_PLATFORM_VERSION}.
     \row
         \li maxVersionTested
-        \li The maximum Windows version the package has been tested against. Defaults to \c WINRT_MANIFEST.minVersion
+        \li The maximum Windows version the package has been tested against.
+            Defaults to \c{WINDOWS_TARGET_PLATFORM_MIN_VERSION}.
 
     \endtable
 

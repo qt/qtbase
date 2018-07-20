@@ -96,9 +96,10 @@
         isEmpty(WINRT_MANIFEST.foreground): WINRT_MANIFEST.foreground = light
         isEmpty(WINRT_MANIFEST.default_language): WINRT_MANIFEST.default_language = en
         *-msvc2015|*-msvc2017 {
-            isEmpty(WINRT_MANIFEST.minVersion): WINRT_MANIFEST.minVersion = $$(UCRTVersion)
-            isEmpty(WINRT_MANIFEST.minVersion): error("No UCRTVersion found in environment."))
-            isEmpty(WINRT_MANIFEST.maxVersionTested): WINRT_MANIFEST.maxVersionTested = $$WINRT_MANIFEST.minVersion
+            isEmpty(WINRT_MANIFEST.minVersion): \
+                WINRT_MANIFEST.minVersion = $$WINDOWS_TARGET_PLATFORM_VERSION
+            isEmpty(WINRT_MANIFEST.maxVersionTested): \
+                WINRT_MANIFEST.maxVersionTested = $$WINDOWS_TARGET_PLATFORM_MIN_VERSION
         }
 
         INDENT = "$$escape_expand(\\r\\n)        "

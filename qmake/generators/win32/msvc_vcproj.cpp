@@ -191,6 +191,10 @@ bool VcprojGenerator::writeProjectMakefile()
         mergedProject.SccProjectName = mergedProjects.at(0)->vcProject.SccProjectName;
         mergedProject.SccLocalPath = mergedProjects.at(0)->vcProject.SccLocalPath;
         mergedProject.PlatformName = mergedProjects.at(0)->vcProject.PlatformName;
+        mergedProject.WindowsTargetPlatformVersion =
+                project->first("WINDOWS_TARGET_PLATFORM_VERSION").toQString();
+        mergedProject.WindowsTargetPlatformMinVersion =
+                project->first("WINDOWS_TARGET_PLATFORM_MIN_VERSION").toQString();
 
         XmlOutput xmlOut(t);
         projectWriter->write(xmlOut, mergedProject);
