@@ -1382,16 +1382,6 @@ QPoint QWindowsWindow::mapFromGlobal(const QPoint &pos) const
     return m_data.hwnd ? QWindowsGeometryHint::mapFromGlobal(m_data.hwnd, pos) : pos;
 }
 
-static inline HWND transientParentHwnd(HWND hwnd)
-{
-    if (GetAncestor(hwnd, GA_PARENT) == GetDesktopWindow()) {
-        const HWND rootOwnerHwnd = GetAncestor(hwnd, GA_ROOTOWNER);
-        if (rootOwnerHwnd != hwnd) // May return itself for toplevels.
-            return rootOwnerHwnd;
-    }
-    return 0;
-}
-
 // Update the transient parent for a toplevel window. The concept does not
 // really exist on Windows, the relationship is set by passing a parent along with !WS_CHILD
 // to window creation or by setting the parent using  GWL_HWNDPARENT (as opposed to
@@ -1406,7 +1396,7 @@ void QWindowsWindow::updateTransientParent() const
     if (window()->type() == Qt::Popup)
         return; // QTBUG-34503, // a popup stays on top, no parent, see also WindowCreationData::fromWindow().
     // Update transient parent.
-    const HWND oldTransientParent = transientParentHwnd(m_data.hwnd);
+    const HWND oldTransientParent = GetWindow(m_data.hwnd, GW_OWNER);
     HWND newTransientParent = 0;
     if (const QWindow *tp = window()->transientParent())
         if (const QWindowsWindow *tw = QWindowsWindow::windowsWindowOf(tp))
