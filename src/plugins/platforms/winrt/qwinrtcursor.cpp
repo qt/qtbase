@@ -174,14 +174,23 @@ QPoint QWinRTCursor::pos() const
     ICoreWindow *coreWindow = screen->coreWindow();
     Q_ASSERT(coreWindow);
     Point point;
-    HRESULT hr = QEventDispatcherWinRT::runOnXamlThread([coreWindow, &point]() {
-        return coreWindow->get_PointerPosition(&point);
+    Rect bounds;
+    HRESULT hr = QEventDispatcherWinRT::runOnXamlThread([coreWindow, &point, &bounds]() {
+        HRESULT hr = coreWindow->get_PointerPosition(&point);
+        RETURN_HR_IF_FAILED("Failed to obtain pointer position.");
+        hr = coreWindow->get_Bounds(&bounds);
+        RETURN_HR_IF_FAILED("Failed to obtain window bounds.");
+        return hr;
     });
     Q_ASSERT_SUCCEEDED(hr);
-    const QPoint position = QPoint(point.X, point.Y) * screen->scaleFactor();
+    QPoint position = QPoint(point.X, point.Y);
     // If no cursor get_PointerPosition returns SHRT_MIN for x and y
-    return position.x() == SHRT_MIN && position.y() == SHRT_MIN || FAILED(hr) ? QPointF(Q_INFINITY, Q_INFINITY).toPoint()
-                                                                              : position;
+    if (position.x() == SHRT_MIN && position.y() == SHRT_MIN || FAILED(hr))
+        return QPointF(Q_INFINITY, Q_INFINITY).toPoint();
+    position.rx() -= bounds.X;
+    position.ry() -= bounds.Y;
+    position *= screen->scaleFactor();
+    return position;
 }
 
 void QWinRTCursor::setPos(const QPoint &pos)
