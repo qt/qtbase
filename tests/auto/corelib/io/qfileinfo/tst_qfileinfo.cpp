@@ -199,7 +199,8 @@ private slots:
 
     void fileTimes_data();
     void fileTimes();
-    void fileTimes_oldFile();
+    void fakeFileTimes_data();
+    void fakeFileTimes();
 
     void isSymLink_data();
     void isSymLink();
@@ -1212,12 +1213,23 @@ void tst_QFileInfo::fileTimes()
     QVERIFY(writeTime < beforeRead);
 }
 
-void tst_QFileInfo::fileTimes_oldFile()
+void tst_QFileInfo::fakeFileTimes_data()
 {
+    QTest::addColumn<QDateTime>("when");
+
     // This is 2^{31} seconds before 1970-01-01 15:14:8,
     // i.e. shortly after the start of time_t, in any time-zone:
-    const QDateTime early(QDate(1901, 12, 14), QTime(12, 0));
-    QFile file("ancientfile.txt");
+    QTest::newRow("early") << QDateTime(QDate(1901, 12, 14), QTime(12, 0));
+
+    // QTBUG-12006 claims XP handled this (2010-Mar-26 8:46:10) wrong due to an MS API bug:
+    QTest::newRow("XP-bug") << QDateTime::fromTime_t(1269593170);
+}
+
+void tst_QFileInfo::fakeFileTimes()
+{
+    QFETCH(QDateTime, when);
+
+    QFile file("faketimefile.txt");
     file.open(QIODevice::WriteOnly);
     file.write("\n", 1);
     file.close();
@@ -1228,15 +1240,13 @@ void tst_QFileInfo::fileTimes_oldFile()
       modification time, so need to re-open for read in order to setFileTime().
      */
     file.open(QIODevice::ReadOnly);
-    bool ok = file.setFileTime(early, QFileDevice::FileModificationTime);
+    bool ok = file.setFileTime(when, QFileDevice::FileModificationTime);
     file.close();
 
-    if (ok) {
-        QFileInfo info(file.fileName());
-        QCOMPARE(info.lastModified(), early);
-    } else {
-        QSKIP("Unable to set file metadata to ancient values");
-    }
+    if (ok)
+        QCOMPARE(QFileInfo(file.fileName()).lastModified(), when);
+    else
+        QSKIP("Unable to set file metadata to contrived values");
 }
 
 void tst_QFileInfo::isSymLink_data()
