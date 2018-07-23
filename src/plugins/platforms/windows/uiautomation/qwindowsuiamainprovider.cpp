@@ -364,7 +364,7 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
         setVariantBool(accessible->state().focusable, pRetVal);
         break;
     case UIA_IsOffscreenPropertyId:
-        setVariantBool(false, pRetVal);
+        setVariantBool(accessible->state().offscreen, pRetVal);
         break;
     case UIA_IsContentElementPropertyId:
         setVariantBool(true, pRetVal);
@@ -454,30 +454,53 @@ HRESULT QWindowsUiaMainProvider::Navigate(NavigateDirection direction, IRawEleme
 
     QAccessibleInterface *targetacc = nullptr;
 
-    switch (direction) {
-    case NavigateDirection_Parent:
-        targetacc = accessible->parent();
-        if (targetacc && (targetacc->role() == QAccessible::Application)) {
-            targetacc = nullptr; // The app's children are considered top level objects.
-        }
-        break;
-    case NavigateDirection_FirstChild:
-        targetacc = accessible->child(0);
-        break;
-    case NavigateDirection_LastChild:
-        targetacc = accessible->child(accessible->childCount() - 1);
-        break;
-    case NavigateDirection_NextSibling:
-    case NavigateDirection_PreviousSibling:
+    if (direction == NavigateDirection_Parent) {
         if (QAccessibleInterface *parent = accessible->parent()) {
-            if (parent->isValid()) {
-                int index = parent->indexOfChild(accessible);
-                index += (direction == NavigateDirection_NextSibling) ? 1 : -1;
-                if (index >= 0 && index < parent->childCount())
-                    targetacc = parent->child(index);
+            // The Application's children are considered top level objects.
+            if (parent->isValid() && parent->role() != QAccessible::Application) {
+                targetacc = parent;
             }
         }
-        break;
+    } else {
+        QAccessibleInterface *parent = nullptr;
+        int index = 0;
+        int incr = 1;
+        switch (direction) {
+        case NavigateDirection_FirstChild:
+            parent = accessible;
+            index = 0;
+            incr = 1;
+            break;
+        case NavigateDirection_LastChild:
+            parent = accessible;
+            index = accessible->childCount() - 1;
+            incr = -1;
+            break;
+        case NavigateDirection_NextSibling:
+            if ((parent = accessible->parent()))
+                index = parent->indexOfChild(accessible) + 1;
+            incr = 1;
+            break;
+        case NavigateDirection_PreviousSibling:
+            if ((parent = accessible->parent()))
+                index = parent->indexOfChild(accessible) - 1;
+            incr = -1;
+            break;
+        default:
+            Q_UNREACHABLE();
+            break;
+        }
+
+        if (parent && parent->isValid()) {
+            for (int count = parent->childCount(); index >= 0 && index < count; index += incr) {
+                if (QAccessibleInterface *child = parent->child(index)) {
+                    if (child->isValid() && !child->state().invisible) {
+                        targetacc = child;
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     if (targetacc)
