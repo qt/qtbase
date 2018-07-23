@@ -100,7 +100,7 @@ void tst_QCommandLineParser::testInvalidOptions()
     QCoreApplication app(empty_argc, empty_argv);
     QCommandLineParser parser;
     QTest::ignoreMessage(QtWarningMsg, "QCommandLineOption: Option names cannot start with a '-'");
-    parser.addOption(QCommandLineOption(QStringLiteral("-v"), QStringLiteral("Displays version information.")));
+    QVERIFY(!parser.addOption(QCommandLineOption(QStringLiteral("-v"), QStringLiteral("Displays version information."))));
 }
 
 void tst_QCommandLineParser::testPositionalArguments()
@@ -336,7 +336,7 @@ void tst_QCommandLineParser::testDoubleDash()
 
     QCoreApplication app(empty_argc, empty_argv);
     QCommandLineParser parser;
-    parser.addOption(QCommandLineOption(QStringList() << "o" << "output", QStringLiteral("Output file"), QStringLiteral("filename")));
+    QVERIFY(parser.addOption(QCommandLineOption(QStringList() << "o" << "output", QStringLiteral("Output file"), QStringLiteral("filename"))));
     parser.setSingleDashWordOptionMode(parsingMode);
     QVERIFY(parser.parse(QStringList() << "tst_qcommandlineparser" << "--output" << "foo"));
     QCOMPARE(parser.value("output"), QString("foo"));
@@ -382,7 +382,7 @@ void tst_QCommandLineParser::testMissingOptionValue()
 {
     QCoreApplication app(empty_argc, empty_argv);
     QCommandLineParser parser;
-    parser.addOption(QCommandLineOption(QStringLiteral("option"), QStringLiteral("An option"), "value"));
+    QVERIFY(parser.addOption(QCommandLineOption(QStringLiteral("option"), QStringLiteral("An option"), "value")));
     QVERIFY(!parser.parse(QStringList() << "argv0" << "--option")); // the user forgot to pass a value for --option
     QCOMPARE(parser.value("option"), QString());
     QCOMPARE(parser.errorText(), QString("Missing value after '--option'."));
@@ -400,8 +400,8 @@ void tst_QCommandLineParser::testStdinArgument()
     QCoreApplication app(empty_argc, empty_argv);
     QCommandLineParser parser;
     parser.setSingleDashWordOptionMode(parsingMode);
-    parser.addOption(QCommandLineOption(QStringList() << "i" << "input", QStringLiteral("Input file."), QStringLiteral("filename")));
-    parser.addOption(QCommandLineOption("b", QStringLiteral("Boolean option.")));
+    QVERIFY(parser.addOption(QCommandLineOption(QStringList() << "i" << "input", QStringLiteral("Input file."), QStringLiteral("filename"))));
+    QVERIFY(parser.addOption(QCommandLineOption("b", QStringLiteral("Boolean option."))));
     QVERIFY(parser.parse(QStringList() << "tst_qcommandlineparser" << "--input" << "-"));
     QCOMPARE(parser.value("input"), QString("-"));
     QCOMPARE(parser.positionalArguments(), QStringList());
@@ -471,14 +471,14 @@ void tst_QCommandLineParser::testSingleDashWordOptionModes()
     QCoreApplication app(empty_argc, empty_argv);
     QCommandLineParser parser;
     parser.setSingleDashWordOptionMode(parsingMode);
-    parser.addOption(QCommandLineOption("a", QStringLiteral("a option.")));
-    parser.addOption(QCommandLineOption("b", QStringLiteral("b option.")));
-    parser.addOption(QCommandLineOption(QStringList() << "c" << "abc", QStringLiteral("c option."), QStringLiteral("value")));
-    parser.addOption(QCommandLineOption("nn", QStringLiteral("nn option.")));
+    QVERIFY(parser.addOption(QCommandLineOption("a", QStringLiteral("a option."))));
+    QVERIFY(parser.addOption(QCommandLineOption("b", QStringLiteral("b option."))));
+    QVERIFY(parser.addOption(QCommandLineOption(QStringList() << "c" << "abc", QStringLiteral("c option."), QStringLiteral("value"))));
+    QVERIFY(parser.addOption(QCommandLineOption("nn", QStringLiteral("nn option."))));
     QCommandLineOption forceShort(QStringLiteral("I"), QStringLiteral("always short option"),
                                   QStringLiteral("path"), QStringLiteral("default"));
     forceShort.setFlags(QCommandLineOption::ShortOptionStyle);
-    parser.addOption(forceShort);
+    QVERIFY(parser.addOption(forceShort));
     QVERIFY(parser.parse(commandLine));
     QCOMPARE(parser.optionNames(), expectedOptionNames);
     for (int i = 0; i < expectedOptionValues.count(); ++i)
@@ -493,11 +493,11 @@ void tst_QCommandLineParser::testCpp11StyleInitialization()
 
     QCommandLineParser parser;
     // primarily check that this compiles:
-    parser.addOptions({
+    QVERIFY(parser.addOptions({
         { "a",                "The A option." },
         { { "v", "verbose" }, "The verbose option." },
         { { "i", "infile" },  "The input file.", "value" },
-    });
+    }));
     // but do a very basic functionality test, too:
     QVERIFY(parser.parse({"tst_QCommandLineParser", "-a", "-vvv", "--infile=in.txt"}));
     QCOMPARE(parser.optionNames(), (QStringList{"a", "v", "v", "v", "infile"}));
