@@ -369,6 +369,7 @@ QByteArray QJsonDocument::toJson() const
   */
 
 /*!
+    \since 5.1
     Converts the QJsonDocument to a UTF-8 encoded JSON document in the provided \a format.
 
     \sa fromJson(), JsonFormat
