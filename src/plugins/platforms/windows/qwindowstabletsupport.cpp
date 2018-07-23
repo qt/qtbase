@@ -489,11 +489,8 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
 
         const int z = currentDevice == QTabletEvent::FourDMouse ? int(packet.pkZ) : 0;
 
-        // This code is to delay the tablet data one cycle to sync with the mouse location.
-        QPointF globalPosF = m_oldGlobalPosF;
-        const QPointF currentGlobalPosF =
+        QPointF globalPosF =
             m_devices.at(m_currentDevice).scaleCoordinates(packet.pkX, packet.pkY, virtualDesktopArea);
-        m_oldGlobalPosF = currentGlobalPosF;
 
         QWindow *target = QGuiApplicationPrivate::tabletDevicePoint(uniqueId).target; // Pass to window that grabbed it.
 
@@ -501,10 +498,10 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
         const QPoint mouseLocation = QWindowsCursor::mousePosition();
         if (m_state == PenProximity) {
             m_state = PenDown;
-            m_mode = (mouseLocation - currentGlobalPosF).manhattanLength() > m_absoluteRange
+            m_mode = (mouseLocation - globalPosF).manhattanLength() > m_absoluteRange
                 ? MouseMode : PenMode;
             qCDebug(lcQpaTablet) << __FUNCTION__ << "mode=" << m_mode << "pen:"
-                << currentGlobalPosF << "mouse:" << mouseLocation;
+                << globalPosF << "mouse:" << mouseLocation;
         }
         if (m_mode == MouseMode)
             globalPosF = mouseLocation;
