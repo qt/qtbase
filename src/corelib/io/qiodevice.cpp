@@ -312,8 +312,9 @@ QIODevicePrivate::~QIODevicePrivate()
 
     \value NotOpen   The device is not open.
     \value ReadOnly  The device is open for reading.
-    \value WriteOnly The device is open for writing. Note that this mode implies
-                     Truncate.
+    \value WriteOnly The device is open for writing. Note that, for file-system
+                     subclasses (e.g. QFile), this mode implies Truncate unless
+                     combined with ReadOnly, Append or NewOnly.
     \value ReadWrite The device is open for reading and writing.
     \value Append    The device is opened in append mode so that all data is
                      written to the end of the file.

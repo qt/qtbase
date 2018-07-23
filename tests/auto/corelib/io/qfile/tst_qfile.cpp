@@ -1293,6 +1293,12 @@ void tst_QFile::append()
     f.putChar('a');
     f.close();
     QCOMPARE(int(f.size()), 2);
+
+    QVERIFY2(f.open(QIODevice::Append | QIODevice::Truncate), msgOpenFailed(f).constData());
+    QCOMPARE(f.pos(), 0);
+    f.putChar('a');
+    f.close();
+    QCOMPARE(int(f.size()), 1);
 }
 
 void tst_QFile::permissions_data()
@@ -1829,13 +1835,14 @@ void tst_QFile::encodeName()
 
 void tst_QFile::truncate()
 {
-    for (int i = 0; i < 2; ++i) {
+    const QIODevice::OpenModeFlag modes[] = { QFile::ReadWrite, QIODevice::WriteOnly, QIODevice::Append };
+    for (auto mode : modes) {
         QFile file("truncate.txt");
         QVERIFY2(file.open(QFile::WriteOnly), msgOpenFailed(file).constData());
         file.write(QByteArray(200, '@'));
         file.close();
 
-        QVERIFY2(file.open((i ? QFile::WriteOnly : QFile::ReadWrite) | QFile::Truncate), msgOpenFailed(file).constData());
+        QVERIFY2(file.open(mode | QFile::Truncate), msgOpenFailed(file).constData());
         file.write(QByteArray(100, '$'));
         file.close();
 
@@ -2753,7 +2760,7 @@ void tst_QFile::renameMultiple()
 void tst_QFile::appendAndRead()
 {
     QFile writeFile(QLatin1String("appendfile.txt"));
-    QVERIFY2(writeFile.open(QIODevice::WriteOnly | QIODevice::Truncate), msgOpenFailed(writeFile).constData());
+    QVERIFY2(writeFile.open(QIODevice::Append | QIODevice::Truncate), msgOpenFailed(writeFile).constData());
 
     QFile readFile(QLatin1String("appendfile.txt"));
     QVERIFY2(readFile.open(QIODevice::ReadOnly), msgOpenFailed(readFile).constData());

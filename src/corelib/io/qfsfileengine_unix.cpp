@@ -82,12 +82,11 @@ static inline int openModeToOpenFlags(QIODevice::OpenMode mode)
     if (QFSFileEnginePrivate::openModeCanCreate(mode))
         oflags |= QT_OPEN_CREAT;
 
-    if (mode & QFile::Append) {
+    if (mode & QFile::Truncate)
+        oflags |= QT_OPEN_TRUNC;
+
+    if (mode & QFile::Append)
         oflags |= QT_OPEN_APPEND;
-    } else if (mode & QFile::WriteOnly) {
-        if ((mode & QFile::Truncate) || !(mode & QFile::ReadOnly))
-            oflags |= QT_OPEN_TRUNC;
-    }
 
     if (mode & QFile::NewOnly)
         oflags |= QT_OPEN_EXCL;
