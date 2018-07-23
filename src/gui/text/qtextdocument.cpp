@@ -2017,7 +2017,6 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
 
     int fromPage = pd->fromPage;
     int toPage = pd->toPage;
-    bool ascending = true;
 
     if (fromPage == 0 && toPage == 0) {
         fromPage = 1;
@@ -2033,6 +2032,7 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
         return;
     }
 
+//    bool ascending = true;
 //    if (printer->pageOrder() == QPrinter::LastPageFirst) {
 //        int tmp = fromPage;
 //        fromPage = toPage;
@@ -2046,12 +2046,7 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
 
         if (page == toPage)
             break;
-
-        if (ascending)
-            ++page;
-        else
-            --page;
-
+        ++page;
         if (!printer->newPage())
             return;
     }
