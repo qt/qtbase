@@ -46,6 +46,11 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qcoreapplication.h>
 
+#if QT_CONFIG(settings)
+#include <QtCore/qsettings.h>
+#include <QtCore/private/qsettings_p.h>
+#endif
+
 // We can't use the default macros because this would lead to recursion.
 // Instead let's define our own one that unconditionally logs...
 #define debugMsg QMessageLogger(__FILE__, __LINE__, __FUNCTION__, "qt.core.logging").debug
@@ -230,7 +235,14 @@ void QLoggingSettingsParser::parseNextLine(QStringRef line)
         int equalPos = line.indexOf(QLatin1Char('='));
         if (equalPos != -1) {
             if (line.lastIndexOf(QLatin1Char('=')) == equalPos) {
-                const auto pattern = line.left(equalPos).trimmed();
+                const auto key = line.left(equalPos).trimmed();
+#if QT_CONFIG(settings)
+                QString tmp;
+                QSettingsPrivate::iniUnescapedKey(key.toUtf8(), 0, key.length(), tmp);
+                QStringRef pattern = QStringRef(&tmp, 0, tmp.length());
+#else
+                QStringRef pattern = key;
+#endif
                 const auto valueStr = line.mid(equalPos + 1).trimmed();
                 int value = -1;
                 if (valueStr == QLatin1String("true"))

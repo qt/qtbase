@@ -187,6 +187,13 @@ private slots:
                           "default=false");
         QCOMPARE(parser.rules().size(), 1);
 
+        // QSettings escapes * to %2A when writing.
+        parser.setContent("[Rules]\n"
+                          "module.%2A=false");
+        QCOMPARE(parser.rules().size(), 1);
+        QCOMPARE(parser.rules().first().category, QString("module."));
+        QCOMPARE(parser.rules().first().flags, QLoggingRule::LeftFilter);
+
         parser.setContent("[OtherSection]\n"
                           "default=false");
         QCOMPARE(parser.rules().size(), 0);
