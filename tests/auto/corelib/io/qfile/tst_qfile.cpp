@@ -2759,19 +2759,20 @@ void tst_QFile::renameMultiple()
 
 void tst_QFile::appendAndRead()
 {
-    QFile writeFile(QLatin1String("appendfile.txt"));
+    const QString fileName(QStringLiteral("appendfile.txt"));
+    QFile writeFile(fileName);
     QVERIFY2(writeFile.open(QIODevice::Append | QIODevice::Truncate), msgOpenFailed(writeFile).constData());
 
-    QFile readFile(QLatin1String("appendfile.txt"));
+    QFile readFile(fileName);
     QVERIFY2(readFile.open(QIODevice::ReadOnly), msgOpenFailed(readFile).constData());
 
     // Write to the end of the file, then read that character back, and so on.
     for (int i = 0; i < 100; ++i) {
         char c = '\0';
-        writeFile.putChar(char(i % 256));
+        writeFile.putChar(char(i));
         writeFile.flush();
         QVERIFY(readFile.getChar(&c));
-        QCOMPARE(c, char(i % 256));
+        QCOMPARE(c, char(i));
         QCOMPARE(readFile.pos(), writeFile.pos());
     }
 
@@ -2782,8 +2783,6 @@ void tst_QFile::appendAndRead()
         writeFile.flush();
         QCOMPARE(readFile.read(size).size(), size);
     }
-
-    readFile.close();
 }
 
 void tst_QFile::miscWithUncPathAsCurrentDir()
