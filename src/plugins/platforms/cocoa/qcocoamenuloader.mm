@@ -191,26 +191,23 @@
     Q_ASSERT(mainMenu);
 #endif
     // Grab the app menu out of the current menu.
-    int numItems = [mainMenu numberOfItems];
-    NSMenuItem *oldAppMenuItem = 0;
-    for (int i = 0; i < numItems; ++i) {
-        NSMenuItem *item = [mainMenu itemAtIndex:i];
-        if ([item submenu] == appMenu) {
-            oldAppMenuItem = item;
-            [oldAppMenuItem retain];
-            [mainMenu removeItemAtIndex:i];
-            break;
+    auto unparentAppMenu = ^bool (NSMenu *supermenu) {
+        auto index = [supermenu indexOfItemWithSubmenu:appMenu];
+        if (index != -1) {
+            [supermenu removeItemAtIndex:index];
+            return true;
         }
-    }
+        return false;
+    };
 
-    if (oldAppMenuItem) {
-        [oldAppMenuItem setSubmenu:nil];
-        [oldAppMenuItem release];
-        NSMenuItem *appMenuItem = [[NSMenuItem alloc] initWithTitle:@"Apple"
-            action:nil keyEquivalent:@""];
-        [appMenuItem setSubmenu:appMenu];
-        [menu insertItem:appMenuItem atIndex:0];
-    }
+    if (!mainMenu || !unparentAppMenu(mainMenu))
+        if (appMenu.supermenu)
+            unparentAppMenu(appMenu.supermenu);
+
+    NSMenuItem *appMenuItem = [[NSMenuItem alloc] initWithTitle:@"Apple"
+        action:nil keyEquivalent:@""];
+    [appMenuItem setSubmenu:appMenu];
+    [menu insertItem:appMenuItem atIndex:0];
 }
 
 - (void)removeActionsFromAppMenu
