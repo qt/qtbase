@@ -81,6 +81,13 @@ void QWinRTUiaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
     case QAccessible::Focus:
         QWinRTUiaMainProvider::notifyFocusChange(event);
         break;
+    case QAccessible::ObjectCreated:
+    case QAccessible::ObjectDestroyed:
+    case QAccessible::ObjectShow:
+    case QAccessible::ObjectHide:
+    case QAccessible::ObjectReorder:
+        QWinRTUiaMainProvider::notifyVisibilityChange(event);
+        break;
     case QAccessible::StateChanged:
         QWinRTUiaMainProvider::notifyStateChange(static_cast<QAccessibleStateChangeEvent *>(event));
         break;

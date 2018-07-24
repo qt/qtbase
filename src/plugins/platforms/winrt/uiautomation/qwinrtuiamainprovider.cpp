@@ -230,6 +230,14 @@ void QWinRTUiaMainProvider::notifyFocusChange(QAccessibleEvent *event)
     }
 }
 
+void QWinRTUiaMainProvider::notifyVisibilityChange(QAccessibleEvent *event)
+{
+    if (QAccessibleInterface *accessible = event->accessibleInterface()) {
+        QAccessible::Id accid = idForAccessible(accessible);
+        QWinRTUiaMetadataCache::instance()->load(accid);
+    }
+}
+
 void QWinRTUiaMainProvider::notifyStateChange(QAccessibleStateChangeEvent *event)
 {
     if (QAccessibleInterface *accessible = event->accessibleInterface()) {
@@ -517,7 +525,8 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaMainProvider::GetChildrenCore(IVector<Automat
                 if (QAccessibleInterface *childAcc = accessible->child(i)) {
                     QAccessible::Id childId = idForAccessible(childAcc);
                     QWinRTUiaMetadataCache::instance()->load(childId);
-                    (*ptrChildren)->append(childId);
+                    if (!childAcc->state().invisible)
+                        (*ptrChildren)->append(childId);
                 }
             }
         }
@@ -683,7 +692,8 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaMainProvider::IsOffscreenCore(boolean *return
 
     if (!returnValue)
         return E_INVALIDARG;
-    *returnValue = false;
+    QSharedPointer<QWinRTUiaControlMetadata> metadata = QWinRTUiaMetadataCache::instance()->metadataForId(id());
+    *returnValue = (metadata->state().offscreen != 0);
     return S_OK;
 }
 
