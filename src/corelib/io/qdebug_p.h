@@ -93,7 +93,7 @@ static inline void formatQEnum(QDebug &debug, QEnum value)
 {
     const QMetaObject *metaObject = qt_getEnumMetaObject(value);
     const QMetaEnum me = metaObject->enumerator(metaObject->indexOfEnumerator(qt_getEnumName(value)));
-    if (const char *key = me.valueToKey(value))
+    if (const char *key = me.valueToKey(int(value)))
         debug << key;
     else
         debug << int(value);
