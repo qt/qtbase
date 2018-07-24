@@ -962,7 +962,7 @@
     \row    \li c11 \li C11 support is enabled. This option has no effect if
             the compiler does not support C11, or can't select the C standard.
             By default, the compiler default is used.
-    \row    \li strict_c Disables support for C compiler extensions.
+    \row    \li strict_c \li Disables support for C compiler extensions.
             By default, they are enabled.
     \row    \li c++11 \li C++11 support is enabled. This option has no effect if
             the compiler does not support C++11, or can't select the C++ standard.
@@ -973,7 +973,7 @@
     \row    \li c++1z \li C++17 support is enabled. This option has no effect if
             the compiler does not support C++17, or can't select the C++ standard.
             By default, support is disabled.
-    \row    \li strict_c++ Disables support for C++ compiler extensions.
+    \row    \li strict_c++ \li Disables support for C++ compiler extensions.
             By default, they are enabled.
     \row    \li depend_includepath \li Appending the value of INCLUDEPATH to
             DEPENDPATH is enabled. Set by default.
