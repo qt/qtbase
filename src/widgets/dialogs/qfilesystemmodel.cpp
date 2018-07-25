@@ -2032,10 +2032,8 @@ bool QFileSystemModelPrivate::passNameFilters(const QFileSystemNode *node) const
                                             : QRegularExpression::CaseInsensitiveOption;
 
         for (const auto &nameFilter : nameFilters) {
-            const QString wildcard = QLatin1String("\\A(?:")
-                                     + QRegularExpression::wildcardToRegularExpression(nameFilter)
-                                     + QLatin1String(")\\z");
-            QRegularExpression rx(wildcard, options);
+            const QString wildcard = QRegularExpression::wildcardToRegularExpression(nameFilter);
+            QRegularExpression rx(QRegularExpression::anchoredPattern(wildcard), options);
             QRegularExpressionMatch match = rx.match(node->fileName);
             if (match.hasMatch())
                 return true;

@@ -483,6 +483,11 @@ QT_BEGIN_NAMESPACE
     Note the usage of the non-capturing group in order to preserve the meaning
     of the branch operator inside the pattern.
 
+    The QRegularExpression::anchoredPattern() helper method does exactly that for
+    you.
+
+    \sa anchoredPattern
+
     \section3 Porting from QRegExp's Partial Matching
 
     When using QRegExp::exactMatch(), if an exact match was not found, one
@@ -1993,6 +1998,17 @@ QString QRegularExpression::wildcardToRegularExpression(const QString &pattern)
 
     return rx;
 }
+
+/*!
+    \fn QRegularExpression::anchoredPattern(const QString &expression)
+
+    \since 5.12
+
+    Returns the expression wrapped between the \c{\A} and \c{\z} anchors to be
+    used for exact matching.
+
+    \sa {Porting from QRegExp's Exact Matching}
+*/
 
 /*!
     \since 5.1

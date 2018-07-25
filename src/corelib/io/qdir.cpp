@@ -2129,7 +2129,7 @@ bool QDir::match(const QStringList &filters, const QString &fileName)
         QString wildcard = QRegularExpression::wildcardToRegularExpression(*sit);
         // Insensitive exact match
         // (see Notes for QRegExp Users in QRegularExpression's documentation)
-        QRegularExpression rx(QLatin1String("\\A(?:") + wildcard + QLatin1String(")\\z"),
+        QRegularExpression rx(QRegularExpression::anchoredPattern(wildcard),
                               QRegularExpression::CaseInsensitiveOption);
         if (rx.match(fileName).hasMatch())
             return true;
