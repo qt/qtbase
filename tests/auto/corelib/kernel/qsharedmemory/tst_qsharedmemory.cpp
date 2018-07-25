@@ -51,7 +51,6 @@ public:
 
 public Q_SLOTS:
     void init();
-    void initTestCase();
     void cleanup();
 
 
@@ -101,7 +100,6 @@ private slots:
     void uniqueKey();
 
 protected:
-    static QString helperBinary();
     int remove(const QString &key);
 
     QString rememberKey(const QString &key)
@@ -125,19 +123,12 @@ private:
 
 tst_QSharedMemory::tst_QSharedMemory()
     : existingSharedMemory(0)
-    , m_helperBinary(tst_QSharedMemory::helperBinary())
+    , m_helperBinary("producerconsumer_helper")
 {
 }
 
 tst_QSharedMemory::~tst_QSharedMemory()
 {
-}
-
-void tst_QSharedMemory::initTestCase()
-{
-#if QT_CONFIG(process)
-    QVERIFY2(!m_helperBinary.isEmpty(), "Could not find helper binary");
-#endif
 }
 
 void tst_QSharedMemory::init()
@@ -178,15 +169,6 @@ void tst_QSharedMemory::cleanup()
 #endif // QT_POSIX_IPC
 #include <errno.h>
 #endif
-
-QString tst_QSharedMemory::helperBinary()
-{
-    QString binary = QStringLiteral("helperbinary");
-#ifdef Q_OS_WIN
-    binary += QStringLiteral(".exe");
-#endif
-    return QFINDTESTDATA(binary);
-}
 
 int tst_QSharedMemory::remove(const QString &key)
 {

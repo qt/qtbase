@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
 qtConfig(sharedmemory) {
-    !winrt: SUBDIRS = sharedmemoryhelper
-    SUBDIRS += test
+    !winrt: SUBDIRS = producerconsumer
+    SUBDIRS += test.pro
 }
