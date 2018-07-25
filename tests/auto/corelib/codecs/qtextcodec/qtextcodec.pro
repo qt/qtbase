@@ -1,2 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS = test echo
+SUBDIRS = test.pro
+unix: SUBDIRS += echo

@@ -2092,7 +2092,7 @@ void tst_QTextCodec::toLocal8Bit()
     QSKIP("No qprocess support", SkipAll);
 #else
     QProcess process;
-    process.start("echo/echo");
+    process.start("echo_helper");
     QString string(QChar(0x410));
     process.write((const char*)string.utf16(), string.length()*2);
 
