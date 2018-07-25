@@ -424,7 +424,7 @@ public:
     void updateChildrenMapping(const QModelIndex &source_parent, Mapping *parent_mapping,
                                Qt::Orientation orient, int start, int end, int delta_item_count, bool remove);
 
-    virtual void _q_sourceModelDestroyed() override;
+    void _q_sourceModelDestroyed() override;
 
     bool needsReorder(const QVector<int> &source_rows, const QModelIndex &source_parent) const;
 

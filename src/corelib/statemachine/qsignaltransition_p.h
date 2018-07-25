@@ -70,7 +70,7 @@ public:
     void unregister();
     void maybeRegister();
 
-    virtual void callOnTransition(QEvent *e) override;
+    void callOnTransition(QEvent *e) override;
 
     const QObject *sender;
     QByteArray signal;

@@ -179,13 +179,13 @@ class QByteDeviceWrappingIoDevice : public QIODevice
 public:
     QByteDeviceWrappingIoDevice (QNonContiguousByteDevice *bd);
     ~QByteDeviceWrappingIoDevice ();
-    virtual bool isSequential () const override;
-    virtual bool atEnd () const override;
-    virtual bool reset () override;
-    virtual qint64 size () const override;
+    bool isSequential() const override;
+    bool atEnd() const override;
+    bool reset() override;
+    qint64 size() const override;
 protected:
-     virtual qint64 readData ( char * data, qint64 maxSize ) override;
-     virtual qint64 writeData ( const char * data, qint64 maxSize ) override;
+    qint64 readData(char *data, qint64 maxSize) override;
+    qint64 writeData(const char *data, qint64 maxSize) override;
 
      QNonContiguousByteDevice *byteDevice;
 };

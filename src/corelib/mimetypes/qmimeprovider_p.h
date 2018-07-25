@@ -97,17 +97,17 @@ public:
     QMimeBinaryProvider(QMimeDatabasePrivate *db, const QString &directory);
     virtual ~QMimeBinaryProvider();
 
-    virtual bool isValid() override;
-    virtual QMimeType mimeTypeForName(const QString &name) override;
+    bool isValid() override;
+    QMimeType mimeTypeForName(const QString &name) override;
     void addFileNameMatches(const QString &fileName, QMimeGlobMatchResult &result) override;
     void addParents(const QString &mime, QStringList &result) override;
-    virtual QString resolveAlias(const QString &name) override;
+    QString resolveAlias(const QString &name) override;
     void addAliases(const QString &name, QStringList &result) override;
     void findByMagic(const QByteArray &data, int *accuracyPtr, QMimeType &candidate) override;
     void addAllMimeTypes(QList<QMimeType> &result) override;
     static void loadMimeTypePrivate(QMimeTypePrivate &);
-    virtual void loadIcon(QMimeTypePrivate &) override;
-    virtual void loadGenericIcon(QMimeTypePrivate &) override;
+    void loadIcon(QMimeTypePrivate &) override;
+    void loadGenericIcon(QMimeTypePrivate &) override;
     void ensureLoaded() override;
 
 private:
@@ -135,11 +135,11 @@ public:
     QMimeXMLProvider(QMimeDatabasePrivate *db, const QString &directory);
     ~QMimeXMLProvider();
 
-    virtual bool isValid() override;
-    virtual QMimeType mimeTypeForName(const QString &name) override;
+    bool isValid() override;
+    QMimeType mimeTypeForName(const QString &name) override;
     void addFileNameMatches(const QString &fileName, QMimeGlobMatchResult &result) override;
     void addParents(const QString &mime, QStringList &result) override;
-    virtual QString resolveAlias(const QString &name) override;
+    QString resolveAlias(const QString &name) override;
     void addAliases(const QString &name, QStringList &result) override;
     void findByMagic(const QByteArray &data, int *accuracyPtr, QMimeType &candidate) override;
     void addAllMimeTypes(QList<QMimeType> &result) override;

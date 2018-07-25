@@ -1721,8 +1721,8 @@ QAbstractTransition *QStateMachinePrivate::createInitialTransition() const
             : QAbstractTransition()
         { setTargetStates(targets); }
     protected:
-        virtual bool eventTest(QEvent *) override { return true; }
-        virtual void onTransition(QEvent *) override {}
+        bool eventTest(QEvent *) override { return true; }
+        void onTransition(QEvent *) override {}
     };
 
     QState *root = rootState();

@@ -100,7 +100,7 @@ public:
     FileError error() const;
     void unsetError();
 
-    virtual void close() override;
+    void close() override;
 
     bool isSequential() const override;
 
