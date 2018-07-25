@@ -54,6 +54,11 @@ namespace MyNamespace {
             MyEnum2,
             MyEnum3
         };
+        enum class MyScopedEnum {
+            Enum1,
+            Enum2,
+            Enum3
+        };
         enum MyAnotherEnum {
             MyAnotherEnum1 = 1,
             MyAnotherEnum2 = 2,
@@ -79,6 +84,7 @@ namespace MyNamespace {
                 { }
     private:
         Q_ENUM(MyEnum)
+        Q_ENUM(MyScopedEnum)
         Q_ENUM(MyAnotherEnum)
         Q_FLAG(MyFlags)
 
@@ -1730,12 +1736,14 @@ void tst_QMetaObject::signalIndex()
 
 void tst_QMetaObject::enumDebugStream()
 {
-    QTest::ignoreMessage(QtDebugMsg, "hello MyNamespace::MyClass::MyEnum(MyEnum2) world ");
-    MyNamespace::MyClass::MyEnum e = MyNamespace::MyClass::MyEnum2;
-    qDebug() << "hello" << e << "world";
+    QTest::ignoreMessage(QtDebugMsg, "hello MyNamespace::MyClass::MyEnum2 world ");
+    qDebug() << "hello" << MyNamespace::MyClass::MyEnum2 << "world";
 
-    QTest::ignoreMessage(QtDebugMsg, "Qt::WindowType(WindowTitleHint) Qt::WindowType(Window) Qt::WindowType(Desktop) Qt::WindowType(WindowSystemMenuHint)");
-    qDebug() << Qt::WindowTitleHint << Qt::Window <<Qt::Desktop << Qt::WindowSystemMenuHint;
+    QTest::ignoreMessage(QtDebugMsg, "hello MyNamespace::MyClass::MyScopedEnum::Enum3 scoped world ");
+    qDebug() << "hello" << MyNamespace::MyClass::MyScopedEnum::Enum3 << "scoped world";
+
+    QTest::ignoreMessage(QtDebugMsg, "Qt::WindowTitleHint Qt::Window Qt::Desktop Qt::WindowSystemMenuHint");
+    qDebug() << Qt::WindowTitleHint << Qt::Window << Qt::Desktop << Qt::WindowSystemMenuHint;
 
     QTest::ignoreMessage(QtDebugMsg, "hello QFlags<MyNamespace::MyClass::MyFlags>(MyFlag1) world");
     MyNamespace::MyClass::MyFlags f1 = MyNamespace::MyClass::MyFlag1;

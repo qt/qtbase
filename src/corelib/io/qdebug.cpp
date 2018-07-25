@@ -939,14 +939,18 @@ void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, int value)
 QDebug qt_QMetaEnum_debugOperator(QDebug &dbg, int value, const QMetaObject *meta, const char *name)
 {
     QDebugStateSaver saver(dbg);
+    dbg.nospace();
     QMetaEnum me = meta->enumerator(meta->indexOfEnumerator(name));
     const char *key = me.valueToKey(value);
-    dbg.nospace() << meta->className() << "::" << name << '(';
-    if (key)
+    if (key) {
+        if (const char *scope = me.scope())
+            dbg << scope << "::";
+        if (me.isScoped())
+            dbg << name << "::";
         dbg << key;
-    else
-        dbg << value;
-    dbg << ')';
+    } else {
+        dbg << meta->className() << "::" << name << "(" << value << ")";
+    }
     return dbg;
 }
 
