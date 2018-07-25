@@ -2263,6 +2263,8 @@ void tst_Moc::cxx11Enums_data()
     QTest::newRow("TypedEnumClass 2") << meta2 << QByteArray("TypedEnumClass") << 'C' << true;
     QTest::newRow("NormalEnum") << meta1 << QByteArray("NormalEnum") << 'D' << false;
     QTest::newRow("NormalEnum 2") << meta2 << QByteArray("NormalEnum") << 'D' << false;
+    QTest::newRow("ClassFlags") << meta1 << QByteArray("ClassFlags") << 'F' << true;
+    QTest::newRow("ClassFlags 2") << meta2 << QByteArray("ClassFlags") << 'F' << true;
 }
 
 void tst_Moc::cxx11Enums()

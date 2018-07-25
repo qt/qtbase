@@ -202,6 +202,7 @@ void Generator::generateCode()
             }
             QByteArray alias = cdef->flagAliases.value(def.name);
             if (cdef->enumDeclarations.contains(alias)) {
+                def.className = def.name;
                 def.name = alias;
                 enumList += def;
             }
@@ -922,7 +923,7 @@ void Generator::generateEnums(int index)
             const QByteArray &val = e.values.at(j);
             QByteArray code = cdef->qualified.constData();
             if (e.isEnumClass)
-                code += "::" + e.name;
+                code += "::" + (e.className.isNull() ? e.name : e.className);
             code += "::" + val;
             fprintf(out, "    %4d, uint(%s),\n",
                     stridx(val), code.constData());
