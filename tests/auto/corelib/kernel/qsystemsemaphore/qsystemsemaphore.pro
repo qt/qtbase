@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
 
-SUBDIRS = systemsemaphorehelper test
+SUBDIRS = acquirerelease test.pro

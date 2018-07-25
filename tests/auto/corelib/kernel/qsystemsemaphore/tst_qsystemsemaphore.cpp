@@ -42,7 +42,6 @@ public:
     tst_QSystemSemaphore();
 
 public Q_SLOTS:
-    void initTestCase();
     void init();
     void cleanup();
 
@@ -65,20 +64,14 @@ private slots:
     void initialValue();
 
 private:
-    static QString helperBinary();
     QSystemSemaphore *existingLock;
 
     const QString m_helperBinary;
 };
 
 tst_QSystemSemaphore::tst_QSystemSemaphore()
-    : m_helperBinary(helperBinary())
+    : m_helperBinary("acquirerelease_helper")
 {
-}
-
-void tst_QSystemSemaphore::initTestCase()
-{
-  QVERIFY2(!m_helperBinary.isEmpty(), "Could not find helper binary");
 }
 
 void tst_QSystemSemaphore::init()
@@ -294,14 +287,6 @@ void tst_QSystemSemaphore::initialValue()
 #endif
 }
 
-QString tst_QSystemSemaphore::helperBinary()
-{
-    QString binary = QStringLiteral("helperbinary");
-#ifdef Q_OS_WIN
-    binary += QStringLiteral(".exe");
-#endif
-    return QFINDTESTDATA(binary);
-}
 QTEST_MAIN(tst_QSystemSemaphore)
 #include "tst_qsystemsemaphore.moc"
 
