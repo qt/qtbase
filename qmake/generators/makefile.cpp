@@ -2829,7 +2829,16 @@ MakefileGenerator::escapeDependencyPath(const QString &path) const
     QString ret = path;
     if (!ret.isEmpty()) {
         // Unix make semantics, to be inherited by unix and mingw generators.
+#ifdef Q_OS_UNIX
+        // When running on Unix, we need to escape colons (which may appear
+        // anywhere in a path, and would be mis-parsed as dependency separators).
         static const QRegExp criticalChars(QStringLiteral("([\t :#])"));
+#else
+        // MinGW make has a hack for colons which denote drive letters, and no
+        // other colons may appear in paths. And escaping colons actually breaks
+        // the make from the Android SDK.
+        static const QRegExp criticalChars(QStringLiteral("([\t #])"));
+#endif
         ret.replace(criticalChars, QStringLiteral("\\\\1"));
         debug_msg(2, "escapeDependencyPath: %s -> %s", path.toLatin1().constData(), ret.toLatin1().constData());
     }
