@@ -1767,6 +1767,11 @@ void tst_QMetaObject::enumDebugStream()
     QTest::ignoreMessage(QtDebugMsg, "QFlags<MyNamespace::MyClass::MyScopedFlag>(MyFlag2|MyFlag3)");
     f3 |= MyNamespace::MyClass::MyScopedFlag::MyFlag3;
     qDebug() << f3;
+
+    // Single flag recognized as enum:
+    QTest::ignoreMessage(QtDebugMsg, "MyNamespace::MyClass::MyFlag1");
+    MyNamespace::MyClass::MyFlag f4 = MyNamespace::MyClass::MyFlag1;
+    qDebug() << f4;
 }
 
 void tst_QMetaObject::inherits_data()
