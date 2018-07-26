@@ -4994,7 +4994,9 @@ void QTouchEvent::TouchPoint::setLastNormalizedPos(const QPointF &lastNormalized
 }
 
 // ### remove the following 3 setRect functions and their usages soon
-/*! \internal \obsolete */
+/*! \internal
+    \obsolete
+*/
 void QTouchEvent::TouchPoint::setRect(const QRectF &rect)
 {
     if (d->ref.load() != 1)
@@ -5003,7 +5005,9 @@ void QTouchEvent::TouchPoint::setRect(const QRectF &rect)
     d->ellipseDiameters = rect.size();
 }
 
-/*! \internal \obsolete */
+/*! \internal
+    \obsolete
+*/
 void QTouchEvent::TouchPoint::setSceneRect(const QRectF &sceneRect)
 {
     if (d->ref.load() != 1)
@@ -5012,7 +5016,9 @@ void QTouchEvent::TouchPoint::setSceneRect(const QRectF &sceneRect)
     d->ellipseDiameters = sceneRect.size();
 }
 
-/*! \internal \obsolete */
+/*! \internal
+    \obsolete
+*/
 void QTouchEvent::TouchPoint::setScreenRect(const QRectF &screenRect)
 {
     if (d->ref.load() != 1)

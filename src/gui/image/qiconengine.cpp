@@ -263,7 +263,7 @@ void QIconEngine::addFile(const QString &/*fileName*/, const QSize &/*size*/, QI
     \variable QIconEngine::ScaledPixmapArgument::pixmap
 
     \brief The pixmap that is the best match for the given \l size, \l mode, \l
-    \state, and \l scale. This is an output parameter that is set after calling
+    state, and \l scale. This is an output parameter that is set after calling
     \l virtual_hook().
 */
 
