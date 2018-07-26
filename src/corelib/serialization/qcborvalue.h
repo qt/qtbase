@@ -57,7 +57,7 @@
 #  undef False
 #endif
 
-#if QT_HAS_INCLUDE(<compare>)
+#if 0 && QT_HAS_INCLUDE(<compare>)
 #  include <compare>
 #endif
 
@@ -252,7 +252,7 @@ public:
     const QCborValue operator[](qint64 key) const;
 
     int compare(const QCborValue &other) const;
-#if QT_HAS_INCLUDE(<compare>)
+#if 0 && QT_HAS_INCLUDE(<compare>)
     std::strong_ordering operator<=>(const QCborValue &other) const
     {
         int c = compare(other);
@@ -398,7 +398,7 @@ public:
 
     int compare(const QCborValue &other) const
     { return concrete().compare(other); }
-#if QT_HAS_INCLUDE(<compare>)
+#if 0 && QT_HAS_INCLUDE(<compare>)
     std::strong_ordering operator<=>(const QCborValue &other) const
     {
         int c = compare(other);

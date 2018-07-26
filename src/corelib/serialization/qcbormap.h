@@ -233,7 +233,7 @@ public:
     { const_iterator it = find(key); return it != end(); }
 
     int compare(const QCborMap &other) const noexcept Q_DECL_PURE_FUNCTION;
-#if QT_HAS_INCLUDE(<compare>)
+#if 0 && QT_HAS_INCLUDE(<compare>)
     std::strong_ordering operator<=>(const QCborMap &other) const
     {
         int c = compare(other);
