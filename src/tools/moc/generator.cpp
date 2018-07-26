@@ -200,9 +200,9 @@ void Generator::generateCode()
             if (cdef->enumDeclarations.contains(def.name)) {
                 enumList += def;
             }
+            def.enumName = def.name;
             QByteArray alias = cdef->flagAliases.value(def.name);
             if (cdef->enumDeclarations.contains(alias)) {
-                def.className = def.name;
                 def.name = alias;
                 enumList += def;
             }
@@ -370,7 +370,7 @@ void Generator::generateCode()
 
     int enumsIndex = index;
     for (int i = 0; i < cdef->enumList.count(); ++i)
-        index += 4 + (cdef->enumList.at(i).values.count() * 2);
+        index += 5 + (cdef->enumList.at(i).values.count() * 2);
     fprintf(out, "    %4d, %4d, // constructors\n", isConstructible ? cdef->constructorList.count() : 0,
             isConstructible ? index : 0);
 
@@ -888,6 +888,8 @@ void Generator::registerEnumStrings()
     for (int i = 0; i < cdef->enumList.count(); ++i) {
         const EnumDef &e = cdef->enumList.at(i);
         strreg(e.name);
+        if (!e.enumName.isNull())
+            strreg(e.enumName);
         for (int j = 0; j < e.values.count(); ++j)
             strreg(e.values.at(j));
     }
@@ -898,8 +900,8 @@ void Generator::generateEnums(int index)
     if (cdef->enumDeclarations.isEmpty())
         return;
 
-    fprintf(out, "\n // enums: name, flags, count, data\n");
-    index += 4 * cdef->enumList.count();
+    fprintf(out, "\n // enums: name, alias, flags, count, data\n");
+    index += 5 * cdef->enumList.count();
     int i;
     for (i = 0; i < cdef->enumList.count(); ++i) {
         const EnumDef &e = cdef->enumList.at(i);
@@ -908,8 +910,9 @@ void Generator::generateEnums(int index)
             flags |= EnumIsFlag;
         if (e.isEnumClass)
             flags |= EnumIsScoped;
-        fprintf(out, "    %4d, 0x%.1x, %4d, %4d,\n",
+        fprintf(out, "    %4d, %4d, 0x%.1x, %4d, %4d,\n",
                  stridx(e.name),
+                 e.enumName.isNull() ? stridx(e.name) : stridx(e.enumName),
                  flags,
                  e.values.count(),
                  index);
@@ -923,7 +926,7 @@ void Generator::generateEnums(int index)
             const QByteArray &val = e.values.at(j);
             QByteArray code = cdef->qualified.constData();
             if (e.isEnumClass)
-                code += "::" + (e.className.isNull() ? e.name : e.className);
+                code += "::" + (e.enumName.isNull() ? e.name : e.enumName);
             code += "::" + val;
             fprintf(out, "    %4d, uint(%s),\n",
                     stridx(val), code.constData());

@@ -297,6 +297,9 @@ public:
 
     QByteArray name() const;
 
+    QByteArray enumName() const;
+    void setEnumName(const QByteArray &alias);
+
     bool isFlag() const;
     void setIsFlag(bool value);
 

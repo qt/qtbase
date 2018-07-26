@@ -171,7 +171,8 @@ class QMutex;
 struct QMetaObjectPrivate
 {
     // revision 7 is Qt 5.0 everything lower is not supported
-    enum { OutputRevision = 7 }; // Used by moc, qmetaobjectbuilder and qdbus
+    // revision 8 is Qt 5.12: It adds the enum name to QMetaEnum
+    enum { OutputRevision = 8 }; // Used by moc, qmetaobjectbuilder and qdbus
 
     int revision;
     int className;

@@ -946,7 +946,7 @@ QDebug qt_QMetaEnum_debugOperator(QDebug &dbg, int value, const QMetaObject *met
         if (const char *scope = me.scope())
             dbg << scope << "::";
         if (me.isScoped())
-            dbg << name << "::";
+            dbg << me.enumName() << "::";
         dbg << key;
     } else {
         dbg << meta->className() << "::" << name << "(" << value << ")";
@@ -964,7 +964,7 @@ QDebug qt_QMetaEnum_flagDebugOperator(QDebug &debug, quint64 value, const QMetaO
     const QMetaEnum me = meta->enumerator(meta->indexOfEnumerator(name));
     if (const char *scope = me.scope())
         debug << scope << "::";
-    debug << me.name() << ">(" << me.valueToKeys(value) << ')';
+    debug << me.enumName() << ">(" << me.valueToKeys(value) << ')';
     return debug;
 }
 #endif // !QT_NO_QOBJECT

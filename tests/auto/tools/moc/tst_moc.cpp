@@ -2248,6 +2248,7 @@ void tst_Moc::privateClass()
 void tst_Moc::cxx11Enums_data()
 {
     QTest::addColumn<const QMetaObject *>("meta");
+    QTest::addColumn<QByteArray>("typeName");
     QTest::addColumn<QByteArray>("enumName");
     QTest::addColumn<char>("prefix");
     QTest::addColumn<bool>("isScoped");
@@ -2255,16 +2256,16 @@ void tst_Moc::cxx11Enums_data()
     const QMetaObject *meta1 = &CXX11Enums::staticMetaObject;
     const QMetaObject *meta2 = &CXX11Enums2::staticMetaObject;
 
-    QTest::newRow("EnumClass") << meta1 << QByteArray("EnumClass") << 'A' << true;
-    QTest::newRow("EnumClass 2") << meta2 << QByteArray("EnumClass") << 'A' << true;
-    QTest::newRow("TypedEnum") << meta1 << QByteArray("TypedEnum") << 'B' << false;
-    QTest::newRow("TypedEnum 2") << meta2 << QByteArray("TypedEnum") << 'B' << false;
-    QTest::newRow("TypedEnumClass") << meta1 << QByteArray("TypedEnumClass") << 'C' << true;
-    QTest::newRow("TypedEnumClass 2") << meta2 << QByteArray("TypedEnumClass") << 'C' << true;
-    QTest::newRow("NormalEnum") << meta1 << QByteArray("NormalEnum") << 'D' << false;
-    QTest::newRow("NormalEnum 2") << meta2 << QByteArray("NormalEnum") << 'D' << false;
-    QTest::newRow("ClassFlags") << meta1 << QByteArray("ClassFlags") << 'F' << true;
-    QTest::newRow("ClassFlags 2") << meta2 << QByteArray("ClassFlags") << 'F' << true;
+    QTest::newRow("EnumClass") << meta1 << QByteArray("EnumClass") << QByteArray("EnumClass") << 'A' << true;
+    QTest::newRow("EnumClass 2") << meta2 << QByteArray("EnumClass") << QByteArray("EnumClass") << 'A' << true;
+    QTest::newRow("TypedEnum") << meta1 << QByteArray("TypedEnum") << QByteArray("TypedEnum") << 'B' << false;
+    QTest::newRow("TypedEnum 2") << meta2 << QByteArray("TypedEnum") << QByteArray("TypedEnum") << 'B' << false;
+    QTest::newRow("TypedEnumClass") << meta1 << QByteArray("TypedEnumClass") << QByteArray("TypedEnumClass") << 'C' << true;
+    QTest::newRow("TypedEnumClass 2") << meta2 << QByteArray("TypedEnumClass") << QByteArray("TypedEnumClass") << 'C' << true;
+    QTest::newRow("NormalEnum") << meta1 << QByteArray("NormalEnum") << QByteArray("NormalEnum") << 'D' << false;
+    QTest::newRow("NormalEnum 2") << meta2 << QByteArray("NormalEnum") << QByteArray("NormalEnum") << 'D' << false;
+    QTest::newRow("ClassFlags") << meta1 << QByteArray("ClassFlags") << QByteArray("ClassFlag") << 'F' << true;
+    QTest::newRow("ClassFlags 2") << meta2 << QByteArray("ClassFlags") << QByteArray("ClassFlag") << 'F' << true;
 }
 
 void tst_Moc::cxx11Enums()
@@ -2272,21 +2273,26 @@ void tst_Moc::cxx11Enums()
     QFETCH(const QMetaObject *,meta);
     QCOMPARE(meta->enumeratorOffset(), 0);
 
+    QFETCH(QByteArray, typeName);
     QFETCH(QByteArray, enumName);
     QFETCH(char, prefix);
     QFETCH(bool, isScoped);
 
-    int idx;
-    idx = meta->indexOfEnumerator(enumName);
+    int idx = meta->indexOfEnumerator(typeName);
     QVERIFY(idx != -1);
+    QCOMPARE(meta->indexOfEnumerator(enumName), idx);
+
     QCOMPARE(meta->enumerator(idx).enclosingMetaObject(), meta);
     QCOMPARE(meta->enumerator(idx).isValid(), true);
     QCOMPARE(meta->enumerator(idx).keyCount(), 4);
-    QCOMPARE(meta->enumerator(idx).name(), enumName.constData());
+    QCOMPARE(meta->enumerator(idx).name(), typeName.constData());
+    QCOMPARE(meta->enumerator(idx).enumName(), enumName.constData());
+    bool isFlag = meta->enumerator(idx).isFlag();
     for (int i = 0; i < 4; i++) {
         QByteArray v = prefix + QByteArray::number(i);
-        QCOMPARE(meta->enumerator(idx).keyToValue(v), i);
-        QCOMPARE(meta->enumerator(idx).valueToKey(i), v.constData());
+        const int value = isFlag ? (1 << i) : i;
+        QCOMPARE(meta->enumerator(idx).keyToValue(v), value);
+        QCOMPARE(meta->enumerator(idx).valueToKey(value), v.constData());
     }
     QCOMPARE(meta->enumerator(idx).isScoped(), isScoped);
 }

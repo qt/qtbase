@@ -39,7 +39,7 @@ public:
     enum TypedEnum : char { B0, B1 , B2, B3 };
     enum class TypedEnumClass : char { C0, C1, C2, C3 };
     enum NormalEnum { D2 = 2, D3, D0 =0 , D1 };
-    enum class ClassFlag { F0, F1, F2, F3 };
+    enum class ClassFlag { F0 = 1, F1 = 2, F2 = 4, F3 = 8};
     Q_DECLARE_FLAGS(ClassFlags, ClassFlag)
 
     Q_ENUM(EnumClass)
@@ -58,7 +58,7 @@ public:
     enum TypedEnum : char { B0, B1 , B2, B3 };
     enum class TypedEnumClass : char { C0, C1, C2, C3 };
     enum NormalEnum { D2 = 2, D3, D0 =0 , D1 };
-    enum class ClassFlag { F0, F1, F2, F3 };
+    enum class ClassFlag { F0 = 1, F1 = 2, F2 = 4, F3 = 8 };
     Q_DECLARE_FLAGS(ClassFlags, ClassFlag)
     Q_ENUMS(EnumClass TypedEnum TypedEnumClass NormalEnum)
     Q_FLAGS(ClassFlags)

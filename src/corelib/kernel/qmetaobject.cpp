@@ -968,10 +968,24 @@ static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, co
 int QMetaObject::indexOfEnumerator(const char *name) const
 {
     const QMetaObject *m = this;
+    const int intsPerEnum = priv(m->d.data)->revision >= 8 ? 5 : 4;
     while (m) {
         const QMetaObjectPrivate *d = priv(m->d.data);
         for (int i = d->enumeratorCount - 1; i >= 0; --i) {
-            const char *prop = rawStringData(m, m->d.data[d->enumeratorData + 4*i]);
+            const char *prop = rawStringData(m, m->d.data[d->enumeratorData + intsPerEnum * i]);
+            if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
+                i += m->enumeratorOffset();
+                return i;
+            }
+        }
+        m = m->d.superdata;
+    }
+    // Check alias names:
+    m = this;
+    while (m) {
+        const QMetaObjectPrivate *d = priv(m->d.data);
+        for (int i = d->enumeratorCount - 1; i >= 0; --i) {
+            const char *prop = rawStringData(m, m->d.data[d->enumeratorData + intsPerEnum * i + 1]);
             if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
                 i += m->enumeratorOffset();
                 return i;
@@ -1086,10 +1100,11 @@ QMetaEnum QMetaObject::enumerator(int index) const
     if (i < 0 && d.superdata)
         return d.superdata->enumerator(index);
 
+    const int intsPerEnum = priv(d.data)->revision >= 8 ? 5 : 4;
     QMetaEnum result;
     if (i >= 0 && i < priv(d.data)->enumeratorCount) {
         result.mobj = this;
-        result.handle = priv(d.data)->enumeratorData + 4*i;
+        result.handle = priv(d.data)->enumeratorData + intsPerEnum * i;
     }
     return result;
 }
@@ -2552,18 +2567,43 @@ bool QMetaMethod::invokeOnGadget(void* gadget, QGenericReturnArgument returnValu
 */
 
 /*!
-    Returns the name of the enumerator (without the scope).
+    Returns the name of the type (without the scope).
 
-    For example, the Qt::AlignmentFlag enumeration has \c
-    AlignmentFlag as the name and \l Qt as the scope.
+    For example, the Qt::Key enumeration has \c
+    Key as the type name and \l Qt as the scope.
 
-    \sa isValid(), scope()
+    For flags this returns the name of the flag type, not the
+    name of the enum type.
+
+    \sa isValid(), scope(), enumName()
 */
 const char *QMetaEnum::name() const
 {
     if (!mobj)
         return 0;
     return rawStringData(mobj, mobj->d.data[handle]);
+}
+
+/*!
+    Returns the enum name of the flag (without the scope).
+
+    For example, the Qt::AlignmentFlag flag has \c
+    AlignmentFlag as the enum name, but \c Alignment as as the type name.
+    Non flag enums has the same type and enum names.
+
+    Enum names have the same scope as the type name.
+
+    \since 5.12
+    \sa isValid(), name()
+*/
+const char *QMetaEnum::enumName() const
+{
+    if (!mobj)
+        return 0;
+    const bool rev8p = priv(mobj->d.data)->revision >= 8;
+    if (rev8p)
+        return rawStringData(mobj, mobj->d.data[handle + 1]);
+    return name();
 }
 
 /*!
@@ -2575,9 +2615,9 @@ int QMetaEnum::keyCount() const
 {
     if (!mobj)
         return 0;
-    return mobj->d.data[handle + 2];
+    const int offset = priv(mobj->d.data)->revision >= 8 ? 3 : 2;
+    return mobj->d.data[handle + offset];
 }
-
 
 /*!
     Returns the key with the given \a index, or 0 if no such key exists.
@@ -2588,8 +2628,9 @@ const char *QMetaEnum::key(int index) const
 {
     if (!mobj)
         return 0;
-    int count = mobj->d.data[handle + 2];
-    int data = mobj->d.data[handle + 3];
+    const int offset = priv(mobj->d.data)->revision >= 8 ? 3 : 2;
+    int count = mobj->d.data[handle + offset];
+    int data = mobj->d.data[handle + offset + 1];
     if (index >= 0  && index < count)
         return rawStringData(mobj, mobj->d.data[data + 2*index]);
     return 0;
@@ -2605,8 +2646,9 @@ int QMetaEnum::value(int index) const
 {
     if (!mobj)
         return 0;
-    int count = mobj->d.data[handle + 2];
-    int data = mobj->d.data[handle + 3];
+    const int offset = priv(mobj->d.data)->revision >= 8 ? 3 : 2;
+    int count = mobj->d.data[handle + offset];
+    int data = mobj->d.data[handle + offset + 1];
     if (index >= 0  && index < count)
         return mobj->d.data[data + 2*index + 1];
     return -1;
@@ -2624,7 +2666,8 @@ int QMetaEnum::value(int index) const
 */
 bool QMetaEnum::isFlag() const
 {
-    return mobj && mobj->d.data[handle + 1] & EnumIsFlag;
+    const int offset = priv(mobj->d.data)->revision >= 8 ? 2 : 1;
+    return mobj && mobj->d.data[handle + offset] & EnumIsFlag;
 }
 
 /*!
@@ -2635,7 +2678,8 @@ bool QMetaEnum::isFlag() const
 */
 bool QMetaEnum::isScoped() const
 {
-    return mobj && mobj->d.data[handle + 1] & EnumIsScoped;
+    const int offset = priv(mobj->d.data)->revision >= 8 ? 2 : 1;
+    return mobj && mobj->d.data[handle + offset] & EnumIsScoped;
 }
 
 /*!
@@ -2677,8 +2721,9 @@ int QMetaEnum::keyToValue(const char *key, bool *ok) const
         scope = s - key - 1;
         key += scope + 2;
     }
-    int count = mobj->d.data[handle + 2];
-    int data = mobj->d.data[handle + 3];
+    const int offset = priv(mobj->d.data)->revision >= 8 ? 3 : 2;
+    int count = mobj->d.data[handle + offset];
+    int data = mobj->d.data[handle + offset + 1];
     for (int i = 0; i < count; ++i) {
         const QByteArray className = stringData(mobj, priv(mobj->d.data)->className);
         if ((!scope || (className.size() == int(scope) && strncmp(qualified_key, className.constData(), scope) == 0))
@@ -2703,8 +2748,9 @@ const char* QMetaEnum::valueToKey(int value) const
 {
     if (!mobj)
         return 0;
-    int count = mobj->d.data[handle + 2];
-    int data = mobj->d.data[handle + 3];
+    const int offset = priv(mobj->d.data)->revision >= 8 ? 3 : 2;
+    int count = mobj->d.data[handle + offset];
+    int data = mobj->d.data[handle + offset + 1];
     for (int i = 0; i < count; ++i)
         if (value == (int)mobj->d.data[data + 2*i + 1])
             return rawStringData(mobj, mobj->d.data[data + 2*i]);
@@ -2735,8 +2781,9 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
         return 0;
     // ### TODO write proper code: do not allocate memory, so we can go nothrow
     int value = 0;
-    int count = mobj->d.data[handle + 2];
-    int data = mobj->d.data[handle + 3];
+    const int offset = priv(mobj->d.data)->revision >= 8 ? 3 : 2;
+    int count = mobj->d.data[handle + offset];
+    int data = mobj->d.data[handle + offset + 1];
     for (const QStringRef &untrimmed : splitKeys) {
         const QStringRef trimmed = untrimmed.trimmed();
         QByteArray qualified_key = trimmed.toLatin1();
@@ -2778,8 +2825,9 @@ QByteArray QMetaEnum::valueToKeys(int value) const
     QByteArray keys;
     if (!mobj)
         return keys;
-    int count = mobj->d.data[handle + 2];
-    int data = mobj->d.data[handle + 3];
+    const int offset = priv(mobj->d.data)->revision >= 8 ? 3 : 2;
+    int count = mobj->d.data[handle + offset];
+    int data = mobj->d.data[handle + offset + 1];
     int v = value;
     // reverse iterate to ensure values like Qt::Dialog=0x2|Qt::Window are processed first.
     for (int i = count - 1; i >= 0; --i) {

@@ -38,6 +38,13 @@
 class tst_QDebug: public QObject
 {
     Q_OBJECT
+public:
+    enum EnumType { EnumValue1 = 1, EnumValue2 = 2 };
+    enum FlagType { EnumFlag1 = 1, EnumFlag2 = 2 };
+    Q_ENUM(EnumType)
+    Q_DECLARE_FLAGS(Flags, FlagType)
+    Q_FLAG(Flags)
+
 private slots:
     void assignment() const;
     void warningWithoutDebug() const;
@@ -637,6 +644,15 @@ void tst_QDebug::qDebugQFlags() const
     QCOMPARE(s_line, line);
     QCOMPARE(QString::fromLatin1(s_function), function);
 
+    // Test the output of QFlags with an enum not declared with Q_DECLARE_FLAGS and Q_FLAGS
+    QFlags<EnumType> flags2(EnumValue2);
+    qDebug() << flags2;
+    QCOMPARE(s_msg, QString::fromLatin1("QFlags<tst_QDebug::EnumType>(EnumValue2)"));
+
+    // A now for one that was fully declared
+    tst_QDebug::Flags flags3(EnumFlag1);
+    qDebug() << flags3;
+    QCOMPARE(s_msg, QString::fromLatin1("QFlags<tst_QDebug::FlagType>(EnumFlag1)"));
 }
 
 void tst_QDebug::textStreamModifiers() const

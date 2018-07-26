@@ -64,7 +64,7 @@ Q_DECLARE_TYPEINFO(Type, Q_MOVABLE_TYPE);
 struct EnumDef
 {
     QByteArray name;
-    QByteArray className;
+    QByteArray enumName;
     QList<QByteArray> values;
     bool isEnumClass; // c++11 enum class
     EnumDef() : isEnumClass(false) {}
