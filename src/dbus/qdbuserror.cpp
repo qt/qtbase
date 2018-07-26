@@ -41,6 +41,7 @@
 
 #include <qdebug.h>
 #include <qvarlengtharray.h>
+#include <private/qoffsetstringarray_p.h>
 
 #ifndef QT_BOOTSTRAPPED
 #include "qdbus_symbols_p.h"
@@ -52,110 +53,46 @@
 
 QT_BEGIN_NAMESPACE
 
-/*
- * Use the following Perl script to generate the error string index list:
-===== PERL SCRIPT ====
-print "static const char errorMessages_string[] =\n";
-$counter = 0;
-$i = 0;
-while (<STDIN>) {
-    chomp;
-    print "    \"$_\\0\"\n";
-    $sizes[$i++] = $counter;
-    $counter += 1 + length $_;
-}
-print "    \"\\0\";\n\nstatic const int errorMessages_indices[] = {\n    ";
-for ($j = 0; $j < $i; ++$j) {
-    printf "$sizes[$j], ";
-}
-print "0\n};\n";
-===== PERL SCRIPT ====
-
- * The input data is as follows:
-other
-org.freedesktop.DBus.Error.Failed
-org.freedesktop.DBus.Error.NoMemory
-org.freedesktop.DBus.Error.ServiceUnknown
-org.freedesktop.DBus.Error.NoReply
-org.freedesktop.DBus.Error.BadAddress
-org.freedesktop.DBus.Error.NotSupported
-org.freedesktop.DBus.Error.LimitsExceeded
-org.freedesktop.DBus.Error.AccessDenied
-org.freedesktop.DBus.Error.NoServer
-org.freedesktop.DBus.Error.Timeout
-org.freedesktop.DBus.Error.NoNetwork
-org.freedesktop.DBus.Error.AddressInUse
-org.freedesktop.DBus.Error.Disconnected
-org.freedesktop.DBus.Error.InvalidArgs
-org.freedesktop.DBus.Error.UnknownMethod
-org.freedesktop.DBus.Error.TimedOut
-org.freedesktop.DBus.Error.InvalidSignature
-org.freedesktop.DBus.Error.UnknownInterface
-org.freedesktop.DBus.Error.UnknownObject
-org.freedesktop.DBus.Error.UnknownProperty
-org.freedesktop.DBus.Error.PropertyReadOnly
-org.qtproject.QtDBus.Error.InternalError
-org.qtproject.QtDBus.Error.InvalidService
-org.qtproject.QtDBus.Error.InvalidObjectPath
-org.qtproject.QtDBus.Error.InvalidInterface
-org.qtproject.QtDBus.Error.InvalidMember
-*/
-
-// in the same order as KnownErrors!
-static const char errorMessages_string[] =
-    "other\0"
-    "org.freedesktop.DBus.Error.Failed\0"
-    "org.freedesktop.DBus.Error.NoMemory\0"
-    "org.freedesktop.DBus.Error.ServiceUnknown\0"
-    "org.freedesktop.DBus.Error.NoReply\0"
-    "org.freedesktop.DBus.Error.BadAddress\0"
-    "org.freedesktop.DBus.Error.NotSupported\0"
-    "org.freedesktop.DBus.Error.LimitsExceeded\0"
-    "org.freedesktop.DBus.Error.AccessDenied\0"
-    "org.freedesktop.DBus.Error.NoServer\0"
-    "org.freedesktop.DBus.Error.Timeout\0"
-    "org.freedesktop.DBus.Error.NoNetwork\0"
-    "org.freedesktop.DBus.Error.AddressInUse\0"
-    "org.freedesktop.DBus.Error.Disconnected\0"
-    "org.freedesktop.DBus.Error.InvalidArgs\0"
-    "org.freedesktop.DBus.Error.UnknownMethod\0"
-    "org.freedesktop.DBus.Error.TimedOut\0"
-    "org.freedesktop.DBus.Error.InvalidSignature\0"
-    "org.freedesktop.DBus.Error.UnknownInterface\0"
-    "org.freedesktop.DBus.Error.UnknownObject\0"
-    "org.freedesktop.DBus.Error.UnknownProperty\0"
-    "org.freedesktop.DBus.Error.PropertyReadOnly\0"
-    "org.qtproject.QtDBus.Error.InternalError\0"
-    "org.qtproject.QtDBus.Error.InvalidService\0"
-    "org.qtproject.QtDBus.Error.InvalidObjectPath\0"
-    "org.qtproject.QtDBus.Error.InvalidInterface\0"
-    "org.qtproject.QtDBus.Error.InvalidMember\0"
-    "\0";
-
-static const int errorMessages_indices[] = {
-    0,    6,   40,   76,  118,  153,  191,  231,
-    273,  313,  349,  384,  421,  461,  501,  540,
-    581,  617,  661,  705,  746,  789,  833,  874,
-    916,  961, 1005
-};
-
-static const int errorMessages_count = sizeof errorMessages_indices /
-                                       sizeof errorMessages_indices[0];
-
-static inline const char *get(QDBusError::ErrorType code)
-{
-    int intcode = qBound(0, int(code) - int(QDBusError::Other), errorMessages_count);
-    return errorMessages_string + errorMessages_indices[intcode];
-}
+static constexpr const auto errorMessages = qOffsetStringArray(
+    "NoError",
+    "other",
+    "org.freedesktop.DBus.Error.Failed",
+    "org.freedesktop.DBus.Error.NoMemory",
+    "org.freedesktop.DBus.Error.ServiceUnknown",
+    "org.freedesktop.DBus.Error.NoReply",
+    "org.freedesktop.DBus.Error.BadAddress",
+    "org.freedesktop.DBus.Error.NotSupported",
+    "org.freedesktop.DBus.Error.LimitsExceeded",
+    "org.freedesktop.DBus.Error.AccessDenied",
+    "org.freedesktop.DBus.Error.NoServer",
+    "org.freedesktop.DBus.Error.Timeout",
+    "org.freedesktop.DBus.Error.NoNetwork",
+    "org.freedesktop.DBus.Error.AddressInUse",
+    "org.freedesktop.DBus.Error.Disconnected",
+    "org.freedesktop.DBus.Error.InvalidArgs",
+    "org.freedesktop.DBus.Error.UnknownMethod",
+    "org.freedesktop.DBus.Error.TimedOut",
+    "org.freedesktop.DBus.Error.InvalidSignature",
+    "org.freedesktop.DBus.Error.UnknownInterface",
+    "org.freedesktop.DBus.Error.UnknownObject",
+    "org.freedesktop.DBus.Error.UnknownProperty",
+    "org.freedesktop.DBus.Error.PropertyReadOnly",
+    "org.qtproject.QtDBus.Error.InternalError",
+    "org.qtproject.QtDBus.Error.InvalidService",
+    "org.qtproject.QtDBus.Error.InvalidObjectPath",
+    "org.qtproject.QtDBus.Error.InvalidInterface",
+    "org.qtproject.QtDBus.Error.InvalidMember",
+    ""
+);
 
 #ifndef QT_BOOTSTRAPPED
 static inline QDBusError::ErrorType get(const char *name)
 {
     if (!name || !*name)
         return QDBusError::NoError;
-    for (int i = 0; i < errorMessages_count; ++i)
-        if (strcmp(name, errorMessages_string + errorMessages_indices[i]) == 0)
-            return QDBusError::ErrorType(i + int(QDBusError::Other));
+    for (int i = 0; i < errorMessages.count(); ++i)
+        if (strcmp(name, errorMessages.at(i)) == 0)
+            return QDBusError::ErrorType(i);
     return QDBusError::Other;
 }
 #endif
@@ -301,7 +238,7 @@ QDBusError::QDBusError(const QDBusMessage &qdmsg)
 QDBusError::QDBusError(ErrorType error, const QString &mess)
     : code(error)
 {
-    nm = QLatin1String(::get(error));
+    nm = QLatin1String(errorMessages[error]);
     msg = mess;
 }
 
@@ -397,7 +334,7 @@ bool QDBusError::isValid() const
 */
 QString QDBusError::errorString(ErrorType error)
 {
-    return QLatin1String(::get(error));
+    return QLatin1String(errorMessages[error]);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -418,3 +355,11 @@ QDebug operator<<(QDebug dbg, const QDBusError &msg)
 QT_END_NAMESPACE
 
 #endif // QT_NO_DBUS
+
+/*
+MSVC2015 has the warning C4503 at the end of the file:
+QtPrivate::StaticStringBuilder<QtPrivate::IndexesList<...> - decorated name length exceeded, name was truncated
+It is used by qOffsetStringArray in a constexpr evaulation and this code does not exist in the object file,
+but we still have the warning or even error with -WX flag
+*/
+QT_WARNING_DISABLE_MSVC(4503)

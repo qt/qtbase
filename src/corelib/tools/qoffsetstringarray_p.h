@@ -123,6 +123,8 @@ constexpr StaticString<0> staticString() noexcept
     return StaticString<0>{};
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_MSVC(4503)
 template<int Sum, int I, int ... Ix>
 constexpr StaticString<Sum> staticString(const char (&s)[I], const char (&...sx)[Ix]) noexcept
 {
@@ -130,6 +132,7 @@ constexpr StaticString<Sum> staticString(const char (&s)[I], const char (&...sx)
         makeIndexSequence<I>,
         makeIndexSequence<Sum - I>>::concatenate(s, staticString<Sum - I>(sx...));
 }
+QT_WARNING_POP
 } // namespace QtPrivate
 
 template<typename T, int SizeString, int SizeOffsets>
