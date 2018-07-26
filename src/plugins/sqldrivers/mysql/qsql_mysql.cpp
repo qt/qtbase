@@ -74,9 +74,9 @@ Q_DECLARE_METATYPE(MYSQL_STMT*)
 #  define Q_CLIENT_MULTI_STATEMENTS 0
 #endif
 
-#if MYSQL_VERSION_ID >= 80001
-using my_bool = bool;
-#endif
+// MySQL above version 8 removed my_bool typedef while MariaDB kept it,
+// by redefining it we can regain source compatibility.
+using my_bool = decltype(mysql_stmt_bind_result(nullptr, nullptr));
 
 QT_BEGIN_NAMESPACE
 
