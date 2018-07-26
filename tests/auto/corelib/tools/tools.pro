@@ -35,6 +35,7 @@ SUBDIRS=\
     qmap_strictiterators \
     qmargins \
     qmessageauthenticationcode \
+    qoffsetstringarray \
     qpair \
     qpoint \
     qpointf \
