@@ -774,7 +774,7 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
         QString canonicalPath = QDir::cleanPath(QFile::decodeName(ret));
         free(ret);
         return QFileSystemEntry(canonicalPath);
-    } else if (errno == ENOENT) { // file doesn't exist
+    } else if (errno == ENOENT || errno == ENOTDIR) { // file doesn't exist
         data.knownFlagsMask |= QFileSystemMetaData::ExistsAttribute;
         data.entryFlags &= ~(QFileSystemMetaData::ExistsAttribute);
         return QFileSystemEntry();

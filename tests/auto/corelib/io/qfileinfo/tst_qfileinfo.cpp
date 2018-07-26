@@ -630,6 +630,16 @@ void tst_QFileInfo::canonicalFilePath()
     info.canonicalFilePath();
 
 #if defined(Q_OS_UNIX)
+    // If this file exists, you can't log in to run this test ...
+    const QString notExtantPath(QStringLiteral("/etc/nologin"));
+    QFileInfo notExtant(notExtantPath);
+    QCOMPARE(notExtant.canonicalFilePath(), QString());
+
+    // A path with a non-directory as a directory component also doesn't exist:
+    const QString badDirPath(QStringLiteral("/dev/null/sub/dir/n'existe.pas"));
+    QFileInfo badDir(badDirPath);
+    QCOMPARE(badDir.canonicalFilePath(), QString());
+
     // This used to crash on Mac
     QFileInfo dontCrash(QLatin1String("/"));
     QCOMPARE(dontCrash.canonicalFilePath(), QLatin1String("/"));
