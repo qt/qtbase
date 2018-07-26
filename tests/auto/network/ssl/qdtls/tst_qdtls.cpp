@@ -87,8 +87,8 @@ private slots:
     void construction();
     void configuration_data();
     void configuration();
-    void setRemote_data();
-    void setRemote();
+    void setPeer_data();
+    void setPeer();
     void handshake_data();
     void handshake();
     void handshakeWithRetransmission();
@@ -231,8 +231,8 @@ void tst_QDtls::construction()
     QFETCH(const QSslSocket::SslMode, mode);
 
     QDtls dtls(mode);
-    QCOMPARE(dtls.remoteAddress(), QHostAddress());
-    QCOMPARE(dtls.remotePort(), quint16());
+    QCOMPARE(dtls.peerAddress(), QHostAddress());
+    QCOMPARE(dtls.peerPort(), quint16());
     QCOMPARE(dtls.peerVerificationName(), QString());
     QCOMPARE(dtls.sslMode(), mode);
 
@@ -298,7 +298,7 @@ void tst_QDtls::configuration()
         // Testing a DTLS server would be more complicated, we'd need a DTLS
         // client sending ClientHello(s), running an event loop etc. - way too
         // much dancing for a simple  setter/getter test.
-        QVERIFY(dtls.setRemote(serverAddress, serverPort));
+        QVERIFY(dtls.setPeer(serverAddress, serverPort));
         QDTLS_VERIFY_NO_ERROR(dtls);
 
         QUdpSocket clientSocket;
@@ -312,12 +312,12 @@ void tst_QDtls::configuration()
     }
 }
 
-void tst_QDtls::setRemote_data()
+void tst_QDtls::setPeer_data()
 {
     clientServerData();
 }
 
-void tst_QDtls::setRemote()
+void tst_QDtls::setPeer()
 {
     static const QHostAddress invalid[] = {QHostAddress(),
                                            QHostAddress(QHostAddress::Broadcast),
@@ -328,17 +328,17 @@ void tst_QDtls::setRemote()
     QDtls dtls(mode);
 
     for (const auto &addr : invalid) {
-        QCOMPARE(dtls.setRemote(addr, 100, peerName), false);
+        QCOMPARE(dtls.setPeer(addr, 100, peerName), false);
         QCOMPARE(dtls.dtlsError(), QDtlsError::InvalidInputParameters);
-        QCOMPARE(dtls.remoteAddress(), QHostAddress());
-        QCOMPARE(dtls.remotePort(), quint16());
+        QCOMPARE(dtls.peerAddress(), QHostAddress());
+        QCOMPARE(dtls.peerPort(), quint16());
         QCOMPARE(dtls.peerVerificationName(), QString());
     }
 
-    QVERIFY(dtls.setRemote(serverAddress, serverPort, peerName));
+    QVERIFY(dtls.setPeer(serverAddress, serverPort, peerName));
     QDTLS_VERIFY_NO_ERROR(dtls);
-    QCOMPARE(dtls.remoteAddress(), serverAddress);
-    QCOMPARE(dtls.remotePort(), serverPort);
+    QCOMPARE(dtls.peerAddress(), serverAddress);
+    QCOMPARE(dtls.peerPort(), serverPort);
     QCOMPARE(dtls.peerVerificationName(), peerName);
 
     if (mode == QSslSocket::SslClientMode) {
@@ -348,7 +348,7 @@ void tst_QDtls::setRemote()
         QVERIFY(dtls.doHandshake(&clientSocket));
         QDTLS_VERIFY_NO_ERROR(dtls);
         QCOMPARE(dtls.handshakeState(), QDtls::HandshakeInProgress);
-        QCOMPARE(dtls.setRemote(serverAddress, serverPort), false);
+        QCOMPARE(dtls.setPeer(serverAddress, serverPort), false);
         QCOMPARE(dtls.dtlsError(), QDtlsError::InvalidOperation);
     }
 }
@@ -391,7 +391,7 @@ void tst_QDtls::handshake()
     QVERIFY(!serverCrypto->doHandshake(&serverSocket, QByteArray("ClientHello")));
     QCOMPARE(serverCrypto->dtlsError(), QDtlsError::InvalidOperation);
 
-    QVERIFY(clientCrypto->setRemote(serverAddress, serverPort, hostName));
+    QVERIFY(clientCrypto->setPeer(serverAddress, serverPort, hostName));
 
     // Invalid socket:
     QVERIFY(!clientCrypto->doHandshake(nullptr));
@@ -428,9 +428,9 @@ void tst_QDtls::handshake()
     QVERIFY(!serverCrypto->doHandshake(&serverSocket, {"ServerHello"}));
     QCOMPARE(serverCrypto->dtlsError(), QDtlsError::InvalidOperation);
     // Cannot change a remote without calling shutdown first.
-    QVERIFY(!clientCrypto->setRemote(serverAddress, serverPort));
+    QVERIFY(!clientCrypto->setPeer(serverAddress, serverPort));
     QCOMPARE(clientCrypto->dtlsError(), QDtlsError::InvalidOperation);
-    QVERIFY(!serverCrypto->setRemote(clientAddress, clientPort));
+    QVERIFY(!serverCrypto->setPeer(clientAddress, clientPort));
     QCOMPARE(serverCrypto->dtlsError(), QDtlsError::InvalidOperation);
 }
 
@@ -446,7 +446,7 @@ void tst_QDtls::handshakeWithRetransmission()
     auto clientConfig = QSslConfiguration::defaultDtlsConfiguration();
     clientConfig.setCaCertificates({selfSignedCert});
     QVERIFY(clientCrypto->setDtlsConfiguration(clientConfig));
-    QVERIFY(clientCrypto->setRemote(serverAddress, serverPort, hostName));
+    QVERIFY(clientCrypto->setPeer(serverAddress, serverPort, hostName));
 
     // Now we are ready for handshake:
     QVERIFY(clientCrypto->doHandshake(&clientSocket));
@@ -482,7 +482,7 @@ void tst_QDtls::sessionCipher()
     clientConfig.setCaCertificates({selfSignedCert});
     QVERIFY(clientCrypto->setDtlsConfiguration(clientConfig));
 
-    QVERIFY(clientCrypto->setRemote(serverAddress, serverPort, hostName));
+    QVERIFY(clientCrypto->setPeer(serverAddress, serverPort, hostName));
     QVERIFY(clientCrypto->doHandshake(&clientSocket));
 
     testLoop.enterLoopMSecs(handshakeTimeoutMS);
@@ -540,7 +540,7 @@ void tst_QDtls::cipherPreferences()
     clientConfig.setPeerVerifyMode(QSslSocket::VerifyNone);
     clientConfig.setCiphers({aes256, aes128});
     QVERIFY(clientCrypto->setDtlsConfiguration(clientConfig));
-    QVERIFY(clientCrypto->setRemote(serverAddress, serverPort));
+    QVERIFY(clientCrypto->setPeer(serverAddress, serverPort));
     QDTLS_VERIFY_NO_ERROR(clientCrypto);
 
     connectHandshakeReadingSlots();
@@ -604,7 +604,7 @@ void tst_QDtls::protocolVersionMatching()
     clientConfig.setProtocol(clientProtocol);
     QVERIFY(clientCrypto->setDtlsConfiguration(clientConfig));
 
-    QVERIFY(clientCrypto->setRemote(serverAddress, serverPort));
+    QVERIFY(clientCrypto->setPeer(serverAddress, serverPort));
     QVERIFY(clientCrypto->doHandshake(&clientSocket));
 
     testLoop.enterLoopMSecs(handshakeTimeoutMS);
@@ -638,7 +638,7 @@ void tst_QDtls::verificationErrors()
     QVERIFY(serverCrypto->setDtlsConfiguration(serverConfig));
     // And our client already has the default DTLS configuration.
 
-    QVERIFY(clientCrypto->setRemote(serverAddress, serverPort));
+    QVERIFY(clientCrypto->setPeer(serverAddress, serverPort));
     // Now we are ready for handshake:
     QVERIFY(clientCrypto->doHandshake(&clientSocket));
 
@@ -751,7 +751,7 @@ void tst_QDtls::verifyServerCertificate()
     clientConfig.setPeerVerifyMode(verifyMode);
 
     QVERIFY(clientCrypto->setDtlsConfiguration(clientConfig));
-    QVERIFY(clientCrypto->setRemote(serverAddress, serverPort, peerName));
+    QVERIFY(clientCrypto->setPeer(serverAddress, serverPort, peerName));
 
     connectHandshakeReadingSlots();
 
@@ -886,7 +886,7 @@ void tst_QDtls::verifyClientCertificate()
     clientConfig.setPrivateKey(clientKey);
     clientConfig.setPeerVerifyMode(QSslSocket::VerifyNone);
     QVERIFY(clientCrypto->setDtlsConfiguration(clientConfig));
-    QVERIFY(clientCrypto->setRemote(serverAddress, serverPort));
+    QVERIFY(clientCrypto->setPeer(serverAddress, serverPort));
 
     QVERIFY(clientCrypto->doHandshake(&clientSocket));
     QDTLS_VERIFY_NO_ERROR(clientCrypto);
@@ -935,7 +935,7 @@ void tst_QDtls::blacklistedCerificate()
 
     connectHandshakeReadingSlots();
     const QString name(serverChain.first().subjectInfo(QSslCertificate::CommonName).first());
-    QVERIFY(clientCrypto->setRemote(serverAddress, serverPort, name));
+    QVERIFY(clientCrypto->setPeer(serverAddress, serverPort, name));
     QVERIFY(clientCrypto->doHandshake(&clientSocket));
 
     testLoop.enterLoopMSecs(handshakeTimeoutMS);
@@ -966,7 +966,7 @@ void tst_QDtls::readWriteEncrypted()
     auto clientConfig = QSslConfiguration::defaultDtlsConfiguration();
     clientConfig.setCaCertificates({selfSignedCert});
     QVERIFY(clientCrypto->setDtlsConfiguration(clientConfig));
-    QVERIFY(clientCrypto->setRemote(serverAddress, serverPort, hostName));
+    QVERIFY(clientCrypto->setPeer(serverAddress, serverPort, hostName));
 
     // 0. Verify we cannot write any encrypted message without handshake done
     QDTLS_VERIFY_NO_ERROR(clientCrypto);
@@ -1047,7 +1047,7 @@ void tst_QDtls::datagramFragmentation()
     auto clientConfig = QSslConfiguration::defaultDtlsConfiguration();
     clientConfig.setPeerVerifyMode(QSslSocket::VerifyNone);
     QVERIFY(clientCrypto->setDtlsConfiguration(clientConfig));
-    QVERIFY(clientCrypto->setRemote(serverAddress, serverPort));
+    QVERIFY(clientCrypto->setPeer(serverAddress, serverPort));
 
     QVERIFY(clientCrypto->doHandshake(&clientSocket));
 
@@ -1100,7 +1100,7 @@ void tst_QDtls::handshakeReadyRead()
             if (addr.isNull() || addr.isBroadcast()) // Could never be us (client), bail out
                 return;
 
-            if (!crypto->setRemote(addr, port))
+            if (!crypto->setPeer(addr, port))
                 return testLoop.exitLoop();
 
             // Check parameter validation:

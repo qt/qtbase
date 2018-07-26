@@ -129,11 +129,11 @@ public:
 
     explicit QDtls(QSslSocket::SslMode mode, QObject *parent = nullptr);
 
-    bool setRemote(const QHostAddress &address, quint16 port,
-                   const QString &verificationName = {});
+    bool setPeer(const QHostAddress &address, quint16 port,
+                 const QString &verificationName = {});
     bool setPeerVerificationName(const QString &name);
-    QHostAddress remoteAddress() const;
-    quint16 remotePort() const;
+    QHostAddress peerAddress() const;
+    quint16 peerPort() const;
     QString peerVerificationName() const;
     QSslSocket::SslMode sslMode() const;
 

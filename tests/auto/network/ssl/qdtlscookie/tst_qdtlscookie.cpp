@@ -158,7 +158,7 @@ void tst_QDtlsCookie::init()
     serverPort = serverSocket.localPort();
 
     dtls.reset(new QDtls(QSslSocket::SslClientMode));
-    dtls->setRemote(serverAddress, serverPort);
+    dtls->setPeer(serverAddress, serverPort);
 }
 
 void tst_QDtlsCookie::construction()
@@ -434,7 +434,7 @@ void tst_QDtlsCookie::makeNoise()
     noiseMaker.writeDatagram({"Hello, my little DTLS server, take this useless dgram!"},
                              serverAddress, serverPort);
     QDtls fakeHandshake(QSslSocket::SslClientMode);
-    fakeHandshake.setRemote(serverAddress, serverPort);
+    fakeHandshake.setPeer(serverAddress, serverPort);
     fakeHandshake.doHandshake(&noiseMaker, {});
 }
 
@@ -446,7 +446,7 @@ void tst_QDtlsCookie::spawnClients()
         connect(newClient.first.data(), &QUdpSocket::readyRead,
                 this, &tst_QDtlsCookie::clientReadyRead);
         newClient.second.reset(new QDtls(QSslSocket::SslClientMode));
-        newClient.second->setRemote(serverAddress, serverPort);
+        newClient.second->setPeer(serverAddress, serverPort);
         connect(newClient.second.data(), &QDtls::handshakeTimeout,
                 this, &tst_QDtlsCookie::handleClientTimeout);
         newClient.second->doHandshake(newClient.first.data(), {});

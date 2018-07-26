@@ -151,8 +151,8 @@ void DtlsServer::readyRead()
 
     const auto client = std::find_if(knownClients.begin(), knownClients.end(),
                                      [&](const DtlsConnection &connection){
-        return connection->remoteAddress() == peerAddress
-               && connection->remotePort() == peerPort;
+        return connection->peerAddress() == peerAddress
+               && connection->peerPort() == peerPort;
     });
 
     if (client == knownClients.end())
@@ -189,7 +189,7 @@ void DtlsServer::handleNewConnection(const QHostAddress &peerAddress,
 
         DtlsConnection newConnection(new QDtls(QSslSocket::SslServerMode));
         newConnection->setDtlsConfiguration(serverConfiguration);
-        newConnection->setRemote(peerAddress, peerPort);
+        newConnection->setPeer(peerAddress, peerPort);
         newConnection->connect(newConnection.data(), &QDtls::pskRequired,
                                this, &DtlsServer::pskRequired);
         knownClients.push_back(newConnection);
@@ -209,8 +209,8 @@ void DtlsServer::doHandshake(DtlsConnection newConnection, const QByteArray &cli
         return;
     }
 
-    const QString peerInfo = peer_info(newConnection->remoteAddress(),
-                                       newConnection->remotePort());
+    const QString peerInfo = peer_info(newConnection->peerAddress(),
+                                       newConnection->peerPort());
     switch (newConnection->handshakeState()) {
     case QDtls::HandshakeInProgress:
         emit infoMessage(peerInfo + tr(": handshake is in progress ..."));
@@ -228,7 +228,7 @@ void DtlsServer::decryptDatagram(DtlsConnection connection, const QByteArray &cl
 {
     Q_ASSERT(connection->connectionEncrypted());
 
-    const QString peerInfo = peer_info(connection->remoteAddress(), connection->remotePort());
+    const QString peerInfo = peer_info(connection->peerAddress(), connection->peerPort());
     const QByteArray dgram = connection->decryptDatagram(&serverSocket, clientMessage);
     if (dgram.size()) {
         emit datagramReceived(peerInfo, clientMessage, dgram);

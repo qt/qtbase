@@ -208,14 +208,14 @@ QDtls::QDtls(QSslSocket::SslMode mode, QObject *parent)
     setDtlsConfiguration(QSslConfiguration::defaultDtlsConfiguration());
 }
 
-bool QDtls::setRemote(const QHostAddress &address, quint16 port,
-                      const QString &verificationName)
+bool QDtls::setPeer(const QHostAddress &address, quint16 port,
+                    const QString &verificationName)
 {
     Q_D(QDtls);
 
     if (d->handshakeState != HandshakeNotStarted) {
         d->setDtlsError(QDtlsError::InvalidOperation,
-                        tr("Cannot set remote after handshake started"));
+                        tr("Cannot set peer after handshake started"));
         return false;
     }
 
@@ -256,14 +256,14 @@ bool QDtls::setPeerVerificationName(const QString &name)
     return true;
 }
 
-QHostAddress QDtls::remoteAddress() const
+QHostAddress QDtls::peerAddress() const
 {
     Q_D(const QDtls);
 
     return d->remoteAddress;
 }
 
-quint16 QDtls::remotePort() const
+quint16 QDtls::peerPort() const
 {
     Q_D(const QDtlsBase);
 
@@ -370,7 +370,7 @@ bool QDtls::startHandshake(QUdpSocket *socket, const QByteArray &datagram)
 
     if (d->remoteAddress.isNull()) {
         d->setDtlsError(QDtlsError::InvalidOperation,
-                        tr("To start a handshake you must set remote address and port first"));
+                        tr("To start a handshake you must set peer's address and port first"));
         return false;
     }
 
