@@ -74,8 +74,8 @@ DtlsAssociation::DtlsAssociation(const QHostAddress &address, quint16 port,
 
 DtlsAssociation::~DtlsAssociation()
 {
-    if (crypto.connectionEncrypted())
-        crypto.sendShutdownAlert(&socket);
+    if (crypto.isConnectionEncrypted())
+        crypto.shutdown(&socket);
 }
 
 void DtlsAssociation::startHandshake()
@@ -108,7 +108,7 @@ void DtlsAssociation::readyRead()
     }
 
     dgram.resize(bytesRead);
-    if (crypto.connectionEncrypted()) {
+    if (crypto.isConnectionEncrypted()) {
         const QByteArray plainText = crypto.decryptDatagram(&socket, dgram);
         if (plainText.size()) {
             emit serverResponse(name, dgram, plainText);
@@ -128,7 +128,7 @@ void DtlsAssociation::readyRead()
             emit errorMessage(tr("%1: handshake error - %2").arg(name, crypto.dtlsErrorString()));
             return;
         }
-        if (crypto.connectionEncrypted()) {
+        if (crypto.isConnectionEncrypted()) {
             emit infoMessage(tr("%1: encrypted connection established!").arg(name));
             pingTimer.start();
             pingTimeout();

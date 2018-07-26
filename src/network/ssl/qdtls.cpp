@@ -420,7 +420,7 @@ bool QDtls::continueHandshake(QUdpSocket *socket, const QByteArray &datagram)
     return d->continueHandshake(socket, datagram);
 }
 
-bool QDtls::resumeHandshakeAfterError(QUdpSocket *socket)
+bool QDtls::resumeHandshake(QUdpSocket *socket)
 {
     Q_D(QDtls);
 
@@ -438,7 +438,7 @@ bool QDtls::resumeHandshakeAfterError(QUdpSocket *socket)
     return d->resumeHandshake(socket);
 }
 
-bool QDtls::abortHandshakeAfterError(QUdpSocket *socket)
+bool QDtls::abortHandshake(QUdpSocket *socket)
 {
     Q_D(QDtls);
 
@@ -457,7 +457,7 @@ bool QDtls::abortHandshakeAfterError(QUdpSocket *socket)
     return true;
 }
 
-bool QDtls::sendShutdownAlert(QUdpSocket *socket)
+bool QDtls::shutdown(QUdpSocket *socket)
 {
     Q_D(QDtls);
 
@@ -477,7 +477,7 @@ bool QDtls::sendShutdownAlert(QUdpSocket *socket)
     return true;
 }
 
-bool QDtls::connectionEncrypted() const
+bool QDtls::isConnectionEncrypted() const
 {
     Q_D(const QDtls);
 
@@ -507,7 +507,7 @@ qint64 QDtls::writeDatagramEncrypted(QUdpSocket *socket, const QByteArray &dgram
         return -1;
     }
 
-    if (!connectionEncrypted()) {
+    if (!isConnectionEncrypted()) {
         d->setDtlsError(QDtlsError::InvalidOperation,
                         tr("Cannot write a datagram, not in encrypted state"));
         return -1;
@@ -525,7 +525,7 @@ QByteArray QDtls::decryptDatagram(QUdpSocket *socket, const QByteArray &dgram)
         return {};
     }
 
-    if (!connectionEncrypted()) {
+    if (!isConnectionEncrypted()) {
         d->setDtlsError(QDtlsError::InvalidOperation,
                         tr("Cannot read a datagram, not in encrypted state"));
         return {};

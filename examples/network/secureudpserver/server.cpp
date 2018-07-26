@@ -158,7 +158,7 @@ void DtlsServer::readyRead()
     if (client == knownClients.end())
         return handleNewConnection(peerAddress, peerPort, dgram);
 
-    if ((*client)->connectionEncrypted()) {
+    if ((*client)->isConnectionEncrypted()) {
         decryptDatagram(*client, dgram);
         if ((*client)->dtlsError() == QDtlsError::RemoteClosedConnectionError)
             knownClients.erase(client);
@@ -226,7 +226,7 @@ void DtlsServer::doHandshake(DtlsConnection newConnection, const QByteArray &cli
 
 void DtlsServer::decryptDatagram(DtlsConnection connection, const QByteArray &clientMessage)
 {
-    Q_ASSERT(connection->connectionEncrypted());
+    Q_ASSERT(connection->isConnectionEncrypted());
 
     const QString peerInfo = peer_info(connection->peerAddress(), connection->peerPort());
     const QByteArray dgram = connection->decryptDatagram(&serverSocket, clientMessage);
@@ -243,7 +243,7 @@ void DtlsServer::decryptDatagram(DtlsConnection connection, const QByteArray &cl
 void DtlsServer::shutdown()
 {
     for (DtlsConnection &connection : knownClients)
-        connection->sendShutdownAlert(&serverSocket);
+        connection->shutdown(&serverSocket);
 
     knownClients.clear();
     serverSocket.close();

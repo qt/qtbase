@@ -68,7 +68,7 @@ bool dtlsErrorIsCleared(DtlsPtr &dtls)
 #define QDTLS_VERIFY_NO_ERROR(obj) QVERIFY(dtlsErrorIsCleared(obj))
 
 #define QDTLS_VERIFY_HANDSHAKE_SUCCESS(obj) \
-    QVERIFY(obj->connectionEncrypted()); \
+    QVERIFY(obj->isConnectionEncrypted()); \
     QCOMPARE(obj->handshakeState(), QDtls::HandshakeComplete); \
     QDTLS_VERIFY_NO_ERROR(obj); \
     QCOMPARE(obj->peerVerificationErrors().size(), 0)
@@ -249,7 +249,7 @@ void tst_QDtls::construction()
     QCOMPARE(dtls.dtlsConfiguration(), QSslConfiguration::defaultDtlsConfiguration());
 
     QCOMPARE(dtls.handshakeState(), QDtls::HandshakeNotStarted);
-    QCOMPARE(dtls.connectionEncrypted(), false);
+    QCOMPARE(dtls.isConnectionEncrypted(), false);
     QCOMPARE(dtls.sessionCipher(), QSslCipher());
     QCOMPARE(dtls.sessionProtocol(), QSsl::UnknownProtocol);
 
@@ -406,12 +406,12 @@ void tst_QDtls::handshake()
 
     QVERIFY(!testLoop.timeout());
 
-    QVERIFY(serverCrypto->connectionEncrypted());
+    QVERIFY(serverCrypto->isConnectionEncrypted());
     QDTLS_VERIFY_NO_ERROR(serverCrypto);
     QCOMPARE(serverCrypto->handshakeState(), QDtls::HandshakeComplete);
     QCOMPARE(serverCrypto->peerVerificationErrors().size(), 0);
 
-    QVERIFY(clientCrypto->connectionEncrypted());
+    QVERIFY(clientCrypto->isConnectionEncrypted());
     QDTLS_VERIFY_NO_ERROR(clientCrypto);
     QCOMPARE(clientCrypto->handshakeState(), QDtls::HandshakeComplete);
     QCOMPARE(clientCrypto->peerVerificationErrors().size(), 0);
@@ -613,9 +613,9 @@ void tst_QDtls::protocolVersionMatching()
         QDTLS_VERIFY_HANDSHAKE_SUCCESS(serverCrypto);
         QDTLS_VERIFY_HANDSHAKE_SUCCESS(clientCrypto);
     } else {
-        QCOMPARE(serverCrypto->connectionEncrypted(), false);
+        QCOMPARE(serverCrypto->isConnectionEncrypted(), false);
         QVERIFY(serverCrypto->handshakeState() != QDtls::HandshakeComplete);
-        QCOMPARE(clientCrypto->connectionEncrypted(), false);
+        QCOMPARE(clientCrypto->isConnectionEncrypted(), false);
         QVERIFY(clientCrypto->handshakeState() != QDtls::HandshakeComplete);
     }
 }
@@ -649,7 +649,7 @@ void tst_QDtls::verificationErrors()
 
     QCOMPARE(clientCrypto->dtlsError(), QDtlsError::PeerVerificationError);
     QCOMPARE(clientCrypto->handshakeState(), QDtls::PeerVerificationFailed);
-    QVERIFY(!clientCrypto->connectionEncrypted());
+    QVERIFY(!clientCrypto->isConnectionEncrypted());
 
     QVERIFY(verificationErrorDetected(QSslError::HostNameMismatch));
     QVERIFY(verificationErrorDetected(QSslError::SelfSignedCertificate));
@@ -661,11 +661,11 @@ void tst_QDtls::verificationErrors()
     QFETCH(const bool, abortHandshake);
 
     if (abortHandshake) {
-        QVERIFY(!clientCrypto->abortHandshakeAfterError(nullptr));
+        QVERIFY(!clientCrypto->abortHandshake(nullptr));
         QCOMPARE(clientCrypto->dtlsError(), QDtlsError::InvalidInputParameters);
-        QVERIFY(clientCrypto->abortHandshakeAfterError(&clientSocket));
+        QVERIFY(clientCrypto->abortHandshake(&clientSocket));
         QDTLS_VERIFY_NO_ERROR(clientCrypto);
-        QVERIFY(!clientCrypto->connectionEncrypted());
+        QVERIFY(!clientCrypto->isConnectionEncrypted());
         QCOMPARE(clientCrypto->handshakeState(), QDtls::HandshakeNotStarted);
         QCOMPARE(clientCrypto->sessionCipher(), QSslCipher());
         QCOMPARE(clientCrypto->sessionProtocol(), QSsl::UnknownProtocol);
@@ -675,11 +675,11 @@ void tst_QDtls::verificationErrors()
         QCOMPARE(clientCrypto->peerVerificationErrors().size(), 0);
     } else {
         clientCrypto->ignoreVerificationErrors(clientCrypto->peerVerificationErrors());
-        QVERIFY(!clientCrypto->resumeHandshakeAfterError(nullptr));
+        QVERIFY(!clientCrypto->resumeHandshake(nullptr));
         QCOMPARE(clientCrypto->dtlsError(), QDtlsError::InvalidInputParameters);
-        QVERIFY(clientCrypto->resumeHandshakeAfterError(&clientSocket));
+        QVERIFY(clientCrypto->resumeHandshake(&clientSocket));
         QDTLS_VERIFY_HANDSHAKE_SUCCESS(clientCrypto);
-        QVERIFY(clientCrypto->connectionEncrypted());
+        QVERIFY(clientCrypto->isConnectionEncrypted());
         QCOMPARE(clientCrypto->handshakeState(), QDtls::HandshakeComplete);
         QCOMPARE(clientCrypto->peerVerificationErrors().size(), 0);
     }
@@ -772,7 +772,7 @@ void tst_QDtls::verifyServerCertificate()
         QDTLS_VERIFY_HANDSHAKE_SUCCESS(serverCrypto);
         QDTLS_VERIFY_HANDSHAKE_SUCCESS(clientCrypto);
     } else {
-        QVERIFY(!clientCrypto->connectionEncrypted());
+        QVERIFY(!clientCrypto->isConnectionEncrypted());
         QCOMPARE(clientCrypto->handshakeState(), QDtls::PeerVerificationFailed);
         QVERIFY(clientCrypto->peerVerificationErrors().size());
         QVERIFY(clientCrypto->writeDatagramEncrypted(&clientSocket, "something") < 0);
@@ -907,12 +907,12 @@ void tst_QDtls::verifyClientCertificate()
         QDTLS_VERIFY_HANDSHAKE_SUCCESS(serverCrypto);
         QDTLS_VERIFY_HANDSHAKE_SUCCESS(clientCrypto);
     } else {
-        QVERIFY(!serverCrypto->connectionEncrypted());
+        QVERIFY(!serverCrypto->isConnectionEncrypted());
         QCOMPARE(serverCrypto->handshakeState(), QDtls::PeerVerificationFailed);
         QVERIFY(serverCrypto->dtlsErrorString().size() > 0);
         QVERIFY(serverCrypto->peerVerificationErrors().size() > 0);
 
-        QVERIFY(!clientCrypto->connectionEncrypted());
+        QVERIFY(!clientCrypto->isConnectionEncrypted());
         QDTLS_VERIFY_NO_ERROR(clientCrypto);
         QCOMPARE(clientCrypto->handshakeState(), QDtls::HandshakeInProgress);
     }
@@ -942,7 +942,7 @@ void tst_QDtls::blacklistedCerificate()
     QVERIFY(!testLoop.timeout());
     QCOMPARE(clientCrypto->handshakeState(), QDtls::PeerVerificationFailed);
     QCOMPARE(clientCrypto->dtlsError(), QDtlsError::PeerVerificationError);
-    QVERIFY(!clientCrypto->connectionEncrypted());
+    QVERIFY(!clientCrypto->isConnectionEncrypted());
     QVERIFY(verificationErrorDetected(QSslError::CertificateBlacklisted));
 }
 
@@ -972,12 +972,12 @@ void tst_QDtls::readWriteEncrypted()
     QDTLS_VERIFY_NO_ERROR(clientCrypto);
     QVERIFY(clientCrypto->writeDatagramEncrypted(&clientSocket, serverExpectedPlainText) <= 0);
     QCOMPARE(clientCrypto->dtlsError(), QDtlsError::InvalidOperation);
-    QVERIFY(!clientCrypto->sendShutdownAlert(&clientSocket));
+    QVERIFY(!clientCrypto->shutdown(&clientSocket));
     QCOMPARE(clientCrypto->dtlsError(), QDtlsError::InvalidOperation);
     QDTLS_VERIFY_NO_ERROR(serverCrypto);
     QVERIFY(serverCrypto->writeDatagramEncrypted(&serverSocket, clientExpectedPlainText) <= 0);
     QCOMPARE(serverCrypto->dtlsError(), QDtlsError::InvalidOperation);
-    QVERIFY(!serverCrypto->sendShutdownAlert(&serverSocket));
+    QVERIFY(!serverCrypto->shutdown(&serverSocket));
     QCOMPARE(serverCrypto->dtlsError(), QDtlsError::InvalidOperation);
 
     // 1. Initiate a handshake:
@@ -1018,19 +1018,19 @@ void tst_QDtls::readWriteEncrypted()
     DtlsPtr &crypto = serverSideShutdown ? serverCrypto : clientCrypto;
     QUdpSocket *socket = serverSideShutdown ? &serverSocket : &clientSocket;
     // 6. Parameter validation:
-    QVERIFY(!crypto->sendShutdownAlert(nullptr));
+    QVERIFY(!crypto->shutdown(nullptr));
     QCOMPARE(crypto->dtlsError(), QDtlsError::InvalidInputParameters);
     // 7. Send shutdown alert:
-    QVERIFY(crypto->sendShutdownAlert(socket));
+    QVERIFY(crypto->shutdown(socket));
     QDTLS_VERIFY_NO_ERROR(crypto);
     QCOMPARE(crypto->handshakeState(), QDtls::HandshakeNotStarted);
-    QVERIFY(!crypto->connectionEncrypted());
+    QVERIFY(!crypto->isConnectionEncrypted());
     // 8. Receive this read notification and handle it:
     testLoop.enterLoopMSecs(dataExchangeTimeoutMS);
     QVERIFY(!testLoop.timeout());
 
     DtlsPtr &peerCrypto = serverSideShutdown ? clientCrypto : serverCrypto;
-    QVERIFY(!peerCrypto->connectionEncrypted());
+    QVERIFY(!peerCrypto->isConnectionEncrypted());
     QCOMPARE(peerCrypto->handshakeState(), QDtls::HandshakeNotStarted);
     QCOMPARE(peerCrypto->dtlsError(), QDtlsError::RemoteClosedConnectionError);
 }
@@ -1066,7 +1066,7 @@ void tst_QDtls::datagramFragmentation()
     QVERIFY(clientCrypto->writeDatagramEncrypted(&clientSocket, QByteArray(1024 * 17, Qt::Uninitialized)) <= 0);
     QVERIFY(clientCrypto->dtlsError() != QDtlsError::NoError);
     // Error to write does not mean QDtls is broken:
-    QVERIFY(clientCrypto->connectionEncrypted());
+    QVERIFY(clientCrypto->isConnectionEncrypted());
     QVERIFY(clientCrypto->writeDatagramEncrypted(&clientSocket, "Hello, I'm a tiny datagram") > 0);
     QDTLS_VERIFY_NO_ERROR(clientCrypto);
 }

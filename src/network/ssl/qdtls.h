@@ -151,11 +151,11 @@ public:
 
     bool doHandshake(QUdpSocket *socket, const QByteArray &dgram = {});
     bool handleTimeout(QUdpSocket *socket);
-    bool resumeHandshakeAfterError(QUdpSocket *socket);
-    bool abortHandshakeAfterError(QUdpSocket *socket);
-    bool sendShutdownAlert(QUdpSocket *socket);
+    bool resumeHandshake(QUdpSocket *socket);
+    bool abortHandshake(QUdpSocket *socket);
+    bool shutdown(QUdpSocket *socket);
 
-    bool connectionEncrypted() const;
+    bool isConnectionEncrypted() const;
     QSslCipher sessionCipher() const;
     QSsl::SslProtocol sessionProtocol() const;
 
