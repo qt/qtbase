@@ -1718,8 +1718,7 @@ bool QXcbConnection::compressEvent(xcb_generic_event_t *event, int currentIndex,
                     continue;
                 if (isXIType(next, m_xiOpCode, XI_TouchUpdate)) {
                     xXIDeviceEvent *xiDeviceNextEvent = reinterpret_cast<xXIDeviceEvent *>(next);
-                    if (id == xiDeviceNextEvent->detail % INT_MAX &&
-                        xiDeviceNextEvent->deviceid == xiDeviceEvent->deviceid)
+                    if (id == xiDeviceNextEvent->detail % INT_MAX)
                         return true;
                 }
             }

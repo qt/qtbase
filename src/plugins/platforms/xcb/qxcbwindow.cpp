@@ -2632,7 +2632,7 @@ bool QXcbWindow::startSystemMove(const QPoint &pos)
 
 bool QXcbWindow::startSystemMoveResize(const QPoint &pos, int corner)
 {
-#if QT_CONFIG(xinput2)
+    return false; // ### FIXME QTBUG-69716
     const xcb_atom_t moveResize = connection()->atom(QXcbAtom::_NET_WM_MOVERESIZE);
     if (!connection()->wmSupport()->isSupportedByWM(moveResize))
         return false;
@@ -2651,10 +2651,6 @@ bool QXcbWindow::startSystemMoveResize(const QPoint &pos, int corner)
     } else
 #endif
     { // Started by mouse press.
-        if (!connection()->hasXInput2() || connection()->xi2MouseEventsDisabled()) {
-            // Without XI2 we can't get button press/move/release events.
-            return false;
-        }
         if (connection()->isUnity())
             return false; // _NET_WM_MOVERESIZE on this WM is bouncy (WM bug?).
 
@@ -2662,11 +2658,6 @@ bool QXcbWindow::startSystemMoveResize(const QPoint &pos, int corner)
     }
 
     return true;
-#else
-    Q_UNUSED(pos);
-    Q_UNUSED(corner);
-    return false;
-#endif
 }
 void QXcbWindow::doStartSystemMoveResize(const QPoint &globalPos, int corner)
 {
