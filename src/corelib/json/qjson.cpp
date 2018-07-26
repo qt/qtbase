@@ -52,7 +52,7 @@ namespace QJsonPrivate
 #endif
 
 static const Base emptyArray = { { Q_TO_LITTLE_ENDIAN(sizeof(Base)) }, { 0 }, { 0 } };
-static const Base emptyObject = { { Q_TO_LITTLE_ENDIAN(sizeof(Base)) }, { 0 }, { 0 } };
+static const Base emptyObject = { { Q_TO_LITTLE_ENDIAN(sizeof(Base)) }, { Q_TO_LITTLE_ENDIAN(1u) }, { 0 } };
 
 
 void Data::compact()
