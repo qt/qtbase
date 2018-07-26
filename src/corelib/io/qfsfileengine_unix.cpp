@@ -530,29 +530,32 @@ QByteArray QFSFileEngine::id() const
 QString QFSFileEngine::fileName(FileName file) const
 {
     Q_D(const QFSFileEngine);
-    if (file == BundleName) {
+    switch (file) {
+    case BundleName:
         return QFileSystemEngine::bundleName(d->fileEntry);
-    } else if (file == BaseName) {
+    case BaseName:
         return d->fileEntry.fileName();
-    } else if (file == PathName) {
+    case PathName:
         return d->fileEntry.path();
-    } else if (file == AbsoluteName || file == AbsolutePathName) {
+    case AbsoluteName:
+    case AbsolutePathName: {
         QFileSystemEntry entry(QFileSystemEngine::absoluteName(d->fileEntry));
-        if (file == AbsolutePathName) {
-            return entry.path();
-        }
-        return entry.filePath();
-    } else if (file == CanonicalName || file == CanonicalPathName) {
+        return file == AbsolutePathName ? entry.path() : entry.filePath();
+    }
+    case CanonicalName:
+    case CanonicalPathName: {
         QFileSystemEntry entry(QFileSystemEngine::canonicalName(d->fileEntry, d->metaData));
-        if (file == CanonicalPathName)
-            return entry.path();
-        return entry.filePath();
-    } else if (file == LinkName) {
+        return file == CanonicalPathName ? entry.path() : entry.filePath();
+    }
+    case LinkName:
         if (d->isSymlink()) {
             QFileSystemEntry entry = QFileSystemEngine::getLinkTarget(d->fileEntry, d->metaData);
             return entry.filePath();
         }
         return QString();
+    case DefaultName:
+    case NFileNames:
+        break;
     }
     return d->fileEntry.filePath();
 }
