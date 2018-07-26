@@ -97,6 +97,7 @@ void tst_QPlugin::loadReleasePlugin()
 {
     const auto fileNames = dir.entryList(QStringList() << "*release*", QDir::Files);
     for (const QString &fileName : fileNames) {
+        if (!QLibrary::isLibrary(fileName))
             continue;
         QPluginLoader loader(dir.filePath(fileName));
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
