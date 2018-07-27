@@ -2,6 +2,7 @@
 [normalGeometry]
 ubuntu-16.04
 [saveRestoreGeometry]
+xcb
 b2qt
 [restoreVersion1Geometry]
 osx
