@@ -527,7 +527,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 
     \code
         QRandomGenerator prng1(1234), prng2(1234);
-        Q_ASSERT(prng1.generate32() == prng2.generate32());
+        Q_ASSERT(prng1.generate() == prng2.generate());
         Q_ASSERT(prng1.generate64() == prng2.generate64());
     \endcode
 
@@ -553,8 +553,8 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     be easily used, as in the following example:
 
     \code
-        int x = QRandomGenerator::global()->generate32();
-        int y = QRandomGenerator::global()->generate32();
+        int x = QRandomGenerator::global()->generate();
+        int y = QRandomGenerator::global()->generate();
         int w = QRandomGenerator::global()->bounded(16384);
         int h = QRandomGenerator::global()->bounded(16384);
     \endcode
