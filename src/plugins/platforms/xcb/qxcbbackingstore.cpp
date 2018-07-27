@@ -100,9 +100,7 @@ public:
 
 private:
     void createShmSegment(size_t segmentSize);
-    void destroyShmSegment(size_t segmentSize);
-
-    void create(const QSize &size, const xcb_format_t *fmt, QImage::Format format);
+    void destroyShmSegment();
     void destroy(bool destroyShm);
 
     void ensureGC(xcb_drawable_t dst);
@@ -142,6 +140,9 @@ private:
 
     bool m_hasAlpha = false;
     bool m_clientSideScroll = false;
+
+    const xcb_format_t *m_xcb_format = nullptr;
+    QImage::Format m_qimage_format = QImage::Format_Invalid;
 };
 
 class QXcbGraphicsBuffer : public QPlatformGraphicsBuffer
@@ -183,58 +184,66 @@ QXcbBackingStoreImage::QXcbBackingStoreImage(QXcbBackingStore *backingStore, con
     : QXcbObject(backingStore->connection())
     , m_backingStore(backingStore)
 {
-    QXcbWindow *window = static_cast<QXcbWindow *>(backingStore->window()->handle());
-    const xcb_format_t *fmt = connection()->formatForDepth(window->depth());
-    Q_ASSERT(fmt);
+    auto window = static_cast<QXcbWindow *>(m_backingStore->window()->handle());
+    m_xcb_format = connection()->formatForDepth(window->depth());
+    Q_ASSERT(m_xcb_format);
+
+    m_qimage_format = window->imageFormat();
+    m_hasAlpha = QImage::toPixelFormat(m_qimage_format).alphaUsage() == QPixelFormat::UsesAlpha;
+    if (!m_hasAlpha)
+        m_qimage_format = qt_maybeAlphaVersionWithSameDepth(m_qimage_format);
 
     memset(&m_shm_info, 0, sizeof m_shm_info);
 
-    QImage::Format format = window->imageFormat();
-    m_hasAlpha = QImage::toPixelFormat(format).alphaUsage() == QPixelFormat::UsesAlpha;
-    if (!m_hasAlpha)
-        create(size, fmt, qt_maybeAlphaVersionWithSameDepth(format));
-    else
-        create(size, fmt, format);
+    resize(size);
 }
 
 void QXcbBackingStoreImage::resize(const QSize &size)
 {
-    xcb_format_t fmt;
-    fmt.depth = m_xcb_image->depth;
-    fmt.bits_per_pixel = m_xcb_image->bpp;
-    fmt.scanline_pad = m_xcb_image->scanline_pad;
-    memset(fmt.pad0, 0, sizeof(fmt.pad0));
     destroy(false);
-    create(size, &fmt, m_qimage.format());
-}
 
-void QXcbBackingStoreImage::create(const QSize &size, const xcb_format_t *fmt, QImage::Format format)
-{
+    auto byteOrder = QSysInfo::ByteOrder == QSysInfo::BigEndian ? XCB_IMAGE_ORDER_MSB_FIRST
+                                                                : XCB_IMAGE_ORDER_LSB_FIRST;
     m_xcb_image = xcb_image_create(size.width(), size.height(),
                                    XCB_IMAGE_FORMAT_Z_PIXMAP,
-                                   fmt->scanline_pad,
-                                   fmt->depth, fmt->bits_per_pixel, 0,
-                                   QSysInfo::ByteOrder == QSysInfo::BigEndian ? XCB_IMAGE_ORDER_MSB_FIRST : XCB_IMAGE_ORDER_LSB_FIRST,
+                                   m_xcb_format->scanline_pad,
+                                   m_xcb_format->depth,
+                                   m_xcb_format->bits_per_pixel,
+                                   0, byteOrder,
                                    XCB_IMAGE_ORDER_MSB_FIRST,
                                    0, ~0, 0);
 
     const size_t segmentSize = imageDataSize(m_xcb_image);
-    if (!segmentSize)
-        return;
 
     if (connection()->hasShm()) {
-        if (m_shm_info.shmaddr && (m_segmentSize < segmentSize || m_segmentSize / 2 >= segmentSize))
-            destroyShmSegment(m_segmentSize);
-        if (!m_shm_info.shmaddr) {
-            qCDebug(lcQpaXcb) << "creating shared memory" << segmentSize << "for"
-                              << size << "depth" << fmt->depth << "bits" << fmt->bits_per_pixel;
-            createShmSegment(segmentSize);
+        if (segmentSize == 0) {
+            if (m_segmentSize > 0) {
+                destroyShmSegment();
+                qCDebug(lcQpaXcb) << "[" << m_backingStore->window()
+                                  << "] destroyed SHM segment due to resize to" << size;
+            }
+        } else {
+            // Destroy shared memory segment if it is double (or more) of what we actually
+            // need with new window size. Or if the new size is bigger than what we currently
+            // have allocated.
+            if (m_shm_info.shmaddr && (m_segmentSize < segmentSize || m_segmentSize / 2 >= segmentSize))
+                destroyShmSegment();
+            if (!m_shm_info.shmaddr) {
+                qCDebug(lcQpaXcb) << "[" << m_backingStore->window()
+                                  << "] creating shared memory" << segmentSize << "bytes for"
+                                  << size << "depth" << m_xcb_format->depth << "bits"
+                                  << m_xcb_format->bits_per_pixel;
+                createShmSegment(segmentSize);
+            }
         }
     }
 
-    m_xcb_image->data = m_shm_info.shmaddr ? m_shm_info.shmaddr : (uint8_t *)malloc(segmentSize);
+    if (segmentSize == 0)
+        return;
 
-    m_qimage = QImage( (uchar*) m_xcb_image->data, m_xcb_image->width, m_xcb_image->height, m_xcb_image->stride, format);
+    m_xcb_image->data = m_shm_info.shmaddr ? m_shm_info.shmaddr : (uint8_t *)malloc(segmentSize);
+    m_qimage = QImage(static_cast<uchar *>(m_xcb_image->data), m_xcb_image->width,
+                      m_xcb_image->height, m_xcb_image->stride, m_qimage_format);
     m_graphics_buffer = new QXcbGraphicsBuffer(&m_qimage);
 
     m_xcb_pixmap = xcb_generate_id(xcb_connection());
@@ -248,16 +257,17 @@ void QXcbBackingStoreImage::create(const QSize &size, const xcb_format_t *fmt, Q
 
 void QXcbBackingStoreImage::destroy(bool destroyShm)
 {
-    if (m_xcb_image->data) {
-        if (m_shm_info.shmaddr) {
-            if (destroyShm)
-                destroyShmSegment(m_segmentSize);
-        } else {
-            free(m_xcb_image->data);
+    if (m_xcb_image) {
+        if (m_xcb_image->data) {
+            if (m_shm_info.shmaddr) {
+                if (destroyShm)
+                    destroyShmSegment();
+            } else {
+                free(m_xcb_image->data);
+            }
         }
+        xcb_image_destroy(m_xcb_image);
     }
-
-    xcb_image_destroy(m_xcb_image);
 
     if (m_gc) {
         xcb_free_gc(xcb_connection(), m_gc);
@@ -268,8 +278,12 @@ void QXcbBackingStoreImage::destroy(bool destroyShm)
     delete m_graphics_buffer;
     m_graphics_buffer = nullptr;
 
-    xcb_free_pixmap(xcb_connection(), m_xcb_pixmap);
-    m_xcb_pixmap = 0;
+    if (m_xcb_pixmap) {
+        xcb_free_pixmap(xcb_connection(), m_xcb_pixmap);
+        m_xcb_pixmap = 0;
+    }
+
+    m_qimage = QImage();
 }
 
 void QXcbBackingStoreImage::flushScrolledRegion(bool clientSideScroll)
@@ -412,11 +426,8 @@ bool QXcbBackingStoreImage::createSystemVShmSegment(QXcbConnection *c, size_t se
     return true;
 }
 
-void QXcbBackingStoreImage::destroyShmSegment(size_t segmentSize)
+void QXcbBackingStoreImage::destroyShmSegment()
 {
-#ifndef XCB_USE_SHM_FD
-    Q_UNUSED(segmentSize)
-#endif
     auto cookie = xcb_shm_detach_checked(xcb_connection(), m_shm_info.shmseg);
     xcb_generic_error_t *error = xcb_request_check(xcb_connection(), cookie);
     if (error)
@@ -425,9 +436,9 @@ void QXcbBackingStoreImage::destroyShmSegment(size_t segmentSize)
 
 #ifdef XCB_USE_SHM_FD
     if (connection()->hasShmFd()) {
-        if (munmap(m_shm_info.shmaddr, segmentSize) == -1) {
+        if (munmap(m_shm_info.shmaddr, m_segmentSize) == -1) {
             qCWarning(lcQpaXcb, "munmap() failed (%d: %s) for %p with size %zu",
-                      errno, strerror(errno), m_shm_info.shmaddr, segmentSize);
+                      errno, strerror(errno), m_shm_info.shmaddr, m_segmentSize);
         }
     } else
 #endif
