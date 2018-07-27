@@ -715,6 +715,12 @@ bool DtlsState::initCtxAndConnection(QDtlsBasePrivate *dtlsBase)
     Q_ASSERT(dtlsBase);
     Q_ASSERT(QSslSocket::supportsSsl());
 
+    if (dtlsBase->mode == QSslSocket::UnencryptedMode) {
+        dtlsBase->setDtlsError(QDtlsError::TlsInitializationError,
+                               QDtls::tr("Invalid SslMode, SslServerMode or SslClientMode expected"));
+        return false;
+    }
+
     // create a deep copy of our configuration
     auto configurationCopy = new QSslConfigurationPrivate(dtlsBase->dtlsConfiguration);
     configurationCopy->ref.store(0); // the QSslConfiguration constructor refs up
