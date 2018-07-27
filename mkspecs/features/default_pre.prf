@@ -11,7 +11,7 @@ CONFIG = \
     testcase_targets import_plugins import_qpa_plugin \
     $$CONFIG
 
-!build_pass:!isEmpty(QT_LICHECK) {
+!build_pass:!isEmpty(QT_LICHECK):!QTDIR_build {
     #
     # call license checker (but cache result for one day)
     #

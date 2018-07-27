@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
-TESTPLUGINS =
+TESTPLUGINS = invalidplugin
 
 win32 {
     contains(QT_CONFIG, debug): TESTPLUGINS += debugplugin
@@ -8,7 +8,7 @@ win32 {
     CONFIG(debug, debug|release): TESTPLUGINS += debugplugin
     CONFIG(release, debug|release): TESTPLUGINS += releaseplugin
 } else {
-    TESTPLUGINS = debugplugin releaseplugin
+    TESTPLUGINS += debugplugin releaseplugin
 }
 
 SUBDIRS += main $$TESTPLUGINS

@@ -114,16 +114,28 @@
     \title Qt Creator: Keyboard Shortcuts
 */
 /*!
-    \externalpage http://doc.qt.io/qtcreator/quick-screens.html
-    \title Qt Creator: Creating Screens
-*/
-/*!
     \externalpage http://doc.qt.io/qtcreator/qmldesigner-pathview-editor.html
     \title Qt Creator: Editing PathView Properties
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/qmldesigner-connections.html
     \title Qt Creator: Adding Connections
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/quick-signals.html
+    \title Qt Creator: Connecting Objects to Signals
+*/
+* /*!
+    \externalpage http://doc.qt.io/qtcreator/quick-dynamic-properties.html
+    \title Qt Creator: Specifying Dynamic Properties
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/quick-property-bindings.html
+    \title Qt Creator: Adding Bindings Between Properties
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/quick-connections-backend.html
+    \title Qt Creator: Managing C++ Backend Objects
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/qtcreator-transitions-example.html
@@ -147,7 +159,7 @@
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-using-qt-quick-designer.html
-    \title Qt Creator: Using Qt Quick Designer
+    \title Qt Creator: Editing QML Files in Design Mode
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/quick-projects.html
@@ -343,7 +355,7 @@
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-analyzer.html
-    \title Qt Creator: Detecting Memory Leaks
+    \title Qt Creator: Detecting Memory Leaks with Memcheck
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-cache-profiler.html
@@ -351,7 +363,7 @@
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-running-valgrind-remotely.html
-    \title Qt Creator: Running Valgrind Tools Remotely
+    \title Qt Creator: Running Valgrind Tools on External Applications
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-valgrind-overview.html
@@ -530,8 +542,12 @@
 */
 
 /*!
-    \externalpage http://doc.qt.io/qtcreator/creator-clang-static-analyzer.html
-    \title Qt Creator: Using Clang Static Analyzer
+    \externalpage http://doc.qt.io/qtcreator/creator-clang-tools.html
+    \title Qt Creator: Using Clang Tools
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-heob.html
+    \title Qt Creator: Detecting Memory Leaks with Heob
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-cpu-usage-analyzer.html
@@ -548,4 +564,20 @@
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-writing-program.html
     \title Creating a Qt Widget Based Application
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/qtquick-navigator.html
+    \title Qt Creator: Managing Item Hierarchy
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/qtquick-properties.html
+    \title Qt Creator: Specifying Item Properties
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/quick-states.html
+    \title Qt Creator: Adding States
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-scxml.html
+    \title Qt Creator: Editing State Charts
 */

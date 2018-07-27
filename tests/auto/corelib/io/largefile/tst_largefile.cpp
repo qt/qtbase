@@ -510,7 +510,7 @@ void tst_LargeFile::mapFile()
 //Mac: memory-mapping beyond EOF may succeed but it could generate bus error on access
 //FreeBSD: same
 //Linux: memory-mapping beyond EOF usually succeeds, but depends on the filesystem
-//  32-bit: limited to 44-bit offsets
+//  32-bit: limited to 44-bit offsets (when sizeof(off_t) == 8)
 //Windows: memory-mapping beyond EOF is not allowed
 void tst_LargeFile::mapOffsetOverflow()
 {
@@ -521,9 +521,9 @@ void tst_LargeFile::mapOffsetOverflow()
 #else
         Succeeds = true,
 #  if (defined(Q_OS_LINUX) || defined(Q_OS_ANDROID)) && Q_PROCESSOR_WORDSIZE == 4
-        MaxOffset = 43
+        MaxOffset = sizeof(QT_OFF_T) > 4 ? 43 : 30
 #  else
-        MaxOffset = 63
+        MaxOffset = 8 * sizeof(QT_OFF_T) - 1
 #  endif
 #endif
     };

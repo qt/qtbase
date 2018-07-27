@@ -150,7 +150,6 @@ private:
     bool m_tiltSupport = false;
     QVector<QWindowsTabletDeviceData> m_devices;
     int m_currentDevice = -1;
-    QPointF m_oldGlobalPosF;
     Mode m_mode = PenMode;
     State m_state = PenUp;
 };

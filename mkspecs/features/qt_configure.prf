@@ -1016,7 +1016,8 @@ defineTest(qtConfTest_compile) {
         QMAKE_MAKE = "$$QMAKE_MAKE clean && $$QMAKE_MAKE"
 
     mkpath($$test_out_dir)|error()
-    write_file($$test_base_out_dir/.qmake.cache)|error()
+    cont = "CONFIG += QTDIR_build"
+    write_file($$test_base_out_dir/.qmake.cache, cont)|error()
 
     $${1}.literal_args += $$qtConfAllLibraryArgs($$eval($${1}.resolved_uses))
 

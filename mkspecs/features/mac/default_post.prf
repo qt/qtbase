@@ -215,5 +215,8 @@ xcode_product_bundle_identifier_setting.name = PRODUCT_BUNDLE_IDENTIFIER
 xcode_product_bundle_identifier_setting.value = $$QMAKE_TARGET_BUNDLE_PREFIX
 isEmpty(xcode_product_bundle_identifier_setting.value): \
     xcode_product_bundle_identifier_setting.value = "com.yourcompany"
-xcode_product_bundle_identifier_setting.value = "$${xcode_product_bundle_identifier_setting.value}.${PRODUCT_NAME:rfc1034identifier}"
+xcode_product_bundle_target = $$QMAKE_BUNDLE
+isEmpty(xcode_product_bundle_target): \
+    xcode_product_bundle_target = ${PRODUCT_NAME:rfc1034identifier}
+xcode_product_bundle_identifier_setting.value = "$${xcode_product_bundle_identifier_setting.value}.$${xcode_product_bundle_target}"
 QMAKE_MAC_XCODE_SETTINGS += xcode_product_bundle_identifier_setting

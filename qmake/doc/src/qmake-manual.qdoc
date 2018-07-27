@@ -1046,7 +1046,7 @@
          library and header files. The proper include and library paths for the
          Qt library will automatically be added to the project. This is defined
          by default, and can be fine-tuned with the \c{\l{#qt}{QT}} variable.
-    \row \li x11 \li The target is a X11 application or library. The proper
+    \row \li x11 \li The target is an X11 application or library. The proper
         include paths and libraries will automatically be added to the
         project.
     \row \li testcase \li The target is an automated test.
@@ -1282,7 +1282,7 @@
     \section1 LEXOBJECTS
 
     Specifies the names of intermediate Lex object
-    files.The value of this variable is typically handled by
+    files. The value of this variable is typically handled by
     qmake and rarely needs to be modified.
 
     \target LEXSOURCES
@@ -1779,9 +1779,9 @@
 
     \note This variable is used on \macos, iOS, tvOS, and watchOS only.
 
-    For projects where the build target is an \macos, iOS, tvOS, or watchOS framework, this
-    variable is used to specify the version number that will be applied to the
-    framework that is built.
+    For projects where the build target is a \macos, iOS, tvOS, or watchOS
+    framework, this variable is used to specify the version number that will be
+    applied to the framework that is built.
 
     By default, this variable contains the same value as the \l{#VERSION}{VERSION}
     variable.
@@ -1865,7 +1865,7 @@
     \note This variable is used on Unix platforms only.
 
     Specifies the location of X11 header file paths to be added
-    to \l{INCLUDEPATH} when building a X11 target. The value of this variable
+    to \l{INCLUDEPATH} when building an X11 target. The value of this variable
     is typically handled by qmake or
     \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
@@ -2255,7 +2255,7 @@
 
     \section1 QMAKE_QMAKE
 
-    Contains the abosolute path of the qmake executable.
+    Contains the absolute path of the qmake executable.
 
     \note Do not attempt to overwrite the value of this variable.
 
@@ -2323,7 +2323,7 @@
     If defined, the value of this variable is used as a path to be prepended to
     the built shared library's \c SONAME identifier. The \c SONAME is the
     identifier that the dynamic linker will later use to reference the library.
-    In general this reference may be a library name or full library path. On \macos,
+    In general, this reference may be a library name or full library path. On \macos,
     iOS, tvOS, and watchOS, the path may be specified relatively using the following
     placeholders:
 
@@ -2629,7 +2629,7 @@
 
     \section1 TARGET_x.y.z
 
-    Specifies the extension of \c TARGET with version number. The
+    Specifies the extension of \c TARGET with a version number. The
     value of this variable is typically handled by
     qmake or \l{#QMAKESPEC}{qmake.conf} and rarely
     needs to be modified.
@@ -2650,7 +2650,7 @@
             The subdirectories are specified using the \l{#SUBDIRS}{SUBDIRS}
             variable.
     \row    \li aux     \li Creates a Makefile for not building anything. Use this if no compiler
-                            needs to be invoked to create the target, for instance because your
+                            needs to be invoked to create the target; for instance, because your
                             project is written in an interpreted language.
                             \note This template type is only available for Makefile-based
                             generators. In particular, it will not work with the vcxproj and
@@ -2832,7 +2832,7 @@
             Windows Phone.
     \row
         \li logo_480x800
-        \li Splash sceen image file of size 480x800 pixels. This is only supported on
+        \li Splash screen image file of size 480x800 pixels. This is only supported on
             Windows Phone.
     \row
         \li logo_large

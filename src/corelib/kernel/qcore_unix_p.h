@@ -176,6 +176,14 @@ inline void qt_ignore_sigpipe()
     }
 }
 
+#if defined(Q_PROCESSOR_X86_32) && defined(__GLIBC__)
+#  if !__GLIBC_PREREQ(2, 22)
+int qt_open64(const char *pathname, int flags, mode_t);
+#    undef QT_OPEN
+#    define QT_OPEN qt_open64
+#  endif
+#endif
+
 // don't call QT_OPEN or ::open
 // call qt_safe_open
 static inline int qt_safe_open(const char *pathname, int flags, mode_t mode = 0777)
