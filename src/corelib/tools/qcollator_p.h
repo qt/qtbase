@@ -85,8 +85,8 @@ const CollatorType NoCollator = 0;
 
 #else // posix - ignores CollatorType collator, only handles system locale
 typedef QVector<wchar_t> CollatorKeyType;
-typedef int CollatorType;
-const CollatorType NoCollator = 0;
+typedef bool CollatorType;
+const CollatorType NoCollator = false;
 #endif
 
 class QCollatorPrivate
