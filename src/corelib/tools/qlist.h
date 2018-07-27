@@ -118,6 +118,11 @@ struct Q_CORE_EXPORT QListData {
     inline void **end() const Q_DECL_NOTHROW { return d->array + d->end; }
 };
 
+namespace QtPrivate {
+    template <typename V, typename U> int indexOf(const QList<V> &list, const U &u, int from);
+    template <typename V, typename U> int lastIndexOf(const QList<V> &list, const U &u, int from);
+}
+
 template <typename T>
 class QList
 #ifndef Q_QDOC
@@ -136,6 +141,8 @@ public:
                 QListData::InlineWithPaddingLayout
              >::type>::type {};
 private:
+    template <typename V, typename U> friend int QtPrivate::indexOf(const QList<V> &list, const U &u, int from);
+    template <typename V, typename U> friend int QtPrivate::lastIndexOf(const QList<V> &list, const U &u, int from);
     struct Node { void *v;
 #if defined(Q_CC_BOR)
         Q_INLINE_TEMPLATE T &t();
@@ -975,34 +982,56 @@ inline void QList<T>::append(const QList<T> &t)
 template <typename T>
 Q_OUTOFLINE_TEMPLATE int QList<T>::indexOf(const T &t, int from) const
 {
+    return QtPrivate::indexOf<T, T>(*this, t, from);
+}
+
+namespace QtPrivate
+{
+template <typename T, typename U>
+int indexOf(const QList<T> &list, const U &u, int from)
+{
+    typedef typename QList<T>::Node Node;
+
     if (from < 0)
-        from = qMax(from + p.size(), 0);
-    if (from < p.size()) {
-        Node *n = reinterpret_cast<Node *>(p.at(from -1));
-        Node *e = reinterpret_cast<Node *>(p.end());
+        from = qMax(from + list.p.size(), 0);
+    if (from < list.p.size()) {
+        Node *n = reinterpret_cast<Node *>(list.p.at(from -1));
+        Node *e = reinterpret_cast<Node *>(list.p.end());
         while (++n != e)
-            if (n->t() == t)
-                return int(n - reinterpret_cast<Node *>(p.begin()));
+            if (n->t() == u)
+                return int(n - reinterpret_cast<Node *>(list.p.begin()));
     }
     return -1;
+}
 }
 
 template <typename T>
 Q_OUTOFLINE_TEMPLATE int QList<T>::lastIndexOf(const T &t, int from) const
 {
+    return QtPrivate::lastIndexOf<T, T>(*this, t, from);
+}
+
+namespace QtPrivate
+{
+template <typename T, typename U>
+int lastIndexOf(const QList<T> &list, const U &u, int from)
+{
+    typedef typename QList<T>::Node Node;
+
     if (from < 0)
-        from += p.size();
-    else if (from >= p.size())
-        from = p.size()-1;
+        from += list.p.size();
+    else if (from >= list.p.size())
+        from = list.p.size()-1;
     if (from >= 0) {
-        Node *b = reinterpret_cast<Node *>(p.begin());
-        Node *n = reinterpret_cast<Node *>(p.at(from + 1));
+        Node *b = reinterpret_cast<Node *>(list.p.begin());
+        Node *n = reinterpret_cast<Node *>(list.p.at(from + 1));
         while (n-- != b) {
-            if (n->t() == t)
+            if (n->t() == u)
                 return n - b;
         }
     }
     return -1;
+}
 }
 
 template <typename T>
