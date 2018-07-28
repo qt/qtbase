@@ -1485,12 +1485,11 @@ public:
     {
     }
 
-    bool checkEvent(xcb_generic_event_t *ev)
+    bool operator() (xcb_generic_event_t *ev, int type)
     {
         if (m_error || !ev)
             return false;
 
-        int type = ev->response_type & ~0x80;
         if (type != XCB_KEY_PRESS && type != XCB_KEY_RELEASE)
             return false;
 
@@ -1516,9 +1515,6 @@ public:
 
         return false;
     }
-
-    bool release() const { return m_release; }
-    xcb_timestamp_t time() const { return m_time; }
 
 private:
     xcb_window_t m_window;

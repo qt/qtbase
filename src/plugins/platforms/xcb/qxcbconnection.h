@@ -440,8 +440,8 @@ public:
     QXcbWindowEventListener *windowEventListenerFromId(xcb_window_t id);
     QXcbWindow *platformWindowFromId(xcb_window_t id);
 
-    template<typename T>
-    inline xcb_generic_event_t *checkEvent(T &checker);
+    template<typename Functor>
+    inline xcb_generic_event_t *checkEvent(Functor &&filter);
 
     typedef bool (*PeekFunc)(QXcbConnection *, xcb_generic_event_t *);
     void addPeekFunc(PeekFunc f);
@@ -734,21 +734,21 @@ Q_DECLARE_TYPEINFO(QXcbConnection::TabletData, Q_MOVABLE_TYPE);
 #endif
 #endif
 
-template<typename T>
-xcb_generic_event_t *QXcbConnection::checkEvent(T &checker)
+template<typename Functor>
+xcb_generic_event_t *QXcbConnection::checkEvent(Functor &&filter)
 {
     QXcbEventArray *eventqueue = m_reader->lock();
 
     for (int i = 0; i < eventqueue->size(); ++i) {
         xcb_generic_event_t *event = eventqueue->at(i);
-        if (checker.checkEvent(event)) {
-            (*eventqueue)[i] = 0;
+        if (event && filter(event, event->response_type & ~0x80)) {
+            (*eventqueue)[i] = nullptr;
             m_reader->unlock();
             return event;
         }
     }
     m_reader->unlock();
-    return 0;
+    return nullptr;
 }
 
 class QXcbConnectionGrabber

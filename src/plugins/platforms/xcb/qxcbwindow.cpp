@@ -1809,53 +1809,6 @@ bool QXcbWindow::requestSystemTrayWindowDock()
     return true;
 }
 
-class ExposeCompressor
-{
-public:
-    ExposeCompressor(xcb_window_t window, QRegion *region)
-        : m_window(window)
-        , m_region(region)
-        , m_pending(true)
-    {
-    }
-
-    bool checkEvent(xcb_generic_event_t *event)
-    {
-        if (!event)
-            return false;
-        if ((event->response_type & ~0x80) != XCB_EXPOSE)
-            return false;
-        xcb_expose_event_t *expose = (xcb_expose_event_t *)event;
-        if (expose->window != m_window)
-            return false;
-        if (expose->count == 0)
-            m_pending = false;
-        *m_region |= QRect(expose->x, expose->y, expose->width, expose->height);
-        return true;
-    }
-
-    bool pending() const
-    {
-        return m_pending;
-    }
-
-private:
-    xcb_window_t m_window;
-    QRegion *m_region;
-    bool m_pending;
-};
-
-bool QXcbWindow::compressExposeEvent(QRegion &exposeRegion)
-{
-    ExposeCompressor compressor(m_window, &exposeRegion);
-    xcb_generic_event_t *filter = 0;
-    do {
-        filter = connection()->checkEvent(compressor);
-        free(filter);
-    } while (filter);
-    return compressor.pending();
-}
-
 bool QXcbWindow::handleGenericEvent(xcb_generic_event_t *event, long *result)
 {
     return QWindowSystemInterface::handleNativeEvent(window(),
@@ -1867,9 +1820,24 @@ bool QXcbWindow::handleGenericEvent(xcb_generic_event_t *event, long *result)
 void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 {
     QRect rect(event->x, event->y, event->width, event->height);
-
     m_exposeRegion |= rect;
-    bool pending = compressExposeEvent(m_exposeRegion);
+
+    bool pending = true;
+    xcb_generic_event_t *e = nullptr;
+    do { // compress expose events
+        e = connection()->checkEvent([this, &pending](xcb_generic_event_t *event, int type) {
+            if (type != XCB_EXPOSE)
+                return false;
+            auto expose = reinterpret_cast<xcb_expose_event_t *>(event);
+            if (expose->window != m_window)
+                return false;
+            if (expose->count == 0)
+                pending = false;
+            m_exposeRegion |= QRect(expose->x, expose->y, expose->width, expose->height);
+            return true;
+        });
+        free(e);
+    } while (e);
 
     // if count is non-zero there are more expose events pending
     if (event->count == 0 || !pending) {
@@ -2162,24 +2130,6 @@ static bool ignoreEnterEvent(quint8 mode, quint8 detail, QXcbConnection *conn = 
             || detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL);
 }
 
-class EnterEventChecker
-{
-public:
-    bool checkEvent(xcb_generic_event_t *event)
-    {
-        if (!event)
-            return false;
-        if ((event->response_type & ~0x80) != XCB_ENTER_NOTIFY)
-            return false;
-
-        xcb_enter_notify_event_t *enter = (xcb_enter_notify_event_t *)event;
-        if (ignoreEnterEvent(enter->mode, enter->detail))
-            return false;
-
-        return true;
-    }
-};
-
 void QXcbWindow::handleEnterNotifyEvent(int event_x, int event_y, int root_x, int root_y,
                                         quint8 mode, quint8 detail, xcb_timestamp_t timestamp)
 {
@@ -2206,9 +2156,17 @@ void QXcbWindow::handleLeaveNotifyEvent(int root_x, int root_y,
     if (ignoreLeaveEvent(mode, detail, connection()) || connection()->mousePressWindow())
         return;
 
-    EnterEventChecker checker;
-    xcb_enter_notify_event_t *enter = (xcb_enter_notify_event_t *)connection()->checkEvent(checker);
-    QXcbWindow *enterWindow = enter ? connection()->platformWindowFromId(enter->event) : 0;
+    // check if enter event is buffered
+    auto event = connection()->checkEvent([](xcb_generic_event_t *event, int type) {
+        if (type != XCB_ENTER_NOTIFY)
+            return false;
+        auto enter = reinterpret_cast<xcb_enter_notify_event_t *>(event);
+        if (ignoreEnterEvent(enter->mode, enter->detail))
+            return false;
+        return true;
+    });
+    auto enter = reinterpret_cast<xcb_enter_notify_event_t *>(event);
+    QXcbWindow *enterWindow = enter ? connection()->platformWindowFromId(enter->event) : nullptr;
 
     if (enterWindow) {
         QPoint local(enter->event_x, enter->event_y);

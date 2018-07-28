@@ -217,8 +217,6 @@ protected:
     void doFocusIn();
     void doFocusOut();
 
-    bool compressExposeEvent(QRegion &exposeRegion);
-
     void handleButtonPressEvent(int event_x, int event_y, int root_x, int root_y,
                                 int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp,
                                 QEvent::Type type, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);

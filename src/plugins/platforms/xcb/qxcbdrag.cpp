@@ -781,12 +781,11 @@ namespace
     public:
         ClientMessageScanner(xcb_atom_t a) : atom(a) {}
         xcb_atom_t atom;
-        bool checkEvent(xcb_generic_event_t *event) const {
-            if (!event)
+        bool operator() (xcb_generic_event_t *event, int type) const {
+            if (type != XCB_CLIENT_MESSAGE)
                 return false;
-            if ((event->response_type & 0x7f) != XCB_CLIENT_MESSAGE)
-                return false;
-            return ((xcb_client_message_event_t *)event)->type == atom;
+            auto clientMessage = reinterpret_cast<xcb_client_message_event_t *>(event);
+            return clientMessage->type == atom;
         }
     };
 }
@@ -794,12 +793,11 @@ namespace
 void QXcbDrag::handlePosition(QPlatformWindow * w, const xcb_client_message_event_t *event)
 {
     xcb_client_message_event_t *lastEvent = const_cast<xcb_client_message_event_t *>(event);
-    xcb_generic_event_t *nextEvent;
     ClientMessageScanner scanner(atom(QXcbAtom::XdndPosition));
-    while ((nextEvent = connection()->checkEvent(scanner))) {
+    while (auto nextEvent = connection()->checkEvent(scanner)) {
         if (lastEvent != event)
             free(lastEvent);
-        lastEvent = (xcb_client_message_event_t *)nextEvent;
+        lastEvent = reinterpret_cast<xcb_client_message_event_t *>(nextEvent);
     }
 
     handle_xdnd_position(w, lastEvent);

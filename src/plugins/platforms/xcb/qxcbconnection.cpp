@@ -1484,54 +1484,35 @@ void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom a, uint id)
     xcb_flush(xcb_connection());
 }
 
-namespace
-{
-    class PropertyNotifyEvent {
-    public:
-        PropertyNotifyEvent(xcb_window_t win, xcb_atom_t property)
-            : window(win), type(XCB_PROPERTY_NOTIFY), atom(property) {}
-        xcb_window_t window;
-        int type;
-        xcb_atom_t atom;
-        bool checkEvent(xcb_generic_event_t *event) const {
-            if (!event)
-                return false;
-            if ((event->response_type & ~0x80) != type) {
-                return false;
-            } else {
-                xcb_property_notify_event_t *pn = reinterpret_cast<xcb_property_notify_event_t *>(event);
-                if ((pn->window == window) && (pn->atom == atom))
-                    return true;
-            }
-            return false;
-        }
-    };
-}
-
 xcb_timestamp_t QXcbConnection::getTimestamp()
 {
     // send a dummy event to myself to get the timestamp from X server.
-    xcb_window_t root_win = rootWindow();
-    xcb_change_property(xcb_connection(), XCB_PROP_MODE_APPEND, root_win, atom(QXcbAtom::CLIP_TEMPORARY),
-                        XCB_ATOM_INTEGER, 32, 0, NULL);
+    xcb_window_t window = rootWindow();
+    xcb_atom_t dummyAtom = atom(QXcbAtom::CLIP_TEMPORARY);
+    xcb_change_property(xcb_connection(), XCB_PROP_MODE_APPEND, window, dummyAtom,
+                        XCB_ATOM_INTEGER, 32, 0, nullptr);
 
     connection()->flush();
-    PropertyNotifyEvent checker(root_win, atom(QXcbAtom::CLIP_TEMPORARY));
 
-    xcb_generic_event_t *event = 0;
+    xcb_generic_event_t *event = nullptr;
     // lets keep this inside a loop to avoid a possible race condition, where
     // reader thread has not yet had the time to acquire the mutex in order
     // to add the new set of events to its event queue
     while (!event) {
         connection()->sync();
-        event = checkEvent(checker);
+        event = checkEvent([window, dummyAtom](xcb_generic_event_t *event, int type) {
+            if (type != XCB_PROPERTY_NOTIFY)
+                return false;
+            auto propertyNotify = reinterpret_cast<xcb_property_notify_event_t *>(event);
+            return propertyNotify->window == window && propertyNotify->atom == dummyAtom;
+        });
     }
 
     xcb_property_notify_event_t *pn = reinterpret_cast<xcb_property_notify_event_t *>(event);
     xcb_timestamp_t timestamp = pn->time;
     free(event);
 
-    xcb_delete_property(xcb_connection(), root_win, atom(QXcbAtom::CLIP_TEMPORARY));
+    xcb_delete_property(xcb_connection(), window, dummyAtom);
 
     return timestamp;
 }

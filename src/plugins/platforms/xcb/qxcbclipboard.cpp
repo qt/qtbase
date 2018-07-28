@@ -807,73 +807,44 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
     return ok;
 }
 
-
-namespace
-{
-    class Notify {
-    public:
-        Notify(xcb_window_t win, int t)
-            : window(win), type(t) {}
-        xcb_window_t window;
-        int type;
-        bool checkEvent(xcb_generic_event_t *event) const {
-            if (!event)
-                return false;
-            int t = event->response_type & 0x7f;
-            if (t != type)
-                return false;
-            if (t == XCB_PROPERTY_NOTIFY) {
-                xcb_property_notify_event_t *pn = (xcb_property_notify_event_t *)event;
-                if (pn->window == window)
-                    return true;
-            } else if (t == XCB_SELECTION_NOTIFY) {
-                xcb_selection_notify_event_t *sn = (xcb_selection_notify_event_t *)event;
-                if (sn->requestor == window)
-                    return true;
-            }
-            return false;
-        }
-    };
-    class ClipboardEvent {
-    public:
-        ClipboardEvent(QXcbConnection *c)
-        { clipboard = c->internAtom("CLIPBOARD"); }
-        xcb_atom_t clipboard;
-        bool checkEvent(xcb_generic_event_t *e) const {
-            if (!e)
-                return false;
-            int type = e->response_type & 0x7f;
-            if (type == XCB_SELECTION_REQUEST) {
-                xcb_selection_request_event_t *sr = (xcb_selection_request_event_t *)e;
-                return sr->selection == XCB_ATOM_PRIMARY || sr->selection == clipboard;
-            } else if (type == XCB_SELECTION_CLEAR) {
-                xcb_selection_clear_event_t *sc = (xcb_selection_clear_event_t *)e;
-                return sc->selection == XCB_ATOM_PRIMARY || sc->selection == clipboard;
-            }
-            return false;
-        }
-    };
-}
-
-xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t win, int type, int timeout, bool checkManager)
+xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t window, int type, int timeout, bool checkManager)
 {
     QElapsedTimer timer;
     timer.start();
     do {
-        Notify notify(win, type);
-        xcb_generic_event_t *e = connection()->checkEvent(notify);
-        if (e)
+        auto e = connection()->checkEvent([window, type](xcb_generic_event_t *event, int eventType) {
+            if (eventType != type)
+                return false;
+            if (eventType == XCB_PROPERTY_NOTIFY) {
+                auto propertyNotify = reinterpret_cast<xcb_property_notify_event_t *>(event);
+                if (propertyNotify->window == window)
+                    return true;
+            } else if (eventType == XCB_SELECTION_NOTIFY) {
+                auto selectionNotify = reinterpret_cast<xcb_selection_notify_event_t *>(event);
+                if (selectionNotify->requestor == window)
+                    return true;
+            }
+            return false;
+        });
+        if (e) // found the waited for event
             return e;
 
         if (checkManager) {
             auto reply = Q_XCB_REPLY(xcb_get_selection_owner, xcb_connection(), atom(QXcbAtom::CLIPBOARD_MANAGER));
             if (!reply || reply->owner == XCB_NONE)
-                return 0;
+                return nullptr;
         }
 
         // process other clipboard events, since someone is probably requesting data from us
-        ClipboardEvent clipboard(connection());
-        e = connection()->checkEvent(clipboard);
+        auto clipboardAtom = connection()->internAtom("CLIPBOARD");
+        e = connection()->checkEvent([clipboardAtom](xcb_generic_event_t *event, int type) {
+            xcb_atom_t selection = XCB_ATOM_NONE;
+            if (type == XCB_SELECTION_REQUEST)
+                selection = reinterpret_cast<xcb_selection_request_event_t *>(event)->selection;
+            else if (type == XCB_SELECTION_CLEAR)
+                selection = reinterpret_cast<xcb_selection_clear_event_t *>(event)->selection;
+            return selection == XCB_ATOM_PRIMARY || selection == clipboardAtom;
+        });
         if (e) {
             connection()->handleXcbEvent(e);
             free(e);
@@ -885,7 +856,7 @@ xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t win, int 
         QThread::msleep(50);
     } while (timer.elapsed() < timeout);
 
-    return 0;
+    return nullptr;
 }
 
 QByteArray QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb_atom_t property, int nbytes, bool nullterm)

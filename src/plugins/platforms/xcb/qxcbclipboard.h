@@ -89,7 +89,7 @@ public:
     QByteArray getSelection(xcb_atom_t selection, xcb_atom_t target, xcb_atom_t property, xcb_timestamp_t t = 0);
 
 private:
-    xcb_generic_event_t *waitForClipboardEvent(xcb_window_t win, int type, int timeout, bool checkManager = false);
+    xcb_generic_event_t *waitForClipboardEvent(xcb_window_t window, int type, int timeout, bool checkManager = false);
 
     xcb_atom_t sendTargetsSelection(QMimeData *d, xcb_window_t window, xcb_atom_t property);
     xcb_atom_t sendSelection(QMimeData *d, xcb_atom_t target, xcb_window_t window, xcb_atom_t property);
