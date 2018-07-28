@@ -48,10 +48,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-#include <QtNetwork>
-
 #include "dialog.h"
+
+#include <QtNetwork>
+#include <QtWidgets>
 
 static const int TotalBytes = 50 * 1024 * 1024;
 static const int PayloadSize = 64 * 1024; // 64 KB
@@ -71,15 +71,15 @@ Dialog::Dialog(QWidget *parent)
     buttonBox->addButton(startButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
 
-    connect(startButton, SIGNAL(clicked()), this, SLOT(start()));
-    connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
-    connect(&tcpServer, SIGNAL(newConnection()),
-            this, SLOT(acceptConnection()));
-    connect(&tcpClient, SIGNAL(connected()), this, SLOT(startTransfer()));
-    connect(&tcpClient, SIGNAL(bytesWritten(qint64)),
-            this, SLOT(updateClientProgress(qint64)));
-    connect(&tcpClient, SIGNAL(error(QAbstractSocket::SocketError)),
-            this, SLOT(displayError(QAbstractSocket::SocketError)));
+    connect(startButton, &QAbstractButton::clicked, this, &Dialog::start);
+    connect(quitButton, &QAbstractButton::clicked, this, &QWidget::close);
+    connect(&tcpServer, &QTcpServer::newConnection,
+            this, &Dialog::acceptConnection);
+    connect(&tcpClient, &QAbstractSocket::connected, this, &Dialog::startTransfer);
+    connect(&tcpClient, &QIODevice::bytesWritten,
+            this, &Dialog::updateClientProgress);
+    connect(&tcpClient, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),
+            this, &Dialog::displayError);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(clientProgressBar);
@@ -124,10 +124,18 @@ void Dialog::start()
 void Dialog::acceptConnection()
 {
     tcpServerConnection = tcpServer.nextPendingConnection();
-    connect(tcpServerConnection, SIGNAL(readyRead()),
-            this, SLOT(updateServerProgress()));
-    connect(tcpServerConnection, SIGNAL(error(QAbstractSocket::SocketError)),
-            this, SLOT(displayError(QAbstractSocket::SocketError)));
+    if (!tcpServerConnection) {
+        serverStatusLabel->setText(tr("Error: got invalid pending connection!"));
+        return;
+    }
+
+    connect(tcpServerConnection, &QIODevice::readyRead,
+            this, &Dialog::updateServerProgress);
+    connect(tcpServerConnection,
+            QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),
+            this, &Dialog::displayError);
+    connect(tcpServerConnection, &QTcpSocket::disconnected,
+            tcpServerConnection, &QTcpSocket::deleteLater);
 
     serverStatusLabel->setText(tr("Accepted connection"));
     tcpServer.close();
@@ -136,13 +144,13 @@ void Dialog::acceptConnection()
 void Dialog::startTransfer()
 {
     // called when the TCP client connected to the loopback server
-    bytesToWrite = TotalBytes - (int)tcpClient.write(QByteArray(PayloadSize, '@'));
+    bytesToWrite = TotalBytes - int(tcpClient.write(QByteArray(PayloadSize, '@')));
     clientStatusLabel->setText(tr("Connected"));
 }
 
 void Dialog::updateServerProgress()
 {
-    bytesReceived += (int)tcpServerConnection->bytesAvailable();
+    bytesReceived += int(tcpServerConnection->bytesAvailable());
     tcpServerConnection->readAll();
 
     serverProgressBar->setMaximum(TotalBytes);
@@ -161,17 +169,16 @@ void Dialog::updateServerProgress()
 
 void Dialog::updateClientProgress(qint64 numBytes)
 {
-    // callen when the TCP client has written some bytes
-    bytesWritten += (int)numBytes;
+    // called when the TCP client has written some bytes
+    bytesWritten += int(numBytes);
 
     // only write more if not finished and when the Qt write buffer is below a certain size.
-    if (bytesToWrite > 0 && tcpClient.bytesToWrite() <= 4*PayloadSize)
-        bytesToWrite -= (int)tcpClient.write(QByteArray(qMin(bytesToWrite, PayloadSize), '@'));
+    if (bytesToWrite > 0 && tcpClient.bytesToWrite() <= 4 * PayloadSize)
+        bytesToWrite -= tcpClient.write(QByteArray(qMin(bytesToWrite, PayloadSize), '@'));
 
     clientProgressBar->setMaximum(TotalBytes);
     clientProgressBar->setValue(bytesWritten);
-    clientStatusLabel->setText(tr("Sent %1MB")
-                               .arg(bytesWritten / (1024 * 1024)));
+    clientStatusLabel->setText(tr("Sent %1MB").arg(bytesWritten / (1024 * 1024)));
 }
 
 void Dialog::displayError(QAbstractSocket::SocketError socketError)

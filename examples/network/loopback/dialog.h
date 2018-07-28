@@ -60,9 +60,6 @@ class QDialogButtonBox;
 class QLabel;
 class QProgressBar;
 class QPushButton;
-class QTcpServer;
-class QTcpSocket;
-class QAction;
 QT_END_NAMESPACE
 
 class Dialog : public QDialog
@@ -70,7 +67,7 @@ class Dialog : public QDialog
     Q_OBJECT
 
 public:
-    Dialog(QWidget *parent = 0);
+    Dialog(QWidget *parent = nullptr);
 
 public slots:
     void start();
@@ -81,21 +78,21 @@ public slots:
     void displayError(QAbstractSocket::SocketError socketError);
 
 private:
-    QProgressBar *clientProgressBar;
-    QProgressBar *serverProgressBar;
-    QLabel *clientStatusLabel;
-    QLabel *serverStatusLabel;
+    QProgressBar *clientProgressBar = nullptr;
+    QProgressBar *serverProgressBar = nullptr;
+    QLabel *clientStatusLabel = nullptr;
+    QLabel *serverStatusLabel = nullptr;
 
-    QPushButton *startButton;
-    QPushButton *quitButton;
-    QDialogButtonBox *buttonBox;
+    QPushButton *startButton = nullptr;
+    QPushButton *quitButton = nullptr;
+    QDialogButtonBox *buttonBox = nullptr;
 
     QTcpServer tcpServer;
     QTcpSocket tcpClient;
-    QTcpSocket *tcpServerConnection;
-    int bytesToWrite;
-    int bytesWritten;
-    int bytesReceived;
+    QTcpSocket *tcpServerConnection = nullptr;
+    int bytesToWrite = 0;
+    int bytesWritten = 0;
+    int bytesReceived = 0;
 };
 
 #endif
