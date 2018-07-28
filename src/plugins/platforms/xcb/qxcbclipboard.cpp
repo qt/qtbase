@@ -305,7 +305,7 @@ QXcbClipboard::~QXcbClipboard()
             connection()->sync();
 
             // waiting until the clipboard manager fetches the content.
-            if (!waitForClipboardEvent(m_owner, XCB_SELECTION_NOTIFY, clipboard_timeout, true)) {
+            if (!waitForClipboardEvent(m_owner, XCB_SELECTION_NOTIFY, true)) {
                 qWarning("QXcbClipboard: Unable to receive an event from the "
                          "clipboard manager in a reasonable time");
             }
@@ -807,7 +807,7 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
     return ok;
 }
 
-xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t window, int type, int timeout, bool checkManager)
+xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t window, int type, bool checkManager)
 {
     QElapsedTimer timer;
     timer.start();
@@ -854,7 +854,7 @@ xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t window, i
 
         // sleep 50 ms, so we don't use up CPU cycles all the time.
         QThread::msleep(50);
-    } while (timer.elapsed() < timeout);
+    } while (timer.elapsed() < clipboard_timeout);
 
     return nullptr;
 }
@@ -878,7 +878,7 @@ QByteArray QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb
 
     for (;;) {
         connection()->flush();
-        xcb_generic_event_t *ge = waitForClipboardEvent(win, XCB_PROPERTY_NOTIFY, clipboard_timeout);
+        xcb_generic_event_t *ge = waitForClipboardEvent(win, XCB_PROPERTY_NOTIFY);
         if (!ge)
             break;
         xcb_property_notify_event_t *event = (xcb_property_notify_event_t *)ge;
@@ -941,7 +941,7 @@ QByteArray QXcbClipboard::getSelection(xcb_atom_t selection, xcb_atom_t target, 
 
     connection()->sync();
 
-    xcb_generic_event_t *ge = waitForClipboardEvent(win, XCB_SELECTION_NOTIFY, clipboard_timeout);
+    xcb_generic_event_t *ge = waitForClipboardEvent(win, XCB_SELECTION_NOTIFY);
     bool no_selection = !ge || ((xcb_selection_notify_event_t *)ge)->property == XCB_NONE;
     free(ge);
 
