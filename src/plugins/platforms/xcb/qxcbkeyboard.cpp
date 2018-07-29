@@ -161,6 +161,13 @@ static constexpr const auto KeyTbl = qMakeArray(
         Xkb2Qt<XKB_KEY_KP_Decimal,              Qt::Key_Period>,
         Xkb2Qt<XKB_KEY_KP_Divide,               Qt::Key_Slash>,
 
+        // special non-XF86 function keys
+
+        Xkb2Qt<XKB_KEY_Undo,                    Qt::Key_Undo>,
+        Xkb2Qt<XKB_KEY_Redo,                    Qt::Key_Redo>,
+        Xkb2Qt<XKB_KEY_Find,                    Qt::Key_Find>,
+        Xkb2Qt<XKB_KEY_Cancel,                  Qt::Key_Cancel>,
+
         // International input method support keys
 
         // International & multi-key character composition
