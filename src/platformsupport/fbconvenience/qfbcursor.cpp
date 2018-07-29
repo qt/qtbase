@@ -63,9 +63,9 @@ QFbCursor::QFbCursor(QFbScreen *screen)
       mCursorImage(nullptr),
       mDeviceListener(nullptr)
 {
-    QByteArray hideCursorVal = qgetenv("QT_QPA_FB_HIDECURSOR");
-    if (!hideCursorVal.isEmpty())
-        mVisible = hideCursorVal.toInt() == 0;
+    const char *envVar = "QT_QPA_FB_HIDECURSOR";
+    if (qEnvironmentVariableIsSet(envVar))
+        mVisible = qEnvironmentVariableIntValue(envVar) == 0;
     if (!mVisible)
         return;
 
@@ -83,7 +83,7 @@ QFbCursor::~QFbCursor()
     delete mDeviceListener;
 }
 
-QRect QFbCursor::getCurrentRect()
+QRect QFbCursor::getCurrentRect() const
 {
     QRect rect = mCursorImage->image()->rect().translated(-mCursorImage->hotspot().x(),
                                                           -mCursorImage->hotspot().y());
@@ -102,6 +102,8 @@ void QFbCursor::setPos(const QPoint &pos)
 {
     QGuiApplicationPrivate::inputDeviceManager()->setCursorPos(pos);
     m_pos = pos;
+    if (!mVisible)
+        return;
     mCurrentRect = getCurrentRect();
     if (mOnScreen || mScreen->geometry().intersects(mCurrentRect.translated(mScreen->geometry().topLeft())))
         setDirty();
@@ -112,6 +114,8 @@ void QFbCursor::pointerEvent(const QMouseEvent &e)
     if (e.type() != QEvent::MouseMove)
         return;
     m_pos = e.screenPos().toPoint();
+    if (!mVisible)
+        return;
     mCurrentRect = getCurrentRect();
     if (mOnScreen || mScreen->geometry().intersects(mCurrentRect.translated(mScreen->geometry().topLeft())))
         setDirty();
@@ -149,23 +153,28 @@ QRect QFbCursor::dirtyRect()
 
 void QFbCursor::setCursor(Qt::CursorShape shape)
 {
-    mCursorImage->set(shape);
+    if (mCursorImage)
+        mCursorImage->set(shape);
 }
 
 void QFbCursor::setCursor(const QImage &image, int hotx, int hoty)
 {
-    mCursorImage->set(image, hotx, hoty);
+    if (mCursorImage)
+        mCursorImage->set(image, hotx, hoty);
 }
 
 void QFbCursor::setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
 {
-    mCursorImage->set(data, mask, width, height, hotX, hotY);
+    if (mCursorImage)
+        mCursorImage->set(data, mask, width, height, hotX, hotY);
 }
 
 #ifndef QT_NO_CURSOR
 void QFbCursor::changeCursor(QCursor * widgetCursor, QWindow *window)
 {
     Q_UNUSED(window);
+    if (!mVisible)
+        return;
     const Qt::CursorShape shape = widgetCursor ? widgetCursor->shape() : Qt::ArrowCursor;
 
     if (shape == Qt::BitmapCursor) {
@@ -196,7 +205,7 @@ void QFbCursor::setDirty()
 
 void QFbCursor::updateMouseStatus()
 {
-    mVisible = mDeviceListener->hasMouse();
+    mVisible = mDeviceListener ? mDeviceListener->hasMouse() : false;
     mScreen->setDirty(mVisible ? getCurrentRect() : lastPainted());
 }
 
