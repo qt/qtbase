@@ -1111,8 +1111,6 @@ QSize QTableView::viewportSizeHint() const
     Q_D(const QTableView);
     QSize result( (d->verticalHeader->isHidden() ? 0 : d->verticalHeader->width()) + d->horizontalHeader->length(),
                   (d->horizontalHeader->isHidden() ? 0 : d->horizontalHeader->height()) + d->verticalHeader->length());
-    result += QSize(verticalScrollBar()->isVisible() ? verticalScrollBar()->width() : 0,
-                    horizontalScrollBar()->isVisible() ? horizontalScrollBar()->height() : 0);
     return result;
 }
 

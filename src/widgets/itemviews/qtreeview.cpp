@@ -2686,11 +2686,7 @@ QSize QTreeView::viewportSizeHint() const
     QSize result = QSize(d->header->length(), deepestRect.bottom() + 1);
 
     // add size for header
-    result += QSize(0, d->header->isVisible() ? d->header->height() : 0);
-
-    // add size for scrollbars
-    result += QSize(verticalScrollBar()->isVisible() ? verticalScrollBar()->width() : 0,
-                    horizontalScrollBar()->isVisible() ? horizontalScrollBar()->height() : 0);
+    result += QSize(0, d->header->isHidden() ? 0 : d->header->height());
 
     return result;
 }

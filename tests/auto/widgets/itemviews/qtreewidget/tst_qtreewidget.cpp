@@ -115,6 +115,8 @@ private slots:
     void changeDataWithSorting();
     void changeDataWithStableSorting_data();
     void changeDataWithStableSorting();
+    void sizeHint_data();
+    void sizeHint();
 
     void sortedIndexOfChild_data();
     void sortedIndexOfChild();
@@ -2619,6 +2621,50 @@ void tst_QTreeWidget::changeDataWithStableSorting()
 
     QCOMPARE(dataChangedSpy.count(), 1);
     QCOMPARE(layoutChangedSpy.count(), reorderingExpected ? 1 : 0);
+}
+
+void tst_QTreeWidget::sizeHint_data()
+{
+    QTest::addColumn<int>("scrollBarPolicy");
+    QTest::addColumn<QSize>("viewSize");
+    QTest::newRow("ScrollBarAlwaysOn") << static_cast<int>(Qt::ScrollBarAlwaysOn) << QSize();
+    QTest::newRow("ScrollBarAlwaysOff") << static_cast<int>(Qt::ScrollBarAlwaysOff) << QSize();
+    // make sure the scrollbars are shown by resizing the view to 40x40
+    QTest::newRow("ScrollBarAsNeeded (40x40)") << static_cast<int>(Qt::ScrollBarAsNeeded) << QSize(40, 40);
+    QTest::newRow("ScrollBarAsNeeded (1000x1000)") << static_cast<int>(Qt::ScrollBarAsNeeded) << QSize(1000, 1000);
+}
+
+void tst_QTreeWidget::sizeHint()
+{
+    QFETCH(int, scrollBarPolicy);
+    QFETCH(QSize, viewSize);
+
+    QTreeWidget view;
+    view.setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+    view.setVerticalScrollBarPolicy(static_cast<Qt::ScrollBarPolicy>(scrollBarPolicy));
+    view.setHorizontalScrollBarPolicy(static_cast<Qt::ScrollBarPolicy>(scrollBarPolicy));
+    view.setColumnCount(2);
+    for (int i = 0 ; i < view.columnCount(); ++i)
+        view.addTopLevelItem(new QTreeWidgetItem(QStringList{"foo","bar"}));
+
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    if (viewSize.isValid()) {
+        view.resize(viewSize);
+        view.setColumnWidth(0, 100);
+        QTRY_COMPARE(view.size(), viewSize);
+    }
+
+    auto sizeHint = view.sizeHint();
+    view.hide();
+    QCOMPARE(view.sizeHint(), sizeHint);
+
+    view.header()->hide();
+    view.show();
+    sizeHint = view.sizeHint();
+    view.hide();
+    QCOMPARE(view.sizeHint(), sizeHint);
 }
 
 void tst_QTreeWidget::itemOperatorLessThan()

@@ -1604,8 +1604,10 @@ QSize QAbstractScrollArea::sizeHint() const
     if (!d->sizeHint.isValid() || d->sizeAdjustPolicy == QAbstractScrollArea::AdjustToContents) {
         const int f = 2 * d->frameWidth;
         const QSize frame( f, f );
-        const QSize scrollbars(d->vbarpolicy == Qt::ScrollBarAlwaysOn ? d->vbar->sizeHint().width() : 0,
-                               d->hbarpolicy == Qt::ScrollBarAlwaysOn ? d->hbar->sizeHint().height() : 0);
+        const bool vbarHidden = d->vbar->isHidden() || d->vbarpolicy == Qt::ScrollBarAlwaysOff;
+        const bool hbarHidden = d->hbar->isHidden() || d->hbarpolicy == Qt::ScrollBarAlwaysOff;
+        const QSize scrollbars(vbarHidden ? 0 : d->vbar->sizeHint().width(),
+                               hbarHidden ? 0 : d->hbar->sizeHint().height());
         d->sizeHint = frame + scrollbars + viewportSizeHint();
     }
     return d->sizeHint;
