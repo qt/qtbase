@@ -217,7 +217,6 @@ private:
     xcb_randr_crtc_t m_crtc;
     xcb_randr_mode_t m_mode = XCB_NONE;
     bool m_primary = false;
-    uint8_t m_rotation = XCB_RANDR_ROTATION_ROTATE_0;
 
     QString m_outputName;
     QSizeF m_outputSizeMillimeters;
