@@ -251,6 +251,20 @@ bool QHttpNetworkConnectionChannel::sendRequest()
     return protocolHandler->sendRequest();
 }
 
+/*
+ * Invoke "protocolHandler->sendRequest" using a queued connection.
+ * It's used to return to the event loop before invoking sendRequest when
+ * there's a very real chance that the request could have been aborted
+ * (i.e. after having emitted 'encrypted').
+ */
+void QHttpNetworkConnectionChannel::sendRequestDelayed()
+{
+    QMetaObject::invokeMethod(this, [this] {
+        Q_ASSERT(!protocolHandler.isNull());
+        if (reply)
+            protocolHandler->sendRequest();
+    }, Qt::ConnectionType::QueuedConnection);
+}
 
 void QHttpNetworkConnectionChannel::_q_receiveReply()
 {
@@ -1234,7 +1248,7 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
             emit reply->encrypted();
         }
         if (reply)
-            sendRequest();
+            sendRequestDelayed();
     }
 }
 

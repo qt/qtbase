@@ -392,6 +392,7 @@ private Q_SLOTS:
     void ignoreSslErrorsListWithSlot_data();
     void ignoreSslErrorsListWithSlot();
     void encrypted();
+    void abortOnEncrypted();
     void sslConfiguration_data();
     void sslConfiguration();
 #ifdef QT_BUILD_INTERNAL
@@ -6242,6 +6243,37 @@ void tst_QNetworkReply::encrypted()
     QCOMPARE(spy.count(), 1);
 
     reply->deleteLater();
+}
+
+void tst_QNetworkReply::abortOnEncrypted()
+{
+    SslServer server;
+    server.listen();
+    if (!server.isListening())
+        QSKIP("Server fails to listen. Skipping since QTcpServer is covered in another test.");
+
+    server.connect(&server, &SslServer::newEncryptedConnection, [&server]() {
+            connect(server.socket, &QTcpSocket::readyRead, server.socket, []() {
+                // This slot must not be invoked!
+                QVERIFY(false);
+            });
+        });
+
+    QNetworkAccessManager nm;
+    QNetworkReply *reply = nm.get(QNetworkRequest(QUrl(QString("https://localhost:%1").arg(server.serverPort()))));
+    reply->ignoreSslErrors();
+
+    connect(reply, &QNetworkReply::encrypted, [reply, &nm]() {
+            reply->abort();
+            nm.clearConnectionCache();
+        });
+
+    QSignalSpy spyEncrypted(reply, &QNetworkReply::encrypted);
+    QTRY_COMPARE(spyEncrypted.count(), 1);
+
+    // Wait for the socket to be closed again in order to be sure QTcpSocket::readyRead would have been emitted.
+    QTRY_VERIFY(server.socket != nullptr);
+    QTRY_COMPARE(server.socket->state(), QAbstractSocket::UnconnectedState);
 }
 
 void tst_QNetworkReply::sslConfiguration()
