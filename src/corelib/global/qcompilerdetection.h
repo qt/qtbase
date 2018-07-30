@@ -1153,8 +1153,16 @@
 #endif
 
 #if defined(__cpp_enumerator_attributes) && __cpp_enumerator_attributes >= 201411
+#if defined(Q_CC_MSVC)
+// Can't mark enum values as __declspec(deprecated) with MSVC, also can't move
+// everything to [[deprecated]] because MSVC gives a compilation error when marking
+// friend methods of a class as [[deprecated("text")]], breaking qstring.h
+#  define Q_DECL_ENUMERATOR_DEPRECATED [[deprecated]]
+#  define Q_DECL_ENUMERATOR_DEPRECATED_X(x) [[deprecated(x)]]
+#else
 #  define Q_DECL_ENUMERATOR_DEPRECATED Q_DECL_DEPRECATED
 #  define Q_DECL_ENUMERATOR_DEPRECATED_X(x) Q_DECL_DEPRECATED_X(x)
+#endif
 #endif
 
 /*
