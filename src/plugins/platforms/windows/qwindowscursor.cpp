@@ -549,6 +549,7 @@ CursorHandlePtr QWindowsCursor::standardWindowCursor(Qt::CursorShape shape)
 }
 
 HCURSOR QWindowsCursor::m_overriddenCursor = nullptr;
+HCURSOR QWindowsCursor::m_overrideCursor = nullptr;
 
 /*!
     \brief Return cached pixmap cursor or create new one.
@@ -621,11 +622,20 @@ void QWindowsCursor::changeCursor(QCursor *cursorIn, QWindow *window)
     }
 }
 
+// QTBUG-69637: Override cursors can get reset externally when moving across
+// window borders. Enforce the cursor again (to be called from enter event).
+void QWindowsCursor::enforceOverrideCursor()
+{
+    if (hasOverrideCursor() && m_overrideCursor != GetCursor())
+        SetCursor(m_overrideCursor);
+}
+
 void QWindowsCursor::setOverrideCursor(const QCursor &cursor)
 {
     const CursorHandlePtr wcursor = cursorHandle(cursor);
-    if (wcursor->handle()) {
-        const HCURSOR previousCursor = SetCursor(wcursor->handle());
+    if (const auto overrideCursor = wcursor->handle()) {
+        m_overrideCursor = overrideCursor;
+        const HCURSOR previousCursor = SetCursor(overrideCursor);
         if (m_overriddenCursor == nullptr)
             m_overriddenCursor = previousCursor;
     } else {
@@ -638,7 +648,7 @@ void QWindowsCursor::clearOverrideCursor()
 {
     if (m_overriddenCursor) {
         SetCursor(m_overriddenCursor);
-        m_overriddenCursor = nullptr;
+        m_overriddenCursor = m_overrideCursor = nullptr;
     }
 }
 
