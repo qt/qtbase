@@ -140,6 +140,10 @@ void tst_QPluginLoader::cleanup()
 
 void tst_QPluginLoader::errorString()
 {
+#if !defined(QT_SHARED)
+    QSKIP("This test requires Qt to create shared libraries.");
+#endif
+
     const QString unknown(QLatin1String("Unknown error"));
 
     {
@@ -224,6 +228,9 @@ void tst_QPluginLoader::errorString()
 
 void tst_QPluginLoader::loadHints()
 {
+#if !defined(QT_SHARED)
+    QSKIP("This test requires Qt to create shared libraries.");
+#endif
     QPluginLoader loader;
     QCOMPARE(loader.loadHints(), (QLibrary::LoadHints)0);   //Do not crash
     loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
@@ -233,6 +240,9 @@ void tst_QPluginLoader::loadHints()
 
 void tst_QPluginLoader::deleteinstanceOnUnload()
 {
+#if !defined(QT_SHARED)
+    QSKIP("This test requires Qt to create shared libraries.");
+#endif
     for (int pass = 0; pass < 2; ++pass) {
         QPluginLoader loader1;
         loader1.setFileName( sys_qualifiedLibraryName("theplugin"));     //a plugin
@@ -268,6 +278,9 @@ void tst_QPluginLoader::deleteinstanceOnUnload()
 
 void tst_QPluginLoader::loadDebugObj()
 {
+#if !defined(QT_SHARED)
+    QSKIP("This test requires a shared build of Qt, as QPluginLoader::setFileName is a no-op in static builds");
+#endif
 #if defined (__ELF__)
     QVERIFY(QFile::exists(QFINDTESTDATA("elftest/debugobj.so")));
     QPluginLoader lib1(QFINDTESTDATA("elftest/debugobj.so"));
@@ -277,6 +290,9 @@ void tst_QPluginLoader::loadDebugObj()
 
 void tst_QPluginLoader::loadCorruptElf()
 {
+#if !defined(QT_SHARED)
+    QSKIP("This test requires a shared build of Qt, as QPluginLoader::setFileName is a no-op in static builds");
+#endif
 #if defined (__ELF__)
     if (sizeof(void*) == 8) {
         QVERIFY(QFile::exists(QFINDTESTDATA("elftest/corrupt1.elf64.so")));
@@ -377,6 +393,9 @@ void tst_QPluginLoader::loadMachO()
 #if defined (Q_OS_UNIX)
 void tst_QPluginLoader::loadGarbage()
 {
+#if !defined(QT_SHARED)
+    QSKIP("This test requires a shared build of Qt, as QPluginLoader::setFileName is a no-op in static builds");
+#endif
     for (int i=0; i<5; i++) {
         const QString name = QLatin1String("elftest/garbage") + QString::number(i + 1) + QLatin1String(".so");
         QPluginLoader lib(QFINDTESTDATA(name));
@@ -388,6 +407,9 @@ void tst_QPluginLoader::loadGarbage()
 
 void tst_QPluginLoader::relativePath()
 {
+#if !defined(QT_SHARED)
+    QSKIP("This test requires Qt to create shared libraries.");
+#endif
     // Windows binaries run from release and debug subdirs, so we can't rely on the current dir.
     const QString binDir = QFINDTESTDATA("bin");
     QVERIFY(!binDir.isEmpty());
@@ -402,6 +424,9 @@ void tst_QPluginLoader::relativePath()
 
 void tst_QPluginLoader::absolutePath()
 {
+#if !defined(QT_SHARED)
+    QSKIP("This test requires Qt to create shared libraries.");
+#endif
     // Windows binaries run from release and debug subdirs, so we can't rely on the current dir.
     const QString binDir = QFINDTESTDATA("bin");
     QVERIFY(!binDir.isEmpty());
@@ -416,6 +441,9 @@ void tst_QPluginLoader::absolutePath()
 
 void tst_QPluginLoader::reloadPlugin()
 {
+#if !defined(QT_SHARED)
+    QSKIP("This test requires Qt to create shared libraries.");
+#endif
     QPluginLoader loader;
     loader.setFileName( sys_qualifiedLibraryName("theplugin"));     //a plugin
     loader.load(); // not recommended, instance() should do the job.
@@ -451,6 +479,9 @@ void tst_QPluginLoader::preloadedPlugin_data()
 
 void tst_QPluginLoader::preloadedPlugin()
 {
+#if !defined(QT_SHARED)
+    QSKIP("This test requires Qt to create shared libraries.");
+#endif
     // check that using QPluginLoader does not interfere with QLibrary
     QFETCH(QString, libname);
     QLibrary lib(libname);
