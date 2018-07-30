@@ -56,12 +56,9 @@
 
 QT_BEGIN_NAMESPACE
 
-class QUnixEventDispatcherQPAPrivate;
-
 class QUnixEventDispatcherQPA : public QEventDispatcherUNIX
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QUnixEventDispatcherQPA)
 
 public:
     explicit QUnixEventDispatcherQPA(QObject *parent = 0);
