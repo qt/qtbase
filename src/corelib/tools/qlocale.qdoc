@@ -939,6 +939,8 @@
     locale doesn't support narrow names, so you should avoid using it
     for date formatting. Also, for the system locale this format is
     the same as ShortFormat.
+
+    \sa QDateTime::toString(), QDate::toString(), QTime::toString()
 */
 
 /*!
@@ -1103,6 +1105,8 @@
   \value ListToSeparatedString a string that represents a join of a given QStringList with a locale-defined separator.
   \value NativeLanguageName a string that represents the name of the native language.
   \value NativeCountryName a string that represents the name of the native country.
+
+  \sa FormatType
 */
 
 /*!

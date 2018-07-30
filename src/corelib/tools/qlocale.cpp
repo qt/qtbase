@@ -1773,6 +1773,8 @@ QString QLocale::toString(qulonglong i) const
     Returns a localized string representation of the given \a date in the
     specified \a format.
     If \a format is an empty string, an empty string is returned.
+
+    \sa QDate::toString()
 */
 
 QString QLocale::toString(const QDate &date, const QString &format) const
@@ -1787,6 +1789,8 @@ QString QLocale::toString(const QDate &date, const QString &format) const
     Returns a localized string representation of the given \a date in the
     specified \a format.
     If \a format is an empty string, an empty string is returned.
+
+    \sa QDate::toString()
 */
 QString QLocale::toString(const QDate &date, QStringView format) const
 {
@@ -1839,6 +1843,8 @@ static bool timeFormatContainsAP(QStringView format)
     Returns a localized string representation of the given \a time according
     to the specified \a format.
     If \a format is an empty string, an empty string is returned.
+
+    \sa QTime::toString()
 */
 QString QLocale::toString(const QTime &time, const QString &format) const
 {
@@ -1852,6 +1858,8 @@ QString QLocale::toString(const QTime &time, const QString &format) const
     Returns a localized string representation of the given \a time according
     to the specified \a format.
     If \a format is an empty string, an empty string is returned.
+
+    \sa QTime::toString()
 */
 QString QLocale::toString(const QTime &time, QStringView format) const
 {
@@ -1865,6 +1873,8 @@ QString QLocale::toString(const QTime &time, QStringView format) const
     Returns a localized string representation of the given \a dateTime according
     to the specified \a format.
     If \a format is an empty string, an empty string is returned.
+
+    \sa QDateTime::toString(), QDate::toString(), QTime::toString()
 */
 
 QString QLocale::toString(const QDateTime &dateTime, const QString &format) const
@@ -1879,6 +1889,8 @@ QString QLocale::toString(const QDateTime &dateTime, const QString &format) cons
     Returns a localized string representation of the given \a dateTime according
     to the specified \a format.
     If \a format is an empty string, an empty string is returned.
+
+    \sa QDateTime::toString(), QDate::toString(), QTime::toString()
 */
 QString QLocale::toString(const QDateTime &dateTime, QStringView format) const
 {
