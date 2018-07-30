@@ -38,16 +38,13 @@
 ****************************************************************************/
 
 #include "qsslconfiguration.h"
+#include "qdtls_openssl_p.h"
 #include "qudpsocket.h"
 #include "qdtls_p.h"
 #include "qssl_p.h"
 #include "qdtls.h"
 
 #include "qglobal.h"
-
-#if QT_CONFIG(openssl)
-#include "qdtls_openssl_p.h"
-#endif // QT_CONFIG
 
 QT_BEGIN_NAMESPACE
 
@@ -122,9 +119,7 @@ bool QDtlsBasePrivate::setCookieGeneratorParameters(QCryptographicHash::Algorith
 }
 
 QDtlsClientVerifier::QDtlsClientVerifier(QObject *parent)
-#if QT_CONFIG(openssl)
     : QObject(*new QDtlsClientVerifierOpenSSL, parent)
-#endif // openssl
 {
     Q_D(QDtlsClientVerifier);
 
@@ -198,9 +193,7 @@ QString QDtlsClientVerifier::dtlsErrorString() const
 }
 
 QDtls::QDtls(QSslSocket::SslMode mode, QObject *parent)
-#if QT_CONFIG(openssl)
     : QObject(*new QDtlsPrivateOpenSSL, parent)
-#endif
 {
     Q_D(QDtls);
 
