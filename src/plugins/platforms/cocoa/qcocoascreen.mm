@@ -59,7 +59,7 @@ class QFontEngineFT;
 QCocoaScreen::QCocoaScreen(int screenIndex)
     : QPlatformScreen(), m_screenIndex(screenIndex), m_refreshRate(60.0)
 {
-    updateGeometry();
+    updateProperties();
     m_cursor = new QCocoaCursor;
 }
 
@@ -115,11 +115,16 @@ static QString displayName(CGDirectDisplayID displayID)
     return QString();
 }
 
-void QCocoaScreen::updateGeometry()
+void QCocoaScreen::updateProperties()
 {
     NSScreen *nsScreen = nativeScreen();
     if (!nsScreen)
         return;
+
+    const QRect previousGeometry = m_geometry;
+    const QRect previousAvailableGeometry = m_availableGeometry;
+    const QDpi previousLogicalDpi = m_logicalDpi;
+    const qreal previousRefreshRate = m_refreshRate;
 
     // The reference screen for the geometry is always the primary screen
     QRectF primaryScreenGeometry = QRectF::fromCGRect([[NSScreen screens] firstObject].frame);
@@ -142,9 +147,14 @@ void QCocoaScreen::updateGeometry()
 
     m_name = displayName(dpy);
 
-    QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry(), availableGeometry());
-    QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen(), m_logicalDpi.first, m_logicalDpi.second);
-    QWindowSystemInterface::handleScreenRefreshRateChange(screen(), m_refreshRate);
+    if (m_geometry != previousGeometry || m_availableGeometry != previousAvailableGeometry)
+        QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry(), availableGeometry());
+    if (m_logicalDpi != previousLogicalDpi)
+        QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen(), m_logicalDpi.first, m_logicalDpi.second);
+    if (m_refreshRate != previousRefreshRate)
+        QWindowSystemInterface::handleScreenRefreshRateChange(screen(), m_refreshRate);
+
+    qCDebug(lcQpaScreen) << "Updated properties for" << this;
 }
 
 // ----------------------- Display link -----------------------

@@ -225,8 +225,6 @@ QCocoaIntegration::Options QCocoaIntegration::options() const
     return mOptions;
 }
 
-Q_LOGGING_CATEGORY(lcQpaScreen, "qt.qpa.screen");
-
 /*!
     \brief Synchronizes the screen list, adds new screens, removes deleted ones
 */
@@ -265,8 +263,7 @@ void QCocoaIntegration::updateScreens()
             }
         if (screen) {
             remainingScreens.remove(screen);
-            screen->updateGeometry();
-            qCDebug(lcQpaScreen) << "Updated properties of" << screen;
+            screen->updateProperties();
         } else {
             screen = new QCocoaScreen(i);
             mScreens.append(screen);

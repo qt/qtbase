@@ -1218,11 +1218,21 @@ void QCocoaWindow::windowDidChangeScreen()
 
     const bool wasRunningDisplayLink = static_cast<QCocoaScreen *>(screen())->isRunningDisplayLink();
 
-    if (QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenForNSScreen(m_view.window.screen)) {
-        QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(window(), cocoaScreen->screen());
+    if (QCocoaScreen *newScreen = QCocoaIntegration::instance()->screenForNSScreen(m_view.window.screen)) {
+        if (newScreen == screen()) {
+            // Screen properties have changed. Will be handled by
+            // NSApplicationDidChangeScreenParametersNotification
+            // in QCocoaIntegration::updateScreens().
+            return;
+        }
+
+        qCDebug(lcQpaWindow) << window() << "moved to" << newScreen;
+        QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(window(), newScreen->screen());
 
         if (hasPendingUpdateRequest() && wasRunningDisplayLink)
             requestUpdate(); // Restart display-link on new screen
+    } else {
+        qCWarning(lcQpaWindow) << "Failed to get QCocoaScreen for" << m_view.window.screen;
     }
 }
 

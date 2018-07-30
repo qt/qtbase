@@ -75,7 +75,7 @@ public:
     // Additional methods
     void setVirtualSiblings(const QList<QPlatformScreen *> &siblings) { m_siblings = siblings; }
     NSScreen *nativeScreen() const;
-    void updateGeometry();
+    void updateProperties();
 
     void requestUpdate();
     void deliverUpdateRequests();
