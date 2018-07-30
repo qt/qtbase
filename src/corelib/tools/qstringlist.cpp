@@ -323,6 +323,7 @@ static bool stringList_contains(const QStringList &stringList, const T &str, Qt:
 }
 
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn bool QStringList::contains(const QString &str, Qt::CaseSensitivity cs) const
 
@@ -332,7 +333,18 @@ static bool stringList_contains(const QStringList &stringList, const T &str, Qt:
 
     \sa indexOf(), lastIndexOf(), QString::contains()
  */
-bool QtPrivate::QStringList_contains(const QStringList *that, const QString &str,
+#endif
+
+/*!
+    \fn bool QStringList::contains(QStringView str, Qt::CaseSensitivity cs) const
+    \overload
+    \since 5.12
+
+    Returns \c true if the list contains the string \a str; otherwise
+    returns \c false. The search is case insensitive if \a cs is
+    Qt::CaseInsensitive; the search is case sensitive by default.
+ */
+bool QtPrivate::QStringList_contains(const QStringList *that, QStringView str,
                                      Qt::CaseSensitivity cs)
 {
     return stringList_contains(*that, str, cs);
