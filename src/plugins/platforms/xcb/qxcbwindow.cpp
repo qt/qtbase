@@ -1807,12 +1807,11 @@ bool QXcbWindow::requestSystemTrayWindowDock()
     return true;
 }
 
-bool QXcbWindow::handleGenericEvent(xcb_generic_event_t *event, long *result)
+bool QXcbWindow::handleNativeEvent(xcb_generic_event_t *event)
 {
-    return QWindowSystemInterface::handleNativeEvent(window(),
-                                                     connection()->nativeInterface()->genericEventFilterType(),
-                                                     event,
-                                                     result);
+    auto eventType = connection()->nativeInterface()->nativeEventType();
+    long result = 0; // Used only by MS Windows
+    return QWindowSystemInterface::handleNativeEvent(window(), eventType, event, &result);
 }
 
 void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)

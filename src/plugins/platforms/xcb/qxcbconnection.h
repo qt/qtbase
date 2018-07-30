@@ -335,7 +335,7 @@ class QXcbWindowEventListener
 {
 public:
     virtual ~QXcbWindowEventListener() {}
-    virtual bool handleGenericEvent(xcb_generic_event_t *, long *) { return false; }
+    virtual bool handleNativeEvent(xcb_generic_event_t *) { return false; }
 
     virtual void handleExposeEvent(const xcb_expose_event_t *) {}
     virtual void handleClientMessageEvent(const xcb_client_message_event_t *) {}
@@ -553,7 +553,6 @@ private:
     void initializeXShape();
     void initializeXKB();
     void initializeXSync();
-    void handleClientMessageEvent(const xcb_client_message_event_t *event);
     QXcbScreen* findScreenForCrtc(xcb_window_t rootWindow, xcb_randr_crtc_t crtc) const;
     QXcbScreen* findScreenForOutput(xcb_window_t rootWindow, xcb_randr_output_t output) const;
     QXcbVirtualDesktop* virtualDesktopForRootWindow(xcb_window_t rootWindow) const;

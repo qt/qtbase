@@ -92,8 +92,7 @@ static int resourceType(const QByteArray &key)
     return int(result - names);
 }
 
-QXcbNativeInterface::QXcbNativeInterface() :
-    m_genericEventFilterType(QByteArrayLiteral("xcb_generic_event_t"))
+QXcbNativeInterface::QXcbNativeInterface()
 {
 }
 

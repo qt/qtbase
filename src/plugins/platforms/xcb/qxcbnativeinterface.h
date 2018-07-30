@@ -98,7 +98,7 @@ public:
 
     QFunctionPointer platformFunction(const QByteArray &function) const override;
 
-    inline const QByteArray &genericEventFilterType() const { return m_genericEventFilterType; }
+    inline const QByteArray &nativeEventType() const { return m_nativeEventType; }
 
     void *displayForWindow(QWindow *window);
     void *connectionForWindow(QWindow *window);
@@ -131,7 +131,7 @@ signals:
     void systemTrayWindowChanged(QScreen *screen);
 
 private:
-    const QByteArray m_genericEventFilterType;
+    const QByteArray m_nativeEventType = QByteArrayLiteral("xcb_generic_event_t");
 
     xcb_atom_t m_sysTraySelectionAtom = XCB_ATOM_NONE;
 

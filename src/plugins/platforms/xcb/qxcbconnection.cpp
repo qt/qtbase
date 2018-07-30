@@ -733,22 +733,22 @@ QXcbWindow *QXcbConnection::platformWindowFromId(xcb_window_t id)
 
 #define HANDLE_PLATFORM_WINDOW_EVENT(event_t, windowMember, handler) \
 { \
-    event_t *e = reinterpret_cast<event_t *>(event); \
+    auto e = reinterpret_cast<event_t *>(event); \
     if (QXcbWindowEventListener *eventListener = windowEventListenerFromId(e->windowMember))  { \
-        handled = eventListener->handleGenericEvent(event, &result); \
-        if (!handled) \
-            eventListener->handler(e); \
+        if (eventListener->handleNativeEvent(event)) \
+            return; \
+        eventListener->handler(e); \
     } \
 } \
 break;
 
 #define HANDLE_KEYBOARD_EVENT(event_t, handler) \
 { \
-    event_t *e = reinterpret_cast<event_t *>(event); \
+    auto e = reinterpret_cast<event_t *>(event); \
     if (QXcbWindowEventListener *eventListener = windowEventListenerFromId(e->event)) { \
-        handled = eventListener->handleGenericEvent(event, &result); \
-        if (!handled) \
-            m_keyboard->handler(e); \
+        if (eventListener->handleNativeEvent(event)) \
+            return; \
+        m_keyboard->handler(e); \
     } \
 } \
 break;
@@ -974,7 +974,7 @@ void QXcbConnection::handleXcbError(xcb_generic_error_t *error)
 {
     long result = 0;
     QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
-    if (dispatcher && dispatcher->filterNativeEvent(m_nativeInterface->genericEventFilterType(), error, &result))
+    if (dispatcher && dispatcher->filterNativeEvent(m_nativeInterface->nativeEventType(), error, &result))
         return;
 
     printXcbError("QXcbConnection: XCB error", error);
@@ -1066,197 +1066,206 @@ namespace {
 
 void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 {
-    long result = 0;
+    if (Q_UNLIKELY(lcQpaEvents().isDebugEnabled()))
+        printXcbEvent(lcQpaEvents(), "Event", event);
+
+    long result = 0; // Used only by MS Windows
     QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
-    bool handled = dispatcher && dispatcher->filterNativeEvent(m_nativeInterface->genericEventFilterType(), event, &result);
+    bool handledByNativeEventFilter = dispatcher && dispatcher->filterNativeEvent(
+                m_nativeInterface->nativeEventType(), event, &result);
+    if (handledByNativeEventFilter)
+        return;
 
     uint response_type = event->response_type & ~0x80;
 
-    if (!handled) {
-        switch (response_type) {
-        case XCB_EXPOSE:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
-
-        case XCB_BUTTON_PRESS: {
-            xcb_button_press_event_t *ev = (xcb_button_press_event_t *)event;
-            m_keyboard->updateXKBStateFromCore(ev->state);
-            // the event explicitly contains the state of the three first buttons,
-            // the rest we need to manage ourselves
-            m_buttonState = (m_buttonState & ~0x7) | translateMouseButtons(ev->state);
-            setButtonState(translateMouseButton(ev->detail), true);
-            if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
-                qCDebug(lcQpaXInputEvents, "legacy mouse press, button %d state %X", ev->detail, static_cast<unsigned int>(m_buttonState));
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
-        }
-        case XCB_BUTTON_RELEASE: {
-            xcb_button_release_event_t *ev = (xcb_button_release_event_t *)event;
-            m_keyboard->updateXKBStateFromCore(ev->state);
-            m_buttonState = (m_buttonState & ~0x7) | translateMouseButtons(ev->state);
-            setButtonState(translateMouseButton(ev->detail), false);
-            if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
-                qCDebug(lcQpaXInputEvents, "legacy mouse release, button %d state %X", ev->detail, static_cast<unsigned int>(m_buttonState));
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);
-        }
-        case XCB_MOTION_NOTIFY: {
-            xcb_motion_notify_event_t *ev = (xcb_motion_notify_event_t *)event;
-            m_keyboard->updateXKBStateFromCore(ev->state);
-            m_buttonState = (m_buttonState & ~0x7) | translateMouseButtons(ev->state);
-            if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
-                qCDebug(lcQpaXInputEvents, "legacy mouse move %d,%d button %d state %X", ev->event_x, ev->event_y,
-                        ev->detail, static_cast<unsigned int>(m_buttonState));
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
-        }
-
-        case XCB_CONFIGURE_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
-        case XCB_MAP_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_map_notify_event_t, event, handleMapNotifyEvent);
-        case XCB_UNMAP_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_unmap_notify_event_t, event, handleUnmapNotifyEvent);
-        case XCB_DESTROY_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_destroy_notify_event_t, event, handleDestroyNotifyEvent);
-        case XCB_CLIENT_MESSAGE:
-            handleClientMessageEvent((xcb_client_message_event_t *)event);
-            break;
-        case XCB_ENTER_NOTIFY:
-#if QT_CONFIG(xcb_xinput)
-            if (hasXInput2() && !xi2MouseEventsDisabled())
-                break;
+    bool handled = true;
+    switch (response_type) {
+    case XCB_EXPOSE:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
+    case XCB_BUTTON_PRESS: {
+        auto ev = reinterpret_cast<xcb_button_press_event_t *>(event);
+        m_keyboard->updateXKBStateFromCore(ev->state);
+        // the event explicitly contains the state of the three first buttons,
+        // the rest we need to manage ourselves
+        m_buttonState = (m_buttonState & ~0x7) | translateMouseButtons(ev->state);
+        setButtonState(translateMouseButton(ev->detail), true);
+        if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
+            qCDebug(lcQpaXInputEvents, "legacy mouse press, button %d state %X",
+                    ev->detail, static_cast<unsigned int>(m_buttonState));
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
+    }
+    case XCB_BUTTON_RELEASE: {
+        auto ev = reinterpret_cast<xcb_button_release_event_t *>(event);
+        m_keyboard->updateXKBStateFromCore(ev->state);
+        m_buttonState = (m_buttonState & ~0x7) | translateMouseButtons(ev->state);
+        setButtonState(translateMouseButton(ev->detail), false);
+        if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
+            qCDebug(lcQpaXInputEvents, "legacy mouse release, button %d state %X",
+                    ev->detail, static_cast<unsigned int>(m_buttonState));
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);
+    }
+    case XCB_MOTION_NOTIFY: {
+        auto ev = reinterpret_cast<xcb_motion_notify_event_t *>(event);
+        m_keyboard->updateXKBStateFromCore(ev->state);
+        m_buttonState = (m_buttonState & ~0x7) | translateMouseButtons(ev->state);
+        if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
+            qCDebug(lcQpaXInputEvents, "legacy mouse move %d,%d button %d state %X",
+                    ev->event_x, ev->event_y, ev->detail, static_cast<unsigned int>(m_buttonState));
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
+    }
+    case XCB_CONFIGURE_NOTIFY:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
+    case XCB_MAP_NOTIFY:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_map_notify_event_t, event, handleMapNotifyEvent);
+    case XCB_UNMAP_NOTIFY:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_unmap_notify_event_t, event, handleUnmapNotifyEvent);
+    case XCB_DESTROY_NOTIFY:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_destroy_notify_event_t, event, handleDestroyNotifyEvent);
+    case XCB_CLIENT_MESSAGE: {
+        auto clientMessage = reinterpret_cast<xcb_client_message_event_t *>(event);
+        if (clientMessage->format != 32)
+            return;
+#if QT_CONFIG(draganddrop)
+        if (clientMessage->type == atom(QXcbAtom::XdndStatus))
+            drag()->handleStatus(clientMessage);
+        else if (clientMessage->type == atom(QXcbAtom::XdndFinished))
+            drag()->handleFinished(clientMessage);
 #endif
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
-        case XCB_LEAVE_NOTIFY:
+        if (m_systemTrayTracker && clientMessage->type == atom(QXcbAtom::MANAGER))
+            m_systemTrayTracker->notifyManagerClientMessageEvent(clientMessage);
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_client_message_event_t, window, handleClientMessageEvent);
+    }
+    case XCB_ENTER_NOTIFY:
 #if QT_CONFIG(xcb_xinput)
-            if (hasXInput2() && !xi2MouseEventsDisabled())
-                break;
-#endif
-            m_keyboard->updateXKBStateFromCore(((xcb_leave_notify_event_t *)event)->state);
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_leave_notify_event_t, event, handleLeaveNotifyEvent);
-        case XCB_FOCUS_IN:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_in_event_t, event, handleFocusInEvent);
-        case XCB_FOCUS_OUT:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_out_event_t, event, handleFocusOutEvent);
-        case XCB_KEY_PRESS:
-        {
-            xcb_key_press_event_t *kp = (xcb_key_press_event_t *)event;
-            m_keyboard->updateXKBStateFromCore(kp->state);
-            setTime(kp->time);
-            HANDLE_KEYBOARD_EVENT(xcb_key_press_event_t, handleKeyPressEvent);
-        }
-        case XCB_KEY_RELEASE:
-            m_keyboard->updateXKBStateFromCore(((xcb_key_release_event_t *)event)->state);
-            HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
-        case XCB_MAPPING_NOTIFY:
-            m_keyboard->updateKeymap(reinterpret_cast<xcb_mapping_notify_event_t *>(event));
+        if (hasXInput2() && !xi2MouseEventsDisabled())
             break;
-        case XCB_SELECTION_REQUEST:
-        {
+#endif
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
+    case XCB_LEAVE_NOTIFY:
+#if QT_CONFIG(xcb_xinput)
+        if (hasXInput2() && !xi2MouseEventsDisabled())
+            break;
+#endif
+        m_keyboard->updateXKBStateFromCore(reinterpret_cast<xcb_leave_notify_event_t *>(event)->state);
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_leave_notify_event_t, event, handleLeaveNotifyEvent);
+    case XCB_FOCUS_IN:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_in_event_t, event, handleFocusInEvent);
+    case XCB_FOCUS_OUT:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_out_event_t, event, handleFocusOutEvent);
+    case XCB_KEY_PRESS:
+    {
+        auto keyPress = reinterpret_cast<xcb_key_press_event_t *>(event);
+        m_keyboard->updateXKBStateFromCore(keyPress->state);
+        setTime(keyPress->time);
+        HANDLE_KEYBOARD_EVENT(xcb_key_press_event_t, handleKeyPressEvent);
+    }
+    case XCB_KEY_RELEASE:
+        m_keyboard->updateXKBStateFromCore(reinterpret_cast<xcb_key_release_event_t *>(event)->state);
+        HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
+    case XCB_MAPPING_NOTIFY:
+        m_keyboard->updateKeymap(reinterpret_cast<xcb_mapping_notify_event_t *>(event));
+        break;
+    case XCB_SELECTION_REQUEST:
+    {
 #if QT_CONFIG(draganddrop) || QT_CONFIG(clipboard)
-            xcb_selection_request_event_t *sr = reinterpret_cast<xcb_selection_request_event_t *>(event);
+        auto selectionRequest = reinterpret_cast<xcb_selection_request_event_t *>(event);
 #endif
 #if QT_CONFIG(draganddrop)
-            if (sr->selection == atom(QXcbAtom::XdndSelection))
-                m_drag->handleSelectionRequest(sr);
-            else
+        if (selectionRequest->selection == atom(QXcbAtom::XdndSelection))
+            m_drag->handleSelectionRequest(selectionRequest);
+        else
 #endif
-            {
-#ifndef QT_NO_CLIPBOARD
-                m_clipboard->handleSelectionRequest(sr);
-#endif
-            }
-            break;
-        }
-        case XCB_SELECTION_CLEAR:
-            setTime((reinterpret_cast<xcb_selection_clear_event_t *>(event))->time);
-#ifndef QT_NO_CLIPBOARD
-            m_clipboard->handleSelectionClearRequest(reinterpret_cast<xcb_selection_clear_event_t *>(event));
-#endif
-            handled = true;
-            break;
-        case XCB_SELECTION_NOTIFY:
-            setTime((reinterpret_cast<xcb_selection_notify_event_t *>(event))->time);
-            handled = false;
-            break;
-        case XCB_PROPERTY_NOTIFY:
         {
-            xcb_property_notify_event_t *pn = reinterpret_cast<xcb_property_notify_event_t *>(event);
-            if (pn->atom == atom(QXcbAtom::_NET_WORKAREA)) {
-                QXcbVirtualDesktop *virtualDesktop = virtualDesktopForRootWindow(pn->window);
-                if (virtualDesktop)
-                    virtualDesktop->updateWorkArea();
-            } else {
-                HANDLE_PLATFORM_WINDOW_EVENT(xcb_property_notify_event_t, window, handlePropertyNotifyEvent);
-            }
-            break;
-        }
-#if QT_CONFIG(xcb_xinput)
-        case XCB_GE_GENERIC:
-            // Here the windowEventListener is invoked from xi2HandleEvent()
-            if (hasXInput2() && isXIEvent(event, m_xiOpCode))
-                xi2HandleEvent(reinterpret_cast<xcb_ge_event_t *>(event));
-            break;
-#endif
-        default:
-            handled = false;
-            break;
-        }
-    }
-
-    if (!handled) {
-        if (has_xfixes && response_type == xfixes_first_event + XCB_XFIXES_SELECTION_NOTIFY) {
-            xcb_xfixes_selection_notify_event_t *notify_event = reinterpret_cast<xcb_xfixes_selection_notify_event_t *>(event);
-            setTime(notify_event->timestamp);
 #ifndef QT_NO_CLIPBOARD
-            m_clipboard->handleXFixesSelectionRequest(notify_event);
-#endif
-            for (QXcbVirtualDesktop *virtualDesktop : qAsConst(m_virtualDesktops))
-                virtualDesktop->handleXFixesSelectionNotify(notify_event);
-
-            handled = true;
-        } else if (has_randr_extension && response_type == xrandr_first_event + XCB_RANDR_NOTIFY) {
-            updateScreens(reinterpret_cast<xcb_randr_notify_event_t *>(event));
-            handled = true;
-        } else if (has_randr_extension && response_type == xrandr_first_event + XCB_RANDR_SCREEN_CHANGE_NOTIFY) {
-            xcb_randr_screen_change_notify_event_t *change_event = reinterpret_cast<xcb_randr_screen_change_notify_event_t *>(event);
-            if (auto *virtualDesktop = virtualDesktopForRootWindow(change_event->root))
-                virtualDesktop->handleScreenChange(change_event);
-
-            handled = true;
-#if QT_CONFIG(xkb)
-        } else if (response_type == xkb_first_event) { // https://bugs.freedesktop.org/show_bug.cgi?id=51295
-            _xkb_event *xkb_event = reinterpret_cast<_xkb_event *>(event);
-            if (xkb_event->any.deviceID == m_keyboard->coreDeviceId()) {
-                switch (xkb_event->any.xkbType) {
-                    // XkbNewKkdNotify and XkbMapNotify together capture all sorts of keymap
-                    // updates (e.g. xmodmap, xkbcomp, setxkbmap), with minimal redundent recompilations.
-                    case XCB_XKB_STATE_NOTIFY:
-                        m_keyboard->updateXKBState(&xkb_event->state_notify);
-                        handled = true;
-                        break;
-                    case XCB_XKB_MAP_NOTIFY:
-                        m_keyboard->updateKeymap();
-                        handled = true;
-                        break;
-                    case XCB_XKB_NEW_KEYBOARD_NOTIFY: {
-                        xcb_xkb_new_keyboard_notify_event_t *ev = &xkb_event->new_keyboard_notify;
-                        if (ev->changed & XCB_XKB_NKN_DETAIL_KEYCODES)
-                            m_keyboard->updateKeymap();
-                        break;
-                    }
-                    default:
-                        break;
-                }
-            }
+            m_clipboard->handleSelectionRequest(selectionRequest);
 #endif
         }
+        break;
+    }
+    case XCB_SELECTION_CLEAR:
+        setTime((reinterpret_cast<xcb_selection_clear_event_t *>(event))->time);
+#ifndef QT_NO_CLIPBOARD
+        m_clipboard->handleSelectionClearRequest(reinterpret_cast<xcb_selection_clear_event_t *>(event));
+#endif
+        break;
+    case XCB_SELECTION_NOTIFY:
+        setTime((reinterpret_cast<xcb_selection_notify_event_t *>(event))->time);
+        break;
+    case XCB_PROPERTY_NOTIFY:
+    {
+        auto propertyNotify = reinterpret_cast<xcb_property_notify_event_t *>(event);
+        if (propertyNotify->atom == atom(QXcbAtom::_NET_WORKAREA)) {
+            QXcbVirtualDesktop *virtualDesktop = virtualDesktopForRootWindow(propertyNotify->window);
+            if (virtualDesktop)
+                virtualDesktop->updateWorkArea();
+        } else {
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_property_notify_event_t, window, handlePropertyNotifyEvent);
+        }
+        break;
+    }
+#if QT_CONFIG(xcb_xinput)
+    case XCB_GE_GENERIC:
+        // Here the windowEventListener is invoked from xi2HandleEvent()
+        if (hasXInput2() && isXIEvent(event, m_xiOpCode))
+            xi2HandleEvent(reinterpret_cast<xcb_ge_event_t *>(event));
+        break;
+#endif
+    default:
+        handled = false; // event type not recognized
+        break;
     }
 
-    if (!handled && m_glIntegration)
-        handled = m_glIntegration->handleXcbEvent(event, response_type);
+    if (handled)
+        return;
 
-#if 0
-    if (Q_UNLIKELY(lcQpaEvents().isDebugEnabled()))
-        printXcbEvent(lcQpaEvents(), handled ? "Handled" : "Unhandled", event);
+    handled = true;
+    if (has_xfixes && response_type == xfixes_first_event + XCB_XFIXES_SELECTION_NOTIFY) {
+        auto notify_event = reinterpret_cast<xcb_xfixes_selection_notify_event_t *>(event);
+        setTime(notify_event->timestamp);
+#ifndef QT_NO_CLIPBOARD
+        m_clipboard->handleXFixesSelectionRequest(notify_event);
 #endif
+        for (QXcbVirtualDesktop *virtualDesktop : qAsConst(m_virtualDesktops))
+            virtualDesktop->handleXFixesSelectionNotify(notify_event);
+    } else if (has_randr_extension && response_type == xrandr_first_event + XCB_RANDR_NOTIFY) {
+        updateScreens(reinterpret_cast<xcb_randr_notify_event_t *>(event));
+    } else if (has_randr_extension && response_type == xrandr_first_event + XCB_RANDR_SCREEN_CHANGE_NOTIFY) {
+        auto change_event = reinterpret_cast<xcb_randr_screen_change_notify_event_t *>(event);
+        if (auto virtualDesktop = virtualDesktopForRootWindow(change_event->root))
+            virtualDesktop->handleScreenChange(change_event);
+#if QT_CONFIG(xkb)
+    } else if (response_type == xkb_first_event) { // https://bugs.freedesktop.org/show_bug.cgi?id=51295
+        auto xkb_event = reinterpret_cast<_xkb_event *>(event);
+        if (xkb_event->any.deviceID == m_keyboard->coreDeviceId()) {
+            switch (xkb_event->any.xkbType) {
+                // XkbNewKkdNotify and XkbMapNotify together capture all sorts of keymap
+                // updates (e.g. xmodmap, xkbcomp, setxkbmap), with minimal redundent recompilations.
+                case XCB_XKB_STATE_NOTIFY:
+                    m_keyboard->updateXKBState(&xkb_event->state_notify);
+                    break;
+                case XCB_XKB_MAP_NOTIFY:
+                    m_keyboard->updateKeymap();
+                    break;
+                case XCB_XKB_NEW_KEYBOARD_NOTIFY: {
+                    xcb_xkb_new_keyboard_notify_event_t *ev = &xkb_event->new_keyboard_notify;
+                    if (ev->changed & XCB_XKB_NKN_DETAIL_KEYCODES)
+                        m_keyboard->updateKeymap();
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+#endif
+    } else {
+        handled = false; // event type still not recognized
+    }
+
+    if (handled)
+        return;
+
+    if (m_glIntegration)
+        m_glIntegration->handleXcbEvent(event, response_type);
 }
 
 void QXcbConnection::addPeekFunc(PeekFunc f)
@@ -1759,28 +1768,6 @@ void QXcbConnection::processXcbEvents()
     m_peekFuncs.clear();
 
     xcb_flush(xcb_connection());
-}
-
-void QXcbConnection::handleClientMessageEvent(const xcb_client_message_event_t *event)
-{
-    if (event->format != 32)
-        return;
-
-#if QT_CONFIG(draganddrop)
-    if (event->type == atom(QXcbAtom::XdndStatus)) {
-        drag()->handleStatus(event);
-    } else if (event->type == atom(QXcbAtom::XdndFinished)) {
-        drag()->handleFinished(event);
-    }
-#endif
-    if (m_systemTrayTracker && event->type == atom(QXcbAtom::MANAGER))
-        m_systemTrayTracker->notifyManagerClientMessageEvent(event);
-
-    QXcbWindow *window = platformWindowFromId(event->window);
-    if (!window)
-        return;
-
-    window->handleClientMessageEvent(event);
 }
 
 static const char * xcb_atomnames = {

@@ -163,9 +163,9 @@ bool QXcbGlxIntegration::handleXcbEvent(xcb_generic_event_t *event, uint respons
                 // Unlock the display before calling the native event filter
                 XUnlockDisplay(xdisplay);
                 locked = false;
-                QByteArray genericEventFilterType = m_connection->nativeInterface()->genericEventFilterType();
+                auto eventType = m_connection->nativeInterface()->nativeEventType();
                 long result = 0;
-                handled = dispatcher->filterNativeEvent(genericEventFilterType, &ev, &result);
+                handled = dispatcher->filterNativeEvent(eventType, &ev, &result);
             }
 #endif
         }
