@@ -6238,11 +6238,14 @@ void tst_QString::compare()
     QStringRef r1(&s1, 0, s1.length());
     QStringRef r2(&s2, 0, s2.length());
 
+    const QStringView v2(s2);
+
     QCOMPARE(sign(QString::compare(s1, s2)), csr);
     QCOMPARE(sign(QStringRef::compare(r1, r2)), csr);
     QCOMPARE(sign(s1.compare(s2)), csr);
     QCOMPARE(sign(s1.compare(r2)), csr);
     QCOMPARE(sign(r1.compare(r2)), csr);
+    QCOMPARE(sign(s1.compare(v2)), csr);
 
     QCOMPARE(sign(s1.compare(s2, Qt::CaseSensitive)), csr);
     QCOMPARE(sign(s1.compare(s2, Qt::CaseInsensitive)), cir);
@@ -6250,6 +6253,8 @@ void tst_QString::compare()
     QCOMPARE(sign(s1.compare(r2, Qt::CaseInsensitive)), cir);
     QCOMPARE(sign(r1.compare(r2, Qt::CaseSensitive)), csr);
     QCOMPARE(sign(r1.compare(r2, Qt::CaseInsensitive)), cir);
+    QCOMPARE(sign(s1.compare(v2, Qt::CaseSensitive)), csr);
+    QCOMPARE(sign(s1.compare(v2, Qt::CaseInsensitive)), cir);
 
     QCOMPARE(sign(QString::compare(s1, s2, Qt::CaseSensitive)), csr);
     QCOMPARE(sign(QString::compare(s1, s2, Qt::CaseInsensitive)), cir);

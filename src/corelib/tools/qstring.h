@@ -608,8 +608,12 @@ public:
     QString &setUnicode(const QChar *unicode, int size);
     inline QString &setUtf16(const ushort *utf16, int size);
 
+#if QT_STRINGVIEW_LEVEL < 2
     int compare(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;
+    inline int compare(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;
+#endif
     int compare(QLatin1String other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;
+    inline int compare(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;
 
     static inline int compare(const QString &s1, const QString &s2,
                               Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW
@@ -622,7 +626,6 @@ public:
                               Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW
     { return -s2.compare(s1, cs); }
 
-    inline int compare(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;
     static int compare(const QString &s1, const QStringRef &s2,
                        Qt::CaseSensitivity = Qt::CaseSensitive) Q_DECL_NOTHROW;
 
@@ -1638,8 +1641,12 @@ inline bool operator> (const QStringRef &lhs, const QString &rhs) Q_DECL_NOTHROW
 inline bool operator<=(const QStringRef &lhs, const QString &rhs) Q_DECL_NOTHROW { return rhs >= lhs; }
 inline bool operator>=(const QStringRef &lhs, const QString &rhs) Q_DECL_NOTHROW { return rhs <= lhs; }
 
+#if QT_STRINGVIEW_LEVEL < 2
 inline int QString::compare(const QStringRef &s, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
 { return QString::compare_helper(constData(), length(), s.constData(), s.length(), cs); }
+#endif
+inline int QString::compare(QStringView s, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
+{ return -s.compare(*this, cs); }
 inline int QString::compare(const QString &s1, const QStringRef &s2, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 { return QString::compare_helper(s1.constData(), s1.length(), s2.constData(), s2.length(), cs); }
 inline int QStringRef::compare(const QString &s, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
