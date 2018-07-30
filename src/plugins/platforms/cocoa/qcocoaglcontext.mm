@@ -376,7 +376,10 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
         return true;
 
     QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
-    setActiveWindow(window);
+    if (!setActiveWindow(window)) {
+        qCDebug(lcQpaOpenGLContext) << "Failed to activate window, skipping makeCurrent";
+        return false;
+    }
 
     // Disable high-resolution surfaces when using the software renderer, which has the
     // problem that the system silently falls back to a to using a low-resolution buffer
@@ -397,23 +400,29 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
     return true;
 }
 
-void QCocoaGLContext::setActiveWindow(QWindow *window)
+bool QCocoaGLContext::setActiveWindow(QWindow *window)
 {
     if (window == m_currentWindow.data())
-        return;
+        return true;
+
+    Q_ASSERT(window->handle());
+    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
+    NSView *view = cocoaWindow->view();
+
+    if ((m_context.view = view) != view) {
+        qCDebug(lcQpaOpenGLContext) << "Associating" << view << "with" << m_context << "failed";
+        return false;
+    }
+
+    qCDebug(lcQpaOpenGLContext) << m_context << "now associated with" << m_context.view;
 
     if (m_currentWindow && m_currentWindow.data()->handle())
         static_cast<QCocoaWindow *>(m_currentWindow.data()->handle())->setCurrentContext(0);
 
-    Q_ASSERT(window->handle());
-
     m_currentWindow = window;
 
-    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
     cocoaWindow->setCurrentContext(this);
-
-    Q_ASSERT(!cocoaWindow->isForeignWindow());
-    [qnsview_cast(cocoaWindow->view()) setQCocoaGLContext:this];
+    return true;
 }
 
 // NSOpenGLContext is not re-entrant (https://openradar.appspot.com/37064579)
@@ -431,7 +440,10 @@ void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
         return; // Nothing to do
 
     QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
-    setActiveWindow(window);
+    if (!setActiveWindow(window)) {
+        qCWarning(lcQpaOpenGLContext) << "Failed to activate window, skipping swapBuffers";
+        return;
+    }
 
     QMutexLocker locker(&s_contextMutex);
     [m_context flushBuffer];

@@ -75,7 +75,7 @@ public:
 private:
     static NSOpenGLPixelFormat *createNSOpenGLPixelFormat(const QSurfaceFormat &format);
 
-    void setActiveWindow(QWindow *window);
+    bool setActiveWindow(QWindow *window);
     void updateSurfaceFormat();
 
     NSOpenGLContext *m_context;

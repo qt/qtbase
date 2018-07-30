@@ -122,10 +122,6 @@
     bool m_dontOverrideCtrlLMB;
     bool m_sendUpAsRightButton;
     Qt::KeyboardModifiers m_currentWheelModifiers;
-#ifndef QT_NO_OPENGL
-    QCocoaGLContext *m_glContext;
-    bool m_shouldSetGLContextinDrawRect;
-#endif
     NSString *m_inputSource;
     QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) *m_mouseMoveHelper;
     bool m_resendKeyEvent;
@@ -143,10 +139,6 @@
         m_acceptedMouseDowns = Qt::NoButton;
         m_frameStrutButtons = Qt::NoButton;
         m_sendKeyEvent = false;
-#ifndef QT_NO_OPENGL
-        m_glContext = nullptr;
-        m_shouldSetGLContextinDrawRect = false;
-#endif
         m_sendUpAsRightButton = false;
         m_inputSource = nil;
         m_mouseMoveHelper = [[QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) alloc] initWithView:self];

@@ -64,12 +64,6 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QCocoaNSMenuItem));
 
 @end
 
-@interface QT_MANGLE_NAMESPACE(QNSView) (DrawingAPI)
-#ifndef QT_NO_OPENGL
-- (void)setQCocoaGLContext:(QCocoaGLContext *)context;
-#endif
-@end
-
 @interface QT_MANGLE_NAMESPACE(QNSView) (MouseAPI)
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent;
 - (void)resetMouseButtons;

@@ -39,22 +39,6 @@
 
 // This file is included from qnsview.mm, and only used to organize the code
 
-@implementation QT_MANGLE_NAMESPACE(QNSView) (DrawingAPI)
-
-#ifndef QT_NO_OPENGL
-- (void)setQCocoaGLContext:(QCocoaGLContext *)context
-{
-    m_glContext = context;
-    [m_glContext->nsOpenGLContext() setView:self];
-    if (![m_glContext->nsOpenGLContext() view]) {
-        //was unable to set view
-        m_shouldSetGLContextinDrawRect = true;
-    }
-}
-#endif
-
-@end
-
 @implementation QT_MANGLE_NAMESPACE(QNSView) (Drawing)
 
 - (BOOL)isOpaque
@@ -84,19 +68,7 @@
         exposedRegion += QRectF::fromCGRect(dirtyRects[i]).toRect();
 
     qCDebug(lcQpaDrawing) << "[QNSView drawRect:]" << m_platformWindow->window() << exposedRegion;
-    [self updateRegion:exposedRegion];
-}
-
-- (void)updateRegion:(QRegion)dirtyRegion
-{
-#ifndef QT_NO_OPENGL
-    if (m_glContext && m_shouldSetGLContextinDrawRect) {
-        [m_glContext->nsOpenGLContext() setView:self];
-        m_shouldSetGLContextinDrawRect = false;
-    }
-#endif
-
-    m_platformWindow->handleExposeEvent(dirtyRegion);
+    m_platformWindow->handleExposeEvent(exposedRegion);
 }
 
 - (BOOL)shouldUseMetalLayer
@@ -174,7 +146,7 @@
     qCDebug(lcQpaDrawing) << "[QNSView displayLayer]" << m_platformWindow->window();
 
     // FIXME: Find out if there's a way to resolve the dirty rect like in drawRect:
-    [self updateRegion:QRectF::fromCGRect(self.bounds).toRect()];
+    m_platformWindow->handleExposeEvent(QRectF::fromCGRect(self.bounds).toRect());
 }
 
 - (void)viewDidChangeBackingProperties
