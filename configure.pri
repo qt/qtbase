@@ -5,7 +5,7 @@ QT_BUILD_TREE = $$shadowed($$PWD)
 # custom command line handling
 
 defineTest(qtConfCommandline_qmakeArgs) {
-    contains(1, QMAKE_[A-Z_]+ *[-+]?=.*) {
+    contains(1, QMAKE_[A-Z0-9_]+ *[-+]?=.*) {
         config.input.qmakeArgs += $$1
         export(config.input.qmakeArgs)
         return(true)
@@ -449,8 +449,8 @@ defineTest(reloadSpec) {
             eval($$l)
         include($$QMAKESPEC/qmake.conf)
         load(spec_post)
-        load(default_pre)
         CONFIG += $$_SAVED_CONFIG
+        load(default_pre)
 
         # ensure pristine environment for configuration. again.
         discard_from($$[QT_HOST_DATA/get]/mkspecs/qconfig.pri)

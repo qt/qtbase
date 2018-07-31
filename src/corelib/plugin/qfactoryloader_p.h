@@ -66,14 +66,7 @@
 
 QT_BEGIN_NAMESPACE
 
-inline QJsonDocument qJsonFromRawLibraryMetaData(const char *raw)
-{
-    raw += strlen("QTMETADATA  ");
-    // the size of the embedded JSON object can be found 8 bytes into the data (see qjson_p.h),
-    // but doesn't include the size of the header (8 bytes)
-    QByteArray json(raw, qFromLittleEndian<uint>(*(const uint *)(raw + 8)) + 8);
-    return QJsonDocument::fromBinaryData(json);
-}
+QJsonDocument qJsonFromRawLibraryMetaData(const char *raw, qsizetype size);
 
 class QFactoryLoaderPrivate;
 class Q_CORE_EXPORT QFactoryLoader : public QObject

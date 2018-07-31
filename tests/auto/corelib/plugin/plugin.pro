@@ -11,5 +11,6 @@ qtConfig(library): SUBDIRS += \
 contains(CONFIG, static) {
     message(Disabling tests requiring shared build of Qt)
     SUBDIRS -= qfactoryloader \
+               qplugin \
                qpluginloader
 }

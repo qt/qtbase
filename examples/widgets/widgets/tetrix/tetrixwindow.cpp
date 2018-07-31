@@ -83,14 +83,25 @@ TetrixWindow::TetrixWindow()
     pauseButton->setFocusPolicy(Qt::NoFocus);
 //! [3] //! [4]
 
-    connect(startButton, SIGNAL(clicked()), board, SLOT(start()));
+    connect(startButton, &QPushButton::clicked, board, &TetrixBoard::start);
 //! [4] //! [5]
-    connect(quitButton , SIGNAL(clicked()), qApp, SLOT(quit()));
-    connect(pauseButton, SIGNAL(clicked()), board, SLOT(pause()));
-    connect(board, SIGNAL(scoreChanged(int)), scoreLcd, SLOT(display(int)));
-    connect(board, SIGNAL(levelChanged(int)), levelLcd, SLOT(display(int)));
-    connect(board, SIGNAL(linesRemovedChanged(int)),
-            linesLcd, SLOT(display(int)));
+    connect(quitButton , &QPushButton::clicked, qApp, &QApplication::quit);
+    connect(pauseButton, &QPushButton::clicked, board, &TetrixBoard::pause);
+#if __cplusplus >= 201402L
+    connect(board, &TetrixBoard::scoreChanged,
+            scoreLcd, qOverload<int>(&QLCDNumber::display));
+    connect(board, &TetrixBoard::levelChanged,
+            levelLcd, qOverload<int>(&QLCDNumber::display));
+    connect(board, &TetrixBoard::linesRemovedChanged,
+            linesLcd, qOverload<int>(&QLCDNumber::display));
+#else
+    connect(board, &TetrixBoard::scoreChanged,
+            scoreLcd, QOverload<int>::of(&QLCDNumber::display));
+    connect(board, &TetrixBoard::levelChanged,
+            levelLcd, QOverload<int>::of(&QLCDNumber::display));
+    connect(board, &TetrixBoard::linesRemovedChanged,
+            linesLcd, QOverload<int>::of(&QLCDNumber::display));
+#endif
 //! [5]
 
 //! [6]
@@ -117,9 +128,9 @@ TetrixWindow::TetrixWindow()
 //! [7]
 QLabel *TetrixWindow::createLabel(const QString &text)
 {
-    QLabel *lbl = new QLabel(text);
-    lbl->setAlignment(Qt::AlignHCenter | Qt::AlignBottom);
-    return lbl;
+    QLabel *label = new QLabel(text);
+    label->setAlignment(Qt::AlignHCenter | Qt::AlignBottom);
+    return label;
 }
 //! [7]
 

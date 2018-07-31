@@ -27,6 +27,7 @@ SOURCES += \
     $$PWD/src/pcre2_context.c \
     $$PWD/src/pcre2_dfa_match.c \
     $$PWD/src/pcre2_error.c \
+    $$PWD/src/pcre2_extuni.c \
     $$PWD/src/pcre2_find_bracket.c \
     $$PWD/src/pcre2_jit_compile.c \
     $$PWD/src/pcre2_maketables.c \

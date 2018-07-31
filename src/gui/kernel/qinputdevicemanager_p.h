@@ -72,7 +72,7 @@ public:
         DeviceTypeTablet
     };
 
-    QInputDeviceManager(QObject *parent = 0);
+    QInputDeviceManager(QObject *parent = nullptr);
 
     int deviceCount(DeviceType type) const;
 

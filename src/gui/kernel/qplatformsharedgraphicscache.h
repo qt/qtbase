@@ -69,7 +69,7 @@ public:
         OpenGLTexture
     };
 
-    explicit QPlatformSharedGraphicsCache(QObject *parent = 0) : QObject(parent) {}
+    explicit QPlatformSharedGraphicsCache(QObject *parent = nullptr) : QObject(parent) {}
 
     virtual void beginRequestBatch() = 0;
     virtual void ensureCacheInitialized(const QByteArray &cacheId, BufferType bufferType,

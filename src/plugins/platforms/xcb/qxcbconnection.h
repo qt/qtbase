@@ -503,6 +503,9 @@ public:
     void grabServer();
     void ungrabServer();
 
+    bool isUnity() const { return m_xdgCurrentDesktop == "unity"; }
+    bool isGnome() const { return m_xdgCurrentDesktop == "gnome"; }
+
     QXcbNativeInterface *nativeInterface() const { return m_nativeInterface; }
 
     QXcbSystemTrayTracker *systemTrayTracker() const;
@@ -521,6 +524,7 @@ public:
     Qt::MouseButton xiToQtMouseButton(uint32_t b);
     void xi2UpdateScrollingDevices();
     bool startSystemMoveResizeForTouchBegin(xcb_window_t window, const QPoint &point, int corner);
+    void abortSystemMoveResizeForTouch();
     bool isTouchScreen(int id);
 #endif
     QXcbEventReader *eventReader() const { return m_reader; }
@@ -565,6 +569,7 @@ private:
 
     bool m_xi2Enabled = false;
 #if QT_CONFIG(xcb_xinput)
+    QVector<int> m_floatingSlaveDevices;
     int m_xi2Minor = -1;
     void initializeXInput2();
     void xi2SetupDevice(void *info, bool removeExisting = true);
@@ -720,6 +725,8 @@ private:
     bool m_peekerIndexCacheDirty = false;
     QHash<qint32, qint32> m_peekerToCachedIndex;
     friend class QXcbEventReader;
+
+    QByteArray m_xdgCurrentDesktop;
 };
 #if QT_CONFIG(xcb_xinput)
 #if QT_CONFIG(tabletevent)

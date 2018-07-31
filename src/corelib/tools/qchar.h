@@ -93,7 +93,9 @@ public:
     Q_STATIC_ASSERT(sizeof(wchar_t) == sizeof(ushort));
 #endif
 #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#   if !defined(_WCHAR_T_DEFINED) || defined(_NATIVE_WCHAR_T_DEFINED)
     Q_DECL_CONSTEXPR QChar(wchar_t ch) Q_DECL_NOTHROW : ucs(ushort(ch)) {} // implicit
+#   endif
 #endif
 
 #ifndef QT_NO_CAST_FROM_ASCII

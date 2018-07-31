@@ -99,6 +99,7 @@ private slots:
     void appStyle();
     void QTBUG11658_cachecrash();
     void styleSheetTargetAttribute();
+    void unpolish();
 
 private:
     QColor COLOR(const QWidget& w) {
@@ -2052,6 +2053,17 @@ void tst_QStyleSheetStyle::styleSheetTargetAttribute()
     QCOMPARE(gb.testAttribute(Qt::WA_StyleSheetTarget), false);
     QCOMPARE(lb.testAttribute(Qt::WA_StyleSheetTarget), false);
     QCOMPARE(pb.testAttribute(Qt::WA_StyleSheetTarget), false);
+}
+
+void tst_QStyleSheetStyle::unpolish()
+{
+    QWidget w;
+    QCOMPARE(w.minimumWidth(), 0);
+    w.setStyleSheet("QWidget { min-width: 100; }");
+    w.ensurePolished();
+    QCOMPARE(w.minimumWidth(), 100);
+    w.setStyleSheet("");
+    QCOMPARE(w.minimumWidth(), 0);
 }
 
 QTEST_MAIN(tst_QStyleSheetStyle)

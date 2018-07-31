@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -474,7 +475,10 @@ QVector<QStaticPlugin> QPluginLoader::staticPlugins()
 */
 QJsonObject QStaticPlugin::metaData() const
 {
-    return qJsonFromRawLibraryMetaData(rawMetaData()).object();
+    // the data is already loaded, so this doesn't matter
+    qsizetype rawMetaDataSize = INT_MAX;
+
+    return qJsonFromRawLibraryMetaData(rawMetaData(), rawMetaDataSize).object();
 }
 
 QT_END_NAMESPACE

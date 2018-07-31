@@ -89,7 +89,12 @@ QCollator::QCollator(const QLocale &locale)
 QCollator::QCollator(const QCollator &other)
     : d(other.d)
 {
-    d->ref.ref();
+    if (d) {
+        // Ensure clean, lest both copies try to init() at the same time:
+        if (d->dirty)
+            d->init();
+        d->ref.ref();
+    }
 }
 
 /*!
@@ -110,7 +115,12 @@ QCollator &QCollator::operator=(const QCollator &other)
         if (d && !d->ref.deref())
             delete d;
         d = other.d;
-        if (d) d->ref.ref();
+        if (d) {
+            // Ensure clean, lest both copies try to init() at the same time:
+            if (d->dirty)
+                d->init();
+            d->ref.ref();
+        }
     }
     return *this;
 }
