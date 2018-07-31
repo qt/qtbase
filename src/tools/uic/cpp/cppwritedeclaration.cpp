@@ -40,10 +40,11 @@
 QT_BEGIN_NAMESPACE
 
 namespace {
-    void openNameSpaces(const QStringList &namespaceList, QTextStream &output) {
-        for (auto it = namespaceList.begin(), end = namespaceList.end(); it != end; ++it) {
-            if (!it->isEmpty())
-                output << "namespace " << *it << " {\n";
+    void openNameSpaces(const QStringList &namespaceList, QTextStream &output)
+    {
+        for (const QString &n : namespaceList) {
+            if (!n.isEmpty())
+                output << "namespace " << n << " {\n";
         }
     }
 
@@ -103,13 +104,9 @@ void WriteDeclaration::acceptUI(DomUI *node)
            << "public:\n";
 
     const QStringList connections = m_uic->databaseInfo()->connections();
-    for (int i=0; i<connections.size(); ++i) {
-        const QString connection = connections.at(i);
-
-        if (connection == QLatin1String("(default)"))
-            continue;
-
-        m_output << m_option.indent << "QSqlDatabase " << connection << "Connection;\n";
+    for (const QString &connection : connections) {
+        if (connection != QLatin1String("(default)"))
+            m_output << m_option.indent << "QSqlDatabase " << connection << "Connection;\n";
     }
 
     TreeWalker::acceptWidget(node->elementWidget());

@@ -56,9 +56,7 @@ Uic::Uic(Driver *d)
 {
 }
 
-Uic::~Uic()
-{
-}
+Uic::~Uic() = default;
 
 bool Uic::printDependencies()
 {

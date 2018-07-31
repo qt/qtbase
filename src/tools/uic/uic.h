@@ -53,6 +53,7 @@ struct Option;
 
 class Uic
 {
+    Q_DISABLE_COPY(Uic)
 public:
     Uic(Driver *driver);
     ~Uic();

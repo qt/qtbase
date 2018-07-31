@@ -161,6 +161,7 @@ private:
 // special initialization
 //
     class Item {
+        Q_DISABLE_COPY(Item)
     public:
         Item(const QString &itemClassName, const QString &indent, QTextStream &setupUiStream, QTextStream &retranslateUiStream, Driver *driver);
         ~Item();
@@ -176,15 +177,15 @@ private:
         int setupUiCount() const { return m_setupUiData.setters.count(); }
         int retranslateUiCount() const { return m_retranslateUiData.setters.count(); }
     private:
-        struct ItemData {
-            ItemData() : policy(DontGenerate) {}
+        struct ItemData
+        {
             QMultiMap<QString, QString> setters; // directive to setter
             QSet<QString> directives;
             enum TemporaryVariableGeneratorPolicy { // policies with priority, number describes the priority
                 DontGenerate = 1,
                 GenerateWithMultiDirective = 2,
                 Generate = 3
-            } policy;
+            } policy = DontGenerate;
         };
         ItemData m_setupUiData;
         ItemData m_retranslateUiData;

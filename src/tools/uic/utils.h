@@ -94,12 +94,8 @@ inline QString fixString(const QString &str, const QString &indent)
 inline QHash<QString, DomProperty *> propertyMap(const QList<DomProperty *> &properties)
 {
     QHash<QString, DomProperty *> map;
-
-    for (int i=0; i<properties.size(); ++i) {
-        DomProperty *p = properties.at(i);
-        map.insert(p->attributeName(), p);
-    }
-
+    for (DomProperty *p : properties)
+         map.insert(p->attributeName(), p);
     return map;
 }
 

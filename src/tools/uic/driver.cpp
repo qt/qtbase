@@ -41,9 +41,7 @@ Driver::Driver()
     m_output = &m_stdout;
 }
 
-Driver::~Driver()
-{
-}
+Driver::~Driver() = default;
 
 QString Driver::findOrInsertWidget(DomWidget *ui_widget)
 {
