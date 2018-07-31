@@ -40,7 +40,7 @@
 #ifndef QTESTSUPPORT_GUI_H
 #define QTESTSUPPORT_GUI_H
 
-#include "qtguiglobal.h"
+#include <QtGui/qtguiglobal.h>
 
 QT_BEGIN_NAMESPACE
 
