@@ -55,11 +55,13 @@ class QSurfacePrivate;
 
 class Q_GUI_EXPORT QSurface
 {
+    Q_GADGET
 public:
     enum SurfaceClass {
         Window,
         Offscreen
     };
+    Q_ENUM(SurfaceClass)
 
     enum SurfaceType {
         RasterSurface,
@@ -69,6 +71,7 @@ public:
         VulkanSurface,
         MetalSurface
     };
+    Q_ENUM(SurfaceType)
 
     virtual ~QSurface();
 

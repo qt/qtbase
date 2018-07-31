@@ -38,6 +38,10 @@
 ****************************************************************************/
 
 #include "qplatformsurface.h"
+#ifndef QT_NO_DEBUG_STREAM
+#include <QtCore/qdebug.h>
+#include <QtGui/qwindow.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -63,6 +67,27 @@ QSurface *QPlatformSurface::surface() const
 QPlatformSurface::QPlatformSurface(QSurface *surface) : m_surface(surface)
 {
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QPlatformSurface *surface)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug << "QPlatformSurface(" << (const void *)surface;
+    if (surface) {
+        QSurface *s = surface->surface();
+        auto surfaceClass = s->surfaceClass();
+        debug << ", class=" << surfaceClass;
+        debug << ", type=" << s->surfaceType();
+        if (surfaceClass == QSurface::Window)
+            debug << ", window=" << static_cast<QWindow *>(s);
+        else
+            debug << ", surface=" << s;
+    }
+    debug << ')';
+    return debug;
+}
+#endif // !QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE
 
