@@ -1874,6 +1874,9 @@ QString QRegularExpression::escape(const QString &str)
     \since 5.12
 
     Returns a regular expression representation of the given glob \a pattern.
+    The transformation is targeting file path globbing, which means in particular
+    that path separators receive special treatment. This implies that it is not
+    just a basic translation from "*" to ".*".
 
     \snippet code/src_corelib_tools_qregularexpression.cpp 31
 
@@ -1917,19 +1920,35 @@ QString QRegularExpression::wildcardToRegularExpression(const QString &pattern)
 {
     const int wclen = pattern.length();
     QString rx;
+    rx.reserve(wclen + wclen / 16);
     int i = 0;
-    bool hasNegativeBracket = false;
     const QChar *wc = pattern.unicode();
+
+#ifdef Q_OS_WIN
+    const QLatin1Char nativePathSeparator('\\');
+    const QLatin1String starEscape("[^/\\\\]*");
+    const QLatin1String questionMarkEscape("[^/\\\\]");
+#else
+    const QLatin1Char nativePathSeparator('/');
+    const QLatin1String starEscape("[^/]*");
+    const QLatin1String questionMarkEscape("[^/]");
+#endif
 
     while (i < wclen) {
         const QChar c = wc[i++];
         switch (c.unicode()) {
         case '*':
-            rx += QLatin1String(".*");
+            rx += starEscape;
             break;
         case '?':
-            rx += QLatin1Char('.');
+            rx += questionMarkEscape;
             break;
+        case '\\':
+#ifdef Q_OS_WIN
+        case '/':
+            rx += QLatin1String("[/\\\\]");
+            break;
+#endif
         case '$':
         case '(':
         case ')':
@@ -1943,35 +1962,27 @@ QString QRegularExpression::wildcardToRegularExpression(const QString &pattern)
             rx += c;
             break;
         case '[':
+            rx += c;
             // Support for the [!abc] or [!a-c] syntax
-            // Implements a negative look-behind for one char.
             if (i < wclen) {
-                if (wc[i] == QLatin1Char(']')) {
-                    rx += c;
-                    rx += wc[i++];
-                } else if (wc[i] == QLatin1Char('!')) {
-                    rx += QLatin1String(".(?<");
-                    rx += wc[i++];
-                    rx += c;
-                    hasNegativeBracket = true;
-                } else {
-                    rx += c;
+                if (wc[i] == QLatin1Char('!')) {
+                    rx += QLatin1Char('^');
+                    ++i;
                 }
+
+                if (i < wclen && wc[i] == QLatin1Char(']'))
+                    rx += wc[i++];
+
                 while (i < wclen && wc[i] != QLatin1Char(']')) {
+                    // The '/' appearing in a character class invalidates the
+                    // regular expression parsing. It also concerns '\\' on
+                    // Windows OS types.
+                    if (wc[i] == QLatin1Char('/') || wc[i] == nativePathSeparator)
+                        return rx;
                     if (wc[i] == QLatin1Char('\\'))
                         rx += QLatin1Char('\\');
                     rx += wc[i++];
                 }
-            } else {
-                rx += c;
-            }
-            break;
-        case ']':
-            rx += c;
-            // Closes the negative look-behind expression.
-            if (hasNegativeBracket) {
-                rx += QLatin1Char(')');
-                hasNegativeBracket = false;
             }
             break;
         default:

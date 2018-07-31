@@ -2173,6 +2173,7 @@ void tst_QRegularExpression::wildcard_data()
     addRow("?m", "test.html", 6);
     addRow("[*]", "test.html", -1);
     addRow("[?]","test.html", -1);
+    addRow("[?]","test.h?ml", 6);
     addRow("[[]","test.h[ml", 6);
     addRow("[]]","test.h]ml", 6);
     addRow(".h[a-z]ml", "test.html", 4);
@@ -2187,6 +2188,24 @@ void tst_QRegularExpression::wildcard_data()
     addRow(".h[][!]", "test.h]ml", 4);
     addRow(".h[][!]", "test.h[ml", 4);
     addRow(".h[][!]", "test.h!ml", 4);
+
+    addRow("foo/*/bar", "Qt/foo/baz/bar", 3);
+    addRow("foo/(*)/bar", "Qt/foo/baz/bar", -1);
+    addRow("foo/(*)/bar", "Qt/foo/(baz)/bar", 3);
+    addRow("foo/?/bar", "Qt/foo/Q/bar", 3);
+    addRow("foo/?/bar", "Qt/foo/Qt/bar", -1);
+    addRow("foo/(?)/bar", "Qt/foo/Q/bar", -1);
+    addRow("foo/(?)/bar", "Qt/foo/(Q)/bar", 3);
+
+#ifdef Q_OS_WIN
+    addRow("foo\\*\\bar", "Qt\\foo\\baz\\bar", 3);
+    addRow("foo\\(*)\\bar", "Qt\\foo\\baz\\bar", -1);
+    addRow("foo\\(*)\\bar", "Qt\\foo\\(baz)\\bar", 3);
+    addRow("foo\\?\\bar", "Qt\\foo\\Q\\bar", 3);
+    addRow("foo\\?\\bar", "Qt\\foo\\Qt\\bar", -1);
+    addRow("foo\\(?)\\bar", "Qt\\foo\\Q\\bar", -1);
+    addRow("foo\\(?)\\bar", "Qt\\foo\\(Q)\\bar", 3);
+#endif
 }
 
 void tst_QRegularExpression::wildcard()
