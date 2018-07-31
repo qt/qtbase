@@ -41,6 +41,7 @@
 #define QCOCOAGLCONTEXT_H
 
 #include <QtCore/QPointer>
+#include <QtCore/private/qcore_mac_p.h>
 #include <qpa/qplatformopenglcontext.h>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QWindow>
@@ -79,6 +80,8 @@ private:
     NSOpenGLContext *m_shareContext = nil;
     QSurfaceFormat m_format;
     bool m_didCheckForSoftwareContext = false;
+    QVarLengthArray<QMacScopedObserver, 3> m_updateObservers;
+    QAtomicInt m_needsUpdate = false;
 };
 
 QT_END_NAMESPACE

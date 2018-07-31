@@ -41,7 +41,6 @@
 #include "qcocoawindow.h"
 #include "qcocoahelpers.h"
 #include <qdebug.h>
-#include <QtCore/private/qcore_mac_p.h>
 #include <QtPlatformHeaders/qcocoanativecontext.h>
 #include <dlfcn.h>
 
@@ -351,7 +350,8 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
             }
         }
 
-        update();
+        if (m_needsUpdate.fetchAndStoreRelaxed(false))
+            update();
     }
 
     return true;
@@ -383,13 +383,44 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
     if (view == m_context.view)
         return true;
 
+    // Setting the drawable may happen on a separate thread as a result of
+    // a call to makeCurrent, so we need to set up the observers before we
+    // associate the view with the context. That way we will guarantee that
+    // as long as the view is the drawable of the context we will know about
+    // any updates to the view that require surface invalidation.
+
+    auto updateCallback = [this, view]() {
+        Q_ASSERT(QThread::currentThread() == qApp->thread());
+        if (m_context.view != view)
+            return;
+        m_needsUpdate = true;
+    };
+
+    m_updateObservers.clear();
+
+    if (view.layer) {
+        m_updateObservers.append(QMacScopedObserver(view, NSViewFrameDidChangeNotification, updateCallback));
+        m_updateObservers.append(QMacScopedObserver(view.window, NSWindowDidChangeScreenNotification, updateCallback));
+    } else {
+        m_updateObservers.append(QMacScopedObserver(view, NSViewGlobalFrameDidChangeNotification, updateCallback));
+    }
+
+    m_updateObservers.append(QMacScopedObserver([NSApplication sharedApplication],
+        NSApplicationDidChangeScreenParametersNotification, updateCallback));
+
+    // If any of the observers fire at this point it's fine. We check the
+    // view association (atomically) in the update callback, and skip the
+    // update if we haven't associated yet. Setting the drawable below will
+    // have the same effect as an update.
+
+    // Now we are ready to associate the view with the context
     if ((m_context.view = view) != view) {
         qCInfo(lcQpaOpenGLContext) << "Failed to set" << view << "as drawable for" << m_context;
+        m_updateObservers.clear();
         return false;
     }
 
     qCInfo(lcQpaOpenGLContext) << "Set drawable for" << m_context << "to" << m_context.view;
-
     return true;
 }
 
