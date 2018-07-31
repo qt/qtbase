@@ -59,7 +59,7 @@ public:
     QWindowsPointerHandler() = default;
     bool translatePointerEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result);
     bool translateMouseEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result);
-    QTouchDevice *touchDevice() const { return m_touchDevice.data(); }
+    QTouchDevice *touchDevice() const { return m_touchDevice; }
     QTouchDevice *ensureTouchDevice();
     Qt::MouseButtons queryMouseButtons();
     QWindow *windowUnderMouse() const { return m_windowUnderPointer.data(); }
@@ -70,7 +70,7 @@ private:
     bool translateTouchEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, PVOID vTouchInfo, unsigned int count);
     bool translatePenEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, PVOID vPenInfo);
 
-    QScopedPointer<QTouchDevice> m_touchDevice;
+    QTouchDevice *m_touchDevice = nullptr;
     QHash<int, QPointF> m_lastTouchPositions;
     QPointer<QWindow> m_windowUnderPointer;
     QPointer<QWindow> m_currentWindow;
