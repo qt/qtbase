@@ -70,7 +70,6 @@ private:
     Q_DECLARE_PRIVATE(QGraphicsAnchor)
 
     friend class QGraphicsAnchorLayoutPrivate;
-    friend struct AnchorData;
 };
 
 class Q_WIDGETS_EXPORT QGraphicsAnchorLayout : public QGraphicsLayout

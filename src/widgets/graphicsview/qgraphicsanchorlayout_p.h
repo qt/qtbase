@@ -73,6 +73,7 @@ QT_BEGIN_NAMESPACE
   respectively.
 */
 
+namespace QtGraphicsAnchorLayout {
 /*!
   \internal
 
@@ -326,6 +327,9 @@ public:
     QSet<AnchorData *> positives;
     QSet<AnchorData *> negatives;
 };
+} // namespace QtGraphicsAnchorLayout
+using namespace QtGraphicsAnchorLayout;
+
 Q_DECLARE_TYPEINFO(GraphPath, Q_MOVABLE_TYPE);
 
 class QGraphicsAnchorLayoutPrivate;
@@ -345,6 +349,9 @@ public:
     qreal spacing() const;
 
     void setSizePolicy(QSizePolicy::Policy policy);
+
+    static QGraphicsAnchorPrivate *get(QGraphicsAnchor *q)
+    { return q->d_func(); }
 
     QGraphicsAnchorLayoutPrivate *layoutPrivate;
     AnchorData *data;
