@@ -125,7 +125,7 @@ public:
 
     QPoint globalPosition() const;
 
-    QWindow *topLevelWindow() const;
+    QWindow *topLevelWindow(QWindow::AncestorMode mode = QWindow::IncludeTransients) const;
 
 #if QT_CONFIG(opengl)
     virtual QOpenGLContext *shareContext() const;

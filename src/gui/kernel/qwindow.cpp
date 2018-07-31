@@ -2605,14 +2605,14 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
     }
 }
 
-QWindow *QWindowPrivate::topLevelWindow() const
+QWindow *QWindowPrivate::topLevelWindow(QWindow::AncestorMode mode) const
 {
     Q_Q(const QWindow);
 
     QWindow *window = const_cast<QWindow *>(q);
 
     while (window) {
-        QWindow *parent = window->parent(QWindow::IncludeTransients);
+        QWindow *parent = window->parent(mode);
         if (!parent)
             break;
 
