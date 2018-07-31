@@ -1207,14 +1207,10 @@ inline void QUrlPrivate::appendHost(QString &appendTo, QUrl::FormattingOptions o
         return;
     if (host.at(0).unicode() == '[') {
         // IPv6 addresses might contain a zone-id which needs to be recoded
-        QString hostInCorrectFormat;
         if (options != 0)
-            qt_urlRecode(hostInCorrectFormat, host.constBegin(), host.constEnd(), options, 0);
-
-        if (hostInCorrectFormat.isEmpty())
-            hostInCorrectFormat = host;
-
-        appendTo += hostInCorrectFormat;
+            if (qt_urlRecode(appendTo, host.constBegin(), host.constEnd(), options, 0))
+                return;
+        appendTo += host;
     } else {
         // this is either an IPv4Address or a reg-name
         // if it is a reg-name, it is already stored in Unicode form
