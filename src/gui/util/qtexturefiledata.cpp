@@ -39,6 +39,7 @@
 
 #include "qtexturefiledata_p.h"
 #include <QMetaEnum>
+#include <QSize>
 #if QT_CONFIG(opengl)
 #include <QOpenGLTexture>
 #endif
