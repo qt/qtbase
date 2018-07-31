@@ -41,6 +41,7 @@
 
 #include <QtCore/qcryptographichash.h>
 #include <QtCore/qbytearray.h>
+#include <QtCore/qvector.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qobject.h>
 
@@ -99,6 +100,7 @@ private slots:
     void protocolVersionMatching();
     void verificationErrors_data();
     void verificationErrors();
+    void ignoreExpectedErrors();
     void verifyServerCertificate_data();
     void verifyServerCertificate();
     void verifyClientCertificate_data();
@@ -683,6 +685,31 @@ void tst_QDtls::verificationErrors()
         QCOMPARE(clientCrypto->handshakeState(), QDtls::HandshakeComplete);
         QCOMPARE(clientCrypto->peerVerificationErrors().size(), 0);
     }
+}
+
+void tst_QDtls::ignoreExpectedErrors()
+{
+    connectHandshakeReadingSlots();
+
+    auto serverConfig = defaultServerConfig;
+    serverConfig.setPrivateKey(serverKeySS);
+    serverConfig.setLocalCertificate(selfSignedCert);
+    QVERIFY(serverCrypto->setDtlsConfiguration(serverConfig));
+
+    const QVector<QSslError> expectedErrors = {{QSslError::HostNameMismatch, selfSignedCert},
+                                               {QSslError::SelfSignedCertificate, selfSignedCert}};
+
+    clientCrypto->ignoreVerificationErrors(expectedErrors);
+    QVERIFY(clientCrypto->setPeer(serverAddress, serverPort));
+    QVERIFY(clientCrypto->doHandshake(&clientSocket));
+
+    testLoop.enterLoopMSecs(handshakeTimeoutMS);
+
+    QVERIFY(!testLoop.timeout());
+
+    QDTLS_VERIFY_HANDSHAKE_SUCCESS(serverCrypto);
+    QCOMPARE(clientCrypto->handshakeState(), QDtls::HandshakeComplete);
+    QVERIFY(clientCrypto->isConnectionEncrypted());
 }
 
 void tst_QDtls::verifyServerCertificate_data()

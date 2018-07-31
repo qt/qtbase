@@ -1054,7 +1054,7 @@ bool QDtlsPrivateOpenSSL::continueHandshake(QUdpSocket *socket, const QByteArray
                               || (dtlsConfiguration.peerVerifyMode == QSslSocket::AutoVerifyPeer
                                   && mode == QSslSocket::SslClientMode);
 
-    if (!doVerifyPeer || verifyPeer()) {
+    if (!doVerifyPeer || verifyPeer() || tlsErrorsWereIgnored()) {
         connectionEncrypted = true;
         handshakeState = QDtls::HandshakeComplete;
         return true;
