@@ -99,9 +99,6 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
         m_context = context;
         [m_context retain];
         m_shareContext = share ? static_cast<QCocoaGLContext *>(share)->nsOpenGLContext() : nil;
-        // OpenGL surfaces can be ordered either above(default) or below the NSWindow.
-        const GLint order = qt_mac_resolveOption(1, "QT_MAC_OPENGL_SURFACE_ORDER");
-        [m_context setValues:&order forParameter:NSOpenGLCPSurfaceOrder];
         updateSurfaceFormat();
         return;
     }
