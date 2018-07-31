@@ -78,10 +78,10 @@ enum StrayCharacterMode {
     WhitespacesAllowed
 };
 
-double asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
-                     StrayCharacterMode strayCharMode = TrailingJunkProhibited);
-void doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *buf, int bufSize,
-                   bool &sign, int &length, int &decpt);
+double qt_asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
+                        StrayCharacterMode strayCharMode = TrailingJunkProhibited);
+void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *buf, int bufSize,
+                      bool &sign, int &length, int &decpt);
 
 QString qulltoa(qulonglong l, int base, const QChar _zero);
 Q_CORE_EXPORT QString qdtoa(qreal d, int *decpt, int *sign);

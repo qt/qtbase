@@ -75,8 +75,8 @@ QT_BEGIN_NAMESPACE
 
 QT_CLOCALE_HOLDER
 
-void doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *buf, int bufSize,
-                   bool &sign, int &length, int &decpt)
+void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *buf, int bufSize,
+                      bool &sign, int &length, int &decpt)
 {
     if (bufSize == 0) {
         decpt = 0;
@@ -277,8 +277,8 @@ void doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *
         --length;
 }
 
-double asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
-                     StrayCharacterMode strayCharMode)
+double qt_asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
+                        StrayCharacterMode strayCharMode)
 {
     if (*num == '\0') {
         ok = false;
@@ -548,7 +548,7 @@ double qstrntod(const char *s00, int len, const char **se, bool *ok)
 {
     int processed = 0;
     bool nonNullOk = false;
-    double d = asciiToDouble(s00, len, nonNullOk, processed, TrailingJunkAllowed);
+    double d = qt_asciiToDouble(s00, len, nonNullOk, processed, TrailingJunkAllowed);
     if (se)
         *se = s00 + processed;
     if (ok)
@@ -564,8 +564,8 @@ QString qdtoa(qreal d, int *decpt, int *sign)
 
     // Some versions of libdouble-conversion like an extra digit, probably for '\0'
     char result[QLocaleData::DoubleMaxSignificant + 1];
-    doubleToAscii(d, QLocaleData::DFSignificantDigits, QLocale::FloatingPointShortest, result,
-                  QLocaleData::DoubleMaxSignificant + 1, nonNullSign, length, nonNullDecpt);
+    qt_doubleToAscii(d, QLocaleData::DFSignificantDigits, QLocale::FloatingPointShortest, result,
+                     QLocaleData::DoubleMaxSignificant + 1, nonNullSign, length, nonNullDecpt);
 
     if (sign)
         *sign = nonNullSign ? 1 : 0;

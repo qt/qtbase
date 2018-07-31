@@ -3077,7 +3077,7 @@ QString QLocaleData::doubleToString(const QChar _zero, const QChar plus, const Q
     QVarLengthArray<char> buf(bufSize);
     int length;
 
-    doubleToAscii(d, form, precision, buf.data(), bufSize, negative, length, decpt);
+    qt_doubleToAscii(d, form, precision, buf.data(), bufSize, negative, length, decpt);
 
     if (qstrncmp(buf.data(), "inf", 3) == 0 || qstrncmp(buf.data(), "nan", 3) == 0) {
         num_str = QString::fromLatin1(buf.data(), length);
@@ -3587,7 +3587,7 @@ double QLocaleData::stringToDouble(QStringView str, bool *ok,
     }
     int processed = 0;
     bool nonNullOk = false;
-    double d = asciiToDouble(buff.constData(), buff.length() - 1, nonNullOk, processed);
+    double d = qt_asciiToDouble(buff.constData(), buff.length() - 1, nonNullOk, processed);
     if (ok != nullptr)
         *ok = nonNullOk;
     return d;
@@ -3625,7 +3625,7 @@ double QLocaleData::bytearrayToDouble(const char *num, bool *ok)
     int len = static_cast<int>(strlen(num));
     Q_ASSERT(len >= 0);
     int processed = 0;
-    double d = asciiToDouble(num, len, nonNullOk, processed);
+    double d = qt_asciiToDouble(num, len, nonNullOk, processed);
     if (ok != nullptr)
         *ok = nonNullOk;
     return d;
