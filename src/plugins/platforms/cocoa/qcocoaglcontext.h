@@ -41,6 +41,9 @@
 #define QCOCOAGLCONTEXT_H
 
 #include <QtCore/QPointer>
+#include <QtCore/qvector.h>
+#include <QtCore/private/qcore_mac_p.h>
+
 #include <qpa/qplatformopenglcontext.h>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QWindow>
@@ -65,8 +68,6 @@ public:
     bool isSharing() const override;
     bool isValid() const override;
 
-    void windowWasHidden();
-
     NSOpenGLContext *nativeContext() const;
 
     QFunctionPointer getProcAddress(const char *procName) override;
@@ -74,14 +75,14 @@ public:
 private:
     static NSOpenGLPixelFormat *pixelFormatForSurfaceFormat(const QSurfaceFormat &format);
 
-    bool setActiveWindow(QWindow *window);
+    bool setDrawable(QPlatformSurface *surface);
     void updateSurfaceFormat();
 
     NSOpenGLContext *m_context = nil;
     NSOpenGLContext *m_shareContext = nil;
     QSurfaceFormat m_format;
-    QPointer<QWindow> m_currentWindow;
     bool m_didCheckForSoftwareContext = false;
+    QVarLengthArray<QMacScopedObserver, 3> m_observers;
 };
 
 QT_END_NAMESPACE
