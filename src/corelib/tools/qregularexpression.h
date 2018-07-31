@@ -96,7 +96,6 @@ public:
 
     QString pattern() const;
     void setPattern(const QString &pattern);
-    void setWildcardPattern(const QString &pattern);
 
     bool isValid() const;
     int patternErrorOffset() const;
@@ -142,6 +141,7 @@ public:
     void optimize() const;
 
     static QString escape(const QString &str);
+    static QString wildcardToRegularExpression(const QString &str);
 
     bool operator==(const QRegularExpression &re) const;
     inline bool operator!=(const QRegularExpression &re) const { return !operator==(re); }
