@@ -243,7 +243,7 @@ static bool systemHasStderr()
     \internal
     \sa systemHasStderr()
 */
-bool stderrHasConsoleAttached()
+static bool stderrHasConsoleAttached()
 {
     static const bool stderrHasConsoleAttached = []() -> bool {
         if (!systemHasStderr())

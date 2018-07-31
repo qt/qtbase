@@ -74,6 +74,23 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace {
+class CloseButton : public QAbstractButton
+{
+    Q_OBJECT
+
+public:
+    explicit CloseButton(QWidget *parent = 0);
+
+    QSize sizeHint() const override;
+    QSize minimumSizeHint() const override
+        { return sizeHint(); }
+    void enterEvent(QEvent *event) override;
+    void leaveEvent(QEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
+};
+}
+
 QMovableTabWidget::QMovableTabWidget(QWidget *parent)
     : QWidget(parent)
 {
@@ -2695,5 +2712,4 @@ void QTabBarPrivate::Tab::TabBarAnimation::updateState(QAbstractAnimation::State
 QT_END_NAMESPACE
 
 #include "moc_qtabbar.cpp"
-
-#include "moc_qtabbar_p.cpp"
+#include "qtabbar.moc"

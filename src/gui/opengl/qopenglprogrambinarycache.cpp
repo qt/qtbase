@@ -62,6 +62,7 @@ const quint32 BINSHADER_MAGIC = 0x5174;
 const quint32 BINSHADER_VERSION = 0x2;
 const quint32 BINSHADER_QTVERSION = QT_VERSION;
 
+namespace {
 struct GLEnvInfo
 {
     GLEnvInfo();
@@ -70,6 +71,7 @@ struct GLEnvInfo
     QByteArray glrenderer;
     QByteArray glversion;
 };
+}
 
 GLEnvInfo::GLEnvInfo()
 {

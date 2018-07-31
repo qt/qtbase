@@ -54,6 +54,7 @@ QEglFSDeviceIntegration *qt_egl_device_integration()
 
 #else
 
+namespace {
 class DeviceIntegration
 {
 public:
@@ -63,6 +64,7 @@ public:
 private:
     QEglFSDeviceIntegration *m_integration;
 };
+}
 
 Q_GLOBAL_STATIC(DeviceIntegration, deviceIntegration)
 

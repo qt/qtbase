@@ -157,6 +157,7 @@ private:
     QByteArray format_atoms;
 };
 
+namespace {
 class INCRTransaction;
 typedef QMap<xcb_window_t,INCRTransaction*> TransactionMap;
 static TransactionMap *transactions = 0;
@@ -263,6 +264,7 @@ private:
     uint offset;
     int abort_timer;
 };
+} // unnamed namespace
 
 const int QXcbClipboard::clipboard_timeout = 5000;
 
