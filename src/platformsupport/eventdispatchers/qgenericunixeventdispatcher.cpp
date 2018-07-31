@@ -43,7 +43,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QAbstractEventDispatcher *createUnixEventDispatcher()
+class QAbstractEventDispatcher *QtGenericUnixDispatcher::createUnixEventDispatcher()
 {
 #if !defined(QT_NO_GLIB) && !defined(Q_OS_WIN)
     if (qEnvironmentVariableIsEmpty("QT_NO_GLIB") && QEventDispatcherGlib::versionSupported())

@@ -56,7 +56,10 @@
 QT_BEGIN_NAMESPACE
 
 class QAbstractEventDispatcher;
+namespace QtGenericUnixDispatcher {
 QAbstractEventDispatcher* createUnixEventDispatcher();
+}
+using QtGenericUnixDispatcher::createUnixEventDispatcher;
 
 QT_END_NAMESPACE
 
