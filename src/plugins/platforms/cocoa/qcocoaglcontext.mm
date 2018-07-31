@@ -112,8 +112,6 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
     if (m_format.renderableType() != QSurfaceFormat::OpenGL)
         return;
 
-    QMacAutoReleasePool pool; // For the SG Canvas render thread
-
     m_shareContext = share ? static_cast<QCocoaGLContext *>(share)->nsOpenGLContext() : nil;
 
     if (m_shareContext) {
@@ -372,7 +370,6 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
 
     Q_ASSERT(surface->surface()->supportsOpenGL());
 
-    QMacAutoReleasePool pool;
     [m_context makeCurrentContext];
 
     if (surface->surface()->surfaceClass() == QSurface::Offscreen)
