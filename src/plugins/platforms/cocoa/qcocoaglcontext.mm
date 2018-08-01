@@ -333,16 +333,18 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
 
     Q_ASSERT(surface->surface()->supportsOpenGL());
 
-    [m_context makeCurrentContext];
-
-    if (surface->surface()->surfaceClass() == QSurface::Offscreen)
+    if (surface->surface()->surfaceClass() == QSurface::Offscreen) {
+        [m_context makeCurrentContext];
         return true;
+    }
 
     QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
     if (!setActiveWindow(window)) {
         qCDebug(lcQpaOpenGLContext) << "Failed to activate window, skipping makeCurrent";
         return false;
     }
+
+    [m_context makeCurrentContext];
 
     // Disable high-resolution surfaces when using the software renderer, which has the
     // problem that the system silently falls back to a to using a low-resolution buffer
