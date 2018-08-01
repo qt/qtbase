@@ -371,6 +371,8 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
     // convertSizeToBacking and backingScaleFactor APIs. A typical result of this is that Qt
     // will display a quarter of the window content when running in a virtual machine.
     if (!m_didCheckForSoftwareContext) {
+        // FIXME: This ensures we check only once per context,
+        // but the context may be used for multiple surfaces.
         m_didCheckForSoftwareContext = true;
 
         const GLubyte* renderer = glGetString(GL_RENDERER);
