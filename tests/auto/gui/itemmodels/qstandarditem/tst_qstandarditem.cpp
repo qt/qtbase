@@ -69,7 +69,19 @@ private slots:
     void sortChildren();
     void subclassing();
     void lessThan();
+    void clearData();
 };
+
+void tst_QStandardItem::clearData()
+{
+    QStandardItem item;
+    item.setData(QStringLiteral("Test"), Qt::EditRole);
+    item.setData(5, Qt::UserRole);
+    item.clearData();
+    QCOMPARE(item.data(Qt::EditRole), QVariant());
+    QCOMPARE(item.data(Qt::UserRole), QVariant());
+    QCOMPARE(item.data(Qt::DisplayRole), QVariant());
+}
 
 void tst_QStandardItem::ctor()
 {

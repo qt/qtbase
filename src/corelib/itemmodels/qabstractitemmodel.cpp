@@ -1866,6 +1866,23 @@ bool QAbstractItemModel::setData(const QModelIndex &index, const QVariant &value
     return false;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+/*!
+    \since 6.0
+    Removes the data stored in all the roles for the given \a index.
+    Returns \c{true} if successful; otherwise returns \c{false}.
+    The dataChanged() signal should be emitted if the data was successfully
+    removed.
+    The base class implementation returns \c{false}
+    \sa data(), itemData(), setData(), setItemData()
+*/
+bool QAbstractItemModel::clearItemData(const QModelIndex &index)
+{
+    Q_UNUSED(index);
+    return false;
+}
+#endif
+
 /*!
     \fn QVariant QAbstractItemModel::data(const QModelIndex &index, int role) const = 0
 

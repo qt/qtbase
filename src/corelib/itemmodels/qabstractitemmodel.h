@@ -198,6 +198,9 @@ public:
 
     virtual QMap<int, QVariant> itemData(const QModelIndex &index) const;
     virtual bool setItemData(const QModelIndex &index, const QMap<int, QVariant> &roles);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    virtual bool clearItemData(const QModelIndex &index);
+#endif
 
     virtual QStringList mimeTypes() const;
     virtual QMimeData *mimeData(const QModelIndexList &indexes) const;

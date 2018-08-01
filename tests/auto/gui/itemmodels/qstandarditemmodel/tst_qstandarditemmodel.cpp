@@ -98,6 +98,7 @@ private slots:
     void checkChildren();
     void data();
     void clear();
+    void clearItemData();
     void sort_data();
     void sort();
     void sortRole_data();
@@ -750,6 +751,27 @@ void tst_QStandardItemModel::data()
     QCOMPARE(m_model->data(m_model->index(0, 0), Qt::DisplayRole).toString(), QLatin1String("initialitem"));
     QCOMPARE(m_model->data(m_model->index(0, 0), Qt::ToolTipRole).toString(), QLatin1String("tooltip"));
 
+}
+
+void tst_QStandardItemModel::clearItemData()
+{
+    currentRoles.clear();
+    QVERIFY(!m_model->clearItemData(QModelIndex()));
+    QCOMPARE(currentRoles, {});
+    const QModelIndex idx = m_model->index(0, 0);
+    const QMap<int, QVariant> oldData = m_model->itemData(idx);
+    m_model->setData(idx, QLatin1String("initialitem"), Qt::DisplayRole);
+    m_model->setData(idx, QLatin1String("tooltip"), Qt::ToolTipRole);
+    m_model->setData(idx, 5, Qt::UserRole);
+    currentRoles.clear();
+    QVERIFY(m_model->clearItemData(idx));
+    QCOMPARE(idx.data(Qt::UserRole), QVariant());
+    QCOMPARE(idx.data(Qt::ToolTipRole), QVariant());
+    QCOMPARE(idx.data(Qt::DisplayRole), QVariant());
+    QCOMPARE(idx.data(Qt::EditRole), QVariant());
+    QCOMPARE(currentRoles, {});
+    m_model->setItemData(idx, oldData);
+    currentRoles.clear();
 }
 
 void tst_QStandardItemModel::clear()
