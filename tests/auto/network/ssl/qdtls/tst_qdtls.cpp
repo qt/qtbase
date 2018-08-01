@@ -100,7 +100,8 @@ private slots:
     void protocolVersionMatching();
     void verificationErrors_data();
     void verificationErrors();
-    void ignoreExpectedErrors();
+    void presetExpectedErrors_data();
+    void presetExpectedErrors();
     void verifyServerCertificate_data();
     void verifyServerCertificate();
     void verifyClientCertificate_data();
@@ -160,6 +161,7 @@ Q_DECLARE_METATYPE(QSslSocket::SslMode)
 Q_DECLARE_METATYPE(QSslSocket::PeerVerifyMode)
 Q_DECLARE_METATYPE(QList<QSslCertificate>)
 Q_DECLARE_METATYPE(QSslKey)
+Q_DECLARE_METATYPE(QVector<QSslError>)
 
 QT_BEGIN_NAMESPACE
 
@@ -687,8 +689,22 @@ void tst_QDtls::verificationErrors()
     }
 }
 
-void tst_QDtls::ignoreExpectedErrors()
+void tst_QDtls::presetExpectedErrors_data()
 {
+    QTest::addColumn<QVector<QSslError>>("expectedTlsErrors");
+    QTest::addColumn<bool>("works");
+
+    QVector<QSslError> expectedErrors{{QSslError::HostNameMismatch, selfSignedCert}};
+    QTest::addRow("unexpected-self-signed") << expectedErrors << false;
+    expectedErrors.push_back({QSslError::SelfSignedCertificate, selfSignedCert});
+    QTest::addRow("all-errors-ignored") << expectedErrors << true;
+}
+
+void tst_QDtls::presetExpectedErrors()
+{
+    QFETCH(const QVector<QSslError>, expectedTlsErrors);
+    QFETCH(const bool, works);
+
     connectHandshakeReadingSlots();
 
     auto serverConfig = defaultServerConfig;
@@ -696,10 +712,7 @@ void tst_QDtls::ignoreExpectedErrors()
     serverConfig.setLocalCertificate(selfSignedCert);
     QVERIFY(serverCrypto->setDtlsConfiguration(serverConfig));
 
-    const QVector<QSslError> expectedErrors = {{QSslError::HostNameMismatch, selfSignedCert},
-                                               {QSslError::SelfSignedCertificate, selfSignedCert}};
-
-    clientCrypto->ignoreVerificationErrors(expectedErrors);
+    clientCrypto->ignoreVerificationErrors(expectedTlsErrors);
     QVERIFY(clientCrypto->setPeer(serverAddress, serverPort));
     QVERIFY(clientCrypto->doHandshake(&clientSocket));
 
@@ -707,9 +720,15 @@ void tst_QDtls::ignoreExpectedErrors()
 
     QVERIFY(!testLoop.timeout());
 
-    QDTLS_VERIFY_HANDSHAKE_SUCCESS(serverCrypto);
-    QCOMPARE(clientCrypto->handshakeState(), QDtls::HandshakeComplete);
-    QVERIFY(clientCrypto->isConnectionEncrypted());
+    if (works) {
+        QDTLS_VERIFY_HANDSHAKE_SUCCESS(serverCrypto);
+        QCOMPARE(clientCrypto->handshakeState(), QDtls::HandshakeComplete);
+        QVERIFY(clientCrypto->isConnectionEncrypted());
+    } else {
+        QCOMPARE(clientCrypto->dtlsError(), QDtlsError::PeerVerificationError);
+        QVERIFY(!clientCrypto->isConnectionEncrypted());
+        QCOMPARE(clientCrypto->handshakeState(), QDtls::PeerVerificationFailed);
+    }
 }
 
 void tst_QDtls::verifyServerCertificate_data()
