@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 class QCocoaGLContext : public QPlatformOpenGLContext
 {
 public:
-    QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, const QVariant &nativeHandle);
+    QCocoaGLContext(QOpenGLContext *context);
     ~QCocoaGLContext();
 
     bool makeCurrent(QPlatformSurface *surface) override;
@@ -77,11 +77,11 @@ private:
     bool setActiveWindow(QWindow *window);
     void updateSurfaceFormat();
 
-    NSOpenGLContext *m_context;
-    NSOpenGLContext *m_shareContext;
+    NSOpenGLContext *m_context = nil;
+    NSOpenGLContext *m_shareContext = nil;
     QSurfaceFormat m_format;
     QPointer<QWindow> m_currentWindow;
-    bool m_didCheckForSoftwareContext;
+    bool m_didCheckForSoftwareContext = false;
 };
 
 QT_END_NAMESPACE

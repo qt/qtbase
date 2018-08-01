@@ -58,40 +58,44 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaOpenGLContext, "qt.qpa.openglcontext", QtWarningMsg);
 
-QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share,
-                                 const QVariant &nativeHandle)
-    : m_context(nil),
-      m_shareContext(nil),
-      m_format(format),
-      m_didCheckForSoftwareContext(false)
+QCocoaGLContext::QCocoaGLContext(QOpenGLContext *context)
+    : QPlatformOpenGLContext(), m_format(context->format())
 {
+    QVariant nativeHandle = context->nativeHandle();
     if (!nativeHandle.isNull()) {
         if (!nativeHandle.canConvert<QCocoaNativeContext>()) {
             qCWarning(lcQpaOpenGLContext, "QOpenGLContext native handle must be a QCocoaNativeContext");
             return;
         }
-        QCocoaNativeContext handle = nativeHandle.value<QCocoaNativeContext>();
-        NSOpenGLContext *context = handle.context();
-        if (!context) {
+        m_context = nativeHandle.value<QCocoaNativeContext>().context();
+        if (!m_context) {
             qCWarning(lcQpaOpenGLContext, "QCocoaNativeContext's NSOpenGLContext can not be null");
             return;
         }
-        m_context = context;
+
         [m_context retain];
-        m_shareContext = share ? static_cast<QCocoaGLContext *>(share)->nativeContext() : nil;
+
+        // Note: We have no way of knowing whether the NSOpenGLContext was created with the
+        // share context as reported by the QOpenGLContext, but we just have to trust that
+        // it was. It's okey, as the only thing we're using it for is to report isShared().
+        if (QPlatformOpenGLContext *shareContext = context->shareHandle())
+            m_shareContext = static_cast<QCocoaGLContext *>(shareContext)->nativeContext();
+
         updateSurfaceFormat();
         return;
     }
 
-    // we only support OpenGL contexts under Cocoa
+    // ----------- Default case, we own the NSOpenGLContext -----------
+
+    // We only support OpenGL contexts under Cocoa
     if (m_format.renderableType() == QSurfaceFormat::DefaultRenderableType)
         m_format.setRenderableType(QSurfaceFormat::OpenGL);
     if (m_format.renderableType() != QSurfaceFormat::OpenGL)
         return;
 
-    m_shareContext = share ? static_cast<QCocoaGLContext *>(share)->nativeContext() : nil;
+    if (QPlatformOpenGLContext *shareContext = context->shareHandle()) {
+        m_shareContext = static_cast<QCocoaGLContext *>(shareContext)->nativeContext();
 
-    if (m_shareContext) {
         // Allow sharing between 3.2 Core and 4.1 Core profile versions in
         // cases where NSOpenGLContext creates a 4.1 context where a 3.2
         // context was requested. Due to the semantics of QSurfaceFormat
@@ -100,14 +104,13 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
         GLint shareContextRequestedProfile;
         [m_shareContext.pixelFormat getValues:&shareContextRequestedProfile
             forAttribute:NSOpenGLPFAOpenGLProfile forVirtualScreen:0];
-        auto shareContextActualProfile = share->format().version();
+        auto shareContextActualProfile = shareContext->format().version();
 
-        if (shareContextRequestedProfile == NSOpenGLProfileVersion3_2Core &&
-            shareContextActualProfile >= qMakePair(4, 1)) {
-
-            // There is a mismatch, downgrade requested format to make the
-            // NSOpenGLPFAOpenGLProfile attributes match. (NSOpenGLContext will
-            // fail to create a new context if there is a mismatch).
+        if (shareContextRequestedProfile == NSOpenGLProfileVersion3_2Core
+            && shareContextActualProfile >= qMakePair(4, 1)) {
+            // There is a mismatch. Downgrade requested format to make the
+            // NSOpenGLPFAOpenGLProfile attributes match. (NSOpenGLContext
+            // will fail to create a new context if there is a mismatch).
             if (m_format.version() >= qMakePair(4, 1))
                 m_format.setVersion(3, 2);
         }
@@ -118,12 +121,11 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
     NSOpenGLPixelFormat *pixelFormat = [pixelFormatForSurfaceFormat(m_format) autorelease];
     m_context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:m_shareContext];
 
-    // retry without sharing on context creation failure.
     if (!m_context && m_shareContext) {
         qCWarning(lcQpaOpenGLContext, "Could not create NSOpenGLContext with shared context, "
             "falling back to unshared context.");
-        m_shareContext = nil;
         m_context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
+        m_shareContext = nil;
     }
 
     if (!m_context) {
@@ -131,16 +133,18 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
         return;
     }
 
-    const GLint interval = format.swapInterval() >= 0 ? format.swapInterval() : 1;
+    // --------------------- Set NSOpenGLContext properties ---------------------
+
+    const GLint interval = m_format.swapInterval() >= 0 ? m_format.swapInterval() : 1;
     [m_context setValues:&interval forParameter:NSOpenGLCPSwapInterval];
 
-    if (format.alphaBufferSize() > 0) {
+    if (m_format.alphaBufferSize() > 0) {
         int zeroOpacity = 0;
         [m_context setValues:&zeroOpacity forParameter:NSOpenGLCPSurfaceOpacity];
     }
 
-
-    // OpenGL surfaces can be ordered either above(default) or below the NSWindow.
+    // OpenGL surfaces can be ordered either above(default) or below the NSWindow
+    // FIXME: Promote to QSurfaceFormat option or property
     const GLint order = qt_mac_resolveOption(1, "QT_MAC_OPENGL_SURFACE_ORDER");
     [m_context setValues:&order forParameter:NSOpenGLCPSurfaceOrder];
 

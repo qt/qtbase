@@ -360,9 +360,7 @@ QPlatformOffscreenSurface *QCocoaIntegration::createPlatformOffscreenSurface(QOf
 #ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QCocoaIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    QCocoaGLContext *glContext = new QCocoaGLContext(context->format(),
-                                                     context->shareHandle(),
-                                                     context->nativeHandle());
+    QCocoaGLContext *glContext = new QCocoaGLContext(context);
     context->setNativeHandle(QVariant::fromValue<QCocoaNativeContext>(glContext->nativeContext()));
     return glContext;
 }
