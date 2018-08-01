@@ -2081,6 +2081,8 @@ bool QWindowsWindow::handleGeometryChangingMessage(MSG *message, const QWindow *
             HWND desktopHWND = GetDesktopWindow();
             platformWindow->m_data.embedded = !parentWindow && parentHWND && (parentHWND != desktopHWND);
         }
+        if (qWindow->flags().testFlag(Qt::WindowStaysOnBottomHint))
+            windowPos->hwndInsertAfter = HWND_BOTTOM;
     }
     if (!qWindow->isTopLevel()) // Implement hasHeightForWidth().
         return false;
