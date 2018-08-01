@@ -54,26 +54,6 @@ static inline QByteArray getGlString(GLenum param)
     return QByteArray();
 }
 
-#if !defined(GL_CONTEXT_FLAGS)
-#define GL_CONTEXT_FLAGS 0x821E
-#endif
-
-#if !defined(GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT)
-#define GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT 0x0001
-#endif
-
-#if !defined(GL_CONTEXT_PROFILE_MASK)
-#define GL_CONTEXT_PROFILE_MASK 0x9126
-#endif
-
-#if !defined(GL_CONTEXT_CORE_PROFILE_BIT)
-#define GL_CONTEXT_CORE_PROFILE_BIT 0x00000001
-#endif
-
-#if !defined(GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
-#define GL_CONTEXT_COMPATIBILITY_PROFILE_BIT 0x00000002
-#endif
-
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaOpenGLContext, "qt.qpa.openglcontext", QtWarningMsg);
