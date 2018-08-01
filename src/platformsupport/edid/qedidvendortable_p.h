@@ -40,7 +40,7 @@
 /*
  * This lookup table was generated from https://github.com/vcrhonek/hwdata/raw/master/pnp.ids
  *
- * Do not change directly this file, instead edit the
+ * Do not change this file directly, instead edit the
  * qtbase/util/edid/qedidvendortable.py script and regenerate this file.
  */
 
