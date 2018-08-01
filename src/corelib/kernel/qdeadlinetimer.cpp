@@ -224,7 +224,7 @@ QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) Q_DECL_NOTHROW
 
     Constructs a QDeadlineTimer object with a deadline at \a deadline time
     point, converting from the clock source \c{Clock} to Qt's internal clock
-    source (see QElapsedTimer::clcokType()).
+    source (see QElapsedTimer::clockType()).
 
     If \a deadline is in the past, this QDeadlineTimer object is set to
     expired, whereas if \a deadline is equal to \c{Duration::max()}, then this
@@ -267,7 +267,7 @@ QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) Q_DECL_NOTHROW
 
     Sets this QDeadlineTimer to the deadline marked by \a deadline time
     point, converting from the clock source \c{Clock} to Qt's internal clock
-    source (see QElapsedTimer::clcokType()).
+    source (see QElapsedTimer::clockType()).
 
     If \a deadline is in the past, this QDeadlineTimer object is set to
     expired, whereas if \a deadline is equal to \c{Duration::max()}, then this
