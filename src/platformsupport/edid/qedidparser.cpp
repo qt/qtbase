@@ -100,11 +100,11 @@ bool QEdidParser::parse(const QByteArray &blob)
      * 7654321076543210
      * |\---/\---/\---/
      * R  C1   C2   C3 */
-    char id[3];
-    id[0] = 'A' + ((data[EDID_OFFSET_PNP_ID] & 0x7c) / 4) - 1;
-    id[1] = 'A' + ((data[EDID_OFFSET_PNP_ID] & 0x3) * 8) + ((data[EDID_OFFSET_PNP_ID + 1] & 0xe0) / 32) - 1;
-    id[2] = 'A' + (data[EDID_OFFSET_PNP_ID + 1] & 0x1f) - 1;
-    identifier = QString::fromLatin1(id, 3);
+    char pnpId[3];
+    pnpId[0] = 'A' + ((data[EDID_OFFSET_PNP_ID] & 0x7c) / 4) - 1;
+    pnpId[1] = 'A' + ((data[EDID_OFFSET_PNP_ID] & 0x3) * 8) + ((data[EDID_OFFSET_PNP_ID + 1] & 0xe0) / 32) - 1;
+    pnpId[2] = 'A' + (data[EDID_OFFSET_PNP_ID + 1] & 0x1f) - 1;
+    QString pnpIdString = QString::fromLatin1(pnpId, 3);
 
     // Clear manufacturer
     manufacturer = QString();
@@ -136,12 +136,11 @@ bool QEdidParser::parse(const QByteArray &blob)
     }
 
     // Try to use cache first because it is potentially more updated
-    if (m_vendorCache.contains(identifier)) {
-        manufacturer = m_vendorCache[identifier];
-    } else {
+    manufacturer = m_vendorCache.value(pnpIdString);
+    if (manufacturer.isEmpty()) {
         // Find the manufacturer from the vendor lookup table
         for (size_t i = 0; i < ARRAY_LENGTH(q_edidVendorTable); i++) {
-            if (strcmp(q_edidVendorTable[i].id, identifier.toLatin1().constData()) == 0) {
+            if (strncmp(q_edidVendorTable[i].id, pnpId, 3) == 0) {
                 manufacturer = QString::fromUtf8(q_edidVendorTable[i].name);
                 break;
             }
@@ -150,7 +149,7 @@ bool QEdidParser::parse(const QByteArray &blob)
 
     // If we don't know the manufacturer, fallback to PNP ID
     if (manufacturer.isEmpty())
-        manufacturer = identifier;
+        manufacturer = pnpIdString;
 
     // Physical size
     physicalSize = QSizeF(data[EDID_PHYSICAL_WIDTH], data[EDID_OFFSET_PHYSICAL_HEIGHT]) * 10;
