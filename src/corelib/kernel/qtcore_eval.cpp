@@ -168,7 +168,7 @@ public:
         }
     }
 
-    void timerEvent(QTimerEvent *e) {
+    void timerEvent(QTimerEvent *e) override {
         if (e->timerId() == warn) {
             killTimer(warn);
             fprintf(stderr, "%s\n", will_shutdown_1min);

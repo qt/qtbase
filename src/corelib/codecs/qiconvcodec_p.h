@@ -69,11 +69,11 @@ public:
     QIconvCodec();
     ~QIconvCodec();
 
-    QString convertToUnicode(const char *, int, ConverterState *) const;
-    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
+    QString convertToUnicode(const char *, int, ConverterState *) const override;
+    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const override;
 
-    QByteArray name() const;
-    int mibEnum() const;
+    QByteArray name() const override;
+    int mibEnum() const override;
 
     void init() const;
     iconv_t createIconv_t(const char *to, const char *from) const;

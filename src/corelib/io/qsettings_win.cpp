@@ -383,17 +383,17 @@ public:
     QWinSettingsPrivate(QString rKey, REGSAM access = 0);
     ~QWinSettingsPrivate();
 
-    void remove(const QString &uKey);
-    void set(const QString &uKey, const QVariant &value);
-    bool get(const QString &uKey, QVariant *value) const;
-    QStringList children(const QString &uKey, ChildSpec spec) const;
-    void clear();
-    void sync();
-    void flush();
-    bool isWritable() const;
+    void remove(const QString &uKey) override;
+    void set(const QString &uKey, const QVariant &value) override;
+    bool get(const QString &uKey, QVariant *value) const override;
+    QStringList children(const QString &uKey, ChildSpec spec) const override;
+    void clear() override;
+    void sync() override;
+    void flush() override;
+    bool isWritable() const override;
     HKEY writeHandle() const;
     bool readKey(HKEY parentHandle, const QString &rSubKey, QVariant *value) const;
-    QString fileName() const;
+    QString fileName() const override;
 
 private:
     RegistryKeyList regList; // list of registry locations to search for keys
