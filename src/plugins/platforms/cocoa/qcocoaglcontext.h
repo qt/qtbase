@@ -67,8 +67,7 @@ public:
 
     void windowWasHidden();
 
-    NSOpenGLContext *nsOpenGLContext() const;
-    QVariant nativeHandle() const;
+    NSOpenGLContext *nativeContext() const;
 
     QFunctionPointer getProcAddress(const char *procName) override;
 

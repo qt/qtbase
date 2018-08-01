@@ -59,6 +59,8 @@
 #include <qpa/qplatformoffscreensurface.h>
 #include <QtCore/qcoreapplication.h>
 
+#include <QtPlatformHeaders/qcocoanativecontext.h>
+
 #include <QtGui/private/qcoregraphics_p.h>
 
 #ifdef QT_WIDGETS_LIB
@@ -361,7 +363,7 @@ QPlatformOpenGLContext *QCocoaIntegration::createPlatformOpenGLContext(QOpenGLCo
     QCocoaGLContext *glContext = new QCocoaGLContext(context->format(),
                                                      context->shareHandle(),
                                                      context->nativeHandle());
-    context->setNativeHandle(glContext->nativeHandle());
+    context->setNativeHandle(QVariant::fromValue<QCocoaNativeContext>(glContext->nativeContext()));
     return glContext;
 }
 #endif

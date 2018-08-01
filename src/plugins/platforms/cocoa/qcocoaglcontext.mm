@@ -78,7 +78,7 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
         }
         m_context = context;
         [m_context retain];
-        m_shareContext = share ? static_cast<QCocoaGLContext *>(share)->nsOpenGLContext() : nil;
+        m_shareContext = share ? static_cast<QCocoaGLContext *>(share)->nativeContext() : nil;
         updateSurfaceFormat();
         return;
     }
@@ -89,7 +89,7 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
     if (m_format.renderableType() != QSurfaceFormat::OpenGL)
         return;
 
-    m_shareContext = share ? static_cast<QCocoaGLContext *>(share)->nsOpenGLContext() : nil;
+    m_shareContext = share ? static_cast<QCocoaGLContext *>(share)->nativeContext() : nil;
 
     if (m_shareContext) {
         // Allow sharing between 3.2 Core and 4.1 Core profile versions in
@@ -468,14 +468,9 @@ bool QCocoaGLContext::isSharing() const
     return m_shareContext != nil;
 }
 
-NSOpenGLContext *QCocoaGLContext::nsOpenGLContext() const
+NSOpenGLContext *QCocoaGLContext::nativeContext() const
 {
     return m_context;
-}
-
-QVariant QCocoaGLContext::nativeHandle() const
-{
-    return QVariant::fromValue<QCocoaNativeContext>(QCocoaNativeContext(m_context));
 }
 
 QFunctionPointer QCocoaGLContext::getProcAddress(const char *procName)
