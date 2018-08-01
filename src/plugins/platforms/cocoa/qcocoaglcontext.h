@@ -72,7 +72,7 @@ public:
     QFunctionPointer getProcAddress(const char *procName) override;
 
 private:
-    static NSOpenGLPixelFormat *createNSOpenGLPixelFormat(const QSurfaceFormat &format);
+    static NSOpenGLPixelFormat *pixelFormatForSurfaceFormat(const QSurfaceFormat &format);
 
     bool setActiveWindow(QWindow *window);
     void updateSurfaceFormat();

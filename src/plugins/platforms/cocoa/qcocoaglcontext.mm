@@ -113,8 +113,9 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
         }
     }
 
-    // create native context for the requested pixel format and share
-    NSOpenGLPixelFormat *pixelFormat = createNSOpenGLPixelFormat(m_format);
+    // ------------------------- Create NSOpenGLContext -------------------------
+
+    NSOpenGLPixelFormat *pixelFormat = [pixelFormatForSurfaceFormat(m_format) autorelease];
     m_context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:m_shareContext];
 
     // retry without sharing on context creation failure.
@@ -125,8 +126,6 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
         m_context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
     }
 
-    // give up if we still did not get a native context
-    [pixelFormat release];
     if (!m_context) {
         qCWarning(lcQpaOpenGLContext, "Failed to create NSOpenGLContext");
         return;
@@ -148,18 +147,10 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
     updateSurfaceFormat();
 }
 
-NSOpenGLPixelFormat *QCocoaGLContext::createNSOpenGLPixelFormat(const QSurfaceFormat &format)
+NSOpenGLPixelFormat *QCocoaGLContext::pixelFormatForSurfaceFormat(const QSurfaceFormat &format)
 {
     QVector<NSOpenGLPixelFormatAttribute> attrs;
 
-    if (format.swapBehavior() == QSurfaceFormat::DoubleBuffer
-        || format.swapBehavior() == QSurfaceFormat::DefaultSwapBehavior)
-        attrs.append(NSOpenGLPFADoubleBuffer);
-    else if (format.swapBehavior() == QSurfaceFormat::TripleBuffer)
-        attrs.append(NSOpenGLPFATripleBuffer);
-
-
-    // Select OpenGL profile
     attrs << NSOpenGLPFAOpenGLProfile;
     if (format.profile() == QSurfaceFormat::CoreProfile) {
         if (format.version() >= qMakePair(4, 1))
@@ -172,32 +163,45 @@ NSOpenGLPixelFormat *QCocoaGLContext::createNSOpenGLPixelFormat(const QSurfaceFo
         attrs << NSOpenGLProfileVersionLegacy;
     }
 
+    switch (format.swapBehavior()) {
+    case QSurfaceFormat::SingleBuffer:
+        break; // The NSOpenGLPixelFormat default, no attribute to set
+    case QSurfaceFormat::DefaultSwapBehavior:
+        // Technically this should be single-buffered, but we force double-buffered
+        // FIXME: Why do we force double-buffered?
+        Q_FALLTHROUGH();
+    case QSurfaceFormat::DoubleBuffer:
+        attrs.append(NSOpenGLPFADoubleBuffer);
+        break;
+    case QSurfaceFormat::TripleBuffer:
+        attrs.append(NSOpenGLPFATripleBuffer);
+        break;
+    }
+
     if (format.depthBufferSize() > 0)
         attrs <<  NSOpenGLPFADepthSize << format.depthBufferSize();
     if (format.stencilBufferSize() > 0)
         attrs << NSOpenGLPFAStencilSize << format.stencilBufferSize();
     if (format.alphaBufferSize() > 0)
         attrs << NSOpenGLPFAAlphaSize << format.alphaBufferSize();
-    if ((format.redBufferSize() > 0) &&
-        (format.greenBufferSize() > 0) &&
-        (format.blueBufferSize() > 0)) {
-        const int colorSize = format.redBufferSize() +
-                              format.greenBufferSize() +
-                              format.blueBufferSize();
+    if (format.redBufferSize() > 0 && format.greenBufferSize() > 0 && format.blueBufferSize() > 0) {
+        const int colorSize = format.redBufferSize() + format.greenBufferSize() + format.blueBufferSize();
         attrs << NSOpenGLPFAColorSize << colorSize << NSOpenGLPFAMinimumPolicy;
     }
 
     if (format.samples() > 0) {
         attrs << NSOpenGLPFAMultisample
-              << NSOpenGLPFASampleBuffers << (NSOpenGLPixelFormatAttribute) 1
-              << NSOpenGLPFASamples << (NSOpenGLPixelFormatAttribute) format.samples();
+              << NSOpenGLPFASampleBuffers << NSOpenGLPixelFormatAttribute(1)
+              << NSOpenGLPFASamples << NSOpenGLPixelFormatAttribute(format.samples());
     }
 
     if (format.stereo())
         attrs << NSOpenGLPFAStereo;
 
+    // Allow rendering on GPUs without a connected display
     attrs << NSOpenGLPFAAllowOfflineRenderers;
 
+    // FIXME: Pull this information out of the NSView
     QByteArray useLayer = qgetenv("QT_MAC_WANTS_LAYER");
     if (!useLayer.isEmpty() && useLayer.toInt() > 0) {
         // Disable the software rendering fallback. This makes compositing
@@ -205,8 +209,7 @@ NSOpenGLPixelFormat *QCocoaGLContext::createNSOpenGLPixelFormat(const QSurfaceFo
         attrs << NSOpenGLPFANoRecovery;
     }
 
-    attrs << 0;
-
+    attrs << 0; // 0-terminate array
     return [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs.constData()];
 }
 
