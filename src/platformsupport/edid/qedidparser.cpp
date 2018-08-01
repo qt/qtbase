@@ -160,7 +160,7 @@ bool QEdidParser::parse(const QByteArray &blob)
 
 QString QEdidParser::parseEdidString(const quint8 *data)
 {
-    QByteArray buffer(reinterpret_cast<const char *>(data), 12);
+    QByteArray buffer(reinterpret_cast<const char *>(data), 13);
 
     // Erase carriage return and line feed
     buffer = buffer.replace('\r', '\0').replace('\n', '\0');
