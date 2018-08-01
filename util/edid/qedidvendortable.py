@@ -129,6 +129,6 @@ for line in data.split('\n'):
 print(copyright)
 print(notice)
 print(header % (max_vendor_length + 1))
-for pnp_id in vendors.keys():
+for pnp_id in sorted(vendors.keys()):
     print('    { "%s", "%s" },' % (pnp_id, vendors[pnp_id]))
 print(footer)
