@@ -522,6 +522,22 @@ QEventDispatcherWin32::~QEventDispatcherWin32()
 {
 }
 
+static bool isUserInputMessage(UINT message)
+{
+    return (message >= WM_KEYFIRST && message <= WM_KEYLAST)
+        || (message >= WM_MOUSEFIRST && message <= WM_MOUSELAST)
+        || message == WM_MOUSEWHEEL
+        || message == WM_MOUSEHWHEEL
+        || message == WM_TOUCH
+#ifndef QT_NO_GESTURES
+        || message == WM_GESTURE
+        || message == WM_GESTURENOTIFY
+#endif
+// Pointer input: Exclude WM_NCPOINTERUPDATE .. WM_POINTERROUTEDRELEASED
+        || (message >= 0x0241 && message <= 0x0253)
+        || message == WM_CLOSE;
+}
+
 bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     Q_D(QEventDispatcherWin32);
@@ -562,19 +578,8 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
             } else {
                 haveMessage = PeekMessage(&msg, 0, 0, 0, PM_REMOVE);
                 if (haveMessage) {
-                    if ((flags & QEventLoop::ExcludeUserInputEvents)
-                        && ((msg.message >= WM_KEYFIRST
-                             && msg.message <= WM_KEYLAST)
-                            || (msg.message >= WM_MOUSEFIRST
-                                && msg.message <= WM_MOUSELAST)
-                            || msg.message == WM_MOUSEWHEEL
-                            || msg.message == WM_MOUSEHWHEEL
-                            || msg.message == WM_TOUCH
-#ifndef QT_NO_GESTURES
-                            || msg.message == WM_GESTURE
-                            || msg.message == WM_GESTURENOTIFY
-#endif
-                            || msg.message == WM_CLOSE)) {
+                    if (flags.testFlag(QEventLoop::ExcludeUserInputEvents)
+                        && isUserInputMessage(msg.message)) {
                         // queue user input events for later processing
                         d->queuedUserInputEvents.append(msg);
                         continue;
