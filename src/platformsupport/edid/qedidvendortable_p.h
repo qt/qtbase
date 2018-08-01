@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 /*
- * This lookup table was generated from https://git.fedorahosted.org/cgit/hwdata.git/plain/pnp.ids
+ * This lookup table was generated from https://github.com/vcrhonek/hwdata/raw/master/pnp.ids
  *
  * Do not change directly this file, instead edit the
  * qtbase/util/edid/qedidvendortable.py script and regenerate this file.

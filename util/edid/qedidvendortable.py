@@ -29,7 +29,10 @@
 
 import urllib.request
 
-url = 'https://git.fedorahosted.org/cgit/hwdata.git/plain/pnp.ids'
+# The original source for this data used to be
+# 'https://git.fedorahosted.org/cgit/hwdata.git/plain/pnp.ids'
+# which is discontinued. For now there seems to be a fork at:
+url = 'https://github.com/vcrhonek/hwdata/raw/master/pnp.ids'
 
 copyright = """/****************************************************************************
 **
