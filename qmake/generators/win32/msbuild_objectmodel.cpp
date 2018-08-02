@@ -1201,7 +1201,7 @@ static inline QString toString(midlCharOption option)
 static inline QString toString(midlErrorCheckOption option)
 {
     switch (option) {
-    case midlAlignNotSet:
+    case midlEnableCustom:
         break;
     case midlDisableAll:
         return "None";
