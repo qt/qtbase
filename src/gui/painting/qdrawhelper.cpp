@@ -5322,8 +5322,10 @@ void qBlendTexture(int count, const QSpan *spans, void *userData)
     case QImage::Format_RGB16:
         proc = processTextureSpansRGB16[blendType];
         break;
+#if defined(__SSE2__) || defined(__ARM_NEON__) || (Q_PROCESSOR_WORDSIZE == 8)
     case QImage::Format_ARGB32:
     case QImage::Format_RGBA8888:
+#endif
     case QImage::Format_BGR30:
     case QImage::Format_A2BGR30_Premultiplied:
     case QImage::Format_RGB30:
