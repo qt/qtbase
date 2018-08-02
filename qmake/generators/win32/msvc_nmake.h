@@ -36,21 +36,21 @@ QT_BEGIN_NAMESPACE
 class NmakeMakefileGenerator : public Win32MakefileGenerator
 {
     void writeNmakeParts(QTextStream &);
-    bool writeMakefile(QTextStream &);
-    void writeImplicitRulesPart(QTextStream &t);
-    void writeBuildRulesPart(QTextStream &t);
+    bool writeMakefile(QTextStream &) override;
+    void writeImplicitRulesPart(QTextStream &t) override;
+    void writeBuildRulesPart(QTextStream &t) override;
     void writeLinkCommand(QTextStream &t, const QString &extraFlags = QString(), const QString &extraInlineFileContent = QString());
     void writeResponseFileFiles(QTextStream &t, const ProStringList &files);
     int msvcVersion() const;
-    void init();
+    void init() override;
     static QStringList sourceFilesForImplicitRulesFilter();
 
 protected:
-    virtual void writeSubMakeCall(QTextStream &t, const QString &callPrefix,
-                                  const QString &makeArguments);
-    virtual QString defaultInstall(const QString &t);
-    virtual QStringList &findDependencies(const QString &file);
-    QString var(const ProKey &value) const;
+    void writeSubMakeCall(QTextStream &t, const QString &callPrefix,
+                          const QString &makeArguments) override;
+    QString defaultInstall(const QString &t) override;
+    QStringList &findDependencies(const QString &file) override;
+    QString var(const ProKey &value) const override;
     QString precompH, precompObj, precompPch;
     QString precompObjC, precompPchC;
     bool usePCH, usePCHC;

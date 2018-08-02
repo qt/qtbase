@@ -38,7 +38,7 @@ class UnixMakefileGenerator : public MakefileGenerator
     bool include_deps;
     QString libtoolFileName(bool fixify=true);
     void writeLibtoolFile();     // for libtool
-    void writePrlFile(QTextStream &);
+    void writePrlFile(QTextStream &) override;
 
 public:
     UnixMakefileGenerator();
@@ -46,23 +46,23 @@ public:
 
 protected:
     virtual bool doPrecompiledHeaders() const { return project->isActiveConfig("precompile_header"); }
-    virtual bool doDepends() const { return !Option::mkfile::do_stub_makefile && MakefileGenerator::doDepends(); }
+    bool doDepends() const override { return !Option::mkfile::do_stub_makefile && MakefileGenerator::doDepends(); }
 #ifdef Q_OS_WIN // MinGW x-compiling for QNX
-    virtual QString installRoot() const;
+    QString installRoot() const override;
 #endif
-    virtual QString defaultInstall(const QString &);
-    virtual ProString fixLibFlag(const ProString &lib);
+    QString defaultInstall(const QString &) override;
+    ProString fixLibFlag(const ProString &lib) override;
 
-    virtual bool findLibraries(bool linkPrl, bool mergeLflags);
-    virtual QString escapeFilePath(const QString &path) const;
+    bool findLibraries(bool linkPrl, bool mergeLflags) override;
+    QString escapeFilePath(const QString &path) const override;
     ProString escapeFilePath(const ProString &path) const { return MakefileGenerator::escapeFilePath(path); }
-    virtual QStringList &findDependencies(const QString &);
-    virtual void init();
+    QStringList &findDependencies(const QString &) override;
+    void init() override;
 
-    virtual void writeDefaultVariables(QTextStream &t);
-    virtual void writeSubTargets(QTextStream &t, QList<SubTarget*> subtargets, int flags);
+    void writeDefaultVariables(QTextStream &t) override;
+    void writeSubTargets(QTextStream &t, QList<SubTarget*> subtargets, int flags) override;
     void writeMakeParts(QTextStream &);
-    bool writeMakefile(QTextStream &);
+    bool writeMakefile(QTextStream &) override;
 
 private:
     void init2();

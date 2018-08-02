@@ -47,10 +47,10 @@ class VcprojGenerator : public Win32MakefileGenerator
     bool is64Bit;
     bool writeVcprojParts(QTextStream &);
 
-    bool writeMakefile(QTextStream &);
-    bool writeProjectMakefile();
+    bool writeMakefile(QTextStream &) override;
+    bool writeProjectMakefile() override;
 
-    void init();
+    void init() override;
 
 public:
     VcprojGenerator();
@@ -70,14 +70,14 @@ public:
 
 protected:
     virtual VCProjectWriter *createProjectWriter();
-    virtual bool doDepends() const { return false; } //never necesary
+    bool doDepends() const override { return false; } // Never necessary
     using Win32MakefileGenerator::replaceExtraCompilerVariables;
-    virtual QString replaceExtraCompilerVariables(const QString &, const QStringList &, const QStringList &, ReplaceFor);
-    virtual bool supportsMetaBuild() { return true; }
-    virtual bool supportsMergedBuilds() { return true; }
-    virtual bool mergeBuildProject(MakefileGenerator *other);
+    QString replaceExtraCompilerVariables(const QString &, const QStringList &, const QStringList &, ReplaceFor) override;
+    bool supportsMetaBuild() override { return true; }
+    bool supportsMergedBuilds() override { return true; }
+    bool mergeBuildProject(MakefileGenerator *other) override;
 
-    virtual bool openOutput(QFile &file, const QString &build) const;
+    bool openOutput(QFile &file, const QString &build) const override;
 
     virtual void initProject();
     void initConfiguration();

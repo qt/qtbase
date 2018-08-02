@@ -62,11 +62,11 @@ private:
 public:
 
     BuildsMetaMakefileGenerator(QMakeProject *p, const QString &n, bool op) : MetaMakefileGenerator(p, n, op), init_flag(false) { }
-    virtual ~BuildsMetaMakefileGenerator() { clearBuilds(); }
+    ~BuildsMetaMakefileGenerator() { clearBuilds(); }
 
-    virtual bool init();
-    virtual int type() const { return BUILDSMETATYPE; }
-    virtual bool write();
+    bool init() override;
+    int type() const override { return BUILDSMETATYPE; }
+    bool write() override;
 };
 
 void
@@ -248,11 +248,11 @@ protected:
 
 public:
     SubdirsMetaMakefileGenerator(QMakeProject *p, const QString &n, bool op) : MetaMakefileGenerator(p, n, op), init_flag(false) { }
-    virtual ~SubdirsMetaMakefileGenerator();
+    ~SubdirsMetaMakefileGenerator();
 
-    virtual bool init();
-    virtual int type() const { return SUBDIRSMETATYPE; }
-    virtual bool write();
+    bool init() override;
+    int type() const override { return SUBDIRSMETATYPE; }
+    bool write() override;
 };
 
 bool

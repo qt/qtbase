@@ -40,27 +40,27 @@ public:
     ~MingwMakefileGenerator();
 protected:
     using MakefileGenerator::escapeDependencyPath;
-    virtual QString escapeDependencyPath(const QString &path) const;
-    virtual ProString fixLibFlag(const ProString &lib);
-    virtual bool processPrlFileBase(QString &origFile, const QStringRef &origName,
-                                    const QStringRef &fixedBase, int slashOff);
-    virtual QString getManifestFileForRcFile() const;
-    bool writeMakefile(QTextStream &);
-    void init();
-    virtual QString installRoot() const;
+    QString escapeDependencyPath(const QString &path) const override;
+    ProString fixLibFlag(const ProString &lib) override;
+    bool processPrlFileBase(QString &origFile, const QStringRef &origName,
+                            const QStringRef &fixedBase, int slashOff) override;
+    QString getManifestFileForRcFile() const override;
+    bool writeMakefile(QTextStream &) override;
+    void init() override;
+    QString installRoot() const override;
 private:
     void writeMingwParts(QTextStream &);
-    void writeIncPart(QTextStream &t);
-    void writeLibsPart(QTextStream &t);
-    void writeObjectsPart(QTextStream &t);
-    void writeBuildRulesPart(QTextStream &t);
-    void writeRcFilePart(QTextStream &t);
+    void writeIncPart(QTextStream &t) override;
+    void writeLibsPart(QTextStream &t) override;
+    void writeObjectsPart(QTextStream &t) override;
+    void writeBuildRulesPart(QTextStream &t) override;
+    void writeRcFilePart(QTextStream &t) override;
 
-    QStringList &findDependencies(const QString &file);
+    QStringList &findDependencies(const QString &file) override;
 
     QString preCompHeaderOut;
 
-    virtual LibFlagType parseLibFlag(const ProString &flag, ProString *arg);
+    LibFlagType parseLibFlag(const ProString &flag, ProString *arg) override;
 
     QString objectsLinkLine;
 };

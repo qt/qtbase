@@ -72,7 +72,7 @@ public:
         return Uindex;
     }
 
-    void addElement(const QString &filepath, const VCFilterFile &allInfo){
+    void addElement(const QString &filepath, const VCFilterFile &allInfo) override {
         QString newNodeName(filepath);
 
         int index = pathIndex(filepath);
@@ -89,7 +89,7 @@ public:
             n->addElement(filepath.mid(index+1), allInfo);
     }
 
-    void removeElements() {
+    void removeElements() override {
         ChildrenMap::ConstIterator it = children.constBegin();
         ChildrenMap::ConstIterator end = children.constEnd();
         for( ; it != end; it++) {
@@ -100,8 +100,8 @@ public:
     }
 
     void generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString &tagName, VCProject &tool,
-                     const QString &filter);
-    bool hasElements() {
+                     const QString &filter) override;
+    bool hasElements() override {
         return children.size() != 0;
     }
 };
@@ -124,7 +124,7 @@ public:
         return Uindex;
     }
 
-    void addElement(const QString &filepath, const VCFilterFile &allInfo){
+    void addElement(const QString &filepath, const VCFilterFile &allInfo) override {
         QString newKey(filepath);
 
         int index = pathIndex(filepath);
@@ -136,13 +136,13 @@ public:
         children.insert(newKey + "\0" + allInfo.file, allInfo);
     }
 
-    void removeElements() {
+    void removeElements() override {
         children.clear();
     }
 
     void generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString &tagName, VCProject &proj,
-                     const QString &filter);
-    bool hasElements() {
+                     const QString &filter) override;
+    bool hasElements() override {
         return children.size() != 0;
     }
 };
@@ -150,20 +150,20 @@ public:
 class VCXProjectWriter : public VCProjectWriter
 {
 public:
-    void write(XmlOutput &, VCProjectSingleConfig &);
-    void write(XmlOutput &, VCProject &);
+    void write(XmlOutput &, VCProjectSingleConfig &) override;
+    void write(XmlOutput &, VCProject &) override;
 
-    void write(XmlOutput &, const VCCLCompilerTool &);
-    void write(XmlOutput &, const VCLinkerTool &);
-    void write(XmlOutput &, const VCMIDLTool &);
-    void write(XmlOutput &, const VCCustomBuildTool &);
-    void write(XmlOutput &, const VCLibrarianTool &);
-    void write(XmlOutput &, const VCResourceCompilerTool &);
-    void write(XmlOutput &, const VCEventTool &);
-    void write(XmlOutput &, const VCDeploymentTool &);
-    void write(XmlOutput &, const VCWinDeployQtTool &);
-    void write(XmlOutput &, const VCConfiguration &);
-    void write(XmlOutput &, VCFilter &);
+    void write(XmlOutput &, const VCCLCompilerTool &) override;
+    void write(XmlOutput &, const VCLinkerTool &) override;
+    void write(XmlOutput &, const VCMIDLTool &) override;
+    void write(XmlOutput &, const VCCustomBuildTool &) override;
+    void write(XmlOutput &, const VCLibrarianTool &) override;
+    void write(XmlOutput &, const VCResourceCompilerTool &) override;
+    void write(XmlOutput &, const VCEventTool &) override;
+    void write(XmlOutput &, const VCDeploymentTool &) override;
+    void write(XmlOutput &, const VCWinDeployQtTool &) override;
+    void write(XmlOutput &, const VCConfiguration &) override;
+    void write(XmlOutput &, VCFilter &) override;
 
 private:
     struct OutputFilterData

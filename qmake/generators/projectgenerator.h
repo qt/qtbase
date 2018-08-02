@@ -40,16 +40,16 @@ class ProjectGenerator : public MakefileGenerator
     QString getWritableVar(const char *, bool fixPath=true);
     QString fixPathToQmake(const QString &file);
 protected:
-    virtual void init();
-    virtual bool writeMakefile(QTextStream &);
+    void init() override;
+    bool writeMakefile(QTextStream &) override;
 
-    virtual QString escapeFilePath(const QString &path) const { Q_ASSERT(false); return QString(); }
+    QString escapeFilePath(const QString &path) const override { Q_ASSERT(false); return QString(); }
 
 public:
     ProjectGenerator();
     ~ProjectGenerator();
-    virtual bool supportsMetaBuild() { return false; }
-    virtual bool openOutput(QFile &, const QString &) const;
+    bool supportsMetaBuild() override { return false; }
+    bool openOutput(QFile &, const QString &) const override;
 };
 
 inline ProjectGenerator::~ProjectGenerator()

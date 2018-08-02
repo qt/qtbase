@@ -39,7 +39,7 @@ public:
     VcxprojGenerator();
 
 protected:
-    virtual VCProjectWriter *createProjectWriter();
+    VCProjectWriter *createProjectWriter() override;
 };
 
 QT_END_NAMESPACE

@@ -124,9 +124,9 @@ protected:
     { return replaceExtraCompilerVariables(val, QStringList(in), QStringList(out), forShell); }
 
     //interface to the source file info
-    QMakeLocalFileName fixPathForFile(const QMakeLocalFileName &, bool);
-    QMakeLocalFileName findFileForDep(const QMakeLocalFileName &, const QMakeLocalFileName &);
-    QFileInfo findFileInfo(const QMakeLocalFileName &);
+    QMakeLocalFileName fixPathForFile(const QMakeLocalFileName &, bool) override;
+    QMakeLocalFileName findFileForDep(const QMakeLocalFileName &, const QMakeLocalFileName &) override;
+    QFileInfo findFileInfo(const QMakeLocalFileName &) override;
     QMakeProject *project;
 
     //escape
@@ -253,7 +253,7 @@ protected:
 
 public:
     MakefileGenerator();
-    virtual ~MakefileGenerator();
+    ~MakefileGenerator();
     QMakeProject *projectFile() const;
     void setProjectFile(QMakeProject *p);
 
