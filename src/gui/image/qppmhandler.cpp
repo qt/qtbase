@@ -115,7 +115,7 @@ static bool read_pbm_header(QIODevice *device, char& type, int& w, int& h, int& 
     else
         mcc = read_pbm_int(device);               // get max color component
 
-    if (w <= 0 || w > 32767 || h <= 0 || h > 32767 || mcc <= 0)
+    if (w <= 0 || w > 32767 || h <= 0 || h > 32767 || mcc <= 0 || mcc > 0xffff)
         return false;                                        // weird P.M image
 
     return true;
