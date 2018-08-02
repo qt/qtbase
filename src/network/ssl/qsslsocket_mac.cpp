@@ -60,6 +60,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <limits>
 #include <vector>
 
 #include <QtCore/private/qcore_mac_p.h>
@@ -142,6 +143,16 @@ EphemeralSecKeychain::EphemeralSecKeychain()
             CFRelease(keychain);
             keychain = nullptr;
         }
+    }
+
+    if (keychain) {
+        SecKeychainSettings settings = {};
+        settings.version = SEC_KEYCHAIN_SETTINGS_VERS1;
+        // Strange, huh? But that's what their docs say to do! With lockOnSleep
+        // == false, set interval to INT_MAX to never lock ...
+        settings.lockInterval = INT_MAX;
+        if (SecKeychainSetSettings(keychain, &settings) != errSecSuccess)
+            qCWarning(lcSsl) << "SecKeychainSettings: failed to disable lock on sleep";
     }
 
 #ifdef QSSLSOCKET_DEBUG
