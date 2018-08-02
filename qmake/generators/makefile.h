@@ -172,7 +172,7 @@ protected:
     { int ret; canExecute(cmdline, &ret); return ret; }
     bool canExecute(const QStringList &cmdline, int *argv0) const;
     inline bool canExecute(const QString &cmdline) const
-    { return canExecute(cmdline.split(' '), 0); }
+    { return canExecute(cmdline.split(' '), nullptr); }
 
     bool mkdir(const QString &dir) const;
     QString mkdir_p_asstring(const QString &dir, bool escape=true) const;

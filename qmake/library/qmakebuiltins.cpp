@@ -1680,7 +1680,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
 #endif
     case T_INCLUDE: {
         QString parseInto;
-        LoadFlags flags = 0;
+        LoadFlags flags;
         if (m_cumulative)
             flags = LoadSilent;
         if (args.count() >= 2) {

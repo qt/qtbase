@@ -84,7 +84,7 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
     if (impexts.isEmpty())
         impexts = project->values("QMAKE_EXTENSION_STATICLIB");
     QList<QMakeLocalFileName> dirs;
-  static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
+  static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", nullptr };
   for (int i = 0; lflags[i]; i++) {
     ProStringList &l = project->values(lflags[i]);
     for (ProStringList::Iterator it = l.begin(); it != l.end();) {
@@ -439,7 +439,7 @@ void Win32MakefileGenerator::writeCleanParts(QTextStream &t)
 {
     t << "clean: compiler_clean " << depVar("CLEAN_DEPS");
     {
-        const char *clean_targets[] = { "OBJECTS", "QMAKE_CLEAN", "CLEAN_FILES", 0 };
+        const char *clean_targets[] = { "OBJECTS", "QMAKE_CLEAN", "CLEAN_FILES", nullptr };
         for(int i = 0; clean_targets[i]; ++i) {
             const ProStringList &list = project->values(clean_targets[i]);
             const QString del_statement("-$(DEL_FILE)");
@@ -468,7 +468,7 @@ void Win32MakefileGenerator::writeCleanParts(QTextStream &t)
 
     t << "distclean: clean " << depVar("DISTCLEAN_DEPS");
     {
-        const char *clean_targets[] = { "QMAKE_DISTCLEAN", 0 };
+        const char *clean_targets[] = { "QMAKE_DISTCLEAN", nullptr };
         for(int i = 0; clean_targets[i]; ++i) {
             const ProStringList &list = project->values(clean_targets[i]);
             const QString del_statement("-$(DEL_FILE)");

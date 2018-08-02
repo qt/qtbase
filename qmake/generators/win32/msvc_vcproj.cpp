@@ -112,7 +112,7 @@ VcprojGenerator::VcprojGenerator()
     : Win32MakefileGenerator(),
       is64Bit(false),
       customBuildToolFilterFileSuffix(QStringLiteral(".cbt")),
-      projectWriter(0)
+      projectWriter(nullptr)
 {
 }
 
@@ -1100,7 +1100,7 @@ void VcprojGenerator::initLinkerTool()
     if (!project->values("DEF_FILE").isEmpty())
         conf.linker.ModuleDefinitionFile = project->first("DEF_FILE").toQString();
 
-    static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
+    static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", nullptr };
     for (int i = 0; lflags[i]; i++) {
         const auto libs = fixLibFlags(lflags[i]);
         for (const ProString &lib : libs) {

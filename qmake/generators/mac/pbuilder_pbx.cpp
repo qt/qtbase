@@ -829,7 +829,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     if(!project->isActiveConfig("staticlib")) { //DUMP LIBRARIES
         ProStringList &libdirs = project->values("QMAKE_PBX_LIBPATHS"),
               &frameworkdirs = project->values("QMAKE_FRAMEWORKPATH");
-        static const char * const libs[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
+        static const char * const libs[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", nullptr };
         for (int i = 0; libs[i]; i++) {
             tmp = project->values(libs[i]);
             for(int x = 0; x < tmp.count();) {
@@ -1422,7 +1422,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             testHost.append("Contents/MacOS/");
         testHost.append(targetName);
 
-        static const char * const configs[] = { "Debug", "Release", 0 };
+        static const char * const configs[] = { "Debug", "Release", nullptr };
         for (int i = 0; configs[i]; i++) {
             QString testBundleBuildConfig = keyFor(pbx_dir + "QMAKE_PBX_TEST_BUNDLE_BUILDCONFIG_" + configs[i]);
             t << "\t\t" << testBundleBuildConfig << " = {\n"

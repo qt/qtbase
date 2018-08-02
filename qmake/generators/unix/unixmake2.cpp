@@ -346,7 +346,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             t << mkdir_p_asstring("$(@D)", false) << "\n\t"
               << "@$(CC) " << cmd << " $< | sed \"s,^\\($(*F).o\\):," << odir << "\\1:,g\" >$@\n\n";
 
-            static const char * const src[] = { "SOURCES", "GENERATED_SOURCES", 0 };
+            static const char * const src[] = { "SOURCES", "GENERATED_SOURCES", nullptr };
             for (int x = 0; src[x]; x++) {
                 const ProStringList &l = project->values(src[x]);
                 for (ProStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {

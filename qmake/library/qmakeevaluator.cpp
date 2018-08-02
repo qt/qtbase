@@ -118,7 +118,7 @@ bool operator==(const QMakeBaseKey &one, const QMakeBaseKey &two)
 }
 
 QMakeBaseEnv::QMakeBaseEnv()
-    : evaluator(0)
+    : evaluator(nullptr)
 {
 #ifdef PROEVALUATOR_THREAD_SAFE
     inProgress = false;
@@ -215,7 +215,7 @@ QMakeEvaluator::QMakeEvaluator(QMakeGlobals *option, QMakeParser *parser, QMakeV
     initStatics();
 
     // Configuration, more or less
-    m_caller = 0;
+    m_caller = nullptr;
 #ifdef PROEVALUATOR_CUMULATIVE
     m_cumulative = false;
 #endif
@@ -941,7 +941,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProVariable(
     if (varName == statics.strTEMPLATE)
         setTemplate();
     else if (varName == statics.strQMAKE_PLATFORM)
-        m_featureRoots = 0;
+        m_featureRoots = nullptr;
     else if (varName == statics.strQMAKE_DIR_SEP)
         m_dirSep = first(varName);
     else if (varName == statics.strQMAKESPEC) {
@@ -950,7 +950,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProVariable(
             if (IoUtils::isAbsolutePath(spec)) {
                 m_qmakespec = spec;
                 m_qmakespecName = IoUtils::fileName(m_qmakespec).toString();
-                m_featureRoots = 0;
+                m_featureRoots = nullptr;
             }
         }
     }
@@ -1594,7 +1594,7 @@ ProFile *QMakeEvaluator::currentProFile() const
 {
     if (m_profileStack.count() > 0)
         return m_profileStack.top();
-    return 0;
+    return nullptr;
 }
 
 int QMakeEvaluator::currentFileId() const
@@ -1874,7 +1874,7 @@ ProValueMap *QMakeEvaluator::findValues(const ProKey &variableName, ProValueMap:
         if (first && isFunctParam(variableName))
             break;
     }
-    return 0;
+    return nullptr;
 }
 
 ProStringList &QMakeEvaluator::valuesRef(const ProKey &variableName)

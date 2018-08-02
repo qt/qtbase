@@ -215,7 +215,7 @@ ProFile *QMakeParser::parsedProFile(const QString &fileName, ParseFlags flags)
                 pro->itemsRef()->squeeze();
                 pro->ref();
             } else {
-                pro = 0;
+                pro = nullptr;
             }
             ent->pro = pro;
 #ifdef PROPARSER_THREAD_SAFE
@@ -234,7 +234,7 @@ ProFile *QMakeParser::parsedProFile(const QString &fileName, ParseFlags flags)
         if (readFile(id, flags, &contents))
             pro = parsedProBlock(QStringRef(&contents), id, fileName, 1, FullGrammar);
         else
-            pro = 0;
+            pro = nullptr;
     }
     return pro;
 }
@@ -437,7 +437,7 @@ void QMakeParser::read(ProFile *pro, const QStringRef &in, int line, SubGrammar 
 
     if (context == CtxPureValue) {
         end = inend;
-        cptr = 0;
+        cptr = nullptr;
         lineCont = false;
         indent = 0; // just gcc being stupid
         goto nextChr;
@@ -449,7 +449,7 @@ void QMakeParser::read(ProFile *pro, const QStringRef &in, int line, SubGrammar 
         // First, skip leading whitespace
         for (indent = 0; ; ++cur, ++indent) {
             if (cur == inend) {
-                cur = 0;
+                cur = nullptr;
                 goto flushLine;
             }
             c = *cur;
@@ -1112,7 +1112,7 @@ void QMakeParser::finalizeCall(ushort *&tokPtr, ushort *uc, ushort *ptr, int arg
                     if (uc == ptr) {
                         // for(literal) (only "ever" would be legal if qmake was sane)
                         putTok(tokPtr, TokForLoop);
-                        putHashStr(tokPtr, (ushort *)0, (uint)0);
+                        putHashStr(tokPtr, nullptr, (uint)0);
                         putBlockLen(tokPtr, 1 + 3 + nlen + 1);
                         putTok(tokPtr, TokHashLiteral);
                         putHashStr(tokPtr, uce + 2, nlen);
@@ -1135,7 +1135,7 @@ void QMakeParser::finalizeCall(ushort *&tokPtr, ushort *uc, ushort *ptr, int arg
                 } else if (argc == 1) {
                     // for(non-literal) (this wouldn't be here if qmake was sane)
                     putTok(tokPtr, TokForLoop);
-                    putHashStr(tokPtr, (ushort *)0, (uint)0);
+                    putHashStr(tokPtr, nullptr, (uint)0);
                     uc = uce;
                     goto doFor;
                 }

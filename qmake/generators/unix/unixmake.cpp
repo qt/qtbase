@@ -420,7 +420,7 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
         libdirs.append(QMakeLocalFileName(dlib.toQString()));
     frameworkdirs.append(QMakeLocalFileName("/System/Library/Frameworks"));
     frameworkdirs.append(QMakeLocalFileName("/Library/Frameworks"));
-    static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
+    static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", nullptr };
     for (int i = 0; lflags[i]; i++) {
         ProStringList &l = project->values(lflags[i]);
         for (ProStringList::Iterator it = l.begin(); it != l.end(); ) {

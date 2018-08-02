@@ -507,7 +507,7 @@ QString
 Option::fixString(QString string, uchar flags)
 {
     //const QString orig_string = string;
-    static QHash<FixStringCacheKey, QString> *cache = 0;
+    static QHash<FixStringCacheKey, QString> *cache = nullptr;
     if(!cache) {
         cache = new QHash<FixStringCacheKey, QString>;
         qmakeAddCacheClear(qmakeDeleteCacheClear<QHash<FixStringCacheKey, QString> >, (void**)&cache);
@@ -635,7 +635,7 @@ public:
     QMakeCacheClearItem(qmakeCacheClearFunc f, void **d) : func(f), data(d) { }
     ~QMakeCacheClearItem() {
         (*func)(*data);
-        *data = 0;
+        *data = nullptr;
     }
 };
 static QList<QMakeCacheClearItem*> cache_items;

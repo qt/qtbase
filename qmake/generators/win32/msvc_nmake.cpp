@@ -499,7 +499,7 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
     QSet<QString> source_directories;
     if (useInferenceRules) {
         source_directories.insert(".");
-        static const char * const directories[] = { "UI_SOURCES_DIR", "UI_DIR", 0 };
+        static const char * const directories[] = { "UI_SOURCES_DIR", "UI_DIR", nullptr };
         for (int y = 0; directories[y]; y++) {
             QString dirTemp = project->first(directories[y]).toQString();
             if (dirTemp.endsWith("\\"))
@@ -507,7 +507,7 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
             if(!dirTemp.isEmpty())
                 source_directories.insert(dirTemp);
         }
-        static const char * const srcs[] = { "SOURCES", "GENERATED_SOURCES", 0 };
+        static const char * const srcs[] = { "SOURCES", "GENERATED_SOURCES", nullptr };
         for (int x = 0; srcs[x]; x++) {
             const ProStringList &l = project->values(srcs[x]);
             for (ProStringList::ConstIterator sit = l.begin(); sit != l.end(); ++sit) {

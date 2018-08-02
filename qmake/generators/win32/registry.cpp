@@ -77,7 +77,7 @@ QString qt_readRegistryKey(HKEY parentHandle, const QString &rSubkey, unsigned l
     QString rSubkeyName = keyName(rSubkey);
     QString rSubkeyPath = keyPath(rSubkey);
 
-    HKEY handle = 0;
+    HKEY handle = nullptr;
     LONG res = RegOpenKeyEx(parentHandle, (wchar_t*)rSubkeyPath.utf16(), 0,
                             KEY_READ | options, &handle);
 
@@ -87,7 +87,7 @@ QString qt_readRegistryKey(HKEY parentHandle, const QString &rSubkey, unsigned l
     // get the size and type of the value
     DWORD dataType;
     DWORD dataSize;
-    res = RegQueryValueEx(handle, (wchar_t*)rSubkeyName.utf16(), 0, &dataType, 0, &dataSize);
+    res = RegQueryValueEx(handle, (wchar_t*)rSubkeyName.utf16(), nullptr, &dataType, nullptr, &dataSize);
     if (res != ERROR_SUCCESS) {
         RegCloseKey(handle);
         return QString();
@@ -95,7 +95,7 @@ QString qt_readRegistryKey(HKEY parentHandle, const QString &rSubkey, unsigned l
 
     // get the value
     QByteArray data(dataSize, 0);
-    res = RegQueryValueEx(handle, (wchar_t*)rSubkeyName.utf16(), 0, 0,
+    res = RegQueryValueEx(handle, (wchar_t*)rSubkeyName.utf16(), nullptr, nullptr,
                           reinterpret_cast<unsigned char*>(data.data()), &dataSize);
     if (res != ERROR_SUCCESS) {
         RegCloseKey(handle);

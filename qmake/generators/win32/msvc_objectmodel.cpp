@@ -2185,7 +2185,7 @@ VCConfiguration::VCConfiguration()
 // VCFilter ---------------------------------------------------------
 VCFilter::VCFilter()
     :   ParseFiles(unset),
-        Config(0)
+        Config(nullptr)
 {
     useCustomBuildTool = false;
     useCompilerTool = false;

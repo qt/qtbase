@@ -138,7 +138,7 @@ BuildsMetaMakefileGenerator::init()
 bool
 BuildsMetaMakefileGenerator::write()
 {
-    Build *glue = 0;
+    Build *glue = nullptr;
     if(!makefiles.isEmpty() && !makefiles.first()->build.isNull()) {
         glue = new Build;
         glue->name = name;
@@ -228,7 +228,7 @@ MakefileGenerator
         if (build_proj->read(project->projectFile()))
             return createMakefileGenerator(build_proj);
     }
-    return 0;
+    return nullptr;
 }
 
 class SubdirsMetaMakefileGenerator : public MetaMakefileGenerator
@@ -236,7 +236,7 @@ class SubdirsMetaMakefileGenerator : public MetaMakefileGenerator
 protected:
     bool init_flag;
     struct Subdir {
-        Subdir() : makefile(0), indent(0) { }
+        Subdir() : makefile(nullptr), indent(0) { }
         ~Subdir() { delete makefile; }
         QString input_dir;
         QString output_dir, output_file;
@@ -336,7 +336,7 @@ SubdirsMetaMakefileGenerator::init()
                 hasError |= !sub->makefile->write();
                 delete sub;
                 qmakeClearCaches();
-                sub = 0;
+                sub = nullptr;
                 Option::output.setFileName(output_name);
             }
             Option::output_dir = old_output_dir;
@@ -412,7 +412,7 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
 {
     Option::postProcessProject(proj);
 
-    MakefileGenerator *mkfile = NULL;
+    MakefileGenerator *mkfile = nullptr;
     if(Option::qmake_mode == Option::QMAKE_GENERATE_PROJECT) {
         mkfile = new ProjectGenerator;
         mkfile->setProjectFile(proj);
@@ -459,7 +459,7 @@ MetaMakefileGenerator::createMetaGenerator(QMakeProject *proj, const QString &na
 {
     Option::postProcessProject(proj);
 
-    MetaMakefileGenerator *ret = 0;
+    MetaMakefileGenerator *ret = nullptr;
     if ((Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
          Option::qmake_mode == Option::QMAKE_GENERATE_PRL)) {
         if (proj->first("TEMPLATE").endsWith("subdirs"))

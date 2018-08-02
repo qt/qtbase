@@ -229,7 +229,7 @@ ProjectGenerator::init()
 
     ProStringList &h = v["HEADERS"];
     bool no_qt_files = true;
-    static const char *srcs[] = { "SOURCES", "YACCSOURCES", "LEXSOURCES", "FORMS", 0 };
+    static const char *srcs[] = { "SOURCES", "YACCSOURCES", "LEXSOURCES", "FORMS", nullptr };
     for (int i = 0; srcs[i]; i++) {
         const ProStringList &l = v[srcs[i]];
         QMakeSourceFileInfo::SourceFileType type = QMakeSourceFileInfo::TYPE_C;

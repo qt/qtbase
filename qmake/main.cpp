@@ -546,7 +546,7 @@ int runQMake(int argc, char **argv)
             exit_val = 5;
         }
         delete mkfile;
-        mkfile = NULL;
+        mkfile = nullptr;
     }
     qmakeClearCaches();
     return exit_val;

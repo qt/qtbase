@@ -49,7 +49,7 @@ public:
 
     virtual ~MetaMakefileGenerator();
 
-    static MetaMakefileGenerator *createMetaGenerator(QMakeProject *proj, const QString &name, bool op=true, bool *success = 0);
+    static MetaMakefileGenerator *createMetaGenerator(QMakeProject *proj, const QString &name, bool op=true, bool *success = nullptr);
     static MakefileGenerator *createMakefileGenerator(QMakeProject *proj, bool noIO = false);
 
     inline QMakeProject *projectFile() const { return project; }

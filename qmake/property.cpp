@@ -68,7 +68,7 @@ static const struct {
     { "QMAKE_XSPEC", QLibraryInfo::TargetSpecPath, true, true },
 };
 
-QMakeProperty::QMakeProperty() : settings(0)
+QMakeProperty::QMakeProperty() : settings(nullptr)
 {
     reload();
 }
@@ -99,7 +99,7 @@ void QMakeProperty::reload()
 QMakeProperty::~QMakeProperty()
 {
     delete settings;
-    settings = 0;
+    settings = nullptr;
 }
 
 void QMakeProperty::initSettings()

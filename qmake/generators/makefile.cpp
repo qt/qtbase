@@ -96,7 +96,7 @@ bool MakefileGenerator::mkdir(const QString &in_path) const
 
 // ** base makefile generator
 MakefileGenerator::MakefileGenerator() :
-    no_io(false), project(0)
+    no_io(false), project(nullptr)
 {
 }
 
@@ -164,7 +164,7 @@ MakefileGenerator::initOutPaths()
         v["PRECOMPILED_DIR"] = v["OBJECTS_DIR"];
     static const char * const dirs[] = { "OBJECTS_DIR", "DESTDIR",
                                          "SUBLIBS_DIR", "DLLDESTDIR",
-                                         "PRECOMPILED_DIR", 0 };
+                                         "PRECOMPILED_DIR", nullptr };
     for (int x = 0; dirs[x]; x++) {
         const ProKey dkey(dirs[x]);
         if (v[dkey].isEmpty())
@@ -424,7 +424,7 @@ MakefileGenerator::init()
     }
     incs.append(project->specDir());
 
-    const char * const cacheKeys[] = { "_QMAKE_STASH_", "_QMAKE_SUPER_CACHE_", 0 };
+    const char * const cacheKeys[] = { "_QMAKE_STASH_", "_QMAKE_SUPER_CACHE_", nullptr };
     for (int i = 0; cacheKeys[i]; ++i) {
         if (v[cacheKeys[i]].isEmpty())
             continue;
@@ -614,7 +614,7 @@ MakefileGenerator::init()
     //build up a list of compilers
     QVector<Compiler> compilers;
     {
-        const char *builtins[] = { "OBJECTS", "SOURCES", "PRECOMPILED_HEADER", 0 };
+        const char *builtins[] = { "OBJECTS", "SOURCES", "PRECOMPILED_HEADER", nullptr };
         for(x = 0; builtins[x]; ++x) {
             Compiler compiler;
             compiler.variable_in = builtins[x];
@@ -829,7 +829,7 @@ MakefileGenerator::init()
     }
 
     //fix up the target deps
-    static const char * const fixpaths[] = { "PRE_TARGETDEPS", "POST_TARGETDEPS", 0 };
+    static const char * const fixpaths[] = { "PRE_TARGETDEPS", "POST_TARGETDEPS", nullptr };
     for (int path = 0; fixpaths[path]; path++) {
         ProStringList &l = v[fixpaths[path]];
         for (ProStringList::Iterator val_it = l.begin(); val_it != l.end(); ++val_it) {
@@ -2790,7 +2790,7 @@ MakefileGenerator::writeMakeQmake(QTextStream &t, bool noDummyQmakeAll)
 QFileInfo
 MakefileGenerator::fileInfo(QString file) const
 {
-    static QHash<FileInfoCacheKey, QFileInfo> *cache = 0;
+    static QHash<FileInfoCacheKey, QFileInfo> *cache = nullptr;
     static QFileInfo noInfo = QFileInfo();
     if(!cache) {
         cache = new QHash<FileInfoCacheKey, QFileInfo>;

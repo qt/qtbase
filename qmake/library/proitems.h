@@ -78,12 +78,12 @@ public:
     int sourceFile() const { return m_file; }
 
     ProString &prepend(const ProString &other);
-    ProString &append(const ProString &other, bool *pending = 0);
+    ProString &append(const ProString &other, bool *pending = nullptr);
     ProString &append(const QString &other) { return append(ProString(other)); }
     ProString &append(const QLatin1String other);
     ProString &append(const char *other) { return append(QLatin1String(other)); }
     ProString &append(QChar other);
-    ProString &append(const ProStringList &other, bool *pending = 0, bool skipEmpty1st = false);
+    ProString &append(const ProStringList &other, bool *pending = nullptr, bool skipEmpty1st = false);
     ProString &operator+=(const ProString &other) { return append(other); }
     ProString &operator+=(const QString &other) { return append(other); }
     ProString &operator+=(const QLatin1String other) { return append(other); }
@@ -133,9 +133,9 @@ public:
     bool contains(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return indexOf(s, 0, cs) >= 0; }
     bool contains(const char *s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return indexOf(QLatin1String(s), 0, cs) >= 0; }
     bool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return indexOf(c, 0, cs) >= 0; }
-    int toLongLong(bool *ok = 0, int base = 10) const { return toQStringRef().toLongLong(ok, base); }
-    int toInt(bool *ok = 0, int base = 10) const { return toQStringRef().toInt(ok, base); }
-    short toShort(bool *ok = 0, int base = 10) const { return toQStringRef().toShort(ok, base); }
+    int toLongLong(bool *ok = nullptr, int base = 10) const { return toQStringRef().toLongLong(ok, base); }
+    int toInt(bool *ok = nullptr, int base = 10) const { return toQStringRef().toInt(ok, base); }
+    short toShort(bool *ok = nullptr, int base = 10) const { return toQStringRef().toShort(ok, base); }
 
     uint hash() const { return m_hash; }
     static uint hash(const QChar *p, int n);
@@ -261,7 +261,7 @@ class ProStringRwUser : public ProStringRoUser
 {
 public:
     ProStringRwUser(QString &rs)
-        : ProStringRoUser(rs), m_ps(0) {}
+        : ProStringRoUser(rs), m_ps(nullptr) {}
     ProStringRwUser(const ProString &ps, QString &rs)
         : ProStringRoUser(ps, rs), m_ps(&ps) {}
     QString &set(const ProString &ps) { m_ps = &ps; return ProStringRoUser::set(ps); }

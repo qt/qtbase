@@ -81,7 +81,7 @@ const QString
 
 struct SourceDependChildren;
 struct SourceFile {
-    SourceFile() : deps(0), type(QMakeSourceFileInfo::TYPE_UNKNOWN),
+    SourceFile() : deps(nullptr), type(QMakeSourceFileInfo::TYPE_UNKNOWN),
                    mocable(0), traversed(0), exists(1),
                    moc_checked(0), dep_checked(0), included_count(0) { }
     ~SourceFile();
@@ -95,8 +95,8 @@ struct SourceFile {
 struct SourceDependChildren {
     SourceFile **children;
     int num_nodes, used_nodes;
-    SourceDependChildren() : children(0), num_nodes(0), used_nodes(0) { }
-    ~SourceDependChildren() { if(children) free(children); children = 0; }
+    SourceDependChildren() : children(nullptr), num_nodes(0), used_nodes(0) { }
+    ~SourceDependChildren() { if (children) free(children); children = nullptr; }
     void addChild(SourceFile *s) {
         if(num_nodes <= used_nodes) {
             num_nodes += 200;
@@ -115,10 +115,10 @@ public:
     SourceFile *lookupFile(const char *);
     inline SourceFile *lookupFile(const QString &f) { return lookupFile(f.toLatin1().constData()); }
     inline SourceFile *lookupFile(const QMakeLocalFileName &f) { return lookupFile(f.local().toLatin1().constData()); }
-    void addFile(SourceFile *, const char *k=0, bool own=true);
+    void addFile(SourceFile *, const char *k = nullptr, bool own = true);
 
     struct SourceFileNode {
-        SourceFileNode() : key(0), next(0), file(0), own_file(1) { }
+        SourceFileNode() : key(nullptr), next(nullptr), file(nullptr), own_file(1) { }
         ~SourceFileNode() {
             delete [] key;
             if(own_file)
@@ -135,7 +135,7 @@ SourceFiles::SourceFiles()
 {
     nodes = (SourceFileNode**)malloc(sizeof(SourceFileNode*)*(num_nodes=3037));
     for(int n = 0; n < num_nodes; n++)
-        nodes[n] = 0;
+        nodes[n] = nullptr;
 }
 
 SourceFiles::~SourceFiles()
@@ -170,7 +170,7 @@ SourceFile *SourceFiles::lookupFile(const char *file)
         if(!strcmp(p->key, file))
             return p->file;
     }
-    return 0;
+    return nullptr;
 }
 
 void SourceFiles::addFile(SourceFile *p, const char *k, bool own_file)
@@ -259,11 +259,11 @@ QMakeSourceFileInfo::QMakeSourceFileInfo(const QString &cf)
     dep_mode = Recursive;
 
     //quick project lookups
-    includes = files = 0;
+    includes = files = nullptr;
     files_changed = false;
 
     //buffer
-    spare_buffer = 0;
+    spare_buffer = nullptr;
     spare_buffer_size = 0;
 
     //cache
@@ -281,7 +281,7 @@ QMakeSourceFileInfo::~QMakeSourceFileInfo()
     //buffer
     if(spare_buffer) {
         free(spare_buffer);
-        spare_buffer = 0;
+        spare_buffer = nullptr;
         spare_buffer_size = 0;
     }
 
@@ -538,7 +538,7 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
     const QMakeLocalFileName sourceFile = fixPathForFile(file->file, true);
 
     struct stat fst;
-    char *buffer = 0;
+    char *buffer = nullptr;
     int buffer_len = 0;
     {
         int fd;
@@ -588,7 +588,7 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
     }
     for (; x < buffer_len; ++x) {
         bool try_local = true;
-        char *inc = 0;
+        char *inc = nullptr;
         if(file->type == QMakeSourceFileInfo::TYPE_UI) {
             // skip whitespaces
             while (x < buffer_len && (buffer[x] == ' ' || buffer[x] == '\t'))
@@ -802,7 +802,7 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                     if (cpp_state == WantName)
                         buffer[clean] = '\0';
                     else // i.e. malformed
-                        inc = 0;
+                        inc = nullptr;
 
                     cpp_state = InCode; // hereafter
                     break;
@@ -915,7 +915,7 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
     file->moc_checked = true;
 
     int buffer_len = 0;
-    char *buffer = 0;
+    char *buffer = nullptr;
     {
         struct stat fst;
         int fd;
