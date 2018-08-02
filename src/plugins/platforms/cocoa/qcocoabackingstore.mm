@@ -44,8 +44,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcQpaBackingStore, "qt.qpa.backingstore");
-
 QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
     : QRasterBackingStore(window)
 {

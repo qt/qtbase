@@ -50,6 +50,7 @@
 //
 
 #include <QtGui/qtguiglobal.h>
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qobject.h>
 
@@ -59,6 +60,7 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_GUI_EXPORT Q_DECLARE_LOGGING_CATEGORY(lcQpaBackingStore)
 
 class QRegion;
 class QRect;

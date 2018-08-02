@@ -89,7 +89,6 @@
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaWindows, "qt.qpa.windows")
-Q_LOGGING_CATEGORY(lcQpaBackingStore, "qt.qpa.backingstore")
 Q_LOGGING_CATEGORY(lcQpaEvents, "qt.qpa.events")
 Q_LOGGING_CATEGORY(lcQpaGl, "qt.qpa.gl")
 Q_LOGGING_CATEGORY(lcQpaMime, "qt.qpa.mime")
