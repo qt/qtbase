@@ -1044,7 +1044,7 @@ static QPlatformTextureList *widgetTexturesFor(QWidget *tlw, QWidget *widget)
         }
     }
 
-    if (QWidgetPrivate::get(tlw)->textureChildSeen) {
+    if (QWidgetPrivate::get(widget)->textureChildSeen) {
         // No render-to-texture widgets in the (sub-)tree due to hidden or native
         // children. Returning null results in using the normal backingstore flush path
         // without OpenGL-based compositing. This is very desirable normally. However,
