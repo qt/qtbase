@@ -1056,6 +1056,77 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
          alpha);
 }
 
+void QRasterPaintEnginePrivate::blitImage(const QPointF &pt,
+                                          const QImage &img,
+                                          const QRect &clip,
+                                          const QRect &sr)
+{
+    if (!clip.isValid())
+        return;
+
+    Q_ASSERT(img.depth() >= 8);
+
+    qsizetype srcBPL = img.bytesPerLine();
+    const uchar *srcBits = img.bits();
+    int srcSize = img.depth() >> 3; // This is the part that is incompatible with lower than 8-bit..
+    int iw = img.width();
+    int ih = img.height();
+
+    if (!sr.isEmpty()) {
+        iw = sr.width();
+        ih = sr.height();
+        // Adjust the image according to the source offset...
+        srcBits += ((sr.y() * srcBPL) + sr.x() * srcSize);
+    }
+
+    // adapt the x parameters
+    int x = qRound(pt.x());
+    int cx1 = clip.x();
+    int cx2 = clip.x() + clip.width();
+    if (x < cx1) {
+        int d = cx1 - x;
+        srcBits += srcSize * d;
+        iw -= d;
+        x = cx1;
+    }
+    if (x + iw > cx2) {
+        int d = x + iw - cx2;
+        iw -= d;
+    }
+    if (iw <= 0)
+        return;
+
+    // adapt the y paremeters...
+    int cy1 = clip.y();
+    int cy2 = clip.y() + clip.height();
+    int y = qRound(pt.y());
+    if (y < cy1) {
+        int d = cy1 - y;
+        srcBits += srcBPL * d;
+        ih -= d;
+        y = cy1;
+    }
+    if (y + ih > cy2) {
+        int d = y + ih - cy2;
+        ih -= d;
+    }
+    if (ih <= 0)
+        return;
+
+    // blit..
+    int dstSize = rasterBuffer->bytesPerPixel();
+    qsizetype dstBPL = rasterBuffer->bytesPerLine();
+    const uint *src = (const uint *) srcBits;
+    uint *dst = reinterpret_cast<uint *>(rasterBuffer->buffer() + x * dstSize + y * dstBPL);
+
+    const int len = iw * (qt_depthForFormat(rasterBuffer->format) >> 3);
+    for (int y = 0; y < ih; ++y) {
+        memcpy(dst, src, len);
+        dst = (quint32 *)(((uchar *) dst) + dstBPL);
+        src = (const quint32 *)(((const uchar *) src) + srcBPL);
+    }
+}
+
 
 void QRasterPaintEnginePrivate::systemStateChanged()
 {
@@ -2160,7 +2231,15 @@ void QRasterPaintEngine::drawImage(const QPointF &p, const QImage &img)
         const QClipData *clip = d->clip();
         QPointF pt(p.x() + s->matrix.dx(), p.y() + s->matrix.dy());
 
-        if (d->canUseFastImageBlending(d->rasterBuffer->compositionMode, img)) {
+        if (d->canUseImageBlitting(d->rasterBuffer->compositionMode, img)) {
+            if (!clip) {
+                d->blitImage(pt, img, d->deviceRect);
+                return;
+            } else if (clip->hasRectClip) {
+                d->blitImage(pt, img, clip->clipRect);
+                return;
+            }
+        } else if (d->canUseFastImageBlending(d->rasterBuffer->compositionMode, img)) {
             SrcOverBlendFunc func = qBlendFunctions[d->rasterBuffer->format][img.format()];
             if (func) {
                 if (!clip) {
@@ -2445,7 +2524,16 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         fillPath(path, &d->image_filler_xform);
         s->matrix = m;
     } else {
-        if (d->canUseFastImageBlending(d->rasterBuffer->compositionMode, img)) {
+        if (d->canUseImageBlitting(d->rasterBuffer->compositionMode, img)) {
+            QPointF pt(r.x() + s->matrix.dx(), r.y() + s->matrix.dy());
+            if (!clip) {
+                d->blitImage(pt, img, d->deviceRect, sr.toRect());
+                return;
+            } else if (clip->hasRectClip) {
+                d->blitImage(pt, img, clip->clipRect, sr.toRect());
+                return;
+            }
+        } else if (d->canUseFastImageBlending(d->rasterBuffer->compositionMode, img)) {
             SrcOverBlendFunc func = qBlendFunctions[d->rasterBuffer->format][img.format()];
             if (func) {
                 QPointF pt(r.x() + s->matrix.dx(), r.y() + s->matrix.dy());
@@ -3662,6 +3750,33 @@ bool QRasterPaintEnginePrivate::canUseFastImageBlending(QPainter::CompositionMod
     return s->flags.fast_images
            && (mode == QPainter::CompositionMode_SourceOver
                || (mode == QPainter::CompositionMode_Source
+                   && !image.hasAlphaChannel()));
+}
+
+bool QRasterPaintEnginePrivate::canUseImageBlitting(QPainter::CompositionMode mode, const QImage &image) const
+{
+    Q_Q(const QRasterPaintEngine);
+    const QRasterPaintEngineState *s = q->state();
+
+    if (!s->flags.fast_images || s->intOpacity != 256 || qt_depthForFormat(rasterBuffer->format) < 8)
+        return false;
+
+    QImage::Format dFormat = rasterBuffer->format;
+    QImage::Format sFormat = image.format();
+    // Formats must match or source format must be a subset of destination format
+    if (dFormat != sFormat && image.pixelFormat().alphaUsage() == QPixelFormat::IgnoresAlpha) {
+        if ((sFormat == QImage::Format_RGB32 && dFormat == QImage::Format_ARGB32)
+            || (sFormat == QImage::Format_RGBX8888 && dFormat == QImage::Format_RGBA8888))
+            sFormat = dFormat;
+        else
+            sFormat = qt_maybeAlphaVersionWithSameDepth(sFormat); // this returns premul formats
+    }
+    if (dFormat != sFormat)
+        return false;
+
+    return s->matrix.type() <= QTransform::TxTranslate
+           && (mode == QPainter::CompositionMode_Source
+               || (mode == QPainter::CompositionMode_SourceOver
                    && !image.hasAlphaChannel()));
 }
 

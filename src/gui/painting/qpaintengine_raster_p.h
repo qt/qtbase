@@ -291,6 +291,8 @@ public:
 
     void drawImage(const QPointF &pt, const QImage &img, SrcOverBlendFunc func,
                    const QRect &clip, int alpha, const QRect &sr = QRect());
+    void blitImage(const QPointF &pt, const QImage &img,
+                   const QRect &clip, const QRect &sr = QRect());
 
     QTransform brushMatrix() const {
         Q_Q(const QRasterPaintEngine);
@@ -313,6 +315,7 @@ public:
 
     void recalculateFastImages();
     bool canUseFastImageBlending(QPainter::CompositionMode mode, const QImage &image) const;
+    bool canUseImageBlitting(QPainter::CompositionMode mode, const QImage &image) const;
 
     QPaintDevice *device;
     QScopedPointer<QOutlineMapper> outlineMapper;
