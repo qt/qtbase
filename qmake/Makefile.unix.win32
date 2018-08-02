@@ -1,5 +1,5 @@
 EXEEXT = .exe
-EXTRA_CXXFLAGS = -DUNICODE
+EXTRA_CXXFLAGS = -DUNICODE -DMINGW_HAS_SECURE_API=1
 EXTRA_LFLAGS = -static -s -lole32 -luuid -ladvapi32 -lkernel32 -lnetapi32
 QTOBJS = \
     qfilesystemengine_win.o \

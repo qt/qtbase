@@ -46,7 +46,7 @@ namespace QJsonPrivate
 {
 
 static Q_CONSTEXPR Base emptyArray  = { { qle_uint(sizeof(Base)) }, { 0 }, { qle_uint(0) } };
-static Q_CONSTEXPR Base emptyObject = { { qle_uint(sizeof(Base)) }, { 0 }, { qle_uint(0) } };
+static Q_CONSTEXPR Base emptyObject = { { qle_uint(sizeof(Base)) }, { qToLittleEndian(1u) }, { qle_uint(0) } };
 
 void Data::compact()
 {

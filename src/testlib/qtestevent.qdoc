@@ -31,12 +31,10 @@
 
     \brief The QTestEventList class provides a list of GUI events.
 
-    QTestEventList inherits from QList<QTestEvent *>, and provides
-    convenience functions for populating the list.
-
     A QTestEventList can be populated with GUI events that can be
     stored as test data for later usage, or be replayed on any
-    QWidget.
+    QWidget. QTestEventList provides convenience functions for populating
+    the list.
 
     Example:
     \snippet code/doc_src_qtestevent.cpp 0
@@ -174,4 +172,3 @@
 
     \sa QTest::mousePress()
 */
-

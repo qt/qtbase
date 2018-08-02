@@ -106,16 +106,16 @@ public:
 
 QT_BEGIN_NAMESPACE
 //! [3] //! [4]
-#define BrushInterface_iid "org.qt-project.Qt.Examples.PlugAndPaint.BrushInterface"
+#define BrushInterface_iid "org.qt-project.Qt.Examples.PlugAndPaint.BrushInterface/1.0"
 
 Q_DECLARE_INTERFACE(BrushInterface, BrushInterface_iid)
 //! [3]
 
-#define ShapeInterface_iid  "org.qt-project.Qt.Examples.PlugAndPaint.ShapeInterface"
+#define ShapeInterface_iid  "org.qt-project.Qt.Examples.PlugAndPaint.ShapeInterface/1.0"
 
 Q_DECLARE_INTERFACE(ShapeInterface, ShapeInterface_iid)
 //! [5]
-#define FilterInterface_iid "org.qt-project.Qt.Examples.PlugAndPaint.FilterInterface"
+#define FilterInterface_iid "org.qt-project.Qt.Examples.PlugAndPaint.FilterInterface/1.0"
 
 Q_DECLARE_INTERFACE(FilterInterface, FilterInterface_iid)
 //! [4] //! [5]

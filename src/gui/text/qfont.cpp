@@ -1254,7 +1254,7 @@ QFont::StyleStrategy QFont::styleStrategy() const
 /*!
     Returns the StyleHint.
 
-    The style hint affects the \l{QFont}{font matching} algorithm.
+    The style hint affects the \l{#fontmatching}{font matching algorithm}.
     See \l QFont::StyleHint for the list of available hints.
 
     \sa setStyleHint(), QFont::StyleStrategy, QFontInfo::styleHint()

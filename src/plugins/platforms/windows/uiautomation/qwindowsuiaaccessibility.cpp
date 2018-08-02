@@ -68,21 +68,18 @@ QWindowsUiaAccessibility::~QWindowsUiaAccessibility()
 // Handles UI Automation window messages.
 bool QWindowsUiaAccessibility::handleWmGetObject(HWND hwnd, WPARAM wParam, LPARAM lParam, LRESULT *lResult)
 {
-    if (lParam == LPARAM(UiaRootObjectId)) {
+    // Start handling accessibility internally
+    QGuiApplicationPrivate::platformIntegration()->accessibility()->setActive(true);
 
-        // Start handling accessibility internally
-        QGuiApplicationPrivate::platformIntegration()->accessibility()->setActive(true);
+    // Ignoring all requests while starting up / shutting down
+    if (QCoreApplication::startingUp() || QCoreApplication::closingDown())
+        return false;
 
-        // Ignoring all requests while starting up / shutting down
-        if (QCoreApplication::startingUp() || QCoreApplication::closingDown())
-            return false;
-
-        if (QWindow *window = QWindowsContext::instance()->findWindow(hwnd)) {
-            if (QAccessibleInterface *accessible = window->accessibleRoot()) {
-                QWindowsUiaMainProvider *provider = QWindowsUiaMainProvider::providerForAccessible(accessible);
-                *lResult = QWindowsUiaWrapper::instance()->returnRawElementProvider(hwnd, wParam, lParam, provider);
-                return true;
-            }
+    if (QWindow *window = QWindowsContext::instance()->findWindow(hwnd)) {
+        if (QAccessibleInterface *accessible = window->accessibleRoot()) {
+            QWindowsUiaMainProvider *provider = QWindowsUiaMainProvider::providerForAccessible(accessible);
+            *lResult = QWindowsUiaWrapper::instance()->returnRawElementProvider(hwnd, wParam, lParam, provider);
+            return true;
         }
     }
     return false;

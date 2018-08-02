@@ -569,7 +569,6 @@ private:
 
     bool m_xi2Enabled = false;
 #if QT_CONFIG(xcb_xinput)
-    QVector<int> m_floatingSlaveDevices;
     int m_xi2Minor = -1;
     void initializeXInput2();
     void xi2SetupDevice(void *info, bool removeExisting = true);

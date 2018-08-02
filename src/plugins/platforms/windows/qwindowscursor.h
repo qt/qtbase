@@ -107,7 +107,8 @@ public:
     void changeCursor(QCursor * widgetCursor, QWindow * widget) override;
     void setOverrideCursor(const QCursor &cursor) override;
     void clearOverrideCursor() override;
-    bool hasOverrideCursor() const { return m_overriddenCursor != nullptr; }
+    static void enforceOverrideCursor();
+    static bool hasOverrideCursor() { return m_overriddenCursor != nullptr; }
 
     QPoint pos() const override;
     void setPos(const QPoint &pos) override;
@@ -143,6 +144,7 @@ private:
     mutable QPixmap m_ignoreDragCursor;
 
     static HCURSOR m_overriddenCursor;
+    static HCURSOR m_overrideCursor;
 };
 
 QT_END_NAMESPACE
