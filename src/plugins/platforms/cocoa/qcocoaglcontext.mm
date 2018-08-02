@@ -76,7 +76,7 @@ static inline QByteArray getGlString(GLenum param)
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcQpaOpenGLContext, "qt.qpa.openglcontext");
+Q_LOGGING_CATEGORY(lcQpaOpenGLContext, "qt.qpa.openglcontext", QtWarningMsg);
 
 QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share,
                                  const QVariant &nativeHandle)
@@ -367,6 +367,9 @@ QCocoaGLContext::~QCocoaGLContext()
 
 bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
 {
+    qCDebug(lcQpaOpenGLContext) << "Making" << m_context << "current"
+        << "in" << QThread::currentThread() << "for" << surface;
+
     Q_ASSERT(surface->surface()->supportsOpenGL());
 
     QMacAutoReleasePool pool;
@@ -431,11 +434,15 @@ static QMutex s_contextMutex;
 void QCocoaGLContext::update()
 {
     QMutexLocker locker(&s_contextMutex);
+    qCInfo(lcQpaOpenGLContext) << "Updating" << m_context << "for" << m_context.view;
     [m_context update];
 }
 
 void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
 {
+    qCDebug(lcQpaOpenGLContext) << "Swapping" << m_context
+        << "in" << QThread::currentThread() << "to" << surface;
+
     if (surface->surface()->surfaceClass() == QSurface::Offscreen)
         return; // Nothing to do
 
@@ -451,6 +458,9 @@ void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
 
 void QCocoaGLContext::doneCurrent()
 {
+    qCDebug(lcQpaOpenGLContext) << "Clearing current context"
+        << [NSOpenGLContext currentContext] << "in" << QThread::currentThread();
+
     if (m_currentWindow && m_currentWindow.data()->handle())
         static_cast<QCocoaWindow *>(m_currentWindow.data()->handle())->setCurrentContext(nullptr);
 
