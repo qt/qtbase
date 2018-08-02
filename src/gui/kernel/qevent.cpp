@@ -995,10 +995,12 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
 QWheelEvent::QWheelEvent(QPointF pos, QPointF globalPos, QPoint pixelDelta, QPoint angleDelta,
             Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase,
             bool inverted, Qt::MouseEventSource source)
-    : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), pixelD(pixelDelta),
-      angleD(angleDelta), mouseState(buttons), ph(phase), src(source),
-      invertedScrolling(inverted)
-{}
+    : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), pixelD(pixelDelta), angleD(angleDelta),
+      qt4O(qAbs(angleDelta.x()) > qAbs(angleDelta.y()) ? Qt::Horizontal : Qt::Vertical),
+      mouseState(buttons), ph(phase), src(source), invertedScrolling(inverted)
+{
+    qt4D = (qt4O == Qt::Horizontal ? angleDelta.x() : angleDelta.y());
+}
 
 #endif // QT_CONFIG(wheelevent)
 
