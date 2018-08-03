@@ -1194,7 +1194,7 @@ static QVector<QRgb> fix_color_table(const QVector<QRgb> &ctbl, QImage::Format f
     if (format == QImage::Format_RGB32) {
         // check if the color table has alpha
         for (int i = 0; i < colorTable.size(); ++i)
-            if (qAlpha(colorTable.at(i) != 0xff))
+            if (qAlpha(colorTable.at(i)) != 0xff)
                 colorTable[i] = colorTable.at(i) | 0xff000000;
     } else if (format == QImage::Format_ARGB32_Premultiplied) {
         // check if the color table has alpha
@@ -1796,8 +1796,9 @@ static void convert_Indexed8_to_X32(QImageData *dest, const QImageData *src, Qt:
     if (colorTable.size() < 256) {
         int tableSize = colorTable.size();
         colorTable.resize(256);
+        QRgb fallbackColor = (dest->format == QImage::Format_RGB32) ? 0xff000000 : 0;
         for (int i=tableSize; i<256; ++i)
-            colorTable[i] = 0;
+            colorTable[i] = fallbackColor;
     }
 
     int w = src->width;

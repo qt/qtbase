@@ -222,6 +222,8 @@ private slots:
 
     void hugeQImage();
 
+    void convertColorTable();
+
 private:
     const QString m_prefix;
 };
@@ -3456,6 +3458,19 @@ void tst_QImage::hugeQImage()
     painter.end();
     QCOMPARE(reinterpret_cast<const unsigned int *>(canvas.constScanLine(90))[50], 0xffaabbcc);
 #endif
+}
+
+void tst_QImage::convertColorTable()
+{
+    QImage image(10, 10, QImage::Format_Indexed8);
+    image.setColor(0, 0x80ffffff);
+    image.fill(0);
+    QImage argb32 = image.convertToFormat(QImage::Format_ARGB32);
+    QCOMPARE(argb32.pixel(0,0), 0x80ffffff);
+    QImage argb32pm = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    QCOMPARE(argb32pm.pixel(0,0), 0x80808080);
+    QImage rgb32 = image.convertToFormat(QImage::Format_RGB32);
+    QCOMPARE(rgb32.pixel(0,0), 0xffffffff);
 }
 
 QTEST_GUILESS_MAIN(tst_QImage)
