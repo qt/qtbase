@@ -1239,29 +1239,30 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
     QList<QSslError> errors;
     // store certificates
     const int certCount = SecTrustGetCertificateCount(trust);
-    // TODO: why this test depends on configuration.peerCertificateChain not being empty????
-    if (configuration.peerCertificateChain.isEmpty()) {
-        // Apple's docs say SetTrustEvaluate must be called before
-        // SecTrustGetCertificateAtIndex, but this results
-        // in 'kSecTrustResultRecoverableTrustFailure', so
-        // here we just ignore 'res' (later we'll use SetAnchor etc.
-        // and evaluate again).
-        SecTrustResultType res = kSecTrustResultInvalid;
-        err = SecTrustEvaluate(trust, &res);
-        if (err != errSecSuccess) {
-            // We can not ignore this, it's not even about trust verification
-            // probably ...
-            setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
-                            QStringLiteral("SecTrustEvaluate failed: %1").arg(err));
-            plainSocket->disconnectFromHost();
-            return false;
-        }
 
-        for (int i = 0; i < certCount; ++i) {
-            SecCertificateRef cert = SecTrustGetCertificateAtIndex(trust, i);
-            QCFType<CFDataRef> derData = SecCertificateCopyData(cert);
-            configuration.peerCertificateChain << QSslCertificate(QByteArray::fromCFData(derData), QSsl::Der);
-        }
+    // Apple's docs say SetTrustEvaluate must be called before
+    // SecTrustGetCertificateAtIndex, but this results
+    // in 'kSecTrustResultRecoverableTrustFailure', so
+    // here we just ignore 'res' (later we'll use SetAnchor etc.
+    // and evaluate again).
+    SecTrustResultType res = kSecTrustResultInvalid;
+    err = SecTrustEvaluate(trust, &res);
+    if (err != errSecSuccess) {
+        // We can not ignore this, it's not even about trust verification
+        // probably ...
+        setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
+                        QStringLiteral("SecTrustEvaluate failed: %1").arg(err));
+        plainSocket->disconnectFromHost();
+        return false;
+    }
+
+    configuration.peerCertificate.clear();
+    configuration.peerCertificateChain.clear();
+
+    for (int i = 0; i < certCount; ++i) {
+        SecCertificateRef cert = SecTrustGetCertificateAtIndex(trust, i);
+        QCFType<CFDataRef> derData = SecCertificateCopyData(cert);
+        configuration.peerCertificateChain << QSslCertificate(QByteArray::fromCFData(derData), QSsl::Der);
     }
 
     if (certCount > 0) {
