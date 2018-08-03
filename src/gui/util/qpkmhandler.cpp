@@ -92,7 +92,7 @@ QTextureFileData QPkmHandler::read()
 
     // texture type
     quint16 type = qFromBigEndian<quint16>(rawData + 6);
-    if (type > sizeof(typeMap)/sizeof(typeMap[0])) {
+    if (type >= sizeof(typeMap)/sizeof(typeMap[0])) {
         qCDebug(lcQtGuiTextureIO, "Unknown compression format in PKM file %s", logName().constData());
         return QTextureFileData();
     }
