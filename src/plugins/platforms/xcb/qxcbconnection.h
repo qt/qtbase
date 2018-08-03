@@ -441,7 +441,7 @@ public:
     QXcbWindow *platformWindowFromId(xcb_window_t id);
 
     template<typename Functor>
-    inline xcb_generic_event_t *checkEvent(Functor &&filter);
+    inline xcb_generic_event_t *checkEvent(Functor &&filter, bool removeFromQueue = true);
 
     typedef bool (*PeekFunc)(QXcbConnection *, xcb_generic_event_t *);
     void addPeekFunc(PeekFunc f);
@@ -735,14 +735,15 @@ Q_DECLARE_TYPEINFO(QXcbConnection::TabletData, Q_MOVABLE_TYPE);
 #endif
 
 template<typename Functor>
-xcb_generic_event_t *QXcbConnection::checkEvent(Functor &&filter)
+xcb_generic_event_t *QXcbConnection::checkEvent(Functor &&filter, bool removeFromQueue)
 {
     QXcbEventArray *eventqueue = m_reader->lock();
 
     for (int i = 0; i < eventqueue->size(); ++i) {
         xcb_generic_event_t *event = eventqueue->at(i);
         if (event && filter(event, event->response_type & ~0x80)) {
-            (*eventqueue)[i] = nullptr;
+            if (removeFromQueue)
+                (*eventqueue)[i] = nullptr;
             m_reader->unlock();
             return event;
         }

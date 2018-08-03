@@ -1472,60 +1472,6 @@ void QXcbKeyboard::resolveMaskConflicts()
     }
 }
 
-class KeyChecker
-{
-public:
-    KeyChecker(xcb_window_t window, xcb_keycode_t code, xcb_timestamp_t time, quint16 state)
-        : m_window(window)
-        , m_code(code)
-        , m_time(time)
-        , m_state(state)
-        , m_error(false)
-        , m_release(true)
-    {
-    }
-
-    bool operator() (xcb_generic_event_t *ev, int type)
-    {
-        if (m_error || !ev)
-            return false;
-
-        if (type != XCB_KEY_PRESS && type != XCB_KEY_RELEASE)
-            return false;
-
-        xcb_key_press_event_t *event = (xcb_key_press_event_t *)ev;
-
-        if (event->event != m_window || event->detail != m_code || event->state != m_state) {
-            m_error = true;
-            return false;
-        }
-
-        if (type == XCB_KEY_PRESS) {
-            m_error = !m_release || event->time - m_time > 10;
-            return !m_error;
-        }
-
-        if (m_release) {
-            m_error = true;
-            return false;
-        }
-
-        m_release = true;
-        m_time = event->time;
-
-        return false;
-    }
-
-private:
-    xcb_window_t m_window;
-    xcb_keycode_t m_code;
-    xcb_timestamp_t m_time;
-    quint16 m_state;
-
-    bool m_error;
-    bool m_release;
-};
-
 void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, xcb_keycode_t code,
                                   quint16 state, xcb_timestamp_t time, bool fromSendEvent)
 {
@@ -1538,7 +1484,6 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
         return;
     if (type == QEvent::KeyPress)
         targetWindow->updateNetWmUserTime(time);
-
 
     ScopedXKBState sendEventState;
     if (fromSendEvent) {
@@ -1557,7 +1502,7 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
     struct xkb_state *xkbState = fromSendEvent ? sendEventState.get() : m_xkbState.get();
 
     xcb_keysym_t sym = xkb_state_key_get_one_sym(xkbState, code);
-    QString string = lookupString(xkbState, code);
+    QString text = lookupString(xkbState, code);
 
     Qt::KeyboardModifiers modifiers = translateModifiers(state);
     if (sym >= XKB_KEY_KP_Space && sym <= XKB_KEY_KP_9)
@@ -1582,55 +1527,42 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
     int qtcode = keysymToQtKey(latinKeysym != XKB_KEY_NoSymbol ? latinKeysym : sym,
                                modifiers, xkbState, code);
 
-    bool isAutoRepeat = false;
     if (type == QEvent::KeyPress) {
-        if (m_autorepeat_code == code) {
-            isAutoRepeat = true;
-            m_autorepeat_code = 0;
-        }
+        if (m_isAutoRepeat && m_autoRepeatCode != code)
+            // Some other key was pressed while we are auto-repeating on a different key.
+            m_isAutoRepeat = false;
     } else {
-        // look ahead for auto-repeat
-        KeyChecker checker(source->xcb_window(), code, time, state);
-        xcb_generic_event_t *event = connection()->checkEvent(checker);
-        if (event) {
-            isAutoRepeat = true;
-            free(event);
-        }
-        m_autorepeat_code = isAutoRepeat ? code : 0;
+        m_isAutoRepeat = false;
+        // Look at the next event in the queue to see if we are auto-repeating.
+        connection()->checkEvent([this, time, code](xcb_generic_event_t *event, int type) {
+            if (type == XCB_KEY_PRESS) {
+                auto keyPress = reinterpret_cast<xcb_key_press_event_t *>(event);
+                m_isAutoRepeat = keyPress->time == time && keyPress->detail == code;
+                if (m_isAutoRepeat)
+                    m_autoRepeatCode = code;
+            }
+            return true;
+        }, false /* removeFromQueue */);
     }
 
     bool filtered = false;
-    QPlatformInputContext *inputContext = QGuiApplicationPrivate::platformIntegration()->inputContext();
-    if (inputContext) {
-        QKeyEvent event(type, qtcode, modifiers, code, sym, state, string, isAutoRepeat, string.length());
+    if (auto inputContext = QGuiApplicationPrivate::platformIntegration()->inputContext()) {
+        QKeyEvent event(type, qtcode, modifiers, code, sym, state, text, m_isAutoRepeat, text.size());
         event.setTimestamp(time);
         filtered = inputContext->filterEvent(&event);
     }
 
-    QWindow *window = targetWindow->window();
     if (!filtered) {
+        QWindow *window = targetWindow->window();
 #ifndef QT_NO_CONTEXTMENU
         if (type == QEvent::KeyPress && qtcode == Qt::Key_Menu) {
             const QPoint globalPos = window->screen()->handle()->cursor()->pos();
             const QPoint pos = window->mapFromGlobal(globalPos);
             QWindowSystemInterface::handleContextMenuEvent(window, false, pos, globalPos, modifiers);
         }
-#endif // QT_NO_CONTEXTMENU
+#endif
         QWindowSystemInterface::handleExtendedKeyEvent(window, time, type, qtcode, modifiers,
-                                                       code, sym, state, string, isAutoRepeat);
-    }
-
-    if (isAutoRepeat && type == QEvent::KeyRelease) {
-        // since we removed it from the event queue using checkEvent we need to send the key press here
-        filtered = false;
-        if (inputContext) {
-            QKeyEvent event(QEvent::KeyPress, qtcode, modifiers, code, sym, state, string, isAutoRepeat, string.length());
-            event.setTimestamp(time);
-            filtered = inputContext->filterEvent(&event);
-        }
-        if (!filtered)
-            QWindowSystemInterface::handleExtendedKeyEvent(window, time, QEvent::KeyPress, qtcode, modifiers,
-                                                           code, sym, state, string, isAutoRepeat);
+                                                       code, sym, state, text, m_isAutoRepeat);
     }
 }
 
