@@ -69,7 +69,7 @@ static inline QDpi monitorDPI(HMONITOR hMonitor)
         if (SUCCEEDED(QWindowsContext::shcoredll.getDpiForMonitor(hMonitor, 0, &dpiX, &dpiY)))
             return QDpi(dpiX, dpiY);
     }
-    return QDpi(0, 0);
+    return {0, 0};
 }
 
 typedef QList<QWindowsScreenData> WindowsScreenDataList;
@@ -401,7 +401,8 @@ QPlatformScreen::SubpixelAntialiasingType QWindowsScreen::subpixelAntialiasingTy
 {
     QPlatformScreen::SubpixelAntialiasingType type = QPlatformScreen::subpixelAntialiasingTypeHint();
     if (type == QPlatformScreen::Subpixel_None) {
-        QSettings settings(QLatin1String("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Avalon.Graphics\\DISPLAY1"), QSettings::NativeFormat);
+        QSettings settings(QLatin1String(R"(HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Avalon.Graphics\DISPLAY1)"),
+                           QSettings::NativeFormat);
         int registryValue = settings.value(QLatin1String("PixelStructure"), -1).toInt();
         switch (registryValue) {
         case 0:

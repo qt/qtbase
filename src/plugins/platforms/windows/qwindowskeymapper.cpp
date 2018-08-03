@@ -653,8 +653,8 @@ static inline int asciiToKeycode(char a, int state)
 
 void QWindowsKeyMapper::deleteLayouts()
 {
-    for (size_t i = 0; i < NumKeyboardLayoutItems; ++i)
-        keyLayout[i].exists = false;
+    for (KeyboardLayoutItem &k : keyLayout)
+        k.exists = false;
 }
 
 void QWindowsKeyMapper::changeKeyboard()
@@ -1111,7 +1111,8 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
             if (uch.isHighSurrogate()) {
                 m_lastHighSurrogate = uch;
                 return true;
-            } else if (uch.isLowSurrogate() && !m_lastHighSurrogate.isNull()) {
+            }
+            if (uch.isLowSurrogate() && !m_lastHighSurrogate.isNull()) {
                 if (QObject *focusObject = QGuiApplication::focusObject()) {
                     const QChar chars[2] = {m_lastHighSurrogate, uch};
                     QInputMethodEvent event;

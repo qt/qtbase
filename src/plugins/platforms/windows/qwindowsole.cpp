@@ -365,10 +365,9 @@ QWindowsOleEnumFmtEtc::Clone(LPENUMFORMATETC FAR* newEnum)
     if (result->isNull()) {
         delete result;
         return ResultFromScode(E_OUTOFMEMORY);
-    } else {
-        *newEnum = result;
     }
 
+    *newEnum = result;
     return NOERROR;
 }
 

@@ -108,7 +108,7 @@ inline QPointF QWindowsTabletDeviceData::scaleCoordinates(int coordX, int coordY
         ((coordY - minY) * qAbs(targetHeight) / qAbs(qreal(maxY - minY))) + targetY :
         ((qAbs(maxY) - (coordY - minY)) * qAbs(targetHeight) / qAbs(qreal(maxY - minY))) + targetY;
 
-    return QPointF(x, y);
+    return {x, y};
 }
 
 template <class Stream>

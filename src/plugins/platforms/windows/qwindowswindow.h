@@ -430,7 +430,7 @@ inline QWindowsWindow *QWindowsWindow::windowsWindowOf(const QWindow *w)
 
 void *QWindowsWindow::userDataOf(HWND hwnd)
 {
-    return (void *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+    return reinterpret_cast<void *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 }
 
 void QWindowsWindow::setUserDataOf(HWND hwnd, void *ud)

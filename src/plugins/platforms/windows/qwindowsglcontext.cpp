@@ -206,18 +206,12 @@ bool QWindowsOpengl32DLL::init(bool softwareRendering)
 
 BOOL QWindowsOpengl32DLL::swapBuffers(HDC dc)
 {
-    if (moduleIsNotOpengl32())
-        return wglSwapBuffers(dc);
-    else
-        return SwapBuffers(dc);
+    return moduleIsNotOpengl32() ? wglSwapBuffers(dc) : SwapBuffers(dc);
 }
 
 BOOL QWindowsOpengl32DLL::setPixelFormat(HDC dc, int pf, const PIXELFORMATDESCRIPTOR *pfd)
 {
-    if (moduleIsNotOpengl32())
-        return wglSetPixelFormat(dc, pf, pfd);
-    else
-        return SetPixelFormat(dc, pf, pfd);
+    return moduleIsNotOpengl32() ? wglSetPixelFormat(dc, pf, pfd) : SetPixelFormat(dc, pf, pfd);
 }
 
 QWindowsOpenGLContext *QOpenGLStaticContext::createContext(QOpenGLContext *context)

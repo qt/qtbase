@@ -660,7 +660,7 @@ QWindowsWindowData
     WindowData result;
     result.flags = flags;
 
-    const HINSTANCE appinst = (HINSTANCE)GetModuleHandle(0);
+    const auto appinst = reinterpret_cast<HINSTANCE>(GetModuleHandle(nullptr));
 
     const QString windowClassName = QWindowsContext::instance()->registerWindowClass(w);
 
@@ -1374,18 +1374,12 @@ bool QWindowsWindow::isEmbedded() const
 
 QPoint QWindowsWindow::mapToGlobal(const QPoint &pos) const
 {
-    if (m_data.hwnd)
-        return QWindowsGeometryHint::mapToGlobal(m_data.hwnd, pos);
-    else
-        return pos;
+    return m_data.hwnd ? QWindowsGeometryHint::mapToGlobal(m_data.hwnd, pos) : pos;
 }
 
 QPoint QWindowsWindow::mapFromGlobal(const QPoint &pos) const
 {
-    if (m_data.hwnd)
-        return QWindowsGeometryHint::mapFromGlobal(m_data.hwnd, pos);
-    else
-        return pos;
+    return m_data.hwnd ? QWindowsGeometryHint::mapFromGlobal(m_data.hwnd, pos) : pos;
 }
 
 static inline HWND transientParentHwnd(HWND hwnd)

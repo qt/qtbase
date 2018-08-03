@@ -363,9 +363,9 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
             }
             m_previousCaptureWindow = window;
             return true;
-        } else if (m_leftButtonDown && !actualLeftDown) {
-            m_leftButtonDown = false;
         }
+        if (m_leftButtonDown && !actualLeftDown)
+            m_leftButtonDown = false;
     }
 
     // In this context, neither an invisible nor a transparent window (transparent regarding mouse

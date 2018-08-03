@@ -889,19 +889,19 @@ EGLConfig QWindowsEGLContext::chooseConfig(const QSurfaceFormat &format)
         EGLint green = 0;
         EGLint blue = 0;
         EGLint alpha = 0;
-        for (int i = 0; i < configs.size(); ++i) {
+        for (const EGLConfig &config : configs) {
             if (confAttrRed)
-                QWindowsEGLStaticContext::libEGL.eglGetConfigAttrib(display, configs[i], EGL_RED_SIZE, &red);
+                QWindowsEGLStaticContext::libEGL.eglGetConfigAttrib(display, config, EGL_RED_SIZE, &red);
             if (confAttrGreen)
-                QWindowsEGLStaticContext::libEGL.eglGetConfigAttrib(display, configs[i], EGL_GREEN_SIZE, &green);
+                QWindowsEGLStaticContext::libEGL.eglGetConfigAttrib(display, config, EGL_GREEN_SIZE, &green);
             if (confAttrBlue)
-                QWindowsEGLStaticContext::libEGL.eglGetConfigAttrib(display, configs[i], EGL_BLUE_SIZE, &blue);
+                QWindowsEGLStaticContext::libEGL.eglGetConfigAttrib(display, config, EGL_BLUE_SIZE, &blue);
             if (confAttrAlpha)
-                QWindowsEGLStaticContext::libEGL.eglGetConfigAttrib(display, configs[i], EGL_ALPHA_SIZE, &alpha);
+                QWindowsEGLStaticContext::libEGL.eglGetConfigAttrib(display, config, EGL_ALPHA_SIZE, &alpha);
 
             if (red == confAttrRed && green == confAttrGreen
                     && blue == confAttrBlue && alpha == confAttrAlpha)
-                return configs[i];
+                return config;
         }
     } while (reduceConfigAttributes(&configureAttributes));
 

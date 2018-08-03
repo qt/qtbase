@@ -107,7 +107,7 @@ static inline bool booleanSystemParametersInfo(UINT what, bool defaultValue)
 {
     BOOL result;
     if (SystemParametersInfo(what, 0, &result, 0))
-        return result ? true : false;
+        return result != FALSE;
     return defaultValue;
 }
 
@@ -121,9 +121,9 @@ static inline DWORD dWordSystemParametersInfo(UINT what, DWORD defaultValue)
 
 static inline QColor mixColors(const QColor &c1, const QColor &c2)
 {
-    return QColor ((c1.red() + c2.red()) / 2,
-                   (c1.green() + c2.green()) / 2,
-                   (c1.blue() + c2.blue()) / 2);
+    return {(c1.red() + c2.red()) / 2,
+            (c1.green() + c2.green()) / 2,
+            (c1.blue() + c2.blue()) / 2};
 }
 
 static inline QColor getSysColor(int index)

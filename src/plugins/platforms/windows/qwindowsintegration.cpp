@@ -255,8 +255,7 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
 
 QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()
 {
-    if (m_fontDatabase)
-        delete m_fontDatabase;
+    delete m_fontDatabase;
 }
 
 QWindowsIntegration *QWindowsIntegration::m_instance = nullptr;

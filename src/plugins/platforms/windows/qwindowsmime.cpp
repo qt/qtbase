@@ -628,7 +628,8 @@ bool QWindowsMimeText::convertFromMime(const FORMATETC &formatetc, const QMimeDa
             }
             o[j]=0;
             return setData(r, pmedium);
-        } else if (cf == CF_UNICODETEXT) {
+        }
+        if (cf == CF_UNICODETEXT) {
             QString str = mimeData->text();
             const QChar *u = str.unicode();
             QString res;
@@ -750,9 +751,9 @@ QWindowsMimeURI::QWindowsMimeURI()
 bool QWindowsMimeURI::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
 {
     if (mimeData->hasUrls() && getCf(formatetc) == CF_HDROP) {
-        QList<QUrl> urls = mimeData->urls();
-        for (int i=0; i<urls.size(); i++) {
-            if (!urls.at(i).toLocalFile().isEmpty())
+        const QList<QUrl> urls = mimeData->urls();
+        for (const QUrl &url : urls) {
+            if (url.isLocalFile())
                 return true;
         }
     }
@@ -763,11 +764,11 @@ bool QWindowsMimeURI::convertFromMime(const FORMATETC &formatetc, const QMimeDat
 {
     if (canConvertFromMime(formatetc, mimeData)) {
         if (getCf(formatetc) == CF_HDROP) {
-            QList<QUrl> urls = mimeData->urls();
+            const QList<QUrl> &urls = mimeData->urls();
             QStringList fileNames;
             int size = sizeof(DROPFILES)+2;
-            for (int i=0; i<urls.size(); i++) {
-                QString fn = QDir::toNativeSeparators(urls.at(i).toLocalFile());
+            for (const QUrl &url : urls) {
+                const QString fn = QDir::toNativeSeparators(url.toLocalFile());
                 if (!fn.isEmpty()) {
                     size += sizeof(ushort) * size_t(fn.length() + 1);
                     fileNames.append(fn);
@@ -792,7 +793,8 @@ bool QWindowsMimeURI::convertFromMime(const FORMATETC &formatetc, const QMimeDat
             *f = 0;
 
             return setData(result, pmedium);
-        } else if (getCf(formatetc) == CF_INETURL_W) {
+        }
+        if (getCf(formatetc) == CF_INETURL_W) {
             QList<QUrl> urls = mimeData->urls();
             QByteArray result;
             if (!urls.isEmpty()) {
@@ -803,7 +805,8 @@ bool QWindowsMimeURI::convertFromMime(const FORMATETC &formatetc, const QMimeDat
             result.append('\0');
             result.append('\0');
             return setData(result, pmedium);
-        } else if (getCf(formatetc) == CF_INETURL) {
+        }
+        if (getCf(formatetc) == CF_INETURL) {
             QList<QUrl> urls = mimeData->urls();
             QByteArray result;
             if (!urls.isEmpty())
@@ -873,7 +876,7 @@ QVariant QWindowsMimeURI::convertToMime(const QString &mimeType, LPDATAOBJECT pD
 
             if (preferredType == QVariant::Url && urls.size() == 1)
                 return urls.at(0);
-            else if (!urls.isEmpty())
+            if (!urls.isEmpty())
                 return urls;
         } else if (canGetData(CF_INETURL_W, pDataObj)) {
             QByteArray data = getData(CF_INETURL_W, pDataObj);
@@ -1076,10 +1079,8 @@ QString QWindowsMimeImage::mimeForFormat(const FORMATETC &formatetc) const
 
 bool QWindowsMimeImage::canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const
 {
-    if (mimeType == QLatin1String("application/x-qt-image") &&
-        (canGetData(CF_DIB, pDataObj) || canGetData(CF_PNG, pDataObj)))
-        return true;
-    return false;
+    return mimeType == QLatin1String("application/x-qt-image")
+        && (canGetData(CF_DIB, pDataObj) || canGetData(CF_PNG, pDataObj));
 }
 
 bool QWindowsMimeImage::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
@@ -1135,7 +1136,7 @@ bool QWindowsMimeImage::hasOriginalDIBV5(IDataObject *pDataObj) const
                 CoTaskMemFree(fc.ptd);
             if (fc.cfFormat == CF_DIB)
                 break;
-            else if (fc.cfFormat == CF_DIBV5) {
+            if (fc.cfFormat == CF_DIBV5) {
                 isSynthesized  = false;
                 break;
             }
@@ -1329,7 +1330,7 @@ QStringList QLastResortMimes::excludeList;
 QLastResortMimes::QLastResortMimes()
 {
     //MIME Media-Types
-    if (!ianaTypes.size()) {
+    if (ianaTypes.isEmpty()) {
         ianaTypes.append(QStringLiteral("application/"));
         ianaTypes.append(QStringLiteral("audio/"));
         ianaTypes.append(QStringLiteral("example/"));
@@ -1341,7 +1342,7 @@ QLastResortMimes::QLastResortMimes()
         ianaTypes.append(QStringLiteral("video/"));
     }
     //Types handled by other classes
-    if (!excludeList.size()) {
+    if (excludeList.isEmpty()) {
         excludeList.append(QStringLiteral("HTML Format"));
         excludeList.append(QStringLiteral("UniformResourceLocator"));
         excludeList.append(QStringLiteral("text/html"));

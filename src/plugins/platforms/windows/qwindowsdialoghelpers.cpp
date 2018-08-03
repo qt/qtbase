@@ -364,7 +364,7 @@ static BOOL QT_WIN_CALLBACK findDialogEnumWindowsProc(HWND hwnd, LPARAM lParam)
     wchar_t buf[256];
     if (!RealGetWindowClass(hwnd, buf, sizeof(buf)/sizeof(wchar_t)) || buf[0] != L'#')
         return TRUE;
-    if (!GetWindowTextW(hwnd, buf, sizeof(buf)/sizeof(wchar_t)) || wcscmp(buf, context->title.data()))
+    if (!GetWindowTextW(hwnd, buf, sizeof(buf)/sizeof(wchar_t)) || wcscmp(buf, context->title.data()) != 0)
         return TRUE;
     context->hwnd = hwnd;
     return FALSE;
@@ -1545,8 +1545,8 @@ QWindowsNativeDialogBase *QWindowsFileDialogHelper::createNativeDialog()
     result->updateDirectory();
     result->updateSelectedNameFilter();
     const QList<QUrl> initialSelection = opts->initiallySelectedFiles();
-    if (initialSelection.size() > 0) {
-        const QUrl url = initialSelection.front();
+    if (!initialSelection.empty()) {
+        const QUrl &url = initialSelection.constFirst();
         if (url.isLocalFile()) {
             QFileInfo info(url.toLocalFile());
             if (!info.isDir())
@@ -1698,7 +1698,7 @@ void QWindowsXpNativeFileDialog::doExec(HWND owner)
         const QStringList nameFilters = m_options->nameFilters();
         if (selectedFilterIndex >= 0 && selectedFilterIndex < nameFilters.size())
             m_data.setSelectedNameFilter(nameFilters.at(selectedFilterIndex));
-        QUrl firstFile = selectedFiles.front();
+        const QUrl &firstFile = selectedFiles.constFirst();
         m_data.setDirectory(firstFile.adjusted(QUrl::RemoveFilename));
         m_result = QPlatformDialogHelper::Accepted;
         emit accepted();
@@ -1727,7 +1727,7 @@ int QWindowsXpNativeFileDialog::existingDirCallback(HWND hwnd, UINT uMsg, LPARAM
     switch (uMsg) {
     case BFFM_INITIALIZED: {
         if (!m_title.isEmpty())
-            SetWindowText(hwnd, (wchar_t *)m_title.utf16());
+            SetWindowText(hwnd, reinterpret_cast<const wchar_t *>(m_title.utf16()));
         const QString initialFile = QDir::toNativeSeparators(m_data.directory().toLocalFile());
         if (!initialFile.isEmpty())
             SendMessage(hwnd, BFFM_SETSELECTION, TRUE, LPARAM(initialFile.utf16()));

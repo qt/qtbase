@@ -524,10 +524,11 @@ HCURSOR QWindowsCursor::createCursorFromShape(Qt::CursorShape cursorShape, const
     }
 
     // Load available standard cursors from resources
-    const QWindowsStandardCursorMapping *sEnd = standardCursors + sizeof(standardCursors) / sizeof(standardCursors[0]);
-    for (const QWindowsStandardCursorMapping *s = standardCursors; s < sEnd; ++s) {
-        if (s->shape == cursorShape)
-            return static_cast<HCURSOR>(LoadImage(0, s->resource, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED));
+    for (const QWindowsStandardCursorMapping &s : standardCursors) {
+        if (s.shape == cursorShape) {
+            return static_cast<HCURSOR>(LoadImage(nullptr, s.resource, IMAGE_CURSOR,
+                                                  0, 0, LR_DEFAULTSIZE | LR_SHARED));
+        }
     }
 
     qWarning("%s: Invalid cursor shape %d", __FUNCTION__, cursorShape);
