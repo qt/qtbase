@@ -1964,6 +1964,10 @@ static const char * xcb_atomnames = {
     "_COMPIZ_DECOR_DELETE_PIXMAP\0"
     "_COMPIZ_TOOLKIT_ACTION\0"
     "_GTK_LOAD_ICONTHEMES\0"
+    "AT_SPI_BUS\0"
+    "EDID\0"
+    "EDID_DATA\0"
+    "XFree86_DDC_EDID1_RAWDATA\0"
     // \0\0 terminates loop.
 };
 

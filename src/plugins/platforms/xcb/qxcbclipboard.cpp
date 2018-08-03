@@ -832,7 +832,7 @@ xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t window, i
         }
 
         // process other clipboard events, since someone is probably requesting data from us
-        auto clipboardAtom = connection()->internAtom("CLIPBOARD");
+        auto clipboardAtom = atom(QXcbAtom::CLIPBOARD);
         e = connection()->checkEvent([clipboardAtom](xcb_generic_event_t *event, int type) {
             xcb_atom_t selection = XCB_ATOM_NONE;
             if (type == XCB_SELECTION_REQUEST)

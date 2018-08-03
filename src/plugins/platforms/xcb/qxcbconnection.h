@@ -295,6 +295,12 @@ namespace QXcbAtom {
         _COMPIZ_TOOLKIT_ACTION,
         _GTK_LOAD_ICONTHEMES,
 
+        AT_SPI_BUS,
+
+        EDID,
+        EDID_DATA,
+        XFree86_DDC_EDID1_RAWDATA,
+
         NAtoms
     };
 }
