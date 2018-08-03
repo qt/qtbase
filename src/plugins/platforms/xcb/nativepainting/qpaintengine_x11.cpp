@@ -226,7 +226,9 @@ public:
     QXRenderGlyphCache(QXcbX11Info x, QFontEngine::GlyphFormat format, const QTransform &matrix);
     ~QXRenderGlyphCache();
 
-    bool addGlyphs(const QTextItemInt &ti, QVarLengthArray<glyph_t> glyphs, QVarLengthArray<QFixedPoint> positions);
+    bool addGlyphs(const QTextItemInt &ti,
+                   const QVarLengthArray<glyph_t> &glyphs,
+                   const QVarLengthArray<QFixedPoint> &positions);
     bool draw(Drawable src, Drawable dst, const QTransform &matrix, const QTextItemInt &ti);
 
     inline GlyphSet glyphSet();
@@ -2608,7 +2610,9 @@ QXRenderGlyphCache::~QXRenderGlyphCache()
         XRenderFreeGlyphSet(xinfo.display(), gset);
 }
 
-bool QXRenderGlyphCache::addGlyphs(const QTextItemInt &ti, QVarLengthArray<glyph_t> glyphs, QVarLengthArray<QFixedPoint> positions)
+bool QXRenderGlyphCache::addGlyphs(const QTextItemInt &ti,
+                                   const QVarLengthArray<glyph_t> &glyphs,
+                                   const QVarLengthArray<QFixedPoint> &positions)
 {
     Q_ASSERT(ti.fontEngine->type() == QFontEngine::Freetype);
 
