@@ -345,7 +345,6 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
                                                                         sizeof(GIdleTimerSource)));
     idleTimerSource->timerSource = timerSource;
     g_source_set_can_recurse(&idleTimerSource->source, true);
-    g_source_set_priority(&idleTimerSource->source, G_PRIORITY_DEFAULT_IDLE);
     g_source_attach(&idleTimerSource->source, mainContext);
 }
 
