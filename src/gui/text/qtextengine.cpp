@@ -597,7 +597,13 @@ struct QBidiAlgorithm {
             } else if (current == QChar::DirBN) {
                 current = last;
             } else {
-                Q_ASSERT(current != QChar::DirLRE && current != QChar::DirRLE && current != QChar::DirLRO && current != QChar::DirRLO && current != QChar::DirPDF); // there shouldn't be any explicit embedding marks here
+                // there shouldn't be any explicit embedding marks here
+                Q_ASSERT(current != QChar::DirLRE);
+                Q_ASSERT(current != QChar::DirRLE);
+                Q_ASSERT(current != QChar::DirLRO);
+                Q_ASSERT(current != QChar::DirRLO);
+                Q_ASSERT(current != QChar::DirPDF);
+
                 last = current;
             }
 
