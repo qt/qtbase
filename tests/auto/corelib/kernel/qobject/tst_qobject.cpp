@@ -2976,6 +2976,7 @@ void tst_QObject::dynamicProperties()
 
     QVERIFY(obj.dynamicPropertyNames().isEmpty());
 
+    // set a non-dynamic property
     QVERIFY(obj.setProperty("number", 42));
     QVERIFY(obj.changedDynamicProperties.isEmpty());
     QCOMPARE(obj.property("number").toInt(), 42);
@@ -2983,19 +2984,30 @@ void tst_QObject::dynamicProperties()
     QVERIFY(!obj.setProperty("number", "invalid string"));
     QVERIFY(obj.changedDynamicProperties.isEmpty());
 
+    // set a dynamic property
     QVERIFY(!obj.setProperty("myuserproperty", "Hello"));
     QCOMPARE(obj.changedDynamicProperties.count(), 1);
     QCOMPARE(obj.changedDynamicProperties.first(), QByteArray("myuserproperty"));
     //check if there is no redundant DynamicPropertyChange events
     QVERIFY(!obj.setProperty("myuserproperty", "Hello"));
     QCOMPARE(obj.changedDynamicProperties.count(), 1);
-    obj.changedDynamicProperties.clear();
 
+    QCOMPARE(obj.property("myuserproperty").type(), QVariant::String);
     QCOMPARE(obj.property("myuserproperty").toString(), QString("Hello"));
 
     QCOMPARE(obj.dynamicPropertyNames().count(), 1);
     QCOMPARE(obj.dynamicPropertyNames().first(), QByteArray("myuserproperty"));
 
+    // change type of the dynamic property
+    obj.changedDynamicProperties.clear();
+    QVERIFY(!obj.setProperty("myuserproperty", QByteArray("Hello")));
+    QCOMPARE(obj.changedDynamicProperties.count(), 1);
+    QCOMPARE(obj.changedDynamicProperties.first(), QByteArray("myuserproperty"));
+    QCOMPARE(obj.property("myuserproperty").type(), QVariant::ByteArray);
+    QCOMPARE(obj.property("myuserproperty").toString(), QByteArray("Hello"));
+
+    // unset the property
+    obj.changedDynamicProperties.clear();
     QVERIFY(!obj.setProperty("myuserproperty", QVariant()));
 
     QCOMPARE(obj.changedDynamicProperties.count(), 1);
