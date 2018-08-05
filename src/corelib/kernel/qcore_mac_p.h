@@ -341,6 +341,50 @@ private:
 
 // -------------------------------------------------------------------------
 
+#if defined( __OBJC__)
+class QMacScopedObserver
+{
+public:
+    QMacScopedObserver() {}
+
+    template<typename Functor>
+    QMacScopedObserver(id object, NSNotificationName name, Functor callback) {
+        observer = [[NSNotificationCenter defaultCenter] addObserverForName:name
+            object:object queue:nil usingBlock:^(NSNotification *) {
+                callback();
+            }
+        ];
+    }
+
+    QMacScopedObserver(const QMacScopedObserver& other) = delete;
+    QMacScopedObserver(QMacScopedObserver&& other) : observer(other.observer) {
+        other.observer = nil;
+    }
+
+    QMacScopedObserver &operator=(const QMacScopedObserver& other) = delete;
+    QMacScopedObserver &operator=(QMacScopedObserver&& other) {
+        if (this != &other) {
+            remove();
+            observer = other.observer;
+            other.observer = nil;
+        }
+        return *this;
+    }
+
+    void remove() {
+        if (observer)
+            [[NSNotificationCenter defaultCenter] removeObserver:observer];
+        observer = nil;
+    }
+    ~QMacScopedObserver() { remove(); }
+
+private:
+    id observer = nil;
+};
+#endif
+
+// -------------------------------------------------------------------------
+
 QT_END_NAMESPACE
 
 #endif // QCORE_MAC_P_H
