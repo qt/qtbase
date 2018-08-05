@@ -4125,7 +4125,7 @@ ushort QByteArray::toUShort(bool *ok, int base) const
     \snippet code/src_corelib_tools_qbytearray.cpp 38
 
     \warning The QByteArray content may only contain valid numerical characters
-    which includes the plus/minus sign, the characters g and e used in scientific
+    which includes the plus/minus sign, the character e used in scientific
     notation, and the decimal point. Including the unit or additional characters
     leads to a conversion error.
 
@@ -4160,7 +4160,7 @@ double QByteArray::toDouble(bool *ok) const
     \snippet code/src_corelib_tools_qbytearray.cpp 38float
 
     \warning The QByteArray content may only contain valid numerical characters
-    which includes the plus/minus sign, the characters g and e used in scientific
+    which includes the plus/minus sign, the character e used in scientific
     notation, and the decimal point. Including the unit or additional characters
     leads to a conversion error.
 
