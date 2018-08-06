@@ -87,6 +87,7 @@ QString connection_info(QSharedPointer<QDtls> connection)
 
 } // unnamed namespace
 
+//! [1]
 DtlsServer::DtlsServer()
 {
     connect(&serverSocket, &QAbstractSocket::readyRead, this, &DtlsServer::readyRead);
@@ -94,12 +95,14 @@ DtlsServer::DtlsServer()
     serverConfiguration.setPreSharedKeyIdentityHint("Qt DTLS example server");
     serverConfiguration.setPeerVerifyMode(QSslSocket::VerifyNone);
 }
+//! [1]
 
 DtlsServer::~DtlsServer()
 {
     shutdown();
 }
 
+//! [2]
 bool DtlsServer::listen(const QHostAddress &address, quint16 port)
 {
     if (address != serverSocket.localAddress() || port != serverSocket.localPort()) {
@@ -113,6 +116,7 @@ bool DtlsServer::listen(const QHostAddress &address, quint16 port)
 
     return listening;
 }
+//! [2]
 
 bool DtlsServer::isListening() const
 {
@@ -126,6 +130,7 @@ void DtlsServer::close()
 
 void DtlsServer::readyRead()
 {
+    //! [3]
     const qint64 bytesToRead = serverSocket.pendingDatagramSize();
     if (bytesToRead <= 0) {
         emit warningMessage(tr("A spurious read notification"));
@@ -143,7 +148,8 @@ void DtlsServer::readyRead()
     }
 
     dgram.resize(bytesRead);
-
+    //! [3]
+    //! [4]
     if (peerAddress.isNull() || !peerPort) {
         emit warningMessage(tr("Failed to extract peer info (address, port)"));
         return;
@@ -154,20 +160,28 @@ void DtlsServer::readyRead()
         return connection->peerAddress() == peerAddress
                && connection->peerPort() == peerPort;
     });
+    //! [4]
 
+    //! [5]
     if (client == knownClients.end())
         return handleNewConnection(peerAddress, peerPort, dgram);
+    //! [5]
 
+    //! [6]
     if ((*client)->isConnectionEncrypted()) {
         decryptDatagram(*client, dgram);
         if ((*client)->dtlsError() == QDtlsError::RemoteClosedConnectionError)
             knownClients.erase(client);
         return;
     }
+    //! [6]
 
+    //! [7]
     doHandshake(*client, dgram);
+    //! [7]
 }
 
+//! [13]
 void DtlsServer::pskRequired(QSslPreSharedKeyAuthenticator *auth)
 {
     Q_ASSERT(auth);
@@ -176,7 +190,9 @@ void DtlsServer::pskRequired(QSslPreSharedKeyAuthenticator *auth)
                      .arg(QString::fromLatin1(auth->identity())));
     auth->setPreSharedKey(QByteArrayLiteral("\x1a\x2b\x3c\x4d\x5e\x6f"));
 }
+//! [13]
 
+//! [8]
 void DtlsServer::handleNewConnection(const QHostAddress &peerAddress,
                                      quint16 peerPort, const QByteArray &clientHello)
 {
@@ -186,7 +202,8 @@ void DtlsServer::handleNewConnection(const QHostAddress &peerAddress,
     const QString peerInfo = peer_info(peerAddress, peerPort);
     if (cookieSender.verifyClient(&serverSocket, clientHello, peerAddress, peerPort)) {
         emit infoMessage(peerInfo + tr(": verified, starting a handshake"));
-
+    //! [8]
+    //! [9]
         DtlsConnection newConnection(new QDtls(QSslSocket::SslServerMode));
         newConnection->setDtlsConfiguration(serverConfiguration);
         newConnection->setPeer(peerAddress, peerPort);
@@ -194,6 +211,7 @@ void DtlsServer::handleNewConnection(const QHostAddress &peerAddress,
                                this, &DtlsServer::pskRequired);
         knownClients.push_back(newConnection);
         doHandshake(newConnection, clientHello);
+    //! [9]
     } else if (cookieSender.dtlsError() != QDtlsError::NoError) {
         emit errorMessage(tr("DTLS error: ") + cookieSender.dtlsErrorString());
     } else {
@@ -201,6 +219,7 @@ void DtlsServer::handleNewConnection(const QHostAddress &peerAddress,
     }
 }
 
+//! [11]
 void DtlsServer::doHandshake(DtlsConnection newConnection, const QByteArray &clientHello)
 {
     const bool result = newConnection->doHandshake(&serverSocket, clientHello);
@@ -223,7 +242,9 @@ void DtlsServer::doHandshake(DtlsConnection newConnection, const QByteArray &cli
         Q_UNREACHABLE();
     }
 }
+//! [11]
 
+//! [12]
 void DtlsServer::decryptDatagram(DtlsConnection connection, const QByteArray &clientMessage)
 {
     Q_ASSERT(connection->isConnectionEncrypted());
@@ -239,7 +260,9 @@ void DtlsServer::decryptDatagram(DtlsConnection connection, const QByteArray &cl
         emit errorMessage(peerInfo + ": " + connection->dtlsErrorString());
     }
 }
+//! [12]
 
+//! [14]
 void DtlsServer::shutdown()
 {
     for (DtlsConnection &connection : knownClients)
@@ -248,5 +271,6 @@ void DtlsServer::shutdown()
     knownClients.clear();
     serverSocket.close();
 }
+//! [14]
 
 QT_END_NAMESPACE

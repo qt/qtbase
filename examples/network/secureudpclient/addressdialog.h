@@ -69,7 +69,6 @@ class AddressDialog : public QDialog
     Q_OBJECT
 
 public:
-
     explicit AddressDialog(QWidget *parent = nullptr);
     ~AddressDialog();
 
@@ -77,7 +76,6 @@ public:
     quint16 remotePort() const;
 
 private:
-
     void setupHostSelector();
     void setupPortSelector();
 

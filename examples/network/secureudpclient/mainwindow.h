@@ -76,7 +76,6 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
@@ -94,7 +93,6 @@ private slots:
     void lookupFinished(const QHostInfo &hostInfo);
 
 private:
-
     void updateUi();
     void startNewConnection(const QHostAddress &address);
 

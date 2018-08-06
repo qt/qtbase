@@ -72,6 +72,8 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+//! [0]
+
 const QString colorizer(QStringLiteral("<font color=\"%1\">%2</font><br>"));
 
 void MainWindow::addErrorMessage(const QString &message)
@@ -101,6 +103,8 @@ void MainWindow::addServerResponse(const QString &clientInfo, const QByteArray &
                                        QString::fromUtf8(plainText));
     ui->serverMessages->insertHtml(colorizer.arg(messageColor, html));
 }
+
+//! [0]
 
 void MainWindow::on_connectButton_clicked()
 {

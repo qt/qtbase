@@ -104,6 +104,7 @@ void MainWindow::updateUi()
                          : ui->startButton->setText(tr("Start listening"));
 }
 
+//! [0]
 const QString colorizer(QStringLiteral("<font color=\"%1\">%2</font><br>"));
 
 void MainWindow::addErrorMessage(const QString &message)
@@ -134,3 +135,4 @@ void MainWindow::addClientMessage(const QString &peerInfo, const QByteArray &dat
                                        QString::fromUtf8(plainText));
     ui->messages->insertHtml(colorizer.arg(messageColor, html));
 }
+//! [0]

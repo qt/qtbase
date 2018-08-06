@@ -29,9 +29,96 @@
     \example secureudpclient
     \title DTLS client
     \ingroup examples-network
-    \brief Demonstrates how to implement a simple DTLS client
+    \brief This example demonstrates how to implement client-side DTLS connections.
 
-    This example uses QUdpSocket, QDtlsClientVerifier, and QDtls to securely
-    communicate over the User Datagram Protocol with DTLS servers.
+    \image secureudpclient-example.png Screenshot of the DTLS client example.
+
+    \note The DTLS client example is intended to be run alongside the \l{secureudpserver}{DTLS server} example.
+
+    The example DTLS client can establish several DTLS connections to one
+    or many DTLS servers. A client-side DTLS connection is implemented by the
+    DtlsAssociation class. This class uses QUdpSocket to read and write datagrams
+    and QDtls for encryption:
+
+    \snippet secureudpclient/association.h 0
+
+    The constructor sets the minimal TLS configuration for the new DTLS connection,
+    and sets the address and the port of the server:
+
+    \dots
+    \snippet secureudpclient/association.cpp 1
+    \dots
+
+    The QDtls::handshakeTimeout() signal is connected to the handleTimeout() slot
+    to deal with packet loss and retransmission during the handshake phase:
+
+    \dots
+    \snippet secureudpclient/association.cpp 2
+    \dots
+
+    To ensure we receive only the datagrams from the server, we connect our UDP socket to the server:
+
+    \dots
+    \snippet secureudpclient/association.cpp 3
+    \dots
+
+    The QUdpSocket::readyRead() signal is connected to the readyRead() slot:
+
+    \dots
+    \snippet secureudpclient/association.cpp 13
+    \dots
+
+    When a secure connection to a server is established, a DtlsAssociation object
+    will be sending short ping messages to the server, using a timer:
+
+    \snippet secureudpclient/association.cpp 4
+
+    startHandshake() starts a handshake with the server:
+
+    \snippet secureudpclient/association.cpp 5
+
+    The readyRead() slot reads a datagram sent by the server:
+
+    \snippet secureudpclient/association.cpp 6
+
+    If the handshake was already completed, this datagram is decrypted:
+
+    \snippet secureudpclient/association.cpp 7
+
+    otherwise, we try to continue the handshake:
+
+    \snippet secureudpclient/association.cpp 8
+
+    When the handshake has completed, we send our first ping message:
+
+    \snippet secureudpclient/association.cpp 9
+
+    The pskRequired() slot provides the Pre-Shared Key (PSK) needed during the handshake
+    phase:
+
+    \snippet secureudpclient/association.cpp 14
+
+    \note For the sake of brevity, the definition of pskRequired() is oversimplified.
+    The documentation for the QSslPreSharedKeyAuthenticator class explains in detail
+    how this slot can be properly implemented.
+
+    pingTimeout() sends an encrypted message to the server:
+
+    \snippet secureudpclient/association.cpp 10
+
+    During the handshake phase the client must handle possible timeouts, which
+    can happen due to packet loss. The handshakeTimeout() slot retransmits
+    the handshake messages:
+
+    \snippet secureudpclient/association.cpp 11
+
+    Before a client connection is destroyed, its DTLS connection must be shut down:
+
+    \snippet secureudpclient/association.cpp 12
+
+    Error messages, informational messages, and decrypted responses from servers
+    are displayed by the UI:
+
+    \snippet secureudpclient/mainwindow.cpp 0
 */
 

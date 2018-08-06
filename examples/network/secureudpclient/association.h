@@ -55,19 +55,18 @@
 
 QT_BEGIN_NAMESPACE
 
+//! [0]
 class DtlsAssociation : public QObject
 {
     Q_OBJECT
 
 public:
-
     DtlsAssociation(const QHostAddress &address, quint16 port,
                     const QString &connectionName);
     ~DtlsAssociation();
     void startHandshake();
 
 signals:
-
     void errorMessage(const QString &message);
     void warningMessage(const QString &message);
     void infoMessage(const QString &message);
@@ -75,7 +74,6 @@ signals:
                         const QByteArray &plainText);
 
 private slots:
-
     void udpSocketConnected();
     void readyRead();
     void handshakeTimeout();
@@ -83,7 +81,6 @@ private slots:
     void pingTimeout();
 
 private:
-
     QString name;
     QUdpSocket socket;
     QDtls crypto;
@@ -93,6 +90,7 @@ private:
 
     Q_DISABLE_COPY(DtlsAssociation)
 };
+//! [0]
 
 QT_END_NAMESPACE
 

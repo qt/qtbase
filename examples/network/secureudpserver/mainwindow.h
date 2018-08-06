@@ -69,12 +69,10 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-
     MainWindow();
     ~MainWindow();
 
 private slots:
-
     void addErrorMessage(const QString &message);
     void addWarningMessage(const QString &message);
     void addInfoMessage(const QString &message);
@@ -85,7 +83,6 @@ private slots:
     void on_quitButton_clicked();
 
 private:
-
     void updateUi();
 
     Ui::MainWindow *ui = nullptr;

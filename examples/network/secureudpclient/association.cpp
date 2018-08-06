@@ -57,27 +57,38 @@ DtlsAssociation::DtlsAssociation(const QHostAddress &address, quint16 port,
     : name(connectionName),
       crypto(QSslSocket::SslClientMode)
 {
+    //! [1]
     auto configuration = QSslConfiguration::defaultDtlsConfiguration();
     configuration.setPeerVerifyMode(QSslSocket::VerifyNone);
     crypto.setPeer(address, port);
     crypto.setDtlsConfiguration(configuration);
+    //! [1]
 
+    //! [2]
     connect(&crypto, &QDtls::handshakeTimeout, this, &DtlsAssociation::handshakeTimeout);
+    //! [2]
     connect(&crypto, &QDtls::pskRequired, this, &DtlsAssociation::pskRequired);
-
+    //! [3]
     socket.connectToHost(address.toString(), port);
+    //! [3]
+    //! [13]
     connect(&socket, &QUdpSocket::readyRead, this, &DtlsAssociation::readyRead);
-
+    //! [13]
+    //! [4]
     pingTimer.setInterval(5000);
     connect(&pingTimer, &QTimer::timeout, this, &DtlsAssociation::pingTimeout);
+    //! [4]
 }
 
+//! [12]
 DtlsAssociation::~DtlsAssociation()
 {
     if (crypto.isConnectionEncrypted())
         crypto.shutdown(&socket);
 }
+//! [12]
 
+//! [5]
 void DtlsAssociation::startHandshake()
 {
     if (socket.state() != QAbstractSocket::ConnectedState) {
@@ -86,11 +97,12 @@ void DtlsAssociation::startHandshake()
         return;
     }
 
-    if (!crypto.doHandshake(&socket, {}))
+    if (!crypto.doHandshake(&socket))
         emit errorMessage(tr("%1: failed to start a handshake - %2").arg(name, crypto.dtlsErrorString()));
     else
         emit infoMessage(tr("%1: starting a handshake").arg(name));
 }
+//! [5]
 
 void DtlsAssociation::udpSocketConnected()
 {
@@ -100,7 +112,8 @@ void DtlsAssociation::udpSocketConnected()
 
 void DtlsAssociation::readyRead()
 {
-    QByteArray dgram(socket.pendingDatagramSize(), '\0');
+    //! [6]
+    QByteArray dgram(socket.pendingDatagramSize(), Qt::Uninitialized);
     const qint64 bytesRead = socket.readDatagram(dgram.data(), dgram.size());
     if (bytesRead <= 0) {
         emit warningMessage(tr("%1: spurious read notification?").arg(name));
@@ -108,6 +121,8 @@ void DtlsAssociation::readyRead()
     }
 
     dgram.resize(bytesRead);
+    //! [6]
+    //! [7]
     if (crypto.isConnectionEncrypted()) {
         const QByteArray plainText = crypto.decryptDatagram(&socket, dgram);
         if (plainText.size()) {
@@ -124,27 +139,36 @@ void DtlsAssociation::readyRead()
 
         emit warningMessage(tr("%1: zero-length datagram received?").arg(name));
     } else {
+    //! [7]
+    //! [8]
         if (!crypto.doHandshake(&socket, dgram)) {
             emit errorMessage(tr("%1: handshake error - %2").arg(name, crypto.dtlsErrorString()));
             return;
         }
+    //! [8]
+
+    //! [9]
         if (crypto.isConnectionEncrypted()) {
             emit infoMessage(tr("%1: encrypted connection established!").arg(name));
             pingTimer.start();
             pingTimeout();
         } else {
+    //! [9]
             emit infoMessage(tr("%1: continuing with handshake ...").arg(name));
         }
     }
 }
 
+//! [11]
 void DtlsAssociation::handshakeTimeout()
 {
     emit warningMessage(tr("%1: handshake timeout, trying to re-transmit").arg(name));
     if (!crypto.handleTimeout(&socket))
         emit errorMessage(tr("%1: failed to re-transmit - %2").arg(name, crypto.dtlsErrorString()));
 }
+//! [11]
 
+//! [14]
 void DtlsAssociation::pskRequired(QSslPreSharedKeyAuthenticator *auth)
 {
     Q_ASSERT(auth);
@@ -153,7 +177,9 @@ void DtlsAssociation::pskRequired(QSslPreSharedKeyAuthenticator *auth)
     auth->setIdentity(name.toLatin1());
     auth->setPreSharedKey(QByteArrayLiteral("\x1a\x2b\x3c\x4d\x5e\x6f"));
 }
+//! [14]
 
+//! [10]
 void DtlsAssociation::pingTimeout()
 {
     static const QString message = QStringLiteral("I am %1, please, accept our ping %2");
@@ -166,5 +192,6 @@ void DtlsAssociation::pingTimeout()
 
     ++ping;
 }
+//! [10]
 
 QT_END_NAMESPACE

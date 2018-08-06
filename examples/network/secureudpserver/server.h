@@ -57,12 +57,12 @@
 
 QT_BEGIN_NAMESPACE
 
+//! [0]
 class DtlsServer : public QObject
 {
     Q_OBJECT
 
 public:
-
     DtlsServer();
     ~DtlsServer();
 
@@ -71,7 +71,6 @@ public:
     void close();
 
 signals:
-
     void errorMessage(const QString &message);
     void warningMessage(const QString &message);
     void infoMessage(const QString &message);
@@ -80,12 +79,10 @@ signals:
                           const QByteArray &plainText);
 
 private slots:
-
     void readyRead();
     void pskRequired(QSslPreSharedKeyAuthenticator *auth);
 
 private:
-
     void handleNewConnection(const QHostAddress &peerAddress, quint16 peerPort,
                              const QByteArray &clientHello);
 
@@ -103,6 +100,7 @@ private:
 
     Q_DISABLE_COPY(DtlsServer)
 };
+//! [0]
 
 QT_END_NAMESPACE
 

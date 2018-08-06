@@ -29,8 +29,103 @@
     \example secureudpserver
     \title DTLS server
     \ingroup examples-network
-    \brief Demonstrates how to implement a simple DTLS server
+    \brief This examples demonstrates how to implement a simple DTLS server.
 
-    This example uses QUdpSocket, QDtlsClientVerifier, and QDtls to securely respond
-    to DTLS client requests over the User Datagram Protocol.
+    \image secureudpserver-example.png Screenshot of the DTLS server example.
+
+    \note The DTLS server example is intended to be run alongside the \l{secureudpclient}{DTLS client} example.
+
+    The server is implemented by the DtlsServer class. It uses QUdpSocket,
+    QDtlsClientVerifier, and QDtls to test each client's reachability, complete a handshake,
+    and read and write encrypted messages.
+
+    \snippet secureudpserver/server.h 0
+
+    The constructor connects the QUdpSocket::readyRead() signal to its
+    readyRead() slot and sets the minimal needed TLS configuration:
+
+    \snippet secureudpserver/server.cpp 1
+
+    \note The server is not using a certificate and is relying on Pre-Shared
+    Key (PSK) handshake.
+
+    listen() binds QUdpSocket:
+
+    \snippet secureudpserver/server.cpp 2
+
+    The readyRead() slot processes incoming datagrams:
+
+    \dots
+    \snippet secureudpserver/server.cpp 3
+    \dots
+
+    After extracting an address and a port number, the server first tests
+    if it's a datagram from an already known peer:
+
+    \dots
+    \snippet secureudpserver/server.cpp 4
+    \dots
+
+    If it is a new, unknown address and port, the datagram is processed as a
+    potential ClientHello message, sent by a DTLS client:
+
+    \dots
+    \snippet secureudpserver/server.cpp 5
+    \dots
+
+    If it's a known DTLS client, the server either decrypts the datagram:
+
+    \dots
+    \snippet secureudpserver/server.cpp 6
+    \dots
+
+    or continues a handshake with this peer:
+
+    \dots
+    \snippet secureudpserver/server.cpp 7
+    \dots
+
+    handleNewConnection() verifies it's a reachable DTLS client, or sends a
+    HelloVerifyRequest:
+
+    \snippet secureudpserver/server.cpp 8
+    \dots
+
+    If the new client was verified to be a reachable DTLS client, the server creates
+    and configures a new QDtls object, and starts a server-side handshake:
+
+    \dots
+    \snippet secureudpserver/server.cpp 9
+    \dots
+
+    doHandshake() progresses through the handshake phase:
+
+    \snippet secureudpserver/server.cpp 11
+
+    During the handshake phase, the QDtls::pskRequired() signal is emitted and
+    the pskRequired() slot provides the preshared key:
+
+    \snippet secureudpserver/server.cpp 13
+
+    \note For the sake of brevity, the definition of pskRequired() is oversimplified.
+    The documentation for the QSslPreSharedKeyAuthenticator class explains in detail
+    how this slot can be properly implemented.
+
+    After the handshake is completed for the network peer, an encrypted DTLS
+    connection is considered to be established and the server decrypts subsequent
+    datagrams, sent by the peer, by calling decryptDatagram(). The server also
+    sends an encrypted response to the peer:
+
+    \snippet secureudpserver/server.cpp 12
+
+    The server closes its DTLS connections by calling QDtls::shutdown():
+
+    \snippet secureudpserver/server.cpp 14
+
+    During its operation, the server reports errors, informational messages, and
+    decrypted datagrams, by emitting signals errorMessage(), warningMessage(),
+    infoMessage(), and datagramReceived(). These messages are logged by the server's
+    UI:
+
+    \snippet secureudpserver/mainwindow.cpp 0
 */
