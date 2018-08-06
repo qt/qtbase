@@ -2099,9 +2099,8 @@ bool QGL2PaintEngineEx::end()
     d->device->endPaint();
 
     ctx->d_ptr->active_engine = 0;
-
+    ctx->makeCurrent();
     d->resetOpenGLContextActiveEngine();
-
     d->resetGLState();
 
     delete d->shaderManager;

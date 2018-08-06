@@ -126,6 +126,7 @@ void QGLPaintDevice::endPaint()
 {
     // Make sure the FBO bound at beginPaint is re-bound again here:
     QGLContext *ctx = context();
+    ctx->makeCurrent();
 
     ctx->d_func()->refreshCurrentFbo();
 
