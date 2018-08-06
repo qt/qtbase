@@ -137,6 +137,7 @@ struct Options
 
     // Build paths
     QString qtInstallDirectory;
+    std::vector<QString> extraPrefixDirs;
     QString androidSourceDirectory;
     QString outputDirectory;
     QString inputFileName;
@@ -727,6 +728,14 @@ bool readInputFile(Options *options)
             return false;
         }
         options->qtInstallDirectory = qtInstallDirectory.toString();
+    }
+
+    {
+        const auto extraPrefixDirs = jsonObject.value(QLatin1String("extraPrefixDirs")).toArray();
+        options->extraPrefixDirs.reserve(extraPrefixDirs.size());
+        for (const auto &prefix : extraPrefixDirs) {
+            options->extraPrefixDirs.push_back(prefix.toString());
+        }
     }
 
     {
@@ -1383,6 +1392,16 @@ bool updateAndroidFiles(Options &options)
     return true;
 }
 
+static QString absoluteFilePath(const Options *options, const QString &relativeFileName)
+{
+    for (const auto &prefix : options->extraPrefixDirs) {
+        const QString path = prefix + QLatin1Char('/') + relativeFileName;
+        if (QFile::exists(path))
+            return path;
+    }
+    return options->qtInstallDirectory + QLatin1Char('/') + relativeFileName;
+}
+
 QList<QtDependency> findFilesRecursively(const Options &options, const QFileInfo &info, const QString &rootPath)
 {
     if (!info.exists())
@@ -1548,7 +1567,7 @@ QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
         if (line.contains("(NEEDED)") && line.contains("Shared library:") ) {
             const int pos = line.lastIndexOf('[') + 1;
             QString libraryName = QLatin1String("lib/") + QString::fromLatin1(line.mid(pos, line.length() - pos - 2));
-            if (QFile::exists(options.qtInstallDirectory + QLatin1Char('/') + libraryName)) {
+            if (QFile::exists(absoluteFilePath(&options, libraryName))) {
                 ret += libraryName;
             }
 
@@ -1579,7 +1598,7 @@ bool readDependenciesFromElf(Options *options,
         if (usedDependencies->contains(dependency))
             continue;
 
-        QString absoluteDependencyPath(options->qtInstallDirectory + QLatin1Char('/') + dependency);
+        QString absoluteDependencyPath = absoluteFilePath(options, dependency);
         usedDependencies->insert(dependency);
         if (!readDependenciesFromElf(options,
                               absoluteDependencyPath,
@@ -1766,11 +1785,9 @@ bool readDependencies(Options *options)
     if (!readDependenciesFromElf(options, options->qtInstallDirectory + QLatin1String("/plugins/platforms/android/libqtforandroid.so"), &usedDependencies, &remainingDependencies))
         return false;
 
-    QString qtDir = options->qtInstallDirectory + QLatin1Char('/');
-
     while (!remainingDependencies.isEmpty()) {
         QSet<QString>::iterator start = remainingDependencies.begin();
-        QString fileName = qtDir + *start;
+        QString fileName = absoluteFilePath(options, *start);
         remainingDependencies.erase(start);
 
         QStringList unmetDependencies;
@@ -1788,7 +1805,7 @@ bool readDependencies(Options *options)
     QStringList::iterator it = options->localLibs.begin();
     while (it != options->localLibs.end()) {
         QStringList unmetDependencies;
-        if (!goodToCopy(options, qtDir + *it, &unmetDependencies)) {
+        if (!goodToCopy(options, absoluteFilePath(options, *it), &unmetDependencies)) {
             fprintf(stdout, "Skipping %s due to unmet dependencies: %s\n",
                     qPrintable(*it),
                     qPrintable(unmetDependencies.join(QLatin1Char(','))));
@@ -1925,7 +1942,7 @@ bool goodToCopy(const Options *options, const QString &file, QStringList *unmetD
     bool ret = true;
     const auto libs = getQtLibsFromElf(*options, file);
     for (const QString &lib : libs) {
-        if (!options->qtDependencies.contains(QtDependency(lib, options->qtInstallDirectory + QLatin1Char('/') + lib))) {
+        if (!options->qtDependencies.contains(QtDependency(lib, absoluteFilePath(options, lib)))) {
             ret = false;
             unmetDependencies->append(lib);
         }
