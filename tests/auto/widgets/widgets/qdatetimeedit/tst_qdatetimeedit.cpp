@@ -4103,6 +4103,9 @@ void tst_QDateTimeEdit::stepModifierKeys()
     QFETCH(QTestEventList, keys);
     QFETCH(QDate, expectedDate);
 
+    // This can interfere with our stuff.
+    testWidget->hide();
+
     QDateTimeEdit edit(0);
     edit.setDate(startDate);
     edit.show();
@@ -4202,6 +4205,8 @@ void tst_QDateTimeEdit::stepModifierButtons()
     QFETCH(QTime, startTime);
     QFETCH(QTime, expectedTime);
 
+    testWidget->hide();
+
     EditorDateEdit edit(0);
     edit.setTime(startTime);
     edit.show();
@@ -4286,6 +4291,8 @@ void tst_QDateTimeEdit::stepModifierPressAndHold()
     QFETCH(int, expectedStepModifier);
 
     const QDate startDate(2000, 1, 1);
+
+    testWidget->hide();
 
     EditorDateEdit edit(0);
     edit.setDate(startDate);
