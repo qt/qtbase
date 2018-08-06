@@ -1977,6 +1977,15 @@ bool VCXProjectWriter::outputFileConfig(OutputFilterData *d, XmlOutput &xml, Xml
     return fileAdded;
 }
 
+static bool isFileClCompatible(const QString &filePath)
+{
+    auto filePathEndsWith = [&filePath] (const QString &ext) {
+        return filePath.endsWith(ext, Qt::CaseInsensitive);
+    };
+    return std::any_of(Option::cpp_ext.cbegin(), Option::cpp_ext.cend(), filePathEndsWith)
+            || std::any_of(Option::c_ext.cbegin(), Option::c_ext.cend(), filePathEndsWith);
+}
+
 void VCXProjectWriter::outputFileConfig(XmlOutput &xml, XmlOutput &xmlFilter,
                                         const QString &filePath, const QString &filterName)
 {
@@ -2000,7 +2009,7 @@ void VCXProjectWriter::outputFileConfig(XmlOutput &xml, XmlOutput &xmlFilter,
                       << attrTagS("Filter", filterName);
             xml << tag("ClInclude")
                 << attrTag("Include", nativeFilePath);
-        } else if (filePath.endsWith(".cpp")) {
+        } else if (isFileClCompatible(filePath)) {
             xmlFilter << tag("ClCompile")
                       << attrTag("Include", nativeFilePath)
                       << attrTagS("Filter", filterName);
