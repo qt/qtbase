@@ -7996,7 +7996,7 @@ QString QString::repeated(int times) const
 void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::UnicodeVersion version, int from)
 {
     const QChar *p = data->constData() + from;
-    if (isAscii(p, p + data->length()))
+    if (isAscii(p, p + data->length() - from))
         return;
     if (p > data->constData() + from)
         from = p - data->constData() - 1;   // need one before the non-ASCII to perform NFC
