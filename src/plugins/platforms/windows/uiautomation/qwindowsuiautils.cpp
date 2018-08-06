@@ -149,7 +149,7 @@ long roleToControlTypeId(QAccessible::Role role)
         {QAccessible::Caret, UIA_CustomControlTypeId},
         {QAccessible::AlertMessage, UIA_CustomControlTypeId},
         {QAccessible::Window, UIA_WindowControlTypeId},
-        {QAccessible::Client, UIA_CustomControlTypeId},
+        {QAccessible::Client, UIA_GroupControlTypeId},
         {QAccessible::PopupMenu, UIA_MenuControlTypeId},
         {QAccessible::MenuItem, UIA_MenuItemControlTypeId},
         {QAccessible::ToolTip, UIA_ToolTipControlTypeId},
