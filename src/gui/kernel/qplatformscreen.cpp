@@ -104,6 +104,20 @@ QWindow *QPlatformScreen::topLevelAt(const QPoint & pos) const
 }
 
 /*!
+    Return all windows residing on this screen.
+*/
+QWindowList QPlatformScreen::windows() const
+{
+    QWindowList windows;
+    for (QWindow *window : QGuiApplication::allWindows()) {
+        if (platformScreenForWindow(window) != this)
+            continue;
+        windows.append(window);
+    }
+    return windows;
+}
+
+/*!
   Find the sibling screen corresponding to \a globalPos.
 
   Returns this screen if no suitable screen is found at the position.
@@ -369,23 +383,15 @@ QPlatformCursor *QPlatformScreen::cursor() const
 */
 void QPlatformScreen::resizeMaximizedWindows()
 {
-    QList<QWindow*> windows = QGuiApplication::allWindows();
-
     // 'screen()' still has the old geometry info while 'this' has the new geometry info
     const QRect oldGeometry = screen()->geometry();
     const QRect oldAvailableGeometry = screen()->availableGeometry();
     const QRect newGeometry = deviceIndependentGeometry();
     const QRect newAvailableGeometry = QHighDpi::fromNative(availableGeometry(), QHighDpiScaling::factor(this), newGeometry.topLeft());
 
-    // make sure maximized and fullscreen windows are updated
-    for (int i = 0; i < windows.size(); ++i) {
-        QWindow *w = windows.at(i);
-
+    for (QWindow *w : windows()) {
         // Skip non-platform windows, e.g., offscreen windows.
         if (!w->handle())
-            continue;
-
-        if (platformScreenForWindow(w) != this)
             continue;
 
         if (w->windowState() & Qt::WindowMaximized || w->geometry() == oldAvailableGeometry)
