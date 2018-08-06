@@ -162,13 +162,13 @@ void QCocoaBackingStore::flush(QWindow *window, const QRegion &region, const QPo
 
     const qreal devicePixelRatio = m_image.devicePixelRatio();
 
-    // If the flushed window is a content view, and not in unified toolbar mode,
-    // and is fully opaque, we can get away with copying the backingstore instead
-    // of blending.
+    // If the flushed window is a content view, and we're filling the drawn area
+    // completely, or it doesn't have a window background we need to preserve,
+    // we can get away with copying instead of blending the backing store.
     QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
     const NSCompositingOperation compositingOperation = cocoaWindow->isContentView()
-            && cocoaWindow->isOpaque() && !windowHasUnifiedToolbar() ?
-            NSCompositingOperationCopy : NSCompositingOperationSourceOver;
+        && (cocoaWindow->isOpaque() || view.window.backgroundColor == NSColor.clearColor)
+            ? NSCompositingOperationCopy : NSCompositingOperationSourceOver;
 
 #ifdef QT_DEBUG
     static bool debugBackingStoreFlush = [[NSUserDefaults standardUserDefaults]
