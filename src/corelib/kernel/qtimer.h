@@ -141,14 +141,14 @@ public:
     template <typename Duration, typename Func1>
     static inline typename std::enable_if<!QtPrivate::FunctionPointer<Func1>::IsPointerToMemberFunction &&
                                           !std::is_same<const char*, Func1>::value, void>::type
-            singleShot(Duration interval, QObject *context, Func1 slot)
+            singleShot(Duration interval, const QObject *context, Func1 slot)
     {
         singleShot(interval, defaultTypeFor(interval), context, std::move(slot));
     }
     template <typename Duration, typename Func1>
     static inline typename std::enable_if<!QtPrivate::FunctionPointer<Func1>::IsPointerToMemberFunction &&
                                           !std::is_same<const char*, Func1>::value, void>::type
-            singleShot(Duration interval, Qt::TimerType timerType, QObject *context, Func1 slot)
+            singleShot(Duration interval, Qt::TimerType timerType, const QObject *context, Func1 slot)
     {
         //compilation error if the slot has arguments.
         typedef QtPrivate::FunctionPointer<Func1> SlotType;
