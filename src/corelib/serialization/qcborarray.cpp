@@ -790,7 +790,7 @@ void QCborArray::detach(qsizetype reserved)
 */
 
 /*!
-    \fn QCborValueRef QCborArray::Iterator::operator[](qsizetype j) const
+    \fn QCborValueRef QCborArray::Iterator::operator[](qsizetype j)
 
     Returns a modifiable reference to the item at a position \a j steps forward
     from the item pointed to by this iterator.
@@ -1036,7 +1036,7 @@ void QCborArray::detach(qsizetype reserved)
 */
 
 /*!
-    \fn QCborValue QCborArray::ConstIterator::operator[](qsizetype j) const
+    \fn const QCborValueRef QCborArray::ConstIterator::operator[](qsizetype j)
 
     Returns the item at a position \a j steps forward from the item pointed to
     by this iterator.
@@ -1057,9 +1057,10 @@ void QCborArray::detach(qsizetype reserved)
 */
 
 /*!
-    \fn bool QCborArray::ConstIterator::operator!=(const ConstIterator &other) const
+    \fn bool QCborArray::ConstIterator::operator!=(const Iterator &o) const
+    \fn bool QCborArray::ConstIterator::operator!=(const ConstIterator &o) const
 
-    Returns \c true if \a other points to a different entry in the array than
+    Returns \c true if \a o points to a different entry in the array than
     this iterator; otherwise returns \c false.
 
     \sa operator==()

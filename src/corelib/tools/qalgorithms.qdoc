@@ -29,6 +29,7 @@
     \headerfile <QtAlgorithms>
     \title Generic Algorithms
     \ingroup funclists
+    \keyword generic algorithms
 
     \brief The <QtAlgorithms> header includes the generic, template-based algorithms.
 

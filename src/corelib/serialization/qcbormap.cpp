@@ -344,7 +344,7 @@ QVector<QCborValue> QCborMap::keys() const
  */
 
 /*!
-    \fn QCborValue QCborArray::take(qint64 key)
+    \fn QCborValue QCborMap::take(qint64 key)
 
     Removes the key \a key and the corresponding value from the map and returns
     the value, if it is found. If the map contains no such key, this function does nothing.
@@ -376,7 +376,7 @@ QVector<QCborValue> QCborMap::keys() const
  */
 
 /*!
-    \fn bool QCborMap::contains(qint64 key)
+    \fn bool QCborMap::contains(qint64 key) const
 
     Returns true if this map contains a key-value pair identified by key \a
     key. CBOR recommends using integer keys, since they occupy less space and
@@ -469,7 +469,7 @@ QCborValueRef QCborMap::operator[](qint64 key)
  */
 
 /*!
-    \fn QCborValue QCborArray::take(QLatin1String key)
+    \fn QCborValue QCborMap::take(QLatin1String key)
 
     Removes the key \a key and the corresponding value from the map and returns
     the value, if it is found. If the map contains no such key, this function does nothing.
@@ -502,7 +502,7 @@ QCborValueRef QCborMap::operator[](qint64 key)
  */
 
 /*!
-    \fn bool QCborMap::contains(QLatin1String key)
+    \fn bool QCborMap::contains(QLatin1String key) const
     \overload
 
     Returns true if this map contains a key-value pair identified by key \a
@@ -596,7 +596,7 @@ QCborValueRef QCborMap::operator[](QLatin1String key)
  */
 
 /*!
-    \fn QCborValue QCborArray::take(const QString &key)
+    \fn QCborValue QCborMap::take(const QString &key)
 
     Removes the key \a key and the corresponding value from the map and returns
     the value, if it is found. If the map contains no such key, this function does nothing.
@@ -630,7 +630,7 @@ QCborValueRef QCborMap::operator[](QLatin1String key)
  */
 
 /*!
-    \fn bool QCborMap::contains(const QString &key)
+    \fn bool QCborMap::contains(const QString &key) const
     \overload
 
     Returns true if this map contains a key-value pair identified by key \a
@@ -723,7 +723,7 @@ QCborValueRef QCborMap::operator[](const QString & key)
  */
 
 /*!
-    \fn QCborValue QCborArray::take(const QCborValue &key)
+    \fn QCborValue QCborMap::take(const QCborValue &key)
 
     Removes the key \a key and the corresponding value from the map and returns
     the value, if it is found. If the map contains no such key, this function does nothing.
@@ -756,7 +756,7 @@ QCborValueRef QCborMap::operator[](const QString & key)
  */
 
 /*!
-    \fn bool QCborMap::contains(const QCborValue &key)
+    \fn bool QCborMap::contains(const QCborValue &key) const
 
     Returns true if this map contains a key-value pair identified by key \a
     key.
