@@ -246,7 +246,7 @@ static void stackTrace()
 
 static bool installCoverageTool(const char * appname, const char * testname)
 {
-#ifdef __COVERAGESCANNER__
+#if defined(__COVERAGESCANNER__) && !QT_CONFIG(testlib_selfcover)
     if (!qEnvironmentVariableIsEmpty("QT_TESTCOCOON_ACTIVE"))
         return false;
     // Set environment variable QT_TESTCOCOON_ACTIVE to prevent an eventual subtest from

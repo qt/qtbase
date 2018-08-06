@@ -11,3 +11,5 @@ SOURCES += \
 
 HEADERS += \
   $${mtdir}/dynamictreemodel.h
+
+include($$QT_SOURCE_TREE/src/testlib/selfcover.pri)

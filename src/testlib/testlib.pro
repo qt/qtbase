@@ -146,4 +146,5 @@ mac {
 
 !qtHaveModule(network): HEADERSCLEAN_EXCLUDE += qtest_network.h
 
+include(selfcover.pri)
 load(qt_module)

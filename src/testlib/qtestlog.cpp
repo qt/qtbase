@@ -73,6 +73,10 @@ QT_BEGIN_NAMESPACE
 static void saveCoverageTool(const char * appname, bool testfailed, bool installedTestCoverage)
 {
 #ifdef __COVERAGESCANNER__
+#  if QT_CONFIG(testlib_selfcover)
+    __coveragescanner_teststate(QTestLog::failCount() > 0 ? "FAILED" :
+                                QTestLog::passCount() > 0 ? "PASSED" : "SKIPPED");
+#  else
     if (!installedTestCoverage)
         return;
     // install again to make sure the filename is correct.
@@ -83,6 +87,7 @@ static void saveCoverageTool(const char * appname, bool testfailed, bool install
     __coveragescanner_testname("");
     __coveragescanner_clear();
     unsetenv("QT_TESTCOCOON_ACTIVE");
+#  endif // testlib_selfcover
 #else
     Q_UNUSED(appname);
     Q_UNUSED(testfailed);
