@@ -255,7 +255,7 @@ void QCocoaIntegration::updateScreens()
                 continue;
         }
         QCocoaScreen* screen = nullptr;
-        foreach (QCocoaScreen* existingScr, mScreens)
+        foreach (QCocoaScreen* existingScr, mScreens) {
             // NSScreen documentation says do not cache the array returned from [NSScreen screens].
             // However in practice, we can identify a screen by its pointer: if resolution changes,
             // the NSScreen object will be the same instance, just with different values.
@@ -263,6 +263,7 @@ void QCocoaIntegration::updateScreens()
                 screen = existingScr;
                 break;
             }
+        }
         if (screen) {
             remainingScreens.remove(screen);
             screen->updateProperties();
