@@ -1078,7 +1078,8 @@ QSurface *QOpenGLContext::surface() const
     Swap the back and front buffers of \a surface.
 
     Call this to finish a frame of OpenGL rendering, and make sure to
-    call makeCurrent() again before you begin a new frame.
+    call makeCurrent() again before issuing any further OpenGL commands,
+    for example as part of a new frame.
 */
 void QOpenGLContext::swapBuffers(QSurface *surface)
 {

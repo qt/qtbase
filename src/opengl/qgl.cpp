@@ -3603,7 +3603,8 @@ void QGLContext::makeCurrent()
     \fn void QGLContext::swapBuffers() const
 
     Call this to finish a frame of OpenGL rendering, and make sure to
-    call makeCurrent() again before you begin a new frame.
+    call makeCurrent() again before issuing any further OpenGL commands,
+    for example as part of a new frame.
 */
 void QGLContext::swapBuffers() const
 {
