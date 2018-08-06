@@ -58,9 +58,10 @@ protected:
 
 class QWindowsClipboard : public QPlatformClipboard
 {
+    Q_DISABLE_COPY(QWindowsClipboard)
 public:
     QWindowsClipboard();
-    ~QWindowsClipboard();
+    ~QWindowsClipboard() override;
     void registerViewer(); // Call in initialization, when context is up.
     void cleanup();
 

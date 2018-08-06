@@ -507,6 +507,7 @@ class QWindowsNativeFileDialogBase;
 
 class QWindowsNativeFileDialogEventHandler : public QWindowsComBase<IFileDialogEvents>
 {
+    Q_DISABLE_COPY(QWindowsNativeFileDialogEventHandler)
 public:
     static IFileDialogEvents *create(QWindowsNativeFileDialogBase *nativeFileDialog);
 
@@ -522,7 +523,6 @@ public:
 
     QWindowsNativeFileDialogEventHandler(QWindowsNativeFileDialogBase *nativeFileDialog) :
         m_nativeFileDialog(nativeFileDialog) {}
-    virtual ~QWindowsNativeFileDialogEventHandler() {}
 
 private:
     QWindowsNativeFileDialogBase *m_nativeFileDialog;
@@ -786,7 +786,7 @@ class QWindowsNativeFileDialogBase : public QWindowsNativeDialogBase
     Q_OBJECT
     Q_PROPERTY(bool hideFiltersDetails READ hideFiltersDetails WRITE setHideFiltersDetails)
 public:
-    ~QWindowsNativeFileDialogBase();
+    ~QWindowsNativeFileDialogBase() override;
 
     inline static QWindowsNativeFileDialogBase *create(QFileDialogOptions::AcceptMode am, const QWindowsFileDialogSharedData &data);
 
@@ -1873,7 +1873,7 @@ QList<QUrl> QWindowsXpNativeFileDialog::execFileNames(HWND owner, int *selectedF
 class QWindowsXpFileDialogHelper : public QWindowsDialogHelperBase<QPlatformFileDialogHelper>
 {
 public:
-    QWindowsXpFileDialogHelper() {}
+    QWindowsXpFileDialogHelper() = default;
     bool supportsNonModalDialog(const QWindow * /* parent */ = 0) const override { return false; }
     bool defaultNameFilterDisables() const override
         { return true; }

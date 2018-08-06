@@ -225,7 +225,7 @@ public:
     };
 
     explicit QWindowsOleDropSource(QWindowsDrag *drag);
-    virtual ~QWindowsOleDropSource();
+    ~QWindowsOleDropSource() override;
 
     void createCursors();
 

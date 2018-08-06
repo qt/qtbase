@@ -170,13 +170,15 @@ public:
     static QOpenGLStaticContext *create(bool softwareRendering = false);
     static QByteArray getGlString(unsigned int which);
 
-    QWindowsOpenGLContext *createContext(QOpenGLContext *context);
-    void *moduleHandle() const { return opengl32.moduleHandle(); }
-    QOpenGLContext::OpenGLModuleType moduleType() const { return QOpenGLContext::LibGL; }
+    QWindowsOpenGLContext *createContext(QOpenGLContext *context) override;
+    void *moduleHandle() const override { return opengl32.moduleHandle(); }
+    QOpenGLContext::OpenGLModuleType moduleType() const override
+    { return QOpenGLContext::LibGL; }
 
     // For a regular opengl32.dll report the ThreadedOpenGL capability.
     // For others, which are likely to be software-only, don't.
-    bool supportsThreadedOpenGL() const { return !opengl32.moduleIsNotOpengl32(); }
+    bool supportsThreadedOpenGL() const override
+    { return !opengl32.moduleIsNotOpengl32(); }
 
     const QByteArray vendor;
     const QByteArray renderer;
@@ -198,7 +200,7 @@ class QWindowsGLContext : public QWindowsOpenGLContext
 {
 public:
     explicit QWindowsGLContext(QOpenGLStaticContext *staticContext, QOpenGLContext *context);
-    ~QWindowsGLContext();
+    ~QWindowsGLContext() override;
     bool isSharing() const override { return m_context->shareHandle(); }
     bool isValid() const override { return m_renderingContext && !m_lost; }
     QSurfaceFormat format() const override { return m_obtainedFormat; }

@@ -80,9 +80,7 @@ QWindowsOleDataObject::QWindowsOleDataObject(QMimeData *mimeData) :
     qCDebug(lcQpaMime) << __FUNCTION__ << mimeData->formats();
 }
 
-QWindowsOleDataObject::~QWindowsOleDataObject()
-{
-}
+QWindowsOleDataObject::~QWindowsOleDataObject() = default;
 
 void QWindowsOleDataObject::releaseQt()
 {

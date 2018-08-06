@@ -60,9 +60,7 @@ QWindowsDropDataObject::QWindowsDropDataObject(QMimeData *mimeData) :
 {
 }
 
-QWindowsDropDataObject::~QWindowsDropDataObject()
-{
-}
+QWindowsDropDataObject::~QWindowsDropDataObject() = default;
 
 STDMETHODIMP
 QWindowsDropDataObject::GetData(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium)

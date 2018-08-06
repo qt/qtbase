@@ -78,7 +78,7 @@ public:
     virtual bool supportsNonModalDialog(const QWindow * /* parent */ = 0) const { return true; }
 
 protected:
-    QWindowsDialogHelperBase() {}
+    QWindowsDialogHelperBase() = default;
     QWindowsNativeDialogBase *nativeDialog() const;
     inline bool hasNativeDialog() const { return m_nativeDialog; }
     void timerEvent(QTimerEvent *) override;

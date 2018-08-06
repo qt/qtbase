@@ -49,7 +49,7 @@ class QWindowsGdiIntegration : public QWindowsIntegration
 {
 public:
     explicit QWindowsGdiIntegration(const QStringList &paramList);
-    virtual ~QWindowsGdiIntegration();
+    ~QWindowsGdiIntegration() override;
 
     QPlatformNativeInterface *nativeInterface() const override;
     QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const override;

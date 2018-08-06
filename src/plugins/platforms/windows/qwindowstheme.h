@@ -51,9 +51,10 @@ class QWindow;
 
 class QWindowsTheme : public QPlatformTheme
 {
+    Q_DISABLE_COPY(QWindowsTheme)
 public:
     QWindowsTheme();
-    ~QWindowsTheme();
+    ~QWindowsTheme() override;
 
     static QWindowsTheme *instance() { return m_instance; }
 

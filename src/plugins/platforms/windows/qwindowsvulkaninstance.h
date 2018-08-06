@@ -53,9 +53,9 @@ QT_BEGIN_NAMESPACE
 
 class QWindowsVulkanInstance : public QBasicPlatformVulkanInstance
 {
+    Q_DISABLE_COPY(QWindowsVulkanInstance)
 public:
     QWindowsVulkanInstance(QVulkanInstance *instance);
-    ~QWindowsVulkanInstance();
 
     void createOrAdoptInstance() override;
     bool supportsPresent(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, QWindow *window) override;

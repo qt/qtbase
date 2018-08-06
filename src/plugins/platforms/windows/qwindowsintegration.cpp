@@ -133,6 +133,7 @@ QT_BEGIN_NAMESPACE
 
 struct QWindowsIntegrationPrivate
 {
+    Q_DISABLE_COPY(QWindowsIntegrationPrivate)
     explicit QWindowsIntegrationPrivate(const QStringList &paramList);
     ~QWindowsIntegrationPrivate();
 

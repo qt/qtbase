@@ -59,7 +59,7 @@ class QDebug;
 
 struct QWindowsGeometryHint
 {
-    QWindowsGeometryHint() {}
+    QWindowsGeometryHint() = default;
     explicit QWindowsGeometryHint(const QWindow *w, const QMargins &customMargins);
     static QMargins frame(DWORD style, DWORD exStyle);
     static bool handleCalculateSize(const QMargins &customMargins, const MSG &msg, LRESULT *result);
@@ -120,6 +120,7 @@ struct QWindowsWindowData
 
 class QWindowsBaseWindow : public QPlatformWindow
 {
+    Q_DISABLE_COPY(QWindowsBaseWindow)
 public:
     explicit QWindowsBaseWindow(QWindow *window) : QPlatformWindow(window) {}
 
@@ -223,7 +224,7 @@ public:
     };
 
     QWindowsWindow(QWindow *window, const QWindowsWindowData &data);
-    ~QWindowsWindow();
+    ~QWindowsWindow() override;
 
     void initialize() override;
 

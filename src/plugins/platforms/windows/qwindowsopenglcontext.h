@@ -51,9 +51,10 @@ class QWindowsOpenGLContext;
 
 class QWindowsStaticOpenGLContext
 {
+    Q_DISABLE_COPY(QWindowsStaticOpenGLContext)
 public:
     static QWindowsStaticOpenGLContext *create();
-    virtual ~QWindowsStaticOpenGLContext() { }
+    virtual ~QWindowsStaticOpenGLContext() = default;
 
     virtual QWindowsOpenGLContext *createContext(QOpenGLContext *context) = 0;
     virtual void *moduleHandle() const = 0;
@@ -65,15 +66,17 @@ public:
     virtual void *createWindowSurface(void * /*nativeWindow*/, void * /*nativeConfig*/, int * /*err*/) { return 0; }
     virtual void destroyWindowSurface(void * /*nativeSurface*/) { }
 
+protected:
+    QWindowsStaticOpenGLContext() = default;
+
 private:
     static QWindowsStaticOpenGLContext *doCreate();
 };
 
 class QWindowsOpenGLContext : public QPlatformOpenGLContext
 {
+    Q_DISABLE_COPY(QWindowsOpenGLContext)
 public:
-    virtual ~QWindowsOpenGLContext() { }
-
     // Returns the native context handle (e.g. HGLRC for WGL, EGLContext for EGL).
     virtual void *nativeContext() const = 0;
 
@@ -81,6 +84,9 @@ public:
     // For others, like WGL, they are not relevant.
     virtual void *nativeDisplay() const { return 0; }
     virtual void *nativeConfig() const { return 0; }
+
+protected:
+    QWindowsOpenGLContext() = default;
 };
 
 #endif // QT_NO_OPENGL

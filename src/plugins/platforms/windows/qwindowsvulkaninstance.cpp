@@ -62,10 +62,6 @@ void QWindowsVulkanInstance::createOrAdoptInstance()
         qWarning("Failed to find vkGetPhysicalDeviceWin32PresentationSupportKHR");
 }
 
-QWindowsVulkanInstance::~QWindowsVulkanInstance()
-{
-}
-
 bool QWindowsVulkanInstance::supportsPresent(VkPhysicalDevice physicalDevice,
                                              uint32_t queueFamilyIndex,
                                              QWindow *window)

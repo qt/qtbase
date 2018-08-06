@@ -58,7 +58,7 @@ class QWindowsOleDataObject : public QWindowsComBase<IDataObject>
 {
 public:
     explicit QWindowsOleDataObject(QMimeData *mimeData);
-    virtual ~QWindowsOleDataObject();
+    ~QWindowsOleDataObject() override;
 
     void releaseQt();
     QMimeData *mimeData() const;
@@ -88,7 +88,7 @@ class QWindowsOleEnumFmtEtc : public QWindowsComBase<IEnumFORMATETC>
 public:
     explicit QWindowsOleEnumFmtEtc(const QVector<FORMATETC> &fmtetcs);
     explicit QWindowsOleEnumFmtEtc(const QVector<LPFORMATETC> &lpfmtetcs);
-    virtual ~QWindowsOleEnumFmtEtc();
+    ~QWindowsOleEnumFmtEtc() override;
 
     bool isNull() const;
 

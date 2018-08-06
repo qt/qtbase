@@ -55,7 +55,7 @@ class QPlatformScreen;
 
 class QWindowsDropMimeData : public QWindowsInternalMimeData {
 public:
-    QWindowsDropMimeData() {}
+    QWindowsDropMimeData() = default;
     IDataObject *retrieveDataObject() const override;
 };
 
@@ -63,7 +63,7 @@ class QWindowsOleDropTarget : public QWindowsComBase<IDropTarget>
 {
 public:
     explicit QWindowsOleDropTarget(QWindow *w);
-    virtual ~QWindowsOleDropTarget();
+    ~QWindowsOleDropTarget() override;
 
     // IDropTarget methods
     STDMETHOD(DragEnter)(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);

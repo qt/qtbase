@@ -57,7 +57,7 @@ class QWindowsSystemTrayIcon : public QPlatformSystemTrayIcon
 {
 public:
     QWindowsSystemTrayIcon();
-    ~QWindowsSystemTrayIcon();
+    ~QWindowsSystemTrayIcon() override;
 
     void init() override;
     void cleanup() override;

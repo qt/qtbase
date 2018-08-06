@@ -113,7 +113,7 @@ class QWindowsEGLStaticContext : public QWindowsStaticOpenGLContext
 
 public:
     static QWindowsEGLStaticContext *create(QWindowsOpenGLTester::Renderers preferredType);
-    ~QWindowsEGLStaticContext();
+    ~QWindowsEGLStaticContext() override;
 
     EGLDisplay display() const { return m_display; }
 
@@ -143,7 +143,7 @@ public:
     QWindowsEGLContext(QWindowsEGLStaticContext *staticContext,
                        const QSurfaceFormat &format,
                        QPlatformOpenGLContext *share);
-    ~QWindowsEGLContext();
+    ~QWindowsEGLContext() override;
 
     bool makeCurrent(QPlatformSurface *surface) override;
     void doneCurrent() override;

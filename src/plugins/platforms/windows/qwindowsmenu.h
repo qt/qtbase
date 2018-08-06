@@ -60,7 +60,7 @@ class QWindowsMenuItem : public QPlatformMenuItem
     Q_OBJECT
 public:
     explicit QWindowsMenuItem(QWindowsMenu *parentMenu = nullptr);
-    ~QWindowsMenuItem();
+    ~QWindowsMenuItem() override;
 
     void setText(const QString &text) override;
     void setIcon(const QIcon &icon) override;
@@ -199,7 +199,7 @@ public:
     typedef QVector<QWindowsMenu *> Menus;
 
     QWindowsMenuBar();
-    ~QWindowsMenuBar();
+    ~QWindowsMenuBar() override;
 
     void insertMenu(QPlatformMenu *menu, QPlatformMenu *before) override;
     void removeMenu(QPlatformMenu *menu) override;

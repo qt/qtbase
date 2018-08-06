@@ -48,7 +48,7 @@ class QWindowsDropDataObject : public QWindowsOleDataObject
 {
 public:
     explicit QWindowsDropDataObject(QMimeData *mimeData);
-    virtual ~QWindowsDropDataObject();
+    ~QWindowsDropDataObject() override;
 
     // overridden IDataObject methods
     STDMETHOD(GetData)(LPFORMATETC pformatetcIn, LPSTGMEDIUM pmedium);

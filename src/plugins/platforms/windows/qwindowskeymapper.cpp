@@ -106,9 +106,7 @@ QWindowsKeyMapper::QWindowsKeyMapper()
     changeKeyboard();
 }
 
-QWindowsKeyMapper::~QWindowsKeyMapper()
-{
-}
+QWindowsKeyMapper::~QWindowsKeyMapper()= default;
 
 #ifndef LANG_PASHTO
 #define LANG_PASHTO 0x63

@@ -83,7 +83,7 @@ template <class ComInterface> class QWindowsComBase : public ComInterface
     Q_DISABLE_COPY(QWindowsComBase)
 public:
     explicit QWindowsComBase(ULONG initialRefCount = 1) : m_ref(initialRefCount) {}
-    virtual ~QWindowsComBase() {}
+    virtual ~QWindowsComBase() = default;
 
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, LPVOID *iface)
     {

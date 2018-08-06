@@ -55,7 +55,7 @@ class QWindowsBackingStore : public QPlatformBackingStore
     Q_DISABLE_COPY(QWindowsBackingStore)
 public:
     QWindowsBackingStore(QWindow *window);
-    ~QWindowsBackingStore();
+    ~QWindowsBackingStore() override;
 
     QPaintDevice *paintDevice() override;
     void flush(QWindow *window, const QRegion &region, const QPoint &offset) override;

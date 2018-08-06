@@ -53,6 +53,7 @@ class QWindowsWindow;
 
 class QWindowsInputContext : public QPlatformInputContext
 {
+    Q_DISABLE_COPY(QWindowsInputContext)
     Q_OBJECT
 
     struct CompositionContext
@@ -65,7 +66,7 @@ class QWindowsInputContext : public QPlatformInputContext
     };
 public:
     explicit QWindowsInputContext();
-    ~QWindowsInputContext();
+    ~QWindowsInputContext() override;
 
     static void setWindowsImeEnabled(QWindowsWindow *platformWindow, bool enabled);
 
