@@ -107,8 +107,8 @@ void QNetworkAccessDebugPipeBackend::open()
     bareProtocol = QUrlQuery(url()).queryItemValue(QLatin1String("bare")) == QLatin1String("1");
 
     if (operation() == QNetworkAccessManager::PutOperation) {
-        uploadByteDevice = createUploadByteDevice();
-        QObject::connect(uploadByteDevice, SIGNAL(readyRead()), this, SLOT(uploadReadyReadSlot()));
+        createUploadByteDevice();
+        QObject::connect(uploadByteDevice.data(), SIGNAL(readyRead()), this, SLOT(uploadReadyReadSlot()));
         QMetaObject::invokeMethod(this, "uploadReadyReadSlot", Qt::QueuedConnection);
     }
 }

@@ -77,7 +77,6 @@ protected:
     void pushFromSocketToDownstream();
     void pushFromUpstreamToSocket();
     void possiblyFinish();
-    QNonContiguousByteDevice *uploadByteDevice;
 
 private slots:
     void uploadReadyReadSlot();

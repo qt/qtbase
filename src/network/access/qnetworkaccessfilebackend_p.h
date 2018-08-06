@@ -73,8 +73,6 @@ public:
 
 public slots:
     void uploadReadyReadSlot();
-protected:
-    QNonContiguousByteDevice *uploadByteDevice;
 private:
     QFile file;
     qint64 totalBytes;
