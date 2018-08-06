@@ -457,6 +457,8 @@ void tst_QDateTimeEdit::cleanup()
     testWidget->setTimeSpec(Qt::LocalTime);
     testWidget->setSpecialValueText(QString());
     testWidget->setWrapping(false);
+    // Restore the default.
+    testWidget->setCalendarPopup(false);
 }
 
 void tst_QDateTimeEdit::constructor_qwidget()
