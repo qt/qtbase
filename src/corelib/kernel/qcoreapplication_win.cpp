@@ -725,7 +725,7 @@ QString decodeMSG(const MSG& msg)
             break;
         case WM_CREATE:
             {
-                const LPCREATESTRUCT lpcs = reinterpret_cast<const LPCREATESTRUCT>(lParam);
+                auto lpcs = reinterpret_cast<LPCREATESTRUCT>(lParam);
                 QString className;
                 if (lpcs->lpszClass != nullptr) {
                     className = HIWORD(lpcs->lpszClass) == 0
@@ -847,7 +847,7 @@ QString decodeMSG(const MSG& msg)
             break;
         case WM_WINDOWPOSCHANGED:
             {
-                const LPWINDOWPOS winPos = reinterpret_cast<const LPWINDOWPOS>(lParam);
+                auto winPos = reinterpret_cast<LPWINDOWPOS>(lParam);
                 if (!winPos)
                     break;
                 const auto insertAfter = quintptr(winPos->hwndInsertAfter);
