@@ -1775,6 +1775,10 @@ void tst_QSpinBox::stepModifierPressAndHold()
     spin.setStyle(stepModifierStyle.data());
 
     QSignalSpy spy(&spin, QOverload<int>::of(&SpinBox::valueChanged));
+    // TODO: remove debug output when QTBUG-69492 is fixed
+    connect(&spin, QOverload<int>::of(&SpinBox::valueChanged), [=]() {
+        qDebug() << QTime::currentTime() << "valueChanged emitted";
+    });
 
     spin.show();
     QVERIFY(QTest::qWaitForWindowActive(&spin));
@@ -1785,6 +1789,9 @@ void tst_QSpinBox::stepModifierPressAndHold()
     const QRect buttonRect = spin.style()->subControlRect(
                 QStyle::CC_SpinBox, &spinBoxStyleOption, subControl, &spin);
 
+    // TODO: remove debug output when QTBUG-69492 is fixed
+    qDebug() << "QGuiApplication::focusWindow():" << QGuiApplication::focusWindow();
+    qDebug() << "QGuiApplication::topLevelWindows():" << QGuiApplication::topLevelWindows();
     QTest::mousePress(&spin, Qt::LeftButton, modifiers, buttonRect.center());
     QTRY_VERIFY2(spy.length() >= 3, qPrintable(QString::fromLatin1(
         "Expected valueChanged() to be emitted 3 or more times, but it was only emitted %1 times").arg(spy.length())));
