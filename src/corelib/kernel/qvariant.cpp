@@ -1479,7 +1479,8 @@ static void customClear(QVariant::Private *d)
         QMetaType::destruct(d->type, &d->data.ptr);
     } else {
         QMetaType::destruct(d->type, d->data.shared->ptr);
-        delete d->data.shared;
+        d->data.shared->~PrivateShared();
+        operator delete(d->data.shared);
     }
 }
 
