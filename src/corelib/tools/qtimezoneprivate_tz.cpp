@@ -535,7 +535,7 @@ static QVector<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArra
     // See the section about TZ at http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html
     QList<QByteArray> parts = posixRule.split(',');
 
-    PosixZone stdZone, dstZone;
+    PosixZone stdZone, dstZone = PosixZone::invalid();
     {
         const QByteArray &zoneinfo = parts.at(0);
         const char *begin = zoneinfo.constBegin();
