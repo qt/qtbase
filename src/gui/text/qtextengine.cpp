@@ -1683,7 +1683,7 @@ void QTextEngine::itemize() const
                 layoutData->string.detach();
                 string = reinterpret_cast<const ushort *>(layoutData->string.unicode());
                 uc = string + offset;
-                e = uc + length;
+                e = string + length;
                 *const_cast<ushort*>(uc) = 0x21B5; // visual line separator
             }
             break;
