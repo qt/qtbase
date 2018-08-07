@@ -102,10 +102,11 @@ Qt::HANDLE QSslCertificate::handle() const
         HRESULT hr;
         ComPtr<IBuffer> buffer;
         hr = g->bufferFactory->CreateFromByteArray(d->derData.length(), (BYTE *)d->derData.data(), &buffer);
-        RETURN_IF_FAILED("Failed to create the certificate data buffer", return 0);
+        RETURN_IF_FAILED("Failed to create the certificate data buffer", return nullptr);
 
         hr = g->certificateFactory->CreateCertificate(buffer.Get(), &d->certificate);
-        RETURN_IF_FAILED("Failed to create the certificate handle from the data buffer", return 0);
+        RETURN_IF_FAILED("Failed to create the certificate handle from the data buffer",
+                         return nullptr);
     }
 
     return d->certificate.Get();

@@ -107,13 +107,13 @@ void QWindowsCaRootFetcher::start()
 #endif
     PCCERT_CHAIN_CONTEXT chain;
     BOOL result = CertGetCertificateChain(
-        0, //default engine
+        nullptr, //default engine
         wincert,
-        0, //current date/time
-        0, //default store
+        nullptr, //current date/time
+        nullptr, //default store
         &parameters,
         0, //default dwFlags
-        0, //reserved
+        nullptr, //reserved
         &chain);
 #ifdef QSSLSOCKET_DEBUG
     qCDebug(lcSsl) << "QWindowsCaRootFetcher" << stopwatch.elapsed() << "ms to get chain";

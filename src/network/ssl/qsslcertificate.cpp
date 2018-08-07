@@ -659,12 +659,12 @@ static const char *const certificate_blacklist[] = {
     "27:83",                                           "NIC Certifying Authority", // intermediate certificate from NIC India (2007)
     "27:92",                                           "NIC CA 2011", // intermediate certificate from NIC India (2011)
     "27:b1",                                           "NIC CA 2014", // intermediate certificate from NIC India (2014)
-    0
+    nullptr
 };
 
 bool QSslCertificatePrivate::isBlacklisted(const QSslCertificate &certificate)
 {
-    for (int a = 0; certificate_blacklist[a] != 0; a++) {
+    for (int a = 0; certificate_blacklist[a] != nullptr; a++) {
         QString blacklistedCommonName = QString::fromUtf8(certificate_blacklist[(a+1)]);
         if (certificate.serialNumber() == certificate_blacklist[a++] &&
             (certificate.subjectInfo(QSslCertificate::CommonName).contains(blacklistedCommonName) ||

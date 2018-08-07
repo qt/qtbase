@@ -128,7 +128,7 @@ void QSslDiffieHellmanParametersPrivate::decodeDer(const QByteArray &der)
 
     QSslSocketPrivate::ensureInitialized();
 
-    DH *dh = q_d2i_DHparams(NULL, &data, len);
+    DH *dh = q_d2i_DHparams(nullptr, &data, len);
     if (dh) {
         if (isSafeDH(dh))
             derData = der;
@@ -162,7 +162,7 @@ void QSslDiffieHellmanParametersPrivate::decodePem(const QByteArray &pem)
     }
 
     DH *dh = nullptr;
-    q_PEM_read_bio_DHparams(bio, &dh, 0, 0);
+    q_PEM_read_bio_DHparams(bio, &dh, nullptr, nullptr);
 
     if (dh) {
         if (isSafeDH(dh)) {

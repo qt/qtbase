@@ -143,7 +143,7 @@ QDateTime QSslCertificate::expiryDate() const
 Qt::HANDLE QSslCertificate::handle() const
 {
     Q_UNIMPLEMENTED();
-    return 0;
+    return nullptr;
 }
 #endif
 

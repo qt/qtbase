@@ -88,9 +88,9 @@
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_OS_WIN)
-    PtrCertOpenSystemStoreW QSslSocketPrivate::ptrCertOpenSystemStoreW = 0;
-    PtrCertFindCertificateInStore QSslSocketPrivate::ptrCertFindCertificateInStore = 0;
-    PtrCertCloseStore QSslSocketPrivate::ptrCertCloseStore = 0;
+    PtrCertOpenSystemStoreW QSslSocketPrivate::ptrCertOpenSystemStoreW = nullptr;
+    PtrCertFindCertificateInStore QSslSocketPrivate::ptrCertFindCertificateInStore = nullptr;
+    PtrCertCloseStore QSslSocketPrivate::ptrCertCloseStore = nullptr;
 #endif
 
 bool QSslSocketPrivate::s_libraryLoaded = false;
@@ -140,10 +140,10 @@ static unsigned int q_ssl_psk_server_callback(SSL *ssl,
 } // extern "C"
 
 QSslSocketBackendPrivate::QSslSocketBackendPrivate()
-    : ssl(0),
-      readBio(0),
-      writeBio(0),
-      session(0)
+    : ssl(nullptr),
+      readBio(nullptr),
+      writeBio(nullptr),
+      session(nullptr)
 {
     // Calls SSL_library_init().
     ensureInitialized();
@@ -415,7 +415,7 @@ void QSslSocketBackendPrivate::destroySslContext()
 {
     if (ssl) {
         q_SSL_free(ssl);
-        ssl = 0;
+        ssl = nullptr;
     }
     sslContextPointer.clear();
 }
@@ -1350,7 +1350,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
     q_X509_STORE_set_verify_cb(certStore, q_X509Callback);
 
     // Build the chain of intermediate certificates
-    STACK_OF(X509) *intermediates = 0;
+    STACK_OF(X509) *intermediates = nullptr;
     if (certificateChain.length() > 1) {
         intermediates = (STACK_OF(X509) *) q_OPENSSL_sk_new_null();
 
@@ -1443,9 +1443,10 @@ bool QSslSocketBackendPrivate::importPkcs12(QIODevice *device,
     BIO *bio = q_BIO_new_mem_buf(const_cast<char *>(pkcs12data.constData()), pkcs12data.size());
 
     // Create the PKCS#12 object
-    PKCS12 *p12 = q_d2i_PKCS12_bio(bio, 0);
+    PKCS12 *p12 = q_d2i_PKCS12_bio(bio, nullptr);
     if (!p12) {
-        qCWarning(lcSsl, "Unable to read PKCS#12 structure, %s", q_ERR_error_string(q_ERR_get_error(), 0));
+        qCWarning(lcSsl, "Unable to read PKCS#12 structure, %s",
+                  q_ERR_error_string(q_ERR_get_error(), nullptr));
         q_BIO_free(bio);
         return false;
     }
@@ -1453,10 +1454,11 @@ bool QSslSocketBackendPrivate::importPkcs12(QIODevice *device,
     // Extract the data
     EVP_PKEY *pkey = nullptr;
     X509 *x509;
-    STACK_OF(X509) *ca = 0;
+    STACK_OF(X509) *ca = nullptr;
 
     if (!q_PKCS12_parse(p12, passPhrase.constData(), &pkey, &x509, &ca)) {
-        qCWarning(lcSsl, "Unable to parse PKCS#12 structure, %s", q_ERR_error_string(q_ERR_get_error(), 0));
+        qCWarning(lcSsl, "Unable to parse PKCS#12 structure, %s",
+                  q_ERR_error_string(q_ERR_get_error(), nullptr));
         q_PKCS12_free(p12);
         q_BIO_free(bio);
         return false;

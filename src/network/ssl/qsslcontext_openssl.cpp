@@ -55,9 +55,9 @@ static inline QString msgErrorSettingBackendConfig(const QString &why)
 }
 
 QSslContext::QSslContext()
-    : ctx(0),
-    pkey(0),
-    session(0),
+    : ctx(nullptr),
+    pkey(nullptr),
+    session(nullptr),
     m_sessionTicketLifeTimeHint(-1)
 {
 }
@@ -137,7 +137,8 @@ SSL* QSslContext::createSsl()
     if (!session && !sessionASN1().isEmpty()
             && !sslConfiguration.testSslOption(QSsl::SslOptionDisableSessionPersistence)) {
         const unsigned char *data = reinterpret_cast<const unsigned char *>(m_sessionASN1.constData());
-        session = q_d2i_SSL_SESSION(0, &data, m_sessionASN1.size()); // refcount is 1 already, set by function above
+        session = q_d2i_SSL_SESSION(
+            nullptr, &data, m_sessionASN1.size()); // refcount is 1 already, set by function above
     }
 
     if (session) {
@@ -145,7 +146,7 @@ SSL* QSslContext::createSsl()
         if (!q_SSL_set_session(ssl, session)) {
             qCWarning(lcSsl, "could not set SSL session");
             q_SSL_SESSION_free(session);
-            session = 0;
+            session = nullptr;
         }
     }
 
@@ -204,7 +205,7 @@ bool QSslContext::cacheSession(SSL* ssl)
     session = q_SSL_get1_session(ssl);
 
     if (session && !sslConfiguration.testSslOption(QSsl::SslOptionDisableSessionPersistence)) {
-        int sessionSize = q_i2d_SSL_SESSION(session, 0);
+        int sessionSize = q_i2d_SSL_SESSION(session, nullptr);
         if (sessionSize > 0) {
             m_sessionASN1.resize(sessionSize);
             unsigned char *data = reinterpret_cast<unsigned char *>(m_sessionASN1.data());
@@ -214,7 +215,7 @@ bool QSslContext::cacheSession(SSL* ssl)
         }
     }
 
-    return (session != 0);
+    return (session != nullptr);
 }
 
 QByteArray QSslContext::sessionASN1() const

@@ -248,7 +248,7 @@ void QSslSocketBackendPrivate::continueHandshake()
         // we could not agree -> be conservative and use HTTP/1.1
         configuration.nextNegotiatedProtocol = QByteArrayLiteral("http/1.1");
     } else {
-        const unsigned char *proto = 0;
+        const unsigned char *proto = nullptr;
         unsigned int proto_len = 0;
 
         q_SSL_get0_alpn_selected(ssl, &proto, &proto_len);

@@ -1323,10 +1323,10 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
     }
 
     // verify certificate chain
-    QCFType<CFMutableArrayRef> certArray = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
+    QCFType<CFMutableArrayRef> certArray = CFArrayCreateMutable(nullptr, 0, &kCFTypeArrayCallBacks);
     for (const QSslCertificate &cert : qAsConst(configuration.caCertificates)) {
         QCFType<CFDataRef> certData = cert.d->derData.toCFData();
-        if (QCFType<SecCertificateRef> secRef = SecCertificateCreateWithData(NULL, certData))
+        if (QCFType<SecCertificateRef> secRef = SecCertificateCreateWithData(nullptr, certData))
             CFArrayAppendValue(certArray, secRef);
         else
             qCWarning(lcSsl, "Failed to create SecCertificate from QSslCertificate");
