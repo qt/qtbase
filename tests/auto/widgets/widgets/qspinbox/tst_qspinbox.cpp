@@ -1786,7 +1786,8 @@ void tst_QSpinBox::stepModifierPressAndHold()
                 QStyle::CC_SpinBox, &spinBoxStyleOption, subControl, &spin);
 
     QTest::mousePress(&spin, Qt::LeftButton, modifiers, buttonRect.center());
-    QTRY_VERIFY(spy.length() >= 3);
+    QTRY_VERIFY2(spy.length() >= 3, qPrintable(QString::fromLatin1(
+        "Expected valueChanged() to be emitted 3 or more times, but it was only emitted %1 times").arg(spy.length())));
     QTest::mouseRelease(&spin, Qt::LeftButton, modifiers, buttonRect.center());
 
     const auto value = spy.last().at(0);
