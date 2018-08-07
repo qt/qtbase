@@ -499,12 +499,10 @@ void QXcbWindow::create()
                             clientMachine.size(), clientMachine.constData());
     }
 
+    // Create WM_HINTS property on the window, so we can xcb_get_wm_hints*()
+    // from various setter functions for adjusting the hints.
     xcb_wm_hints_t hints;
     memset(&hints, 0, sizeof(hints));
-    xcb_wm_hints_set_normal(&hints);
-
-    xcb_wm_hints_set_input(&hints, !(window()->flags() & Qt::WindowDoesNotAcceptFocus));
-
     xcb_set_wm_hints(xcb_connection(), m_window, &hints);
 
     xcb_window_t leader = connection()->clientLeader();
@@ -531,9 +529,6 @@ void QXcbWindow::create()
     setWindowState(window()->windowStates());
     setWindowFlags(window()->flags());
     setWindowTitle(window()->title());
-
-    if (window()->flags() & Qt::WindowTransparentForInput)
-        setTransparentForMouseEvents(true);
 
 #if QT_CONFIG(xcb_xlib)
     // force sync to read outstanding requests - see QTBUG-29106
@@ -738,20 +733,6 @@ void QXcbWindow::setVisible(bool visible)
 void QXcbWindow::show()
 {
     if (window()->isTopLevel()) {
-
-        xcb_get_property_cookie_t cookie = xcb_get_wm_hints_unchecked(xcb_connection(), m_window);
-
-        xcb_wm_hints_t hints;
-        xcb_get_wm_hints_reply(xcb_connection(), cookie, &hints, NULL);
-
-        if (window()->windowStates() & Qt::WindowMinimized)
-            xcb_wm_hints_set_iconic(&hints);
-        else
-            xcb_wm_hints_set_normal(&hints);
-
-        xcb_wm_hints_set_input(&hints, !(window()->flags() & Qt::WindowDoesNotAcceptFocus));
-
-        xcb_set_wm_hints(xcb_connection(), m_window, &hints);
 
         // update WM_NORMAL_HINTS
         propagateSizeHints();
@@ -1230,6 +1211,16 @@ void QXcbWindow::setWindowState(Qt::WindowStates state)
         changeNetWmState(state & Qt::WindowFullScreen, atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN));
     }
 
+    xcb_get_property_cookie_t cookie = xcb_get_wm_hints_unchecked(xcb_connection(), m_window);
+    xcb_wm_hints_t hints;
+    if (xcb_get_wm_hints_reply(xcb_connection(), cookie, &hints, nullptr)) {
+        if (state & Qt::WindowMinimized)
+            xcb_wm_hints_set_iconic(&hints);
+        else
+            xcb_wm_hints_set_normal(&hints);
+        xcb_set_wm_hints(xcb_connection(), m_window, &hints);
+    }
+
     connection()->sync();
     m_windowState = state;
 }
@@ -1402,9 +1393,8 @@ void QXcbWindow::updateDoesNotAcceptFocus(bool doesNotAcceptFocus)
     xcb_get_property_cookie_t cookie = xcb_get_wm_hints_unchecked(xcb_connection(), m_window);
 
     xcb_wm_hints_t hints;
-    if (!xcb_get_wm_hints_reply(xcb_connection(), cookie, &hints, NULL)) {
+    if (!xcb_get_wm_hints_reply(xcb_connection(), cookie, &hints, nullptr))
         return;
-    }
 
     xcb_wm_hints_set_input(&hints, !doesNotAcceptFocus);
     xcb_set_wm_hints(xcb_connection(), m_window, &hints);
