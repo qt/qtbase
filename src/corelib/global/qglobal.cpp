@@ -589,7 +589,7 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
     {long long int } (\c __int64 on Windows).
 
     Several convenience type definitions are declared: \l qreal for \c
-    double, \l uchar for \c unsigned char, \l uint for \c unsigned
+    double or \c float, \l uchar for \c unsigned char, \l uint for \c unsigned
     int, \l ulong for \c unsigned long and \l ushort for \c unsigned
     short.
 

@@ -174,6 +174,7 @@ public:
     void abort();
 
     bool sendRequest();
+    void sendRequestDelayed();
 
     bool ensureConnection();
 

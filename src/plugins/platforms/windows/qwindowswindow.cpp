@@ -2108,6 +2108,8 @@ bool QWindowsWindow::handleGeometryChangingMessage(MSG *message, const QWindow *
             HWND desktopHWND = GetDesktopWindow();
             platformWindow->m_data.embedded = !parentWindow && parentHWND && (parentHWND != desktopHWND);
         }
+        if (qWindow->flags().testFlag(Qt::WindowStaysOnBottomHint))
+            windowPos->hwndInsertAfter = HWND_BOTTOM;
     }
     if (!qWindow->isTopLevel()) // Implement hasHeightForWidth().
         return false;
@@ -2454,8 +2456,11 @@ static inline bool applyNewCursor(const QWindow *w)
 
 void QWindowsWindow::applyCursor()
 {
-    if (static_cast<const QWindowsCursor *>(screen()->cursor())->hasOverrideCursor())
+    if (QWindowsCursor::hasOverrideCursor()) {
+        if (isTopLevel())
+            QWindowsCursor::enforceOverrideCursor();
         return;
+    }
 #ifndef QT_NO_CURSOR
     if (m_cursor->isNull()) { // Recurse up to parent with non-null cursor. Set default for toplevel.
         if (const QWindow *p = window()->parent()) {

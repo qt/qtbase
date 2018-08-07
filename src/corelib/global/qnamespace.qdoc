@@ -116,8 +116,8 @@
 
     \value AA_DontShowShortcutsInContextMenus Actions with the Shortcut property
            won't be shown in any shortcut menus unless specifically set by the
-           QAction::shortcutVisibleInContextMenu property. This value has
-           been added in Qt 5.10.
+           QAction::shortcutVisibleInContextMenu property. This value was added
+           in Qt 5.10.
 
     \value AA_NativeWindows Ensures that widgets have native windows.
 
@@ -132,9 +132,8 @@
            menu and not taking possession of the native menu bar. Setting this
            attribute to true will also set the AA_DontUseNativeMenuBar attribute
            to true. It also disables native event filters.
-           This attribute has been added in Qt 5.7. It must be set before
-           \l {QGuiApplication}{Q\(Gui\)Application} is constructed.
-
+           This attribute must be set before QGuiApplication constructed.
+           This value was added in Qt 5.7.
 
     \value AA_DontUseNativeMenuBar All menubars created while this attribute is
            set to true won't be used as a native menubar (e.g, the menubar at
@@ -174,14 +173,14 @@
 
     \value AA_UseDesktopOpenGL Forces the usage of desktop OpenGL (for example,
            \e opengl32.dll or \e libGL.so) on platforms that use dynamic loading
-           of the OpenGL implementation. This value has been added in Qt 5.3.
-           This attribute must be set before \l {QGuiApplication}
-           {Q\(Gui\)Application} is constructed.
+           of the OpenGL implementation. This attribute must be set before
+           QGuiApplication is constructed.
+           This value was added in Qt 5.3.
 
     \value AA_UseOpenGLES Forces the usage of OpenGL ES 2.0 or higher on
            platforms that use dynamic loading of the OpenGL implementation.
-           This value has been added in Qt 5.3. This attribute must be set
-           before \l {QGuiApplication}{Q\(Gui\)Application} is constructed.
+           This attribute must be set before QGuiApplication is constructed.
+           This value was added in Qt 5.3.
 
     \value AA_UseSoftwareOpenGL Forces the usage of a software based OpenGL
            implementation on platforms that use dynamic loading of the OpenGL
@@ -191,29 +190,28 @@
            implementation is available. The default name of this library is
            \c opengl32sw.dll and can be overridden by setting the environment
            variable \e QT_OPENGL_DLL. See the platform-specific pages, for
-           instance \l{Qt for Windows}, for more information.  This value has
-           been added in Qt 5.4. This attribute must be set before
-           \l {QGuiApplication}{Q\(Gui\)Application} is constructed.
+           instance \l{Qt for Windows}, for more information. This attribute
+           must be set before QGuiApplication is constructed.
+           This value was added in Qt 5.4.
 
     \value AA_ShareOpenGLContexts Enables resource sharing between the OpenGL
            contexts used by classes like QOpenGLWidget and QQuickWidget. This
            allows sharing OpenGL resources, like textures, between QOpenGLWidget
-           instances that belong to different top-level windows. This value has
-           been added in Qt 5.4. This attribute must be set before
-           \l {QGuiApplication}{Q\(Gui\)Application} is constructed.
+           instances that belong to different top-level windows. This attribute
+           must be set before QGuiApplication is constructed.
+           This value was added in Qt 5.4.
 
     \value AA_SetPalette Indicates whether a palette was explicitly set on the
-           \l {QGuiApplication}{Q\(Gui\)Application}. This value has been added
-           in Qt 5.5.
+           QGuiApplication. This value was added in Qt 5.5.
 
     \value AA_EnableHighDpiScaling Enables high-DPI scaling in Qt on supported
            platforms (see also \l{High DPI Displays}). Supported platforms are
            X11, Windows and Android. Enabling makes Qt scale the main (device
            independent) coordinate system according to display scale factors
            provided by the operating system. This corresponds to setting the
-           QT_AUTO_SCREEN\unicode{0x200b}_SCALE_FACTOR environment variable to 1. This value
-           has been added in Qt 5.6. This attribute must be set before
-           Q(Gui)Application is constructed.
+           QT_AUTO_SCREEN\unicode{0x200b}_SCALE_FACTOR environment variable to
+           1. This attribute must be set before QGuiApplication is constructed.
+           This value was added in Qt 5.6.
 
     \value AA_DisableHighDpiScaling Disables high-DPI scaling in Qt, exposing window
            system coordinates. Note that the window system may do its own scaling,
@@ -221,24 +219,26 @@
            be equal to 1. In addition, scale factors set by QT_SCALE_FACTOR will not
            be affected. This corresponds to setting the
            QT_AUTO_SCREEN\unicode{0x200b}_SCALE_FACTOR environment variable to 0.
-           This value has been added in Qt 5.6. This
-           attribute must be set before Q(Gui)Application is constructed.
+           This attribute must be set before QGuiApplication is constructed.
+           This value was added in Qt 5.6.
 
     \value AA_UseStyleSheetPropagationInWidgetStyles By default, Qt Style Sheets
            disable regular QWidget palette and font propagation. When this flag
            is enabled, font and palette changes propagate as though the user had
            manually called the corresponding QWidget methods. See
            \l{The Style Sheet Syntax#Inheritance}{The Style Sheet Syntax - Inheritance}
-           for more details. This value has been added in Qt 5.7.
+           for more details.
+           This value was added in Qt 5.7.
 
     \value AA_DontUseNativeDialogs All dialogs created while this attribute is
            set to true won't use the native dialogs provided by the platform.
-           This value has been added in Qt 5.7.
+           This value was added in Qt 5.7.
 
     \value AA_SynthesizeMouseForUnhandledTabletEvents All tablet events
            that are not accepted by the application will be translated
            to mouse events instead. This attribute is enabled
-           by default. This value has been added in Qt 5.7.
+           by default.
+           This value was added in Qt 5.7.
 
     \value AA_CompressHighFrequencyEvents Enables compression of certain frequent events.
            On the X11 windowing system, the default value is true, which means that
@@ -251,19 +251,21 @@
            If your application needs to handle all events with no compression,
            you can unset this attribute. Notice that input events from tablet devices
            will not be compressed. See AA_CompressTabletEvents if you want these to be
-           compressed as well. This value has been added in Qt 5.7.
+           compressed as well.
+           This value was added in Qt 5.7.
 
     \value AA_CompressTabletEvents Enables compression of input events from tablet devices.
            Notice that AA_CompressHighFrequencyEvents must be true for events compression
            to be enabled, and that this flag extends the former to tablet events. Its default
-           value is false. This value has been added in Qt 5.10.
+           value is false.
+           This value was added in Qt 5.10.
 
     \value AA_DontCheckOpenGLContextThreadAffinity When making a context
            current using QOpenGLContext, do not check that the
            \l{QObject#Thread Affinity}{QObject thread affinity}
            of the QOpenGLContext object is the same thread calling
-           \l{QOpenGLContext::makeCurrent}{makeCurrent()}. This value has been
-           added in Qt 5.8.
+           \l{QOpenGLContext::makeCurrent}{makeCurrent()}.
+           This value was added in Qt 5.8.
 
     \value AA_DisableShaderDiskCache Disables caching of shader program binaries
            on disk. By default Qt Quick, QPainter's OpenGL backend, and any
@@ -277,7 +279,7 @@
     \value AA_DisableWindowContextHelpButton Disables the WindowContextHelpButtonHint
            by default on Qt::Sheet and Qt::Dialog widgets. This hides the \gui ? button
            on Windows, which only makes sense if you use \l QWhatsThis functionality.
-           This value has been added in Qt 5.10. For Qt 6, WindowContextHelpButtonHint
+           This value was added in Qt 5.10. In Qt 6, WindowContextHelpButtonHint
            will not be set by default.
 
     The following values are deprecated or obsolete:
@@ -2276,12 +2278,16 @@
            correctly.
 
     \value WindowStaysOnBottomHint Informs the window system that the
-           window should stay on bottom of all other windows. Note
-           that on X11 this hint will work only in window managers
+           window should stay on bottom of all other windows.
+
+           \note On X11, this hint will work only in window managers
            that support _NET_WM_STATE_BELOW atom. If a window always
            on the bottom has a parent, the parent will also be left on
            the bottom.  This window hint is currently not implemented
            for \macos.
+
+           \note On Windows, this will work only for frameless or
+           full-screen windows.
 
     \value WindowTransparentForInput Informs the window system that this window
            is used only for output (displaying something) and does not take input.
@@ -2652,7 +2658,7 @@
                                 but \b{must} not return an empty string unless the cursor is at the end of the document.
     \value ImEnterKeyType       The Enter key type.
     \value ImAnchorRectangle    The bounding rectangle of the selection anchor.
-                                This value has been added in Qt 5.7.
+                                This value was added in Qt 5.7.
     \value ImInputItemClipRectangle The actual exposed input item rectangle. Parts of the input item might be
                                 clipped. This value will take clipping into consideration and return the actual painted
                                 item rectangle. The rectangle is in widget coordinates.
@@ -2780,7 +2786,7 @@
     \value ItemNeverHasChildren The item never has child items.
            This is used for optimization purposes only.
     \value ItemIsUserTristate The user can cycle through three separate states.
-           This value has been added in Qt 5.5.
+           This value was added in Qt 5.5.
 
     Note that checkable items need to be given both a suitable set of flags
     and an initial state, indicating whether the item is checked or not.

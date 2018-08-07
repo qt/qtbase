@@ -648,6 +648,7 @@ void tst_QtJson::testArrayNestedEmpty()
     object.insert("inner", inner);
     QJsonValue val = object.value("inner");
     QJsonArray value = object.value("inner").toArray();
+    QVERIFY(QJsonDocument(value).isArray());
     QCOMPARE(value.size(), 0);
     QCOMPARE(value, inner);
     QCOMPARE(value.size(), 0);
@@ -666,6 +667,7 @@ void tst_QtJson::testObjectNestedEmpty()
     object.insert("inner", inner);
     object.insert("inner2", inner2);
     QJsonObject value = object.value("inner").toObject();
+    QVERIFY(QJsonDocument(value).isObject());
     QCOMPARE(value.size(), 0);
     QCOMPARE(value, inner);
     QCOMPARE(value.size(), 0);

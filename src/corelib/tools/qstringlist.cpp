@@ -611,8 +611,6 @@ static int lastIndexOfMutating(const QStringList *that, QRegExp &rx, int from)
     the list, searching forward from index position \a from. Returns
     -1 if no item matched.
 
-    By default, this function is case sensitive.
-
     \sa lastIndexOf(), contains(), QRegExp::exactMatch()
 */
 int QtPrivate::QStringList_indexOf(const QStringList *that, const QRegExp &rx, int from)
@@ -629,8 +627,6 @@ int QtPrivate::QStringList_indexOf(const QStringList *that, const QRegExp &rx, i
     Returns the index position of the first exact match of \a rx in
     the list, searching forward from index position \a from. Returns
     -1 if no item matched.
-
-    By default, this function is case sensitive.
 
     If an item matched, the \a rx regular expression will contain the
     matched objects (see QRegExp::matchedLength, QRegExp::cap).
@@ -650,8 +646,6 @@ int QtPrivate::QStringList_indexOf(const QStringList *that, QRegExp &rx, int fro
     from is -1 (the default), the search starts at the last item.
     Returns -1 if no item matched.
 
-    By default, this function is case sensitive.
-
     \sa indexOf(), contains(), QRegExp::exactMatch()
 */
 int QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QRegExp &rx, int from)
@@ -669,8 +663,6 @@ int QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QRegExp &r
     the list, searching backward from index position \a from. If \a
     from is -1 (the default), the search starts at the last item.
     Returns -1 if no item matched.
-
-    By default, this function is case sensitive.
 
     If an item matched, the \a rx regular expression will contain the
     matched objects (see QRegExp::matchedLength, QRegExp::cap).

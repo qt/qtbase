@@ -1047,32 +1047,50 @@ void tst_QProcess::mergedChannels()
 
 void tst_QProcess::forwardedChannels_data()
 {
+    QTest::addColumn<bool>("detach");
     QTest::addColumn<int>("mode");
     QTest::addColumn<int>("inmode");
     QTest::addColumn<QByteArray>("outdata");
     QTest::addColumn<QByteArray>("errdata");
 
-    QTest::newRow("separate") << int(QProcess::SeparateChannels) << int(QProcess::ManagedInputChannel)
-                              << QByteArray() << QByteArray();
-    QTest::newRow("forwarded") << int(QProcess::ForwardedChannels) << int(QProcess::ManagedInputChannel)
-                               << QByteArray("forwarded") << QByteArray("forwarded");
-    QTest::newRow("stdout") << int(QProcess::ForwardedOutputChannel) << int(QProcess::ManagedInputChannel)
-                            << QByteArray("forwarded") << QByteArray();
-    QTest::newRow("stderr") << int(QProcess::ForwardedErrorChannel) << int(QProcess::ManagedInputChannel)
-                            << QByteArray() << QByteArray("forwarded");
-    QTest::newRow("fwdinput") << int(QProcess::ForwardedErrorChannel) << int(QProcess::ForwardedInputChannel)
-                            << QByteArray() << QByteArray("input");
+    QTest::newRow("separate")
+            << false
+            << int(QProcess::SeparateChannels) << int(QProcess::ManagedInputChannel)
+            << QByteArray() << QByteArray();
+    QTest::newRow("forwarded")
+            << false
+            << int(QProcess::ForwardedChannels) << int(QProcess::ManagedInputChannel)
+            << QByteArray("forwarded") << QByteArray("forwarded");
+    QTest::newRow("stdout")
+            << false
+            << int(QProcess::ForwardedOutputChannel) << int(QProcess::ManagedInputChannel)
+            << QByteArray("forwarded") << QByteArray();
+    QTest::newRow("stderr")
+            << false
+            << int(QProcess::ForwardedErrorChannel) << int(QProcess::ManagedInputChannel)
+            << QByteArray() << QByteArray("forwarded");
+    QTest::newRow("fwdinput")
+            << false
+            << int(QProcess::ForwardedErrorChannel) << int(QProcess::ForwardedInputChannel)
+            << QByteArray() << QByteArray("input");
+    QTest::newRow("detached-default-forwarding")
+            << true
+            << int(QProcess::SeparateChannels) << int(QProcess::ManagedInputChannel)
+            << QByteArray("out data") << QByteArray("err data");
 }
 
 void tst_QProcess::forwardedChannels()
 {
+    QFETCH(bool, detach);
     QFETCH(int, mode);
     QFETCH(int, inmode);
     QFETCH(QByteArray, outdata);
     QFETCH(QByteArray, errdata);
 
     QProcess process;
-    process.start("testForwarding/testForwarding", QStringList() << QString::number(mode) << QString::number(inmode));
+    process.start("testForwarding/testForwarding",
+                  QStringList() << QString::number(mode) << QString::number(inmode)
+                                << QString::number(bool(detach)));
     QVERIFY(process.waitForStarted(5000));
     QCOMPARE(process.write("input"), 5);
     process.closeWriteChannel();
@@ -1089,7 +1107,9 @@ void tst_QProcess::forwardedChannels()
     case 4: err = "did not finish"; break;
     case 5: err = "unexpected stdout"; break;
     case 6: err = "unexpected stderr"; break;
-    case 13: err = "parameter error"; break;
+    case 12: err = "cannot create temp file"; break;
+    case 13: err = "startDetached failed"; break;
+    case 14: err = "waitForDoneFileWritten timed out"; break;
     default: err = "unknown exit code"; break;
     }
     QVERIFY2(!process.exitCode(), err);
