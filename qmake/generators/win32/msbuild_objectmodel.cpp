@@ -557,6 +557,12 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
     addFilters(tempProj, xmlFilter, "Deployment Files");
     addFilters(tempProj, xmlFilter, "Distribution Files");
 
+    tempProj.ExtraCompilers.reserve(tool.ExtraCompilersFiles.size());
+    std::transform(tool.ExtraCompilersFiles.cbegin(), tool.ExtraCompilersFiles.cend(),
+                   std::back_inserter(tempProj.ExtraCompilers),
+                   [] (const VCFilter &filter) { return filter.Name; });
+    tempProj.ExtraCompilers.removeDuplicates();
+
     for (int x = 0; x < tempProj.ExtraCompilers.count(); ++x)
         addFilters(tempProj, xmlFilter, tempProj.ExtraCompilers.at(x));
 
