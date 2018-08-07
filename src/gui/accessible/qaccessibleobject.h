@@ -65,7 +65,7 @@ public:
     QAccessibleInterface *childAt(int x, int y) const override;
 
 protected:
-    virtual ~QAccessibleObject();
+    ~QAccessibleObject();
 
 private:
     QAccessibleObjectPrivate *d;

@@ -219,7 +219,7 @@ public:
         requestedFormat = QSurfaceFormat::defaultFormat();
     }
 
-    virtual ~QOpenGLContextPrivate()
+    ~QOpenGLContextPrivate()
     {
         //do not delete the QOpenGLContext handle here as it is deleted in
         //QWidgetPrivate::deleteTLSysExtra()

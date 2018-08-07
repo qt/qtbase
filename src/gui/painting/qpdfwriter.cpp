@@ -76,7 +76,7 @@ public:
         : QPagedPaintDevicePrivate(), pd(d)
     {}
 
-    virtual ~QPdfPagedPaintDevicePrivate()
+    ~QPdfPagedPaintDevicePrivate()
     {}
 
     bool setPageLayout(const QPageLayout &newPageLayout) override

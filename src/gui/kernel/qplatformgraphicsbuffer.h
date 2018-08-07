@@ -78,7 +78,7 @@ public:
         OriginTopLeft
     };
 
-    virtual ~QPlatformGraphicsBuffer();
+    ~QPlatformGraphicsBuffer();
 
     AccessTypes isLocked() const { return m_lock_access; }
     bool lock(AccessTypes access, const QRect &rect = QRect());

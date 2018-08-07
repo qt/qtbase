@@ -153,7 +153,7 @@ public:
     Q_ENUM(ButtonLayout)
 
     QPlatformDialogHelper();
-    virtual ~QPlatformDialogHelper();
+    ~QPlatformDialogHelper();
 
     virtual QVariant styleHint(StyleHint hint) const;
 

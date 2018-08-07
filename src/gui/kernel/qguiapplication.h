@@ -86,7 +86,7 @@ public:
 #else
     QGuiApplication(int &argc, char **argv, int = ApplicationFlags);
 #endif
-    virtual ~QGuiApplication();
+    ~QGuiApplication();
 
     static void setApplicationDisplayName(const QString &name);
     static QString applicationDisplayName();

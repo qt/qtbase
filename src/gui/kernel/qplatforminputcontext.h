@@ -67,7 +67,7 @@ public:
     };
 
     QPlatformInputContext();
-    virtual ~QPlatformInputContext();
+    ~QPlatformInputContext();
 
     virtual bool isValid() const;
     virtual bool hasCapability(Capability capability) const;

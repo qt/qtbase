@@ -89,7 +89,7 @@ public:
         contentStream = device;
     }
 
-    virtual ~QXmlStreamStrategy()
+    ~QXmlStreamStrategy()
     {
         if (contentStream)
             contentStream->close();

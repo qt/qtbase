@@ -141,7 +141,7 @@ class Q_GUI_EXPORT QImageIOPlugin : public QObject
     Q_OBJECT
 public:
     explicit QImageIOPlugin(QObject *parent = nullptr);
-    virtual ~QImageIOPlugin();
+    ~QImageIOPlugin();
 
     enum Capability {
         CanRead = 0x1,

@@ -60,7 +60,7 @@ public:
     // ### Qt 6: merge overloads
     explicit QOffscreenSurface(QScreen *screen, QObject *parent);
     explicit QOffscreenSurface(QScreen *screen = nullptr);
-    virtual ~QOffscreenSurface();
+    ~QOffscreenSurface();
 
     SurfaceType surfaceType() const override;
 

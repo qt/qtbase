@@ -71,7 +71,7 @@ class QScreen;
 class Q_GUI_EXPORT QBasicDrag : public QPlatformDrag, public QObject
 {
 public:
-    virtual ~QBasicDrag();
+    ~QBasicDrag();
 
     virtual Qt::DropAction drag(QDrag *drag) override;
     void cancelDrag() override;

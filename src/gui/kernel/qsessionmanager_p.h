@@ -69,7 +69,7 @@ public:
     QSessionManagerPrivate(const QString &id,
                            const QString &key);
 
-    virtual ~QSessionManagerPrivate();
+    ~QSessionManagerPrivate();
 
     QPlatformSessionManager *platformSessionManager;
 };

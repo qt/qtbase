@@ -143,7 +143,7 @@ public:
 
     explicit QWindow(QScreen *screen = nullptr);
     explicit QWindow(QWindow *parent);
-    virtual ~QWindow();
+    ~QWindow();
 
     void setSurfaceType(SurfaceType surfaceType);
     SurfaceType surfaceType() const override;
