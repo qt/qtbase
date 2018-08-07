@@ -1248,9 +1248,8 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
     }
 
     QList<QSslError> errors;
-    // store certificates
-    const int certCount = SecTrustGetCertificateCount(trust);
 
+    // Store certificates.
     // Apple's docs say SetTrustEvaluate must be called before
     // SecTrustGetCertificateAtIndex, but this results
     // in 'kSecTrustResultRecoverableTrustFailure', so
@@ -1270,19 +1269,17 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
     configuration.peerCertificate.clear();
     configuration.peerCertificateChain.clear();
 
-    for (int i = 0; i < certCount; ++i) {
+    const CFIndex certCount = SecTrustGetCertificateCount(trust);
+    for (CFIndex i = 0; i < certCount; ++i) {
         SecCertificateRef cert = SecTrustGetCertificateAtIndex(trust, i);
         QCFType<CFDataRef> derData = SecCertificateCopyData(cert);
         configuration.peerCertificateChain << QSslCertificate(QByteArray::fromCFData(derData), QSsl::Der);
     }
 
-    if (certCount > 0) {
-        SecCertificateRef cert = SecTrustGetCertificateAtIndex(trust, 0);
-        QCFType<CFDataRef> derData = SecCertificateCopyData(cert);
-        configuration.peerCertificate = QSslCertificate(QByteArray::fromCFData(derData), QSsl::Der);
-    }
+    if (configuration.peerCertificateChain.size())
+        configuration.peerCertificate = configuration.peerCertificateChain.at(0);
 
-    // check the whole chain for blacklisting (including root, as we check for subjectInfo and issuer)
+    // Check the whole chain for blacklisting (including root, as we check for subjectInfo and issuer):
     for (const QSslCertificate &cert : qAsConst(configuration.peerCertificateChain)) {
         if (QSslCertificatePrivate::isBlacklisted(cert) && !canIgnoreVerify) {
             const QSslError error(QSslError::CertificateBlacklisted, cert);
