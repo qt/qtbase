@@ -98,10 +98,18 @@
 #define QT_NO_QOBJECT
 #define QT_FEATURE_process -1
 #define QT_FEATURE_regularexpression -1
-#define QT_FEATURE_renameat2 -1
+#ifdef __GLIBC_PREREQ
+# define QT_FEATURE_renameat2 (__GLIBC_PREREQ(2, 28) ? 1 : -1)
+#else
+# define QT_FEATURE_renameat2 -1
+#endif
 #define QT_FEATURE_sharedmemory -1
 #define QT_FEATURE_slog2 -1
-#define QT_FEATURE_statx -1
+#ifdef __GLIBC_PREREQ
+# define QT_FEATURE_statx (__GLIBC_PREREQ(2, 28) ? 1 : -1)
+#else
+# define QT_FEATURE_statx -1
+#endif
 #define QT_FEATURE_syslog -1
 #define QT_NO_SYSTEMLOCALE
 #define QT_FEATURE_systemsemaphore -1

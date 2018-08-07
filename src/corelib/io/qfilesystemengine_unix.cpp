@@ -91,7 +91,6 @@ extern "C" NSString *NSTemporaryDirectory();
 #  include <sys/syscall.h>
 #  include <sys/sendfile.h>
 #  include <linux/fs.h>
-#  include <linux/stat.h>
 
 // in case linux/fs.h is too old and doesn't define it:
 #ifndef FICLONE
@@ -112,6 +111,7 @@ static int renameat2(int oldfd, const char *oldpath, int newfd, const char *newp
 #    endif
 
 #    if !QT_CONFIG(statx) && defined(SYS_statx)
+#      include <linux/stat.h>
 static int statx(int dirfd, const char *pathname, int flag, unsigned mask, struct statx *statxbuf)
 { return syscall(SYS_statx, dirfd, pathname, flag, mask, statxbuf); }
 #    elif !QT_CONFIG(statx) && !defined(SYS_statx)
