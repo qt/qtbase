@@ -433,6 +433,46 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn template <typename T> QLEInteger &QLEInteger<T>::operator++()
+
+    Performs a prefix ++ (increment) on this QLEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn template <typename T> QLEInteger QLEInteger<T>::operator++(int)
+
+    Performs a postfix ++ (increment) on this QLEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn template <typename T> QLEInteger &QLEInteger<T>::operator--()
+
+    Performs a prefix -- (decrement) on this QLEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn template <typename T> QLEInteger QLEInteger<T>::operator--(int)
+
+    Performs a postfix -- (decrement) on this QLEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn template <typename T> QLEInteger QLEInteger<T>::max()
+
+    Returns the maximum (finite) value representable by the numeric type T.
+*/
+
+/*!
+    \fn template <typename T> QLEInteger QLEInteger<T>::min()
+
+    Returns the minimum (finite) value representable by the numeric type T.
+*/
+
+/*!
     \class QBEInteger
     \inmodule QtCore
     \brief The QBEInteger class provides platform-independent big-endian integers.
@@ -549,6 +589,46 @@ QT_BEGIN_NAMESPACE
 
     Performs a bitwise XOR with \a i onto this QBEInteger and returns a reference to
     this object.
+*/
+
+/*!
+    \fn template <typename T> QBEInteger &QBEInteger<T>::operator++()
+
+    Performs a prefix ++ (increment) on this QBEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn template <typename T> QBEInteger QBEInteger<T>::operator++(int)
+
+    Performs a postfix ++ (increment) on this QBEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn template <typename T> QBEInteger &QBEInteger<T>::operator--()
+
+    Performs a prefix -- (decrement) on this QBEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn template <typename T> QBEInteger QBEInteger<T>::operator--(int)
+
+    Performs a postfix -- (decrement) on this QBEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn template <typename T> QBEInteger QBEInteger<T>::max()
+
+    Returns the maximum (finite) value representable by the numeric type T.
+*/
+
+/*!
+    \fn template <typename T> QBEInteger QBEInteger<T>::min()
+
+    Returns the minimum (finite) value representable by the numeric type T.
 */
 
 /*!
