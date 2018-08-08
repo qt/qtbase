@@ -49,10 +49,6 @@
 
 #include <QtCore/QDebug>
 
-#define class class_name // Workaround XCB-ICCCM 3.8 breakage
-#include <xcb/xcb_icccm.h>
-#undef class
-
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_CLIPBOARD
