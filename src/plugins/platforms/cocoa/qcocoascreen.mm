@@ -147,7 +147,9 @@ void QCocoaScreen::updateProperties()
 
     m_name = displayName(dpy);
 
-    if (m_geometry != previousGeometry || m_availableGeometry != previousAvailableGeometry)
+    const bool didChangeGeometry = m_geometry != previousGeometry || m_availableGeometry != previousAvailableGeometry;
+
+    if (didChangeGeometry)
         QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry(), availableGeometry());
     if (m_logicalDpi != previousLogicalDpi)
         QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen(), m_logicalDpi.first, m_logicalDpi.second);
@@ -155,6 +157,22 @@ void QCocoaScreen::updateProperties()
         QWindowSystemInterface::handleScreenRefreshRateChange(screen(), m_refreshRate);
 
     qCDebug(lcQpaScreen) << "Updated properties for" << this;
+
+    if (didChangeGeometry) {
+        // When a screen changes its geometry, AppKit will send us a NSWindowDidMoveNotification
+        // for each window, resulting in calls to handleGeometryChange(), but this happens before
+        // the NSApplicationDidChangeScreenParametersNotification, so when we map the new geometry
+        // (which is correct at that point) to the screen using QCocoaScreen::mapFromNative(), we
+        // end up using the stale screen geometry, and the new window geometry we report is wrong.
+        // To make sure we finally report the correct window geometry, we need to do another pass
+        // of geometry reporting, now that the screen properties have been updates. FIXME: Ideally
+        // this would be solved by not caching the screen properties in QCocoaScreen, but that
+        // requires more research.
+        for (QWindow *window : windows()) {
+            if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow*>(window->handle()))
+                cocoaWindow->handleGeometryChange();
+        }
+    }
 }
 
 // ----------------------- Display link -----------------------
