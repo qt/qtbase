@@ -123,6 +123,8 @@ public:
     virtual void setOrientationUpdateMask(Qt::ScreenOrientations mask);
 
     virtual QWindow *topLevelAt(const QPoint &point) const;
+    QWindowList windows() const;
+
     virtual QList<QPlatformScreen *> virtualSiblings() const;
     const QPlatformScreen *screenForPosition(const QPoint &point) const;
 

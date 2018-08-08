@@ -1864,19 +1864,19 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
                 static_cast<QWindowSystemInterfacePrivate::CloseEvent *>(e));
         break;
     case QWindowSystemInterfacePrivate::ScreenOrientation:
-        QGuiApplicationPrivate::reportScreenOrientationChange(
+        QGuiApplicationPrivate::processScreenOrientationChange(
                 static_cast<QWindowSystemInterfacePrivate::ScreenOrientationEvent *>(e));
         break;
     case QWindowSystemInterfacePrivate::ScreenGeometry:
-        QGuiApplicationPrivate::reportGeometryChange(
+        QGuiApplicationPrivate::processScreenGeometryChange(
                 static_cast<QWindowSystemInterfacePrivate::ScreenGeometryEvent *>(e));
         break;
     case QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInch:
-        QGuiApplicationPrivate::reportLogicalDotsPerInchChange(
+        QGuiApplicationPrivate::processScreenLogicalDotsPerInchChange(
                 static_cast<QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *>(e));
         break;
     case QWindowSystemInterfacePrivate::ScreenRefreshRate:
-        QGuiApplicationPrivate::reportRefreshRateChange(
+        QGuiApplicationPrivate::processScreenRefreshRateChange(
                 static_cast<QWindowSystemInterfacePrivate::ScreenRefreshRateEvent *>(e));
         break;
     case QWindowSystemInterfacePrivate::ThemeChange:
@@ -2907,7 +2907,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
     }
 }
 
-void QGuiApplicationPrivate::reportScreenOrientationChange(QWindowSystemInterfacePrivate::ScreenOrientationEvent *e)
+void QGuiApplicationPrivate::processScreenOrientationChange(QWindowSystemInterfacePrivate::ScreenOrientationEvent *e)
 {
     // This operation only makes sense after the QGuiApplication constructor runs
     if (QCoreApplication::startingUp())
@@ -2944,7 +2944,7 @@ void QGuiApplicationPrivate::reportScreenOrientationChange(QScreen *s)
     QCoreApplication::sendEvent(QCoreApplication::instance(), &event);
 }
 
-void QGuiApplicationPrivate::reportGeometryChange(QWindowSystemInterfacePrivate::ScreenGeometryEvent *e)
+void QGuiApplicationPrivate::processScreenGeometryChange(QWindowSystemInterfacePrivate::ScreenGeometryEvent *e)
 {
     // This operation only makes sense after the QGuiApplication constructor runs
     if (QCoreApplication::startingUp())
@@ -2987,7 +2987,7 @@ void QGuiApplicationPrivate::reportGeometryChange(QWindowSystemInterfacePrivate:
     }
 }
 
-void QGuiApplicationPrivate::reportLogicalDotsPerInchChange(QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *e)
+void QGuiApplicationPrivate::processScreenLogicalDotsPerInchChange(QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *e)
 {
     // This operation only makes sense after the QGuiApplication constructor runs
     if (QCoreApplication::startingUp())
@@ -3002,7 +3002,7 @@ void QGuiApplicationPrivate::reportLogicalDotsPerInchChange(QWindowSystemInterfa
     emit s->logicalDotsPerInchChanged(s->logicalDotsPerInch());
 }
 
-void QGuiApplicationPrivate::reportRefreshRateChange(QWindowSystemInterfacePrivate::ScreenRefreshRateEvent *e)
+void QGuiApplicationPrivate::processScreenRefreshRateChange(QWindowSystemInterfacePrivate::ScreenRefreshRateEvent *e)
 {
     // This operation only makes sense after the QGuiApplication constructor runs
     if (QCoreApplication::startingUp())
