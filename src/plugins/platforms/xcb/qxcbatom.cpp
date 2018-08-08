@@ -183,16 +183,6 @@ static const char *xcb_atomnames = {
     "XdndActionMove\0"
     "XdndActionPrivate\0"
 
-    // Motif DND
-    "_MOTIF_DRAG_AND_DROP_MESSAGE\0"
-    "_MOTIF_DRAG_INITIATOR_INFO\0"
-    "_MOTIF_DRAG_RECEIVER_INFO\0"
-    "_MOTIF_DRAG_WINDOW\0"
-    "_MOTIF_DRAG_TARGETS\0"
-
-    "XmTRANSFER_SUCCESS\0"
-    "XmTRANSFER_FAILURE\0"
-
     // Xkb
     "_XKB_RULES_NAMES\0"
 

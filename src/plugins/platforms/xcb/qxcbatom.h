@@ -184,16 +184,6 @@ public:
         XdndActionMove,
         XdndActionPrivate,
 
-        // Motif DND
-        _MOTIF_DRAG_AND_DROP_MESSAGE,
-        _MOTIF_DRAG_INITIATOR_INFO,
-        _MOTIF_DRAG_RECEIVER_INFO,
-        _MOTIF_DRAG_WINDOW,
-        _MOTIF_DRAG_TARGETS,
-
-        XmTRANSFER_SUCCESS,
-        XmTRANSFER_FAILURE,
-
         // Xkb
         _XKB_RULES_NAMES,
 
