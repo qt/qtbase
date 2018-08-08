@@ -724,7 +724,8 @@ void tst_QMenu::submenuTearOffDontClose()
     // Move then click to avoid the submenu moves from causing it to close
     QTest::mouseMove(menu, submenuPos, 100);
     QTest::mouseClick(menu, Qt::LeftButton, 0, submenuPos, 100);
-    QTRY_VERIFY(QTest::qWaitForWindowActive(submenu));
+    QVERIFY(QTest::qWaitFor([&]() { return submenu->window()->windowHandle(); }));
+    QVERIFY(QTest::qWaitForWindowActive(submenu));
     // Make sure we enter the submenu frame directly on the tear-off area
     QTest::mouseMove(submenu, QPoint(10, 3), 100);
     if (submenu->style()->styleHint(QStyle::SH_Menu_SubMenuDontStartSloppyOnLeave)) {
