@@ -327,8 +327,8 @@ void QCborArray::insert(qsizetype i, QCborValue &&value)
 }
 
 /*!
-    \fn QCborValue QCborArray::extract(iterator it)
-    \fn QCborValue QCborArray::extract(const_iterator it)
+    \fn QCborValue QCborArray::extract(Iterator it)
+    \fn QCborValue QCborArray::extract(ConstIterator it)
 
     Extracts a value from the array at the position indicated by iterator \a it
     and returns the value so extracted.
@@ -1048,6 +1048,7 @@ void QCborArray::detach(qsizetype reserved)
 */
 
 /*!
+    \fn bool QCborArray::ConstIterator::operator==(const Iterator &other) const
     \fn bool QCborArray::ConstIterator::operator==(const ConstIterator &other) const
 
     Returns \c true if \a other points to the same entry in the array as this
@@ -1067,6 +1068,7 @@ void QCborArray::detach(qsizetype reserved)
 */
 
 /*!
+    \fn bool QCborArray::ConstIterator::operator<(const Iterator &other) const
     \fn bool QCborArray::ConstIterator::operator<(const ConstIterator &other) const
 
     Returns \c true if the entry in the array pointed to by this iterator
@@ -1074,6 +1076,7 @@ void QCborArray::detach(qsizetype reserved)
 */
 
 /*!
+    \fn bool QCborArray::ConstIterator::operator<=(const Iterator &other) const
     \fn bool QCborArray::ConstIterator::operator<=(const ConstIterator &other) const
 
     Returns \c true if the entry in the array pointed to by this iterator
@@ -1082,6 +1085,7 @@ void QCborArray::detach(qsizetype reserved)
 */
 
 /*!
+    \fn bool QCborArray::ConstIterator::operator>(const Iterator &other) const
     \fn bool QCborArray::ConstIterator::operator>(const ConstIterator &other) const
 
     Returns \c true if the entry in the array pointed to by this iterator
@@ -1089,6 +1093,7 @@ void QCborArray::detach(qsizetype reserved)
 */
 
 /*!
+    \fn bool QCborArray::ConstIterator::operator>=(const Iterator &other) const
     \fn bool QCborArray::ConstIterator::operator>=(const ConstIterator &other) const
 
     Returns \c true if the entry in the array pointed to by this iterator
