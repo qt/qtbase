@@ -58,8 +58,7 @@ QT_BEGIN_NAMESPACE
 namespace QTestPrivate {
     // Export functions so they can also be used by QQuickTest
     Q_TESTLIB_EXPORT void parseBlackList();
-    Q_TESTLIB_EXPORT void parseGpuBlackList();
-    Q_TESTLIB_EXPORT void checkBlackLists(const char *slot, const char *data);
+    Q_TESTLIB_EXPORT void checkBlackList(const char *slot, const char *data);
 }
 
 QT_END_NAMESPACE
