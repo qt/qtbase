@@ -92,6 +92,7 @@ DtlsServer::DtlsServer()
 {
     connect(&serverSocket, &QAbstractSocket::readyRead, this, &DtlsServer::readyRead);
 
+    serverConfiguration = QSslConfiguration::defaultDtlsConfiguration();
     serverConfiguration.setPreSharedKeyIdentityHint("Qt DTLS example server");
     serverConfiguration.setPeerVerifyMode(QSslSocket::VerifyNone);
 }
