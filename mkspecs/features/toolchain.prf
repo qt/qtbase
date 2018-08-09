@@ -142,6 +142,29 @@ isEmpty($${target_prefix}.INCDIRS) {
             !integrity: \
                 error("failed to parse default search paths from compiler output")
         QMAKE_DEFAULT_LIBDIRS = $$unique(QMAKE_DEFAULT_LIBDIRS)
+    } else: ghs {
+        cmd = $$QMAKE_CXX $$QMAKE_CXXFLAGS -$${LITERAL_HASH} -o /tmp/fake_output /tmp/fake_input.cpp
+        output = $$system("$$cmd", blob, ec)
+        !equals(ec, 0): qtCompilerErrror($$QMAKE_CXX, $$output)
+        output ~= s/\\\\\\n {8}//g
+        output = $$split(output, $$escape_expand(\\n))
+        for (line, output) {
+            contains(line, "^[^ ]+/ecom[^ ]+ .* /tmp/fake_input\\.cpp") {
+                for (parameter, $$list($$line)) {
+                    contains(parameter, "^(-I|--include_no_mmd=|--sys_include=).*") {
+                        parameter ~= s/^(-I|--include_no_mmd=|--sys_include=)//
+                        QMAKE_DEFAULT_INCDIRS += $$clean_path($$parameter)
+                    }
+                }
+            } else: contains(line, "^[^ ]+/elxr .*") {
+                for (parameter, $$list($$line)) {
+                    contains(parameter, "^-L.*") {
+                        parameter ~= s/^-L//
+                        QMAKE_DEFAULT_LIBDIRS += $$clean_path($$parameter)
+                    }
+                }
+            }
+        }
     } else: msvc {
         # This doesn't differentiate between host and target,
         # but neither do the compilers.
@@ -199,11 +222,11 @@ isEmpty($${target_prefix}.COMPILER_MACROS) {
         } else {
             vars = $$qtVariablesFromMSVC($$QMAKE_CXX)
         }
-    } else: gcc {
+    } else: gcc|ghs {
         vars = $$qtVariablesFromGCC($$QMAKE_CXX)
     }
     for (v, vars) {
-        contains(v, $${LITERAL_HASH}.*)|contains(v, " *"): next()
+        !contains(v, "[A-Z_]+ = .*"): next()
         # Set both <varname> for the outer scope ...
         eval($$v)
         v ~= s/ .*//
@@ -245,6 +268,8 @@ QMAKE_COMPILER_DEFINES += __cplusplus=$$QT_COMPILER_STDCXX
         __GNUC__=$$QMAKE_GCC_MAJOR_VERSION \
         __GNUC_MINOR__=$$QMAKE_GCC_MINOR_VERSION \
         __GNUC_PATCHLEVEL__=$$QMAKE_GCC_PATCH_VERSION
+!isEmpty(QMAKE_GHS_VERSION): \
+    QMAKE_COMPILER_DEFINES += __ghs__ __GHS_VERSION_NUMBER=$$QMAKE_GHS_VERSION
 
 QMAKE_CFLAGS += $$QMAKE_CFLAGS_MSVC_COMPAT
 QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_MSVC_COMPAT

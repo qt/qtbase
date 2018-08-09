@@ -1144,6 +1144,12 @@ defineReplace(qtConfOutputPostProcess_publicPro) {
             "QT_ICC_MINOR_VERSION = $$format_number($$replace(QMAKE_ICC_VER, "(..)(..)", "\\2"))" \
             "QT_ICC_PATCH_VERSION = $$QMAKE_ICC_UPDATE_VER"
     }
+    !isEmpty(QMAKE_GHS_VERSION) {
+        output += \
+            "QT_GHS_MAJOR_VERSION = $$replace(QMAKE_GHS_VERSION, "(.*)(.)(.)", "\\1")" \
+            "QT_GHS_MINOR_VERSION = $$replace(QMAKE_GHS_VERSION, "(.*)(.)(.)", "\\2")" \
+            "QT_GHS_PATCH_VERSION = $$replace(QMAKE_GHS_VERSION, "(.*)(.)(.)", "\\3")"
+    }
 
     output += "QT_EDITION = $$config.input.qt_edition"
     !contains(config.input.qt_edition, "(OpenSource|Preview)") {
