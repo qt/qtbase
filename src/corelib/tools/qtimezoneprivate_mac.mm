@@ -227,7 +227,7 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
 QTimeZonePrivate::Data QMacTimeZonePrivate::previousTransition(qint64 beforeMSecsSinceEpoch) const
 {
     // The native API only lets us search forward, so we need to find an early-enough start:
-    const NSTimeInterval lowerBound = std::numeric_limits<NSTimeInterval>::min();
+    const NSTimeInterval lowerBound = std::numeric_limits<NSTimeInterval>::lowest();
     const qint64 endSecs = beforeMSecsSinceEpoch / 1000;
     const int year = 366 * 24 * 3600; // a (long) year, in seconds
     NSTimeInterval prevSecs = endSecs; // sentinel for later check
