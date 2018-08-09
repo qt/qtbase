@@ -78,6 +78,7 @@ private slots:
 #endif
 
     void ctor();
+    void emptyCtor_data();
     void emptyCtor();
     void consistentC();
     void matchingLocales();
@@ -157,6 +158,7 @@ private slots:
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
     QString m_sysapp;
+    QStringList cleanEnv;
     bool europeanTimeZone;
 };
 
@@ -189,6 +191,14 @@ void tst_QLocale::initTestCase()
     QVERIFY2(fi.exists() && fi.isExecutable(),
              qPrintable(QDir::toNativeSeparators(m_sysapp)
                         + QStringLiteral(" does not exist or is not executable.")));
+
+    // Get an environment free of any locale-related variables
+    cleanEnv.clear();
+    foreach (QString const& entry, QProcess::systemEnvironment()) {
+        if (entry.startsWith("LANG=") || entry.startsWith("LC_") || entry.startsWith("LANGUAGE="))
+            continue;
+        cleanEnv << entry;
+    }
 #endif // QT_CONFIG(process)
 }
 
@@ -528,81 +538,101 @@ static inline bool runSysAppTest(const QString &binary,
 }
 #endif
 
-void tst_QLocale::emptyCtor()
+void tst_QLocale::emptyCtor_data()
 {
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
-#else
+#endif
 #ifdef Q_OS_ANDROID
     QSKIP("This test crashes on Android");
 #endif
-#define TEST_CTOR(req_lc, exp_str) \
-    { \
-    /* Test constructor without arguments. Needs separate process */ \
-    /* because of caching of the system locale. */ \
-    QString errorMessage; \
-    QVERIFY2(runSysAppTest(m_sysapp, env, QLatin1String(req_lc), QLatin1String(exp_str), &errorMessage), \
-             qPrintable(errorMessage)); \
-    }
 
-    // Get an environment free of any locale-related variables
-    QStringList env;
-    foreach (QString const& entry, QProcess::systemEnvironment()) {
-        if (entry.startsWith("LANG=") || entry.startsWith("LC_") || entry.startsWith("LANGUAGE="))
-            continue;
-        env << entry;
-    }
+    QTest::addColumn<QString>("expected");
 
+#define ADD_CTOR_TEST(give, expect) QTest::newRow(give) << QStringLiteral(expect);
+
+    // For format and meaning, see:
+    // http://pubs.opengroup.org/onlinepubs/7908799/xbd/envvar.html
+    // Note that the accepted values for fields are implementation-dependent;
+    // the template is language[_territory][.codeset][@modifier]
+
+    // Vanilla:
+    ADD_CTOR_TEST("C", "C");
+
+    // Standard forms:
+    ADD_CTOR_TEST("en", "en_US");
+    ADD_CTOR_TEST("en_GB", "en_GB");
+    ADD_CTOR_TEST("de", "de_DE");
+    // Norsk has some quirks:
+    ADD_CTOR_TEST("no", "nb_NO");
+    ADD_CTOR_TEST("nb", "nb_NO");
+    ADD_CTOR_TEST("nn", "nn_NO");
+    ADD_CTOR_TEST("no_NO", "nb_NO");
+    ADD_CTOR_TEST("nb_NO", "nb_NO");
+    ADD_CTOR_TEST("nn_NO", "nn_NO");
+
+    // Not too fussy about case:
+    ADD_CTOR_TEST("DE", "de_DE");
+    ADD_CTOR_TEST("EN", "en_US");
+
+    // Invalid fields
+    ADD_CTOR_TEST("bla", "C");
+    ADD_CTOR_TEST("zz", "C");
+    ADD_CTOR_TEST("zz_zz", "C");
+    ADD_CTOR_TEST("zz...", "C");
+    ADD_CTOR_TEST("en.bla", "en_US");
+    ADD_CTOR_TEST("en@bla", "en_US");
+    ADD_CTOR_TEST("en_blaaa", "en_US");
+    ADD_CTOR_TEST("en_zz", "en_US");
+    ADD_CTOR_TEST("en_GB.bla", "en_GB");
+    ADD_CTOR_TEST("en_GB@.bla", "en_GB");
+    ADD_CTOR_TEST("en_GB@bla", "en_GB");
+
+    // Empty optional fields, but with punctuators supplied
+    ADD_CTOR_TEST("en.", "en_US");
+    ADD_CTOR_TEST("en@", "en_US");
+    ADD_CTOR_TEST("en.@", "en_US");
+    ADD_CTOR_TEST("en_", "en_US");
+    ADD_CTOR_TEST("en_.", "en_US");
+    ADD_CTOR_TEST("en_.@", "en_US");
+#undef ADD_CTOR_TEST
+
+#if QT_CONFIG(process) // for runSysApp
     // Get default locale.
     QString defaultLoc;
     QString errorMessage;
-    QVERIFY2(runSysApp(m_sysapp, env, &defaultLoc, &errorMessage),
+    if (runSysApp(m_sysapp, cleanEnv, &defaultLoc, &errorMessage)) {
+#define ADD_CTOR_TEST(give) QTest::newRow(give) << defaultLoc;
+        ADD_CTOR_TEST("en/");
+        ADD_CTOR_TEST("asdfghj");
+        ADD_CTOR_TEST("123456");
+#undef ADD_CTOR_TEST
+    } else {
+        qDebug() << "Skipping tests based on default locale" << qPrintable(errorMessage);
+    }
+#endif // process
+}
+
+void tst_QLocale::emptyCtor()
+{
+#if QT_CONFIG(process) // for runSysAppTest
+    QLatin1String request(QTest::currentDataTag());
+    QFETCH(QString, expected);
+
+    // Test constructor without arguments (see syslocaleapp/syslocaleapp.cpp)
+    // Needs separate process because of caching of the system locale.
+    QString errorMessage;
+    QVERIFY2(runSysAppTest(m_sysapp, cleanEnv, request, expected, &errorMessage),
              qPrintable(errorMessage));
 
-    TEST_CTOR("C", "C")
-    TEST_CTOR("bla", "C")
-    TEST_CTOR("zz", "C")
-    TEST_CTOR("zz_zz", "C")
-    TEST_CTOR("zz...", "C")
-    TEST_CTOR("en", "en_US")
-    TEST_CTOR("en", "en_US")
-    TEST_CTOR("en.", "en_US")
-    TEST_CTOR("en@", "en_US")
-    TEST_CTOR("en.@", "en_US")
-    TEST_CTOR("en_", "en_US")
-    TEST_CTOR("en_.", "en_US")
-    TEST_CTOR("en_.@", "en_US")
-    TEST_CTOR("en.bla", "en_US")
-    TEST_CTOR("en@bla", "en_US")
-    TEST_CTOR("en_blaaa", "en_US")
-    TEST_CTOR("en_zz", "en_US")
-    TEST_CTOR("en_GB", "en_GB")
-    TEST_CTOR("en_GB.bla", "en_GB")
-    TEST_CTOR("en_GB@.bla", "en_GB")
-    TEST_CTOR("en_GB@bla", "en_GB")
-    TEST_CTOR("de", "de_DE")
-
-    QVERIFY(QLocale::Norwegian == QLocale::NorwegianBokmal);
-    TEST_CTOR("no", "nb_NO")
-    TEST_CTOR("nb", "nb_NO")
-    TEST_CTOR("nn", "nn_NO")
-    TEST_CTOR("no_NO", "nb_NO")
-    TEST_CTOR("nb_NO", "nb_NO")
-    TEST_CTOR("nn_NO", "nn_NO")
-
-    TEST_CTOR("DE", "de_DE");
-    TEST_CTOR("EN", "en_US");
-
-    TEST_CTOR("en/", defaultLoc.toLatin1())
-    TEST_CTOR("asdfghj", defaultLoc.toLatin1());
-    TEST_CTOR("123456", defaultLoc.toLatin1());
-
-#undef TEST_CTOR
-#endif
+#else
+    // This won't be called, as _data() skipped out early.
+#endif // process
 }
 
 void tst_QLocale::legacyNames()
 {
+    QVERIFY(QLocale::Norwegian == QLocale::NorwegianBokmal);
     QLocale::setDefault(QLocale(QLocale::C));
 
 #define TEST_CTOR(req_lang, req_country, exp_lang, exp_country) \
