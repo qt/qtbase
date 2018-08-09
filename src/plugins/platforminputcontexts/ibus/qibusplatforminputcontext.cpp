@@ -93,6 +93,7 @@ public:
     QIBusProxy *bus;
     QIBusProxyPortal *portalBus; // bus and portalBus are alternative.
     QIBusInputContextProxy *context;
+    QDBusServiceWatcher serviceWatcher;
 
     bool usePortal; // return value of shouldConnectIbusPortal
     bool valid;
@@ -107,20 +108,25 @@ public:
 QIBusPlatformInputContext::QIBusPlatformInputContext ()
     : d(new QIBusPlatformInputContextPrivate())
 {
-    QString socketPath = QIBusPlatformInputContextPrivate::getSocketPath();
-    QFile file(socketPath);
-    if (file.open(QFile::ReadOnly)) {
+    if (!d->usePortal) {
+        QString socketPath = QIBusPlatformInputContextPrivate::getSocketPath();
+        QFile file(socketPath);
+        if (file.open(QFile::ReadOnly)) {
 #ifndef QT_NO_FILESYSTEMWATCHER
-        // If KDE session save is used or restart ibus-daemon,
-        // the applications could run before ibus-daemon runs.
-        // We watch the getSocketPath() to get the launching ibus-daemon.
-        m_socketWatcher.addPath(socketPath);
-        connect(&m_socketWatcher, SIGNAL(fileChanged(QString)), this, SLOT(socketChanged(QString)));
+            qCDebug(qtQpaInputMethods) << "socketWatcher.addPath" << socketPath;
+            // If KDE session save is used or restart ibus-daemon,
+            // the applications could run before ibus-daemon runs.
+            // We watch the getSocketPath() to get the launching ibus-daemon.
+            m_socketWatcher.addPath(socketPath);
+            connect(&m_socketWatcher, SIGNAL(fileChanged(QString)), this, SLOT(socketChanged(QString)));
 #endif
+        }
+        m_timer.setSingleShot(true);
+        connect(&m_timer, SIGNAL(timeout()), this, SLOT(connectToBus()));
     }
 
-    m_timer.setSingleShot(true);
-    connect(&m_timer, SIGNAL(timeout()), this, SLOT(connectToBus()));
+    QObject::connect(&d->serviceWatcher, SIGNAL(serviceRegistered(QString)), this, SLOT(busRegistered(QString)));
+    QObject::connect(&d->serviceWatcher, SIGNAL(serviceUnregistered(QString)), this, SLOT(busUnregistered(QString)));
 
     connectToContextSignals();
 
@@ -534,6 +540,22 @@ void QIBusPlatformInputContext::socketChanged(const QString &str)
     m_timer.start(100);
 }
 
+void QIBusPlatformInputContext::busRegistered(const QString &str)
+{
+    qCDebug(qtQpaInputMethods) << "busRegistered";
+    Q_UNUSED (str);
+    if (d->usePortal) {
+        connectToBus();
+    }
+}
+
+void QIBusPlatformInputContext::busUnregistered(const QString &str)
+{
+    qCDebug(qtQpaInputMethods) << "busUnregistered";
+    Q_UNUSED (str);
+    d->busConnected = false;
+}
+
 // When getSocketPath() is modified, the bus is not established yet
 // so use m_timer.
 void QIBusPlatformInputContext::connectToBus()
@@ -543,7 +565,7 @@ void QIBusPlatformInputContext::connectToBus()
     connectToContextSignals();
 
 #ifndef QT_NO_FILESYSTEMWATCHER
-    if (m_socketWatcher.files().size() == 0)
+    if (!d->usePortal && m_socketWatcher.files().size() == 0)
         m_socketWatcher.addPath(QIBusPlatformInputContextPrivate::getSocketPath());
 #endif
 }
@@ -652,6 +674,11 @@ void QIBusPlatformInputContextPrivate::createBusProxy()
 
         ic = bus->CreateInputContext(QLatin1String("QIBusInputContext"));
     }
+
+    serviceWatcher.removeWatchedService(ibusService);
+    serviceWatcher.setConnection(*connection);
+    serviceWatcher.addWatchedService(ibusService);
+
     if (!ic.isValid()) {
         qWarning("QIBusPlatformInputContext: CreateInputContext failed.");
         return;
