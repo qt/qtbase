@@ -168,14 +168,14 @@ isEmpty($${target_prefix}.INCDIRS) {
 #
 
 defineReplace(qtVariablesFromMSVC) {
-    ret = $$system("$$1 -nologo -E $$2 $$system_quote($$PWD/data/macros.cpp) <NUL 2>NUL", lines, ec)
+    ret = $$system("$$1 -nologo -E $$2 $$system_quote($$PWD/data/macros.cpp) 2>NUL", lines, ec)
     !equals(ec, 0): qtCompilerErrror($$1, $$ret)
     return($$ret)
 }
 
 defineReplace(qtVariablesFromGCC) {
     ret = $$system("$$1 -E $$system_quote($$PWD/data/macros.cpp) \
-        <$$QMAKE_SYSTEM_NULL_DEVICE 2>$$QMAKE_SYSTEM_NULL_DEVICE", lines, ec)
+        2>$$QMAKE_SYSTEM_NULL_DEVICE", lines, ec)
     !equals(ec, 0): qtCompilerErrror($$1, $$ret)
     return($$ret)
 }
