@@ -284,12 +284,6 @@ void tst_QDtls::configuration()
     QFETCH(const QSslSocket::SslMode, mode);
     QDtls dtls(mode);
     QCOMPARE(dtls.dtlsConfiguration(), config);
-    // Default TLS (no 'D') configuration has a wrong protocol version:
-    QCOMPARE(dtls.setDtlsConfiguration(QSslConfiguration::defaultConfiguration()), false);
-    QCOMPARE(dtls.dtlsError(), QDtlsError::InvalidInputParameters);
-    // The previous failure did not change our default configuration:
-    QCOMPARE(dtls.dtlsConfiguration(), config);
-    // Now set a valid (non-default) configuration:
     config.setProtocol(QSsl::DtlsV1_0OrLater);
     config.setDtlsCookieVerificationEnabled(false);
     QCOMPARE(config.dtlsCookieVerificationEnabled(), false);

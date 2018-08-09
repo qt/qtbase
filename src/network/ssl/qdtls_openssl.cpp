@@ -721,7 +721,13 @@ bool DtlsState::initCtxAndConnection(QDtlsBasePrivate *dtlsBase)
         return false;
     }
 
-    // create a deep copy of our configuration
+    if (!QDtlsBasePrivate::isDtlsProtocol(dtlsBase->dtlsConfiguration.protocol)) {
+        dtlsBase->setDtlsError(QDtlsError::TlsInitializationError,
+                               QDtls::tr("Invalid protocol version, DTLS protocol expected"));
+        return false;
+    }
+
+    // Create a deep copy of our configuration
     auto configurationCopy = new QSslConfigurationPrivate(dtlsBase->dtlsConfiguration);
     configurationCopy->ref.store(0); // the QSslConfiguration constructor refs up
 

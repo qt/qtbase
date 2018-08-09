@@ -333,19 +333,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static bool isDtlsProtocol(QSsl::SslProtocol protocol)
-{
-    switch (protocol) {
-    case QSsl::DtlsV1_0:
-    case QSsl::DtlsV1_0OrLater:
-    case QSsl::DtlsV1_2:
-    case QSsl::DtlsV1_2OrLater:
-        return true;
-    default:
-        return false;
-    }
-}
-
 QSslConfiguration QDtlsBasePrivate::configuration() const
 {
     auto copyPrivate = new QSslConfigurationPrivate(dtlsConfiguration);
@@ -368,7 +355,6 @@ void QDtlsBasePrivate::setConfiguration(const QSslConfiguration &configuration)
     dtlsConfiguration.caCertificates = configuration.caCertificates();
     dtlsConfiguration.peerVerifyDepth = configuration.peerVerifyDepth();
     dtlsConfiguration.peerVerifyMode = configuration.peerVerifyMode();
-    Q_ASSERT(isDtlsProtocol(configuration.protocol()));
     dtlsConfiguration.protocol = configuration.protocol();
     dtlsConfiguration.sslOptions = configuration.d->sslOptions;
     dtlsConfiguration.sslSession = configuration.sessionTicket();
@@ -396,6 +382,19 @@ bool QDtlsBasePrivate::setCookieGeneratorParameters(QCryptographicHash::Algorith
     secret = key;
 
     return true;
+}
+
+bool QDtlsBasePrivate::isDtlsProtocol(QSsl::SslProtocol protocol)
+{
+    switch (protocol) {
+    case QSsl::DtlsV1_0:
+    case QSsl::DtlsV1_0OrLater:
+    case QSsl::DtlsV1_2:
+    case QSsl::DtlsV1_2OrLater:
+        return true;
+    default:
+        return false;
+    }
 }
 
 static QString msgUnsupportedMulticastAddress()
@@ -755,13 +754,8 @@ bool QDtls::setDtlsConfiguration(const QSslConfiguration &configuration)
         return false;
     }
 
-    if (isDtlsProtocol(configuration.protocol())) {
-        d->setConfiguration(configuration);
-        return true;
-    }
-
-    d->setDtlsError(QDtlsError::InvalidInputParameters, tr("Unsupported protocol"));
-    return false;
+    d->setConfiguration(configuration);
+    return true;
 }
 
 /*!

@@ -96,6 +96,8 @@ public:
     bool setCookieGeneratorParameters(QCryptographicHash::Algorithm alg,
                                       const QByteArray &secret);
 
+    static bool isDtlsProtocol(QSsl::SslProtocol protocol);
+
     QHostAddress remoteAddress;
     quint16 remotePort = 0;
     quint16 mtuHint = 0;
