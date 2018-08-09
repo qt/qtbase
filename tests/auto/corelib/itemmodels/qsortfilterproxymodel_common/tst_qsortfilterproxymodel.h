@@ -72,6 +72,8 @@ private slots:
     void insertRows_data();
     void insertRows();
     void prependRow();
+    void appendRowFromCombobox_data();
+    void appendRowFromCombobox();
     void removeRows_data();
     void removeRows();
     void removeColumns_data();
