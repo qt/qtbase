@@ -88,6 +88,7 @@ private slots:
     void construction();
     void configuration_data();
     void configuration();
+    void invalidConfiguration();
     void setPeer_data();
     void setPeer();
     void handshake_data();
@@ -308,6 +309,20 @@ void tst_QDtls::configuration()
         QCOMPARE(dtls.dtlsError(), QDtlsError::InvalidOperation);
         QCOMPARE(dtls.dtlsConfiguration(), config);
     }
+}
+
+void tst_QDtls::invalidConfiguration()
+{
+    QUdpSocket socket;
+    QDtls crypto(QSslSocket::SslClientMode);
+    QVERIFY(crypto.setPeer(serverAddress, serverPort));
+    // Note: not defaultDtlsConfiguration(), so the protocol is TLS (without D):
+    QVERIFY(crypto.setDtlsConfiguration(QSslConfiguration::defaultConfiguration()));
+    QDTLS_VERIFY_NO_ERROR(crypto);
+    QCOMPARE(crypto.dtlsConfiguration(), QSslConfiguration::defaultConfiguration());
+    // Try to start the handshake:
+    QCOMPARE(crypto.doHandshake(&socket), false);
+    QCOMPARE(crypto.dtlsError(), QDtlsError::TlsInitializationError);
 }
 
 void tst_QDtls::setPeer_data()
