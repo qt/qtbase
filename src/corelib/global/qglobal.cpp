@@ -3814,14 +3814,14 @@ bool qunsetenv(const char *varName)
 
     Marks the UTF-8 encoded string literal \a sourceText for numerator
     dependent delayed translation in the given \a context with the given
-    \a disambiguation.
+    \a comment.
     The \a context is typically a class and also needs to be specified
     as a string literal. The string literal \a disambiguation should be
     a short semantic tag to tell apart otherwise identical strings.
 
     The macro tells lupdate to collect the string, and expands to an
     anonymous struct of the two string literals passed as \a sourceText
-    and \a disambiguation.
+    and \a comment.
 
     Example:
 

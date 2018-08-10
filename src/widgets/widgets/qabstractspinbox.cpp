@@ -127,6 +127,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QAbstractSpinBox::StepType
+
+    \value DefaultStepType
+    \value AdaptiveDecimalStepType
+*/
+
+/*!
   \fn void QAbstractSpinBox::editingFinished()
 
   This signal is emitted editing is finished. This happens when the
