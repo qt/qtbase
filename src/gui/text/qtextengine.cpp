@@ -2077,7 +2077,6 @@ void QTextEngine::itemize() const
         case QChar::Nbsp:
             if (option.flags() & QTextOption::ShowTabsAndSpaces) {
                 analysis->flags = QScriptAnalysis::Space;
-                analysis->bidiLevel = bidi.baseLevel;
                 break;
             }
             Q_FALLTHROUGH();
