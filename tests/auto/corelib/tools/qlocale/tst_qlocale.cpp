@@ -299,8 +299,8 @@ void tst_QLocale::defaulted_ctor()
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France)
     TEST_CTOR(C, France, QLocale::C, QLocale::AnyCountry)
-    TEST_CTOR(Spanish, LatinAmericaAndTheCaribbean, QLocale::Spanish,
-              QLocale::LatinAmericaAndTheCaribbean)
+    TEST_CTOR(Spanish, LatinAmerica, QLocale::Spanish,
+              QLocale::LatinAmerica)
 
     QLocale::setDefault(QLocale(QLocale::English, QLocale::France));
 
@@ -428,6 +428,8 @@ void tst_QLocale::defaulted_ctor()
     TEST_CTOR("en_GB@bla", English, UnitedKingdom)
     TEST_CTOR("en-GB", English, UnitedKingdom)
     TEST_CTOR("en-GB@bla", English, UnitedKingdom)
+    TEST_CTOR("eo", Esperanto, World)
+    TEST_CTOR("yi", Yiddish, World)
 
     QVERIFY(QLocale::Norwegian == QLocale::NorwegianBokmal);
     TEST_CTOR("no", Norwegian, Norway)
@@ -437,8 +439,8 @@ void tst_QLocale::defaulted_ctor()
     TEST_CTOR("nb_NO", Norwegian, Norway)
     TEST_CTOR("nn_NO", NorwegianNynorsk, Norway)
     TEST_CTOR("es_ES", Spanish, Spain)
-    TEST_CTOR("es_419", Spanish, LatinAmericaAndTheCaribbean)
-    TEST_CTOR("es-419", Spanish, LatinAmericaAndTheCaribbean)
+    TEST_CTOR("es_419", Spanish, LatinAmerica)
+    TEST_CTOR("es-419", Spanish, LatinAmerica)
     TEST_CTOR("fr_MA", French, Morocco)
 
     // test default countries for languages

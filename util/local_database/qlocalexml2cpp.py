@@ -809,6 +809,7 @@ def main():
     qlocaleh_temp_file.write("        RepublicOfKorea = SouthKorea,\n")
     qlocaleh_temp_file.write("        RussianFederation = Russia,\n")
     qlocaleh_temp_file.write("        SyrianArabRepublic = Syria,\n")
+    qlocaleh_temp_file.write("        LatinAmericaAndTheCaribbean = LatinAmerica,\n")
     qlocaleh_temp_file.write("\n")
     qlocaleh_temp_file.write("        LastCountry = " + country + "\n")
     qlocaleh_temp_file.write("    };\n")

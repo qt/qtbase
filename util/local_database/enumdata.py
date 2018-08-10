@@ -29,7 +29,8 @@
 
 # language_list and country_list reflect the current values of enums in qlocale.h
 # If new xml language files are available in CLDR, these languages and countries
-# need to be *appended* to this list.
+# need to be *appended* to this list (for compatibility between versions).
+### Qt 6: restore alphabetic order in each list.
 
 language_list = {
     0 : [ "AnyLanguage",          "  " ],
@@ -641,7 +642,7 @@ country_list = {
     243 : [ "Serbia",                                   "RS"  ],
     244 : [ "Saint Barthelemy",                         "BL"  ],
     245 : [ "Saint Martin",                             "MF"  ],
-    246 : [ "LatinAmericaAndTheCaribbean",              "419" ],
+    246 : [ "Latin America",                            "419" ],
     247 : [ "AscensionIsland",                          "AC"  ],
     248 : [ "AlandIslands",                             "AX"  ],
     249 : [ "DiegoGarcia",                              "DG"  ],
@@ -654,7 +655,9 @@ country_list = {
     256 : [ "SintMaarten",                              "SX"  ],
     257 : [ "Kosovo",                                   "XK"  ],
     258 : [ "European Union",                           "EU"  ],
-    259 : [ "Outlying Oceania",                         "QO"  ]
+    259 : [ "Outlying Oceania",                         "QO"  ],
+    260 : [ "World",                                    "001" ],
+    261 : [ "Europe",                                   "150" ]
 }
 
 script_list = {

@@ -851,7 +851,7 @@ public:
         Serbia = 243,
         SaintBarthelemy = 244,
         SaintMartin = 245,
-        LatinAmericaAndTheCaribbean = 246,
+        LatinAmerica = 246,
         AscensionIsland = 247,
         AlandIslands = 248,
         DiegoGarcia = 249,
@@ -865,6 +865,8 @@ public:
         Kosovo = 257,
         EuropeanUnion = 258,
         OutlyingOceania = 259,
+        World = 260,
+        Europe = 261,
 
         Tokelau = TokelauCountry,
         Tuvalu = TuvaluCountry,
@@ -874,8 +876,9 @@ public:
         RepublicOfKorea = SouthKorea,
         RussianFederation = Russia,
         SyrianArabRepublic = Syria,
+        LatinAmericaAndTheCaribbean = LatinAmerica,
 
-        LastCountry = OutlyingOceania
+        LastCountry = Europe
     };
 // GENERATED PART ENDS HERE
 
