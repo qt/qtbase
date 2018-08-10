@@ -133,6 +133,8 @@ QByteArray QHttpNetworkRequest::uri(bool throughProxy) const
     QUrl copy = d->url;
     if (copy.path().isEmpty())
         copy.setPath(QStringLiteral("/"));
+    else
+        format |= QUrl::NormalizePathSegments;
     QByteArray uri = copy.toEncoded(format);
     return uri;
 }
