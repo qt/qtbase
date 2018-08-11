@@ -437,8 +437,6 @@ void QXcbWindow::create()
 
     connection()->addWindowEventListener(m_window, this);
 
-    xcb_change_window_attributes(xcb_connection(), m_window, mask, values);
-
     propagateSizeHints();
 
     xcb_atom_t properties[5];
