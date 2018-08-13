@@ -27,9 +27,13 @@
 ##
 #############################################################################
 
-# language_list and country_list reflect the current values of enums in qlocale.h
-# If new xml language files are available in CLDR, these languages and countries
-# need to be *appended* to this list (for compatibility between versions).
+# Each *_list reflects the current values of its enums in qlocale.h;
+# if new xml language files are available in CLDR, these languages and
+# countries need to be *appended* to this list (for compatibility
+# between versions).  Include any spaces present in names (scripts
+# shall squish them out for the enum entries) in *_list, but use the
+# squished forms of names in the *_aliases mappings.
+
 ### Qt 6: restore alphabetic order in each list.
 
 language_list = {
@@ -395,6 +399,25 @@ language_list = {
     359 : ["Tangut",                      "txg"]
 }
 
+language_aliases = {
+    # Legacy - should disappear at some point:
+    'Norwegian': 'NorwegianBokmal',
+    'Moldavian': 'Romanian',
+    'SerboCroatian': 'Serbian',
+    'Tagalog': 'Filipino',
+    'Twi': 'Akan',
+    # Renamings:
+    'Afan': 'Oromo',
+    'Byelorussian': 'Belarusian',
+    'Bhutani': 'Dzongkha',
+    'Cambodian': 'Khmer',
+    'Kurundi': 'Rundi',
+    'RhaetoRomance': 'Romansh',
+    'Chewa': 'Nyanja',
+    'Frisian': 'WesternFrisian',
+    'Uigur': 'Uighur',
+}
+
 country_list = {
     0   : ["AnyCountry",                                   "ZZ"],
     1   : ["Afghanistan",                                  "AF"],
@@ -660,6 +683,20 @@ country_list = {
     261 : ["Europe",                                       "150"]
 }
 
+country_aliases = {
+    # Deprecated:
+    'Tokelau': 'TokelauCountry',
+    'Tuvalu': 'TuvaluCountry',
+    # Renamings:
+    'DemocraticRepublicOfCongo': 'CongoKinshasa',
+    'PeoplesRepublicOfCongo': 'CongoBrazzaville',
+    'DemocraticRepublicOfKorea': 'NorthKorea',
+    'RepublicOfKorea': 'SouthKorea',
+    'RussianFederation': 'Russia',
+    'SyrianArabRepublic': 'Syria',
+    'LatinAmericaAndTheCaribbean': 'LatinAmerica',
+}
+
 script_list = {
     0   : ["AnyScript",              "Zzzz"],
     1   : ["Arabic",                 "Arab"],
@@ -803,6 +840,12 @@ script_list = {
     139 : ["Tangut",                 "Tang"],
     140 : ["Han with Bopomofo",      "Hanb"],
     141 : ["Jamo",                   "Jamo"]
+}
+
+script_aliases = {
+    # Renamings:
+    'SimplifiedChineseScript': 'SimplifiedHanScript',
+    'TraditionalChineseScript': 'TraditionalHanScript',
 }
 
 def countryCodeToId(code):
