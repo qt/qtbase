@@ -732,13 +732,6 @@ void QXcbWindow::setVisible(bool visible)
         hide();
 }
 
-static inline bool testShowWithoutActivating(const QWindow *window)
-{
-    // QWidget-attribute Qt::WA_ShowWithoutActivating.
-    const QVariant showWithoutActivating = window->property("_q_showWithoutActivating");
-    return showWithoutActivating.isValid() && showWithoutActivating.toBool();
-}
-
 void QXcbWindow::show()
 {
     if (window()->isTopLevel()) {
@@ -786,7 +779,9 @@ void QXcbWindow::show()
         updateNetWmStateBeforeMap();
     }
 
-    if (testShowWithoutActivating(window()))
+    // QWidget-attribute Qt::WA_ShowWithoutActivating.
+    const auto showWithoutActivating = window()->property("_q_showWithoutActivating");
+    if (showWithoutActivating.isValid() && showWithoutActivating.toBool())
         updateNetWmUserTime(0);
     else if (connection()->time() != XCB_TIME_CURRENT_TIME)
         updateNetWmUserTime(connection()->time());
