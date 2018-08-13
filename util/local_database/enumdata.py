@@ -396,7 +396,12 @@ language_list = {
     356 : ["Uncoded Languages",           "mis"],
     357 : ["Cantonese",                   "yue"],
     358 : ["Osage",                       "osa"],
-    359 : ["Tangut",                      "txg"]
+    359 : ["Tangut",                      "txg"],
+    360 : ["Ido",                         "io"],
+    361 : ["Lojban",                      "jbo"],
+    362 : ["Sicilian",                    "scn"],
+    363 : ["Southern Kurdish",            "sdh"],
+    364 : ["Western Balochi",             "bgn"],
 }
 
 language_aliases = {
@@ -680,7 +685,7 @@ country_list = {
     258 : ["European Union",                               "EU"],
     259 : ["Outlying Oceania",                             "QO"],
     260 : ["World",                                        "001"],
-    261 : ["Europe",                                       "150"]
+    261 : ["Europe",                                       "150"],
 }
 
 country_aliases = {
@@ -839,7 +844,7 @@ script_list = {
     138 : ["Osage",                  "Osge"],
     139 : ["Tangut",                 "Tang"],
     140 : ["Han with Bopomofo",      "Hanb"],
-    141 : ["Jamo",                   "Jamo"]
+    141 : ["Jamo",                   "Jamo"],
 }
 
 script_aliases = {

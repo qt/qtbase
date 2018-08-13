@@ -436,6 +436,11 @@ public:
         Cantonese = 357,
         Osage = 358,
         Tangut = 359,
+        Ido = 360,
+        Lojban = 361,
+        Sicilian = 362,
+        SouthernKurdish = 363,
+        WesternBalochi = 364,
 
         Afan = Oromo,
         Bhutani = Dzongkha,
@@ -452,7 +457,7 @@ public:
         Twi = Akan,
         Uigur = Uighur,
 
-        LastLanguage = Tangut
+        LastLanguage = WesternBalochi
     };
 
     enum Script {

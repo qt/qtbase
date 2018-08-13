@@ -2651,9 +2651,11 @@ void tst_QLocale::textDirection_data()
         case QLocale::Sabaean:
         case QLocale::Samaritan:
         case QLocale::Sindhi:
+        case QLocale::SouthernKurdish:
         case QLocale::Syriac:
         case QLocale::Uighur:
         case QLocale::Urdu:
+        case QLocale::WesternBalochi:
         case QLocale::Yiddish:
             // false if there is no locale data for language:
             rightToLeft = (QLocale(QLocale::Language(language)).language()

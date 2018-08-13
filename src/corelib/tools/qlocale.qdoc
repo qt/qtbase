@@ -483,6 +483,11 @@
     \value TokPisin Since Qt 5.7
     \value TuvaluLanguage Since Qt 5.7
     \value UncodedLanguages Since Qt 5.7
+    \value Ido Since Qt 5.12
+    \value Lojban Since Qt 5.12
+    \value Sicilian Since Qt 5.12
+    \value SouthernKurdish Since Qt 5.12
+    \value WesternBalochi Since Qt 5.12
     \omitvalue LastLanguage
 
     \sa language(), languageToString()
