@@ -438,6 +438,36 @@ def integrateWeekData(filePath):
         else:
             locale.weekendEnd = weekendEndByCountryCode["001"]
 
+def splitLocale(name):
+    """Split name into (language, script, territory) triple as generator.
+
+    Ignores any trailing fields, leaves script or territory empty if
+    unspecified, returns empty generator if no language found."""
+    tags = iter(name.split('_'))
+    yield tags.next() # Language
+    tag = tags.next()
+
+    # Script is always four letters, always capitalised:
+    if len(tag) == 4 and tag[0].isupper() and tag[1:].islower():
+        yield tag
+        try:
+            tag = tags.next()
+        except StopIteration:
+            tag = ''
+    else:
+        yield ''
+
+    # Territory is upper-case or numeric:
+    if tag and tag.isupper() or tag.isdigit():
+        yield tag
+        tag = ''
+    else:
+        yield ''
+
+    # If nothing is left, StopIteration will avoid the warning:
+    tag = (tag if tag else tags.next(),)
+    sys.stderr.write('Ignoring unparsed cruft %s in %s\n' % ('_'.join(tag + tuple(tags)), name))
+
 if len(sys.argv) != 2:
     usage()
 
@@ -451,30 +481,25 @@ cldr_files = os.listdir(cldr_dir)
 locale_database = {}
 
 # see http://www.unicode.org/reports/tr35/tr35-info.html#Default_Content
-defaultContent_locales = {}
+defaultContent_locales = []
 for ns in findTagsInFile(os.path.join(cldr_dir, '..', 'supplemental',
                                       'supplementalMetadata.xml'),
                          'metadata/defaultContent'):
     for data in ns[1:][0]:
         if data[0] == u"locales":
-            defaultContent_locales = data[1].split()
+            defaultContent_locales += data[1].split()
 
 for file in defaultContent_locales:
-    items = file.split("_")
-    if len(items) == 3:
-        language_code = items[0]
-        script_code = items[1]
-        country_code = items[2]
-    else:
-        if len(items) != 2:
-            sys.stderr.write('skipping defaultContent locale "' + file + '" [neither lang_script_country nor lang_country]\n')
-            continue
-        language_code = items[0]
-        script_code = ""
-        country_code = items[1]
-        if len(country_code) == 4:
-            sys.stderr.write('skipping defaultContent locale "' + file + '" [long country code]\n')
-            continue
+    try:
+        language_code, script_code, country_code = splitLocale(file)
+    except ValueError:
+        sys.stderr.write('skipping defaultContent locale "' + file + '" [neither two nor three tags]\n')
+        continue
+
+    if not (script_code or country_code):
+        sys.stderr.write('skipping defaultContent locale "' + file + '" [second tag is neither script nor territory]\n')
+        continue
+
     try:
         l = _generateLocaleInfo(cldr_dir + "/" + file + ".xml", language_code, script_code, country_code)
         if not l:
@@ -548,31 +573,31 @@ def _parseLocale(l):
     if l == "und":
         raise xpathlite.Error("we are treating unknown locale like C")
 
-    items = l.split("_")
-    language_code = items[0]
+    parsed = splitLocale(l)
+    language_code = parsed.next()
+    script_code = country_code = ''
+    try:
+        script_code, country_code = parsed
+    except ValueError:
+        pass
+
     if language_code != "und":
         language_id = enumdata.languageCodeToId(language_code)
         if language_id == -1:
             raise xpathlite.Error('unknown language code "%s"' % language_code)
         language = enumdata.language_list[language_id][0]
 
-    if len(items) > 1:
-        script_code = items[1]
-        country_code = ""
-        if len(items) > 2:
-            country_code = items[2]
-        if len(script_code) == 4:
-            script_id = enumdata.scriptCodeToId(script_code)
-            if script_id == -1:
-                raise xpathlite.Error('unknown script code "%s"' % script_code)
-            script = enumdata.script_list[script_id][0]
-        else:
-            country_code = script_code
-        if country_code:
-            country_id = enumdata.countryCodeToId(country_code)
-            if country_id == -1:
-                raise xpathlite.Error('unknown country code "%s"' % country_code)
-            country = enumdata.country_list[country_id][0]
+    if script_code:
+        script_id = enumdata.scriptCodeToId(script_code)
+        if script_id == -1:
+            raise xpathlite.Error('unknown script code "%s"' % script_code)
+        script = enumdata.script_list[script_id][0]
+
+    if country_code:
+        country_id = enumdata.countryCodeToId(country_code)
+        if country_id == -1:
+            raise xpathlite.Error('unknown country code "%s"' % country_code)
+        country = enumdata.country_list[country_id][0]
 
     return (language, script, country)
 
