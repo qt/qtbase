@@ -243,7 +243,7 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
     numbering_system = None
     try:
         numbering_system = findEntry(path, "numbers/defaultNumberingSystem")
-    except:
+    except xpathlite.Error:
         pass
     def findEntryDef(path, xpath, value=''):
         try:
