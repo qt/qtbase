@@ -213,12 +213,8 @@ def _fixedLookupChain(dirname, name):
     return items
 
 def _findEntry(base, path, draft=None, attribute=None):
-    file = base
     if base.endswith(".xml"):
-        filename = base
         base = base[:-4]
-    else:
-        file = base + ".xml"
     (dirname, filename) = os.path.split(base)
 
     items = _fixedLookupChain(dirname, filename)
