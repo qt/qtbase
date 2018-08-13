@@ -1115,13 +1115,18 @@ bool QDtlsPrivateOpenSSL::resumeHandshake(QUdpSocket *socket)
 void QDtlsPrivateOpenSSL::abortHandshake(QUdpSocket *socket)
 {
     Q_ASSERT(socket);
-    Q_ASSERT(handshakeState == QDtls::PeerVerificationFailed);
+    Q_ASSERT(handshakeState == QDtls::PeerVerificationFailed
+             || handshakeState == QDtls::HandshakeInProgress);
 
     clearDtlsError();
 
-    // Yes, while peer verification failed, we were actually encrypted.
-    // Let's play it nice - inform our peer about connection shut down.
-    sendShutdownAlert(socket);
+    if (handshakeState == QDtls::PeerVerificationFailed) {
+        // Yes, while peer verification failed, we were actually encrypted.
+        // Let's play it nice - inform our peer about connection shut down.
+        sendShutdownAlert(socket);
+    } else {
+        resetDtls();
+    }
 }
 
 void QDtlsPrivateOpenSSL::sendShutdownAlert(QUdpSocket *socket)

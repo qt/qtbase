@@ -930,8 +930,8 @@ bool QDtls::resumeHandshake(QUdpSocket *socket)
 }
 
 /*!
-    Aborts the handshake in case peer verification errors could not be ignored.
-    \a socket must be a valid pointer.
+    Aborts the ongoing handshake. Returns true if one was on-going on \a socket;
+    otherwise, sets a suitable error and returns false.
 
     \sa doHandshake(), resumeHandshake()
  */
@@ -944,9 +944,9 @@ bool QDtls::abortHandshake(QUdpSocket *socket)
         return false;
     }
 
-    if (d->handshakeState != PeerVerificationFailed) {
+    if (d->handshakeState != PeerVerificationFailed && d->handshakeState != HandshakeInProgress) {
         d->setDtlsError(QDtlsError::InvalidOperation,
-                        tr("Not in VerificationError state, nothing to abort"));
+                        tr("No handshake in progress, nothing to abort"));
         return false;
     }
 
