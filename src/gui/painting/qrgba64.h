@@ -118,7 +118,27 @@ public:
     Q_DECL_CONSTEXPR quint8 alpha8() const { return div_257(alpha()); }
     Q_DECL_CONSTEXPR uint toArgb32() const
     {
+#if defined(__cpp_constexpr) && __cpp_constexpr-0 >= 201304
+        quint64 br = rgba & Q_UINT64_C(0xffff0000ffff);
+        quint64 ag = (rgba >> 16) & Q_UINT64_C(0xffff0000ffff);
+        br += Q_UINT64_C(0x8000000080);
+        ag += Q_UINT64_C(0x8000000080);
+        br = (br - ((br >> 8) & Q_UINT64_C(0xffff0000ffff))) >> 8;
+        ag = (ag - ((ag >> 8) & Q_UINT64_C(0xffff0000ffff)));
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+        return ((br << 24) & 0xff000000)
+             | ((ag >> 24) & 0xff0000)
+             | ((br >> 24) & 0xff00)
+             | ((ag >> 8)  & 0xff);
+#else
+        return ((ag >> 16) & 0xff000000)
+             | ((br << 16) & 0xff0000)
+             | (ag         & 0xff00)
+             | ((br >> 32) & 0xff);
+#endif
+#else
         return uint((alpha8() << 24) | (red8() << 16) | (green8() << 8) | blue8());
+#endif
     }
     Q_DECL_CONSTEXPR ushort toRgb16() const
     {
@@ -131,11 +151,20 @@ public:
             return *this;
         if (isTransparent())
             return QRgba64::fromRgba64(0);
-        const quint32 a = alpha();
-        const quint16 r = div_65535(red()   * a);
-        const quint16 g = div_65535(green() * a);
-        const quint16 b = div_65535(blue()  * a);
-        return fromRgba64(r, g, b, quint16(a));
+        const quint64 a = alpha();
+        quint64 br = (rgba & Q_UINT64_C(0xffff0000ffff)) * a;
+        quint64 ag = ((rgba >> 16) & Q_UINT64_C(0xffff0000ffff)) * a;
+        br = (br + ((br >> 16) & Q_UINT64_C(0xffff0000ffff)) + Q_UINT64_C(0x800000008000));
+        ag = (ag + ((ag >> 16) & Q_UINT64_C(0xffff0000ffff)) + Q_UINT64_C(0x800000008000));
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+        ag = ag & Q_UINT64_C(0xffff0000ffff0000);
+        br = (br >> 16) & Q_UINT64_C(0xffff00000000);
+        return fromRgba64(a | br | ag);
+#else
+        br = (br >> 16) & Q_UINT64_C(0xffff0000ffff);
+        ag = ag & Q_UINT64_C(0xffff0000);
+        return fromRgba64((a << 48) | br | ag);
+#endif
     }
 
     Q_DECL_RELAXED_CONSTEXPR QRgba64 unpremultiplied() const
@@ -163,7 +192,6 @@ private:
 
     static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE quint8 div_257_floor(uint x) { return quint8((x - (x >> 8)) >> 8); }
     static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE quint8 div_257(quint16 x) { return div_257_floor(x + 128U); }
-    static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE quint16 div_65535(uint x) { return quint16((x + (x>>16) + 0x8000U) >> 16); }
     Q_DECL_RELAXED_CONSTEXPR Q_ALWAYS_INLINE QRgba64 unpremultiplied_32bit() const
     {
         if (isOpaque() || isTransparent())
