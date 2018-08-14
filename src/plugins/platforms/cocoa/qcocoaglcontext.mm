@@ -41,8 +41,6 @@
 #include "qcocoawindow.h"
 #include "qcocoahelpers.h"
 #include <qdebug.h>
-#include <QtCore/qscopedvaluerollback.h>
-#include <QtCore/qatomic.h>
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtPlatformHeaders/qcocoanativecontext.h>
 #include <dlfcn.h>
@@ -322,6 +320,9 @@ void QCocoaGLContext::updateSurfaceFormat()
 
 QCocoaGLContext::~QCocoaGLContext()
 {
+    if (m_currentWindow && m_currentWindow.data()->handle())
+        static_cast<QCocoaWindow *>(m_currentWindow.data()->handle())->setCurrentContext(0);
+
     [m_context release];
 }
 
@@ -330,14 +331,6 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
     qCDebug(lcQpaOpenGLContext) << "Making" << m_context << "current"
         << "in" << QThread::currentThread() << "for" << surface;
 
-    // No need to make context current if it already is. This also ensures
-    // that we only lock the context once, meaning we don't need to keep
-    // track of how many times we've locked it to undo it in doneCurrent().
-    // Note that we're not using QOpenGLContext::currentContext() here, as
-    // that has already been updated to match context() before this call.
-    if ([NSOpenGLContext currentContext] == m_context)
-        return true;
-
     Q_ASSERT(surface->surface()->supportsOpenGL());
 
     if (surface->surface()->surfaceClass() == QSurface::Offscreen) {
@@ -345,14 +338,11 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
         return true;
     }
 
-    if (!setDrawable(surface))
+    QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
+    if (!setActiveWindow(window)) {
+        qCDebug(lcQpaOpenGLContext) << "Failed to activate window, skipping makeCurrent";
         return false;
-
-    // The context may be owned and used by a dedicated render thread, but
-    // we will get notifications that trigger update() on the main thread,
-    // so we need to guard against concurrent uses of the context. We hold
-    // this lock until swapBuffer() or doneCurrent() gets called.
-    CGLLockContext(m_context.CGLContextObj);
+    }
 
     [m_context makeCurrentContext];
 
@@ -373,74 +363,43 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
         }
     }
 
+    update();
     return true;
 }
 
-/*!
-    Sets the drawable object of the NSOpenGLContext, which is the
-    frame buffer that is the target of OpenGL drawing operations.
-*/
-bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
+bool QCocoaGLContext::setActiveWindow(QWindow *window)
 {
-    Q_ASSERT(surface->surface()->surfaceClass() == QSurface::Window);
-    NSView *view = static_cast<QCocoaWindow *>(surface)->view();
-
-    if (view == m_context.view)
+    if (window == m_currentWindow.data())
         return true;
 
-    m_observers.clear();
+    Q_ASSERT(window->handle());
+    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
+    NSView *view = cocoaWindow->view();
 
     if ((m_context.view = view) != view) {
-        qCInfo(lcQpaOpenGLContext) << "Failed to set" << view << "as drawable for" << m_context;
+        qCDebug(lcQpaOpenGLContext) << "Associating" << view << "with" << m_context << "failed";
         return false;
     }
 
-    qCInfo(lcQpaOpenGLContext) << "Set drawable for" << m_context << "to" << m_context.view;
+    qCDebug(lcQpaOpenGLContext) << m_context << "now associated with" << m_context.view;
 
-    auto updateCallback = [&]() { update(); };
+    if (m_currentWindow && m_currentWindow.data()->handle())
+        static_cast<QCocoaWindow *>(m_currentWindow.data()->handle())->setCurrentContext(0);
 
-    if (view.layer) {
-        m_observers.append(QMacScopedObserver(view, NSViewFrameDidChangeNotification, updateCallback));
-        m_observers.append(QMacScopedObserver(view.window, NSWindowDidChangeScreenNotification, updateCallback));
-    } else {
-        m_observers.append(QMacScopedObserver(view, NSViewGlobalFrameDidChangeNotification, updateCallback));
-    }
+    m_currentWindow = window;
 
-    m_observers.append(QMacScopedObserver([NSApplication sharedApplication],
-        NSApplicationDidChangeScreenParametersNotification, updateCallback));
-
+    cocoaWindow->setCurrentContext(this);
     return true;
 }
 
-// NSOpenGLContext is not re-entrant, which means that even when using separate
-// contexts per thread, per view, and window, calls into the API will still deadlock.
-// Note that this is different from the use of CGLLockContext and CGLUnlockContext
-// to prevent concurrent access to the _same_ context from two different threads.
-// The latter is expected due to NSOpenGLContext not being thread-safe, while the
-// former is working around bugs in NSOpenGLContext that make it not re-entrant.
-// For more information see https://openradar.appspot.com/37064579
+// NSOpenGLContext is not re-entrant (https://openradar.appspot.com/37064579)
 static QMutex s_contextMutex;
 
 void QCocoaGLContext::update()
 {
-    // Updating the context may result in a call to [NSSurface setFrame:], which
-    // will recurse back here through NSViewGlobalFrameDidChangeNotification. We
-    // could use a recursive mutex to prevent a deadlock, but since they are slower
-    // we opt for a manual recursion check.
-    static QAtomicPointer<void> updatingThread = nullptr;
-    if (updatingThread == QThread::currentThreadId())
-        return;
-
-    // Guard against concurrent access to the context in the case where there
-    // is a dedicated render thread operating on the context. See makeCurrent().
-    CGLLockContext(m_context.CGLContextObj);
-
     QMutexLocker locker(&s_contextMutex);
-    QScopedValueRollback<QAtomicPointer<void>> rollback(updatingThread, QThread::currentThreadId());
     qCInfo(lcQpaOpenGLContext) << "Updating" << m_context << "for" << m_context.view;
     [m_context update];
-
-    CGLUnlockContext(m_context.CGLContextObj);
 }
 
 void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
@@ -451,52 +410,37 @@ void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
     if (surface->surface()->surfaceClass() == QSurface::Offscreen)
         return; // Nothing to do
 
-    if (!setDrawable(surface)) {
-        qCWarning(lcQpaOpenGLContext) << "Can't flush" << m_context
-            << "without" << surface << "as drawable";
+    QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
+    if (!setActiveWindow(window)) {
+        qCWarning(lcQpaOpenGLContext) << "Failed to activate window, skipping swapBuffers";
         return;
     }
 
     QMutexLocker locker(&s_contextMutex);
     [m_context flushBuffer];
-
-    // We're done flushing, and should release the lock we have on the
-    // context. To ensure that we're not leaving the context current
-    // without a lock held on it, we need to couple this with actually
-    // clearing the context. This should not be a performance hit for the
-    // case where the same context is made current and then cleared, and
-    // QOpenGLContext::swapBuffers is documented as requiring makeCurrent
-    // again before beginning a new frame, so the user can't expect the
-    // context to be current after a call to swapBuffers(). We explicitly
-    // go via QOpenGLContext for this, instead of calling our platform
-    // method directly, as that will ensure QOpenGLContext records the
-    // fact that there is no longer a current context. We then end up
-    // in QCocoaGLContext::doneCurrent, where we clear the lock.
-    context()->doneCurrent();
 }
 
 void QCocoaGLContext::doneCurrent()
 {
-    auto currentContext = QOpenGLContext::currentContext();
-    if (!currentContext)
-        return;
-
-    // QOpenGLContext::doneCurrent() clears the current context, but can
-    // be called on any context, not necessarily the current one. Since
-    // we rely on unlocking the context lock we must propagate the call
-    // to the right context.
-    if (context() != currentContext) {
-        currentContext->doneCurrent();
-        return;
-    }
-
-    Q_ASSERT([NSOpenGLContext currentContext] == m_context);
-
     qCDebug(lcQpaOpenGLContext) << "Clearing current context"
         << [NSOpenGLContext currentContext] << "in" << QThread::currentThread();
 
+    if (m_currentWindow && m_currentWindow.data()->handle())
+        static_cast<QCocoaWindow *>(m_currentWindow.data()->handle())->setCurrentContext(nullptr);
+
+    m_currentWindow.clear();
+
     [NSOpenGLContext clearCurrentContext];
-    CGLUnlockContext(m_context.CGLContextObj);
+}
+
+void QCocoaGLContext::windowWasHidden()
+{
+    // If the window is hidden, we need to unset the m_currentWindow
+    // variable so that succeeding makeCurrent's will not abort prematurely
+    // because of the optimization in setActiveWindow.
+    // Doing a full doneCurrent here is not preferable, because the GL context
+    // might be rendering in a different thread at this time.
+    m_currentWindow.clear();
 }
 
 QSurfaceFormat QCocoaGLContext::format() const

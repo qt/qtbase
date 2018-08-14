@@ -41,6 +41,9 @@
 #include "qcocoascreen.h"
 #include "qnswindowdelegate.h"
 #include "qcocoaeventdispatcher.h"
+#ifndef QT_NO_OPENGL
+#include "qcocoaglcontext.h"
+#endif
 #include "qcocoahelpers.h"
 #include "qcocoanativeinterface.h"
 #include "qnsview.h"
@@ -148,6 +151,9 @@ QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
     , m_inSetVisible(false)
     , m_inSetGeometry(false)
     , m_inSetStyleMask(false)
+#ifndef QT_NO_OPENGL
+    , m_glContext(nullptr)
+#endif
     , m_menubar(nullptr)
     , m_needsInvalidateShadow(false)
     , m_hasModalSession(false)
@@ -397,6 +403,10 @@ void QCocoaWindow::setVisible(bool visible)
             [m_view setHidden:NO];
     } else {
         // qDebug() << "close" << this;
+#ifndef QT_NO_OPENGL
+        if (m_glContext)
+            m_glContext->windowWasHidden();
+#endif
         QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
         QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = nullptr;
         if (cocoaEventDispatcher)
@@ -1323,6 +1333,18 @@ bool QCocoaWindow::windowIsPopupType(Qt::WindowType type) const
 
     return ((type & Qt::Popup) == Qt::Popup);
 }
+
+#ifndef QT_NO_OPENGL
+void QCocoaWindow::setCurrentContext(QCocoaGLContext *context)
+{
+    m_glContext = context;
+}
+
+QCocoaGLContext *QCocoaWindow::currentContext() const
+{
+    return m_glContext;
+}
+#endif
 
 /*!
     Checks if the window is the content view of its immediate NSWindow.
