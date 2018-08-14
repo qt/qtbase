@@ -471,8 +471,6 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     \note Arguments are not processed if debug output for the category is not
     enabled, so do not rely on any side effects.
 
-    \note Using the macro is thread-safe.
-
     \sa qDebug()
 */
 
@@ -492,8 +490,6 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 
     \note Arguments might not be processed if debug output for the category is
     not enabled, so do not rely on any side effects.
-
-    \note Using the macro is thread-safe.
 
     \sa qDebug()
 */
@@ -518,8 +514,6 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     \note Arguments are not processed if debug output for the category is not
     enabled, so do not rely on any side effects.
 
-    \note Using the macro is thread-safe.
-
     \sa qInfo()
 */
 
@@ -539,8 +533,6 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 
     \note Arguments might not be processed if debug output for the category is
     not enabled, so do not rely on any side effects.
-
-    \note Using the macro is thread-safe.
 
     \sa qInfo()
 */
@@ -565,8 +557,6 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     \note Arguments are not processed if warning output for the category is not
     enabled, so do not rely on any side effects.
 
-    \note Using the macro is thread-safe.
-
     \sa qWarning()
 */
 
@@ -586,8 +576,6 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 
     \note Arguments might not be processed if warning output for the category is
     not enabled, so do not rely on any side effects.
-
-    \note Using the macro is thread-safe.
 
     \sa qWarning()
 */
@@ -612,8 +600,6 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     \note Arguments are not processed if critical output for the category is not
     enabled, so do not rely on any side effects.
 
-    \note Using the macro is thread-safe.
-
     \sa qCritical()
 */
 
@@ -633,8 +619,6 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 
     \note Arguments might not be processed if critical output for the category
     is not enabled, so do not rely on any side effects.
-
-    \note Using the macro is thread-safe.
 
     \sa qCritical()
 */
