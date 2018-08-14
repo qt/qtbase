@@ -1031,7 +1031,7 @@ void QSslConfiguration::setDefaultConfiguration(const QSslConfiguration &configu
     QSslConfigurationPrivate::setDefaultConfiguration(configuration);
 }
 
-#if QT_CONFIG(dtls)
+#if QT_CONFIG(dtls) || defined(Q_CLANG_QDOC)
 
 /*!
   This function returns true if DTLS cookie verification was enabled on a
