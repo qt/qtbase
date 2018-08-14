@@ -330,10 +330,7 @@ QRect QWindowsScreen::virtualGeometry(const QPlatformScreen *screen) // cf QScre
     return result;
 }
 
-enum OrientationPreference // matching Win32 API ORIENTATION_PREFERENCE
-#if defined(Q_COMPILER_CLASS_ENUM) || defined(Q_CC_MSVC)
-    : DWORD
-#endif
+enum OrientationPreference : DWORD // matching Win32 API ORIENTATION_PREFERENCE
 {
     orientationPreferenceNone = 0,
     orientationPreferenceLandscape = 0x1,
