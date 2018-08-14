@@ -4070,7 +4070,12 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
 #  if QT_CONFIG(wheelevent)
     case QEvent::Wheel: {
         const QWheelEvent *we = static_cast<const QWheelEvent *>(e);
-        dbg << "QWheelEvent(" << "pixelDelta=" << we->pixelDelta() << ", angleDelta=" << we->angleDelta() << ')';
+        dbg << "QWheelEvent(" << we->phase();
+        if (!we->pixelDelta().isNull() || !we->angleDelta().isNull())
+            dbg << ", pixelDelta=" << we->pixelDelta() << ", angleDelta=" << we->angleDelta();
+        else if (int qt4Delta = we->delta())
+            dbg << ", delta=" << qt4Delta << ", orientation=" << we->orientation();
+        dbg << ')';
     }
         break;
 #  endif // QT_CONFIG(wheelevent)
