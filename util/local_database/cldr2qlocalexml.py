@@ -51,6 +51,7 @@ order.
 import os
 import sys
 import re
+import textwrap
 
 import enumdata
 import xpathlite
@@ -59,6 +60,10 @@ from dateconverter import convert_date
 from localexml import Locale
 
 findEntryInFile = xpathlite._findEntryInFile
+def wrappedwarn(prefix, tokens):
+    return sys.stderr.write(
+        '\n'.join(textwrap.wrap(prefix + ', '.join(tokens),
+                                subsequent_indent=' ', width=80)) + '\n')
 
 def parse_number_format(patterns, data):
     # this is a very limited parsing of the number format for currency only.
@@ -164,9 +169,9 @@ def getNumberSystems(cache={}):
             entry = dict(ns[1])
             name = entry[u'id']
             if u'digits' in entry and ord(entry[u'digits'][0]) > 0xffff:
-                # FIXME: make this redundant:
+                # FIXME, QTBUG-69324: make this redundant:
                 # omit number system if zero doesn't fit in single-char16 UTF-16 :-(
-                sys.stderr.write('skipping number system "%s" [can\'t represent its zero, U+%X, QTBUG-69324]\n'
+                sys.stderr.write('skipping number system "%s" [can\'t represent its zero, U+%X]\n'
                                  % (name, ord(entry[u'digits'][0])))
             else:
                 cache[name] = entry
@@ -489,6 +494,7 @@ for ns in findTagsInFile(os.path.join(cldr_dir, '..', 'supplemental',
         if data[0] == u"locales":
             defaultContent_locales += data[1].split()
 
+skips = []
 for file in defaultContent_locales:
     try:
         language_code, script_code, country_code = splitLocale(file)
@@ -503,7 +509,7 @@ for file in defaultContent_locales:
     try:
         l = _generateLocaleInfo(cldr_dir + "/" + file + ".xml", language_code, script_code, country_code)
         if not l:
-            sys.stderr.write('skipping defaultContent locale "' + file + '" [no locale info generated]\n')
+            skips.append(file)
             continue
     except xpathlite.Error as e:
         sys.stderr.write('skipping defaultContent locale "%s" (%s)\n' % (file, str(e)))
@@ -511,17 +517,24 @@ for file in defaultContent_locales:
 
     locale_database[(l.language_id, l.script_id, l.country_id, l.variant_code)] = l
 
+if skips:
+    wrappedwarn('skipping defaultContent locales [no locale info generated]: ', skips)
+    skips = []
+
 for file in cldr_files:
     try:
         l = generateLocaleInfo(cldr_dir + "/" + file)
         if not l:
-            sys.stderr.write('skipping file "' + file + '" [no locale info generated]\n')
+            skips.append(file)
             continue
     except xpathlite.Error as e:
         sys.stderr.write('skipping file "%s" (%s)\n' % (file, str(e)))
         continue
 
     locale_database[(l.language_id, l.script_id, l.country_id, l.variant_code)] = l
+
+if skips:
+    wrappedwarn('skipping files [no locale info generated]: ', skips)
 
 integrateWeekData(cldr_dir+"/../supplemental/supplementalData.xml")
 locale_keys = locale_database.keys()
@@ -601,6 +614,7 @@ def _parseLocale(l):
 
     return (language, script, country)
 
+skips = []
 print "    <likelySubtags>"
 for ns in findTagsInFile(cldr_dir + "/../supplemental/likelySubtags.xml", "likelySubtags"):
     tmp = {}
@@ -608,14 +622,13 @@ for ns in findTagsInFile(cldr_dir + "/../supplemental/likelySubtags.xml", "likel
         tmp[data[0]] = data[1]
 
     try:
-        (from_language, from_script, from_country) = _parseLocale(tmp[u"from"])
+        from_language, from_script, from_country = _parseLocale(tmp[u"from"])
+        to_language, to_script, to_country = _parseLocale(tmp[u"to"])
     except xpathlite.Error as e:
-        sys.stderr.write('skipping likelySubtag "%s" -> "%s" (%s)\n' % (tmp[u"from"], tmp[u"to"], str(e)))
-        continue
-    try:
-        (to_language, to_script, to_country) = _parseLocale(tmp[u"to"])
-    except xpathlite.Error as e:
-        sys.stderr.write('skipping likelySubtag "%s" -> "%s" (%s)\n' % (tmp[u"from"], tmp[u"to"], str(e)))
+        if tmp[u'to'].startswith(tmp[u'from']) and str(e) == 'unknown language code "%s"' % tmp[u'from']:
+            skips.append(tmp[u'to'])
+        else:
+            sys.stderr.write('skipping likelySubtag "%s" -> "%s" (%s)\n' % (tmp[u"from"], tmp[u"to"], str(e)))
         continue
     # substitute according to http://www.unicode.org/reports/tr35/#Likely_Subtags
     if to_country == "AnyCountry" and from_country != to_country:
@@ -636,7 +649,8 @@ for ns in findTagsInFile(cldr_dir + "/../supplemental/likelySubtags.xml", "likel
     print "            </to>"
     print "        </likelySubtag>"
 print "    </likelySubtags>"
-
+if skips:
+    wrappedwarn('skipping likelySubtags (for unknown language codes): ', skips)
 print "    <localeList>"
 
 Locale.C().toXml()
