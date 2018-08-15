@@ -44,26 +44,38 @@ void tst_qtexturefilereader::checkHandlers_data()
     QTest::addColumn<QSize>("size");
     QTest::addColumn<quint32>("glFormat");
     QTest::addColumn<quint32>("glInternalFormat");
-    // todo: glBaseInternalFormat
+    QTest::addColumn<quint32>("glBaseInternalFormat");
     QTest::addColumn<int>("levels");
-    QTest::addColumn<int>("dataOffset");
-    QTest::addColumn<int>("dataLength");
+    QTest::addColumn<QList<int>>("dataOffsets");
+    QTest::addColumn<QList<int>>("dataLengths");
 
     QTest::addRow("pattern.pkm") << QStringLiteral(":/texturefiles/pattern.pkm")
                                  << QSize(64, 64)
                                  << quint32(0x0)
                                  << quint32(0x8d64)
+                                 << quint32(0x0)
                                  << 1
-                                 << 16
-                                 << 2048;
+                                 << (QList<int>() << 16)
+                                 << (QList<int>() << 2048);
 
     QTest::addRow("car.ktx") << QStringLiteral(":/texturefiles/car.ktx")
                              << QSize(146, 80)
                              << quint32(0x0)
                              << quint32(0x9278)
+                             << quint32(0x1908)
                              << 1
-                             << 68
-                             << 11840;
+                             << (QList<int>() << 68)
+                             << (QList<int>() << 11840);
+
+    QTest::addRow("car_mips.ktx") << QStringLiteral(":/texturefiles/car_mips.ktx")
+                                  << QSize(146, 80)
+                                  << quint32(0x0)
+                                  << quint32(0x9274)
+                                  << quint32(0x1907)
+                                  << 8
+                                  << (QList<int>() << 68 << 5992 << 7516 << 7880 << 8004 << 8056 << 8068 << 8080)
+                                  << (QList<int>() << 5920 << 1520 << 360 << 120 << 48 << 8 << 8 << 8);
+
 }
 
 void tst_qtexturefilereader::checkHandlers()
@@ -73,8 +85,8 @@ void tst_qtexturefilereader::checkHandlers()
     QFETCH(quint32, glFormat);
     QFETCH(quint32, glInternalFormat);
     QFETCH(int, levels);
-    QFETCH(int, dataOffset);
-    QFETCH(int, dataLength);
+    QFETCH(QList<int>, dataOffsets);
+    QFETCH(QList<int>, dataLengths);
 
     QFile f(fileName);
     QVERIFY(f.open(QIODevice::ReadOnly));
@@ -88,8 +100,10 @@ void tst_qtexturefilereader::checkHandlers()
     QCOMPARE(tex.glFormat(), glFormat);
     QCOMPARE(tex.glInternalFormat(), glInternalFormat);
     QCOMPARE(tex.numLevels(), levels);
-    QCOMPARE(tex.dataOffset(), dataOffset);
-    QCOMPARE(tex.dataLength(), dataLength);
+    for (int i = 0; i < tex.numLevels(); i++) {
+        QCOMPARE(tex.dataOffset(i), dataOffsets.at(i));
+        QCOMPARE(tex.dataLength(i), dataLengths.at(i));
+    }
 }
 
 QTEST_MAIN(tst_qtexturefilereader)
