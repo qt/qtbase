@@ -113,17 +113,17 @@
     \value Aghem
     \value Ahom Since Qt 5.7
     \value Akan
-    \value Akkadian
+    \value Akkadian Since Qt 5.1
     \value Akoose Since Qt 5.3
     \value Albanian
     \value AmericanSignLanguage Since Qt 5.7
     \value Amharic
-    \value AncientEgyptian
-    \value AncientGreek
+    \value AncientEgyptian Since Qt 5.1
+    \value AncientGreek Since Qt 5.1
     \value AncientNorthArabian Since Qt 5.5
     \value Arabic
-    \value Aragonese
-    \value Aramaic
+    \value Aragonese Since Qt 5.1
+    \value Aramaic Since Qt 5.1
     \value ArdhamagadhiPrakrit Since Qt 5.7
     \value Armenian
     \value Assamese
@@ -135,14 +135,14 @@
     \value Aymara
     \value Azerbaijani
     \value Bafia
-    \value Balinese
+    \value Balinese Since Qt 5.1
     \value Bambara
-    \value Bamun
+    \value Bamun Since Qt 5.1
     \value Basaa
     \value Bashkir
     \value Basque
     \value Bassa Since Qt 5.5
-    \value BatakToba
+    \value BatakToba Since Qt 5.1
     \value Belarusian
     \value Bemba
     \value Bena
@@ -155,18 +155,18 @@
     \value Bodo
     \value Bosnian
     \value Breton
-    \value Buginese
-    \value Buhid
+    \value Buginese Since Qt 5.1
+    \value Buhid Since Qt 5.1
     \value Bulgarian
     \value Burmese
     \value Byelorussian Obsolete, please use Belarusian
     \value Cambodian Obsolete, please use Khmer
     \value Cantonese Since Qt 5.7
-    \value Carian
+    \value Carian Since Qt 5.1
     \value Catalan
     \value CentralKurdish Since Qt 5.5
     \value CentralMoroccoTamazight
-    \value Chakma
+    \value Chakma Since Qt 5.1
     \value Chamorro
     \value Chechen
     \value Cherokee
@@ -175,10 +175,10 @@
     \value Chinese
     \value Church
     \value Chuvash
-    \value ClassicalMandaic
+    \value ClassicalMandaic Since Qt 5.1
     \value Colognian
     \value CongoSwahili
-    \value Coptic
+    \value Coptic Since Qt 5.1
     \value Cornish
     \value Corsican
     \value Cree
@@ -186,17 +186,17 @@
     \value Czech
     \value Danish
     \value Divehi
-    \value Dogri
+    \value Dogri Since Qt 5.1
     \value Duala
     \value Dutch
     \value Dzongkha
-    \value EasternCham
-    \value EasternKayah
+    \value EasternCham Since Qt 5.1
+    \value EasternKayah Since Qt 5.1
     \value Embu
     \value English
     \value Esperanto
     \value Estonian
-    \value Etruscan
+    \value Etruscan Since Qt 5.1
     \value Ewe
     \value Ewondo
     \value Faroese
@@ -214,14 +214,14 @@
     \value Geez
     \value Georgian
     \value German
-    \value Gothic
+    \value Gothic Since Qt 5.1
     \value Greek
     \value Greenlandic
     \value Guarani
     \value Gujarati
     \value Gusii
     \value Haitian
-    \value Hanunoo
+    \value Hanunoo Since Qt 5.1
     \value Hausa
     \value Hawaiian
     \value Hebrew
@@ -237,7 +237,7 @@
     \value Igbo
     \value InariSami Since Qt 5.5
     \value Indonesian
-    \value Ingush
+    \value Ingush Since Qt 5.1
     \value Interlingua
     \value Interlingue
     \value Inuktitut
@@ -278,29 +278,29 @@
     \value Lakota Since Qt 5.3
     \value Langi
     \value Lao
-    \value LargeFloweryMiao
+    \value LargeFloweryMiao Since Qt 5.1
     \value Latin
     \value Latvian
-    \value Lepcha
+    \value Lepcha Since Qt 5.1
     \value Lezghian Since Qt 5.5
-    \value Limbu
     \value Limburgish
+    \value Limbu Since Qt 5.1
     \value LinearA Since Qt 5.5
     \value Lingala
-    \value Lisu
+    \value Lisu Since Qt 5.1
     \value LiteraryChinese Since Qt 5.7
     \value Lithuanian
     \value Lojban Since Qt 5.12
     \value LowerSorbian Since Qt 5.5
     \value LowGerman
-    \value Lu
     \value LubaKatanga
     \value LuleSami Since Qt 5.5
     \value Luo
+    \value Lu Since Qt 5.1
     \value Luxembourgish
     \value Luyia
-    \value Lycian
-    \value Lydian
+    \value Lycian Since Qt 5.1
+    \value Lydian Since Qt 5.1
     \value Macedonian
     \value Machame
     \value Maithili Since Qt 5.5
@@ -310,9 +310,9 @@
     \value Malay
     \value Malayalam
     \value Maltese
-    \value Mandingo
+    \value Mandingo Since Qt 5.1
     \value ManichaeanMiddlePersian Since Qt 5.5
-    \value Manipuri
+    \value Manipuri Since Qt 5.1
     \value Manx
     \value Maori
     \value Mapuche Since Qt 5.5
@@ -321,7 +321,7 @@
     \value Masai
     \value Mazanderani Since Qt 5.7
     \value Mende Since Qt 5.5
-    \value Meroitic
+    \value Meroitic Since Qt 5.1
     \value Meru
     \value Meta
     \value Mohawk Since Qt 5.5
@@ -343,7 +343,7 @@
     \value NorthernLuri Since Qt 5.7
     \value NorthernSami
     \value NorthernSotho
-    \value NorthernThai
+    \value NorthernThai Since Qt 5.1
     \value NorthNdebele
     \value NorwegianBokmal same as Norwegian
     \value NorwegianNynorsk
@@ -353,29 +353,29 @@
     \value Nyankole
     \value Occitan
     \value Ojibwa
-    \value OldIrish
-    \value OldNorse
-    \value OldPersian
-    \value OldTurkish
+    \value OldIrish Since Qt 5.1
+    \value OldNorse Since Qt 5.1
+    \value OldPersian Since Qt 5.1
+    \value OldTurkish Since Qt 5.1
     \value Oriya
     \value Oromo
     \value Osage Since Qt 5.7
     \value Ossetic
-    \value Pahlavi
+    \value Pahlavi Since Qt 5.1
     \value Palauan Since Qt 5.7
     \value Pali
     \value Papiamento Since Qt 5.7
-    \value Parthian
+    \value Parthian Since Qt 5.1
     \value Pashto
     \value Persian
-    \value Phoenician
+    \value Phoenician Since Qt 5.1
     \value Polish
     \value Portuguese
-    \value PrakritLanguage
+    \value PrakritLanguage Since Qt 5.1
     \value Prussian Since Qt 5.5
     \value Punjabi
     \value Quechua
-    \value Rejang
+    \value Rejang Since Qt 5.1
     \value RhaetoRomance Obsolete, please use Romansh
     \value Romanian
     \value Romansh
@@ -383,19 +383,19 @@
     \value Rundi
     \value Russian
     \value Rwa
-    \value Sabaean
+    \value Sabaean Since Qt 5.1
     \value Saho
     \value Sakha
-    \value Samaritan
+    \value Samaritan Since Qt 5.1
     \value Samburu
     \value Samoan
     \value Sango
     \value Sangu
     \value Sanskrit
-    \value Santali
+    \value Santali Since Qt 5.1
     \value Saraiki Since Qt 5.7
     \value Sardinian
-    \value Saurashtra
+    \value Saurashtra Since Qt 5.1
     \value Sena
     \value Serbian
     \value SerboCroatian Obsolete, please use Serbian
@@ -411,7 +411,7 @@
     \value Slovenian
     \value Soga
     \value Somali
-    \value Sora
+    \value Sora Since Qt 5.1
     \value SouthernKurdish Since Qt 5.12
     \value SouthernSami Since Qt 5.5
     \value SouthernSotho
@@ -423,14 +423,14 @@
     \value Swati
     \value Swedish
     \value SwissGerman
-    \value Sylheti
+    \value Sylheti Since Qt 5.1
     \value Syriac
     \value Tachelhit
     \value Tagalog Obsolete, please use Filipino
-    \value Tagbanwa
+    \value Tagbanwa Since Qt 5.1
     \value Tahitian
-    \value TaiDam
-    \value TaiNua
+    \value TaiDam Since Qt 5.1
+    \value TaiNua Since Qt 5.1
     \value Taita
     \value Tajik
     \value Tamil
@@ -455,7 +455,7 @@
     \value TuvaluLanguage Since Qt 5.7
     \value Twi Obsolete, please use Akan
     \value Tyap
-    \value Ugaritic
+    \value Ugaritic Since Qt 5.1
     \value Uighur
     \value Uigur Obsolete, please use Uighur
     \value Ukrainian
@@ -623,7 +623,7 @@
     \value Kazakhstan
     \value Kenya
     \value Kiribati
-    \value Kosovo
+    \value Kosovo Since Qt 5.2
     \value Kuwait
     \value Kyrgyzstan
     \value Laos
@@ -784,82 +784,82 @@
     \value AnatolianHieroglyphsScript Since Qt 5.7
     \value ArabicScript
     \value ArmenianScript
-    \value AvestanScript
-    \value BalineseScript
-    \value BamumScript
+    \value AvestanScript Since Qt 5.1
+    \value BalineseScript Since Qt 5.1
+    \value BamumScript Since Qt 5.1
     \value BassaVahScript Since Qt 5.5
-    \value BatakScript
+    \value BatakScript Since Qt 5.1
     \value BengaliScript
     \value BhaiksukiScript Since Qt 5.7
-    \value BopomofoScript
-    \value BrahmiScript
-    \value BrailleScript
-    \value BugineseScript
-    \value BuhidScript
-    \value CanadianAboriginalScript
-    \value CarianScript
+    \value BopomofoScript Since Qt 5.1
+    \value BrahmiScript Since Qt 5.1
+    \value BrailleScript Since Qt 5.1
+    \value BugineseScript Since Qt 5.1
+    \value BuhidScript Since Qt 5.1
+    \value CanadianAboriginalScript Since Qt 5.1
+    \value CarianScript Since Qt 5.1
     \value CaucasianAlbanianScript Since Qt 5.5
-    \value ChakmaScript
-    \value ChamScript
+    \value ChakmaScript Since Qt 5.1
+    \value ChamScript Since Qt 5.1
     \value CherokeeScript
-    \value CopticScript
-    \value CuneiformScript
-    \value CypriotScript
+    \value CopticScript Since Qt 5.1
+    \value CuneiformScript Since Qt 5.1
+    \value CypriotScript Since Qt 5.1
     \value CyrillicScript
-    \value DeseretScript
+    \value DeseretScript Since Qt 5.1
     \value DevanagariScript
     \value DuployanScript Since Qt 5.5
-    \value EgyptianHieroglyphsScript
+    \value EgyptianHieroglyphsScript Since Qt 5.1
     \value ElbasanScript Since Qt 5.5
     \value EthiopicScript
-    \value FraserScript
+    \value FraserScript Since Qt 5.1
     \value GeorgianScript
-    \value GlagoliticScript
-    \value GothicScript
+    \value GlagoliticScript Since Qt 5.1
+    \value GothicScript Since Qt 5.1
     \value GranthaScript Since Qt 5.5
     \value GreekScript
     \value GujaratiScript
     \value GurmukhiScript
-    \value HangulScript
-    \value HanScript
-    \value HanunooScript
+    \value HangulScript Since Qt 5.1
+    \value HanScript Since Qt 5.1
+    \value HanunooScript Since Qt 5.1
     \value HanWithBopomofoScript Since Qt 5.7
     \value HatranScript Since Qt 5.7
     \value HebrewScript
-    \value HiraganaScript
-    \value ImperialAramaicScript
-    \value InscriptionalPahlaviScript
-    \value InscriptionalParthianScript
+    \value HiraganaScript Since Qt 5.1
+    \value ImperialAramaicScript Since Qt 5.1
+    \value InscriptionalPahlaviScript Since Qt 5.1
+    \value InscriptionalParthianScript Since Qt 5.1
     \value JamoScript Since Qt 5.7
     \value JapaneseScript
-    \value JavaneseScript
-    \value KaithiScript
+    \value JavaneseScript Since Qt 5.1
+    \value KaithiScript Since Qt 5.1
     \value KannadaScript
-    \value KatakanaScript
-    \value KayahLiScript
-    \value KharoshthiScript
-    \value KhmerScript
+    \value KatakanaScript Since Qt 5.1
+    \value KayahLiScript Since Qt 5.1
+    \value KharoshthiScript Since Qt 5.1
+    \value KhmerScript Since Qt 5.1
     \value KhojkiScript Since Qt 5.5
     \value KhudawadiScript Since Qt 5.5
     \value KoreanScript
-    \value LannaScript
+    \value LannaScript Since Qt 5.1
     \value LaoScript
     \value LatinScript
-    \value LepchaScript
-    \value LimbuScript
+    \value LepchaScript Since Qt 5.1
+    \value LimbuScript Since Qt 5.1
     \value LinearAScript Since Qt 5.5
-    \value LinearBScript
-    \value LycianScript
-    \value LydianScript
+    \value LinearBScript Since Qt 5.1
+    \value LycianScript Since Qt 5.1
+    \value LydianScript Since Qt 5.1
     \value MahajaniScript Since Qt 5.5
     \value MalayalamScript
-    \value MandaeanScript
+    \value MandaeanScript Since Qt 5.1
     \value ManichaeanScript Since Qt 5.5
     \value MarchenScript Since Qt 5.7
-    \value MeiteiMayekScript
+    \value MeiteiMayekScript Since Qt 5.1
     \value MendeKikakuiScript Since Qt 5.5
-    \value MeroiticCursiveScript
-    \value MeroiticScript
+    \value MeroiticCursiveScript Since Qt 5.1
+    \value MeroiticScript Since Qt 5.1
     \value ModiScript Since Qt 5.5
     \value MongolianScript
     \value MroScript Since Qt 5.5
@@ -867,47 +867,47 @@
     \value MyanmarScript
     \value NabataeanScript Since Qt 5.5
     \value NewaScript Since Qt 5.7
-    \value NewTaiLueScript
-    \value NkoScript
-    \value OghamScript
-    \value OlChikiScript
+    \value NewTaiLueScript Since Qt 5.1
+    \value NkoScript Since Qt 5.1
+    \value OghamScript Since Qt 5.1
+    \value OlChikiScript Since Qt 5.1
     \value OldHungarianScript Since Qt 5.7
-    \value OldItalicScript
+    \value OldItalicScript Since Qt 5.1
     \value OldNorthArabianScript Since Qt 5.5
     \value OldPermicScript Since Qt 5.5
-    \value OldPersianScript
-    \value OldSouthArabianScript
+    \value OldPersianScript Since Qt 5.1
+    \value OldSouthArabianScript Since Qt 5.1
     \value OriyaScript
-    \value OrkhonScript
+    \value OrkhonScript Since Qt 5.1
     \value OsageScript Since Qt 5.7
-    \value OsmanyaScript
+    \value OsmanyaScript Since Qt 5.1
     \value PahawhHmongScript Since Qt 5.5
     \value PalmyreneScript Since Qt 5.5
     \value PauCinHauScript Since Qt 5.5
-    \value PhagsPaScript
-    \value PhoenicianScript
-    \value PollardPhoneticScript
+    \value PhagsPaScript Since Qt 5.1
+    \value PhoenicianScript Since Qt 5.1
+    \value PollardPhoneticScript Since Qt 5.1
     \value PsalterPahlaviScript Since Qt 5.5
-    \value RejangScript
-    \value RunicScript
-    \value SamaritanScript
-    \value SaurashtraScript
-    \value SharadaScript
-    \value ShavianScript
+    \value RejangScript Since Qt 5.1
+    \value RunicScript Since Qt 5.1
+    \value SamaritanScript Since Qt 5.1
+    \value SaurashtraScript Since Qt 5.1
+    \value SharadaScript Since Qt 5.1
+    \value ShavianScript Since Qt 5.1
     \value SiddhamScript Since Qt 5.5
     \value SignWritingScript Since Qt 5.7
     \value SimplifiedChineseScript same as SimplifiedHanScript
     \value SimplifiedHanScript same as SimplifiedChineseScript
     \value SinhalaScript
-    \value SoraSompengScript
-    \value SundaneseScript
-    \value SylotiNagriScript
+    \value SoraSompengScript Since Qt 5.1
+    \value SundaneseScript Since Qt 5.1
+    \value SylotiNagriScript Since Qt 5.1
     \value SyriacScript
-    \value TagalogScript
-    \value TagbanwaScript
-    \value TaiLeScript
-    \value TaiVietScript
-    \value TakriScript
+    \value TagalogScript Since Qt 5.1
+    \value TagbanwaScript Since Qt 5.1
+    \value TaiLeScript Since Qt 5.1
+    \value TaiVietScript Since Qt 5.1
+    \value TakriScript Since Qt 5.1
     \value TamilScript
     \value TangutScript Since Qt 5.7
     \value TeluguScript
@@ -918,7 +918,7 @@
     \value TirhutaScript Since Qt 5.5
     \value TraditionalChineseScript same as TraditionalHanScript
     \value TraditionalHanScript same as TraditionalChineseScript
-    \value UgariticScript
+    \value UgariticScript Since Qt 5.1
     \value VaiScript
     \value VarangKshitiScript Since Qt 5.5
     \value YiScript
