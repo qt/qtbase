@@ -732,11 +732,9 @@ bool DtlsState::initCtxAndConnection(QDtlsBasePrivate *dtlsBase)
     configurationCopy->ref.store(0); // the QSslConfiguration constructor refs up
 
     // DTLSTODO: check we do not set something DTLS-incompatible there ...
-    // 'true' - means load root certs on-demand loading - double check how this
-    // expected to be done (QSslSocket).
     TlsContext newContext(QSslContext::sharedFromConfiguration(dtlsBase->mode,
                                                                configurationCopy,
-                                                               true));
+                                                               dtlsBase->dtlsConfiguration.allowRootCertOnDemandLoading));
 
     if (newContext->error() != QSslError::NoError) {
         dtlsBase->setDtlsError(QDtlsError::TlsInitializationError, newContext->errorString());
