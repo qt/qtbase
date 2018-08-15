@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+static const DWORD VENDOR_ID_AMD = 0x1002;
+
 GpuDescription GpuDescription::detect()
 {
     typedef IDirect3D9 * (WINAPI *PtrDirect3DCreate9)(UINT);
@@ -74,9 +76,16 @@ GpuDescription GpuDescription::detect()
     IDirect3D9 *direct3D9 = direct3DCreate9(D3D_SDK_VERSION);
     if (!direct3D9)
         return result;
+
     D3DADAPTER_IDENTIFIER9 adapterIdentifier;
-    const HRESULT hr = direct3D9->GetAdapterIdentifier(0, 0, &adapterIdentifier);
-    direct3D9->Release();
+    bool isAMD = false;
+    // Adapter "0" is D3DADAPTER_DEFAULT which returns the default adapter. In
+    // multi-GPU, multi-screen setups this is the GPU that is associated with
+    // the "main display" in the Display Settings, and this is the GPU OpenGL
+    // and D3D uses by default. Therefore querying any additional adapters is
+    // futile and not useful for our purposes in general, except for
+    // identifying a few special cases later on.
+    HRESULT hr = direct3D9->GetAdapterIdentifier(0, 0, &adapterIdentifier);
     if (SUCCEEDED(hr)) {
         result.vendorId = adapterIdentifier.VendorId;
         result.deviceId = adapterIdentifier.DeviceId;
@@ -90,7 +99,37 @@ GpuDescription GpuDescription::detect()
         result.driverVersion = QVersionNumber(version);
         result.driverName = adapterIdentifier.Driver;
         result.description = adapterIdentifier.Description;
+        isAMD = result.vendorId == VENDOR_ID_AMD;
     }
+
+    // Detect QTBUG-50371 (having AMD as the default adapter results in a crash
+    // when starting apps on a screen connected to the Intel card) by looking
+    // for a default AMD adapter and an additional non-AMD one.
+    if (isAMD) {
+        const UINT adapterCount = direct3D9->GetAdapterCount();
+        for (UINT adp = 1; adp < adapterCount; ++adp) {
+            hr = direct3D9->GetAdapterIdentifier(adp, 0, &adapterIdentifier);
+            if (SUCCEEDED(hr)) {
+                if (adapterIdentifier.VendorId != VENDOR_ID_AMD) {
+                    // Bingo. Now figure out the display for the AMD card.
+                    DISPLAY_DEVICE dd;
+                    memset(&dd, 0, sizeof(dd));
+                    dd.cb = sizeof(dd);
+                    for (int dev = 0; EnumDisplayDevices(nullptr, dev, &dd, 0); ++dev) {
+                        if (dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) {
+                            // DeviceName is something like \\.\DISPLAY1 which can be used to
+                            // match with the MONITORINFOEX::szDevice queried by QWindowsScreen.
+                            result.gpuSuitableScreen = QString::fromWCharArray(dd.DeviceName);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    direct3D9->Release();
     return result;
 }
 
@@ -103,7 +142,8 @@ QDebug operator<<(QDebug d, const GpuDescription &gd)
       << ", deviceId=" << gd.deviceId << ", subSysId=" << gd.subSysId
       << dec << noshowbase << ", revision=" << gd.revision
       << ", driver: " << gd.driverName
-      << ", version=" << gd.driverVersion << ", " << gd.description << ')';
+      << ", version=" << gd.driverVersion << ", " << gd.description
+      << gd.gpuSuitableScreen << ')';
     return d;
 }
 #endif // !QT_NO_DEBUG_STREAM
@@ -113,15 +153,17 @@ QString GpuDescription::toString() const
 {
     QString result;
     QTextStream str(&result);
-    str <<   "         Card name: " << description
-        << "\n       Driver Name: " << driverName
-        << "\n    Driver Version: " << driverVersion.toString()
-        << "\n         Vendor ID: 0x" << qSetPadChar(QLatin1Char('0'))
+    str <<   "         Card name         : " << description
+        << "\n       Driver Name         : " << driverName
+        << "\n    Driver Version         : " << driverVersion.toString()
+        << "\n         Vendor ID         : 0x" << qSetPadChar(QLatin1Char('0'))
         << uppercasedigits << hex << qSetFieldWidth(4) << vendorId
-        << "\n         Device ID: 0x" << qSetFieldWidth(4) << deviceId
-        << "\n         SubSys ID: 0x" << qSetFieldWidth(8) << subSysId
-        << "\n       Revision ID: 0x" << qSetFieldWidth(4) << revision
+        << "\n         Device ID         : 0x" << qSetFieldWidth(4) << deviceId
+        << "\n         SubSys ID         : 0x" << qSetFieldWidth(8) << subSysId
+        << "\n       Revision ID         : 0x" << qSetFieldWidth(4) << revision
         << dec;
+    if (!gpuSuitableScreen.isEmpty())
+        str << "\nGL windows forced to screen: " << gpuSuitableScreen;
     return result;
 }
 
