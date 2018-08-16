@@ -6,6 +6,7 @@
 
     "Description": "xkbcommon is a keymap compiler and support library which processes a reduced subset of keymaps as defined by the XKB specification.",
     "Homepage": "http://xkbcommon.org/",
+    "Version": "0.4.1",
     "License": "MIT Licenses (with no-advertisement clause)",
     "LicenseId": "MIT",
     "LicenseFile": "COPYING",

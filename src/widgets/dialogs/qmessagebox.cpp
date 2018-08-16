@@ -1022,6 +1022,16 @@ void QMessageBoxPrivate::detectEscapeButton()
         return;
     }
 
+    // If there are two buttons and one of them is the "Show Details..."
+    // button, then make the other one the escape button
+    if (buttons.count() == 2 && detailsButton) {
+        auto idx = buttons.indexOf(detailsButton);
+        if (idx != -1) {
+            detectedEscapeButton = buttons.at(1 - idx);
+            return;
+        }
+    }
+
     // if the message box has one RejectRole button, make it the escape button
     for (auto *button : buttons) {
         if (buttonBox->buttonRole(button) == QDialogButtonBox::RejectRole) {
