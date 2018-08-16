@@ -465,26 +465,11 @@ QByteArray QAuthenticatorPrivate::calculateResponse(const QByteArray &requestMet
         methodString = "";
         phase = Done;
         break;
-    case QAuthenticatorPrivate::Plain:
-        response = '\0' + user.toUtf8() + '\0' + password.toUtf8();
-        phase = Done;
-        break;
     case QAuthenticatorPrivate::Basic:
         methodString = "Basic ";
         response = user.toLatin1() + ':' + password.toLatin1();
         response = response.toBase64();
         phase = Done;
-        break;
-    case QAuthenticatorPrivate::Login:
-        if (challenge.contains("VXNlciBOYW1lAA==")) {
-            response = user.toUtf8().toBase64();
-            phase = Phase2;
-        } else if (challenge.contains("UGFzc3dvcmQA")) {
-            response = password.toUtf8().toBase64();
-            phase = Done;
-        }
-        break;
-    case QAuthenticatorPrivate::CramMd5:
         break;
     case QAuthenticatorPrivate::DigestMd5:
         methodString = "Digest ";
