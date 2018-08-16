@@ -3878,7 +3878,7 @@ void tst_QAccessibility::bridgeTest()
     // Label
     hr = nodeList.at(4)->get_CurrentControlType(&controlTypeId);
     QVERIFY(SUCCEEDED(hr));
-    QCOMPARE(controlTypeId, UIA_EditControlTypeId);
+    QCOMPARE(controlTypeId, UIA_TextControlTypeId);
 
     for (auto nd : nodeList) {
         nd->Release();
