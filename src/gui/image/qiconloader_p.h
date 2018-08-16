@@ -177,6 +177,8 @@ public:
 
     QString themeName() const { return m_userTheme.isEmpty() ? m_systemTheme : m_userTheme; }
     void setThemeName(const QString &themeName);
+    QString fallbackThemeName() const;
+    void setFallbackThemeName(const QString &themeName);
     QIconTheme theme() { return themeList.value(themeName()); }
     void setThemeSearchPath(const QStringList &searchPaths);
     QStringList themeSearchPaths() const;
@@ -200,6 +202,7 @@ private:
     bool m_initialized;
 
     mutable QString m_userTheme;
+    mutable QString m_userFallbackTheme;
     mutable QString m_systemTheme;
     mutable QStringList m_iconDirs;
     mutable QHash <QString, QIconTheme> themeList;

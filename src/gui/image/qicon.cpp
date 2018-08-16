@@ -1194,7 +1194,7 @@ void QIcon::setFallbackSearchPaths(const QStringList &paths)
 
     The \a name should correspond to a directory name in the
     themeSearchPath() containing an index.theme
-    file describing it's contents.
+    file describing its contents.
 
     \sa themeSearchPaths(), themeName()
 */
@@ -1217,6 +1217,37 @@ void QIcon::setThemeName(const QString &name)
 QString QIcon::themeName()
 {
     return QIconLoader::instance()->themeName();
+}
+
+/*!
+    \since 5.12
+
+    Returns the name of the fallback icon theme.
+
+    On X11, if not set, the fallback icon theme depends on your desktop
+    settings. On other platforms it is not set by default.
+
+    \sa setFallbackThemeName(), themeName()
+*/
+QString QIcon::fallbackThemeName()
+{
+    return QIconLoader::instance()->fallbackThemeName();
+}
+
+/*!
+    \since 5.12
+
+    Sets the fallback icon theme to \a name.
+
+    The \a name should correspond to a directory name in the
+    themeSearchPath() containing an index.theme
+    file describing its contents.
+
+    \sa fallbackThemeName(), themeSearchPaths(), themeName()
+*/
+void QIcon::setFallbackThemeName(const QString &name)
+{
+    QIconLoader::instance()->setFallbackThemeName(name);
 }
 
 /*!
