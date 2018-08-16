@@ -397,10 +397,12 @@ void QHttpNetworkConnectionPrivate::copyCredentials(int fromChannel, QAuthentica
     // NTLM and Negotiate do multi-phase authentication.
     // Copying credentialsbetween authenticators would mess things up.
     if (fromChannel >= 0) {
-        const QHttpNetworkConnectionChannel &channel = channels[fromChannel];
-        const QAuthenticatorPrivate::Method method = isProxy ? channel.proxyAuthMethod : channel.authMethod;
-        if (method == QAuthenticatorPrivate::Ntlm || method == QAuthenticatorPrivate::Negotiate)
+        QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(*auth);
+        if (priv
+            && (priv->method == QAuthenticatorPrivate::Ntlm
+                || priv->method == QAuthenticatorPrivate::Negotiate)) {
             return;
+        }
     }
 
     // select another channel
@@ -432,19 +434,16 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
     //create the response header to be used with QAuthenticatorPrivate.
     QList<QPair<QByteArray, QByteArray> > fields = reply->header();
 
-    //find out the type of authentication protocol requested.
-    QAuthenticatorPrivate::Method authMethod = reply->d_func()->authenticationMethod(isProxy);
-    if (authMethod != QAuthenticatorPrivate::None) {
+    // Check that any of the proposed authenticate methods are supported
+    const QByteArray header = isProxy ? "proxy-authenticate" : "www-authenticate";
+    const QByteArrayList &authenticationMethods = reply->d_func()->headerFieldValues(header);
+    const bool isSupported = std::any_of(authenticationMethods.begin(), authenticationMethods.end(),
+                                         QAuthenticatorPrivate::isMethodSupported);
+    if (isSupported) {
         int i = indexOf(socket);
         //Use a single authenticator for all domains. ### change later to use domain/realm
-        QAuthenticator* auth = nullptr;
-        if (isProxy) {
-            auth = &channels[i].proxyAuthenticator;
-            channels[i].proxyAuthMethod = authMethod;
-        } else {
-            auth = &channels[i].authenticator;
-            channels[i].authMethod = authMethod;
-        }
+        QAuthenticator *auth = isProxy ? &channels[i].proxyAuthenticator
+                                       : &channels[i].authenticator;
         //proceed with the authentication.
         if (auth->isNull())
             auth->detach();
@@ -453,10 +452,6 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
         // Update method in case it changed
         if (priv->method == QAuthenticatorPrivate::None)
             return false;
-        if (isProxy)
-            channels[i].proxyAuthMethod = priv->method;
-        else
-            channels[i].authMethod = priv->method;
 
         if (priv->phase == QAuthenticatorPrivate::Done) {
             pauseConnection();
@@ -591,28 +586,30 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
 
     int i = indexOf(socket);
 
+    QAuthenticator *authenticator = &channels[i].authenticator;
+    QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(*authenticator);
     // Send "Authorization" header, but not if it's NTLM and the socket is already authenticated.
-    if (channels[i].authMethod != QAuthenticatorPrivate::None) {
-        if ((channels[i].authMethod != QAuthenticatorPrivate::Ntlm && request.headerField("Authorization").isEmpty()) || channels[i].lastStatus == 401) {
-            QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(channels[i].authenticator);
-            if (priv && priv->method != QAuthenticatorPrivate::None) {
-                QByteArray response = priv->calculateResponse(request.methodName(), request.uri(false), request.url().host());
-                request.setHeaderField("Authorization", response);
-                channels[i].authenticationCredentialsSent = true;
-            }
+    if (priv && priv->method != QAuthenticatorPrivate::None) {
+        if ((priv->method != QAuthenticatorPrivate::Ntlm
+             && request.headerField("Authorization").isEmpty())
+            || channels[i].lastStatus == 401) {
+            QByteArray response = priv->calculateResponse(request.methodName(), request.uri(false),
+                                                          request.url().host());
+            request.setHeaderField("Authorization", response);
+            channels[i].authenticationCredentialsSent = true;
         }
     }
 
 #if QT_CONFIG(networkproxy)
+    authenticator = &channels[i].proxyAuthenticator;
+    priv = QAuthenticatorPrivate::getPrivate(*authenticator);
     // Send "Proxy-Authorization" header, but not if it's NTLM and the socket is already authenticated.
-    if (channels[i].proxyAuthMethod != QAuthenticatorPrivate::None) {
-        if (!(channels[i].proxyAuthMethod == QAuthenticatorPrivate::Ntlm && channels[i].lastStatus != 407)) {
-            QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(channels[i].proxyAuthenticator);
-            if (priv && priv->method != QAuthenticatorPrivate::None) {
-                QByteArray response = priv->calculateResponse(request.methodName(), request.uri(false), networkProxy.hostName());
-                request.setHeaderField("Proxy-Authorization", response);
-                channels[i].proxyCredentialsSent = true;
-            }
+    if (priv && priv->method != QAuthenticatorPrivate::None) {
+        if (priv->method != QAuthenticatorPrivate::Ntlm || channels[i].lastStatus == 407) {
+            QByteArray response = priv->calculateResponse(request.methodName(), request.uri(false),
+                                                          networkProxy.hostName());
+            request.setHeaderField("Proxy-Authorization", response);
+            channels[i].proxyCredentialsSent = true;
         }
     }
 #endif // QT_CONFIG(networkproxy)
