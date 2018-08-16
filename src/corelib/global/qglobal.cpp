@@ -2142,11 +2142,20 @@ struct QUnixOSVersion
 
 static QString unquote(const char *begin, const char *end)
 {
+    // man os-release says:
+    // Variable assignment values must be enclosed in double
+    // or single quotes if they include spaces, semicolons or
+    // other special characters outside of A–Z, a–z, 0–9. Shell
+    // special characters ("$", quotes, backslash, backtick)
+    // must be escaped with backslashes, following shell style.
+    // All strings should be in UTF-8 format, and non-printable
+    // characters should not be used. It is not supported to
+    // concatenate multiple individually quoted strings.
     if (*begin == '"') {
         Q_ASSERT(end[-1] == '"');
-        return QString::fromLatin1(begin + 1, end - begin - 2);
+        return QString::fromUtf8(begin + 1, end - begin - 2);
     }
-    return QString::fromLatin1(begin, end - begin);
+    return QString::fromUtf8(begin, end - begin);
 }
 static QByteArray getEtcFileContent(const char *filename)
 {
