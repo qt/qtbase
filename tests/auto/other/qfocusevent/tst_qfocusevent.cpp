@@ -38,6 +38,9 @@
 #include <QBoxLayout>
 #include <QSysInfo>
 
+#include <qpa/qplatformintegration.h>
+#include <private/qguiapplication_p.h>
+
 QT_FORWARD_DECLARE_CLASS(QWidget)
 
 class FocusLineEdit : public QLineEdit
@@ -92,13 +95,16 @@ private slots:
     void checkReason_ActiveWindow();
 
 private:
-    QWidget* testFocusWidget;
+    QWidget* testFocusWidget = nullptr;
     FocusLineEdit* childFocusWidgetOne;
     FocusLineEdit* childFocusWidgetTwo;
 };
 
 void tst_QFocusEvent::initTestCase()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported on this platform.");
+
     testFocusWidget = new QWidget( 0 );
     childFocusWidgetOne = new FocusLineEdit( testFocusWidget );
     childFocusWidgetOne->setGeometry( 10, 10, 180, 20 );

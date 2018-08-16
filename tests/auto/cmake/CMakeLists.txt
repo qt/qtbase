@@ -153,3 +153,4 @@ if (NOT CMAKE_VERSION VERSION_LESS 3.8)
     # /usr/bin/ld: CMakeFiles/mywidget.dir/moc_mywidget.cpp.o: previous definition here
     # Reason: SKIP_* properties were added in CMake 3.8 only
     expect_pass(test_QTBUG-63422)
+endif()

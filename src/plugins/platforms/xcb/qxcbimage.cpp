@@ -69,7 +69,7 @@ QImage::Format imageFormatForMasks(int depth, int bits_per_pixel, int red_mask, 
             if (red_mask == 0xff && blue_mask == 0xff0000)
                 return QImage::Format_RGBA8888_Premultiplied;
 #else
-            if (red_mask == 0xff000000 && blue_mask == 0xff00)
+            if (unsigned(red_mask) == unsigned(0xff000000) && blue_mask == 0xff00)
                 return QImage::Format_RGBA8888_Premultiplied;
 #endif
             if (red_mask == 0x3ff && blue_mask == 0x3ff00000)
@@ -90,7 +90,7 @@ QImage::Format imageFormatForMasks(int depth, int bits_per_pixel, int red_mask, 
             if (red_mask == 0xff && blue_mask == 0xff0000)
                 return QImage::Format_RGBX8888;
 #else
-            if (red_mask == 0xff000000 && blue_mask == 0xff00)
+            if (unsigned(red_mask) == unsigned(0xff000000) && blue_mask == 0xff00)
                 return QImage::Format_RGBX8888;
 #endif
             break;
