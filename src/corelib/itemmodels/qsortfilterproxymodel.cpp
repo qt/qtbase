@@ -2191,7 +2191,7 @@ bool QSortFilterProxyModel::insertRows(int row, int count, const QModelIndex &pa
     if (row > m->source_rows.count())
         return false;
     int source_row = (row >= m->source_rows.count()
-                      ? m->source_rows.count()
+                      ? m->proxy_rows.count()
                       : m->source_rows.at(row));
     return d->model->insertRows(source_row, count, source_parent);
 }
@@ -2211,7 +2211,7 @@ bool QSortFilterProxyModel::insertColumns(int column, int count, const QModelInd
     if (column > m->source_columns.count())
         return false;
     int source_column = (column >= m->source_columns.count()
-                         ? m->source_columns.count()
+                         ? m->proxy_columns.count()
                          : m->source_columns.at(column));
     return d->model->insertColumns(source_column, count, source_parent);
 }
