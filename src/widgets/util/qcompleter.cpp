@@ -182,10 +182,10 @@ int QCompletionModel::columnCount(const QModelIndex &) const
 
 void QCompletionModel::setSourceModel(QAbstractItemModel *source)
 {
-    bool hadModel = (sourceModel() != 0);
+    bool hadModel = (sourceModel() != nullptr);
 
     if (hadModel)
-        QObject::disconnect(sourceModel(), 0, this, 0);
+        QObject::disconnect(sourceModel(), nullptr, this, nullptr);
 
     QAbstractProxyModel::setSourceModel(source);
 
@@ -402,7 +402,7 @@ QVariant QCompletionModel::data(const QModelIndex& index, int role) const
 
 void QCompletionModel::modelDestroyed()
 {
-    QAbstractProxyModel::setSourceModel(0); // switch to static empty model
+    QAbstractProxyModel::setSourceModel(nullptr); // switch to static empty model
     invalidate();
 }
 
@@ -471,13 +471,13 @@ QMatchData QCompletionEngine::filterHistory()
         return QMatchData();
 
 #if QT_CONFIG(dirmodel)
-    const bool isDirModel = (qobject_cast<QDirModel *>(source) != 0);
+    const bool isDirModel = (qobject_cast<QDirModel *>(source) != nullptr);
 #else
     const bool isDirModel = false;
 #endif
     Q_UNUSED(isDirModel)
 #if QT_CONFIG(filesystemmodel)
-    const bool isFsModel = (qobject_cast<QFileSystemModel *>(source) != 0);
+    const bool isFsModel = (qobject_cast<QFileSystemModel *>(source) != nullptr);
 #else
     const bool isFsModel = false;
 #endif
@@ -828,9 +828,18 @@ QMatchData QUnsortedModelEngine::filter(const QString& part, const QModelIndex& 
 
 ///////////////////////////////////////////////////////////////////////////////
 QCompleterPrivate::QCompleterPrivate()
-: widget(0), proxy(0), popup(0), filterMode(Qt::MatchStartsWith), cs(Qt::CaseSensitive),
-  role(Qt::EditRole), column(0), maxVisibleItems(7), sorting(QCompleter::UnsortedModel),
-  wrap(true), eatFocusOut(true), hiddenBecauseNoMatch(false)
+    : widget(nullptr),
+      proxy(nullptr),
+      popup(nullptr),
+      filterMode(Qt::MatchStartsWith),
+      cs(Qt::CaseSensitive),
+      role(Qt::EditRole),
+      column(0),
+      maxVisibleItems(7),
+      sorting(QCompleter::UnsortedModel),
+      wrap(true),
+      eatFocusOut(true),
+      hiddenBecauseNoMatch(false)
 {
 }
 
@@ -1146,7 +1155,7 @@ void QCompleter::setCompletionMode(QCompleter::CompletionMode mode)
             d->widget->removeEventFilter(this);
         if (d->popup) {
             d->popup->deleteLater();
-            d->popup = 0;
+            d->popup = nullptr;
         }
     } else {
         if (d->widget)
@@ -1222,8 +1231,8 @@ void QCompleter::setPopup(QAbstractItemView *popup)
     Q_D(QCompleter);
     Q_ASSERT(popup != 0);
     if (d->popup) {
-        QObject::disconnect(d->popup->selectionModel(), 0, this, 0);
-        QObject::disconnect(d->popup, 0, this, 0);
+        QObject::disconnect(d->popup->selectionModel(), nullptr, this, nullptr);
+        QObject::disconnect(d->popup, nullptr, this, nullptr);
     }
     if (d->popup != popup)
         delete d->popup;
@@ -1234,7 +1243,7 @@ void QCompleter::setPopup(QAbstractItemView *popup)
     Qt::FocusPolicy origPolicy = Qt::NoFocus;
     if (d->widget)
         origPolicy = d->widget->focusPolicy();
-    popup->setParent(0, Qt::Popup);
+    popup->setParent(nullptr, Qt::Popup);
     popup->setFocusPolicy(Qt::NoFocus);
     if (d->widget)
         d->widget->setFocusPolicy(origPolicy);
@@ -1488,7 +1497,7 @@ void QCompleter::complete(const QRect& rect)
         return;
     }
 
-    Q_ASSERT(d->widget != 0);
+    Q_ASSERT(d->widget);
     if ((d->mode == QCompleter::PopupCompletion && !idx.isValid())
         || (d->mode == QCompleter::UnfilteredPopupCompletion && d->proxy->rowCount() == 0)) {
         if (d->popup)
@@ -1798,10 +1807,10 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
     bool isDirModel = false;
     bool isFsModel = false;
 #if QT_CONFIG(dirmodel)
-    isDirModel = qobject_cast<QDirModel *>(d->proxy->sourceModel()) != 0;
+    isDirModel = qobject_cast<QDirModel *>(d->proxy->sourceModel()) != nullptr;
 #endif
 #if QT_CONFIG(filesystemmodel)
-    isFsModel = qobject_cast<QFileSystemModel *>(d->proxy->sourceModel()) != 0;
+    isFsModel = qobject_cast<QFileSystemModel *>(d->proxy->sourceModel()) != nullptr;
 #endif
     if (!isDirModel && !isFsModel)
         return sourceModel->data(index, d->role).toString();
@@ -1848,13 +1857,13 @@ QStringList QCompleter::splitPath(const QString& path) const
     bool isFsModel = false;
 #if QT_CONFIG(dirmodel)
     Q_D(const QCompleter);
-    isDirModel = qobject_cast<QDirModel *>(d->proxy->sourceModel()) != 0;
+    isDirModel = qobject_cast<QDirModel *>(d->proxy->sourceModel()) != nullptr;
 #endif
 #if QT_CONFIG(filesystemmodel)
 #if !QT_CONFIG(dirmodel)
     Q_D(const QCompleter);
 #endif
-    isFsModel = qobject_cast<QFileSystemModel *>(d->proxy->sourceModel()) != 0;
+    isFsModel = qobject_cast<QFileSystemModel *>(d->proxy->sourceModel()) != nullptr;
 #endif
 
     if ((!isDirModel && !isFsModel) || path.isEmpty())
