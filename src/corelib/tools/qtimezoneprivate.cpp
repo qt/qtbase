@@ -260,6 +260,8 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
     const qint64 sixteenHoursInMSecs(16 * 3600 * 1000);
     Q_STATIC_ASSERT(-sixteenHoursInMSecs / 1000 < QTimeZone::MinUtcOffsetSecs
                   && sixteenHoursInMSecs / 1000 > QTimeZone::MaxUtcOffsetSecs);
+    const qint64 recent = forLocalMSecs - sixteenHoursInMSecs;
+    const qint64 imminent = forLocalMSecs + sixteenHoursInMSecs;
     /*
       Offsets are Local - UTC, positive to the east of Greenwich, negative to
       the west; DST offset always exceeds standard offset, when DST applies.
@@ -327,7 +329,7 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
 
         // Get a transition definitely before the local MSecs; usually all we need.
         // Only around the transition times might we need another.
-        Data tran = previousTransition(forLocalMSecs - sixteenHoursInMSecs);
+        Data tran = previousTransition(recent);
         Q_ASSERT(forLocalMSecs < 0 || // Pre-epoch TZ info may be unavailable
                  forLocalMSecs - tran.offsetFromUtc * 1000 >= tran.atMSecsSinceEpoch);
         Data nextTran = nextTransition(tran.atMSecsSinceEpoch);
@@ -343,8 +345,7 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
                && forLocalMSecs > nextTran.atMSecsSinceEpoch + nextTran.offsetFromUtc * 1000) {
             Data newTran = nextTransition(nextTran.atMSecsSinceEpoch);
             if (newTran.atMSecsSinceEpoch == invalidMSecs()
-                || newTran.atMSecsSinceEpoch + newTran.offsetFromUtc * 1000
-                > forLocalMSecs + sixteenHoursInMSecs) {
+                || newTran.atMSecsSinceEpoch + newTran.offsetFromUtc * 1000 > imminent) {
                 // Definitely not a relevant tansition: too far in the future.
                 break;
             }
@@ -417,8 +418,8 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
     /* Bracket and refine to discover offset. */
     qint64 utcEpochMSecs;
 
-    int early = offsetFromUtc(forLocalMSecs - sixteenHoursInMSecs);
-    int late = offsetFromUtc(forLocalMSecs + sixteenHoursInMSecs);
+    int early = offsetFromUtc(recent);
+    int late = offsetFromUtc(imminent);
     if (Q_LIKELY(early == late)) { // > 99% of the time
         utcEpochMSecs = forLocalMSecs - early * 1000;
     } else {
@@ -439,9 +440,7 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
             utcEpochMSecs = forStd;
         } else {
             // Invalid forLocalMSecs: in spring-forward gap.
-            const int dstStep = daylightTimeOffset(early < late ?
-                                                   forLocalMSecs + sixteenHoursInMSecs :
-                                                   forLocalMSecs - sixteenHoursInMSecs);
+            const int dstStep = daylightTimeOffset(early < late ? imminent : recent);
             Q_ASSERT(dstStep); // There can't be a transition without it !
             utcEpochMSecs = (hint > 0) ? forStd - dstStep : forDst + dstStep;
         }
