@@ -75,7 +75,7 @@ public:
     void initColOffsets(int size);
     int columnInQuery(int modelColumn) const;
 
-    mutable QSqlQuery query;
+    mutable QSqlQuery query = { QSqlQuery(0) };
     mutable QSqlError error;
     QModelIndex bottom;
     QSqlRecord rec;

@@ -31,11 +31,29 @@
 #include "../../kernel/qsqldatabase/tst_databases.h"
 #include <QtSql>
 #include <QtSql/private/qsqltablemodel_p.h>
+#include <QThread>
 
 const QString test(qTableName("test", __FILE__, QSqlDatabase())),
                    test2(qTableName("test2", __FILE__, QSqlDatabase())),
                    test3(qTableName("test3", __FILE__, QSqlDatabase()));
 
+// In order to catch when the warning message occurs, indicating that the database belongs to another
+// thread, we have to install our own message handler. To ensure that the test reporting still happens
+// as before, we call the originating one.
+//
+// For now, this is only called inside the modelInAnotherThread() test
+QtMessageHandler oldHandler = nullptr;
+
+void sqlTableModelMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    if (type == QtWarningMsg &&
+        msg == "QSqlDatabasePrivate::database: requested database does not "
+               "belong to the calling thread.") {
+        QFAIL("Requested database does not belong to the calling thread.");
+    }
+    if (oldHandler)
+        oldHandler(type, context, msg);
+}
 
 class tst_QSqlTableModel : public QObject
 {
@@ -116,6 +134,7 @@ private slots:
 
     void sqlite_bigTable_data() { generic_data("QSQLITE"); }
     void sqlite_bigTable();
+    void modelInAnotherThread();
 
     // bug specific tests
     void insertRecordBeforeSelect_data() { generic_data(); }
@@ -276,6 +295,10 @@ void tst_QSqlTableModel::init()
 void tst_QSqlTableModel::cleanup()
 {
     recreateTestTables();
+    if (oldHandler) {
+        qInstallMessageHandler(oldHandler);
+        oldHandler = nullptr;
+    }
 }
 
 void tst_QSqlTableModel::select()
@@ -2098,6 +2121,30 @@ void tst_QSqlTableModel::invalidFilterAndHeaderData()
 
     QVariant v = model.headerData(0, Qt::Horizontal, Qt::SizeHintRole);
     QVERIFY(!v.isValid());
+}
+
+class SqlThread : public QThread
+{
+public:
+    SqlThread() : QThread() {}
+    void run()
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "non-default-connection");
+        QSqlTableModel stm(nullptr, db);
+        isDone = true;
+    }
+    bool isDone = false;
+};
+
+void tst_QSqlTableModel::modelInAnotherThread()
+{
+    oldHandler = qInstallMessageHandler(sqlTableModelMessageHandler);
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    CHECK_DATABASE(db);
+    SqlThread t;
+    t.start();
+    QTRY_VERIFY(t.isDone);
+    QVERIFY(t.isFinished());
 }
 
 QTEST_MAIN(tst_QSqlTableModel)
