@@ -357,10 +357,10 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
 
             /*
               So now tran is definitely before and nextTran is either after or only
-              slightly before.  The one with the larger offset is in DST; the other in
-              standard time.  Our hint tells us which of those to use (defaulting to
-              standard if no hint): try it first; if that fails, try the other; if both
-              fail life's tricky.
+              slightly before.  One is standard time; we interpret the other as DST
+              (although the transition might in fact by a change in standard offset).  Our
+              hint tells us which of those to use (defaulting to standard if no hint): try
+              it first; if that fails, try the other; if both fail, life's tricky.
             */
             Q_ASSERT(forLocalMSecs < 0
                      || forLocalMSecs - tran.offsetFromUtc * 1000 > tran.atMSecsSinceEpoch);
@@ -369,7 +369,9 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
             nextTran.atMSecsSinceEpoch = forLocalMSecs - nextTran.offsetFromUtc * 1000;
             tran.atMSecsSinceEpoch = forLocalMSecs - tran.offsetFromUtc * 1000;
 
-            const bool nextIsDst = tran.offsetFromUtc < nextTran.offsetFromUtc;
+            // If both or neither have zero DST, treat the one with lower offset as standard:
+            const bool nextIsDst = !nextTran.daylightTimeOffset == !tran.daylightTimeOffset
+                ? tran.offsetFromUtc < nextTran.offsetFromUtc : nextTran.daylightTimeOffset;
             // If that agrees with hint > 0, our first guess is to use nextTran; else tran.
             const bool nextFirst = nextIsDst == (hint > 0) && nextStart != invalidMSecs();
             for (int i = 0; i < 2; i++) {
