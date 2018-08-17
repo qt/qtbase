@@ -165,6 +165,11 @@ void QMacCocoaViewContainer::setCocoaView(NSView *view)
     Q_ASSERT(window->handle());
 
     [oldView release];
+
+    // The QWindow::destroy()) call above will explicitly hide this widget.
+    // Clear the hidden state here so it can be implicitly shown again.
+    setAttribute(Qt::WA_WState_Hidden, false);
+
 }
 
 QT_END_NAMESPACE
