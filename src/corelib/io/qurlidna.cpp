@@ -2021,7 +2021,7 @@ static bool isBidirectionalL(uint uc)
     return false;
 }
 
-Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from)
+Q_AUTOTEST_EXPORT bool qt_nameprep(QString *source, int from)
 {
     QChar *src = source->data(); // causes a detach, so we're sure the only one using it
     QChar *out = src + from;
@@ -2036,7 +2036,7 @@ Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from)
         }
     }
     if (out == e)
-        return; // everything was mapped easily (lowercased, actually)
+        return true;    // everything was mapped easily (lowercased, actually)
     int firstNonAscii = out - src;
 
     // Characters unassigned in Unicode 3.2 are not allowed in "stored string" scheme
@@ -2059,7 +2059,7 @@ Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from)
             QChar::UnicodeVersion version = QChar::unicodeVersion(uc);
             if (version == QChar::Unicode_Unassigned || version > QChar::Unicode_3_2) {
                 source->resize(from); // not allowed, clear the label
-                return;
+                return false;
             }
         }
         if (!isMappedToNothing(uc)) {
@@ -2086,7 +2086,7 @@ Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from)
     // Strip prohibited output
     if (containsProhibitedOuptut(source, firstNonAscii)) {
         source->resize(from);
-        return;
+        return false;
     }
 
     // Check for valid bidirectional characters
@@ -2110,9 +2110,13 @@ Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from)
     }
     if (containsRandALCat) {
         if (containsLCat || (!isBidirectionalRorAL(src[from].unicode())
-                             || !isBidirectionalRorAL(e[-1].unicode())))
+                             || !isBidirectionalRorAL(e[-1].unicode()))) {
             source->resize(from); // not allowed, clear the label
+            return false;
+        }
     }
+
+    return true;
 }
 
 static const QChar *qt_find_nonstd3(const QChar *uc, int len, Qt::CaseSensitivity cs)
@@ -2553,7 +2557,8 @@ QString qt_ACE_do(const QString &domain, AceOperation op, AceLeadingDot dot)
         } else {
             // Punycode encoding and decoding cannot be done in-place
             // That means we need one or two temporaries
-            qt_nameprep(&result, prevLen);
+            if (!qt_nameprep(&result, prevLen))
+                return QString();   // failed
             labelLength = result.length() - prevLen;
             int toReserve = labelLength + 4 + 6; // "xn--" plus some extra bytes
             aceForm.resize(0);

@@ -63,7 +63,7 @@ public:
     ~CustomStyle() {}
 
     void drawPrimitive(PrimitiveElement element, const QStyleOption *option,
-                       QPainter *painter, const QWidget *widget) const;
+                       QPainter *painter, const QWidget *widget) const override;
 };
 //! [0]
 

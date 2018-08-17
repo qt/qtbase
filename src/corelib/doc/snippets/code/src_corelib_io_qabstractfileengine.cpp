@@ -52,7 +52,7 @@
 class ZipEngineHandler : public QAbstractFileEngineHandler
 {
 public:
-    QAbstractFileEngine *create(const QString &fileName) const;
+    QAbstractFileEngine *create(const QString &fileName) const override;
 };
 
 QAbstractFileEngine *ZipEngineHandler::create(const QString &fileName) const
@@ -105,12 +105,12 @@ public:
         entries << "entry1" << "entry2" << "entry3";
     }
 
-    bool hasNext() const
+    bool hasNext() const override
     {
         return index < entries.size() - 1;
     }
 
-    QString next()
+    QString next() override
     {
        if (!hasNext())
            return QString();
@@ -118,7 +118,7 @@ public:
        return currentFilePath();
     }
 
-    QString currentFileName()
+    QString currentFileName() override
     {
         return entries.at(index);
     }

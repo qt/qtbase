@@ -58,7 +58,7 @@ public:
 
     void drawItems(QPainter *painter, int numItems, QGraphicsItem *items[],
                    const QStyleOptionGraphicsItem options[],
-                   QWidget *widget = 0);
+                   QWidget *widget = 0) override;
 };
 
 //! [0]
