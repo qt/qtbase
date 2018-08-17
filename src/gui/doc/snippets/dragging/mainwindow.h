@@ -68,7 +68,7 @@ public:
     MainWindow(QWidget *parent = 0);
 
 protected:
-    void mousePressEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event) override;
 
 private:
     QLabel *iconLabel;

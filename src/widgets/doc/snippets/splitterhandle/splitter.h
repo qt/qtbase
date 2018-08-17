@@ -64,7 +64,7 @@ public:
     Splitter(Qt::Orientation orientation, QWidget *parent = 0);
 
 protected:
-    QSplitterHandle *createHandle();
+    QSplitterHandle *createHandle() override;
 };
 //! [0]
 
@@ -74,7 +74,7 @@ public:
     SplitterHandle(Qt::Orientation orientation, QSplitter *parent);
 
 protected:
-    void paintEvent(QPaintEvent *event);
+    void paintEvent(QPaintEvent *event) override;
 
 private:
     QLinearGradient gradient;

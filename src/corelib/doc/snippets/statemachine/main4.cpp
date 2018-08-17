@@ -72,7 +72,7 @@ public:
         : m_value(value) {}
 
 protected:
-    virtual bool eventTest(QEvent *e)
+    bool eventTest(QEvent *e) override
     {
         if (e->type() != QEvent::Type(QEvent::User+1)) // StringEvent
             return false;
@@ -80,7 +80,7 @@ protected:
         return (m_value == se->value);
     }
 
-    virtual void onTransition(QEvent *) {}
+    void onTransition(QEvent *) override {}
 
 private:
     QString m_value;

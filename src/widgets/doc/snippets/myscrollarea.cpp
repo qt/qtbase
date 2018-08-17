@@ -57,8 +57,8 @@ public:
     void setWidget(QWidget *w);
 
 protected:
-    void scrollContentsBy(int dx, int dy);
-    void resizeEvent(QResizeEvent *event);
+    void scrollContentsBy(int dx, int dy) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 private:
     void updateWidgetPosition();

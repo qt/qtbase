@@ -101,7 +101,7 @@ public:
     MainWindow();
 
 protected:
-    bool eventFilter(QObject *obj, QEvent *ev);
+    bool eventFilter(QObject *obj, QEvent *ev) override;
 
 private:
     QTextEdit *textEdit;
@@ -147,7 +147,7 @@ public:
     MyObject(QObject *parent = 0);
 
 protected:
-    void timerEvent(QTimerEvent *event);
+    void timerEvent(QTimerEvent *event) override;
 };
 
 MyObject::MyObject(QObject *parent)
@@ -215,7 +215,7 @@ class KeyPressEater : public QObject
     ...
 
 protected:
-    bool eventFilter(QObject *obj, QEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event) override;
 };
 
 bool KeyPressEater::eventFilter(QObject *obj, QEvent *event)
@@ -508,7 +508,7 @@ public:
     MyClass(QWidget *parent = 0);
     ~MyClass();
 
-    bool event(QEvent* ev)
+    bool event(QEvent* ev) override
     {
         if (ev->type() == QEvent::PolishRequest) {
             // overwrite handling of PolishRequest if any

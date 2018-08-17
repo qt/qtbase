@@ -53,8 +53,8 @@
 class MyException : public QException
 {
 public:
-    void raise() const { throw *this; }
-    MyException *clone() const { return new MyException(*this); }
+    void raise() const override { throw *this; }
+    MyException *clone() const override { return new MyException(*this); }
 };
 
 //! [0]

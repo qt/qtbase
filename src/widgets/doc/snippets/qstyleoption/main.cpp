@@ -56,7 +56,7 @@ class MyPushButton : public QPushButton
 public:
     MyPushButton(QWidget *parent = 0);
 
-    void paintEvent(QPaintEvent *);
+    void paintEvent(QPaintEvent *) override;
 };
 
 MyPushButton::MyPushButton(QWidget *parent)
@@ -87,7 +87,7 @@ class MyStyle : public QStyle
 public:
 
     void drawPrimitive(PrimitiveElement element, const QStyleOption *option,
-                       QPainter *painter, const QWidget *widget);
+                       QPainter *painter, const QWidget *widget) override;
 };
 
 //! [4]

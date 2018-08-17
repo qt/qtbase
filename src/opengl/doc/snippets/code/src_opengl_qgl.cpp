@@ -146,7 +146,7 @@ public:
 
 protected:
 
-    void initializeGL()
+    void initializeGL() override
     {
         // Set up the rendering context, define display lists etc.:
         ...
@@ -155,7 +155,7 @@ protected:
         ...
     }
 
-    void resizeGL(int w, int h)
+    void resizeGL(int w, int h) override
     {
         // setup viewport, projection etc.:
         glViewport(0, 0, (GLint)w, (GLint)h);
@@ -164,7 +164,7 @@ protected:
         ...
     }
 
-    void paintGL()
+    void paintGL() override
     {
         // draw the scene:
         ...

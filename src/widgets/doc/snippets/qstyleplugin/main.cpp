@@ -59,7 +59,7 @@ class MyStylePlugin : public QStylePlugin
 public:
     MyStylePlugin(QObject *parent = 0);
 
-    QStyle *create(const QString &key);
+    QStyle *create(const QString &key) override;
 };
 //! [0]
 

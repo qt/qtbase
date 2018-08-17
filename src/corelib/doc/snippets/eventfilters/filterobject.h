@@ -59,7 +59,7 @@ class FilterObject : public QObject
 
 public:
     FilterObject(QObject *parent = 0);
-    bool eventFilter(QObject *object, QEvent *event);
+    bool eventFilter(QObject *object, QEvent *event) override;
     void setFilteredObject(QObject *object);
 
 private:

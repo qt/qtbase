@@ -67,8 +67,8 @@ public:
     Window(QWidget *parent = 0);
 
 protected:
-    void dragMoveEvent(QDragMoveEvent *event);
-    void dropEvent(QDropEvent *event);
+    void dragMoveEvent(QDragMoveEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
 
 private:
     QComboBox *mimeTypeCombo;
