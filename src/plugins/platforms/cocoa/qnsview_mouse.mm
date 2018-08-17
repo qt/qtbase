@@ -566,6 +566,42 @@
     NSTimeInterval timestamp = [theEvent timestamp];
     ulong qt_timestamp = timestamp * 1000;
 
+    Qt::ScrollPhase phase = Qt::NoScrollPhase;
+    if (theEvent.phase == NSEventPhaseMayBegin || theEvent.phase == NSEventPhaseBegan) {
+        // MayBegin is likely to happen. We treat it the same as an actual begin,
+        // and follow it with an update when the actual begin is delivered.
+        phase = m_scrolling ? Qt::ScrollUpdate : Qt::ScrollBegin;
+        m_scrolling = true;
+    } else if (theEvent.phase == NSEventPhaseStationary || theEvent.phase == NSEventPhaseChanged) {
+        phase = Qt::ScrollUpdate;
+    } else if (theEvent.phase == NSEventPhaseEnded) {
+        // A scroll event phase may be followed by a momentum phase after the user releases
+        // the finger, and in that case we don't want to send a Qt::ScrollEnd until after
+        // the momentum phase has ended. Unfortunately there isn't any guaranteed way of
+        // knowing whether or not a NSEventPhaseEnded will be followed by a momentum phase.
+        // The best we can do is to look at the event queue and hope that the system has
+        // had time to emit a momentum phase event.
+        if ([NSApp nextEventMatchingMask:NSScrollWheelMask untilDate:[NSDate distantPast]
+                inMode:@"QtMomementumEventSearchMode" dequeue:NO].momentumPhase == NSEventPhaseBegan) {
+            Q_ASSERT(pixelDelta.isNull() && angleDelta.isNull());
+            return; // Ignore this event, as it has a delta of 0,0
+        }
+        phase = Qt::ScrollEnd;
+        m_scrolling = false;
+    } else if (theEvent.momentumPhase == NSEventPhaseBegan) {
+        Q_ASSERT(!pixelDelta.isNull() && !angleDelta.isNull());
+        phase = Qt::ScrollUpdate; // Send as update, it has a delta
+    } else if (theEvent.momentumPhase == NSEventPhaseChanged) {
+        phase = Qt::ScrollMomentum;
+    } else if (theEvent.phase == NSEventPhaseCancelled
+            || theEvent.momentumPhase == NSEventPhaseEnded
+            || theEvent.momentumPhase == NSEventPhaseCancelled) {
+        phase = Qt::ScrollEnd;
+        m_scrolling = false;
+    } else {
+        Q_ASSERT(theEvent.momentumPhase != NSEventPhaseStationary);
+    }
+
     // Prevent keyboard modifier state from changing during scroll event streams.
     // A two-finger trackpad flick generates a stream of scroll events. We want
     // the keyboard modifier state to be the state at the beginning of the
@@ -573,34 +609,16 @@
     // mid-stream. One example of this happening would be when pressing cmd
     // after scrolling in Qt Creator: not taking the phase into account causes
     // the end of the event stream to be interpreted as font size changes.
-    NSEventPhase momentumPhase = [theEvent momentumPhase];
-    if (momentumPhase == NSEventPhaseNone)
+    if (theEvent.momentumPhase == NSEventPhaseNone)
         m_currentWheelModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
 
-    NSEventPhase phase = [theEvent phase];
-    Qt::ScrollPhase ph = Qt::ScrollUpdate;
-
-    // MayBegin is likely to happen.  We treat it the same as an actual begin.
-    if (phase == NSEventPhaseMayBegin) {
-        m_scrolling = true;
-        ph = Qt::ScrollBegin;
-    } else if (phase == NSEventPhaseBegan) {
-        // If MayBegin did not happen, Began is the actual beginning.
-        if (!m_scrolling)
-            ph = Qt::ScrollBegin;
-        m_scrolling = true;
-    } else if (phase == NSEventPhaseEnded || phase == NSEventPhaseCancelled ||
-               momentumPhase == NSEventPhaseEnded || momentumPhase == NSEventPhaseCancelled) {
-        ph = Qt::ScrollEnd;
-        m_scrolling = false;
-    } else if (phase == NSEventPhaseNone && momentumPhase == NSEventPhaseNone) {
-        ph = Qt::NoScrollPhase;
-    }
     // "isInverted": natural OS X scrolling, inverted from the Qt/other platform/Jens perspective.
     bool isInverted  = [theEvent isDirectionInvertedFromDevice];
 
-    qCDebug(lcQpaMouse) << "scroll wheel @ window pos" << qt_windowPoint << "delta px" << pixelDelta << "angle" << angleDelta << "phase" << ph << (isInverted ? "inverted" : "");
-    QWindowSystemInterface::handleWheelEvent(m_platformWindow->window(), qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, m_currentWheelModifiers, ph, source, isInverted);
+    qCDebug(lcQpaMouse) << "scroll wheel @ window pos" << qt_windowPoint << "delta px" << pixelDelta
+            << "angle" << angleDelta << "phase" << phase << (isInverted ? "inverted" : "");
+    QWindowSystemInterface::handleWheelEvent(m_platformWindow->window(), qt_timestamp, qt_windowPoint,
+            qt_screenPoint, pixelDelta, angleDelta, m_currentWheelModifiers, phase, source, isInverted);
 }
 #endif // QT_CONFIG(wheelevent)
 
