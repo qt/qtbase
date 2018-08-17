@@ -402,7 +402,7 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
               0 < tran.atMSecsSinceEpoch - nextTran.atMSecsSinceEpoch
               = (nextTran.offsetFromUtc - tran.offsetFromUtc) * 1000
             */
-            int dstStep = nextTran.offsetFromUtc - tran.offsetFromUtc;
+            int dstStep = (nextTran.offsetFromUtc - tran.offsetFromUtc) * 1000;
             Q_ASSERT(dstStep > 0); // How else could we get here ?
             if (nextFirst) { // hint thought we needed nextTran, so use tran
                 tran.atMSecsSinceEpoch -= dstStep;
