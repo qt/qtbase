@@ -52,6 +52,7 @@ static const char *const additionalMimeFiles[] = {
     "invalid-magic1.xml",
     "invalid-magic2.xml",
     "invalid-magic3.xml",
+    "magic-and-hierarchy.xml",
     0
 };
 
@@ -984,6 +985,12 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
         QVERIFY(objcsrc.isValid());
         qDebug() << objcsrc.globPatterns();
     }
+
+    const QString fooTestFile = QLatin1String(RESOURCE_PREFIX "magic-and-hierarchy.foo");
+    QCOMPARE(db.mimeTypeForFile(fooTestFile).name(), QString::fromLatin1("application/foo"));
+
+    const QString fooTestFile2 = QLatin1String(RESOURCE_PREFIX "magic-and-hierarchy2.foo");
+    QCOMPARE(db.mimeTypeForFile(fooTestFile2).name(), QString::fromLatin1("application/vnd.qnx.bar-descriptor"));
 
     // Now test removing the mimetype definitions again
     for (int i = 0; i < m_additionalMimeFileNames.size(); ++i)

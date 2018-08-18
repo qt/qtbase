@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+    <!-- The real life example would be that this mime type is a sub class of application/xml
+         which has a magic that matches &lt;?xml .
+         XML files with an early appearing qnx tag are detected as
+         application/vnd.qnx.bar-descriptor. We want that XML files without the qnx tag to be
+         identified as application/xml, independent of the order in which the two are registered. -->
+    <mime-type type="application/vnd.qnx.bar-descriptor">
+      <sub-class-of type="application/foo"/>
+      <glob pattern="*.foo"/>
+      <magic><!-- higher priority than the parent magic -->
+        <match value="&lt;qnx&gt;" type="string" offset="0:200"/>
+      </magic>
+    </mime-type>
+    <mime-type type="application/foo">
+      <glob pattern="*.foo"/>
+      <magic priority="40">
+        <match value="&lt;?foo" type="string" offset="0"/>
+      </magic>
+    </mime-type>
+</mime-info>
