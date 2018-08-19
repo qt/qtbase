@@ -308,8 +308,7 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     {
         const auto *connection = qAsConst(m_connections).first();
         if (const auto *integration = connection->glIntegration())
-            return cap != ThreadedOpenGL
-                || (connection->threadedEventHandling() && integration->supportsThreadedOpenGL());
+            return cap != ThreadedOpenGL || integration->supportsThreadedOpenGL();
         return false;
     }
 

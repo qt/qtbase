@@ -90,25 +90,6 @@
 #include <xcb/render.h>
 #endif
 
-#if defined(Q_CC_GNU) && defined(Q_OF_ELF)
-static xcb_generic_event_t *local_xcb_poll_for_queued_event(xcb_connection_t *c)
-    __attribute__((weakref("xcb_poll_for_queued_event")));
-
-static inline void checkXcbPollForQueuedEvent()
-{ }
-#else
-#include <dlfcn.h>
-typedef xcb_generic_event_t * (*XcbPollForQueuedEventFunctionPointer)(xcb_connection_t *c);
-static XcbPollForQueuedEventFunctionPointer local_xcb_poll_for_queued_event;
-
-static inline void checkXcbPollForQueuedEvent()
-{
-#ifdef RTLD_DEFAULT
-    local_xcb_poll_for_queued_event = (XcbPollForQueuedEventFunctionPointer)dlsym(RTLD_DEFAULT, "xcb_poll_for_queued_event");
-#endif
-}
-#endif
-
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaXInput, "qt.qpa.input")
@@ -1365,39 +1346,19 @@ bool QXcbConnection::peekEventQueue(PeekerCallback peeker, void *peekerData,
 QXcbEventReader::QXcbEventReader(QXcbConnection *connection)
     : m_connection(connection)
 {
-    checkXcbPollForQueuedEvent();
 }
 
 void QXcbEventReader::start()
 {
-    if (local_xcb_poll_for_queued_event) {
-        connect(this, SIGNAL(eventPending()), m_connection, SLOT(processXcbEvents()), Qt::QueuedConnection);
-        connect(this, SIGNAL(finished()), m_connection, SLOT(processXcbEvents()));
-        QThread::start();
-    } else {
-        // Must be done after we have an event-dispatcher. By posting a method invocation
-        // we are sure that by the time the method is called we have an event-dispatcher.
-        QMetaObject::invokeMethod(this, "registerForEvents", Qt::QueuedConnection);
-    }
-}
-
-void QXcbEventReader::registerForEvents()
-{
-    QSocketNotifier *notifier = new QSocketNotifier(xcb_get_file_descriptor(m_connection->xcb_connection()), QSocketNotifier::Read, this);
-    connect(notifier, SIGNAL(activated(int)), m_connection, SLOT(processXcbEvents()));
-
-    QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::eventDispatcher;
-    connect(dispatcher, SIGNAL(aboutToBlock()), m_connection, SLOT(processXcbEvents()));
-    connect(dispatcher, SIGNAL(awake()), m_connection, SLOT(processXcbEvents()));
+    connect(this, &QXcbEventReader::eventPending, m_connection, &QXcbConnection::processXcbEvents, Qt::QueuedConnection);
+    connect(this, &QXcbEventReader::finished, m_connection, &QXcbConnection::processXcbEvents);
+    QThread::start();
 }
 
 void QXcbEventReader::registerEventDispatcher(QAbstractEventDispatcher *dispatcher)
 {
-    // flush the xcb connection before the EventDispatcher is going to block
-    // In the non-threaded case processXcbEvents is called before going to block,
-    // which flushes the connection.
-    if (local_xcb_poll_for_queued_event)
-        connect(dispatcher, SIGNAL(aboutToBlock()), m_connection, SLOT(flush()));
+    // Flush the xcb connection before the event dispatcher is going to block.
+    connect(dispatcher, &QAbstractEventDispatcher::aboutToBlock, m_connection, &QXcbConnection::flush);
 }
 
 void QXcbEventReader::run()
@@ -1406,7 +1367,7 @@ void QXcbEventReader::run()
     while (m_connection && (event = xcb_wait_for_event(m_connection->xcb_connection()))) {
         m_mutex.lock();
         addEvent(event);
-        while (m_connection && (event = local_xcb_poll_for_queued_event(m_connection->xcb_connection())))
+        while (m_connection && (event = xcb_poll_for_queued_event(m_connection->xcb_connection())))
             addEvent(event);
         m_mutex.unlock();
         emit eventPending();
@@ -1430,10 +1391,6 @@ void QXcbEventReader::addEvent(xcb_generic_event_t *event)
 QXcbEventArray *QXcbEventReader::lock()
 {
     m_mutex.lock();
-    if (!local_xcb_poll_for_queued_event) {
-        while (xcb_generic_event_t *event = xcb_poll_for_event(m_connection->xcb_connection()))
-            m_events << event;
-    }
     return &m_events;
 }
 
