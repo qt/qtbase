@@ -2924,6 +2924,27 @@ bool QPlainTextEdit::find(const QRegExp &exp, QTextDocument::FindFlags options)
 #endif
 
 /*!
+    \fn bool QTextEdit::find(const QRegularExpression &exp, QTextDocument::FindFlags options)
+
+    \since 5.13
+    \overload
+
+    Finds the next occurrence, matching the regular expression, \a exp, using the given
+    \a options. The QTextDocument::FindCaseSensitively option is ignored for this overload,
+    use QRegularExpression::CaseInsensitiveOption instead.
+
+    Returns \c true if a match was found and changes the cursor to select the match;
+    otherwise returns \c false.
+*/
+#if QT_CONFIG(regularexpression)
+bool QPlainTextEdit::find(const QRegularExpression &exp, QTextDocument::FindFlags options)
+{
+    Q_D(QPlainTextEdit);
+    return d->control->find(exp, options);
+}
+#endif
+
+/*!
     \fn void QPlainTextEdit::copyAvailable(bool yes)
 
     This signal is emitted when text is selected or de-selected in the

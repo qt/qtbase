@@ -140,6 +140,11 @@ private slots:
     void findBackwardWithRegExp();
     void findWithRegExpReturnsFalseIfNoMoreResults();
 #endif
+#if QT_CONFIG(regularexpression)
+    void findWithRegularExpression();
+    void findBackwardWithRegularExpression();
+    void findWithRegularExpressionReturnsFalseIfNoMoreResults();
+#endif
     void layoutAfterMultiLineRemove();
     void undoCommandRemovesAndReinsertsBlock();
     void taskQTBUG_43562_lineCountCrash();
@@ -1573,6 +1578,45 @@ void tst_QPlainTextEdit::findWithRegExpReturnsFalseIfNoMoreResults()
 {
     ed->setPlainText(QStringLiteral("arbitrary text"));
     QRegExp rx("t.xt");
+    ed->find(rx);
+
+    bool found = ed->find(rx);
+
+    QVERIFY(!found);
+    QCOMPARE(ed->textCursor().selectedText(), QStringLiteral("text"));
+}
+#endif
+
+#if QT_CONFIG(regularexpression)
+void tst_QPlainTextEdit::findWithRegularExpression()
+{
+    ed->setPlainText(QStringLiteral("arbitrary text"));
+    QRegularExpression rx("\\w{2}xt");
+
+    bool found = ed->find(rx);
+
+    QVERIFY(found);
+    QCOMPARE(ed->textCursor().selectedText(), QStringLiteral("text"));
+}
+
+void tst_QPlainTextEdit::findBackwardWithRegularExpression()
+{
+    ed->setPlainText(QStringLiteral("arbitrary text"));
+    QTextCursor cursor = ed->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    ed->setTextCursor(cursor);
+    QRegularExpression rx("a\\w*t");
+
+    bool found = ed->find(rx, QTextDocument::FindBackward);
+
+    QVERIFY(found);
+    QCOMPARE(ed->textCursor().selectedText(), QStringLiteral("arbit"));
+}
+
+void tst_QPlainTextEdit::findWithRegularExpressionReturnsFalseIfNoMoreResults()
+{
+    ed->setPlainText(QStringLiteral("arbitrary text"));
+    QRegularExpression rx("t.xt");
     ed->find(rx);
 
     bool found = ed->find(rx);
