@@ -80,6 +80,7 @@ class QMenu;
 class QWidgetTextControlPrivate;
 class QAbstractScrollArea;
 class QEvent;
+class QRegularExpression;
 class QTimerEvent;
 
 class Q_WIDGETS_EXPORT QWidgetTextControl : public QInputControl
@@ -118,6 +119,9 @@ public:
     bool find(const QString &exp, QTextDocument::FindFlags options = 0);
 #ifndef QT_NO_REGEXP
     bool find(const QRegExp &exp, QTextDocument::FindFlags options = 0);
+#endif
+#if QT_CONFIG(regularexpression)
+    bool find(const QRegularExpression &exp, QTextDocument::FindFlags options = 0);
 #endif
 
     QString toPlainText() const;
