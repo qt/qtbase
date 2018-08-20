@@ -5825,7 +5825,7 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
         return ParentStyle::subElementRect(se, opt, w);
 
 #if QT_CONFIG(itemviews)
-    case SE_ViewItemCheckIndicator:
+    case SE_ItemViewItemCheckIndicator:
         if (!qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             return subElementRect(SE_CheckBoxIndicator, opt, w);
         }

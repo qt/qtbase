@@ -3067,7 +3067,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 }
                 d->cachedOption = new QStyleOptionViewItem(*vopt);
             }
-            if (sr == SE_ViewItemCheckIndicator)
+            if (sr == SE_ItemViewItemCheckIndicator)
                 r = d->checkRect;
             else if (sr == SE_ItemViewItemDecoration)
                 r = d->decorationRect;

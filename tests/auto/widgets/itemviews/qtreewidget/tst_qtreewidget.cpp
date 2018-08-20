@@ -3004,7 +3004,7 @@ void tst_QTreeWidget::task191552_rtl()
     opt.features = QStyleOptionViewItem::HasDisplay | QStyleOptionViewItem::HasCheckIndicator;
     opt.checkState = Qt::Checked;
     opt.widget = &tw;
-    const QRect checkRect = tw.style()->subElementRect(QStyle::SE_ViewItemCheckIndicator, &opt, &tw);
+    const QRect checkRect = tw.style()->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &opt, &tw);
     QTest::mouseClick(tw.viewport(), Qt::LeftButton, Qt::NoModifier, checkRect.center());
     QCOMPARE(item->checkState(0), Qt::Unchecked);
 
@@ -3218,7 +3218,7 @@ void tst_QTreeWidget::nonEditableTristate()
     option.checkState = item->checkState(0);
 
     const int checkMargin = qApp->style()->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, 0) + 1;
-    QPoint pos = qApp->style()->subElementRect(QStyle::SE_ViewItemCheckIndicator, &option, 0).center() + QPoint(checkMargin, 0);
+    QPoint pos = qApp->style()->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &option, 0).center() + QPoint(checkMargin, 0);
     QTest::mouseClick(tree->viewport(), Qt::LeftButton, Qt::NoModifier, pos);
     QCOMPARE(int(item->checkState(0)), int(Qt::Checked));
 

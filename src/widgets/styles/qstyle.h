@@ -308,8 +308,8 @@ public:
         SE_TabWidgetLeftCorner,
         SE_TabWidgetRightCorner,
 
-        SE_ViewItemCheckIndicator, // ### Qt 6: remove
-        SE_ItemViewItemCheckIndicator = SE_ViewItemCheckIndicator,
+        SE_ItemViewItemCheckIndicator,
+        SE_ViewItemCheckIndicator = SE_ItemViewItemCheckIndicator, // ### Qt 6: remove
 
         SE_TabBarTearIndicator,
         SE_TabBarTearIndicatorLeft = SE_TabBarTearIndicator,

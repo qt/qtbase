@@ -1089,7 +1089,7 @@ QRect QItemDelegate::doCheck(const QStyleOptionViewItem &option,
         opt.rect = bounding;
         const QWidget *widget = d->widget(option); // cast
         QStyle *style = widget ? widget->style() : QApplication::style();
-        return style->subElementRect(QStyle::SE_ViewItemCheckIndicator, &opt, widget);
+        return style->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &opt, widget);
     }
     return QRect();
 }
