@@ -95,6 +95,7 @@ struct Options
         , generateAssetsFileList(true)
         , build(true)
         , gradle(false)
+        , auxMode(false)
         , deploymentMechanism(Bundled)
         , releasePackage(false)
         , digestAlg(QLatin1String("SHA1"))
@@ -126,6 +127,7 @@ struct Options
     bool generateAssetsFileList;
     bool build;
     bool gradle;
+    bool auxMode;
     QTime timer;
 
     // External tools
@@ -432,6 +434,8 @@ Options parseOptions()
             options.jarSigner = true;
         } else if (argument.compare(QLatin1String("--no-generated-assets-cache"), Qt::CaseInsensitive) == 0) {
             options.generateAssetsFileList = false;
+        } else if (argument.compare(QLatin1String("--aux-mode"), Qt::CaseInsensitive) == 0) {
+            options.auxMode = true;
         }
     }
 
@@ -517,6 +521,9 @@ void printHelp()
                     "    --verbose: Prints out information during processing.\n"
                     "    --no-generated-assets-cache: Do not pregenerate the entry list for\n"
                     "       the assets file engine.\n"
+                    "    --aux-mode: Operate in auxiliary mode. This will only copy the\n"
+                    "       dependencies into the build directory and update the XML templates.\n"
+                    "       The project will not be built or installed.\n"
                     "    --help: Displays this information.\n\n",
                     qPrintable(QCoreApplication::arguments().at(0))
             );
@@ -2825,6 +2832,22 @@ int main(int argc, char *argv[])
                 ? (options.installLocation.isEmpty() ? "Default device" : qPrintable(options.installLocation))
                 : "No"
             );
+
+    if (options.auxMode) {
+        if (!readDependencies(&options))
+            return CannotReadDependencies;
+        if (!copyQtFiles(&options))
+            return CannotCopyQtFiles;
+        if (!copyAndroidExtraResources(options))
+            return CannotCopyAndroidExtraResources;
+        if (!stripLibraries(options))
+            return CannotStripLibraries;
+        if (!updateAndroidFiles(options))
+            return CannotUpdateAndroidFiles;
+        if (options.generateAssetsFileList && !generateAssetsFileList(options))
+            return CannotGenerateAssetsFileList;
+        return 0;
+    }
 
     if (options.build) {
         if (options.gradle)
