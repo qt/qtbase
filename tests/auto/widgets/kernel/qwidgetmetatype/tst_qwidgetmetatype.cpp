@@ -41,6 +41,8 @@ public:
 
 private slots:
     void metaObject();
+    void saveAndLoadBuiltin_data();
+    void saveAndLoadBuiltin();
 };
 
 class CustomWidget : public QWidget
@@ -67,6 +69,51 @@ void tst_QWidgetMetaType::metaObject()
     QCOMPARE(QMetaType::metaObjectForType(qMetaTypeId<CustomWidget*>()), &CustomWidget::staticMetaObject);
     QCOMPARE(QMetaType::metaObjectForType(qMetaTypeId<QSizePolicy>()), &QSizePolicy::staticMetaObject);
 }
+
+template <typename T>
+struct StreamingTraits
+{
+    // Streamable by default, as currently all widgets built-in types are streamable
+    enum { isStreamable = 1 };
+};
+
+void tst_QWidgetMetaType::saveAndLoadBuiltin_data()
+{
+    QTest::addColumn<int>("type");
+    QTest::addColumn<bool>("isStreamable");
+
+#define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
+    QTest::newRow(#RealType) << MetaTypeId << bool(StreamingTraits<RealType>::isStreamable);
+    QT_FOR_EACH_STATIC_WIDGETS_CLASS(ADD_METATYPE_TEST_ROW)
+#undef ADD_METATYPE_TEST_ROW
+}
+
+void tst_QWidgetMetaType::saveAndLoadBuiltin()
+{
+    QFETCH(int, type);
+    QFETCH(bool, isStreamable);
+
+    void *value = QMetaType::create(type);
+
+    QByteArray ba;
+    QDataStream stream(&ba, QIODevice::ReadWrite);
+    QCOMPARE(QMetaType::save(stream, type, value), isStreamable);
+    QCOMPARE(stream.status(), QDataStream::Ok);
+
+    if (isStreamable)
+        QVERIFY(QMetaType::load(stream, type, value));
+
+    stream.device()->seek(0);
+    stream.resetStatus();
+    QCOMPARE(QMetaType::load(stream, type, value), isStreamable);
+    QCOMPARE(stream.status(), QDataStream::Ok);
+
+    if (isStreamable)
+        QVERIFY(QMetaType::load(stream, type, value));
+
+    QMetaType::destroy(type, value);
+}
+
 
 QTEST_MAIN(tst_QWidgetMetaType)
 #include "tst_qwidgetmetatype.moc"

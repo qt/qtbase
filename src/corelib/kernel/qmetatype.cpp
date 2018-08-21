@@ -1385,6 +1385,191 @@ int QMetaType::type(const QT_PREPEND_NAMESPACE(QByteArray) &typeName)
 }
 
 #ifndef QT_NO_DATASTREAM
+
+namespace
+{
+
+template<typename T>
+class HasStreamOperator
+{
+    struct Yes { char unused[1]; };
+    struct No { char unused[2]; };
+    Q_STATIC_ASSERT(sizeof(Yes) != sizeof(No));
+
+    template<class C> static decltype(std::declval<QDataStream&>().operator>>(std::declval<C&>()), Yes()) load(int);
+    template<class C> static decltype(operator>>(std::declval<QDataStream&>(), std::declval<C&>()), Yes()) load(int);
+    template<class C> static No load(...);
+    template<class C> static decltype(operator<<(std::declval<QDataStream&>(), std::declval<const C&>()), Yes()) saveFunction(int);
+    template<class C> static decltype(std::declval<QDataStream&>().operator<<(std::declval<const C&>()), Yes()) saveMethod(int);
+    template<class C> static No saveMethod(...);
+    template<class C> static No saveFunction(...);
+    static constexpr bool LoadValue = QtMetaTypePrivate::TypeDefinition<T>::IsAvailable && (sizeof(load<T>(0)) == sizeof(Yes));
+    static constexpr bool SaveValue = QtMetaTypePrivate::TypeDefinition<T>::IsAvailable &&
+        ((sizeof(saveMethod<T>(0)) == sizeof(Yes)) || (sizeof(saveFunction<T>(0)) == sizeof(Yes)));
+public:
+    static constexpr bool Value = LoadValue && SaveValue;
+};
+
+// Quick sanity checks
+Q_STATIC_ASSERT(HasStreamOperator<NS(QJsonDocument)>::Value);
+Q_STATIC_ASSERT(!HasStreamOperator<void*>::Value);
+Q_STATIC_ASSERT(HasStreamOperator<qint8>::Value);
+
+template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted && HasStreamOperator<T>::Value>
+struct FilteredOperatorSwitch
+{
+    static bool load(QDataStream &stream, T *data, int)
+    {
+        stream >> *data;
+        return true;
+    }
+    static bool save(QDataStream &stream, const T *data, int)
+    {
+        stream << *data;
+        return true;
+    }
+};
+template<typename T>
+struct FilteredOperatorSwitch<T, /* IsAcceptedType = */ false>
+{
+    static const QMetaTypeInterface* getMetaTypeInterface(int type)
+    {
+        if (QModulesPrivate::QTypeModuleInfo<T>::IsGui && qMetaTypeGuiHelper)
+            return &qMetaTypeGuiHelper[type - QMetaType::FirstGuiType];
+        else if (QModulesPrivate::QTypeModuleInfo<T>::IsWidget && qMetaTypeWidgetsHelper)
+            return &qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType];
+        return nullptr;
+    }
+    static bool save(QDataStream &stream, const T *data, int type)
+    {
+        if (auto interface = getMetaTypeInterface(type)) {
+            interface->saveOp(stream, data);
+            return true;
+        }
+        return false;
+    }
+    static bool load(QDataStream &stream, T *data, int type)
+    {
+        if (auto interface = getMetaTypeInterface(type)) {
+            interface->loadOp(stream, data);
+            return true;
+        }
+        return false;
+    }
+};
+
+class SaveOperatorSwitch
+{
+public:
+    QDataStream &stream;
+    int m_type;
+
+    template<typename T>
+    bool delegate(const T *data)
+    {
+        return FilteredOperatorSwitch<T>::save(stream, data, m_type);
+    }
+    bool delegate(const char *data)
+    {
+        // force a char to be signed
+        stream << qint8(*data);
+        return true;
+    }
+    bool delegate(const long *data)
+    {
+        stream << qlonglong(*data);
+        return true;
+    }
+    bool delegate(const unsigned long *data)
+    {
+        stream << qulonglong(*data);
+        return true;
+    }
+    bool delegate(const QCborSimpleType *data)
+    {
+        // TODO just define a normal QDataStream operator
+        stream << quint8(*data);
+        return true;
+    }
+    bool delegate(const QMetaTypeSwitcher::NotBuiltinType *data)
+    {
+        const QVector<QCustomTypeInfo> * const ct = customTypes();
+        if (!ct)
+            return false;
+        QMetaType::SaveOperator saveOp = nullptr;
+        {
+            QReadLocker locker(customTypesLock());
+            saveOp = ct->at(m_type - QMetaType::User).saveOp;
+        }
+        if (!saveOp)
+            return false;
+        saveOp(stream, data);
+        return true;
+    }
+    bool delegate(const void*) { return false; }
+    bool delegate(const QMetaTypeSwitcher::UnknownType*) { return false; }
+};
+class LoadOperatorSwitch
+{
+public:
+    QDataStream &stream;
+    int m_type;
+
+    template<typename T>
+    bool delegate(const T *data)
+    {
+        return FilteredOperatorSwitch<T>::load(stream, const_cast<T*>(data), m_type);
+    }
+    bool delegate(const char *data)
+    {
+        // force a char to be signed
+        qint8 c;
+        stream >> c;
+        *const_cast<char*>(data) = c;
+        return true;
+    }
+    bool delegate(const long *data)
+    {
+        qlonglong l;
+        stream >> l;
+        *const_cast<long*>(data) = l;
+        return true;
+    }
+    bool delegate(const unsigned long *data)
+    {
+        qlonglong l;
+        stream >> l;
+        *const_cast<unsigned long*>(data) = l;
+        return true;
+    }
+    bool delegate(const QCborSimpleType *data)
+    {
+        // TODO just define a normal QDataStream operator
+        quint8 l;
+        stream >> l;
+        *const_cast<QCborSimpleType*>(data) = QCborSimpleType(l);
+        return true;
+    }
+    bool delegate(const QMetaTypeSwitcher::NotBuiltinType *data)
+    {
+        const QVector<QCustomTypeInfo> * const ct = customTypes();
+        if (!ct)
+            return false;
+        QMetaType::LoadOperator loadOp = nullptr;
+        {
+            QReadLocker locker(customTypesLock());
+            loadOp = ct->at(m_type - QMetaType::User).loadOp;
+        }
+        if (!loadOp)
+            return false;
+        loadOp(stream, const_cast<QMetaTypeSwitcher::NotBuiltinType*>(data));
+        return true;
+    }
+    bool delegate(const void*) { return false; }
+    bool delegate(const QMetaTypeSwitcher::UnknownType*) { return false; }
+};
+}  // namespace
+
 /*!
     Writes the object pointed to by \a data with the ID \a type to
     the given \a stream. Returns \c true if the object is saved
@@ -1401,222 +1586,10 @@ int QMetaType::type(const QT_PREPEND_NAMESPACE(QByteArray) &typeName)
 */
 bool QMetaType::save(QDataStream &stream, int type, const void *data)
 {
-    if (!data || !isRegistered(type))
+    if (!data)
         return false;
-
-    switch(type) {
-    case QMetaType::UnknownType:
-    case QMetaType::Void:
-    case QMetaType::VoidStar:
-    case QMetaType::QObjectStar:
-#if QT_CONFIG(itemmodel)
-    case QMetaType::QModelIndex:
-    case QMetaType::QPersistentModelIndex:
-#endif
-    case QMetaType::QJsonValue:
-    case QMetaType::QJsonObject:
-    case QMetaType::QJsonArray:
-    case QMetaType::QCborValue:
-    case QMetaType::QCborArray:
-    case QMetaType::QCborMap:
-        return false;
-    case QMetaType::Nullptr:
-        stream << *static_cast<const std::nullptr_t *>(data);
-        return true;
-    case QMetaType::Long:
-        stream << qlonglong(*static_cast<const long *>(data));
-        break;
-    case QMetaType::Int:
-        stream << *static_cast<const int *>(data);
-        break;
-    case QMetaType::Short:
-        stream << *static_cast<const short *>(data);
-        break;
-    case QMetaType::Char:
-        // force a char to be signed
-        stream << *static_cast<const signed char *>(data);
-        break;
-    case QMetaType::ULong:
-        stream << qulonglong(*static_cast<const ulong *>(data));
-        break;
-    case QMetaType::UInt:
-        stream << *static_cast<const uint *>(data);
-        break;
-    case QMetaType::LongLong:
-        stream << *static_cast<const qlonglong *>(data);
-        break;
-    case QMetaType::ULongLong:
-        stream << *static_cast<const qulonglong *>(data);
-        break;
-    case QMetaType::UShort:
-        stream << *static_cast<const ushort *>(data);
-        break;
-    case QMetaType::SChar:
-        stream << *static_cast<const signed char *>(data);
-        break;
-    case QMetaType::UChar:
-        stream << *static_cast<const uchar *>(data);
-        break;
-    case QMetaType::Bool:
-        stream << qint8(*static_cast<const bool *>(data));
-        break;
-    case QMetaType::Float:
-        stream << *static_cast<const float *>(data);
-        break;
-    case QMetaType::Double:
-        stream << *static_cast<const double *>(data);
-        break;
-    case QMetaType::QChar:
-        stream << *static_cast<const NS(QChar) *>(data);
-        break;
-#ifndef QT_BOOTSTRAPPED
-    case QMetaType::QVariantMap:
-        stream << *static_cast<const NS(QVariantMap)*>(data);
-        break;
-    case QMetaType::QVariantHash:
-        stream << *static_cast<const NS(QVariantHash)*>(data);
-        break;
-    case QMetaType::QVariantList:
-        stream << *static_cast<const NS(QVariantList)*>(data);
-        break;
-    case QMetaType::QVariant:
-        stream << *static_cast<const NS(QVariant)*>(data);
-        break;
-    case QMetaType::QByteArrayList:
-        stream << *static_cast<const NS(QByteArrayList)*>(data);
-        break;
-#endif
-    case QMetaType::QByteArray:
-        stream << *static_cast<const NS(QByteArray)*>(data);
-        break;
-    case QMetaType::QString:
-        stream << *static_cast<const NS(QString)*>(data);
-        break;
-    case QMetaType::QStringList:
-        stream << *static_cast<const NS(QStringList)*>(data);
-        break;
-#ifndef QT_BOOTSTRAPPED
-    case QMetaType::QBitArray:
-        stream << *static_cast<const NS(QBitArray)*>(data);
-        break;
-#endif
-    case QMetaType::QDate:
-        stream << *static_cast<const NS(QDate)*>(data);
-        break;
-    case QMetaType::QTime:
-        stream << *static_cast<const NS(QTime)*>(data);
-        break;
-    case QMetaType::QDateTime:
-        stream << *static_cast<const NS(QDateTime)*>(data);
-        break;
-#ifndef QT_BOOTSTRAPPED
-    case QMetaType::QUrl:
-        stream << *static_cast<const NS(QUrl)*>(data);
-        break;
-#endif
-    case QMetaType::QLocale:
-        stream << *static_cast<const NS(QLocale)*>(data);
-        break;
-#ifndef QT_NO_GEOM_VARIANT
-    case QMetaType::QRect:
-        stream << *static_cast<const NS(QRect)*>(data);
-        break;
-    case QMetaType::QRectF:
-        stream << *static_cast<const NS(QRectF)*>(data);
-        break;
-    case QMetaType::QSize:
-        stream << *static_cast<const NS(QSize)*>(data);
-        break;
-    case QMetaType::QSizeF:
-        stream << *static_cast<const NS(QSizeF)*>(data);
-        break;
-    case QMetaType::QLine:
-        stream << *static_cast<const NS(QLine)*>(data);
-        break;
-    case QMetaType::QLineF:
-        stream << *static_cast<const NS(QLineF)*>(data);
-        break;
-    case QMetaType::QPoint:
-        stream << *static_cast<const NS(QPoint)*>(data);
-        break;
-    case QMetaType::QPointF:
-        stream << *static_cast<const NS(QPointF)*>(data);
-        break;
-#endif
-#ifndef QT_NO_REGEXP
-    case QMetaType::QRegExp:
-        stream << *static_cast<const NS(QRegExp)*>(data);
-        break;
-#endif
-#if QT_CONFIG(regularexpression)
-    case QMetaType::QRegularExpression:
-        stream << *static_cast<const NS(QRegularExpression)*>(data);
-        break;
-#endif // QT_CONFIG(regularexpression)
-#ifndef QT_BOOTSTRAPPED
-    case QMetaType::QEasingCurve:
-        stream << *static_cast<const NS(QEasingCurve)*>(data);
-        break;
-    case QMetaType::QCborSimpleType:
-        stream << *static_cast<const quint8 *>(data);
-        break;
-    case QMetaType::QJsonDocument:
-        stream << *static_cast<const NS(QJsonDocument)*>(data);
-        break;
-#endif // QT_BOOTSTRAPPED
-    case QMetaType::QFont:
-    case QMetaType::QPixmap:
-    case QMetaType::QBrush:
-    case QMetaType::QColor:
-    case QMetaType::QPalette:
-    case QMetaType::QImage:
-    case QMetaType::QPolygon:
-    case QMetaType::QPolygonF:
-    case QMetaType::QRegion:
-    case QMetaType::QBitmap:
-    case QMetaType::QCursor:
-    case QMetaType::QKeySequence:
-    case QMetaType::QPen:
-    case QMetaType::QTextLength:
-    case QMetaType::QTextFormat:
-    case QMetaType::QMatrix:
-    case QMetaType::QTransform:
-    case QMetaType::QMatrix4x4:
-    case QMetaType::QVector2D:
-    case QMetaType::QVector3D:
-    case QMetaType::QVector4D:
-    case QMetaType::QQuaternion:
-    case QMetaType::QIcon:
-        if (!qMetaTypeGuiHelper)
-            return false;
-        qMetaTypeGuiHelper[type - FirstGuiType].saveOp(stream, data);
-        break;
-    case QMetaType::QSizePolicy:
-        if (!qMetaTypeWidgetsHelper)
-            return false;
-        qMetaTypeWidgetsHelper[type - FirstWidgetsType].saveOp(stream, data);
-        break;
-    case QMetaType::QUuid:
-        stream << *static_cast<const NS(QUuid)*>(data);
-        break;
-    default: {
-        const QVector<QCustomTypeInfo> * const ct = customTypes();
-        if (!ct)
-            return false;
-
-        SaveOperator saveOp = 0;
-        {
-            QReadLocker locker(customTypesLock());
-            saveOp = ct->at(type - User).saveOp;
-        }
-
-        if (!saveOp)
-            return false;
-        saveOp(stream, data);
-        break; }
-    }
-
-    return true;
+    SaveOperatorSwitch saveOp{stream, type};
+    return QMetaTypeSwitcher::switcher<bool>(saveOp, type, data);
 }
 
 /*!
@@ -1635,227 +1608,10 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
 */
 bool QMetaType::load(QDataStream &stream, int type, void *data)
 {
-    if (!data || !isRegistered(type))
+   if (!data)
         return false;
-
-    switch(type) {
-    case QMetaType::UnknownType:
-    case QMetaType::Void:
-    case QMetaType::VoidStar:
-    case QMetaType::QObjectStar:
-#if QT_CONFIG(itemmodel)
-    case QMetaType::QModelIndex:
-    case QMetaType::QPersistentModelIndex:
-#endif
-    case QMetaType::QJsonValue:
-    case QMetaType::QJsonObject:
-    case QMetaType::QJsonArray:
-    case QMetaType::QCborValue:
-    case QMetaType::QCborArray:
-    case QMetaType::QCborMap:
-        return false;
-    case QMetaType::Nullptr:
-        stream >> *static_cast<std::nullptr_t *>(data);
-        return true;
-    case QMetaType::Long: {
-        qlonglong l;
-        stream >> l;
-        *static_cast<long *>(data) = long(l);
-        break; }
-    case QMetaType::Int:
-        stream >> *static_cast<int *>(data);
-        break;
-    case QMetaType::Short:
-        stream >> *static_cast<short *>(data);
-        break;
-    case QMetaType::Char:
-        // force a char to be signed
-        stream >> *static_cast<signed char *>(data);
-        break;
-    case QMetaType::ULong: {
-        qulonglong ul;
-        stream >> ul;
-        *static_cast<ulong *>(data) = ulong(ul);
-        break; }
-    case QMetaType::UInt:
-        stream >> *static_cast<uint *>(data);
-        break;
-    case QMetaType::LongLong:
-        stream >> *static_cast<qlonglong *>(data);
-        break;
-    case QMetaType::ULongLong:
-        stream >> *static_cast<qulonglong *>(data);
-        break;
-    case QMetaType::UShort:
-        stream >> *static_cast<ushort *>(data);
-        break;
-    case QMetaType::SChar:
-        stream >> *static_cast<signed char *>(data);
-        break;
-    case QMetaType::UChar:
-        stream >> *static_cast<uchar *>(data);
-        break;
-    case QMetaType::Bool: {
-        qint8 b;
-        stream >> b;
-        *static_cast<bool *>(data) = b;
-        break; }
-    case QMetaType::Float:
-        stream >> *static_cast<float *>(data);
-        break;
-    case QMetaType::Double:
-        stream >> *static_cast<double *>(data);
-        break;
-    case QMetaType::QChar:
-        stream >> *static_cast< NS(QChar)*>(data);
-        break;
-#ifndef QT_BOOTSTRAPPED
-    case QMetaType::QVariantMap:
-        stream >> *static_cast< NS(QVariantMap)*>(data);
-        break;
-    case QMetaType::QVariantHash:
-        stream >> *static_cast< NS(QVariantHash)*>(data);
-        break;
-    case QMetaType::QVariantList:
-        stream >> *static_cast< NS(QVariantList)*>(data);
-        break;
-    case QMetaType::QVariant:
-        stream >> *static_cast< NS(QVariant)*>(data);
-        break;
-    case QMetaType::QByteArrayList:
-        stream >> *static_cast< NS(QByteArrayList)*>(data);
-        break;
-#endif
-    case QMetaType::QByteArray:
-        stream >> *static_cast< NS(QByteArray)*>(data);
-        break;
-    case QMetaType::QString:
-        stream >> *static_cast< NS(QString)*>(data);
-        break;
-    case QMetaType::QStringList:
-        stream >> *static_cast< NS(QStringList)*>(data);
-        break;
-#ifndef QT_BOOTSTRAPPED
-    case QMetaType::QBitArray:
-        stream >> *static_cast< NS(QBitArray)*>(data);
-        break;
-#endif
-    case QMetaType::QDate:
-        stream >> *static_cast< NS(QDate)*>(data);
-        break;
-    case QMetaType::QTime:
-        stream >> *static_cast< NS(QTime)*>(data);
-        break;
-    case QMetaType::QDateTime:
-        stream >> *static_cast< NS(QDateTime)*>(data);
-        break;
-#ifndef QT_BOOTSTRAPPED
-    case QMetaType::QUrl:
-        stream >> *static_cast< NS(QUrl)*>(data);
-        break;
-#endif
-    case QMetaType::QLocale:
-        stream >> *static_cast< NS(QLocale)*>(data);
-        break;
-#ifndef QT_NO_GEOM_VARIANT
-    case QMetaType::QRect:
-        stream >> *static_cast< NS(QRect)*>(data);
-        break;
-    case QMetaType::QRectF:
-        stream >> *static_cast< NS(QRectF)*>(data);
-        break;
-    case QMetaType::QSize:
-        stream >> *static_cast< NS(QSize)*>(data);
-        break;
-    case QMetaType::QSizeF:
-        stream >> *static_cast< NS(QSizeF)*>(data);
-        break;
-    case QMetaType::QLine:
-        stream >> *static_cast< NS(QLine)*>(data);
-        break;
-    case QMetaType::QLineF:
-        stream >> *static_cast< NS(QLineF)*>(data);
-        break;
-    case QMetaType::QPoint:
-        stream >> *static_cast< NS(QPoint)*>(data);
-        break;
-    case QMetaType::QPointF:
-        stream >> *static_cast< NS(QPointF)*>(data);
-        break;
-#endif
-#ifndef QT_NO_REGEXP
-    case QMetaType::QRegExp:
-        stream >> *static_cast< NS(QRegExp)*>(data);
-        break;
-#endif
-#if QT_CONFIG(regularexpression)
-    case QMetaType::QRegularExpression:
-        stream >> *static_cast< NS(QRegularExpression)*>(data);
-        break;
-#endif // QT_CONFIG(regularexpression)
-#ifndef QT_BOOTSTRAPPED
-    case QMetaType::QEasingCurve:
-        stream >> *static_cast< NS(QEasingCurve)*>(data);
-        break;
-    case QMetaType::QCborSimpleType:
-        stream >> *static_cast<quint8 *>(data);
-        break;
-    case QMetaType::QJsonDocument:
-        stream >> *static_cast<NS(QJsonDocument)*>(data);
-        break;
-#endif // QT_BOOTSTRAPPED
-    case QMetaType::QFont:
-    case QMetaType::QPixmap:
-    case QMetaType::QBrush:
-    case QMetaType::QColor:
-    case QMetaType::QPalette:
-    case QMetaType::QImage:
-    case QMetaType::QPolygon:
-    case QMetaType::QPolygonF:
-    case QMetaType::QRegion:
-    case QMetaType::QBitmap:
-    case QMetaType::QCursor:
-    case QMetaType::QKeySequence:
-    case QMetaType::QPen:
-    case QMetaType::QTextLength:
-    case QMetaType::QTextFormat:
-    case QMetaType::QMatrix:
-    case QMetaType::QTransform:
-    case QMetaType::QMatrix4x4:
-    case QMetaType::QVector2D:
-    case QMetaType::QVector3D:
-    case QMetaType::QVector4D:
-    case QMetaType::QQuaternion:
-    case QMetaType::QIcon:
-        if (!qMetaTypeGuiHelper)
-            return false;
-        qMetaTypeGuiHelper[type - FirstGuiType].loadOp(stream, data);
-        break;
-    case QMetaType::QSizePolicy:
-        if (!qMetaTypeWidgetsHelper)
-            return false;
-        qMetaTypeWidgetsHelper[type - FirstWidgetsType].loadOp(stream, data);
-        break;
-    case QMetaType::QUuid:
-        stream >> *static_cast< NS(QUuid)*>(data);
-        break;
-    default: {
-        const QVector<QCustomTypeInfo> * const ct = customTypes();
-        if (!ct)
-            return false;
-
-        LoadOperator loadOp = 0;
-        {
-            QReadLocker locker(customTypesLock());
-            loadOp = ct->at(type - User).loadOp;
-        }
-
-        if (!loadOp)
-            return false;
-        loadOp(stream, data);
-        break; }
-    }
-    return true;
+    LoadOperatorSwitch loadOp{stream, type};
+    return QMetaTypeSwitcher::switcher<bool>(loadOp, type, data);
 }
 #endif // QT_NO_DATASTREAM
 
