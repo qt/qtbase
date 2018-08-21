@@ -584,32 +584,32 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
 {
     Q_ASSERT(socket);
 
-    int i = indexOf(socket);
+    QHttpNetworkConnectionChannel &channel = channels[indexOf(socket)];
 
-    QAuthenticator *authenticator = &channels[i].authenticator;
+    QAuthenticator *authenticator = &channel.authenticator;
     QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(*authenticator);
     // Send "Authorization" header, but not if it's NTLM and the socket is already authenticated.
     if (priv && priv->method != QAuthenticatorPrivate::None) {
         if ((priv->method != QAuthenticatorPrivate::Ntlm
              && request.headerField("Authorization").isEmpty())
-            || channels[i].lastStatus == 401) {
+            || channel.lastStatus == 401) {
             QByteArray response = priv->calculateResponse(request.methodName(), request.uri(false),
                                                           request.url().host());
             request.setHeaderField("Authorization", response);
-            channels[i].authenticationCredentialsSent = true;
+            channel.authenticationCredentialsSent = true;
         }
     }
 
 #if QT_CONFIG(networkproxy)
-    authenticator = &channels[i].proxyAuthenticator;
+    authenticator = &channel.proxyAuthenticator;
     priv = QAuthenticatorPrivate::getPrivate(*authenticator);
     // Send "Proxy-Authorization" header, but not if it's NTLM and the socket is already authenticated.
     if (priv && priv->method != QAuthenticatorPrivate::None) {
-        if (priv->method != QAuthenticatorPrivate::Ntlm || channels[i].lastStatus == 407) {
+        if (priv->method != QAuthenticatorPrivate::Ntlm || channel.lastStatus == 407) {
             QByteArray response = priv->calculateResponse(request.methodName(), request.uri(false),
                                                           networkProxy.hostName());
             request.setHeaderField("Proxy-Authorization", response);
-            channels[i].proxyCredentialsSent = true;
+            channel.proxyCredentialsSent = true;
         }
     }
 #endif // QT_CONFIG(networkproxy)
