@@ -35,7 +35,9 @@
 #include <QtNetwork/QNetworkCookieJar>
 #include <QtNetwork/QNetworkCookie>
 #include <QtNetwork/QNetworkRequest>
+#if QT_CONFIG(topleveldomain)
 #include "private/qtldurl_p.h"
+#endif
 
 class tst_QNetworkCookieJar: public QObject
 {
@@ -47,7 +49,7 @@ private slots:
     void setCookiesFromUrl();
     void cookiesForUrl_data();
     void cookiesForUrl();
-#ifdef QT_BUILD_INTERNAL
+#if defined(QT_BUILD_INTERNAL) && QT_CONFIG(topleveldomain)
     void effectiveTLDs_data();
     void effectiveTLDs();
 #endif
@@ -398,7 +400,7 @@ void tst_QNetworkCookieJar::cookiesForUrl()
 }
 
 // This test requires private API.
-#ifdef QT_BUILD_INTERNAL
+#if defined(QT_BUILD_INTERNAL) && QT_CONFIG(topleveldomain)
 void tst_QNetworkCookieJar::effectiveTLDs_data()
 {
     QTest::addColumn<QString>("domain");
