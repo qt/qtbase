@@ -640,6 +640,19 @@ void QT_FASTCALL rbSwap<QImage::Format_RGBA8888>(uchar *d, const uchar *s, int c
 {
     return rbSwap_rgb32(d, s, count);
 }
+#else
+template<>
+void QT_FASTCALL rbSwap<QImage::Format_RGBA8888>(uchar *d, const uchar *s, int count)
+{
+    const uint *src = reinterpret_cast<const uint *>(s);
+    uint *dest = reinterpret_cast<uint *>(d);
+    for (int i = 0; i < count; ++i) {
+        const uint c = src[i];
+        const uint rb = c & 0xff00ff00;
+        const uint ga = c & 0x00ff00ff;
+        dest[i] = ga | (rb << 16) | (rb >> 16);
+    }
+}
 #endif
 
 static void QT_FASTCALL rbSwap_rgb30(uchar *d, const uchar *s, int count)
