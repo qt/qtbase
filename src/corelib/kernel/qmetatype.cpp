@@ -1416,7 +1416,6 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::QJsonValue:
     case QMetaType::QJsonObject:
     case QMetaType::QJsonArray:
-    case QMetaType::QJsonDocument:
     case QMetaType::QCborValue:
     case QMetaType::QCborArray:
     case QMetaType::QCborMap:
@@ -1561,6 +1560,9 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::QCborSimpleType:
         stream << *static_cast<const quint8 *>(data);
         break;
+    case QMetaType::QJsonDocument:
+        stream << *static_cast<const NS(QJsonDocument)*>(data);
+        break;
 #endif // QT_BOOTSTRAPPED
     case QMetaType::QFont:
     case QMetaType::QPixmap:
@@ -1648,7 +1650,6 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::QJsonValue:
     case QMetaType::QJsonObject:
     case QMetaType::QJsonArray:
-    case QMetaType::QJsonDocument:
     case QMetaType::QCborValue:
     case QMetaType::QCborArray:
     case QMetaType::QCborMap:
@@ -1798,6 +1799,9 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
         break;
     case QMetaType::QCborSimpleType:
         stream >> *static_cast<quint8 *>(data);
+        break;
+    case QMetaType::QJsonDocument:
+        stream >> *static_cast<NS(QJsonDocument)*>(data);
         break;
 #endif // QT_BOOTSTRAPPED
     case QMetaType::QFont:

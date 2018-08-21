@@ -172,6 +172,11 @@ Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QJsonDocument)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonDocument &);
 #endif
 
+#ifndef QT_NO_DATASTREAM
+Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QJsonDocument &);
+Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QJsonDocument &);
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QJSONDOCUMENT_H

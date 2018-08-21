@@ -153,6 +153,10 @@ private Q_SLOTS:
     void implicitValueType();
     void implicitDocumentType();
 
+    void streamSerialization_data();
+    void streamSerialization();
+    void streamVariantSerialization();
+
 private:
     QString testDataDir;
 };
@@ -3009,6 +3013,43 @@ void tst_QtJson::implicitDocumentType()
     QCOMPARE(arrayDocument[-1], QJsonValue(QJsonValue::Undefined));
     QCOMPARE(arrayDocument["asObject"], QJsonValue(QJsonValue::Undefined));
     QCOMPARE(arrayDocument[-1].toInt(123), 123);
+}
+
+void tst_QtJson::streamSerialization_data()
+{
+    QTest::addColumn<QJsonDocument>("document");
+    QTest::newRow("empty") << QJsonDocument();
+    QTest::newRow("object") << QJsonDocument(QJsonObject{{"value", 42}});
+}
+
+void tst_QtJson::streamSerialization()
+{
+    // Check interface only, implementation is tested through to and from
+    // json functions.
+    QByteArray buffer;
+    QFETCH(QJsonDocument, document);
+    QJsonDocument output;
+    QDataStream save(&buffer, QIODevice::WriteOnly);
+    save << document;
+    QDataStream load(buffer);
+    load >> output;
+    QCOMPARE(output, document);
+}
+
+void tst_QtJson::streamVariantSerialization()
+{
+    // Check interface only, implementation is tested through to and from
+    // json functions.
+    QByteArray buffer;
+    QJsonDocument objectDoc(QJsonArray{665, 666, 667});
+    QVariant output;
+    QVariant variant(objectDoc);
+    QDataStream save(&buffer, QIODevice::WriteOnly);
+    save << variant;
+    QDataStream load(buffer);
+    load >> output;
+    QCOMPARE(output.userType(), QMetaType::QJsonDocument);
+    QCOMPARE(output.toJsonDocument(), objectDoc);
 }
 
 QTEST_MAIN(tst_QtJson)

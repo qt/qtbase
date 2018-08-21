@@ -669,4 +669,20 @@ QDebug operator<<(QDebug dbg, const QJsonDocument &o)
 }
 #endif
 
+#ifndef QT_NO_DATASTREAM
+QDataStream &operator<<(QDataStream &stream, const QJsonDocument &doc)
+{
+    stream << doc.toJson(QJsonDocument::Compact);
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, QJsonDocument &doc)
+{
+    QByteArray buffer;
+    stream >> buffer;
+    doc = QJsonDocument::fromJson(buffer);
+    return stream;
+}
+#endif
+
 QT_END_NAMESPACE
