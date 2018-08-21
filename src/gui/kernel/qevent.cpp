@@ -2750,7 +2750,7 @@ Qt::MouseButtons QTabletEvent::buttons() const
     \header
         \li Event Type
         \li Description
-        \li Touch equence
+        \li Touch sequence
     \row
         \li Qt::ZoomNativeGesture
         \li Magnification delta in percent.
