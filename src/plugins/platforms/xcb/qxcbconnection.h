@@ -412,6 +412,8 @@ public:
 
     bool imageNeedsEndianSwap() const
     {
+        if (!hasShm())
+            return false; // The non-Shm path does its own swapping
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
         return m_setup->image_byte_order != XCB_IMAGE_ORDER_MSB_FIRST;
 #else
