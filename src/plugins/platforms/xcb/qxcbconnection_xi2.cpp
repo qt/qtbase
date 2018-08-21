@@ -581,8 +581,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
     }
 
     if (eventListener) {
-        long result = 0;
-        if (eventListener->handleGenericEvent(reinterpret_cast<xcb_generic_event_t *>(event), &result))
+        if (eventListener->handleNativeEvent(reinterpret_cast<xcb_generic_event_t *>(event)))
             return;
     }
 

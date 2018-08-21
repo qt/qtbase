@@ -2703,18 +2703,6 @@ static const int slow_timeout = 300000; //  5m
 
 const uint QFontCache::min_cost = 4*1024; // 4mb
 
-#ifdef QT_NO_THREAD
-Q_GLOBAL_STATIC(QFontCache, theFontCache)
-
-QFontCache *QFontCache::instance()
-{
-    return theFontCache();
-}
-
-void QFontCache::cleanup()
-{
-}
-#else
 Q_GLOBAL_STATIC(QThreadStorage<QFontCache *>, theFontCache)
 
 QFontCache *QFontCache::instance()
@@ -2736,7 +2724,6 @@ void QFontCache::cleanup()
     if (cache && cache->hasLocalData())
         cache->setLocalData(0);
 }
-#endif // QT_NO_THREAD
 
 QBasicAtomicInt font_cache_id = Q_BASIC_ATOMIC_INITIALIZER(1);
 

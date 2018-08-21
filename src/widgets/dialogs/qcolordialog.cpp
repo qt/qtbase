@@ -2170,7 +2170,7 @@ QColor QColorDialog::getColor(const QColor &initial, QWidget *parent, const QStr
     and an alpha channel (transparency) value. The color+alpha is
     initially set to \a initial. The dialog is a child of \a parent.
 
-    If \a ok is non-null, \e *\a ok is set to true if the user clicked
+    If \a ok is non-null, \e {*ok} is set to true if the user clicked
     \uicontrol{OK}, and to false if the user clicked Cancel.
 
     If the user clicks Cancel, the \a initial value is returned.

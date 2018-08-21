@@ -108,6 +108,8 @@ public Q_SLOTS:
     void showPreeditText();
     void filterEventFinished(QDBusPendingCallWatcher *call);
     void socketChanged(const QString &str);
+    void busRegistered(const QString &str);
+    void busUnregistered(const QString &str);
     void connectToBus();
     void globalEngineChanged(const QString &engine_name);
 

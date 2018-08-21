@@ -169,6 +169,11 @@ public:
     NSUInteger windowStyleMask(Qt::WindowFlags flags);
     void setWindowZoomButton(Qt::WindowFlags flags);
 
+#ifndef QT_NO_OPENGL
+    void setCurrentContext(QCocoaGLContext *context);
+    QCocoaGLContext *currentContext() const;
+#endif
+
     bool setWindowModified(bool modified) override;
 
     void setFrameStrutEventsEnabled(bool enabled) override;
@@ -248,6 +253,9 @@ public: // for QNSView
     bool m_inSetVisible;
     bool m_inSetGeometry;
     bool m_inSetStyleMask;
+#ifndef QT_NO_OPENGL
+    QCocoaGLContext *m_glContext;
+#endif
     QCocoaMenuBar *m_menubar;
 
     bool m_needsInvalidateShadow;

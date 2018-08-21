@@ -483,6 +483,11 @@ QT_BEGIN_NAMESPACE
     Note the usage of the non-capturing group in order to preserve the meaning
     of the branch operator inside the pattern.
 
+    The QRegularExpression::anchoredPattern() helper method does exactly that for
+    you.
+
+    \sa anchoredPattern
+
     \section3 Porting from QRegExp's Partial Matching
 
     When using QRegExp::exactMatch(), if an exact match was not found, one
@@ -516,10 +521,10 @@ QT_BEGIN_NAMESPACE
 
     \section2 Wildcard matching
 
-    There is no equivalent of wildcard matching in QRegularExpression.
-    Nevertheless, rewriting a regular expression in wildcard syntax to a
-    Perl-compatible regular expression is a very easy task, given the fact
-    that wildcard syntax supported by QRegExp is very simple.
+    There is no direct way to do wildcard matching in QRegularExpression.
+    However, the wildcardToRegularExpression method is provided to translate
+    glob patterns into a Perl-compatible regular expression that can be used
+    for that purpose.
 
     \section2 Other pattern syntaxes
 
@@ -783,82 +788,6 @@ QT_BEGIN_NAMESPACE
         constitute a security issue. This enum value has been introduced in
         Qt 5.4.
 */
-
-namespace QtPrivate {
-/*!
-    internal
-*/
-QString wildcardToRegularExpression(const QString &wildcardString)
-{
-    const int wclen = wildcardString.length();
-    QString rx;
-    int i = 0;
-    bool hasNegativeBracket = false;
-    const QChar *wc = wildcardString.unicode();
-
-    while (i < wclen) {
-        const QChar c = wc[i++];
-        switch (c.unicode()) {
-        case '*':
-            rx += QLatin1String(".*");
-            break;
-        case '?':
-            rx += QLatin1Char('.');
-            break;
-        case '$':
-        case '(':
-        case ')':
-        case '+':
-        case '.':
-        case '^':
-        case '{':
-        case '|':
-        case '}':
-            rx += QLatin1Char('\\');
-            rx += c;
-            break;
-        case '[':
-            // Support for the [!abc] or [!a-c] syntax
-            // Implements a negative look-behind for one char.
-            if (wc[i] == QLatin1Char(']')) {
-                rx += c;
-                rx += wc[i++];
-            } else if (wc[i] == QLatin1Char('!')) {
-                rx += QLatin1String(".(?<");
-                rx += wc[i++];
-                rx += c;
-                hasNegativeBracket = true;
-            } else {
-                rx += c;
-            }
-
-            if (i < wclen) {
-                if (rx[i] == QLatin1Char(']'))
-                    rx += wc[i++];
-                while (i < wclen && wc[i] != QLatin1Char(']')) {
-                    if (wc[i] == QLatin1Char('\\'))
-                        rx += QLatin1Char('\\');
-                    rx += wc[i++];
-                }
-            }
-            break;
-        case ']':
-            rx += c;
-            // Closes the negative look-behind expression.
-            if (hasNegativeBracket) {
-                rx += QLatin1Char(')');
-                hasNegativeBracket = false;
-            }
-            break;
-        default:
-            rx += c;
-            break;
-        }
-    }
-
-    return rx;
-}
-}
 
 /*!
     \internal
@@ -1583,47 +1512,6 @@ void QRegularExpression::setPattern(const QString &pattern)
 }
 
 /*!
-    \since 5.12
-
-    Sets the pattern string of the regular expression to \a wildcard pattern.
-    The pattern options are left unchanged.
-
-    \warning Unlike QRegExp, this implementation follows closely the definition
-    of wildcard for glob patterns:
-    \table
-    \row \li \b{c}
-         \li Any character represents itself apart from those mentioned
-         below. Thus \b{c} matches the character \e c.
-    \row \li \b{?}
-         \li Matches any single character. It is the same as
-         \b{.} in full regexps.
-    \row \li \b{*}
-         \li Matches zero or more of any characters. It is the
-         same as \b{.*} in full regexps.
-    \row \li \b{[abc]}
-         \li Matches one character given in the bracket.
-    \row \li \b{[a-c]}
-         \li Matches one character from the range given in the bracket.
-    \row \li \b{[!abc]}
-         \li Matches one character that is not given in the bracket.
-    \row \li \b{[!a-c]}
-         \li matches one character that is not from the range given in the
-         bracket.
-    \endtable
-
-    \note This function generates a regular expression that will act following
-    the wildcard pattern given. However the content of the regular expression
-    will not be the same as the one set.
-
-    \sa pattern(), setPattern()
-*/
-void QRegularExpression::setWildcardPattern(const QString &pattern)
-{
-    setPattern(QtPrivate::wildcardToRegularExpression(pattern));
-}
-
-
-/*!
     Returns the pattern options for the regular expression.
 
     \sa setPatternOptions(), pattern()
@@ -1986,6 +1874,141 @@ QString QRegularExpression::escape(const QString &str)
     result.squeeze();
     return result;
 }
+
+/*!
+    \since 5.12
+
+    Returns a regular expression representation of the given glob \a pattern.
+    The transformation is targeting file path globbing, which means in particular
+    that path separators receive special treatment. This implies that it is not
+    just a basic translation from "*" to ".*".
+
+    \snippet code/src_corelib_tools_qregularexpression.cpp 31
+
+    \warning Unlike QRegExp, this implementation follows closely the definition
+    of wildcard for glob patterns:
+    \table
+    \row \li \b{c}
+         \li Any character represents itself apart from those mentioned
+         below. Thus \b{c} matches the character \e c.
+    \row \li \b{?}
+         \li Matches any single character. It is the same as
+         \b{.} in full regexps.
+    \row \li \b{*}
+         \li Matches zero or more of any characters. It is the
+         same as \b{.*} in full regexps.
+    \row \li \b{[abc]}
+         \li Matches one character given in the bracket.
+    \row \li \b{[a-c]}
+         \li Matches one character from the range given in the bracket.
+    \row \li \b{[!abc]}
+         \li Matches one character that is not given in the bracket. It is the
+         same as \b{[^abc]} in full regexp.
+    \row \li \b{[!a-c]}
+         \li Matches one character that is not from the range given in the
+         bracket. It is the same as \b{[^a-c]} in full regexp.
+    \endtable
+
+    \note The backslash (\\) character is \e not an escape char in this context.
+    In order to match one of the special characters, place it in square brackets
+    (for example, "[?]").
+
+    More information about the implementation can be found in:
+    \list
+    \li \l {https://en.wikipedia.org/wiki/Glob_(programming)} {The Wikipedia Glob article}
+    \li \c man 7 glob
+    \endlist
+
+    \sa escape()
+*/
+QString QRegularExpression::wildcardToRegularExpression(const QString &pattern)
+{
+    const int wclen = pattern.length();
+    QString rx;
+    rx.reserve(wclen + wclen / 16);
+    int i = 0;
+    const QChar *wc = pattern.unicode();
+
+#ifdef Q_OS_WIN
+    const QLatin1Char nativePathSeparator('\\');
+    const QLatin1String starEscape("[^/\\\\]*");
+    const QLatin1String questionMarkEscape("[^/\\\\]");
+#else
+    const QLatin1Char nativePathSeparator('/');
+    const QLatin1String starEscape("[^/]*");
+    const QLatin1String questionMarkEscape("[^/]");
+#endif
+
+    while (i < wclen) {
+        const QChar c = wc[i++];
+        switch (c.unicode()) {
+        case '*':
+            rx += starEscape;
+            break;
+        case '?':
+            rx += questionMarkEscape;
+            break;
+        case '\\':
+#ifdef Q_OS_WIN
+        case '/':
+            rx += QLatin1String("[/\\\\]");
+            break;
+#endif
+        case '$':
+        case '(':
+        case ')':
+        case '+':
+        case '.':
+        case '^':
+        case '{':
+        case '|':
+        case '}':
+            rx += QLatin1Char('\\');
+            rx += c;
+            break;
+        case '[':
+            rx += c;
+            // Support for the [!abc] or [!a-c] syntax
+            if (i < wclen) {
+                if (wc[i] == QLatin1Char('!')) {
+                    rx += QLatin1Char('^');
+                    ++i;
+                }
+
+                if (i < wclen && wc[i] == QLatin1Char(']'))
+                    rx += wc[i++];
+
+                while (i < wclen && wc[i] != QLatin1Char(']')) {
+                    // The '/' appearing in a character class invalidates the
+                    // regular expression parsing. It also concerns '\\' on
+                    // Windows OS types.
+                    if (wc[i] == QLatin1Char('/') || wc[i] == nativePathSeparator)
+                        return rx;
+                    if (wc[i] == QLatin1Char('\\'))
+                        rx += QLatin1Char('\\');
+                    rx += wc[i++];
+                }
+            }
+            break;
+        default:
+            rx += c;
+            break;
+        }
+    }
+
+    return rx;
+}
+
+/*!
+    \fn QRegularExpression::anchoredPattern(const QString &expression)
+
+    \since 5.12
+
+    Returns the expression wrapped between the \c{\A} and \c{\z} anchors to be
+    used for exact matching.
+
+    \sa {Porting from QRegExp's Exact Matching}
+*/
 
 /*!
     \since 5.1

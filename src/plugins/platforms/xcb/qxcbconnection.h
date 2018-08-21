@@ -295,6 +295,12 @@ namespace QXcbAtom {
         _COMPIZ_TOOLKIT_ACTION,
         _GTK_LOAD_ICONTHEMES,
 
+        AT_SPI_BUS,
+
+        EDID,
+        EDID_DATA,
+        XFree86_DDC_EDID1_RAWDATA,
+
         NAtoms
     };
 }
@@ -335,7 +341,7 @@ class QXcbWindowEventListener
 {
 public:
     virtual ~QXcbWindowEventListener() {}
-    virtual bool handleGenericEvent(xcb_generic_event_t *, long *) { return false; }
+    virtual bool handleNativeEvent(xcb_generic_event_t *) { return false; }
 
     virtual void handleExposeEvent(const xcb_expose_event_t *) {}
     virtual void handleClientMessageEvent(const xcb_client_message_event_t *) {}
@@ -447,8 +453,8 @@ public:
     QXcbWindowEventListener *windowEventListenerFromId(xcb_window_t id);
     QXcbWindow *platformWindowFromId(xcb_window_t id);
 
-    template<typename T>
-    inline xcb_generic_event_t *checkEvent(T &checker);
+    template<typename Functor>
+    inline xcb_generic_event_t *checkEvent(Functor &&filter, bool removeFromQueue = true);
 
     typedef bool (*PeekFunc)(QXcbConnection *, xcb_generic_event_t *);
     void addPeekFunc(PeekFunc f);
@@ -560,7 +566,6 @@ private:
     void initializeXShape();
     void initializeXKB();
     void initializeXSync();
-    void handleClientMessageEvent(const xcb_client_message_event_t *event);
     QXcbScreen* findScreenForCrtc(xcb_window_t rootWindow, xcb_randr_crtc_t crtc) const;
     QXcbScreen* findScreenForOutput(xcb_window_t rootWindow, xcb_randr_output_t output) const;
     QXcbVirtualDesktop* virtualDesktopForRootWindow(xcb_window_t rootWindow) const;
@@ -741,21 +746,22 @@ Q_DECLARE_TYPEINFO(QXcbConnection::TabletData, Q_MOVABLE_TYPE);
 #endif
 #endif
 
-template<typename T>
-xcb_generic_event_t *QXcbConnection::checkEvent(T &checker)
+template<typename Functor>
+xcb_generic_event_t *QXcbConnection::checkEvent(Functor &&filter, bool removeFromQueue)
 {
     QXcbEventArray *eventqueue = m_reader->lock();
 
     for (int i = 0; i < eventqueue->size(); ++i) {
         xcb_generic_event_t *event = eventqueue->at(i);
-        if (checker.checkEvent(event)) {
-            (*eventqueue)[i] = 0;
+        if (event && filter(event, event->response_type & ~0x80)) {
+            if (removeFromQueue)
+                (*eventqueue)[i] = nullptr;
             m_reader->unlock();
             return event;
         }
     }
     m_reader->unlock();
-    return 0;
+    return nullptr;
 }
 
 class QXcbConnectionGrabber

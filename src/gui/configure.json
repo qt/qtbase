@@ -979,7 +979,7 @@
         },
         "evdev": {
             "label": "evdev",
-            "condition": "tests.evdev",
+            "condition": "features.thread && tests.evdev",
             "output": [ "privateFeature" ]
         },
         "freetype": {
@@ -1170,7 +1170,7 @@
         },
         "egl_x11": {
             "label": "EGL on X11",
-            "condition": "features.egl && tests.egl-x11",
+            "condition": "features.thread && features.egl && tests.egl-x11",
             "output": [ "privateFeature" ]
         },
         "eglfs": {
@@ -1300,7 +1300,7 @@
             "section": "Platform plugins",
             "autoDetect": "!config.darwin",
             "enable": "input.xcb == 'system' || input.xcb == 'qt' || input.xcb == 'yes'",
-            "condition": "libs.xcb",
+            "condition": "features.thread && libs.xcb",
             "output": [ "privateFeature" ]
         },
         "system-xcb": {

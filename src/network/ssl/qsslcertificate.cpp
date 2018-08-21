@@ -692,6 +692,56 @@ QByteArray QSslCertificatePrivate::subjectInfoToString(QSslCertificate::SubjectI
 }
 
 /*!
+    \since 5.12
+
+    Returns a name that describes the issuer. It returns the QSslCertificate::CommonName
+    if available, otherwise falls back to the first QSslCertificate::Organization or the
+    first QSslCertificate::OrganizationalUnitName.
+
+    \sa issuerInfo()
+*/
+QString QSslCertificate::issuerDisplayName() const
+{
+    QStringList names;
+    names = issuerInfo(QSslCertificate::CommonName);
+    if (!names.isEmpty())
+        return names.first();
+    names = issuerInfo(QSslCertificate::Organization);
+    if (!names.isEmpty())
+        return names.first();
+    names = issuerInfo(QSslCertificate::OrganizationalUnitName);
+    if (!names.isEmpty())
+        return names.first();
+
+    return QString();
+}
+
+/*!
+    \since 5.12
+
+    Returns a name that describes the subject. It returns the QSslCertificate::CommonName
+    if available, otherwise falls back to the first QSslCertificate::Organization or the
+    first QSslCertificate::OrganizationalUnitName.
+
+    \sa subjectInfo()
+*/
+QString QSslCertificate::subjectDisplayName() const
+{
+    QStringList names;
+    names = subjectInfo(QSslCertificate::CommonName);
+    if (!names.isEmpty())
+        return names.first();
+    names = subjectInfo(QSslCertificate::Organization);
+    if (!names.isEmpty())
+        return names.first();
+    names = subjectInfo(QSslCertificate::OrganizationalUnitName);
+    if (!names.isEmpty())
+        return names.first();
+
+    return QString();
+}
+
+/*!
     \fn uint qHash(const QSslCertificate &key, uint seed)
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
@@ -708,8 +758,8 @@ QDebug operator<<(QDebug debug, const QSslCertificate &certificate)
           << certificate.version()
           << ", " << certificate.serialNumber()
           << ", " << certificate.digest().toBase64()
-          << ", " << certificate.issuerInfo(QSslCertificate::Organization)
-          << ", " << certificate.subjectInfo(QSslCertificate::Organization)
+          << ", " << certificate.issuerDisplayName()
+          << ", " << certificate.subjectDisplayName()
           << ", " << certificate.subjectAlternativeNames()
 #ifndef QT_NO_DATESTRING
           << ", " << certificate.effectiveDate()

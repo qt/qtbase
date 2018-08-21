@@ -2321,6 +2321,12 @@ void tst_QWidget::resizeEvent()
 
 void tst_QWidget::showMinimized()
 {
+    if (m_platform == QStringLiteral("wayland")) {
+        QSKIP("Wayland: Neither xdg_shell, wl_shell or ivi_application support "
+              "letting a client know whether it's minimized. So on these shells "
+              "Qt Wayland will always report that it's unmimized.");
+    }
+
     QWidget plain;
     plain.move(100, 100);
     plain.resize(200, 200);
@@ -9165,7 +9171,7 @@ void tst_QWidget::syntheticEnterLeave()
 void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
 {
     if (m_platform == QStringLiteral("wayland"))
-        QSKIP("Wayland: This fails. Figure out why.");
+        QSKIP("Wayland: Clients can't set cursor position on wayland.");
     class SELParent : public QWidget
     {
     public:

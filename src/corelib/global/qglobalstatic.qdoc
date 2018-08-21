@@ -264,7 +264,7 @@
     [stmt.decl], but as of the time of this writing, only compilers based on
     the IA-64 C++ ABI implemented it properly. The implementation requiring
     thread-safe initialization is also used on the Qt bootstrapped tools, which
-    define QT_NO_THREAD.
+    disable the "thread" feature.
 
     The implementation requiring thread-safe initialization from the compiler
     is the simplest: it creates the \a Type object as a function-local static

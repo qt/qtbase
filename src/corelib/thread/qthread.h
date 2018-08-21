@@ -66,7 +66,6 @@ class QThreadData;
 class QThreadPrivate;
 class QAbstractEventDispatcher;
 
-#ifndef QT_NO_THREAD
 class Q_CORE_EXPORT QThread : public QObject
 {
     Q_OBJECT
@@ -238,36 +237,6 @@ QThread *QThread::create(Function &&f)
 #endif // QTHREAD_HAS_VARIADIC_CREATE
 
 #endif // QT_CONFIG(cxx11_future)
-
-#else // QT_NO_THREAD
-
-class Q_CORE_EXPORT QThread : public QObject
-{
-public:
-    static Qt::HANDLE currentThreadId() { return Qt::HANDLE(currentThread()); }
-    static QThread* currentThread();
-
-    static void sleep(unsigned long);
-    static void msleep(unsigned long);
-    static void usleep(unsigned long);
-
-    QAbstractEventDispatcher *eventDispatcher() const;
-    void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
-
-protected:
-    QThread(QThreadPrivate &dd, QObject *parent = nullptr);
-
-private:
-    explicit QThread(QObject *parent = nullptr);
-    static QThread *instance;
-
-    friend class QCoreApplication;
-    friend class QThreadData;
-    friend class QAdoptedThread;
-    Q_DECLARE_PRIVATE(QThread)
-};
-
-#endif // QT_NO_THREAD
 
 QT_END_NAMESPACE
 

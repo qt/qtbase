@@ -183,8 +183,7 @@ qtConfig(regularexpression) {
     QMAKE_USE_PRIVATE += pcre2
 
     HEADERS += \
-        tools/qregularexpression.h \
-        tools/qregularexpression_p.h
+        tools/qregularexpression.h
     SOURCES += tools/qregularexpression.cpp
 }
 

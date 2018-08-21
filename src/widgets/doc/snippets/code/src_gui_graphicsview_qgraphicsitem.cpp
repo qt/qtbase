@@ -52,7 +52,7 @@
 class SimpleItem : public QGraphicsItem
 {
 public:
-    QRectF boundingRect() const
+    QRectF boundingRect() const override
     {
         qreal penWidth = 1;
         return QRectF(-10 - penWidth / 2, -10 - penWidth / 2,
@@ -60,7 +60,7 @@ public:
     }
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-               QWidget *widget)
+               QWidget *widget) override
     {
         painter->drawRoundedRect(-10, -10, 20, 20, 5, 5);
     }
@@ -74,7 +74,7 @@ class CustomItem : public QGraphicsItem
 public:
    enum { Type = UserType + 1 };
 
-   int type() const
+   int type() const override
    {
        // Enable the use of qgraphicsitem_cast with this item.
        return Type;
@@ -260,7 +260,7 @@ class QGraphicsPathItem : public QAbstractGraphicsShapeItem
 {
  public:
   enum { Type = 2 };
-    int type() const { return Type; }
+    int type() const override { return Type; }
   ...
 };
 //! [18]

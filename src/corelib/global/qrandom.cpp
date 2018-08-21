@@ -1298,7 +1298,7 @@ struct QRandEngine
 };
 }
 
-#if defined(QT_NO_THREAD) || defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
 // On Windows srand() and rand() already use Thread-Local-Storage
 // to store the seed between calls
 static inline QRandEngine *randTLS()

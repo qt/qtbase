@@ -120,6 +120,9 @@ public:
     QStringList issuerInfo(const QByteArray &attribute) const;
     QStringList subjectInfo(SubjectInfo info) const;
     QStringList subjectInfo(const QByteArray &attribute) const;
+    QString issuerDisplayName() const;
+    QString subjectDisplayName() const;
+
     QList<QByteArray> subjectInfoAttributes() const;
     QList<QByteArray> issuerInfoAttributes() const;
 #if QT_DEPRECATED_SINCE(5,0)

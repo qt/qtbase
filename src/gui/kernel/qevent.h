@@ -232,10 +232,11 @@ protected:
     int qt4D = 0;
     Qt::Orientation qt4O = Qt::Vertical;
     Qt::MouseButtons mouseState;
-    uint ph : 2;
+    uint _unused_ : 2; // Kept for binary compatibility
     uint src: 2;
     bool invertedScrolling : 1;
-    int reserved : 27;
+    uint ph : 3;
+    int reserved : 24;
 
     friend class QApplication;
 };

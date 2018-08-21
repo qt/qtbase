@@ -134,7 +134,7 @@ void transformRegion_template(T (*transformOne)(T), void (*transformRegion)(cons
 
     auto checkBounds = [&](int from) {
         for ( ; from < Size; ++from)
-            QCOMPARE(dest[from], 0);
+            QCOMPARE(dest[from], T(0));
     };
 
     transformRegion(source, 1, dest);

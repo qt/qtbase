@@ -56,8 +56,6 @@
 #include <sys/time.h>
 #include <time.h>
 
-#ifndef QT_NO_THREAD
-
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_OS_ANDROID
@@ -264,5 +262,3 @@ bool QWaitCondition::wait(QReadWriteLock *readWriteLock, QDeadlineTimer deadline
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_THREAD

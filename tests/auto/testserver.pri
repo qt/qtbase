@@ -55,7 +55,7 @@ TESTSERVER_COMPOSE_FILE = $$dirname(_QMAKE_CONF_)/tests/testserver/docker-compos
 TESTSERVER_VERSION = $$system(docker-compose --version)
 TESTSERVER_IMAGES = $$system(docker images -aq "qt-test-server-*")
 
-equals(QMAKE_HOST.os, Windows)|isEmpty(TESTSERVER_VERSION)|!linux-g++ {
+equals(QMAKE_HOST.os, Windows)|isEmpty(TESTSERVER_VERSION) {
     # Make check with server "qt-test-server.qt-test-net" as a fallback
     message("testserver: qt-test-server.qt-test-net")
 } else {

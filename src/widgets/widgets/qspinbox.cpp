@@ -421,8 +421,8 @@ void QSpinBox::setRange(int minimum, int maximum)
 }
 
 /*!
-    Sets the step type for the spin box: single step or adaptive
-    decimal step.
+    Sets the step type for the spin box to \a stepType, which is single
+    step or adaptive decimal step.
 
     Adaptive decimal step means that the step size will continuously be
     adjusted to one power of ten below the current \l value. So when
@@ -439,7 +439,6 @@ void QSpinBox::setRange(int minimum, int maximum)
     \l singleStep, although it is preserved so that \l singleStep
     comes into effect if adaptive decimal step is later turned off.
 
-    \sa QAbstractSpinBox::groupSeparator()
     \since 5.12
 */
 
@@ -448,6 +447,13 @@ void QSpinBox::setStepType(QAbstractSpinBox::StepType stepType)
     Q_D(QSpinBox);
     d->stepType = stepType;
 }
+
+/*!
+    \property QSpinBox::stepType
+    \brief The step type.
+
+    The step type can be single step or adaptive decimal step.
+*/
 
 QAbstractSpinBox::StepType QSpinBox::stepType() const
 {
@@ -888,8 +894,8 @@ void QDoubleSpinBox::setRange(double minimum, double maximum)
 }
 
 /*!
-    Sets the step type for the spin box: single step or adaptive
-    decimal step.
+    Sets the step type for the spin box to \a stepType, which is single
+    step or adaptive decimal step.
 
     Adaptive decimal step means that the step size will continuously be
     adjusted to one power of ten below the current \l value. So when
@@ -909,7 +915,6 @@ void QDoubleSpinBox::setRange(double minimum, double maximum)
     \l singleStep, although it is preserved so that \l singleStep
     comes into effect if adaptive decimal step is later turned off.
 
-    \sa QAbstractSpinBox::groupSeparator()
     \since 5.12
 */
 
@@ -918,6 +923,13 @@ void QDoubleSpinBox::setStepType(StepType stepType)
     Q_D(QDoubleSpinBox);
     d->stepType = stepType;
 }
+
+/*!
+    \property QDoubleSpinBox::stepType
+    \brief The step type.
+
+    The step type can be single step or adaptive decimal step.
+*/
 
 QAbstractSpinBox::StepType QDoubleSpinBox::stepType() const
 {

@@ -215,9 +215,7 @@ typedef QList<QAbstractAnimation*>::ConstIterator AnimationListConstIt;
     QUnifiedTimer drives animations indirectly, via QAbstractAnimationTimer.
 */
 
-#ifndef QT_NO_THREAD
 Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
-#endif
 
 QUnifiedTimer::QUnifiedTimer() :
     QObject(), defaultDriver(this), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL),
@@ -234,18 +232,12 @@ QUnifiedTimer::QUnifiedTimer() :
 QUnifiedTimer *QUnifiedTimer::instance(bool create)
 {
     QUnifiedTimer *inst;
-#ifndef QT_NO_THREAD
     if (create && !unifiedTimer()->hasLocalData()) {
         inst = new QUnifiedTimer;
         unifiedTimer()->setLocalData(inst);
     } else {
         inst = unifiedTimer() ? unifiedTimer()->localData() : 0;
     }
-#else
-    Q_UNUSED(create);
-    static QUnifiedTimer unifiedTimer;
-    inst = &unifiedTimer;
-#endif
     return inst;
 }
 
@@ -554,7 +546,7 @@ bool QUnifiedTimer::canUninstallAnimationDriver(QAnimationDriver *d)
     return d == driver && driver != &defaultDriver;
 }
 
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
 Q_GLOBAL_STATIC(QThreadStorage<QAnimationTimer *>, animationTimer)
 #endif
 
@@ -569,7 +561,7 @@ QAnimationTimer::QAnimationTimer() :
 QAnimationTimer *QAnimationTimer::instance(bool create)
 {
     QAnimationTimer *inst;
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
     if (create && !animationTimer()->hasLocalData()) {
         inst = new QAnimationTimer;
         animationTimer()->setLocalData(inst);

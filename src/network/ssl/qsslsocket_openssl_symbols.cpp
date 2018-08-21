@@ -903,12 +903,10 @@ bool q_resolveOpenSslSymbols()
 {
     static bool symbolsResolved = false;
     static bool triedToResolveSymbols = false;
-#ifndef QT_NO_THREAD
 #if QT_CONFIG(opensslv11)
     QMutexLocker locker(QMutexPool::globalInstanceGet((void *)&q_OPENSSL_init_ssl));
 #else
     QMutexLocker locker(QMutexPool::globalInstanceGet((void *)&q_SSL_library_init));
-#endif
 #endif
     if (symbolsResolved)
         return true;

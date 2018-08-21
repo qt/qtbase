@@ -1704,7 +1704,8 @@ public:
         NoScrollPhase = 0,
         ScrollBegin,
         ScrollUpdate,
-        ScrollEnd
+        ScrollEnd,
+        ScrollMomentum
     };
 
     enum MouseEventSource {

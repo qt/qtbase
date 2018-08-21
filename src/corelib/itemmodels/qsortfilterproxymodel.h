@@ -42,6 +42,7 @@
 
 #include <QtCore/qabstractproxymodel.h>
 #include <QtCore/qregexp.h>
+#include <QtCore/qregularexpression.h>
 
 QT_REQUIRE_CONFIG(sortfilterproxymodel);
 
@@ -59,6 +60,9 @@ class Q_CORE_EXPORT QSortFilterProxyModel : public QAbstractProxyModel
 
     Q_OBJECT
     Q_PROPERTY(QRegExp filterRegExp READ filterRegExp WRITE setFilterRegExp)
+#if QT_CONFIG(regularexpression)
+    Q_PROPERTY(QRegularExpression filterRegularExpression READ filterRegularExpression WRITE setFilterRegularExpression)
+#endif
     Q_PROPERTY(int filterKeyColumn READ filterKeyColumn WRITE setFilterKeyColumn)
     Q_PROPERTY(bool dynamicSortFilter READ dynamicSortFilter WRITE setDynamicSortFilter)
     Q_PROPERTY(Qt::CaseSensitivity filterCaseSensitivity READ filterCaseSensitivity WRITE setFilterCaseSensitivity)
@@ -82,6 +86,9 @@ public:
 
     QRegExp filterRegExp() const;
     void setFilterRegExp(const QRegExp &regExp);
+
+    QRegularExpression filterRegularExpression() const;
+    void setFilterRegularExpression(const QRegularExpression &regularExpression);
 
     int filterKeyColumn() const;
     void setFilterKeyColumn(int column);
@@ -112,6 +119,9 @@ public:
 
 public Q_SLOTS:
     void setFilterRegExp(const QString &pattern);
+#if QT_CONFIG(regularexpression)
+    void setFilterRegularExpression(const QString &pattern);
+#endif
     void setFilterWildcard(const QString &pattern);
     void setFilterFixedString(const QString &pattern);
 #if QT_DEPRECATED_SINCE(5, 11)

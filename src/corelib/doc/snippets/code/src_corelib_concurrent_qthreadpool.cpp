@@ -51,7 +51,7 @@
 //! [0]
 class HelloWorldTask : public QRunnable
 {
-    void run()
+    void run() override
     {
         qDebug() << "Hello world from thread" << QThread::currentThread();
     }

@@ -878,14 +878,17 @@ QString QTzTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
     }
 
     // Otherwise is strange sequence, so work backwards through trans looking for first match, if any
-    for (int i = m_tranTimes.size() - 1; i >= 0; --i) {
-        if (m_tranTimes.at(i).atMSecsSinceEpoch <= currentMSecs) {
-            tran = dataForTzTransition(m_tranTimes.at(i));
-            if ((timeType == QTimeZone::DaylightTime && tran.daylightTimeOffset != 0)
-                || (timeType == QTimeZone::StandardTime && tran.daylightTimeOffset == 0)) {
-                return tran.abbreviation;
-            }
-        }
+    auto it = std::partition_point(m_tranTimes.cbegin(), m_tranTimes.cend(),
+                                   [currentMSecs](const QTzTransitionTime &at) {
+                                       return at.atMSecsSinceEpoch <= currentMSecs;
+                                   });
+
+    while (it != m_tranTimes.cbegin()) {
+        --it;
+        tran = dataForTzTransition(*it);
+        int offset = tran.daylightTimeOffset;
+        if ((timeType == QTimeZone::DaylightTime) != (offset == 0))
+            return tran.abbreviation;
     }
 
     // Otherwise if no match use current data
@@ -900,7 +903,7 @@ QString QTzTimeZonePrivate::abbreviation(qint64 atMSecsSinceEpoch) const
 int QTzTimeZonePrivate::offsetFromUtc(qint64 atMSecsSinceEpoch) const
 {
     const QTimeZonePrivate::Data tran = data(atMSecsSinceEpoch);
-    return tran.standardTimeOffset + tran.daylightTimeOffset;
+    return tran.offsetFromUtc; // == tran.standardTimeOffset + tran.daylightTimeOffset
 }
 
 int QTzTimeZonePrivate::standardTimeOffset(qint64 atMSecsSinceEpoch) const
@@ -942,40 +945,38 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::dataForTzTransition(QTzTransitionTime
 
 QTimeZonePrivate::Data QTzTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 {
+    // If we have no rules (so probably an invalid tz), return invalid data:
+    if (!m_tranTimes.size())
+        return invalidData();
+
     // If the required time is after the last transition and we have a POSIX rule then use it
-    if (m_tranTimes.size() > 0 && m_tranTimes.last().atMSecsSinceEpoch < forMSecsSinceEpoch
+    if (m_tranTimes.last().atMSecsSinceEpoch < forMSecsSinceEpoch
         && !m_posixRule.isEmpty() && forMSecsSinceEpoch >= 0) {
         const int year = QDateTime::fromMSecsSinceEpoch(forMSecsSinceEpoch, Qt::UTC).date().year();
         QVector<QTimeZonePrivate::Data> posixTrans =
             calculatePosixTransitions(m_posixRule, year - 1, year + 1,
                                       m_tranTimes.last().atMSecsSinceEpoch);
-        for (int i = posixTrans.size() - 1; i >= 0; --i) {
-            if (posixTrans.at(i).atMSecsSinceEpoch <= forMSecsSinceEpoch) {
-                QTimeZonePrivate::Data data = posixTrans.at(i);
-                data.atMSecsSinceEpoch = forMSecsSinceEpoch;
-                return data;
-            }
-        }
-    }
-
-    // Otherwise if we can find a valid tran then use its rule
-    for (int i = m_tranTimes.size() - 1; i >= 0; --i) {
-        if (m_tranTimes.at(i).atMSecsSinceEpoch <= forMSecsSinceEpoch) {
-            Data data = dataForTzTransition(m_tranTimes.at(i));
+        auto it = std::partition_point(posixTrans.cbegin(), posixTrans.cend(),
+                                       [forMSecsSinceEpoch] (const QTimeZonePrivate::Data &at) {
+                                           return at.atMSecsSinceEpoch <= forMSecsSinceEpoch;
+                                       });
+        if (it > posixTrans.cbegin()) {
+            QTimeZonePrivate::Data data = *--it;
             data.atMSecsSinceEpoch = forMSecsSinceEpoch;
             return data;
         }
     }
 
-    // Otherwise use the earliest transition we have
-    if (m_tranTimes.size() > 0) {
-        Data data = dataForTzTransition(m_tranTimes.at(0));
-        data.atMSecsSinceEpoch = forMSecsSinceEpoch;
-        return data;
-    }
-
-    // Otherwise we have no rules, so probably an invalid tz, so return invalid data
-    return invalidData();
+    // Otherwise, if we can find a valid tran, then use its rule:
+    auto last = std::partition_point(m_tranTimes.cbegin(), m_tranTimes.cend(),
+                                     [forMSecsSinceEpoch] (const QTzTransitionTime &at) {
+                                         return at.atMSecsSinceEpoch <= forMSecsSinceEpoch;
+                                     });
+    if (last > m_tranTimes.cbegin())
+        --last;
+    Data data = dataForTzTransition(*last);
+    data.atMSecsSinceEpoch = forMSecsSinceEpoch;
+    return data;
 }
 
 bool QTzTimeZonePrivate::hasTransitions() const
@@ -992,21 +993,20 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::nextTransition(qint64 afterMSecsSince
         QVector<QTimeZonePrivate::Data> posixTrans =
             calculatePosixTransitions(m_posixRule, year - 1, year + 1,
                                       m_tranTimes.last().atMSecsSinceEpoch);
-        for (int i = 0; i < posixTrans.size(); ++i) {
-            if (posixTrans.at(i).atMSecsSinceEpoch > afterMSecsSinceEpoch)
-                return posixTrans.at(i);
-        }
+        auto it = std::partition_point(posixTrans.cbegin(), posixTrans.cend(),
+                                       [afterMSecsSinceEpoch] (const QTimeZonePrivate::Data &at) {
+                                           return at.atMSecsSinceEpoch <= afterMSecsSinceEpoch;
+                                       });
+
+        return it == posixTrans.cend() ? invalidData() : *it;
     }
 
-    // Otherwise if we can find a valid tran then use its rule
-    for (int i = 0; i < m_tranTimes.size(); ++i) {
-        if (m_tranTimes.at(i).atMSecsSinceEpoch > afterMSecsSinceEpoch) {
-            return dataForTzTransition(m_tranTimes.at(i));
-        }
-    }
-
-    // Otherwise we have no rule, or there is no next transition, so return invalid data
-    return invalidData();
+    // Otherwise, if we can find a valid tran, use its rule:
+    auto last = std::partition_point(m_tranTimes.cbegin(), m_tranTimes.cend(),
+                                     [afterMSecsSinceEpoch] (const QTzTransitionTime &at) {
+                                         return at.atMSecsSinceEpoch <= afterMSecsSinceEpoch;
+                                     });
+    return last != m_tranTimes.cend() ? dataForTzTransition(*last) : invalidData();
 }
 
 QTimeZonePrivate::Data QTzTimeZonePrivate::previousTransition(qint64 beforeMSecsSinceEpoch) const
@@ -1018,21 +1018,20 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::previousTransition(qint64 beforeMSecs
         QVector<QTimeZonePrivate::Data> posixTrans =
             calculatePosixTransitions(m_posixRule, year - 1, year + 1,
                                       m_tranTimes.last().atMSecsSinceEpoch);
-        for (int i = posixTrans.size() - 1; i >= 0; --i) {
-            if (posixTrans.at(i).atMSecsSinceEpoch < beforeMSecsSinceEpoch)
-                return posixTrans.at(i);
-        }
+        auto it = std::partition_point(posixTrans.cbegin(), posixTrans.cend(),
+                                       [beforeMSecsSinceEpoch] (const QTimeZonePrivate::Data &at) {
+                                           return at.atMSecsSinceEpoch < beforeMSecsSinceEpoch;
+                                       });
+        Q_ASSERT(it > posixTrans.cbegin());
+        return *--it;
     }
 
     // Otherwise if we can find a valid tran then use its rule
-    for (int i = m_tranTimes.size() - 1; i >= 0; --i) {
-        if (m_tranTimes.at(i).atMSecsSinceEpoch < beforeMSecsSinceEpoch) {
-            return dataForTzTransition(m_tranTimes.at(i));
-        }
-    }
-
-    // Otherwise we have no rule, so return invalid data
-    return invalidData();
+    auto last = std::partition_point(m_tranTimes.cbegin(), m_tranTimes.cend(),
+                                     [beforeMSecsSinceEpoch] (const QTzTransitionTime &at) {
+                                         return at.atMSecsSinceEpoch < beforeMSecsSinceEpoch;
+                                     });
+    return last > m_tranTimes.cbegin() ? dataForTzTransition(*--last) : invalidData();
 }
 
 // TODO Could cache the value and monitor the required files for any changes

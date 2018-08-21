@@ -2171,6 +2171,11 @@ void tst_QRegularExpression::wildcard_data()
     addRow(".???l", "test.html", 4);
     addRow("?", "test.html", 0);
     addRow("?m", "test.html", 6);
+    addRow("[*]", "test.html", -1);
+    addRow("[?]","test.html", -1);
+    addRow("[?]","test.h?ml", 6);
+    addRow("[[]","test.h[ml", 6);
+    addRow("[]]","test.h]ml", 6);
     addRow(".h[a-z]ml", "test.html", 4);
     addRow(".h[A-Z]ml", "test.html", -1);
     addRow(".h[A-Z]ml", "test.hTml", 4);
@@ -2183,6 +2188,24 @@ void tst_QRegularExpression::wildcard_data()
     addRow(".h[][!]", "test.h]ml", 4);
     addRow(".h[][!]", "test.h[ml", 4);
     addRow(".h[][!]", "test.h!ml", 4);
+
+    addRow("foo/*/bar", "Qt/foo/baz/bar", 3);
+    addRow("foo/(*)/bar", "Qt/foo/baz/bar", -1);
+    addRow("foo/(*)/bar", "Qt/foo/(baz)/bar", 3);
+    addRow("foo/?/bar", "Qt/foo/Q/bar", 3);
+    addRow("foo/?/bar", "Qt/foo/Qt/bar", -1);
+    addRow("foo/(?)/bar", "Qt/foo/Q/bar", -1);
+    addRow("foo/(?)/bar", "Qt/foo/(Q)/bar", 3);
+
+#ifdef Q_OS_WIN
+    addRow("foo\\*\\bar", "Qt\\foo\\baz\\bar", 3);
+    addRow("foo\\(*)\\bar", "Qt\\foo\\baz\\bar", -1);
+    addRow("foo\\(*)\\bar", "Qt\\foo\\(baz)\\bar", 3);
+    addRow("foo\\?\\bar", "Qt\\foo\\Q\\bar", 3);
+    addRow("foo\\?\\bar", "Qt\\foo\\Qt\\bar", -1);
+    addRow("foo\\(?)\\bar", "Qt\\foo\\Q\\bar", -1);
+    addRow("foo\\(?)\\bar", "Qt\\foo\\(Q)\\bar", 3);
+#endif
 }
 
 void tst_QRegularExpression::wildcard()
@@ -2191,9 +2214,7 @@ void tst_QRegularExpression::wildcard()
     QFETCH(QString, string);
     QFETCH(int, foundIndex);
 
-    QRegularExpression re;
-    re.setWildcardPattern(pattern);
-
+    QRegularExpression re(QRegularExpression::wildcardToRegularExpression(pattern));
     QRegularExpressionMatch match = re.match(string);
 
     QCOMPARE(match.capturedStart(), foundIndex);
@@ -2217,11 +2238,9 @@ void tst_QRegularExpression::testInvalidWildcard_data()
 void tst_QRegularExpression::testInvalidWildcard()
 {
     QFETCH(QString, pattern);
-
-    QRegularExpression re;
-    re.setWildcardPattern(pattern);
-
     QFETCH(bool, isValid);
+
+    QRegularExpression re(QRegularExpression::wildcardToRegularExpression(pattern));
     QCOMPARE(re.isValid(), isValid);
 }
 

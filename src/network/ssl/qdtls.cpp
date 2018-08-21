@@ -277,6 +277,12 @@
 */
 
 /*!
+    \typedef QDtls::GeneratorParameters
+
+    This is a synonym for QDtlsClientVerifier::GeneratorParameters.
+*/
+
+/*!
     \fn void QDtls::handshakeTimeout()
 
     Packet loss can result in timeouts during the handshake phase. In this case
@@ -363,6 +369,7 @@ void QDtlsBasePrivate::setConfiguration(const QSslConfiguration &configuration)
     dtlsConfiguration.nextNegotiatedProtocol = configuration.nextNegotiatedProtocol();
     dtlsConfiguration.nextProtocolNegotiationStatus = configuration.nextProtocolNegotiationStatus();
     dtlsConfiguration.dtlsCookieEnabled = configuration.dtlsCookieVerificationEnabled();
+    dtlsConfiguration.allowRootCertOnDemandLoading = configuration.d->allowRootCertOnDemandLoading;
 
     clearDtlsError();
 }
@@ -447,9 +454,10 @@ QDtlsClientVerifier::QDtlsClientVerifier(QObject *parent)
 }
 
 /*!
-    Sets the secret and cryptographic hash algorithm that this QDtlsClientVerifier
-    will use to generate cookies. If the new secret has size zero, this function
-    returns \c false and does not change the previous generator parameters.
+    Sets the secret and the cryptographic hash algorithm from \a params. This
+    QDtlsClientVerifier will use these to generate cookies. If the new secret
+    has size zero, this function returns \c false and does not change the
+    cookie generator parameters.
 
     \note The secret is supposed to be a cryptographically secure sequence of bytes.
 
@@ -481,11 +489,12 @@ QDtlsClientVerifier::GeneratorParameters QDtlsClientVerifier::cookieGeneratorPar
 }
 
 /*!
-    \a socket must be a valid pointer, \a dgram must be a non-empty datagram,
-    \a address cannot be null, broadcast, or multicast. This function returns
-    \c true if \a dgram contains a ClientHello message with a valid cookie.
-    If no matching cookie is found, verifyClient() will send a HelloVerifyRequest
-    message using \a socket and will return \c false.
+    \a socket must be a valid pointer, \a dgram must be a non-empty
+    datagram, \a address cannot be null, broadcast, or multicast.
+    \a port is the remote peer's port. This function returns \c true
+    if \a dgram contains a ClientHello message with a valid cookie.
+    If no matching cookie is found, verifyClient() will send a
+    HelloVerifyRequest message using \a socket and return \c false.
 
     The following snippet shows how a server application may check for errors:
 
@@ -556,7 +565,7 @@ QString QDtlsClientVerifier::dtlsErrorString() const
     \a mode is QSslSocket::SslServerMode for a server-side DTLS connection or
     QSslSocket::SslClientMode for a client.
 
-    \sa sslMode(), QSslSocket::SslSocket
+    \sa sslMode(), QSslSocket::SslMode
 */
 QDtls::QDtls(QSslSocket::SslMode mode, QObject *parent)
     : QObject(*new QDtlsPrivateOpenSSL, parent)
@@ -568,9 +577,9 @@ QDtls::QDtls(QSslSocket::SslMode mode, QObject *parent)
 }
 
 /*!
-    Sets the peer's address, \a port, and host name. \a address must not be
-    null, multicast, or broadcast. \a verificationName is the host name used
-    for the certificate validation.
+    Sets the peer's address, \a port, and host name and returns \c true
+    if successful. \a address must not be null, multicast, or broadcast.
+    \a verificationName is the host name used for the certificate validation.
 
     \sa peerAddress(), peerPort(), peerVerificationName()
  */
@@ -607,7 +616,9 @@ bool QDtls::setPeer(const QHostAddress &address, quint16 port,
 }
 
 /*!
-    Sets the host name that will be used for the certificate validation.
+    Sets the host \a name that will be used for the certificate validation
+    and returns \c true if successful.
+
     \note This function must be called before the handshake starts.
 
     \sa peerVerificationName(), setPeer()
@@ -704,8 +715,9 @@ quint16 QDtls::mtuHint() const
 }
 
 /*!
-    Sets the cryptographic hash algorithm and the secret. This function is only
-    needed for a server-side QDtls connection.
+    Sets the cryptographic hash algorithm and the secret from \a params.
+    This function is only needed for a server-side QDtls connection.
+    Returns \c true if successful.
 
     \note This function must be called before the handshake starts.
 
@@ -738,7 +750,8 @@ QDtls::GeneratorParameters QDtls::cookieGeneratorParameters() const
 }
 
 /*!
-    Sets the connection's TLS configuration from \a configuration.
+    Sets the connection's TLS configuration from \a configuration
+    and returns \c true if successful.
 
     \note This function must be called before the handshake starts.
 
@@ -892,8 +905,10 @@ bool QDtls::continueHandshake(QUdpSocket *socket, const QByteArray &datagram)
 }
 
 /*!
-    If peer verification errors were ignored during the handshake, resumeHandshake()
-    resumes and completes the handshake. \a socket must be a valid pointer.
+    If peer verification errors were ignored during the handshake,
+    resumeHandshake() resumes and completes the handshake and returns
+    \c true. \a socket must be a valid pointer. Returns \c false if
+    the handshake could not be resumed.
 
     \sa doHandshake(), abortHandshake() peerVerificationErrors(), ignoreVerificationErrors()
 */
@@ -916,10 +931,10 @@ bool QDtls::resumeHandshake(QUdpSocket *socket)
 }
 
 /*!
-    Aborts the handshake in case peer verification errors could not be ignored.
-    \a socket must be a valid pointer.
+    Aborts the ongoing handshake. Returns true if one was on-going on \a socket;
+    otherwise, sets a suitable error and returns false.
 
-    \sa doHandshake(), resumeHandshakeAfterError()
+    \sa doHandshake(), resumeHandshake()
  */
 bool QDtls::abortHandshake(QUdpSocket *socket)
 {
@@ -930,9 +945,9 @@ bool QDtls::abortHandshake(QUdpSocket *socket)
         return false;
     }
 
-    if (d->handshakeState != PeerVerificationFailed) {
+    if (d->handshakeState != PeerVerificationFailed && d->handshakeState != HandshakeInProgress) {
         d->setDtlsError(QDtlsError::InvalidOperation,
-                        tr("Not in VerificationError state, nothing to abort"));
+                        tr("No handshake in progress, nothing to abort"));
         return false;
     }
 
@@ -1021,7 +1036,7 @@ QSsl::SslProtocol QDtls::sessionProtocol() const
     before writing encrypted data. \a socket must be a valid
     pointer.
 
-    \sa doHandshake(), handshakeState(), connectionEncrypted(), dtlsError()
+    \sa doHandshake(), handshakeState(), isConnectionEncrypted(), dtlsError()
 */
 qint64 QDtls::writeDatagramEncrypted(QUdpSocket *socket, const QByteArray &dgram)
 {
@@ -1107,7 +1122,7 @@ QVector<QSslError> QDtls::peerVerificationErrors() const
 }
 
 /*!
-    This method tells QDtls to ignore only the errors given in \a errors.
+    This method tells QDtls to ignore only the errors given in \a errorsToIgnore.
 
     If, for instance, you want to connect to a server that uses a self-signed
     certificate, consider the following snippet:

@@ -906,16 +906,12 @@ QByteArray QXcbScreen::getEdid() const
         return result;
 
     // Try a bunch of atoms
-    xcb_atom_t atom = connection()->internAtom("EDID");
-    result = getOutputProperty(atom);
-    if (result.isEmpty()) {
-        atom = connection()->internAtom("EDID_DATA");
-        result = getOutputProperty(atom);
-    }
-    if (result.isEmpty()) {
-        atom = connection()->internAtom("XFree86_DDC_EDID1_RAWDATA");
-        result = getOutputProperty(atom);
-    }
+    result = getOutputProperty(atom(QXcbAtom::EDID));
+    if (result.isEmpty())
+        result = getOutputProperty(atom(QXcbAtom::EDID_DATA));
+    if (result.isEmpty())
+        result = getOutputProperty(atom(QXcbAtom::XFree86_DDC_EDID1_RAWDATA));
+
     return result;
 }
 

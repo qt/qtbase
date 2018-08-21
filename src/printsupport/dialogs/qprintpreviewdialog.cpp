@@ -573,8 +573,11 @@ void QPrintPreviewDialogPrivate::_q_print()
     if (printer->outputFormat() != QPrinter::NativeFormat) {
         QString title = QCoreApplication::translate("QPrintPreviewDialog", "Export to PDF");
         QString suffix = QLatin1String(".pdf");
-        QString fileName = QFileDialog::getSaveFileName(q, title, printer->outputFileName(),
+        QString fileName;
+#if QT_CONFIG(filedialog)
+        fileName = QFileDialog::getSaveFileName(q, title, printer->outputFileName(),
                                                         QLatin1Char('*') + suffix);
+#endif
         if (!fileName.isEmpty()) {
             if (QFileInfo(fileName).suffix().isEmpty())
                 fileName.append(suffix);

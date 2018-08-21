@@ -1044,7 +1044,7 @@ void QCborStreamWriter::append(QCborSimpleType st)
 
    Appends the floating point number \a f to the stream, creating a CBOR 16-bit
    Half-Precision Floating Point value. The following code can be used to convert
-   a C++ \tt float to \l qfloat16 if there's no loss of precision and append it, or
+   a C++ \tt float to \c qfloat16 if there's no loss of precision and append it, or
    instead append the \tt float.
 
    \code
@@ -1144,7 +1144,7 @@ void QCborStreamWriter::append(double d)
    QCborStreamReader::readByteArray() nor QCborValue support reading CBOR
    streams with byte arrays larger than 2 GB.
 
-   \sa append(QByteArray), appendTextString(),
+   \sa append(), appendTextString(),
        QCborStreamReader::isByteArray(), QCborStreamReader::readByteArray()
  */
 void QCborStreamWriter::appendByteString(const char *data, qsizetype len)

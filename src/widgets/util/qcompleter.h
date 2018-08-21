@@ -87,7 +87,7 @@ public:
 #if QT_CONFIG(stringlistmodel)
     QCompleter(const QStringList& completions, QObject *parent = nullptr);
 #endif
-    ~QCompleter();
+    ~QCompleter() override;
 
     void setWidget(QWidget *widget);
     QWidget *widget() const;

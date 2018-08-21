@@ -109,7 +109,8 @@ protected:
 
 private:
     bool m_config = false;
-    xcb_keycode_t m_autorepeat_code = 0;
+    bool m_isAutoRepeat = false;
+    xcb_keycode_t m_autoRepeatCode = 0;
 
     struct _mod_masks {
         uint alt;

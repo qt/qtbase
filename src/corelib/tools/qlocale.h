@@ -437,19 +437,19 @@ public:
         Osage = 358,
         Tangut = 359,
 
-        Norwegian = NorwegianBokmal,
+        Afan = Oromo,
+        Bhutani = Dzongkha,
+        Byelorussian = Belarusian,
+        Cambodian = Khmer,
+        Chewa = Nyanja,
+        Frisian = WesternFrisian,
+        Kurundi = Rundi,
         Moldavian = Romanian,
+        Norwegian = NorwegianBokmal,
+        RhaetoRomance = Romansh,
         SerboCroatian = Serbian,
         Tagalog = Filipino,
         Twi = Akan,
-        Afan = Oromo,
-        Byelorussian = Belarusian,
-        Bhutani = Dzongkha,
-        Cambodian = Khmer,
-        Kurundi = Rundi,
-        RhaetoRomance = Romansh,
-        Chewa = Nyanja,
-        Frisian = WesternFrisian,
         Uigur = Uighur,
 
         LastLanguage = Tangut
@@ -868,15 +868,15 @@ public:
         World = 260,
         Europe = 261,
 
-        Tokelau = TokelauCountry,
-        Tuvalu = TuvaluCountry,
         DemocraticRepublicOfCongo = CongoKinshasa,
-        PeoplesRepublicOfCongo = CongoBrazzaville,
         DemocraticRepublicOfKorea = NorthKorea,
+        LatinAmericaAndTheCaribbean = LatinAmerica,
+        PeoplesRepublicOfCongo = CongoBrazzaville,
         RepublicOfKorea = SouthKorea,
         RussianFederation = Russia,
         SyrianArabRepublic = Syria,
-        LatinAmericaAndTheCaribbean = LatinAmerica,
+        Tokelau = TokelauCountry,
+        Tuvalu = TuvaluCountry,
 
         LastCountry = Europe
     };

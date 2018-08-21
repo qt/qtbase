@@ -568,6 +568,7 @@
     \value Estonia
     \value Ethiopia
     \value EuropeanUnion Since Qt 5.7
+    \value Europe Since Qt 5.12
     \value FalklandIslands
     \value FaroeIslands
     \value Fiji
@@ -619,6 +620,8 @@
     \value Kuwait
     \value Kyrgyzstan
     \value Laos
+    \value LatinAmerica
+    \value LatinAmericaAndTheCaribbean Obsolete, please use LatinAmerica
     \value Latvia
     \value Lebanon
     \value Lesotho
@@ -742,6 +745,7 @@
     \value UnitedStatesVirginIslands
     \value WallisAndFutunaIslands
     \value WesternSahara
+    \value World Since Qt 5.12
     \value Yemen
     \value Zambia
     \value Zimbabwe
@@ -749,7 +753,6 @@
     \value Serbia
     \value SaintBarthelemy
     \value SaintMartin
-    \value LatinAmericaAndTheCaribbean
     \value AscensionIsland
     \value AlandIslands
     \value DiegoGarcia

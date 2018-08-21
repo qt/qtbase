@@ -40,8 +40,6 @@
 #include "qatomic.h"
 #include "qmutexpool_p.h"
 
-#ifndef QT_NO_THREAD
-
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC_WITH_ARGS(QMutexPool, globalMutexPool, (QMutex::Recursive))
@@ -148,5 +146,3 @@ QMutex *QMutexPool::globalInstanceGet(const void *address)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_THREAD

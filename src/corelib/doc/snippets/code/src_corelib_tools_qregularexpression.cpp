@@ -350,4 +350,11 @@ while (i.hasNext()) {
 //! [30]
 }
 
+{
+//! [31]
+QString wildcard = QRegularExpression::wildcardToRegularExpression("*.jpeg");
+// wilcard == ".*\.jpeg"
+//! [31]
+}
+
 }

@@ -1106,10 +1106,17 @@
             "condition": "libs.zlib",
             "output": [ "privateFeature" ]
         },
+        "thread": {
+            "label": "Thread support",
+            "purpose": "Provides QThread and related classes.",
+            "section": "Kernel",
+            "output": [ "publicFeature" ]
+        },
         "future": {
             "label": "QFuture",
             "purpose": "Provides QFuture and related classes.",
             "section": "Kernel",
+            "condition": "features.thread",
             "output": [ "publicFeature" ]
         },
         "concurrent": {
@@ -1122,6 +1129,7 @@
         "dbus": {
             "label": "Qt D-Bus",
             "autoDetect": "!config.uikit && !config.android && !config.winrt",
+            "condition": "features.thread",
             "output": [ "privateFeature", "feature" ]
         },
         "dbus-linked": {
@@ -1153,10 +1161,12 @@
         },
         "network": {
             "label": "Qt Network",
+            "condition": "features.thread",
             "output": [ "privateFeature" ]
         },
         "sql": {
             "label": "Qt Sql",
+            "condition": "features.thread",
             "output": [ "privateFeature" ]
         },
         "testlib": {

@@ -71,8 +71,8 @@ public:
     const QPixmap *pixmap() const;
 
 protected:
-    void mouseMoveEvent(QMouseEvent *event);
-    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
 
 private:
     void createImage();

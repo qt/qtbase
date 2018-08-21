@@ -73,6 +73,7 @@ inline QPlatformNativeInterface::NativeResourceForIntegrationFunction resolvePla
 
 
 /*!
+    \fn NSMenu *QMenu::toNSMenu()
     \since 5.2
 
     Returns the native NSMenu for this menu. Available on \macos only.
@@ -94,6 +95,7 @@ NSMenu *QMenu::toNSMenu()
 
 
 /*!
+    \fn void QMenu::setAsDockMenu()
     \since 5.2
 
     Set this menu to be the dock menu available by option-clicking
@@ -149,6 +151,7 @@ void QMenuPrivate::moveWidgetToPlatformItem(QWidget *widget, QPlatformMenuItem* 
 #if QT_CONFIG(menubar)
 
 /*!
+    \fn NSMenu *QMenuBar::toNSMenu()
     \since 5.2
 
     Returns the native NSMenu for this menu bar. Available on \macos only.

@@ -692,7 +692,7 @@ int QtPrivate::QStringList_indexOf(const QStringList *that, const QRegularExpres
     if (from < 0)
         from = qMax(from + that->size(), 0);
 
-    QString exactPattern = QLatin1String("\\A(?:") + re.pattern() + QLatin1String(")\\z");
+    QString exactPattern = QRegularExpression::anchoredPattern(re.pattern());
     QRegularExpression exactRe(exactPattern, re.patternOptions());
 
     for (int i = from; i < that->size(); ++i) {
@@ -722,7 +722,7 @@ int QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QRegularEx
     else if (from >= that->size())
         from = that->size() - 1;
 
-    QString exactPattern = QLatin1String("\\A(?:") + re.pattern() + QLatin1String(")\\z");
+    QString exactPattern = QRegularExpression::anchoredPattern(re.pattern());
     QRegularExpression exactRe(exactPattern, re.patternOptions());
 
     for (int i = from; i >= 0; --i) {

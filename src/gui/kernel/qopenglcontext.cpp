@@ -945,7 +945,7 @@ GLuint QOpenGLContext::defaultFramebufferObject() const
 
     Avoid calling this function from a different thread than the one the
     QOpenGLContext instance lives in. If you wish to use QOpenGLContext from a
-    different thread you should first call make sure it's not current in the
+    different thread you should first make sure it's not current in the
     current thread, by calling doneCurrent() if necessary. Then call
     moveToThread(otherThread) before using it in the other thread.
 

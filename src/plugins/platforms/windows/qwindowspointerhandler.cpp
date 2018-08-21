@@ -239,8 +239,8 @@ static QTouchDevice *createTouchDevice()
 QTouchDevice *QWindowsPointerHandler::ensureTouchDevice()
 {
     if (!m_touchDevice)
-        m_touchDevice.reset(createTouchDevice());
-    return m_touchDevice.data();
+        m_touchDevice = createTouchDevice();
+    return m_touchDevice;
 }
 
 Qt::MouseButtons QWindowsPointerHandler::queryMouseButtons()
@@ -400,7 +400,7 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
         touchPoints.append(touchPoint);
     }
 
-    QWindowSystemInterface::handleTouchEvent(window, m_touchDevice.data(), touchPoints,
+    QWindowSystemInterface::handleTouchEvent(window, m_touchDevice, touchPoints,
                                              QWindowsKeyMapper::queryKeyboardModifiers());
 
     if (!(QWindowsIntegration::instance()->options() & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch)) {

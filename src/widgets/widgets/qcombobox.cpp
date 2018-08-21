@@ -3160,7 +3160,6 @@ void QComboBoxPrivate::showPopupFromMouseEvent(QMouseEvent *e)
 #endif
             // We've restricted the next couple of lines, because by not calling
             // viewContainer(), we avoid creating the QComboBoxPrivateContainer.
-            viewContainer()->blockMouseReleaseTimer.start(QApplication::doubleClickInterval());
             viewContainer()->initialClickPosition = q->mapToGlobal(e->pos());
 #ifdef QT_KEYPAD_NAVIGATION
         }
@@ -3169,8 +3168,10 @@ void QComboBoxPrivate::showPopupFromMouseEvent(QMouseEvent *e)
         // The code below ensures that regular mousepress and pick item still works
         // If it was not called the viewContainer would ignore event since it didn't have
         // a mousePressEvent first.
-        if (viewContainer())
+        if (viewContainer()) {
+            viewContainer()->blockMouseReleaseTimer.start(QApplication::doubleClickInterval());
             viewContainer()->maybeIgnoreMouseButtonRelease = false;
+        }
     } else {
 #ifdef QT_KEYPAD_NAVIGATION
         if (QApplication::keypadNavigationEnabled() && sc == QStyle::SC_ComboBoxEditField && lineEdit) {

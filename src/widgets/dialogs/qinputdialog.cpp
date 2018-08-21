@@ -1180,7 +1180,7 @@ void QInputDialog::done(int result)
     \a inputMethodHints is the input method hints that will be used in the
     edit widget if an input method is active.
 
-    If \a ok is nonnull \e *\a ok will be set to true if the user pressed
+    If \a ok is nonnull \e {*ok} will be set to true if the user pressed
     \uicontrol OK and to false if the user pressed \uicontrol Cancel. The dialog's parent
     is \a parent. The dialog will be modal and uses the specified widget
     \a flags.
@@ -1228,7 +1228,7 @@ QString QInputDialog::getText(QWidget *parent, const QString &title, const QStri
     \a inputMethodHints is the input method hints that will be used in the
     edit widget if an input method is active.
 
-    If \a ok is nonnull \e *\a ok will be set to true if the user pressed
+    If \a ok is nonnull \e {*ok} will be set to true if the user pressed
     \uicontrol OK and to false if the user pressed \uicontrol Cancel. The dialog's parent
     is \a parent. The dialog will be modal and uses the specified widget
     \a flags.
@@ -1436,7 +1436,7 @@ double QInputDialog::getDouble(QWidget *parent, const QString &title, const QStr
     If \a editable is true the user can enter their own text; otherwise, the
     user may only select one of the existing items.
 
-    If \a ok is nonnull \e *\a ok will be set to true if the user pressed
+    If \a ok is nonnull \e {*ok} will be set to true if the user pressed
     \uicontrol OK and to false if the user pressed \uicontrol Cancel. The dialog's parent
     is \a parent. The dialog will be modal and uses the widget \a flags.
 

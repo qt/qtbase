@@ -92,8 +92,7 @@ static int resourceType(const QByteArray &key)
     return int(result - names);
 }
 
-QXcbNativeInterface::QXcbNativeInterface() :
-    m_genericEventFilterType(QByteArrayLiteral("xcb_generic_event_t"))
+QXcbNativeInterface::QXcbNativeInterface()
 {
 }
 
@@ -409,7 +408,7 @@ void *QXcbNativeInterface::atspiBus()
     QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
     QXcbConnection *defaultConnection = integration->defaultConnection();
     if (defaultConnection) {
-        xcb_atom_t atspiBusAtom = defaultConnection->internAtom("AT_SPI_BUS");
+        auto atspiBusAtom = defaultConnection->atom(QXcbAtom::AT_SPI_BUS);
         auto reply = Q_XCB_REPLY(xcb_get_property, defaultConnection->xcb_connection(),
                                      false, defaultConnection->rootWindow(),
                                      atspiBusAtom, XCB_ATOM_STRING, 0, 128);

@@ -34,8 +34,6 @@
 #include <QtCore/qatomic.h>
 
 
-#ifndef QT_NO_THREAD
-
 class QOnceControl
 {
 public:
@@ -90,7 +88,5 @@ public:
     inline T* operator->() { return value(); }
     inline operator T*() { return value(); }
 };
-
-#endif // QT_NO_THREAD
 
 #endif

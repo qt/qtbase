@@ -69,6 +69,7 @@ public:
 
     virtual QVariant data(int role = Qt::UserRole + 1) const;
     virtual void setData(const QVariant &value, int role = Qt::UserRole + 1);
+    void clearData();
 
     inline QString text() const {
         return qvariant_cast<QString>(data(Qt::DisplayRole));
@@ -343,6 +344,8 @@ public:
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+    // Qt 6: add override keyword
+    bool clearItemData(const QModelIndex &index);
 
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const override;

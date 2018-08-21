@@ -42,7 +42,7 @@
 
 #include <QtCore/qglobal.h>
 
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
 
 QT_BEGIN_NAMESPACE
 
@@ -152,6 +152,81 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_THREAD
+#else // !QT_CONFIG(thread)
+
+#include <qscopedpointer.h>
+
+#include <type_traits>
+
+template <typename T, typename U>
+inline bool qThreadStorage_hasLocalData(const QScopedPointer<T, U> &data)
+{
+    return !!data;
+}
+
+template <typename T, typename U>
+inline bool qThreadStorage_hasLocalData(const QScopedPointer<T*, U> &data)
+{
+    return !!data ? *data != nullptr : false;
+}
+
+template <typename T>
+inline void qThreadStorage_deleteLocalData(T *t)
+{
+    delete t;
+}
+
+template <typename T>
+inline void qThreadStorage_deleteLocalData(T **t)
+{
+    delete *t;
+    delete t;
+}
+
+template <class T>
+class QThreadStorage
+{
+private:
+    struct ScopedPointerThreadStorageDeleter
+    {
+        static inline void cleanup(T *t)
+        {
+            if (t == nullptr)
+                return;
+            qThreadStorage_deleteLocalData(t);
+        }
+    };
+    QScopedPointer<T, ScopedPointerThreadStorageDeleter> data;
+
+public:
+    QThreadStorage() = default;
+    ~QThreadStorage() = default;
+    QThreadStorage(const QThreadStorage &rhs) = delete;
+    QThreadStorage &operator=(const QThreadStorage &rhs) = delete;
+
+    inline bool hasLocalData() const
+    {
+        return qThreadStorage_hasLocalData(data);
+    }
+
+    inline T& localData()
+    {
+        if (!data)
+            data.reset(new T());
+        return *data;
+    }
+
+    inline T localData() const
+    {
+        return !!data ? *data : T();
+    }
+
+    inline void setLocalData(T t)
+    {
+        data.reset(new T(t));
+    }
+};
+
+#endif // QT_CONFIG(thread)
 
 #endif // QTHREADSTORAGE_H

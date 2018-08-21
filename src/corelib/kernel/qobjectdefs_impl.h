@@ -112,13 +112,31 @@ namespace QtPrivate {
        The Functor<Func,N> struct is the helper to call a functor of N argument.
        its call function is the same as the FunctionPointer::call function.
      */
-    template <int...> struct IndexesList {};
-    template <typename IndexList, int Right> struct IndexesAppend;
-    template <int... Left, int Right> struct IndexesAppend<IndexesList<Left...>, Right>
-    { typedef IndexesList<Left..., Right> Value; };
-    template <int N> struct Indexes
-    { typedef typename IndexesAppend<typename Indexes<N - 1>::Value, N - 1>::Value Value; };
-    template <> struct Indexes<0> { typedef IndexesList<> Value; };
+    template<class T> using InvokeGenSeq = typename T::Type;
+
+    template<int...> struct IndexesList { using Type = IndexesList; };
+
+    template<int N, class S1, class S2> struct ConcatSeqImpl;
+
+    template<int N, int... I1, int... I2>
+    struct ConcatSeqImpl<N, IndexesList<I1...>, IndexesList<I2...>>
+        : IndexesList<I1..., (N + I2)...>{};
+
+    template<int N, class S1, class S2>
+    using ConcatSeq = InvokeGenSeq<ConcatSeqImpl<N, S1, S2>>;
+
+    template<int N> struct GenSeq;
+    template<int N> using makeIndexSequence = InvokeGenSeq<GenSeq<N>>;
+
+    template<int N>
+    struct GenSeq : ConcatSeq<N/2, makeIndexSequence<N/2>, makeIndexSequence<N - N/2>>{};
+
+    template<> struct GenSeq<0> : IndexesList<>{};
+    template<> struct GenSeq<1> : IndexesList<0>{};
+
+    template<int N>
+    struct Indexes { using Value = makeIndexSequence<N>; };
+
     template<typename Func> struct FunctionPointer { enum {ArgumentCount = -1, IsPointerToMemberFunction = false}; };
 
     template <typename, typename, typename, typename> struct FunctorCall;

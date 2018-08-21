@@ -472,16 +472,10 @@ static inline QString webDavSslTag()
     return QStringLiteral("@SSL");
 }
 
-#ifdef Q_COMPILER_CLASS_ENUM
-#  define colon_uchar   : uchar
-#else
-#  define colon_uchar
-#endif
-
 class QUrlPrivate
 {
 public:
-    enum Section colon_uchar {
+    enum Section : uchar {
         Scheme = 0x01,
         UserName = 0x02,
         Password = 0x04,
@@ -496,7 +490,7 @@ public:
         FullUrl = 0xff
     };
 
-    enum Flags colon_uchar {
+    enum Flags : uchar {
         IsLocalFile = 0x01
     };
 
@@ -616,7 +610,6 @@ public:
     // 32-bit: 2 bytes tail padding available
     // 64-bit: 6 bytes tail padding available
 };
-#undef colon_uchar
 
 inline QUrlPrivate::QUrlPrivate()
     : ref(1), port(-1),

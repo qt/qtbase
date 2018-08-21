@@ -931,6 +931,21 @@ void QStandardItem::setData(const QVariant &value, int role)
 }
 
 /*!
+    \since 5.12
+    Removes all the data from all roles previously set.
+    \sa data(), setData()
+*/
+void QStandardItem::clearData()
+{
+    Q_D(QStandardItem);
+    if (d->values.isEmpty())
+        return;
+    d->values.clear();
+    if (d->model)
+        d->model->d_func()->itemChanged(this, QVector<int>{});
+}
+
+/*!
     Returns the item's data for the given \a role, or an invalid
     QVariant if there is no data for the role.
 
@@ -2987,6 +3002,23 @@ bool QStandardItemModel::setData(const QModelIndex &index, const QVariant &value
     if (item == 0)
         return false;
     item->setData(value, role);
+    return true;
+}
+
+/*!
+  \since 5.12
+  Removes the data stored in all the roles for the given \a index.
+  \sa setData(), data()
+*/
+bool QStandardItemModel::clearItemData(const QModelIndex &index)
+{
+    if (!checkIndex(index, CheckIndexOption::IndexIsValid))
+        return false;
+    Q_D(QStandardItemModel);
+    QStandardItem *item = d->itemFromIndex(index);
+    if (!item)
+        return false;
+    item->clearData();
     return true;
 }
 

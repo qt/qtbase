@@ -48,6 +48,9 @@
 #endif
 #include <qapplication.h>
 #include <QtCore/qcollator.h>
+#if QT_CONFIG(regularexpression)
+#  include <QtCore/qregularexpression.h>
+#endif
 
 #include <algorithm>
 
@@ -1580,7 +1583,7 @@ bool QFileSystemModel::nameFilterDisables() const
 void QFileSystemModel::setNameFilters(const QStringList &filters)
 {
     // Prep the regexp's ahead of time
-#ifndef QT_NO_REGEXP
+#if QT_CONFIG(regularexpression)
     Q_D(QFileSystemModel);
 
     if (!d->bypassFilters.isEmpty()) {
@@ -1601,11 +1604,7 @@ void QFileSystemModel::setNameFilters(const QStringList &filters)
         }
     }
 
-    d->nameFilters.clear();
-    const Qt::CaseSensitivity caseSensitive =
-        (filter() & QDir::CaseSensitive) ? Qt::CaseSensitive : Qt::CaseInsensitive;
-    for (const auto &filter : filters)
-        d->nameFilters << QRegExp(filter, caseSensitive, QRegExp::Wildcard);
+    d->nameFilters = filters;
     d->forceSort = true;
     d->delayedSort();
 #endif
@@ -1616,16 +1615,12 @@ void QFileSystemModel::setNameFilters(const QStringList &filters)
 */
 QStringList QFileSystemModel::nameFilters() const
 {
+#if QT_CONFIG(regularexpression)
     Q_D(const QFileSystemModel);
-    QStringList filters;
-#ifndef QT_NO_REGEXP
-    const int numNameFilters = d->nameFilters.size();
-    filters.reserve(numNameFilters);
-    for (int i = 0; i < numNameFilters; ++i) {
-         filters << d->nameFilters.at(i).pattern();
-    }
+    return d->nameFilters;
+#else
+    return QStringList();
 #endif
-    return filters;
 }
 
 /*!
@@ -2026,15 +2021,21 @@ bool QFileSystemModelPrivate::filtersAcceptsNode(const QFileSystemNode *node) co
  */
 bool QFileSystemModelPrivate::passNameFilters(const QFileSystemNode *node) const
 {
-#ifndef QT_NO_REGEXP
+#if QT_CONFIG(regularexpression)
     if (nameFilters.isEmpty())
         return true;
 
     // Check the name regularexpression filters
     if (!(node->isDir() && (filters & QDir::AllDirs))) {
+        const QRegularExpression::PatternOptions options =
+            (filters & QDir::CaseSensitive) ? QRegularExpression::NoPatternOption
+                                            : QRegularExpression::CaseInsensitiveOption;
+
         for (const auto &nameFilter : nameFilters) {
-            QRegExp copy = nameFilter;
-            if (copy.exactMatch(node->fileName))
+            const QString wildcard = QRegularExpression::wildcardToRegularExpression(nameFilter);
+            QRegularExpression rx(QRegularExpression::anchoredPattern(wildcard), options);
+            QRegularExpressionMatch match = rx.match(node->fileName);
+            if (match.hasMatch())
                 return true;
         }
         return false;

@@ -597,7 +597,13 @@ struct QBidiAlgorithm {
             } else if (current == QChar::DirBN) {
                 current = last;
             } else {
-                Q_ASSERT(current != QChar::DirLRE && current != QChar::DirRLE && current != QChar::DirLRO && current != QChar::DirRLO && current != QChar::DirPDF); // there shouldn't be any explicit embedding marks here
+                // there shouldn't be any explicit embedding marks here
+                Q_ASSERT(current != QChar::DirLRE);
+                Q_ASSERT(current != QChar::DirRLE);
+                Q_ASSERT(current != QChar::DirLRO);
+                Q_ASSERT(current != QChar::DirRLO);
+                Q_ASSERT(current != QChar::DirPDF);
+
                 last = current;
             }
 
@@ -2053,7 +2059,7 @@ void QTextEngine::itemize() const
                 layoutData->string.detach();
                 string = reinterpret_cast<const ushort *>(layoutData->string.unicode());
                 uc = string + offset;
-                e = uc + length;
+                e = string + length;
                 *const_cast<ushort*>(uc) = 0x21B5; // visual line separator
             }
             break;

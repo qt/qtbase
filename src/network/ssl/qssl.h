@@ -91,7 +91,7 @@ namespace QSsl {
         TlsV1_1OrLater,
         TlsV1_2OrLater,
 
-#if QT_CONFIG(dtls)
+#if QT_CONFIG(dtls) || defined(Q_CLANG_QDOC)
         DtlsV1_0,
         DtlsV1_0OrLater,
         DtlsV1_2,

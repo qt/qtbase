@@ -38,6 +38,7 @@ import sys
 import tempfile
 import datetime
 import xml.dom.minidom
+from enumdata import language_aliases, country_aliases, script_aliases
 
 from localexml import Locale
 
@@ -751,27 +752,15 @@ def main():
 
     # Language enum
     qlocaleh_temp_file.write("    enum Language {\n")
-    language = ""
-    for key in language_map.keys():
-        language = fixedLanguageName(language_map[key][0], dupes)
+    language = None
+    for key, value in language_map.items():
+        language = fixedLanguageName(value[0], dupes)
         qlocaleh_temp_file.write("        " + language + " = " + str(key) + ",\n")
-    # legacy. should disappear at some point
-    qlocaleh_temp_file.write("\n")
-    qlocaleh_temp_file.write("        Norwegian = NorwegianBokmal,\n")
-    qlocaleh_temp_file.write("        Moldavian = Romanian,\n")
-    qlocaleh_temp_file.write("        SerboCroatian = Serbian,\n")
-    qlocaleh_temp_file.write("        Tagalog = Filipino,\n")
-    qlocaleh_temp_file.write("        Twi = Akan,\n")
-    # renamings
-    qlocaleh_temp_file.write("        Afan = Oromo,\n")
-    qlocaleh_temp_file.write("        Byelorussian = Belarusian,\n")
-    qlocaleh_temp_file.write("        Bhutani = Dzongkha,\n")
-    qlocaleh_temp_file.write("        Cambodian = Khmer,\n")
-    qlocaleh_temp_file.write("        Kurundi = Rundi,\n")
-    qlocaleh_temp_file.write("        RhaetoRomance = Romansh,\n")
-    qlocaleh_temp_file.write("        Chewa = Nyanja,\n")
-    qlocaleh_temp_file.write("        Frisian = WesternFrisian,\n")
-    qlocaleh_temp_file.write("        Uigur = Uighur,\n")
+
+    qlocaleh_temp_file.write("\n        " +
+                             ",\n        ".join('%s = %s' % pair
+                                                for pair in sorted(language_aliases.items())) +
+                             ",\n")
     qlocaleh_temp_file.write("\n")
     qlocaleh_temp_file.write("        LastLanguage = " + language + "\n")
     qlocaleh_temp_file.write("    };\n")
@@ -780,36 +769,28 @@ def main():
 
     # Script enum
     qlocaleh_temp_file.write("    enum Script {\n")
-    script = ""
-    for key in script_map.keys():
-        script = fixedScriptName(script_map[key][0], dupes)
+    script = None
+    for key, value in script_map.items():
+        script = fixedScriptName(value[0], dupes)
         qlocaleh_temp_file.write("        " + script + " = " + str(key) + ",\n")
-    # renamings
-    qlocaleh_temp_file.write("\n")
-    qlocaleh_temp_file.write("        SimplifiedChineseScript = SimplifiedHanScript,\n")
-    qlocaleh_temp_file.write("        TraditionalChineseScript = TraditionalHanScript,\n")
+    qlocaleh_temp_file.write("\n        " +
+                             ",\n        ".join('%s = %s' % pair
+                                                for pair in sorted(script_aliases.items())) +
+                             ",\n")
     qlocaleh_temp_file.write("\n")
     qlocaleh_temp_file.write("        LastScript = " + script + "\n")
     qlocaleh_temp_file.write("    };\n")
 
     # Country enum
     qlocaleh_temp_file.write("    enum Country {\n")
-    country = ""
-    for key in country_map.keys():
-        country = fixedCountryName(country_map[key][0], dupes)
+    country = None
+    for key, value in country_map.items():
+        country = fixedCountryName(value[0], dupes)
         qlocaleh_temp_file.write("        " + country + " = " + str(key) + ",\n")
-    # deprecated
-    qlocaleh_temp_file.write("\n")
-    qlocaleh_temp_file.write("        Tokelau = TokelauCountry,\n")
-    qlocaleh_temp_file.write("        Tuvalu = TuvaluCountry,\n")
-    # renamings
-    qlocaleh_temp_file.write("        DemocraticRepublicOfCongo = CongoKinshasa,\n")
-    qlocaleh_temp_file.write("        PeoplesRepublicOfCongo = CongoBrazzaville,\n")
-    qlocaleh_temp_file.write("        DemocraticRepublicOfKorea = NorthKorea,\n")
-    qlocaleh_temp_file.write("        RepublicOfKorea = SouthKorea,\n")
-    qlocaleh_temp_file.write("        RussianFederation = Russia,\n")
-    qlocaleh_temp_file.write("        SyrianArabRepublic = Syria,\n")
-    qlocaleh_temp_file.write("        LatinAmericaAndTheCaribbean = LatinAmerica,\n")
+    qlocaleh_temp_file.write("\n        " +
+                             ",\n        ".join('%s = %s' % pair
+                                                for pair in sorted(country_aliases.items())) +
+                             ",\n")
     qlocaleh_temp_file.write("\n")
     qlocaleh_temp_file.write("        LastCountry = " + country + "\n")
     qlocaleh_temp_file.write("    };\n")
@@ -836,7 +817,7 @@ def main():
     qlocaleqdoc_temp_file = os.fdopen(qlocaleqdoc_temp_file, "w")
     qlocaleqdoc_file = open(qtsrcdir + "/src/corelib/tools/qlocale.qdoc", "r")
     s = qlocaleqdoc_file.readline()
-    DOCSTRING="    QLocale's data is based on Common Locale Data Repository "
+    DOCSTRING = "    QLocale's data is based on Common Locale Data Repository "
     while s:
         if DOCSTRING in s:
             qlocaleqdoc_temp_file.write(DOCSTRING + "v" + cldr_version + ".\n")

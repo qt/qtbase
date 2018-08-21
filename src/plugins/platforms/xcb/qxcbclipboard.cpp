@@ -49,10 +49,6 @@
 
 #include <QtCore/QDebug>
 
-#define class class_name // Workaround XCB-ICCCM 3.8 breakage
-#include <xcb/xcb_icccm.h>
-#undef class
-
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_CLIPBOARD
@@ -305,7 +301,7 @@ QXcbClipboard::~QXcbClipboard()
             connection()->sync();
 
             // waiting until the clipboard manager fetches the content.
-            if (!waitForClipboardEvent(m_owner, XCB_SELECTION_NOTIFY, clipboard_timeout, true)) {
+            if (!waitForClipboardEvent(m_owner, XCB_SELECTION_NOTIFY, true)) {
                 qWarning("QXcbClipboard: Unable to receive an event from the "
                          "clipboard manager in a reasonable time");
             }
@@ -807,73 +803,44 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
     return ok;
 }
 
-
-namespace
-{
-    class Notify {
-    public:
-        Notify(xcb_window_t win, int t)
-            : window(win), type(t) {}
-        xcb_window_t window;
-        int type;
-        bool checkEvent(xcb_generic_event_t *event) const {
-            if (!event)
-                return false;
-            int t = event->response_type & 0x7f;
-            if (t != type)
-                return false;
-            if (t == XCB_PROPERTY_NOTIFY) {
-                xcb_property_notify_event_t *pn = (xcb_property_notify_event_t *)event;
-                if (pn->window == window)
-                    return true;
-            } else if (t == XCB_SELECTION_NOTIFY) {
-                xcb_selection_notify_event_t *sn = (xcb_selection_notify_event_t *)event;
-                if (sn->requestor == window)
-                    return true;
-            }
-            return false;
-        }
-    };
-    class ClipboardEvent {
-    public:
-        ClipboardEvent(QXcbConnection *c)
-        { clipboard = c->internAtom("CLIPBOARD"); }
-        xcb_atom_t clipboard;
-        bool checkEvent(xcb_generic_event_t *e) const {
-            if (!e)
-                return false;
-            int type = e->response_type & 0x7f;
-            if (type == XCB_SELECTION_REQUEST) {
-                xcb_selection_request_event_t *sr = (xcb_selection_request_event_t *)e;
-                return sr->selection == XCB_ATOM_PRIMARY || sr->selection == clipboard;
-            } else if (type == XCB_SELECTION_CLEAR) {
-                xcb_selection_clear_event_t *sc = (xcb_selection_clear_event_t *)e;
-                return sc->selection == XCB_ATOM_PRIMARY || sc->selection == clipboard;
-            }
-            return false;
-        }
-    };
-}
-
-xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t win, int type, int timeout, bool checkManager)
+xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t window, int type, bool checkManager)
 {
     QElapsedTimer timer;
     timer.start();
     do {
-        Notify notify(win, type);
-        xcb_generic_event_t *e = connection()->checkEvent(notify);
-        if (e)
+        auto e = connection()->checkEvent([window, type](xcb_generic_event_t *event, int eventType) {
+            if (eventType != type)
+                return false;
+            if (eventType == XCB_PROPERTY_NOTIFY) {
+                auto propertyNotify = reinterpret_cast<xcb_property_notify_event_t *>(event);
+                if (propertyNotify->window == window)
+                    return true;
+            } else if (eventType == XCB_SELECTION_NOTIFY) {
+                auto selectionNotify = reinterpret_cast<xcb_selection_notify_event_t *>(event);
+                if (selectionNotify->requestor == window)
+                    return true;
+            }
+            return false;
+        });
+        if (e) // found the waited for event
             return e;
 
         if (checkManager) {
             auto reply = Q_XCB_REPLY(xcb_get_selection_owner, xcb_connection(), atom(QXcbAtom::CLIPBOARD_MANAGER));
             if (!reply || reply->owner == XCB_NONE)
-                return 0;
+                return nullptr;
         }
 
         // process other clipboard events, since someone is probably requesting data from us
-        ClipboardEvent clipboard(connection());
-        e = connection()->checkEvent(clipboard);
+        auto clipboardAtom = atom(QXcbAtom::CLIPBOARD);
+        e = connection()->checkEvent([clipboardAtom](xcb_generic_event_t *event, int type) {
+            xcb_atom_t selection = XCB_ATOM_NONE;
+            if (type == XCB_SELECTION_REQUEST)
+                selection = reinterpret_cast<xcb_selection_request_event_t *>(event)->selection;
+            else if (type == XCB_SELECTION_CLEAR)
+                selection = reinterpret_cast<xcb_selection_clear_event_t *>(event)->selection;
+            return selection == XCB_ATOM_PRIMARY || selection == clipboardAtom;
+        });
         if (e) {
             connection()->handleXcbEvent(e);
             free(e);
@@ -883,9 +850,9 @@ xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t win, int 
 
         // sleep 50 ms, so we don't use up CPU cycles all the time.
         QThread::msleep(50);
-    } while (timer.elapsed() < timeout);
+    } while (timer.elapsed() < clipboard_timeout);
 
-    return 0;
+    return nullptr;
 }
 
 QByteArray QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb_atom_t property, int nbytes, bool nullterm)
@@ -907,7 +874,7 @@ QByteArray QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb
 
     for (;;) {
         connection()->flush();
-        xcb_generic_event_t *ge = waitForClipboardEvent(win, XCB_PROPERTY_NOTIFY, clipboard_timeout);
+        xcb_generic_event_t *ge = waitForClipboardEvent(win, XCB_PROPERTY_NOTIFY);
         if (!ge)
             break;
         xcb_property_notify_event_t *event = (xcb_property_notify_event_t *)ge;
@@ -970,7 +937,7 @@ QByteArray QXcbClipboard::getSelection(xcb_atom_t selection, xcb_atom_t target, 
 
     connection()->sync();
 
-    xcb_generic_event_t *ge = waitForClipboardEvent(win, XCB_SELECTION_NOTIFY, clipboard_timeout);
+    xcb_generic_event_t *ge = waitForClipboardEvent(win, XCB_SELECTION_NOTIFY);
     bool no_selection = !ge || ((xcb_selection_notify_event_t *)ge)->property == XCB_NONE;
     free(ge);
 

@@ -2197,6 +2197,16 @@ QCborValue QCborValue::fromCbor(const QByteArray &ba, QCborParserError *error)
 }
 
 /*!
+    \fn QCborValue QCborValue::fromCbor(const char *data, qsizetype len, QCborParserError *error)
+    \fn QCborValue QCborValue::fromCbor(const quint8 *data, qsizetype len, QCborParserError *error)
+    \overload
+
+    Converts \a len bytes of \a data to a QByteArray and then calls the
+    overload of this function that accepts a QByteArray, also passing \a error,
+    if provided.
+*/
+
+/*!
     Encodes this QCborValue object to its CBOR representation, using the
     options specified in \a opt, and return the byte array containing that
     representation.
@@ -2213,7 +2223,7 @@ QCborValue QCborValue::fromCbor(const QByteArray &ba, QCborParserError *error)
     infinities and NaN values.
 
     Similarly, if \l{EncodingOption}{UseFloat16} is specified, this function
-    will try to use half-precision (\l qfloat16) floating point if the
+    will try to use half-precision (\c qfloat16) floating point if the
     conversion to that results in no loss of precision. This is always true for
     infinities and NaN.
 

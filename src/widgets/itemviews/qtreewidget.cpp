@@ -1001,6 +1001,7 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
 */
 
 /*!
+  \fn void QTreeWidgetItem::setHidden(bool hide)
   \since 4.2
 
   Hides the item if \a hide is true, otherwise shows the item.

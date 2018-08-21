@@ -126,7 +126,7 @@ AutomationControlType roleToControlType(QAccessible::Role role)
         {QAccessible::PropertyPage, AutomationControlType::AutomationControlType_Custom},
         {QAccessible::Indicator, AutomationControlType::AutomationControlType_Custom},
         {QAccessible::Graphic, AutomationControlType::AutomationControlType_Image},
-        {QAccessible::StaticText, AutomationControlType::AutomationControlType_Edit},
+        {QAccessible::StaticText, AutomationControlType::AutomationControlType_Text},
         {QAccessible::EditableText, AutomationControlType::AutomationControlType_Edit},
         {QAccessible::Button, AutomationControlType::AutomationControlType_Button},
         {QAccessible::CheckBox, AutomationControlType::AutomationControlType_CheckBox},

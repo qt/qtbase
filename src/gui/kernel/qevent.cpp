@@ -783,7 +783,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, int delta,
                          Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                          Qt::Orientation orient)
     : QInputEvent(Wheel, modifiers), p(pos), qt4D(delta), qt4O(orient), mouseState(buttons),
-      ph(Qt::NoScrollPhase), src(Qt::MouseEventNotSynthesized), invertedScrolling(false)
+      src(Qt::MouseEventNotSynthesized), invertedScrolling(false), ph(Qt::NoScrollPhase)
 {
     g = QCursor::pos();
     if (orient == Qt::Vertical)
@@ -818,7 +818,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta
                          Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                          Qt::Orientation orient)
     : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), qt4D(delta), qt4O(orient), mouseState(buttons),
-      ph(Qt::NoScrollPhase), src(Qt::MouseEventNotSynthesized), invertedScrolling(false)
+      src(Qt::MouseEventNotSynthesized), invertedScrolling(false), ph(Qt::NoScrollPhase)
 {
     if (orient == Qt::Vertical)
         angleD = QPoint(0, delta);
@@ -959,8 +959,8 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
             QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
             Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase, Qt::MouseEventSource source, bool inverted)
     : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), pixelD(pixelDelta),
-      angleD(angleDelta), qt4D(qt4Delta), qt4O(qt4Orientation), mouseState(buttons), ph(phase), src(source),
-      invertedScrolling(inverted)
+      angleD(angleDelta), qt4D(qt4Delta), qt4O(qt4Orientation), mouseState(buttons), src(source),
+      invertedScrolling(inverted), ph(phase)
 {}
 
 /*!
@@ -995,10 +995,12 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
 QWheelEvent::QWheelEvent(QPointF pos, QPointF globalPos, QPoint pixelDelta, QPoint angleDelta,
             Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase,
             bool inverted, Qt::MouseEventSource source)
-    : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), pixelD(pixelDelta),
-      angleD(angleDelta), mouseState(buttons), ph(phase), src(source),
-      invertedScrolling(inverted)
-{}
+    : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), pixelD(pixelDelta), angleD(angleDelta),
+      qt4O(qAbs(angleDelta.x()) > qAbs(angleDelta.y()) ? Qt::Horizontal : Qt::Vertical),
+      mouseState(buttons), src(source), invertedScrolling(inverted), ph(phase)
+{
+    qt4D = (qt4O == Qt::Horizontal ? angleDelta.x() : angleDelta.y());
+}
 
 #endif // QT_CONFIG(wheelevent)
 
@@ -4068,7 +4070,12 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
 #  if QT_CONFIG(wheelevent)
     case QEvent::Wheel: {
         const QWheelEvent *we = static_cast<const QWheelEvent *>(e);
-        dbg << "QWheelEvent(" << "pixelDelta=" << we->pixelDelta() << ", angleDelta=" << we->angleDelta() << ')';
+        dbg << "QWheelEvent(" << we->phase();
+        if (!we->pixelDelta().isNull() || !we->angleDelta().isNull())
+            dbg << ", pixelDelta=" << we->pixelDelta() << ", angleDelta=" << we->angleDelta();
+        else if (int qt4Delta = we->delta())
+            dbg << ", delta=" << qt4Delta << ", orientation=" << we->orientation();
+        dbg << ')';
     }
         break;
 #  endif // QT_CONFIG(wheelevent)

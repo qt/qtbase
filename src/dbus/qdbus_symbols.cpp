@@ -79,10 +79,8 @@ bool qdbus_loadLibDBus()
 #endif
 
     static bool triedToLoadLibrary = false;
-#ifndef QT_NO_THREAD
     static QBasicMutex mutex;
     QMutexLocker locker(&mutex);
-#endif
 
     QLibrary *&lib = qdbus_libdbus;
     if (triedToLoadLibrary)

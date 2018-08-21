@@ -103,7 +103,7 @@ QThreadData::~QThreadData()
 
 void QThreadData::ref()
 {
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
     (void) _ref.ref();
     Q_ASSERT(_ref.load() != 0);
 #endif
@@ -111,7 +111,7 @@ void QThreadData::ref()
 
 void QThreadData::deref()
 {
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
     if (!_ref.deref())
         delete this;
 #endif
@@ -134,7 +134,7 @@ QAdoptedThread::QAdoptedThread(QThreadData *data)
 {
     // thread should be running and not finished for the lifetime
     // of the application (even if QCoreApplication goes away)
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
     d_func()->running = true;
     d_func()->finished = false;
     init();
@@ -148,7 +148,7 @@ QAdoptedThread::~QAdoptedThread()
     // fprintf(stderr, "~QAdoptedThread = %p\n", this);
 }
 
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
 void QAdoptedThread::run()
 {
     // this function should never be called
@@ -756,7 +756,7 @@ int QThread::loopLevel() const
     return d->data->eventLoops.size();
 }
 
-#else // QT_NO_THREAD
+#else // QT_CONFIG(thread)
 
 QThread::QThread(QObject *parent)
     : QObject(*(new QThreadPrivate), parent)
@@ -765,9 +765,78 @@ QThread::QThread(QObject *parent)
     d->data->thread = this;
 }
 
+QThread::~QThread()
+{
+
+}
+
+void QThread::run()
+{
+
+}
+
+int QThread::exec()
+{
+    return 0;
+}
+
+void QThread::start(Priority priority)
+{
+    Q_D(QThread);
+    Q_UNUSED(priority);
+    d->running = true;
+}
+
+void QThread::terminate()
+{
+
+}
+
+void QThread::quit()
+{
+
+}
+
+bool QThread::wait(unsigned long time)
+{
+    Q_UNUSED(time);
+    return false;
+}
+
+bool QThread::event(QEvent* event)
+{
+    return QObject::event(event);
+}
+
+Qt::HANDLE QThread::currentThreadId() Q_DECL_NOTHROW
+{
+    return Qt::HANDLE(currentThread());
+}
+
 QThread *QThread::currentThread()
 {
     return QThreadData::current()->thread;
+}
+
+int QThread::idealThreadCount() Q_DECL_NOTHROW
+{
+    return 1;
+}
+
+void QThread::yieldCurrentThread()
+{
+
+}
+
+bool QThread::isFinished() const
+{
+    return false;
+}
+
+bool QThread::isRunning() const
+{
+    Q_D(const QThread);
+    return d->running;
 }
 
 // No threads: so we can just use static variables
@@ -778,7 +847,9 @@ QThreadData *QThreadData::current(bool createIfNecessary)
     if (!data && createIfNecessary) {
         data = new QThreadData;
         data->thread = new QAdoptedThread(data);
+        data->threadId.store(Qt::HANDLE(data->thread));
         data->deref();
+        data->isAdopted = true;
         if (!QCoreApplicationPrivate::theMainThread)
             QCoreApplicationPrivate::theMainThread = data->thread.load();
     }
@@ -811,7 +882,7 @@ QThreadPrivate::~QThreadPrivate()
     delete data;
 }
 
-#endif // QT_NO_THREAD
+#endif // QT_CONFIG(thread)
 
 /*!
     \since 5.0
@@ -848,7 +919,7 @@ void QThread::setEventDispatcher(QAbstractEventDispatcher *eventDispatcher)
     }
 }
 
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
 
 /*!
     \reimp
@@ -1013,7 +1084,7 @@ QDaemonThread::~QDaemonThread()
 {
 }
 
-#endif // QT_NO_THREAD
+#endif // QT_CONFIG(thread)
 
 QT_END_NAMESPACE
 

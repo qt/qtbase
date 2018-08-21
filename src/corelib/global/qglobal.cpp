@@ -53,10 +53,6 @@
 
 #include <qmutex.h>
 
-#ifndef QT_NO_QOBJECT
-#include <private/qthread_p.h>
-#endif
-
 #include <stdlib.h>
 #include <limits.h>
 #include <stdarg.h>
@@ -2212,10 +2208,19 @@ static bool readEtcFile(QUnixOSVersion &v, const char *filename,
     return true;
 }
 
-static bool readEtcOsRelease(QUnixOSVersion &v)
+static bool readOsRelease(QUnixOSVersion &v)
 {
-    return readEtcFile(v, "/etc/os-release", QByteArrayLiteral("ID="),
-                       QByteArrayLiteral("VERSION_ID="), QByteArrayLiteral("PRETTY_NAME="));
+    QByteArray id = QByteArrayLiteral("ID=");
+    QByteArray versionId = QByteArrayLiteral("VERSION_ID=");
+    QByteArray prettyName = QByteArrayLiteral("PRETTY_NAME=");
+
+    // man os-release(5) says:
+    // The file /etc/os-release takes precedence over /usr/lib/os-release.
+    // Applications should check for the former, and exclusively use its data
+    // if it exists, and only fall back to /usr/lib/os-release if it is
+    // missing.
+    return readEtcFile(v, "/etc/os-release", id, versionId, prettyName) ||
+            readEtcFile(v, "/usr/lib/os-release", id, versionId, prettyName);
 }
 
 static bool readEtcLsbRelease(QUnixOSVersion &v)
@@ -2297,7 +2302,7 @@ static bool readEtcDebianVersion(QUnixOSVersion &v)
 
 static bool findUnixOsVersion(QUnixOSVersion &v)
 {
-    if (readEtcOsRelease(v))
+    if (readOsRelease(v))
         return true;
     if (readEtcLsbRelease(v))
         return true;
@@ -3814,14 +3819,14 @@ bool qunsetenv(const char *varName)
 
     Marks the UTF-8 encoded string literal \a sourceText for numerator
     dependent delayed translation in the given \a context with the given
-    \a disambiguation.
+    \a comment.
     The \a context is typically a class and also needs to be specified
     as a string literal. The string literal \a disambiguation should be
     a short semantic tag to tell apart otherwise identical strings.
 
     The macro tells lupdate to collect the string, and expands to an
     anonymous struct of the two string literals passed as \a sourceText
-    and \a disambiguation.
+    and \a comment.
 
     Example:
 

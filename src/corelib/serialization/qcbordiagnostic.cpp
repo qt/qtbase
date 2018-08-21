@@ -337,7 +337,7 @@ void DiagnosticNotation::appendValue(const QCborValue &v)
     high-fidelity notation of a stream, without transformation, see the \c
     cbordump example.
 
-    \sa toCbor(), toJsonDocument(), QJsonDocument::toJson()
+    \sa toCbor(), QJsonDocument::toJson()
  */
 QString QCborValue::toDiagnosticNotation(DiagnosticNotationOptions opts) const
 {

@@ -102,6 +102,10 @@ void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceS
 
     if (resourceString == "nsview") {
         return static_cast<QCocoaWindow *>(window->handle())->m_view;
+#ifndef QT_NO_OPENGL
+    } else if (resourceString == "nsopenglcontext") {
+        return static_cast<QCocoaWindow *>(window->handle())->currentContext()->nativeContext();
+#endif
     } else if (resourceString == "nswindow") {
         return static_cast<QCocoaWindow *>(window->handle())->nativeWindow();
 #if QT_CONFIG(vulkan)

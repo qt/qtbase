@@ -206,7 +206,7 @@ public:
     static inline QDir temp() { return QDir(tempPath()); }
     static QString tempPath();
 
-#ifndef QT_NO_REGEXP
+#if QT_CONFIG(regularexpression)
     static bool match(const QStringList &filters, const QString &fileName);
     static bool match(const QString &filter, const QString &fileName);
 #endif

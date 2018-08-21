@@ -263,6 +263,7 @@
             "label": "HTTP",
             "purpose": "Provides support for the Hypertext Transfer Protocol in QNetworkAccessManager.",
             "section": "Networking",
+            "condition": "features.thread",
             "output": [ "publicFeature", "feature" ]
         },
         "udpsocket": {
@@ -301,7 +302,7 @@
             "label": "Bearer management",
             "purpose": "Provides bearer management for the network stack.",
             "section": "Networking",
-            "condition": "features.library && features.networkinterface && features.properties",
+            "condition": "features.thread && features.library && features.networkinterface && features.properties",
             "output": [ "publicFeature", "feature" ]
         },
         "localserver": {

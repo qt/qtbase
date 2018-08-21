@@ -67,7 +67,7 @@ public:
     QAction *addAction(const QString &text);
     QAction *addAction(const QString &text, const QObject *receiver, const char* member);
 
-#ifdef Q_QDOC
+#ifdef Q_CLANG_QDOC
     template<typename Obj, typename PointerToMemberFunctionOrFunctor>
     QAction *addAction(const QString &text, const Obj *receiver, PointerToMemberFunctionOrFunctor method);
     template<typename Functor>
@@ -91,7 +91,7 @@ public:
         connect(result, &QAction::triggered, std::move(slot));
         return result;
     }
-#endif // !Q_QDOC
+#endif // !Q_CLANG_QDOC
 
     QAction *addMenu(QMenu *menu);
     QMenu *addMenu(const QString &title);
@@ -121,7 +121,7 @@ public:
     void setCornerWidget(QWidget *w, Qt::Corner corner = Qt::TopRightCorner);
     QWidget *cornerWidget(Qt::Corner corner = Qt::TopRightCorner) const;
 
-#ifdef Q_OS_OSX
+#if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
     NSMenu* toNSMenu();
 #endif
 

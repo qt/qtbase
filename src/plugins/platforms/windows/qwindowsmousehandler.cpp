@@ -257,12 +257,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
                                                QtWindows::WindowsEventType et,
                                                MSG msg, LRESULT *result)
 {
-#ifdef Q_COMPILER_CLASS_ENUM
     enum : quint64 { signatureMask = 0xffffff00, miWpSignature = 0xff515700 };
-#else
-    static const quint64 signatureMask = 0xffffff00;
-    static const quint64 miWpSignature = 0xff515700;
-#endif // !Q_COMPILER_CLASS_ENUM
 
     if (et == QtWindows::MouseWheelEvent)
         return translateMouseWheelEvent(window, hwnd, msg, result);

@@ -45,8 +45,6 @@
 #include "qlist.h"
 #include "qalgorithms.h"
 
-#ifndef QT_NO_THREAD
-
 #define Q_MUTEX_T void*
 #include <private/qmutex_p.h>
 #include <private/qreadwritelock_p.h>
@@ -247,4 +245,3 @@ void QWaitCondition::wakeAll()
 }
 
 QT_END_NAMESPACE
-#endif // QT_NO_THREAD

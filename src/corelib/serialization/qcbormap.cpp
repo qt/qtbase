@@ -804,6 +804,9 @@ QCborValueRef QCborMap::operator[](const QCborValue &key)
 }
 
 /*!
+    \fn QCborMap::iterator QCborMap::find(qint64 key)
+    \fn QCborMap::const_iterator QCborMap::find(qint64 key) const
+
     Returns a map iterator to the key-value pair whose key is \a key, if the
     map contains such a pair. If it doesn't, this function returns end().
 
@@ -828,6 +831,8 @@ QCborMap::iterator QCborMap::find(qint64 key)
 }
 
 /*!
+    \fn QCborMap::iterator QCborMap::find(QLatin1String key)
+    \fn QCborMap::const_iterator QCborMap::find(QLatin1String key) const
     \overload
 
     Returns a map iterator to the key-value pair whose key is \a key, if the
@@ -852,6 +857,8 @@ QCborMap::iterator QCborMap::find(QLatin1String key)
 }
 
 /*!
+    \fn QCborMap::iterator QCborMap::find(const QString & key)
+    \fn QCborMap::const_iterator QCborMap::find(const QString & key) const
     \overload
 
     Returns a map iterator to the key-value pair whose key is \a key, if the
@@ -876,6 +883,8 @@ QCborMap::iterator QCborMap::find(const QString & key)
 }
 
 /*!
+    \fn QCborMap::iterator QCborMap::find(const QCborValue &key)
+    \fn QCborMap::const_iterator QCborMap::find(const QCborValue &key) const
     \overload
 
     Returns a map iterator to the key-value pair whose key is \a key, if the
@@ -1100,6 +1109,9 @@ QCborMap::iterator QCborMap::erase(QCborMap::iterator it)
 }
 
 /*!
+    \fn QCborValue QCborMap::extract(iterator it)
+    \fn QCborValue QCborMap::extract(const_iterator it)
+
     Extracts a value from the map at the position indicated by iterator \a it
     and returns the value so extracted.
 
@@ -1360,6 +1372,40 @@ void QCborMap::detach(qsizetype reserved)
 */
 
 /*!
+    \fn bool QCborMap::Iterator::operator<(const Iterator& other) const
+    \fn bool QCborMap::Iterator::operator<(const ConstIterator& other) const
+
+    Returns \c true if the entry in the map pointed to by this iterator
+    occurs before the entry pointed to by the \a other iterator.
+*/
+
+/*!
+    \fn bool QCborMap::Iterator::operator<=(const Iterator& other) const
+    \fn bool QCborMap::Iterator::operator<=(const ConstIterator& other) const
+
+    Returns \c true if the entry in the map pointed to by this iterator
+    occurs before or is the same entry as is pointed to by the \a other
+    iterator.
+*/
+
+/*!
+    \fn bool QCborMap::Iterator::operator>(const Iterator& other) const
+    \fn bool QCborMap::Iterator::operator>(const ConstIterator& other) const
+
+    Returns \c true if the entry in the map pointed to by this iterator
+    occurs after the entry pointed to by the \a other iterator.
+ */
+
+/*!
+    \fn bool QCborMap::Iterator::operator>=(const Iterator& other) const
+    \fn bool QCborMap::Iterator::operator>=(const ConstIterator& other) const
+
+    Returns \c true if the entry in the map pointed to by this iterator
+    occurs after or is the same entry as is pointed to by the \a other
+    iterator.
+*/
+
+/*!
     \fn QCborMap::Iterator &QCborMap::Iterator::operator++()
 
     The prefix ++ operator, \c{++i}, advances the iterator to the next item in
@@ -1411,6 +1457,16 @@ void QCborMap::detach(qsizetype reserved)
 
     Returns an iterator to the item at \a j positions backward from this
     iterator. If \a j is negative, the iterator goes forward.
+
+    \sa operator+()
+*/
+
+/*!
+    \fn qsizetype QCborMap::Iterator::operator-(QCborMap::Iterator j) const
+
+    Returns the position of the item at iterator \a j relative to the item
+    at this iterator. If the item at \a j is forward of this time, the returned
+    value is negative.
 
     \sa operator+()
 */
@@ -1561,6 +1617,40 @@ void QCborMap::detach(qsizetype reserved)
  */
 
 /*!
+    \fn bool QCborMap::ConstIterator::operator<(const Iterator &other) const
+    \fn bool QCborMap::ConstIterator::operator<(const ConstIterator &other) const
+
+    Returns \c true if the entry in the map pointed to by this iterator
+    occurs before the entry pointed to by the \a other iterator.
+*/
+
+/*!
+    \fn bool QCborMap::ConstIterator::operator<=(const Iterator &other) const
+    \fn bool QCborMap::ConstIterator::operator<=(const ConstIterator &other) const
+
+    Returns \c true if the entry in the map pointed to by this iterator
+    occurs before or is the same entry as is pointed to by the \a other
+    iterator.
+*/
+
+/*!
+    \fn bool QCborMap::ConstIterator::operator>(const Iterator &other) const
+    \fn bool QCborMap::ConstIterator::operator>(const ConstIterator &other) const
+
+    Returns \c true if the entry in the map pointed to by this iterator
+    occurs after the entry pointed to by the \a other iterator.
+*/
+
+/*!
+    \fn bool QCborMap::ConstIterator::operator>=(const Iterator &other) const
+    \fn bool QCborMap::ConstIterator::operator>=(const ConstIterator &other) const
+
+    Returns \c true if the entry in the map pointed to by this iterator
+    occurs after or is the same entry as is pointed to by the \a other
+    iterator.
+*/
+
+/*!
     \fn QCborMap::ConstIterator &QCborMap::ConstIterator::operator++()
 
     The prefix ++ operator, \c{++i}, advances the iterator to the next item in
@@ -1612,6 +1702,16 @@ void QCborMap::detach(qsizetype reserved)
 
     Returns an iterator to the item at \a j positions backward from this
     iterator. If \a j is negative, the iterator goes forward.
+
+    \sa operator+()
+*/
+
+/*!
+    \fn qsizetype QCborMap::ConstIterator::operator-(QCborMap::ConstIterator j) const
+
+    Returns the position of the item at iterator \a j relative to the item
+    at this iterator. If the item at \a j is forward of this time, the returned
+    value is negative.
 
     \sa operator+()
 */

@@ -81,7 +81,7 @@
             "label": "QFileSystemModel",
             "purpose": "Provides a data model for the local filesystem.",
             "section": "File I/O",
-            "condition": "features.itemmodel",
+            "condition": "features.itemmodel && features.thread",
             "output": [ "publicFeature", "feature" ]
         },
         "itemviews": {

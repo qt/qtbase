@@ -50,7 +50,9 @@
 #include <qthread.h>
 #include <qvariant.h>
 #include <qdebug.h>
+#if QT_CONFIG(thread)
 #include <qsemaphore.h>
+#endif
 
 #include "private/qobject_p.h"
 #include "private/qmetaobject_p.h"
@@ -1540,14 +1542,14 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
 
         QCoreApplication::postEvent(object, new QMetaCallEvent(slot, 0, -1, 1, types, args));
     } else if (type == Qt::BlockingQueuedConnection) {
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
         if (currentThread == objectThread)
             qWarning("QMetaObject::invokeMethod: Dead lock detected");
 
         QSemaphore semaphore;
         QCoreApplication::postEvent(object, new QMetaCallEvent(slot, 0, -1, 0, 0, argv, &semaphore));
         semaphore.acquire();
-#endif // QT_NO_THREAD
+#endif // QT_CONFIG(thread)
     } else {
         qWarning("QMetaObject::invokeMethod: Unknown connection type");
         return false;
@@ -2272,7 +2274,7 @@ bool QMetaMethod::invoke(QObject *object,
                          : Qt::QueuedConnection;
     }
 
-#ifdef QT_NO_THREAD
+#if !QT_CONFIG(thread)
     if (connectionType == Qt::BlockingQueuedConnection) {
         connectionType = Qt::DirectConnection;
     }
@@ -2348,7 +2350,7 @@ bool QMetaMethod::invoke(QObject *object,
         QCoreApplication::postEvent(object, new QMetaCallEvent(idx_offset, idx_relative, callFunction,
                                                         0, -1, nargs, types, args));
     } else { // blocking queued connection
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
         if (currentThread == objectThread) {
             qWarning("QMetaMethod::invoke: Dead lock detected in "
                         "BlockingQueuedConnection: Receiver is %s(%p)",
@@ -2359,7 +2361,7 @@ bool QMetaMethod::invoke(QObject *object,
         QCoreApplication::postEvent(object, new QMetaCallEvent(idx_offset, idx_relative, callFunction,
                                                         0, -1, 0, 0, param, &semaphore));
         semaphore.acquire();
-#endif // QT_NO_THREAD
+#endif // QT_CONFIG(thread)
     }
     return true;
 }

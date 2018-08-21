@@ -57,24 +57,28 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    Convenience function to both lock and bind the buffer to a texture. This
-    function will first try and lock with texture read and texture write
+    Convenience function to both lock and bind the \a graphicsBuffer to a texture.
+    This function will first try to lock with texture read and texture write
     access. If this succeeds it will use the bindToTexture function to bind the
-    content to the currently bound texture. If this fail it will try and lock
-    with SWReadAccess and then use the bindSWToTexture convenience function.
+    content to the currently bound texture, and if \a premultiplied is provided,
+    it is set to false.
 
-    \a swizzle is suppose to be used by the caller to figure out if the Red and
+    If it fails, it will try to lock with SWReadAccess and then use the
+    bindSWToTexture convenience function. If \a premultiplied is provided, it is
+    passed to the bindSWToTexture() function.
+
+    \a swizzle is meant to be used by the caller to figure out if the Red and
     Blue color channels need to be swizzled when rendering.
 
     \a rect is the subrect which is desired to be bounded to the texture. This
-    argument has a no less than semantic, meaning more (if not all) of the buffer
+    argument has a not less than semantic, meaning more (if not all) of the buffer
     can be bounded to the texture. An empty QRect is interpreted as entire buffer
     should be bound.
 
     The user should use the AccessTypes returned by isLocked to figure out what
     lock has been obtained.
 
-    returns true if the buffer has successfully been bound to the currently
+    Returns true if the buffer has successfully been bound to the currently
     bound texture, otherwise returns false.
 */
 bool QPlatformGraphicsBufferHelper::lockAndBindToTexture(QPlatformGraphicsBuffer *graphicsBuffer,
@@ -103,26 +107,29 @@ bool QPlatformGraphicsBufferHelper::lockAndBindToTexture(QPlatformGraphicsBuffer
 }
 
 /*!
-    Convenience function that uploads the current raster content to the currently bound texture.
+    Convenience function that uploads the current raster content to the currently
+    bound texture.
 
-    \a swizzleRandB is suppose to be used by the caller to figure out if the Red and
+    \a swizzleRandB is meant to be used by the caller to decide if the Red and
     Blue color channels need to be swizzled when rendering. This is an
     optimization. Qt often renders to software buffers interpreting pixels as
     unsigned ints. When these buffers are uploaded to textures and each color
     channel per pixel is interpreted as a byte (read sequentially), then the
-    Red and Blue channels are swapped. Conveniently the Alpha buffer will be
-    correct since Qt historically has had the alpha channel as the first
+    Red and Blue channels are swapped. Conveniently, the Alpha buffer will be
+    correct, since Qt historically has had the alpha channel as the first
     channel, while OpenGL typically expects the alpha channel to be the last
     channel.
 
-    \a subRect is the subrect which is desired to be bounded to the texture. This
-    argument has a no less than semantic, meaning more (if not all) of the buffer
-    can be bounded to the texture. An empty QRect is interpreted as entire buffer
-    should be bound.
+    \a subRect is the region to be bound to the texture. This argument has a
+    not less than semantic, meaning more (if not all) of the buffer can be
+    bound to the texture. An empty QRect is interpreted as meaning the entire
+    buffer should be bound.
 
-    This function fails for buffers not capable of locking to SWAccess.
+    This function fails if the \a graphicsBuffer is not locked to SWAccess.
 
-    Returns true on success, otherwise false.
+    Returns true on success, otherwise false. If \a premultipliedB is
+    provided, it is set according to what happens, if the function returns
+    true.
 */
 bool QPlatformGraphicsBufferHelper::bindSWToTexture(const QPlatformGraphicsBuffer *graphicsBuffer,
                                                     bool *swizzleRandB, bool *premultipliedB,

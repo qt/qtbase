@@ -59,7 +59,9 @@
 #include <qpair.h>
 #include <qvarlengtharray.h>
 #include <qset.h>
+#if QT_CONFIG(thread)
 #include <qsemaphore.h>
+#endif
 #include <qsharedpointer.h>
 
 #include <private/qorderedmutexlocker_p.h>
@@ -488,7 +490,7 @@ QMetaCallEvent::~QMetaCallEvent()
         free(types_);
         free(args_);
     }
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
     if (semaphore_)
         semaphore_->release();
 #endif
@@ -3727,7 +3729,7 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
                 || (c->connectionType == Qt::QueuedConnection)) {
                 queued_activate(sender, signal_index, c, argv ? argv : empty_argv, locker);
                 continue;
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
             } else if (c->connectionType == Qt::BlockingQueuedConnection) {
                 if (receiverInSameThread) {
                     qWarning("Qt: Dead lock detected while activating a BlockingQueuedConnection: "

@@ -39,9 +39,6 @@
 
 #include "qplatformdefs.h"
 #include "qmutex.h"
-
-#if !defined(QT_NO_THREAD)
-
 #include "qmutex_p.h"
 
 #include <mach/mach.h>
@@ -89,5 +86,3 @@ void QMutexPrivate::wakeUp() Q_DECL_NOTHROW
 
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_THREAD

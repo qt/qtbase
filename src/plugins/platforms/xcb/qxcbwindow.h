@@ -121,7 +121,7 @@ public:
     QImage::Format imageFormat() const { return m_imageFormat; }
     bool imageNeedsRgbSwap() const { return m_imageRgbSwap; }
 
-    bool handleGenericEvent(xcb_generic_event_t *event, long *result)  override;
+    bool handleNativeEvent(xcb_generic_event_t *event)  override;
 
     void handleExposeEvent(const xcb_expose_event_t *event) override;
     void handleClientMessageEvent(const xcb_client_message_event_t *event) override;
@@ -216,8 +216,6 @@ protected:
     bool relayFocusToModalWindow() const;
     void doFocusIn();
     void doFocusOut();
-
-    bool compressExposeEvent(QRegion &exposeRegion);
 
     void handleButtonPressEvent(int event_x, int event_y, int root_x, int root_y,
                                 int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp,

@@ -46,7 +46,7 @@
 #include <QtGui/qicon.h>
 #include <QtWidgets/qaction.h>
 
-#ifdef Q_OS_OSX
+#if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
 Q_FORWARD_DECLARE_OBJC_CLASS(NSMenu);
 #endif
 
@@ -81,7 +81,7 @@ public:
     QAction *addAction(const QString &text, const QObject *receiver, const char* member, const QKeySequence &shortcut = 0);
     QAction *addAction(const QIcon &icon, const QString &text, const QObject *receiver, const char* member, const QKeySequence &shortcut = 0);
 
-#ifdef Q_QDOC
+#ifdef Q_CLANG_QDOC
     template<typename PointerToMemberFunction>
     QAction *addAction(const QString &text, const QObject *receiver, PointerToMemberFunction method, const QKeySequence &shortcut = 0);
     template<typename Functor>
@@ -151,7 +151,7 @@ public:
         connect(result, &QAction::triggered, std::move(slot));
         return result;
     }
-#endif // !Q_QDOC
+#endif // !Q_CLANG_QDOC
 
     QAction *addMenu(QMenu *menu);
     QMenu *addMenu(const QString &title);
@@ -211,7 +211,7 @@ public:
     QPlatformMenu *platformMenu();
     void setPlatformMenu(QPlatformMenu *platformMenu);
 
-#ifdef Q_OS_OSX
+#if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
     NSMenu* toNSMenu();
     void setAsDockMenu();
 #endif

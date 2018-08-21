@@ -47,6 +47,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef min // MSVC
+#undef min
+#undef max
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -279,6 +284,27 @@ public:
     {   return (*this = S::fromSpecial(val) & i); }
     QSpecialInteger &operator ^=(T i)
     {   return (*this = S::fromSpecial(val) ^ i); }
+    QSpecialInteger &operator ++()
+    {   return (*this = S::fromSpecial(val) + 1); }
+    QSpecialInteger &operator --()
+    {   return (*this = S::fromSpecial(val) - 1); }
+    QSpecialInteger operator ++(int)
+    {
+        QSpecialInteger<S> pre = *this;
+        *this += 1;
+        return pre;
+    }
+    QSpecialInteger operator --(int)
+    {
+        QSpecialInteger<S> pre = *this;
+        *this -= 1;
+        return pre;
+    }
+
+    static constexpr QSpecialInteger max()
+    { return QSpecialInteger(std::numeric_limits<T>::max()); }
+    static constexpr QSpecialInteger min()
+    { return QSpecialInteger(std::numeric_limits<T>::min()); }
 };
 
 template<typename T>
@@ -316,6 +342,13 @@ public:
     QLEInteger &operator |=(T i);
     QLEInteger &operator &=(T i);
     QLEInteger &operator ^=(T i);
+    QLEInteger &operator ++();
+    QLEInteger &operator --();
+    QLEInteger &operator ++(int);
+    QLEInteger &operator --(int);
+
+    static constexpr QLEInteger max();
+    static constexpr QLEInteger min();
 };
 
 template<typename T>
@@ -336,6 +369,13 @@ public:
     QBEInteger &operator |=(T i);
     QBEInteger &operator &=(T i);
     QBEInteger &operator ^=(T i);
+    QBEInteger &operator ++();
+    QBEInteger &operator --();
+    QBEInteger &operator ++(int);
+    QBEInteger &operator --(int);
+
+    static constexpr QBEInteger max();
+    static constexpr QBEInteger min();
 };
 #else
 
