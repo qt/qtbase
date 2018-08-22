@@ -140,9 +140,12 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
                 // No support for direct ARGB32 upload.
                 break;
             }
+#else
+            // Big endian requires GL_UNSIGNED_INT_8_8_8_8_REV for ARGB to match BGRA
+            break;
+#endif
         }
         targetFormat = image.format();
-#endif
         break;
     case QImage::Format_BGR30:
     case QImage::Format_A2BGR30_Premultiplied:
