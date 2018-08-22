@@ -161,6 +161,10 @@ private slots:
     void emitLayoutChangedOnlyIfSortingChanged();
 
     void checkSetNewModel();
+    void filterAndInsertRow_data();
+    void filterAndInsertRow();
+    void filterAndInsertColumn_data();
+    void filterAndInsertColumn();
 
     void removeIntervals_data();
     void removeIntervals();

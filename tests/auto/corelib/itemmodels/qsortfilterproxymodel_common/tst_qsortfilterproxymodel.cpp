@@ -4662,4 +4662,236 @@ void tst_QSortFilterProxyModel::checkSetNewModel()
     QCoreApplication::processEvents();
 }
 
+enum ColumnFilterMode {
+    FilterNothing,
+    FilterOutMiddle,
+    FilterOutBeginEnd,
+    FilterAll
+};
+Q_DECLARE_METATYPE(ColumnFilterMode)
+
+void tst_QSortFilterProxyModel::filterAndInsertColumn_data()
+{
+
+    QTest::addColumn<int>("insertCol");
+    QTest::addColumn<ColumnFilterMode>("filterMode");
+    QTest::addColumn<QStringList>("expectedModelList");
+    QTest::addColumn<QStringList>("expectedProxyModelList");
+
+    QTest::newRow("at_beginning_filter_out_middle")
+        << 0
+        << FilterOutMiddle
+        << QStringList{{"", "A1", "B1", "C1", "D1"}}
+        << QStringList{{"", "D1"}}
+    ;
+    QTest::newRow("at_end_filter_out_middle")
+        << 2
+        << FilterOutMiddle
+        << QStringList{{"A1", "B1", "C1", "D1", ""}}
+        << QStringList{{"A1", ""}}
+    ;
+    QTest::newRow("in_the_middle_filter_out_middle")
+        << 1
+        << FilterOutMiddle
+        << QStringList{{"A1", "B1", "C1", "", "D1"}}
+        << QStringList{{"A1", "D1"}}
+    ;
+    QTest::newRow("at_beginning_filter_out_begin_and_end")
+        << 0
+        << FilterOutBeginEnd
+        << QStringList{{"A1", "", "B1", "C1", "D1"}}
+        << QStringList{{"", "B1", "C1"}}
+    ;
+    QTest::newRow("at_end_filter_out_begin_and_end")
+        << 2
+        << FilterOutBeginEnd
+        << QStringList{{"A1", "B1", "C1", "D1", ""}}
+        << QStringList{{"B1", "C1", "D1"}}
+    ;
+    QTest::newRow("in_the_middle_filter_out_begin_and_end")
+        << 1
+        << FilterOutBeginEnd
+        << QStringList{{"A1", "B1", "", "C1", "D1"}}
+        << QStringList{{"B1", "", "C1"}}
+    ;
+
+    QTest::newRow("at_beginning_filter_nothing")
+        << 0
+        << FilterAll
+        << QStringList{{"", "A1", "B1", "C1", "D1"}}
+        << QStringList{{"", "A1", "B1", "C1", "D1"}}
+    ;
+    QTest::newRow("at_end_filter_nothing")
+        << 4
+        << FilterAll
+        << QStringList{{"A1", "B1", "C1", "D1", ""}}
+        << QStringList{{"A1", "B1", "C1", "D1", ""}}
+    ;
+    QTest::newRow("in_the_middle_nothing")
+        << 2
+        << FilterAll
+        << QStringList{{"A1", "B1", "", "C1", "D1"}}
+        << QStringList{{"A1", "B1", "", "C1", "D1"}}
+    ;
+
+    QTest::newRow("filter_all")
+        << 0
+        << FilterNothing
+        << QStringList{{"A1", "B1", "C1", "D1", ""}}
+        << QStringList{}
+    ;
+}
+void tst_QSortFilterProxyModel::filterAndInsertColumn()
+{
+
+    class ColumnFilterProxy : public QSortFilterProxyModel {
+        Q_DISABLE_COPY(ColumnFilterProxy)
+        ColumnFilterMode filerMode;
+    public:
+        ColumnFilterProxy(ColumnFilterMode mode)
+            : filerMode(mode)
+        {}
+        bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const override
+        {
+            Q_UNUSED(source_parent)
+            switch (filerMode){
+            case FilterAll:
+                return true;
+            case FilterNothing:
+                return false;
+            case FilterOutMiddle:
+                return source_column == 0 || source_column == sourceModel()->columnCount() - 1;
+            case FilterOutBeginEnd:
+                return source_column > 0 && source_column< sourceModel()->columnCount() - 1;
+            }
+            Q_UNREACHABLE();
+        }
+    };
+    QFETCH(int, insertCol);
+    QFETCH(ColumnFilterMode, filterMode);
+    QFETCH(QStringList, expectedModelList);
+    QFETCH(QStringList, expectedProxyModelList);
+    QStandardItemModel model;
+    model.insertColumns(0, 4);
+    model.insertRows(0, 1);
+    for (int i = 0; i < model.rowCount(); ++i) {
+        for (int j = 0; j < model.columnCount(); ++j)
+            model.setData(model.index(i, j), QString('A' + j) + QString::number(i + 1));
+    }
+    ColumnFilterProxy proxy(filterMode);
+    proxy.setSourceModel(&model);
+    QVERIFY(proxy.insertColumn(insertCol));
+    proxy.invalidate();
+    QStringList modelStringList;
+    for (int i = 0; i < model.rowCount(); ++i) {
+        for (int j = 0; j < model.columnCount(); ++j)
+            modelStringList.append(model.index(i, j).data().toString());
+    }
+    QCOMPARE(expectedModelList, modelStringList);
+    modelStringList.clear();
+    for (int i = 0; i < proxy.rowCount(); ++i) {
+        for (int j = 0; j < proxy.columnCount(); ++j)
+            modelStringList.append(proxy.index(i, j).data().toString());
+    }
+    QCOMPARE(expectedProxyModelList, modelStringList);
+}
+
+void tst_QSortFilterProxyModel::filterAndInsertRow_data()
+{
+    QTest::addColumn<QStringList>("initialModelList");
+    QTest::addColumn<int>("row");
+    QTest::addColumn<QString>("filterRegExp");
+    QTest::addColumn<QStringList>("expectedModelList");
+    QTest::addColumn<QStringList>("expectedProxyModelList");
+
+    QTest::newRow("at_beginning_filter_out_middle")
+        << QStringList{{"A5", "B5", "B6", "A7"}}
+        << 0
+        << "^A"
+        << QStringList{{"", "A5", "B5", "B6", "A7"}}
+        << QStringList{{"A5", "A7"}};
+    QTest::newRow("at_end_filter_out_middle")
+        << QStringList{{"A5", "B5", "B6", "A7"}}
+        << 2
+        << "^A"
+        << QStringList{{"A5", "B5", "B6", "A7", ""}}
+        << QStringList{{"A5", "A7"}};
+    QTest::newRow("in_the_middle_filter_out_middle")
+        << QStringList{{"A5", "B5", "B6", "A7"}}
+        << 1
+        << "^A"
+        << QStringList{{"A5", "B5", "B6", "", "A7"}}
+        << QStringList{{"A5", "A7"}};
+
+    QTest::newRow("at_beginning_filter_out_first_and_last")
+        << QStringList{{"A5", "B5", "B6", "A7"}}
+        << 0
+        << "^B"
+        << QStringList{{"A5", "", "B5", "B6", "A7"}}
+        << QStringList{{"B5", "B6"}};
+    QTest::newRow("at_end_filter_out_first_and_last")
+        << QStringList{{"A5", "B5", "B6", "A7"}}
+        << 2
+        << "^B"
+        << QStringList{{"A5", "B5", "B6", "A7", ""}}
+        << QStringList{{"B5", "B6"}};
+    QTest::newRow("in_the_middle_filter_out_first_and_last")
+        << QStringList{{"A5", "B5", "B6", "A7"}}
+        << 1
+        << "^B"
+        << QStringList{{"A5", "B5", "", "B6", "A7"}}
+        << QStringList{{"B5", "B6"}};
+
+    QTest::newRow("at_beginning_no_filter")
+        << QStringList{{"A5", "B5", "B6", "A7"}}
+        << 0
+        << ".*"
+        << QStringList{{"", "A5", "B5", "B6", "A7"}}
+        << QStringList{{"", "A5", "B5", "B6", "A7"}};
+    QTest::newRow("at_end_no_filter")
+        << QStringList{{"A5", "B5", "B6", "A7"}}
+        << 4
+        << ".*"
+        << QStringList{{"A5", "B5", "B6", "A7", ""}}
+        << QStringList{{"A5", "B5", "B6", "A7", ""}};
+    QTest::newRow("in_the_middle_no_filter")
+        << QStringList{{"A5", "B5", "B6", "A7"}}
+        << 2
+        << ".*"
+        << QStringList{{"A5", "B5", "", "B6", "A7"}}
+        << QStringList{{"A5", "B5", "", "B6", "A7"}};
+
+    QTest::newRow("filter_all")
+        << QStringList{{"A5", "B5", "B6", "A7"}}
+        << 0
+        << "$a"
+        << QStringList{{"A5", "B5", "B6", "A7", ""}}
+        << QStringList{};
+}
+
+void tst_QSortFilterProxyModel::filterAndInsertRow()
+{
+    QFETCH(QStringList, initialModelList);
+    QFETCH(int, row);
+    QFETCH(QString, filterRegExp);
+    QFETCH(QStringList, expectedModelList);
+    QFETCH(QStringList, expectedProxyModelList);
+    QStringListModel model;
+    QSortFilterProxyModel proxyModel;
+
+    model.setStringList(initialModelList);
+    proxyModel.setSourceModel(&model);
+    proxyModel.setDynamicSortFilter(true);
+    proxyModel.setFilterRegExp(filterRegExp);
+
+    QVERIFY(proxyModel.insertRow(row));
+    QCOMPARE(model.stringList(), expectedModelList);
+    QCOMPARE(proxyModel.rowCount(), expectedProxyModelList.count());
+    for (int r = 0; r < proxyModel.rowCount(); ++r) {
+      QModelIndex index = proxyModel.index(r, 0);
+      QVERIFY(index.isValid());
+      QCOMPARE(proxyModel.data(index).toString(), expectedProxyModelList.at(r));
+    }
+}
+
 #include "tst_qsortfilterproxymodel.moc"

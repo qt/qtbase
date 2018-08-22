@@ -1043,19 +1043,31 @@ struct QBidiAlgorithm {
         }
     }
 
-    bool process()
+    bool checkForBidi() const
     {
-        memset(analysis, 0, length * sizeof(QScriptAnalysis));
-
-        bool hasBidi = (baseLevel != 0);
-        if (!hasBidi) {
-            for (int i = 0; i < length; ++i) {
-                if (text[i].unicode() >= 0x590) {
-                    hasBidi = true;
+        if (baseLevel != 0)
+            return true;
+        for (int i = 0; i < length; ++i) {
+            if (text[i].unicode() >= 0x590) {
+                switch (text[i].direction()) {
+                case QChar::DirR: case QChar::DirAN:
+                case QChar::DirLRE: case QChar::DirLRO: case QChar::DirAL:
+                case QChar::DirRLE: case QChar::DirRLO: case QChar::DirPDF:
+                case QChar::DirLRI: case QChar::DirRLI: case QChar::DirFSI: case QChar::DirPDI:
+                    return true;
+                default:
                     break;
                 }
             }
         }
+        return false;
+    }
+
+    bool process()
+    {
+        memset(analysis, 0, length * sizeof(QScriptAnalysis));
+
+        bool hasBidi = checkForBidi();
 
         if (!hasBidi)
             return false;
@@ -2071,7 +2083,6 @@ void QTextEngine::itemize() const
         case QChar::Nbsp:
             if (option.flags() & QTextOption::ShowTabsAndSpaces) {
                 analysis->flags = (*uc == QChar::Space) ? QScriptAnalysis::Space : QScriptAnalysis::Nbsp;
-                analysis->bidiLevel = bidi.baseLevel;
                 break;
             }
             Q_FALLTHROUGH();
