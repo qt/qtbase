@@ -126,11 +126,13 @@ class QMetaTypeInterface
 public:
     QMetaType::SaveOperator saveOp;
     QMetaType::LoadOperator loadOp;
-    QMetaType::Constructor constructor;
+    QMetaType::Constructor constructor; // TODO Qt6: remove me
     QMetaType::Destructor destructor;
     int size;
     QMetaType::TypeFlags::Int flags;
     const QMetaObject *metaObject;
+    QMetaType::TypedConstructor typedConstructor;
+    QMetaType::TypedDestructor typedDestructor;
 };
 
 #ifndef QT_NO_DATASTREAM
@@ -161,7 +163,9 @@ public:
     /*destructor*/(QtMetaTypePrivate::QMetaTypeFunctionHelper<Type, QtMetaTypePrivate::TypeDefinition<Type>::IsAvailable>::Destruct), \
     /*size*/(QTypeInfo<Type>::sizeOf), \
     /*flags*/QtPrivate::QMetaTypeTypeFlags<Type>::Flags, \
-    /*metaObject*/METAOBJECT_DELEGATE(Type) \
+    /*metaObject*/METAOBJECT_DELEGATE(Type), \
+    /*typedConstructor*/ nullptr, \
+    /*typedDestructor*/ nullptr \
 }
 
 
@@ -184,7 +188,9 @@ public:
     /*destructor*/ 0, \
     /*size*/ 0, \
     /*flags*/ 0, \
-    /*metaObject*/ 0 \
+    /*metaObject*/ 0 , \
+    /*typedConstructor*/ nullptr, \
+    /*typedDestructor*/ nullptr \
 }
 
 namespace QtMetaTypePrivate {

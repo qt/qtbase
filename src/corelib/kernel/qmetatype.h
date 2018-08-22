@@ -493,8 +493,12 @@ public:
     typedef void (*Deleter)(void *);
     typedef void *(*Creator)(const void *);
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     typedef void (*Destructor)(void *);
-    typedef void *(*Constructor)(void *, const void *);
+    typedef void *(*Constructor)(void *, const void *); // TODO Qt6: remove me
+#endif
+    typedef void (*TypedDestructor)(int, void *);
+    typedef void *(*TypedConstructor)(int, void *, const void *);
 
     typedef void (*SaveOperator)(QDataStream &, const void *);
     typedef void (*LoadOperator)(QDataStream &, void *);
@@ -513,6 +517,12 @@ public:
                             int size,
                             QMetaType::TypeFlags flags,
                             const QMetaObject *metaObject);
+    static int registerType(const char *typeName,
+                            TypedDestructor destructor,
+                            TypedConstructor constructor,
+                            int size,
+                            QMetaType::TypeFlags flags,
+                            const QMetaObject *metaObject);
     static bool unregisterType(int type);
     static int registerNormalizedType(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName, Deleter deleter,
                             Creator creator,
@@ -523,6 +533,11 @@ public:
                             const QMetaObject *metaObject);
     static int registerNormalizedType(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName, Destructor destructor,
                             Constructor constructor,
+                            int size,
+                            QMetaType::TypeFlags flags,
+                            const QMetaObject *metaObject);
+    static int registerNormalizedType(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName, TypedDestructor destructor,
+                            TypedConstructor constructor,
                             int size,
                             QMetaType::TypeFlags flags,
                             const QMetaObject *metaObject);
@@ -683,8 +698,8 @@ public:
 private:
     static QMetaType typeInfo(const int type);
     inline QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeInterface *info,
-                     Creator creator,
-                     Deleter deleter,
+                     TypedConstructor creator,
+                     TypedDestructor deleter,
                      SaveOperator saveOp,
                      LoadOperator loadOp,
                      Constructor constructor,
@@ -731,8 +746,8 @@ public:
     static void unregisterConverterFunction(int from, int to);
 private:
 
-    Creator m_creator_unused;
-    Deleter m_deleter_unused;
+    TypedConstructor m_typedConstructor;
+    TypedDestructor m_typedDestructor;
     SaveOperator m_saveOp;
     LoadOperator m_loadOp;
     Constructor m_constructor;
@@ -2163,8 +2178,8 @@ QT_BEGIN_NAMESPACE
 #undef Q_DECLARE_METATYPE_TEMPLATE_SMART_POINTER_ITER
 
 inline QMetaType::QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeInterface *info,
-                            Creator creator,
-                            Deleter deleter,
+                            TypedConstructor creator,
+                            TypedDestructor deleter,
                             SaveOperator saveOp,
                             LoadOperator loadOp,
                             Constructor constructor,
@@ -2173,8 +2188,8 @@ inline QMetaType::QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeI
                             uint theTypeFlags,
                             int typeId,
                             const QMetaObject *_metaObject)
-    : m_creator_unused(creator)
-    , m_deleter_unused(deleter)
+    : m_typedConstructor(creator)
+    , m_typedDestructor(deleter)
     , m_saveOp(saveOp)
     , m_loadOp(loadOp)
     , m_constructor(constructor)
