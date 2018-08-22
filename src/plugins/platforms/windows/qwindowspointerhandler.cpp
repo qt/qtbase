@@ -354,6 +354,17 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
     if (count < 1)
         return false;
 
+    if (msg.message == WM_POINTERCAPTURECHANGED) {
+        QWindowSystemInterface::handleTouchCancelEvent(window, m_touchDevice,
+                                                       QWindowsKeyMapper::queryKeyboardModifiers());
+        m_lastTouchPositions.clear();
+        return true;
+    }
+
+    // Only handle down/up/update, ignore others like WM_POINTERENTER, WM_POINTERLEAVE, etc.
+    if (msg.message > WM_POINTERUP)
+        return false;
+
     const QScreen *screen = window->screen();
     if (!screen)
         screen = QGuiApplication::primaryScreen();
@@ -366,7 +377,18 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
 
     QList<QWindowSystemInterface::TouchPoint> touchPoints;
 
+    if (QWindowsContext::verbose > 1)
+        qCDebug(lcQpaEvents).noquote().nospace() << showbase
+                << __FUNCTION__
+                << " message=" << hex << msg.message
+                << " count=" << dec << count;
+
     for (quint32 i = 0; i < count; ++i) {
+        if (QWindowsContext::verbose > 1)
+            qCDebug(lcQpaEvents).noquote().nospace() << showbase
+                    << "    TouchPoint id=" << touchInfo[i].pointerInfo.pointerId
+                    << " frame=" << touchInfo[i].pointerInfo.frameId
+                    << " flags=" << hex << touchInfo[i].pointerInfo.pointerFlags;
 
         QWindowSystemInterface::TouchPoint touchPoint;
         touchPoint.id = touchInfo[i].pointerInfo.pointerId;
@@ -398,6 +420,9 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
             m_lastTouchPositions.insert(touchPoint.id, touchPoint.normalPosition);
         }
         touchPoints.append(touchPoint);
+
+        // Avoid getting repeated messages for this frame if there are multiple pointerIds
+        QWindowsContext::user32dll.skipPointerFrameMessages(touchInfo[i].pointerInfo.pointerId);
     }
 
     QWindowSystemInterface::handleTouchEvent(window, m_touchDevice, touchPoints,

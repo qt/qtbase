@@ -201,6 +201,7 @@ void QWindowsUser32DLL::init()
         getPointerTouchInfo = (GetPointerTouchInfo)library.resolve("GetPointerTouchInfo");
         getPointerFrameTouchInfo = (GetPointerFrameTouchInfo)library.resolve("GetPointerFrameTouchInfo");
         getPointerPenInfo = (GetPointerPenInfo)library.resolve("GetPointerPenInfo");
+        skipPointerFrameMessages = (SkipPointerFrameMessages)library.resolve("SkipPointerFrameMessages");
     }
 
     if (QOperatingSystemVersion::current()
@@ -214,7 +215,8 @@ void QWindowsUser32DLL::init()
 bool QWindowsUser32DLL::supportsPointerApi()
 {
     return enableMouseInPointer && getPointerType && getPointerInfo && getPointerDeviceRects
-            && getPointerTouchInfo && getPointerFrameTouchInfo && getPointerPenInfo;
+            && getPointerTouchInfo && getPointerFrameTouchInfo && getPointerPenInfo
+            && skipPointerFrameMessages;
 }
 
 void QWindowsShcoreDLL::init()

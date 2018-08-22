@@ -93,6 +93,7 @@ struct QWindowsUser32DLL
     typedef BOOL (WINAPI *GetPointerTouchInfo)(UINT32, PVOID);
     typedef BOOL (WINAPI *GetPointerFrameTouchInfo)(UINT32, UINT32 *, PVOID);
     typedef BOOL (WINAPI *GetPointerPenInfo)(UINT32, PVOID);
+    typedef BOOL (WINAPI *SkipPointerFrameMessages)(UINT32);
     typedef BOOL (WINAPI *SetProcessDPIAware)();
     typedef BOOL (WINAPI *AddClipboardFormatListener)(HWND);
     typedef BOOL (WINAPI *RemoveClipboardFormatListener)(HWND);
@@ -110,6 +111,7 @@ struct QWindowsUser32DLL
     GetPointerTouchInfo getPointerTouchInfo = nullptr;
     GetPointerFrameTouchInfo getPointerFrameTouchInfo = nullptr;
     GetPointerPenInfo getPointerPenInfo = nullptr;
+    SkipPointerFrameMessages skipPointerFrameMessages = nullptr;
 
     // Windows Vista onwards
     SetProcessDPIAware setProcessDPIAware = nullptr;
