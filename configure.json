@@ -161,6 +161,7 @@
             },
             "sources": [
                 { "libs": "-lzdll", "condition": "config.msvc" },
+                { "libs": "-lzlib", "condition": "config.msvc" },
                 { "libs": "-lz", "condition": "!config.msvc" }
             ]
         },
