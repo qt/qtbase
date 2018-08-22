@@ -249,6 +249,38 @@ bool QStringListModel::removeRows(int row, int count, const QModelIndex &parent)
     return true;
 }
 
+/*!
+    \since 5.13
+    \reimp
+*/
+bool QStringListModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
+{
+    if (sourceRow < 0
+        || sourceRow + count - 1 >= rowCount(sourceParent)
+        || destinationChild <= 0
+        || destinationChild > rowCount(destinationParent)
+        || sourceRow == destinationChild - 1
+        || count <= 0) {
+        return false;
+    }
+    if (!beginMoveRows(QModelIndex(), sourceRow, sourceRow + count - 1, QModelIndex(), destinationChild))
+        return false;
+    /*
+    QList::move assumes that the second argument is the index where the item will end up to
+    i.e. the valid range for that argument is from 0 to QList::size()-1
+    QAbstractItemModel::moveRows when source and destinations have the same parent assumes that
+    the item will end up being in the row BEFORE the one indicated by destinationChild
+    i.e. the valid range for that argument is from 1 to QList::size()
+    For this reason we remove 1 from destinationChild when using it inside QList
+    */
+    destinationChild--;
+    const int fromRow = destinationChild < sourceRow ? (sourceRow + count - 1) : sourceRow;
+    while (count--)
+        lst.move(fromRow, destinationChild);
+    endMoveRows();
+    return true;
+}
+
 static bool ascendingLessThan(const QPair<QString, int> &s1, const QPair<QString, int> &s2)
 {
     return s1.first < s2.first;
