@@ -1102,18 +1102,7 @@ MakefileGenerator::write()
 QString
 MakefileGenerator::prlFileName(bool fixify)
 {
-    QString ret = project->first("TARGET_PRL").toQString();
-    if(ret.isEmpty())
-        ret = project->first("TARGET").toQString();
-    int slsh = ret.lastIndexOf(Option::dir_sep);
-    if(slsh != -1)
-        ret.remove(0, slsh);
-    if(!ret.endsWith(Option::prl_ext)) {
-        int dot = ret.indexOf('.');
-        if(dot != -1)
-            ret.truncate(dot);
-        ret += Option::prl_ext;
-    }
+    QString ret = project->first("PRL_TARGET") + Option::prl_ext;
     if(!project->isEmpty("QMAKE_BUNDLE"))
         ret.prepend(project->first("QMAKE_BUNDLE") + Option::dir_sep);
     if(fixify) {
