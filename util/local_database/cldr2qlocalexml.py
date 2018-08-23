@@ -446,8 +446,10 @@ def integrateWeekData(filePath):
 def splitLocale(name):
     """Split name into (language, script, territory) triple as generator.
 
-    Ignores any trailing fields, leaves script or territory empty if
-    unspecified, returns empty generator if no language found."""
+    Ignores any trailing fields (with a warning), leaves script (a capitalised
+    four-letter token) or territory (either a number or an all-uppercase token)
+    empty if unspecified, returns a single-entry generator if name is a single
+    tag (i.e. contains no underscores).  Always yields 1 or 3 values, never 2."""
     tags = iter(name.split('_'))
     yield tags.next() # Language
     tag = tags.next()
