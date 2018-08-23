@@ -428,15 +428,31 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
         return false; // Let DefWindowProc() handle Non Client messages.
 
     POINTER_PEN_INFO *penInfo = static_cast<POINTER_PEN_INFO *>(vPenInfo);
+
+    RECT pRect, dRect;
+    if (!QWindowsContext::user32dll.getPointerDeviceRects(penInfo->pointerInfo.sourceDevice, &pRect, &dRect))
+        return false;
+
     const quint32 pointerId = penInfo->pointerInfo.pointerId;
     const QPoint globalPos = QPoint(penInfo->pointerInfo.ptPixelLocation.x, penInfo->pointerInfo.ptPixelLocation.y);
     const QPoint localPos = QWindowsGeometryHint::mapFromGlobal(hwnd, globalPos);
+    const QPointF hiResGlobalPos = QPointF(dRect.left + qreal(penInfo->pointerInfo.ptHimetricLocation.x - pRect.left)
+                                           / (pRect.right - pRect.left) * (dRect.right - dRect.left),
+                                           dRect.top + qreal(penInfo->pointerInfo.ptHimetricLocation.y - pRect.top)
+                                           / (pRect.bottom - pRect.top) * (dRect.bottom - dRect.top));
     const qreal pressure = (penInfo->penMask & PEN_MASK_PRESSURE) ? qreal(penInfo->pressure) / 1024.0 : 0.5;
     const qreal rotation = (penInfo->penMask & PEN_MASK_ROTATION) ? qreal(penInfo->rotation) : 0.0;
     const qreal tangentialPressure = 0.0;
     const int xTilt = (penInfo->penMask & PEN_MASK_TILT_X) ? penInfo->tiltX : 0;
     const int yTilt = (penInfo->penMask & PEN_MASK_TILT_Y) ? penInfo->tiltY : 0;
     const int z = 0;
+
+    if (QWindowsContext::verbose > 1)
+        qCDebug(lcQpaEvents).noquote().nospace() << showbase
+            << __FUNCTION__ << " pointerId=" << pointerId
+            << " globalPos=" << globalPos << " localPos=" << localPos << " hiResGlobalPos=" << hiResGlobalPos
+            << " message=" << hex << msg.message
+            << " flags=" << hex << penInfo->pointerInfo.pointerFlags;
 
     const QTabletEvent::TabletDevice device = QTabletEvent::Stylus;
     QTabletEvent::PointerType type;
@@ -491,16 +507,18 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
         }
         const Qt::KeyboardModifiers keyModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
 
-        QWindowSystemInterface::handleTabletEvent(target, localPos, globalPos, device, type, mouseButtons,
+        QWindowSystemInterface::handleTabletEvent(target, localPos, hiResGlobalPos, device, type, mouseButtons,
                                                   pressure, xTilt, yTilt, tangentialPressure, rotation, z,
                                                   pointerId, keyModifiers);
 
-        QEvent::Type eventType;
-        Qt::MouseButton button;
-        getMouseEventInfo(msg.message, penInfo->pointerInfo.ButtonChangeType, globalPos, &eventType, &button);
+        if (!(QWindowsIntegration::instance()->options() & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch)) {
+            QEvent::Type eventType;
+            Qt::MouseButton button;
+            getMouseEventInfo(msg.message, penInfo->pointerInfo.ButtonChangeType, globalPos, &eventType, &button);
 
-        QWindowSystemInterface::handleMouseEvent(target, localPos, globalPos, mouseButtons, button, eventType,
-                                                 keyModifiers, Qt::MouseEventSynthesizedByQt);
+            QWindowSystemInterface::handleMouseEvent(target, localPos, globalPos, mouseButtons, button, eventType,
+                                                     keyModifiers, Qt::MouseEventSynthesizedByQt);
+        }
         break;
     }
     }

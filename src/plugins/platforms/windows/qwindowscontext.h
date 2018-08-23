@@ -89,6 +89,7 @@ struct QWindowsUser32DLL
     typedef BOOL (WINAPI *EnableMouseInPointer)(BOOL);
     typedef BOOL (WINAPI *GetPointerType)(UINT32, PVOID);
     typedef BOOL (WINAPI *GetPointerInfo)(UINT32, PVOID);
+    typedef BOOL (WINAPI *GetPointerDeviceRects)(HANDLE, RECT *, RECT *);
     typedef BOOL (WINAPI *GetPointerTouchInfo)(UINT32, PVOID);
     typedef BOOL (WINAPI *GetPointerFrameTouchInfo)(UINT32, UINT32 *, PVOID);
     typedef BOOL (WINAPI *GetPointerPenInfo)(UINT32, PVOID);
@@ -105,6 +106,7 @@ struct QWindowsUser32DLL
     EnableMouseInPointer enableMouseInPointer = nullptr;
     GetPointerType getPointerType = nullptr;
     GetPointerInfo getPointerInfo = nullptr;
+    GetPointerDeviceRects getPointerDeviceRects = nullptr;
     GetPointerTouchInfo getPointerTouchInfo = nullptr;
     GetPointerFrameTouchInfo getPointerFrameTouchInfo = nullptr;
     GetPointerPenInfo getPointerPenInfo = nullptr;
