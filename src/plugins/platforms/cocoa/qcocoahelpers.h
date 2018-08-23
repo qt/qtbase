@@ -295,26 +295,17 @@ public:
     }
 
 private:
-    template <std::size_t... Ts>
-    struct index {};
-
-    template <std::size_t N, std::size_t... Ts>
-    struct gen_seq : gen_seq<N - 1, N - 1, Ts...> {};
-
-    template <std::size_t... Ts>
-    struct gen_seq<0, Ts...> : index<Ts...> {};
-
     template <typename ReturnType, bool V>
     using if_requires_stret = typename std::enable_if<objc_msgsend_requires_stret<ReturnType>::value == V, ReturnType>::type;
 
-    template <typename ReturnType, std::size_t... Is>
-    if_requires_stret<ReturnType, false> msgSendSuper(std::tuple<Args...>& args, index<Is...>)
+    template <typename ReturnType, int... Is>
+    if_requires_stret<ReturnType, false> msgSendSuper(std::tuple<Args...>& args, QtPrivate::IndexesList<Is...>)
     {
         return qt_msgSendSuper<ReturnType>(m_receiver, m_selector, std::get<Is>(args)...);
     }
 
-    template <typename ReturnType, std::size_t... Is>
-    if_requires_stret<ReturnType, true> msgSendSuper(std::tuple<Args...>& args, index<Is...>)
+    template <typename ReturnType, int... Is>
+    if_requires_stret<ReturnType, true> msgSendSuper(std::tuple<Args...>& args, QtPrivate::IndexesList<Is...>)
     {
         return qt_msgSendSuper_stret<ReturnType>(m_receiver, m_selector, std::get<Is>(args)...);
     }
@@ -322,7 +313,7 @@ private:
     template <typename ReturnType>
     ReturnType msgSendSuper(std::tuple<Args...>& args)
     {
-        return msgSendSuper<ReturnType>(args, gen_seq<sizeof...(Args)>{});
+        return msgSendSuper<ReturnType>(args, QtPrivate::makeIndexSequence<sizeof...(Args)>{});
     }
 
     id m_receiver;
