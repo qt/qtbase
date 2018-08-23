@@ -490,7 +490,7 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
         }
     } else {
         T *b = ptr + offset;
-        memmove(b + 1, b, (s - offset) * sizeof(T));
+        memmove(static_cast<void *>(b + 1), static_cast<const void *>(b), (s - offset) * sizeof(T));
         new (b) T(std::move(t));
     }
     s += 1;
@@ -518,7 +518,7 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
         } else {
             T *b = ptr + offset;
             T *i = b + n;
-            memmove(i, b, (s - offset - n) * sizeof(T));
+            memmove(static_cast<void *>(i), static_cast<const void *>(b), (s - offset - n) * sizeof(T));
             while (i != b)
                 new (--i) T(copy);
         }
@@ -544,7 +544,7 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
             i->~T();
         }
     } else {
-        memmove(ptr + f, ptr + l, (s - l) * sizeof(T));
+        memmove(static_cast<void *>(ptr + f), static_cast<const void *>(ptr + l), (s - l) * sizeof(T));
     }
     s -= n;
     return ptr + f;

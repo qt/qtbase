@@ -58,6 +58,7 @@
 #else
 #  include "qwindowsopenglcontext.h"
 #endif
+#include "qwindowsopengltester.h"
 #ifdef QT_NO_CURSOR
 #  include "qwindowscursor.h"
 #endif
@@ -541,6 +542,84 @@ static inline void fixTopLevelWindowFlags(Qt::WindowFlags &flags)
         flags |= Qt::FramelessWindowHint;
 }
 
+static QScreen *screenForName(const QWindow *w, const QString &name)
+{
+    QScreen *winScreen = w ? w->screen() : QGuiApplication::primaryScreen();
+    if (winScreen && winScreen->name() != name) {
+        const auto screens = winScreen->virtualSiblings();
+        for (QScreen *screen : screens) {
+            if (screen->name() == name)
+                return screen;
+        }
+    }
+    return winScreen;
+}
+
+static QScreen *forcedScreenForGLWindow(const QWindow *w)
+{
+    const QString forceToScreen = GpuDescription::detect().gpuSuitableScreen;
+    return forceToScreen.isEmpty() ? nullptr : screenForName(w, forceToScreen);
+}
+
+static QPoint calcPosition(const QWindow *w, const QWindowCreationContextPtr &context, const QMargins &invMargins)
+{
+    const QPoint orgPos(context->frameX - invMargins.left(), context->frameY - invMargins.top());
+
+    if (!w || (!w->isTopLevel() && w->surfaceType() != QWindow::OpenGLSurface))
+        return orgPos;
+
+    // Workaround for QTBUG-50371
+    const QScreen *screenForGL = forcedScreenForGLWindow(w);
+    if (!screenForGL)
+        return orgPos;
+
+    const QPoint posFrame(context->frameX, context->frameY);
+    const QMargins margins = context->margins;
+    const QRect scrGeo = screenForGL->handle()->availableGeometry();
+
+    // Point is already in the required screen.
+    if (scrGeo.contains(orgPos))
+        return orgPos;
+
+    // If the visible part of the window is already in the
+    // required screen, just ignore the invisible offset.
+    if (scrGeo.contains(posFrame))
+        return posFrame;
+
+    // Find the original screen containing the coordinates.
+    const QList<QScreen *> screens = screenForGL->virtualSiblings();
+    const QScreen *orgScreen = nullptr;
+    for (QScreen *screen : screens) {
+        if (screen->handle()->availableGeometry().contains(posFrame)) {
+            orgScreen = screen;
+            break;
+        }
+    }
+    const QPoint ctPos = QPoint(qMax(scrGeo.left(), scrGeo.center().x()
+                                     + (margins.right() - margins.left() - context->frameWidth)/2),
+                                qMax(scrGeo.top(), scrGeo.center().y()
+                                     + (margins.bottom() - margins.top() - context->frameHeight)/2));
+
+    // If initial coordinates were outside all screens, center the window on the required screen.
+    if (!orgScreen)
+        return ctPos;
+
+    const QRect orgGeo = orgScreen->handle()->availableGeometry();
+    const QRect orgFrame(QPoint(context->frameX, context->frameY),
+                         QSize(context->frameWidth, context->frameHeight));
+
+    // Window would be centered on orgScreen. Center it on the required screen.
+    if (orgGeo.center() == (orgFrame - margins).center())
+        return ctPos;
+
+    // Transform the coordinates to map them into the required screen.
+    const QPoint newPos(scrGeo.left() + ((posFrame.x() - orgGeo.left()) * scrGeo.width()) / orgGeo.width(),
+                        scrGeo.top() + ((posFrame.y() - orgGeo.top()) * scrGeo.height()) / orgGeo.height());
+    const QPoint newPosNoMargin(newPos.x() - invMargins.left(), newPos.y() - invMargins.top());
+
+    return scrGeo.contains(newPosNoMargin) ? newPosNoMargin : newPos;
+}
+
 void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flagsIn,
                                     unsigned creationFlags)
 {
@@ -688,9 +767,12 @@ QWindowsWindowData
         << " custom margins: " << context->customMargins
         << " invisible margins: " << invMargins;
 
+
+    QPoint pos = calcPosition(w, context, invMargins);
+
     result.hwnd = CreateWindowEx(exStyle, classNameUtf16, titleUtf16,
                                  style,
-                                 context->frameX - invMargins.left(), context->frameY - invMargins.top(),
+                                 pos.x(), pos.y(),
                                  context->frameWidth, context->frameHeight,
                                  parentHandle, NULL, appinst, NULL);
     qCDebug(lcQpaWindows).nospace()

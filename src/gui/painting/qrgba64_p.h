@@ -64,14 +64,6 @@ inline QRgba64 combineAlpha256(QRgba64 rgba64, uint alpha256)
     return QRgba64::fromRgba64(rgba64.red(), rgba64.green(), rgba64.blue(), (rgba64.alpha() * alpha256) >> 8);
 }
 
-inline QRgba64 multiplyAlpha256(QRgba64 rgba64, uint alpha256)
-{
-    return QRgba64::fromRgba64((rgba64.red()   * alpha256) >> 8,
-                               (rgba64.green() * alpha256) >> 8,
-                               (rgba64.blue()  * alpha256) >> 8,
-                               (rgba64.alpha() * alpha256) >> 8);
-}
-
 inline QRgba64 multiplyAlpha65535(QRgba64 rgba64, uint alpha65535)
 {
     return QRgba64::fromRgba64(qt_div_65535(rgba64.red()   * alpha65535),
@@ -124,11 +116,6 @@ inline T multiplyAlpha255(T rgba64, uint alpha255)
                                qt_div_255(rgba64.blue()  * alpha255),
                                qt_div_255(rgba64.alpha() * alpha255));
 #endif
-}
-
-inline QRgba64 interpolate256(QRgba64 x, uint alpha1, QRgba64 y, uint alpha2)
-{
-    return QRgba64::fromRgba64(multiplyAlpha256(x, alpha1) + multiplyAlpha256(y, alpha2));
 }
 
 inline QRgba64 interpolate255(QRgba64 x, uint alpha1, QRgba64 y, uint alpha2)

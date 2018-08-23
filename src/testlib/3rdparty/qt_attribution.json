@@ -8,6 +8,7 @@
 
         "Description": "An instrumentation framework for building dynamic analysis tools.",
         "Homepage": "http://valgrind.org/",
+        "Version": "3.3.0",
         "License": "BSD 4-clause \"Original\" or \"Old\" License",
         "LicenseId": "BSD-4-Clause",
         "LicenseFile": "VALGRIND_LICENSE.txt",
@@ -36,6 +37,8 @@ Copyright (c) 2003, 2006 Massachusetts Institute of Technology"
         "Files": "linux_perf_event_p.h",
 
         "Description": "Allows access to the Linux kernel's performance events.",
+        "Homepage": "https://www.kernel.org",
+        "Version": "3.7",
         "License": "GNU General Public License v2.0 only with Linux Syscall Note",
         "LicenseId": "GPL-2.0 WITH Linux-syscall-note",
         "LicenseFile": "LINUX_LICENSE.txt",

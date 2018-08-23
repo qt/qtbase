@@ -79,6 +79,7 @@ public:
 
     bool saveImage(const QString &file);
     bool loadImage(const QString &file);
+    void clear();
     void setAlphaChannelValuator(Valuator type)
         { m_alphaChannelValuator = type; }
     void setColorSaturationValuator(Valuator type)

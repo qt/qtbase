@@ -208,6 +208,8 @@ public:
     void setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiAwareness);
     static int processDpiAwareness();
 
+    void setDetectAltGrModifier(bool a);
+
     // Returns a combination of SystemInfoFlags
     unsigned systemInfo() const;
 

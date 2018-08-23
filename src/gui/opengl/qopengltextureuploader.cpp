@@ -140,9 +140,12 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
                 // No support for direct ARGB32 upload.
                 break;
             }
+#else
+            // Big endian requires GL_UNSIGNED_INT_8_8_8_8_REV for ARGB to match BGRA
+            break;
+#endif
         }
         targetFormat = image.format();
-#endif
         break;
     case QImage::Format_BGR30:
     case QImage::Format_A2BGR30_Premultiplied:
@@ -309,6 +312,11 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
 
     if (newSize != tx.size())
         tx = tx.scaled(newSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
+    // Handle cases where the QImage is actually a sub image of its image data:
+    qsizetype naturalBpl = ((qsizetype(tx.width()) * tx.depth() + 31) >> 5) << 2;
+    if (tx.bytesPerLine() != naturalBpl)
+        tx = tx.copy(tx.rect());
 
     funcs->glTexImage2D(target, 0, internalFormat, tx.width(), tx.height(), 0, externalFormat, pixelType, tx.constBits());
 

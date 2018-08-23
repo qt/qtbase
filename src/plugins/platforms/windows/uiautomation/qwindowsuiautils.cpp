@@ -180,7 +180,7 @@ long roleToControlTypeId(QAccessible::Role role)
         {QAccessible::PropertyPage, UIA_CustomControlTypeId},
         {QAccessible::Indicator, UIA_CustomControlTypeId},
         {QAccessible::Graphic, UIA_ImageControlTypeId},
-        {QAccessible::StaticText, UIA_EditControlTypeId},
+        {QAccessible::StaticText, UIA_TextControlTypeId},
         {QAccessible::EditableText, UIA_EditControlTypeId},
         {QAccessible::Button, UIA_ButtonControlTypeId},
         {QAccessible::CheckBox, UIA_CheckBoxControlTypeId},

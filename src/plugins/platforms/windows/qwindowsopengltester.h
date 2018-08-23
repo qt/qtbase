@@ -62,6 +62,7 @@ struct GpuDescription
     QVersionNumber driverVersion;
     QByteArray driverName;
     QByteArray description;
+    QString gpuSuitableScreen;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

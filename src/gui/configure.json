@@ -294,7 +294,7 @@
             },
             "sources": [
                 { "libs": "-llibjpeg", "condition": "config.msvc" },
-                { "libs": "-ljpeg", "condition": "!config.msvc" }
+                "-ljpeg"
             ]
         },
         "libpng": {
@@ -305,7 +305,9 @@
             },
             "sources": [
                 { "type": "pkgConfig", "args": "libpng" },
+                { "libs": "-llibpng16", "condition": "config.msvc" },
                 { "libs": "-llibpng", "condition": "config.msvc" },
+                { "libs": "-lpng16", "condition": "!config.msvc" },
                 { "libs": "-lpng", "condition": "!config.msvc" }
             ],
             "use": [

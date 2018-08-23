@@ -342,7 +342,7 @@ static void QT_FASTCALL convertToRGB32(uint *buffer, int count, const QVector<QR
         buffer[i] = convertPixelToRGB32<Format>(buffer[i]);
 }
 
-#if defined(__SSE2__) && !defined(__SSSE3__)
+#if defined(__SSE2__) && !defined(__SSSE3__) && QT_COMPILER_SUPPORTS_SSSE3
 extern const uint * QT_FASTCALL fetchPixelsBPP24_ssse3(uint *dest, const uchar*src, int index, int count);
 #endif
 
@@ -351,7 +351,7 @@ static const uint *QT_FASTCALL fetchRGBToRGB32(uint *buffer, const uchar *src, i
                                                const QVector<QRgb> *, QDitherInfo *)
 {
     constexpr QPixelLayout::BPP BPP = bitsPerPixel<Format>();
-#if defined(__SSE2__) && !defined(__SSSE3__)
+#if defined(__SSE2__) && !defined(__SSSE3__) && QT_COMPILER_SUPPORTS_SSSE3
     if (BPP == QPixelLayout::BPP24 && qCpuHasFeature(SSSE3)) {
         // With SSE2 can convertToRGB32 be vectorized, but it takes SSSE3
         // to vectorize the deforested version below.
@@ -442,7 +442,7 @@ static const uint *QT_FASTCALL fetchARGBPMToARGB32PM(uint *buffer, const uchar *
                                                      const QVector<QRgb> *, QDitherInfo *)
 {
     constexpr QPixelLayout::BPP BPP = bitsPerPixel<Format>();
-#if defined(__SSE2__) && !defined(__SSSE3__)
+#if defined(__SSE2__) && !defined(__SSSE3__) && QT_COMPILER_SUPPORTS_SSSE3
     if (BPP == QPixelLayout::BPP24 && qCpuHasFeature(SSSE3)) {
         // With SSE2 can convertToRGB32 be vectorized, but it takes SSSE3
         // to vectorize the deforested version below.
@@ -639,6 +639,19 @@ template<>
 void QT_FASTCALL rbSwap<QImage::Format_RGBA8888>(uchar *d, const uchar *s, int count)
 {
     return rbSwap_rgb32(d, s, count);
+}
+#else
+template<>
+void QT_FASTCALL rbSwap<QImage::Format_RGBA8888>(uchar *d, const uchar *s, int count)
+{
+    const uint *src = reinterpret_cast<const uint *>(s);
+    uint *dest = reinterpret_cast<uint *>(d);
+    for (int i = 0; i < count; ++i) {
+        const uint c = src[i];
+        const uint rb = c & 0xff00ff00;
+        const uint ga = c & 0x00ff00ff;
+        dest[i] = ga | (rb << 16) | (rb >> 16);
+    }
 }
 #endif
 
@@ -2261,43 +2274,6 @@ static inline uint interpolate_4_pixels_16(uint tl, uint tr, uint bl, uint br, u
     rAG = vandq_s16(invColorMask, rAG); \
     rRB = vreinterpretq_s16_u16(vshrq_n_u16(vreinterpretq_u16_s16(rRB), 8)); \
     vst1q_s16((int16_t*)(b), vorrq_s16(rAG, rRB)); \
-}
-#endif
-
-#if defined(__SSE2__)
-static inline QRgba64 interpolate_4_pixels_rgb64(const QRgba64 t[], const QRgba64 b[], uint distx, uint disty)
-{
-    __m128i vt = _mm_loadu_si128((const __m128i*)t);
-    if (disty) {
-       __m128i vb = _mm_loadu_si128((const __m128i*)b);
-        vt = _mm_mulhi_epu16(vt, _mm_set1_epi16(0x10000 - disty));
-        vb = _mm_mulhi_epu16(vb, _mm_set1_epi16(disty));
-        vt = _mm_add_epi16(vt, vb);
-    }
-    if (distx) {
-        const __m128i vdistx = _mm_shufflelo_epi16(_mm_cvtsi32_si128(distx), _MM_SHUFFLE(0, 0, 0, 0));
-        const __m128i vidistx = _mm_shufflelo_epi16(_mm_cvtsi32_si128(0x10000 - distx), _MM_SHUFFLE(0, 0, 0, 0));
-        vt = _mm_mulhi_epu16(vt, _mm_unpacklo_epi64(vidistx, vdistx));
-        vt = _mm_add_epi16(vt, _mm_srli_si128(vt, 8));
-    }
-#ifdef Q_PROCESSOR_X86_64
-    return QRgba64::fromRgba64(_mm_cvtsi128_si64(vt));
-#else
-    QRgba64 out;
-    _mm_storel_epi64((__m128i*)&out, vt);
-    return out;
-#endif
-}
-#else
-static inline QRgba64 interpolate_4_pixels_rgb64(const QRgba64 t[], const QRgba64 b[], uint distx, uint disty)
-{
-    const uint dx = distx>>8;
-    const uint dy = disty>>8;
-    const uint idx = 256 - dx;
-    const uint idy = 256 - dy;
-    QRgba64 xtop = interpolate256(t[0], idx, t[1], dx);
-    QRgba64 xbot = interpolate256(b[0], idx, b[1], dx);
-    return interpolate256(xtop, idy, xbot, dy);
 }
 #endif
 

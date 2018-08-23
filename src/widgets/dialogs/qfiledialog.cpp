@@ -1047,10 +1047,15 @@ void QFileDialog::selectFile(const QString &filename)
         return;
 
     if (!d->usingWidgets()) {
-        QUrl url = QUrl::fromLocalFile(filename);
+        QUrl url;
         if (QFileInfo(filename).isRelative()) {
-            QDir dir(d->options->initialDirectory().toLocalFile());
-            url = QUrl::fromLocalFile(dir.absoluteFilePath(filename));
+            url = d->options->initialDirectory();
+            QString path = url.path();
+            if (!path.endsWith(QLatin1Char('/')))
+                path += QLatin1Char('/');
+            url.setPath(path + filename);
+        } else {
+            url = QUrl::fromLocalFile(filename);
         }
         d->selectFile_sys(url);
         d->options->setInitiallySelectedFiles(QList<QUrl>() << url);

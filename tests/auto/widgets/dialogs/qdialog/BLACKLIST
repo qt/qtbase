@@ -1,2 +1,4 @@
 [snapToDefaultButton]
 osx
+[showFullScreen]
+osx-10.13 ci

@@ -198,6 +198,8 @@ static inline unsigned parseOptions(const QStringList &paramList,
             } else if (param.endsWith(QLatin1String("none"))) {
                 options |= QWindowsIntegration::NoNativeDialogs;
             }
+        } else if (param == QLatin1String("altgr")) {
+            options |= QWindowsIntegration::DetectAltGrModifier;
         } else if (param == QLatin1String("gl=gdi")) {
             options |= QWindowsIntegration::DisableArb;
         } else if (param == QLatin1String("nodirectwrite")) {
@@ -269,6 +271,7 @@ QWindowsIntegration::QWindowsIntegration(const QStringList &paramList) :
     d->m_clipboard.registerViewer();
 #endif
     d->m_context.screenManager().handleScreenChanges();
+    d->m_context.setDetectAltGrModifier((d->m_options & DetectAltGrModifier) != 0);
 }
 
 QWindowsIntegration::~QWindowsIntegration()

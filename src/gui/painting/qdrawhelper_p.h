@@ -747,6 +747,77 @@ static constexpr inline bool hasFastInterpolate4() { return false; }
 
 #endif
 
+static inline QRgba64 multiplyAlpha256(QRgba64 rgba64, uint alpha256)
+{
+    return QRgba64::fromRgba64((rgba64.red()   * alpha256) >> 8,
+                               (rgba64.green() * alpha256) >> 8,
+                               (rgba64.blue()  * alpha256) >> 8,
+                               (rgba64.alpha() * alpha256) >> 8);
+}
+static inline QRgba64 interpolate256(QRgba64 x, uint alpha1, QRgba64 y, uint alpha2)
+{
+    return QRgba64::fromRgba64(multiplyAlpha256(x, alpha1) + multiplyAlpha256(y, alpha2));
+}
+
+#ifdef __SSE2__
+static inline QRgba64 interpolate_4_pixels_rgb64(const QRgba64 t[], const QRgba64 b[], uint distx, uint disty)
+{
+    __m128i vt = _mm_loadu_si128((const __m128i*)t);
+    if (disty) {
+       __m128i vb = _mm_loadu_si128((const __m128i*)b);
+        vt = _mm_mulhi_epu16(vt, _mm_set1_epi16(0x10000 - disty));
+        vb = _mm_mulhi_epu16(vb, _mm_set1_epi16(disty));
+        vt = _mm_add_epi16(vt, vb);
+    }
+    if (distx) {
+        const __m128i vdistx = _mm_shufflelo_epi16(_mm_cvtsi32_si128(distx), _MM_SHUFFLE(0, 0, 0, 0));
+        const __m128i vidistx = _mm_shufflelo_epi16(_mm_cvtsi32_si128(0x10000 - distx), _MM_SHUFFLE(0, 0, 0, 0));
+        vt = _mm_mulhi_epu16(vt, _mm_unpacklo_epi64(vidistx, vdistx));
+        vt = _mm_add_epi16(vt, _mm_srli_si128(vt, 8));
+    }
+#ifdef Q_PROCESSOR_X86_64
+    return QRgba64::fromRgba64(_mm_cvtsi128_si64(vt));
+#else
+    QRgba64 out;
+    _mm_storel_epi64((__m128i*)&out, vt);
+    return out;
+#endif // Q_PROCESSOR_X86_64
+}
+#elif defined(__ARM_NEON__)
+static inline QRgba64 interpolate_4_pixels_rgb64(const QRgba64 t[], const QRgba64 b[], uint distx, uint disty)
+{
+    uint64x1x2_t vt = vld2_u64(reinterpret_cast<const uint64_t *>(t));
+    if (disty) {
+        uint64x1x2_t vb = vld2_u64(reinterpret_cast<const uint64_t *>(b));
+        uint32x4_t vt0 = vmull_n_u16(vreinterpret_u16_u64(vt.val[0]), 0x10000 - disty);
+        uint32x4_t vt1 = vmull_n_u16(vreinterpret_u16_u64(vt.val[1]), 0x10000 - disty);
+        vt0 = vmlal_n_u16(vt0, vreinterpret_u16_u64(vb.val[0]), disty);
+        vt1 = vmlal_n_u16(vt1, vreinterpret_u16_u64(vb.val[1]), disty);
+        vt.val[0] = vreinterpret_u64_u16(vshrn_n_u32(vt0, 16));
+        vt.val[1] = vreinterpret_u64_u16(vshrn_n_u32(vt1, 16));
+    }
+    if (distx) {
+        uint32x4_t vt0 = vmull_n_u16(vreinterpret_u16_u64(vt.val[0]), 0x10000 - distx);
+        vt0 = vmlal_n_u16(vt0, vreinterpret_u16_u64(vt.val[1]), distx);
+        vt.val[0] = vreinterpret_u64_u16(vshrn_n_u32(vt0, 16));
+    }
+    QRgba64 out;
+    vst1_u64(reinterpret_cast<uint64_t *>(&out), vt.val[0]);
+    return out;
+}
+#else
+static inline QRgba64 interpolate_4_pixels_rgb64(const QRgba64 t[], const QRgba64 b[], uint distx, uint disty)
+{
+    const uint dx = distx>>8;
+    const uint dy = disty>>8;
+    const uint idx = 256 - dx;
+    const uint idy = 256 - dy;
+    QRgba64 xtop = interpolate256(t[0], idx, t[1], dx);
+    QRgba64 xbot = interpolate256(b[0], idx, b[1], dx);
+    return interpolate256(xtop, idy, xbot, dy);
+}
+#endif // __SSE2__
+
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
 static Q_ALWAYS_INLINE quint32 RGBA2ARGB(quint32 x) {
     quint32 rgb = x >> 8;

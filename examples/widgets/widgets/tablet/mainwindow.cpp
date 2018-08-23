@@ -104,15 +104,16 @@ void MainWindow::setEventCompression(bool compress)
 }
 
 //! [5]
-void MainWindow::save()
+bool MainWindow::save()
 {
     QString path = QDir::currentPath() + "/untitled.png";
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Picture"),
                              path);
-
-    if (!m_canvas->saveImage(fileName))
+    bool success = m_canvas->saveImage(fileName);
+    if (!success)
         QMessageBox::information(this, "Error Saving Picture",
                                  "Could not save the image");
+    return success;
 }
 //! [5]
 
@@ -128,6 +129,14 @@ void MainWindow::load()
 }
 //! [6]
 
+void MainWindow::clear()
+{
+    if (QMessageBox::question(this, tr("Save changes"), tr("Do you want to save your changes?"),
+                              QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+                              QMessageBox::Save) != QMessageBox::Save || save())
+        m_canvas->clear();
+}
+
 //! [7]
 void MainWindow::about()
 {
@@ -142,6 +151,7 @@ void MainWindow::createMenus()
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(tr("&Open..."), this, &MainWindow::load, QKeySequence::Open);
     fileMenu->addAction(tr("&Save As..."), this, &MainWindow::save, QKeySequence::SaveAs);
+    fileMenu->addAction(tr("&New"), this, &MainWindow::clear, QKeySequence::New);
     fileMenu->addAction(tr("E&xit"), this, &MainWindow::close, QKeySequence::Quit);
 
     QMenu *brushMenu = menuBar()->addMenu(tr("&Brush"));

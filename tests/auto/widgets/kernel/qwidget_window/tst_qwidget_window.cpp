@@ -44,6 +44,8 @@
 #include <qmainwindow.h>
 #include <qtoolbar.h>
 #include <private/qwindow_p.h>
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 
 #include <QtTest/private/qtesthelpers_p.h>
 
@@ -79,6 +81,7 @@ private slots:
 
     void tst_showWithoutActivating();
     void tst_paintEventOnSecondShow();
+    void tst_exposeObscuredMapped_QTBUG39220();
     void tst_paintEventOnResize_QTBUG50796();
 
 #if QT_CONFIG(draganddrop)
@@ -375,6 +378,33 @@ void tst_QWidget_window::tst_paintEventOnSecondShow()
     QVERIFY(QTest::qWaitForWindowExposed(&w));
     QApplication::processEvents();
     QTRY_VERIFY(w.paintEventCount > 0);
+}
+
+void tst_QWidget_window::tst_exposeObscuredMapped_QTBUG39220()
+{
+    const auto integration = QGuiApplicationPrivate::platformIntegration();
+    if (!integration->hasCapability(QPlatformIntegration::MultipleWindows)
+        || !integration->hasCapability(QPlatformIntegration::NonFullScreenWindows)
+        || QGuiApplication::platformName() == QLatin1String("winrt")) {
+        QSKIP("The platform does not have the required capabilities");
+    }
+    // QTBUG-39220: Fully obscured parent widgets may not receive expose
+    // events (as is the case for frameless, obscured parents on Windows).
+    // Ensure Qt::WA_Mapped is set so updating works.
+    const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
+    const QSize size = availableGeometry.size() / 6;
+    QWidget topLevel;
+    setFrameless(&topLevel);
+    topLevel.resize(size);
+    const QPoint sizeP(size.width(), size.height());
+    topLevel.move(availableGeometry.center() - sizeP / 2);
+    QWidget *child = new QWidget(&topLevel);
+    child->resize(size);
+    child->move(0, 0);
+    QVERIFY(child->winId());
+    topLevel.show();
+    QTRY_VERIFY(child->testAttribute(Qt::WA_Mapped));
+    QVERIFY(topLevel.testAttribute(Qt::WA_Mapped));
 }
 
 void tst_QWidget_window::tst_paintEventOnResize_QTBUG50796()

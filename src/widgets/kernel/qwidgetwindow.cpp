@@ -977,7 +977,10 @@ void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
     }
 
     if (exposed) {
+        // QTBUG-39220, QTBUG-58575: set all (potentially fully obscured parent widgets) mapped.
         m_widget->setAttribute(Qt::WA_Mapped);
+        for (QWidget *p = m_widget->parentWidget(); p && !p->testAttribute(Qt::WA_Mapped); p = p->parentWidget())
+            p->setAttribute(Qt::WA_Mapped);
         if (!event->region().isNull())
             wPriv->syncBackingStore(event->region());
     } else {
