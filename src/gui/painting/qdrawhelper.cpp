@@ -342,7 +342,7 @@ static void QT_FASTCALL convertToRGB32(uint *buffer, int count, const QVector<QR
         buffer[i] = convertPixelToRGB32<Format>(buffer[i]);
 }
 
-#if defined(__SSE2__) && !defined(__SSSE3__)
+#if defined(__SSE2__) && !defined(__SSSE3__) && QT_COMPILER_SUPPORTS_SSSE3
 extern const uint * QT_FASTCALL fetchPixelsBPP24_ssse3(uint *dest, const uchar*src, int index, int count);
 #endif
 
@@ -351,7 +351,7 @@ static const uint *QT_FASTCALL fetchRGBToRGB32(uint *buffer, const uchar *src, i
                                                const QVector<QRgb> *, QDitherInfo *)
 {
     constexpr QPixelLayout::BPP BPP = bitsPerPixel<Format>();
-#if defined(__SSE2__) && !defined(__SSSE3__)
+#if defined(__SSE2__) && !defined(__SSSE3__) && QT_COMPILER_SUPPORTS_SSSE3
     if (BPP == QPixelLayout::BPP24 && qCpuHasFeature(SSSE3)) {
         // With SSE2 can convertToRGB32 be vectorized, but it takes SSSE3
         // to vectorize the deforested version below.
@@ -442,7 +442,7 @@ static const uint *QT_FASTCALL fetchARGBPMToARGB32PM(uint *buffer, const uchar *
                                                      const QVector<QRgb> *, QDitherInfo *)
 {
     constexpr QPixelLayout::BPP BPP = bitsPerPixel<Format>();
-#if defined(__SSE2__) && !defined(__SSSE3__)
+#if defined(__SSE2__) && !defined(__SSSE3__) && QT_COMPILER_SUPPORTS_SSSE3
     if (BPP == QPixelLayout::BPP24 && qCpuHasFeature(SSSE3)) {
         // With SSE2 can convertToRGB32 be vectorized, but it takes SSSE3
         // to vectorize the deforested version below.
