@@ -313,6 +313,11 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
     if (newSize != tx.size())
         tx = tx.scaled(newSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
+    // Handle cases where the QImage is actually a sub image of its image data:
+    qsizetype naturalBpl = ((qsizetype(tx.width()) * tx.depth() + 31) >> 5) << 2;
+    if (tx.bytesPerLine() != naturalBpl)
+        tx = tx.copy(tx.rect());
+
     funcs->glTexImage2D(target, 0, internalFormat, tx.width(), tx.height(), 0, externalFormat, pixelType, tx.constBits());
 
     qsizetype cost = qint64(tx.width()) * tx.height() * tx.depth() / 8;
