@@ -245,7 +245,10 @@
            QEvent::MouseMove, QEvent::TouchUpdate, and changes in window size and
            position will be combined whenever they occur more frequently than the
            application handles them, so that they don't accumulate and overwhelm the
-           application later. On other platforms, the default is false.
+           application later.
+           On Windows 8 and above the default value is also true, but it only applies
+           to touch events. Mouse and window events remain unaffected by this flag.
+           On other platforms, the default is false.
            (In the future, the compression feature may be implemented across platforms.)
            You can test the attribute to see whether compression is enabled.
            If your application needs to handle all events with no compression,
@@ -256,8 +259,9 @@
 
     \value AA_CompressTabletEvents Enables compression of input events from tablet devices.
            Notice that AA_CompressHighFrequencyEvents must be true for events compression
-           to be enabled, and that this flag extends the former to tablet events. Its default
-           value is false.
+           to be enabled, and that this flag extends the former to tablet events.
+           Currently supported on the X11 windowing system, Windows 8 and above.
+           The default value is false.
            This value was added in Qt 5.10.
 
     \value AA_DontCheckOpenGLContextThreadAffinity When making a context
