@@ -128,7 +128,7 @@ qDebug("Time elapsed: %d ms", t.elapsed());
 
 //! [11]
 QDateTime now = QDateTime::currentDateTime();
-QDateTime xmas(QDate(now.date().year(), 12, 25), QTime(0, 0));
+QDateTime xmas(QDate(now.date().year(), 12, 25).startOfDay());
 qDebug("There are %d seconds to Christmas", now.secsTo(xmas));
 //! [11]
 

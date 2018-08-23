@@ -1982,7 +1982,7 @@ QString QDateTimeParser::stateName(State s) const
 #if QT_CONFIG(datestring)
 bool QDateTimeParser::fromString(const QString &t, QDate *date, QTime *time) const
 {
-    QDateTime val(QDate(1900, 1, 1), QDATETIMEEDIT_TIME_MIN);
+    QDateTime val(QDate(1900, 1, 1).startOfDay());
     const StateNode tmp = parse(t, -1, val, false);
     if (tmp.state != Acceptable || tmp.conflicts) {
         return false;
@@ -2010,20 +2010,20 @@ QDateTime QDateTimeParser::getMinimum() const
 {
     // Cache the most common case
     if (spec == Qt::LocalTime) {
-        static const QDateTime localTimeMin(QDATETIMEEDIT_DATE_MIN, QDATETIMEEDIT_TIME_MIN, Qt::LocalTime);
+        static const QDateTime localTimeMin(QDATETIMEEDIT_DATE_MIN.startOfDay(Qt::LocalTime));
         return localTimeMin;
     }
-    return QDateTime(QDATETIMEEDIT_DATE_MIN, QDATETIMEEDIT_TIME_MIN, spec);
+    return QDateTime(QDATETIMEEDIT_DATE_MIN.startOfDay(spec));
 }
 
 QDateTime QDateTimeParser::getMaximum() const
 {
     // Cache the most common case
     if (spec == Qt::LocalTime) {
-        static const QDateTime localTimeMax(QDATETIMEEDIT_DATE_MAX, QDATETIMEEDIT_TIME_MAX, Qt::LocalTime);
+        static const QDateTime localTimeMax(QDATETIMEEDIT_DATE_MAX.endOfDay(Qt::LocalTime));
         return localTimeMax;
     }
-    return QDateTime(QDATETIMEEDIT_DATE_MAX, QDATETIMEEDIT_TIME_MAX, spec);
+    return QDateTime(QDATETIMEEDIT_DATE_MAX.endOfDay(spec));
 }
 
 QString QDateTimeParser::getAmPmText(AmPm ap, Case cs) const

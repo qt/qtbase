@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -616,6 +616,268 @@ int QDate::weekNumber(int *yearNumber) const
         *yearNumber = year;
     return week;
 }
+
+static bool inDateTimeRange(qint64 jd, bool start)
+{
+    using Bounds = std::numeric_limits<qint64>;
+    if (jd < Bounds::min() + JULIAN_DAY_FOR_EPOCH)
+        return false;
+    jd -= JULIAN_DAY_FOR_EPOCH;
+    const qint64 maxDay = Bounds::max() / MSECS_PER_DAY;
+    const qint64 minDay = Bounds::min() / MSECS_PER_DAY - 1;
+    // (Divisions rounded towards zero, as MSECS_PER_DAY has factors other than two.)
+    // Range includes start of last day and end of first:
+    if (start)
+        return jd > minDay && jd <= maxDay;
+    return jd >= minDay && jd < maxDay;
+}
+
+static QDateTime toEarliest(const QDate &day, const QDateTime &form)
+{
+    const Qt::TimeSpec spec = form.timeSpec();
+    const int offset = (spec == Qt::OffsetFromUTC) ? form.offsetFromUtc() : 0;
+#if QT_CONFIG(timezone)
+    QTimeZone zone;
+    if (spec == Qt::TimeZone)
+        zone = form.timeZone();
+#endif
+    auto moment = [=](QTime time) {
+        switch (spec) {
+        case Qt::OffsetFromUTC: return QDateTime(day, time, spec, offset);
+#if QT_CONFIG(timezone)
+        case Qt::TimeZone: return QDateTime(day, time, zone);
+#endif
+        default: return QDateTime(day, time, spec);
+        }
+    };
+    // Longest routine time-zone transition is 2 hours:
+    QDateTime when = moment(QTime(2, 0));
+    if (!when.isValid()) {
+        // Noon should be safe ...
+        when = moment(QTime(12, 0));
+        if (!when.isValid()) {
+            // ... unless it's a 24-hour jump (moving the date-line)
+            when = moment(QTime(23, 59, 59, 999));
+            if (!when.isValid())
+                return QDateTime();
+        }
+    }
+    int high = when.time().msecsSinceStartOfDay() / 60000;
+    int low = 0;
+    // Binary chop to the right minute
+    while (high > low + 1) {
+        int mid = (high + low) / 2;
+        QDateTime probe = moment(QTime(mid / 60, mid % 60));
+        if (probe.isValid() && probe.date() == day) {
+            high = mid;
+            when = probe;
+        } else {
+            low = mid;
+        }
+    }
+    return when;
+}
+
+/*!
+    \since 5.14
+    \fn QDateTime QDate::startOfDay(Qt::TimeSpec spec, int offsetSeconds) const
+    \fn QDateTime QDate::startOfDay(const QTimeZone &zone) const
+
+    Returns the start-moment of the day.  Usually, this shall be midnight at the
+    start of the day: however, if a time-zone transition causes the given date
+    to skip over that midnight (e.g. a DST spring-forward skipping from the end
+    of the previous day to 01:00 of the new day), the actual earliest time in
+    the day is returned.  This can only arise when the start-moment is specified
+    in terms of a time-zone (by passing its QTimeZone as \a zone) or in terms of
+    local time (by passing Qt::LocalTime as \a spec; this is its default).
+
+    The \a offsetSeconds is ignored unless \a spec is Qt::OffsetFromUTC, when it
+    gives the implied zone's offset from UTC.  As UTC and such zones have no
+    transitions, the start of the day is QTime(0, 0) in these cases.
+
+    In the rare case of a date that was entirely skipped (this happens when a
+    zone east of the international date-line switches to being west of it), the
+    return shall be invalid.  Passing Qt::TimeZone as \a spec (instead of
+    passing a QTimeZone) or passing an invalid time-zone as \a zone will also
+    produce an invalid result, as shall dates that start outside the range
+    representable by QDateTime.
+
+    \sa endOfDay()
+*/
+QDateTime QDate::startOfDay(Qt::TimeSpec spec, int offsetSeconds) const
+{
+    if (!inDateTimeRange(jd, true))
+        return QDateTime();
+
+    switch (spec) {
+    case Qt::TimeZone: // should pass a QTimeZone instead of Qt::TimeZone
+        qWarning() << "Called QDate::startOfDay(Qt::TimeZone) on" << *this;
+        return QDateTime();
+    case Qt::OffsetFromUTC:
+    case Qt::UTC:
+        return QDateTime(*this, QTime(0, 0), spec, offsetSeconds);
+
+    case Qt::LocalTime:
+        if (offsetSeconds)
+            qWarning("Ignoring offset (%d seconds) passed with Qt::LocalTime", offsetSeconds);
+        break;
+    }
+    QDateTime when(*this, QTime(0, 0), spec);
+    if (!when.isValid())
+        when = toEarliest(*this, when);
+
+    return when.isValid() ? when : QDateTime();
+}
+
+#if QT_CONFIG(timezone)
+/*!
+  \overload
+  \since 5.14
+*/
+QDateTime QDate::startOfDay(const QTimeZone &zone) const
+{
+    if (!inDateTimeRange(jd, true) || !zone.isValid())
+        return QDateTime();
+
+    QDateTime when(*this, QTime(0, 0), zone);
+    if (when.isValid())
+        return when;
+
+    // The start of the day must have fallen in a spring-forward's gap; find the spring-forward:
+    if (zone.hasTransitions()) {
+        QTimeZone::OffsetData tran = zone.previousTransition(QDateTime(*this, QTime(23, 59, 59, 999), zone));
+        const QDateTime &at = tran.atUtc.toTimeZone(zone);
+        if (at.isValid() && at.date() == *this)
+            return at;
+    }
+
+    when = toEarliest(*this, when);
+    return when.isValid() ? when : QDateTime();
+}
+#endif // timezone
+
+static QDateTime toLatest(const QDate &day, const QDateTime &form)
+{
+    const Qt::TimeSpec spec = form.timeSpec();
+    const int offset = (spec == Qt::OffsetFromUTC) ? form.offsetFromUtc() : 0;
+#if QT_CONFIG(timezone)
+    QTimeZone zone;
+    if (spec == Qt::TimeZone)
+        zone = form.timeZone();
+#endif
+    auto moment = [=](QTime time) {
+        switch (spec) {
+        case Qt::OffsetFromUTC: return QDateTime(day, time, spec, offset);
+#if QT_CONFIG(timezone)
+        case Qt::TimeZone: return QDateTime(day, time, zone);
+#endif
+        default: return QDateTime(day, time, spec);
+        }
+    };
+    // Longest routine time-zone transition is 2 hours:
+    QDateTime when = moment(QTime(21, 59, 59, 999));
+    if (!when.isValid()) {
+        // Noon should be safe ...
+        when = moment(QTime(12, 0));
+        if (!when.isValid()) {
+            // ... unless it's a 24-hour jump (moving the date-line)
+            when = moment(QTime(0, 0));
+            if (!when.isValid())
+                return QDateTime();
+        }
+    }
+    int high = 24 * 60;
+    int low = when.time().msecsSinceStartOfDay() / 60000;
+    // Binary chop to the right minute
+    while (high > low + 1) {
+        int mid = (high + low) / 2;
+        QDateTime probe = moment(QTime(mid / 60, mid % 60, 59, 999));
+        if (probe.isValid() && probe.date() == day) {
+            low = mid;
+            when = probe;
+        } else {
+            high = mid;
+        }
+    }
+    return when;
+}
+
+/*!
+    \since 5.14
+    \fn QDateTime QDate::endOfDay(Qt::TimeSpec spec, int offsetSeconds) const
+    \fn QDateTime QDate::endOfDay(const QTimeZone &zone) const
+
+    Returns the end-moment of the day.  Usually, this is one millisecond before
+    the midnight at the end of the day: however, if a time-zone transition
+    causes the given date to skip over that midnight (e.g. a DST spring-forward
+    skipping from just before 23:00 to the start of the next day), the actual
+    latest time in the day is returned.  This can only arise when the
+    start-moment is specified in terms of a time-zone (by passing its QTimeZone
+    as \a zone) or in terms of local time (by passing Qt::LocalTime as \a spec;
+    this is its default).
+
+    The \a offsetSeconds is ignored unless \a spec is Qt::OffsetFromUTC, when it
+    gives the implied zone's offset from UTC.  As UTC and such zones have no
+    transitions, the end of the day is QTime(23, 59, 59, 999) in these cases.
+
+    In the rare case of a date that was entirely skipped (this happens when a
+    zone east of the international date-line switches to being west of it), the
+    return shall be invalid.  Passing Qt::TimeZone as \a spec (instead of
+    passing a QTimeZone) will also produce an invalid result, as shall dates
+    that end outside the range representable by QDateTime.
+
+    \sa startOfDay()
+*/
+QDateTime QDate::endOfDay(Qt::TimeSpec spec, int offsetSeconds) const
+{
+    if (!inDateTimeRange(jd, false))
+        return QDateTime();
+
+    switch (spec) {
+    case Qt::TimeZone: // should pass a QTimeZone instead of Qt::TimeZone
+        qWarning() << "Called QDate::endOfDay(Qt::TimeZone) on" << *this;
+        return QDateTime();
+    case Qt::UTC:
+    case Qt::OffsetFromUTC:
+        return QDateTime(*this, QTime(23, 59, 59, 999), spec, offsetSeconds);
+
+    case Qt::LocalTime:
+        if (offsetSeconds)
+            qWarning("Ignoring offset (%d seconds) passed with Qt::LocalTime", offsetSeconds);
+        break;
+    }
+    QDateTime when(*this, QTime(23, 59, 59, 999), spec);
+    if (!when.isValid())
+        when = toLatest(*this, when);
+    return when.isValid() ? when : QDateTime();
+}
+
+#if QT_CONFIG(timezone)
+/*!
+  \overload
+  \since 5.14
+*/
+QDateTime QDate::endOfDay(const QTimeZone &zone) const
+{
+    if (!inDateTimeRange(jd, false) || !zone.isValid())
+        return QDateTime();
+
+    QDateTime when(*this, QTime(23, 59, 59, 999), zone);
+    if (when.isValid())
+        return when;
+
+    // The end of the day must have fallen in a spring-forward's gap; find the spring-forward:
+    if (zone.hasTransitions()) {
+        QTimeZone::OffsetData tran = zone.nextTransition(QDateTime(*this, QTime(0, 0), zone));
+        const QDateTime &at = tran.atUtc.toTimeZone(zone);
+        if (at.isValid() && at.date() == *this)
+            return at;
+    }
+
+    when = toLatest(*this, when);
+    return when.isValid() ? when : QDateTime();
+}
+#endif // timezone
 
 #if QT_DEPRECATED_SINCE(5, 11) && QT_CONFIG(textdate)
 /*!
@@ -1468,7 +1730,8 @@ bool QDate::isLeapYear(int y)
     \fn QTime::QTime()
 
     Constructs a null time object. For a null time, isNull() returns \c true and
-    isValid() returns \c false. If you need a zero time, use QTime(0, 0).
+    isValid() returns \c false. If you need a zero time, use QTime(0, 0).  For
+    the start of a day, see QDate::startOfDay().
 
     \sa isNull(), isValid()
 */
@@ -2392,8 +2655,8 @@ static void msecsToTime(qint64 msecs, QDate *date, QTime *time)
     qint64 jd = JULIAN_DAY_FOR_EPOCH;
     qint64 ds = 0;
 
-    if (qAbs(msecs) >= MSECS_PER_DAY) {
-        jd += (msecs / MSECS_PER_DAY);
+    if (msecs >= MSECS_PER_DAY || msecs <= -MSECS_PER_DAY) {
+        jd += msecs / MSECS_PER_DAY;
         msecs %= MSECS_PER_DAY;
     }
 

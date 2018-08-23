@@ -1,4 +1,4 @@
 CONFIG += testcase
 TARGET = tst_qdate
-QT = core testlib
+QT = core-private testlib
 SOURCES = tst_qdate.cpp

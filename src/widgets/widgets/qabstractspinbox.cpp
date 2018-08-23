@@ -2097,7 +2097,7 @@ QVariant operator*(const QVariant &arg1, double multiplier)
         days -= daysInt;
         qint64 msecs = qint64(arg1.toDateTime().time().msecsSinceStartOfDay() * multiplier
                               + days * (24 * 3600 * 1000));
-        ret = QDateTime(QDATETIMEEDIT_DATE_MIN.addDays(daysInt), QTime::fromMSecsSinceStartOfDay(msecs));
+        ret = QDATETIMEEDIT_DATE_MIN.addDays(daysInt).startOfDay().addMSecs(msecs);
         break;
     }
 #endif // datetimeparser

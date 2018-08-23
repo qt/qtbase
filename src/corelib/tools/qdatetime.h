@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -55,6 +55,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSDate);
 QT_BEGIN_NAMESPACE
 
 class QTimeZone;
+class QDateTime;
 
 class Q_CORE_EXPORT QDate
 {
@@ -80,6 +81,13 @@ public:
     int daysInMonth() const;
     int daysInYear() const;
     int weekNumber(int *yearNum = nullptr) const;
+
+    QDateTime startOfDay(Qt::TimeSpec spec = Qt::LocalTime, int offsetSeconds = 0) const;
+    QDateTime endOfDay(Qt::TimeSpec spec = Qt::LocalTime, int offsetSeconds = 0) const;
+#if QT_CONFIG(timezone)
+    QDateTime startOfDay(const QTimeZone &zone) const;
+    QDateTime endOfDay(const QTimeZone &zone) const;
+#endif
 
 #if QT_DEPRECATED_SINCE(5, 10) && QT_CONFIG(textdate)
     QT_DEPRECATED_X("Use QLocale::monthName or QLocale::standaloneMonthName")
