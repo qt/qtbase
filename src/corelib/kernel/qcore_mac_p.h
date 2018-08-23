@@ -190,7 +190,6 @@ Q_CORE_EXPORT bool qt_mac_applicationIsInDarkMode();
 QDebug operator<<(QDebug debug, const QMacAutoReleasePool *pool);
 #endif
 
-Q_CORE_EXPORT void qt_apple_check_os_version();
 Q_CORE_EXPORT bool qt_apple_isApplicationExtension();
 
 #if defined(Q_OS_MACOS) && !defined(QT_BOOTSTRAPPED)

@@ -448,16 +448,23 @@ void qt_apple_check_os_version()
         version / 10000, version / 100 % 100, version % 100};
     const NSOperatingSystemVersion current = NSProcessInfo.processInfo.operatingSystemVersion;
     if (![NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:required]) {
-        fprintf(stderr, "You can't use this version of %s with this version of %s. "
-                "You have %s %ld.%ld.%ld. Qt requires %s %ld.%ld.%ld or later.\n",
-                (reinterpret_cast<const NSString *>(
-                    NSBundle.mainBundle.infoDictionary[@"CFBundleName"]).UTF8String),
-                os,
-                os, long(current.majorVersion), long(current.minorVersion), long(current.patchVersion),
-                os, long(required.majorVersion), long(required.minorVersion), long(required.patchVersion));
-        abort();
+        NSDictionary *plist = NSBundle.mainBundle.infoDictionary;
+        NSString *applicationName = plist[@"CFBundleDisplayName"];
+        if (!applicationName)
+            applicationName = plist[@"CFBundleName"];
+        if (!applicationName)
+            applicationName = NSProcessInfo.processInfo.processName;
+
+        fprintf(stderr, "Sorry, \"%s\" can not be run on this version of %s. "
+            "Qt requires %s %ld.%ld.%ld or later, you have %s %ld.%ld.%ld.\n",
+            applicationName.UTF8String, os,
+            os, long(required.majorVersion), long(required.minorVersion), long(required.patchVersion),
+            os, long(current.majorVersion), long(current.minorVersion), long(current.patchVersion));
+
+        exit(1);
     }
 }
+Q_CONSTRUCTOR_FUNCTION(qt_apple_check_os_version);
 
 // -------------------------------------------------------------------------
 
