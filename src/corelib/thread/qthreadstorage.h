@@ -154,7 +154,7 @@ QT_END_NAMESPACE
 
 #else // !QT_CONFIG(thread)
 
-#include <qscopedpointer.h>
+#include <QtCore/qscopedpointer.h>
 
 #include <type_traits>
 
