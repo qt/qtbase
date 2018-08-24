@@ -43,6 +43,7 @@ private slots:
     void keyValueAt();
     void keyValues();
     void duration();
+    void interpolation();
 };
 
 class TestableQVariantAnimation : public QVariantAnimation
@@ -127,6 +128,30 @@ void tst_QVariantAnimation::duration()
     QTest::ignoreMessage(QtWarningMsg, "QVariantAnimation::setDuration: cannot set a negative duration");
     anim.setDuration(-1);
     QCOMPARE(anim.duration(), 500);
+}
+
+void tst_QVariantAnimation::interpolation()
+{
+    QVariantAnimation unsignedAnim;
+    unsignedAnim.setStartValue(100u);
+    unsignedAnim.setEndValue(0u);
+    unsignedAnim.setDuration(100);
+    unsignedAnim.setCurrentTime(50);
+    QCOMPARE(unsignedAnim.currentValue().toUInt(), 50u);
+
+    QVariantAnimation signedAnim;
+    signedAnim.setStartValue(100);
+    signedAnim.setEndValue(0);
+    signedAnim.setDuration(100);
+    signedAnim.setCurrentTime(50);
+    QCOMPARE(signedAnim.currentValue().toInt(), 50);
+
+    QVariantAnimation pointAnim;
+    pointAnim.setStartValue(QPoint(100, 100));
+    pointAnim.setEndValue(QPoint(0, 0));
+    pointAnim.setDuration(100);
+    pointAnim.setCurrentTime(50);
+    QCOMPARE(pointAnim.currentValue().toPoint(), QPoint(50, 50));
 }
 
 QTEST_MAIN(tst_QVariantAnimation)
