@@ -29,7 +29,6 @@
 
 #include <QtCore>
 #include <QtTest/QtTest>
-#include <QtCore/private/qmetaobject_p.h>
 #include <QtCore/private/qmetaobjectbuilder_p.h>
 
 #include "tst_qmetatype.h"
@@ -286,8 +285,7 @@ void tst_QMetaType::registerGadget(const char *name, const QVector<GadgetPropert
 {
     QMetaObjectBuilder gadgetBuilder;
     gadgetBuilder.setClassName(name);
-    QMetaObjectBuilder::MetaObjectFlags metaObjectflags = QMetaObjectBuilder::DynamicMetaObject;
-    metaObjectflags |= QMetaObjectBuilder::MetaObjectFlags(PropertyAccessInStaticMetaCall);
+    QMetaObjectBuilder::MetaObjectFlags metaObjectflags = QMetaObjectBuilder::DynamicMetaObject | QMetaObjectBuilder::PropertyAccessInStaticMetaCall;
     gadgetBuilder.setFlags(metaObjectflags);
     auto dynamicGadgetProperties = std::make_shared<GenericGadgetType>();
     for (const auto &prop : gadgetProperties) {
