@@ -6963,8 +6963,10 @@ void QWidget::setTabOrder(QWidget* first, QWidget *second)
     determineLastFocusChild(second, lastFocusChildOfSecond);
 
     // If the tab order is already correct, exit early
-    if (lastFocusChildOfFirst->d_func()->focus_next == second)
+    if (lastFocusChildOfFirst == second ||
+        lastFocusChildOfFirst->d_func()->focus_next == second) {
         return;
+    }
 
     // Note that we need to handle two different sections in the tab chain; The section
     // that 'first' belongs to (firstSection), where we are about to insert 'second', and
