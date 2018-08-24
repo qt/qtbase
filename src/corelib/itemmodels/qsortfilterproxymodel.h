@@ -42,7 +42,10 @@
 
 #include <QtCore/qabstractproxymodel.h>
 #include <QtCore/qregexp.h>
-#include <QtCore/qregularexpression.h>
+
+#if QT_CONFIG(regularexpression)
+# include <QtCore/qregularexpression.h>
+#endif
 
 QT_REQUIRE_CONFIG(sortfilterproxymodel);
 
@@ -87,8 +90,10 @@ public:
     QRegExp filterRegExp() const;
     void setFilterRegExp(const QRegExp &regExp);
 
+#if QT_CONFIG(regularexpression)
     QRegularExpression filterRegularExpression() const;
     void setFilterRegularExpression(const QRegularExpression &regularExpression);
+#endif
 
     int filterKeyColumn() const;
     void setFilterKeyColumn(int column);

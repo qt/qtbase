@@ -43,7 +43,6 @@
 #include <qdebug.h>
 #include <qdatetime.h>
 #include <qpair.h>
-#include <qregularexpression.h>
 #include <qstringlist.h>
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractproxymodel_p.h>
