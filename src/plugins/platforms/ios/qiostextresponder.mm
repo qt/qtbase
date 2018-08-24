@@ -244,17 +244,15 @@
         self.inputAccessoryView = [[[WrapperView alloc] initWithView:accessoryView] autorelease];
 
 #ifndef Q_OS_TVOS
-    if (__builtin_available(iOS 9, *)) {
-        if (platformData.value(kImePlatformDataHideShortcutsBar).toBool()) {
-            // According to the docs, leadingBarButtonGroups/trailingBarButtonGroups should be set to nil to hide the shortcuts bar.
-            // However, starting with iOS 10, the API has been surrounded with NS_ASSUME_NONNULL, which contradicts this and causes
-            // compiler warnings. Still it is the way to go to really hide the space reserved for that.
+    if (platformData.value(kImePlatformDataHideShortcutsBar).toBool()) {
+        // According to the docs, leadingBarButtonGroups/trailingBarButtonGroups should be set to nil to hide the shortcuts bar.
+        // However, starting with iOS 10, the API has been surrounded with NS_ASSUME_NONNULL, which contradicts this and causes
+        // compiler warnings. Still it is the way to go to really hide the space reserved for that.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wnonnull"
-            self.inputAssistantItem.leadingBarButtonGroups = nil;
-            self.inputAssistantItem.trailingBarButtonGroups = nil;
+        self.inputAssistantItem.leadingBarButtonGroups = nil;
+        self.inputAssistantItem.trailingBarButtonGroups = nil;
 #pragma clang diagnostic pop
-        }
     }
 #endif
 

@@ -24,5 +24,3 @@ load(default_pre)
 !versionAtLeast(QMAKE_XCODE_VERSION, 4.3): \
     error("This mkspec requires Xcode 4.3 or later")
 
-ios:shared:!versionAtLeast(QMAKE_IOS_DEPLOYMENT_TARGET, 8.0): \
-    QMAKE_IOS_DEPLOYMENT_TARGET = 8.0

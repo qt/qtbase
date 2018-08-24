@@ -52,10 +52,7 @@ bool QAppleTestLogger::debugLoggingEnabled()
     // Debug-level messages are only captured in memory when debug logging is
     // enabled through a configuration change, which can happen automatically
     // when running inside Xcode, or with the Console application open.
-    if (__builtin_available(macOS 10.12, iOS 10, tvOS 10, watchOS 3, *))
-        return os_log_type_enabled(OS_LOG_DEFAULT, OS_LOG_TYPE_DEBUG);
-
-    return false;
+    return os_log_type_enabled(OS_LOG_DEFAULT, OS_LOG_TYPE_DEBUG);
 }
 
 QAppleTestLogger::QAppleTestLogger(QAbstractTestLogger *logger)
@@ -71,15 +68,13 @@ void QAppleTestLogger::enterTestFunction(const char *function)
     // Re-create activity each time
     testFunctionActivity = QT_APPLE_LOG_ACTIVITY("Running test function").enter();
 
-    if (__builtin_available(macOS 10.12, iOS 10, tvOS 10, watchOS 3, *)) {
-        QTestCharBuffer testIdentifier;
-        QTestPrivate::generateTestIdentifier(&testIdentifier);
-        QString identifier = QString::fromLatin1(testIdentifier.data());
-        QMessageLogContext context(nullptr, 0, nullptr, "qt.test.enter");
-        QString message = identifier;
-        if (AppleUnifiedLogger::messageHandler(QtDebugMsg, context, message, identifier))
-            return; // AUL already printed to stderr
-    }
+    QTestCharBuffer testIdentifier;
+    QTestPrivate::generateTestIdentifier(&testIdentifier);
+    QString identifier = QString::fromLatin1(testIdentifier.data());
+    QMessageLogContext context(nullptr, 0, nullptr, "qt.test.enter");
+    QString message = identifier;
+    if (AppleUnifiedLogger::messageHandler(QtDebugMsg, context, message, identifier))
+        return; // AUL already printed to stderr
 
     m_logger->enterTestFunction(function);
 }
@@ -113,41 +108,38 @@ static IncidentClassification incidentTypeToClassification(QAbstractTestLogger::
 void QAppleTestLogger::addIncident(IncidentTypes type, const char *description,
                                    const char *file, int line)
 {
-    if (__builtin_available(macOS 10.12, iOS 10, tvOS 10, watchOS 3, *)) {
-        IncidentClassification incidentClassification = incidentTypeToClassification(type);
 
-        QTestCharBuffer category;
-        QTest::qt_asprintf(&category, "qt.test.%s", incidentClassification.second);
-        QMessageLogContext context(file, line, /* function = */ nullptr, category.data());
+    IncidentClassification incidentClassification = incidentTypeToClassification(type);
 
-        QTestCharBuffer subsystemBuffer;
-        // It would be nice to have the data tag as part of the subsystem too, but that
-        // will for some tests results in hundreds of thousands of log objects being
-        // created, so we limit the subsystem to test functions, which we can hope
-        // are reasonably limited.
-        generateTestIdentifier(&subsystemBuffer, TestObject | TestFunction);
-        QString subsystem = QString::fromLatin1(subsystemBuffer.data());
+    QTestCharBuffer category;
+    QTest::qt_asprintf(&category, "qt.test.%s", incidentClassification.second);
+    QMessageLogContext context(file, line, /* function = */ nullptr, category.data());
 
-        // We still want the full identifier as part of the message though
-        QTestCharBuffer testIdentifier;
-        generateTestIdentifier(&testIdentifier);
-        QString message = QString::fromLatin1(testIdentifier.data());
-        if (qstrlen(description))
-            message += QLatin1Char('\n') % QString::fromLatin1(description);
+    QTestCharBuffer subsystemBuffer;
+    // It would be nice to have the data tag as part of the subsystem too, but that
+    // will for some tests results in hundreds of thousands of log objects being
+    // created, so we limit the subsystem to test functions, which we can hope
+    // are reasonably limited.
+    generateTestIdentifier(&subsystemBuffer, TestObject | TestFunction);
+    QString subsystem = QString::fromLatin1(subsystemBuffer.data());
 
-        if (AppleUnifiedLogger::messageHandler(incidentClassification.first, context, message, subsystem))
-            return; // AUL already printed to stderr
-    }
+    // We still want the full identifier as part of the message though
+    QTestCharBuffer testIdentifier;
+    generateTestIdentifier(&testIdentifier);
+    QString message = QString::fromLatin1(testIdentifier.data());
+    if (qstrlen(description))
+        message += QLatin1Char('\n') % QString::fromLatin1(description);
+
+    if (AppleUnifiedLogger::messageHandler(incidentClassification.first, context, message, subsystem))
+        return; // AUL already printed to stderr
 
     m_logger->addIncident(type, description, file, line);
 }
 
 void QAppleTestLogger::addMessage(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
-    if (__builtin_available(macOS 10.12, iOS 10, tvOS 10, watchOS 3, *)) {
-        if (AppleUnifiedLogger::messageHandler(type, context, message))
-            return; // AUL already printed to stderr
-    }
+    if (AppleUnifiedLogger::messageHandler(type, context, message))
+        return; // AUL already printed to stderr
 
     m_logger->addMessage(type, context, message);
 }

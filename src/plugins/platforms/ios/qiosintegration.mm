@@ -115,10 +115,8 @@ void QIOSIntegration::initialize()
     m_touchDevice = new QTouchDevice;
     m_touchDevice->setType(QTouchDevice::TouchScreen);
     QTouchDevice::Capabilities touchCapabilities = QTouchDevice::Position | QTouchDevice::NormalizedPosition;
-    if (__builtin_available(iOS 9, *)) {
-        if (mainScreen.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable)
-            touchCapabilities |= QTouchDevice::Pressure;
-    }
+    if (mainScreen.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable)
+        touchCapabilities |= QTouchDevice::Pressure;
     m_touchDevice->setCapabilities(touchCapabilities);
     QWindowSystemInterface::registerTouchDevice(m_touchDevice);
 #if QT_CONFIG(tabletevent)

@@ -1768,8 +1768,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
 # elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     handledStderr |= android_default_message_handler(type, context, message);
 # elif defined(QT_USE_APPLE_UNIFIED_LOGGING)
-    if (__builtin_available(macOS 10.12, iOS 10, tvOS 10, watchOS 3, *))
-        handledStderr |= AppleUnifiedLogger::messageHandler(type, context, message);
+    handledStderr |= AppleUnifiedLogger::messageHandler(type, context, message);
 # elif defined Q_OS_WASM
     handledStderr |= wasm_default_message_handler(type, context, message);
 # endif

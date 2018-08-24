@@ -262,29 +262,20 @@ static bool isMouseEvent(NSEvent *ev)
     NSEnumerator<NSWindow*> *windowEnumerator = nullptr;
     NSApplication *application = [NSApplication sharedApplication];
 
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_12)
-    if (__builtin_available(macOS 10.12, *)) {
-        // Unfortunately there's no NSWindowListOrderedBackToFront,
-        // so we have to manually reverse the order using an array.
-        NSMutableArray<NSWindow *> *windows = [NSMutableArray<NSWindow *> new];
-        [application enumerateWindowsWithOptions:NSWindowListOrderedFrontToBack
-            usingBlock:^(NSWindow *window, BOOL *) {
-                // For some reason AppKit will give us nil-windows, skip those
-                if (!window)
-                    return;
+    // Unfortunately there's no NSWindowListOrderedBackToFront,
+    // so we have to manually reverse the order using an array.
+    NSMutableArray<NSWindow *> *windows = [NSMutableArray<NSWindow *> new];
+    [application enumerateWindowsWithOptions:NSWindowListOrderedFrontToBack
+        usingBlock:^(NSWindow *window, BOOL *) {
+            // For some reason AppKit will give us nil-windows, skip those
+            if (!window)
+                return;
 
-                [windows addObject:window];
-            }
-        ];
+            [windows addObject:window];
+        }
+    ];
 
-        windowEnumerator = windows.reverseObjectEnumerator;
-    } else
-#endif
-    {
-        // No way to get ordered list of windows, so fall back to unordered,
-        // list, which typically corresponds to window creation order.
-        windowEnumerator = application.windows.objectEnumerator;
-    }
+    windowEnumerator = windows.reverseObjectEnumerator;
 
     for (NSWindow *window in windowEnumerator) {
         // We're meddling with normal and floating windows, so leave others alone

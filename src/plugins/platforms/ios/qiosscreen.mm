@@ -456,12 +456,7 @@ qreal QIOSScreen::devicePixelRatio() const
 
 qreal QIOSScreen::refreshRate() const
 {
-#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_NA, 100300, 110000, __WATCHOS_NA)
-    if (__builtin_available(iOS 10.3, tvOS 11, *))
-        return m_uiScreen.maximumFramesPerSecond;
-#endif
-
-    return 60.0;
+    return m_uiScreen.maximumFramesPerSecond;
 }
 
 Qt::ScreenOrientation QIOSScreen::nativeOrientation() const

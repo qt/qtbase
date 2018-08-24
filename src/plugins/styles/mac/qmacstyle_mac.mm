@@ -1735,17 +1735,10 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
                 }
                 Q_UNREACHABLE();
             } ();
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_12)
             const auto styleMask = NSWindowStyleMaskTitled
                                  | NSWindowStyleMaskClosable
                                  | NSWindowStyleMaskMiniaturizable
                                  | NSWindowStyleMaskResizable;
-#else
-            const auto styleMask = NSTitledWindowMask
-                                 | NSClosableWindowMask
-                                 | NSMiniaturizableWindowMask
-                                 | NSResizableWindowMask;
-#endif
             bv = [NSWindow standardWindowButton:button forStyleMask:styleMask];
             [bv retain];
             break;
