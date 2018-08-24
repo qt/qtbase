@@ -18,6 +18,7 @@
             "ocsp": "boolean",
             "sctp": "boolean",
             "securetransport": "boolean",
+            "schannel": "boolean",
             "ssl": "boolean",
             "system-proxies": "boolean"
         }
@@ -243,13 +244,13 @@
             "autoDetect": "!config.winrt && !config.wasm",
             "enable": "input.openssl == 'yes' || input.openssl == 'runtime'",
             "disable": "input.openssl == 'no' || input.openssl == 'linked' || input.ssl == 'no'",
-            "condition": "!features.securetransport && libs.openssl_headers"
+            "condition": "!features.securetransport && !features.schannel && libs.openssl_headers"
         },
         "openssl-linked": {
             "label": "  Qt directly linked to OpenSSL",
             "autoDetect": false,
             "enable": "input.openssl == 'linked'",
-            "condition": "!features.securetransport && libs.openssl",
+            "condition": "!features.securetransport && !features.schannel && libs.openssl",
             "output": [
                 "privateFeature",
                 { "type": "define", "name": "QT_LINKED_OPENSSL" }
@@ -264,9 +265,18 @@
                 { "type": "define", "name": "QT_SECURETRANSPORT" }
             ]
         },
+        "schannel": {
+            "label": "Schannel",
+            "disable": "input.schannel == 'no' || input.ssl == 'no'",
+            "condition": "input.schannel == 'yes' && config.win32 && !config.winrt && (input.openssl == '' || input.openssl == 'no')",
+            "output": [
+                "publicFeature",
+                { "type": "define", "name": "QT_SCHANNEL" }
+            ]
+        },
         "ssl": {
             "label": "SSL",
-            "condition": "config.winrt || features.securetransport || features.openssl",
+            "condition": "config.winrt || features.securetransport || features.openssl || features.schannel",
             "output": [ "publicFeature", "feature" ]
         },
         "dtls": {
@@ -411,6 +421,11 @@ For example:
                     "type": "feature",
                     "args": "securetransport",
                     "condition": "config.darwin"
+                },
+                {
+                    "type": "feature",
+                    "args": "schannel",
+                    "condition": "config.win32 && !config.winrt"
                 },
                 "openssl",
                 "openssl-linked",

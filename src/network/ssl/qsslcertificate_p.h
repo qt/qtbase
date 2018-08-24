@@ -75,6 +75,10 @@ struct ASN1_OBJECT;
 #include <windows.security.cryptography.certificates.h>
 #endif
 
+#if QT_CONFIG(schannel)
+#include <wincrypt.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // forward declaration
@@ -95,6 +99,10 @@ public:
 #ifndef QT_NO_OPENSSL
         if (x509)
             q_X509_free(x509);
+#endif
+#if QT_CONFIG(schannel)
+        if (certificateContext)
+            CertFreeCertificateContext(certificateContext);
 #endif
     }
 
@@ -142,6 +150,12 @@ public:
     Microsoft::WRL::ComPtr<ABI::Windows::Security::Cryptography::Certificates::ICertificate> certificate;
 
     static QSslCertificate QSslCertificate_from_Certificate(ABI::Windows::Security::Cryptography::Certificates::ICertificate *iCertificate);
+#endif
+
+#if QT_CONFIG(schannel)
+    const CERT_CONTEXT *certificateContext = nullptr;
+
+    static QSslCertificate QSslCertificate_from_CERT_CONTEXT(const CERT_CONTEXT *certificateContext);
 #endif
 };
 

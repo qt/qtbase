@@ -94,6 +94,8 @@ QSslPreSharedKeyAuthenticatorPrivate::QSslPreSharedKeyAuthenticatorPrivate()
     \note PSK ciphersuites are supported only when using OpenSSL 1.0.1 (or
     greater) as the SSL backend.
 
+    \note PSK is currently only supported in OpenSSL.
+
     \sa QSslSocket
 */
 

@@ -139,7 +139,7 @@ QDateTime QSslCertificate::expiryDate() const
     return d->notValidAfter;
 }
 
-#ifndef Q_OS_WINRT // implemented in qsslcertificate_winrt.cpp
+#if !defined(Q_OS_WINRT) && !QT_CONFIG(schannel) // implemented in qsslcertificate_{winrt,schannel}.cpp
 Qt::HANDLE QSslCertificate::handle() const
 {
     Q_UNIMPLEMENTED();
@@ -206,6 +206,10 @@ void QSslCertificatePrivate::init(const QByteArray &data, QSsl::EncodingFormat f
             : certificatesFromDer(data, 1);
         if (!certs.isEmpty()) {
             *this = *certs.first().d;
+#if QT_CONFIG(schannel)
+            if (certificateContext)
+                certificateContext = CertDuplicateCertificateContext(certificateContext);
+#endif
         }
     }
 }

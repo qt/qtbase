@@ -49,6 +49,19 @@ qtConfig(ssl) {
                    ssl/qsslellipticcurve_dummy.cpp
     }
 
+    qtConfig(schannel) {
+        HEADERS += ssl/qsslsocket_schannel_p.h
+        SOURCES += ssl/qsslsocket_schannel.cpp \
+                   ssl/qsslcertificate_schannel.cpp \
+                   ssl/qsslkey_schannel.cpp \
+                   ssl/qsslkey_qt.cpp \
+                   ssl/qssldiffiehellmanparameters_dummy.cpp \
+                   ssl/qsslellipticcurve_dummy.cpp \
+                   ssl/qsslsocket_qt.cpp
+
+        LIBS_PRIVATE += "-lSecur32" "-lCrypt32" "-lbcrypt" "-lncrypt"
+    }
+
     qtConfig(securetransport) {
         HEADERS += ssl/qsslsocket_mac_p.h
         SOURCES += ssl/qssldiffiehellmanparameters_dummy.cpp \

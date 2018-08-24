@@ -587,6 +587,8 @@ void QSslConfiguration::setPrivateKey(const QSslKey &key)
     ciphers. You can revert to using the entire set by calling
     setCiphers() with the list returned by QSslSocket::supportedCiphers().
 
+    \note This is not currently supported in the Schannel backend.
+
     \sa setCiphers(), QSslSocket::supportedCiphers()
 */
 QList<QSslCipher> QSslConfiguration::ciphers() const
@@ -601,6 +603,8 @@ QList<QSslCipher> QSslConfiguration::ciphers() const
 
     Restricting the cipher suite must be done before the handshake
     phase, where the session cipher is chosen.
+
+    \note This is not currently supported in the Schannel backend.
 
     \sa ciphers(), QSslSocket::supportedCiphers()
 */

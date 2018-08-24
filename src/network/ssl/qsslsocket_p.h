@@ -171,7 +171,7 @@ public:
     void _q_flushWriteBuffer();
     void _q_flushReadBuffer();
     void _q_resumeImplementation();
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) && !QT_CONFIG(schannel)
     virtual void _q_caRootLoaded(QSslCertificate,QSslCertificate) = 0;
 #endif
 
@@ -209,7 +209,7 @@ protected:
     bool flushTriggered;
 };
 
-#if QT_CONFIG(securetransport)
+#if QT_CONFIG(securetransport) || QT_CONFIG(schannel)
 // Implemented in qsslsocket_qt.cpp
 QByteArray _q_makePkcs12(const QList<QSslCertificate> &certs, const QSslKey &key, const QString &passPhrase);
 #endif

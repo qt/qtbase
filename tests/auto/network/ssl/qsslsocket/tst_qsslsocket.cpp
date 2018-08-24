@@ -641,6 +641,10 @@ void tst_QSslSocket::sslErrors()
     QFETCH(int, port);
 
     QSslSocketPtr socket = newSocket();
+#if QT_CONFIG(schannel)
+    // Needs to be < 1.2 because of the old certificate and <= 1.0 because of the mail server
+    socket->setProtocol(QSsl::SslProtocol::TlsV1_0);
+#endif
     QSignalSpy sslErrorsSpy(socket.data(), SIGNAL(sslErrors(QList<QSslError>)));
     QSignalSpy peerVerifyErrorSpy(socket.data(), SIGNAL(peerVerifyError(QSslError)));
 
@@ -720,6 +724,9 @@ void tst_QSslSocket::connectToHostEncrypted()
         return;
 
     QSslSocketPtr socket = newSocket();
+#if QT_CONFIG(schannel) // old certificate not supported with TLS 1.2
+    socket->setProtocol(QSsl::SslProtocol::TlsV1_1);
+#endif
     this->socket = socket.data();
     QVERIFY(socket->addCaCertificates(testDataDir + "certs/qt-test-server-cacert.pem"));
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
@@ -753,6 +760,9 @@ void tst_QSslSocket::connectToHostEncryptedWithVerificationPeerName()
         return;
 
     QSslSocketPtr socket = newSocket();
+#if QT_CONFIG(schannel) // old certificate not supported with TLS 1.2
+    socket->setProtocol(QSsl::SslProtocol::TlsV1_1);
+#endif
     this->socket = socket.data();
 
     socket->addCaCertificates(testDataDir + "certs/qt-test-server-cacert.pem");
@@ -1413,6 +1423,11 @@ void tst_QSslSocket::setLocalCertificateChain()
     loop.exec();
 
     QList<QSslCertificate> chain = socket->peerCertificateChain();
+#if QT_CONFIG(schannel)
+    QEXPECT_FAIL("", "Schannel cannot send intermediate certificates not "
+                     "located in a system certificate store",
+                 Abort);
+#endif
     QCOMPARE(chain.size(), 2);
     QCOMPARE(chain[0].serialNumber(), QByteArray("10:a0:ad:77:58:f6:6e:ae:46:93:a3:43:f9:59:8a:9e"));
     QCOMPARE(chain[1].serialNumber(), QByteArray("3b:eb:99:c5:ea:d8:0b:5d:0b:97:5d:4f:06:75:4b:e1"));
@@ -1480,6 +1495,9 @@ void tst_QSslSocket::setSslConfiguration()
     QSslSocketPtr socket = newSocket();
     QFETCH(QSslConfiguration, configuration);
     socket->setSslConfiguration(configuration);
+#if QT_CONFIG(schannel) // old certificate not supported with TLS 1.2
+    socket->setProtocol(QSsl::SslProtocol::TlsV1_1);
+#endif
     this->socket = socket.data();
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
     QFETCH(bool, works);
@@ -2174,6 +2192,9 @@ void tst_QSslSocket::verifyMode()
         return;
 
     QSslSocket socket;
+#if QT_CONFIG(schannel) // old certificate not supported with TLS 1.2
+    socket.setProtocol(QSsl::SslProtocol::TlsV1_1);
+#endif
     QCOMPARE(socket.peerVerifyMode(), QSslSocket::AutoVerifyPeer);
     socket.setPeerVerifyMode(QSslSocket::VerifyNone);
     QCOMPARE(socket.peerVerifyMode(), QSslSocket::VerifyNone);
@@ -2474,6 +2495,9 @@ void tst_QSslSocket::abortOnSslErrors()
 void tst_QSslSocket::readFromClosedSocket()
 {
     QSslSocketPtr socket = newSocket();
+#if QT_CONFIG(schannel) // old certificate not supported with TLS 1.2
+    socket->setProtocol(QSsl::SslProtocol::TlsV1_1);
+#endif
     socket->ignoreSslErrors();
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
     socket->ignoreSslErrors();
@@ -3222,6 +3246,11 @@ void tst_QSslSocket::verifyClientCertificate()
         return;
 
     QFETCH(QSslSocket::PeerVerifyMode, peerVerifyMode);
+#if QT_CONFIG(schannel)
+    if (peerVerifyMode == QSslSocket::QueryPeer || peerVerifyMode == QSslSocket::AutoVerifyPeer)
+        QSKIP("Schannel doesn't tackle requesting a certificate and not receiving one.");
+#endif
+
     SslServer server;
     server.addCaCertificates = testDataDir + "certs/bogus-ca.crt";
     server.ignoreSslErrors = false;
@@ -3252,6 +3281,14 @@ void tst_QSslSocket::verifyClientCertificate()
     // check server socket
     QVERIFY(server.socket);
 
+#if QT_CONFIG(schannel)
+    // As additional info to the QEXPECT_FAIL below:
+    // This is because schannel treats it as an error (client side) if you don't have a certificate
+    // when asked for one.
+    QEXPECT_FAIL("NoCert:VerifyPeer",
+                 "The client disconnects first, which causes the event "
+                 "loop to quit before the server disconnects.", Continue);
+#endif
     QCOMPARE(server.socket->state(), expectedState);
     QCOMPARE(server.socket->isEncrypted(), works);
 
@@ -3260,6 +3297,13 @@ void tst_QSslSocket::verifyClientCertificate()
         QVERIFY(server.socket->peerCertificateChain().isEmpty());
     } else {
         QCOMPARE(server.socket->peerCertificate(), clientCerts.first());
+#if QT_CONFIG(schannel)
+        if (clientCerts.count() == 1 && server.socket->peerCertificateChain().count() == 2) {
+            QEXPECT_FAIL("",
+                         "Schannel includes the entire chain, not just the leaf and intermediates",
+                         Continue);
+        }
+#endif
         QCOMPARE(server.socket->peerCertificateChain(), clientCerts);
     }
 
@@ -3270,7 +3314,7 @@ void tst_QSslSocket::verifyClientCertificate()
 
 void tst_QSslSocket::readBufferMaxSize()
 {
-#ifdef QT_SECURETRANSPORT
+#if defined(QT_SECURETRANSPORT) || QT_CONFIG(schannel)
     // QTBUG-55170:
     // SecureTransport back-end was ignoring read-buffer
     // size limit, resulting (potentially) in a constantly
@@ -3806,6 +3850,9 @@ void tst_QSslSocket::pskServer()
 {
 #ifdef Q_OS_WINRT
     QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
+#if QT_CONFIG(schannel)
+    QSKIP("Schannel does not have PSK support implemented.");
 #endif
     QFETCH_GLOBAL(bool, setProxy);
     if (!QSslSocket::supportsSsl() || setProxy)

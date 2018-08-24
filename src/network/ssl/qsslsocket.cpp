@@ -203,6 +203,7 @@
     does not require this certificate to be valid. This is useful when you
     want to display peer certificate details to the user without affecting the
     actual SSL handshake. This mode is the default for servers.
+    Note: In Schannel this value acts the same as VerifyNone.
 
     \value VerifyPeer QSslSocket will request a certificate from the peer
     during the SSL handshake phase, and requires that this certificate is
@@ -321,6 +322,9 @@
 #endif
 #ifdef QT_SECURETRANSPORT
 #include "qsslsocket_mac_p.h"
+#endif
+#if QT_CONFIG(schannel)
+#include "qsslsocket_schannel_p.h"
 #endif
 #include "qsslconfiguration_p.h"
 

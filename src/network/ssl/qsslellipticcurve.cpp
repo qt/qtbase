@@ -64,6 +64,8 @@ QT_BEGIN_NAMESPACE
 
     QSslEllipticCurve instances can be compared for equality and can be used as keys
     in QHash and QSet. They cannot be used as key in a QMap.
+
+    \note This class is currently only supported in OpenSSL.
 */
 
 /*!

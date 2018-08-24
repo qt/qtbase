@@ -814,7 +814,7 @@ void tst_QSslCertificate::task256066toPem()
 
 void tst_QSslCertificate::nulInCN()
 {
-#if defined(QT_SECURETRANSPORT) || defined(Q_OS_WINRT)
+#if defined(QT_SECURETRANSPORT) || defined(Q_OS_WINRT) || QT_CONFIG(schannel)
     QSKIP("Generic QSslCertificatePrivate fails this test");
 #endif
     QList<QSslCertificate> certList =
@@ -833,7 +833,7 @@ void tst_QSslCertificate::nulInCN()
 
 void tst_QSslCertificate::nulInSan()
 {
-#if defined(QT_SECURETRANSPORT) || defined(Q_OS_WINRT)
+#if defined(QT_SECURETRANSPORT) || defined(Q_OS_WINRT) || QT_CONFIG(schannel)
     QSKIP("Generic QSslCertificatePrivate fails this test");
 #endif
     QList<QSslCertificate> certList =
