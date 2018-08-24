@@ -91,31 +91,26 @@
     if (m_buttons != Qt::NoButton)
         return;
 
-    NSEventType ty = [theEvent type];
-    switch (ty) {
-    case NSLeftMouseDown:
+    switch (theEvent.type) {
+    case NSEventTypeLeftMouseDown:
+    case NSEventTypeLeftMouseDragged:
         m_frameStrutButtons |= Qt::LeftButton;
         break;
-    case NSLeftMouseUp:
+    case NSEventTypeLeftMouseUp:
          m_frameStrutButtons &= ~Qt::LeftButton;
          break;
-    case NSRightMouseDown:
+    case NSEventTypeRightMouseDown:
+    case NSEventTypeRightMouseDragged:
         m_frameStrutButtons |= Qt::RightButton;
         break;
-    case NSLeftMouseDragged:
-        m_frameStrutButtons |= Qt::LeftButton;
-        break;
-    case NSRightMouseDragged:
-        m_frameStrutButtons |= Qt::RightButton;
-        break;
-    case NSRightMouseUp:
+    case NSEventTypeRightMouseUp:
         m_frameStrutButtons &= ~Qt::RightButton;
         break;
-    case NSOtherMouseDown:
-        m_frameStrutButtons |= cocoaButton2QtButton([theEvent buttonNumber]);
+    case NSEventTypeOtherMouseDown:
+        m_frameStrutButtons |= cocoaButton2QtButton(theEvent.buttonNumber);
         break;
-    case NSOtherMouseUp:
-        m_frameStrutButtons &= ~cocoaButton2QtButton([theEvent buttonNumber]);
+    case NSEventTypeOtherMouseUp:
+        m_frameStrutButtons &= ~cocoaButton2QtButton(theEvent.buttonNumber);
     default:
         break;
     }
@@ -581,7 +576,7 @@
         // knowing whether or not a NSEventPhaseEnded will be followed by a momentum phase.
         // The best we can do is to look at the event queue and hope that the system has
         // had time to emit a momentum phase event.
-        if ([NSApp nextEventMatchingMask:NSScrollWheelMask untilDate:[NSDate distantPast]
+        if ([NSApp nextEventMatchingMask:NSEventMaskScrollWheel untilDate:[NSDate distantPast]
                 inMode:@"QtMomementumEventSearchMode" dequeue:NO].momentumPhase == NSEventPhaseBegan) {
             Q_ASSERT(pixelDelta.isNull() && angleDelta.isNull());
             return; // Ignore this event, as it has a delta of 0,0

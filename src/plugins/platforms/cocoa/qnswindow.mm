@@ -50,13 +50,13 @@ Q_LOGGING_CATEGORY(lcQpaEvents, "qt.qpa.events");
 static bool isMouseEvent(NSEvent *ev)
 {
     switch ([ev type]) {
-    case NSLeftMouseDown:
-    case NSLeftMouseUp:
-    case NSRightMouseDown:
-    case NSRightMouseUp:
-    case NSMouseMoved:
-    case NSLeftMouseDragged:
-    case NSRightMouseDragged:
+    case NSEventTypeLeftMouseDown:
+    case NSEventTypeLeftMouseUp:
+    case NSEventTypeRightMouseDown:
+    case NSEventTypeRightMouseUp:
+    case NSEventTypeMouseMoved:
+    case NSEventTypeLeftMouseDragged:
+    case NSEventTypeRightMouseDragged:
         return true;
     default:
         return false;
@@ -186,16 +186,16 @@ static bool isMouseEvent(NSEvent *ev)
 /*!
     Borderless windows need a transparent background
 
-    Technically windows with NSTexturedBackgroundWindowMask (such
-    as windows with unified toolbars) need to draw the textured
+    Technically windows with NSWindowStyleMaskTexturedBackground
+    (such as windows with unified toolbars) need to draw the textured
     background of the NSWindow, and can't have a transparent
-    background, but as NSBorderlessWindowMask is 0, you can't
-    have a window with NSTexturedBackgroundWindowMask that is
+    background, but as NSWindowStyleMaskBorderless is 0, you can't
+    have a window with NSWindowStyleMaskTexturedBackground that is
     also borderless.
 */
 - (NSColor *)backgroundColor
 {
-    return self.styleMask == NSBorderlessWindowMask
+    return self.styleMask == NSWindowStyleMaskBorderless
         ? [NSColor clearColor] : qt_objcDynamicSuper();
 }
 

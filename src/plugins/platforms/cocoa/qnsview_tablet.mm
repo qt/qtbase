@@ -64,7 +64,7 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
         return false;
 
     NSEventType eventType = [theEvent type];
-    if (eventType != NSTabletPoint && [theEvent subtype] != NSTabletPointEventSubtype)
+    if (eventType != NSEventTypeTabletPoint && [theEvent subtype] != NSEventSubtypeTabletPoint)
         return false; // Not a tablet event.
 
     ulong timestamp = [theEvent timestamp] * 1000;
@@ -82,7 +82,7 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
     }
     const QCocoaTabletDeviceData &deviceData = tabletDeviceDataHash->value(deviceId);
 
-    bool down = (eventType != NSMouseMoved);
+    bool down = (eventType != NSEventTypeMouseMoved);
 
     qreal pressure;
     if (down) {
@@ -182,17 +182,17 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     deviceData.capabilityMask = [theEvent capabilityMask];
 
     switch ([theEvent pointingDeviceType]) {
-        case NSUnknownPointingDevice:
+        case NSPointingDeviceTypeUnknown:
         default:
             deviceData.pointerType = QTabletEvent::UnknownPointer;
             break;
-        case NSPenPointingDevice:
+        case NSPointingDeviceTypePen:
             deviceData.pointerType = QTabletEvent::Pen;
             break;
-        case NSCursorPointingDevice:
+        case NSPointingDeviceTypeCursor:
             deviceData.pointerType = QTabletEvent::Cursor;
             break;
-        case NSEraserPointingDevice:
+        case NSPointingDeviceTypeEraser:
             deviceData.pointerType = QTabletEvent::Eraser;
             break;
     }

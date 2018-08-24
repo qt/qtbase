@@ -337,9 +337,9 @@ void QCocoaWindow::setVisible(bool visible)
                 // Since this isn't a native popup, the window manager doesn't close the popup when you click outside
                 NSWindow *nativeParentWindow = parentCocoaWindow->nativeWindow();
                 NSUInteger parentStyleMask = nativeParentWindow.styleMask;
-                if ((m_resizableTransientParent = (parentStyleMask & NSResizableWindowMask))
-                    && !(nativeParentWindow.styleMask & NSFullScreenWindowMask))
-                    nativeParentWindow.styleMask &= ~NSResizableWindowMask;
+                if ((m_resizableTransientParent = (parentStyleMask & NSWindowStyleMaskResizable))
+                    && !(nativeParentWindow.styleMask & NSWindowStyleMaskFullScreen))
+                    nativeParentWindow.styleMask &= ~NSWindowStyleMaskResizable;
             }
 
         }
@@ -384,7 +384,9 @@ void QCocoaWindow::setVisible(bool visible)
                     ((NSPanel *)m_view.window).worksWhenModal = YES;
                     if (!(parentCocoaWindow && window()->transientParent()->isActive()) && window()->type() == Qt::Popup) {
                         removeMonitor();
-                        monitor = [NSEvent addGlobalMonitorForEventsMatchingMask:NSLeftMouseDownMask|NSRightMouseDownMask|NSOtherMouseDownMask|NSMouseMovedMask handler:^(NSEvent *e) {
+                        NSEventMask eventMask = NSEventMaskLeftMouseDown | NSEventMaskRightMouseDown
+                                              | NSEventMaskOtherMouseDown | NSEventMaskMouseMoved;
+                        monitor = [NSEvent addGlobalMonitorForEventsMatchingMask:eventMask handler:^(NSEvent *e) {
                             const auto button = cocoaButton2QtButton(e);
                             const auto buttons = currentlyPressedMouseButtons();
                             const auto eventType = cocoaEvent2QtMouseEvent(e);
@@ -446,9 +448,9 @@ void QCocoaWindow::setVisible(bool visible)
         if (parentCocoaWindow && window()->type() == Qt::Popup) {
             NSWindow *nativeParentWindow = parentCocoaWindow->nativeWindow();
             if (m_resizableTransientParent
-                && !(nativeParentWindow.styleMask & NSFullScreenWindowMask))
+                && !(nativeParentWindow.styleMask & NSWindowStyleMaskFullScreen))
                 // A window should not be resizable while a transient popup is open
-                nativeParentWindow.styleMask |= NSResizableWindowMask;
+                nativeParentWindow.styleMask |= NSWindowStyleMaskResizable;
         }
     }
 
@@ -491,39 +493,39 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     const bool frameless = (flags & Qt::FramelessWindowHint) || windowIsPopupType(type);
 
     // Remove zoom button by disabling resize for CustomizeWindowHint windows, except for
-    // Qt::Tool windows (e.g. dock windows) which should always be resizeable.
-    const bool resizeable = !(flags & Qt::CustomizeWindowHint) || (type == Qt::Tool);
+    // Qt::Tool windows (e.g. dock windows) which should always be resizable.
+    const bool resizable = !(flags & Qt::CustomizeWindowHint) || (type == Qt::Tool);
 
     // Select base window type. Note that the value of NSBorderlessWindowMask is 0.
-    NSUInteger styleMask = (frameless || !resizeable) ? NSBorderlessWindowMask : NSResizableWindowMask;
+    NSUInteger styleMask = (frameless || !resizable) ? NSWindowStyleMaskBorderless : NSWindowStyleMaskResizable;
 
     if (frameless) {
         // No further customizations for frameless since there are no window decorations.
     } else if (flags & Qt::CustomizeWindowHint) {
         if (flags & Qt::WindowTitleHint)
-            styleMask |= NSTitledWindowMask;
+            styleMask |= NSWindowStyleMaskTitled;
         if (flags & Qt::WindowCloseButtonHint)
-            styleMask |= NSClosableWindowMask;
+            styleMask |= NSWindowStyleMaskClosable;
         if (flags & Qt::WindowMinimizeButtonHint)
-            styleMask |= NSMiniaturizableWindowMask;
+            styleMask |= NSWindowStyleMaskMiniaturizable;
         if (flags & Qt::WindowMaximizeButtonHint)
-            styleMask |= NSResizableWindowMask;
+            styleMask |= NSWindowStyleMaskResizable;
     } else {
-        styleMask |= NSClosableWindowMask | NSTitledWindowMask;
+        styleMask |= NSWindowStyleMaskClosable | NSWindowStyleMaskTitled;
 
         if (type != Qt::Dialog)
-            styleMask |= NSMiniaturizableWindowMask;
+            styleMask |= NSWindowStyleMaskMiniaturizable;
     }
 
     if (type == Qt::Tool)
-        styleMask |= NSUtilityWindowMask;
+        styleMask |= NSWindowStyleMaskUtilityWindow;
 
     if (m_drawContentBorderGradient)
-        styleMask |= NSTexturedBackgroundWindowMask;
+        styleMask |= NSWindowStyleMaskTexturedBackground;
 
     // Don't wipe fullscreen state
-    if (m_view.window.styleMask & NSFullScreenWindowMask)
-        styleMask |= NSFullScreenWindowMask;
+    if (m_view.window.styleMask & NSWindowStyleMaskFullScreen)
+        styleMask |= NSWindowStyleMaskFullScreen;
 
     return styleMask;
 }
@@ -630,7 +632,7 @@ void QCocoaWindow::applyWindowState(Qt::WindowStates requestedState)
 
     const NSWindow *nsWindow = m_view.window;
 
-    if (nsWindow.styleMask & NSUtilityWindowMask
+    if (nsWindow.styleMask & NSWindowStyleMaskUtilityWindow
         && newState & (Qt::WindowMinimized | Qt::WindowFullScreen)) {
         qWarning() << window()->type() << "windows can not be made" << newState;
         handleWindowStateChanged(HandleUnconditionally);
@@ -704,14 +706,14 @@ void QCocoaWindow::toggleMaximized()
 
     // The NSWindow needs to be resizable, otherwise the window will
     // not be possible to zoom back to non-zoomed state.
-    const bool wasResizable = window.styleMask & NSResizableWindowMask;
-    window.styleMask |= NSResizableWindowMask;
+    const bool wasResizable = window.styleMask & NSWindowStyleMaskResizable;
+    window.styleMask |= NSWindowStyleMaskResizable;
 
     const id sender = window;
     [window zoom:sender];
 
     if (!wasResizable)
-        window.styleMask &= ~NSResizableWindowMask;
+        window.styleMask &= ~NSWindowStyleMaskResizable;
 }
 
 void QCocoaWindow::toggleFullScreen()
@@ -735,13 +737,13 @@ void QCocoaWindow::windowWillEnterFullScreen()
     // The NSWindow needs to be resizable, otherwise we'll end up with
     // the normal window geometry, centered in the middle of the screen
     // on a black background. The styleMask will be reset below.
-    m_view.window.styleMask |= NSResizableWindowMask;
+    m_view.window.styleMask |= NSWindowStyleMaskResizable;
 }
 
 bool QCocoaWindow::isTransitioningToFullScreen() const
 {
     NSWindow *window = m_view.window;
-    return window.styleMask & NSFullScreenWindowMask && !window.qt_fullScreen;
+    return window.styleMask & NSWindowStyleMaskFullScreen && !window.qt_fullScreen;
 }
 
 void QCocoaWindow::windowDidEnterFullScreen()
@@ -765,7 +767,7 @@ void QCocoaWindow::windowWillExitFullScreen()
 
     // The NSWindow needs to be resizable, otherwise we'll end up with
     // a weird zoom animation. The styleMask will be reset below.
-    m_view.window.styleMask |= NSResizableWindowMask;
+    m_view.window.styleMask |= NSWindowStyleMaskResizable;
 }
 
 void QCocoaWindow::windowDidExitFullScreen()
@@ -1707,7 +1709,7 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
         return;
 
     if (!m_drawContentBorderGradient) {
-        window.styleMask = window.styleMask & ~NSTexturedBackgroundWindowMask;
+        window.styleMask = window.styleMask & ~NSWindowStyleMaskTexturedBackground;
         [window.contentView.superview setNeedsDisplay:YES];
         window.titlebarAppearsTransparent = NO;
         return;
@@ -1733,7 +1735,7 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
 
     int effectiveBottomContentBorderThickness = m_bottomContentBorderThickness;
 
-    [window setStyleMask:[window styleMask] | NSTexturedBackgroundWindowMask];
+    [window setStyleMask:[window styleMask] | NSWindowStyleMaskTexturedBackground];
     window.titlebarAppearsTransparent = YES;
 
     [window setContentBorderThickness:effectiveTopContentBorderThickness forEdge:NSMaxYEdge];
