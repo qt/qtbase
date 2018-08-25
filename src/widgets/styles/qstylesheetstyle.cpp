@@ -4853,13 +4853,12 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
             return 0;
         break;
 
-    case PM_TabBarScrollButtonWidth:   {
+    case PM_TabBarScrollButtonWidth:
         subRule = renderRule(w, opt, PseudoElement_TabBarScroller);
         if (subRule.hasContentsSize()) {
             QSize sz = subRule.size();
-            return sz.width() != -1 ? sz.width() : sz.height();
+            return (sz.width() != -1 ? sz.width() : sz.height()) / 2;
         }
-                                        }
         break;
 
     case PM_TabBarTabShiftHorizontal:
@@ -5916,6 +5915,12 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
                 r = subRule.contentsRect(r);
             return r;
         }
+        break;
+
+    case SE_TabBarScrollLeftButton:
+    case SE_TabBarScrollRightButton:
+        if (hasStyleRule(w, PseudoElement_TabBarScroller))
+            return ParentStyle::subElementRect(se, opt, w);
         break;
 
     case SE_TabBarTearIndicator: {
