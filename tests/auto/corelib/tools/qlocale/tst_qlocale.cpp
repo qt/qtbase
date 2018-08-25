@@ -2467,6 +2467,10 @@ void tst_QLocale::currency()
     QCOMPARE(de_DE.toCurrencyString(double(-1234.56), QLatin1String("BAZ")),
              QString::fromUtf8("-1.234,56\xc2\xa0" "BAZ"));
 
+    const QLocale es_CR(QLocale::Spanish, QLocale::CostaRica);
+    QCOMPARE(es_CR.toCurrencyString(double(1565.25)),
+             QString::fromUtf8("\xE2\x82\xA1" "1\xC2\xA0" "565,25"));
+
     const QLocale system = QLocale::system();
     QVERIFY(system.toCurrencyString(1, QLatin1String("FOO")).contains(QLatin1String("FOO")));
 }
