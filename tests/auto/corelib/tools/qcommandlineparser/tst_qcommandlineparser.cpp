@@ -536,6 +536,7 @@ static const char expectedOptionsHelp[] =
         "  --load <url>                Load file from URL.\n"
         "  -o, --output <file>         Set output file.\n"
         "  -D <key=value>              Define macro.\n"
+        "  --long-option\n"
         "  -n, --no-implicit-includes  Disable magic generation of implicit\n"
         "                              #include-directives.\n"
         "  --newline                   This is an option with a rather long\n"
