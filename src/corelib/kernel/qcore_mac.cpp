@@ -65,6 +65,7 @@ QCFString::operator CFStringRef() const
 
 #if defined(QT_USE_APPLE_UNIFIED_LOGGING)
 
+QT_MAC_WEAK_IMPORT(_os_log_default);
 bool AppleUnifiedLogger::messageHandler(QtMsgType msgType, const QMessageLogContext &context,
                                         const QString &message, const QString &optionalSubsystem)
 {

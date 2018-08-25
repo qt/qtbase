@@ -108,6 +108,8 @@
 #define QT_NAMESPACE_ALIAS_OBJC_CLASS(__KLASS__)
 #endif
 
+#define QT_MAC_WEAK_IMPORT(symbol) extern "C" decltype(symbol) symbol __attribute__((weak_import));
+
 QT_BEGIN_NAMESPACE
 template <typename T, typename U, U (*RetainFunction)(U), void (*ReleaseFunction)(U)>
 class QAppleRefCounted
@@ -180,16 +182,16 @@ private:
     QString string;
 };
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 Q_CORE_EXPORT QChar qt_mac_qtKey2CocoaKey(Qt::Key key);
 Q_CORE_EXPORT Qt::Key qt_mac_cocoaKey2QtKey(QChar keyCode);
+Q_CORE_EXPORT bool qt_mac_applicationIsInDarkMode();
 #endif
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QMacAutoReleasePool *pool);
 #endif
 
-Q_CORE_EXPORT void qt_apple_check_os_version();
 Q_CORE_EXPORT bool qt_apple_isApplicationExtension();
 
 #if defined(Q_OS_MACOS) && !defined(QT_BOOTSTRAPPED)
@@ -326,6 +328,7 @@ private:
 #define QT_APPLE_LOG_ACTIVITY_WITH_PARENT2(description, parent) QT_APPLE_LOG_ACTIVITY_WITH_PARENT3(true, description, parent)
 #define QT_APPLE_LOG_ACTIVITY_WITH_PARENT(...) QT_OVERLOADED_MACRO(QT_APPLE_LOG_ACTIVITY_WITH_PARENT, __VA_ARGS__)
 
+QT_MAC_WEAK_IMPORT(_os_activity_current);
 #define QT_APPLE_LOG_ACTIVITY2(condition, description) QT_APPLE_LOG_ACTIVITY_CREATE(condition, description, OS_ACTIVITY_CURRENT)
 #define QT_APPLE_LOG_ACTIVITY1(description) QT_APPLE_LOG_ACTIVITY2(true, description)
 #define QT_APPLE_LOG_ACTIVITY(...) QT_OVERLOADED_MACRO(QT_APPLE_LOG_ACTIVITY, __VA_ARGS__)

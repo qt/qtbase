@@ -42,6 +42,7 @@
 #include <qpa/qplatformfontdatabase.h>
 #include <QtCore/qendian.h>
 #include <QtCore/qsettings.h>
+#include <QtCore/qoperatingsystemversion.h>
 
 #include <private/qimage_p.h>
 
@@ -652,16 +653,35 @@ bool QCoreTextFontEngine::expectsGammaCorrectedBlending() const
 
 QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool aa, const QTransform &matrix)
 {
-
     glyph_metrics_t br = alphaMapBoundingBox(glyph, subPixelPosition, matrix, glyphFormat);
 
     bool isColorGlyph = glyphFormat == QFontEngine::Format_ARGB;
     QImage::Format imageFormat = isColorGlyph ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
     QImage im(br.width.ceil().toInt(), br.height.ceil().toInt(), imageFormat);
-    im.fill(0);
-
     if (!im.width() || !im.height())
         return im;
+
+#if defined(Q_OS_MACOS)
+    CGColorRef glyphColor = CGColorGetConstantColor(kCGColorWhite);
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
+        // macOS 10.14 uses a new font smoothing algorithm that takes the fill color into
+        // account. This means our default approach of drawing white on black to produce
+        // the alpha map will result in non-native looking text when then drawn as black
+        // on white during the final blit. As a workaround we use the application's current
+        // appearance to decide whether to draw with white or black fill, and then invert
+        // the glyph image in the latter case, producing an alpha map. This covers the
+        // most common use-cases, but longer term we should propagate the fill color all
+        // the way from the paint engine, and include it in the key for the glyph cache.
+        if (!qt_mac_applicationIsInDarkMode())
+            glyphColor = CGColorGetConstantColor(kCGColorBlack);
+    }
+    const bool blackOnWhiteGlyphs = !isColorGlyph
+            && CGColorEqualToColor(glyphColor, CGColorGetConstantColor(kCGColorBlack));
+    if (blackOnWhiteGlyphs)
+        im.fill(Qt::white);
+    else
+#endif
+        im.fill(0); // Faster than Qt::black
 
     CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
     uint cgflags = isColorGlyph ? kCGImageAlphaPremultipliedFirst : kCGImageAlphaNoneSkipFirst;
@@ -696,7 +716,11 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
 
     if (!isColorGlyph) {
         CGContextSetTextMatrix(ctx, cgMatrix);
+#if defined(Q_OS_MACOS)
+        CGContextSetFillColorWithColor(ctx, glyphColor);
+#else
         CGContextSetRGBFillColor(ctx, 1, 1, 1, 1);
+#endif
         CGContextSetTextDrawingMode(ctx, kCGTextFill);
         CGContextSetTextPosition(ctx, pos_x, pos_y);
 
@@ -720,6 +744,11 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
 
     CGContextRelease(ctx);
     CGColorSpaceRelease(colorspace);
+
+#if defined(Q_OS_MACOS)
+    if (blackOnWhiteGlyphs)
+        im.invertPixels();
+#endif
 
     return im;
 }

@@ -49,6 +49,7 @@
 #include <qsortfilterproxymodel.h>
 #include <qlineedit.h>
 #include <qlayout.h>
+#include <qtemporarydir.h>
 #include <private/qfiledialog_p.h>
 #if defined QT_BUILD_INTERNAL
 #include <private/qsidebar_p.h>
@@ -1310,57 +1311,116 @@ void tst_QFiledialog::saveButtonText()
     QCOMPARE(button->text(), caption);
 }
 
+// Predicate for use with QTRY_VERIFY() that checks whether the file dialog list
+// has been populated (contains an entry).
+class DirPopulatedPredicate
+{
+public:
+    explicit DirPopulatedPredicate(QListView *list, const QString &needle) :
+        m_list(list), m_needle(needle) {}
+
+    operator bool() const
+    {
+        const auto model = m_list->model();
+        const auto root = m_list->rootIndex();
+        for (int r = 0, count = model->rowCount(root); r < count; ++r) {
+            if (m_needle == model->index(r, 0, root).data(Qt::DisplayRole).toString())
+                return true;
+        }
+        return false;
+    }
+
+private:
+    QListView *m_list;
+    QString m_needle;
+};
+
+// A predicate for use with QTRY_VERIFY() that ensures an entry of the file dialog
+// list is selected by pressing cursor down.
+class SelectDirTestPredicate
+{
+public:
+    explicit SelectDirTestPredicate(QListView *list, const QString &needle) :
+        m_list(list), m_needle(needle) {}
+
+    operator bool() const
+    {
+        if (m_needle == m_list->currentIndex().data(Qt::DisplayRole).toString())
+            return true;
+        QCoreApplication::processEvents();
+        QTest::keyClick(m_list, Qt::Key_Down);
+        return false;
+    }
+
+private:
+    QListView *m_list;
+    QString m_needle;
+};
+
 void tst_QFiledialog::clearLineEdit()
 {
-    QFileDialog fd(0, "caption", "foo");
+    // Play it really safe by creating a directory which should show first in
+    // a temporary dir
+    QTemporaryDir workDir(QDir::tempPath() + QLatin1String("/tst_qfd_clearXXXXXX"));
+    QVERIFY2(workDir.isValid(), qPrintable(workDir.errorString()));
+    const QString workDirPath = workDir.path();
+    const QString dirName = QLatin1String("aaaaa");
+    QVERIFY(QDir(workDirPath).mkdir(dirName));
+
+    QFileDialog fd(nullptr,
+                   QLatin1String(QTest::currentTestFunction()) + QLatin1String(" AnyFile"),
+                   "foo");
     fd.setViewMode(QFileDialog::List);
     fd.setFileMode(QFileDialog::AnyFile);
     fd.show();
 
-    //play it really safe by creating a directory
-    QDir::home().mkdir("_____aaaaaaaaaaaaaaaaaaaaaa");
-
     QLineEdit *lineEdit = fd.findChild<QLineEdit*>("fileNameEdit");
     QVERIFY(lineEdit);
     QCOMPARE(lineEdit->text(), QLatin1String("foo"));
-    fd.setDirectory(QDir::home());
 
     QListView* list = fd.findChild<QListView*>("listView");
     QVERIFY(list);
 
-    // saving a file the text shouldn't be cleared
-    fd.setDirectory(QDir::home());
+    // When in AnyFile mode, lineEdit's text shouldn't be cleared when entering
+    // a directory by activating one in the list
+    fd.setDirectory(workDirPath);
+    DirPopulatedPredicate dirPopulated(list, dirName);
+    QTRY_VERIFY(dirPopulated);
 
 #ifdef QT_KEYPAD_NAVIGATION
     list->setEditFocus(true);
 #endif
-    QTest::keyClick(list, Qt::Key_Down);
+
+    SelectDirTestPredicate selectTestDir(list, dirName);
+    QTRY_VERIFY(selectTestDir);
+
 #ifndef Q_OS_MAC
     QTest::keyClick(list, Qt::Key_Return);
 #else
     QTest::keyClick(list, Qt::Key_O, Qt::ControlModifier);
 #endif
 
-    QTRY_VERIFY(fd.directory().absolutePath() != QDir::home().absolutePath());
+    QTRY_VERIFY(fd.directory().absolutePath() != workDirPath);
     QVERIFY(!lineEdit->text().isEmpty());
 
-    // selecting a dir the text should be cleared so one can just hit ok
+    // When in Directory mode, lineEdit's text should be cleared when entering
+    // a directory by activating one in the list so one can just hit ok
     // and it selects that directory
     fd.setFileMode(QFileDialog::Directory);
-    fd.setDirectory(QDir::home());
+    fd.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1String(" Directory"));
+    fd.setDirectory(workDirPath);
+    QTRY_VERIFY(dirPopulated);
 
-    QTest::keyClick(list, Qt::Key_Down);
+    QTRY_VERIFY(selectTestDir);
+
 #ifndef Q_OS_MAC
     QTest::keyClick(list, Qt::Key_Return);
 #else
     QTest::keyClick(list, Qt::Key_O, Qt::ControlModifier);
 #endif
 
-    QTRY_VERIFY(fd.directory().absolutePath() != QDir::home().absolutePath());
+    QTRY_VERIFY(fd.directory().absolutePath() != workDirPath);
     QVERIFY(lineEdit->text().isEmpty());
-
-    //remove the dir
-    QDir::home().rmdir("_____aaaaaaaaaaaaaaaaaaaaaa");
 }
 
 void tst_QFiledialog::enableChooseButton()

@@ -1623,15 +1623,15 @@ void tst_QLocale::formatTimeZone()
         qDebug("(Skipped some CET-only tests)");
     }
 
-    QString cet(QStringLiteral("CET")), cest(QStringLiteral("CEST"));
 #ifdef Q_OS_ANDROID // Only reports (general) zones as offsets (QTBUG-68837)
-    cet = QStringLiteral("GMT+01:00");
-    cest = QStringLiteral("GMT+02:00");
-#elif defined Q_OS_DARWIN // Lacked real names until 10.13, High Sierra
-    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSHighSierra) {
-        cet = QStringLiteral("GMT+1");
-        cest = QStringLiteral("GMT+2");
-    }
+    const QString cet(QStringLiteral("GMT+01:00"));
+    const QString cest(QStringLiteral("GMT+02:00"));
+#elif defined Q_OS_DARWIN
+    const QString cet(QStringLiteral("GMT+1"));
+    const QString cest(QStringLiteral("GMT+2"));
+#else
+    const QString cet(QStringLiteral("CET"));
+    const QString cest(QStringLiteral("CEST"));
 #endif
 
     QDateTime dt6(QDate(2013, 1, 1), QTime(0, 0, 0), QTimeZone("Europe/Berlin"));
@@ -2466,6 +2466,10 @@ void tst_QLocale::currency()
              QString::fromUtf8("-1.234,56\xc2\xa0\xe2\x82\xac"));
     QCOMPARE(de_DE.toCurrencyString(double(-1234.56), QLatin1String("BAZ")),
              QString::fromUtf8("-1.234,56\xc2\xa0" "BAZ"));
+
+    const QLocale es_CR(QLocale::Spanish, QLocale::CostaRica);
+    QCOMPARE(es_CR.toCurrencyString(double(1565.25)),
+             QString::fromUtf8("\xE2\x82\xA1" "1\xC2\xA0" "565,25"));
 
     const QLocale system = QLocale::system();
     QVERIFY(system.toCurrencyString(1, QLatin1String("FOO")).contains(QLatin1String("FOO")));

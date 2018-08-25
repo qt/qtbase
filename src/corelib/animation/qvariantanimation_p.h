@@ -58,6 +58,8 @@
 
 #include "private/qabstractanimation_p.h"
 
+#include <type_traits>
+
 #ifndef QT_NO_ANIMATION
 
 QT_BEGIN_NAMESPACE
@@ -104,7 +106,17 @@ public:
 };
 
 //this should make the interpolation faster
-template<typename T> inline T _q_interpolate(const T &f, const T &t, qreal progress)
+template<typename T>
+typename std::enable_if<std::is_unsigned<T>::value, T>::type
+_q_interpolate(const T &f, const T &t, qreal progress)
+{
+    return T(f + t * progress - f * progress);
+}
+
+// the below will apply also to all non-arithmetic types
+template<typename T>
+typename std::enable_if<!std::is_unsigned<T>::value, T>::type
+_q_interpolate(const T &f, const T &t, qreal progress)
 {
     return T(f + (t - f) * progress);
 }
