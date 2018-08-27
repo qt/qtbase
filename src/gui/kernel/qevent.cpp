@@ -2750,7 +2750,7 @@ Qt::MouseButtons QTabletEvent::buttons() const
     \header
         \li Event Type
         \li Description
-        \li Touch equence
+        \li Touch sequence
     \row
         \li Qt::ZoomNativeGesture
         \li Magnification delta in percent.
@@ -4119,7 +4119,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         const QNativeGestureEvent *ne = static_cast<const QNativeGestureEvent *>(e);
         dbg << "QNativeGestureEvent(";
         QtDebugUtils::formatQEnum(dbg, ne->gestureType());
-        dbg << "localPos=";
+        dbg << ", localPos=";
         QtDebugUtils::formatQPoint(dbg, ne->localPos());
         dbg << ", value=" << ne->value() << ')';
     }
