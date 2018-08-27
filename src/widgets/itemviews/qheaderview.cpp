@@ -3369,7 +3369,9 @@ void QHeaderViewPrivate::setupSectionIndicator(int section, int position)
     sectionIndicator->resize(w, h);
 #endif
 
-    QPixmap pm(w, h);
+    const qreal pixmapDevicePixelRatio = q->devicePixelRatioF();
+    QPixmap pm(QSize(w, h) * pixmapDevicePixelRatio);
+    pm.setDevicePixelRatio(pixmapDevicePixelRatio);
     pm.fill(QColor(0, 0, 0, 45));
     QRect rect(0, 0, w, h);
 
