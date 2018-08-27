@@ -760,7 +760,7 @@ void QWidgetBackingStore::updateLists(QWidget *cur)
     QList<QObject*> children = cur->children();
     for (int i = 0; i < children.size(); ++i) {
         QWidget *child = qobject_cast<QWidget*>(children.at(i));
-        if (!child)
+        if (!child || child->isWindow())
             continue;
 
         updateLists(child);
