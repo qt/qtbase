@@ -75,7 +75,7 @@ private slots:
 
     void dontBlockEvents();
     void postedEventsShouldNotStarveTimers();
-    void connectTo();
+    void callOnTimeout();
 };
 
 void tst_QTimer::zeroTimer()
@@ -979,7 +979,7 @@ void tst_QTimer::crossThreadSingleShotToFunctor()
     delete o;
 }
 
-void tst_QTimer::connectTo()
+void tst_QTimer::callOnTimeout()
 {
     QTimer timer;
     QSignalSpy timeoutSpy(&timer, &QTimer::timeout);
@@ -989,9 +989,9 @@ void tst_QTimer::connectTo()
     auto context = new QObject();
 
     int count = 0;
-    timer.connectTo([&count] { count++; });
-    QMetaObject::Connection connection = timer.connectTo(context, [&count] { count++; });
-    timer.connectTo(&timer, &QTimer::stop);
+    timer.callOnTimeout([&count] { count++; });
+    QMetaObject::Connection connection = timer.callOnTimeout(context, [&count] { count++; });
+    timer.callOnTimeout(&timer, &QTimer::stop);
 
 
     QTest::qWait(100);

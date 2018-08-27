@@ -97,11 +97,11 @@ public:
     template<typename Functor, int>
     static void singleShot(int msec, Qt::TimerType timerType, const QObject *context, Functor functor);
     template <typename Functor>
-    QMetaObject::Connection connectTo(Functor slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
+    QMetaObject::Connection callOnTimeout(Functor slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
     template <typename Functor>
-    QMetaObject::Connection connectTo(const QObject *context, Functor slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
+    QMetaObject::Connection callOnTimeout(const QObject *context, Functor slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
     template <typename PointerToMemberFunction>
-    QMetaObject::Connection connectTo(const QObject *receiver, PointerToMemberFunction slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
+    QMetaObject::Connection callOnTimeout(const QObject *receiver, PointerToMemberFunction slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
 #else
     // singleShot to a QObject slot
     template <typename Duration, typename Func1>
@@ -160,7 +160,7 @@ public:
     }
 
     template <typename ... Args>
-    QMetaObject::Connection connectTo(Args && ...args)
+    QMetaObject::Connection callOnTimeout(Args && ...args)
     {
         return QObject::connect(this, &QTimer::timeout, std::forward<Args>(args)... );
     }
