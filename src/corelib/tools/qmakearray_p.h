@@ -111,10 +111,10 @@ struct QuickSortFilter<Predicate, QuickSortData<Head, Tail...>>
     using TailFilteredData = typename QuickSortFilter<
         Predicate, QuickSortData<Tail...>>::Type;
 
-    using Type = typename QConditional<
+    using Type = typename std::conditional<
         Predicate<Head>::value,
         decltype(quickSortConcat(QuickSortData<Head> {}, TailFilteredData{})),
-        TailFilteredData>::Type;
+        TailFilteredData>::type;
 };
 
 template <template <typename> class Predicate>

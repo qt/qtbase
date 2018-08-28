@@ -896,10 +896,8 @@ private:
     template <typename T> static
     T toIntegral_helper(const QChar *data, int len, bool *ok, int base)
     {
-        // ### Qt6: use std::conditional<std::is_unsigned<T>::value, qulonglong, qlonglong>::type
-        const bool isUnsigned = T(0) < T(-1);
-        typedef typename QtPrivate::QConditional<isUnsigned, qulonglong, qlonglong>::Type Int64;
-        typedef typename QtPrivate::QConditional<isUnsigned, uint, int>::Type Int32;
+        using Int64 = typename std::conditional<std::is_unsigned<T>::value, qulonglong, qlonglong>::type;
+        using Int32 = typename std::conditional<std::is_unsigned<T>::value, uint, int>::type;
 
         // we select the right overload by casting size() to int or uint
         Int64 val = toIntegral_helper(data, Int32(len), ok, base);

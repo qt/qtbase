@@ -3885,9 +3885,7 @@ static qulonglong toIntegral_helper(const char *data, bool *ok, int base, qulong
 template <typename T> static inline
 T toIntegral_helper(const char *data, bool *ok, int base)
 {
-    // ### Qt6: use std::conditional<std::is_unsigned<T>::value, qulonglong, qlonglong>::type
-    const bool isUnsigned = T(0) < T(-1);
-    typedef typename QtPrivate::QConditional<isUnsigned, qulonglong, qlonglong>::Type Int64;
+    using Int64 = typename std::conditional<std::is_unsigned<T>::value, qulonglong, qlonglong>::type;
 
 #if defined(QT_CHECK_RANGE)
     if (base != 0 && (base < 2 || base > 36)) {

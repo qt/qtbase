@@ -66,14 +66,14 @@ template<int Last, int I, int S, int ... Idx>
 struct OffsetSequenceHelper<1, Last, I, S, Idx...> : IndexesList<Last + I, Idx..., Last>
 {
     static const constexpr auto Length = Last + I;
-    using Type = typename QConditional<
+    using Type = typename std::conditional<
         Last <= std::numeric_limits<quint8>::max(),
         quint8,
-        typename QConditional<
+        typename std::conditional<
             Last <= std::numeric_limits<quint16>::max(),
             quint16,
-            int>::Type
-        >::Type;
+            int>::type
+        >::type;
 };
 
 template<int ... Idx>
