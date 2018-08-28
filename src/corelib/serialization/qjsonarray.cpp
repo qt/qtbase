@@ -1237,6 +1237,10 @@ void QJsonArray::compact()
     a = static_cast<QJsonPrivate::Array *>(d->header->root());
 }
 
+uint qHash(const QJsonArray &array, uint seed)
+{
+    return qHashRange(array.begin(), array.end(), seed);
+}
 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 QDebug operator<<(QDebug dbg, const QJsonArray &a)

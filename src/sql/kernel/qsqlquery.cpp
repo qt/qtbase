@@ -942,10 +942,12 @@ void QSqlQuery::clear()
   query. See the \l{QSqlQuery examples}{Detailed Description} for
   examples.
 
-  Portability note: Some databases choose to delay preparing a query
+  Portability notes: Some databases choose to delay preparing a query
   until it is executed the first time. In this case, preparing a
   syntactically wrong query succeeds, but every consecutive exec()
   will fail.
+  When the database does not support named placeholders directly,
+  the placeholder can only contain characters in the range [a-zA-Z0-9_].
 
   For SQLite, the query string can contain only one statement at a time.
   If more than one statement is given, the function returns \c false.

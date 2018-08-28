@@ -197,6 +197,7 @@ void QWindowsUser32DLL::init()
         enableMouseInPointer = (EnableMouseInPointer)library.resolve("EnableMouseInPointer");
         getPointerType = (GetPointerType)library.resolve("GetPointerType");
         getPointerInfo = (GetPointerInfo)library.resolve("GetPointerInfo");
+        getPointerDeviceRects = (GetPointerDeviceRects)library.resolve("GetPointerDeviceRects");
         getPointerTouchInfo = (GetPointerTouchInfo)library.resolve("GetPointerTouchInfo");
         getPointerFrameTouchInfo = (GetPointerFrameTouchInfo)library.resolve("GetPointerFrameTouchInfo");
         getPointerPenInfo = (GetPointerPenInfo)library.resolve("GetPointerPenInfo");
@@ -212,7 +213,8 @@ void QWindowsUser32DLL::init()
 
 bool QWindowsUser32DLL::supportsPointerApi()
 {
-    return enableMouseInPointer && getPointerType && getPointerInfo && getPointerTouchInfo && getPointerFrameTouchInfo && getPointerPenInfo;
+    return enableMouseInPointer && getPointerType && getPointerInfo && getPointerDeviceRects
+            && getPointerTouchInfo && getPointerFrameTouchInfo && getPointerPenInfo;
 }
 
 void QWindowsShcoreDLL::init()

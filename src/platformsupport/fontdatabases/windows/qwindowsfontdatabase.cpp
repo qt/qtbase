@@ -799,9 +799,9 @@ enum PlatformFieldValue {
     PlatformId_Microsoft = 3
 };
 
-FontNames qt_getCanonicalFontNames(const uchar *table, quint32 bytes)
+QFontNames qt_getCanonicalFontNames(const uchar *table, quint32 bytes)
 {
-    FontNames out;
+    QFontNames out;
     const int NameRecordSize = 12;
     const int MS_LangIdEnglish = 0x009;
 
@@ -947,7 +947,7 @@ QString qt_getEnglishName(const QString &familyName, bool includeStyle)
         goto error;
 
     {
-        const FontNames names = qt_getCanonicalFontNames(table, bytes);
+        const QFontNames names = qt_getCanonicalFontNames(table, bytes);
         i18n_name = names.name;
         if (includeStyle)
             i18n_name += QLatin1Char(' ') + names.style;
@@ -963,9 +963,9 @@ error:
 }
 
 // Note this duplicates parts of qt_getEnglishName, we should try to unify the two functions.
-FontNames qt_getCanonicalFontNames(const LOGFONT &lf)
+QFontNames qt_getCanonicalFontNames(const LOGFONT &lf)
 {
-    FontNames fontNames;
+    QFontNames fontNames;
     HDC hdc = GetDC(0);
     HFONT hfont = CreateFontIndirect(&lf);
 
@@ -1054,7 +1054,7 @@ static bool addFontToDatabase(QString familyName,
     QString subFamilyStyle;
     if (ttf) {
         // Look-up names registered in the font
-        FontNames canonicalNames = qt_getCanonicalFontNames(logFont);
+        QFontNames canonicalNames = qt_getCanonicalFontNames(logFont);
         if (qt_localizedName(familyName) && !canonicalNames.name.isEmpty())
             englishName = canonicalNames.name;
         if (!canonicalNames.preferredName.isEmpty()) {
@@ -1488,7 +1488,7 @@ static void getFontTable(const uchar *fileBegin, const uchar *data, quint32 tag,
 }
 
 static void getFamiliesAndSignatures(const QByteArray &fontData,
-                                     QList<FontNames> *families,
+                                     QList<QFontNames> *families,
                                      QVector<FONTSIGNATURE> *signatures)
 {
     const uchar *data = reinterpret_cast<const uchar *>(fontData.constData());
@@ -1504,7 +1504,7 @@ static void getFamiliesAndSignatures(const QByteArray &fontData,
         getFontTable(data, font, MAKE_TAG('n', 'a', 'm', 'e'), &table, &length);
         if (!table)
             continue;
-        FontNames names = qt_getCanonicalFontNames(table, length);
+        QFontNames names = qt_getCanonicalFontNames(table, length);
         if (names.name.isEmpty())
             continue;
 
@@ -1535,7 +1535,7 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
     WinApplicationFont font;
     font.fileName = fileName;
     QVector<FONTSIGNATURE> signatures;
-    QList<FontNames> families;
+    QList<QFontNames> families;
     QStringList familyNames;
 
     if (!fontData.isEmpty()) {

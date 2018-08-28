@@ -210,7 +210,7 @@ static bool addFontToDatabase(QString familyName,
     QString subFamilyStyle;
     if (ttf) {
         // Look-up names registered in the font
-        FontNames canonicalNames = qt_getCanonicalFontNames(logFont);
+        QFontNames canonicalNames = qt_getCanonicalFontNames(logFont);
         if (qt_localizedName(familyName) && !canonicalNames.name.isEmpty())
             englishName = canonicalNames.name;
         if (!canonicalNames.preferredName.isEmpty()) {

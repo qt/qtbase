@@ -876,6 +876,28 @@ QJsonValue QJsonValueRef::toValue() const
     return o->valueAt(index);
 }
 
+uint qHash(const QJsonValue &value, uint seed)
+{
+    switch (value.type()) {
+    case QJsonValue::Null:
+        return qHash(nullptr, seed);
+    case QJsonValue::Bool:
+        return qHash(value.toBool(), seed);
+    case QJsonValue::Double:
+        return qHash(value.toDouble(), seed);
+    case QJsonValue::String:
+        return qHash(value.toString(), seed);
+    case QJsonValue::Array:
+        return qHash(value.toArray(), seed);
+    case QJsonValue::Object:
+        return qHash(value.toObject(), seed);
+    case QJsonValue::Undefined:
+        return seed;
+    }
+    Q_UNREACHABLE();
+    return 0;
+}
+
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 QDebug operator<<(QDebug dbg, const QJsonValue &o)
 {

@@ -1292,6 +1292,17 @@ void QJsonObject::setValueAt(int i, const QJsonValue &val)
     insert(e->key(), val);
 }
 
+uint qHash(const QJsonObject &object, uint seed)
+{
+    QtPrivate::QHashCombine hash;
+    for (auto it = object.begin(), end = object.end(); it != end; ++it) {
+        const QString key = it.key();
+        const QJsonValue value = it.value();
+        seed = hash(seed, std::pair<const QString&, const QJsonValue&>(key, value));
+    }
+    return seed;
+}
+
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 QDebug operator<<(QDebug dbg, const QJsonObject &o)
 {
