@@ -309,6 +309,15 @@ int QAbstractEventDispatcher::registerTimer(int interval, Qt::TimerType timerTyp
 
     Wakes up the event loop.
 
+    \omit
+    ### FIXME - QTBUG-70229
+    On Unix and Glib event dispatchers, if the dispatcher is already awake when
+    this function is called, it is ensured that the current iteration won't block
+    waiting for more events, but will instead do another event loop iteration.
+
+    ### TODO - does other event dispatchers behave the same?
+    \endomit
+
     \sa awake()
 */
 
