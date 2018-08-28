@@ -5801,6 +5801,46 @@ static inline int qRgbAvg(QRgb rgb)
     return (qRed(rgb) * 5 + qGreen(rgb) * 6 + qBlue(rgb) * 5) / 16;
 }
 
+static inline QRgb rgbBlend(QRgb d, QRgb s, uint rgbAlpha)
+{
+#if defined(__SSE2__)
+    __m128i vd = _mm_cvtsi32_si128(d);
+    __m128i vs = _mm_cvtsi32_si128(s);
+    __m128i va = _mm_cvtsi32_si128(rgbAlpha);
+    const __m128i vz = _mm_setzero_si128();
+    vd = _mm_unpacklo_epi8(vd, vz);
+    vs = _mm_unpacklo_epi8(vs, vz);
+    va = _mm_unpacklo_epi8(va, vz);
+    __m128i vb = _mm_xor_si128(_mm_set1_epi16(255), va);
+    vs = _mm_mullo_epi16(vs, va);
+    vd = _mm_mullo_epi16(vd, vb);
+    vd = _mm_add_epi16(vd, vs);
+    vd = _mm_add_epi16(vd, _mm_srli_epi16(vd, 8));
+    vd = _mm_add_epi16(vd, _mm_set1_epi16(0x80));
+    vd = _mm_srli_epi16(vd, 8);
+    vd = _mm_packus_epi16(vd, vd);
+    return _mm_cvtsi128_si32(vd);
+#else
+    const int dr = qRed(d);
+    const int dg = qGreen(d);
+    const int db = qBlue(d);
+
+    const int sr = qRed(s);
+    const int sg = qGreen(s);
+    const int sb = qBlue(s);
+
+    const int mr = qRed(rgbAlpha);
+    const int mg = qGreen(rgbAlpha);
+    const int mb = qBlue(rgbAlpha);
+
+    const int nr = qt_div_255(sr * mr + dr * (255 - mr));
+    const int ng = qt_div_255(sg * mg + dg * (255 - mg));
+    const int nb = qt_div_255(sb * mb + db * (255 - mb));
+
+    return 0xff000000 | (nr << 16) | (ng << 8) | nb;
+#endif
+}
+
 static inline void alphargbblend_generic(uint coverage, QRgba64 *dest, int x, const QRgba64 &srcLinear, const QRgba64 &src, const QColorProfile *colorProfile)
 {
     if (coverage == 0xff000000) {
@@ -5823,20 +5863,20 @@ static inline void alphargbblend_generic(uint coverage, QRgba64 *dest, int x, co
     }
 }
 
-static inline void alphargbblend_argb32(quint32 *dst, uint coverage, QRgba64 srcLinear, quint32 src, const QColorProfile *colorProfile)
+static inline void alphargbblend_argb32(quint32 *dst, uint coverage, const QRgba64 &srcLinear, quint32 src, const QColorProfile *colorProfile)
 {
     if (coverage == 0xff000000) {
         // nothing
     } else if (coverage == 0xffffffff) {
         *dst = src;
-    } else {
-        if (*dst >= 0xff000000) {
-            rgbBlendPixel(dst, coverage, srcLinear, colorProfile);
-        } else {
-            // Give up and do a naive gray alphablend. Needed to deal with ARGB32 and invalid ARGB32_premultiplied, see QTBUG-60571
-            const int a = qRgbAvg(coverage);
-            *dst = INTERPOLATE_PIXEL_255(src, a, *dst, 255 - a);
-        }
+    } else if (*dst < 0xff000000) {
+        // Give up and do a naive gray alphablend. Needed to deal with ARGB32 and invalid ARGB32_premultiplied, see QTBUG-60571
+        const int a = qRgbAvg(coverage);
+        *dst = INTERPOLATE_PIXEL_255(src, a, *dst, 255 - a);
+    } else if (!colorProfile) {
+        *dst = rgbBlend(*dst, src, coverage);
+    } else  {
+        rgbBlendPixel(dst, coverage, srcLinear, colorProfile);
     }
 }
 
