@@ -53,7 +53,6 @@
 
 TESTSERVER_COMPOSE_FILE = $$dirname(_QMAKE_CONF_)/tests/testserver/docker-compose.yml
 TESTSERVER_VERSION = $$system(docker-compose --version)
-TESTSERVER_IMAGES = $$system(docker images -aq "qt-test-server-*")
 
 equals(QMAKE_HOST.os, Windows)|isEmpty(TESTSERVER_VERSION) {
     # Make check with server "qt-test-server.qt-test-net" as a fallback
@@ -66,11 +65,14 @@ equals(QMAKE_HOST.os, Windows)|isEmpty(TESTSERVER_VERSION) {
     # file which is mandatory for all docker-compose commands. You can get more
     # detail from the description of TESTSERVER_COMPOSE_FILE above. There is
     # also an example showing how to configure it manually.
-    isEmpty(TESTSERVER_COMPOSE_FILE): error("Project variable 'TESTSERVER_COMPOSE_FILE' is not set")
+    FILE_PRETEST_MSG = "Project variable 'TESTSERVER_COMPOSE_FILE' is not set"
+    testserver_pretest.commands = $(if $$TESTSERVER_COMPOSE_FILE,,$(error $$FILE_PRETEST_MSG))
 
     # Before starting the test servers, it requires the user to run the setup
     # script (coin/provisioning/.../testserver/docker_testserver.sh) in advance.
-    isEmpty(TESTSERVER_IMAGES): error("Docker image qt-test-server-* not found")
+    IMAGE_PRETEST_CMD = docker images -aq "qt-test-server-*"
+    IMAGE_PRETEST_MSG = "Docker image qt-test-server-* not found"
+    testserver_pretest.commands += $(if $(shell $$IMAGE_PRETEST_CMD),,$(error $$IMAGE_PRETEST_MSG))
 
     # The domain name is relevant to https keycert (qnetworkreply/crts/qt-test-net-cacert.pem).
     DNSDOMAIN = test-net.qt.local
@@ -84,6 +86,9 @@ equals(QMAKE_HOST.os, Windows)|isEmpty(TESTSERVER_VERSION) {
     # Rename the check target of testcase feature
     check.target = check_network
     testserver_test.target = check
+
+    # Pretesting test servers environment
+    testserver_test.depends = testserver_pretest
 
     # Bring up test servers and make sure the services are ready.
     testserver_test.commands = $$TEST_ENV docker-compose -f $$TESTSERVER_COMPOSE_FILE up -d \
@@ -100,5 +105,5 @@ equals(QMAKE_HOST.os, Windows)|isEmpty(TESTSERVER_VERSION) {
     testserver_clean.commands = $$TEST_ENV docker-compose -f $$TESTSERVER_COMPOSE_FILE down \
                                 --rmi all
 
-    QMAKE_EXTRA_TARGETS += testserver_test testserver_clean
+    QMAKE_EXTRA_TARGETS += testserver_pretest testserver_test testserver_clean
 }
