@@ -245,7 +245,7 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
     png_set_interlace_handling(png_ptr);
 
     if (color_type == PNG_COLOR_TYPE_GRAY) {
-        // Black & White or 8-bit grayscale
+        // Black & White or grayscale
         if (bit_depth == 1 && png_get_channels(png_ptr, info_ptr) == 1) {
             png_set_invert_mono(png_ptr);
             png_read_update_info(png_ptr, info_ptr);
@@ -266,19 +266,22 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
                 else if (g == 1)
                     image.setColor(0, qRgba(255, 255, 255, 0));
             }
-        } else if (bit_depth == 16 && png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
-            png_set_expand(png_ptr);
-            png_set_strip_16(png_ptr);
+        } else if (bit_depth == 16) {
+            bool hasMask = png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS);
+            if (!hasMask)
+                png_set_filler(png_ptr, 0xffff, PNG_FILLER_AFTER);
+            else
+                png_set_expand(png_ptr);
             png_set_gray_to_rgb(png_ptr);
-            if (image.size() != QSize(width, height) || image.format() != QImage::Format_ARGB32) {
-                image = QImage(width, height, QImage::Format_ARGB32);
+            QImage::Format format = hasMask ? QImage::Format_RGBA64 : QImage::Format_RGBX64;
+            if (image.size() != QSize(width, height) || image.format() != format) {
+                image = QImage(width, height, format);
                 if (image.isNull())
                     return;
             }
-            if (QSysInfo::ByteOrder == QSysInfo::BigEndian)
-                png_set_swap_alpha(png_ptr);
-
             png_read_update_info(png_ptr, info_ptr);
+            if (QSysInfo::ByteOrder == QSysInfo::LittleEndian)
+                png_set_swap(png_ptr);
         } else if (bit_depth == 8 && !png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
             png_set_expand(png_ptr);
             if (image.size() != QSize(width, height) || image.format() != QImage::Format_Grayscale8) {
@@ -289,9 +292,7 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
 
             png_read_update_info(png_ptr, info_ptr);
         } else {
-            if (bit_depth == 16)
-                png_set_strip_16(png_ptr);
-            else if (bit_depth < 8)
+            if (bit_depth < 8)
                 png_set_packing(png_ptr);
             int ncols = bit_depth < 8 ? 1 << bit_depth : 256;
             png_read_update_info(png_ptr, info_ptr);
@@ -356,12 +357,14 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
         if (QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
             png_set_bgr(png_ptr);
         }
-    } else if (bit_depth == 16 && (color_type & PNG_COLOR_MASK_COLOR)) {
+    } else if (bit_depth == 16 && !(color_type & PNG_COLOR_MASK_PALETTE)) {
         QImage::Format format = QImage::Format_RGBA64;
         if (!(color_type & PNG_COLOR_MASK_ALPHA) && !png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
             png_set_filler(png_ptr, 0xffff, PNG_FILLER_AFTER);
             format = QImage::Format_RGBX64;
         }
+        if (!(color_type & PNG_COLOR_MASK_COLOR))
+            png_set_gray_to_rgb(png_ptr);
         if (image.size() != QSize(width, height) || image.format() != format) {
             image = QImage(width, height, format);
             if (image.isNull())
@@ -680,11 +683,11 @@ QImage::Format QPngHandlerPrivate::readImageFormat()
         int num_palette;
         png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, 0, 0, 0);
         if (color_type == PNG_COLOR_TYPE_GRAY) {
-            // Black & White or 8-bit grayscale
+            // Black & White or grayscale
             if (bit_depth == 1 && png_get_channels(png_ptr, info_ptr) == 1) {
                 format = QImage::Format_Mono;
-            } else if (bit_depth == 16 && png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
-                format = QImage::Format_ARGB32;
+            } else if (bit_depth == 16) {
+                format = png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) ? QImage::Format_RGBA64 : QImage::Format_RGBX64;
             } else if (bit_depth == 8 && !png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
                 format = QImage::Format_Grayscale8;
             } else {
@@ -696,7 +699,7 @@ QImage::Format QPngHandlerPrivate::readImageFormat()
         {
             // 1-bit and 8-bit color
             format = bit_depth == 1 ? QImage::Format_Mono : QImage::Format_Indexed8;
-        } else if (bit_depth == 16 && (color_type & PNG_COLOR_MASK_COLOR)) {
+        } else if (bit_depth == 16 && !(color_type & PNG_COLOR_MASK_PALETTE)) {
             format = QImage::Format_RGBA64;
             if (!(color_type & PNG_COLOR_MASK_ALPHA) && !png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
                 format = QImage::Format_RGBX64;

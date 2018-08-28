@@ -525,6 +525,11 @@ void tst_QImageReader::imageFormat_data()
     QTest::newRow("png") << QString("kollada.png") << QByteArray("png") << QImage::Format_ARGB32;
     QTest::newRow("png-2") << QString("YCbCr_cmyk.png") << QByteArray("png") << QImage::Format_RGB32;
     QTest::newRow("png-3") << QString("kollada-16bpc.png") << QByteArray("png") << QImage::Format_RGBA64;
+    QTest::newRow("png-4") << QString("basn0g16.png") << QByteArray("png") << QImage::Format_RGBX64; // Grayscale16
+    QTest::newRow("png-5") << QString("basn2c16.png") << QByteArray("png") << QImage::Format_RGBX64;
+    QTest::newRow("png-6") << QString("basn4a16.png") << QByteArray("png") << QImage::Format_RGBA64; // Grayscale16Alpha16
+    QTest::newRow("png-7") << QString("basn6a16.png") << QByteArray("png") << QImage::Format_RGBA64;
+    QTest::newRow("png-8") << QString("tbwn0g16.png") << QByteArray("png") << QImage::Format_RGBA64; // Grayscale16+tRNS
     QTest::newRow("svg") << QString("rect.svg") << QByteArray("svg") << QImage::Format_ARGB32_Premultiplied;
     QTest::newRow("svgz") << QString("rect.svgz") << QByteArray("svgz") << QImage::Format_ARGB32_Premultiplied;
 }
