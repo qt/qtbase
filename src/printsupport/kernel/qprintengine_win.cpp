@@ -1779,39 +1779,26 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
         QTransform matrix = QTransform::fromTranslate(baseline_pos.x(), baseline_pos.y());
         ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags,
             _glyphs, positions);
-        if (_glyphs.size() == 0) {
+        if (_glyphs.isEmpty()) {
             SelectObject(hdc, old_font);
             return;
         }
 
-        bool outputEntireItem = _glyphs.size() > 0;
-
-        if (outputEntireItem) {
-            options |= ETO_PDY;
-            QVarLengthArray<INT> glyphDistances(_glyphs.size() * 2);
-            QVarLengthArray<wchar_t> g(_glyphs.size());
-            for (int i=0; i<_glyphs.size() - 1; ++i) {
-                glyphDistances[i * 2] = qRound(positions[i + 1].x) - qRound(positions[i].x);
-                glyphDistances[i * 2 + 1] = qRound(positions[i + 1].y) - qRound(positions[i].y);
-                g[i] = _glyphs[i];
-            }
-            glyphDistances[(_glyphs.size() - 1) * 2] = 0;
-            glyphDistances[(_glyphs.size() - 1) * 2 + 1] = 0;
-            g[_glyphs.size() - 1] = _glyphs[_glyphs.size() - 1];
-            ExtTextOut(hdc, qRound(positions[0].x), qRound(positions[0].y), options, 0,
-                       g.constData(), _glyphs.size(),
-                       glyphDistances.data());
-        } else {
-            int i = 0;
-            while(i < _glyphs.size()) {
-                wchar_t g = _glyphs[i];
-
-                ExtTextOut(hdc, qRound(positions[i].x),
-                           qRound(positions[i].y), options, 0,
-                           &g, 1, 0);
-                ++i;
-            }
+        options |= ETO_PDY;
+        QVarLengthArray<INT> glyphDistances(_glyphs.size() * 2);
+        QVarLengthArray<wchar_t> g(_glyphs.size());
+        const int lastGlyph = _glyphs.size() - 1;
+        for (int i = 0; i < lastGlyph; ++i) {
+            glyphDistances[i * 2] = qRound(positions[i + 1].x) - qRound(positions[i].x);
+            glyphDistances[i * 2 + 1] = qRound(positions[i + 1].y) - qRound(positions[i].y);
+            g[i] = _glyphs[i];
         }
+        glyphDistances[lastGlyph * 2] = 0;
+        glyphDistances[lastGlyph * 2 + 1] = 0;
+        g[lastGlyph] = _glyphs[lastGlyph];
+        ExtTextOut(hdc, qRound(positions[0].x), qRound(positions[0].y), options, nullptr,
+                   g.constData(), _glyphs.size(),
+                   glyphDistances.data());
     }
 
         win_xform.eM11 = win_xform.eM22 = 1.0;
