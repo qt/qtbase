@@ -62,25 +62,22 @@ namespace QtPrivate {
 template<int N, int O, int I, int ... Idx>
 struct OffsetSequenceHelper : OffsetSequenceHelper<N - 1, O + I, Idx..., O> { };
 
-template<int O, int I, int ... Idx>
-struct OffsetSequenceHelper<0, O, I, Idx...> : IndexesList<O, Idx...>
+template<int Last, int I, int S, int ... Idx>
+struct OffsetSequenceHelper<1, Last, I, S, Idx...> : IndexesList<Last + I, Idx..., Last>
 {
-    static const constexpr auto Length = O;
-};
-
-template<int I, int ... Idx>
-struct OffsetSequence : OffsetSequenceHelper<sizeof ... (Idx) + 1, 0, I, Idx..., 0>
-{
-    static const constexpr auto Count = sizeof ... (Idx) + 1;
+    static const constexpr auto Length = Last + I;
     using Type = typename QConditional<
-        Count <= std::numeric_limits<quint8>::max() + 1,
+        Last <= std::numeric_limits<quint8>::max(),
         quint8,
         typename QConditional<
-            Count <= std::numeric_limits<quint16>::max() + 1,
+            Last <= std::numeric_limits<quint16>::max(),
             quint16,
             int>::Type
         >::Type;
 };
+
+template<int ... Idx>
+struct OffsetSequence : OffsetSequenceHelper<sizeof ... (Idx), 0, Idx..., 0> { };
 
 template<int N>
 struct StaticString
@@ -168,7 +165,7 @@ public:
     }
 
     constexpr inline const char *str() const { return m_string; }
-    constexpr inline const int *offsets() const { return m_offsets; }
+    constexpr inline const T *offsets() const { return m_offsets; }
     constexpr inline int count() const { return SizeOffsets; };
 
     static constexpr const auto sizeString = SizeString;

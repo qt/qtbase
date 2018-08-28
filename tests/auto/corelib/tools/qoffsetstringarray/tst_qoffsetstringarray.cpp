@@ -81,6 +81,13 @@ constexpr const auto messages257 = qOffsetStringArray(
     "", "", "", "", "", "", "end"
 );
 
+constexpr const auto messagesBigOffsets = qOffsetStringArray(
+    "        10        20        30        40        50        60        70        80        90",
+    "        10        20        30        40        50        60        70        80        90",
+    "        10        20        30        40        50        60        70        80        90",
+    "        10        20        30        40        50        60        70        80        90"
+);
+
 void tst_QOffsetStringArray::init()
 {
     static_assert(messages.sizeString == 51, "message.sizeString");
@@ -91,6 +98,11 @@ void tst_QOffsetStringArray::init()
     static_assert(messages257.sizeString == 260, "messages257.sizeString");
     static_assert(std::is_same<decltype(messages257)::Type, quint16>::value,
                   "messages257::Type != quint16");
+
+    static_assert(messagesBigOffsets.sizeOffsets == 4, "messagesBigOffsets.sizeOffsets");
+    static_assert(messagesBigOffsets.sizeString == 364, "messagesBigOffsets.sizeString");
+    static_assert(std::is_same<decltype(messagesBigOffsets)::Type, quint16>::value,
+                  "messagesBigOffsets::Type != quint16");
 }
 
 void tst_QOffsetStringArray::access()
