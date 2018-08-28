@@ -168,7 +168,8 @@ inline quint16 qt_getUShort(const unsigned char *p)
     return val;
 }
 
-struct FontNames {
+struct QFontNames
+{
     QString name;   // e.g. "DejaVu Sans Condensed"
     QString style;  // e.g. "Italic"
     QString preferredName;  // e.g. "DejaVu Sans"
@@ -177,7 +178,7 @@ struct FontNames {
 
 bool qt_localizedName(const QString &name);
 QString qt_getEnglishName(const QString &familyName, bool includeStyle = false);
-FontNames qt_getCanonicalFontNames(const LOGFONT &lf);
+QFontNames qt_getCanonicalFontNames(const LOGFONT &lf);
 
 QT_END_NAMESPACE
 
