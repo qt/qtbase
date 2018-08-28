@@ -1,0 +1,129 @@
+Qt 5.11.2 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.11.0 through 5.11.1.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+http://doc.qt.io/qt-5/index.html
+
+The Qt version 5.11 series is binary compatible with the 5.10.x series.
+Applications compiled for 5.10 will continue to run with 5.11.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                              Qt 5.11.2 Changes                           *
+****************************************************************************
+
+****************************************************************************
+*                                Licensing                                 *
+****************************************************************************
+
+ - [QTBUG-52222] The commercial preview license in the git checkout has
+   been replaced by the Qt License Agreement 4.0 text. This makes it
+   explicit that commercial customers of The Qt Company can use the git
+   version under commercial terms. However, support is (still) only
+   provided for builds from released branches of Qt.
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - QFile:
+   * [QTBUG-69417] Fixed a regression in QFile::copy() that caused the
+     original file not to be copied entirely if it was modified outside of
+     this QFile object between the last time we checked its size and the
+     copy() call. Note this is not a prevention against race conditions.
+   * [QTBUG-69148] Fixed a regression that caused QFile::map() to succeed
+     or produce incorrect results when trying to map a file at an offset
+     beyond 4 GB on 32-bit Android systems and on some special Linux
+     configurations.
+
+ - QObject:
+   * [QTBUG-69744] Fixed a bug in setProperty() that caused a property
+     change not to take effect if the old value compared equal using
+     QVariant's equality operator, but the values were not strictly equal.
+
+ - QPluginLoader:
+   * Fixed an issue that could cause a crash when certain damaged or
+     corrupt plugin files were scanned.
+
+ - QSortFilterProxyModel:
+   * [QTBUG-58499][QTBUG-69158] insertRows(row,count,parent) with row ==
+     rowCount will insert at the bottom of the source model rather than
+     at the row QSortFilterProxyModel::rowCount of the source model.
+
+ - QStorageInfo:
+   * [QTBUG-60215] Fixed a bug that caused the last entry in the mtab file
+     to be ignored on Android.
+   * Fixed a bug on Android that could cause QStorageInfo to skip some
+     filesystems (if the mount table is a virtual file and contains any
+     short lines) or crash (if the mount table contains any 3-field lines).
+
+ - QString:
+   * [QTBUG-63620] Formatting of doubles with single-digit exponent, by
+     number() or args(), now includes a leading zero in that exponent,
+     consistently with sprintf(), as it did up to 5.6.
+
+ - QSysInfo:
+   * Fixed QSysInfo::productType() to properly detect some Linux
+     distributions that ship with a minimal /etc.
+
+ - QTemporaryFile:
+   * [QTBUG-69436] Worked around a bug in the GNU C Library versions 2.21
+     and earlier (used on Linux) that caused temporary files to be created
+     with permissions 000.
+
+ - QUrl:
+   * Fixed a bug that caused URLs whose hostnames contained unassigned or
+     prohibited Unicode codepoints to report isValid() == true, despite
+     clearing the hostname.
+
+****************************************************************************
+*                                  QtGui                                   *
+****************************************************************************
+
+ - QMatrix:
+   * The qHash() implementation for QMatrix has been changed.
+
+ - QTransform:
+   * The qHash() implementation for QTransform has been changed.
+
+ - Text:
+   * [QTBUG-69661] Fixed potential crash when using
+     QTextOption::ShowLineAndParagraphSeparators.
+   * [QTBUG-70096] Fixed a possible crash when combining QStaticText,
+     QOpenGLWidget and Qt Quick in the same application.
+
+****************************************************************************
+*                                QtWidgets                                 *
+****************************************************************************
+
+ - QMessageBox:
+   * [QTBUG-69526] A message box with two buttons, one of which is the "Show
+     Details..." button, can now be closed by clicking the X button on the
+     window's title bar.
+
+ - QFileDialog:
+   * QFileDialog::selectedMimeTypeFilter() now returns the actually
+     selected name filter.
+
+****************************************************************************
+*                             Third-Party Code                             *
+****************************************************************************
+
+ - [QTBUG-69274] SQLite was updated to version 3.24.0.
+ - [QTBUG-69271] PCRE2 was updated to version 10.31.
+
+****************************************************************************
+*                                 plugins                                  *
+****************************************************************************
+
+ - ibus:
+   * Qt programs in Flatpak environment can now trigger IBus input method.
