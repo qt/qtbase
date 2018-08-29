@@ -894,8 +894,7 @@ QEventDispatcherWin32::registeredTimers(QObject *object) const
 
     Q_D(const QEventDispatcherWin32);
     QList<TimerInfo> list;
-    for (int i = 0; i < d->timerVec.size(); ++i) {
-        const WinTimerInfo *t = d->timerVec.at(i);
+    for (const WinTimerInfo *t : qAsConst(d->timerVec)) {
         if (t && t->obj == object)
             list << TimerInfo(t->timerId, t->interval, t->timerType);
     }
@@ -992,9 +991,7 @@ int QEventDispatcherWin32::remainingTime(int timerId)
 
     quint64 currentTime = qt_msectime();
 
-    WinTimerInfo *t;
-    for (int i=0; i<d->timerVec.size(); i++) {
-        t = d->timerVec.at(i);
+    for (const WinTimerInfo *t : qAsConst(d->timerVec)) {
         if (t && t->timerId == timerId) // timer found, return time to wait
             return t->timeout > currentTime ? t->timeout - currentTime : 0;
     }

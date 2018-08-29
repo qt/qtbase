@@ -1001,9 +1001,9 @@ LCID qt_inIsoNametoLCID(const char *name)
         ++c;
     }
 
-    for (int i = 0; i < windows_to_iso_count; ++i) {
-        if (!strcmp(n, windows_to_iso_list[i].iso_name))
-            return windows_to_iso_list[i].windows_code;
+    for (const WindowsToISOListElt &i : windows_to_iso_list) {
+        if (!strcmp(n, i.iso_name))
+            return i.windows_code;
     }
     return LOCALE_USER_DEFAULT;
 }
