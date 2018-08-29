@@ -141,9 +141,9 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
         if (message == WM_TIMER)
             KillTimer(hwnd, wp);
         return 0;
-    } else if (dispatcher->filterNativeEvent(QByteArrayLiteral("windows_dispatcher_MSG"), &msg, &result)) {
-        return result;
     }
+    if (dispatcher->filterNativeEvent(QByteArrayLiteral("windows_dispatcher_MSG"), &msg, &result))
+        return result;
 
 #ifdef GWLP_USERDATA
     auto q = reinterpret_cast<QEventDispatcherWin32 *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
@@ -154,7 +154,8 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
     if (q != 0)
         d = q->d_func();
 
-    if (message == WM_QT_SOCKETNOTIFIER) {
+    switch (message) {
+    case WM_QT_SOCKETNOTIFIER: {
         // socket notifier message
         int type = -1;
         switch (WSAGETSELECTEVENT(lp)) {
@@ -202,7 +203,8 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
             }
         }
         return 0;
-    } else if (message == WM_QT_ACTIVATENOTIFIERS) {
+    }
+    case WM_QT_ACTIVATENOTIFIERS: {
         Q_ASSERT(d != 0);
 
         // Postpone activation if we have unhandled socket notifier messages
@@ -226,22 +228,25 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
         }
         d->activateNotifiersPosted = false;
         return 0;
-    } else if (message == WM_QT_SENDPOSTEDEVENTS
-               // we also use a Windows timer to send posted events when the message queue is full
-               || (message == WM_TIMER
-                   && d->sendPostedEventsWindowsTimerId != 0
-                   && wp == (uint)d->sendPostedEventsWindowsTimerId)) {
+    }
+    case WM_TIMER:
+        if (d->sendPostedEventsWindowsTimerId == 0
+            || wp != uint(d->sendPostedEventsWindowsTimerId)) {
+            Q_ASSERT(d != 0);
+            d->sendTimerEvent(wp);
+            return 0;
+        }
+        // we also use a Windows timer to send posted events when the message queue is full
+        Q_FALLTHROUGH();
+    case WM_QT_SENDPOSTEDEVENTS: {
         const int localSerialNumber = d->serialNumber.load();
         if (localSerialNumber != d->lastSerialNumber) {
             d->lastSerialNumber = localSerialNumber;
             q->sendPostedEvents();
         }
         return 0;
-    } else if (message == WM_TIMER) {
-        Q_ASSERT(d != 0);
-        d->sendTimerEvent(wp);
-        return 0;
     }
+    } // switch (message)
 
     return DefWindowProc(hwnd, message, wp, lp);
 }
@@ -683,7 +688,8 @@ void QEventDispatcherWin32::registerSocketNotifier(QSocketNotifier *notifier)
     if (sockfd < 0) {
         qWarning("QSocketNotifier: Internal error");
         return;
-    } else if (notifier->thread() != thread() || thread() != QThread::currentThread()) {
+    }
+    if (notifier->thread() != thread() || thread() != QThread::currentThread()) {
         qWarning("QSocketNotifier: socket notifiers cannot be enabled from another thread");
         return;
     }
@@ -743,7 +749,8 @@ void QEventDispatcherWin32::unregisterSocketNotifier(QSocketNotifier *notifier)
     if (sockfd < 0) {
         qWarning("QSocketNotifier: Internal error");
         return;
-    } else if (notifier->thread() != thread() || thread() != QThread::currentThread()) {
+    }
+    if (notifier->thread() != thread() || thread() != QThread::currentThread()) {
         qWarning("QSocketNotifier: socket notifiers cannot be disabled from another thread");
         return;
     }
@@ -789,7 +796,8 @@ void QEventDispatcherWin32::registerTimer(int timerId, int interval, Qt::TimerTy
     if (timerId < 1 || interval < 0 || !object) {
         qWarning("QEventDispatcherWin32::registerTimer: invalid arguments");
         return;
-    } else if (object->thread() != thread() || thread() != QThread::currentThread()) {
+    }
+    if (object->thread() != thread() || thread() != QThread::currentThread()) {
         qWarning("QEventDispatcherWin32::registerTimer: timers cannot be started from another thread");
         return;
     }
@@ -987,14 +995,8 @@ int QEventDispatcherWin32::remainingTime(int timerId)
     WinTimerInfo *t;
     for (int i=0; i<d->timerVec.size(); i++) {
         t = d->timerVec.at(i);
-        if (t && t->timerId == timerId) {                // timer found
-            if (currentTime < t->timeout) {
-                // time to wait
-                return t->timeout - currentTime;
-            } else {
-                return 0;
-            }
-        }
+        if (t && t->timerId == timerId) // timer found, return time to wait
+            return t->timeout > currentTime ? t->timeout - currentTime : 0;
     }
 
 #ifndef QT_NO_DEBUG
@@ -1054,7 +1056,8 @@ void QEventDispatcherWin32::closingDown()
 bool QEventDispatcherWin32::event(QEvent *e)
 {
     Q_D(QEventDispatcherWin32);
-    if (e->type() == QEvent::ZeroTimerEvent) {
+    switch (e->type()) {
+    case QEvent::ZeroTimerEvent: {
         QZeroTimerEvent *zte = static_cast<QZeroTimerEvent*>(e);
         WinTimerInfo *t = d->timerDict.value(zte->timerId());
         if (t) {
@@ -1076,9 +1079,12 @@ bool QEventDispatcherWin32::event(QEvent *e)
             }
         }
         return true;
-    } else if (e->type() == QEvent::Timer) {
-        QTimerEvent *te = static_cast<QTimerEvent*>(e);
-        d->sendTimerEvent(te->timerId());
+    }
+    case QEvent::Timer:
+        d->sendTimerEvent(static_cast<const QTimerEvent*>(e)->timerId());
+        break;
+    default:
+        break;
     }
     return QAbstractEventDispatcher::event(e);
 }

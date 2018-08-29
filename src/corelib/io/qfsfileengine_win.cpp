@@ -766,10 +766,9 @@ QString QFSFileEngine::fileName(FileName file) const
             int slash = ret.lastIndexOf(QLatin1Char('/'));
             if (slash < 0)
                 return ret;
-            else if (ret.at(0) != QLatin1Char('/') && slash == 2)
+            if (ret.at(0) != QLatin1Char('/') && slash == 2)
                 return ret.left(3);      // include the slash
-            else
-                return ret.left(slash > 0 ? slash : 1);
+            return ret.left(slash > 0 ? slash : 1);
         }
         return ret;
     } else if (file == CanonicalName || file == CanonicalPathName) {

@@ -270,13 +270,11 @@ void QWindowsPipeReader::readFileCompleted(DWORD errorCode, DWORD numberOfBytesT
 DWORD QWindowsPipeReader::checkPipeState()
 {
     DWORD bytes;
-    if (PeekNamedPipe(handle, NULL, 0, NULL, &bytes, NULL)) {
+    if (PeekNamedPipe(handle, nullptr, 0, nullptr, &bytes, nullptr))
         return bytes;
-    } else {
-        if (!pipeBroken) {
-            pipeBroken = true;
-            emit pipeClosed();
-        }
+    if (!pipeBroken) {
+        pipeBroken = true;
+        emit pipeClosed();
     }
     return 0;
 }

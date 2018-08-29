@@ -143,10 +143,7 @@ bool QSharedMemoryPrivate::create(int size)
     setErrorString(function);
 
     // hand is valid when it already exists unlike unix so explicitly check
-    if (error == QSharedMemory::AlreadyExists || !hand)
-        return false;
-
-    return true;
+    return error != QSharedMemory::AlreadyExists && hand;
 }
 
 bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)

@@ -106,8 +106,7 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
                         QLatin1String("\\\\") + parts.at(2), &uncShares)) {
                     if (uncShares.isEmpty())
                         return false; // No shares found in the server
-                    else
-                        uncFallback = true;
+                    uncFallback = true;
                 }
             }
         }

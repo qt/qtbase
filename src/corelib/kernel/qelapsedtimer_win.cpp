@@ -72,10 +72,9 @@ static inline qint64 ticksToNanoseconds(qint64 ticks)
         qint64 seconds = ticks / counterFrequency;
         qint64 nanoSeconds = (ticks - seconds * counterFrequency) * 1000000000 / counterFrequency;
         return seconds * 1000000000 + nanoSeconds;
-    } else {
-        // GetTickCount(64) return milliseconds
-        return ticks * 1000000;
     }
+    // GetTickCount(64) returns milliseconds
+    return ticks * 1000000;
 }
 
 static inline qint64 nanosecondsToTicks(qint64 nsec)
@@ -115,10 +114,7 @@ QElapsedTimer::ClockType QElapsedTimer::clockType() Q_DECL_NOTHROW
 {
     resolveCounterFrequency();
 
-    if (counterFrequency > 0)
-        return PerformanceCounter;
-    else
-        return TickCounter;
+    return counterFrequency > 0 ? PerformanceCounter : TickCounter;
 }
 
 bool QElapsedTimer::isMonotonic() Q_DECL_NOTHROW

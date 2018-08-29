@@ -260,31 +260,27 @@ DWORD WINAPI qt_adopted_thread_watcher_function(LPVOID)
         }
 
         const int handleIndex = offset + ret - WAIT_OBJECT_0;
-        if (handleIndex == 0){
-            // New handle to watch was added.
+        if (handleIndex == 0) // New handle to watch was added.
             continue;
-        } else {
-//             printf("(qt) - qt_adopted_thread_watcher_function... called\n");
-            const int qthreadIndex = handleIndex - 1;
+        const int qthreadIndex = handleIndex - 1;
 
-            qt_adopted_thread_watcher_mutex.lock();
-            QThreadData *data = QThreadData::get2(qt_adopted_qthreads.at(qthreadIndex));
-            qt_adopted_thread_watcher_mutex.unlock();
-            if (data->isAdopted) {
-                QThread *thread = data->thread;
-                Q_ASSERT(thread);
-                QThreadPrivate *thread_p = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread));
-                Q_UNUSED(thread_p)
-                Q_ASSERT(!thread_p->finished);
-                thread_p->finish(thread);
-            }
-            data->deref();
-
-            QMutexLocker lock(&qt_adopted_thread_watcher_mutex);
-            CloseHandle(qt_adopted_thread_handles.at(handleIndex));
-            qt_adopted_thread_handles.remove(handleIndex);
-            qt_adopted_qthreads.remove(qthreadIndex);
+        qt_adopted_thread_watcher_mutex.lock();
+        QThreadData *data = QThreadData::get2(qt_adopted_qthreads.at(qthreadIndex));
+        qt_adopted_thread_watcher_mutex.unlock();
+        if (data->isAdopted) {
+            QThread *thread = data->thread;
+            Q_ASSERT(thread);
+            auto thread_p = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread));
+            Q_UNUSED(thread_p)
+            Q_ASSERT(!thread_p->finished);
+            QThreadPrivate::finish(thread);
         }
+        data->deref();
+
+        QMutexLocker lock(&qt_adopted_thread_watcher_mutex);
+        CloseHandle(qt_adopted_thread_handles.at(handleIndex));
+        qt_adopted_thread_handles.remove(handleIndex);
+        qt_adopted_qthreads.remove(qthreadIndex);
     }
 
     QThreadData *threadData = reinterpret_cast<QThreadData *>(TlsGetValue(qt_current_thread_data_tls_index));

@@ -837,26 +837,32 @@ bool QWinSettingsPrivate::isWritable() const
 QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format, QSettings::Scope scope,
                                            const QString &organization, const QString &application)
 {
-    if (format == QSettings::NativeFormat)
+    switch (format) {
+    case QSettings::NativeFormat:
         return new QWinSettingsPrivate(scope, organization, application);
-    else if (format == QSettings::Registry32Format)
+    case QSettings::Registry32Format:
         return new QWinSettingsPrivate(scope, organization, application, KEY_WOW64_32KEY);
-    else if (format == QSettings::Registry64Format)
+    case QSettings::Registry64Format:
         return new QWinSettingsPrivate(scope, organization, application, KEY_WOW64_64KEY);
-    else
-        return new QConfFileSettingsPrivate(format, scope, organization, application);
+    default:
+        break;
+    }
+    return new QConfFileSettingsPrivate(format, scope, organization, application);
 }
 
 QSettingsPrivate *QSettingsPrivate::create(const QString &fileName, QSettings::Format format)
 {
-    if (format == QSettings::NativeFormat)
+    switch (format) {
+    case QSettings::NativeFormat:
         return new QWinSettingsPrivate(fileName);
-    else if (format == QSettings::Registry32Format)
+    case QSettings::Registry32Format:
         return new QWinSettingsPrivate(fileName, KEY_WOW64_32KEY);
-    else if (format == QSettings::Registry64Format)
+    case QSettings::Registry64Format:
         return new QWinSettingsPrivate(fileName, KEY_WOW64_64KEY);
-    else
-        return new QConfFileSettingsPrivate(fileName, format);
+    default:
+        break;
+    }
+    return new QConfFileSettingsPrivate(fileName, format);
 }
 
 QT_END_NAMESPACE
