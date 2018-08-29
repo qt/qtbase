@@ -7,7 +7,7 @@ SUBDIRS=\
    lancelot \
    languagechange \
    macgui \
-   macnativeevents \
+   #macnativeevents \
    macplist \
    networkselftest \
    qaccessibility \
