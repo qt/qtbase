@@ -606,8 +606,8 @@ bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const Q
         // Set up the DC
         const LOGFONT captionLogFont = getCaptionLogFont(hTheme);
         const HFONT hCaptionFont = CreateFontIndirect(&captionLogFont);
-        HBITMAP hOldBmp = (HBITMAP)SelectObject(dcMem, (HGDIOBJ) bmp);
-        HFONT hOldFont = (HFONT)SelectObject(dcMem, (HGDIOBJ) hCaptionFont);
+        auto hOldBmp = reinterpret_cast<HBITMAP>(SelectObject(dcMem, (HGDIOBJ) bmp));
+        auto hOldFont = reinterpret_cast<HFONT>(SelectObject(dcMem, (HGDIOBJ) hCaptionFont));
 
         // Draw the text!
         DTTOPTS dto;
@@ -654,7 +654,7 @@ bool QVistaHelper::drawBlackRect(const QRect &rect, HDC hdc)
         dib.bmiHeader.biCompression = BI_RGB;
 
         bmp = CreateDIBSection(hdc, &dib, DIB_RGB_COLORS, NULL, NULL, 0);
-        HBITMAP hOldBmp = (HBITMAP)SelectObject(dcMem, (HGDIOBJ) bmp);
+        auto hOldBmp = reinterpret_cast<HBITMAP>(SelectObject(dcMem, (HGDIOBJ) bmp));
 
         BitBlt(hdc, rectDp.left(), rectDp.top(), rectDp.width(), rectDp.height(), dcMem, 0, 0, SRCCOPY);
         SelectObject(dcMem, (HGDIOBJ) hOldBmp);

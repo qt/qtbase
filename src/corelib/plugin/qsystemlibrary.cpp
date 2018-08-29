@@ -121,7 +121,7 @@ HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirect
             fullPathAttempt.append(QLatin1Char('\\'));
         }
         fullPathAttempt.append(fileName);
-        HINSTANCE inst = ::LoadLibrary((const wchar_t *)fullPathAttempt.utf16());
+        HINSTANCE inst = ::LoadLibrary(reinterpret_cast<const wchar_t *>(fullPathAttempt.utf16()));
         if (inst != 0)
             return inst;
     }

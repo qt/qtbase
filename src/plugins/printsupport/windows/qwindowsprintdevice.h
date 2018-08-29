@@ -140,6 +140,8 @@ protected:
     void loadMinMaxPageSizes() const;
 
 private:
+    LPCWSTR wcharId() const { return reinterpret_cast<LPCWSTR>(m_id.utf16()); }
+
     HANDLE m_hPrinter;
     mutable bool m_haveCopies;
     mutable bool m_haveMinMaxPageSizes;

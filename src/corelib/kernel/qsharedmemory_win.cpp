@@ -101,7 +101,8 @@ HANDLE QSharedMemoryPrivate::handle()
 #if defined(Q_OS_WINRT)
         hand = OpenFileMappingFromApp(FILE_MAP_ALL_ACCESS, FALSE, reinterpret_cast<PCWSTR>(nativeKey.utf16()));
 #else
-        hand = OpenFileMapping(FILE_MAP_ALL_ACCESS, false, (wchar_t*)nativeKey.utf16());
+        hand = OpenFileMapping(FILE_MAP_ALL_ACCESS, false,
+                               reinterpret_cast<const wchar_t*>(nativeKey.utf16()));
 #endif
         if (!hand) {
             setErrorString(function);
@@ -133,9 +134,11 @@ bool QSharedMemoryPrivate::create(int size)
 
     // Create the file mapping.
 #if defined(Q_OS_WINRT)
-    hand = CreateFileMappingFromApp(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, size, (PCWSTR)nativeKey.utf16());
+    hand = CreateFileMappingFromApp(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, size,
+                                    reinterpret_cast<PCWSTR>(nativeKey.utf16()));
 #else
-    hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, size, (wchar_t*)nativeKey.utf16());
+    hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, size,
+                             reinterpret_cast<const wchar_t*>(nativeKey.utf16()));
 #endif
     setErrorString(function);
 

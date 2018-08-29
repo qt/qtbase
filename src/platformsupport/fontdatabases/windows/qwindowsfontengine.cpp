@@ -111,9 +111,8 @@ QFixed QWindowsFontEngine::lineThickness() const
 
 static OUTLINETEXTMETRIC *getOutlineTextMetric(HDC hdc)
 {
-    int size;
-    size = GetOutlineTextMetrics(hdc, 0, 0);
-    OUTLINETEXTMETRIC *otm = (OUTLINETEXTMETRIC *)malloc(size);
+    const auto size = GetOutlineTextMetrics(hdc, 0, nullptr);
+    auto otm = reinterpret_cast<OUTLINETEXTMETRIC *>(malloc(size));
     GetOutlineTextMetrics(hdc, size, otm);
     return otm;
 }
@@ -1140,7 +1139,7 @@ QImage QWindowsFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed, const QTra
 
     QImage rgbMask(mask->width(), mask->height(), QImage::Format_RGB32);
     for (int y=0; y<mask->height(); ++y) {
-        uint *dest = (uint *) rgbMask.scanLine(y);
+        auto dest = reinterpret_cast<uint *>(rgbMask.scanLine(y));
         const uint *src = reinterpret_cast<const uint *>(source.constScanLine(y));
         for (int x=0; x<mask->width(); ++x) {
             dest[x] = 0xffffffff - (0x00ffffff & src[x]);
