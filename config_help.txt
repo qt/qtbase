@@ -135,6 +135,9 @@ Build options:
                          for example, -sanitize address cannot be combined with
                          -sanitize thread.
 
+  -coverage {trace-pc-guard}
+                         Add code coverage instrumentation (Clang only)
+
   -c++std <edition> .... Select C++ standard <edition> [c++1z/c++14/c++11]
                          (Not supported with MSVC)
 

@@ -67,6 +67,7 @@
             "commercial": "void",
             "compile-examples": { "type": "boolean", "name": "compile_examples" },
             "confirm-license": "void",
+            "coverage": "coverage",
             "dbus": { "type": "optionalString", "values": [ "no", "yes", "linked", "runtime" ] },
             "dbus-linked": { "type": "void", "name": "dbus", "value": "linked" },
             "dbus-runtime": { "type": "void", "name": "dbus", "value": "runtime" },
@@ -791,6 +792,16 @@
             "condition": "features.sanitize_address || features.sanitize_thread || features.sanitize_memory || features.sanitize_undefined",
             "output": [ "sanitizer", "publicConfig" ]
         },
+        "coverage_trace_pc_guard": {
+            "label": "trace-pc-guard",
+            "autoDetect": false,
+            "output": [ "publicConfig" ]
+        },
+        "coverage": {
+            "label": "Code Coverage Instrumentation",
+            "condition": "features.coverage_trace_pc_guard",
+            "output": [ "publicConfig" ]
+        },
         "GNUmake": {
             "label": "GNU make",
             "autoDetect": false,
@@ -1268,6 +1279,11 @@ Qt can be built in release mode with separate debug information, so
             "type": "error",
             "condition": "(features.rpath || features.rpath_dir) && var.QMAKE_LFLAGS_RPATH == ''",
             "message": "This platform does not support RPATH"
+        },
+        {
+            "type": "error",
+            "condition": "features.coverage && !config.clang",
+            "message": "Command line option -coverage is only supported with clang compilers."
         }
     ],
 
@@ -1400,6 +1416,12 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                     "section": "Sanitizers",
                     "condition": "features.sanitizer",
                     "entries": [ "sanitize_address", "sanitize_thread", "sanitize_memory", "sanitize_undefined" ]
+                },
+                {
+                    "message": "Code Coverage Instrumentation",
+                    "type": "firstAvailableFeature",
+                    "args": "coverage_trace_pc_guard",
+                    "condition": "features.coverage"
                 },
                 {
                     "message": "Build parts",

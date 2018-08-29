@@ -58,6 +58,21 @@ defineTest(qtConfCommandline_sanitize) {
     }
 }
 
+defineTest(qtConfCommandline_coverage) {
+    arg = $${1}
+    val = $${2}
+    isEmpty(val): val = $$qtConfGetNextCommandlineArg()
+    !contains(val, "^-.*"):!isEmpty(val) {
+        equals(val, "trace-pc-guard") {
+            qtConfCommandlineSetInput("coverage_trace_pc_guard", "yes")
+        } else {
+            qtConfAddError("Invalid argument $$val to command line parameter $$arg")
+        }
+    } else {
+        qtConfAddError("Missing argument to command line parameter $$arg")
+    }
+}
+
 # callbacks
 
 defineReplace(qtConfFunc_crossCompile) {
