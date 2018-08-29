@@ -1169,7 +1169,6 @@
         },
         "network": {
             "label": "Qt Network",
-            "condition": "features.thread",
             "output": [ "privateFeature" ]
         },
         "sql": {

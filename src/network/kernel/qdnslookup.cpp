@@ -49,7 +49,9 @@
 
 QT_BEGIN_NAMESPACE
 
+#if QT_CONFIG(thread)
 Q_GLOBAL_STATIC(QDnsLookupThreadPool, theDnsLookupThreadPool);
+#endif
 
 static bool qt_qdnsmailexchangerecord_less_than(const QDnsMailExchangeRecord &r1, const QDnsMailExchangeRecord &r2)
 {
@@ -503,7 +505,9 @@ void QDnsLookup::lookup()
     connect(d->runnable, SIGNAL(finished(QDnsLookupReply)),
             this, SLOT(_q_lookupFinished(QDnsLookupReply)),
             Qt::BlockingQueuedConnection);
+#if QT_CONFIG(thread)
     theDnsLookupThreadPool()->start(d->runnable);
+#endif
 }
 
 /*!
@@ -1016,6 +1020,7 @@ void QDnsLookupRunnable::run()
     emit finished(reply);
 }
 
+#if QT_CONFIG(thread)
 QDnsLookupThreadPool::QDnsLookupThreadPool()
     : signalsConnected(false)
 {
@@ -1051,7 +1056,7 @@ void QDnsLookupThreadPool::_q_applicationDestroyed()
     waitForDone();
     signalsConnected = false;
 }
-
+#endif // QT_CONFIG(thread)
 QT_END_NAMESPACE
 
 #include "moc_qdnslookup.cpp"

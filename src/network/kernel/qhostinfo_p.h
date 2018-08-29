@@ -61,7 +61,9 @@
 #include "QtCore/qobject.h"
 #include "QtCore/qpointer.h"
 #include "QtCore/qthread.h"
+#if QT_CONFIG(thread)
 #include "QtCore/qthreadpool.h"
+#endif
 #include "QtCore/qrunnable.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qqueue.h"
@@ -238,20 +240,25 @@ public:
 
     friend class QHostInfoRunnable;
 protected:
+#if QT_CONFIG(thread)
     QList<QHostInfoRunnable*> currentLookups; // in progress
     QList<QHostInfoRunnable*> postponedLookups; // postponed because in progress for same host
+#endif
     QQueue<QHostInfoRunnable*> scheduledLookups; // not yet started
     QList<QHostInfoRunnable*> finishedLookups; // recently finished
     QList<int> abortedLookups; // ids of aborted lookups
 
+#if QT_CONFIG(thread)
     QThreadPool threadPool;
-
+#endif
     QMutex mutex;
 
     bool wasDeleted;
 
 private slots:
+#if QT_CONFIG(thread)
     void waitForThreadPoolDone() { threadPool.waitForDone(); }
+#endif
 };
 
 QT_END_NAMESPACE
