@@ -368,6 +368,7 @@ namespace {
 
     class DirectWriteFontFileStream: public IDWriteFontFileStream
     {
+        Q_DISABLE_COPY(DirectWriteFontFileStream)
     public:
         DirectWriteFontFileStream(const QByteArray &fontData)
             : m_fontData(fontData)

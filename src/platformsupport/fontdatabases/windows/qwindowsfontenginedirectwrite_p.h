@@ -72,11 +72,12 @@ class QWindowsFontEngineData;
 
 class QWindowsFontEngineDirectWrite : public QFontEngine
 {
+    Q_DISABLE_COPY(QWindowsFontEngineDirectWrite)
 public:
     explicit QWindowsFontEngineDirectWrite(IDWriteFontFace *directWriteFontFace,
                                     qreal pixelSize,
                                     const QSharedPointer<QWindowsFontEngineData> &d);
-    ~QWindowsFontEngineDirectWrite();
+    ~QWindowsFontEngineDirectWrite() override;
 
     void initFontInfo(const QFontDef &request, int dpi);
 

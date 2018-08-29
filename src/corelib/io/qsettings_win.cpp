@@ -377,11 +377,12 @@ typedef QVector<RegistryKey> RegistryKeyList;
 
 class QWinSettingsPrivate : public QSettingsPrivate
 {
+    Q_DISABLE_COPY(QWinSettingsPrivate)
 public:
     QWinSettingsPrivate(QSettings::Scope scope, const QString &organization,
                         const QString &application, REGSAM access = 0);
     QWinSettingsPrivate(QString rKey, REGSAM access = 0);
-    ~QWinSettingsPrivate();
+    ~QWinSettingsPrivate() override;
 
     void remove(const QString &uKey) override;
     void set(const QString &uKey, const QVariant &value) override;

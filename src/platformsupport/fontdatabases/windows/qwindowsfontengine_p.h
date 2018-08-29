@@ -66,13 +66,14 @@ class QWindowsFontEngineData;
 
 class QWindowsFontEngine : public QFontEngine
 {
+    Q_DISABLE_COPY(QWindowsFontEngine)
     friend class QWindowsMultiFontEngine;
 
 public:
     QWindowsFontEngine(const QString &name, LOGFONT lf,
                        const QSharedPointer<QWindowsFontEngineData> &fontEngineData);
 
-    ~QWindowsFontEngine();
+    ~QWindowsFontEngine() override;
     void initFontInfo(const QFontDef &request,
                       int dpi);
 
@@ -89,7 +90,7 @@ public:
     void recalcAdvances(QGlyphLayout *glyphs, ShaperFlags) const override;
 
     void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags) override;
-    virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
+    void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
                          QPainterPath *path, QTextItem::RenderFlags flags) override;
 
     HGDIOBJ selectDesignFont() const;

@@ -46,9 +46,10 @@ QT_BEGIN_NAMESPACE
 
 class QWindowsPrinterSupport : public QPlatformPrinterSupport
 {
+    Q_DISABLE_COPY(QWindowsPrinterSupport)
 public:
     QWindowsPrinterSupport();
-    ~QWindowsPrinterSupport();
+    ~QWindowsPrinterSupport() override;
 
     QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode, const QString &deviceId = QString()) override;
     QPaintEngine *createPaintEngine(QPrintEngine *printEngine, QPrinter::PrinterMode) override;

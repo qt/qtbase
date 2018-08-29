@@ -69,15 +69,14 @@ namespace {
 
     class GeometrySink: public IDWriteGeometrySink
     {
+        Q_DISABLE_COPY(GeometrySink)
     public:
         GeometrySink(QPainterPath *path)
             : m_refCount(0), m_path(path)
         {
             Q_ASSERT(m_path != 0);
         }
-        virtual ~GeometrySink()
-        {
-        }
+        virtual ~GeometrySink() = default;
 
         IFACEMETHOD_(void, AddBeziers)(const D2D1_BEZIER_SEGMENT *beziers, UINT bezierCount);
         IFACEMETHOD_(void, AddLines)(const D2D1_POINT_2F *points, UINT pointCount);

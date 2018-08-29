@@ -85,6 +85,7 @@ public:
 
 class QWindowsFontDatabase : public QPlatformFontDatabase
 {
+    Q_DISABLE_COPY(QWindowsFontDatabase)
 public:
     enum FontOptions {
         // Relevant bits from QWindowsIntegration::Options
@@ -93,7 +94,7 @@ public:
     };
 
     QWindowsFontDatabase();
-    ~QWindowsFontDatabase();
+    ~QWindowsFontDatabase() override;
 
     void populateFontDatabase() override;
     void populateFamily(const QString &familyName) override;
