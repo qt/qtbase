@@ -256,6 +256,14 @@ static void CALLBACK wfsoCallback(void *context, BOOLEAN /*ignore*/)
 {
     QWinEventNotifierPrivate *nd = reinterpret_cast<QWinEventNotifierPrivate *>(context);
     QAbstractEventDispatcher *eventDispatcher = nd->threadData->eventDispatcher.load();
+
+    // Happens when Q(Core)Application is destroyed before QWinEventNotifier.
+    // https://bugreports.qt.io/browse/QTBUG-70214
+    if (!eventDispatcher) { // perhaps application is shutting down
+        qWarning("QWinEventNotifier: no event dispatcher, application shutting down? Cannot deliver event.");
+        return;
+    }
+
     QEventDispatcherWin32Private *edp = QEventDispatcherWin32Private::get(
                 static_cast<QEventDispatcherWin32 *>(eventDispatcher));
     ++nd->signaledCount;
