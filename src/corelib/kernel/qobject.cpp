@@ -2142,7 +2142,8 @@ void QObject::removeEventFilter(QObject *obj)
     \fn void QObject::destroyed(QObject *obj)
 
     This signal is emitted immediately before the object \a obj is
-    destroyed, and can not be blocked.
+    destroyed, after any instances of QPointer have been notified,
+    and can not be blocked.
 
     All the objects's children are destroyed immediately after this
     signal is emitted.
