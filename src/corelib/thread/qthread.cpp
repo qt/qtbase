@@ -879,6 +879,7 @@ QThreadPrivate::QThreadPrivate(QThreadData *d) : data(d ? d : new QThreadData)
 
 QThreadPrivate::~QThreadPrivate()
 {
+    data->thread = nullptr; // prevent QThreadData from deleting the QThreadPrivate (again).
     delete data;
 }
 
