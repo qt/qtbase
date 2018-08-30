@@ -84,47 +84,34 @@ struct StaticString
 {
     const char data[N];
 
-    constexpr StaticString(const char (&literal)[N]) noexcept
-        : StaticString(literal, makeIndexSequence<N> {})
-    { }
-
-    template<int ... Idx>
-    constexpr StaticString(const char (&literal)[N],
-                           IndexesList<Idx...>) noexcept
-        : data{literal[Idx]...}
-    { }
-
-    template<typename ... T>
-    constexpr StaticString(const T ... c) noexcept : data{c...} { }
-
-    constexpr char operator[](int i) const noexcept
-    {
-        return data[i];
-    }
-
-    template<int N2>
-    constexpr StaticString<N + N2> operator+(const StaticString<N2> &rs) const noexcept
-    {
-        return concatenate(rs, makeIndexSequence<N>{}, makeIndexSequence<N2>{});
-    }
-
-    template<int N2, int ... I1, int ... I2>
-    constexpr StaticString<N + N2> concatenate(const StaticString<N2> &rs,
-                                               IndexesList<I1...>,
-                                               IndexesList<I2...>) const noexcept
-    {
-        return StaticString<N + N2>(data[I1]..., rs[I2]...);
-    }
-
-    constexpr int size() const noexcept
+    static constexpr int size() noexcept
     {
         return N;
     }
 };
 
+
 template<>
 struct StaticString<0>
 {
+    static constexpr int size() noexcept
+    {
+        return 0;
+    }
+};
+
+template<typename, typename>
+struct StaticStringBuilder;
+
+template<int ... I1, int ... I2>
+struct StaticStringBuilder<IndexesList<I1...>, IndexesList<I2...>>
+{
+    template<int N1, typename T2>
+    static constexpr StaticString<N1 + T2::size()> concatenate(
+        const char (&ls)[N1], const T2 &rs) noexcept
+    {
+        return {ls[I1]..., rs.data[I2]...};
+    }
 };
 
 template<int Sum>
@@ -136,7 +123,9 @@ constexpr StaticString<0> staticString() noexcept
 template<int Sum, int I, int ... Ix>
 constexpr StaticString<Sum> staticString(const char (&s)[I], const char (&...sx)[Ix]) noexcept
 {
-    return StaticString<I>(s) + staticString<Sum - I>(sx...);
+    return StaticStringBuilder<
+        makeIndexSequence<I>,
+        makeIndexSequence<Sum - I>>::concatenate(s, staticString<Sum - I>(sx...));
 }
 } // namespace QtPrivate
 
@@ -146,25 +135,24 @@ class QOffsetStringArray
 public:
     using Type = T;
 
-    template<int ... Cx, int ... Ox>
+    template<int ... Ox>
     constexpr QOffsetStringArray(const QtPrivate::StaticString<SizeString> &str,
-                                 QtPrivate::IndexesList<Cx...>,
                                  QtPrivate::IndexesList<SizeString, Ox...>) noexcept
-        : m_string{str[Cx]...},
+        : m_string{str},
           m_offsets{Ox...}
     { }
 
     constexpr inline const char *operator[](const int index) const noexcept
     {
-        return m_string + m_offsets[qBound(int(0), index, SizeOffsets - 1)];
+        return m_string.data + m_offsets[qBound(int(0), index, SizeOffsets - 1)];
     }
 
     constexpr inline const char *at(const int index) const noexcept
     {
-        return m_string + m_offsets[index];
+        return m_string.data + m_offsets[index];
     }
 
-    constexpr inline const char *str() const { return m_string; }
+    constexpr inline const char *str() const { return m_string.data; }
     constexpr inline const T *offsets() const { return m_offsets; }
     constexpr inline int count() const { return SizeOffsets; };
 
@@ -172,7 +160,7 @@ public:
     static constexpr const auto sizeOffsets = SizeOffsets;
 
 private:
-    const char m_string[SizeString];
+    QtPrivate::StaticString<SizeString> m_string;
     const T m_offsets[SizeOffsets];
 };
 
@@ -183,7 +171,6 @@ constexpr QOffsetStringArray<T, N, sizeof ... (Ox)> qOffsetStringArray(
 {
     return QOffsetStringArray<T, N, sizeof ... (Ox)>(
                string,
-               QtPrivate::makeIndexSequence<N> {},
                offsets);
 }
 
@@ -201,7 +188,6 @@ constexpr auto qOffsetStringArray(const char (&...strings)[Nx]) noexcept -> type
     return qOffsetStringArray<typename Offsets::Type>(
             QtPrivate::staticString<Offsets::Length>(strings...), Offsets{});
 }
-
 
 QT_END_NAMESPACE
 
