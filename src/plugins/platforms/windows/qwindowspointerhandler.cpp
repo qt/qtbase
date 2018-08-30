@@ -428,21 +428,6 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
     QWindowSystemInterface::handleTouchEvent(window, m_touchDevice, touchPoints,
                                              QWindowsKeyMapper::queryKeyboardModifiers());
 
-    if (!(QWindowsIntegration::instance()->options() & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch)) {
-
-        const QPoint globalPos = QPoint(touchInfo->pointerInfo.ptPixelLocation.x, touchInfo->pointerInfo.ptPixelLocation.y);
-        const QPoint localPos = QWindowsGeometryHint::mapFromGlobal(hwnd, globalPos);
-        const Qt::KeyboardModifiers keyModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
-        const Qt::MouseButtons mouseButtons = queryMouseButtons();
-
-        QEvent::Type eventType;
-        Qt::MouseButton button;
-        getMouseEventInfo(msg.message, touchInfo->pointerInfo.ButtonChangeType, globalPos, &eventType, &button);
-
-        QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos, mouseButtons, button, eventType,
-                                                 keyModifiers, Qt::MouseEventSynthesizedByQt);
-    }
-
     return true;
 }
 
@@ -535,15 +520,6 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
         QWindowSystemInterface::handleTabletEvent(target, localPos, hiResGlobalPos, device, type, mouseButtons,
                                                   pressure, xTilt, yTilt, tangentialPressure, rotation, z,
                                                   pointerId, keyModifiers);
-
-        if (!(QWindowsIntegration::instance()->options() & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch)) {
-            QEvent::Type eventType;
-            Qt::MouseButton button;
-            getMouseEventInfo(msg.message, penInfo->pointerInfo.ButtonChangeType, globalPos, &eventType, &button);
-
-            QWindowSystemInterface::handleMouseEvent(target, localPos, globalPos, mouseButtons, button, eventType,
-                                                     keyModifiers, Qt::MouseEventSynthesizedByQt);
-        }
         break;
     }
     }

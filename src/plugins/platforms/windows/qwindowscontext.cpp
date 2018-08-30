@@ -65,6 +65,7 @@
 
 #include <QtGui/qwindow.h>
 #include <qpa/qwindowsysteminterface.h>
+#include <qpa/qwindowsysteminterface_p.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qopenglcontext.h>
@@ -329,8 +330,12 @@ bool QWindowsContext::initTouch(unsigned integrationOptions)
     if (!touchDevice)
         return false;
 
-    if (!(integrationOptions & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch))
-        touchDevice->setCapabilities(touchDevice->capabilities() | QTouchDevice::MouseEmulation);
+    if (d->m_systemInfo & QWindowsContext::SI_SupportsPointer) {
+        QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
+    } else {
+        if (!(integrationOptions & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch))
+            touchDevice->setCapabilities(touchDevice->capabilities() | QTouchDevice::MouseEmulation);
+    }
 
     QWindowSystemInterface::registerTouchDevice(touchDevice);
 

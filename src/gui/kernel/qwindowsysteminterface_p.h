@@ -365,7 +365,7 @@ public:
         QUrl url;
     };
 
-    class TabletEvent : public InputEvent {
+    class Q_GUI_EXPORT TabletEvent : public InputEvent {
     public:
         static void handleTabletEvent(QWindow *w, const QPointF &local, const QPointF &global,
                                       int device, int pointerType, Qt::MouseButtons buttons, qreal pressure, int xTilt, int yTilt,
