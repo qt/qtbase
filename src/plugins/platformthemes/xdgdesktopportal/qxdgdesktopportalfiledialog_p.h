@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 Red Hat, Inc
+** Copyright (C) 2017-2018 Red Hat, Inc
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -36,20 +36,20 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QFLATPAKFILEDIALOG_P_H
-#define QFLATPAKFILEDIALOG_P_H
+#ifndef QXDGDESKTOPPORTALFILEDIALOG_P_H
+#define QXDGDESKTOPPORTALFILEDIALOG_P_H
 
 #include <qpa/qplatformdialoghelper.h>
 #include <QVector>
 
 QT_BEGIN_NAMESPACE
 
-class QFlatpakFileDialogPrivate;
+class QXdgDesktopPortalFileDialogPrivate;
 
-class QFlatpakFileDialog : public QPlatformFileDialogHelper
+class QXdgDesktopPortalFileDialog : public QPlatformFileDialogHelper
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QFlatpakFileDialog)
+    Q_DECLARE_PRIVATE(QXdgDesktopPortalFileDialog)
 public:
     enum ConditionType : uint {
         GlobalPattern = 0,
@@ -69,8 +69,8 @@ public:
     };
     typedef QVector<Filter> FilterList;
 
-    QFlatpakFileDialog(QPlatformFileDialogHelper *nativeFileDialog = nullptr);
-    ~QFlatpakFileDialog();
+    QXdgDesktopPortalFileDialog(QPlatformFileDialogHelper *nativeFileDialog = nullptr);
+    ~QXdgDesktopPortalFileDialog();
 
     bool defaultNameFilterDisables() const override;
     QUrl directory() const override;
@@ -92,15 +92,15 @@ private:
     void initializeDialog();
     void openPortal();
 
-    QScopedPointer<QFlatpakFileDialogPrivate> d_ptr;
+    QScopedPointer<QXdgDesktopPortalFileDialogPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QFlatpakFileDialog::FilterCondition);
-Q_DECLARE_METATYPE(QFlatpakFileDialog::FilterConditionList);
-Q_DECLARE_METATYPE(QFlatpakFileDialog::Filter);
-Q_DECLARE_METATYPE(QFlatpakFileDialog::FilterList);
+Q_DECLARE_METATYPE(QXdgDesktopPortalFileDialog::FilterCondition);
+Q_DECLARE_METATYPE(QXdgDesktopPortalFileDialog::FilterConditionList);
+Q_DECLARE_METATYPE(QXdgDesktopPortalFileDialog::Filter);
+Q_DECLARE_METATYPE(QXdgDesktopPortalFileDialog::FilterList);
 
-#endif // QFLATPAKFILEDIALOG_P_H
+#endif // QXDGDESKTOPPORTALFILEDIALOG_P_H
 

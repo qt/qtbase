@@ -37,20 +37,20 @@
 **
 ****************************************************************************/
 
-#ifndef QFLATPAKTHEME_H
-#define QFLATPAKTHEME_H
+#ifndef QXDGDESKTOPPORTALTHEME_H
+#define QXDGDESKTOPPORTALTHEME_H
 
 #include <qpa/qplatformtheme.h>
 
 QT_BEGIN_NAMESPACE
 
-class QFlatpakThemePrivate;
+class QXdgDesktopPortalThemePrivate;
 
-class QFlatpakTheme : public QPlatformTheme
+class QXdgDesktopPortalTheme : public QPlatformTheme
 {
-    Q_DECLARE_PRIVATE(QFlatpakTheme)
+    Q_DECLARE_PRIVATE(QXdgDesktopPortalTheme)
 public:
-    QFlatpakTheme();
+    QXdgDesktopPortalTheme();
 
     QPlatformMenuItem *createPlatformMenuItem() const override;
     QPlatformMenu *createPlatformMenu() const override;
@@ -81,10 +81,10 @@ public:
     QString standardButtonText(int button) const override;
 
 private:
-    QScopedPointer<QFlatpakThemePrivate> d_ptr;
-    Q_DISABLE_COPY(QFlatpakTheme)
+    QScopedPointer<QXdgDesktopPortalThemePrivate> d_ptr;
+    Q_DISABLE_COPY(QXdgDesktopPortalTheme)
 };
 
 QT_END_NAMESPACE
 
-#endif // QFLATPAKTHEME_H
+#endif // QXDGDESKTOPPORTALTHEME_H

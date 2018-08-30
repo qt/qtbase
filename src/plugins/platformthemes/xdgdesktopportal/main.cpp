@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 Red Hat, Inc
+** Copyright (C) 2017-2018 Red Hat, Inc
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -38,24 +38,26 @@
 ****************************************************************************/
 
 #include <qpa/qplatformthemeplugin.h>
-#include "qflatpaktheme.h"
+#include "qxdgdesktopportaltheme.h"
 
 QT_BEGIN_NAMESPACE
 
-class QFlatpakThemePlugin : public QPlatformThemePlugin
+class QXdgDesktopPortalThemePlugin : public QPlatformThemePlugin
 {
    Q_OBJECT
-   Q_PLUGIN_METADATA(IID QPlatformThemeFactoryInterface_iid FILE "flatpak.json")
+   Q_PLUGIN_METADATA(IID QPlatformThemeFactoryInterface_iid FILE "xdgdesktopportal.json")
 
 public:
     QPlatformTheme *create(const QString &key, const QStringList &params) override;
 };
 
-QPlatformTheme *QFlatpakThemePlugin::create(const QString &key, const QStringList &params)
+QPlatformTheme *QXdgDesktopPortalThemePlugin::create(const QString &key, const QStringList &params)
 {
     Q_UNUSED(params);
-    if (!key.compare(QLatin1String("flatpak"), Qt::CaseInsensitive))
-        return new QFlatpakTheme;
+    if (!key.compare(QLatin1String("xdgdesktopportal"), Qt::CaseInsensitive) ||
+        !key.compare(QLatin1String("flatpak"), Qt::CaseInsensitive) ||
+        !key.compare(QLatin1String("snap"), Qt::CaseInsensitive))
+        return new QXdgDesktopPortalTheme;
 
     return nullptr;
 }

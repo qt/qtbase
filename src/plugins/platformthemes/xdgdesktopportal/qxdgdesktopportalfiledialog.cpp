@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 Red Hat, Inc
+** Copyright (C) 2017-2018 Red Hat, Inc
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "qflatpakfiledialog_p.h"
+#include "qxdgdesktopportalfiledialog_p.h"
 
 #include <QtCore/qeventloop.h>
 
@@ -56,7 +56,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QDBusArgument &operator <<(QDBusArgument &arg, const QFlatpakFileDialog::FilterCondition &filterCondition)
+QDBusArgument &operator <<(QDBusArgument &arg, const QXdgDesktopPortalFileDialog::FilterCondition &filterCondition)
 {
     arg.beginStructure();
     arg << filterCondition.type << filterCondition.pattern;
@@ -64,20 +64,20 @@ QDBusArgument &operator <<(QDBusArgument &arg, const QFlatpakFileDialog::FilterC
     return arg;
 }
 
-const QDBusArgument &operator >>(const QDBusArgument &arg, QFlatpakFileDialog::FilterCondition &filterCondition)
+const QDBusArgument &operator >>(const QDBusArgument &arg, QXdgDesktopPortalFileDialog::FilterCondition &filterCondition)
 {
     uint type;
     QString filterPattern;
     arg.beginStructure();
     arg >> type >> filterPattern;
-    filterCondition.type = (QFlatpakFileDialog::ConditionType)type;
+    filterCondition.type = (QXdgDesktopPortalFileDialog::ConditionType)type;
     filterCondition.pattern = filterPattern;
     arg.endStructure();
 
     return arg;
 }
 
-QDBusArgument &operator <<(QDBusArgument &arg, const QFlatpakFileDialog::Filter filter)
+QDBusArgument &operator <<(QDBusArgument &arg, const QXdgDesktopPortalFileDialog::Filter filter)
 {
     arg.beginStructure();
     arg << filter.name << filter.filterConditions;
@@ -85,10 +85,10 @@ QDBusArgument &operator <<(QDBusArgument &arg, const QFlatpakFileDialog::Filter 
     return arg;
 }
 
-const QDBusArgument &operator >>(const QDBusArgument &arg, QFlatpakFileDialog::Filter &filter)
+const QDBusArgument &operator >>(const QDBusArgument &arg, QXdgDesktopPortalFileDialog::Filter &filter)
 {
     QString name;
-    QFlatpakFileDialog::FilterConditionList filterConditions;
+    QXdgDesktopPortalFileDialog::FilterConditionList filterConditions;
     arg.beginStructure();
     arg >> name >> filterConditions;
     filter.name = name;
@@ -98,10 +98,10 @@ const QDBusArgument &operator >>(const QDBusArgument &arg, QFlatpakFileDialog::F
     return arg;
 }
 
-class QFlatpakFileDialogPrivate
+class QXdgDesktopPortalFileDialogPrivate
 {
 public:
-    QFlatpakFileDialogPrivate(QPlatformFileDialogHelper *nativeFileDialog)
+    QXdgDesktopPortalFileDialogPrivate(QPlatformFileDialogHelper *nativeFileDialog)
         : nativeFileDialog(nativeFileDialog)
     { }
 
@@ -118,11 +118,11 @@ public:
     QPlatformFileDialogHelper *nativeFileDialog = nullptr;
 };
 
-QFlatpakFileDialog::QFlatpakFileDialog(QPlatformFileDialogHelper *nativeFileDialog)
+QXdgDesktopPortalFileDialog::QXdgDesktopPortalFileDialog(QPlatformFileDialogHelper *nativeFileDialog)
     : QPlatformFileDialogHelper()
-    , d_ptr(new QFlatpakFileDialogPrivate(nativeFileDialog))
+    , d_ptr(new QXdgDesktopPortalFileDialogPrivate(nativeFileDialog))
 {
-    Q_D(QFlatpakFileDialog);
+    Q_D(QXdgDesktopPortalFileDialog);
 
     if (d->nativeFileDialog) {
         connect(d->nativeFileDialog, SIGNAL(accept()), this, SIGNAL(accept()));
@@ -130,13 +130,13 @@ QFlatpakFileDialog::QFlatpakFileDialog(QPlatformFileDialogHelper *nativeFileDial
     }
 }
 
-QFlatpakFileDialog::~QFlatpakFileDialog()
+QXdgDesktopPortalFileDialog::~QXdgDesktopPortalFileDialog()
 {
 }
 
-void QFlatpakFileDialog::initializeDialog()
+void QXdgDesktopPortalFileDialog::initializeDialog()
 {
-    Q_D(QFlatpakFileDialog);
+    Q_D(QXdgDesktopPortalFileDialog);
 
     if (d->nativeFileDialog)
         d->nativeFileDialog->setOptions(options());
@@ -162,9 +162,9 @@ void QFlatpakFileDialog::initializeDialog()
     setDirectory(options()->initialDirectory());
 }
 
-void QFlatpakFileDialog::openPortal()
+void QXdgDesktopPortalFileDialog::openPortal()
 {
-    Q_D(const QFlatpakFileDialog);
+    Q_D(const QXdgDesktopPortalFileDialog);
 
     QDBusMessage message = QDBusMessage::createMethodCall(QLatin1String("org.freedesktop.portal.Desktop"),
                                                           QLatin1String("/org/freedesktop/portal/desktop"),
@@ -270,14 +270,14 @@ void QFlatpakFileDialog::openPortal()
     });
 }
 
-bool QFlatpakFileDialog::defaultNameFilterDisables() const
+bool QXdgDesktopPortalFileDialog::defaultNameFilterDisables() const
 {
     return false;
 }
 
-void QFlatpakFileDialog::setDirectory(const QUrl &directory)
+void QXdgDesktopPortalFileDialog::setDirectory(const QUrl &directory)
 {
-    Q_D(QFlatpakFileDialog);
+    Q_D(QXdgDesktopPortalFileDialog);
 
     if (d->nativeFileDialog) {
         d->nativeFileDialog->setOptions(options());
@@ -287,9 +287,9 @@ void QFlatpakFileDialog::setDirectory(const QUrl &directory)
     d->directory = directory.path();
 }
 
-QUrl QFlatpakFileDialog::directory() const
+QUrl QXdgDesktopPortalFileDialog::directory() const
 {
-    Q_D(const QFlatpakFileDialog);
+    Q_D(const QXdgDesktopPortalFileDialog);
 
     if (d->nativeFileDialog && (options()->fileMode() == QFileDialogOptions::Directory || options()->fileMode() == QFileDialogOptions::DirectoryOnly))
         return d->nativeFileDialog->directory();
@@ -297,9 +297,9 @@ QUrl QFlatpakFileDialog::directory() const
     return d->directory;
 }
 
-void QFlatpakFileDialog::selectFile(const QUrl &filename)
+void QXdgDesktopPortalFileDialog::selectFile(const QUrl &filename)
 {
-    Q_D(QFlatpakFileDialog);
+    Q_D(QXdgDesktopPortalFileDialog);
 
     if (d->nativeFileDialog) {
         d->nativeFileDialog->setOptions(options());
@@ -309,9 +309,9 @@ void QFlatpakFileDialog::selectFile(const QUrl &filename)
     d->selectedFiles << filename.path();
 }
 
-QList<QUrl> QFlatpakFileDialog::selectedFiles() const
+QList<QUrl> QXdgDesktopPortalFileDialog::selectedFiles() const
 {
-    Q_D(const QFlatpakFileDialog);
+    Q_D(const QXdgDesktopPortalFileDialog);
 
     if (d->nativeFileDialog && (options()->fileMode() == QFileDialogOptions::Directory || options()->fileMode() == QFileDialogOptions::DirectoryOnly))
         return d->nativeFileDialog->selectedFiles();
@@ -323,9 +323,9 @@ QList<QUrl> QFlatpakFileDialog::selectedFiles() const
     return files;
 }
 
-void QFlatpakFileDialog::setFilter()
+void QXdgDesktopPortalFileDialog::setFilter()
 {
-    Q_D(QFlatpakFileDialog);
+    Q_D(QXdgDesktopPortalFileDialog);
 
     if (d->nativeFileDialog) {
         d->nativeFileDialog->setOptions(options());
@@ -333,9 +333,9 @@ void QFlatpakFileDialog::setFilter()
     }
 }
 
-void QFlatpakFileDialog::selectNameFilter(const QString &filter)
+void QXdgDesktopPortalFileDialog::selectNameFilter(const QString &filter)
 {
-    Q_D(QFlatpakFileDialog);
+    Q_D(QXdgDesktopPortalFileDialog);
 
     if (d->nativeFileDialog) {
         d->nativeFileDialog->setOptions(options());
@@ -343,15 +343,15 @@ void QFlatpakFileDialog::selectNameFilter(const QString &filter)
     }
 }
 
-QString QFlatpakFileDialog::selectedNameFilter() const
+QString QXdgDesktopPortalFileDialog::selectedNameFilter() const
 {
     // TODO
     return QString();
 }
 
-void QFlatpakFileDialog::exec()
+void QXdgDesktopPortalFileDialog::exec()
 {
-    Q_D(QFlatpakFileDialog);
+    Q_D(QXdgDesktopPortalFileDialog);
 
     if (d->nativeFileDialog && (options()->fileMode() == QFileDialogOptions::Directory || options()->fileMode() == QFileDialogOptions::DirectoryOnly)) {
         d->nativeFileDialog->exec();
@@ -365,17 +365,17 @@ void QFlatpakFileDialog::exec()
     loop.exec();
 }
 
-void QFlatpakFileDialog::hide()
+void QXdgDesktopPortalFileDialog::hide()
 {
-    Q_D(QFlatpakFileDialog);
+    Q_D(QXdgDesktopPortalFileDialog);
 
     if (d->nativeFileDialog)
         d->nativeFileDialog->hide();
 }
 
-bool QFlatpakFileDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent)
+bool QXdgDesktopPortalFileDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent)
 {
-    Q_D(QFlatpakFileDialog);
+    Q_D(QXdgDesktopPortalFileDialog);
 
     initializeDialog();
 
@@ -390,9 +390,9 @@ bool QFlatpakFileDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality wi
     return true;
 }
 
-void QFlatpakFileDialog::gotResponse(uint response, const QVariantMap &results)
+void QXdgDesktopPortalFileDialog::gotResponse(uint response, const QVariantMap &results)
 {
-    Q_D(QFlatpakFileDialog);
+    Q_D(QXdgDesktopPortalFileDialog);
 
     if (!response) {
         if (results.contains(QLatin1String("uris")))
