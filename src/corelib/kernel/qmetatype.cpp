@@ -290,6 +290,10 @@ struct DefinedTypesFilter {
     \value QJsonObject QJsonObject
     \value QJsonArray QJsonArray
     \value QJsonDocument QJsonDocument
+    \value QCborValue QCborValue
+    \value QCborArray QCborArray
+    \value QCborMap QCborMap
+    \value QCborSimpleType QCborSimpleType
     \value QModelIndex QModelIndex
     \value QPersistentModelIndex QPersistentModelIndex (since 5.5)
     \value QUuid QUuid
