@@ -106,12 +106,18 @@ struct StaticStringBuilder;
 template<int ... I1, int ... I2>
 struct StaticStringBuilder<IndexesList<I1...>, IndexesList<I2...>>
 {
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_MSVC(4100) // The formal parameter is not referenced in the body of the function.
+                              // The unreferenced parameter is ignored.
+                              // It happens when 'rs' is StaticString<0>
     template<int N1, typename T2>
     static constexpr StaticString<N1 + T2::size()> concatenate(
         const char (&ls)[N1], const T2 &rs) noexcept
     {
         return {ls[I1]..., rs.data[I2]...};
     }
+QT_WARNING_POP
 };
 
 template<int Sum>
