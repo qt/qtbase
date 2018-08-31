@@ -1541,7 +1541,8 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
     } else {
         m_isAutoRepeat = false;
         // Look at the next event in the queue to see if we are auto-repeating.
-        connection()->checkEvent([this, time, code](xcb_generic_event_t *event, int type) {
+        connection()->eventQueue()->peek(QXcbEventQueue::PeekRetainMatch,
+                                         [this, time, code](xcb_generic_event_t *event, int type) {
             if (type == XCB_KEY_PRESS) {
                 auto keyPress = reinterpret_cast<xcb_key_press_event_t *>(event);
                 m_isAutoRepeat = keyPress->time == time && keyPress->detail == code;
@@ -1549,7 +1550,7 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
                     m_autoRepeatCode = code;
             }
             return true;
-        }, false /* removeFromQueue */);
+        });
     }
 
     bool filtered = false;

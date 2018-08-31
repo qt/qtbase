@@ -27,7 +27,8 @@ SOURCES = \
         qxcbcursor.cpp \
         qxcbimage.cpp \
         qxcbxsettings.cpp \
-        qxcbsystemtraytracker.cpp
+        qxcbsystemtraytracker.cpp \
+        qxcbeventqueue.cpp
 
 HEADERS = \
         qxcbclipboard.h \
@@ -45,7 +46,8 @@ HEADERS = \
         qxcbimage.h \
         qxcbxsettings.h \
         qxcbsystemtraytracker.h \
-        qxcbxkbcommon.h
+        qxcbxkbcommon.h \
+        qxcbeventqueue.h
 
 qtConfig(draganddrop) {
     SOURCES += qxcbdrag.cpp

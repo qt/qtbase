@@ -46,6 +46,7 @@
 #include "qxcbbackingstore.h"
 #include "qxcbnativeinterface.h"
 #include "qxcbclipboard.h"
+#include "qxcbeventqueue.h"
 #if QT_CONFIG(draganddrop)
 #include "qxcbdrag.h"
 #endif
@@ -344,7 +345,7 @@ QAbstractEventDispatcher *QXcbIntegration::createEventDispatcher() const
 {
     QAbstractEventDispatcher *dispatcher = createUnixEventDispatcher();
     for (int i = 0; i < m_connections.size(); i++)
-        m_connections[i]->eventReader()->registerEventDispatcher(dispatcher);
+        m_connections[i]->eventQueue()->registerEventDispatcher(dispatcher);
     return dispatcher;
 }
 

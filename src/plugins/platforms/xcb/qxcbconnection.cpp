@@ -57,6 +57,7 @@
 #include "qxcbglintegration.h"
 #include "qxcbcursor.h"
 #include "qxcbbackingstore.h"
+#include "qxcbeventqueue.h"
 
 #include <QSocketNotifier>
 #include <QAbstractEventDispatcher>
@@ -97,6 +98,7 @@ Q_LOGGING_CATEGORY(lcQpaXInputDevices, "qt.qpa.input.devices")
 Q_LOGGING_CATEGORY(lcQpaXInputEvents, "qt.qpa.input.events")
 Q_LOGGING_CATEGORY(lcQpaScreen, "qt.qpa.screen")
 Q_LOGGING_CATEGORY(lcQpaEvents, "qt.qpa.events")
+Q_LOGGING_CATEGORY(lcQpaEventReader, "qt.qpa.events.reader")
 Q_LOGGING_CATEGORY(lcQpaXcb, "qt.qpa.xcb") // for general (uncategorized) XCB logging
 Q_LOGGING_CATEGORY(lcQpaPeeker, "qt.qpa.peeker")
 Q_LOGGING_CATEGORY(lcQpaKeyboard, "qt.qpa.xkeyboard")
@@ -550,8 +552,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
         return;
     }
 
-    m_reader = new QXcbEventReader(this);
-    m_reader->start();
+    m_eventQueue = new QXcbEventQueue(this);
 
     xcb_extension_t *extensions[] = {
         &xcb_shm_id, &xcb_xfixes_id, &xcb_randr_id, &xcb_shape_id, &xcb_sync_id,
@@ -618,12 +619,8 @@ QXcbConnection::~QXcbConnection()
 #if QT_CONFIG(draganddrop)
     delete m_drag;
 #endif
-    if (m_reader && m_reader->isRunning()) {
-        sendConnectionEvent(QXcbAtom::_QT_CLOSE_CONNECTION);
-        m_reader->wait();
-    }
-
-    delete m_reader;
+    if (m_eventQueue)
+        delete m_eventQueue;
 
     QXcbIntegration *integration = QXcbIntegration::instance();
     // Delete screens in reverse order to avoid crash in case of multiple screens
@@ -1226,151 +1223,6 @@ void QXcbConnection::addPeekFunc(PeekFunc f)
     m_peekFuncs.append(f);
 }
 
-qint32 QXcbConnection::generatePeekerId()
-{
-    qint32 peekerId = m_peekerIdSource++;
-    m_peekerToCachedIndex.insert(peekerId, 0);
-    return peekerId;
-}
-
-bool QXcbConnection::removePeekerId(qint32 peekerId)
-{
-    if (!m_peekerToCachedIndex.contains(peekerId)) {
-        qCWarning(lcQpaXcb, "failed to remove unknown peeker id: %d", peekerId);
-        return false;
-    }
-    m_peekerToCachedIndex.remove(peekerId);
-    if (m_peekerToCachedIndex.isEmpty()) {
-        m_peekerIdSource = 0; // Once the hash becomes empty, we can start reusing IDs
-        m_peekerIndexCacheDirty = false;
-    }
-    return true;
-}
-
-bool QXcbConnection::peekEventQueue(PeekerCallback peeker, void *peekerData,
-                                    PeekOptions option, qint32 peekerId)
-{
-    bool peekerIdProvided = peekerId != -1;
-    if (peekerIdProvided && !m_peekerToCachedIndex.contains(peekerId)) {
-        qCWarning(lcQpaXcb, "failed to find index for unknown peeker id: %d", peekerId);
-        return false;
-    }
-
-    bool peekFromCachedIndex = option.testFlag(PeekOption::PeekFromCachedIndex);
-    if (peekFromCachedIndex && !peekerIdProvided) {
-        qCWarning(lcQpaXcb, "PeekOption::PeekFromCachedIndex requires peeker id");
-        return false;
-    }
-
-    if (peekerIdProvided && m_peekerIndexCacheDirty) {
-        // When the main event loop has flushed the buffered XCB events into the window
-        // system event queue, the cached indices are not valid anymore and need reset.
-        auto it = m_peekerToCachedIndex.begin();
-        while (it != m_peekerToCachedIndex.constEnd()) {
-            (*it) = 0;
-            ++it;
-        }
-        m_peekerIndexCacheDirty = false;
-    }
-
-    qint32 peekerIndex = peekFromCachedIndex ? m_peekerToCachedIndex.value(peekerId) : 0;
-    qint32 startingIndex = peekerIndex;
-    bool result = false;
-    m_mainEventLoopFlushedQueue = false;
-
-    QXcbEventArray *eventqueue = m_reader->lock();
-
-    if (Q_UNLIKELY(lcQpaPeeker().isDebugEnabled())) {
-        qCDebug(lcQpaPeeker, "[%d] peeker index: %d | mode: %s | queue size: %d", peekerId,
-                peekerIndex, peekFromCachedIndex ? "cache" : "start", eventqueue->size());
-    }
-    while (peekerIndex < eventqueue->size() && !result && !m_mainEventLoopFlushedQueue) {
-        xcb_generic_event_t *event = eventqueue->at(peekerIndex++);
-        if (!event)
-            continue;
-        if (Q_UNLIKELY(lcQpaPeeker().isDebugEnabled())) {
-            QString debug = QString((QLatin1String("[%1] peeking at index: %2")))
-                            .arg(peekerId).arg(peekerIndex - 1);
-            printXcbEvent(lcQpaPeeker(), debug.toLatin1(), event);
-        }
-        // A peeker may call QCoreApplication::processEvents(), which has two implications:
-        // 1) We need to make the lock available for QXcbConnection::processXcbEvents(),
-        //    otherwise we will deadlock;
-        // 2) QXcbConnection::processXcbEvents() will flush the queue we are currently
-        //    looping through;
-        m_reader->unlock();
-        result = peeker(event, peekerData);
-        m_reader->lock();
-    }
-
-    m_reader->unlock();
-
-    if (peekerIdProvided && peekerIndex != startingIndex && !m_mainEventLoopFlushedQueue) {
-        auto it = m_peekerToCachedIndex.find(peekerId);
-        // Make sure that a peeker callback did not remove the peeker id
-        if (it != m_peekerToCachedIndex.constEnd())
-            (*it) = peekerIndex;
-    }
-
-    return result;
-}
-
-QXcbEventReader::QXcbEventReader(QXcbConnection *connection)
-    : m_connection(connection)
-{
-}
-
-void QXcbEventReader::start()
-{
-    connect(this, &QXcbEventReader::eventPending, m_connection, &QXcbConnection::processXcbEvents, Qt::QueuedConnection);
-    connect(this, &QXcbEventReader::finished, m_connection, &QXcbConnection::processXcbEvents);
-    QThread::start();
-}
-
-void QXcbEventReader::registerEventDispatcher(QAbstractEventDispatcher *dispatcher)
-{
-    // Flush the xcb connection before the event dispatcher is going to block.
-    connect(dispatcher, &QAbstractEventDispatcher::aboutToBlock, m_connection, &QXcbConnection::flush);
-}
-
-void QXcbEventReader::run()
-{
-    xcb_generic_event_t *event;
-    while (m_connection && (event = xcb_wait_for_event(m_connection->xcb_connection()))) {
-        m_mutex.lock();
-        addEvent(event);
-        while (m_connection && (event = xcb_poll_for_queued_event(m_connection->xcb_connection())))
-            addEvent(event);
-        m_mutex.unlock();
-        emit eventPending();
-    }
-
-    m_mutex.lock();
-    for (int i = 0; i < m_events.size(); ++i)
-        free(m_events.at(i));
-    m_events.clear();
-    m_mutex.unlock();
-}
-
-void QXcbEventReader::addEvent(xcb_generic_event_t *event)
-{
-    if ((event->response_type & ~0x80) == XCB_CLIENT_MESSAGE
-        && (reinterpret_cast<xcb_client_message_event_t *>(event))->type == m_connection->atom(QXcbAtom::_QT_CLOSE_CONNECTION))
-        m_connection = 0;
-    m_events << event;
-}
-
-QXcbEventArray *QXcbEventReader::lock()
-{
-    m_mutex.lock();
-    return &m_events;
-}
-
-void QXcbEventReader::unlock()
-{
-    m_mutex.unlock();
-}
-
 void QXcbConnection::setFocusWindow(QWindow *w)
 {
     m_focusWindow = w ? static_cast<QXcbWindow *>(w->handle()) : nullptr;
@@ -1397,31 +1249,6 @@ void QXcbConnection::ungrabServer()
         xcb_ungrab_server(m_connection);
 }
 
-void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom a, uint id)
-{
-    xcb_client_message_event_t event;
-    memset(&event, 0, sizeof(event));
-
-    const xcb_window_t eventListener = xcb_generate_id(m_connection);
-    xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_setup);
-    xcb_screen_t *screen = it.data;
-    xcb_create_window(m_connection, XCB_COPY_FROM_PARENT,
-                      eventListener, screen->root,
-                      0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY,
-                      screen->root_visual, 0, 0);
-
-    event.response_type = XCB_CLIENT_MESSAGE;
-    event.format = 32;
-    event.sequence = 0;
-    event.window = eventListener;
-    event.type = atom(a);
-    event.data.data32[0] = id;
-
-    xcb_send_event(xcb_connection(), false, eventListener, XCB_EVENT_MASK_NO_EVENT, reinterpret_cast<const char *>(&event));
-    xcb_destroy_window(m_connection, eventListener);
-    xcb_flush(xcb_connection());
-}
-
 xcb_timestamp_t QXcbConnection::getTimestamp()
 {
     // send a dummy event to myself to get the timestamp from X server.
@@ -1433,12 +1260,10 @@ xcb_timestamp_t QXcbConnection::getTimestamp()
     connection()->flush();
 
     xcb_generic_event_t *event = nullptr;
-    // lets keep this inside a loop to avoid a possible race condition, where
-    // reader thread has not yet had the time to acquire the mutex in order
-    // to add the new set of events to its event queue
+
     while (!event) {
         connection()->sync();
-        event = checkEvent([window, dummyAtom](xcb_generic_event_t *event, int type) {
+        event = eventQueue()->peek([window, dummyAtom](xcb_generic_event_t *event, int type) {
             if (type != XCB_PROPERTY_NOTIFY)
                 return false;
             auto propertyNotify = reinterpret_cast<xcb_property_notify_event_t *>(event);
@@ -1546,10 +1371,6 @@ static inline bool isXIType(xcb_generic_event_t *event, int opCode, uint16_t typ
     return e->event_type == type;
 }
 #endif
-static inline bool isValid(xcb_generic_event_t *event)
-{
-    return event && (event->response_type & ~0x80);
-}
 
 /*! \internal
 
@@ -1563,22 +1384,18 @@ static inline bool isValid(xcb_generic_event_t *event)
     3) Or add public API to Qt for disabling event compression QTBUG-44964
 
 */
-bool QXcbConnection::compressEvent(xcb_generic_event_t *event, int currentIndex, QXcbEventArray *eventqueue) const
+bool QXcbConnection::compressEvent(xcb_generic_event_t *event) const
 {
     uint responseType = event->response_type & ~0x80;
-    int nextIndex = currentIndex + 1;
 
     if (responseType == XCB_MOTION_NOTIFY) {
         // compress XCB_MOTION_NOTIFY notify events
-        for (int j = nextIndex; j < eventqueue->size(); ++j) {
-            xcb_generic_event_t *next = eventqueue->at(j);
-            if (!isValid(next))
-                continue;
-            if (next->response_type == XCB_MOTION_NOTIFY)
-                return true;
-        }
-        return false;
+        return m_eventQueue->peek(QXcbEventQueue::PeekRetainMatch,
+                                  [](xcb_generic_event_t *, int type) {
+            return type == XCB_MOTION_NOTIFY;
+        });
     }
+
 #if QT_CONFIG(xcb_xinput)
     // compress XI_* events
     if (responseType == XCB_GE_GENERIC) {
@@ -1588,50 +1405,44 @@ bool QXcbConnection::compressEvent(xcb_generic_event_t *event, int currentIndex,
         // compress XI_Motion
         if (isXIType(event, m_xiOpCode, XCB_INPUT_MOTION)) {
 #if QT_CONFIG(tabletevent)
-            auto *xdev = reinterpret_cast<xcb_input_motion_event_t *>(event);
+            auto xdev = reinterpret_cast<xcb_input_motion_event_t *>(event);
             if (!QCoreApplication::testAttribute(Qt::AA_CompressTabletEvents) &&
                     const_cast<QXcbConnection *>(this)->tabletDataForDevice(xdev->sourceid))
                 return false;
 #endif // QT_CONFIG(tabletevent)
-            for (int j = nextIndex; j < eventqueue->size(); ++j) {
-                xcb_generic_event_t *next = eventqueue->at(j);
-                if (!isValid(next))
-                    continue;
-                if (isXIType(next, m_xiOpCode, XCB_INPUT_MOTION))
-                    return true;
-            }
-            return false;
+            return m_eventQueue->peek(QXcbEventQueue::PeekRetainMatch,
+                                      [this](xcb_generic_event_t *next, int) {
+                return isXIType(next, m_xiOpCode, XCB_INPUT_MOTION);
+            });
         }
+
         // compress XI_TouchUpdate for the same touch point id
         if (isXIType(event, m_xiOpCode, XCB_INPUT_TOUCH_UPDATE)) {
-            auto *touchUpdateEvent = reinterpret_cast<xcb_input_touch_update_event_t *>(event);
+            auto touchUpdateEvent = reinterpret_cast<xcb_input_touch_update_event_t *>(event);
             uint32_t id = touchUpdateEvent->detail % INT_MAX;
-            for (int j = nextIndex; j < eventqueue->size(); ++j) {
-                xcb_generic_event_t *next = eventqueue->at(j);
-                if (!isValid(next))
-                    continue;
-                if (isXIType(next, m_xiOpCode, XCB_INPUT_TOUCH_UPDATE)) {
-                    auto *touchUpdateNextEvent = reinterpret_cast<xcb_input_touch_update_event_t *>(next);
-                    if (id == touchUpdateNextEvent->detail % INT_MAX)
-                        return true;
-                }
-            }
-            return false;
+            return m_eventQueue->peek(QXcbEventQueue::PeekRetainMatch,
+                                      [this, &id](xcb_generic_event_t *next, int) {
+                if (!isXIType(next, m_xiOpCode, XCB_INPUT_TOUCH_UPDATE))
+                    return false;
+                auto touchUpdateNextEvent = reinterpret_cast<xcb_input_touch_update_event_t *>(next);
+                return id == touchUpdateNextEvent->detail % INT_MAX;
+            });
         }
+
         return false;
     }
 #endif
+
     if (responseType == XCB_CONFIGURE_NOTIFY) {
         // compress multiple configure notify events for the same window
-        for (int j = nextIndex; j < eventqueue->size(); ++j) {
-            xcb_generic_event_t *next = eventqueue->at(j);
-            if (isValid(next) && next->response_type == XCB_CONFIGURE_NOTIFY
-                && reinterpret_cast<xcb_configure_notify_event_t *>(next)->event == reinterpret_cast<xcb_configure_notify_event_t *>(event)->event)
-            {
-                return true;
-            }
-        }
-        return false;
+        return m_eventQueue->peek(QXcbEventQueue::PeekRetainMatch,
+                                  [event](xcb_generic_event_t *next, int type) {
+            if (type != XCB_CONFIGURE_NOTIFY)
+                return false;
+            auto currentEvent = reinterpret_cast<xcb_configure_notify_event_t *>(event);
+            auto nextEvent = reinterpret_cast<xcb_configure_notify_event_t *>(next);
+            return currentEvent->event == nextEvent->event;
+        });
     }
 
     return false;
@@ -1645,22 +1456,17 @@ void QXcbConnection::processXcbEvents()
         exit(1);
     }
 
-    QXcbEventArray *eventqueue = m_reader->lock();
+    m_eventQueue->flushBufferedEvents();
 
-    for (int i = 0; i < eventqueue->size(); ++i) {
-        xcb_generic_event_t *event = eventqueue->at(i);
-        if (!event)
-            continue;
+    while (xcb_generic_event_t *event = m_eventQueue->takeFirst()) {
         QScopedPointer<xcb_generic_event_t, QScopedPointerPodDeleter> eventGuard(event);
-        (*eventqueue)[i] = 0;
 
         if (!(event->response_type & ~0x80)) {
             handleXcbError(reinterpret_cast<xcb_generic_error_t *>(event));
             continue;
         }
-
         if (Q_LIKELY(QCoreApplication::testAttribute(Qt::AA_CompressHighFrequencyEvents)) &&
-                compressEvent(event, i, eventqueue))
+                compressEvent(event))
             continue;
 
 #ifndef QT_NO_CLIPBOARD
@@ -1679,21 +1485,19 @@ void QXcbConnection::processXcbEvents()
         m_peekFuncs.erase(std::remove_if(m_peekFuncs.begin(), m_peekFuncs.end(),
                                          isWaitingFor),
                           m_peekFuncs.end());
-        m_reader->unlock();
+
         handleXcbEvent(event);
-        m_reader->lock();
+
+        // The lock-based solution used to free the lock inside this loop,
+        // hence allowing for more events to arrive. ### Check if we want
+        // this flush here after QTBUG-70095
+        m_eventQueue->flushBufferedEvents();
     }
-
-    eventqueue->clear();
-
-    m_reader->unlock();
-
-    m_peekerIndexCacheDirty = m_mainEventLoopFlushedQueue = true;
 
     // Indicate with a null event that the event the callbacks are waiting for
     // is not in the queue currently.
     for (PeekFunc f : qAsConst(m_peekFuncs))
-        f(this, 0);
+        f(this, nullptr);
     m_peekFuncs.clear();
 
     xcb_flush(xcb_connection());

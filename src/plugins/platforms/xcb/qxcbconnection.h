@@ -47,14 +47,13 @@
 #include "qxcbexport.h"
 #include <QHash>
 #include <QList>
-#include <QMutex>
 #include <QObject>
-#include <QThread>
 #include <QVector>
-#include <QVarLengthArray>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/QLoggingCategory>
 #include <QtCore/private/qglobal_p.h>
+
+#include "qxcbeventqueue.h"
 
 #include <cstdlib>
 #include <memory>
@@ -84,6 +83,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaXcb)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaPeeker)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaKeyboard)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaXDnd)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaEventReader)
 
 class QXcbVirtualDesktop;
 class QXcbScreen;
@@ -305,35 +305,6 @@ namespace QXcbAtom {
     };
 }
 
-typedef QVarLengthArray<xcb_generic_event_t *, 64> QXcbEventArray;
-
-class QXcbConnection;
-class QXcbEventReader : public QThread
-{
-    Q_OBJECT
-public:
-    QXcbEventReader(QXcbConnection *connection);
-
-    void run() override;
-
-    QXcbEventArray *lock();
-    void unlock();
-
-    void start();
-
-    void registerEventDispatcher(QAbstractEventDispatcher *dispatcher);
-
-signals:
-    void eventPending();
-
-private:
-    void addEvent(xcb_generic_event_t *event);
-
-    QMutex m_mutex;
-    QXcbEventArray m_events;
-    QXcbConnection *m_connection;
-};
-
 class QXcbWindowEventListener
 {
 public:
@@ -375,7 +346,6 @@ private:
     QXcbWindow *m_window;
 };
 
-class QAbstractEventDispatcher;
 class Q_XCB_EXPORT QXcbConnection : public QObject
 {
     Q_OBJECT
@@ -385,6 +355,7 @@ public:
 
     QXcbConnection *connection() const { return const_cast<QXcbConnection *>(this); }
     bool isConnected() const;
+    QXcbEventQueue *eventQueue() const { return m_eventQueue; }
 
     const QList<QXcbVirtualDesktop *> &virtualDesktops() const { return m_virtualDesktops; }
     const QList<QXcbScreen *> &screens() const { return m_screens; }
@@ -445,20 +416,8 @@ public:
     QXcbWindowEventListener *windowEventListenerFromId(xcb_window_t id);
     QXcbWindow *platformWindowFromId(xcb_window_t id);
 
-    template<typename Functor>
-    inline xcb_generic_event_t *checkEvent(Functor &&filter, bool removeFromQueue = true);
-
     typedef bool (*PeekFunc)(QXcbConnection *, xcb_generic_event_t *);
     void addPeekFunc(PeekFunc f);
-
-    // Peek at all queued events
-    qint32 generatePeekerId();
-    bool removePeekerId(qint32 peekerId);
-    enum PeekOption { PeekDefault = 0, PeekFromCachedIndex = 1 }; // see qx11info_x11.h
-    Q_DECLARE_FLAGS(PeekOptions, PeekOption)
-    typedef bool (*PeekerCallback)(xcb_generic_event_t *event, void *peekerData);
-    bool peekEventQueue(PeekerCallback peeker, void *peekerData = nullptr,
-                        PeekOptions option = PeekDefault, qint32 peekerId = -1);
 
     inline xcb_timestamp_t time() const { return m_time; }
     inline void setTime(xcb_timestamp_t t) { if (t > m_time) m_time = t; }
@@ -530,24 +489,20 @@ public:
     void abortSystemMoveResizeForTouch();
     bool isTouchScreen(int id);
 #endif
-    QXcbEventReader *eventReader() const { return m_reader; }
 
     bool canGrab() const { return m_canGrabServer; }
 
     QXcbGlIntegration *glIntegration() const;
 
+    void flush() { xcb_flush(m_connection); }
+
 protected:
     bool event(QEvent *e) override;
 
-public slots:
-    void flush() { xcb_flush(m_connection); }
-
-private slots:
     void processXcbEvents();
 
 private:
     void initializeAllAtoms();
-    void sendConnectionEvent(QXcbAtom::Atom atom, uint id = 0);
     void initializeShm();
     void initializeXFixes();
     void initializeXRender();
@@ -567,7 +522,7 @@ private:
                              xcb_randr_get_output_info_reply_t *outputInfo);
     void destroyScreen(QXcbScreen *screen);
     void initializeScreens();
-    bool compressEvent(xcb_generic_event_t *event, int currentIndex, QXcbEventArray *eventqueue) const;
+    bool compressEvent(xcb_generic_event_t *event) const;
 
     bool m_xi2Enabled = false;
 #if QT_CONFIG(xcb_xinput)
@@ -670,7 +625,7 @@ private:
 #if QT_CONFIG(xcb_xlib)
     void *m_xlib_display = nullptr;
 #endif
-    QXcbEventReader *m_reader = nullptr;
+    QXcbEventQueue *m_eventQueue = nullptr;
 
 #if QT_CONFIG(xcb_xinput)
     QHash<int, TouchDeviceData> m_touchDevices;
@@ -722,11 +677,7 @@ private:
 
     xcb_window_t m_qtSelectionOwner = 0;
 
-    bool m_mainEventLoopFlushedQueue = false;
-    qint32 m_peekerIdSource = 0;
-    bool m_peekerIndexCacheDirty = false;
-    QHash<qint32, qint32> m_peekerToCachedIndex;
-    friend class QXcbEventReader;
+    friend class QXcbEventQueue;
 
     QByteArray m_xdgCurrentDesktop;
 };
@@ -736,24 +687,6 @@ Q_DECLARE_TYPEINFO(QXcbConnection::TabletData::ValuatorClassInfo, Q_PRIMITIVE_TY
 Q_DECLARE_TYPEINFO(QXcbConnection::TabletData, Q_MOVABLE_TYPE);
 #endif
 #endif
-
-template<typename Functor>
-xcb_generic_event_t *QXcbConnection::checkEvent(Functor &&filter, bool removeFromQueue)
-{
-    QXcbEventArray *eventqueue = m_reader->lock();
-
-    for (int i = 0; i < eventqueue->size(); ++i) {
-        xcb_generic_event_t *event = eventqueue->at(i);
-        if (event && filter(event, event->response_type & ~0x80)) {
-            if (removeFromQueue)
-                (*eventqueue)[i] = nullptr;
-            m_reader->unlock();
-            return event;
-        }
-    }
-    m_reader->unlock();
-    return nullptr;
-}
 
 class QXcbConnectionGrabber
 {
