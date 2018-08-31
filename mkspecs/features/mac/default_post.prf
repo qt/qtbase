@@ -1,5 +1,11 @@
 load(default_post)
 
+# Detect changes to the platform SDK. Apps only for now
+contains(TEMPLATE, .*app):!macx-xcode {
+    QMAKE_EXTRA_VARIABLES += QMAKE_MAC_SDK QMAKE_MAC_SDK_VERSION
+    QMAKE_EXTRA_INCLUDES += $$shell_quote($$PWD/sdk.mk)
+}
+
 !no_objective_c:CONFIG += objective_c
 
 qt {
