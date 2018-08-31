@@ -111,7 +111,7 @@ load(qt_common)
         load(resolve_target)
         TARGETPATHBASE = $$replace(TARGETPATH, \\.\\d+\$, )
         qmltypes.target = qmltypes
-        qmltypes.commands = $$QMLPLUGINDUMP -nonrelocatable $$replace(TARGETPATHBASE, /, .) $$IMPORT_VERSION > $$QMLTYPEFILE
+        qmltypes.commands = $$QMLPLUGINDUMP -nonrelocatable $$QMAKE_QMLPLUGINDUMP_FLAGS $$replace(TARGETPATHBASE, /, .) $$IMPORT_VERSION > $$QMLTYPEFILE
         qmltypes.depends = $$QMAKE_RESOLVED_TARGET
     } else {
         qmltypes.CONFIG += recursive
