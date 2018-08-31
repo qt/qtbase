@@ -1,9 +1,41 @@
 load(default_post)
 
-# Detect changes to the platform SDK. Apps only for now
-contains(TEMPLATE, .*app):!macx-xcode {
-    QMAKE_EXTRA_VARIABLES += QMAKE_MAC_SDK QMAKE_MAC_SDK_VERSION
-    QMAKE_EXTRA_INCLUDES += $$shell_quote($$PWD/sdk.mk)
+contains(TEMPLATE, .*app) {
+    !macx-xcode {
+        # Detect changes to the platform SDK
+        QMAKE_EXTRA_VARIABLES += QMAKE_MAC_SDK QMAKE_MAC_SDK_VERSION
+        QMAKE_EXTRA_INCLUDES += $$shell_quote($$PWD/sdk.mk)
+    }
+
+    # Detect incompatible SDK versions
+
+    !versionAtLeast(QMAKE_MAC_SDK_VERSION, $$QT_MAC_SDK_VERSION): \
+        warning("Qt requires at least version $$QT_MAC_SDK_VERSION of the platform SDK," \
+              "you're using $${QMAKE_MAC_SDK_VERSION}. Please upgrade.")
+
+    !isEmpty(QT_MAC_SDK_VERSION_TESTED_WITH) {
+        # For Qt developers only
+        !isEmpty($$list($$(QT_MAC_SDK_NO_VERSION_CHECK))): \
+            CONFIG += sdk_no_version_check
+
+        !sdk_no_version_check:!versionAtMost(QMAKE_MAC_SDK_VERSION, $$QT_MAC_SDK_VERSION_TESTED_WITH) {
+            warning("Qt has only been tested with version $$QT_MAC_SDK_VERSION_TESTED_WITH"\
+                    "of the platform SDK, you're using $${QMAKE_MAC_SDK_VERSION}.")
+            warning("This is an unsupported configuration. You may experience build issues," \
+                    "and by using")
+            warning("the $$QMAKE_MAC_SDK_VERSION SDK you are opting in to new features" \
+                    "that Qt has not been prepared for.")
+
+            isEqual(QMAKE_MAC_SDK_VERSION, 10.14): \
+                warning("E.g., 10.14 enables dark mode and layer-backed views," \
+                        "which Qt $${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION} does not support.")
+
+            warning("Please downgrade the SDK you use to build your app to version" \
+                    "$$QT_MAC_SDK_VERSION_TESTED_WITH, or configure")
+            warning("with CONFIG+=sdk_no_version_check when running qmake" \
+                    "to silence this warning.")
+        }
+    }
 }
 
 !no_objective_c:CONFIG += objective_c
