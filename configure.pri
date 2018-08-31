@@ -604,6 +604,9 @@ defineTest(qtConfOutput_prepareOptions) {
             target_arch = armeabi-v7a
 
         platform = $$eval(config.input.android-ndk-platform)
+        isEmpty(platform): equals(target_arch, arm64-v8a): \
+            platform = android-21
+
         isEmpty(platform): \
             platform = android-16  ### the windows configure disagrees ...
 
