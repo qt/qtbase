@@ -3870,7 +3870,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
         if(hasStyleRule(w, PseudoElement_HeaderViewSection)) {
             QRenderRule subRule = renderRule(w, opt, PseudoElement_HeaderViewSection);
             if (!subRule.hasNativeBorder() || !subRule.baseStyleCanDraw()
-                || subRule.hasBackground() || subRule.hasPalette() || subRule.hasFont) {
+                || subRule.hasBackground() || subRule.hasPalette() || subRule.hasFont || subRule.hasBorder()) {
                 ParentStyle::drawControl(ce, opt, p, w);
                 return;
             }
