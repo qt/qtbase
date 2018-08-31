@@ -3874,13 +3874,6 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 ParentStyle::drawControl(ce, opt, p, w);
                 return;
             }
-            if (subRule.hasFont) {
-                const QFont oldFont = p->font();
-                p->setFont(subRule.font.resolve(p->font()));
-                baseStyle()->drawControl(ce, opt, p, w);
-                p->setFont(oldFont);
-                return;
-            }
         }
         break;
     case CE_HeaderSection:
