@@ -2968,8 +2968,10 @@ void QHeaderView::paintSection(QPainter *painter, const QRect &rect, int logical
         margin += style()->pixelMetric(QStyle::PM_SmallIconSize, 0, this) +
                   style()->pixelMetric(QStyle::PM_HeaderMargin, 0, this);
 
-    if (d->textElideMode != Qt::ElideNone)
-        opt.text = opt.fontMetrics.elidedText(opt.text, d->textElideMode , rect.width() - margin);
+    if (d->textElideMode != Qt::ElideNone) {
+        const QRect textRect = style()->subElementRect(QStyle::SE_HeaderLabel, &opt, this);
+        opt.text = opt.fontMetrics.elidedText(opt.text, d->textElideMode, textRect.width() - margin);
+    }
 
     QVariant foregroundBrush = d->model->headerData(logicalIndex, d->orientation,
                                                     Qt::ForegroundRole);
