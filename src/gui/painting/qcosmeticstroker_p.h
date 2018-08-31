@@ -85,6 +85,7 @@ public:
 
     // used to avoid drop outs or duplicated points
     enum Direction {
+        NoDirection = 0,
         TopToBottom = 0x1,
         BottomToTop = 0x2,
         LeftToRight = 0x4,
@@ -104,7 +105,7 @@ public:
           patternOffset(0),
           legacyRounding(false),
           current_span(0),
-          lastDir(LeftToRight),
+          lastDir(NoDirection),
           lastAxisAligned(false)
     { setup(); }
 

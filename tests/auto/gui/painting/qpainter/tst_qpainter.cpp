@@ -5024,7 +5024,7 @@ void tst_QPainter::drawPolyline_data()
 {
     QTest::addColumn< QVector<QPointF> >("points");
 
-    QTest::newRow("basic") << (QVector<QPointF>() << QPointF(10, 10) << QPointF(20, 10) << QPointF(20, 20) << QPointF(10, 20));
+    QTest::newRow("basic") << (QVector<QPointF>() << QPointF(10, 10) << QPointF(20, 10) << QPointF(20, 20));
     QTest::newRow("clipped") << (QVector<QPointF>() << QPoint(-10, 100) << QPoint(-1, 100) << QPoint(-1,  -2) << QPoint(100, -2) << QPoint(100, 40)); // QTBUG-31579
     QTest::newRow("shortsegment") << (QVector<QPointF>() << QPoint(20, 100) << QPoint(20, 99) << QPoint(21, 99) << QPoint(21, 104)); // QTBUG-42398
     QTest::newRow("edge") << (QVector<QPointF>() << QPointF(4.5, 121.6) << QPointF(9.4, 150.9) << QPointF(14.2, 184.8) << QPointF(19.1, 130.4));
