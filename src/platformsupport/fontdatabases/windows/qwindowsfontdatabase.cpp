@@ -1608,7 +1608,8 @@ void QWindowsFontDatabase::removeApplicationFonts()
         if (font.handle) {
             RemoveFontMemResourceEx(font.handle);
         } else {
-            RemoveFontResourceExW((LPCWSTR)font.fileName.utf16(), FR_PRIVATE, 0);
+            RemoveFontResourceExW(reinterpret_cast<LPCWSTR>(font.fileName.utf16()),
+                                  FR_PRIVATE, nullptr);
         }
     }
     m_applicationFonts.clear();
@@ -1652,7 +1653,8 @@ void QWindowsFontDatabase::refUniqueFont(const QString &uniqueFont)
 // ### fixme Qt 6 (QTBUG-58610): See comment at QWindowsFontDatabase::systemDefaultFont()
 HFONT QWindowsFontDatabase::systemFont()
 {
-    static const HFONT stock_sysfont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+    static const auto stock_sysfont =
+        reinterpret_cast<HFONT>(GetStockObject(DEFAULT_GUI_FONT));
     return stock_sysfont;
 }
 

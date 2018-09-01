@@ -36,18 +36,12 @@
 #ifndef assert
 #  include <assert.h>
 #endif
-#include <float.h>
-#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
 #ifndef __cplusplus
 #  include <stdbool.h>
-#endif
-
-#ifdef __F16C__
-#  include <immintrin.h>
 #endif
 
 #if __STDC_VERSION__ >= 201112L || __cplusplus >= 201103L || __cpp_static_assert >= 200410
@@ -204,59 +198,6 @@ static inline bool add_check_overflow(size_t v1, size_t v2, size_t *r)
     /* unsigned additions are well-defined */
     *r = v1 + v2;
     return v1 > v1 + v2;
-#endif
-}
-
-static inline unsigned short encode_half(double val)
-{
-#ifdef __F16C__
-    return _cvtss_sh((float)val, 3);
-#else
-    uint64_t v;
-    int sign, exp, mant;
-    memcpy(&v, &val, sizeof(v));
-    sign = v >> 63 << 15;
-    exp = (v >> 52) & 0x7ff;
-    mant = v << 12 >> 12 >> (53-11);    /* keep only the 11 most significant bits of the mantissa */
-    exp -= 1023;
-    if (exp == 1024) {
-        /* infinity or NaN */
-        exp = 16;
-        mant >>= 1;
-    } else if (exp >= 16) {
-        /* overflow, as largest number */
-        exp = 15;
-        mant = 1023;
-    } else if (exp >= -14) {
-        /* regular normal */
-    } else if (exp >= -24) {
-        /* subnormal */
-        mant |= 1024;
-        mant >>= -(exp + 14);
-        exp = -15;
-    } else {
-        /* underflow, make zero */
-        return 0;
-    }
-
-    /* safe cast here as bit operations above guarantee not to overflow */
-    return (unsigned short)(sign | ((exp + 15) << 10) | mant);
-#endif
-}
-
-/* this function was copied & adapted from RFC 7049 Appendix D */
-static inline double decode_half(unsigned short half)
-{
-#ifdef __F16C__
-    return _cvtsh_ss(half);
-#else
-    int exp = (half >> 10) & 0x1f;
-    int mant = half & 0x3ff;
-    double val;
-    if (exp == 0) val = ldexp(mant, -24);
-    else if (exp != 31) val = ldexp(mant + 1024, exp - 25);
-    else val = mant == 0 ? INFINITY : NAN;
-    return half & 0x8000 ? -val : val;
 #endif
 }
 

@@ -94,6 +94,10 @@
 # include "private/qcore_unix_p.h"
 #endif
 
+#ifdef Q_OS_WASM
+#include <emscripten/emscripten.h>
+#endif
+
 #if QT_CONFIG(regularexpression)
 #  ifdef __UCLIBC__
 #    if __UCLIBC_HAS_BACKTRACE__
@@ -1690,6 +1694,37 @@ static bool win_message_handler(QtMsgType type, const QMessageLogContext &contex
 }
 #endif
 
+#ifdef Q_OS_WASM
+static bool wasm_default_message_handler(QtMsgType type,
+                                  const QMessageLogContext &context,
+                                  const QString &message)
+{
+    if (shouldLogToStderr())
+        return false; // Leave logging up to stderr handler
+
+    QString formattedMessage = qFormatLogMessage(type, context, message);
+    int emOutputFlags = (EM_LOG_CONSOLE | EM_LOG_DEMANGLE);
+    QByteArray localMsg = message.toLocal8Bit();
+    switch (type) {
+    case QtDebugMsg:
+        break;
+    case QtInfoMsg:
+        break;
+    case QtWarningMsg:
+        emOutputFlags |= EM_LOG_WARN;
+        break;
+    case QtCriticalMsg:
+        emOutputFlags |= EM_LOG_ERROR;
+        break;
+    case QtFatalMsg:
+        emOutputFlags |= EM_LOG_ERROR;
+    }
+    emscripten_log(emOutputFlags, "%s\n", qPrintable(formattedMessage));
+
+    return true; // Prevent further output to stderr
+}
+#endif
+
 #endif // Bootstrap check
 
 // --------------------------------------------------------------------------
@@ -1733,8 +1768,9 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
 # elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     handledStderr |= android_default_message_handler(type, context, message);
 # elif defined(QT_USE_APPLE_UNIFIED_LOGGING)
-    if (__builtin_available(macOS 10.12, iOS 10, tvOS 10, watchOS 3, *))
-        handledStderr |= AppleUnifiedLogger::messageHandler(type, context, message);
+    handledStderr |= AppleUnifiedLogger::messageHandler(type, context, message);
+# elif defined Q_OS_WASM
+    handledStderr |= wasm_default_message_handler(type, context, message);
 # endif
 #endif
 

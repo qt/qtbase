@@ -61,13 +61,13 @@ static quint32 constructModifierMask(quint32 accel_key)
     quint32 ret = 0;
     const bool dontSwap = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
     if ((accel_key & Qt::CTRL) == Qt::CTRL)
-        ret |= (dontSwap ? NSControlKeyMask : NSCommandKeyMask);
+        ret |= (dontSwap ? NSEventModifierFlagControl : NSEventModifierFlagCommand);
     if ((accel_key & Qt::META) == Qt::META)
-        ret |= (dontSwap ? NSCommandKeyMask : NSControlKeyMask);
+        ret |= (dontSwap ? NSEventModifierFlagCommand : NSEventModifierFlagControl);
     if ((accel_key & Qt::ALT) == Qt::ALT)
-        ret |= NSAlternateKeyMask;
+        ret |= NSEventModifierFlagOption;
     if ((accel_key & Qt::SHIFT) == Qt::SHIFT)
-        ret |= NSShiftKeyMask;
+        ret |= NSEventModifierFlagShift;
     return ret;
 }
 
@@ -343,7 +343,7 @@ NSMenuItem *QCocoaMenuItem::sync()
 #endif
     {
         m_native.keyEquivalent = @"";
-        m_native.keyEquivalentModifierMask = NSCommandKeyMask;
+        m_native.keyEquivalentModifierMask = NSEventModifierFlagCommand;
     }
 
     NSImage *img = nil;

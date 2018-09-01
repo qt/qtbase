@@ -274,7 +274,7 @@ QSystemLocalePrivate::SubstitutionType QSystemLocalePrivate::substitution()
 QString &QSystemLocalePrivate::substituteDigits(QString &string)
 {
     ushort zero = zeroDigit().unicode();
-    ushort *qch = (ushort *)string.data();
+    ushort *qch = reinterpret_cast<ushort *>(string.data());
     for (ushort *end = qch + string.size(); qch != end; ++qch) {
         if (*qch >= '0' && *qch <= '9')
             *qch = zero + (*qch - '0');

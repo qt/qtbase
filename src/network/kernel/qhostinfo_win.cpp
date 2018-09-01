@@ -92,13 +92,13 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         sockaddr *sa;
         QT_SOCKLEN_T saSize;
         if (address.protocol() == QAbstractSocket::IPv4Protocol) {
-            sa = (sockaddr *)&sa4;
+            sa = reinterpret_cast<sockaddr *>(&sa4);
             saSize = sizeof(sa4);
             memset(&sa4, 0, sizeof(sa4));
             sa4.sin_family = AF_INET;
             sa4.sin_addr.s_addr = htonl(address.toIPv4Address());
         } else {
-            sa = (sockaddr *)&sa6;
+            sa = reinterpret_cast<sockaddr *>(&sa6);
             saSize = sizeof(sa6);
             memset(&sa6, 0, sizeof(sa6));
             sa6.sin6_family = AF_INET6;
@@ -132,14 +132,14 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
             switch (p->ai_family) {
             case AF_INET: {
                 QHostAddress addr;
-                addr.setAddress(ntohl(((sockaddr_in *) p->ai_addr)->sin_addr.s_addr));
+                addr.setAddress(ntohl(reinterpret_cast<sockaddr_in *>(p->ai_addr)->sin_addr.s_addr));
                 if (!addresses.contains(addr))
                     addresses.append(addr);
             }
                 break;
             case AF_INET6: {
                 QHostAddress addr;
-                addr.setAddress(((sockaddr_in6 *) p->ai_addr)->sin6_addr.s6_addr);
+                addr.setAddress(reinterpret_cast<const sockaddr_in6 *>(p->ai_addr)->sin6_addr.s6_addr);
                 if (!addresses.contains(addr))
                     addresses.append(addr);
             }

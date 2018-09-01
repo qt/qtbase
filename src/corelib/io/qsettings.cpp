@@ -77,6 +77,10 @@
 #  include <ioLib.h>
 #endif
 
+#ifdef Q_OS_WASM
+#include <emscripten.h>
+#endif
+
 #include <algorithm>
 #include <stdlib.h>
 
@@ -1544,6 +1548,13 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
                     perms |= QFile::ReadGroup | QFile::ReadOther;
                 QFile(confFile->name).setPermissions(perms);
             }
+#ifdef Q_OS_WASM
+        EM_ASM(
+            // Sync sandbox filesystem to persistent database filesystem. See QTBUG-70002
+            FS.syncfs(false, function(err) {
+            });
+        );
+#endif
         } else {
             setStatus(QSettings::AccessError);
         }

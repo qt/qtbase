@@ -47,9 +47,12 @@
 #include <qdebug.h>
 #include "qmutex.h"
 #include "qplugin.h"
+#include "qplugin_p.h"
 #include "qpluginloader.h"
 #include "private/qobject_p.h"
 #include "private/qcoreapplication_p.h"
+#include "qcbormap.h"
+#include "qcborvalue.h"
 #include "qjsondocument.h"
 #include "qjsonvalue.h"
 #include "qjsonobject.h"
@@ -64,22 +67,86 @@ static inline int metaDataSignatureLength()
     return sizeof("QTMETADATA  ") - 1;
 }
 
-QJsonDocument qJsonFromRawLibraryMetaData(const char *raw, qsizetype sectionSize)
+static QJsonDocument jsonFromCborMetaData(const char *raw, qsizetype size, QString *errMsg)
+{
+    // extract the keys not stored in CBOR
+    int qt_metadataVersion = quint8(raw[0]);
+    int qt_version = qFromBigEndian<quint16>(raw + 1);
+    int qt_archRequirements = quint8(raw[3]);
+    if (Q_UNLIKELY(raw[-1] != '!' || qt_metadataVersion != 0)) {
+        *errMsg = QStringLiteral("Invalid metadata version");
+        return QJsonDocument();
+    }
+
+    raw += 4;
+    size -= 4;
+    QByteArray ba = QByteArray::fromRawData(raw, int(size));
+    QCborParserError err;
+    QCborValue metadata = QCborValue::fromCbor(ba, &err);
+
+    if (err.error != QCborError::NoError) {
+        *errMsg = QLatin1String("Metadata parsing error: ") + err.error.toString();
+        return QJsonDocument();
+    }
+
+    if (!metadata.isMap()) {
+        *errMsg = QStringLiteral("Unexpected metadata contents");
+        return QJsonDocument();
+    }
+
+    QJsonObject o;
+    o.insert(QLatin1String("version"), qt_version << 8);
+    o.insert(QLatin1String("debug"), bool(qt_archRequirements & 1));
+    o.insert(QLatin1String("archreq"), qt_archRequirements);
+
+    // convert the top-level map integer keys
+    for (auto it : metadata.toMap()) {
+        QString key;
+        if (it.first.isInteger()) {
+            switch (it.first.toInteger()) {
+#define CONVERT_TO_STRING(IntKey, StringKey, Description) \
+            case int(IntKey): key = QStringLiteral(StringKey); break;
+                QT_PLUGIN_FOREACH_METADATA(CONVERT_TO_STRING)
+#undef CONVERT_TO_STRING
+
+            case int(QtPluginMetaDataKeys::Requirements):
+                // special case: recreate the debug key
+                o.insert(QLatin1String("debug"), bool(it.second.toInteger() & 1));
+                key = QStringLiteral("archreq");
+                break;
+            }
+        } else {
+            key = it.first.toString();
+        }
+
+        if (!key.isEmpty())
+            o.insert(key, it.second.toJsonValue());
+    }
+    return QJsonDocument(o);
+}
+
+QJsonDocument qJsonFromRawLibraryMetaData(const char *raw, qsizetype sectionSize, QString *errMsg)
 {
     raw += metaDataSignatureLength();
     sectionSize -= metaDataSignatureLength();
 
-    // the size of the embedded JSON object can be found 8 bytes into the data (see qjson_p.h)
-    uint size = qFromLittleEndian<uint>(raw + 8);
-    // but the maximum size of binary JSON is 128 MB
-    size = qMin(size, 128U * 1024 * 1024);
-    // and it doesn't include the size of the header (8 bytes)
-    size += 8;
-    // finally, it can't be bigger than the file or section size
-    size = qMin(sectionSize, qsizetype(size));
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    if (Q_UNLIKELY(raw[-1] == ' ')) {
+        // the size of the embedded JSON object can be found 8 bytes into the data (see qjson_p.h)
+        uint size = qFromLittleEndian<uint>(raw + 8);
+        // but the maximum size of binary JSON is 128 MB
+        size = qMin(size, 128U * 1024 * 1024);
+        // and it doesn't include the size of the header (8 bytes)
+        size += 8;
+        // finally, it can't be bigger than the file or section size
+        size = qMin(sectionSize, qsizetype(size));
 
-    QByteArray json(raw, size);
-    return QJsonDocument::fromBinaryData(json);
+        QByteArray json(raw, size);
+        return QJsonDocument::fromBinaryData(json);
+    }
+#endif
+
+    return jsonFromCborMetaData(raw, sectionSize, errMsg);
 }
 
 class QFactoryLoaderPrivate : public QObjectPrivate

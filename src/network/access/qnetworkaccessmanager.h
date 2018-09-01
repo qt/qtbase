@@ -195,6 +195,9 @@ private:
     friend class QNetworkReplyHttpImplPrivate;
     friend class QNetworkReplyFileImpl;
 
+#ifdef Q_OS_WASM
+    friend class QNetworkReplyWasmImpl;
+#endif
     Q_DECLARE_PRIVATE(QNetworkAccessManager)
     Q_PRIVATE_SLOT(d_func(), void _q_replyFinished())
     Q_PRIVATE_SLOT(d_func(), void _q_replyEncrypted())

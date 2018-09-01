@@ -97,10 +97,10 @@ bool QLibraryPrivate::load_sys()
 
     for (const QString &attempt : qAsConst(attempts)) {
 #ifndef Q_OS_WINRT
-        pHnd = LoadLibrary((wchar_t*)QDir::toNativeSeparators(attempt).utf16());
+        pHnd = LoadLibrary(reinterpret_cast<const wchar_t*>(QDir::toNativeSeparators(attempt).utf16()));
 #else // Q_OS_WINRT
         QString path = QDir::toNativeSeparators(QDir::current().relativeFilePath(attempt));
-        pHnd = LoadPackagedLibrary((LPCWSTR)path.utf16(), 0);
+        pHnd = LoadPackagedLibrary(reinterpret_cast<LPCWSTR>(path.utf16()), 0);
         if (pHnd)
             qualifiedFileName = attempt;
 #endif // !Q_OS_WINRT

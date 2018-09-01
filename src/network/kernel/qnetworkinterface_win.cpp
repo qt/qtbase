@@ -74,15 +74,16 @@ static QHostAddress addressFromSockaddr(sockaddr *sa)
     if (!sa)
         return address;
 
-    if (sa->sa_family == AF_INET)
-        address.setAddress(htonl(((sockaddr_in *)sa)->sin_addr.s_addr));
-    else if (sa->sa_family == AF_INET6) {
-        address.setAddress(((sockaddr_in6 *)sa)->sin6_addr.s6_addr);
-        int scope = ((sockaddr_in6 *)sa)->sin6_scope_id;
-        if (scope)
-            address.setScopeId(QNetworkInterfaceManager::interfaceNameFromIndex(scope));
-    } else
+    if (sa->sa_family == AF_INET) {
+        address.setAddress(htonl(reinterpret_cast<const sockaddr_in *>(sa)->sin_addr.s_addr));
+    } else if (sa->sa_family == AF_INET6) {
+        auto sai6 = reinterpret_cast<const sockaddr_in6 *>(sa);
+        address.setAddress(sai6->sin6_addr.s6_addr);
+        if (sai6->sin6_scope_id)
+            address.setScopeId(QNetworkInterfaceManager::interfaceNameFromIndex(sai6->sin6_scope_id));
+    } else {
         qWarning("Got unknown socket family %d", sa->sa_family);
+    }
     return address;
 
 }
@@ -121,7 +122,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     ULONG retval = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, pAdapter, &bufSize);
     if (retval == ERROR_BUFFER_OVERFLOW) {
         // need more memory
-        pAdapter = (IP_ADAPTER_ADDRESSES *)malloc(bufSize);
+        pAdapter = reinterpret_cast<IP_ADAPTER_ADDRESSES *>(malloc(bufSize));
         if (!pAdapter)
             return interfaces;
         // try again
@@ -255,7 +256,7 @@ QString QHostInfo::localDomainName()
     ULONG bufSize = sizeof info;
     pinfo = &info;
     if (GetNetworkParams(pinfo, &bufSize) == ERROR_BUFFER_OVERFLOW) {
-        pinfo = (FIXED_INFO *)malloc(bufSize);
+        pinfo = reinterpret_cast<FIXED_INFO *>(malloc(bufSize));
         if (!pinfo)
             return QString();
         // try again

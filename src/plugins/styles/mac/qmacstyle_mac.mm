@@ -394,9 +394,9 @@ static bool setupSlider(NSSlider *slider, const QStyleOptionSlider *sl)
 
         const bool ticksAbove = sl->tickPosition == QSlider::TicksAbove;
         if (sl->orientation == Qt::Horizontal)
-            slider.tickMarkPosition = ticksAbove ? NSTickMarkAbove : NSTickMarkBelow;
+            slider.tickMarkPosition = ticksAbove ? NSTickMarkPositionAbove : NSTickMarkPositionBelow;
         else
-            slider.tickMarkPosition = ticksAbove ? NSTickMarkLeft : NSTickMarkRight;
+            slider.tickMarkPosition = ticksAbove ? NSTickMarkPositionLeading : NSTickMarkPositionTrailing;
     } else {
         slider.numberOfTickMarks = 0;
     }
@@ -1735,17 +1735,10 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
                 }
                 Q_UNREACHABLE();
             } ();
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_12)
             const auto styleMask = NSWindowStyleMaskTitled
                                  | NSWindowStyleMaskClosable
                                  | NSWindowStyleMaskMiniaturizable
                                  | NSWindowStyleMaskResizable;
-#else
-            const auto styleMask = NSTitledWindowMask
-                                 | NSClosableWindowMask
-                                 | NSMiniaturizableWindowMask
-                                 | NSResizableWindowMask;
-#endif
             bv = [NSWindow standardWindowButton:button forStyleMask:styleMask];
             [bv retain];
             break;
@@ -1792,10 +1785,10 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
             auto *ctrl = static_cast<NSControl *>(bv);
             switch (widget.size) {
             case QStyleHelper::SizeSmall:
-                ctrl.controlSize = NSSmallControlSize;
+                ctrl.controlSize = NSControlSizeSmall;
                 break;
             case QStyleHelper::SizeMini:
-                ctrl.controlSize = NSMiniControlSize;
+                ctrl.controlSize = NSControlSizeMini;
                 break;
             default:
                 break;
@@ -1806,10 +1799,10 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
             pi.indeterminate = (widget.type == ProgressIndicator_Indeterminate);
             switch (widget.size) {
             case QStyleHelper::SizeSmall:
-                pi.controlSize = NSSmallControlSize;
+                pi.controlSize = NSControlSizeSmall;
                 break;
             case QStyleHelper::SizeMini:
-                pi.controlSize = NSMiniControlSize;
+                pi.controlSize = NSControlSizeMini;
                 break;
             default:
                 break;
@@ -1855,10 +1848,10 @@ NSCell *QMacStylePrivate::cocoaCell(CocoaControl widget) const
 
         switch (widget.size) {
         case QStyleHelper::SizeSmall:
-            cell.controlSize = NSSmallControlSize;
+            cell.controlSize = NSControlSizeSmall;
             break;
         case QStyleHelper::SizeMini:
-            cell.controlSize = NSMiniControlSize;
+            cell.controlSize = NSControlSizeMini;
             break;
         default:
             break;
@@ -2198,9 +2191,9 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         ret = 0;
         break;
     case PM_TitleBarHeight: {
-        NSUInteger style = NSTitledWindowMask;
+        NSUInteger style = NSWindowStyleMaskTitled;
         if (widget && ((widget->windowFlags() & Qt::Tool) == Qt::Tool))
-            style |= NSUtilityWindowMask;
+            style |= NSWindowStyleMaskUtilityWindow;
         ret = int([NSWindow frameRectForContentRect:NSZeroRect
                                           styleMask:style].size.height);
         break; }

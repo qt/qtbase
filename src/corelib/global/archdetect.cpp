@@ -51,6 +51,8 @@
 #  define ARCH_PROCESSOR "avr32"
 #elif defined(Q_PROCESSOR_BLACKFIN)
 #  define ARCH_PROCESSOR "bfin"
+#elif defined(Q_PROCESSOR_WASM)
+#  define ARCH_PROCESSOR "wasm"
 #elif defined(Q_PROCESSOR_X86_32)
 #  define ARCH_PROCESSOR "i386"
 #elif defined(Q_PROCESSOR_X86_64)

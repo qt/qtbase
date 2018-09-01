@@ -50,13 +50,13 @@ Q_LOGGING_CATEGORY(lcQpaEvents, "qt.qpa.events");
 static bool isMouseEvent(NSEvent *ev)
 {
     switch ([ev type]) {
-    case NSLeftMouseDown:
-    case NSLeftMouseUp:
-    case NSRightMouseDown:
-    case NSRightMouseUp:
-    case NSMouseMoved:
-    case NSLeftMouseDragged:
-    case NSRightMouseDragged:
+    case NSEventTypeLeftMouseDown:
+    case NSEventTypeLeftMouseUp:
+    case NSEventTypeRightMouseDown:
+    case NSEventTypeRightMouseUp:
+    case NSEventTypeMouseMoved:
+    case NSEventTypeLeftMouseDragged:
+    case NSEventTypeRightMouseDragged:
         return true;
     default:
         return false;
@@ -186,16 +186,16 @@ static bool isMouseEvent(NSEvent *ev)
 /*!
     Borderless windows need a transparent background
 
-    Technically windows with NSTexturedBackgroundWindowMask (such
-    as windows with unified toolbars) need to draw the textured
+    Technically windows with NSWindowStyleMaskTexturedBackground
+    (such as windows with unified toolbars) need to draw the textured
     background of the NSWindow, and can't have a transparent
-    background, but as NSBorderlessWindowMask is 0, you can't
-    have a window with NSTexturedBackgroundWindowMask that is
+    background, but as NSWindowStyleMaskBorderless is 0, you can't
+    have a window with NSWindowStyleMaskTexturedBackground that is
     also borderless.
 */
 - (NSColor *)backgroundColor
 {
-    return self.styleMask == NSBorderlessWindowMask
+    return self.styleMask == NSWindowStyleMaskBorderless
         ? [NSColor clearColor] : qt_objcDynamicSuper();
 }
 
@@ -262,29 +262,20 @@ static bool isMouseEvent(NSEvent *ev)
     NSEnumerator<NSWindow*> *windowEnumerator = nullptr;
     NSApplication *application = [NSApplication sharedApplication];
 
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_12)
-    if (__builtin_available(macOS 10.12, *)) {
-        // Unfortunately there's no NSWindowListOrderedBackToFront,
-        // so we have to manually reverse the order using an array.
-        NSMutableArray<NSWindow *> *windows = [NSMutableArray<NSWindow *> new];
-        [application enumerateWindowsWithOptions:NSWindowListOrderedFrontToBack
-            usingBlock:^(NSWindow *window, BOOL *) {
-                // For some reason AppKit will give us nil-windows, skip those
-                if (!window)
-                    return;
+    // Unfortunately there's no NSWindowListOrderedBackToFront,
+    // so we have to manually reverse the order using an array.
+    NSMutableArray<NSWindow *> *windows = [NSMutableArray<NSWindow *> new];
+    [application enumerateWindowsWithOptions:NSWindowListOrderedFrontToBack
+        usingBlock:^(NSWindow *window, BOOL *) {
+            // For some reason AppKit will give us nil-windows, skip those
+            if (!window)
+                return;
 
-                [windows addObject:window];
-            }
-        ];
+            [windows addObject:window];
+        }
+    ];
 
-        windowEnumerator = windows.reverseObjectEnumerator;
-    } else
-#endif
-    {
-        // No way to get ordered list of windows, so fall back to unordered,
-        // list, which typically corresponds to window creation order.
-        windowEnumerator = application.windows.objectEnumerator;
-    }
+    windowEnumerator = windows.reverseObjectEnumerator;
 
     for (NSWindow *window in windowEnumerator) {
         // We're meddling with normal and floating windows, so leave others alone

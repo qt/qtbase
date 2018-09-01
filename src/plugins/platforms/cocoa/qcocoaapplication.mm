@@ -116,8 +116,8 @@ static bool qt_filterEvent(NSEvent *event)
             filterNativeEvent(q_macLocalEventType, static_cast<void*>(event), nullptr))
         return true;
 
-    if ([event type] == NSApplicationDefined) {
-        switch (static_cast<short>([event subtype])) {
+    if (event.type == NSEventTypeApplicationDefined) {
+        switch (static_cast<short>(event.subtype)) {
             case QtCocoaEventSubTypePostMessage:
                 qt_sendPostedMessage(event);
                 return true;
@@ -137,7 +137,7 @@ static void qt_maybeSendKeyEquivalentUpEvent(NSEvent *event)
     // and forward the key event to the key (focus) window.
     // However, non-Qt windows will not (and should not) get
     // any special treatment, only QWindow-owned NSWindows.
-    if (event.type == NSKeyUp && (event.modifierFlags & NSCommandKeyMask)) {
+    if (event.type == NSEventTypeKeyUp && (event.modifierFlags & NSEventModifierFlagCommand)) {
         NSWindow *targetWindow = event.window;
         if ([targetWindow.class conformsToProtocol:@protocol(QNSWindowProtocol)])
             [targetWindow sendEvent:event];

@@ -1244,7 +1244,8 @@ void UnixMakefileGenerator::init2()
         if(!project->isEmpty("TARGET"))
             project->values("TARGET").first().prepend(project->first("DESTDIR"));
     } else if (project->isActiveConfig("staticlib")) {
-        project->values("TARGET").first().prepend(project->first("QMAKE_PREFIX_STATICLIB"));
+        project->values("PRL_TARGET") =
+            project->values("TARGET").first().prepend(project->first("QMAKE_PREFIX_STATICLIB"));
         project->values("TARGET").first() += "." + project->first("QMAKE_EXTENSION_STATICLIB");
         if(project->values("QMAKE_AR_CMD").isEmpty())
             project->values("QMAKE_AR_CMD").append("$(AR) $(DESTDIR)$(TARGET) $(OBJECTS)");
@@ -1278,6 +1279,7 @@ void UnixMakefileGenerator::init2()
             QString prefix;
             if(!project->isActiveConfig("no_plugin_name_prefix"))
                 prefix = "lib";
+            project->values("PRL_TARGET").prepend(prefix + project->first("TARGET"));
             project->values("TARGET_x.y.z").append(prefix +
                                                         project->first("TARGET") + "." +
                                                         project->first("QMAKE_EXTENSION_PLUGIN"));
@@ -1291,6 +1293,7 @@ void UnixMakefileGenerator::init2()
                                                         "." + project->first("VER_MAJ"));
             project->values("TARGET") = project->values("TARGET_x.y.z");
         } else if (!project->isEmpty("QMAKE_HPUX_SHLIB")) {
+            project->values("PRL_TARGET").prepend("lib" + project->first("TARGET"));
             project->values("TARGET_").append("lib" + project->first("TARGET") + ".sl");
             if(project->isActiveConfig("lib_version_first"))
                 project->values("TARGET_x").append("lib" + project->first("VER_MAJ") + "." +
@@ -1300,6 +1303,7 @@ void UnixMakefileGenerator::init2()
                                                         project->first("VER_MAJ"));
             project->values("TARGET") = project->values("TARGET_x");
         } else if (!project->isEmpty("QMAKE_AIX_SHLIB")) {
+            project->values("PRL_TARGET").prepend("lib" + project->first("TARGET"));
             project->values("TARGET_").append(project->first("QMAKE_PREFIX_STATICLIB") + project->first("TARGET")
                     + "." + project->first("QMAKE_EXTENSION_STATICLIB"));
             if(project->isActiveConfig("lib_version_first")) {
@@ -1331,6 +1335,7 @@ void UnixMakefileGenerator::init2()
             }
             project->values("TARGET") = project->values("TARGET_x.y.z");
         } else {
+            project->values("PRL_TARGET").prepend("lib" + project->first("TARGET"));
             project->values("TARGET_").append("lib" + project->first("TARGET") + "." +
                                                    project->first("QMAKE_EXTENSION_SHLIB"));
             if(project->isActiveConfig("lib_version_first")) {

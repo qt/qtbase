@@ -56,6 +56,21 @@ QT_BEGIN_NAMESPACE
 #  endif
 #endif
 
+inline constexpr unsigned char qPluginArchRequirements()
+{
+    return 0
+#ifndef QT_NO_DEBUG
+            | 1
+#endif
+#ifdef __AVX2__
+            | 2
+#  ifdef __AVX512F__
+            | 4
+#  endif
+#endif
+    ;
+}
+
 typedef QObject *(*QtPluginInstanceFunction)();
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 typedef const char *(*QtPluginMetaDataFunction)();

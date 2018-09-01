@@ -8,5 +8,6 @@ qtConfig(c++11): CONFIG += c++11
 android:!android-embedded: RESOURCES += qimage.qrc
 
 win32:!winrt: LIBS += -lgdi32 -luser32
+darwin: LIBS += -framework CoreGraphics
 
 TESTDATA += images/*

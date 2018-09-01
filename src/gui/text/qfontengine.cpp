@@ -1327,7 +1327,7 @@ const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSy
 resolveTable:
     *isSymbolFont = (symbolTable > -1);
 
-    quint32 unicode_table;
+    quint32 unicode_table = 0;
     if (!qSafeFromBigEndian(maps + 8 * tableToUse + 4, endPtr, &unicode_table))
         return 0;
 

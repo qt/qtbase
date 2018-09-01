@@ -295,12 +295,12 @@ Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
 Qt::MouseButton cocoaButton2QtButton(NSEvent *event)
 {
     switch (event.type) {
-    case NSMouseMoved:
+    case NSEventTypeMouseMoved:
         return Qt::NoButton;
 
-    case NSRightMouseUp:
-    case NSRightMouseDown:
-    case NSRightMouseDragged:
+    case NSEventTypeRightMouseUp:
+    case NSEventTypeRightMouseDown:
+    case NSEventTypeRightMouseDragged:
         return Qt::RightButton;
 
     default:
@@ -318,22 +318,22 @@ Qt::MouseButton cocoaButton2QtButton(NSEvent *event)
 QEvent::Type cocoaEvent2QtMouseEvent(NSEvent *event)
 {
     switch (event.type) {
-    case NSLeftMouseDown:
-    case NSRightMouseDown:
-    case NSOtherMouseDown:
+    case NSEventTypeLeftMouseDown:
+    case NSEventTypeRightMouseDown:
+    case NSEventTypeOtherMouseDown:
         return QEvent::MouseButtonPress;
 
-    case NSLeftMouseUp:
-    case NSRightMouseUp:
-    case NSOtherMouseUp:
+    case NSEventTypeLeftMouseUp:
+    case NSEventTypeRightMouseUp:
+    case NSEventTypeOtherMouseUp:
         return QEvent::MouseButtonRelease;
 
-    case NSLeftMouseDragged:
-    case NSRightMouseDragged:
-    case NSOtherMouseDragged:
+    case NSEventTypeLeftMouseDragged:
+    case NSEventTypeRightMouseDragged:
+    case NSEventTypeOtherMouseDragged:
         return QEvent::MouseMove;
 
-    case NSMouseMoved:
+    case NSEventTypeMouseMoved:
         return QEvent::MouseMove;
 
     default:
@@ -432,7 +432,7 @@ QT_END_NAMESPACE
     // FIXME: Not obvious, from Cocoa's documentation, that QString::toNSString() makes a deep copy
     button.title = (NSString *)cleanTitle.toCFString();
     ((NSButtonCell *)button.cell).font =
-            [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSRegularControlSize]];
+            [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSControlSizeRegular]];
     [self addSubview:button];
     return button;
 }

@@ -294,7 +294,8 @@ static inline QAbstractSocket::SocketType qt_socket_getType(qintptr socketDescri
 {
     int value = 0;
     QT_SOCKLEN_T valueSize = sizeof(value);
-    if (::getsockopt(socketDescriptor, SOL_SOCKET, SO_TYPE, (char *) &value, &valueSize) != 0) {
+    if (::getsockopt(socketDescriptor, SOL_SOCKET, SO_TYPE,
+                     reinterpret_cast<char *>(&value), &valueSize) != 0) {
         WS_ERROR_DEBUG(WSAGetLastError());
     } else {
         if (value == SOCK_STREAM)
@@ -361,7 +362,7 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
 #ifdef HANDLE_FLAG_INHERIT
         if (socket != INVALID_SOCKET) {
             // make non inheritable the old way
-            BOOL handleFlags = SetHandleInformation((HANDLE)socket, HANDLE_FLAG_INHERIT, 0);
+            BOOL handleFlags = SetHandleInformation(reinterpret_cast<HANDLE>(socket), HANDLE_FLAG_INHERIT, 0);
 #ifdef QNATIVESOCKETENGINE_DEBUG
             qDebug() << "QNativeSocketEnginePrivate::createNewSocket - set inheritable" << handleFlags;
 #else
@@ -1443,7 +1444,7 @@ qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
 
     for (;;) {
         WSABUF buf;
-        buf.buf = (char*)data + ret;
+        buf.buf = const_cast<char*>(data) + ret;
         buf.len = bytesToSend;
         DWORD flags = 0;
         DWORD bytesWritten = 0;

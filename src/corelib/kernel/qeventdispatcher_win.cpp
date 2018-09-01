@@ -120,7 +120,7 @@ void WINAPI QT_WIN_CALLBACK qt_fast_timer_proc(uint timerId, uint /*reserved*/, 
 {
     if (!timerId) // sanity check
         return;
-    WinTimerInfo *t = (WinTimerInfo*)user;
+    auto t = reinterpret_cast<WinTimerInfo*>(user);
     Q_ASSERT(t);
     QCoreApplication::postEvent(t->dispatcher, new QTimerEvent(t->timerId));
 }
@@ -146,9 +146,9 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
     }
 
 #ifdef GWLP_USERDATA
-    QEventDispatcherWin32 *q = (QEventDispatcherWin32 *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+    auto q = reinterpret_cast<QEventDispatcherWin32 *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 #else
-    QEventDispatcherWin32 *q = (QEventDispatcherWin32 *) GetWindowLong(hwnd, GWL_USERDATA);
+    auto q = reinterpret_cast<QEventDispatcherWin32 *>(GetWindowLong(hwnd, GWL_USERDATA));
 #endif
     QEventDispatcherWin32Private *d = 0;
     if (q != 0)
@@ -369,9 +369,9 @@ static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatch
     }
 
 #ifdef GWLP_USERDATA
-    SetWindowLongPtr(wnd, GWLP_USERDATA, (LONG_PTR)eventDispatcher);
+    SetWindowLongPtr(wnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(eventDispatcher));
 #else
-    SetWindowLong(wnd, GWL_USERDATA, (LONG)eventDispatcher);
+    SetWindowLong(wnd, GWL_USERDATA, reinterpret_cast<LONG>(eventDispatcher));
 #endif
 
     return wnd;
@@ -603,7 +603,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
             if (haveMessage) {
                 // WinCE doesn't support hooks at all, so we have to call this by hand :(
                 if (!d->getMessageHook)
-                    (void) qt_GetMessageHook(0, PM_REMOVE, (LPARAM) &msg);
+                    (void) qt_GetMessageHook(0, PM_REMOVE, reinterpret_cast<LPARAM>(&msg));
 
                 if (d->internalHwnd == msg.hwnd && msg.message == WM_QT_SENDPOSTEDEVENTS) {
                     if (seenWM_QT_SENDPOSTEDEVENTS) {

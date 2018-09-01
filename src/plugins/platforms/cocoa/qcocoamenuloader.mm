@@ -155,7 +155,7 @@
                                                        action:@selector(hideOtherApplications:)
                                                 keyEquivalent:@"h"];
         hideAllOthersItem.target = self;
-        hideAllOthersItem.keyEquivalentModifierMask = NSCommandKeyMask | NSAlternateKeyMask;
+        hideAllOthersItem.keyEquivalentModifierMask = NSEventModifierFlagCommand | NSEventModifierFlagOption;
         [appMenu addItem:hideAllOthersItem];
 
         // Show All

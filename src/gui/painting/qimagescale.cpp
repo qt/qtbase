@@ -564,7 +564,10 @@ static void qt_qimageScaleRgba64_up_xy(QImageScaleInfo *isi, QRgba64 *dest,
             for (int x = 0; x < dw; x++) {
                 const QRgba64 *pix = sptr + xpoints[x];
                 const int xap = xapoints[x];
-                *dptr = interpolate256(pix[0], 256 - xap, pix[1], xap);
+                if (xap > 0)
+                    *dptr = interpolate256(pix[0], 256 - xap, pix[1], xap);
+                else
+                    *dptr = pix[0];
                 dptr++;
             }
         }

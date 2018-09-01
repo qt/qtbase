@@ -46,6 +46,8 @@ haiku {
     SUBDIRS += haiku
 }
 
+wasm: SUBDIRS = wasm
+
 qtConfig(mirclient): SUBDIRS += mirclient
 
 qtConfig(integrityfb): SUBDIRS += integrity

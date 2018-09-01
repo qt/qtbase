@@ -204,8 +204,6 @@ void MingwMakefileGenerator::init()
         return;
     }
 
-    project->values("TARGET_PRL").append(project->first("TARGET"));
-
     processVars();
 
     project->values("QMAKE_LIBS") += project->values("RES_FILE");

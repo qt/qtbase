@@ -185,7 +185,8 @@ void Win32MakefileGenerator::processVars()
     if (project->first("TEMPLATE").endsWith("aux"))
         return;
 
-    project->values("QMAKE_ORIG_TARGET") = project->values("TARGET");
+    project->values("PRL_TARGET") =
+            project->values("QMAKE_ORIG_TARGET") = project->values("TARGET");
     if (project->isEmpty("QMAKE_PROJECT_NAME"))
         project->values("QMAKE_PROJECT_NAME") = project->values("QMAKE_ORIG_TARGET");
     else if (project->first("TEMPLATE").startsWith("vc"))

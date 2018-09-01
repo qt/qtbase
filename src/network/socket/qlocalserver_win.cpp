@@ -89,7 +89,7 @@ bool QLocalServerPrivate::addListener()
         DWORD dwBufferSize = 0;
         GetTokenInformation(hToken, TokenUser, 0, 0, &dwBufferSize);
         tokenUserBuffer.fill(0, dwBufferSize);
-        PTOKEN_USER pTokenUser = (PTOKEN_USER)tokenUserBuffer.data();
+        auto pTokenUser = reinterpret_cast<PTOKEN_USER>(tokenUserBuffer.data());
         if (!GetTokenInformation(hToken, TokenUser, pTokenUser, dwBufferSize, &dwBufferSize)) {
             setError(QLatin1String("QLocalServerPrivate::addListener"));
             CloseHandle(hToken);
@@ -99,7 +99,7 @@ bool QLocalServerPrivate::addListener()
         dwBufferSize = 0;
         GetTokenInformation(hToken, TokenPrimaryGroup, 0, 0, &dwBufferSize);
         tokenGroupBuffer.fill(0, dwBufferSize);
-        PTOKEN_PRIMARY_GROUP pTokenGroup = (PTOKEN_PRIMARY_GROUP)tokenGroupBuffer.data();
+        auto pTokenGroup = reinterpret_cast<PTOKEN_PRIMARY_GROUP>(tokenGroupBuffer.data());
         if (!GetTokenInformation(hToken, TokenPrimaryGroup, pTokenGroup, dwBufferSize, &dwBufferSize)) {
             setError(QLatin1String("QLocalServerPrivate::addListener"));
             CloseHandle(hToken);
@@ -140,7 +140,7 @@ bool QLocalServerPrivate::addListener()
         aclSize = (aclSize + (sizeof(DWORD) - 1)) & 0xfffffffc;
 
         aclBuffer.fill(0, aclSize);
-        PACL acl = (PACL)aclBuffer.data();
+        auto acl = reinterpret_cast<PACL>(aclBuffer.data());
         InitializeAcl(acl, aclSize, ACL_REVISION_DS);
 
         if (socketOptions & QLocalServer::UserAccessOption) {
@@ -176,7 +176,7 @@ bool QLocalServerPrivate::addListener()
     }
 
     listener.handle = CreateNamedPipe(
-                 (const wchar_t *)fullServerName.utf16(), // pipe name
+                 reinterpret_cast<const wchar_t *>(fullServerName.utf16()), // pipe name
                  PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,       // read/write access
                  PIPE_TYPE_BYTE |          // byte type pipe
                  PIPE_READMODE_BYTE |      // byte-read mode
@@ -299,7 +299,7 @@ void QLocalServerPrivate::_q_onNewConnection()
                     tryAgain = true;
 
                 // Make this the last thing so connected slots can wreak the least havoc
-                q->incomingConnection((quintptr)handle);
+                q->incomingConnection(reinterpret_cast<quintptr>(handle));
             } else {
                 if (GetLastError() != ERROR_IO_INCOMPLETE) {
                     q->close();

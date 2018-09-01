@@ -60,6 +60,8 @@
 #include <QtCore/qvarlengtharray.h>
 
 QT_BEGIN_NAMESPACE
+// ### TODO Qt6: add a proper namespace with Q_NAMESPACE and use scoped enums
+// A namespace and scoped are needed to avoid enum clashes
 
 enum PropertyFlags  {
     Invalid = 0x00000000,
@@ -103,7 +105,7 @@ enum MethodFlags  {
     MethodRevisioned = 0x80
 };
 
-enum MetaObjectFlags {
+enum MetaObjectFlags { // keep it in sync with QMetaObjectBuilder::MetaObjectFlag enum
     DynamicMetaObject = 0x01,
     RequiresVariantMetaObject = 0x02,
     PropertyAccessInStaticMetaCall = 0x04 // since Qt 5.5, property code is in the static metacall

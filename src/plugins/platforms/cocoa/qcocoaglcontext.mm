@@ -217,9 +217,6 @@ NSOpenGLPixelFormat *QCocoaGLContext::pixelFormatForSurfaceFormat(const QSurface
               << NSOpenGLPFASamples << NSOpenGLPixelFormatAttribute(format.samples());
     }
 
-    if (format.stereo())
-        attrs << NSOpenGLPFAStereo;
-
     // Allow rendering on GPUs without a connected display
     attrs << NSOpenGLPFAAllowOfflineRenderers;
 
@@ -277,6 +274,9 @@ void QCocoaGLContext::updateSurfaceFormat()
     // Debug contexts not supported on macOS
     m_format.setOption(QSurfaceFormat::DebugContext, false);
 
+    // Nor are stereo buffers (deprecated in macOS 10.12)
+    m_format.setOption(QSurfaceFormat::StereoBuffers, false);
+
     // ------------------ Query the pixel format ------------------
 
     NSOpenGLPixelFormat *pixelFormat = m_context.pixelFormat;
@@ -305,8 +305,6 @@ void QCocoaGLContext::updateSurfaceFormat()
         m_format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
     else
         m_format.setSwapBehavior(QSurfaceFormat::SingleBuffer);
-
-    m_format.setOption(QSurfaceFormat::StereoBuffers, [pixelFormat qt_getAttribute:NSOpenGLPFAStereo]);
 
     // ------------------- Query the context -------------------
 

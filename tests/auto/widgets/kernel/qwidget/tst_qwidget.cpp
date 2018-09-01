@@ -188,6 +188,7 @@ private slots:
     void reverseTabOrder();
     void tabOrderWithProxy();
     void tabOrderWithCompoundWidgets();
+    void tabOrderNoChange();
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     void activation();
 #endif
@@ -1928,6 +1929,34 @@ void tst_QWidget::tabOrderWithCompoundWidgets()
 
     container.backTab();
     QVERIFY(lastEdit->hasFocus());
+}
+
+static QVector<QWidget*> getFocusChain(QWidget *start, bool bForward)
+{
+    QVector<QWidget*> ret;
+    QWidget *cur = start;
+    do {
+        ret += cur;
+        auto widgetPrivate = static_cast<QWidgetPrivate *>(qt_widget_private(cur));
+        cur = bForward ? widgetPrivate->focus_next : widgetPrivate->focus_prev;
+    } while (cur != start);
+    return ret;
+}
+
+void tst_QWidget::tabOrderNoChange()
+{
+    QWidget w;
+    auto *verticalLayout = new QVBoxLayout(&w);
+    auto *tabWidget = new QTabWidget(&w);
+    auto *tv = new QTreeView(tabWidget);
+    tabWidget->addTab(tv, QStringLiteral("Tab 1"));
+    verticalLayout->addWidget(tabWidget);
+
+    const auto focusChainForward = getFocusChain(&w, true);
+    const auto focusChainBackward = getFocusChain(&w, false);
+    QWidget::setTabOrder(tabWidget, tv);
+    QCOMPARE(focusChainForward, getFocusChain(&w, true));
+    QCOMPARE(focusChainBackward, getFocusChain(&w, false));
 }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)

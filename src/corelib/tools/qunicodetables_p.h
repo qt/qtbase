@@ -72,6 +72,9 @@ struct Properties {
     signed short mirrorDiff    : 16;
     ushort lowerCaseSpecial    : 1;
     signed short lowerCaseDiff : 15;
+#ifdef Q_OS_WASM
+    unsigned char              : 0; //wasm 64 packing trick
+#endif
     ushort upperCaseSpecial    : 1;
     signed short upperCaseDiff : 15;
     ushort titleCaseSpecial    : 1;
@@ -80,6 +83,9 @@ struct Properties {
     signed short caseFoldDiff  : 15;
     ushort unicodeVersion      : 8; /* 5 used */
     ushort nfQuickCheck        : 8;
+#ifdef Q_OS_WASM
+    unsigned char              : 0; //wasm 64 packing trick
+#endif
     ushort graphemeBreakClass  : 5; /* 5 used */
     ushort wordBreakClass      : 5; /* 5 used */
     ushort sentenceBreakClass  : 8; /* 4 used */

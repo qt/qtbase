@@ -128,21 +128,17 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
             self.layer.borderWidth = 1.0;
         }
 
-#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_NA, 110000, 110000, __WATCHOS_NA)
         if (qEnvironmentVariableIsSet("QT_IOS_DEBUG_WINDOW_SAFE_AREAS")) {
-            if (__builtin_available(iOS 11, tvOS 11, *)) {
-                UIView *safeAreaOverlay = [[UIView alloc] initWithFrame:CGRectZero];
-                [safeAreaOverlay setBackgroundColor:[UIColor colorWithRed:0.3 green:0.7 blue:0.9 alpha:0.3]];
-                [self addSubview:safeAreaOverlay];
+            UIView *safeAreaOverlay = [[UIView alloc] initWithFrame:CGRectZero];
+            [safeAreaOverlay setBackgroundColor:[UIColor colorWithRed:0.3 green:0.7 blue:0.9 alpha:0.3]];
+            [self addSubview:safeAreaOverlay];
 
-                safeAreaOverlay.translatesAutoresizingMaskIntoConstraints = NO;
-                [safeAreaOverlay.topAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.topAnchor].active = YES;
-                [safeAreaOverlay.leftAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.leftAnchor].active = YES;
-                [safeAreaOverlay.rightAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.rightAnchor].active = YES;
-                [safeAreaOverlay.bottomAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor].active = YES;
-            }
+            safeAreaOverlay.translatesAutoresizingMaskIntoConstraints = NO;
+            [safeAreaOverlay.topAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.topAnchor].active = YES;
+            [safeAreaOverlay.leftAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.leftAnchor].active = YES;
+            [safeAreaOverlay.rightAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.rightAnchor].active = YES;
+            [safeAreaOverlay.bottomAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor].active = YES;
         }
-#endif
     }
 
     return self;
@@ -355,12 +351,10 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     QTouchDevice *touchDevice = QIOSIntegration::instance()->touchDevice();
     QTouchDevice::Capabilities touchCapabilities = touchDevice->capabilities();
 
-    if (__builtin_available(iOS 9, *)) {
-        if (self.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable)
-            touchCapabilities |= QTouchDevice::Pressure;
-        else
-            touchCapabilities &= ~QTouchDevice::Pressure;
-    }
+    if (self.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable)
+        touchCapabilities |= QTouchDevice::Pressure;
+    else
+        touchCapabilities &= ~QTouchDevice::Pressure;
 
     touchDevice->setCapabilities(touchCapabilities);
 }
@@ -668,18 +662,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 - (UIEdgeInsets)qt_safeAreaInsets
 {
-#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_NA, 110000, 110000, __WATCHOS_NA)
-    if (__builtin_available(iOS 11, tvOS 11, *))
-        return self.safeAreaInsets;
-#endif
-
-    // Fallback for iOS < 11
-    UIEdgeInsets safeAreaInsets = UIEdgeInsetsZero;
-    CGPoint topInset = [self convertPoint:CGPointMake(0, self.viewController.topLayoutGuide.length) fromView:nil];
-    CGPoint bottomInset = [self convertPoint:CGPointMake(0, self.viewController.bottomLayoutGuide.length) fromView:nil];
-    safeAreaInsets.top = topInset.y;
-    safeAreaInsets.bottom = bottomInset.y;
-    return safeAreaInsets;
+    return self.safeAreaInsets;
 }
 
 @end

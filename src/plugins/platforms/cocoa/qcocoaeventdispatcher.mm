@@ -293,25 +293,25 @@ static bool IsMouseOrKeyEvent( NSEvent* event )
 
     switch( [event type] )
     {
-        case NSLeftMouseDown:
-        case NSLeftMouseUp:
-        case NSRightMouseDown:
-        case NSRightMouseUp:
-        case NSMouseMoved:                // ??
-        case NSLeftMouseDragged:
-        case NSRightMouseDragged:
-        case NSMouseEntered:
-        case NSMouseExited:
-        case NSKeyDown:
-        case NSKeyUp:
-        case NSFlagsChanged:            // key modifiers changed?
-        case NSCursorUpdate:            // ??
-        case NSScrollWheel:
-        case NSTabletPoint:
-        case NSTabletProximity:
-        case NSOtherMouseDown:
-        case NSOtherMouseUp:
-        case NSOtherMouseDragged:
+        case NSEventTypeLeftMouseDown:
+        case NSEventTypeLeftMouseUp:
+        case NSEventTypeRightMouseDown:
+        case NSEventTypeRightMouseUp:
+        case NSEventTypeMouseMoved:                // ??
+        case NSEventTypeLeftMouseDragged:
+        case NSEventTypeRightMouseDragged:
+        case NSEventTypeMouseEntered:
+        case NSEventTypeMouseExited:
+        case NSEventTypeKeyDown:
+        case NSEventTypeKeyUp:
+        case NSEventTypeFlagsChanged:            // key modifiers changed?
+        case NSEventTypeCursorUpdate:            // ??
+        case NSEventTypeScrollWheel:
+        case NSEventTypeTabletPoint:
+        case NSEventTypeTabletProximity:
+        case NSEventTypeOtherMouseDown:
+        case NSEventTypeOtherMouseUp:
+        case NSEventTypeOtherMouseDragged:
 #ifndef QT_NO_GESTURES
         case NSEventTypeGesture: // touch events
         case NSEventTypeMagnify:
@@ -335,7 +335,7 @@ static inline void qt_mac_waitForMoreEvents(NSString *runLoopMode = NSDefaultRun
     // at least one event occur. Setting 'dequeuing' to 'no' in the following call
     // causes it to hang under certain circumstances (QTBUG-28283), so we tell it
     // to dequeue instead, just to repost the event again:
-    NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
+    NSEvent* event = [NSApp nextEventMatchingMask:NSEventMaskAny
         untilDate:[NSDate distantFuture]
         inMode:runLoopMode
         dequeue:YES];
@@ -460,7 +460,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
                     // Dispatch all non-user events (but que non-user events up for later). In
                     // this case, we need more control over which events gets dispatched, and
                     // cannot use [NSApp runModalSession:session]:
-                    event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                    event = [NSApp nextEventMatchingMask:NSEventMaskAny
                     untilDate:nil
                     inMode:NSModalPanelRunLoopMode
                     dequeue: YES];
@@ -479,7 +479,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
                 } while (!d->interrupt && event);
             } else do {
                 // INVARIANT: No modal window is executing.
-                event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                event = [NSApp nextEventMatchingMask:NSEventMaskAny
                 untilDate:nil
                 inMode:NSDefaultRunLoopMode
                 dequeue: YES];
@@ -936,7 +936,7 @@ void QCocoaEventDispatcherPrivate::cancelWaitForMoreEvents()
     // In case the event dispatcher is waiting for more
     // events somewhere, we post a dummy event to wake it up:
     QMacAutoReleasePool pool;
-    [NSApp postEvent:[NSEvent otherEventWithType:NSApplicationDefined location:NSZeroPoint
+    [NSApp postEvent:[NSEvent otherEventWithType:NSEventTypeApplicationDefined location:NSZeroPoint
         modifierFlags:0 timestamp:0. windowNumber:0 context:nil
         subtype:QtCocoaEventSubTypeWakeup data1:0 data2:0] atStart:NO];
 }

@@ -155,7 +155,7 @@ void QLocalSocket::connectToServer(OpenMode openMode)
     forever {
         DWORD permissions = (openMode & QIODevice::ReadOnly) ? GENERIC_READ : 0;
         permissions |= (openMode & QIODevice::WriteOnly) ? GENERIC_WRITE : 0;
-        localSocket = CreateFile((const wchar_t *)d->fullServerName.utf16(),   // pipe name
+        localSocket = CreateFile(reinterpret_cast<const wchar_t *>(d->fullServerName.utf16()), // pipe name
                                  permissions,
                                  0,              // no sharing
                                  NULL,           // default security attributes
@@ -183,7 +183,7 @@ void QLocalSocket::connectToServer(OpenMode openMode)
     }
 
     // we have a valid handle
-    if (setSocketDescriptor((qintptr)localSocket, ConnectedState, openMode))
+    if (setSocketDescriptor(reinterpret_cast<qintptr>(localSocket), ConnectedState, openMode))
         emit connected();
 }
 
@@ -371,7 +371,7 @@ void QLocalSocketPrivate::_q_canWrite()
 qintptr QLocalSocket::socketDescriptor() const
 {
     Q_D(const QLocalSocket);
-    return (qintptr)d->handle;
+    return reinterpret_cast<qintptr>(d->handle);
 }
 
 qint64 QLocalSocket::readBufferSize() const

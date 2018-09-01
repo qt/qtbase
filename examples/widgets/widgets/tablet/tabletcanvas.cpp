@@ -148,12 +148,14 @@ void TabletCanvas::initPixmap()
     m_pixmap = newPixmap;
 }
 
-void TabletCanvas::paintEvent(QPaintEvent *)
+void TabletCanvas::paintEvent(QPaintEvent *event)
 {
     if (m_pixmap.isNull())
         initPixmap();
     QPainter painter(this);
-    painter.drawPixmap(0, 0, m_pixmap);
+    QRect pixmapPortion = QRect(event->rect().topLeft() * devicePixelRatioF(),
+                                event->rect().size() * devicePixelRatioF());
+    painter.drawPixmap(event->rect().topLeft(), m_pixmap, pixmapPortion);
 }
 //! [4]
 

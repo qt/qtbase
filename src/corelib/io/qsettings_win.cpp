@@ -515,7 +515,7 @@ bool QWinSettingsPrivate::readKey(HKEY parentHandle, const QString &rSubKey, QVa
         case REG_SZ: {
             QString s;
             if (dataSize) {
-                s = QString::fromWCharArray(((const wchar_t *)data.constData()));
+                s = QString::fromWCharArray(reinterpret_cast<const wchar_t *>(data.constData()));
             }
             if (value != 0)
                 *value = stringToVariant(s);
@@ -527,7 +527,7 @@ bool QWinSettingsPrivate::readKey(HKEY parentHandle, const QString &rSubKey, QVa
             if (dataSize) {
                 int i = 0;
                 for (;;) {
-                    QString s = QString::fromWCharArray((const wchar_t *)data.constData() + i);
+                    QString s = QString::fromWCharArray(reinterpret_cast<const wchar_t *>(data.constData()) + i);
                     i += s.length() + 1;
 
                     if (s.isEmpty())
@@ -544,7 +544,7 @@ bool QWinSettingsPrivate::readKey(HKEY parentHandle, const QString &rSubKey, QVa
         case REG_BINARY: {
             QString s;
             if (dataSize) {
-                s = QString::fromWCharArray((const wchar_t *)data.constData(), data.size() / 2);
+                s = QString::fromWCharArray(reinterpret_cast<const wchar_t *>(data.constData()), data.size() / 2);
             }
             if (value != 0)
                 *value = stringToVariant(s);
@@ -555,7 +555,7 @@ bool QWinSettingsPrivate::readKey(HKEY parentHandle, const QString &rSubKey, QVa
         case REG_DWORD: {
             Q_ASSERT(data.size() == sizeof(int));
             int i;
-            memcpy((char*)&i, data.constData(), sizeof(int));
+            memcpy(reinterpret_cast<char*>(&i), data.constData(), sizeof(int));
             if (value != 0)
                 *value = i;
             break;
@@ -564,7 +564,7 @@ bool QWinSettingsPrivate::readKey(HKEY parentHandle, const QString &rSubKey, QVa
         case REG_QWORD: {
             Q_ASSERT(data.size() == sizeof(qint64));
             qint64 i;
-            memcpy((char*)&i, data.constData(), sizeof(qint64));
+            memcpy(reinterpret_cast<char*>(&i), data.constData(), sizeof(qint64));
             if (value != 0)
                 *value = i;
             break;
@@ -688,12 +688,12 @@ void QWinSettingsPrivate::set(const QString &uKey, const QVariant &value)
 
             if (type == REG_BINARY) {
                 QString s = variantToString(value);
-                regValueBuff = QByteArray((const char*)s.utf16(), s.length() * 2);
+                regValueBuff = QByteArray(reinterpret_cast<const char*>(s.utf16()), s.length() * 2);
             } else {
                 QStringList::const_iterator it = l.constBegin();
                 for (; it != l.constEnd(); ++it) {
                     const QString &s = *it;
-                    regValueBuff += QByteArray((const char*)s.utf16(), (s.length() + 1) * 2);
+                    regValueBuff += QByteArray(reinterpret_cast<const char*>(s.utf16()), (s.length() + 1) * 2);
                 }
                 regValueBuff.append((char)0);
                 regValueBuff.append((char)0);
@@ -705,7 +705,7 @@ void QWinSettingsPrivate::set(const QString &uKey, const QVariant &value)
         case QVariant::UInt: {
             type = REG_DWORD;
             qint32 i = value.toInt();
-            regValueBuff = QByteArray((const char*)&i, sizeof(qint32));
+            regValueBuff = QByteArray(reinterpret_cast<const char*>(&i), sizeof(qint32));
             break;
         }
 
@@ -713,7 +713,7 @@ void QWinSettingsPrivate::set(const QString &uKey, const QVariant &value)
         case QVariant::ULongLong: {
             type = REG_QWORD;
             qint64 i = value.toLongLong();
-            regValueBuff = QByteArray((const char*)&i, sizeof(qint64));
+            regValueBuff = QByteArray(reinterpret_cast<const char*>(&i), sizeof(qint64));
             break;
         }
 
@@ -725,11 +725,11 @@ void QWinSettingsPrivate::set(const QString &uKey, const QVariant &value)
             // string type. Otherwise we use REG_BINARY.
             QString s = variantToString(value);
             type = s.contains(QChar::Null) ? REG_BINARY : REG_SZ;
-            if (type == REG_BINARY) {
-                regValueBuff = QByteArray((const char*)s.utf16(), s.length() * 2);
-            } else {
-                regValueBuff = QByteArray((const char*)s.utf16(), (s.length() + 1) * 2);
-            }
+            int length = s.length();
+            if (type == REG_SZ)
+                ++length;
+            regValueBuff = QByteArray(reinterpret_cast<const char *>(s.utf16()),
+                                      int(sizeof(wchar_t)) * length);
             break;
         }
     }

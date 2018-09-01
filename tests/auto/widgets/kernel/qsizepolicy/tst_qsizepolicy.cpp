@@ -116,8 +116,16 @@ void tst_QSizePolicy::constExpr()
     { Q_CONSTEXPR QSizePolicy sp = QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred); Q_UNUSED(sp); }
     { Q_CONSTEXPR QSizePolicy sp = QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding, QSizePolicy::DefaultType);
       Q_CONSTEXPR QSizePolicy tp = sp.transposed(); Q_UNUSED(tp); }
-    { Q_RELAXED_CONSTEXPR auto sp = QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed, QSizePolicy::CheckBox);
-      Q_RELAXED_CONSTEXPR auto tp = sp.transposed(); Q_UNUSED(tp); }
+    {
+      // QTBUG-69983: For ControlType != QSizePolicy::DefaultType, qCountTrailingZeroBits()
+      // is used, which MSVC 15.8.1 does not consider constexpr due to built-ins
+#  if defined(QT_HAS_CONSTEXPR_BUILTINS) && (!defined(Q_CC_MSVC) || _MSC_VER < 1915)
+      Q_RELAXED_CONSTEXPR auto sp = QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed, QSizePolicy::CheckBox);
+#  else
+      Q_CONSTEXPR auto sp = QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding, QSizePolicy::DefaultType);
+#  endif
+      Q_RELAXED_CONSTEXPR auto tp = sp.transposed(); Q_UNUSED(tp);
+    }
 #else
     QSKIP("QSizePolicy cannot be constexpr with this version of the compiler.");
 #endif

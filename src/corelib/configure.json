@@ -481,7 +481,7 @@
         },
         "eventfd": {
             "label": "eventfd",
-            "condition": "tests.eventfd",
+            "condition": "!config.wasm && tests.eventfd",
             "output": [ "feature" ]
         },
         "futimens": {
@@ -592,7 +592,7 @@
         "poll_ppoll": {
             "label": "Native ppoll()",
             "emitIf": "!config.win32",
-            "condition": "tests.ppoll",
+            "condition": "!config.wasm && tests.ppoll",
             "output": [ "privateFeature" ]
         },
         "poll_pollts": {

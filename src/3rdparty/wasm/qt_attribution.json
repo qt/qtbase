@@ -1,0 +1,21 @@
+{
+    "Id": "vera_font",
+    "Name": "Vera",
+    "QDocModule": "qtcore",
+    "QtUsage": "Used for WebAssembly platform.",
+
+    "License": "Bitstream",
+    "LicenseFile": "LICENSE",
+    "Copyright": "Copyright (C) 2003 Bitstream,Inc"
+},
+{
+    "Id": "dejayvu",
+    "Name": "DejaVuSans",
+    "QDocModule": "qtcore",
+    "QtUsage": "Used for WebAssembly platform.",
+
+    "License": "Bitstream",
+    "LicenseFile": "LICENSE",
+    "Copyright": "Copyright (C) 2003 Bitstream,Inc"
+}
+

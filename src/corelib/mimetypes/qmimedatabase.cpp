@@ -151,7 +151,9 @@ void QMimeDatabasePrivate::loadProviders()
 
 QVector<QMimeProviderBase *> QMimeDatabasePrivate::providers()
 {
+#ifndef Q_OS_WASM // stub implementation always returns true
     Q_ASSERT(!mutex.tryLock()); // caller should have locked mutex
+#endif
     if (m_providers.isEmpty()) {
         loadProviders();
         m_lastCheck.start();

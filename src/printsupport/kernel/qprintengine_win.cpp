@@ -1556,14 +1556,15 @@ HGLOBAL *QWin32PrintEngine::createGlobalDevNames()
     Q_D(QWin32PrintEngine);
 
     int size = sizeof(DEVNAMES) + d->m_printDevice.id().length() * 2 + 2;
-    HGLOBAL *hGlobal = (HGLOBAL *) GlobalAlloc(GMEM_MOVEABLE, size);
-    DEVNAMES *dn = (DEVNAMES*) GlobalLock(hGlobal);
+    auto hGlobal = reinterpret_cast<HGLOBAL *>(GlobalAlloc(GMEM_MOVEABLE, size));
+    auto dn = reinterpret_cast<DEVNAMES*>(GlobalLock(hGlobal));
 
     dn->wDriverOffset = 0;
     dn->wDeviceOffset = sizeof(DEVNAMES) / sizeof(wchar_t);
     dn->wOutputOffset = 0;
 
-    memcpy((ushort*)dn + dn->wDeviceOffset, d->m_printDevice.id().utf16(), d->m_printDevice.id().length() * 2 + 2);
+    memcpy(reinterpret_cast<ushort*>(dn) + dn->wDeviceOffset,
+           d->m_printDevice.id().utf16(), d->m_printDevice.id().length() * 2 + 2);
     dn->wDefault = 0;
 
     GlobalUnlock(hGlobal);
@@ -1574,8 +1575,9 @@ void QWin32PrintEngine::setGlobalDevMode(HGLOBAL globalDevNames, HGLOBAL globalD
 {
     Q_D(QWin32PrintEngine);
     if (globalDevNames) {
-        DEVNAMES *dn = (DEVNAMES*) GlobalLock(globalDevNames);
-        QString id = QString::fromWCharArray((wchar_t*)(dn) + dn->wDeviceOffset);
+        auto dn = reinterpret_cast<DEVNAMES*>(GlobalLock(globalDevNames));
+        const QString id =
+            QString::fromWCharArray(reinterpret_cast<const wchar_t*>(dn) + dn->wDeviceOffset);
         QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
         if (ps)
             d->m_printDevice = ps->createPrintDevice(id.isEmpty() ? ps->defaultPrintDeviceId() : id);
@@ -1583,7 +1585,7 @@ void QWin32PrintEngine::setGlobalDevMode(HGLOBAL globalDevNames, HGLOBAL globalD
     }
 
     if (globalDevMode) {
-        DEVMODE *dm = (DEVMODE*) GlobalLock(globalDevMode);
+        auto dm = reinterpret_cast<DEVMODE*>(GlobalLock(globalDevMode));
         d->release();
         d->globalDevMode = globalDevMode;
         if (d->ownsDevMode) {

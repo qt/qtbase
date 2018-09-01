@@ -8,3 +8,5 @@ SOURCES += tst_macnativeevents.cpp
 
 requires(mac)
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
+
+LIBS += -framework AppKit

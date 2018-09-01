@@ -906,9 +906,19 @@ void QOpenGLWidgetPrivate::invalidateFbo()
         const int gl_color_attachment0 = 0x8CE0;  // GL_COLOR_ATTACHMENT0
         const int gl_depth_attachment = 0x8D00;   // GL_DEPTH_ATTACHMENT
         const int gl_stencil_attachment = 0x8D20; // GL_STENCIL_ATTACHMENT
+#ifdef Q_OS_WASM
+        // webgl does not allow separate depth and stencil attachments
+        // QTBUG-69913
+        const int gl_depth_stencil_attachment = 0x821A; // GL_DEPTH_STENCIL_ATTACHMENT
+
+        const GLenum attachments[] = {
+            gl_color_attachment0, gl_depth_attachment, gl_stencil_attachment, gl_depth_stencil_attachment
+        };
+#else
         const GLenum attachments[] = {
             gl_color_attachment0, gl_depth_attachment, gl_stencil_attachment
         };
+#endif
         f->glDiscardFramebufferEXT(GL_FRAMEBUFFER, sizeof attachments / sizeof *attachments, attachments);
     } else {
         f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);

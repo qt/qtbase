@@ -112,7 +112,7 @@ QWindowsPrintDevice::QWindowsPrintDevice(const QString &id)
 {
     // First do a fast lookup to see if printer exists, if it does then open it
     if (!id.isEmpty() && QWindowsPrintDevice::availablePrintDeviceIds().contains(id)) {
-        if (OpenPrinter((LPWSTR)m_id.utf16(), &m_hPrinter, NULL)) {
+        if (OpenPrinter(const_cast<LPWSTR>(wcharId()), &m_hPrinter, nullptr)) {
             DWORD needed = 0;
             GetPrinter(m_hPrinter, 2, 0, 0, &needed);
             QScopedArrayPointer<BYTE> buffer(new BYTE[needed]);
@@ -351,16 +351,19 @@ int QWindowsPrintDevice::defaultResolution() const
 
 void QWindowsPrintDevice::loadInputSlots() const
 {
-    DWORD binCount = DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_BINS, NULL, NULL);
+    const auto printerId = wcharId();
+    DWORD binCount = DeviceCapabilities(printerId, nullptr, DC_BINS, nullptr, nullptr);
     if (int(binCount) > 0
-        && DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_BINNAMES, NULL, NULL) == binCount) {
+        && DeviceCapabilities(printerId, nullptr, DC_BINNAMES, nullptr, nullptr) == binCount) {
 
         QScopedArrayPointer<WORD> bins(new WORD[binCount*sizeof(WORD)]);
         QScopedArrayPointer<wchar_t> binNames(new wchar_t[binCount*24]);
 
         // Get the details and match the default paper size
-        if (DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_BINS, (LPWSTR)bins.data(), NULL) == binCount
-            && DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_BINNAMES, binNames.data(), NULL) == binCount) {
+        if (DeviceCapabilities(printerId, nullptr, DC_BINS,
+                               reinterpret_cast<LPWSTR>(bins.data()), nullptr) == binCount
+            && DeviceCapabilities(printerId, nullptr, DC_BINNAMES, binNames.data(),
+                                  nullptr) == binCount) {
 
             for (int i = 0; i < int(binCount); ++i) {
                 wchar_t *binName = binNames.data() + (i * 24);
@@ -410,7 +413,7 @@ void QWindowsPrintDevice::loadOutputBins() const
 void QWindowsPrintDevice::loadDuplexModes() const
 {
     m_duplexModes.append(QPrint::DuplexNone);
-    DWORD duplex = DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_DUPLEX, NULL, NULL);
+    DWORD duplex = DeviceCapabilities(wcharId(), nullptr, DC_DUPLEX, nullptr, nullptr);
     if (int(duplex) == 1) {
         // TODO Assume if duplex flag supports both modes
         m_duplexModes.append(QPrint::DuplexAuto);
@@ -444,7 +447,7 @@ QPrint::DuplexMode QWindowsPrintDevice::defaultDuplexMode() const
 void QWindowsPrintDevice::loadColorModes() const
 {
     m_colorModes.append(QPrint::GrayScale);
-    DWORD color = DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_COLORDEVICE, NULL, NULL);
+    DWORD color = DeviceCapabilities(wcharId(), nullptr, DC_COLORDEVICE, nullptr, nullptr);
     if (int(color) == 1)
         m_colorModes.append(QPrint::Color);
     m_haveColorModes = true;
@@ -503,7 +506,7 @@ QString QWindowsPrintDevice::defaultPrintDeviceId()
 
 void QWindowsPrintDevice::loadCopiesSupport() const
 {
-    LPWSTR printerId = const_cast<LPWSTR>(reinterpret_cast<LPCWSTR>(m_id.utf16()));
+    auto printerId = wcharId();
     m_supportsMultipleCopies = (DeviceCapabilities(printerId, NULL, DC_COPIES, NULL, NULL) > 1);
     m_supportsCollateCopies = DeviceCapabilities(printerId, NULL, DC_COLLATE, NULL, NULL);
     m_haveCopies = true;
@@ -552,7 +555,7 @@ void QWindowsPrintDevice::loadMinMaxPageSizes() const
 {
     // Min/Max custom size is in tenths of a millimeter
     const qreal multiplier = qt_pointMultiplier(QPageLayout::Millimeter);
-    LPWSTR printerId = const_cast<LPWSTR>(reinterpret_cast<LPCWSTR>(m_id.utf16()));
+    auto printerId = wcharId();
     DWORD min = DeviceCapabilities(printerId, NULL, DC_MINEXTENT, NULL, NULL);
     m_minimumPhysicalPageSize = QSize((LOWORD(min) / 10.0) * multiplier, (HIWORD(min) / 10.0) * multiplier);
     DWORD max = DeviceCapabilities(printerId, NULL, DC_MAXEXTENT, NULL, NULL);

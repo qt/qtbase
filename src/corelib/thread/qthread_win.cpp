@@ -318,7 +318,8 @@ void qt_set_thread_name(HANDLE threadId, LPCSTR threadName)
 
     __try
     {
-        RaiseException(0x406D1388, 0, sizeof(info)/sizeof(DWORD), (const ULONG_PTR*)&info);
+        RaiseException(0x406D1388, 0, sizeof(info)/sizeof(DWORD),
+                       reinterpret_cast<const ULONG_PTR*>(&info));
     }
     __except (EXCEPTION_CONTINUE_EXECUTION)
     {
@@ -365,7 +366,7 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
 #if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC) && !defined(Q_OS_WINRT)
     // sets the name of the current thread.
     QByteArray objectName = thr->objectName().toLocal8Bit();
-    qt_set_thread_name((HANDLE)-1,
+    qt_set_thread_name(HANDLE(-1),
                        objectName.isEmpty() ?
                        thr->metaObject()->className() : objectName.constData());
 #endif
@@ -508,8 +509,9 @@ void QThread::start(Priority priority)
                                             this, CREATE_SUSPENDED, &(d->id));
 #else
     // MSVC -MD or -MDd or MinGW build
-    d->handle = (Qt::HANDLE) CreateThread(NULL, d->stackSize, (LPTHREAD_START_ROUTINE)QThreadPrivate::start,
-                                            this, CREATE_SUSPENDED, reinterpret_cast<LPDWORD>(&d->id));
+    d->handle = CreateThread(nullptr, d->stackSize,
+                             reinterpret_cast<LPTHREAD_START_ROUTINE>(QThreadPrivate::start),
+                             this, CREATE_SUSPENDED, reinterpret_cast<LPDWORD>(&d->id));
 #endif // Q_OS_WINRT
 
     if (!d->handle) {
