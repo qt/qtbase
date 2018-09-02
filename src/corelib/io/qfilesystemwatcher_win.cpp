@@ -667,7 +667,8 @@ void QWindowsFileSystemWatcherEngineThread::run()
                 if (m != '@')
                     DEBUG() << "QWindowsFileSystemWatcherEngine: unknown message sent to thread: " << char(m);
                 break;
-            } else if (r > WAIT_OBJECT_0 && r < WAIT_OBJECT_0 + uint(handlesCopy.count())) {
+            }
+            if (r > WAIT_OBJECT_0 && r < WAIT_OBJECT_0 + uint(handlesCopy.count())) {
                 int at = r - WAIT_OBJECT_0;
                 Q_ASSERT(at < handlesCopy.count());
                 HANDLE handle = handlesCopy.at(at);

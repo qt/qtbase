@@ -50,7 +50,7 @@
 #include <QtCore/QUrl>
 
 #if QT_CONFIG(dbus)
-// These QtCore includes are needed for flatpak support
+// These QtCore includes are needed for xdg-desktop-portal support
 #include <QtCore/private/qcore_unix_p.h>
 
 #include <QtCore/QFileInfo>
@@ -172,12 +172,12 @@ static inline bool launch(const QString &launcher, const QUrl &url)
 }
 
 #if QT_CONFIG(dbus)
-static inline bool checkRunningUnderFlatpak()
+static inline bool checkNeedPortalSupport()
 {
-    return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, QLatin1String("flatpak-info")).isEmpty();
+    return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, QLatin1String("flatpak-info")).isEmpty() || qEnvironmentVariableIsSet("SNAP");
 }
 
-static inline bool flatpakOpenFile(const QUrl &url)
+static inline bool xdgDesktopPortalOpenFile(const QUrl &url)
 {
     // DBus signature:
     // OpenFile (IN   s      parent_window,
@@ -212,7 +212,7 @@ static inline bool flatpakOpenFile(const QUrl &url)
     return false;
 }
 
-static inline bool flatpakOpenUrl(const QUrl &url)
+static inline bool xdgDesktopPortalOpenUrl(const QUrl &url)
 {
     // DBus signature:
     // OpenURI (IN   s      parent_window,
@@ -236,7 +236,7 @@ static inline bool flatpakOpenUrl(const QUrl &url)
     return !reply.isError();
 }
 
-static inline bool flatpakSendEmail(const QUrl &url)
+static inline bool xdgDesktopPortalSendEmail(const QUrl &url)
 {
     // DBus signature:
     // ComposeEmail (IN   s      parent_window,
@@ -294,15 +294,15 @@ bool QGenericUnixServices::openUrl(const QUrl &url)
 {
     if (url.scheme() == QLatin1String("mailto")) {
 #if QT_CONFIG(dbus)
-        if (checkRunningUnderFlatpak())
-            return flatpakSendEmail(url);
+        if (checkNeedPortalSupport())
+            return xdgDesktopPortalSendEmail(url);
 #endif
         return openDocument(url);
     }
 
 #if QT_CONFIG(dbus)
-    if (checkRunningUnderFlatpak())
-        return flatpakOpenUrl(url);
+    if (checkNeedPortalSupport())
+        return xdgDesktopPortalOpenUrl(url);
 #endif
 
     if (m_webBrowser.isEmpty() && !detectWebBrowser(desktopEnvironment(), true, &m_webBrowser)) {
@@ -315,8 +315,8 @@ bool QGenericUnixServices::openUrl(const QUrl &url)
 bool QGenericUnixServices::openDocument(const QUrl &url)
 {
 #if QT_CONFIG(dbus)
-    if (checkRunningUnderFlatpak())
-        return flatpakOpenFile(url);
+    if (checkNeedPortalSupport())
+        return xdgDesktopPortalOpenFile(url);
 #endif
 
     if (m_documentLauncher.isEmpty() && !detectWebBrowser(desktopEnvironment(), false, &m_documentLauncher)) {

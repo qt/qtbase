@@ -179,9 +179,7 @@ QWindowsVistaStyle::QWindowsVistaStyle()
 /*!
   Destructor.
 */
-QWindowsVistaStyle::~QWindowsVistaStyle()
-{
-}
+QWindowsVistaStyle::~QWindowsVistaStyle() = default;
 
 //convert Qt state flags to uxtheme button states
 static int buttonStateId(int flags, int partId)

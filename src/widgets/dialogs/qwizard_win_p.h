@@ -71,22 +71,23 @@ class QVistaBackButton : public QAbstractButton
 public:
     QVistaBackButton(QWidget *widget);
 
-    QSize sizeHint() const;
-    inline QSize minimumSizeHint() const
+    QSize sizeHint() const override;
+    inline QSize minimumSizeHint() const override
     { return sizeHint(); }
 
-    void enterEvent(QEvent *event);
-    void leaveEvent(QEvent *event);
-    void paintEvent(QPaintEvent *event);
+    void enterEvent(QEvent *event) override;
+    void leaveEvent(QEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
 };
 
 class QWizard;
 
 class QVistaHelper : public QObject
 {
+    Q_DISABLE_COPY(QVistaHelper)
 public:
     QVistaHelper(QWizard *wizard);
-    ~QVistaHelper();
+    ~QVistaHelper() override;
     enum TitleBarChangeType { NormalTitleBar, ExtendedTitleBar };
     void updateCustomMargins(bool vistaMargins);
     bool setDWMTitleBar(TitleBarChangeType type);
@@ -133,7 +134,7 @@ private:
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
-    bool eventFilter(QObject *obj, QEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
     static int instanceCount;
     static VistaState cachedVistaState;

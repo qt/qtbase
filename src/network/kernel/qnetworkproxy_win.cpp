@@ -370,7 +370,10 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
 #if !defined(Q_OS_WINRT)
 namespace {
 class QRegistryWatcher {
+    Q_DISABLE_COPY(QRegistryWatcher)
 public:
+    QRegistryWatcher() = default;
+
     void addLocation(HKEY hive, const QString& path)
     {
         HKEY openedKey;
@@ -422,6 +425,7 @@ private:
 
 class QWindowsSystemProxy
 {
+    Q_DISABLE_COPY(QWindowsSystemProxy)
 public:
     QWindowsSystemProxy();
     ~QWindowsSystemProxy();

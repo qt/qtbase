@@ -688,10 +688,10 @@ QString QWinTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
     if (nameType == QTimeZone::OffsetName) {
         const QWinTransitionRule &rule =
             m_tranRules.at(ruleIndexForYear(m_tranRules, QDate::currentDate().year()));
+        int offset = rule.standardTimeBias;
         if (timeType == QTimeZone::DaylightTime)
-            return isoOffsetFormat((rule.standardTimeBias + rule.daylightTimeBias) * -60);
-        else
-            return isoOffsetFormat((rule.standardTimeBias) * -60);
+            offset += rule.daylightTimeBias;
+        return isoOffsetFormat(offset * -60);
     }
 
     switch (timeType) {

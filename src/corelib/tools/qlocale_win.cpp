@@ -365,7 +365,7 @@ QVariant QSystemLocalePrivate::dayName(int day, QLocale::FormatType type)
 
     if (type == QLocale::LongFormat)
         return getLocaleInfo(long_day_map[day]);
-    else if (type == QLocale::NarrowFormat)
+    if (type == QLocale::NarrowFormat)
         return getLocaleInfo(narrow_day_map[day]);
     return getLocaleInfo(short_day_map[day]);
 }
@@ -386,7 +386,7 @@ QVariant QSystemLocalePrivate::monthName(int month, QLocale::FormatType type)
 
     month -= 1;
     if (month < 0 || month > 11)
-    return QString();
+        return QString();
 
     LCTYPE lctype = (type == QLocale::ShortFormat || type == QLocale::NarrowFormat)
             ? short_month_map[month] : long_month_map[month];
@@ -988,7 +988,7 @@ LCID qt_inIsoNametoLCID(const char *name)
     // handle norwegian manually, the list above will fail
     if (!strncmp(name, "nb", 2))
         return 0x0414;
-    else if (!strncmp(name, "nn", 2))
+    if (!strncmp(name, "nn", 2))
         return 0x0814;
 
     char n[64];
@@ -1001,9 +1001,9 @@ LCID qt_inIsoNametoLCID(const char *name)
         ++c;
     }
 
-    for (int i = 0; i < windows_to_iso_count; ++i) {
-        if (!strcmp(n, windows_to_iso_list[i].iso_name))
-            return windows_to_iso_list[i].windows_code;
+    for (const WindowsToISOListElt &i : windows_to_iso_list) {
+        if (!strcmp(n, i.iso_name))
+            return i.windows_code;
     }
     return LOCALE_USER_DEFAULT;
 }
@@ -1099,8 +1099,7 @@ static QByteArray getWinLocaleName(LPWSTR id)
             id = qstrtoll(result.data(), 0, 0, &ok);
             if ( !ok || id == 0 || id < INT_MIN || id > INT_MAX )
                 return result;
-            else
-                return winLangCodeToIsoName( (int)id );
+            return winLangCodeToIsoName(int(id));
         }
     }
 

@@ -377,11 +377,12 @@ typedef QVector<RegistryKey> RegistryKeyList;
 
 class QWinSettingsPrivate : public QSettingsPrivate
 {
+    Q_DISABLE_COPY(QWinSettingsPrivate)
 public:
     QWinSettingsPrivate(QSettings::Scope scope, const QString &organization,
                         const QString &application, REGSAM access = 0);
     QWinSettingsPrivate(QString rKey, REGSAM access = 0);
-    ~QWinSettingsPrivate();
+    ~QWinSettingsPrivate() override;
 
     void remove(const QString &uKey) override;
     void set(const QString &uKey, const QVariant &value) override;
@@ -629,11 +630,9 @@ void QWinSettingsPrivate::remove(const QString &uKey)
         deleteChildGroups(handle, access);
 
         if (rKey.isEmpty()) {
-            QStringList childKeys = childKeysOrGroups(handle, QSettingsPrivate::ChildKeys);
+            const QStringList childKeys = childKeysOrGroups(handle, QSettingsPrivate::ChildKeys);
 
-            for (int i = 0; i < childKeys.size(); ++i) {
-                QString group = childKeys.at(i);
-
+            for (const QString &group : childKeys) {
                 LONG res = RegDeleteValue(handle, reinterpret_cast<const wchar_t *>(group.utf16()));
                 if (res != ERROR_SUCCESS) {
                     qWarning("QSettings: RegDeleteValue failed on subkey \"%s\": %s",
@@ -754,8 +753,8 @@ bool QWinSettingsPrivate::get(const QString &uKey, QVariant *value) const
 {
     QString rKey = escapedKey(uKey);
 
-    for (int i = 0; i < regList.size(); ++i) {
-        HKEY handle = regList.at(i).handle();
+    for (const RegistryKey &r : regList) {
+        HKEY handle = r.handle();
         if (handle != 0 && readKey(handle, rKey, value))
             return true;
 
@@ -771,8 +770,8 @@ QStringList QWinSettingsPrivate::children(const QString &uKey, ChildSpec spec) c
     NameSet result;
     QString rKey = escapedKey(uKey);
 
-    for (int i = 0; i < regList.size(); ++i) {
-        HKEY parent_handle = regList.at(i).handle();
+    for (const RegistryKey &r : regList) {
+        HKEY parent_handle = r.handle();
         if (parent_handle == 0)
             continue;
         HKEY handle = openKey(parent_handle, KEY_READ, rKey, access);
@@ -836,26 +835,32 @@ bool QWinSettingsPrivate::isWritable() const
 QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format, QSettings::Scope scope,
                                            const QString &organization, const QString &application)
 {
-    if (format == QSettings::NativeFormat)
+    switch (format) {
+    case QSettings::NativeFormat:
         return new QWinSettingsPrivate(scope, organization, application);
-    else if (format == QSettings::Registry32Format)
+    case QSettings::Registry32Format:
         return new QWinSettingsPrivate(scope, organization, application, KEY_WOW64_32KEY);
-    else if (format == QSettings::Registry64Format)
+    case QSettings::Registry64Format:
         return new QWinSettingsPrivate(scope, organization, application, KEY_WOW64_64KEY);
-    else
-        return new QConfFileSettingsPrivate(format, scope, organization, application);
+    default:
+        break;
+    }
+    return new QConfFileSettingsPrivate(format, scope, organization, application);
 }
 
 QSettingsPrivate *QSettingsPrivate::create(const QString &fileName, QSettings::Format format)
 {
-    if (format == QSettings::NativeFormat)
+    switch (format) {
+    case QSettings::NativeFormat:
         return new QWinSettingsPrivate(fileName);
-    else if (format == QSettings::Registry32Format)
+    case QSettings::Registry32Format:
         return new QWinSettingsPrivate(fileName, KEY_WOW64_32KEY);
-    else if (format == QSettings::Registry64Format)
+    case QSettings::Registry64Format:
         return new QWinSettingsPrivate(fileName, KEY_WOW64_64KEY);
-    else
-        return new QConfFileSettingsPrivate(fileName, format);
+    default:
+        break;
+    }
+    return new QConfFileSettingsPrivate(fileName, format);
 }
 
 QT_END_NAMESPACE

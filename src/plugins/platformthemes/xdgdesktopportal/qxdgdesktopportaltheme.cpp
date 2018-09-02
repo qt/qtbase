@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#include "qflatpaktheme.h"
-#include "qflatpakfiledialog_p.h"
+#include "qxdgdesktopportaltheme.h"
+#include "qxdgdesktopportalfiledialog_p.h"
 
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme_p.h>
@@ -47,14 +47,14 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFlatpakThemePrivate : public QPlatformThemePrivate
+class QXdgDesktopPortalThemePrivate : public QPlatformThemePrivate
 {
 public:
-    QFlatpakThemePrivate()
+    QXdgDesktopPortalThemePrivate()
         : QPlatformThemePrivate()
     { }
 
-    ~QFlatpakThemePrivate()
+    ~QXdgDesktopPortalThemePrivate()
     {
         delete baseTheme;
     }
@@ -62,10 +62,10 @@ public:
     QPlatformTheme *baseTheme;
 };
 
-QFlatpakTheme::QFlatpakTheme()
-    : d_ptr(new QFlatpakThemePrivate)
+QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
+    : d_ptr(new QXdgDesktopPortalThemePrivate)
 {
-    Q_D(QFlatpakTheme);
+    Q_D(QXdgDesktopPortalTheme);
 
     QStringList themeNames;
     themeNames += QGuiApplicationPrivate::platform_integration->themeNames();
@@ -92,33 +92,33 @@ QFlatpakTheme::QFlatpakTheme()
         d->baseTheme = new QPlatformTheme;
 }
 
-QPlatformMenuItem* QFlatpakTheme::createPlatformMenuItem() const
+QPlatformMenuItem* QXdgDesktopPortalTheme::createPlatformMenuItem() const
 {
-    Q_D(const QFlatpakTheme);
+    Q_D(const QXdgDesktopPortalTheme);
     return d->baseTheme->createPlatformMenuItem();
 }
 
-QPlatformMenu* QFlatpakTheme::createPlatformMenu() const
+QPlatformMenu* QXdgDesktopPortalTheme::createPlatformMenu() const
 {
-    Q_D(const QFlatpakTheme);
+    Q_D(const QXdgDesktopPortalTheme);
     return d->baseTheme->createPlatformMenu();
 }
 
-QPlatformMenuBar* QFlatpakTheme::createPlatformMenuBar() const
+QPlatformMenuBar* QXdgDesktopPortalTheme::createPlatformMenuBar() const
 {
-    Q_D(const QFlatpakTheme);
+    Q_D(const QXdgDesktopPortalTheme);
     return d->baseTheme->createPlatformMenuBar();
 }
 
-void QFlatpakTheme::showPlatformMenuBar()
+void QXdgDesktopPortalTheme::showPlatformMenuBar()
 {
-    Q_D(const QFlatpakTheme);
+    Q_D(const QXdgDesktopPortalTheme);
     return d->baseTheme->showPlatformMenuBar();
 }
 
-bool QFlatpakTheme::usePlatformNativeDialog(DialogType type) const
+bool QXdgDesktopPortalTheme::usePlatformNativeDialog(DialogType type) const
 {
-    Q_D(const QFlatpakTheme);
+    Q_D(const QXdgDesktopPortalTheme);
 
     if (type == FileDialog)
         return true;
@@ -126,74 +126,74 @@ bool QFlatpakTheme::usePlatformNativeDialog(DialogType type) const
     return d->baseTheme->usePlatformNativeDialog(type);
 }
 
-QPlatformDialogHelper* QFlatpakTheme::createPlatformDialogHelper(DialogType type) const
+QPlatformDialogHelper* QXdgDesktopPortalTheme::createPlatformDialogHelper(DialogType type) const
 {
-    Q_D(const QFlatpakTheme);
+    Q_D(const QXdgDesktopPortalTheme);
 
     if (type == FileDialog) {
         if (d->baseTheme->usePlatformNativeDialog(type))
-            return new QFlatpakFileDialog(static_cast<QPlatformFileDialogHelper*>(d->baseTheme->createPlatformDialogHelper(type)));
+            return new QXdgDesktopPortalFileDialog(static_cast<QPlatformFileDialogHelper*>(d->baseTheme->createPlatformDialogHelper(type)));
 
-        return new QFlatpakFileDialog;
+        return new QXdgDesktopPortalFileDialog;
     }
 
     return d->baseTheme->createPlatformDialogHelper(type);
 }
 
 #ifndef QT_NO_SYSTEMTRAYICON
-QPlatformSystemTrayIcon* QFlatpakTheme::createPlatformSystemTrayIcon() const
+QPlatformSystemTrayIcon* QXdgDesktopPortalTheme::createPlatformSystemTrayIcon() const
 {
-    Q_D(const QFlatpakTheme);
+    Q_D(const QXdgDesktopPortalTheme);
     return d->baseTheme->createPlatformSystemTrayIcon();
 }
 #endif
 
-const QPalette *QFlatpakTheme::palette(Palette type) const
+const QPalette *QXdgDesktopPortalTheme::palette(Palette type) const
 {
-    Q_D(const QFlatpakTheme);
+    Q_D(const QXdgDesktopPortalTheme);
     return d->baseTheme->palette(type);
 }
 
-const QFont* QFlatpakTheme::font(Font type) const
+const QFont* QXdgDesktopPortalTheme::font(Font type) const
 {
-    Q_D(const QFlatpakTheme);
+    Q_D(const QXdgDesktopPortalTheme);
     return d->baseTheme->font(type);
 }
 
-QVariant QFlatpakTheme::themeHint(ThemeHint hint) const
+QVariant QXdgDesktopPortalTheme::themeHint(ThemeHint hint) const
 {
-    Q_D(const QFlatpakTheme);
+    Q_D(const QXdgDesktopPortalTheme);
     return d->baseTheme->themeHint(hint);
 }
 
-QPixmap QFlatpakTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
+QPixmap QXdgDesktopPortalTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
 {
-    Q_D(const QFlatpakTheme);
+    Q_D(const QXdgDesktopPortalTheme);
     return d->baseTheme->standardPixmap(sp, size);
 }
 
-QIcon QFlatpakTheme::fileIcon(const QFileInfo &fileInfo,
+QIcon QXdgDesktopPortalTheme::fileIcon(const QFileInfo &fileInfo,
                               QPlatformTheme::IconOptions iconOptions) const
 {
-    Q_D(const QFlatpakTheme);
+    Q_D(const QXdgDesktopPortalTheme);
     return d->baseTheme->fileIcon(fileInfo, iconOptions);
 }
 
-QIconEngine * QFlatpakTheme::createIconEngine(const QString &iconName) const
+QIconEngine * QXdgDesktopPortalTheme::createIconEngine(const QString &iconName) const
 {
-    Q_D(const QFlatpakTheme);
+    Q_D(const QXdgDesktopPortalTheme);
     return d->baseTheme->createIconEngine(iconName);
 }
 
-QList<QKeySequence> QFlatpakTheme::keyBindings(QKeySequence::StandardKey key) const
+QList<QKeySequence> QXdgDesktopPortalTheme::keyBindings(QKeySequence::StandardKey key) const
 {
-    Q_D(const QFlatpakTheme);
+    Q_D(const QXdgDesktopPortalTheme);
     return d->baseTheme->keyBindings(key);
 }
 
-QString QFlatpakTheme::standardButtonText(int button) const
+QString QXdgDesktopPortalTheme::standardButtonText(int button) const
 {
-    Q_D(const QFlatpakTheme);
+    Q_D(const QXdgDesktopPortalTheme);
     return d->baseTheme->standardButtonText(button);
 }
 

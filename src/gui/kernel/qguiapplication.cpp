@@ -256,10 +256,10 @@ static inline void clearFontUnlocked()
     QGuiApplicationPrivate::app_font = 0;
 }
 
-static bool checkRunningUnderFlatpak()
+static bool checkNeedPortalSupport()
 {
 #if QT_CONFIG(dbus)
-    return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, QLatin1String("flatpak-info")).isEmpty();
+    return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, QLatin1String("flatpak-info")).isEmpty() || qEnvironmentVariableIsSet("SNAP");
 #else
     return false;
 #endif // QT_CONFIG(dbus)
@@ -1225,9 +1225,9 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
     if (!platformThemeName.isEmpty())
         themeNames.append(platformThemeName);
 
-    // 2) Special case - check whether we are in sandbox to use flatpak platform theme for portals support
-    if (checkRunningUnderFlatpak()) {
-        themeNames.append(QStringLiteral("flatpak"));
+    // 2) Special case - check whether it's a flatpak or snap app to use xdg-desktop-portal platform theme for portals support
+    if (checkNeedPortalSupport()) {
+        themeNames.append(QStringLiteral("xdgdesktopportal"));
     }
 
     // 3) Ask the platform integration for a list of theme names
