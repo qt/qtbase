@@ -259,6 +259,10 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::detectSupportedRenderers(c
         qCDebug(lcQpaGl) << "Disabling rotation: " << gpu;
         result |= DisableRotationFlag;
     }
+    if (features.contains(QStringLiteral("disable_program_cache"))) {
+        qCDebug(lcQpaGl) << "Disabling program cache: " << gpu;
+        result |= DisableProgramCacheFlag;
+    }
     srCache->insert(qgpu, result);
     return result;
 #endif // !QT_NO_OPENGL
