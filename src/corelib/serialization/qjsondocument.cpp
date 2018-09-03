@@ -47,6 +47,7 @@
 #include "qjsonwriter_p.h"
 #include "qjsonparser_p.h"
 #include "qjson_p.h"
+#include "qdatastream.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -680,7 +681,10 @@ QDataStream &operator>>(QDataStream &stream, QJsonDocument &doc)
 {
     QByteArray buffer;
     stream >> buffer;
-    doc = QJsonDocument::fromJson(buffer);
+    QJsonParseError parseError{};
+    doc = QJsonDocument::fromJson(buffer, &parseError);
+    if (parseError.error && !buffer.isEmpty())
+        stream.setStatus(QDataStream::ReadCorruptData);
     return stream;
 }
 #endif
