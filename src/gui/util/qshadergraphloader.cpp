@@ -39,6 +39,8 @@
 
 #include "qshadergraphloader_p.h"
 
+#include "qshadernodesloader_p.h"
+
 #include <QtCore/qdebug.h>
 #include <QtCore/qiodevice.h>
 #include <QtCore/qjsonarray.h>
@@ -128,6 +130,19 @@ void QShaderGraphLoader::load()
     }
 
     bool hasError = false;
+
+    const auto prototypesValue = root.value(QStringLiteral("prototypes"));
+    if (!prototypesValue.isUndefined()) {
+        if (prototypesValue.isObject()) {
+            QShaderNodesLoader loader;
+            loader.load(prototypesValue.toObject());
+            m_prototypes.unite(loader.nodes());
+        } else {
+            qWarning() << "Invalid prototypes property, should be an object";
+            m_status = Error;
+            return;
+        }
+    }
 
     const auto nodes = nodesValue.toArray();
     for (const auto &nodeValue : nodes) {

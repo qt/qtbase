@@ -78,6 +78,7 @@ public:
     Q_GUI_EXPORT void setDevice(QIODevice *device) Q_DECL_NOTHROW;
 
     Q_GUI_EXPORT void load();
+    Q_GUI_EXPORT void load(const QJsonObject &prototypesObject);
 
 private:
     Status m_status;
