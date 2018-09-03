@@ -116,6 +116,9 @@ private slots:
     void QTBUG14363_completerWithAnyKeyPressedEditTriggers();
     void mimeData();
     void QTBUG50891_ensureSelectionModelSignalConnectionsAreSet();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void clearItemData();
+#endif
 
 protected slots:
     void rowsAboutToBeInserted(const QModelIndex &parent, int first, int last)
@@ -1742,6 +1745,28 @@ void tst_QListWidget::QTBUG50891_ensureSelectionModelSignalConnectionsAreSet()
     QCOMPARE(itemSelectionChangedSpy.count(), 1);
 
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void tst_QListWidget::clearItemData()
+{
+    QListWidget list;
+    for (int i = 0 ; i < 4; ++i)
+        new QListWidgetItem(QString::number(i), &list);
+    QSignalSpy dataChangeSpy(list.model(), &QAbstractItemModel::dataChanged);
+    QVERIFY(dataChangeSpy.isValid());
+    QVERIFY(!list.model()->clearItemData(QModelIndex()));
+    QCOMPARE(dataChangeSpy.size(), 0);
+    QVERIFY(list.model()->clearItemData(list.model()->index(0, 0)));
+    QVERIFY(!list.model()->index(0, 0).data().isValid());
+    QCOMPARE(dataChangeSpy.size(), 1);
+    const QList<QVariant> dataChangeArgs = dataChangeSpy.takeFirst();
+    QCOMPARE(dataChangeArgs.at(0).value<QModelIndex>(), list.model()->index(0, 0));
+    QCOMPARE(dataChangeArgs.at(1).value<QModelIndex>(), list.model()->index(0, 0));
+    QVERIFY(dataChangeArgs.at(2).value<QVector<int>>().isEmpty());
+    QVERIFY(list.model()->clearItemData(list.model()->index(0, 0)));
+    QCOMPARE(dataChangeSpy.size(), 0);
+}
+#endif
 
 QTEST_MAIN(tst_QListWidget)
 #include "tst_qlistwidget.moc"

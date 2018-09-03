@@ -197,6 +197,16 @@ bool QStringListModel::setData(const QModelIndex &index, const QVariant &value, 
     return false;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+/*!
+    \reimp
+ */
+bool QStringListModel::clearItemData(const QModelIndex &index)
+{
+    return setData(index, QVariant(), Qt::EditRole);
+}
+#endif
+
 /*!
     Inserts \a count rows into the model, beginning at the given \a row.
 

@@ -390,6 +390,27 @@ bool QTreeModel::setData(const QModelIndex &index, const QVariant &value, int ro
     return false;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+bool QTreeModel::clearItemData(const QModelIndex &index)
+{
+    if (!checkIndex(index, CheckIndexOption::IndexIsValid))
+        return false;
+    QTreeWidgetItem *itm = item(index);
+    if (!itm)
+        return false;
+    const auto beginIter = itm->values.at(index.column()).cbegin();
+    const auto endIter = itm->values.at(index.column()).cend();
+    if (std::all_of(beginIter, endIter, [](const QWidgetItemData& data) -> bool { return !data.value.isValid(); })
+        && !itm->d->display.at(index.column()).isValid()) {
+        return true; //it's already cleared
+    }
+    itm->d->display[index.column()] = QVariant();
+    itm->values[index.column()].clear();
+    emit dataChanged(index, index, QVector<int>{});
+    return true;
+}
+#endif
+
 QMap<int, QVariant> QTreeModel::itemData(const QModelIndex &index) const
 {
     QMap<int, QVariant> roles;

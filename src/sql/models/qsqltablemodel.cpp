@@ -607,6 +607,16 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
     return true;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+/*!
+    \reimp
+ */
+bool QStringListModel::clearItemData(const QModelIndex &index)
+{
+    return setData(index, QVariant(), Qt::EditRole);
+}
+#endif
+
 /*!
     This function simply calls QSqlQueryModel::setQuery(\a query).
     You should normally not call it on a QSqlTableModel. Instead, use

@@ -89,6 +89,9 @@ private slots:
     void itemWithHeaderItems();
     void mimeData();
     void selectedRowAfterSorting();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void clearItemData();
+#endif
 
 private:
     QTableWidget *testWidget;
@@ -1609,6 +1612,29 @@ void tst_QTableWidget::selectedRowAfterSorting()
         QCOMPARE(item->row(),0);
     }
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void tst_QTableWidget::clearItemData()
+{
+    QTableWidget table(3,3);
+    for (int r = 0; r < 3; r++)
+        for (int c = 0; c < 3; c++)
+            table.setItem(r,c,new QTableWidgetItem(QStringLiteral("0")));
+    QSignalSpy dataChangeSpy(table.model(), &QAbstractItemModel::dataChanged);
+    QVERIFY(dataChangeSpy.isValid());
+    QVERIFY(!table.model()->clearItemData(QModelIndex()));
+    QCOMPARE(dataChangeSpy.size(), 0);
+    QVERIFY(table.model()->clearItemData(table.model()->index(0, 0)));
+    QVERIFY(!table.model()->index(0, 0).data().isValid());
+    QCOMPARE(dataChangeSpy.size(), 1);
+    const QList<QVariant> dataChangeArgs = dataChangeSpy.takeFirst();
+    QCOMPARE(dataChangeArgs.at(0).value<QModelIndex>(), table.model()->index(0, 0));
+    QCOMPARE(dataChangeArgs.at(1).value<QModelIndex>(), table.model()->index(0, 0));
+    QVERIFY(dataChangeArgs.at(2).value<QVector<int>>().isEmpty());
+    QVERIFY(table.model()->clearItemData(table.model()->index(0, 0)));
+    QCOMPARE(dataChangeSpy.size(), 0);
+}
+#endif
 
 QTEST_MAIN(tst_QTableWidget)
 #include "tst_qtablewidget.moc"

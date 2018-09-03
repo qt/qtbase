@@ -161,6 +161,9 @@ private slots:
     void getMimeDataWithInvalidItem();
     void testVisualItemRect();
     void reparentHiddenItem();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void clearItemData();
+#endif
 
 public slots:
     void itemSelectionChanged();
@@ -3528,6 +3531,44 @@ void tst_QTreeWidget::reparentHiddenItem()
     otherParent->addChild(child);
     QVERIFY(grandChild->isHidden());
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void tst_QTreeWidget::clearItemData()
+{
+    QTreeWidget tree;
+    QAbstractItemModel* model = tree.model();
+    QVERIFY(model->insertColumn(0));
+    QVERIFY(model->insertRow(0));
+    const QModelIndex parentIdx = model->index(0, 0);
+    QVERIFY(model->insertColumn(0, parentIdx));
+    QVERIFY(model->insertRow(0, parentIdx));
+    const QModelIndex childIdx = model->index(0, 0, parentIdx);
+    model->setData(parentIdx, QStringLiteral("parent"));
+    model->setData(parentIdx, QStringLiteral("parent"), Qt::UserRole);
+    model->setData(childIdx, QStringLiteral("child"));
+    QSignalSpy dataChangeSpy(model, &QAbstractItemModel::dataChanged);
+    QVERIFY(dataChangeSpy.isValid());
+    QVERIFY(!model->clearItemData(QModelIndex()));
+    QCOMPARE(dataChangeSpy.size(), 0);
+    QVERIFY(model->clearItemData(parentIdx));
+    QVERIFY(!model->data(parentIdx).isValid());
+    QVERIFY(!model->data(parentIdx, Qt::UserRole).isValid());
+    QCOMPARE(dataChangeSpy.size(), 1);
+    QList<QVariant> dataChangeArgs = dataChangeSpy.takeFirst();
+    QCOMPARE(dataChangeArgs.at(0).value<QModelIndex>(), parentIdx);
+    QCOMPARE(dataChangeArgs.at(1).value<QModelIndex>(), parentIdx);
+    QVERIFY(dataChangeArgs.at(2).value<QVector<int>>().isEmpty());
+    QVERIFY(model->clearItemData(parentIdx));
+    QCOMPARE(dataChangeSpy.size(), 0);
+    QVERIFY(model->clearItemData(childIdx));
+    QVERIFY(!model->data(childIdx).isValid());
+    QCOMPARE(dataChangeSpy.size(), 1);
+    dataChangeArgs = dataChangeSpy.takeFirst();
+    QCOMPARE(dataChangeArgs.at(0).value<QModelIndex>(), childIdx);
+    QCOMPARE(dataChangeArgs.at(1).value<QModelIndex>(), childIdx);
+    QVERIFY(dataChangeArgs.at(2).value<QVector<int>>().isEmpty());
+}
+#endif
 
 QTEST_MAIN(tst_QTreeWidget)
 #include "tst_qtreewidget.moc"

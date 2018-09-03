@@ -313,6 +313,17 @@ bool QAbstractProxyModel::setHeaderData(int section, Qt::Orientation orientation
     return d->model->setHeaderData(sourceSection, orientation, value, role);
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+/*!
+    \reimp
+ */
+bool QAbstractProxyModel::clearItemData(const QModelIndex &index)
+{
+    Q_D(QAbstractProxyModel);
+    return d->model->clearItemData(mapToSource(index));
+}
+#endif
+
 /*!
     \reimp
  */

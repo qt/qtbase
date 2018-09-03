@@ -227,6 +227,22 @@ bool QListModel::setData(const QModelIndex &index, const QVariant &value, int ro
     return true;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+bool QListModel::clearItemData(const QModelIndex &index)
+{
+    if (!checkIndex(index, CheckIndexOption::IndexIsValid))
+        return false;
+    QListWidgetItem *item = items.at(index.row());
+    const auto beginIter = item->d->values.cbegin();
+    const auto endIter = item->d->values.cend();
+    if (std::all_of(beginIter, endIter, [](const QWidgetItemData& data) -> bool { return !data.value.isValid(); }))
+        return true; //it's already cleared
+    item->d->values.clear();
+    emit dataChanged(index, index, QVector<int>{});
+    return true;
+}
+#endif
+
 QMap<int, QVariant> QListModel::itemData(const QModelIndex &index) const
 {
     QMap<int, QVariant> roles;

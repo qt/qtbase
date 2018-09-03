@@ -129,6 +129,9 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex &index, const QVariant &value, int role) override;
     bool setItemData(const QModelIndex &index, const QMap<int, QVariant> &roles) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    bool clearItemData(const QModelIndex &index) override;
+#endif
 
     QMap<int, QVariant> itemData(const QModelIndex &index) const override;
 
