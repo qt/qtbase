@@ -268,6 +268,11 @@ Q_CORE_EXPORT uint qHash(const QJsonObject &object, uint seed = 0);
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonObject &);
 #endif
 
+#ifndef QT_NO_DATASTREAM
+Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QJsonObject &);
+Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QJsonObject &);
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QJSONOBJECT_H

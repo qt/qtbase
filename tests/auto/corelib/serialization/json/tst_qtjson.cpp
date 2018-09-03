@@ -157,6 +157,8 @@ private Q_SLOTS:
     void streamSerializationQJsonDocument();
     void streamSerializationQJsonArray_data();
     void streamSerializationQJsonArray();
+    void streamSerializationQJsonObject_data();
+    void streamSerializationQJsonObject();
     void streamVariantSerialization();
 
 private:
@@ -3059,6 +3061,27 @@ void tst_QtJson::streamSerializationQJsonArray()
     QCOMPARE(output, array);
 }
 
+void tst_QtJson::streamSerializationQJsonObject_data()
+{
+    QTest::addColumn<QJsonObject>("object");
+    QTest::newRow("empty") << QJsonObject();
+    QTest::newRow("non-empty") << QJsonObject{{"foo", 665}, {"bar", 666}};
+}
+
+void tst_QtJson::streamSerializationQJsonObject()
+{
+    // Check interface only, implementation is tested through to and from
+    // json functions.
+    QByteArray buffer;
+    QFETCH(QJsonObject, object);
+    QJsonObject output;
+    QDataStream save(&buffer, QIODevice::WriteOnly);
+    save << object;
+    QDataStream load(buffer);
+    load >> output;
+    QCOMPARE(output, object);
+}
+
 void tst_QtJson::streamVariantSerialization()
 {
     // Check interface only, implementation is tested through to and from
@@ -3085,6 +3108,17 @@ void tst_QtJson::streamVariantSerialization()
         load >> output;
         QCOMPARE(output.userType(), QMetaType::QJsonArray);
         QCOMPARE(output.toJsonArray(), array);
+    }
+    {
+        QJsonObject obj{{"foo", 42}};
+        QVariant output;
+        QVariant variant(obj);
+        QDataStream save(&buffer, QIODevice::WriteOnly);
+        save << variant;
+        QDataStream load(buffer);
+        load >> output;
+        QCOMPARE(output.userType(), QMetaType::QJsonObject);
+        QCOMPARE(output.toJsonObject(), obj);
     }
 }
 

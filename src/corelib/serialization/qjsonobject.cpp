@@ -1320,4 +1320,21 @@ QDebug operator<<(QDebug dbg, const QJsonObject &o)
 }
 #endif
 
+#ifndef QT_NO_DATASTREAM
+QDataStream &operator<<(QDataStream &stream, const QJsonObject &object)
+{
+    QJsonDocument doc{object};
+    stream << doc.toJson(QJsonDocument::Compact);
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, QJsonObject &object)
+{
+    QJsonDocument doc;
+    stream >> doc;
+    object = doc.object();
+    return stream;
+}
+#endif
+
 QT_END_NAMESPACE

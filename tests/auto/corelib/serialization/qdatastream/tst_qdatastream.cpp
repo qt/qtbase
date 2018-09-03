@@ -137,6 +137,7 @@ private slots:
 
     void stream_QJsonDocument();
     void stream_QJsonArray();
+    void stream_QJsonObject();
 
     void setVersion_data();
     void setVersion();
@@ -2143,6 +2144,30 @@ void tst_QDataStream::stream_QJsonArray()
         QJsonArray arrayLoad;
         load >> arrayLoad;
         QCOMPARE(arrayLoad, arraySave);
+    }
+}
+
+void tst_QDataStream::stream_QJsonObject()
+{
+    QByteArray buffer;
+    {
+        QDataStream save(&buffer, QIODevice::WriteOnly);
+        save << QByteArrayLiteral("invalidJson");
+        QDataStream load(&buffer, QIODevice::ReadOnly);
+        QJsonObject object;
+        load >> object;
+        QVERIFY(object.isEmpty());
+        QVERIFY(load.status() != QDataStream::Ok);
+        QCOMPARE(load.status(), QDataStream::ReadCorruptData);
+    }
+    {
+        QDataStream save(&buffer, QIODevice::WriteOnly);
+        QJsonObject objSave{{"foo", 1}, {"bar", 2}};
+        save << objSave;
+        QDataStream load(&buffer, QIODevice::ReadOnly);
+        QJsonObject objLoad;
+        load >> objLoad;
+        QCOMPARE(objLoad, objSave);
     }
 }
 
