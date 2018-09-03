@@ -1666,23 +1666,23 @@ void tst_QLocale::macDefaultLocale()
 
     // Depending on the configured time zone, the time string might not
     // contain a GMT specifier. (Sometimes it just names the zone, like "CEST")
-    if (timeString.contains(QString("GMT"))) {
-        QString expectedGMTSpecifierBase("GMT");
-        if (diff >= 0)
-            expectedGMTSpecifierBase.append(QLatin1Char('+'));
-        else
-            expectedGMTSpecifierBase.append(QLatin1Char('-'));
+    QLatin1String gmt("GMT");
+    if (timeString.contains(gmt) && diff) {
+        QLatin1Char sign(diff < 0 ? '-' : '+');
+        QString number(QString::number(qAbs(diff)));
+        const QString expect = gmt + sign + number;
 
-        QString expectedGMTSpecifier = expectedGMTSpecifierBase + QString("%1").arg(qAbs(diff));
-        QString expectedGMTSpecifierZeroExtended = expectedGMTSpecifierBase + QString("0%1").arg(qAbs(diff));
+        if (diff < 10) {
+            const QString zeroed = gmt + sign + QLatin1Char('0') + number;
 
-        QVERIFY2(timeString.contains(expectedGMTSpecifier)
-            || timeString.contains(expectedGMTSpecifierZeroExtended),
-            qPrintable(QString("timeString `%1', expectedGMTSpecifier `%2' or `%3'")
-            .arg(timeString)
-            .arg(expectedGMTSpecifier)
-            .arg(expectedGMTSpecifierZeroExtended)
-        ));
+            QVERIFY2(timeString.contains(expect) || timeString.contains(zeroed),
+                     qPrintable(QString("timeString `%1', expected GMT specifier `%2' or `%3'")
+                                .arg(timeString).arg(expect).arg(zeroed)));
+        } else {
+            QVERIFY2(timeString.contains(expect),
+                     qPrintable(QString("timeString `%1', expected GMT specifier `%2'")
+                                .arg(timeString).arg(expect)));
+        }
     }
     QCOMPARE(locale.dayName(1), QString("Monday"));
     QCOMPARE(locale.dayName(7), QString("Sunday"));
