@@ -45,6 +45,7 @@
 #include <qvariant.h>
 #include <qstringlist.h>
 #include <qdebug.h>
+#include "qdatastream.h"
 
 #ifndef QT_BOOTSTRAPPED
 #  include <qcborarray.h>
@@ -930,6 +931,80 @@ QDebug operator<<(QDebug dbg, const QJsonValue &o)
         break;
     }
     return dbg;
+}
+#endif
+
+#ifndef QT_NO_DATASTREAM
+QDataStream &operator<<(QDataStream &stream, const QJsonValue &v)
+{
+    quint8 type = v.t;
+    stream << type;
+    switch (type) {
+    case QJsonValue::Undefined:
+    case QJsonValue::Null:
+        break;
+    case QJsonValue::Bool:
+        stream << v.toBool();
+        break;
+    case QJsonValue::Double:
+        stream << v.toDouble();
+        break;
+    case QJsonValue::String:
+        stream << v.toString();
+        break;
+    case QJsonValue::Array:
+        stream << v.toArray();
+        break;
+    case QJsonValue::Object:
+        stream << v.toObject();
+        break;
+    }
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, QJsonValue &v)
+{
+    quint8 type;
+    stream >> type;
+    switch (type) {
+    case QJsonValue::Undefined:
+    case QJsonValue::Null:
+        v = QJsonValue{QJsonValue::Type(type)};
+        break;
+    case QJsonValue::Bool: {
+        bool b;
+        stream >> b;
+        v = QJsonValue(b);
+        break;
+    } case QJsonValue::Double: {
+        double d;
+        stream >> d;
+        v = QJsonValue{d};
+        break;
+    } case QJsonValue::String: {
+        QString s;
+        stream >> s;
+        v = QJsonValue{s};
+        break;
+    }
+    case QJsonValue::Array: {
+        QJsonArray a;
+        stream >> a;
+        v = QJsonValue{a};
+        break;
+    }
+    case QJsonValue::Object: {
+        QJsonObject o;
+        stream >> o;
+        v = QJsonValue{o};
+        break;
+    }
+    default: {
+        stream.setStatus(QDataStream::ReadCorruptData);
+        v = QJsonValue{QJsonValue::Undefined};
+    }
+    }
+    return stream;
 }
 #endif
 

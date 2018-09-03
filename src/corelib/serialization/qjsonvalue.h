@@ -152,6 +152,7 @@ private:
     friend class QJsonObject;
     friend class QCborValue;
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonValue &);
+    friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QJsonValue &);
 
     QJsonValue(QJsonPrivate::Data *d, QJsonPrivate::Base *b, const QJsonPrivate::Value& v);
     void stringDataFromQStringHelper(const QString &string);
@@ -251,6 +252,11 @@ Q_CORE_EXPORT uint qHash(const QJsonValue &value, uint seed = 0);
 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonValue &);
+#endif
+
+#ifndef QT_NO_DATASTREAM
+Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QJsonValue &);
+Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QJsonValue &);
 #endif
 
 QT_END_NAMESPACE

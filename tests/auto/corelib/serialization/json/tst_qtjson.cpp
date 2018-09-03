@@ -159,6 +159,9 @@ private Q_SLOTS:
     void streamSerializationQJsonArray();
     void streamSerializationQJsonObject_data();
     void streamSerializationQJsonObject();
+    void streamSerializationQJsonValue_data();
+    void streamSerializationQJsonValue();
+    void streamSerializationQJsonValueEmpty();
     void streamVariantSerialization();
 
 private:
@@ -3082,6 +3085,51 @@ void tst_QtJson::streamSerializationQJsonObject()
     QCOMPARE(output, object);
 }
 
+void tst_QtJson::streamSerializationQJsonValue_data()
+{
+    QTest::addColumn<QJsonValue>("value");
+    QTest::newRow("double") << QJsonValue{665};
+    QTest::newRow("bool") << QJsonValue{true};
+    QTest::newRow("string") << QJsonValue{QStringLiteral("bum")};
+    QTest::newRow("array") << QJsonValue{QJsonArray{12,1,5,6,7}};
+    QTest::newRow("object") << QJsonValue{QJsonObject{{"foo", 665}, {"bar", 666}}};
+}
+
+void tst_QtJson::streamSerializationQJsonValue()
+{
+    QByteArray buffer;
+    QFETCH(QJsonValue, value);
+    QJsonValue output;
+    QDataStream save(&buffer, QIODevice::WriteOnly);
+    save << value;
+    QDataStream load(buffer);
+    load >> output;
+    QCOMPARE(output, value);
+}
+
+void tst_QtJson::streamSerializationQJsonValueEmpty()
+{
+    QByteArray buffer;
+    {
+        QJsonValue undef{QJsonValue::Undefined};
+        QDataStream save(&buffer, QIODevice::WriteOnly);
+        save << undef;
+        QDataStream load(buffer);
+        QJsonValue output;
+        load >> output;
+        QVERIFY(output.isUndefined());
+    }
+    {
+        QJsonValue null{QJsonValue::Null};
+        QDataStream save(&buffer, QIODevice::WriteOnly);
+        save << null;
+        QDataStream load(buffer);
+        QJsonValue output;
+        load >> output;
+        QVERIFY(output.isNull());
+    }
+}
+
 void tst_QtJson::streamVariantSerialization()
 {
     // Check interface only, implementation is tested through to and from
@@ -3119,6 +3167,17 @@ void tst_QtJson::streamVariantSerialization()
         load >> output;
         QCOMPARE(output.userType(), QMetaType::QJsonObject);
         QCOMPARE(output.toJsonObject(), obj);
+    }
+    {
+        QJsonValue value{42};
+        QVariant output;
+        QVariant variant(value);
+        QDataStream save(&buffer, QIODevice::WriteOnly);
+        save << variant;
+        QDataStream load(buffer);
+        load >> output;
+        QCOMPARE(output.userType(), QMetaType::QJsonValue);
+        QCOMPARE(output.toJsonValue(), value);
     }
 }
 
