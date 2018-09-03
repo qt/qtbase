@@ -1259,5 +1259,22 @@ QDebug operator<<(QDebug dbg, const QJsonArray &a)
 }
 #endif
 
+#ifndef QT_NO_DATASTREAM
+QDataStream &operator<<(QDataStream &stream, const QJsonArray &array)
+{
+    QJsonDocument doc{array};
+    stream << doc.toJson(QJsonDocument::Compact);
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, QJsonArray &array)
+{
+    QJsonDocument doc;
+    stream >> doc;
+    array = doc.array();
+    return stream;
+}
+#endif
+
 QT_END_NAMESPACE
 
