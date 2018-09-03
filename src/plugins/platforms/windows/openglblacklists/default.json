@@ -141,6 +141,18 @@
           "features": [
             "disable_desktopgl", "disable_d3d11", "disable_d3d9"
           ]
+        },
+        {
+           "id": 12,
+           "description": "Intel HD Graphics 620 crash in conjunction with shader caches (QTBUG-64697)",
+           "vendor_id": "0x8086",
+           "device_id": [ "0x5916" ],
+           "os": {
+               "type": "win"
+           },
+           "features": [
+               "disable_program_cache"
+           ]
         }
     ]
 }

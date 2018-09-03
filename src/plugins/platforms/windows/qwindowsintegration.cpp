@@ -418,6 +418,10 @@ QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::doCreate()
     }
 
     const QWindowsOpenGLTester::Renderers supportedRenderers = QWindowsOpenGLTester::supportedRenderers();
+    if (supportedRenderers.testFlag(QWindowsOpenGLTester::DisableProgramCacheFlag)
+        && !QCoreApplication::testAttribute(Qt::AA_DisableShaderDiskCache)) {
+        QCoreApplication::setAttribute(Qt::AA_DisableShaderDiskCache);
+    }
     if (supportedRenderers & QWindowsOpenGLTester::DesktopGl) {
         if (QWindowsStaticOpenGLContext *glCtx = QOpenGLStaticContext::create()) {
             if ((supportedRenderers & QWindowsOpenGLTester::DisableRotationFlag)
