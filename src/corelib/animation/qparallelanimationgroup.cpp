@@ -53,13 +53,7 @@
     You can treat QParallelAnimationGroup as any other QAbstractAnimation,
     e.g., pause, resume, or add it to other animation groups.
 
-    \code
-        QParallelAnimationGroup *group = new QParallelAnimationGroup;
-        group->addAnimation(anim1);
-        group->addAnimation(anim2);
-
-        group->start();
-    \endcode
+    \snippet code/src_corelib_animation_qparallelanimationgroup.cpp 0
 
     In this example, \c anim1 and \c anim2 are two
     \l{QPropertyAnimation}s that have already been set up.

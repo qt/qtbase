@@ -135,9 +135,7 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
     flexible way. Rules are specified in text, where every line must have the
     format
 
-    \code
-    <category>[.<type>] = true|false
-    \endcode
+    \snippet code/src_corelib_io_qloggingcategory.cpp 0
 
     \c <category> is the name of the category, potentially with \c{*} as a
     wildcard symbol as the first or last character (or at both positions).
@@ -149,10 +147,7 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
 
     Rules can be set via \l setFilterRules():
 
-    \code
-    QLoggingCategory::setFilterRules("*.debug=false\n"
-                                     "driver.usb.debug=true");
-    \endcode
+    \snippet code/src_corelib_io_qloggingcategory.cpp 1
 
     Since Qt 5.3, logging rules are also
     automatically loaded from the \c [Rules] section of a logging
@@ -160,19 +155,13 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
     configuration directory, or explicitly set in a \c QT_LOGGING_CONF
     environment variable:
 
-    \code
-    [Rules]
-    *.debug=false
-    driver.usb.debug=true
-    \endcode
+    \snippet code/src_corelib_io_qloggingcategory.cpp 2
 
     Since Qt 5.3, logging rules can also be specified in a \c QT_LOGGING_RULES
     environment variable. And since Qt 5.6, multiple rules can also be
     separated by semicolons:
 
-    \code
-    QT_LOGGING_RULES="*.debug=false;driver.usb.debug=true"
-    \endcode
+    \snippet code/src_corelib_io_qloggingcategory.cpp 3
 
     Rules set by \l setFilterRules() take precedence over rules specified
     in the QtProject configuration directory, and can, in turn, be

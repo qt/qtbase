@@ -2109,9 +2109,7 @@ QString QFileDialog::labelText(DialogLabel label) const
     strings. If you want multiple filters, separate them with ';;', for
     example:
 
-    \code
-    "Images (*.png *.xpm *.jpg);;Text files (*.txt);;XML files (*.xml)"
-    \endcode
+    \snippet code/src_gui_dialogs_qfiledialog.cpp 14
 
     The \a options argument holds various options about how to run the dialog,
     see the QFileDialog::Option enum for more information on the flags you can
@@ -2224,9 +2222,7 @@ QUrl QFileDialog::getOpenFileUrl(QWidget *parent,
     \a selectedFilter and \a filter may be empty strings. If you need multiple
     filters, separate them with ';;', for instance:
 
-    \code
-    "Images (*.png *.xpm *.jpg);;Text files (*.txt);;XML files (*.xml)"
-    \endcode
+    \snippet code/src_gui_dialogs_qfiledialog.cpp 14
 
     The dialog's caption is set to \a caption. If \a caption is not specified
     then a default caption will be used.
@@ -2340,9 +2336,7 @@ QList<QUrl> QFileDialog::getOpenFileUrls(QWidget *parent,
     parameters \a dir, \a selectedFilter, and \a filter may be empty strings.
     Multiple filters are separated with ';;'. For instance:
 
-    \code
-    "Images (*.png *.xpm *.jpg);;Text files (*.txt);;XML files (*.xml)"
-    \endcode
+    \snippet code/src_gui_dialogs_qfiledialog.cpp 14
 
     The \a options argument holds various options about how to run the dialog,
     see the QFileDialog::Option enum for more information on the flags you can

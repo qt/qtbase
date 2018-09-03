@@ -91,19 +91,7 @@ void QContiguousCacheData::freeData(QContiguousCacheData *data)
     The simplest way of using a contiguous cache is to use the append()
     and prepend().
 
-\code
-MyRecord record(int row) const
-{
-    Q_ASSERT(row >= 0 && row < count());
-
-    while(row > cache.lastIndex())
-        cache.append(slowFetchRecord(cache.lastIndex()+1));
-    while(row < cache.firstIndex())
-        cache.prepend(slowFetchRecord(cache.firstIndex()-1));
-
-    return cache.at(row);
-}
-\endcode
+    \snippet code/src_corelib_tools_qcontiguouscache.cpp 0
 
     If the cache is full then the item at the opposite end of the cache from
     where the new item is appended or prepended will be removed.
@@ -463,12 +451,7 @@ MyRecord record(int row) const
     It is provided so that index overflows can be corrected when using the
     cache as a circular buffer.
 
-    \code
-    QContiguousCache<int> cache(10);
-    cache.insert(INT_MAX, 1); // cache contains one value and has valid indexes, INT_MAX to INT_MAX
-    cache.append(2); // cache contains two values but does not have valid indexes.
-    cache.normalizeIndexes(); // cache has two values, 1 and 2.  New first index will be in the range of 0 to capacity().
-    \endcode
+    \snippet code/src_corelib_tools_qcontiguouscache.cpp 1
 
     \sa areIndexesValid(), append(), prepend()
 */

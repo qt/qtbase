@@ -388,44 +388,14 @@
     sharedFromThis() that return a QSharedPointer<T> and
     QSharedPointer<const T>, depending on constness, to \c this:
 
-    \code
-    class Y: public QEnableSharedFromThis<Y>
-    {
-    public:
-        QSharedPointer<Y> f()
-        {
-            return sharedFromThis();
-        }
-    };
-
-    int main()
-    {
-        QSharedPointer<Y> p(new Y());
-        QSharedPointer<Y> y = p->f();
-        Q_ASSERT(p == y); // p and q must share ownership
-    }
-    \endcode
+    \snippet code/src_corelib_tools_qsharedpointer.cpp 0
 
     It is also possible to get a shared pointer from an object outside of
     the class itself. This is especially useful in code that provides an
     interface to scripts, where it is currently not possible to use shared
     pointers. For example:
 
-    \code
-    class ScriptInterface : public QObject
-    {
-        Q_OBJECT
-
-        // ...
-
-    public slots:
-        void slotCalledByScript(Y *managedBySharedPointer)
-        {
-            QSharedPointer<Y> yPtr = managedBySharedPointer->sharedFromThis();
-            // Some other code unrelated to scripts that expects a QSharedPointer<Y> ...
-        }
-    };
-    \endcode
+    \snippet code/src_corelib_tools_qsharedpointer.cpp 1
 */
 
 /*!
@@ -466,30 +436,13 @@
     when the strong reference count drops to 0. This is useful,
     for instance, for calling \l {QObject::}{deleteLater()} on a QObject instead:
 
-    \code
-    static void doDeleteLater(MyObject *obj)
-    {
-        obj->deleteLater();
-    }
-
-    void otherFunction()
-    {
-        QSharedPointer<MyObject> obj =
-            QSharedPointer<MyObject>(new MyObject, doDeleteLater);
-
-        // continue using obj
-        obj.clear();    // calls obj->deleteLater();
-    }
-    \endcode
+    \snippet code/src_corelib_tools_qsharedpointer.cpp 2
 
     Note that the custom deleter function will be called with a pointer to type
     \c X, even if the QSharedPointer template parameter \c T is not the same.
 
     It is also possible to specify a member function directly, as in:
-    \code
-        QSharedPointer<MyObject> obj =
-            QSharedPointer<MyObject>(new MyObject, &QObject::deleteLater);
-    \endcode
+    \snippet code/src_corelib_tools_qsharedpointer.cpp 3
 
     \sa clear()
 */
@@ -618,9 +571,7 @@
     Returns \c true if this object is not null. This function is suitable
     for use in \tt if-constructs, like:
 
-    \code
-        if (sharedptr) { ... }
-    \endcode
+    \snippet code/src_corelib_tools_qsharedpointer.cpp 4
 
     \sa isNull()
 */
@@ -631,9 +582,7 @@
     Returns \c true if this object is null. This function is suitable
     for use in \tt if-constructs, like:
 
-    \code
-        if (!sharedptr) { ... }
-    \endcode
+    \snippet code/src_corelib_tools_qsharedpointer.cpp 5
 
     \sa isNull()
 */
@@ -766,9 +715,7 @@
 
     Resets this QSharedPointer object to point to \a t
     instead. Equivalent to:
-    \code
-    QSharedPointer<T> other(t); this->swap(other);
-    \endcode
+    \snippet code/src_corelib_tools_qsharedpointer.cpp 6
 */
 
 /*!
@@ -777,9 +724,7 @@
 
     Resets this QSharedPointer object to point to \a t
     instead, with the Deleter \a deleter. Equivalent to:
-    \code
-    QSharedPointer<T> other(t, deleter); this->swap(other);
-    \endcode
+    \snippet code/src_corelib_tools_qsharedpointer.cpp 7
 */
 
 /*!
@@ -896,9 +841,7 @@
     Returns \c true if this object is not null. This function is suitable
     for use in \tt if-constructs, like:
 
-    \code
-        if (weakref) { ... }
-    \endcode
+    \snippet code/src_corelib_tools_qsharedpointer.cpp 8
 
     Note that, due to the nature of weak references, the pointer that
     QWeakPointer references can become null at any moment, so
@@ -914,9 +857,7 @@
     Returns \c true if this object is null. This function is suitable
     for use in \tt if-constructs, like:
 
-    \code
-        if (!weakref) { ... }
-    \endcode
+    \snippet code/src_corelib_tools_qsharedpointer.cpp 9
 
     Note that, due to the nature of weak references, the pointer that
     QWeakPointer references can become null at any moment, so
@@ -939,9 +880,7 @@
     It is ok to obtain the value of the pointer and using that value itself,
     like for example in debugging statements:
 
-    \code
-        qDebug("Tracking %p", weakref.data());
-    \endcode
+    \snippet code/src_corelib_tools_qsharedpointer.cpp 10
 
     However, dereferencing the pointer is only allowed if you can guarantee
     by external means that the pointer does not get deleted. For example,
@@ -950,18 +889,7 @@
 
     If that is the case, then the following code is valid:
 
-    \code
-        // this pointer cannot be used in another thread
-        // so other threads cannot delete it
-        QWeakPointer<int> weakref = obtainReference();
-
-        Object *obj = weakref.data();
-        if (obj) {
-            // if the pointer wasn't deleted yet, we know it can't get
-            // deleted by our own code here nor the functions we call
-            otherFunction(obj);
-        }
-    \endcode
+    \snippet code/src_corelib_tools_qsharedpointer.cpp 11
 
     Use this function with care.
 
@@ -986,17 +914,7 @@
     to a strong reference and, if it succeeded, it prints the value of the
     integer that was held:
 
-    \code
-        QWeakPointer<int> weakref;
-
-        // ...
-
-        QSharedPointer<int> strong = weakref.toStrongRef();
-        if (strong)
-            qDebug() << "The value is:" << *strong;
-        else
-            qDebug() << "The value has already been deleted";
-    \endcode
+    \snippet code/src_corelib_tools_qsharedpointer.cpp 12
 
     \sa QSharedPointer::QSharedPointer()
 */

@@ -350,22 +350,10 @@ QByteArray QJsonDocument::toJson() const
     when converting to a QJsonDocument using toJson().
 
     \value Indented Defines human readable output as follows:
-        \code
-        {
-            "Array": [
-                true,
-                999,
-                "string"
-            ],
-            "Key": "Value",
-            "null": null
-        }
-        \endcode
+        \snippet code/src_corelib_serialization_qjsondocument.cpp 0
 
     \value Compact Defines a compact output as follows:
-        \code
-        {"Array":[true,999,"string"],"Key":"Value","null":null}
-        \endcode
+        \snippet code/src_corelib_serialization_qjsondocument.cpp 1
   */
 
 /*!

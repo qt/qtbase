@@ -74,19 +74,14 @@ QT_BEGIN_NAMESPACE
     string literal.
 
     QStringViews should be passed by value, not by reference-to-const:
-    \code
-    void myfun1(QStringView sv);        // preferred
-    void myfun2(const QStringView &sv); // compiles and works, but slower
-    \endcode
+    \snippet code/src_corelib_tools_qstringview.cpp 0
 
     If you want to give your users maximum freedom in what strings they can pass
     to your function, accompany the QStringView overload with overloads for
 
     \list
         \li \e QChar: this overload can delegate to the QStringView version:
-            \code
-            void fun(QChar ch) { fun(QStringView(&ch, 1)); }
-            \endcode
+            \snippet code/src_corelib_tools_qstringview.cpp 1
             even though, for technical reasons, QStringView cannot provide a
             QChar constructor by itself.
         \li \e QString: if you store an unmodified copy of the string and thus would
@@ -291,9 +286,7 @@ QT_BEGIN_NAMESPACE
     If you need the full array, use the constructor from pointer and
     size instead:
 
-    \code
-    auto sv = QStringView(array, std::size(array)); // using C++17 std::size()
-    \endcode
+    \snippet code/src_corelib_tools_qstringview.cpp 2
 
     \a string must remain valid for the lifetime of this string view
     object.

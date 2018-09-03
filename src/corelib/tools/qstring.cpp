@@ -7966,10 +7966,7 @@ QVector<QStringRef> QString::splitRef(const QRegularExpression &re, SplitBehavio
 
     Example:
 
-    \code
-        QString str("ab");
-        str.repeated(4);            // returns "abababab"
-    \endcode
+    \snippet code/src_corelib_tools_qstring.cpp 8
 */
 QString QString::repeated(int times) const
 {
@@ -12096,10 +12093,7 @@ QString QString::toHtmlEscaped() const
 
   If you have code that looks like this:
 
-  \code
-  // hasAttribute takes a QString argument
-  if (node.hasAttribute("http-contents-length")) //...
-  \endcode
+  \snippet code/src_corelib_tools_qstring.cpp 9
 
   then a temporary QString will be created to be passed as the \c{hasAttribute}
   function parameter. This can be quite expensive, as it involves a memory
@@ -12108,9 +12102,7 @@ QString QString::toHtmlEscaped() const
 
   This cost can be avoided by using QStringLiteral instead:
 
-  \code
-  if (node.hasAttribute(QStringLiteral(u"http-contents-length"))) //...
-  \endcode
+  \snippet code/src_corelib_tools_qstring.cpp 10
 
   In this case, QString's internal data will be generated at compile time; no
   conversion or allocation will occur at runtime.
@@ -12125,9 +12117,7 @@ QString QString::toHtmlEscaped() const
   instance, QString::operator==() can compare to a QLatin1String
   directly:
 
-  \code
-  if (attribute.name() == QLatin1String("http-contents-length")) //...
-  \endcode
+  \snippet code/src_corelib_tools_qstring.cpp 11
 
   \note Some compilers have bugs encoding strings containing characters outside
   the US-ASCII character set. Make sure you prefix your string with \c{u} in

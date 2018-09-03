@@ -538,3 +538,16 @@ QString text = MyMagicClass::tr("Sim sala bim.");
 //! [explicit tr context]
 QString text = QScrollBar::tr("Page up");
 //! [explicit tr context]
+
+//! [53]
+{
+const QSignalBlocker blocker(someQObject);
+// no signals here
+}
+//! [53]
+
+//! [54]
+const bool wasBlocked = someQObject->blockSignals(true);
+// no signals here
+someQObject->blockSignals(wasBlocked);
+//! [54]

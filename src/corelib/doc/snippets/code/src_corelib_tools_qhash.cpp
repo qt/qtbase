@@ -350,3 +350,23 @@ inline uint qHash(const std::unordered_set<int> &key, uint seed = 0)
     return qHashRangeCommutative(key.begin(), key.end(), seed);
 }
 //! [qhashrangecommutative]
+
+//! [29]
+qHash(qMakePair(key.first, key.second), seed);
+//! [29]
+
+//! [30]
+{0, 1, 2}
+//! [30]
+
+//! [31]
+{1, 2, 0}
+//! [31]
+
+//! [32]
+uint qHash(K key);
+uint qHash(const K &key);
+
+uint qHash(K key, uint seed);
+uint qHash(const K &key, uint seed);
+//! [32]

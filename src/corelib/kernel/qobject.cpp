@@ -526,18 +526,9 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
     constructor and in the destructor it resets the state to what
     it was before the constructor ran.
 
-    \code
-    {
-    const QSignalBlocker blocker(someQObject);
-    // no signals here
-    }
-    \endcode
+    \snippet code/src_corelib_kernel_qobject.cpp 53
     is thus equivalent to
-    \code
-    const bool wasBlocked = someQObject->blockSignals(true);
-    // no signals here
-    someQObject->blockSignals(wasBlocked);
-    \endcode
+    \snippet code/src_corelib_kernel_qobject.cpp 54
 
     except the code using QSignalBlocker is safe in the face of
     exceptions.

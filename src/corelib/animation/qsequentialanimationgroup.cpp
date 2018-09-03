@@ -61,14 +61,7 @@
     groups. You can also call addPause() or insertPause() to add a
     pause to a sequential animation group.
 
-    \code
-        QSequentialAnimationGroup *group = new QSequentialAnimationGroup;
-
-        group->addAnimation(anim1);
-        group->addAnimation(anim2);
-
-        group->start();
-    \endcode
+    \snippet code/src_corelib_animation_qsequentialanimationgroup.cpp 0
 
     In this example, \c anim1 and \c anim2 are two already set up
     \l{QPropertyAnimation}s.

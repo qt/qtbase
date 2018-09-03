@@ -56,14 +56,7 @@
     makes it possible to animate many of Qt's widgets. Let's look at
     an example:
 
-    \code
-        QPropertyAnimation *animation = new QPropertyAnimation(myWidget, "geometry");
-        animation->setDuration(10000);
-        animation->setStartValue(QRect(0, 0, 100, 30));
-        animation->setEndValue(QRect(250, 250, 100, 30));
-
-        animation->start();
-    \endcode
+    \snippet code/src_corelib_animation_qpropertyanimation.cpp 0
 
     The property name and the QObject instance of which property
     should be animated are passed to the constructor. You can then

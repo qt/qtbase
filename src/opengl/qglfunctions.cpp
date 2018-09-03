@@ -62,44 +62,18 @@ QT_BEGIN_NAMESPACE
     that need it.  The recommended way to use QGLFunctions is by
     direct inheritance:
 
-    \code
-    class MyGLWidget : public QGLWidget, protected QGLFunctions
-    {
-        Q_OBJECT
-    public:
-        MyGLWidget(QWidget *parent = 0) : QGLWidget(parent) {}
-
-    protected:
-        void initializeGL();
-        void paintGL();
-    };
-
-    void MyGLWidget::initializeGL()
-    {
-        initializeGLFunctions();
-    }
-    \endcode
+    \snippet code/src_opengl_qglfunctions.cpp 0
 
     The \c{paintGL()} function can then use any of the OpenGL ES 2.0
     functions without explicit resolution, such as glActiveTexture()
     in the following example:
 
-    \code
-    void MyGLWidget::paintGL()
-    {
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        ...
-    }
-    \endcode
+    \snippet code/src_opengl_qglfunctions.cpp 1
 
     QGLFunctions can also be used directly for ad-hoc invocation
     of OpenGL ES 2.0 functions on all platforms:
 
-    \code
-    QGLFunctions glFuncs(QGLContext::currentContext());
-    glFuncs.glActiveTexture(GL_TEXTURE1);
-    \endcode
+    \snippet code/src_opengl_qglfunctions.cpp 2
 
     QGLFunctions provides wrappers for all OpenGL ES 2.0 functions,
     except those like \c{glDrawArrays()}, \c{glViewport()}, and
@@ -114,10 +88,7 @@ QT_BEGIN_NAMESPACE
     feature.  For example, the following checks if non power of two
     textures are available:
 
-    \code
-    QGLFunctions funcs(QGLContext::currentContext());
-    bool npot = funcs.hasOpenGLFeature(QGLFunctions::NPOTTextures);
-    \endcode
+    \snippet code/src_opengl_qglfunctions.cpp 3
 
     \note This class has been deprecated in favor of QOpenGLFunctions.
 */

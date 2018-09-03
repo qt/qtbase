@@ -102,9 +102,7 @@ QT_BEGIN_NAMESPACE
     Qt types compare equal to the tag type of the same contents. In other
     words, the following expression is true:
 
-    \code
-      QCborValue(uuid) == QCborValue(QCborKnownTags::Uuid, uuid.toRfc4122());
-    \endcode
+    \snippet code/src_corelib_serialization_qcborvalue.cpp 0
 
     \section1 Undefined and null values
 
@@ -429,9 +427,7 @@ QT_BEGIN_NAMESPACE
     This function can be used with simple types not defined in the API. For
     example, to create a QCborValue with simple type 12, one could write:
 
-    \code
-        QCborValue value(QCborSimpleType(12));
-    \endcode
+    \snippet code/src_corelib_serialization_qcborvalue.cpp 1
 
     Simple types should not be used until a specification for them has been
     published, since other implementations may not support them properly.
@@ -702,9 +698,7 @@ QT_BEGIN_NAMESPACE
     any CBOR simple type, even those for which there is no enumeration in the
     API. For example, for the simple type of value 12, you could write:
 
-    \code
-      value.isSimpleType(QCborSimpleType(12));
-    \endcode
+    \snippet code/src_corelib_serialization_qcborvalue.cpp 2
 
     \sa QCborValue::QCborValue(QCborSimpleType), isSimpleType(), isFalse(),
         isTrue(), isNull, isUndefined(), toSimpleType()
@@ -1163,9 +1157,7 @@ inline int QCborContainerPrivate::compareElement_helper(const QCborContainerPriv
     \l{Type}{Url} and \l{Type}{Url} and its equivalent tagged representation.
     So, for example, the following expression is true:
 
-    \code
-        QCborValue(QUrl("https://example.com")) == QCborValue(QCborKnownTags::Url, "https://example.com");
-    \endcode
+    \snippet code/src_corelib_serialization_qcborvalue.cpp 3
 
     Do note that Qt types like \l QUrl and \l QDateTime will normalize and
     otherwise modify their arguments. The expression above is true only because
@@ -2047,9 +2039,7 @@ QCborMap QCborValue::toMap(const QCborMap &defaultValue) const
 
     This function is equivalent to:
 
-    \code
-      value.toMap().value(key);
-    \endcode
+    \snippet code/src_corelib_serialization_qcborvalue.cpp 4
 
     \sa operator[](qint64), QCborMap::operator[], QCborMap::value(),
         QCborMap::find()
@@ -2070,9 +2060,7 @@ const QCborValue QCborValue::operator[](const QString &key) const
 
     This function is equivalent to:
 
-    \code
-      value.toMap().value(key);
-    \endcode
+    \snippet code/src_corelib_serialization_qcborvalue.cpp 5
 
     \sa operator[](qint64), QCborMap::operator[], QCborMap::value(),
         QCborMap::find()
@@ -2113,12 +2101,7 @@ const QCborValue QCborValue::operator[](qint64 key) const
     QCborStreamReader. For example, the following code illustrates how to skip
     the CBOR signature tag from the beginning of a file:
 
-    \code
-        if (reader.isTag() && reader.toTag() == QCborKnownTags::Signature)
-            reader.next();
-
-        QCborValue contents = QCborValue::fromCbor(reader);
-    \endcode
+    \snippet code/src_corelib_serialization_qcborvalue.cpp 6
 
     The returned value may be partially complete and indistinguishable from a
     valid QCborValue even if the decoding failed. To determine if there was an

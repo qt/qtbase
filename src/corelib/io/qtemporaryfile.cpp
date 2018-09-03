@@ -893,13 +893,7 @@ bool QTemporaryFile::rename(const QString &newName)
 
   For example:
 
-  \code
-  QFile f(":/resources/file.txt");
-  QTemporaryFile::createNativeFile(f); // Returns a pointer to a temporary file
-
-  QFile f("/users/qt/file.txt");
-  QTemporaryFile::createNativeFile(f); // Returns 0
-  \endcode
+  \snippet code/src_corelib_io_qtemporaryfile.cpp 1
 
   \sa QFileInfo::isNativePath()
 */
