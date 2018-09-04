@@ -984,11 +984,15 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
 #endif
     }
 
-    QOpenGLContext *previous = QOpenGLContextPrivate::setCurrentContext(this);
-    if (!d->platformGLContext->makeCurrent(surface->surfaceHandle())) {
-        QOpenGLContextPrivate::setCurrentContext(previous);
+    if (!d->platformGLContext->makeCurrent(surface->surfaceHandle()))
         return false;
-    }
+
+    QOpenGLContextPrivate::setCurrentContext(this);
+#ifndef QT_NO_DEBUG
+    QOpenGLContextPrivate::toggleMakeCurrentTracker(this, true);
+#endif
+
+    d->surface = surface;
 
     static bool needsWorkaroundSet = false;
     static bool needsWorkaround = false;
@@ -1030,13 +1034,7 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
     if (needsWorkaround)
         d->workaround_brokenFBOReadBack = true;
 
-    d->surface = surface;
-
     d->shareGroup->d_func()->deletePendingResources(this);
-
-#ifndef QT_NO_DEBUG
-    QOpenGLContextPrivate::toggleMakeCurrentTracker(this, true);
-#endif
 
     return true;
 }
