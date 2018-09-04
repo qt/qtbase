@@ -258,7 +258,7 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
                     }
                 } else {
                     while (n--) {
-                        *p++ = read_pbm_int(device) * 255 / mcc;
+                        *p++ = (read_pbm_int(device) & 0xffff) * 255 / mcc;
                     }
                 }
             } else {                                // 32 bits
