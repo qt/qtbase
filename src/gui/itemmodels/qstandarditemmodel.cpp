@@ -306,8 +306,11 @@ const QMap<int, QVariant> QStandardItemPrivate::itemData() const
 {
     QMap<int, QVariant> result;
     QVector<QStandardItemData>::const_iterator it;
-    for (it = values.begin(); it != values.end(); ++it)
-        result.insert((*it).role, (*it).value);
+    for (it = values.cbegin(); it != values.cend(); ++it){
+        // Qt::UserRole - 1 is used internally to store the flags
+        if (it->role != Qt::UserRole - 1)
+            result.insert(it->role, it->value);
+    }
     return result;
 }
 
@@ -2939,8 +2942,10 @@ bool QStandardItemModel::insertRows(int row, int count, const QModelIndex &paren
 QMap<int, QVariant> QStandardItemModel::itemData(const QModelIndex &index) const
 {
     Q_D(const QStandardItemModel);
-    QStandardItem *item = d->itemFromIndex(index);
-    return item ? item->d_func()->itemData() : QMap<int, QVariant>();
+    const QStandardItem *const item = d->itemFromIndex(index);
+    if (!item || item == d->root.data())
+        return QMap<int, QVariant>();
+    return item->d_func()->itemData();
 }
 
 /*!
