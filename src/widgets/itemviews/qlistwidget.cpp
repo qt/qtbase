@@ -293,6 +293,30 @@ bool QListModel::removeRows(int row, int count, const QModelIndex &parent)
     return true;
 }
 
+/*!
+    \since 5.13
+    \reimp
+*/
+bool QListModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
+{
+    if (sourceRow < 0
+        || sourceRow + count - 1 >= rowCount(sourceParent)
+        || destinationChild <= 0
+        || destinationChild > rowCount(destinationParent)
+        || sourceRow == destinationChild - 1
+        || count <= 0) {
+        return false;
+    }
+    if (!beginMoveRows(QModelIndex(), sourceRow, sourceRow + count - 1, QModelIndex(), destinationChild))
+        return false;
+    destinationChild--;
+    const int fromRow = destinationChild < sourceRow ? (sourceRow + count - 1) : sourceRow;
+    while (count--)
+        items.move(fromRow, destinationChild);
+    endMoveRows();
+    return true;
+}
+
 Qt::ItemFlags QListModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid() || index.row() >= items.count() || index.model() != this)

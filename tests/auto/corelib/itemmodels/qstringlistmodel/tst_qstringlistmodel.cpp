@@ -83,8 +83,8 @@ private slots:
 
     void supportedDragDropActions();
 
-    void moveRows();
     void moveRows_data();
+    void moveRows();
     void moveRowsInvalid_data();
     void moveRowsInvalid();
 };
@@ -115,11 +115,11 @@ void tst_QStringListModel::moveRowsInvalid_data()
     tempModel = new QStringListModel(QStringList{"A", "B", "C", "D", "E", "F"}, this);
     QTest::addRow("source_row_equal_rowCount") << tempModel << QModelIndex() << tempModel->rowCount() << 1 << QModelIndex() << 1;
     tempModel = new QStringListModel(QStringList{"A", "B", "C", "D", "E", "F"}, this);
-    QTest::addRow("destination_row_greather_rowCount") << tempModel << QModelIndex() << 0 << 1 << QModelIndex() << tempModel->rowCount() + 1;
+    QTest::addRow("destination_row_greater_rowCount") << tempModel << QModelIndex() << 0 << 1 << QModelIndex() << tempModel->rowCount() + 1;
     tempModel = new QStringListModel(QStringList{"A", "B", "C", "D", "E", "F"}, this);
     QTest::addRow("move_row_within_source_range") << tempModel << QModelIndex() << 0 << 3 << QModelIndex() << 2;
     tempModel = new QStringListModel(QStringList{"A", "B", "C", "D", "E", "F"}, this);
-    QTest::addRow("destrination_row_before_0") << tempModel << QModelIndex() << 1 << 1 << QModelIndex() << 0;
+    QTest::addRow("destination_row_before_0") << tempModel << QModelIndex() << 1 << 1 << QModelIndex() << 0;
 }
 
 void tst_QStringListModel::moveRowsInvalid()
@@ -154,8 +154,8 @@ void tst_QStringListModel::moveRows_data()
     QTest::newRow("1_Item_from_bottom_to_middle") << 5 << 1 << 3 << QStringList{"A", "B", "F", "C", "D", "E"};
     QTest::newRow("1_Item_from_bottom to_top") << 5 << 1 << 1 << QStringList{"F", "A", "B", "C", "D", "E"};
     QTest::newRow("1_Item_from_middle_to_bottom") << 2 << 1 << 6 << QStringList{"A", "B", "D", "E", "F", "C"};
-    QTest::newRow("1_Item_from_middle_to_middle before") << 2 << 1 << 1 << QStringList{"C", "A", "B", "D", "E", "F"};
-    QTest::newRow("1_Item_from_middle_to_middle after") << 2 << 1 << 4 << QStringList{"A", "B", "D", "C", "E", "F"};
+    QTest::newRow("1_Item_from_middle_to_middle_before") << 2 << 1 << 1 << QStringList{"C", "A", "B", "D", "E", "F"};
+    QTest::newRow("1_Item_from_middle_to_middle_after") << 2 << 1 << 4 << QStringList{"A", "B", "D", "C", "E", "F"};
 
     QTest::newRow("2_Items_from_top_to_middle") << 0 << 2 << 3 << QStringList{"C", "A", "B", "D", "E", "F"};
     QTest::newRow("2_Items_from_top_to_bottom") << 0 << 2 << 6 << QStringList{"C", "D", "E", "F", "A", "B"};
@@ -163,8 +163,8 @@ void tst_QStringListModel::moveRows_data()
     QTest::newRow("2_Items_from_bottom_to_middle") << 4 << 2 << 3 << QStringList{"A", "B", "E", "F", "C", "D"};
     QTest::newRow("2_Items_from_bottom_to_top") << 4 << 2 << 1 << QStringList{"E", "F", "A", "B", "C", "D"};
     QTest::newRow("2_Items_from_middle_to_bottom") << 2 << 2 << 6 << QStringList{"A", "B", "E", "F", "C", "D"};
-    QTest::newRow("2_Items_from_middle_to_middle before") << 3 << 2 << 2 << QStringList{"A", "D", "E", "B", "C", "F"};
-    QTest::newRow("2_Items_from_middle_to_middle after") << 1 << 2 << 5 << QStringList{"A", "D", "E", "B", "C", "F"};
+    QTest::newRow("2_Items_from_middle_to_middle_before") << 3 << 2 << 2 << QStringList{"A", "D", "E", "B", "C", "F"};
+    QTest::newRow("2_Items_from_middle_to_middle_after") << 1 << 2 << 5 << QStringList{"A", "D", "E", "B", "C", "F"};
 }
 
 void tst_QStringListModel::moveRows()
@@ -180,7 +180,7 @@ void tst_QStringListModel::moveRows()
     QCOMPARE(baseModel.stringList(), expected);
     QCOMPARE(rowMovedSpy.size(), 1);
     QCOMPARE(rowAboutMovedSpy.size(), 1);
-    for (const QList<QVariant> &signalArgs : {rowMovedSpy.takeFirst(), rowAboutMovedSpy.takeFirst()}){
+    for (const QList<QVariant> &signalArgs : {rowMovedSpy.first(), rowAboutMovedSpy.first()}){
         QVERIFY(!signalArgs.at(0).value<QModelIndex>().isValid());
         QCOMPARE(signalArgs.at(1).toInt(), startRow);
         QCOMPARE(signalArgs.at(2).toInt(), startRow + count - 1);
