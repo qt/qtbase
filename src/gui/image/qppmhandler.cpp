@@ -123,7 +123,7 @@ static bool read_pbm_header(QIODevice *device, char& type, int& w, int& h, int& 
 
 static inline QRgb scale_pbm_color(quint16 mx, quint16 rv, quint16 gv, quint16 bv)
 {
-    return QRgba64::fromRgba64((rv * 0xffff) / mx, (gv * 0xffff) / mx, (bv * 0xffff) / mx, 0xffff).toArgb32();
+    return QRgba64::fromRgba64((rv * 0xffffu) / mx, (gv * 0xffffu) / mx, (bv * 0xffffu) / mx, 0xffff).toArgb32();
 }
 
 static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, QImage *outImage)
