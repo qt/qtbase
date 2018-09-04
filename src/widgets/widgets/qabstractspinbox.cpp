@@ -91,7 +91,7 @@ QT_BEGIN_NAMESPACE
     \li \l alignment: The alignment of the text in the QAbstractSpinBox.
 
     \li \l wrapping: Whether the QAbstractSpinBox wraps from the
-    minimum value to the maximum value and vica versa.
+    minimum value to the maximum value and vice versa.
 
     \endlist
 
@@ -285,7 +285,7 @@ void QAbstractSpinBox::setSpecialValueText(const QString &specialValueText)
     \brief whether the spin box is circular.
 
     If wrapping is true stepping up from maximum() value will take you
-    to the minimum() value and vica versa. Wrapping only make sense if
+    to the minimum() value and vice versa. Wrapping only make sense if
     you have minimum() and maximum() values set.
 
     \snippet code/src_gui_widgets_qabstractspinbox.cpp 0
