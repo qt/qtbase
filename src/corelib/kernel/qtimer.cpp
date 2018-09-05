@@ -571,7 +571,7 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
 */
 
 /*!
-    \fn template<typename Functor> QMetaObject::Connection connectTo(Functor functor, Qt::ConnectionType connectionType = Qt::AutoConnection)
+    \fn template<typename Functor> QMetaObject::Connection callOnTimeout(Functor functor, Qt::ConnectionType connectionType = Qt::AutoConnection)
     \since 5.12
     \overload
 
@@ -585,9 +585,9 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
 */
 
 /*!
-    \fn template<typename Functor> QMetaObject::Connection connectTo(QObject *context, Functor functor, Qt::ConnectionType connectionType = Qt::AutoConnection)
+    \fn template<typename Functor> QMetaObject::Connection callOnTimeout(QObject *context, Functor functor, Qt::ConnectionType connectionType = Qt::AutoConnection)
     \since 5.12
-    \overload connectTo()
+    \overload callOnTimeout()
 
     Creates a connection from the timeout() signal to \a functor to be placed in a specific
     event loop of \a context, and returns a handle to the connection.
@@ -599,9 +599,9 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
 */
 
 /*!
-    \fn template<typename PointerToMemberFunction> QMetaObject::Connection connectTo(QObject *receiver, PointerToMemberFunction method, Qt::ConnectionType connectionType = Qt::AutoConnection)
+    \fn template<typename PointerToMemberFunction> QMetaObject::Connection callOnTimeout(QObject *receiver, PointerToMemberFunction method, Qt::ConnectionType connectionType = Qt::AutoConnection)
     \since 5.12
-    \overload connectTo()
+    \overload callOnTimeout()
 
     Creates a connection from the timeout() signal to the \a method in the \a receiver object. Returns
     a handle to the connection.

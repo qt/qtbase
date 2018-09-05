@@ -210,7 +210,7 @@ void QWindowsPrintDevice::loadPageSizes() const
         && DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_PAPERS, NULL, NULL) == paperCount) {
 
         QScopedArrayPointer<wchar_t> paperNames(new wchar_t[paperCount*64]);
-        QScopedArrayPointer<POINT> winSizes(new POINT[paperCount*sizeof(POINT)]);
+        QScopedArrayPointer<POINT> winSizes(new POINT[paperCount]);
         QScopedArrayPointer<wchar_t> papers(new wchar_t[paperCount]);
 
         // Get the details and match the default paper size
@@ -356,7 +356,7 @@ void QWindowsPrintDevice::loadInputSlots() const
     if (int(binCount) > 0
         && DeviceCapabilities(printerId, nullptr, DC_BINNAMES, nullptr, nullptr) == binCount) {
 
-        QScopedArrayPointer<WORD> bins(new WORD[binCount*sizeof(WORD)]);
+        QScopedArrayPointer<WORD> bins(new WORD[binCount]);
         QScopedArrayPointer<wchar_t> binNames(new wchar_t[binCount*24]);
 
         // Get the details and match the default paper size

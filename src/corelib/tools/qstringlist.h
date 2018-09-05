@@ -117,8 +117,11 @@ public:
     { QList<QString>::operator=(std::move(other)); return *this; }
 #endif
 
+#if QT_STRINGVIEW_LEVEL < 2
     inline bool contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+#endif
     inline bool contains(QLatin1String str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline bool contains(QStringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
     inline QStringList operator+(const QStringList &other) const
     { QStringList n = *this; n += other; return n; }
@@ -161,7 +164,7 @@ namespace QtPrivate {
     QStringList Q_CORE_EXPORT QStringList_filter(const QStringList *that, const QString &str,
                                                Qt::CaseSensitivity cs);
 
-    bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, const QString &str, Qt::CaseSensitivity cs);
+    bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, QStringView str, Qt::CaseSensitivity cs);
     bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, QLatin1String str, Qt::CaseSensitivity cs);
     void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, const QString &before, const QString &after,
                                       Qt::CaseSensitivity cs);
@@ -213,12 +216,19 @@ inline QStringList QListSpecialMethods<QString>::filter(const QString &str, Qt::
     return QtPrivate::QStringList_filter(self(), str, cs);
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 inline bool QStringList::contains(const QString &str, Qt::CaseSensitivity cs) const
 {
     return QtPrivate::QStringList_contains(this, str, cs);
 }
+#endif
 
 inline bool QStringList::contains(QLatin1String str, Qt::CaseSensitivity cs) const
+{
+    return QtPrivate::QStringList_contains(this, str, cs);
+}
+
+inline bool QStringList::contains(QStringView str, Qt::CaseSensitivity cs) const
 {
     return QtPrivate::QStringList_contains(this, str, cs);
 }

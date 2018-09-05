@@ -844,7 +844,7 @@
         },
         "precompile_header": {
             "label": "Using precompiled headers",
-            "condition": "config.msvc || tests.precompile_header",
+            "condition": "tests.precompile_header",
             "output": [
                 "privateConfig",
                 { "type": "varRemove", "negative": true, "name": "CONFIG", "value": "'precompile_header'" }

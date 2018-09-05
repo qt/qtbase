@@ -6225,7 +6225,17 @@ QString& QString::fill(QChar ch, int size)
     sensitivity setting \a cs.
 */
 
+/*!
+    \fn int QString::compare(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
 
+    \since 5.12
+    \overload compare()
+
+    Performs a comparison of this with \a s, using the case
+    sensitivity setting \a cs.
+*/
+
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \overload compare()
     \since 4.2
@@ -6241,6 +6251,7 @@ int QString::compare(const QString &other, Qt::CaseSensitivity cs) const Q_DECL_
 {
     return qt_compare_strings(*this, other, cs);
 }
+#endif
 
 /*!
     \internal
@@ -6267,6 +6278,7 @@ int QString::compare(QLatin1String other, Qt::CaseSensitivity cs) const Q_DECL_N
     return qt_compare_strings(*this, other, cs);
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
   \fn int QString::compare(const QStringRef &ref, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
   \overload compare()
@@ -6275,6 +6287,7 @@ int QString::compare(QLatin1String other, Qt::CaseSensitivity cs) const Q_DECL_N
   an integer less than, equal to, or greater than zero if the string
   is less than, equal to, or greater than \a ref.
 */
+#endif
 
 /*!
     \internal

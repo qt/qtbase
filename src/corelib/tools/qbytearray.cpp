@@ -432,7 +432,7 @@ int qstricmp(const char *str1, const char *str2)
         return int(Incomplete);
     };
 
-#ifdef __SSE4_1__
+#if defined(__SSE4_1__) && !(defined(__SANITIZE_ADDRESS__) || QT_HAS_FEATURE(address_sanitizer))
     enum { PageSize = 4096, PageMask = PageSize - 1 };
     const __m128i zero = _mm_setzero_si128();
     forever {

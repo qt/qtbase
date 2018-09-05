@@ -845,12 +845,14 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
 #endif // QT_CONFIG(itemviews)
         if (!(opt->state & State_Off)) {
             QPointF  points[6];
-            points[0] = { opt->rect.x() + QStyleHelper::dpiScaled(3.5), opt->rect.y() + QStyleHelper::dpiScaled(5.5) };
-            points[1] = { points[0].x(), points[0].y() + QStyleHelper::dpiScaled(2) };
-            points[2] = { points[1].x() + QStyleHelper::dpiScaled(2), points[1].y() + QStyleHelper::dpiScaled(2) };
-            points[3] = { points[2].x() + QStyleHelper::dpiScaled(4), points[2].y() - QStyleHelper::dpiScaled(4) };
-            points[4] = { points[3].x(), points[3].y() - QStyleHelper::dpiScaled(2) };
-            points[5] = { points[4].x() - QStyleHelper::dpiScaled(4), points[4].y() + QStyleHelper::dpiScaled(4) };
+            qreal scaleh = opt->rect.width() / 12.0;
+            qreal scalev = opt->rect.height() / 12.0;
+            points[0] = { opt->rect.x() + 3.5 * scaleh, opt->rect.y() + 5.5 * scalev };
+            points[1] = { points[0].x(),                points[0].y() + 2 * scalev };
+            points[2] = { points[1].x() + 2 * scaleh,   points[1].y() + 2 * scalev };
+            points[3] = { points[2].x() + 4 * scaleh,   points[2].y() - 4 * scalev };
+            points[4] = { points[3].x(),                points[3].y() - 2 * scalev };
+            points[5] = { points[4].x() - 4 * scaleh,   points[4].y() + 4 * scalev };
             p->setPen(QPen(opt->palette.text().color(), 0));
             p->setBrush(opt->palette.text().color());
             p->drawPolygon(points, 6);

@@ -565,6 +565,10 @@ bool QSqlTableModel::isDirty(const QModelIndex &index) const
     Returns \c true if the value could be set or false on error, for
     example if \a index is out of bounds.
 
+    Returns \c false if the role is not Qt::EditRole. To set data
+    for roles other than EditRole, either use a custom proxy model
+    or subclass QSqlTableModel.
+
     \sa editStrategy(), data(), submit(), submitAll(), revertRow()
 */
 bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
