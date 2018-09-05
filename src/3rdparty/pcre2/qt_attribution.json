@@ -1,3 +1,4 @@
+[
 {
     "Id": "pcre2",
     "Name": "PCRE2",
@@ -15,4 +16,22 @@
 Copyright (c) 2009-2018 Zoltan Herczeg
 Copyright (c) 2007-2012 Google Inc.
 Copyright (c) 2013-2013 Tilera Corporation (jiwang@tilera.com)"
+},
+{
+    "Id": "pcre2-sljit",
+    "Name": "PCRE2 - Stack-less Just-In-Time Compiler",
+    "QDocModule": "qtcore",
+    "QtUsage": "Optionally used in Qt Core (QRegularExpression). Configure with -system-pcre or -no-pcre to avoid.",
+
+    "Path": "src/sljit",
+    "Description": "The PCRE library is a set of functions that implement regular expression pattern matching using the same syntax and semantics as Perl 5.",
+    "Homepage": "http://www.pcre.org/",
+    "Version": "10.31",
+    "DownloadLocation": "https://ftp.pcre.org/pub/pcre/pcre2-10.31.tar.bz2",
+    "License": "BSD 2-clause \"Simplified\" License",
+    "LicenseId": "BSD-2-Clause",
+    "LicenseFile": "LICENCE-SLJIT",
+    "Copyright": "Copyright (c) Zoltan Herczeg
+Copyright 2013-2013 Tilera Corporation(jiwang@tilera.com)"
 }
+]
