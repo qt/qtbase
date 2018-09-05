@@ -54,6 +54,18 @@ private slots:
     void formatValue();
 };
 
+static bool driverSupportsDefaultValues(QSqlDriver::DbmsType dbType)
+{
+    switch (dbType) {
+    case QSqlDriver::SQLite:
+    case QSqlDriver::PostgreSQL:
+    case QSqlDriver::Oracle:
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
 
 void tst_QSqlDriver::initTestCase_data()
 {
@@ -81,8 +93,9 @@ void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)
         doubleField = "more_data double precision";
     else
         doubleField = "more_data double(8,7)";
+    const QString defValue(driverSupportsDefaultValues(dbType) ? QStringLiteral("DEFAULT 'defaultVal'") : QString());
     QVERIFY_SQL( q, exec("create table " + relTEST1 +
-            " (id int not null primary key, name varchar(20), title_key int, another_title_key int, " + doubleField + QLatin1Char(')')));
+            " (id int not null primary key, name varchar(20) " + defValue + ", title_key int, another_title_key int, " + doubleField + QLatin1Char(')')));
     QVERIFY_SQL( q, exec("insert into " + relTEST1 + " values(1, 'harry', 1, 2, 1.234567)"));
     QVERIFY_SQL( q, exec("insert into " + relTEST1 + " values(2, 'trond', 2, 1, 8.901234)"));
     QVERIFY_SQL( q, exec("insert into " + relTEST1 + " values(3, 'vohi', 1, 2, 5.678901)"));
@@ -127,7 +140,7 @@ void tst_QSqlDriver::record()
 
     //check we can get records using an unquoted mixed case table name
     QSqlRecord rec = db.driver()->record(tablename);
-    QCOMPARE(rec.count(), 5);
+    QCOMPARE(rec.count(), fields.size());
 
     QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     // QTBUG-1363: QSqlField::length() always return -1 when using QODBC3 driver and QSqlDatabase::record()
@@ -140,6 +153,9 @@ void tst_QSqlDriver::record()
 
     for (int i = 0; i < fields.count(); ++i)
         QCOMPARE(rec.fieldName(i), fields[i]);
+
+    if (driverSupportsDefaultValues(dbType))
+        QCOMPARE(rec.field(QStringLiteral("name")).defaultValue().toString(), QStringLiteral("defaultVal"));
 
     if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)
         tablename = tablename.toUpper();
