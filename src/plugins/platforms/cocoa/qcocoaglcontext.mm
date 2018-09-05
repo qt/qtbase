@@ -363,6 +363,11 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
 */
 bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
 {
+    // Make sure any surfaces released during this process are deallocated
+    // straight away, otherwise we may run out of surfaces when spinning a
+    // render-loop that doesn't return to one of the outer pools.
+    QMacAutoReleasePool pool;
+
     if (!surface || surface->surface()->surfaceClass() == QSurface::Offscreen) {
         // Clear the current drawable and reset the active window, so that GL
         // commands that don't target a specific FBO will not end up stomping
@@ -393,6 +398,11 @@ static QMutex s_contextMutex;
 
 void QCocoaGLContext::update()
 {
+    // Make sure any surfaces released during this process are deallocated
+    // straight away, otherwise we may run out of surfaces when spinning a
+    // render-loop that doesn't return to one of the outer pools.
+    QMacAutoReleasePool pool;
+
     QMutexLocker locker(&s_contextMutex);
     qCInfo(lcQpaOpenGLContext) << "Updating" << m_context << "for" << m_context.view;
     [m_context update];
