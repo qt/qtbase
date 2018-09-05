@@ -318,9 +318,6 @@ void QCocoaGLContext::updateSurfaceFormat()
 
 QCocoaGLContext::~QCocoaGLContext()
 {
-    if (m_currentWindow && m_currentWindow.data()->handle())
-        static_cast<QCocoaWindow *>(m_currentWindow.data()->handle())->setCurrentContext(0);
-
     [m_context release];
 }
 
@@ -372,19 +369,14 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
         // on the previously set drawable.
         qCDebug(lcQpaOpenGLContext) << "Clearing current drawable" << m_context.view << "for" << m_context;
         [m_context clearDrawable];
-        m_currentWindow.clear();
         return true;
     }
 
     Q_ASSERT(surface->surface()->surfaceClass() == QSurface::Window);
-    QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
+    QNSView *view = qnsview_cast(static_cast<QCocoaWindow *>(surface)->view());
 
-    if (window == m_currentWindow.data())
+    if (view == m_context.view)
         return true;
-
-    Q_ASSERT(window->handle());
-    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
-    NSView *view = cocoaWindow->view();
 
     if ((m_context.view = view) != view) {
         qCInfo(lcQpaOpenGLContext) << "Failed to set" << view << "as drawable for" << m_context;
@@ -393,12 +385,6 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
 
     qCInfo(lcQpaOpenGLContext) << "Set drawable for" << m_context << "to" << m_context.view;
 
-    if (m_currentWindow && m_currentWindow.data()->handle())
-        static_cast<QCocoaWindow *>(m_currentWindow.data()->handle())->setCurrentContext(0);
-
-    m_currentWindow = window;
-
-    cocoaWindow->setCurrentContext(this);
     return true;
 }
 
@@ -435,22 +421,11 @@ void QCocoaGLContext::doneCurrent()
     qCDebug(lcQpaOpenGLContext) << "Clearing current context"
         << [NSOpenGLContext currentContext] << "in" << QThread::currentThread();
 
-    if (m_currentWindow && m_currentWindow.data()->handle())
-        static_cast<QCocoaWindow *>(m_currentWindow.data()->handle())->setCurrentContext(nullptr);
-
-    m_currentWindow.clear();
+    // Note: We do not need to clear the current drawable here.
+    // As long as there is no current context, GL calls will
+    // do nothing.
 
     [NSOpenGLContext clearCurrentContext];
-}
-
-void QCocoaGLContext::windowWasHidden()
-{
-    // If the window is hidden, we need to unset the m_currentWindow
-    // variable so that succeeding makeCurrent's will not abort prematurely
-    // because of the optimization in setDrawable.
-    // Doing a full doneCurrent here is not preferable, because the GL context
-    // might be rendering in a different thread at this time.
-    m_currentWindow.clear();
 }
 
 QSurfaceFormat QCocoaGLContext::format() const

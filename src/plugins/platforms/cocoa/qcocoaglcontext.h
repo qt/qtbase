@@ -65,8 +65,6 @@ public:
     bool isSharing() const override;
     bool isValid() const override;
 
-    void windowWasHidden();
-
     NSOpenGLContext *nativeContext() const;
 
     QFunctionPointer getProcAddress(const char *procName) override;
@@ -80,7 +78,6 @@ private:
     NSOpenGLContext *m_context = nil;
     NSOpenGLContext *m_shareContext = nil;
     QSurfaceFormat m_format;
-    QPointer<QWindow> m_currentWindow;
     bool m_didCheckForSoftwareContext = false;
 };
 
