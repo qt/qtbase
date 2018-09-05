@@ -74,7 +74,7 @@ public:
 private:
     static NSOpenGLPixelFormat *pixelFormatForSurfaceFormat(const QSurfaceFormat &format);
 
-    bool setActiveWindow(QWindow *window);
+    bool setDrawable(QPlatformSurface *surface);
     void updateSurfaceFormat();
 
     NSOpenGLContext *m_context = nil;
