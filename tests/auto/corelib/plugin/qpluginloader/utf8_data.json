@@ -1,0 +1,17 @@
+{
+    "KPlugin": {
+        "Name": "WindowGeometry",
+        "Name[mr]": "चौकट भूमिती",
+        "Name[pa]": "ਵਿੰਡੋਜੁਮੈਟਰੀ",
+        "Name[th]": "มิติขนาดของหน้าต่าง",
+        "Name[uk]": "Розміри вікна",
+        "Name[zh_CN]": "窗口形状",
+        "Name[zh_TW]": "視窗位置",
+        "ServiceTypes": [
+            "KCModule"
+        ]
+    },
+    "X-KDE-ParentComponents": [
+        "windowgeometry"
+    ]
+}

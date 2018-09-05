@@ -82,8 +82,10 @@ private:
     void putChar(char c)
     {
         putNewline();
-        if (c < 0x20 || c >= 0x7f)
+        if (uchar(c) < 0x20)
             fprintf(out, " '\\x%x',", uint8_t(c));
+        else if (uchar(c) >= 0x7f)
+            fprintf(out, " uchar('\\x%x'),", uint8_t(c));
         else if (c == '\'' || c == '\\')
             fprintf(out, " '\\%c',", c);
         else
