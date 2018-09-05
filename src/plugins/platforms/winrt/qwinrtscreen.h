@@ -89,7 +89,7 @@ class QWinRTScreen : public QPlatformScreen
 {
 public:
     explicit QWinRTScreen();
-    ~QWinRTScreen();
+    ~QWinRTScreen() override;
 
     QRect geometry() const override;
     QRect availableGeometry() const override;

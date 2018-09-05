@@ -99,7 +99,7 @@ QMimeData *QWinRTClipboard::mimeData(QClipboard::Mode mode)
 
     quint32 size;
     const wchar_t *textStr = result.GetRawBuffer(&size);
-    QString text = QString::fromWCharArray(textStr, size);
+    QString text = QString::fromWCharArray(textStr, int(size));
     text.replace(QLatin1String("\r\n"), QLatin1String("\n"));
 
     if (m_mimeData) {
@@ -161,7 +161,8 @@ void QWinRTClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
                                 &package);
 
         const QString nativeString = convertToWindowsLineEnding(text);
-        HStringReference textRef(reinterpret_cast<LPCWSTR>(nativeString.utf16()), nativeString.length());
+        HStringReference textRef(reinterpret_cast<LPCWSTR>(nativeString.utf16()),
+                                 uint(nativeString.length()));
 
         hr = package->SetText(textRef.Get());
         RETURN_HR_IF_FAILED("Could not set text to clipboard data package.");

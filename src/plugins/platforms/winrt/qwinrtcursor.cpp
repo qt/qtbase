@@ -78,10 +78,6 @@ QWinRTCursor::QWinRTCursor()
     Q_ASSERT_SUCCEEDED(hr);
 }
 
-QWinRTCursor::~QWinRTCursor()
-{
-}
-
 #ifndef QT_NO_CURSOR
 void QWinRTCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 {
@@ -183,9 +179,9 @@ QPoint QWinRTCursor::pos() const
         return hr;
     });
     Q_ASSERT_SUCCEEDED(hr);
-    QPoint position = QPoint(point.X, point.Y);
+    QPoint position = QPoint(int(point.X), int(point.Y));
     // If no cursor get_PointerPosition returns SHRT_MIN for x and y
-    if (position.x() == SHRT_MIN && position.y() == SHRT_MIN || FAILED(hr))
+    if ((position.x() == SHRT_MIN && position.y() == SHRT_MIN) || FAILED(hr))
         return QPointF(Q_INFINITY, Q_INFINITY).toPoint();
     position.rx() -= bounds.X;
     position.ry() -= bounds.Y;
@@ -211,7 +207,8 @@ void QWinRTCursor::setPos(const QPoint &pos)
         Point mousePos;
         hr = coreWindow->get_PointerPosition(&mousePos);
         RETURN_HR_IF_FAILED("Failed to obtain mouse position.");
-        const Point p = {FLOAT(scaledPos.x() + bounds.X), FLOAT(scaledPos.y() + bounds.Y)};
+        const Point p = { FLOAT(scaledPos.x()) + bounds.X,
+                          FLOAT(scaledPos.y()) + bounds.Y };
         const bool wasInWindow = qIsPointInRect(mousePos, bounds);
         const bool willBeInWindow = qIsPointInRect(p, bounds);
         if (wasInWindow && willBeInWindow)

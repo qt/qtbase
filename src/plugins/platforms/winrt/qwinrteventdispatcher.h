@@ -48,7 +48,7 @@ class QWinRTEventDispatcher : public QEventDispatcherWinRT
 {
     Q_OBJECT
 public:
-    explicit QWinRTEventDispatcher(QObject *parent = 0);
+    explicit QWinRTEventDispatcher(QObject *parent = nullptr);
 
 protected:
     bool hasPendingEvents() override;

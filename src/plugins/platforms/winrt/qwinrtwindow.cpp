@@ -126,7 +126,7 @@ QWinRTWindow::QWinRTWindow(QWindow *window)
     hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_Xaml_Controls_Canvas).Get(),
                                 IID_PPV_ARGS(&d->canvas));
     Q_ASSERT_SUCCEEDED(hr);
-    hr = QEventDispatcherWinRT::runOnXamlThread([this, d]() {
+    hr = QEventDispatcherWinRT::runOnXamlThread([d]() {
         // Create a new swapchain and place it inside the canvas
         HRESULT hr;
         hr = RoActivateInstance(HString::MakeReference(RuntimeClass_Windows_UI_Xaml_Controls_SwapChainPanel).Get(),

@@ -67,7 +67,7 @@ class QWinRTMessageDialogHelper : public QPlatformMessageDialogHelper
     Q_OBJECT
 public:
     explicit QWinRTMessageDialogHelper(const QWinRTTheme *theme);
-    ~QWinRTMessageDialogHelper();
+    ~QWinRTMessageDialogHelper() override;
 
     void exec() override;
     bool show(Qt::WindowFlags windowFlags,

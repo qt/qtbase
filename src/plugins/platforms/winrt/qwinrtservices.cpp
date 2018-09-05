@@ -83,17 +83,14 @@ QWinRTServices::QWinRTServices()
     Q_ASSERT_X(SUCCEEDED(hr), Q_FUNC_INFO, qPrintable(qt_error_string(hr)));
 }
 
-QWinRTServices::~QWinRTServices()
-{
-}
-
 bool QWinRTServices::openUrl(const QUrl &url)
 {
     Q_D(QWinRTServices);
 
     ComPtr<IUriRuntimeClass> uri;
     QString urlString = url.toString();
-    HStringReference uriString(reinterpret_cast<LPCWSTR>(urlString.utf16()), urlString.length());
+    HStringReference uriString(reinterpret_cast<LPCWSTR>(urlString.utf16()),
+                               uint(urlString.length()));
     HRESULT hr = d->uriFactory->CreateUri(uriString.Get(), &uri);
     RETURN_FALSE_IF_FAILED("Failed to create URI from QUrl.");
 
@@ -122,7 +119,8 @@ bool QWinRTServices::openDocument(const QUrl &url)
     }
     if (!file) {
         const QString pathString = QDir::toNativeSeparators(url.toLocalFile());
-        HStringReference path(reinterpret_cast<LPCWSTR>(pathString.utf16()), pathString.length());
+        HStringReference path(reinterpret_cast<LPCWSTR>(pathString.utf16()),
+                              uint(pathString.length()));
         ComPtr<IAsyncOperation<StorageFile *>> op;
         hr = d->fileFactory->GetFileFromPathAsync(path.Get(), &op);
         RETURN_FALSE_IF_FAILED("Failed to initialize file URI.");

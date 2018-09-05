@@ -75,7 +75,7 @@ class QWinRTIntegration : public QPlatformIntegration
 private:
     explicit QWinRTIntegration();
 public:
-    ~QWinRTIntegration();
+    ~QWinRTIntegration() override;
 
     static QWinRTIntegration *create()
     {

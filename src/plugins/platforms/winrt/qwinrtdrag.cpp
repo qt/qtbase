@@ -81,7 +81,7 @@ ComPtr<IBuffer> createIBufferFromData(const char *data, qint32 size)
     }
 
     ComPtr<IBuffer> buffer;
-    const UINT32 length = size;
+    const UINT32 length = UINT32(size);
     hr = bufferFactory->Create(length, &buffer);
     Q_ASSERT_SUCCEEDED(hr);
     hr = buffer->put_Length(length);
@@ -118,13 +118,13 @@ inline QString hStringToQString(const HString &hString)
 {
     quint32 l;
     const wchar_t *raw = hString.GetRawBuffer(&l);
-    return (QString::fromWCharArray(raw, l));
+    return (QString::fromWCharArray(raw, int(l)));
 }
 
 inline HString qStringToHString(const QString &qString)
 {
     HString h;
-    h.Set(reinterpret_cast<const wchar_t*>(qString.utf16()), qString.size());
+    h.Set(reinterpret_cast<const wchar_t*>(qString.utf16()), uint(qString.size()));
     return h;
 }
 
@@ -182,10 +182,6 @@ QWinRTInternalMimeData::QWinRTInternalMimeData()
         hr = NativeFormatStrings::dataStatics->get_StorageItems(&NativeFormatStrings::storage);
         Q_ASSERT_SUCCEEDED(hr);
     }
-}
-
-QWinRTInternalMimeData::~QWinRTInternalMimeData()
-{
 }
 
 bool QWinRTInternalMimeData::hasFormat_sys(const QString &mimetype) const
@@ -311,7 +307,7 @@ QVariant QWinRTInternalMimeData::retrieveData_sys(const QString &mimetype, QVari
             ComPtr<IAsyncOperation<IInspectable*>> op;
             ComPtr<IInspectable> res;
             HString type;
-            type.Set(reinterpret_cast<const wchar_t*>(mimetype.utf16()), mimetype.size());
+            type.Set(reinterpret_cast<const wchar_t*>(mimetype.utf16()), uint(mimetype.size()));
             hr = dataView->GetDataAsync(type.Get(), &op);
             RETURN_OK_IF_FAILED("Could not query custom drag data.");
             hr = QWinRTFunctions::await(op, res.GetAddressOf());
@@ -434,7 +430,7 @@ QVariant QWinRTInternalMimeData::retrieveData_sys(const QString &mimetype, QVari
                                             IID_PPV_ARGS(&bufferFactory));
                 Q_ASSERT_SUCCEEDED(hr);
 
-                UINT32 length = qBound(quint64(0), quint64(size), quint64(UINT_MAX));
+                UINT32 length = UINT32(qBound(quint64(0), quint64(size), quint64(UINT_MAX)));
                 ComPtr<IBuffer> buffer;
                 hr = bufferFactory->Create(length, &buffer);
                 Q_ASSERT_SUCCEEDED(hr);
@@ -452,7 +448,7 @@ QVariant QWinRTInternalMimeData::retrieveData_sys(const QString &mimetype, QVari
 
                 byte *bytes;
                 hr = byteArrayAccess->Buffer(&bytes);
-                QByteArray array((char *)bytes, length);
+                QByteArray array((char *)bytes, int(length));
                 result.setValue(array);
                 return S_OK;
             }
@@ -559,7 +555,7 @@ extern ComPtr<ABI::Windows::UI::Input::IPointerPoint> qt_winrt_lastPointerPoint;
 
 QWinRTDrag::QWinRTDrag()
     : QPlatformDrag()
-    , m_dragTarget(0)
+    , m_dragTarget(nullptr)
 {
     qCDebug(lcQpaMime) << __FUNCTION__;
     m_enter = new Q_INST_DRAGHANDLER(Enter);
@@ -612,7 +608,7 @@ Qt::DropAction QWinRTDrag::drag(QDrag *drag)
     ComPtr<IAsyncOperation<ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation>> op;
     EventRegistrationToken startingToken;
 
-    hr = QEventDispatcherWinRT::runOnXamlThread([drag, &op, &hr, elem3, &startingToken, this]() {
+    hr = QEventDispatcherWinRT::runOnXamlThread([drag, &op, &hr, elem3, &startingToken]() {
 
         hr = elem3->put_CanDrag(true);
         Q_ASSERT_SUCCEEDED(hr);
@@ -660,7 +656,8 @@ Qt::DropAction QWinRTDrag::drag(QDrag *drag)
                 const QImage image = image2.convertToFormat(QImage::Format_ARGB32);
                 if (!image.isNull()) {
                     // Create IBuffer containing image
-                    ComPtr<IBuffer> imageBuffer = createIBufferFromData(reinterpret_cast<const char*>(image.bits()), image.byteCount());
+                    ComPtr<IBuffer> imageBuffer
+                            = createIBufferFromData(reinterpret_cast<const char*>(image.bits()), int(image.sizeInBytes()));
 
                     ComPtr<ISoftwareBitmapFactory> bitmapFactory;
                     hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Graphics_Imaging_SoftwareBitmap).Get(),
@@ -697,7 +694,7 @@ Qt::DropAction QWinRTDrag::drag(QDrag *drag)
                 hr = RoActivateInstance(HString::MakeReference(RuntimeClass_Windows_Storage_Streams_InMemoryRandomAccessStream).Get(), &ras);
                 Q_ASSERT_SUCCEEDED(hr);
 
-                hr = ras->put_Size(data.size());
+                hr = ras->put_Size(UINT64(data.size()));
                 ComPtr<IOutputStream> outputStream;
                 hr = ras->GetOutputStreamAt(0, &outputStream);
                 Q_ASSERT_SUCCEEDED(hr);
@@ -802,7 +799,7 @@ void QWinRTDrag::handleNativeDragEvent(IInspectable *sender, ABI::Windows::UI::X
     Point relativePoint;
     hr = e->GetPosition(m_ui.Get(), &relativePoint);
     RETURN_VOID_IF_FAILED("Could not query drag position.");
-    const QPoint p(relativePoint.X, relativePoint.Y);
+    const QPoint p(int(relativePoint.X), int(relativePoint.Y));
 
     ComPtr<IDragEventArgs2> e2;
     hr = e->QueryInterface(IID_PPV_ARGS(&e2));

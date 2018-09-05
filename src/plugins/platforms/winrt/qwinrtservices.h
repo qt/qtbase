@@ -50,7 +50,7 @@ class QWinRTServices : public QPlatformServices
 {
 public:
     explicit QWinRTServices();
-    ~QWinRTServices();
+    ~QWinRTServices() override = default;
 
     bool openUrl(const QUrl &url) override;
     bool openDocument(const QUrl &url) override;
