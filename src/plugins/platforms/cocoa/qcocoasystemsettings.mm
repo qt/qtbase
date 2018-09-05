@@ -169,7 +169,11 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
                 // Cheap approximation for NSVisualEffectView (see deprecation note for selectedMenuItemTextColor)
                 selectedMenuItemColor = [[NSColor selectedContentBackgroundColor] highlightWithLevel:0.4];
             } else {
-                selectedMenuItemColor = [NSColor selectedMenuItemTextColor];
+                // selectedMenuItemColor would presumably be the correct color to use as the background
+                // for selected menu items. But that color is always blue, and doesn't follow the
+                // appearance color in system preferences. So we therefore deliberatly choose to use
+                // keyboardFocusIndicatorColor instead, which appears to have the same color value.
+                selectedMenuItemColor = [NSColor keyboardFocusIndicatorColor];
             }
             pal.setBrush(QPalette::Highlight, qt_mac_toQColor(selectedMenuItemColor));
             qc = qt_mac_toQColor([NSColor labelColor]);
