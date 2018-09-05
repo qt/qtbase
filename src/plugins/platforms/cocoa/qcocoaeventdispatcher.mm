@@ -120,9 +120,15 @@ void QCocoaEventDispatcherPrivate::runLoopTimerCallback(CFRunLoopTimerRef, void 
 void QCocoaEventDispatcherPrivate::activateTimersSourceCallback(void *info)
 {
     QCocoaEventDispatcherPrivate *d = static_cast<QCocoaEventDispatcherPrivate *>(info);
-    (void) d->timerInfoList.activateTimers();
-    d->maybeStartCFRunLoopTimer();
+    d->processTimers();
     d->maybeCancelWaitForMoreEvents();
+}
+
+bool QCocoaEventDispatcherPrivate::processTimers()
+{
+    int activated = timerInfoList.activateTimers();
+    maybeStartCFRunLoopTimer();
+    return activated > 0;
 }
 
 void QCocoaEventDispatcherPrivate::maybeStartCFRunLoopTimer()
@@ -500,10 +506,9 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
             } while (!d->interrupt && event);
 
             if ((d->processEventsFlags & QEventLoop::EventLoopExec) == 0) {
-                // when called "manually", always send posted events and timers
+                // When called "manually", always process posted events and timers
                 d->processPostedEvents();
-                retVal = d->timerInfoList.activateTimers() > 0 || retVal;
-                d->maybeStartCFRunLoopTimer();
+                retVal = d->processTimers() || retVal;
             }
 
             // be sure to return true if the posted event source fired
