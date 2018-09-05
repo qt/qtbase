@@ -131,6 +131,13 @@ public:
         setAutoBufferSwap(false);
     }
 
+    void resizeEvent(QResizeEvent *e)
+    {
+        m_thread->lock();
+        QGLWidget::resizeEvent(e);
+        m_thread->unlock();
+    }
+
     void paintEvent(QPaintEvent *)
     {
         m_thread->lock();
