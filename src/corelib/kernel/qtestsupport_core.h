@@ -67,7 +67,13 @@ Q_REQUIRED_RESULT static bool qWaitFor(Functor predicate, int timeout = 5000)
     QDeadlineTimer deadline(remaining, Qt::PreciseTimer);
 
     do {
-        QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
+        // We explicitly do not pass the remaining time to processEvents, as
+        // that would keep spinning processEvents for the whole duration if
+        // new events were posted as part of processing events, and we need
+        // to return back to this function to check the predicate between
+        // each pass of processEvents. Our own timer will take care of the
+        // timeout.
+        QCoreApplication::processEvents(QEventLoop::AllEvents);
         QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
 
         remaining = deadline.remainingTime();

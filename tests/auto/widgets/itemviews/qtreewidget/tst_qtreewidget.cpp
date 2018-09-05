@@ -3368,6 +3368,7 @@ void tst_QTreeWidget::setChildIndicatorPolicy()
     treeWidget.setItemDelegate(&delegate);
     treeWidget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&treeWidget));
+    QCoreApplication::processEvents(); // Process all queued paint events
 
     QTreeWidgetItem *item = new QTreeWidgetItem(QStringList("Hello"));
     treeWidget.insertTopLevelItem(0, item);
