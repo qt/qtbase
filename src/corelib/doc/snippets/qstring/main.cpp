@@ -291,7 +291,7 @@ void Widget::argFunction()
     //! [97]
 
     //! [98]
-    str = "%1%2%3";
+    str = "%1%3%2";
     str.arg("Hello", QString::number(20), QString::number(50)); // returns "Hello5020"
     //! [98]
 
