@@ -65,7 +65,7 @@ struct EnumDef
 {
     QByteArray name;
     QByteArray enumName;
-    QList<QByteArray> values;
+    QVector<QByteArray> values;
     bool isEnumClass; // c++11 enum class
     EnumDef() : isEnumClass(false) {}
 };
@@ -207,10 +207,10 @@ public:
     bool noInclude;
     bool mustIncludeQPluginH;
     QByteArray includePath;
-    QList<QByteArray> includeFiles;
+    QVector<QByteArray> includeFiles;
     QVector<ClassDef> classList;
     QMap<QByteArray, QByteArray> interface2IdMap;
-    QList<QByteArray> metaTypes;
+    QVector<QByteArray> metaTypes;
     // map from class name to fully qualified name
     QHash<QByteArray, QByteArray> knownQObjectClasses;
     QHash<QByteArray, QByteArray> knownGadgets;
