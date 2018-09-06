@@ -6505,10 +6505,19 @@ static void qInitDrawhelperFunctions()
                                                               const QVector<QRgb> *, QDitherInfo *);
     extern const uint *QT_FASTCALL fetchRGBA8888ToARGB32PM_neon(uint *buffer, const uchar *src, int index, int count,
                                                                 const QVector<QRgb> *, QDitherInfo *);
+    extern void QT_FASTCALL storeARGB32FromARGB32PM_neon(uchar *dest, const uint *src, int index, int count,
+                                                         const QVector<QRgb> *, QDitherInfo *);
+    extern void QT_FASTCALL storeRGBA8888FromARGB32PM_neon(uchar *dest, const uint *src, int index, int count,
+                                                           const QVector<QRgb> *, QDitherInfo *);
+    extern void QT_FASTCALL storeRGBXFromARGB32PM_neon(uchar *dest, const uint *src, int index, int count,
+                                                       const QVector<QRgb> *, QDitherInfo *);
     qPixelLayouts[QImage::Format_ARGB32].fetchToARGB32PM = fetchARGB32ToARGB32PM_neon;
     qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_neon;
+    qPixelLayouts[QImage::Format_ARGB32].storeFromARGB32PM = storeARGB32FromARGB32PM_neon;
     qPixelLayouts[QImage::Format_RGBA8888].fetchToARGB32PM = fetchRGBA8888ToARGB32PM_neon;
     qPixelLayouts[QImage::Format_RGBA8888].convertToARGB32PM = convertRGBA8888ToARGB32PM_neon;
+    qPixelLayouts[QImage::Format_RGBA8888].storeFromARGB32PM = storeRGBA8888FromARGB32PM_neon;
+    qPixelLayouts[QImage::Format_RGBX8888].storeFromARGB32PM = storeRGBXFromARGB32PM_neon;
 #endif
 
 #if defined(ENABLE_PIXMAN_DRAWHELPERS)
