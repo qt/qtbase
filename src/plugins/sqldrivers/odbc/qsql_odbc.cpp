@@ -72,6 +72,7 @@ inline static QString fromSQLTCHAR(const QVarLengthArray<SQLTCHAR>& input, int s
 {
     QString result;
 
+    // Remove any trailing \0 as some drivers misguidedly append one
     int realsize = qMin(size, input.size());
     if(realsize > 0 && input[realsize-1] == 0)
         realsize--;
@@ -458,7 +459,6 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
                 // more data can be fetched, the length indicator does NOT
                 // contain the number of bytes returned - it contains the
                 // total number of bytes that CAN be fetched
-                // colSize-1: remove 0 termination when there is more data to fetch
                 int rSize = (r == SQL_SUCCESS_WITH_INFO) ? colSize : int(lengthIndicator / sizeof(SQLTCHAR));
                     fieldVal += fromSQLTCHAR(buf, rSize);
                 if (lengthIndicator < SQLLEN(colSize*sizeof(SQLTCHAR))) {
@@ -499,9 +499,12 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
                 // more data can be fetched, the length indicator does NOT
                 // contain the number of bytes returned - it contains the
                 // total number of bytes that CAN be fetched
-                // colSize-1: remove 0 termination when there is more data to fetch
                 int rSize = (r == SQL_SUCCESS_WITH_INFO) ? colSize : lengthIndicator;
-                    fieldVal += QString::fromUtf8((const char *)buf.constData(), rSize);
+                // Remove any trailing \0 as some drivers misguidedly append one
+                int realsize = qMin(rSize, buf.size());
+                if (realsize > 0 && buf[realsize - 1] == 0)
+                    realsize--;
+                fieldVal += QString::fromUtf8(reinterpret_cast<const char *>(buf.constData()), realsize);
                 if (lengthIndicator < SQLLEN(colSize)) {
                     // workaround for Drivermanagers that don't return SQL_NO_DATA
                     break;
