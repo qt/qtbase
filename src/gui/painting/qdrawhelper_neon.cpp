@@ -1163,6 +1163,20 @@ void QT_FASTCALL convertRGBA8888ToARGB32PM_neon(uint *buffer, int count, const Q
     convertARGBToARGB32PM_neon<true>(buffer, buffer, count);
 }
 
+const uint *QT_FASTCALL fetchARGB32ToARGB32PM_neon(uint *buffer, const uchar *src, int index, int count,
+                                                   const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToARGB32PM_neon<false>(buffer, reinterpret_cast<const uint *>(src) + index, count);
+    return buffer;
+}
+
+const uint *QT_FASTCALL fetchRGBA8888ToARGB32PM_neon(uint *buffer, const uchar *src, int index, int count,
+                                                     const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToARGB32PM_neon<true>(buffer, reinterpret_cast<const uint *>(src) + index, count);
+    return buffer;
+}
+
 #endif // Q_BYTE_ORDER == Q_LITTLE_ENDIAN
 
 QT_END_NAMESPACE
