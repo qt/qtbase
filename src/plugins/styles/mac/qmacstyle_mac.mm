@@ -253,33 +253,50 @@ QVector<QPointer<QObject> > QMacStylePrivate::scrollBars;
 
 static QLinearGradient titlebarGradientActive()
 {
-    static QLinearGradient gradient;
-    if (gradient == QLinearGradient()) {
+    static QLinearGradient darkGradient = [](){
+        QLinearGradient gradient;
+        // FIXME: colors are chosen somewhat arbitrarily and could be fine-tuned,
+        // or ideally determined by calling a native API.
+        gradient.setColorAt(0, QColor(47, 47, 47));
+        return gradient;
+    }();
+    static QLinearGradient lightGradient = [](){
+        QLinearGradient gradient;
         gradient.setColorAt(0, QColor(235, 235, 235));
         gradient.setColorAt(0.5, QColor(210, 210, 210));
         gradient.setColorAt(0.75, QColor(195, 195, 195));
         gradient.setColorAt(1, QColor(180, 180, 180));
-    }
-    return gradient;
+        return gradient;
+    }();
+    return qt_mac_applicationIsInDarkMode() ? darkGradient : lightGradient;
 }
 
 static QLinearGradient titlebarGradientInactive()
 {
-    static QLinearGradient gradient;
-    if (gradient == QLinearGradient()) {
+    static QLinearGradient darkGradient = [](){
+        QLinearGradient gradient;
+        gradient.setColorAt(1, QColor(42, 42, 42));
+        return gradient;
+    }();
+    static QLinearGradient lightGradient = [](){
+        QLinearGradient gradient;
         gradient.setColorAt(0, QColor(250, 250, 250));
         gradient.setColorAt(1, QColor(225, 225, 225));
-    }
-    return gradient;
+        return gradient;
+    }();
+    return qt_mac_applicationIsInDarkMode() ? darkGradient : lightGradient;
 }
 
 static const QColor titlebarSeparatorLineActive(111, 111, 111);
 static const QColor titlebarSeparatorLineInactive(131, 131, 131);
+static const QColor darkModeSeparatorLine(88, 88, 88);
 
 // Gradient colors used for the dock widget title bar and
 // non-unifed tool bar bacground.
-static const QColor mainWindowGradientBegin(240, 240, 240);
-static const QColor mainWindowGradientEnd(200, 200, 200);
+static const QColor lightMainWindowGradientBegin(240, 240, 240);
+static const QColor lightMainWindowGradientEnd(200, 200, 200);
+static const QColor darkMainWindowGradientBegin(47, 47, 47);
+static const QColor darkMainWindowGradientEnd(47, 47, 47);
 
 static const int DisclosureOffset = 4;
 
@@ -4233,12 +4250,13 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 #ifndef QT_NO_TOOLBAR
     case CE_ToolBar: {
         const QStyleOptionToolBar *toolBar = qstyleoption_cast<const QStyleOptionToolBar *>(opt);
+        const bool isDarkMode = qt_mac_applicationIsInDarkMode();
 
         // Unified title and toolbar drawing. In this mode the cocoa platform plugin will
         // fill the top toolbar area part with a background gradient that "unifies" with
         // the title bar. The following code fills the toolBar area with transparent pixels
         // to make that gradient visible.
-        if (w)  {
+        if (w) {
 #if QT_CONFIG(mainwindow)
             if (QMainWindow * mainWindow = qobject_cast<QMainWindow *>(w->window())) {
                 if (toolBar && toolBar->toolBarArea == Qt::TopToolBarArea && mainWindow->unifiedTitleAndToolBarOnMac()) {
@@ -4248,7 +4266,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     p->fillRect(opt->rect, Qt::transparent);
                     p->restore();
 
-                    // Drow a horizontal separator line at the toolBar bottom if the "unified" area ends here.
+                    // Draw a horizontal separator line at the toolBar bottom if the "unified" area ends here.
                     // There might be additional toolbars or other widgets such as tab bars in document
                     // mode below. Determine this by making a unified toolbar area test for the row below
                     // this toolbar.
@@ -4257,7 +4275,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     if (isEndOfUnifiedArea) {
                         const int margin = qt_mac_aqua_get_metric(SeparatorSize);
                         const auto separatorRect = QRect(opt->rect.left(), opt->rect.bottom(), opt->rect.width(), margin);
-                        p->fillRect(separatorRect, opt->palette.dark().color());
+                        p->fillRect(separatorRect, isDarkMode ? darkModeSeparatorLine : opt->palette.dark().color());
                     }
                     break;
                 }
@@ -4272,21 +4290,23 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         else
             linearGrad = QLinearGradient(opt->rect.left(), 0,  opt->rect.right(), 0);
 
+        QColor mainWindowGradientBegin = isDarkMode ? darkMainWindowGradientBegin : lightMainWindowGradientBegin;
+        QColor mainWindowGradientEnd = isDarkMode ? darkMainWindowGradientEnd : lightMainWindowGradientEnd;
+
         linearGrad.setColorAt(0, mainWindowGradientBegin);
         linearGrad.setColorAt(1, mainWindowGradientEnd);
         p->fillRect(opt->rect, linearGrad);
 
         p->save();
         if (opt->state & State_Horizontal) {
-            p->setPen(mainWindowGradientBegin.lighter(114));
+            p->setPen(isDarkMode ? darkModeSeparatorLine : mainWindowGradientBegin.lighter(114));
             p->drawLine(opt->rect.topLeft(), opt->rect.topRight());
-            p->setPen(mainWindowGradientEnd.darker(114));
+            p->setPen(isDarkMode ? darkModeSeparatorLine :mainWindowGradientEnd.darker(114));
             p->drawLine(opt->rect.bottomLeft(), opt->rect.bottomRight());
-
         } else {
-            p->setPen(mainWindowGradientBegin.lighter(114));
+            p->setPen(isDarkMode ? darkModeSeparatorLine : mainWindowGradientBegin.lighter(114));
             p->drawLine(opt->rect.topLeft(), opt->rect.bottomLeft());
-            p->setPen(mainWindowGradientEnd.darker(114));
+            p->setPen(isDarkMode ? darkModeSeparatorLine : mainWindowGradientEnd.darker(114));
             p->drawLine(opt->rect.topRight(), opt->rect.bottomRight());
         }
         p->restore();
