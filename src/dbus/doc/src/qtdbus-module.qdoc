@@ -51,6 +51,7 @@
 
     \snippet code/doc_src_qtdbus.cpp 0
 
+    \if !defined(qtforpython)
     If you're using qmake to build your application, you can add this
     line to your .pro file to make it link against the Qt D-Bus
     libraries:
@@ -60,6 +61,7 @@
     \note The source code for this module is located in the \c{src/qdbus}
     directory. When installing Qt from source, this module is built when Qt's
     tools are built.
+    \endif
 
     See the \l {Qt D-Bus}{D-Bus} page for detailed information on
     how to use this module.

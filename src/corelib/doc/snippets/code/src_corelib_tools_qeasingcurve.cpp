@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -49,6 +49,17 @@
 ****************************************************************************/
 
 //! [0]
-qreal myEasingFunction(qreal progress);
+    QEasingCurve easing(QEasingCurve::InOutQuad);
+
+    for (qreal t = 0.0; t < 1.0; t+=0.1)
+        qWarning() << "Effective progress" << t << " is
+                   << easing.valueForProgress(t);
 //! [0]
 
+//! [1]
+    QPropertyAnimation animation;
+    animation.setStartValue(0);
+    animation.setEndValue(1000);
+    animation.setDuration(1000);
+    animation.setEasingCurve(QEasingCurve::InOutQuad);
+//! [1]

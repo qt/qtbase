@@ -57,11 +57,25 @@ QWindow *windowForAccessible(const QAccessibleInterface *accessible)
 {
     QWindow *window = accessible->window();
     if (!window) {
-        QAccessibleInterface *acc = accessible->parent();
-        while (acc && acc->isValid() && !window) {
-            window = acc->window();
-            QAccessibleInterface *par = acc->parent();
+        const QAccessibleInterface *acc = accessible;
+        const QAccessibleInterface *par = accessible->parent();
+        while (par && par->isValid() && !window) {
+            window = par->window();
             acc = par;
+            par = par->parent();
+        }
+        if (!window) {
+            // Workaround for WebEngineView not knowing its parent.
+            const auto appWindows = QGuiApplication::topLevelWindows();
+            for (QWindow *w : appWindows) {
+                if (QAccessibleInterface *root = w->accessibleRoot()) {
+                    int count = root->childCount();
+                    for (int i = 0; i < count; ++i) {
+                        if (root->child(i) == acc)
+                            return w;
+                    }
+                }
+            }
         }
     }
     return window;

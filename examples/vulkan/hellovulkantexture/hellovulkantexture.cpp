@@ -59,7 +59,7 @@
 // Vulkan Y is negated in clip space and the near/far plane is at 0/1 instead
 // of -1/1. These will be corrected for by an extra transformation when
 // calculating the modelview-projection matrix.
-static float vertexData[] = {
+static float vertexData[] = { // Y up, front = CW
     // x, y, z, u, v
     -1, -1, 0, 0, 1,
     -1,  1, 0, 0, 0,

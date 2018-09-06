@@ -41,9 +41,11 @@
 
     \snippet code/doc_src_qttest.cpp 0
 
+    \if !define(qtforpython)
     To link against Qt Test, add this line to the project file:
 
     \snippet code/doc_src_qttest.pro 1
+    \endif
 
     \section1 Articles and Guides
 

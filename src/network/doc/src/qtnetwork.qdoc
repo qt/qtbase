@@ -40,10 +40,13 @@
     \code
     #include <QtNetwork>
     \endcode
+
+    \if !defined(qtforpython)
     To link against the Qt Network module, add this line to the project file:
     \code
     QT += network
     \endcode
+    \endif
 
     \section1 Articles and Guides
 

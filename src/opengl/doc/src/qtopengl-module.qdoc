@@ -57,10 +57,12 @@
 
     \snippet code/doc_src_qtopengl.cpp 0
 
+    \if !defined(qtforpython)
     To link against the module, add this line to your \l qmake \c
     .pro file:
 
     \snippet code/doc_src_qtopengl.pro 1
+    \endif
 
     The Qt OpenGL module is implemented as a platform-independent Qt/C++
     wrapper around the platform-dependent GLX (version 1.3 or later),

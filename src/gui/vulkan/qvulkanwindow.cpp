@@ -2694,15 +2694,11 @@ QImage QVulkanWindow::grab()
    system differences between OpenGL and Vulkan.
 
    By pre-multiplying the projection matrix with this matrix, applications can
-   continue to assume OpenGL-style Y coordinates in clip space (i.e. Y pointing
-   upwards), and can set minDepth and maxDepth to 0 and 1, respectively,
-   without any further corrections to the vertex Z positions, while using the
-   projection matrices retrieved from the QMatrix4x4 functions, such as
-   QMatrix4x4::perspective(), as-is.
-
-   \note With vertex data following the default OpenGL rules (that is, the
-   front face being CCW), the correct winding order in the rasterization state
-   after applying this matrix is clockwise (\c{VK_FRONT_FACE_CLOCKWISE}).
+   continue to assume that Y is pointing upwards, and can set minDepth and
+   maxDepth in the viewport to 0 and 1, respectively, without having to do any
+   further corrections to the vertex Z positions. Geometry from OpenGL
+   applications can then be used as-is, assuming a rasterization state matching
+   the OpenGL culling and front face settings.
  */
 QMatrix4x4 QVulkanWindow::clipCorrectionMatrix()
 {

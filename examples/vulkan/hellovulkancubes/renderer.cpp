@@ -53,7 +53,7 @@
 #include <QtConcurrentRun>
 #include <QTime>
 
-static float quadVert[] = {
+static float quadVert[] = { // Y up, front = CW
     -1, -1, 0,
     -1,  1, 0,
      1, -1, 0,

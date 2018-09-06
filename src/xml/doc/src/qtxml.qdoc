@@ -41,8 +41,10 @@
 
     \snippet code/doc_src_qtxml.cpp 0
 
+    \if !defined(qtforpython)
     To link against the module, add this line to your \l qmake \c
     .pro file:
 
     \snippet code/doc_src_qtxml.pro 1
+    \endif
 */
