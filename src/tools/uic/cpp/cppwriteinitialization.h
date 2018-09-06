@@ -230,6 +230,8 @@ private:
 private:
     QString writeFontProperties(const DomFont *f);
     QString writeIconProperties(const DomResourceIcon *i);
+    void writePixmapFunctionIcon(QTextStream &output, const QString &iconName,
+                                 const QString &indent, const DomResourceIcon *i) const;
     QString writeSizePolicy(const DomSizePolicy *sp);
     QString writeBrushInitialization(const DomBrush *brush);
     void addButtonGroup(const DomWidget *node, const QString &varName);

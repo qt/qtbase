@@ -40,12 +40,16 @@
 #ifndef QCOCOAVULKANINSTANCE_H
 #define QCOCOAVULKANINSTANCE_H
 
+// Include mvk_vulkan.h first. The order is important since
+// mvk_vulkan.h just defines VK_USE_PLATFORM_MACOS_MVK (or the IOS
+// variant) and includes vulkan.h. If something else included vulkan.h
+// before this then we wouldn't get the MVK specifics...
+#include <MoltenVK/mvk_vulkan.h>
+
 #include <QtCore/QHash>
 #include <QtVulkanSupport/private/qbasicvulkanplatforminstance_p.h>
 
 #include <AppKit/AppKit.h>
-
-#include <MoltenVK/mvk_vulkan.h>
 
 QT_BEGIN_NAMESPACE
 

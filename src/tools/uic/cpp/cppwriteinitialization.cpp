@@ -1645,6 +1645,53 @@ static void writeResourceIcon(QTextStream &output,
     }
 }
 
+void WriteInitialization::writePixmapFunctionIcon(QTextStream &output,
+                                                  const QString &iconName,
+                                                  const QString &indent,
+                                                  const DomResourceIcon *i) const
+{
+    if (i->hasElementNormalOff()) {
+        output << indent << iconName << ".addPixmap("
+               << pixCall(QLatin1String("QPixmap"), i->elementNormalOff()->text())
+               << ", QIcon::Normal, QIcon::Off);\n";
+    }
+    if (i->hasElementNormalOn()) {
+        output << indent << iconName << ".addPixmap("
+               << pixCall(QLatin1String("QPixmap"), i->elementNormalOn()->text())
+               << ", QIcon::Normal, QIcon::On);\n";
+    }
+    if (i->hasElementDisabledOff()) {
+        output << indent << iconName << ".addPixmap("
+               << pixCall(QLatin1String("QPixmap"), i->elementDisabledOff()->text())
+               << ", QIcon::Disabled, QIcon::Off);\n";
+    }
+    if (i->hasElementDisabledOn()) {
+        output << indent << iconName << ".addPixmap("
+               << pixCall(QLatin1String("QPixmap"), i->elementDisabledOn()->text())
+               << ", QIcon::Disabled, QIcon::On);\n";
+    }
+    if (i->hasElementActiveOff()) {
+        output << indent << iconName << ".addPixmap("
+               << pixCall(QLatin1String("QPixmap"), i->elementActiveOff()->text())
+               << ", QIcon::Active, QIcon::Off);\n";
+    }
+    if (i->hasElementActiveOn()) {
+        output << indent << iconName << ".addPixmap("
+               << pixCall(QLatin1String("QPixmap"), i->elementActiveOn()->text())
+               << ", QIcon::Active, QIcon::On);\n";
+    }
+    if (i->hasElementSelectedOff()) {
+        output << indent << iconName << ".addPixmap("
+               << pixCall(QLatin1String("QPixmap"), i->elementSelectedOff()->text())
+               << ", QIcon::Selected, QIcon::Off);\n";
+    }
+    if (i->hasElementSelectedOn()) {
+        output << indent << iconName << ".addPixmap("
+               << pixCall(QLatin1String("QPixmap"), i->elementSelectedOn()->text())
+               << ", QIcon::Selected, QIcon::On);\n";
+    }
+}
+
 QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
 {
     // check cache
@@ -1661,7 +1708,10 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
         if (i->attributeTheme().isEmpty()) {
             // No theme: Write resource icon as is
             m_output << m_indent << "QIcon " << iconName << ";\n";
-            writeResourceIcon(m_output, iconName, m_indent, i);
+            if (m_uic->pixmapFunction().isEmpty())
+                writeResourceIcon(m_output, iconName, m_indent, i);
+            else
+                writePixmapFunctionIcon(m_output, iconName, m_indent, i);
         } else {
             // Theme: Generate code to check the theme and default to resource
             const QString themeIconName = fixString(i->attributeTheme(), QString());
@@ -1683,7 +1733,10 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
                          << ")) {\n"
                          << m_dindent << iconName << " = QIcon::fromTheme(" << themeNameStringVariableC << ");\n"
                          << m_indent << "} else {\n";
-                writeResourceIcon(m_output, iconName, m_dindent, i);
+                if (m_uic->pixmapFunction().isEmpty())
+                    writeResourceIcon(m_output, iconName, m_dindent, i);
+                else
+                    writePixmapFunctionIcon(m_output, iconName, m_dindent, i);
                 m_output << m_indent << "}\n";
             } else {
                 // Theme, but no state pixmaps: Construct from theme directly.

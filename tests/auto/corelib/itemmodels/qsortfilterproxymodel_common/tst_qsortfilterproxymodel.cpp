@@ -32,6 +32,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtGui/QStandardItem>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QTreeView>
 #include <QtWidgets/QTableView>
 
@@ -504,6 +505,58 @@ void tst_QSortFilterProxyModel::prependRow()
 
     QCOMPARE(sub2.rowCount(), proxy.rowCount(index_sub2));
     QCOMPARE(proxy.rowCount(QModelIndex()), 1); //only the "root" item is there
+}
+
+void tst_QSortFilterProxyModel::appendRowFromCombobox_data()
+{
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<QStringList>("initial");
+    QTest::addColumn<QString>("newitem");
+    QTest::addColumn<QStringList>("expected");
+
+    QTest::newRow("filter_out_second_last_item")
+        << "^[0-9]*$"
+        << (QStringList() << "a" << "1")
+        << "2"
+        << (QStringList() << "a" << "1" << "2");
+
+    QTest::newRow("filter_out_everything")
+        << "^c*$"
+        << (QStringList() << "a" << "b")
+        << "c"
+        << (QStringList() << "a" << "b" << "c");
+
+    QTest::newRow("no_filter")
+        << ""
+        << (QStringList() << "0" << "1")
+        << "2"
+        << (QStringList() << "0" << "1" << "2");
+
+    QTest::newRow("filter_out_last_item")
+        << "^[a-z]*$"
+        << (QStringList() << "a" << "1")
+        << "b"
+        << (QStringList() << "a" << "1" << "b");
+}
+
+void tst_QSortFilterProxyModel::appendRowFromCombobox()
+{
+    QFETCH(QString, pattern);
+    QFETCH(QStringList, initial);
+    QFETCH(QString, newitem);
+    QFETCH(QStringList, expected);
+
+    QStringListModel model(initial);
+
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+    proxy.setFilterRegExp(pattern);
+
+    QComboBox comboBox;
+    comboBox.setModel(&proxy);
+    comboBox.addItem(newitem);
+
+    QCOMPARE(model.stringList(), expected);
 }
 
 void tst_QSortFilterProxyModel::removeRows_data()

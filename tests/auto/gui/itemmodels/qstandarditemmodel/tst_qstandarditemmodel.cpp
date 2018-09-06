@@ -750,7 +750,11 @@ void tst_QStandardItemModel::data()
 
     QCOMPARE(m_model->data(m_model->index(0, 0), Qt::DisplayRole).toString(), QLatin1String("initialitem"));
     QCOMPARE(m_model->data(m_model->index(0, 0), Qt::ToolTipRole).toString(), QLatin1String("tooltip"));
-
+    const QMap<int, QVariant> itmData = m_model->itemData(m_model->index(0, 0));
+    QCOMPARE(itmData.value(Qt::DisplayRole), QLatin1String("initialitem"));
+    QCOMPARE(itmData.value(Qt::ToolTipRole), QLatin1String("tooltip"));
+    QVERIFY(!itmData.contains(Qt::UserRole - 1));
+    QVERIFY(m_model->itemData(QModelIndex()).isEmpty());
 }
 
 void tst_QStandardItemModel::clearItemData()

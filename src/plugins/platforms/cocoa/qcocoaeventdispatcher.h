@@ -153,6 +153,7 @@ public:
     void maybeStopCFRunLoopTimer();
     static void runLoopTimerCallback(CFRunLoopTimerRef, void *info);
     static void activateTimersSourceCallback(void *info);
+    bool processTimers();
 
     // Set 'blockSendPostedEvents' to true if you _really_ need
     // to make sure that qt events are not posted while calling

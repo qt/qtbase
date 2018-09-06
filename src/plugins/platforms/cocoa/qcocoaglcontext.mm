@@ -336,11 +336,8 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
         return true;
     }
 
-    QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
-    if (!setActiveWindow(window)) {
-        qCDebug(lcQpaOpenGLContext) << "Failed to activate window, skipping makeCurrent";
+    if (!setDrawable(surface))
         return false;
-    }
 
     [m_context makeCurrentContext];
 
@@ -365,8 +362,15 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
     return true;
 }
 
-bool QCocoaGLContext::setActiveWindow(QWindow *window)
+/*!
+    Sets the drawable object of the NSOpenGLContext, which is the
+    frame buffer that is the target of OpenGL drawing operations.
+*/
+bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
 {
+    Q_ASSERT(surface && surface->surface()->surfaceClass() == QSurface::Window);
+    QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
+
     if (window == m_currentWindow.data())
         return true;
 
@@ -375,11 +379,11 @@ bool QCocoaGLContext::setActiveWindow(QWindow *window)
     NSView *view = cocoaWindow->view();
 
     if ((m_context.view = view) != view) {
-        qCDebug(lcQpaOpenGLContext) << "Associating" << view << "with" << m_context << "failed";
+        qCInfo(lcQpaOpenGLContext) << "Failed to set" << view << "as drawable for" << m_context;
         return false;
     }
 
-    qCDebug(lcQpaOpenGLContext) << m_context << "now associated with" << m_context.view;
+    qCInfo(lcQpaOpenGLContext) << "Set drawable for" << m_context << "to" << m_context.view;
 
     if (m_currentWindow && m_currentWindow.data()->handle())
         static_cast<QCocoaWindow *>(m_currentWindow.data()->handle())->setCurrentContext(0);
@@ -408,9 +412,9 @@ void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
     if (surface->surface()->surfaceClass() == QSurface::Offscreen)
         return; // Nothing to do
 
-    QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
-    if (!setActiveWindow(window)) {
-        qCWarning(lcQpaOpenGLContext) << "Failed to activate window, skipping swapBuffers";
+    if (!setDrawable(surface)) {
+        qCWarning(lcQpaOpenGLContext) << "Can't flush" << m_context
+            << "without" << surface << "as drawable";
         return;
     }
 
@@ -435,7 +439,7 @@ void QCocoaGLContext::windowWasHidden()
 {
     // If the window is hidden, we need to unset the m_currentWindow
     // variable so that succeeding makeCurrent's will not abort prematurely
-    // because of the optimization in setActiveWindow.
+    // because of the optimization in setDrawable.
     // Doing a full doneCurrent here is not preferable, because the GL context
     // might be rendering in a different thread at this time.
     m_currentWindow.clear();
