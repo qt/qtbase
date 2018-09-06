@@ -69,6 +69,9 @@ public:
     bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
     bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
 
+    QMap<int, QVariant> itemData(const QModelIndex &index) const override;
+    bool setItemData(const QModelIndex &index, const QMap<int, QVariant> &roles) override;
+
     void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
 
     QStringList stringList() const;

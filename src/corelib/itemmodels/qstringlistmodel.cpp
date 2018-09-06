@@ -136,6 +136,42 @@ QModelIndex QStringListModel::sibling(int row, int column, const QModelIndex &id
 }
 
 /*!
+  \reimp
+  \since 5.13
+*/
+QMap<int, QVariant> QStringListModel::itemData(const QModelIndex &index) const
+{
+    if (!checkIndex(index, CheckIndexOption::IndexIsValid | CheckIndexOption::ParentIsInvalid))
+        return QMap<int, QVariant>{};
+    const QVariant displayData = lst.at(index.row());
+    return QMap<int, QVariant>{{
+        std::make_pair<int>(Qt::DisplayRole, displayData),
+        std::make_pair<int>(Qt::EditRole, displayData)
+    }};
+}
+
+/*!
+  \reimp
+  \since 5.13
+  If \a roles contains both Qt::DisplayRole and Qt::EditRole, the latter will take precedence
+*/
+bool QStringListModel::setItemData(const QModelIndex &index, const QMap<int, QVariant> &roles)
+{
+    if (roles.isEmpty())
+        return false;
+    if (std::any_of(roles.keyBegin(), roles.keyEnd(), [](int role) -> bool {
+        return role != Qt::DisplayRole && role != Qt::EditRole;
+    })) {
+        return false;
+    }
+    auto roleIter = roles.constFind(Qt::EditRole);
+    if (roleIter == roles.constEnd())
+        roleIter = roles.constFind(Qt::DisplayRole);
+    Q_ASSERT(roleIter != roles.constEnd());
+    return setData(index, roleIter.value(), roleIter.key());
+}
+
+/*!
     Returns data for the specified \a role, from the item with the
     given \a index.
 
@@ -185,13 +221,7 @@ bool QStringListModel::setData(const QModelIndex &index, const QVariant &value, 
     if (index.row() >= 0 && index.row() < lst.size()
         && (role == Qt::EditRole || role == Qt::DisplayRole)) {
         lst.replace(index.row(), value.toString());
-        QVector<int> roles;
-        roles.reserve(2);
-        roles.append(Qt::DisplayRole);
-        roles.append(Qt::EditRole);
-        emit dataChanged(index, index, roles);
-        // once Q_COMPILER_UNIFORM_INIT can be used, change to:
-        // emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
+        emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
         return true;
     }
     return false;
