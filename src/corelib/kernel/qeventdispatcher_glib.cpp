@@ -260,8 +260,8 @@ static gboolean postEventSourcePrepare(GSource *s, gint *timeout)
     *timeout = canWait ? -1 : 0;
 
     GPostEventSource *source = reinterpret_cast<GPostEventSource *>(s);
-    return (!canWait
-            || (source->serialNumber.load() != source->lastSerialNumber));
+    source->d->wakeUpCalled = source->serialNumber.load() != source->lastSerialNumber;
+    return !canWait || source->d->wakeUpCalled;
 }
 
 static gboolean postEventSourceCheck(GSource *source)
