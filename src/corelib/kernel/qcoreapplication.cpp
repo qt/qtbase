@@ -1266,7 +1266,11 @@ bool QCoreApplication::closingDown()
     \l{QCoreApplication::sendPostedEvents()}{sendPostedEvents()} from
     within that local loop.
 
-    Calling this function processes events only for the calling thread.
+    Calling this function processes events only for the calling thread,
+    and returns after all available events have been processed. Available
+    events are events queued before the function call. This means that
+    events that are posted while the function runs will be queued until
+    a later round of event processing.
 
     \threadsafe
 
@@ -1283,7 +1287,7 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
 /*!
     \overload processEvents()
 
-    Processes pending events for the calling thread for \a maxtime
+    Processes pending events for the calling thread for \a ms
     milliseconds or until there are no more events to process,
     whichever is shorter.
 
@@ -1292,11 +1296,14 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     Calling this function processes events only for the calling thread.
 
+    \note Unlike the \l{QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)}{processEvents()}
+    overload, this function also processes events that are posted while the function runs.
+
     \threadsafe
 
     \sa exec(), QTimer, QEventLoop::processEvents()
 */
-void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int maxtime)
+void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int ms)
 {
     // ### Qt 6: consider splitting this method into a public and a private
     //           one, so that a user-invoked processEvents can be detected
@@ -1307,7 +1314,7 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int m
     QElapsedTimer start;
     start.start();
     while (data->eventDispatcher.load()->processEvents(flags & ~QEventLoop::WaitForMoreEvents)) {
-        if (start.elapsed() > maxtime)
+        if (start.elapsed() > ms)
             break;
     }
 }
