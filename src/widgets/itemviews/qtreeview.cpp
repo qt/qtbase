@@ -1088,15 +1088,8 @@ void QTreeView::keyboardSearch(const QString &search)
     if (start.column() > 0)
         index = index.sibling(index.row(), start.column());
 
-    if (index.isValid()) {
-        QItemSelectionModel::SelectionFlags flags = (d->selectionMode == SingleSelection
-                                                     ? QItemSelectionModel::SelectionFlags(
-                                                         QItemSelectionModel::ClearAndSelect
-                                                         |d->selectionBehaviorFlags())
-                                                     : QItemSelectionModel::SelectionFlags(
-                                                         QItemSelectionModel::NoUpdate));
-        selectionModel()->setCurrentIndex(index, flags);
-    }
+    if (index.isValid())
+        setCurrentIndex(index);
 }
 
 /*!

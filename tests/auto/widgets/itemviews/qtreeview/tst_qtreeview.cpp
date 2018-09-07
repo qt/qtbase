@@ -2435,6 +2435,8 @@ void tst_QTreeView::selection()
     for (int i = 0;i < 10; ++i)
         m.setData(m.index(i, 0), i);
     treeView.setModel(&m);
+    treeView.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&treeView));
 
     treeView.setSelectionBehavior(QAbstractItemView::SelectRows);
     treeView.setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -2446,6 +2448,13 @@ void tst_QTreeView::selection()
 
     QTest::mousePress(treeView.viewport(), Qt::LeftButton, 0, treeView.visualRect(m.index(1, 0)).center());
     QTest::keyPress(treeView.viewport(), Qt::Key_Down);
+    auto selectedRows = treeView.selectionModel()->selectedRows();
+    QCOMPARE(selectedRows.size(), 1);
+    QCOMPARE(selectedRows.first(), m.index(2, 0, QModelIndex()));
+    QTest::keyPress(treeView.viewport(), Qt::Key_5);
+    selectedRows = treeView.selectionModel()->selectedRows();
+    QCOMPARE(selectedRows.size(), 1);
+    QCOMPARE(selectedRows.first(), m.index(5, 0, QModelIndex()));
 }
 
 //From task 151686 QTreeView ExtendedSelection selects hidden rows
