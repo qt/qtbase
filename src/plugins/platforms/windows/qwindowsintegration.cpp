@@ -300,7 +300,7 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
     case AllGLFunctionsQueryable:
         return true;
     case SwitchableWidgetComposition:
-        return true;
+        return false; // QTBUG-68329 QTBUG-53515 QTBUG-54734
     default:
         return QPlatformIntegration::hasCapability(cap);
     }
