@@ -454,6 +454,13 @@ QDtlsClientVerifier::QDtlsClientVerifier(QObject *parent)
 }
 
 /*!
+    Destroys the QDtlsClientVerifier object.
+*/
+QDtlsClientVerifier::~QDtlsClientVerifier()
+{
+}
+
+/*!
     Sets the secret and the cryptographic hash algorithm from \a params. This
     QDtlsClientVerifier will use these to generate cookies. If the new secret
     has size zero, this function returns \c false and does not change the
@@ -574,6 +581,13 @@ QDtls::QDtls(QSslSocket::SslMode mode, QObject *parent)
 
     d->mode = mode;
     setDtlsConfiguration(QSslConfiguration::defaultDtlsConfiguration());
+}
+
+/*!
+    Destroys the QDtls object.
+*/
+QDtls::~QDtls()
+{
 }
 
 /*!
