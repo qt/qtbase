@@ -1437,6 +1437,13 @@ void QPainterPrivate::updateState(QPainterState *newState)
     by slightly less than half a pixel. Also will treat default constructed pens
     as cosmetic. Potentially useful when porting a Qt 4 application to Qt 5.
 
+    \value LosslessImageRendering Use a lossless image rendering, whenever possible.
+    Currently, this hint is only used when QPainter is employed to output a PDF
+    file through QPrinter or QPdfWriter, where drawImage()/drawPixmap() calls
+    will encode images using a lossless compression algorithm instead of lossy
+    JPEG compression.
+    This value was added in Qt 5.13.
+
     \sa renderHints(), setRenderHint(), {QPainter#Rendering
     Quality}{Rendering Quality}, {Concentric Circles Example}
 

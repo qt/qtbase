@@ -91,7 +91,8 @@ public:
         SmoothPixmapTransform = 0x04,
         HighQualityAntialiasing = 0x08,
         NonCosmeticDefaultPen = 0x10,
-        Qt4CompatiblePainting = 0x20
+        Qt4CompatiblePainting = 0x20,
+        LosslessImageRendering = 0x40,
     };
     Q_FLAG(RenderHint)
 
