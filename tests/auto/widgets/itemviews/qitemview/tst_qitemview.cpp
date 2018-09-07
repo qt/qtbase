@@ -546,23 +546,26 @@ void tst_QItemView::walkScreen(QAbstractItemView *view)
     }
 }
 
-void walkIndex(QModelIndex index, QAbstractItemView *view)
+void walkIndex(const QModelIndex &index, const QAbstractItemView *view)
 {
-    QRect visualRect = view->visualRect(index);
-    //if (index.column() == 0)
-    //qDebug() << index << visualRect;
-    int width = visualRect.width();
-    int height = visualRect.height();
+    const QRect visualRect = view->visualRect(index);
+    const int width = visualRect.width();
+    const int height = visualRect.height();
 
-    for (int w = 0; w < width; ++w)
+    if (width == 0 || height == 0)
+        return;
+
+    const auto widths = (width < 2) ? QVector<int>({ 0, 1 }) : QVector<int>({ 0, 1, width / 2, width - 2, width - 1 });
+    const auto heights = (height < 2) ? QVector<int>({ 0, 1 }) : QVector<int>({ 0, 1, height / 2, height - 2, height - 1 });
+    for (int w : widths)
     {
-        for (int h = 0; h < height; ++h)
+        for (int h : heights)
         {
-            QPoint point(visualRect.x()+w, visualRect.y()+h);
-            if (view->indexAt(point) != index) {
+            const QPoint point(visualRect.x() + w, visualRect.y() + h);
+            const auto idxAt = view->indexAt(point);
+            if (idxAt != index)
                 qDebug() << "index" << index << "visualRect" << visualRect << point << view->indexAt(point);
-            }
-            QCOMPARE(view->indexAt(point), index);
+            QCOMPARE(idxAt, index);
         }
     }
 
@@ -579,7 +582,7 @@ void walkIndex(QModelIndex index, QAbstractItemView *view)
     a bug it will point it out, but the above tests should have already found the basic bugs
     because it is easier to figure out the problem in those tests then this one.
  */
-void checkChildren(QAbstractItemView *currentView, const QModelIndex &parent = QModelIndex(), int currentDepth=0)
+void checkChildren(const QAbstractItemView *currentView, const QModelIndex &parent = QModelIndex(), int currentDepth = 0)
 {
     QAbstractItemModel *currentModel = currentView->model();
 
@@ -623,7 +626,6 @@ void tst_QItemView::indexAt()
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
     view->show();
     view->setModel(treeModel);
-#if 0
     checkChildren(view);
 
     QModelIndex index = view->model()->index(0, 0);
@@ -636,7 +638,6 @@ void tst_QItemView::indexAt()
     QPoint p(1, view->height()/2);
     QModelIndex idx = view->indexAt(p);
     QCOMPARE(idx, QModelIndex());
-#endif
 }
 
 void tst_QItemView::scrollTo_data()
