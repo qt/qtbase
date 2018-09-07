@@ -99,12 +99,13 @@ public:
     };
 
     QPngHandlerPrivate(QPngHandler *qq)
-        : gamma(0.0), fileGamma(0.0), quality(2), png_ptr(0), info_ptr(0), end_info(0), state(Ready), q(qq)
+        : gamma(0.0), fileGamma(0.0), quality(50), compression(50), png_ptr(0), info_ptr(0), end_info(0), state(Ready), q(qq)
     { }
 
     float gamma;
     float fileGamma;
-    int quality;
+    int quality; // quality is used for backward compatibility, maps to compression
+    int compression;
     QString description;
     QSize scaledSize;
     QStringList readTexts;
@@ -161,11 +162,11 @@ public:
     void setGamma(float);
 
     bool writeImage(const QImage& img, int x, int y);
-    bool writeImage(const QImage& img, volatile int quality, const QString &description, int x, int y);
+    bool writeImage(const QImage& img, volatile int compression_in, const QString &description, int x, int y);
     bool writeImage(const QImage& img)
         { return writeImage(img, 0, 0); }
-    bool writeImage(const QImage& img, int quality, const QString &description)
-        { return writeImage(img, quality, description, 0, 0); }
+    bool writeImage(const QImage& img, int compression, const QString &description)
+        { return writeImage(img, compression, description, 0, 0); }
 
     QIODevice* device() { return dev; }
 
@@ -814,7 +815,7 @@ bool QPNGImageWriter::writeImage(const QImage& image, int off_x, int off_y)
     return writeImage(image, -1, QString(), off_x, off_y);
 }
 
-bool QPNGImageWriter::writeImage(const QImage& image, volatile int quality_in, const QString &description,
+bool QPNGImageWriter::writeImage(const QImage& image, volatile int compression_in, const QString &description,
                                  int off_x_in, int off_y_in)
 {
     QPoint offset = image.offset();
@@ -842,13 +843,13 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int quality_in, c
         return false;
     }
 
-    int quality = quality_in;
-    if (quality >= 0) {
-        if (quality > 9) {
-            qWarning("PNG: Quality %d out of range", quality);
-            quality = 9;
+    int compression = compression_in;
+    if (compression >= 0) {
+        if (compression > 9) {
+            qWarning("PNG: Compression %d out of range", compression);
+            compression = 9;
         }
-        png_set_compression_level(png_ptr, quality);
+        png_set_compression_level(png_ptr, compression);
     }
 
     png_set_write_fn(png_ptr, (void*)this, qpiw_write_fn, qpiw_flush_fn);
@@ -1067,15 +1068,21 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int quality_in, c
 }
 
 static bool write_png_image(const QImage &image, QIODevice *device,
-                            int quality, float gamma, const QString &description)
+                            int compression, int quality, float gamma, const QString &description)
 {
+    // quality is used for backward compatibility, maps to compression
+
     QPNGImageWriter writer(device);
-    if (quality >= 0) {
-        quality = qMin(quality, 100);
-        quality = (100-quality) * 9 / 91; // map [0,100] -> [9,0]
-    }
+    if (compression >= 0)
+        compression = qMin(compression, 100);
+    else if (quality >= 0)
+        compression = 100 - qMin(quality, 100);
+
+    if (compression >= 0)
+        compression = (compression * 9) / 91; // map [0,100] -> [0,9]
+
     writer.setGamma(gamma);
-    return writer.writeImage(image, quality, description);
+    return writer.writeImage(image, compression, description);
 }
 
 QPngHandler::QPngHandler()
@@ -1122,7 +1129,7 @@ bool QPngHandler::read(QImage *image)
 
 bool QPngHandler::write(const QImage &image)
 {
-    return write_png_image(image, device(), d->quality, d->gamma, d->description);
+    return write_png_image(image, device(), d->compression, d->quality, d->gamma, d->description);
 }
 
 bool QPngHandler::supportsOption(ImageOption option) const
@@ -1131,6 +1138,7 @@ bool QPngHandler::supportsOption(ImageOption option) const
         || option == Description
         || option == ImageFormat
         || option == Quality
+        || option == CompressionRatio
         || option == Size
         || option == ScaledSize;
 }
@@ -1146,6 +1154,8 @@ QVariant QPngHandler::option(ImageOption option) const
         return d->gamma == 0.0 ? d->fileGamma : d->gamma;
     else if (option == Quality)
         return d->quality;
+    else if (option == CompressionRatio)
+        return d->compression;
     else if (option == Description)
         return d->description;
     else if (option == Size)
@@ -1164,6 +1174,8 @@ void QPngHandler::setOption(ImageOption option, const QVariant &value)
         d->gamma = value.toFloat();
     else if (option == Quality)
         d->quality = value.toInt();
+    else if (option == CompressionRatio)
+        d->compression = value.toInt();
     else if (option == Description)
         d->description = value.toString();
     else if (option == ScaledSize)
