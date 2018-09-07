@@ -20,6 +20,14 @@ qtConfig(proxymodel) {
     SOURCES += \
         itemmodels/qabstractproxymodel.cpp
 
+    qtConfig(concatenatetablesproxymodel) {
+        HEADERS += \
+            itemmodels/qconcatenatetablesproxymodel.h
+
+        SOURCES += \
+            itemmodels/qconcatenatetablesproxymodel.cpp
+    }
+
     qtConfig(identityproxymodel) {
         HEADERS += \
             itemmodels/qidentityproxymodel.h

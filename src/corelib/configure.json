@@ -793,6 +793,13 @@
             "condition": "features.proxymodel",
             "output": [ "publicFeature", "feature" ]
         },
+        "concatenatetablesproxymodel": {
+            "label": "QConcatenateTablesProxyModel",
+            "purpose": "Supports concatenating source models.",
+            "section": "ItemViews",
+            "condition": "features.proxymodel",
+            "output": [ "publicFeature", "feature" ]
+        },
         "stringlistmodel": {
             "label": "QStringListModel",
             "purpose": "Provides a model that supplies strings to views.",

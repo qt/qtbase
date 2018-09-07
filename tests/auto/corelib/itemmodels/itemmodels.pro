@@ -5,6 +5,7 @@ SUBDIRS = qabstractitemmodel \
 
 qtHaveModule(gui): SUBDIRS += \
     qabstractproxymodel \
+    qconcatenatetablesproxymodel \
     qidentityproxymodel \
     qitemselectionmodel \
     qsortfilterproxymodel_recursive \
