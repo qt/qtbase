@@ -225,6 +225,9 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
             pal.setBrush(QPalette::Active, QPalette::Base, qt_mac_toQColor([NSColor textBackgroundColor]));
             pal.setBrush(QPalette::Disabled, QPalette::Base,
                          pal.brush(QPalette::Active, QPalette::Base));
+        } else if (mac_widget_colors[i].paletteRole == QPlatformTheme::LabelPalette) {
+            qc = qt_mac_toQColor([NSColor labelColor]);
+            pal.setBrush(QPalette::Inactive, QPalette::ToolTipText, qc);
         }
         palettes.insert(mac_widget_colors[i].paletteRole, &pal);
     }
