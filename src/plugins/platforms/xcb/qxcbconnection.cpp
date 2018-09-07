@@ -1386,6 +1386,9 @@ static inline bool isXIType(xcb_generic_event_t *event, int opCode, uint16_t typ
 */
 bool QXcbConnection::compressEvent(xcb_generic_event_t *event) const
 {
+    if (!QCoreApplication::testAttribute(Qt::AA_CompressHighFrequencyEvents))
+        return false;
+
     uint responseType = event->response_type & ~0x80;
 
     if (responseType == XCB_MOTION_NOTIFY) {
@@ -1465,8 +1468,7 @@ void QXcbConnection::processXcbEvents()
             handleXcbError(reinterpret_cast<xcb_generic_error_t *>(event));
             continue;
         }
-        if (Q_LIKELY(QCoreApplication::testAttribute(Qt::AA_CompressHighFrequencyEvents)) &&
-                compressEvent(event))
+        if (compressEvent(event))
             continue;
 
 #ifndef QT_NO_CLIPBOARD
