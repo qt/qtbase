@@ -331,34 +331,32 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
 
     Q_ASSERT(surface->surface()->supportsOpenGL());
 
-    if (surface->surface()->surfaceClass() == QSurface::Offscreen) {
-        [m_context makeCurrentContext];
-        return true;
-    }
-
     if (!setDrawable(surface))
         return false;
 
     [m_context makeCurrentContext];
 
-    // Disable high-resolution surfaces when using the software renderer, which has the
-    // problem that the system silently falls back to a to using a low-resolution buffer
-    // when a high-resolution buffer is requested. This is not detectable using the NSWindow
-    // convertSizeToBacking and backingScaleFactor APIs. A typical result of this is that Qt
-    // will display a quarter of the window content when running in a virtual machine.
-    if (!m_didCheckForSoftwareContext) {
-        // FIXME: This ensures we check only once per context,
-        // but the context may be used for multiple surfaces.
-        m_didCheckForSoftwareContext = true;
+    if (surface->surface()->surfaceClass() == QSurface::Window) {
+        // Disable high-resolution surfaces when using the software renderer, which has the
+        // problem that the system silently falls back to a to using a low-resolution buffer
+        // when a high-resolution buffer is requested. This is not detectable using the NSWindow
+        // convertSizeToBacking and backingScaleFactor APIs. A typical result of this is that Qt
+        // will display a quarter of the window content when running in a virtual machine.
+        if (!m_didCheckForSoftwareContext) {
+            // FIXME: This ensures we check only once per context,
+            // but the context may be used for multiple surfaces.
+            m_didCheckForSoftwareContext = true;
 
-        const GLubyte* renderer = glGetString(GL_RENDERER);
-        if (qstrcmp((const char *)renderer, "Apple Software Renderer") == 0) {
-            NSView *view = static_cast<QCocoaWindow *>(surface)->m_view;
-            [view setWantsBestResolutionOpenGLSurface:NO];
+            const GLubyte* renderer = glGetString(GL_RENDERER);
+            if (qstrcmp((const char *)renderer, "Apple Software Renderer") == 0) {
+                NSView *view = static_cast<QCocoaWindow *>(surface)->m_view;
+                [view setWantsBestResolutionOpenGLSurface:NO];
+            }
         }
+
+        update();
     }
 
-    update();
     return true;
 }
 
@@ -368,7 +366,17 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
 */
 bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
 {
-    Q_ASSERT(surface && surface->surface()->surfaceClass() == QSurface::Window);
+    if (!surface || surface->surface()->surfaceClass() == QSurface::Offscreen) {
+        // Clear the current drawable and reset the active window, so that GL
+        // commands that don't target a specific FBO will not end up stomping
+        // on the previously set drawable.
+        qCDebug(lcQpaOpenGLContext) << "Clearing current drawable" << m_context.view << "for" << m_context;
+        [m_context clearDrawable];
+        m_currentWindow.clear();
+        return true;
+    }
+
+    Q_ASSERT(surface->surface()->surfaceClass() == QSurface::Window);
     QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
 
     if (window == m_currentWindow.data())

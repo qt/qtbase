@@ -985,62 +985,60 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
     }
 
     QOpenGLContext *previous = QOpenGLContextPrivate::setCurrentContext(this);
-
-    if (d->platformGLContext->makeCurrent(surface->surfaceHandle())) {
-        static bool needsWorkaroundSet = false;
-        static bool needsWorkaround = false;
-
-        if (!needsWorkaroundSet) {
-            QByteArray env;
-#ifdef Q_OS_ANDROID
-            env = qgetenv(QByteArrayLiteral("QT_ANDROID_DISABLE_GLYPH_CACHE_WORKAROUND"));
-            needsWorkaround = env.isEmpty() || env == QByteArrayLiteral("0") || env == QByteArrayLiteral("false");
-#endif
-            env = qgetenv(QByteArrayLiteral("QT_ENABLE_GLYPH_CACHE_WORKAROUND"));
-            if (env == QByteArrayLiteral("1") || env == QByteArrayLiteral("true"))
-                needsWorkaround = true;
-
-            if (!needsWorkaround) {
-                const char *rendererString = reinterpret_cast<const char *>(functions()->glGetString(GL_RENDERER));
-                if (rendererString)
-                    needsWorkaround =
-                            qstrncmp(rendererString, "Mali-4xx", 6) == 0 // Mali-400, Mali-450
-                            || qstrcmp(rendererString, "Mali-T880") == 0
-                            || qstrncmp(rendererString, "Adreno (TM) 2xx", 13) == 0 // Adreno 200, 203, 205
-                            || qstrncmp(rendererString, "Adreno 2xx", 8) == 0 // Same as above but without the '(TM)'
-                            || qstrncmp(rendererString, "Adreno (TM) 3xx", 13) == 0 // Adreno 302, 305, 320, 330
-                            || qstrncmp(rendererString, "Adreno 3xx", 8) == 0 // Same as above but without the '(TM)'
-                            || qstrncmp(rendererString, "Adreno (TM) 4xx", 13) == 0 // Adreno 405, 418, 420, 430
-                            || qstrncmp(rendererString, "Adreno 4xx", 8) == 0 // Same as above but without the '(TM)'
-                            || qstrncmp(rendererString, "Adreno (TM) 5xx", 13) == 0 // Adreno 505, 506, 510, 530, 540
-                            || qstrncmp(rendererString, "Adreno 5xx", 8) == 0 // Same as above but without the '(TM)'
-                            || qstrncmp(rendererString, "Adreno (TM) 6xx", 13) == 0 // Adreno 610, 620, 630
-                            || qstrncmp(rendererString, "Adreno 6xx", 8) == 0 // Same as above but without the '(TM)'
-                            || qstrcmp(rendererString, "GC800 core") == 0
-                            || qstrcmp(rendererString, "GC1000 core") == 0
-                            || strstr(rendererString, "GC2000") != 0
-                            || qstrcmp(rendererString, "Immersion.16") == 0;
-            }
-            needsWorkaroundSet = true;
-        }
-
-        if (needsWorkaround)
-            d->workaround_brokenFBOReadBack = true;
-
-        d->surface = surface;
-
-        d->shareGroup->d_func()->deletePendingResources(this);
-
-#ifndef QT_NO_DEBUG
-        QOpenGLContextPrivate::toggleMakeCurrentTracker(this, true);
-#endif
-
-        return true;
+    if (!d->platformGLContext->makeCurrent(surface->surfaceHandle())) {
+        QOpenGLContextPrivate::setCurrentContext(previous);
+        return false;
     }
 
-    QOpenGLContextPrivate::setCurrentContext(previous);
+    static bool needsWorkaroundSet = false;
+    static bool needsWorkaround = false;
 
-    return false;
+    if (!needsWorkaroundSet) {
+        QByteArray env;
+#ifdef Q_OS_ANDROID
+        env = qgetenv(QByteArrayLiteral("QT_ANDROID_DISABLE_GLYPH_CACHE_WORKAROUND"));
+        needsWorkaround = env.isEmpty() || env == QByteArrayLiteral("0") || env == QByteArrayLiteral("false");
+#endif
+        env = qgetenv(QByteArrayLiteral("QT_ENABLE_GLYPH_CACHE_WORKAROUND"));
+        if (env == QByteArrayLiteral("1") || env == QByteArrayLiteral("true"))
+            needsWorkaround = true;
+
+        if (!needsWorkaround) {
+            const char *rendererString = reinterpret_cast<const char *>(functions()->glGetString(GL_RENDERER));
+            if (rendererString)
+                needsWorkaround =
+                        qstrncmp(rendererString, "Mali-4xx", 6) == 0 // Mali-400, Mali-450
+                        || qstrcmp(rendererString, "Mali-T880") == 0
+                        || qstrncmp(rendererString, "Adreno (TM) 2xx", 13) == 0 // Adreno 200, 203, 205
+                        || qstrncmp(rendererString, "Adreno 2xx", 8) == 0 // Same as above but without the '(TM)'
+                        || qstrncmp(rendererString, "Adreno (TM) 3xx", 13) == 0 // Adreno 302, 305, 320, 330
+                        || qstrncmp(rendererString, "Adreno 3xx", 8) == 0 // Same as above but without the '(TM)'
+                        || qstrncmp(rendererString, "Adreno (TM) 4xx", 13) == 0 // Adreno 405, 418, 420, 430
+                        || qstrncmp(rendererString, "Adreno 4xx", 8) == 0 // Same as above but without the '(TM)'
+                        || qstrncmp(rendererString, "Adreno (TM) 5xx", 13) == 0 // Adreno 505, 506, 510, 530, 540
+                        || qstrncmp(rendererString, "Adreno 5xx", 8) == 0 // Same as above but without the '(TM)'
+                        || qstrncmp(rendererString, "Adreno (TM) 6xx", 13) == 0 // Adreno 610, 620, 630
+                        || qstrncmp(rendererString, "Adreno 6xx", 8) == 0 // Same as above but without the '(TM)'
+                        || qstrcmp(rendererString, "GC800 core") == 0
+                        || qstrcmp(rendererString, "GC1000 core") == 0
+                        || strstr(rendererString, "GC2000") != 0
+                        || qstrcmp(rendererString, "Immersion.16") == 0;
+        }
+        needsWorkaroundSet = true;
+    }
+
+    if (needsWorkaround)
+        d->workaround_brokenFBOReadBack = true;
+
+    d->surface = surface;
+
+    d->shareGroup->d_func()->deletePendingResources(this);
+
+#ifndef QT_NO_DEBUG
+    QOpenGLContextPrivate::toggleMakeCurrentTracker(this, true);
+#endif
+
+    return true;
 }
 
 /*!

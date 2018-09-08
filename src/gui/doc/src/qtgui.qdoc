@@ -46,11 +46,12 @@
 
     \snippet code/doc_src_qtgui.pro 0
 
+    \if !defined(qtforpython)
     If you use \l qmake to build your projects, \l{Qt GUI} is included by
     default. To disable Qt GUI, add the following line to your \c .pro file:
 
     \snippet code/doc_src_qtgui.pro 1
-
+    \endif
 */
 
 /*!
@@ -75,10 +76,12 @@
 
     \snippet code/doc_src_qtgui.pro 0
 
+    \if !defined(qtforpython)
     If you use \l qmake to build your projects, Qt GUI is included by
     default. To disable Qt GUI, add the following line to your \c .pro file:
 
     \snippet code/doc_src_qtgui.pro 1
+    \endif
 
     \section1 Application Windows
 

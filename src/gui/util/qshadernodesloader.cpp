@@ -99,11 +99,15 @@ void QShaderNodesLoader::load()
     }
 
     const auto root = document.object();
+    load(root);
+}
 
+void QShaderNodesLoader::load(const QJsonObject &prototypesObject)
+{
     bool hasError = false;
 
-    for (const auto &property : root.keys()) {
-        const auto nodeValue = root.value(property);
+    for (const auto &property : prototypesObject.keys()) {
+        const auto nodeValue = prototypesObject.value(property);
         if (!nodeValue.isObject()) {
             qWarning() << "Invalid node found";
             hasError = true;

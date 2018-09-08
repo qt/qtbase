@@ -72,24 +72,15 @@
     curve is a linear curve. This is the default behaviour.
 
     For example,
-    \code
-    QEasingCurve easing(QEasingCurve::InOutQuad);
 
-    for(qreal t = 0.0; t < 1.0; t+=0.1)
-        qWarning() << "Effective progress" << t << " is
-                   << easing.valueForProgress(t);
-    \endcode
+    \snippet code/src_corelib_tools_qeasingcurve.cpp 0
+
     will print the effective progress of the interpolation between 0 and 1.
 
     When using a QPropertyAnimation, the associated easing curve will be used to control the
     progress of the interpolation between startValue and endValue:
-    \code
-    QPropertyAnimation animation;
-    animation.setStartValue(0);
-    animation.setEndValue(1000);
-    animation.setDuration(1000);
-    animation.setEasingCurve(QEasingCurve::InOutQuad);
-    \endcode
+
+    \snippet code/src_corelib_tools_qeasingcurve.cpp 1
 
     The ability to set an amplitude, overshoot, or period depends on
     the QEasingCurve type. Amplitude access is available to curves

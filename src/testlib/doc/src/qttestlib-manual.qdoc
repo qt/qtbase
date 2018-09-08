@@ -109,6 +109,7 @@
 
     For more examples, refer to the \l{Qt Test Tutorial}.
 
+    \if !defined(qtforpython)
     \section1 Building a Test
 
     If you are using \c qmake as your build tool, just add the
@@ -132,6 +133,7 @@
 
     See \l {Chapter 1: Writing a Unit Test}{Writing a Unit Test} for a step by
     step explanation.
+    \endif
 
     \section1 Qt Test Command Line Arguments
 
