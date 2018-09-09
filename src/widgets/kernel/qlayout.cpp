@@ -109,10 +109,11 @@ static int menuBarHeightForWidth(QWidget *menubar, int w)
 
 /*!
     Constructs a new top-level QLayout, with parent \a parent.
-    \a parent may not be 0.
+    \a parent may not be a \c nullptr.
 
-    There can be only one top-level layout for a widget. It is
-    returned by QWidget::layout().
+    The layout is set directly as the top-level layout for
+    \a parent. There can be only one top-level layout for a
+    widget. It is returned by QWidget::layout().
 */
 QLayout::QLayout(QWidget *parent)
     : QObject(*new QLayoutPrivate, parent)

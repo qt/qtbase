@@ -1353,6 +1353,11 @@ void tst_QTableView::moveCursorBiggerJump()
     QCOMPARE(view.indexAt(QPoint(0,0)), model.index(7,0));
     QTest::keyClick(&view, Qt::Key_PageUp);
     QCOMPARE(view.indexAt(QPoint(0,0)), model.index(0,0));
+
+    QTest::keyClick(&view, Qt::Key_PageDown);
+    view.verticalHeader()->hideSection(0);
+    QTest::keyClick(&view, Qt::Key_PageUp);
+    QTRY_COMPARE(view.currentIndex().row(), view.rowAt(0));
 }
 
 void tst_QTableView::hideRows_data()

@@ -270,7 +270,7 @@ QCborMap &QCborMap::operator=(const QCborMap &other) noexcept
 
     Returns true if this map is empty (that is, size() is 0).
 
-    \sa size()
+    \sa size(), clear()
  */
 
 /*!
@@ -281,6 +281,16 @@ QCborMap &QCborMap::operator=(const QCborMap &other) noexcept
 qsizetype QCborMap::size() const noexcept
 {
     return d ? d->elements.size() / 2 : 0;
+}
+
+/*!
+    Empties this map.
+
+    \sa isEmpty()
+ */
+void QCborMap::clear()
+{
+    d.reset();
 }
 
 /*!

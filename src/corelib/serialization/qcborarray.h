@@ -180,6 +180,7 @@ public:
 
     qsizetype size() const noexcept;
     bool isEmpty() const { return size() == 0; }
+    void clear();
 
     QCborValue at(qsizetype i) const;
     QCborValue first() const { return at(0); }
