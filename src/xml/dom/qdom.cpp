@@ -6666,8 +6666,6 @@ bool QDomDocument::setContent(const QString& text, bool namespaceProcessing, QSt
 }
 
 /*!
-    \nonreentrant
-
     This function parses the XML document from the byte array \a
     data and sets it as the content of the document. It tries to
     detect the encoding of the document as required by the XML

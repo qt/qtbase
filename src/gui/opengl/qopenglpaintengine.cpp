@@ -1741,6 +1741,7 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngine::GlyphFormat gly
             // we may have to re-bind brush textures after filling in the cache.
             brushTextureDirty = (QT_BRUSH_TEXTURE_UNIT == glypchCacheTextureUnit);
         }
+        cache->setPaintEnginePrivate(nullptr);
     }
 
     if (cache->width() == 0 || cache->height() == 0)

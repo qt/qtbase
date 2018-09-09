@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
 
     The QRect class provides a collection of functions that return the
     various rectangle coordinates, and enable manipulation of
-    these. QRect also provide functions to move the rectangle relative
+    these. QRect also provides functions to move the rectangle relative
     to the various coordinates. In addition there is a moveTo()
     function that moves the rectangle, leaving its top left corner at
     the given coordinates. Alternatively, the translate() function
@@ -155,7 +155,7 @@ QT_BEGIN_NAMESPACE
 
     The QRect class provides a collection of functions that return the
     various rectangle coordinates, and enable manipulation of
-    these. QRect also provide functions to move the rectangle relative
+    these. QRect also provides functions to move the rectangle relative
     to the various coordinates.
 
     For example the left(), setLeft() and moveLeft() functions as an
@@ -1335,7 +1335,7 @@ QDebug operator<<(QDebug dbg, const QRect &r)
 
     The QRectF class provides a collection of functions that return
     the various rectangle coordinates, and enable manipulation of
-    these. QRectF also provide functions to move the rectangle
+    these. QRectF also provides functions to move the rectangle
     relative to the various coordinates. In addition there is a
     moveTo() function that moves the rectangle, leaving its top left
     corner at the given coordinates. Alternatively, the translate()
@@ -1418,7 +1418,7 @@ QDebug operator<<(QDebug dbg, const QRect &r)
 
     The QRectF class provides a collection of functions that return
     the various rectangle coordinates, and enable manipulation of
-    these. QRectF also provide functions to move the rectangle
+    these. QRectF also provides functions to move the rectangle
     relative to the various coordinates.
 
     For example: the bottom(), setBottom() and moveBottom() functions:
