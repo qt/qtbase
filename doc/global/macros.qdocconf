@@ -40,6 +40,10 @@ macro.endfloat.HTML         = "</div>"
 macro.clearfloat.HTML       = "<br style=\"clear: both\" />"
 macro.emptyspan.HTML        = "<span></span>"
 
+# Expands to the minor version based on the QT_VER environment variable
+macro.QtMinorVersion        = "$QT_VER"
+macro.QtMinorVersion.match  = "\\d+\\.(\\d+)"
+
 # Embed YouTube content by video ID - Example: \youtube dQw4w9WgXcQ
 # Also requires a <ID>.jpg thumbnail for offline docs. In .qdocconf, add:
 #
