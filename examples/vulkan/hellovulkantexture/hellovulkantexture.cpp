@@ -294,12 +294,12 @@ void VulkanRenderer::ensureTexture()
 
         barrier.oldLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
         barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        barrier.srcAccessMask = 0; // VK_ACCESS_HOST_WRITE_BIT ### no, keep validation layer happy (??)
+        barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
         barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
         barrier.image = m_texImage;
 
         m_devFuncs->vkCmdPipelineBarrier(cb,
-                                VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                                VK_PIPELINE_STAGE_HOST_BIT,
                                 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                                 0, 0, nullptr, 0, nullptr,
                                 1, &barrier);
@@ -312,7 +312,7 @@ void VulkanRenderer::ensureTexture()
         barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
         barrier.image = m_texStaging;
         m_devFuncs->vkCmdPipelineBarrier(cb,
-                                VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                                VK_PIPELINE_STAGE_HOST_BIT,
                                 VK_PIPELINE_STAGE_TRANSFER_BIT,
                                 0, 0, nullptr, 0, nullptr,
                                 1, &barrier);
