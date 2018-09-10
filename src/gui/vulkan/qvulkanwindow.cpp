@@ -989,7 +989,7 @@ bool QVulkanWindowPrivate::createDefaultRenderPass()
     attDesc[1].samples = sampleCount;
     attDesc[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     attDesc[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    attDesc[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attDesc[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     attDesc[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     attDesc[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     attDesc[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -999,7 +999,7 @@ bool QVulkanWindowPrivate::createDefaultRenderPass()
         attDesc[2].format = colorFormat;
         attDesc[2].samples = sampleCount;
         attDesc[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        attDesc[2].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attDesc[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attDesc[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attDesc[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         attDesc[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
