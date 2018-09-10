@@ -243,6 +243,9 @@ public:
     ~QThreadData();
 
     static Q_AUTOTEST_EXPORT QThreadData *current(bool createIfNecessary = true);
+#ifdef Q_OS_WINRT
+    static void setMainThread();
+#endif
     static void clearCurrentThreadData();
     static QThreadData *get2(QThread *thread)
     { Q_ASSERT_X(thread != 0, "QThread", "internal error"); return thread->d_func()->data; }
