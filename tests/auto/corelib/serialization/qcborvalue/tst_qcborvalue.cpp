@@ -97,6 +97,10 @@ private slots:
     void validation();
     void toDiagnosticNotation_data();
     void toDiagnosticNotation();
+
+    void datastreamSerialization_data();
+    void datastreamSerialization();
+    void streamVariantSerialization();
 };
 
 // Get the validation data from TinyCBOR (see src/3rdparty/tinycbor/tests/parser/data.cpp)
@@ -1685,6 +1689,83 @@ void tst_QCborValue::toDiagnosticNotation()
 
     QString result = v.toDiagnosticNotation(QCborValue::DiagnosticNotationOptions(opts));
     QCOMPARE(result, expected);
+}
+
+
+void tst_QCborValue::datastreamSerialization_data()
+{
+    addCommonCborData();
+}
+
+void tst_QCborValue::datastreamSerialization()
+{
+    QFETCH(QCborValue, v);
+    QByteArray buffer;
+    {
+        QDataStream save(&buffer, QIODevice::WriteOnly);
+        save << v;
+        QDataStream load(buffer);
+        QCborValue output;
+        load >> output;
+        QCOMPARE(output, v);
+    }
+    if (v.isArray()) {
+        QCborArray array = v.toArray();
+        QDataStream save(&buffer, QIODevice::WriteOnly);
+        save << array;
+        QDataStream load(buffer);
+        QCborValue output;
+        load >> output;
+        QCOMPARE(output, array);
+    } else if (v.isMap()) {
+        QCborMap map = v.toMap();
+        QDataStream save(&buffer, QIODevice::WriteOnly);
+        save << map;
+        QDataStream load(buffer);
+        QCborValue output;
+        load >> output;
+        QCOMPARE(output, map);
+    }
+}
+
+void tst_QCborValue::streamVariantSerialization()
+{
+    // Check interface only, implementation is tested through to and from
+    // cbor functions.
+    QByteArray buffer;
+    {
+        QCborArray array{665, 666, 667};
+        QVariant output;
+        QVariant variant = QVariant::fromValue(array);
+        QDataStream save(&buffer, QIODevice::WriteOnly);
+        save << variant;
+        QDataStream load(buffer);
+        load >> output;
+        QCOMPARE(output.userType(), QMetaType::QCborArray);
+        QCOMPARE(qvariant_cast<QCborArray>(output), array);
+    }
+    {
+        QCborMap obj{{"foo", 42}};
+        QVariant output;
+        QVariant variant = QVariant::fromValue(obj);
+        QDataStream save(&buffer, QIODevice::WriteOnly);
+        save << variant;
+        QDataStream load(buffer);
+        load >> output;
+        QCOMPARE(output.userType(), QMetaType::QCborMap);
+        QCOMPARE(qvariant_cast<QCborMap>(output), obj);
+    }
+    {
+        QCborValue value{42};
+        QVariant output;
+        QVariant variant = QVariant::fromValue(value);
+        QDataStream save(&buffer, QIODevice::WriteOnly);
+        save << variant;
+        QDataStream load(buffer);
+        load >> output;
+        QCOMPARE(output.userType(), QMetaType::QCborValue);
+        QCOMPARE(qvariant_cast<QCborValue>(output), value);
+    }
 }
 
 QTEST_MAIN(tst_QCborValue)

@@ -47,6 +47,7 @@
 QT_BEGIN_NAMESPACE
 
 class QJsonArray;
+class QDataStream;
 
 class QCborContainerPrivate;
 class Q_CORE_EXPORT QCborArray
@@ -291,6 +292,11 @@ Q_CORE_EXPORT uint qHash(const QCborArray &array, uint seed = 0);
 
 #if !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QCborArray &a);
+#endif
+
+#ifndef QT_NO_DATASTREAM
+Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QCborArray &);
+Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QCborArray &);
 #endif
 
 QT_END_NAMESPACE

@@ -39,7 +39,7 @@
 
 #include "qcborvalue.h"
 #include "qcborvalue_p.h"
-
+#include "qdatastream.h"
 #include "qcborarray.h"
 #include "qcbormap.h"
 #include "qcborstream.h"
@@ -2468,6 +2468,26 @@ QDebug operator<<(QDebug dbg, const QCborValue &v)
     return debugContents(dbg, v) << ')';
 }
 #endif
+
+#ifndef QT_NO_DATASTREAM
+QDataStream &operator<<(QDataStream &stream, const QCborValue &value)
+{
+    stream << QCborValue(value).toCbor();
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, QCborValue &value)
+{
+    QByteArray buffer;
+    stream >> buffer;
+    QCborParserError parseError{};
+    value = QCborValue::fromCbor(buffer, &parseError);
+    if (parseError.error)
+        stream.setStatus(QDataStream::ReadCorruptData);
+    return stream;
+}
+#endif
+
 
 QT_END_NAMESPACE
 

@@ -140,6 +140,10 @@ private slots:
     void stream_QJsonObject();
     void stream_QJsonValue();
 
+    void stream_QCborArray();
+    void stream_QCborMap();
+    void stream_QCborValue();
+
     void setVersion_data();
     void setVersion();
 
@@ -2194,6 +2198,42 @@ void tst_QDataStream::stream_QJsonValue()
         load >> valueLoad;
         QCOMPARE(valueLoad, valueSave);
     }
+}
+
+void tst_QDataStream::stream_QCborArray()
+{
+    QByteArray buffer;
+    QDataStream save(&buffer, QIODevice::WriteOnly);
+    QCborArray arraySave({1, 2, 3});
+    save << arraySave;
+    QDataStream load(&buffer, QIODevice::ReadOnly);
+    QCborArray arrayLoad;
+    load >> arrayLoad;
+    QCOMPARE(arrayLoad, arraySave);
+}
+
+void tst_QDataStream::stream_QCborMap()
+{
+    QByteArray buffer;
+    QDataStream save(&buffer, QIODevice::WriteOnly);
+    QCborMap objSave{{"foo", 1}, {"bar", 2}};
+    save << objSave;
+    QDataStream load(&buffer, QIODevice::ReadOnly);
+    QCborMap objLoad;
+    load >> objLoad;
+    QCOMPARE(objLoad, objSave);
+}
+
+void tst_QDataStream::stream_QCborValue()
+{
+    QByteArray buffer;
+    QDataStream save(&buffer, QIODevice::WriteOnly);
+    QCborValue valueSave{42};
+    save << valueSave;
+    QDataStream load(&buffer, QIODevice::ReadOnly);
+    QCborValue valueLoad;
+    load >> valueLoad;
+    QCOMPARE(valueLoad, valueSave);
 }
 
 void tst_QDataStream::setVersion_data()

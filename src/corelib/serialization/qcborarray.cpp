@@ -39,6 +39,7 @@
 
 #include "qcborarray.h"
 #include "qcborvalue_p.h"
+#include "qdatastream.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -1207,6 +1208,25 @@ QDebug operator<<(QDebug dbg, const QCborArray &a)
         comma = ", ";
     }
     return dbg << '}';
+}
+#endif
+
+#ifndef QT_NO_DATASTREAM
+QDataStream &operator<<(QDataStream &stream, const QCborArray &value)
+{
+    stream << value.toCborValue().toCbor();
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, QCborArray &value)
+{
+    QByteArray buffer;
+    stream >> buffer;
+    QCborParserError parseError{};
+    value = QCborValue::fromCbor(buffer, &parseError).toArray();
+    if (parseError.error)
+        stream.setStatus(QDataStream::ReadCorruptData);
+    return stream;
 }
 #endif
 

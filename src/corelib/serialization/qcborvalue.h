@@ -67,6 +67,7 @@ class QCborArray;
 class QCborMap;
 class QCborStreamReader;
 class QCborStreamWriter;
+class QDataStream;
 
 struct QCborParserError
 {
@@ -455,6 +456,11 @@ Q_CORE_EXPORT uint qHash(const QCborValue &value, uint seed = 0);
 
 #if !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QCborValue &v);
+#endif
+
+#ifndef QT_NO_DATASTREAM
+Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QCborValue &);
+Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QCborValue &);
 #endif
 
 QT_END_NAMESPACE

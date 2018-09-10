@@ -52,6 +52,7 @@ typedef QMap<QString, QVariant> QVariantMap;
 template <class Key, class T> class QHash;
 typedef QHash<QString, QVariant> QVariantHash;
 class QJsonObject;
+class QDataStream;
 
 class QCborContainerPrivate;
 class Q_CORE_EXPORT QCborMap
@@ -343,6 +344,12 @@ Q_CORE_EXPORT uint qHash(const QCborMap &map, uint seed = 0);
 #if !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QCborMap &m);
 #endif
+
+#ifndef QT_NO_DATASTREAM
+Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QCborMap &);
+Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QCborMap &);
+#endif
+
 
 QT_END_NAMESPACE
 

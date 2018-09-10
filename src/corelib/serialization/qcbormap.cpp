@@ -1763,4 +1763,23 @@ QDebug operator<<(QDebug dbg, const QCborMap &m)
 }
 #endif
 
+#ifndef QT_NO_DATASTREAM
+QDataStream &operator<<(QDataStream &stream, const QCborMap &value)
+{
+    stream << value.toCborValue().toCbor();
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, QCborMap &value)
+{
+    QByteArray buffer;
+    stream >> buffer;
+    QCborParserError parseError{};
+    value = QCborValue::fromCbor(buffer, &parseError).toMap();
+    if (parseError.error)
+        stream.setStatus(QDataStream::ReadCorruptData);
+    return stream;
+}
+#endif
+
 QT_END_NAMESPACE
