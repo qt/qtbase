@@ -213,6 +213,14 @@ void tst_QPluginLoader::errorString()
 
     {
     QPluginLoader loader( sys_qualifiedLibraryName("theplugin"));     //a plugin
+
+    // Check metadata
+    const QJsonObject metaData = loader.metaData();
+    QCOMPARE(metaData.value("IID").toString(), QStringLiteral("org.qt-project.Qt.autotests.plugininterface"));
+    const QJsonObject kpluginObject = metaData.value("MetaData").toObject().value("KPlugin").toObject();
+    QCOMPARE(kpluginObject.value("Name[mr]").toString(), QString::fromUtf8("चौकट भूमिती"));
+
+    // Load
     QCOMPARE(loader.load(), true);
     QCOMPARE(loader.errorString(), unknown);
 

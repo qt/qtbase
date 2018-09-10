@@ -30,6 +30,7 @@
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QPainter>
 #include <QtGui/QScreen>
+#include <QtGui/QStaticText>
 #include <QtWidgets/QDesktopWidget>
 #include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QGraphicsScene>
@@ -40,6 +41,8 @@
 #include <QtTest/QtTest>
 #include <QSignalSpy>
 #include <private/qguiapplication_p.h>
+#include <private/qstatictext_p.h>
+#include <private/qopengltextureglyphcache_p.h>
 #include <qpa/qplatformintegration.h>
 
 class tst_QOpenGLWidget : public QObject
@@ -64,6 +67,10 @@ private slots:
     void stackWidgetOpaqueChildIsVisible();
     void offscreen();
     void offscreenThenOnscreen();
+
+#ifdef QT_BUILD_INTERNAL
+    void staticTextDanglingPointer();
+#endif
 };
 
 void tst_QOpenGLWidget::initTestCase()
@@ -674,6 +681,53 @@ void tst_QOpenGLWidget::offscreenThenOnscreen()
     QCOMPARE(image.height(), w->height());
     QVERIFY(image.pixel(30, 40) == qRgb(0, 0, 255));
 }
+
+class StaticTextPainterWidget : public QOpenGLWidget
+{
+public:
+    StaticTextPainterWidget(QWidget *parent = nullptr)
+        : QOpenGLWidget(parent)
+    {
+    }
+
+    void paintEvent(QPaintEvent *)
+    {
+        QPainter p(this);
+        text.setText(QStringLiteral("test"));
+        p.drawStaticText(0, 0, text);
+
+        ctx = QOpenGLContext::currentContext();
+    }
+
+    QStaticText text;
+    QOpenGLContext *ctx;
+};
+
+#ifdef QT_BUILD_INTERNAL
+void tst_QOpenGLWidget::staticTextDanglingPointer()
+{
+    QWidget w;
+    StaticTextPainterWidget *glw = new StaticTextPainterWidget(&w);
+    w.resize(640, 480);
+    glw->resize(320, 200);
+    w.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    QStaticTextPrivate *d = QStaticTextPrivate::get(&glw->text);
+
+    QCOMPARE(d->itemCount, 1);
+    QFontEngine *fe = d->items->fontEngine();
+
+    for (int i = QFontEngine::Format_None; i <= QFontEngine::Format_ARGB; ++i) {
+        QOpenGLTextureGlyphCache *cache =
+                (QOpenGLTextureGlyphCache *) fe->glyphCache(glw->ctx,
+                                                            QFontEngine::GlyphFormat(i),
+                                                            QTransform());
+        if (cache != nullptr)
+            QCOMPARE(cache->paintEnginePrivate(), nullptr);
+    }
+}
+#endif
 
 QTEST_MAIN(tst_QOpenGLWidget)
 

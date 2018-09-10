@@ -335,6 +335,15 @@ static bool stringList_contains(const QStringList &stringList, const T &str, Qt:
  */
 #endif
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+/// Not really needed anymore, but kept for binary compatibility
+bool QtPrivate::QStringList_contains(const QStringList *that, const QString &str,
+                                     Qt::CaseSensitivity cs)
+{
+    return stringList_contains(*that, str, cs);
+}
+#endif
+
 /*!
     \fn bool QStringList::contains(QStringView str, Qt::CaseSensitivity cs) const
     \overload

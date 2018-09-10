@@ -78,6 +78,7 @@ class Q_NETWORK_EXPORT QDtlsClientVerifier : public QObject
 public:
 
     explicit QDtlsClientVerifier(QObject *parent = nullptr);
+    ~QDtlsClientVerifier();
 
     struct Q_NETWORK_EXPORT GeneratorParameters
     {
@@ -125,6 +126,7 @@ public:
     };
 
     explicit QDtls(QSslSocket::SslMode mode, QObject *parent = nullptr);
+    ~QDtls();
 
     bool setPeer(const QHostAddress &address, quint16 port,
                  const QString &verificationName = {});
