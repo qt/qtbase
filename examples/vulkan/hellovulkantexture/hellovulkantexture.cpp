@@ -223,6 +223,16 @@ bool VulkanRenderer::createTextureImage(const QSize &size, VkImage *image, VkDev
     VkMemoryRequirements memReq;
     m_devFuncs->vkGetImageMemoryRequirements(dev, *image, &memReq);
 
+    if (!(memReq.memoryTypeBits & (1 << memIndex))) {
+        VkPhysicalDeviceMemoryProperties physDevMemProps;
+        m_window->vulkanInstance()->functions()->vkGetPhysicalDeviceMemoryProperties(m_window->physicalDevice(), &physDevMemProps);
+        for (uint32_t i = 0; i < physDevMemProps.memoryTypeCount; ++i) {
+            if (!(memReq.memoryTypeBits & (1 << i)))
+                continue;
+            memIndex = i;
+        }
+    }
+
     VkMemoryAllocateInfo allocInfo = {
         VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
         nullptr,

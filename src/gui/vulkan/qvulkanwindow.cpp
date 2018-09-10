@@ -2298,6 +2298,11 @@ uint32_t QVulkanWindow::hostVisibleMemoryIndex() const
     \note Calling this function is only valid from the invocation of
     QVulkanWindowRenderer::initResources() up until
     QVulkanWindowRenderer::releaseResources().
+
+    \note It is not guaranteed that this memory type is always suitable. The
+    correct, cross-implementation solution - especially for device local images
+    - is to manually pick a memory type after checking the mask returned from
+    \c{vkGetImageMemoryRequirements}.
  */
 uint32_t QVulkanWindow::deviceLocalMemoryIndex() const
 {
