@@ -2164,8 +2164,8 @@ void QVulkanWindowPrivate::addReadback()
     barrier.image = frameGrabImage;
 
     devFuncs->vkCmdPipelineBarrier(image.cmdBuf,
-                                   VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                                    VK_PIPELINE_STAGE_TRANSFER_BIT,
+                                   VK_PIPELINE_STAGE_HOST_BIT,
                                    0, 0, nullptr, 0, nullptr,
                                    1, &barrier);
 }
