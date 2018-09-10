@@ -1132,6 +1132,8 @@ defineReplace(qtConfOutputPostProcess_publicPro) {
             "QT_GCC_MINOR_VERSION = $$QMAKE_GCC_MINOR_VERSION" \
             "QT_GCC_PATCH_VERSION = $$QMAKE_GCC_PATCH_VERSION"
     }
+    !isEmpty(QMAKE_MAC_SDK_VERSION): \
+        output += "QT_MAC_SDK_VERSION = $$QMAKE_MAC_SDK_VERSION"
     !isEmpty(QMAKE_CLANG_MAJOR_VERSION) {
         output += \
             "QT_CLANG_MAJOR_VERSION = $$QMAKE_CLANG_MAJOR_VERSION" \

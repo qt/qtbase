@@ -152,6 +152,11 @@ public:
 
     void clear();
 
+    QOpenGL2PaintEngineExPrivate *paintEnginePrivate() const
+    {
+        return pex;
+    }
+
 private:
     void setupVertexAttribs();
 
