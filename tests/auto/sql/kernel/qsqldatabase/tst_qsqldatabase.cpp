@@ -199,6 +199,9 @@ private slots:
 
     void sqlite_openError();
 
+    void sqlite_check_json1_data() { generic_data("QSQLITE"); }
+    void sqlite_check_json1();
+
 private:
     void createTestTables(QSqlDatabase db);
     void dropTestTables(QSqlDatabase db);
@@ -2348,6 +2351,30 @@ void tst_QSqlDatabase::sqlite_openError()
     QSqlError error = db.lastError();
     QCOMPARE(error.nativeErrorCode(), "14");  // SQLITE_CANTOPEN
     QCOMPARE(error.databaseText(), "unable to open database file");
+}
+
+void tst_QSqlDatabase::sqlite_check_json1()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+    if (dbType != QSqlDriver::SQLite)
+        QSKIP("SQLite3 specific test");
+
+    QSqlQuery q(db);
+    const QString json1("{\"id\":1}");
+    const QString tableName(qTableName("sqlite_check_json1", __FILE__, db));
+    tst_Databases::safeDropTable(db, tableName);
+    QVERIFY_SQL(q, exec(QString("CREATE TABLE %1(text TEXT)").arg(tableName)));
+    QVERIFY_SQL(q, exec(QString("INSERT INTO %1 VALUES(json('%2'))").arg(tableName, json1)));
+    QVERIFY_SQL(q, prepare(QString("INSERT INTO %1 VALUES(?)").arg(tableName)));
+    q.addBindValue("json('{\"id\":2}')");
+    QVERIFY_SQL(q, prepare(QString("SELECT * from %1 WHERE text = json('%2')").arg(tableName, json1)));
+    QVERIFY_SQL(q, exec());
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toString(), json1);
+    QFAIL_SQL(q, next());
 }
 
 void tst_QSqlDatabase::cloneDatabase()
