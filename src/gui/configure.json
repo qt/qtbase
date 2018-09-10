@@ -1577,7 +1577,7 @@
         },
         "multiprocess": {
             "label": "Multi process",
-            "description": "Provides support for detecting the desktop environment, launching external processes and opening URLs.",
+            "purpose": "Provides support for detecting the desktop environment, launching external processes and opening URLs.",
             "section": "Utilities",
             "condition": "!config.integrity",
             "output": [ "privateFeature" ]
