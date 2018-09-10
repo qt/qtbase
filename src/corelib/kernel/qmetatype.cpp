@@ -1485,12 +1485,6 @@ public:
         stream << qulonglong(*data);
         return true;
     }
-    bool delegate(const QCborSimpleType *data)
-    {
-        // TODO just define a normal QDataStream operator
-        stream << quint8(*data);
-        return true;
-    }
     bool delegate(const QMetaTypeSwitcher::NotBuiltinType *data)
     {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
@@ -1540,14 +1534,6 @@ public:
         qlonglong l;
         stream >> l;
         *const_cast<unsigned long*>(data) = l;
-        return true;
-    }
-    bool delegate(const QCborSimpleType *data)
-    {
-        // TODO just define a normal QDataStream operator
-        quint8 l;
-        stream >> l;
-        *const_cast<QCborSimpleType*>(data) = QCborSimpleType(l);
         return true;
     }
     bool delegate(const QMetaTypeSwitcher::NotBuiltinType *data)

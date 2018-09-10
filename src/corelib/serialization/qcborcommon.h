@@ -133,6 +133,11 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, QCborKnownTags tg);
 Q_CORE_EXPORT QDebug operator<<(QDebug, QCborTag tg);
 #endif
 
+#if !defined(QT_NO_DEBUG_STREAM)
+QDataStream &operator<<(QDataStream &ds, QCborSimpleType st);
+QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st);
+#endif
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QCborTag)

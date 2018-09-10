@@ -44,6 +44,7 @@
 #include <qbuffer.h>
 #include <qdebug.h>
 #include <qstack.h>
+#include <qdatastream.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -169,6 +170,21 @@ Q_CORE_EXPORT const char *qt_cbor_simpletype_id(QCborSimpleType st)
     }
     return nullptr;
 }
+
+#if !defined(QT_NO_DATASTREAM)
+QDataStream &operator<<(QDataStream &ds, QCborSimpleType st)
+{
+    return ds << quint8(st);
+}
+
+QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st)
+{
+    quint8 v;
+    ds >> v;
+    st = QCborSimpleType(v);
+    return ds;
+}
+#endif
 
 #if !defined(QT_NO_DEBUG_STREAM)
 QDebug operator<<(QDebug dbg, QCborSimpleType st)
