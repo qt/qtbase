@@ -222,6 +222,11 @@ protected:
     bool flushTriggered;
 };
 
+#if QT_CONFIG(securetransport)
+// Implemented in qsslsocket_qt.cpp
+QByteArray _q_makePkcs12(const QList<QSslCertificate> &certs, const QSslKey &key, const QString &passPhrase);
+#endif
+
 QT_END_NAMESPACE
 
 #endif

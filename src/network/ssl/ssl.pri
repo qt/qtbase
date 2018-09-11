@@ -56,6 +56,7 @@ qtConfig(ssl) {
                    ssl/qsslkey_mac.cpp \
                    ssl/qsslsocket_mac_shared.cpp \
                    ssl/qsslsocket_mac.cpp \
+                   ssl/qsslsocket_qt.cpp \
                    ssl/qsslellipticcurve_dummy.cpp
     }
 
