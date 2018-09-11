@@ -324,20 +324,19 @@ static int fromOffsetString(const QStringRef &offsetString, bool *valid) Q_DECL_
     \brief The QDate class provides date functions.
 
 
-    A QDate object contains a calendar date, i.e. year, month, and day
-    numbers, in the Gregorian calendar. It can read the current date
-    from the system clock. It provides functions for comparing dates,
-    and for manipulating dates. For example, it is possible to add
-    and subtract days, months, and years to dates.
+    A QDate object encodes a calendar date, i.e. year, month, and day numbers,
+    in the proleptic Gregorian calendar by default. It can read the current date
+    from the system clock. It provides functions for comparing dates, and for
+    manipulating dates. For example, it is possible to add and subtract days,
+    months, and years to dates.
 
-    A QDate object is typically created by giving the year,
-    month, and day numbers explicitly. Note that QDate interprets two
-    digit years as is, i.e., years 0 - 99. A QDate can also be
-    constructed with the static function currentDate(), which creates
-    a QDate object containing the system clock's date.  An explicit
-    date can also be set using setDate(). The fromString() function
-    returns a QDate given a string and a date format which is used to
-    interpret the date within the string.
+    A QDate object is typically created by giving the year, month, and day
+    numbers explicitly. Note that QDate interprets two digit years as presented,
+    i.e., as years 0 through 99, without adding any offset.  A QDate can also be
+    constructed with the static function currentDate(), which creates a QDate
+    object containing the system clock's date.  An explicit date can also be set
+    using setDate(). The fromString() function returns a QDate given a string
+    and a date format which is used to interpret the date within the string.
 
     The year(), month(), and day() functions provide access to the
     year, month, and day numbers. Also, dayOfWeek() and dayOfYear()
@@ -361,9 +360,9 @@ static int fromOffsetString(const QStringRef &offsetString, bool *valid) Q_DECL_
 
     \section2 No Year 0
 
-    There is no year 0. Dates in that year are considered invalid. The
-    year -1 is the year "1 before Christ" or "1 before current era."
-    The day before 1 January 1 CE is 31 December 1 BCE.
+    There is no year 0. Dates in that year are considered invalid. The year -1
+    is the year "1 before Christ" or "1 before current era." The day before 1
+    January 1 CE, QDate(1, 1, 1), is 31 December 1 BCE, QDate(-1, 12, 31).
 
     \section2 Range of Valid Dates
 
@@ -1416,11 +1415,12 @@ bool QDate::isLeapYear(int y)
     \brief The QTime class provides clock time functions.
 
 
-    A QTime object contains a clock time, i.e. the number of hours,
-    minutes, seconds, and milliseconds since midnight. It can read the
-    current time from the system clock and measure a span of elapsed
-    time. It provides functions for comparing times and for
-    manipulating a time by adding a number of milliseconds.
+    A QTime object contains a clock time, which it can express as the
+    numbers of hours, minutes, seconds, and milliseconds since
+    midnight. It can read the current time from the system clock and
+    measure a span of elapsed time. It provides functions for
+    comparing times and for manipulating a time by adding a number of
+    milliseconds.
 
     QTime uses the 24-hour clock format; it has no concept of AM/PM.
     Unlike QDateTime, QTime knows nothing about time zones or
@@ -1438,14 +1438,14 @@ bool QDate::isLeapYear(int y)
     of the time. The same information is provided in textual format by
     the toString() function.
 
-    QTime provides a full set of operators to compare two QTime
-    objects. QTime A is considered smaller than QTime B if A is
-    earlier than B.
-
     The addSecs() and addMSecs() functions provide the time a given
     number of seconds or milliseconds later than a given time.
     Correspondingly, the number of seconds or milliseconds
     between two times can be found using secsTo() or msecsTo().
+
+    QTime provides a full set of operators to compare two QTime
+    objects; an earlier time is considered smaller than a later one;
+    if A.msecsTo(B) is positive, then A < B.
 
     QTime can be used to measure a span of elapsed time using the
     start(), restart(), and elapsed() functions.
@@ -3007,8 +3007,8 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     \brief The QDateTime class provides date and time functions.
 
 
-    A QDateTime object contains a calendar date and a clock time (a
-    "datetime"). It is a combination of the QDate and QTime classes.
+    A QDateTime object encodes a calendar date and a clock time (a
+    "datetime"). It combines features of the QDate and QTime classes.
     It can read the current datetime from the system clock. It
     provides functions for comparing datetimes and for manipulating a
     datetime by adding a number of seconds, days, months, or years.
