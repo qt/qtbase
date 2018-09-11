@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -718,16 +718,12 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
 
     case DayOfWeekSectionShort:
     case DayOfWeekSectionLong:
-#if !QT_CONFIG(textdate)
-        return 2;
-#else
+#if QT_CONFIG(textdate)
         mcount = 7;
         Q_FALLTHROUGH();
 #endif
     case MonthSection:
-#if !QT_CONFIG(textdate)
-        return 2;
-#else
+#if QT_CONFIG(textdate)
         if (count <= 2)
             return 2;
 
@@ -743,7 +739,9 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
             }
             return ret;
         }
-#endif
+#else
+        return 2;
+#endif // textdate
     case MSecSection:
         return 3;
     case YearSection:
