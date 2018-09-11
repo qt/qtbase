@@ -5,6 +5,7 @@ ubuntu-18.04
 # QTBUG-67254
 ubuntu
 opensuse
+opensuse-leap
 [graphicsItemGesture]
 ubuntu-18.04
 [graphicsItemTreeGesture]
