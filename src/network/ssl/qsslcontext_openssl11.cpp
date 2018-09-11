@@ -124,20 +124,20 @@ init_context:
     case QSsl::TlsV1SslV3:
     case QSsl::AnyProtocol:
         minVersion = SSL3_VERSION;
-        maxVersion = TLS_MAX_VERSION;
+        maxVersion = 0;
         break;
     case QSsl::SecureProtocols:
     case QSsl::TlsV1_0OrLater:
         minVersion = TLS1_VERSION;
-        maxVersion = TLS_MAX_VERSION;
+        maxVersion = 0;
         break;
     case QSsl::TlsV1_1OrLater:
         minVersion = TLS1_1_VERSION;
-        maxVersion = TLS_MAX_VERSION;
+        maxVersion = 0;
         break;
     case QSsl::TlsV1_2OrLater:
         minVersion = TLS1_2_VERSION;
-        maxVersion = TLS_MAX_VERSION;
+        maxVersion = 0;
         break;
     case QSsl::SslV2:
         // This protocol is not supported by OpenSSL 1.1 and we handle
