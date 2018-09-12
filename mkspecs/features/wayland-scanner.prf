@@ -22,7 +22,7 @@ wayland_server_header.name = wayland ${QMAKE_FILE_BASE}
 wayland_server_header.input = WAYLANDSERVERSOURCES WAYLANDSERVERSOURCES_SYSTEM
 wayland_server_header.variable_out = HEADERS
 wayland_server_header.output = wayland-${QMAKE_FILE_BASE}-server-protocol$${first(QMAKE_EXT_H)}
-wayland_server_header.commands = $$QMAKE_WAYLAND_SCANNER server-header < ${QMAKE_FILE_IN} > ${QMAKE_FILE_OUT}
+wayland_server_header.commands = $$QMAKE_WAYLAND_SCANNER --include-core-only server-header < ${QMAKE_FILE_IN} > ${QMAKE_FILE_OUT}
 silent:wayland_server_header.commands = @echo Wayland server header ${QMAKE_FILE_IN} && $$wayland_server_header.commands
 QMAKE_EXTRA_COMPILERS += wayland_server_header
 
@@ -30,7 +30,7 @@ wayland_client_header.name = wayland ${QMAKE_FILE_BASE}
 wayland_client_header.input = WAYLANDCLIENTSOURCES WAYLANDCLIENTSOURCES_SYSTEM
 wayland_client_header.variable_out = HEADERS
 wayland_client_header.output = wayland-${QMAKE_FILE_BASE}-client-protocol$${first(QMAKE_EXT_H)}
-wayland_client_header.commands = $$QMAKE_WAYLAND_SCANNER client-header < ${QMAKE_FILE_IN} > ${QMAKE_FILE_OUT}
+wayland_client_header.commands = $$QMAKE_WAYLAND_SCANNER --include-core-only client-header < ${QMAKE_FILE_IN} > ${QMAKE_FILE_OUT}
 silent:wayland_client_header.commands = @echo Wayland client header ${QMAKE_FILE_IN} && $$wayland_client_header.commands
 QMAKE_EXTRA_COMPILERS += wayland_client_header
 
@@ -38,7 +38,7 @@ wayland_code.name = wayland ${QMAKE_FILE_BASE}
 wayland_code.input = WAYLANDCLIENTSOURCES WAYLANDSERVERSOURCES
 wayland_code.variable_out = SOURCES
 wayland_code.output = wayland-${QMAKE_FILE_BASE}-protocol.c
-wayland_code.commands = $$QMAKE_WAYLAND_SCANNER code < ${QMAKE_FILE_IN} > ${QMAKE_FILE_OUT}
+wayland_code.commands = $$QMAKE_WAYLAND_SCANNER --include-core-only code < ${QMAKE_FILE_IN} > ${QMAKE_FILE_OUT}
 silent:wayland_code.commands = @echo Wayland code header ${QMAKE_FILE_IN} && $$wayland_code.commands
 QMAKE_EXTRA_COMPILERS += wayland_code
 
