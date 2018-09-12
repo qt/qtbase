@@ -58,6 +58,7 @@
 #include <private/qhighdpiscaling_p.h>
 
 #include <QTextCharFormat>
+#include <QTextBoundaryFinder>
 
 #include <QDebug>
 
@@ -892,8 +893,19 @@ jint QAndroidInputContext::getCursorCapsMode(jint /*reqModes*/)
         return res;
 
     const uint qtInputMethodHints = query->value(Qt::ImHints).toUInt();
+    const int localPos = query->value(Qt::ImCursorPosition).toInt();
 
-    if (!(qtInputMethodHints & Qt::ImhLowercaseOnly) && !(qtInputMethodHints & Qt::ImhNoAutoUppercase))
+    bool atWordBoundary = (localPos == 0);
+    if (!atWordBoundary) {
+        QString surroundingText = query->value(Qt::ImSurroundingText).toString();
+        surroundingText.truncate(localPos);
+        // Add a character to see if it is at the end of the sentence or not
+        QTextBoundaryFinder finder(QTextBoundaryFinder::Sentence, surroundingText + QLatin1Char('A'));
+        finder.setPosition(localPos);
+        if (finder.isAtBoundary())
+            atWordBoundary = finder.isAtBoundary();
+    }
+    if (atWordBoundary && !(qtInputMethodHints & Qt::ImhLowercaseOnly) && !(qtInputMethodHints & Qt::ImhNoAutoUppercase))
         res |= CAP_MODE_SENTENCES;
 
     if (qtInputMethodHints & Qt::ImhUppercaseOnly)
