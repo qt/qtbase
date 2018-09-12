@@ -917,13 +917,20 @@ static QSqlIndex qGetTableInfo(QSqlQuery &q, const QString &tableName, bool only
         if (onlyPIndex && !isPk)
             continue;
         QString typeName = q.value(2).toString().toLower();
+        QString defVal = q.value(4).toString();
+        if (!defVal.isEmpty() && defVal.at(0) == QLatin1Char('\'')) {
+            const int end = defVal.lastIndexOf(QLatin1Char('\''));
+            if (end > 0)
+                defVal = defVal.mid(1, end - 1);
+        }
+
         QSqlField fld(q.value(1).toString(), qGetColumnType(typeName), tableName);
         if (isPk && (typeName == QLatin1String("integer")))
             // INTEGER PRIMARY KEY fields are auto-generated in sqlite
             // INT PRIMARY KEY is not the same as INTEGER PRIMARY KEY!
             fld.setAutoValue(true);
         fld.setRequired(q.value(3).toInt() != 0);
-        fld.setDefaultValue(q.value(4));
+        fld.setDefaultValue(defVal);
         ind.append(fld);
     }
     return ind;

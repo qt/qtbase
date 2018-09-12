@@ -43,6 +43,11 @@
 #include <QSize>
 
 //#define KTX_DEBUG
+#ifdef KTX_DEBUG
+#include <QDebug>
+#include <QMetaEnum>
+#include <QOpenGLTexture>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -68,7 +73,7 @@ struct KTXHeader {
     quint32 bytesOfKeyValueData;
 };
 
-static const int headerSize = sizeof(KTXHeader);
+static const quint32 headerSize = sizeof(KTXHeader);
 
 // Currently unused, declared for future reference
 struct KTXKeyValuePairItem {
@@ -111,7 +116,8 @@ QTextureFileData QKtxHandler::read()
         return QTextureFileData();
 
     QByteArray buf = device()->readAll();
-    if (buf.size() < headerSize || !canRead(QByteArray(), buf)) {
+    const quint32 dataSize = quint32(buf.size());
+    if (dataSize < headerSize || !canRead(QByteArray(), buf)) {
         qCDebug(lcQtGuiTextureIO, "Invalid KTX file %s", logName().constData());
         return QTextureFileData();
     }
@@ -130,13 +136,17 @@ QTextureFileData QKtxHandler::read()
     texData.setGLInternalFormat(decode(header->glInternalFormat));
     texData.setGLBaseInternalFormat(decode(header->glBaseInternalFormat));
 
-    //### For now, ignore any additional mipmap levels
-    texData.setNumLevels(1);
-    int preambleSize = headerSize + decode(header->bytesOfKeyValueData);
-    if (buf.size() >= preambleSize + int(sizeof(KTXMipmapLevel))) {
-        texData.setDataOffset(preambleSize + sizeof(quint32)); // for the imageSize
-        const KTXMipmapLevel *level = reinterpret_cast<const KTXMipmapLevel *>(buf.constData() + preambleSize);
-        texData.setDataLength(decode(level->imageSize));
+    texData.setNumLevels(decode(header->numberOfMipmapLevels));
+    quint32 offset = headerSize + decode(header->bytesOfKeyValueData);
+    const int maxLevels = qMin(texData.numLevels(), 32);               // Cap iterations in case of corrupt file.
+    for (int i = 0; i < maxLevels; i++) {
+        if (offset + sizeof(KTXMipmapLevel) > dataSize)                // Corrupt file; avoid oob read
+            break;
+        const KTXMipmapLevel *level = reinterpret_cast<const KTXMipmapLevel *>(buf.constData() + offset);
+        quint32 levelLen = decode(level->imageSize);
+        texData.setDataOffset(offset + sizeof(KTXMipmapLevel::imageSize), i);
+        texData.setDataLength(levelLen, i);
+        offset += sizeof(KTXMipmapLevel::imageSize) + levelLen + (3 - ((levelLen + 3) % 4));
     }
 
     if (!texData.isValid()) {
@@ -147,7 +157,7 @@ QTextureFileData QKtxHandler::read()
     texData.setLogName(logName());
 
 #ifdef KTX_DEBUG
-    qDebug() << "KTX file handler read" << texData.data();
+    qDebug() << "KTX file handler read" << texData;
 #endif
 
     return texData;

@@ -1297,7 +1297,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     itself and its bounding rectangle: The bounding rect contains
     pixels with alpha == 0 (i.e the pixels surrounding the
     primitive). These pixels will overwrite the other image's pixels,
-    affectively clearing those, while the primitive only overwrites
+    effectively clearing those, while the primitive only overwrites
     its own area.
 
     \table 100%
@@ -1387,7 +1387,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     clip.
 
     \li Composition Modes \c QPainter::CompositionMode_Source and
-    QPainter::CompositionMode_SourceOver
+    QPainter::CompositionMode_SourceOver.
 
     \li Rounded rectangle filling using solid color and two-color
     linear gradients fills.
@@ -8259,6 +8259,7 @@ void QPainter::setTransform(const QTransform &transform, bool combine )
 }
 
 /*!
+    Alias for worldTransform().
     Returns the world transformation matrix.
 
     \sa worldTransform()

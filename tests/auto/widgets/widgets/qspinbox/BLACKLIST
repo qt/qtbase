@@ -1,2 +1,3 @@
 [stepModifierPressAndHold]
 opensuse ci # QTBUG-69492
+opensuse-leap ci

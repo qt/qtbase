@@ -8,6 +8,7 @@ osx-10.12 ci
 ubuntu-16.04
 # QTBUG-66851
 opensuse
+opensuse-leap
 # QTBUG-69160
 android
 [setVisible]

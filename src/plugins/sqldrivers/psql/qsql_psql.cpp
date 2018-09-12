@@ -1465,8 +1465,11 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
             precision = -1;
         }
         QString defVal = query.value(5).toString();
-        if (!defVal.isEmpty() && defVal.at(0) == QLatin1Char('\''))
-            defVal = defVal.mid(1, defVal.length() - 2);
+        if (!defVal.isEmpty() && defVal.at(0) == QLatin1Char('\'')) {
+            const int end = defVal.lastIndexOf(QLatin1Char('\''));
+            if (end > 0)
+                defVal = defVal.mid(1, end - 1);
+        }
         QSqlField f(query.value(0).toString(), qDecodePSQLType(query.value(1).toInt()), tablename);
         f.setRequired(query.value(2).toBool());
         f.setLength(len);

@@ -989,7 +989,7 @@ bool QVulkanWindowPrivate::createDefaultRenderPass()
     attDesc[1].samples = sampleCount;
     attDesc[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     attDesc[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    attDesc[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attDesc[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     attDesc[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     attDesc[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     attDesc[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -999,7 +999,7 @@ bool QVulkanWindowPrivate::createDefaultRenderPass()
         attDesc[2].format = colorFormat;
         attDesc[2].samples = sampleCount;
         attDesc[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        attDesc[2].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attDesc[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attDesc[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attDesc[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         attDesc[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -2164,8 +2164,8 @@ void QVulkanWindowPrivate::addReadback()
     barrier.image = frameGrabImage;
 
     devFuncs->vkCmdPipelineBarrier(image.cmdBuf,
-                                   VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                                    VK_PIPELINE_STAGE_TRANSFER_BIT,
+                                   VK_PIPELINE_STAGE_HOST_BIT,
                                    0, 0, nullptr, 0, nullptr,
                                    1, &barrier);
 }
@@ -2298,6 +2298,11 @@ uint32_t QVulkanWindow::hostVisibleMemoryIndex() const
     \note Calling this function is only valid from the invocation of
     QVulkanWindowRenderer::initResources() up until
     QVulkanWindowRenderer::releaseResources().
+
+    \note It is not guaranteed that this memory type is always suitable. The
+    correct, cross-implementation solution - especially for device local images
+    - is to manually pick a memory type after checking the mask returned from
+    \c{vkGetImageMemoryRequirements}.
  */
 uint32_t QVulkanWindow::deviceLocalMemoryIndex() const
 {
