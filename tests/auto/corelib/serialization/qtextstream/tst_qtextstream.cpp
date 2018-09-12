@@ -2662,28 +2662,30 @@ void tst_QTextStream::useCase2()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::manipulators_data()
 {
-    QTest::addColumn<int>("flags");
+    QTest::addColumn<int>("base");
+    QTest::addColumn<int>("alignFlag");
+    QTest::addColumn<int>("numberFlag");
     QTest::addColumn<int>("width");
     QTest::addColumn<double>("realNumber");
     QTest::addColumn<int>("intNumber");
     QTest::addColumn<QString>("textData");
     QTest::addColumn<QByteArray>("result");
 
-    QTest::newRow("no flags") << 0 << 0  << 5.0 << 5 << QString("five") << QByteArray("55five");
-    QTest::newRow("rightadjust") << 0 << 10 << 5.0 << 5 << QString("five") << QByteArray("         5         5      five");
-
-    // ### FIX
-//    QTest::newRow("leftadjust") << int(QTextStream::left) << 10 << 5.0 << 5 << QString("five") << QByteArray("5         5         five      ");
-//    QTest::newRow("showpos") << int(QTextStream::showpos) << 10 << 5.0 << 5 << QString("five") << QByteArray("        +5        +5      five");
-//    QTest::newRow("showpos2") << int(QTextStream::showpos) << 5 << 3.14 << -5 << QString("five") << QByteArray("+3.14   -5 five");
-//    QTest::newRow("hex") << int(QTextStream::hex | QTextStream::showbase) << 5 << 3.14 << -5 << QString("five") << QByteArray(" 3.14 -0x5 five");
-//    QTest::newRow("hex uppercase") << int(QTextStream::hex | QTextStream::uppercase | QTextStream::showbase) << 5 << 3.14 << -5 << QString("five") << QByteArray(" 3.14 -0X5 five");
+    QTest::newRow("no flags") << 10 << 0 << 0 << 0  << 5.0 << 5 << QString("five") << QByteArray("55five");
+    QTest::newRow("rightadjust") << 10 << int(QTextStream::AlignRight) << 0 << 10 << 5.0 << 5 << QString("five") << QByteArray("         5         5      five");
+    QTest::newRow("leftadjust") << 10 << int(QTextStream::AlignLeft) << 0 << 10 << 5.0 << 5 << QString("five") << QByteArray("5         5         five      ");
+    QTest::newRow("showpos") << 10 << int(QTextStream::AlignRight) << int(QTextStream::ForceSign) << 10 << 5.0 << 5 << QString("five") << QByteArray("        +5        +5      five");
+    QTest::newRow("showpos2") << 10 << int(QTextStream::AlignRight) << int(QTextStream::ForceSign) << 5 << 3.14 << -5 << QString("five") << QByteArray("+3.14   -5 five");
+    QTest::newRow("hex") << 16 << int(QTextStream::AlignRight) << int(QTextStream::ShowBase) << 5 << 3.14 << -5 << QString("five") << QByteArray(" 3.14 -0x5 five");
+    QTest::newRow("hex") << 16 << int(QTextStream::AlignRight) << int(QTextStream::ShowBase | QTextStream::UppercaseBase) << 5 << 3.14 << -5 << QString("five") << QByteArray(" 3.14 -0X5 five");
 }
 
 // ------------------------------------------------------------------------------
 void tst_QTextStream::manipulators()
 {
-//    QFETCH(int, flags);
+    QFETCH(int, base);
+    QFETCH(int, alignFlag);
+    QFETCH(int, numberFlag);
     QFETCH(int, width);
     QFETCH(double, realNumber);
     QFETCH(int, intNumber);
@@ -2697,14 +2699,16 @@ void tst_QTextStream::manipulators()
     stream.setCodec(QTextCodec::codecForName("ISO-8859-1"));
     stream.setAutoDetectUnicode(true);
 
-//    stream.setFlags(flags);
+    stream.setIntegerBase(base);
+    stream.setFieldAlignment(QTextStream::FieldAlignment(alignFlag));
+    stream.setNumberFlags(QTextStream::NumberFlag(numberFlag));
     stream.setFieldWidth(width);
     stream << realNumber;
     stream << intNumber;
     stream << textData;
     stream.flush();
 
-    QCOMPARE(buffer.data().constData(), result.constData());
+    QCOMPARE(buffer.data(), result);
 }
 
 void tst_QTextStream::generateBOM()
