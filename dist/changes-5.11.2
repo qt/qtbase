@@ -18,10 +18,6 @@ Each of these identifiers can be entered in the bug tracker to obtain more
 information about a particular change.
 
 ****************************************************************************
-*                              Qt 5.11.2 Changes                           *
-****************************************************************************
-
-****************************************************************************
 *                                Licensing                                 *
 ****************************************************************************
 
@@ -32,8 +28,11 @@ information about a particular change.
    provided for builds from released branches of Qt.
 
 ****************************************************************************
-*                                  QtCore                                  *
+*                                  Library                                 *
 ****************************************************************************
+
+QtCore
+------
 
  - QFile:
    * [QTBUG-69417] Fixed a regression in QFile::copy() that caused the
@@ -85,9 +84,8 @@ information about a particular change.
      prohibited Unicode codepoints to report isValid() == true, despite
      clearing the hostname.
 
-****************************************************************************
-*                                  QtGui                                   *
-****************************************************************************
+QtGui
+-----
 
  - QMatrix:
    * The qHash() implementation for QMatrix has been changed.
@@ -101,9 +99,10 @@ information about a particular change.
    * [QTBUG-70096] Fixed a possible crash when combining QStaticText,
      QOpenGLWidget and Qt Quick in the same application.
 
-****************************************************************************
-*                                QtWidgets                                 *
-****************************************************************************
+ - Qt programs in Flatpak environment can now trigger IBus input method.
+
+QtWidgets
+---------
 
  - QMessageBox:
    * [QTBUG-69526] A message box with two buttons, one of which is the "Show
@@ -121,9 +120,3 @@ information about a particular change.
  - [QTBUG-69274] SQLite was updated to version 3.24.0.
  - [QTBUG-69271] PCRE2 was updated to version 10.31.
 
-****************************************************************************
-*                                 plugins                                  *
-****************************************************************************
-
- - ibus:
-   * Qt programs in Flatpak environment can now trigger IBus input method.
