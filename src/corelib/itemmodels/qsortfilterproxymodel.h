@@ -88,11 +88,9 @@ public:
     QItemSelection mapSelectionFromSource(const QItemSelection &sourceSelection) const override;
 
     QRegExp filterRegExp() const;
-    void setFilterRegExp(const QRegExp &regExp);
 
 #if QT_CONFIG(regularexpression)
     QRegularExpression filterRegularExpression() const;
-    void setFilterRegularExpression(const QRegularExpression &regularExpression);
 #endif
 
     int filterKeyColumn() const;
@@ -124,8 +122,10 @@ public:
 
 public Q_SLOTS:
     void setFilterRegExp(const QString &pattern);
+    void setFilterRegExp(const QRegExp &regExp);
 #if QT_CONFIG(regularexpression)
     void setFilterRegularExpression(const QString &pattern);
+    void setFilterRegularExpression(const QRegularExpression &regularExpression);
 #endif
     void setFilterWildcard(const QString &pattern);
     void setFilterFixedString(const QString &pattern);
