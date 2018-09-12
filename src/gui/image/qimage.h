@@ -334,7 +334,7 @@ public:
     static QPixelFormat toPixelFormat(QImage::Format format) Q_DECL_NOTHROW;
     static QImage::Format toImageFormat(QPixelFormat format) Q_DECL_NOTHROW;
 
-    // Platform spesific conversion functions
+    // Platform specific conversion functions
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     CGImageRef toCGImage() const Q_DECL_CF_RETURNS_RETAINED;
 #endif
