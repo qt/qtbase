@@ -123,7 +123,7 @@ MODULE_INC_OUTDIR = $$MODULE_BASE_OUTDIR/include/$$MODULE_INCNAME
 
 isEmpty(MODULE_CFG_FILE): MODULE_CFG_FILE = qt$${MODULE}-config
 exists($$OUT_PWD/$${MODULE_CFG_FILE}.h) {
-    fwd_rel = $$relative_path($$OUT_PWD, $$MODULE_INC_OUTDIR)
+    fwd_rel = $$relative_path($$OUT_PWD, $$REAL_MODULE_BASE_OUTDIR)
     SYNCQT.INJECTIONS += \
         $$fwd_rel/$${MODULE_CFG_FILE}.h:$${MODULE_CFG_FILE}.h \
         $$fwd_rel/$${MODULE_CFG_FILE}_p.h:$$MODULE_VERSION/$$MODULE_INCNAME/private/$${MODULE_CFG_FILE}_p.h
@@ -131,7 +131,7 @@ exists($$OUT_PWD/$${MODULE_CFG_FILE}.h) {
 
 for (injection, SYNCQT.INJECTIONS) {
     injects = $$split(injection, :)
-    dst_hdr = $$absolute_path($$member(injects, 0), $$MODULE_INC_OUTDIR)
+    dst_hdr = $$absolute_path($$member(injects, 0), $$REAL_MODULE_BASE_OUTDIR)
     ofwd_hdr = $$member(injects, 1)
     fwd_hdr = $$replace(ofwd_hdr, ^\\^, )
     MAIN_FWD = $$MODULE_INC_OUTDIR/$$fwd_hdr
