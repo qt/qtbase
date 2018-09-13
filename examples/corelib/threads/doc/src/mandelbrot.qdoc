@@ -39,7 +39,7 @@
 
     The heavy computation here is the Mandelbrot set, probably the
     world's most famous fractal. These days, while sophisticated
-    programs such as \l{http://xaos.sourceforge.net/}{XaoS} that provide real-time zooming in the
+    programs such as \l{http://matek.hu/xaos/doku.php}{XaoS} that provide real-time zooming in the
     Mandelbrot set, the standard Mandelbrot algorithm is just slow
     enough for our purposes.
 
@@ -201,7 +201,7 @@
     \snippet threads/mandelbrot/renderthread.cpp 9
 
     Once we're done with all the iterations, we call
-    QWaitCondition::wait() to put the thread to sleep by calling,
+    QWaitCondition::wait() to put the thread to sleep,
     unless \c restart is \c true. There's no use in keeping a worker
     thread looping indefinitely while there's nothing to do.
 
@@ -232,7 +232,7 @@
 
     \snippet threads/mandelbrot/mandelbrotwidget.cpp 0
 
-    The implementation starts with a few contants that we'll need
+    The implementation starts with a few constants that we'll need
     later on.
 
     \snippet threads/mandelbrot/mandelbrotwidget.cpp 1
@@ -256,15 +256,15 @@
     slot later on. Qt knows how to take of copy of many C++ and Qt
     types, but QImage isn't one of them. We must therefore call the
     template function qRegisterMetaType() before we can use QImage
-    as parameter in queued connections.
+    as a parameter in queued connections.
 
     \snippet threads/mandelbrot/mandelbrotwidget.cpp 2
     \snippet threads/mandelbrot/mandelbrotwidget.cpp 3
     \snippet threads/mandelbrot/mandelbrotwidget.cpp 4
 
     In \l{QWidget::paintEvent()}{paintEvent()}, we start by filling
-    the background with black. If we have nothing yet to paint (\c
-    pixmap is null), we print a message on the widget asking the user
+    the background with black. If we have nothing to paint yet (\c
+    pixmap is null), we display a message on the widget asking the user
     to be patient and return from the function immediately.
 
     \snippet threads/mandelbrot/mandelbrotwidget.cpp 5
@@ -293,7 +293,7 @@
 
     Notice that we rely on \c resizeEvent() being automatically
     called by Qt when the widget is shown the first time to generate
-    the image the very first time.
+    the initial image.
 
     \snippet threads/mandelbrot/mandelbrotwidget.cpp 11
 
@@ -307,7 +307,7 @@
     control the zoom level. QWheelEvent::delta() returns the angle of
     the wheel mouse movement, in eights of a degree. For most mice,
     one wheel step corresponds to 15 degrees. We find out how many
-    mouse steps we have and determine the zoom factor in consequence.
+    mouse steps we have and determine the resulting zoom factor.
     For example, if we have two wheel steps in the positive direction
     (i.e., +30 degrees), the zoom factor becomes \c ZoomInFactor
     to the second power, i.e. 0.8 * 0.8 = 0.64.

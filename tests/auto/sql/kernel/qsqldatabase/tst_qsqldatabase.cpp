@@ -197,6 +197,8 @@ private slots:
     void sqlite_enableRegexp_data() { generic_data("QSQLITE"); }
     void sqlite_enableRegexp();
 
+    void sqlite_openError();
+
 private:
     void createTestTables(QSqlDatabase db);
     void dropTestTables(QSqlDatabase db);
@@ -2330,6 +2332,22 @@ void tst_QSqlDatabase::sqlite_enableRegexp()
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toString(), QString("a1"));
     QFAIL_SQL(q, next());
+}
+
+void tst_QSqlDatabase::sqlite_openError()
+{
+    // see QTBUG-70506
+    if (!QSqlDatabase::drivers().contains("QSQLITE"))
+        QSKIP("Database driver QSQLITE not available");
+
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "sqlite_openError");
+    db.setDatabaseName("/doesnotexist/foo.sqlite");
+    QVERIFY(db.isValid());
+
+    QVERIFY(!db.open());
+    QSqlError error = db.lastError();
+    QCOMPARE(error.nativeErrorCode(), "14");  // SQLITE_CANTOPEN
+    QCOMPARE(error.databaseText(), "unable to open database file");
 }
 
 void tst_QSqlDatabase::cloneDatabase()
