@@ -41,6 +41,7 @@
 #define QOFFSCREENINTEGRATION_H
 
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformnativeinterface.h>
 
 #include <qscopedpointer.h>
 

@@ -52,6 +52,30 @@
 
 QT_BEGIN_NAMESPACE
 
+class QOffscreenX11Info
+{
+public:
+    QOffscreenX11Info(QOffscreenX11Connection *connection)
+        : m_connection(connection)
+    {
+    }
+
+    Display *display() const {
+        return (Display *)m_connection->display();
+    }
+
+    Window root() const {
+        return DefaultRootWindow(display());
+    }
+
+    int screenNumber() const {
+        return m_connection->screenNumber();
+    }
+
+private:
+    QOffscreenX11Connection *m_connection;
+};
+
 QOffscreenIntegration *QOffscreenIntegration::createOffscreenIntegration()
 {
     return new QOffscreenX11Integration;
@@ -77,6 +101,35 @@ QPlatformOpenGLContext *QOffscreenX11Integration::createPlatformOpenGLContext(QO
     return new QOffscreenX11GLXContext(m_connection->x11Info(), context);
 }
 
+QPlatformNativeInterface *QOffscreenX11Integration::nativeInterface() const
+{
+   return const_cast<QOffscreenX11Integration *>(this);
+}
+
+void *QOffscreenX11Integration::nativeResourceForScreen(const QByteArray &resource, QScreen *screen)
+{
+    Q_UNUSED(screen)
+    if (resource.toLower() == QByteArrayLiteral("display") ) {
+        if (!m_connection)
+            m_connection.reset(new QOffscreenX11Connection);
+        return m_connection->display();
+    }
+    return nullptr;
+}
+
+#ifndef QT_NO_OPENGL
+void *QOffscreenX11Integration::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) {
+    if (resource.toLower() == QByteArrayLiteral("glxconfig") ) {
+        if (!m_connection)
+            m_connection.reset(new QOffscreenX11Connection);
+        QOffscreenX11Info *x11 = m_connection->x11Info();
+        GLXFBConfig config = qglx_findConfig(x11->display(), x11->screenNumber(), context->format());
+        return config;
+    }
+    return nullptr;
+}
+#endif
+
 QOffscreenX11Connection::QOffscreenX11Connection()
 {
     XInitThreads();
@@ -92,30 +145,6 @@ QOffscreenX11Connection::~QOffscreenX11Connection()
     if (m_display)
         XCloseDisplay((Display *)m_display);
 }
-
-class QOffscreenX11Info
-{
-public:
-    QOffscreenX11Info(QOffscreenX11Connection *connection)
-        : m_connection(connection)
-    {
-    }
-
-    Display *display() const {
-        return (Display *)m_connection->display();
-    }
-
-    Window root() const {
-        return DefaultRootWindow(display());
-    }
-
-    int screenNumber() const {
-        return m_connection->screenNumber();
-    }
-
-private:
-    QOffscreenX11Connection *m_connection;
-};
 
 QOffscreenX11Info *QOffscreenX11Connection::x11Info()
 {
