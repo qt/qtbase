@@ -265,9 +265,27 @@ const ushort *QtPrivate::qustrchr(QStringView str, ushort c) noexcept
     const ushort *e = reinterpret_cast<const ushort *>(str.end());
 
 #ifdef __SSE2__
+    bool loops = true;
     // Using the PMOVMSKB instruction, we get two bits for each character
     // we compare.
+#  if defined(__AVX2__) && !defined(__OPTIMIZE_SIZE__)
+    // we're going to read n[0..15] (32 bytes)
+    __m256i mch256 = _mm256_set1_epi32(c | (c << 16));
+    for (const ushort *next = n + 16; next <= e; n = next, next += 16) {
+        __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(n));
+        __m256i result = _mm256_cmpeq_epi16(data, mch256);
+        uint mask = uint(_mm256_movemask_epi8(result));
+        if (mask) {
+            uint idx = qCountTrailingZeroBits(mask);
+            return n + idx / 2;
+        }
+    }
+    loops = false;
+    __m128i mch = _mm256_castsi256_si128(mch256);
+#  else
     __m128i mch = _mm_set1_epi32(c | (c << 16));
+#  endif
+
     auto hasMatch = [mch, &n](__m128i data, ushort validityMask) {
         __m128i result = _mm_cmpeq_epi16(data, mch);
         uint mask = uint(_mm_movemask_epi8(result));
@@ -283,6 +301,11 @@ const ushort *QtPrivate::qustrchr(QStringView str, ushort c) noexcept
         __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(n));
         if (hasMatch(data, 0xffff))
             return n;
+
+        if (!loops) {
+            n += 8;
+            break;
+        }
     }
 
 #  if !defined(__OPTIMIZE_SIZE__)
