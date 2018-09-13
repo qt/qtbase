@@ -415,6 +415,21 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
 
     return true;
 }
+
+static Q_ALWAYS_INLINE __m128i mm_load8_zero_extend(const void *ptr)
+{
+    const __m128i *dataptr = static_cast<const __m128i *>(ptr);
+#if defined(__SSE4_1__)
+    // use a MOVQ followed by PMOVZXBW
+    // if AVX2 is present, these should combine into a single VPMOVZXBW instruction
+    __m128i data = _mm_loadl_epi64(dataptr);
+    return _mm_cvtepu8_epi16(data);
+#  else
+    // use MOVQ followed by PUNPCKLBW
+    __m128i data = _mm_loadl_epi64(dataptr);
+    return _mm_unpacklo_epi8(data, _mm_setzero_si128());
+#  endif
+}
 #endif
 
 // Note: ptr on output may be off by one and point to a preceding US-ASCII
@@ -585,8 +600,7 @@ void qt_from_latin1(ushort *dst, const char *str, size_t size) Q_DECL_NOTHROW
 
     // we're going to read str[offset..offset+7] (8 bytes)
     if (str + offset + 7 < e) {
-        const __m128i chunk = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(str + offset));
-        const __m128i unpacked = _mm_unpacklo_epi8(chunk, _mm_setzero_si128());
+        const __m128i unpacked = mm_load8_zero_extend(str + offset);
         _mm_storeu_si128(reinterpret_cast<__m128i *>(dst + offset), unpacked);
         offset += 8;
     }
@@ -1044,8 +1058,7 @@ static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
     // we'll read uc[offset..offset+7] (16 bytes) and c[offset..offset+7] (8 bytes)
     if (uc + offset + 7 < e) {
         // same, but we're using an 8-byte load
-        __m128i chunk = _mm_loadl_epi64((const __m128i*)(c + offset));
-        __m128i secondHalf = _mm_unpacklo_epi8(chunk, nullmask);
+        __m128i secondHalf = mm_load8_zero_extend(c + offset);
 
         __m128i ucdata = _mm_loadu_si128((const __m128i*)(uc + offset));
         __m128i result = _mm_cmpeq_epi16(secondHalf, ucdata);
