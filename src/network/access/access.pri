@@ -24,8 +24,7 @@ HEADERS += \
     access/qabstractnetworkcache.h \
     access/qnetworkfile_p.h \
     access/qhsts_p.h \
-    access/qhstspolicy.h \
-    access/qhstsstore_p.h
+    access/qhstspolicy.h
 
 SOURCES += \
     access/qnetworkaccessauthenticationmanager.cpp \
@@ -45,8 +44,7 @@ SOURCES += \
     access/qabstractnetworkcache.cpp \
     access/qnetworkfile.cpp \
     access/qhsts.cpp \
-    access/qhstspolicy.cpp \
-    access/qhstsstore.cpp
+    access/qhstspolicy.cpp
 
 qtConfig(ftp) {
     HEADERS += \
@@ -64,6 +62,14 @@ qtConfig(networkdiskcache) {
         access/qnetworkdiskcache.h
 
     SOURCES += access/qnetworkdiskcache.cpp
+}
+
+qtConfig(settings) {
+    HEADERS += \
+        access/qhstsstore_p.h
+
+    SOURCES += \
+        access/qhstsstore.cpp
 }
 
 mac: LIBS_PRIVATE += -framework Security

@@ -37,12 +37,15 @@
 **
 ****************************************************************************/
 
-#include "qhstsstore_p.h"
 #include "qhsts_p.h"
 
 #include "QtCore/private/qipaddress_p.h"
 #include "QtCore/qvector.h"
 #include "QtCore/qlist.h"
+
+#if QT_CONFIG(settings)
+#include "qhstsstore_p.h"
+#endif // QT_CONFIG(settings)
 
 QT_BEGIN_NAMESPACE
 
@@ -83,8 +86,10 @@ void QHstsCache::updateFromHeaders(const QList<QPair<QByteArray, QByteArray>> &h
     QHstsHeaderParser parser;
     if (parser.parse(headers)) {
         updateKnownHost(url.host(), parser.expirationDate(), parser.includeSubDomains());
+#if QT_CONFIG(settings)
         if (hstsStore)
             hstsStore->synchronize();
+#endif // QT_CONFIG(settings)
     }
 }
 
@@ -93,12 +98,14 @@ void QHstsCache::updateFromPolicies(const QVector<QHstsPolicy> &policies)
     for (const auto &policy : policies)
         updateKnownHost(policy.host(), policy.expiry(), policy.includesSubDomains());
 
+#if QT_CONFIG(settings)
     if (hstsStore && policies.size()) {
         // These policies are coming either from store or from QNAM's setter
         // function. As a result we can notice expired or new policies, time
         // to sync ...
         hstsStore->synchronize();
     }
+#endif // QT_CONFIG(settings)
 }
 
 void QHstsCache::updateKnownHost(const QUrl &url, const QDateTime &expires,
@@ -108,8 +115,10 @@ void QHstsCache::updateKnownHost(const QUrl &url, const QDateTime &expires,
         return;
 
     updateKnownHost(url.host(), expires, includeSubDomains);
+#if QT_CONFIG(settings)
     if (hstsStore)
         hstsStore->synchronize();
+#endif // QT_CONFIG(settings)
 }
 
 void QHstsCache::updateKnownHost(const QString &host, const QDateTime &expires,
@@ -137,8 +146,10 @@ void QHstsCache::updateKnownHost(const QString &host, const QDateTime &expires,
         }
 
         knownHosts.insert(pos, {hostName, newPolicy});
+#if QT_CONFIG(settings)
         if (hstsStore)
             hstsStore->addToObserved(newPolicy);
+#endif // QT_CONFIG(settings)
         return;
     }
 
@@ -149,8 +160,10 @@ void QHstsCache::updateKnownHost(const QString &host, const QDateTime &expires,
     else
         return;
 
+#if QT_CONFIG(settings)
     if (hstsStore)
         hstsStore->addToObserved(newPolicy);
+#endif // QT_CONFIG(settings)
 }
 
 bool QHstsCache::isKnownHost(const QUrl &url) const
@@ -187,10 +200,12 @@ bool QHstsCache::isKnownHost(const QUrl &url) const
         if (pos != knownHosts.end()) {
             if (pos->second.isExpired()) {
                 knownHosts.erase(pos);
+#if QT_CONFIG(settings)
                 if (hstsStore) {
                     // Inform our store that this policy has expired.
                     hstsStore->addToObserved(pos->second);
                 }
+#endif // QT_CONFIG(settings)
             } else if (!superDomainMatch || pos->second.includesSubDomains()) {
                 return true;
             }
@@ -221,6 +236,7 @@ QVector<QHstsPolicy> QHstsCache::policies() const
     return values;
 }
 
+#if QT_CONFIG(settings)
 void QHstsCache::setStore(QHstsStore *store)
 {
     // Caller retains ownership of store, which must outlive this cache.
@@ -248,6 +264,7 @@ void QHstsCache::setStore(QHstsStore *store)
         updateFromPolicies(restored);
     }
 }
+#endif // QT_CONFIG(settings)
 
 // The parser is quite simple: 'nextToken' knowns exactly what kind of tokens
 // are valid and it will return false if something else was found; then
