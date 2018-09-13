@@ -264,7 +264,7 @@ QImageWriterPrivate::QImageWriterPrivate(QImageWriter *qq)
     deleteDevice = false;
     handler = 0;
     quality = -1;
-    compression = 0;
+    compression = -1;
     gamma = 0.0;
     optimizedWrite = false;
     progressiveScanWrite = false;
