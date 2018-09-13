@@ -179,14 +179,15 @@ QPoint QWinRTCursor::pos() const
         return hr;
     });
     Q_ASSERT_SUCCEEDED(hr);
-    QPoint position = QPoint(int(point.X), int(point.Y));
+    QPointF position(qreal(point.X), qreal(point.Y));
     // If no cursor get_PointerPosition returns SHRT_MIN for x and y
-    if ((position.x() == SHRT_MIN && position.y() == SHRT_MIN) || FAILED(hr))
+    if ((int(position.x()) == SHRT_MIN && int(position.y()) == SHRT_MIN)
+            || FAILED(hr))
         return QPointF(Q_INFINITY, Q_INFINITY).toPoint();
-    position.rx() -= bounds.X;
-    position.ry() -= bounds.Y;
+    position.rx() -= qreal(bounds.X);
+    position.ry() -= qreal(bounds.Y);
     position *= screen->scaleFactor();
-    return position;
+    return position.toPoint();
 }
 
 void QWinRTCursor::setPos(const QPoint &pos)
@@ -195,7 +196,7 @@ void QWinRTCursor::setPos(const QPoint &pos)
     Q_ASSERT(screen);
     ComPtr<ICoreWindow> coreWindow = screen->coreWindow();
     Q_ASSERT(coreWindow);
-    const QPointF scaledPos = pos / screen->scaleFactor();
+    const QPointF scaledPos = QPointF(pos) / screen->scaleFactor();
     QWinRTScreen::MousePositionTransition t;
     HRESULT hr = QEventDispatcherWinRT::runOnXamlThread([coreWindow, scaledPos, &t]() {
         ComPtr<ICoreWindow2> coreWindow2;
