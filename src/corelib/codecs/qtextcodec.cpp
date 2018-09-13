@@ -69,7 +69,7 @@
 #  include "qwindowscodec_p.h"
 #endif
 #  include "qsimplecodec_p.h"
-#if !defined(QT_NO_BIG_CODECS)
+#if QT_CONFIG(big_codecs)
 #  ifndef Q_OS_INTEGRITY
 #    include "qgb18030codec_p.h"
 #    include "qeucjpcodec_p.h"
@@ -78,7 +78,7 @@
 #    include "qeuckrcodec_p.h"
 #    include "qbig5codec_p.h"
 #  endif // !Q_OS_INTEGRITY
-#endif // !QT_NO_BIG_CODECS
+#endif // big_codecs
 
 #endif // icu
 #endif // QT_BOOTSTRAPPED
@@ -275,7 +275,7 @@ static void setup()
     for (int i = 0; i < QSimpleTextCodec::numSimpleCodecs; ++i)
         (void)new QSimpleTextCodec(i);
 
-#  if !defined(QT_NO_BIG_CODECS) && !defined(Q_OS_INTEGRITY)
+#  if QT_CONFIG(big_codecs) && !defined(Q_OS_INTEGRITY)
     (void)new QGb18030Codec;
     (void)new QGbkCodec;
     (void)new QGb2312Codec;
@@ -286,7 +286,7 @@ static void setup()
     (void)new QCP949Codec;
     (void)new QBig5Codec;
     (void)new QBig5hkscsCodec;
-#  endif // !QT_NO_BIG_CODECS && !Q_OS_INTEGRITY
+#  endif // big_codecs && !Q_OS_INTEGRITY
 #if QT_CONFIG(iconv)
     (void) new QIconvCodec;
 #endif

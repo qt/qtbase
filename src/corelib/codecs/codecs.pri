@@ -23,22 +23,24 @@ qtConfig(icu) {
     SOURCES += \
         codecs/qicucodec.cpp
 } else {
-    HEADERS += \
-        codecs/qgb18030codec_p.h \
-        codecs/qeucjpcodec_p.h \
-        codecs/qjiscodec_p.h \
-        codecs/qsjiscodec_p.h \
-        codecs/qeuckrcodec_p.h \
-        codecs/qbig5codec_p.h
+    qtConfig(big_codecs) {
+        HEADERS += \
+            codecs/qgb18030codec_p.h \
+            codecs/qeucjpcodec_p.h \
+            codecs/qjiscodec_p.h \
+            codecs/qsjiscodec_p.h \
+            codecs/qeuckrcodec_p.h \
+            codecs/qbig5codec_p.h
 
-    SOURCES += \
-        codecs/qgb18030codec.cpp \
-        codecs/qjpunicode.cpp \
-        codecs/qeucjpcodec.cpp \
-        codecs/qjiscodec.cpp \
-        codecs/qsjiscodec.cpp \
-        codecs/qeuckrcodec.cpp \
-        codecs/qbig5codec.cpp
+        SOURCES += \
+            codecs/qgb18030codec.cpp \
+            codecs/qjpunicode.cpp \
+            codecs/qeucjpcodec.cpp \
+            codecs/qjiscodec.cpp \
+            codecs/qsjiscodec.cpp \
+            codecs/qeuckrcodec.cpp \
+            codecs/qbig5codec.cpp
+    }
 
     qtConfig(iconv) {
         HEADERS += codecs/qiconvcodec_p.h
