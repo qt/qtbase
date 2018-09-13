@@ -265,29 +265,32 @@ const ushort *QtPrivate::qustrchr(QStringView str, ushort c) noexcept
     const ushort *e = reinterpret_cast<const ushort *>(str.end());
 
 #ifdef __SSE2__
+    // Using the PMOVMSKB instruction, we get two bits for each character
+    // we compare.
     __m128i mch = _mm_set1_epi32(c | (c << 16));
+    auto hasMatch = [mch, &n](__m128i data, ushort validityMask) {
+        __m128i result = _mm_cmpeq_epi16(data, mch);
+        uint mask = uint(_mm_movemask_epi8(result));
+        if ((mask & validityMask) == 0)
+            return false;
+        uint idx = qCountTrailingZeroBits(mask);
+        n += idx / 2;
+        return true;
+    };
 
     // we're going to read n[0..7] (16 bytes)
     for (const ushort *next = n + 8; next <= e; n = next, next += 8) {
         __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(n));
-        __m128i result = _mm_cmpeq_epi16(data, mch);
-        uint mask = _mm_movemask_epi8(result);
-        if (ushort(mask)) {
-            // found a match
-            return n + (qCountTrailingZeroBits(mask) >> 1);
-        }
+        if (hasMatch(data, 0xffff))
+            return n;
     }
 
 #  if !defined(__OPTIMIZE_SIZE__)
     // we're going to read n[0..3] (8 bytes)
     if (e - n > 3) {
         __m128i data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(n));
-        __m128i result = _mm_cmpeq_epi16(data, mch);
-        uint mask = _mm_movemask_epi8(result);
-        if (uchar(mask)) {
-            // found a match
-            return n + (qCountTrailingZeroBits(mask) >> 1);
-        }
+        if (hasMatch(data, 0xff))
+            return n;
 
         n += 4;
     }
@@ -874,6 +877,19 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
     const QChar *end = a + l;
     qptrdiff offset = 0;
 
+    // Using the PMOVMSKB instruction, we get two bits for each character
+    // we compare.
+    int retval;
+    auto isDifferent = [a, b, &offset, &retval](__m128i a_data, __m128i b_data) {
+        __m128i result = _mm_cmpeq_epi16(a_data, b_data);
+        uint mask = ~uint(_mm_movemask_epi8(result));
+        if (ushort(mask) == 0)
+            return false;
+        uint idx = qCountTrailingZeroBits(mask);
+        retval = a[offset + idx / 2].unicode() - b[offset + idx / 2].unicode();
+        return true;
+    };
+
     // we're going to read a[0..15] and b[0..15] (32 bytes)
     for ( ; a + offset + 16 <= end; offset += 16) {
 #ifdef __AVX2__
@@ -902,13 +918,8 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
     if (a + offset + 8 <= end) {
         __m128i a_data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(a + offset));
         __m128i b_data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(b + offset));
-        __m128i result = _mm_cmpeq_epi16(a_data, b_data);
-        uint mask = ~_mm_movemask_epi8(result);
-        if (ushort(mask)) {
-            // found a different character
-            uint idx = qCountTrailingZeroBits(mask);
-            return a[offset + idx / 2].unicode() - b[offset + idx / 2].unicode();
-        }
+        if (isDifferent(a_data, b_data))
+            return retval;
 
         offset += 8;
     }
@@ -917,13 +928,8 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
     if (a + offset + 4 <= end) {
         __m128i a_data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(a + offset));
         __m128i b_data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(b + offset));
-        __m128i result = _mm_cmpeq_epi16(a_data, b_data);
-        uint mask = ~_mm_movemask_epi8(result);
-        if (uchar(mask)) {
-            // found a different character
-            uint idx = qCountTrailingZeroBits(mask);
-            return a[offset + idx / 2].unicode() - b[offset + idx / 2].unicode();
-        }
+        if (isDifferent(a_data, b_data))
+            return retval;
 
         offset += 4;
     }
@@ -1018,6 +1024,19 @@ static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
     __m128i nullmask = _mm_setzero_si128();
     qptrdiff offset = 0;
 
+    // Using the PMOVMSKB instruction, we get two bits for each character
+    // we compare.
+    int retval;
+    auto isDifferent = [uc, c, &offset, &retval](__m128i a_data, __m128i b_data) {
+        __m128i result = _mm_cmpeq_epi16(a_data, b_data);
+        uint mask = ~uint(_mm_movemask_epi8(result));
+        if (ushort(mask) == 0)
+            return false;
+        uint idx = qCountTrailingZeroBits(mask);
+        retval = uc[offset + idx / 2] - c[offset + idx / 2];
+        return true;
+    };
+
     // we're going to read uc[offset..offset+15] (32 bytes)
     // and c[offset..offset+15] (16 bytes)
     for ( ; uc + offset + 15 < e; offset += 16) {
@@ -1061,13 +1080,8 @@ static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
         __m128i secondHalf = mm_load8_zero_extend(c + offset);
 
         __m128i ucdata = _mm_loadu_si128((const __m128i*)(uc + offset));
-        __m128i result = _mm_cmpeq_epi16(secondHalf, ucdata);
-        uint mask = ~_mm_movemask_epi8(result);
-        if (ushort(mask)) {
-            // found a different character
-            uint idx = qCountTrailingZeroBits(mask);
-            return uc[offset + idx / 2] - c[offset + idx / 2];
-        }
+        if (isDifferent(ucdata, secondHalf))
+            return retval;
 
         // still matched
         offset += 8;
@@ -1080,13 +1094,8 @@ static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
         __m128i secondHalf = _mm_unpacklo_epi8(chunk, nullmask);
 
         __m128i ucdata = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(uc + offset));
-        __m128i result = _mm_cmpeq_epi8(secondHalf, ucdata);
-        uint mask = ~_mm_movemask_epi8(result);
-        if (uchar(mask)) {
-            // found a different character
-            uint idx = qCountTrailingZeroBits(mask);
-            return uc[offset + idx / 2] - c[offset + idx / 2];
-        }
+        if (isDifferent(ucdata, secondHalf))
+            return retval;
 
         // still matched
         offset += 4;
