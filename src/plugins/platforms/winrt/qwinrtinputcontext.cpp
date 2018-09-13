@@ -205,6 +205,8 @@ void QWinRTInputContext::showInputPanel()
 void QWinRTInputContext::hideInputPanel()
 {
     qCDebug(lcQpaInputMethods) << __FUNCTION__;
+    if (!m_isInputPanelVisible)
+        return;
 
     QEventDispatcherWinRT::runOnXamlThread([&]() {
         ComPtr<IInputPane2> inputPane;
