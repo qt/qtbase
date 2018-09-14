@@ -77,6 +77,7 @@ struct QCborParserError
     QString errorString() const { return error.toString(); }
 };
 
+class QCborValueRef;
 class QCborContainerPrivate;
 class Q_CORE_EXPORT QCborValue
 {
@@ -246,6 +247,9 @@ public:
     const QCborValue operator[](const QString &key) const;
     const QCborValue operator[](QLatin1String key) const;
     const QCborValue operator[](qint64 key) const;
+    QCborValueRef operator[](qint64 key);
+    QCborValueRef operator[](QLatin1String key);
+    QCborValueRef operator[](const QString & key);
 
     int compare(const QCborValue &other) const;
 #if 0 && QT_HAS_INCLUDE(<compare>)
@@ -387,6 +391,13 @@ public:
     QCborMap toMap() const;
     QCborMap toMap(const QCborMap &m) const;
 
+    const QCborValue operator[](const QString &key) const;
+    const QCborValue operator[](QLatin1String key) const;
+    const QCborValue operator[](qint64 key) const;
+    QCborValueRef operator[](qint64 key);
+    QCborValueRef operator[](QLatin1String key);
+    QCborValueRef operator[](const QString & key);
+
     int compare(const QCborValue &other) const
     { return concrete().compare(other); }
 #if 0 && QT_HAS_INCLUDE(<compare>)
@@ -417,6 +428,7 @@ public:
     { return concrete().toDiagnosticNotation(opt); }
 
 private:
+    friend class QCborValue;
     friend class QCborArray;
     friend class QCborMap;
     friend class QCborContainerPrivate;

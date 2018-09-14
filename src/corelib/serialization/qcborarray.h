@@ -272,6 +272,7 @@ private:
     void detach(qsizetype reserve = 0);
 
     friend QCborValue;
+    friend QCborValueRef;
     explicit QCborArray(QCborContainerPrivate &dd) noexcept;
     QExplicitlySharedDataPointer<QCborContainerPrivate> d;
 };

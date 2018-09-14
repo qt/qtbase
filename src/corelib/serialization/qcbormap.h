@@ -118,6 +118,8 @@ public:
         QCborValueRef item;     // points to the value
         friend class Iterator;
         friend class QCborMap;
+        friend class QCborValue;
+        friend class QCborValueRef;
         ConstIterator(QCborContainerPrivate *dd, qsizetype ii) : item(dd, ii) {}
     public:
         typedef std::random_access_iterator_tag iterator_category;
@@ -323,9 +325,10 @@ public:
     QJsonObject toJsonObject() const;
 
 private:
+    friend class QCborValue;
+    friend class QCborValueRef;
     void detach(qsizetype reserve = 0);
 
-    friend QCborValue;
     explicit QCborMap(QCborContainerPrivate &dd) noexcept;
     QExplicitlySharedDataPointer<QCborContainerPrivate> d;
 };
