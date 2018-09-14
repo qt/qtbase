@@ -862,7 +862,8 @@ QString QTextHtmlParser::parseWord()
         ++pos;
         while (pos < len) {
             QChar c = txt.at(pos++);
-            if (c == QLatin1Char('\''))
+            // Allow for escaped single quotes as they may be part of the string
+            if (c == QLatin1Char('\'') && (txt.length() > 1 && txt.at(pos - 2) != QLatin1Char('\\')))
                 break;
             else
                 word += c;

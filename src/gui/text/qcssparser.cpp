@@ -1200,11 +1200,13 @@ static bool setFontWeightFromValue(const QCss::Value &value, QFont *font)
 static bool setFontFamilyFromValues(const QVector<QCss::Value> &values, QFont *font, int start = 0)
 {
     QString family;
+    QStringList families;
     bool shouldAddSpace = false;
     for (int i = start; i < values.count(); ++i) {
         const QCss::Value &v = values.at(i);
         if (v.type == Value::TermOperatorComma) {
-            family += QLatin1Char(',');
+            families << family;
+            family.clear();
             shouldAddSpace = false;
             continue;
         }
@@ -1216,9 +1218,12 @@ static bool setFontFamilyFromValues(const QVector<QCss::Value> &values, QFont *f
         family += str;
         shouldAddSpace = true;
     }
-    if (family.isEmpty())
+    if (!family.isEmpty())
+        families << family;
+    if (families.isEmpty())
         return false;
-    font->setFamily(family);
+    font->setFamily(families.at(0));
+    font->setFamilies(families);
     return true;
 }
 

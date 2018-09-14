@@ -78,6 +78,7 @@ struct QFontDef
     }
 
     QString family;
+    QStringList families;
     QString styleName;
 
     QStringList fallBackFamilies;
@@ -109,6 +110,7 @@ struct QFontDef
                     && styleStrategy == other.styleStrategy
                     && ignorePitch == other.ignorePitch && fixedPitch == other.fixedPitch
                     && family == other.family
+                    && families == other.families
                     && styleName == other.styleName
                     && hintingPreference == other.hintingPreference
                           ;
@@ -122,6 +124,7 @@ struct QFontDef
         if (styleHint != other.styleHint) return styleHint < other.styleHint;
         if (styleStrategy != other.styleStrategy) return styleStrategy < other.styleStrategy;
         if (family != other.family) return family < other.family;
+        if (families != other.families) return families < other.families;
         if (styleName != other.styleName)
             return styleName < other.styleName;
         if (hintingPreference != other.hintingPreference) return hintingPreference < other.hintingPreference;
@@ -144,6 +147,7 @@ inline uint qHash(const QFontDef &fd, uint seed = 0) Q_DECL_NOTHROW
         ^  qHash(fd.ignorePitch)
         ^  qHash(fd.fixedPitch)
         ^  qHash(fd.family, seed)
+        ^  qHash(fd.families, seed)
         ^  qHash(fd.styleName)
         ^  qHash(fd.hintingPreference)
         ;

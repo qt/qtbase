@@ -188,6 +188,7 @@ public:
         FontStyleStrategy = 0x1FE4,
         FontKerning = 0x1FE5,
         FontHintingPreference = 0x1FE6,
+        FontFamilies = 0x1FE7,
         FontFamily = 0x2000,
         FontPointSize = 0x2001,
         FontSizeAdjustment = 0x2002,
@@ -427,6 +428,11 @@ public:
     { setProperty(FontFamily, family); }
     inline QString fontFamily() const
     { return stringProperty(FontFamily); }
+
+    inline void setFontFamilies(const QStringList &families)
+    { setProperty(FontFamilies, QVariant(families)); }
+    inline QVariant fontFamilies() const
+    { return property(FontFamilies); }
 
     inline void setFontPointSize(qreal size)
     { setProperty(FontPointSize, size); }

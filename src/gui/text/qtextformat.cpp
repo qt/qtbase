@@ -361,6 +361,9 @@ void QTextFormatPrivate::recalcFont() const
             case QTextFormat::FontFamily:
                 f.setFamily(props.at(i).value.toString());
                 break;
+            case QTextFormat::FontFamilies:
+                f.setFamilies(props.at(i).value.toStringList());
+                break;
             case QTextFormat::FontPointSize:
                 f.setPointSizeF(props.at(i).value.toReal());
                 break;
@@ -562,6 +565,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     Character properties
 
     \value FontFamily
+    \value FontFamilies
     \value FontPointSize
     \value FontPixelSize
     \value FontSizeAdjustment       Specifies the change in size given to the fontsize already set using
@@ -1390,7 +1394,23 @@ QTextCharFormat::QTextCharFormat(const QTextFormat &fmt)
     \sa font()
 */
 
+/*!
+    \fn void QTextCharFormat::setFontFamilies(const QStringList &families)
+    \since 5.13
 
+    Sets the text format's font \a families.
+
+    \sa setFont()
+*/
+
+/*!
+    \fn QStringList QTextCharFormat::fontFamilies() const
+    \since 5.13
+
+    Returns the text format's font families.
+
+    \sa font()
+*/
 /*!
     \fn void QTextCharFormat::setFontPointSize(qreal size)
 
@@ -1919,6 +1939,9 @@ void QTextCharFormat::setFont(const QFont &font, FontPropertiesInheritanceBehavi
 
     if (mask & QFont::FamilyResolved)
         setFontFamily(font.family());
+    if (mask & QFont::FamiliesResolved)
+        setFontFamilies(font.families());
+
     if (mask & QFont::SizeResolved) {
         const qreal pointSize = font.pointSizeF();
         if (pointSize > 0) {

@@ -66,6 +66,12 @@ private slots:
     void fromStringWithoutStyleName();
 
     void sharing();
+    void familyNameWithCommaQuote_data();
+    void familyNameWithCommaQuote();
+    void setFamilies_data();
+    void setFamilies();
+    void setFamiliesAndFamily_data();
+    void setFamiliesAndFamily();
 };
 
 // Testing get/set functions
@@ -116,6 +122,14 @@ void tst_QFont::exactMatch()
     QVERIFY(!QFont("sans-serif").exactMatch());
     QVERIFY(!QFont("serif").exactMatch());
     QVERIFY(!QFont("monospace").exactMatch());
+
+    font.setFamilies(QStringList() << "BogusFont");
+    QVERIFY(!font.exactMatch());
+    QVERIFY(!QFont("sans").exactMatch());
+    QVERIFY(!QFont("sans-serif").exactMatch());
+    QVERIFY(!QFont("serif").exactMatch());
+    QVERIFY(!QFont("monospace").exactMatch());
+
 }
 
 void tst_QFont::italicOblique()
@@ -277,6 +291,12 @@ void tst_QFont::resolve()
     QCOMPARE(f4.pointSize(), 45);
     f4 = f4.resolve(f3);
     QCOMPARE(f4.pointSize(), 55);
+
+    QFont font5, font6;
+    const QStringList fontFamilies = { QStringLiteral("Arial") };
+    font5.setFamilies(fontFamilies);
+    font6 = font6.resolve(font5);
+    QCOMPARE(font6.families(), fontFamilies);
 }
 
 #ifndef QT_NO_WIDGETS
@@ -622,6 +642,109 @@ void tst_QFont::sharing()
     QCOMPARE(QFontPrivate::get(f2)->ref.load(), 1);
     QVERIFY(!QFontPrivate::get(f2)->engineData);
     QVERIFY(QFontPrivate::get(f2)->engineData != QFontPrivate::get(f)->engineData);
+}
+
+void tst_QFont::familyNameWithCommaQuote_data()
+{
+    QTest::addColumn<QString>("familyName");
+    QTest::addColumn<QString>("chosenFamilyName");
+
+    const QString standardFont(QFont().defaultFamily());
+    if (standardFont.isEmpty())
+        QSKIP("No default font available on the system");
+    const QString weirdFont(QLatin1String("'My, weird'' font name',"));
+    const QString commaSeparated(standardFont + QLatin1String(",Times New Roman"));
+    const QString commaSeparatedWeird(weirdFont + QLatin1String(",") + standardFont);
+    const QString commaSeparatedBogus(QLatin1String("BogusFont,") + standardFont);
+
+    QTest::newRow("standard") << standardFont << standardFont;
+    QTest::newRow("weird") << weirdFont << weirdFont;
+    QTest::newRow("commaSeparated") << commaSeparated << standardFont;
+    QTest::newRow("commaSeparatedWeird") << commaSeparatedWeird << weirdFont;
+    QTest::newRow("commaSeparatedBogus") << commaSeparatedBogus << standardFont;
+}
+
+void tst_QFont::familyNameWithCommaQuote()
+{
+    QFETCH(QString, familyName);
+    QFETCH(QString, chosenFamilyName);
+
+    const int weirdFontId = QFontDatabase::addApplicationFont(":/weirdfont.otf");
+
+    QVERIFY(weirdFontId != -1);
+    QFont f(familyName);
+    QCOMPARE(f.family(), familyName);
+    QCOMPARE(QFontInfo(f).family(), chosenFamilyName);
+
+    QFontDatabase::removeApplicationFont(weirdFontId);
+}
+
+void tst_QFont::setFamilies_data()
+{
+    QTest::addColumn<QStringList>("families");
+    QTest::addColumn<QString>("chosenFamilyName");
+
+    const QString weirdFont(QLatin1String("'My, weird'' font name',"));
+    const QString standardFont(QFont().defaultFamily());
+    if (standardFont.isEmpty())
+        QSKIP("No default font available on the system");
+
+    QTest::newRow("standard") << (QStringList() << standardFont) << standardFont;
+    QTest::newRow("weird") << (QStringList() << weirdFont) << weirdFont;
+    QTest::newRow("standard-weird") << (QStringList() << standardFont << weirdFont) << standardFont;
+    QTest::newRow("weird-standard") << (QStringList() << weirdFont << standardFont) << weirdFont;
+    QTest::newRow("nonexist-weird") << (QStringList() << "NonExistentFont" << weirdFont) << weirdFont;
+}
+
+void tst_QFont::setFamilies()
+{
+    QFETCH(QStringList, families);
+    QFETCH(QString, chosenFamilyName);
+
+    const int weirdFontId = QFontDatabase::addApplicationFont(":/weirdfont.otf");
+
+    QVERIFY(weirdFontId != -1);
+    QFont f;
+    f.setFamilies(families);
+    QCOMPARE(QFontInfo(f).family(), chosenFamilyName);
+
+    QFontDatabase::removeApplicationFont(weirdFontId);
+}
+
+void tst_QFont::setFamiliesAndFamily_data()
+{
+    QTest::addColumn<QStringList>("families");
+    QTest::addColumn<QString>("family");
+    QTest::addColumn<QString>("chosenFamilyName");
+
+    const QString weirdFont(QLatin1String("'My, weird'' font name',"));
+    const QString defaultFont(QFont().defaultFamily());
+    if (defaultFont.isEmpty())
+        QSKIP("No default font available on the system");
+
+    const QString timesFont(QLatin1String("Times"));
+    const QString nonExistFont(QLatin1String("NonExistentFont"));
+
+    QTest::newRow("firstInFamilies") << (QStringList() << defaultFont << timesFont) << weirdFont << defaultFont;
+    QTest::newRow("secondInFamilies") << (QStringList() << nonExistFont << weirdFont) << defaultFont << weirdFont;
+    QTest::newRow("family") << (QStringList() << nonExistFont) << defaultFont << defaultFont;
+}
+
+void tst_QFont::setFamiliesAndFamily()
+{
+    QFETCH(QStringList, families);
+    QFETCH(QString, family);
+    QFETCH(QString, chosenFamilyName);
+
+    const int weirdFontId = QFontDatabase::addApplicationFont(":/weirdfont.otf");
+
+    QVERIFY(weirdFontId != -1);
+    QFont f;
+    f.setFamilies(families);
+    f.setFamily(family);
+    QCOMPARE(QFontInfo(f).family(), chosenFamilyName);
+
+    QFontDatabase::removeApplicationFont(weirdFontId);
 }
 
 QTEST_MAIN(tst_QFont)

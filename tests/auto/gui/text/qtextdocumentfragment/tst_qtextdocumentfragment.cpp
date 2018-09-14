@@ -159,6 +159,7 @@ private slots:
     void nonZeroMarginOnImport();
     void html_charFormatPropertiesUnset();
     void html_headings();
+    void html_quotedFontFamily_data();
     void html_quotedFontFamily();
     void html_spanBackgroundColor();
     void defaultFont();
@@ -2184,23 +2185,45 @@ void tst_QTextDocumentFragment::html_headings()
     QCOMPARE(doc->blockCount(), 2);
 }
 
+void tst_QTextDocumentFragment::html_quotedFontFamily_data()
+{
+    QTest::addColumn<QString>("html");
+    QTest::addColumn<QString>("fontFamily");
+    QTest::addColumn<QStringList>("fontFamilies");
+
+    const QString fooFamily = QLatin1String("Foo Bar");
+    const QString weirdFamily = QLatin1String("'Weird, & font '' name',");
+
+    QTest::newRow("data1") << QString("<div style=\"font-family: 'Foo Bar';\">Test</div>")
+                           << fooFamily << QStringList(fooFamily);
+    QTest::newRow("data2") << QString("<div style='font-family: \"Foo  Bar\";'>Test</div>")
+                           << QString("Foo  Bar") << QStringList("Foo  Bar");
+    QTest::newRow("data3") << QString("<div style='font-family: Foo\n  Bar;'>Test</div>")
+                           << fooFamily << QStringList(fooFamily);
+    QTest::newRow("data4") << QString("<div style='font-family: Foo\n  Bar, serif, \"bar foo\";'>Test"
+                                      "</div>")
+                           << fooFamily << (QStringList() << "Foo Bar" << "serif" << "bar foo");
+    QTest::newRow("data5") << QString("<div style='font-family: \"\\'Weird, & font \\'\\' name\\',"
+                                      "\";'>Test</div>")
+                           << weirdFamily << QStringList(weirdFamily);
+    QTest::newRow("data6") << QString("<div style='font-family: \"\\'Weird, & font \\'\\' name\\',"
+                                      "\";'>Test</div>")
+                           << weirdFamily << QStringList(weirdFamily);
+    QTest::newRow("data7") << QString("<div style='font-family: \"\\'Weird, & font \\'\\' name\\',\", "
+                                      "serif, \"bar foo\";'>Test</div>")
+                            << weirdFamily
+                            << (QStringList() << weirdFamily << "serif" << "bar foo");
+}
+
 void tst_QTextDocumentFragment::html_quotedFontFamily()
 {
-    setHtml("<div style=\"font-family: 'Foo Bar';\">Test</div>");
-    QCOMPARE(doc->begin().begin().fragment().charFormat().fontFamily(), QString("Foo Bar"));
+    QFETCH(QString, html);
+    QFETCH(QString, fontFamily);
+    QFETCH(QStringList, fontFamilies);
 
-    setHtml("<div style='font-family: \"Foo Bar\";'>Test</div>");
-    QCOMPARE(doc->begin().begin().fragment().charFormat().fontFamily(), QString("Foo Bar"));
-
-    setHtml("<div style='font-family: \"Foo  Bar\";'>Test</div>");
-    QCOMPARE(doc->begin().begin().fragment().charFormat().fontFamily(), QString("Foo  Bar"));
-
-    setHtml("<div style='font-family: Foo\n  Bar;'>Test</div>");
-    QCOMPARE(doc->begin().begin().fragment().charFormat().fontFamily(), QString("Foo Bar"));
-
-    setHtml("<div style='font-family: Foo\n  Bar, serif, \"bar foo\";'>Test</div>");
-    QCOMPARE(doc->begin().begin().fragment().charFormat().fontFamily(), QString("Foo Bar,serif,bar foo"));
-
+    setHtml(html);
+    QCOMPARE(doc->begin().begin().fragment().charFormat().fontFamily(), fontFamily);
+    QCOMPARE(doc->begin().begin().fragment().charFormat().font().families(), fontFamilies);
 }
 
 void tst_QTextDocumentFragment::defaultFont()

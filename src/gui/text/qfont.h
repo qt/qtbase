@@ -164,7 +164,8 @@ public:
         WordSpacingResolved         = 0x4000,
         HintingPreferenceResolved   = 0x8000,
         StyleNameResolved           = 0x10000,
-        AllPropertiesResolved       = 0x1ffff
+        FamiliesResolved            = 0x20000,
+        AllPropertiesResolved       = 0x3ffff
     };
 
     QFont();
@@ -178,6 +179,9 @@ public:
 
     QString family() const;
     void setFamily(const QString &);
+
+    QStringList families() const;
+    void setFamilies(const QStringList &);
 
     QString styleName() const;
     void setStyleName(const QString &);
