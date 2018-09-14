@@ -18,10 +18,6 @@ Each of these identifiers can be entered in the bug tracker to obtain more
 information about a particular change.
 
 ****************************************************************************
-*                              Qt 5.11.2 Changes                           *
-****************************************************************************
-
-****************************************************************************
 *                                Licensing                                 *
 ****************************************************************************
 
@@ -32,8 +28,11 @@ information about a particular change.
    provided for builds from released branches of Qt.
 
 ****************************************************************************
-*                                  QtCore                                  *
+*                                  Library                                 *
 ****************************************************************************
+
+QtCore
+------
 
  - QFile:
    * [QTBUG-69417] Fixed a regression in QFile::copy() that caused the
@@ -85,9 +84,8 @@ information about a particular change.
      prohibited Unicode codepoints to report isValid() == true, despite
      clearing the hostname.
 
-****************************************************************************
-*                                  QtGui                                   *
-****************************************************************************
+QtGui
+-----
 
  - QMatrix:
    * The qHash() implementation for QMatrix has been changed.
@@ -101,9 +99,10 @@ information about a particular change.
    * [QTBUG-70096] Fixed a possible crash when combining QStaticText,
      QOpenGLWidget and Qt Quick in the same application.
 
-****************************************************************************
-*                                QtWidgets                                 *
-****************************************************************************
+ - Qt programs in Flatpak environment can now trigger IBus input method.
+
+QtWidgets
+---------
 
  - QMessageBox:
    * [QTBUG-69526] A message box with two buttons, one of which is the "Show
@@ -122,8 +121,39 @@ information about a particular change.
  - [QTBUG-69271] PCRE2 was updated to version 10.31.
 
 ****************************************************************************
-*                                 plugins                                  *
+*                                Tools                                     *
 ****************************************************************************
 
- - ibus:
-   * Qt programs in Flatpak environment can now trigger IBus input method.
+configure & build system
+------------------------
+
+ - [QTBUG-63452] Fixed re-configuring commercial builds after more than a day.
+ - [QTBUG-63483] Fixed -sysroot being ignored by various configure tests.
+ - [QTBUG-67443] Fixed build with some MinGW distributions.
+ - [QTBUG-69176] Fixed setting variables with digits in their names on
+   the configure command line.
+ - [MSVC][ICC] Fixed build with MSVC 2017 15.8.
+ - Fixed -L & -F being ignored by library configure tests.
+ - Added support for building with Wayland on macOS.
+
+qmake
+-----
+
+ - [QTBUG-22863][QTBUG-68635] Fixed support for file names containing colons
+   or hash marks - to a degree.
+ - [QTBUG-35713][Android@Win] Fixed building of static libraries with DESTDIR.
+ - [QTBUG-37592][Darwin] Switching the SDK version on an existing build will
+   now raise an error.
+ - [QTBUG-59967][VS2012+] Fixed handling of QMAKE_MANIFEST.
+ - [QTBUG-65072][Android@Win] Fixed inconsistent use of path separators in
+   generated dependencies with lead to build rules not being found.
+ - [QTBUG-69244][Xcode] Fixed shadow builds of SUBDIRS projects.
+ - [QTBUG-69279][Xcode] Fixed clobbering of build directory name in debug
+   builds of libraries with CONFIG+=create_prl when the path contains the
+   library name itself.
+ - [QTBUG-69770][VS] Fixed compilation of generated C++ sources with non-.cpp
+   file extensions.
+ - [QTBUG-69769][VS] Fixed QMAKE_EXTRA_COMPILERS for non-debug&release builds.
+ - [Darwin] Fixed QMAKE_BUNDLE not being used for the bundle identifier.
+ - Clang-based mkspecs now support CROSS_COMPILE.
+ - Added support for C++14/17 with MSVC 2017 15.7.
