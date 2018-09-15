@@ -393,8 +393,10 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
     return true;
 }
 
-// NSOpenGLContext is not re-entrant (https://openradar.appspot.com/37064579)
-static QMutex s_contextMutex;
+// NSOpenGLContext is not re-entrant. Even when using separate contexts per thread,
+// view, and window, calls into the API will still deadlock. For more information
+// see https://openradar.appspot.com/37064579
+static QMutex s_reentrancyMutex;
 
 void QCocoaGLContext::update()
 {
@@ -403,7 +405,7 @@ void QCocoaGLContext::update()
     // render-loop that doesn't return to one of the outer pools.
     QMacAutoReleasePool pool;
 
-    QMutexLocker locker(&s_contextMutex);
+    QMutexLocker locker(&s_reentrancyMutex);
     qCInfo(lcQpaOpenGLContext) << "Updating" << m_context << "for" << m_context.view;
     [m_context update];
 }
@@ -422,7 +424,7 @@ void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
         return;
     }
 
-    QMutexLocker locker(&s_contextMutex);
+    QMutexLocker locker(&s_reentrancyMutex);
     [m_context flushBuffer];
 }
 

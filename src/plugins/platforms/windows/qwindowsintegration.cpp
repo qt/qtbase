@@ -236,7 +236,9 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
     m_options = parseOptions(paramList, &tabletAbsoluteRange, &dpiAwareness);
     QWindowsFontDatabase::setFontOptions(m_options);
 
-    if (!m_context.initPointer(m_options)) {
+    if (m_context.initPointer(m_options)) {
+        QCoreApplication::setAttribute(Qt::AA_CompressHighFrequencyEvents);
+    } else {
         m_context.initTablet(m_options);
         if (tabletAbsoluteRange >= 0)
             m_context.setTabletAbsoluteRange(tabletAbsoluteRange);

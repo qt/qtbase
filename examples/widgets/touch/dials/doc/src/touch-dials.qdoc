@@ -26,13 +26,13 @@
 ****************************************************************************/
 
 /*!
-    \example touch/knobs
-    \title Touch Knobs Example
+    \example touch/dials
+    \title Touch Dials Example
     \ingroup touchinputexamples
-    \brief Shows how to create custom controls that accept touch input
+    \brief Shows how to apply touch to a set of standard Qt widgets.
 
-    The Touch Knobs example shows how to create custom controls that
-    accept touch input.
+    The Touch Dials example shows how to apply touch to a set of
+    standard Qt widgets.
 
-    \image touch-knobs-example.png
+    \image touch-dials-example.png
 */

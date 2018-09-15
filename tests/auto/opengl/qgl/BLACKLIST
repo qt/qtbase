@@ -19,6 +19,7 @@ winrt
 [graphicsViewClipping]
 windows
 winrt
+rhel-7.4 ci
 [glFBOUseInGLWidget]
 windows
 winrt

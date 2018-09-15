@@ -1058,7 +1058,7 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
     \internal
     \since 5.12
 
-    Registers a user type for marshalling, with \a typeName, a \a
+    Registers a user type for marshalling, with \a typeName, a
     \a destructor, a \a constructor, and a \a size. Returns the
     type's handle, or -1 if the type could not be registered.
  */

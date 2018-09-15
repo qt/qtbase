@@ -9,5 +9,5 @@ SOURCES       = main.cpp \
                 scribblearea.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/touch/fingerpaint
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/touch/fingerpaint
 INSTALLS += target

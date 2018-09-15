@@ -12,5 +12,5 @@ RESOURCES += \
 	mice.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/touch/pinchzoom
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/touch/pinchzoom
 INSTALLS += target

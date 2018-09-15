@@ -30,6 +30,7 @@
 #include <QtTest/QtTest>
 
 #include "qmdisubwindow.h"
+#include "private/qmdisubwindow_p.h"
 #include "qmdiarea.h"
 
 #include <QLayout>
@@ -723,7 +724,9 @@ void tst_QMdiSubWindow::setOpaqueResizeAndMove()
     resizeSpy.clear();
     QCOMPARE(resizeSpy.count(), 0);
 
-    QTest::qWait(250); // delayed update of dirty regions
+    // we need to wait for the resizeTimer to make sure updateDirtyRegions is called
+    auto priv = static_cast<QMdiSubWindowPrivate*>(qt_widget_private(window));
+    QTRY_COMPARE(priv->resizeTimerId, -1);
 
     // Enter resize mode.
     int offset = window->style()->pixelMetric(QStyle::PM_MDIFrameWidth) / 2;

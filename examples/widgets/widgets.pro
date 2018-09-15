@@ -19,6 +19,7 @@ SUBDIRS       = \
                 scroller \
                 statemachine \
                 tools \
+                touch \
                 tutorials \
                 widgets
 

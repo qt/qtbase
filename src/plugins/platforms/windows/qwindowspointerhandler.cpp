@@ -106,6 +106,32 @@ bool QWindowsPointerHandler::translatePointerEvent(QWindow *window, HWND hwnd, Q
             qWarning() << "GetPointerFrameTouchInfo() failed:" << qt_error_string();
             return false;
         }
+
+        if (!pointerCount)
+            return false;
+
+        // The history count is the same for all the touchpoints in touchInfo
+        quint32 historyCount = touchInfo[0].pointerInfo.historyCount;
+        // dispatch any skipped frames if event compression is disabled by the app
+        if (historyCount > 1 && !QCoreApplication::testAttribute(Qt::AA_CompressHighFrequencyEvents)) {
+            touchInfo.resize(pointerCount * historyCount);
+            if (!QWindowsContext::user32dll.getPointerFrameTouchInfoHistory(pointerId,
+                                                                            &historyCount,
+                                                                            &pointerCount,
+                                                                            touchInfo.data())) {
+                qWarning() << "GetPointerFrameTouchInfoHistory() failed:" << qt_error_string();
+                return false;
+            }
+
+            // history frames are returned with the most recent frame first so we iterate backwards
+            bool result = true;
+            for (auto it = touchInfo.rbegin(), end = touchInfo.rend(); it != end; it += pointerCount) {
+                result &= translateTouchEvent(window, hwnd, et, msg,
+                                              &(*(it + (pointerCount - 1))), pointerCount);
+            }
+            return result;
+        }
+
         return translateTouchEvent(window, hwnd, et, msg, touchInfo.data(), pointerCount);
     }
     case QT_PT_PEN: {
@@ -114,6 +140,29 @@ bool QWindowsPointerHandler::translatePointerEvent(QWindow *window, HWND hwnd, Q
             qWarning() << "GetPointerPenInfo() failed:" << qt_error_string();
             return false;
         }
+
+        quint32 historyCount = penInfo.pointerInfo.historyCount;
+        // dispatch any skipped frames if generic or tablet event compression is disabled by the app
+        if (historyCount > 1
+            && (!QCoreApplication::testAttribute(Qt::AA_CompressHighFrequencyEvents)
+                || !QCoreApplication::testAttribute(Qt::AA_CompressTabletEvents))) {
+            QVarLengthArray<POINTER_PEN_INFO, 10> penInfoHistory(historyCount);
+
+            if (!QWindowsContext::user32dll.getPointerPenInfoHistory(pointerId,
+                                                                     &historyCount,
+                                                                     penInfoHistory.data())) {
+                qWarning() << "GetPointerPenInfoHistory() failed:" << qt_error_string();
+                return false;
+            }
+
+            // history frames are returned with the most recent frame first so we iterate backwards
+            bool result = true;
+            for (auto it = penInfoHistory.rbegin(), end = penInfoHistory.rend(); it != end; ++it) {
+                result &= translatePenEvent(window, hwnd, et, msg, &(*(it)));
+            }
+            return result;
+        }
+
         return translatePenEvent(window, hwnd, et, msg, &penInfo);
     }
     }
