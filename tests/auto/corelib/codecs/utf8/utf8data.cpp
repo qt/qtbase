@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -29,15 +30,24 @@
 
 void loadInvalidUtf8Rows()
 {
-    QTest::newRow("1char") << QByteArray("\x80");
-    QTest::newRow("2chars-1") << QByteArray("\xC2\xC0");
-    QTest::newRow("2chars-2") << QByteArray("\xC3\xDF");
-    QTest::newRow("2chars-3") << QByteArray("\xC7\xF0");
-    QTest::newRow("3chars-1") << QByteArray("\xE0\xA0\xC0");
-    QTest::newRow("3chars-2") << QByteArray("\xE0\xC0\xA0");
-    QTest::newRow("4chars-1") << QByteArray("\xF0\x90\x80\xC0");
-    QTest::newRow("4chars-2") << QByteArray("\xF0\x90\xC0\x80");
-    QTest::newRow("4chars-3") << QByteArray("\xF0\xC0\x80\x80");
+    // Wrong continuations
+    QTest::newRow("bad-continuation-1char") << QByteArray("\x80");
+    QTest::newRow("bad-continuation-2chars-1") << QByteArray("\xC2\xC0");
+    QTest::newRow("bad-continuation-2chars-2") << QByteArray("\xC3\xDF");
+    QTest::newRow("bad-continuation-2chars-3") << QByteArray("\xC7\xF0");
+    QTest::newRow("bad-continuation-3chars-1") << QByteArray("\xE0\xA0\xC0");
+    QTest::newRow("bad-continuation-3chars-2") << QByteArray("\xE0\xC0\xA0");
+    QTest::newRow("bad-continuation-4chars-1") << QByteArray("\xF0\x90\x80\xC0");
+    QTest::newRow("bad-continuation-4chars-2") << QByteArray("\xF0\x90\xC0\x80");
+    QTest::newRow("bad-continuation-4chars-3") << QByteArray("\xF0\xC0\x80\x80");
+
+    // Too short
+    QTest::newRow("too-short-2chars") << QByteArray("\xC2");
+    QTest::newRow("too-short-3chars-1") << QByteArray("\xE0");
+    QTest::newRow("too-short-3chars-2") << QByteArray("\xE0\xA0");
+    QTest::newRow("too-short-4chars-1") << QByteArray("\xF0");
+    QTest::newRow("too-short-4chars-2") << QByteArray("\xF0\x90");
+    QTest::newRow("too-short-4chars-3") << QByteArray("\xF0\x90\x80");
 
     // Surrogate pairs must now be present either
     // U+D800:        1101   10 0000   00 0000

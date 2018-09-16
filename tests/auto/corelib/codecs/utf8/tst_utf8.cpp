@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -71,7 +71,7 @@ void tst_Utf8::initTestCase()
     // is the locale UTF-8?
     if (QString(QChar(QChar::ReplacementCharacter)).toLocal8Bit() == "\xEF\xBF\xBD") {
         QTest::newRow("localecodec") << true;
-        qDebug() << "locale is utf8";
+        qInfo() << "locale is utf8";
     }
 }
 
@@ -226,6 +226,15 @@ void tst_Utf8::invalidUtf8()
     // The system's UTF-8 codec is sometimes buggy
     //  GNU libc's iconv is known to accept U+FFFF and U+FFFE encoded as UTF-8
     //  OS X's iconv is known to accept those, plus surrogates and codepoints above U+10FFFF
+    if (!useLocale)
+        QVERIFY(decoder->hasFailure() || decoder->needsMoreData());
+    else if (!decoder->hasFailure() && !decoder->needsMoreData())
+        qWarning("System codec does not report failure when it should. Should report bug upstream.");
+
+    // add a continuation character and test that we don't accidentally use it
+    // (buffer overrun)
+    utf8 += char(0x80 | 0x3f);
+    decoder->toUnicode(utf8.constData(), utf8.size() - 1);
     if (!useLocale)
         QVERIFY(decoder->hasFailure());
     else if (!decoder->hasFailure())
