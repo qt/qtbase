@@ -970,9 +970,9 @@ static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, co
 int QMetaObject::indexOfEnumerator(const char *name) const
 {
     const QMetaObject *m = this;
-    const int intsPerEnum = priv(m->d.data)->revision >= 8 ? 5 : 4;
     while (m) {
         const QMetaObjectPrivate *d = priv(m->d.data);
+        const int intsPerEnum = d->revision >= 8 ? 5 : 4;
         for (int i = d->enumeratorCount - 1; i >= 0; --i) {
             const char *prop = rawStringData(m, m->d.data[d->enumeratorData + intsPerEnum * i]);
             if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
@@ -986,6 +986,7 @@ int QMetaObject::indexOfEnumerator(const char *name) const
     m = this;
     while (m) {
         const QMetaObjectPrivate *d = priv(m->d.data);
+        const int intsPerEnum = d->revision >= 8 ? 5 : 4;
         for (int i = d->enumeratorCount - 1; i >= 0; --i) {
             const char *prop = rawStringData(m, m->d.data[d->enumeratorData + intsPerEnum * i + 1]);
             if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
