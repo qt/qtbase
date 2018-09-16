@@ -49,6 +49,7 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
+#include <QtCore/qcborcommon.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
@@ -109,6 +110,12 @@ template<> inline char *toString(const QDateTime &dateTime)
         : qstrdup("Invalid QDateTime");
 }
 #endif // datestring
+
+template<> inline char *toString(const QCborError &c)
+{
+    // use the Q_ENUM formatting
+    return toString(c.c);
+}
 
 template<> inline char *toString(const QChar &c)
 {
