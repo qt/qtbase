@@ -362,11 +362,18 @@ void tst_QTableWidget::takeItem()
         for (int c = 0; c < testWidget->columnCount(); ++c)
             QCOMPARE(testWidget->item(r, c)->text(), QString::number(r * c + c));
 
+    QSignalSpy spy(testWidget, &QTableWidget::cellChanged);
     QTableWidgetItem *item = testWidget->takeItem(row, column);
     QCOMPARE(!!item, expectItem);
     if (expectItem) {
         QCOMPARE(item->text(), QString::number(row * column + column));
         delete item;
+
+        QTRY_COMPARE(spy.count(), 1);
+        const QList<QVariant> arguments = spy.takeFirst();
+        QCOMPARE(arguments.size(), 2);
+        QCOMPARE(arguments.at(0).toInt(), row);
+        QCOMPARE(arguments.at(1).toInt(), column);
     }
     QVERIFY(!testWidget->takeItem(row, column));
 }
