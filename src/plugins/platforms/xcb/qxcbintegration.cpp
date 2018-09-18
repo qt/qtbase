@@ -231,11 +231,11 @@ QPlatformPixmap *QXcbIntegration::createPlatformPixmap(QPlatformPixmap::PixelTyp
 
 QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
 {
-    QXcbScreen *screen = static_cast<QXcbScreen *>(window->screen()->handle());
-    QXcbGlIntegration *glIntegration = screen->connection()->glIntegration();
+    QXcbGlIntegration *glIntegration = nullptr;
     const bool isTrayIconWindow = window->objectName() == QLatin1String("QSystemTrayIconSysWindow");
     if (window->type() != Qt::Desktop && !isTrayIconWindow) {
         if (window->supportsOpenGL()) {
+            glIntegration = defaultConnection()->glIntegration();
             if (glIntegration) {
                 QXcbWindow *xcbWindow = glIntegration->createWindow(window);
                 xcbWindow->create();

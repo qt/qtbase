@@ -546,7 +546,7 @@ public:
 
     bool canGrab() const { return m_canGrabServer; }
 
-    QXcbGlIntegration *glIntegration() const { return m_glIntegration; }
+    QXcbGlIntegration *glIntegration() const;
 
 protected:
     bool event(QEvent *e) override;
@@ -727,7 +727,8 @@ private:
     xcb_window_t m_clientLeader = 0;
     QByteArray m_startupId;
     QXcbSystemTrayTracker *m_systemTrayTracker = nullptr;
-    QXcbGlIntegration *m_glIntegration = nullptr;
+    mutable QXcbGlIntegration *m_glIntegration = nullptr;
+    mutable bool m_glIntegrationInitialized = false;
     bool m_xiGrab = false;
     QVector<int> m_xiMasterPointerIds;
 
