@@ -47,6 +47,7 @@
 #include "qxcbnativeinterface.h"
 #include "qxcbclipboard.h"
 #include "qxcbeventqueue.h"
+#include "qxcbeventdispatcher.h"
 #if QT_CONFIG(draganddrop)
 #include "qxcbdrag.h"
 #endif
@@ -58,7 +59,6 @@
 
 #include <xcb/xcb.h>
 
-#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtServiceSupport/private/qgenericunixservices_p.h>
 
@@ -343,7 +343,7 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 
 QAbstractEventDispatcher *QXcbIntegration::createEventDispatcher() const
 {
-    QAbstractEventDispatcher *dispatcher = createUnixEventDispatcher();
+    QAbstractEventDispatcher *dispatcher = QXcbEventDispatcher::createEventDispatcher(defaultConnection());
     for (int i = 0; i < m_connections.size(); i++)
         m_connections[i]->eventQueue()->registerEventDispatcher(dispatcher);
     return dispatcher;

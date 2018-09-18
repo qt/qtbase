@@ -53,7 +53,6 @@ QT_BEGIN_NAMESPACE
 class QXcbConnection;
 class QAbstractEventDispatcher;
 class QXcbNativeInterface;
-class QXcbScreen;
 
 class Q_XCB_EXPORT QXcbIntegration : public QPlatformIntegration
 {

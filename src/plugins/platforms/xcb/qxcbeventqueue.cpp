@@ -76,7 +76,6 @@ QT_BEGIN_NAMESPACE
 QXcbEventQueue::QXcbEventQueue(QXcbConnection *connection)
     : m_connection(connection)
 {
-    connect(this, &QXcbEventQueue::eventsPending, m_connection, &QXcbConnection::processXcbEvents, Qt::QueuedConnection);
     connect(this, &QXcbEventQueue::finished, m_connection, &QXcbConnection::processXcbEvents);
 
     // Lets init the list with one node, so we don't have to check for
@@ -105,8 +104,7 @@ QXcbEventQueue::~QXcbEventQueue()
 
 void QXcbEventQueue::registerEventDispatcher(QAbstractEventDispatcher *dispatcher)
 {
-    // Flush the xcb connection before the event dispatcher is going to block.
-    connect(dispatcher, &QAbstractEventDispatcher::aboutToBlock, m_connection, &QXcbConnection::flush);
+    connect(this, &QXcbEventQueue::eventsPending, dispatcher, &QAbstractEventDispatcher::wakeUp, Qt::QueuedConnection);
 }
 
 xcb_generic_event_t *QXcbEventQueue::takeFirst()

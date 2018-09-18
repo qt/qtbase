@@ -495,11 +495,10 @@ public:
     QXcbGlIntegration *glIntegration() const;
 
     void flush() { xcb_flush(m_connection); }
+    void processXcbEvents();
 
 protected:
     bool event(QEvent *e) override;
-
-    void processXcbEvents();
 
 private:
     void initializeAllAtoms();
