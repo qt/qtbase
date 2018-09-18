@@ -4292,8 +4292,10 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
                 int topMargin = 0;
                 int topHeight = 0;
                 int verticalAlignment = proxy()->styleHint(SH_GroupBox_TextLabelVerticalAlignment, groupBox, widget);
-                if (groupBox->text.size() || (groupBox->subControls & QStyle::SC_GroupBoxCheckBox)) {
-                    topHeight = groupBox->fontMetrics.height();
+                bool hasCheckBox = groupBox->subControls & QStyle::SC_GroupBoxCheckBox;
+                if (groupBox->text.size() || hasCheckBox) {
+                    int checkBoxHeight = hasCheckBox ? proxy()->pixelMetric(PM_IndicatorHeight, groupBox, widget) : 0;
+                    topHeight = qMax(groupBox->fontMetrics.height(), checkBoxHeight);
                     if (verticalAlignment & Qt::AlignVCenter)
                         topMargin = topHeight / 2;
                     else if (verticalAlignment & Qt::AlignTop)
@@ -4318,20 +4320,24 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
             case SC_GroupBoxCheckBox:
             case SC_GroupBoxLabel: {
                 QFontMetrics fontMetrics = groupBox->fontMetrics;
-                int h = fontMetrics.height();
+                int th = fontMetrics.height();
                 int tw = fontMetrics.size(Qt::TextShowMnemonic, groupBox->text + QLatin1Char(' ')).width();
                 int marg = (groupBox->features & QStyleOptionFrame::Flat) ? 0 : 8;
                 ret = groupBox->rect.adjusted(marg, 0, -marg, 0);
-                ret.setHeight(h);
 
                 int indicatorWidth = proxy()->pixelMetric(PM_IndicatorWidth, opt, widget);
+                int indicatorHeight = proxy()->pixelMetric(PM_IndicatorHeight, opt, widget);
                 int indicatorSpace = proxy()->pixelMetric(PM_CheckBoxLabelSpacing, opt, widget) - 1;
                 bool hasCheckBox = groupBox->subControls & QStyle::SC_GroupBoxCheckBox;
-                int checkBoxSize = hasCheckBox ? (indicatorWidth + indicatorSpace) : 0;
+                int checkBoxWidth = hasCheckBox ? (indicatorWidth + indicatorSpace) : 0;
+                int checkBoxHeight = hasCheckBox ? indicatorHeight : 0;
+
+                int h = qMax(th, checkBoxHeight);
+                ret.setHeight(h);
 
                 // Adjusted rect for label + indicatorWidth + indicatorSpace
                 QRect totalRect = alignedRect(groupBox->direction, groupBox->textAlignment,
-                                              QSize(tw + checkBoxSize, h), ret);
+                                              QSize(tw + checkBoxWidth, h), ret);
 
                 // Adjust totalRect if checkbox is set
                 if (hasCheckBox) {
@@ -4339,15 +4345,14 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
                     int left = 0;
                     // Adjust for check box
                     if (sc == SC_GroupBoxCheckBox) {
-                        int indicatorHeight = proxy()->pixelMetric(PM_IndicatorHeight, opt, widget);
                         left = ltr ? totalRect.left() : (totalRect.right() - indicatorWidth);
-                        int top = totalRect.top() + qMax(0, fontMetrics.height() - indicatorHeight) / 2;
+                        int top = totalRect.top() + (h - checkBoxHeight) / 2;
                         totalRect.setRect(left, top, indicatorWidth, indicatorHeight);
                     // Adjust for label
                     } else {
-                        left = ltr ? (totalRect.left() + checkBoxSize - 2) : totalRect.left();
-                        totalRect.setRect(left, totalRect.top(),
-                                          totalRect.width() - checkBoxSize, totalRect.height());
+                        left = ltr ? (totalRect.left() + checkBoxWidth - 2) : totalRect.left();
+                        int top = totalRect.top() + (h - th) / 2;
+                        totalRect.setRect(left, top, totalRect.width() - checkBoxWidth, th);
                     }
                 }
                 ret = totalRect;
