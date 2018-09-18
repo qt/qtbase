@@ -43,6 +43,10 @@
 #include "qopenglbuffer.h"
 #include <private/qopenglextensions_p.h>
 
+#ifndef GL_CONTEXT_LOST
+#define GL_CONTEXT_LOST                   0x0507
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -346,7 +350,14 @@ bool QOpenGLBuffer::read(int offset, void *data, int count)
     Q_D(QOpenGLBuffer);
     if (!d->funcs->hasOpenGLFeature(QOpenGLFunctions::Buffers) || !d->guard->id())
         return false;
-    while (d->funcs->glGetError() != GL_NO_ERROR) ; // Clear error state.
+
+    while (true) { // Clear error state.
+        GLenum error = d->funcs->glGetError();
+        if (error == GL_NO_ERROR)
+            break;
+        if (error == GL_CONTEXT_LOST)
+            return false;
+    };
     d->funcs->glGetBufferSubData(d->type, offset, count, data);
     return d->funcs->glGetError() == GL_NO_ERROR;
 #else

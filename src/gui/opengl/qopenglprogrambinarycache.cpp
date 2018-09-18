@@ -54,6 +54,10 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(DBG_SHADER_CACHE)
 
+#ifndef GL_CONTEXT_LOST
+#define GL_CONTEXT_LOST                   0x0507
+#endif
+
 #ifndef GL_PROGRAM_BINARY_LENGTH
 #define GL_PROGRAM_BINARY_LENGTH          0x8741
 #endif
@@ -161,7 +165,11 @@ bool QOpenGLProgramBinaryCache::verifyHeader(const QByteArray &buf) const
 bool QOpenGLProgramBinaryCache::setProgramBinary(uint programId, uint blobFormat, const void *p, uint blobSize)
 {
     QOpenGLExtraFunctions *funcs = QOpenGLContext::currentContext()->extraFunctions();
-    while (funcs->glGetError() != GL_NO_ERROR) { }
+    while (true) {
+        GLenum error = funcs->glGetError();
+        if (error == GL_NO_ERROR || error == GL_CONTEXT_LOST)
+            break;
+    }
     funcs->glProgramBinary(programId, blobFormat, p, blobSize);
 
     GLenum err = funcs->glGetError();
@@ -337,7 +345,11 @@ void QOpenGLProgramBinaryCache::save(const QByteArray &cacheKey, uint programId)
 
     QOpenGLExtraFunctions *funcs = QOpenGLContext::currentContext()->extraFunctions();
     GLint blobSize = 0;
-    while (funcs->glGetError() != GL_NO_ERROR) { }
+    while (true) {
+        GLenum error = funcs->glGetError();
+        if (error == GL_NO_ERROR || error == GL_CONTEXT_LOST)
+            break;
+    }
     funcs->glGetProgramiv(programId, GL_PROGRAM_BINARY_LENGTH, &blobSize);
 
     const int headerSize = FULL_HEADER_SIZE(info.glvendor.size() + info.glrenderer.size() + info.glversion.size());
