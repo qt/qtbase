@@ -100,6 +100,9 @@
 #if QT_CONFIG(wizard)
 #include <qwizard.h>
 #endif
+#if QT_CONFIG(filedialog)
+#include <qsidebar_p.h>
+#endif
 #include <qfileinfo.h>
 #include <qdir.h>
 #include <qsettings.h>
@@ -4720,8 +4723,15 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         break;
 
     case PM_TabBarIconSize:
-    case PM_ListViewIconSize:
         ret = proxy()->pixelMetric(PM_SmallIconSize, opt, widget);
+        break;
+    case PM_ListViewIconSize:
+#if QT_CONFIG(filedialog)
+        if (qobject_cast<const QSidebar *>(widget))
+            ret = int(QStyleHelper::dpiScaled(24.));
+        else
+#endif
+            ret = proxy()->pixelMetric(PM_SmallIconSize, opt, widget);
         break;
 
     case PM_ButtonIconSize:

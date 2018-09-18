@@ -381,8 +381,6 @@ QSidebar::QSidebar(QWidget *parent) : QListView(parent)
 
 void QSidebar::setModelAndUrls(QFileSystemModel *model, const QList<QUrl> &newUrls)
 {
-    // ### TODO make icon size dynamic
-    setIconSize(QSize(24,24));
     setUniformItemSizes(true);
     urlModel = new QUrlModel(this);
     urlModel->setFileSystemModel(model);
