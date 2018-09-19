@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 Intel Corporation.
+** Copyright (C) 2018 Intel Corporation.
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2013 Samuel Gaist <samuel.gaist@edeltech.ch>
 ** Contact: https://www.qt.io/licensing/
@@ -88,7 +88,6 @@ extern "C" NSString *NSTemporaryDirectory();
 
 #if defined(Q_OS_LINUX)
 #  include <sys/ioctl.h>
-#  include <sys/syscall.h>
 #  include <sys/sendfile.h>
 #  include <linux/fs.h>
 
@@ -96,28 +95,6 @@ extern "C" NSString *NSTemporaryDirectory();
 #ifndef FICLONE
 #  define FICLONE       _IOW(0x94, 9, int)
 #endif
-
-#  if defined(Q_OS_ANDROID)
-// renameat2() and statx() are disabled on Android because quite a few systems
-// come with sandboxes that kill applications that make system calls outside a
-// whitelist and several Android vendors can't be bothered to update the list.
-#    undef SYS_renameat2
-#    undef SYS_statx
-#    undef STATX_BASIC_STATS
-#  else
-#    if !QT_CONFIG(renameat2) && defined(SYS_renameat2)
-static int renameat2(int oldfd, const char *oldpath, int newfd, const char *newpath, unsigned flags)
-{ return syscall(SYS_renameat2, oldfd, oldpath, newfd, newpath, flags); }
-#    endif
-
-#    if !QT_CONFIG(statx) && defined(SYS_statx)
-#      include <linux/stat.h>
-static int statx(int dirfd, const char *pathname, int flag, unsigned mask, struct statx *statxbuf)
-{ return syscall(SYS_statx, dirfd, pathname, flag, mask, statxbuf); }
-#    elif !QT_CONFIG(statx) && !defined(SYS_statx)
-#      undef STATX_BASIC_STATS
-#    endif
-#  endif // !Q_OS_ANDROID
 #endif
 
 #ifndef STATX_ALL
@@ -331,22 +308,8 @@ mtime(const T &statBuffer, int)
 #ifdef STATX_BASIC_STATS
 static int qt_real_statx(int fd, const char *pathname, int flags, struct statx *statxBuffer)
 {
-#ifdef Q_ATOMIC_INT8_IS_SUPPORTED
-    static QBasicAtomicInteger<qint8> statxTested  = Q_BASIC_ATOMIC_INITIALIZER(0);
-#else
-    static QBasicAtomicInt statxTested = Q_BASIC_ATOMIC_INITIALIZER(0);
-#endif
-
-    if (statxTested.load() == -1)
-        return -ENOSYS;
-
     unsigned mask = STATX_BASIC_STATS | STATX_BTIME;
     int ret = statx(fd, pathname, flags, mask, statxBuffer);
-    if (ret == -1 && errno == ENOSYS) {
-        statxTested.store(-1);
-        return -ENOSYS;
-    }
-    statxTested.store(1);
     return ret == -1 ? -errno : 0;
 }
 
@@ -1282,14 +1245,12 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
     if (Q_UNLIKELY(srcPath.isEmpty() || tgtPath.isEmpty()))
         return emptyFileEntryWarning(), false;
 
-#if defined(RENAME_NOREPLACE) && (QT_CONFIG(renameat2) || defined(SYS_renameat2))
+#if defined(RENAME_NOREPLACE) && QT_CONFIG(renameat2)
     if (renameat2(AT_FDCWD, srcPath, AT_FDCWD, tgtPath, RENAME_NOREPLACE) == 0)
         return true;
 
-    // If we're using syscall(), check for ENOSYS;
-    // if renameat2 came from libc, we don't accept ENOSYS.
     // We can also get EINVAL for some non-local filesystems.
-    if ((QT_CONFIG(renameat2) || errno != ENOSYS) && errno != EINVAL) {
+    if (errno != EINVAL) {
         error = QSystemError(errno, QSystemError::StandardLibraryError);
         return false;
     }
