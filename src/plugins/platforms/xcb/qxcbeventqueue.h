@@ -83,6 +83,7 @@ public:
     bool isEmpty() const { return m_head == m_flushedTail && !m_head->event; }
     xcb_generic_event_t *takeFirst();
     void flushBufferedEvents();
+    void wakeUpDispatcher();
 
     // ### peek() and peekEventQueue() could be unified. Note that peekEventQueue()
     // is public API exposed via QX11Extras/QX11Info.

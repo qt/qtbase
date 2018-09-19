@@ -81,8 +81,6 @@ static bool dispatcherOwnerDestructing = false;
 QXcbEventQueue::QXcbEventQueue(QXcbConnection *connection)
     : m_connection(connection)
 {
-    connect(this, &QXcbEventQueue::finished, m_connection, &QXcbConnection::processXcbEvents);
-
     // When running test cases in auto tests, static variables are preserved
     // between test function runs, even if Q*Application object is destroyed.
     // Reset to default value to account for this.
@@ -199,14 +197,25 @@ void QXcbEventQueue::run()
         enqueueEvent(event);
         while (!m_closeConnectionDetected && (event = xcb_poll_for_queued_event(connection)))
             enqueueEvent(event);
+        wakeUpDispatcher();
+    }
 
-        QMutexLocker locker(&qAppExiting);
-        if (!dispatcherOwnerDestructing) {
-            // This thread can run before a dispatcher has been created,
-            // so check if it is ready.
-            if (QCoreApplication::eventDispatcher())
-                QCoreApplication::eventDispatcher()->wakeUp();
-        }
+    if (!m_closeConnectionDetected) {
+        // Connection was terminated not by us. Wake up dispatcher, which will
+        // call processXcbEvents(), where we handle the connection errors via
+        // xcb_connection_has_error().
+        wakeUpDispatcher();
+    }
+}
+
+void QXcbEventQueue::wakeUpDispatcher()
+{
+    QMutexLocker locker(&qAppExiting);
+    if (!dispatcherOwnerDestructing) {
+        // This thread can run before a dispatcher has been created,
+        // so check if it is ready.
+        if (QCoreApplication::eventDispatcher())
+            QCoreApplication::eventDispatcher()->wakeUp();
     }
 }
 
