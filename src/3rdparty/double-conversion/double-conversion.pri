@@ -1,4 +1,4 @@
-INCLUDEPATH += $$PWD/include $$PWD/include/double-conversion
+INCLUDEPATH += $$PWD/.. $$PWD/include $$PWD/include/double-conversion
 SOURCES += \
     $$PWD/bignum.cc \
     $$PWD/bignum-dtoa.cc \
