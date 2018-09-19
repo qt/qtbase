@@ -137,6 +137,8 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
     m_instance = this;
     qApp->setAttribute(Qt::AA_CompressHighFrequencyEvents, true);
 
+    QWindowSystemInterface::setPlatformFiltersEvents(true);
+
     qRegisterMetaType<QXcbWindow*>();
 #if QT_CONFIG(xcb_xlib)
     XInitThreads();

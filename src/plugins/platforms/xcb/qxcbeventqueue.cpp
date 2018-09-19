@@ -114,6 +114,35 @@ QXcbEventQueue::~QXcbEventQueue()
     qCDebug(lcQpaEventReader) << "nodes on heap:" << m_nodesOnHeap;
 }
 
+xcb_generic_event_t *QXcbEventQueue::takeFirst(QEventLoop::ProcessEventsFlags flags)
+{
+    // This is the level at which we were moving excluded user input events into
+    // separate queue in Qt 4 (see qeventdispatcher_x11.cpp). In this case
+    // QXcbEventQueue represents Xlib's internal event queue. In Qt 4, Xlib's
+    // event queue peeking APIs would not see these events anymore, the same way
+    // our peeking functions do not consider m_inputEvents. This design is
+    // intentional to keep the same behavior. We could do filtering directly on
+    // QXcbEventQueue, without the m_inputEvents, but it is not clear if it is
+    // needed by anyone who peeks at the native event queue.
+
+    bool excludeUserInputEvents = flags.testFlag(QEventLoop::ExcludeUserInputEvents);
+    if (excludeUserInputEvents) {
+        xcb_generic_event_t *event = nullptr;
+        while ((event = takeFirst())) {
+            if (m_connection->isUserInputEvent(event)) {
+                m_inputEvents << event;
+                continue;
+            }
+            break;
+        }
+        return event;
+    }
+
+    if (!m_inputEvents.isEmpty())
+        return m_inputEvents.takeFirst();
+    return takeFirst();
+}
+
 xcb_generic_event_t *QXcbEventQueue::takeFirst()
 {
     if (isEmpty())

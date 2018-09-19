@@ -10096,20 +10096,24 @@ void QWidget::hideEvent(QHideEvent *)
     which are passed in the \a message parameter.
 
     In your reimplementation of this function, if you want to stop the
-    event being handled by Qt, return true and set \a result.
-    If you return false, this native event is passed back to Qt,
-    which translates the event into a Qt event and sends it to the widget.
+    event being handled by Qt, return true and set \a result. The \a result
+    parameter has meaning only on Windows. If you return false, this native
+    event is passed back to Qt, which translates the event into a Qt event
+    and sends it to the widget.
 
-    \note Events are only delivered to this event handler if the widget is
-    has a native Window handle.
+    \note Events are only delivered to this event handler if the widget
+    has a native window handle.
 
     \note This function superseedes the event filter functions
     x11Event(), winEvent() and macEvent() of Qt 4.
+
+    \sa QAbstractNativeEventFilter
 
     \table
     \header \li Platform \li Event Type Identifier \li Message Type \li Result Type
     \row \li Windows \li "windows_generic_MSG" \li MSG * \li LRESULT
     \row \li macOS \li "NSEvent" \li NSEvent * \li
+    \row \li XCB \li "xcb_generic_event_t" \li xcb_generic_event_t * \li
     \endtable
 */
 

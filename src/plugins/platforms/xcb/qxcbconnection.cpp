@@ -1020,11 +1020,10 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         printXcbEvent(lcQpaEvents(), "Event", event);
 
     long result = 0; // Used only by MS Windows
-    QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
-    bool handledByNativeEventFilter = dispatcher && dispatcher->filterNativeEvent(
-                m_nativeInterface->nativeEventType(), event, &result);
-    if (handledByNativeEventFilter)
-        return;
+    if (QAbstractEventDispatcher *dispatcher = QAbstractEventDispatcher::instance()) {
+        if (dispatcher->filterNativeEvent(m_nativeInterface->nativeEventType(), event, &result))
+            return;
+    }
 
     uint response_type = event->response_type & ~0x80;
 
@@ -1451,7 +1450,47 @@ bool QXcbConnection::compressEvent(xcb_generic_event_t *event) const
     return false;
 }
 
-void QXcbConnection::processXcbEvents()
+bool QXcbConnection::isUserInputEvent(xcb_generic_event_t *event) const
+{
+    auto eventType = event->response_type & ~0x80;
+    bool isInputEvent = eventType == XCB_BUTTON_PRESS ||
+                        eventType == XCB_BUTTON_RELEASE ||
+                        eventType == XCB_KEY_PRESS ||
+                        eventType == XCB_KEY_RELEASE ||
+                        eventType == XCB_MOTION_NOTIFY ||
+                        eventType == XCB_ENTER_NOTIFY ||
+                        eventType == XCB_LEAVE_NOTIFY;
+    if (isInputEvent)
+        return true;
+
+#if QT_CONFIG(xcb_xinput)
+    if (connection()->hasXInput2()) {
+        isInputEvent = isXIType(event, m_xiOpCode, XCB_INPUT_BUTTON_PRESS) ||
+                       isXIType(event, m_xiOpCode, XCB_INPUT_BUTTON_RELEASE) ||
+                       isXIType(event, m_xiOpCode, XCB_INPUT_MOTION) ||
+                       isXIType(event, m_xiOpCode, XCB_INPUT_TOUCH_BEGIN) ||
+                       isXIType(event, m_xiOpCode, XCB_INPUT_TOUCH_UPDATE) ||
+                       isXIType(event, m_xiOpCode, XCB_INPUT_TOUCH_END) ||
+                       isXIType(event, m_xiOpCode, XCB_INPUT_ENTER) ||
+                       isXIType(event, m_xiOpCode, XCB_INPUT_LEAVE) ||
+                       // wacom driver's way of reporting tool proximity
+                       isXIType(event, m_xiOpCode, XCB_INPUT_PROPERTY);
+    }
+    if (isInputEvent)
+        return true;
+#endif
+
+    if (eventType == XCB_CLIENT_MESSAGE) {
+        auto clientMessage = reinterpret_cast<const xcb_client_message_event_t *>(event);
+        if (clientMessage->format == 32 && clientMessage->type == atom(QXcbAtom::WM_PROTOCOLS))
+            if (clientMessage->data.data32[0] == atom(QXcbAtom::WM_DELETE_WINDOW))
+                isInputEvent = true;
+    }
+
+    return isInputEvent;
+}
+
+void QXcbConnection::processXcbEvents(QEventLoop::ProcessEventsFlags flags)
 {
     int connection_error = xcb_connection_has_error(xcb_connection());
     if (connection_error) {
@@ -1461,13 +1500,14 @@ void QXcbConnection::processXcbEvents()
 
     m_eventQueue->flushBufferedEvents();
 
-    while (xcb_generic_event_t *event = m_eventQueue->takeFirst()) {
+    while (xcb_generic_event_t *event = m_eventQueue->takeFirst(flags)) {
         QScopedPointer<xcb_generic_event_t, QScopedPointerPodDeleter> eventGuard(event);
 
         if (!(event->response_type & ~0x80)) {
             handleXcbError(reinterpret_cast<xcb_generic_error_t *>(event));
             continue;
         }
+
         if (compressEvent(event))
             continue;
 

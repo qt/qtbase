@@ -58,7 +58,7 @@ QXcbUnixEventDispatcher::~QXcbUnixEventDispatcher()
 bool QXcbUnixEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     const bool didSendEvents = QEventDispatcherUNIX::processEvents(flags);
-    m_connection->processXcbEvents();
+    m_connection->processXcbEvents(flags);
     // The following line should not be necessary after QTBUG-70095
     return QWindowSystemInterface::sendWindowSystemEvents(flags) || didSendEvents;
 }
@@ -99,9 +99,10 @@ static gboolean xcbSourceCheck(GSource *source)
 static gboolean xcbSourceDispatch(GSource *source, GSourceFunc, gpointer)
 {
     auto xcbEventSource = reinterpret_cast<XcbEventSource *>(source);
-    xcbEventSource->connection->processXcbEvents();
+    QEventLoop::ProcessEventsFlags flags = xcbEventSource->dispatcher->flags();
+    xcbEventSource->connection->processXcbEvents(flags);
     // The following line should not be necessary after QTBUG-70095
-    QWindowSystemInterface::sendWindowSystemEvents(xcbEventSource->dispatcher->flags());
+    QWindowSystemInterface::sendWindowSystemEvents(flags);
     return true;
 }
 

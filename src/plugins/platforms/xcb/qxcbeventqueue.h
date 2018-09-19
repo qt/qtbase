@@ -41,6 +41,8 @@
 
 #include <QtCore/QThread>
 #include <QtCore/QHash>
+#include <QtCore/QEventLoop>
+#include <QtCore/QVector>
 
 #include <xcb/xcb.h>
 
@@ -81,6 +83,7 @@ public:
     void run() override;
 
     bool isEmpty() const { return m_head == m_flushedTail && !m_head->event; }
+    xcb_generic_event_t *takeFirst(QEventLoop::ProcessEventsFlags flags);
     xcb_generic_event_t *takeFirst();
     void flushBufferedEvents();
     void wakeUpDispatcher();
@@ -123,6 +126,8 @@ private:
     bool m_queueModified = false;
     bool m_peekerIndexCacheDirty = false;
     QHash<qint32, QXcbEventNode *> m_peekerToNode;
+
+    QVector<xcb_generic_event_t *> m_inputEvents;
 
     // debug stats
     quint64 m_nodesOnHeap = 0;

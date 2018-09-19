@@ -475,6 +475,8 @@ public:
     Qt::MouseButtons queryMouseButtons() const;
     Qt::KeyboardModifiers queryKeyboardModifiers() const;
 
+    bool isUserInputEvent(xcb_generic_event_t *event) const;
+
 #if QT_CONFIG(xcb_xinput)
     void xi2SelectStateEvents();
     void xi2SelectDeviceEvents(xcb_window_t window);
@@ -495,7 +497,7 @@ public:
     QXcbGlIntegration *glIntegration() const;
 
     void flush() { xcb_flush(m_connection); }
-    void processXcbEvents();
+    void processXcbEvents(QEventLoop::ProcessEventsFlags flags);
 
 protected:
     bool event(QEvent *e) override;
