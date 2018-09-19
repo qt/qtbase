@@ -699,7 +699,7 @@ QDebug operator<<(QDebug debug, const QSslCertificate &certificate)
           << ", " << certificate.issuerInfo(QSslCertificate::Organization)
           << ", " << certificate.subjectInfo(QSslCertificate::Organization)
           << ", " << certificate.subjectAlternativeNames()
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
           << ", " << certificate.effectiveDate()
           << ", " << certificate.expiryDate()
 #endif

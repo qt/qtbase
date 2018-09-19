@@ -679,7 +679,7 @@ QVariant QPSQLResult::data(int i)
         if (val[0] == '\0') {
             return QVariant(QDate());
         } else {
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
             return QVariant(QDate::fromString(QString::fromLatin1(val), Qt::ISODate));
 #else
             return QVariant(QString::fromLatin1(val));
@@ -687,7 +687,7 @@ QVariant QPSQLResult::data(int i)
         }
     case QVariant::Time: {
         const QString str = QString::fromLatin1(val);
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
         if (str.isEmpty())
             return QVariant(QTime());
         else
@@ -698,7 +698,7 @@ QVariant QPSQLResult::data(int i)
     }
     case QVariant::DateTime: {
         QString dtval = QString::fromLatin1(val);
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
         if (dtval.length() < 10) {
             return QVariant(QDateTime());
        } else {
@@ -1497,7 +1497,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
     } else {
         switch (int(field.type())) {
         case QVariant::DateTime:
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
             if (field.value().toDateTime().isValid()) {
                 // we force the value to be considered with a timezone information, and we force it to be UTC
                 // this is safe since postgresql stores only the UTC value and not the timezone offset (only used
@@ -1510,10 +1510,10 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
             }
 #else
             r = QLatin1String("NULL");
-#endif // QT_NO_DATESTRING
+#endif // datestring
             break;
         case QVariant::Time:
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
             if (field.value().toTime().isValid()) {
                 r = QLatin1Char('\'') + field.value().toTime().toString(QLatin1String("hh:mm:ss.zzz")) + QLatin1Char('\'');
             } else

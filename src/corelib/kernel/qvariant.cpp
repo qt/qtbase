@@ -445,7 +445,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         case QVariant::Double:
             *str = QString::number(d->data.d, 'g', QLocale::FloatingPointShortest);
             break;
-#if !defined(QT_NO_DATESTRING)
+#if QT_CONFIG(datestring)
         case QVariant::Date:
             *str = v_cast<QDate>(d)->toString(Qt::ISODate);
             break;
@@ -589,7 +589,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         QDate *dt = static_cast<QDate *>(result);
         if (d->type == QVariant::DateTime)
             *dt = v_cast<QDateTime>(d)->date();
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
         else if (d->type == QVariant::String)
             *dt = QDate::fromString(*v_cast<QString>(d), Qt::ISODate);
 #endif
@@ -604,7 +604,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         case QVariant::DateTime:
             *t = v_cast<QDateTime>(d)->time();
             break;
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
         case QVariant::String:
             *t = QTime::fromString(*v_cast<QString>(d), Qt::ISODate);
             break;
@@ -617,7 +617,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
     case QVariant::DateTime: {
         QDateTime *dt = static_cast<QDateTime *>(result);
         switch (d->type) {
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
         case QVariant::String:
             *dt = QDateTime::fromString(*v_cast<QString>(d), Qt::ISODate);
             break;

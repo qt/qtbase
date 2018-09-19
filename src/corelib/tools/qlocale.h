@@ -1001,7 +1001,7 @@ public:
     QString dateFormat(FormatType format = LongFormat) const;
     QString timeFormat(FormatType format = LongFormat) const;
     QString dateTimeFormat(FormatType format = LongFormat) const;
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
     QDate toDate(const QString &string, FormatType = LongFormat) const;
     QTime toTime(const QString &string, FormatType = LongFormat) const;
     QDateTime toDateTime(const QString &string, FormatType format = LongFormat) const;

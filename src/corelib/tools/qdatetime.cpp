@@ -202,7 +202,7 @@ static int fromShortMonthName(const QStringRef &monthName)
 }
 #endif // textdate
 
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
 struct ParsedRfcDateTime {
     QDate date;
     QTime time;
@@ -241,7 +241,7 @@ static ParsedRfcDateTime rfcDateImpl(const QString &s)
 
     return result;
 }
-#endif // QT_NO_DATESTRING
+#endif // datestring
 
 // Return offset in [+-]HH:mm format
 static QString toOffsetString(Qt::DateFormat format, int offset)
@@ -254,6 +254,7 @@ static QString toOffsetString(Qt::DateFormat format, int offset)
                              (qAbs(offset) / 60) % 60);
 }
 
+#if QT_CONFIG(datestring)
 // Parse offset in [+-]HH[[:]mm] format
 static int fromOffsetString(const QStringRef &offsetString, bool *valid) Q_DECL_NOTHROW
 {
@@ -298,6 +299,7 @@ static int fromOffsetString(const QStringRef &offsetString, bool *valid) Q_DECL_
     *valid = true;
     return sign * ((hour * 60) + minute) * 60;
 }
+#endif // datestring
 
 /*****************************************************************************
   QDate member functions
@@ -777,7 +779,7 @@ QString QDate::longDayName(int weekday, MonthNameType type)
 }
 #endif // textdate && deprecated
 
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
 
 #if QT_CONFIG(textdate)
 static QString toStringTextDate(QDate date)
@@ -939,7 +941,7 @@ QString QDate::toString(const QString &format) const
 }
 #endif
 
-#endif //QT_NO_DATESTRING
+#endif // datestring
 
 /*!
     \fn bool QDate::setYMD(int y, int m, int d)
@@ -1201,7 +1203,7 @@ qint64 QDate::daysTo(const QDate &d) const
     \sa QTime::currentTime(), QDateTime::currentDateTime()
 */
 
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
 /*!
     \fn QDate QDate::fromString(const QString &string, Qt::DateFormat format)
 
@@ -1350,7 +1352,7 @@ QDate QDate::fromString(const QString &string, const QString &format)
 #endif
     return date;
 }
-#endif // QT_NO_DATESTRING
+#endif // datestring
 
 /*!
     \overload
@@ -1566,7 +1568,7 @@ int QTime::msec() const
     return ds() % 1000;
 }
 
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
 /*!
     \overload
 
@@ -1702,7 +1704,7 @@ QString QTime::toString(const QString &format) const
 }
 #endif
 
-#endif //QT_NO_DATESTRING
+#endif // datestring
 
 /*!
     Sets the time to hour \a h, minute \a m, seconds \a s and
@@ -1887,7 +1889,7 @@ int QTime::msecsTo(const QTime &t) const
     operating system; not all systems provide 1-millisecond accuracy.
 */
 
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
 
 static QTime fromIsoTimeString(const QStringRef &string, Qt::DateFormat format, bool *isMidnight24)
 {
@@ -2069,7 +2071,7 @@ QTime QTime::fromString(const QString &string, const QString &format)
     return time;
 }
 
-#endif // QT_NO_DATESTRING
+#endif // datestring
 
 
 /*!
@@ -3773,7 +3775,7 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
 }
 #endif
 
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
 /*!
     \fn QString QDateTime::toString(Qt::DateFormat format) const
 
@@ -3993,7 +3995,7 @@ QString QDateTime::toString(const QString &format) const
 }
 #endif
 
-#endif //QT_NO_DATESTRING
+#endif // datestring
 
 static inline void massageAdjustedDateTime(const QDateTimeData &d, QDate *date, QTime *time)
 {
@@ -4722,7 +4724,7 @@ int QDateTime::utcOffset() const
 }
 #endif // QT_DEPRECATED_SINCE
 
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
 
 /*!
     \fn QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
@@ -5071,7 +5073,7 @@ QDateTime QDateTime::fromString(const QString &string, const QString &format)
     return QDateTime();
 }
 
-#endif // QT_NO_DATESTRING
+#endif // datestring
 /*!
     \fn QDateTime QDateTime::toLocalTime() const
 
@@ -5330,7 +5332,7 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
   Date / Time Debug Streams
 *****************************************************************************/
 
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_NO_DATESTRING)
+#if !defined(QT_NO_DEBUG_STREAM) && QT_CONFIG(datestring)
 QDebug operator<<(QDebug dbg, const QDate &date)
 {
     QDebugStateSaver saver(dbg);
@@ -5382,7 +5384,7 @@ QDebug operator<<(QDebug dbg, const QDateTime &date)
     }
     return dbg.nospace() << ')';
 }
-#endif
+#endif // debug_stream && datestring
 
 /*! \fn uint qHash(const QDateTime &key, uint seed = 0)
     \relates QHash

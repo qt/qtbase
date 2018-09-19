@@ -85,7 +85,7 @@ template<> inline char *toString(const QByteArray &ba)
     return QTest::toPrettyCString(ba.constData(), ba.length());
 }
 
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
 template<> inline char *toString(const QTime &time)
 {
     return time.isValid()
@@ -106,7 +106,7 @@ template<> inline char *toString(const QDateTime &dateTime)
         ? qstrdup(qPrintable(dateTime.toString(QStringViewLiteral("yyyy/MM/dd hh:mm:ss.zzz[t]"))))
         : qstrdup("Invalid QDateTime");
 }
-#endif // QT_NO_DATESTRING
+#endif // datestring
 
 template<> inline char *toString(const QChar &c)
 {

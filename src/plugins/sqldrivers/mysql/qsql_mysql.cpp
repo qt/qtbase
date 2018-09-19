@@ -126,7 +126,7 @@ static inline QByteArray fromUnicode(QTextCodec *tc, const QString &str)
 
 static inline QVariant qDateFromString(const QString &val)
 {
-#ifdef QT_NO_DATESTRING
+#if !QT_CONFIG(datestring)
     Q_UNUSED(val);
     return QVariant(val);
 #else
@@ -138,7 +138,7 @@ static inline QVariant qDateFromString(const QString &val)
 
 static inline QVariant qTimeFromString(const QString &val)
 {
-#ifdef QT_NO_DATESTRING
+#if !QT_CONFIG(datestring)
     Q_UNUSED(val);
     return QVariant(val);
 #else
@@ -150,7 +150,7 @@ static inline QVariant qTimeFromString(const QString &val)
 
 static inline QVariant qDateTimeFromString(QString &val)
 {
-#ifdef QT_NO_DATESTRING
+#if !QT_CONFIG(datestring)
     Q_UNUSED(val);
     return QVariant(val);
 #else

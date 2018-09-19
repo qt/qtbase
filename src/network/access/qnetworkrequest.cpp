@@ -47,7 +47,7 @@
 #include "QtCore/qdatetime.h"
 
 #include <ctype.h>
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
 # include <stdio.h>
 #endif
 
@@ -1159,7 +1159,7 @@ QDateTime QNetworkHeadersPrivate::fromHttpDate(const QByteArray &value)
 
     int pos = value.indexOf(',');
     QDateTime dt;
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
     if (pos == -1) {
         // no comma -> asctime(3) format
         dt = QDateTime::fromString(QString::fromLatin1(value), Qt::TextDate);
@@ -1186,7 +1186,7 @@ QDateTime QNetworkHeadersPrivate::fromHttpDate(const QByteArray &value)
             dt = c.toDateTime(sansWeekday, QLatin1String("dd-MMM-yy hh:mm:ss 'GMT'"));
         }
     }
-#endif // QT_NO_DATESTRING
+#endif // datestring
 
     if (dt.isValid())
         dt.setTimeSpec(Qt::UTC);

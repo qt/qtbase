@@ -370,7 +370,7 @@ void QNetworkAccessFtpBackend::ftpRawCommandReply(int code, const QString &text)
         if (id == sizeId) {
             // reply to the size command
             setHeader(QNetworkRequest::ContentLengthHeader, text.toLongLong());
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
         } else if (id == mdtmId) {
             QDateTime dt = QDateTime::fromString(text, QLatin1String("yyyyMMddHHmmss"));
             setHeader(QNetworkRequest::LastModifiedHeader, dt);
