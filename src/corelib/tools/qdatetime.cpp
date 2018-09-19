@@ -171,7 +171,7 @@ static ParsedDate getDateFromJulianDay(qint64 julianDay)
 
 static const char monthDays[] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-#ifndef QT_NO_TEXTDATE
+#if QT_CONFIG(textdate)
 static const char qt_shortMonthNames[][4] = {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
@@ -200,7 +200,7 @@ static int fromShortMonthName(const QStringRef &monthName)
     }
     return -1;
 }
-#endif // QT_NO_TEXTDATE
+#endif // textdate
 
 #ifndef QT_NO_DATESTRING
 struct ParsedRfcDateTime {
@@ -613,7 +613,7 @@ int QDate::weekNumber(int *yearNumber) const
     return week;
 }
 
-#if QT_DEPRECATED_SINCE(5, 11) && !defined(QT_NO_TEXTDATE)
+#if QT_DEPRECATED_SINCE(5, 11) && QT_CONFIG(textdate)
 /*!
     \since 4.5
     \deprecated
@@ -775,11 +775,11 @@ QString QDate::longDayName(int weekday, MonthNameType type)
     }
     return QString();
 }
-#endif // QT_NO_TEXTDATE && deprecated
+#endif // textdate && deprecated
 
 #ifndef QT_NO_DATESTRING
 
-#ifndef QT_NO_TEXTDATE
+#if QT_CONFIG(textdate)
 static QString toStringTextDate(QDate date)
 {
     const ParsedDate pd = getDateFromJulianDay(date.toJulianDay());
@@ -789,7 +789,7 @@ static QString toStringTextDate(QDate date)
          + QString::number(pd.day) + sp
          + QString::number(pd.year);
 }
-#endif // QT_NO_TEXTDATE
+#endif // textdate
 
 static QString toStringIsoDate(qint64 jd)
 {
@@ -865,7 +865,7 @@ QString QDate::toString(Qt::DateFormat format) const
     case Qt::RFC2822Date:
         return QLocale::c().toString(*this, QStringViewLiteral("dd MMM yyyy"));
     default:
-#ifndef QT_NO_TEXTDATE
+#if QT_CONFIG(textdate)
     case Qt::TextDate:
         return toStringTextDate(*this);
 #endif
@@ -1234,7 +1234,7 @@ QDate QDate::fromString(const QString& string, Qt::DateFormat format)
     case Qt::RFC2822Date:
         return rfcDateImpl(string).date;
     default:
-#ifndef QT_NO_TEXTDATE
+#if QT_CONFIG(textdate)
     case Qt::TextDate: {
         QVector<QStringRef> parts = string.splitRef(QLatin1Char(' '), QString::SkipEmptyParts);
 
@@ -1255,7 +1255,7 @@ QDate QDate::fromString(const QString& string, Qt::DateFormat format)
 
         return QDate(year, month, parts.at(2).toInt());
         }
-#endif // QT_NO_TEXTDATE
+#endif // textdate
     case Qt::ISODate: {
         // Semi-strict parsing, must be long enough and have non-numeric separators
         if (string.size() < 10 || string.at(4).isDigit() || string.at(7).isDigit()
@@ -3848,7 +3848,7 @@ QString QDateTime::toString(Qt::DateFormat format) const
         return buf;
     }
     default:
-#ifndef QT_NO_TEXTDATE
+#if QT_CONFIG(textdate)
     case Qt::TextDate: {
         const QPair<QDate, QTime> p = getDateTime(d);
         buf = p.first.toString(Qt::TextDate);
@@ -4827,7 +4827,7 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
             date = date.addDays(1);
         return QDateTime(date, time, spec, offset);
     }
-#if !defined(QT_NO_TEXTDATE)
+#if QT_CONFIG(textdate)
     case Qt::TextDate: {
         QVector<QStringRef> parts = string.splitRef(QLatin1Char(' '), QString::SkipEmptyParts);
 
@@ -4936,7 +4936,7 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
             return QDateTime(date, time, Qt::UTC);
         }
     }
-#endif //QT_NO_TEXTDATE
+#endif // textdate
     }
 
     return QDateTime();

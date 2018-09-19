@@ -81,7 +81,7 @@ public:
     int daysInYear() const;
     int weekNumber(int *yearNum = nullptr) const;
 
-#if QT_DEPRECATED_SINCE(5, 10) && !defined QT_NO_TEXTDATE
+#if QT_DEPRECATED_SINCE(5, 10) && QT_CONFIG(textdate)
     QT_DEPRECATED_X("Use QLocale::monthName or QLocale::standaloneMonthName")
         static QString shortMonthName(int month, MonthNameType type = DateFormat);
     QT_DEPRECATED_X("Use QLocale::dayName or QLocale::standaloneDayName")
@@ -90,7 +90,7 @@ public:
         static QString longMonthName(int month, MonthNameType type = DateFormat);
     QT_DEPRECATED_X("Use QLocale::dayName or QLocale::standaloneDayName")
         static QString longDayName(int weekday, MonthNameType type = DateFormat);
-#endif // QT_NO_TEXTDATE && deprecated
+#endif // textdate && deprecated
 #ifndef QT_NO_DATESTRING
     QString toString(Qt::DateFormat f = Qt::TextDate) const;
 #if QT_STRINGVIEW_LEVEL < 2

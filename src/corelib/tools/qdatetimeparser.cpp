@@ -612,7 +612,7 @@ int QDateTimeParser::sectionSize(int sectionIndex) const
 
 int QDateTimeParser::sectionMaxSize(Section s, int count) const
 {
-#ifndef QT_NO_TEXTDATE
+#if QT_CONFIG(textdate)
     int mcount = 12;
 #endif
 
@@ -636,14 +636,14 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
     case DaySection: return 2;
     case DayOfWeekSectionShort:
     case DayOfWeekSectionLong:
-#ifdef QT_NO_TEXTDATE
+#if !QT_CONFIG(textdate)
         return 2;
 #else
         mcount = 7;
         Q_FALLTHROUGH();
 #endif
     case MonthSection:
-#ifdef QT_NO_TEXTDATE
+#if !QT_CONFIG(textdate)
         return 2;
 #else
         if (count <= 2)
