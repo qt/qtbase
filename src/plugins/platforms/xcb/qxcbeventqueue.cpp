@@ -40,10 +40,15 @@
 #include "qxcbconnection.h"
 
 #include <QtCore/QObject>
+#include <QtCore/QCoreApplication>
 #include <QtCore/QAbstractEventDispatcher>
+#include <QtCore/QMutex>
 #include <QtCore/QDebug>
 
 QT_BEGIN_NAMESPACE
+
+static QBasicMutex qAppExiting;
+static bool dispatcherOwnerDestructing = false;
 
 /*!
     \class QXcbEventQueue
@@ -78,6 +83,15 @@ QXcbEventQueue::QXcbEventQueue(QXcbConnection *connection)
 {
     connect(this, &QXcbEventQueue::finished, m_connection, &QXcbConnection::processXcbEvents);
 
+    // When running test cases in auto tests, static variables are preserved
+    // between test function runs, even if Q*Application object is destroyed.
+    // Reset to default value to account for this.
+    dispatcherOwnerDestructing = false;
+    qAddPostRoutine([]() {
+        QMutexLocker locker(&qAppExiting);
+        dispatcherOwnerDestructing = true;
+    });
+
     // Lets init the list with one node, so we don't have to check for
     // this special case in various places.
     m_head = m_flushedTail = qXcbEventNodeFactory(nullptr);
@@ -100,11 +114,6 @@ QXcbEventQueue::~QXcbEventQueue()
         delete m_head; // the deferred node
 
     qCDebug(lcQpaEventReader) << "nodes on heap:" << m_nodesOnHeap;
-}
-
-void QXcbEventQueue::registerEventDispatcher(QAbstractEventDispatcher *dispatcher)
-{
-    connect(this, &QXcbEventQueue::eventsPending, dispatcher, &QAbstractEventDispatcher::wakeUp, Qt::QueuedConnection);
 }
 
 xcb_generic_event_t *QXcbEventQueue::takeFirst()
@@ -191,7 +200,13 @@ void QXcbEventQueue::run()
         while (!m_closeConnectionDetected && (event = xcb_poll_for_queued_event(connection)))
             enqueueEvent(event);
 
-        emit eventsPending();
+        QMutexLocker locker(&qAppExiting);
+        if (!dispatcherOwnerDestructing) {
+            // This thread can run before a dispatcher has been created,
+            // so check if it is ready.
+            if (QCoreApplication::eventDispatcher())
+                QCoreApplication::eventDispatcher()->wakeUp();
+        }
     }
 }
 

@@ -80,8 +80,6 @@ public:
 
     void run() override;
 
-    void registerEventDispatcher(QAbstractEventDispatcher *dispatcher);
-
     bool isEmpty() const { return m_head == m_flushedTail && !m_head->event; }
     xcb_generic_event_t *takeFirst();
     void flushBufferedEvents();
@@ -101,8 +99,6 @@ public:
     using PeekerCallback = bool (*)(xcb_generic_event_t *event, void *peekerData);
     bool peekEventQueue(PeekerCallback peeker, void *peekerData = nullptr,
                         PeekOptions option = PeekDefault, qint32 peekerId = -1);
-signals:
-    void eventsPending();
 
 private:
     QXcbEventNode *qXcbEventNodeFactory(xcb_generic_event_t *event);
