@@ -660,18 +660,18 @@ QPoint QWindowsCursor::mousePosition()
     return QPoint(p.x, p.y);
 }
 
-QWindowsCursor::CursorState QWindowsCursor::cursorState()
+QWindowsCursor::State QWindowsCursor::cursorState()
 {
     enum { cursorShowing = 0x1, cursorSuppressed = 0x2 }; // Windows 8: CURSOR_SUPPRESSED
     CURSORINFO cursorInfo;
     cursorInfo.cbSize = sizeof(CURSORINFO);
     if (GetCursorInfo(&cursorInfo)) {
-        if (cursorInfo.flags & CursorShowing)
-            return CursorShowing;
+        if (cursorInfo.flags & cursorShowing)
+            return State::Showing;
         if (cursorInfo.flags & cursorSuppressed)
-            return CursorSuppressed;
+            return State::Suppressed;
     }
-    return CursorHidden;
+    return State::Hidden;
 }
 
 QPoint QWindowsCursor::pos() const
