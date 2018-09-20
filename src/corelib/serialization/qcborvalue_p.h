@@ -136,6 +136,7 @@ public:
     void compact(qsizetype reserved);
     static QCborContainerPrivate *clone(QCborContainerPrivate *d, qsizetype reserved = -1);
     static QCborContainerPrivate *detach(QCborContainerPrivate *d, qsizetype reserved);
+    static QCborContainerPrivate *grow(QCborContainerPrivate *d, qsizetype index);
 
     qptrdiff addByteData(const char *block, qsizetype len)
     {
