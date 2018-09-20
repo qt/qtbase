@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qpagesetupwidget.ui'
 **
-** Created by: Qt User Interface Compiler version 5.9.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -104,7 +104,7 @@ public:
         horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
         pageWidth = new QDoubleSpinBox(groupBox_2);
         pageWidth->setObjectName(QString::fromUtf8("pageWidth"));
-        pageWidth->setMaximum(9999.99);
+        pageWidth->setMaximum(9999.989999999999782);
 
         horizontalLayout_3->addWidget(pageWidth);
 
@@ -115,7 +115,7 @@ public:
 
         pageHeight = new QDoubleSpinBox(groupBox_2);
         pageHeight->setObjectName(QString::fromUtf8("pageHeight"));
-        pageHeight->setMaximum(9999.99);
+        pageHeight->setMaximum(9999.989999999999782);
 
         horizontalLayout_3->addWidget(pageHeight);
 
@@ -199,7 +199,7 @@ public:
         topMargin = new QDoubleSpinBox(groupBox);
         topMargin->setObjectName(QString::fromUtf8("topMargin"));
         topMargin->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
-        topMargin->setMaximum(999.99);
+        topMargin->setMaximum(999.990000000000009);
 
         gridLayout->addWidget(topMargin, 0, 1, 1, 1);
 
@@ -212,7 +212,7 @@ public:
         leftMargin = new QDoubleSpinBox(groupBox);
         leftMargin->setObjectName(QString::fromUtf8("leftMargin"));
         leftMargin->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
-        leftMargin->setMaximum(999.99);
+        leftMargin->setMaximum(999.990000000000009);
 
         horizontalLayout->addWidget(leftMargin);
 
@@ -223,7 +223,7 @@ public:
         rightMargin = new QDoubleSpinBox(groupBox);
         rightMargin->setObjectName(QString::fromUtf8("rightMargin"));
         rightMargin->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
-        rightMargin->setMaximum(999.99);
+        rightMargin->setMaximum(999.990000000000009);
 
         horizontalLayout->addWidget(rightMargin);
 
@@ -241,7 +241,7 @@ public:
         bottomMargin = new QDoubleSpinBox(groupBox);
         bottomMargin->setObjectName(QString::fromUtf8("bottomMargin"));
         bottomMargin->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
-        bottomMargin->setMaximum(999.99);
+        bottomMargin->setMaximum(999.990000000000009);
 
         gridLayout->addWidget(bottomMargin, 2, 1, 1, 1);
 

@@ -31,7 +31,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qtgradienteditor.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -176,8 +176,8 @@ public:
         spinBox1->setGeometry(QRect(279, 69, 73, 23));
         spinBox1->setKeyboardTracking(false);
         spinBox1->setDecimals(3);
-        spinBox1->setMaximum(1);
-        spinBox1->setSingleStep(0.01);
+        spinBox1->setMaximum(1.000000000000000);
+        spinBox1->setSingleStep(0.010000000000000);
         label2 = new QLabel(QtGradientEditor);
         label2->setObjectName(QString::fromUtf8("label2"));
         label2->setGeometry(QRect(209, 99, 64, 23));
@@ -186,8 +186,8 @@ public:
         spinBox2->setGeometry(QRect(279, 99, 73, 23));
         spinBox2->setKeyboardTracking(false);
         spinBox2->setDecimals(3);
-        spinBox2->setMaximum(1);
-        spinBox2->setSingleStep(0.01);
+        spinBox2->setMaximum(1.000000000000000);
+        spinBox2->setSingleStep(0.010000000000000);
         label3 = new QLabel(QtGradientEditor);
         label3->setObjectName(QString::fromUtf8("label3"));
         label3->setGeometry(QRect(209, 129, 64, 23));
@@ -196,8 +196,8 @@ public:
         spinBox3->setGeometry(QRect(279, 129, 73, 23));
         spinBox3->setKeyboardTracking(false);
         spinBox3->setDecimals(3);
-        spinBox3->setMaximum(1);
-        spinBox3->setSingleStep(0.01);
+        spinBox3->setMaximum(1.000000000000000);
+        spinBox3->setSingleStep(0.010000000000000);
         label4 = new QLabel(QtGradientEditor);
         label4->setObjectName(QString::fromUtf8("label4"));
         label4->setGeometry(QRect(209, 159, 64, 23));
@@ -206,8 +206,8 @@ public:
         spinBox4->setGeometry(QRect(279, 159, 73, 23));
         spinBox4->setKeyboardTracking(false);
         spinBox4->setDecimals(3);
-        spinBox4->setMaximum(1);
-        spinBox4->setSingleStep(0.01);
+        spinBox4->setMaximum(1.000000000000000);
+        spinBox4->setSingleStep(0.010000000000000);
         label5 = new QLabel(QtGradientEditor);
         label5->setObjectName(QString::fromUtf8("label5"));
         label5->setGeometry(QRect(209, 189, 64, 23));
@@ -216,8 +216,8 @@ public:
         spinBox5->setGeometry(QRect(279, 189, 73, 23));
         spinBox5->setKeyboardTracking(false);
         spinBox5->setDecimals(3);
-        spinBox5->setMaximum(1);
-        spinBox5->setSingleStep(0.01);
+        spinBox5->setMaximum(1.000000000000000);
+        spinBox5->setSingleStep(0.010000000000000);
         gradientStopsWidget = new QtGradientStopsWidget(QtGradientEditor);
         gradientStopsWidget->setObjectName(QString::fromUtf8("gradientStopsWidget"));
         gradientStopsWidget->setGeometry(QRect(10, 225, 193, 67));
@@ -390,10 +390,10 @@ public:
         positionSpinBox->setObjectName(QString::fromUtf8("positionSpinBox"));
         positionSpinBox->setKeyboardTracking(false);
         positionSpinBox->setDecimals(3);
-        positionSpinBox->setMinimum(0);
-        positionSpinBox->setMaximum(1);
-        positionSpinBox->setSingleStep(0.01);
-        positionSpinBox->setValue(0);
+        positionSpinBox->setMinimum(0.000000000000000);
+        positionSpinBox->setMaximum(1.000000000000000);
+        positionSpinBox->setSingleStep(0.010000000000000);
+        positionSpinBox->setValue(0.000000000000000);
 
         vboxLayout1->addWidget(positionSpinBox);
 
