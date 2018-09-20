@@ -511,7 +511,7 @@ void QThread::start(Priority priority)
 #endif // Q_OS_WINRT
 
     if (!d->handle) {
-        qErrnoWarning(errno, "QThread::start: Failed to create thread");
+        qErrnoWarning("QThread::start: Failed to create thread");
         d->running = false;
         d->finished = true;
         return;
