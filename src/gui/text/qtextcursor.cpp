@@ -80,7 +80,8 @@ QTextCursorPrivate::QTextCursorPrivate(const QTextCursorPrivate &rhs)
     visualNavigation = rhs.visualNavigation;
     keepPositionOnInsert = rhs.keepPositionOnInsert;
     changed = rhs.changed;
-    priv->addCursor(this);
+    if (priv != nullptr)
+        priv->addCursor(this);
 }
 
 QTextCursorPrivate::~QTextCursorPrivate()

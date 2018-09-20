@@ -137,6 +137,7 @@ private slots:
     void cursorPositionWithBlockUndoAndRedo3();
 
     void joinNonEmptyRemovedBlockUserState();
+    void crashOnDetachingDanglingCursor();
 
 private:
     int blockCount();
@@ -1972,6 +1973,15 @@ void tst_QTextCursor::joinNonEmptyRemovedBlockUserState()
     cursor.removeSelectedText();
 
     QCOMPARE(cursor.block().userState(), 10);
+}
+
+void tst_QTextCursor::crashOnDetachingDanglingCursor()
+{
+    QTextDocument *document = new QTextDocument;
+    QTextCursor cursor(document);
+    QTextCursor cursor2 = cursor;
+    delete document;
+    cursor2.setPosition(0); // Don't crash here
 }
 
 QTEST_MAIN(tst_QTextCursor)
