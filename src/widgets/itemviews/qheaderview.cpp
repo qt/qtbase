@@ -2211,9 +2211,6 @@ void QHeaderViewPrivate::_q_sectionsAboutToBeChanged(const QList<QPersistentMode
                                                   ? model->index(0, logical, root)
                                                   : model->index(logical, 0, root),
                                               s});
-
-        if (layoutChangePersistentSections.size() > 1000)
-            break;
     }
 }
 
