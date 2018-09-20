@@ -176,7 +176,7 @@ public:
 
     static QString ftpServerName()
     {
-#ifdef QT_TEST_SERVER
+#ifdef QT_TEST_SERVER_NAME
         return QString("vsftpd.") % serverDomainName();
 #else
         return serverName();
@@ -184,7 +184,7 @@ public:
     }
     static QString ftpProxyServerName()
     {
-#ifdef QT_TEST_SERVER
+#ifdef QT_TEST_SERVER_NAME
         return QString("ftp-proxy.") % serverDomainName();
 #else
         return serverName();
@@ -192,7 +192,7 @@ public:
     }
     static QString httpServerName()
     {
-#ifdef QT_TEST_SERVER
+#ifdef QT_TEST_SERVER_NAME
         return QString("apache2.") % serverDomainName();
 #else
         return serverName();
@@ -200,7 +200,7 @@ public:
     }
     static QString httpProxyServerName()
     {
-#ifdef QT_TEST_SERVER
+#ifdef QT_TEST_SERVER_NAME
         return QString("squid.") % serverDomainName();
 #else
         return serverName();
@@ -208,7 +208,7 @@ public:
     }
     static QString socksProxyServerName()
     {
-#ifdef QT_TEST_SERVER
+#ifdef QT_TEST_SERVER_NAME
         return QString("danted.") % serverDomainName();
 #else
         return serverName();

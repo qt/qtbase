@@ -1,0 +1,80 @@
+version: '3.4'
+
+# The tag of images is used by docker compose file to launch the corresponding
+# docker containers. The value of tag comes from the provisioning script
+# (coin/provisioning/.../testserver/docker_testserver.sh). The script gets SHA-1
+# of each server context as the tag of docker images. If one of the server
+# contexts gets changes, please make sure to update this compose file as well.
+# You can run command 'docker images' to list all the tags of test server images.
+# For example:
+# REPOSITORY              TAG                                       IMAGE ID
+# qt-test-server-apache2  cc9ea678b92bdda33acb9fa0159bb4ad0f3cd947  2ad5c8720317
+
+services:
+    apache2:
+        image: qt-test-server-apache2:cc9ea678b92bdda33acb9fa0159bb4ad0f3cd947
+        container_name: qt-test-server-apache2
+        domainname: test-net.qt.local
+        volumes:
+            - ./common:/common:ro
+            - ./apache2:/service:ro
+        entrypoint: common/startup.sh
+        command: [common/ssl.sh, service/apache2.sh]
+        network_mode: "host"
+
+    squid:
+        image: qt-test-server-squid:577d99307eea9a8cccfec944d25be2bce2fe99cc
+        container_name: qt-test-server-squid
+        domainname: test-net.qt.local
+        depends_on:
+            - apache2
+        volumes:
+            - ./common:/common:ro
+            - ./squid:/service:ro
+        entrypoint: common/startup.sh
+        command: service/squid.sh
+        network_mode: "host"
+
+    vsftpd:
+        image: qt-test-server-vsftpd:18896604c7e90b543e56d80c8a8aabdb65a590d0
+        container_name: qt-test-server-vsftpd
+        domainname: test-net.qt.local
+        volumes:
+            - ./common:/common:ro
+            - ./vsftpd:/service:ro
+        entrypoint: common/startup.sh
+        command: service/vsftpd.sh
+        network_mode: "host"
+
+    ftp-proxy:
+        image: qt-test-server-ftp-proxy:2c6c8f1ab6a364b540c43d705fb6f15a585cb2af
+        container_name: qt-test-server-ftp-proxy
+        domainname: test-net.qt.local
+        depends_on:
+            - vsftpd
+        volumes:
+            - ./common:/common:ro
+            - ./ftp-proxy:/service:ro
+        entrypoint: common/startup.sh
+        command: service/ftp-proxy.sh
+        network_mode: "host"
+
+    danted:
+        image: qt-test-server-danted:2d5eea7356dd0ba25f3c12d1cba00d70770da1b0
+        container_name: qt-test-server-danted
+        domainname: test-net.qt.local
+        depends_on:
+            - apache2
+            - vsftpd
+            - ftp-proxy
+        volumes:
+            - ./common:/common:ro
+            - ./danted:/service:ro
+        entrypoint: common/startup.sh
+        command: service/danted.sh
+        network_mode: "host"
+        environment:
+            - danted_internal=${MACHINE_IP:-eth0}
+            - danted_external=${MACHINE_IP:-eth0}
+            - danted_auth_internal=${MACHINE_IP:-eth0}
+            - danted_auth_external=${MACHINE_IP:-eth0}

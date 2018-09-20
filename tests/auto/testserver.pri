@@ -51,7 +51,6 @@
 # 2. testserver_clean - Clean up server containers/images and tidy away related
 #    files.
 
-TESTSERVER_COMPOSE_FILE = $$dirname(_QMAKE_CONF_)/tests/testserver/docker-compose.yml
 TESTSERVER_VERSION = $$system(docker-compose --version)
 
 equals(QMAKE_HOST.os, Windows)|isEmpty(TESTSERVER_VERSION) {
@@ -59,29 +58,42 @@ equals(QMAKE_HOST.os, Windows)|isEmpty(TESTSERVER_VERSION) {
     message("testserver: qt-test-server.qt-test-net")
 } else {
     # Make check with test servers
-    message("testserver:" $$TESTSERVER_VERSION)
+    equals(QMAKE_HOST.os, Darwin) {
+        # There is no docker bridge on macOS. It is impossible to ping a container.
+        # Docker docs recommends using port mapping to connect to a container;
+        # but it causes a port conflict if the user is running a service that
+        # binds the same port on the host. An alternative solution is to deploy
+        # the docker environment into VirtualBox using docker-machine.
+        TESTSERVER_COMPOSE_FILE = \
+            $$dirname(_QMAKE_CONF_)/tests/testserver/docker-compose-for-macOS.yml
+
+        # The connection configuration for the target machine
+        MACHINE_CONFIG = $(shell docker-machine config qt-test-server)
+
+        # The environment variables passed to the docker-compose file
+        TEST_ENV = 'MACHINE_IP=$(shell docker-machine ip qt-test-server)'
+    } else {
+        TESTSERVER_COMPOSE_FILE = $$dirname(_QMAKE_CONF_)/tests/testserver/docker-compose.yml
+        DEFINES += QT_TEST_SERVER_NAME
+    }
 
     # Ensure that the docker-compose file is provided. It is a configuration
     # file which is mandatory for all docker-compose commands. You can get more
     # detail from the description of TESTSERVER_COMPOSE_FILE above. There is
     # also an example showing how to configure it manually.
     FILE_PRETEST_MSG = "Project variable 'TESTSERVER_COMPOSE_FILE' is not set"
-    testserver_pretest.commands = $(if $$TESTSERVER_COMPOSE_FILE,,$(error $$FILE_PRETEST_MSG))
+    testserver_pretest.commands = $(info "testserver:" $$TESTSERVER_VERSION)
+    testserver_pretest.commands += $(if $$TESTSERVER_COMPOSE_FILE,,$(error $$FILE_PRETEST_MSG))
 
     # Before starting the test servers, it requires the user to run the setup
     # script (coin/provisioning/.../testserver/docker_testserver.sh) in advance.
-    IMAGE_PRETEST_CMD = docker images -aq "qt-test-server-*"
+    IMAGE_PRETEST_CMD = docker $$MACHINE_CONFIG images -aq "qt-test-server-*"
     IMAGE_PRETEST_MSG = "Docker image qt-test-server-* not found"
     testserver_pretest.commands += $(if $(shell $$IMAGE_PRETEST_CMD),,$(error $$IMAGE_PRETEST_MSG))
 
     # The domain name is relevant to https keycert (qnetworkreply/crts/qt-test-net-cacert.pem).
     DNSDOMAIN = test-net.qt.local
-    TEST_ENV += TESTSERVER_DOMAIN=$$DNSDOMAIN
     DEFINES += QT_TEST_SERVER QT_TEST_SERVER_DOMAIN=$$shell_quote(\"$${DNSDOMAIN}\")
-
-    # There is no docker bridge on macOS. It is impossible to ping a container.
-    # Docker docs recommends using port mapping to connect to a container.
-    equals(QMAKE_HOST.os, Darwin): TEST_ENV += TESTSERVER_BIND_LOCAL=1
 
     # Rename the check target of testcase feature
     check.target = check_network
@@ -91,18 +103,19 @@ equals(QMAKE_HOST.os, Windows)|isEmpty(TESTSERVER_VERSION) {
     testserver_test.depends = testserver_pretest
 
     # Bring up test servers and make sure the services are ready.
-    testserver_test.commands = $$TEST_ENV docker-compose -f $$TESTSERVER_COMPOSE_FILE up -d \
-                               --force-recreate --timeout 1 $${QT_TEST_SERVER_LIST} &&
+    !isEmpty(TEST_ENV): testserver_test.commands = env $$TEST_ENV
+    testserver_test.commands += docker-compose $$MACHINE_CONFIG -f $$TESTSERVER_COMPOSE_FILE up \
+                                --detach --force-recreate --timeout 1 $${QT_TEST_SERVER_LIST} &&
 
     # Check test cases with docker-based test servers.
     testserver_test.commands += $(MAKE) check_network;
 
     # Stop and remove test servers after testing.
-    testserver_test.commands += $$TEST_ENV docker-compose -f $$TESTSERVER_COMPOSE_FILE down \
+    testserver_test.commands += docker-compose $$MACHINE_CONFIG -f $$TESTSERVER_COMPOSE_FILE down \
                                 --timeout 1
 
     # Destroy test servers and tidy away related files.
-    testserver_clean.commands = $$TEST_ENV docker-compose -f $$TESTSERVER_COMPOSE_FILE down \
+    testserver_clean.commands = docker-compose $$MACHINE_CONFIG -f $$TESTSERVER_COMPOSE_FILE down \
                                 --rmi all
 
     QMAKE_EXTRA_TARGETS += testserver_pretest testserver_test testserver_clean

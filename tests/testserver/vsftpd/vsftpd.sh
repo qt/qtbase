@@ -43,7 +43,7 @@ cp $TESTDATA/vsftpd.{conf,user_list} /etc/
 # Resolve error message "vsftpd failed - probably invalid config" during boot
 command='start-stop-daemon --start --background -m --oknodo --pidfile /var/run/vsftpd/vsftpd.pid'
 command+=' --exec ${DAEMON}'
-sed -i "s,$command.*$,$command; sleep 1," /etc/init.d/vsftpd
+sed -i "s,$command.*$,$command; sleep 10," /etc/init.d/vsftpd
 
 # Populate the FTP sites:
 su $USER -c "cp -r $TESTDATA/ftp ~/ftp"
