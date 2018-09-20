@@ -26,10 +26,6 @@ contains(TEMPLATE, .*app) {
             warning("the $$QMAKE_MAC_SDK_VERSION SDK you are opting in to new features" \
                     "that Qt has not been prepared for.")
 
-            isEqual(QMAKE_MAC_SDK_VERSION, 10.14): \
-                warning("E.g., 10.14 enables dark mode and layer-backed views," \
-                        "which Qt $${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION} does not support.")
-
             warning("Please downgrade the SDK you use to build your app to version" \
                     "$$QT_MAC_SDK_VERSION_TESTED_WITH, or configure")
             warning("with CONFIG+=sdk_no_version_check when running qmake" \
