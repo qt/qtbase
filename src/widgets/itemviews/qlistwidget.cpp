@@ -329,7 +329,7 @@ void QListModel::sort(int column, Qt::SortOrder order)
     if (column != 0)
         return;
 
-    emit layoutAboutToBeChanged();
+    emit layoutAboutToBeChanged({}, QAbstractItemModel::VerticalSortHint);
 
     QVector < QPair<QListWidgetItem*,int> > sorting(items.count());
     for (int i = 0; i < items.count(); ++i) {
@@ -353,7 +353,7 @@ void QListModel::sort(int column, Qt::SortOrder order)
     }
     changePersistentIndexList(fromIndexes, toIndexes);
 
-    emit layoutChanged();
+    emit layoutChanged({}, QAbstractItemModel::VerticalSortHint);
 }
 
 /**

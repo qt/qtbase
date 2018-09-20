@@ -656,7 +656,7 @@ void QTreeModel::ensureSorted(int column, Qt::SortOrder order,
             // we are going to change the persistent indexes, so we need to prepare
             if (!changed) { // this will only happen once
                 changed = true;
-                emit layoutAboutToBeChanged(); // the selection model needs to know
+                emit layoutAboutToBeChanged({parent}, QAbstractItemModel::VerticalSortHint); // the selection model needs to know
                 oldPersistentIndexes = persistentIndexList();
                 newPersistentIndexes = oldPersistentIndexes;
             }
@@ -689,7 +689,7 @@ void QTreeModel::ensureSorted(int column, Qt::SortOrder order,
     if (changed) {
         itm->children = lst;
         changePersistentIndexList(oldPersistentIndexes, newPersistentIndexes);
-        emit layoutChanged();
+        emit layoutChanged({parent}, QAbstractItemModel::VerticalSortHint);
     }
 }
 
@@ -2185,9 +2185,9 @@ void QTreeWidgetItem::sortChildren(int column, Qt::SortOrder order, bool climb)
     QTreeModel::SkipSorting skipSorting(model);
     int oldSortColumn = view->d_func()->explicitSortColumn;
     view->d_func()->explicitSortColumn = column;
-    emit model->layoutAboutToBeChanged();
+    emit model->layoutAboutToBeChanged({}, QAbstractItemModel::VerticalSortHint);
     d->sortChildren(column, order, climb);
-    emit model->layoutChanged();
+    emit model->layoutChanged({}, QAbstractItemModel::VerticalSortHint);
     view->d_func()->explicitSortColumn = oldSortColumn;
 }
 

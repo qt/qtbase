@@ -189,7 +189,7 @@ void QTableModel::setItem(int row, int column, QTableWidgetItem *item)
             sortedRow = qMax((int)(it - colItems.begin()), 0);
         }
         if (sortedRow != row) {
-            emit layoutAboutToBeChanged();
+            emit layoutAboutToBeChanged({}, QAbstractItemModel::VerticalSortHint);
             // move the items @ row to sortedRow
             int cc = columnCount();
             QVector<QTableWidgetItem*> rowItems(cc);
@@ -209,7 +209,7 @@ void QTableModel::setItem(int row, int column, QTableWidgetItem *item)
             changePersistentIndexList(oldPersistentIndexes,
                                       newPersistentIndexes);
 
-            emit layoutChanged();
+            emit layoutChanged({}, QAbstractItemModel::VerticalSortHint);
             return;
         }
     }
@@ -548,12 +548,12 @@ void QTableModel::sort(int column, Qt::SortOrder order)
         }
     }
 
-    emit layoutAboutToBeChanged();
+    emit layoutAboutToBeChanged({}, QAbstractItemModel::VerticalSortHint);
 
     tableItems = sorted_table;
     changePersistentIndexList(from, to); // ### slow
 
-    emit layoutChanged();
+    emit layoutChanged({}, QAbstractItemModel::VerticalSortHint);
 }
 
 /*
@@ -598,7 +598,7 @@ void QTableModel::ensureSorted(int column, Qt::SortOrder order,
         vit = colItems.insert(vit, item);
         if (newRow != oldRow) {
             if (!changed) {
-                emit layoutAboutToBeChanged();
+                emit layoutAboutToBeChanged({}, QAbstractItemModel::VerticalSortHint);
                 oldPersistentIndexes = persistentIndexList();
                 newPersistentIndexes = oldPersistentIndexes;
                 changed = true;
@@ -633,7 +633,7 @@ void QTableModel::ensureSorted(int column, Qt::SortOrder order,
         verticalHeaderItems = newVertical;
         changePersistentIndexList(oldPersistentIndexes,
                                   newPersistentIndexes);
-        emit layoutChanged();
+        emit layoutChanged({}, QAbstractItemModel::VerticalSortHint);
     }
 }
 
