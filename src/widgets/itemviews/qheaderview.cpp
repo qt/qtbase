@@ -3877,9 +3877,9 @@ void QHeaderViewPrivate::updateDefaultSectionSizeFromStyle()
 void QHeaderViewPrivate::recalcSectionStartPos() const // linear (but fast)
 {
     int pixelpos = 0;
-    for (QVector<SectionItem>::const_iterator i = sectionItems.constBegin(); i != sectionItems.constEnd(); ++i) {
-        i->calculated_startpos = pixelpos; // write into const mutable
-        pixelpos += i->size;
+    for (const SectionItem &i : sectionItems) {
+        i.calculated_startpos = pixelpos; // write into const mutable
+        pixelpos += i.size;
     }
     sectionStartposRecalc = false;
 }
