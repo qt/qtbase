@@ -218,6 +218,14 @@ bool QWidgetTextControlPrivate::cursorMoveKeyEvent(QKeyEvent *e)
     else if (e == QKeySequence::SelectPreviousLine) {
             op = QTextCursor::Up;
             mode = QTextCursor::KeepAnchor;
+            {
+                QTextBlock block = cursor.block();
+                QTextLine line = currentTextLine(cursor);
+                if (!block.previous().isValid()
+                    && line.isValid()
+                    && line.lineNumber() == 0)
+                    op = QTextCursor::Start;
+            }
     }
     else if (e == QKeySequence::SelectNextLine) {
             op = QTextCursor::Down;
