@@ -51,31 +51,6 @@
 
 using qt_xcb_input_device_event_t = xcb_input_button_press_event_t;
 
-void QXcbConnection::initializeXInput2()
-{
-    const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection, &xcb_input_id);
-    if (!reply || !reply->present) {
-        qCDebug(lcQpaXInput, "XInput extension is not present on the X server");
-        return;
-    }
-
-    m_xiOpCode = reply->major_opcode;
-    xinput_first_event = reply->first_event;
-
-    auto xinput_query = Q_XCB_REPLY(xcb_input_xi_query_version, m_connection, 2, 2);
-
-    if (!xinput_query || xinput_query->major_version != 2) {
-        qCWarning(lcQpaXInput, "X server does not support XInput 2");
-    } else {
-        qCDebug(lcQpaXInput, "Using XInput version %d.%d",
-                xinput_query->major_version, xinput_query->minor_version);
-        m_xi2Minor = xinput_query->minor_version;
-        m_xi2Enabled = true;
-        xi2SetupDevices();
-        xi2SelectStateEvents();
-    }
-}
-
 struct qt_xcb_input_event_mask_t {
     xcb_input_event_mask_t header;
     uint32_t               mask;
@@ -91,7 +66,7 @@ void QXcbConnection::xi2SelectStateEvents()
     xiEventMask.mask = XCB_INPUT_XI_EVENT_MASK_HIERARCHY;
     xiEventMask.mask |= XCB_INPUT_XI_EVENT_MASK_DEVICE_CHANGED;
     xiEventMask.mask |= XCB_INPUT_XI_EVENT_MASK_PROPERTY;
-    xcb_input_xi_select_events(m_connection, rootWindow(), 1, &xiEventMask.header);
+    xcb_input_xi_select_events(xcb_connection(), rootWindow(), 1, &xiEventMask.header);
 }
 
 void QXcbConnection::xi2SelectDeviceEvents(xcb_window_t window)
@@ -117,8 +92,8 @@ void QXcbConnection::xi2SelectDeviceEvents(xcb_window_t window)
     mask.header.mask_len = 1;
     mask.mask = bitMask;
     xcb_void_cookie_t cookie =
-            xcb_input_xi_select_events_checked(m_connection, window, 1, &mask.header);
-    xcb_generic_error_t *error = xcb_request_check(m_connection, cookie);
+            xcb_input_xi_select_events_checked(xcb_connection(), window, 1, &mask.header);
+    xcb_generic_error_t *error = xcb_request_check(xcb_connection(), cookie);
     if (error) {
         qCDebug(lcQpaXInput, "failed to select events, window %x, error code %d", window, error->error_code);
         free(error);
@@ -310,7 +285,7 @@ void QXcbConnection::xi2SetupDevices()
     m_touchDevices.clear();
     m_xiMasterPointerIds.clear();
 
-    auto reply = Q_XCB_REPLY(xcb_input_xi_query_device, m_connection, XCB_INPUT_DEVICE_ALL);
+    auto reply = Q_XCB_REPLY(xcb_input_xi_query_device, xcb_connection(), XCB_INPUT_DEVICE_ALL);
     if (!reply) {
         qCDebug(lcQpaXInputDevices) << "failed to query devices";
         return;
@@ -387,8 +362,8 @@ void QXcbConnection::xi2SelectDeviceEventsCompatibility(xcb_window_t window)
         xiMask.mask = mask;
 
         xcb_void_cookie_t cookie =
-                xcb_input_xi_select_events_checked(m_connection, window, 1, &xiMask.header);
-        xcb_generic_error_t *error = xcb_request_check(m_connection, cookie);
+                xcb_input_xi_select_events_checked(xcb_connection(), window, 1, &xiMask.header);
+        xcb_generic_error_t *error = xcb_request_check(xcb_connection(), cookie);
         if (error) {
             qCDebug(lcQpaXInput, "failed to select events, window %x, error code %d", window, error->error_code);
             free(error);
@@ -413,7 +388,7 @@ void QXcbConnection::xi2SelectDeviceEventsCompatibility(xcb_window_t window)
             xiEventMask[i].header.mask_len = 1;
             xiEventMask[i].mask = mask;
         }
-        xcb_input_xi_select_events(m_connection, window, nrTablets, &(xiEventMask.data()->header));
+        xcb_input_xi_select_events(xcb_connection(), window, nrTablets, &(xiEventMask.data()->header));
     }
 #endif
 
@@ -430,7 +405,7 @@ void QXcbConnection::xi2SelectDeviceEventsCompatibility(xcb_window_t window)
             xiEventMask[i].mask = mask;
             i++;
         }
-        xcb_input_xi_select_events(m_connection, window, i, &(xiEventMask.data()->header));
+        xcb_input_xi_select_events(xcb_connection(), window, i, &(xiEventMask.data()->header));
     }
 }
 
@@ -633,7 +608,7 @@ bool QXcbConnection::xi2MouseEventsDisabled() const
     static bool xi2MouseDisabled = qEnvironmentVariableIsSet("QT_XCB_NO_XI2_MOUSE");
     // FIXME: Don't use XInput2 mouse events when Xinerama extension
     // is enabled, because it causes problems with multi-monitor setup.
-    return xi2MouseDisabled || has_xinerama_extension;
+    return xi2MouseDisabled || hasXinerama();
 }
 
 bool QXcbConnection::isTouchScreen(int id)
@@ -745,7 +720,7 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
         // Touches must be accepted when we are grabbing touch events. Otherwise the entire sequence
         // will get replayed when the grab ends.
         if (m_xiGrab) {
-            xcb_input_xi_allow_events(m_connection, XCB_CURRENT_TIME, xiDeviceEvent->deviceid,
+            xcb_input_xi_allow_events(xcb_connection(), XCB_CURRENT_TIME, xiDeviceEvent->deviceid,
                                       XCB_INPUT_EVENT_MODE_ACCEPT_TOUCH,
                                       xiDeviceEvent->detail, xiDeviceEvent->event);
         }
@@ -771,7 +746,7 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
             xiDeviceEvent->detail == m_startSystemMoveResizeInfo.pointid) {
             QXcbWindow *window = platformWindowFromId(m_startSystemMoveResizeInfo.window);
             if (window) {
-                xcb_input_xi_allow_events(m_connection, XCB_CURRENT_TIME, xiDeviceEvent->deviceid,
+                xcb_input_xi_allow_events(xcb_connection(), XCB_CURRENT_TIME, xiDeviceEvent->deviceid,
                                           XCB_INPUT_EVENT_MODE_REJECT_TOUCH,
                                           xiDeviceEvent->detail, xiDeviceEvent->event);
                 window->doStartSystemMoveResize(QPoint(x, y), m_startSystemMoveResizeInfo.corner);
@@ -850,10 +825,10 @@ bool QXcbConnection::xi2SetMouseGrabEnabled(xcb_window_t w, bool grab)
 
         for (int id : m_xiMasterPointerIds) {
             xcb_generic_error_t *error = nullptr;
-            auto cookie = xcb_input_xi_grab_device(m_connection, w, XCB_CURRENT_TIME, XCB_CURSOR_NONE, id,
+            auto cookie = xcb_input_xi_grab_device(xcb_connection(), w, XCB_CURRENT_TIME, XCB_CURSOR_NONE, id,
                                                    XCB_INPUT_GRAB_MODE_22_ASYNC, XCB_INPUT_GRAB_MODE_22_ASYNC,
                                                    false, 1, &mask);
-            auto *reply = xcb_input_xi_grab_device_reply(m_connection, cookie, &error);
+            auto *reply = xcb_input_xi_grab_device_reply(xcb_connection(), cookie, &error);
             if (error) {
                 qCDebug(lcQpaXInput, "failed to grab events for device %d on window %x"
                                      "(error code %d)", id, w, error->error_code);
@@ -867,8 +842,8 @@ bool QXcbConnection::xi2SetMouseGrabEnabled(xcb_window_t w, bool grab)
         }
     } else { // ungrab
         for (int id : m_xiMasterPointerIds) {
-            auto cookie = xcb_input_xi_ungrab_device_checked(m_connection, XCB_CURRENT_TIME, id);
-            xcb_generic_error_t *error = xcb_request_check(m_connection, cookie);
+            auto cookie = xcb_input_xi_ungrab_device_checked(xcb_connection(), XCB_CURRENT_TIME, id);
+            xcb_generic_error_t *error = xcb_request_check(xcb_connection(), cookie);
             if (error) {
                 qCDebug(lcQpaXInput, "XIUngrabDevice failed - id: %d (error code %d)", id, error->error_code);
                 free(error);
@@ -911,7 +886,7 @@ void QXcbConnection::xi2HandleDeviceChangedEvent(void *event)
     auto *xiEvent = reinterpret_cast<xcb_input_device_changed_event_t *>(event);
     switch (xiEvent->reason) {
     case XCB_INPUT_CHANGE_REASON_DEVICE_CHANGE: {
-        auto reply = Q_XCB_REPLY(xcb_input_xi_query_device, m_connection, xiEvent->sourceid);
+        auto reply = Q_XCB_REPLY(xcb_input_xi_query_device, xcb_connection(), xiEvent->sourceid);
         if (!reply || reply->num_infos <= 0)
             return;
         auto it = xcb_input_xi_query_device_infos_iterator(reply.get());
@@ -931,7 +906,7 @@ void QXcbConnection::xi2HandleDeviceChangedEvent(void *event)
 
 void QXcbConnection::xi2UpdateScrollingDevice(ScrollingDevice &scrollingDevice)
 {
-    auto reply = Q_XCB_REPLY(xcb_input_xi_query_device, m_connection, scrollingDevice.deviceId);
+    auto reply = Q_XCB_REPLY(xcb_input_xi_query_device, xcb_connection(), scrollingDevice.deviceId);
     if (!reply || reply->num_infos <= 0) {
         qCDebug(lcQpaXInputDevices, "scrolling device %d no longer present", scrollingDevice.deviceId);
         return;
@@ -1184,7 +1159,7 @@ bool QXcbConnection::xi2HandleTabletEvent(const void *event, TabletData *tabletD
                     _WACSER_COUNT
                 };
 
-                auto reply = Q_XCB_REPLY(xcb_input_xi_get_property, m_connection, tabletData->deviceId, 0,
+                auto reply = Q_XCB_REPLY(xcb_input_xi_get_property, xcb_connection(), tabletData->deviceId, 0,
                                          ev->property, XCB_GET_PROPERTY_TYPE_ANY, 0, 100);
                 if (reply) {
                     if (reply->type == atom(QXcbAtom::INTEGER) && reply->format == 32 && reply->num_items == _WACSER_COUNT) {

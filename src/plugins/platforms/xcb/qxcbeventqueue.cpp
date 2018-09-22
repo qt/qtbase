@@ -351,7 +351,7 @@ void QXcbEventQueue::sendCloseConnectionEvent() const
 
     xcb_connection_t *c = m_connection->xcb_connection();
     const xcb_window_t window = xcb_generate_id(c);
-    xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_connection->m_setup);
+    xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_connection->setup());
     xcb_screen_t *screen = it.data;
     xcb_create_window(c, XCB_COPY_FROM_PARENT,
                       window, screen->root,

@@ -1190,9 +1190,10 @@ QXcbKeyboard::QXcbKeyboard(QXcbConnection *connection)
 #if QT_CONFIG(xkb)
     core_device_id = 0;
     if (connection->hasXKB()) {
+        selectEvents();
         core_device_id = xkb_x11_get_core_keyboard_device_id(xcb_connection());
         if (core_device_id == -1) {
-            qWarning("Qt: couldn't get core keyboard device info");
+            qCWarning(lcQpaXcb, "failed to get core keyboard device info");
             return;
         }
     } else {
@@ -1208,6 +1209,42 @@ QXcbKeyboard::~QXcbKeyboard()
 {
     if (m_key_symbols)
         xcb_key_symbols_free(m_key_symbols);
+}
+
+void QXcbKeyboard::selectEvents()
+{
+#if QT_CONFIG(xkb)
+    const uint16_t required_map_parts = (XCB_XKB_MAP_PART_KEY_TYPES |
+        XCB_XKB_MAP_PART_KEY_SYMS |
+        XCB_XKB_MAP_PART_MODIFIER_MAP |
+        XCB_XKB_MAP_PART_EXPLICIT_COMPONENTS |
+        XCB_XKB_MAP_PART_KEY_ACTIONS |
+        XCB_XKB_MAP_PART_KEY_BEHAVIORS |
+        XCB_XKB_MAP_PART_VIRTUAL_MODS |
+        XCB_XKB_MAP_PART_VIRTUAL_MOD_MAP);
+
+    const uint16_t required_events = (XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY |
+        XCB_XKB_EVENT_TYPE_MAP_NOTIFY |
+        XCB_XKB_EVENT_TYPE_STATE_NOTIFY);
+
+    // XKB events are reported to all interested clients without regard
+    // to the current keyboard input focus or grab state
+    xcb_void_cookie_t select = xcb_xkb_select_events_checked(
+                xcb_connection(),
+                XCB_XKB_ID_USE_CORE_KBD,
+                required_events,
+                0,
+                required_events,
+                required_map_parts,
+                required_map_parts,
+                0);
+
+    xcb_generic_error_t *error = xcb_request_check(xcb_connection(), select);
+    if (error) {
+        free(error);
+        qCWarning(lcQpaXcb, "failed to select notify events from XKB");
+    }
+#endif
 }
 
 void QXcbKeyboard::updateVModMapping()

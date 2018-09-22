@@ -31,7 +31,9 @@ SOURCES = \
         qxcbxsettings.cpp \
         qxcbsystemtraytracker.cpp \
         qxcbeventqueue.cpp \
-        qxcbeventdispatcher.cpp
+        qxcbeventdispatcher.cpp \
+        qxcbconnection_basic.cpp \
+        qxcbatom.cpp
 
 HEADERS = \
         qxcbclipboard.h \
@@ -51,7 +53,9 @@ HEADERS = \
         qxcbsystemtraytracker.h \
         qxcbxkbcommon.h \
         qxcbeventqueue.h \
-        qxcbeventdispatcher.h
+        qxcbeventdispatcher.h \
+        qxcbconnection_basic.h \
+        qxcbatom.h
 
 qtConfig(draganddrop) {
     SOURCES += qxcbdrag.cpp
