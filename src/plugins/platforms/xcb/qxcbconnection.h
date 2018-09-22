@@ -330,7 +330,15 @@ private:
     ScrollingDevice *scrollingDeviceForId(int id);
 
     static bool xi2GetValuatorValueIfSet(const void *event, int valuatorNum, double *value);
-#endif
+
+    QHash<int, TouchDeviceData> m_touchDevices;
+    struct StartSystemMoveResizeInfo {
+        xcb_window_t window = XCB_NONE;
+        uint16_t deviceid;
+        uint32_t pointid;
+        int corner;
+    } m_startSystemMoveResizeInfo;
+#endif // QT_CONFIG(xcb_xinput)
 
     const bool m_canGrabServer;
     const xcb_visualid_t m_defaultVisualId;
@@ -353,15 +361,6 @@ private:
 
     QXcbEventQueue *m_eventQueue = nullptr;
 
-#if QT_CONFIG(xcb_xinput)
-    QHash<int, TouchDeviceData> m_touchDevices;
-    struct StartSystemMoveResizeInfo {
-        xcb_window_t window = XCB_NONE;
-        uint16_t deviceid;
-        uint32_t pointid;
-        int corner;
-    } m_startSystemMoveResizeInfo;
-#endif
     WindowMapper m_mapper;
 
     QVector<PeekFunc> m_peekFuncs;

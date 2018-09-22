@@ -33,6 +33,7 @@ SOURCES = \
         qxcbeventqueue.cpp \
         qxcbeventdispatcher.cpp \
         qxcbconnection_basic.cpp \
+        qxcbconnection_screens.cpp \
         qxcbatom.cpp
 
 HEADERS = \
