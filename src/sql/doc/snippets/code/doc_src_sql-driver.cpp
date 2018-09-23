@@ -106,7 +106,7 @@ while (query.next()) {
     QVariant v = query.result()->handle();
     if (qstrcmp(v.typeName(), "PGresult*") == 0) {
         PGresult *handle = *static_cast<PGresult **>(v.data());
-        if (handle != 0) {
+        if (handle) {
             // Do something...
         }
     }

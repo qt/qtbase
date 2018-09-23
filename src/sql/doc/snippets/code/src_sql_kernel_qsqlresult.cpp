@@ -72,10 +72,10 @@ if (!q.execBatch())
 //! [1]
 QSqlQuery query = ...
 QVariant v = query.result()->handle();
-if (v.isValid() && qstrcmp(v.typeName(), "sqlite3_stmt*")) {
+if (v.isValid() && qstrcmp(v.typeName(), "sqlite3_stmt*") == 0) {
     // v.data() returns a pointer to the handle
     sqlite3_stmt *handle = *static_cast<sqlite3_stmt **>(v.data());
-    if (handle != 0) { // check that it is not NULL
+    if (handle) {
         ...
     }
 }
@@ -83,13 +83,13 @@ if (v.isValid() && qstrcmp(v.typeName(), "sqlite3_stmt*")) {
 
 
 //! [2]
-if (v.typeName() == "PGresult*") {
+if (qstrcmp(v.typeName(), "PGresult*") == 0) {
     PGresult *handle = *static_cast<PGresult **>(v.data());
-    if (handle != 0) ...
+    if (handle) ...
 }
 
-if (v.typeName() == "MYSQL_STMT*") {
+if (qstrcmp(v.typeName(), "MYSQL_STMT*") == 0) {
     MYSQL_STMT *handle = *static_cast<MYSQL_STMT **>(v.data());
-    if (handle != 0) ...
+    if (handle) ...
 }
 //! [2]
