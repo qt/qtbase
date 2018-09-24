@@ -297,7 +297,7 @@ void QXcbWindow::create()
     destroy();
 
     m_windowState = Qt::WindowNoState;
-    m_trayIconWindow = window()->objectName() == QLatin1String("QSystemTrayIconSysWindow");
+    m_trayIconWindow = isTrayIconWindow(window());
 
     Qt::WindowType type = window()->type();
 

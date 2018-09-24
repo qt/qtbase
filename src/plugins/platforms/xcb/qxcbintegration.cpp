@@ -232,7 +232,7 @@ QPlatformPixmap *QXcbIntegration::createPlatformPixmap(QPlatformPixmap::PixelTyp
 QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
 {
     QXcbGlIntegration *glIntegration = nullptr;
-    const bool isTrayIconWindow = window->objectName() == QLatin1String("QSystemTrayIconSysWindow");
+    const bool isTrayIconWindow = QXcbWindow::isTrayIconWindow(window);;
     if (window->type() != Qt::Desktop && !isTrayIconWindow) {
         if (window->supportsOpenGL()) {
             glIntegration = defaultConnection()->glIntegration();
@@ -277,7 +277,7 @@ QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLCont
 
 QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    const bool isTrayIconWindow = window->objectName() == QLatin1String("QSystemTrayIconSysWindow");
+    const bool isTrayIconWindow = QXcbWindow::isTrayIconWindow(window);
     if (isTrayIconWindow)
         return new QXcbSystemTrayBackingStore(window);
 
