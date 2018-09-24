@@ -65,6 +65,10 @@ int main(int, char**argv)
     d = _mm512_loadu_pd((double *)argv + 64);
     f = _mm512_loadu_ps((float *)argv + 128);
 
+    // some intrinsic that GCC forgot until GCC 8
+    i = _mm512_maskz_set1_epi32(m, '?');
+    _mm512_mask_cvtepi32_storeu_epi8(argv, m, i);
+
 #ifdef WANT_AVX512ER
     /* AVX512 Exponential and Reciprocal */
     f =  _mm512_exp2a23_round_ps(f, 8);
@@ -84,6 +88,7 @@ int main(int, char**argv)
 #ifdef WANT_AVX512BW
     /* AVX512 Byte and Word support */
     i =  _mm512_mask_loadu_epi8(i, m, argv - 8);
+    _mm512_mask_cvtepi16_storeu_epi8(argv + 8, m, i);
 #endif
 #ifdef WANT_AVX512VL
     /* AVX512 Vector Length */

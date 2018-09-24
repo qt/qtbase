@@ -192,6 +192,7 @@ bool QWidgetResizeHandler::eventFilter(QObject *o, QEvent *ee)
         keyPressEvent(static_cast<QKeyEvent *>(ee));
         break;
     case QEvent::ShortcutOverride:
+        buttonDown &= ((QGuiApplication::mouseButtons() & Qt::LeftButton) != Qt::NoButton);
         if (buttonDown) {
             ee->accept();
             return true;
