@@ -66,6 +66,7 @@ class QVariant;
 
 class Q_GUI_EXPORT QLayoutPolicy
 {
+    Q_GADGET
     Q_ENUMS(Policy)
 
 public:
