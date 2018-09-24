@@ -57,9 +57,6 @@
 #include <qtimer.h>
 #include "private/qtextdocumentlayout_p.h"
 #include "private/qabstracttextdocumentlayout_p.h"
-#if QT_CONFIG(textedit)
-#include "private/qtextedit_p.h"
-#endif
 #include "qtextdocument.h"
 #include "private/qtextdocument_p.h"
 #include "qtextlist.h"
@@ -1365,15 +1362,8 @@ process:
 
 QVariant QWidgetTextControl::loadResource(int type, const QUrl &name)
 {
-#if !QT_CONFIG(textedit)
     Q_UNUSED(type);
     Q_UNUSED(name);
-#else
-    if (QTextEdit *textEdit = qobject_cast<QTextEdit *>(parent())) {
-        QUrl resolvedName = textEdit->d_func()->resolveUrl(name);
-        return textEdit->loadResource(type, resolvedName);
-    }
-#endif
     return QVariant();
 }
 

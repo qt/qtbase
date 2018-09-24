@@ -105,6 +105,14 @@ public:
         else
             ed->insertFromMimeData(source);
     }
+    QVariant loadResource(int type, const QUrl &name) override {
+        auto *ed = qobject_cast<QTextEdit *>(parent());
+        if (!ed)
+            return QWidgetTextControl::loadResource(type, name);
+
+        QUrl resolvedName = ed->d_func()->resolveUrl(name);
+        return ed->loadResource(type, resolvedName);
+    }
 };
 
 QTextEditPrivate::QTextEditPrivate()
