@@ -641,6 +641,10 @@ QList<QSslCertificate> QSslConfiguration::caCertificates() const
   The CA certificate database is used by the socket during the
   handshake phase to validate the peer's certificate.
 
+  \note The default configuration uses the system CA certificate database. If
+  that is not available (as is commonly the case on iOS), the default database
+  is empty.
+
   \sa caCertificates()
 */
 void QSslConfiguration::setCaCertificates(const QList<QSslCertificate> &certificates)
