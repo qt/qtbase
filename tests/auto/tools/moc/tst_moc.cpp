@@ -682,6 +682,7 @@ private slots:
     void finalClasses();
     void explicitOverrideControl_data();
     void explicitOverrideControl();
+    void overloadedAddressOperator();
     void autoPropertyMetaTypeRegistration();
     void autoMethodArgumentMetaTypeRegistration();
     void autoSignalSpyMetaTypeRegistration();
@@ -2937,6 +2938,34 @@ void tst_Moc::explicitOverrideControl()
     QCOMPARE(mo->indexOfMethod("pureSlot8()"), mo->methodOffset() + 8);
     QCOMPARE(mo->indexOfMethod("pureSlot9()"), mo->methodOffset() + 9);
 #endif
+}
+
+class OverloadedAddressOperator : public QObject
+{
+   Q_OBJECT
+public:
+   void* operator&() { return nullptr; }
+signals:
+   void self(OverloadedAddressOperator&);
+public slots:
+    void assertSelf(OverloadedAddressOperator &o)
+    {
+        QCOMPARE(std::addressof(o), this);
+        testResult = (std::addressof(o) == this);
+    }
+public:
+    bool testResult = false;
+};
+
+void tst_Moc::overloadedAddressOperator()
+{
+    OverloadedAddressOperator o;
+    OverloadedAddressOperator *p = std::addressof(o);
+    QCOMPARE(&o, nullptr);
+    QVERIFY(p);
+    QObject::connect(p, &OverloadedAddressOperator::self, p, &OverloadedAddressOperator::assertSelf);
+    emit o.self(o);
+    QVERIFY(o.testResult);
 }
 
 class CustomQObject : public QObject
