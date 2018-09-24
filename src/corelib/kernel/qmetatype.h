@@ -570,6 +570,7 @@ public:
 
     inline bool isValid() const;
     inline bool isRegistered() const;
+    inline int id() const;
     inline int sizeOf() const;
     inline TypeFlags flags() const;
     inline const QMetaObject *metaObject() const;
@@ -2219,6 +2220,11 @@ inline bool QMetaType::isValid() const
 inline bool QMetaType::isRegistered() const
 {
     return isValid();
+}
+
+inline int QMetaType::id() const
+{
+    return m_typeId;
 }
 
 inline void *QMetaType::create(const void *copy) const

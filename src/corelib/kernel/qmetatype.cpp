@@ -377,6 +377,13 @@ struct DefinedTypesFilter {
 */
 
 /*!
+    \fn int QMetaType::id() const
+    \since 5.13
+
+    Returns id type hold by this QMetatype instance.
+*/
+
+/*!
     \fn bool QMetaType::sizeOf() const
     \since 5.0
 

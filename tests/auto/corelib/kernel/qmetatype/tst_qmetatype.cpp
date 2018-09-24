@@ -73,6 +73,7 @@ private slots:
     void defined();
     void threadSafety();
     void namespaces();
+    void id();
     void qMetaTypeId();
     void properties();
     void normalizedTypes();
@@ -473,6 +474,12 @@ void tst_QMetaType::namespaces()
 
     int qungTfuId = qRegisterMetaType<ADD_TESTSPACE(QungTfu)>();
     QCOMPARE(QMetaType::typeName(qungTfuId), "TestSpace::QungTfu");
+}
+
+void tst_QMetaType::id()
+{
+    QCOMPARE(QMetaType(QMetaType::QString).id(), QMetaType::QString);
+    QCOMPARE(QMetaType(::qMetaTypeId<TestSpace::Foo>()).id(), ::qMetaTypeId<TestSpace::Foo>());
 }
 
 void tst_QMetaType::qMetaTypeId()
