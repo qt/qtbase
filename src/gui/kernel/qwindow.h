@@ -123,6 +123,7 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_PROPERTY(Visibility visibility READ visibility WRITE setVisibility NOTIFY visibilityChanged REVISION 1)
     Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged)
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged REVISION 1)
+    Q_PRIVATE_PROPERTY(QWindow::d_func(), QWindow* transientParent MEMBER transientParent WRITE setTransientParent NOTIFY transientParentChanged REVISION 13)
 
 public:
     enum Visibility {
@@ -335,6 +336,8 @@ Q_SIGNALS:
     void focusObjectChanged(QObject *object);
 
     Q_REVISION(1) void opacityChanged(qreal opacity);
+
+    Q_REVISION(13) void transientParentChanged(QWindow *transientParent);
 
 protected:
     virtual void exposeEvent(QExposeEvent *);

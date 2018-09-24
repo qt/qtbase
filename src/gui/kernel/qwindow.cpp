@@ -1328,16 +1328,18 @@ Qt::WindowStates QWindow::windowStates() const
 */
 
 /*!
-    Sets the transient \a parent
+    \property QWindow::transientParent
+    \brief the window for which this window is a transient pop-up
+    \since 5.13
 
     This is a hint to the window manager that this window is a dialog or pop-up
-    on behalf of the given window.
+    on behalf of the transient parent.
 
     In order to cause the window to be centered above its transient parent by
     default, depending on the window manager, it may also be necessary to call
     setFlags() with a suitable \l Qt::WindowType (such as \c Qt::Dialog).
 
-    \sa transientParent(), parent()
+    \sa parent()
 */
 void QWindow::setTransientParent(QWindow *parent)
 {
@@ -1354,17 +1356,26 @@ void QWindow::setTransientParent(QWindow *parent)
     d->transientParent = parent;
 
     QGuiApplicationPrivate::updateBlockedStatus(this);
+    emit transientParentChanged(parent);
 }
 
-/*!
-    Returns the transient parent of the window.
-
-    \sa setTransientParent(), parent()
-*/
 QWindow *QWindow::transientParent() const
 {
     Q_D(const QWindow);
     return d->transientParent.data();
+}
+
+/*
+    The setter for the QWindow::transientParent property.
+    The only reason this exists is to set the transientParentPropertySet flag
+    so that Qt Quick knows whether it was set programmatically (because of
+    Window declaration context) or because the user set the property.
+*/
+void QWindowPrivate::setTransientParent(QWindow *parent)
+{
+    Q_Q(QWindow);
+    q->setTransientParent(parent);
+    transientParentPropertySet = true;
 }
 
 /*!

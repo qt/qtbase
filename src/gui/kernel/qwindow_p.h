@@ -148,6 +148,7 @@ public:
     void disconnectFromScreen();
     void emitScreenChangedRecursion(QScreen *newScreen);
     QScreen *screenForGeometry(const QRect &rect);
+    void setTransientParent(QWindow *parent);
 
     virtual void clearFocusObject();
     virtual QRectF closestAcceptableGeometry(const QRectF &rect) const;
@@ -191,6 +192,7 @@ public:
     bool blockedByModalWindow;
 
     bool updateRequestPending;
+    bool transientParentPropertySet = false;
 
     QPointer<QWindow> transientParent;
     QPointer<QScreen> topLevelScreen;
