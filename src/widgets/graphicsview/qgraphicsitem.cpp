@@ -1598,7 +1598,7 @@ QGraphicsItem::~QGraphicsItem()
 #ifndef QT_NO_GESTURES
     if (d_ptr->isObject && !d_ptr->gestureContext.isEmpty()) {
         QGraphicsObject *o = static_cast<QGraphicsObject *>(this);
-        if (QGestureManager *manager = QGestureManager::instance()) {
+        if (QGestureManager *manager = QGestureManager::instance(QGestureManager::DontForceCreation)) {
             const auto types  = d_ptr->gestureContext.keys(); // FIXME: iterate over the map directly?
             for (Qt::GestureType type : types)
                 manager->cleanupCachedGestures(o, type);

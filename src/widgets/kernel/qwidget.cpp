@@ -1572,7 +1572,7 @@ QWidget::~QWidget()
 #endif
 
 #ifndef QT_NO_GESTURES
-    if (QGestureManager *manager = QGestureManager::instance()) {
+    if (QGestureManager *manager = QGestureManager::instance(QGestureManager::DontForceCreation)) {
         // \forall Qt::GestureType type : ungrabGesture(type) (inlined)
         for (auto it = d->gestureContext.keyBegin(), end = d->gestureContext.keyEnd(); it != end; ++it)
             manager->cleanupCachedGestures(this, *it);

@@ -81,7 +81,9 @@ public:
     bool filterEvent(QGraphicsObject *receiver, QEvent *event);
 #endif // QT_CONFIG(graphicsview)
 
-    static QGestureManager* instance(); // declared in qapplication.cpp
+    enum InstanceCreation { ForceCreation, DontForceCreation };
+
+    static QGestureManager *instance(InstanceCreation ic = ForceCreation); // declared in qapplication.cpp
     static bool gesturePending(QObject *o);
 
     void cleanupCachedGestures(QObject *target, Qt::GestureType type);
