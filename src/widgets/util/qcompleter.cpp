@@ -1233,7 +1233,14 @@ void QCompleter::setPopup(QAbstractItemView *popup)
     Qt::FocusPolicy origPolicy = Qt::NoFocus;
     if (d->widget)
         origPolicy = d->widget->focusPolicy();
-    popup->setParent(0, Qt::Popup);
+
+    // Mark the widget window as a popup, so that if the last non-popup window is closed by the
+    // user, the application should not be prevented from exiting. It needs to be set explicitly via
+    // setWindowFlag(), because passing the flag via setParent(parent, windowFlags) does not call
+    // QWidgetPrivate::adjustQuitOnCloseAttribute(), and causes an application not to exit if the
+    // popup ends up being the last window.
+    popup->setParent(nullptr);
+    popup->setWindowFlag(Qt::Popup);
     popup->setFocusPolicy(Qt::NoFocus);
     if (d->widget)
         d->widget->setFocusPolicy(origPolicy);
