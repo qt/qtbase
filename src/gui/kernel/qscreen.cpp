@@ -748,7 +748,7 @@ QPixmap QScreen::grabWindow(WId window, int x, int y, int width, int height)
     QPixmap result =
         platformScreen->grabWindow(window, nativePos.x(), nativePos.y(),
                                    nativeSize.width(), nativeSize.height());
-    result.setDevicePixelRatio(factor);
+    result.setDevicePixelRatio(result.devicePixelRatio() * factor);
     return result;
 }
 
