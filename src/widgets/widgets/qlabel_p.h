@@ -154,6 +154,7 @@ public:
 #endif
     uint openExternalLinks : 1;
     // <-- space for more bit field values here
+    QUrlResourceProvider *resourceProvider;
 
     friend class QMessageBoxPrivate;
 };

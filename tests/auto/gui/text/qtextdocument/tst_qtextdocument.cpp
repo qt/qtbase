@@ -47,6 +47,7 @@
 #include <qimage.h>
 #include <qtextlayout.h>
 #include <QDomDocument>
+#include <qurlresourceprovider.h>
 #include "common.h"
 
 // #define DEBUG_WRITE_OUTPUT
@@ -191,6 +192,8 @@ private slots:
 
     void clearUndoRedoStacks();
     void mergeFontFamilies();
+
+    void resourceProvider();
 
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
@@ -3593,6 +3596,28 @@ void tst_QTextDocument::clearUndoRedoStacks()
     QVERIFY(!doc.isUndoAvailable());
 }
 
+class UrlResourceProvider : public QUrlResourceProvider
+{
+public:
+    QVariant resource(const QUrl &url) override
+    {
+        resourseUrl = url;
+        return QVariant();
+    }
+
+    QUrl resourseUrl;
+};
+
+void tst_QTextDocument::resourceProvider()
+{
+    QTextDocument doc;
+    UrlResourceProvider resourceProvider;
+    doc.setResourceProvider(&resourceProvider);
+    QUrl url("test://img");
+    doc.setHtml(QStringLiteral("<img src='%1'/>").arg(url.toString()));
+    doc.resource(QTextDocument::UserResource, url);
+    QCOMPARE(url, resourceProvider.resourseUrl);
+}
 
 QTEST_MAIN(tst_QTextDocument)
 #include "tst_qtextdocument.moc"

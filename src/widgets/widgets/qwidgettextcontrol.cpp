@@ -2677,6 +2677,7 @@ void QWidgetTextControl::print(QPagedPaintDevice *printer) const
         if (!d->cursor.hasSelection())
             return;
         tempDoc = new QTextDocument(const_cast<QTextDocument *>(doc));
+        tempDoc->setResourceProvider(doc->resourceProvider());
         tempDoc->setMetaInformation(QTextDocument::DocumentTitle, doc->metaInformation(QTextDocument::DocumentTitle));
         tempDoc->setPageSize(doc->pageSize());
         tempDoc->setDefaultFont(doc->defaultFont());

@@ -100,7 +100,8 @@ QLabelPrivate::QLabelPrivate()
       validCursor(false),
       onAnchor(false),
 #endif
-      openExternalLinks(false)
+      openExternalLinks(false),
+      resourceProvider(nullptr)
 {
 }
 
@@ -1424,6 +1425,32 @@ void QLabel::setTextFormat(Qt::TextFormat format)
 }
 
 /*!
+    \since 6.1
+
+    Returns the resource provider for rich text of this label.
+*/
+QUrlResourceProvider *QLabel::resourceProvider() const
+{
+    Q_D(const QLabel);
+    return d->control ? d->control->document()->resourceProvider() : d->resourceProvider;
+}
+
+/*!
+    \since 6.1
+
+    Sets the \a provider of resources for rich text of this label.
+
+    \note The label \e{does not} take ownership of the \a provider.
+*/
+void QLabel::setResourceProvider(QUrlResourceProvider *provider)
+{
+    Q_D(QLabel);
+    d->resourceProvider = provider;
+    if (d->control != nullptr)
+        d->control->document()->setResourceProvider(provider);
+}
+
+/*!
   \reimp
 */
 void QLabel::changeEvent(QEvent *ev)
@@ -1589,6 +1616,8 @@ void QLabelPrivate::ensureTextControl() const
         control = new QWidgetTextControl(const_cast<QLabel *>(q));
         control->document()->setUndoRedoEnabled(false);
         control->document()->setDefaultFont(q->font());
+        if (resourceProvider != nullptr)
+            control->document()->setResourceProvider(resourceProvider);
         control->setTextInteractionFlags(textInteractionFlags);
         control->setOpenExternalLinks(openExternalLinks);
         control->setPalette(q->palette());

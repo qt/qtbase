@@ -242,6 +242,7 @@ qt_internal_add_module(Gui
         text/qtextobject.cpp text/qtextobject.h text/qtextobject_p.h
         text/qtextoption.cpp text/qtextoption.h
         text/qtexttable.cpp text/qtexttable.h text/qtexttable_p.h
+        text/qurlresourceprovider.cpp text/qurlresourceprovider.h
         util/qabstractlayoutstyleinfo.cpp util/qabstractlayoutstyleinfo_p.h
         util/qastchandler.cpp util/qastchandler_p.h
         util/qdesktopservices.cpp util/qdesktopservices.h

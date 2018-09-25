@@ -52,6 +52,7 @@
 #include "qtextdocumentlayout_p.h"
 #include "qtexttable.h"
 #include "qtextengine_p.h"
+#include "qurlresourceprovider.h"
 
 #include <stdlib.h>
 
@@ -186,7 +187,8 @@ QTextDocumentPrivate::QTextDocumentPrivate()
     docChangeLength(0),
     framesDirty(true),
     rtFrame(nullptr),
-    initialBlockCharFormatIndex(-1) // set correctly later in init()
+    initialBlockCharFormatIndex(-1), // set correctly later in init()
+    resourceProvider(nullptr)
 {
     editBlock = 0;
     editBlockCursorPosition = -1;

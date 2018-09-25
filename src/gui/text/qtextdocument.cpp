@@ -46,6 +46,7 @@
 #include "qtextdocumentfragment_p.h"
 #include "qtexttable.h"
 #include "qtextlist.h"
+#include "qurlresourceprovider.h"
 #include <qdebug.h>
 #if QT_CONFIG(regularexpression)
 #include <qregularexpression.h>
@@ -354,6 +355,7 @@ QTextDocument *QTextDocument::clone(QObject *parent) const
     priv->setDefaultFont(d->defaultFont());
     priv->resources = d->resources;
     priv->cachedResources.clear();
+    priv->resourceProvider = d->resourceProvider;
 #ifndef QT_NO_CSSPARSER
     priv->defaultStyleSheet = d->defaultStyleSheet;
     priv->parsedDefaultStyleSheet = d->parsedDefaultStyleSheet;
@@ -2087,8 +2089,15 @@ QVariant QTextDocument::resource(int type, const QUrl &name) const
     QVariant r = d->resources.value(url);
     if (!r.isValid()) {
         r = d->cachedResources.value(url);
-        if (!r.isValid())
+        if (!r.isValid()) {
             r = const_cast<QTextDocument *>(this)->loadResource(type, url);
+            if (!r.isValid()) {
+                if (d->resourceProvider)
+                    r = d->resourceProvider->resource(url);
+                else if (auto defaultProvider = QUrlResourceProvider::defaultProvider())
+                    r = defaultProvider->resource(url);
+            }
+        }
     }
     return r;
 }
@@ -2116,6 +2125,30 @@ void QTextDocument::addResource(int type, const QUrl &name, const QVariant &reso
     Q_UNUSED(type);
     Q_D(QTextDocument);
     d->resources.insert(name, resource);
+}
+
+/*!
+    \since 6.1
+
+    Returns the resource provider for this text document.
+*/
+QUrlResourceProvider *QTextDocument::resourceProvider() const
+{
+    Q_D(const QTextDocument);
+    return d->resourceProvider;
+}
+
+/*!
+    \since 6.1
+
+    Sets the \a provider of resources for the text document.
+
+    \note The text document \e{does not} take ownership of the \a provider.
+*/
+void QTextDocument::setResourceProvider(QUrlResourceProvider *provider)
+{
+    Q_D(QTextDocument);
+    d->resourceProvider = provider;
 }
 
 /*!

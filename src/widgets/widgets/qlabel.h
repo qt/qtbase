@@ -49,6 +49,7 @@ QT_REQUIRE_CONFIG(label);
 QT_BEGIN_NAMESPACE
 
 
+class QUrlResourceProvider;
 class QLabelPrivate;
 
 class Q_WIDGETS_EXPORT QLabel : public QFrame
@@ -91,6 +92,9 @@ public:
 
     Qt::TextFormat textFormat() const;
     void setTextFormat(Qt::TextFormat);
+
+    QUrlResourceProvider *resourceProvider() const;
+    void setResourceProvider(QUrlResourceProvider *provider);
 
     Qt::Alignment alignment() const;
     void setAlignment(Qt::Alignment);

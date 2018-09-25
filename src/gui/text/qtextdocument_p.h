@@ -366,6 +366,7 @@ private:
     QMap<int, QTextObject *> objects;
     QMap<QUrl, QVariant> resources;
     QMap<QUrl, QVariant> cachedResources;
+    QUrlResourceProvider *resourceProvider;
     QString defaultStyleSheet;
 
     int lastBlockCount;

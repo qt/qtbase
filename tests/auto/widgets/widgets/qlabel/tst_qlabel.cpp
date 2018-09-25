@@ -40,6 +40,7 @@
 #include <qmessagebox.h>
 #include <qfontmetrics.h>
 #include <qmath.h>
+#include <qurlresourceprovider.h>
 #include <private/qlabel_p.h>
 
 class Widget : public QWidget
@@ -102,6 +103,8 @@ private Q_SLOTS:
 
     void taskQTBUG_48157_dprPixmap();
     void taskQTBUG_48157_dprMovie();
+
+    void resourceProvider();
 
 private:
     QLabel *testWidget;
@@ -594,6 +597,29 @@ void tst_QLabel::taskQTBUG_48157_dprMovie()
     QCOMPARE(movie.currentPixmap().devicePixelRatio(), 2.0);
     label.setMovie(&movie);
     QCOMPARE(label.sizeHint(), movie.currentPixmap().size() / movie.currentPixmap().devicePixelRatio());
+}
+
+class UrlResourceProvider : public QUrlResourceProvider
+{
+public:
+    QVariant resource(const QUrl &url) override
+    {
+        resourseUrl = url;
+        return QVariant();
+    }
+
+    QUrl resourseUrl;
+};
+
+void tst_QLabel::resourceProvider()
+{
+    QLabel label;
+    UrlResourceProvider resourceProvider;
+    label.setResourceProvider(&resourceProvider);
+    QUrl url("test://img");
+    label.setText(QStringLiteral("<img src='%1'/>").arg(url.toString()));
+    label.show();
+    QCOMPARE(url, resourceProvider.resourseUrl);
 }
 
 QTEST_MAIN(tst_QLabel)
