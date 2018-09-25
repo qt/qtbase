@@ -118,13 +118,6 @@ QXcbVirtualDesktop::QXcbVirtualDesktop(QXcbConnection *connection, xcb_screen_t 
 
         xcb_depth_next(&depth_iterator);
     }
-
-    if (connection->hasXRandr()) {
-        xcb_connection_t *conn = connection->xcb_connection();
-        auto screen_info = Q_XCB_REPLY(xcb_randr_get_screen_info, conn, screen->root);
-        if (screen_info)
-            m_rotation = screen_info->rotation;
-    }
 }
 
 QXcbVirtualDesktop::~QXcbVirtualDesktop()
