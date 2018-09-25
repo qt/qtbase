@@ -466,6 +466,7 @@ QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height
 
     const qreal dpr = devicePixelRatio();
     QPixmap windowPixmap(windowSize * dpr);
+    windowPixmap.setDevicePixelRatio(dpr);
     windowPixmap.fill(Qt::transparent);
 
     for (uint i = 0; i < displayCount; ++i) {
