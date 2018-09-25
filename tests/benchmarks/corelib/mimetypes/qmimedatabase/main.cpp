@@ -35,6 +35,7 @@ class tst_QMimeDatabase: public QObject
 
 private slots:
     void inheritsPerformance();
+    void benchMimeTypeForName();
 };
 
 void tst_QMimeDatabase::inheritsPerformance()
@@ -68,6 +69,16 @@ void tst_QMimeDatabase::inheritsPerformance()
     //   (but the startup time is way higher)
     // And memory usage is flat at 200K with QMimeBinaryProvider, while it peaks at 6 MB when
     // parsing XML, and then keeps being around 4.5 MB for all the in-memory hashes.
+}
+
+void tst_QMimeDatabase::benchMimeTypeForName()
+{
+    QMimeDatabase db;
+
+    QBENCHMARK {
+        const auto s = db.mimeTypeForName(QStringLiteral("text/plain"));
+        QVERIFY(s.isValid());
+    }
 }
 
 QTEST_MAIN(tst_QMimeDatabase)

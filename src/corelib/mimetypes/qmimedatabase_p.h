@@ -102,11 +102,12 @@ public:
     bool mimeInherits(const QString &mime, const QString &parent);
 
 private:
-    QVector<QMimeProviderBase *> providers();
+    using Providers = std::vector<QMimeProviderBase *>;
+    const Providers &providers();
     bool shouldCheck();
     void loadProviders();
 
-    mutable QVector<QMimeProviderBase *> m_providers;
+    mutable Providers m_providers;
     QElapsedTimer m_lastCheck;
 
 public:
