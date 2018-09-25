@@ -205,11 +205,12 @@ typedef QHash<QOpenGLConfig::Gpu, QWindowsOpenGLTester::Renderers> SupportedRend
 Q_GLOBAL_STATIC(SupportedRenderersCache, supportedRenderersCache)
 #endif
 
-QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::detectSupportedRenderers(const GpuDescription &gpu, bool glesOnly)
+QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::detectSupportedRenderers(const GpuDescription &gpu,
+                                                                               Renderer requested)
 {
-    Q_UNUSED(gpu)
-    Q_UNUSED(glesOnly)
 #if defined(QT_NO_OPENGL)
+    Q_UNUSED(gpu)
+    Q_UNUSED(requested)
     return 0;
 #else
     QOpenGLConfig::Gpu qgpu = QOpenGLConfig::Gpu::fromDevice(gpu.vendorId, gpu.deviceId, gpu.driverVersion, gpu.description);
@@ -223,8 +224,11 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::detectSupportedRenderers(c
         | QWindowsOpenGLTester::AngleRendererD3d11Warp
         | QWindowsOpenGLTester::SoftwareRasterizer);
 
-    if (!glesOnly && testDesktopGL())
-        result |= QWindowsOpenGLTester::DesktopGl;
+    // Don't test for GL if explicitly requested or GLES only is requested
+    if (requested == DesktopGl
+        || ((requested & GlesMask) == 0 && testDesktopGL())) {
+            result |= QWindowsOpenGLTester::DesktopGl;
+    }
 
     const char bugListFileVar[] = "QT_OPENGL_BUGLIST";
     QString buglistFileName = QStringLiteral(":/qt-project.org/windows/openglblacklists/default.json");
@@ -264,19 +268,11 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::detectSupportedRenderers(c
 #endif // !QT_NO_OPENGL
 }
 
-QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::supportedGlesRenderers()
+QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::supportedRenderers(Renderer requested)
 {
     const GpuDescription gpu = GpuDescription::detect();
-    const QWindowsOpenGLTester::Renderers result = detectSupportedRenderers(gpu, true);
-    qCDebug(lcQpaGl) << __FUNCTION__ << gpu << "renderer: " << result;
-    return result;
-}
-
-QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::supportedRenderers()
-{
-    const GpuDescription gpu = GpuDescription::detect();
-    const QWindowsOpenGLTester::Renderers result = detectSupportedRenderers(gpu, false);
-    qCDebug(lcQpaGl) << __FUNCTION__ << gpu << "renderer: " << result;
+    const QWindowsOpenGLTester::Renderers result = detectSupportedRenderers(gpu, requested);
+    qCDebug(lcQpaGl) << __FUNCTION__ << gpu << requested << "renderer: " << result;
     return result;
 }
 

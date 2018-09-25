@@ -386,7 +386,7 @@ QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::doCreate()
     switch (requestedRenderer) {
     case QWindowsOpenGLTester::DesktopGl:
         if (QWindowsStaticOpenGLContext *glCtx = QOpenGLStaticContext::create()) {
-            if ((QWindowsOpenGLTester::supportedRenderers() & QWindowsOpenGLTester::DisableRotationFlag)
+            if ((QWindowsOpenGLTester::supportedRenderers(requestedRenderer) & QWindowsOpenGLTester::DisableRotationFlag)
                 && !QWindowsScreen::setOrientationPreference(Qt::LandscapeOrientation)) {
                 qCWarning(lcQpaGl, "Unable to disable rotation.");
             }
@@ -400,19 +400,19 @@ QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::doCreate()
     case QWindowsOpenGLTester::AngleRendererD3d11Warp:
         return QWindowsEGLStaticContext::create(requestedRenderer);
     case QWindowsOpenGLTester::Gles:
-        return QWindowsEGLStaticContext::create(QWindowsOpenGLTester::supportedGlesRenderers());
+        return QWindowsEGLStaticContext::create(requestedRenderer);
     case QWindowsOpenGLTester::SoftwareRasterizer:
         if (QWindowsStaticOpenGLContext *swCtx = QOpenGLStaticContext::create(true))
             return swCtx;
         qCWarning(lcQpaGl, "Software OpenGL failed. Falling back to system OpenGL.");
-        if (QWindowsOpenGLTester::supportedRenderers() & QWindowsOpenGLTester::DesktopGl)
+        if (QWindowsOpenGLTester::supportedRenderers(requestedRenderer) & QWindowsOpenGLTester::DesktopGl)
             return QOpenGLStaticContext::create();
         return Q_NULLPTR;
     default:
         break;
     }
 
-    const QWindowsOpenGLTester::Renderers supportedRenderers = QWindowsOpenGLTester::supportedRenderers();
+    const QWindowsOpenGLTester::Renderers supportedRenderers = QWindowsOpenGLTester::supportedRenderers(requestedRenderer);
     if (supportedRenderers & QWindowsOpenGLTester::DesktopGl) {
         if (QWindowsStaticOpenGLContext *glCtx = QOpenGLStaticContext::create()) {
             if ((supportedRenderers & QWindowsOpenGLTester::DisableRotationFlag)
@@ -430,7 +430,7 @@ QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::doCreate()
 #elif defined(QT_OPENGL_ES_2)
     QWindowsOpenGLTester::Renderers glesRenderers = QWindowsOpenGLTester::requestedGlesRenderer();
     if (glesRenderers == QWindowsOpenGLTester::InvalidRenderer)
-        glesRenderers = QWindowsOpenGLTester::supportedGlesRenderers();
+        glesRenderers = QWindowsOpenGLTester::supportedRenderers(QWindowsOpenGLTester::AngleRendererD3d11);
     return QWindowsEGLStaticContext::create(glesRenderers);
 #elif !defined(QT_NO_OPENGL)
     return QOpenGLStaticContext::create();
