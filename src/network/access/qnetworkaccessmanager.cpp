@@ -930,7 +930,7 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, QHttpM
 
 /*!
     Uploads the contents of \a data to the destination \a request and
-    returnes a new QNetworkReply object that will be open for reply.
+    returns a new QNetworkReply object that will be open for reply.
 
     \a data must be opened for reading when this function is called
     and must remain valid until the finished() signal is emitted for
