@@ -3388,6 +3388,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                                 tablet->tangentialPressure(), tablet->rotation(), tablet->z(),
                                 tablet->modifiers(), tablet->uniqueId(), tablet->button(), tablet->buttons());
                 te.spont = e->spontaneous();
+                te.setAccepted(false);
                 res = d->notify_helper(w, w == receiver ? tablet : &te);
                 eventAccepted = ((w == receiver) ? tablet : &te)->isAccepted();
                 e->spont = false;
