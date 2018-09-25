@@ -20,7 +20,7 @@ DEFINES += QT_NO_FOREACH
 
 QMAKE_DOCS = $$PWD/doc/qtdbus.qdocconf
 
-PUB_HEADERS = qtdbusglobal.h \
+HEADERS += qtdbusglobal.h \
     qdbusargument.h \
     qdbusconnectioninterface.h \
     qdbuserror.h \
@@ -38,8 +38,7 @@ PUB_HEADERS = qtdbusglobal.h \
     qdbuscontext.h \
     qdbusvirtualobject.h \
     qdbusservicewatcher.h \
-    qdbusunixfiledescriptor.h
-HEADERS += $$PUB_HEADERS \
+    qdbusunixfiledescriptor.h \
     qtdbusglobal_p.h \
     qdbusconnection_p.h \
     qdbusconnectionmanager_p.h \
