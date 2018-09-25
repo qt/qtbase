@@ -63,6 +63,8 @@ QT_REQUIRE_CONFIG(thread);
 
 QT_BEGIN_NAMESPACE
 
+class QDeadlineTimer;
+
 class QueuePage {
 public:
     enum {
@@ -163,12 +165,13 @@ public:
     void startThread(QRunnable *runnable = 0);
     void reset();
     bool waitForDone(int msecs);
+    bool waitForDone(const QDeadlineTimer &timer);
     void clear();
     void stealAndRunRunnable(QRunnable *runnable);
     void deletePageIfFinished(QueuePage *page);
 
     mutable QMutex mutex;
-    QList<QThreadPoolThread *> allThreads;
+    QSet<QThreadPoolThread *> allThreads;
     QQueue<QThreadPoolThread *> waitingThreads;
     QQueue<QThreadPoolThread *> expiredThreads;
     QVector<QueuePage*> queue;
@@ -179,7 +182,6 @@ public:
     int reservedThreads = 0;
     int activeThreads = 0;
     uint stackSize = 0;
-    bool isExiting = false;
 };
 
 QT_END_NAMESPACE
