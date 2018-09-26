@@ -1961,13 +1961,13 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
         } else {
             HGDIOBJ oldFont = SelectObject(data->hdc, hfont);
 
+            const QFont::HintingPreference hintingPreference =
+                static_cast<QFont::HintingPreference>(request.hintingPreference);
+            bool useDw = useDirectWrite(hintingPreference, fam);
+
             IDWriteFontFace *directWriteFontFace = NULL;
             HRESULT hr = data->directWriteGdiInterop->CreateFontFaceFromHdc(data->hdc, &directWriteFontFace);
-            if (FAILED(hr)) {
-                const QString errorString = qt_error_string(int(hr));
-                qWarning().noquote().nospace() << "DirectWrite: CreateFontFaceFromHDC() failed ("
-                    << errorString << ") for " << request << ' ' << lf << " dpi=" << dpi;
-            } else {
+            if (SUCCEEDED(hr)) {
                 bool isColorFont = false;
 #if defined(QT_USE_DIRECTWRITE2)
                 IDWriteFontFace2 *directWriteFontFace2 = nullptr;
@@ -1977,9 +1977,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
                         isColorFont = directWriteFontFace2->GetPaletteEntryCount() > 0;
                 }
 #endif
-                const QFont::HintingPreference hintingPreference =
-                    static_cast<QFont::HintingPreference>(request.hintingPreference);
-                const bool useDw = useDirectWrite(hintingPreference, fam, isColorFont);
+                useDw = useDw || useDirectWrite(hintingPreference, fam, isColorFont);
                 qCDebug(lcQpaFonts) << __FUNCTION__ << request.family << request.pointSize
                     << "pt" << "hintingPreference=" << hintingPreference << "color=" << isColorFont
                     << dpi << "dpi" << "useDirectWrite=" << useDw;
@@ -2001,6 +1999,10 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
                 } else {
                     directWriteFontFace->Release();
                 }
+            } else if (useDw) {
+                const QString errorString = qt_error_string(int(hr));
+                qWarning().noquote().nospace() << "DirectWrite: CreateFontFaceFromHDC() failed ("
+                    << errorString << ") for " << request << ' ' << lf << " dpi=" << dpi;
             }
 
             SelectObject(data->hdc, oldFont);
