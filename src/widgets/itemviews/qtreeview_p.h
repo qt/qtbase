@@ -53,7 +53,9 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "private/qabstractitemview_p.h"
+#if QT_CONFIG(animation)
 #include <QtCore/qvariantanimation.h>
+#endif
 #include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qvector.h>
 
@@ -105,7 +107,7 @@ public:
     QItemViewPaintPairs draggablePaintPairs(const QModelIndexList &indexes, QRect *r) const override;
     void adjustViewOptionsForIndex(QStyleOptionViewItem *option, const QModelIndex &current) const override;
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     struct AnimatedOperation : public QVariantAnimation
     {
         int item;
@@ -123,7 +125,7 @@ public:
     void drawAnimatedOperation(QPainter *painter) const;
     QPixmap renderTreeToPixmapForAnimation(const QRect &rect) const;
     void _q_endAnimatedOperation();
-#endif //QT_NO_ANIMATION
+#endif // animation
 
     void expand(int item, bool emitSignal);
     void collapse(int item, bool emitSignal);

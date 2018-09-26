@@ -2109,13 +2109,13 @@ void QTabBarPrivate::moveTabFinished(int index)
     Q_Q(QTabBar);
     bool cleanup = (pressedIndex == index) || (pressedIndex == -1) || !validIndex(index);
     bool allAnimationsFinished = true;
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     for(int i = 0; allAnimationsFinished && i < tabList.count(); ++i) {
         const Tab &t = tabList.at(i);
         if (t.animation && t.animation->state() == QAbstractAnimation::Running)
             allAnimationsFinished = false;
     }
-#endif //QT_NO_ANIMATION
+#endif // animation
     if (allAnimationsFinished && cleanup) {
         if(movingTab)
             movingTab->setVisible(false); // We might not get a mouse release
@@ -2680,7 +2680,7 @@ void CloseButton::paintEvent(QPaintEvent *)
     style()->drawPrimitive(QStyle::PE_IndicatorTabClose, &opt, &p, this);
 }
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 void QTabBarPrivate::Tab::TabBarAnimation::updateCurrentValue(const QVariant &current)
 {
     priv->moveTab(priv->tabList.indexOf(*tab), current.toInt());

@@ -153,8 +153,6 @@
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qpointer.h>
 
-#ifndef QT_NO_ANIMATION
-
 #define DEFAULT_TIMER_INTERVAL 16
 #define PAUSE_TIMER_COARSE_THRESHOLD 2000
 
@@ -1485,5 +1483,3 @@ QT_END_NAMESPACE
 
 #include "moc_qabstractanimation.cpp"
 #include "moc_qabstractanimation_p.cpp"
-
-#endif //QT_NO_ANIMATION

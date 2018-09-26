@@ -53,7 +53,7 @@ class QAbstractState;
 class QState;
 class QStateMachine;
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 class QAbstractAnimation;
 #endif
 
@@ -86,7 +86,7 @@ public:
 
     QStateMachine *machine() const;
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     void addAnimation(QAbstractAnimation *animation);
     void removeAnimation(QAbstractAnimation *animation);
     QList<QAbstractAnimation*> animations() const;

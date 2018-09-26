@@ -43,8 +43,9 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qcommonstyle.h"
 #include "qstyle_p.h"
+#if QT_CONFIG(animation)
 #include "qstyleanimation_p.h"
-
+#endif
 #include "qstyleoption.h"
 
 QT_BEGIN_NAMESPACE
@@ -76,7 +77,7 @@ public:
 
     ~QCommonStylePrivate()
     {
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
         qDeleteAll(animations);
 #endif
 #if QT_CONFIG(itemviews)
@@ -115,7 +116,7 @@ public:
 #endif
 
     int animationFps;
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     void _q_removeAnimation();
 
     QList<const QObject*> animationTargets() const;
@@ -125,7 +126,7 @@ public:
 
 private:
     mutable QHash<const QObject*, QStyleAnimation*> animations;
-#endif // QT_NO_ANIMATION
+#endif // animation
 };
 
 QT_END_NAMESPACE

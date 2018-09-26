@@ -112,7 +112,7 @@ private slots:
     void expandAndCollapse();
     void expandAndCollapseAll();
     void expandWithNoChildren();
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     void quickExpandCollapse();
 #endif
     void keyboardNavigation();
@@ -4401,7 +4401,7 @@ void tst_QTreeView::testInitialFocus()
     QCOMPARE(treeWidget.currentIndex().column(), 2);
 }
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 void tst_QTreeView::quickExpandCollapse()
 {
     //this unit tests makes sure the state after the animation is restored correctly
@@ -4433,7 +4433,7 @@ void tst_QTreeView::quickExpandCollapse()
 
     QCOMPARE(tree.state(), initialState);
 }
-#endif
+#endif // animation
 
 void tst_QTreeView::taskQTBUG_37813_crash()
 {

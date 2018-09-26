@@ -3,7 +3,6 @@
 HEADERS += \
         styles/qdrawutil.h \
         styles/qstyle.h \
-        styles/qstyleanimation_p.h \
         styles/qstylefactory.h \
         styles/qstyleoption.h \
         styles/qstyleplugin.h \
@@ -21,7 +20,6 @@ HEADERS += \
 SOURCES += \
         styles/qdrawutil.cpp \
         styles/qstyle.cpp \
-        styles/qstyleanimation.cpp \
         styles/qstylefactory.cpp \
         styles/qstyleoption.cpp \
         styles/qstyleplugin.cpp \
@@ -36,6 +34,11 @@ SOURCES += \
 RESOURCES += styles/qstyle.qrc
 
 include($$OUT_PWD/qtwidgets-config.pri)
+
+qtConfig(animation) {
+    HEADERS += styles/qstyleanimation_p.h
+    SOURCES += styles/qstyleanimation.cpp
+}
 
 qtConfig(style-windows) {
     HEADERS += styles/qwindowsstyle_p.h styles/qwindowsstyle_p_p.h

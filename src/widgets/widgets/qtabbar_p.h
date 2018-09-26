@@ -58,7 +58,9 @@
 #include <qicon.h>
 #include <qtoolbutton.h>
 #include <qdebug.h>
+#if QT_CONFIG(animation)
 #include <qvariantanimation.h>
+#endif
 
 #define ANIMATION_DURATION 250
 
@@ -107,9 +109,9 @@ public:
         inline Tab(const QIcon &ico, const QString &txt)
             : enabled(true) , shortcutId(0), text(txt), icon(ico),
             leftWidget(0), rightWidget(0), lastTab(-1), dragOffset(0)
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
             , animation(0)
-#endif //QT_NO_ANIMATION
+#endif // animation
         {}
         bool operator==(const Tab &other) const { return &other == this; }
         bool enabled;
@@ -136,7 +138,7 @@ public:
         QString accessibleName;
 #endif
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
         ~Tab() { delete animation; }
         struct TabBarAnimation : public QVariantAnimation {
             TabBarAnimation(Tab *t, QTabBarPrivate *_priv) : tab(t), priv(_priv)
@@ -166,7 +168,7 @@ public:
 #else
         void startAnimation(QTabBarPrivate *priv, int duration)
         { Q_UNUSED(duration); priv->moveTabFinished(priv->tabList.indexOf(*this)); }
-#endif //QT_NO_ANIMATION
+#endif // animation
     };
     QList<Tab> tabList;
     mutable QHash<QString, QSize> textSizes;

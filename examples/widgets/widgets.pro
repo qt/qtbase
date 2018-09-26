@@ -27,4 +27,5 @@ qtHaveModule(gui):qtConfig(opengl): \
 
 contains(DEFINES, QT_NO_CURSOR): SUBDIRS -= mainwindows
 !qtConfig(draganddrop): SUBDIRS -= draganddrop
+!qtConfig(animation): SUBDIRS -= animation
 mac:SUBDIRS += mac

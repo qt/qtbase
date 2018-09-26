@@ -204,7 +204,7 @@ QInputDeviceManager *QGuiApplicationPrivate::m_inputDeviceManager = 0;
 static qreal fontSmoothingGamma = 1.7;
 
 extern void qRegisterGuiVariant();
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 extern void qRegisterGuiGetInterpolator();
 #endif
 
@@ -1517,7 +1517,7 @@ void QGuiApplicationPrivate::init()
     // trigger registering of QVariant's GUI types
     qRegisterGuiVariant();
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     // trigger registering of animation interpolators
     qRegisterGuiGetInterpolator();
 #endif

@@ -46,8 +46,6 @@
 
 #include <algorithm>
 
-#ifndef QT_NO_ANIMATION
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -700,5 +698,3 @@ void QVariantAnimation::updateCurrentTime(int)
 QT_END_NAMESPACE
 
 #include "moc_qvariantanimation.cpp"
-
-#endif //QT_NO_ANIMATION

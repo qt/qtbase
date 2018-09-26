@@ -42,10 +42,9 @@
 
 #include <QtCore/qobject.h>
 
+QT_REQUIRE_CONFIG(animation);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_ANIMATION
 
 class QAnimationGroup;
 class QSequentialAnimationGroup;
@@ -168,11 +167,6 @@ private:
     friend class QUnifiedTimer;
 
 };
-
-
-
-
-#endif //QT_NO_ANIMATION
 
 QT_END_NAMESPACE
 

@@ -1334,12 +1334,12 @@ void QTreeView::paintEvent(QPaintEvent *event)
     Q_D(QTreeView);
     d->executePostedLayout();
     QPainter painter(viewport());
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     if (d->isAnimating()) {
         drawTree(&painter, event->region() - d->animatedOperation.rect());
         d->drawAnimatedOperation(&painter);
     } else
-#endif //QT_NO_ANIMATION
+#endif // animation
     {
         drawTree(&painter, event->region());
 #if QT_CONFIG(draganddrop)
@@ -3056,10 +3056,10 @@ void QTreeViewPrivate::initialize()
     header->setStretchLastSection(true);
     header->setDefaultAlignment(Qt::AlignLeft|Qt::AlignVCenter);
     q->setHeader(header);
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     animationsEnabled = q->style()->styleHint(QStyle::SH_Widget_Animation_Duration, 0, q) > 0;
     QObject::connect(&animatedOperation, SIGNAL(finished()), q, SLOT(_q_endAnimatedOperation()));
-#endif //QT_NO_ANIMATION
+#endif // animation
 }
 
 void QTreeViewPrivate::expand(int item, bool emitSignal)
@@ -3072,10 +3072,10 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
     if (index.flags() & Qt::ItemNeverHasChildren)
         return;
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     if (emitSignal && animationsEnabled)
         prepareAnimatedOperation(item, QVariantAnimation::Forward);
-#endif //QT_NO_ANIMATION
+#endif // animation
      //if already animating, stateBeforeAnimation is set to the correct value
     if (state != QAbstractItemView::AnimatingState)
         stateBeforeAnimation = state;
@@ -3089,10 +3089,10 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
         model->fetchMore(index);
     if (emitSignal) {
         emit q->expanded(index);
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
         if (animationsEnabled)
             beginAnimatedOperation();
-#endif //QT_NO_ANIMATION
+#endif // animation
     }
 }
 
@@ -3147,10 +3147,10 @@ void QTreeViewPrivate::collapse(int item, bool emitSignal)
     if (it == expandedIndexes.end() || viewItems.at(item).expanded == false)
         return; // nothing to do
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     if (emitSignal && animationsEnabled)
         prepareAnimatedOperation(item, QVariantAnimation::Backward);
-#endif //QT_NO_ANIMATION
+#endif // animation
 
     //if already animating, stateBeforeAnimation is set to the correct value
     if (state != QAbstractItemView::AnimatingState)
@@ -3168,14 +3168,14 @@ void QTreeViewPrivate::collapse(int item, bool emitSignal)
 
     if (emitSignal) {
         emit q->collapsed(modelIndex);
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
         if (animationsEnabled)
             beginAnimatedOperation();
-#endif //QT_NO_ANIMATION
+#endif // animation
     }
 }
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 void QTreeViewPrivate::prepareAnimatedOperation(int item, QVariantAnimation::Direction direction)
 {
     animatedOperation.item = item;
@@ -3280,7 +3280,7 @@ void QTreeViewPrivate::_q_endAnimatedOperation()
     q->updateGeometries();
     viewport->update();
 }
-#endif //QT_NO_ANIMATION
+#endif // animation
 
 void QTreeViewPrivate::_q_modelAboutToBeReset()
 {

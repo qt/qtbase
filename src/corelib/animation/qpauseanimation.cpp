@@ -64,9 +64,6 @@
 #include "qpauseanimation.h"
 #include "qabstractanimation_p.h"
 
-
-#ifndef QT_NO_ANIMATION
-
 QT_BEGIN_NAMESPACE
 
 class QPauseAnimationPrivate : public QAbstractAnimationPrivate
@@ -150,5 +147,3 @@ void QPauseAnimation::updateCurrentTime(int)
 QT_END_NAMESPACE
 
 #include "moc_qpauseanimation.cpp"
-
-#endif //QT_NO_ANIMATION

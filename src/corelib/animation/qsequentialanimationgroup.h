@@ -42,10 +42,9 @@
 
 #include <QtCore/qanimationgroup.h>
 
+QT_REQUIRE_CONFIG(animation);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_ANIMATION
 
 class QPauseAnimation;
 class QSequentialAnimationGroupPrivate;
@@ -81,8 +80,6 @@ private:
     Q_DECLARE_PRIVATE(QSequentialAnimationGroup)
     Q_PRIVATE_SLOT(d_func(), void _q_uncontrolledAnimationFinished())
 };
-
-#endif //QT_NO_ANIMATION
 
 QT_END_NAMESPACE
 

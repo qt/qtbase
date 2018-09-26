@@ -105,7 +105,9 @@
 #include <qsettings.h>
 #include <qvariant.h>
 #include <qpixmapcache.h>
+#if QT_CONFIG(animation)
 #include <private/qstyleanimation_p.h>
+#endif
 
 #include <limits.h>
 
@@ -1195,7 +1197,7 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *w
 }
 #endif // QT_CONFIG(tabbar)
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 /*! \internal */
 QList<const QObject*> QCommonStylePrivate::animationTargets() const
 {

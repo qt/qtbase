@@ -80,9 +80,6 @@ machine.start();
 \sa QState, {The Animation Framework}
 */
 
-
-#ifndef QT_NO_ANIMATION
-
 /*!
   Constructs a new state with the given \a parent state.
 */
@@ -155,5 +152,3 @@ bool QAnimationState::event(QEvent *e)
 }
 
 QT_END_NAMESPACE
-
-#endif

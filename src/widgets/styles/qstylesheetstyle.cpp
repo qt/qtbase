@@ -84,7 +84,9 @@
 #include <qheaderview.h>
 #endif
 #include <private/qwindowsstyle_p_p.h>
+#if QT_CONFIG(animation)
 #include <private/qstyleanimation_p.h>
+#endif
 #if QT_CONFIG(tabbar)
 #include <qtabbar.h>
 #endif
