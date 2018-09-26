@@ -254,6 +254,7 @@ private slots:
     void zeroScale();
     void focusItemChangedSignal();
     void minimumRenderSize();
+    void focusOnTouch();
 
     // task specific tests below me
     void task139710_bspTreeCrash();
@@ -4756,6 +4757,41 @@ void tst_QGraphicsScene::minimumRenderSize()
     QCOMPARE(viewRepaints, bigParent->repaints);
     QVERIFY(bigParent->repaints > smallChild->repaints);
     QVERIFY(smallChild->repaints > smallerGrandChild->repaints);
+}
+
+void tst_QGraphicsScene::focusOnTouch()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    scene.setSceneRect(0, 0, 100, 100);
+    QGraphicsRectItem *rect = scene.addRect(0, 0, 100, 100);
+    rect->setFlag(QGraphicsItem::ItemIsFocusable, true);
+
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+
+    QVERIFY(!rect->hasFocus());
+
+    scene.setFocusOnTouch(false);
+
+    QTouchDevice device;
+    device.setType(QTouchDevice::TouchPad);
+    QList<QTouchEvent::TouchPoint> touchPoints;
+    QTouchEvent::TouchPoint point;
+    point.setScenePos(QPointF(10, 10));
+    point.setState(Qt::TouchPointPressed);
+    touchPoints.append(point);
+    QTouchEvent event(QEvent::TouchBegin, &device, Qt::NoModifier, Qt::TouchPointStates(),
+                      touchPoints);
+
+    QApplication::sendEvent(&scene, &event);
+
+    QVERIFY(!rect->hasFocus());
+    scene.setFocusOnTouch(true);
+
+    QApplication::sendEvent(&scene, &event);
+    QVERIFY(rect->hasFocus());
 }
 
 void tst_QGraphicsScene::taskQTBUG_15977_renderWithDeviceCoordinateCache()
