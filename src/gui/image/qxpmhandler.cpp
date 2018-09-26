@@ -45,6 +45,7 @@
 #include <qbytearraymatcher.h>
 #include <qimage.h>
 #include <qmap.h>
+#include <qregexp.h>
 #include <qtextstream.h>
 #include <qvariant.h>
 

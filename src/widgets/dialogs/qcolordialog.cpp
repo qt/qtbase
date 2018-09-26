@@ -57,6 +57,11 @@
 #include "qpainter.h"
 #include "qpixmap.h"
 #include "qpushbutton.h"
+#if QT_CONFIG(regularexpression)
+#include <qregularexpression.h>
+#else
+#include <qregexp.h>
+#endif
 #if QT_CONFIG(settings)
 #include "qsettings.h"
 #endif

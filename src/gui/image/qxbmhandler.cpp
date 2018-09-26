@@ -44,6 +44,7 @@
 
 #include <qimage.h>
 #include <qiodevice.h>
+#include <qregexp.h>
 #include <qvariant.h>
 
 #include <stdio.h>

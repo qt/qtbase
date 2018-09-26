@@ -48,7 +48,6 @@
 #include "qpoint.h"
 #include "qbuffer.h"
 #include "qimage.h"
-#include "qregexp.h"
 #include "qdir.h"
 #include "qimagereader.h"
 #include "qimagewriter.h"

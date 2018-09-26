@@ -46,9 +46,6 @@
 
 #include "qdebug.h"
 #include <QtCore/qhashfunctions.h>
-#ifndef QT_NO_REGEXP
-# include "qregexp.h"
-#endif
 #ifndef QT_NO_DATASTREAM
 # include "qdatastream.h"
 #endif

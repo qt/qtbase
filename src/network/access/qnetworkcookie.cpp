@@ -46,6 +46,7 @@
 #include "QtCore/qdebug.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qlocale.h"
+#include <QtCore/qregexp.h>
 #include "QtCore/qstring.h"
 #include "QtCore/qstringlist.h"
 #include "QtCore/qurl.h"

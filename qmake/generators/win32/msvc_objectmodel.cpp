@@ -34,6 +34,7 @@
 
 #include <qscopedpointer.h>
 #include <qfileinfo.h>
+#include <qregexp.h>
 
 using namespace QMakeInternal;
 

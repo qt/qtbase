@@ -34,6 +34,7 @@
 #include <qscopedpointer.h>
 #include <qstringlist.h>
 #include <qfileinfo.h>
+#include <qregexp.h>
 
 QT_BEGIN_NAMESPACE
 

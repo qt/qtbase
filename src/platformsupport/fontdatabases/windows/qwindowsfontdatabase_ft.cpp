@@ -48,7 +48,11 @@
 #include <QtCore/QDir>
 #include <QtCore/QDirIterator>
 #include <QtCore/QSettings>
+#if QT_CONFIG(regularexpression)
 #include <QtCore/QRegularExpression>
+#else
+#include <QtCore/QRegExp>
+#endif
 #include <QtGui/QGuiApplication>
 #include <QtGui/QFontDatabase>
 

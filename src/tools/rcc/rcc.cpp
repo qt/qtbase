@@ -37,6 +37,7 @@
 #include <qfile.h>
 #include <qiodevice.h>
 #include <qlocale.h>
+#include <qregexp.h>
 #include <qstack.h>
 #include <qxmlstream.h>
 

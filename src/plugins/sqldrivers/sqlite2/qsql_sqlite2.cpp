@@ -43,7 +43,6 @@
 #include <qvariant.h>
 #include <qdatetime.h>
 #include <qfile.h>
-#include <qregexp.h>
 #include <qsqlerror.h>
 #include <qsqlfield.h>
 #include <qsqlindex.h>

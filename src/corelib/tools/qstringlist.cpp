@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include <qstringlist.h>
+#include <qregexp.h>
 #include <qset.h>
 #if QT_CONFIG(regularexpression)
 #  include <qregularexpression.h>

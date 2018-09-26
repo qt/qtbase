@@ -93,6 +93,7 @@
 #include "qdir_p.h"
 #include "qabstractfileengine_p.h"
 
+#include <QtCore/qregexp.h>
 #include <QtCore/qset.h>
 #include <QtCore/qstack.h>
 #include <QtCore/qvariant.h>

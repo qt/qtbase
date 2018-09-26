@@ -38,6 +38,7 @@
 #include <QDir>
 #include <QTime>
 #include <QPointer>
+#include <QRegExp>
 
 const QString PI_Project(QLS("Project"));
 const QString PI_TestCase(QLS("TestCase"));

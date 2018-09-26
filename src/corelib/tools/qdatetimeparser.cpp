@@ -47,7 +47,6 @@
 #if QT_CONFIG(timezone)
 #include "qtimezone.h"
 #endif
-#include "qregexp.h"
 #include "qdebug.h"
 
 //#define QDATETIMEPARSER_DEBUG

@@ -41,7 +41,6 @@
 
 #include "qvariant.h"
 #include "qhash.h"
-#include "qregexp.h"
 #include "qsqlerror.h"
 #include "qsqlfield.h"
 #include "qsqlrecord.h"

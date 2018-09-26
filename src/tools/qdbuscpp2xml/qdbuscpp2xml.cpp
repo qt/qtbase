@@ -32,7 +32,6 @@
 #include <qfile.h>
 #include <qlist.h>
 #include <qbuffer.h>
-#include <qregexp.h>
 #include <qvector.h>
 #include <qdebug.h>
 

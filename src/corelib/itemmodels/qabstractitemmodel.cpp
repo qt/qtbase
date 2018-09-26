@@ -45,6 +45,7 @@
 #include <qmimedata.h>
 #include <qdebug.h>
 #include <qvector.h>
+#include <qregexp.h>
 #include <qstack.h>
 #include <qbitarray.h>
 #include <qdatetime.h>

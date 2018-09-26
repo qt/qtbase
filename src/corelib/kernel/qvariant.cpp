@@ -55,6 +55,7 @@
 #include "qstringlist.h"
 #include "qurl.h"
 #include "qlocale.h"
+#include "qregexp.h"
 #include "quuid.h"
 #if QT_CONFIG(itemmodel)
 #include "qabstractitemmodel.h"
