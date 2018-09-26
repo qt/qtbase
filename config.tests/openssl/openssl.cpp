@@ -39,8 +39,8 @@
 
 #include <openssl/opensslv.h>
 
-#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x0090700fL
-#  error "OpenSSL >= 0.9.7 is required"
+#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x0090700fL || OPENSSL_VERSION_NUMBER-0 >= 0x10100000L
+#  error "OpenSSL >= 0.9.7, and < 1.1.0 is required"
 #endif
 
 #include <openssl/ssl.h>
