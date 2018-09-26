@@ -1776,6 +1776,7 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
     if (config.isValid())
         newSession = QSharedNetworkSessionManager::getSession(config);
 
+    QNetworkSession::State oldState = QNetworkSession::Invalid;
     if (networkSessionStrongRef) {
         //do nothing if new and old session are the same
         if (networkSessionStrongRef == newSession)
@@ -1787,6 +1788,7 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
             q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)));
         QObject::disconnect(networkSessionStrongRef.data(), SIGNAL(error(QNetworkSession::SessionError)),
                             q, SLOT(_q_networkSessionFailed(QNetworkSession::SessionError)));
+        oldState = networkSessionStrongRef->state();
     }
 
     //switch to new session (null if config was invalid)
@@ -1812,7 +1814,11 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
     QObject::connect(networkSessionStrongRef.data(), SIGNAL(error(QNetworkSession::SessionError)),
                         q, SLOT(_q_networkSessionFailed(QNetworkSession::SessionError)));
 
-    _q_networkSessionStateChanged(networkSessionStrongRef->state());
+    const QNetworkSession::State newState = networkSessionStrongRef->state();
+    if (newState != oldState) {
+        QMetaObject::invokeMethod(q, "_q_networkSessionStateChanged", Qt::QueuedConnection,
+                                  Q_ARG(QNetworkSession::State, newState));
+    }
 }
 
 void QNetworkAccessManagerPrivate::_q_networkSessionClosed()
