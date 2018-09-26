@@ -696,7 +696,6 @@ void QDockWidget::initStyleOption(QStyleOptionDockWidget *option) const
     // If we are in a floating tab, init from the parent because the attributes and the geometry
     // of the title bar should be taken from the floating window.
     option->initFrom(floatingTab && !isFloating() ? parentWidget() : this);
-    option->fontMetrics = QFontMetrics(d->font);
     option->rect = dwlayout->titleArea();
     option->title = d->fixedWindowTitle;
     option->closable = hasFeature(this, QDockWidget::DockWidgetClosable);
@@ -1473,6 +1472,7 @@ void QDockWidget::closeEvent(QCloseEvent *event)
 void QDockWidget::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event)
+    Q_D(QDockWidget);
 
     QDockWidgetLayout *layout
         = qobject_cast<QDockWidgetLayout*>(this->layout());
@@ -1493,7 +1493,11 @@ void QDockWidget::paintEvent(QPaintEvent *event)
         // the title may wish to extend out to all sides (eg. Vista style)
         QStyleOptionDockWidget titleOpt;
         initStyleOption(&titleOpt);
-        p.setFont(d_func()->font);
+        if (font() == QApplication::font("QDockWidget")) {
+            titleOpt.fontMetrics = QFontMetrics(d->font);
+            p.setFont(d->font);
+        }
+
         p.drawControl(QStyle::CE_DockWidgetTitle, titleOpt);
     }
 }
