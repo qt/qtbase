@@ -2259,7 +2259,7 @@ Q_GLOBAL_STATIC(QLocale, tst_qapp_locale);
 #if QT_CONFIG(process)
 Q_GLOBAL_STATIC(QProcess, tst_qapp_process);
 #endif
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
 Q_GLOBAL_STATIC(QFileSystemWatcher, tst_qapp_fileSystemWatcher);
 #endif
 #ifndef QT_NO_SHAREDMEMORY
@@ -2284,7 +2284,7 @@ void tst_QApplication::globalStaticObjectDestruction()
 #if QT_CONFIG(process)
     QVERIFY(tst_qapp_process());
 #endif
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
     QVERIFY(tst_qapp_fileSystemWatcher());
 #endif
 #ifndef QT_NO_SHAREDMEMORY

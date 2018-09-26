@@ -472,7 +472,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
                 return const_cast<QFileSystemModelPrivate::QFileSystemNode*>(&root);
             QFileSystemModelPrivate *p = const_cast<QFileSystemModelPrivate*>(this);
             node = p->addNode(parent, element,info);
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
             node->populate(fileInfoGatherer.getInfo(info));
 #endif
         } else {
@@ -510,7 +510,7 @@ void QFileSystemModel::timerEvent(QTimerEvent *event)
     Q_D(QFileSystemModel);
     if (event->timerId() == d->fetchingTimer.timerId()) {
         d->fetchingTimer.stop();
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
         for (int i = 0; i < d->toFetch.count(); ++i) {
             const QFileSystemModelPrivate::QFileSystemNode *node = d->toFetch.at(i).node;
             if (!node->hasInformation()) {
@@ -658,7 +658,7 @@ void QFileSystemModel::fetchMore(const QModelIndex &parent)
     if (indexNode->populatedChildren)
         return;
     indexNode->populatedChildren = true;
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
     d->fileInfoGatherer.list(filePath(parent));
 #endif
 }
@@ -694,13 +694,13 @@ int QFileSystemModel::columnCount(const QModelIndex &parent) const
  */
 QVariant QFileSystemModel::myComputer(int role) const
 {
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
     Q_D(const QFileSystemModel);
 #endif
     switch (role) {
     case Qt::DisplayRole:
         return QFileSystemModelPrivate::myComputer();
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
     case Qt::DecorationRole:
         return d->fileInfoGatherer.iconProvider()->icon(QFileIconProvider::Computer);
 #endif
@@ -737,14 +737,14 @@ QVariant QFileSystemModel::data(const QModelIndex &index, int role) const
     case Qt::DecorationRole:
         if (index.column() == 0) {
             QIcon icon = d->icon(index);
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
             if (icon.isNull()) {
                 if (d->node(index)->isDir())
                     icon = d->fileInfoGatherer.iconProvider()->icon(QFileIconProvider::Folder);
                 else
                     icon = d->fileInfoGatherer.iconProvider()->icon(QFileIconProvider::File);
             }
-#endif // QT_NO_FILESYSTEMWATCHER
+#endif // filesystemwatcher
             return icon;
         }
         break;
@@ -821,7 +821,7 @@ QString QFileSystemModelPrivate::name(const QModelIndex &index) const
         return QString();
     QFileSystemNode *dirNode = node(index);
     if (
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
         fileInfoGatherer.resolveSymlinks() &&
 #endif
         !resolvedSymLinks.isEmpty() && dirNode->isSymLink(/* ignoreNtfsSymLinks = */ true)) {
@@ -923,7 +923,7 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
         QScopedPointer<QFileSystemModelPrivate::QFileSystemNode> nodeToRename(parentNode->children.take(oldName));
         nodeToRename->fileName = newName;
         nodeToRename->parent = parentNode;
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
         nodeToRename->populate(d->fileInfoGatherer.getInfo(QFileInfo(parentPath, newName)));
 #endif
         nodeToRename->isVisible = true;
@@ -1274,7 +1274,7 @@ QString QFileSystemModel::filePath(const QModelIndex &index) const
     QString fullPath = d->filePath(index);
     QFileSystemModelPrivate::QFileSystemNode *dirNode = d->node(index);
     if (dirNode->isSymLink()
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
         && d->fileInfoGatherer.resolveSymlinks()
 #endif
         && d->resolvedSymLinks.contains(fullPath)
@@ -1330,7 +1330,7 @@ QModelIndex QFileSystemModel::mkdir(const QModelIndex &parent, const QString &na
     d->addNode(parentNode, name, QFileInfo());
     Q_ASSERT(parentNode->children.contains(name));
     QFileSystemModelPrivate::QFileSystemNode *node = parentNode->children[name];
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
     node->populate(d->fileInfoGatherer.getInfo(QFileInfo(dir.absolutePath() + QDir::separator() + name)));
 #endif
     d->addVisibleFiles(parentNode, QStringList(name));
@@ -1394,7 +1394,7 @@ QModelIndex QFileSystemModel::setRootPath(const QString &newPath)
     //We remove the watcher on the previous path
     if (!rootPath().isEmpty() && rootPath() != QLatin1String(".")) {
         //This remove the watcher for the old rootPath
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
         d->fileInfoGatherer.removePath(rootPath());
 #endif
         //This line "marks" the node as dirty, so the next fetchMore
@@ -1450,7 +1450,7 @@ QDir QFileSystemModel::rootDirectory() const
 void QFileSystemModel::setIconProvider(QFileIconProvider *provider)
 {
     Q_D(QFileSystemModel);
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
     d->fileInfoGatherer.setIconProvider(provider);
 #endif
     d->root.updateIcon(provider, QString());
@@ -1461,7 +1461,7 @@ void QFileSystemModel::setIconProvider(QFileIconProvider *provider)
 */
 QFileIconProvider *QFileSystemModel::iconProvider() const
 {
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
     Q_D(const QFileSystemModel);
     return d->fileInfoGatherer.iconProvider();
 #else
@@ -1513,7 +1513,7 @@ QDir::Filters QFileSystemModel::filter() const
 */
 void QFileSystemModel::setResolveSymlinks(bool enable)
 {
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
     Q_D(QFileSystemModel);
     d->fileInfoGatherer.setResolveSymlinks(enable);
 #else
@@ -1523,7 +1523,7 @@ void QFileSystemModel::setResolveSymlinks(bool enable)
 
 bool QFileSystemModel::resolveSymlinks() const
 {
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
     Q_D(const QFileSystemModel);
     return d->fileInfoGatherer.resolveSymlinks();
 #else
@@ -1633,7 +1633,7 @@ QStringList QFileSystemModel::nameFilters() const
 */
 bool QFileSystemModel::event(QEvent *event)
 {
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
     Q_D(QFileSystemModel);
     if (event->type() == QEvent::LanguageChange) {
         d->root.retranslateStrings(d->fileInfoGatherer.iconProvider(), QString());
@@ -1647,7 +1647,7 @@ bool QFileSystemModel::rmdir(const QModelIndex &aindex)
 {
     QString path = filePath(aindex);
     const bool success = QDir().rmdir(path);
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
     if (success) {
         QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());
         d->fileInfoGatherer.removePath(path);
@@ -1690,7 +1690,7 @@ QFileSystemModelPrivate::QFileSystemNode* QFileSystemModelPrivate::addNode(QFile
 {
     // In the common case, itemLocation == count() so check there first
     QFileSystemModelPrivate::QFileSystemNode *node = new QFileSystemModelPrivate::QFileSystemNode(fileName, parentNode);
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
     node->populate(info);
 #else
     Q_UNUSED(info)
@@ -1798,7 +1798,7 @@ void QFileSystemModelPrivate::removeVisibleFile(QFileSystemNode *parentNode, int
  */
 void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path, const QVector<QPair<QString, QFileInfo> > &updates)
 {
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
     Q_Q(QFileSystemModel);
     QVector<QString> rowsToUpdate;
     QStringList newFiles;
@@ -1894,7 +1894,7 @@ void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path, const QV
 #else
     Q_UNUSED(path)
     Q_UNUSED(updates)
-#endif // !QT_NO_FILESYSTEMWATCHER
+#endif // filesystemwatcher
 }
 
 /*!
@@ -1952,7 +1952,7 @@ void QFileSystemModelPrivate::init()
 {
     Q_Q(QFileSystemModel);
     qRegisterMetaType<QVector<QPair<QString,QFileInfo> > >();
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
     q->connect(&fileInfoGatherer, SIGNAL(newListOfFiles(QString,QStringList)),
                q, SLOT(_q_directoryChanged(QString,QStringList)));
     q->connect(&fileInfoGatherer, SIGNAL(updates(QString,QVector<QPair<QString,QFileInfo> >)),
@@ -1961,7 +1961,7 @@ void QFileSystemModelPrivate::init()
             q, SLOT(_q_resolvedName(QString,QString)));
     q->connect(&fileInfoGatherer, SIGNAL(directoryLoaded(QString)),
                q, SIGNAL(directoryLoaded(QString)));
-#endif // !QT_NO_FILESYSTEMWATCHER
+#endif // filesystemwatcher
     q->connect(&delayedSortTimer, SIGNAL(timeout()), q, SLOT(_q_performDelayedSort()), Qt::QueuedConnection);
 
     roleNames.insertMulti(QFileSystemModel::FileIconRole, QByteArrayLiteral("fileIcon")); // == Qt::decoration

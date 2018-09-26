@@ -53,8 +53,6 @@
 
 #include "qfilesystemwatcher_p.h"
 
-#ifndef QT_NO_FILESYSTEMWATCHER
-
 #include <QtCore/qdatetime.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qfile.h>
@@ -174,7 +172,5 @@ Q_SIGNALS:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_FILESYSTEMWATCHER
 
 #endif // QFILESYSTEMWATCHER_WIN_P_H

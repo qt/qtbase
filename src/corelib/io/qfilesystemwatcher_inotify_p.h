@@ -53,7 +53,7 @@
 
 #include "qfilesystemwatcher_p.h"
 
-#ifndef QT_NO_FILESYSTEMWATCHER
+QT_REQUIRE_CONFIG(filesystemwatcher);
 
 #include <QtCore/qhash.h>
 #include <QtCore/qmutex.h>
@@ -89,5 +89,4 @@ private:
 
 
 QT_END_NAMESPACE
-#endif // QT_NO_FILESYSTEMWATCHER
 #endif // QFILESYSTEMWATCHER_INOTIFY_P_H

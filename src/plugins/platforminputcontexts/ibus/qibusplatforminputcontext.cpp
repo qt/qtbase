@@ -112,7 +112,7 @@ QIBusPlatformInputContext::QIBusPlatformInputContext ()
         QString socketPath = QIBusPlatformInputContextPrivate::getSocketPath();
         QFile file(socketPath);
         if (file.open(QFile::ReadOnly)) {
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
             qCDebug(qtQpaInputMethods) << "socketWatcher.addPath" << socketPath;
             // If KDE session save is used or restart ibus-daemon,
             // the applications could run before ibus-daemon runs.
@@ -564,7 +564,7 @@ void QIBusPlatformInputContext::connectToBus()
     d->initBus();
     connectToContextSignals();
 
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
     if (!d->usePortal && m_socketWatcher.files().size() == 0)
         m_socketWatcher.addPath(QIBusPlatformInputContextPrivate::getSocketPath());
 #endif

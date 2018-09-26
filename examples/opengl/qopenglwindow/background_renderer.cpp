@@ -84,7 +84,7 @@ FragmentToy::FragmentToy(const QString &fragmentSource, QObject *parent)
         QFileInfo info(fragmentSource);
         m_fragment_file_last_modified = info.lastModified();
         m_fragment_file = fragmentSource;
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
         m_watcher.addPath(info.canonicalPath());
         QObject::connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, &FragmentToy::fileChanged);
 #endif

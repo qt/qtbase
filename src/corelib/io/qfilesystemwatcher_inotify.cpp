@@ -40,8 +40,6 @@
 #include "qfilesystemwatcher.h"
 #include "qfilesystemwatcher_inotify_p.h"
 
-#ifndef QT_NO_FILESYSTEMWATCHER
-
 #include "private/qcore_unix_p.h"
 #include "private/qsystemerror_p.h"
 
@@ -427,5 +425,3 @@ QString QInotifyFileSystemWatcherEngine::getPathFromID(int id) const
 QT_END_NAMESPACE
 
 #include "moc_qfilesystemwatcher_inotify_p.cpp"
-
-#endif // QT_NO_FILESYSTEMWATCHER

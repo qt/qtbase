@@ -40,8 +40,6 @@
 #include "qfilesystemwatcher.h"
 #include "qfilesystemwatcher_p.h"
 
-#ifndef QT_NO_FILESYSTEMWATCHER
-
 #include <qdatetime.h>
 #include <qdebug.h>
 #include <qdir.h>
@@ -498,6 +496,4 @@ QT_END_NAMESPACE
 
 #include "moc_qfilesystemwatcher.cpp"
 #include "moc_qfilesystemwatcher_p.cpp"
-
-#endif // QT_NO_FILESYSTEMWATCHER
 

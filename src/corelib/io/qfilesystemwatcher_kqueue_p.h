@@ -59,7 +59,7 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qsocketnotifier.h>
 
-#ifndef QT_NO_FILESYSTEMWATCHER
+QT_REQUIRE_CONFIG(filesystemwatcher);
 struct kevent;
 
 QT_BEGIN_NAMESPACE
@@ -90,5 +90,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif //QT_NO_FILESYSTEMWATCHER
 #endif // QFILESYSTEMWATCHER_KQUEUE_P_H

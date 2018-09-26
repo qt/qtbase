@@ -40,8 +40,6 @@
 #include "qfilesystemwatcher.h"
 #include "qfilesystemwatcher_win_p.h"
 
-#ifndef QT_NO_FILESYSTEMWATCHER
-
 #include <qdebug.h>
 #include <qfileinfo.h>
 #include <qstringlist.h>
@@ -757,5 +755,3 @@ QT_END_NAMESPACE
 #ifndef Q_OS_WINRT
 #  include "qfilesystemwatcher_win.moc"
 #endif
-
-#endif // QT_NO_FILESYSTEMWATCHER
