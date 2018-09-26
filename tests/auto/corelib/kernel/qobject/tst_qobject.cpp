@@ -103,6 +103,7 @@ private slots:
     void deleteQObjectWhenDeletingEvent();
     void overloads();
     void isSignalConnected();
+    void isSignalConnectedAfterDisconnection();
     void qMetaObjectConnect();
     void qMetaObjectDisconnectOne();
     void sameName();
@@ -3833,6 +3834,58 @@ void tst_QObject::isSignalConnected()
     QVERIFY(o.isSignalConnected(meta->method(meta->indexOfSignal("destroyed(QObject*)"))));
 
     QVERIFY(!o.isSignalConnected(QMetaMethod()));
+}
+
+void tst_QObject::isSignalConnectedAfterDisconnection()
+{
+    ManySignals o;
+    const QMetaObject *meta = o.metaObject();
+
+    const QMetaMethod sig00 = meta->method(meta->indexOfSignal("sig00()"));
+    QVERIFY(!o.isSignalConnected(sig00));
+    QObject::connect(&o, &ManySignals::sig00, qt_noop);
+    QVERIFY(o.isSignalConnected(sig00));
+    QVERIFY(QObject::disconnect(&o, &ManySignals::sig00, 0, 0));
+    QVERIFY(!o.isSignalConnected(sig00));
+
+    const QMetaMethod sig69 = meta->method(meta->indexOfSignal("sig69()"));
+    QVERIFY(!o.isSignalConnected(sig69));
+    QObject::connect(&o, &ManySignals::sig69, qt_noop);
+    QVERIFY(o.isSignalConnected(sig69));
+    QVERIFY(QObject::disconnect(&o, &ManySignals::sig69, 0, 0));
+    QVERIFY(!o.isSignalConnected(sig69));
+
+    {
+        ManySignals o2;
+        QObject::connect(&o, &ManySignals::sig00, &o2, &ManySignals::sig00);
+        QVERIFY(o.isSignalConnected(sig00));
+        // o2 is destructed
+    }
+    QVERIFY(!o.isSignalConnected(sig00));
+
+    const QMetaMethod sig01 = meta->method(meta->indexOfSignal("sig01()"));
+    QObject::connect(&o, &ManySignals::sig00, qt_noop);
+    QObject::connect(&o, &ManySignals::sig01, qt_noop);
+    QObject::connect(&o, &ManySignals::sig69, qt_noop);
+    QVERIFY(o.isSignalConnected(sig00));
+    QVERIFY(o.isSignalConnected(sig01));
+    QVERIFY(o.isSignalConnected(sig69));
+    QVERIFY(QObject::disconnect(&o, &ManySignals::sig69, 0, 0));
+    QVERIFY(o.isSignalConnected(sig00));
+    QVERIFY(o.isSignalConnected(sig01));
+    QVERIFY(!o.isSignalConnected(sig69));
+    QVERIFY(QObject::disconnect(&o, &ManySignals::sig00, 0, 0));
+    QVERIFY(!o.isSignalConnected(sig00));
+    QVERIFY(o.isSignalConnected(sig01));
+    QVERIFY(!o.isSignalConnected(sig69));
+    QObject::connect(&o, &ManySignals::sig69, qt_noop);
+    QVERIFY(!o.isSignalConnected(sig00));
+    QVERIFY(o.isSignalConnected(sig01));
+    QVERIFY(o.isSignalConnected(sig69));
+    QVERIFY(QObject::disconnect(&o, &ManySignals::sig01, 0, 0));
+    QVERIFY(!o.isSignalConnected(sig00));
+    QVERIFY(!o.isSignalConnected(sig01));
+    QVERIFY(o.isSignalConnected(sig69));
 }
 
 void tst_QObject::qMetaObjectConnect()

@@ -421,6 +421,7 @@ void QObjectPrivate::cleanConnectionLists()
 {
     if (connectionLists->dirty && !connectionLists->inUse) {
         // remove broken connections
+        bool allConnected = false;
         for (int signal = -1; signal < connectionLists->count(); ++signal) {
             QObjectPrivate::ConnectionList &connectionList =
                 (*connectionLists)[signal];
@@ -432,11 +433,13 @@ void QObjectPrivate::cleanConnectionLists()
 
             QObjectPrivate::Connection **prev = &connectionList.first;
             QObjectPrivate::Connection *c = *prev;
+            bool connected = false; // whether the signal is still connected somewhere
             while (c) {
                 if (c->receiver) {
                     last = c;
                     prev = &c->nextConnectionList;
                     c = *prev;
+                    connected = true;
                 } else {
                     QObjectPrivate::Connection *next = c->nextConnectionList;
                     *prev = next;
@@ -448,6 +451,14 @@ void QObjectPrivate::cleanConnectionLists()
             // Correct the connection list's last pointer.
             // As conectionList.last could equal last, this could be a noop
             connectionList.last = last;
+
+            if (!allConnected && !connected && signal >= 0
+                && size_t(signal) < sizeof(connectedSignals) * 8) {
+                // This signal is no longer connected
+                connectedSignals[signal >> 5] &= ~(1 << (signal & 0x1f));
+            } else if (signal == -1) {
+                allConnected = connected;
+            }
         }
         connectionLists->dirty = false;
     }
@@ -2501,19 +2512,20 @@ bool QObject::isSignalConnected(const QMetaMethod &signal) const
 
     signalIndex += QMetaObjectPrivate::signalOffset(signal.mobj);
 
-    if (signalIndex < sizeof(d->connectedSignals) * 8)
+    QMutexLocker locker(signalSlotLock(this));
+    if (!d->connectionLists)
+        return false;
+
+    if (signalIndex < sizeof(d->connectedSignals) * 8 && !d->connectionLists->dirty)
         return d->isSignalConnected(signalIndex);
 
-    QMutexLocker locker(signalSlotLock(this));
-    if (d->connectionLists) {
-        if (signalIndex < uint(d->connectionLists->count())) {
-            const QObjectPrivate::Connection *c =
-                d->connectionLists->at(signalIndex).first;
-            while (c) {
-                if (c->receiver)
-                    return true;
-                c = c->nextConnectionList;
-            }
+    if (signalIndex < uint(d->connectionLists->count())) {
+        const QObjectPrivate::Connection *c =
+            d->connectionLists->at(signalIndex).first;
+        while (c) {
+            if (c->receiver)
+                return true;
+            c = c->nextConnectionList;
         }
     }
     return false;
