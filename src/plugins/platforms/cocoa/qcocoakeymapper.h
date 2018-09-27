@@ -89,15 +89,12 @@ public:
     void clearMappings();
 
 private:
-    QCFType<TISInputSourceRef> currentInputSource;
+    QCFType<TISInputSourceRef> currentInputSource = nullptr;
 
-    enum { NullMode, UnicodeMode, OtherMode } keyboard_mode;
-    union {
-        const UCKeyboardLayout *unicode;
-        void *other;
-    } keyboard_layout_format;
-    KeyboardLayoutKind keyboard_kind;
-    UInt32 keyboard_dead;
+    enum { NullMode, UnicodeMode, OtherMode } keyboard_mode = NullMode;
+    const UCKeyboardLayout *keyboard_layout_format = nullptr;
+    KeyboardLayoutKind keyboard_kind = kKLKCHRuchrKind;
+    UInt32 keyboard_dead = 0;
     KeyboardLayoutItem *keyLayout[256];
 };
 
