@@ -675,7 +675,8 @@ void QSslSocketBackendPrivate::transmit()
         // Check if we've got any data to be written to the socket.
         QVarLengthArray<char, 4096> data;
         int pendingBytes;
-        while (plainSocket->isValid() && (pendingBytes = q_BIO_pending(writeBio)) > 0) {
+        while (plainSocket->isValid() && (pendingBytes = q_BIO_pending(writeBio)) > 0
+                && plainSocket->openMode() != QIODevice::NotOpen) {
             // Read encrypted data from the write BIO into a buffer.
             data.resize(pendingBytes);
             int encryptedBytesRead = q_BIO_read(writeBio, data.data(), pendingBytes);
@@ -760,6 +761,10 @@ void QSslSocketBackendPrivate::transmit()
         int readBytes = 0;
         const int bytesToRead = 4096;
         do {
+            if (readChannelCount == 0) {
+                // The read buffer is deallocated, don't try resize or write to it.
+                break;
+            }
             // Don't use SSL_pending(). It's very unreliable.
             readBytes = q_SSL_read(ssl, buffer.reserve(bytesToRead), bytesToRead);
             if (readBytes > 0) {
