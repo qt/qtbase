@@ -577,6 +577,8 @@ private slots:
     void invalidStringCharacters() const;
     void hasError() const;
     void readBack() const;
+    void roundTrip() const;
+    void roundTrip_data() const;
 
 private:
     static QByteArray readFile(const QString &filename);
@@ -1739,6 +1741,36 @@ void tst_QXmlStream::readBack() const
             QVERIFY2(!reader.hasError(), QByteArray::number(c));
         }
     }
+}
+
+void tst_QXmlStream::roundTrip_data() const
+{
+    QTest::addColumn<QString>("in");
+
+    QTest::newRow("QTBUG-63434") <<
+        "<?xml version=\"1.0\"?>"
+        "<root>"
+            "<father>"
+                "<child xmlns:unknown=\"http://mydomain\">Text</child>"
+            "</father>"
+        "</root>\n";
+}
+
+void tst_QXmlStream::roundTrip() const
+{
+    QFETCH(QString, in);
+    QString out;
+
+    QXmlStreamReader reader(in);
+    QXmlStreamWriter writer(&out);
+
+    while (!reader.atEnd()) {
+        reader.readNext();
+        QVERIFY(!reader.hasError());
+        writer.writeCurrentToken(reader);
+        QVERIFY(!writer.hasError());
+    }
+    QCOMPARE(out, in);
 }
 
 #include "tst_qxmlstream.moc"
