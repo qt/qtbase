@@ -525,7 +525,7 @@ static void _q_parseUnixDir(const QStringList &tokens, const QString &userName, 
     // Resolve the modification date by parsing all possible formats
     QDateTime dateTime;
     int n = 0;
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
     do {
         dateTime = QLocale::c().toDateTime(dateString, formats.at(n++));
     }  while (n < formats.size() && (!dateTime.isValid()));
@@ -600,7 +600,7 @@ static void _q_parseDosDir(const QStringList &tokens, const QString &userName, Q
     info->setWritable(info->isFile());
 
     QDateTime dateTime;
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
     dateTime = QLocale::c().toDateTime(tokens.at(1), QLatin1String("MM-dd-yy  hh:mmAP"));
     if (dateTime.date().year() < 1971) {
         dateTime.setDate(QDate(dateTime.date().year() + 100,

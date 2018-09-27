@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -77,6 +77,7 @@
 #define QT_CRYPTOGRAPHICHASH_ONLY_SHA1
 #define QT_FEATURE_cxx11_random (QT_HAS_INCLUDE(<random>) ? 1 : -1)
 #define QT_NO_DATASTREAM
+#define QT_FEATURE_datestring 1
 #define QT_FEATURE_datetimeparser -1
 #define QT_FEATURE_etw -1
 #define QT_FEATURE_getauxval (QT_HAS_INCLUDE(<sys/auxv.h>) ? 1 : -1)
@@ -115,6 +116,7 @@
 #define QT_NO_SYSTEMLOCALE
 #define QT_FEATURE_systemsemaphore -1
 #define QT_FEATURE_temporaryfile 1
+#define QT_FEATURE_textdate 1
 #define QT_FEATURE_thread -1
 #define QT_FEATURE_timezone -1
 #define QT_FEATURE_topleveldomain -1

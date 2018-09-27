@@ -2074,7 +2074,7 @@ QString QLocale::dateTimeFormat(FormatType format) const
 
     \sa timeFormat(), toDate(), toDateTime(), QTime::fromString()
 */
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
 QTime QLocale::toTime(const QString &string, FormatType format) const
 {
     return toTime(string, timeFormat(format));
@@ -2092,7 +2092,7 @@ QTime QLocale::toTime(const QString &string, FormatType format) const
 
     \sa dateFormat(), toTime(), toDateTime(), QDate::fromString()
 */
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
 QDate QLocale::toDate(const QString &string, FormatType format) const
 {
     return toDate(string, dateFormat(format));
@@ -2111,7 +2111,7 @@ QDate QLocale::toDate(const QString &string, FormatType format) const
     \sa dateTimeFormat(), toTime(), toDate(), QDateTime::fromString()
 */
 
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
 QDateTime QLocale::toDateTime(const QString &string, FormatType format) const
 {
     return toDateTime(string, dateTimeFormat(format));
@@ -2129,7 +2129,7 @@ QDateTime QLocale::toDateTime(const QString &string, FormatType format) const
 
     \sa timeFormat(), toDate(), toDateTime(), QTime::fromString()
 */
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
 QTime QLocale::toTime(const QString &string, const QString &format) const
 {
     QTime time;
@@ -2160,7 +2160,7 @@ QTime QLocale::toTime(const QString &string, const QString &format) const
 
     \sa dateFormat(), toTime(), toDateTime(), QDate::fromString()
 */
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
 QDate QLocale::toDate(const QString &string, const QString &format) const
 {
     QDate date;
@@ -2191,7 +2191,7 @@ QDate QLocale::toDate(const QString &string, const QString &format) const
 
     \sa dateTimeFormat(), toTime(), toDate(), QDateTime::fromString()
 */
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
 QDateTime QLocale::toDateTime(const QString &string, const QString &format) const
 {
 #if QT_CONFIG(datetimeparser)
