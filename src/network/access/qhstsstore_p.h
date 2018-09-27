@@ -53,6 +53,8 @@
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
+QT_REQUIRE_CONFIG(settings);
+
 #include <QtCore/qsettings.h>
 #include <QtCore/qvector.h>
 

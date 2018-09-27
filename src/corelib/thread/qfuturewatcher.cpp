@@ -98,7 +98,9 @@ QT_BEGIN_NAMESPACE
 
 /*! \fn template <typename T> QFutureWatcher<T>::QFutureWatcher(QObject *parent)
 
-    Constructs a new QFutureWatcher with the given \a parent.
+    Constructs a new QFutureWatcher with the given \a parent. Until a future is
+    set with setFuture(), the functions isStarted(), isCanceled(), and
+    isFinished() return \c true.
 */
 QFutureWatcherBase::QFutureWatcherBase(QObject *parent)
     :QObject(*new QFutureWatcherBasePrivate, parent)
@@ -241,7 +243,7 @@ QString QFutureWatcherBase::progressText() const
 /*! \fn template <typename T> bool QFutureWatcher<T>::isStarted() const
 
     Returns \c true if the asynchronous computation represented by the future()
-    has been started; otherwise returns \c false.
+    has been started, or if no future has been set; otherwise returns \c false.
 */
 bool QFutureWatcherBase::isStarted() const
 {
@@ -272,7 +274,7 @@ bool QFutureWatcherBase::isRunning() const
 /*! \fn template <typename T> bool QFutureWatcher<T>::isCanceled() const
 
     Returns \c true if the asynchronous computation has been canceled with the
-    cancel() function; otherwise returns \c false.
+    cancel() function, or if no future has been set; otherwise returns \c false.
 
     Be aware that the computation may still be running even though this
     function returns \c true. See cancel() for more details.

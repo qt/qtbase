@@ -6,6 +6,7 @@
 
     "Description": "IAccessible2 is a new accessibility API which complements Microsoft's earlier work on MSAA",
     "Homepage": "http://www.linuxfoundation.org/collaborate/workgroups/accessibility/iaccessible2",
+    "Version": "1.3.0",
     "License": "BSD 3-clause \"New\" or \"Revised\" License",
     "LicenseId": "BSD-3-Clause",
     "LicenseFile": "LICENSE",
