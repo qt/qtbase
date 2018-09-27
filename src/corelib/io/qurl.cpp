@@ -3722,37 +3722,37 @@ bool QUrl::matches(const QUrl &url, FormattingOptions options) const
     if (isLocalFile())
         mask &= ~QUrlPrivate::Host;
 
-    if (options & QUrl::RemoveScheme)
+    if (options.testFlag(QUrl::RemoveScheme))
         mask &= ~QUrlPrivate::Scheme;
     else if (d->scheme != url.d->scheme)
         return false;
 
-    if (options & QUrl::RemovePassword)
+    if (options.testFlag(QUrl::RemovePassword))
         mask &= ~QUrlPrivate::Password;
     else if (d->password != url.d->password)
         return false;
 
-    if (options & QUrl::RemoveUserInfo)
+    if (options.testFlag(QUrl::RemoveUserInfo))
         mask &= ~QUrlPrivate::UserName;
     else if (d->userName != url.d->userName)
         return false;
 
-    if (options & QUrl::RemovePort)
+    if (options.testFlag(QUrl::RemovePort))
         mask &= ~QUrlPrivate::Port;
     else if (d->port != url.d->port)
         return false;
 
-    if (options & QUrl::RemoveAuthority)
+    if (options.testFlag(QUrl::RemoveAuthority))
         mask &= ~QUrlPrivate::Host;
     else if (d->host != url.d->host)
         return false;
 
-    if (options & QUrl::RemoveQuery)
+    if (options.testFlag(QUrl::RemoveQuery))
         mask &= ~QUrlPrivate::Query;
     else if (d->query != url.d->query)
         return false;
 
-    if (options & QUrl::RemoveFragment)
+    if (options.testFlag(QUrl::RemoveFragment))
         mask &= ~QUrlPrivate::Fragment;
     else if (d->fragment != url.d->fragment)
         return false;
@@ -3760,7 +3760,7 @@ bool QUrl::matches(const QUrl &url, FormattingOptions options) const
     if ((d->sectionIsPresent & mask) != (url.d->sectionIsPresent & mask))
         return false;
 
-    if (options & QUrl::RemovePath)
+    if (options.testFlag(QUrl::RemovePath))
         return true;
 
     // Compare paths, after applying path-related options

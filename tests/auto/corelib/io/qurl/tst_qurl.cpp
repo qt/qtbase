@@ -4123,6 +4123,18 @@ void tst_QUrl::matches_data()
         << "http://user:pass@www.website.com/directory"
         << "http://otheruser:otherpass@www.website.com/directory"
         << uint(QUrl::RemovePath | QUrl::RemoveAuthority) << true;
+    QTest::newRow("matchingHost-removePort") << "http://example.com" << "http://example.com"
+                                             << uint(QUrl::RemovePort) << true;
+    QTest::newRow("nonMatchingHost-removePort") << "http://example.com" << "http://example.net"
+                                                << uint(QUrl::RemovePort) << false;
+    QTest::newRow("matchingHost-removePassword") << "http://example.com" << "http://example.com"
+                                                 << uint(QUrl::RemovePassword) << true;
+    QTest::newRow("nonMatchingHost-removePassword") << "http://example.com" << "http://example.net"
+                                                    << uint(QUrl::RemovePassword) << false;
+    QTest::newRow("matchingUserName-removePassword") << "http://user@example.com" << "http://user@example.com"
+                                                 << uint(QUrl::RemovePassword) << true;
+    QTest::newRow("nonMatchingUserName-removePassword") << "http://user@example.com" << "http://user2@example.com"
+                                                    << uint(QUrl::RemovePassword) << false;
 }
 
 void tst_QUrl::matches()
