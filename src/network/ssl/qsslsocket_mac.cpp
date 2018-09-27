@@ -410,7 +410,7 @@ void QSslSocketBackendPrivate::continueHandshake()
     Q_Q(QSslSocket);
     connectionEncrypted = true;
 
-#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_13, __IPHONE_11_0, __TVOS_11_0, __WATCHOS_4_0)
+#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_13_4, __IPHONE_11_0, __TVOS_11_0, __WATCHOS_4_0)
     // Unlike OpenSSL, Secure Transport does not allow to negotiate protocols via
     // a callback during handshake. We can only set our list of preferred protocols
     // (and send it during handshake) and then receive what our peer has sent to us.
@@ -920,7 +920,7 @@ bool QSslSocketBackendPrivate::initSslContext()
         return false;
     }
 
-#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_13, __IPHONE_11_0, __TVOS_11_0, __WATCHOS_4_0)
+#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_13_4, __IPHONE_11_0, __TVOS_11_0, __WATCHOS_4_0)
     if (__builtin_available(macOS 10.13, iOS 11.0, tvOS 11.0, watchOS 4.0, *)) {
         const auto protocolNames = configuration.nextAllowedProtocols;
         QCFType<CFMutableArrayRef> cfNames(CFArrayCreateMutable(nullptr, 0, &kCFTypeArrayCallBacks));
