@@ -42,6 +42,7 @@
     \l rcc (Qt's resource compiler), and QFile.
 
     \section1 Resource Collection Files (\c{.qrc})
+    \target {Resource Collection Files}
 
     The resources associated with an application are specified in a
     \c .qrc file, an XML-based file format that lists files on the
