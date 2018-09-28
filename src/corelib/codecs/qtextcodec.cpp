@@ -57,8 +57,10 @@
 #include "qlatincodec_p.h"
 
 #if !defined(QT_BOOTSTRAPPED)
+#if QT_CONFIG(codecs)
 #  include "qtsciicodec_p.h"
 #  include "qisciicodec_p.h"
+#endif
 #if QT_CONFIG(icu)
 #include "qicucodec_p.h"
 #else
@@ -268,7 +270,7 @@ static void setup()
         return;
     initialized = true;
 
-#if !defined(QT_NO_CODECS) && !defined(QT_BOOTSTRAPPED)
+#if QT_CONFIG(codecs) && !defined(QT_BOOTSTRAPPED)
     (void)new QTsciiCodec;
     for (int i = 0; i < 9; ++i)
         (void)new QIsciiCodec(i);
@@ -293,7 +295,7 @@ static void setup()
 #if defined(Q_OS_WIN32)
     (void) new QWindowsLocalCodec;
 #endif // Q_OS_WIN32
-#endif // !QT_NO_CODECS && !QT_BOOTSTRAPPED
+#endif // codecs && !QT_BOOTSTRAPPED
 
     (void)new QUtf16Codec;
     (void)new QUtf16BECodec;

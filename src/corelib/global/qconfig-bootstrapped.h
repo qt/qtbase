@@ -130,7 +130,6 @@
 #define QT_NO_TEXTCODEC
 #define QT_FEATURE_textcodec -1
 #else
-#define QT_NO_CODECS
 #define QT_FEATURE_codecs -1
 #define QT_FEATURE_commandlineparser 1
 #define QT_FEATURE_textcodec 1
