@@ -40,8 +40,6 @@
 
 #include <qplatformdefs.h> // always first
 
-#ifndef QT_NO_MIMETYPE
-
 #include "qmimedatabase.h"
 #include "qmimedatabase_p.h"
 
@@ -803,5 +801,3 @@ QList<QMimeType> QMimeDatabase::allMimeTypes() const
 */
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_MIMETYPE

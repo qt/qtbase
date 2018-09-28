@@ -463,7 +463,7 @@ bool QPpdPrintDevice::isFeatureAvailable(QPrintDevice::PrintDevicePropertyKey ke
     return QPlatformPrintDevice::isFeatureAvailable(key, params);
 }
 
-#ifndef QT_NO_MIMETYPE
+#if QT_CONFIG(mimetype)
 void QPpdPrintDevice::loadMimeTypes() const
 {
     // TODO No CUPS api? Need to manually load CUPS mime.types file?

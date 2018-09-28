@@ -40,8 +40,6 @@
 
 #include "qmimetype.h"
 
-#ifndef QT_NO_MIMETYPE
-
 #include "qmimetype_p.h"
 #include "qmimedatabase_p.h"
 #include "qmimeprovider_p.h"
@@ -526,5 +524,3 @@ QDebug operator<<(QDebug debug, const QMimeType &mime)
 #endif
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_MIMETYPE

@@ -54,7 +54,7 @@
 
 #include "qmimedatabase_p.h"
 
-#ifndef QT_NO_MIMETYPE
+QT_REQUIRE_CONFIG(mimetype);
 
 #include "qmimeglobpattern_p.h"
 #include <QtCore/qdatetime.h>
@@ -173,5 +173,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_MIMETYPE
 #endif // QMIMEPROVIDER_P_H

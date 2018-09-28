@@ -47,8 +47,10 @@
 #include "private/qiconloader_p.h"
 #include "qpainter.h"
 #include "qfileinfo.h"
+#if QT_CONFIG(mimetype)
 #include <qmimedatabase.h>
 #include <qmimetype.h>
+#endif
 #include "qpixmapcache.h"
 #include "qvariant.h"
 #include "qcache.h"
@@ -1079,10 +1081,10 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
 
         QFileInfo info(fileName);
         QIconEngine *engine = iconEngineFromSuffix(fileName, info.suffix());
-#ifndef QT_NO_MIMETYPE
+#if QT_CONFIG(mimetype)
         if (!engine)
             engine = iconEngineFromSuffix(fileName, QMimeDatabase().mimeTypeForFile(info).preferredSuffix());
-#endif // !QT_NO_MIMETYPE
+#endif // mimetype
         d = new QIconPrivate(engine ? engine : new QPixmapIconEngine);
     }
 

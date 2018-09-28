@@ -54,7 +54,7 @@
 #include <QtCore/private/qglobal_p.h>
 #include "qmimetype.h"
 
-#ifndef QT_NO_MIMETYPE
+QT_REQUIRE_CONFIG(mimetype);
 
 #include <QtCore/qhash.h>
 #include <QtCore/qstringlist.h>
@@ -124,5 +124,4 @@ QT_END_NAMESPACE
     QT_END_NAMESPACE
 #endif
 
-#endif // QT_NO_MIMETYPE
 #endif   // QMIMETYPE_P_H

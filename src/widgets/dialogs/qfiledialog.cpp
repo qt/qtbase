@@ -59,7 +59,9 @@
 #include <stdlib.h>
 #include <qsettings.h>
 #include <qdebug.h>
+#if QT_CONFIG(mimetype)
 #include <qmimedatabase.h>
+#endif
 #include <qapplication.h>
 #include <qstylepainter.h>
 #include "ui_qfiledialog.h"
@@ -1515,7 +1517,7 @@ void QFileDialog::setFilter(QDir::Filters filters)
     d->showHiddenAction->setChecked((filters & QDir::Hidden));
 }
 
-#ifndef QT_NO_MIMETYPE
+#if QT_CONFIG(mimetype)
 
 static QString nameFilterForMime(const QString &mimeType)
 {
@@ -1596,7 +1598,7 @@ void QFileDialog::selectMimeTypeFilter(const QString &filter)
     }
 }
 
-#endif // QT_NO_MIMETYPE
+#endif // mimetype
 
 /*!
  * \since 5.9
@@ -1609,7 +1611,7 @@ QString QFileDialog::selectedMimeTypeFilter() const
     if (!d->usingWidgets())
         mimeTypeFilter = d->selectedMimeTypeFilter_sys();
 
-#ifndef QT_NO_MIMETYPE
+#if QT_CONFIG(mimetype)
     if (mimeTypeFilter.isNull() && !d->options->mimeTypeFilters().isEmpty()) {
         const auto nameFilter = selectedNameFilter();
         const auto mimeTypes = d->options->mimeTypeFilters();
@@ -3034,7 +3036,7 @@ void QFileDialogPrivate::createWidgets()
     if (!options->sidebarUrls().isEmpty())
         q->setSidebarUrls(options->sidebarUrls());
     q->setDirectoryUrl(options->initialDirectory());
-#ifndef QT_NO_MIMETYPE
+#if QT_CONFIG(mimetype)
     if (!options->mimeTypeFilters().isEmpty())
         q->setMimeTypeFilters(options->mimeTypeFilters());
     else

@@ -57,7 +57,9 @@
 
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
+#if QT_CONFIG(mimetype)
 #include <QtCore/qmimetype.h>
+#endif
 #include <QtGui/qpagelayout.h>
 
 
@@ -125,7 +127,7 @@ public:
     virtual bool setProperty(QPrintDevice::PrintDevicePropertyKey key, const QVariant &value);
     virtual bool isFeatureAvailable(QPrintDevice::PrintDevicePropertyKey key, const QVariant &params) const;
 
-#ifndef QT_NO_MIMETYPE
+#if QT_CONFIG(mimetype)
     virtual QList<QMimeType> supportedMimeTypes() const;
 #endif
 
@@ -139,7 +141,7 @@ protected:
     virtual void loadOutputBins() const;
     virtual void loadDuplexModes() const;
     virtual void loadColorModes() const;
-#ifndef QT_NO_MIMETYPE
+#if QT_CONFIG(mimetype)
     virtual void loadMimeTypes() const;
 #endif
 
@@ -178,7 +180,7 @@ protected:
     mutable bool m_haveColorModes;
     mutable QVector<QPrint::ColorMode> m_colorModes;
 
-#ifndef QT_NO_MIMETYPE
+#if QT_CONFIG(mimetype)
     mutable bool m_haveMimeTypes;
     mutable QList<QMimeType> m_mimeTypes;
 #endif

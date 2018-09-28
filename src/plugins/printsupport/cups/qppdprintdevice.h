@@ -100,7 +100,7 @@ protected:
     void loadOutputBins() const override;
     void loadDuplexModes() const override;
     void loadColorModes() const override;
-#ifndef QT_NO_MIMETYPE
+#if QT_CONFIG(mimetype)
     void loadMimeTypes() const override;
 #endif
 

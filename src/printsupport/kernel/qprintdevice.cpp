@@ -260,12 +260,12 @@ bool QPrintDevice::isFeatureAvailable(PrintDevicePropertyKey key, const QVariant
     return isValid() ? d->isFeatureAvailable(key, params) : false;
 }
 
-#ifndef QT_NO_MIMETYPE
+#if QT_CONFIG(mimetype)
 QList<QMimeType> QPrintDevice::supportedMimeTypes() const
 {
     return isValid() ? d->supportedMimeTypes() : QList<QMimeType>();
 }
-#endif // QT_NO_MIMETYPE
+#endif // mimetype
 
 #  ifndef QT_NO_DEBUG_STREAM
 void QPrintDevice::format(QDebug debug) const
@@ -296,7 +296,7 @@ void QPrintDevice::format(QDebug debug) const
         debug << "), defaultResolution=" << defaultResolution()
               << ", defaultDuplexMode=" << defaultDuplexMode()
               << ", defaultColorMode="<< defaultColorMode();
-#    ifndef QT_NO_MIMETYPE
+#    if QT_CONFIG(mimetype)
         const QList<QMimeType> mimeTypes = supportedMimeTypes();
         if (!mimeTypes.isEmpty()) {
             debug << ", supportedMimeTypes=(";
@@ -304,7 +304,7 @@ void QPrintDevice::format(QDebug debug) const
                 debug << " \"" << mimeType.name() << '"';
             debug << ')';
         }
-#    endif // !QT_NO_MIMETYPE
+#    endif // mimetype
     } else {
         debug << "null";
     }
