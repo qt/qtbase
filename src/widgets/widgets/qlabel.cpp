@@ -1098,7 +1098,7 @@ void QLabel::paintEvent(QPaintEvent *)
                 QImage scaledImage =
                     d->cachedimage->scaled(scaledSize,
                                            Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-                d->scaledpixmap = new QPixmap(QPixmap::fromImage(scaledImage));
+                d->scaledpixmap = new QPixmap(QPixmap::fromImage(std::move(scaledImage)));
                 d->scaledpixmap->setDevicePixelRatio(devicePixelRatioF());
             }
             pix = *d->scaledpixmap;
