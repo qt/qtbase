@@ -282,8 +282,10 @@ public:
     static void cacheStatistics();
 
     QString defaultFamily() const;
-    QString lastResortFamily() const;
-    QString lastResortFont() const;
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED QString lastResortFamily() const;
+    QT_DEPRECATED QString lastResortFont() const;
+#endif
 
     QFont resolve(const QFont &) const;
     inline uint resolve() const { return resolve_mask; }

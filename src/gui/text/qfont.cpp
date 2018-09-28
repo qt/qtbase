@@ -340,7 +340,7 @@ QFontEngineData::~QFontEngineData()
     \class QFont
     \reentrant
 
-    \brief The QFont class specifies a font used for drawing text.
+    \brief The QFont class specifies a query for a font used for drawing text.
 
     \ingroup painting
     \ingroup appearance
@@ -348,6 +348,7 @@ QFontEngineData::~QFontEngineData()
     \ingroup richtext-processing
     \inmodule QtGui
 
+    QFont can be regarded as a query for one or more fonts on the system.
 
     When you create a QFont object you specify various attributes that
     you want the font to have. Qt will use the font with the specified
@@ -355,8 +356,14 @@ QFontEngineData::~QFontEngineData()
     matching installed font. The attributes of the font that is
     actually used are retrievable from a QFontInfo object. If the
     window system provides an exact match exactMatch() returns \c true.
-    Use QFontMetrics to get measurements, e.g. the pixel length of a
+    Use QFontMetricsF to get measurements, e.g. the pixel length of a
     string using QFontMetrics::width().
+
+    Attributes which are not specifically set will not affect the font
+    selection algorithm, and default values will be preferred instead.
+
+    To load a specific physical font, typically represented by a single file,
+    use QRawFont instead.
 
     Note that a QGuiApplication instance must exist before a QFont can be
     used. You can set the application's default font with
@@ -390,8 +397,6 @@ QFontEngineData::~QFontEngineData()
     setStyleHint(). The default family (corresponding to the current
     style hint) is returned by defaultFamily().
 
-    The font-matching algorithm has a lastResortFamily() and
-    lastResortFont() in cases where a suitable match cannot be found.
     You can provide substitutions for font family names using
     insertSubstitution() and insertSubstitutions(). Substitutions can
     be removed with removeSubstitutions(). Use substitute() to retrieve
@@ -419,18 +424,20 @@ QFontEngineData::~QFontEngineData()
     \target fontmatching
     The font matching algorithm works as follows:
     \list 1
-    \li The specified font family is searched for.
-    \li If not found, the styleHint() is used to select a replacement
-       family.
-    \li Each replacement font family is searched for.
-    \li If none of these are found or there was no styleHint(), "helvetica"
-       will be searched for.
-    \li If "helvetica" isn't found Qt will try the lastResortFamily().
-    \li If the lastResortFamily() isn't found Qt will try the
-       lastResortFont() which will always return a name of some kind.
+    \li If the specified font family exists and can be used to represent
+        the writing system in use, it will be selected.
+    \li If not, a replacement font that supports the writing system is
+        selected. The font matching algorithm will try to find the
+        best match for all the properties set in the QFont. How this is
+        done varies from platform to platform.
+    \li If no font exists on the system that can support the text,
+        then special "missing character" boxes will be shown in its place.
     \endlist
 
-    Note that the actual font matching algorithm varies from platform to platform.
+    \note If the selected font, though supporting the writing system in general,
+    is missing glyphs for one or more specific characters, then Qt will try to
+    find a fallback font for this or these particular characters. This feature
+    can be disabled using QFont::NoFontMerging style strategy.
 
     In Windows a request for the "Courier" font is automatically changed to
     "Courier New", an improved version of Courier that allows for smooth scaling.
@@ -2133,14 +2140,14 @@ void QFont::cacheStatistics()
 {
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn QString QFont::lastResortFamily() const
 
-    Returns the "last resort" font family name.
+    \obsolete
 
-    The current implementation tries a wide variety of common fonts,
-    returning the first one it finds. Is is possible that no family is
-    found in which case an empty string is returned.
+    This function is deprecated and is not in use by the font
+    selection algorithm in Qt 5. It always returns "helvetica".
 
     \sa lastResortFont()
 */
@@ -2148,6 +2155,7 @@ QString QFont::lastResortFamily() const
 {
     return QString::fromLatin1("helvetica");
 }
+#endif
 
 extern QStringList qt_fallbacksForFamily(const QString &family, QFont::Style style,
                                          QFont::StyleHint styleHint, QChar::Script script);
@@ -2169,33 +2177,20 @@ QString QFont::defaultFamily() const
     return QString();
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn QString QFont::lastResortFont() const
 
-    Returns a "last resort" font name for the font matching algorithm.
-    This is used if the last resort family is not available. It will
-    always return a name, if necessary returning something like
-    "fixed" or "system".
+    \obsolete
 
-    The current implementation tries a wide variety of common fonts,
-    returning the first one it finds. The implementation may change
-    at any time, but this function will always return a string
-    containing something.
-
-    It is theoretically possible that there really isn't a
-    lastResortFont() in which case Qt will abort with an error
-    message. We have not been able to identify a case where this
-    happens. Please \l{bughowto.html}{report it as a bug} if
-    it does, preferably with a list of the fonts you have installed.
-
-    \sa lastResortFamily()
+    Deprecated function. Since Qt 5.0, this is not used by the font selection algorithm. For
+    compatibility it remains in the API, but will always return the same value as lastResortFamily().
 */
 QString QFont::lastResortFont() const
 {
-    qFatal("QFont::lastResortFont: Cannot find any reasonable font");
-    // Shut compiler up
-    return QString();
+    return lastResortFamily();
 }
+#endif
 
 /*****************************************************************************
   QFont stream functions
