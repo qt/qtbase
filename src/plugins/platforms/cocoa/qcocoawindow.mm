@@ -1714,6 +1714,14 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
     [window setStyleMask:[window styleMask] | NSTexturedBackgroundWindowMask];
     window.titlebarAppearsTransparent = YES;
 
+    // Setting titlebarAppearsTransparent to YES means that the border thickness has to account
+    // for the title bar height as well, otherwise sheets will not be presented at the correct
+    // position, which should be (title bar height + top content border size).
+    const NSRect frameRect = window.frame;
+    const NSRect contentRect = [window contentRectForFrameRect:frameRect];
+    const CGFloat titlebarHeight = frameRect.size.height - contentRect.size.height;
+    effectiveTopContentBorderThickness += titlebarHeight;
+
     [window setContentBorderThickness:effectiveTopContentBorderThickness forEdge:NSMaxYEdge];
     [window setAutorecalculatesContentBorderThickness:NO forEdge:NSMaxYEdge];
 
