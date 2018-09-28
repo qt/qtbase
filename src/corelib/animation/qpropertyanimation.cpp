@@ -312,8 +312,8 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
     }
 }
 
-#include "moc_qpropertyanimation.cpp"
-
 QT_END_NAMESPACE
+
+#include "moc_qpropertyanimation.cpp"
 
 #endif //QT_NO_ANIMATION

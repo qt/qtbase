@@ -82,8 +82,6 @@ Q_SIGNALS:
     void forcedSessionClose(const QNetworkConfiguration &config);
 };
 
-#include "qnetworksession_impl.moc"
-
 Q_GLOBAL_STATIC(QNetworkSessionManagerPrivate, sessionManager);
 
 void QNetworkSessionPrivateImpl::syncStateWithInterface()
@@ -432,3 +430,5 @@ void QNetworkSessionPrivateImpl::decrementTimeout()
 }
 
 QT_END_NAMESPACE
+
+#include "qnetworksession_impl.moc"
