@@ -218,6 +218,7 @@ QCocoaWindow::~QCocoaWindow()
     }
 
     [m_view release];
+    [m_nsWindow close];
     [m_nsWindow release];
 }
 
