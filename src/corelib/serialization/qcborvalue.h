@@ -237,16 +237,11 @@ public:
     QRegularExpression toRegularExpression(const QRegularExpression &defaultValue = {}) const;
     QUuid toUuid(const QUuid &defaultValue = {}) const;
 
-#ifdef Q_QDOC
-    QCborArray toArray(const QCborArray &a = {}) const;
-    QCborMap toMap(const QCborMap &m = {}) const;
-#else
     // only forward-declared, need split functions
     QCborArray toArray() const;
     QCborArray toArray(const QCborArray &defaultValue) const;
     QCborMap toMap() const;
     QCborMap toMap(const QCborMap &defaultValue) const;
-#endif
 
     const QCborValue operator[](const QString &key) const;
     const QCborValue operator[](QLatin1String key) const;
@@ -386,16 +381,11 @@ public:
     QUuid toUuid(const QUuid &defaultValue = {}) const
     { return concrete().toUuid(defaultValue); }
 
-#ifdef Q_QDOC
-    QCborArray toArray(const QCborArray &a = {}) const;
-    QCborMap toMap(const QCborMap &m = {}) const;
-#else
     // only forward-declared, need split functions. Implemented in qcbor{array,map}.h
     QCborArray toArray() const;
     QCborArray toArray(const QCborArray &a) const;
     QCborMap toMap() const;
     QCborMap toMap(const QCborMap &m) const;
-#endif
 
     int compare(const QCborValue &other) const
     { return concrete().compare(other); }
