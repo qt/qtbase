@@ -41,6 +41,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QVariant>
+#include <QtCore/QRegularExpression>
 #include <QtCore/QSharedData>
 #if QT_CONFIG(settings)
 #include <QtCore/QSettings>
@@ -779,18 +780,19 @@ void QPlatformFileDialogHelper::setOptions(const QSharedPointer<QFileDialogOptio
     m_options = options;
 }
 
-const char *QPlatformFileDialogHelper::filterRegExp =
+const char QPlatformFileDialogHelper::filterRegExp[] =
 "^(.*)\\(([a-zA-Z0-9_.,*? +;#\\-\\[\\]@\\{\\}/!<>\\$%&=^~:\\|]*)\\)$";
 
 // Makes a list of filters from a normal filter string "Image Files (*.png *.jpg)"
 QStringList QPlatformFileDialogHelper::cleanFilterList(const QString &filter)
 {
-    QRegExp regexp(QString::fromLatin1(filterRegExp));
+    QRegularExpression regexp(QString::fromLatin1(filterRegExp));
     Q_ASSERT(regexp.isValid());
     QString f = filter;
-    int i = regexp.indexIn(f);
-    if (i >= 0)
-        f = regexp.cap(2);
+    QRegularExpressionMatch match;
+    filter.indexOf(regexp, 0, &match);
+    if (match.hasMatch())
+        f = match.captured(2);
     return f.split(QLatin1Char(' '), QString::SkipEmptyParts);
 }
 
