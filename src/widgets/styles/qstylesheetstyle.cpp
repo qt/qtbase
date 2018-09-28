@@ -5075,21 +5075,27 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
             QRenderRule subRule = renderRule(w, opt, pe);
             if ((pe == PseudoElement_MenuSeparator) && subRule.hasContentsSize()) {
                 return QSize(sz.width(), subRule.size().height());
-            } else if ((pe == PseudoElement_Item) && (subRule.hasBox() || subRule.hasBorder())) {
-                int width = csz.width();
+            }
+            if ((pe == PseudoElement_Item) && (subRule.hasBox() || subRule.hasBorder() || subRule.hasFont)) {
+                QSize sz(csz);
                 if (mi->text.contains(QLatin1Char('\t')))
-                    width += 12; //as in QCommonStyle
+                    sz.rwidth() += 12; //as in QCommonStyle
                 bool checkable = mi->checkType != QStyleOptionMenuItem::NotCheckable;
                 if (checkable) {
                     QRenderRule subSubRule = renderRule(w, opt, PseudoElement_MenuCheckMark);
                     QRect checkmarkRect = positionRect(w, subRule, subSubRule, PseudoElement_MenuCheckMark, opt->rect, opt->direction);
-                    width += checkmarkRect.width();
+                    sz.rwidth() += checkmarkRect.width();
                 }
                 if (!mi->icon.isNull()) {
                     QPixmap pixmap = mi->icon.pixmap(pixelMetric(PM_SmallIconSize));
-                    width += pixmap.width();
+                    sz.rwidth() += pixmap.width();
                 }
-                return subRule.boxSize(subRule.adjustSize(QSize(width, csz.height())));
+                if (subRule.hasFont) {
+                    QFontMetrics fm(subRule.font);
+                    const QRect r = fm.boundingRect(QRect(), Qt::TextSingleLine | Qt::TextShowMnemonic, mi->text);
+                    sz = sz.expandedTo(r.size());
+                }
+                return subRule.boxSize(subRule.adjustSize(sz));
             }
         }
         break;
