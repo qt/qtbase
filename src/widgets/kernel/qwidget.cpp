@@ -4497,16 +4497,14 @@ void QWidget::setForegroundRole(QPalette::ColorRole role)
     and these styles typically do not follow the palette. Because of this,
     assigning roles to a widget's palette is not guaranteed to change the
     appearance of the widget. Instead, you may choose to apply a \l
-    styleSheet. You can refer to our Knowledge Base article
-    \l{http://qt.nokia.com/developer/knowledgebase/22}{here} for more
-    information.
+    styleSheet.
 
     \warning Do not use this function in conjunction with \l{Qt Style Sheets}.
     When using style sheets, the palette of a widget can be customized using
     the "color", "background-color", "selection-color",
     "selection-background-color" and "alternate-background-color".
 
-    \sa QApplication::palette(), QWidget::font()
+    \sa QApplication::palette(), QWidget::font(), \l {Qt Style Sheets}
 */
 const QPalette &QWidget::palette() const
 {
