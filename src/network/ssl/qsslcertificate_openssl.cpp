@@ -44,8 +44,9 @@
 #include "qsslkey_p.h"
 #include "qsslcertificateextension_p.h"
 
+#if QT_CONFIG(thread)
 #include <QtCore/private/qmutexpool_p.h>
-
+#endif
 QT_BEGIN_NAMESPACE
 
 // forward declaration
@@ -90,7 +91,9 @@ bool QSslCertificate::isSelfSigned() const
 
 QByteArray QSslCertificate::version() const
 {
+#if QT_CONFIG(thread)
     QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
+#endif
     if (d->versionString.isEmpty() && d->x509)
         d->versionString = QByteArray::number(qlonglong(q_X509_get_version(d->x509)) + 1);
 
@@ -99,7 +102,9 @@ QByteArray QSslCertificate::version() const
 
 QByteArray QSslCertificate::serialNumber() const
 {
+#if QT_CONFIG(thread)
     QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
+#endif
     if (d->serialNumberString.isEmpty() && d->x509) {
         ASN1_INTEGER *serialNumber = q_X509_get_serialNumber(d->x509);
         QByteArray hexString;
@@ -116,7 +121,9 @@ QByteArray QSslCertificate::serialNumber() const
 
 QStringList QSslCertificate::issuerInfo(SubjectInfo info) const
 {
+#if QT_CONFIG(thread)
     QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
+#endif
     // lazy init
     if (d->issuerInfo.isEmpty() && d->x509)
         d->issuerInfo =
@@ -127,7 +134,9 @@ QStringList QSslCertificate::issuerInfo(SubjectInfo info) const
 
 QStringList QSslCertificate::issuerInfo(const QByteArray &attribute) const
 {
+#if QT_CONFIG(thread)
     QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
+#endif
     // lazy init
     if (d->issuerInfo.isEmpty() && d->x509)
         d->issuerInfo =
@@ -138,7 +147,9 @@ QStringList QSslCertificate::issuerInfo(const QByteArray &attribute) const
 
 QStringList QSslCertificate::subjectInfo(SubjectInfo info) const
 {
+#if QT_CONFIG(thread)
     QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
+#endif
     // lazy init
     if (d->subjectInfo.isEmpty() && d->x509)
         d->subjectInfo =
@@ -149,7 +160,9 @@ QStringList QSslCertificate::subjectInfo(SubjectInfo info) const
 
 QStringList QSslCertificate::subjectInfo(const QByteArray &attribute) const
 {
+#if QT_CONFIG(thread)
     QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
+#endif
     // lazy init
     if (d->subjectInfo.isEmpty() && d->x509)
         d->subjectInfo =
@@ -160,7 +173,9 @@ QStringList QSslCertificate::subjectInfo(const QByteArray &attribute) const
 
 QList<QByteArray> QSslCertificate::subjectInfoAttributes() const
 {
+#if QT_CONFIG(thread)
     QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
+#endif
     // lazy init
     if (d->subjectInfo.isEmpty() && d->x509)
         d->subjectInfo =
@@ -171,7 +186,9 @@ QList<QByteArray> QSslCertificate::subjectInfoAttributes() const
 
 QList<QByteArray> QSslCertificate::issuerInfoAttributes() const
 {
+#if QT_CONFIG(thread)
     QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
+#endif
     // lazy init
     if (d->issuerInfo.isEmpty() && d->x509)
         d->issuerInfo =

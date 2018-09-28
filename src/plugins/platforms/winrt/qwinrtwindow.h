@@ -54,7 +54,7 @@ class QWinRTWindow : public QPlatformWindow
 {
 public:
     QWinRTWindow(QWindow *window);
-    ~QWinRTWindow();
+    ~QWinRTWindow() override;
 
     QSurfaceFormat format() const override;
     bool isActive() const override;

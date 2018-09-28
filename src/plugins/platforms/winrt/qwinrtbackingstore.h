@@ -54,7 +54,7 @@ class QWinRTBackingStore : public QPlatformBackingStore
 {
 public:
     explicit QWinRTBackingStore(QWindow *window);
-    ~QWinRTBackingStore();
+    ~QWinRTBackingStore() override;
     QPaintDevice *paintDevice() override;
     void beginPaint(const QRegion &) override;
     void endPaint() override;

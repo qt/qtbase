@@ -83,8 +83,6 @@ void QWasmWindow::initialize()
     setWindowState(window()->windowStates());
     setWindowFlags(window()->flags());
     setWindowTitle(window()->title());
-    m_hasTitle = window()->flags().testFlag(Qt::WindowTitleHint) && m_needsCompositor;
-
     if (window()->isTopLevel())
         setWindowIcon(window()->icon());
     m_normalGeometry = rect;
@@ -135,8 +133,8 @@ void QWasmWindow::setVisible(bool visible)
 
 QMargins QWasmWindow::frameMargins() const
 {
-    int border = m_hasTitle ? 4. * (qreal(qt_defaultDpiX()) / 96.0) : 0;
-    int titleBarHeight = m_hasTitle ? titleHeight() : 0;
+    int border = hasTitleBar() ? 4. * (qreal(qt_defaultDpiX()) / 96.0) : 0;
+    int titleBarHeight = hasTitleBar() ? titleHeight() : 0;
 
     QMargins margins;
     margins.setLeft(border);
@@ -177,7 +175,7 @@ void QWasmWindow::injectMousePressed(const QPoint &local, const QPoint &global,
     Q_UNUSED(local);
     Q_UNUSED(mods);
 
-    if (!m_hasTitle || button != Qt::LeftButton)
+    if (!hasTitleBar() || button != Qt::LeftButton)
         return;
 
     if (maxButtonRect().contains(global))
@@ -198,7 +196,7 @@ void QWasmWindow::injectMouseReleased(const QPoint &local, const QPoint &global,
     Q_UNUSED(local);
     Q_UNUSED(mods);
 
-    if (!m_hasTitle || button != Qt::LeftButton)
+    if (!hasTitleBar() || button != Qt::LeftButton)
         return;
 
     if (closeButtonRect().contains(global) && m_activeControl == QWasmCompositor::SC_TitleBarCloseButton)
@@ -393,6 +391,11 @@ void QWasmWindow::requestUpdate()
 
     if (!registered)
         QPlatformWindow::requestUpdate();
+}
+
+bool QWasmWindow::hasTitleBar() const
+{
+    return !(m_windowState & Qt::WindowFullScreen) && (window()->flags().testFlag(Qt::WindowTitleHint) && m_needsCompositor);
 }
 
 QT_END_NAMESPACE

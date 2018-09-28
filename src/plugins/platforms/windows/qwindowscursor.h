@@ -89,10 +89,10 @@ typedef QSharedPointer<CursorHandle> CursorHandlePtr;
 class QWindowsCursor : public QPlatformCursor
 {
 public:
-    enum CursorState {
-        CursorShowing,
-        CursorHidden,
-        CursorSuppressed // Cursor suppressed by touch interaction (Windows 8).
+    enum class State {
+        Showing,
+        Hidden,
+        Suppressed // Cursor suppressed by touch interaction (Windows 8).
     };
 
     struct PixmapCursor {
@@ -119,7 +119,7 @@ public:
 
     static HCURSOR createCursorFromShape(Qt::CursorShape cursorShape, const QPlatformScreen *screen = nullptr);
     static QPoint mousePosition();
-    static CursorState cursorState();
+    static State cursorState();
 
     CursorHandlePtr standardWindowCursor(Qt::CursorShape s = Qt::ArrowCursor);
     CursorHandlePtr pixmapWindowCursor(const QCursor &c);

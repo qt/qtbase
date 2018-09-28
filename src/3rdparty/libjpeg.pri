@@ -1,17 +1,13 @@
 winrt: DEFINES += NO_GETENV
 
-DEFINES += \
-    C_ARITH_CODING_SUPPORTED=1 \
-    D_ARITH_CODING_SUPPORTED=1 \
-    BITS_IN_JSAMPLE=8 \
-    JPEG_LIB_VERSION=80 \
-    SIZEOF_SIZE_T=__SIZEOF_SIZE_T__
-
 # Disable warnings in 3rdparty code due to unused arguments
 gcc: QMAKE_CFLAGS_WARN_ON += -Wno-unused-parameter -Wno-main
 
 
-INCLUDEPATH += $$PWD/libjpeg/src
+INCLUDEPATH += \
+    $$PWD/libjpeg \
+    $$PWD/libjpeg/src
+
 SOURCES += \
     $$PWD/libjpeg/src/jaricom.c \
     $$PWD/libjpeg/src/jcapimin.c \

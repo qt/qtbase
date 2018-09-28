@@ -64,8 +64,8 @@ inline QRectF getInputPaneRect(ComPtr<IInputPane> pane, qreal scaleFactor)
 {
     Rect rect;
     pane->get_OccludedRect(&rect);
-    return QRectF(qRound(rect.X * scaleFactor), qRound(rect.Y * scaleFactor),
-                  qRound(rect.Width * scaleFactor), qRound(rect.Height * scaleFactor));
+    return QRectF(qRound(qreal(rect.X) * scaleFactor), qRound(qreal(rect.Y) * scaleFactor),
+                  qRound(qreal(rect.Width) * scaleFactor), qRound(qreal(rect.Height) * scaleFactor));
 }
 
 /*!
@@ -205,6 +205,8 @@ void QWinRTInputContext::showInputPanel()
 void QWinRTInputContext::hideInputPanel()
 {
     qCDebug(lcQpaInputMethods) << __FUNCTION__;
+    if (!m_isInputPanelVisible)
+        return;
 
     QEventDispatcherWinRT::runOnXamlThread([&]() {
         ComPtr<IInputPane2> inputPane;

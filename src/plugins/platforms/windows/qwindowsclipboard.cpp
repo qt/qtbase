@@ -50,6 +50,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qmimedata.h>
 #include <QtCore/qstringlist.h>
+#include <QtCore/qthread.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qurl.h>
 
@@ -318,7 +319,15 @@ void QWindowsClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
             m_data = new QWindowsOleDataObject(mimeData);
     }
 
-    const HRESULT src = OleSetClipboard(m_data);
+    HRESULT src = S_FALSE;
+    int attempts = 0;
+    for (; attempts < 3; ++attempts) {
+        src = OleSetClipboard(m_data);
+        if (src != CLIPBRD_E_CANT_OPEN || QWindowsContext::isSessionLocked())
+            break;
+        QThread::msleep(100);
+    }
+
     if (src != S_OK) {
         QString mimeDataFormats = mimeData ?
             mimeData->formats().join(QLatin1String(", ")) : QString(QStringLiteral("NULL"));

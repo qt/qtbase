@@ -42,7 +42,7 @@
 # into 3rdparty/libjpeg/.
 
 if [ $# -ne 2 ]; then
-    echo "Usage: $0 LIBJPEG_tarball_dir/ \$QTDIR/src/3rdparty/LIBJPEG/"
+    echo "Usage: $0 LIBJPEG_tarball_dir/ \$QTDIR/src/3rdparty/libjpeg/"
     exit 1
 fi
 
@@ -75,14 +75,14 @@ copy_file() {
 }
 
 copy_file "LICENSE.md" "LICENSE"
-copy_file "jconfig.txt" "src/jconfig.h"
-copy_file "win/jconfigint.h.in" "src/jconfigint.h"
 
 FILES="
    change.log
    ChangeLog.md
    README.md
    README.ijg
+   jconfig.h.in
+   jconfigint.h.in
 
    jaricom.c
    jcapimin.c
@@ -163,3 +163,5 @@ FILES="
 for i in $FILES; do
     copy_file "$i" "src/$i"
 done
+
+echo Done. $TARGET_DIR/jconfig.h and jconfigint.h may need manual updating.

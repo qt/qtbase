@@ -1528,7 +1528,6 @@ void tst_QCborValue::toDiagnosticNotation_data()
     QUuid uuid = QUuid::createUuid();
 
     QMetaEnum me = QMetaEnum::fromType<QCborValue::Type>();
-    auto st = [](QCborSimpleType t) { return QVariant::fromValue<SimpleTypeWrapper>(t); };
     auto add = [me](const QCborValue &v, const QString &exp) {
         auto addRow = [=](const char *prefix) -> QTestData & {
             QCborValue::Type t = v.type();

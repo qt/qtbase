@@ -954,7 +954,7 @@ void QMdiAreaPrivate::rearrange(Rearranger *rearranger)
         }
     }
 
-    if (active && rearranger->type() == Rearranger::RegularTiler) {
+    if (active && rearranger->type() == Rearranger::RegularTiler && !tileCalledFromResizeEvent) {
         // Move active window in front if necessary. That's the case if we
         // have any windows with staysOnTopHint set.
         int indexToActive = widgets.indexOf((QWidget *)active);

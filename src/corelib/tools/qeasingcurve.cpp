@@ -292,7 +292,7 @@
     This is a typedef for a pointer to a function with the following
     signature:
 
-    \snippet code/src_corelib_tools_qeasingcurve.cpp 0
+    \snippet code/src_corelib_tools_qeasingcurve.cpp typedef
 */
 
 #include "qeasingcurve.h"

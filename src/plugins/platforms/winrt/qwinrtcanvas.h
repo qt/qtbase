@@ -54,7 +54,7 @@ class QWinRTCanvas:
 {
 public:
     QWinRTCanvas(const std::function<QWindow*()> &delegateWindow);
-    virtual ~QWinRTCanvas();
+    ~QWinRTCanvas() override = default;
 
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, LPVOID *iface) override;
     HRESULT STDMETHODCALLTYPE GetIids(ULONG *iidCount, IID **iids) override;

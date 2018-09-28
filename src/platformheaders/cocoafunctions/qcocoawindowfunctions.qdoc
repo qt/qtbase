@@ -46,7 +46,7 @@
 /*!
     \fn QByteArray QCocoaWindowFunctions::bottomLeftClippedByNSWindowOffsetIdentifier()
 
-    This function returnes the bytearray that can be used to query
+    This function returns the bytearray that can be used to query
     QGuiApplication::platformFunction to retrieve the BottomLeftClippedByNSWindowOffset function.
 */
 

@@ -70,7 +70,7 @@ class QWinRTFileDialogHelper : public QPlatformFileDialogHelper
     Q_OBJECT
 public:
     explicit QWinRTFileDialogHelper();
-    ~QWinRTFileDialogHelper();
+    ~QWinRTFileDialogHelper() override = default;
 
     void exec() override;
     bool show(Qt::WindowFlags, Qt::WindowModality, QWindow *) override;

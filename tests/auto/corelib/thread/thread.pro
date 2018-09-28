@@ -1,6 +1,6 @@
 TEMPLATE=subdirs
 
-qtHaveFeature(thread) {
+qtConfig(thread) {
     SUBDIRS=\
         qatomicint \
         qatomicinteger \

@@ -51,7 +51,7 @@
 #include <wrl.h>
 #include <windows.foundation.h>
 #include <windows.storage.pickers.h>
-#include <Windows.ApplicationModel.activation.h>
+#include <Windows.Applicationmodel.Activation.h>
 
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
@@ -73,12 +73,12 @@ class WindowsStringVector : public RuntimeClass<IVector<HSTRING>>
 public:
     HRESULT __stdcall GetAt(quint32 index, HSTRING *item)
     {
-        *item = impl.at(index);
+        *item = impl.at(int(index));
         return S_OK;
     }
     HRESULT __stdcall get_Size(quint32 *size)
     {
-        *size = impl.size();
+        *size = quint32(impl.size());
         return S_OK;
     }
     HRESULT __stdcall GetView(IVectorView<HSTRING> **view)
@@ -108,7 +108,7 @@ public:
         HRESULT hr = WindowsDuplicateString(item, &newItem);
         if (FAILED(hr))
             return hr;
-        impl[index] = newItem;
+        impl[int(index)] = newItem;
         return S_OK;
     }
     HRESULT __stdcall InsertAt(quint32 index, HSTRING item)
@@ -117,12 +117,12 @@ public:
         HRESULT hr = WindowsDuplicateString(item, &newItem);
         if (FAILED(hr))
             return hr;
-        impl.insert(index, newItem);
+        impl.insert(int(index), newItem);
         return S_OK;
     }
     HRESULT __stdcall RemoveAt(quint32 index)
     {
-        WindowsDeleteString(impl.takeAt(index));
+        WindowsDeleteString(impl.takeAt(int(index)));
         return S_OK;
     }
     HRESULT __stdcall Append(HSTRING item)
@@ -164,7 +164,7 @@ static bool initializePicker(HSTRING runtimeId, T **picker, const QSharedPointer
     if (options->isLabelExplicitlySet(QFileDialogOptions::Accept)) {
         const QString labelText = options->labelText(QFileDialogOptions::Accept);
         HStringReference labelTextRef(reinterpret_cast<const wchar_t *>(labelText.utf16()),
-                                      labelText.length());
+                                      uint(labelText.length()));
         hr = (*picker)->put_CommitButtonText(labelTextRef.Get());
         RETURN_FALSE_IF_FAILED("Failed to set commit button text");
     }
@@ -188,7 +188,7 @@ static bool initializeOpenPickerOptions(T *picker, const QSharedPointer<QFileDia
             // Remove leading star
             const int offset = (filter.length() > 1 && filter.startsWith(QLatin1Char('*'))) ? 1 : 0;
             HStringReference filterRef(reinterpret_cast<const wchar_t *>(filter.utf16() + offset),
-                                       filter.length() - offset);
+                                       uint(filter.length() - offset));
             hr = filters->Append(filterRef.Get());
             if (FAILED(hr)) {
                 qWarning("Failed to add named file filter \"%s\": %s",
@@ -290,16 +290,12 @@ QWinRTFileDialogHelper::QWinRTFileDialogHelper()
     d->shown = false;
 }
 
-QWinRTFileDialogHelper::~QWinRTFileDialogHelper()
-{
-}
-
 void QWinRTFileDialogHelper::exec()
 {
     Q_D(QWinRTFileDialogHelper);
 
     if (!d->shown)
-        show(Qt::Dialog, Qt::ApplicationModal, 0);
+        show(Qt::Dialog, Qt::ApplicationModal, nullptr);
     d->loop.exec();
 }
 
@@ -369,7 +365,7 @@ bool QWinRTFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModalit
                     // Remove leading star
                     const int starOffset = (filter.length() > 1 && filter.startsWith(QLatin1Char('*'))) ? 1 : 0;
                     HStringReference filterRef(reinterpret_cast<const wchar_t *>(filter.utf16() + starOffset),
-                                               filter.length() - starOffset);
+                                               uint(filter.length() - starOffset));
                     hr = entry->Append(filterRef.Get());
                     if (FAILED(hr)) {
                         qWarning("Failed to add named file filter \"%s\": %s",
@@ -379,7 +375,7 @@ bool QWinRTFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModalit
                 const int offset = namedFilter.indexOf(QLatin1String(" ("));
                 const QString filterTitle = namedFilter.mid(0, offset);
                 HStringReference namedFilterRef(reinterpret_cast<const wchar_t *>(filterTitle.utf16()),
-                                                filterTitle.length());
+                                                uint(filterTitle.length()));
                 boolean replaced;
                 hr = choices->Insert(namedFilterRef.Get(), entry.Get(), &replaced);
                 // Only print a warning as * or *.* is not a valid choice on Windows 10
@@ -396,7 +392,7 @@ bool QWinRTFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModalit
             if (!suffix.startsWith(QLatin1Char('.')))
                 suffix.prepend(QLatin1Char('.'));
             HStringReference nativeSuffix(reinterpret_cast<const wchar_t *>(suffix.utf16()),
-                                          suffix.length());
+                                          uint(suffix.length()));
             hr = picker->put_DefaultFileExtension(nativeSuffix.Get());
             RETURN_FALSE_IF_FAILED_WITH_ARGS("Failed to set default file extension \"%s\"", qPrintable(suffix));
         }
@@ -404,7 +400,7 @@ bool QWinRTFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModalit
         const QString suggestedName = QFileInfo(d->saveFileName.toLocalFile()).fileName();
         if (!suggestedName.isEmpty()) {
             HStringReference nativeSuggestedName(reinterpret_cast<const wchar_t *>(suggestedName.utf16()),
-                                                 suggestedName.length());
+                                                 uint(suggestedName.length()));
             hr = picker->put_SuggestedFileName(nativeSuggestedName.Get());
             RETURN_FALSE_IF_FAILED("Failed to set suggested file name");
         }

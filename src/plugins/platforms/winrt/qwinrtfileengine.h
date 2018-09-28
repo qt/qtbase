@@ -57,7 +57,7 @@ class QWinRTFileEngineHandler : public QAbstractFileEngineHandler
 {
 public:
     QWinRTFileEngineHandler();
-    ~QWinRTFileEngineHandler();
+    ~QWinRTFileEngineHandler() override = default;
     QAbstractFileEngine *create(const QString &fileName) const override;
 
     static void registerFile(const QString &fileName, ABI::Windows::Storage::IStorageItem *file);
@@ -73,7 +73,7 @@ class QWinRTFileEngine : public QAbstractFileEngine
 {
 public:
     QWinRTFileEngine(const QString &fileName, ABI::Windows::Storage::IStorageItem *file);
-    ~QWinRTFileEngine();
+    ~QWinRTFileEngine() override = default;
 
     bool open(QIODevice::OpenMode openMode) override;
     bool close() override;

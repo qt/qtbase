@@ -3295,6 +3295,8 @@ int QDockAreaLayout::separatorMove(const QList<int> &separator, const QPoint &or
     delta = pick(o, dest - origin);
     delta = separatorMoveHelper(list, sep_index, delta, sep);
 
+    fallbackToSizeHints = false;
+
     if (index == QInternal::LeftDock || index == QInternal::RightDock)
         setGrid(0, &list);
     else

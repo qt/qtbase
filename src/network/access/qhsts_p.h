@@ -69,8 +69,6 @@ QT_BEGIN_NAMESPACE
 template<typename T> class QList;
 template <typename T> class QVector;
 
-class QHstsStore;
-
 class Q_AUTOTEST_EXPORT QHstsCache
 {
 public:
@@ -85,7 +83,9 @@ public:
 
     QVector<QHstsPolicy> policies() const;
 
-    void setStore(QHstsStore *store);
+#if QT_CONFIG(settings)
+    void setStore(class QHstsStore *store);
+#endif // QT_CONFIG(settings)
 
 private:
 
@@ -119,7 +119,9 @@ private:
     };
 
     mutable std::map<HostName, QHstsPolicy> knownHosts;
+#if QT_CONFIG(settings)
     QHstsStore *hstsStore = nullptr;
+#endif // QT_CONFIG(settings)
 };
 
 class Q_AUTOTEST_EXPORT QHstsHeaderParser

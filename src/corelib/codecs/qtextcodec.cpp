@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -1234,6 +1235,19 @@ QTextCodec *QTextCodec::codecForUtfText(const QByteArray &ba)
 bool QTextDecoder::hasFailure() const
 {
     return state.invalidChars != 0;
+}
+
+/*!
+    \internal
+    \since 5.12
+
+    Determines whether the decoder needs more bytes to continue decoding. That
+    is, this signifies that the input string ended in the middle of a
+    multi-byte sequence. Note that it's possible some codecs do not report this.
+ */
+bool QTextDecoder::needsMoreData() const
+{
+    return state.remainingChars;
 }
 
 QT_END_NAMESPACE

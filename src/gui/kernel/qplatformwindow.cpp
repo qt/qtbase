@@ -140,7 +140,7 @@ void QPlatformWindow::setGeometry(const QRect &rect)
 }
 
 /*!
-    Returnes the current geometry of a window
+    Returns the current geometry of a window
 */
 QRect QPlatformWindow::geometry() const
 {

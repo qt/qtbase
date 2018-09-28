@@ -86,7 +86,7 @@ public:
     HRESULT STDMETHODCALLTYPE GetRuntimeId(SAFEARRAY **pRetVal) override;
     HRESULT STDMETHODCALLTYPE get_BoundingRectangle(UiaRect *pRetVal) override;
     HRESULT STDMETHODCALLTYPE GetEmbeddedFragmentRoots(SAFEARRAY **pRetVal) override;
-    HRESULT STDMETHODCALLTYPE SetFocus();
+    HRESULT STDMETHODCALLTYPE SetFocus() override;
     HRESULT STDMETHODCALLTYPE get_FragmentRoot(IRawElementProviderFragmentRoot **pRetVal) override;
 
     // IRawElementProviderFragmentRoot methods

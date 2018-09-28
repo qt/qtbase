@@ -208,16 +208,6 @@ struct VcsolutionDepend {
     QStringList dependencies;
 };
 
-/* Disable optimization in getProjectUUID() due to a compiler
- * bug in MSVC 2010 that causes ASSERT: "&other != this" in the QString
- * copy constructor for non-empty file names at:
- * filename.isEmpty()?project->first("QMAKE_MAKEFILE"):filename */
-
-#ifdef Q_CC_MSVC
-#   pragma optimize( "g", off )
-#   pragma warning ( disable : 4748 )
-#endif
-
 QUuid VcprojGenerator::getProjectUUID(const QString &filename)
 {
     bool validUUID = true;
@@ -248,10 +238,6 @@ QUuid VcprojGenerator::getProjectUUID(const QString &filename)
     project->values("GUID") = ProStringList(uuid.toString().toUpper());
     return uuid;
 }
-
-#ifdef Q_CC_MSVC
-#   pragma optimize( "g", on )
-#endif
 
 QUuid VcprojGenerator::increaseUUID(const QUuid &id)
 {

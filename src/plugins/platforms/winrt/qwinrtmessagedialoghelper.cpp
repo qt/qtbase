@@ -99,7 +99,7 @@ void QWinRTMessageDialogHelper::exec()
     Q_D(QWinRTMessageDialogHelper);
 
     if (!d->shown)
-        show(Qt::Dialog, Qt::ApplicationModal, 0);
+        show(Qt::Dialog, Qt::ApplicationModal, nullptr);
     d->loop.exec();
 }
 
@@ -134,9 +134,11 @@ bool QWinRTMessageDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModa
     RETURN_FALSE_IF_FAILED("Failed to create command factory");
 
     ComPtr<IMessageDialog> dialog;
-    HStringReference nativeText(reinterpret_cast<LPCWSTR>(text.utf16()), text.size());
+    HStringReference nativeText(reinterpret_cast<LPCWSTR>(text.utf16()),
+                                uint(text.size()));
     if (!title.isEmpty()) {
-        HStringReference nativeTitle(reinterpret_cast<LPCWSTR>(title.utf16()), title.size());
+        HStringReference nativeTitle(reinterpret_cast<LPCWSTR>(title.utf16()),
+                                     uint(title.size()));
         hr = dialogFactory->CreateWithTitle(nativeText.Get(), nativeTitle.Get(), &dialog);
         RETURN_FALSE_IF_FAILED("Failed to create dialog with title");
     } else {
@@ -162,7 +164,8 @@ bool QWinRTMessageDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModa
                 continue;
             // Add native command
             const QString label = d->theme->standardButtonText(i);
-            HStringReference nativeLabel(reinterpret_cast<LPCWSTR>(label.utf16()), label.size());
+            HStringReference nativeLabel(reinterpret_cast<LPCWSTR>(label.utf16()),
+                                         uint(label.size()));
             ComPtr<IUICommand> command;
             hr = commandFactory->Create(nativeLabel.Get(), &command);
             RETURN_HR_IF_FAILED("Failed to create message box command");

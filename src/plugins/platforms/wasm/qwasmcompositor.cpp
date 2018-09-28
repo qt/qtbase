@@ -642,7 +642,7 @@ void QWasmCompositor::drawShadePanel(QWasmTitleBarOptions options, QPainter *pai
 
 void QWasmCompositor::drawWindow(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window)
 {
-    if (window->window()->type() != Qt::Popup)
+    if (window->window()->type() != Qt::Popup && !(window->m_windowState & Qt::WindowFullScreen))
         drawWindowDecorations(blitter, screen, window);
     drawWindowContent(blitter, screen, window);
 }

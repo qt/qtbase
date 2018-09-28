@@ -19,6 +19,7 @@ macro.QD                = "\\e{Qt Designer}"
 macro.QL                = "\\e{Qt Linguist}"
 macro.QQV               = "\\e{Qt QML Viewer}"
 macro.QtVersion         = "$QT_VERSION"
+macro.QtVer             = "$QT_VER"
 macro.param             = "\\e"
 macro.raisedaster.HTML  = "<sup>*</sup>"
 macro.rarrow.HTML       = "&rarr;"
@@ -39,6 +40,10 @@ macro.beginfloatright.HTML  = "<div style=\"float: right; margin-left: 2em\">"
 macro.endfloat.HTML         = "</div>"
 macro.clearfloat.HTML       = "<br style=\"clear: both\" />"
 macro.emptyspan.HTML        = "<span></span>"
+
+# Expands to the minor version based on the QT_VER environment variable
+macro.QtMinorVersion        = "$QT_VER"
+macro.QtMinorVersion.match  = "\\d+\\.(\\d+)"
 
 # Embed YouTube content by video ID - Example: \youtube dQw4w9WgXcQ
 # Also requires a <ID>.jpg thumbnail for offline docs. In .qdocconf, add:

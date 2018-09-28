@@ -150,6 +150,14 @@ TextEdit::TextEdit(QWidget *parent)
 
     textEdit->setFocus();
     setCurrentFileName(QString());
+
+#ifdef Q_OS_MACOS
+    // Use dark text on light background on macOS, also in dark mode.
+    QPalette pal = textEdit->palette();
+    pal.setColor(QPalette::Base, QColor(Qt::white));
+    pal.setColor(QPalette::Text, QColor(Qt::black));
+    textEdit->setPalette(pal);
+#endif
 }
 
 void TextEdit::closeEvent(QCloseEvent *e)

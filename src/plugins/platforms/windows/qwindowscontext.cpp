@@ -86,6 +86,7 @@
 #include <windowsx.h>
 #include <comdef.h>
 #include <dbt.h>
+#include <wtsapi32.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -751,6 +752,37 @@ QWindowsWindow *QWindowsContext::findPlatformWindowAt(HWND parent,
     QWindowsWindow *result = 0;
     const POINT screenPoint = { screenPointIn.x(), screenPointIn.y() };
     while (findPlatformWindowHelper(screenPoint, cwex_flags, this, &parent, &result)) {}
+    return result;
+}
+
+bool QWindowsContext::isSessionLocked()
+{
+    bool result = false;
+    const DWORD sessionId = WTSGetActiveConsoleSessionId();
+    if (sessionId != 0xFFFFFFFF) {
+        LPTSTR buffer = nullptr;
+        DWORD size = 0;
+#if !defined(Q_CC_MINGW)
+        if (WTSQuerySessionInformation(WTS_CURRENT_SERVER_HANDLE, sessionId,
+                                       WTSSessionInfoEx, &buffer, &size) == TRUE
+            && size > 0) {
+            const WTSINFOEXW *info = reinterpret_cast<WTSINFOEXW *>(buffer);
+            result = info->Level == 1 && info->Data.WTSInfoExLevel1.SessionFlags == WTS_SESSIONSTATE_LOCK;
+            WTSFreeMemory(buffer);
+        }
+#else   // MinGW as of 7.3 does not have WTSINFOEXW in wtsapi32.h
+        // Retrieve the flags which are at offset 16 due to padding for 32/64bit alike.
+        if (WTSQuerySessionInformation(WTS_CURRENT_SERVER_HANDLE, sessionId,
+                                       WTS_INFO_CLASS(25), &buffer, &size) == TRUE
+            && size >= 20) {
+            const DWORD *p = reinterpret_cast<DWORD *>(buffer);
+            const DWORD level = *p;
+            const DWORD sessionFlags = *(p + 4);
+            result = level == 1 && sessionFlags == 1;
+            WTSFreeMemory(buffer);
+        }
+#endif // Q_CC_MINGW
+    }
     return result;
 }
 

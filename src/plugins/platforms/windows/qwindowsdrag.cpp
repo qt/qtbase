@@ -260,7 +260,7 @@ private:
 };
 
 QWindowsOleDropSource::QWindowsOleDropSource(QWindowsDrag *drag)
-    : m_mode(QWindowsCursor::cursorState() != QWindowsCursor::CursorSuppressed ? MouseDrag : TouchDrag)
+    : m_mode(QWindowsCursor::cursorState() != QWindowsCursor::State::Suppressed ? MouseDrag : TouchDrag)
     , m_drag(drag)
     , m_windowUnderMouse(QWindowsContext::instance()->windowUnderMouse())
     , m_currentButtons(Qt::NoButton)
@@ -455,7 +455,7 @@ QWindowsOleDropSource::GiveFeedback(DWORD dwEffect)
             break;
         case TouchDrag:
             // "Touch drag" with an unsuppressed cursor may happen with RDP (see createCursors())
-            if (QWindowsCursor::cursorState() != QWindowsCursor::CursorSuppressed)
+            if (QWindowsCursor::cursorState() != QWindowsCursor::State::Suppressed)
                 SetCursor(nullptr);
             if (!m_touchDragWindow)
                 m_touchDragWindow = new QWindowsDragCursorWindow;

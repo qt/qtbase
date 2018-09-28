@@ -877,10 +877,26 @@ bool QWindowsKeyMapper::translateKeyEvent(QWindow *widget, HWND hwnd,
 bool QWindowsKeyMapper::translateMultimediaKeyEventInternal(QWindow *window, const MSG &msg)
 {
 #if defined(WM_APPCOMMAND)
-    // QTBUG-57198, do not send mouse-synthesized commands as key events in addition
-    if (GET_DEVICE_LPARAM(msg.lParam) == FAPPCOMMAND_MOUSE)
-        return false;
     const int cmd = GET_APPCOMMAND_LPARAM(msg.lParam);
+    // QTBUG-57198, do not send mouse-synthesized commands as key events in addition
+    switch (GET_DEVICE_LPARAM(msg.lParam)) {
+    case FAPPCOMMAND_MOUSE:
+        return false;
+    case FAPPCOMMAND_KEY:
+        // QTBUG-62838, swallow WM_KEYDOWN, WM_KEYUP for commands that are
+        // reflected in VK(s) like VK_MEDIA_NEXT_TRACK. Don't do that for
+        // APPCOMMAND_BROWSER_HOME as that one does not trigger two events
+        if (cmd != APPCOMMAND_BROWSER_HOME) {
+            MSG peekedMsg;
+            if (PeekMessage(&peekedMsg, msg.hwnd, 0, 0, PM_NOREMOVE)
+                && peekedMsg.message == WM_KEYDOWN) {
+                PeekMessage(&peekedMsg, msg.hwnd, 0, 0, PM_REMOVE);
+                PeekMessage(&peekedMsg, msg.hwnd, 0, 0, PM_REMOVE);
+            }
+        }
+        break;
+    }
+
     const int dwKeys = GET_KEYSTATE_LPARAM(msg.lParam);
     int state = 0;
     state |= (dwKeys & MK_SHIFT ? int(Qt::ShiftModifier) : 0);

@@ -48,6 +48,10 @@
 #include "qhstspolicy.h"
 #include "qhsts_p.h"
 
+#if QT_CONFIG(settings)
+#include "qhstsstore_p.h"
+#endif // QT_CONFIG(settings)
+
 #include "QtNetwork/qnetworksession.h"
 #include "QtNetwork/private/qsharednetworksession_p.h"
 
@@ -763,9 +767,14 @@ bool QNetworkAccessManager::isStrictTransportSecurityEnabled() const
 
 void QNetworkAccessManager::enableStrictTransportSecurityStore(bool enabled, const QString &storeDir)
 {
+#if QT_CONFIG(settings)
     Q_D(QNetworkAccessManager);
     d->stsStore.reset(enabled ? new QHstsStore(storeDir) : nullptr);
     d->stsCache.setStore(d->stsStore.data());
+#else
+    Q_UNUSED(enabled) Q_UNUSED(storeDir)
+    qWarning("HSTS permanent store requires the feature 'settings' enabled");
+#endif // QT_CONFIG(settings)
 }
 
 /*!
@@ -779,8 +788,12 @@ void QNetworkAccessManager::enableStrictTransportSecurityStore(bool enabled, con
 
 bool QNetworkAccessManager::isStrictTransportSecurityStoreEnabled() const
 {
+#if QT_CONFIG(settings)
     Q_D(const QNetworkAccessManager);
     return bool(d->stsStore.data());
+#else
+    return false;
+#endif // QT_CONFIG(settings)
 }
 
 /*!
@@ -930,7 +943,7 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, QHttpM
 
 /*!
     Uploads the contents of \a data to the destination \a request and
-    returnes a new QNetworkReply object that will be open for reply.
+    returns a new QNetworkReply object that will be open for reply.
 
     \a data must be opened for reading when this function is called
     and must remain valid until the finished() signal is emitted for

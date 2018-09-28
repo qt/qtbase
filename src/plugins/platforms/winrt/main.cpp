@@ -58,7 +58,7 @@ QPlatformIntegration *QWinRTIntegrationPlugin::create(const QString& system, con
     if (!system.compare(QLatin1String("winrt"), Qt::CaseInsensitive))
         return QWinRTIntegration::create();
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

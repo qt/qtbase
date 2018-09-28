@@ -100,6 +100,10 @@ QT_BEGIN_NAMESPACE
 
     \endcode
 
+    If you try to clear the error stack, make sure not just keep going until
+    GL_NO_ERROR is returned but also break on GL_CONTEXT_LOST as that error
+    value will keep repeating.
+
     There are also many other information we are interested in (as application
     developers), for instance performance issues, or warnings about using
     deprecated APIs. Those kind of messages are not reported through the

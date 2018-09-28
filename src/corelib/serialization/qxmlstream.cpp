@@ -3956,13 +3956,13 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
         writeEndDocument();
         break;
     case QXmlStreamReader::StartElement: {
+        writeStartElement(reader.namespaceUri().toString(), reader.name().toString());
         QXmlStreamNamespaceDeclarations namespaceDeclarations = reader.namespaceDeclarations();
         for (int i = 0; i < namespaceDeclarations.size(); ++i) {
             const QXmlStreamNamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.at(i);
             writeNamespace(namespaceDeclaration.namespaceUri().toString(),
                            namespaceDeclaration.prefix().toString());
         }
-        writeStartElement(reader.namespaceUri().toString(), reader.name().toString());
         writeAttributes(reader.attributes());
              } break;
     case QXmlStreamReader::EndElement:

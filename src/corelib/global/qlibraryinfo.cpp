@@ -267,7 +267,7 @@ QLibraryInfo::licensedProducts()
     \deprecated
     This function used to return the installation date for this build of Qt, but now returns a constant date.
 */
-#ifndef QT_NO_DATESTRING
+#if QT_CONFIG(datestring)
 #if QT_DEPRECATED_SINCE(5, 5)
 QDate
 QLibraryInfo::buildDate()
@@ -275,7 +275,7 @@ QLibraryInfo::buildDate()
     return QDate::fromString(QString::fromLatin1(qt_configure_installation + 12), Qt::ISODate);
 }
 #endif
-#endif //QT_NO_DATESTRING
+#endif // datestring
 
 #if defined(Q_CC_INTEL) // must be before GNU, Clang and MSVC because ICC/ICL claim to be them
 #  ifdef __INTEL_CLANG_COMPILER

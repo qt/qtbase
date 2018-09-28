@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -44,6 +44,7 @@
 #include <QtCore/QSharedData>
 #include <QtCore/QSettings>
 #include <QtCore/QUrl>
+#include <QtCore/QVector>
 #include <QtGui/QColor>
 
 #include <algorithm>
@@ -786,7 +787,8 @@ class QMessageDialogOptionsPrivate : public QSharedData
 public:
     QMessageDialogOptionsPrivate() :
         icon(QMessageDialogOptions::NoIcon),
-        buttons(QPlatformDialogHelper::Ok)
+        buttons(QPlatformDialogHelper::Ok),
+        nextCustomButtonId(QPlatformDialogHelper::LastButton + 1)
     {}
 
     QString windowTitle;
@@ -795,6 +797,8 @@ public:
     QString informativeText;
     QString detailedText;
     QPlatformDialogHelper::StandardButtons buttons;
+    QVector<QMessageDialogOptions::CustomButton> customButtons;
+    int nextCustomButtonId;
 };
 
 QMessageDialogOptions::QMessageDialogOptions(QMessageDialogOptionsPrivate *dd)
@@ -884,6 +888,35 @@ void QMessageDialogOptions::setStandardButtons(QPlatformDialogHelper::StandardBu
 QPlatformDialogHelper::StandardButtons QMessageDialogOptions::standardButtons() const
 {
     return d->buttons;
+}
+
+int QMessageDialogOptions::addButton(const QString &label, QPlatformDialogHelper::ButtonRole role,
+                                     void *buttonImpl)
+{
+    const CustomButton b(d->nextCustomButtonId++, label, role, buttonImpl);
+    d->customButtons.append(b);
+    return b.id;
+}
+
+static inline bool operator==(const QMessageDialogOptions::CustomButton &a,
+                              const QMessageDialogOptions::CustomButton &b) {
+    return a.id == b.id;
+}
+
+void QMessageDialogOptions::removeButton(int id)
+{
+    d->customButtons.removeOne(CustomButton(id));
+}
+
+const QVector<QMessageDialogOptions::CustomButton> &QMessageDialogOptions::customButtons()
+{
+    return d->customButtons;
+}
+
+const QMessageDialogOptions::CustomButton *QMessageDialogOptions::customButton(int id)
+{
+    int i = d->customButtons.indexOf(CustomButton(id));
+    return (i < 0 ? nullptr : &d->customButtons.at(i));
 }
 
 QPlatformDialogHelper::ButtonRole QPlatformDialogHelper::buttonRole(QPlatformDialogHelper::StandardButton button)

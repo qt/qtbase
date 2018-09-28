@@ -49,7 +49,7 @@ class QWinRTCursor : public QPlatformCursor
 {
 public:
     explicit QWinRTCursor();
-    ~QWinRTCursor();
+    ~QWinRTCursor() override = default;
 #ifndef QT_NO_CURSOR
     void changeCursor(QCursor * windowCursor, QWindow *window) override;
 #endif

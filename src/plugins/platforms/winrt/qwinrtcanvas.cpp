@@ -70,10 +70,6 @@ QWinRTCanvas::QWinRTCanvas(const std::function<QWindow*()> &delegateWindow)
     delegate = delegateWindow;
 }
 
-QWinRTCanvas::~QWinRTCanvas()
-{
-}
-
 HRESULT STDMETHODCALLTYPE QWinRTCanvas::QueryInterface(REFIID iid, LPVOID *iface)
 {
     if (!iface)

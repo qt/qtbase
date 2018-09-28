@@ -55,7 +55,9 @@
 #include "QtCore/qmutex.h"
 #include "QtCore/qrunnable.h"
 #include "QtCore/qsharedpointer.h"
+#if QT_CONFIG(thread)
 #include "QtCore/qthreadpool.h"
+#endif
 #include "QtNetwork/qdnslookup.h"
 #include "QtNetwork/qhostaddress.h"
 #include "private/qobject_p.h"
@@ -132,6 +134,7 @@ private:
     QHostAddress nameserver;
 };
 
+#if QT_CONFIG(thread)
 class QDnsLookupThreadPool : public QThreadPool
 {
     Q_OBJECT
@@ -147,6 +150,7 @@ private:
     QMutex signalsMutex;
     bool signalsConnected;
 };
+#endif // QT_CONFIG(thread)
 
 class QDnsRecordPrivate : public QSharedData
 {

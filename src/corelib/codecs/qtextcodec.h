@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -162,6 +162,7 @@ public:
     QString toUnicode(const QByteArray &ba);
     void toUnicode(QString *target, const char *chars, int len);
     bool hasFailure() const;
+    bool needsMoreData() const;
 private:
     const QTextCodec *c;
     QTextCodec::ConverterState state;

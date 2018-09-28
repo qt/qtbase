@@ -2,7 +2,7 @@
     "Id": "harfbuzz",
     "Name": "HarfBuzz",
     "QDocModule": "qtgui",
-    "QtUsage": "Optionally used in Qt GUI. Configure with -system-harfbuzz or -qt-harfbuzz to avoid.",
+    "QtUsage": "Optionally used in Qt GUI. Configure with -system-harfbuzz to force the use of the system library, or -no-harfbuzz to disable the use of HarfBuzz entirely.",
 
     "License": "MIT License",
     "LicenseId": "MIT",

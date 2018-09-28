@@ -2206,10 +2206,11 @@ void tst_QGraphicsItem::setMatrix()
     QCOMPARE(spy.count(), 3);
     QList<QRectF> rlist = qvariant_cast<QList<QRectF> >(spy.last().at(0));
 
-    QCOMPARE(rlist.size(), 3);
-    QCOMPARE(rlist.at(0), rotatedRect);   // From item.setMatrix() (clearing rotated rect)
-    QCOMPARE(rlist.at(1), rotatedRect);   // From scene.update()   (updating scene rect)
-    QCOMPARE(rlist.at(2), unrotatedRect); // From post-update      (update current state)
+    QCOMPARE(rlist.size(), 2);
+    // From item.setMatrix() (clearing rotated rect), from scene.update() (updating scene rect),
+    // squashed into one
+    QCOMPARE(rlist.at(0), rotatedRect);
+    QCOMPARE(rlist.at(1), unrotatedRect); // From post-update      (update current state)
 }
 
 static QList<QGraphicsItem *> _paintedItems;

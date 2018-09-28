@@ -50,7 +50,7 @@ class QWinRTEGLContext : public QPlatformOpenGLContext
 {
 public:
     explicit QWinRTEGLContext(QOpenGLContext *context);
-    ~QWinRTEGLContext();
+    ~QWinRTEGLContext() override;
 
     void initialize() override;
 
