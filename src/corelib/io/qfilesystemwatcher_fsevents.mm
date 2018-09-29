@@ -45,8 +45,6 @@
 #include "private/qcore_unix_p.h"
 #include "kernel/qcore_mac_p.h"
 
-#ifndef QT_NO_FILESYSTEMWATCHER
-
 #include <qdebug.h>
 #include <qdir.h>
 #include <qfile.h>
@@ -584,7 +582,5 @@ bool QFseventsFileSystemWatcherEngine::derefPath(const QString &watchedPath)
 
     return false;
 }
-
-#endif //QT_NO_FILESYSTEMWATCHER
 
 QT_END_NAMESPACE

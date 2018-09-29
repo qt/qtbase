@@ -56,7 +56,9 @@
 #include <qthread.h>
 #include <qmutex.h>
 #include <qwaitcondition.h>
+#if QT_CONFIG(filesystemwatcher)
 #include <qfilesystemwatcher.h>
+#endif
 #include <qfileiconprovider.h>
 #include <qpair.h>
 #include <qstack.h>
@@ -207,7 +209,7 @@ private:
     // end protected by mutex
     QAtomicInt abort;
 
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
     QFileSystemWatcher *watcher;
 #endif
 #ifdef Q_OS_WIN

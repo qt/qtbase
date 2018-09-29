@@ -55,6 +55,9 @@ SUBDIRS=\
 win32:!qtConfig(private_tests): SUBDIRS -= \
     qfilesystementry
 
+!qtConfig(filesystemwatcher): SUBDIRS -= \
+    qfilesystemwatcher
+
 !qtConfig(processenvironment): SUBDIRS -= \
     qprocessenvironment
 

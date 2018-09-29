@@ -53,6 +53,7 @@ int main(int argc, char *argv[])
     parser.addOption(QCommandLineOption("load", "Load file from URL.", "url"));
     parser.addOption(QCommandLineOption(QStringList() << "o" << "output", "Set output file.", "file"));
     parser.addOption(QCommandLineOption("D", "Define macro.", "key=value"));
+    parser.addOption(QCommandLineOption("long-option"));
 
     // An option with a longer description, to test wrapping
     QCommandLineOption noImplicitIncludesOption(QStringList() << QStringLiteral("n") << QStringLiteral("no-implicit-includes"));

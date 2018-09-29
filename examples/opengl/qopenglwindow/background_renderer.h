@@ -54,7 +54,9 @@
 #include <QObject>
 #include <QFile>
 #include <QDateTime>
+#if QT_CONFIG(filesystemwatcher)
 #include <QFileSystemWatcher>
+#endif
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 #include <QOpenGLShaderProgram>
@@ -71,7 +73,7 @@ public:
 private:
     void fileChanged(const QString &path);
     bool m_recompile_shaders;
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
     QFileSystemWatcher m_watcher;
 #endif
     QString m_fragment_file;

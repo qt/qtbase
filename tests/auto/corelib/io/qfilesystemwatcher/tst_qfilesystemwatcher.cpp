@@ -45,7 +45,6 @@ class tst_QFileSystemWatcher : public QObject
 public:
     tst_QFileSystemWatcher();
 
-#ifndef QT_NO_FILESYSTEMWATCHER
 private slots:
     void basicTest_data();
     void basicTest();
@@ -77,24 +76,20 @@ private slots:
 
 private:
     QString m_tempDirPattern;
-#endif // QT_NO_FILESYSTEMWATCHER
 };
 
 tst_QFileSystemWatcher::tst_QFileSystemWatcher()
 {
-#ifndef QT_NO_FILESYSTEMWATCHER
     m_tempDirPattern = QDir::tempPath();
     if (!m_tempDirPattern.endsWith(QLatin1Char('/')))
         m_tempDirPattern += QLatin1Char('/');
     m_tempDirPattern += QStringLiteral("tst_qfilesystemwatcherXXXXXX");
-#endif // QT_NO_FILESYSTEMWATCHER
 
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     QDir::setCurrent(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
 #endif
 }
 
-#ifndef QT_NO_FILESYSTEMWATCHER
 void tst_QFileSystemWatcher::basicTest_data()
 {
     QTest::addColumn<QString>("backend");
@@ -805,7 +800,6 @@ void tst_QFileSystemWatcher::watchUnicodeCharacters()
     QVERIFY(testDir.mkdir("creme"));
     QTRY_COMPARE(changedSpy.count(), 1);
 }
-#endif // QT_NO_FILESYSTEMWATCHER
 
 QTEST_MAIN(tst_QFileSystemWatcher)
 #include "tst_qfilesystemwatcher.moc"

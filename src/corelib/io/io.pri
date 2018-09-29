@@ -38,9 +38,6 @@ HEADERS +=  \
         io/qsettings_p.h \
         io/qfsfileengine_p.h \
         io/qfsfileengine_iterator_p.h \
-        io/qfilesystemwatcher.h \
-        io/qfilesystemwatcher_p.h \
-        io/qfilesystemwatcher_polling_p.h \
         io/qfilesystementry_p.h \
         io/qfilesystemengine_p.h \
         io/qfilesystemmetadata_p.h \
@@ -79,13 +76,37 @@ SOURCES += \
         io/qsettings.cpp \
         io/qfsfileengine.cpp \
         io/qfsfileengine_iterator.cpp \
-        io/qfilesystemwatcher.cpp \
-        io/qfilesystemwatcher_polling.cpp \
         io/qfilesystementry.cpp \
         io/qfilesystemengine.cpp \
         io/qfileselector.cpp \
         io/qloggingcategory.cpp \
         io/qloggingregistry.cpp
+
+qtConfig(filesystemwatcher) {
+    HEADERS += \
+        io/qfilesystemwatcher.h \
+        io/qfilesystemwatcher_p.h \
+        io/qfilesystemwatcher_polling_p.h
+    SOURCES += \
+        io/qfilesystemwatcher.cpp \
+        io/qfilesystemwatcher_polling.cpp
+
+    win32 {
+        SOURCES += io/qfilesystemwatcher_win.cpp
+        HEADERS += io/qfilesystemwatcher_win_p.h
+    } else:macos {
+        OBJECTIVE_SOURCES += io/qfilesystemwatcher_fsevents.mm
+        HEADERS += io/qfilesystemwatcher_fsevents_p.h
+    } else:qtConfig(inotify) {
+        SOURCES += io/qfilesystemwatcher_inotify.cpp
+        HEADERS += io/qfilesystemwatcher_inotify_p.h
+    } else {
+        freebsd|darwin|openbsd|netbsd {
+            SOURCES += io/qfilesystemwatcher_kqueue.cpp
+            HEADERS += io/qfilesystemwatcher_kqueue_p.h
+        }
+    }
+}
 
 qtConfig(processenvironment) {
     SOURCES += \
@@ -103,9 +124,6 @@ qtConfig(processenvironment) {
 win32 {
         SOURCES += io/qfsfileengine_win.cpp
         SOURCES += io/qlockfile_win.cpp
-
-        SOURCES += io/qfilesystemwatcher_win.cpp
-        HEADERS += io/qfilesystemwatcher_win_p.h
         SOURCES += io/qfilesystemengine_win.cpp
 
         qtConfig(filesystemiterator) {
@@ -153,8 +171,6 @@ win32 {
                 OBJECTIVE_SOURCES += io/qprocess_darwin.mm
             OBJECTIVE_SOURCES += io/qstandardpaths_mac.mm
             osx {
-                OBJECTIVE_SOURCES += io/qfilesystemwatcher_fsevents.mm
-                HEADERS += io/qfilesystemwatcher_fsevents_p.h
                 LIBS += -framework DiskArbitration -framework IOKit
             } else {
                 LIBS += -framework MobileCoreServices
@@ -172,18 +188,6 @@ win32 {
             SOURCES += \
                 io/qstandardpaths_unix.cpp \
                 io/qstorageinfo_unix.cpp
-        }
-
-        linux|if(qnx:qtConfig(inotify)) {
-            SOURCES += io/qfilesystemwatcher_inotify.cpp
-            HEADERS += io/qfilesystemwatcher_inotify_p.h
-        }
-
-        !nacl {
-            freebsd-*|mac|darwin-*|openbsd-*|netbsd-*:{
-                SOURCES += io/qfilesystemwatcher_kqueue.cpp
-                HEADERS += io/qfilesystemwatcher_kqueue_p.h
-            }
         }
 }
 
