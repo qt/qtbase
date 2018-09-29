@@ -835,17 +835,29 @@ void tst_QCssParser::colorValue_data()
     QTest::newRow("hexcolor") << "color: #12af0e" << QColor(0x12, 0xaf, 0x0e);
     QTest::newRow("functional1") << "color: rgb(21, 45, 73)" << QColor(21, 45, 73);
     QTest::newRow("functional2") << "color: rgb(100%, 0%, 100%)" << QColor(0xff, 0, 0xff);
+    QTest::newRow("rgb") << "color: rgb(10, 20, 30)" << QColor(10, 20, 30);
     QTest::newRow("rgba") << "color: rgba(10, 20, 30, 40)" << QColor(10, 20, 30, 40);
     QTest::newRow("rgbaf") << "color: rgba(10, 20, 30, 0.5)" << QColor(10, 20, 30, 127);
-    QTest::newRow("rgb") << "color: rgb(10, 20, 30, 40)" << QColor(10, 20, 30, 40);
-    QTest::newRow("hsl") << "color: hsv(10, 20, 30)" << QColor::fromHsv(10, 20, 30, 255);
-    QTest::newRow("hsla") << "color: hsva(10, 20, 30, 40)" << QColor::fromHsv(10, 20, 30, 40);
+    QTest::newRow("hsv") << "color: hsv(10, 20, 30)" << QColor::fromHsv(10, 20, 30);
+    QTest::newRow("hsva") << "color: hsva(10, 20, 30, 40)" << QColor::fromHsv(10, 20, 30, 40);
+    QTest::newRow("hsvaf") << "color: hsva(10, 20, 30, 0.5)" << QColor::fromHsv(10, 20, 30, 127);
+    QTest::newRow("hsl") << "color: hsl(60, 100%, 50%)" << QColor::fromHsl(60., 255, 127);
+    QTest::newRow("hsla") << "color: hsla(240, 255, 127, 192)" << QColor::fromHsl(240, 255, 127, 192);
+    QTest::newRow("hslaf") << "color: hsla(240, 255, 127, 0.25)" << QColor::fromHsl(240, 255, 127, 63);
     QTest::newRow("invalid1") << "color: rgb(why, does, it, always, rain, on, me)" << QColor();
     QTest::newRow("invalid2") << "color: rgba(i, meant, norway)" << QColor();
     QTest::newRow("invalid3") << "color: rgb(21)" << QColor();
+    QTest::newRow("invalid4") << "color: rgbx(1, 2, 3)" << QColor();
+    QTest::newRow("invalid5") << "color: rgbax(1, 2, 3, 4)" << QColor();
+    QTest::newRow("invalid6") << "color: hsv(360, 0, 0)" << QColor();
+    QTest::newRow("invalid7") << "color: hsla(1, a, 1, 21)" << QColor();
     QTest::newRow("role") << "color: palette(base)" << qApp->palette().color(QPalette::Base);
     QTest::newRow("role2") << "color: palette( window-text ) " << qApp->palette().color(QPalette::WindowText);
     QTest::newRow("transparent") << "color: transparent" << QColor(Qt::transparent);
+
+    // ### Qt6: no longer valid
+    QTest::newRow("rgb-invalid") << "color: rgb(10, 20, 30, 40)" << QColor(10, 20, 30, 40);
+    QTest::newRow("rgba-invalid") << "color: rgba(10, 20, 30)" << QColor(10, 20, 30, 255);
 }
 
 void tst_QCssParser::colorValue()

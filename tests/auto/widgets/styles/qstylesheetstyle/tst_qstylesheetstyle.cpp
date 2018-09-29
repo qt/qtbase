@@ -1189,7 +1189,7 @@ void tst_QStyleSheetStyle::transparent()
     QPushButton *p3=new QPushButton(&w);
     p1->setStyleSheet("background:transparent");
     p2->setStyleSheet("background-color:transparent");
-    p3->setStyleSheet("background:rgb(0,0,0,0)");
+    p3->setStyleSheet("background:rgba(0,0,0,0)");
     QCOMPARE(BACKGROUND(*p1) , QColor(0,0,0,0));
     QCOMPARE(BACKGROUND(*p2) , QColor(0,0,0,0));
     QCOMPARE(BACKGROUND(*p3) , QColor(0,0,0,0));

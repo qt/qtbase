@@ -723,7 +723,8 @@ static ColorData parseColorValue(QCss::Value v)
     if (lst.count() != 2)
         return ColorData();
 
-    if ((lst.at(0).compare(QLatin1String("palette"), Qt::CaseInsensitive)) == 0) {
+    const QString &identifier = lst.at(0);
+    if ((identifier.compare(QLatin1String("palette"), Qt::CaseInsensitive)) == 0) {
         int role = findKnownValue(lst.at(1).trimmed(), values, NumKnownValues);
         if (role >= Value_FirstColorRole && role <= Value_LastColorRole)
             return (QPalette::ColorRole)(role-Value_FirstColorRole);
@@ -731,8 +732,16 @@ static ColorData parseColorValue(QCss::Value v)
         return ColorData();
     }
 
-    bool rgb = lst.at(0).startsWith(QLatin1String("rgb"));
-    bool rgba = lst.at(0).startsWith(QLatin1String("rgba"));
+    const bool rgb = identifier.startsWith(QLatin1String("rgb"));
+    const bool hsv = !rgb && identifier.startsWith(QLatin1String("hsv"));
+    const bool hsl = !rgb && !hsv && identifier.startsWith(QLatin1String("hsl"));
+
+    if (!rgb && !hsv && !hsl)
+        return ColorData();
+
+    const bool hasAlpha = identifier.size() == 4 && identifier.at(3) == QLatin1Char('a');
+    if (identifier.size() > 3 && !hasAlpha)
+        return ColorData();
 
     Parser p(lst.at(1));
     if (!p.testExpr())
@@ -756,20 +765,29 @@ static ColorData parseColorValue(QCss::Value v)
     if (tokenCount < 5)
         return ColorData();
 
+    // ### Qt6: replace this with a check and return invalid color when token count does not match
+    if (hasAlpha && tokenCount != 7)
+        qWarning("QCssParser::parseColorValue: Specified color with alpha value but no alpha given: '%s'", qPrintable(lst.join(QLatin1Char(' '))));
+    if (!hasAlpha && tokenCount != 5)
+        qWarning("QCssParser::parseColorValue: Specified color without alpha value but alpha given: '%s'", qPrintable(lst.join(QLatin1Char(' '))));
+
     int v1 = colorDigits.at(0).variant.toInt();
     int v2 = colorDigits.at(2).variant.toInt();
     int v3 = colorDigits.at(4).variant.toInt();
     int alpha = 255;
-    if (tokenCount >= 7) {
+    if (tokenCount == 7) {
         int alphaValue = colorDigits.at(6).variant.toInt();
-        if (rgba && alphaValue <= 1)
+        if (alphaValue <= 1)
             alpha = colorDigits.at(6).variant.toReal() * 255.;
         else
             alpha = alphaValue;
     }
 
-    return rgb ? QColor::fromRgb(v1, v2, v3, alpha)
-               : QColor::fromHsv(v1, v2, v3, alpha);
+    if (rgb)
+        return QColor::fromRgb(v1, v2, v3, alpha);
+    if (hsv)
+        return QColor::fromHsv(v1, v2, v3, alpha);
+    return QColor::fromHsl(v1, v2, v3, alpha);
 }
 
 static QColor colorFromData(const ColorData& c, const QPalette &pal)

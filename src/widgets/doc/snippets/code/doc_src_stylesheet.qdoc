@@ -514,13 +514,15 @@ QLabel { border-width: 1px 2px 3px 4px }        /* 1px 2px 3px 4px */
 
 
 //! [84]
-QLabel { border-color: red }                    /* opaque red */
-QLabel { border-color: #FF0000 }                /* opaque red */
-QLabel { border-color: rgba(255, 0, 0, 75%) }   /* 75% opaque red */
-QLabel { border-color: rgb(255, 0, 0) }         /* opaque red */
-QLabel { border-color: rgb(100%, 0%, 0%) }      /* opaque red */
-QLabel { border-color: hsv(60, 255, 255) }      /* opaque yellow */
-QLabel { border-color: hsva(240, 255, 255, 75%) }      /* 75% blue */
+QLabel { border-color: red }                      /* opaque red */
+QLabel { border-color: #FF0000 }                  /* opaque red */
+QLabel { border-color: rgba(255, 0, 0, 75%) }     /* 75% opaque red */
+QLabel { border-color: rgb(255, 0, 0) }           /* opaque red */
+QLabel { border-color: rgb(100%, 0%, 0%) }        /* opaque red */
+QLabel { border-color: hsv(60, 100%, 100%) }      /* opaque yellow */
+QLabel { border-color: hsva(240, 255, 255, 75%) } /* 75% blue */
+QLabel { border-color: hsl(60, 100%, 50%) }       /* opaque yellow */
+QLabel { border-color: hsla(240, 255, 50%, 75%) } /* 75% blue */
 //! [84]
 
 

@@ -2881,14 +2881,20 @@
            | \tt{rgba(\e{r}, \e{g}, \e{b}, \e{a})} \br
            | \tt{hsv(\e{h}, \e{s}, \e{v})} \br
            | \tt{hsva(\e{h}, \e{s}, \e{v}, \e{a})} \br
+           | \tt{hsl(\e{h}, \e{s}, \e{l})} \br
+           | \tt{hsla(\e{h}, \e{s}, \e{l}, \e{a})} \br
            | \tt{#\e{rrggbb}} \br
            | \l{QColor::setNamedColor()}{Color Name} \br
-        \li Specifies a color as RGB (red, green, blue) or RGBA
-           (red, green, blue, alpha) or HSV (hue, saturation, value) or HSVA
-           (hue, saturation, value, alpha) or a named color. The \c rgb() or \c rgba()
-           syntax can be used with integer values between 0 and 255, or with
-           percentages. The value of s, v, and a in \c hsv() or \c hsva() must all
-           be in the range 0-255; the value of h must be in the range 0-359.
+        \li Specifies a color as RGB (red, green, blue), RGBA (red,
+           green, blue, alpha), HSV (hue, saturation, value), HSVA
+           (hue, saturation, value, alpha), HSL (hue, saturation,
+           lightness), HSLA (hue, saturation, lightness, alpha) or a
+           named color. The \c rgb() or \c rgba() syntax can be used
+           with integer values between 0 and 255, or with percentages.
+           The value of s, v, l and a in \c hsv(), \c hsva() \c hsl()
+           or \c hsla() must all be in the range 0-255 or with
+           percentages, the value of h must be in the range 0-359.
+           The support for HSL(A) is available since 5.13.
 
            Examples:
 
