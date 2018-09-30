@@ -88,6 +88,7 @@
 #import <AppKit/AppKit.h>
 
 #include <qglobal.h>
+#include <qwindowdefs.h>
 #include <private/qcore_mac_p.h>
 
 @class QT_MANGLE_NAMESPACE(QCocoaMenuLoader);
@@ -97,6 +98,7 @@
     NSMenu *dockMenu;
     NSObject <NSApplicationDelegate> *reflectionDelegate;
     bool inLaunch;
+    QWindowList hiddenWindows;
 }
 + (QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate)*)sharedDelegate;
 - (void)setDockMenu:(NSMenu *)newMenu;
