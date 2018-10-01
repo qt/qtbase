@@ -160,6 +160,7 @@ public Q_SLOTS:
     void resizeColumnToContents(int column);
     void sortByColumn(int column);
     void expandAll();
+    void expandRecursively(const QModelIndex &index, int depth = -1);
     void collapseAll();
     void expandToDepth(int depth);
 

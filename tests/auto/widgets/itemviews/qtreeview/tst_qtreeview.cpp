@@ -1647,50 +1647,96 @@ void tst_QTreeView::expandAndCollapse()
     }
 }
 
+static void checkExpandState(const QAbstractItemModel &model, const QTreeView &view,
+                             const QModelIndex &startIdx, bool bIsExpanded, int *count)
+{
+    *count = 0;
+    QStack<QModelIndex> parents;
+    parents.push(startIdx);
+    if (startIdx.isValid()) {
+        QCOMPARE(view.isExpanded(startIdx), bIsExpanded);
+        *count += 1;
+    }
+    while (!parents.isEmpty()) {
+        const QModelIndex p = parents.pop();
+        const int rows = model.rowCount(p);
+        for (int r = 0; r < rows; ++r) {
+            const QModelIndex c = model.index(r, 0, p);
+            QCOMPARE(view.isExpanded(c), bIsExpanded);
+            parents.push(c);
+        }
+        *count += rows;
+    }
+}
+
 void tst_QTreeView::expandAndCollapseAll()
 {
-    QtTestModel model(3, 2);
-    model.levels = 2;
+    QStandardItemModel model;
+    // QtTestModel has a broken parent/child handling which will break the test
+    for (int i1 = 0; i1 < 3; ++i1) {
+        QStandardItem *s1 = new QStandardItem;
+        s1->setText(QString::number(i1));
+        model.appendRow(s1);
+        for (int i2 = 0; i2 < 3; ++i2) {
+            QStandardItem *s2 = new QStandardItem;
+            s2->setText(QStringLiteral("%1 - %2").arg(i1).arg(i2));
+            s1->appendRow(s2);
+            for (int i3 = 0; i3 < 3; ++i3) {
+                QStandardItem *s3 = new QStandardItem;
+                s3->setText(QStringLiteral("%1 - %2 - %3").arg(i1).arg(i2).arg(i3));
+                s2->appendRow(s3);
+            }
+        }
+    }
     QTreeView view;
     view.setUniformRowHeights(true);
     view.setModel(&model);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QSignalSpy expandedSpy(&view, SIGNAL(expanded(QModelIndex)));
-    QSignalSpy collapsedSpy(&view, SIGNAL(collapsed(QModelIndex)));
+    QSignalSpy expandedSpy(&view, &QTreeView::expanded);
+    QSignalSpy collapsedSpy(&view, &QTreeView::collapsed);
+    int count;
 
     view.expandAll();
-    view.show();
-
+    checkExpandState(model, view, QModelIndex(), true, &count);
     QCOMPARE(collapsedSpy.count(), 0);
+    QCOMPARE(expandedSpy.count(),  39); // == 3 (first) + 9 (second) + 27 (third level)
+    QCOMPARE(count, 39);
 
-    QStack<QModelIndex> parents;
-    parents.push(QModelIndex());
-    int count = 0;
-    while (!parents.isEmpty()) {
-        QModelIndex p = parents.pop();
-        int rows = model.rowCount(p);
-        for (int r = 0; r < rows; ++r)
-            QVERIFY(view.isExpanded(model.index(r, 0, p)));
-        count += rows;
-        for (int r = 0; r < rows; ++r)
-            parents.push(model.index(r, 0, p));
-    }
-    QCOMPARE(expandedSpy.count(), 12); // == (3+1)*(2+1) from QtTestModel model(3, 2);
-
+    collapsedSpy.clear();
+    expandedSpy.clear();
     view.collapseAll();
+    checkExpandState(model, view, QModelIndex(), false, &count);
+    QCOMPARE(collapsedSpy.count(), 39);
+    QCOMPARE(expandedSpy.count(), 0);
+    QCOMPARE(count, 39);
 
-    parents.push(QModelIndex());
-    count = 0;
-    while (!parents.isEmpty()) {
-        QModelIndex p = parents.pop();
-        int rows = model.rowCount(p);
-        for (int r = 0; r < rows; ++r)
-            QVERIFY(!view.isExpanded(model.index(r, 0, p)));
-        count += rows;
-        for (int r = 0; r < rows; ++r)
-            parents.push(model.index(r, 0, p));
-    }
-    QCOMPARE(collapsedSpy.count(), 12);
+    collapsedSpy.clear();
+    expandedSpy.clear();
+    view.expandRecursively(model.index(0, 0));
+    QCOMPARE(expandedSpy.count(), 13); // 1 + 3 + 9
+
+    checkExpandState(model, view, model.index(0, 0), true, &count);
+    QCOMPARE(count, 13);
+    checkExpandState(model, view, model.index(1, 0), false, &count);
+    QCOMPARE(count, 13);
+    checkExpandState(model, view, model.index(2, 0), false, &count);
+    QCOMPARE(count, 13);
+
+    expandedSpy.clear();
+    view.collapseAll();
+    view.expandRecursively(model.index(0, 0), 1);
+    QCOMPARE(expandedSpy.count(), 4); // 1 + 3
+    view.expandRecursively(model.index(0, 0), 2);
+    QCOMPARE(expandedSpy.count(), 13); // (1 + 3) + 9
+
+    checkExpandState(model, view, model.index(0, 0), true, &count);
+    QCOMPARE(count, 13);
+    checkExpandState(model, view, model.index(1, 0), false, &count);
+    QCOMPARE(count, 13);
+    checkExpandState(model, view, model.index(2, 0), false, &count);
+    QCOMPARE(count, 13);
 }
 
 void tst_QTreeView::expandWithNoChildren()

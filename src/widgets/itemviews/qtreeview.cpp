@@ -1985,21 +1985,7 @@ void QTreeView::keyPressEvent(QKeyEvent *event)
     if (d->isIndexValid(current) && d->model && d->itemsExpandable) {
         switch (event->key()) {
         case Qt::Key_Asterisk: {
-            // do layouting only once after expanding is done
-            d->doDelayedItemsLayout();
-            QStack<QModelIndex> parents;
-            parents.push(current);
-            while (!parents.isEmpty()) {
-                QModelIndex parent = parents.pop();
-                for (int row = 0; row < d->model->rowCount(parent); ++row) {
-                    QModelIndex child = d->model->index(row, 0, parent);
-                    if (!d->isIndexValid(child))
-                        break;
-                    parents.push(child);
-                    expand(child);
-                }
-            }
-            expand(current);
+            expandRecursively(current);
             break; }
         case Qt::Key_Plus:
             expand(current);
@@ -2694,7 +2680,7 @@ QSize QTreeView::viewportSizeHint() const
   \since 4.2
   Expands all expandable items.
 
-  Warning: if the model contains a large number of items,
+  \warning: if the model contains a large number of items,
   this function will take some time to execute.
 
   \sa collapseAll(), expand(), collapse(), setExpanded()
@@ -2707,6 +2693,50 @@ void QTreeView::expandAll()
     d->layout(-1, true);
     updateGeometries();
     d->viewport->update();
+}
+
+/*!
+  \since 5.13
+  Expands the item at the given \a index and all its children to the
+  given \a depth. The \a depth is relative to the given \a index.
+  A \a depth of -1 will expand all children, a \a depth of 0 will
+  only expand the given \a index.
+
+  \warning: if the model contains a large number of items,
+  this function will take some time to execute.
+
+  \sa expandAll()
+*/
+void QTreeView::expandRecursively(const QModelIndex &index, int depth)
+{
+    Q_D(QTreeView);
+
+    if (depth < -1)
+        return;
+    // do layouting only once after expanding is done
+    d->doDelayedItemsLayout();
+    expand(index);
+    if (depth == 0)
+        return;
+    QStack<QPair<QModelIndex, int>> parents;
+    parents.push({index, 0});
+    while (!parents.isEmpty()) {
+        const QPair<QModelIndex, int> elem = parents.pop();
+        const QModelIndex &parent = elem.first;
+        const int curDepth = elem.second;
+        const int rowCount = d->model->rowCount(parent);
+        for (int row = 0; row < rowCount; ++row) {
+            const QModelIndex child = d->model->index(row, 0, parent);
+            if (!d->isIndexValid(child))
+                break;
+            if (depth == -1 || curDepth + 1 < depth)
+                parents.push({child, curDepth + 1});
+            if (d->isIndexExpanded(child))
+                continue;
+            if (d->storeExpanded(child))
+                emit expanded(child);
+        }
+    }
 }
 
 /*!
