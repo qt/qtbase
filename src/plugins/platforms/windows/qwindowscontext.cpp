@@ -960,6 +960,7 @@ static inline bool isInputMessage(UINT m)
     case WM_IME_STARTCOMPOSITION:
     case WM_IME_ENDCOMPOSITION:
     case WM_IME_COMPOSITION:
+    case WM_INPUT:
     case WM_TOUCH:
     case WM_MOUSEHOVER:
     case WM_MOUSELEAVE:
