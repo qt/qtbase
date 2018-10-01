@@ -112,7 +112,7 @@ QT_WARNING_DISABLE_MSVC(4100) // The formal parameter is not referenced in the b
     static constexpr StaticString<N1 + N2> concatenate(
         const char (&ls)[N1], const StaticString<N2> &rs) noexcept
     {
-        return StaticString<N1 + N2>{ls[I1]..., rs.data[I2]...};
+        return StaticString<N1 + N2>{{ls[I1]..., rs.data[I2]...}};
     }
 QT_WARNING_POP
 };
