@@ -173,7 +173,10 @@ public:
     bool startSystemMoveResize(const QPoint &pos, int corner);
     void doStartSystemMoveResize(const QPoint &globalPos, int corner);
 
-    bool isTrayIconWindow() const { return m_trayIconWindow; }
+    static bool isTrayIconWindow(QWindow *window)
+    {
+        return window->objectName() == QLatin1String("QSystemTrayIconSysWindow");
+    }
 
     virtual void create();
     virtual void destroy();

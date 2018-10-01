@@ -297,7 +297,7 @@ void QXcbWindow::create()
     destroy();
 
     m_windowState = Qt::WindowNoState;
-    m_trayIconWindow = window()->objectName() == QLatin1String("QSystemTrayIconSysWindow");
+    m_trayIconWindow = isTrayIconWindow(window());
 
     Qt::WindowType type = window()->type();
 
@@ -397,9 +397,12 @@ void QXcbWindow::create()
                  | XCB_CW_SAVE_UNDER
                  | XCB_CW_EVENT_MASK;
 
-    static const bool haveOpenGL = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL);
+    static auto haveOpenGL = []() {
+        static const bool result = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL);
+        return result;
+    };
 
-    if ((window()->supportsOpenGL() && haveOpenGL) || m_format.hasAlpha()) {
+    if ((window()->supportsOpenGL() && haveOpenGL()) || m_format.hasAlpha()) {
         m_cmap = xcb_generate_id(xcb_connection());
         xcb_create_colormap(xcb_connection(),
                             XCB_COLORMAP_ALLOC_NONE,

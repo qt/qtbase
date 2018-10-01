@@ -45,6 +45,7 @@
 #include <qdrawutil.h>
 #include <qevent.h>
 #include <qfontmetrics.h>
+#include <qproxystyle.h>
 #include <qwindow.h>
 #include <qscreen.h>
 #include <qmainwindow.h>
@@ -165,6 +166,10 @@ static inline bool isWindowsStyle(const QStyle *style)
 #if QT_CONFIG(style_stylesheet)
     if (style->inherits("QStyleSheetStyle"))
       effectiveStyle = static_cast<const QStyleSheetStyle *>(style)->baseStyle();
+#endif
+#if !defined(QT_NO_STYLE_PROXY)
+    if (style->inherits("QProxyStyle"))
+      effectiveStyle = static_cast<const QProxyStyle *>(style)->baseStyle();
 #endif
 
     return effectiveStyle->inherits("QWindowsStyle");

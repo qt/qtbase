@@ -62,7 +62,7 @@
 #include <dispatch/dispatch.h>
 #include <CoreServices/CoreServices.h>
 
-#ifndef QT_NO_FILESYSTEMWATCHER
+QT_REQUIRE_CONFIG(filesystemwatcher);
 
 QT_BEGIN_NAMESPACE
 
@@ -150,5 +150,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif //QT_NO_FILESYSTEMWATCHER
 #endif // QFILESYSTEMWATCHER_FSEVENTS_P_H

@@ -545,23 +545,33 @@ QString QFSFileEngine::tempPath()
     return QFileSystemEngine::tempPath();
 }
 
+#if !defined(Q_OS_WINRT)
+// cf QStorageInfo::isReady
+static inline bool isDriveReady(const wchar_t *path)
+{
+    DWORD fileSystemFlags;
+    const UINT driveType = GetDriveType(path);
+    return (driveType != DRIVE_REMOVABLE && driveType != DRIVE_CDROM)
+        || GetVolumeInformation(path, nullptr, 0, nullptr, nullptr,
+                                &fileSystemFlags, nullptr, 0) == TRUE;
+}
+#endif // !Q_OS_WINRT
+
 QFileInfoList QFSFileEngine::drives()
 {
     QFileInfoList ret;
 #if !defined(Q_OS_WINRT)
-#  if defined(Q_OS_WIN32)
     const UINT oldErrorMode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
     quint32 driveBits = (quint32) GetLogicalDrives() & 0x3ffffff;
-    ::SetErrorMode(oldErrorMode);
-#  endif
-    char driveName[] = "A:/";
+    wchar_t driveName[] = L"A:\\";
 
     while (driveBits) {
-        if (driveBits & 1)
-            ret.append(QFileInfo(QLatin1String(driveName)));
+        if ((driveBits & 1) && isDriveReady(driveName))
+            ret.append(QFileInfo(QString::fromWCharArray(driveName)));
         driveName[0]++;
         driveBits = driveBits >> 1;
     }
+    ::SetErrorMode(oldErrorMode);
     return ret;
 #else // !Q_OS_WINRT
     ret.append(QFileInfo(QLatin1String("/")));

@@ -390,15 +390,29 @@ void QInputMethod::invokeAction(Action a, int cursorPosition)
         ic->invokeAction(a, cursorPosition);
 }
 
+static inline bool platformSupportsHiddenText()
+{
+    const QPlatformInputContext *inputContext = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    return inputContext && inputContext->hasCapability(QPlatformInputContext::HiddenTextCapability);
+}
+
 bool QInputMethodPrivate::objectAcceptsInputMethod(QObject *object)
 {
     bool enabled = false;
     if (object) {
-        QInputMethodQueryEvent query(Qt::ImEnabled);
+        // If the platform does not support hidden text, query the hints
+        // in addition and disable in case of ImhHiddenText.
+        static const bool supportsHiddenText = platformSupportsHiddenText();
+        QInputMethodQueryEvent query(supportsHiddenText
+                                     ? Qt::InputMethodQueries(Qt::ImEnabled)
+                                     : Qt::InputMethodQueries(Qt::ImEnabled | Qt::ImHints));
         QGuiApplication::sendEvent(object, &query);
         enabled = query.value(Qt::ImEnabled).toBool();
+        if (enabled && !supportsHiddenText
+            && Qt::InputMethodHints(query.value(Qt::ImHints).toInt()).testFlag(Qt::ImhHiddenText)) {
+            enabled = false;
+        }
     }
-
     return enabled;
 }
 

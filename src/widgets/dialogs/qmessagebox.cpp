@@ -1075,7 +1075,7 @@ void QMessageBoxPrivate::detectEscapeButton()
     or 0 if the user hit the \uicontrol Esc key and
     no \l{setEscapeButton()}{escape button} was set.
 
-    If exec() hasn't been called yet, returns 0.
+    If exec() hasn't been called yet, returns nullptr.
 
     Example:
 
@@ -1093,7 +1093,7 @@ QAbstractButton *QMessageBox::clickedButton() const
     \since 4.2
 
     Returns the button that should be the message box's
-    \l{QPushButton::setDefault()}{default button}. Returns 0
+    \l{QPushButton::setDefault()}{default button}. Returns nullptr
     if no default button was set.
 
     \sa addButton(), QPushButton::setDefault()
@@ -2745,7 +2745,7 @@ QPixmap QMessageBox::standardIcon(Icon icon)
   Shows the message box as a \l{QDialog#Modal Dialogs}{modal dialog},
   blocking until the user closes it.
 
-  When using a QMessageBox with standard buttons, this functions returns a
+  When using a QMessageBox with standard buttons, this function returns a
   \l StandardButton value indicating the standard button that was clicked.
   When using QMessageBox with custom buttons, this function returns an
   opaque value; use clickedButton() to determine which button was clicked.

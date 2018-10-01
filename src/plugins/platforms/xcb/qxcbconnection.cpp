@@ -654,34 +654,6 @@ QXcbConnection::QXcbConnection(xcb_connection_t *c, int primaryScreenNumber,
     if (!m_startupId.isNull())
         qunsetenv("DESKTOP_STARTUP_ID");
 
-
-    QStringList glIntegrationNames;
-    glIntegrationNames << QStringLiteral("xcb_glx") << QStringLiteral("xcb_egl");
-    QString glIntegrationName = QString::fromLocal8Bit(qgetenv("QT_XCB_GL_INTEGRATION"));
-    if (!glIntegrationName.isEmpty()) {
-        qCDebug(lcQpaGl) << "QT_XCB_GL_INTEGRATION is set to" << glIntegrationName;
-        if (glIntegrationName != QLatin1String("none")) {
-            glIntegrationNames.removeAll(glIntegrationName);
-            glIntegrationNames.prepend(glIntegrationName);
-        } else {
-            glIntegrationNames.clear();
-        }
-    }
-
-    if (!glIntegrationNames.isEmpty()) {
-        qCDebug(lcQpaGl) << "Choosing xcb gl-integration based on following priority\n" << glIntegrationNames;
-        for (int i = 0; i < glIntegrationNames.size() && !m_glIntegration; i++) {
-            m_glIntegration = QXcbGlIntegrationFactory::create(glIntegrationNames.at(i));
-            if (m_glIntegration && !m_glIntegration->initialize(this)) {
-                qCDebug(lcQpaGl) << "Failed to initialize xcb gl-integration" << glIntegrationNames.at(i);
-                delete m_glIntegration;
-                m_glIntegration = nullptr;
-            }
-        }
-        if (!m_glIntegration)
-            qCDebug(lcQpaGl) << "Failed to create xcb gl-integration";
-    }
-
     sync();
 }
 
@@ -2302,6 +2274,42 @@ Qt::KeyboardModifiers QXcbConnection::queryKeyboardModifiers() const
     int stateMask = 0;
     QXcbCursor::queryPointer(connection(), 0, 0, &stateMask);
     return keyboard()->translateModifiers(stateMask);
+}
+
+QXcbGlIntegration *QXcbConnection::glIntegration() const
+{
+    if (m_glIntegrationInitialized)
+        return m_glIntegration;
+
+    QStringList glIntegrationNames;
+    glIntegrationNames << QStringLiteral("xcb_glx") << QStringLiteral("xcb_egl");
+    QString glIntegrationName = QString::fromLocal8Bit(qgetenv("QT_XCB_GL_INTEGRATION"));
+    if (!glIntegrationName.isEmpty()) {
+        qCDebug(lcQpaGl) << "QT_XCB_GL_INTEGRATION is set to" << glIntegrationName;
+        if (glIntegrationName != QLatin1String("none")) {
+            glIntegrationNames.removeAll(glIntegrationName);
+            glIntegrationNames.prepend(glIntegrationName);
+        } else {
+            glIntegrationNames.clear();
+        }
+    }
+
+    if (!glIntegrationNames.isEmpty()) {
+        qCDebug(lcQpaGl) << "Choosing xcb gl-integration based on following priority\n" << glIntegrationNames;
+        for (int i = 0; i < glIntegrationNames.size() && !m_glIntegration; i++) {
+            m_glIntegration = QXcbGlIntegrationFactory::create(glIntegrationNames.at(i));
+            if (m_glIntegration && !m_glIntegration->initialize(const_cast<QXcbConnection *>(this))) {
+                qCDebug(lcQpaGl) << "Failed to initialize xcb gl-integration" << glIntegrationNames.at(i);
+                delete m_glIntegration;
+                m_glIntegration = nullptr;
+            }
+        }
+        if (!m_glIntegration)
+            qCDebug(lcQpaGl) << "Failed to create xcb gl-integration";
+    }
+
+    m_glIntegrationInitialized = true;
+    return m_glIntegration;
 }
 
 bool QXcbConnection::event(QEvent *e)

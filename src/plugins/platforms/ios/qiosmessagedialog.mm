@@ -79,6 +79,18 @@ inline QString QIOSMessageDialog::messageTextPlain()
     return text;
 }
 
+inline UIAlertAction *QIOSMessageDialog::createAction(
+        const QMessageDialogOptions::CustomButton &customButton)
+{
+    const QString label = QPlatformTheme::removeMnemonics(customButton.label);
+    const UIAlertActionStyle style = UIAlertActionStyleDefault;
+
+    return [UIAlertAction actionWithTitle:label.toNSString() style:style handler:^(UIAlertAction *) {
+        hide();
+        emit clicked(static_cast<QPlatformDialogHelper::StandardButton>(customButton.id), customButton.role);
+    }];
+}
+
 inline UIAlertAction *QIOSMessageDialog::createAction(StandardButton button)
 {
     const StandardButton labelButton = button == NoButton ? Ok : button;
@@ -118,12 +130,18 @@ bool QIOSMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality win
         message:messageTextPlain().toNSString()
         preferredStyle:UIAlertControllerStyleAlert] retain];
 
+    const QVector<QMessageDialogOptions::CustomButton> customButtons = options()->customButtons();
+    for (const QMessageDialogOptions::CustomButton &button : customButtons) {
+        UIAlertAction *act = createAction(button);
+        [m_alertController addAction:act];
+    }
+
     if (StandardButtons buttons = options()->standardButtons()) {
         for (int i = FirstButton; i < LastButton; i<<=1) {
             if (i & buttons)
                 [m_alertController addAction:createAction(StandardButton(i))];
         }
-    } else {
+    } else if (customButtons.isEmpty()) {
         // We need at least one button to allow the user close the dialog
         [m_alertController addAction:createAction(NoButton)];
     }

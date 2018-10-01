@@ -63,6 +63,7 @@ private:
     UIAlertController *m_alertController;
     QString messageTextPlain();
     UIAlertAction *createAction(StandardButton button);
+    UIAlertAction *createAction(const QMessageDialogOptions::CustomButton &customButton);
 };
 
 QT_END_NAMESPACE

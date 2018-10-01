@@ -60,7 +60,7 @@
 
 #include "qfilesystemwatcher_p.h"
 
-#ifndef QT_NO_FILESYSTEMWATCHER
+QT_REQUIRE_CONFIG(filesystemwatcher);
 QT_BEGIN_NAMESPACE
 
 enum { PollingInterval = 1000 };
@@ -121,6 +121,5 @@ private:
 };
 
 QT_END_NAMESPACE
-#endif // !QT_NO_FILESYSTEMWATCHER
 #endif // QFILESYSTEMWATCHER_POLLING_P_H
 
