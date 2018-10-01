@@ -399,7 +399,7 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
               0 < tran.atMSecsSinceEpoch - nextTran.atMSecsSinceEpoch
               = (nextTran.offsetFromUtc - tran.offsetFromUtc) * 1000
             */
-            int dstStep = nextTran.offsetFromUtc - tran.offsetFromUtc;
+            int dstStep = (nextTran.offsetFromUtc - tran.offsetFromUtc) * 1000;
             Q_ASSERT(dstStep > 0); // How else could we get here ?
             if (nextFirst) { // hint thought we needed nextTran, so use tran
                 tran.atMSecsSinceEpoch -= dstStep;
@@ -439,7 +439,7 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
             // Invalid forLocalMSecs: in spring-forward gap.
             const int dstStep = daylightTimeOffset(early < late ?
                                                    forLocalMSecs + sixteenHoursInMSecs :
-                                                   forLocalMSecs - sixteenHoursInMSecs);
+                                                   forLocalMSecs - sixteenHoursInMSecs) * 1000;
             Q_ASSERT(dstStep); // There can't be a transition without it !
             utcEpochMSecs = (hint > 0) ? forStd - dstStep : forDst + dstStep;
         }
