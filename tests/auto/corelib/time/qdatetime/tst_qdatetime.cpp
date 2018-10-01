@@ -3021,28 +3021,13 @@ void tst_QDateTime::timeZoneAbbreviation()
         qDebug("(Skipped some CET-only tests)");
     }
 
-#ifdef Q_OS_ANDROID // Only reports (general) zones as offsets (QTBUG-68837)
-    const QString cet(QStringLiteral("GMT+01:00"));
-    const QString cest(QStringLiteral("GMT+02:00"));
-#elif defined Q_OS_DARWIN
-    const QString cet(QStringLiteral("GMT+1"));
-    const QString cest(QStringLiteral("GMT+2"));
-#else
-    const QString cet(QStringLiteral("CET"));
-    const QString cest(QStringLiteral("CEST"));
-#endif
-
 #if QT_CONFIG(timezone)
-    QDateTime dt5(QDate(2013, 1, 1), QTime(0, 0, 0), QTimeZone("Europe/Berlin"));
-#ifdef Q_OS_WIN
-    QEXPECT_FAIL("", "Windows only reports long names (QTBUG-32759)", Continue);
-#endif
-    QCOMPARE(dt5.timeZoneAbbreviation(), cet);
-    QDateTime dt6(QDate(2013, 6, 1), QTime(0, 0, 0), QTimeZone("Europe/Berlin"));
-#ifdef Q_OS_WIN
-    QEXPECT_FAIL("", "Windows only reports long names (QTBUG-32759)", Continue);
-#endif
-    QCOMPARE(dt6.timeZoneAbbreviation(), cest);
+    const QTimeZone berlin("Europe/Berlin");
+    const QDateTime jan(QDate(2013, 1, 1).startOfDay(berlin));
+    const QDateTime jul(QDate(2013, 7, 1).startOfDay(berlin));
+
+    QCOMPARE(jan.timeZoneAbbreviation(), berlin.abbreviation(jan));
+    QCOMPARE(jul.timeZoneAbbreviation(), berlin.abbreviation(jul));
 #endif
 }
 
