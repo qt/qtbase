@@ -771,6 +771,17 @@ static QPair<QLibrary*, QLibrary*> loadOpenSsl()
     // reason, we will search a few common paths (see findAllLibSsl() above) in hopes
     // we find one that works.
     //
+    // If that fails, for OpenSSL 1.0 we also try a fallback -- just look up
+    // libssl.so with a hardcoded soname. The reason is QTBUG-68156: the binary
+    // builds of Qt happen (at the time of this writing) on RHEL machines,
+    // which change SHLIB_VERSION_NUMBER to a non-portable string. When running
+    // those binaries on the target systems, this code won't pick up
+    // libssl.so.MODIFIED_SHLIB_VERSION_NUMBER because it doesn't exist there.
+    // Given that the only 1.0 supported release (at the time of this writing)
+    // is 1.0.2, with soname "1.0.0", give that a try too. Note that we mandate
+    // OpenSSL >= 1.0.0 with a configure-time check, and OpenSSL has kept binary
+    // compatibility between 1.0.0 and 1.0.2.
+    //
     // It is important, however, to try the canonical name and the unversioned name
     // without going through the loop. By not specifying a path, we let the system
     // dlopen(3) function determine it for us. This will include any DT_RUNPATH or
@@ -791,6 +802,18 @@ static QPair<QLibrary*, QLibrary*> loadOpenSsl()
         libssl->unload();
         libcrypto->unload();
     }
+
+#if !QT_CONFIG(opensslv11)
+    // first-and-half attempt: for OpenSSL 1.0 try to load an hardcoded soname.
+    libssl->setFileNameAndVersion(QLatin1String("ssl"), QLatin1String("1.0.0"));
+    libcrypto->setFileNameAndVersion(QLatin1String("crypto"), QLatin1String("1.0.0"));
+    if (libcrypto->load() && libssl->load()) {
+        return pair;
+    } else {
+        libssl->unload();
+        libcrypto->unload();
+    }
+#endif
 #endif
 
 #ifndef Q_OS_DARWIN
