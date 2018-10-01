@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-         New API code Copyright (c) 2016 University of Cambridge
+          New API code Copyright (c) 2016-2018 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -505,7 +505,7 @@ Arguments:
   utf         TRUE in UTF mode
   cb          compile data block
   base_list   the data list of the base opcode
-  base_end    the end of the data list
+  base_end    the end of the base opcode
   rec_limit   points to recursion depth counter
 
 Returns:      TRUE if the auto-possessification is possible
@@ -558,53 +558,81 @@ for(;;)
     continue;
     }
 
+  /* At the end of a branch, skip to the end of the group. */
+
   if (c == OP_ALT)
     {
     do code += GET(code, 1); while (*code == OP_ALT);
     c = *code;
     }
 
+  /* Inspect the next opcode. */
+
   switch(c)
     {
-    case OP_END:
-    case OP_KETRPOS:
-    /* TRUE only in greedy case. The non-greedy case could be replaced by
-    an OP_EXACT, but it is probably not worth it. (And note that OP_EXACT
-    uses more memory, which we cannot get at this stage.) */
+    /* We can always possessify a greedy iterator at the end of the pattern,
+    which is reached after skipping over the final OP_KET. A non-greedy
+    iterator must never be possessified. */
 
+    case OP_END:
     return base_list[1] != 0;
 
+    /* When an iterator is at the end of certain kinds of group we can inspect
+    what follows the group by skipping over the closing ket. Note that this
+    does not apply to OP_KETRMAX or OP_KETRMIN because what follows any given
+    iteration is variable (could be another iteration or could be the next
+    item). As these two opcodes are not listed in the next switch, they will
+    end up as the next code to inspect, and return FALSE by virtue of being
+    unsupported. */
+
     case OP_KET:
-    /* If the bracket is capturing, and referenced by an OP_RECURSE, or
-    it is an atomic sub-pattern (assert, once, etc.) the non-greedy case
-    cannot be converted to a possessive form. */
+    case OP_KETRPOS:
+    /* The non-greedy case cannot be converted to a possessive form. */
 
     if (base_list[1] == 0) return FALSE;
 
+    /* If the bracket is capturing it might be referenced by an OP_RECURSE
+    so its last iterator can never be possessified if the pattern contains
+    recursions. (This could be improved by keeping a list of group numbers that
+    are called by recursion.) */
+
     switch(*(code - GET(code, 1)))
       {
+      case OP_CBRA:
+      case OP_SCBRA:
+      case OP_CBRAPOS:
+      case OP_SCBRAPOS:
+      if (cb->had_recurse) return FALSE;
+      break;
+
+      /* Atomic sub-patterns and assertions can always auto-possessify their
+      last iterator. However, if the group was entered as a result of checking
+      a previous iterator, this is not possible. */
+
       case OP_ASSERT:
       case OP_ASSERT_NOT:
       case OP_ASSERTBACK:
       case OP_ASSERTBACK_NOT:
       case OP_ONCE:
-      case OP_ONCE_NC:
-      /* Atomic sub-patterns and assertions can always auto-possessify their
-      last iterator. However, if the group was entered as a result of checking
-      a previous iterator, this is not possible. */
 
       return !entered_a_group;
       }
 
+    /* Skip over the bracket and inspect what comes next. */
+
     code += PRIV(OP_lengths)[c];
     continue;
 
+    /* Handle cases where the next item is a group. */
+
     case OP_ONCE:
-    case OP_ONCE_NC:
     case OP_BRA:
     case OP_CBRA:
     next_code = code + GET(code, 1);
     code += PRIV(OP_lengths)[c];
+
+    /* Check each branch. We have to recurse a level for all but the last
+    branch. */
 
     while (*next_code == OP_ALT)
       {
@@ -621,8 +649,8 @@ for(;;)
     case OP_BRAMINZERO:
 
     next_code = code + 1;
-    if (*next_code != OP_BRA && *next_code != OP_CBRA
-        && *next_code != OP_ONCE && *next_code != OP_ONCE_NC) return FALSE;
+    if (*next_code != OP_BRA && *next_code != OP_CBRA &&
+        *next_code != OP_ONCE) return FALSE;
 
     do next_code += GET(next_code, 1); while (*next_code == OP_ALT);
 
@@ -635,11 +663,15 @@ for(;;)
     code += PRIV(OP_lengths)[c];
     continue;
 
+    /* The next opcode does not need special handling; fall through and use it
+    to see if the base can be possessified. */
+
     default:
     break;
     }
 
-  /* Check for a supported opcode, and load its properties. */
+  /* We now have the next appropriate opcode to compare with the base. Check
+  for a supported opcode, and load its properties. */
 
   code = get_chr_property_list(code, utf, cb->fcc, list);
   if (code == NULL) return FALSE;    /* Unsupported */
@@ -698,7 +730,7 @@ for(;;)
       if ((*xclass_flags & XCL_MAP) == 0)
         {
         /* No bits are set for characters < 256. */
-        if (list[1] == 0) return TRUE;
+        if (list[1] == 0) return (*xclass_flags & XCL_NOT) == 0;
         /* Might be an empty repeat. */
         continue;
         }
@@ -1046,8 +1078,10 @@ but some compilers complain about an unreachable statement. */
 
 /* Replaces single character iterations with their possessive alternatives
 if appropriate. This function modifies the compiled opcode! Hitting a
-non-existant opcode may indicate a bug in PCRE2, but it can also be caused if a
-bad UTF string was compiled with PCRE2_NO_UTF_CHECK.
+non-existent opcode may indicate a bug in PCRE2, but it can also be caused if a
+bad UTF string was compiled with PCRE2_NO_UTF_CHECK. The rec_limit catches
+overly complicated or large patterns. In these cases, the check just stops,
+leaving the remainder of the pattern unpossessified.
 
 Arguments:
   code        points to start of the byte code
@@ -1061,17 +1095,17 @@ Returns:      0 for success
 int
 PRIV(auto_possessify)(PCRE2_UCHAR *code, BOOL utf, const compile_block *cb)
 {
-register PCRE2_UCHAR c;
+PCRE2_UCHAR c;
 PCRE2_SPTR end;
 PCRE2_UCHAR *repeat_opcode;
 uint32_t list[8];
-int rec_limit;
+int rec_limit = 1000;  /* Was 10,000 but clang+ASAN uses a lot of stack. */
 
 for (;;)
   {
   c = *code;
 
-  if (c > OP_TABLE_LENGTH) return -1;   /* Something gone wrong */
+  if (c >= OP_TABLE_LENGTH) return -1;   /* Something gone wrong */
 
   if (c >= OP_STAR && c <= OP_TYPEPOSUPTO)
     {
@@ -1080,7 +1114,6 @@ for (;;)
       get_chr_property_list(code, utf, cb->fcc, list) : NULL;
     list[1] = c == OP_STAR || c == OP_PLUS || c == OP_QUERY || c == OP_UPTO;
 
-    rec_limit = 1000;
     if (end != NULL && compare_opcodes(end, utf, cb, list, end, &rec_limit))
       {
       switch(c)
@@ -1137,7 +1170,6 @@ for (;;)
 
       list[1] = (c & 1) == 0;
 
-      rec_limit = 1000;
       if (compare_opcodes(end, utf, cb, list, end, &rec_limit))
         {
         switch (c)
@@ -1203,6 +1235,7 @@ for (;;)
 #endif
 
     case OP_MARK:
+    case OP_COMMIT_ARG:
     case OP_PRUNE_ARG:
     case OP_SKIP_ARG:
     case OP_THEN_ARG:
