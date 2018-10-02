@@ -46,7 +46,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 /*!
     \class QCollator
     \inmodule QtCore
@@ -71,9 +70,20 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    Constructs a QCollator for \a locale.
+  \since 5.13
 
-    If \a locale is not specified, the system's default locale is used.
+  Constructs a QCollator using the system's default collation locale.
+
+  \sa setLocale(), QLocale::collation()
+*/
+QCollator::QCollator()
+    : d(new QCollatorPrivate(QLocale::system().collation()))
+{
+    d->init();
+}
+
+/*!
+    Constructs a QCollator from \a locale.
 
     \sa setLocale()
  */

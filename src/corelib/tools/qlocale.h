@@ -1048,7 +1048,7 @@ public:
     QString pmText() const;
 
     MeasurementSystem measurementSystem() const;
-
+    QLocale collation() const;
     Qt::LayoutDirection textDirection() const;
 
     QString toUpper(const QString &str) const;

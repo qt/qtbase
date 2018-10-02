@@ -81,7 +81,8 @@ inline bool operator<(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs)
 class Q_CORE_EXPORT QCollator
 {
 public:
-    explicit QCollator(const QLocale &locale = QLocale());
+    QCollator();
+    explicit QCollator(const QLocale &locale);
     QCollator(const QCollator &);
     ~QCollator();
     QCollator &operator=(const QCollator &);

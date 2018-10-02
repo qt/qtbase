@@ -4132,6 +4132,29 @@ QStringList QLocale::uiLanguages() const
 }
 
 /*!
+  \since 5.13
+
+  Returns the locale to use for collation.
+
+  The result is usually this locale; however, the system locale (which is
+  commonly the default locale) will return the system collation locale.
+  The result is suitable for passing to QCollator's constructor.
+
+  \sa QCollator
+*/
+QLocale QLocale::collation() const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d->m_data == systemData()) {
+        QString res = systemLocale()->query(QSystemLocale::Collation, QVariant()).toString();
+        if (!res.isEmpty())
+            return QLocale(res);
+    }
+#endif
+    return *this;
+}
+
+/*!
     \since 4.8
 
     Returns a native name of the language for the locale. For example

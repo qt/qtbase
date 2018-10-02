@@ -69,6 +69,7 @@ struct QSystemLocaleData
     QLocale lc_messages;
     QByteArray lc_messages_var;
     QByteArray lc_measurement_var;
+    QByteArray lc_collate_var;
     QStringList uiLanguages;
 };
 
@@ -82,6 +83,7 @@ void QSystemLocaleData::readEnvironment()
     QByteArray monetary = all.isEmpty() ? qgetenv("LC_MONETARY") : all;
     lc_messages_var     = all.isEmpty() ? qgetenv("LC_MESSAGES") : all;
     lc_measurement_var  = all.isEmpty() ? qgetenv("LC_MEASUREMENT") : all;
+    lc_collate_var      = all.isEmpty() ? qgetenv("LC_COLLATE") : all;
     QByteArray lang = qgetenv("LANG");
     if (lang.isEmpty())
         lang = QByteArray("C");
@@ -95,6 +97,8 @@ void QSystemLocaleData::readEnvironment()
         lc_messages_var = lang;
     if (lc_measurement_var.isEmpty())
         lc_measurement_var = lang;
+    if (lc_collate_var.isEmpty())
+        lc_collate_var = lang;
     lc_numeric = QLocale(QString::fromLatin1(numeric));
     lc_time = QLocale(QString::fromLatin1(time));
     lc_monetary = QLocale(QString::fromLatin1(monetary));
@@ -247,13 +251,15 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         return QString();
     }
     case MeasurementSystem: {
-        const QString meas_locale = QString::fromLatin1(d->lc_measurement_var.constData(), d->lc_measurement_var.size());
+        const QString meas_locale = QString::fromLatin1(d->lc_measurement_var);
         if (meas_locale.compare(QLatin1String("Metric"), Qt::CaseInsensitive) == 0)
             return QLocale::MetricSystem;
         if (meas_locale.compare(QLatin1String("Other"), Qt::CaseInsensitive) == 0)
             return QLocale::MetricSystem;
         return QVariant((int)QLocale(meas_locale).measurementSystem());
     }
+    case Collation:
+        return QString::fromLatin1(d->lc_collate_var);
     case UILanguages: {
         if (!d->uiLanguages.isEmpty())
             return d->uiLanguages;

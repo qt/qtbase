@@ -113,6 +113,7 @@ public:
         Weekdays, // QList<Qt::DayOfWeek>
         CurrencySymbol, // QString in: CurrencyToStringArgument
         CurrencyToString, // QString in: qlonglong, qulonglong or double
+        Collation, // QString
         UILanguages, // QStringList
         StringToStandardQuotation, // QString in: QStringRef to quote
         StringToAlternateQuotation, // QString in: QStringRef to quote
