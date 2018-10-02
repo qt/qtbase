@@ -37,6 +37,7 @@ public:
     tst_QSortFilterProxyModelRegExp();
 private slots:
     void tst_invalid();
+    void tst_caseSensitivity();
 };
 
 tst_QSortFilterProxyModelRegExp::tst_QSortFilterProxyModelRegExp() :
@@ -53,6 +54,15 @@ void tst_QSortFilterProxyModelRegExp::tst_invalid()
     QCOMPARE(model.filterRegExp(), QRegExp(pattern));
     model.setFilterRegularExpression(pattern);
     QCOMPARE(model.filterRegExp(), QRegExp());
+}
+
+void tst_QSortFilterProxyModelRegExp::tst_caseSensitivity()
+{
+    const QLatin1String pattern("test");
+    QSortFilterProxyModel model;
+    model.setFilterCaseSensitivity(Qt::CaseInsensitive);
+    model.setFilterRegExp(pattern);
+    QCOMPARE(model.filterCaseSensitivity(), Qt::CaseInsensitive);
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModelRegExp)

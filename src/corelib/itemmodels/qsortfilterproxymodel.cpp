@@ -2731,6 +2731,7 @@ void QSortFilterProxyModel::setFilterRegExp(const QString &pattern)
     Q_D(QSortFilterProxyModel);
     d->filter_about_to_be_changed();
     QRegExp rx(pattern);
+    rx.setCaseSensitivity(d->filter_data.caseSensitivity());
     d->filter_data.setRegExp(rx);
     d->filter_changed();
 }
