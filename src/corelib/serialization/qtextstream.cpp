@@ -326,7 +326,7 @@ QT_BEGIN_NAMESPACE
 */
 QTextStreamPrivate::QTextStreamPrivate(QTextStream *q_ptr)
     :
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     readConverterSavedState(0),
 #endif
     readConverterSavedStateOffset(0),
@@ -347,12 +347,12 @@ QTextStreamPrivate::~QTextStreamPrivate()
 #endif
         delete device;
     }
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     delete readConverterSavedState;
 #endif
 }
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 static void resetCodecConverterStateHelper(QTextCodec::ConverterState *state)
 {
     state->~ConverterState();
@@ -401,7 +401,7 @@ void QTextStreamPrivate::reset()
     readBufferStartDevicePos = 0;
     lastTokenSize = 0;
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     codec = QTextCodec::codecForLocale();
     resetCodecConverterStateHelper(&readConverterState);
     resetCodecConverterStateHelper(&writeConverterState);
@@ -461,7 +461,7 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
     if (bytesRead <= 0)
         return false;
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     // codec auto detection, explicitly defaults to locale encoding if the
     // codec has been set to 0.
     if (!codec || autoDetectUnicode) {
@@ -485,7 +485,7 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
 #endif
 
     int oldReadBufferSize = readBuffer.size();
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     // convert to unicode
     readBuffer += Q_LIKELY(codec) ? codec->toUnicode(buf, bytesRead, &readConverterState)
                                   : QString::fromLatin1(buf, bytesRead);
@@ -567,7 +567,7 @@ void QTextStreamPrivate::flushWriteBuffer()
     }
 #endif
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     if (!codec)
         codec = QTextCodec::codecForLocale();
 #if defined (QTEXTSTREAM_DEBUG)
@@ -786,7 +786,7 @@ inline void QTextStreamPrivate::consume(int size)
 */
 inline void QTextStreamPrivate::saveConverterState(qint64 newPos)
 {
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     if (readConverterState.d) {
         // converter cannot be copied, so don't save anything
         // don't update readBufferStartDevicePos either
@@ -807,7 +807,7 @@ inline void QTextStreamPrivate::saveConverterState(qint64 newPos)
 */
 inline void QTextStreamPrivate::restoreToSavedConverterState()
 {
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     if (readConverterSavedState) {
         // we have a saved state
         // that means the converter can be copied
@@ -1202,7 +1202,7 @@ bool QTextStream::seek(qint64 pos)
             return false;
         d->resetReadBuffer();
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
         // Reset the codec converter states.
         resetCodecConverterStateHelper(&d->readConverterState);
         resetCodecConverterStateHelper(&d->writeConverterState);
@@ -1253,7 +1253,7 @@ qint64 QTextStream::pos() const
         QTextStreamPrivate *thatd = const_cast<QTextStreamPrivate *>(d);
         thatd->readBuffer.clear();
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
         thatd->restoreToSavedConverterState();
         if (d->readBufferStartDevicePos == 0)
             thatd->autoDetectUnicode = true;
@@ -3021,7 +3021,7 @@ QTextStream &ws(QTextStream &stream)
     Equivalent to QTextStream::setRealNumberPrecision(\a precision).
 */
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 /*!
     \relates QTextStream
 

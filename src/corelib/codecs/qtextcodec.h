@@ -43,10 +43,9 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qlist.h>
 
+QT_REQUIRE_CONFIG(textcodec);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_TEXTCODEC
 
 class QTextCodec;
 class QIODevice;
@@ -166,8 +165,6 @@ private:
     const QTextCodec *c;
     QTextCodec::ConverterState state;
 };
-
-#endif // QT_NO_TEXTCODEC
 
 QT_END_NAMESPACE
 

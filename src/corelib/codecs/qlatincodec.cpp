@@ -40,8 +40,6 @@
 #include "qlatincodec_p.h"
 #include "qlist.h"
 
-#ifndef QT_NO_TEXTCODEC
-
 QT_BEGIN_NAMESPACE
 
 QLatin1Codec::~QLatin1Codec()
@@ -238,5 +236,3 @@ int QLatin15Codec::mibEnum() const
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_TEXTCODEC

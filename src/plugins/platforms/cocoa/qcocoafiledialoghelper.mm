@@ -56,7 +56,6 @@
 #include <qbuffer.h>
 #include <qdebug.h>
 #include <qstringlist.h>
-#include <qtextcodec.h>
 #include <qvarlengtharray.h>
 #include <stdlib.h>
 #include <qabstracteventdispatcher.h>

@@ -44,7 +44,6 @@
 #include "qpixmap.h"
 #include "qevent.h"
 #include "qfile.h"
-#include "qtextcodec.h"
 #include "qguiapplication.h"
 #include "qpoint.h"
 #include "qbuffer.h"

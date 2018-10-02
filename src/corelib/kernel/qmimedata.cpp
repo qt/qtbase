@@ -42,7 +42,9 @@
 #include "private/qobject_p.h"
 #include "qurl.h"
 #include "qstringlist.h"
+#if QT_CONFIG(textcodec)
 #include "qtextcodec.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -150,7 +152,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
     if (data.type() == QVariant::ByteArray) {
         // see if we can convert to the requested type
         switch(type) {
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
         case QVariant::String: {
             const QByteArray ba = data.toByteArray();
             QTextCodec *codec = QTextCodec::codecForName("utf-8");
@@ -158,7 +160,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
                 codec = QTextCodec::codecForHtml(ba, codec);
             return codec->toUnicode(ba);
         }
-#endif // QT_NO_TEXTCODEC
+#endif // textcodec
         case QVariant::Color: {
             QVariant newData = data;
             newData.convert(QVariant::Color);

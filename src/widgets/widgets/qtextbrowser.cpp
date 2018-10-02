@@ -47,7 +47,9 @@
 #include <qdebug.h>
 #include <qabstracttextdocumentlayout.h>
 #include "private/qtextdocumentlayout_p.h"
+#if QT_CONFIG(textcodec)
 #include <qtextcodec.h>
+#endif
 #include <qpainter.h>
 #include <qdir.h>
 #if QT_CONFIG(whatsthis)
@@ -290,7 +292,7 @@ void QTextBrowserPrivate::setSource(const QUrl &url)
         if (data.type() == QVariant::String) {
             txt = data.toString();
         } else if (data.type() == QVariant::ByteArray) {
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
             QByteArray ba = data.toByteArray();
             QTextCodec *codec = Qt::codecForHtml(ba);
             txt = codec->toUnicode(ba);

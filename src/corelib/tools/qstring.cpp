@@ -44,7 +44,7 @@
 #include "qregularexpression.h"
 #endif
 #include "qunicodetables_p.h"
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 #include <qtextcodec.h>
 #endif
 #include <private/qutfcodec_p.h>
@@ -5057,11 +5057,11 @@ static QByteArray qt_convert_to_local_8bit(QStringView string)
 {
     if (string.isNull())
         return QByteArray();
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     QTextCodec *localeCodec = QTextCodec::codecForLocale();
     if (localeCodec)
         return localeCodec->fromUnicode(string);
-#endif // QT_NO_TEXTCODEC
+#endif // textcodec
     return qt_convert_to_latin1(string);
 }
 
@@ -5255,13 +5255,13 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
         QStringDataPtr empty = { Data::allocate(0) };
         return QString(empty);
     }
-#if !defined(QT_NO_TEXTCODEC)
+#if QT_CONFIG(textcodec)
     if (size < 0)
         size = qstrlen(str);
     QTextCodec *codec = QTextCodec::codecForLocale();
     if (codec)
         return codec->toUnicode(str, size);
-#endif // !QT_NO_TEXTCODEC
+#endif // textcodec
     return fromLatin1(str, size);
 }
 

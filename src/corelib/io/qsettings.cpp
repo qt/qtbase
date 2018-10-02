@@ -54,7 +54,7 @@
 #include "qstandardpaths.h"
 #include <qdatastream.h>
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 #  include "qtextcodec.h"
 #endif
 
@@ -677,7 +677,7 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result, 
             if (ch <= 0x1F || (ch >= 0x7F && !useCodec)) {
                 result += "\\x" + QByteArray::number(ch, 16);
                 escapeNextIfDigit = true;
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
             } else if (useCodec) {
                 // slow
                 result += codec->fromUnicode(&unicode[i], 1);
@@ -830,7 +830,7 @@ StNormal:
                 ++j;
             }
 
-#ifdef QT_NO_TEXTCODEC
+#if !QT_CONFIG(textcodec)
             Q_UNUSED(codec)
 #else
             if (codec) {
@@ -1668,7 +1668,7 @@ bool QConfFileSettingsPrivate::readIniFile(const QByteArray &data,
     int sectionPosition = 0;
     bool ok = true;
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     // detect utf8 BOM
     const uchar *dd = (const uchar *)data.constData();
     if (data.size() >= 3 && dd[0] == 0xef && dd[1] == 0xbb && dd[2] == 0xbf) {
@@ -2824,7 +2824,7 @@ QString QSettings::applicationName() const
     return d->applicationName;
 }
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 
 /*!
     \since 4.5
@@ -2877,7 +2877,7 @@ QTextCodec *QSettings::iniCodec() const
     return d->iniCodec;
 }
 
-#endif // QT_NO_TEXTCODEC
+#endif // textcodec
 
 /*!
     Returns a status code indicating the first error that was met by

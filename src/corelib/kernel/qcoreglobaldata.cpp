@@ -38,7 +38,9 @@
 ****************************************************************************/
 
 #include "qcoreglobaldata_p.h"
+#if QT_CONFIG(textcodec)
 #include "qtextcodec.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 

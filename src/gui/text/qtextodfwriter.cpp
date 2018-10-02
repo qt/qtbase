@@ -772,7 +772,7 @@ bool QTextOdfWriter::writeAll()
         return false;
     }
     QXmlStreamWriter writer(m_strategy->contentStream);
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     if (m_codec)
         writer.setCodec(m_codec);
 #endif
