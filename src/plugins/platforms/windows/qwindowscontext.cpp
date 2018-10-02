@@ -873,7 +873,6 @@ static inline bool isInputMessage(UINT m)
     case WM_TOUCH:
     case WM_MOUSEHOVER:
     case WM_MOUSELEAVE:
-    case WM_NCHITTEST:
     case WM_NCMOUSEHOVER:
     case WM_NCMOUSELEAVE:
     case WM_SIZING:
