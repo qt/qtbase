@@ -1078,11 +1078,12 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
     if (!d) {
 
         QFileInfo info(fileName);
-        QIconEngine *engine = iconEngineFromSuffix(fileName, info.suffix());
+        QString suffix = info.suffix();
 #ifndef QT_NO_MIMETYPE
-        if (!engine)
-            engine = iconEngineFromSuffix(fileName, QMimeDatabase().mimeTypeForFile(info).preferredSuffix());
+        if (suffix.isEmpty())
+            suffix = QMimeDatabase().mimeTypeForFile(info).preferredSuffix(); // determination from contents
 #endif // !QT_NO_MIMETYPE
+        QIconEngine *engine = iconEngineFromSuffix(fileName, suffix);
         d = new QIconPrivate(engine ? engine : new QPixmapIconEngine);
     }
 
