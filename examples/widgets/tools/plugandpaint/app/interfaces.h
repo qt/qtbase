@@ -68,7 +68,7 @@ QT_END_NAMESPACE
 class BrushInterface
 {
 public:
-    virtual ~BrushInterface() {}
+    virtual ~BrushInterface() = default;
 
     virtual QStringList brushes() const = 0;
     virtual QRect mousePress(const QString &brush, QPainter &painter,
@@ -84,7 +84,7 @@ public:
 class ShapeInterface
 {
 public:
-    virtual ~ShapeInterface() {}
+    virtual ~ShapeInterface() = default;
 
     virtual QStringList shapes() const = 0;
     virtual QPainterPath generateShape(const QString &shape,
@@ -96,7 +96,7 @@ public:
 class FilterInterface
 {
 public:
-    virtual ~FilterInterface() {}
+    virtual ~FilterInterface() = default;
 
     virtual QStringList filters() const = 0;
     virtual QImage filterImage(const QString &filter, const QImage &image,
