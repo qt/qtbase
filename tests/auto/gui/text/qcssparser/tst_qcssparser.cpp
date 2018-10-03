@@ -1509,6 +1509,12 @@ void tst_QCssParser::gradient_data()
          "spread: repeat, stop:0.2 rgb(1, 2, 3), stop:0.5 rgba(1, 2, 3, 4))" << "conical" << QPointF(4, 2) << QPointF()
                              << 2 << qreal(0.2) << QColor(1, 2, 3) << qreal(0.5) << QColor(1, 2, 3, 4);
 
+    // spaces before first function parameter lead to parser errors
+    QTest::newRow("QTBUG-61795") <<
+     "selection-background-color: qconicalgradient( cx: 4, cy : 2, angle: 23, "
+         "spread: repeat, stop:0.2 rgb( 1, 2, 3), stop:0.5 rgba( 1, 2, 3, 4))" << "conical" << QPointF(4, 2) << QPointF()
+                             << 2 << qreal(0.2) << QColor(1, 2, 3) << qreal(0.5) << QColor(1, 2, 3, 4);
+
     /* won't pass: stop values are expected to be sorted
      QTest::newRow("unsorted-stop") <<
      "selection-background: lineargradient(x1:0, y1:0, x2:0, y2:1, "
