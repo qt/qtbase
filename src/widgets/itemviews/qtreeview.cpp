@@ -131,11 +131,12 @@ QT_BEGIN_NAMESPACE
          of the sibling that follows the parent.
     \row \li Left  \li Hides the children of the current item (if present)
          by collapsing a branch.
-    \row \li Minus  \li Same as LeftArrow.
+    \row \li Minus \li Same as Left.
     \row \li Right \li Reveals the children of the current item (if present)
          by expanding a branch.
-    \row \li Plus  \li Same as RightArrow.
-    \row \li Asterisk  \li Expands all children of the current item (if present).
+    \row \li Plus  \li Same as Right.
+    \row \li Asterisk  \li Expands the current item and all its children
+         (if present).
     \row \li PageUp   \li Moves the cursor up one page.
     \row \li PageDown \li Moves the cursor down one page.
     \row \li Home \li Moves the cursor to an item in the same column of the first
