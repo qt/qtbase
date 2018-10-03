@@ -754,7 +754,8 @@ static ColorData parseColorValue(QCss::Value v)
 
     for (int i = 0; i < qMin(tokenCount, 7); i += 2) {
         if (colorDigits.at(i).type == Value::Percentage) {
-            colorDigits[i].variant = colorDigits.at(i).variant.toReal() * (255. / 100.);
+            const qreal maxRange = (rgb || i != 0) ? 255. : 359.;
+            colorDigits[i].variant = colorDigits.at(i).variant.toReal() * (maxRange / 100.);
             colorDigits[i].type = Value::Number;
         } else if (colorDigits.at(i).type != Value::Number) {
             return ColorData();
