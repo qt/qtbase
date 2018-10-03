@@ -680,7 +680,8 @@ QSize QLineEdit::sizeHint() const
     Q_D(const QLineEdit);
     ensurePolished();
     QFontMetrics fm(font());
-    int h = qMax(fm.height(), 14) + 2*d->verticalMargin
+    const int iconSize = style()->pixelMetric(QStyle::PM_SmallIconSize, 0, this);
+    int h = qMax(fm.height(), iconSize - 2) + 2*d->verticalMargin
             + d->topTextMargin + d->bottomTextMargin
             + d->topmargin + d->bottommargin;
     int w = fm.horizontalAdvance(QLatin1Char('x')) * 17 + 2*d->horizontalMargin
