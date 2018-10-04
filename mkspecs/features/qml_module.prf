@@ -23,15 +23,9 @@ for(qmlf, AUX_QML_FILES): fq_aux_qml_files += $$absolute_path($$qmlf, $$_PRO_FIL
 
 load(qt_build_paths)
 
-qml1_target {
-    DESTDIR = $$MODULE_BASE_OUTDIR/imports/$$TARGETPATH
-    instbase = $$[QT_INSTALL_IMPORTS]
-} else {
-    DESTDIR = $$MODULE_BASE_OUTDIR/qml/$$TARGETPATH
-    instbase = $$[QT_INSTALL_QML]
-}
+DESTDIR = $$MODULE_BASE_OUTDIR/qml/$$TARGETPATH
 
-!qml1_target:static: \
+static: \
     CONFIG += builtin_resources
 else: \
     CONFIG += install_qml_files
@@ -52,7 +46,7 @@ qmldir.base = $$_PRO_FILE_PWD_
 # Tools need qmldir and plugins.qmltypes always installed on the file system
 qmldir.files = $$qmldir_file $$fq_aux_qml_files
 install_qml_files: qmldir.files += $$fq_qml_files
-qmldir.path = $$instbase/$$TARGETPATH
+qmldir.path = $$[QT_INSTALL_QML]/$$TARGETPATH
 INSTALLS += qmldir
 
 !debug_and_release|!build_all|CONFIG(release, debug|release) {
