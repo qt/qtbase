@@ -41,6 +41,7 @@
 #include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
+#include <QScopedPointer>
 #if QT_CONFIG(process)
 # include <QProcess>
 #endif
@@ -500,14 +501,13 @@ void tst_QObject::connectSlotsByName()
 
 void tst_QObject::qobject_castTemplate()
 {
-    QObject *o = 0;
-    QVERIFY( !::qobject_cast<QObject*>(o) );
+    QScopedPointer<QObject> o;
+    QVERIFY(!::qobject_cast<QObject*>(o.data()));
 
-    o = new SenderObject;
-    QVERIFY( ::qobject_cast<SenderObject*>(o) );
-    QVERIFY( ::qobject_cast<QObject*>(o) );
-    QVERIFY( !::qobject_cast<ReceiverObject*>(o) );
-    delete o;
+    o.reset(new SenderObject);
+    QVERIFY(::qobject_cast<SenderObject*>(o.data()));
+    QVERIFY(::qobject_cast<QObject*>(o.data()));
+    QVERIFY(!::qobject_cast<ReceiverObject*>(o.data()));
 }
 
 void tst_QObject::findChildren()
