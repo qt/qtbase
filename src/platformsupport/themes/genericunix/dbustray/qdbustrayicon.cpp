@@ -52,6 +52,9 @@
 #include <qdebug.h>
 #include <qrect.h>
 #include <qloggingcategory.h>
+#include <qstandardpaths.h>
+#include <qdir.h>
+#include <qmetaobject.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformservices.h>
 #include <qdbusconnectioninterface.h>

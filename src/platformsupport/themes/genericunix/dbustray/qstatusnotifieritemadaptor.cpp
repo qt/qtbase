@@ -52,6 +52,9 @@
 
 #ifndef QT_NO_SYSTEMTRAYICON
 
+#include <QtCore/QLoggingCategory>
+#include <QtCore/QCoreApplication>
+
 #include "qdbustrayicon_p.h"
 
 QT_BEGIN_NAMESPACE

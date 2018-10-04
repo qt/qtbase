@@ -65,6 +65,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>
 #include <QtCore/QList>
+#include <QtCore/QLoggingCategory>
 #include <QtCore/QMap>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
