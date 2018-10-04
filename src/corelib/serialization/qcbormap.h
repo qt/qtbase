@@ -195,14 +195,22 @@ public:
     { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
     QCborValue value(const QCborValue &key) const
     { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
-    QCborValue operator[](qint64 key) const
+#if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
+    template<size_t N> QT_ASCII_CAST_WARN const QCborValue value(const char (&key)[N]) const
+    { return value(QString::fromUtf8(key, N - 1)); }
+#endif
+    const QCborValue operator[](qint64 key) const
     { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
-    QCborValue operator[](QLatin1String key) const
+    const QCborValue operator[](QLatin1String key) const
     { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
-    QCborValue operator[](const QString & key) const
+    const QCborValue operator[](const QString & key) const
     { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
-    QCborValue operator[](const QCborValue &key) const
+    const QCborValue operator[](const QCborValue &key) const
     { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
+#if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
+    template<size_t N> QT_ASCII_CAST_WARN const QCborValue operator[](const char (&key)[N]) const
+    { return operator[](QString::fromUtf8(key, N - 1)); }
+#endif
     QCborValueRef operator[](qint64 key);
     QCborValueRef operator[](QLatin1String key);
     QCborValueRef operator[](const QString & key);

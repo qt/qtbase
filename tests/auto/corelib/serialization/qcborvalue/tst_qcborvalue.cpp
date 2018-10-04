@@ -413,6 +413,9 @@ void tst_QCborValue::mapDefaultInitialization()
     QVERIFY(m.value(QLatin1String("Hello")).isUndefined());
     QVERIFY(m.value(QStringLiteral("Hello")).isUndefined());
     QVERIFY(m.value(QCborValue()).isUndefined());
+#if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
+    QVERIFY(m.value("Hello").isUndefined());
+#endif
 
     QVERIFY(m == m);
     QVERIFY(m == QCborMap{});
