@@ -284,104 +284,100 @@ static void playWithObjects()
 
 void tst_QObject::disconnect()
 {
-    SenderObject *s = new SenderObject;
-    ReceiverObject *r1 = new ReceiverObject;
-    ReceiverObject *r2 = new ReceiverObject;
+    SenderObject s;
+    ReceiverObject r1;
+    ReceiverObject r2;
 
-    connect( s, SIGNAL(signal1()), r1, SLOT(slot1()) );
+    connect(&s, SIGNAL(signal1()), &r1, SLOT(slot1()));
 
-    connect( s, SIGNAL(signal2()), r1, SLOT(slot2()) );
-    connect( s, SIGNAL(signal3()), r1, SLOT(slot3()) );
-    connect( s, SIGNAL(signal4()), r1, SLOT(slot4()) );
+    connect(&s, SIGNAL(signal2()), &r1, SLOT(slot2()));
+    connect(&s, SIGNAL(signal3()), &r1, SLOT(slot3()));
+    connect(&s, SIGNAL(signal4()), &r1, SLOT(slot4()));
 
-    s->emitSignal1();
-    s->emitSignal2();
-    s->emitSignal3();
-    s->emitSignal4();
+    s.emitSignal1();
+    s.emitSignal2();
+    s.emitSignal3();
+    s.emitSignal4();
 
-    QVERIFY(r1->called(1));
-    QVERIFY(r1->called(2));
-    QVERIFY(r1->called(3));
-    QVERIFY(r1->called(4));
-    r1->reset();
+    QVERIFY(r1.called(1));
+    QVERIFY(r1.called(2));
+    QVERIFY(r1.called(3));
+    QVERIFY(r1.called(4));
+    r1.reset();
 
     // usual disconnect with all parameters given
-    bool ret = QObject::disconnect( s, SIGNAL(signal1()), r1, SLOT(slot1()) );
+    bool ret = QObject::disconnect(&s, SIGNAL(signal1()), &r1, SLOT(slot1()));
 
-    s->emitSignal1();
+    s.emitSignal1();
 
-    QVERIFY(!r1->called(1));
-    r1->reset();
+    QVERIFY(!r1.called(1));
+    r1.reset();
 
     QVERIFY(ret);
-    ret = QObject::disconnect( s, SIGNAL(signal1()), r1, SLOT(slot1()) );
+    ret = QObject::disconnect(&s, SIGNAL(signal1()), &r1, SLOT(slot1()));
     QVERIFY(!ret);
 
     // disconnect all signals from s from all slots from r1
-    QObject::disconnect( s, 0, r1, 0 );
+    QObject::disconnect(&s, 0, &r1, 0);
 
-    s->emitSignal2();
-    s->emitSignal3();
-    s->emitSignal4();
+    s.emitSignal2();
+    s.emitSignal3();
+    s.emitSignal4();
 
-    QVERIFY(!r1->called(2));
-    QVERIFY(!r1->called(3));
-    QVERIFY(!r1->called(4));
-    r1->reset();
+    QVERIFY(!r1.called(2));
+    QVERIFY(!r1.called(3));
+    QVERIFY(!r1.called(4));
+    r1.reset();
 
-    connect( s, SIGNAL(signal1()), r1, SLOT(slot1()) );
-    connect( s, SIGNAL(signal1()), r1, SLOT(slot2()) );
-    connect( s, SIGNAL(signal1()), r1, SLOT(slot3()) );
-    connect( s, SIGNAL(signal2()), r1, SLOT(slot4()) );
+    connect(&s, SIGNAL(signal1()), &r1, SLOT(slot1()));
+    connect(&s, SIGNAL(signal1()), &r1, SLOT(slot2()));
+    connect(&s, SIGNAL(signal1()), &r1, SLOT(slot3()));
+    connect(&s, SIGNAL(signal2()), &r1, SLOT(slot4()));
 
     // disconnect s's signal1() from all slots of r1
-    QObject::disconnect( s, SIGNAL(signal1()), r1, 0 );
+    QObject::disconnect(&s, SIGNAL(signal1()), &r1, 0);
 
-    s->emitSignal1();
-    s->emitSignal2();
+    s.emitSignal1();
+    s.emitSignal2();
 
-    QVERIFY(!r1->called(1));
-    QVERIFY(!r1->called(2));
-    QVERIFY(!r1->called(3));
-    QVERIFY(r1->called(4));
-    r1->reset();
+    QVERIFY(!r1.called(1));
+    QVERIFY(!r1.called(2));
+    QVERIFY(!r1.called(3));
+    QVERIFY(r1.called(4));
+    r1.reset();
     // make sure all is disconnected again
-    QObject::disconnect( s, 0, r1, 0 );
+    QObject::disconnect(&s, 0, &r1, 0);
 
-    connect( s, SIGNAL(signal1()), r1, SLOT(slot1()) );
-    connect( s, SIGNAL(signal1()), r2, SLOT(slot1()) );
-    connect( s, SIGNAL(signal2()), r1, SLOT(slot2()) );
-    connect( s, SIGNAL(signal2()), r2, SLOT(slot2()) );
-    connect( s, SIGNAL(signal3()), r1, SLOT(slot3()) );
-    connect( s, SIGNAL(signal3()), r2, SLOT(slot3()) );
+    connect(&s, SIGNAL(signal1()), &r1, SLOT(slot1()));
+    connect(&s, SIGNAL(signal1()), &r2, SLOT(slot1()));
+    connect(&s, SIGNAL(signal2()), &r1, SLOT(slot2()));
+    connect(&s, SIGNAL(signal2()), &r2, SLOT(slot2()));
+    connect(&s, SIGNAL(signal3()), &r1, SLOT(slot3()));
+    connect(&s, SIGNAL(signal3()), &r2, SLOT(slot3()));
 
     // disconnect signal1() from all receivers
-    QObject::disconnect( s, SIGNAL(signal1()), 0, 0 );
-    s->emitSignal1();
-    s->emitSignal2();
-    s->emitSignal3();
+    QObject::disconnect(&s, SIGNAL(signal1()), 0, 0);
+    s.emitSignal1();
+    s.emitSignal2();
+    s.emitSignal3();
 
-    QVERIFY(!r1->called(1));
-    QVERIFY(!r2->called(1));
-    QVERIFY(r1->called(2));
-    QVERIFY(r2->called(2));
-    QVERIFY(r1->called(2));
-    QVERIFY(r2->called(2));
+    QVERIFY(!r1.called(1));
+    QVERIFY(!r2.called(1));
+    QVERIFY(r1.called(2));
+    QVERIFY(r2.called(2));
+    QVERIFY(r1.called(2));
+    QVERIFY(r2.called(2));
 
-    r1->reset();
-    r2->reset();
+    r1.reset();
+    r2.reset();
 
     // disconnect all signals of s from all receivers
-    QObject::disconnect( s, 0, 0, 0 );
+    QObject::disconnect(&s, 0, 0, 0);
 
-    QVERIFY(!r1->called(2));
-    QVERIFY(!r2->called(2));
-    QVERIFY(!r1->called(2));
-    QVERIFY(!r2->called(2));
-
-    delete r2;
-    delete r1;
-    delete s;
+    QVERIFY(!r1.called(2));
+    QVERIFY(!r2.called(2));
+    QVERIFY(!r1.called(2));
+    QVERIFY(!r2.called(2));
 }
 
 class AutoConnectSender : public QObject
@@ -797,192 +793,197 @@ void tst_QObject::connectDisconnectNotify_data()
 
 void tst_QObject::connectDisconnectNotify()
 {
-    NotifyObject *s = new NotifyObject;
-    NotifyObject *r = new NotifyObject;
+    NotifyObject s;
+    NotifyObject r;
 
     QFETCH(QString, a_signal);
     QFETCH(QString, a_slot);
 
     // Obtaining meta methods
-    int signalIndx = ((SenderObject*)s)->metaObject()->indexOfSignal(
+    int signalIndx = ((SenderObject &)s).metaObject()->indexOfSignal(
             QMetaObject::normalizedSignature(a_signal.toLatin1().constData()+1).constData());
-    int methodIndx = ((ReceiverObject*)r)->metaObject()->indexOfMethod(
+    int methodIndx = ((ReceiverObject &)r).metaObject()->indexOfMethod(
             QMetaObject::normalizedSignature(a_slot.toLatin1().constData()+1).constData());
-    QMetaMethod signal = ((SenderObject*)s)->metaObject()->method(signalIndx);
-    QMetaMethod method = ((ReceiverObject*)r)->metaObject()->method(methodIndx);
+    QMetaMethod signal = ((SenderObject &)s).metaObject()->method(signalIndx);
+    QMetaMethod method = ((ReceiverObject &)r).metaObject()->method(methodIndx);
     QVERIFY(signal.isValid());
     QVERIFY(method.isValid());
 
     // Test connectNotify
-    QVERIFY(QObject::connect((SenderObject*)s, a_signal.toLatin1(), (ReceiverObject*)r, a_slot.toLatin1()));
-    QCOMPARE(s->connectedSignals.size(), 1);
-    QCOMPARE(s->connectedSignals.at(0), signal);
-    QVERIFY(s->disconnectedSignals.isEmpty());
+    QVERIFY(QObject::connect((SenderObject *)&s, a_signal.toLatin1(),
+                             (ReceiverObject *)&r, a_slot.toLatin1()));
+    QCOMPARE(s.connectedSignals.size(), 1);
+    QCOMPARE(s.connectedSignals.at(0), signal);
+    QVERIFY(s.disconnectedSignals.isEmpty());
 
     // Test disconnectNotify
-    QVERIFY(QObject::disconnect((SenderObject*)s, a_signal.toLatin1(), (ReceiverObject*)r, a_slot.toLatin1()));
-    QCOMPARE(s->disconnectedSignals.size(), 1);
-    QCOMPARE(s->disconnectedSignals.at(0), signal);
-    QCOMPARE(s->connectedSignals.size(), 1);
+    QVERIFY(QObject::disconnect((SenderObject *)&s, a_signal.toLatin1(),
+                                (ReceiverObject *)&r, a_slot.toLatin1()));
+    QCOMPARE(s.disconnectedSignals.size(), 1);
+    QCOMPARE(s.disconnectedSignals.at(0), signal);
+    QCOMPARE(s.connectedSignals.size(), 1);
 
     // Reconnect
-    s->clearNotifications();
-    QVERIFY(QObject::connect((SenderObject*)s, a_signal.toLatin1(), (ReceiverObject*)r, a_slot.toLatin1()));
-    QCOMPARE(s->connectedSignals.size(), 1);
-    QCOMPARE(s->connectedSignals.at(0), signal);
-    QVERIFY(s->disconnectedSignals.isEmpty());
+    s.clearNotifications();
+    QVERIFY(QObject::connect((SenderObject *)&s, a_signal.toLatin1(),
+                             (ReceiverObject *)&r, a_slot.toLatin1()));
+    QCOMPARE(s.connectedSignals.size(), 1);
+    QCOMPARE(s.connectedSignals.at(0), signal);
+    QVERIFY(s.disconnectedSignals.isEmpty());
 
     // Test disconnectNotify for a complete disconnect
-    QVERIFY(((SenderObject*)s)->disconnect((ReceiverObject*)r));
-    QCOMPARE(s->disconnectedSignals.size(), 1);
-    QCOMPARE(s->disconnectedSignals.at(0), QMetaMethod());
-    QCOMPARE(s->connectedSignals.size(), 1);
+    QVERIFY(((SenderObject *)&s)->disconnect((ReceiverObject *)&r));
+    QCOMPARE(s.disconnectedSignals.size(), 1);
+    QCOMPARE(s.disconnectedSignals.at(0), QMetaMethod());
+    QCOMPARE(s.connectedSignals.size(), 1);
 
     // Test connectNotify when connecting by QMetaMethod
-    s->clearNotifications();
-    QVERIFY(QObject::connect((SenderObject*)s, signal, (ReceiverObject*)r, method));
-    QCOMPARE(s->connectedSignals.size(), 1);
-    QCOMPARE(s->connectedSignals.at(0), signal);
-    QVERIFY(s->disconnectedSignals.isEmpty());
+    s.clearNotifications();
+    QVERIFY(QObject::connect((SenderObject *)&s, signal, (ReceiverObject *)&r, method));
+    QCOMPARE(s.connectedSignals.size(), 1);
+    QCOMPARE(s.connectedSignals.at(0), signal);
+    QVERIFY(s.disconnectedSignals.isEmpty());
 
     // Test disconnectNotify when disconnecting by QMetaMethod
-    QVERIFY(QObject::disconnect((SenderObject*)s, signal, (ReceiverObject*)r, method));
-    QCOMPARE(s->disconnectedSignals.size(), 1);
-    QCOMPARE(s->disconnectedSignals.at(0), signal);
-    QCOMPARE(s->connectedSignals.size(), 1);
+    QVERIFY(QObject::disconnect((SenderObject *)&s, signal, (ReceiverObject *)&r, method));
+    QCOMPARE(s.disconnectedSignals.size(), 1);
+    QCOMPARE(s.disconnectedSignals.at(0), signal);
+    QCOMPARE(s.connectedSignals.size(), 1);
 
     // Reconnect
-    s->clearNotifications();
-    QVERIFY(QObject::connect((SenderObject*)s, a_signal.toLatin1(), (ReceiverObject*)r, a_slot.toLatin1()));
+    s.clearNotifications();
+    QVERIFY(QObject::connect((SenderObject *)&s, a_signal.toLatin1(),
+                             (ReceiverObject *)&r, a_slot.toLatin1()));
 
     // Test disconnectNotify for a complete disconnect by QMetaMethod
-    QVERIFY(QObject::disconnect((SenderObject*)s, QMetaMethod(), 0, QMetaMethod()));
-    QCOMPARE(s->disconnectedSignals.size(), 1);
-    QCOMPARE(s->disconnectedSignals.at(0), QMetaMethod());
-    QCOMPARE(s->connectedSignals.size(), 1);
+    QVERIFY(QObject::disconnect((SenderObject *)&s, QMetaMethod(), 0, QMetaMethod()));
+    QCOMPARE(s.disconnectedSignals.size(), 1);
+    QCOMPARE(s.disconnectedSignals.at(0), QMetaMethod());
+    QCOMPARE(s.connectedSignals.size(), 1);
 
     // Test connectNotify when connecting by index
-    s->clearNotifications();
-    QVERIFY(QMetaObject::connect((SenderObject*)s, signalIndx, (ReceiverObject*)r, methodIndx));
-    QCOMPARE(s->connectedSignals.size(), 1);
-    QCOMPARE(s->connectedSignals.at(0), signal);
-    QVERIFY(s->disconnectedSignals.isEmpty());
+    s.clearNotifications();
+    QVERIFY(QMetaObject::connect((SenderObject *)&s, signalIndx, (ReceiverObject *)&r, methodIndx));
+    QCOMPARE(s.connectedSignals.size(), 1);
+    QCOMPARE(s.connectedSignals.at(0), signal);
+    QVERIFY(s.disconnectedSignals.isEmpty());
 
     // Test disconnectNotify when disconnecting by index
-    QVERIFY(QMetaObject::disconnect((SenderObject*)s, signalIndx, (ReceiverObject*)r, methodIndx));
-    QCOMPARE(s->disconnectedSignals.size(), 1);
-    QCOMPARE(s->disconnectedSignals.at(0), signal);
-    QCOMPARE(s->connectedSignals.size(), 1);
-
-    delete s;
-    delete r;
+    QVERIFY(QMetaObject::disconnect((SenderObject *)&s, signalIndx,
+                                    (ReceiverObject *)&r, methodIndx));
+    QCOMPARE(s.disconnectedSignals.size(), 1);
+    QCOMPARE(s.disconnectedSignals.at(0), signal);
+    QCOMPARE(s.connectedSignals.size(), 1);
 }
 
 static void connectDisconnectNotifyTestSlot() {}
 
 void tst_QObject::connectDisconnectNotifyPMF()
 {
-    NotifyObject *s = new NotifyObject;
-    NotifyObject *r = new NotifyObject;
+    NotifyObject s;
+    NotifyObject r;
 
     QMetaMethod signal = QMetaMethod::fromSignal(&SenderObject::signal1);
 
     // Test connectNotify
-    QVERIFY(QObject::connect((SenderObject*)s, &SenderObject::signal1, (ReceiverObject*)r, &ReceiverObject::slot1));
-    QCOMPARE(s->connectedSignals.size(), 1);
-    QCOMPARE(s->connectedSignals.at(0), signal);
-    QVERIFY(s->disconnectedSignals.isEmpty());
+    QVERIFY(QObject::connect((SenderObject *)&s, &SenderObject::signal1,
+                             (ReceiverObject *)&r, &ReceiverObject::slot1));
+    QCOMPARE(s.connectedSignals.size(), 1);
+    QCOMPARE(s.connectedSignals.at(0), signal);
+    QVERIFY(s.disconnectedSignals.isEmpty());
 
     // Test disconnectNotify
-    QVERIFY(QObject::disconnect((SenderObject*)s, &SenderObject::signal1, (ReceiverObject*)r, &ReceiverObject::slot1));
-    QCOMPARE(s->disconnectedSignals.size(), 1);
-    QCOMPARE(s->disconnectedSignals.at(0), signal);
-    QCOMPARE(s->connectedSignals.size(), 1);
+    QVERIFY(QObject::disconnect((SenderObject *)&s, &SenderObject::signal1,
+                                (ReceiverObject *)&r, &ReceiverObject::slot1));
+    QCOMPARE(s.disconnectedSignals.size(), 1);
+    QCOMPARE(s.disconnectedSignals.at(0), signal);
+    QCOMPARE(s.connectedSignals.size(), 1);
 
     // Reconnect
-    s->clearNotifications();
-    QVERIFY(QObject::connect((SenderObject*)s, &SenderObject::signal1, (ReceiverObject*)r, &ReceiverObject::slot1));
-    QCOMPARE(s->connectedSignals.size(), 1);
-    QCOMPARE(s->connectedSignals.at(0), signal);
-    QVERIFY(s->disconnectedSignals.isEmpty());
+    s.clearNotifications();
+    QVERIFY(QObject::connect((SenderObject *)&s, &SenderObject::signal1,
+                             (ReceiverObject *)&r, &ReceiverObject::slot1));
+    QCOMPARE(s.connectedSignals.size(), 1);
+    QCOMPARE(s.connectedSignals.at(0), signal);
+    QVERIFY(s.disconnectedSignals.isEmpty());
 
     // Test disconnectNotify with wildcard slot
-    QVERIFY(QObject::disconnect((SenderObject*)s, &SenderObject::signal1, (ReceiverObject*)r, 0));
-    QCOMPARE(s->disconnectedSignals.size(), 1);
-    QCOMPARE(s->disconnectedSignals.at(0), signal);
-    QCOMPARE(s->connectedSignals.size(), 1);
+    QVERIFY(QObject::disconnect((SenderObject *)&s, &SenderObject::signal1,
+                                (ReceiverObject *)&r, 0));
+    QCOMPARE(s.disconnectedSignals.size(), 1);
+    QCOMPARE(s.disconnectedSignals.at(0), signal);
+    QCOMPARE(s.connectedSignals.size(), 1);
 
     // Reconnect
-    s->clearNotifications();
-    QMetaObject::Connection conn = connect((SenderObject*)s, &SenderObject::signal1,
-                                           (ReceiverObject*)r, &ReceiverObject::slot1);
+    s.clearNotifications();
+    QMetaObject::Connection conn = connect((SenderObject *)&s, &SenderObject::signal1,
+                                           (ReceiverObject *)&r, &ReceiverObject::slot1);
 
     QVERIFY(conn);
 
     // Test disconnectNotify when disconnecting by QMetaObject::Connection
     QVERIFY(QObject::disconnect(conn));
-    QVERIFY(!s->disconnectedSignals.isEmpty());
+    QVERIFY(!s.disconnectedSignals.isEmpty());
 
     // Test connectNotify when connecting by function pointer
-    s->clearNotifications();
-    QVERIFY(QObject::connect((SenderObject*)s, &SenderObject::signal1, connectDisconnectNotifyTestSlot));
-    QCOMPARE(s->connectedSignals.size(), 1);
-    QCOMPARE(s->connectedSignals.at(0), signal);
-    QVERIFY(s->disconnectedSignals.isEmpty());
-
-    delete s;
-    delete r;
+    s.clearNotifications();
+    QVERIFY(QObject::connect((SenderObject *)&s, &SenderObject::signal1,
+                             connectDisconnectNotifyTestSlot));
+    QCOMPARE(s.connectedSignals.size(), 1);
+    QCOMPARE(s.connectedSignals.at(0), signal);
+    QVERIFY(s.disconnectedSignals.isEmpty());
 }
 
 void tst_QObject::disconnectNotify_receiverDestroyed()
 {
-    NotifyObject *s = new NotifyObject;
-    NotifyObject *r = new NotifyObject;
+    NotifyObject s;
 
-    QVERIFY(QObject::connect((SenderObject*)s, SIGNAL(signal1()), (ReceiverObject*)r, SLOT(slot1())));
+    {
+        NotifyObject r;
+        QVERIFY(QObject::connect((SenderObject *)&s, SIGNAL(signal1()),
+                                 (ReceiverObject *)&r, SLOT(slot1())));
+    }
+    QCOMPARE(s.disconnectedSignals.count(), 1);
+    QCOMPARE(s.disconnectedSignals.at(0), QMetaMethod::fromSignal(&SenderObject::signal1));
 
-    delete r;
-    QCOMPARE(s->disconnectedSignals.count(), 1);
-    QCOMPARE(s->disconnectedSignals.at(0), QMetaMethod::fromSignal(&SenderObject::signal1));
+    s.disconnectedSignals.clear();
 
-    s->disconnectedSignals.clear();
-    r = new NotifyObject;
+    {
+        NotifyObject r;
+        QVERIFY(QObject::connect((SenderObject *)&s, SIGNAL(signal3()),
+                                 (ReceiverObject *)&r, SLOT(slot3())));
+    }
 
-    QVERIFY(QObject::connect((SenderObject*)s, SIGNAL(signal3()), (ReceiverObject*)r, SLOT(slot3())));
+    QCOMPARE(s.disconnectedSignals.count(), 1);
+    QCOMPARE(s.disconnectedSignals.at(0), QMetaMethod::fromSignal(&SenderObject::signal3));
 
-    delete r;
-    QCOMPARE(s->disconnectedSignals.count(), 1);
-    QCOMPARE(s->disconnectedSignals.at(0), QMetaMethod::fromSignal(&SenderObject::signal3));
+    s.disconnectedSignals.clear();
 
-    s->disconnectedSignals.clear();
-    r = new NotifyObject;
+    {
+        NotifyObject r;
+        QVERIFY(QObject::connect((SenderObject *)&s, SIGNAL(destroyed()), (ReceiverObject *)&r, SLOT(slot3())));
+    }
 
-    QVERIFY(QObject::connect((SenderObject*)s, SIGNAL(destroyed()), (ReceiverObject*)r, SLOT(slot3())));
-
-    delete r;
-    QCOMPARE(s->disconnectedSignals.count(), 1);
-    QCOMPARE(s->disconnectedSignals.at(0), QMetaMethod::fromSignal(&QObject::destroyed));
-
-    delete s;
+    QCOMPARE(s.disconnectedSignals.count(), 1);
+    QCOMPARE(s.disconnectedSignals.at(0), QMetaMethod::fromSignal(&QObject::destroyed));
 }
 
 void tst_QObject::disconnectNotify_metaObjConnection()
 {
-    NotifyObject *s = new NotifyObject;
-    NotifyObject *r = new NotifyObject;
+    NotifyObject s;
+    {
+        NotifyObject r;
 
-    QMetaObject::Connection c = QObject::connect((SenderObject*)s, SIGNAL(signal1()),
-                                                 (ReceiverObject*)r, SLOT(slot1()));
-    QVERIFY(c);
-    QVERIFY(QObject::disconnect(c));
+        QMetaObject::Connection c = QObject::connect((SenderObject *)&s, SIGNAL(signal1()),
+                                                     (ReceiverObject *)&r, SLOT(slot1()));
+        QVERIFY(c);
+        QVERIFY(QObject::disconnect(c));
 
-    QCOMPARE(s->disconnectedSignals.count(), 1);
-    QCOMPARE(s->disconnectedSignals.at(0), QMetaMethod::fromSignal(&SenderObject::signal1));
+        QCOMPARE(s.disconnectedSignals.count(), 1);
+        QCOMPARE(s.disconnectedSignals.at(0), QMetaMethod::fromSignal(&SenderObject::signal1));
 
-    delete r;
-    QCOMPARE(s->disconnectedSignals.count(), 1);
-
-    delete s;
+        QCOMPARE(s.disconnectedSignals.count(), 1);
+    }
 }
 
 class ConnectByNameNotifySenderObject : public QObject
@@ -3462,130 +3463,131 @@ void tst_QObject::qobjectConstCast()
 
 void tst_QObject::uniqConnection()
 {
-    SenderObject *s = new SenderObject;
-    ReceiverObject *r1 = new ReceiverObject;
-    ReceiverObject *r2 = new ReceiverObject;
-    r1->reset();
-    r2->reset();
+    SenderObject s;
+    ReceiverObject r1;
+    ReceiverObject r2;
+    r1.reset();
+    r2.reset();
     ReceiverObject::sequence = 0;
 
-    QVERIFY( connect( s, SIGNAL(signal1()), r1, SLOT(slot1()) , Qt::UniqueConnection) );
-    QVERIFY( connect( s, SIGNAL(signal1()), r2, SLOT(slot1()) , Qt::UniqueConnection) );
-    QVERIFY( connect( s, SIGNAL(signal1()), r1, SLOT(slot3()) , Qt::UniqueConnection) );
-    QVERIFY( connect( s, SIGNAL(signal3()), r1, SLOT(slot3()) , Qt::UniqueConnection) );
+    QVERIFY(connect(&s, SIGNAL(signal1()), &r1, SLOT(slot1()) , Qt::UniqueConnection) );
+    QVERIFY(connect(&s, SIGNAL(signal1()), &r2, SLOT(slot1()) , Qt::UniqueConnection) );
+    QVERIFY(connect(&s, SIGNAL(signal1()), &r1, SLOT(slot3()) , Qt::UniqueConnection) );
+    QVERIFY(connect(&s, SIGNAL(signal3()), &r1, SLOT(slot3()) , Qt::UniqueConnection) );
 
-    s->emitSignal1();
-    s->emitSignal2();
-    s->emitSignal3();
-    s->emitSignal4();
+    s.emitSignal1();
+    s.emitSignal2();
+    s.emitSignal3();
+    s.emitSignal4();
 
-    QCOMPARE( r1->count_slot1, 1 );
-    QCOMPARE( r1->count_slot2, 0 );
-    QCOMPARE( r1->count_slot3, 2 );
-    QCOMPARE( r1->count_slot4, 0 );
-    QCOMPARE( r2->count_slot1, 1 );
-    QCOMPARE( r2->count_slot2, 0 );
-    QCOMPARE( r2->count_slot3, 0 );
-    QCOMPARE( r2->count_slot4, 0 );
-    QCOMPARE( r1->sequence_slot1, 1 );
-    QCOMPARE( r2->sequence_slot1, 2 );
-    QCOMPARE( r1->sequence_slot3, 4 );
+    QCOMPARE(r1.count_slot1, 1);
+    QCOMPARE(r1.count_slot2, 0);
+    QCOMPARE(r1.count_slot3, 2);
+    QCOMPARE(r1.count_slot4, 0);
+    QCOMPARE(r2.count_slot1, 1);
+    QCOMPARE(r2.count_slot2, 0);
+    QCOMPARE(r2.count_slot3, 0);
+    QCOMPARE(r2.count_slot4, 0);
+    QCOMPARE(r1.sequence_slot1, 1);
+    QCOMPARE(r2.sequence_slot1, 2);
+    QCOMPARE(r1.sequence_slot3, 4);
 
-    r1->reset();
-    r2->reset();
+    r1.reset();
+    r2.reset();
     ReceiverObject::sequence = 0;
 
-    QVERIFY( connect( s, SIGNAL(signal4()), r1, SLOT(slot4()) , Qt::UniqueConnection) );
-    QVERIFY( connect( s, SIGNAL(signal4()), r2, SLOT(slot4()) , Qt::UniqueConnection) );
-    QVERIFY(!connect( s, SIGNAL(signal4()), r2, SLOT(slot4()) , Qt::UniqueConnection) );
-    QVERIFY( connect( s, SIGNAL(signal1()), r2, SLOT(slot4()) , Qt::UniqueConnection) );
-    QVERIFY(!connect( s, SIGNAL(signal4()), r1, SLOT(slot4()) , Qt::UniqueConnection) );
+    QVERIFY( connect(&s, SIGNAL(signal4()), &r1, SLOT(slot4()) , Qt::UniqueConnection));
+    QVERIFY( connect(&s, SIGNAL(signal4()), &r2, SLOT(slot4()) , Qt::UniqueConnection));
+    QVERIFY(!connect(&s, SIGNAL(signal4()), &r2, SLOT(slot4()) , Qt::UniqueConnection));
+    QVERIFY( connect(&s, SIGNAL(signal1()), &r2, SLOT(slot4()) , Qt::UniqueConnection));
+    QVERIFY(!connect(&s, SIGNAL(signal4()), &r1, SLOT(slot4()) , Qt::UniqueConnection));
 
-    s->emitSignal4();
-    QCOMPARE( r1->count_slot4, 1 );
-    QCOMPARE( r2->count_slot4, 1 );
-    QCOMPARE( r1->sequence_slot4, 1 );
-    QCOMPARE( r2->sequence_slot4, 2 );
+    s.emitSignal4();
+    QCOMPARE(r1.count_slot4, 1);
+    QCOMPARE(r2.count_slot4, 1);
+    QCOMPARE(r1.sequence_slot4, 1);
+    QCOMPARE(r2.sequence_slot4, 2);
 
-    r1->reset();
-    r2->reset();
+    r1.reset();
+    r2.reset();
     ReceiverObject::sequence = 0;
 
-    connect( s, SIGNAL(signal4()), r1, SLOT(slot4()) );
+    connect(&s, SIGNAL(signal4()), &r1, SLOT(slot4()));
 
-    s->emitSignal4();
-    QCOMPARE( r1->count_slot4, 2 );
-    QCOMPARE( r2->count_slot4, 1 );
-    QCOMPARE( r1->sequence_slot4, 3 );
-    QCOMPARE( r2->sequence_slot4, 2 );
-
-    delete s;
-    delete r1;
-    delete r2;
+    s.emitSignal4();
+    QCOMPARE(r1.count_slot4, 2);
+    QCOMPARE(r2.count_slot4, 1);
+    QCOMPARE(r1.sequence_slot4, 3);
+    QCOMPARE(r2.sequence_slot4, 2);
 }
 
 void tst_QObject::uniqConnectionPtr()
 {
-    SenderObject *s = new SenderObject;
-    ReceiverObject *r1 = new ReceiverObject;
-    ReceiverObject *r2 = new ReceiverObject;
-    r1->reset();
-    r2->reset();
+    SenderObject s;
+    ReceiverObject r1;
+    ReceiverObject r2;
+    r1.reset();
+    r2.reset();
     ReceiverObject::sequence = 0;
 
-    QVERIFY( connect( s, &SenderObject::signal1, r1, &ReceiverObject::slot1 , Qt::UniqueConnection) );
-    QVERIFY( connect( s, &SenderObject::signal1, r2, &ReceiverObject::slot1 , Qt::UniqueConnection) );
-    QVERIFY( connect( s, &SenderObject::signal1, r1, &ReceiverObject::slot3 , Qt::UniqueConnection) );
-    QVERIFY( connect( s, &SenderObject::signal3, r1, &ReceiverObject::slot3 , Qt::UniqueConnection) );
+    QVERIFY(connect(&s, &SenderObject::signal1, &r1, &ReceiverObject::slot1 ,
+                    Qt::UniqueConnection));
+    QVERIFY(connect(&s, &SenderObject::signal1, &r2, &ReceiverObject::slot1 ,
+                    Qt::UniqueConnection));
+    QVERIFY(connect(&s, &SenderObject::signal1, &r1, &ReceiverObject::slot3 ,
+                    Qt::UniqueConnection));
+    QVERIFY(connect(&s, &SenderObject::signal3, &r1, &ReceiverObject::slot3 ,
+                    Qt::UniqueConnection));
 
-    s->emitSignal1();
-    s->emitSignal2();
-    s->emitSignal3();
-    s->emitSignal4();
+    s.emitSignal1();
+    s.emitSignal2();
+    s.emitSignal3();
+    s.emitSignal4();
 
-    QCOMPARE( r1->count_slot1, 1 );
-    QCOMPARE( r1->count_slot2, 0 );
-    QCOMPARE( r1->count_slot3, 2 );
-    QCOMPARE( r1->count_slot4, 0 );
-    QCOMPARE( r2->count_slot1, 1 );
-    QCOMPARE( r2->count_slot2, 0 );
-    QCOMPARE( r2->count_slot3, 0 );
-    QCOMPARE( r2->count_slot4, 0 );
-    QCOMPARE( r1->sequence_slot1, 1 );
-    QCOMPARE( r2->sequence_slot1, 2 );
-    QCOMPARE( r1->sequence_slot3, 4 );
+    QCOMPARE(r1.count_slot1, 1);
+    QCOMPARE(r1.count_slot2, 0);
+    QCOMPARE(r1.count_slot3, 2);
+    QCOMPARE(r1.count_slot4, 0);
+    QCOMPARE(r2.count_slot1, 1);
+    QCOMPARE(r2.count_slot2, 0);
+    QCOMPARE(r2.count_slot3, 0);
+    QCOMPARE(r2.count_slot4, 0);
+    QCOMPARE(r1.sequence_slot1, 1);
+    QCOMPARE(r2.sequence_slot1, 2);
+    QCOMPARE(r1.sequence_slot3, 4);
 
-    r1->reset();
-    r2->reset();
+    r1.reset();
+    r2.reset();
     ReceiverObject::sequence = 0;
 
-    QVERIFY( connect( s, &SenderObject::signal4, r1, &ReceiverObject::slot4 , Qt::UniqueConnection) );
-    QVERIFY( connect( s, &SenderObject::signal4, r2, &ReceiverObject::slot4 , Qt::UniqueConnection) );
-    QVERIFY(!connect( s, &SenderObject::signal4, r2, &ReceiverObject::slot4 , Qt::UniqueConnection) );
-    QVERIFY( connect( s, &SenderObject::signal1, r2, &ReceiverObject::slot4 , Qt::UniqueConnection) );
-    QVERIFY(!connect( s, &SenderObject::signal4, r1, &ReceiverObject::slot4 , Qt::UniqueConnection) );
+    QVERIFY( connect(&s, &SenderObject::signal4, &r1, &ReceiverObject::slot4 ,
+                     Qt::UniqueConnection));
+    QVERIFY( connect(&s, &SenderObject::signal4, &r2, &ReceiverObject::slot4 ,
+                     Qt::UniqueConnection));
+    QVERIFY(!connect(&s, &SenderObject::signal4, &r2, &ReceiverObject::slot4 ,
+                     Qt::UniqueConnection));
+    QVERIFY( connect(&s, &SenderObject::signal1, &r2, &ReceiverObject::slot4 ,
+                     Qt::UniqueConnection));
+    QVERIFY(!connect(&s, &SenderObject::signal4, &r1, &ReceiverObject::slot4 ,
+                     Qt::UniqueConnection));
 
-    s->emitSignal4();
-    QCOMPARE( r1->count_slot4, 1 );
-    QCOMPARE( r2->count_slot4, 1 );
-    QCOMPARE( r1->sequence_slot4, 1 );
-    QCOMPARE( r2->sequence_slot4, 2 );
+    s.emitSignal4();
+    QCOMPARE(r1.count_slot4, 1);
+    QCOMPARE(r2.count_slot4, 1);
+    QCOMPARE(r1.sequence_slot4, 1);
+    QCOMPARE(r2.sequence_slot4, 2);
 
-    r1->reset();
-    r2->reset();
+    r1.reset();
+    r2.reset();
     ReceiverObject::sequence = 0;
 
-    connect( s, &SenderObject::signal4, r1, &ReceiverObject::slot4 );
+    connect(&s, &SenderObject::signal4, &r1, &ReceiverObject::slot4);
 
-    s->emitSignal4();
-    QCOMPARE( r1->count_slot4, 2 );
-    QCOMPARE( r2->count_slot4, 1 );
-    QCOMPARE( r1->sequence_slot4, 3 );
-    QCOMPARE( r2->sequence_slot4, 2 );
-
-    delete s;
-    delete r1;
-    delete r2;
+    s.emitSignal4();
+    QCOMPARE(r1.count_slot4, 2);
+    QCOMPARE(r2.count_slot4, 1);
+    QCOMPARE(r1.sequence_slot4, 3);
+    QCOMPARE(r2.sequence_slot4, 2);
 }
 
 void tst_QObject::interfaceIid()
@@ -3837,217 +3839,214 @@ void tst_QObject::isSignalConnected()
 
 void tst_QObject::qMetaObjectConnect()
 {
-    SenderObject *s = new SenderObject;
-    ReceiverObject *r1 = new ReceiverObject;
-    ReceiverObject *r2 = new ReceiverObject;
-    r1->reset();
-    r2->reset();
-    ReceiverObject::sequence = 0;
+    ReceiverObject r1;
+    ReceiverObject r2;
+    int slot1Index, slot2Index, slot3Index;
+    {
+        SenderObject s;
+        r1.reset();
+        r2.reset();
+        ReceiverObject::sequence = 0;
 
-    int signal1Index = s->metaObject()->indexOfSignal("signal1()");
-    int signal3Index = s->metaObject()->indexOfSignal("signal3()");
-    int slot1Index = r1->metaObject()->indexOfSlot("slot1()");
-    int slot2Index = r1->metaObject()->indexOfSlot("slot2()");
-    int slot3Index = r1->metaObject()->indexOfSlot("slot3()");
+        int signal1Index = s.metaObject()->indexOfSignal("signal1()");
+        int signal3Index = s.metaObject()->indexOfSignal("signal3()");
+        slot1Index = r1.metaObject()->indexOfSlot("slot1()");
+        slot2Index = r1.metaObject()->indexOfSlot("slot2()");
+        slot3Index = r1.metaObject()->indexOfSlot("slot3()");
 
-    QVERIFY(slot1Index > 0);
-    QVERIFY(slot2Index > 0);
-    QVERIFY(slot3Index > 0);
+        QVERIFY(slot1Index > 0);
+        QVERIFY(slot2Index > 0);
+        QVERIFY(slot3Index > 0);
 
-    QVERIFY( QMetaObject::connect( s, signal1Index, r1, slot1Index) );
-    QVERIFY( QMetaObject::connect( s, signal3Index, r2, slot3Index) );
-    QVERIFY( QMetaObject::connect( s, -1, r2, slot2Index) );
+        QVERIFY(QMetaObject::connect(&s, signal1Index, &r1, slot1Index));
+        QVERIFY(QMetaObject::connect(&s, signal3Index, &r2, slot3Index));
+        QVERIFY(QMetaObject::connect(&s, -1, &r2, slot2Index));
 
-    QCOMPARE( r1->count_slot1, 0 );
-    QCOMPARE( r1->count_slot2, 0 );
-    QCOMPARE( r1->count_slot3, 0 );
-    QCOMPARE( r2->count_slot1, 0 );
-    QCOMPARE( r2->count_slot2, 0 );
-    QCOMPARE( r2->count_slot3, 0 );
+        QCOMPARE(r1.count_slot1, 0);
+        QCOMPARE(r1.count_slot2, 0);
+        QCOMPARE(r1.count_slot3, 0);
+        QCOMPARE(r2.count_slot1, 0);
+        QCOMPARE(r2.count_slot2, 0);
+        QCOMPARE(r2.count_slot3, 0);
 
-    s->emitSignal1();
+        s.emitSignal1();
 
-    QCOMPARE( r1->count_slot1, 1 );
-    QCOMPARE( r1->count_slot2, 0 );
-    QCOMPARE( r1->count_slot3, 0 );
-    QCOMPARE( r2->count_slot1, 0 );
-    QCOMPARE( r2->count_slot2, 1 );
-    QCOMPARE( r2->count_slot3, 0 );
+        QCOMPARE(r1.count_slot1, 1);
+        QCOMPARE(r1.count_slot2, 0);
+        QCOMPARE(r1.count_slot3, 0);
+        QCOMPARE(r2.count_slot1, 0);
+        QCOMPARE(r2.count_slot2, 1);
+        QCOMPARE(r2.count_slot3, 0);
 
-    s->emitSignal2();
-    s->emitSignal3();
-    s->emitSignal4();
+        s.emitSignal2();
+        s.emitSignal3();
+        s.emitSignal4();
 
-    QCOMPARE( r1->count_slot1, 1 );
-    QCOMPARE( r1->count_slot2, 0 );
-    QCOMPARE( r1->count_slot3, 0 );
-    QCOMPARE( r2->count_slot1, 0 );
-    QCOMPARE( r2->count_slot2, 4 );
-    QCOMPARE( r2->count_slot3, 1 );
+        QCOMPARE(r1.count_slot1, 1);
+        QCOMPARE(r1.count_slot2, 0);
+        QCOMPARE(r1.count_slot3, 0);
+        QCOMPARE(r2.count_slot1, 0);
+        QCOMPARE(r2.count_slot2, 4);
+        QCOMPARE(r2.count_slot3, 1);
 
-    QVERIFY( QMetaObject::disconnect( s, signal1Index, r1, slot1Index) );
-    QVERIFY( QMetaObject::disconnect( s, signal3Index, r2, slot3Index) );
-    QVERIFY( QMetaObject::disconnect( s, -1, r2, slot2Index) );
+        QVERIFY(QMetaObject::disconnect(&s, signal1Index, &r1, slot1Index));
+        QVERIFY(QMetaObject::disconnect(&s, signal3Index, &r2, slot3Index));
+        QVERIFY(QMetaObject::disconnect(&s, -1, &r2, slot2Index));
 
-    s->emitSignal1();
-    s->emitSignal2();
-    s->emitSignal3();
-    s->emitSignal4();
+        s.emitSignal1();
+        s.emitSignal2();
+        s.emitSignal3();
+        s.emitSignal4();
 
-    QCOMPARE( r1->count_slot1, 1 );
-    QCOMPARE( r1->count_slot2, 0 );
-    QCOMPARE( r1->count_slot3, 0 );
-    QCOMPARE( r2->count_slot1, 0 );
-    QCOMPARE( r2->count_slot2, 4 );
-    QCOMPARE( r2->count_slot3, 1 );
+        QCOMPARE(r1.count_slot1, 1);
+        QCOMPARE(r1.count_slot2, 0);
+        QCOMPARE(r1.count_slot3, 0);
+        QCOMPARE(r2.count_slot1, 0);
+        QCOMPARE(r2.count_slot2, 4);
+        QCOMPARE(r2.count_slot3, 1);
 
-    //some "dynamic" signal
-    QVERIFY( QMetaObject::connect( s, s->metaObject()->methodOffset() + 20, r1, slot3Index) );
-    QVERIFY( QMetaObject::connect( s, s->metaObject()->methodOffset() + 35, r2, slot1Index) );
-    QVERIFY( QMetaObject::connect( s, -1, r1, slot2Index) );
+        //some "dynamic" signal
+        QVERIFY(QMetaObject::connect(&s, s.metaObject()->methodOffset() + 20, &r1, slot3Index));
+        QVERIFY(QMetaObject::connect(&s, s.metaObject()->methodOffset() + 35, &r2, slot1Index));
+        QVERIFY(QMetaObject::connect(&s, -1, &r1, slot2Index));
 
-    r1->reset();
-    r2->reset();
+        r1.reset();
+        r2.reset();
 
-    void *args[] = { 0 , 0 };
-    QMetaObject::activate(s, s->metaObject()->methodOffset() + 20, args);
-    QMetaObject::activate(s, s->metaObject()->methodOffset() + 48, args);
-    QCOMPARE( r1->count_slot1, 0 );
-    QCOMPARE( r1->count_slot2, 2 );
-    QCOMPARE( r1->count_slot3, 1 );
-    QCOMPARE( r2->count_slot1, 0 );
-    QCOMPARE( r2->count_slot2, 0 );
-    QCOMPARE( r2->count_slot3, 0 );
+        void *args[] = { 0 , 0 };
+        QMetaObject::activate(&s, s.metaObject()->methodOffset() + 20, args);
+        QMetaObject::activate(&s, s.metaObject()->methodOffset() + 48, args);
+        QCOMPARE(r1.count_slot1, 0);
+        QCOMPARE(r1.count_slot2, 2);
+        QCOMPARE(r1.count_slot3, 1);
+        QCOMPARE(r2.count_slot1, 0);
+        QCOMPARE(r2.count_slot2, 0);
+        QCOMPARE(r2.count_slot3, 0);
 
-    QMetaObject::activate(s, s->metaObject()->methodOffset() + 35, args);
-    s->emitSignal1();
-    s->emitSignal2();
+        QMetaObject::activate(&s, s.metaObject()->methodOffset() + 35, args);
+        s.emitSignal1();
+        s.emitSignal2();
 
-    QCOMPARE( r1->count_slot1, 0 );
-    QCOMPARE( r1->count_slot2, 5 );
-    QCOMPARE( r1->count_slot3, 1 );
-    QCOMPARE( r2->count_slot1, 1 );
-    QCOMPARE( r2->count_slot2, 0 );
-    QCOMPARE( r2->count_slot3, 0 );
+        QCOMPARE(r1.count_slot1, 0);
+        QCOMPARE(r1.count_slot2, 5);
+        QCOMPARE(r1.count_slot3, 1);
+        QCOMPARE(r2.count_slot1, 1);
+        QCOMPARE(r2.count_slot2, 0);
+        QCOMPARE(r2.count_slot3, 0);
+    }
 
-    delete s;
-    r1->reset();
-    r2->reset();
+    r1.reset();
+    r2.reset();
 
 #define SIGNAL_INDEX(S)  obj1.metaObject()->indexOfSignal(QMetaObject::normalizedSignature(#S))
     OverloadObject obj1;
     QObject obj2, obj3;
 
-    QMetaObject::connect(&obj1, SIGNAL_INDEX(sig(int)) , r1, slot1Index);
-    QMetaObject::connect(&obj1, SIGNAL_INDEX(sig(QObject *, QObject *, QObject *)) , r2, slot1Index);
+    QMetaObject::connect(&obj1, SIGNAL_INDEX(sig(int)) , &r1, slot1Index);
+    QMetaObject::connect(&obj1, SIGNAL_INDEX(sig(QObject *, QObject *, QObject *)) ,
+                         &r2, slot1Index);
 
-    QMetaObject::connect(&obj1, SIGNAL_INDEX(sig(QObject *, QObject *, QObject *, QObject *)) , r1, slot2Index);
-    QMetaObject::connect(&obj1, SIGNAL_INDEX(sig(QObject *)) , r2, slot2Index);
-    QMetaObject::connect(&obj1, SIGNAL_INDEX(sig(int, int)) , r1, slot3Index);
+    QMetaObject::connect(&obj1, SIGNAL_INDEX(sig(QObject *, QObject *, QObject *, QObject *)) ,
+                         &r1, slot2Index);
+    QMetaObject::connect(&obj1, SIGNAL_INDEX(sig(QObject *)) , &r2, slot2Index);
+    QMetaObject::connect(&obj1, SIGNAL_INDEX(sig(int, int)) , &r1, slot3Index);
 
     emit obj1.sig(0.5); //connected to nothing
     emit obj1.sig(1, 'a'); //connected to nothing
-    QCOMPARE( r1->count_slot1, 0 );
-    QCOMPARE( r1->count_slot2, 0 );
-    QCOMPARE( r1->count_slot3, 0 );
-    QCOMPARE( r2->count_slot1, 0 );
-    QCOMPARE( r2->count_slot2, 0 );
-    QCOMPARE( r2->count_slot3, 0 );
+    QCOMPARE(r1.count_slot1, 0);
+    QCOMPARE(r1.count_slot2, 0);
+    QCOMPARE(r1.count_slot3, 0);
+    QCOMPARE(r2.count_slot1, 0);
+    QCOMPARE(r2.count_slot2, 0);
+    QCOMPARE(r2.count_slot3, 0);
 
     emit obj1.sig(1); //this signal is connected
     emit obj1.sig(&obj2);
 
-    QCOMPARE( r1->count_slot1, 1 );
-    QCOMPARE( r1->count_slot2, 0 );
-    QCOMPARE( r1->count_slot3, 1 );
-    QCOMPARE( r2->count_slot1, 0 );
-    QCOMPARE( r2->count_slot2, 1 );
-    QCOMPARE( r2->count_slot3, 0 );
+    QCOMPARE(r1.count_slot1, 1);
+    QCOMPARE(r1.count_slot2, 0);
+    QCOMPARE(r1.count_slot3, 1);
+    QCOMPARE(r2.count_slot1, 0);
+    QCOMPARE(r2.count_slot2, 1);
+    QCOMPARE(r2.count_slot3, 0);
 
     emit obj1.sig(&obj2, &obj3); //this signal is connected
 
-    QCOMPARE( r1->count_slot1, 1 );
-    QCOMPARE( r1->count_slot2, 1 );
-    QCOMPARE( r1->count_slot3, 1 );
-    QCOMPARE( r2->count_slot1, 1 );
-    QCOMPARE( r2->count_slot2, 1 );
-    QCOMPARE( r2->count_slot3, 0 );
-
-    delete r1;
-    delete r2;
-
+    QCOMPARE(r1.count_slot1, 1);
+    QCOMPARE(r1.count_slot2, 1);
+    QCOMPARE(r1.count_slot3, 1);
+    QCOMPARE(r2.count_slot1, 1);
+    QCOMPARE(r2.count_slot2, 1);
+    QCOMPARE(r2.count_slot3, 0);
 }
 
 void tst_QObject::qMetaObjectDisconnectOne()
 {
-    SenderObject *s = new SenderObject;
-    ReceiverObject *r1 = new ReceiverObject;
+    SenderObject s;
+    ReceiverObject r1;
 
-    int signal1Index = s->metaObject()->indexOfSignal("signal1()");
-    int signal3Index = s->metaObject()->indexOfSignal("signal3()");
-    int slot1Index = r1->metaObject()->indexOfSlot("slot1()");
-    int slot2Index = r1->metaObject()->indexOfSlot("slot2()");
+    int signal1Index = s.metaObject()->indexOfSignal("signal1()");
+    int signal3Index = s.metaObject()->indexOfSignal("signal3()");
+    int slot1Index = r1.metaObject()->indexOfSlot("slot1()");
+    int slot2Index = r1.metaObject()->indexOfSlot("slot2()");
 
     QVERIFY(signal1Index > 0);
     QVERIFY(signal3Index > 0);
     QVERIFY(slot1Index > 0);
     QVERIFY(slot2Index > 0);
 
-    QVERIFY( QMetaObject::connect(s, signal1Index, r1, slot1Index) );
-    QVERIFY( QMetaObject::connect(s, signal3Index, r1, slot2Index) );
-    QVERIFY( QMetaObject::connect(s, signal3Index, r1, slot2Index) );
-    QVERIFY( QMetaObject::connect(s, signal3Index, r1, slot2Index) );
+    QVERIFY(QMetaObject::connect(&s, signal1Index, &r1, slot1Index));
+    QVERIFY(QMetaObject::connect(&s, signal3Index, &r1, slot2Index));
+    QVERIFY(QMetaObject::connect(&s, signal3Index, &r1, slot2Index));
+    QVERIFY(QMetaObject::connect(&s, signal3Index, &r1, slot2Index));
 
-    r1->reset();
-    QCOMPARE( r1->count_slot1, 0 );
-    QCOMPARE( r1->count_slot2, 0 );
+    r1.reset();
+    QCOMPARE(r1.count_slot1, 0);
+    QCOMPARE(r1.count_slot2, 0);
 
-    s->emitSignal1();
-    QCOMPARE( r1->count_slot1, 1 );
-    QCOMPARE( r1->count_slot2, 0 );
+    s.emitSignal1();
+    QCOMPARE(r1.count_slot1, 1);
+    QCOMPARE(r1.count_slot2, 0);
 
-    s->emitSignal3();
-    QCOMPARE( r1->count_slot1, 1 );
-    QCOMPARE( r1->count_slot2, 3 );
+    s.emitSignal3();
+    QCOMPARE(r1.count_slot1, 1);
+    QCOMPARE(r1.count_slot2, 3);
 
-    r1->reset();
-    QVERIFY( QMetaObject::disconnectOne(s, signal1Index, r1, slot1Index) );
-    QVERIFY( QMetaObject::disconnectOne(s, signal3Index, r1, slot2Index) );
+    r1.reset();
+    QVERIFY(QMetaObject::disconnectOne(&s, signal1Index, &r1, slot1Index));
+    QVERIFY(QMetaObject::disconnectOne(&s, signal3Index, &r1, slot2Index));
 
-    s->emitSignal1();
-    QCOMPARE( r1->count_slot1, 0 );
-    QCOMPARE( r1->count_slot2, 0 );
+    s.emitSignal1();
+    QCOMPARE(r1.count_slot1, 0);
+    QCOMPARE(r1.count_slot2, 0);
 
-    s->emitSignal3();
-    QCOMPARE( r1->count_slot1, 0 );
-    QCOMPARE( r1->count_slot2, 2 );
+    s.emitSignal3();
+    QCOMPARE(r1.count_slot1, 0);
+    QCOMPARE(r1.count_slot2, 2);
 
-    r1->reset();
-    QVERIFY( false == QMetaObject::disconnectOne(s, signal1Index, r1, slot1Index) );
-    QVERIFY( QMetaObject::disconnectOne(s, signal3Index, r1, slot2Index) );
+    r1.reset();
+    QVERIFY(!QMetaObject::disconnectOne(&s, signal1Index, &r1, slot1Index));
+    QVERIFY( QMetaObject::disconnectOne(&s, signal3Index, &r1, slot2Index));
 
-    s->emitSignal1();
-    QCOMPARE( r1->count_slot1, 0 );
-    QCOMPARE( r1->count_slot2, 0 );
+    s.emitSignal1();
+    QCOMPARE(r1.count_slot1, 0);
+    QCOMPARE(r1.count_slot2, 0);
 
-    s->emitSignal3();
-    QCOMPARE( r1->count_slot1, 0 );
-    QCOMPARE( r1->count_slot2, 1 );
+    s.emitSignal3();
+    QCOMPARE(r1.count_slot1, 0);
+    QCOMPARE(r1.count_slot2, 1);
 
-    r1->reset();
-    QVERIFY( false == QMetaObject::disconnectOne(s, signal1Index, r1, slot1Index) );
-    QVERIFY( QMetaObject::disconnectOne(s, signal3Index, r1, slot2Index) );
+    r1.reset();
+    QVERIFY(!QMetaObject::disconnectOne(&s, signal1Index, &r1, slot1Index));
+    QVERIFY( QMetaObject::disconnectOne(&s, signal3Index, &r1, slot2Index));
 
-    s->emitSignal1();
-    QCOMPARE( r1->count_slot1, 0 );
-    QCOMPARE( r1->count_slot2, 0 );
+    s.emitSignal1();
+    QCOMPARE(r1.count_slot1, 0);
+    QCOMPARE(r1.count_slot2, 0);
 
-    s->emitSignal3();
-    QCOMPARE( r1->count_slot1, 0 );
-    QCOMPARE( r1->count_slot2, 0 );
-
-    delete s;
-    delete r1;
+    s.emitSignal3();
+    QCOMPARE(r1.count_slot1, 0);
+    QCOMPARE(r1.count_slot2, 0);
 }
 
 class ConfusingObject : public SenderObject
@@ -4169,106 +4168,95 @@ void tst_QObject::connectConstructorByMetaMethod()
 
 void tst_QObject::disconnectByMetaMethod()
 {
-    SenderObject *s = new SenderObject;
-    ReceiverObject *r1 = new ReceiverObject;
-    ReceiverObject *r2 = new ReceiverObject;
+    SenderObject s;
+    ReceiverObject r1;
+    ReceiverObject r2;
 
-    QMetaMethod signal1 = s->metaObject()->method(
-            s->metaObject()->indexOfMethod("signal1()"));
-    QMetaMethod signal2 = s->metaObject()->method(
-            s->metaObject()->indexOfMethod("signal2()"));
-    QMetaMethod signal3 = s->metaObject()->method(
-            s->metaObject()->indexOfMethod("signal3()"));
+    QMetaMethod signal1 = s.metaObject()->method(s.metaObject()->indexOfMethod("signal1()"));
+    QMetaMethod signal2 = s.metaObject()->method(s.metaObject()->indexOfMethod("signal2()"));
+    QMetaMethod signal3 = s.metaObject()->method(s.metaObject()->indexOfMethod("signal3()"));
 
-    QMetaMethod slot1 = r1->metaObject()->method(
-            r1->metaObject()->indexOfMethod("slot1()"));
-    QMetaMethod slot2 = r1->metaObject()->method(
-            r1->metaObject()->indexOfMethod("slot2()"));
-    QMetaMethod slot3 = r1->metaObject()->method(
-            r1->metaObject()->indexOfMethod("slot3()"));
-    QMetaMethod slot4 = r1->metaObject()->method(
-            r1->metaObject()->indexOfMethod("slot4()"));
+    QMetaMethod slot1 = r1.metaObject()->method(r1.metaObject()->indexOfMethod("slot1()"));
+    QMetaMethod slot2 = r1.metaObject()->method(r1.metaObject()->indexOfMethod("slot2()"));
+    QMetaMethod slot3 = r1.metaObject()->method(r1.metaObject()->indexOfMethod("slot3()"));
+    QMetaMethod slot4 = r1.metaObject()->method(r1.metaObject()->indexOfMethod("slot4()"));
 
-    connect(s, signal1, r1, slot1);
+    connect(&s, signal1, &r1, slot1);
 
-    s->emitSignal1();
+    s.emitSignal1();
 
-    QVERIFY(r1->called(1));
-    r1->reset();
+    QVERIFY(r1.called(1));
+    r1.reset();
 
     // usual disconnect with all parameters given
-    bool ret = QObject::disconnect(s, signal1, r1, slot1);
+    bool ret = QObject::disconnect(&s, signal1, &r1, slot1);
 
-    s->emitSignal1();
+    s.emitSignal1();
 
-    QVERIFY(!r1->called(1));
-    r1->reset();
+    QVERIFY(!r1.called(1));
+    r1.reset();
 
     QVERIFY(ret);
-    ret = QObject::disconnect(s, signal1, r1, slot1);
+    ret = QObject::disconnect(&s, signal1, &r1, slot1);
     QVERIFY(!ret);
 
-    r1->reset();
+    r1.reset();
 
-    connect( s, signal1, r1, slot1 );
-    connect( s, signal1, r1, slot2 );
-    connect( s, signal1, r1, slot3 );
-    connect( s, signal2, r1, slot4 );
+    connect(&s, signal1, &r1, slot1);
+    connect(&s, signal1, &r1, slot2);
+    connect(&s, signal1, &r1, slot3);
+    connect(&s, signal2, &r1, slot4);
 
     // disconnect s's signal1() from all slots of r1
-    QObject::disconnect(s, signal1, r1, QMetaMethod());
+    QObject::disconnect(&s, signal1, &r1, QMetaMethod());
 
-    s->emitSignal1();
-    s->emitSignal2();
+    s.emitSignal1();
+    s.emitSignal2();
 
-    QVERIFY(!r1->called(1));
-    QVERIFY(!r1->called(2));
-    QVERIFY(!r1->called(3));
-    QVERIFY(r1->called(4));
-    r1->reset();
+    QVERIFY(!r1.called(1));
+    QVERIFY(!r1.called(2));
+    QVERIFY(!r1.called(3));
+    QVERIFY(r1.called(4));
+    r1.reset();
     // make sure all is disconnected again
-    QObject::disconnect(s, 0, r1, 0);
+    QObject::disconnect(&s, 0, &r1, 0);
 
-    connect(s, signal1, r1, slot1);
-    connect(s, signal1, r2, slot1);
-    connect(s, signal2, r1, slot2);
-    connect(s, signal2, r2, slot2);
-    connect(s, signal3, r1, slot3);
-    connect(s, signal3, r2, slot3);
+    connect(&s, signal1, &r1, slot1);
+    connect(&s, signal1, &r2, slot1);
+    connect(&s, signal2, &r1, slot2);
+    connect(&s, signal2, &r2, slot2);
+    connect(&s, signal3, &r1, slot3);
+    connect(&s, signal3, &r2, slot3);
 
     // disconnect signal1() from all receivers
-    QObject::disconnect(s, signal1, 0, QMetaMethod());
-    s->emitSignal1();
-    s->emitSignal2();
-    s->emitSignal3();
+    QObject::disconnect(&s, signal1, 0, QMetaMethod());
+    s.emitSignal1();
+    s.emitSignal2();
+    s.emitSignal3();
 
-    QVERIFY(!r1->called(1));
-    QVERIFY(!r2->called(1));
-    QVERIFY(r1->called(2));
-    QVERIFY(r2->called(2));
-    QVERIFY(r1->called(2));
-    QVERIFY(r2->called(2));
+    QVERIFY(!r1.called(1));
+    QVERIFY(!r2.called(1));
+    QVERIFY(r1.called(2));
+    QVERIFY(r2.called(2));
+    QVERIFY(r1.called(2));
+    QVERIFY(r2.called(2));
 
-    r1->reset();
-    r2->reset();
+    r1.reset();
+    r2.reset();
 
     // disconnect all signals of s from all receivers
-    QObject::disconnect( s, 0, 0, 0 );
+    QObject::disconnect(&s, 0, 0, 0);
 
-    connect( s, signal1, r1, slot1 );
-    connect( s, signal1, r2, slot1 );
+    connect(&s, signal1, &r1, slot1);
+    connect(&s, signal1, &r2, slot1);
 
     // disconnect all signals from slot1 of r1
-    QObject::disconnect(s, QMetaMethod(), r1, slot1);
+    QObject::disconnect(&s, QMetaMethod(), &r1, slot1);
 
-    s->emitSignal1();
+    s.emitSignal1();
 
-    QVERIFY(!r1->called(1));
-    QVERIFY(r2->called(1));
-
-    delete r2;
-    delete r1;
-    delete s;
+    QVERIFY(!r1.called(1));
+    QVERIFY(r2.called(1));
 }
 
 void tst_QObject::disconnectNotSignalMetaMethod()
@@ -4406,63 +4394,64 @@ void tst_QObject::baseDestroyed()
 
 void tst_QObject::pointerConnect()
 {
-    SenderObject *s = new SenderObject;
-    ReceiverObject *r1 = new ReceiverObject;
-    ReceiverObject *r2 = new ReceiverObject;
-    r1->reset();
-    r2->reset();
+    SenderObject s;
+    ReceiverObject r1;
+    ReceiverObject r2;
+    r1.reset();
+    r2.reset();
     ReceiverObject::sequence = 0;
     QTimer timer;
 
-    QVERIFY( connect( s, &SenderObject::signal1 , r1, &ReceiverObject::slot1 ) );
-    QVERIFY( connect( s, &SenderObject::signal1 , r2, &ReceiverObject::slot1 ) );
-    QVERIFY( connect( s, &SenderObject::signal1 , r1, &ReceiverObject::slot3 ) );
-    QVERIFY( connect( s, &SenderObject::signal3 , r1, &ReceiverObject::slot3 ) );
-    QVERIFY2( connect( &timer, &QTimer::timeout, r1, &ReceiverObject::deleteLater ),
-             "Signal connection failed most likely due to failing comparison of pointers to member functions caused by problems with -reduce-relocations on this platform.");
+    QVERIFY(connect(&s, &SenderObject::signal1 , &r1, &ReceiverObject::slot1));
+    QVERIFY(connect(&s, &SenderObject::signal1 , &r2, &ReceiverObject::slot1));
+    QVERIFY(connect(&s, &SenderObject::signal1 , &r1, &ReceiverObject::slot3));
+    QVERIFY(connect(&s, &SenderObject::signal3 , &r1, &ReceiverObject::slot3));
+    QVERIFY2(connect(&timer, &QTimer::timeout, &r1, &ReceiverObject::deleteLater),
+             "Signal connection failed most likely due to failing comparison of pointers to member "
+             "functions caused by problems with -reduce-relocations on this platform.");
 
-    s->emitSignal1();
-    s->emitSignal2();
-    s->emitSignal3();
-    s->emitSignal4();
+    s.emitSignal1();
+    s.emitSignal2();
+    s.emitSignal3();
+    s.emitSignal4();
 
-    QCOMPARE( r1->count_slot1, 1 );
-    QCOMPARE( r1->count_slot2, 0 );
-    QCOMPARE( r1->count_slot3, 2 );
-    QCOMPARE( r1->count_slot4, 0 );
-    QCOMPARE( r2->count_slot1, 1 );
-    QCOMPARE( r2->count_slot2, 0 );
-    QCOMPARE( r2->count_slot3, 0 );
-    QCOMPARE( r2->count_slot4, 0 );
-    QCOMPARE( r1->sequence_slot1, 1 );
-    QCOMPARE( r2->sequence_slot1, 2 );
-    QCOMPARE( r1->sequence_slot3, 4 );
+    QCOMPARE(r1.count_slot1, 1);
+    QCOMPARE(r1.count_slot2, 0);
+    QCOMPARE(r1.count_slot3, 2);
+    QCOMPARE(r1.count_slot4, 0);
+    QCOMPARE(r2.count_slot1, 1);
+    QCOMPARE(r2.count_slot2, 0);
+    QCOMPARE(r2.count_slot3, 0);
+    QCOMPARE(r2.count_slot4, 0);
+    QCOMPARE(r1.sequence_slot1, 1);
+    QCOMPARE(r2.sequence_slot1, 2);
+    QCOMPARE(r1.sequence_slot3, 4);
 
-    r1->reset();
-    r2->reset();
+    r1.reset();
+    r2.reset();
     ReceiverObject::sequence = 0;
 
-    QVERIFY( connect( s, &SenderObject::signal4, r1, &ReceiverObject::slot4 ) );
-    QVERIFY( connect( s, &SenderObject::signal4, r2, &ReceiverObject::slot4 ) );
-    QVERIFY( connect( s, &SenderObject::signal1, r2, &ReceiverObject::slot4 ) );
+    QVERIFY(connect(&s, &SenderObject::signal4, &r1, &ReceiverObject::slot4));
+    QVERIFY(connect(&s, &SenderObject::signal4, &r2, &ReceiverObject::slot4));
+    QVERIFY(connect(&s, &SenderObject::signal1, &r2, &ReceiverObject::slot4));
 
-    s->emitSignal4();
-    QCOMPARE( r1->count_slot4, 1 );
-    QCOMPARE( r2->count_slot4, 1 );
-    QCOMPARE( r1->sequence_slot4, 1 );
-    QCOMPARE( r2->sequence_slot4, 2 );
+    s.emitSignal4();
+    QCOMPARE(r1.count_slot4, 1);
+    QCOMPARE(r2.count_slot4, 1);
+    QCOMPARE(r1.sequence_slot4, 1);
+    QCOMPARE(r2.sequence_slot4, 2);
 
-    r1->reset();
-    r2->reset();
+    r1.reset();
+    r2.reset();
     ReceiverObject::sequence = 0;
 
-    connect( s, &SenderObject::signal4 , r1, &ReceiverObject::slot4  );
+    connect(&s, &SenderObject::signal4 , &r1, &ReceiverObject::slot4);
 
-    s->emitSignal4();
-    QCOMPARE( r1->count_slot4, 2 );
-    QCOMPARE( r2->count_slot4, 1 );
-    QCOMPARE( r1->sequence_slot4, 3 );
-    QCOMPARE( r2->sequence_slot4, 2 );
+    s.emitSignal4();
+    QCOMPARE(r1.count_slot4, 2);
+    QCOMPARE(r2.count_slot4, 1);
+    QCOMPARE(r1.sequence_slot4, 3);
+    QCOMPARE(r2.sequence_slot4, 2);
 
     QMetaObject::Connection con;
     QVERIFY(!con);
@@ -4470,116 +4459,107 @@ void tst_QObject::pointerConnect()
 
     //connect a slot to a signal (== error)
     QTest::ignoreMessage(QtWarningMsg, "QObject::connect: signal not found in ReceiverObject");
-    con = connect(r1, &ReceiverObject::slot4 , s, &SenderObject::signal4 );
+    con = connect(&r1, &ReceiverObject::slot4 , &s, &SenderObject::signal4);
     QVERIFY(!con);
     QVERIFY(!QObject::disconnect(con));
-
-    delete s;
-    delete r1;
-    delete r2;
 }
 
 void tst_QObject::pointerDisconnect()
 {
-    SenderObject *s = new SenderObject;
-    ReceiverObject *r1 = new ReceiverObject;
-    ReceiverObject *r2 = new ReceiverObject;
+    SenderObject s;
+    ReceiverObject r1;
+    ReceiverObject r2;
 
-    connect( s, &SenderObject::signal1, r1, &ReceiverObject::slot1 );
+    connect(&s, &SenderObject::signal1, &r1, &ReceiverObject::slot1);
 
-    connect( s, &SenderObject::signal2, r1, &ReceiverObject::slot2 );
-    connect( s, &SenderObject::signal3, r1, &ReceiverObject::slot3 );
-    connect( s, &SenderObject::signal4, r1, &ReceiverObject::slot4 );
+    connect(&s, &SenderObject::signal2, &r1, &ReceiverObject::slot2);
+    connect(&s, &SenderObject::signal3, &r1, &ReceiverObject::slot3);
+    connect(&s, &SenderObject::signal4, &r1, &ReceiverObject::slot4);
 
-    s->emitSignal1();
-    s->emitSignal2();
-    s->emitSignal3();
-    s->emitSignal4();
+    s.emitSignal1();
+    s.emitSignal2();
+    s.emitSignal3();
+    s.emitSignal4();
 
-    QVERIFY(r1->called(1));
-    QVERIFY(r1->called(2));
-    QVERIFY(r1->called(3));
-    QVERIFY(r1->called(4));
-    r1->reset();
+    QVERIFY(r1.called(1));
+    QVERIFY(r1.called(2));
+    QVERIFY(r1.called(3));
+    QVERIFY(r1.called(4));
+    r1.reset();
 
     // usual disconnect with all parameters given
-    bool ret = QObject::disconnect( s, &SenderObject::signal1, r1, &ReceiverObject::slot1 );
+    bool ret = QObject::disconnect(&s, &SenderObject::signal1, &r1, &ReceiverObject::slot1);
 
-    s->emitSignal1();
+    s.emitSignal1();
 
-    QVERIFY(!r1->called(1));
-    r1->reset();
+    QVERIFY(!r1.called(1));
+    r1.reset();
 
     QVERIFY(ret);
-    ret = QObject::disconnect( s, &SenderObject::signal1, r1, &ReceiverObject::slot1 );
+    ret = QObject::disconnect(&s, &SenderObject::signal1, &r1, &ReceiverObject::slot1);
     QVERIFY(!ret);
 
     // disconnect all signals from s from all slots from r1
-    QObject::disconnect( s, 0, r1, 0 );
+    QObject::disconnect(&s, 0, &r1, 0);
 
-    s->emitSignal2();
-    s->emitSignal3();
-    s->emitSignal4();
+    s.emitSignal2();
+    s.emitSignal3();
+    s.emitSignal4();
 
-    QVERIFY(!r1->called(2));
-    QVERIFY(!r1->called(3));
-    QVERIFY(!r1->called(4));
-    r1->reset();
+    QVERIFY(!r1.called(2));
+    QVERIFY(!r1.called(3));
+    QVERIFY(!r1.called(4));
+    r1.reset();
 
-    connect( s, &SenderObject::signal1, r1, &ReceiverObject::slot1 );
-    connect( s, &SenderObject::signal1, r1, &ReceiverObject::slot2 );
-    connect( s, &SenderObject::signal1, r1, &ReceiverObject::slot3 );
-    connect( s, &SenderObject::signal2, r1, &ReceiverObject::slot4 );
+    connect(&s, &SenderObject::signal1, &r1, &ReceiverObject::slot1);
+    connect(&s, &SenderObject::signal1, &r1, &ReceiverObject::slot2);
+    connect(&s, &SenderObject::signal1, &r1, &ReceiverObject::slot3);
+    connect(&s, &SenderObject::signal2, &r1, &ReceiverObject::slot4);
 
     // disconnect s's signal1() from all slots of r1
-    QObject::disconnect( s, &SenderObject::signal1, r1, 0 );
+    QObject::disconnect(&s, &SenderObject::signal1, &r1, 0);
 
-    s->emitSignal1();
-    s->emitSignal2();
+    s.emitSignal1();
+    s.emitSignal2();
 
-    QVERIFY(!r1->called(1));
-    QVERIFY(!r1->called(2));
-    QVERIFY(!r1->called(3));
-    QVERIFY(r1->called(4));
-    r1->reset();
+    QVERIFY(!r1.called(1));
+    QVERIFY(!r1.called(2));
+    QVERIFY(!r1.called(3));
+    QVERIFY(r1.called(4));
+    r1.reset();
     // make sure all is disconnected again
-    QObject::disconnect( s, 0, r1, 0 );
+    QObject::disconnect(&s, 0, &r1, 0);
 
-    connect( s, &SenderObject::signal1, r1, &ReceiverObject::slot1 );
-    connect( s, &SenderObject::signal1, r2, &ReceiverObject::slot1 );
-    connect( s, &SenderObject::signal2, r1, &ReceiverObject::slot2 );
-    connect( s, &SenderObject::signal2, r2, &ReceiverObject::slot2 );
-    connect( s, &SenderObject::signal3, r1, &ReceiverObject::slot3 );
-    connect( s, &SenderObject::signal3, r2, &ReceiverObject::slot3 );
+    connect(&s, &SenderObject::signal1, &r1, &ReceiverObject::slot1);
+    connect(&s, &SenderObject::signal1, &r2, &ReceiverObject::slot1);
+    connect(&s, &SenderObject::signal2, &r1, &ReceiverObject::slot2);
+    connect(&s, &SenderObject::signal2, &r2, &ReceiverObject::slot2);
+    connect(&s, &SenderObject::signal3, &r1, &ReceiverObject::slot3);
+    connect(&s, &SenderObject::signal3, &r2, &ReceiverObject::slot3);
 
     // disconnect signal1() from all receivers
-    QObject::disconnect( s, &SenderObject::signal1, 0, 0 );
-    s->emitSignal1();
-    s->emitSignal2();
-    s->emitSignal3();
+    QObject::disconnect(&s, &SenderObject::signal1, 0, 0);
+    s.emitSignal1();
+    s.emitSignal2();
+    s.emitSignal3();
 
-    QVERIFY(!r1->called(1));
-    QVERIFY(!r2->called(1));
-    QVERIFY(r1->called(2));
-    QVERIFY(r2->called(2));
-    QVERIFY(r1->called(2));
-    QVERIFY(r2->called(2));
+    QVERIFY(!r1.called(1));
+    QVERIFY(!r2.called(1));
+    QVERIFY(r1.called(2));
+    QVERIFY(r2.called(2));
+    QVERIFY(r1.called(2));
+    QVERIFY(r2.called(2));
 
-    r1->reset();
-    r2->reset();
+    r1.reset();
+    r2.reset();
 
     // disconnect all signals of s from all receivers
-    QObject::disconnect( s, 0, 0, 0 );
+    QObject::disconnect(&s, 0, 0, 0);
 
-    QVERIFY(!r1->called(2));
-    QVERIFY(!r2->called(2));
-    QVERIFY(!r1->called(2));
-    QVERIFY(!r2->called(2));
-
-    delete r2;
-    delete r1;
-    delete s;
-
+    QVERIFY(!r1.called(2));
+    QVERIFY(!r2.called(2));
+    QVERIFY(!r1.called(2));
+    QVERIFY(!r2.called(2));
 }
 
 
@@ -4703,35 +4683,32 @@ void tst_QObject::customTypesPointer()
 
 void tst_QObject::connectCxx0x()
 {
-    SenderObject *s = new SenderObject;
-    ReceiverObject *r1 = new ReceiverObject;
+    SenderObject s;
+    ReceiverObject r1;
 
-    QObject::connect(s, &SenderObject::signal1, r1, &ReceiverObject::slot1);
-    QObject::connect(s, &SenderObject::signal3, r1, &ReceiverObject::slot2);
-    QObject::connect(s, &SenderObject::signal3, r1, &ReceiverObject::slot2);
-    QObject::connect(s, &SenderObject::signal3, r1, &ReceiverObject::slot2);
+    QObject::connect(&s, &SenderObject::signal1, &r1, &ReceiverObject::slot1);
+    QObject::connect(&s, &SenderObject::signal3, &r1, &ReceiverObject::slot2);
+    QObject::connect(&s, &SenderObject::signal3, &r1, &ReceiverObject::slot2);
+    QObject::connect(&s, &SenderObject::signal3, &r1, &ReceiverObject::slot2);
 
-    r1->reset();
-    QCOMPARE( r1->count_slot1, 0 );
-    QCOMPARE( r1->count_slot2, 0 );
+    r1.reset();
+    QCOMPARE(r1.count_slot1, 0);
+    QCOMPARE(r1.count_slot2, 0);
 
-    s->emitSignal1();
-    QCOMPARE( r1->count_slot1, 1 );
-    QCOMPARE( r1->count_slot2, 0 );
+    s.emitSignal1();
+    QCOMPARE(r1.count_slot1, 1);
+    QCOMPARE(r1.count_slot2, 0);
 
-    s->emitSignal3();
-    QCOMPARE( r1->count_slot1, 1 );
-    QCOMPARE( r1->count_slot2, 3 );
+    s.emitSignal3();
+    QCOMPARE(r1.count_slot1, 1);
+    QCOMPARE(r1.count_slot2, 3);
 
     // connect signal to signal
-    QObject::connect(s, &SenderObject::signal2, s, &SenderObject::signal1);
+    QObject::connect(&s, &SenderObject::signal2, &s, &SenderObject::signal1);
 
-    r1->reset();
-    s->emitSignal2();
-    QCOMPARE( r1->count_slot1, 1 );
-
-    delete s;
-    delete r1;
+    r1.reset();
+    s.emitSignal2();
+    QCOMPARE(r1.count_slot1, 1);
 }
 
 int receivedCount;
