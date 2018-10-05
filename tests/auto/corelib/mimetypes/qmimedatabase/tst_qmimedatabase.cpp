@@ -73,12 +73,12 @@ static inline QString testSuiteWarning()
     str << "\nCannot find the shared-mime-info test suite\nstarting from: "
         << QDir::toNativeSeparators(QDir::currentPath()) << "\n"
            "cd " << QDir::toNativeSeparators(QStringLiteral("tests/auto/corelib/mimetypes/qmimedatabase")) << "\n"
-           "wget http://cgit.freedesktop.org/xdg/shared-mime-info/snapshot/Release-1-8.zip\n"
-           "unzip Release-1-8.zip\n";
+           "wget http://cgit.freedesktop.org/xdg/shared-mime-info/snapshot/Release-1-10.zip\n"
+           "unzip Release-1-10.zip\n";
 #ifdef Q_OS_WIN
-    str << "mkdir testfiles\nxcopy /s Release-1-8 s-m-i\n";
+    str << "mkdir testfiles\nxcopy /s Release-1-10 s-m-i\n";
 #else
-    str << "ln -s Release-1-8 s-m-i\n";
+    str << "ln -s Release-1-10 s-m-i\n";
 #endif
     return result;
 }
@@ -611,7 +611,7 @@ void tst_QMimeDatabase::allMimeTypes()
     QVERIFY(!lst.isEmpty());
 
     // Hardcoding this is the only way to check both providers find the same number of mimetypes.
-    QCOMPARE(lst.count(), 749);
+    QCOMPARE(lst.count(), 779);
 
     foreach (const QMimeType &mime, lst) {
         const QString name = mime.name();
@@ -640,7 +640,7 @@ void tst_QMimeDatabase::suffixes_data()
     QTest::newRow("mimetype with multiple patterns") << "text/plain" << "*.asc;*.txt;*,v" << "txt";
     QTest::newRow("mimetype with uncommon pattern") << "text/x-readme" << "README*" << QString();
     QTest::newRow("mimetype with no patterns") << "application/x-ole-storage" << QString() << QString();
-    QTest::newRow("default_mimetype") << "application/octet-stream" << "*.bin" << QString();
+    QTest::newRow("default_mimetype") << "application/octet-stream" << QString() << QString();
 }
 
 void tst_QMimeDatabase::suffixes()
