@@ -2153,12 +2153,10 @@ int QTreeView::verticalOffset() const
         // ### find a faster way to do this
         d->executePostedLayout();
         int offset = 0;
-        for (int i = 0; i < d->viewItems.count(); ++i) {
-            if (i == verticalScrollBar()->value())
-                return offset;
+        const int cnt = std::min(d->viewItems.count(), verticalScrollBar()->value());
+        for (int i = 0; i < cnt; ++i)
             offset += d->itemHeight(i);
-        }
-        return 0;
+        return offset;
     }
     // scroll per pixel
     return verticalScrollBar()->value();
