@@ -27,11 +27,13 @@ qhp.extraFiles += style/online.css \
 
 HTML.headerstyles = \
     "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/online.css\" />\n" \
-    "  <link rel=\"shortcut icon\" href=\"//d3hp9ud7yvwzy0.cloudfront.net/wp-content/themes/oneqt/images/favicon.ico.gzip\" />\n"
+    "  <link rel=\"shortcut icon\" href=\"//d33sqmjvzgs8hq.cloudfront.net/wp-content/themes/oneqt/assets/images/favicon.ico.gzip\" />\n"
 
 HTML.headerscripts = \
     "  <script type=\"text/javascript\"> wpThemeFolder = \'http://qt.io/wp-content/themes/oneqt\'; </script>\n" \
-    "  <script type=\"text/javascript\" src=\"//d3hp9ud7yvwzy0.cloudfront.net/wp-content/themes/oneqt/js/combo.js.gzip\"></script>\n" \
+    "  <script type=\"text/javascript\" src=\"//d33sqmjvzgs8hq.cloudfront.net/wp-includes/js/jquery/jquery.js.gzip\"></script>\n" \
+    "  <script type=\"text/javascript\" src=\"//d33sqmjvzgs8hq.cloudfront.net/wp-includes/js/jquery/jquery-migrate.min.js.gzip\"></script>\n" \
+    "  <script type=\"text/javascript\" src=\"//d33sqmjvzgs8hq.cloudfront.net/wp-content/themes/oneqt/js/combo.js.gzip\"></script>\n" \
     "  <script type=\"text/javascript\" src=\"scripts/main.js\"></script>\n" \
     "  <script type=\"text/javascript\" src=\"scripts/extras.js\"></script>\n" \
     "  <script type=\"text/javascript\">\n" \
@@ -65,7 +67,7 @@ HTML.postheader = \
     "<header id=\"navbar\" class=\"\">\n" \
     "        <div class=\"cookies_yum\">\n" \
     "            <div>\n" \
-    "                <img src=\"//d3hp9ud7yvwzy0.cloudfront.net/wp-content/themes/oneqt/assets/images/cookie_small.png\" align=\"left\">\n" \
+    "                <img src=\"//d33sqmjvzgs8hq.cloudfront.net/wp-content/themes/oneqt/assets/images/cookie_small.png\" align=\"left\">\n" \
     "                <p class=\"close_button\">\n" \
     "                    We bake cookies in your browser for a better experience.  Using this site means that you consent. <a href=\"//qt.io/terms-conditions/\">Read More</a>\n" \
     "                </p>\n" \
