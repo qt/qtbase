@@ -1,0 +1,7 @@
+****************************************************************************
+*                 Important Source Incompatible Changes                    *
+****************************************************************************
+
+ - Moc generated files include the standard <memory> header file now.
+   A side effect of this is that code including the Moc output from within
+   a namespace will fail to compile.
