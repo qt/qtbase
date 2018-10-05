@@ -71,6 +71,16 @@
     formats, in addition to any image format plugins that support
     writing.
 
+    \note QImageWriter assumes exclusive control over the file or
+    device that is assigned. Any attempts to modify the assigned file
+    or device during the lifetime of the QImageWriter object will
+    yield undefined results. If immediate access to a resource is
+    desired, the use of a scope is the recommended method.
+
+    For example:
+
+    \snippet qimagewriter/main.cpp 0
+
     \sa QImageReader, QImageIOHandler, QImageIOPlugin
 */
 
