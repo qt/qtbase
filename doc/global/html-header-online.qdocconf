@@ -1,6 +1,7 @@
 # HTML Header with qt.io branding and online links
 
 HTML.stylesheets = template/style/online.css \
+                   template/style/cookie-confirm.css \
                    template/style/gsc.css \
                    template/style/list_arrow.png \
                    template/style/list_expand.png \
@@ -14,6 +15,7 @@ HTML.stylesheets = template/style/online.css \
 
 #for including files into the qch file. Relative to the outputdir of a QDoc build.
 qhp.extraFiles += style/online.css \
+                  style/cookie-confirm.css \
                   style/gsc.css \
                   style/list_arrow.png \
                   style/list_expand.png \
