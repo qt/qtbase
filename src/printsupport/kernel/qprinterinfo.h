@@ -93,6 +93,9 @@ public:
     QPrinter::DuplexMode defaultDuplexMode() const;
     QList<QPrinter::DuplexMode> supportedDuplexModes() const;
 
+    QPrinter::ColorMode defaultColorMode() const;
+    QList<QPrinter::ColorMode> supportedColorModes() const;
+
     static QStringList availablePrinterNames();
     static QList<QPrinterInfo> availablePrinters();
 

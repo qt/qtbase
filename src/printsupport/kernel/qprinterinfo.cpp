@@ -388,6 +388,35 @@ QList<QPrinter::DuplexMode> QPrinterInfo::supportedDuplexModes() const
 }
 
 /*!
+    Returns the default color mode of this printer.
+
+    \since 5.13
+*/
+
+QPrinter::ColorMode QPrinterInfo::defaultColorMode() const
+{
+    Q_D(const QPrinterInfo);
+    return QPrinter::ColorMode(d->m_printDevice.defaultColorMode());
+}
+
+/*!
+    Returns the supported color modes of this printer.
+
+    \since 5.13
+*/
+
+QList<QPrinter::ColorMode> QPrinterInfo::supportedColorModes() const
+{
+    Q_D(const QPrinterInfo);
+    QList<QPrinter::ColorMode> list;
+    const auto supportedColorModes = d->m_printDevice.supportedColorModes();
+    list.reserve(supportedColorModes.size());
+    for (QPrint::ColorMode mode : supportedColorModes)
+        list << QPrinter::ColorMode(mode);
+    return list;
+}
+
+/*!
     Returns a list of all the available Printer Names on this system.
 
     It is recommended to use this instead of availablePrinters() as
