@@ -342,6 +342,7 @@ struct Bar
             ++failureCount;
         }
     }
+    ~Bar() {}
 
 public:
     static int failureCount;
@@ -458,7 +459,7 @@ void tst_QMetaType::threadSafety()
 
 namespace TestSpace
 {
-    struct Foo { double d; };
+    struct Foo { double d; public: ~Foo() {} };
     struct QungTfu {};
 }
 Q_DECLARE_METATYPE(TestSpace::Foo)
@@ -515,10 +516,16 @@ void tst_QMetaType::properties()
 }
 
 template <typename T>
-struct Whity { T t; };
+struct Whity { T t; Whity() {} };
 
 Q_DECLARE_METATYPE( Whity < int > )
 Q_DECLARE_METATYPE(Whity<double>)
+
+#if !defined(Q_CC_CLANG) && defined(Q_CC_GNU) && Q_CC_GNU < 501
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(Whity<double>, Q_MOVABLE_TYPE);
+QT_END_NAMESPACE
+#endif
 
 void tst_QMetaType::normalizedTypes()
 {
@@ -818,10 +825,13 @@ void tst_QMetaType::sizeOfStaticLess()
     QCOMPARE(size_t(QMetaType(type).sizeOf()), size);
 }
 
-struct CustomMovable {};
+struct CustomMovable { CustomMovable() {} };
+#if !defined(Q_CC_CLANG) && defined(Q_CC_GNU) && Q_CC_GNU < 501
 QT_BEGIN_NAMESPACE
 Q_DECLARE_TYPEINFO(CustomMovable, Q_MOVABLE_TYPE);
 QT_END_NAMESPACE
+#endif
+
 Q_DECLARE_METATYPE(CustomMovable);
 
 class CustomObject : public QObject
@@ -850,13 +860,15 @@ public:
 };
 Q_DECLARE_METATYPE(CustomMultiInheritanceObject*);
 
-class C { char _[4]; };
-class M { char _[4]; };
+class C { char _[4]; public: C() = default; C(const C&) {} };
+class M { char _[4]; public: M() {} };
 class P { char _[4]; };
 
 QT_BEGIN_NAMESPACE
+#if defined(Q_CC_GNU) && Q_CC_GNU < 501
 Q_DECLARE_TYPEINFO(M, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(P, Q_PRIMITIVE_TYPE);
+#endif
 QT_END_NAMESPACE
 
 // avoid the comma:
@@ -902,7 +914,7 @@ QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(ADD_METATYPE_TEST_ROW)
 QT_FOR_EACH_STATIC_CORE_POINTER(ADD_METATYPE_TEST_ROW)
 #undef ADD_METATYPE_TEST_ROW
     QTest::newRow("TestSpace::Foo") << ::qMetaTypeId<TestSpace::Foo>() << false << true << false << false;
-    QTest::newRow("Whity<double>") << ::qMetaTypeId<Whity<double> >() << false << true << false << false;
+    QTest::newRow("Whity<double>") << ::qMetaTypeId<Whity<double> >() << true << true << false << false;
     QTest::newRow("CustomMovable") << ::qMetaTypeId<CustomMovable>() << true << true << false << false;
     QTest::newRow("CustomObject*") << ::qMetaTypeId<CustomObject*>() << true << false << true << false;
     QTest::newRow("CustomMultiInheritanceObject*") << ::qMetaTypeId<CustomMultiInheritanceObject*>() << true << false << true << false;
