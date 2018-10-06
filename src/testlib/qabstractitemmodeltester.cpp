@@ -217,7 +217,7 @@ QAbstractItemModelTester::QAbstractItemModelTester(QAbstractItemModel *model, Fa
 
     Q_D(QAbstractItemModelTester);
 
-    const auto &runAllTests = [d] { d->runAllTests(); };
+    auto runAllTests = [d] { d->runAllTests(); };
 
     connect(model, &QAbstractItemModel::columnsAboutToBeInserted,
             this, runAllTests);
