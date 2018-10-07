@@ -120,7 +120,7 @@ QT_BEGIN_NAMESPACE
  * Whenever multiple alternatives are equivalent or near so, we prefer the one
  * using instructions from SSE2, since SSE2 is guaranteed to be enabled for all
  * 64-bit builds and we enable it for 32-bit builds by default. Use of higher
- * SSE versions should be done when there's a clear performance benefit and
+ * SSE versions should be done when there is a clear performance benefit and
  * requires fallback code to SSE2, if it exists.
  *
  * Performance measurement in the past shows that most strings are short in
@@ -1497,7 +1497,7 @@ const QString::Null QString::null = { };
     functions. The former searches forward starting from a given index
     position, the latter searches backward. Both return the index
     position of the character or substring if they find it; otherwise,
-    they return -1.  For example, here's a typical loop that finds all
+    they return -1.  For example, here is a typical loop that finds all
     occurrences of a particular substring:
 
     \snippet qstring/main.cpp 6
@@ -6612,7 +6612,7 @@ namespace QUnicodeTables {
     this function requires to be a valid, empty string) and \c{s} contains the
     only copy of the string, without reallocation (thus, \a it is still valid).
 
-    There's one pathological case left: when the in-place conversion needs to
+    There is one pathological case left: when the in-place conversion needs to
     reallocate memory to grow the buffer. In that case, we need to adjust the \a
     it pointer.
  */
@@ -6770,7 +6770,7 @@ QString &QString::sprintf(const char *cformat, ...)
     \warning We do not recommend using QString::asprintf() in new Qt
     code. Instead, consider using QTextStream or arg(), both of
     which support Unicode strings seamlessly and are type-safe.
-    Here's an example that uses QTextStream:
+    Here is an example that uses QTextStream:
 
     \snippet qstring/main.cpp 64
 
@@ -7735,7 +7735,7 @@ QStringList QString::split(const QString &sep, SplitBehavior behavior, Qt::CaseS
     the result.
 
     \note All references are valid as long this string is alive. Destroying this
-    string will cause all references be dangling pointers.
+    string will cause all references to be dangling pointers.
 
     \since 5.4
     \sa QStringRef split()
@@ -7769,7 +7769,7 @@ QVector<QStringRef> QString::splitRef(QChar sep, SplitBehavior behavior, Qt::Cas
     the result.
 
     \note All references are valid as long this string is alive. Destroying this
-    string will cause all references be dangling pointers.
+    string will cause all references to be dangling pointers.
 
     \since 5.4
 */
@@ -7818,17 +7818,17 @@ static ResultList splitString(const QString &source, MidMethod mid, const QRegEx
     does not match anywhere in the string, split() returns a
     single-element list containing this string.
 
-    Here's an example where we extract the words in a sentence
+    Here is an example where we extract the words in a sentence
     using one or more whitespace characters as the separator:
 
     \snippet qstring/main.cpp 59
 
-    Here's a similar example, but this time we use any sequence of
+    Here is a similar example, but this time we use any sequence of
     non-word characters as the separator:
 
     \snippet qstring/main.cpp 60
 
-    Here's a third example where we use a zero-length assertion,
+    Here is a third example where we use a zero-length assertion,
     \b{\\b} (word boundary), to split the string into an
     alternating sequence of non-word and word tokens:
 
@@ -7851,7 +7851,7 @@ QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
     single-element vector containing this string reference.
 
     \note All references are valid as long this string is alive. Destroying this
-    string will cause all references be dangling pointers.
+    string will cause all references to be dangling pointers.
 
     \sa QStringRef split()
 */
@@ -7900,17 +7900,17 @@ static ResultList splitString(const QString &source, MidMethod mid, const QRegul
     does not match anywhere in the string, split() returns a
     single-element list containing this string.
 
-    Here's an example where we extract the words in a sentence
+    Here is an example where we extract the words in a sentence
     using one or more whitespace characters as the separator:
 
     \snippet qstring/main.cpp 90
 
-    Here's a similar example, but this time we use any sequence of
+    Here is a similar example, but this time we use any sequence of
     non-word characters as the separator:
 
     \snippet qstring/main.cpp 91
 
-    Here's a third example where we use a zero-length assertion,
+    Here is a third example where we use a zero-length assertion,
     \b{\\b} (word boundary), to split the string into an
     alternating sequence of non-word and word tokens:
 
@@ -7933,7 +7933,7 @@ QStringList QString::split(const QRegularExpression &re, SplitBehavior behavior)
     single-element vector containing this string reference.
 
     \note All references are valid as long this string is alive. Destroying this
-    string will cause all references be dangling pointers.
+    string will cause all references to be dangling pointers.
 
     \sa split() QStringRef
 */
@@ -9073,7 +9073,7 @@ bool QString::isRightToLeft() const
     to create a deep copy of the data, ensuring that the raw data
     isn't modified.
 
-    Here's an example of how we can use a QRegularExpression on raw data in
+    Here is an example of how we can use a QRegularExpression on raw data in
     memory without requiring to copy the data into a QString:
 
     \snippet qstring/main.cpp 22
