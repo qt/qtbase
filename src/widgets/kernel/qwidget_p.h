@@ -400,6 +400,7 @@ public:
 
     void setUpdatesEnabled_helper(bool );
 
+    bool updateBrushOrigin(QPainter *, const QBrush &brush) const;
     void paintBackground(QPainter *, const QRegion &, int flags = DrawAsRoot) const;
     bool isAboutToShow() const;
     QRegion prepareToRender(const QRegion &region, QWidget::RenderFlags renderFlags);

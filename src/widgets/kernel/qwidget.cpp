@@ -2416,29 +2416,34 @@ static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QBrus
     }
 }
 
-void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int flags) const
+bool QWidgetPrivate::updateBrushOrigin(QPainter *painter, const QBrush &brush) const
 {
-    Q_Q(const QWidget);
-
 #if QT_CONFIG(scrollarea)
-    bool resetBrushOrigin = false;
-    QPointF oldBrushOrigin;
+    Q_Q(const QWidget);
     //If we are painting the viewport of a scrollarea, we must apply an offset to the brush in case we are drawing a texture
+    if (brush.style() == Qt::NoBrush || brush.style() == Qt::SolidPattern)
+        return false;
     QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(parent);
     if (scrollArea && scrollArea->viewport() == q) {
         QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr.data();
         QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(scrollPrivate);
-        oldBrushOrigin = painter->brushOrigin();
-        resetBrushOrigin = true;
         painter->setBrushOrigin(-priv->contentsOffset());
-
     }
 #endif // QT_CONFIG(scrollarea)
+    return true;
+}
 
+void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int flags) const
+{
+    Q_Q(const QWidget);
+
+    bool brushOriginSet = false;
     const QBrush autoFillBrush = q->palette().brush(q->backgroundRole());
 
     if ((flags & DrawAsRoot) && !(q->autoFillBackground() && autoFillBrush.isOpaque())) {
         const QBrush bg = q->palette().brush(QPalette::Window);
+        if (!brushOriginSet)
+            brushOriginSet = updateBrushOrigin(painter, bg);
         if (!(flags & DontSetCompositionMode)) {
             //copy alpha straight in
             QPainter::CompositionMode oldMode = painter->compositionMode();
@@ -2450,8 +2455,11 @@ void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int 
         }
     }
 
-    if (q->autoFillBackground())
+    if (q->autoFillBackground()) {
+        if (!brushOriginSet)
+            brushOriginSet = updateBrushOrigin(painter, autoFillBrush);
         fillRegion(painter, rgn, autoFillBrush);
+    }
 
     if (q->testAttribute(Qt::WA_StyledBackground)) {
         painter->setClipRegion(rgn);
@@ -2459,11 +2467,6 @@ void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int 
         opt.initFrom(q);
         q->style()->drawPrimitive(QStyle::PE_Widget, &opt, painter, q);
     }
-
-#if QT_CONFIG(scrollarea)
-    if (resetBrushOrigin)
-        painter->setBrushOrigin(oldBrushOrigin);
-#endif // QT_CONFIG(scrollarea)
 }
 
 /*
