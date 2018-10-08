@@ -152,10 +152,7 @@ QString QSystemError::string(ErrorScope errorScope, int errorCode)
     case NativeError:
 #if defined (Q_OS_WIN)
         return windowsErrorString(errorCode);
-#else
-        //unix: fall through as native and standard library are the same
-        Q_FALLTHROUGH();
-#endif
+#endif // else unix: native and standard library are the same
     case StandardLibraryError:
         return standardLibraryErrorString(errorCode);
     default:
