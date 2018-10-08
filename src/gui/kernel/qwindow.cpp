@@ -546,6 +546,9 @@ void QWindowPrivate::create(bool recursive, WId nativeHandle)
 
     QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceCreated);
     QGuiApplication::sendEvent(q, &e);
+
+    if (updateRequestPending)
+        platformWindow->requestUpdate();
 }
 
 void QWindowPrivate::clearFocusObject()

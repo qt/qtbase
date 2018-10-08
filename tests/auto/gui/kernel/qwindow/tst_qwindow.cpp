@@ -29,6 +29,7 @@
 #include <qrasterwindow.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformwindow.h>
 #include <private/qguiapplication_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <QtGui/QPainter>
@@ -114,6 +115,7 @@ private slots:
     void cleanup();
     void testBlockingWindowShownAfterModalDialog();
     void generatedMouseMove();
+    void keepPendingUpdateRequests();
 
 private:
     QPoint m_availableTopLeft;
@@ -2449,6 +2451,27 @@ void tst_QWindow::generatedMouseMove()
     QTest::mouseRelease(&w, Qt::RightButton, 0, point);
     QTest::mouseRelease(&w, Qt::LeftButton, 0, point);
     QVERIFY(w.mouseMovedCount == 5);
+}
+
+void tst_QWindow::keepPendingUpdateRequests()
+{
+    QRect geometry(m_availableTopLeft + QPoint(80, 80), m_testWindowSize);
+
+    Window window;
+    window.setGeometry(geometry);
+    window.show();
+    QCoreApplication::processEvents();
+    QTRY_VERIFY(window.isExposed());
+
+    window.requestUpdate();
+    window.close();
+    window.setVisible(true);
+
+    QPlatformWindow *platformWindow = window.handle();
+    QVERIFY(platformWindow);
+
+    QVERIFY(platformWindow->hasPendingUpdateRequest());
+    QTRY_VERIFY(!platformWindow->hasPendingUpdateRequest());
 }
 
 #include <tst_qwindow.moc>
