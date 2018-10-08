@@ -1572,7 +1572,7 @@ QWidget::~QWidget()
 #endif
 
 #ifndef QT_NO_GESTURES
-    if (QGestureManager *manager = QGestureManager::instance()) {
+    if (QGestureManager *manager = QGestureManager::instance(QGestureManager::DontForceCreation)) {
         // \forall Qt::GestureType type : ungrabGesture(type) (inlined)
         for (auto it = d->gestureContext.keyBegin(), end = d->gestureContext.keyEnd(); it != end; ++it)
             manager->cleanupCachedGestures(this, *it);
@@ -6600,9 +6600,12 @@ QWidget *QWidgetPrivate::deepestFocusProxy() const
 void QWidgetPrivate::setFocus_sys()
 {
     Q_Q(QWidget);
-    // Embedded native widget may have taken the focus; get it back to toplevel if that is the case
+    // Embedded native widget may have taken the focus; get it back to toplevel
+    // if that is the case (QTBUG-25852)
     const QWidget *topLevel = q->window();
-    if (topLevel->windowType() != Qt::Popup) {
+    // Do not activate in case the popup menu opens another application (QTBUG-70810).
+    if (QGuiApplication::applicationState() == Qt::ApplicationActive
+        && topLevel->windowType() != Qt::Popup) {
         if (QWindow *nativeWindow = q->window()->windowHandle()) {
             if (nativeWindow != QGuiApplication::focusWindow()
                 && q->testAttribute(Qt::WA_WState_Created)) {

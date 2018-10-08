@@ -441,7 +441,7 @@ QLineEditPrivate::SideWidgetParameters QLineEditPrivate::sideWidgetParameters() 
 {
     Q_Q(const QLineEdit);
     SideWidgetParameters result;
-    result.iconSize = q->height() < 34 ? 16 : 32;
+    result.iconSize = q->style()->pixelMetric(QStyle::PM_SmallIconSize, 0, q);
     result.margin = result.iconSize / 4;
     result.widgetWidth = result.iconSize + 6;
     result.widgetHeight = result.iconSize + 2;

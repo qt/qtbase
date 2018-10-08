@@ -743,8 +743,6 @@ void QToolBar::clear()
 }
 
 /*!
-    \overload
-
     Creates a new action with the given \a text. This action is added to
     the end of the toolbar.
 */

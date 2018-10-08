@@ -1345,7 +1345,6 @@ void QApplication::setGlobalStrut(const QSize& strut)
 
 /*!
     \fn QPalette QApplication::palette(const QWidget* widget)
-    \overload
 
     If a \a widget is passed, the default palette for the widget's class is
     returned. This may or may not be the application palette. In most cases
@@ -4522,12 +4521,12 @@ void QApplicationPrivate::notifyDragStarted(const QDrag *drag)
 #endif // QT_CONFIG(draganddrop)
 
 #ifndef QT_NO_GESTURES
-QGestureManager* QGestureManager::instance()
+QGestureManager* QGestureManager::instance(InstanceCreation ic)
 {
     QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
     if (!qAppPriv)
         return 0;
-    if (!qAppPriv->gestureManager)
+    if (!qAppPriv->gestureManager && ic == ForceCreation)
         qAppPriv->gestureManager = new QGestureManager(qApp);
     return qAppPriv->gestureManager;
 }

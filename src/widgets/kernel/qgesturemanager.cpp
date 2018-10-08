@@ -773,7 +773,7 @@ void QGestureManager::recycle(QGesture *gesture)
 
 bool QGestureManager::gesturePending(QObject *o)
 {
-    const QGestureManager *gm = QGestureManager::instance();
+    const QGestureManager *gm = QGestureManager::instance(DontForceCreation);
     return gm && gm->m_gestureOwners.key(o);
 }
 

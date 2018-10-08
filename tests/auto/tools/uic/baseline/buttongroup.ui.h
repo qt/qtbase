@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'buttongroup.ui'
 **
-** Created by: Qt User Interface Compiler version 5.10.1
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -129,9 +129,9 @@ public:
         sizePolicy3.setHeightForWidth(periodSpinBox->sizePolicy().hasHeightForWidth());
         periodSpinBox->setSizePolicy(sizePolicy3);
         periodSpinBox->setMinimumSize(QSize(0, 30));
-        periodSpinBox->setMinimum(-1);
-        periodSpinBox->setSingleStep(0.1);
-        periodSpinBox->setValue(-1);
+        periodSpinBox->setMinimum(-1.000000000000000);
+        periodSpinBox->setSingleStep(0.100000000000000);
+        periodSpinBox->setValue(-1.000000000000000);
 
         formLayout->setWidget(0, QFormLayout::FieldRole, periodSpinBox);
 
@@ -139,9 +139,9 @@ public:
         amplitudeSpinBox->setObjectName(QString::fromUtf8("amplitudeSpinBox"));
         amplitudeSpinBox->setEnabled(false);
         amplitudeSpinBox->setMinimumSize(QSize(0, 30));
-        amplitudeSpinBox->setMinimum(-1);
-        amplitudeSpinBox->setSingleStep(0.1);
-        amplitudeSpinBox->setValue(-1);
+        amplitudeSpinBox->setMinimum(-1.000000000000000);
+        amplitudeSpinBox->setSingleStep(0.100000000000000);
+        amplitudeSpinBox->setValue(-1.000000000000000);
 
         formLayout->setWidget(2, QFormLayout::FieldRole, amplitudeSpinBox);
 
@@ -155,9 +155,9 @@ public:
         overshootSpinBox->setObjectName(QString::fromUtf8("overshootSpinBox"));
         overshootSpinBox->setEnabled(false);
         overshootSpinBox->setMinimumSize(QSize(0, 30));
-        overshootSpinBox->setMinimum(-1);
-        overshootSpinBox->setSingleStep(0.1);
-        overshootSpinBox->setValue(-1);
+        overshootSpinBox->setMinimum(-1.000000000000000);
+        overshootSpinBox->setSingleStep(0.100000000000000);
+        overshootSpinBox->setValue(-1.000000000000000);
 
         formLayout->setWidget(4, QFormLayout::FieldRole, overshootSpinBox);
 

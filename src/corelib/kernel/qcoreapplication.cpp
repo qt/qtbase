@@ -482,6 +482,10 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
         qFatal("FATAL: The application binary appears to be running setuid, this is a security hole.");
 #  endif // Q_OS_UNIX
 
+#ifdef Q_OS_WINRT
+    QThreadData::setMainThread();
+#endif
+
     QThread *cur = QThread::currentThread(); // note: this may end up setting theMainThread!
     if (cur != theMainThread)
         qWarning("WARNING: QApplication was not created in the main() thread.");

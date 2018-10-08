@@ -2,5 +2,6 @@
 <RCC version="1.0">
   <qresource>
     <file>images/testimage.png</file>
+    <file>images/testimage@2x.png</file>
   </qresource>
 </RCC>

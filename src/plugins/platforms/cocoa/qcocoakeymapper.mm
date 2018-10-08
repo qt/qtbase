@@ -341,8 +341,6 @@ static int qt_mac_get_key(int modif, const QChar &key, int virtualKey)
 QCocoaKeyMapper::QCocoaKeyMapper()
 {
     memset(keyLayout, 0, sizeof(keyLayout));
-    keyboard_layout_format.unicode = 0;
-    currentInputSource = 0;
 }
 
 QCocoaKeyMapper::~QCocoaKeyMapper()
@@ -371,11 +369,18 @@ bool QCocoaKeyMapper::updateKeyboard()
 
     keyboard_kind = LMGetKbdType();
     if (uchrData) {
-        keyboard_layout_format.unicode = uchrData;
+        keyboard_layout_format = uchrData;
         keyboard_mode = UnicodeMode;
+    } else {
+        keyboard_layout_format = nullptr;
+        keyboard_mode = NullMode;
     }
     currentInputSource = source;
     keyboard_dead = 0;
+
+    const auto newMode = keyboard_mode;
+    deleteLayouts();
+    keyboard_mode = newMode;
 
     return true;
 }
@@ -399,10 +404,8 @@ void QCocoaKeyMapper::clearMappings()
 
 void QCocoaKeyMapper::updateKeyMap(unsigned short macVirtualKey, QChar unicodeKey)
 {
-    if (updateKeyboard()) {
-        // ### Qt 4 did this:
-        // QKeyMapper::changeKeyboard();
-    }
+    updateKeyboard();
+
     if (keyLayout[macVirtualKey])
         return;
 
@@ -414,7 +417,7 @@ void QCocoaKeyMapper::updateKeyMap(unsigned short macVirtualKey, QChar unicodeKe
         keyLayout[macVirtualKey]->qtKey[i] = 0;
 
         const UInt32 keyModifier = ((qt_mac_get_mac_modifiers(ModsTbl[i]) >> 8) & 0xFF);
-        OSStatus err = UCKeyTranslate(keyboard_layout_format.unicode, macVirtualKey, kUCKeyActionDown, keyModifier,
+        OSStatus err = UCKeyTranslate(keyboard_layout_format, macVirtualKey, kUCKeyActionDown, keyModifier,
                                       keyboard_kind, 0, &keyboard_dead, buffer_size, &out_buffer_size, buffer);
         if (err == noErr && out_buffer_size) {
             const QChar unicode(buffer[0]);

@@ -116,6 +116,8 @@
 #include <QtWidgets/qtoolbar.h>
 #endif
 
+#include <QtGui/qscreen.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QCss;
@@ -954,7 +956,7 @@ QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QObject
     origin = Origin_Padding;
     Origin clip = Origin_Border;
     if (v.extractBackground(&brush, &uri, &repeat, &alignment, &origin, &attachment, &clip)) {
-        QPixmap pixmap(uri);
+        QPixmap pixmap = QStyleSheetStyle::loadPixmap(uri, object);
         if (!uri.isEmpty() && pixmap.isNull())
             qWarning("Could not create pixmap from %s", qPrintable(QDir::toNativeSeparators(uri)));
         bg = new QStyleSheetBackgroundData(brush, pixmap, repeat, alignment, origin, attachment, clip);
@@ -997,7 +999,7 @@ QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QObject
                     bd->bi = new QStyleSheetBorderImageData;
 
                 QStyleSheetBorderImageData *bi = bd->bi;
-                bi->pixmap = QPixmap(uri);
+                bi->pixmap = QStyleSheetStyle::loadPixmap(uri, object);
                 for (int i = 0; i < 4; i++)
                     bi->cuts[i] = cuts[i];
                 bi->horizStretch = horizStretch;
@@ -1220,30 +1222,33 @@ void QRenderRule::drawBackgroundImage(QPainter *p, const QRect &rect, QPoint off
     if (background()->attachment == Attachment_Fixed)
         off = QPoint(0, 0);
 
+    QSize bgpSize = bgp.size() / bgp.devicePixelRatio();
+    int bgpHeight = bgpSize.height();
+    int bgpWidth = bgpSize.width();
     QRect r = originRect(rect, background()->origin);
-    QRect aligned = QStyle::alignedRect(Qt::LeftToRight, background()->position, bgp.size(), r);
+    QRect aligned = QStyle::alignedRect(Qt::LeftToRight, background()->position, bgpSize, r);
     QRect inter = aligned.translated(-off).intersected(r);
 
     switch (background()->repeat) {
     case Repeat_Y:
         p->drawTiledPixmap(inter.x(), r.y(), inter.width(), r.height(), bgp,
                            inter.x() - aligned.x() + off.x(),
-                           bgp.height() - int(aligned.y() - r.y()) % bgp.height() + off.y());
+                           bgpHeight - int(aligned.y() - r.y()) % bgpHeight + off.y());
         break;
     case Repeat_X:
         p->drawTiledPixmap(r.x(), inter.y(), r.width(), inter.height(), bgp,
-                           bgp.width() - int(aligned.x() - r.x())%bgp.width() + off.x(),
+                           bgpWidth - int(aligned.x() - r.x())%bgpWidth + off.x(),
                            inter.y() - aligned.y() + off.y());
         break;
     case Repeat_XY:
         p->drawTiledPixmap(r, bgp,
-                           QPoint(bgp.width() - int(aligned.x() - r.x())% bgp.width() + off.x(),
-                                  bgp.height() - int(aligned.y() - r.y())%bgp.height() + off.y()));
+                            QPoint(bgpWidth - int(aligned.x() - r.x())% bgpWidth + off.x(),
+                                   bgpHeight - int(aligned.y() - r.y())%bgpHeight + off.y()));
         break;
     case Repeat_None:
     default:
         p->drawPixmap(inter.x(), inter.y(), bgp, inter.x() - aligned.x() + off.x(),
-                      inter.y() - aligned.y() + off.y(), inter.width(), inter.height());
+                      inter.y() - aligned.y() + off.y(), bgp.width() , bgp.height());
         break;
     }
 
@@ -6116,6 +6121,28 @@ bool QStyleSheetStyle::isNaturalChild(const QObject *obj)
         return true;
 
     return false;
+}
+
+QPixmap QStyleSheetStyle::loadPixmap(const QString &fileName, const QObject *context)
+{
+    qreal ratio = -1.0;
+    if (const QWidget *widget = qobject_cast<const QWidget *>(context)) {
+        if (QScreen *screen = QApplication::screenAt(widget->mapToGlobal(QPoint(0, 0))))
+            ratio = screen->devicePixelRatio();
+    }
+
+    if (ratio < 0) {
+        if (const QApplication *app = qApp)
+            ratio = app->devicePixelRatio();
+        else
+            ratio = 1.0;
+    }
+
+    qreal sourceDevicePixelRatio = 1.0;
+    QString resolvedFileName = qt_findAtNxFile(fileName, ratio, &sourceDevicePixelRatio);
+    QPixmap pixmap(resolvedFileName);
+    pixmap.setDevicePixelRatio(sourceDevicePixelRatio);
+    return pixmap;
 }
 
 QT_END_NAMESPACE

@@ -931,7 +931,6 @@ QFontDialog::FontDialogOptions QFontDialog::options() const
 
 /*!
     \since 4.5
-    \overload
 
     Opens the dialog and connects its fontSelected() signal to the slot specified
     by \a receiver and \a member.

@@ -297,6 +297,7 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       painterStateProtection(true),
       sortCacheEnabled(false),
       allItemsIgnoreTouchEvents(true),
+      focusOnTouch(true),
       minimumRenderSize(0.0),
       selectionChanging(0),
       rectAdjust(2),
@@ -2393,6 +2394,7 @@ void QGraphicsScene::clear()
     d->allItemsIgnoreHoverEvents = true;
     d->allItemsUseDefaultCursor = true;
     d->allItemsIgnoreTouchEvents = true;
+    d->focusOnTouch = true;
 }
 
 /*!
@@ -5854,6 +5856,41 @@ void QGraphicsScene::setMinimumRenderSize(qreal minSize)
     update();
 }
 
+/*!
+    \property QGraphicsScene::focusOnTouch
+    \since 5.12
+    \brief whether items gain focus when receiving a \e {touch begin} event.
+
+    The usual behavior is to transfer focus only when an item is clicked. Often
+    a tap on a touchpad is interpreted as equivalent to a mouse click by the
+    operating system, generating a synthesized click event in response. However,
+    at least on macOS you can configure this behavior.
+
+    By default, QGraphicsScene also transfers focus when you touch on a trackpad
+    or similar. If the operating system is configured to not generate a
+    synthetic mouse click on tapping the trackpad, this is surprising. If the
+    operating system does generate synthetic mouse clicks on tapping the
+    trackpad, the focus transfer on starting a touch gesture is unnecessary.
+
+    With focusOnTouch switched off, QGraphicsScene behaves as one would expect
+    on macOS.
+
+    The default value is \c true, ensuring that the default behavior is just as
+    in Qt versions prior to 5.12. Set to \c false to prevent touch events from
+    triggering focus changes.
+*/
+bool QGraphicsScene::focusOnTouch() const
+{
+    Q_D(const QGraphicsScene);
+    return d->focusOnTouch;
+}
+
+void QGraphicsScene::setFocusOnTouch(bool enabled)
+{
+    Q_D(QGraphicsScene);
+    d->focusOnTouch = enabled;
+}
+
 void QGraphicsScenePrivate::addView(QGraphicsView *view)
 {
     views << view;
@@ -6033,39 +6070,41 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
 {
     Q_Q(QGraphicsScene);
 
-    if (cachedItemsUnderMouse.isEmpty() || cachedItemsUnderMouse.constFirst() != origin) {
-        const QTouchEvent::TouchPoint &firstTouchPoint = touchEvent->touchPoints().first();
-        cachedItemsUnderMouse = itemsAtPosition(firstTouchPoint.screenPos().toPoint(),
-                                                firstTouchPoint.scenePos(),
-                                                static_cast<QWidget *>(touchEvent->target()));
-    }
+    if (focusOnTouch) {
+        if (cachedItemsUnderMouse.isEmpty() || cachedItemsUnderMouse.constFirst() != origin) {
+            const QTouchEvent::TouchPoint &firstTouchPoint = touchEvent->touchPoints().first();
+            cachedItemsUnderMouse = itemsAtPosition(firstTouchPoint.screenPos().toPoint(),
+                                                    firstTouchPoint.scenePos(),
+                                                    static_cast<QWidget *>(touchEvent->target()));
+        }
 
-    // Set focus on the topmost enabled item that can take focus.
-    bool setFocus = false;
+        // Set focus on the topmost enabled item that can take focus.
+        bool setFocus = false;
 
-    foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
-        if (item->isEnabled() && ((item->flags() & QGraphicsItem::ItemIsFocusable) && item->d_ptr->mouseSetsFocus)) {
-            if (!item->isWidget() || ((QGraphicsWidget *)item)->focusPolicy() & Qt::ClickFocus) {
+        foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
+            if (item->isEnabled() && ((item->flags() & QGraphicsItem::ItemIsFocusable) && item->d_ptr->mouseSetsFocus)) {
+                if (!item->isWidget() || ((QGraphicsWidget *)item)->focusPolicy() & Qt::ClickFocus) {
+                    setFocus = true;
+                    if (item != q->focusItem())
+                        q->setFocusItem(item, Qt::MouseFocusReason);
+                    break;
+                }
+            }
+            if (item->isPanel())
+                break;
+            if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
+                break;
+            if (item->d_ptr->flags & QGraphicsItem::ItemStopsFocusHandling) {
+                // Make sure we don't clear focus.
                 setFocus = true;
-                if (item != q->focusItem())
-                    q->setFocusItem(item, Qt::MouseFocusReason);
                 break;
             }
         }
-        if (item->isPanel())
-            break;
-        if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
-            break;
-        if (item->d_ptr->flags & QGraphicsItem::ItemStopsFocusHandling) {
-            // Make sure we don't clear focus.
-            setFocus = true;
-            break;
-        }
-    }
 
-    // If nobody could take focus, clear it.
-    if (!stickyFocus && !setFocus)
-        q->setFocusItem(0, Qt::MouseFocusReason);
+        // If nobody could take focus, clear it.
+        if (!stickyFocus && !setFocus)
+            q->setFocusItem(0, Qt::MouseFocusReason);
+    }
 
     bool res = false;
     bool eventAccepted = touchEvent->isAccepted();

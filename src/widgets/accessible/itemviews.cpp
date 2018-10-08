@@ -110,7 +110,7 @@ QAccessibleTable::QAccessibleTable(QWidget *w)
 
 bool QAccessibleTable::isValid() const
 {
-    return (view() && !qobject_cast<QWidget*>(view())->d_func()->data.in_destructor);
+    return view() && !qt_widget_private(view())->data.in_destructor;
 }
 
 QAccessibleTable::~QAccessibleTable()
@@ -1091,7 +1091,8 @@ void QAccessibleTableCell::setText(QAccessible::Text /*t*/, const QString &text)
 
 bool QAccessibleTableCell::isValid() const
 {
-    return view && view->model() && m_index.isValid();
+    return view && !qt_widget_private(view)->data.in_destructor
+            && view->model() && m_index.isValid();
 }
 
 QAccessibleInterface *QAccessibleTableCell::parent() const
@@ -1180,7 +1181,8 @@ void QAccessibleTableHeaderCell::setText(QAccessible::Text, const QString &)
 
 bool QAccessibleTableHeaderCell::isValid() const
 {
-    return view && view->model() && (index >= 0)
+    return view && !qt_widget_private(view)->data.in_destructor
+            && view->model() && (index >= 0)
             && ((orientation == Qt::Horizontal) ? (index < view->model()->columnCount()) : (index < view->model()->rowCount()));
 }
 

@@ -7,7 +7,6 @@ DEFINES += QT_EGL_NO_X11
 
 INCLUDEPATH += $$PWD/../../api
 CONFIG += egl
-QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 
 SOURCES += $$PWD/qeglfsmalimain.cpp \
            $$PWD/qeglfsmaliintegration.cpp

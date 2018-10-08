@@ -865,7 +865,6 @@ void QProgressDialog::forceShow()
 
 /*!
     \since 4.5
-    \overload
 
     Opens the dialog and connects its canceled() signal to the slot specified
     by \a receiver and \a member.

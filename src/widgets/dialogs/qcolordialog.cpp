@@ -2123,7 +2123,6 @@ void QColorDialog::setVisible(bool visible)
 }
 
 /*!
-    \overload
     \since 4.5
 
     Opens the dialog and connects its colorSelected() signal to the slot specified

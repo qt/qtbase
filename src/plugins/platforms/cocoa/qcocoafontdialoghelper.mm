@@ -108,8 +108,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
         [mFontPanel setRestorable:NO];
         [mFontPanel setDelegate:self];
 
-        [NSFontManager sharedFontManager].target = self; // Action is changeFont:
-
         [mFontPanel retain];
     }
     return self;
@@ -119,7 +117,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
 {
     [mStolenContentView release];
     [mFontPanel setDelegate:nil];
-    [NSFontManager sharedFontManager].target = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 
     [super dealloc];
@@ -222,6 +219,13 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
     [NSApp runModalForWindow:mFontPanel];
     mDialogIsExecuting = false;
     return (mResultCode == NSModalResponseOK);
+}
+
+// Future proofing in case _NSTargetForSendAction checks this
+// property before sending us the changeFont: message.
+- (BOOL)worksWhenModal
+{
+    return YES;
 }
 
 - (QPlatformDialogHelper::DialogCode)dialogResultCode

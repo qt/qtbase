@@ -39,14 +39,26 @@
 #include <QtCore/qobject.h>
 
 #include <QtCore/qdeadlinetimer.h>
+#include <emscripten/bind.h>
 
 #include <iostream>
 
 QT_BEGIN_NAMESPACE
+using namespace emscripten;
 
 // macOS CTRL <-> META switching. We most likely want to enable
 // the existing switching code in QtGui, but for now do it here.
 static bool g_usePlatformMacCtrlMetaSwitching = false;
+
+bool g_useNaturalScrolling = false;
+
+void setNaturalScrolling(bool use) {
+    g_useNaturalScrolling = use;
+}
+
+EMSCRIPTEN_BINDINGS(mouse_module) {
+    function("setNaturalScrolling", &setNaturalScrolling);
+}
 
 QWasmEventTranslator::QWasmEventTranslator(QObject *parent)
     : QObject(parent)
@@ -84,6 +96,20 @@ QWasmEventTranslator::QWasmEventTranslator(QObject *parent)
         Platform(EM_ASM_INT("if (navigator.platform.includes(\"Mac\")) return 1; return 0;"));
 
     g_usePlatformMacCtrlMetaSwitching = (platform == MacOSPlatform);
+
+    if (platform == MacOSPlatform) {
+        g_useNaturalScrolling = true; //make this default on macOS
+        EM_ASM(
+            if (window.safari !== undefined)  {//this only works on safari
+                Module["canvas"].addEventListener('wheel', mouseWheelEvent);
+                function mouseWheelEvent(e) {
+                    if (event.webkitDirectionInvertedFromDevice) {
+                        Module.setNaturalScrolling(event.webkitDirectionInvertedFromDevice);
+                    }
+                }
+            }
+        );
+    }
 }
 
 template <typename Event>
@@ -448,6 +474,9 @@ int QWasmEventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *wh
         scrollFactor = 20;
         break;
     };
+
+    if (g_useNaturalScrolling) //macOS platform has document oriented scrolling
+        scrollFactor = -scrollFactor;
 
     Qt::KeyboardModifiers modifiers = translateMouseEventModifier(&mouseEvent);
     auto timestamp = mouseEvent.timestamp;

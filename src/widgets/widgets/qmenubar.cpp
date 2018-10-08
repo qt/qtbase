@@ -749,8 +749,6 @@ QMenuBar::~QMenuBar()
 }
 
 /*!
-    \overload
-
     This convenience function creates a new action with \a text.
     The function adds the newly created action to the menu's
     list of actions, and returns it.

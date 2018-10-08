@@ -9,7 +9,6 @@ INCLUDEPATH += $$PWD/../../api
 
 CONFIG += egl
 QMAKE_USE += xcb_xlib
-QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 
 SOURCES += $$PWD/qeglfsx11main.cpp \
            $$PWD/qeglfsx11integration.cpp

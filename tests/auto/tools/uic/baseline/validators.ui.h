@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'validators.ui'
 **
-** Created by: Qt User Interface Compiler version 5.10.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -252,9 +252,9 @@ public:
         doubleMinVal->setObjectName(QString::fromUtf8("doubleMinVal"));
         sizePolicy.setHeightForWidth(doubleMinVal->sizePolicy().hasHeightForWidth());
         doubleMinVal->setSizePolicy(sizePolicy);
-        doubleMinVal->setMinimum(-100000);
-        doubleMinVal->setMaximum(100000);
-        doubleMinVal->setValue(0);
+        doubleMinVal->setMinimum(-100000.000000000000000);
+        doubleMinVal->setMaximum(100000.000000000000000);
+        doubleMinVal->setValue(0.000000000000000);
 
         gridLayout1->addWidget(doubleMinVal, 0, 1, 1, 1);
 
@@ -281,9 +281,9 @@ public:
         doubleMaxVal->setObjectName(QString::fromUtf8("doubleMaxVal"));
         sizePolicy.setHeightForWidth(doubleMaxVal->sizePolicy().hasHeightForWidth());
         doubleMaxVal->setSizePolicy(sizePolicy);
-        doubleMaxVal->setMinimum(-100000);
-        doubleMaxVal->setMaximum(100000);
-        doubleMaxVal->setValue(1000);
+        doubleMaxVal->setMinimum(-100000.000000000000000);
+        doubleMaxVal->setMaximum(100000.000000000000000);
+        doubleMaxVal->setValue(1000.000000000000000);
 
         gridLayout1->addWidget(doubleMaxVal, 1, 1, 1, 1);
 

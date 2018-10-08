@@ -1405,10 +1405,10 @@ void WriteInitialization::writeProperties(const QString &varName,
             propertyValue += QLatin1Char(')');
             break;
         case DomProperty::Float:
-            propertyValue = QString::number(p->elementFloat());
+            propertyValue = QString::number(p->elementFloat(), 'f', 8);
             break;
         case DomProperty::Double:
-            propertyValue = QString::number(p->elementDouble());
+            propertyValue = QString::number(p->elementDouble(), 'f', 15);
             break;
         case DomProperty::Char: {
             const DomChar *c = p->elementChar();

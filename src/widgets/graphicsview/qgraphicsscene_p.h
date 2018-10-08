@@ -114,7 +114,8 @@ public:
     quint32 painterStateProtection : 1;
     quint32 sortCacheEnabled : 1; // for compatibility
     quint32 allItemsIgnoreTouchEvents : 1;
-    quint32 padding : 15;
+    quint32 focusOnTouch : 1;
+    quint32 padding : 14;
 
     qreal minimumRenderSize;
 

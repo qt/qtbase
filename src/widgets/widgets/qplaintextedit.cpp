@@ -2338,8 +2338,6 @@ void QPlainTextEdit::wheelEvent(QWheelEvent *e)
 #endif
 
 /*!
-    \fn QPlainTextEdit::zoomIn(int range)
-
     Zooms in on the text by making the base font size \a range
     points larger and recalculating all font sizes to be the new size.
     This does not change the size of any images.
@@ -2352,10 +2350,6 @@ void QPlainTextEdit::zoomIn(int range)
 }
 
 /*!
-    \fn QPlainTextEdit::zoomOut(int range)
-
-    \overload
-
     Zooms out on the text by making the base font size \a range points
     smaller and recalculating all font sizes to be the new size. This
     does not change the size of any images.

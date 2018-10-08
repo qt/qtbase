@@ -511,8 +511,6 @@ QString QTabWidget::tabText(int index) const
 }
 
 /*!
-    \overload
-
     Sets the \a icon for the tab at position \a index.
 */
 void QTabWidget::setTabIcon(int index, const QIcon &icon)

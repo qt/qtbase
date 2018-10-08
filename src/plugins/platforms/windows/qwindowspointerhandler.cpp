@@ -61,6 +61,8 @@
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qoperatingsystemversion.h>
 
+#include <algorithm>
+
 #include <windowsx.h>
 
 QT_BEGIN_NAMESPACE
@@ -184,41 +186,65 @@ static void getMouseEventInfo(UINT message, POINTER_BUTTON_CHANGE_TYPE changeTyp
         {POINTER_CHANGE_FIFTHBUTTON_UP, Qt::XButton2},
     };
 
-    static const QHash<UINT, QEvent::Type> eventMapping {
-        {WM_POINTERUPDATE, QEvent::MouseMove},
-        {WM_POINTERDOWN, QEvent::MouseButtonPress},
-        {WM_POINTERUP, QEvent::MouseButtonRelease},
-        {WM_NCPOINTERUPDATE, QEvent::NonClientAreaMouseMove},
-        {WM_NCPOINTERDOWN, QEvent::NonClientAreaMouseButtonPress},
-        {WM_NCPOINTERUP, QEvent::NonClientAreaMouseButtonRelease},
-        {WM_POINTERWHEEL, QEvent::Wheel},
-        {WM_POINTERHWHEEL, QEvent::Wheel},
+    static const POINTER_BUTTON_CHANGE_TYPE downChanges[] = {
+        POINTER_CHANGE_FIRSTBUTTON_DOWN,
+        POINTER_CHANGE_SECONDBUTTON_DOWN,
+        POINTER_CHANGE_THIRDBUTTON_DOWN,
+        POINTER_CHANGE_FOURTHBUTTON_DOWN,
+        POINTER_CHANGE_FIFTHBUTTON_DOWN,
+    };
+
+    static const POINTER_BUTTON_CHANGE_TYPE upChanges[] = {
+        POINTER_CHANGE_FIRSTBUTTON_UP,
+        POINTER_CHANGE_SECONDBUTTON_UP,
+        POINTER_CHANGE_THIRDBUTTON_UP,
+        POINTER_CHANGE_FOURTHBUTTON_UP,
+        POINTER_CHANGE_FIFTHBUTTON_UP,
     };
 
     if (!eventType || !mouseButton)
         return;
 
-    if (message == WM_POINTERDOWN || message == WM_POINTERUP || message == WM_NCPOINTERDOWN || message == WM_NCPOINTERUP)
-        *mouseButton = buttonMapping.value(changeType, Qt::NoButton);
-    else
-        *mouseButton = Qt::NoButton;
+    const bool nonClient = message == WM_NCPOINTERUPDATE ||
+                           message == WM_NCPOINTERDOWN ||
+                           message == WM_NCPOINTERUP;
 
-    *eventType = eventMapping.value(message, QEvent::None);
+    if (std::find(std::begin(downChanges),
+                  std::end(downChanges), changeType) < std::end(downChanges)) {
+        *eventType = nonClient ? QEvent::NonClientAreaMouseButtonPress :
+                                 QEvent::MouseButtonPress;
+    } else if (std::find(std::begin(upChanges),
+                         std::end(upChanges), changeType) < std::end(upChanges)) {
+        *eventType = nonClient ? QEvent::NonClientAreaMouseButtonRelease :
+                                 QEvent::MouseButtonRelease;
+    } else if (message == WM_POINTERWHEEL || message == WM_POINTERHWHEEL) {
+        *eventType = QEvent::Wheel;
+    } else {
+        *eventType = nonClient ? QEvent::NonClientAreaMouseMove :
+                                 QEvent::MouseMove;
+    }
+
+    *mouseButton = buttonMapping.value(changeType, Qt::NoButton);
 
     // Pointer messages lack a double click indicator. Check if this is the case here.
-    if (message == WM_POINTERDOWN) {
+    if (*eventType == QEvent::MouseButtonPress ||
+        *eventType == QEvent::NonClientAreaMouseButtonPress) {
         static LONG lastTime = 0;
         static Qt::MouseButton lastButton = Qt::NoButton;
+        static QEvent::Type lastEvent = QEvent::None;
         static QPoint lastPos;
         LONG messageTime = GetMessageTime();
         if (*mouseButton == lastButton
+            && *eventType == lastEvent
             && messageTime - lastTime < (LONG)GetDoubleClickTime()
             && qAbs(globalPos.x() - lastPos.x()) < GetSystemMetrics(SM_CXDOUBLECLK)
             && qAbs(globalPos.y() - lastPos.y()) < GetSystemMetrics(SM_CYDOUBLECLK)) {
-            *eventType = QEvent::MouseButtonDblClick;
+            *eventType = nonClient ? QEvent::NonClientAreaMouseButtonDblClick :
+                                     QEvent::MouseButtonDblClick;
         }
         lastTime = messageTime;
         lastButton = *mouseButton;
+        lastEvent = *eventType;
         lastPos = globalPos;
     }
 }

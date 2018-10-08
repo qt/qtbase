@@ -106,6 +106,7 @@ class Q_WIDGETS_EXPORT QGraphicsScene : public QObject
     Q_PROPERTY(bool sortCacheEnabled READ isSortCacheEnabled WRITE setSortCacheEnabled)
     Q_PROPERTY(bool stickyFocus READ stickyFocus WRITE setStickyFocus)
     Q_PROPERTY(qreal minimumRenderSize READ minimumRenderSize WRITE setMinimumRenderSize)
+    Q_PROPERTY(bool focusOnTouch READ focusOnTouch WRITE setFocusOnTouch)
 
 public:
     enum ItemIndexMethod {
@@ -252,6 +253,9 @@ public:
 
     qreal minimumRenderSize() const;
     void setMinimumRenderSize(qreal minSize);
+
+    bool focusOnTouch() const;
+    void setFocusOnTouch(bool enabled);
 
 public Q_SLOTS:
     void update(const QRectF &rect = QRectF());

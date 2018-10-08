@@ -353,7 +353,10 @@ while (i.hasNext()) {
 {
 //! [31]
 QString wildcard = QRegularExpression::wildcardToRegularExpression("*.jpeg");
-// wilcard == ".*\.jpeg"
+// Will match files with names like:
+//    foo.jpeg
+//    f_o_o.jpeg
+//    föö.jpeg
 //! [31]
 }
 

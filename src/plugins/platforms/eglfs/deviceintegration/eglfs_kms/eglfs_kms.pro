@@ -13,7 +13,6 @@ DEFINES += QT_EGL_NO_X11
 
 QMAKE_USE += gbm drm
 CONFIG += egl
-QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 
 SOURCES += $$PWD/qeglfskmsgbmmain.cpp \
            $$PWD/qeglfskmsgbmintegration.cpp \

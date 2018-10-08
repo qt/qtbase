@@ -140,11 +140,15 @@ QThreadData *QThreadData::current(bool createIfNecessary)
         threadData->isAdopted = true;
         threadData->threadId.store(reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId())));
 
+#ifndef Q_OS_WINRT
         if (!QCoreApplicationPrivate::theMainThread) {
             QCoreApplicationPrivate::theMainThread = threadData->thread.load();
-            // TODO: is there a way to reflect the branch's behavior using
-            // WinRT API?
         } else {
+#else
+        // for winrt the main thread is set explicitly in QCoreApplication's constructor as the
+        // native main thread (Xaml thread) is not Qt's main thread.
+        {
+#endif
             HANDLE realHandle = INVALID_HANDLE_VALUE;
             DuplicateHandle(GetCurrentProcess(),
                     GetCurrentThread(),
@@ -158,6 +162,33 @@ QThreadData *QThreadData::current(bool createIfNecessary)
     }
     return threadData;
 }
+
+#ifdef Q_OS_WINRT
+void QThreadData::setMainThread()
+{
+    Q_ASSERT(!QCoreApplicationPrivate::theMainThread);
+    qt_create_tls();
+    QThreadData *threadData = reinterpret_cast<QThreadData *>(TlsGetValue(qt_current_thread_data_tls_index));
+    if (!threadData) {
+        threadData = new QThreadData;
+        // This needs to be called prior to new AdoptedThread() to
+        // avoid recursion.
+        TlsSetValue(qt_current_thread_data_tls_index, threadData);
+        QT_TRY {
+            threadData->thread = new QAdoptedThread(threadData);
+        } QT_CATCH(...) {
+            TlsSetValue(qt_current_thread_data_tls_index, 0);
+            threadData->deref();
+            threadData = 0;
+            QT_RETHROW;
+        }
+        threadData->deref();
+        threadData->isAdopted = true;
+        threadData->threadId.store(reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId())));
+    }
+    QCoreApplicationPrivate::theMainThread = threadData->thread.load();
+}
+#endif
 
 void QAdoptedThread::init()
 {
