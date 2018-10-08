@@ -643,7 +643,7 @@ void QStatusBar::hideOrShow()
     }
 #endif
 
-    repaint(d->messageRect());
+    update(d->messageRect());
 }
 
 /*!
