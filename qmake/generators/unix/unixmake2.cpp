@@ -690,56 +690,20 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         QString destdir_r = project->first("DESTDIR").toQString();
         QString destdir_d = escapeDependencyPath(destdir_r);
         QString destdir = escapeFilePath(destdir_r);
-        allDeps = ' ' + destdir_d + depVar("TARGET")
-                  + varGlue("QMAKE_AR_SUBLIBS", ' ' + destdir_d, ' ' + destdir_d, "");
-        t << "staticlib: " << destdir_d << "$(TARGET)\n\n";
-        if(project->isEmpty("QMAKE_AR_SUBLIBS")) {
-            t << destdir_d << depVar("TARGET") << ": " << depVar("PRE_TARGETDEPS")
-              << " $(OBJECTS) $(OBJCOMP) " << depVar("POST_TARGETDEPS") << "\n\t";
-            if(!destdir.isEmpty())
-                t << mkdir_p_asstring(destdir, false) << "\n\t";
-            if (!project->isEmpty("QMAKE_PRE_LINK"))
-                t << var("QMAKE_PRE_LINK") << "\n\t";
-            t << "-$(DEL_FILE) " << destdir << "$(TARGET)\n\t"
-              << var("QMAKE_AR_CMD") << "\n";
-            if(!project->isEmpty("QMAKE_POST_LINK"))
-                t << "\t" << var("QMAKE_POST_LINK") << "\n";
-            if(!project->isEmpty("QMAKE_RANLIB"))
-                t << "\t$(RANLIB) " << destdir << "$(TARGET)\n";
-        } else {
-            int max_files = project->first("QMAKE_MAX_FILES_PER_AR").toInt();
-            ProStringList objs = project->values("OBJECTS") + project->values("OBJCOMP"),
-                        libs = project->values("QMAKE_AR_SUBLIBS");
-            libs.prepend("$(TARGET)");
-            for (ProStringList::Iterator libit = libs.begin(), objit = objs.begin();
-                 libit != libs.end(); ++libit) {
-                ProStringList build;
-                for(int cnt = 0; cnt < max_files && objit != objs.end(); ++objit, cnt++)
-                    build << (*objit);
-                QString ar;
-                ProString lib = destdir + escapeFilePath(*libit);
-                if((*libit) == "$(TARGET)") {
-                    t << destdir_d << depVar("TARGET") << ": " << depVar("PRE_TARGETDEPS")
-                      << ' ' << depVar("POST_TARGETDEPS") << valList(escapeDependencyPaths(build)) << "\n\t";
-                    ar = project->first("QMAKE_AR_CMD").toQString();
-                    ar.replace(QLatin1String("$(OBJECTS)"), escapeFilePaths(build).join(' '));
-                } else {
-                    t << destdir_d << escapeDependencyPath(*libit) << ": "
-                      << valList(escapeDependencyPaths(build)) << "\n\t";
-                    ar = "$(AR) " + lib + ' ' + escapeFilePaths(build).join(' ');
-                }
-                if(!destdir.isEmpty())
-                    t << mkdir_p_asstring(destdir, false) << "\n\t";
-                if (!project->isEmpty("QMAKE_PRE_LINK"))
-                    t << var("QMAKE_PRE_LINK") << "\n\t";
-                t << "-$(DEL_FILE) " << lib << "\n\t"
-                  << ar << "\n";
-                if(!project->isEmpty("QMAKE_POST_LINK"))
-                    t << "\t" << var("QMAKE_POST_LINK") << "\n";
-                if(!project->isEmpty("QMAKE_RANLIB"))
-                    t << "\t$(RANLIB) " << lib << "\n";
-            }
-        }
+        allDeps = ' ' + destdir_d + depVar("TARGET");
+        t << "staticlib: " << destdir_d << "$(TARGET)\n\n"
+          << destdir_d << depVar("TARGET") << ": " << depVar("PRE_TARGETDEPS")
+          << " $(OBJECTS) $(OBJCOMP) " << depVar("POST_TARGETDEPS") << "\n\t";
+        if (!destdir.isEmpty())
+            t << mkdir_p_asstring(destdir, false) << "\n\t";
+        if (!project->isEmpty("QMAKE_PRE_LINK"))
+            t << var("QMAKE_PRE_LINK") << "\n\t";
+        t << "-$(DEL_FILE) " << destdir << "$(TARGET)\n\t"
+          << var("QMAKE_AR_CMD") << "\n";
+        if (!project->isEmpty("QMAKE_POST_LINK"))
+            t << "\t" << var("QMAKE_POST_LINK") << "\n";
+        if (!project->isEmpty("QMAKE_RANLIB"))
+            t << "\t$(RANLIB) " << destdir << "$(TARGET)\n";
         t << endl << endl;
     }
 
