@@ -93,7 +93,13 @@ public:
     void reserve(int size);
     inline void squeeze()
     {
-        reallocData(d->size, d->size);
+        if (d->size < int(d->alloc)) {
+            if (!d->size) {
+                *this = QVector<T>();
+                return;
+            }
+            realloc(d->size);
+        }
         if (d->capacityReserved) {
             // capacity reserved in a read only memory would be useless
             // this checks avoid writing to such memory.
@@ -296,9 +302,10 @@ public:
     inline std::vector<T> toStdVector() const
     { return std::vector<T>(d->begin(), d->end()); }
 private:
-    // ### Qt6: remove const from int parameters
+    // ### Qt6: remove methods, they are unused
     void reallocData(const int size, const int alloc, QArrayData::AllocationOptions options = QArrayData::Default);
     void reallocData(const int sz) { reallocData(sz, d->alloc); }
+    void realloc(int alloc, QArrayData::AllocationOptions options = QArrayData::Default);
     void freeData(Data *d);
     void defaultConstruct(T *from, T *to);
     void copyConstruct(const T *srcFrom, const T *srcTo, T *dstFrom);
@@ -386,7 +393,7 @@ void QVector<T>::detach()
             d = Data::unsharableEmpty();
         else
 #endif
-            reallocData(d->size, int(d->alloc));
+            realloc(int(d->alloc));
     }
     Q_ASSERT(isDetached());
 }
@@ -395,7 +402,7 @@ template <typename T>
 void QVector<T>::reserve(int asize)
 {
     if (asize > int(d->alloc))
-        reallocData(d->size, asize);
+        realloc(asize);
     if (isDetached()
 #if !defined(QT_NO_UNSHARABLE_CONTAINERS)
             && d != Data::unsharableEmpty()
@@ -408,21 +415,26 @@ void QVector<T>::reserve(int asize)
 template <typename T>
 void QVector<T>::resize(int asize)
 {
-    int newAlloc;
-    const int oldAlloc = int(d->alloc);
-    QArrayData::AllocationOptions opt;
-
-    if (asize > oldAlloc) { // there is not enough space
-        newAlloc = asize;
-        opt = QArrayData::Grow;
-    } else {
-        newAlloc = oldAlloc;
+    if (asize == d->size)
+        return;
+    if (asize > int(d->alloc) || !isDetached()) { // there is not enough space
+        QArrayData::AllocationOptions opt = asize > int(d->alloc) ? QArrayData::Grow : QArrayData::Default;
+        realloc(qMax(int(d->alloc), asize), opt);
     }
-    reallocData(asize, newAlloc, opt);
+    if (asize < d->size)
+        destruct(begin() + asize, end());
+    else
+        defaultConstruct(end(), begin() + asize);
+    d->size = asize;
 }
 template <typename T>
 inline void QVector<T>::clear()
-{ resize(0); }
+{
+    if (!d->size)
+        return;
+    destruct(begin(), end());
+    d->size = 0;
+}
 template <typename T>
 inline const T &QVector<T>::at(int i) const
 { Q_ASSERT_X(i >= 0 && i < d->size, "QVector<T>::at", "index out of range");
@@ -653,6 +665,77 @@ void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::Allo
     Q_ASSERT(d->size == asize);
 }
 
+template<typename T>
+void QVector<T>::realloc(int aalloc, QArrayData::AllocationOptions options)
+{
+    Q_ASSERT(aalloc >= d->size);
+    Data *x = d;
+
+    const bool isShared = d->ref.isShared();
+    Q_ASSERT(aalloc != int(d->alloc) || isShared);
+
+    QT_TRY {
+        // allocate memory
+        x = Data::allocate(aalloc, options);
+        Q_CHECK_PTR(x);
+        // aalloc is bigger then 0 so it is not [un]sharedEmpty
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
+        Q_ASSERT(x->ref.isSharable() || options.testFlag(QArrayData::Unsharable));
+#endif
+        Q_ASSERT(!x->ref.isStatic());
+        x->size = d->size;
+
+        T *srcBegin = d->begin();
+        T *srcEnd = d->end();
+        T *dst = x->begin();
+
+        if (!QTypeInfoQuery<T>::isRelocatable || (isShared && QTypeInfo<T>::isComplex)) {
+            QT_TRY {
+                if (isShared || !std::is_nothrow_move_constructible<T>::value) {
+                    // we can not move the data, we need to copy construct it
+                    while (srcBegin != srcEnd)
+                        new (dst++) T(*srcBegin++);
+                } else {
+                    while (srcBegin != srcEnd)
+                        new (dst++) T(std::move(*srcBegin++));
+                }
+            } QT_CATCH (...) {
+                // destruct already copied objects
+                destruct(x->begin(), dst);
+                QT_RETHROW;
+            }
+        } else {
+            ::memcpy(static_cast<void *>(dst), static_cast<void *>(srcBegin), (srcEnd - srcBegin) * sizeof(T));
+            dst += srcEnd - srcBegin;
+        }
+
+    } QT_CATCH (...) {
+        Data::deallocate(x);
+        QT_RETHROW;
+    }
+    x->capacityReserved = d->capacityReserved;
+
+    Q_ASSERT(d != x);
+    if (!d->ref.deref()) {
+        if (!QTypeInfoQuery<T>::isRelocatable || !aalloc || (isShared && QTypeInfo<T>::isComplex)) {
+            // data was copy constructed, we need to call destructors
+            // or if !alloc we did nothing to the old 'd'.
+            freeData(d);
+        } else {
+            Data::deallocate(d);
+        }
+    }
+    d = x;
+
+    Q_ASSERT(d->data());
+    Q_ASSERT(uint(d->size) <= d->alloc);
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
+    Q_ASSERT(d != Data::unsharableEmpty());
+#endif
+    Q_ASSERT(d != Data::sharedNull());
+    Q_ASSERT(d->alloc >= uint(aalloc));
+}
+
 #if defined(Q_CC_MSVC)
 QT_WARNING_POP
 #endif
@@ -678,7 +761,7 @@ void QVector<T>::append(const T &t)
     if (!isDetached() || isTooSmall) {
         T copy(t);
         QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
-        reallocData(d->size, isTooSmall ? d->size + 1 : d->alloc, opt);
+        realloc(isTooSmall ? d->size + 1 : d->alloc, opt);
 
         if (QTypeInfo<T>::isComplex)
             new (d->end()) T(qMove(copy));
@@ -701,7 +784,7 @@ void QVector<T>::append(T &&t)
     const bool isTooSmall = uint(d->size + 1) > d->alloc;
     if (!isDetached() || isTooSmall) {
         QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
-        reallocData(d->size, isTooSmall ? d->size + 1 : d->alloc, opt);
+        realloc(isTooSmall ? d->size + 1 : d->alloc, opt);
     }
 
     new (d->end()) T(std::move(t));
@@ -716,13 +799,11 @@ void QVector<T>::removeLast()
     Q_ASSERT(!isEmpty());
     Q_ASSERT(d->alloc);
 
-    if (!d->ref.isShared()) {
-        --d->size;
-        if (QTypeInfo<T>::isComplex)
-            (d->data() + d->size)->~T();
-    } else {
-        reallocData(d->size - 1);
-    }
+    if (d->ref.isShared())
+        detach();
+    --d->size;
+    if (QTypeInfo<T>::isComplex)
+        (d->data() + d->size)->~T();
 }
 
 template <typename T>
@@ -734,7 +815,7 @@ typename QVector<T>::iterator QVector<T>::insert(iterator before, size_type n, c
     if (n != 0) {
         const T copy(t);
         if (!isDetached() || d->size + n > int(d->alloc))
-            reallocData(d->size, d->size + n, QArrayData::Grow);
+            realloc(d->size + n, QArrayData::Grow);
         if (!QTypeInfoQuery<T>::isRelocatable) {
             T *b = d->end();
             T *i = d->end() + n;
@@ -767,7 +848,7 @@ typename QVector<T>::iterator QVector<T>::insert(iterator before, T &&t)
 
     const auto offset = std::distance(d->begin(), before);
     if (!isDetached() || d->size + 1 > int(d->alloc))
-        reallocData(d->size, d->size + 1, QArrayData::Grow);
+        realloc(d->size + 1, QArrayData::Grow);
     if (!QTypeInfoQuery<T>::isRelocatable) {
         T *i = d->end();
         T *j = i + 1;
@@ -869,14 +950,14 @@ QVector<T> &QVector<T>::fill(const T &from, int asize)
 template <typename T>
 QVector<T> &QVector<T>::operator+=(const QVector &l)
 {
-    if (d == Data::sharedNull()) {
+    if (d->size == 0) {
         *this = l;
     } else {
         uint newSize = d->size + l.d->size;
         const bool isTooSmall = newSize > d->alloc;
         if (!isDetached() || isTooSmall) {
             QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
-            reallocData(d->size, isTooSmall ? newSize : d->alloc, opt);
+            realloc(isTooSmall ? newSize : d->alloc, opt);
         }
 
         if (d->alloc) {
@@ -959,7 +1040,7 @@ Q_OUTOFLINE_TEMPLATE QVector<T> QVector<T>::mid(int pos, int len) const
     }
 
     QVector<T> midResult;
-    midResult.reallocData(0, len);
+    midResult.realloc(len);
     T *srcFrom = d->begin() + pos;
     T *srcTo = d->begin() + pos + len;
     midResult.copyConstruct(srcFrom, srcTo, midResult.data());
