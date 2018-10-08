@@ -42,7 +42,6 @@
 
 #include <QtCore/qalgorithms.h>
 #include <QtCore/qiterator.h>
-#include <QtCore/qlist.h>
 #include <QtCore/qrefcount.h>
 #include <QtCore/qarraydata.h>
 #include <QtCore/qhashfunctions.h>
@@ -968,37 +967,6 @@ Q_OUTOFLINE_TEMPLATE QVector<T> QVector<T>::mid(int pos, int len) const
     return midResult;
 }
 
-template <typename T>
-Q_OUTOFLINE_TEMPLATE QList<T> QVector<T>::toList() const
-{
-    QList<T> result;
-    result.reserve(size());
-    for (int i = 0; i < size(); ++i)
-        result.append(at(i));
-    return result;
-}
-
-template <typename T>
-Q_OUTOFLINE_TEMPLATE QVector<T> QList<T>::toVector() const
-{
-    QVector<T> result(size());
-    for (int i = 0; i < size(); ++i)
-        result[i] = at(i);
-    return result;
-}
-
-template <typename T>
-QVector<T> QVector<T>::fromList(const QList<T> &list)
-{
-    return list.toVector();
-}
-
-template <typename T>
-QList<T> QList<T>::fromVector(const QVector<T> &vector)
-{
-    return vector.toList();
-}
-
 Q_DECLARE_SEQUENTIAL_ITERATOR(Vector)
 Q_DECLARE_MUTABLE_SEQUENTIAL_ITERATOR(Vector)
 
@@ -1046,20 +1014,12 @@ inline bool operator>=(const QVector<T> &lhs, const QVector<T> &rhs)
    ### QVector<QPointF> respectively.
 */
 
-#ifdef Q_CC_MSVC
+#if defined(Q_CC_MSVC) && !defined(QT_BUILD_CORE_LIB)
 QT_BEGIN_INCLUDE_NAMESPACE
 #include <QtCore/qpoint.h>
 QT_END_INCLUDE_NAMESPACE
-
-#ifndef Q_TEMPLATE_EXTERN
-#if defined(QT_BUILD_CORE_LIB)
-#define Q_TEMPLATE_EXTERN
-#else
-#define Q_TEMPLATE_EXTERN extern
-#endif
-#endif
-Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QVector<QPointF>;
-Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QVector<QPoint>;
+extern template class Q_CORE_EXPORT QVector<QPointF>;
+extern template class Q_CORE_EXPORT QVector<QPoint>;
 #endif
 
 QVector<uint> QStringView::toUcs4() const { return QtPrivate::convertToUcs4(*this); }

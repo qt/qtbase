@@ -48,6 +48,23 @@
 QT_BEGIN_NAMESPACE
 
 /*
+   ### Qt 5:
+   ### This needs to be removed for next releases of Qt. It is a workaround for vc++ because
+   ### Qt exports QPolygon and QPolygonF that inherit QVector<QPoint> and
+   ### QVector<QPointF> respectively.
+*/
+
+#if defined(Q_CC_MSVC) && defined(QT_BUILD_CORE_LIB)
+QT_BEGIN_INCLUDE_NAMESPACE
+#include <QtCore/qpoint.h>
+QT_END_INCLUDE_NAMESPACE
+
+template class Q_CORE_EXPORT QVector<QPointF>;
+template class Q_CORE_EXPORT QVector<QPoint>;
+#endif
+
+
+/*
     QList as an array-list combines the easy-of-use of a random
     access interface with fast list operations and the low memory
     management overhead of an array. Accessing elements by index,

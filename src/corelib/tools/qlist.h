@@ -45,6 +45,7 @@
 #include <QtCore/qrefcount.h>
 #include <QtCore/qarraydata.h>
 #include <QtCore/qhashfunctions.h>
+#include <QtCore/qvector.h>
 
 #include <iterator>
 #include <list>
@@ -1049,6 +1050,37 @@ inline int QList<T>::count_impl(const T &t, QListData::ArrayCompatibleLayout) co
     return int(std::count(reinterpret_cast<const T*>(p.begin()),
                           reinterpret_cast<const T*>(p.end()),
                           t));
+}
+
+template <typename T>
+Q_OUTOFLINE_TEMPLATE QVector<T> QList<T>::toVector() const
+{
+    QVector<T> result(size());
+    for (int i = 0; i < size(); ++i)
+        result[i] = at(i);
+    return result;
+}
+
+template <typename T>
+QList<T> QList<T>::fromVector(const QVector<T> &vector)
+{
+    return vector.toList();
+}
+
+template <typename T>
+Q_OUTOFLINE_TEMPLATE QList<T> QVector<T>::toList() const
+{
+    QList<T> result;
+    result.reserve(size());
+    for (int i = 0; i < size(); ++i)
+        result.append(at(i));
+    return result;
+}
+
+template <typename T>
+QVector<T> QVector<T>::fromList(const QList<T> &list)
+{
+    return list.toVector();
 }
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(List)
