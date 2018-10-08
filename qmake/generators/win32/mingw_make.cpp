@@ -209,7 +209,7 @@ void MingwMakefileGenerator::init()
 
     processVars();
 
-    project->values("QMAKE_LIBS") += project->values("RES_FILE");
+    project->values("LIBS") += project->values("RES_FILE");
 
     if (project->isActiveConfig("dll")) {
         QString destDir = "";
@@ -285,6 +285,8 @@ void MingwMakefileGenerator::writeLibsPart(QTextStream &t)
         t << "LINKER      =        " << var("QMAKE_LINK") << endl;
         t << "LFLAGS        =        " << var("QMAKE_LFLAGS") << endl;
         t << "LIBS        =        "
+          << fixLibFlags("LIBS").join(' ') << ' '
+          << fixLibFlags("LIBS_PRIVATE").join(' ') << ' '
           << fixLibFlags("QMAKE_LIBS").join(' ') << ' '
           << fixLibFlags("QMAKE_LIBS_PRIVATE").join(' ') << endl;
     }

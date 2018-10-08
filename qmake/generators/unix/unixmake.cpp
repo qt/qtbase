@@ -80,8 +80,6 @@ UnixMakefileGenerator::init()
     }
 
     project->values("QMAKE_ORIG_DESTDIR") = project->values("DESTDIR");
-    project->values("QMAKE_LIBS") += project->values("LIBS");
-    project->values("QMAKE_LIBS_PRIVATE") += project->values("LIBS_PRIVATE");
     if((!project->isEmpty("QMAKE_LIB_FLAG") && !project->isActiveConfig("staticlib")) ||
        (project->isActiveConfig("qt") &&  project->isActiveConfig("plugin"))) {
         if(configs.indexOf("dll") == -1) configs.append("dll");
@@ -118,7 +116,7 @@ UnixMakefileGenerator::init()
         }
         ldadd += project->values("QMAKE_FRAMEWORKPATH_FLAGS");
     }
-    ProStringList &qmklibs = project->values("QMAKE_LIBS");
+    ProStringList &qmklibs = project->values("LIBS");
     qmklibs = ldadd + qmklibs;
     if (!project->isEmpty("QMAKE_RPATHDIR") && !project->isEmpty("QMAKE_LFLAGS_RPATH")) {
         const ProStringList &rpathdirs = project->values("QMAKE_RPATHDIR");
@@ -396,7 +394,8 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
         libdirs.append(QMakeLocalFileName(dlib.toQString()));
     frameworkdirs.append(QMakeLocalFileName("/System/Library/Frameworks"));
     frameworkdirs.append(QMakeLocalFileName("/Library/Frameworks"));
-    static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", nullptr };
+    static const char * const lflags[] = { "LIBS", "LIBS_PRIVATE",
+                                           "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", nullptr };
     for (int i = 0; lflags[i]; i++) {
         ProStringList &l = project->values(lflags[i]);
         for (ProStringList::Iterator it = l.begin(); it != l.end(); ) {

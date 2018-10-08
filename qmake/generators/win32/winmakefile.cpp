@@ -84,7 +84,8 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
     if (impexts.isEmpty())
         impexts = project->values("QMAKE_EXTENSION_STATICLIB");
     QList<QMakeLocalFileName> dirs;
-  static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", nullptr };
+  static const char * const lflags[] = { "LIBS", "LIBS_PRIVATE",
+                                         "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", nullptr };
   for (int i = 0; lflags[i]; i++) {
     ProStringList &l = project->values(lflags[i]);
     for (ProStringList::Iterator it = l.begin(); it != l.end();) {
@@ -225,8 +226,8 @@ void Win32MakefileGenerator::processVars()
             libs << QLatin1String("-L") + lib;
         }
     }
-    project->values("QMAKE_LIBS") += libs + project->values("LIBS");
-    project->values("QMAKE_LIBS_PRIVATE") += project->values("LIBS_PRIVATE");
+    ProStringList &qmklibs = project->values("LIBS");
+    qmklibs = libs + qmklibs;
 
     if (project->values("TEMPLATE").contains("app")) {
         project->values("QMAKE_CFLAGS") += project->values("QMAKE_CFLAGS_APP");
@@ -651,7 +652,9 @@ void Win32MakefileGenerator::writeLibsPart(QTextStream &t)
     } else {
         t << "LINKER        = " << var("QMAKE_LINK") << endl;
         t << "LFLAGS        = " << var("QMAKE_LFLAGS") << endl;
-        t << "LIBS          = " << fixLibFlags("QMAKE_LIBS").join(' ') << ' '
+        t << "LIBS          = " << fixLibFlags("LIBS").join(' ') << ' '
+                                << fixLibFlags("LIBS_PRIVATE").join(' ') << ' '
+                                << fixLibFlags("QMAKE_LIBS").join(' ') << ' '
                                 << fixLibFlags("QMAKE_LIBS_PRIVATE").join(' ') << endl;
     }
 }

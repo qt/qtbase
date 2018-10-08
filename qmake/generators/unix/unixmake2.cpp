@@ -213,7 +213,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     if(!project->isActiveConfig("staticlib")) {
         t << "LINK          = " << var("QMAKE_LINK") << endl;
         t << "LFLAGS        = " << var("QMAKE_LFLAGS") << endl;
-        t << "LIBS          = $(SUBLIBS) " << fixLibFlags("QMAKE_LIBS").join(' ') << ' '
+        t << "LIBS          = $(SUBLIBS) " << fixLibFlags("LIBS").join(' ') << ' '
+                                           << fixLibFlags("LIBS_PRIVATE").join(' ') << ' '
+                                           << fixLibFlags("QMAKE_LIBS").join(' ') << ' '
                                            << fixLibFlags("QMAKE_LIBS_PRIVATE").join(' ') << endl;
     }
 
@@ -1479,7 +1481,7 @@ UnixMakefileGenerator::writeLibtoolFile()
 
     t << "# Libraries that this one depends upon.\n";
     ProStringList libs;
-    libs << "QMAKE_LIBS";
+    libs << "LIBS" << "QMAKE_LIBS";
     t << "dependency_libs='";
     for (ProStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it)
         t << fixLibFlags((*it).toKey()).join(' ') << ' ';

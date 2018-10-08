@@ -383,7 +383,7 @@ void NmakeMakefileGenerator::init()
 
     processVars();
 
-    project->values("QMAKE_LIBS") += project->values("RES_FILE");
+    project->values("LIBS") += project->values("RES_FILE");
 
     if (!project->values("DEF_FILE").isEmpty()) {
         QString defFileName = fileFixify(project->first("DEF_FILE").toQString());

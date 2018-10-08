@@ -907,9 +907,9 @@
 
     Platform-specific variables follow the naming pattern of the
     variables which they extend or modify, but include the name of the relevant
-    platform in their name. For example, \c QMAKE_LIBS can be used to specify a list
-    of libraries that a project needs to link against, and \c QMAKE_LIBS_X11 can be
-    used to extend or override this list.
+    platform in their name. For example, a makespec may use \c QMAKE_LIBS
+    to specify a list of libraries that each project needs to link against,
+    and \c QMAKE_LIBS_X11 would be used to extend this list.
 
     \target CONFIG
     \section1 CONFIG
@@ -2098,9 +2098,11 @@
 
     \section1 QMAKE_LIBS
 
-    Specifies all project libraries. The value of this variable
-    is typically handled by qmake or
+    Specifies additional libraries each project needs to link against.
+    The value of this variable is typically handled by qmake or
     \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    To specify libraries in a project file, use \l LIBS instead.
 
     \section1 QMAKE_LIBS_EGL
 
