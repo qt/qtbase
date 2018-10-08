@@ -246,12 +246,6 @@ public:
         { QSet<T> result = *this; result -= other; return result; }
 
     QList<T> values() const;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    Q_DECL_DEPRECATED_X("Use values() instead.")
-    QList<T> toList() const { return values(); }
-    Q_DECL_DEPRECATED_X("Use QSet<T>(list.begin(), list.end()) instead.")
-    static QSet<T> fromList(const QList<T> &list);
-#endif
 
 private:
     Hash q_hash;
@@ -375,30 +369,6 @@ Q_OUTOFLINE_TEMPLATE QList<T> QSet<T>::values() const
     }
     return result;
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-template <typename T>
-Q_OUTOFLINE_TEMPLATE QSet<T> QList<T>::toSet() const
-{
-    QSet<T> result;
-    result.reserve(size());
-    for (int i = 0; i < size(); ++i)
-        result.insert(at(i));
-    return result;
-}
-
-template <typename T>
-QSet<T> QSet<T>::fromList(const QList<T> &list)
-{
-    return list.toSet();
-}
-
-template <typename T>
-QList<T> QList<T>::fromSet(const QSet<T> &set)
-{
-    return set.toList();
-}
-#endif
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(Set)
 
