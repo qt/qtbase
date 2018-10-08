@@ -254,7 +254,8 @@ private:
 
     bool isValidIterator(const const_iterator &i) const
     {
-        return (i <= constEnd()) && (constBegin() <= i);
+        const std::less<const T*> less = {};
+        return !less(cend(), i) && !less(i, cbegin());
     }
 };
 

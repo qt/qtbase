@@ -1341,12 +1341,33 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
 
     const QDate date(year, month, day);
     const QTime time(hour, minute, second, msec);
-    return StateNode(
+    const QDateTime when =
 #if QT_CONFIG(timezone)
-                     tspec == Qt::TimeZone ? QDateTime(date, time, timeZone) :
+            tspec == Qt::TimeZone ? QDateTime(date, time, timeZone) :
 #endif
-                     QDateTime(date, time, tspec, zoneOffset),
-                     state, padding, conflicts);
+            QDateTime(date, time, tspec, zoneOffset);
+
+    // If hour wasn't specified, check the default we're using exists on the
+    // given date (which might be a spring-forward, skipping an hour).
+    if (parserType == QVariant::DateTime && !(isSet & HourSectionMask) && !when.isValid()) {
+        qint64 msecs = when.toMSecsSinceEpoch();
+        // Fortunately, that gets a useful answer ...
+        const QDateTime replace =
+#if QT_CONFIG(timezone)
+            tspec == Qt::TimeZone
+            ? QDateTime::fromMSecsSinceEpoch(msecs, timeZone) :
+#endif
+            QDateTime::fromMSecsSinceEpoch(msecs, tspec, zoneOffset);
+        const QTime tick = replace.time();
+        if (replace.date() == date
+            && (!(isSet & MinuteSection) || tick.minute() == minute)
+            && (!(isSet & SecondSection) || tick.second() == second)
+            && (!(isSet & MSecSection)   || tick.msec() == msec)) {
+            return StateNode(replace, state, padding, conflicts);
+        }
+    }
+
+    return StateNode(when, state, padding, conflicts);
 }
 
 /*!

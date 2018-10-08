@@ -975,14 +975,12 @@
             \li
     \row    \li \c meta
             \li Meta-information
-            \li If a text encoding is specified using the \c{meta} tag,
-               it is picked up by Qt::codecForHtml().
-               Likewise, if an encoding is specified to
-               QTextDocument::toHtml(), the encoding is stored using
-               a \c meta tag, for example:
-
-    \snippet code/doc_src_richtext.qdoc 7
-
+            \li If a text encoding is specified using the \c{meta}
+               tag, it is picked up by Qt::codecForHtml().  Likewise,
+               if an encoding is specified to QTextDocument::toHtml(),
+               the encoding is stored using a \c meta tag, for
+               example:
+               \c {<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />}
     \row    \li \c li
             \li List item
             \li

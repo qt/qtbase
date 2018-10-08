@@ -2390,6 +2390,14 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("data16") << QString("2005-06-28T07:57:30.001Z")
                             << QString("yyyy-MM-ddThh:mm:ss.zt")
                             << QDateTime(QDate(2005, 06, 28), QTime(07, 57, 30, 1), Qt::UTC);
+#if QT_CONFIG(timezone)
+    QTimeZone southBrazil("America/Sao_Paulo");
+    if (southBrazil.isValid()) {
+        QTest::newRow("spring-forward-midnight")
+            << QString("2008-10-19 23:45.678 America/Sao_Paulo") << QString("yyyy-MM-dd mm:ss.zzz t")
+            << QDateTime(QDate(2008, 10, 19), QTime(1, 23, 45, 678), southBrazil);
+    }
+#endif
     QTest::newRow("late") << QString("9999-12-31T23:59:59.999Z")
                           << QString("yyyy-MM-ddThh:mm:ss.zZ")
                           << QDateTime(QDate(9999, 12, 31), QTime(23, 59, 59, 999));

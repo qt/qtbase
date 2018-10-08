@@ -298,7 +298,8 @@ QCborValue QCborArray::at(qsizetype i) const
     \fn QCborValueRef QCborArray::operator[](qsizetype i)
 
     Returns a reference to the QCborValue element at position \a i in the
-    array. The array must have at least \a i elements.
+    array.  Indices beyond the end of the array will grow the array, filling
+    with undefined entries, until it has an entry at the specified index.
 
     QCborValueRef has the exact same API as \l QCborValue, with one important
     difference: if you assign new values to it, this map will be updated with
@@ -312,27 +313,34 @@ QCborValue QCborArray::at(qsizetype i) const
     \fn void QCborArray::insert(qsizetype i, const QCborValue &value)
     \fn void QCborArray::insert(qsizetype i, QCborValue &&value)
 
-    Inserts \a value into the array at position \a i in this array. The array
-    must have at least \a i elements before the insertion.
+    Inserts \a value into the array at position \a i in this array. If \a i is
+    -1, the entry is appended to the array. Pads the array with invalid entries
+    if \a i is greater than the prior size of the array.
 
     \sa at(), operator[](), first(), last(), prepend(), append(),
         removeAt(), takeAt(), extract()
  */
 void QCborArray::insert(qsizetype i, const QCborValue &value)
 {
-    Q_ASSERT(size_t(i) <= size_t(size()) || i == -1);
-    if (i < 0)
+    if (i < 0) {
+        Q_ASSERT(i == -1);
         i = size();
-    detach(qMax(i + 1, size()));
+        detach(i + 1);
+    } else {
+        d = QCborContainerPrivate::grow(d.data(), i); // detaches
+    }
     d->insertAt(i, value);
 }
 
 void QCborArray::insert(qsizetype i, QCborValue &&value)
 {
-    Q_ASSERT(size_t(i) <= size_t(size()) || i == -1);
-    if (i < 0)
+    if (i < 0) {
+        Q_ASSERT(i == -1);
         i = size();
-    detach(qMax(i + 1, size()));
+        detach(i + 1);
+    } else {
+        d = QCborContainerPrivate::grow(d.data(), i); // detaches
+    }
     d->insertAt(i, value, QCborContainerPrivate::MoveContainer);
     QCborContainerPrivate::resetValue(value);
 }

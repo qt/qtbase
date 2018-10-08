@@ -413,7 +413,8 @@ private:
 
     bool isValidIterator(const iterator &i) const Q_DECL_NOTHROW
     {
-        return (constBegin().i <= i.i) && (i.i <= constEnd().i);
+        const std::less<const Node *> less = {};
+        return !less(i.i, cbegin().i) && !less(cend().i, i.i);
     }
 
 private:

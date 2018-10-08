@@ -186,10 +186,15 @@ public:
     QCborValue at(qsizetype i) const;
     QCborValue first() const { return at(0); }
     QCborValue last() const { return at(size() - 1); }
-    QCborValue operator[](qsizetype i) const { return at(i); }
+    const QCborValue operator[](qsizetype i) const { return at(i); }
     QCborValueRef first() { Q_ASSERT(!isEmpty()); return begin()[0]; }
     QCborValueRef last() { Q_ASSERT(!isEmpty()); return begin()[size() - 1]; }
-    QCborValueRef operator[](qsizetype i) { Q_ASSERT(i < size()); return begin()[i]; }
+    QCborValueRef operator[](qsizetype i)
+    {
+        if (i >= size())
+            insert(i, QCborValue());
+        return begin()[i];
+    }
 
     void insert(qsizetype i, const QCborValue &value);
     void insert(qsizetype i, QCborValue &&value);

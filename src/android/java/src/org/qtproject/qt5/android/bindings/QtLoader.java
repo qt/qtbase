@@ -46,6 +46,7 @@ import android.content.ServiceConnection;
 import android.content.pm.ComponentInfo;
 import android.content.pm.PackageInfo;
 import android.content.res.AssetManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -651,13 +652,24 @@ public abstract class QtLoader {
                 String themePath = m_context.getApplicationInfo().dataDir + "/qt-reserved-files/android-style/";
                 String stylePath = themePath + m_displayDensity + "/";
 
-                String extractOption = "full";
+                String extractOption = "default";
                 if (m_contextInfo.metaData.containsKey("android.app.extract_android_style")) {
                     extractOption = m_contextInfo.metaData.getString("android.app.extract_android_style");
-                    if (!extractOption.equals("full") && !extractOption.equals("minimal") && !extractOption.equals("none")) {
-                        Log.e(QtApplication.QtTAG, "Invalid extract_android_style option \"" + extractOption + "\", defaulting to full");
-                        extractOption = "full";
+                    if (!extractOption.equals("default") && !extractOption.equals("full") && !extractOption.equals("minimal") && !extractOption.equals("none")) {
+                        Log.e(QtApplication.QtTAG, "Invalid extract_android_style option \"" + extractOption + "\", defaulting to \"default\"");
+                        extractOption = "default";
                    }
+                }
+
+                // QTBUG-69810: The extraction code will trigger compatibility warnings on Android SDK version >= 28
+                // when the target SDK version is set to something lower then 28, so default to "none" and issue a warning
+                // if that is the case.
+                if (extractOption.equals("default")) {
+                    final int targetSdkVersion = m_context.getApplicationInfo().targetSdkVersion;
+                    if (targetSdkVersion < 28 && Build.VERSION.SDK_INT >= 28) {
+                        Log.e(QtApplication.QtTAG, "extract_android_style option set to \"none\" when targetSdkVersion is less then 28");
+                        extractOption = "none";
+                    }
                 }
 
                 if (!(new File(stylePath)).exists() && !extractOption.equals("none")) {

@@ -859,6 +859,23 @@ QCborContainerPrivate *QCborContainerPrivate::detach(QCborContainerPrivate *d, q
     return d;
 }
 
+/*!
+  Prepare for an insertion at position \a index
+
+  Detaches and ensures there are at least index entries in the array, padding
+  with Undefined as needed.
+*/
+QCborContainerPrivate *QCborContainerPrivate::grow(QCborContainerPrivate *d, qsizetype index)
+{
+    Q_ASSERT(index >= 0);
+    d = detach(d, index + 1);
+    Q_ASSERT(d);
+    int j = d->elements.size();
+    while (j < index)
+        d->append(Undefined());
+    return d;
+}
+
 // Copies or moves \a value into element at position \a e. If \a disp is
 // CopyContainer, then this function increases the reference count of the
 // container, but otherwise leaves it unmodified. If \a disp is MoveContainer,
