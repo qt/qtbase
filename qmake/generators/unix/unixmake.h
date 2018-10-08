@@ -66,6 +66,7 @@ protected:
 
 private:
     void init2();
+    ProStringList libdirToFlags(const ProKey &key);
 };
 
 inline UnixMakefileGenerator::~UnixMakefileGenerator()

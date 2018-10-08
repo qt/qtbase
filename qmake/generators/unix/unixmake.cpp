@@ -37,6 +37,17 @@
 
 QT_BEGIN_NAMESPACE
 
+ProStringList UnixMakefileGenerator::libdirToFlags(const ProKey &key)
+{
+    ProStringList results;
+    for (const auto &libdir : qAsConst(project->values(key))) {
+        if (!project->isEmpty("QMAKE_LFLAGS_RPATH") && project->isActiveConfig("rpath_libdirs"))
+            project->values("QMAKE_LFLAGS") += var("QMAKE_LFLAGS_RPATH") + libdir;
+        results.append("-L" + escapeFilePath(libdir));
+    }
+    return results;
+}
+
 void
 UnixMakefileGenerator::init()
 {
@@ -93,21 +104,13 @@ UnixMakefileGenerator::init()
             project->isActiveConfig("dll"))
         project->values("QMAKE_LFLAGS") += project->values("QMAKE_LFLAGS_PREBIND");
     project->values("QMAKE_INCDIR") += project->values("QMAKE_INCDIR_POST");
-    project->values("QMAKE_LIBDIR") += project->values("QMAKE_LIBDIR_POST");
     project->values("QMAKE_RPATHDIR") += project->values("QMAKE_RPATHDIR_POST");
     project->values("QMAKE_RPATHLINKDIR") += project->values("QMAKE_RPATHLINKDIR_POST");
     if(!project->isEmpty("QMAKE_INCDIR"))
         project->values("INCLUDEPATH") += project->values("QMAKE_INCDIR");
-    ProStringList ldadd;
-    if(!project->isEmpty("QMAKE_LIBDIR")) {
-        const ProStringList &libdirs = project->values("QMAKE_LIBDIR");
-        for(int i = 0; i < libdirs.size(); ++i) {
-            if(!project->isEmpty("QMAKE_LFLAGS_RPATH") && project->isActiveConfig("rpath_libdirs"))
-                project->values("QMAKE_LFLAGS") += var("QMAKE_LFLAGS_RPATH") + libdirs[i];
-            project->values("QMAKE_LIBDIR_FLAGS") += "-L" + escapeFilePath(libdirs[i]);
-        }
-    }
-    ldadd += project->values("QMAKE_LIBDIR_FLAGS");
+    // The order of the next two lines is relevant due to side effect on QMAKE_LFLAGS.
+    ProStringList ldadd = project->values("QMAKE_LIBDIR_FLAGS") + libdirToFlags("QMAKE_LIBDIR");
+    ProStringList ldaddpost = libdirToFlags("QMAKE_LIBDIR_POST");
     if (project->isActiveConfig("mac")) {
         if (!project->isEmpty("QMAKE_FRAMEWORKPATH")) {
             const ProStringList &fwdirs = project->values("QMAKE_FRAMEWORKPATH");
@@ -118,6 +121,8 @@ UnixMakefileGenerator::init()
     }
     ProStringList &qmklibs = project->values("LIBS");
     qmklibs = ldadd + qmklibs;
+    ProStringList &qmklibspost = project->values("QMAKE_LIBS");
+    qmklibspost = ldaddpost + qmklibspost;
     if (!project->isEmpty("QMAKE_RPATHDIR") && !project->isEmpty("QMAKE_LFLAGS_RPATH")) {
         const ProStringList &rpathdirs = project->values("QMAKE_RPATHDIR");
         for (int i = 0; i < rpathdirs.size(); ++i) {

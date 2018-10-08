@@ -2061,7 +2061,19 @@
 
     \section1 QMAKE_LIBDIR
 
-    Specifies a list of system library paths.
+    Specifies a list of library search paths for all projects.
+    The value of this variable is typically handled by qmake
+    or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    To specify additional search paths in project files,
+    use \l LIBS like that, instead:
+    \badcode
+        LIBS += -L/path/to/libraries
+    \endcode
+
+    \section1 QMAKE_LIBDIR_POST
+
+    Specifies a list of system library search paths for all projects.
     The value of this variable is typically handled by qmake
     or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
