@@ -1479,10 +1479,7 @@ UnixMakefileGenerator::writeLibtoolFile()
 
     t << "# Libraries that this one depends upon.\n";
     ProStringList libs;
-    if(!project->isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
-        libs = project->values("QMAKE_INTERNAL_PRL_LIBS");
-    else
-        libs << "QMAKE_LIBS"; //obvious one
+    libs << "QMAKE_LIBS";
     t << "dependency_libs='";
     for (ProStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it)
         t << fixLibFlags((*it).toKey()).join(' ') << ' ';

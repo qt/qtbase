@@ -458,8 +458,6 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
 
                     // Add all unknown libs to the deps
                     QStringList where = QStringList() << "QMAKE_LIBS" << "QMAKE_LIBS_PRIVATE";
-                    if (!tmp_proj.isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
-                    where = tmp_proj.values("QMAKE_INTERNAL_PRL_LIBS").toQStringList();
                     for (QStringList::ConstIterator wit = where.begin();
                         wit != where.end(); ++wit) {
                             const ProStringList &l = tmp_proj.values(ProKey(*wit));
