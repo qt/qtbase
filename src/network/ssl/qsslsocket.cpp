@@ -388,6 +388,9 @@ QSslSocket::~QSslSocket()
 */
 void QSslSocket::resume()
 {
+    Q_D(QSslSocket);
+    if (!d->paused)
+        return;
     // continuing might emit signals, rather do this through the event loop
     QMetaObject::invokeMethod(this, "_q_resumeImplementation", Qt::QueuedConnection);
 }
@@ -2573,6 +2576,7 @@ void QSslSocketPrivate::_q_resumeImplementation()
         if (verifyErrorsHaveBeenIgnored()) {
             continueHandshake();
         } else {
+            Q_ASSERT(!sslErrors.isEmpty());
             setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError, sslErrors.constFirst().errorString());
             plainSocket->disconnectFromHost();
             return;
