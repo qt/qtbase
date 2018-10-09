@@ -57,6 +57,10 @@
 #include "QtCore/qiodevice.h"
 #include "QtCore/qstack.h"
 #include "QtCore/qstringlist.h"
+
+#include <QtCore/qvariant.h>
+#include "qsettings.h"
+
 #ifndef QT_NO_QOBJECT
 #include "private/qobject_p.h"
 #endif
@@ -253,6 +257,10 @@ protected:
     mutable QSettings::Status status;
 };
 
+#ifdef Q_OS_WASM
+class QWasmSettingsPrivate;
+#endif
+
 class QConfFileSettingsPrivate : public QSettingsPrivate
 {
 public:
@@ -281,7 +289,7 @@ public:
 
 private:
     void initFormat();
-    void initAccess();
+    virtual void initAccess();
     void syncConfFile(QConfFile *confFile);
     bool writeIniFile(QIODevice &device, const ParsedSettingsMap &map);
 #ifdef Q_OS_MAC
@@ -297,6 +305,9 @@ private:
     QString extension;
     Qt::CaseSensitivity caseSensitivity;
     int nextPosition;
+#ifdef Q_OS_WASM
+    friend class QWasmSettingsPrivate;
+#endif
 };
 
 QT_END_NAMESPACE
