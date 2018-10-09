@@ -131,22 +131,25 @@ QString MingwMakefileGenerator::installRoot() const
     return QStringLiteral("$(INSTALL_ROOT:@msyshack@%=%)");
 }
 
-void createLdObjectScriptFile(const QString &fileName, const ProStringList &objList)
+void createLdResponseFile(const QString &fileName, const ProStringList &objList)
 {
     QString filePath = Option::output_dir + QDir::separator() + fileName;
     QFile file(filePath);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream t(&file);
-        t << "INPUT(\n";
         for (ProStringList::ConstIterator it = objList.constBegin(); it != objList.constEnd(); ++it) {
             QString path = (*it).toQString();
-            // ### quoting?
-            if (QDir::isRelativePath(path))
-                t << "./" << path << endl;
-            else
-                t << path << endl;
+            // In response files, whitespace and special characters are
+            // escaped with a backslash; backslashes themselves can either
+            // be escaped into double backslashes, or, as this is a list of
+            // path names, converted to forward slashes.
+            path.replace(QLatin1Char('\\'), QLatin1String("/"))
+                .replace(QLatin1Char(' '), QLatin1String("\\ "))
+                .replace(QLatin1Char('\t'), QLatin1String("\\\t"))
+                .replace(QLatin1Char('"'), QLatin1String("\\\""))
+                .replace(QLatin1Char('\''), QLatin1String("\\'"));
+            t << path << endl;
         }
-        t << ");\n";
         t.flush();
         file.close();
     }
@@ -307,14 +310,13 @@ void MingwMakefileGenerator::writeObjectsPart(QTextStream &t)
         createArObjectScriptFile(ar_script_file, var("DEST_TARGET"), project->values("OBJECTS"));
         objectsLinkLine = ar_cmd + " -M < " + escapeFilePath(ar_script_file);
     } else {
-        QString ld_script_file = var("QMAKE_LINK_OBJECT_SCRIPT") + "." + var("TARGET");
-        if (!var("BUILD_NAME").isEmpty()) {
-            ld_script_file += "." + var("BUILD_NAME");
-        }
+        QString ld_response_file = var("QMAKE_LINK_OBJECT_SCRIPT") + "." + var("TARGET");
+        if (!var("BUILD_NAME").isEmpty())
+            ld_response_file += "." + var("BUILD_NAME");
         if (!var("MAKEFILE").isEmpty())
-            ld_script_file += "." + var("MAKEFILE");
-        createLdObjectScriptFile(ld_script_file, project->values("OBJECTS"));
-        objectsLinkLine = escapeFilePath(ld_script_file);
+            ld_response_file += "." + var("MAKEFILE");
+        createLdResponseFile(ld_response_file, project->values("OBJECTS"));
+        objectsLinkLine = "@" + escapeFilePath(ld_response_file);
     }
     Win32MakefileGenerator::writeObjectsPart(t);
 }
