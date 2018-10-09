@@ -136,6 +136,7 @@ qtConfig(settings) {
     } else: darwin:!nacl {
         SOURCES += io/qsettings_mac.cpp
     }
+    wasm : SOURCES += io/qsettings_wasm.cpp
 }
 
 win32 {

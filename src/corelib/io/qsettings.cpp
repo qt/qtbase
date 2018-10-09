@@ -76,10 +76,6 @@
 #  include <ioLib.h>
 #endif
 
-#ifdef Q_OS_WASM
-#include <emscripten.h>
-#endif
-
 #include <algorithm>
 #include <stdlib.h>
 
@@ -295,7 +291,7 @@ after_loop:
 
 // see also qsettings_win.cpp, qsettings_winrt.cpp and qsettings_mac.cpp
 
-#if !defined(Q_OS_WIN) && !defined(Q_OS_MAC)
+#if !defined(Q_OS_WIN) && !defined(Q_OS_MAC) && !defined(Q_OS_WASM)
 QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format, QSettings::Scope scope,
                                            const QString &organization, const QString &application)
 {
@@ -1185,7 +1181,9 @@ QConfFileSettingsPrivate::QConfFileSettingsPrivate(QSettings::Format format,
         confFiles.append(QConfFile::fromName(systemPath.path + orgFile, false));
     }
 
+#ifndef Q_OS_WASM // wasm needs to delay access until after file sync
     initAccess();
+#endif
 }
 
 QConfFileSettingsPrivate::QConfFileSettingsPrivate(const QString &fileName,
@@ -1548,13 +1546,6 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
                     perms |= QFile::ReadGroup | QFile::ReadOther;
                 QFile(confFile->name).setPermissions(perms);
             }
-#ifdef Q_OS_WASM
-        EM_ASM(
-            // Sync sandbox filesystem to persistent database filesystem. See QTBUG-70002
-            FS.syncfs(false, function(err) {
-            });
-        );
-#endif
         } else {
             setStatus(QSettings::AccessError);
         }
