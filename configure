@@ -771,7 +771,7 @@ setBootstrapVariable()
         echo "RM_RF = rm -rf" >> "$mkfile"
 
         case `basename "$PLATFORM"` in
-        win32-g++*)
+        win32-*g++*)
             cat "$in_mkfile.win32" >> "$mkfile"
             ;;
         *)
