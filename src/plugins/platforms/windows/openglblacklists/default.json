@@ -144,9 +144,8 @@
         },
         {
            "id": 12,
-           "description": "Intel HD Graphics 620 crash in conjunction with shader caches (QTBUG-64697)",
+           "description": "Intel HD Graphics crash in conjunction with shader caches (QTBUG-64697) - disable for all Intel GPUs",
            "vendor_id": "0x8086",
-           "device_id": [ "0x5916" ],
            "os": {
                "type": "win"
            },
