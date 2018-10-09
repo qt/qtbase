@@ -3252,6 +3252,34 @@ void *qMemSet(void *dest, int c, size_t n) { return memset(dest, c, n); }
 // add thread-safety for the Qt wrappers.
 static QBasicMutex environmentMutex;
 
+/*
+  Wraps tzset(), which accesses the environment, so should only be called while
+  we hold the lock on the environment mutex.
+*/
+void qTzSet()
+{
+    QMutexLocker locker(&environmentMutex);
+#if defined(Q_OS_WIN)
+    _tzset();
+#else
+    tzset();
+#endif // Q_OS_WIN
+}
+
+/*
+  Wrap mktime(), which is specified to behave as if it called tzset(), hence
+  shares its implicit environment-dependence.
+*/
+time_t qMkTime(struct tm *when)
+{
+    QMutexLocker locker(&environmentMutex);
+    return mktime(when);
+}
+
+// Also specified to behave as if they call tzset():
+// localtime() -- but not localtime_r(), which we use when threaded
+// strftime() -- not used (except in tests)
+
 /*!
     \relates <QtGlobal>
     \threadsafe

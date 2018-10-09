@@ -2171,16 +2171,6 @@ int QTime::elapsed() const
 typedef QDateTimePrivate::QDateTimeShortData ShortData;
 typedef QDateTimePrivate::QDateTimeData QDateTimeData;
 
-// Calls the platform variant of tzset
-static void qt_tzset()
-{
-#if defined(Q_OS_WIN)
-    _tzset();
-#else
-    tzset();
-#endif // Q_OS_WIN
-}
-
 // Returns the platform variant of timezone, i.e. the standard time offset
 // The timezone external variable is documented as always holding the
 // Standard Time offset as seconds west of Greenwich, i.e. UTC+01:00 is -3600
@@ -2278,7 +2268,7 @@ static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStat
 #if defined(Q_OS_WIN)
     int hh = local.tm_hour;
 #endif // Q_OS_WIN
-    time_t secsSinceEpoch = mktime(&local);
+    time_t secsSinceEpoch = qMkTime(&local);
     if (secsSinceEpoch != time_t(-1)) {
         *date = QDate(local.tm_year + 1900, local.tm_mon + 1, local.tm_mday);
         *time = QTime(local.tm_hour, local.tm_min, local.tm_sec, msec);
@@ -2337,10 +2327,10 @@ static bool qt_localtime(qint64 msecsSinceEpoch, QDate *localDate, QTime *localT
     tm local;
     bool valid = false;
 
-    // localtime() is required to work as if tzset() was called before it.
-    // localtime_r() does not have this requirement, so make an explicit call.
+    // localtime() is specified to work as if it called tzset().
+    // localtime_r() does not have this constraint, so make an explicit call.
     // The explicit call should also request the timezone info be re-parsed.
-    qt_tzset();
+    qTzSet();
 #if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // Use the reentrant version of localtime() where available
     // as is thread-safe and doesn't use a shared static data area
@@ -2422,7 +2412,7 @@ static bool epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTi
     if (msecs < 0) {
         // Docs state any LocalTime before 1970-01-01 will *not* have any Daylight Time applied
         // Instead just use the standard offset from UTC to convert to UTC time
-        qt_tzset();
+        qTzSet();
         msecsToTime(msecs - qt_timezone() * 1000, localDate, localTime);
         if (daylightStatus)
             *daylightStatus = QDateTimePrivate::StandardTime;
@@ -2485,7 +2475,7 @@ static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
             }
         } else {
             // If we don't call mktime then need to call tzset to get offset
-            qt_tzset();
+            qTzSet();
         }
         // Time is clearly before 1970-01-01 so just use standard offset to convert
         qint64 utcMsecs = localMsecs + qt_timezone() * 1000;
