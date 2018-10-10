@@ -118,11 +118,14 @@ void QWinRTBackingStore::flush(QWindow *window, const QRegion &region, const QPo
     if (d->size.isEmpty())
         return;
 
+    const QRect bounds = region.boundingRect() & d->paintDevice.rect();
+    if (bounds.isEmpty())
+        return;
+
     const bool ok = d->context->makeCurrent(window);
     if (!ok)
         qWarning("unable to flush");
 
-    const QRect bounds = region.boundingRect();
     glBindTexture(GL_TEXTURE_2D, d->fbo->texture());
     // TODO: when ANGLE GLES3 support is finished, use the glPixelStorei functions to minimize upload
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, bounds.y(), d->size.width(), bounds.height(),
