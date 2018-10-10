@@ -311,7 +311,7 @@ QDBusPendingCall &QDBusPendingCall::operator=(const QDBusPendingCall &other)
     \sa QDBusPendingReply::isFinished()
 */
 /*!
-    \fn bool QDBusPendingReply::isFinished() const
+    \fn template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> bool QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::isFinished() const
 
     Returns \c true if the pending call has finished processing and the
     reply has been received. If this function returns \c true, the
@@ -340,7 +340,7 @@ void QDBusPendingCall::waitForFinished()
 }
 
 /*!
-    \fn bool QDBusPendingReply::isValid() const
+    \fn template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> bool QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::isValid() const
 
     Returns \c true if the reply contains a normal reply message, false
     if it contains anything else.
@@ -357,7 +357,7 @@ bool QDBusPendingCall::isValid() const
 }
 
 /*!
-    \fn bool QDBusPendingReply::isError() const
+    \fn template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> bool QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::isError() const
 
     Returns \c true if the reply contains an error message, false if it
     contains a normal method reply.
@@ -374,7 +374,7 @@ bool QDBusPendingCall::isError() const
 }
 
 /*!
-    \fn QDBusError QDBusPendingReply::error() const
+    \fn template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> QDBusError QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::error() const
 
     Retrieves the error content of the reply message, if it has
     finished processing. If the reply message has not finished
@@ -395,7 +395,7 @@ QDBusError QDBusPendingCall::error() const
 }
 
 /*!
-    \fn QDBusMessage QDBusPendingReply::reply() const
+    \fn template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> QDBusMessage QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::reply() const
 
     Retrieves the reply message received for the asynchronous call
     that was sent, if it has finished processing. If the pending call
@@ -445,7 +445,7 @@ bool QDBusPendingCall::setReplyCallback(QObject *target, const char *member)
     \since 4.6
     Creates a QDBusPendingCall object based on the error condition
     \a error. The resulting pending call object will be in the
-    "finished" state and QDBusPendingReply::isError() will return true.
+    "finished" state and QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::isError() will return true.
 
     \sa fromCompletedCall()
 */

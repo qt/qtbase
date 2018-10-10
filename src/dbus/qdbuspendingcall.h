@@ -67,7 +67,7 @@ public:
 
     void swap(QDBusPendingCall &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
-#ifndef Q_QDOC
+#ifndef Q_CLANG_QDOC
     // pretend that they aren't here
     bool isFinished() const;
     void waitForFinished();

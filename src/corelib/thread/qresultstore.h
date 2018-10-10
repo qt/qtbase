@@ -56,7 +56,6 @@ QT_BEGIN_NAMESPACE
     either individually or in batches.
 */
 
-#ifndef Q_QDOC
 
 namespace QtPrivate {
 
@@ -196,7 +195,6 @@ public:
 
 Q_DECLARE_TYPEINFO(QtPrivate::ResultItem, Q_PRIMITIVE_TYPE);
 
-#endif //Q_QDOC
 
 QT_END_NAMESPACE
 

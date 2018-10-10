@@ -267,7 +267,7 @@ bool QDBusArgumentPrivate::checkReadAndDetach(QDBusArgumentPrivate *&d)
 */
 
 /*!
-    \fn qdbus_cast(const QDBusArgument &arg)
+    \fn template<typename T> T qdbus_cast(const QDBusArgument &arg, T*)
     \relates QDBusArgument
     \since 4.2
 

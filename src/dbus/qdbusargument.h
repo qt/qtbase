@@ -158,22 +158,14 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QDBusArgument)
 QT_BEGIN_NAMESPACE
 
-template<typename T> inline T qdbus_cast(const QDBusArgument &arg
-#ifndef Q_QDOC
-, T * = nullptr
-#endif
-    )
+template<typename T> inline T qdbus_cast(const QDBusArgument &arg, T * = nullptr)
 {
     T item;
     arg >> item;
     return item;
 }
 
-template<typename T> inline T qdbus_cast(const QVariant &v
-#ifndef Q_QDOC
-, T * = nullptr
-#endif
-    )
+template<typename T> inline T qdbus_cast(const QVariant &v, T * = nullptr)
 {
     int id = v.userType();
     if (id == qMetaTypeId<QDBusArgument>())

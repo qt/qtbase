@@ -94,7 +94,7 @@
 */
 
 /*!
-    \fn QDBusPendingReply::QDBusPendingReply()
+    \fn template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::QDBusPendingReply()
 
     Creates an empty QDBusPendingReply object. Without assigning a
     QDBusPendingCall object to this reply, QDBusPendingReply cannot do
@@ -102,7 +102,7 @@
 */
 
 /*!
-    \fn QDBusPendingReply::QDBusPendingReply(const QDBusPendingReply &other)
+    \fn template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::QDBusPendingReply(const QDBusPendingReply &other)
 
     Creates a copy of the \a other QDBusPendingReply object. Just like
     QDBusPendingCall and QDBusPendingCallWatcher, this QDBusPendingReply
@@ -111,7 +111,7 @@
 */
 
 /*!
-    \fn QDBusPendingReply::QDBusPendingReply(const QDBusPendingCall &call)
+    \fn template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::QDBusPendingReply(const QDBusPendingCall &call)
 
     Creates a QDBusPendingReply object that will take its contents from
     the \a call pending asynchronous call. This QDBusPendingReply object
@@ -119,7 +119,7 @@
 */
 
 /*!
-    \fn QDBusPendingReply::QDBusPendingReply(const QDBusMessage &message)
+    \fn template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::QDBusPendingReply(const QDBusMessage &message)
 
     Creates a QDBusPendingReply object that will take its contents from
     the message \a message. In this case, this object will be already
@@ -129,7 +129,7 @@
 */
 
 /*!
-    \fn QDBusPendingReply &QDBusPendingReply::operator=(const QDBusPendingReply &other)
+    \fn template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> QDBusPendingReply &QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::operator=(const QDBusPendingReply &other)
 
     Makes a copy of \a other and drops the reference to the current
     pending call. If the current reference is to an unfinished pending
@@ -139,7 +139,7 @@
 */
 
 /*!
-    \fn QDBusPendingReply &QDBusPendingReply::operator=(const QDBusPendingCall &call)
+    \fn template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> QDBusPendingReply &QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::operator=(const QDBusPendingCall &call)
 
     Makes this object take its contents from the \a call pending call
     and drops the reference to the current pending call. If the
@@ -149,7 +149,7 @@
 */
 
 /*!
-    \fn QDBusPendingReply &QDBusPendingReply::operator=(const QDBusMessage &message)
+    \fn template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> QDBusPendingReply &QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::operator=(const QDBusMessage &message)
 
     Makes this object take its contents from the \a message message
     and drops the reference to the current pending call. If the
@@ -171,7 +171,7 @@
  */
 
 /*!
-    \fn int QDBusPendingReply::count() const
+    \fn template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> int QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::count() const
 
     Return the number of arguments the reply is supposed to have. This
     number matches the number of non-void template parameters in this
@@ -183,7 +183,7 @@
 */
 
 /*!
-    \fn QVariant QDBusPendingReply::argumentAt(int index) const
+    \fn template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> QVariant QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::argumentAt(int index) const
 
     Returns the argument at position \a index in the reply's
     contents. If the reply doesn't have that many elements, this
@@ -198,12 +198,7 @@
 */
 
 /*!
-  \typedef QDBusPendingReply::T1
-  \internal
- */
-
-/*!
-    \fn T1 QDBusPendingReply::value() const
+    \fn template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> T1 QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::value() const
 
     Returns the first argument in this reply, cast to type \c T1 (the
     first template parameter of this class). This is equivalent to
@@ -221,7 +216,7 @@
 */
 
 /*!
-    \fn QDBusPendingReply::operator T1() const
+    \fn template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::operator T1() const
 
     Returns the first argument in this reply, cast to type \c T1 (the
     first template parameter of this class). This is equivalent to
@@ -239,7 +234,7 @@
 */
 
 /*!
-    \fn void QDBusPendingReply::waitForFinished()
+    \fn template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> void QDBusPendingReply<T1, T2, T3, T4, T5, T6, T7, T8>::waitForFinished()
 
     Suspends the execution of the calling thread until the reply is
     received and processed. After this function returns, isFinished()

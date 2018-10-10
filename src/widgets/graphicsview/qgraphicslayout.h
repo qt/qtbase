@@ -83,7 +83,9 @@ private:
     friend class QGraphicsWidget;
 };
 
+#ifndef Q_CLANG_QDOC
 Q_DECLARE_INTERFACE(QGraphicsLayout, "org.qt-project.Qt.QGraphicsLayout")
+#endif
 
 QT_END_NAMESPACE
 

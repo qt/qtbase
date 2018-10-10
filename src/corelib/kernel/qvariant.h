@@ -55,6 +55,8 @@
 
 #if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
 #include <variant>
+#elif defined(Q_CLANG_QDOC)
+namespace std { template<typename...> struct variant; }
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -365,7 +367,7 @@ class Q_CORE_EXPORT QVariant
     static inline QVariant fromValue(const T &value)
     { return qVariantFromValue(value); }
 
-#if defined(Q_CLANG_QDOC) || (QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L)
+#if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
     template<typename... Types>
     static inline QVariant fromStdVariant(const std::variant<Types...> &value)
     {

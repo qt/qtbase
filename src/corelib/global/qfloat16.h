@@ -67,11 +67,9 @@ QT_BEGIN_NAMESPACE
 class qfloat16
 {
 public:
-#ifndef Q_QDOC
     Q_DECL_CONSTEXPR inline qfloat16() Q_DECL_NOTHROW : b16(0) { }
     inline qfloat16(float f) Q_DECL_NOTHROW;
     inline operator float() const Q_DECL_NOTHROW;
-#endif
 
 private:
     quint16 b16;

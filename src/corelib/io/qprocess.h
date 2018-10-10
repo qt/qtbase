@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 class QProcessPrivate;
 
-#if !defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#if !defined(Q_OS_WIN)
 typedef qint64 Q_PID;
 #else
 QT_END_NAMESPACE

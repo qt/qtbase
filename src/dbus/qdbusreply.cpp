@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template<typename T> QDBusReply<T>::QDBusReply(const QDBusPendingReply &reply)
+    \fn template<typename T> QDBusReply<T>::QDBusReply(const QDBusPendingReply<T> &reply)
     Constructs a QDBusReply object from the pending reply message, \a reply.
 */
 

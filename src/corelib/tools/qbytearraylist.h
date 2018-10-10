@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 typedef QListIterator<QByteArray> QByteArrayListIterator;
 typedef QMutableListIterator<QByteArray> QMutableByteArrayListIterator;
-#ifndef Q_QDOC
+#ifndef Q_CLANG_QDOC
 typedef QList<QByteArray> QByteArrayList;
 
 namespace QtPrivate {
@@ -58,13 +58,13 @@ namespace QtPrivate {
 }
 #endif
 
-#ifdef Q_QDOC
+#ifdef Q_CLANG_QDOC
 class QByteArrayList : public QList<QByteArray>
 #else
 template <> struct QListSpecialMethods<QByteArray>
 #endif
 {
-#ifndef Q_QDOC
+#ifndef Q_CLANG_QDOC
 protected:
     ~QListSpecialMethods() {}
 #endif

@@ -122,9 +122,7 @@ public:
         SubPath = 0x1
         // Reserved = 0xff000000
     };
-#ifndef Q_QDOC
     Q_DECLARE_FLAGS(VirtualObjectRegisterOptions, VirtualObjectRegisterOption)
-#endif
 
     enum ConnectionCapability {
         UnixFileDescriptorPassing = 0x0001

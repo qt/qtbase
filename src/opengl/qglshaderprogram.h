@@ -46,17 +46,6 @@
 #include <QtGui/qvector4d.h>
 #include <QtGui/qmatrix4x4.h>
 
-#if defined(Q_CLANG_QDOC)
-#undef GLfloat
-typedef double GLfloat;
-#undef GLint
-typedef int GLint;
-#undef GLuint
-typedef unsigned int GLuint;
-#undef GLenum
-typedef unsigned int GLenum;
-#endif
-
 QT_BEGIN_NAMESPACE
 
 

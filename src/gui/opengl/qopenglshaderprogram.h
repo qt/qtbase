@@ -50,13 +50,6 @@
 #include <QtGui/qvector4d.h>
 #include <QtGui/qmatrix4x4.h>
 
-#if defined(Q_CLANG_QDOC)
-#undef GLint
-typedef int GLint;
-#undef GLfloat
-typedef double GLfloat;
-#endif
-
 QT_BEGIN_NAMESPACE
 
 
