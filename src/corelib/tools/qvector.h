@@ -251,6 +251,13 @@ public:
     T value(int i) const;
     T value(int i, const T &defaultValue) const;
 
+    void swapItemsAt(int i, int j) {
+        Q_ASSERT_X(i >= 0 && i < size() && j >= 0 && j < size(),
+                    "QVector<T>::swap", "index out of range");
+        detach();
+        qSwap(d->begin()[i], d->begin()[j]);
+    }
+
     // STL compatibility
     typedef T value_type;
     typedef value_type* pointer;

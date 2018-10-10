@@ -331,6 +331,8 @@ private slots:
 
     void insertMove() const;
 
+    void swapItemsAt() const;
+
 private:
     template<typename T> void copyConstructor() const;
     template<typename T> void add() const;
@@ -2988,6 +2990,23 @@ void tst_QVector::insertMove() const
         QCOMPARE(Movable::counter.loadAcquire(), instancesCount + 14);
     }
     QCOMPARE(Movable::counter.loadAcquire(), instancesCount);
+}
+
+void tst_QVector::swapItemsAt() const
+{
+    QVector<int> v;
+    v << 0 << 1 << 2 << 3;
+
+    v.swapItemsAt(0, 2);
+    QCOMPARE(v.at(0), 2);
+    QCOMPARE(v.at(2), 0);
+
+    auto copy = v;
+    copy.swapItemsAt(0, 2);
+    QCOMPARE(v.at(0), 2);
+    QCOMPARE(v.at(2), 0);
+    QCOMPARE(copy.at(0), 0);
+    QCOMPARE(copy.at(2), 2);
 }
 
 QTEST_MAIN(tst_QVector)

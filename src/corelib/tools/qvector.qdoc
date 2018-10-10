@@ -288,6 +288,16 @@
     never fails.
 */
 
+/*! \fn template <typename T> void QVector<T>::swapItemsAt(int i, int j)
+    \since 5.14
+
+    Exchange the item at index position \a i with the item at index
+    position \a j. This function assumes that both \a i and \a j are
+    at least 0 but less than size(). To avoid failure, test that both
+    \a i and \a j are at least 0 and less than size().
+*/
+
+
 /*! \fn template <typename T> bool QVector<T>::operator==(const QVector<T> &other) const
 
     Returns \c true if \a other is equal to this vector; otherwise
