@@ -449,8 +449,7 @@ Q_GUI_EXPORT QImage qt_imageFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0
 
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0)
 {
-    const QImage image = imageFromWinHBITMAP_GetDiBits(bitmap, /* forceQuads */ true, hbitmapFormat);
-    return QPixmap::fromImage(image);
+    return QPixmap::fromImage(imageFromWinHBITMAP_GetDiBits(bitmap, /* forceQuads */ true, hbitmapFormat));
 }
 
 Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &p)
@@ -567,7 +566,7 @@ Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon)
     SelectObject(hdc, oldhdc); //restore state
     DeleteObject(winBitmap);
     DeleteDC(hdc);
-    return QPixmap::fromImage(image);
+    return QPixmap::fromImage(std::move(image));
 }
 
 QT_END_NAMESPACE
