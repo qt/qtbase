@@ -146,7 +146,7 @@ list.move(1, 4);
 //! [12]
 QList<QString> list;
 list << "A" << "B" << "C" << "D" << "E" << "F";
-list.swap(1, 4);
+list.swapItemsAt(1, 4);
 // list: ["A", "E", "C", "D", "B", "F"]
 //! [12]
 

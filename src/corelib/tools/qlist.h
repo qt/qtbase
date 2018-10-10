@@ -214,7 +214,11 @@ public:
     T takeFirst();
     T takeLast();
     void move(int from, int to);
-    void swap(int i, int j);
+    void swapItemsAt(int i, int j);
+#if QT_DEPRECATED_SINCE(5, 13) && QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    QT_DEPRECATED_X("Use QList<T>::swapItemsAt()")
+    void swap(int i, int j) { swapItemsAt(i, j); }
+#endif
     int indexOf(const T &t, int from = 0) const;
     int lastIndexOf(const T &t, int from = -1) const;
     bool contains(const T &t) const;
@@ -690,7 +694,7 @@ inline void QList<T>::replace(int i, const T &t)
 }
 
 template <typename T>
-inline void QList<T>::swap(int i, int j)
+inline void QList<T>::swapItemsAt(int i, int j)
 {
     Q_ASSERT_X(i >= 0 && i < p.size() && j >= 0 && j < p.size(),
                 "QList<T>::swap", "index out of range");

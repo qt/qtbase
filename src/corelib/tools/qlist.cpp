@@ -965,6 +965,13 @@ void **QListData::erase(void **xi)
 
 /*! \fn template <class T> void QList<T>::swap(int i, int j)
 
+    \obsolete Use swapItemsAt()
+
+    \sa move(), swapItemsAt()
+*/
+
+/*! \fn template <class T> void QList<T>::swapItemsAt(int i, int j)
+
     Exchange the item at index position \a i with the item at index
     position \a j. This function assumes that both \a i and \a j are
     at least 0 but less than size(). To avoid failure, test that both

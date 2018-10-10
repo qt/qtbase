@@ -780,7 +780,7 @@ int QtPrivate::QStringList_removeDuplicates(QStringList *that)
             continue;
         ++setSize;
         if (j != i)
-            that->swap(i, j);
+            that->swapItemsAt(i, j);
         ++j;
     }
     if (n != j)

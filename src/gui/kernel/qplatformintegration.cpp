@@ -534,7 +534,7 @@ void QPlatformIntegration::setPrimaryScreen(QPlatformScreen *newPrimary)
     if (idx == 0)
         return;
 
-    QGuiApplicationPrivate::screen_list.swap(0, idx);
+    QGuiApplicationPrivate::screen_list.swapItemsAt(0, idx);
     emit qGuiApp->primaryScreenChanged(newPrimaryScreen);
 }
 
