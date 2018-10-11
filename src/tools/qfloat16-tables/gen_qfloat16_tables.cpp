@@ -68,7 +68,7 @@ qint32 main(qint32 argc, char **argv)
         return -1;
     }
 
-    QFile fid(argv[1]);
+    QFile fid(QFile::decodeName(argv[1]));
     if (!fid.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qWarning() << "Abort: Failed to open/create file" << fid.fileName();
         return -1;

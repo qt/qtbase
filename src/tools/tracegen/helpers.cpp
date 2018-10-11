@@ -46,7 +46,7 @@ QString includeGuard(const QString &filename)
 
     for (int i = 0; i < guard.size(); ++i) {
         if (!guard.at(i).isLetterOrNumber())
-            guard[i] = QChar('_');
+            guard[i] = QLatin1Char('_');
     }
 
     return guard;
