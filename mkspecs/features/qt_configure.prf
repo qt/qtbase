@@ -1156,7 +1156,7 @@ defineTest(qtConfSetupTestTypeDeps) {
     }
 }
 
-defineTest(qtConfEnsureTestTypeDeps) {
+defineTest(qtConfEnsureTestTypeDepsOne) {
     depsn = $${currentConfig}.testTypeDependencies.$${1}._KEYS_
     !isEmpty($$depsn) {
         for (dep, $$depsn) {
@@ -1170,10 +1170,16 @@ defineTest(qtConfEnsureTestTypeDeps) {
     fwdsn = $${currentConfig}.testTypeForwards.$${1}
     !isEmpty($$fwdsn) {
         for (fwd, $$fwdsn): \
-           qtConfEnsureTestTypeDeps($$fwd)
+           qtConfEnsureTestTypeDepsOne($$fwd)
         $$fwdsn =
         export($$fwdsn)
     }
+}
+
+defineTest(qtConfEnsureTestTypeDeps) {
+    qtConfEnsureTestTypeDepsOne($$1)
+    currentConfig = config.builtins
+    qtConfEnsureTestTypeDepsOne($$1)
 }
 
 defineTest(qtRunSingleTest) {
@@ -1660,6 +1666,11 @@ defineTest(qtConfCheckErrors) {
 # output generation
 #
 
+defineTest(qtConfOutput_libraryPaths) {
+    qtLog("Global lib dirs: [$$val_escape(EXTRA_LIBDIR)] [$$val_escape(QMAKE_DEFAULT_LIBDIRS)]")
+    qtLog("Global inc dirs: [$$val_escape(EXTRA_INCLUDEPATH)] [$$val_escape(QMAKE_DEFAULT_INCDIRS)]")
+}
+
 # qtConfOutputVar(modifier, output, name, value)
 defineTest(qtConfOutputVar) {
     modifier = $$1
@@ -2028,6 +2039,9 @@ for(ever) {
     }
     configsToProcess = $$subconfigs $$configsToProcess
 }
+# 'builtins' is used for command line parsing and test type dependency
+# injection, but its features must not be processed regularly.
+allModuleConfigs = $$member(allConfigs, 1, -1)
 
 QMAKE_SAVED_ARGS = $$QMAKE_EXTRA_ARGS
 QMAKE_REDO_CONFIG = false
@@ -2036,7 +2050,7 @@ qtConfCheckErrors()
 
 !isEmpty(config.input.list-features) {
     all_ft =
-    for (currentConfig, allConfigs) {
+    for (currentConfig, allModuleConfigs) {
         for (k, $${currentConfig}.features._KEYS_) {
             pp = $$eval($${currentConfig}.features.$${k}.purpose)
             !isEmpty(pp) {
@@ -2056,7 +2070,7 @@ qtConfCheckErrors()
 
 !isEmpty(config.input.list-libraries) {
     logn()
-    for (currentConfig, allConfigs) {
+    for (currentConfig, allModuleConfigs) {
         !isEmpty($${currentConfig}.exports._KEYS_) {
             !isEmpty($${currentConfig}.module): \
                 logn($$eval($${currentConfig}.module):)
@@ -2093,7 +2107,7 @@ qtLog("Command line: $$qtSystemQuote($$QMAKE_SAVED_ARGS)")
 $$QMAKE_REDO_CONFIG: \
     qtLog("config.opt: $$qtSystemQuote($$QMAKE_EXTRA_REDO_ARGS)")
 
-for (currentConfig, allConfigs) {
+for (currentConfig, allModuleConfigs) {
     qtConfSetModuleName()
     qtConfSetupModuleOutputs()
     # do early checks, mainly to validate the command line
@@ -2137,7 +2151,7 @@ CONFIG += qt_conf_tests_allowed
 logn()
 logn("Running configuration tests...")
 
-for (currentConfig, allConfigs) {
+for (currentConfig, allModuleConfigs) {
     tdir = $$eval($${currentConfig}.testDir)
     isEmpty(tdir): tdir = config.tests
     QMAKE_CONFIG_TESTS_DIR = $$absolute_path($$tdir, $$eval($${currentConfig}.dir))
