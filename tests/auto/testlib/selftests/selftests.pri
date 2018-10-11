@@ -21,6 +21,8 @@ SUBPROGRAMS = \
      exceptionthrow \
      expectfail \
      failcleanup \
+     faildatatype \
+     failfetchtype \
      failinit \
      failinitdata \
      fetchbogus \

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="2" failures="1" tests="2" name="tst_FailDataType">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+    <property value="" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="fail" name="value">
+    <!-- message="expected data of type &apos;QString&apos;, got &apos;bool&apos; for element 0 of data with tag &apos;bool&#x002D;as&#x002D;string&apos;" type="qdebug" -->
+    <!-- message="ASSERT: &quot;false&quot; in file qtbase/src/testlib/qtestdata.cpp, line 92" type="qfatal" -->
+    <failure message="Received a fatal error." result="fail"/>
+  </testcase>
+  <system-err>
+<![CDATA[expected data of type 'QString', got 'bool' for element 0 of data with tag 'bool-as-string']]>
+<![CDATA[ASSERT: "false" in file qtbase/src/testlib/qtestdata.cpp, line 0]]>
+  </system-err>
+</testsuite>

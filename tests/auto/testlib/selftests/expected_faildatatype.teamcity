@@ -1,0 +1,8 @@
+##teamcity[testSuiteStarted name='tst_FailDataType' flowId='tst_FailDataType']
+##teamcity[testStarted name='initTestCase()' flowId='tst_FailDataType']
+##teamcity[testFinished name='initTestCase()' flowId='tst_FailDataType']
+##teamcity[testStarted name='value()' flowId='tst_FailDataType']
+##teamcity[testFailed name='value()' message='Failure! |[Loc: Unknown file(0)|]' details='Received a fatal error.' flowId='tst_FailDataType']
+##teamcity[testStdOut name='value()' out='QDEBUG: expected data of type |'QString|', got |'bool|' for element 0 of data with tag |'bool-as-string|'|nQFATAL: ASSERT: "false" in file qtbase/src/testlib/qtestdata.cpp, line 0' flowId='tst_FailDataType']
+##teamcity[testFinished name='value()' flowId='tst_FailDataType']
+##teamcity[testSuiteFinished name='tst_FailDataType' flowId='tst_FailDataType']

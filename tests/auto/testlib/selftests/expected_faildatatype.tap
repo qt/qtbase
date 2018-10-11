@@ -1,0 +1,16 @@
+TAP version 13
+# tst_FailDataType
+ok 1 - initTestCase()
+# expected data of type 'QString', got 'bool' for element 0 of data with tag 'bool-as-string'
+# ASSERT: "false" in file qtbase/src/testlib/qtestdata.cpp, line 0
+not ok 2 - value()
+  ---
+  # Received a fatal error.
+  at: tst_FailDataType::value() (Unknown file:0)
+  file: Unknown file
+  line: 0
+  ...
+1..2
+# tests 2
+# pass 1
+# fail 1

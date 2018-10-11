@@ -1,0 +1,8 @@
+##teamcity[testSuiteStarted name='tst_FailFetchType' flowId='tst_FailFetchType']
+##teamcity[testStarted name='initTestCase()' flowId='tst_FailFetchType']
+##teamcity[testFinished name='initTestCase()' flowId='tst_FailFetchType']
+##teamcity[testStarted name='fetch(bool)' flowId='tst_FailFetchType']
+##teamcity[testFailed name='fetch(bool)' message='Failure! |[Loc: Unknown file(0)|]' details='Received a fatal error.' flowId='tst_FailFetchType']
+##teamcity[testStdOut name='fetch(bool)' out='QFATAL: Requested type |'QString|' does not match available type |'bool|'.' flowId='tst_FailFetchType']
+##teamcity[testFinished name='fetch(bool)' flowId='tst_FailFetchType']
+##teamcity[testSuiteFinished name='tst_FailFetchType' flowId='tst_FailFetchType']

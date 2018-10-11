@@ -244,8 +244,8 @@ def generateTestData(testname, clean,
         },
                      # These are actually *other* crashers, beside those in extraEnv;
                      # must match tst_Selftests::runSubTest_data():
-                     crashers = ("assert", "blacklisted", "crashedterminate",
-                                 "exceptionthrow", "fetchbogus", "silent")):
+                     crashers = ("assert", "blacklisted", "crashedterminate", "exceptionthrow",
+                                 "faildatatype", "failfetchtype", "fetchbogus", "silent")):
     """Run one test and save its cleaned results.
 
     Required arguments are the name of the test directory (the binary

@@ -1,0 +1,15 @@
+TAP version 13
+# tst_FailFetchType
+ok 1 - initTestCase()
+# Requested type 'QString' does not match available type 'bool'.
+not ok 2 - fetch(bool)
+  ---
+  # Received a fatal error.
+  at: tst_FailFetchType::fetch() (Unknown file:0)
+  file: Unknown file
+  line: 0
+  ...
+1..2
+# tests 2
+# pass 1
+# fail 1

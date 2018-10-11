@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCase name="tst_FailDataType">
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QtBuild/>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="value">
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[expected data of type 'QString', got 'bool' for element 0 of data with tag 'bool-as-string']]></Description>
+</Message>
+<Message type="qfatal" file="" line="0">
+    <Description><![CDATA[ASSERT: "false" in file qtbase/src/testlib/qtestdata.cpp, line 0]]></Description>
+</Message>
+<Incident type="fail" file="Unknown file" line="0">
+    <Description><![CDATA[Received a fatal error.]]></Description>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
+<Duration msecs="0"/>
+</TestCase>

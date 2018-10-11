@@ -468,10 +468,13 @@ void tst_Selftests::runSubTest_data()
 #endif
         << "expectfail"
         << "failcleanup"
+#ifndef Q_OS_WIN // these assert, by design; so same problem as "assert"
+        << "faildatatype"
+        << "failfetchtype"
+#endif
         << "failinit"
         << "failinitdata"
-#if !defined(Q_OS_WIN)
-        // Disable this test on Windows, as the run-time will popup dialogs with warnings
+#ifndef Q_OS_WIN // asserts, by design; so same problem as "assert"
         << "fetchbogus"
 #endif
         << "findtestdata"
@@ -616,6 +619,7 @@ void tst_Selftests::runSubTest_data()
             // Keep in sync with generateTestData()'s crashers in generate_expected_output.py:
             const bool crashes = subtest == QLatin1String("assert") || subtest == QLatin1String("exceptionthrow")
                 || subtest == QLatin1String("fetchbogus") || subtest == QLatin1String("crashedterminate")
+                || subtest == QLatin1String("faildatatype") || subtest == QLatin1String("failfetchtype")
                 || subtest == QLatin1String("crashes") || subtest == QLatin1String("silent")
                 || subtest == QLatin1String("blacklisted");
             QTest::newRow(qPrintable(QString("%1 %2").arg(subtest).arg(loggerSet.name)))
@@ -745,11 +749,13 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
 #endif
 #ifdef Q_OS_LINUX
         // QEMU outputs to stderr about uncaught signals
-        && (!EmulationDetector::isRunningArmOnX86() ||
-                (subdir != QLatin1String("blacklisted")
-                 && subdir != QLatin1String("silent")
-                 && subdir != QLatin1String("assert")
-                 && subdir != QLatin1String("crashes")
+        && !(EmulationDetector::isRunningArmOnX86() &&
+                (subdir == QLatin1String("assert")
+                 || subdir == QLatin1String("blacklisted")
+                 || subdir == QLatin1String("crashes")
+                 || subdir == QLatin1String("faildatatype")
+                 || subdir == QLatin1String("failfetchtype")
+                 || subdir == QLatin1String("silent")
                 )
             )
 #endif
@@ -902,7 +908,8 @@ bool tst_Selftests::compareLine(const QString &logger, const QString &subdir,
     if (actualLine == expectedLine)
         return true;
 
-    if (subdir == QLatin1String("assert")
+    if ((subdir == QLatin1String("assert")
+         || subdir == QLatin1String("faildatatype") || subdir == QLatin1String("failfetchtype"))
         && actualLine.contains(QLatin1String("ASSERT: "))
         && expectedLine.contains(QLatin1String("ASSERT: "))) {
         // Q_ASSERT uses __FILE__, the exact contents of which are

@@ -1,0 +1,9 @@
+********* Start testing of tst_FailDataType *********
+Config: Using QtTest library
+PASS   : tst_FailDataType::initTestCase()
+QDEBUG : tst_FailDataType::value() expected data of type 'QString', got 'bool' for element 0 of data with tag 'bool-as-string'
+QFATAL : tst_FailDataType::value() ASSERT: "false" in file qtbase/src/testlib/qtestdata.cpp, line 0
+FAIL!  : tst_FailDataType::value() Received a fatal error.
+   Loc: [Unknown file(0)]
+Totals: 1 passed, 1 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_FailDataType *********
