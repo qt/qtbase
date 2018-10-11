@@ -6,7 +6,7 @@ SKIP   : tst_Blacklisted::skip() This test should SKIP
    Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
 BFAIL  : tst_Blacklisted::fail() 'false' returned FALSE. (This test should BFAIL)
    Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
-XFAIL  : tst_Blacklisted::xfail() This test should XFAIL then BFAIL
+XFAIL  : tst_Blacklisted::xfail() This test should XFAIL then BPASS
    Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
 BPASS  : tst_Blacklisted::xfail()
 XPASS  : tst_Blacklisted::xpass() 'true' returned TRUE unexpectedly. (This test should XPASS, blacklist ignored for XPASS)

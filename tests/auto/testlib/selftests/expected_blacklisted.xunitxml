@@ -12,7 +12,7 @@
   </testcase>
   <testcase result="bfail" name="fail"/>
   <testcase result="xfail" name="xfail">
-    <!-- message="This test should XFAIL then BFAIL" type="info" -->
+    <!-- message="This test should XFAIL then BPASS" type="info" -->
   </testcase>
   <testcase result="xpass" name="xpass">
     <failure message="&apos;true&apos; returned TRUE unexpectedly. (This test should XPASS, blacklist ignored for XPASS)" result="xpass"/>
@@ -28,7 +28,7 @@
   </testcase>
   <system-err>
 <![CDATA[This test should SKIP]]>
-<![CDATA[This test should XFAIL then BFAIL]]>
+<![CDATA[This test should XFAIL then BPASS]]>
 <![CDATA[This is a warning that should not appear in silent test output]]>
 <![CDATA[This is an internal testlib warning that should not appear in silent test output]]>
 <![CDATA[This is a debug message that should not appear in silent test output]]>

@@ -1,12 +1,20 @@
-[pass]
+obscure # no such platform; is ignored
 *
+
+[pass]
+!*
+
 [skip]
 *
+
 [fail]
 *
-[xpass]
-*
+
 [xfail]
 *
+
+[xpass]
+*
+
 [messages]
 *
