@@ -4419,8 +4419,15 @@ int QImage::bitPlaneCount() const
 }
 
 /*!
+   \internal
    Returns a smoothly scaled copy of the image. The returned image has a size
    of width \a w by height \a h pixels.
+
+   The function operates internally on \c Format_RGB32, \c Format_ARGB32_Premultiplied,
+   \c Format_RGBX8888, \c Format_RGBA8888_Premultiplied, \c Format_RGBX64,
+   or \c Format_RGBA64_Premultiplied and will convert to those formats
+   if necessary. To avoid unnecessary conversion the result is returned in the format
+   internally used, and not in the original format.
 */
 QImage QImage::smoothScaled(int w, int h) const {
     QImage src = *this;
@@ -4547,8 +4554,8 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
     Q_TRACE_SCOPE(QImage_transformed, matrix, mode);
 
     // source image data
-    int ws = width();
-    int hs = height();
+    const int ws = width();
+    const int hs = height();
 
     // target image data
     int wd;
@@ -4558,6 +4565,7 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
     QTransform mat = trueMatrix(matrix, ws, hs);
     bool complex_xform = false;
     bool scale_xform = false;
+    bool nonpaintable_scale_xform = false;
     if (mat.type() <= QTransform::TxScale) {
         if (mat.type() == QTransform::TxNone) // identity matrix
             return *this;
@@ -4572,6 +4580,10 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
             wd = int(qAbs(mat.m11()) * ws + 0.9999);
         }
         scale_xform = true;
+        // The paint-based scaling is only bilinear, and has problems
+        // with scaling smoothly more than 2x down.
+        if (hd * 2 < hs || wd * 2 < ws)
+            nonpaintable_scale_xform = true;
     } else {
         if (mat.type() <= QTransform::TxRotate && mat.m11() == 0 && mat.m22() == 0) {
             if (mat.m12() == 1. && mat.m21() == -1.)
@@ -4591,16 +4603,40 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
     if (wd == 0 || hd == 0)
         return QImage();
 
-    // Make use of the optimized algorithm when we're scaling
     if (scale_xform && mode == Qt::SmoothTransformation) {
-        if (mat.m11() < 0.0F && mat.m22() < 0.0F) { // horizontal/vertical flip
-            return smoothScaled(wd, hd).mirrored(true, true);
-        } else if (mat.m11() < 0.0F) { // horizontal flip
-            return smoothScaled(wd, hd).mirrored(true, false);
-        } else if (mat.m22() < 0.0F) { // vertical flip
-            return smoothScaled(wd, hd).mirrored(false, true);
-        } else { // no flipping
-            return smoothScaled(wd, hd);
+        switch (format()) {
+        case QImage::Format_RGB32:
+        case QImage::Format_ARGB32_Premultiplied:
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+        case QImage::Format_RGBX8888:
+#endif
+        case QImage::Format_RGBA8888_Premultiplied:
+#if QT_CONFIG(raster_64bit)
+        case QImage::Format_RGBX64:
+        case QImage::Format_RGBA64_Premultiplied:
+#endif
+            // Use smoothScaled for scaling when we can do so without conversion.
+            if (mat.m11() > 0.0F && mat.m22() > 0.0F)
+                return smoothScaled(wd, hd);
+            break;
+        default:
+            break;
+        }
+        // Otherwise only use it when the scaling factor demands it, or the image is large enough to scale multi-threaded
+        if (nonpaintable_scale_xform
+#if QT_CONFIG(thread) && !defined(Q_OS_WASM)
+            || (ws * hs) >= (1<<20)
+#endif
+            ) {
+            if (mat.m11() < 0.0F && mat.m22() < 0.0F) { // horizontal/vertical flip
+                return smoothScaled(wd, hd).mirrored(true, true).convertToFormat(format());
+            } else if (mat.m11() < 0.0F) { // horizontal flip
+                return smoothScaled(wd, hd).mirrored(true, false).convertToFormat(format());
+            } else if (mat.m22() < 0.0F) { // vertical flip
+                return smoothScaled(wd, hd).mirrored(false, true).convertToFormat(format());
+            } else { // no flipping
+                return smoothScaled(wd, hd).convertToFormat(format());
+            }
         }
     }
 
@@ -4612,7 +4648,7 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
     QImage::Format target_format = d->format;
 
     if (complex_xform || mode == Qt::SmoothTransformation) {
-        if (d->format < QImage::Format_RGB32 || !hasAlphaChannel()) {
+        if (d->format < QImage::Format_RGB32 || (!hasAlphaChannel() && complex_xform)) {
             target_format = qt_alphaVersion(d->format);
         }
     }

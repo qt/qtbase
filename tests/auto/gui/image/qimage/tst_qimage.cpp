@@ -123,6 +123,8 @@ private slots:
 
     void smoothScaleBig();
     void smoothScaleAlpha();
+    void smoothScaleFormats_data();
+    void smoothScaleFormats();
 
     void transformed_data();
     void transformed();
@@ -1920,6 +1922,34 @@ void tst_QImage::smoothScaleAlpha()
     dstPainter.end();
 
     QCOMPARE(dst, expected);
+}
+
+void tst_QImage::smoothScaleFormats_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+    for (int i = QImage::Format_RGB32; i < QImage::NImageFormats; ++i) {
+        QTest::addRow("%s", formatToString(QImage::Format(i)).data()) << QImage::Format(i);
+    }
+}
+
+void tst_QImage::smoothScaleFormats()
+{
+    QFETCH(QImage::Format, format);
+    QImage src(32, 32, format);
+    src.fill(0x0);
+
+    // Upscale using painter scaling
+    QImage scaled = src.scaled(64, 64, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    QCOMPARE(scaled.format(), src.format());
+
+    // > 2x down-scaling using QImage::smoothScaled()
+    scaled = src.scaled(8, 8, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    QCOMPARE(scaled.format(), src.format());
+
+    QTransform transform;
+    transform.rotate(45);
+    QImage rotated = src.transformed(transform);
+    QVERIFY(rotated.hasAlphaChannel());
 }
 
 static int count(const QImage &img, int x, int y, int dx, int dy, QRgb pixel)
