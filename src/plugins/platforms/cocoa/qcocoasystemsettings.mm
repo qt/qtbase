@@ -202,7 +202,7 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
                              qt_mac_toQBrush([NSColor unemphasizedSelectedTextColor]));
             } else {
                 baseColors = [NSColor controlAlternatingRowBackgroundColors];
-                activeHighlightColor = [NSColor selectedControlColor];
+                activeHighlightColor = [NSColor alternateSelectedControlColor];
                 pal.setBrush(QPalette::Inactive, QPalette::HighlightedText,
                              pal.brush(QPalette::Active, QPalette::Text));
             }
