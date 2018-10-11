@@ -104,8 +104,11 @@ public:
     int rightBearing(QChar) const;
 
 #if QT_DEPRECATED_SINCE(5, 11)
+    QT_DEPRECATED_X("Use QFont::horizontalAdvance")
     int width(const QString &, int len = -1) const;
+    QT_DEPRECATED_X("Use QFont::horizontalAdvance")
     int width(const QString &, int len, int flags) const;
+    QT_DEPRECATED_X("Use QFont::horizontalAdvance")
     int width(QChar) const;
 #endif
 
