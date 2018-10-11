@@ -28,6 +28,9 @@ QT_BEGIN_NAMESPACE
 # define QT_ONLY_WIDGETLIB_USES Q_DECL_UNUSED_MEMBER
 #endif
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wweak-vtables") // QTBUG-1044486
+
 class QTestEvent
 {
 public:
@@ -36,13 +39,15 @@ public:
 #endif
     virtual QTestEvent *clone() const = 0;
 
-    virtual ~QTestEvent() {}
+    virtual ~QTestEvent() = default; // ### FIXME: weak vtable (QTBUG-104486)
 };
 
 #ifdef QT_GUI_LIB
 class QTestKeyEvent: public QTestEvent
 {
 public:
+    ~QTestKeyEvent() override = default; // ### FIXME: weak vtable (QTBUG-104486)
+
     inline QTestKeyEvent(QTest::KeyAction action, Qt::Key key, Qt::KeyboardModifiers modifiers, int delay)
         : _action(action), _delay(delay), _modifiers(modifiers), _ascii(0), _key(key) {}
     inline QTestKeyEvent(QTest::KeyAction action, char ascii, Qt::KeyboardModifiers modifiers, int delay)
@@ -71,6 +76,8 @@ protected:
 class QTestKeyClicksEvent: public QTestEvent
 {
 public:
+    ~QTestKeyClicksEvent() override = default; // ### FIXME: weak vtables (QTBUG-104486)
+
     inline QTestKeyClicksEvent(const QString &keys, Qt::KeyboardModifiers modifiers, int delay)
         : _keys(keys), _modifiers(modifiers), _delay(delay) {}
     inline QTestEvent *clone() const override { return new QTestKeyClicksEvent(*this); }
@@ -91,6 +98,8 @@ private:
 class QTestMouseEvent: public QTestEvent
 {
 public:
+    ~QTestMouseEvent() override = default; // ### FIXME: weak vtables (QTBUG-104486)
+
     inline QTestMouseEvent(QTest::MouseAction action, Qt::MouseButton button,
             Qt::KeyboardModifiers modifiers, QPoint position, int delay)
         : _action(action), _button(button), _modifiers(modifiers), _pos(position), _delay(delay) {}
@@ -117,6 +126,8 @@ class QTestDelayEvent: public QTestEvent
 {
 public:
     inline QTestDelayEvent(int msecs): _delay(msecs) {}
+    ~QTestDelayEvent() override = default; // ### FIXME: weak vtables (QTBUG-104486)
+
     inline QTestEvent *clone() const override { return new QTestDelayEvent(*this); }
 
 #ifdef QT_WIDGETS_LIB
@@ -189,6 +200,8 @@ public:
 };
 
 #undef QT_ONLY_WIDGETLIB_USES
+
+QT_WARNING_POP // Clang -Wweak-vtables
 
 QT_END_NAMESPACE
 

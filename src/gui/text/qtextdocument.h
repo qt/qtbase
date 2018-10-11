@@ -45,14 +45,10 @@ namespace Qt
 class Q_GUI_EXPORT QAbstractUndoItem
 {
 public:
-    virtual ~QAbstractUndoItem() = 0;
+    virtual ~QAbstractUndoItem();
     virtual void undo() = 0;
     virtual void redo() = 0;
 };
-
-inline QAbstractUndoItem::~QAbstractUndoItem()
-{
-}
 
 class QTextDocumentPrivate;
 

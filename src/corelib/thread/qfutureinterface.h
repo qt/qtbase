@@ -465,6 +465,9 @@ std::vector<T> QFutureInterface<T>::takeResults()
 }
 #endif
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wweak-vtables") // QTBUG-125115
+
 template <>
 class QFutureInterface<void> : public QFutureInterfaceBase
 {
@@ -494,6 +497,8 @@ public:
         QFutureInterfaceBase::runContinuation();
     }
 };
+
+QT_WARNING_POP // Clang -Wweak-vtables
 
 template<typename T>
 inline void swap(QFutureInterface<T> &a, QFutureInterface<T> &b) noexcept

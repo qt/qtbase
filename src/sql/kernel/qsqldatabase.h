@@ -23,7 +23,7 @@ class QThread;
 class Q_SQL_EXPORT QSqlDriverCreatorBase
 {
 public:
-    virtual ~QSqlDriverCreatorBase() {}
+    virtual ~QSqlDriverCreatorBase();
     virtual QSqlDriver *createObject() const = 0;
 };
 

@@ -33,6 +33,8 @@ QT_BEGIN_NAMESPACE
 
     Destroys the accessibility bridge object.
 */
+QAccessibleBridge::~QAccessibleBridge()
+    = default;
 
 /*!
     \fn void QAccessibleBridge::setRootObject(QAccessibleInterface *object)

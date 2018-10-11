@@ -130,7 +130,8 @@ function(qt_internal_add_headersclean_target module_target module_headers)
         endif()
 
         if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang|IntelLLVM")
-            list(APPEND hcleanFLAGS -Wshorten-64-to-32)
+            list(APPEND hcleanFLAGS -Wshorten-64-to-32
+                -Wweak-vtables)
         endif()
 
         separate_arguments(cxx_flags NATIVE_COMMAND ${CMAKE_CXX_FLAGS})

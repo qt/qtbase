@@ -53,6 +53,9 @@ namespace {
     QTextDocument::ResourceProvider qt_defaultResourceProvider;
 };
 
+QAbstractUndoItem::~QAbstractUndoItem()
+    = default;
+
 /*!
     \fn bool Qt::mightBeRichText(QAnyStringView text)
 
