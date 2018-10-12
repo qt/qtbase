@@ -422,7 +422,7 @@ bool QMimeDatabasePrivate::inherits(const QString &mime, const QString &parent)
         toCheck.pop();
         const auto parentList = parents(mimeName);
         for (const QString &par : parentList)
-            toCheck.push(par);
+            toCheck.push(resolveAlias(par));
     }
     return false;
 }
