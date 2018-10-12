@@ -2062,13 +2062,7 @@ QImage QImage::convertToFormat_helper(Format format, Qt::ImageConversionFlags fl
     Image_Converter converter = qimage_converter_map[d->format][format];
     if (!converter && format > QImage::Format_Indexed8 && d->format > QImage::Format_Indexed8) {
         if (highColorPrecision(format) && highColorPrecision(d->format)) {
-            // Convert over RGBA64_Premultiplied
-            if (format == QImage::Format_RGBA64_Premultiplied)
-                converter = convert_generic_to_rgb64;
-            else {
-                Q_ASSERT(d->format != QImage::Format_RGBA64_Premultiplied);
-                return convertToFormat(Format_RGBA64_Premultiplied, flags).convertToFormat(format, flags);
-            }
+            converter = convert_generic_to_rgb64;
         } else
             converter = convert_generic;
     }

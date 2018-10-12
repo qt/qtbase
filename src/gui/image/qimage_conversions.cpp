@@ -223,18 +223,29 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
 
 void convert_generic_to_rgb64(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
-    Q_ASSERT(dest->format == QImage::Format_RGBA64_Premultiplied);
+    Q_ASSERT(dest->format > QImage::Format_Indexed8);
     Q_ASSERT(src->format > QImage::Format_Indexed8);
+    QRgba64 buf[BufferSize];
+    QRgba64 *buffer = buf;
     const QPixelLayout *srcLayout = &qPixelLayouts[src->format];
+    const QPixelLayout *destLayout = &qPixelLayouts[dest->format];
     const uchar *srcData = src->data;
     uchar *destData = dest->data;
 
     const FetchAndConvertPixelsFunc64 fetch = srcLayout->fetchToRGBA64PM;
+    const ConvertAndStorePixelsFunc64 store = qStoreFromRGBA64PM[dest->format];
 
     for (int y = 0; y < src->height; ++y) {
-        const QRgba64 *ptr = fetch((QRgba64*)destData, srcData, 0, src->width, nullptr, nullptr);
-        if (ptr != (const QRgba64*)destData) {
-            memcpy(destData, ptr, dest->bytes_per_line);
+        int x = 0;
+        while (x < src->width) {
+            int l = src->width - x;
+            if (destLayout->bpp == QPixelLayout::BPP64)
+                buffer = reinterpret_cast<QRgba64 *>(destData) + x;
+            else
+                l = qMin(l, BufferSize);
+            const QRgba64 *ptr = fetch(buffer, srcData, x, l, nullptr, nullptr);
+            store(destData, ptr, x, l, nullptr, nullptr);
+            x += l;
         }
         srcData += src->bytes_per_line;
         destData += dest->bytes_per_line;
@@ -1205,33 +1216,6 @@ static void convert_RGBA64_to_ARGB32(QImageData *dest, const QImageData *src, Qt
 }
 
 template<bool RGBA>
-static void convert_RGBA64PM_to_ARGB32(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
-{
-    Q_ASSERT(src->format == QImage::Format_RGBA64_Premultiplied);
-    Q_ASSERT(RGBA || dest->format == QImage::Format_ARGB32);
-    Q_ASSERT(!RGBA || dest->format == QImage::Format_RGBA8888);
-    Q_ASSERT(src->width == dest->width);
-    Q_ASSERT(src->height == dest->height);
-
-    const int src_pad = (src->bytes_per_line >> 3) - src->width;
-    const int dest_pad = (dest->bytes_per_line >> 2) - dest->width;
-    const QRgba64 *src_data = reinterpret_cast<const QRgba64 *>(src->data);
-    uint *dest_data = reinterpret_cast<uint *>(dest->data);
-
-    for (int i = 0; i < src->height; ++i) {
-        const QRgba64 *end = src_data + src->width;
-        while (src_data < end) {
-            QRgba64 s = src_data->unpremultiplied();
-            *dest_data = RGBA ? ARGB2RGBA(s.toArgb32()) : s.toArgb32();
-            ++src_data;
-            ++dest_data;
-        }
-        src_data += src_pad;
-        dest_data += dest_pad;
-    }
-}
-
-template<bool RGBA>
 static void convert_ARGB32_to_RGBA64(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
     Q_ASSERT(RGBA || src->format == QImage::Format_ARGB32);
@@ -1240,74 +1224,14 @@ static void convert_ARGB32_to_RGBA64(QImageData *dest, const QImageData *src, Qt
     Q_ASSERT(src->width == dest->width);
     Q_ASSERT(src->height == dest->height);
 
-    const int src_pad = (src->bytes_per_line >> 2) - src->width;
-    const int dest_pad = (dest->bytes_per_line >> 3) - dest->width;
-    const uint *src_data = reinterpret_cast<const uint *>(src->data);
-    QRgba64 *dest_data = reinterpret_cast<QRgba64 *>(dest->data);
+    const uchar *src_data = src->data;
+    uchar *dest_data = dest->data;
+    const FetchAndConvertPixelsFunc64 fetch = qPixelLayouts[src->format + 1].fetchToRGBA64PM;
 
     for (int i = 0; i < src->height; ++i) {
-        const uint *end = src_data + src->width;
-        while (src_data < end) {
-            if (RGBA)
-                *dest_data = QRgba64::fromArgb32(RGBA2ARGB(*src_data));
-            else
-                *dest_data = QRgba64::fromArgb32(*src_data);
-            ++src_data;
-            ++dest_data;
-        }
-        src_data += src_pad;
-        dest_data += dest_pad;
-    }
-}
-
-template<QtPixelOrder PixelOrder>
-static void convert_RGBA64PM_to_RGB30(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
-{
-    Q_ASSERT(src->format == QImage::Format_RGBA64_Premultiplied);
-    Q_ASSERT(dest->format == QImage::Format_RGB30 || dest->format == QImage::Format_BGR30);
-    Q_ASSERT(src->width == dest->width);
-    Q_ASSERT(src->height == dest->height);
-
-    const int src_pad = (src->bytes_per_line >> 3) - src->width;
-    const int dest_pad = (dest->bytes_per_line >> 2) - dest->width;
-    const QRgba64 *src_data = reinterpret_cast<const QRgba64 *>(src->data);
-    uint *dest_data = reinterpret_cast<uint *>(dest->data);
-
-    for (int i = 0; i < src->height; ++i) {
-        const QRgba64 *end = src_data + src->width;
-        while (src_data < end) {
-            *dest_data = 0xc0000000 | qConvertRgb64ToRgb30<PixelOrder>(src_data->unpremultiplied());
-            ++src_data;
-            ++dest_data;
-        }
-        src_data += src_pad;
-        dest_data += dest_pad;
-    }
-}
-
-template<QtPixelOrder PixelOrder>
-static void convert_RGBA64PM_to_A2RGB30(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
-{
-    Q_ASSERT(src->format == QImage::Format_RGBA64_Premultiplied);
-    Q_ASSERT(dest->format == QImage::Format_A2RGB30_Premultiplied
-          || dest->format == QImage::Format_A2BGR30_Premultiplied);
-    Q_ASSERT(src->width == dest->width);
-    Q_ASSERT(src->height == dest->height);
-
-    const int src_pad = (src->bytes_per_line >> 3) - src->width;
-    const int dest_pad = (dest->bytes_per_line >> 2) - dest->width;
-    const QRgba64 *src_data = reinterpret_cast<const QRgba64 *>(src->data);
-    uint *dest_data = reinterpret_cast<uint *>(dest->data);
-
-    for (int i = 0; i < src->height; ++i) {
-        const QRgba64 *end = src_data + src->width;
-        while (src_data < end) {
-            *dest_data = qConvertRgb64ToRgb30<PixelOrder>(*src_data);
-            ++src_data;
-            ++dest_data;
-        }
-        src_data += src_pad;
-        dest_data += dest_pad;
+        fetch(reinterpret_cast<QRgba64 *>(dest_data), src_data, 0, src->width, nullptr, nullptr);
+        src_data += src->bytes_per_line;;
+        dest_data += dest->bytes_per_line;
     }
 }
 
@@ -2958,7 +2882,6 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        convert_RGBA64PM_to_ARGB32<false>,
         0,
         0,
         0,
@@ -2970,12 +2893,10 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        convert_RGBA64PM_to_ARGB32<true>,
         0,
-        convert_RGBA64PM_to_RGB30<PixelOrderBGR>,
-        convert_RGBA64PM_to_A2RGB30<PixelOrderBGR>,
-        convert_RGBA64PM_to_RGB30<PixelOrderRGB>,
-        convert_RGBA64PM_to_A2RGB30<PixelOrderRGB>,
+        0,
+        0,
+        0, 0, 0, 0,
         0, 0,
         convert_RGBA64PM_to_RGBA64<true>,
         convert_RGBA64PM_to_RGBA64<false>,
