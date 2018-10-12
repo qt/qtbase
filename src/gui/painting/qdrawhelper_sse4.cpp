@@ -94,6 +94,55 @@ static void convertARGBToARGB32PM_sse4(uint *buffer, const uint *src, int count)
     }
 }
 
+template<bool RGBA>
+static void convertARGBToRGBA64PM_sse4(QRgba64 *buffer, const uint *src, int count)
+{
+    int i = 0;
+    const __m128i alphaMask = _mm_set1_epi32(0xff000000);
+    const __m128i rgbaMask = _mm_setr_epi8(2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15);
+    const __m128i shuffleMask = _mm_setr_epi8(6, 7, 6, 7, 6, 7, 6, 7, 14, 15, 14, 15, 14, 15, 14, 15);
+    const __m128i zero = _mm_setzero_si128();
+
+    for (; i < count - 3; i += 4) {
+        __m128i srcVector = _mm_loadu_si128((const __m128i *)&src[i]);
+        if (!_mm_testz_si128(srcVector, alphaMask)) {
+            if (!_mm_testc_si128(srcVector, alphaMask)) {
+                if (!RGBA)
+                    srcVector = _mm_shuffle_epi8(srcVector, rgbaMask);
+                __m128i src1 = _mm_unpacklo_epi8(srcVector, zero);
+                __m128i src2 = _mm_unpackhi_epi8(srcVector, zero);
+                __m128i alpha1 = _mm_shuffle_epi8(src1, shuffleMask);
+                __m128i alpha2 = _mm_shuffle_epi8(src2, shuffleMask);
+                src1 = _mm_mullo_epi16(src1, alpha1);
+                src2 = _mm_mullo_epi16(src2, alpha2);
+                alpha1 = _mm_unpacklo_epi8(srcVector, srcVector);
+                alpha2 = _mm_unpackhi_epi8(srcVector, srcVector);
+                src1 = _mm_add_epi16(src1, _mm_srli_epi16(src1, 7));
+                src2 = _mm_add_epi16(src2, _mm_srli_epi16(src2, 7));
+                src1 = _mm_blend_epi16(src1, alpha1, 0x88);
+                src2 = _mm_blend_epi16(src2, alpha2, 0x88);
+                _mm_storeu_si128((__m128i *)&buffer[i], src1);
+                _mm_storeu_si128((__m128i *)&buffer[i + 2], src2);
+            } else {
+                if (!RGBA)
+                    srcVector = _mm_shuffle_epi8(srcVector, rgbaMask);
+                const __m128i src1 = _mm_unpacklo_epi8(srcVector, srcVector);
+                const __m128i src2 = _mm_unpackhi_epi8(srcVector, srcVector);
+                _mm_storeu_si128((__m128i *)&buffer[i], src1);
+                _mm_storeu_si128((__m128i *)&buffer[i + 2], src2);
+            }
+        } else {
+            _mm_storeu_si128((__m128i *)&buffer[i], zero);
+            _mm_storeu_si128((__m128i *)&buffer[i + 2], zero);
+        }
+    }
+
+    SIMD_EPILOGUE(i, count, 3) {
+        const uint s = RGBA ? RGBA2ARGB(src[i]) : src[i];
+        buffer[i] = QRgba64::fromArgb32(s).premultiplied();
+    }
+}
+
 static inline __m128 Q_DECL_VECTORCALL reciprocal_mul_ps(__m128 a, float mul)
 {
     __m128 ia = _mm_rcp_ps(a); // Approximate 1/a
@@ -269,6 +318,20 @@ void QT_FASTCALL convertRGBA8888ToARGB32PM_sse4(uint *buffer, int count, const Q
     convertARGBToARGB32PM_sse4<true>(buffer, buffer, count);
 }
 
+const QRgba64 * QT_FASTCALL convertARGB32ToRGBA64PM_sse4(QRgba64 *buffer, const uint *src, int count,
+                                                         const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToRGBA64PM_sse4<false>(buffer, src, count);
+    return buffer;
+}
+
+const QRgba64 * QT_FASTCALL convertRGBA8888ToRGBA64PM_sse4(QRgba64 *buffer, const uint *src, int count,
+                                                           const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToRGBA64PM_sse4<true>(buffer, src, count);
+    return buffer;
+}
+
 const uint *QT_FASTCALL fetchARGB32ToARGB32PM_sse4(uint *buffer, const uchar *src, int index, int count,
                                                   const QVector<QRgb> *, QDitherInfo *)
 {
@@ -280,6 +343,20 @@ const uint *QT_FASTCALL fetchRGBA8888ToARGB32PM_sse4(uint *buffer, const uchar *
                                                      const QVector<QRgb> *, QDitherInfo *)
 {
     convertARGBToARGB32PM_sse4<true>(buffer, reinterpret_cast<const uint *>(src) + index, count);
+    return buffer;
+}
+
+const QRgba64 *QT_FASTCALL fetchARGB32ToRGBA64PM_sse4(QRgba64 *buffer, const uchar *src, int index, int count,
+                                                      const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToRGBA64PM_sse4<false>(buffer, reinterpret_cast<const uint *>(src) + index, count);
+    return buffer;
+}
+
+const QRgba64 *QT_FASTCALL fetchRGBA8888ToRGBA64PM_sse4(QRgba64 *buffer, const uchar *src, int index, int count,
+                                                        const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToRGBA64PM_sse4<true>(buffer, reinterpret_cast<const uint *>(src) + index, count);
     return buffer;
 }
 
