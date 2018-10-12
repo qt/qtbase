@@ -1345,10 +1345,10 @@ void tst_QSslSocket::protocolServerSide()
     // to quit due to a socket error, and investigate the culprit.
     if (server.socket->error() != QAbstractSocket::UnknownSocketError) {
         QVERIFY(client.error() == QAbstractSocket::UnknownSocketError);
-        QCOMPARE(int(server.socket->state()), int(expectedState));
+        QCOMPARE(server.socket->state(), expectedState);
     } else if (client.error() != QAbstractSocket::UnknownSocketError) {
         QVERIFY(server.socket->error() == QAbstractSocket::UnknownSocketError);
-        QCOMPARE(int(client.state()), int(expectedState));
+        QCOMPARE(client.state(), expectedState);
     }
     QCOMPARE(client.isEncrypted(), works);
 }
@@ -3271,10 +3271,10 @@ void tst_QSslSocket::verifyClientCertificate_data()
     validCerts += QSslCertificate::fromPath(testDataDir + "certs/bogus-ca.crt");
     QCOMPARE(validCerts.size(), 2);
 
-    QTest::newRow("ValidClientCert:AutoVerifyPeer") << QSslSocket::AutoVerifyPeer << validCerts << validKey << true;
-    QTest::newRow("ValidClientCert:QueryPeer") << QSslSocket::QueryPeer << validCerts << validKey << true;
-    QTest::newRow("ValidClientCert:VerifyNone") << QSslSocket::VerifyNone << validCerts << validKey << true;
-    QTest::newRow("ValidClientCert:VerifyPeer") << QSslSocket::VerifyPeer << validCerts << validKey << true;
+    QTest::newRow("ValidChainedClientCert:AutoVerifyPeer") << QSslSocket::AutoVerifyPeer << validCerts << validKey << true;
+    QTest::newRow("ValidChainedClientCert:QueryPeer") << QSslSocket::QueryPeer << validCerts << validKey << true;
+    QTest::newRow("ValidChainedClientCert:VerifyNone") << QSslSocket::VerifyNone << validCerts << validKey << true;
+    QTest::newRow("ValidChainedClientCert:VerifyPeer") << QSslSocket::VerifyPeer << validCerts << validKey << true;
 }
 
 void tst_QSslSocket::verifyClientCertificate()
@@ -3330,7 +3330,7 @@ void tst_QSslSocket::verifyClientCertificate()
     // check server socket
     QVERIFY(server.socket);
 
-    QCOMPARE(int(server.socket->state()), int(expectedState));
+    QCOMPARE(server.socket->state(), expectedState);
     QCOMPARE(server.socket->isEncrypted(), works);
 
     if (peerVerifyMode == QSslSocket::VerifyNone || clientCerts.isEmpty()) {
@@ -3342,7 +3342,7 @@ void tst_QSslSocket::verifyClientCertificate()
     }
 
     // check client socket
-    QCOMPARE(int(client.state()), int(expectedState));
+    QCOMPARE(client.state(), expectedState);
     QCOMPARE(client.isEncrypted(), works);
 }
 
