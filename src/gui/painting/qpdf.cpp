@@ -71,6 +71,11 @@ static const bool do_compress = true;
 // Can't use it though, as gs generates completely wrong images if this is true.
 static const bool interpolateImages = false;
 
+static void initResources()
+{
+    Q_INIT_RESOURCE(qpdf);
+}
+
 QT_BEGIN_NAMESPACE
 
 inline QPaintEngine::PaintEngineFeatures qt_pdf_decide_features()
@@ -1445,6 +1450,7 @@ QPdfEnginePrivate::QPdfEnginePrivate()
       grayscale(false),
       m_pageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(10, 10, 10, 10))
 {
+    initResources();
     resolution = 1200;
     currentObject = 1;
     currentPage = 0;
