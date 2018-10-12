@@ -285,7 +285,7 @@ function(QT5_ADD_RESOURCES outfiles )
                            COMMAND ${Qt5Core_RCC_EXECUTABLE}
                            ARGS ${rcc_options} --name ${outfilename} --output ${outfile} ${infile}
                            MAIN_DEPENDENCY ${infile}
-                           DEPENDS ${_rc_depends} "${out_depends}" VERBATIM)
+                           DEPENDS ${_rc_depends} "${_out_depends}" VERBATIM)
         set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC ON)
         set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOUIC ON)
         list(APPEND ${outfiles} ${outfile})
