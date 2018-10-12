@@ -54,6 +54,8 @@
 #include "private/qmemrotate_p.h"
 #include "private/qdrawhelper_p.h"
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QPixmapFilterPrivate : public QObjectPrivate
@@ -319,7 +321,7 @@ static void convolute(
     const QImage processImage = (srcImage.format() != QImage::Format_ARGB32_Premultiplied ) ?               srcImage.convertToFormat(QImage::Format_ARGB32_Premultiplied) : srcImage;
     // TODO: support also other formats directly without copying
 
-    int *fixedKernel = new int[kernelWidth*kernelHeight];
+    std::unique_ptr<int[]> fixedKernel(new int[kernelWidth * kernelHeight]);
     for(int i = 0; i < kernelWidth*kernelHeight; i++)
     {
         fixedKernel[i] = (int)(65536 * kernel[i]);
@@ -403,7 +405,6 @@ static void convolute(
         }
         yk++;
     }
-    delete[] fixedKernel;
 }
 
 /*!
