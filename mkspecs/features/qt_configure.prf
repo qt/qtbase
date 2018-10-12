@@ -2215,7 +2215,7 @@ qtConfPrintReport()
 logn()
 logn("Qt is now configured for building. Just run '$$QMAKE_MAKE_NAME'.")
 pfx = $$[QT_INSTALL_PREFIX]
-equals(pfx, $$[QT_INSTALL_PREFIX/get]) {
+exists($$pfx/.qmake.cache) {
     logn("Once everything is built, Qt is installed.")
     logn("You should NOT run '$$QMAKE_MAKE_NAME install'.")
     logn("Note that this build cannot be deployed to other machines or devices.")
