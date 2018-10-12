@@ -1104,13 +1104,15 @@ void QPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const Q
 
     if (srcRect.isNull()) {
         srcImage = src.toImage();
-        srcImage = srcImage.convertToFormat(srcImage.hasAlphaChannel() ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32);
+        const auto format = srcImage.hasAlphaChannel() ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+        srcImage = std::move(srcImage).convertToFormat(format);
         destImage = QImage(srcImage.size(), srcImage.format());
     } else {
         QRect rect = srcRect.toAlignedRect().intersected(src.rect());
 
         srcImage = src.copy(rect).toImage();
-        srcImage = srcImage.convertToFormat(srcImage.hasAlphaChannel() ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32);
+        const auto format = srcImage.hasAlphaChannel() ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+        srcImage = std::move(srcImage).convertToFormat(format);
         destImage = QImage(rect.size(), srcImage.format());
     }
     destImage.setDevicePixelRatio(src.devicePixelRatioF());
@@ -1129,7 +1131,7 @@ void QPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const Q
         bufPainter.setOpacity(d->strength);
         bufPainter.drawImage(0, 0, destImage);
         bufPainter.end();
-        destImage = buffer;
+        destImage = std::move(buffer);
     }
 
     if (srcImage.hasAlphaChannel())
@@ -1333,7 +1335,7 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
     qt_blurImage(&blurPainter, tmp, d->radius, false, true);
     blurPainter.end();
 
-    tmp = blurred;
+    tmp = std::move(blurred);
 
     // blacken the image...
     tmpPainter.begin(&tmp);
