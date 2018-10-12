@@ -66,9 +66,6 @@ class QTestCoreList
         void addToList(T **list);
         T *nextElement();
         T *previousElement();
-        int count(T *list);
-        int count();
-
     private:
         T *next;
         T *prev;
@@ -119,20 +116,6 @@ template <class T>
 T *QTestCoreList<T>::previousElement()
 {
     return prev;
-}
-
-template <class T>
-int QTestCoreList<T>::count()
-{
-    int numOfElements = 0;
-    T *it = next;
-
-    while (it) {
-        ++numOfElements;
-        it = it->nextElement();
-    }
-
-    return numOfElements;
 }
 
 QT_END_NAMESPACE
