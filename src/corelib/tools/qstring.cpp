@@ -711,9 +711,15 @@ static void qt_to_latin1_internal(uchar *dst, const ushort *src, qsizetype lengt
     }
 
     length = length % 4;
+#  else
+    length = length % 16;
+#  endif // optimize size
+
+    // advance dst, src for tail processing
     dst += offset;
     src += offset;
 
+#  if !defined(__OPTIMIZE_SIZE__)
     return UnrollTailLoop<3>::exec(length, [=](int i) {
         if (Checked)
             dst[i] = (src[i]>0xff) ? '?' : (uchar) src[i];
@@ -1072,11 +1078,13 @@ static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
         // still matched
         offset += 4;
     }
+#  endif // optimize size
 
     // reset uc and c
     uc += offset;
     c += offset;
 
+#  if !defined(__OPTIMIZE_SIZE__)
     const auto lambda = [=](size_t i) { return uc[i] - ushort(c[i]); };
     return UnrollTailLoop<MaxTailLength>::exec(e - uc, 0, lambda, lambda);
 #  endif
