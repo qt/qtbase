@@ -119,6 +119,7 @@ void qGamma_correct_back_to_linear_cs(QImage *image)
  *****************************************************************************/
 
 // The drawhelper conversions from/to RGB32 are passthroughs which is not always correct for general image conversion
+#if !defined(__ARM_NEON__)
 static void QT_FASTCALL storeRGB32FromARGB32PM(uchar *dest, const uint *src, int index, int count,
                                                const QVector<QRgb> *, QDitherInfo *)
 {
@@ -126,6 +127,7 @@ static void QT_FASTCALL storeRGB32FromARGB32PM(uchar *dest, const uint *src, int
     for (int i = 0; i < count; ++i)
         d[i] = 0xff000000 | qUnpremultiply(src[i]);
 }
+#endif
 
 static void QT_FASTCALL storeRGB32FromARGB32(uchar *dest, const uint *src, int index, int count,
                                              const QVector<QRgb> *, QDitherInfo *)
@@ -146,6 +148,9 @@ static const uint *QT_FASTCALL fetchRGB32ToARGB32PM(uint *buffer, const uchar *s
 
 #ifdef QT_COMPILER_SUPPORTS_SSE4_1
 extern void QT_FASTCALL storeRGB32FromARGB32PM_sse4(uchar *dest, const uint *src, int index, int count,
+                                                    const QVector<QRgb> *, QDitherInfo *);
+#elif defined(__ARM_NEON__)
+extern void QT_FASTCALL storeRGB32FromARGB32PM_neon(uchar *dest, const uint *src, int index, int count,
                                                     const QVector<QRgb> *, QDitherInfo *);
 #endif
 
@@ -175,8 +180,12 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
             if (qCpuHasFeature(SSE4_1))
                 store = storeRGB32FromARGB32PM_sse4;
             else
-#endif
                 store = storeRGB32FromARGB32PM;
+#elif defined(__ARM_NEON__)
+            store = storeRGB32FromARGB32PM_neon;
+#else
+            store = storeRGB32FromARGB32PM;
+#endif
         }
     }
     if (srcLayout->hasAlphaChannel && !srcLayout->premultiplied &&
@@ -261,8 +270,12 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
             if (qCpuHasFeature(SSE4_1))
                 store = storeRGB32FromARGB32PM_sse4;
             else
-#endif
                 store = storeRGB32FromARGB32PM;
+#elif defined(__ARM_NEON__)
+            store = storeRGB32FromARGB32PM_neon;
+#else
+            store = storeRGB32FromARGB32PM;
+#endif
         }
     }
     if (srcLayout->hasAlphaChannel && !srcLayout->premultiplied &&

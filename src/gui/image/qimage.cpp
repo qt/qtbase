@@ -1454,7 +1454,8 @@ void QImage::setDevicePixelRatio(qreal scaleFactor)
         return;
 
     detach();
-    d->devicePixelRatio = scaleFactor;
+    if (d)
+        d->devicePixelRatio = scaleFactor;
 }
 
 /*!
@@ -2240,8 +2241,15 @@ bool QImage::reinterpretAsFormat(Format format)
         return true;
     if (qt_depthForFormat(format) != qt_depthForFormat(d->format))
         return false;
-    if (!isDetached()) // Detach only if shared, not for read-only data.
+    if (!isDetached()) { // Detach only if shared, not for read-only data.
+        QImageData *oldD = d;
         detach();
+        // In case detach() ran out of memory
+        if (!d) {
+            d = oldD;
+            return false;
+        }
+    }
 
     d->format = format;
     return true;
@@ -3288,6 +3296,8 @@ void QImage::mirrored_inplace(bool horizontal, bool vertical)
         return;
 
     detach();
+    if (!d)
+        return;
     if (!d->own_data)
         *this = copy();
 
@@ -3440,6 +3450,8 @@ void QImage::rgbSwapped_inplace()
         return;
 
     detach();
+    if (!d)
+        return;
     if (!d->own_data)
         *this = copy();
 

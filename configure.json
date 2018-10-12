@@ -730,6 +730,7 @@
         "headersclean": {
             "label": "Check for clean headers",
             "autoDetect": "features.developer-build",
+            "condition": "!config.wasm",
             "output": [ "privateConfig" ]
         },
         "framework": {

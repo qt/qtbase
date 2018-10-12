@@ -907,9 +907,9 @@
 
     Platform-specific variables follow the naming pattern of the
     variables which they extend or modify, but include the name of the relevant
-    platform in their name. For example, \c QMAKE_LIBS can be used to specify a list
-    of libraries that a project needs to link against, and \c QMAKE_LIBS_X11 can be
-    used to extend or override this list.
+    platform in their name. For example, a makespec may use \c QMAKE_LIBS
+    to specify a list of libraries that each project needs to link against,
+    and \c QMAKE_LIBS_X11 would be used to extend this list.
 
     \target CONFIG
     \section1 CONFIG
@@ -1319,6 +1319,19 @@
     \c no_lflags_merge option to the \l{CONFIG} variable:
 
     \snippet code/doc_src_qmake-manual.pro 39
+
+    \target LIBS_PRIVATE
+    \section1 LIBS_PRIVATE
+
+    Specifies a list of libraries to be linked privately into the project.
+    The behavior of this variable is identical to \l LIBS, except that
+    shared library projects built for Unix do not expose these dependencies
+    in their link interface.
+
+    The effect of this is that if project C depends on library B which
+    depends on library A privately, but C also wants to use symbols from A
+    directly, it needs to link to A explicitly. Put differently, libraries
+    linked privately are not exposed transitively at build time.
 
     \target LITERAL_HASH
     \section1 LITERAL_HASH
@@ -2048,7 +2061,19 @@
 
     \section1 QMAKE_LIBDIR
 
-    Specifies a list of system library paths.
+    Specifies a list of library search paths for all projects.
+    The value of this variable is typically handled by qmake
+    or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    To specify additional search paths in project files,
+    use \l LIBS like that, instead:
+    \badcode
+        LIBS += -L/path/to/libraries
+    \endcode
+
+    \section1 QMAKE_LIBDIR_POST
+
+    Specifies a list of system library search paths for all projects.
     The value of this variable is typically handled by qmake
     or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
@@ -2098,9 +2123,21 @@
 
     \section1 QMAKE_LIBS
 
-    Specifies all project libraries. The value of this variable
-    is typically handled by qmake or
+    Specifies additional libraries each project needs to link against.
+    The value of this variable is typically handled by qmake or
     \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    To specify libraries in a project file, use \l LIBS instead.
+
+    \section1 QMAKE_LIBS_PRIVATE
+
+    Specifies additional private libraries each project needs to
+    link against.
+    The value of this variable is typically handled by qmake or
+    \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    To specify private libraries in a library project file,
+    use \l LIBS_PRIVATE instead.
 
     \section1 QMAKE_LIBS_EGL
 

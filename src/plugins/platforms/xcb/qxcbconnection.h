@@ -326,9 +326,6 @@ public:
 signals:
     void eventPending();
 
-private slots:
-    void registerForEvents();
-
 private:
     void addEvent(xcb_generic_event_t *event);
 
@@ -492,8 +489,6 @@ public:
     bool hasShm() const { return has_shm; }
     bool hasShmFd() const { return has_shm_fd; }
     bool hasXSync() const { return has_sync_extension; }
-
-    bool threadedEventHandling() const { return m_reader->isRunning(); }
 
     xcb_timestamp_t getTimestamp();
     xcb_window_t getSelectionOwner(xcb_atom_t atom) const;

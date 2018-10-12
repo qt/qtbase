@@ -457,9 +457,8 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                         newDep->dependencies << "idc.exe";
 
                     // Add all unknown libs to the deps
-                    QStringList where = QStringList() << "QMAKE_LIBS" << "QMAKE_LIBS_PRIVATE";
-                    if (!tmp_proj.isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
-                    where = tmp_proj.values("QMAKE_INTERNAL_PRL_LIBS").toQStringList();
+                    QStringList where = QStringList() << "LIBS" << "LIBS_PRIVATE"
+                                                      << "QMAKE_LIBS" << "QMAKE_LIBS_PRIVATE";
                     for (QStringList::ConstIterator wit = where.begin();
                         wit != where.end(); ++wit) {
                             const ProStringList &l = tmp_proj.values(ProKey(*wit));
@@ -750,7 +749,7 @@ void VcprojGenerator::init()
         projectTarget = Application;
     } else if(project->first("TEMPLATE") == "vclib") {
         if(project->isActiveConfig("staticlib")) {
-            project->values("QMAKE_LIBS") += project->values("RES_FILE");
+            project->values("LIBS") += project->values("RES_FILE");
             projectTarget = StaticLib;
         } else
             projectTarget = SharedLib;
@@ -1086,7 +1085,8 @@ void VcprojGenerator::initLinkerTool()
     if (!project->values("DEF_FILE").isEmpty())
         conf.linker.ModuleDefinitionFile = project->first("DEF_FILE").toQString();
 
-    static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", nullptr };
+    static const char * const lflags[] = { "LIBS", "LIBS_PRIVATE",
+                                           "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", nullptr };
     for (int i = 0; lflags[i]; i++) {
         const auto libs = fixLibFlags(lflags[i]);
         for (const ProString &lib : libs) {
@@ -1181,7 +1181,8 @@ void VcprojGenerator::initDeploymentTool()
     if (!dllPaths.isEmpty() &&
         !(conf.WinRT && project->first("MSVC_VER").toQString() == "14.0")) {
         // FIXME: This code should actually resolve the libraries from all Qt modules.
-        ProStringList arg = project->values("QMAKE_LIBS") + project->values("QMAKE_LIBS_PRIVATE");
+        ProStringList arg = project->values("LIBS") + project->values("LIBS_PRIVATE")
+                + project->values("QMAKE_LIBS") + project->values("QMAKE_LIBS_PRIVATE");
         bool qpaPluginDeployed = false;
         for (ProStringList::ConstIterator it = arg.constBegin(); it != arg.constEnd(); ++it) {
             QString dllName = (*it).toQString();

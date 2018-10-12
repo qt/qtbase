@@ -1221,13 +1221,43 @@ defineReplace(qtConfReportArch) {
     return("$$arch, CPU features: $$subarch")
 }
 
+defineReplace(qtConfReportCompiler) {
+    clang_cl: {
+        return("clang-cl $${QMAKE_CLANG_MAJOR_VERSION}.$${QMAKE_CLANG_MINOR_VERSION}.$${QMAKE_CLANG_PATCH_VERSION}")
+    } else: clang {
+        !isEmpty(QMAKE_APPLE_CLANG_MAJOR_VERSION) {
+            return("clang (Apple) $${QMAKE_APPLE_CLANG_MAJOR_VERSION}.$${QMAKE_APPLE_CLANG_MINOR_VERSION}.$${QMAKE_APPLE_CLANG_PATCH_VERSION}")
+        } else {
+            return("clang $${QMAKE_CLANG_MAJOR_VERSION}.$${QMAKE_CLANG_MINOR_VERSION}.$${QMAKE_CLANG_PATCH_VERSION}")
+        }
+    } else: intel_icc {
+        return("intel_icc $$QMAKE_ICC_VER")
+    } else: intel_icl {
+        return("intel_icl $$QMAKE_ICC_VER")
+    } else: rim_qcc {
+        return("rim_qcc $${QMAKE_GCC_MAJOR_VERSION}.$${QMAKE_GCC_MINOR_VERSION}.$${QMAKE_GCC_PATCH_VERSION}")
+    } else: gcc {
+        return("gcc $${QMAKE_GCC_MAJOR_VERSION}.$${QMAKE_GCC_MINOR_VERSION}.$${QMAKE_GCC_PATCH_VERSION}")
+    } else: msvc {
+        return("msvc $$QMAKE_MSC_FULL_VER")
+    } else: ghs {
+        return("ghs $$QMAKE_GHS_VERSION")
+    } else {
+        return("unknown ($$QMAKE_COMPILER)")
+    }
+}
+
+
 defineTest(qtConfReport_buildTypeAndConfig) {
     !$$qtConfEvaluate("features.cross_compile") {
         qtConfAddReport("Build type: $$[QMAKE_SPEC] ($$qtConfReportArch(architecture))")
+        qtConfAddReport("Compiler: $$qtConfReportCompiler()")
     } else {
         qtConfAddReport("Building on: $$[QMAKE_SPEC] ($$qtConfReportArch(host_architecture))")
         qtConfAddReport("Building for: $$[QMAKE_XSPEC] ($$qtConfReportArch(architecture))")
+        qtConfAddReport("Target compiler: $$qtConfReportCompiler()")
     }
+
     qtConfAddReport()
     qtConfAddReport("Configuration: $$eval($${currentConfig}.output.privatePro.append.CONFIG) $$eval($${currentConfig}.output.publicPro.append.QT_CONFIG)")
     qtConfAddReport()

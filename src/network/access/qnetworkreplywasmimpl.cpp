@@ -49,9 +49,134 @@
 #include <private/qnetworkaccessmanager_p.h>
 #include <private/qnetworkfile_p.h>
 
-#include <iostream>
+#include <emscripten.h>
+#include <emscripten/bind.h>
+#include <emscripten/val.h>
 
 QT_BEGIN_NAMESPACE
+
+using namespace emscripten;
+
+static void q_requestErrorCallback(val event)
+{
+    val xhr = event["target"];
+
+    quintptr func = xhr["data-handler"].as<quintptr>();
+    QNetworkReplyWasmImplPrivate *reply = reinterpret_cast<QNetworkReplyWasmImplPrivate*>(func);
+    Q_ASSERT(reply);
+
+    int statusCode = xhr["status"].as<int>();
+
+    QString reasonStr = QString::fromStdString(xhr["statusText"].as<std::string>());
+
+    reply->setReplyAttributes(func, statusCode, reasonStr);
+
+    if (statusCode >= 400 && !reasonStr.isEmpty())
+        reply->emitReplyError(reply->statusCodeFromHttp(statusCode, reply->request.url()), reasonStr);
+}
+
+static void q_progressCallback(val event)
+{
+    val xhr = event["target"];
+
+    QNetworkReplyWasmImplPrivate *reply =
+            reinterpret_cast<QNetworkReplyWasmImplPrivate*>(xhr["data-handler"].as<quintptr>());
+    Q_ASSERT(reply);
+
+    if (xhr["lengthComputable"].as<bool>() && xhr["status"].as<int>() < 400)
+        reply->emitDataReadProgress(xhr["loaded"].as<qint64>(), xhr["total"].as<qint64>());
+
+}
+
+static void q_loadCallback(val event)
+{
+    val xhr = event["target"];
+
+    QNetworkReplyWasmImplPrivate *reply =
+            reinterpret_cast<QNetworkReplyWasmImplPrivate*>(xhr["data-handler"].as<quintptr>());
+    Q_ASSERT(reply);
+
+    int status = xhr["status"].as<int>();
+    if (status >= 300) {
+        q_requestErrorCallback(event);
+        return;
+    }
+    QString statusText = QString::fromStdString(xhr["statusText"].as<std::string>());
+    if (status == 200 || status == 203) {
+        QString responseString;
+        const std::string responseType = xhr["responseType"].as<std::string>();
+        if (responseType.length() == 0 || responseType == "document" || responseType == "text") {
+            responseString = QString::fromStdWString(xhr["responseText"].as<std::wstring>());
+        } else if (responseType == "json") {
+            responseString =
+                    QString::fromStdWString(val::global("JSON").call<std::wstring>("stringify", xhr["response"]));
+        } else if (responseType == "arraybuffer" || responseType == "blob") {
+            // handle this data in the FileReader, triggered by the call to readAsArrayBuffer
+            val reader = val::global("FileReader").new_();
+            reader.set("onload", val::module_property("QNetworkReplyWasmImplPrivate_readBinary"));
+            reader.set("data-handler", xhr["data-handler"]);
+            reader.call<void>("readAsArrayBuffer", xhr["response"]);
+        }
+
+        int readyState = xhr["readyState"].as<int>();
+
+        if (readyState == 4) { // done
+            reply->setReplyAttributes(xhr["data-handler"].as<quintptr>(), status, statusText);
+            if (!responseString.isEmpty())
+                reply->dataReceived(responseString.toUtf8(), responseString.size());
+        }
+    }
+    if (status >= 400 && !statusText.isEmpty())
+        reply->emitReplyError(reply->statusCodeFromHttp(status, reply->request.url()), statusText);
+}
+
+static void q_responseHeadersCallback(val event)
+{
+    val xhr = event["target"];
+
+    if (xhr["readyState"].as<int>() == 2) { // HEADERS_RECEIVED
+        std::string responseHeaders = xhr.call<std::string>("getAllResponseHeaders");
+        if (!responseHeaders.empty()) {
+            QNetworkReplyWasmImplPrivate *reply =
+                    reinterpret_cast<QNetworkReplyWasmImplPrivate*>(xhr["data-handler"].as<quintptr>());
+            Q_ASSERT(reply);
+
+            reply->headersReceived(QString::fromStdString(responseHeaders));
+        }
+    }
+}
+
+static void q_readBinary(val event)
+{
+    val fileReader = event["target"];
+
+    QNetworkReplyWasmImplPrivate *reply =
+            reinterpret_cast<QNetworkReplyWasmImplPrivate*>(fileReader["data-handler"].as<quintptr>());
+    Q_ASSERT(reply);
+
+    // Set up source typed array
+    val result = fileReader["result"]; // ArrayBuffer
+    val Uint8Array = val::global("Uint8Array");
+    val sourceTypedArray = Uint8Array.new_(result);
+
+    // Allocate and set up destination typed array
+    const quintptr size = result["byteLength"].as<quintptr>();
+    QByteArray buffer(size, Qt::Uninitialized);
+
+    val destinationTypedArray = Uint8Array.new_(val::module_property("HEAPU8")["buffer"],
+                                                            reinterpret_cast<quintptr>(buffer.data()), size);
+    destinationTypedArray.call<void>("set", sourceTypedArray);
+    reply->dataReceived(buffer, buffer.size());
+}
+
+
+EMSCRIPTEN_BINDINGS(network_module) {
+    function("QNetworkReplyWasmImplPrivate_requestErrorCallback", q_requestErrorCallback);
+    function("QNetworkReplyWasmImplPrivate_progressCallback", q_progressCallback);
+    function("QNetworkReplyWasmImplPrivate_loadCallback", q_loadCallback);
+    function("QNetworkReplyWasmImplPrivate_responseHeadersCallback", q_responseHeadersCallback);
+    function("QNetworkReplyWasmImplPrivate_readBinary", q_readBinary);
+}
 
 QNetworkReplyWasmImplPrivate::QNetworkReplyWasmImplPrivate()
     : QNetworkReplyPrivate()
@@ -172,226 +297,80 @@ void QNetworkReplyWasmImplPrivate::setup(QNetworkAccessManager::Operation op, co
     doSendRequest();
 }
 
-void QNetworkReplyWasmImplPrivate::onLoadCallback(void *data, int statusCode, int statusReason, int readyState, int buffer, int bufferSize)
+void QNetworkReplyWasmImplPrivate::setReplyAttributes(quintptr data, int statusCode, const QString &statusReason)
 {
     QNetworkReplyWasmImplPrivate *handler = reinterpret_cast<QNetworkReplyWasmImplPrivate*>(data);
-
-    const QString reasonStr = QString::fromUtf8(reinterpret_cast<char *>(statusReason));
-
-    switch (readyState) {
-    case 0://unsent
-        break;
-    case 1://opened
-        break;
-    case 2://headers received
-        break;
-    case 3://loading
-        break;
-    case 4: {//done
-        handler->q_func()->setAttribute(QNetworkRequest::HttpStatusCodeAttribute, statusCode);
-        if (!reasonStr.isEmpty())
-            handler->q_func()->setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, reasonStr);
-
-        if (statusCode >= 400) {
-            if (!reasonStr.isEmpty())
-                handler->emitReplyError(handler->statusCodeFromHttp(statusCode, handler->request.url()), reasonStr);
-        } else {
-            handler->dataReceived(reinterpret_cast<char *>(buffer), bufferSize);
-        }
-    }
-     break;
-    };
- }
-
-void QNetworkReplyWasmImplPrivate::onProgressCallback(void* data, int bytesWritten, int total, uint timestamp)
-{
-    Q_UNUSED(timestamp);
-
-    QNetworkReplyWasmImplPrivate *handler = reinterpret_cast<QNetworkReplyWasmImplPrivate*>(data);
-    handler->emitDataReadProgress(bytesWritten, total);
-}
-
-void QNetworkReplyWasmImplPrivate::onRequestErrorCallback(void* data, int statusCode, int statusReason)
-{
-    QString reasonStr = QString::fromUtf8(reinterpret_cast<char *>(statusReason));
-
-    QNetworkReplyWasmImplPrivate *handler = reinterpret_cast<QNetworkReplyWasmImplPrivate*>(data);
+    Q_ASSERT(handler);
 
     handler->q_func()->setAttribute(QNetworkRequest::HttpStatusCodeAttribute, statusCode);
-    if (!reasonStr.isEmpty())
-        handler->q_func()->setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, reasonStr);
-
-    if (statusCode >= 400) {
-        if (!reasonStr.isEmpty())
-            handler->emitReplyError(handler->statusCodeFromHttp(statusCode, handler->request.url()), reasonStr);
-    }
-}
-
-void QNetworkReplyWasmImplPrivate::onResponseHeadersCallback(void* data, int headers)
-{
-    QNetworkReplyWasmImplPrivate *handler = reinterpret_cast<QNetworkReplyWasmImplPrivate*>(data);
-    handler->headersReceived(reinterpret_cast<char *>(headers));
+    if (!statusReason.isEmpty())
+        handler->q_func()->setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, statusReason);
 }
 
 void QNetworkReplyWasmImplPrivate::doSendRequest()
 {
     Q_Q(QNetworkReplyWasmImpl);
     totalDownloadSize = 0;
-    jsRequest(QString::fromUtf8(q->methodName()), // GET POST
-              request.url().toString(),
-              (void *)&onLoadCallback,
-              (void *)&onProgressCallback,
-              (void *)&onRequestErrorCallback,
-              (void *)&onResponseHeadersCallback);
-}
 
-/* const QString &body, const QList<QPair<QByteArray, QByteArray> > &headers ,*/
-void QNetworkReplyWasmImplPrivate::jsRequest(const QString &verb, const QString &url,
-                                             void *loadCallback, void *progressCallback,
-                                             void *errorCallback, void *onResponseHeadersCallback)
-{
+    val xhr = val::global("XMLHttpRequest").new_();
+    std::string verb = q->methodName().toStdString();
+
+    QUrl url;
     QString extraDataString;
 
+    if (request.url().hasQuery()) { //strip query from url
+        extraDataString = request.url().query(QUrl::FullyEncoded);
+        QString urlStr = request.url().toString();
+        url.setUrl(urlStr.left(urlStr.indexOf("?")));
+    } else {
+        url = request.url();
+    }
+    xhr.call<void>("open", verb, url.toString().toStdString());
+
+    xhr.set("onerror", val::module_property("QNetworkReplyWasmImplPrivate_requestErrorCallback"));
+    xhr.set("onload", val::module_property("QNetworkReplyWasmImplPrivate_loadCallback"));
+    xhr.set("onprogress", val::module_property("QNetworkReplyWasmImplPrivate_progressCallback"));
+    xhr.set("onreadystatechange", val::module_property("QNetworkReplyWasmImplPrivate_responseHeadersCallback"));
+
+    xhr.set("data-handler", val(quintptr(reinterpret_cast<void *>(this))));
+
+    QByteArray contentType = request.rawHeader("Content-Type");
+
+    // handle extra data
+    val dataToSend = val::null();
     QByteArray extraData;
-    if (outgoingData)
+
+    if (outgoingData) // data from post request
         extraData = outgoingData->readAll();
 
-    if (extraData.size() > 0)
-        extraDataString.fromUtf8(extraData);
-
-    if (extraDataString.size() >= 0 && verb == QStringLiteral("POST") && extraDataString.startsWith(QStringLiteral("?")))
-        extraDataString.remove(QStringLiteral("?"));
-
-    // Probably a good idea to save any shared pointers as members in C++
-    // so the objects they point to survive as long as you need them
-
-    QStringList headersList;
-    for (auto header : request.rawHeaderList())
-        headersList << QString::fromUtf8(header + ":" + request.rawHeader(header));
-
-    EM_ASM_ARGS({
-        var verb = Pointer_stringify($0);
-        var url = Pointer_stringify($1);
-        var onLoadCallbackPointer = $2;
-        var onProgressCallbackPointer = $3;
-        var onErrorCallbackPointer = $4;
-        var onHeadersCallback = $5;
-        var handler = $8;
-
-        var dataToSend;
-        var extraRequestData = Pointer_stringify($6); // request parameters
-        var headersData = Pointer_stringify($7);
-
-        var xhr;
-        xhr = new XMLHttpRequest();
-        xhr.responseType = 'arraybuffer';
-
-        xhr.open(verb, url, true); //async
-
-        function handleError(xhrStatusCode, xhrStatusText) {
-            var errorPtr = allocate(intArrayFromString(xhrStatusText), 'i8', ALLOC_NORMAL);
-            Runtime.dynCall('viii', onErrorCallbackPointer, [handler, xhrStatusCode, errorPtr]);
-            _free(errorPtr);
+    if (contentType.contains("text") ||
+            contentType.contains("json") ||
+            contentType.contains("form")) {
+        if (extraData.size() > 0)
+            extraDataString.fromUtf8(extraData);
+    }
+    if (contentType.contains("json")) {
+        if (!extraDataString.isEmpty()) {
+            xhr.set("responseType", val("json"));
+            dataToSend = val(extraDataString.toStdString());
         }
+    }
+    if (contentType.contains("form")) { //construct form data
+        if (!extraDataString.isEmpty()) {
+            val formData = val::global("FormData").new_();
+            QStringList formList = extraDataString.split('&');
 
-        if (headersData) {
-            var headers = headersData.split("&");
-            for (var i = 0; i < headers.length; i++) {
-                var header = headers[i].split(":")[0];
-                var value =  headers[i].split(":")[1];
-
-                if (verb === 'POST' && value.toLowerCase().includes('json')) {
-                    if (extraRequestData) {
-                        xhr.responseType = 'json';
-                        dataToSend = extraRequestData;
-                    }
-                }
-                if (verb === 'POST' && value.toLowerCase().includes('form')) {
-                    if (extraRequestData) {
-                        var formData = new FormData();
-                        var extra = extraRequestData.split("&");
-                        for (var i = 0; i < extra.length; i++) {
-                            formData.append(extra[i].split("=")[0],extra[i].split("=")[1]);
-                        }
-                        dataToSend = formData;
-                    }
-                }
-             xhr.setRequestHeader(header, value);
+            for (auto formEntry : formList) {
+                formData.call<void>("append", formEntry.split('=')[0].toStdString(), formEntry.split('=')[1].toStdString());
             }
+            dataToSend = formData;
         }
-
-        xhr.onprogress = function(e) {
-            switch (xhr.status) {
-                case 200:
-                case 206:
-                case 300:
-                case 301:
-                case 302: {
-                    var date = xhr.getResponseHeader('Last-Modified');
-                    date = ((date != null) ? new Date(date).getTime() / 1000 : 0);
-                    Runtime.dynCall('viiii', onProgressCallbackPointer, [handler, e.loaded, e.total, date]);
-                }
-                break;
-           }
-        };
-
-        xhr.onreadystatechange = function() {
-            if (this.readyState == this.HEADERS_RECEIVED) {
-                var responseStr = this.getAllResponseHeaders();
-                if (responseStr.length > 0) {
-                    var ptr = allocate(intArrayFromString(responseStr), 'i8', ALLOC_NORMAL);
-                    Runtime.dynCall('vii', onHeadersCallback, [handler, ptr]);
-                    _free(ptr);
-                }
-            }
-        };
-
-        xhr.onload = function(e) {
-            if (xhr.status >= 300) { //error
-                handleError(xhr.status, xhr.statusText);
-                } else {
-                    if (this.status == 200 || this.status == 203) {
-                        var datalength;
-                        var byteArray = 0;
-                        var buffer;
-                        if (this.responseType.length === 0 || this.responseType === 'document') {
-                            byteArray = new Uint8Array(this.responseText);
-                        } else if (this.responseType === 'json') {
-                            var jsonResponse = JSON.stringify(this.response);
-                            buffer = allocate(intArrayFromString(jsonResponse), 'i8', ALLOC_NORMAL);
-                            datalength = jsonResponse.length;
-                        } else if (this.responseType === 'arraybuffer') {
-                            byteArray  = new Uint8Array(xhr.response);
-                        }
-                        if (byteArray != 0 ) {
-                            datalength = byteArray.length;
-                            buffer = _malloc(datalength);
-                            HEAPU8.set(byteArray, buffer);
-                        }
-                        var reasonPtr = allocate(intArrayFromString(this.statusText), 'i8', ALLOC_NORMAL);
-                        Runtime.dynCall('viiiiii', onLoadCallbackPointer, [handler, this.status, reasonPtr, this.readyState, buffer, datalength]);
-                        _free(buffer);
-                        _free(reasonPtr);
-                    }
-                }
-        };
-
-        xhr.onerror = function(e) {
-            handleError(xhr.status, xhr.statusText);
-        };
-        //TODO other operations, handle user/pass, handle binary data, data streaming
-        xhr.send(dataToSend);
-
-    }, verb.toLatin1().data(),
-       url.toLatin1().data(),
-       loadCallback,
-       progressCallback,
-       errorCallback,
-       onResponseHeadersCallback,
-       extraDataString.size() > 0 ? extraDataString.toLatin1().data() : extraData.data(),
-       headersList.join(QStringLiteral("&")).toLatin1().data(),
-       this
-    );
+    }
+    // set request headers
+    for (auto header : request.rawHeaderList()) {
+        xhr.call<void>("setRequestHeader", header.toStdString(), request.rawHeader(header).toStdString());
+    }
+     xhr.call<void>("send", dataToSend);
 }
 
 void QNetworkReplyWasmImplPrivate::emitReplyError(QNetworkReply::NetworkError errorCode, const QString &errorString)
@@ -414,10 +393,10 @@ void QNetworkReplyWasmImplPrivate::emitDataReadProgress(qint64 bytesReceived, qi
 
     percentFinished = (bytesReceived / bytesTotal) * 100;
 
-    emit q->downloadProgress(bytesReceived, totalDownloadSize);
+    emit q->downloadProgress(bytesReceived, bytesTotal);
 }
 
-void QNetworkReplyWasmImplPrivate::dataReceived(char *buffer, int bufferSize)
+void QNetworkReplyWasmImplPrivate::dataReceived(const QByteArray &buffer, int bufferSize)
 {
     Q_Q(QNetworkReplyWasmImpl);
 
@@ -481,11 +460,10 @@ static int parseHeaderName(const QByteArray &headerName)
 }
 
 
-void QNetworkReplyWasmImplPrivate::headersReceived(char *buffer)
+void QNetworkReplyWasmImplPrivate::headersReceived(const QString &bufferString)
 {
     Q_Q(QNetworkReplyWasmImpl);
 
-    QString bufferString = QString::fromUtf8(buffer);
     if (!bufferString.isEmpty()) {
         QStringList headers = bufferString.split(QString::fromUtf8("\r\n"), QString::SkipEmptyParts);
 

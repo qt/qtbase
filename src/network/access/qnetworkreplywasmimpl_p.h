@@ -95,7 +95,6 @@ public:
 
 private:
     QByteArray methodName() const;
-
 };
 
 class QNetworkReplyWasmImplPrivate: public QNetworkReplyPrivate
@@ -106,19 +105,12 @@ public:
 
     QNetworkAccessManagerPrivate *managerPrivate;
     void doSendRequest();
-
-    void jsRequest(const QString &verb, const QString &url, void *, void *, void *, void *);
-
-    static void onLoadCallback(void *data, int statusCode, int statusReason, int readyState, int textBuffer, int size);
-    static void onProgressCallback(void *data, int done, int bytesTotal, uint timestamp);
-    static void onRequestErrorCallback(void *data, int statusCode, int statusReason);
-    static void onStateChangedCallback(int status);
-    static void onResponseHeadersCallback(void *data, int headers);
+    static void setReplyAttributes(quintptr data, int statusCode, const QString &statusReason);
 
     void emitReplyError(QNetworkReply::NetworkError errorCode, const QString &);
     void emitDataReadProgress(qint64 done, qint64 total);
-    void dataReceived(char *buffer, int bufferSize);
-    void headersReceived(char *buffer);
+    void dataReceived(const QByteArray &buffer, int bufferSize);
+    void headersReceived(const QString &bufferString);
 
     void setup(QNetworkAccessManager::Operation op, const QNetworkRequest &request,
                QIODevice *outgoingData);
@@ -147,7 +139,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-//Q_DECLARE_METATYPE(QNetworkRequest::KnownHeaders)
 
 #endif // QNETWORKREPLYWASMIMPL_H

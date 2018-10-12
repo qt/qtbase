@@ -1012,12 +1012,10 @@ MakefileGenerator::writePrlFile(QTextStream &t)
         t << "QMAKE_PRL_VERSION = " << project->first("VERSION") << endl;
     if(project->isActiveConfig("staticlib") || project->isActiveConfig("explicitlib")) {
         ProStringList libs;
-        if(!project->isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
-            libs = project->values("QMAKE_INTERNAL_PRL_LIBS");
+        if (!project->isActiveConfig("staticlib"))
+            libs << "LIBS" << "QMAKE_LIBS";
         else
-            libs << "QMAKE_LIBS"; //obvious one
-        if(project->isActiveConfig("staticlib"))
-            libs << "QMAKE_LIBS_PRIVATE";
+            libs << "LIBS" << "LIBS_PRIVATE" << "QMAKE_LIBS" << "QMAKE_LIBS_PRIVATE";
         t << "QMAKE_PRL_LIBS =";
         for (ProStringList::Iterator it = libs.begin(); it != libs.end(); ++it)
             t << qv(project->values((*it).toKey()));
@@ -3348,10 +3346,9 @@ MakefileGenerator::writePkgConfigFile()
 
     if (project->isActiveConfig("staticlib")) {
         ProStringList libs;
-        if (!project->isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
-            libs = project->values("QMAKE_INTERNAL_PRL_LIBS");
-        else
-            libs << "QMAKE_LIBS"; //obvious one
+        libs << "LIBS";  // FIXME: this should not be conditional on staticlib
+        libs << "LIBS_PRIVATE";
+        libs << "QMAKE_LIBS";  // FIXME: this should not be conditional on staticlib
         libs << "QMAKE_LIBS_PRIVATE";
         libs << "QMAKE_LFLAGS_THREAD"; //not sure about this one, but what about things like -pthread?
         t << "Libs.private:";
