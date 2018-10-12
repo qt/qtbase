@@ -1303,6 +1303,7 @@ defineTest(createConfigStatus) {
         cont = \
             "$$system_quote($$system_path($$cfg)$$ext) -redo %*"
     } else {
+        !contains(cfg, .*/.*): cfg = ./$$cfg
         cont = \
             "$${LITERAL_HASH}!/bin/sh" \
             "exec $$system_quote($$cfg) -redo \"$@\""
