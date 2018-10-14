@@ -380,15 +380,8 @@ class Q_XCB_EXPORT QXcbConnection : public QObject
 {
     Q_OBJECT
 public:
-    explicit QXcbConnection(xcb_connection_t *c, int primaryScreenNumber,
-                            QXcbNativeInterface *nativeInterface, bool canGrabServer,
-                            xcb_visualid_t defaultVisualId, const QByteArray &displayName,
-                            void *xlibDisplay = nullptr);
-
+    QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, xcb_visualid_t defaultVisualId, const char *displayName = 0);
     ~QXcbConnection();
-
-    static QXcbConnection *create(QXcbNativeInterface *nativeInterface, bool canGrabServer,
-                                  xcb_visualid_t defaultVisualId, const char *displayName = nullptr);
 
     QXcbConnection *connection() const { return const_cast<QXcbConnection *>(this); }
     bool isConnected() const;
@@ -648,21 +641,21 @@ private:
     static bool xi2GetValuatorValueIfSet(const void *event, int valuatorNum, double *value);
 #endif
 
-    xcb_connection_t *const m_connection;
+    xcb_connection_t *m_connection = nullptr;
     const xcb_setup_t *m_setup = nullptr;
     const bool m_canGrabServer;
     const xcb_visualid_t m_defaultVisualId;
 
     QList<QXcbVirtualDesktop *> m_virtualDesktops;
     QList<QXcbScreen *> m_screens;
-    const int m_primaryScreenNumber;
+    int m_primaryScreenNumber = 0;
 
     xcb_atom_t m_allAtoms[QXcbAtom::NAtoms];
 
     xcb_timestamp_t m_time = XCB_CURRENT_TIME;
     xcb_timestamp_t m_netWmUserTime = XCB_CURRENT_TIME;
 
-    const QByteArray m_displayName;
+    QByteArray m_displayName;
 
     QXcbKeyboard *m_keyboard = nullptr;
 #ifndef QT_NO_CLIPBOARD
@@ -675,7 +668,7 @@ private:
     QXcbNativeInterface *m_nativeInterface = nullptr;
 
 #if QT_CONFIG(xcb_xlib)
-    void *const m_xlib_display;
+    void *m_xlib_display = nullptr;
 #endif
     QXcbEventReader *m_reader = nullptr;
 

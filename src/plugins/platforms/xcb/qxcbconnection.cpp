@@ -525,59 +525,31 @@ void QXcbConnection::initializeScreens()
     }
 }
 
-QXcbConnection *QXcbConnection::create(QXcbNativeInterface *nativeInterface, bool canGrabServer,
-                                       xcb_visualid_t defaultVisualId,
-                                       const char *displayNameIn)
+QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, xcb_visualid_t defaultVisualId, const char *displayName)
+    : m_canGrabServer(canGrabServer)
+    , m_defaultVisualId(defaultVisualId)
+    , m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
+    , m_nativeInterface(nativeInterface)
 {
-    const QByteArray displayName = displayNameIn ? QByteArray(displayNameIn) : qgetenv("DISPLAY");
-    int primaryScreenNumber = 0;
-    void *xlibDisplay = nullptr;
-    xcb_connection_t *connection = nullptr;
 #if QT_CONFIG(xcb_xlib)
-    Display *dpy = XOpenDisplay(displayName.constData());
+    Display *dpy = XOpenDisplay(m_displayName.constData());
     if (dpy) {
-        primaryScreenNumber = DefaultScreen(dpy);
-        connection = XGetXCBConnection(dpy);
+        m_primaryScreenNumber = DefaultScreen(dpy);
+        m_connection = XGetXCBConnection(dpy);
         XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
         XSetErrorHandler(nullErrorHandler);
         XSetIOErrorHandler(ioErrorHandler);
-        xlibDisplay = dpy;
+        m_xlib_display = dpy;
     }
 #else
-    connection = xcb_connect(displayName.constData(), &primaryScreenNumber);
+    m_connection = xcb_connect(m_displayName.constData(), &m_primaryScreenNumber);
 #endif // QT_CONFIG(xcb_xlib)
-    if (Q_UNLIKELY(connection == nullptr)) {
-        qWarning("QXcbConnection: Could not connect to display \"%s\"", displayName.constData());
-        return nullptr;
-    }
-    if (Q_UNLIKELY(xcb_connection_has_error(connection))) {
-#if QT_CONFIG(xcb_xlib)
-        XCloseDisplay(static_cast<Display *>(xlibDisplay));
-#else
-        xcb_disconnect(connection);
-#endif
-        qWarning("QXcbConnection: Errors occurred connecting to display \"%s\"", displayName.constData());
-        return nullptr;
-    }
-    return new QXcbConnection(connection, primaryScreenNumber, nativeInterface,
-                              canGrabServer, defaultVisualId, displayName, xlibDisplay);
-}
 
+    if (Q_UNLIKELY(!m_connection || xcb_connection_has_error(m_connection))) {
+        qCWarning(lcQpaScreen, "QXcbConnection: Could not connect to display %s", m_displayName.constData());
+        return;
+    }
 
-QXcbConnection::QXcbConnection(xcb_connection_t *c, int primaryScreenNumber,
-                               QXcbNativeInterface *nativeInterface, bool canGrabServer,
-                               xcb_visualid_t defaultVisualId, const QByteArray &displayName,
-                               void *xlibDisplay)
-    : m_connection(c)
-    , m_canGrabServer(canGrabServer)
-    , m_defaultVisualId(defaultVisualId)
-    , m_primaryScreenNumber(primaryScreenNumber)
-    , m_displayName(displayName)
-    , m_nativeInterface(nativeInterface)
-#if QT_CONFIG(xcb_xlib)
-    , m_xlib_display(xlibDisplay)
-#endif
-{
     m_reader = new QXcbEventReader(this);
     m_reader->start();
 
