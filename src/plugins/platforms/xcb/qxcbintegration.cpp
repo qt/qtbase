@@ -195,25 +195,23 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
 
     const int numParameters = parameters.size();
     m_connections.reserve(1 + numParameters / 2);
-    auto conn = new QXcbConnection(m_nativeInterface.data(), m_canGrab, m_defaultVisualId, displayName);
-    if (conn->isConnected())
-        m_connections << conn;
-    else
-        delete conn;
 
+    auto conn = new QXcbConnection(m_nativeInterface.data(), m_canGrab, m_defaultVisualId, displayName);
+    if (!conn->isConnected()) {
+        delete conn;
+        return;
+    }
+    m_connections << conn;
+
+    // ### Qt 6 (QTBUG-52408) remove this multi-connection code path
     for (int i = 0; i < numParameters - 1; i += 2) {
-        qCDebug(lcQpaScreen) << "connecting to additional display: " << parameters.at(i) << parameters.at(i+1);
+        qCDebug(lcQpaXcb) << "connecting to additional display: " << parameters.at(i) << parameters.at(i+1);
         QString display = parameters.at(i) + QLatin1Char(':') + parameters.at(i+1);
         conn = new QXcbConnection(m_nativeInterface.data(), m_canGrab, m_defaultVisualId, display.toLatin1().constData());
         if (conn->isConnected())
             m_connections << conn;
         else
             delete conn;
-    }
-
-    if (m_connections.isEmpty()) {
-        qCritical("Could not connect to any X display.");
-        exit(1);
     }
 
     m_fontDatabase.reset(new QGenericUnixFontDatabase());

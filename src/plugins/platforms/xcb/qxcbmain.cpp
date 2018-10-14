@@ -52,10 +52,16 @@ public:
 
 QPlatformIntegration* QXcbIntegrationPlugin::create(const QString& system, const QStringList& parameters, int &argc, char **argv)
 {
-    if (!system.compare(QLatin1String("xcb"), Qt::CaseInsensitive))
-        return new QXcbIntegration(parameters, argc, argv);
+    if (!system.compare(QLatin1String("xcb"), Qt::CaseInsensitive)) {
+        auto xcbIntegration = new QXcbIntegration(parameters, argc, argv);
+        if (!xcbIntegration->hasDefaultConnection()) {
+            delete xcbIntegration;
+            return nullptr;
+        }
+        return xcbIntegration;
+    }
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE
