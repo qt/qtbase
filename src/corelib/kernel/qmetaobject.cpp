@@ -2652,8 +2652,10 @@ int QMetaEnum::value(int index) const
 */
 bool QMetaEnum::isFlag() const
 {
+    if (!mobj)
+        return false;
     const int offset = priv(mobj->d.data)->revision >= 8 ? 2 : 1;
-    return mobj && mobj->d.data[handle + offset] & EnumIsFlag;
+    return mobj->d.data[handle + offset] & EnumIsFlag;
 }
 
 /*!
@@ -2664,8 +2666,10 @@ bool QMetaEnum::isFlag() const
 */
 bool QMetaEnum::isScoped() const
 {
+    if (!mobj)
+        return false;
     const int offset = priv(mobj->d.data)->revision >= 8 ? 2 : 1;
-    return mobj && mobj->d.data[handle + offset] & EnumIsScoped;
+    return mobj->d.data[handle + offset] & EnumIsScoped;
 }
 
 /*!
