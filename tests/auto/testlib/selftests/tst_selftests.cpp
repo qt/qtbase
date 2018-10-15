@@ -520,6 +520,7 @@ void tst_Selftests::runSubTest_data()
 
         foreach (QString const& subtest, tests) {
             QStringList arguments = loggerSet.arguments;
+            // Keep in sync with generateTestData()'s extraArgs in generate_expected_output.py:
             if (subtest == "commandlinedata") {
                 arguments << QString("fiveTablePasses fiveTablePasses:fiveTablePasses_data1 -v2").split(' ');
             }
@@ -612,6 +613,7 @@ void tst_Selftests::runSubTest_data()
             if (loggerSet.name.contains("teamcity") && subtest.startsWith("benchlib"))
                 continue;   // Skip benchmark for TeamCity logger
 
+            // Keep in sync with generateTestData()'s crashers in generate_expected_output.py:
             const bool crashes = subtest == QLatin1String("assert") || subtest == QLatin1String("exceptionthrow")
                 || subtest == QLatin1String("fetchbogus") || subtest == QLatin1String("crashedterminate")
                 || subtest == QLatin1String("crashes") || subtest == QLatin1String("silent")
@@ -687,6 +689,7 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
 
     QProcess proc;
     QProcessEnvironment environment = processEnvironment();
+    // Keep in sync with generateTestData()'s extraEnv in generate_expected_output.py:
     if (crashes) {
         environment.insert("QTEST_DISABLE_CORE_DUMP", "1");
         environment.insert("QTEST_DISABLE_STACK_DUMP", "1");

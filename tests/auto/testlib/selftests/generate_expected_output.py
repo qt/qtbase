@@ -223,6 +223,7 @@ del re
 
 def generateTestData(testname, clean,
                      formats = ('xml', 'txt', 'xunitxml', 'lightxml', 'teamcity', 'tap'),
+                     # Make sure this matches tst_Selftests::runSubTest_data():
                      extraArgs = {
         "commandlinedata": "fiveTablePasses fiveTablePasses:fiveTablePasses_data1 -v2",
         "benchlibcallgrind": "-callgrind",
@@ -236,7 +237,15 @@ def generateTestData(testname, clean,
         "silent": "-silent",
         "verbose1": "-v1",
         "verbose2": "-v2",
-        }):
+        },
+                     # Make sure this matches tst_Selftests::doRunSubTest():
+                     extraEnv = {
+        "crashes": { "QTEST_DISABLE_CORE_DUMP": "1", "QTEST_DISABLE_STACK_DUMP": "1" },
+        },
+                     # These are actually *other* crashers, beside those in extraEnv;
+                     # must match tst_Selftests::runSubTest_data():
+                     crashers = ("assert", "blacklisted", "crashedterminate",
+                                 "exceptionthrow", "fetchbogus", "silent")):
     """Run one test and save its cleaned results.
 
     Required arguments are the name of the test directory (the binary
@@ -248,6 +257,16 @@ def generateTestData(testname, clean,
     if not os.path.isfile(path):
         print("Warning: directory", testname, "contains no test executable")
         return
+    env = None
+    try:
+        env = extraEnv[testname]
+    except KeyError:
+        if env in crashers:
+            env = extraEnv["crashes"]
+    if env:
+        data = os.environ.copy()
+        data.update(env)
+        env = data
 
     print("  running", testname)
     for format in formats:
@@ -255,7 +274,7 @@ def generateTestData(testname, clean,
         if testname in extraArgs:
             cmd += extraArgs[testname].split()
 
-        data = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+        data = subprocess.Popen(cmd, stdout=subprocess.PIPE, env=env,
                                 universal_newlines=True).communicate()[0]
         with open('expected_' + testname + '.' + format, 'w') as out:
             out.write('\n'.join(clean(data))) # write() appends a newline, too
