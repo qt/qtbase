@@ -483,7 +483,6 @@ public:
     void _q_showIfNotHidden();
 
     void setEnabled_helper(bool);
-    void registerDropSite(bool);
     static void adjustFlags(Qt::WindowFlags &flags, QWidget *w = 0);
 
     void updateFrameStrut();

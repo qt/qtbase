@@ -1580,9 +1580,6 @@ QWidget::~QWidget()
     d->gestureContext.clear();
 #endif
 
-    // force acceptDrops false before winId is destroyed.
-    d->registerDropSite(false);
-
 #ifndef QT_NO_ACTION
     // remove all actions from this widget
     for (int i = 0; i < d->actions.size(); ++i) {
@@ -3461,11 +3458,6 @@ void QWidget::setAcceptDrops(bool on)
 {
     setAttribute(Qt::WA_AcceptDrops, on);
 
-}
-
-void QWidgetPrivate::registerDropSite(bool on)
-{
-    Q_UNUSED(on);
 }
 
 /*!
@@ -11207,7 +11199,6 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break;
     }
     case Qt::WA_DropSiteRegistered:  {
-        d->registerDropSite(on);
         for (int i = 0; i < d->children.size(); ++i) {
             QWidget *w = qobject_cast<QWidget *>(d->children.at(i));
             if (w && !w->isWindow() && !w->testAttribute(Qt::WA_AcceptDrops) && w->testAttribute(Qt::WA_DropSiteRegistered) != on)
