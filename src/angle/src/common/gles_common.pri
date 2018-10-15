@@ -766,6 +766,7 @@ khr_headers.path = $$[QT_INSTALL_HEADERS]/QtANGLE/KHR
 gles2_headers.files = \
     $$ANGLE_DIR/include/GLES2/gl2.h \
     $$ANGLE_DIR/include/GLES2/gl2ext.h \
+    $$ANGLE_DIR/include/GLES2/gl2ext_angle.h \
     $$ANGLE_DIR/include/GLES2/gl2platform.h
 gles2_headers.path = $$[QT_INSTALL_HEADERS]/QtANGLE/GLES2
 gles3_headers.files = \

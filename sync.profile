@@ -80,7 +80,7 @@
 );
 
 @qpa_headers = ( qr/^(?!qplatformheaderhelper)qplatform/, qr/^qwindowsystem/ );
-my @angle_headers = ('egl.h', 'eglext.h', 'eglplatform.h', 'gl2.h', 'gl2ext.h', 'gl2platform.h', 'ShaderLang.h', 'khrplatform.h');
+my @angle_headers = ('egl.h', 'eglext.h', 'eglext_angle.h', 'eglplatform.h', 'gl2.h', 'gl2ext.h', 'gl2ext_angle.h', 'gl2platform.h', 'ShaderLang.h', 'khrplatform.h');
 my @internal_zlib_headers = ( "crc32.h", "deflate.h", "gzguts.h", "inffast.h", "inffixed.h", "inflate.h", "inftrees.h", "trees.h", "zutil.h" );
 my @zlib_headers = ( "zconf.h", "zlib.h" );
 @ignore_headers = ( @internal_zlib_headers );
