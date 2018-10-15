@@ -505,6 +505,7 @@ void tst_Selftests::runSubTest_data()
         << "verifyexceptionthrown"
 #endif //!QT_NO_EXCEPTIONS
         << "warnings"
+        << "watchdog"
         << "xunit"
     ;
 
@@ -621,7 +622,7 @@ void tst_Selftests::runSubTest_data()
                 || subtest == QLatin1String("fetchbogus") || subtest == QLatin1String("crashedterminate")
                 || subtest == QLatin1String("faildatatype") || subtest == QLatin1String("failfetchtype")
                 || subtest == QLatin1String("crashes") || subtest == QLatin1String("silent")
-                || subtest == QLatin1String("blacklisted");
+                || subtest == QLatin1String("blacklisted") || subtest == QLatin1String("watchdog");
             QTest::newRow(qPrintable(QString("%1 %2").arg(subtest).arg(loggerSet.name)))
                 << subtest
                 << loggers
@@ -700,6 +701,8 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
     if (crashes) {
         environment.insert("QTEST_DISABLE_CORE_DUMP", "1");
         environment.insert("QTEST_DISABLE_STACK_DUMP", "1");
+        if (subdir == QLatin1String("watchdog"))
+            environment.insert("QTEST_FUNCTION_TIMEOUT", "100");
     }
     proc.setProcessEnvironment(environment);
     const QString path = subdir + QLatin1Char('/') + subdir;
@@ -742,6 +745,7 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
     if (subdir != QLatin1String("exceptionthrow")
         && subdir != QLatin1String("cmptest") // QImage comparison requires QGuiApplication
         && subdir != QLatin1String("fetchbogus")
+        && subdir != QLatin1String("watchdog")
         && subdir != QLatin1String("xunit")
 #ifdef Q_CC_MINGW
         && subdir != QLatin1String("blacklisted") // calls qFatal()

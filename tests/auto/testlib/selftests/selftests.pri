@@ -50,6 +50,7 @@ SUBPROGRAMS = \
      verbose2 \
      verifyexceptionthrown \
      warnings \
+     watchdog \
      xunit
 
 qtHaveModule(gui): SUBPROGRAMS += \

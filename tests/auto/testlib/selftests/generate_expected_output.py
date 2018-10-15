@@ -267,11 +267,14 @@ def baseEnv(platname=None,
 def testEnv(testname,
             # Make sure this matches tst_Selftests::doRunSubTest():
             extraEnv = {
-        "crashers": { "QTEST_DISABLE_CORE_DUMP": "1", "QTEST_DISABLE_STACK_DUMP": "1" },
+        "crashers": { "QTEST_DISABLE_CORE_DUMP": "1",
+                      "QTEST_DISABLE_STACK_DUMP": "1" },
+        "watchdog": { "QTEST_FUNCTION_TIMEOUT": "100" },
         },
             # Must match tst_Selftests::runSubTest_data():
-            crashers = ("assert", "blacklisted", "crashes", "crashedterminate", "exceptionthrow",
-                        "faildatatype", "failfetchtype", "fetchbogus", "silent")):
+            crashers = ("assert", "blacklisted", "crashes", "crashedterminate",
+                        "exceptionthrow", "faildatatype", "failfetchtype",
+                        "fetchbogus", "silent", "watchdog")):
     """Determine the environment in which to run a test."""
     data = baseEnv()
     if testname in crashers:
