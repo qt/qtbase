@@ -1200,7 +1200,9 @@ char *formatString(const char *prefix, const char *suffix, size_t numArguments, 
   Returns a pointer to a string that is the string \a ba represented
   as a space-separated sequence of hex characters. If the input is
   considered too long, it is truncated. A trucation is indicated in
-  the returned string as an ellipsis at the end.
+  the returned string as an ellipsis at the end. The caller has
+  ownership of the returned pointer and must ensure it is later passed
+  to operator delete[].
 
   \a length is the length of the string \a ba.
  */
