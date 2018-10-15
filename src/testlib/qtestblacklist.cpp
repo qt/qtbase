@@ -259,7 +259,7 @@ void parseBlackList()
     }
 }
 
-void checkBlackList(const char *slot, const char *data)
+void checkBlackLists(const char *slot, const char *data)
 {
     bool ignore = ignoreAll;
 

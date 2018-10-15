@@ -1103,7 +1103,7 @@ bool TestMethods::invokeTest(int index, const char *data, WatchDog *watchDog) co
                 if (!data || !qstrcmp(data, table.testData(curDataIndex)->dataTag())) {
                     foundFunction = true;
 
-                    QTestPrivate::checkBlackList(name.constData(), dataCount ? table.testData(curDataIndex)->dataTag() : 0);
+                    QTestPrivate::checkBlackLists(name.constData(), dataCount ? table.testData(curDataIndex)->dataTag() : 0);
 
                     QTestDataSetter s(curDataIndex >= dataCount ? static_cast<QTestData *>(0)
                                                       : table.testData(curDataIndex));
