@@ -72,6 +72,7 @@
 #endif
 
 #include <stdlib.h>
+#include <new>
 
 #include "qobject_p.h"
 
@@ -592,7 +593,7 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
 #endif // QT_USE_MMAP
 
         if (!ok) {
-            d->unmapPointer = new char[d->unmapLength];
+            d->unmapPointer = new (std::nothrow) char[d->unmapLength];
             if (d->unmapPointer) {
                 file.seek(0);
                 qint64 readResult = file.read(d->unmapPointer, d->unmapLength);
