@@ -2905,7 +2905,10 @@ void QStyleSheetStyle::polish(QPalette &pal)
 
 void QStyleSheetStyle::repolish(QWidget *w)
 {
-    QList<const QObject *> children = w->findChildren<const QObject *>(QString());
+    QList<const QObject *> children;
+    children.reserve(w->children().size() + 1);
+    for (auto child: qAsConst(w->children()))
+        children.append(child);
     children.append(w);
     styleSheetCaches->styleSheetCache.remove(w);
     updateObjects(children);
