@@ -497,6 +497,7 @@ void tst_Selftests::runSubTest_data()
         << "sleep"
         << "strcmp"
         << "subtest"
+        << "testlib"
         << "tuplediagnostics"
         << "verbose1"
         << "verbose2"

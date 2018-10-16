@@ -45,6 +45,7 @@ SUBPROGRAMS = \
      sleep \
      strcmp \
      subtest \
+     testlib \
      tuplediagnostics \
      verbose1 \
      verbose2 \
