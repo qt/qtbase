@@ -49,7 +49,7 @@ class DomButtonGroup;
 
 class Driver
 {
-    Q_DISABLE_COPY(Driver)
+    Q_DISABLE_COPY_MOVE(Driver)
 public:
     Driver();
     virtual ~Driver();

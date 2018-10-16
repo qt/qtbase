@@ -108,7 +108,7 @@ public:
     void close();
 private:
     QZipWriterPrivate *d;
-    Q_DISABLE_COPY(QZipWriter)
+    Q_DISABLE_COPY_MOVE(QZipWriter)
 };
 
 QT_END_NAMESPACE

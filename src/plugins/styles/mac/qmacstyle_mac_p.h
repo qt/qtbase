@@ -115,7 +115,7 @@ public:
                       const QWidget *widget = 0) const;
 
 private:
-    Q_DISABLE_COPY(QMacStyle)
+    Q_DISABLE_COPY_MOVE(QMacStyle)
     Q_DECLARE_PRIVATE(QMacStyle)
 };
 

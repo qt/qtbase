@@ -113,7 +113,7 @@ private:
     int m_savedPriority;
     QCUPSSupport::JobSheets m_savedJobSheets;
 
-    Q_DISABLE_COPY(QCupsJobWidget)
+    Q_DISABLE_COPY_MOVE(QCupsJobWidget)
 };
 
 QT_END_NAMESPACE

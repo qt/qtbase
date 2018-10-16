@@ -158,7 +158,7 @@ Q_SIGNALS:
     void done(bool);
 
 private:
-    Q_DISABLE_COPY(QFtp)
+    Q_DISABLE_COPY_MOVE(QFtp)
     Q_DECLARE_PRIVATE(QFtp)
 
     Q_PRIVATE_SLOT(d_func(), void _q_startNextCommand())

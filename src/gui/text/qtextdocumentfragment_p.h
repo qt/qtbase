@@ -109,7 +109,7 @@ public:
 
     uint importedFromPlainText : 1;
 private:
-    Q_DISABLE_COPY(QTextDocumentFragmentPrivate)
+    Q_DISABLE_COPY_MOVE(QTextDocumentFragmentPrivate)
 };
 
 #ifndef QT_NO_TEXTHTMLPARSER

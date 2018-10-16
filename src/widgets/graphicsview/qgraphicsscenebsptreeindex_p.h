@@ -99,7 +99,7 @@ protected:
 
 private :
     Q_DECLARE_PRIVATE(QGraphicsSceneBspTreeIndex)
-    Q_DISABLE_COPY(QGraphicsSceneBspTreeIndex)
+    Q_DISABLE_COPY_MOVE(QGraphicsSceneBspTreeIndex)
     Q_PRIVATE_SLOT(d_func(), void _q_updateSortCache())
     Q_PRIVATE_SLOT(d_func(), void _q_updateIndex())
 

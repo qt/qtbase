@@ -160,7 +160,7 @@ private:
     bool readHttpHeader();
 
     Q_DECLARE_PRIVATE(QHttpSocketEngine)
-    Q_DISABLE_COPY(QHttpSocketEngine)
+    Q_DISABLE_COPY_MOVE(QHttpSocketEngine)
 
 };
 

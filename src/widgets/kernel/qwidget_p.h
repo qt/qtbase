@@ -150,7 +150,7 @@ public:
     }
 
 private:
-    Q_DISABLE_COPY(QWidgetBackingStoreTracker)
+    Q_DISABLE_COPY_MOVE(QWidgetBackingStoreTracker)
 
 private:
     QWidgetBackingStore* m_ptr;

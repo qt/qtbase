@@ -88,7 +88,7 @@ protected:
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsEffectSource)
-    Q_DISABLE_COPY(QGraphicsEffectSource)
+    Q_DISABLE_COPY_MOVE(QGraphicsEffectSource)
     friend class QGraphicsEffect;
     friend class QGraphicsEffectPrivate;
     friend class QGraphicsScenePrivate;

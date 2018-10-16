@@ -196,7 +196,7 @@ public:
 
 
 private:
-    Q_DISABLE_COPY(QVectorPath)
+    Q_DISABLE_COPY_MOVE(QVectorPath)
 
     const QPainterPath::ElementType *m_elements;
     const qreal *m_points;

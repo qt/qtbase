@@ -184,7 +184,7 @@ public:
 #endif
 
 private:
-    Q_DISABLE_COPY(QMetaObjectBuilder)
+    Q_DISABLE_COPY_MOVE(QMetaObjectBuilder)
 
     QMetaObjectBuilderPrivate *d;
 

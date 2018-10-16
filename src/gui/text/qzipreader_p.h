@@ -116,7 +116,7 @@ public:
 
 private:
     QZipReaderPrivate *d;
-    Q_DISABLE_COPY(QZipReader)
+    Q_DISABLE_COPY_MOVE(QZipReader)
 };
 Q_DECLARE_TYPEINFO(QZipReader::FileInfo, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(QZipReader::Status, Q_PRIMITIVE_TYPE);

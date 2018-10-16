@@ -89,7 +89,7 @@ struct EphemeralSecKeychain
     ~EphemeralSecKeychain();
 
     SecKeychainRef keychain = nullptr;
-    Q_DISABLE_COPY(EphemeralSecKeychain)
+    Q_DISABLE_COPY_MOVE(EphemeralSecKeychain)
 };
 
 EphemeralSecKeychain::EphemeralSecKeychain()

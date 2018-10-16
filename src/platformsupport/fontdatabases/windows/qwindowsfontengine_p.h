@@ -66,7 +66,7 @@ class QWindowsFontEngineData;
 
 class QWindowsFontEngine : public QFontEngine
 {
-    Q_DISABLE_COPY(QWindowsFontEngine)
+    Q_DISABLE_COPY_MOVE(QWindowsFontEngine)
     friend class QWindowsMultiFontEngine;
 
 public:

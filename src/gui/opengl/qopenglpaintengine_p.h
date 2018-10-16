@@ -166,7 +166,7 @@ public:
     bool shouldDrawCachedGlyphs(QFontEngine *, const QTransform &) const override;
 
 private:
-    Q_DISABLE_COPY(QOpenGL2PaintEngineEx)
+    Q_DISABLE_COPY_MOVE(QOpenGL2PaintEngineEx)
 
     friend class QOpenGLEngineShaderManager;
 };

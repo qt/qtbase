@@ -208,7 +208,7 @@ protected:
     QScopedPointer<QAbstractFileEnginePrivate> d_ptr;
 private:
     Q_DECLARE_PRIVATE(QAbstractFileEngine)
-    Q_DISABLE_COPY(QAbstractFileEngine)
+    Q_DISABLE_COPY_MOVE(QAbstractFileEngine)
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractFileEngine::FileFlags)
@@ -245,7 +245,7 @@ protected:
     virtual QVariant entryInfo(EntryInfoType type) const;
 
 private:
-    Q_DISABLE_COPY(QAbstractFileEngineIterator)
+    Q_DISABLE_COPY_MOVE(QAbstractFileEngineIterator)
     friend class QDirIterator;
     friend class QDirIteratorPrivate;
     void setPath(const QString &path);

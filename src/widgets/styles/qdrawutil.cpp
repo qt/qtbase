@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 class PainterStateGuard {
-    Q_DISABLE_COPY(PainterStateGuard)
+    Q_DISABLE_COPY_MOVE(PainterStateGuard)
 public:
     explicit PainterStateGuard(QPainter *p) : m_painter(p) {}
     ~PainterStateGuard()

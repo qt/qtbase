@@ -86,7 +86,7 @@ public:
     static QPainterPath intersect(const QPainterPath &path, const QRectF &rect);
 
 private:
-    Q_DISABLE_COPY(QPathClipper)
+    Q_DISABLE_COPY_MOVE(QPathClipper)
 
     enum ClipperMode {
         ClipMode, // do the full clip

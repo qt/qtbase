@@ -82,7 +82,7 @@ protected:
 
 private:
     Q_DECLARE_PRIVATE(QColumnViewGrip)
-    Q_DISABLE_COPY(QColumnViewGrip)
+    Q_DISABLE_COPY_MOVE(QColumnViewGrip)
 };
 
 class QColumnViewGripPrivate : public QWidgetPrivate

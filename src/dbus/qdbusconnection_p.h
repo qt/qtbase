@@ -94,7 +94,7 @@ class QDBusServer;
 class QDBusErrorInternal
 {
     mutable DBusError error;
-    Q_DISABLE_COPY(QDBusErrorInternal)
+    Q_DISABLE_COPY_MOVE(QDBusErrorInternal)
 public:
     inline QDBusErrorInternal() { q_dbus_error_init(&error); }
     inline ~QDBusErrorInternal() { q_dbus_error_free(&error); }

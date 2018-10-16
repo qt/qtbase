@@ -173,7 +173,7 @@ public:
     static int numinstances;
 
 private:
-    Q_DISABLE_COPY(QStyleSheetStyle)
+    Q_DISABLE_COPY_MOVE(QStyleSheetStyle)
     Q_DECLARE_PRIVATE(QStyleSheetStyle)
 };
 

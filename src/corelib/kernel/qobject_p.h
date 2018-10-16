@@ -407,7 +407,7 @@ private:
 
 class QBoolBlocker
 {
-    Q_DISABLE_COPY(QBoolBlocker)
+    Q_DISABLE_COPY_MOVE(QBoolBlocker)
 public:
     explicit inline QBoolBlocker(bool &b, bool value=true):block(b), reset(b){block = value;}
     inline ~QBoolBlocker(){block = reset; }

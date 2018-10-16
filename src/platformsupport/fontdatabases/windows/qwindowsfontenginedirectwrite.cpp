@@ -69,7 +69,7 @@ namespace {
 
     class GeometrySink: public IDWriteGeometrySink
     {
-        Q_DISABLE_COPY(GeometrySink)
+        Q_DISABLE_COPY_MOVE(GeometrySink)
     public:
         GeometrySink(QPainterPath *path)
             : m_refCount(0), m_path(path)

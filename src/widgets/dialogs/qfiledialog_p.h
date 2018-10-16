@@ -290,7 +290,7 @@ private:
     virtual void helperPrepareShow(QPlatformDialogHelper *) override;
     virtual void helperDone(QDialog::DialogCode, QPlatformDialogHelper *) override;
 
-    Q_DISABLE_COPY(QFileDialogPrivate)
+    Q_DISABLE_COPY_MOVE(QFileDialogPrivate)
 };
 
 class QFileDialogLineEdit : public QLineEdit

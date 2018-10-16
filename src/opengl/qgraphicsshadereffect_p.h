@@ -80,7 +80,7 @@ protected:
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsShaderEffect)
-    Q_DISABLE_COPY(QGraphicsShaderEffect)
+    Q_DISABLE_COPY_MOVE(QGraphicsShaderEffect)
 
     friend class QGLCustomShaderEffectStage;
 };

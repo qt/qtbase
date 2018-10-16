@@ -115,7 +115,7 @@ private:
 
 class QMenuSloppyState
 {
-    Q_DISABLE_COPY(QMenuSloppyState)
+    Q_DISABLE_COPY_MOVE(QMenuSloppyState)
 public:
     QMenuSloppyState()
         : m_enabled(false)

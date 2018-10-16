@@ -115,7 +115,7 @@ protected:
     friend class QGraphicsItemPrivate;
     friend class QGraphicsSceneBspTreeIndex;
 private:
-    Q_DISABLE_COPY(QGraphicsSceneIndex)
+    Q_DISABLE_COPY_MOVE(QGraphicsSceneIndex)
     Q_DECLARE_PRIVATE(QGraphicsSceneIndex)
 };
 

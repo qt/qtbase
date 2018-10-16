@@ -395,7 +395,7 @@ namespace QtPrivate {
     protected:
         ~QSlotObjectBase() {}
     private:
-        Q_DISABLE_COPY(QSlotObjectBase)
+        Q_DISABLE_COPY_MOVE(QSlotObjectBase)
     };
 
     // implementation of QSlotObjectBase for which the slot is a pointer to member function of a QObject

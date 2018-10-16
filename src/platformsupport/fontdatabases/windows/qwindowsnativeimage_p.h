@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 class QWindowsNativeImage
 {
-    Q_DISABLE_COPY(QWindowsNativeImage)
+    Q_DISABLE_COPY_MOVE(QWindowsNativeImage)
 public:
     QWindowsNativeImage(int width, int height,
                         QImage::Format format);

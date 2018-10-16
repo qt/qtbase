@@ -67,7 +67,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaFonts)
 
 class QWindowsFontEngineData
 {
-    Q_DISABLE_COPY(QWindowsFontEngineData)
+    Q_DISABLE_COPY_MOVE(QWindowsFontEngineData)
 public:
     QWindowsFontEngineData();
     ~QWindowsFontEngineData();
@@ -85,7 +85,7 @@ public:
 
 class QWindowsFontDatabase : public QPlatformFontDatabase
 {
-    Q_DISABLE_COPY(QWindowsFontDatabase)
+    Q_DISABLE_COPY_MOVE(QWindowsFontDatabase)
 public:
     enum FontOptions {
         // Relevant bits from QWindowsIntegration::Options

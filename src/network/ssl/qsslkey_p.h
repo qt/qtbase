@@ -130,7 +130,7 @@ public:
     QAtomicInt ref;
 
 private:
-    Q_DISABLE_COPY(QSslKeyPrivate)
+    Q_DISABLE_COPY_MOVE(QSslKeyPrivate)
 };
 
 QT_END_NAMESPACE

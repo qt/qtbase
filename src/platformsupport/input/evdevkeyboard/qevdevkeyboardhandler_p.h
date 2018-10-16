@@ -132,7 +132,7 @@ inline QDataStream &operator<<(QDataStream &ds, const QEvdevKeyboardMap::Composi
 class QFdContainer
 {
     int m_fd;
-    Q_DISABLE_COPY(QFdContainer);
+    Q_DISABLE_COPY_MOVE(QFdContainer);
 public:
     explicit QFdContainer(int fd = -1) Q_DECL_NOTHROW : m_fd(fd) {}
     ~QFdContainer() { reset(); }

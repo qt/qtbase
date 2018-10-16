@@ -82,7 +82,7 @@ public:
 
 private:
     QScopedPointer<QXdgDesktopPortalThemePrivate> d_ptr;
-    Q_DISABLE_COPY(QXdgDesktopPortalTheme)
+    Q_DISABLE_COPY_MOVE(QXdgDesktopPortalTheme)
 };
 
 QT_END_NAMESPACE

@@ -76,7 +76,7 @@ public:
 private:
     friend QKeyMapperPrivate *qt_keymapper_private();
     Q_DECLARE_PRIVATE(QKeyMapper)
-    Q_DISABLE_COPY(QKeyMapper)
+    Q_DISABLE_COPY_MOVE(QKeyMapper)
 };
 
 struct KeyboardLayoutItem;

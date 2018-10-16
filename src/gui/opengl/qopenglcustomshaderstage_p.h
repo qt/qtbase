@@ -80,7 +80,7 @@ protected:
 private:
     QOpenGLCustomShaderStagePrivate* d_ptr;
 
-    Q_DISABLE_COPY(QOpenGLCustomShaderStage)
+    Q_DISABLE_COPY_MOVE(QOpenGLCustomShaderStage)
 };
 
 

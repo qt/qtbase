@@ -64,7 +64,7 @@ class QIODevice;
 
 class QMimeTypeParserBase
 {
-    Q_DISABLE_COPY(QMimeTypeParserBase)
+    Q_DISABLE_COPY_MOVE(QMimeTypeParserBase)
 
 public:
     QMimeTypeParserBase() {}

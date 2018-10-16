@@ -127,7 +127,7 @@ public:
 
 private:
     Q_DECLARE_PRIVATE(QSocks5SocketEngine)
-    Q_DISABLE_COPY(QSocks5SocketEngine)
+    Q_DISABLE_COPY_MOVE(QSocks5SocketEngine)
     Q_PRIVATE_SLOT(d_func(), void _q_controlSocketConnected())
     Q_PRIVATE_SLOT(d_func(), void _q_controlSocketReadNotification())
     Q_PRIVATE_SLOT(d_func(), void _q_controlSocketError(QAbstractSocket::SocketError))

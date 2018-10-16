@@ -84,7 +84,7 @@ protected:
     void onTransition(QEvent *) override;
 
 private:
-    Q_DISABLE_COPY(QBasicKeyEventTransition)
+    Q_DISABLE_COPY_MOVE(QBasicKeyEventTransition)
     Q_DECLARE_PRIVATE(QBasicKeyEventTransition)
 };
 

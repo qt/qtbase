@@ -370,7 +370,7 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
 #if !defined(Q_OS_WINRT)
 namespace {
 class QRegistryWatcher {
-    Q_DISABLE_COPY(QRegistryWatcher)
+    Q_DISABLE_COPY_MOVE(QRegistryWatcher)
 public:
     QRegistryWatcher() = default;
 
@@ -425,7 +425,7 @@ private:
 
 class QWindowsSystemProxy
 {
-    Q_DISABLE_COPY(QWindowsSystemProxy)
+    Q_DISABLE_COPY_MOVE(QWindowsSystemProxy)
 public:
     QWindowsSystemProxy();
     ~QWindowsSystemProxy();

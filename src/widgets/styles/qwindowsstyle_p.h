@@ -102,7 +102,7 @@ protected:
     QWindowsStyle(QWindowsStylePrivate &dd);
 
 private:
-    Q_DISABLE_COPY(QWindowsStyle)
+    Q_DISABLE_COPY_MOVE(QWindowsStyle)
     Q_DECLARE_PRIVATE(QWindowsStyle)
 };
 

@@ -165,7 +165,7 @@ public:
     QFontEngine *engines[QChar::ScriptCount];
 
 private:
-    Q_DISABLE_COPY(QFontEngineData)
+    Q_DISABLE_COPY_MOVE(QFontEngineData)
 };
 
 

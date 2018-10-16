@@ -103,7 +103,7 @@ protected:
     QPicturePaintEngine(QPaintEnginePrivate &dptr);
 
 private:
-    Q_DISABLE_COPY(QPicturePaintEngine)
+    Q_DISABLE_COPY_MOVE(QPicturePaintEngine)
 
     void writeCmdLength(int pos, const QRectF &r, bool corr);
 };

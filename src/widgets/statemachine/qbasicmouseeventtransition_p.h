@@ -87,7 +87,7 @@ protected:
     void onTransition(QEvent *) override;
 
 private:
-    Q_DISABLE_COPY(QBasicMouseEventTransition)
+    Q_DISABLE_COPY_MOVE(QBasicMouseEventTransition)
     Q_DECLARE_PRIVATE(QBasicMouseEventTransition)
 };
 

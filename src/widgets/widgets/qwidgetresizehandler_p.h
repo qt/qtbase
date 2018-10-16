@@ -100,7 +100,7 @@ protected:
     void keyPressEvent(QKeyEvent *e);
 
 private:
-    Q_DISABLE_COPY(QWidgetResizeHandler)
+    Q_DISABLE_COPY_MOVE(QWidgetResizeHandler)
 
     enum MousePosition {
         Nowhere,

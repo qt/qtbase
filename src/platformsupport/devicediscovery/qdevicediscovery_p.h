@@ -96,7 +96,7 @@ signals:
 
 protected:
     QDeviceDiscovery(QDeviceTypes types, QObject *parent) : QObject(parent), m_types(types) { }
-    Q_DISABLE_COPY(QDeviceDiscovery)
+    Q_DISABLE_COPY_MOVE(QDeviceDiscovery)
 
     QDeviceTypes m_types;
 };

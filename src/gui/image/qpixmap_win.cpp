@@ -210,7 +210,7 @@ static QImage copyImageData(const BITMAPINFOHEADER &header, const RGBQUAD *color
 
 class DisplayHdc
 {
-    Q_DISABLE_COPY(DisplayHdc)
+    Q_DISABLE_COPY_MOVE(DisplayHdc)
 public:
     DisplayHdc() : m_displayDc(GetDC(nullptr)) {}
     ~DisplayHdc() { ReleaseDC(nullptr, m_displayDc); }

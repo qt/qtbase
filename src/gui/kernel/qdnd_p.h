@@ -110,7 +110,7 @@ private:
     QDrag *m_object;
 
     static QDragManager *m_instance;
-    Q_DISABLE_COPY(QDragManager)
+    Q_DISABLE_COPY_MOVE(QDragManager)
 };
 
 QT_END_NAMESPACE

@@ -196,7 +196,7 @@ public Q_SLOTS:
 
 private:
     Q_DECLARE_PRIVATE(QNativeSocketEngine)
-    Q_DISABLE_COPY(QNativeSocketEngine)
+    Q_DISABLE_COPY_MOVE(QNativeSocketEngine)
 };
 
 class QSocketNotifier;

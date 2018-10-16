@@ -746,7 +746,7 @@ public:
     bool valid() const;
 
 private:
-    Q_DISABLE_COPY(Data)
+    Q_DISABLE_COPY_MOVE(Data)
 };
 
 }

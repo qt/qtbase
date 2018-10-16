@@ -89,7 +89,7 @@ public:
     void clear();
 
 private:
-    Q_DISABLE_COPY(BitOStream);
+    Q_DISABLE_COPY_MOVE(BitOStream);
 
     std::vector<uchar> &buffer;
     quint64 bitsSet;

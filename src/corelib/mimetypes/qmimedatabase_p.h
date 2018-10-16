@@ -74,7 +74,7 @@ class QMimeProviderBase;
 class QMimeDatabasePrivate
 {
 public:
-    Q_DISABLE_COPY(QMimeDatabasePrivate)
+    Q_DISABLE_COPY_MOVE(QMimeDatabasePrivate)
 
     QMimeDatabasePrivate();
     ~QMimeDatabasePrivate();

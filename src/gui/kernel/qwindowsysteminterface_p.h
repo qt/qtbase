@@ -508,7 +508,7 @@ public:
             }
         }
     private:
-        Q_DISABLE_COPY(WindowSystemEventList)
+        Q_DISABLE_COPY_MOVE(WindowSystemEventList)
     };
 
     static WindowSystemEventList windowSystemEventQueue;

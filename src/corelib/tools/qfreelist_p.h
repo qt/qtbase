@@ -187,7 +187,7 @@ class QFreeList
     QAtomicInt _next;
 
     // QFreeList is not copyable
-    Q_DISABLE_COPY(QFreeList)
+    Q_DISABLE_COPY_MOVE(QFreeList)
 
 public:
     Q_DECL_CONSTEXPR inline QFreeList();

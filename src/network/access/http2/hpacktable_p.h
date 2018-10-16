@@ -227,7 +227,7 @@ private:
 
     mutable QByteArray dummyDst;
 
-    Q_DISABLE_COPY(FieldLookupTable);
+    Q_DISABLE_COPY_MOVE(FieldLookupTable);
 };
 
 }

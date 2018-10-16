@@ -119,7 +119,7 @@ Q_SIGNALS:
 
 private:
     Q_DECLARE_PRIVATE(QPpsObject)
-    Q_DISABLE_COPY(QPpsObject)
+    Q_DISABLE_COPY_MOVE(QPpsObject)
 };
 
 QT_END_NAMESPACE

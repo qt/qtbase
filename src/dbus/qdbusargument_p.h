@@ -155,7 +155,7 @@ public:
     bool skipSignature;
 
 private:
-    Q_DISABLE_COPY(QDBusMarshaller)
+    Q_DISABLE_COPY_MOVE(QDBusMarshaller)
 };
 
 class QDBusDemarshaller: public QDBusArgumentPrivate
@@ -208,7 +208,7 @@ public:
     QDBusDemarshaller *parent;
 
 private:
-    Q_DISABLE_COPY(QDBusDemarshaller)
+    Q_DISABLE_COPY_MOVE(QDBusDemarshaller)
     QString toStringUnchecked();
     QDBusObjectPath toObjectPathUnchecked();
     QDBusSignature toSignatureUnchecked();

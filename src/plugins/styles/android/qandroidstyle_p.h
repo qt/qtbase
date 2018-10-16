@@ -371,7 +371,7 @@ public:
     void unpolish(QWidget *widget);
 
 private:
-    Q_DISABLE_COPY(QAndroidStyle)
+    Q_DISABLE_COPY_MOVE(QAndroidStyle)
     static ItemType qtControl(QStyle::ComplexControl control);
     static ItemType qtControl(QStyle::ContentsType contentsType);
     static ItemType qtControl(QStyle::ControlElement controlElement);

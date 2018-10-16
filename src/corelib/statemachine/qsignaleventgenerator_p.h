@@ -71,7 +71,7 @@ private:
     void execute(void **_a);
 
 private:
-    Q_DISABLE_COPY(QSignalEventGenerator)
+    Q_DISABLE_COPY_MOVE(QSignalEventGenerator)
 };
 
 QT_END_NAMESPACE

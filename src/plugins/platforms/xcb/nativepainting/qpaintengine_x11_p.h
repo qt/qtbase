@@ -116,7 +116,7 @@ protected:
     friend GC qt_x11_get_brush_gc(QPainter *);
 
 private:
-    Q_DISABLE_COPY(QX11PaintEngine)
+    Q_DISABLE_COPY_MOVE(QX11PaintEngine)
 };
 
 QT_END_NAMESPACE

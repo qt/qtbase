@@ -46,7 +46,7 @@ QT_BEGIN_NAMESPACE
 
 class QWindowsPrinterSupport : public QPlatformPrinterSupport
 {
-    Q_DISABLE_COPY(QWindowsPrinterSupport)
+    Q_DISABLE_COPY_MOVE(QWindowsPrinterSupport)
 public:
     QWindowsPrinterSupport();
     ~QWindowsPrinterSupport() override;

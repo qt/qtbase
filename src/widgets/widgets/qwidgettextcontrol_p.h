@@ -267,7 +267,7 @@ protected:
     virtual bool event(QEvent *e) override;
 
 private:
-    Q_DISABLE_COPY(QWidgetTextControl)
+    Q_DISABLE_COPY_MOVE(QWidgetTextControl)
     Q_PRIVATE_SLOT(d_func(), void _q_updateCurrentCharFormatAndSelection())
     Q_PRIVATE_SLOT(d_func(), void _q_emitCursorPosChanged(const QTextCursor &))
     Q_PRIVATE_SLOT(d_func(), void _q_deleteSelected())

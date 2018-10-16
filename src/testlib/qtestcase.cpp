@@ -294,8 +294,9 @@ IOPMAssertionID powerID;
 #endif
 
 class TestMethods {
-    Q_DISABLE_COPY(TestMethods)
-    public:
+public:
+    Q_DISABLE_COPY_MOVE(TestMethods)
+
     typedef std::vector<QMetaMethod> MetaMethods;
 
     explicit TestMethods(const QObject *o, const MetaMethods &m = MetaMethods());
@@ -1605,7 +1606,7 @@ FatalSignalHandler::~FatalSignalHandler()
 // Helper class for resolving symbol names by dynamically loading "dbghelp.dll".
 class DebugSymbolResolver
 {
-    Q_DISABLE_COPY(DebugSymbolResolver)
+    Q_DISABLE_COPY_MOVE(DebugSymbolResolver)
 public:
     struct Symbol {
         Symbol() : name(nullptr), address(0) {}

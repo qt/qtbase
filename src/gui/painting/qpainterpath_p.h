@@ -157,7 +157,7 @@ public:
     QVectorPath path;
 
 private:
-    Q_DISABLE_COPY(QVectorPathConverter)
+    Q_DISABLE_COPY_MOVE(QVectorPathConverter)
 };
 
 class QPainterPathData : public QPainterPathPrivate

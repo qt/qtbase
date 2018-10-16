@@ -150,7 +150,7 @@ struct QSimplexConstraint
 
 class QSimplex
 {
-    Q_DISABLE_COPY(QSimplex)
+    Q_DISABLE_COPY_MOVE(QSimplex)
 public:
     QSimplex();
     ~QSimplex();

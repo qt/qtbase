@@ -156,7 +156,7 @@ public:
 
 private:
     Q_DECLARE_PRIVATE(QHttpNetworkConnection)
-    Q_DISABLE_COPY(QHttpNetworkConnection)
+    Q_DISABLE_COPY_MOVE(QHttpNetworkConnection)
     friend class QHttpThreadDelegate;
     friend class QHttpNetworkReply;
     friend class QHttpNetworkReplyPrivate;

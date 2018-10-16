@@ -84,7 +84,7 @@ class QWizard;
 
 class QVistaHelper : public QObject
 {
-    Q_DISABLE_COPY(QVistaHelper)
+    Q_DISABLE_COPY_MOVE(QVistaHelper)
 public:
     QVistaHelper(QWizard *wizard);
     ~QVistaHelper() override;
