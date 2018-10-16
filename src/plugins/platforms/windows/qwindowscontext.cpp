@@ -148,7 +148,7 @@ static inline bool sessionManagerInteractionBlocked() { return false; }
 
 static inline int windowDpiAwareness(HWND hwnd)
 {
-    return QWindowsContext::user32dll.getWindowDpiAwarenessContext && QWindowsContext::user32dll.getWindowDpiAwarenessContext
+    return QWindowsContext::user32dll.getWindowDpiAwarenessContext && QWindowsContext::user32dll.getAwarenessFromDpiAwarenessContext
         ? QWindowsContext::user32dll.getAwarenessFromDpiAwarenessContext(QWindowsContext::user32dll.getWindowDpiAwarenessContext(hwnd))
         : -1;
 }
