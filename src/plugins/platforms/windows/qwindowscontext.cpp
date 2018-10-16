@@ -213,6 +213,7 @@ void QWindowsUser32DLL::init()
         enableNonClientDpiScaling = (EnableNonClientDpiScaling)library.resolve("EnableNonClientDpiScaling");
         getWindowDpiAwarenessContext = (GetWindowDpiAwarenessContext)library.resolve("GetWindowDpiAwarenessContext");
         getAwarenessFromDpiAwarenessContext = (GetAwarenessFromDpiAwarenessContext)library.resolve("GetAwarenessFromDpiAwarenessContext");
+        systemParametersInfoForDpi = (SystemParametersInfoForDpi)library.resolve("SystemParametersInfoForDpi");
     }
 }
 
@@ -914,6 +915,45 @@ QByteArray QWindowsContext::comErrorString(HRESULT hr)
     result += errorMessageFromComError(error);
     result += ')';
     return result;
+}
+
+bool QWindowsContext::systemParametersInfo(unsigned action, unsigned param, void *out,
+                                           unsigned dpi)
+{
+    const BOOL result = QWindowsContext::user32dll.systemParametersInfoForDpi != nullptr && dpi != 0
+        ? QWindowsContext::user32dll.systemParametersInfoForDpi(action, param, out, 0, dpi)
+        : SystemParametersInfo(action, param, out, 0);
+    return result == TRUE;
+}
+
+bool QWindowsContext::systemParametersInfoForScreen(unsigned action, unsigned param, void *out,
+                                                    const QPlatformScreen *screen)
+{
+    return systemParametersInfo(action, param, out, screen ? screen->logicalDpi().first : 0);
+}
+
+bool QWindowsContext::systemParametersInfoForWindow(unsigned action, unsigned param, void *out,
+                                                    const QPlatformWindow *win)
+{
+    return systemParametersInfoForScreen(action, param, out, win ? win->screen() : nullptr);
+}
+
+bool QWindowsContext::nonClientMetrics(NONCLIENTMETRICS *ncm, unsigned dpi)
+{
+    memset(ncm, 0, sizeof(NONCLIENTMETRICS));
+    ncm->cbSize = sizeof(NONCLIENTMETRICS);
+    return systemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm->cbSize, ncm, dpi);
+}
+
+bool QWindowsContext::nonClientMetricsForScreen(NONCLIENTMETRICS *ncm,
+                                                const QPlatformScreen *screen)
+{
+    return nonClientMetrics(ncm, screen ? screen->logicalDpi().first : 0);
+}
+
+bool QWindowsContext::nonClientMetricsForWindow(NONCLIENTMETRICS *ncm, const QPlatformWindow *win)
+{
+    return nonClientMetricsForScreen(ncm, win ? win->screen() : nullptr);
 }
 
 static inline QWindowsInputContext *windowsInputContext()
