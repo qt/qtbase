@@ -1968,9 +1968,8 @@ QList<QByteArray> QMetaMethod::parameterTypes() const
 */
 QList<QByteArray> QMetaMethod::parameterNames() const
 {
-    QList<QByteArray> list;
     if (!mobj)
-        return list;
+        return QList<QByteArray>();
     return QMetaMethodPrivate::get(this)->parameterNames();
 }
 
