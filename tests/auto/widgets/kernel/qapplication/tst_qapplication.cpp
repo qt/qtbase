@@ -240,6 +240,7 @@ void tst_QApplication::staticSetup()
     QVERIFY(style);
     QApplication::setStyle(style);
 
+    bool palette_changed = false;
     QPalette pal;
     QApplication::setPalette(pal);
 
@@ -247,7 +248,11 @@ void tst_QApplication::staticSetup()
     QApplication::setFont(font);*/
 
     int argc = 0;
-    QApplication app(argc, 0);
+    QApplication app(argc, nullptr);
+    QObject::connect(&app, &QApplication::paletteChanged, [&palette_changed]{ palette_changed = true; });
+    QVERIFY(!palette_changed);
+    qApp->setPalette(QPalette(Qt::red));
+    QVERIFY(palette_changed);
 }
 
 
