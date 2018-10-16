@@ -456,7 +456,13 @@ NSOpenGLPixelFormat *QCocoaGLContext::createNSOpenGLPixelFormat(const QSurfaceFo
     if (format.stereo())
         attrs << NSOpenGLPFAStereo;
 
-    attrs << NSOpenGLPFAAllowOfflineRenderers;
+    //Workaround for problems with Chromium and offline renderers on the lat 2013 MacPros.
+    //FIXME: Think if this could be solved via QSurfaceFormat in the future.
+    static bool offlineRenderersAllowed = qEnvironmentVariableIsEmpty("QT_MAC_PRO_WEBENGINE_WORKAROUND");
+    if (offlineRenderersAllowed) {
+        // Allow rendering on GPUs without a connected display
+        attrs << NSOpenGLPFAAllowOfflineRenderers;
+    }
 
     QByteArray useLayer = qgetenv("QT_MAC_WANTS_LAYER");
     if (!useLayer.isEmpty() && useLayer.toInt() > 0) {
