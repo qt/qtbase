@@ -242,8 +242,10 @@ static QByteArray _q_PKCS12_bag(const QList<QSslCertificate> &certs, const QSslK
         items << _q_PKCS7_data(_q_PKCS12_certBag(certs[i]));
 
     // key
-    const QByteArray localKeyId = certs.first().digest(QCryptographicHash::Sha1);
-    items << _q_PKCS7_data(_q_PKCS12_shroudedKeyBag(key, passPhrase, localKeyId));
+    if (!key.isNull()) {
+        const QByteArray localKeyId = certs.first().digest(QCryptographicHash::Sha1);
+        items << _q_PKCS7_data(_q_PKCS12_shroudedKeyBag(key, passPhrase, localKeyId));
+    }
 
     // dump
     QAsn1Element root = QAsn1Element::fromVector(items);
