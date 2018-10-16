@@ -228,7 +228,6 @@ struct xkb_pointer_button_action {
 
 struct xkb_private_action {
     enum xkb_action_type type;
-    enum xkb_action_flags flags;
     uint8_t data[7];
 };
 
@@ -254,6 +253,7 @@ struct xkb_key_type {
     xkb_atom_t name;
     struct xkb_mods mods;
     xkb_level_index_t num_levels;
+    unsigned int num_level_names;
     xkb_atom_t *level_names;
     unsigned int num_entries;
     struct xkb_key_type_entry *entries;
@@ -325,7 +325,7 @@ struct xkb_group {
     bool explicit_type;
     /* Points to a type in keymap->types. */
     const struct xkb_key_type *type;
-    /* Use XkbKeyGroupWidth for the number of levels. */
+    /* Use XkbKeyNumLevels for the number of levels. */
     struct xkb_level *levels;
 };
 
@@ -353,6 +353,11 @@ struct xkb_mod {
     xkb_mod_mask_t mapping; /* vmod -> real mod mapping */
 };
 
+struct xkb_mod_set {
+    struct xkb_mod mods[XKB_MAX_MODS];
+    unsigned int num_mods;
+};
+
 /* Common keyboard description structure */
 struct xkb_keymap {
     struct xkb_context *ctx;
@@ -377,7 +382,7 @@ struct xkb_keymap {
     unsigned int num_sym_interprets;
     struct xkb_sym_interpret *sym_interprets;
 
-    darray(struct xkb_mod) mods;
+    struct xkb_mod_set mods;
 
     /* Number of groups in the key with the most groups. */
     xkb_layout_index_t num_groups;
@@ -385,7 +390,8 @@ struct xkb_keymap {
     xkb_layout_index_t num_group_names;
     xkb_atom_t *group_names;
 
-    darray(struct xkb_led) leds;
+    struct xkb_led leds[XKB_MAX_LEDS];
+    unsigned int num_leds;
 
     char *keycodes_section_name;
     char *symbols_section_name;
@@ -393,10 +399,30 @@ struct xkb_keymap {
     char *compat_section_name;
 };
 
-#define xkb_foreach_key(iter, keymap) \
-    for (iter = keymap->keys + keymap->min_key_code; \
-         iter <= keymap->keys + keymap->max_key_code; \
-         iter++)
+#define xkb_keys_foreach(iter, keymap) \
+    for ((iter) = (keymap)->keys + (keymap)->min_key_code; \
+         (iter) <= (keymap)->keys + (keymap)->max_key_code; \
+         (iter)++)
+
+#define xkb_mods_foreach(iter, mods_) \
+    for ((iter) = (mods_)->mods; \
+         (iter) < (mods_)->mods + (mods_)->num_mods; \
+         (iter)++)
+
+#define xkb_mods_enumerate(idx, iter, mods_) \
+    for ((idx) = 0, (iter) = (mods_)->mods; \
+         (idx) < (mods_)->num_mods; \
+         (idx)++, (iter)++)
+
+#define xkb_leds_foreach(iter, keymap) \
+    for ((iter) = (keymap)->leds; \
+         (iter) < (keymap)->leds + (keymap)->num_leds; \
+         (iter)++)
+
+#define xkb_leds_enumerate(idx, iter, keymap) \
+    for ((idx) = 0, (iter) = (keymap)->leds; \
+         (idx) < (keymap)->num_leds; \
+         (idx)++, (iter)++)
 
 static inline const struct xkb_key *
 XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
@@ -407,7 +433,7 @@ XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
 }
 
 static inline xkb_level_index_t
-XkbKeyGroupWidth(const struct xkb_key *key, xkb_layout_index_t layout)
+XkbKeyNumLevels(const struct xkb_key *key, xkb_layout_index_t layout)
 {
     return key->groups[layout].type->num_levels;
 }
@@ -421,16 +447,26 @@ struct xkb_key *
 XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases);
 
 xkb_atom_t
-XkbResolveKeyAlias(struct xkb_keymap *keymap, xkb_atom_t name);
+XkbResolveKeyAlias(const struct xkb_keymap *keymap, xkb_atom_t name);
 
 void
 XkbEscapeMapName(char *name);
 
+xkb_mod_index_t
+XkbModNameToIndex(const struct xkb_mod_set *mods, xkb_atom_t name,
+                  enum mod_type type);
+
+bool
+XkbLevelsSameSyms(const struct xkb_level *a, const struct xkb_level *b);
+
 xkb_layout_index_t
-wrap_group_into_range(int32_t group,
+XkbWrapGroupIntoRange(int32_t group,
                       xkb_layout_index_t num_groups,
                       enum xkb_range_exceed_type out_of_range_group_action,
                       xkb_layout_index_t out_of_range_group_number);
+
+xkb_mod_mask_t
+mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods);
 
 struct xkb_keymap_format_ops {
     bool (*keymap_new_from_names)(struct xkb_keymap *keymap,

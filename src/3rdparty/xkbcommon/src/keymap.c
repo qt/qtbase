@@ -68,11 +68,11 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
 
     if (keymap->keys) {
         struct xkb_key *key;
-        xkb_foreach_key(key, keymap) {
+        xkb_keys_foreach(key, keymap) {
             if (key->groups) {
                 for (unsigned i = 0; i < key->num_groups; i++) {
                     if (key->groups[i].levels) {
-                        for (unsigned j = 0; j < XkbKeyGroupWidth(key, i); j++)
+                        for (unsigned j = 0; j < XkbKeyNumLevels(key, i); j++)
                             if (key->groups[i].levels[j].num_syms > 1)
                                 free(key->groups[i].levels[j].u.syms);
                         free(key->groups[i].levels);
@@ -93,8 +93,6 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
     free(keymap->sym_interprets);
     free(keymap->key_aliases);
     free(keymap->group_names);
-    darray_free(keymap->mods);
-    darray_free(keymap->leds);
     free(keymap->keycodes_section_name);
     free(keymap->symbols_section_name);
     free(keymap->types_section_name);
@@ -263,7 +261,7 @@ xkb_keymap_get_as_string(struct xkb_keymap *keymap,
 XKB_EXPORT xkb_mod_index_t
 xkb_keymap_num_mods(struct xkb_keymap *keymap)
 {
-    return darray_size(keymap->mods);
+    return keymap->mods.num_mods;
 }
 
 /**
@@ -272,10 +270,10 @@ xkb_keymap_num_mods(struct xkb_keymap *keymap)
 XKB_EXPORT const char *
 xkb_keymap_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx)
 {
-    if (idx >= darray_size(keymap->mods))
+    if (idx >= keymap->mods.num_mods)
         return NULL;
 
-    return xkb_atom_text(keymap->ctx, darray_item(keymap->mods, idx).name);
+    return xkb_atom_text(keymap->ctx, keymap->mods.mods[idx].name);
 }
 
 /**
@@ -284,19 +282,13 @@ xkb_keymap_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx)
 XKB_EXPORT xkb_mod_index_t
 xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name)
 {
-    xkb_mod_index_t i;
     xkb_atom_t atom;
-    const struct xkb_mod *mod;
 
     atom = xkb_atom_lookup(keymap->ctx, name);
     if (atom == XKB_ATOM_NONE)
         return XKB_MOD_INVALID;
 
-    darray_enumerate(i, mod, keymap->mods)
-        if (mod->name == atom)
-            return i;
-
-    return XKB_MOD_INVALID;
+    return XkbModNameToIndex(&keymap->mods, atom, MOD_BOTH);
 }
 
 /**
@@ -365,13 +357,13 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t kc,
     if (!key)
         return 0;
 
-    layout = wrap_group_into_range(layout, key->num_groups,
+    layout = XkbWrapGroupIntoRange(layout, key->num_groups,
                                    key->out_of_range_group_action,
                                    key->out_of_range_group_number);
     if (layout == XKB_LAYOUT_INVALID)
         return 0;
 
-    return XkbKeyGroupWidth(key, layout);
+    return XkbKeyNumLevels(key, layout);
 }
 
 /**
@@ -380,7 +372,7 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t kc,
 XKB_EXPORT xkb_led_index_t
 xkb_keymap_num_leds(struct xkb_keymap *keymap)
 {
-    return darray_size(keymap->leds);
+    return keymap->num_leds;
 }
 
 /**
@@ -389,10 +381,10 @@ xkb_keymap_num_leds(struct xkb_keymap *keymap)
 XKB_EXPORT const char *
 xkb_keymap_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx)
 {
-    if (idx >= darray_size(keymap->leds))
+    if (idx >= keymap->num_leds)
         return NULL;
 
-    return xkb_atom_text(keymap->ctx, darray_item(keymap->leds, idx).name);
+    return xkb_atom_text(keymap->ctx, keymap->leds[idx].name);
 }
 
 /**
@@ -408,7 +400,7 @@ xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name)
     if (atom == XKB_ATOM_NONE)
         return XKB_LED_INVALID;
 
-    darray_enumerate(i, led, keymap->leds)
+    xkb_leds_enumerate(i, led, keymap)
         if (led->name == atom)
             return i;
 
@@ -431,13 +423,13 @@ xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
     if (!key)
         goto err;
 
-    layout = wrap_group_into_range(layout, key->num_groups,
+    layout = XkbWrapGroupIntoRange(layout, key->num_groups,
                                    key->out_of_range_group_action,
                                    key->out_of_range_group_number);
     if (layout == XKB_LAYOUT_INVALID)
         goto err;
 
-    if (level >= XkbKeyGroupWidth(key, layout))
+    if (level >= XkbKeyNumLevels(key, layout))
         goto err;
 
     num_syms = key->groups[layout].levels[level].num_syms;
@@ -474,8 +466,42 @@ xkb_keymap_key_for_each(struct xkb_keymap *keymap, xkb_keymap_key_iter_t iter,
 {
     struct xkb_key *key;
 
-    xkb_foreach_key(key, keymap)
+    xkb_keys_foreach(key, keymap)
         iter(keymap, key->keycode, data);
+}
+
+XKB_EXPORT const char *
+xkb_keymap_key_get_name(struct xkb_keymap *keymap, xkb_keycode_t kc)
+{
+    const struct xkb_key *key = XkbKey(keymap, kc);
+
+    if (!key)
+        return NULL;
+
+    return xkb_atom_text(keymap->ctx, key->name);
+}
+
+XKB_EXPORT xkb_keycode_t
+xkb_keymap_key_by_name(struct xkb_keymap *keymap, const char *name)
+{
+    struct xkb_key *key;
+    xkb_atom_t atom;
+
+    atom = xkb_atom_lookup(keymap->ctx, name);
+    if (atom) {
+        xkb_atom_t ratom = XkbResolveKeyAlias(keymap, atom);
+        if (ratom)
+            atom = ratom;
+    }
+    if (!atom)
+        return XKB_KEYCODE_INVALID;
+
+    xkb_keys_foreach(key, keymap) {
+        if (key->name == atom)
+            return key->keycode;
+    }
+
+    return XKB_KEYCODE_INVALID;
 }
 
 /**

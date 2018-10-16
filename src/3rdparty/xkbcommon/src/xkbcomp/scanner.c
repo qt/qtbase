@@ -23,6 +23,7 @@
 
 #include "xkbcomp-priv.h"
 #include "parser-priv.h"
+#include "scanner-utils.h"
 
 static bool
 number(struct scanner *s, int64_t *out, int *out_tok)
@@ -68,7 +69,7 @@ skip_more_whitespace_and_comments:
 
     /* Skip comments. */
     if (lit(s, "//") || chr(s, '#')) {
-        while (!eof(s) && !eol(s)) next(s);
+        skip_to_eol(s);
         goto skip_more_whitespace_and_comments;
     }
 
@@ -121,7 +122,7 @@ skip_more_whitespace_and_comments:
             return ERROR_TOK;
         }
         /* Empty key name literals are allowed. */
-        yylval->sval = xkb_atom_intern(s->ctx, s->buf, s->buf_pos - 1);
+        yylval->atom = xkb_atom_intern(s->ctx, s->buf, s->buf_pos - 1);
         return KEYNAME;
     }
 
@@ -181,7 +182,7 @@ XkbParseString(struct xkb_context *ctx, const char *string, size_t len,
                const char *file_name, const char *map)
 {
     struct scanner scanner;
-    scanner_init(&scanner, ctx, string, len, file_name);
+    scanner_init(&scanner, ctx, string, len, file_name, NULL);
     return parse(ctx, &scanner, map);
 }
 
@@ -191,7 +192,7 @@ XkbParseFile(struct xkb_context *ctx, FILE *file,
 {
     bool ok;
     XkbFile *xkb_file;
-    const char *string;
+    char *string;
     size_t size;
 
     ok = map_file(file, &string, &size);

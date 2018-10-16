@@ -29,7 +29,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include <strings.h>
 
 #include "darray.h"
 
@@ -39,6 +38,19 @@
  * errors.
  */
 #define UNCONSTIFY(const_ptr)  ((void *) (uintptr_t) (const_ptr))
+
+#define STATIC_ASSERT(expr, message) do { \
+    switch (0) { case 0: case (expr): ; } \
+} while (0)
+
+char
+to_lower(char c);
+
+int
+istrcmp(const char *a, const char *b);
+
+int
+istrncmp(const char *a, const char *b, size_t n);
 
 static inline bool
 streq(const char *s1, const char *s2)
@@ -57,13 +69,13 @@ streq_not_null(const char *s1, const char *s2)
 static inline bool
 istreq(const char *s1, const char *s2)
 {
-    return strcasecmp(s1, s2) == 0;
+    return istrcmp(s1, s2) == 0;
 }
 
 static inline bool
 istreq_prefix(const char *s1, const char *s2)
 {
-    return strncasecmp(s1, s2, strlen(s1)) == 0;
+    return istrncmp(s1, s2, strlen(s1)) == 0;
 }
 
 static inline char *
@@ -99,7 +111,7 @@ strempty(const char *s)
 static inline void *
 memdup(const void *mem, size_t nmemb, size_t size)
 {
-    void *p = malloc(nmemb * size);
+    void *p = calloc(nmemb, size);
     if (p)
         memcpy(p, mem, nmemb * size);
     return p;
@@ -174,11 +186,25 @@ msb_pos(uint32_t mask)
     return pos;
 }
 
+// Avoid conflict with other popcount()s.
+static inline int
+my_popcount(uint32_t x)
+{
+    int count;
+#if defined(HAVE___BUILTIN_POPCOUNT)
+    count = __builtin_popcount(x);
+#else
+    for (count = 0; x; count++)
+        x &= x - 1;
+#endif
+    return count;
+}
+
 bool
-map_file(FILE *file, const char **string_out, size_t *size_out);
+map_file(FILE *file, char **string_out, size_t *size_out);
 
 void
-unmap_file(const char *str, size_t size);
+unmap_file(char *string, size_t size);
 
 #define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
 
@@ -186,6 +212,9 @@ unmap_file(const char *str, size_t size);
 #define MIN3(a, b, c) MIN(MIN((a), (b)), (c))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MAX3(a, b, c) MAX(MAX((a), (b)), (c))
+
+/* Round up @a so it's divisible by @b. */
+#define ROUNDUP(a, b) (((a) + (b) - 1) / (b) * (b))
 
 #if defined(HAVE_SECURE_GETENV)
 # define secure_getenv secure_getenv

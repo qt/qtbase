@@ -32,15 +32,7 @@
 static void
 ComputeEffectiveMask(struct xkb_keymap *keymap, struct xkb_mods *mods)
 {
-    const struct xkb_mod *mod;
-    xkb_mod_index_t i;
-
-    /* The effective mask is only real mods for now. */
-    mods->mask = mods->mods & MOD_REAL_MASK_ALL;
-
-    darray_enumerate(i, mod, keymap->mods)
-        if (mods->mods & (1u << i))
-            mods->mask |= mod->mapping;
+    mods->mask = mod_mask_get_effective(keymap, mods->mods);
 }
 
 static void
@@ -115,7 +107,7 @@ FindInterpForKey(struct xkb_keymap *keymap, const struct xkb_key *key,
             found = (!mods || (interp->mods & mods));
             break;
         case MATCH_ANY:
-            found = !!(interp->mods & mods);
+            found = (interp->mods & mods);
             break;
         case MATCH_ALL:
             found = ((interp->mods & mods) == interp->mods);
@@ -144,7 +136,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
         return true;
 
     for (group = 0; group < key->num_groups; group++) {
-        for (level = 0; level < XkbKeyGroupWidth(key, group); level++) {
+        for (level = 0; level < XkbKeyNumLevels(key, group); level++) {
             const struct xkb_sym_interpret *interp;
 
             interp = FindInterpForKey(keymap, key, group, level);
@@ -180,20 +172,20 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
 static bool
 UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
 {
+    struct xkb_key *key;
     struct xkb_mod *mod;
     struct xkb_led *led;
     unsigned int i, j;
-    struct xkb_key *key;
 
     /* Find all the interprets for the key and bind them to actions,
      * which will also update the vmodmap. */
-    xkb_foreach_key(key, keymap)
+    xkb_keys_foreach(key, keymap)
         if (!ApplyInterpsToKey(keymap, key))
             return false;
 
     /* Update keymap->mods, the virtual -> real mod mapping. */
-    xkb_foreach_key(key, keymap)
-        darray_enumerate(i, mod, keymap->mods)
+    xkb_keys_foreach(key, keymap)
+        xkb_mods_enumerate(i, mod, &keymap->mods)
             if (key->vmodmap & (1u << i))
                 mod->mapping |= key->modmap;
 
@@ -208,18 +200,18 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     }
 
     /* Update action modifiers. */
-    xkb_foreach_key(key, keymap)
+    xkb_keys_foreach(key, keymap)
         for (i = 0; i < key->num_groups; i++)
-            for (j = 0; j < XkbKeyGroupWidth(key, i); j++)
+            for (j = 0; j < XkbKeyNumLevels(key, i); j++)
                 UpdateActionMods(keymap, &key->groups[i].levels[j].action,
                                  key->modmap);
 
     /* Update vmod -> led maps. */
-    darray_foreach(led, keymap->leds)
+    xkb_leds_foreach(led, keymap)
         ComputeEffectiveMask(keymap, &led->mods);
 
     /* Find maximum number of groups out of all keys in the keymap. */
-    xkb_foreach_key(key, keymap)
+    xkb_keys_foreach(key, keymap)
         keymap->num_groups = MAX(keymap->num_groups, key->num_groups);
 
     return true;
@@ -240,20 +232,22 @@ bool
 CompileKeymap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
 {
     bool ok;
-    const char *main_name;
     XkbFile *files[LAST_KEYMAP_FILE_TYPE + 1] = { NULL };
     enum xkb_file_type type;
     struct xkb_context *ctx = keymap->ctx;
-
-    main_name = file->name ? file->name : "(unnamed)";
 
     /* Collect section files and check for duplicates. */
     for (file = (XkbFile *) file->defs; file;
          file = (XkbFile *) file->common.next) {
         if (file->file_type < FIRST_KEYMAP_FILE_TYPE ||
             file->file_type > LAST_KEYMAP_FILE_TYPE) {
-            log_err(ctx, "Cannot define %s in a keymap file\n",
-                    xkb_file_type_to_string(file->file_type));
+            if (file->file_type == FILE_TYPE_GEOMETRY) {
+                log_vrb(ctx, 1,
+                        "Geometry sections are not supported; ignoring\n");
+            } else {
+                log_err(ctx, "Cannot define %s in a keymap file\n",
+                        xkb_file_type_to_string(file->file_type));
+            }
             continue;
         }
 
@@ -263,11 +257,6 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
                     "All sections after the first ignored\n",
                     xkb_file_type_to_string(file->file_type));
             continue;
-        }
-
-        if (!file->topName) {
-            free(file->topName);
-            file->topName = strdup(main_name);
         }
 
         files[file->file_type] = file;
@@ -295,7 +284,7 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
          type <= LAST_KEYMAP_FILE_TYPE;
          type++) {
         log_dbg(ctx, "Compiling %s \"%s\"\n",
-                xkb_file_type_to_string(type), files[type]->topName);
+                xkb_file_type_to_string(type), files[type]->name);
 
         ok = compile_file_fns[type](files[type], keymap, merge);
         if (!ok) {
