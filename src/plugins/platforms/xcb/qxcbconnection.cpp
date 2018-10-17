@@ -84,6 +84,7 @@ Q_LOGGING_CATEGORY(lcQpaEvents, "qt.qpa.events")
 Q_LOGGING_CATEGORY(lcQpaEventReader, "qt.qpa.events.reader")
 Q_LOGGING_CATEGORY(lcQpaPeeker, "qt.qpa.peeker")
 Q_LOGGING_CATEGORY(lcQpaKeyboard, "qt.qpa.xkeyboard")
+Q_LOGGING_CATEGORY(lcQpaClipboard, "qt.qpa.clipboard")
 Q_LOGGING_CATEGORY(lcQpaXDnd, "qt.qpa.xdnd")
 
 // this event type was added in libxcb 1.10,
@@ -651,6 +652,10 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         break;
     case XCB_PROPERTY_NOTIFY:
     {
+#ifndef QT_NO_CLIPBOARD
+        if (m_clipboard->handlePropertyNotify(event))
+            break;
+#endif
         auto propertyNotify = reinterpret_cast<xcb_property_notify_event_t *>(event);
         if (propertyNotify->atom == atom(QXcbAtom::_NET_WORKAREA)) {
             QXcbVirtualDesktop *virtualDesktop = virtualDesktopForRootWindow(propertyNotify->window);
@@ -1009,14 +1014,6 @@ void QXcbConnection::processXcbEvents(QEventLoop::ProcessEventsFlags flags)
 
         if (compressEvent(event))
             continue;
-
-#ifndef QT_NO_CLIPBOARD
-        bool accepted = false;
-        if (clipboard()->processIncr())
-            clipboard()->incrTransactionPeeker(event, accepted);
-        if (accepted)
-            continue;
-#endif
 
         auto isWaitingFor = [=](PeekFunc peekFunc) {
             // These callbacks return true if the event is what they were
