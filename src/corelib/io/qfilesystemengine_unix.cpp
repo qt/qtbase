@@ -97,6 +97,13 @@ extern "C" NSString *NSTemporaryDirectory();
 #endif
 #endif
 
+#if defined(Q_OS_ANDROID)
+// statx() is disabled on Android because quite a few systems
+// come with sandboxes that kill applications that make system calls outside a
+// whitelist and several Android vendors can't be bothered to update the list.
+#  undef STATX_BASIC_STATS
+#endif
+
 #ifndef STATX_ALL
 struct statx { mode_t stx_mode; };      // dummy
 #endif
