@@ -53,7 +53,7 @@
 
 #include <QtCore/private/qglobal_p.h>
 
-#ifndef QT_NO_MIMETYPE
+QT_REQUIRE_CONFIG(mimetype);
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qscopedpointer.h>
@@ -125,5 +125,4 @@ Q_DECLARE_SHARED(QMimeMagicRule)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_MIMETYPE
 #endif // QMIMEMAGICRULE_H

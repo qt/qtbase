@@ -43,7 +43,7 @@
 
 #include <QtCore/qglobal.h>
 
-#ifndef QT_NO_MIMETYPE
+QT_REQUIRE_CONFIG(mimetype);
 
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qshareddata.h>
@@ -135,5 +135,4 @@ Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QMimeType &mime);
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_MIMETYPE
 #endif // QMIMETYPE_H

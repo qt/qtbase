@@ -66,8 +66,6 @@
 #include "qparallelanimationgroup_p.h"
 //#define QANIMATION_DEBUG
 
-#ifndef QT_NO_ANIMATION
-
 QT_BEGIN_NAMESPACE
 
 typedef QList<QAbstractAnimation *>::ConstIterator AnimationListConstIt;
@@ -333,5 +331,3 @@ bool QParallelAnimationGroup::event(QEvent *event)
 QT_END_NAMESPACE
 
 #include "moc_qparallelanimationgroup.cpp"
-
-#endif //QT_NO_ANIMATION

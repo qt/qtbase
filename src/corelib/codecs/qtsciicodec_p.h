@@ -83,9 +83,9 @@
 #include <QtCore/private/qglobal_p.h>
 #include "QtCore/qtextcodec.h"
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(codecs);
 
-#ifndef QT_NO_CODECS
+QT_BEGIN_NAMESPACE
 
 class QTsciiCodec : public QTextCodec {
 public:
@@ -97,8 +97,6 @@ public:
     QString convertToUnicode(const char *, int, ConverterState *) const override;
     QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const override;
 };
-
-#endif // QT_NO_CODECS
 
 QT_END_NAMESPACE
 

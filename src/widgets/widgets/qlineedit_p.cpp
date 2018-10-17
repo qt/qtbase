@@ -57,7 +57,9 @@
 #include "qlist.h"
 #endif
 #include <qpainter.h>
+#if QT_CONFIG(animation)
 #include <qpropertyanimation.h>
+#endif
 #include <qstylehints.h>
 #include <qvalidator.h>
 
@@ -389,7 +391,7 @@ void QLineEditIconButton::setOpacity(qreal value)
     }
 }
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 void QLineEditIconButton::startOpacityAnimation(qreal endValue)
 {
     QPropertyAnimation *animation = new QPropertyAnimation(this, QByteArrayLiteral("opacity"));

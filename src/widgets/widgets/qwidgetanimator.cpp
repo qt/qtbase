@@ -37,14 +37,16 @@
 **
 ****************************************************************************/
 
+#include "qwidgetanimator_p.h"
+
+#if QT_CONFIG(animation)
 #include <QtCore/qpropertyanimation.h>
+#endif
 #include <QtWidgets/qwidget.h>
 #include <QtWidgets/qstyle.h>
 #if QT_CONFIG(mainwindow)
 #include <private/qmainwindowlayout_p.h>
 #endif
-
-#include "qwidgetanimator_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -54,7 +56,7 @@ QWidgetAnimator::QWidgetAnimator(QMainWindowLayout *layout) : m_mainWindowLayout
 
 void QWidgetAnimator::abort(QWidget *w)
 {
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     const auto it = m_animation_map.constFind(w);
     if (it == m_animation_map.cend())
         return;
@@ -68,16 +70,16 @@ void QWidgetAnimator::abort(QWidget *w)
 #endif
 #else
     Q_UNUSED(w); //there is no animation to abort
-#endif //QT_NO_ANIMATION
+#endif // animation
 }
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 void QWidgetAnimator::animationFinished()
 {
     QPropertyAnimation *anim = qobject_cast<QPropertyAnimation*>(sender());
     abort(static_cast<QWidget*>(anim->targetObject()));
 }
-#endif //QT_NO_ANIMATION
+#endif // animation
 
 void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, bool animate)
 {
@@ -91,7 +93,7 @@ void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, boo
     const QRect final_geometry = _final_geometry.isValid() || widget->isWindow() ? _final_geometry :
         QRect(QPoint(-500 - widget->width(), -500 - widget->height()), widget->size());
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     //If the QStyle has animations, animate
     if (const int animationDuration = widget->style()->styleHint(QStyle::SH_Widget_Animation_Duration, 0, widget)) {
         AnimationMap::const_iterator it = m_animation_map.constFind(widget);
@@ -106,7 +108,7 @@ void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, boo
         connect(anim, SIGNAL(finished()), SLOT(animationFinished()));
         anim->start(QPropertyAnimation::DeleteWhenStopped);
     } else
-#endif //QT_NO_ANIMATION
+#endif // animation
     {
     //we do it in one shot
     widget->setGeometry(final_geometry);

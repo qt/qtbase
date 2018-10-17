@@ -53,7 +53,7 @@ void QEglFSKmsGbmWindow::resetSurface()
     m_config = QEglFSDeviceIntegration::chooseConfig(display, platformFormat);
     m_format = q_glFormatFromConfig(display, m_config, platformFormat);
     // One fullscreen window per screen -> the native window is simply the gbm_surface the screen created.
-    m_window = reinterpret_cast<EGLNativeWindowType>(gbmScreen->createSurface());
+    m_window = reinterpret_cast<EGLNativeWindowType>(gbmScreen->createSurface(m_config));
 
     PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC createPlatformWindowSurface = nullptr;
     const char *extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);

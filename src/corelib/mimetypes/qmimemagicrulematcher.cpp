@@ -41,8 +41,6 @@
 
 #include "qmimemagicrulematcher_p.h"
 
-#ifndef QT_NO_MIMETYPE
-
 #include "qmimetype_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -106,4 +104,3 @@ unsigned QMimeMagicRuleMatcher::priority() const
 }
 
 QT_END_NAMESPACE
-#endif // QT_NO_MIMETYPE

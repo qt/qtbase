@@ -86,8 +86,6 @@
 
 #include <QtCore/QMutex>
 
-#ifndef QT_NO_ANIMATION
-
 QT_BEGIN_NAMESPACE
 
 void QPropertyAnimationPrivate::updateMetaProperty()
@@ -308,5 +306,3 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
 #include "moc_qpropertyanimation.cpp"
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_ANIMATION

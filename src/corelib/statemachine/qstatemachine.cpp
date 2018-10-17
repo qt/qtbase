@@ -59,7 +59,7 @@
 #include "qeventtransition_p.h"
 #endif
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 #include "qpropertyanimation.h"
 #include "qanimationgroup.h"
 #include <private/qvariantanimation_p.h>
@@ -167,7 +167,7 @@ QT_BEGIN_NAMESPACE
     \sa start(), stop(), started(), stopped(), runningChanged()
 */
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 /*!
     \property QStateMachine::animated
 
@@ -401,7 +401,7 @@ QStateMachinePrivate::QStateMachinePrivate()
     error = QStateMachine::NoError;
     globalRestorePolicy = QState::DontRestoreProperties;
     signalEventGenerator = 0;
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     animated = true;
 #endif
 }
@@ -700,12 +700,12 @@ void QStateMachinePrivate::microstep(QEvent *event, const QList<QAbstractTransit
 
     executeTransitionContent(event, enabledTransitions);
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     QList<QAbstractAnimation *> selectedAnimations = selectAnimations(enabledTransitions);
 #endif
 
     enterStates(event, exitedStates, enteredStates, statesForDefaultEntry, assignmentsForEnteredStates
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
                 , selectedAnimations
 #endif
                 );
@@ -827,7 +827,7 @@ void QStateMachinePrivate::exitStates(QEvent *event, const QList<QAbstractState*
 #endif
         QAbstractStatePrivate::get(s)->callOnExit(event);
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
         terminateActiveAnimations(s, assignmentsForEnteredStates);
 #else
         Q_UNUSED(assignmentsForEnteredStates);
@@ -942,7 +942,7 @@ void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState
                                        const QList<QAbstractState*> &statesToEnter_sorted,
                                        const QSet<QAbstractState*> &statesForDefaultEntry,
                                        QHash<QAbstractState*, QVector<QPropertyAssignment> > &propertyAssignmentsForState
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
                                        , const QList<QAbstractAnimation *> &selectedAnimations
 #endif
                                        )
@@ -958,7 +958,7 @@ void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState
         configuration.insert(s);
         registerTransitions(s);
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
         initializeAnimations(s, selectedAnimations, exitedStates_sorted, propertyAssignmentsForState);
 #endif
 
@@ -1002,7 +1002,7 @@ void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState
         {
             QState *ss = toStandardState(s);
             if (ss
-    #ifndef QT_NO_ANIMATION
+    #if QT_CONFIG(animation)
                 && !animationsForState.contains(s)
     #endif
                 )
@@ -1513,7 +1513,7 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
     }
 }
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 
 QStateMachinePrivate::InitializeAnimationResult
 QStateMachinePrivate::initializeAnimation(QAbstractAnimation *abstractAnimation,
@@ -1710,7 +1710,7 @@ void QStateMachinePrivate::initializeAnimations(QAbstractState *state, const QLi
     }
 }
 
-#endif // !QT_NO_ANIMATION
+#endif // animation
 
 QAbstractTransition *QStateMachinePrivate::createInitialTransition() const
 {
@@ -1814,7 +1814,7 @@ void QStateMachinePrivate::_q_start()
     QHash<RestorableId, QVariant> pendingRestorables;
     QHash<QAbstractState*, QVector<QPropertyAssignment> > assignmentsForEnteredStates =
             computePropertyAssignments(enteredStates, pendingRestorables);
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     QList<QAbstractAnimation*> selectedAnimations = selectAnimations(transitions);
 #endif
     // enterStates() will set stopProcessingReason to Finished if a final
@@ -1822,7 +1822,7 @@ void QStateMachinePrivate::_q_start()
     stopProcessingReason = EventQueueEmpty;
     enterStates(&nullEvent, exitedStates, enteredStates, statesForDefaultEntry,
                 assignmentsForEnteredStates
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
                 , selectedAnimations
 #endif
                 );
@@ -2957,7 +2957,7 @@ void QStateMachine::onExit(QEvent *event)
     QState::onExit(event);
 }
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 
 /*!
   Returns whether animations are enabled for this state machine.
@@ -3004,7 +3004,7 @@ void QStateMachine::removeDefaultAnimation(QAbstractAnimation *animation)
     d->defaultAnimations.removeAll(animation);
 }
 
-#endif // QT_NO_ANIMATION
+#endif // animation
 
 
 // Begin moc-generated code -- modify carefully (check "HAND EDIT" parts)!

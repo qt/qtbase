@@ -76,8 +76,6 @@
 
 #include <QtCore/qdebug.h>
 
-#ifndef QT_NO_ANIMATION
-
 QT_BEGIN_NAMESPACE
 
 typedef QList<QAbstractAnimation *>::ConstIterator AnimationListConstIt;
@@ -575,5 +573,3 @@ void QSequentialAnimationGroupPrivate::animationRemoved(int index, QAbstractAnim
 QT_END_NAMESPACE
 
 #include "moc_qsequentialanimationgroup.cpp"
-
-#endif //QT_NO_ANIMATION
