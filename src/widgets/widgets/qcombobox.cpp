@@ -1941,12 +1941,15 @@ const QValidator *QComboBox::validator() const
     performs case insensitive inline completion is automatically created.
 
     \note The completer is removed when the \l editable property becomes \c false.
+    Setting a completer on a QComboBox that is not editable will be ignored.
 */
 void QComboBox::setCompleter(QCompleter *c)
 {
     Q_D(QComboBox);
-    if (!d->lineEdit)
+    if (!d->lineEdit) {
+        qWarning("Setting a QCompleter on non-editable QComboBox is not allowed.");
         return;
+    }
     d->lineEdit->setCompleter(c);
     if (c) {
         connect(c, SIGNAL(activated(QModelIndex)), this, SLOT(_q_completerActivated(QModelIndex)));
