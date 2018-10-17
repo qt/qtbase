@@ -7655,9 +7655,6 @@ void tst_QWidget::updateWhileMinimized()
 
     // Restore window.
     widget.showNormal();
-    QTest::qWait(30);
-    if (m_platform == QStringLiteral("xcb"))
-        QSKIP("QTBUG-26424");
     QTRY_COMPARE(widget.numPaintEvents, 1);
     QCOMPARE(widget.paintedRegion, QRegion(0, 0, 50, 50));
 }
