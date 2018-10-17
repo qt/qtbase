@@ -41,6 +41,7 @@
 
 #include "private/qgesture_p.h"
 #include "private/qgesturemanager_p.h"
+#include "private/qapplication_p.h"
 
 #ifndef QT_NO_GESTURES
 
@@ -231,6 +232,11 @@ Qt::GestureType QGestureRecognizer::registerRecognizer(QGestureRecognizer *recog
 */
 void QGestureRecognizer::unregisterRecognizer(Qt::GestureType type)
 {
+    auto qAppPriv = QApplicationPrivate::instance();
+    if (!qAppPriv)
+        return;
+    if (!qAppPriv->gestureManager)
+        return;
     QGestureManager::instance()->unregisterGestureRecognizer(type);
 }
 
