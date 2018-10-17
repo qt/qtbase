@@ -893,16 +893,19 @@ bool tst_Selftests::compareLine(const QString &logger, const QString &subdir,
                                 const QString &actualLine, const QString &expectedLine,
                                 QString *errorMessage) const
 {
-    if (subdir == QLatin1String("assert") && actualLine.contains(QLatin1String("ASSERT: "))
-        && expectedLine.contains(QLatin1String("ASSERT: ")) && actualLine != expectedLine) {
+    if (actualLine == expectedLine)
+        return true;
+
+    if (subdir == QLatin1String("assert")
+        && actualLine.contains(QLatin1String("ASSERT: "))
+        && expectedLine.contains(QLatin1String("ASSERT: "))) {
         // Q_ASSERT uses __FILE__, the exact contents of which are
         // undefined. If have we something that looks like a Q_ASSERT and we
         // were expecting to see a Q_ASSERT, we'll skip the line.
         return true;
     }
 
-    if (expectedLine.startsWith(QLatin1String("FAIL!  : tst_Exception::throwException() Caught unhandled exce"))
-        && actualLine != expectedLine) {
+    if (expectedLine.startsWith(QLatin1String("FAIL!  : tst_Exception::throwException() Caught unhandled exce"))) {
         // On some platforms we compile without RTTI, and as a result we never throw an exception
         if (actualLine.simplified() != QLatin1String("tst_Exception::throwException()")) {
             *errorMessage = QString::fromLatin1("'%1' != 'tst_Exception::throwException()'").arg(actualLine);
@@ -939,9 +942,6 @@ bool tst_Selftests::compareLine(const QString &logger, const QString &subdir,
     }
 
     if (actualLine.startsWith(QLatin1String("Totals:")) && expectedLine.startsWith(QLatin1String("Totals:")))
-        return true;
-
-    if (actualLine == expectedLine)
         return true;
 
     *errorMessage = msgMismatch(actualLine, expectedLine);
