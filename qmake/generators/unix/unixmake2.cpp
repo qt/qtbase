@@ -1485,7 +1485,7 @@ UnixMakefileGenerator::writeLibtoolFile()
     ProStringList libs;
     libs << "LIBS" << "QMAKE_LIBS";
     t << "dependency_libs='";
-    for (ProStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it)
+    for (ProStringList::ConstIterator it = libs.cbegin(); it != libs.cend(); ++it)
         t << fixLibFlags((*it).toKey()).join(' ') << ' ';
     t << "'\n\n";
 

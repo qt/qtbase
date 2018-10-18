@@ -178,8 +178,8 @@ QMakeProperty::exec()
             }
             return true;
         }
-        for(QStringList::ConstIterator it = Option::prop::properties.begin();
-            it != Option::prop::properties.end(); it++) {
+        for (QStringList::ConstIterator it = Option::prop::properties.cbegin();
+            it != Option::prop::properties.cend(); it++) {
             if(Option::prop::properties.count() > 1)
                 fprintf(stdout, "%s:", (*it).toLatin1().constData());
             const ProKey pkey(*it);
@@ -191,11 +191,11 @@ QMakeProperty::exec()
             }
         }
     } else if(Option::qmake_mode == Option::QMAKE_SET_PROPERTY) {
-        for(QStringList::ConstIterator it = Option::prop::properties.begin();
-            it != Option::prop::properties.end(); it++) {
+        for (QStringList::ConstIterator it = Option::prop::properties.cbegin();
+            it != Option::prop::properties.cend(); it++) {
             QString var = (*it);
             it++;
-            if(it == Option::prop::properties.end()) {
+            if (it == Option::prop::properties.cend()) {
                 ret = false;
                 break;
             }
@@ -203,8 +203,8 @@ QMakeProperty::exec()
                 setValue(var, (*it));
         }
     } else if(Option::qmake_mode == Option::QMAKE_UNSET_PROPERTY) {
-        for(QStringList::ConstIterator it = Option::prop::properties.begin();
-            it != Option::prop::properties.end(); it++) {
+        for (QStringList::ConstIterator it = Option::prop::properties.cbegin();
+            it != Option::prop::properties.cend(); it++) {
             QString var = (*it);
             if(!var.startsWith("."))
                 remove(var);

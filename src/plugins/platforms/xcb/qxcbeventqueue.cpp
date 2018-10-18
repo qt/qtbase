@@ -257,7 +257,7 @@ qint32 QXcbEventQueue::generatePeekerId()
 
 bool QXcbEventQueue::removePeekerId(qint32 peekerId)
 {
-    const auto it = m_peekerToNode.find(peekerId);
+    const auto it = m_peekerToNode.constFind(peekerId);
     if (it == m_peekerToNode.constEnd()) {
         qCWarning(lcQpaXcb, "failed to remove unknown peeker id: %d", peekerId);
         return false;
@@ -276,7 +276,7 @@ bool QXcbEventQueue::peekEventQueue(PeekerCallback peeker, void *peekerData,
     const bool peekerIdProvided = peekerId != -1;
     auto peekerToNodeIt = m_peekerToNode.find(peekerId);
 
-    if (peekerIdProvided && peekerToNodeIt == m_peekerToNode.constEnd()) {
+    if (peekerIdProvided && peekerToNodeIt == m_peekerToNode.end()) {
         qCWarning(lcQpaXcb, "failed to find index for unknown peeker id: %d", peekerId);
         return false;
     }
@@ -336,7 +336,7 @@ bool QXcbEventQueue::peekEventQueue(PeekerCallback peeker, void *peekerData,
         // Before updating, make sure that a peeker callback did not remove
         // the peeker id.
         peekerToNodeIt = m_peekerToNode.find(peekerId);
-        if (peekerToNodeIt != m_peekerToNode.constEnd())
+        if (peekerToNodeIt != m_peekerToNode.end())
             *peekerToNodeIt = node; // id still in the cache, update node
     }
 

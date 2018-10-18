@@ -505,9 +505,9 @@ QTextCodec::~QTextCodec()
 
     globalData->allCodecs.removeOne(this);
 
-    auto it = globalData->codecCache.cbegin();
+    auto it = globalData->codecCache.begin();
 
-    while (it != globalData->codecCache.cend()) {
+    while (it != globalData->codecCache.end()) {
         if (it.value() == this)
             it = globalData->codecCache.erase(it);
         else

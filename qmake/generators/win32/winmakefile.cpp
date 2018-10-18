@@ -112,8 +112,8 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                     goto found;
                 }
                 QString libBase = (*dir_it).local() + '/' + lib + verovr;
-                for (ProStringList::ConstIterator extit = impexts.begin();
-                     extit != impexts.end(); ++extit) {
+                for (ProStringList::ConstIterator extit = impexts.cbegin();
+                     extit != impexts.cend(); ++extit) {
                     if (exists(libBase + '.' + *extit)) {
                         (*it) = cand + verovr + '.' + *extit;
                         goto found;

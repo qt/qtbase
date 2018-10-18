@@ -624,7 +624,7 @@ MakefileGenerator::init()
                 compiler.flags |= Compiler::CompilerNoCheckDeps;
             compilers.append(compiler);
         }
-        for (ProStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
+        for (ProStringList::ConstIterator it = quc.cbegin(); it != quc.cend(); ++it) {
             const ProStringList &inputs = v[ProKey(*it + ".input")];
             for(x = 0; x < inputs.size(); ++x) {
                 Compiler compiler;
@@ -1878,7 +1878,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             t << ' ' << escapeDependencyPath(Option::fixPathToTargetOS(
                     replaceExtraCompilerVariables(tmp_out, input, QString(), NoShell)));
         } else {
-            for (ProStringList::ConstIterator input = tmp_inputs.begin(); input != tmp_inputs.end(); ++input) {
+            for (ProStringList::ConstIterator input = tmp_inputs.cbegin(); input != tmp_inputs.cend(); ++input) {
                 t << ' ' << escapeDependencyPath(Option::fixPathToTargetOS(
                         replaceExtraCompilerVariables(tmp_out, (*input).toQString(), QString(), NoShell)));
             }
@@ -1912,7 +1912,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 const QString del_statement("-$(DEL_FILE)");
                 if(!wrote_clean) {
                     QStringList dels;
-                    for (ProStringList::ConstIterator input = tmp_inputs.begin(); input != tmp_inputs.end(); ++input) {
+                    for (ProStringList::ConstIterator input = tmp_inputs.cbegin(); input != tmp_inputs.cend(); ++input) {
                         QString tinp = (*input).toQString();
                         QString out = replaceExtraCompilerVariables(tmp_out, tinp, QString(), NoShell);
                         for (const QString &rc : qAsConst(raw_clean)) {
@@ -1940,7 +1940,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 if(!cleans.isEmpty())
                     t << valGlue(cleans, "\n\t" + del_statement, "\n\t" + del_statement, "");
                 if(!wrote_clean_cmds) {
-                    for (ProStringList::ConstIterator input = tmp_inputs.begin(); input != tmp_inputs.end(); ++input) {
+                    for (ProStringList::ConstIterator input = tmp_inputs.cbegin(); input != tmp_inputs.cend(); ++input) {
                         QString tinp = (*input).toQString();
                         t << "\n\t" << replaceExtraCompilerVariables(tmp_clean_cmds, tinp,
                                          replaceExtraCompilerVariables(tmp_out, tinp, QString(), NoShell), TargetShell);
@@ -1959,7 +1959,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             QStringList deps, inputs;
             if(!tmp_dep.isEmpty())
                 deps += fileFixify(tmp_dep, FileFixifyFromOutdir);
-            for (ProStringList::ConstIterator input = tmp_inputs.begin(); input != tmp_inputs.end(); ++input) {
+            for (ProStringList::ConstIterator input = tmp_inputs.cbegin(); input != tmp_inputs.cend(); ++input) {
                 QString inpf = (*input).toQString();
                 deps += findDependencies(inpf);
                 inputs += Option::fixPathToTargetOS(inpf, false);
@@ -2043,7 +2043,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             t << "\n\t" << cmd << endl << endl;
             continue;
         }
-        for (ProStringList::ConstIterator input = tmp_inputs.begin(); input != tmp_inputs.end(); ++input) {
+        for (ProStringList::ConstIterator input = tmp_inputs.cbegin(); input != tmp_inputs.cend(); ++input) {
             QString inpf = (*input).toQString();
             QString in = Option::fixPathToTargetOS(inpf, false);
             QStringList deps = findDependencies(inpf);
@@ -3350,7 +3350,7 @@ MakefileGenerator::writePkgConfigFile()
         libs << "QMAKE_LIBS_PRIVATE";
         libs << "QMAKE_LFLAGS_THREAD"; //not sure about this one, but what about things like -pthread?
         t << "Libs.private:";
-        for (ProStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it)
+        for (ProStringList::ConstIterator it = libs.cbegin(); it != libs.cend(); ++it)
             t << ' ' << fixLibFlags((*it).toKey()).join(' ');
         t << endl;
     }
