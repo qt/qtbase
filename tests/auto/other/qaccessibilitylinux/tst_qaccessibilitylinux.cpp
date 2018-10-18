@@ -374,13 +374,21 @@ void tst_QAccessibilityLinux::testTreeWidget()
 
     QDBusInterface *cell3 = getInterface(tableChildren.at(2), "org.a11y.atspi.Accessible");
     QCOMPARE(cell3->property("Name").toString(), QLatin1String("0.0"));
+    QVERIFY(!hasState(cell3, ATSPI_STATE_EXPANDABLE));
+    QVERIFY(!hasState(cell3, ATSPI_STATE_EXPANDED));
 
     QDBusInterface *cell4 = getInterface(tableChildren.at(3), "org.a11y.atspi.Accessible");
     QCOMPARE(cell4->property("Name").toString(), QLatin1String("0.1"));
 
+    QDBusInterface *dbus_top2 = getInterface(tableChildren.at(4), "org.a11y.atspi.Accessible");
+    QCOMPARE(dbus_top2->property("Name").toString(), QLatin1String("1.0"));
+    QVERIFY(hasState(dbus_top2, ATSPI_STATE_EXPANDABLE));
+    QVERIFY(!hasState(dbus_top2, ATSPI_STATE_EXPANDED));
+
     tree->expandItem(top2);
     tableChildren = getChildren(treeIface);
     QCOMPARE(tableChildren.size(), 8);
+    QVERIFY(hasState(dbus_top2, ATSPI_STATE_EXPANDED));
 
     QDBusInterface *cell5 = getInterface(tableChildren.at(6), "org.a11y.atspi.Accessible");
     QCOMPARE(cell5->property("Name").toString(), QLatin1String("1.0 0.0"));
