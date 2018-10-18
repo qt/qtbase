@@ -1468,8 +1468,8 @@ QRectF QMacStylePrivate::CocoaControl::adjustedControlFrame(const QRectF &rect) 
     QRectF frameRect;
     const auto frameSize = defaultFrameSize();
     if (type == QMacStylePrivate::Button_SquareButton) {
-        frameRect = rect.adjusted(3, 1, -3, -5)
-                .adjusted(focusRingWidth, focusRingWidth, -focusRingWidth, -focusRingWidth);
+        frameRect = rect.adjusted(3, 1, -3, -1)
+                        .adjusted(focusRingWidth, focusRingWidth, -focusRingWidth, -focusRingWidth);
     } else if (type == QMacStylePrivate::Button_PushButton) {
         // Start from the style option's top-left corner.
         frameRect = QRectF(rect.topLeft(),
