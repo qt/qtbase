@@ -496,7 +496,7 @@ static void qPrintDataTags(FILE *stream)
     }
 }
 
-static int qToInt(char *str)
+static int qToInt(const char *str)
 {
     char *pEnd;
     int l = (int)strtol(str, &pEnd, 10);
@@ -507,7 +507,7 @@ static int qToInt(char *str)
     return l;
 }
 
-Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
+Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool qml)
 {
     QTestLog::LogMode logFormat = QTestLog::Plain;
     const char *logFilename = 0;
@@ -843,6 +843,11 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
     // set using the old-style command-line options.
     if (QTestLog::loggerCount() == 0)
         QTestLog::addLogger(logFormat, logFilename);
+}
+
+// Temporary, backwards compatibility, until qtdeclarative's use of it is converted
+Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml) {
+    qtest_qParseArgs(argc, const_cast<const char *const *>(argv), qml);
 }
 
 QBenchmarkResult qMedian(const QVector<QBenchmarkResult> &container)
