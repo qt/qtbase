@@ -282,74 +282,74 @@ namespace QTestPrivate
 
 namespace QTest
 {
-    class WatchDog;
+class WatchDog;
 
-    static QObject *currentTestObject = 0;
-    static QString mainSourcePath;
+static QObject *currentTestObject = 0;
+static QString mainSourcePath;
 
 #if defined(Q_OS_MACOS)
-    bool macNeedsActivate = false;
-    IOPMAssertionID powerID;
+bool macNeedsActivate = false;
+IOPMAssertionID powerID;
 #endif
 
-    class TestMethods {
-        Q_DISABLE_COPY(TestMethods)
+class TestMethods {
+    Q_DISABLE_COPY(TestMethods)
     public:
-        typedef std::vector<QMetaMethod> MetaMethods;
+    typedef std::vector<QMetaMethod> MetaMethods;
 
-        explicit TestMethods(const QObject *o, const MetaMethods &m = MetaMethods());
+    explicit TestMethods(const QObject *o, const MetaMethods &m = MetaMethods());
 
-        void invokeTests(QObject *testObject) const;
+    void invokeTests(QObject *testObject) const;
 
-        static QMetaMethod findMethod(const QObject *obj, const char *signature);
+    static QMetaMethod findMethod(const QObject *obj, const char *signature);
 
-    private:
-        bool invokeTest(int index, const char *data, WatchDog *watchDog) const;
-        void invokeTestOnData(int index) const;
+private:
+    bool invokeTest(int index, const char *data, WatchDog *watchDog) const;
+    void invokeTestOnData(int index) const;
 
-        QMetaMethod m_initTestCaseMethod; // might not exist, check isValid().
-        QMetaMethod m_initTestCaseDataMethod;
-        QMetaMethod m_cleanupTestCaseMethod;
-        QMetaMethod m_initMethod;
-        QMetaMethod m_cleanupMethod;
+    QMetaMethod m_initTestCaseMethod; // might not exist, check isValid().
+    QMetaMethod m_initTestCaseDataMethod;
+    QMetaMethod m_cleanupTestCaseMethod;
+    QMetaMethod m_initMethod;
+    QMetaMethod m_cleanupMethod;
 
-        MetaMethods m_methods;
-    };
+    MetaMethods m_methods;
+};
 
-    TestMethods::TestMethods(const QObject *o, const MetaMethods &m)
-        : m_initTestCaseMethod(TestMethods::findMethod(o, "initTestCase()"))
-        , m_initTestCaseDataMethod(TestMethods::findMethod(o, "initTestCase_data()"))
-        , m_cleanupTestCaseMethod(TestMethods::findMethod(o, "cleanupTestCase()"))
-        , m_initMethod(TestMethods::findMethod(o, "init()"))
-        , m_cleanupMethod(TestMethods::findMethod(o, "cleanup()"))
-        , m_methods(m)
-    {
-        if (m.empty()) {
-            const QMetaObject *metaObject = o->metaObject();
-            const int count = metaObject->methodCount();
-            m_methods.reserve(count);
-            for (int i = 0; i < count; ++i) {
-                const QMetaMethod me = metaObject->method(i);
-                if (isValidSlot(me))
-                    m_methods.push_back(me);
-            }
+TestMethods::TestMethods(const QObject *o, const MetaMethods &m)
+    : m_initTestCaseMethod(TestMethods::findMethod(o, "initTestCase()"))
+    , m_initTestCaseDataMethod(TestMethods::findMethod(o, "initTestCase_data()"))
+    , m_cleanupTestCaseMethod(TestMethods::findMethod(o, "cleanupTestCase()"))
+    , m_initMethod(TestMethods::findMethod(o, "init()"))
+    , m_cleanupMethod(TestMethods::findMethod(o, "cleanup()"))
+    , m_methods(m)
+{
+    if (m.empty()) {
+        const QMetaObject *metaObject = o->metaObject();
+        const int count = metaObject->methodCount();
+        m_methods.reserve(count);
+        for (int i = 0; i < count; ++i) {
+            const QMetaMethod me = metaObject->method(i);
+            if (isValidSlot(me))
+                m_methods.push_back(me);
         }
     }
+}
 
-    QMetaMethod TestMethods::findMethod(const QObject *obj, const char *signature)
-    {
-        const QMetaObject *metaObject = obj->metaObject();
-        const int funcIndex = metaObject->indexOfMethod(signature);
-        return funcIndex >= 0 ? metaObject->method(funcIndex) : QMetaMethod();
-    }
+QMetaMethod TestMethods::findMethod(const QObject *obj, const char *signature)
+{
+    const QMetaObject *metaObject = obj->metaObject();
+    const int funcIndex = metaObject->indexOfMethod(signature);
+    return funcIndex >= 0 ? metaObject->method(funcIndex) : QMetaMethod();
+}
 
-    static int keyDelay = -1;
-    static int mouseDelay = -1;
-    static int eventDelay = -1;
+static int keyDelay = -1;
+static int mouseDelay = -1;
+static int eventDelay = -1;
 #if QT_CONFIG(thread)
-    static int timeout = -1;
+static int timeout = -1;
 #endif
-    static bool noCrashHandler = false;
+static bool noCrashHandler = false;
 
 /*! \internal
     Invoke a method of the object without generating warning if the method does not exist
