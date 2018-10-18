@@ -131,20 +131,28 @@ public:
     inline void setTextAlignment(int alignment)
         { setData(Qt::TextAlignmentRole, alignment); }
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X ("Use QTableWidgetItem::background() instead")
     inline QColor backgroundColor() const
-        { return qvariant_cast<QColor>(data(Qt::BackgroundColorRole)); }
+        { return qvariant_cast<QColor>(data(Qt::BackgroundRole)); }
+    QT_DEPRECATED_X ("Use QTableWidgetItem::setBackground() instead")
     inline void setBackgroundColor(const QColor &color)
-        { setData(Qt::BackgroundColorRole, color); }
+        { setData(Qt::BackgroundRole, color); }
+#endif
 
     inline QBrush background() const
         { return qvariant_cast<QBrush>(data(Qt::BackgroundRole)); }
     inline void setBackground(const QBrush &brush)
         { setData(Qt::BackgroundRole, brush); }
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X ("Use QTableWidgetItem::foreground() instead")
     inline QColor textColor() const
-        { return qvariant_cast<QColor>(data(Qt::TextColorRole)); }
+        { return qvariant_cast<QColor>(data(Qt::ForegroundRole)); }
+    QT_DEPRECATED_X ("Use QTableWidgetItem::setForeground() instead")
     inline void setTextColor(const QColor &color)
-        { setData(Qt::TextColorRole, color); }
+        { setData(Qt::ForegroundRole, color); }
+#endif
 
     inline QBrush foreground() const
         { return qvariant_cast<QBrush>(data(Qt::ForegroundRole)); }

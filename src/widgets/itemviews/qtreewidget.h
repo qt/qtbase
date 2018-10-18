@@ -134,20 +134,28 @@ public:
     inline void setTextAlignment(int column, int alignment)
         { setData(column, Qt::TextAlignmentRole, alignment); }
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X ("Use QTreeWidgetItem::background() instead")
     inline QColor backgroundColor(int column) const
-        { return qvariant_cast<QColor>(data(column, Qt::BackgroundColorRole)); }
+        { return qvariant_cast<QColor>(data(column, Qt::BackgroundRole)); }
+    QT_DEPRECATED_X ("Use QTreeWidgetItem::setBackground() instead")
     inline void setBackgroundColor(int column, const QColor &color)
-        { setData(column, Qt::BackgroundColorRole, color); }
+        { setData(column, Qt::BackgroundRole, color); }
+#endif
 
     inline QBrush background(int column) const
         { return qvariant_cast<QBrush>(data(column, Qt::BackgroundRole)); }
     inline void setBackground(int column, const QBrush &brush)
         { setData(column, Qt::BackgroundRole, brush); }
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X ("Use QTreeWidgetItem::foreground() instead")
     inline QColor textColor(int column) const
-        { return qvariant_cast<QColor>(data(column, Qt::TextColorRole)); }
+        { return qvariant_cast<QColor>(data(column, Qt::ForegroundRole)); }
+    QT_DEPRECATED_X ("Use QTreeWidgetItem::setForeground() instead")
     inline void setTextColor(int column, const QColor &color)
-        { setData(column, Qt::TextColorRole, color); }
+        { setData(column, Qt::ForegroundRole, color); }
+#endif
 
     inline QBrush foreground(int column) const
         { return qvariant_cast<QBrush>(data(column, Qt::ForegroundRole)); }
