@@ -1885,9 +1885,8 @@ void tst_QTreeWidget::setData()
                     QCOMPARE(qvariant_cast<QSize>(item->data(j, Qt::SizeHintRole)), sizeHint);
                     QCOMPARE(qvariant_cast<QFont>(item->data(j, Qt::FontRole)), font);
                     QCOMPARE(qvariant_cast<int>(item->data(j, Qt::TextAlignmentRole)), int(textAlignment));
-                    QCOMPARE(qvariant_cast<QBrush>(item->data(j, Qt::BackgroundColorRole)), QBrush(backgroundColor));
                     QCOMPARE(qvariant_cast<QBrush>(item->data(j, Qt::BackgroundRole)), QBrush(backgroundColor));
-                    QCOMPARE(qvariant_cast<QColor>(item->data(j, Qt::TextColorRole)), textColor);
+                    QCOMPARE(qvariant_cast<QColor>(item->data(j, Qt::ForegroundRole)), textColor);
                     QCOMPARE(qvariant_cast<int>(item->data(j, Qt::CheckStateRole)), int(checkState));
 
                     item->setBackground(j, pixmap);
@@ -1907,8 +1906,8 @@ void tst_QTreeWidget::setData()
                     item->setData(j, Qt::SizeHintRole, QVariant());
                     item->setData(j, Qt::FontRole, QVariant());
                     item->setData(j, Qt::TextAlignmentRole, QVariant());
-                    item->setData(j, Qt::BackgroundColorRole, QVariant());
-                    item->setData(j, Qt::TextColorRole, QVariant());
+                    item->setData(j, Qt::BackgroundRole, QVariant());
+                    item->setData(j, Qt::ForegroundRole, QVariant());
                     item->setData(j, Qt::CheckStateRole, QVariant());
                     QCOMPARE(itemChangedSpy.count(), 11);
                     itemChangedSpy.clear();
@@ -1921,9 +1920,8 @@ void tst_QTreeWidget::setData()
                     QCOMPARE(item->data(j, Qt::SizeHintRole), QVariant());
                     QCOMPARE(item->data(j, Qt::FontRole), QVariant());
                     QCOMPARE(item->data(j, Qt::TextAlignmentRole), QVariant());
-                    QCOMPARE(item->data(j, Qt::BackgroundColorRole), QVariant());
                     QCOMPARE(item->data(j, Qt::BackgroundRole), QVariant());
-                    QCOMPARE(item->data(j, Qt::TextColorRole), QVariant());
+                    QCOMPARE(item->data(j, Qt::ForegroundRole), QVariant());
                     QCOMPARE(item->data(j, Qt::CheckStateRole), QVariant());
                 }
             }

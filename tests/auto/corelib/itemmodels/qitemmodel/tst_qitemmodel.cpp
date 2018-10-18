@@ -576,12 +576,12 @@ void tst_QItemModel::data()
                 alignment == Qt::AlignJustify);
     }
 
-    QVariant colorVariant = currentModel->data(currentModel->index(0,0), Qt::BackgroundColorRole);
+    QVariant colorVariant = currentModel->data(currentModel->index(0,0), Qt::BackgroundRole);
     if (colorVariant.isValid()) {
         QVERIFY(colorVariant.canConvert<QColor>());
     }
 
-    colorVariant = currentModel->data(currentModel->index(0,0), Qt::TextColorRole);
+    colorVariant = currentModel->data(currentModel->index(0,0), Qt::ForegroundRole);
     if (colorVariant.isValid()) {
         QVERIFY(colorVariant.canConvert<QColor>());
     }

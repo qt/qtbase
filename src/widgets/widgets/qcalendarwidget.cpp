@@ -1178,9 +1178,9 @@ QVariant QCalendarModel::data(const QModelIndex &index, int role) const
     }
 
     QTextCharFormat fmt = formatForCell(row, column);
-    if (role == Qt::BackgroundColorRole)
+    if (role == Qt::BackgroundRole)
         return fmt.background().color();
-    if (role == Qt::TextColorRole)
+    if (role == Qt::ForegroundRole)
         return fmt.foreground().color();
     if (role == Qt::FontRole)
         return fmt.font();

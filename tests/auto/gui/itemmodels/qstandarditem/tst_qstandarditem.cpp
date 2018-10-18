@@ -202,9 +202,7 @@ void tst_QStandardItem::getSetData()
             QCOMPARE(qvariant_cast<QSize>(item.data(Qt::SizeHintRole)), sizeHint);
             QCOMPARE(qvariant_cast<QFont>(item.data(Qt::FontRole)), font);
             QCOMPARE(qvariant_cast<int>(item.data(Qt::TextAlignmentRole)), int(textAlignment));
-            QCOMPARE(qvariant_cast<QBrush>(item.data(Qt::BackgroundColorRole)), QBrush(backgroundColor));
             QCOMPARE(qvariant_cast<QBrush>(item.data(Qt::BackgroundRole)), QBrush(backgroundColor));
-            QCOMPARE(qvariant_cast<QBrush>(item.data(Qt::TextColorRole)), QBrush(textColor));
             QCOMPARE(qvariant_cast<QBrush>(item.data(Qt::ForegroundRole)), QBrush(textColor));
             QCOMPARE(qvariant_cast<int>(item.data(Qt::CheckStateRole)), int(checkState));
             QCOMPARE(qvariant_cast<QString>(item.data(Qt::AccessibleTextRole)), accessibleText);
@@ -236,9 +234,7 @@ void tst_QStandardItem::getSetData()
         QCOMPARE(item.data(Qt::SizeHintRole), QVariant());
         QCOMPARE(item.data(Qt::FontRole), QVariant());
         QCOMPARE(item.data(Qt::TextAlignmentRole), QVariant());
-        QCOMPARE(item.data(Qt::BackgroundColorRole), QVariant());
         QCOMPARE(item.data(Qt::BackgroundRole), QVariant());
-        QCOMPARE(item.data(Qt::TextColorRole), QVariant());
         QCOMPARE(item.data(Qt::ForegroundRole), QVariant());
         QCOMPARE(item.data(Qt::CheckStateRole), QVariant());
         QCOMPARE(item.data(Qt::AccessibleTextRole), QVariant());

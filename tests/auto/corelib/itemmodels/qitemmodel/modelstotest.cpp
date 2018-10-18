@@ -251,7 +251,7 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
                     QString val = xval + QString::number(y) + QString::number(i);
                     QModelIndex index = model->index(x, y, parent);
                     model->setData(index, val);
-                    model->setData(index, blue, Qt::TextColorRole);
+                    model->setData(index, blue, Qt::ForegroundRole);
                 }
             }
             */
@@ -276,7 +276,7 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
                     QString val = xval + QString::number(y) + QString::number(i);
                     QModelIndex index = realModel->index(x, y, parent);
                     realModel->setData(index, val);
-                    realModel->setData(index, blue, Qt::TextColorRole);
+                    realModel->setData(index, blue, Qt::ForegroundRole);
                 }
             }
             */

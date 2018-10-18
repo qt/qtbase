@@ -1504,9 +1504,11 @@ public:
         // Metadata
         FontRole = 6,
         TextAlignmentRole = 7,
+#if QT_DEPRECATED_SINCE(5, 13)
         BackgroundColorRole = 8,
-        BackgroundRole = 8,
         TextColorRole = 9,
+#endif
+        BackgroundRole = 8,
         ForegroundRole = 9,
         CheckStateRole = 10,
         // Accessibility

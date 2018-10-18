@@ -79,7 +79,7 @@ QVariant SpreadSheetItem::data(int role) const
     bool isNumber = false;
     int number = t.toInt(&isNumber);
 
-    if (role == Qt::TextColorRole) {
+    if (role == Qt::ForegroundRole) {
         if (!isNumber)
             return QVariant::fromValue(QColor(Qt::black));
         else if (number < 0)

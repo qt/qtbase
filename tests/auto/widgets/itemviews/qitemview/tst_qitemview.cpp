@@ -249,7 +249,7 @@ void tst_QItemView::populate()
             for (int y = 0; y < treeModel->columnCount(); ++y) {
                 QModelIndex index = treeModel->index(x, y, parent);
                 treeModel->setData(index, xS + QLatin1Char('_') + QString::number(y) + QLatin1Char('_') + iS);
-                treeModel->setData(index, QVariant(QColor(Qt::blue)), Qt::TextColorRole);
+                treeModel->setData(index, QVariant(QColor(Qt::blue)), Qt::ForegroundRole);
             }
         }
     }
