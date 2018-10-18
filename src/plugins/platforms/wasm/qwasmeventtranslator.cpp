@@ -546,7 +546,7 @@ int QWasmEventTranslator::touchCallback(int eventType, const EmscriptenTouchEven
     else
         QWindowSystemInterface::handleTouchCancelEvent(window2, wasmEventTranslator->getTimestamp(), wasmEventTranslator->touchDevice, keyModifier);
 
-    QCoreApplication::processEvents();
+    QWasmEventDispatcher::maintainTimers();
     return 1;
 }
 
