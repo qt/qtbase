@@ -42,11 +42,10 @@
 #include <QDBusInterface>
 #include <QDBusReply>
 
-#include "atspi/atspi-constants.h"
+#include <atspi/atspi-constants.h>
+#include <private/dbusconnection_p.h>
+#include <private/struct_marshallers_p.h>
 #include "bus_interface.h"
-
-#include "dbusconnection_p.h"
-#include "struct_marshallers_p.h"
 
 #define COMPARE3(v1, v2, v3) QCOMPARE(v1, v3); QCOMPARE(v2, v3);
 
