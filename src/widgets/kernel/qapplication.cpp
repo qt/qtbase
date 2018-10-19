@@ -3908,6 +3908,7 @@ Qt::NavigationMode QApplication::navigationMode()
     return QApplicationPrivate::navigationMode;
 }
 
+# if QT_DEPRECATED_SINCE(5, 13)
 /*!
     Sets whether Qt should use focus navigation suitable for use with a
     minimal keypad.
@@ -3950,6 +3951,7 @@ bool QApplication::keypadNavigationEnabled()
     return QApplicationPrivate::navigationMode == Qt::NavigationModeKeypadTabOrder ||
         QApplicationPrivate::navigationMode == Qt::NavigationModeKeypadDirectional;
 }
+# endif
 #endif
 
 /*!
