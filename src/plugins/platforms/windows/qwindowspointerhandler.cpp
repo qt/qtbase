@@ -280,7 +280,7 @@ bool QWindowsPointerHandler::translatePointerEvent(QWindow *window, HWND hwnd, Q
     return false;
 }
 
-static void getMouseEventInfo(UINT message, POINTER_BUTTON_CHANGE_TYPE changeType, QPoint globalPos, QEvent::Type *eventType, Qt::MouseButton *mouseButton)
+static void getMouseEventInfo(UINT message, POINTER_BUTTON_CHANGE_TYPE changeType, QEvent::Type *eventType, Qt::MouseButton *mouseButton)
 {
     static const QHash<POINTER_BUTTON_CHANGE_TYPE, Qt::MouseButton> buttonMapping {
         {POINTER_CHANGE_FIRSTBUTTON_DOWN, Qt::LeftButton},
@@ -334,28 +334,6 @@ static void getMouseEventInfo(UINT message, POINTER_BUTTON_CHANGE_TYPE changeTyp
     }
 
     *mouseButton = buttonMapping.value(changeType, Qt::NoButton);
-
-    // Pointer messages lack a double click indicator. Check if this is the case here.
-    if (*eventType == QEvent::MouseButtonPress ||
-        *eventType == QEvent::NonClientAreaMouseButtonPress) {
-        static LONG lastTime = 0;
-        static Qt::MouseButton lastButton = Qt::NoButton;
-        static QEvent::Type lastEvent = QEvent::None;
-        static QPoint lastPos;
-        LONG messageTime = GetMessageTime();
-        if (*mouseButton == lastButton
-            && *eventType == lastEvent
-            && messageTime - lastTime < (LONG)GetDoubleClickTime()
-            && qAbs(globalPos.x() - lastPos.x()) < GetSystemMetrics(SM_CXDOUBLECLK)
-            && qAbs(globalPos.y() - lastPos.y()) < GetSystemMetrics(SM_CYDOUBLECLK)) {
-            *eventType = nonClient ? QEvent::NonClientAreaMouseButtonDblClick :
-                                     QEvent::MouseButtonDblClick;
-        }
-        lastTime = messageTime;
-        lastButton = *mouseButton;
-        lastEvent = *eventType;
-        lastPos = globalPos;
-    }
 }
 
 static QWindow *getWindowUnderPointer(QWindow *window, QPoint globalPos)
@@ -467,7 +445,7 @@ bool QWindowsPointerHandler::translateMouseTouchPadEvent(QWindow *window, HWND h
 
         QEvent::Type eventType;
         Qt::MouseButton button;
-        getMouseEventInfo(msg.message, pointerInfo->ButtonChangeType, globalPos, &eventType, &button);
+        getMouseEventInfo(msg.message, pointerInfo->ButtonChangeType, &eventType, &button);
 
         if (et & QtWindows::NonClientEventFlag) {
             QWindowSystemInterface::handleFrameStrutMouseEvent(window, localPos, globalPos, mouseButtons, button, eventType,
