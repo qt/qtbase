@@ -78,7 +78,6 @@ static void initAgeMap()
     }
 }
 
-
 static QHash<QByteArray, QChar::Category> categoryMap;
 
 static void initCategoryMap()
@@ -778,7 +777,6 @@ static void initScriptMap()
         { QChar::Script_Soyombo,                "Soyombo" },
         { QChar::Script_ZanabazarSquare,        "ZanabazarSquare" },
 
-
         // unhandled
         { QChar::Script_Unknown,                0 }
     };
@@ -788,7 +786,6 @@ static void initScriptMap()
         ++p;
     }
 }
-
 
 // Keep this one in sync with the code in createPropertyInfo
 static const char *property_string =
@@ -2473,9 +2470,9 @@ static QByteArray createPropertyInfo()
         out += ", ";
         out += QByteArray::number( p.lowerCaseDiff );
         out += ", ";
-        out += "#ifdef Q_OS_WASM \n"
+        out += "#ifdef Q_OS_WASM \n";
 //     "        unsigned char    : 0; //wasm 64 packing trick QTBUG-65259\n"
-        out += "#endif \n"
+        out += "#endif \n";
         out += ", ";
 //     "        ushort upperCaseSpecial    : 1;\n"
 //     "        signed short upperCaseDiff : 15;\n"
@@ -2501,9 +2498,9 @@ static QByteArray createPropertyInfo()
 //     "    ushort nfQuickCheck        : 8;\n"
         out += QByteArray::number( p.nfQuickCheck );
         out += ", ";
-        out += "#ifdef Q_OS_WASM \n"
+        out += "#ifdef Q_OS_WASM \n";
 //     "        unsigned char    : 0; //wasm 64 packing trick QTBUG-65259\n"
-        out += "#endif \n"
+        out += "#endif \n";
         out += ", ";
 //     "        ushort graphemeBreakClass  : 5; /* 5 used */\n"
 //     "        ushort wordBreakClass      : 5; /* 5 used */\n"
