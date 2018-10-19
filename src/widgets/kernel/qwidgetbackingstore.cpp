@@ -101,6 +101,13 @@ void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBack
 
     if (tlw->testAttribute(Qt::WA_DontShowOnScreen) || widget->testAttribute(Qt::WA_DontShowOnScreen))
         return;
+
+    // Foreign Windows do not have backing store content and must not be flushed
+    if (QWindow *widgetWindow = widget->windowHandle()) {
+        if (widgetWindow->type() == Qt::ForeignWindow)
+            return;
+    }
+
     static bool fpsDebug = qEnvironmentVariableIntValue("QT_DEBUG_FPS");
     if (fpsDebug) {
         if (!widgetBackingStore->perfFrames++)
