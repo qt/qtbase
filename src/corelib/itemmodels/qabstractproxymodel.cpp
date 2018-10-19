@@ -316,6 +316,7 @@ bool QAbstractProxyModel::setHeaderData(int section, Qt::Orientation orientation
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 /*!
     \reimp
+    \since 6.0
  */
 bool QAbstractProxyModel::clearItemData(const QModelIndex &index)
 {

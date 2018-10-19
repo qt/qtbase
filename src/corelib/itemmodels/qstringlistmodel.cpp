@@ -230,6 +230,7 @@ bool QStringListModel::setData(const QModelIndex &index, const QVariant &value, 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 /*!
     \reimp
+    \since 6.0
  */
 bool QStringListModel::clearItemData(const QModelIndex &index)
 {
