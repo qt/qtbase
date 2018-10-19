@@ -394,6 +394,9 @@ QT_DEFINE_QPA_EVENT_HANDLER(void, handleMouseEvent, QWindow *window, ulong times
                             Qt::MouseButton button, QEvent::Type type, Qt::KeyboardModifiers mods,
                             Qt::MouseEventSource source)
 {
+    Q_ASSERT_X(type != QEvent::MouseButtonDblClick && type != QEvent::NonClientAreaMouseButtonDblClick,
+               "QWindowSystemInterface::handleMouseEvent",
+               "QTBUG-71263: Native double clicks are not implemented.");
     auto localPos = QHighDpi::fromNativeLocalPosition(local, window);
     auto globalPos = QHighDpi::fromNativePixels(global, window);
 
