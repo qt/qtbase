@@ -51,9 +51,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtWidgets/QMainWindow>
+#include <QMainWindow>
 
-QT_BEGIN_NAMESPACE // QT_BEGIN_NAMESPACE / QT_END_NAMESPACE are not needed in Qt user code
+QT_BEGIN_NAMESPACE
 class QTreeView; //forward declarations
 class QStandardItemModel;
 class QItemSelection;
@@ -67,7 +67,7 @@ private:
     QTreeView *treeView;
     QStandardItemModel *standardModel;
 private slots:
-    void selectionChangedSlot(const QItemSelection & newSelection, const QItemSelection & oldSelection);
+    void selectionChangedSlot(const QItemSelection &newSelection, const QItemSelection &oldSelection);
 public:
     MainWindow(QWidget *parent = 0);
 };

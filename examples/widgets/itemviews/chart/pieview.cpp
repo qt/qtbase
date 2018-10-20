@@ -48,30 +48,25 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-#include <qmath.h>
-#include <cmath>
 #include "pieview.h"
+
+#include <QtWidgets>
 
 PieView::PieView(QWidget *parent)
     : QAbstractItemView(parent)
 {
     horizontalScrollBar()->setRange(0, 0);
     verticalScrollBar()->setRange(0, 0);
-
-    margin = 8;
-    totalSize = 300;
-    pieSize = totalSize - 2 * margin;
-    validItems = 0;
-    totalValue = 0.0;
-    rubberBand = 0;
 }
 
 void PieView::dataChanged(const QModelIndex &topLeft,
                           const QModelIndex &bottomRight,
-                          const QVector<int> &)
+                          const QVector<int> &roles)
 {
-    QAbstractItemView::dataChanged(topLeft, bottomRight);
+    QAbstractItemView::dataChanged(topLeft, bottomRight, roles);
+
+    if (!roles.contains(Qt::DisplayRole))
+        return;
 
     validItems = 0;
     totalValue = 0.0;
@@ -79,7 +74,7 @@ void PieView::dataChanged(const QModelIndex &topLeft,
     for (int row = 0; row < model()->rowCount(rootIndex()); ++row) {
 
         QModelIndex index = model()->index(row, 1, rootIndex());
-        double value = model()->data(index).toDouble();
+        double value = model()->data(index, Qt::DisplayRole).toDouble();
 
         if (value > 0.0) {
             totalValue += value;
@@ -197,15 +192,14 @@ QRect PieView::itemRect(const QModelIndex &index) const
             listItem++;
     }
 
-    double itemHeight;
-
     switch (index.column()) {
-    case 0:
-        itemHeight = QFontMetrics(viewOptions().font).height();
+    case 0: {
+        const qreal itemHeight = QFontMetricsF(viewOptions().font).height();
 
         return QRect(totalSize,
-                     int(margin + listItem*itemHeight),
-                     totalSize - margin, int(itemHeight));
+                     qRound(margin + listItem * itemHeight),
+                     totalSize - margin, qRound(itemHeight));
+    }
     case 1:
         return viewport()->rect();
     }
@@ -235,7 +229,7 @@ QRegion PieView::itemRegion(const QModelIndex &index) const
             if (sliceIndex == index) {
                 QPainterPath slicePath;
                 slicePath.moveTo(totalSize / 2, totalSize / 2);
-                slicePath.arcTo(margin, margin, margin+pieSize, margin+pieSize,
+                slicePath.arcTo(margin, margin, margin + pieSize, margin + pieSize,
                                 startAngle, angle);
                 slicePath.closeSubpath();
 
@@ -342,7 +336,7 @@ void PieView::paintEvent(QPaintEvent *event)
         double value = model()->data(index).toDouble();
 
         if (value > 0.0) {
-            double angle = 360*value/totalValue;
+            double angle = 360 * value / totalValue;
 
             QModelIndex colorIndex = model()->index(row, 0, rootIndex());
             QColor color = QColor(model()->data(colorIndex, Qt::DecorationRole).toString());
@@ -480,16 +474,16 @@ void PieView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFlag
     }
 
     if (indexes.size() > 0) {
-        int firstRow = indexes[0].row();
-        int lastRow = indexes[0].row();
-        int firstColumn = indexes[0].column();
-        int lastColumn = indexes[0].column();
+        int firstRow = indexes.at(0).row();
+        int lastRow = firstRow;
+        int firstColumn = indexes.at(0).column();
+        int lastColumn = firstColumn;
 
         for (int i = 1; i < indexes.size(); ++i) {
-            firstRow = qMin(firstRow, indexes[i].row());
-            lastRow = qMax(lastRow, indexes[i].row());
-            firstColumn = qMin(firstColumn, indexes[i].column());
-            lastColumn = qMax(lastColumn, indexes[i].column());
+            firstRow = qMin(firstRow, indexes.at(i).row());
+            lastRow = qMax(lastRow, indexes.at(i).row());
+            firstColumn = qMin(firstColumn, indexes.at(i).column());
+            lastColumn = qMax(lastColumn, indexes.at(i).column());
         }
 
         QItemSelection selection(
@@ -508,7 +502,7 @@ void PieView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFlag
 void PieView::updateGeometries()
 {
     horizontalScrollBar()->setPageStep(viewport()->width());
-    horizontalScrollBar()->setRange(0, qMax(0, 2*totalSize - viewport()->width()));
+    horizontalScrollBar()->setRange(0, qMax(0, 2 * totalSize - viewport()->width()));
     verticalScrollBar()->setPageStep(viewport()->height());
     verticalScrollBar()->setRange(0, qMax(0, totalSize - viewport()->height()));
 }
@@ -546,7 +540,7 @@ QRegion PieView::visualRegionForSelection(const QItemSelection &selection) const
 
     QRegion region;
     for (int i = 0; i < ranges; ++i) {
-        QItemSelectionRange range = selection.at(i);
+        const QItemSelectionRange &range = selection.at(i);
         for (int row = range.top(); row <= range.bottom(); ++row) {
             for (int col = range.left(); col <= range.right(); ++col) {
                 QModelIndex index = model()->index(row, col, rootIndex());

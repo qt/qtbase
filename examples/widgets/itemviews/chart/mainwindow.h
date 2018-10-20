@@ -56,7 +56,6 @@
 QT_BEGIN_NAMESPACE
 class QAbstractItemModel;
 class QAbstractItemView;
-class QItemSelectionModel;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -64,7 +63,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow();
+    MainWindow(QWidget *parent = nullptr);
 
 private slots:
     void openFile();
@@ -75,9 +74,8 @@ private:
     void setupViews();
     void loadFile(const QString &path);
 
-    QAbstractItemModel *model;
-    QAbstractItemView *pieChart;
-    QItemSelectionModel *selectionModel;
+    QAbstractItemModel *model = nullptr;
+    QAbstractItemView *pieChart = nullptr;
 };
 
 #endif // MAINWINDOW_H

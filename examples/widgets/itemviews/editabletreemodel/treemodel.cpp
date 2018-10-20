@@ -225,7 +225,7 @@ bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int rol
     bool result = item->setData(index.column(), value);
 
     if (result)
-        emit dataChanged(index, index);
+        emit dataChanged(index, index, {role});
 
     return result;
 }

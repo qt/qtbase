@@ -48,12 +48,10 @@
 **
 ****************************************************************************/
 
-
 #include "mymodel.h"
 
-
 MyModel::MyModel(QObject *parent)
-    :QAbstractTableModel(parent)
+    : QAbstractTableModel(parent)
 {
 }
 
@@ -72,33 +70,31 @@ int MyModel::columnCount(const QModelIndex & /*parent*/) const
 //-----------------------------------------------------------------
 QVariant MyModel::data(const QModelIndex &index, int role) const
 {
-    if (role == Qt::DisplayRole)
-    {
-        return m_gridData[index.row()][index.column()];
-    }
+    if (role == Qt::DisplayRole && checkIndex(index))
+            return m_gridData[index.row()][index.column()];
+
     return QVariant();
 }
 
 //-----------------------------------------------------------------
 //! [quoting mymodel_e]
-bool MyModel::setData(const QModelIndex & index, const QVariant & value, int role)
+bool MyModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    if (role == Qt::EditRole)
-    {
+    if (role == Qt::EditRole) {
+        if (!checkIndex(index))
+            return false;
         //save value from editor to member m_gridData
         m_gridData[index.row()][index.column()] = value.toString();
         //for presentation purposes only: build and emit a joined string
         QString result;
-        for (int row= 0; row < ROWS; row++)
-        {
-            for(int col= 0; col < COLS; col++)
-            {
+        for (int row = 0; row < ROWS; row++) {
+            for (int col= 0; col < COLS; col++)
                 result += m_gridData[row][col] + ' ';
-            }
         }
-        emit editCompleted( result );
+        emit editCompleted(result);
+        return true;
     }
-    return true;
+    return false;
 }
 //! [quoting mymodel_e]
 
