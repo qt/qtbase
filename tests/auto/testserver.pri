@@ -85,6 +85,22 @@ equals(QMAKE_HOST.os, Windows)|isEmpty(TESTSERVER_VERSION) {
     testserver_pretest.commands = $(info "testserver:" $$TESTSERVER_VERSION)
     testserver_pretest.commands += $(if $$TESTSERVER_COMPOSE_FILE,,$(error $$FILE_PRETEST_MSG))
 
+    # Make sure docker-machine is both created and running. The docker_machine
+    # script is used to deploy the docker environment into VirtualBox.
+    # Example: qt5/coin/provisioning/common/shared/testserver/docker_machine.sh
+    !isEmpty(MACHINE_CONFIG) {
+        MACHINE_LIST_CMD = docker-machine ls -q --filter "Name=^qt-test-server$"
+        MACHINE_LIST_MSG = "Docker machine qt-test-server not found"
+        testserver_pretest.commands += \
+            $(if $(shell $$MACHINE_LIST_CMD),,$(error $$MACHINE_LIST_MSG))
+
+        MACHINE_STATE_CMD = \
+            docker-machine ls -q --filter "State=Running" --filter "Name=^qt-test-server$"
+        MACHINE_START_CMD = docker-machine start qt-test-server
+        testserver_pretest.commands += \
+            $(if $(shell $$MACHINE_STATE_CMD),,$(shell $$MACHINE_START_CMD > /dev/null))
+    }
+
     # Before starting the test servers, it requires the user to run the setup
     # script (coin/provisioning/.../testserver/docker_testserver.sh) in advance.
     IMAGE_PRETEST_CMD = docker $$MACHINE_CONFIG images -aq "qt-test-server-*"
