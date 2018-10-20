@@ -1146,22 +1146,17 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
     qint64 ret = -1;
     int recvResult = 0;
     DWORD flags;
-    DWORD bufferCount = 5;
-    WSABUF * buf = 0;
+    // We start at 1500 bytes (the MTU for Ethernet V2), which should catch
+    // almost all uses (effective MTU for UDP under IPv4 is 1468), except
+    // for localhost datagrams and those reassembled by the IP layer.
+    char udpMessagePeekBuffer[1500];
+    std::vector<WSABUF> buf;
     for (;;) {
-        // We start at 1500 bytes (the MTU for Ethernet V2), which should catch
-        // almost all uses (effective MTU for UDP under IPv4 is 1468), except
-        // for localhost datagrams and those reassembled by the IP layer.
-        char udpMessagePeekBuffer[1500];
+        buf.resize(buf.size() + 5, {sizeof(udpMessagePeekBuffer), udpMessagePeekBuffer});
 
-        buf = new WSABUF[bufferCount];
-        for (DWORD i=0; i<bufferCount; i++) {
-           buf[i].buf = udpMessagePeekBuffer;
-           buf[i].len = sizeof(udpMessagePeekBuffer);
-        }
         flags = MSG_PEEK;
         DWORD bytesRead = 0;
-        recvResult = ::WSARecv(socketDescriptor, buf, bufferCount, &bytesRead, &flags, 0,0);
+        recvResult = ::WSARecv(socketDescriptor, buf.data(), DWORD(buf.size()), &bytesRead, &flags, nullptr, nullptr);
         int err = WSAGetLastError();
         if (recvResult != SOCKET_ERROR) {
             ret = qint64(bytesRead);
@@ -1169,8 +1164,6 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
         } else {
             switch (err) {
             case WSAEMSGSIZE:
-                bufferCount += 5;
-                delete[] buf;
                 continue;
             case WSAECONNRESET:
             case WSAENETRESET:
@@ -1184,9 +1177,6 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
             break;
         }
     }
-
-    if (buf)
-        delete[] buf;
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativePendingDatagramSize() == %lli", ret);
