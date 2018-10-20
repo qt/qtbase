@@ -74,7 +74,7 @@ static QString driveSpec(const QString &path)
     if (path.size() < 2)
         return QString();
     char c = path.at(0).toLatin1();
-    if (c < 'a' && c > 'z' && c < 'A' && c > 'Z')
+    if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z'))
         return QString();
     if (path.at(1).toLatin1() != ':')
         return QString();
