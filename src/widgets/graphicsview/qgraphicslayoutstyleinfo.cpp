@@ -51,8 +51,7 @@ QGraphicsLayoutStyleInfo::QGraphicsLayoutStyleInfo(const QGraphicsLayoutPrivate 
     : m_layout(layout), m_style(0)
 {
     m_widget = new QWidget; // pixelMetric might need a widget ptr
-    if (m_widget)
-        m_styleOption.initFrom(m_widget);
+    m_styleOption.initFrom(m_widget);
     m_isWindow = m_styleOption.state & QStyle::State_Window;
 }
 
