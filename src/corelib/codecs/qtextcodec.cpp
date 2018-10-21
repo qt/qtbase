@@ -45,8 +45,9 @@
 #ifndef QT_NO_TEXTCODEC
 
 #include "qbytearraymatcher.h"
-#include "qlist.h"
+#include "qendian.h"
 #include "qfile.h"
+#include "qlist.h"
 #include "qstringlist.h"
 #include "qvarlengtharray.h"
 #if !defined(QT_BOOTSTRAPPED)
@@ -1183,32 +1184,31 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba)
 QTextCodec *QTextCodec::codecForUtfText(const QByteArray &ba, QTextCodec *defaultCodec)
 {
     const int arraySize = ba.size();
+    const uchar *buf = reinterpret_cast<const uchar *>(ba.constData());
+    const uint bom = 0xfeff;
 
     if (arraySize > 3) {
-        if ((uchar)ba[0] == 0x00
-            && (uchar)ba[1] == 0x00
-            && (uchar)ba[2] == 0xFE
-            && (uchar)ba[3] == 0xFF)
+        uint uc = qFromUnaligned<uint>(buf);
+        if (uc == qToBigEndian(bom))
             return QTextCodec::codecForMib(1018); // utf-32 be
-        else if ((uchar)ba[0] == 0xFF
-                 && (uchar)ba[1] == 0xFE
-                 && (uchar)ba[2] == 0x00
-                 && (uchar)ba[3] == 0x00)
+        else if (uc == qToLittleEndian(bom))
             return QTextCodec::codecForMib(1019); // utf-32 le
     }
 
     if (arraySize < 2)
         return defaultCodec;
-    if ((uchar)ba[0] == 0xfe && (uchar)ba[1] == 0xff)
+
+    ushort uc = qFromUnaligned<ushort>(buf);
+    if (uc == qToBigEndian(ushort(bom)))
         return QTextCodec::codecForMib(1013); // utf16 be
-    else if ((uchar)ba[0] == 0xff && (uchar)ba[1] == 0xfe)
+    else if (uc == qToLittleEndian(ushort(bom)))
         return QTextCodec::codecForMib(1014); // utf16 le
 
     if (arraySize < 3)
         return defaultCodec;
-    if ((uchar)ba[0] == 0xef
-        && (uchar)ba[1] == 0xbb
-        && (uchar)ba[2] == 0xbf)
+
+    static const char utf8bom[] = "\xef\xbb\xbf";
+    if (memcmp(buf, utf8bom, sizeof(utf8bom) - 1) == 0)
         return QTextCodec::codecForMib(106); // utf-8
 
     return defaultCodec;
