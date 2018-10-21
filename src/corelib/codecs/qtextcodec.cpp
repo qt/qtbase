@@ -1164,9 +1164,19 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba)
 
     Tries to detect the encoding of the provided snippet \a ba by
     using the BOM (Byte Order Mark) and returns a QTextCodec instance
-    that is capable of decoding the text to unicode. If the codec
-    cannot be detected from the content provided, \a defaultCodec is
-    returned.
+    that is capable of decoding the text to unicode. This function can
+    detect one of the following codecs:
+
+    \list
+      \li UTF-32 Little Endian
+      \li UTF-32 Big Endian
+      \li UTF-16 Little Endian
+      \li UTF-16 Big Endian
+      \li UTF-8
+    \endlist
+
+    If the codec cannot be detected from the content provided, \a defaultCodec
+    is returned.
 
     \sa codecForHtml()
 */
@@ -1209,8 +1219,19 @@ QTextCodec *QTextCodec::codecForUtfText(const QByteArray &ba, QTextCodec *defaul
 
     Tries to detect the encoding of the provided snippet \a ba by
     using the BOM (Byte Order Mark) and returns a QTextCodec instance
-    that is capable of decoding the text to unicode. If the codec
-    cannot be detected, this overload returns a Latin-1 QTextCodec.
+    that is capable of decoding the text to unicode. This function can
+    detect one of the following codecs:
+
+    \list
+      \li UTF-32 Little Endian
+      \li UTF-32 Big Endian
+      \li UTF-16 Little Endian
+      \li UTF-16 Big Endian
+      \li UTF-8
+    \endlist
+
+    If the codec cannot be detected from the content provided, this overload
+    returns a Latin-1 QTextCodec.
 
     \sa codecForHtml()
 */
