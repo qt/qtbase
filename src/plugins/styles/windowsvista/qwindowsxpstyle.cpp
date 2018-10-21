@@ -511,8 +511,8 @@ QRegion QWindowsXPStylePrivate::region(XPThemeData &themeData)
         if (numBytes == 0)
             return QRegion();
 
-        char *buf = new char[numBytes];
-        if (buf == 0)
+        char *buf = new (std::nothrow) char[numBytes];
+        if (!buf)
             return QRegion();
 
         RGNDATA *rd = reinterpret_cast<RGNDATA*>(buf);
