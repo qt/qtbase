@@ -290,12 +290,12 @@ public:
 
         gridLayout_3->addItem(verticalSpacer, 6, 0, 1, 1);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         pageSizeLabel->setBuddy(pageSizeCombo);
         widthLabel->setBuddy(pageWidth);
         heightLabel->setBuddy(pageHeight);
         paperSourceLabel->setBuddy(paperSource);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(QPageSetupWidget);
 
@@ -316,30 +316,30 @@ public:
         reverseLandscape->setText(QApplication::translate("QPageSetupWidget", "Reverse landscape", nullptr));
         reversePortrait->setText(QApplication::translate("QPageSetupWidget", "Reverse portrait", nullptr));
         groupBox->setTitle(QApplication::translate("QPageSetupWidget", "Margins", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         topMargin->setToolTip(QApplication::translate("QPageSetupWidget", "top margin", nullptr));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(accessibility)
         topMargin->setAccessibleName(QApplication::translate("QPageSetupWidget", "top margin", nullptr));
-#endif // QT_NO_ACCESSIBILITY
-#ifndef QT_NO_TOOLTIP
+#endif // QT_CONFIG(accessibility)
+#if QT_CONFIG(tooltip)
         leftMargin->setToolTip(QApplication::translate("QPageSetupWidget", "left margin", nullptr));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(accessibility)
         leftMargin->setAccessibleName(QApplication::translate("QPageSetupWidget", "left margin", nullptr));
-#endif // QT_NO_ACCESSIBILITY
-#ifndef QT_NO_TOOLTIP
+#endif // QT_CONFIG(accessibility)
+#if QT_CONFIG(tooltip)
         rightMargin->setToolTip(QApplication::translate("QPageSetupWidget", "right margin", nullptr));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(accessibility)
         rightMargin->setAccessibleName(QApplication::translate("QPageSetupWidget", "right margin", nullptr));
-#endif // QT_NO_ACCESSIBILITY
-#ifndef QT_NO_TOOLTIP
+#endif // QT_CONFIG(accessibility)
+#if QT_CONFIG(tooltip)
         bottomMargin->setToolTip(QApplication::translate("QPageSetupWidget", "bottom margin", nullptr));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(accessibility)
         bottomMargin->setAccessibleName(QApplication::translate("QPageSetupWidget", "bottom margin", nullptr));
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
         pagesPerSheetButtonGroup->setTitle(QApplication::translate("QPageSetupWidget", "Page Layout", nullptr));
         label->setText(QApplication::translate("QPageSetupWidget", "Page order:", nullptr));
         label_2->setText(QApplication::translate("QPageSetupWidget", "Pages per sheet:", nullptr));

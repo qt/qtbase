@@ -166,9 +166,9 @@ public:
         actionOpenForm->setText(QApplication::translate("TrPreviewToolClass", "&Open Form...", nullptr));
         actionLoadTranslation->setText(QApplication::translate("TrPreviewToolClass", "&Load Translation...", nullptr));
         actionReloadTranslations->setText(QApplication::translate("TrPreviewToolClass", "&Reload Translations", nullptr));
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         actionReloadTranslations->setShortcut(QApplication::translate("TrPreviewToolClass", "F5", nullptr));
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
         actionClose->setText(QApplication::translate("TrPreviewToolClass", "&Close", nullptr));
         actionAbout->setText(QApplication::translate("TrPreviewToolClass", "About", nullptr));
         actionAbout_Qt->setText(QApplication::translate("TrPreviewToolClass", "About Qt", nullptr));

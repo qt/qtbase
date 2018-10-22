@@ -156,10 +156,10 @@ public:
 
         vboxLayout->addLayout(hboxLayout2);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(paperSizeCombo);
         label_2->setBuddy(paperOrientationCombo);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(PreviewDialogBase);
         QObject::connect(buttonBox, SIGNAL(accepted()), PreviewDialogBase, SLOT(accept()));

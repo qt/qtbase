@@ -83,12 +83,12 @@ public:
 
         formLayout->setWidget(3, QFormLayout::FieldRole, spacing);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(layoutDirection);
         label_2->setBuddy(fontComboBox);
         label_3->setBuddy(style);
         label_4->setBuddy(spacing);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(embeddedDialog);
 

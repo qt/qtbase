@@ -584,117 +584,117 @@ public:
     void retranslateUi(QWidget *QtGradientEditor)
     {
         QtGradientEditor->setWindowTitle(QApplication::translate("QtGradientEditor", "Form", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         gradientWidget->setToolTip(QApplication::translate("QtGradientEditor", "Gradient Editor", nullptr));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_WHATSTHIS
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(whatsthis)
         gradientWidget->setWhatsThis(QApplication::translate("QtGradientEditor", "This area shows a preview of the gradient being edited. It also allows you to edit parameters specific to the gradient's type such as start and final point, radius, etc. by drag & drop.", nullptr));
-#endif // QT_NO_WHATSTHIS
+#endif // QT_CONFIG(whatsthis)
         label1->setText(QApplication::translate("QtGradientEditor", "1", nullptr));
         label2->setText(QApplication::translate("QtGradientEditor", "2", nullptr));
         label3->setText(QApplication::translate("QtGradientEditor", "3", nullptr));
         label4->setText(QApplication::translate("QtGradientEditor", "4", nullptr));
         label5->setText(QApplication::translate("QtGradientEditor", "5", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         gradientStopsWidget->setToolTip(QApplication::translate("QtGradientEditor", "Gradient Stops Editor", nullptr));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_WHATSTHIS
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(whatsthis)
         gradientStopsWidget->setWhatsThis(QApplication::translate("QtGradientEditor", "This area allows you to edit gradient stops. Double click on the existing stop handle to duplicate it. Double click outside of the existing stop handles to create a new stop. Drag & drop the handle to reposition it. Use right mouse button to popup context menu with extra actions.", nullptr));
-#endif // QT_NO_WHATSTHIS
+#endif // QT_CONFIG(whatsthis)
         zoomLabel->setText(QApplication::translate("QtGradientEditor", "Zoom", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         zoomAllButton->setToolTip(QApplication::translate("QtGradientEditor", "Reset Zoom", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         zoomAllButton->setText(QApplication::translate("QtGradientEditor", "Reset Zoom", nullptr));
         positionLabel->setText(QApplication::translate("QtGradientEditor", "Position", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         hLabel->setToolTip(QApplication::translate("QtGradientEditor", "Hue", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         hLabel->setText(QApplication::translate("QtGradientEditor", "H", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         hueColorLine->setToolTip(QApplication::translate("QtGradientEditor", "Hue", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         hueLabel->setText(QApplication::translate("QtGradientEditor", "Hue", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         sLabel->setToolTip(QApplication::translate("QtGradientEditor", "Saturation", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         sLabel->setText(QApplication::translate("QtGradientEditor", "S", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         saturationColorLine->setToolTip(QApplication::translate("QtGradientEditor", "Saturation", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         saturationLabel->setText(QApplication::translate("QtGradientEditor", "Sat", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         vLabel->setToolTip(QApplication::translate("QtGradientEditor", "Value", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         vLabel->setText(QApplication::translate("QtGradientEditor", "V", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         valueColorLine->setToolTip(QApplication::translate("QtGradientEditor", "Value", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         valueLabel->setText(QApplication::translate("QtGradientEditor", "Val", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         aLabel->setToolTip(QApplication::translate("QtGradientEditor", "Alpha", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         aLabel->setText(QApplication::translate("QtGradientEditor", "A", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         alphaColorLine->setToolTip(QApplication::translate("QtGradientEditor", "Alpha", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         alphaLabel->setText(QApplication::translate("QtGradientEditor", "Alpha", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         typeComboBox->setToolTip(QApplication::translate("QtGradientEditor", "Type", nullptr));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
         spreadComboBox->setToolTip(QApplication::translate("QtGradientEditor", "Spread", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         colorLabel->setText(QApplication::translate("QtGradientEditor", "Color", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         colorButton->setToolTip(QApplication::translate("QtGradientEditor", "Current stop's color", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         colorButton->setText(QString());
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         hsvRadioButton->setToolTip(QApplication::translate("QtGradientEditor", "Show HSV specification", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         hsvRadioButton->setText(QApplication::translate("QtGradientEditor", "HSV", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         rgbRadioButton->setToolTip(QApplication::translate("QtGradientEditor", "Show RGB specification", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         rgbRadioButton->setText(QApplication::translate("QtGradientEditor", "RGB", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         positionSpinBox->setToolTip(QApplication::translate("QtGradientEditor", "Current stop's position", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         zoomSpinBox->setSuffix(QApplication::translate("QtGradientEditor", "%", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         zoomInButton->setToolTip(QApplication::translate("QtGradientEditor", "Zoom In", nullptr));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
         zoomOutButton->setToolTip(QApplication::translate("QtGradientEditor", "Zoom Out", nullptr));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
         detailsButton->setToolTip(QApplication::translate("QtGradientEditor", "Toggle details extension", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         detailsButton->setText(QApplication::translate("QtGradientEditor", ">", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         linearButton->setToolTip(QApplication::translate("QtGradientEditor", "Linear Type", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         linearButton->setText(QApplication::translate("QtGradientEditor", "...", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         radialButton->setToolTip(QApplication::translate("QtGradientEditor", "Radial Type", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         radialButton->setText(QApplication::translate("QtGradientEditor", "...", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         conicalButton->setToolTip(QApplication::translate("QtGradientEditor", "Conical Type", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         conicalButton->setText(QApplication::translate("QtGradientEditor", "...", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         padButton->setToolTip(QApplication::translate("QtGradientEditor", "Pad Spread", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         padButton->setText(QApplication::translate("QtGradientEditor", "...", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         repeatButton->setToolTip(QApplication::translate("QtGradientEditor", "Repeat Spread", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         repeatButton->setText(QApplication::translate("QtGradientEditor", "...", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         reflectButton->setToolTip(QApplication::translate("QtGradientEditor", "Reflect Spread", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         reflectButton->setText(QApplication::translate("QtGradientEditor", "...", nullptr));
     } // retranslateUi
 

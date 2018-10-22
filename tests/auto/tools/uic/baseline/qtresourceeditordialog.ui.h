@@ -142,23 +142,23 @@ public:
     void retranslateUi(QDialog *QtResourceEditorDialog)
     {
         QtResourceEditorDialog->setWindowTitle(QApplication::translate("QtResourceEditorDialog", "Dialog", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         newQrcButton->setToolTip(QApplication::translate("QtResourceEditorDialog", "New File", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         newQrcButton->setText(QApplication::translate("QtResourceEditorDialog", "N", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         removeQrcButton->setToolTip(QApplication::translate("QtResourceEditorDialog", "Remove File", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         removeQrcButton->setText(QApplication::translate("QtResourceEditorDialog", "R", nullptr));
         importQrcButton->setText(QApplication::translate("QtResourceEditorDialog", "I", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         newResourceButton->setToolTip(QApplication::translate("QtResourceEditorDialog", "New Resource", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         newResourceButton->setText(QApplication::translate("QtResourceEditorDialog", "N", nullptr));
         addResourceButton->setText(QApplication::translate("QtResourceEditorDialog", "A", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         removeResourceButton->setToolTip(QApplication::translate("QtResourceEditorDialog", "Remove Resource or File", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         removeResourceButton->setText(QApplication::translate("QtResourceEditorDialog", "R", nullptr));
     } // retranslateUi
 

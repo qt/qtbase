@@ -128,10 +128,10 @@ public:
 
         horizontalLayout_2->addWidget(printerGroup);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(printers);
         lOutput->setBuddy(filename);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(QPrintWidget);
 

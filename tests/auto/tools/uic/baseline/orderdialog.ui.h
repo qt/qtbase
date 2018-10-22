@@ -132,12 +132,12 @@ public:
     {
         qdesigner_internal__OrderDialog->setWindowTitle(QApplication::translate("qdesigner_internal::OrderDialog", "Change Page Order", nullptr));
         groupBox->setTitle(QApplication::translate("qdesigner_internal::OrderDialog", "Page Order", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         upButton->setToolTip(QApplication::translate("qdesigner_internal::OrderDialog", "Move page up", nullptr));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
         downButton->setToolTip(QApplication::translate("qdesigner_internal::OrderDialog", "Move page down", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
     } // retranslateUi
 
 };

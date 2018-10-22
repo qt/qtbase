@@ -120,10 +120,10 @@ public:
 
         vboxLayout->addWidget(m_gridGroupBox);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(m_deltaXSpinBox);
         label_2->setBuddy(m_deltaYSpinBox);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(qdesigner_internal__GridPanel);
 

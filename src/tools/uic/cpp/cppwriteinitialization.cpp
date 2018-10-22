@@ -34,6 +34,8 @@
 #include "databaseinfo.h"
 #include "globaldefs.h"
 
+#include <language.h>
+
 #include <qtextstream.h>
 #include <qdebug.h>
 
@@ -172,16 +174,15 @@ namespace {
         }
         return  true;
     }
-
-    inline void openIfndef(QTextStream &str, const QString &symbol) { if (!symbol.isEmpty()) str << QLatin1String("#ifndef ") << symbol << endl;  }
-    inline void closeIfndef(QTextStream &str, const QString &symbol) { if (!symbol.isEmpty()) str << QLatin1String("#endif // ") << symbol << endl; }
-
-    const char *accessibilityDefineC = "QT_NO_ACCESSIBILITY";
-    const char *toolTipDefineC = "QT_NO_TOOLTIP";
-    const char *whatsThisDefineC = "QT_NO_WHATSTHIS";
-    const char *statusTipDefineC = "QT_NO_STATUSTIP";
-    const char *shortcutDefineC = "QT_NO_SHORTCUT";
 }
+
+// QtGui
+static inline QString accessibilityConfigKey() { return QStringLiteral("accessibility"); }
+static inline QString shortcutConfigKey()      { return QStringLiteral("shortcut"); }
+static inline QString whatsThisConfigKey()     { return QStringLiteral("whatsthis"); }
+// QtWidgets
+static inline QString statusTipConfigKey()     { return QStringLiteral("statustip"); }
+static inline QString toolTipConfigKey()       { return QStringLiteral("tooltip"); }
 
 namespace CPP {
 
@@ -520,7 +521,7 @@ void WriteInitialization::acceptUI(DomUI *node)
     acceptWidget(node->elementWidget());
 
     if (!m_buddies.empty())
-        openIfndef(m_output, QLatin1String(shortcutDefineC));
+        m_output << language::openQtConfig(shortcutConfigKey());
     for (const Buddy &b : qAsConst(m_buddies)) {
         if (!m_registeredWidgets.contains(b.objName)) {
             fprintf(stderr, "%s: Warning: Buddy assignment: '%s' is not a valid widget.\n",
@@ -537,7 +538,7 @@ void WriteInitialization::acceptUI(DomUI *node)
         m_output << m_indent << b.objName << "->setBuddy(" << b.buddy << ");\n";
     }
     if (!m_buddies.empty())
-        closeIfndef(m_output, QLatin1String(shortcutDefineC));
+        m_output << language::closeQtConfig(shortcutConfigKey());
 
     if (node->elementTabStops())
         acceptTabStops(node->elementTabStops());
@@ -1124,6 +1125,23 @@ QString WriteInitialization::writeStringListProperty(const DomStringList *list) 
     return propertyValue;
 }
 
+static QString configKeyForProperty(const QString &propertyName)
+{
+    if (propertyName == QLatin1String("toolTip"))
+        return toolTipConfigKey();
+    if (propertyName == QLatin1String("whatsThis"))
+        return whatsThisConfigKey();
+    if (propertyName == QLatin1String("statusTip"))
+        return statusTipConfigKey();
+    if (propertyName == QLatin1String("shortcut"))
+        return shortcutConfigKey();
+    if (propertyName == QLatin1String("accessibleName")
+        || propertyName == QLatin1String("accessibleDescription")) {
+        return accessibilityConfigKey();
+    }
+    return QString();
+}
+
 void WriteInitialization::writeProperties(const QString &varName,
                                           const QString &className,
                                           const DomPropertyList &lst,
@@ -1461,28 +1479,18 @@ void WriteInitialization::writeProperties(const QString &varName,
         }
 
         if (propertyValue.size()) {
-            const char* defineC = 0;
-            if (propertyName == QLatin1String("toolTip"))
-                defineC = toolTipDefineC;
-            else if (propertyName == QLatin1String("whatsThis"))
-                defineC = whatsThisDefineC;
-            else if (propertyName == QLatin1String("statusTip"))
-                defineC = statusTipDefineC;
-            else if (propertyName == QLatin1String("shortcut"))
-                defineC = shortcutDefineC;
-            else if (propertyName == QLatin1String("accessibleName") || propertyName == QLatin1String("accessibleDescription"))
-                defineC = accessibilityDefineC;
+            const QString configKey = configKeyForProperty(propertyName);
 
             QTextStream &o = delayProperty ? m_delayedOut : autoTrOutput(p);
 
-            if (defineC)
-                openIfndef(o, QLatin1String(defineC));
+            if (!configKey.isEmpty())
+                o << language::openQtConfig(configKey);
             o << m_indent << varNewName << setFunction << propertyValue;
             if (!stdset)
                 o << ')';
             o << ");\n";
-            if (defineC)
-                closeIfndef(o, QLatin1String(defineC));
+            if (!configKey.isEmpty())
+               o << language::closeQtConfig(configKey);
 
             if (varName == m_mainFormVarName && &o == &m_refreshOut) {
                 // this is the only place (currently) where we output mainForm name to the retranslateUi().
@@ -2127,9 +2135,12 @@ void WriteInitialization::addCommonInitializers(Item *item,
     addQtFlagsInitializer(item, properties, QLatin1String("textAlignment"), column);
     addQtEnumInitializer(item, properties, QLatin1String("checkState"), column);
     addStringInitializer(item, properties, QLatin1String("text"), column);
-    addStringInitializer(item, properties, QLatin1String("toolTip"), column, QLatin1String(toolTipDefineC));
-    addStringInitializer(item, properties, QLatin1String("whatsThis"), column, QLatin1String(whatsThisDefineC));
-    addStringInitializer(item, properties, QLatin1String("statusTip"), column, QLatin1String(statusTipDefineC));
+    addStringInitializer(item, properties, QLatin1String("toolTip"), column,
+                         toolTipConfigKey());
+    addStringInitializer(item, properties, QLatin1String("whatsThis"), column,
+                         whatsThisConfigKey());
+    addStringInitializer(item, properties, QLatin1String("statusTip"), column,
+                         statusTipConfigKey());
 }
 
 void WriteInitialization::initializeListWidget(DomWidget *w)
@@ -2466,7 +2477,7 @@ static void generateMultiDirectiveBegin(QTextStream &outputStream, const QSet<QS
         return;
 
     if (directives.size() == 1) {
-        outputStream << "#ifndef " << *directives.cbegin() << endl;
+        outputStream << language::openQtConfig(*directives.cbegin());
         return;
     }
 
@@ -2474,7 +2485,10 @@ static void generateMultiDirectiveBegin(QTextStream &outputStream, const QSet<QS
     // sort (always generate in the same order):
     std::sort(list.begin(), list.end());
 
-    outputStream << "#if !defined(" << list.join(QLatin1String(") || !defined(")) << ')' << endl;
+    outputStream << "#if " << language::qtConfig(list.constFirst());
+    for (int i = 1, size = list.size(); i < size; ++i)
+        outputStream << " || " << language::qtConfig(list.at(i));
+    outputStream << endl;
 }
 
 static void generateMultiDirectiveEnd(QTextStream &outputStream, const QSet<QString> &directives)
@@ -2531,9 +2545,11 @@ QString WriteInitialization::Item::writeSetupUi(const QString &parent, Item::Emp
 
     QMultiMap<QString, QString>::ConstIterator it = m_setupUiData.setters.constBegin();
     while (it != m_setupUiData.setters.constEnd()) {
-        openIfndef(m_setupUiStream, it.key());
+        if (!it.key().isEmpty())
+            m_setupUiStream << language::openQtConfig(it.key());
         m_setupUiStream << m_indent << uniqueName << it.value() << endl;
-        closeIfndef(m_setupUiStream, it.key());
+        if (!it.key().isEmpty())
+            m_setupUiStream << language::closeQtConfig(it.key());
         ++it;
     }
     for (Item *child : qAsConst(m_children))
@@ -2560,14 +2576,17 @@ void WriteInitialization::Item::writeRetranslateUi(const QString &parentPath)
     while (it != m_retranslateUiData.setters.constEnd()) {
         const QString newDirective = it.key();
         if (oldDirective != newDirective) {
-            closeIfndef(m_retranslateUiStream, oldDirective);
-            openIfndef(m_retranslateUiStream, newDirective);
+            if (!oldDirective.isEmpty())
+                m_retranslateUiStream << language::closeQtConfig(oldDirective);
+            if (!newDirective.isEmpty())
+                m_retranslateUiStream << language::openQtConfig(newDirective);
             oldDirective = newDirective;
         }
         m_retranslateUiStream << m_indent << uniqueName << it.value() << endl;
         ++it;
     }
-    closeIfndef(m_retranslateUiStream, oldDirective);
+    if (!oldDirective.isEmpty())
+        m_retranslateUiStream << language::closeQtConfig(oldDirective);
 
     for (int i = 0; i < m_children.size(); i++)
         m_children[i]->writeRetranslateUi(uniqueName + QLatin1String("->child(") + QString::number(i) + QLatin1Char(')'));

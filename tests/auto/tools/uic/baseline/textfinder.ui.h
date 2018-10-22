@@ -81,9 +81,9 @@ public:
 
         vboxLayout->addItem(spacerItem);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         searchLabel->setBuddy(lineEdit);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(Form);
         QObject::connect(lineEdit, SIGNAL(returnPressed()), findButton, SLOT(animateClick()));

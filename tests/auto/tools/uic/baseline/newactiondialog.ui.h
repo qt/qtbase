@@ -143,11 +143,11 @@ public:
 
         verticalLayout->addWidget(buttonBox);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(editActionText);
         label_3->setBuddy(editObjectName);
         label_2->setBuddy(iconSelector);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
         QWidget::setTabOrder(editActionText, editObjectName);
 
         retranslateUi(qdesigner_internal__NewActionDialog);

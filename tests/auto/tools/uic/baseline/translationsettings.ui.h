@@ -86,9 +86,9 @@ public:
 
         vboxLayout->addWidget(buttonBox);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(cbLanguageList);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(TranslationSettings);
         QObject::connect(buttonBox, SIGNAL(accepted()), TranslationSettings, SLOT(accept()));

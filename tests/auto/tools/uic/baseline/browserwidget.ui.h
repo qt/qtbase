@@ -157,13 +157,13 @@ public:
     {
         Browser->setWindowTitle(QApplication::translate("Browser", "Qt SQL Browser", nullptr));
         insertRowAction->setText(QApplication::translate("Browser", "&Insert Row", nullptr));
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
         insertRowAction->setStatusTip(QApplication::translate("Browser", "Inserts a new Row", nullptr));
-#endif // QT_NO_STATUSTIP
+#endif // QT_CONFIG(statustip)
         deleteRowAction->setText(QApplication::translate("Browser", "&Delete Row", nullptr));
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
         deleteRowAction->setStatusTip(QApplication::translate("Browser", "Deletes the current Row", nullptr));
-#endif // QT_NO_STATUSTIP
+#endif // QT_CONFIG(statustip)
         groupBox->setTitle(QApplication::translate("Browser", "SQL Query", nullptr));
         clearButton->setText(QApplication::translate("Browser", "&Clear", nullptr));
         submitButton->setText(QApplication::translate("Browser", "&Submit", nullptr));

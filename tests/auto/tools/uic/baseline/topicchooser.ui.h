@@ -86,9 +86,9 @@ public:
 
         vboxLayout->addWidget(Layout16);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(listWidget);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(TopicChooser);
 

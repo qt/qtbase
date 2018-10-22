@@ -260,9 +260,9 @@ public:
 
         horizontalLayout_2->addWidget(tabs);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(copies);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(QPrintSettingsOutput);
         QObject::connect(printRange, SIGNAL(toggled(bool)), from, SLOT(setEnabled(bool)));

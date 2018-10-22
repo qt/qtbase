@@ -201,9 +201,9 @@ public:
 
         vboxLayout->addWidget(buttonBox);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(valueEdit);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(qdesigner_internal__Dialog);
         QObject::connect(buttonBox, SIGNAL(accepted()), qdesigner_internal__Dialog, SLOT(accept()));
@@ -216,22 +216,22 @@ public:
     {
         qdesigner_internal__Dialog->setWindowTitle(QApplication::translate("qdesigner_internal::Dialog", "Dialog", nullptr));
         groupBox->setTitle(QApplication::translate("qdesigner_internal::Dialog", "StringList", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         newButton->setToolTip(QApplication::translate("qdesigner_internal::Dialog", "New String", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         newButton->setText(QApplication::translate("qdesigner_internal::Dialog", "&New", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         deleteButton->setToolTip(QApplication::translate("qdesigner_internal::Dialog", "Delete String", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         deleteButton->setText(QApplication::translate("qdesigner_internal::Dialog", "&Delete", nullptr));
         label->setText(QApplication::translate("qdesigner_internal::Dialog", "&Value:", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         upButton->setToolTip(QApplication::translate("qdesigner_internal::Dialog", "Move String Up", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         upButton->setText(QApplication::translate("qdesigner_internal::Dialog", "Up", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         downButton->setToolTip(QApplication::translate("qdesigner_internal::Dialog", "Move String Down", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         downButton->setText(QApplication::translate("qdesigner_internal::Dialog", "Down", nullptr));
     } // retranslateUi
 

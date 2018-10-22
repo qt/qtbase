@@ -59,9 +59,9 @@ public:
         MyDialog->setWindowTitle(QApplication::translate("MyDialog", "Mach 2!", nullptr));
         aLabel->setText(QApplication::translate("MyDialog", "Join the life in the fastlane; - PCH enable your project today! -", nullptr));
         aButton->setText(QApplication::translate("MyDialog", "&Quit", nullptr));
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         aButton->setShortcut(QApplication::translate("MyDialog", "Alt+Q", nullptr));
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
     } // retranslateUi
 
 };

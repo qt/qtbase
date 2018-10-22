@@ -174,24 +174,24 @@ public:
     {
         qdesigner_internal__ListWidgetEditor->setWindowTitle(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Dialog", nullptr));
         groupBox->setTitle(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Items List", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         listWidget->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Items List", nullptr));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
         newItemButton->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "New Item", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         newItemButton->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "&New", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         deleteItemButton->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Delete Item", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         deleteItemButton->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "&Delete", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         moveItemUpButton->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Move Item Up", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         moveItemUpButton->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "U", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         moveItemDownButton->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Move Item Down", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         moveItemDownButton->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "D", nullptr));
         label->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Icon", nullptr));
     } // retranslateUi

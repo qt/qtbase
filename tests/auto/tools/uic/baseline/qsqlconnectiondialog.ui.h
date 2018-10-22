@@ -179,14 +179,14 @@ public:
 
         vboxLayout->addLayout(hboxLayout1);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         textLabel4->setBuddy(editUsername);
         textLabel2->setBuddy(comboDriver);
         textLabel3->setBuddy(editDatabase);
         textLabel5->setBuddy(editHostname);
         textLabel5_2->setBuddy(portSpinBox);
         textLabel4_2->setBuddy(editPassword);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
         QWidget::setTabOrder(comboDriver, editDatabase);
         QWidget::setTabOrder(editDatabase, editUsername);
         QWidget::setTabOrder(editUsername, editPassword);

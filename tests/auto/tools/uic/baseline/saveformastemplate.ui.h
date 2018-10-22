@@ -117,10 +117,10 @@ public:
 
         vboxLayout->addWidget(buttonBox);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(templateNameEdit);
         label_2->setBuddy(categoryCombo);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(SaveFormAsTemplate);
         QObject::connect(buttonBox, SIGNAL(accepted()), SaveFormAsTemplate, SLOT(accept()));

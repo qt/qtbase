@@ -125,9 +125,9 @@ public:
         statusbar = new QStatusBar(ChatMainWindow);
         statusbar->setObjectName(QString::fromUtf8("statusbar"));
         ChatMainWindow->setStatusBar(statusbar);
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(messageLineEdit);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
         QWidget::setTabOrder(chatHistory, messageLineEdit);
         QWidget::setTabOrder(messageLineEdit, sendButton);
 
@@ -149,24 +149,24 @@ public:
     {
         ChatMainWindow->setWindowTitle(QApplication::translate("ChatMainWindow", "Qt D-Bus Chat", nullptr));
         actionQuit->setText(QApplication::translate("ChatMainWindow", "Quit", nullptr));
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         actionQuit->setShortcut(QApplication::translate("ChatMainWindow", "Ctrl+Q", nullptr));
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
         actionAboutQt->setText(QApplication::translate("ChatMainWindow", "About Qt...", nullptr));
         actionChangeNickname->setText(QApplication::translate("ChatMainWindow", "Change nickname...", nullptr));
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         actionChangeNickname->setShortcut(QApplication::translate("ChatMainWindow", "Ctrl+N", nullptr));
-#endif // QT_NO_SHORTCUT
-#ifndef QT_NO_TOOLTIP
+#endif // QT_CONFIG(shortcut)
+#if QT_CONFIG(tooltip)
         chatHistory->setToolTip(QApplication::translate("ChatMainWindow", "Messages sent and received from other users", nullptr));
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
         label->setText(QApplication::translate("ChatMainWindow", "Message:", nullptr));
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         sendButton->setToolTip(QApplication::translate("ChatMainWindow", "Sends a message to other people", nullptr));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_WHATSTHIS
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(whatsthis)
         sendButton->setWhatsThis(QString());
-#endif // QT_NO_WHATSTHIS
+#endif // QT_CONFIG(whatsthis)
         sendButton->setText(QApplication::translate("ChatMainWindow", "Send", nullptr));
         menuQuit->setTitle(QApplication::translate("ChatMainWindow", "Help", nullptr));
         menuFile->setTitle(QApplication::translate("ChatMainWindow", "File", nullptr));

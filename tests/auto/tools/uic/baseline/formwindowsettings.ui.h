@@ -250,12 +250,12 @@ public:
 
         gridLayout->addWidget(gridPanel, 1, 0, 1, 2);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label_2->setBuddy(defaultSpacingSpinBox);
         label->setBuddy(defaultMarginSpinBox);
         label_3->setBuddy(marginFunctionLineEdit);
         label_3_2->setBuddy(spacingFunctionLineEdit);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
         QWidget::setTabOrder(authorLineEdit, defaultMarginSpinBox);
         QWidget::setTabOrder(defaultMarginSpinBox, defaultSpacingSpinBox);
         QWidget::setTabOrder(defaultSpacingSpinBox, marginFunctionLineEdit);
