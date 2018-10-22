@@ -1,29 +1,22 @@
 /*
- ---------------------------------------------------------------------------
- Copyright (c) 1998-2008, Brian Gladman, Worcester, UK. All rights reserved.
+---------------------------------------------------------------------------
+Copyright (c) 1998-2013, Brian Gladman, Worcester, UK. All rights reserved.
 
- LICENSE TERMS
+The redistribution and use of this software (with or without changes)
+is allowed without the payment of fees or royalties provided that:
 
- The redistribution and use of this software (with or without changes)
- is allowed without the payment of fees or royalties provided that:
+  source code distributions include the above copyright notice, this
+  list of conditions and the following disclaimer;
 
-  1. source code distributions include the above copyright notice, this
-     list of conditions and the following disclaimer;
+  binary distributions include the above copyright notice, this list
+  of conditions and the following disclaimer in their documentation.
 
-  2. binary distributions include the above copyright notice, this list
-     of conditions and the following disclaimer in their documentation;
-
-  3. the name of the copyright holder is not used to endorse products
-     built using this software without specific written permission.
-
- DISCLAIMER
-
- This software is provided 'as is' with no explicit or implied warranties
- in respect of its properties, including, but not limited to, correctness
- and/or fitness for purpose.
- ---------------------------------------------------------------------------
- Issue Date: 20/12/2007
- Changes for ARM 9/9/2010
+This software is provided 'as is' with no explicit or implied warranties
+in respect of its operation, including, but not limited to, correctness
+and fitness for purpose.
+---------------------------------------------------------------------------
+Issue Date: 20/12/2007
+Changes for ARM 9/9/2010 [Downstream relative to Gladman's GitHub, upstream to Qt]
 */
 
 #ifndef _BRG_ENDIAN_H
@@ -32,7 +25,12 @@
 #define IS_BIG_ENDIAN      4321 /* byte 0 is most significant (mc68k) */
 #define IS_LITTLE_ENDIAN   1234 /* byte 0 is least significant (i386) */
 
-#if 0
+/* This is needed when using clang with MSVC to avoid including */
+/* endian.h and byteswap.h which are not present on Windows     */
+#if defined( _MSC_VER ) && defined( __clang__ )
+#  undef __GNUC__
+#endif
+
 /* Include files where endian defines and byteswap functions may reside */
 #if defined( __sun )
 #  include <sys/isa_defs.h>
@@ -42,13 +40,12 @@
       defined( __CYGWIN32__ ) || defined( __DJGPP__ ) || defined( __osf__ )
 #  include <machine/endian.h>
 #elif defined( __linux__ ) || defined( __GNUC__ ) || defined( __GNU_LIBRARY__ )
-#  if !defined( __MINGW32__ ) && !defined( _AIX )
+#  if !defined( __MINGW32__ ) && !defined( _AIX ) && !defined(Q_OS_QNX)
 #    include <endian.h>
 #    if !defined( __BEOS__ )
 #      include <byteswap.h>
 #    endif
 #  endif
-#endif
 #endif
 
 /* Now attempt to set the define for platform byte order using any  */
@@ -134,7 +131,7 @@
 #elif 0     /* **** EDIT HERE IF NECESSARY **** */
 #  define PLATFORM_BYTE_ORDER IS_BIG_ENDIAN
 #else
-#  error Please edit lines 132 or 134 in brg_endian.h to set the platform byte order
+#  error Please edit lines 129 or 131 in brg_endian.h to set the platform byte order
 #endif
 
 #endif
