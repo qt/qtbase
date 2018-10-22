@@ -541,6 +541,12 @@ void QCocoaWindow::setWindowZoomButton(Qt::WindowFlags flags)
 
 void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
 {
+    // Updating the window flags may affect the window's theme frame, which
+    // in the process retains and then autoreleases the NSWindow. To make
+    // sure this doesn't leave lingering releases when there is no pool in
+    // place (e.g. during main(), before exec), we add one locally here.
+    QMacAutoReleasePool pool;
+
     if (!isContentView())
         return;
 
