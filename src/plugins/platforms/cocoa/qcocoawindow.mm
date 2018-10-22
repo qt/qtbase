@@ -1378,11 +1378,14 @@ void QCocoaWindow::recreateWindowIfNeeded()
     if (m_windowModality != window()->modality())
         recreateReason |= WindowModalityChanged;
 
-    const bool shouldBeContentView = !parentWindow && !isEmbeddedView;
+    Qt::WindowType type = window()->type();
+
+    const bool shouldBeContentView = !parentWindow
+        && !((type & Qt::SubWindow) == Qt::SubWindow)
+        && !isEmbeddedView;
     if (isContentView() != shouldBeContentView)
         recreateReason |= ContentViewChanged;
 
-    Qt::WindowType type = window()->type();
     const bool isPanel = isContentView() && [m_view.window isKindOfClass:[QNSPanel class]];
     const bool shouldBePanel = shouldBeContentView &&
         ((type & Qt::Popup) == Qt::Popup || (type & Qt::Dialog) == Qt::Dialog);
