@@ -54,6 +54,8 @@
 #include <QtGui/private/qabstractlayoutstyleinfo_p.h>
 #include <QtWidgets/qstyleoption.h>
 
+#include <memory>
+
 QT_REQUIRE_CONFIG(graphicsview);
 
 QT_BEGIN_NAMESPACE
@@ -93,7 +95,7 @@ private:
     const QGraphicsLayoutPrivate *m_layout;
     mutable QStyle *m_style;
     QStyleOption m_styleOption;
-    QWidget *m_widget;
+    std::unique_ptr<QWidget> m_widget;
 };
 
 QT_END_NAMESPACE
