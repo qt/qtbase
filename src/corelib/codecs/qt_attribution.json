@@ -6,6 +6,7 @@
         "QtUsage": "Used in Qt Core if ICU is not used. Configure with -icu to avoid.",
         "Path": "qbig5codec.cpp",
 
+        "Description": "Treat as final version; no upstream known",
         "Description": "The Big5 codecs (QBig5Codec, QBig5hkscsCodec)
 provide conversion to and from the Big5 encodings.",
         "License": "BSD 2-clause \"Simplified\" License",
@@ -23,6 +24,7 @@ Copyright (C) 2001, 2002  Anthony Fok, ThizLinux Laboratory Ltd."
         "QtUsage": "Used in Qt Core if ICU is not used. Configure with -icu to avoid.",
         "Path": "qeucjpcodec.cpp",
 
+        "Description": "Treat as final version; no upstream known",
         "Description": "The EUC-JP text codec provides conversion to and from EUC-JP,
 the main legacy encoding for Unix machines in Japan.",
         "License": "BSD 2-clause \"Simplified\" License",
@@ -37,6 +39,7 @@ the main legacy encoding for Unix machines in Japan.",
         "QtUsage": "Used in Qt Core if ICU is not used. Configure with -icu to avoid.",
         "Path": "qeuckrcodec.cpp",
 
+        "Description": "Treat as final version; no upstream known",
         "Description": "The EUC-KR text codec provides conversion to and from EUC-KR, KR,
 the main legacy encoding for Unix machines in Korea.",
         "License": "BSD 2-clause \"Simplified\" License",
@@ -51,6 +54,7 @@ the main legacy encoding for Unix machines in Korea.",
         "QtUsage": "Used in Qt Core if ICU is not used. Configure with -icu to avoid.",
         "Path": "qjiscodec.cpp",
 
+        "Description": "Treat as final version; no upstream known",
         "Description": "The ISO 2022-JP (JIS) text codec provides conversion to and from ISO 2022-JP.",
         "License": "BSD 2-clause \"Simplified\" License",
         "LicenseId": "BSD-2-Clause",
@@ -64,6 +68,7 @@ the main legacy encoding for Unix machines in Korea.",
         "QtUsage": "Used in Qt Core if ICU is not used. Configure with -icu to avoid.",
         "Path": "qsjiscodec.cpp",
 
+        "Description": "Treat as final version; no upstream known",
         "Description": "The Shift-JIS text codec provides conversion to and from Shift-JIS.",
         "License": "BSD 2-clause \"Simplified\" License",
         "LicenseId": "BSD-2-Clause",
@@ -77,6 +82,7 @@ the main legacy encoding for Unix machines in Korea.",
         "QtUsage": "Used in Qt Core.",
         "Path": "qtsciicodec.cpp",
 
+        "Description": "Treat as final version; no upstream known",
         "Description": "The TSCII text codec provides conversion to and from the Tamil TSCII
 encoding.",
         "License": "BSD 2-clause \"Simplified\" License",
@@ -91,6 +97,7 @@ encoding.",
         "QtUsage": "Used in Qt Core if ICU is not used. Configure with -icu to avoid.",
         "Path": "qgb18030codec.cpp",
 
+        "Description": "Treat as final version; no upstream known",
         "Description": "The GBK codec provides conversion to and from the Chinese
 GB18030/GBK/GB2312 encoding.",
         "License": "BSD 2-clause \"Simplified\" License",
