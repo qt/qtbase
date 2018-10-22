@@ -3880,12 +3880,9 @@ void QGLContext::doneCurrent()
 */
 
 QGLWidget::QGLWidget(QWidget *parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
-    : QWidget(*(new QGLWidgetPrivate), parent, f | Qt::MSWindowsOwnDC)
+    : QWidget(*(new QGLWidgetPrivate), parent, f)
 {
     Q_D(QGLWidget);
-    setAttribute(Qt::WA_PaintOnScreen);
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAutoFillBackground(true); // for compatibility
     d->init(new QGLContext(QGLFormat::defaultFormat(), this), shareWidget);
 }
 
@@ -3893,12 +3890,9 @@ QGLWidget::QGLWidget(QWidget *parent, const QGLWidget* shareWidget, Qt::WindowFl
   \internal
  */
 QGLWidget::QGLWidget(QGLWidgetPrivate &dd, const QGLFormat &format, QWidget *parent, const QGLWidget *shareWidget, Qt::WindowFlags f)
-    : QWidget(dd, parent, f | Qt::MSWindowsOwnDC)
+    : QWidget(dd, parent, f)
 {
     Q_D(QGLWidget);
-    setAttribute(Qt::WA_PaintOnScreen);
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAutoFillBackground(true); // for compatibility
     d->init(new QGLContext(format, this), shareWidget);
 
 }
@@ -3935,12 +3929,9 @@ QGLWidget::QGLWidget(QGLWidgetPrivate &dd, const QGLFormat &format, QWidget *par
 
 QGLWidget::QGLWidget(const QGLFormat &format, QWidget *parent, const QGLWidget* shareWidget,
                      Qt::WindowFlags f)
-    : QWidget(*(new QGLWidgetPrivate), parent, f | Qt::MSWindowsOwnDC)
+    : QWidget(*(new QGLWidgetPrivate), parent, f)
 {
     Q_D(QGLWidget);
-    setAttribute(Qt::WA_PaintOnScreen);
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAutoFillBackground(true); // for compatibility
     d->init(new QGLContext(format, this), shareWidget);
 }
 
@@ -3971,12 +3962,9 @@ QGLWidget::QGLWidget(const QGLFormat &format, QWidget *parent, const QGLWidget* 
 */
 QGLWidget::QGLWidget(QGLContext *context, QWidget *parent, const QGLWidget *shareWidget,
                      Qt::WindowFlags f)
-    : QWidget(*(new QGLWidgetPrivate), parent, f | Qt::MSWindowsOwnDC)
+    : QWidget(*(new QGLWidgetPrivate), parent, f)
 {
     Q_D(QGLWidget);
-    setAttribute(Qt::WA_PaintOnScreen);
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAutoFillBackground(true); // for compatibility
     d->init(context, shareWidget);
 }
 
@@ -5169,6 +5157,15 @@ QPaintEngine *QGLWidget::paintEngine() const
 
 void QGLWidgetPrivate::init(QGLContext *context, const QGLWidget *shareWidget)
 {
+    Q_Q(QGLWidget);
+    q->setAttribute(Qt::WA_PaintOnScreen);
+    q->setAttribute(Qt::WA_NoSystemBackground);
+    q->setAutoFillBackground(true); // for compatibility
+
+    mustHaveWindowHandle = 1;
+    q->setAttribute(Qt::WA_NativeWindow);
+    q->setWindowFlag(Qt::MSWindowsOwnDC);
+
     initContext(context, shareWidget);
 }
 
