@@ -8,11 +8,11 @@
         "Path": "qopenglext.h",
 
         "Homepage": "https://www.khronos.org/",
-        "Version": "Revision 27684",
+        "Version": "20170325",
         "License": "MIT License",
         "LicenseId": "MIT",
         "LicenseFile": "KHRONOS_LICENSE.txt",
-        "Copyright": "Copyright (c) 2013-2014 The Khronos Group Inc."
+        "Copyright": "Copyright (c) 2013-2017 The Khronos Group Inc."
     },
     {
         "Id": "opengl-es2-headers",
@@ -23,10 +23,10 @@
         "Path": "qopengles2ext.h",
 
         "Homepage": "https://www.khronos.org/",
-        "Version": "Revision 27673",
+        "Version": "20170331",
         "License": "MIT License",
         "LicenseId": "MIT",
         "LicenseFile": "KHRONOS_LICENSE.txt",
-        "Copyright": "Copyright (c) 2013-2014 The Khronos Group Inc."
+        "Copyright": "Copyright (c) 2013-2017 The Khronos Group Inc."
     }
 ]

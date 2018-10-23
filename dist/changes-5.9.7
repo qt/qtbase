@@ -1,0 +1,68 @@
+Qt 5.9.7 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.9.0 through 5.9.6.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+http://doc.qt.io/qt-5/index.html
+
+The Qt version 5.9 series is binary compatible with the 5.8.x series.
+Applications compiled for 5.8 will continue to run with 5.9.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                                Licensing                                 *
+****************************************************************************
+
+ - [QTBUG-52222] The commercial preview license in the git checkout has
+   been replaced by the Qt License Agreement 4.0 text. This makes it
+   explicit that commercial customers of The Qt Company can use the git
+   version under commercial terms. However, support is (still) only
+   provided for builds from released branches of Qt.
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - QObject:
+   * [QTBUG-69744] Fixed a bug in setProperty() that caused a property
+     change not to take effect if the old value compared equal using
+     QVariant's equality operator, but the values were not strictly equal.
+
+****************************************************************************
+*                                  QtGui                                   *
+****************************************************************************
+
+ - Text:
+   * [QTBUG-69661] Fixed potential crash when using
+     QTextOption::ShowLineAndParagraphSeparators.
+
+ - Image handlers:
+   * [QTBUG-69449] PPM reader: Fixed crash for malformed file
+   * BMP reader: Fixed crash for out of range / malformed file
+   * GIF reader: fixed crash for malformed file / oom situation
+
+****************************************************************************
+*                         Platform-specific changes                        *
+****************************************************************************
+
+ - macOS:
+   * The Qt 5.9 series is not compatible with Xcode 10 or the macOS 10.14 SDK.
+     Building your application against the 10.14 SDK will result in opting in
+     to features such as dark mode, and layer backed views, which are not
+     supported by Qt 5.9.x. Please build against the 10.13 SDK instead,
+     which is available though Xcode 9.
+
+****************************************************************************
+*                             Third-Party Code                             *
+****************************************************************************
+
+ - [QTBUG-69274] Sqlite was updated to version 3.24.0
+ - [QTBUG-70852] Update public suffix list to match current publicsuffix.org
