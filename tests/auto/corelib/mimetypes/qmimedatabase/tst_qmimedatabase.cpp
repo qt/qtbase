@@ -992,6 +992,20 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     const QString fooTestFile2 = QLatin1String(RESOURCE_PREFIX "magic-and-hierarchy2.foo");
     QCOMPARE(db.mimeTypeForFile(fooTestFile2).name(), QString::fromLatin1("application/vnd.qnx.bar-descriptor"));
 
+    // Test if we can use the default comment
+    {
+        struct RestoreLocale
+        {
+            ~RestoreLocale() { QLocale::setDefault(QLocale::c()); }
+        } restoreLocale;
+
+        QLocale::setDefault(QLocale("zh_CN"));
+        QMimeType suseymp = db.mimeTypeForName("text/x-suse-ymp");
+        QVERIFY(suseymp.isValid());
+        QCOMPARE(suseymp.comment(),
+                 QString::fromLatin1("YaST Meta Package"));
+    }
+
     // Now test removing the mimetype definitions again
     for (int i = 0; i < m_additionalMimeFileNames.size(); ++i)
         QFile::remove(destDir + m_additionalMimeFileNames.at(i));
