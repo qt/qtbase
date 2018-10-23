@@ -2494,6 +2494,7 @@ QTabletEvent::QTabletEvent(Type type, const QPointF &pos, const QPointF &globalP
 */
 QTabletEvent::~QTabletEvent()
 {
+    delete static_cast<QTabletEventPrivate *>(mExtra);
 }
 
 /*!
