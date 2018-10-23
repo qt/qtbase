@@ -31,7 +31,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'newform.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
