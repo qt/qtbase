@@ -717,7 +717,7 @@ QString decodeMSG(const MSG& msg)
     else if (const char *wmmsgC = findWMstr(msg.message))
         message = QString::fromLatin1(wmmsgC);
     else
-        message = QString::fromLatin1("WM_(%1)").arg(msg.message); // Unknown WM_, so use number
+        message = QString::fromLatin1("WM_(0x%1)").arg(msg.message, 0, 16); // Unknown WM_, so use number
 
     // Yes, we want to give the WM_ names 20 chars of space before showing the
     // decoded message, since some of the common messages are quite long, and
