@@ -962,9 +962,6 @@ void tst_QLocalSocket::processConnection()
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
-#ifdef Q_OS_MAC
-    QSKIP("The processConnection test is unstable on Mac. See QTBUG-39986.");
-#endif
 
 #ifdef Q_OS_WIN
     const QString exeSuffix = QStringLiteral(".exe");
