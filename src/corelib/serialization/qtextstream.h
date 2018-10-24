@@ -233,6 +233,13 @@ inline QTextStream &operator<<(QTextStream &s, QTextStreamFunction f)
 inline QTextStream &operator<<(QTextStream &s, QTextStreamManipulator m)
 { m.exec(s); return s; }
 
+#if defined(Q_QDOC) || QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+namespace Qt {
+#else
+// This namespace only exists for 'using namespace' declarations.
+namespace QTextStreamFunctions {
+#endif
+
 Q_CORE_EXPORT QTextStream &bin(QTextStream &s);
 Q_CORE_EXPORT QTextStream &oct(QTextStream &s);
 Q_CORE_EXPORT QTextStream &dec(QTextStream &s);
@@ -264,6 +271,18 @@ Q_CORE_EXPORT QTextStream &reset(QTextStream &s);
 Q_CORE_EXPORT QTextStream &bom(QTextStream &s);
 
 Q_CORE_EXPORT QTextStream &ws(QTextStream &s);
+
+} // namespace QTextStreamFunctions
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && !defined(Q_QDOC)
+namespace Qt {
+using namespace QTextStreamFunctions;
+}
+
+// We use 'using namespace' as that doesn't cause
+// conflicting definitions compiler errors.
+using namespace QTextStreamFunctions;
+#endif // QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && !defined(Q_QDOC)
 
 inline QTextStreamManipulator qSetFieldWidth(int width)
 {
