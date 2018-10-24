@@ -484,6 +484,9 @@ bool QWindowsPointerHandler::translateMouseTouchPadEvent(QWindow *window, HWND h
     case WM_POINTERHWHEEL:
     case WM_POINTERWHEEL: {
 
+        if (!isValidWheelReceiver(window))
+            return true;
+
         int delta = GET_WHEEL_DELTA_WPARAM(msg.wParam);
 
         // Qt horizontal wheel rotation orientation is opposite to the one in WM_POINTERHWHEEL
@@ -493,8 +496,7 @@ bool QWindowsPointerHandler::translateMouseTouchPadEvent(QWindow *window, HWND h
         const QPoint angleDelta = (msg.message == WM_POINTERHWHEEL || (keyModifiers & Qt::AltModifier)) ?
                     QPoint(delta, 0) : QPoint(0, delta);
 
-        if (isValidWheelReceiver(window))
-            QWindowSystemInterface::handleWheelEvent(window, localPos, globalPos, QPoint(), angleDelta, keyModifiers);
+        QWindowSystemInterface::handleWheelEvent(window, localPos, globalPos, QPoint(), angleDelta, keyModifiers);
         return true;
     }
     case WM_POINTERLEAVE:
@@ -508,7 +510,6 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
                                                  MSG msg, PVOID vTouchInfo, quint32 count)
 {
     Q_UNUSED(hwnd);
-    Q_UNUSED(et);
 
     if (et & QtWindows::NonClientEventFlag)
         return false; // Let DefWindowProc() handle Non Client messages.
@@ -707,20 +708,45 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
 // Process old-style mouse messages here.
 bool QWindowsPointerHandler::translateMouseEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result)
 {
-    Q_UNUSED(et);
-
     // Generate enqueued events.
     flushTouchEvents(m_touchDevice);
     flushTabletEvents();
 
     *result = 0;
-    if (msg.message != WM_MOUSELEAVE && msg.message != WM_MOUSEMOVE)
+    if (et != QtWindows::MouseWheelEvent && msg.message != WM_MOUSELEAVE && msg.message != WM_MOUSEMOVE)
         return false;
 
-    const QPoint localPos(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
-    const QPoint globalPos = QWindowsGeometryHint::mapToGlobal(hwnd, localPos);
+    const QPoint eventPos(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
+    QPoint localPos;
+    QPoint globalPos;
+    if ((et == QtWindows::MouseWheelEvent) || (et & QtWindows::NonClientEventFlag)) {
+        globalPos = eventPos;
+        localPos = QWindowsGeometryHint::mapFromGlobal(hwnd, eventPos);
+    } else {
+        localPos = eventPos;
+        globalPos = QWindowsGeometryHint::mapToGlobal(hwnd, eventPos);
+    }
 
+    const Qt::KeyboardModifiers keyModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
     QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
+
+    if (et == QtWindows::MouseWheelEvent) {
+
+        if (!isValidWheelReceiver(window))
+            return true;
+
+        int delta = GET_WHEEL_DELTA_WPARAM(msg.wParam);
+
+        // Qt horizontal wheel rotation orientation is opposite to the one in WM_MOUSEHWHEEL
+        if (msg.message == WM_MOUSEHWHEEL)
+            delta = -delta;
+
+        const QPoint angleDelta = (msg.message == WM_MOUSEHWHEEL || (keyModifiers & Qt::AltModifier)) ?
+                    QPoint(delta, 0) : QPoint(0, delta);
+
+        QWindowSystemInterface::handleWheelEvent(window, localPos, globalPos, QPoint(), angleDelta, keyModifiers);
+        return true;
+    }
 
     if (msg.message == WM_MOUSELEAVE) {
         if (window == m_currentWindow) {
@@ -762,7 +788,6 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window, HWND hwnd, QtW
         m_windowUnderPointer = currentWindowUnderPointer;
     }
 
-    const Qt::KeyboardModifiers keyModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
     const Qt::MouseButtons mouseButtons = queryMouseButtons();
 
     if (!discardEvent)
