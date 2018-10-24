@@ -808,7 +808,7 @@ QFile::copy(const QString &newName)
                 if (error) {
                     out.close();
                     close();
-                    d->setError(QFile::CopyError, tr("Cannot open for output"));
+                    d->setError(QFile::CopyError, tr("Cannot open for output: %1").arg(out.errorString()));
                 } else {
                     if (!d->engine()->cloneTo(out.d_func()->engine())) {
                         char block[4096];
