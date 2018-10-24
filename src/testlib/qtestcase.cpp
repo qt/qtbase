@@ -811,9 +811,9 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
             // we load the QML files.  So just store the data for now.
             int colon = -1;
             int offset;
-            for (offset = 0; *(argv[i]+offset); ++offset) {
-                if (*(argv[i]+offset) == ':') {
-                    if (*(argv[i]+offset+1) == ':') {
+            for (offset = 0; argv[i][offset]; ++offset) {
+                if (argv[i][offset] == ':') {
+                    if (argv[i][offset + 1] == ':') {
                         // "::" is used as a test name separator.
                         // e.g. "ClickTests::test_click:row1".
                         ++offset;
