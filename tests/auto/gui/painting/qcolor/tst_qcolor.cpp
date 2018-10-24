@@ -318,6 +318,9 @@ void tst_QColor::namehex_data()
     QTest::newRow("global color darkCyan") << "#008080" << QColor(Qt::darkCyan);
     QTest::newRow("global color darkMagenta") << "#800080" << QColor(Qt::darkMagenta);
     QTest::newRow("global color darkYellow") << "#808000" << QColor(Qt::darkYellow);
+    QTest::newRow("#RGB") << "#888" << QColor(0x88, 0x88, 0x88);
+    QTest::newRow("#RRRGGGBBB") << "#80F80F80F" << QColor(qRgba64(0x80f8, 0x80f8, 0x80f8, 0xffff));
+    QTest::newRow("#RRRRGGGGBBBB") << "#808180818081" << QColor(qRgba64(0x8081, 0x8081, 0x8081, 0xffff));
     QTest::newRow("transparent red") << "#66ff0000" << QColor(255, 0, 0, 102);
     QTest::newRow("invalid red") << "#gg0000" << QColor();
     QTest::newRow("invalid transparent") << "#gg00ff00" << QColor();

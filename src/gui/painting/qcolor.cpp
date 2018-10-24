@@ -54,77 +54,77 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \internal
-    If s[0..1] is a valid hex number, returns its integer value,
+    If s[0..n] is a valid hex number, returns its integer value,
     otherwise returns -1.
  */
-static inline int hex2int(const char *s)
+static inline int hex2int(const char *s, int n)
 {
-    const int hi = QtMiscUtils::fromHex(s[0]);
-    if (hi < 0)
+    if (n < 0)
         return -1;
-    const int lo = QtMiscUtils::fromHex(s[1]);
-    if (lo < 0)
-        return -1;
-    return (hi << 4) | lo;
+    int result = 0;
+    for (; n > 0; --n) {
+        result = result * 16;
+        const int h = QtMiscUtils::fromHex(*s++);
+        if (h < 0)
+            return -1;
+        result += h;
+    }
+    return result;
 }
 
-/*!
-    \internal
-    If s is a valid hex digit, returns its integer value,
-    multiplied by 0x11, otherwise returns -1.
- */
-static inline int hex2int(char s)
-{
-    const int h = QtMiscUtils::fromHex(s);
-    return h < 0 ? h : (h << 4) | h;
-}
-
-static bool get_hex_rgb(const char *name, size_t len, QRgb *rgb)
+static bool get_hex_rgb(const char *name, size_t len, QRgba64 *rgb)
 {
     if (name[0] != '#')
         return false;
     name++;
     --len;
     int a, r, g, b;
-    a = 255;
+    a = 65535;
     if (len == 12) {
-        r = hex2int(name);
-        g = hex2int(name + 4);
-        b = hex2int(name + 8);
+        r = hex2int(name + 0, 4);
+        g = hex2int(name + 4, 4);
+        b = hex2int(name + 8, 4);
     } else if (len == 9) {
-        r = hex2int(name);
-        g = hex2int(name + 3);
-        b = hex2int(name + 6);
+        r = hex2int(name + 0, 3);
+        g = hex2int(name + 3, 3);
+        b = hex2int(name + 6, 3);
+        r = (r << 4) | (r >> 8);
+        g = (g << 4) | (g >> 8);
+        b = (b << 4) | (b >> 8);
     } else if (len == 8) {
-        a = hex2int(name);
-        r = hex2int(name + 2);
-        g = hex2int(name + 4);
-        b = hex2int(name + 6);
+        a = hex2int(name + 0, 2) * 0x101;
+        r = hex2int(name + 2, 2) * 0x101;
+        g = hex2int(name + 4, 2) * 0x101;
+        b = hex2int(name + 6, 2) * 0x101;
     } else if (len == 6) {
-        r = hex2int(name);
-        g = hex2int(name + 2);
-        b = hex2int(name + 4);
+        r = hex2int(name + 0, 2) * 0x101;
+        g = hex2int(name + 2, 2) * 0x101;
+        b = hex2int(name + 4, 2) * 0x101;
     } else if (len == 3) {
-        r = hex2int(name[0]);
-        g = hex2int(name[1]);
-        b = hex2int(name[2]);
+        r = hex2int(name + 0, 1) * 0x1111;
+        g = hex2int(name + 1, 1) * 0x1111;
+        b = hex2int(name + 2, 1) * 0x1111;
     } else {
         r = g = b = -1;
     }
-    if ((uint)r > 255 || (uint)g > 255 || (uint)b > 255 || (uint)a > 255) {
+    if ((uint)r > 65535 || (uint)g > 65535 || (uint)b > 65535 || (uint)a > 65535) {
         *rgb = 0;
         return false;
     }
-    *rgb = qRgba(r, g ,b, a);
+    *rgb = qRgba64(r, g ,b, a);
     return true;
 }
 
 bool qt_get_hex_rgb(const char *name, QRgb *rgb)
 {
-    return get_hex_rgb(name, qstrlen(name), rgb);
+    QRgba64 rgba64;
+    if (!get_hex_rgb(name, qstrlen(name), &rgba64))
+        return false;
+    *rgb = rgba64.toArgb32();
+    return true;
 }
 
-static bool get_hex_rgb(const QChar *str, size_t len, QRgb *rgb)
+static bool get_hex_rgb(const QChar *str, size_t len, QRgba64 *rgb)
 {
     if (len > 13)
         return false;
@@ -948,9 +948,9 @@ bool QColor::setColorFromString(String name)
     }
 
     if (name[0] == QLatin1Char('#')) {
-        QRgb rgba;
+        QRgba64 rgba;
         if (get_hex_rgb(name.data(), name.size(), &rgba)) {
-            setRgba(rgba);
+            setRgba64(rgba);
             return true;
         } else {
             invalidate();
