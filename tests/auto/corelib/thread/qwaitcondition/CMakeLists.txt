@@ -1,0 +1,1 @@
+add_qt_test(tst_qwaitcondition SOURCES tst_qwaitcondition.cpp)

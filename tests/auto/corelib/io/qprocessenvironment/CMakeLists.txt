@@ -1,0 +1,1 @@
+add_qt_test(tst_qprocessenvironment SOURCES tst_qprocessenvironment.cpp)

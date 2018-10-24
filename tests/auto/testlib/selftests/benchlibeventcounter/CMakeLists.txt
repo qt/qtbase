@@ -1,0 +1,1 @@
+add_qt_test(benchlibeventcounter SOURCES tst_benchlibeventcounter.cpp)

@@ -1,0 +1,33 @@
+# Generated from dbus.pro.
+
+add_subdirectory(qdbusconnection_delayed)
+add_subdirectory(qdbusconnection)
+add_subdirectory(qdbusconnection_no_app)
+add_subdirectory(qdbusconnection_no_bus)
+add_subdirectory(qdbusconnection_no_libdbus)
+add_subdirectory(qdbusconnection_spyhook)
+add_subdirectory(qdbuscontext)
+add_subdirectory(qdbuslocalcalls)
+add_subdirectory(qdbusmetaobject)
+add_subdirectory(qdbusmetatype)
+add_subdirectory(qdbuspendingcall)
+add_subdirectory(qdbuspendingreply)
+add_subdirectory(qdbusreply)
+add_subdirectory(qdbusservicewatcher)
+add_subdirectory(qdbustype)
+add_subdirectory(qdbusthreading)
+
+if(QT_FEATURE_process)
+    # missing add_qt_binary: add_subdirectory("qdbusabstractadaptor")
+    # missing add_qt_binary: add_subdirectory("qdbusabstractinterface")
+    # missing add_qt_binary: add_subdirectory("qdbusinterface")
+
+    if(QT_FEATURE_private_tests)
+        add_subdirectory(qdbusmarshall)
+    endif()
+endif()
+
+### FIXME
+# if(QT_FEATURE_xml)
+#     add_subdirectory(qdbusxmlparser)
+# endif()

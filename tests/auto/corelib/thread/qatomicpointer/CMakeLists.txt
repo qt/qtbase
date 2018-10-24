@@ -1,0 +1,1 @@
+add_qt_test(tst_qatomicpointer SOURCES tst_qatomicpointer.cpp)

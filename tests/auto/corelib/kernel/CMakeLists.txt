@@ -1,0 +1,13 @@
+add_subdirectory(qdeadlinetimer)
+add_subdirectory(qelapsedtimer)
+add_subdirectory(qeventdispatcher)
+add_subdirectory(qmath)
+add_subdirectory(qmetaenum)
+add_subdirectory(qmetamethod)
+add_subdirectory(qmetaobject)
+add_subdirectory(qmetaobjectbuilder)
+add_subdirectory(qmetaproperty)
+# add_subdirectory(qmimedata)
+add_subdirectory(qsignalmapper)
+# add_subdirectory(qwineventnotifier)
+

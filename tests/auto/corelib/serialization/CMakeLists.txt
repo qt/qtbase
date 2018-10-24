@@ -1,0 +1,5 @@
+add_subdirectory(qcborvalue_json)
+add_subdirectory(qcborstreamreader)
+add_subdirectory(qcborstreamwriter)
+add_subdirectory(qcborvalue)
+

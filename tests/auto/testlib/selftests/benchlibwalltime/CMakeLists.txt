@@ -1,0 +1,1 @@
+add_qt_test(benchlibwalltime SOURCES tst_benchlibwalltime.cpp)

@@ -1,0 +1,12 @@
+add_subdirectory(largefile)
+add_subdirectory(qbuffer)
+add_subdirectory(qdataurl)
+add_subdirectory(qfilesystementry)
+add_subdirectory(qfilesystemwatcher)
+add_subdirectory(qipaddress)
+# add_subdirectory(qloggingcategory)
+add_subdirectory(qnodebug)
+add_subdirectory(qprocessenvironment)
+add_subdirectory(qstorageinfo)
+add_subdirectory(qurlquery)
+

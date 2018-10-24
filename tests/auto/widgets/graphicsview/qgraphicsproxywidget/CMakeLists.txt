@@ -1,0 +1,10 @@
+add_qt_test("tst_qgraphicsproxywidget"
+    SOURCES
+        tst_qgraphicsproxywidget.cpp
+    DEFINES
+        QTEST_QPA_MOUSE_HANDLING
+    LIBRARIES
+        Qt::WidgetsPrivate
+        Qt::CorePrivate
+        Qt::GuiPrivate
+)

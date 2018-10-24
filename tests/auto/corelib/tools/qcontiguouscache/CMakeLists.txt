@@ -1,0 +1,1 @@
+add_qt_test(tst_qcontiguouscache SOURCES tst_qcontiguouscache.cpp)

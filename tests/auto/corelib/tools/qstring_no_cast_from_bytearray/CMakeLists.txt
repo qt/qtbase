@@ -1,0 +1,1 @@
+add_qt_test(tst_qstring_no_cast_from_bytearray SOURCES tst_qstring_no_cast_from_bytearray.cpp)

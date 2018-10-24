@@ -1,0 +1,43 @@
+@PACKAGE_INIT@
+
+# Slightly amended version of ./src/corelib/Qt5Config.cmake.in
+if (CMAKE_VERSION VERSION_LESS 3.1.0)
+    message(FATAL_ERROR "Qt requires at least CMake version 3.1.0")
+endif()
+
+get_filename_component(_qt5_install_prefix "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
+
+include("${CMAKE_CURRENT_LIST_DIR}/Qt5Targets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/Qt5ToolsTargets.cmake")
+
+# if (NOT Qt_FIND_COMPONENTS)
+#     set(Qt_NOT_FOUND_MESSAGE "The Qt package requires at least one component")
+#     set(Qt_FOUND False)
+#     return()
+# endif()
+
+foreach(module ${Qt_FIND_COMPONENTS})
+    find_package(Qt${module}
+        ${_Qt_FIND_PARTS_QUIET}
+        ${_Qt_FIND_PARTS_REQUIRED}
+        PATHS ${_qt_install_prefix} NO_DEFAULT_PATH
+    )
+    if (NOT Qt${module}_FOUND)
+        string(CONFIGURE ${_qt5_module_location_template} _expected_module_location @ONLY)
+
+        if (Qt_FIND_REQUIRED_${module})
+            set(_Qt_NOTFOUND_MESSAGE "${_Qt_NOTFOUND_MESSAGE}Failed to find Qt component \"${module}\" config file at                                       \"${_expected_module_location}\"\n")
+        elseif(NOT Qt_FIND_QUIETLY)
+            message(WARNING "Failed to find Qt component \"${module}\" config file at \"${_expected_module_location}\"")
+        endif()
+
+        unset(_expected_module_location)
+    endif()
+endforeach()
+
+set(QT_BUILD_SHARED_LIBS @BUILD_SHARED_LIBS@)
+
+if (_Qt_NOTFOUND_MESSAGE)
+    set(Qt_NOT_FOUND_MESSAGE "${_Qt_NOTFOUND_MESSAGE}")
+    set(Qt_FOUND False)
+endif()

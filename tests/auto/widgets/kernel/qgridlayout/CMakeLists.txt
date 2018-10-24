@@ -1,0 +1,10 @@
+add_qt_test("tst_qgridlayout"
+    SOURCES
+        sortdialog.ui
+        tst_qgridlayout.cpp
+    LIBRARIES
+        Qt::WidgetsPrivate
+        Qt::CorePrivate
+        Qt::GuiPrivate
+        Qt::TestPrivate
+)

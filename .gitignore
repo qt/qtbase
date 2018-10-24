@@ -36,6 +36,8 @@
 qt*-config.h
 qt*-config_p.h
 qt*-config.pri
+*.pyc
+.mypy_cache
 
 /include/
 

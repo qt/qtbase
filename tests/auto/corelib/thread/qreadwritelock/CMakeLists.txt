@@ -1,0 +1,1 @@
+add_qt_test(tst_qreadwritelock SOURCES tst_qreadwritelock.cpp)

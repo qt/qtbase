@@ -1,0 +1,1 @@
+add_qt_test(tst_qvarlengtharray SOURCES tst_qvarlengtharray.cpp)

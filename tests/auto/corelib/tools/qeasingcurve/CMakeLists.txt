@@ -1,0 +1,1 @@
+add_qt_test(tst_qeasingcurve SOURCES tst_qeasingcurve.cpp)

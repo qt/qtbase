@@ -1,0 +1,1 @@
+add_qt_test(tst_bench_qdir_10000 SOURCES bench_qdir_10000.cpp)

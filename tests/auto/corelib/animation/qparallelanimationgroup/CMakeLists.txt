@@ -1,0 +1,1 @@
+add_qt_test(tst_qparallelanimationgroup SOURCES tst_qparallelanimationgroup.cpp)

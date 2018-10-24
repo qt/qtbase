@@ -1,0 +1,1 @@
+add_qt_test(tst_qregularexpression SOURCES tst_qregularexpression.cpp)

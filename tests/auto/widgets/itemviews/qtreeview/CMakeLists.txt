@@ -1,0 +1,11 @@
+add_qt_test("tst_qtreeview"
+    SOURCES
+        ../../../../shared/fakedirmodel.h
+        tst_qtreeview.cpp
+    LIBRARIES
+        Qt::Widgets
+        Qt::WidgetsPrivate
+        Qt::GuiPrivate
+        Qt::CorePrivate
+        Qt::TestPrivate
+)

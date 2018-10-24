@@ -1,0 +1,1 @@
+add_qt_test(pairdiagnostics SOURCES tst_pairdiagnostics.cpp)

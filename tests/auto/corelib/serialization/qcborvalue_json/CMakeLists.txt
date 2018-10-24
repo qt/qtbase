@@ -1,0 +1,1 @@
+add_qt_test(tst_qcborvalue_json SOURCES tst_qcborvalue_json.cpp)

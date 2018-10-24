@@ -1,0 +1,13 @@
+add_subdirectory(qatomicint)
+add_subdirectory(qatomicpointer)
+add_subdirectory(qfuture)
+add_subdirectory(qfuturesynchronizer)
+add_subdirectory(qmutexlocker)
+add_subdirectory(qreadlocker)
+add_subdirectory(qreadwritelock)
+add_subdirectory(qresultstore)
+add_subdirectory(qsemaphore)
+add_subdirectory(qthreadpool)
+add_subdirectory(qwaitcondition)
+add_subdirectory(qwritelocker)
+

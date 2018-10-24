@@ -1,0 +1,12 @@
+add_subdirectory(q_func_info)
+add_subdirectory(qflags)
+add_subdirectory(qfloat16)
+add_subdirectory(qgetputenv)
+add_subdirectory(qglobalstatic)
+add_subdirectory(qhooks)
+add_subdirectory(qlogging)
+add_subdirectory(qnumeric)
+add_subdirectory(qrand)
+add_subdirectory(qrandomgenerator)
+add_subdirectory(qtendian)
+

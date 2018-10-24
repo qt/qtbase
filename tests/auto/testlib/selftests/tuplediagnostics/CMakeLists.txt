@@ -1,0 +1,1 @@
+add_qt_test(tuplediagnostics SOURCES tst_tuplediagnostics.cpp)

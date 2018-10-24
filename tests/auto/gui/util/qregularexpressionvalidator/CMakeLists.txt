@@ -1,0 +1,1 @@
+add_qt_test(tst_qregularexpressionvalidator SOURCES tst_qregularexpressionvalidator.cpp LIBRARIES Qt::Gui)

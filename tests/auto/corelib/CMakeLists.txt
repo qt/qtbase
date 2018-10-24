@@ -1,0 +1,12 @@
+add_subdirectory(animation)
+add_subdirectory(codecs)
+add_subdirectory(global)
+add_subdirectory(io)
+add_subdirectory(itemmodels)
+add_subdirectory(kernel)
+add_subdirectory(mimetypes)
+add_subdirectory(serialization)
+add_subdirectory(statemachine)
+add_subdirectory(thread)
+add_subdirectory(tools)
+

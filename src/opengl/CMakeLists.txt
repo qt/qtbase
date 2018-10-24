@@ -1,0 +1,58 @@
+# Generated from opengl.pro.
+
+#####################################################################
+## QtOpenGL Module:
+#####################################################################
+
+add_qt_module(OpenGL
+    SOURCES
+        gl2paintengineex/qgl2pexvertexarray.cpp gl2paintengineex/qgl2pexvertexarray_p.h
+        gl2paintengineex/qglcustomshaderstage.cpp gl2paintengineex/qglcustomshaderstage_p.h
+        gl2paintengineex/qglengineshadermanager.cpp gl2paintengineex/qglengineshadermanager_p.h
+        gl2paintengineex/qglengineshadersource_p.h
+        gl2paintengineex/qglgradientcache.cpp gl2paintengineex/qglgradientcache_p.h
+        gl2paintengineex/qglshadercache_p.h
+        gl2paintengineex/qpaintengineex_opengl2.cpp gl2paintengineex/qpaintengineex_opengl2_p.h
+        gl2paintengineex/qtextureglyphcache_gl.cpp gl2paintengineex/qtextureglyphcache_gl_p.h
+        qgl.cpp qgl.h qgl_p.h
+        qglbuffer.cpp qglbuffer.h
+        qglcolormap.cpp qglcolormap.h
+        qglframebufferobject.cpp qglframebufferobject.h qglframebufferobject_p.h
+        qglfunctions.cpp qglfunctions.h
+        qglpaintdevice.cpp qglpaintdevice_p.h
+        qglpixelbuffer.cpp qglpixelbuffer.h qglpixelbuffer_p.h
+        qglshaderprogram.cpp qglshaderprogram.h
+        qtopenglglobal.h
+    DEFINES
+        QT_NO_USING_NAMESPACE
+        QT_NO_FOREACH
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::GuiPrivate
+        Qt::WidgetsPrivate
+)
+
+## Scopes:
+#####################################################################
+#
+#extend_target(OpenGL CONDITION MSVC
+#)
+#
+#extend_target(OpenGL CONDITION (MSVC) AND (equals(QT_ARCH, i386))
+#)
+#
+#extend_target(OpenGL CONDITION solaris-cc*
+#)
+#
+#extend_target(OpenGL CONDITION QT_FEATURE_opengl
+#)
+#
+#extend_target(OpenGL CONDITION QT_FEATURE_opengles2
+#)
+
+extend_target(OpenGL CONDITION QT_FEATURE_graphicseffect
+    SOURCES
+        qgraphicsshadereffect.cpp qgraphicsshadereffect_p.h
+)
+
+add_qt_docs(./doc/qtopengl.qdocconf)

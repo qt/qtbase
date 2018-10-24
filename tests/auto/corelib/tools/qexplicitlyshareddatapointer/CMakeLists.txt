@@ -1,0 +1,1 @@
+add_qt_test(tst_qexplicitlyshareddatapointer SOURCES tst_qexplicitlyshareddatapointer.cpp)

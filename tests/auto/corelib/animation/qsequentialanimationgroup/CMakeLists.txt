@@ -1,0 +1,1 @@
+add_qt_test(tst_qsequentialanimationgroup SOURCES tst_qsequentialanimationgroup.cpp)

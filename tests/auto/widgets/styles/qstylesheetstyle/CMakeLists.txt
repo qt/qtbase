@@ -1,0 +1,9 @@
+add_qt_test("tst_qstylesheetstyle"
+    SOURCES
+        resources.qrc
+        tst_qstylesheetstyle.cpp
+    LIBRARIES
+        Qt::WidgetsPrivate
+        Qt::GuiPrivate
+        Qt::TestPrivate
+)

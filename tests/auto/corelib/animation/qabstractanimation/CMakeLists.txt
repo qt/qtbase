@@ -1,0 +1,1 @@
+add_qt_test(tst_qabstractanimation SOURCES tst_qabstractanimation.cpp)

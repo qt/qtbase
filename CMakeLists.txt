@@ -1,0 +1,43 @@
+cmake_minimum_required(VERSION 3.12.0)
+
+project(QtBase
+    VERSION 5.12.0
+    DESCRIPTION "Qt Base Libraries"
+    HOMEPAGE_URL "https://qt.io/"
+    LANGUAGES CXX C
+)
+
+## Add some paths to check for cmake modules:
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdparty/extra-cmake-modules/find-modules;${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdparty/kwin")
+
+## Qt specific setup common for all modules:
+include(QtSetup)
+
+## Enable feature summary at the end of the configure run:
+include(FeatureSummary)
+
+## QtBase specific configure tests:
+include(QtBaseConfigureTests)
+
+## Targets for global features, etc.:
+include(QtBaseGlobalTargets)
+
+## Should this Qt be static or dynamically linked?
+option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" ON)
+set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
+
+## Visit all the directories:
+add_subdirectory(src)
+
+if (BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
+
+add_subdirectory(qmake)
+add_subdirectory(examples)
+
+## Delayed actions on some of the Qt targets:
+include(QtPostProcess)
+
+## Print a feature summary:
+feature_summary(WHAT PACKAGES_FOUND PACKAGES_NOT_FOUND FATAL_ON_MISSING_REQUIRED_PACKAGES)

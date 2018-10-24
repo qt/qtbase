@@ -1,0 +1,860 @@
+#!/usr/bin/env python3
+#############################################################################
+##
+## Copyright (C) 2018 The Qt Company Ltd.
+## Contact: https://www.qt.io/licensing/
+##
+## This file is part of the plugins of the Qt Toolkit.
+##
+## $QT_BEGIN_LICENSE:GPL-EXCEPT$
+## Commercial License Usage
+## Licensees holding valid commercial Qt licenses may use this file in
+## accordance with the commercial license agreement provided with the
+## Software or, alternatively, in accordance with the terms contained in
+## a written agreement between you and The Qt Company. For licensing terms
+## and conditions see https://www.qt.io/terms-conditions. For further
+## information use the contact form at https://www.qt.io/contact-us.
+##
+## GNU General Public License Usage
+## Alternatively, this file may be used under the terms of the GNU
+## General Public License version 3 as published by the Free Software
+## Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
+## included in the packaging of this file. Please review the following
+## information to ensure the GNU General Public License requirements will
+## be met: https://www.gnu.org/licenses/gpl-3.0.html.
+##
+## $QT_END_LICENSE$
+##
+#############################################################################
+
+import json
+import os.path
+import re
+import sys
+from typing import Set, Union, List, Dict
+
+from helper import map_qt_library, featureName, substitute_platform
+
+knownTests = set()  # type: Set[str]
+
+
+class LibraryMapping:
+    def __init__(self, package: str, resultVariable: str, appendFoundSuffix: bool = True) -> None:
+        self.package = package
+        self.resultVariable = resultVariable
+        self.appendFoundSuffix = appendFoundSuffix
+
+
+def map_library(lib: str) -> Union[str, LibraryMapping, List[str]]:
+    libmap = {
+       'zlib': 'ZLIB',
+       'gbm': 'gbm',
+       'host_dbus': None,
+       'libdl': None,  # handled by CMAKE_DL_LIBS
+       'libatomic': 'Atomic',
+       'double-conversion': 'WrapDoubleConversion',
+       'gnu_iconv': None,
+       'sun_iconv': None,
+       'posix_iconv': None,
+       'icu': ['ICU', 'COMPONENTS', 'i18n', 'uc', 'data'],
+       'pcre2': ['PCRE2', 'REQUIRED'],
+       'libpng': 'PNG',
+       'libudev': 'Libudev',
+       'udev': 'Libudev',
+       'journald': 'Libsystemd',
+       'vulkan': 'Vulkan',
+       'glib': 'GLib',
+       'harfbuzz': 'harfbuzz',
+       'opengl': LibraryMapping(package="OpenGL", resultVariable="OpenGL_OpenGL"),
+       'egl': LibraryMapping(package="OpenGL", resultVariable="OpenGL_EGL"),
+       'openssl_headers': LibraryMapping(package="OpenSSL", resultVariable="OPENSSL_INCLUDE_DIR", appendFoundSuffix=False),
+       'libpng': 'PNG',
+       'libjpeg': 'JPEG',
+       'freetype': 'Freetype',
+       'fontconfig': LibraryMapping(package='Fontconfig', resultVariable="FONTCONFIG"),
+       'libinput': 'Libinput',
+       'xcb': ['XCB', '1.9'],
+       'libproxy': 'libproxy',
+       'drm': 'Libdrm',
+       'xkbcommon': ['XKB', '0.4.1'],
+       'xlib': 'X11',
+       'xcb_xlib': 'X11_XCB',
+       'xrender': LibraryMapping(package="XCB", resultVariable="XCB_RENDER"),
+       'xcb_render': LibraryMapping(package="XCB", resultVariable="XCB_RENDER"),
+       'xcb_glx': LibraryMapping(package="XCB", resultVariable="XCB_GLX"),
+       'xcb_xkb': LibraryMapping(package="XCB", resultVariable="XCB_XKB"),
+       'xcb_xinput': LibraryMapping(package="XCB", resultVariable="XCB_XINPUT"),
+       'x11sm': LibraryMapping(package="X11", resultVariable="X11_SM"),
+       'wayland_server': 'Wayland',
+    }  # type: Dict[str, Union[str, List[str], LibraryMapping]]
+    if lib not in libmap:
+        raise Exception('    XXXX Unknown library "{}".'.format(lib))
+
+    return libmap[lib]
+
+
+def map_tests(test: str) -> str:
+    testmap = {
+        'c++11': '$<COMPILE_FEATURES:cxx_std_11>',
+        'c++14': '$<COMPILE_FEATURES:cxx_std_14>',
+        'c++1z': '$<COMPILE_FEATURES:cxx_std_17>',
+        'c99': '$<COMPILE_FEATURES:c_std_99>',
+        'c11': '$<COMPILE_FEATURES:c_std_11>',
+
+        'x86SimdAlways': 'ON',  # FIXME: Is this the right thing?
+
+        'aesni': 'TEST_subarch_aes',
+        'avx': 'TEST_subarch_avx',
+        'avx2': 'TEST_subarch_avx2',
+        'avx512f': 'TEST_subarch_avx512f',
+        'avx512cd': 'TEST_subarch_avx512cd',
+        'avx512dq': 'TEST_subarch_avx512dq',
+        'avx512bw': 'TEST_subarch_avx512bw',
+        'avx512er': 'TEST_subarch_avx512er',
+        'avx512pf': 'TEST_subarch_avx512pf',
+        'avx512vl': 'TEST_subarch_avx512vl',
+        'avx512ifma': 'TEST_subarch_avx512ifma',
+        'avx512vbmi': 'TEST_subarch_avx512vbmi',
+        'avx512vbmi2': 'TEST_subarch_avx512vbmi2',
+        'avx512vpopcntdq': 'TEST_subarch_avx512vpopcntdq',
+        'avx5124fmaps': 'TEST_subarch_avx5124fmaps',
+        'avx5124vnniw': 'TEST_subarch_avx5124vnniw',
+        'bmi': 'TEST_subarch_bmi',
+        'bmi2': 'TEST_subarch_bmi2',
+        'cx16': 'TEST_subarch_cx16',
+        'f16c': 'TEST_subarch_c16c',
+        'fma': 'TEST_subarch_fma',
+        'fma4': 'TEST_subarch_fma4',
+        'fsgsbase': 'TEST_subarch_fsgsbase',
+        'gfni': 'TEST_subarch_gfni',
+        'ibt': 'TEST_subarch_ibt',
+        'lwp': 'TEST_subarch_lwp',
+        'lzcnt': 'TEST_subarch_lzcnt',
+        'mmx': 'TEST_subarch_mmx',
+        'movbe': 'TEST_subarch_movbe',
+        'mpx': 'TEST_subarch_mpx',
+        'no-sahf': 'TEST_subarch_no_shaf',
+        'pclmul': 'TEST_subarch_pclmul',
+        'popcnt': 'TEST_subarch_popcnt',
+        'prefetchwt1': 'TEST_subarch_prefetchwt1',
+        'prfchw': 'TEST_subarch_prfchw',
+        'pdpid': 'TEST_subarch_rdpid',
+        'rdpid': 'TEST_subarch_rdpid',
+        'rdseed': 'TEST_subarch_rdseed',
+        'rdrnd': 'TEST_subarch_rdseed',  # FIXME: Is this the right thing?
+        'rtm': 'TEST_subarch_rtm',
+        'shani': 'TEST_subarch_sha',
+        'shstk': 'TEST_subarch_shstk',
+        'sse2': 'TEST_subarch_sse2',
+        'sse3': 'TEST_subarch_sse3',
+        'ssse3': 'TEST_subarch_ssse3',
+        'sse4a': 'TEST_subarch_sse4a',
+        'sse4_1': 'TEST_subarch_sse4_1',
+        'sse4_2': 'TEST_subarch_sse4_2',
+        'tbm': 'TEST_subarch_tbm',
+        'xop': 'TEST_subarch_xop',
+
+        'neon': 'TEST_subarch_neon',
+        'iwmmxt': 'TEST_subarch_iwmmxt',
+        'crc32': 'TEST_subarch_crc32',
+
+        'vis': 'TEST_subarch_vis',
+        'vis2': 'TEST_subarch_vis2',
+        'vis3': 'TEST_subarch_vis3',
+
+        'dsp': 'TEST_subarch_dsp',
+        'dspr2': 'TEST_subarch_dspr2',
+
+        'altivec': 'TEST_subarch_altivec',
+        'spe': 'TEST_subarch_spe',
+        'vsx': 'TEST_subarch_vsx',
+
+        'posix-iconv': 'TEST_posix_iconv',
+        'sun-iconv': 'TEST_sun_iconv',
+
+        'openssl11': '(OPENSSL_VERSION VERSION_GREATER_EQUAL "1.1.0")',
+
+        'reduce_exports': 'CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY',
+    }
+    if test in testmap:
+        return testmap.get(test, None)
+    if test in knownTests:
+        return 'TEST_{}'.format(featureName(test))
+    return None
+
+
+def cm(ctx, *output):
+    txt = ctx['output']
+    if txt != '' and not txt.endswith('\n'):
+        txt += '\n'
+    txt += '\n'.join(output)
+
+    ctx['output'] = txt
+    return ctx
+
+
+def readJsonFromDir(dir):
+    path = os.path.join(dir, 'configure.json')
+
+    print('Reading {}...'.format(path))
+    assert os.path.exists(path)
+
+    with open(path, 'r') as fh:
+        return json.load(fh)
+
+
+def processFiles(ctx, data):
+    print('  files:')
+    if 'files' in data:
+        for (k, v) in data['files'].items():
+            ctx[k] = v
+    return ctx
+
+def parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set):
+    extra = []
+    try:
+        newlib = map_library(lib)
+        if isinstance(newlib, list):
+            extra = newlib[1:]
+            newlib = newlib[0]
+        elif isinstance(newlib, LibraryMapping):
+            newlib = newlib.package
+    except Exception:
+        return ctx
+
+    if newlib is None:
+        print('    **** Skipping library "{}" -- was masked.'.format(lib))
+        return
+
+    print('    mapped library {} to {}.'.format(lib, newlib))
+
+    # Avoid duplicate find_package calls.
+    if newlib in cmake_find_packages_set:
+        return
+
+    cmake_find_packages_set.add(newlib)
+
+    isRequired = False
+
+    if extra:
+        if "REQUIRED" in extra:
+            isRequired = True
+            extra.remove("REQUIRED")
+
+    if extra:
+        cm_fh.write('find_package({} {})\n'.format(newlib, ' '.join(extra)))
+    else:
+        cm_fh.write('find_package({})\n'.format(newlib))
+
+    cm_fh.write('set_package_properties({} PROPERTIES TYPE {})\n'
+                .format(newlib, 'REQUIRED' if isRequired else 'OPTIONAL')
+    )
+
+def lineify(label, value, quote=True):
+    if value:
+        if quote:
+            return '    {} "{}"\n'.format(label, value.replace('"', '\\"'))
+        return '    {} {}\n'.format(label, value)
+    return ''
+
+def map_condition(condition):
+    # Handle NOT:
+    if isinstance(condition, list):
+        condition = '(' + ') AND ('.join(condition) + ')'
+    if isinstance(condition, bool):
+        if condition:
+            return 'ON'
+        else:
+            return 'OFF'
+    assert isinstance(condition, str)
+
+    mapped_features = {
+        "dlopen": "UNIX",
+        'gbm': 'gbm_FOUND',
+        "sun-libiconv": "TEST_sun_iconv",
+        "system-xcb": "ON",
+        "system-freetype": "ON",
+    }
+
+    # Turn foo != "bar" into (NOT foo STREQUAL 'bar')
+    condition = re.sub(r"(.+)\s*!=\s*('.+')", '(! \\1 == \\2)', condition)
+
+    condition = condition.replace('!', 'NOT ')
+    condition = condition.replace('&&', ' AND ')
+    condition = condition.replace('||', ' OR ')
+    condition = condition.replace('==', ' STREQUAL ')
+
+    # explicitly handle input.sdk == '':
+    condition = re.sub(r"input\.sdk\s*==\s*''", 'NOT INPUT_SDK', condition)
+
+    last_pos = 0
+    mapped_condition = ''
+    has_failed = False
+    for match in re.finditer(r'([a-zA-Z0-9_]+)\.([a-zA-Z0-9_+-]+)', condition):
+        substitution = None
+        appendFoundSuffix = True
+        if match.group(1) == 'libs':
+            try:
+                substitution = map_library(match.group(2))
+                if isinstance(substitution, list):
+                    substitution = substitution[0]
+                elif isinstance(substitution, LibraryMapping):
+                    appendFoundSuffix = substitution.appendFoundSuffix
+                    substitution = substitution.resultVariable
+            except Exception:
+                substitution = None
+
+            if substitution is not None and appendFoundSuffix:
+                substitution += '_FOUND'
+
+        elif match.group(1) == 'features':
+            feature = match.group(2)
+            if feature in mapped_features:
+                substitution = mapped_features.get(feature)
+            else:
+                substitution = 'QT_FEATURE_{}'.format(featureName(match.group(2)))
+
+        elif match.group(1) == 'subarch':
+            substitution = 'TEST_subarch_{}'.format(match.group(2))
+
+        elif match.group(1) == 'call':
+            if match.group(2) == 'crossCompile':
+                substitution = 'CMAKE_CROSSCOMPILING'
+
+        elif match.group(1) == 'tests':
+            substitution = map_tests(match.group(2))
+
+        elif match.group(1) == 'input':
+            substitution = 'INPUT_{}'.format(featureName(match.group(2)))
+
+        elif match.group(1) == 'config':
+            substitution = substitute_platform(match.group(2))
+
+        elif match.group(1) == 'arch':
+            if match.group(2) == 'i386':
+                # FIXME: Does this make sense?
+                substitution = '(TEST_architecture_arch STREQUAL i386)'
+            elif match.group(2) == 'x86_64':
+                substitution = '(TEST_architecture_arch STREQUAL x86_64)'
+            elif match.group(2) == 'arm':
+                # FIXME: Does this make sense?
+                substitution = '(TEST_architecture_arch STREQUAL arm)'
+            elif match.group(2) == 'arm64':
+                # FIXME: Does this make sense?
+                substitution = '(TEST_architecture_arch STREQUAL arm64)'
+            elif match.group(2) == 'mips':
+                # FIXME: Does this make sense?
+                substitution = '(TEST_architecture_arch STREQUAL mips)'
+
+        if substitution is None:
+            print('    XXXX Unknown condition "{}".'.format(match.group(0)))
+            has_failed = True
+        else:
+            mapped_condition += condition[last_pos:match.start(1)] + substitution
+            last_pos = match.end(2)
+
+    mapped_condition += condition[last_pos:]
+
+    # Space out '(' and ')':
+    mapped_condition = mapped_condition.replace('(', ' ( ')
+    mapped_condition = mapped_condition.replace(')', ' ) ')
+
+    # Prettify:
+    condition = re.sub('\\s+', ' ', mapped_condition)
+    condition = condition.strip()
+
+    if has_failed:
+        condition += ' OR FIXME'
+
+    return condition
+
+
+def parseInput(ctx, input, data, cm_fh):
+    skip_inputs = {
+        "prefix", "hostprefix", "extprefix",
+
+        "archdatadir", "bindir", "datadir", "docdir",
+        "examplesdir", "external-hostbindir", "headerdir",
+        "hostbindir", "hostdatadir", "hostlibdir",
+        "importdir", "libdir", "libexecdir",
+        "plugindir", "qmldir", "settingsdir",
+        "sysconfdir", "testsdir", "translationdir",
+
+        "android-arch", "android-ndk", "android-ndk-host",
+        "android-ndk-platform", "android-sdk",
+        "android-toolchain-version", "android-style-assets",
+
+        "appstore-compliant",
+
+        "avx", "avx2", "avx512", "c++std", "ccache", "commercial",
+        "compile-examples", "confirm-license",
+        "dbus",
+        "dbus-runtime",
+
+        "debug", "debug-and-release",
+
+        "developer-build",
+
+        "device", "device-option",
+
+        "f16c",
+
+        "force-asserts", "force-debug-info", "force-pkg-config",
+        "framework",
+
+        "gc-binaries",
+
+        "gdb-index",
+
+        "gcc-sysroot",
+
+        "gcov",
+
+        "gnumake",
+
+        "gui",
+
+        "headersclean",
+
+        "incredibuild-xge",
+
+        "libudev",
+        "ltcg",
+        "make",
+        "make-tool",
+
+        "mips_dsp",
+        "mips_dspr2",
+        "mp",
+
+        "nomake",
+
+        "opensource",
+
+        "optimize-debug", "optimize-size", "optimized-qmake", "optimized-tools",
+
+        "pch",
+
+        "pkg-config",
+
+        "platform",
+
+        "plugin-manifests",
+        "profile",
+        "qreal",
+
+        "reduce-exports", "reduce-relocations",
+
+        "release",
+
+        "rpath",
+
+        "sanitize",
+
+        "sdk",
+
+        "separate-debug-info",
+
+        "shared",
+
+        "silent",
+
+        "qdbus",
+
+        "sse2",
+        "sse3",
+        "sse4.1",
+        "sse4.2",
+        "ssse3",
+        "static",
+        "static-runtime",
+        "strip",
+        "syncqt",
+        "sysroot",
+        "testcocoon",
+        "use-gold-linker",
+        "warnings-are-errors",
+        "Werror",
+        "widgets",
+        "xplatform",
+        "zlib",
+
+        "doubleconversion",
+
+        "eventfd",
+        "glib",
+        "icu",
+        "inotify",
+        "journald",
+        "pcre",
+        "posix-ipc",
+        "pps",
+        "slog2",
+        "syslog",
+
+        "sqlite",
+    }
+
+    if input in skip_inputs:
+        print('    **** Skipping input {}: masked.'.format(input))
+        return
+
+    type = data
+    if isinstance(data, dict):
+        type = data["type"]
+
+    if type == "boolean":
+        print('    **** Skipping boolean input {}: masked.'.format(input))
+        return
+
+    if type == "enum":
+        cm_fh.write("# input {}\n".format(input))
+        cm_fh.write('set(INPUT_{} "undefined" CACHE STRING "")\n'.format(featureName(input)))
+        cm_fh.write('set_property(CACHE INPUT_{} PROPERTY STRINGS undefined {})\n\n'.format(featureName(input), " ".join(data["values"])))
+        return
+
+    print('    XXXX UNHANDLED INPUT TYPE {} in input description'.format(type))
+    return
+
+
+#  "tests": {
+#        "cxx11_future": {
+#            "label": "C++11 <future>",
+#            "type": "compile",
+#            "test": {
+#                "include": "future",
+#                "main": [
+#                    "std::future<int> f = std::async([]() { return 42; });",
+#                    "(void)f.get();"
+#                ],
+#                "qmake": "unix:LIBS += -lpthread"
+#            }
+#        },
+def parseTest(ctx, test, data, cm_fh):
+    skip_tests = {
+       'c11', 'c99',
+       'c++11', 'c++14', 'c++1y', 'c++1z',
+       'reduce_exports',
+       'posix-iconv', "sun-iconv",
+       'separate_debug_info',  # FIXME: see if cmake can do this
+       'gc_binaries',
+    }
+
+    if test in skip_tests:
+        print('    **** Skipping features {}: masked.'.format(test))
+        return
+
+    if data["type"] == "compile":
+        knownTests.add(test)
+
+        details = data["test"]
+
+        if isinstance(details, str):
+            print('    XXXX UNHANDLED TEST SUB-TYPE {} in test description'.format(details))
+            return
+
+        head = details.get("head", "")
+        if isinstance(head, list):
+            head = "\n".join(head)
+
+        sourceCode = head + '\n'
+
+        include = details.get("include", "")
+        if isinstance(include, list):
+            include = '#include <' + '>\n#include <'.join(include) + '>'
+        elif include:
+            include = '#include <{}>'.format(include)
+
+        sourceCode += include + '\n'
+
+        tail = details.get("tail", "")
+        if isinstance(tail, list):
+            tail = "\n".join(tail)
+
+        sourceCode += tail + '\n'
+
+        sourceCode += "int main(int argc, char **argv)\n"
+        sourceCode += "{\n"
+        sourceCode += "    (void)argc; (void)argv;\n"
+        sourceCode += "    /* BEGIN TEST: */\n"
+
+        main = details.get("main", "")
+        if isinstance(main, list):
+            main = "\n".join(main)
+
+        sourceCode += main + '\n'
+
+        sourceCode += "    /* END TEST: */\n"
+        sourceCode += "    return 0;\n"
+        sourceCode += "}\n"
+
+        sourceCode = sourceCode.replace('"', '\\"')
+
+        cm_fh.write("# {}\n".format(test))
+        cm_fh.write("qt_config_compile_test({}\n".format(featureName(test)))
+        cm_fh.write(lineify("LABEL", data.get("label", "")))
+        cm_fh.write('"' + sourceCode + '"')
+        if "qmake" in details:
+            cm_fh.write("# FIXME: qmake: {}\n".format(details["qmake"]))
+        cm_fh.write(")\n\n")
+
+    elif data["type"] == "x86Simd":
+        knownTests.add(test)
+
+        label = data["label"]
+
+        cm_fh.write("# {}\n".format(test))
+        cm_fh.write("qt_config_compile_test_x86simd({} \"{}\")\n".format(test, label))
+        cm_fh.write("\n")
+
+#    "features": {
+#        "android-style-assets": {
+#            "label": "Android Style Assets",
+#            "condition": "config.android",
+#            "output": [ "privateFeature" ],
+#            "comment": "This belongs into gui, but the license check needs it here already."
+#        },
+    else:
+        print('    XXXX UNHANDLED TEST TYPE {} in test description'.format(data["type"]))
+
+
+def parseFeature(ctx, feature, data, cm_fh):
+    skip_features = {
+        'c++11', 'c++14', 'c++1y', 'c++1z',  # C++ versions
+        'c89', 'c99', 'c11',  # C versions
+        'stl',  # Do we really need to test for this in 2018?!
+        'rpath', 'rpath_dir',  # rpath related
+        'static', 'shared',  # static/shared libs
+        'debug', 'release', 'debug_and_release', 'build_all', 'optimize_debug', 'optimize_size',  # build types
+        'release_tools', 'gcov', 'silent', 'profile',
+        'msvc_mp', 'static_runtime', 'incredibuild_xge', 'ccache',  # compiler specific stuff
+        'sanitize_address', 'sanitize_thread', 'sanitize_memory',  # sanitizer
+        'sanitize_undefined', 'sanitizer',
+        'force_debug_info', 'separate_debug_info',  'warnings_are_errors',  # FIXME: Do we need these?
+        'strip', 'precompile_header', 'ltcg', 'enable_new_dtags',
+        'enable_gdb_index', 'reduce_relocations',
+        'stack-protector-strong',
+        'host-dbus',  # dbus related
+        'cross_compile', 'gcc-sysroot', # cross compile related
+        'gc_binaries', 'qmakeargs', 'use_gold_linker', 'pkg-config', 'verifyspec',   # qmake stuff...
+        'GNUmake', 'compiler-flags',
+        'system-doubleconversion', 'system-pcre2', 'system-zlib', 'system-png', 'system-jpeg', 'system-freetype', 'system-xcb', 'xkbcommon-system', # system libraries
+        'doubleconversion',
+        'dlopen',  # handled by CMAKE_DL_LIBS
+        'alloc_stdlib_h', 'alloc_h', 'alloc_malloc_h',  # handled by alloc target
+        'posix_fallocate',  # Only needed for sqlite, which we do not want to build
+        'qpa_default_platform', # Not a bool!
+        'sun-libiconv', # internal feature but not referenced in our system
+    }
+    if feature in skip_features:
+        print('    **** Skipping features {}: masked.'.format(feature))
+        return
+
+    disabled_features = set()
+
+    override_condition = {}
+
+    handled = { 'autoDetect', 'comment', 'condition', 'description', 'disable', 'emitIf', 'enable', 'label', 'output', 'purpose', 'section' }
+    label = data.get('label', '')
+    purpose = data.get('purpose', data.get('description', label))
+    autoDetect = map_condition(data.get('autoDetect', ''))
+    condition = override_condition.get(feature, map_condition(data.get('condition', '')))
+    output = data.get('output', [])
+    comment = data.get('comment', '')
+    section = data.get('section', '')
+    enable = map_condition(data.get('enable', ''))
+    disable = map_condition(data.get('disable', ''))
+    emitIf = map_condition(data.get('emitIf', ''))
+
+    if feature in disabled_features:
+        condition = "FALSE"
+
+    for k in [k for k in data.keys() if k not in handled]:
+        print('    XXXX UNHANDLED KEY {} in feature description'.format(k))
+
+    if not output:
+        # feature that is only used in the conditions of other features
+        output = ["internalFeature"]
+
+    publicInfo = False
+    privateInfo = False
+    internalFeature = False
+
+    for o in output:
+        outputType = o
+        outputArgs = {}
+        if isinstance(o, dict):
+            outputType = o['type']
+            outputArgs = o
+
+        if outputType in ['varAssign', 'varAppend', 'varRemove', 'publicQtConfig', 'privateConfig', 'publicConfig']:
+            continue
+
+        elif outputType in ['feature', 'publicFeature', 'define']:
+            publicInfo = True
+        elif outputType == 'privateFeature':
+            privateInfo = True
+        elif outputType == 'internalFeature':
+            internalFeature = True
+        else:
+            print('    XXXX UNHANDLED OUTPUT TYPE {} in feature {}.'.format(outputType, feature))
+            continue
+
+    if not publicInfo and not privateInfo and not internalFeature:
+        print('    **** Skipping feature {}: Not relevant for C++.'.format(feature))
+        return
+
+    # write feature:
+    cxxFeature = featureName(feature)
+    if comment:
+        cm_fh.write('# {}\n'.format(comment))
+
+    cm_fh.write('qt_feature("{}"'.format(cxxFeature))
+    if publicInfo:
+        cm_fh.write(' PUBLIC')
+    if privateInfo:
+        cm_fh.write(' PRIVATE')
+    cm_fh.write('\n')
+
+    cm_fh.write(lineify('SECTION', section))
+    cm_fh.write(lineify('LABEL', label))
+    if purpose != label:
+        cm_fh.write(lineify('PURPOSE', purpose))
+    cm_fh.write(lineify('AUTODETECT', autoDetect, quote=False))
+    cm_fh.write(lineify('CONDITION', condition, quote=False))
+    cm_fh.write(lineify('ENABLE', enable, quote=False))
+    cm_fh.write(lineify('DISABLE', disable, quote=False))
+    cm_fh.write(lineify('EMIT_IF', emitIf, quote=False))
+    cm_fh.write(')\n')
+
+    for o in output:
+        outputType = o
+        outputArgs = {}
+        if isinstance(o, dict):
+            outputType = o['type']
+            outputArgs = o
+
+        # Map feature to define:
+        if outputType == 'feature':
+            outputType = 'define'
+            outputArgs = {'name': 'QT_NO_{}'.format(cxxFeature.upper()),
+                          'negative': True,
+                          'value': 1,
+                          'type': 'define'}
+
+        if outputType != 'define':
+            continue
+
+        if outputArgs.get('name') is None:
+            print('    XXXX DEFINE output without name in feature {}.'.format(feature))
+            continue
+
+        cm_fh.write('qt_feature_definition("{}" "{}"'.format(cxxFeature, outputArgs.get('name')))
+        if outputArgs.get('negative', False):
+            cm_fh.write(' NEGATE')
+        if outputArgs.get('value') is not None:
+            cm_fh.write(' VALUE "{}"'.format(outputArgs.get('value')))
+        cm_fh.write(')\n')
+
+
+def processInputs(ctx, data, cm_fh):
+    print('  inputs:')
+    if 'commandline' not in data:
+        return
+
+    commandLine = data['commandline']
+    if "options" not in commandLine:
+        return
+
+    for input in commandLine['options']:
+        parseInput(ctx, input, commandLine['options'][input], cm_fh)
+
+
+def processTests(ctx, data, cm_fh):
+    print('  tests:')
+    if 'tests' not in data:
+        return
+
+    for test in data['tests']:
+        parseTest(ctx, test, data['tests'][test], cm_fh)
+
+
+def processFeatures(ctx, data, cm_fh):
+    print('  features:')
+    if 'features' not in data:
+        return
+
+    for feature in data['features']:
+        parseFeature(ctx, feature, data['features'][feature], cm_fh)
+
+
+def processLibraries(ctx, data, cm_fh):
+    cmake_find_packages_set = set()
+    print('  libraries:')
+    if 'libraries' not in data:
+        return
+
+    for lib in data['libraries']:
+        parseLib(ctx, lib, data['libraries'][lib], cm_fh, cmake_find_packages_set)
+
+
+def processSubconfigs(dir, ctx, data):
+    assert ctx is not None
+    if 'subconfigs' in data:
+        for subconf in data['subconfigs']:
+            subconfDir = os.path.join(dir, subconf)
+            subconfData = readJsonFromDir(subconfDir)
+            subconfCtx = ctx
+            processJson(subconfDir, subconfCtx, subconfData)
+
+
+def processJson(dir, ctx, data):
+    ctx['module'] = data.get('module', 'global')
+
+    ctx = processFiles(ctx, data)
+
+    with open(os.path.join(dir, "configure.cmake"), 'w') as cm_fh:
+        cm_fh.write("\n\n#### Inputs\n\n")
+
+        processInputs(ctx, data, cm_fh)
+
+        cm_fh.write("\n\n#### Libraries\n\n")
+
+        processLibraries(ctx, data, cm_fh)
+
+        cm_fh.write("\n\n#### Tests\n\n")
+
+        processTests(ctx, data, cm_fh)
+
+        cm_fh.write("\n\n#### Features\n\n")
+
+        processFeatures(ctx, data, cm_fh)
+
+        if ctx.get('module') == 'global':
+            cm_fh.write('\nqt_extra_definition("QT_VERSION_STR" "\\\"${PROJECT_VERSION}\\\"" PUBLIC)\n')
+            cm_fh.write('qt_extra_definition("QT_VERSION_MAJOR" ${PROJECT_VERSION_MAJOR} PUBLIC)\n')
+            cm_fh.write('qt_extra_definition("QT_VERSION_MINOR" ${PROJECT_VERSION_MINOR} PUBLIC)\n')
+            cm_fh.write('qt_extra_definition("QT_VERSION_PATCH" ${PROJECT_VERSION_PATCH} PUBLIC)\n')
+
+        if ctx.get('module') == 'gui':
+            cm_fh.write('\nqt_extra_definition("QT_QPA_DEFAULT_PLATFORM" "${QT_QPA_DEFAULT_PLATFORM}" PUBLIC)\n')
+
+    # do this late:
+    processSubconfigs(dir, ctx, data)
+
+
+def main():
+    if len(sys.argv) != 2:
+       print("This scripts needs one directory to process!")
+       quit(1)
+
+    dir = sys.argv[1]
+
+    print("Processing: {}.".format(dir))
+
+    data = readJsonFromDir(dir)
+    processJson(dir, {}, data)
+
+
+if __name__ == '__main__':
+    main()

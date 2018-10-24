@@ -1,0 +1,1 @@
+add_qt_test(tst_qfuturesynchronizer SOURCES tst_qfuturesynchronizer.cpp)

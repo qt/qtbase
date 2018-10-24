@@ -1,0 +1,1 @@
+add_qt_test(benchliboptions SOURCES tst_benchliboptions.cpp)

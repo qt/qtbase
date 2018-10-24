@@ -1,0 +1,1 @@
+add_qt_test(tst_qhashfunctions SOURCES tst_qhashfunctions.cpp)

@@ -1,0 +1,172 @@
+# Generated from xcb_qpa_lib.pro.
+
+#####################################################################
+## QtXcbQpa Module:
+#####################################################################
+find_package(X11_XCB)
+find_package(X11)
+find_package(XCB)
+find_package(XKB)
+find_package(PkgConfig)
+
+pkg_check_modules(XKB_COMMON_X11 xkbcommon-x11>=0.4.1 IMPORTED_TARGET)
+
+add_qt_module(XcbQpa
+    NO_MODULE_HEADERS
+    SOURCES
+        gl_integrations/qxcbglintegration.cpp gl_integrations/qxcbglintegration.h
+        gl_integrations/qxcbglintegrationfactory.cpp gl_integrations/qxcbglintegrationfactory.h
+        gl_integrations/qxcbglintegrationplugin.h
+        gl_integrations/qxcbnativeinterfacehandler.cpp gl_integrations/qxcbnativeinterfacehandler.h
+        qxcbbackingstore.cpp qxcbbackingstore.h
+        qxcbclipboard.cpp qxcbclipboard.h
+        qxcbconnection.cpp qxcbconnection.h
+        qxcbcursor.cpp qxcbcursor.h
+        qxcbimage.cpp qxcbimage.h
+        qxcbintegration.cpp qxcbintegration.h
+        qxcbkeyboard.cpp qxcbkeyboard.h
+        qxcbmime.cpp qxcbmime.h
+        qxcbnativeinterface.cpp qxcbnativeinterface.h
+        qxcbobject.h
+        qxcbscreen.cpp qxcbscreen.h
+        qxcbsystemtraytracker.cpp qxcbsystemtraytracker.h
+        qxcbwindow.cpp qxcbwindow.h
+        qxcbwmsupport.cpp qxcbwmsupport.h
+        qxcbxkbcommon.h
+        qxcbxsettings.cpp qxcbxsettings.h
+    DEFINES
+        QT_NO_FOREACH
+        QT_BUILD_XCB_PLUGIN
+    INCLUDE_DIRECTORIES
+        gl_integrations/
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::GuiPrivate
+        Qt::ServiceSupportPrivate
+        Qt::ThemeSupportPrivate
+        Qt::EventDispatcherSupportPrivate
+        Qt::FontDatabaseSupportPrivate
+        Qt::EdidSupportPrivate
+        X11::XCB
+        XCB::XCB
+        XCB::SHAPE
+        XCB::ICCCM
+        XCB::RANDR
+        XCB::XKB
+        XCB::SYNC
+        XCB::XFIXES
+        XCB::XINERAMA
+        XCB::SHM
+        XCB::IMAGE
+        XCB::RENDER
+        XCB::RENDERUTIL
+        XCB::KEYSYMS
+        XKB::XKB
+        PkgConfig::XKB_COMMON_X11
+)
+
+## Scopes:
+#####################################################################
+
+extend_target(XcbQpa CONDITION TARGET Qt::linuxaccessibility_support_private
+    LIBRARIES
+        linuxaccessibility_supportPrivate
+)
+
+extend_target(XcbQpa CONDITION QT_FEATURE_vulkan
+    LIBRARIES
+        vulkan_supportPrivate
+)
+
+extend_target(XcbQpa CONDITION QT_FEATURE_draganddrop
+    SOURCES
+        qxcbdrag.cpp qxcbdrag.h
+)
+#
+#extend_target(XcbQpa CONDITION QT_FEATURE_xcb_xlib
+#)
+
+extend_target(XcbQpa CONDITION QT_FEATURE_xcb_xinput
+    SOURCES
+        qxcbconnection_xi2.cpp
+)
+
+extend_target(XcbQpa CONDITION QT_FEATURE_xcb_sm
+    SOURCES
+        qxcbsessionmanager.cpp qxcbsessionmanager.h
+    LIBRARIES
+        ${X11_SM_LIB} ${X11_ICE_LIB}
+)
+
+extend_target(XcbQpa CONDITION QT_FEATURE_vulkan
+    SOURCES
+        qxcbvulkaninstance.cpp qxcbvulkaninstance.h
+        qxcbvulkanwindow.cpp qxcbvulkanwindow.h
+)
+#
+#extend_target(XcbQpa CONDITION NOT QT_FEATURE_system_xcb
+#)
+#
+#extend_target(XcbQpa CONDITION NOT NOT QT_FEATURE_system_xcb
+#)
+#
+#extend_target(XcbQpa CONDITION (NOT NOT QT_FEATURE_system_xcb) AND (QT_FEATURE_xkb)
+#)
+#
+#extend_target(XcbQpa CONDITION (NOT NOT QT_FEATURE_system_xcb) AND (QT_FEATURE_xcb_render)
+#)
+#
+#extend_target(XcbQpa CONDITION (NOT NOT QT_FEATURE_system_xcb) AND (QT_FEATURE_xcb_xinput)
+#)
+#
+#extend_target(XcbQpa CONDITION NOT QT_FEATURE_xkbcommon_system
+#)
+
+extend_target(XcbQpa CONDITION (NOT QT_FEATURE_xkbcommon_system) AND (QT_FEATURE_xkb)
+    INCLUDE_DIRECTORIES
+        ../../../3rdparty/xkbcommon/src/x11
+)
+
+extend_target(XcbQpa CONDITION (NOT QT_FEATURE_xkbcommon_system) AND (NOT QT_FEATURE_xkb)
+    INCLUDE_DIRECTORIES
+        ../../../3rdparty/xkbcommon
+        ../../../3rdparty/xkbcommon/xkbcommon
+        ../../../3rdparty/xkbcommon/src
+        ../../../3rdparty/xkbcommon/src/xkbcomp
+)
+#
+#extend_target(XcbQpa CONDITION NOT NOT QT_FEATURE_xkbcommon_system
+#)
+#
+#extend_target(XcbQpa CONDITION QT_FEATURE_dlopen
+#)
+
+extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting
+    SOURCES
+        nativepainting/qbackingstore_x11.cpp nativepainting/qbackingstore_x11_p.h
+        nativepainting/qcolormap_x11.cpp nativepainting/qcolormap_x11_p.h
+        nativepainting/qpaintengine_x11.cpp nativepainting/qpaintengine_x11_p.h
+        nativepainting/qpixmap_x11.cpp nativepainting/qpixmap_x11_p.h
+        nativepainting/qt_x11_p.h
+        nativepainting/qtessellator.cpp nativepainting/qtessellator_p.h
+        nativepainting/qxcbnativepainting.cpp nativepainting/qxcbnativepainting.h
+    INCLUDE_DIRECTORIES
+        nativepainting/
+)
+#
+#extend_target(XcbQpa CONDITION (QT_FEATURE_xcb_native_painting) AND (QT_FEATURE_xrender)
+#)
+
+extend_target(XcbQpa CONDITION (QT_FEATURE_xcb_native_painting) AND (QT_FEATURE_fontconfig)
+    LIBRARIES
+        freetype
+)
+
+add_qt_plugin(qxcb
+    TYPE platforms
+    SOURCES
+        qxcbmain.cpp
+    LIBRARIES
+        Qt::XcbQpa
+        Qt::GuiPrivate
+)

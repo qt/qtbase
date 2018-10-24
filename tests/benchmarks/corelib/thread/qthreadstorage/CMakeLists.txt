@@ -1,0 +1,1 @@
+add_qt_test(tst_bench_qthreadstorage SOURCES tst_qthreadstorage.cpp)

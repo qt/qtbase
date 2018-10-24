@@ -1,0 +1,1 @@
+add_qt_test(tst_qstringbuilder2 SOURCES tst_qstringbuilder2.cpp)

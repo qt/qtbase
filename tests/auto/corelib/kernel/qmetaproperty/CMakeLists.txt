@@ -1,0 +1,1 @@
+add_qt_test(tst_qmetaproperty SOURCES tst_qmetaproperty.cpp)

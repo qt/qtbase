@@ -1,0 +1,1 @@
+add_qt_test(tst_deleteLater_noApp SOURCES tst_deleteLater_noApp.cpp)

@@ -1,0 +1,1 @@
+add_qt_test(tst_qitemselectionmodel SOURCES tst_qitemselectionmodel.cpp)

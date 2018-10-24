@@ -1,0 +1,1 @@
+add_qt_test(tst_qmessageauthenticationcode SOURCES tst_qmessageauthenticationcode.cpp)

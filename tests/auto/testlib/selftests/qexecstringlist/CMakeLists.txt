@@ -1,0 +1,1 @@
+add_qt_test(qexecstringlist SOURCES tst_qexecstringlist.cpp)

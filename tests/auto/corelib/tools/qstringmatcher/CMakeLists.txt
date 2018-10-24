@@ -1,0 +1,1 @@
+add_qt_test(tst_qstringmatcher SOURCES tst_qstringmatcher.cpp)

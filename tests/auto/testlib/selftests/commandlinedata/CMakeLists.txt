@@ -1,0 +1,1 @@
+add_qt_test(commandlinedata SOURCES tst_commandlinedata.cpp)

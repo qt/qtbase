@@ -1,0 +1,9 @@
+add_qt_test("tst_qfontdialog"
+    SOURCES
+        testfonts.qrc
+        tst_qfontdialog.cpp
+    LIBRARIES
+        Qt::WidgetsPrivate
+        Qt::CorePrivate
+        Qt::GuiPrivate
+)

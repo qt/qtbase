@@ -1,0 +1,1 @@
+add_qt_test(printdatatagswithglobaltags SOURCES tst_printdatatagswithglobaltags.cpp)
