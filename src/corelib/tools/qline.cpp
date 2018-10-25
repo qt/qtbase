@@ -387,10 +387,9 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 
     \value UnboundedIntersection The two lines intersect, but not
     within the range defined by their lengths. This will be the case
-    if the lines are not parallel.
-
-    intersect() will also return this value if the intersect point is
-    within the start and end point of only one of the lines.
+    if the lines are not parallel. intersect() will also return this
+    value if the intersect point is within the start and end point of
+    only one of the lines.
 
     \value BoundedIntersection The two lines intersect with each other
     within the start and end points of each line.
