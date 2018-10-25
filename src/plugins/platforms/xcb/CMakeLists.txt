@@ -122,18 +122,6 @@ extend_target(XcbQpa CONDITION QT_FEATURE_vulkan
 #extend_target(XcbQpa CONDITION NOT QT_FEATURE_xkbcommon_system
 #)
 
-extend_target(XcbQpa CONDITION (NOT QT_FEATURE_xkbcommon_system) AND (QT_FEATURE_xkb)
-    INCLUDE_DIRECTORIES
-        ../../../3rdparty/xkbcommon/src/x11
-)
-
-extend_target(XcbQpa CONDITION (NOT QT_FEATURE_xkbcommon_system) AND (NOT QT_FEATURE_xkb)
-    INCLUDE_DIRECTORIES
-        ../../../3rdparty/xkbcommon
-        ../../../3rdparty/xkbcommon/xkbcommon
-        ../../../3rdparty/xkbcommon/src
-        ../../../3rdparty/xkbcommon/src/xkbcomp
-)
 #
 #extend_target(XcbQpa CONDITION NOT NOT QT_FEATURE_xkbcommon_system
 #)

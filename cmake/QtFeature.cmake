@@ -32,22 +32,14 @@ function(qt_feature _feature)
         "PRIVATE;PUBLIC"
         "LABEL;PURPOSE;SECTION;" "AUTODETECT;CONDITION;ENABLE;DISABLE;EMIT_IF" ${ARGN})
 
-    if("${_arg_EMIT_IF}" STREQUAL "")
-        set(_arg_EMIT_IF 1)
+    # Register feature for future use:
+    if (_arg_PUBLIC)
+        list(APPEND __QtFeature_public_features "${_feature}")
+    endif()
+    if (_arg_PRIVATE)
+        list(APPEND __QtFeature_private_features "${_feature}")
     endif()
 
-    if (${_arg_EMIT_IF})
-        set(QT_FEATURE_${_feature} "UNSET" CACHE STRING "${_arg_LABEL}")
-        set_property(CACHE QT_FEATURE_${_feature} PROPERTY STRINGS UNSET ON OFF)
-
-        # Register feature for future use:
-        if (_arg_PUBLIC)
-            list(APPEND __QtFeature_public_features "${_feature}")
-        endif()
-        if (_arg_PRIVATE)
-            list(APPEND __QtFeature_private_features "${_feature}")
-        endif()
-    endif()
     set(__QtFeature_public_features ${__QtFeature_public_features} PARENT_SCOPE)
     set(__QtFeature_private_features ${__QtFeature_private_features} PARENT_SCOPE)
 endfunction()
@@ -114,7 +106,7 @@ function(qt_evaluate_config_expression resultVar)
         elseif("${member}" STREQUAL "STREQUAL" AND memberIdx LESS ${length})
             # Unfortunately the semantics for STREQUAL in if() are broken when the
             # RHS is an empty string and the parameters to if are coming through a variable.
-            # So we expect people two write the empty string with single quotes and then we
+            # So we expect people to write the empty string with single quotes and then we
             # do the comparison manually here.
             list(LENGTH result lhsIndex)
             math(EXPR lhsIndex "${lhsIndex}-1")
@@ -157,7 +149,8 @@ endfunction()
 function(qt_evaluate_feature _feature)
     # If the feature was set explicitly by the user to be on or off, in the cache, then
     # there's nothing for us to do.
-    if(NOT QT_FEATURE_${_feature} STREQUAL UNSET)
+    if(DEFINED "QT_FEATURE_${_feature}")
+        message("${_feature} is already defined...")
         return()
     endif()
 
@@ -201,6 +194,15 @@ function(qt_evaluate_feature _feature)
 
     set(QT_FEATURE_COMPUTED_VALUE_${_feature} "${result}" CACHE INTERNAL "${_arg_LABEL}")
     set(QT_FEATURE_${_feature} "${result}" PARENT_SCOPE)
+
+    if("${_arg_EMIT_IF}" STREQUAL "")
+        set(_arg_EMIT_IF ON)
+    endif()
+
+    if (${_arg_EMIT_IF})
+        set(FEATURE_${_feature} "UNSET" CACHE STRING "${_arg_LABEL}")
+        set_property(CACHE FEATURE_${_feature} PROPERTY STRINGS UNSET ON OFF)
+    endif()
 endfunction()
 
 function(qt_feature_definition _feature _name)
