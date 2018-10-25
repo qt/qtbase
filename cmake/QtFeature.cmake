@@ -27,10 +27,11 @@ function(qt_feature_module_begin)
 endfunction()
 
 function(qt_feature _feature)
-    set(QT_FEATURE_DEFINITION_${_feature} ${ARGN} PARENT_SCOPE)
     qt_parse_all_arguments(_arg "qt_feature"
         "PRIVATE;PUBLIC"
         "LABEL;PURPOSE;SECTION;" "AUTODETECT;CONDITION;ENABLE;DISABLE;EMIT_IF" ${ARGN})
+
+    set(_QT_FEATURE_DEFINITION_${_feature} ${ARGN} PARENT_SCOPE)
 
     # Register feature for future use:
     if (_arg_PUBLIC)
@@ -150,20 +151,19 @@ function(qt_evaluate_feature _feature)
     # If the feature was set explicitly by the user to be on or off, in the cache, then
     # there's nothing for us to do.
     if(DEFINED "QT_FEATURE_${_feature}")
-        message("${_feature} is already defined...")
         return()
     endif()
 
-    if(NOT DEFINED QT_FEATURE_DEFINITION_${_feature})
+    if(NOT DEFINED _QT_FEATURE_DEFINITION_${_feature})
         message(FATAL_ERROR "Attempting to evaluate feature ${_feature} but its definition is missing. Either the feature does not exist or a dependency to the module that defines it is missing")
     endif()
 
     cmake_parse_arguments(_arg
         "PRIVATE;PUBLIC"
-        "LABEL;PURPOSE;SECTION;" "AUTODETECT;CONDITION;ENABLE;DISABLE;EMIT_IF" ${QT_FEATURE_DEFINITION_${_feature}})
+        "LABEL;PURPOSE;SECTION;" "AUTODETECT;CONDITION;ENABLE;DISABLE;EMIT_IF" ${_QT_FEATURE_DEFINITION_${_feature}})
 
-    if(DEFINED QT_FEATURE_COMPUTED_VALUE_${_feature})
-        set(QT_FEATURE_${_feature} ${QT_FEATURE_COMPUTED_VALUE_${_feature}} PARENT_SCOPE)
+    if(DEFINED _QT_FEATURE_VALUE_${_feature})
+        set(QT_FEATURE_${_feature} ${_QT_FEATURE_VALUE_${_feature}} PARENT_SCOPE)
         return()
     endif()
 
@@ -180,29 +180,33 @@ function(qt_evaluate_feature _feature)
     endif()
 
     if("${_arg_CONDITION}" STREQUAL "")
-        set(_arg_CONDITION ON)
+        set(condition ON)
+    else()
+        qt_evaluate_config_expression(condition ${_arg_CONDITION})
     endif()
 
     if(${_arg_DISABLE})
         set(result OFF)
     elseif((${_arg_ENABLE}) OR (${_arg_AUTODETECT}))
-        qt_evaluate_config_expression(result ${_arg_CONDITION})
+        set(result ${condition})
     else()
         # feature not auto-detected and not explicitly enabled
         set(result OFF)
     endif()
 
-    set(QT_FEATURE_COMPUTED_VALUE_${_feature} "${result}" CACHE INTERNAL "${_arg_LABEL}")
-    set(QT_FEATURE_${_feature} "${result}" PARENT_SCOPE)
-
     if("${_arg_EMIT_IF}" STREQUAL "")
-        set(_arg_EMIT_IF ON)
+        set(emit_if ON)
+    else()
+        qt_evaluate_config_expression(emit_if ${_arg_EMIT_IF})
     endif()
 
-    if (${_arg_EMIT_IF})
+    if (${emit_if})
         set(FEATURE_${_feature} "UNSET" CACHE STRING "${_arg_LABEL}")
         set_property(CACHE FEATURE_${_feature} PROPERTY STRINGS UNSET ON OFF)
     endif()
+
+    set(_QT_FEATURE_VALUE_${_feature} "${result}" CACHE INTERNAL "${_arg_LABEL}")
+    set(QT_FEATURE_${_feature} "${result}" PARENT_SCOPE)
 endfunction()
 
 function(qt_feature_definition _feature _name)
@@ -278,7 +282,7 @@ function(qt_feature_module_end target)
     list(REMOVE_DUPLICATES all_features)
 
     foreach(feature ${all_features})
-        unset(QT_FEATURE_COMPUTED_VALUE_${feature} CACHE)
+        unset(_QT_FEATURE_VALUE_${feature} CACHE)
     endforeach()
 
     foreach(feature ${all_features})
@@ -309,8 +313,8 @@ function(qt_feature_module_end target)
     endforeach()
 
     foreach(feature ${all_features})
-        unset(QT_FEATURE_COMPUTED_VALUE_${feature} CACHE)
-        unset(QT_FEATURE_DEFINITION_${feature} CACHE)
+        unset(_QT_FEATURE_VALUE_${feature} CACHE)
+        unset(_QT_FEATURE_DEFINITION_${feature} CACHE)
     endforeach()
 
     _qt_feature_write_file("${CMAKE_CURRENT_BINARY_DIR}/${__QtFeature_private_file}"
