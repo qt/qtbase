@@ -199,10 +199,9 @@ protected:
     NetWmStates netWmStates();
     void setNetWmStates(NetWmStates);
 
-    void setMotifWindowFlags(Qt::WindowFlags flags);
-    void setNetWmStateWindowFlags(Qt::WindowFlags flags);
+    void setMotifWmHints(Qt::WindowFlags flags);
 
-    void updateMotifWmHintsBeforeMap();
+    void setNetWmStateWindowFlags(Qt::WindowFlags flags);
     void updateNetWmStateBeforeMap();
 
     void setTransparentForMouseEvents(bool transparent);

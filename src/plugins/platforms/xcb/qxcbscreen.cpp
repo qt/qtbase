@@ -747,7 +747,11 @@ void QXcbScreen::updateGeometry(const QRect &geometry, uint8_t rotation)
         m_sizeMillimeters = sizeInMillimeters(geometry.size(), m_virtualDesktop->dpi());
 
     qreal dpi = geometry.width() / physicalSize().width() * qreal(25.4);
-    m_pixelDensity = qMax(1, qRound(dpi/96));
+
+    // Use 128 as a reference DPI on small screens. This favors "small UI" over "large UI".
+    qreal referenceDpi = physicalSize().width() <= 320 ? 128 : 96;
+
+    m_pixelDensity = qMax(1, qRound(dpi/referenceDpi));
     m_geometry = geometry;
     m_availableGeometry = geometry & m_virtualDesktop->workArea();
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), m_geometry, m_availableGeometry);

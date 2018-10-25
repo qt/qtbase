@@ -42,10 +42,9 @@
 
 #include <QtCore/qanimationgroup.h>
 
+QT_REQUIRE_CONFIG(animation);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_ANIMATION
 
 class QParallelAnimationGroupPrivate;
 class Q_CORE_EXPORT QParallelAnimationGroup : public QAnimationGroup
@@ -71,8 +70,6 @@ private:
     Q_DECLARE_PRIVATE(QParallelAnimationGroup)
     Q_PRIVATE_SLOT(d_func(), void _q_uncontrolledAnimationFinished())
 };
-
-#endif //QT_NO_ANIMATION
 
 QT_END_NAMESPACE
 

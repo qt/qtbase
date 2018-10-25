@@ -218,7 +218,7 @@ struct DBusMessageIter
   int dummy10;          /**< Don't use this */
   int dummy11;          /**< Don't use this */
   int pad1;             /**< Don't use this */
-  int pad2;             /**< Don't use this */
+  void *pad2;           /**< Don't use this */ /* Was int; changed to void* at 1.10.8 */
   void *pad3;           /**< Don't use this */
 };
 
@@ -251,6 +251,7 @@ struct DBusMessageIter
 #define DBUS_TYPE_SIGNATURE_AS_STRING      "g"
 #define DBUS_TYPE_UNIX_FD      ((int) 'h')
 #define DBUS_TYPE_UNIX_FD_AS_STRING        "h"
+
 #define DBUS_TYPE_ARRAY         ((int) 'a')
 #define DBUS_TYPE_ARRAY_AS_STRING          "a"
 #define DBUS_TYPE_VARIANT       ((int) 'v')
@@ -270,13 +271,13 @@ struct DBusMessageIter
 #define DBUS_DICT_ENTRY_END_CHAR     ((int) '}')
 #define DBUS_DICT_ENTRY_END_CHAR_AS_STRING     "}"
 
+#define DBUS_MAXIMUM_NAME_LENGTH 255
+
 #define DBUS_MESSAGE_TYPE_INVALID       0
 #define DBUS_MESSAGE_TYPE_METHOD_CALL   1
 #define DBUS_MESSAGE_TYPE_METHOD_RETURN 2
 #define DBUS_MESSAGE_TYPE_ERROR         3
 #define DBUS_MESSAGE_TYPE_SIGNAL        4
-
-#define DBUS_MAXIMUM_NAME_LENGTH 255
 
 #define DBUS_INTROSPECT_1_0_XML_NAMESPACE         "http://www.freedesktop.org/standards/dbus"
 #define DBUS_INTROSPECT_1_0_XML_PUBLIC_IDENTIFIER "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"

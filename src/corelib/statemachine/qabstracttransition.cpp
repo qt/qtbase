@@ -334,7 +334,7 @@ QStateMachine *QAbstractTransition::machine() const
     return d->machine();
 }
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 
 /*!
   Adds the given \a animation to this transition.

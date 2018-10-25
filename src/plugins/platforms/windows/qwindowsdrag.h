@@ -92,6 +92,7 @@ public:
     static QWindowsDrag *instance();
     void cancelDrag() override { QWindowsDrag::m_canceled = true; }
     static bool isCanceled() { return QWindowsDrag::m_canceled; }
+    static bool isDragging() { return QWindowsDrag::m_dragging; }
 
     IDataObject *dropDataObject() const             { return m_dropDataObject; }
     void setDropDataObject(IDataObject *dataObject) { m_dropDataObject = dataObject; }
@@ -102,6 +103,7 @@ public:
 
 private:
     static bool m_canceled;
+    static bool m_dragging;
 
     QWindowsDropMimeData m_dropData;
     IDataObject *m_dropDataObject = nullptr;

@@ -28,8 +28,8 @@
 #define XKBCOMP_PARSER_PRIV_H
 
 struct parser_param;
+struct scanner;
 
-#include "scanner-utils.h"
 #include "parser.h"
 
 int

@@ -294,6 +294,7 @@ void QPlainTextDocumentLayout::documentChanged(int from, int charsRemoved, int c
 
     QTextBlock changeStartBlock = doc->findBlock(from);
     QTextBlock changeEndBlock = doc->findBlock(qMax(0, from + charsChanged - 1));
+    bool blockVisibilityChanged = false;
 
     if (changeStartBlock == changeEndBlock && newBlockCount == d->blockCount) {
         QTextBlock block = changeStartBlock;
@@ -311,14 +312,18 @@ void QPlainTextDocumentLayout::documentChanged(int from, int charsRemoved, int c
         QTextBlock block = changeStartBlock;
         do {
             block.clearLayout();
+            const int lineCount = block.isVisible() ? 1 : 0;
+            if (block.lineCount() != lineCount) {
+                blockVisibilityChanged = true;
+                block.setLineCount(lineCount);
+            }
             if (block == changeEndBlock)
                 break;
             block = block.next();
         } while(block.isValid());
     }
 
-    if (newBlockCount != d->blockCount) {
-
+    if (newBlockCount != d->blockCount || blockVisibilityChanged) {
         int changeEnd = changeEndBlock.blockNumber();
         int blockDiff = newBlockCount - d->blockCount;
         int oldChangeEnd = changeEnd - blockDiff;

@@ -38,8 +38,6 @@
 ****************************************************************************/
 #include <QtGui/qtguiglobal.h>
 
-#ifndef QT_NO_ANIMATION
-
 #include <QtCore/qvariantanimation.h>
 #include <private/qvariantanimation_p.h>
 #include <QtGui/qcolor.h>
@@ -90,5 +88,3 @@ static void qUnregisterGuiGetInterpolator()
 Q_DESTRUCTOR_FUNCTION(qUnregisterGuiGetInterpolator)
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_ANIMATION

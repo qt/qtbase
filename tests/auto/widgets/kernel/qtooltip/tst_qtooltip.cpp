@@ -46,6 +46,7 @@ private slots:
     void whatsThis();
     void setPalette();
     void qtbug64550_stylesheet();
+    void dontCrashOutsideScreenGeometry();
 };
 
 void tst_QToolTip::init()
@@ -216,6 +217,12 @@ void tst_QToolTip::qtbug64550_stylesheet()
     QVERIFY2(toolTipSize.width() >= boundingRect.width()
              && toolTipSize.height() >= boundingRect.height(),
              msgSizeTooSmall(toolTipSize, boundingRect.size()).constData());
+}
+
+void tst_QToolTip::dontCrashOutsideScreenGeometry() {
+    QToolTip::showText(QPoint(-10000, -10000), "tip outside monitor", nullptr);
+    QTRY_VERIFY(QToolTip::isVisible());
+    QToolTip::hideText();
 }
 
 QTEST_MAIN(tst_QToolTip)

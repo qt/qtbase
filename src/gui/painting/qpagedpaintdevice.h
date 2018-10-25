@@ -213,7 +213,7 @@ public:
         Envelope10 = Comm10E
     };
 
-    enum PdfVersion { PdfVersion_1_4, PdfVersion_A1b };
+    enum PdfVersion { PdfVersion_1_4, PdfVersion_A1b, PdfVersion_1_6 };
 
     // ### Qt6 Make these virtual
     bool setPageLayout(const QPageLayout &pageLayout);

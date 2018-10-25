@@ -110,6 +110,14 @@ load(qt_common)
 
         load(resolve_target)
         TARGETPATHBASE = $$replace(TARGETPATH, \\.\\d+\$, )
+
+        !qml1_target {
+            isEmpty(QMAKE_PLUGINDUMP_DEPENDENCIES_FILE):exists($$_PRO_FILE_PWD_/dependencies.json): \
+                QMAKE_PLUGINDUMP_DEPENDENCIES_FILE = $$_PRO_FILE_PWD_/dependencies.json
+            !isEmpty(QMAKE_PLUGINDUMP_DEPENDENCIES_FILE): \
+                QMAKE_QMLPLUGINDUMP_FLAGS += -dependencies $$shell_quote($$QMAKE_PLUGINDUMP_DEPENDENCIES_FILE)
+        }
+
         qmltypes.target = qmltypes
         qmltypes.commands = $$QMLPLUGINDUMP -nonrelocatable $$QMAKE_QMLPLUGINDUMP_FLAGS $$replace(TARGETPATHBASE, /, .) $$IMPORT_VERSION > $$QMLTYPEFILE
         qmltypes.depends = $$QMAKE_RESOLVED_TARGET

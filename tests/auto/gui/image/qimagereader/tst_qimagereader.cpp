@@ -1603,6 +1603,7 @@ void tst_QImageReader::supportsOption_data()
                          << (QIntList() << QImageIOHandler::Gamma
                               << QImageIOHandler::Description
                               << QImageIOHandler::Quality
+                              << QImageIOHandler::CompressionRatio
                               << QImageIOHandler::Size
                               << QImageIOHandler::ScaledSize);
 }

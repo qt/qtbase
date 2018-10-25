@@ -238,6 +238,33 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QVerticalSplitView);
 }
 @end
 
+// See render code in drawPrimitive(PE_FrameTabWidget)
+@interface QT_MANGLE_NAMESPACE(QDarkNSBox) : NSBox
+@end
+
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QDarkNSBox);
+
+@implementation QDarkNSBox
+- (instancetype)init
+{
+    if ((self = [super init])) {
+        self.title = @"";
+        self.titlePosition = NSNoTitle;
+        self.boxType = NSBoxCustom;
+        self.cornerRadius = 3;
+        self.borderColor = [NSColor.controlColor colorWithAlphaComponent:0.1];
+        self.fillColor = [NSColor.darkGrayColor colorWithAlphaComponent:0.2];
+    }
+
+    return self;
+}
+
+- (void)drawRect:(NSRect)rect
+{
+    [super drawRect:rect];
+}
+@end
+
 QT_BEGIN_NAMESPACE
 
 // The following constants are used for adjusting the size
@@ -1468,8 +1495,8 @@ QRectF QMacStylePrivate::CocoaControl::adjustedControlFrame(const QRectF &rect) 
     QRectF frameRect;
     const auto frameSize = defaultFrameSize();
     if (type == QMacStylePrivate::Button_SquareButton) {
-        frameRect = rect.adjusted(3, 1, -3, -5)
-                .adjusted(focusRingWidth, focusRingWidth, -focusRingWidth, -focusRingWidth);
+        frameRect = rect.adjusted(3, 1, -3, -1)
+                        .adjusted(focusRingWidth, focusRingWidth, -focusRingWidth, -focusRingWidth);
     } else if (type == QMacStylePrivate::Button_PushButton) {
         // Start from the style option's top-left corner.
         frameRect = QRectF(rect.topLeft(),
@@ -1704,18 +1731,28 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
         || widget.size == QStyleHelper::SizeDefault)
         return nil;
 
+    if (widget.type == Box) {
+        if (__builtin_available(macOS 10.14, *)) {
+            if (qt_mac_applicationIsInDarkMode()) {
+                // See render code in drawPrimitive(PE_FrameTabWidget)
+                widget.type = Box_Dark;
+            }
+        }
+    }
+
     NSView *bv = cocoaControls.value(widget, nil);
     if (!bv) {
         switch (widget.type) {
         case Box: {
-            NSBox *bc = [[NSBox alloc] init];
-            bc.title = @"";
-            bc.titlePosition = NSNoTitle;
-            bc.boxType = NSBoxPrimary;
-            bc.borderType = NSBezelBorder;
-            bv = bc;
+            NSBox *box = [[NSBox alloc] init];
+            bv = box;
+            box.title = @"";
+            box.titlePosition = NSNoTitle;
             break;
         }
+        case Box_Dark:
+            bv = [[QDarkNSBox alloc] init];
+            break;
         case Button_CheckBox:
         case Button_Disclosure:
         case Button_PushButton:
@@ -2922,10 +2959,28 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     {
         const auto cw = QMacStylePrivate::CocoaControl(QMacStylePrivate::Box, QStyleHelper::SizeLarge);
         auto *box = static_cast<NSBox *>(d->cocoaControl(cw));
+        // FIXME Since macOS 10.14, simply calling drawRect: won't display anything anymore.
+        // The AppKit team is aware of this and has proposed a couple of solutions.
+        // The first solution was to call displayRectIgnoringOpacity:inContext: instead.
+        // However, it doesn't seem to work on 10.13. More importantly, dark mode on 10.14
+        // is extremely slow. Light mode works fine.
+        // The second solution is to subclass NSBox and reimplement a trivial drawRect: which
+        // would only call super. This works without any issue on 10.13, but a double border
+        // shows on 10.14 in both light and dark modes.
+        // The code below picks what works on each version and mode. On 10.13 and earlier, we
+        // simply call drawRect: on a regular NSBox. On 10.14, we call displayRectIgnoringOpacity:
+        // inContext:, but only in light mode. In dark mode, we use a custom NSBox subclass,
+        // QDarkNSBox, of type NSBoxCustom. Its appearance is close enough to the real thing so
+        // we can use this for now.
         d->drawNSViewInRect(box, opt->rect, p, ^(CGContextRef ctx, const CGRect &rect) {
             CGContextTranslateCTM(ctx, 0, rect.origin.y + rect.size.height);
             CGContextScaleCTM(ctx, 1, -1);
-            [box drawRect:rect];
+            if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSMojave
+                || [box isMemberOfClass:QDarkNSBox.class]) {
+                [box drawRect:rect];
+            } else {
+                [box displayRectIgnoringOpacity:box.bounds inContext:NSGraphicsContext.currentContext];
+            }
         });
         break;
     }

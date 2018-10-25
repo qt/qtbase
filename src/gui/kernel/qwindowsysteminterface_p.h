@@ -525,6 +525,7 @@ public:
 public:
     static QElapsedTimer eventTime;
     static bool synchronousWindowSystemEvents;
+    static bool platformFiltersEvents;
 
     static QWaitCondition eventsFlushed;
     static QMutex flushEventMutex;

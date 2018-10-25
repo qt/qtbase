@@ -5,13 +5,15 @@ DEFINES += QT_NO_FOREACH
 QT += \
     core-private gui-private \
     service_support-private theme_support-private \
-    eventdispatcher_support-private fontdatabase_support-private \
+    fontdatabase_support-private \
     edid_support-private
 
 qtHaveModule(linuxaccessibility_support-private): \
     QT += linuxaccessibility_support-private
 
 qtConfig(vulkan): QT += vulkan_support-private
+
+qtConfig(glib) : QMAKE_USE_PRIVATE += glib
 
 SOURCES = \
         qxcbclipboard.cpp \
@@ -27,7 +29,12 @@ SOURCES = \
         qxcbcursor.cpp \
         qxcbimage.cpp \
         qxcbxsettings.cpp \
-        qxcbsystemtraytracker.cpp
+        qxcbsystemtraytracker.cpp \
+        qxcbeventqueue.cpp \
+        qxcbeventdispatcher.cpp \
+        qxcbconnection_basic.cpp \
+        qxcbconnection_screens.cpp \
+        qxcbatom.cpp
 
 HEADERS = \
         qxcbclipboard.h \
@@ -45,7 +52,11 @@ HEADERS = \
         qxcbimage.h \
         qxcbxsettings.h \
         qxcbsystemtraytracker.h \
-        qxcbxkbcommon.h
+        qxcbxkbcommon.h \
+        qxcbeventqueue.h \
+        qxcbeventdispatcher.h \
+        qxcbconnection_basic.h \
+        qxcbatom.h
 
 qtConfig(draganddrop) {
     SOURCES += qxcbdrag.cpp

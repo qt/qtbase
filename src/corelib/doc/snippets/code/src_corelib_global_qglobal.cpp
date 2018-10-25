@@ -725,3 +725,64 @@ bool readConfiguration(const QFile &file)
 #include <QtGui>
 #endif
 //! [qt-version-check]
+
+//! [is-empty]
+    qgetenv(varName).isEmpty()
+//! [is-empty]
+
+//! [to-int]
+    qgetenv(varName).toInt(ok, 0)
+//! [to-int]
+
+//! [is-null]
+    !qgetenv(varName).isNull()
+//! [is-null]
+
+//! [as-const-0]
+    QString s = ...;
+    for (QChar ch : s) // detaches 's' (performs a deep-copy if 's' was shared)
+        process(ch);
+    for (QChar ch : qAsConst(s)) // ok, no detach attempt
+        process(ch);
+//! [as-const-0]
+
+//! [as-const-1]
+    const QString s = ...;
+    for (QChar ch : s) // ok, no detach attempt on const objects
+        process(ch);
+//! [as-const-1]
+
+//! [as-const-2]
+    for (QChar ch : funcReturningQString())
+        process(ch); // OK, the returned object is kept alive for the loop's duration
+//! [as-const-2]
+
+//! [as-const-3]
+    for (QChar ch : qAsConst(funcReturningQString()))
+        process(ch); // ERROR: ch is copied from deleted memory
+//! [as-const-3]
+
+//! [as-const-4]
+    for (QChar ch : qAsConst(funcReturningQString()))
+        process(ch); // ERROR: ch is copied from deleted memory
+//! [as-const-4]
+
+//! [qterminate]
+    try { expr; } catch(...) { qTerminate(); }
+//! [qterminate]
+
+//! [qdecloverride]
+    // generate error if this doesn't actually override anything:
+    virtual void MyWidget::paintEvent(QPaintEvent*) Q_DECL_OVERRIDE;
+//! [qdecloverride]
+
+//! [qdeclfinal-1]
+    // more-derived classes no longer permitted to override this:
+    virtual void MyWidget::paintEvent(QPaintEvent*) Q_DECL_FINAL;
+//! [qdeclfinal-1]
+
+//! [qdeclfinal-2]
+    class QRect Q_DECL_FINAL { // cannot be derived from
+        // ...
+    };
+//! [qdeclfinal-2]

@@ -1968,9 +1968,8 @@ QList<QByteArray> QMetaMethod::parameterTypes() const
 */
 QList<QByteArray> QMetaMethod::parameterNames() const
 {
-    QList<QByteArray> list;
     if (!mobj)
-        return list;
+        return QList<QByteArray>();
     return QMetaMethodPrivate::get(this)->parameterNames();
 }
 
@@ -1996,27 +1995,11 @@ const char *QMetaMethod::typeName() const
     Tag information can be added in the following
     way in the function declaration:
 
-    \code
-        // In the class MainWindow declaration
-        #ifndef Q_MOC_RUN
-        // define the tag text as empty, so the compiler doesn't see it
-        #  define MY_CUSTOM_TAG
-        #endif
-        ...
-        private slots:
-            MY_CUSTOM_TAG void testFunc();
-    \endcode
+    \snippet code/src_corelib_kernel_qmetaobject.cpp 10
 
     and the information can be accessed by using:
 
-    \code
-        MainWindow win;
-        win.show();
-
-        int functionIndex = win.metaObject()->indexOfSlot("testFunc()");
-        QMetaMethod mm = win.metaObject()->method(functionIndex);
-        qDebug() << mm.tag(); // prints MY_CUSTOM_TAG
-    \endcode
+    \snippet code/src_corelib_kernel_qmetaobject.cpp 11
 
     For the moment, \c moc will extract and record all tags, but it will not
     handle any of them specially. You can use the tags to annotate your methods
@@ -2669,8 +2652,10 @@ int QMetaEnum::value(int index) const
 */
 bool QMetaEnum::isFlag() const
 {
+    if (!mobj)
+        return false;
     const int offset = priv(mobj->d.data)->revision >= 8 ? 2 : 1;
-    return mobj && mobj->d.data[handle + offset] & EnumIsFlag;
+    return mobj->d.data[handle + offset] & EnumIsFlag;
 }
 
 /*!
@@ -2681,8 +2666,10 @@ bool QMetaEnum::isFlag() const
 */
 bool QMetaEnum::isScoped() const
 {
+    if (!mobj)
+        return false;
     const int offset = priv(mobj->d.data)->revision >= 8 ? 2 : 1;
-    return mobj && mobj->d.data[handle + offset] & EnumIsScoped;
+    return mobj->d.data[handle + offset] & EnumIsScoped;
 }
 
 /*!

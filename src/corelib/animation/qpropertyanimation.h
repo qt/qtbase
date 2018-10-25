@@ -42,10 +42,9 @@
 
 #include <QtCore/qvariantanimation.h>
 
+QT_REQUIRE_CONFIG(animation);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_ANIMATION
 
 class QPropertyAnimationPrivate;
 class Q_CORE_EXPORT QPropertyAnimation : public QVariantAnimation
@@ -74,8 +73,6 @@ private:
     Q_DISABLE_COPY(QPropertyAnimation)
     Q_DECLARE_PRIVATE(QPropertyAnimation)
 };
-
-#endif //QT_NO_ANIMATION
 
 QT_END_NAMESPACE
 

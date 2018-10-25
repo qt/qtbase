@@ -2416,6 +2416,13 @@ void QWindowsWindow::setFrameStrutEventsEnabled(bool enabled)
     }
 }
 
+static int getBorderWidth(const QPlatformScreen *screen)
+{
+    NONCLIENTMETRICS ncm;
+    QWindowsContext::nonClientMetricsForScreen(&ncm, screen);
+    return ncm.iBorderWidth + ncm.iPaddedBorderWidth + 2;
+}
+
 void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 {
     // We don't apply the min/max size hint as we change the dpi, because we did not adjust the
@@ -2425,10 +2432,11 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
         hint.applyToMinMaxInfo(m_data.hwnd, mmi);
     }
 
-    if ((testFlag(WithinMaximize) || (window()->windowStates() & Qt::WindowMinimized))
-            && (m_data.flags & Qt::FramelessWindowHint)) {
-        // This block fixes QTBUG-8361: Frameless windows shouldn't cover the
-        // taskbar when maximized
+    // This block fixes QTBUG-8361, QTBUG-4362: Frameless/title-less windows shouldn't cover the
+    // taskbar when maximized
+    if ((testFlag(WithinMaximize) || window()->windowStates().testFlag(Qt::WindowMinimized))
+        && (m_data.flags.testFlag(Qt::FramelessWindowHint)
+            || (m_data.flags.testFlag(Qt::CustomizeWindowHint) && !m_data.flags.testFlag(Qt::WindowTitleHint)))) {
         const QScreen *screen = window()->screen();
 
         // Documentation of MINMAXINFO states that it will only work for the primary screen
@@ -2442,6 +2450,14 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
             // If you have the taskbar on top, or on the left you don't want it at (0,0):
             mmi->ptMaxPosition.x = availableGeometry.x();
             mmi->ptMaxPosition.y = availableGeometry.y();
+            if (!m_data.flags.testFlag(Qt::FramelessWindowHint)) {
+                const int borderWidth = getBorderWidth(screen->handle());
+                mmi->ptMaxSize.x += borderWidth * 2;
+                mmi->ptMaxSize.y += borderWidth * 2;
+                mmi->ptMaxTrackSize = mmi->ptMaxSize;
+                mmi->ptMaxPosition.x -= borderWidth;
+                mmi->ptMaxPosition.y -= borderWidth;
+            }
         } else if (!screen){
             qWarning("window()->screen() returned a null screen");
         }

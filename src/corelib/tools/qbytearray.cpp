@@ -2655,10 +2655,7 @@ QList<QByteArray> QByteArray::split(char sep) const
 
     Example:
 
-    \code
-        QByteArray ba("ab");
-        ba.repeated(4);             // returns "abababab"
-    \endcode
+    \snippet code/src_corelib_tools_qbytearray.cpp 49
 */
 QByteArray QByteArray::repeated(int times) const
 {
@@ -4730,11 +4727,7 @@ QByteArray QByteArray::toHex() const
     If \a separator is not '\0', the separator character is inserted between the hex bytes.
 
     Example:
-    \code
-        QByteArray macAddress = QByteArray::fromHex("123456abcdef");
-        macAddress.toHex(':'); // returns "12:34:56:ab:cd:ef"
-        macAddress.toHex(0);   // returns "123456abcdef"
-    \endcode
+    \snippet code/src_corelib_tools_qbytearray.cpp 50
 
     \sa fromHex()
 */
@@ -4810,10 +4803,7 @@ void q_fromPercentEncoding(QByteArray *ba)
     another (for instance, '_' or '=').
 
     For example:
-    \code
-        QByteArray text = QByteArray::fromPercentEncoding("Qt%20is%20great%33");
-        text.data();            // returns "Qt is great!"
-    \endcode
+    \snippet code/src_corelib_tools_qbytearray.cpp 51
 
     \note Given invalid input (such as a string containing the sequence "%G5",
     which is not a valid hexadecimal number) the output will be invalid as
@@ -4935,12 +4925,7 @@ void q_normalizePercentEncoding(QByteArray *ba, const char *exclude)
 
     Example:
 
-    \code
-         QByteArray text = "{a fishy string?}";
-         QByteArray ba = text.toPercentEncoding("{}", "s");
-         qDebug(ba.constData());
-         // prints "{a fi%73hy %73tring%3F}"
-    \endcode
+    \snippet code/src_corelib_tools_qbytearray.cpp 52
 
     The hex encoding uses the numbers 0-9 and the uppercase letters A-F.
 
@@ -5058,9 +5043,7 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 
     For instance:
 
-    \code
-    QByteArray ba = QByteArrayLiteral("byte array contents");
-    \endcode
+    \snippet code/src_corelib_tools_qbytearray.cpp 53
 
     Using QByteArrayLiteral instead of a double quoted plain C++ string literal
     can significantly speed up creation of QByteArray instances from data known

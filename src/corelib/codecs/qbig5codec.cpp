@@ -41,7 +41,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_BIG_CODECS
 static int qt_Big5hkscsToUnicode(const uchar *s, uint *pwc);
 static int qt_UnicodeToBig5hkscs(uint wc, uchar *r);
 
@@ -12661,6 +12660,5 @@ int qt_UnicodeToBig5hkscs (uint wc, uchar *r)
 
 
 /* ====================================================================== */
-#endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE

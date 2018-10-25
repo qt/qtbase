@@ -3750,7 +3750,9 @@ QDataStream &operator>>(QDataStream &s, QImage &image)
             return s;
         }
     }
-    image = QImageReader(s.device(), 0).read();
+    image = QImageReader(s.device(), s.version() == 1 ? "bmp" : "png").read();
+    if (image.isNull() && s.version() >= 5)
+        s.setStatus(QDataStream::ReadPastEnd);
     return s;
 }
 #endif // QT_NO_DATASTREAM

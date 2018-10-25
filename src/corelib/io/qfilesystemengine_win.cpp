@@ -204,10 +204,12 @@ GlobalSid::GlobalSid()
                 ::GetTokenInformation(token, TokenUser, 0, 0, &retsize);
                 if (retsize) {
                     void *tokenBuffer = malloc(retsize);
+                    Q_CHECK_PTR(tokenBuffer);
                     if (::GetTokenInformation(token, TokenUser, tokenBuffer, retsize, &retsize)) {
                         PSID tokenSid = reinterpret_cast<PTOKEN_USER>(tokenBuffer)->User.Sid;
                         DWORD sidLen = ::GetLengthSid(tokenSid);
                         currentUserSID = reinterpret_cast<PSID>(malloc(sidLen));
+                        Q_CHECK_PTR(currentUserSID);
                         if (::CopySid(sidLen, currentUserSID, tokenSid))
                             BuildTrusteeWithSid(&currentUserTrusteeW, currentUserSID);
                     }
@@ -294,6 +296,7 @@ static QString readSymLink(const QFileSystemEntry &link)
     if (handle != INVALID_HANDLE_VALUE) {
         DWORD bufsize = MAXIMUM_REPARSE_DATA_BUFFER_SIZE;
         REPARSE_DATA_BUFFER *rdb = (REPARSE_DATA_BUFFER*)malloc(bufsize);
+        Q_CHECK_PTR(rdb);
         DWORD retsize = 0;
         if (::DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT, 0, 0, rdb, bufsize, &retsize, 0)) {
             if (rdb->ReparseTag == IO_REPARSE_TAG_MOUNT_POINT) {

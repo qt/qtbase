@@ -83,6 +83,8 @@ quint64 spiStatesFromQState(QAccessible::State state)
     //        if (state.HotTracked)
     if (state.defaultButton)
         setSpiStateBit(&spiState, ATSPI_STATE_IS_DEFAULT);
+    if (state.expandable)
+        setSpiStateBit(&spiState, ATSPI_STATE_EXPANDABLE);
     if (state.expanded)
         setSpiStateBit(&spiState, ATSPI_STATE_EXPANDED);
     if (state.collapsed)

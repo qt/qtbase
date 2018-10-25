@@ -140,3 +140,7 @@ QFileDialog dialog(this);
 dialog.setMimeTypeFilters(mimeTypeFilters);
 dialog.exec();
 //! [13]
+
+//! [14]
+"Images (*.png *.xpm *.jpg);;Text files (*.txt);;XML files (*.xml)"
+//! [14]

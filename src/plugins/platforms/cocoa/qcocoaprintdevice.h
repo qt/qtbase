@@ -98,7 +98,9 @@ protected:
     void loadOutputBins() const override;
     void loadDuplexModes() const override;
     void loadColorModes() const override;
+#if QT_CONFIG(mimetype)
     void loadMimeTypes() const override;
+#endif
 
 private:
     QPageSize createPageSize(const PMPaper &paper) const;

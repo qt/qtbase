@@ -75,8 +75,9 @@ QPalette * qt_mac_createSystemPalette()
     palette->setBrush(QPalette::Disabled, QPalette::Text, dark);
     palette->setBrush(QPalette::Disabled, QPalette::ButtonText, dark);
     palette->setBrush(QPalette::Disabled, QPalette::Base, backgroundBrush);
-    palette->setBrush(QPalette::Active, QPalette::Base, backgroundBrush);
-    palette->setBrush(QPalette::Inactive, QPalette::Base, backgroundBrush);
+    QBrush textBackgroundBrush = qt_mac_toQBrush([NSColor textBackgroundColor]);
+    palette->setBrush(QPalette::Active, QPalette::Base, textBackgroundBrush);
+    palette->setBrush(QPalette::Inactive, QPalette::Base, textBackgroundBrush);
     palette->setColor(QPalette::Disabled, QPalette::Dark, QColor(191, 191, 191));
     palette->setColor(QPalette::Active, QPalette::Dark, QColor(191, 191, 191));
     palette->setColor(QPalette::Inactive, QPalette::Dark, QColor(191, 191, 191));
@@ -202,7 +203,7 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
                              qt_mac_toQBrush([NSColor unemphasizedSelectedTextColor]));
             } else {
                 baseColors = [NSColor controlAlternatingRowBackgroundColors];
-                activeHighlightColor = [NSColor selectedControlColor];
+                activeHighlightColor = [NSColor alternateSelectedControlColor];
                 pal.setBrush(QPalette::Inactive, QPalette::HighlightedText,
                              pal.brush(QPalette::Active, QPalette::Text));
             }

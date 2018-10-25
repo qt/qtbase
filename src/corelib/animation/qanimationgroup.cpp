@@ -86,8 +86,6 @@
 #include <QtCore/qcoreevent.h>
 #include "qanimationgroup_p.h"
 
-#ifndef QT_NO_ANIMATION
-
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
@@ -300,5 +298,3 @@ void QAnimationGroupPrivate::animationRemoved(int index, QAbstractAnimation *)
 QT_END_NAMESPACE
 
 #include "moc_qanimationgroup.cpp"
-
-#endif //QT_NO_ANIMATION

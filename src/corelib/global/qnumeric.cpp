@@ -130,12 +130,7 @@ static inline quint32 f2i(float f)
     two 32-bit floating point numbers and all you need is an approximated 24-bit precision, you can
     use this function like this:
 
-    \code
-    if (qFloatDistance(a, b) < (1 << 7)) {   // The last 7 bits are not
-                                            // significant
-        // precise enough
-    }
-    \endcode
+    \snippet code/src_corelib_global_qnumeric.cpp 0
 
     \sa qFuzzyCompare()
     \since 5.2

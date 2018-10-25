@@ -37,6 +37,9 @@ ExprDef *
 ExprCreateInteger(int ival);
 
 ExprDef *
+ExprCreateFloat(void);
+
+ExprDef *
 ExprCreateBoolean(bool set);
 
 ExprDef *

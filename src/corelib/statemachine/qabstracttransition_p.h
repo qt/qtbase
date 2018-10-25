@@ -85,7 +85,7 @@ public:
     QVector<QPointer<QAbstractState> > targetStates;
     QAbstractTransition::TransitionType transitionType;
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     QList<QAbstractAnimation*> animations;
 #endif
 };

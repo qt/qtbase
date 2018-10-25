@@ -973,7 +973,7 @@ void QAccessibleTableCell::unselectCell()
 {
 
     QAbstractItemView::SelectionMode selectionMode = view->selectionMode();
-    if (!m_index.isValid() || (selectionMode & QAbstractItemView::NoSelection))
+    if (!m_index.isValid() || (selectionMode == QAbstractItemView::NoSelection))
         return;
 
     QAccessibleTableInterface *cellTable = table()->tableInterface();

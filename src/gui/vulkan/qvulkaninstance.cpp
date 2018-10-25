@@ -97,22 +97,7 @@ QT_BEGIN_NAMESPACE
     calling QWindow::setVulkanInstance(). Thus a typical application pattern is
     the following:
 
-    \code
-    int main(int argc, char **argv)
-    {
-        QGuiApplication app(argc, argv);
-
-        QVulkanInstance inst;
-        if (!inst.create())
-            return 1;
-
-        ...
-        window->setVulkanInstance(&inst);
-        window->show();
-
-        return app.exec();
-    }
-    \endcode
+    \snippet code/src_gui_vulkan_qvulkaninstance.cpp 0
 
     \section1 Configuration
 
@@ -138,31 +123,12 @@ QT_BEGIN_NAMESPACE
     For example, to enable the standard validation layers, one could do the
     following:
 
-    \code
-        QVulkanInstance inst;
-
-        // Enable validation layer, if supported. Messages go to qDebug by default.
-        inst.setLayers(QByteArrayList() << "VK_LAYER_LUNARG_standard_validation");
-
-        bool ok = inst.create();
-        if (!ok)
-            ... // Vulkan not available
-        if (!inst.layers().contains("VK_LAYER_LUNARG_standard_validation"))
-            ... // validation layer not available
-    \endcode
+    \snippet code/src_gui_vulkan_qvulkaninstance.cpp 1
 
     Or, alternatively, to make decisions before attempting to create a Vulkan
     instance:
 
-    \code
-        QVulkanInstance inst;
-
-        if (inst.supportedLayers().contains("VK_LAYER_LUNARG_standard_validation"))
-            ...
-
-        bool ok = inst.create();
-        ...
-    \endcode
+    \snippet code/src_gui_vulkan_qvulkaninstance.cpp 2
 
     \section1 Adopting an Existing Instance
 
@@ -229,62 +195,7 @@ QT_BEGIN_NAMESPACE
 
     The following is the basic outline of creating a Vulkan-capable QWindow:
 
-    \code
-    class VulkanWindow : public QWindow
-    {
-    public:
-        VulkanWindow() {
-            setSurfaceType(VulkanSurface);
-        }
-
-        void exposeEvent(QExposeEvent *) {
-            if (isExposed()) {
-                if (!m_initialized) {
-                    m_initialized = true;
-                    // initialize device, swapchain, etc.
-                    QVulkanInstance *inst = vulkanInstance();
-                    QVulkanFunctions *f = inst->functions();
-                    uint32_t devCount = 0;
-                    f->vkEnumeratePhysicalDevices(inst->vkInstance(), &devCount, nullptr);
-                    ...
-                    // build the first frame
-                    render();
-                }
-            }
-        }
-
-        bool event(QEvent *e) {
-            if (e->type == QEvent::UpdateRequest)
-                render();
-            return QWindow::event(e);
-        }
-
-        void render() {
-           ...
-           requestUpdate(); // render continuously
-        }
-
-    private:
-        bool m_initialized = false;
-    };
-
-    int main(int argc, char **argv)
-    {
-        QGuiApplication app(argc, argv);
-
-        QVulkanInstance inst;
-        if (!inst.create()) {
-            qWarning("Vulkan not available");
-            return 1;
-        }
-
-        VulkanWindow window;
-        window.showMaximized();
-
-        return app.exec();
-
-    }
-    \endcode
+    \snippet code/src_gui_vulkan_qvulkaninstance.cpp 3
 
     \note In addition to expose, a well-behaving window implementation will
     also have to take care of additional events like resize and

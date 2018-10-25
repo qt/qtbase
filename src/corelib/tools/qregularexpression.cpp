@@ -1560,15 +1560,11 @@ int QRegularExpression::captureCount() const
 
     For instance, given the regular expression
 
-    \code
-        (?<day>\d\d)-(?<month>\d\d)-(?<year>\d\d\d\d) (\w+) (?<name>\w+)
-    \endcode
+    \snippet code/src_corelib_tools_qregularexpression.cpp 32
 
     namedCaptureGroups() will return the following list:
 
-    \code
-        ("", "day", "month", "year", "", "name")
-    \endcode
+    \snippet code/src_corelib_tools_qregularexpression.cpp 33
 
     which corresponds to the fact that the capturing group #0 (corresponding to
     the whole match) has no name, the capturing group #1 has name "day", the

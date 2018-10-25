@@ -1,8 +1,8 @@
 INCLUDEPATH += $$PWD
 
-qtHaveModule(opengl)|qtConfig(opengles2)  {
-    DEFINES += QT_OPENGL_SUPPORT
-    QT += opengl widgets
+qtConfig(opengl) {
+    SOURCES += $$PWD/fbopaintdevice.cpp
+    HEADERS += $$PWD/fbopaintdevice.h
 }
 
 SOURCES += \

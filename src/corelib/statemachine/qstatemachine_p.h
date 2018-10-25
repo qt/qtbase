@@ -297,7 +297,7 @@ public:
     void initializeAnimations(QAbstractState *state, const QList<QAbstractAnimation*> &selectedAnimations,
                               const QList<QAbstractState *> &exitedStates_sorted,
                               QHash<QAbstractState *, QVector<QPropertyAssignment> > &assignmentsForEnteredStates);
-#endif // QT_NO_ANIMATION
+#endif // animation
 
     QSignalEventGenerator *signalEventGenerator;
 

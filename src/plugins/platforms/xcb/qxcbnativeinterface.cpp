@@ -437,20 +437,20 @@ void QXcbNativeInterface::setAppUserTime(QScreen* screen, xcb_timestamp_t time)
 qint32 QXcbNativeInterface::generatePeekerId()
 {
     QXcbIntegration *integration = QXcbIntegration::instance();
-    return integration->defaultConnection()->generatePeekerId();
+    return integration->defaultConnection()->eventQueue()->generatePeekerId();
 }
 
 bool QXcbNativeInterface::removePeekerId(qint32 peekerId)
 {
     QXcbIntegration *integration = QXcbIntegration::instance();
-    return integration->defaultConnection()->removePeekerId(peekerId);
+    return integration->defaultConnection()->eventQueue()->removePeekerId(peekerId);
 }
 
-bool QXcbNativeInterface::peekEventQueue(QXcbConnection::PeekerCallback peeker, void *peekerData,
-                                         QXcbConnection::PeekOptions option, qint32 peekerId)
+bool QXcbNativeInterface::peekEventQueue(QXcbEventQueue::PeekerCallback peeker, void *peekerData,
+                                         QXcbEventQueue::PeekOptions option, qint32 peekerId)
 {
     QXcbIntegration *integration = QXcbIntegration::instance();
-    return integration->defaultConnection()->peekEventQueue(peeker, peekerData, option, peekerId);
+    return integration->defaultConnection()->eventQueue()->peekEventQueue(peeker, peekerData, option, peekerId);
 }
 
 void QXcbNativeInterface::setStartupId(const char *data)

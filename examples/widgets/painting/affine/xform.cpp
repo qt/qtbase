@@ -830,13 +830,11 @@ XFormWidget::XFormWidget(QWidget *parent)
 
     QPushButton *showSourceButton = new QPushButton(mainGroup);
     showSourceButton->setText(tr("Show Source"));
-#ifdef QT_OPENGL_SUPPORT
+#if QT_CONFIG(opengl)
     QPushButton *enableOpenGLButton = new QPushButton(mainGroup);
     enableOpenGLButton->setText(tr("Use OpenGL"));
     enableOpenGLButton->setCheckable(true);
     enableOpenGLButton->setChecked(view->usesOpenGL());
-    if (!QGLFormat::hasOpenGL())
-        enableOpenGLButton->hide();
 #endif
     QPushButton *whatsThisButton = new QPushButton(mainGroup);
     whatsThisButton->setText(tr("What's This?"));
@@ -871,7 +869,7 @@ XFormWidget::XFormWidget(QWidget *parent)
     mainGroupLayout->addWidget(resetButton);
     mainGroupLayout->addWidget(animateButton);
     mainGroupLayout->addWidget(showSourceButton);
-#ifdef QT_OPENGL_SUPPORT
+#if QT_CONFIG(opengl)
     mainGroupLayout->addWidget(enableOpenGLButton);
 #endif
     mainGroupLayout->addWidget(whatsThisButton);
@@ -897,7 +895,7 @@ XFormWidget::XFormWidget(QWidget *parent)
     connect(view, &XFormView::descriptionEnabledChanged, view->hoverPoints(), &HoverPoints::setDisabled);
     connect(view, &XFormView::descriptionEnabledChanged, whatsThisButton, &QPushButton::setChecked);
     connect(showSourceButton, &QPushButton::clicked, view, &XFormView::showSource);
-#ifdef QT_OPENGL_SUPPORT
+#if QT_CONFIG(opengl)
     connect(enableOpenGLButton, &QPushButton::clicked, view, &XFormView::enableOpenGL);
 #endif
     view->loadSourceFile(":res/affine/xform.cpp");

@@ -794,7 +794,7 @@ void QXcbDrag::handlePosition(QPlatformWindow * w, const xcb_client_message_even
 {
     xcb_client_message_event_t *lastEvent = const_cast<xcb_client_message_event_t *>(event);
     ClientMessageScanner scanner(atom(QXcbAtom::XdndPosition));
-    while (auto nextEvent = connection()->checkEvent(scanner)) {
+    while (auto nextEvent = connection()->eventQueue()->peek(scanner)) {
         if (lastEvent != event)
             free(lastEvent);
         lastEvent = reinterpret_cast<xcb_client_message_event_t *>(nextEvent);
@@ -846,7 +846,7 @@ void QXcbDrag::handleStatus(const xcb_client_message_event_t *event)
     xcb_client_message_event_t *lastEvent = const_cast<xcb_client_message_event_t *>(event);
     xcb_generic_event_t *nextEvent;
     ClientMessageScanner scanner(atom(QXcbAtom::XdndStatus));
-    while ((nextEvent = connection()->checkEvent(scanner))) {
+    while ((nextEvent = connection()->eventQueue()->peek(scanner))) {
         if (lastEvent != event)
             free(lastEvent);
         lastEvent = (xcb_client_message_event_t *)nextEvent;

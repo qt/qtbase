@@ -59,7 +59,9 @@
 #include <stdlib.h>
 #include <qsettings.h>
 #include <qdebug.h>
+#if QT_CONFIG(mimetype)
 #include <qmimedatabase.h>
+#endif
 #include <qapplication.h>
 #include <qstylepainter.h>
 #include "ui_qfiledialog.h"
@@ -1518,7 +1520,7 @@ void QFileDialog::setFilter(QDir::Filters filters)
     d->showHiddenAction->setChecked((filters & QDir::Hidden));
 }
 
-#ifndef QT_NO_MIMETYPE
+#if QT_CONFIG(mimetype)
 
 static QString nameFilterForMime(const QString &mimeType)
 {
@@ -1599,7 +1601,7 @@ void QFileDialog::selectMimeTypeFilter(const QString &filter)
     }
 }
 
-#endif // QT_NO_MIMETYPE
+#endif // mimetype
 
 /*!
  * \since 5.9
@@ -1612,7 +1614,7 @@ QString QFileDialog::selectedMimeTypeFilter() const
     if (!d->usingWidgets())
         mimeTypeFilter = d->selectedMimeTypeFilter_sys();
 
-#ifndef QT_NO_MIMETYPE
+#if QT_CONFIG(mimetype)
     if (mimeTypeFilter.isNull() && !d->options->mimeTypeFilters().isEmpty()) {
         const auto nameFilter = selectedNameFilter();
         const auto mimeTypes = d->options->mimeTypeFilters();
@@ -2109,9 +2111,7 @@ QString QFileDialog::labelText(DialogLabel label) const
     strings. If you want multiple filters, separate them with ';;', for
     example:
 
-    \code
-    "Images (*.png *.xpm *.jpg);;Text files (*.txt);;XML files (*.xml)"
-    \endcode
+    \snippet code/src_gui_dialogs_qfiledialog.cpp 14
 
     The \a options argument holds various options about how to run the dialog,
     see the QFileDialog::Option enum for more information on the flags you can
@@ -2224,9 +2224,7 @@ QUrl QFileDialog::getOpenFileUrl(QWidget *parent,
     \a selectedFilter and \a filter may be empty strings. If you need multiple
     filters, separate them with ';;', for instance:
 
-    \code
-    "Images (*.png *.xpm *.jpg);;Text files (*.txt);;XML files (*.xml)"
-    \endcode
+    \snippet code/src_gui_dialogs_qfiledialog.cpp 14
 
     The dialog's caption is set to \a caption. If \a caption is not specified
     then a default caption will be used.
@@ -2340,9 +2338,7 @@ QList<QUrl> QFileDialog::getOpenFileUrls(QWidget *parent,
     parameters \a dir, \a selectedFilter, and \a filter may be empty strings.
     Multiple filters are separated with ';;'. For instance:
 
-    \code
-    "Images (*.png *.xpm *.jpg);;Text files (*.txt);;XML files (*.xml)"
-    \endcode
+    \snippet code/src_gui_dialogs_qfiledialog.cpp 14
 
     The \a options argument holds various options about how to run the dialog,
     see the QFileDialog::Option enum for more information on the flags you can
@@ -3037,7 +3033,7 @@ void QFileDialogPrivate::createWidgets()
     if (!options->sidebarUrls().isEmpty())
         q->setSidebarUrls(options->sidebarUrls());
     q->setDirectoryUrl(options->initialDirectory());
-#ifndef QT_NO_MIMETYPE
+#if QT_CONFIG(mimetype)
     if (!options->mimeTypeFilters().isEmpty())
         q->setMimeTypeFilters(options->mimeTypeFilters());
     else

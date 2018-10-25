@@ -2476,7 +2476,7 @@ QDataStream &operator>>(QDataStream &s, QPainterPath &p)
     s >> p.d_func()->cStart;
     int fillRule;
     s >> fillRule;
-    Q_ASSERT(fillRule == Qt::OddEvenFill || Qt::WindingFill);
+    Q_ASSERT(fillRule == Qt::OddEvenFill || fillRule == Qt::WindingFill);
     p.d_func()->fillRule = Qt::FillRule(fillRule);
     p.d_func()->dirtyBounds = true;
     p.d_func()->dirtyControlBounds = true;

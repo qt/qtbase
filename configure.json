@@ -582,7 +582,7 @@
         "shared": {
             "label": "Building shared libraries",
             "autoDetect": "!config.uikit",
-            "condition": "!config.integrity",
+            "condition": "!config.integrity && !config.wasm",
             "output": [
                 "shared",
                 "publicFeature",
@@ -1119,6 +1119,7 @@
             "label": "Thread support",
             "purpose": "Provides QThread and related classes.",
             "section": "Kernel",
+            "condition": "!config.wasm",
             "output": [ "publicFeature" ]
         },
         "future": {

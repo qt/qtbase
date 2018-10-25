@@ -170,11 +170,17 @@ void QPdfWriter::setPdfVersion(PdfVersion version)
 {
     Q_D(QPdfWriter);
 
+    static const QHash<QPdfWriter::PdfVersion, QPdfEngine::PdfVersion> engineMapping {
+        {QPdfWriter::PdfVersion_1_4, QPdfEngine::Version_1_4},
+        {QPdfWriter::PdfVersion_A1b, QPdfEngine::Version_A1b},
+        {QPdfWriter::PdfVersion_1_6, QPdfEngine::Version_1_6}
+    };
+
     if (d->pdfVersion == version)
         return;
 
     d->pdfVersion = version;
-    d->engine->setPdfVersion(d->pdfVersion == QPdfWriter::PdfVersion_1_4 ? QPdfEngine::Version_1_4 : QPdfEngine::Version_A1b);
+    d->engine->setPdfVersion(engineMapping.value(version, QPdfEngine::Version_1_4));
 }
 
 /*!

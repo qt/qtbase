@@ -207,6 +207,15 @@ QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
     \sa hasPendingEvents()
 */
 
+/*!
+    \internal
+
+    \note processEvents() only processes events queued before the function
+    is called. Events that are posted while the function runs will be queued
+    until a later round of event processing. This only applies to posted Qt
+    events. For timers and system level events, the situation is unknown.
+*/
+
 /*! \fn bool QAbstractEventDispatcher::hasPendingEvents()
     \deprecated
 

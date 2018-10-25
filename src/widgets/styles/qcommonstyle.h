@@ -97,7 +97,7 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QCommonStyle)
     Q_DISABLE_COPY(QCommonStyle)
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     Q_PRIVATE_SLOT(d_func(), void _q_removeAnimation())
 #endif
 };

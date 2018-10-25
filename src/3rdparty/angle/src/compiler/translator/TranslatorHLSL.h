@@ -9,26 +9,33 @@
 
 #include "compiler/translator/Compiler.h"
 
+namespace sh
+{
+
 class TranslatorHLSL : public TCompiler
 {
   public:
     TranslatorHLSL(sh::GLenum type, ShShaderSpec spec, ShShaderOutput output);
     TranslatorHLSL *getAsTranslatorHLSL() override { return this; }
 
-    bool hasInterfaceBlock(const std::string &interfaceBlockName) const;
-    unsigned int getInterfaceBlockRegister(const std::string &interfaceBlockName) const;
+    bool hasUniformBlock(const std::string &interfaceBlockName) const;
+    unsigned int getUniformBlockRegister(const std::string &interfaceBlockName) const;
 
-    bool hasUniform(const std::string &uniformName) const;
-    unsigned int getUniformRegister(const std::string &uniformName) const;
+    const std::map<std::string, unsigned int> *getUniformRegisterMap() const;
 
   protected:
-    void translate(TIntermNode *root, int compileOptions) override;
+    void translate(TIntermBlock *root,
+                   ShCompileOptions compileOptions,
+                   PerformanceDiagnostics *perfDiagnostics) override;
+    bool shouldFlattenPragmaStdglInvariantAll() override;
 
     // collectVariables needs to be run always so registers can be assigned.
-    bool shouldCollectVariables(int compileOptions) override { return true; }
+    bool shouldCollectVariables(ShCompileOptions compileOptions) override { return true; }
 
-    std::map<std::string, unsigned int> mInterfaceBlockRegisterMap;
+    std::map<std::string, unsigned int> mUniformBlockRegisterMap;
     std::map<std::string, unsigned int> mUniformRegisterMap;
 };
+
+}  // namespace sh
 
 #endif  // COMPILER_TRANSLATOR_TRANSLATORHLSL_H_

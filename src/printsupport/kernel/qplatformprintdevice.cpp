@@ -60,7 +60,7 @@ QPlatformPrintDevice::QPlatformPrintDevice(const QString &id)
       m_haveOutputBins(false),
       m_haveDuplexModes(false),
       m_haveColorModes(false)
-#ifndef QT_NO_MIMETYPE
+#if QT_CONFIG(mimetype)
     , m_haveMimeTypes(false)
 #endif
 {
@@ -353,10 +353,11 @@ QVector<QPrint::ColorMode> QPlatformPrintDevice::supportedColorModes() const
     return m_colorModes;
 }
 
-#ifndef QT_NO_MIMETYPE
+#if QT_CONFIG(mimetype)
 void QPlatformPrintDevice::loadMimeTypes() const
 {
 }
+#endif // mimetype
 
 QVariant QPlatformPrintDevice::property(QPrintDevice::PrintDevicePropertyKey key) const
 {
@@ -381,13 +382,14 @@ bool QPlatformPrintDevice::isFeatureAvailable(QPrintDevice::PrintDevicePropertyK
     return false;
 }
 
+#if QT_CONFIG(mimetype)
 QList<QMimeType> QPlatformPrintDevice::supportedMimeTypes() const
 {
     if (!m_haveMimeTypes)
         loadMimeTypes();
     return m_mimeTypes;
 }
-#endif // QT_NO_MIMETYPE
+#endif // mimetype
 
 QPageSize QPlatformPrintDevice::createPageSize(const QString &key, const QSize &size, const QString &localizedName)
 {

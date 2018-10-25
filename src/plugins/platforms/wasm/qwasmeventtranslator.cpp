@@ -50,7 +50,7 @@ using namespace emscripten;
 // the existing switching code in QtGui, but for now do it here.
 static bool g_usePlatformMacCtrlMetaSwitching = false;
 
-bool g_useNaturalScrolling = false;
+bool g_useNaturalScrolling = true; // natural scrolling is default on linux/windows
 
 void setNaturalScrolling(bool use) {
     g_useNaturalScrolling = use;
@@ -98,7 +98,7 @@ QWasmEventTranslator::QWasmEventTranslator(QObject *parent)
     g_usePlatformMacCtrlMetaSwitching = (platform == MacOSPlatform);
 
     if (platform == MacOSPlatform) {
-        g_useNaturalScrolling = true; //make this default on macOS
+        g_useNaturalScrolling = false; // make this !default on macOS
         EM_ASM(
             if (window.safari !== undefined)  {//this only works on safari
                 Module["canvas"].addEventListener('wheel', mouseWheelEvent);
@@ -492,6 +492,9 @@ int QWasmEventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *wh
     if (wheelEvent->deltaX != 0) pixelDelta.setX(wheelEvent->deltaX * scrollFactor);
 
     QWindowSystemInterface::handleWheelEvent(window2, timestamp, localPoint, globalPoint, QPoint(), pixelDelta, modifiers);
+
+    QWasmEventDispatcher::maintainTimers();
+
     return 1;
 }
 

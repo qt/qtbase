@@ -94,7 +94,8 @@ QT_BEGIN_NAMESPACE
     Data interchange with other users is out of the scope of QStandardPaths.
 
     \value DesktopLocation Returns the user's desktop directory. This is a generic value.
-           On systems with no concept of a desktop.
+           On systems with no concept of a desktop, this is the same as
+           QStandardPaths::HomeLocation.
     \value DocumentsLocation Returns the directory containing user document files.
            This is a generic value. The returned path is never empty.
     \value FontsLocation Returns the directory containing user's fonts. This is a generic value.

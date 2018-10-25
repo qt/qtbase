@@ -95,6 +95,7 @@ enum expr_value_type {
     EXPR_TYPE_UNKNOWN = 0,
     EXPR_TYPE_BOOLEAN,
     EXPR_TYPE_INT,
+    EXPR_TYPE_FLOAT,
     EXPR_TYPE_STRING,
     EXPR_TYPE_ACTION,
     EXPR_TYPE_KEYNAME,
@@ -185,6 +186,12 @@ typedef struct {
     ExprCommon expr;
     int ival;
 } ExprInteger;
+
+typedef struct {
+    ExprCommon expr;
+    /* We don't support floats, but we still represnt them in the AST, in
+     * order to provide proper error messages. */
+} ExprFloat;
 
 typedef struct {
     ExprCommon expr;
@@ -338,7 +345,6 @@ enum xkb_map_flags {
 typedef struct {
     ParseCommon common;
     enum xkb_file_type file_type;
-    char *topName;
     char *name;
     ParseCommon *defs;
     enum xkb_map_flags flags;

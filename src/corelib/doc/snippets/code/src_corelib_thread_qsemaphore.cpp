@@ -81,3 +81,32 @@ QSemaphore sem(5);            // sem.available() == 5
 sem.tryAcquire(250, 1000);    // sem.available() == 5, waits 1000 milliseconds and returns false
 sem.tryAcquire(3, 30000);     // sem.available() == 2, returns true without waiting
 //! [3]
+
+//! [4]
+// ... do something that may throw or return early
+sem.release();
+//! [4]
+
+//! [5]
+const QSemaphoreReleaser releaser(sem);
+// ... do something that may throw or early return
+// implicitly calls sem.release() here and at every other return in between
+//! [5]
+
+//! [6]
+{ // some scope
+    QSemaphoreReleaser releaser; // does nothing
+    // ...
+    if (someCondition) {
+        releaser = QSemaphoreReleaser(sem);
+        // ...
+    }
+    // ...
+} // conditionally calls sem.release(), depending on someCondition
+//! [6]
+
+//! [7]
+releaser.cancel(); // avoid releasing old semaphore()
+releaser = QSemaphoreReleaser(sem, 42);
+// now will call sem.release(42) when 'releaser' is destroyed
+//! [7]

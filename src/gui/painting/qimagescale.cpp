@@ -239,7 +239,6 @@ static QImageScaleInfo* QImageScale::qimageCalcScaleInfo(const QImage &img,
     isi = new QImageScaleInfo;
     if (!isi)
         return 0;
-    memset(isi, 0, sizeof(QImageScaleInfo));
 
     isi->xup_yup = (qAbs(dw) >= sw) + ((qAbs(dh) >= sh) << 1);
 

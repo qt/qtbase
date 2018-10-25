@@ -247,8 +247,12 @@ bool Uic::write(DomUI *ui)
     }
 
     pixFunction = ui->elementPixmapFunction();
-    if (pixFunction == QLatin1String("QPixmap::fromMimeSource"))
-        pixFunction = QLatin1String("qPixmapFromMimeSource");
+    if (pixFunction == QLatin1String("QPixmap::fromMimeSource")
+        || pixFunction == QLatin1String("qPixmapFromMimeSource")) {
+        fprintf(stderr, "%s: Warning: Obsolete pixmap function '%s' specified in the UI file.\n",
+                qPrintable(opt.messagePrefix()), qPrintable(pixFunction));
+        pixFunction.clear();
+    }
 
     info.acceptUI(ui);
     cWidgetsInfo.acceptUI(ui);

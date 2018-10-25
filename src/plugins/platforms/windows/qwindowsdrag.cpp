@@ -652,6 +652,7 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
 */
 
 bool QWindowsDrag::m_canceled = false;
+bool QWindowsDrag::m_dragging = false;
 
 QWindowsDrag::QWindowsDrag() = default;
 
@@ -699,7 +700,10 @@ Qt::DropAction QWindowsDrag::drag(QDrag *drag)
     const DWORD allowedEffects = translateToWinDragEffects(possibleActions);
     qCDebug(lcQpaMime) << '>' << __FUNCTION__ << "possible Actions=0x"
         << hex << int(possibleActions) << "effects=0x" << allowedEffects << dec;
+    // Indicate message handlers we are in DoDragDrop() event loop.
+    QWindowsDrag::m_dragging = true;
     const HRESULT r = DoDragDrop(dropDataObject, windowDropSource, allowedEffects, &resultEffect);
+    QWindowsDrag::m_dragging = false;
     const DWORD  reportedPerformedEffect = dropDataObject->reportedPerformedEffect();
     if (r == DRAGDROP_S_DROP) {
         if (reportedPerformedEffect == DROPEFFECT_MOVE && resultEffect != DROPEFFECT_MOVE) {

@@ -53,7 +53,7 @@
 
 #include "qmimemagicrule_p.h"
 
-#ifndef QT_NO_MIMETYPE
+QT_REQUIRE_CONFIG(mimetype);
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qlist.h>
@@ -94,5 +94,4 @@ Q_DECLARE_SHARED(QMimeMagicRuleMatcher)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_MIMETYPE
 #endif // QMIMEMAGICRULEMATCHER_P_H

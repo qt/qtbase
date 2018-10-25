@@ -57,6 +57,11 @@
 #include <QMouseEvent>
 #include <qmath.h>
 
+#if QT_CONFIG(opengl)
+#include <QOpenGLFunctions>
+#include <QOpenGLWindow>
+#endif
+
 const int animationInterval = 15; // update every 16 ms = ~60FPS
 
 CompositionWidget::CompositionWidget(QWidget *parent)
@@ -136,14 +141,11 @@ CompositionWidget::CompositionWidget(QWidget *parent)
 
     QPushButton *showSourceButton = new QPushButton(mainGroup);
     showSourceButton->setText(tr("Show Source"));
-#if defined(USE_OPENGL) && !defined(QT_OPENGL_ES)
+#if QT_CONFIG(opengl)
     QPushButton *enableOpenGLButton = new QPushButton(mainGroup);
     enableOpenGLButton->setText(tr("Use OpenGL"));
     enableOpenGLButton->setCheckable(true);
     enableOpenGLButton->setChecked(view->usesOpenGL());
-
-    if (!QGLFormat::hasOpenGL() || !QGLPixelBuffer::hasOpenGLPbuffers())
-        enableOpenGLButton->hide();
 #endif
     QPushButton *whatsThisButton = new QPushButton(mainGroup);
     whatsThisButton->setText(tr("What's This?"));
@@ -166,7 +168,7 @@ CompositionWidget::CompositionWidget(QWidget *parent)
     mainGroupLayout->addWidget(animateButton);
     mainGroupLayout->addWidget(whatsThisButton);
     mainGroupLayout->addWidget(showSourceButton);
-#if defined(USE_OPENGL) && !defined(QT_OPENGL_ES)
+#if QT_CONFIG(opengl)
     mainGroupLayout->addWidget(enableOpenGLButton);
 #endif
 
@@ -210,7 +212,7 @@ CompositionWidget::CompositionWidget(QWidget *parent)
     connect(whatsThisButton, SIGNAL(clicked(bool)), view, SLOT(setDescriptionEnabled(bool)));
     connect(view, SIGNAL(descriptionEnabledChanged(bool)), whatsThisButton, SLOT(setChecked(bool)));
     connect(showSourceButton, SIGNAL(clicked()), view, SLOT(showSource()));
-#if defined(USE_OPENGL) && !defined(QT_OPENGL_ES)
+#if QT_CONFIG(opengl)
     connect(enableOpenGLButton, SIGNAL(clicked(bool)), view, SLOT(enableOpenGL(bool)));
 #endif
     connect(animateButton, SIGNAL(toggled(bool)), view, SLOT(setAnimationEnabled(bool)));
@@ -258,8 +260,7 @@ CompositionRenderer::CompositionRenderer(QWidget *parent)
     m_circle_pos = QPoint(200, 100);
 
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-#ifdef USE_OPENGL
-    m_pbuffer = 0;
+#if QT_CONFIG(opengl)
     m_pbuffer_size = 1024;
 #endif
 }
@@ -350,8 +351,11 @@ void CompositionRenderer::drawSource(QPainter &p)
 
 void CompositionRenderer::paint(QPainter *painter)
 {
-#if defined(USE_OPENGL) && !defined(QT_OPENGL_ES)
-    if (usesOpenGL()) {
+#if QT_CONFIG(opengl)
+    if (usesOpenGL() && glWindow()->isValid()) {
+
+        if (!m_blitter.isCreated())
+            m_blitter.create();
 
         int new_pbuf_size = m_pbuffer_size;
         if (size().width() > m_pbuffer_size || size().height() > m_pbuffer_size)
@@ -360,95 +364,46 @@ void CompositionRenderer::paint(QPainter *painter)
         if (size().width() < m_pbuffer_size/2 && size().height() < m_pbuffer_size/2)
             new_pbuf_size /= 2;
 
-        if (!m_pbuffer || new_pbuf_size != m_pbuffer_size) {
-            if (m_pbuffer) {
-                m_pbuffer->deleteTexture(m_base_tex);
-                m_pbuffer->deleteTexture(m_compositing_tex);
-                delete m_pbuffer;
-            }
-
-            m_pbuffer = new QGLPixelBuffer(QSize(new_pbuf_size, new_pbuf_size), QGLFormat::defaultFormat(), glWidget());
-            m_pbuffer->makeCurrent();
-            m_base_tex = m_pbuffer->generateDynamicTexture();
-            m_compositing_tex = m_pbuffer->generateDynamicTexture();
+        if (!m_fbo || new_pbuf_size != m_pbuffer_size) {
+            m_fbo.reset(new QFboPaintDevice(QSize(new_pbuf_size, new_pbuf_size), false, false));
             m_pbuffer_size = new_pbuf_size;
         }
 
         if (size() != m_previous_size) {
             m_previous_size = size();
-            QPainter p(m_pbuffer);
-            p.setCompositionMode(QPainter::CompositionMode_Source);
-            p.fillRect(QRect(0, 0, m_pbuffer->width(), m_pbuffer->height()), Qt::transparent);
+            QPainter p(m_fbo.data());
             drawBase(p);
             p.end();
-            m_pbuffer->updateDynamicTexture(m_base_tex);
+            m_base_tex = m_fbo->takeTexture();
         }
 
-        qreal x_fraction = width()/float(m_pbuffer->width());
-        qreal y_fraction = height()/float(m_pbuffer->height());
-
+        painter->beginNativePainting();
         {
-            QPainter p(m_pbuffer);
-            p.setCompositionMode(QPainter::CompositionMode_Source);
-            p.fillRect(QRect(0, 0, m_pbuffer->width(), m_pbuffer->height()), Qt::transparent);
-
-            p.save(); // Needed when using the GL1 engine
-            p.beginNativePainting(); // Needed when using the GL2 engine
-
-            glBindTexture(GL_TEXTURE_2D, m_base_tex);
-            glEnable(GL_TEXTURE_2D);
-            glColor4f(1.,1.,1.,1.);
-
-            glBegin(GL_QUADS);
-            {
-                glTexCoord2f(0, 1.0);
-                glVertex2f(0, 0);
-
-                glTexCoord2f(x_fraction, 1.0);
-                glVertex2f(width(), 0);
-
-                glTexCoord2f(x_fraction, 1.0-y_fraction);
-                glVertex2f(width(), height());
-
-                glTexCoord2f(0, 1.0-y_fraction);
-                glVertex2f(0, height());
-            }
-            glEnd();
-
-            glDisable(GL_TEXTURE_2D);
-
-            p.endNativePainting(); // Needed when using the GL2 engine
-            p.restore(); // Needed when using the GL1 engine
-
+            QPainter p(m_fbo.data());
+            p.beginNativePainting();
+            m_blitter.bind();
+            const QRect targetRect(QPoint(0, 0), m_fbo->size());
+            const QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, QRect(QPoint(0, 0), m_fbo->size()));
+            m_blitter.blit(m_base_tex, target, QOpenGLTextureBlitter::OriginBottomLeft);
+            m_blitter.release();
+            p.endNativePainting();
             drawSource(p);
             p.end();
-            m_pbuffer->updateDynamicTexture(m_compositing_tex);
+            m_compositing_tex = m_fbo->takeTexture();
         }
+        painter->endNativePainting();
 
-        painter->beginNativePainting(); // Needed when using the GL2 engine
-        glWidget()->makeCurrent(); // Needed when using the GL1 engine
-        glBindTexture(GL_TEXTURE_2D, m_compositing_tex);
-        glEnable(GL_TEXTURE_2D);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-        glColor4f(1.,1.,1.,1.);
-        glBegin(GL_QUADS);
-        {
-            glTexCoord2f(0, 1.0);
-            glVertex2f(0, 0);
-
-            glTexCoord2f(x_fraction, 1.0);
-            glVertex2f(width(), 0);
-
-            glTexCoord2f(x_fraction, 1.0-y_fraction);
-            glVertex2f(width(), height());
-
-            glTexCoord2f(0, 1.0-y_fraction);
-            glVertex2f(0, height());
-        }
-        glEnd();
-        glDisable(GL_TEXTURE_2D);
-        painter->endNativePainting(); // Needed when using the GL2 engine
+        painter->beginNativePainting();
+        auto *funcs = QOpenGLContext::currentContext()->functions();
+        funcs->glEnable(GL_BLEND);
+        funcs->glBlendEquation(GL_FUNC_ADD);
+        funcs->glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        m_blitter.bind();
+        const QRect targetRect(QPoint(0, 0), m_fbo->size());
+        const QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, QRect(QPoint(0, 0), size()));
+        m_blitter.blit(m_compositing_tex, target, QOpenGLTextureBlitter::OriginBottomLeft);
+        m_blitter.release();
+        painter->endNativePainting();
     } else
 #endif
     {
@@ -520,7 +475,7 @@ void CompositionRenderer::setCirclePos(const QPointF &pos)
     const QRect oldRect = rectangle_around(m_circle_pos).toAlignedRect();
     m_circle_pos = pos;
     const QRect newRect = rectangle_around(m_circle_pos).toAlignedRect();
-#if defined(USE_OPENGL) && !defined(QT_OPENGL_ES)
+#if QT_CONFIG(opengl)
     if (usesOpenGL()) {
         update();
         return;

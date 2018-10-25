@@ -129,10 +129,7 @@ QT_BEGIN_NAMESPACE
   Non-standard delimiters should be chosen from among what RFC 3986 calls
   "sub-delimiters". They are:
 
-  \code
-    sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
-                  / "*" / "+" / "," / ";" / "="
-  \endcode
+  \snippet code/src_corelib_io_qurlquery.cpp 0
 
   Use of other characters is not supported and may result in unexpected
   behaviour. QUrlQuery does not verify that you passed a valid delimiter.
@@ -570,10 +567,7 @@ QString QUrlQuery::query(QUrl::ComponentFormattingOptions encoding) const
     \note Non-standard delimiters should be chosen from among what RFC 3986 calls
     "sub-delimiters". They are:
 
-    \code
-      sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
-                    / "*" / "+" / "," / ";" / "="
-    \endcode
+    \snippet code/src_corelib_io_qurlquery.cpp 0
 
     Use of other characters is not supported and may result in unexpected
     behaviour. This method does not verify that you passed a valid delimiter.
