@@ -150,4 +150,26 @@ QByteArray QtPrivate::QByteArrayList_join(const QByteArrayList *that, const char
     return res;
 }
 
+/*!
+    \fn int QByteArrayList::indexOf(const char *needle, int from) const
+
+    Returns the index position of the first occurrence of \a needle in
+    the list, searching forward from index position \a from. Returns
+    -1 if no item matched.
+
+    \a needle must be NUL-terminated.
+
+    This overload doesn't require creating a QByteArray, thus saving a
+    memory allocation and some CPU time.
+
+    \since 5.13
+    \overload
+*/
+
+int QtPrivate::QByteArrayList_indexOf(const QByteArrayList *that, const char *needle, int from)
+{
+    const auto it = std::find_if(that->begin() + from, that->end(), [needle](const QByteArray &item) { return item == needle; });
+    return it == that->end() ? -1 : int(std::distance(that->begin(), it));
+}
+
 QT_END_NAMESPACE
