@@ -15,6 +15,7 @@
             "openssl-linked": { "type": "void", "name": "openssl", "value": "linked" },
             "openssl-runtime": { "type": "void", "name": "openssl", "value": "runtime" },
             "dtls": "boolean",
+            "ocsp": "boolean",
             "sctp": "boolean",
             "securetransport": "boolean",
             "ssl": "boolean",
@@ -163,6 +164,23 @@
                 ]
             },
             "use": "openssl"
+        },
+        "ocsp": {
+            "label": "OCSP stapling support in OpenSSL",
+            "type": "compile",
+            "test": {
+                "include": ["openssl/ssl.h", "openssl/ocsp.h"],
+                "tail": [
+                    "#if defined(OPENSSL_NO_OCSP) || defined(OPENSSL_NO_TLSEXT)",
+                    "#  error OpenSSL without OCSP stapling",
+                    "#endif"
+                ],
+                "main": [
+                    "(void)SSL_get_tlsext_status_ocsp_resp(nullptr, nullptr);",
+                    "(void)d2i_OCSP_RESPONSE(nullptr, nullptr, 0);"
+                ]
+            },
+            "use": "openssl"
         }
     },
 
@@ -235,6 +253,13 @@
             "purpose": "Provides a DTLS implementation",
             "section": "Networking",
             "condition": "features.openssl && tests.dtls",
+            "output": [ "publicFeature" ]
+        },
+        "ocsp": {
+            "label": "OCSP-stapling",
+            "purpose": "Provides OCSP stapling support",
+            "section": "Networking",
+            "condition": "features.opensslv11 && tests.ocsp",
             "output": [ "publicFeature" ]
         },
         "opensslv11": {
@@ -370,6 +395,7 @@ For example:
                 "openssl-linked",
                 "opensslv11",
                 "dtls",
+                "ocsp",
                 "sctp",
                 "system-proxies"
             ]

@@ -83,6 +83,10 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qscopedvaluerollback.h>
 
+#if QT_CONFIG(ocsp)
+#include <openssl/ocsp.h>
+#endif
+
 #include <string.h>
 
 QT_BEGIN_NAMESPACE
@@ -198,8 +202,92 @@ QSslErrorEntry QSslErrorEntry::fromStoreContext(X509_STORE_CTX *ctx)
     };
 }
 
+#if QT_CONFIG(ocsp)
+
+QSslError qt_OCSP_response_status_to_QSslError(long code)
+{
+    switch (code) {
+    case OCSP_RESPONSE_STATUS_MALFORMEDREQUEST:
+        return QSslError::OcspMalformedRequest;
+    case OCSP_RESPONSE_STATUS_INTERNALERROR:
+        return QSslError::OcspInternalError;
+    case OCSP_RESPONSE_STATUS_TRYLATER:
+        return QSslError::OcspTryLater;
+    case OCSP_RESPONSE_STATUS_SIGREQUIRED:
+        return QSslError::OcspSigRequred;
+    case OCSP_RESPONSE_STATUS_UNAUTHORIZED:
+        return QSslError::OcspUnauthorized;
+    case OCSP_RESPONSE_STATUS_SUCCESSFUL:
+    default:
+        return {};
+    }
+    Q_UNREACHABLE();
+}
+
+bool qt_OCSP_certificate_match(OCSP_SINGLERESP *singleResponse, X509 *peerCert, X509 *issuer)
+{
+    // OCSP_basic_verify does verify that the responder is legit, the response is
+    // correctly signed, CertID is correct. But it does not know which certificate
+    // we were presented with by our peer, so it does not check if it's a response
+    // for our peer's certificate.
+    Q_ASSERT(singleResponse && peerCert && issuer);
+
+    const OCSP_CERTID *certId = q_OCSP_SINGLERESP_get0_id(singleResponse); // Does not increment refcount.
+    if (!certId) {
+        qCWarning(lcSsl, "A SingleResponse without CertID");
+        return false;
+    }
+
+    ASN1_OBJECT *md = nullptr;
+    ASN1_INTEGER *reportedSerialNumber = nullptr;
+    const int result =  q_OCSP_id_get0_info(nullptr, &md, nullptr, &reportedSerialNumber, const_cast<OCSP_CERTID *>(certId));
+    if (result != 1 || !md || !reportedSerialNumber) {
+        qCWarning(lcSsl, "Failed to extract a hash and serial number from CertID structure");
+        return false;
+    }
+
+    if (!q_X509_get_serialNumber(peerCert)) {
+        // Is this possible at all? But we have to check this,
+        // ASN1_INTEGER_cmp (called from OCSP_id_cmp) dereferences
+        // without any checks at all.
+        qCWarning(lcSsl, "No serial number in peer's ceritificate");
+        return false;
+    }
+
+    const int nid = q_OBJ_obj2nid(md);
+    if (nid == NID_undef) {
+        qCWarning(lcSsl, "Unknown hash algorithm in CertID");
+        return false;
+    }
+
+    const EVP_MD *digest = q_EVP_get_digestbynid(nid); // Does not increment refcount.
+    if (!digest) {
+        qCWarning(lcSsl) << "No digest for nid" << nid;
+        return false;
+    }
+
+    OCSP_CERTID *recreatedId = q_OCSP_cert_to_id(digest, peerCert, issuer);
+    if (!recreatedId) {
+        qCWarning(lcSsl, "Failed to re-create CertID");
+        return false;
+    }
+    const QSharedPointer<OCSP_CERTID> guard(recreatedId, q_OCSP_CERTID_free);
+
+    if (q_OCSP_id_cmp(const_cast<OCSP_CERTID *>(certId), recreatedId)) {
+        qDebug(lcSsl, "Certificate ID mismatch");
+        return false;
+    }
+    // Bingo!
+    return true;
+}
+
+#endif // ocsp
+
 // ### This list is shared between all threads, and protected by a
-// mutex. Investigate using thread local storage instead.
+// mutex. Investigate using thread local storage instead. Or better properly
+// use OpenSSL's ability to attach application data to an SSL/SSL_CTX
+// and extract it in a callback. See how it's done, for example, in PSK
+// callback or in DTLS verification callback.
 struct QSslErrorList
 {
     QMutex mutex;
@@ -405,6 +493,21 @@ bool QSslSocketBackendPrivate::initSslContext()
             q_SSL_set_psk_server_callback(ssl, &q_ssl_psk_server_callback);
     }
 #endif
+
+#if QT_CONFIG(ocsp)
+    if (configuration.ocspStaplingEnabled) {
+        if (mode == QSslSocket::SslServerMode) {
+            setErrorAndEmit(QAbstractSocket::SslInvalidUserDataError,
+                            QSslSocket::tr("Server-side QSslSocket does not support OCSP stapling"));
+            return false;
+        }
+        if (q_SSL_set_tlsext_status_type(ssl, TLSEXT_STATUSTYPE_ocsp) != 1) {
+            setErrorAndEmit(QAbstractSocket::SslInternalError,
+                            QSslSocket::tr("Failed to enable OCSP stapling"));
+            return false;
+        }
+    }
+#endif // ocsp
 
     return true;
 }
@@ -993,9 +1096,33 @@ bool QSslSocketBackendPrivate::startHandshake()
         }
     }
 
-    bool doVerifyPeer = configuration.peerVerifyMode == QSslSocket::VerifyPeer
-                        || (configuration.peerVerifyMode == QSslSocket::AutoVerifyPeer
-                            && mode == QSslSocket::SslClientMode);
+    const bool doVerifyPeer = configuration.peerVerifyMode == QSslSocket::VerifyPeer
+                              || (configuration.peerVerifyMode == QSslSocket::AutoVerifyPeer
+                                  && mode == QSslSocket::SslClientMode);
+
+#if QT_CONFIG(ocsp)
+    // For now it's always QSslSocket::SslClientMode - initSslContext() will bail out early,
+    // if it's enabled in QSslSocket::SslServerMode. This can change.
+    if (!configuration.peerCertificate.isNull() && configuration.ocspStaplingEnabled && doVerifyPeer) {
+        if (!checkOcspStatus()) {
+            if (ocspErrors.isEmpty()) {
+                {
+                    const ScopedBool bg(inSetAndEmitError, true);
+                    setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError, ocspErrorDescription);
+                }
+                q->abort();
+                return false;
+            }
+
+            for (const QSslError &error : ocspErrors) {
+                errors << error;
+                emit q->peerVerifyError(error);
+                if (q->state() != QAbstractSocket::ConnectedState)
+                    return false;
+            }
+        }
+    }
+#endif // ocsp
 
     // Check the peer certificate itself. First try the subject's common name
     // (CN) as a wildcard, then try all alternate subject name DNS entries the
@@ -1241,6 +1368,180 @@ void QSslSocketBackendPrivate::_q_caRootLoaded(QSslCertificate cert, QSslCertifi
 }
 
 #endif
+
+#if QT_CONFIG(ocsp)
+
+bool QSslSocketBackendPrivate::checkOcspStatus()
+{
+    Q_ASSERT(ssl);
+    Q_ASSERT(mode == QSslSocket::SslClientMode); // See initSslContext() for SslServerMode
+    Q_ASSERT(configuration.peerVerifyMode != QSslSocket::VerifyNone);
+
+    ocspErrorDescription.clear();
+    ocspErrors.clear();
+
+    const unsigned char *responseData = nullptr;
+    const long responseLength = q_SSL_get_tlsext_status_ocsp_resp(ssl, &responseData);
+    if (responseLength <= 0 || !responseData) {
+        ocspErrors.push_back(QSslError::OcspNoResponseFound);
+        return false;
+    }
+
+    OCSP_RESPONSE *response = q_d2i_OCSP_RESPONSE(nullptr, &responseData, responseLength);
+    if (!response) {
+        // Treat this as a fatal SslHandshakeError.
+        ocspErrorDescription = QSslSocket::tr("Failed to decode OCSP response");
+        return false;
+    }
+    const QSharedPointer<OCSP_RESPONSE> responseGuard(response, q_OCSP_RESPONSE_free);
+
+    const int ocspStatus = q_OCSP_response_status(response);
+    if (ocspStatus != OCSP_RESPONSE_STATUS_SUCCESSFUL) {
+        // It's not a definitive response, it's an error message (not signed by the responder).
+        ocspErrors.push_back(qt_OCSP_response_status_to_QSslError(ocspStatus));
+        return false;
+    }
+
+    OCSP_BASICRESP *basicResponse = q_OCSP_response_get1_basic(response);
+    if (!basicResponse) {
+        // SslHandshakeError.
+        ocspErrorDescription = QSslSocket::tr("Failed to extract basic OCSP response");
+        return false;
+    }
+    const QSharedPointer<OCSP_BASICRESP> basicResponseGuard(basicResponse, q_OCSP_BASICRESP_free);
+
+    SSL_CTX *ctx = q_SSL_get_SSL_CTX(ssl); // Does not increment refcount.
+    Q_ASSERT(ctx);
+    X509_STORE *store = q_SSL_CTX_get_cert_store(ctx); // Does not increment refcount.
+    if (!store) {
+        // SslHandshakeError.
+        ocspErrorDescription = QSslSocket::tr("No certificate verification store, cannot verify OCSP response");
+        return false;
+    }
+
+    STACK_OF(X509) *peerChain = q_SSL_get_peer_cert_chain(ssl); // Does not increment refcount.
+    X509 *peerX509 = q_SSL_get_peer_certificate(ssl);
+    Q_ASSERT(peerChain || peerX509);
+    const QSharedPointer<X509> peerX509Guard(peerX509, q_X509_free);
+    // OCSP_basic_verify with 0 as verificationFlags:
+    //
+    // 0) Tries to find the OCSP responder's certificate in either peerChain
+    // or basicResponse->certs. If not found, verification fails.
+    // 1) It checks the signature using the responder's public key.
+    // 2) Then it tries to validate the responder's cert (building a chain
+    //    etc.)
+    // 3) It checks CertID in response.
+    // 4) Ensures the responder is authorized to sign the status respond.
+    //
+    // Here it's important to notice that it calls X509_cert_verify and
+    // as a result, possibly, our verification callback. Given this callback
+    // at the moment uses a global variable, we have to lock. This will change
+    // as soon as we fix our verification procedure.
+    // Also note, OpenSSL prior to 1.0.2b would only use bs->certs to
+    // verify the responder's chain (see their commit 4ba9a4265bd).
+    // Working this around - is too much fuss for ancient versions we
+    // are dropping quite soon anyway.
+    {
+        const unsigned long verificationFlags = 0;
+        const QMutexLocker locker(&_q_sslErrorList()->mutex);
+        // Before unlocking the mutex, startHandshake() stores errors (found in SSL_connect()
+        // or SSL_accept()) into the local variable, so it's safe to clear it here - as soon
+        // as we managed to lock, whoever had the lock before, already stored their own copy
+        // of errors.
+        _q_sslErrorList()->errors.clear();
+        const int success = q_OCSP_basic_verify(basicResponse, peerChain, store, verificationFlags);
+        if (success <= 0 || _q_sslErrorList()->errors.size()) {
+            _q_sslErrorList()->errors.clear();
+            ocspErrors.push_back(QSslError::OcspResponseCannotBeTrusted);
+        }
+    }
+
+    if (q_OCSP_resp_count(basicResponse) != 1) {
+        ocspErrors.push_back(QSslError::OcspMalformedResponse);
+        return false;
+    }
+
+    OCSP_SINGLERESP *singleResponse = q_OCSP_resp_get0(basicResponse, 0);
+    if (!singleResponse) {
+        ocspErrors.clear();
+        // A fatal problem -> SslHandshakeError.
+        ocspErrorDescription = QSslSocket::tr("Failed to decode a SingleResponse from OCSP status response");
+        return false;
+    }
+
+    // Let's make sure the response is for the correct certificate - we
+    // can re-create this CertID using our peer's certificate and its
+    // issuer's public key.
+
+    bool matchFound = false;
+    if (configuration.peerCertificate.isSelfSigned()) {
+        matchFound = qt_OCSP_certificate_match(singleResponse, peerX509, peerX509);
+    } else {
+        const STACK_OF(X509) *certs = q_SSL_get_peer_cert_chain(ssl);
+        if (!certs) // Oh, what a cataclysm! Last try:
+            certs = q_OCSP_resp_get0_certs(basicResponse);
+        if (certs) {
+            // It could be the first certificate in 'certs' is our peer's
+            // certificate. Since it was not captured by the 'self-signed' branch
+            // above, the CertID will not match and we'll just iterate on to the
+            // next certificate. So we start from 0, not 1.
+            for (int i = 0, e = q_sk_X509_num(certs); i < e; ++i) {
+                X509 *issuer = q_sk_X509_value(certs, i);
+                matchFound = qt_OCSP_certificate_match(singleResponse, peerX509, issuer);
+                if (matchFound) {
+                    if (q_X509_check_issued(issuer, peerX509) == X509_V_OK)
+                        break;
+                    matchFound = false;
+                }
+            }
+        }
+    }
+
+    if (!matchFound)
+        ocspErrors.push_back({QSslError::OcspResponseCertIdUnknown, configuration.peerCertificate});
+
+    // Check if the response is valid time-wise:
+    ASN1_GENERALIZEDTIME *revTime = nullptr;
+    ASN1_GENERALIZEDTIME *thisUpdate = nullptr;
+    ASN1_GENERALIZEDTIME *nextUpdate = nullptr;
+    int reason;
+    const int certStatus = q_OCSP_single_get0_status(singleResponse, &reason, &revTime, &thisUpdate, &nextUpdate);
+    if (!thisUpdate) {
+        // This is unexpected, treat as SslHandshakeError, OCSP_check_validity assumes this pointer
+        // to be != nullptr.
+        ocspErrors.clear();
+        ocspErrorDescription = QSslSocket::tr("Failed to extract 'this update time' from the SingleResponse");
+        return false;
+    }
+
+    // OCSP_check_validity(this, next, nsec, maxsec) does this check:
+    // this <= now <= next. They allow some freedom to account
+    // for delays/time inaccuracy.
+    // this > now + nsec ? -> NOT_YET_VALID
+    // if maxsec >= 0:
+    //     now - maxsec > this ? -> TOO_OLD
+    // now - nsec > next ? -> EXPIRED
+    // next < this ? -> NEXT_BEFORE_THIS
+    // OK.
+    if (!q_OCSP_check_validity(thisUpdate, nextUpdate, 60, -1))
+        ocspErrors.push_back({QSslError::OcspResponseExpired, configuration.peerCertificate});
+
+    // And finally, the status:
+    switch (certStatus) {
+    case V_OCSP_CERTSTATUS_GOOD:
+        // This certificate was not found among the revoked ones.
+        break;
+    case V_OCSP_CERTSTATUS_REVOKED:
+        ocspErrors.push_back({QSslError::CertificateRevoked, configuration.peerCertificate});
+        break;
+    case V_OCSP_CERTSTATUS_UNKNOWN:
+        ocspErrors.push_back({QSslError::OcspStatusUnknown, configuration.peerCertificate});
+    }
+
+    return !ocspErrors.size();
+}
+
+#endif // ocsp
 
 void QSslSocketBackendPrivate::disconnectFromHost()
 {

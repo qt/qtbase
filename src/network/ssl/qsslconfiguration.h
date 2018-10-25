@@ -170,6 +170,9 @@ public:
     static void setDefaultDtlsConfiguration(const QSslConfiguration &configuration);
 #endif // dtls
 
+    void setOcspStaplingEnabled(bool enable);
+    bool ocspStaplingEnabled() const;
+
     enum NextProtocolNegotiationStatus {
         NextProtocolNegotiationNone,
         NextProtocolNegotiationNegotiated,

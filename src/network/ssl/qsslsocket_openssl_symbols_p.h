@@ -72,6 +72,10 @@
 #include "qsslsocket_openssl_p.h"
 #include <QtCore/qglobal.h>
 
+#if QT_CONFIG(ocsp)
+#include <openssl/ocsp.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #define DUMMYARG
@@ -224,6 +228,7 @@ QT_BEGIN_NAMESPACE
 
 bool q_resolveOpenSslSymbols();
 long q_ASN1_INTEGER_get(ASN1_INTEGER *a);
+int q_ASN1_INTEGER_cmp(const ASN1_INTEGER *x, const ASN1_INTEGER *y);
 int q_ASN1_STRING_length(ASN1_STRING *a);
 int q_ASN1_STRING_to_UTF8(unsigned char **a, ASN1_STRING *b);
 long q_BIO_ctrl(BIO *a, int b, long c, void *d);
@@ -267,6 +272,8 @@ int q_EVP_CipherInit(EVP_CIPHER_CTX *ctx, const EVP_CIPHER *type, const unsigned
 int q_EVP_CipherInit_ex(EVP_CIPHER_CTX *ctx, const EVP_CIPHER *cipher, ENGINE *impl, const unsigned char *key, const unsigned char *iv, int enc);
 int q_EVP_CipherUpdate(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl, const unsigned char *in, int inl);
 int q_EVP_CipherFinal(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl);
+const EVP_MD *q_EVP_get_digestbyname(const char *name);
+
 #ifndef OPENSSL_NO_DES
 const EVP_CIPHER *q_EVP_des_cbc();
 const EVP_CIPHER *q_EVP_des_ede3_cbc();
@@ -299,6 +306,7 @@ int q_OBJ_ln2nid(const char *s);
 int q_i2t_ASN1_OBJECT(char *buf, int buf_len, ASN1_OBJECT *obj);
 int q_OBJ_obj2txt(char *buf, int buf_len, ASN1_OBJECT *obj, int no_name);
 int q_OBJ_obj2nid(const ASN1_OBJECT *a);
+#define q_EVP_get_digestbynid(a) q_EVP_get_digestbyname(q_OBJ_nid2sn(a))
 #ifdef SSLEAY_MACROS
 // ### verify
 void *q_PEM_ASN1_read_bio(d2i_of_void *a, const char *b, BIO *c, void **d, pem_password_cb *e,
@@ -385,6 +393,7 @@ STACK_OF(X509) *q_SSL_get_peer_cert_chain(SSL *a);
 X509 *q_SSL_get_peer_certificate(SSL *a);
 long q_SSL_get_verify_result(const SSL *a);
 SSL *q_SSL_new(SSL_CTX *a);
+SSL_CTX *q_SSL_get_SSL_CTX(SSL *a);
 long q_SSL_ctrl(SSL *ssl,int cmd, long larg, void *parg);
 int q_SSL_read(SSL *a, void *b, int c);
 void q_SSL_set_bio(SSL *a, BIO *b, BIO *c);
@@ -575,6 +584,36 @@ int q_BIO_set_ex_data(BIO *b, int idx, void *data);
 // Helper function
 class QDateTime;
 QDateTime q_getTimeFromASN1(const ASN1_TIME *aTime);
+
+#ifndef OPENSSL_NO_TLSEXT
+
+#define q_SSL_set_tlsext_status_type(ssl, type) q_SSL_ctrl((ssl), SSL_CTRL_SET_TLSEXT_STATUS_REQ_TYPE, (type), nullptr)
+
+#endif // OPENSSL_NO_TLSEXT
+
+#if QT_CONFIG(ocsp)
+
+OCSP_RESPONSE *q_d2i_OCSP_RESPONSE(OCSP_RESPONSE **a, const unsigned char **in, long len);
+void q_OCSP_RESPONSE_free(OCSP_RESPONSE *rs);
+int q_OCSP_response_status(OCSP_RESPONSE *resp);
+OCSP_BASICRESP *q_OCSP_response_get1_basic(OCSP_RESPONSE *resp);
+void q_OCSP_BASICRESP_free(OCSP_BASICRESP *bs);
+int q_OCSP_basic_verify(OCSP_BASICRESP *bs, STACK_OF(X509) *certs, X509_STORE *st, unsigned long flags);
+int q_OCSP_resp_count(OCSP_BASICRESP *bs);
+OCSP_SINGLERESP *q_OCSP_resp_get0(OCSP_BASICRESP *bs, int idx);
+int q_OCSP_single_get0_status(OCSP_SINGLERESP *single, int *reason, ASN1_GENERALIZEDTIME **revtime,
+                              ASN1_GENERALIZEDTIME **thisupd, ASN1_GENERALIZEDTIME **nextupd);
+int q_OCSP_check_validity(ASN1_GENERALIZEDTIME *thisupd, ASN1_GENERALIZEDTIME *nextupd, long nsec, long maxsec);
+int q_OCSP_id_get0_info(ASN1_OCTET_STRING **piNameHash, ASN1_OBJECT **pmd, ASN1_OCTET_STRING **pikeyHash,
+                        ASN1_INTEGER **pserial, OCSP_CERTID *cid);
+const STACK_OF(X509) *q_OCSP_resp_get0_certs(const OCSP_BASICRESP *bs);
+OCSP_CERTID *q_OCSP_cert_to_id(const EVP_MD *dgst, X509 *subject, X509 *issuer);
+void q_OCSP_CERTID_free(OCSP_CERTID *cid);
+int q_OCSP_id_cmp(OCSP_CERTID *a, OCSP_CERTID *b);
+
+#define q_SSL_get_tlsext_status_ocsp_resp(ssl, arg) q_SSL_ctrl(ssl, SSL_CTRL_GET_TLSEXT_STATUS_REQ_OCSP_RESP, 0, arg)
+
+#endif // ocsp
 
 QT_END_NAMESPACE
 

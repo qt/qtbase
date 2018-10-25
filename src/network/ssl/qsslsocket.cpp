@@ -952,6 +952,9 @@ void QSslSocket::setSslConfiguration(const QSslConfiguration &configuration)
     d->configuration.nextAllowedProtocols = configuration.allowedNextProtocols();
     d->configuration.nextNegotiatedProtocol = configuration.nextNegotiatedProtocol();
     d->configuration.nextProtocolNegotiationStatus = configuration.nextProtocolNegotiationStatus();
+#if QT_CONFIG(ocsp)
+    d->configuration.ocspStaplingEnabled = configuration.ocspStaplingEnabled();
+#endif
 
     // if the CA certificates were set explicitly (either via
     // QSslConfiguration::setCaCertificates() or QSslSocket::setCaCertificates(),
@@ -2323,6 +2326,9 @@ void QSslConfigurationPrivate::deepCopyDefaultConfiguration(QSslConfigurationPri
     ptr->backendConfig = global->backendConfig;
 #if QT_CONFIG(dtls)
     ptr->dtlsCookieEnabled = global->dtlsCookieEnabled;
+#endif
+#if QT_CONFIG(ocsp)
+    ptr->ocspStaplingEnabled = global->ocspStaplingEnabled;
 #endif
 }
 

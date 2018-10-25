@@ -80,6 +80,18 @@ public:
         HostNameMismatch,
         NoSslSupport,
         CertificateBlacklisted,
+        CertificateStatusUnknown,
+        OcspNoResponseFound,
+        OcspMalformedRequest,
+        OcspMalformedResponse,
+        OcspInternalError,
+        OcspTryLater,
+        OcspSigRequred,
+        OcspUnauthorized,
+        OcspResponseCannotBeTrusted,
+        OcspResponseCertIdUnknown,
+        OcspResponseExpired,
+        OcspStatusUnknown,
         UnspecifiedError = -1
     };
 

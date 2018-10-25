@@ -172,6 +172,10 @@ void q_BIO_set_init(BIO *a, int init);
 int q_BIO_get_shutdown(BIO *a);
 void q_BIO_set_shutdown(BIO *a, int shut);
 
+#if QT_CONFIG(ocsp)
+const OCSP_CERTID *q_OCSP_SINGLERESP_get0_id(const OCSP_SINGLERESP *x);
+#endif // ocsp
+
 #define q_SSL_CTX_set_min_proto_version(ctx, version) \
         q_SSL_CTX_ctrl(ctx, SSL_CTRL_SET_MIN_PROTO_VERSION, version, nullptr)
 

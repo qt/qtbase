@@ -143,6 +143,12 @@ public:
     const bool dtlsCookieEnabled = false;
 #endif // dtls
 
+#if QT_CONFIG(ocsp)
+    bool ocspStaplingEnabled = false;
+#else
+    const bool ocspStaplingEnabled = false;
+#endif
+
     // in qsslsocket.cpp:
     static QSslConfiguration defaultConfiguration();
     static void setDefaultConfiguration(const QSslConfiguration &configuration);
