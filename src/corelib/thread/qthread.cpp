@@ -298,12 +298,9 @@ QThreadPrivate::~QThreadPrivate()
     \warning The handle returned by this function is used for internal
     purposes and should not be used in any application code.
 
-    \warning On Windows, the returned value is a pseudo-handle for the
-    current thread. It can't be used for numerical comparison. i.e.,
-    this function returns the DWORD (Windows-Thread ID) returned by
-    the Win32 function getCurrentThreadId(), not the HANDLE
-    (Windows-Thread HANDLE) returned by the Win32 function
-    getCurrentThread().
+    \note On Windows, this function returns the DWORD (Windows-Thread
+    ID) returned by the Win32 function GetCurrentThreadId(), not the pseudo-HANDLE
+    (Windows-Thread HANDLE) returned by the Win32 function GetCurrentThread().
 */
 
 /*!
