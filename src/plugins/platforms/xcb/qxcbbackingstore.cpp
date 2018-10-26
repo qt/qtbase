@@ -106,7 +106,7 @@ public:
     void put(xcb_drawable_t dst, const QRegion &region, const QPoint &offset);
     void preparePaint(const QRegion &region);
 
-    static bool createSystemVShmSegment(QXcbConnection *c, size_t segmentSize = 1,
+    static bool createSystemVShmSegment(xcb_connection_t *c, size_t segmentSize = 1,
                                         xcb_shm_segment_info_t *shm_info = nullptr);
 
 private:
@@ -406,12 +406,12 @@ void QXcbBackingStoreImage::createShmSegment(size_t segmentSize)
     } else
 #endif
     {
-        if (createSystemVShmSegment(connection(), segmentSize, &m_shm_info))
+        if (createSystemVShmSegment(xcb_connection(), segmentSize, &m_shm_info))
             m_segmentSize = segmentSize;
     }
 }
 
-bool QXcbBackingStoreImage::createSystemVShmSegment(QXcbConnection *c, size_t segmentSize,
+bool QXcbBackingStoreImage::createSystemVShmSegment(xcb_connection_t *c, size_t segmentSize,
                                                     xcb_shm_segment_info_t *shmInfo)
 {
     const int id = shmget(IPC_PRIVATE, segmentSize, IPC_CREAT | 0600);
@@ -429,17 +429,17 @@ bool QXcbBackingStoreImage::createSystemVShmSegment(QXcbConnection *c, size_t se
     if (shmctl(id, IPC_RMID, 0) == -1)
         qCWarning(lcQpaXcb, "Error while marking the shared memory segment to be destroyed");
 
-    const auto seg = xcb_generate_id(c->xcb_connection());
-    auto cookie = xcb_shm_attach_checked(c->xcb_connection(), seg, id, false);
-    auto *error = xcb_request_check(c->xcb_connection(), cookie);
+    const auto seg = xcb_generate_id(c);
+    auto cookie = xcb_shm_attach_checked(c, seg, id, false);
+    auto *error = xcb_request_check(c, cookie);
     if (error) {
-        c->printXcbError("xcb_shm_attach() failed with error", error);
+        qCWarning(lcQpaXcb(), "xcb_shm_attach() failed");
         free(error);
         if (shmdt(addr) == -1)
             qCWarning(lcQpaXcb, "shmdt() failed (%d: %s) for %p", errno, strerror(errno), addr);
         return false;
     } else if (!shmInfo) { // this was a test run, free the allocated test segment
-        xcb_shm_detach(c->xcb_connection(), seg);
+        xcb_shm_detach(c, seg);
         auto shmaddr = static_cast<quint8 *>(addr);
         if (shmdt(shmaddr) == -1)
             qCWarning(lcQpaXcb, "shmdt() failed (%d: %s) for %p", errno, strerror(errno), shmaddr);
@@ -766,7 +766,7 @@ void QXcbBackingStoreImage::preparePaint(const QRegion &region)
     m_pendingFlush |= region;
 }
 
-bool QXcbBackingStore::createSystemVShmSegment(QXcbConnection *c, size_t segmentSize, void *shmInfo)
+bool QXcbBackingStore::createSystemVShmSegment(xcb_connection_t *c, size_t segmentSize, void *shmInfo)
 {
     auto info = reinterpret_cast<xcb_shm_segment_info_t *>(shmInfo);
     return QXcbBackingStoreImage::createSystemVShmSegment(c, segmentSize, info);

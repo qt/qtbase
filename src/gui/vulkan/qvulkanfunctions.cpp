@@ -66,16 +66,7 @@ QT_BEGIN_NAMESPACE
 
     The typical usage is the following:
 
-    \code
-    void Window::render()
-    {
-        QVulkanInstance *inst = vulkanInstance();
-        QVulkanFunctions *f = inst->functions();
-        ...
-        VkResult err = f->vkAllocateCommandBuffers(device, &cmdBufInfo, &cmdBuf);
-        ...
-    }
-    \endcode
+    \snippet code/src_gui_vulkan_qvulkanfunctions.cpp 0
 
     \note Windowing system interface (WSI) specifics and extensions are
     excluded. This class only covers core Vulkan commands, with the exception
@@ -118,15 +109,7 @@ QT_BEGIN_NAMESPACE
 
     The typical usage is the following:
 
-    \code
-    void Window::render()
-    {
-        QVulkanInstance *inst = vulkanInstance();
-        QVulkanDeviceFunctions *df = inst->deviceFunctions(device);
-        VkResult err = df->vkAllocateCommandBuffers(device, &cmdBufInfo, &cmdBuf);
-        ...
-    }
-    \endcode
+    \snippet code/src_gui_vulkan_qvulkanfunctions.cpp 1
 
     The QVulkanDeviceFunctions object specific to the provided VkDevice is
     created when QVulkanInstance::deviceFunctions() is first called with the

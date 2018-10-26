@@ -4,6 +4,10 @@ include(xkbcommon.pri)
 # in xcb-plugin.pro (linked to system libraries or if Qt was configured with -qt-xcb then
 # linked to -lxcb-static).
 INCLUDEPATH += $$PWD/xkbcommon/src/x11
+
+# Need to rename several files, qmake has problems processing a project when
+# sub-directories contain files with an equal names.
+
 SOURCES += \
     $$PWD/xkbcommon/src/x11/util.c \
     $$PWD/xkbcommon/src/x11/x11-keymap.c \ # renamed: keymap.c -> x11-keymap.c

@@ -1429,14 +1429,14 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                 painter->drawRoundedRect(progressBar.adjusted(1, 1, -1, -1), 1, 1);
 
                 if (!indeterminate) {
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
                     (const_cast<QFusionStylePrivate*>(d))->stopAnimation(option->styleObject);
 #endif
                 } else {
                     highlightedGradientStartColor.setAlpha(120);
                     painter->setPen(QPen(highlightedGradientStartColor, 9.0));
                     painter->setClipRect(progressBar.adjusted(1, 1, -1, -1));
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
                 if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(option->styleObject)))
                     step = animation->animationStep() % 22;
                 else
@@ -2463,7 +2463,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     styleObject->setProperty("_q_stylestate", static_cast<QStyle::State::Int>(scrollBar->state));
                     styleObject->setProperty("_q_stylecontrols", static_cast<uint>(scrollBar->activeSubControls));
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
                     // if the scrollbar is transient or its attributes, geometry or
                     // state has changed, the opacity is reset back to 100% opaque
                     opacity = 1.0;
@@ -2481,10 +2481,10 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     } else if (anim && anim->mode() == QScrollbarStyleAnimation::Deactivating) {
                         d->stopAnimation(styleObject);
                     }
-#endif // !QT_NO_ANIMATION
+#endif // animation
                 }
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
                 QScrollbarStyleAnimation *anim = qobject_cast<QScrollbarStyleAnimation *>(d->animation(styleObject));
                 if (anim && anim->mode() == QScrollbarStyleAnimation::Deactivating) {
                     // once a scrollbar was active (hovered/pressed), it retains
@@ -2513,7 +2513,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     }
                 }
                 painter->setOpacity(opacity);
-#endif // !QT_NO_ANIMATION
+#endif // animation
             }
 
             bool transient = proxy()->styleHint(SH_ScrollBar_Transient, option, widget);

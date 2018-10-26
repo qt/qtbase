@@ -86,7 +86,9 @@
 #include <private/qhighdpiscaling_p.h>
 
 #include <private/qstylehelper_p.h>
+#if QT_CONFIG(animation)
 #include <private/qstyleanimation_p.h>
+#endif
 
 #include <algorithm>
 

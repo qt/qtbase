@@ -356,9 +356,7 @@ int qFindByteArray(
     value of that function in a \c{static const auto} variable, so you don't need
     to pass the \c{N} template parameter explicitly:
 
-    \code
-    static const auto matcher = qMakeStaticByteArrayMatcher("needle");
-    \endcode
+    \snippet code/src_corelib_tools_qbytearraymatcher.cpp 0
 
     Then call indexIn() on the QByteArray in which you want to search, just like
     with QByteArrayMatcher.
@@ -430,9 +428,7 @@ int QStaticByteArrayMatcherBase::indexOfIn(const char *needle, uint nlen, const 
     To take full advantage of this function, assign the result to an
     \c{auto} variable:
 
-    \code
-    static const auto matcher = qMakeStaticByteArrayMatcher("needle");
-    \endcode
+    \snippet code/src_corelib_tools_qbytearraymatcher.cpp 1
 */
 
 

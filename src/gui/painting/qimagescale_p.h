@@ -61,10 +61,11 @@ QImage qSmoothScaleImage(const QImage &img, int w, int h);
 
 namespace QImageScale {
     struct QImageScaleInfo {
-        int *xpoints;
-        const unsigned int **ypoints;
-        int *xapoints, *yapoints;
-        int xup_yup;
+        int *xpoints{nullptr};
+        const unsigned int **ypoints{nullptr};
+        int *xapoints{nullptr};
+        int *yapoints{nullptr};
+        int xup_yup{0};
     };
 }
 

@@ -271,3 +271,18 @@ QRect deviceRect = xform.mapRect(rect).toAlignedRect();
 view->viewport()->scroll(dx, dy, deviceRect);
 //! [19]
 
+//! [20]
+item->setTransform(QTransform().rotate(angle), true);
+//! [20]
+
+//! [21]
+setTransform(QTransform::fromScale(sx, sy), true);
+//! [21]
+
+//! [22]
+setTransform(QTransform().shear(sh, sv), true);
+//! [22]
+
+//! [23]
+setTransform(QTransform::fromTranslate(dx, dy), true);
+//! [23]

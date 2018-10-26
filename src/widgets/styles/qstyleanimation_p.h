@@ -45,9 +45,9 @@
 #include "qdatetime.h"
 #include "qimage.h"
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(animation);
 
-#ifndef QT_NO_ANIMATION
+QT_BEGIN_NAMESPACE
 
 //
 //  W A R N I N G
@@ -200,8 +200,6 @@ private:
     Mode _mode;
     bool _active;
 };
-
-#endif // QT_NO_ANIMATION
 
 QT_END_NAMESPACE
 

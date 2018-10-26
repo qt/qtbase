@@ -59,9 +59,9 @@
 #include <QtCore/qtextcodec.h>
 #include <QtCore/qlist.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(big_codecs);
 
-#ifndef QT_NO_BIG_CODECS
+QT_BEGIN_NAMESPACE
 
 class QBig5Codec : public QTextCodec {
 public:
@@ -90,8 +90,6 @@ public:
     QString convertToUnicode(const char *, int, ConverterState *) const;
     QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
 };
-
-#endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE
 

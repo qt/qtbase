@@ -4666,9 +4666,7 @@ void QGraphicsItem::resetTransform()
 
     Use
 
-    \code
-    item->setTransform(QTransform().rotate(angle), true);
-    \endcode
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 20
 
     instead.
 
@@ -4689,9 +4687,7 @@ void QGraphicsItem::resetTransform()
 
     Use
 
-    \code
-    setTransform(QTransform::fromScale(sx, sy), true);
-    \endcode
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 21
 
     instead.
 
@@ -4712,9 +4708,7 @@ void QGraphicsItem::resetTransform()
 
     Use
 
-    \code
-    setTransform(QTransform().shear(sh, sv), true);
-    \endcode
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 22
 
     instead.
 
@@ -4730,9 +4724,7 @@ void QGraphicsItem::resetTransform()
     Use setPos() or setTransformOriginPoint() instead. For identical
     behavior, use
 
-    \code
-    setTransform(QTransform::fromTranslate(dx, dy), true);
-    \endcode
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 23
 
     Translates the current item transformation by (\a dx, \a dy).
 

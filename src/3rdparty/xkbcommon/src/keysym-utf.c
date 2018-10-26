@@ -521,7 +521,7 @@ static const struct codepair keysymtab[] = {
     { 0x0aa8, 0x200a }, /*                   hairspace   HAIR SPACE */
     { 0x0aa9, 0x2014 }, /*                      emdash — EM DASH */
     { 0x0aaa, 0x2013 }, /*                      endash – EN DASH */
-    /*  0x0aac                               signifblank ? ??? */
+    { 0x0aac, 0x2423 }, /*                 signifblank ␣ OPEN BOX */
     { 0x0aae, 0x2026 }, /*                    ellipsis … HORIZONTAL ELLIPSIS */
     { 0x0aaf, 0x2025 }, /*             doubbaselinedot ‥ TWO DOT LEADER */
     { 0x0ab0, 0x2153 }, /*                    onethird ⅓ VULGAR FRACTION ONE THIRD */
@@ -534,9 +534,9 @@ static const struct codepair keysymtab[] = {
     { 0x0ab7, 0x215a }, /*                  fivesixths ⅚ VULGAR FRACTION FIVE SIXTHS */
     { 0x0ab8, 0x2105 }, /*                      careof ℅ CARE OF */
     { 0x0abb, 0x2012 }, /*                     figdash ‒ FIGURE DASH */
-    { 0x0abc, 0x2329 }, /*            leftanglebracket 〈 LEFT-POINTING ANGLE BRACKET */
+    { 0x0abc, 0x27e8 }, /*            leftanglebracket ⟨ MATHEMATICAL LEFT ANGLE BRACKET */
     { 0x0abd, 0x002e }, /*                decimalpoint . FULL STOP */
-    { 0x0abe, 0x232a }, /*           rightanglebracket 〉 RIGHT-POINTING ANGLE BRACKET */
+    { 0x0abe, 0x27e9 }, /*           rightanglebracket ⟩ MATHEMATICAL RIGHT ANGLE BRACKET */
     /*  0x0abf                                  marker ? ??? */
     { 0x0ac3, 0x215b }, /*                   oneeighth ⅛ VULGAR FRACTION ONE EIGHTH */
     { 0x0ac4, 0x215c }, /*                threeeighths ⅜ VULGAR FRACTION THREE EIGHTHS */
@@ -554,6 +554,7 @@ static const struct codepair keysymtab[] = {
     { 0x0ad2, 0x201c }, /*         leftdoublequotemark “ LEFT DOUBLE QUOTATION MARK */
     { 0x0ad3, 0x201d }, /*        rightdoublequotemark ” RIGHT DOUBLE QUOTATION MARK */
     { 0x0ad4, 0x211e }, /*                prescription ℞ PRESCRIPTION TAKE */
+    { 0x0ad5, 0x2030 }, /*                    permille ‰ PER MILLE SIGN */
     { 0x0ad6, 0x2032 }, /*                     minutes ′ PRIME */
     { 0x0ad7, 0x2033 }, /*                     seconds ″ DOUBLE PRIME */
     { 0x0ad9, 0x271d }, /*                  latincross ✝ LATIN CROSS */
@@ -880,9 +881,15 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym)
         keysym == XKB_KEY_KP_Enter || keysym == XKB_KEY_KP_Equal)
         return keysym & 0x7f;
 
-    /* also check for directly encoded 24-bit UCS characters */
-    if ((keysym & 0xff000000) == 0x01000000)
-        return keysym & 0x00ffffff;
+    /* also check for directly encoded Unicode codepoints */
+    /*
+     * In theory, this is supposed to start from 0x100100, such that the ASCII
+     * range, which is already covered by 0x00-0xff, can't be encoded in two
+     * ways. However, changing this after a couple of decades probably won't
+     * go well, so it stays as it is.
+     */
+    if (0x01000000 <= keysym && keysym <= 0x0110ffff)
+        return keysym - 0x01000000;
 
     /* search main table */
     return bin_search(keysymtab, ARRAY_SIZE(keysymtab) - 1, keysym);

@@ -173,7 +173,7 @@ void QCocoaMenuItem::setIsSeparator(bool isSeparator)
 
 void QCocoaMenuItem::setFont(const QFont &font)
 {
-    m_font = font;
+    Q_UNUSED(font)
 }
 
 void QCocoaMenuItem::setRole(MenuRole role)
@@ -319,21 +319,7 @@ NSMenuItem *QCocoaMenuItem::sync()
         text += QLatin1String(" (") + accel.toString(QKeySequence::NativeText) + QLatin1String(")");
 #endif
 
-    QString finalString = QPlatformTheme::removeMnemonics(text);
-    bool useAttributedTitle = false;
-    // Cocoa Font and title
-    if (m_font.resolve()) {
-        NSFont *customMenuFont = [NSFont fontWithName:m_font.family().toNSString()
-                                  size:m_font.pointSize()];
-        if (customMenuFont) {
-            NSAttributedString *str = [[[NSAttributedString alloc] initWithString:finalString.toNSString()
-                                     attributes:@{NSFontAttributeName: customMenuFont}] autorelease];
-            m_native.attributedTitle = str;
-            useAttributedTitle = true;
-        }
-    }
-    if (!useAttributedTitle)
-       m_native.title = finalString.toNSString();
+    m_native.title = QPlatformTheme::removeMnemonics(text).toNSString();
 
 #ifndef QT_NO_SHORTCUT
     if (accel.count() == 1) {

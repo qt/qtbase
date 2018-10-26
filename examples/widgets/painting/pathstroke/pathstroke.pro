@@ -7,10 +7,6 @@ include($$SHARED_FOLDER/shared.pri)
 
 RESOURCES += pathstroke.qrc
 
-qtHaveModule(opengl) {
-	DEFINES += QT_OPENGL_SUPPORT
-	QT += opengl
-}
 QT += widgets
 
 # install

@@ -71,6 +71,11 @@ static const bool do_compress = true;
 // Can't use it though, as gs generates completely wrong images if this is true.
 static const bool interpolateImages = false;
 
+static void initResources()
+{
+    Q_INIT_RESOURCE(qpdf);
+}
+
 QT_BEGIN_NAMESPACE
 
 inline QPaintEngine::PaintEngineFeatures qt_pdf_decide_features()
@@ -1448,6 +1453,7 @@ QPdfEnginePrivate::QPdfEnginePrivate()
       grayscale(false),
       m_pageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(10, 10, 10, 10))
 {
+    initResources();
     resolution = 1200;
     currentObject = 1;
     currentPage = 0;
@@ -1543,7 +1549,14 @@ void QPdfEnginePrivate::writeHeader()
 {
     addXrefEntry(0,false);
 
-    xprintf("%%PDF-1.4\n");
+    static const QHash<QPdfEngine::PdfVersion, const char *> mapping {
+        {QPdfEngine::Version_1_4, "1.4"},
+        {QPdfEngine::Version_A1b, "1.4"},
+        {QPdfEngine::Version_1_6, "1.6"}
+    };
+    const char *verStr = mapping.value(pdfVersion, "1.4");
+
+    xprintf("%%PDF-%s\n", verStr);
     xprintf("%%\303\242\303\243\n");
 
     writeInfo();
@@ -1876,6 +1889,19 @@ void QPdfEnginePrivate::embedFont(QFontSubset *font)
     }
 }
 
+qreal QPdfEnginePrivate::calcUserUnit() const
+{
+    // PDF standards < 1.6 support max 200x200in pages (no UserUnit)
+    if (pdfVersion < QPdfEngine::Version_1_6)
+        return 1.0;
+
+    const int maxLen = qMax(currentPage->pageSize.width(), currentPage->pageSize.height());
+    if (maxLen <= 14400)
+        return 1.0; // for pages up to 200x200in (14400x14400 units) use default scaling
+
+    // for larger pages, rescale units so we can have up to 381x381km
+    return qMin(maxLen / 14400.0, 75000.0);
+}
 
 void QPdfEnginePrivate::writeFonts()
 {
@@ -1898,6 +1924,8 @@ void QPdfEnginePrivate::writePage()
     uint resources = requestObject();
     uint annots = requestObject();
 
+    qreal userUnit = calcUserUnit();
+
     addXrefEntry(pages.constLast());
     xprintf("<<\n"
             "/Type /Page\n"
@@ -1905,12 +1933,16 @@ void QPdfEnginePrivate::writePage()
             "/Contents %d 0 R\n"
             "/Resources %d 0 R\n"
             "/Annots %d 0 R\n"
-            "/MediaBox [0 0 %d %d]\n"
-            ">>\n"
-            "endobj\n",
+            "/MediaBox [0 0 %f %f]\n",
             pageRoot, pageStream, resources, annots,
             // make sure we use the pagesize from when we started the page, since the user may have changed it
-            currentPage->pageSize.width(), currentPage->pageSize.height());
+            currentPage->pageSize.width() / userUnit, currentPage->pageSize.height() / userUnit);
+
+    if (pdfVersion >= QPdfEngine::Version_1_6)
+        xprintf("/UserUnit %f\n", userUnit);
+
+    xprintf(">>\n"
+            "endobj\n");
 
     addXrefEntry(resources);
     xprintf("<<\n"
@@ -2982,8 +3014,9 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
 
 QTransform QPdfEnginePrivate::pageMatrix() const
 {
-    qreal scale = 72./resolution;
-    QTransform tmp(scale, 0.0, 0.0, -scale, 0.0, m_pageLayout.fullRectPoints().height());
+    qreal userUnit = calcUserUnit();
+    qreal scale = 72. / userUnit / resolution;
+    QTransform tmp(scale, 0.0, 0.0, -scale, 0.0, m_pageLayout.fullRectPoints().height() / userUnit);
     if (m_pageLayout.mode() != QPageLayout::FullPageMode) {
         QRect r = m_pageLayout.paintRectPixels(resolution);
         tmp.translate(r.left(), r.top());

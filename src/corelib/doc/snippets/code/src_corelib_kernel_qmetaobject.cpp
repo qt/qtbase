@@ -147,4 +147,23 @@ method.invoke(obj,
 QMetaMethod destroyedSignal = QMetaMethod::fromSignal(&QObject::destroyed);
 //! [9]
 
+//! [10]
+    // In the class MainWindow declaration
+    #ifndef Q_MOC_RUN
+    // define the tag text as empty, so the compiler doesn't see it
+    #  define MY_CUSTOM_TAG
+    #endif
+    ...
+    private slots:
+        MY_CUSTOM_TAG void testFunc();
+//! [10]
+
+//! [11]
+    MainWindow win;
+    win.show();
+
+    int functionIndex = win.metaObject()->indexOfSlot("testFunc()");
+    QMetaMethod mm = win.metaObject()->method(functionIndex);
+    qDebug() << mm.tag(); // prints MY_CUSTOM_TAG
+//! [11]
 }

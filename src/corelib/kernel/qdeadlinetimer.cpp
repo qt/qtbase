@@ -75,17 +75,7 @@ Q_DECL_CONST_FUNCTION static inline QPair<qint64, qint64> toSecsAndNSecs(qint64 
     QDeadlineTimer objects can be passed to functions being called to execute
     this operation so they know how long to still operate.
 
-    \code
-    void executeOperation(int msecs)
-    {
-        QDeadlineTimer deadline(msecs);
-        do {
-            if (readFromDevice(deadline.remainingTime())
-                break;
-            waitForReadyRead(deadline);
-        } while (!deadline.hasExpired());
-    }
-    \endcode
+    \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 0
 
     Many QDeadlineTimer functions deal with time out values, which all are
     measured in milliseconds. There are two special values, the same as many
@@ -125,15 +115,7 @@ Q_DECL_CONST_FUNCTION static inline QPair<qint64, qint64> toSecsAndNSecs(qint64 
     \c{std::chrono::time_point} objects. In addition, it is fully compatible
     with the time literals from C++14, which allow one to write code as:
 
-    \code
-        using namespace std::chrono;
-        using namespace std::chrono_literals;
-
-        QDeadlineTimer deadline(30s);
-        device->waitForReadyRead(deadline);
-        if (deadline.remainingTime<nanoseconds>() > 300ms)
-            cleanup();
-    \endcode
+    \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 1
 
     As can be seen in the example above, QDeadlineTimer offers a templated
     version of remainingTime() and deadline() that can be used to return
@@ -145,13 +127,7 @@ Q_DECL_CONST_FUNCTION static inline QPair<qint64, qint64> toSecsAndNSecs(qint64 
     Also note that, due to this conversion, the deadlines will not be precise,
     so the following code is not expected to compare equally:
 
-    \code
-        using namespace std::chrono;
-        using namespace std::chrono_literals;
-        auto now = steady_clock::now();
-        QDeadlineTimer deadline(now + 1s);
-        Q_ASSERT(deadline == now + 1s);
-    \endcode
+    \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 2
 
     \sa QTime, QTimer, QDeadlineTimer, Qt::TimerType
 */
@@ -246,10 +222,7 @@ QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) Q_DECL_NOTHROW
 
     This constructor can be used with C++14's user-defined literals for time, such as in:
 
-    \code
-        using namespace std::chrono_literals;
-        QDeadlineTimer deadline(250ms);
-    \endcode
+    \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 3
 
     For optimization purposes, if \a remaining is zero or negative, this
     function may skip obtaining the current time and may instead use a value
@@ -339,10 +312,7 @@ void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, qint64 nsecs, Qt::Time
 
     This function can be used with C++14's user-defined literals for time, such as in:
 
-    \code
-        using namespace std::chrono_literals;
-        deadline.setRemainingTime(250ms);
-    \endcode
+    \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 4
 
     \note Qt detects the necessary C++14 compiler support by way of the feature
     test recommendations from
@@ -415,9 +385,7 @@ void QDeadlineTimer::setTimerType(Qt::TimerType timerType)
     lock functions in \l QMutex, \l QWaitCondition, \l QSemaphore, or
     \l QReadWriteLock. For example:
 
-    \code
-        mutex.tryLock(deadline.remainingTime());
-    \endcode
+    \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 5
 
     \sa remainingTimeNSecs(), isForever(), hasExpired()
 */
@@ -469,16 +437,7 @@ qint64 QDeadlineTimer::rawRemainingTimeNSecs() const Q_DECL_NOTHROW
     overdue, by subtracting QDeadlineTimer::current() or
     QElapsedTimer::msecsSinceReference(), as in the following example:
 
-    \code
-        qint64 realTimeLeft = deadline.deadline();
-        if (realTimeLeft != (std::numeric_limits<qint64>::max)()) {
-            realTimeLeft -= QDeadlineTimer::current().deadline();
-            // or:
-            //QElapsedTimer timer;
-            //timer.start();
-            //realTimeLeft -= timer.msecsSinceReference();
-        }
-    \endcode
+    \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 6
 
     \note Timers that were created as expired have an indetermine time point in
     the past as their deadline, so the above calculation may not work.
@@ -505,11 +464,7 @@ qint64 QDeadlineTimer::deadline() const Q_DECL_NOTHROW
     overdue, by subtracting QDeadlineTimer::current(), as in the following
     example:
 
-    \code
-        qint64 realTimeLeft = deadline.deadlineNSecs();
-        if (realTimeLeft != std::numeric_limits<qint64>::max())
-            realTimeLeft -= QDeadlineTimer::current().deadlineNSecs();
-    \endcode
+    \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 7
 
     \note Timers that were created as expired have an indetermine time point in
     the past as their deadline, so the above calculation may not work.
@@ -614,9 +569,7 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
     same, false otherwise. The timer type used to create the two deadlines is
     ignored. This function is equivalent to:
 
-    \code
-        return d1.deadlineNSecs() == d2.deadlineNSecs();
-    \endcode
+    \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 8
 
     \note comparing QDeadlineTimer objects with different timer types is
     not supported and may result in unpredictable behavior.
@@ -630,9 +583,7 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
     diferent, false otherwise. The timer type used to create the two deadlines
     is ignored. This function is equivalent to:
 
-    \code
-        return d1.deadlineNSecs() != d2.deadlineNSecs();
-    \endcode
+    \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 9
 
     \note comparing QDeadlineTimer objects with different timer types is
     not supported and may result in unpredictable behavior.
@@ -646,9 +597,7 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
     d2, false otherwise. The timer type used to create the two deadlines is
     ignored. This function is equivalent to:
 
-    \code
-        return d1.deadlineNSecs() < d2.deadlineNSecs();
-    \endcode
+    \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 10
 
     \note comparing QDeadlineTimer objects with different timer types is
     not supported and may result in unpredictable behavior.
@@ -662,9 +611,7 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
     deadline in \a d2, false otherwise. The timer type used to create the two
     deadlines is ignored. This function is equivalent to:
 
-    \code
-        return d1.deadlineNSecs() <= d2.deadlineNSecs();
-    \endcode
+    \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 11
 
     \note comparing QDeadlineTimer objects with different timer types is
     not supported and may result in unpredictable behavior.
@@ -678,9 +625,7 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
     d2, false otherwise. The timer type used to create the two deadlines is
     ignored. This function is equivalent to:
 
-    \code
-        return d1.deadlineNSecs() > d2.deadlineNSecs();
-    \endcode
+    \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 12
 
     \note comparing QDeadlineTimer objects with different timer types is
     not supported and may result in unpredictable behavior.
@@ -694,9 +639,7 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
     deadline in \a d2, false otherwise. The timer type used to create the two
     deadlines is ignored. This function is equivalent to:
 
-    \code
-        return d1.deadlineNSecs() >= d2.deadlineNSecs();
-    \endcode
+    \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 13
 
     \note comparing QDeadlineTimer objects with different timer types is
     not supported and may result in unpredictable behavior.

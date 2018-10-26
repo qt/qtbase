@@ -61,3 +61,11 @@
     // as it goes out of scope.
 //! [0]
 }
+
+//! [1]
+  QFile f(":/resources/file.txt");
+  QTemporaryFile::createNativeFile(f); // Returns a pointer to a temporary file
+
+  QFile f("/users/qt/file.txt");
+  QTemporaryFile::createNativeFile(f); // Returns 0
+//! [1]

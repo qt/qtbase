@@ -7,9 +7,9 @@
 #ifndef COMPILER_PREPROCESSOR_TOKENIZER_H_
 #define COMPILER_PREPROCESSOR_TOKENIZER_H_
 
-#include "Input.h"
-#include "Lexer.h"
-#include "pp_utils.h"
+#include "common/angleutils.h"
+#include "compiler/preprocessor/Input.h"
+#include "compiler/preprocessor/Lexer.h"
 
 namespace pp
 {
@@ -34,9 +34,9 @@ class Tokenizer : public Lexer
     };
 
     Tokenizer(Diagnostics *diagnostics);
-    ~Tokenizer();
+    ~Tokenizer() override;
 
-    bool init(size_t count, const char * const string[], const int length[]);
+    bool init(size_t count, const char *const string[], const int length[]);
 
     void setFileNumber(int file);
     void setLineNumber(int line);
@@ -45,13 +45,12 @@ class Tokenizer : public Lexer
     void lex(Token *token) override;
 
   private:
-    PP_DISALLOW_COPY_AND_ASSIGN(Tokenizer);
     bool initScanner();
     void destroyScanner();
 
-    void *mHandle;  // Scanner handle.
-    Context mContext;  // Scanner extra.
-    size_t mMaxTokenSize; // Maximum token size
+    void *mHandle;         // Scanner handle.
+    Context mContext;      // Scanner extra.
+    size_t mMaxTokenSize;  // Maximum token size
 };
 
 }  // namespace pp

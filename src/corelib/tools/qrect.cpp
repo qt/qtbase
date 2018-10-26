@@ -713,10 +713,7 @@ QRect QRect::normalized() const Q_DECL_NOTHROW
     Returns a copy of the rectangle that has its width and height
     exchanged:
 
-    \code
-    QRect r = {15, 51, 42, 24};
-    r = r.transposed(); // r == {15, 51, 24, 42}
-    \endcode
+    \snippet code/src_corelib_tools_qrect.cpp 2
 
     \sa QSize::transposed()
 */
@@ -1863,10 +1860,7 @@ QRectF QRectF::normalized() const Q_DECL_NOTHROW
     Returns a copy of the rectangle that has its width and height
     exchanged:
 
-    \code
-    QRectF r = {1.5, 5.1, 4.2, 2.4};
-    r = r.transposed(); // r == {1.5, 5.1, 2.4, 4.2}
-    \endcode
+    \snippet code/src_corelib_tools_qrect.cpp 3
 
     \sa QSizeF::transposed()
 */

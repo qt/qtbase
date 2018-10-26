@@ -43,11 +43,14 @@ void
 FreeActionsInfo(ActionsInfo *info);
 
 bool
-HandleActionDef(ExprDef *def, struct xkb_keymap *keymap,
-                union xkb_action *action, ActionsInfo *info);
+HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
+                const struct xkb_mod_set *mods, ExprDef *def,
+                union xkb_action *action);
 
 bool
-SetActionField(struct xkb_keymap *keymap, const char *elem, const char *field,
-               ExprDef *array_ndx, ExprDef *value, ActionsInfo *info);
+SetActionField(struct xkb_context *ctx, ActionsInfo *info,
+               struct xkb_mod_set *mods, const char *elem,
+               const char *field, ExprDef *array_ndx, ExprDef *value);
+
 
 #endif

@@ -9,7 +9,10 @@
 
 #include "compiler/translator/RewriteDoWhile.h"
 
-#include "compiler/translator/IntermNode.h"
+#include "compiler/translator/IntermTraverse.h"
+
+namespace sh
+{
 
 namespace
 {
@@ -41,17 +44,15 @@ namespace
 class DoWhileRewriter : public TIntermTraverser
 {
   public:
-    DoWhileRewriter() : TIntermTraverser(true, false, false) {}
-
-    bool visitAggregate(Visit, TIntermAggregate *node) override
+    DoWhileRewriter(TSymbolTable *symbolTable) : TIntermTraverser(true, false, false, symbolTable)
     {
-        // A well-formed AST can only have do-while in EOpSequence which represent lists of
-        // statements. By doing a prefix traversal we are able to replace the do-while in the
-        // sequence directly as the content of the do-while will be traversed later.
-        if (node->getOp() != EOpSequence)
-        {
-            return true;
-        }
+    }
+
+    bool visitBlock(Visit, TIntermBlock *node) override
+    {
+        // A well-formed AST can only have do-while inside TIntermBlock. By doing a prefix traversal
+        // we are able to replace the do-while in the sequence directly as the content of the
+        // do-while will be traversed later.
 
         TIntermSequence *statements = node->getSequence();
 
@@ -68,10 +69,13 @@ class DoWhileRewriter : public TIntermTraverser
                 continue;
             }
 
+            // Found a loop to change.
+            nextTemporaryId();
+
             TType boolType = TType(EbtBool);
 
             // bool temp = false;
-            TIntermAggregate *tempDeclaration = nullptr;
+            TIntermDeclaration *tempDeclaration = nullptr;
             {
                 TConstantUnion *falseConstant = new TConstantUnion();
                 falseConstant->setBConst(false);
@@ -95,23 +99,22 @@ class DoWhileRewriter : public TIntermTraverser
             //     break;
             //   }
             // }
-            TIntermSelection *breakIf = nullptr;
+            TIntermIfElse *breakIf = nullptr;
             {
                 TIntermBranch *breakStatement = new TIntermBranch(EOpBreak, nullptr);
 
-                TIntermAggregate *breakBlock = new TIntermAggregate(EOpSequence);
+                TIntermBlock *breakBlock = new TIntermBlock();
                 breakBlock->getSequence()->push_back(breakStatement);
 
-                TIntermUnary *negatedCondition = new TIntermUnary(EOpLogicalNot);
-                negatedCondition->setOperand(loop->getCondition());
+                TIntermUnary *negatedCondition =
+                    new TIntermUnary(EOpLogicalNot, loop->getCondition());
 
-                TIntermSelection *innerIf =
-                    new TIntermSelection(negatedCondition, breakBlock, nullptr);
+                TIntermIfElse *innerIf = new TIntermIfElse(negatedCondition, breakBlock, nullptr);
 
-                TIntermAggregate *innerIfBlock = new TIntermAggregate(EOpSequence);
+                TIntermBlock *innerIfBlock = new TIntermBlock();
                 innerIfBlock->getSequence()->push_back(innerIf);
 
-                breakIf = new TIntermSelection(createTempSymbol(boolType), innerIfBlock, nullptr);
+                breakIf = new TIntermIfElse(createTempSymbol(boolType), innerIfBlock, nullptr);
             }
 
             // Assemble the replacement loops, reusing the do-while loop's body and inserting our
@@ -122,14 +125,10 @@ class DoWhileRewriter : public TIntermTraverser
                 trueConstant->setBConst(true);
                 TIntermTyped *trueValue = new TIntermConstantUnion(trueConstant, boolType);
 
-                TIntermAggregate *body = nullptr;
-                if (loop->getBody() != nullptr)
+                TIntermBlock *body = loop->getBody();
+                if (body == nullptr)
                 {
-                    body = loop->getBody()->getAsAggregate();
-                }
-                else
-                {
-                    body = new TIntermAggregate(EOpSequence);
+                    body = new TIntermBlock();
                 }
                 auto sequence = body->getSequence();
                 sequence->insert(sequence->begin(), assignTrue);
@@ -143,8 +142,6 @@ class DoWhileRewriter : public TIntermTraverser
             replacement.push_back(newLoop);
 
             node->replaceChildNodeWithMultiple(loop, replacement);
-
-            nextTemporaryIndex();
         }
         return true;
     }
@@ -152,12 +149,11 @@ class DoWhileRewriter : public TIntermTraverser
 
 }  // anonymous namespace
 
-void RewriteDoWhile(TIntermNode *root, unsigned int *temporaryIndex)
+void RewriteDoWhile(TIntermNode *root, TSymbolTable *symbolTable)
 {
-    ASSERT(temporaryIndex != 0);
-
-    DoWhileRewriter rewriter;
-    rewriter.useTemporaryIndex(temporaryIndex);
+    DoWhileRewriter rewriter(symbolTable);
 
     root->traverse(&rewriter);
 }
+
+}  // namespace sh

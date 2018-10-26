@@ -10,12 +10,18 @@
 #ifndef COMPILER_TRANSLATOR_REMOVEDYNAMICINDEXING_H_
 #define COMPILER_TRANSLATOR_REMOVEDYNAMICINDEXING_H_
 
+namespace sh
+{
+
 class TIntermNode;
 class TSymbolTable;
+class PerformanceDiagnostics;
 
 void RemoveDynamicIndexing(TIntermNode *root,
-                           unsigned int *temporaryIndex,
-                           const TSymbolTable &symbolTable,
-                           int shaderVersion);
+                           TSymbolTable *symbolTable,
+                           int shaderVersion,
+                           PerformanceDiagnostics *perfDiagnostics);
+
+}  // namespace sh
 
 #endif  // COMPILER_TRANSLATOR_REMOVEDYNAMICINDEXING_H_

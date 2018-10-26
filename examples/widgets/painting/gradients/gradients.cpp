@@ -317,13 +317,11 @@ GradientWidget::GradientWidget(QWidget *parent)
 
     QPushButton *showSourceButton = new QPushButton(mainGroup);
     showSourceButton->setText(tr("Show Source"));
-#ifdef QT_OPENGL_SUPPORT
+#if QT_CONFIG(opengl)
     QPushButton *enableOpenGLButton = new QPushButton(mainGroup);
     enableOpenGLButton->setText(tr("Use OpenGL"));
     enableOpenGLButton->setCheckable(true);
     enableOpenGLButton->setChecked(m_renderer->usesOpenGL());
-    if (!QGLFormat::hasOpenGL())
-        enableOpenGLButton->hide();
 #endif
     QPushButton *whatsThisButton = new QPushButton(mainGroup);
     whatsThisButton->setText(tr("What's This?"));
@@ -343,7 +341,7 @@ GradientWidget::GradientWidget(QWidget *parent)
     mainGroupLayout->addWidget(defaultsGroup);
     mainGroupLayout->addStretch(1);
     mainGroupLayout->addWidget(showSourceButton);
-#ifdef QT_OPENGL_SUPPORT
+#if QT_CONFIG(opengl)
     mainGroupLayout->addWidget(enableOpenGLButton);
 #endif
     mainGroupLayout->addWidget(whatsThisButton);
@@ -406,7 +404,7 @@ GradientWidget::GradientWidget(QWidget *parent)
 
     connect(showSourceButton, &QPushButton::clicked,
             m_renderer, &GradientRenderer::showSource);
-#ifdef QT_OPENGL_SUPPORT
+#if QT_CONFIG(opengl)
     connect(enableOpenGLButton, QOverload<bool>::of(&QPushButton::clicked),
             m_renderer, &ArthurFrame::enableOpenGL);
 #endif

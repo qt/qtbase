@@ -26,7 +26,7 @@
 /*
  * References for the lonesome traveler:
  * Xkb protocol specification:
- *      http://www.x.org/releases/current/doc/kbproto/xkbproto.html
+ *      https://www.x.org/releases/current/doc/kbproto/xkbproto.html
  * The XCB xkb XML protocol file:
  *      /user/share/xcb/xkb.xml
  * The XCB xkb header file:
@@ -218,8 +218,8 @@ translate_action(union xkb_action *action, const xcb_xkb_action_t *wire)
     case XCB_XKB_SA_TYPE_MOVE_PTR:
         action->type = ACTION_TYPE_PTR_MOVE;
 
-        action->ptr.x = (wire->moveptr.xLow | (wire->moveptr.xHigh << 8));
-        action->ptr.y = (wire->moveptr.yLow | (wire->moveptr.yHigh << 8));
+        action->ptr.x = (int16_t) (wire->moveptr.xLow | ((uint16_t) wire->moveptr.xHigh << 8));
+        action->ptr.y = (int16_t) (wire->moveptr.yLow | ((uint16_t) wire->moveptr.yHigh << 8));
 
         if (!(wire->moveptr.flags & XCB_XKB_SA_MOVE_PTR_FLAG_NO_ACCELERATION))
             action->ptr.flags |= ACTION_ACCEL;
@@ -298,6 +298,20 @@ translate_action(union xkb_action *action, const xcb_xkb_action_t *wire)
     case XCB_XKB_SA_TYPE_LOCK_DEVICE_BTN:
     case XCB_XKB_SA_TYPE_DEVICE_VALUATOR:
         action->type = ACTION_TYPE_NONE;
+        break;
+
+    default:
+        if (wire->type < ACTION_TYPE_PRIVATE) {
+            action->type = ACTION_TYPE_NONE;
+            break;
+        }
+
+        /* Treat high unknown actions as Private actions. */
+        action->priv.type = wire->noaction.type;
+        STATIC_ASSERT(sizeof(action->priv.data) == 7 &&
+                      sizeof(wire->noaction.pad0) == 7,
+                      "The private action data must be 7 bytes long!");
+        memcpy(action->priv.data, wire->noaction.pad0, 7);
         break;
     }
 }
@@ -434,6 +448,7 @@ get_sym_maps(struct xkb_keymap *keymap, xcb_connection_t *conn,
                 const xkb_layout_index_t group = j / wire_sym_map->width;
                 const xkb_level_index_t level = j % wire_sym_map->width;
 
+                assert(key->groups[group].type != NULL);
                 if (level < key->groups[group].type->num_levels &&
                     wire_keysym != XKB_KEY_NoSymbol) {
                     key->groups[group].levels[level].num_syms = 1;
@@ -508,13 +523,13 @@ get_vmods(struct xkb_keymap *keymap, xcb_connection_t *conn,
 {
     uint8_t *iter = xcb_xkb_get_map_map_vmods_rtrn(map);
 
-    darray_resize0(keymap->mods,
-                   NUM_REAL_MODS + msb_pos(reply->virtualMods));
+    keymap->mods.num_mods =
+        NUM_REAL_MODS + MIN(msb_pos(reply->virtualMods), NUM_VMODS);
 
     for (unsigned i = 0; i < NUM_VMODS; i++) {
         if (reply->virtualMods & (1u << i)) {
             uint8_t wire = *iter;
-            struct xkb_mod *mod = &darray_item(keymap->mods, NUM_REAL_MODS + i);
+            struct xkb_mod *mod = &keymap->mods.mods[NUM_REAL_MODS + i];
 
             mod->type = MOD_VIRT;
             mod->mapping = translate_mods(wire, 0, 0);
@@ -685,12 +700,12 @@ get_indicators(struct xkb_keymap *keymap, xcb_connection_t *conn,
     xcb_xkb_indicator_map_iterator_t iter =
         xcb_xkb_get_indicator_map_maps_iterator(reply);
 
-    darray_resize0(keymap->leds, msb_pos(reply->which));
+    keymap->num_leds = msb_pos(reply->which);
 
     for (unsigned i = 0; i < NUM_INDICATORS; i++) {
         if (reply->which & (1u << i)) {
             xcb_xkb_indicator_map_t *wire = iter.data;
-            struct xkb_led *led = &darray_item(keymap->leds, i);
+            struct xkb_led *led = &keymap->leds[i];
 
             if (wire->whichGroups & XCB_XKB_IM_GROUPS_WHICH_USE_BASE)
                 led->which_groups |= XKB_STATE_LAYOUT_DEPRESSED;
@@ -789,7 +804,7 @@ get_sym_interprets(struct xkb_keymap *keymap, xcb_connection_t *conn,
         }
 
         sym_interpret->level_one_only =
-            !!(wire->match & XCB_XKB_SYM_INTERP_MATCH_LEVEL_ONE_ONLY);
+            (wire->match & XCB_XKB_SYM_INTERP_MATCH_LEVEL_ONE_ONLY);
         sym_interpret->mods = wire->mods;
 
         if (wire->virtualMod == NO_MODIFIER)
@@ -797,7 +812,7 @@ get_sym_interprets(struct xkb_keymap *keymap, xcb_connection_t *conn,
         else
             sym_interpret->virtual_mod = NUM_REAL_MODS + wire->virtualMod;
 
-        sym_interpret->repeat = !!(wire->flags & 0x01);
+        sym_interpret->repeat = (wire->flags & 0x01);
         translate_action(&sym_interpret->action,
                          (xcb_xkb_action_t *) &wire->action);
 
@@ -887,12 +902,12 @@ get_indicator_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
 {
     xcb_atom_t *iter = xcb_xkb_get_names_value_list_indicator_names(list);
 
-    FAIL_UNLESS(msb_pos(reply->indicators) <= darray_size(keymap->leds));
+    FAIL_UNLESS(msb_pos(reply->indicators) <= keymap->num_leds);
 
     for (unsigned i = 0; i < NUM_INDICATORS; i++) {
         if (reply->indicators & (1u << i)) {
             xcb_atom_t wire = *iter;
-            struct xkb_led *led = &darray_item(keymap->leds, i);
+            struct xkb_led *led = &keymap->leds[i];
 
             if (!adopt_atom(keymap->ctx, conn, wire, &led->name))
                 return false;
@@ -919,12 +934,13 @@ get_vmod_names(struct xkb_keymap *keymap, xcb_connection_t *conn,
      * tells us which vmods exist (a vmod must have a name), so we fix
      * up the size here.
      */
-    darray_resize0(keymap->mods, NUM_REAL_MODS + msb_pos(reply->virtualMods));
+    keymap->mods.num_mods =
+        NUM_REAL_MODS + MIN(msb_pos(reply->virtualMods), NUM_VMODS);
 
     for (unsigned i = 0; i < NUM_VMODS; i++) {
         if (reply->virtualMods & (1u << i)) {
             xcb_atom_t wire = *iter;
-            struct xkb_mod *mod = &darray_item(keymap->mods, NUM_REAL_MODS + i);
+            struct xkb_mod *mod = &keymap->mods.mods[NUM_REAL_MODS + i];
 
             if (!adopt_atom(keymap->ctx, conn, wire, &mod->name))
                 return false;
@@ -1115,7 +1131,7 @@ get_controls(struct xkb_keymap *keymap, xcb_connection_t *conn,
     FAIL_UNLESS(keymap->max_key_code < XCB_XKB_CONST_PER_KEY_BIT_ARRAY_SIZE * 8);
 
     for (xkb_keycode_t i = keymap->min_key_code; i <= keymap->max_key_code; i++)
-        keymap->keys[i].repeats = !!(reply->perKeyRepeat[i / 8] & (1 << (i % 8)));
+        keymap->keys[i].repeats = (reply->perKeyRepeat[i / 8] & (1 << (i % 8)));
 
     free(reply);
     return true;
@@ -1139,7 +1155,7 @@ xkb_x11_keymap_new_from_device(struct xkb_context *ctx,
         return NULL;
     }
 
-    if (device_id < 0 || device_id > 255) {
+    if (device_id < 0 || device_id > 127) {
         log_err_func(ctx, "illegal device ID: %d\n", device_id);
         return NULL;
     }

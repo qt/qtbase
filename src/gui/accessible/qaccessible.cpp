@@ -1309,14 +1309,7 @@ QColor QAccessibleInterface::backgroundColor() const
 
     For example to notify about a focus change when re-implementing QWidget::setFocus,
     the event could be used as follows:
-    \code
-    void MyWidget::setFocus(Qt::FocusReason reason)
-    {
-        // handle custom focus setting...
-        QAccessibleEvent event(f, QAccessible::Focus);
-        QAccessible::updateAccessibility(&event);
-    }
-    \endcode
+    \snippet code/src_gui_accessible_qaccessible.cpp 2
 
     To enable in process screen readers, all events must be sent after the change has happened.
 */
@@ -1826,14 +1819,7 @@ void QAccessibleInterface::virtual_hook(int /*id*/, void * /*data*/)
     Qt's QLineEdit for example has its accessibility support
     implemented in QAccessibleLineEdit.
 
-    \code
-void *QAccessibleLineEdit::interface_cast(QAccessible::InterfaceType t)
-{
-    if (t == QAccessible::TextInterface)
-        return static_cast<QAccessibleTextInterface*>(this);
-    return QAccessibleWidget::interface_cast(t);
-}
-    \endcode
+    \snippet code/src_gui_accessible_qaccessible.cpp 3
 
     \sa QAccessible::InterfaceType, QAccessibleTextInterface,
     QAccessibleValueInterface, QAccessibleActionInterface,

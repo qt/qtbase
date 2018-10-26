@@ -142,9 +142,7 @@ QT_BEGIN_NAMESPACE
     would just predeclare the private subclass \c EmployeeData in \c
     {employee.h} this way:
 
-    \code
-    class EmployeeData;
-    \endcode
+    \snippet code/src_corelib_tools_qshareddata.cpp 0
 
     If we had done it that way here, the copy constructor shown would be
     required. Since the copy constructor is trivial, you might as well
@@ -396,13 +394,7 @@ QT_BEGIN_NAMESPACE
     a template-specialization of this function for your own type, like
     the example below:
 
-    \code
-      template<>
-      EmployeeData *QSharedDataPointer<EmployeeData>::clone()
-      {
-          return d->clone();
-      }
-    \endcode
+    \snippet code/src_corelib_tools_qshareddata.cpp 1
 
     In the example above, the template specialization for the clone()
     function calls the \e {EmployeeData::clone()} virtual function. A
@@ -554,10 +546,7 @@ QT_BEGIN_NAMESPACE
     \warning relying on such \c{static_cast} is potentially dangerous,
     because it allows code like this to compile:
 
-    \code
-        QExplicitlySharedDataPointer<Base> base(new Base);
-        QExplicitlySharedDataPointer<Derived> derived(base); // !!! DANGER !!!
-    \endcode
+    \snippet code/src_corelib_tools_qshareddata.cpp 2
 
     Starting from Qt 5.4 the cast is disabled by default. It is
     possible to enable it back by defining the

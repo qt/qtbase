@@ -43,6 +43,11 @@
 #include "qxcbobject.h"
 
 #include <xcb/xcb_keysyms.h>
+#if QT_CONFIG(xkb)
+#define explicit dont_use_cxx_explicit
+#include <xcb/xkb.h>
+#undef explicit
+#endif
 
 #include <xkbcommon/xkbcommon.h>
 #if QT_CONFIG(xkb)
@@ -61,6 +66,8 @@ public:
     QXcbKeyboard(QXcbConnection *connection);
 
     ~QXcbKeyboard();
+
+    void selectEvents();
 
     void handleKeyPressEvent(const xcb_key_press_event_t *event);
     void handleKeyReleaseEvent(const xcb_key_release_event_t *event);

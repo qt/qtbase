@@ -70,6 +70,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaTrayIcon)
 
 class QWindow;
 class QPlatformScreen;
+class QPlatformWindow;
 class QWindowsMenuBar;
 class QWindowsScreenManager;
 class QWindowsTabletSupport;
@@ -104,6 +105,7 @@ struct QWindowsUser32DLL
     typedef BOOL (WINAPI *EnableNonClientDpiScaling)(HWND);
     typedef int  (WINAPI *GetWindowDpiAwarenessContext)(HWND);
     typedef int  (WINAPI *GetAwarenessFromDpiAwarenessContext)(int);
+    typedef BOOL (WINAPI *SystemParametersInfoForDpi)(UINT, UINT, PVOID, UINT, UINT);
 
     // Windows pointer functions (Windows 8 or later).
     EnableMouseInPointer enableMouseInPointer = nullptr;
@@ -132,6 +134,7 @@ struct QWindowsUser32DLL
     EnableNonClientDpiScaling enableNonClientDpiScaling = nullptr;
     GetWindowDpiAwarenessContext getWindowDpiAwarenessContext = nullptr;
     GetAwarenessFromDpiAwarenessContext getAwarenessFromDpiAwarenessContext = nullptr;
+    SystemParametersInfoForDpi systemParametersInfoForDpi = nullptr;
 };
 
 // Shell scaling library (Windows 8.1 onwards)
@@ -236,6 +239,17 @@ public:
     static QByteArray comErrorString(HRESULT hr);
     bool asyncExpose() const;
     void setAsyncExpose(bool value);
+
+    static bool systemParametersInfo(unsigned action, unsigned param, void *out, unsigned dpi = 0);
+    static bool systemParametersInfoForScreen(unsigned action, unsigned param, void *out,
+                                              const QPlatformScreen *screen = nullptr);
+    static bool systemParametersInfoForWindow(unsigned action, unsigned param, void *out,
+                                              const QPlatformWindow *win = nullptr);
+    static bool nonClientMetrics(NONCLIENTMETRICS *ncm, unsigned dpi = 0);
+    static bool nonClientMetricsForScreen(NONCLIENTMETRICS *ncm,
+                                          const QPlatformScreen *screen = nullptr);
+    static bool nonClientMetricsForWindow(NONCLIENTMETRICS *ncm,
+                                          const QPlatformWindow *win = nullptr);
 
     static DWORD readAdvancedExplorerSettings(const wchar_t *subKey, DWORD defaultValue);
 

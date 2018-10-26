@@ -89,7 +89,7 @@ public:
 
     qreal opacity() const { return m_opacity; }
     void setOpacity(qreal value);
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     void animateShow(bool visible) { startOpacityAnimation(visible ? 1.0 : 0.0); }
 #endif
 
@@ -101,7 +101,7 @@ private slots:
     void updateCursor();
 
 private:
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     void startOpacityAnimation(qreal endValue);
 #endif
     QLineEditPrivate *lineEditPrivate() const;

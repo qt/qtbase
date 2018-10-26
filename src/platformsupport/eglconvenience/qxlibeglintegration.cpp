@@ -91,21 +91,21 @@ VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay
             int visualRedSize = qPopulationCount(chosenVisualInfo->red_mask);
             int visualGreenSize = qPopulationCount(chosenVisualInfo->green_mask);
             int visualBlueSize = qPopulationCount(chosenVisualInfo->blue_mask);
-            int visualAlphaSize = chosenVisualInfo->depth == 32 ? 8 : 0;
+            int visualAlphaSize = chosenVisualInfo->depth - visualRedSize - visualBlueSize - visualGreenSize;
 
-            const bool visualMatchesConfig = visualRedSize == configRedSize
-                && visualGreenSize == configGreenSize
-                && visualBlueSize == configBlueSize
-                && visualAlphaSize == configAlphaSize;
+            const bool visualMatchesConfig = visualRedSize >= configRedSize
+                && visualGreenSize >= configGreenSize
+                && visualBlueSize >= configBlueSize
+                && visualAlphaSize >= configAlphaSize;
 
             // In some cases EGL tends to suggest a 24-bit visual for 8888
             // configs. In such a case we have to fall back to XGetVisualInfo.
             if (!visualMatchesConfig) {
                 visualId = 0;
                 qCDebug(lcXlibEglDebug,
-                        "EGL suggested using X Visual ID %d (%d %d %d depth %d) for EGL config %d"
+                        "EGL suggested using X Visual ID %d (%d %d %d %d depth %d) for EGL config %d"
                         "(%d %d %d %d), but this is incompatible",
-                        (int)visualId, visualRedSize, visualGreenSize, visualBlueSize, chosenVisualInfo->depth,
+                        (int)visualId, visualRedSize, visualGreenSize, visualBlueSize, visualAlphaSize, chosenVisualInfo->depth,
                         configId, configRedSize, configGreenSize, configBlueSize, configAlphaSize);
             }
         } else {

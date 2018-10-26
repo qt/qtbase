@@ -75,12 +75,16 @@ err:
 XKB_EXPORT int
 xkb_context_include_path_append_default(struct xkb_context *ctx)
 {
-    const char *home;
+    const char *home, *root;
     char *user_path;
     int err;
     int ret = 0;
 
-    ret |= xkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_ROOT);
+    root = secure_getenv("XKB_CONFIG_ROOT");
+    if (root != NULL)
+       ret |= xkb_context_include_path_append(ctx, root);
+    else
+       ret |= xkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_ROOT);
 
     home = secure_getenv("HOME");
     if (!home)

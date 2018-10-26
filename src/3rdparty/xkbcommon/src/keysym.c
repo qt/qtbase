@@ -76,7 +76,7 @@ compare_by_name(const void *a, const void *b)
 {
     const char *key = a;
     const struct name_keysym *entry = b;
-    return strcasecmp(key, get_name(entry));
+    return istrcmp(key, get_name(entry));
 }
 
 XKB_EXPORT int
@@ -109,7 +109,7 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
 /*
  * Find the correct keysym if one case-insensitive match is given.
  *
- * The name_to_keysym table is sorted by strcasecmp(). So bsearch() may return
+ * The name_to_keysym table is sorted by istrcmp(). So bsearch() may return
  * _any_ of all possible case-insensitive duplicates. This function searches the
  * returned entry @entry, all previous and all next entries that match by
  * case-insensitive comparison and returns the exact match to @name. If @icase
@@ -138,7 +138,7 @@ find_sym(const struct name_keysym *entry, const char *name, bool icase)
     for (iter = entry - 1; iter >= name_to_keysym; --iter) {
         if (!icase && strcmp(get_name(iter), name) == 0)
             return iter;
-        if (strcasecmp(get_name(iter), get_name(entry)) != 0)
+        if (istrcmp(get_name(iter), get_name(entry)) != 0)
             break;
         if (icase && xkb_keysym_is_lower(iter->keysym))
             return iter;
@@ -148,7 +148,7 @@ find_sym(const struct name_keysym *entry, const char *name, bool icase)
     for (iter = entry + 1; iter < last; ++iter) {
         if (!icase && strcmp(get_name(iter), name) == 0)
             return iter;
-        if (strcasecmp(get_name(iter), get_name(entry)) != 0)
+        if (istrcmp(get_name(iter), get_name(entry)) != 0)
             break;
         if (icase && xkb_keysym_is_lower(iter->keysym))
             return iter;
@@ -165,7 +165,7 @@ xkb_keysym_from_name(const char *s, enum xkb_keysym_flags flags)
     const struct name_keysym *entry;
     char *tmp;
     xkb_keysym_t val;
-    bool icase = !!(flags & XKB_KEYSYM_CASE_INSENSITIVE);
+    bool icase = (flags & XKB_KEYSYM_CASE_INSENSITIVE);
 
     if (flags & ~XKB_KEYSYM_CASE_INSENSITIVE)
         return XKB_KEY_NoSymbol;
@@ -223,6 +223,18 @@ xkb_keysym_is_keypad(xkb_keysym_t keysym)
     return keysym >= XKB_KEY_KP_Space && keysym <= XKB_KEY_KP_Equal;
 }
 
+
+bool
+xkb_keysym_is_modifier(xkb_keysym_t keysym)
+{
+    return
+        (keysym >= XKB_KEY_Shift_L && keysym <= XKB_KEY_Hyper_R) ||
+        /* libX11 only goes upto XKB_KEY_ISO_Level5_Lock. */
+        (keysym >= XKB_KEY_ISO_Lock && keysym <= XKB_KEY_ISO_Last_Group_Lock) ||
+        keysym == XKB_KEY_Mode_switch ||
+        keysym == XKB_KEY_Num_Lock;
+}
+
 static void
 XConvertCase(xkb_keysym_t sym, xkb_keysym_t *lower, xkb_keysym_t *upper);
 
@@ -252,7 +264,7 @@ xkb_keysym_is_upper(xkb_keysym_t ks)
     return (ks == upper ? true : false);
 }
 
-xkb_keysym_t
+XKB_EXPORT xkb_keysym_t
 xkb_keysym_to_lower(xkb_keysym_t ks)
 {
     xkb_keysym_t lower, upper;
@@ -262,7 +274,7 @@ xkb_keysym_to_lower(xkb_keysym_t ks)
     return lower;
 }
 
-xkb_keysym_t
+XKB_EXPORT xkb_keysym_t
 xkb_keysym_to_upper(xkb_keysym_t ks)
 {
     xkb_keysym_t lower, upper;

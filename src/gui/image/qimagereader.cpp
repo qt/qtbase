@@ -165,6 +165,7 @@
 #endif
 
 #include <private/qimagereaderwriterhelpers_p.h>
+#include <qtgui_tracepoints_p.h>
 
 #include <algorithm>
 
@@ -1250,7 +1251,18 @@ bool QImageReader::read(QImage *image)
         d->handler->setOption(QImageIOHandler::Quality, d->quality);
 
     // read the image
-    if (!d->handler->read(image)) {
+    if (Q_TRACE_ENABLED(QImageReader_read_before_reading)) {
+        QString fileName = QStringLiteral("unknown");
+        if (QFile *file = qobject_cast<QFile *>(d->device))
+            fileName = file->fileName();
+        Q_TRACE(QImageReader_read_before_reading, this, fileName);
+    }
+
+    const bool result = d->handler->read(image);
+
+    Q_TRACE(QImageReader_read_after_reading, this, result);
+
+    if (!result) {
         d->imageReaderError = InvalidDataError;
         d->errorString = QImageReader::tr("Unable to read image data");
         return false;

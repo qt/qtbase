@@ -159,9 +159,10 @@ adopt_atoms(struct xkb_context *ctx, xcb_connection_t *conn,
 {
     enum { SIZE = 128 };
     xcb_get_atom_name_cookie_t cookies[SIZE];
+    const size_t num_batches = ROUNDUP(count, SIZE) / SIZE;
 
     /* Send and collect the atoms in batches of reasonable SIZE. */
-    for (size_t batch = 0; batch <= count / SIZE; batch++) {
+    for (size_t batch = 0; batch < num_batches; batch++) {
         const size_t start = batch * SIZE;
         const size_t stop = min((batch + 1) * SIZE, count);
 
@@ -195,15 +196,12 @@ adopt_atoms(struct xkb_context *ctx, xcb_connection_t *conn,
 
             /*
              * If we don't discard the uncollected replies, they just
-             * sit there waiting. Sad.
+             * sit in the XCB queue waiting forever. Sad.
              */
 err_discard:
-            for (size_t j = i + 1; j < stop; j++) {
-                if (from[j] != XCB_ATOM_NONE) {
-                    reply = xcb_get_atom_name_reply(conn, cookies[j % SIZE], NULL);
-                    free(reply);
-                }
-            }
+            for (size_t j = i + 1; j < stop; j++)
+                if (from[j] != XCB_ATOM_NONE)
+                    xcb_discard_reply(conn, cookies[j % SIZE].sequence);
             return false;
         }
     }

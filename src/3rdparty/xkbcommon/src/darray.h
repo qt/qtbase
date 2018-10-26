@@ -23,7 +23,7 @@
 #ifndef CCAN_DARRAY_H
 #define CCAN_DARRAY_H
 
-/* Originally taken from: http://ccodearchive.net/info/darray.html
+/* Originally taken from: https://ccodearchive.net/info/darray.html
  * But modified for libxkbcommon. */
 
 #include <stdlib.h>
@@ -41,6 +41,13 @@
 
 #define darray_free(arr) do { \
     free((arr).item); \
+    darray_init(arr); \
+} while (0)
+
+#define darray_steal(arr, to, to_size) do { \
+    *(to) = (arr).item; \
+    if (to_size) \
+        *(unsigned int *) (to_size) = (arr).size; \
     darray_init(arr); \
 } while (0)
 
@@ -78,7 +85,6 @@ typedef darray (unsigned long)  darray_ulong;
 #define darray_item(arr, i)     ((arr).item[i])
 #define darray_size(arr)        ((arr).size)
 #define darray_empty(arr)       ((arr).size == 0)
-#define darray_mem(arr, offset) ((arr).item + (offset))
 
 /*** Insertion (single item) ***/
 
@@ -98,11 +104,15 @@ typedef darray (unsigned long)  darray_ulong;
 #define darray_from_items(arr, items, count) do { \
     unsigned __count = (count); \
     darray_resize(arr, __count); \
-    memcpy((arr).item, items, __count * sizeof(*(arr).item)); \
+    if (__count != 0) \
+        memcpy((arr).item, items, __count * sizeof(*(arr).item)); \
 } while (0)
 
 #define darray_copy(arr_to, arr_from) \
     darray_from_items((arr_to), (arr_from).item, (arr_from).size)
+
+#define darray_concat(arr_to, arr_from) \
+    darray_append_items((arr_to), (arr_from).item, (arr_from).size)
 
 /*** String buffer ***/
 
@@ -160,6 +170,12 @@ typedef darray (unsigned long)  darray_ulong;
                                               sizeof(*(arr).item))); \
 } while (0)
 
+#define darray_shrink(arr) do { \
+    if ((arr).size > 0) \
+        (arr).item = realloc((arr).item, \
+                             ((arr).alloc = (arr).size) * sizeof(*(arr).item)); \
+} while (0)
+
 static inline unsigned
 darray_next_alloc(unsigned alloc, unsigned need, unsigned itemSize)
 {
@@ -189,8 +205,5 @@ darray_next_alloc(unsigned alloc, unsigned need, unsigned itemSize)
     for ((idx) = (from), (val) = &(arr).item[0]; \
          (idx) < (arr).size; \
          (idx)++, (val)++)
-
-#define darray_foreach_reverse(i, arr) \
-    for ((i) = &(arr).item[(arr).size]; (i)-- > &(arr).item[0]; )
 
 #endif /* CCAN_DARRAY_H */

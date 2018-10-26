@@ -288,4 +288,121 @@ __eglMustCastToProperFunctionPointerType EGLAPIENTRY eglGetProcAddress(const cha
     return egl::GetProcAddress(procname);
 }
 
+EGLStreamKHR EGLAPIENTRY eglCreateStreamKHR(EGLDisplay dpy, const EGLint *attrib_list)
+{
+    return egl::CreateStreamKHR(dpy, attrib_list);
 }
+
+EGLBoolean EGLAPIENTRY eglDestroyStreamKHR(EGLDisplay dpy, EGLStreamKHR stream)
+{
+    return egl::DestroyStreamKHR(dpy, stream);
+}
+
+EGLBoolean EGLAPIENTRY eglStreamAttribKHR(EGLDisplay dpy,
+                                          EGLStreamKHR stream,
+                                          EGLenum attribute,
+                                          EGLint value)
+{
+    return egl::StreamAttribKHR(dpy, stream, attribute, value);
+}
+
+EGLBoolean EGLAPIENTRY eglQueryStreamKHR(EGLDisplay dpy,
+                                         EGLStreamKHR stream,
+                                         EGLenum attribute,
+                                         EGLint *value)
+{
+    return egl::QueryStreamKHR(dpy, stream, attribute, value);
+}
+
+EGLBoolean EGLAPIENTRY eglQueryStreamu64KHR(EGLDisplay dpy,
+                                            EGLStreamKHR stream,
+                                            EGLenum attribute,
+                                            EGLuint64KHR *value)
+{
+    return egl::QueryStreamu64KHR(dpy, stream, attribute, value);
+}
+
+EGLBoolean EGLAPIENTRY eglStreamConsumerGLTextureExternalKHR(EGLDisplay dpy, EGLStreamKHR stream)
+{
+    return egl::StreamConsumerGLTextureExternalKHR(dpy, stream);
+}
+
+EGLBoolean EGLAPIENTRY eglStreamConsumerAcquireKHR(EGLDisplay dpy, EGLStreamKHR stream)
+{
+    return egl::StreamConsumerAcquireKHR(dpy, stream);
+}
+
+EGLBoolean EGLAPIENTRY eglStreamConsumerReleaseKHR(EGLDisplay dpy, EGLStreamKHR stream)
+{
+    return egl::StreamConsumerReleaseKHR(dpy, stream);
+}
+
+EGLBoolean EGLAPIENTRY eglStreamConsumerGLTextureExternalAttribsNV(EGLDisplay dpy,
+                                                                   EGLStreamKHR stream,
+                                                                   EGLAttrib *attrib_list)
+{
+    return egl::StreamConsumerGLTextureExternalAttribsNV(dpy, stream, attrib_list);
+}
+
+EGLBoolean EGLAPIENTRY eglCreateStreamProducerD3DTextureNV12ANGLE(EGLDisplay dpy,
+                                                                  EGLStreamKHR stream,
+                                                                  const EGLAttrib *attrib_list)
+{
+    return egl::CreateStreamProducerD3DTextureNV12ANGLE(dpy, stream, attrib_list);
+}
+
+EGLBoolean EGLAPIENTRY eglStreamPostD3DTextureNV12ANGLE(EGLDisplay dpy,
+                                                        EGLStreamKHR stream,
+                                                        void *texture,
+                                                        const EGLAttrib *attrib_list)
+{
+    return egl::StreamPostD3DTextureNV12ANGLE(dpy, stream, texture, attrib_list);
+}
+
+EGLBoolean EGLAPIENTRY eglGetSyncValuesCHROMIUM(EGLDisplay dpy,
+                                                EGLSurface surface,
+                                                EGLuint64KHR *ust,
+                                                EGLuint64KHR *msc,
+                                                EGLuint64KHR *sbc)
+{
+    return egl::GetSyncValuesCHROMIUM(dpy, surface, ust, msc, sbc);
+}
+
+EGLBoolean EGLAPIENTRY eglSwapBuffersWithDamageEXT(EGLDisplay dpy,
+                                                   EGLSurface surface,
+                                                   EGLint *rects,
+                                                   EGLint n_rects)
+{
+    return egl::SwapBuffersWithDamageEXT(dpy, surface, rects, n_rects);
+}
+
+EGLint EGLAPIENTRY eglProgramCacheGetAttribANGLE(EGLDisplay dpy, EGLenum attrib)
+{
+    return egl::ProgramCacheGetAttribANGLE(dpy, attrib);
+}
+
+void EGLAPIENTRY eglProgramCacheQueryANGLE(EGLDisplay dpy,
+                                           EGLint index,
+                                           void *key,
+                                           EGLint *keysize,
+                                           void *binary,
+                                           EGLint *binarysize)
+{
+    egl::ProgramCacheQueryANGLE(dpy, index, key, keysize, binary, binarysize);
+}
+
+void EGLAPIENTRY eglProgramCachePopulateANGLE(EGLDisplay dpy,
+                                              const void *key,
+                                              EGLint keysize,
+                                              const void *binary,
+                                              EGLint binarysize)
+{
+    egl::ProgramCachePopulateANGLE(dpy, key, keysize, binary, binarysize);
+}
+
+EGLint EGLAPIENTRY eglProgramCacheResizeANGLE(EGLDisplay dpy, EGLint limit, EGLenum mode)
+{
+    return egl::ProgramCacheResizeANGLE(dpy, limit, mode);
+}
+
+}  // extern "C"

@@ -48,9 +48,9 @@ cross_compile: SUBDIRS -= \
    atwrapper \
    compiler
 
-winrt|!qtConfig(accessibility): SUBDIRS -= qaccessibility
+winrt|!qtHaveModule(gui)|!qtConfig(accessibility): SUBDIRS -= qaccessibility
 
-!qtConfig(accessibility-atspi-bridge): SUBDIRS -= qaccessibilitylinux
+!qtHaveModule(gui)|!qtConfig(accessibility-atspi-bridge): SUBDIRS -= qaccessibilitylinux
 
 !qtConfig(process): SUBDIRS -= qprocess_and_guieventloop
 

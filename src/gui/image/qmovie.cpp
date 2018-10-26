@@ -379,7 +379,7 @@ QFrameInfo QMoviePrivate::infoForFrame(int frameNumber)
             }
             if (frameNumber > greatestFrameNumber)
                 greatestFrameNumber = frameNumber;
-            QPixmap aPixmap = QPixmap::fromImage(anImage);
+            QPixmap aPixmap = QPixmap::fromImage(std::move(anImage));
             int aDelay = reader->nextImageDelay();
             return QFrameInfo(aPixmap, aDelay);
         } else if (frameNumber != 0) {
@@ -405,7 +405,7 @@ QFrameInfo QMoviePrivate::infoForFrame(int frameNumber)
                     return QFrameInfo(); // Invalid
                 }
                 greatestFrameNumber = i;
-                QPixmap aPixmap = QPixmap::fromImage(anImage);
+                QPixmap aPixmap = QPixmap::fromImage(std::move(anImage));
                 int aDelay = reader->nextImageDelay();
                 QFrameInfo info(aPixmap, aDelay);
                 // Cache it!

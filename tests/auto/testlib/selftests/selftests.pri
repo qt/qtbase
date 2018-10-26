@@ -27,10 +27,8 @@ SUBPROGRAMS = \
      findtestdata \
      float \
      globaldata \
-     keyboard \
      longstring \
      maxwarnings \
-     mouse \
      multiexec \
      pairdiagnostics \
      printdatatags \
@@ -51,6 +49,10 @@ SUBPROGRAMS = \
      verifyexceptionthrown \
      warnings \
      xunit
+
+qtHaveModule(gui): SUBPROGRAMS += \
+    keyboard \
+    mouse
 
 INCLUDEPATH += ../../../../shared/
 HEADERS += ../../../../shared/emulationdetector.h

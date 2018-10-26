@@ -60,12 +60,7 @@ QT_BEGIN_NAMESPACE
     QGLBuffer objects can be copied around as a reference to the
     underlying GL buffer object:
 
-    \code
-    QGLBuffer buffer1(QGLBuffer::IndexBuffer);
-    buffer1.create();
-
-    QGLBuffer buffer2 = buffer1;
-    \endcode
+    \snippet code/src_opengl_qglbuffer.cpp 0
 
     QGLBuffer performs a shallow copy when objects are copied in this
     manner, but does not implement copy-on-write semantics.  The original
@@ -474,9 +469,7 @@ void QGLBuffer::release()
     been bound to the context but wants to make sure that it
     is released.
 
-    \code
-    QGLBuffer::release(QGLBuffer::VertexBuffer);
-    \endcode
+    \snippet code/src_opengl_qglbuffer.cpp 1
 */
 void QGLBuffer::release(QGLBuffer::Type type)
 {

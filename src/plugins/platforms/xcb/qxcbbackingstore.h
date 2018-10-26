@@ -74,7 +74,7 @@ public:
     void beginPaint(const QRegion &) override;
     void endPaint() override;
 
-    static bool createSystemVShmSegment(QXcbConnection *c, size_t segmentSize = 1,
+    static bool createSystemVShmSegment(xcb_connection_t *c, size_t segmentSize = 1,
                                         void *shmInfo = nullptr);
 
 protected:

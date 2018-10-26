@@ -73,7 +73,7 @@ public:
 
     void abort(QWidget *widget);
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 private Q_SLOTS:
     void animationFinished();
 #endif

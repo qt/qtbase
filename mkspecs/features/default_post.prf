@@ -113,6 +113,8 @@ breakpad {
     !isEmpty(QMAKE_STRIP):QMAKE_POST_LINK = $$QMAKE_POST_LINK$$escape_expand(\\n\\t)$$quote($$QMAKE_STRIP $$DEBUGFILENAME)
 }
 
+c++17: CONFIG += c++1z
+
 !c++11:!c++14:!c++1z {
     # Qt requires C++11 since 5.7, check if we need to force a compiler option
     QT_COMPILER_STDCXX_no_L = $$replace(QT_COMPILER_STDCXX, "L$", "")

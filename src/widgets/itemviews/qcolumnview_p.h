@@ -57,7 +57,9 @@
 #include <private/qabstractitemview_p.h>
 
 #include <QtCore/qabstractitemmodel.h>
+#if QT_CONFIG(animation)
 #include <QtCore/qpropertyanimation.h>
+#endif
 #include <QtWidgets/qabstractitemdelegate.h>
 #include <QtWidgets/qabstractitemview.h>
 #include <QtWidgets/qitemdelegate.h>
@@ -169,7 +171,7 @@ public:
     QVector<int> columnSizes; // used during init and corner moving
     bool showResizeGrips;
     int offset;
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     QPropertyAnimation currentAnimation;
 #endif
     QWidget *previewWidget;

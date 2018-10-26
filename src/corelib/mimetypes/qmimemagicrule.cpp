@@ -42,8 +42,6 @@
 
 #include "qmimemagicrule_p.h"
 
-#ifndef QT_NO_MIMETYPE
-
 #include "qmimetypeparser_p.h"
 #include <QtCore/QList>
 #include <QtCore/QDebug>
@@ -364,5 +362,3 @@ bool QMimeMagicRule::matches(const QByteArray &data) const
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_MIMETYPE

@@ -108,6 +108,7 @@ public:
     GSocketNotifierSource *socketNotifierSource;
     GTimerSource *timerSource;
     GIdleTimerSource *idleTimerSource;
+    bool wakeUpCalled = true;
 
     void runTimersOnceWithNormalPriority();
 };

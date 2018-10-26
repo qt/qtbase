@@ -48,10 +48,6 @@
 **
 ****************************************************************************/
 
-#ifdef QT_OPENGL_SUPPORT
-#include <QGLWidget>
-#endif
-
 #include "arthurwidgets.h"
 #include "hoverpoints.h"
 
@@ -269,11 +265,6 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
             QApplication::sendEvent(object, event);
             m_widget = that_widget;
             paintPoints();
-#ifdef QT_OPENGL_SUPPORT
-            ArthurFrame *af = qobject_cast<ArthurFrame *>(that_widget);
-            if (af && af->usesOpenGL())
-                af->glWidget()->swapBuffers();
-#endif
             return true;
         }
         default:
@@ -288,12 +279,14 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
 void HoverPoints::paintPoints()
 {
     QPainter p;
-#ifdef QT_OPENGL_SUPPORT
+#if QT_CONFIG(opengl)
     ArthurFrame *af = qobject_cast<ArthurFrame *>(m_widget);
-    if (af && af->usesOpenGL())
-        p.begin(af->glWidget());
-    else
+    if (af && af->usesOpenGL() && af->glWindow()->isValid()) {
+        af->glWindow()->makeCurrent();
+        p.begin(af->glWindow());
+    } else {
         p.begin(m_widget);
+    }
 #else
     p.begin(m_widget);
 #endif

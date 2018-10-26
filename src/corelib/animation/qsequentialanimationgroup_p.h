@@ -54,7 +54,7 @@
 #include "qsequentialanimationgroup.h"
 #include "private/qanimationgroup_p.h"
 
-#ifndef QT_NO_ANIMATION
+QT_REQUIRE_CONFIG(animation);
 
 QT_BEGIN_NAMESPACE
 
@@ -106,7 +106,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_ANIMATION
 
 #endif //QSEQUENTIALANIMATIONGROUP_P_H

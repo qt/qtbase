@@ -52,17 +52,14 @@ struct GUserEventSource
 {
     GSource source;
     QPAEventDispatcherGlib *q;
+    QPAEventDispatcherGlibPrivate *d;
 };
 
 static gboolean userEventSourcePrepare(GSource *source, gint *timeout)
 {
     Q_UNUSED(timeout)
     GUserEventSource *userEventSource = reinterpret_cast<GUserEventSource *>(source);
-    QPAEventDispatcherGlib *dispatcher = userEventSource->q;
-    if (dispatcher->m_flags & QEventLoop::ExcludeUserInputEvents)
-        return QWindowSystemInterface::nonUserInputEventsQueued();
-    else
-        return QWindowSystemInterface::windowSystemEventsQueued() > 0;
+    return userEventSource->d->wakeUpCalled;
 }
 
 static gboolean userEventSourceCheck(GSource *source)
@@ -94,6 +91,7 @@ QPAEventDispatcherGlibPrivate::QPAEventDispatcherGlibPrivate(GMainContext *conte
     userEventSource = reinterpret_cast<GUserEventSource *>(g_source_new(&userEventSourceFuncs,
                                                                        sizeof(GUserEventSource)));
     userEventSource->q = q;
+    userEventSource->d = this;
     g_source_set_can_recurse(&userEventSource->source, true);
     g_source_attach(&userEventSource->source, mainContext);
 }

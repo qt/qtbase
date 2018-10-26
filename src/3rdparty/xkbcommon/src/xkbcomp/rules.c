@@ -85,7 +85,7 @@ skip_more_whitespace_and_comments:
 
     /* Skip comments. */
     if (lit(s, "//")) {
-        while (!eof(s) && !eol(s)) next(s);
+        skip_to_eol(s);
     }
 
     /* New line. */
@@ -182,15 +182,23 @@ static const struct sval rules_kccgst_svals[_KCCGST_NUM_ENTRIES] = {
     [KCCGST_GEOMETRY] = SVAL_LIT("geometry"),
 };
 
+/* We use this to keep score whether an mlvo was matched or not; if not,
+ * we warn the user that his preference was ignored. */
+struct matched_sval {
+    struct sval sval;
+    bool matched;
+};
+typedef darray(struct matched_sval) darray_matched_sval;
+
 /*
  * A broken-down version of xkb_rule_names (without the rules,
  * obviously).
  */
 struct rule_names {
-    struct sval model;
-    darray_sval layouts;
-    darray_sval variants;
-    darray_sval options;
+    struct matched_sval model;
+    darray_matched_sval layouts;
+    darray_matched_sval variants;
+    darray_matched_sval options;
 };
 
 struct group {
@@ -253,10 +261,10 @@ strip_spaces(struct sval v)
     return v;
 }
 
-static darray_sval
-split_comma_separated_string(const char *s)
+static darray_matched_sval
+split_comma_separated_mlvo(const char *s)
 {
-    darray_sval arr = darray_new();
+    darray_matched_sval arr = darray_new();
 
     /*
      * Make sure the array returned by this function always includes at
@@ -264,15 +272,16 @@ split_comma_separated_string(const char *s)
      */
 
     if (!s) {
-        struct sval val = { NULL, 0 };
+        struct matched_sval val = { .sval = { NULL, 0 } };
         darray_append(arr, val);
         return arr;
     }
 
     while (true) {
-        struct sval val = { s, 0 };
-        while (*s != '\0' && *s != ',') { s++; val.len++; }
-        darray_append(arr, strip_spaces(val));
+        struct matched_sval val = { .sval = { s, 0 } };
+        while (*s != '\0' && *s != ',') { s++; val.sval.len++; }
+        val.sval = strip_spaces(val.sval);
+        darray_append(arr, val);
         if (*s == '\0') break;
         if (*s == ',') s++;
     }
@@ -289,11 +298,11 @@ matcher_new(struct xkb_context *ctx,
         return NULL;
 
     m->ctx = ctx;
-    m->rmlvo.model.start = rmlvo->model;
-    m->rmlvo.model.len = strlen_safe(rmlvo->model);
-    m->rmlvo.layouts = split_comma_separated_string(rmlvo->layout);
-    m->rmlvo.variants = split_comma_separated_string(rmlvo->variant);
-    m->rmlvo.options = split_comma_separated_string(rmlvo->options);
+    m->rmlvo.model.sval.start = rmlvo->model;
+    m->rmlvo.model.sval.len = strlen_safe(rmlvo->model);
+    m->rmlvo.layouts = split_comma_separated_mlvo(rmlvo->layout);
+    m->rmlvo.variants = split_comma_separated_mlvo(rmlvo->variant);
+    m->rmlvo.options = split_comma_separated_mlvo(rmlvo->options);
 
     return m;
 }
@@ -309,6 +318,8 @@ matcher_free(struct matcher *m)
     darray_free(m->rmlvo.options);
     darray_foreach(group, m->groups)
         darray_free(group->elements);
+    for (int i = 0; i < _KCCGST_NUM_ENTRIES; i++)
+        darray_free(m->kccgst[i]);
     darray_free(m->groups);
     free(m);
 }
@@ -584,13 +595,23 @@ match_group(struct matcher *m, struct sval group_name, struct sval to)
 
 static bool
 match_value(struct matcher *m, struct sval val, struct sval to,
-          enum mlvo_match_type match_type)
+            enum mlvo_match_type match_type)
 {
     if (match_type == MLVO_MATCH_WILDCARD)
         return true;
     if (match_type == MLVO_MATCH_GROUP)
         return match_group(m, val, to);
     return svaleq(val, to);
+}
+
+static bool
+match_value_and_mark(struct matcher *m, struct sval val,
+                     struct matched_sval *to, enum mlvo_match_type match_type)
+{
+    bool matched = match_value(m, val, to->sval, match_type);
+    if (matched)
+        to->matched = true;
+    return matched;
 }
 
 /*
@@ -614,7 +635,7 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
         enum rules_mlvo mlv;
         xkb_layout_index_t idx;
         char pfx, sfx;
-        struct sval expanded_value;
+        struct matched_sval *expanded_value;
 
         /* Check if that's a start of an expansion. */
         if (s[i] != '%') {
@@ -664,40 +685,42 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
         }
 
         /* Get the expanded value. */
-        expanded_value.len = 0;
+        expanded_value = NULL;
 
         if (mlv == MLVO_LAYOUT) {
             if (idx != XKB_LAYOUT_INVALID &&
                 idx < darray_size(m->rmlvo.layouts) &&
                 darray_size(m->rmlvo.layouts) > 1)
-                expanded_value = darray_item(m->rmlvo.layouts, idx);
+                expanded_value = &darray_item(m->rmlvo.layouts, idx);
             else if (idx == XKB_LAYOUT_INVALID &&
                      darray_size(m->rmlvo.layouts) == 1)
-                expanded_value = darray_item(m->rmlvo.layouts, 0);
+                expanded_value = &darray_item(m->rmlvo.layouts, 0);
         }
         else if (mlv == MLVO_VARIANT) {
             if (idx != XKB_LAYOUT_INVALID &&
                 idx < darray_size(m->rmlvo.variants) &&
                 darray_size(m->rmlvo.variants) > 1)
-                expanded_value = darray_item(m->rmlvo.variants, idx);
+                expanded_value = &darray_item(m->rmlvo.variants, idx);
             else if (idx == XKB_LAYOUT_INVALID &&
                      darray_size(m->rmlvo.variants) == 1)
-                expanded_value = darray_item(m->rmlvo.variants, 0);
+                expanded_value = &darray_item(m->rmlvo.variants, 0);
         }
         else if (mlv == MLVO_MODEL) {
-            expanded_value = m->rmlvo.model;
+            expanded_value = &m->rmlvo.model;
         }
 
         /* If we didn't get one, skip silently. */
-        if (expanded_value.len <= 0)
+        if (!expanded_value || expanded_value->sval.len == 0)
             continue;
 
         if (pfx != 0)
             darray_appends_nullterminate(expanded, &pfx, 1);
         darray_appends_nullterminate(expanded,
-                                     expanded_value.start, expanded_value.len);
+                                     expanded_value->sval.start,
+                                     expanded_value->sval.len);
         if (sfx != 0)
             darray_appends_nullterminate(expanded, &sfx, 1);
+        expanded_value->matched = true;
     }
 
     /*
@@ -743,29 +766,28 @@ matcher_rule_apply_if_matches(struct matcher *m)
         enum rules_mlvo mlvo = m->mapping.mlvo_at_pos[i];
         struct sval value = m->rule.mlvo_value_at_pos[i];
         enum mlvo_match_type match_type = m->rule.match_type_at_pos[i];
+        struct matched_sval *to;
         bool matched = false;
 
         if (mlvo == MLVO_MODEL) {
-            matched = match_value(m, value, m->rmlvo.model, match_type);
+            to = &m->rmlvo.model;
+            matched = match_value_and_mark(m, value, to, match_type);
         }
         else if (mlvo == MLVO_LAYOUT) {
             xkb_layout_index_t idx = m->mapping.layout_idx;
             idx = (idx == XKB_LAYOUT_INVALID ? 0 : idx);
-            matched = match_value(m, value,
-                                  darray_item(m->rmlvo.layouts, idx),
-                                  match_type);
+            to = &darray_item(m->rmlvo.layouts, idx);
+            matched = match_value_and_mark(m, value, to, match_type);
         }
         else if (mlvo == MLVO_VARIANT) {
             xkb_layout_index_t idx = m->mapping.layout_idx;
             idx = (idx == XKB_LAYOUT_INVALID ? 0 : idx);
-            matched = match_value(m, value,
-                                  darray_item(m->rmlvo.variants, idx),
-                                  match_type);
+            to = &darray_item(m->rmlvo.variants, idx);
+            matched = match_value_and_mark(m, value, to, match_type);
         }
         else if (mlvo == MLVO_OPTION) {
-            struct sval *option;
-            darray_foreach(option, m->rmlvo.options) {
-                matched = match_value(m, value, *option, match_type);
+            darray_foreach(to, m->rmlvo.options) {
+                matched = match_value_and_mark(m, value, to, match_type);
                 if (matched)
                     break;
             }
@@ -801,11 +823,12 @@ matcher_match(struct matcher *m, const char *string, size_t len,
               const char *file_name, struct xkb_component_names *out)
 {
     enum rules_token tok;
+    struct matched_sval *mval;
 
     if (!m)
         return false;
 
-    scanner_init(&m->scanner, m->ctx, string, len, file_name);
+    scanner_init(&m->scanner, m->ctx, string, len, file_name, NULL);
 
 initial:
     switch (tok = gettok(m)) {
@@ -944,12 +967,29 @@ finish:
         darray_empty(m->kccgst[KCCGST_SYMBOLS]))
         goto error;
 
-    out->keycodes = darray_mem(m->kccgst[KCCGST_KEYCODES], 0);
-    out->types = darray_mem(m->kccgst[KCCGST_TYPES], 0);
-    out->compat = darray_mem(m->kccgst[KCCGST_COMPAT], 0);
-    /* out->geometry = darray_mem(m->kccgst[KCCGST_GEOMETRY], 0); */
+    darray_steal(m->kccgst[KCCGST_KEYCODES], &out->keycodes, NULL);
+    darray_steal(m->kccgst[KCCGST_TYPES], &out->types, NULL);
+    darray_steal(m->kccgst[KCCGST_COMPAT], &out->compat, NULL);
+    darray_steal(m->kccgst[KCCGST_SYMBOLS], &out->symbols, NULL);
     darray_free(m->kccgst[KCCGST_GEOMETRY]);
-    out->symbols = darray_mem(m->kccgst[KCCGST_SYMBOLS], 0);
+
+
+    mval = &m->rmlvo.model;
+    if (!mval->matched && mval->sval.len > 0)
+        log_err(m->ctx, "Unrecognized RMLVO model \"%.*s\" was ignored\n",
+                mval->sval.len, mval->sval.start);
+    darray_foreach(mval, m->rmlvo.layouts)
+        if (!mval->matched && mval->sval.len > 0)
+            log_err(m->ctx, "Unrecognized RMLVO layout \"%.*s\" was ignored\n",
+                    mval->sval.len, mval->sval.start);
+    darray_foreach(mval, m->rmlvo.variants)
+        if (!mval->matched && mval->sval.len > 0)
+            log_err(m->ctx, "Unrecognized RMLVO variant \"%.*s\" was ignored\n",
+                    mval->sval.len, mval->sval.start);
+    darray_foreach(mval, m->rmlvo.options)
+        if (!mval->matched && mval->sval.len > 0)
+            log_err(m->ctx, "Unrecognized RMLVO option \"%.*s\" was ignored\n",
+                    mval->sval.len, mval->sval.start);
 
     return true;
 
@@ -967,7 +1007,7 @@ xkb_components_from_rules(struct xkb_context *ctx,
     bool ret = false;
     FILE *file;
     char *path;
-    const char *string;
+    char *string;
     size_t size;
     struct matcher *matcher;
 

@@ -12,54 +12,52 @@
 #include "angle_gl.h"
 #include <GLSLANG/ShaderLang.h>
 
+#include "compiler/translator/HashNames.h"
+#include "compiler/translator/Operator.h"
 #include "compiler/translator/Types.h"
-
-// strtof_clamp is like strtof but
-//   1. it forces C locale, i.e. forcing '.' as decimal point.
-//   2. it clamps the value to -FLT_MAX or FLT_MAX if overflow happens.
-// Return false if overflow happens.
-bool strtof_clamp(const std::string &str, float *value);
 
 // If overflow happens, clamp the value to UINT_MIN or UINT_MAX.
 // Return false if overflow happens.
 bool atoi_clamp(const char *str, unsigned int *value);
 
-class TSymbolTable;
-
 namespace sh
 {
+class TSymbolTable;
+
+float NumericLexFloat32OutOfRangeToInfinity(const std::string &str);
+
+// strtof_clamp is like strtof but
+//   1. it forces C locale, i.e. forcing '.' as decimal point.
+//   2. it sets the value to infinity if overflow happens.
+//   3. str should be guaranteed to be in the valid format for a floating point number as defined
+//      by the grammar in the ESSL 3.00.6 spec section 4.1.4.
+// Return false if overflow happens.
+bool strtof_clamp(const std::string &str, float *value);
 
 GLenum GLVariableType(const TType &type);
 GLenum GLVariablePrecision(const TType &type);
 bool IsVaryingIn(TQualifier qualifier);
 bool IsVaryingOut(TQualifier qualifier);
 bool IsVarying(TQualifier qualifier);
+bool IsGeometryShaderInput(GLenum shaderType, TQualifier qualifier);
 InterpolationType GetInterpolationType(TQualifier qualifier);
+
+// Returns array brackets including size with outermost array size first, as specified in GLSL ES
+// 3.10 section 4.1.9.
 TString ArrayString(const TType &type);
 
-class GetVariableTraverser : angle::NonCopyable
-{
-  public:
-    GetVariableTraverser(const TSymbolTable &symbolTable);
-    virtual ~GetVariableTraverser() {}
+TString GetTypeName(const TType &type, ShHashFunction64 hashFunction, NameMap *nameMap);
 
-    template <typename VarT>
-    void traverse(const TType &type, const TString &name, std::vector<VarT> *output);
+TType GetShaderVariableBasicType(const sh::ShaderVariable &var);
 
-  protected:
-    // May be overloaded
-    virtual void visitVariable(ShaderVariable *newVar) {}
+bool IsBuiltinOutputVariable(TQualifier qualifier);
+bool IsBuiltinFragmentInputVariable(TQualifier qualifier);
+bool CanBeInvariantESSL1(TQualifier qualifier);
+bool CanBeInvariantESSL3OrGreater(TQualifier qualifier);
+bool IsOutputESSL(ShShaderOutput output);
+bool IsOutputGLSL(ShShaderOutput output);
+bool IsOutputHLSL(ShShaderOutput output);
+bool IsOutputVulkan(ShShaderOutput output);
+}  // namespace sh
 
-  private:
-    // Helper function called by traverse() to fill specific fields
-    // for attributes/varyings/uniforms.
-    template <typename VarT>
-    void setTypeSpecificInfo(
-        const TType &type, const TString &name, VarT *variable) {}
-
-    const TSymbolTable &mSymbolTable;
-};
-
-}
-
-#endif // COMPILER_TRANSLATOR_UTIL_H_
+#endif  // COMPILER_TRANSLATOR_UTIL_H_

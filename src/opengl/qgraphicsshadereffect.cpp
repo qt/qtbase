@@ -70,48 +70,12 @@ QT_BEGIN_NAMESPACE
     grayscale and then applies a colorize operation using the
     \c effectColor value:
 
-    \code
-    static char const colorizeShaderCode[] =
-        "uniform lowp vec4 effectColor;\n"
-        "lowp vec4 customShader(lowp sampler2D imageTexture, highp vec2 textureCoords) {\n"
-        "    vec4 src = texture2D(imageTexture, textureCoords);\n"
-        "    float gray = dot(src.rgb, vec3(0.212671, 0.715160, 0.072169));\n"
-        "    vec4 colorize = 1.0-((1.0-gray)*(1.0-effectColor));\n"
-        "    return vec4(colorize.rgb, src.a);\n"
-        "}";
-    \endcode
+    \snippet code/src_opengl_qgraphicsshadereffect.cpp 0
 
     To use this shader code, it is necessary to define a subclass
     of QGraphicsShaderEffect as follows:
 
-    \code
-    class ColorizeEffect : public QGraphicsShaderEffect
-    {
-        Q_OBJECT
-    public:
-        ColorizeEffect(QObject *parent = 0)
-            : QGraphicsShaderEffect(parent), color(Qt::black)
-        {
-            setPixelShaderFragment(colorizeShaderCode);
-        }
-
-        QColor effectColor() const { return color; }
-        void setEffectColor(const QColor& c)
-        {
-            color = c;
-            setUniformsDirty();
-        }
-
-    protected:
-        void setUniforms(QGLShaderProgram *program)
-        {
-            program->setUniformValue("effectColor", color);
-        }
-
-    private:
-        QColor color;
-    };
-    \endcode
+    \snippet code/src_opengl_qgraphicsshadereffect.cpp 1
 
     The setUniforms() function is called when the effect is about
     to be used for drawing to give the subclass the opportunity to
@@ -216,11 +180,7 @@ QByteArray QGraphicsShaderEffect::pixelShaderFragment() const
     shader program.  The following is the default pixel shader fragment,
     which draws a pixmap with no effect applied:
 
-    \code
-    lowp vec4 customShader(lowp sampler2D imageTexture, highp vec2 textureCoords) {
-        return texture2D(imageTexture, textureCoords);
-    }
-    \endcode
+    \snippet code/src_opengl_qgraphicsshadereffect.cpp 2
 
     \sa pixelShaderFragment(), setUniforms()
 */

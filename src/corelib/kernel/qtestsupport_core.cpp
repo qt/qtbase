@@ -68,13 +68,7 @@ Q_CORE_EXPORT void QTestPrivate::qSleep(int ms)
 
     Example:
 
-    \code
-        MyObject obj;
-        obj.startup();
-        QTest::qWaitFor([&]() {
-            return obj.isReady();
-        }, 3000);
-    \endcode
+    \snippet code/src_corelib_kernel_qtestsupport_core.cpp 0
 
     The code above will wait for the object to become ready, for a
     maximum of three seconds.
@@ -91,11 +85,7 @@ Q_CORE_EXPORT void QTestPrivate::qSleep(int ms)
 
     Example:
 
-    \code
-        int i = 0;
-        while (myNetworkServerNotResponding() && i++ < 50)
-            QTest::qWait(250);
-    \endcode
+    \snippet code/src_corelib_kernel_qtestsupport_core.cpp 1
 
     The code above will wait until the network server is responding for a
     maximum of about 12.5 seconds.

@@ -72,7 +72,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_BIG_CODECS
 unsigned int qt_Ksc5601ToUnicode(unsigned int code);
 
 unsigned int qt_UnicodeToKsc5601(unsigned int unicode);
@@ -3522,7 +3521,5 @@ QString QCP949Codec::convertToUnicode(const char* chars, int len, ConverterState
     }
     return result;
 }
-
-#endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE

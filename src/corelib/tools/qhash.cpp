@@ -755,9 +755,7 @@ void QHashData::checkSanity()
     Types \c T1 and \c T2 must be supported by qHash().
 
     \note The return type of this function is \e{not} the same as that of
-    \code
-    qHash(qMakePair(key.first, key.second), seed);
-    \endcode
+    \snippet code/src_corelib_tools_qhash.cpp 29
     The two functions use different hashing algorithms; due to binary compatibility
     constraints, we cannot change the QPair algorithm to match the std::pair one before Qt 6.
 */
@@ -773,14 +771,10 @@ void QHashData::checkSanity()
     The return value of this function depends on the order of elements
     in the range. That means that
 
-    \code
-    {0, 1, 2}
-    \endcode
+    \snippet code/src_corelib_tools_qhash.cpp 30
 
     and
-    \code
-    {1, 2, 0}
-    \endcode
+    \snippet code/src_corelib_tools_qhash.cpp 31
 
     hash to \b{different} values. If order does not matter, for example for hash
     tables, use qHashRangeCommutative() instead. If you are hashing raw
@@ -812,14 +806,10 @@ void QHashData::checkSanity()
     The return value of this function does not depend on the order of
     elements in the range. That means that
 
-    \code
-    {0, 1, 2}
-    \endcode
+    \snippet code/src_corelib_tools_qhash.cpp 30
 
     and
-    \code
-    {1, 2, 0}
-    \endcode
+    \snippet code/src_corelib_tools_qhash.cpp 31
 
     hash to the \b{same} values. If order matters, for example, for vectors
     and arrays, use qHashRange() instead. If you are hashing raw
@@ -1177,13 +1167,7 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
 
     For a key type \c{K}, the qHash function must have one of these signatures:
 
-    \code
-    uint qHash(K key);
-    uint qHash(const K &key);
-
-    uint qHash(K key, uint seed);
-    uint qHash(const K &key, uint seed);
-    \endcode
+    \snippet code/src_corelib_tools_qhash.cpp 32
 
     The two-arguments overloads take an unsigned integer that should be used to
     seed the calculation of the hash function. This seed is provided by QHash

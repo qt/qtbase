@@ -1,4 +1,5 @@
 Texture2D<float4> TextureF  : register(t0);
+Texture2DMS<float4> TextureF_MS: register(t0);
 Texture2D<uint4>  TextureUI : register(t0);
 Texture2D<int4>   TextureI  : register(t0);
 
@@ -19,6 +20,16 @@ float PS_PassthroughDepth2D(in float4 inPosition : SV_POSITION, in float2 inTexC
 float4 PS_PassthroughRGBA2D(in float4 inPosition : SV_POSITION, in float2 inTexCoord : TEXCOORD0) : SV_TARGET0
 {
     return TextureF.Sample(Sampler, inTexCoord).rgba;
+}
+
+float4 PS_PassthroughA2D(in float4 inPosition : SV_POSITION, in float2 inTexCoord : TEXCOORD0) : SV_TARGET0
+{
+    return float4(0.0f, 0.0f, 0.0f, TextureF.Sample(Sampler, inTexCoord).a);
+}
+
+float4 PS_PassthroughRGBA2DMS(in float4 inPosition : SV_POSITION, in float2 inTexCoord : TEXCORD0, in uint inSampleIndex : SV_SAMPLEINDEX) : SV_TARGET0
+{
+    return TextureF_MS.sample[inSampleIndex][inTexCoord].rgba;
 }
 
 uint4 PS_PassthroughRGBA2DUI(in float4 inPosition : SV_POSITION, in float2 inTexCoord : TEXCOORD0) : SV_TARGET0

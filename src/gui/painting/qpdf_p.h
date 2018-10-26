@@ -171,7 +171,8 @@ public:
     enum PdfVersion
     {
         Version_1_4,
-        Version_A1b
+        Version_A1b,
+        Version_1_6
     };
 
     QPdfEngine();
@@ -300,6 +301,7 @@ private:
     void writePageRoot();
     void writeFonts();
     void embedFont(QFontSubset *font);
+    qreal calcUserUnit() const;
 
     QVector<int> xrefPositions;
     QDataStream* stream;

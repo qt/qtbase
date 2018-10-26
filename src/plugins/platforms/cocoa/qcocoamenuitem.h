@@ -119,7 +119,6 @@ private:
     QString m_text;
     QIcon m_icon;
     QPointer<QCocoaMenu> m_menu;
-    QFont m_font;
     MenuRole m_role;
     MenuRole m_detectedRole;
 #ifndef QT_NO_SHORTCUT
