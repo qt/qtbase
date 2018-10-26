@@ -207,7 +207,6 @@ protected:
     void setTransparentForMouseEvents(bool transparent);
     void updateDoesNotAcceptFocus(bool doesNotAcceptFocus);
 
-    QRect windowToWmGeometry(QRect r) const;
     void sendXEmbedMessage(xcb_window_t window, quint32 message,
                            quint32 detail = 0, quint32 data1 = 0, quint32 data2 = 0);
     void handleXEmbedMessage(const xcb_client_message_event_t *event);
