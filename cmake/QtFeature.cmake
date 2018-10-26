@@ -147,6 +147,44 @@ function(qt_evaluate_config_expression resultVar)
     set(${resultVar} ${result} PARENT_SCOPE)
 endfunction()
 
+function(qt_feature_set_cache_value resultVar feature emit_if calculated label)
+    if (DEFINED "FEATURE_${feature}")
+        # Must set up the cache
+        if (NOT (emit_if))
+            message(FATAL_ERROR "Sanity check failed: FEATURE_${feature} that was not emitted was found in the CMakeCache.")
+        endif()
+
+        # Revisit value:
+        set(cache "${FEATURE_${feature}}")
+        if ((cache STREQUAL "ON") OR (cache STREQUAL "OFF"))
+            set(result "${cache}")
+        else()
+            message(FATAL_ERROR "Sanity check failed: FEATURE_${feature} has invalid value \"${cache}\"!")
+        endif()
+        # Fix-up user-provided values
+        set("FEATURE_${feature}" "${cache}" CACHE BOOL "${label}")
+    else()
+        # Initial setup:
+        if (emit_if)
+            set("FEATURE_${feature}" "${calculated}" CACHE BOOL "${label}")
+        endif()
+        set(result "${calculated}")
+    endif()
+
+    set("${resultVar}" "${result}" PARENT_SCOPE)
+endfunction()
+
+macro(qt_feature_set_value feature cache condition label)
+    set(result "${cache}")
+
+    if (NOT (condition) AND (cache))
+        message(SEND_ERROR "Feature \"${feature}\": Forcing to \"${cache}\" breaks its condition.")
+    endif()
+
+    set(_QT_FEATURE_VALUE_${feature} "${result}" CACHE INTERNAL "${_arg_LABEL}")
+    set(QT_FEATURE_${feature} "${result}" PARENT_SCOPE)
+endmacro()
+
 function(qt_evaluate_feature _feature)
     # If the feature was set explicitly by the user to be on or off, in the cache, then
     # there's nothing for us to do.
@@ -200,13 +238,12 @@ function(qt_evaluate_feature _feature)
         qt_evaluate_config_expression(emit_if ${_arg_EMIT_IF})
     endif()
 
-    if (${emit_if})
-        set(FEATURE_${_feature} "UNSET" CACHE STRING "${_arg_LABEL}")
-        set_property(CACHE FEATURE_${_feature} PROPERTY STRINGS UNSET ON OFF)
+    if (NOT (condition) AND (calculated))
+        message(FATAL_ERROR "Sanity check failed: Feature ${_feature} is enabled but condition does not hold true.")
     endif()
 
-    set(_QT_FEATURE_VALUE_${_feature} "${result}" CACHE INTERNAL "${_arg_LABEL}")
-    set(QT_FEATURE_${_feature} "${result}" PARENT_SCOPE)
+    qt_feature_set_cache_value(cache "${_feature}" "${emit_if}" "${result}" "${_arg_LABEL}")
+    qt_feature_set_value("${_feature}" "${cache}" "${condition}" "${_arg_LABEL}")
 endfunction()
 
 function(qt_feature_definition _feature _name)
