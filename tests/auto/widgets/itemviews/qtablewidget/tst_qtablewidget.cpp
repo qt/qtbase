@@ -196,10 +196,10 @@ void tst_QTableWidget::clear()
 {
     QTableWidgetItem *item = new QTableWidgetItem("foo");
     testWidget->setItem(0, 0, item);
-    testWidget->setItemSelected(item, true);
+    item->setSelected(true);
 
     QVERIFY(testWidget->item(0, 0) == item);
-    QVERIFY(testWidget->isItemSelected(item));
+    QVERIFY(item->isSelected());
 
 
     QPointer<QObjectTableItem> bla = new QObjectTableItem();
@@ -583,7 +583,7 @@ void tst_QTableWidget::selectedItems()
                 continue;
 
             QTableWidgetItem *item = testWidget->item(row, column);
-            if (item && testWidget->isItemSelected(item))
+            if (item && item->isSelected())
                 QVERIFY(selectedItems.contains(item));
         }
     }

@@ -1055,24 +1055,6 @@ QTableWidgetSelectionRange::~QTableWidgetSelectionRange()
 */
 
 /*!
-  \fn void QTableWidgetItem::setSelected(bool select)
-  \since 4.2
-
-  Sets the selected state of the item to \a select.
-
-  \sa isSelected()
-*/
-
-/*!
-  \fn bool QTableWidgetItem::isSelected() const
-  \since 4.2
-
-  Returns \c true if the item is selected, otherwise returns \c false.
-
-  \sa setSelected()
-*/
-
-/*!
   \fn QSize QTableWidgetItem::sizeHint() const
   \since 4.1
 
@@ -1107,6 +1089,44 @@ QTableWidgetSelectionRange::~QTableWidgetSelectionRange()
 
     Returns the table widget that contains the item.
 */
+
+/*!
+  \fn bool QTableWidgetItem::isSelected() const
+  \since 4.2
+
+  Returns \c true if the item is selected, otherwise returns \c false.
+
+  \sa setSelected()
+*/
+bool QTableWidgetItem::isSelected() const
+{
+    if (!view || !view->selectionModel())
+        return false;
+    const QTableModel *model = qobject_cast<const QTableModel*>(view->model());
+    if (!model)
+        return false;
+    const QModelIndex index = model->index(this);
+    return view->selectionModel()->isSelected(index);
+}
+
+/*!
+  \fn void QTableWidgetItem::setSelected(bool select)
+  \since 4.2
+
+  Sets the selected state of the item to \a select.
+
+  \sa isSelected()
+*/
+void QTableWidgetItem::setSelected(bool select)
+{
+    if (!view || !view->selectionModel())
+        return;
+    const QTableModel *model = qobject_cast<const QTableModel*>(view->model());
+    if (!model)
+        return;
+    const QModelIndex index = model->index(this);
+    view->selectionModel()->select(index, select ? QItemSelectionModel::Select : QItemSelectionModel::Deselect);
+}
 
 /*!
     \fn Qt::ItemFlags QTableWidgetItem::flags() const
@@ -2323,6 +2343,7 @@ void QTableWidget::setCellWidget(int row, int column, QWidget *widget)
     QAbstractItemView::setIndexWidget(index, widget);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
   Returns \c true if the \a item is selected, otherwise returns \c false.
 
@@ -2333,9 +2354,7 @@ void QTableWidget::setCellWidget(int row, int column, QWidget *widget)
 
 bool QTableWidget::isItemSelected(const QTableWidgetItem *item) const
 {
-    Q_D(const QTableWidget);
-    QModelIndex index = d->tableModel()->index(item);
-    return selectionModel()->isSelected(index);
+    return ((item && item->tableWidget() == this) ? item->isSelected() : false);
 }
 
 /*!
@@ -2347,10 +2366,10 @@ bool QTableWidget::isItemSelected(const QTableWidgetItem *item) const
 */
 void QTableWidget::setItemSelected(const QTableWidgetItem *item, bool select)
 {
-    Q_D(QTableWidget);
-    QModelIndex index = d->tableModel()->index(item);
-    selectionModel()->select(index, select ? QItemSelectionModel::Select : QItemSelectionModel::Deselect);
+    if (item && item->tableWidget() == this)
+        const_cast<QTableWidgetItem*>(item)->setSelected(select);
 }
+#endif
 
 /*!
   Selects or deselects the \a range depending on \a select.
