@@ -2792,7 +2792,7 @@ void tst_QTreeView::sortByColumn()
 
     view.setSortingEnabled(sortingEnabled);
     view.setModel(&model);
-    view.sortByColumn(1);
+    view.sortByColumn(1, Qt::DescendingOrder);
     QCOMPARE(view.header()->sortIndicatorSection(), 1);
     QCOMPARE(view.model()->data(view.model()->index(0,1)).toString(), QString::fromLatin1("h"));
     QCOMPARE(view.model()->data(view.model()->index(1,1)).toString(), QString::fromLatin1("g"));
@@ -3102,7 +3102,7 @@ void tst_QTreeView::evilModel()
     view.resizeColumnToContents(1);
     model.change();
 
-    view.sortByColumn(1);
+    view.sortByColumn(1, Qt::DescendingOrder);
     model.change();
 
     view.selectAll();
@@ -3946,7 +3946,7 @@ void tst_QTreeView::task254234_proxySort()
     model.setItem(2,1,new QStandardItem("h"));
     model.setItem(3,1,new QStandardItem("f"));
 
-    view.sortByColumn(1);
+    view.sortByColumn(1, Qt::DescendingOrder);
     view.setSortingEnabled(true);
 
     QSortFilterProxyModel proxy;

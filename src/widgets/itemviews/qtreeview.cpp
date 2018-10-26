@@ -2598,10 +2598,13 @@ void QTreeView::resizeColumnToContents(int column)
     d->header->resizeSection(column, qMax(contents, header));
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
   \obsolete
   \overload
 
+  This function is deprecated. Use
+  sortByColumn(int column, Qt::SortOrder order) instead.
   Sorts the model by the values in the given \a column.
 */
 void QTreeView::sortByColumn(int column)
@@ -2609,6 +2612,7 @@ void QTreeView::sortByColumn(int column)
     Q_D(QTreeView);
     sortByColumn(column, d->header->sortIndicatorOrder());
 }
+#endif
 
 /*!
   \since 4.2
@@ -2624,10 +2628,12 @@ void QTreeView::sortByColumn(int column)
 void QTreeView::sortByColumn(int column, Qt::SortOrder order)
 {
     Q_D(QTreeView);
-
-    //If sorting is enabled  will emit a signal connected to _q_sortIndicatorChanged, which then actually sorts
+    if (column < 0)
+        return;
+    // If sorting is enabled it will emit a signal connected to
+    // _q_sortIndicatorChanged, which then actually sorts
     d->header->setSortIndicator(column, order);
-    //If sorting is not enabled, force to sort now.
+    // If sorting is not enabled, force to sort now
     if (!d->sortingEnabled)
         d->model->sort(column, order);
 }

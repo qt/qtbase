@@ -143,7 +143,6 @@ public:
     void doItemsLayout() override;
     void reset() override;
 
-    void sortByColumn(int column, Qt::SortOrder order);
 
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) override;
     void selectAll() override;
@@ -158,7 +157,11 @@ public Q_SLOTS:
     void expand(const QModelIndex &index);
     void collapse(const QModelIndex &index);
     void resizeColumnToContents(int column);
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X ("Use QTreeeView::sortByColumn(int column, Qt::SortOrder order) instead")
     void sortByColumn(int column);
+#endif
+    void sortByColumn(int column, Qt::SortOrder order);
     void expandAll();
     void expandRecursively(const QModelIndex &index, int depth = -1);
     void collapseAll();

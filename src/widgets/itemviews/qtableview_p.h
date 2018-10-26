@@ -257,6 +257,7 @@ public:
     void _q_updateSpanInsertedColumns(const QModelIndex &parent, int start, int end);
     void _q_updateSpanRemovedRows(const QModelIndex &parent, int start, int end);
     void _q_updateSpanRemovedColumns(const QModelIndex &parent, int start, int end);
+    void _q_sortIndicatorChanged(int column, Qt::SortOrder order);
 };
 
 QT_END_NAMESPACE
