@@ -3881,6 +3881,19 @@ QString QLocale::toCurrencyString(double value, const QString &symbol, int preci
     \sa formattedDataSize()
 */
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+/*!
+    \obsolete
+
+    Use the const version instead.
+*/
+QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats format)
+{
+    const auto *that = this;
+    return that->formattedDataSize(bytes, precision, format);
+}
+#endif
+
 /*!
     \since 5.10
 
@@ -3897,7 +3910,7 @@ QString QLocale::toCurrencyString(double value, const QString &symbol, int preci
     whereas \c DataSizeSIFormat uses the older SI quantifiers k, M, etc., and
     \c DataSizeTraditionalFormat abuses them.
 */
-QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats format)
+QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats format) const
 {
     int power, base = 1000;
     if (!bytes) {

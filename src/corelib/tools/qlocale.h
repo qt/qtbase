@@ -1066,7 +1066,10 @@ public:
     { return toCurrencyString(double(i), symbol, precision); }
 #endif
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QString formattedDataSize(qint64 bytes, int precision = 2, DataSizeFormats format = DataSizeIecFormat);
+#endif
+    QString formattedDataSize(qint64 bytes, int precision = 2, DataSizeFormats format = DataSizeIecFormat) const;
 
     QStringList uiLanguages() const;
 
