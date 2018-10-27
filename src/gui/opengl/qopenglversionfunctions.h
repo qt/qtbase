@@ -214,6 +214,7 @@ public:
 
     virtual bool initializeOpenGLFunctions();
 
+    Q_DISABLE_COPY(QAbstractOpenGLFunctions)
     Q_DECLARE_PRIVATE(QAbstractOpenGLFunctions)
 
 protected:
