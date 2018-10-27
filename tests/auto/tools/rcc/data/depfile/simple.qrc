@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+   <file>../images/images/circle.png</file>
+   <file>../images/images/square.png</file>
+</qresource>
+</RCC>
