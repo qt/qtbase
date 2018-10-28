@@ -302,7 +302,9 @@ public Q_SLOTS:
     virtual void revert();
 
 protected Q_SLOTS:
-    // Qt 6: Make virtual
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    virtual
+#endif
     void resetInternalData();
 
 protected:
