@@ -34,6 +34,8 @@ set_property(CACHE INPUT_xkbcommon_x11 PROPERTY STRINGS undefined no qt system)
 
 #### Libraries
 
+find_package(ATSPI2)
+set_package_properties(ATSPI2 PROPERTIES TYPE OPTIONAL)
 find_package(Libdrm)
 set_package_properties(Libdrm PROPERTIES TYPE OPTIONAL)
 find_package(OpenGL)
@@ -430,7 +432,7 @@ XCloseDisplay(d);
 
 qt_feature("accessibility_atspi_bridge" PUBLIC PRIVATE
     LABEL "ATSPI Bridge"
-    CONDITION QT_FEATURE_accessibility AND QT_FEATURE_xcb AND QT_FEATURE_dbus AND libs.atspi OR FIXME
+    CONDITION QT_FEATURE_accessibility AND QT_FEATURE_xcb AND QT_FEATURE_dbus AND ATSPI2_FOUND
 )
 qt_feature_definition("accessibility_atspi_bridge" "QT_NO_ACCESSIBILITY_ATSPI_BRIDGE" NEGATE VALUE "1")
 qt_feature("angle" PUBLIC
