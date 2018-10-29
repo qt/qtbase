@@ -1005,6 +1005,15 @@ QForeachContainer<typename std::decay<T>::type> qMakeForeachContainer(T &&t)
 }
 
 }
+
+#if __cplusplus >= 201703L
+// Use C++17 if statement with initializer. User's code ends up in a else so
+// scoping of different ifs is not broken
+#define Q_FOREACH(variable, container)                                   \
+for (auto _container_ = QtPrivate::qMakeForeachContainer(container);     \
+     _container_.i != _container_.e;  ++_container_.i)                   \
+    if (variable = *_container_.i; false) {} else
+#else
 // Explanation of the control word:
 //  - it's initialized to 1
 //  - that means both the inner and outer loops start
@@ -1019,7 +1028,7 @@ for (auto _container_ = QtPrivate::qMakeForeachContainer(container); \
      _container_.control && _container_.i != _container_.e;         \
      ++_container_.i, _container_.control ^= 1)                     \
     for (variable = *_container_.i; _container_.control; _container_.control = 0)
-
+#endif
 #endif // QT_NO_FOREACH
 
 #define Q_FOREVER for(;;)
