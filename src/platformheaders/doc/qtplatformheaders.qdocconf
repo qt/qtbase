@@ -35,5 +35,7 @@ sourcedirs  += ..
 exampledirs += snippets
 imagedirs   += images
 
+tagfile = qtplatformheaders.tags
+
 navigation.landingpage = "Qt Platform Headers"
 navigation.cppclassespage = "Qt Platform Headers C++ Classes"

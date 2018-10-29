@@ -25,6 +25,8 @@ sources                 = src/qmake-manual.qdoc
 imagedirs               = images
 exampledirs             = snippets
 
+tagfile = qmake.tags
+
 depends += \
     activeqt \
     qt3d \

@@ -23,6 +23,8 @@ depends += qtdoc qtcore qtgui qtwidgets qmake
 
 examplesinstallpath     = opengl
 
+tagfile = qtopengl.tags
+
 # The following parameters are for creating a qhp file, the qhelpgenerator
 # program can convert the qhp file into a qch file which can be opened in
 # Qt Assistant and/or Qt Creator.

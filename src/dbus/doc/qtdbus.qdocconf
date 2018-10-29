@@ -21,6 +21,8 @@ excludedirs += ../../../examples/widgets/doc
 
 examplesinstallpath     = dbus
 
+tagfile = qtdbus.tags
+
 depends += qtdoc qtcore
 
 # The following parameters are for creating a qhp file, the qhelpgenerator
