@@ -1083,9 +1083,23 @@ public:
     int control = 1;
 };
 
+// Containers that have a detach function are considered shared, and are OK in a foreach loop
+template <typename T, typename = decltype(std::declval<T>().detach())>
+inline void warnIfContainerIsNotShared(int) {}
+
+#if QT_DEPRECATED_SINCE(6, 0)
+// Other containers will copy themselves if used in foreach, this use is deprecated
+template <typename T>
+QT_DEPRECATED_VERSION_X_6_0("Do not use foreach/Q_FOREACH with containers which are not implicitly shared. "
+    "Prefer using a range-based for loop with these containers: `for (const auto &it : container)`, "
+    "keeping in mind that range-based for doesn't copy the container as Q_FOREACH does")
+inline void warnIfContainerIsNotShared(...) {}
+#endif
+
 template<typename T>
 QForeachContainer<typename std::decay<T>::type> qMakeForeachContainer(T &&t)
 {
+    warnIfContainerIsNotShared<typename std::decay<T>::type>(0);
     return QForeachContainer<typename std::decay<T>::type>(std::forward<T>(t));
 }
 
