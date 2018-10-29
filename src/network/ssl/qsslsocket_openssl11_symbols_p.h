@@ -130,6 +130,10 @@ const char *q_OpenSSL_version(int type);
 unsigned long q_SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *session);
 unsigned long q_SSL_set_options(SSL *s, unsigned long op);
 
+#ifdef TLS1_3_VERSION
+int q_SSL_CTX_set_ciphersuites(SSL_CTX *ctx, const char *str);
+#endif
+
 #if QT_CONFIG(dtls)
 // Functions and types required for DTLS support:
 extern "C"

@@ -180,6 +180,8 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSL_CIPHER(const SSL_CIPHER
             ciph.d->protocol = QSsl::TlsV1_1;
         else if (protoString == QLatin1String("TLSv1.2"))
             ciph.d->protocol = QSsl::TlsV1_2;
+        else if (protoString == QLatin1String("TLSv1.3"))
+            ciph.d->protocol = QSsl::TlsV1_3;
 
         if (descriptionList.at(2).startsWith(QLatin1String("Kx=")))
             ciph.d->keyExchangeMethod = descriptionList.at(2).mid(3).toString();
@@ -291,6 +293,8 @@ long QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SslProtocol protocol, Q
         options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TLSv1;
     else if (protocol == QSsl::TlsV1_2OrLater)
         options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TLSv1|SSL_OP_NO_TLSv1_1;
+    else if (protocol == QSsl::TlsV1_3OrLater)
+        options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TLSv1|SSL_OP_NO_TLSv1_1|SSL_OP_NO_TLSv1_2;
 #endif
     else
         options = SSL_OP_ALL;
@@ -1294,6 +1298,8 @@ QSsl::SslProtocol QSslSocketBackendPrivate::sessionProtocol() const
         return QSsl::TlsV1_1;
     case 0x303:
         return QSsl::TlsV1_2;
+    case 0x304:
+        return QSsl::TlsV1_3;
     }
 
     return QSsl::UnknownProtocol;
