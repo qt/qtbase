@@ -614,6 +614,13 @@ qt_feature("identityproxymodel" PUBLIC
     CONDITION QT_FEATURE_proxymodel
 )
 qt_feature_definition("identityproxymodel" "QT_NO_IDENTITYPROXYMODEL" NEGATE VALUE "1")
+qt_feature("concatenatetablesproxymodel" PUBLIC
+    SECTION "ItemViews"
+    LABEL "QConcatenateTablesProxyModel"
+    PURPOSE "Supports concatenating source models."
+    CONDITION QT_FEATURE_proxymodel
+)
+qt_feature_definition("concatenatetablesproxymodel" "QT_NO_CONCATENATETABLESPROXYMODEL" NEGATE VALUE "1")
 qt_feature("stringlistmodel" PUBLIC
     SECTION "ItemViews"
     LABEL "QStringListModel"

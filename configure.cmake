@@ -392,7 +392,6 @@ qt_feature("gui" PRIVATE
 )
 qt_feature("network" PRIVATE
     LABEL "Qt Network"
-    CONDITION QT_FEATURE_thread
 )
 qt_feature("sql" PRIVATE
     LABEL "Qt Sql"
