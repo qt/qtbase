@@ -197,6 +197,8 @@ public:
 #ifndef QT_NO_NETWORKPROXY
     void setProxy(const QNetworkProxy &networkProxy);
     QNetworkProxy proxy() const;
+    QString protocolTag() const;
+    void setProtocolTag(const QString &tag);
 #endif
 
 Q_SIGNALS:

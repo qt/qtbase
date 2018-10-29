@@ -914,7 +914,7 @@ void QAbstractSocketPrivate::resolveProxy(const QString &hostname, quint16 port)
         proxies << proxy;
     } else {
         // try the application settings instead
-        QNetworkProxyQuery query(hostname, port, QString(),
+        QNetworkProxyQuery query(hostname, port, protocolTag,
                                  socketType == QAbstractSocket::TcpSocket ?
                                  QNetworkProxyQuery::TcpSocket :
                                  socketType == QAbstractSocket::SctpSocket ?
@@ -2959,6 +2959,38 @@ QNetworkProxy QAbstractSocket::proxy() const
     Q_D(const QAbstractSocket);
     return d->proxy;
 }
+
+/*!
+    \since 5.13
+
+    Returns the protocol tag for this socket.
+    If the protocol tag is set then this is passed to QNetworkProxyQuery
+    when this is created internally to indicate the protocol tag to be
+    used.
+
+    \sa setProtocolTag(), QNetworkProxyQuery
+*/
+
+QString QAbstractSocket::protocolTag() const
+{
+    Q_D(const QAbstractSocket);
+    return d->protocolTag;
+}
+
+/*!
+    \since 5.13
+
+    Sets the protocol tag for this socket to \a tag.
+
+    \sa protocolTag()
+*/
+
+void QAbstractSocket::setProtocolTag(const QString &tag)
+{
+    Q_D(QAbstractSocket);
+    d->protocolTag = tag;
+}
+
 #endif // QT_NO_NETWORKPROXY
 
 #ifndef QT_NO_DEBUG_STREAM

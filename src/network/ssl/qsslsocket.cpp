@@ -1977,6 +1977,7 @@ void QSslSocket::connectToHost(const QString &hostName, quint16 port, OpenMode o
         d->createPlainSocket(openMode);
     }
 #ifndef QT_NO_NETWORKPROXY
+    d->plainSocket->setProtocolTag(d->protocolTag);
     d->plainSocket->setProxy(proxy());
 #endif
     QIODevice::open(openMode);
