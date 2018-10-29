@@ -46,7 +46,7 @@
 
 #include <xcb/xinerama.h>
 
-void QXcbConnection::selectXRandrEvents()
+void QXcbConnection::xrandrSelectEvents()
 {
     xcb_screen_iterator_t rootIter = xcb_setup_roots_iterator(setup());
     for (; rootIter.rem; xcb_screen_next(&rootIter)) {
@@ -270,8 +270,6 @@ void QXcbConnection::destroyScreen(QXcbScreen *screen)
 
 void QXcbConnection::initializeScreens()
 {
-    selectXRandrEvents();
-
     xcb_screen_iterator_t it = xcb_setup_roots_iterator(setup());
     int xcbScreenNumber = 0;    // screen number in the xcb sense
     QXcbScreen *primaryScreen = nullptr;
@@ -284,7 +282,7 @@ void QXcbConnection::initializeScreens()
         QXcbVirtualDesktop *virtualDesktop = new QXcbVirtualDesktop(this, xcbScreen, xcbScreenNumber);
         m_virtualDesktops.append(virtualDesktop);
         QList<QPlatformScreen *> siblings;
-        if (hasXRender()) {
+        if (hasXRandr()) {
             // RRGetScreenResourcesCurrent is fast but it may return nothing if the
             // configuration is not initialized wrt to the hardware. We should call
             // RRGetScreenResources in this case.

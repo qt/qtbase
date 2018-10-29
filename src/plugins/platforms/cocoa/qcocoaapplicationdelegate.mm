@@ -86,6 +86,7 @@
 #include <private/qguiapplication_p.h>
 #include "qt_mac_p.h"
 #include <qpa/qwindowsysteminterface.h>
+#include <qwindowdefs.h>
 
 QT_USE_NAMESPACE
 
@@ -93,6 +94,7 @@ QT_USE_NAMESPACE
     bool startedQuit;
     NSObject <NSApplicationDelegate> *reflectionDelegate;
     bool inLaunch;
+    QWindowList hiddenWindows;
 }
 
 + (instancetype)sharedDelegate
@@ -322,10 +324,26 @@ QT_USE_NAMESPACE
     // fact that the application itself is hidden, which will cause a problem when
     // the application is made visible again.
     const QWindowList topLevelWindows = QGuiApplication::topLevelWindows();
-    for (QWindow *topLevelWindow : qAsConst(topLevelWindows)) {
-        if ((topLevelWindow->type() & Qt::Popup) == Qt::Popup && topLevelWindow->isVisible())
+    for (QWindow *topLevelWindow : topLevelWindows) {
+        if ((topLevelWindow->type() & Qt::Popup) == Qt::Popup && topLevelWindow->isVisible()) {
             topLevelWindow->hide();
+
+            if ((topLevelWindow->type() & Qt::Tool) == Qt::Tool)
+                hiddenWindows << topLevelWindow;
+        }
     }
+}
+
+- (void)applicationDidUnhide:(NSNotification *)notification
+{
+    if (reflectionDelegate
+        && [reflectionDelegate respondsToSelector:@selector(applicationDidUnhide:)])
+        [reflectionDelegate applicationDidUnhide:notification];
+
+    for (QWindow *window : qAsConst(hiddenWindows))
+        window->show();
+
+    hiddenWindows.clear();
 }
 
 - (void)applicationDidBecomeActive:(NSNotification *)notification

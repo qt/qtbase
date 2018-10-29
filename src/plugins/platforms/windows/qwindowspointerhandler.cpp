@@ -280,7 +280,7 @@ bool QWindowsPointerHandler::translatePointerEvent(QWindow *window, HWND hwnd, Q
     return false;
 }
 
-static void getMouseEventInfo(UINT message, POINTER_BUTTON_CHANGE_TYPE changeType, QPoint globalPos, QEvent::Type *eventType, Qt::MouseButton *mouseButton)
+static void getMouseEventInfo(UINT message, POINTER_BUTTON_CHANGE_TYPE changeType, QEvent::Type *eventType, Qt::MouseButton *mouseButton)
 {
     static const QHash<POINTER_BUTTON_CHANGE_TYPE, Qt::MouseButton> buttonMapping {
         {POINTER_CHANGE_FIRSTBUTTON_DOWN, Qt::LeftButton},
@@ -334,28 +334,6 @@ static void getMouseEventInfo(UINT message, POINTER_BUTTON_CHANGE_TYPE changeTyp
     }
 
     *mouseButton = buttonMapping.value(changeType, Qt::NoButton);
-
-    // Pointer messages lack a double click indicator. Check if this is the case here.
-    if (*eventType == QEvent::MouseButtonPress ||
-        *eventType == QEvent::NonClientAreaMouseButtonPress) {
-        static LONG lastTime = 0;
-        static Qt::MouseButton lastButton = Qt::NoButton;
-        static QEvent::Type lastEvent = QEvent::None;
-        static QPoint lastPos;
-        LONG messageTime = GetMessageTime();
-        if (*mouseButton == lastButton
-            && *eventType == lastEvent
-            && messageTime - lastTime < (LONG)GetDoubleClickTime()
-            && qAbs(globalPos.x() - lastPos.x()) < GetSystemMetrics(SM_CXDOUBLECLK)
-            && qAbs(globalPos.y() - lastPos.y()) < GetSystemMetrics(SM_CYDOUBLECLK)) {
-            *eventType = nonClient ? QEvent::NonClientAreaMouseButtonDblClick :
-                                     QEvent::MouseButtonDblClick;
-        }
-        lastTime = messageTime;
-        lastButton = *mouseButton;
-        lastEvent = *eventType;
-        lastPos = globalPos;
-    }
 }
 
 static QWindow *getWindowUnderPointer(QWindow *window, QPoint globalPos)
@@ -467,7 +445,7 @@ bool QWindowsPointerHandler::translateMouseTouchPadEvent(QWindow *window, HWND h
 
         QEvent::Type eventType;
         Qt::MouseButton button;
-        getMouseEventInfo(msg.message, pointerInfo->ButtonChangeType, globalPos, &eventType, &button);
+        getMouseEventInfo(msg.message, pointerInfo->ButtonChangeType, &eventType, &button);
 
         if (et & QtWindows::NonClientEventFlag) {
             QWindowSystemInterface::handleFrameStrutMouseEvent(window, localPos, globalPos, mouseButtons, button, eventType,
@@ -506,6 +484,9 @@ bool QWindowsPointerHandler::translateMouseTouchPadEvent(QWindow *window, HWND h
     case WM_POINTERHWHEEL:
     case WM_POINTERWHEEL: {
 
+        if (!isValidWheelReceiver(window))
+            return true;
+
         int delta = GET_WHEEL_DELTA_WPARAM(msg.wParam);
 
         // Qt horizontal wheel rotation orientation is opposite to the one in WM_POINTERHWHEEL
@@ -515,8 +496,7 @@ bool QWindowsPointerHandler::translateMouseTouchPadEvent(QWindow *window, HWND h
         const QPoint angleDelta = (msg.message == WM_POINTERHWHEEL || (keyModifiers & Qt::AltModifier)) ?
                     QPoint(delta, 0) : QPoint(0, delta);
 
-        if (isValidWheelReceiver(window))
-            QWindowSystemInterface::handleWheelEvent(window, localPos, globalPos, QPoint(), angleDelta, keyModifiers);
+        QWindowSystemInterface::handleWheelEvent(window, localPos, globalPos, QPoint(), angleDelta, keyModifiers);
         return true;
     }
     case WM_POINTERLEAVE:
@@ -530,7 +510,6 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
                                                  MSG msg, PVOID vTouchInfo, quint32 count)
 {
     Q_UNUSED(hwnd);
-    Q_UNUSED(et);
 
     if (et & QtWindows::NonClientEventFlag)
         return false; // Let DefWindowProc() handle Non Client messages.
@@ -729,20 +708,45 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
 // Process old-style mouse messages here.
 bool QWindowsPointerHandler::translateMouseEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result)
 {
-    Q_UNUSED(et);
-
     // Generate enqueued events.
     flushTouchEvents(m_touchDevice);
     flushTabletEvents();
 
     *result = 0;
-    if (msg.message != WM_MOUSELEAVE && msg.message != WM_MOUSEMOVE)
+    if (et != QtWindows::MouseWheelEvent && msg.message != WM_MOUSELEAVE && msg.message != WM_MOUSEMOVE)
         return false;
 
-    const QPoint localPos(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
-    const QPoint globalPos = QWindowsGeometryHint::mapToGlobal(hwnd, localPos);
+    const QPoint eventPos(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
+    QPoint localPos;
+    QPoint globalPos;
+    if ((et == QtWindows::MouseWheelEvent) || (et & QtWindows::NonClientEventFlag)) {
+        globalPos = eventPos;
+        localPos = QWindowsGeometryHint::mapFromGlobal(hwnd, eventPos);
+    } else {
+        localPos = eventPos;
+        globalPos = QWindowsGeometryHint::mapToGlobal(hwnd, eventPos);
+    }
 
+    const Qt::KeyboardModifiers keyModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
     QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
+
+    if (et == QtWindows::MouseWheelEvent) {
+
+        if (!isValidWheelReceiver(window))
+            return true;
+
+        int delta = GET_WHEEL_DELTA_WPARAM(msg.wParam);
+
+        // Qt horizontal wheel rotation orientation is opposite to the one in WM_MOUSEHWHEEL
+        if (msg.message == WM_MOUSEHWHEEL)
+            delta = -delta;
+
+        const QPoint angleDelta = (msg.message == WM_MOUSEHWHEEL || (keyModifiers & Qt::AltModifier)) ?
+                    QPoint(delta, 0) : QPoint(0, delta);
+
+        QWindowSystemInterface::handleWheelEvent(window, localPos, globalPos, QPoint(), angleDelta, keyModifiers);
+        return true;
+    }
 
     if (msg.message == WM_MOUSELEAVE) {
         if (window == m_currentWindow) {
@@ -784,7 +788,6 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window, HWND hwnd, QtW
         m_windowUnderPointer = currentWindowUnderPointer;
     }
 
-    const Qt::KeyboardModifiers keyModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
     const Qt::MouseButtons mouseButtons = queryMouseButtons();
 
     if (!discardEvent)

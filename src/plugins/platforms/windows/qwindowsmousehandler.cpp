@@ -207,26 +207,26 @@ static inline MouseEvent eventFromMsg(const MSG &msg)
         return {QEvent::MouseButtonPress, Qt::LeftButton};
     case WM_LBUTTONUP:
         return {QEvent::MouseButtonRelease, Qt::LeftButton};
-    case WM_LBUTTONDBLCLK:
-        return {QEvent::MouseButtonDblClick, Qt::LeftButton};
+    case WM_LBUTTONDBLCLK: // Qt QPA does not handle double clicks, send as press
+        return {QEvent::MouseButtonPress, Qt::LeftButton};
     case WM_MBUTTONDOWN:
         return {QEvent::MouseButtonPress, Qt::MidButton};
     case WM_MBUTTONUP:
         return {QEvent::MouseButtonRelease, Qt::MidButton};
     case WM_MBUTTONDBLCLK:
-        return {QEvent::MouseButtonDblClick, Qt::MidButton};
+        return {QEvent::MouseButtonPress, Qt::MidButton};
     case WM_RBUTTONDOWN:
         return {QEvent::MouseButtonPress, Qt::RightButton};
     case WM_RBUTTONUP:
         return {QEvent::MouseButtonRelease, Qt::RightButton};
     case WM_RBUTTONDBLCLK:
-        return {QEvent::MouseButtonDblClick, Qt::RightButton};
+        return {QEvent::MouseButtonPress, Qt::RightButton};
     case WM_XBUTTONDOWN:
         return {QEvent::MouseButtonPress, extraButton(msg.wParam)};
     case WM_XBUTTONUP:
         return {QEvent::MouseButtonRelease, extraButton(msg.wParam)};
     case WM_XBUTTONDBLCLK:
-        return {QEvent::MouseButtonDblClick, extraButton(msg.wParam)};
+        return {QEvent::MouseButtonPress, extraButton(msg.wParam)};
     case WM_NCMOUSEMOVE:
         return {QEvent::NonClientAreaMouseMove, Qt::NoButton};
     case WM_NCLBUTTONDOWN:
@@ -234,19 +234,19 @@ static inline MouseEvent eventFromMsg(const MSG &msg)
     case WM_NCLBUTTONUP:
         return {QEvent::NonClientAreaMouseButtonRelease, Qt::LeftButton};
     case WM_NCLBUTTONDBLCLK:
-        return {QEvent::NonClientAreaMouseButtonDblClick, Qt::LeftButton};
+        return {QEvent::NonClientAreaMouseButtonPress, Qt::LeftButton};
     case WM_NCMBUTTONDOWN:
         return {QEvent::NonClientAreaMouseButtonPress, Qt::MidButton};
     case WM_NCMBUTTONUP:
         return {QEvent::NonClientAreaMouseButtonRelease, Qt::MidButton};
     case WM_NCMBUTTONDBLCLK:
-        return {QEvent::NonClientAreaMouseButtonDblClick, Qt::MidButton};
+        return {QEvent::NonClientAreaMouseButtonPress, Qt::MidButton};
     case WM_NCRBUTTONDOWN:
         return {QEvent::NonClientAreaMouseButtonPress, Qt::RightButton};
     case WM_NCRBUTTONUP:
         return {QEvent::NonClientAreaMouseButtonRelease, Qt::RightButton};
     case WM_NCRBUTTONDBLCLK:
-        return {QEvent::NonClientAreaMouseButtonDblClick, Qt::RightButton};
+        return {QEvent::NonClientAreaMouseButtonPress, Qt::RightButton};
     default: // WM_MOUSELEAVE
         break;
     }

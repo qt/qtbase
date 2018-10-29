@@ -64,6 +64,9 @@ struct TestData
     quint16 data16;
     quint8 data8;
 
+    float dataFloat;
+    double dataDouble;
+
     quint8 reserved;
 };
 
@@ -72,6 +75,7 @@ template <> quint8 getData(const TestData &d) { return d.data8; }
 template <> quint16 getData(const TestData &d) { return d.data16; }
 template <> quint32 getData(const TestData &d) { return d.data32; }
 template <> quint64 getData(const TestData &d) { return d.data64; }
+template <> float getData(const TestData &d) { return d.dataFloat; }
 
 union RawTestData
 {
@@ -79,9 +83,39 @@ union RawTestData
     TestData data;
 };
 
-static const TestData inNativeEndian = { Q_UINT64_C(0x0123456789abcdef), 0x00c0ffee, 0xcafe, 0xcf, '\0' };
-static const RawTestData inBigEndian = { "\x01\x23\x45\x67\x89\xab\xcd\xef" "\x00\xc0\xff\xee" "\xca\xfe" "\xcf" };
-static const RawTestData inLittleEndian = { "\xef\xcd\xab\x89\x67\x45\x23\x01" "\xee\xff\xc0\x00" "\xfe\xca" "\xcf" };
+template <typename Float>
+Float int2Float(typename QIntegerForSizeof<Float>::Unsigned i)
+{
+    Float result = 0;
+    memcpy(reinterpret_cast<char *>(&result), reinterpret_cast<const char *>(&i), sizeof (Float));
+    return result;
+}
+
+static const TestData inNativeEndian = {
+    Q_UINT64_C(0x0123456789abcdef),
+    0x00c0ffee,
+    0xcafe,
+    0xcf,
+    int2Float<float>(0x00c0ffeeU),
+    int2Float<double>(Q_UINT64_C(0x0123456789abcdef)),
+    '\0'
+};
+static const RawTestData inBigEndian = {
+    "\x01\x23\x45\x67\x89\xab\xcd\xef"
+    "\x00\xc0\xff\xee"
+    "\xca\xfe"
+    "\xcf"
+    "\x00\xc0\xff\xee"
+    "\x01\x23\x45\x67\x89\xab\xcd\xef"
+};
+static const RawTestData inLittleEndian = {
+    "\xef\xcd\xab\x89\x67\x45\x23\x01"
+    "\xee\xff\xc0\x00"
+    "\xfe\xca"
+    "\xcf"
+    "\xee\xff\xc0\x00"
+    "\xef\xcd\xab\x89\x67\x45\x23\x01"
+};
 
 #define EXPAND_ENDIAN_TEST(endian)          \
     do {                                    \

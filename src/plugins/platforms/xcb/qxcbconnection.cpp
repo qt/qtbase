@@ -105,6 +105,9 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
 
     m_xdgCurrentDesktop = qgetenv("XDG_CURRENT_DESKTOP").toLower();
 
+    if (hasXRandr())
+        xrandrSelectEvents();
+
     initializeScreens();
 
 #if QT_CONFIG(xcb_xinput)

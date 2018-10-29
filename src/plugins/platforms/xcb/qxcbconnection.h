@@ -250,7 +250,7 @@ protected:
     bool event(QEvent *e) override;
 
 private:
-    void selectXRandrEvents();
+    void xrandrSelectEvents();
     QXcbScreen* findScreenForCrtc(xcb_window_t rootWindow, xcb_randr_crtc_t crtc) const;
     QXcbScreen* findScreenForOutput(xcb_window_t rootWindow, xcb_randr_output_t output) const;
     QXcbVirtualDesktop* virtualDesktopForRootWindow(xcb_window_t rootWindow) const;
