@@ -405,7 +405,7 @@ function(qt_internal_process_automatic_sources target)
 endfunction()
 
 
-set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES")
+set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_ADAPTOR_FLAGS;DBUS_ADAPTOR_SOURCES;DBUS_INTERFACE_FLAGS;DBUS_INTERFACE_SOURCES")
 set(__default_public_args "PUBLIC_LIBRARIES;PUBLIC_INCLUDE_DIRECTORIES;PUBLIC_DEFINES")
 
 
@@ -423,7 +423,16 @@ function(extend_target target)
 
     qt_evaluate_config_expression(result ${_arg_CONDITION})
     if (${result})
-        qt_internal_process_automatic_sources("${target}" ${_arg_SOURCES})
+        set(dbus_sources "")
+        foreach(adaptor ${_arg_DBUS_ADAPTOR_SOURCES})
+            qt_create_qdbusxml2cpp_command("${target}" "${adaptor}" ADAPTOR FLAGS "${_arg_DBUS_ADAPTOR_FLAGS}")
+            list(APPEND dbus_sources "${sources}")
+        endforeach()
+        foreach(interface ${_arg_DBUS_INTERFACE_SOURCES})
+            qt_create_qdbusxml2cpp_command("${target}" "${interface}" INTERFACE FLAGS "${_arg_DBUS_INTERFACE_FLAGS}")
+            list(APPEND dbus_sources "${sources}")
+        endforeach()
+        qt_internal_process_automatic_sources("${target}" "${_arg_SOURCES}")
 
         foreach(dep ${_arg_LIBRARIES} ${_arg_PUBLIC_LIBRARIES})
             if("${dep}" MATCHES "Qt::(.+)(Private?)")
@@ -445,7 +454,7 @@ function(extend_target target)
             endif()
         endforeach()
 
-        target_sources("${target}" PRIVATE ${_arg_SOURCES})
+        target_sources("${target}" PRIVATE ${_arg_SOURCES} ${dbus_sources})
         if (_arg_COMPILE_FLAGS)
             set_source_files_properties(${_arg_SOURCES} PROPERTIES COMPILE_FLAGS "${_arg_COMPILE_FLAGS}")
         endif()
@@ -635,6 +644,10 @@ function(add_qt_module name)
             ${_arg_PUBLIC_LIBRARIES}
         LIBRARIES
             ${_arg_LIBRARIES}
+        DBUS_ADAPTOR_SOURCES "${_arg_DBUS_ADAPTOR_SOURCES}"
+        DBUS_ADAPTOR_FLAGS "${_arg_DBUS_ADAPTOR_FLAGS}"
+        DBUS_INTERFACE_SOURCES "${_arg_DBUS_INTERFACE_SOURCES}"
+        DBUS_INTERFACE_FLAGS "${_arg_DBUS_INTERFACE_FLAGS}"
     )
 
     ### FIXME: Can we replace headers.pri?
@@ -774,6 +787,10 @@ function(add_qt_plugin name)
         PUBLIC_DEFINES
             QT_${name_upper}_LIB
             ${_arg_PUBLIC_DEFINES}
+        DBUS_ADAPTOR_SOURCES "${_arg_DBUS_ADAPTOR_SOURCES}"
+        DBUS_ADAPTOR_FLAGS "${_arg_DBUS_ADAPTOR_FLAGS}"
+        DBUS_INTERFACE_SOURCES "${_arg_DBUS_INTERFACE_SOURCES}"
+        DBUS_INTERFACE_FLAGS "${_arg_DBUS_INTERFACE_FLAGS}"
     )
 
     install(TARGETS "${module}" EXPORT "${module}Targets"
@@ -811,6 +828,10 @@ function(add_qt_executable name)
             ${_arg_INCLUDE_DIRECTORIES}
         DEFINES ${_arg_DEFINES}
         LIBRARIES ${_arg_LIBRARIES}
+        DBUS_ADAPTOR_SOURCES "${_arg_DBUS_ADAPTOR_SOURCES}"
+        DBUS_ADAPTOR_FLAGS "${_arg_DBUS_ADAPTOR_FLAGS}"
+        DBUS_INTERFACE_SOURCES "${_arg_DBUS_INTERFACE_SOURCES}"
+        DBUS_INTERFACE_FLAGS "${_arg_DBUS_INTERFACE_FLAGS}"
     )
     set_target_properties("${name}" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${_arg_OUTPUT_DIRECTORY}"
@@ -1044,6 +1065,39 @@ function(qt_create_uic_command infile _result)
                        COMMENT "Running UIC on ${infile}."
                        VERBATIM)
     set(${_result} "${CMAKE_CURRENT_BINARY_DIR}/${outfile}" PARENT_SCOPE)
+endfunction()
+
+
+# helper to set up a qdbusxml2cpp rule
+function(qt_create_qdbusxml2cpp_command target infile)
+    qt_parse_all_arguments(_arg "qt_create_qdbusxml2cpp_command" "ADAPTOR;INTERFACE" "" "FLAGS" ${ARGN})
+    if((_arg_ADAPTOR AND _arg_INTERFACE) OR (NOT _arg_ADAPTOR AND NOT _arg_INTERFACE))
+        message(FATAL_ERROR "qt_create_dbusxml2cpp_command needs either ADAPTOR or INTERFACE.")
+    endif()
+
+    set(_option "-a")
+    set(_type "adaptor")
+    if (_arg_INTERFACE)
+        set(_option "-p")
+        set(_type "interface")
+    endif()
+
+    get_filename_component(file_name "${infile}" NAME_WE)
+    string(TOLOWER "${file_name}" file_name)
+
+    set(header_file "${CMAKE_CURRENT_BINARY_DIR}/${file_name}_${_type}.h")
+    set(source_file "${CMAKE_CURRENT_BINARY_DIR}/${file_name}_${_type}.cpp")
+
+    add_custom_command(OUTPUT "${header_file}" "${source_file}"
+                       COMMAND Qt::qdbusxml2cpp ${_arg_FLAGS} "${_option}" "${header_file}:${source_file}" "${infile}"
+                       DEPENDS "${infile}"
+                       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+                       VERBATIM)
+
+    # Moc the header:
+    qt_internal_wrap_cpp(moc_sources TARGET "${target}" MOC "${header_file}" HEADER_FILE_ONLY OFF)
+
+    target_sources("${target}" PRIVATE "${header_file}" "${source_file}" "${moc_sources}")
 endfunction()
 
 
