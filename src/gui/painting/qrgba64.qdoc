@@ -35,7 +35,7 @@
 
     QRgba64 is a 64-bit data-structure containing four 16-bit color channels: Red, green, blue and alpha.
 
-    QRgba64 can be used a replacement for QRgb when higher precision is needed. In particular a
+    QRgba64 can be used as a replacement for QRgb when higher precision is needed. In particular a
     premultiplied QRgba64 can operate on unpremultiplied QRgb without loss of precision except
     for alpha 0.
 
