@@ -1,2 +1,6 @@
 add_subdirectory(uic)
+if (QT_FEATURE_dbus)
+    add_subdirectory(qdbuscpp2xml)
+    add_subdirectory(qdbusxml2cpp)
+endif()
 add_subdirectory(qvkgen)

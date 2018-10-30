@@ -44,10 +44,10 @@ endfunction()
 find_or_build_bootstrap_names()
 
 add_subdirectory(corelib)
-add_subdirectory(tools)
 add_subdirectory(network)
 add_subdirectory(xml)
 add_subdirectory(dbus)
+add_subdirectory(tools)
 if(QT_FEATURE_gui)
     add_subdirectory(gui)
 
