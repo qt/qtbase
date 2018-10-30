@@ -3246,8 +3246,8 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
 #if QT_CONFIG(scrollbar)
     case CC_ScrollBar:
         if (const QStyleOptionSlider *sb = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-            QStyleOptionSlider sbOpt(*sb);
             if (!rule.hasDrawable()) {
+                QStyleOptionSlider sbOpt(*sb);
                 sbOpt.rect = rule.borderRect(opt->rect);
                 rule.drawBackgroundImage(p, opt->rect);
                 baseStyle()->drawComplexControl(cc, &sbOpt, p, w);
