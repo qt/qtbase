@@ -183,6 +183,8 @@ void QEglFSScreen::handleCursorMove(const QPoint &pos)
 
     if (enter && leave)
         QWindowSystemInterface::handleEnterLeaveEvent(enter, leave, enter->mapFromGlobal(pos), pos);
+#else
+    Q_UNUSED(pos);
 #endif
 }
 
@@ -231,7 +233,13 @@ QPixmap QEglFSScreen::grabWindow(WId wid, int x, int y, int width, int height) c
             return QPixmap::fromImage(img).copy(rect);
         }
     }
-#endif // QT_NO_OPENGL
+#else // QT_NO_OPENGL
+    Q_UNUSED(wid);
+    Q_UNUSED(x);
+    Q_UNUSED(y);
+    Q_UNUSED(width);
+    Q_UNUSED(height);
+#endif
     return QPixmap();
 }
 

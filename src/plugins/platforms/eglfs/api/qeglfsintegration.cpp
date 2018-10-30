@@ -198,6 +198,7 @@ QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *wi
     static_cast<QEglFSWindow *>(window->handle())->setBackingStore(bs);
     return bs;
 #else
+    Q_UNUSED(window);
     return nullptr;
 #endif
 }

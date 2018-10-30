@@ -132,6 +132,7 @@ QPlatformBackingStore *QMinimalEglIntegration::createPlatformBackingStore(QWindo
 #ifndef QT_NO_OPENGL
     return new QMinimalEglBackingStore(window);
 #else
+    Q_UNUSED(window);
     return nullptr;
 #endif
 }
