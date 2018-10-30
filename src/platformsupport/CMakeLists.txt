@@ -15,6 +15,9 @@ endif()
 
 if(QT_FEATURE_accessibility)
     add_subdirectory(accessibility)
+    if(QT_FEATURE_accessibility_atspi_bridge)
+        add_subdirectory(linuxaccessibility)
+    endif()
 endif()
 
 if(APPLE)

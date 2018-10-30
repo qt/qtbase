@@ -68,9 +68,9 @@ add_qt_module(XcbQpa
 ## Scopes:
 #####################################################################
 
-extend_target(XcbQpa CONDITION TARGET Qt::linuxaccessibility_support_private
+extend_target(XcbQpa CONDITION TARGET Qt::LinuxAccessibilitySupportPrivate
     LIBRARIES
-        linuxaccessibility_supportPrivate
+        Qt::LinuxAccessibilitySupportPrivate
 )
 
 extend_target(XcbQpa CONDITION QT_FEATURE_vulkan
