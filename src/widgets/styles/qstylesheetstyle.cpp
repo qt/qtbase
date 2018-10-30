@@ -5777,11 +5777,10 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
     case SE_PushButtonContents:
     case SE_PushButtonFocusRect:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
-            QStyleOptionButton btnOpt(*btn);
             if (rule.hasBox() || !rule.hasNativeBorder())
                 return visualRect(opt->direction, opt->rect, rule.contentsRect(opt->rect));
-            return rule.baseStyleCanDraw() ? baseStyle()->subElementRect(se, &btnOpt, w)
-                                           : QWindowsStyle::subElementRect(se, &btnOpt, w);
+            return rule.baseStyleCanDraw() ? baseStyle()->subElementRect(se, btn, w)
+                                           : QWindowsStyle::subElementRect(se, btn, w);
         }
         break;
 
