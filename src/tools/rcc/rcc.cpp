@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -51,6 +52,11 @@ enum {
     CONSTANT_COMPRESSTHRESHOLD_DEFAULT = 70
 };
 
+#if !defined(QT_NO_COMPRESS)
+#  define CONSTANT_COMPRESSALGO_DEFAULT     RCCResourceLibrary::CompressionAlgorithm::Zlib
+#else
+#  define CONSTANT_COMPRESSALGO_DEFAULT     RCCResourceLibrary::CompressionAlgorithm::None
+#endif
 
 #define writeString(s) write(s, sizeof(s))
 
@@ -97,6 +103,7 @@ public:
                 QLocale::Language language = QLocale::C,
                 QLocale::Country country = QLocale::AnyCountry,
                 uint flags = NoFlags,
+                RCCResourceLibrary::CompressionAlgorithm compressAlgo = CONSTANT_COMPRESSALGO_DEFAULT,
                 int compressLevel = CONSTANT_COMPRESSLEVEL_DEFAULT,
                 int compressThreshold = CONSTANT_COMPRESSTHRESHOLD_DEFAULT);
     ~RCCFileInfo();
@@ -115,6 +122,7 @@ public:
     QFileInfo m_fileInfo;
     RCCFileInfo *m_parent;
     QHash<QString, RCCFileInfo*> m_children;
+    RCCResourceLibrary::CompressionAlgorithm m_compressAlgo;
     int m_compressLevel;
     int m_compressThreshold;
 
@@ -125,7 +133,7 @@ public:
 
 RCCFileInfo::RCCFileInfo(const QString &name, const QFileInfo &fileInfo,
     QLocale::Language language, QLocale::Country country, uint flags,
-    int compressLevel, int compressThreshold)
+    RCCResourceLibrary::CompressionAlgorithm compressAlgo, int compressLevel, int compressThreshold)
 {
     m_name = name;
     m_fileInfo = fileInfo;
@@ -136,6 +144,7 @@ RCCFileInfo::RCCFileInfo(const QString &name, const QFileInfo &fileInfo,
     m_nameOffset = 0;
     m_dataOffset = 0;
     m_childOffset = 0;
+    m_compressAlgo = compressAlgo;
     m_compressLevel = compressLevel;
     m_compressThreshold = compressThreshold;
 }
@@ -236,16 +245,26 @@ qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib, qint64 offset,
     }
     QByteArray data = file.readAll();
 
-#ifndef QT_NO_COMPRESS
     // Check if compression is useful for this file
-    if (m_compressLevel != 0 && data.size() != 0) {
-        QByteArray compressed =
-            qCompress(reinterpret_cast<uchar *>(data.data()), data.size(), m_compressLevel);
+    if (data.size() != 0) {
+#ifndef QT_NO_COMPRESS
+        if (m_compressAlgo == RCCResourceLibrary::CompressionAlgorithm::Zlib) {
+            QByteArray compressed =
+                    qCompress(reinterpret_cast<uchar *>(data.data()), data.size(), m_compressLevel);
 
-        int compressRatio = int(100.0 * (data.size() - compressed.size()) / data.size());
-        if (compressRatio >= m_compressThreshold) {
-            data = compressed;
-            m_flags |= Compressed;
+            int compressRatio = int(100.0 * (data.size() - compressed.size()) / data.size());
+            if (compressRatio >= m_compressThreshold) {
+                if (lib.verbose()) {
+                    QString msg = QString::fromLatin1("%1: note: compressed using zlib (%2 -> %3)\n")
+                            .arg(m_name).arg(data.size()).arg(compressed.size());
+                    lib.m_errorDevice->write(msg.toUtf8());
+                }
+                data = compressed;
+                m_flags |= Compressed;
+            } else if (lib.verbose()) {
+                QString msg = QString::fromLatin1("%1: note: not compressed\n").arg(m_name);
+                lib.m_errorDevice->write(msg.toUtf8());
+            }
         }
     }
 #endif // QT_NO_COMPRESS
@@ -343,7 +362,8 @@ RCCResourceLibrary::Strings::Strings() :
    ATTRIBUTE_PREFIX(QLatin1String("prefix")),
    ATTRIBUTE_ALIAS(QLatin1String("alias")),
    ATTRIBUTE_THRESHOLD(QLatin1String("threshold")),
-   ATTRIBUTE_COMPRESS(QLatin1String("compress"))
+   ATTRIBUTE_COMPRESS(QLatin1String("compress")),
+   ATTRIBUTE_COMPRESSALGO(QStringLiteral("compression-algorithm"))
 {
 }
 
@@ -351,6 +371,7 @@ RCCResourceLibrary::RCCResourceLibrary(quint8 formatVersion)
   : m_root(0),
     m_format(C_Code),
     m_verbose(false),
+    m_compressionAlgo(CONSTANT_COMPRESSALGO_DEFAULT),
     m_compressLevel(CONSTANT_COMPRESSLEVEL_DEFAULT),
     m_compressThreshold(CONSTANT_COMPRESSTHRESHOLD_DEFAULT),
     m_treeOffset(0),
@@ -391,6 +412,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
     QLocale::Language language = QLocale::c().language();
     QLocale::Country country = QLocale::c().country();
     QString alias;
+    auto compressAlgo = m_compressionAlgo;
     int compressLevel = m_compressLevel;
     int compressThreshold = m_compressThreshold;
 
@@ -444,17 +466,27 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                     if (attributes.hasAttribute(m_strings.ATTRIBUTE_ALIAS))
                         alias = attributes.value(m_strings.ATTRIBUTE_ALIAS).toString();
 
+                    compressAlgo = m_compressionAlgo;
                     compressLevel = m_compressLevel;
-                    if (attributes.hasAttribute(m_strings.ATTRIBUTE_COMPRESS))
-                        compressLevel = attributes.value(m_strings.ATTRIBUTE_COMPRESS).toString().toInt();
-
                     compressThreshold = m_compressThreshold;
+
+                    QString errorString;
+                    if (attributes.hasAttribute(m_strings.ATTRIBUTE_COMPRESSALGO))
+                        compressAlgo = parseCompressionAlgorithm(attributes.value(m_strings.ATTRIBUTE_COMPRESSALGO), &errorString);
+                    if (errorString.isEmpty() && attributes.hasAttribute(m_strings.ATTRIBUTE_COMPRESS)) {
+                        QString value = attributes.value(m_strings.ATTRIBUTE_COMPRESS).toString();
+                        compressLevel = parseCompressionLevel(compressAlgo, value, &errorString);
+                    }
+
+                    // Special case for -no-compress
+                    if (m_compressLevel == -2)
+                        compressAlgo = CompressionAlgorithm::None;
+
                     if (attributes.hasAttribute(m_strings.ATTRIBUTE_THRESHOLD))
                         compressThreshold = attributes.value(m_strings.ATTRIBUTE_THRESHOLD).toString().toInt();
 
-                    // Special case for -no-compress. Overrides all other settings.
-                    if (m_compressLevel == -2)
-                        compressLevel = 0;
+                    if (!errorString.isEmpty())
+                        reader.raiseError(errorString);
                 }
             } else {
                 reader.raiseError(QString(QLatin1String("unexpected tag: %1")).arg(reader.name().toString()));
@@ -520,6 +552,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                                                     language,
                                                     country,
                                                     child.isDir() ? RCCFileInfo::Directory : RCCFileInfo::NoFlags,
+                                                    compressAlgo,
                                                     compressLevel,
                                                     compressThreshold)
                                         );
@@ -535,6 +568,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                                             language,
                                             country,
                                             RCCFileInfo::NoFlags,
+                                            compressAlgo,
                                             compressLevel,
                                             compressThreshold)
                                 );
@@ -727,6 +761,40 @@ RCCResourceLibrary::ResourceDataFileMap RCCResourceLibrary::resourceDataFileMap(
     if (m_root)
         resourceDataFileMapRecursion(m_root, QString(QLatin1Char(':')),  rc);
     return rc;
+}
+
+RCCResourceLibrary::CompressionAlgorithm RCCResourceLibrary::parseCompressionAlgorithm(QStringView value, QString *errorMsg)
+{
+    if (value == QLatin1String("zlib")) {
+#ifdef QT_NO_COMPRESS
+        *errorMsg = QLatin1String("zlib support not compiled in");
+#else
+        return CompressionAlgorithm::Zlib;
+#endif
+    } else if (value != QLatin1String("none")) {
+        *errorMsg = QString::fromLatin1("Unknown compression algorithm '%1'").arg(value);
+    }
+
+    return CompressionAlgorithm::None;
+}
+
+int RCCResourceLibrary::parseCompressionLevel(CompressionAlgorithm algo, const QString &level, QString *errorMsg)
+{
+    bool ok;
+    int c = level.toInt(&ok);
+    if (ok) {
+        switch (algo) {
+        case CompressionAlgorithm::None:
+            return 0;
+        case CompressionAlgorithm::Zlib:
+            if (c >= 1 && c <= 9)
+                return c;
+            break;
+        }
+    }
+
+    *errorMsg = QString::fromLatin1("invalid compression level '%1'").arg(level);
+    return 0;
 }
 
 bool RCCResourceLibrary::output(QIODevice &outDevice, QIODevice &tempDevice, QIODevice &errorDevice)

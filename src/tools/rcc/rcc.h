@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -77,6 +78,17 @@ public:
     void setOutputName(const QString &name) { m_outputName = name; }
     QString outputName() const { return m_outputName; }
 
+    enum class CompressionAlgorithm {
+        Zlib,
+
+        None = -1
+    };
+
+    static CompressionAlgorithm parseCompressionAlgorithm(QStringView algo, QString *errorMsg);
+    void setCompressionAlgorithm(CompressionAlgorithm algo) { m_compressionAlgo = algo; }
+    CompressionAlgorithm compressionAlgorithm() const { return m_compressionAlgo; }
+
+    static int parseCompressionLevel(CompressionAlgorithm algo, const QString &level, QString *errorMsg);
     void setCompressLevel(int c) { m_compressLevel = c; }
     int compressLevel() const { return m_compressLevel; }
 
@@ -104,6 +116,7 @@ private:
         const QString ATTRIBUTE_ALIAS;
         const QString ATTRIBUTE_THRESHOLD;
         const QString ATTRIBUTE_COMPRESS;
+        const QString ATTRIBUTE_COMPRESSALGO;
     };
     friend class RCCFileInfo;
     void reset();
@@ -133,6 +146,7 @@ private:
     QString m_outputName;
     Format m_format;
     bool m_verbose;
+    CompressionAlgorithm m_compressionAlgo;
     int m_compressLevel;
     int m_compressThreshold;
     int m_treeOffset;
