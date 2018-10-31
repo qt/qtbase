@@ -574,7 +574,8 @@ QHostAddress &QHostAddress::operator=(SpecialAddress address)
 */
 
 /*!
-    Sets the host address to null.
+    Sets the host address to null and sets the protocol to
+    QAbstractSocket::UnknownNetworkLayerProtocol.
 
     \sa QHostAddress::Null
 */
