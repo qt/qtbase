@@ -1029,7 +1029,7 @@ QRect QGridLayoutPrivate::cellRect(int row, int col) const
     This illustration shows a fragment of a dialog with a five-column,
     three-row grid (the grid is shown overlaid in magenta):
 
-    \image gridlayout.png A grid layout
+    \image qgridlayout.png A grid layout
 
     Columns 0, 2 and 4 in this dialog fragment are made up of a
     QLabel, a QLineEdit, and a QListBox. Columns 1 and 3 are
