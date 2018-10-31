@@ -3796,7 +3796,7 @@ bool qunsetenv(const char *varName)
     dependent delayed translation in the given \a context with the given
     \a comment.
     The \a context is typically a class and also needs to be specified
-    as a string literal. The string literal \a disambiguation should be
+    as a string literal. The string literal \a comment should be
     a short semantic tag to tell apart otherwise identical strings.
 
     The macro tells lupdate to collect the string, and expands to an
