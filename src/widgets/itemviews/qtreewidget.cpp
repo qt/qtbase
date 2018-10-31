@@ -1009,8 +1009,18 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
   Sets the selected state of the item to \a select.
 
   \sa isSelected()
-
 */
+void QTreeWidgetItem::setSelected(bool select)
+{
+    const QTreeModel *model = treeModel();
+    if (!model || !view->selectionModel())
+        return;
+    const QModelIndex index = model->index(this, 0);
+    view->selectionModel()->select(index, (select ? QItemSelectionModel::Select
+                                                  : QItemSelectionModel::Deselect)
+                                   | QItemSelectionModel::Rows);
+    d->selected = select;
+}
 
 /*!
   \fn bool QTreeWidgetItem::isSelected() const
@@ -1020,6 +1030,10 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
 
   \sa setSelected()
 */
+bool QTreeWidgetItem::isSelected() const
+{
+    return d->selected;
+}
 
 /*!
   \fn void QTreeWidgetItem::setHidden(bool hide)
@@ -1033,12 +1047,18 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
   \sa isHidden()
 */
 
-void QTreeWidgetItem::setHidden(bool ahide)
+void QTreeWidgetItem::setHidden(bool hide)
 {
-    if (view) {
-        view->setItemHidden(this, ahide);
-        d->hidden = ahide;
+    const QTreeModel *model = treeModel();
+    if (!model)
+        return;
+    if (this == model->headerItem) {
+        view->header()->setHidden(hide);
+    } else {
+        const QModelIndex index = view->d_func()->index(this);
+        view->setRowHidden(index.row(), index.parent(), hide);
     }
+    d->hidden = hide;
 }
 
 /*!
@@ -1052,7 +1072,15 @@ void QTreeWidgetItem::setHidden(bool ahide)
 
 bool QTreeWidgetItem::isHidden() const
 {
-    return (view ? d->hidden : false);
+    const QTreeModel *model = treeModel();
+    if (!model)
+        return false;
+    if (this == model->headerItem)
+        return view->header()->isHidden();
+    if (view->d_func()->hiddenIndexes.isEmpty())
+        return false;
+    QTreeModel::SkipSorting skipSorting(model);
+    return view->d_func()->isRowHidden(view->d_func()->index(this));
 }
 
 /*!
@@ -1064,6 +1092,14 @@ bool QTreeWidgetItem::isHidden() const
 
   \sa isExpanded()
 */
+void QTreeWidgetItem::setExpanded(bool expand)
+{
+    const QTreeModel *model = treeModel();
+    if (!model)
+        return;
+    QTreeModel::SkipSorting skipSorting(model);
+    view->setExpanded(view->d_func()->index(this), expand);
+}
 
 /*!
   \fn bool QTreeWidgetItem::isExpanded() const
@@ -1073,6 +1109,14 @@ bool QTreeWidgetItem::isHidden() const
 
   \sa setExpanded()
 */
+bool QTreeWidgetItem::isExpanded() const
+{
+    const QTreeModel *model = treeModel();
+    if (!model)
+        return false;
+    QTreeModel::SkipSorting skipSorting(model);
+    return view->isExpanded(view->d_func()->index(this));
+}
 
 /*!
   \fn void QTreeWidgetItem::setFirstColumnSpanned(bool span)
@@ -3058,6 +3102,7 @@ void QTreeWidget::setItemWidget(QTreeWidgetItem *item, int column, QWidget *widg
     QAbstractItemView::setIndexWidget(d->index(item, column), widget);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
   Returns \c true if the \a item is selected; otherwise returns \c false.
 
@@ -3069,9 +3114,7 @@ void QTreeWidget::setItemWidget(QTreeWidgetItem *item, int column, QWidget *widg
 */
 bool QTreeWidget::isItemSelected(const QTreeWidgetItem *item) const
 {
-    if (!item)
-        return false;
-    return item->d->selected;
+    return ((item && item->treeWidget() == this) ? item->isSelected() : false);
 }
 
 /*!
@@ -3086,16 +3129,10 @@ bool QTreeWidget::isItemSelected(const QTreeWidgetItem *item) const
 */
 void QTreeWidget::setItemSelected(const QTreeWidgetItem *item, bool select)
 {
-    Q_D(QTreeWidget);
-
-    if (!item)
-        return;
-
-    selectionModel()->select(d->index(item), (select ? QItemSelectionModel::Select
-                                              : QItemSelectionModel::Deselect)
-                             |QItemSelectionModel::Rows);
-    item->d->selected = select;
+    if (item && item->treeWidget() == this)
+        const_cast<QTreeWidgetItem*>(item)->setSelected(select);
 }
+#endif
 
 /*!
   Returns a list of all selected non-hidden items.
@@ -3112,7 +3149,7 @@ QList<QTreeWidgetItem*> QTreeWidget::selectedItems() const
     seen.reserve(indexes.count());
     for (const auto &index : indexes) {
         QTreeWidgetItem *item = d->item(index);
-        if (isItemHidden(item) || seen.contains(item))
+        if (item->isHidden() || seen.contains(item))
             continue;
         seen.insert(item);
         items.append(item);
@@ -3136,6 +3173,7 @@ QList<QTreeWidgetItem*> QTreeWidget::findItems(const QString &text, Qt::MatchFla
     return items;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
   Returns \c true if the \a item is explicitly hidden, otherwise returns \c false.
 
@@ -3145,13 +3183,7 @@ QList<QTreeWidgetItem*> QTreeWidget::findItems(const QString &text, Qt::MatchFla
 */
 bool QTreeWidget::isItemHidden(const QTreeWidgetItem *item) const
 {
-    Q_D(const QTreeWidget);
-    if (item == d->treeModel()->headerItem)
-        return header()->isHidden();
-    if (d->hiddenIndexes.isEmpty())
-        return false;
-    QTreeModel::SkipSorting skipSorting(d->treeModel());
-    return d->isRowHidden(d->index(item));
+    return ((item && item->treeWidget() == this) ? item->isHidden() : false);
 }
 
 /*!
@@ -3165,16 +3197,8 @@ bool QTreeWidget::isItemHidden(const QTreeWidgetItem *item) const
 */
 void QTreeWidget::setItemHidden(const QTreeWidgetItem *item, bool hide)
 {
-    if (!item)
-        return;
-    Q_D(QTreeWidget);
-    if (item == d->treeModel()->headerItem) {
-        header()->setHidden(hide);
-    } else {
-        const QModelIndex index = d->index(item);
-        setRowHidden(index.row(), index.parent(), hide);
-    }
-    item->d->hidden = hide;
+    if (item && item->treeWidget() == this)
+        const_cast<QTreeWidgetItem*>(item)->setHidden(hide);
 }
 
 /*!
@@ -3188,9 +3212,7 @@ void QTreeWidget::setItemHidden(const QTreeWidgetItem *item, bool hide)
 */
 bool QTreeWidget::isItemExpanded(const QTreeWidgetItem *item) const
 {
-    Q_D(const QTreeWidget);
-    QTreeModel::SkipSorting skipSorting(d->treeModel());
-    return isExpanded(d->index(item));
+    return ((item && item->treeWidget() == this) ? item->isExpanded() : false);
 }
 
 /*!
@@ -3205,10 +3227,10 @@ bool QTreeWidget::isItemExpanded(const QTreeWidgetItem *item) const
 */
 void QTreeWidget::setItemExpanded(const QTreeWidgetItem *item, bool expand)
 {
-    Q_D(QTreeWidget);
-    QTreeModel::SkipSorting skipSorting(d->treeModel());
-    setExpanded(d->index(item), expand);
+    if (item && item->treeWidget() == this)
+        const_cast<QTreeWidgetItem*>(item)->setExpanded(expand);
 }
+#endif
 
 /*!
   \since 4.3

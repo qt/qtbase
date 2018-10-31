@@ -79,14 +79,14 @@ public:
 
     inline QTreeWidget *treeWidget() const { return view; }
 
-    inline void setSelected(bool select);
-    inline bool isSelected() const;
+    void setSelected(bool select);
+    bool isSelected() const;
 
     void setHidden(bool hide);
     bool isHidden() const;
 
-    inline void setExpanded(bool expand);
-    inline bool isExpanded() const;
+    void setExpanded(bool expand);
+    bool isExpanded() const;
 
     inline void setFirstColumnSpanned(bool span);
     inline bool isFirstColumnSpanned() const;
@@ -315,17 +315,27 @@ public:
     void setItemWidget(QTreeWidgetItem *item, int column, QWidget *widget);
     inline void removeItemWidget(QTreeWidgetItem *item, int column);
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X ("Use QTreeWidgetItem::isSelected() instead")
     bool isItemSelected(const QTreeWidgetItem *item) const;
+    QT_DEPRECATED_X ("Use QTreeWidgetItem::setSelected() instead")
     void setItemSelected(const QTreeWidgetItem *item, bool select);
+#endif
     QList<QTreeWidgetItem*> selectedItems() const;
     QList<QTreeWidgetItem*> findItems(const QString &text, Qt::MatchFlags flags,
                                       int column = 0) const;
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X ("Use QTreeWidgetItem::isHidden() instead")
     bool isItemHidden(const QTreeWidgetItem *item) const;
+    QT_DEPRECATED_X ("Use QTreeWidgetItem::setHidden() instead")
     void setItemHidden(const QTreeWidgetItem *item, bool hide);
 
+    QT_DEPRECATED_X ("Use QTreeWidgetItem::isExpanded() instead")
     bool isItemExpanded(const QTreeWidgetItem *item) const;
+    QT_DEPRECATED_X ("Use QTreeWidgetItem::setExpanded() instead")
     void setItemExpanded(const QTreeWidgetItem *item, bool expand);
+#endif
 
     bool isFirstItemColumnSpanned(const QTreeWidgetItem *item) const;
     void setFirstItemColumnSpanned(const QTreeWidgetItem *item, bool span);
@@ -412,18 +422,6 @@ inline QTreeWidgetItem *QTreeWidget::itemAt(int ax, int ay) const
 
 inline void QTreeWidget::setHeaderLabel(const QString &alabel)
 { setHeaderLabels(QStringList(alabel)); }
-
-inline void QTreeWidgetItem::setSelected(bool aselect)
-{ if (view) view->setItemSelected(this, aselect); }
-
-inline bool QTreeWidgetItem::isSelected() const
-{ return (view ? view->isItemSelected(this) : false); }
-
-inline void QTreeWidgetItem::setExpanded(bool aexpand)
-{ if (view) view->setItemExpanded(this, aexpand); }
-
-inline bool QTreeWidgetItem::isExpanded() const
-{ return (view ? view->isItemExpanded(this) : false); }
 
 inline void QTreeWidgetItem::setFirstColumnSpanned(bool aspan)
 { if (view) view->setFirstItemColumnSpanned(this, aspan); }

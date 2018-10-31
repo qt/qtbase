@@ -154,14 +154,14 @@ void MainWindow::findItems()
     QTreeWidgetItem *item;
 //! [6]
     foreach (item, treeWidget->selectedItems())
-        treeWidget->setItemSelected(item, false);
+        item->setSelected(false);
 
 //! [7]
     QList<QTreeWidgetItem *> found = treeWidget->findItems(
         itemText, Qt::MatchWildcard);
 
     foreach (item, found) {
-        treeWidget->setItemSelected(item, true);
+        item->setSelected(true);
         // Show the item->text(0) for each item.
     }
 //! [7]

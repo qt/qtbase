@@ -608,31 +608,31 @@ void tst_QTreeWidget::setItemHidden()
     QVERIFY(testWidget->visualItemRect(child).isValid()
            && testWidget->viewport()->rect().intersects(testWidget->visualItemRect(child)));
 
-    QVERIFY(!testWidget->isItemHidden(parent));
-    QVERIFY(!testWidget->isItemHidden(child));
+    QVERIFY(!parent->isHidden());
+    QVERIFY(!child->isHidden());
 
-    testWidget->setItemHidden(parent, true);
+    parent->setHidden(true);
 
     QVERIFY(!(testWidget->visualItemRect(parent).isValid()
              && testWidget->viewport()->rect().intersects(testWidget->visualItemRect(parent))));
     QVERIFY(!(testWidget->visualItemRect(child).isValid()
              && testWidget->viewport()->rect().intersects(testWidget->visualItemRect(child))));
 
-    QVERIFY(testWidget->isItemHidden(parent));
-    QVERIFY(!testWidget->isItemHidden(child));
+    QVERIFY(parent->isHidden());
+    QVERIFY(!child->isHidden());
 
     // From task 78670 (This caused an core dump)
     // Check if we can set an item visible if it already is visible.
-    testWidget->setItemHidden(parent, false);
-    testWidget->setItemHidden(parent, false);
-    QVERIFY(!testWidget->isItemHidden(parent));
+    parent->setHidden(false);
+    parent->setHidden(false);
+    QVERIFY(!parent->isHidden());
 
 
     // hide, hide and then unhide.
-    testWidget->setItemHidden(parent, true);
-    testWidget->setItemHidden(parent, true);
-    testWidget->setItemHidden(parent, false);
-    QVERIFY(!testWidget->isItemHidden(parent));
+    parent->setHidden(true);
+    parent->setHidden(true);
+    parent->setHidden(false);
+    QVERIFY(!parent->isHidden());
 
 
 }
@@ -658,7 +658,7 @@ void tst_QTreeWidget::setItemHidden2()
 
     if (testWidget->topLevelItemCount() > 0) {
         top = testWidget->topLevelItem(0);
-        testWidget->setItemExpanded(top, true);
+        top->setExpanded(true);
     }
 
     if (testWidget->topLevelItemCount() > 0) {
@@ -666,8 +666,8 @@ void tst_QTreeWidget::setItemHidden2()
         for (int i = 0; i < top->childCount(); i++) {
             leaf = top->child(i);
             if (leaf->text(0).toInt() % 2 == 0) {
-                if (!testWidget->isItemHidden(leaf)) {
-                    testWidget->setItemHidden(leaf, true);
+                if (!leaf->isHidden()) {
+                    leaf->setHidden(true);
                 }
             }
         }
@@ -821,7 +821,7 @@ void tst_QTreeWidget::selectedItems()
             else
                 item = item->child(index);
         }
-        testWidget->setItemSelected(item, true);
+        item->setSelected(true);
     }
 
     // hide rows
@@ -833,7 +833,7 @@ void tst_QTreeWidget::selectedItems()
             else
                 item = item->child(index);
         }
-        testWidget->setItemHidden(item, true);
+        item->setHidden(true);
     }
 
     // open/close toplevel
@@ -862,18 +862,20 @@ void tst_QTreeWidget::selectedItems()
     // compare isSelected
     for (int t=0; t<testWidget->topLevelItemCount(); ++t) {
         QTreeWidgetItem *top = testWidget->topLevelItem(t);
-        if (testWidget->isItemSelected(top) && !testWidget->isItemHidden(top))
+        if (top->isSelected() && !top->isHidden())
             QVERIFY(sel.contains(top));
         for (int c=0; c<top->childCount(); ++c) {
             QTreeWidgetItem *child = top->child(c);
-            if (testWidget->isItemSelected(child) && !testWidget->isItemHidden(child))
+            if (child->isSelected() && !child->isHidden())
                 QVERIFY(sel.contains(child));
         }
     }
 
+#if QT_DEPRECATED_SINCE(5, 13)
     // Possible to select null without crashing?
     testWidget->setItemSelected(0, true);
     QVERIFY(!testWidget->isItemSelected(0));
+#endif
 
     // unselect
     foreach (IntList itemPath, selectedItems) {
@@ -884,7 +886,7 @@ void tst_QTreeWidget::selectedItems()
             else
                 item = item->child(index);
         }
-        testWidget->setItemSelected(item, false);
+        item->setSelected(false);
     }
     QCOMPARE(testWidget->selectedItems().count(), 0);
 }
@@ -1010,21 +1012,21 @@ void tst_QTreeWidget::expand()
     QTreeWidgetItem *topLevelItem = testWidget->topLevelItem(topLevelIndex);
     QTreeWidgetItem *childItem = topLevelItem->child(childIndex);
 
-    QVERIFY(!testWidget->isItemExpanded(topLevelItem));
-    testWidget->setItemExpanded(topLevelItem, true);
-    QVERIFY(testWidget->isItemExpanded(topLevelItem));
+    QVERIFY(!topLevelItem->isExpanded());
+    topLevelItem->setExpanded(true);
+    QVERIFY(topLevelItem->isExpanded());
 
-    QVERIFY(!testWidget->isItemExpanded(childItem));
-    testWidget->setItemExpanded(childItem, true);
-    QVERIFY(testWidget->isItemExpanded(childItem));
+    QVERIFY(!childItem->isExpanded());
+    childItem->setExpanded(true);
+    QVERIFY(childItem->isExpanded());
 
-    QVERIFY(testWidget->isItemExpanded(topLevelItem));
-    testWidget->setItemExpanded(topLevelItem, false);
-    QVERIFY(!testWidget->isItemExpanded(topLevelItem));
+    QVERIFY(topLevelItem->isExpanded());
+    topLevelItem->setExpanded(false);
+    QVERIFY(!topLevelItem->isExpanded());
 
-    QVERIFY(testWidget->isItemExpanded(childItem));
-    testWidget->setItemExpanded(childItem, false);
-    QVERIFY(!testWidget->isItemExpanded(childItem));
+    QVERIFY(childItem->isExpanded());
+    childItem->setExpanded(false);
+    QVERIFY(!childItem->isExpanded());
 }
 
 void tst_QTreeWidget::checkState_data()
@@ -1525,7 +1527,7 @@ void tst_QTreeWidget::keyboardNavigation()
             }
             break;
         case Qt::Key_Down:
-            if (testWidget->isItemExpanded(item)) {
+            if (item->isExpanded()) {
                 row = 0;
                 item = item->child(row);
             } else {
@@ -1538,7 +1540,7 @@ void tst_QTreeWidget::keyboardNavigation()
             break;
         case Qt::Key_Left:
             if (checkScroll) {
-                QVERIFY(testWidget->isItemExpanded(item));
+                QVERIFY(item->isExpanded());
                 QCOMPARE(scrollBar->value(), valueBeforeClick - scrollBar->singleStep());
             }
             // windows style right will walk to the parent
@@ -1597,9 +1599,9 @@ void tst_QTreeWidget::scrollToItem()
     QCOMPARE(search->text(0), QLatin1String("111"));
 
     QTreeWidgetItem *par = search->parent();
-    QVERIFY(testWidget->isItemExpanded(par));
+    QVERIFY(par->isExpanded());
     par = par->parent();
-    QVERIFY(testWidget->isItemExpanded(par));
+    QVERIFY(par->isExpanded());
 }
 
 // From task #85413
@@ -2917,14 +2919,14 @@ void tst_QTreeWidget::randomExpand()
     QTreeWidgetItem *newItem1 = 0;
     for (int i = 0; i < 100; i++) {
         newItem1 = new QTreeWidgetItem(&tree, item1);
-        tree.setItemExpanded(newItem1, true);
-        QCOMPARE(tree.isItemExpanded(newItem1), true);
+        newItem1->setExpanded(true);
+        QCOMPARE(newItem1->isExpanded(), true);
 
         QTreeWidgetItem *x = new QTreeWidgetItem();
-        QCOMPARE(tree.isItemExpanded(newItem1), true);
+        QCOMPARE(newItem1->isExpanded(), true);
         newItem1->addChild(x);
 
-        QCOMPARE(tree.isItemExpanded(newItem1), true);
+        QCOMPARE(newItem1->isExpanded(), true);
     }
 
 }
@@ -2937,19 +2939,19 @@ void tst_QTreeWidget::crashTest()
 
     QTreeWidgetItem *item1 = new QTreeWidgetItem(tree);
     item1->setText(0, "item1");
-    tree->setItemExpanded(item1, true);
+    item1->setExpanded(true);
     QTreeWidgetItem *item2 = new QTreeWidgetItem(item1);
     item2->setText(0, "item2");
 
     QTreeWidgetItem *item3 = new QTreeWidgetItem(tree, item1);
     item3->setText(0, "item3");
-    tree->setItemExpanded(item3, true);
+    item3->setExpanded(true);
     QTreeWidgetItem *item4 = new QTreeWidgetItem(item3);
     item4->setText(0, "item4");
 
     QTreeWidgetItem *item5 = new QTreeWidgetItem(tree, item3);
     item5->setText(0, "item5");
-    tree->setItemExpanded(item5, true);
+    item5->setExpanded(true);
     QTreeWidgetItem *item6 = new QTreeWidgetItem(item5);
     item6->setText(0, "item6");
 
