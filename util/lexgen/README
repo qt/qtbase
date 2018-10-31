@@ -11,6 +11,5 @@ you want. But I like that it generates code that operates on QChar and friends.
 
 Use at your own risk ;-)
 
-
 --
-Simon Hausmann <simon.hausmann@digia.com>
+Simon Hausmann <simon.hausmann@qt.io>
