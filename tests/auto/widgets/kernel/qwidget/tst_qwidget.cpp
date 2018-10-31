@@ -9422,7 +9422,7 @@ QWidgetBackingStore* backingStore(QWidget &widget)
 void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 {
 #ifndef QT_NO_CURSOR
-    QApplication::setOverrideCursor(Qt::BlankCursor); //keep the cursor out of screen grabs
+    QGuiApplication::setOverrideCursor(Qt::BlankCursor); //keep the cursor out of screen grabs
 #endif
     QWidget main(0,Qt::FramelessWindowHint); //don't get confused by the size of the window frame
     QPalette palette;
@@ -9459,7 +9459,7 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
     QTRY_COMPARE(mainPixmap.toImage().convertToFormat(QImage::Format_RGB32),
                  correct.toImage().convertToFormat(QImage::Format_RGB32));
 #ifndef QT_NO_CURSOR
-    QApplication::restoreOverrideCursor();
+    QGuiApplication::restoreOverrideCursor();
 #endif
 }
 

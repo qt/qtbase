@@ -4920,9 +4920,9 @@ void QWidget::unsetLayoutDirection()
     Some underlying window implementations will reset the cursor if it
     leaves a widget even if the mouse is grabbed. If you want to have
     a cursor set for all widgets, even when outside the window, consider
-    QApplication::setOverrideCursor().
+    QGuiApplication::setOverrideCursor().
 
-    \sa QApplication::setOverrideCursor()
+    \sa QGuiApplication::setOverrideCursor()
 */
 
 #ifndef QT_NO_CURSOR

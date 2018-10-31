@@ -161,9 +161,9 @@ void MainWindow::save()
     }
 
     QTextStream out(&file);
-    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QGuiApplication::setOverrideCursor(Qt::WaitCursor);
     out << textEdit->toHtml();
-    QApplication::restoreOverrideCursor();
+    QGuiApplication::restoreOverrideCursor();
 
     statusBar()->showMessage(tr("Saved '%1'").arg(fileName), 2000);
 }

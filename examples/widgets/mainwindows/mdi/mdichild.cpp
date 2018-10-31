@@ -82,9 +82,9 @@ bool MdiChild::loadFile(const QString &fileName)
     }
 
     QTextStream in(&file);
-    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QGuiApplication::setOverrideCursor(Qt::WaitCursor);
     setPlainText(in.readAll());
-    QApplication::restoreOverrideCursor();
+    QGuiApplication::restoreOverrideCursor();
 
     setCurrentFile(fileName);
 
@@ -124,9 +124,9 @@ bool MdiChild::saveFile(const QString &fileName)
     }
 
     QTextStream out(&file);
-    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QGuiApplication::setOverrideCursor(Qt::WaitCursor);
     out << toPlainText();
-    QApplication::restoreOverrideCursor();
+    QGuiApplication::restoreOverrideCursor();
 
     setCurrentFile(fileName);
     return true;

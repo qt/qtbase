@@ -180,7 +180,7 @@ QAbstractItemModel *MainWindow::modelFromFile(const QString& fileName)
         return new QStringListModel(completer);
 
 #ifndef QT_NO_CURSOR
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 #endif
     QStringList words;
 
@@ -218,7 +218,7 @@ QAbstractItemModel *MainWindow::modelFromFile(const QString& fileName)
     }
 
 #ifndef QT_NO_CURSOR
-    QApplication::restoreOverrideCursor();
+    QGuiApplication::restoreOverrideCursor();
 #endif
 
     return model;

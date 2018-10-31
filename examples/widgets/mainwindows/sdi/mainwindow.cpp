@@ -338,9 +338,9 @@ void MainWindow::loadFile(const QString &fileName)
     }
 
     QTextStream in(&file);
-    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QGuiApplication::setOverrideCursor(Qt::WaitCursor);
     textEdit->setPlainText(in.readAll());
-    QApplication::restoreOverrideCursor();
+    QGuiApplication::restoreOverrideCursor();
 
     setCurrentFile(fileName);
     statusBar()->showMessage(tr("File loaded"), 2000);
@@ -434,9 +434,9 @@ bool MainWindow::saveFile(const QString &fileName)
     }
 
     QTextStream out(&file);
-    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QGuiApplication::setOverrideCursor(Qt::WaitCursor);
     out << textEdit->toPlainText();
-    QApplication::restoreOverrideCursor();
+    QGuiApplication::restoreOverrideCursor();
 
     setCurrentFile(fileName);
     statusBar()->showMessage(tr("File saved"), 2000);
