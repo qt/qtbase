@@ -583,24 +583,6 @@ Qt::DropActions QListModel::supportedDropActions() const
 */
 
 /*!
-    \fn void QListWidgetItem::setSelected(bool select)
-    \since 4.2
-
-    Sets the selected state of the item to \a select.
-
-    \sa isSelected()
-*/
-
-/*!
-    \fn bool QListWidgetItem::isSelected() const
-    \since 4.2
-
-    Returns \c true if the item is selected; otherwise returns \c false.
-
-    \sa setSelected()
-*/
-
-/*!
     \fn void QListWidgetItem::setHidden(bool hide)
     \since 4.2
 
@@ -1000,6 +982,50 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
     Sets the size hint for the list item to be \a size. If no size hint is set,
     the item delegate will compute the size hint based on the item data.
 */
+
+/*!
+    \fn void QListWidgetItem::setSelected(bool select)
+    \since 4.2
+
+    Sets the selected state of the item to \a select.
+
+    \sa isSelected()
+*/
+void QListWidgetItem::setSelected(bool select)
+{
+    const QListModel *model = listModel();
+    if (!model || !view->selectionModel())
+        return;
+    const QAbstractItemView::SelectionMode selectionMode = view->selectionMode();
+    if (selectionMode == QAbstractItemView::NoSelection)
+        return;
+    const QModelIndex index = model->index(this);
+    if (selectionMode == QAbstractItemView::SingleSelection)
+        view->selectionModel()->select(index, select
+                                       ? QItemSelectionModel::ClearAndSelect
+                                       : QItemSelectionModel::Deselect);
+    else
+        view->selectionModel()->select(index, select
+                                       ? QItemSelectionModel::Select
+                                       : QItemSelectionModel::Deselect);
+}
+
+/*!
+    \fn bool QListWidgetItem::isSelected() const
+    \since 4.2
+
+    Returns \c true if the item is selected; otherwise returns \c false.
+
+    \sa setSelected()
+*/
+bool QListWidgetItem::isSelected() const
+{
+    const QListModel *model = listModel();
+    if (!model || !view->selectionModel())
+        return false;
+    const QModelIndex index = model->index(this);
+    return view->selectionModel()->isSelected(index);
+}
 
 /*!
     \fn void QListWidgetItem::setFlags(Qt::ItemFlags flags)
@@ -1743,6 +1769,7 @@ void QListWidget::setItemWidget(QListWidgetItem *item, QWidget *widget)
     QAbstractItemView::setIndexWidget(index, widget);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     Returns \c true if \a item is selected; otherwise returns \c false.
 
@@ -1752,9 +1779,7 @@ void QListWidget::setItemWidget(QListWidgetItem *item, QWidget *widget)
 */
 bool QListWidget::isItemSelected(const QListWidgetItem *item) const
 {
-    Q_D(const QListWidget);
-    QModelIndex index = d->listModel()->index(const_cast<QListWidgetItem*>(item));
-    return selectionModel()->isSelected(index);
+    return ((item && item->listWidget() == this) ? item->isSelected() : false);
 }
 
 /*!
@@ -1767,20 +1792,10 @@ bool QListWidget::isItemSelected(const QListWidgetItem *item) const
 */
 void QListWidget::setItemSelected(const QListWidgetItem *item, bool select)
 {
-    Q_D(QListWidget);
-    QModelIndex index = d->listModel()->index(const_cast<QListWidgetItem*>(item));
-
-    if (d->selectionMode == SingleSelection) {
-        selectionModel()->select(index, select
-                                 ? QItemSelectionModel::ClearAndSelect
-                                 : QItemSelectionModel::Deselect);
-    } else if (d->selectionMode != NoSelection) {
-        selectionModel()->select(index, select
-                                 ? QItemSelectionModel::Select
-                                 : QItemSelectionModel::Deselect);
-    }
-
+    if (item && item->listWidget() == this)
+        const_cast<QListWidgetItem*>(item)->setSelected(select);
 }
+#endif
 
 /*!
     Returns a list of all selected items in the list widget.
@@ -1816,6 +1831,7 @@ QList<QListWidgetItem*> QListWidget::findItems(const QString &text, Qt::MatchFla
     return items;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     Returns \c true if the \a item is explicitly hidden; otherwise returns \c false.
 
@@ -1839,6 +1855,7 @@ void QListWidget::setItemHidden(const QListWidgetItem *item, bool hide)
 {
     setRowHidden(row(item), hide);
 }
+#endif
 
 /*!
     Scrolls the view if necessary to ensure that the \a item is visible.

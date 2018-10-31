@@ -72,8 +72,8 @@ public:
 
     inline QListWidget *listWidget() const { return view; }
 
-    inline void setSelected(bool select);
-    inline bool isSelected() const;
+    void setSelected(bool select);
+    bool isSelected() const;
 
     inline void setHidden(bool hide);
     inline bool isHidden() const;
@@ -167,7 +167,6 @@ public:
 
 private:
     QListModel *listModel() const;
-private:
     int rtti;
     QVector<void *> dummy;
     QListWidget *view;
@@ -256,13 +255,21 @@ public:
     void setItemWidget(QListWidgetItem *item, QWidget *widget);
     inline void removeItemWidget(QListWidgetItem *item);
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X ("Use QListWidgetItem::isSelected() instead")
     bool isItemSelected(const QListWidgetItem *item) const;
+    QT_DEPRECATED_X ("Use QListWidgetItem::setSelected() instead")
     void setItemSelected(const QListWidgetItem *item, bool select);
+#endif
     QList<QListWidgetItem*> selectedItems() const;
     QList<QListWidgetItem*> findItems(const QString &text, Qt::MatchFlags flags) const;
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X ("Use QListWidgetItem::isHidden() instead")
     bool isItemHidden(const QListWidgetItem *item) const;
+    QT_DEPRECATED_X ("Use QListWidgetItem::setHidden() instead")
     void setItemHidden(const QListWidgetItem *item, bool hide);
+#endif
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 protected:
 #endif
@@ -341,17 +348,11 @@ inline void QListWidget::addItem(QListWidgetItem *aitem)
 inline QListWidgetItem *QListWidget::itemAt(int ax, int ay) const
 { return itemAt(QPoint(ax, ay)); }
 
-inline void QListWidgetItem::setSelected(bool aselect)
-{ if (view) view->setItemSelected(this, aselect); }
-
-inline bool QListWidgetItem::isSelected() const
-{ return (view ? view->isItemSelected(this) : false); }
-
 inline void QListWidgetItem::setHidden(bool ahide)
-{ if (view) view->setItemHidden(this, ahide); }
+{ if (view) view->setRowHidden(view->row(this), ahide); }
 
 inline bool QListWidgetItem::isHidden() const
-{ return (view ? view->isItemHidden(this) : false); }
+{ return (view ? view->isRowHidden(view->row(this)) : false); }
 
 QT_END_NAMESPACE
 

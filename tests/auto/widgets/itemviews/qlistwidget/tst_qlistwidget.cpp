@@ -344,7 +344,7 @@ void tst_QListWidget::addItem2()
     testWidget->addItem(item);
     QCOMPARE(testWidget->count(), ++count);
     QCOMPARE(testWidget->item(testWidget->count()-1), item);
-    QCOMPARE(testWidget->isItemHidden(item), false);
+    QCOMPARE(item->isHidden(), false);
 }
 
 void tst_QListWidget::addItems()
@@ -402,9 +402,11 @@ void tst_QListWidget::closePersistentEditor()
 
 void tst_QListWidget::setItemHidden()
 {
+#if QT_DEPRECATED_SINCE(5, 13)
     // Boundary checking
     testWidget->setItemHidden(0, true);
     testWidget->setItemHidden(0, false);
+#endif
 
     int totalHidden = 0;
     for (int i = 0; i < testWidget->model()->rowCount(); ++i)
@@ -421,27 +423,27 @@ void tst_QListWidget::setItemHidden()
             newTotal++;
     QCOMPARE(newTotal, totalHidden);
 
-    testWidget->setItemHidden(item, true);
-    QCOMPARE(testWidget->isItemHidden(item), true);
+    item->setHidden(true);
+    QCOMPARE(item->isHidden(), true);
 
     // Check that nothing else changed
     newTotal = 0;
     for (int i = 0; i < testWidget->model()->rowCount(); ++i)
-        if (testWidget->isItemHidden(testWidget->item(i)))
+        if (testWidget->item(i)->isHidden())
             newTotal++;
     QCOMPARE(newTotal, totalHidden + 1);
 
-    testWidget->setItemHidden(item, false);
-    QCOMPARE(testWidget->isItemHidden(item), false);
+    item->setHidden(false);
+    QCOMPARE(item->isHidden(), false);
 
     // Check that nothing else changed
     newTotal = 0;
     for (int i = 0; i < testWidget->model()->rowCount(); ++i)
-        if (testWidget->isItemHidden(testWidget->item(i)))
+        if (testWidget->item(i)->isHidden())
             newTotal++;
     QCOMPARE(newTotal, totalHidden);
 
-    testWidget->setItemHidden(item, true);
+    item->setHidden(true);
 }
 
 void tst_QListWidget::setCurrentItem_data()
@@ -847,7 +849,7 @@ void tst_QListWidget::selectedItems()
     testWidget->setSelectionMode(QListWidget::SingleSelection);
     for (int i=0; i<itemCount; ++i) {
         QListWidgetItem *item = testWidget->item(i);
-        testWidget->setItemSelected(item, true);
+        item->setSelected(true);
         QVERIFY(item->isSelected());
         QCOMPARE(testWidget->selectedItems().count(), 1);
     }
@@ -860,10 +862,10 @@ void tst_QListWidget::selectedItems()
     QCOMPARE(testWidget->count(), itemCount);
     // hide items
     foreach (int row, hiddenRows)
-        testWidget->setItemHidden(testWidget->item(row), true);
+        testWidget->item(row)->setHidden(true);
     // select items
     foreach (int row, selectedRows)
-        testWidget->setItemSelected(testWidget->item(row), true);
+        testWidget->item(row)->setSelected(true);
 
     // check that the correct number of items and the expected items are there
     QList<QListWidgetItem *> selectedItems = testWidget->selectedItems();
@@ -874,7 +876,7 @@ void tst_QListWidget::selectedItems()
     //check that isSelected agrees with selectedItems
     for (int i=0; i<itemCount; ++i) {
         QListWidgetItem *item = testWidget->item(i);
-        if (testWidget->isItemSelected(item))
+        if (item->isSelected())
             QVERIFY(selectedItems.contains(item));
     }
 }
