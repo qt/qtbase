@@ -67,17 +67,17 @@ do {\
 
 #define QFAIL(message) \
 do {\
-    QTest::qFail(message, __FILE__, __LINE__);\
+    QTest::qFail(static_cast<const char *>(message), __FILE__, __LINE__);\
     return;\
 } while (false)
 
 #define QVERIFY2(statement, description) \
 do {\
     if (statement) {\
-        if (!QTest::qVerify(true, #statement, (description), __FILE__, __LINE__))\
+        if (!QTest::qVerify(true, #statement, static_cast<const char *>(description), __FILE__, __LINE__))\
             return;\
     } else {\
-        if (!QTest::qVerify(false, #statement, (description), __FILE__, __LINE__))\
+        if (!QTest::qVerify(false, #statement, static_cast<const char *>(description), __FILE__, __LINE__))\
             return;\
     }\
 } while (false)
@@ -184,7 +184,7 @@ do { \
 
 #define QSKIP_INTERNAL(statement) \
 do {\
-    QTest::qSkip(statement, __FILE__, __LINE__);\
+    QTest::qSkip(static_cast<const char *>(statement), __FILE__, __LINE__);\
     return;\
 } while (false)
 
@@ -200,7 +200,7 @@ do {\
 
 #define QEXPECT_FAIL(dataIndex, comment, mode)\
 do {\
-    if (!QTest::qExpectFail(dataIndex, comment, QTest::mode, __FILE__, __LINE__))\
+    if (!QTest::qExpectFail(dataIndex, static_cast<const char *>(comment), QTest::mode, __FILE__, __LINE__))\
         return;\
 } while (false)
 
@@ -217,7 +217,7 @@ do {\
 } while (false)
 
 #define QWARN(msg)\
-    QTest::qWarn(msg, __FILE__, __LINE__)
+    QTest::qWarn(static_cast<const char *>(msg), __FILE__, __LINE__)
 
 #ifdef QT_TESTCASE_BUILDDIR
 # define QFINDTESTDATA(basepath)\
