@@ -223,14 +223,15 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , QSurfaceFormat format
                     continue;
             }
 
-            QXlibPointer<XVisualInfo> visual(glXGetVisualFromFBConfig(display, candidate));
-            if (visual.isNull())
-                continue;
+            int actualRed;
+            int actualGreen;
+            int actualBlue;
+            int actualAlpha;
+            glXGetFBConfigAttrib(display, candidate, GLX_RED_SIZE, &actualRed);
+            glXGetFBConfigAttrib(display, candidate, GLX_GREEN_SIZE, &actualGreen);
+            glXGetFBConfigAttrib(display, candidate, GLX_BLUE_SIZE, &actualBlue);
+            glXGetFBConfigAttrib(display, candidate, GLX_ALPHA_SIZE, &actualAlpha);
 
-            const int actualRed = qPopulationCount(visual->red_mask);
-            const int actualGreen = qPopulationCount(visual->green_mask);
-            const int actualBlue = qPopulationCount(visual->blue_mask);
-            const int actualAlpha = visual->depth - actualRed - actualGreen - actualBlue;
 
             if (requestedRed && actualRed < requestedRed)
                 continue;
