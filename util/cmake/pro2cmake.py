@@ -710,8 +710,10 @@ def do_include(scope: Scope, *, debug: bool=False) -> None:
 def main() -> None:
     args = _parse_commandline()
 
+    debug_parsing = args.debug_parser or args.debug
+
     for file in args.files:
-        parseresult = parseProFile(file, debug=args.debug_parser or args.debug)
+        parseresult = parseProFile(file, debug=debug_parsing)
 
         if args.debug_parse_result or args.debug:
             print('\n\n#### Parser result:')
@@ -729,7 +731,7 @@ def main() -> None:
             print(file_scope.dump())
             print('\n#### End of .pro/.pri file structure.\n')
 
-        do_include(file_scope)
+        do_include(file_scope, debug=debug_parsing)
 
         if args.debug_full_pro_structure or args.debug:
             print('\n\n#### Full .pro/.pri file structure:')
