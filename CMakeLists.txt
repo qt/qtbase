@@ -8,7 +8,11 @@ project(QtBase
 )
 
 ## Add some paths to check for cmake modules:
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdparty/extra-cmake-modules/find-modules;${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdparty/kwin")
+list(APPEND CMAKE_MODULE_PATH
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdparty/extra-cmake-modules/find-modules"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdparty/kwin"
+)
 
 ## Qt specific setup common for all modules:
 include(QtSetup)
