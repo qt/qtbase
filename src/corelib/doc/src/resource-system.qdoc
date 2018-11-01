@@ -100,6 +100,9 @@
     See the QLocale documentation for a description of the format to use
     for locale strings.
 
+    See QFileSelector for an additional mechanism to select locale-specific
+    resources, in addition to the ability to select OS-specific and other
+    features.
 
     \section2 External Binary Resources
 
@@ -143,23 +146,69 @@
 
     \section1 Compression
 
-    Resources are compressed by default (in the \c ZIP format). It is
-    possible to turn off compression. This can be useful if your
-    resources already contain a compressed format, such as \c .png
-    files. You do this by giving the \c {-no-compress} command line
-    argument.
+    \c rcc attempts to compress the content to optimize disk space usage in the
+    final binaries. By default, it will perform a heuristic check to determine
+    whether compressing is worth it and will store the content uncompressed if
+    it fails to sufficiently compress. To control the threshold, you can use
+    the \c {-threshold} option, which tells \c rcc the percentage of the
+    original file size that must be gained for it to store the file in
+    compressed form.
+
+    \code
+        rcc -threshold 25 myresources.qrc
+    \endcode
+
+    The default value is "70", indicating that the compressed file must be 70%
+    smaller than the original (no more than 30% of the original file size).
+
+    It is possible to turn off compression, if desired. This can be useful if
+    your resources already contain a compressed format, such as \c .png files,
+    and you do not want to incur the CPU cost at build time to confirm that it
+    can't be compressed. Another reason is if disk usage is not a problem and
+    the application would prefer to keep the content as clean memory pages at
+    runtime. You do this by giving the \c {-no-compress} command line argument.
 
     \code
         rcc -no-compress myresources.qrc
     \endcode
 
-    \c rcc also gives you some control over the compression. You can
-    specify the compression level and the threshold level to consider
-    while compressing files, for example:
+    \c rcc also gives you some control over the compression level and
+    compression algorithm, for example:
 
     \code
-        rcc -compress 2 -threshold 3 myresources.qrc
+        rcc -compress 2 -compress-algo zlib myresources.qrc
     \endcode
+
+    \c rcc supports the following compression algorithms and compression
+    levels:
+
+    \list
+      \li \c{best}: use the best algorithm among the ones below, at its highest
+      compression level, to achieve the most compression at the expense of
+      using a lot of CPU time during compilation. This value is useful in the
+      XML file to indicate a file should be most compressed, regardless of
+      which algorithms \c rcc supports.
+
+      \li \c{zstd}: use the \l{Zstandard}{https://zstd.net} library to compress
+      contents. Valid compression levels range from 1 to 19, 1 is least
+      compression (least CPU time) and 19 is the most compression (most CPU
+      time). The default level is 14. A special value of 0 tells the \c{zstd}
+      library to choose an implementation-defined default.
+
+      \li \c{zlib}: use the \l{zlib}{https://zlib.net} library to compress
+      contents. Valid compression levels range from 1 to 9, with 1the least
+      compression (least CPU time) and 9 the most compression (most CPU time).
+      The special value 0 means "no compression" and should not be used. The
+      default is implementation-defined, but usually is level 6.
+
+      \li \c{none}: no compression. This is the same as the \c{-no-compress}
+      option.
+    \endlist
+
+    Support for both Zstandard and zlib are optional. If a given library was
+    not detected at compile time, attempting to pass \c {-compress-algo} for
+    that library will result in an error. The default compression algorithm is
+    \c zstd if it is enabled, \c zlib if not.
 
     \section1 Using Resources in the Application
 

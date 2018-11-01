@@ -36,6 +36,8 @@
 #include <qhash.h>
 #include <qstring.h>
 
+typedef struct ZSTD_CCtx_s ZSTD_CCtx;
+
 QT_BEGIN_NAMESPACE
 
 class RCCFileInfo;
@@ -80,6 +82,7 @@ public:
 
     enum class CompressionAlgorithm {
         Zlib,
+        Zstd,
 
         None = -1
     };
@@ -137,6 +140,10 @@ private:
     void writeChar(char c) { m_out.append(c); }
     void writeByteArray(const QByteArray &);
     void write(const char *, int len);
+
+#if QT_CONFIG(zstd)
+    ZSTD_CCtx *m_zstdCCtx;
+#endif
 
     const Strings m_strings;
     RCCFileInfo *m_root;

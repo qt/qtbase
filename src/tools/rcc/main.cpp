@@ -128,7 +128,11 @@ int runRcc(int argc, char *argv[])
     QCommandLineOption rootOption(QStringLiteral("root"), QStringLiteral("Prefix resource access path with root path."), QStringLiteral("path"));
     parser.addOption(rootOption);
 
-#if !defined(QT_NO_COMPRESS)
+#if QT_CONFIG(zstd) && !defined(QT_NO_COMPRESS)
+#  define ALGOS     "[zstd], zlib, none"
+#elif QT_CONFIG(zstd)
+#  define ALGOS     "[zstd], none"
+#elif !defined(QT_NO_COMPRESS)
 #  define ALGOS     "[zlib], none"
 #else
 #  define ALGOS     "[none]"
