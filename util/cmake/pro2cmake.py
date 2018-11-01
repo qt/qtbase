@@ -325,11 +325,13 @@ class QmakeParser:
         Option = pp.Keyword('option') + pp.Suppress('(') + Identifier('option') + pp.Suppress(')')
         DefineTest = pp.Suppress(pp.Keyword('defineTest') + pp.Suppress('(') + Identifier + pp.Suppress(')')
             + pp.nestedExpr(opener='{', closer='}') + pp.LineEnd())  # ignore the whole thing...
+        ForLoop = pp.Suppress(pp.Keyword('for') + pp.nestedExpr()
+            + pp.nestedExpr(opener='{', closer='}', ignoreExpr=None) + pp.LineEnd())  # ignore the whole thing...
         FunctionCall = pp.Suppress(Identifier + pp.nestedExpr())
 
         Scope = pp.Forward()
 
-        Statement = pp.Group(Load | Include | Option | DefineTest | FunctionCall | Operation)
+        Statement = pp.Group(Load | Include | Option | DefineTest | ForLoop | FunctionCall | Operation)
         StatementLine = Statement + EOL
         StatementGroup = pp.ZeroOrMore(StatementLine | Scope | EOL)
 
@@ -350,7 +352,7 @@ class QmakeParser:
         Scope <<= pp.Group(Condition('condition') + (SingleLineScope | MultiLineScope) + pp.Optional(Else))
 
         if debug:
-            for ename in "EOL Identifier Substitution SubstitutionValue LiteralValuePart Value Values SingleLineScope MultiLineScope Scope SingleLineElse MultiLineElse Else Condition Block StatementGroup Statement Load Include Option DefineTest FunctionCall Operation".split():
+            for ename in "EOL Identifier Substitution SubstitutionValue LiteralValuePart Value Values SingleLineScope MultiLineScope Scope SingleLineElse MultiLineElse Else Condition Block StatementGroup Statement Load Include Option DefineTest ForLoop FunctionCall Operation".split():
                 expr = locals()[ename]
                 expr.setName(ename)
                 expr.setDebug()
