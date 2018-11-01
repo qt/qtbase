@@ -29,6 +29,7 @@
 #ifndef LANGUAGE_H
 #define LANGUAGE_H
 
+#include <QtCore/qstring.h>
 #include <QtCore/qstringview.h>
 
 QT_FORWARD_DECLARE_CLASS(QTextStream)
@@ -75,6 +76,36 @@ const char *toolbarArea(int v);
 const char *sizePolicy(int v);
 const char *dockWidgetArea(int v);
 const char *paletteColorRole(int v);
+
+enum class Encoding { Utf8, Unicode };
+
+void _formatString(QTextStream &str, const QString &value, const QString &indent,
+                   bool qString);
+
+template <bool AsQString>
+class _string
+{
+public:
+    explicit _string(const QString &value, const QString &indent = QString())
+        : m_value(value), m_indent(indent) {}
+
+    void format(QTextStream &str) const
+    { _formatString(str, m_value, m_indent, AsQString); }
+
+private:
+    const QString &m_value;
+    const QString &m_indent;
+};
+
+template <bool AsQString>
+inline QTextStream &operator<<(QTextStream &str, const language::_string<AsQString> &s)
+{
+    s.format(str);
+    return str;
+}
+
+using charliteral = _string<false>;
+using qstring = _string<true>;
 
 } // namespace language
 

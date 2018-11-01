@@ -32,6 +32,8 @@
 
 namespace language {
 
+static Encoding encoding = Encoding::Utf8;
+
 QTextStream &operator<<(QTextStream &str, const qtConfig &c)
 {
     str << "QT_CONFIG(" << c.parameter() << ')';
@@ -139,6 +141,131 @@ const char *paletteColorRole(int v)
         {20, "PlaceholderText"},
     };
     return lookupEnum(colorRoles, v);
+}
+
+// Helpers for formatting a character sequences
+
+// Format a special character like '\x0a'
+static int formatEscapedNumber(QTextStream &str, ushort value, int base, int width,
+                               char prefix = 0)
+{
+    int length = 1 + width;
+    str << '\\';
+    if (prefix) {
+        str << prefix;
+        ++length;
+    }
+    const auto oldPadChar = str.padChar();
+    const auto oldFieldWidth = str.fieldWidth();
+    const auto oldFieldAlignment = str.fieldAlignment();
+    const auto oldIntegerBase = str.integerBase();
+    str.setPadChar(QLatin1Char('0'));
+    str.setFieldWidth(width);
+    str.setFieldAlignment(QTextStream::AlignRight);
+    str.setIntegerBase(base);
+    str << value;
+    str.setIntegerBase(oldIntegerBase);
+    str.setFieldAlignment(oldFieldAlignment);
+    str.setFieldWidth(oldFieldWidth);
+    str.setPadChar(oldPadChar);
+    return length;
+}
+
+static int formatSpecialCharacter(QTextStream &str, ushort value)
+{
+    int length = 0;
+    switch (value) {
+    case '\\':
+        str << "\\\\";
+        length += 2;
+        break;
+    case '\"':
+        str << "\\\"";
+        length += 2;
+        break;
+    case '\n':
+        str << "\\n\"\n\"";
+        length += 5;
+        break;
+    default:
+        break;
+    }
+    return length;
+}
+
+// Format a sequence of characters for C++ with special characters numerically
+// escaped (non-raw string literals), wrappped at maxSegmentSize. FormattingTraits
+// are used to transform characters into (unsigned) codes, which can be used
+// for either normal escapes or Unicode code points as used in Unicode literals.
+
+enum : int { maxSegmentSize = 1024 };
+
+template <Encoding e>
+struct FormattingTraits
+{
+};
+
+template <>
+struct FormattingTraits<Encoding::Utf8>
+{
+    static ushort code(char c) { return uchar(c); }
+};
+
+template <>
+struct FormattingTraits<Encoding::Unicode>
+{
+    static ushort code(QChar c) { return c.unicode(); }
+};
+
+template <Encoding e, class Iterator>
+static void formatStringSequence(QTextStream &str, Iterator it, Iterator end,
+                                 const QString &indent,
+                                 int escapeIntegerBase, int escapeWidth,
+                                 char escapePrefix = 0)
+{
+    str << '"';
+    int length = 0;
+    while (it != end) {
+        const auto code = FormattingTraits<e>::code(*it);
+        if (code >= 0x80) {
+            length += formatEscapedNumber(str, code, escapeIntegerBase, escapeWidth, escapePrefix);
+        } else if (const int l = formatSpecialCharacter(str, code)) {
+            length += l;
+        } else if (code != '\r') {
+            str << *it;
+            ++length;
+        }
+        ++it;
+        if (it != end && length > maxSegmentSize) {
+            str << "\"\n" << indent << indent << '"';
+            length = 0;
+        }
+    }
+    str << '"';
+}
+
+void _formatString(QTextStream &str, const QString &value, const QString &indent,
+                   bool qString)
+{
+    switch (encoding) {
+    // Special characters as 3 digit octal escapes (u8"\303\234mlaut")
+    case Encoding::Utf8: {
+        if (qString)
+            str << "QString::fromUtf8(";
+        const QByteArray utf8 = value.toUtf8();
+        formatStringSequence<Encoding::Utf8>(str, utf8.cbegin(), utf8.cend(), indent,
+                                             8, 3);
+        if (qString)
+            str << ')';
+    }
+        break;
+    // Special characters as 4 digit hex Unicode points (u8"\u00dcmlaut")
+    case Encoding::Unicode:
+        str << 'u'; // Python Unicode literal (would be UTF-16 in C++)
+        formatStringSequence<Encoding::Unicode>(str, value.cbegin(), value.cend(), indent,
+                                                16, 4, 'u');
+        break;
+    }
 }
 
 } // namespace language
