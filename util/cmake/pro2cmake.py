@@ -331,7 +331,7 @@ class QmakeParser:
 
         Statement = pp.Group(Load | Include | Option | DefineTest | FunctionCall | Operation)
         StatementLine = Statement + EOL
-        StatementGroup = pp.ZeroOrMore(Scope | EOL | StatementLine)
+        StatementGroup = pp.ZeroOrMore(StatementLine | Scope | EOL)
 
         Block = pp.Suppress('{') + pp.Optional(EOL) \
             + pp.ZeroOrMore(EOL | Statement + EOL | Scope) \
