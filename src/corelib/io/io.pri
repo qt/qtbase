@@ -79,6 +79,8 @@ SOURCES += \
         io/qloggingcategory.cpp \
         io/qloggingregistry.cpp
 
+qtConfig(zstd): QMAKE_USE_PRIVATE += zstd
+
 qtConfig(filesystemwatcher) {
     HEADERS += \
         io/qfilesystemwatcher.h \

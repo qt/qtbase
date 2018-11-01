@@ -136,7 +136,8 @@
             "Werror": { "type": "boolean", "name": "warnings_are_errors" },
             "widgets": "boolean",
             "xplatform": "string",
-            "zlib": { "type": "enum", "name": "system-zlib", "values": { "system": "yes", "qt": "no" } }
+            "zlib": { "type": "enum", "name": "system-zlib", "values": { "system": "yes", "qt": "no" } },
+            "zstd": "boolean"
         },
         "prefix": {
             "D": "defines",
@@ -165,6 +166,21 @@
                 { "libs": "-lzlib", "condition": "config.msvc" },
                 { "libs": "-lz", "condition": "!config.msvc" },
                 { "libs": "-s USE_ZLIB=1", "condition": "config.wasm" }
+            ]
+        },
+        "zstd": {
+            "label": "Zstandard",
+            "test": {
+                "include": "zstd.h",
+                "main": [
+                    "(void) ZSTD_compress(NULL, 0, NULL, 0, 1);",
+                    "unsigned long long n = ZSTD_getFrameContentSize(NULL, 0);",
+                    "(void) ZSTD_decompress(NULL, 0, NULL, n);"
+                ]
+            },
+            "sources": [
+                { "type": "pkgConfig", "args": "libzstd >= 1.3" },
+                "-lzstd"
             ]
         },
         "dbus": {
@@ -1126,6 +1142,11 @@
             "condition": "libs.zlib",
             "output": [ "privateFeature" ]
         },
+        "zstd": {
+            "label": "Zstandard support",
+            "condition": "libs.zstd",
+            "output": [ "privateFeature" ]
+        },
         "thread": {
             "label": "Thread support",
             "purpose": "Provides QThread and related classes.",
@@ -1452,7 +1473,8 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
             "entries": [
                 "pkg-config",
                 "libudev",
-                "system-zlib"
+                "system-zlib",
+                "zstd"
             ]
         }
     ]

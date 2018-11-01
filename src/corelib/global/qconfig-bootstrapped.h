@@ -121,6 +121,7 @@
 #define QT_FEATURE_topleveldomain -1
 #define QT_NO_TRANSLATION
 #define QT_FEATURE_translation -1
+#define QT_FEATURE_zstd -1
 
 #ifdef QT_BUILD_QMAKE
 #define QT_FEATURE_commandlineparser -1

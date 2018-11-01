@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -56,7 +57,12 @@
 #include "private/qabstractfileengine_p.h"
 #include "private/qnumeric_p.h"
 #include "private/qsimd_p.h"
+#include "private/qtools_p.h"
 #include "private/qsystemerror_p.h"
+
+#if QT_CONFIG(zstd)
+#  include <zstd.h>
+#endif
 
 #ifdef Q_OS_UNIX
 # include "private/qcore_unix_p.h"
@@ -100,8 +106,10 @@ class QResourceRoot
 {
     enum Flags
     {
+        // must match rcc.h
         Compressed = 0x01,
-        Directory = 0x02
+        Directory = 0x02,
+        CompressedZstd = 0x04
     };
     const uchar *tree, *names, *payloads;
     int version;
@@ -117,7 +125,15 @@ public:
     virtual ~QResourceRoot() { }
     int findNode(const QString &path, const QLocale &locale=QLocale()) const;
     inline bool isContainer(int node) const { return flags(node) & Directory; }
-    inline bool isCompressed(int node) const { return flags(node) & Compressed; }
+    QResource::Compression compressionAlgo(int node)
+    {
+        uint compressionFlags = flags(node) & (Compressed | CompressedZstd);
+        if (compressionFlags == Compressed)
+            return QResource::ZlibCompression;
+        if (compressionFlags == CompressedZstd)
+            return QResource::ZstdCompression;
+        return QResource::NoCompression;
+    }
     const uchar *data(int node, qint64 *size) const;
     quint64 lastModified(int node) const;
     QStringList children(int node) const;
@@ -229,6 +245,23 @@ static inline QStringList *resourceSearchPaths()
     \sa {The Qt Resource System}, QFile, QDir, QFileInfo
 */
 
+/*!
+    \enum QResource::Compression
+    \since 5.13
+
+    This enum is used by compressionAlgorithm() to indicate which algorithm the
+    RCC tool used to compress the payload.
+
+    \value NoCompression    Contents are not compressed (isCompressed() is false).
+    \value ZlibCompression  Contents are compressed using \l{zlib}{https://zlib.net} and can
+                            be decompressed using the qUncompress() function.
+    \value ZstdCompression  Contents are compressed using \l{zstd}{https://zstd.net}. To
+                            decompress, use the \c{ZSTD_decompress} function from the zstd
+                            library.
+
+    \sa compressionAlgorithm(), isCopressed()
+*/
+
 class QResourcePrivate {
 public:
     inline QResourcePrivate(QResource *_q) : q_ptr(_q) { clear(); }
@@ -243,12 +276,13 @@ public:
     QLocale locale;
     QString fileName, absoluteFilePath;
     QList<QResourceRoot*> related;
-    uint container : 1;
-    mutable uint compressed : 1;
     mutable qint64 size;
+    mutable quint64 lastModified;
     mutable const uchar *data;
     mutable QStringList children;
-    mutable quint64 lastModified;
+    mutable quint8 compressionAlgo;
+    bool container;
+    /* 2 or 6 padding bytes */
 
     QResource *q_ptr;
     Q_DECLARE_PUBLIC(QResource)
@@ -258,7 +292,7 @@ void
 QResourcePrivate::clear()
 {
     absoluteFilePath.clear();
-    compressed = 0;
+    compressionAlgo = QResource::NoCompression;
     data = 0;
     size = 0;
     children.clear();
@@ -287,11 +321,11 @@ QResourcePrivate::load(const QString &file)
                 container = res->isContainer(node);
                 if(!container) {
                     data = res->data(node, &size);
-                    compressed = res->isCompressed(node);
+                    compressionAlgo = res->compressionAlgo(node);
                 } else {
-                    data = 0;
+                    data = nullptr;
                     size = 0;
-                    compressed = 0;
+                    compressionAlgo = QResource::NoCompression;
                 }
                 lastModified = res->lastModified(node);
             } else if(res->isContainer(node) != container) {
@@ -301,9 +335,9 @@ QResourcePrivate::load(const QString &file)
             related.append(res);
         } else if(res->mappingRootSubdir(file)) {
             container = true;
-            data = 0;
+            data = nullptr;
             size = 0;
-            compressed = 0;
+            compressionAlgo = QResource::NoCompression;
             lastModified = 0;
             res->ref.ref();
             related.append(res);
@@ -493,16 +527,41 @@ bool QResource::isValid() const
 
 /*!
     Returns \c true if the resource represents a file and the data backing it
-    is in a compressed format, false otherwise.
+    is in a compressed format, false otherwise. If the data is compressed,
+    check compressionAlgorithm() to verify what algorithm to use to decompress
+    the data.
 
-    \sa data(), isFile()
+    \sa data(), compressionType(), isFile()
 */
 
 bool QResource::isCompressed() const
 {
+    return compressionAlgorithm() != NoCompression;
+}
+
+/*!
+    \since 5.13
+
+    Returns the compression type that this resource is compressed with, if any.
+    If it is not compressed, this function returns QResource::NoCompression.
+
+    If this function returns QResource::ZlibCompression, you may decompress the
+    data using the qUncompress() function. Up until Qt 5.13, this was the only
+    possible compression algorithm.
+
+    If this function returns QResource::ZstdCompression, you need to use the
+    Zstandard library functios (\c{<zstd.h> header). Qt does not provide a
+    wrapper.
+
+    See \l{http://facebook.github.io/zstd/zstd_manual.html}{Zstandard manual}.
+
+    \sa isCompressed(), data(), isFile()
+*/
+QResource::Compression QResource::compressionAlgorithm() const
+{
     Q_D(const QResource);
     d->ensureInitialized();
-    return d->compressed;
+    return Compression(d->compressionAlgo);
 }
 
 /*!
@@ -1531,12 +1590,40 @@ bool QResourceFileEnginePrivate::unmap(uchar *ptr)
 
 void QResourceFileEnginePrivate::uncompress() const
 {
-    if (resource.isCompressed() && uncompressed.isEmpty() && resource.size()) {
+    if (uncompressed.isEmpty() && resource.size()) {
+        quint64 size;
+        switch (resource.compressionAlgorithm()) {
+        case QResource::NoCompression:
+            return;     // nothing to do
+
+        case QResource::ZlibCompression:
 #ifndef QT_NO_COMPRESS
-        uncompressed = qUncompress(resource.data(), resource.size());
+            uncompressed = qUncompress(resource.data(), resource.size());
 #else
-        Q_ASSERT(!"QResourceFileEngine::open: Qt built without support for compression");
+            Q_ASSERT(!"QResourceFileEngine::open: Qt built without support for Zlib compression");
 #endif
+            break;
+
+        case QResource::ZstdCompression:
+#if QT_CONFIG(zstd)
+            size = ZSTD_getFrameContentSize(resource.data(), resource.size());
+            if (!ZSTD_isError(size)) {
+                if (size >= MaxAllocSize) {
+                    qWarning("QResourceFileEngine::open: content bigger than memory (size %lld)", size);
+                } else {
+                    uncompressed = QByteArray(size, Qt::Uninitialized);
+                    size = ZSTD_decompress(const_cast<char *>(uncompressed.data()), size,
+                                           resource.data(), resource.size());
+                }
+            }
+            if (ZSTD_isError(size))
+                qWarning("QResourceFileEngine::open: error decoding: %s", ZSTD_getErrorName(size));
+#else
+            Q_UNUSED(size);
+            Q_ASSERT(!"QResourceFileEngine::open: Qt built without support for Zstd compression");
+#endif
+            break;
+        }
     }
 }
 

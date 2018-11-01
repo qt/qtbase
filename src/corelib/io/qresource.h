@@ -54,6 +54,12 @@ class QResourcePrivate;
 class Q_CORE_EXPORT QResource
 {
 public:
+    enum Compression {
+        NoCompression,
+        ZlibCompression,
+        ZstdCompression
+    };
+
     QResource(const QString &file=QString(), const QLocale &locale=QLocale());
     ~QResource();
 
@@ -67,6 +73,7 @@ public:
     bool isValid() const;
 
     bool isCompressed() const;
+    Compression compressionAlgorithm() const;
     qint64 size() const;
     const uchar *data() const;
     QDateTime lastModified() const;

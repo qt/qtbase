@@ -94,6 +94,7 @@ class RCCFileInfo
 public:
     enum Flags
     {
+        // must match qresource.cpp
         NoFlags = 0x00,
         Compressed = 0x01,
         Directory = 0x02
