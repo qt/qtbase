@@ -153,9 +153,9 @@ private:
 #endif
 
 #ifdef QT_MESSAGELOGCONTEXT
-  #define QT_MESSAGELOG_FILE __FILE__
+  #define QT_MESSAGELOG_FILE static_cast<const char *>(__FILE__)
   #define QT_MESSAGELOG_LINE __LINE__
-  #define QT_MESSAGELOG_FUNC Q_FUNC_INFO
+  #define QT_MESSAGELOG_FUNC static_cast<const char *>(Q_FUNC_INFO)
 #else
   #define QT_MESSAGELOG_FILE nullptr
   #define QT_MESSAGELOG_LINE 0
