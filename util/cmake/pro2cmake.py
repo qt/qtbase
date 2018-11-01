@@ -37,7 +37,7 @@ import typing
 
 import pyparsing as pp
 
-from helper import map_qt_library, featureName, substitute_platform, substitute_libs
+from helper import map_qt_library, map_qt_base_library, featureName, substitute_platform, substitute_libs
 
 
 def _parse_commandline():
@@ -386,7 +386,10 @@ def map_condition(condition: str) -> str:
         # some features contain e.g. linux, that should not be turned upper case
         feature = re.match(r"(qtConfig|qtHaveModule)\(([a-zA-Z0-9_-]+)\)", part)
         if feature:
-            part = 'QT_FEATURE_' + featureName(feature.group(2))
+            if (feature.group(1) == "qtHaveModule"):
+                part = 'TARGET {}'.format(map_qt_base_library(feature.group(2)))
+            else:
+                part = 'QT_FEATURE_' + featureName(feature.group(2))
         else:
             part = substitute_platform(part)
 
