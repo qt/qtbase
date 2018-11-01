@@ -300,7 +300,7 @@ class QmakeParser:
         LC = pp.Suppress(pp.Literal('\\') + pp.LineEnd())
         EOL = pp.Suppress(pp.Optional(pp.pythonStyleComment()) + pp.LineEnd())
 
-        Identifier = pp.Word(pp.alphas + '_', bodyChars=pp.alphanums+'_./')
+        Identifier = pp.Word(pp.alphas + '_', bodyChars=pp.alphanums+'_-./')
         Substitution = pp.Combine(pp.Literal('$')
             + (((pp.Literal('$') + Identifier + pp.Optional(pp.nestedExpr()))
                | (pp.Literal('(') + Identifier + pp.Literal(')'))
