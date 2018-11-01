@@ -129,7 +129,10 @@ class Scope:
         other.set_basedir(self._basedir)
 
         for k in self._values.keys():
-            self.append_value(k, other.get(k, []))
+            if k == 'TEMPLATE':
+                assert other.get(k, []) == self.get(k, [])
+            else:
+                self.append_value(k, other.get(k, []))
 
         for k in other._values.keys():
             if k not in self._values:
@@ -214,10 +217,9 @@ class Scope:
         return self._condition
 
     def _push_down_TEMPLATE(self, template: str) -> None:
-        if not self._rawTemplate():
-            self.set_value('TEMPLATE', [template, ])
-            for c in self._children:
-                c._push_down_TEMPLATE(template)
+        self.set_value('TEMPLATE', [template, ])
+        for c in self._children:
+            c._push_down_TEMPLATE(template)
 
     def add_child(self, scope: 'Scope') -> None:
         scope._parent = self
@@ -632,7 +634,7 @@ def write_plugin(cm_fh, scope, *, indent: int=0):
 
 
 def handle_app_or_lib(scope: Scope, cm_fh: IO[str], *, indent=0) -> None:
-    assert scope.getTemplate() in ('app', 'lib', None)
+    assert scope.getTemplate() in ('app', 'lib')
 
     is_lib = scope.getTemplate() == 'lib'
     is_plugin = any('qt_plugin' == s for s in scope.get('_LOADED', []))
@@ -669,7 +671,7 @@ def cmakeify_scope(scope: Scope, cm_fh: IO[str], *, indent: int=0) -> None:
     handle_qt_for_config(scope, cm_fh)
     if template == 'subdirs':
         handle_subdir(scope, cm_fh, indent=indent)
-    elif template in ('app', 'lib', None):
+    elif template in ('app', 'lib'):
         handle_app_or_lib(scope, cm_fh, indent=indent)
     else:
         print('    XXXX: {}: Template type {} not yet supported.'
@@ -694,6 +696,8 @@ def do_include(scope: Scope, *, debug: bool=False) -> None:
         include_result = parseProFile(include_file, debug=debug)
         include_scope = Scope.FromDict(include_file, include_result.asDict().get('statements'),
                                        '', dir)
+        if not include_scope._rawTemplate():
+            include_scope._push_down_TEMPLATE(scope.getTemplate())
 
         do_include(include_scope)
 
