@@ -41,6 +41,7 @@
 #ifndef QENDIAN_H
 #define QENDIAN_H
 
+#include <QtCore/qfloat16.h>
 #include <QtCore/qglobal.h>
 
 // include stdlib.h and hope that it defines __GLIBC__ for glibc-based systems
@@ -149,6 +150,31 @@ template <> inline Q_DECL_CONSTEXPR qint16 qbswap<qint16>(qint16 source)
 template <> inline Q_DECL_CONSTEXPR qint8 qbswap<qint8>(qint8 source)
 {
     return source;
+}
+
+// floating specializations
+template<typename Float>
+Float qbswapFloatHelper(Float source)
+{
+    // memcpy call in qFromUnaligned is recognized by optimizer as a correct way of type prunning
+    auto temp = qFromUnaligned<typename QIntegerForSizeof<Float>::Unsigned>(&source);
+    temp = qbswap(temp);
+    return qFromUnaligned<Float>(&temp);
+}
+
+template <> inline qfloat16 qbswap<qfloat16>(qfloat16 source)
+{
+    return qbswapFloatHelper(source);
+}
+
+template <> inline float qbswap<float>(float source)
+{
+    return qbswapFloatHelper(source);
+}
+
+template <> inline double qbswap<double>(double source)
+{
+    return qbswapFloatHelper(source);
 }
 
 /*

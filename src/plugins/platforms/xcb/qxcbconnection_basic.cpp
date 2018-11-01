@@ -308,7 +308,7 @@ void QXcbBasicConnection::initializeXRandr()
         return;
     }
 
-    m_hasXRender = true;
+    m_hasXRandr = true;
     m_xrenderVersion.first = xrenderQuery->major_version;
     m_xrenderVersion.second = xrenderQuery->minor_version;
 #endif
@@ -358,7 +358,7 @@ void QXcbBasicConnection::initializeXRender()
         return;
     }
 
-    m_hasXRandr = true;
+    m_hasXRender = true;
     m_xrandrFirstEvent = reply->first_event;
 }
 

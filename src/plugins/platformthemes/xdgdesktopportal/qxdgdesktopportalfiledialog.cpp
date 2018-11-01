@@ -181,10 +181,10 @@ void QXdgDesktopPortalFileDialog::openPortal()
 
     if (d->saveFile) {
         if (!d->directory.isEmpty())
-            options.insert(QLatin1String("current_folder"), d->directory.toLatin1());
+            options.insert(QLatin1String("current_folder"), d->directory.toLatin1().append('\0'));
 
         if (!d->selectedFiles.isEmpty())
-            options.insert(QLatin1String("current_file"), d->selectedFiles.first().toLatin1());
+            options.insert(QLatin1String("current_file"), d->selectedFiles.first().toLatin1().append('\0'));
     }
 
     // Insert filters

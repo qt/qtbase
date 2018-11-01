@@ -217,6 +217,7 @@ void QContiguousCache<T>::setCapacity(int asize)
     detach();
     union { QContiguousCacheData *d; QContiguousCacheTypedData<T> *p; } x;
     x.d = allocateData(asize);
+    x.d->ref.store(1);
     x.d->alloc = asize;
     x.d->count = qMin(d->count, asize);
     x.d->offset = d->offset + d->count - x.d->count;

@@ -954,7 +954,18 @@ void QPdfEngine::drawPixmap (const QRectF &rectangle, const QPixmap &pixmap, con
     if (object < 0)
         return;
 
-    *d->currentPage << "q\n/GSa gs\n";
+    *d->currentPage << "q\n";
+
+    if ((d->pdfVersion != QPdfEngine::Version_A1b) && (d->opacity != 1.0)) {
+        int stateObject = d->addConstantAlphaObject(qRound(255 * d->opacity), qRound(255 * d->opacity));
+        if (stateObject)
+            *d->currentPage << "/GState" << stateObject << "gs\n";
+        else
+            *d->currentPage << "/GSa gs\n";
+    } else {
+        *d->currentPage << "/GSa gs\n";
+    }
+
     *d->currentPage
         << QPdf::generateMatrix(QTransform(rectangle.width() / sr.width(), 0, 0, rectangle.height() / sr.height(),
                                            rectangle.x(), rectangle.y()) * (d->simplePen ? QTransform() : d->stroker.matrix));
@@ -983,7 +994,18 @@ void QPdfEngine::drawImage(const QRectF &rectangle, const QImage &image, const Q
     if (object < 0)
         return;
 
-    *d->currentPage << "q\n/GSa gs\n";
+    *d->currentPage << "q\n";
+
+    if ((d->pdfVersion != QPdfEngine::Version_A1b) && (d->opacity != 1.0)) {
+        int stateObject = d->addConstantAlphaObject(qRound(255 * d->opacity), qRound(255 * d->opacity));
+        if (stateObject)
+            *d->currentPage << "/GState" << stateObject << "gs\n";
+        else
+            *d->currentPage << "/GSa gs\n";
+    } else {
+        *d->currentPage << "/GSa gs\n";
+    }
+
     *d->currentPage
         << QPdf::generateMatrix(QTransform(rectangle.width() / sr.width(), 0, 0, rectangle.height() / sr.height(),
                                            rectangle.x(), rectangle.y()) * (d->simplePen ? QTransform() : d->stroker.matrix));

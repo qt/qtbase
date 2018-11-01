@@ -465,11 +465,7 @@ int QThread::idealThreadCount() Q_DECL_NOTHROW
 
 void QThread::yieldCurrentThread()
 {
-#if !defined(Q_OS_WINRT)
     SwitchToThread();
-#else
-    ::Sleep(0);
-#endif
 }
 
 #endif // QT_CONFIG(thread)

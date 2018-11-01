@@ -45,13 +45,40 @@
 #include <xcb/xcb.h>
 #include <xcb/xfixes.h>
 
+#include <QtCore/QObject>
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_CLIPBOARD
 
 class QXcbConnection;
 class QXcbScreen;
+class QXcbClipboard;
 class QXcbClipboardMime;
+
+class QXcbClipboardTransaction : public QObject
+{
+    Q_OBJECT
+public:
+    QXcbClipboardTransaction(QXcbClipboard *clipboard, xcb_window_t w, xcb_atom_t p,
+                           QByteArray d, xcb_atom_t t, int f);
+    ~QXcbClipboardTransaction();
+
+    bool updateIncrementalProperty(const xcb_property_notify_event_t *event);
+
+protected:
+    void timerEvent(QTimerEvent *ev) override;
+
+private:
+    QXcbClipboard *m_clipboard;
+    xcb_window_t m_window;
+    xcb_atom_t m_property;
+    QByteArray m_data;
+    xcb_atom_t m_target;
+    uint8_t m_format;
+    uint m_offset = 0;
+    int m_abortTimerId = 0;
+};
 
 class QXcbClipboard : public QXcbObject, public QPlatformClipboard
 {
@@ -81,12 +108,15 @@ public:
 
     QByteArray getDataInFormat(xcb_atom_t modeAtom, xcb_atom_t fmtatom);
 
-    void setProcessIncr(bool process) { m_incr_active = process; }
-    bool processIncr() { return m_incr_active; }
-    void incrTransactionPeeker(xcb_generic_event_t *ge, bool &accepted);
+    bool handlePropertyNotify(const xcb_generic_event_t *event);
 
     xcb_window_t getSelectionOwner(xcb_atom_t atom) const;
     QByteArray getSelection(xcb_atom_t selection, xcb_atom_t target, xcb_atom_t property, xcb_timestamp_t t = 0);
+
+    int increment() const { return m_increment; }
+    int clipboardTimeout() const { return clipboard_timeout; }
+
+    void removeTransaction(xcb_window_t window) { m_transactions.remove(window); }
 
 private:
     xcb_generic_event_t *waitForClipboardEvent(xcb_window_t window, int type, bool checkManager = false);
@@ -107,9 +137,12 @@ private:
 
     static const int clipboard_timeout;
 
-    bool m_incr_active = false;
+    int m_increment = 0;
     bool m_clipboard_closing = false;
     xcb_timestamp_t m_incr_receive_time = 0;
+
+    using TransactionMap = QMap<xcb_window_t, QXcbClipboardTransaction *>;
+    TransactionMap m_transactions;
 };
 
 #endif // QT_NO_CLIPBOARD
