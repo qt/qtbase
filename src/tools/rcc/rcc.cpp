@@ -258,6 +258,10 @@ qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib, qint64 offset,
     // Check if compression is useful for this file
     if (data.size() != 0) {
 #if QT_CONFIG(zstd)
+        if (m_compressAlgo == RCCResourceLibrary::CompressionAlgorithm::Best) {
+            m_compressAlgo = RCCResourceLibrary::CompressionAlgorithm::Zstd;
+            m_compressLevel = 19;   // not ZSTD_maxCLevel(), as 20+ are experimental
+        }
         if (m_compressAlgo == RCCResourceLibrary::CompressionAlgorithm::Zstd) {
             if (lib.m_zstdCCtx == nullptr)
                 lib.m_zstdCCtx = ZSTD_createCCtx();
@@ -301,6 +305,10 @@ qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib, qint64 offset,
         }
 #endif
 #ifndef QT_NO_COMPRESS
+        if (m_compressAlgo == RCCResourceLibrary::CompressionAlgorithm::Best) {
+            m_compressAlgo = RCCResourceLibrary::CompressionAlgorithm::Zlib;
+            m_compressLevel = 9;
+        }
         if (m_compressAlgo == RCCResourceLibrary::CompressionAlgorithm::Zlib) {
             QByteArray compressed =
                     qCompress(reinterpret_cast<uchar *>(data.data()), data.size(), m_compressLevel);
@@ -824,6 +832,8 @@ RCCResourceLibrary::ResourceDataFileMap RCCResourceLibrary::resourceDataFileMap(
 
 RCCResourceLibrary::CompressionAlgorithm RCCResourceLibrary::parseCompressionAlgorithm(QStringView value, QString *errorMsg)
 {
+    if (value == QLatin1String("best"))
+        return CompressionAlgorithm::Best;
     if (value == QLatin1String("zlib")) {
 #ifdef QT_NO_COMPRESS
         *errorMsg = QLatin1String("zlib support not compiled in");
@@ -850,6 +860,7 @@ int RCCResourceLibrary::parseCompressionLevel(CompressionAlgorithm algo, const Q
     if (ok) {
         switch (algo) {
         case CompressionAlgorithm::None:
+        case CompressionAlgorithm::Best:
             return 0;
         case CompressionAlgorithm::Zlib:
             if (c >= 1 && c <= 9)

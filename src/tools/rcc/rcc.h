@@ -84,6 +84,7 @@ public:
         Zlib,
         Zstd,
 
+        Best = 99,
         None = -1
     };
 
