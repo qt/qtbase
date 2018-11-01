@@ -153,7 +153,7 @@ bool Qt::mightBeRichText(const QString& text)
 
     This function is defined in the \c <QTextDocument> header file.
 
-    \sa escape(), mightBeRichText()
+    \sa QString::toHtmlEscaped(), mightBeRichText()
 */
 QString Qt::convertFromPlainText(const QString &plain, Qt::WhiteSpaceMode mode)
 {

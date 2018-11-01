@@ -645,6 +645,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \value ImageName
     \value ImageWidth
     \value ImageHeight
+    \value ImageQuality
 
     Selection properties
 
@@ -2251,7 +2252,7 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     \fn void QTextBlockFormat::setHeadingLevel(int level)
     \since 5.12
 
-    Sets the paragraph's heading level, where 1 is the highest-level heading
+    Sets the paragraph's heading \a level, where 1 is the highest-level heading
     type (usually with the largest possible heading font size), and increasing
     values are progressively deeper into the document (and usually with smaller
     font sizes). For example when reading an HTML H1 tag, the heading level is
