@@ -484,13 +484,8 @@
                     "xcb/xinerama.h",
                     "xcb/sync.h",
                     "xcb/randr.h",
-                    "xcb/shm.h"
-                ],
-                "tail": [
-                    "// This workaround can be removed for xcb-icccm > 3.8",
-                    "#define class class_name",
-                    "#include <xcb/xcb_icccm.h>",
-                    "#undef class"
+                    "xcb/shm.h",
+                    "xcb/xcb_icccm.h"
                 ],
                 "main": [
                     "int primaryScreen = 0;",
