@@ -10,7 +10,7 @@ MODULE_INCLUDEPATH = $$PWD
 
 load(qt_helper_lib)
 
-DEFINES += PNG_ARM_NEON_OPT=0
+DEFINES += PNG_ARM_NEON_OPT=0 PNG_POWERPC_VSX_OPT=0
 SOURCES += \
     png.c \
     pngerror.c \
