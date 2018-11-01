@@ -410,6 +410,10 @@ void tst_QResourceEngine::checkStructure()
         QVERIFY2(ptr, qPrintable(file.errorString()));
         QByteArray ba = QByteArray::fromRawData(reinterpret_cast<const char *>(ptr), file.size());
         QCOMPARE(ba, contents);
+
+        // check that it is still valid after closing the file
+        file.close();
+        QCOMPARE(ba, contents);
     }
     QLocale::setDefault(QLocale::system());
 }

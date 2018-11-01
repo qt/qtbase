@@ -1288,7 +1288,6 @@ bool QResourceFileEngine::close()
 {
     Q_D(QResourceFileEngine);
     d->offset = 0;
-    d->uncompressed.clear();
     return true;
 }
 
