@@ -233,7 +233,7 @@ void QT_FASTCALL comp_func_Source_sse2(uint *dst, const uint *src, int length, u
     }
 }
 
-void qt_memfill32(quint32 *dest, quint32 value, int count)
+void qt_memfill32(quint32 *dest, quint32 value, qsizetype count)
 {
     if (count < 7) {
         switch (count) {
@@ -314,7 +314,7 @@ void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, u
     }
 }
 
-void qt_memfill16(quint16 *dest, quint16 value, int count)
+void qt_memfill16(quint16 *dest, quint16 value, qsizetype count)
 {
     if (count < 3) {
         switch (count) {

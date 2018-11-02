@@ -160,9 +160,9 @@ extern SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::N
 extern DrawHelper qDrawHelper[QImage::NImageFormats];
 
 void qBlendTexture(int count, const QSpan *spans, void *userData);
-extern void qt_memfill64(quint64 *dest, quint64 value, int count);
-extern void qt_memfill32(quint32 *dest, quint32 value, int count);
-extern void qt_memfill16(quint16 *dest, quint16 value, int count);
+extern void qt_memfill64(quint64 *dest, quint64 value, qsizetype count);
+extern void qt_memfill32(quint32 *dest, quint32 value, qsizetype count);
+extern void qt_memfill16(quint16 *dest, quint16 value, qsizetype count);
 
 typedef void (QT_FASTCALL *CompositionFunction)(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, uint const_alpha);
 typedef void (QT_FASTCALL *CompositionFunction64)(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha);
@@ -884,7 +884,7 @@ inline quint24::operator uint() const
     return data[2] | (data[1] << 8) | (data[0] << 16);
 }
 
-template <class T> inline void qt_memfill_template(T *dest, T color, int count)
+template <class T> inline void qt_memfill_template(T *dest, T color, qsizetype count)
 {
     if (!count)
         return;
@@ -904,27 +904,27 @@ template <class T> inline void qt_memfill_template(T *dest, T color, int count)
     }
 }
 
-template <class T> inline void qt_memfill(T *dest, T value, int count)
+template <class T> inline void qt_memfill(T *dest, T value, qsizetype count)
 {
     qt_memfill_template(dest, value, count);
 }
 
-template<> inline void qt_memfill(quint64 *dest, quint64 color, int count)
+template<> inline void qt_memfill(quint64 *dest, quint64 color, qsizetype count)
 {
     qt_memfill64(dest, color, count);
 }
 
-template<> inline void qt_memfill(quint32 *dest, quint32 color, int count)
+template<> inline void qt_memfill(quint32 *dest, quint32 color, qsizetype count)
 {
     qt_memfill32(dest, color, count);
 }
 
-template<> inline void qt_memfill(quint16 *dest, quint16 color, int count)
+template<> inline void qt_memfill(quint16 *dest, quint16 color, qsizetype count)
 {
     qt_memfill16(dest, color, count);
 }
 
-template<> inline void qt_memfill(quint8 *dest, quint8 color, int count)
+template<> inline void qt_memfill(quint8 *dest, quint8 color, qsizetype count)
 {
     memset(dest, color, count);
 }
@@ -935,7 +935,7 @@ inline void qt_rectfill(T *dest, T value,
 {
     char *d = reinterpret_cast<char*>(dest + x) + y * stride;
     if (uint(stride) == (width * sizeof(T))) {
-        qt_memfill(reinterpret_cast<T*>(d), value, width * height);
+        qt_memfill(reinterpret_cast<T*>(d), value, qsizetype(width) * height);
     } else {
         for (int j = 0; j < height; ++j) {
             dest = reinterpret_cast<T*>(d);

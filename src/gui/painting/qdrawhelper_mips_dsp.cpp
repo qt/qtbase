@@ -43,7 +43,7 @@
 
 QT_BEGIN_NAMESPACE
 
-void qt_memfill32(quint32 *dest, quint32 color, int count)
+void qt_memfill32(quint32 *dest, quint32 color, qsizetype count)
 {
     qt_memfill32_asm_mips_dsp(dest, color, count);
 }

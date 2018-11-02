@@ -6244,13 +6244,13 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     },
 };
 
-void qt_memfill64(quint64 *dest, quint64 color, int count)
+void qt_memfill64(quint64 *dest, quint64 color, qsizetype count)
 {
     qt_memfill_template<quint64>(dest, color, count);
 }
 
 #if !defined(__SSE2__)
-void qt_memfill16(quint16 *dest, quint16 value, int count)
+void qt_memfill16(quint16 *dest, quint16 value, qsizetype count)
 {
     if (count < 3) {
         switch (count) {
@@ -6272,7 +6272,7 @@ void qt_memfill16(quint16 *dest, quint16 value, int count)
 }
 #endif
 #if !defined(__SSE2__) && !defined(__ARM_NEON__) && !defined(__MIPS_DSP__)
-void qt_memfill32(quint32 *dest, quint32 color, int count)
+void qt_memfill32(quint32 *dest, quint32 color, qsizetype count)
 {
     qt_memfill_template<quint32>(dest, color, count);
 }
