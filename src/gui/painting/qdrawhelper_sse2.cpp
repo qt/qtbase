@@ -314,29 +314,6 @@ void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, u
     }
 }
 
-void qt_memfill16(quint16 *dest, quint16 value, qsizetype count)
-{
-    if (count < 3) {
-        switch (count) {
-        case 2: *dest++ = value; Q_FALLTHROUGH();
-        case 1: *dest = value;
-        }
-        return;
-    }
-
-    const int align = (quintptr)(dest) & 0x3;
-    if (align) {
-        *dest++ = value;
-        --count;
-    }
-
-    if (count & 0x1)
-        dest[count - 1] = value;
-
-    const quint32 value32 = (value << 16) | value;
-    qt_memfill32(reinterpret_cast<quint32*>(dest), value32, count / 2);
-}
-
 void qt_bitmapblit32_sse2_base(QRasterBuffer *rasterBuffer, int x, int y,
                           quint32 color,
                           const uchar *src, int width, int height, int stride)

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2018 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -6249,28 +6249,21 @@ void qt_memfill64(quint64 *dest, quint64 color, qsizetype count)
     qt_memfill_template<quint64>(dest, color, count);
 }
 
-#if !defined(__SSE2__)
 void qt_memfill16(quint16 *dest, quint16 value, qsizetype count)
 {
-    if (count < 3) {
-        switch (count) {
-        case 2: *dest++ = value; Q_FALLTHROUGH();
-        case 1: *dest = value;
-        }
-        return;
+    const int align = quintptr(dest) & 0x3;
+    if (align) {
+        *dest++ = value;
+        --count;
     }
 
-    const int align = (quintptr)(dest) & 0x3;
-    switch (align) {
-    case 2: *dest++ = value; --count;
-    }
-
-    const quint32 value32 = (value << 16) | value;
-    qt_memfill(reinterpret_cast<quint32*>(dest), value32, count / 2);
     if (count & 0x1)
         dest[count - 1] = value;
+
+    const quint32 value32 = (value << 16) | value;
+    qt_memfill32(reinterpret_cast<quint32*>(dest), value32, count / 2);
 }
-#endif
+
 #if !defined(__SSE2__) && !defined(__ARM_NEON__) && !defined(__MIPS_DSP__)
 void qt_memfill32(quint32 *dest, quint32 color, qsizetype count)
 {
