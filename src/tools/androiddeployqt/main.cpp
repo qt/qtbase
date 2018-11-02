@@ -157,6 +157,7 @@ struct Options
     QString toolchainVersion;
     QString toolchainPrefix;
     QString toolPrefix;
+    bool useLLVM = false;
     QString ndkHost;
 
     // Package information
@@ -809,6 +810,11 @@ bool readInputFile(Options *options)
     }
 
     {
+        const QJsonValue value = jsonObject.value(QStringLiteral("useLLVM"));
+        options->useLLVM = value.toBool(false);
+    }
+
+    {
         const QJsonValue toolchainPrefix = jsonObject.value(QStringLiteral("toolchain-prefix"));
         if (toolchainPrefix.isUndefined()) {
             fprintf(stderr, "No toolchain prefix defined in json file.\n");
@@ -827,7 +833,7 @@ bool readInputFile(Options *options)
         }
     }
 
-    {
+    if (!options->useLLVM) {
         const QJsonValue toolchainVersion = jsonObject.value(QStringLiteral("toolchain-version"));
         if (toolchainVersion.isUndefined()) {
             fprintf(stderr, "No toolchain version defined in json file.\n");
@@ -863,15 +869,17 @@ bool readInputFile(Options *options)
 
     {
         const QJsonValue stdcppPath = jsonObject.value(QStringLiteral("stdcpp-path"));
-        if (!stdcppPath.isUndefined()) {
-            options->stdCppPath = stdcppPath.toString();
-            auto name = QFileInfo(options->stdCppPath).baseName();
-            if (!name.startsWith(QLatin1String("lib"))) {
-                fprintf(stderr, "Invalid STD C++ library name.\n");
-                return false;
-            }
-            options->stdCppName = name.mid(3);
+        if (stdcppPath.isUndefined()) {
+            fprintf(stderr, "No stdcpp-path defined in json file.\n");
+            return false;
         }
+        options->stdCppPath = stdcppPath.toString();
+        auto name = QFileInfo(options->stdCppPath).baseName();
+        if (!name.startsWith(QLatin1String("lib"))) {
+            fprintf(stderr, "Invalid STD C++ library name.\n");
+            return false;
+        }
+        options->stdCppName = name.mid(3);
     }
 
     {
@@ -1546,14 +1554,16 @@ QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
 {
     QString readElf = options.ndkPath
             + QLatin1String("/toolchains/")
-            + options.toolchainPrefix
-            + QLatin1Char('-')
-            + options.toolchainVersion
-            + QLatin1String("/prebuilt/")
+            + options.toolchainPrefix;
+
+    if (!options.useLLVM)
+        readElf += QLatin1Char('-') + options.toolchainVersion;
+
+    readElf += QLatin1String("/prebuilt/")
             + options.ndkHost
             + QLatin1String("/bin/")
-            + options.toolPrefix
-            + QLatin1String("-readelf");
+            + options.toolPrefix +
+            (options.useLLVM ? QLatin1String("-readobj") : QLatin1String("-readelf"));
 #if defined(Q_OS_WIN32)
     readElf += QLatin1String(".exe");
 #endif
@@ -1563,27 +1573,40 @@ QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
         return QStringList();
     }
 
-    readElf = QString::fromLatin1("%1 -d -W %2").arg(shellQuote(readElf)).arg(shellQuote(fileName));
+    if (options.useLLVM)
+        readElf = QString::fromLatin1("%1 -needed-libs %2").arg(shellQuote(readElf), shellQuote(fileName));
+    else
+        readElf = QString::fromLatin1("%1 -d -W %2").arg(shellQuote(readElf), shellQuote(fileName));
 
     FILE *readElfCommand = openProcess(readElf);
-    if (readElfCommand == 0) {
+    if (!readElfCommand) {
         fprintf(stderr, "Cannot execute command %s", qPrintable(readElf));
         return QStringList();
     }
 
     QStringList ret;
 
+    bool readLibs = false;
     char buffer[512];
     while (fgets(buffer, sizeof(buffer), readElfCommand) != 0) {
         QByteArray line = QByteArray::fromRawData(buffer, qstrlen(buffer));
-        if (line.contains("(NEEDED)") && line.contains("Shared library:") ) {
-            const int pos = line.lastIndexOf('[') + 1;
-            QString libraryName = QLatin1String("lib/") + QString::fromLatin1(line.mid(pos, line.length() - pos - 2));
-            if (QFile::exists(absoluteFilePath(&options, libraryName))) {
-                ret += libraryName;
+        QString library;
+        if (options.useLLVM) {
+            line = line.trimmed();
+            if (!readLibs) {
+                readLibs = line.startsWith("NeededLibraries");
+                continue;
             }
-
+            if (!line.startsWith("lib"))
+                continue;
+            library = QString::fromLatin1(line);
+        } else if (line.contains("(NEEDED)") && line.contains("Shared library:")) {
+            const int pos = line.lastIndexOf('[') + 1;
+            library = QString::fromLatin1(line.mid(pos, line.length() - pos - 2));
         }
+        QString libraryName = QLatin1String("lib/") + library;
+        if (QFile::exists(absoluteFilePath(&options, libraryName)))
+            ret += libraryName;
     }
 
     pclose(readElfCommand);
@@ -1837,10 +1860,12 @@ bool stripFile(const Options &options, const QString &fileName)
 {
     QString strip = options.ndkPath
             + QLatin1String("/toolchains/")
-            + options.toolchainPrefix
-            + QLatin1Char('-')
-            + options.toolchainVersion
-            + QLatin1String("/prebuilt/")
+            + options.toolchainPrefix;
+
+    if (!options.useLLVM)
+        strip += QLatin1Char('-') + options.toolchainVersion;
+
+    strip += QLatin1String("/prebuilt/")
             + options.ndkHost
             + QLatin1String("/bin/")
             + options.toolPrefix
@@ -1854,7 +1879,10 @@ bool stripFile(const Options &options, const QString &fileName)
         return false;
     }
 
-    strip = QString::fromLatin1("%1 %2").arg(shellQuote(strip)).arg(shellQuote(fileName));
+    if (options.useLLVM)
+        strip = QString::fromLatin1("%1 -strip-all -strip-all-gnu %2").arg(shellQuote(strip), shellQuote(fileName));
+    else
+        strip = QString::fromLatin1("%1 %2").arg(shellQuote(strip), shellQuote(fileName));
 
     FILE *stripCommand = openProcess(strip);
     if (stripCommand == 0) {
@@ -2423,22 +2451,15 @@ bool copyStdCpp(Options *options)
     if (options->verbose)
         fprintf(stdout, "Copying STL library\n");
 
-    QString filePath = !options->stdCppPath.isEmpty() ? options->stdCppPath
-                                                      : options->ndkPath
-            + QLatin1String("/sources/cxx-stl/gnu-libstdc++/")
-            + options->toolchainVersion
-            + QLatin1String("/libs/")
-            + options->architecture
-            + QLatin1String("/libgnustl_shared.so");
-    if (!QFile::exists(filePath)) {
-        fprintf(stderr, "STL library does not exist at %s\n", qPrintable(filePath));
+    if (!QFile::exists(options->stdCppPath)) {
+        fprintf(stderr, "STL library does not exist at %s\n", qPrintable(options->stdCppPath));
         return false;
     }
 
     const QString destinationDirectory = options->outputDirectory
             + QLatin1String("/libs/") + options->architecture;
 
-    if (!copyFileIfNewer(filePath, destinationDirectory + QLatin1String("/lib")
+    if (!copyFileIfNewer(options->stdCppPath, destinationDirectory + QLatin1String("/lib")
                                    + options->stdCppName + QLatin1String(".so"),
                          options->verbose)) {
         return false;
