@@ -1,0 +1,37 @@
+# Generated from sql.pro.
+
+#####################################################################
+## Sql Module:
+#####################################################################
+
+add_qt_module(Sql
+    SOURCES
+        kernel/qsqlcachedresult.cpp kernel/qsqlcachedresult_p.h
+        kernel/qsqldatabase.cpp kernel/qsqldatabase.h
+        kernel/qsqldriver.cpp kernel/qsqldriver.h kernel/qsqldriver_p.h
+        kernel/qsqldriverplugin.cpp kernel/qsqldriverplugin.h
+        kernel/qsqlerror.cpp kernel/qsqlerror.h
+        kernel/qsqlfield.cpp kernel/qsqlfield.h
+        kernel/qsqlindex.cpp kernel/qsqlindex.h
+        kernel/qsqlnulldriver_p.h
+        kernel/qsqlquery.cpp kernel/qsqlquery.h
+        kernel/qsqlrecord.cpp kernel/qsqlrecord.h
+        kernel/qsqlresult.cpp kernel/qsqlresult.h kernel/qsqlresult_p.h
+        kernel/qtsqlglobal.h kernel/qtsqlglobal_p.h
+    DEFINES
+        QT_NO_USING_NAMESPACE
+        QT_NO_CAST_FROM_ASCII
+        QT_NO_FOREACH
+    LIBRARIES
+        Qt::CorePrivate
+)
+
+extend_target(Sql CONDITION QT_FEATURE_sqlmodel
+    SOURCES
+        models/qsqlquerymodel.cpp models/qsqlquerymodel.h models/qsqlquerymodel_p.h
+        models/qsqlrelationaldelegate.cpp models/qsqlrelationaldelegate.h
+        models/qsqlrelationaltablemodel.cpp models/qsqlrelationaltablemodel.h
+        models/qsqltablemodel.cpp models/qsqltablemodel.h models/qsqltablemodel_p.h
+)
+
+add_qt_docs(./doc/qtsql.qdocconf)
