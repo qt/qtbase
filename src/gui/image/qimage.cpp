@@ -118,21 +118,14 @@ QImageData::QImageData()
 QImageData * QImageData::create(const QSize &size, QImage::Format format)
 {
     if (!size.isValid() || format == QImage::Format_Invalid)
-        return 0;                                // invalid parameter(s)
+        return nullptr;                             // invalid parameter(s)
 
-    uint width = size.width();
-    uint height = size.height();
-    uint depth = qt_depthForFormat(format);
-
-    const int bytes_per_line = ((width * depth + 31) >> 5) << 2; // bytes per scanline (must be multiple of 4)
-
-    // sanity check for potential overflows
-    if (std::numeric_limits<int>::max()/depth < width
-        || bytes_per_line <= 0
-        || height <= 0
-        || std::numeric_limits<qsizetype>::max()/uint(bytes_per_line) < height
-        || std::numeric_limits<int>::max()/sizeof(uchar *) < uint(height))
-        return 0;
+    int width = size.width();
+    int height = size.height();
+    int depth = qt_depthForFormat(format);
+    auto params = calculateImageParameters(width, height, depth);
+    if (params.bytesPerLine < 0)
+        return nullptr;
 
     QScopedPointer<QImageData> d(new QImageData);
 
@@ -154,18 +147,15 @@ QImageData * QImageData::create(const QSize &size, QImage::Format format)
     d->has_alpha_clut = false;
     d->is_cached = false;
 
-    d->bytes_per_line = bytes_per_line;
-
-    d->nbytes = d->bytes_per_line*height;
+    d->bytes_per_line = params.bytesPerLine;
+    d->nbytes = params.totalSize;
     d->data  = (uchar *)malloc(d->nbytes);
 
-    if (!d->data) {
-        return 0;
-    }
+    if (!d->data)
+        return nullptr;
 
     d->ref.ref();
     return d.take();
-
 }
 
 QImageData::~QImageData()
@@ -786,27 +776,27 @@ QImage::QImage(const QSize &size, Format format)
 
 QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QImage::Format format, bool readOnly, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
 {
-    QImageData *d = 0;
-
-    if (format == QImage::Format_Invalid)
-        return d;
+    if (width <= 0 || height <= 0 || !data || format == QImage::Format_Invalid)
+        return nullptr;
 
     const int depth = qt_depthForFormat(format);
-    const int calc_bytes_per_line = ((width * depth + 31)/32) * 4;
-    const int min_bytes_per_line = (width * depth + 7)/8;
+    auto params = calculateImageParameters(width, height, depth);
+    if (params.totalSize < 0)
+        return nullptr;
 
-    if (bpl <= 0)
-        bpl = calc_bytes_per_line;
+    if (bpl > 0) {
+        // can't overflow, because has calculateImageParameters already done this multiplication
+        const int min_bytes_per_line = (width * depth + 7)/8;
+        if (bpl < min_bytes_per_line)
+            return nullptr;
 
-    if (width <= 0 || height <= 0 || !data
-        || INT_MAX/sizeof(uchar *) < uint(height)
-        || INT_MAX/uint(depth) < uint(width)
-        || bpl <= 0
-        || bpl < min_bytes_per_line
-        || INT_MAX/uint(bpl) < uint(height))
-        return d;                                        // invalid parameter(s)
+        // recalculate the total with this value
+        params.bytesPerLine = bpl;
+        if (mul_overflow<qsizetype>(bpl, height, &params.totalSize))
+            return nullptr;
+    }
 
-    d = new QImageData;
+    QImageData *d = new QImageData;
     d->ref.ref();
 
     d->own_data = false;
@@ -817,8 +807,8 @@ QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QIm
     d->depth = depth;
     d->format = format;
 
-    d->bytes_per_line = bpl;
-    d->nbytes = d->bytes_per_line * height;
+    d->bytes_per_line = params.bytesPerLine;
+    d->nbytes = params.totalSize;
 
     d->cleanupFunction = cleanupFunction;
     d->cleanupInfo = cleanupInfo;
