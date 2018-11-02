@@ -4343,7 +4343,7 @@ static void blend_color_argb(int count, const QSpan *spans, void *userData)
         while (count--) {
             uint *target = ((uint *)data->rasterBuffer->scanLine(spans->y)) + spans->x;
             if (spans->coverage == 255) {
-                QT_MEMFILL_UINT(target, spans->len, color);
+                qt_memfill(target, color, spans->len);
             } else {
                 uint c = BYTE_MUL(color, spans->coverage);
                 int ialpha = 255 - spans->coverage;
@@ -4422,7 +4422,7 @@ static void blend_color_rgb16(int count, const QSpan *spans, void *userData)
         while (count--) {
             ushort *target = ((ushort *)data->rasterBuffer->scanLine(spans->y)) + spans->x;
             if (spans->coverage == 255) {
-                QT_MEMFILL_USHORT(target, spans->len, c);
+                qt_memfill(target, c, spans->len);
             } else {
                 ushort color = BYTE_MUL_RGB16(c, spans->coverage);
                 int ialpha = 255 - spans->coverage;

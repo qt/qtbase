@@ -944,12 +944,6 @@ inline void qt_rectfill(T *dest, T value,
     }
 }
 
-#define QT_MEMFILL_UINT(dest, length, color)            \
-    qt_memfill<quint32>(dest, color, length);
-
-#define QT_MEMFILL_USHORT(dest, length, color) \
-    qt_memfill<quint16>(dest, color, length);
-
 #define QT_MEMCPY_REV_UINT(dest, src, length) \
 do {                                          \
     /* Duff's device */                       \

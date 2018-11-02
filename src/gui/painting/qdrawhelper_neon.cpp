@@ -791,7 +791,7 @@ void QT_FASTCALL qt_destStoreRGB16_neon(QRasterBuffer *rasterBuffer, int x, int 
 void QT_FASTCALL comp_func_solid_SourceOver_neon(uint *destPixels, int length, uint color, uint const_alpha)
 {
     if ((const_alpha & qAlpha(color)) == 255) {
-        QT_MEMFILL_UINT(destPixels, length, color);
+        qt_memfill32(destPixels, color, length);
     } else {
         if (const_alpha != 255)
             color = BYTE_MUL(color, const_alpha);
