@@ -52,6 +52,7 @@ public:
     { return m_customWidgets.value(name); }
 
     QString customWidgetAddPageMethod(const QString &name) const;
+    QString simpleContainerAddPageMethod(const QString &name) const;
 
     QString realClassName(const QString &className) const;
 

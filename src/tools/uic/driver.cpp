@@ -33,6 +33,8 @@
 #include <qfileinfo.h>
 #include <qdebug.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 Driver::Driver()
@@ -136,11 +138,9 @@ QString Driver::findOrInsertName(const QString &name)
 QString Driver::normalizedName(const QString &name)
 {
     QString result = name;
-    QChar *data = result.data();
-    for (int i = name.size(); --i >= 0; ++data) {
-        if (!data->isLetterOrNumber())
-            *data = QLatin1Char('_');
-    }
+    std::replace_if(result.begin(), result.end(),
+                    [] (QChar c) { return !c.isLetterOrNumber(); },
+                    QLatin1Char('_'));
     return result;
 }
 
@@ -149,23 +149,21 @@ QString Driver::unique(const QString &instanceName, const QString &className)
     QString name;
     bool alreadyUsed = false;
 
-    if (instanceName.size()) {
-        int id = 1;
-        name = instanceName;
-        name = normalizedName(name);
+    if (!instanceName.isEmpty()) {
+        name = normalizedName(instanceName);
         QString base = name;
 
-        while (m_nameRepository.contains(name)) {
+        for (int id = 1; m_nameRepository.contains(name); ++id) {
             alreadyUsed = true;
-            name = base + QString::number(id++);
+            name = base + QString::number(id);
         }
-    } else if (className.size()) {
+    } else if (!className.isEmpty()) {
         name = unique(qtify(className));
     } else {
         name = unique(QLatin1String("var"));
     }
 
-    if (alreadyUsed && className.size()) {
+    if (alreadyUsed && !className.isEmpty()) {
         fprintf(stderr, "%s: Warning: The name '%s' (%s) is already in use, defaulting to '%s'.\n",
                 qPrintable(m_option.messagePrefix()),
                 qPrintable(instanceName), qPrintable(className),
@@ -181,17 +179,10 @@ QString Driver::qtify(const QString &name)
     QString qname = name;
 
     if (qname.at(0) == QLatin1Char('Q') || qname.at(0) == QLatin1Char('K'))
-        qname = qname.mid(1);
+        qname.remove(0, 1);
 
-    int i=0;
-    while (i < qname.length()) {
-        if (qname.at(i).toLower() != qname.at(i))
-            qname[i] = qname.at(i).toLower();
-        else
-            break;
-
-        ++i;
-    }
+    for (int i = 0, size = qname.size(); i < size && qname.at(i).isUpper(); ++i)
+        qname[i] = qname.at(i).toLower();
 
     return qname;
 }

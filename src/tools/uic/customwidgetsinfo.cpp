@@ -31,6 +31,8 @@
 #include "ui4.h"
 #include "utils.h"
 
+#include <utility>
+
 QT_BEGIN_NAMESPACE
 
 CustomWidgetsInfo::CustomWidgetsInfo() = default;
@@ -96,5 +98,24 @@ QString CustomWidgetsInfo::customWidgetAddPageMethod(const QString &name) const
     return QString();
 }
 
+// add page methods for simple containers taking only the widget parameter
+QString CustomWidgetsInfo::simpleContainerAddPageMethod(const QString &name) const
+{
+    using AddPageMethod = std::pair<const char *, const char *>;
+
+    static AddPageMethod addPageMethods[] = {
+        {"QStackedWidget", "addWidget"},
+        {"QToolBar", "addWidget"},
+        {"QDockWidget", "setWidget"},
+        {"QScrollArea", "setWidget"},
+        {"QSplitter", "addWidget"},
+        {"QMdiArea", "addSubWindow"}
+    };
+    for (const auto &m : addPageMethods) {
+        if (extends(name, QLatin1String(m.first)))
+            return QLatin1String(m.second);
+    }
+    return QString();
+}
 
 QT_END_NAMESPACE

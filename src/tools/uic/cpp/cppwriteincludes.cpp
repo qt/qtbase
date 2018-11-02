@@ -119,7 +119,7 @@ void WriteIncludes::acceptUI(DomUI *node)
     writeHeaders(m_globalIncludes, true);
     writeHeaders(m_localIncludes, false);
 
-    m_output << QLatin1Char('\n');
+    m_output << '\n';
 }
 
 void WriteIncludes::acceptWidget(DomWidget *node)
@@ -314,7 +314,7 @@ void WriteIncludes::writeHeaders(const OrderedSet &headers, bool global)
         const QString value = m_oldHeaderToNewHeader.value(header, header);
         const auto trimmed = QStringRef(&value).trimmed();
         if (!trimmed.isEmpty())
-            m_output << "#include " << openingQuote << trimmed << closingQuote << QLatin1Char('\n');
+            m_output << "#include " << openingQuote << trimmed << closingQuote << '\n';
     }
 }
 
