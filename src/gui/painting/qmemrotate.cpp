@@ -44,7 +44,7 @@ QT_BEGIN_NAMESPACE
 static const int tileSize = 32;
 
 template <class T>
-Q_STATIC_TEMPLATE_FUNCTION
+static
 inline void qt_memrotate90_tiled(const T *src, int w, int h, int sstride, T *dest, int dstride)
 {
     sstride /= sizeof(T);
@@ -103,7 +103,7 @@ inline void qt_memrotate90_tiled(const T *src, int w, int h, int sstride, T *des
 }
 
 template <class T>
-Q_STATIC_TEMPLATE_FUNCTION
+static
 inline void qt_memrotate90_tiled_unpacked(const T *src, int w, int h, int sstride, T *dest,
                                           int dstride)
 {
@@ -131,7 +131,7 @@ inline void qt_memrotate90_tiled_unpacked(const T *src, int w, int h, int sstrid
 }
 
 template <class T>
-Q_STATIC_TEMPLATE_FUNCTION
+static
 inline void qt_memrotate270_tiled(const T *src, int w, int h, int sstride, T *dest, int dstride)
 {
     sstride /= sizeof(T);
@@ -190,7 +190,7 @@ inline void qt_memrotate270_tiled(const T *src, int w, int h, int sstride, T *de
 }
 
 template <class T>
-Q_STATIC_TEMPLATE_FUNCTION
+static
 inline void qt_memrotate270_tiled_unpacked(const T *src, int w, int h, int sstride, T *dest,
                                            int dstride)
 {
@@ -219,7 +219,7 @@ inline void qt_memrotate270_tiled_unpacked(const T *src, int w, int h, int sstri
 
 
 template <class T>
-Q_STATIC_TEMPLATE_FUNCTION
+static
 inline void qt_memrotate90_template(const T *src, int srcWidth, int srcHeight, int srcStride,
                                     T *dest, int dstStride)
 {
@@ -246,7 +246,7 @@ inline void qt_memrotate90_template<quint64>(const quint64 *src, int w, int h, i
 }
 
 template <class T>
-Q_STATIC_TEMPLATE_FUNCTION
+static
 inline void qt_memrotate180_template(const T *src, int w, int h, int sstride, T *dest, int dstride)
 {
     const char *s = (const char*)(src) + (h - 1) * sstride;
@@ -261,7 +261,7 @@ inline void qt_memrotate180_template(const T *src, int w, int h, int sstride, T 
 }
 
 template <class T>
-Q_STATIC_TEMPLATE_FUNCTION
+static
 inline void qt_memrotate270_template(const T *src, int srcWidth, int srcHeight, int srcStride,
                                      T *dest, int dstStride)
 {

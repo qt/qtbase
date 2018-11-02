@@ -1107,7 +1107,7 @@ static inline uint multiply_op_rgb64(uint dst, uint src, uint da, uint sa)
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Multiply_impl(uint *dest, int length, uint color, const T &coverage)
+static inline void comp_func_solid_Multiply_impl(uint *dest, int length, uint color, const T &coverage)
 {
     int sa = qAlpha(color);
     int sr = qRed(color);
@@ -1130,7 +1130,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Multiply_impl(uint *dest,
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Multiply_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
+static inline void comp_func_solid_Multiply_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
 {
     uint sa = color.alpha();
     uint sr = color.red();
@@ -1169,7 +1169,7 @@ void QT_FASTCALL comp_func_solid_Multiply_rgb64(QRgba64 *dest, int length, QRgba
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Multiply_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_Multiply_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         uint d = dest[i];
@@ -1190,7 +1190,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Multiply_impl(uint *Q_DECL_REST
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Multiply_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_Multiply_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         QRgba64 d = dest[i];
@@ -1231,7 +1231,7 @@ void QT_FASTCALL comp_func_Multiply_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const Q
          = Sca + Dca - Sca.Dca
 */
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Screen_impl(uint *dest, int length, uint color, const T &coverage)
+static inline void comp_func_solid_Screen_impl(uint *dest, int length, uint color, const T &coverage)
 {
     int sa = qAlpha(color);
     int sr = qRed(color);
@@ -1254,7 +1254,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Screen_impl(uint *dest, i
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Screen_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
+static inline void comp_func_solid_Screen_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
 {
     uint sa = color.alpha();
     uint sr = color.red();
@@ -1293,7 +1293,7 @@ void QT_FASTCALL comp_func_solid_Screen_rgb64(QRgba64 *dest, int length, QRgba64
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Screen_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_Screen_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         uint d = dest[i];
@@ -1314,7 +1314,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Screen_impl(uint *Q_DECL_RESTRI
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Screen_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_Screen_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         QRgba64 d = dest[i];
@@ -1375,7 +1375,7 @@ static inline uint overlay_op_rgb64(uint dst, uint src, uint da, uint sa)
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Overlay_impl(uint *dest, int length, uint color, const T &coverage)
+static inline void comp_func_solid_Overlay_impl(uint *dest, int length, uint color, const T &coverage)
 {
     int sa = qAlpha(color);
     int sr = qRed(color);
@@ -1398,7 +1398,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Overlay_impl(uint *dest, 
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Overlay_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
+static inline void comp_func_solid_Overlay_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
 {
     uint sa = color.alpha();
     uint sr = color.red();
@@ -1437,7 +1437,7 @@ void QT_FASTCALL comp_func_solid_Overlay_rgb64(QRgba64 *dest, int length, QRgba6
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Overlay_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_Overlay_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         uint d = dest[i];
@@ -1458,7 +1458,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Overlay_impl(uint *Q_DECL_RESTR
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Overlay_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_Overlay_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         QRgba64 d = dest[i];
@@ -1509,7 +1509,7 @@ static inline uint darken_op_rgb64(uint dst, uint src, uint da, uint sa)
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Darken_impl(uint *dest, int length, uint color, const T &coverage)
+static inline void comp_func_solid_Darken_impl(uint *dest, int length, uint color, const T &coverage)
 {
     int sa = qAlpha(color);
     int sr = qRed(color);
@@ -1532,7 +1532,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Darken_impl(uint *dest, i
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Darken_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
+static inline void comp_func_solid_Darken_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
 {
     uint sa = color.alpha();
     uint sr = color.red();
@@ -1571,7 +1571,7 @@ void QT_FASTCALL comp_func_solid_Darken_rgb64(QRgba64 *dest, int length, QRgba64
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Darken_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_Darken_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         uint d = dest[i];
@@ -1592,7 +1592,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Darken_impl(uint *Q_DECL_RESTRI
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Darken_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_Darken_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         QRgba64 d = dest[i];
@@ -1643,7 +1643,7 @@ static inline uint lighten_op_rgb64(uint dst, uint src, uint da, uint sa)
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Lighten_impl(uint *dest, int length, uint color, const T &coverage)
+static inline void comp_func_solid_Lighten_impl(uint *dest, int length, uint color, const T &coverage)
 {
     int sa = qAlpha(color);
     int sr = qRed(color);
@@ -1666,7 +1666,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Lighten_impl(uint *dest, 
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Lighten_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
+static inline void comp_func_solid_Lighten_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
 {
     uint sa = color.alpha();
     uint sr = color.red();
@@ -1705,7 +1705,7 @@ void QT_FASTCALL comp_func_solid_Lighten_rgb64(QRgba64 *dest, int length, QRgba6
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Lighten_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_Lighten_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         uint d = dest[i];
@@ -1726,7 +1726,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Lighten_impl(uint *Q_DECL_RESTR
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Lighten_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_Lighten_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         QRgba64 d = dest[i];
@@ -1795,7 +1795,7 @@ static inline uint color_dodge_op_rgb64(qint64 dst, qint64 src, qint64 da, qint6
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_ColorDodge_impl(uint *dest, int length, uint color, const T &coverage)
+static inline void comp_func_solid_ColorDodge_impl(uint *dest, int length, uint color, const T &coverage)
 {
     int sa = qAlpha(color);
     int sr = qRed(color);
@@ -1818,7 +1818,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_ColorDodge_impl(uint *des
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_ColorDodge_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
+static inline void comp_func_solid_ColorDodge_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
 {
     uint sa = color.alpha();
     uint sr = color.red();
@@ -1857,7 +1857,7 @@ void QT_FASTCALL comp_func_solid_ColorDodge_rgb64(QRgba64 *dest, int length, QRg
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_ColorDodge_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_ColorDodge_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         uint d = dest[i];
@@ -1878,7 +1878,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_ColorDodge_impl(uint *Q_DECL_RE
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_ColorDodge_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_ColorDodge_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         QRgba64 d = dest[i];
@@ -1947,7 +1947,7 @@ static inline uint color_burn_op_rgb64(qint64 dst, qint64 src, qint64 da, qint64
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_ColorBurn_impl(uint *dest, int length, uint color, const T &coverage)
+static inline void comp_func_solid_ColorBurn_impl(uint *dest, int length, uint color, const T &coverage)
 {
     int sa = qAlpha(color);
     int sr = qRed(color);
@@ -1970,7 +1970,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_ColorBurn_impl(uint *dest
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_ColorBurn_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
+static inline void comp_func_solid_ColorBurn_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
 {
     uint sa = color.alpha();
     uint sr = color.red();
@@ -2009,7 +2009,7 @@ void QT_FASTCALL comp_func_solid_ColorBurn_rgb64(QRgba64 *dest, int length, QRgb
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_ColorBurn_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_ColorBurn_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         uint d = dest[i];
@@ -2030,7 +2030,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_ColorBurn_impl(uint *Q_DECL_RES
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_ColorBurn_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_ColorBurn_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         QRgba64 d = dest[i];
@@ -2093,7 +2093,7 @@ static inline uint hardlight_op_rgb64(uint dst, uint src, uint da, uint sa)
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_HardLight_impl(uint *dest, int length, uint color, const T &coverage)
+static inline void comp_func_solid_HardLight_impl(uint *dest, int length, uint color, const T &coverage)
 {
     int sa = qAlpha(color);
     int sr = qRed(color);
@@ -2116,7 +2116,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_HardLight_impl(uint *dest
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_HardLight_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
+static inline void comp_func_solid_HardLight_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
 {
     uint sa = color.alpha();
     uint sr = color.red();
@@ -2155,7 +2155,7 @@ void QT_FASTCALL comp_func_solid_HardLight_rgb64(QRgba64 *dest, int length, QRgb
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_HardLight_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_HardLight_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         uint d = dest[i];
@@ -2176,7 +2176,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_HardLight_impl(uint *Q_DECL_RES
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_HardLight_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_HardLight_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         QRgba64 d = dest[i];
@@ -2252,7 +2252,7 @@ static inline uint soft_light_op_rgb64(qint64 dst, qint64 src, qint64 da, qint64
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_SoftLight_impl(uint *dest, int length, uint color, const T &coverage)
+static inline void comp_func_solid_SoftLight_impl(uint *dest, int length, uint color, const T &coverage)
 {
     int sa = qAlpha(color);
     int sr = qRed(color);
@@ -2275,7 +2275,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_SoftLight_impl(uint *dest
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_SoftLight_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
+static inline void comp_func_solid_SoftLight_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
 {
     uint sa = color.alpha();
     uint sr = color.red();
@@ -2314,7 +2314,7 @@ void QT_FASTCALL comp_func_solid_SoftLight_rgb64(QRgba64 *dest, int length, QRgb
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_SoftLight_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_SoftLight_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         uint d = dest[i];
@@ -2335,7 +2335,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_SoftLight_impl(uint *Q_DECL_RES
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_SoftLight_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_SoftLight_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         QRgba64 d = dest[i];
@@ -2386,7 +2386,7 @@ static inline uint difference_op_rgb64(qint64 dst, qint64 src, qint64 da, qint64
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Difference_impl(uint *dest, int length, uint color, const T &coverage)
+static inline void comp_func_solid_Difference_impl(uint *dest, int length, uint color, const T &coverage)
 {
     int sa = qAlpha(color);
     int sr = qRed(color);
@@ -2409,7 +2409,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Difference_impl(uint *des
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Difference_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
+static inline void comp_func_solid_Difference_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
 {
     uint sa = color.alpha();
     uint sr = color.red();
@@ -2448,7 +2448,7 @@ void QT_FASTCALL comp_func_solid_Difference_rgb64(QRgba64 *dest, int length, QRg
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Difference_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_Difference_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         uint d = dest[i];
@@ -2469,7 +2469,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Difference_impl(uint *Q_DECL_RE
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Difference_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_Difference_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         QRgba64 d = dest[i];
@@ -2509,7 +2509,7 @@ void QT_FASTCALL comp_func_Difference_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const
     Dca' = (Sca.Da + Dca.Sa - 2.Sca.Dca) + Sca.(1 - Da) + Dca.(1 - Sa)
 */
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void QT_FASTCALL comp_func_solid_Exclusion_impl(uint *dest, int length, uint color, const T &coverage)
+static inline void QT_FASTCALL comp_func_solid_Exclusion_impl(uint *dest, int length, uint color, const T &coverage)
 {
     int sa = qAlpha(color);
     int sr = qRed(color);
@@ -2532,7 +2532,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void QT_FASTCALL comp_func_solid_Exclusion_imp
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void QT_FASTCALL comp_func_solid_Exclusion_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
+static inline void QT_FASTCALL comp_func_solid_Exclusion_impl(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
 {
     uint sa = color.alpha();
     uint sr = color.red();
@@ -2572,7 +2572,7 @@ void QT_FASTCALL comp_func_solid_Exclusion_rgb64(QRgba64 *dest, int length, QRgb
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Exclusion_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_Exclusion_impl(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         uint d = dest[i];
@@ -2593,7 +2593,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Exclusion_impl(uint *Q_DECL_RES
 }
 
 template <typename T>
-Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Exclusion_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
+static inline void comp_func_Exclusion_impl(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, const T &coverage)
 {
     for (int i = 0; i < length; ++i) {
         QRgba64 d = dest[i];

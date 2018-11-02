@@ -5228,7 +5228,7 @@ void qBlendTexture(int count, const QSpan *spans, void *userData)
     proc(count, spans, userData);
 }
 
-template <class DST> Q_STATIC_TEMPLATE_FUNCTION
+template <class DST> static
 inline void qt_bitmapblit_template(QRasterBuffer *rasterBuffer,
                                    int x, int y, DST color,
                                    const uchar *map,

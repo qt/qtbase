@@ -69,13 +69,10 @@
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_CC_GNU)
-#  define Q_STATIC_TEMPLATE_FUNCTION static
 #  define Q_DECL_RESTRICT __restrict__
 #elif defined(Q_CC_MSVC)
-#  define Q_STATIC_TEMPLATE_FUNCTION static
 #  define Q_DECL_RESTRICT __restrict
 #else
-#  define Q_STATIC_TEMPLATE_FUNCTION static
 #  define Q_DECL_RESTRICT
 #endif
 
@@ -887,7 +884,7 @@ inline quint24::operator uint() const
     return data[2] | (data[1] << 8) | (data[0] << 16);
 }
 
-template <class T> Q_STATIC_TEMPLATE_FUNCTION
+template <class T> static
 void qt_memfill(T *dest, T value, int count);
 
 template<> inline void qt_memfill(quint64 *dest, quint64 color, int count)
@@ -931,7 +928,7 @@ inline void qt_memfill(T *dest, T value, int count)
     }
 }
 
-template <class T> Q_STATIC_TEMPLATE_FUNCTION
+template <class T> static
 inline void qt_rectfill(T *dest, T value,
                         int x, int y, int width, int height, qsizetype stride)
 {
