@@ -325,15 +325,16 @@ void qt_memfill16(quint16 *dest, quint16 value, qsizetype count)
     }
 
     const int align = (quintptr)(dest) & 0x3;
-    switch (align) {
-    case 2: *dest++ = value; --count;
+    if (align) {
+        *dest++ = value;
+        --count;
     }
-
-    const quint32 value32 = (value << 16) | value;
-    qt_memfill32(reinterpret_cast<quint32*>(dest), value32, count / 2);
 
     if (count & 0x1)
         dest[count - 1] = value;
+
+    const quint32 value32 = (value << 16) | value;
+    qt_memfill32(reinterpret_cast<quint32*>(dest), value32, count / 2);
 }
 
 void qt_bitmapblit32_sse2_base(QRasterBuffer *rasterBuffer, int x, int y,
