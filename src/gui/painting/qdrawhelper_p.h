@@ -70,10 +70,17 @@ QT_BEGIN_NAMESPACE
 
 #if defined(Q_CC_GNU)
 #  define Q_DECL_RESTRICT __restrict__
+#  if defined(Q_PROCESSOR_X86_32) && defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+#    define Q_DECL_VECTORCALL __attribute__((sseregparm,regparm(3)))
+#  else
+#    define Q_DECL_VECTORCALL
+#  endif
 #elif defined(Q_CC_MSVC)
 #  define Q_DECL_RESTRICT __restrict
+#  define Q_DECL_VECTORCALL __vectorcall
 #else
 #  define Q_DECL_RESTRICT
+#  define Q_DECL_VECTORCALL
 #endif
 
 static const uint AMASK = 0xff000000;

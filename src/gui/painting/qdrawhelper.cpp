@@ -6260,10 +6260,12 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     },
 };
 
+#if !defined(__SSE2__)
 void qt_memfill64(quint64 *dest, quint64 color, qsizetype count)
 {
     qt_memfill_template<quint64>(dest, color, count);
 }
+#endif
 
 void qt_memfill16(quint16 *dest, quint16 value, qsizetype count)
 {

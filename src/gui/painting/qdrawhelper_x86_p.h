@@ -57,6 +57,7 @@
 QT_BEGIN_NAMESPACE
 
 #ifdef __SSE2__
+void qt_memfill64(quint64 *dest, quint64 value, qsizetype count);
 void qt_memfill32(quint32 *dest, quint32 value, qsizetype count);
 void qt_bitmapblit32_sse2(QRasterBuffer *rasterBuffer, int x, int y,
                           const QRgba64 &color,
