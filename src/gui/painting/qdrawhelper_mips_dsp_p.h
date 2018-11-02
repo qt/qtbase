@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 
 #if defined(QT_COMPILER_SUPPORTS_MIPS_DSP)
 
-extern "C" void qt_memfill32_asm_mips_dsp(quint32 *dest, quint32 value, int count);
+extern "C" void qt_memfill32_asm_mips_dsp(quint32 *dest, quint32 value, qsizetype count);
 
 extern "C" void comp_func_SourceOver_asm_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha);
 

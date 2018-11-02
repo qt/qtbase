@@ -6278,7 +6278,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
 
 #if defined(Q_CC_MSVC) && !defined(_MIPS_)
 template <class T>
-inline void qt_memfill_template(T *dest, T color, int count)
+inline void qt_memfill_template(T *dest, T color, qsizetype count)
 {
     while (count--)
         *dest++ = color;
@@ -6287,9 +6287,12 @@ inline void qt_memfill_template(T *dest, T color, int count)
 #else
 
 template <class T>
-inline void qt_memfill_template(T *dest, T color, int count)
+inline void qt_memfill_template(T *dest, T color, qsizetype count)
 {
-    int n = (count + 7) / 8;
+    if (!count)
+        return;
+
+    qsizetype n = (count + 7) / 8;
     switch (count & 0x07)
     {
     case 0: do { *dest++ = color; Q_FALLTHROUGH();
@@ -6305,7 +6308,7 @@ inline void qt_memfill_template(T *dest, T color, int count)
 }
 
 template <>
-inline void qt_memfill_template(quint16 *dest, quint16 value, int count)
+inline void qt_memfill_template(quint16 *dest, quint16 value, qsizetype count)
 {
     if (count < 3) {
         switch (count) {
@@ -6327,19 +6330,19 @@ inline void qt_memfill_template(quint16 *dest, quint16 value, int count)
 }
 #endif
 
-void qt_memfill64(quint64 *dest, quint64 color, int count)
+void qt_memfill64(quint64 *dest, quint64 color, qsizetype count)
 {
     qt_memfill_template<quint64>(dest, color, count);
 }
 
 #if !defined(__SSE2__)
-void qt_memfill16(quint16 *dest, quint16 color, int count)
+void qt_memfill16(quint16 *dest, quint16 color, qsizetype count)
 {
     qt_memfill_template<quint16>(dest, color, count);
 }
 #endif
 #if !defined(__SSE2__) && !defined(__ARM_NEON__) && !defined(__MIPS_DSP__)
-void qt_memfill32(quint32 *dest, quint32 color, int count)
+void qt_memfill32(quint32 *dest, quint32 color, qsizetype count)
 {
     qt_memfill_template<quint32>(dest, color, count);
 }
