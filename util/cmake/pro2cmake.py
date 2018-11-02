@@ -522,7 +522,11 @@ def write_sources_section(cm_fh: IO[str], scope: Scope, *, indent: int=0,
                 d = '${FW%s}' % d
             if d.startswith('-l'):
                 d = d[2:]
-            d = substitute_libs(d)
+
+            if d.startswith('-'):
+                d = '# Remove: {}'.format(d[1:])
+            else:
+                d = substitute_libs(d)
             cm_fh.write('{}        {}\n'.format(ind, d))
             is_framework = False
 
