@@ -435,20 +435,20 @@ function(extend_target target)
         qt_internal_process_automatic_sources("${target}" "${_arg_SOURCES}")
 
         foreach(dep ${_arg_LIBRARIES} ${_arg_PUBLIC_LIBRARIES})
-            if("${dep}" MATCHES "Qt::(.+)(Private?)")
+            if("${dep}" MATCHES "^Qt::(.+)(Private)?$")
                 set(depTarget ${CMAKE_MATCH_1})
 
                 # Fetch features from dependencies and make them available to the
                 # caller as well as to the local scope for configure.cmake evaluation.
 
+                if(NOT TARGET "${dep}")
+                    find_package(Qt${PROJECT_VERSION_MAJOR}${depTarget} REQUIRED)
+                endif()
+
                 if("x${CMAKE_MATCH_2}" STREQUAL "xPrivate")
                     qt_pull_features_into_current_scope(PRIVATE_FEATURES ${depTarget})
                 endif()
                 qt_pull_features_into_current_scope(PUBLIC_FEATURES ${depTarget})
-                if(TARGET "${dep}")
-                    continue()
-                endif()
-                find_package(Qt${PROJECT_VERSION_MAJOR}${depTarget} REQUIRED)
             endif()
         endforeach()
 
@@ -856,7 +856,7 @@ function(add_qt_test name)
             "${CMAKE_CURRENT_BINARY_DIR}"
             "${_arg_INCLUDE_DIRECTORIES}"
         DEFINES "${_arg_DEFINES}"
-        LIBRARIES "Qt::Core;Qt::Test;${_arg_LIBRARIES}"
+        LIBRARIES Qt::Core Qt::Test ${_arg_LIBRARIES}
     )
 
     add_test(NAME "${name}" COMMAND "${name}" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
