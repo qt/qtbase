@@ -22,8 +22,7 @@ function(qt_feature_module_begin)
     set(__QtFeature_private_extra "" PARENT_SCOPE)
     set(__QtFeature_public_extra "" PARENT_SCOPE)
 
-    qt_push_features_into_parent_scope(PUBLIC_FEATURES ${_arg_PUBLIC_DEPENDENCIES})
-    qt_push_features_into_parent_scope(PRIVATE_FEATURES ${_arg_PRIVATE_DEPENDENCIES})
+    qt_push_features_into_parent_scope()
 endfunction()
 
 function(qt_feature _feature)
@@ -181,7 +180,6 @@ macro(qt_feature_set_value feature cache condition label)
         message(SEND_ERROR "Feature \"${feature}\": Forcing to \"${cache}\" breaks its condition.")
     endif()
 
-    set(_QT_FEATURE_VALUE_${feature} "${result}" CACHE INTERNAL "${_arg_LABEL}")
     set(QT_FEATURE_${feature} "${result}" PARENT_SCOPE)
 endmacro()
 
@@ -193,6 +191,7 @@ function(qt_evaluate_feature _feature)
     endif()
 
     if(NOT DEFINED _QT_FEATURE_DEFINITION_${_feature})
+        qt_debug_print_variables(DEDUP MATCH "^QT_FEATURE")
         message(FATAL_ERROR "Attempting to evaluate feature ${_feature} but its definition is missing. Either the feature does not exist or a dependency to the module that defines it is missing")
     endif()
 
@@ -200,8 +199,7 @@ function(qt_evaluate_feature _feature)
         "PRIVATE;PUBLIC"
         "LABEL;PURPOSE;SECTION;" "AUTODETECT;CONDITION;ENABLE;DISABLE;EMIT_IF" ${_QT_FEATURE_DEFINITION_${_feature}})
 
-    if(DEFINED _QT_FEATURE_VALUE_${_feature})
-        set(QT_FEATURE_${_feature} ${_QT_FEATURE_VALUE_${_feature}} PARENT_SCOPE)
+    if(DEFINED QT_FEATURE_${_feature})
         return()
     endif()
 
@@ -319,13 +317,7 @@ function(qt_feature_module_end target)
     list(REMOVE_DUPLICATES all_features)
 
     foreach(feature ${all_features})
-        unset(_QT_FEATURE_VALUE_${feature} CACHE)
-    endforeach()
-
-    foreach(feature ${all_features})
         qt_evaluate_feature(${feature})
-
-        set(QT_FEATURE_${feature} ${QT_FEATURE_${feature}} PARENT_SCOPE)
     endforeach()
 
     set(enabled_public_features "")
@@ -350,8 +342,7 @@ function(qt_feature_module_end target)
     endforeach()
 
     foreach(feature ${all_features})
-        unset(_QT_FEATURE_VALUE_${feature} CACHE)
-        unset(_QT_FEATURE_DEFINITION_${feature} CACHE)
+        unset(_QT_FEATURE_DEFINITION_${feature} PARENT_SCOPE)
     endforeach()
 
     _qt_feature_write_file("${CMAKE_CURRENT_BINARY_DIR}/${__QtFeature_private_file}"
@@ -389,6 +380,8 @@ function(qt_feature_module_end target)
 
     unset(__QtFeature_private_extra PARENT_SCOPE)
     unset(__QtFeature_public_extra PARENT_SCOPE)
+
+    qt_push_features_into_parent_scope()
 endfunction()
 
 function(qt_config_compile_test name)
@@ -440,33 +433,14 @@ function(qt_pull_features_into_current_scope)
 endfunction()
 
 macro(qt_push_features_into_parent_scope)
-    cmake_parse_arguments(__arg "PUBLIC_FEATURES;PRIVATE_FEATURES" "FEATURE_PROPERTY_INFIX" "" ${ARGN})
-    foreach(__target IN ITEMS ${__arg_UNPARSED_ARGUMENTS})
-        if(NOT TARGET ${__target})
-            continue()
+    get_cmake_property(__variableNames VARIABLES)
+    list (SORT __variableNames)
+    list(REMOVE_DUPLICATES __variableNames)
+
+    foreach(__var ${__variableNames})
+        if(__var MATCHES "^QT_FEATURE_[a-z][a-z0-9_]*$")
+            set("${__var}" "${${__var}}" PARENT_SCOPE)
         endif()
-        get_target_property(__target_type "${__target}" TYPE)
-        if("${__target_type}" STREQUAL "INTERFACE_LIBRARY")
-            set(__property_prefix "INTERFACE_")
-        else()
-            set(__property_prefix "")
-        endif()
-        foreach(__visibility PUBLIC PRIVATE)
-            set(__value ON)
-            foreach(__state ENABLED DISABLED)
-                if(NOT ${__arg_${__visibility}_FEATURES})
-                    continue()
-                endif()
-                get_target_property(__features "${__target}" ${__property_prefix}QT_${__arg_FEATURE_PROPERTY_INFIX}${__state}_${__visibility}_FEATURES)
-                if("${__features}" STREQUAL "__features-NOTFOUND")
-                    continue()
-                endif()
-                foreach(__feature ${__features})
-                    set(QT_FEATURE_${__feature} ${__value} PARENT_SCOPE)
-                endforeach()
-                set(__value OFF)
-            endforeach()
-        endforeach()
     endforeach()
 endmacro()
 

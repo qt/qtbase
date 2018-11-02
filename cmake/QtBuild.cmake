@@ -442,10 +442,8 @@ function(extend_target target)
                 # caller as well as to the local scope for configure.cmake evaluation.
 
                 if("x${CMAKE_MATCH_2}" STREQUAL "xPrivate")
-                    qt_push_features_into_parent_scope(PRIVATE_FEATURES ${depTarget})
                     qt_pull_features_into_current_scope(PRIVATE_FEATURES ${depTarget})
                 endif()
-                qt_push_features_into_parent_scope(PUBLIC_FEATURES ${depTarget})
                 qt_pull_features_into_current_scope(PUBLIC_FEATURES ${depTarget})
                 if(TARGET "${dep}")
                     continue()
@@ -462,6 +460,8 @@ function(extend_target target)
         target_compile_definitions("${target}" PUBLIC ${_arg_PUBLIC_DEFINES} PRIVATE ${_arg_DEFINES})
         target_link_libraries("${target}" PUBLIC ${_arg_PUBLIC_LIBRARIES} PRIVATE ${_arg_LIBRARIES})
     endif()
+
+    qt_push_features_into_parent_scope()
 endfunction()
 
 
@@ -549,20 +549,18 @@ function(add_qt_module name)
 
     # Import global features
     if(NOT "${target}" STREQUAL "Core")
-        qt_push_features_into_parent_scope(PUBLIC_FEATURES PRIVATE_FEATURES FEATURE_PROPERTY_INFIX "GLOBAL_" Qt::Core)
+        qt_pull_features_into_current_scope(PUBLIC_FEATURES PRIVATE_FEATURES FEATURE_PROPERTY_INFIX "GLOBAL_" Qt::Core)
     endif()
 
     # Fetch features from dependencies and make them available to the
     # caller as well as to the local scope for configure.cmake evaluation.
-    foreach(dep ${_arg_LIBRARIES} ${_arg_PUBLIC_LIBRARIES})
+    foreach(dep ${_arg_LIBRARIES} ${_arg_PUBLIC_LIBRARIES} ${_arg_FEATURE_DEPENDENCIES})
         if("${dep}" MATCHES "(Qt::.+)Private")
             set(publicDep ${CMAKE_MATCH_1})
-            qt_push_features_into_parent_scope(PRIVATE_FEATURES ${publicDep})
             qt_pull_features_into_current_scope(PRIVATE_FEATURES ${publicDep})
         else()
             set(publicDep ${dep})
         endif()
-        qt_push_features_into_parent_scope(PUBLIC_FEATURES ${publicDep})
         qt_pull_features_into_current_scope(PUBLIC_FEATURES ${publicDep})
     endforeach()
 
@@ -602,7 +600,7 @@ function(add_qt_module name)
         )
         include(${configureFile})
         qt_feature_module_end("${target}")
-        qt_push_features_into_parent_scope(PUBLIC_FEATURES PRIVATE_FEATURES "${target}")
+        qt_pull_features_into_current_scope(PUBLIC_FEATURES PRIVATE_FEATURES "${target}")
 
         set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/qt${_arg_CONFIG_MODULE_NAME}-config.h")
         set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/qt${_arg_CONFIG_MODULE_NAME}-config_p.h")
@@ -665,7 +663,7 @@ function(add_qt_module name)
         qt_internal_add_linker_version_script("${target}")
     endif()
 
-    qt_push_features_into_parent_scope(PUBLIC_FEATURES PRIVATE_FEATURES ${_arg_FEATURE_DEPENDENCIES})
+    qt_pull_features_into_current_scope(PUBLIC_FEATURES PRIVATE_FEATURES ${_arg_FEATURE_DEPENDENCIES})
 
     install(TARGETS "${target}" "${target_private}" EXPORT "${versioned_module_name}Targets"
         LIBRARY DESTINATION ${INSTALL_LIBDIR}
@@ -726,6 +724,8 @@ function(add_qt_module name)
         $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}>
         $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>
     )
+
+    qt_push_features_into_parent_scope()
 endfunction()
 
 
@@ -748,19 +748,17 @@ function(add_qt_plugin name)
     set_target_properties("${module}" PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}")
 
     # Import global features
-    qt_push_features_into_parent_scope(PUBLIC_FEATURES PRIVATE_FEATURES FEATURE_PROPERTY_INFIX "GLOBAL_" Qt::Core)
+    qt_pull_features_into_current_scope(PUBLIC_FEATURES PRIVATE_FEATURES FEATURE_PROPERTY_INFIX "GLOBAL_" Qt::Core)
 
     # Fetch features from dependencies and make them available to the
     # caller as well as to the local scope for configure.cmake evaluation.
     foreach(dep ${_arg_LIBRARIES} ${_arg_PUBLIC_LIBRARIES})
         if("${dep}" MATCHES "(Qt::.+)Private")
             set(publicDep ${CMAKE_MATCH_1})
-            qt_push_features_into_parent_scope(PRIVATE_FEATURES ${publicDep})
             qt_pull_features_into_current_scope(PRIVATE_FEATURES ${publicDep})
         else()
             set(publicDep ${dep})
         endif()
-        qt_push_features_into_parent_scope(PUBLIC_FEATURES ${publicDep})
         qt_pull_features_into_current_scope(PUBLIC_FEATURES ${publicDep})
     endforeach()
 
@@ -806,6 +804,8 @@ function(add_qt_plugin name)
     endif()
 
     qt_internal_add_linker_version_script(${module})
+
+    qt_push_features_into_parent_scope()
 endfunction()
 
 
@@ -838,6 +838,8 @@ function(add_qt_executable name)
         WIN32_EXECUTABLE "${_arg_GUI}"
         MACOSX_BUNDLE "${_arg_GUI}"
     )
+
+    qt_push_features_into_parent_scope()
 endfunction()
 
 
@@ -862,6 +864,8 @@ function(add_qt_test name)
     set_tests_properties("${name}" PROPERTIES RUN_SERIAL "${_arg_RUN_SERIAL}")
     set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "PATH=${_path}${QT_PATH_SEPARATOR}${CMAKE_CURRENT_BINARY_DIR}${QT_PATH_SEPARATOR}$ENV{PATH}")
     set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "QT_PLUGIN_PATH=${PROJECT_BINARY_DIR}/${INSTALL_PLUGINSDIR}")
+
+    qt_push_features_into_parent_scope()
 endfunction()
 
 
@@ -869,6 +873,7 @@ endfunction()
 # tests launch separate programs to test certainly input/output behavior.
 function(add_qt_test_helper name)
     add_qt_executable("${name}" OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" ${ARGN})
+    qt_push_features_into_parent_scope()
 endfunction()
 
 
@@ -899,6 +904,7 @@ function(add_qt_tool name)
     endif()
 
     install(TARGETS "${name}" EXPORT "Qt${PROJECT_VERSION_MAJOR}ToolsTargets" DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
+    qt_push_features_into_parent_scope()
 endfunction()
 
 
