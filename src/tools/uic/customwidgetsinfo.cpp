@@ -75,6 +75,24 @@ bool CustomWidgetsInfo::extends(const QString &classNameIn, QLatin1String baseCl
     return false;
 }
 
+bool CustomWidgetsInfo::extendsOneOf(const QString &classNameIn,
+                                     const QStringList &baseClassNames) const
+{
+    if (baseClassNames.contains(classNameIn))
+        return true;
+
+    QString className = classNameIn;
+    while (const DomCustomWidget *c = customWidget(className)) {
+        const QString extends = c->elementExtends();
+        if (className == extends) // Faulty legacy custom widget entries exist.
+            return false;
+        if (baseClassNames.contains(extends))
+            return true;
+        className = extends;
+    }
+    return false;
+}
+
 bool CustomWidgetsInfo::isCustomWidgetContainer(const QString &className) const
 {
     if (const DomCustomWidget *dcw = m_customWidgets.value(className, 0))

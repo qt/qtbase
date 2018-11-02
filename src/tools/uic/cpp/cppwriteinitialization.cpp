@@ -608,18 +608,23 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     if (m_uic->isContainer(parentClass))
         parentWidget.clear();
 
-    if (m_widgetChain.size() != 1)
-        m_output << m_indent << varName << " = new " << m_uic->customWidgetsInfo()->realClassName(className) << '(' << parentWidget << ");\n";
+    const auto *cwi = m_uic->customWidgetsInfo();
+
+    if (m_widgetChain.size() != 1) {
+        m_output << m_indent << varName << " = new " << cwi->realClassName(className)
+            << '(' << parentWidget << ");\n";
+    }
 
     parentWidget = savedParentWidget;
 
-    if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QComboBox"))) {
+
+    if (cwi->extends(className, QLatin1String("QComboBox"))) {
         initializeComboBox(node);
-    } else if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QListWidget"))) {
+    } else if (cwi->extends(className, QLatin1String("QListWidget"))) {
         initializeListWidget(node);
-    } else if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QTreeWidget"))) {
+    } else if (cwi->extends(className, QLatin1String("QTreeWidget"))) {
         initializeTreeWidget(node);
-    } else if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QTableWidget"))) {
+    } else if (cwi->extends(className, QLatin1String("QTableWidget"))) {
         initializeTableWidget(node);
     }
 
@@ -629,7 +634,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     writeProperties(varName, className, node->elementProperty());
 
     if (!parentWidget.isEmpty()
-        && m_uic->customWidgetsInfo()->extends(className, QLatin1String("QMenu"))) {
+        && cwi->extends(className, QLatin1String("QMenu"))) {
         initializeMenu(node, parentWidget);
     }
 
@@ -657,10 +662,10 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 
     const QString pageDefaultString = QLatin1String("Page");
 
-    if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QMainWindow"))) {
-        if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QMenuBar"))) {
+    if (cwi->extends(parentClass, QLatin1String("QMainWindow"))) {
+        if (cwi->extends(className, QLatin1String("QMenuBar"))) {
             m_output << m_indent << parentWidget << "->setMenuBar(" << varName <<");\n";
-        } else if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QToolBar"))) {
+        } else if (cwi->extends(className, QLatin1String("QToolBar"))) {
             m_output << m_indent << parentWidget << "->addToolBar("
                      << toolBarAreaStringFromDOMAttributes(attributes) << varName << ");\n";
 
@@ -670,7 +675,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
                 }
             }
 
-        } else if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QDockWidget"))) {
+        } else if (cwi->extends(className, QLatin1String("QDockWidget"))) {
             m_output << m_indent << parentWidget << "->addDockWidget(";
             if (DomProperty *pstyle = attributes.value(QLatin1String("dockWidgetArea")))
                 m_output << "Qt::" << language::dockWidgetArea(pstyle->elementNumber()) << ", ";
@@ -683,9 +688,9 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     }
 
     // Check for addPageMethod of a custom plugin first
-    QString addPageMethod = m_uic->customWidgetsInfo()->customWidgetAddPageMethod(parentClass);
+    QString addPageMethod = cwi->customWidgetAddPageMethod(parentClass);
     if (addPageMethod.isEmpty())
-        addPageMethod = m_uic->customWidgetsInfo()->simpleContainerAddPageMethod(parentClass);
+        addPageMethod = cwi->simpleContainerAddPageMethod(parentClass);
     if (!addPageMethod.isEmpty()) {
         m_output << m_indent << parentWidget << "->" << addPageMethod << '(' << varName << ");\n";
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QWizard"))) {
@@ -753,8 +758,14 @@ void WriteInitialization::acceptWidget(DomWidget *node)
         QLatin1String("stretchLastSection"),
     };
 
-    if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QTreeView"))
-               || m_uic->customWidgetsInfo()->extends(className, QLatin1String("QTreeWidget"))) {
+    static const QStringList trees = {
+        QLatin1String("QTreeView"), QLatin1String("QTreeWidget")
+    };
+    static const QStringList tables = {
+        QLatin1String("QTableView"), QLatin1String("QTableWidget")
+    };
+
+    if (cwi->extendsOneOf(className, trees)) {
         DomPropertyList headerProperties;
         for (auto realPropertyName : realPropertyNames) {
             const QString fakePropertyName = QLatin1String("header")
@@ -767,9 +778,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
         writeProperties(varName + QLatin1String("->header()"), QLatin1String("QHeaderView"),
                         headerProperties, WritePropertyIgnoreObjectName);
 
-    } else if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QTableView"))
-               || m_uic->customWidgetsInfo()->extends(className, QLatin1String("QTableWidget"))) {
-
+    } else if (cwi->extendsOneOf(className, tables)) {
         static const QLatin1String headerPrefixes[] = {
             QLatin1String("horizontalHeader"),
             QLatin1String("verticalHeader"),
@@ -1166,11 +1175,12 @@ void WriteInitialization::writeProperties(const QString &varName,
                        << p->elementNumber() << ");\n";
             continue;
         }
+        static const QStringList currentIndexWidgets = {
+            QLatin1String("QComboBox"), QLatin1String("QStackedWidget"),
+            QLatin1String("QTabWidget"), QLatin1String("QToolBox")
+        };
         if (propertyName == QLatin1String("currentIndex") // set currentIndex later
-            && (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QComboBox"))
-                || m_uic->customWidgetsInfo()->extends(className, QLatin1String("QStackedWidget"))
-                || m_uic->customWidgetsInfo()->extends(className, QLatin1String("QTabWidget"))
-                || m_uic->customWidgetsInfo()->extends(className, QLatin1String("QToolBox")))) {
+            && (m_uic->customWidgetsInfo()->extendsOneOf(className, currentIndexWidgets))) {
             m_delayedOut << m_indent << varName << "->setCurrentIndex("
                        << p->elementNumber() << ");\n";
             continue;
