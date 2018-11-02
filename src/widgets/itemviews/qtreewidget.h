@@ -88,8 +88,8 @@ public:
     void setExpanded(bool expand);
     bool isExpanded() const;
 
-    inline void setFirstColumnSpanned(bool span);
-    inline bool isFirstColumnSpanned() const;
+    void setFirstColumnSpanned(bool span);
+    bool isFirstColumnSpanned() const;
 
     inline void setDisabled(bool disabled);
     inline bool isDisabled() const;
@@ -335,10 +335,12 @@ public:
     bool isItemExpanded(const QTreeWidgetItem *item) const;
     QT_DEPRECATED_X ("Use QTreeWidgetItem::setExpanded() instead")
     void setItemExpanded(const QTreeWidgetItem *item, bool expand);
-#endif
 
+    QT_DEPRECATED_X ("Use QTreeWidgetItem::isFirstColumnSpanned() instead")
     bool isFirstItemColumnSpanned(const QTreeWidgetItem *item) const;
+    QT_DEPRECATED_X ("Use QTreeWidgetItem::setFirstColumnSpanned() instead")
     void setFirstItemColumnSpanned(const QTreeWidgetItem *item, bool span);
+#endif
 
     QTreeWidgetItem *itemAbove(const QTreeWidgetItem *item) const;
     QTreeWidgetItem *itemBelow(const QTreeWidgetItem *item) const;
@@ -422,12 +424,6 @@ inline QTreeWidgetItem *QTreeWidget::itemAt(int ax, int ay) const
 
 inline void QTreeWidget::setHeaderLabel(const QString &alabel)
 { setHeaderLabels(QStringList(alabel)); }
-
-inline void QTreeWidgetItem::setFirstColumnSpanned(bool aspan)
-{ if (view) view->setFirstItemColumnSpanned(this, aspan); }
-
-inline bool QTreeWidgetItem::isFirstColumnSpanned() const
-{ return (view ? view->isFirstItemColumnSpanned(this) : false); }
 
 inline void QTreeWidgetItem::setDisabled(bool disabled)
 { setFlags(disabled ? (flags() & ~Qt::ItemIsEnabled) : flags() | Qt::ItemIsEnabled); }

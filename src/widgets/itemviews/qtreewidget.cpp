@@ -1127,6 +1127,14 @@ bool QTreeWidgetItem::isExpanded() const
 
   \sa isFirstColumnSpanned()
 */
+void QTreeWidgetItem::setFirstColumnSpanned(bool span)
+{
+    const QTreeModel *model = treeModel();
+    if (!model || this == model->headerItem)
+        return; // We can't set the header items to spanning
+    const QModelIndex index = model->index(this, 0);
+    view->setFirstColumnSpanned(index.row(), index.parent(), span);
+}
 
 /*!
   \fn bool QTreeWidgetItem::isFirstColumnSpanned() const
@@ -1136,6 +1144,14 @@ bool QTreeWidgetItem::isExpanded() const
 
   \sa setFirstColumnSpanned()
 */
+bool QTreeWidgetItem::isFirstColumnSpanned() const
+{
+    const QTreeModel *model = treeModel();
+    if (!model || this == model->headerItem)
+        return false;
+    const QModelIndex index = model->index(this, 0);
+    return view->isFirstColumnSpanned(index.row(), index.parent());
+}
 
 /*!
     \fn QString QTreeWidgetItem::text(int column) const
@@ -3230,7 +3246,6 @@ void QTreeWidget::setItemExpanded(const QTreeWidgetItem *item, bool expand)
     if (item && item->treeWidget() == this)
         const_cast<QTreeWidgetItem*>(item)->setExpanded(expand);
 }
-#endif
 
 /*!
   \since 4.3
@@ -3239,14 +3254,14 @@ void QTreeWidget::setItemExpanded(const QTreeWidgetItem *item, bool expand)
   otherwise returns \c false.
 
   \sa setFirstItemColumnSpanned()
+
+  \obsolete
+
+  This function is deprecated. Use \l{QTreeWidgetItem::isFirstColumnSpanned()} instead.
 */
 bool QTreeWidget::isFirstItemColumnSpanned(const QTreeWidgetItem *item) const
 {
-    Q_D(const QTreeWidget);
-    if (item == d->treeModel()->headerItem)
-        return false; // We can't set the header items to spanning
-    const QModelIndex index = d->index(item);
-    return isFirstColumnSpanned(index.row(), index.parent());
+    return ((item && item->treeWidget() == this) ? item->isFirstColumnSpanned() : false);
 }
 
 /*!
@@ -3256,15 +3271,17 @@ bool QTreeWidget::isFirstItemColumnSpanned(const QTreeWidgetItem *item) const
   otherwise the item will show one section per column.
 
   \sa isFirstItemColumnSpanned()
+
+  \obsolete
+
+  This function is deprecated. Use \l{QTreeWidgetItem::setFirstColumnSpanned()} instead.
 */
 void QTreeWidget::setFirstItemColumnSpanned(const QTreeWidgetItem *item, bool span)
 {
-    Q_D(QTreeWidget);
-    if (item == d->treeModel()->headerItem)
-        return; // We can't set header items to spanning
-    const QModelIndex index = d->index(item);
-    setFirstColumnSpanned(index.row(), index.parent(), span);
+    if (item && item->treeWidget() == this)
+        const_cast<QTreeWidgetItem*>(item)->setFirstColumnSpanned(span);
 }
+#endif
 
 /*!
   \since 4.3

@@ -140,6 +140,7 @@ private slots:
     void expandAndCallapse();
     void itemData();
     void setDisabled();
+    void setSpanned();
     void removeSelectedItem();
     void removeCurrentItem();
     void removeCurrentItem_task186451();
@@ -2816,6 +2817,28 @@ void tst_QTreeWidget::setDisabled()
     QCOMPARE(takenChildren.items[0]->isDisabled(), false);
     QCOMPARE(takenChildren.items[1]->isDisabled(), false);
     QCOMPARE(takenChildren.items[1]->isDisabled(), false);
+}
+
+void tst_QTreeWidget::setSpanned()
+{
+    QTreeWidget w;
+    QTreeWidgetItem *i1 = new QTreeWidgetItem();
+    QScopedPointer<QTreeWidgetItem> i2(new QTreeWidgetItem());
+
+    QTreeWidgetItem *top = new QTreeWidgetItem(&w);
+    top->addChild(i1);
+
+    top->setFirstColumnSpanned(true);
+    QCOMPARE(top->isFirstColumnSpanned(), true);
+    QCOMPARE(i1->isFirstColumnSpanned(), false);
+    QCOMPARE(i2->isFirstColumnSpanned(), false);
+
+    top->setFirstColumnSpanned(false);
+    i1->setFirstColumnSpanned(true);
+    i2->setFirstColumnSpanned(true);
+    QCOMPARE(top->isFirstColumnSpanned(), false);
+    QCOMPARE(i1->isFirstColumnSpanned(), true);
+    QCOMPARE(i2->isFirstColumnSpanned(), false);
 }
 
 void tst_QTreeWidget::removeSelectedItem()
