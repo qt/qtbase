@@ -1,4 +1,4 @@
-TARGET = tst_qmap
+TARGET = tst_bench_qmap
 QT = core testlib
 INCLUDEPATH += .
 SOURCES += main.cpp
