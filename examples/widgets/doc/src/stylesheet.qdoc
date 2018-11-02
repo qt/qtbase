@@ -58,23 +58,23 @@
     \c stylesheeteditor.ui.
 
     \quotefromfile widgets/stylesheet/stylesheeteditor.cpp
-    \skipto on_styleCombo_activated
-    \printline on_styleCombo_activated
+    \skipto setStyleName
+    \printline setStyleName
 
     Sets the specified \a styleName and grays the \c applyButton.
 
-    \skipto on_styleSheetCombo_activated
-    \printline on_styleSheetCombo_activated
+    \skipto setStyleSheetName
+    \printline setStyleSheetName
 
     Loads the stylesheet from \c styleSheetName.
 
-    \skipto on_styleTextEdit_textChanged()
-    \printline on_styleTextEdit_textChanged()
+    \skipto setModified()
+    \printline setModified()
 
     Enables the \c applyButton when the text in the buffer has changed.
 
-    \skipto on_applyButton_clicked()
-    \printline on_applyButton_clicked()
+    \skipto apply()
+    \printline apply()
 
     Sets the stylesheet properties in \l qApp and disables the \c applyButton.
 

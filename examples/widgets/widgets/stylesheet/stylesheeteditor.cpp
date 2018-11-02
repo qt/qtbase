@@ -59,6 +59,11 @@ StyleSheetEditor::StyleSheetEditor(QWidget *parent)
 {
     ui.setupUi(this);
 
+    connect(ui.styleCombo, &QComboBox::textActivated, this, &StyleSheetEditor::setStyleName);
+    connect(ui.styleSheetCombo, &QComboBox::textActivated, this, &StyleSheetEditor::setStyleSheetName);
+    connect(ui.styleTextEdit, &QTextEdit::textChanged, this, &StyleSheetEditor::setModified);
+    connect(ui.applyButton, &QAbstractButton::clicked, this, &StyleSheetEditor::apply);
+
     QRegularExpression regExp("^.(.*)\\+?Style$");
     QString defaultStyle = QApplication::style()->metaObject()->className();
     QRegularExpressionMatch match = regExp.match(defaultStyle);
@@ -72,23 +77,23 @@ StyleSheetEditor::StyleSheetEditor(QWidget *parent)
     loadStyleSheet("Coffee");
 }
 
-void StyleSheetEditor::on_styleCombo_activated(const QString &styleName)
+void StyleSheetEditor::setStyleName(const QString &styleName)
 {
     qApp->setStyle(styleName);
     ui.applyButton->setEnabled(false);
 }
 
-void StyleSheetEditor::on_styleSheetCombo_activated(const QString &sheetName)
+void StyleSheetEditor::setStyleSheetName(const QString &sheetName)
 {
     loadStyleSheet(sheetName);
 }
 
-void StyleSheetEditor::on_styleTextEdit_textChanged()
+void StyleSheetEditor::setModified()
 {
     ui.applyButton->setEnabled(true);
 }
 
-void StyleSheetEditor::on_applyButton_clicked()
+void StyleSheetEditor::apply()
 {
     qApp->setStyleSheet(ui.styleTextEdit->toPlainText());
     ui.applyButton->setEnabled(false);

@@ -63,10 +63,10 @@ public:
     StyleSheetEditor(QWidget *parent = nullptr);
 
 private slots:
-    void on_styleCombo_activated(const QString &styleName);
-    void on_styleSheetCombo_activated(const QString &styleSheetName);
-    void on_styleTextEdit_textChanged();
-    void on_applyButton_clicked();
+    void setStyleName(const QString &styleName);
+    void setStyleSheetName(const QString &styleSheetName);
+    void setModified();
+    void apply();
 
 private:
     void loadStyleSheet(const QString &sheetName);
