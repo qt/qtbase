@@ -404,6 +404,12 @@ void tst_QResourceEngine::checkStructure()
 
         // check contents
         QCOMPARE(file.readAll(), contents);
+
+        // check memory map too
+        uchar *ptr = file.map(0, file.size(), QFile::MapPrivateOption);
+        QVERIFY2(ptr, qPrintable(file.errorString()));
+        QByteArray ba = QByteArray::fromRawData(reinterpret_cast<const char *>(ptr), file.size());
+        QCOMPARE(ba, contents);
     }
     QLocale::setDefault(QLocale::system());
 }
