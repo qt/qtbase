@@ -726,12 +726,14 @@ void WriteInitialization::acceptWidget(DomWidget *node)
         autoTrOutput(plabelString, pageDefaultString) << m_indent << parentWidget << "->setItemText("
                    << parentWidget << "->indexOf(" << varName << "), " << autoTrCall(plabelString, pageDefaultString) << ");\n";
 
-#ifndef QT_NO_TOOLTIP
         if (DomProperty *ptoolTip = attributes.value(QLatin1String("toolTip"))) {
-            autoTrOutput(ptoolTip->elementString()) << m_indent << parentWidget << "->setItemToolTip("
-                       << parentWidget << "->indexOf(" << varName << "), " << autoTrCall(ptoolTip->elementString()) << ");\n";
+            autoTrOutput(ptoolTip->elementString())
+                << language::openQtConfig(toolTipConfigKey())
+                << m_indent << parentWidget << "->setItemToolTip(" << parentWidget
+                << "->indexOf(" << varName << "), "
+                << autoTrCall(ptoolTip->elementString()) << ");\n"
+                << language::closeQtConfig(toolTipConfigKey());
         }
-#endif // QT_NO_TOOLTIP
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QTabWidget"))) {
         QString icon;
         if (const DomProperty *picon = attributes.value(QLatin1String("icon"))) {
@@ -747,18 +749,22 @@ void WriteInitialization::acceptWidget(DomWidget *node)
         autoTrOutput(ptitleString, pageDefaultString) << m_indent << parentWidget << "->setTabText("
                    << parentWidget << "->indexOf(" << varName << "), " << autoTrCall(ptitleString, pageDefaultString) << ");\n";
 
-#ifndef QT_NO_TOOLTIP
         if (const DomProperty *ptoolTip = attributes.value(QLatin1String("toolTip"))) {
-            autoTrOutput(ptoolTip->elementString()) << m_indent << parentWidget << "->setTabToolTip("
-                       << parentWidget << "->indexOf(" << varName << "), " << autoTrCall(ptoolTip->elementString()) << ");\n";
+            autoTrOutput(ptoolTip->elementString())
+                << language::openQtConfig(toolTipConfigKey())
+                << m_indent << parentWidget << "->setTabToolTip(" << parentWidget
+                << "->indexOf(" << varName << "), "
+                << autoTrCall(ptoolTip->elementString()) << ");\n"
+                << language::closeQtConfig(toolTipConfigKey());
         }
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_WHATSTHIS
         if (const DomProperty *pwhatsThis = attributes.value(QLatin1String("whatsThis"))) {
-            autoTrOutput(pwhatsThis->elementString()) << m_indent << parentWidget << "->setTabWhatsThis("
-                       << parentWidget << "->indexOf(" << varName << "), " << autoTrCall(pwhatsThis->elementString()) << ");\n";
+            autoTrOutput(pwhatsThis->elementString())
+                << language::openQtConfig(whatsThisConfigKey())
+                << m_indent << parentWidget << "->setTabWhatsThis(" << parentWidget
+                << "->indexOf(" << varName << "), "
+                << autoTrCall(pwhatsThis->elementString()) << ");\n"
+                << language::closeQtConfig(whatsThisConfigKey());
         }
-#endif // QT_NO_WHATSTHIS
     }
 
     //
