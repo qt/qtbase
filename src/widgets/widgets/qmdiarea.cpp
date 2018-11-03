@@ -1296,7 +1296,11 @@ QRect QMdiAreaPrivate::resizeToMinimumTileSize(const QSize &minSubWindowSize, in
             minAreaHeight += 2 * frame;
         }
         const QSize diff = QSize(minAreaWidth, minAreaHeight).expandedTo(q->size()) - q->size();
-        topLevel->resize(topLevel->size() + diff);
+        // Only resize topLevel widget if scroll bars are disabled.
+        if (hbarpolicy == Qt::ScrollBarAlwaysOff)
+            topLevel->resize(topLevel->size().width() + diff.width(), topLevel->size().height());
+        if (vbarpolicy == Qt::ScrollBarAlwaysOff)
+            topLevel->resize(topLevel->size().width(), topLevel->size().height() + diff.height());
     }
 
     QRect domain = viewport->rect();

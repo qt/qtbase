@@ -1713,6 +1713,8 @@ void tst_QMdiArea::tileSubWindows()
     // Prevent scrollbars from messing up the expected viewport calculation below
     workspace.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     workspace.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    QCOMPARE(workspace.horizontalScrollBarPolicy(), Qt::ScrollBarAlwaysOff);
+    QCOMPARE(workspace.verticalScrollBarPolicy(), Qt::ScrollBarAlwaysOff);
 
     workspace.tileSubWindows();
     // The sub-windows are now tiled like this:
@@ -1731,9 +1733,11 @@ void tst_QMdiArea::tileSubWindows()
     const QSize expectedViewportSize(3 * minSize.width() + spacing, 3 * minSize.height() + spacing);
     QTRY_COMPARE(workspace.viewport()->rect().size(), expectedViewportSize);
 
-    // Restore original scrollbar behavior for test below
+    // Enable scroll bar for test below (default property for QMdiArea is Qt::ScrollBarAlwaysOff)
     workspace.setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     workspace.setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QCOMPARE(workspace.horizontalScrollBarPolicy(), Qt::ScrollBarAsNeeded);
+    QCOMPARE(workspace.verticalScrollBarPolicy(), Qt::ScrollBarAsNeeded);
 
     // Not enough space for all sub-windows to be visible -> provide scroll bars.
     workspace.resize(160, 150);
@@ -1754,13 +1758,16 @@ void tst_QMdiArea::tileSubWindows()
     QCOMPARE(vBar->value(), 0);
     QCOMPARE(vBar->minimum(), 0);
 
+    // Tile windows with scroll bars enabled.
     workspace.tileSubWindows();
     QVERIFY(QTest::qWaitForWindowExposed(&workspace));
     qApp->processEvents();
 
-    QTRY_VERIFY(workspace.size() != QSize(150, 150));
-    QTRY_VERIFY(!vBar->isVisible());
-    QTRY_VERIFY(!hBar->isVisible());
+    // Workspace should not have changed size after tile.
+    QTRY_VERIFY(workspace.size() == QSize(160, 150));
+    // Scroll bars should be visible.
+    QTRY_VERIFY(vBar->isVisible());
+    QTRY_VERIFY(hBar->isVisible());
 }
 
 void tst_QMdiArea::cascadeAndTileSubWindows()
