@@ -51,6 +51,19 @@ QT_USE_NAMESPACE
 
 #ifndef QT_NO_ACCESSIBILITY
 
+/**
+ * Converts between absolute character offsets and line numbers of a
+ * QAccessibleTextInterface. Works in exactly one of two modes:
+ *
+ *  - Pass *line == -1 in order to get a line containing character at the given
+ *    *offset
+ *  - Pass *offset == -1 in order to get the offset of first character of the
+ *    given *line
+ *
+ * You can optionally also pass non-NULL `start` and `end`, which will in both
+ * modes be filled with the offset of the first and last characters of the
+ * relevant line.
+ */
 static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *offset, NSUInteger *start = 0, NSUInteger *end = 0)
 {
     Q_ASSERT(*line == -1 || *offset == -1);
