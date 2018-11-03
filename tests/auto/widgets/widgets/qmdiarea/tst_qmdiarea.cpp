@@ -1689,14 +1689,16 @@ void tst_QMdiArea::tileSubWindows()
     workspace.setActiveSubWindow(0);
     QVERIFY(workspace.viewport()->childrenRect() != workspace.viewport()->rect());
 
-    // Make sure the active window is placed in top left corner regardless
+    // Make sure the active window does not move position after a tile regardless
     // of whether we have any windows with staysOnTopHint or not.
+    workspace.tileSubWindows();
     windows.at(3)->setWindowFlags(windows.at(3)->windowFlags() | Qt::WindowStaysOnTopHint);
     QMdiSubWindow *activeSubWindow = windows.at(6);
     workspace.setActiveSubWindow(activeSubWindow);
     QCOMPARE(workspace.activeSubWindow(), activeSubWindow);
+    QPoint pos = activeSubWindow->geometry().topLeft();
     workspace.tileSubWindows();
-    QCOMPARE(activeSubWindow->geometry().topLeft(), QPoint(0, 0));
+    QCOMPARE(activeSubWindow->geometry().topLeft(), pos);
 
     // Verify that we try to resize the area such that all sub-windows are visible.
     // It's important that tiled windows are NOT overlapping.
@@ -2187,7 +2189,7 @@ void tst_QMdiArea::setActivationOrder_data()
 
     list << 2 << 1 << 0 << 1 << 2 << 3 << 4;
     list2 << 0 << 1 << 2 << 3 << 4;
-    list3 << 1 << 4 << 3 << 1 << 2 << 0;
+    list3 << 4 << 3 << 2 << 4 << 1 << 0; // Most recently created window is in top-left position
     QTest::newRow("CreationOrder") << QMdiArea::CreationOrder << 5 << 3 << 1 << list << list2 << list3;
 
     list = QList<int>();
@@ -2195,7 +2197,7 @@ void tst_QMdiArea::setActivationOrder_data()
     list2 = QList<int>();
     list2 << 0 << 2 << 4 << 1 << 3;
     list3 = QList<int>();
-    list3 << 1 << 3 << 4 << 1 << 2 << 0;
+    list3 << 3 << 1 << 4 << 3 << 2 << 0; // Window with "stays-on-top" flag set will be in the top-left position
     QTest::newRow("StackingOrder") << QMdiArea::StackingOrder << 5 << 3 << 1 << list << list2 << list3;
 
     list = QList<int>();

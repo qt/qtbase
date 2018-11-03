@@ -954,14 +954,6 @@ void QMdiAreaPrivate::rearrange(Rearranger *rearranger)
         }
     }
 
-    if (active && rearranger->type() == Rearranger::RegularTiler && !tileCalledFromResizeEvent) {
-        // Move active window in front if necessary. That's the case if we
-        // have any windows with staysOnTopHint set.
-        int indexToActive = widgets.indexOf((QWidget *)active);
-        if (indexToActive > 0)
-            widgets.move(indexToActive, 0);
-    }
-
     QRect domain = viewport->rect();
     if (rearranger->type() == Rearranger::RegularTiler && !widgets.isEmpty())
         domain = resizeToMinimumTileSize(minSubWindowSize, widgets.count());
