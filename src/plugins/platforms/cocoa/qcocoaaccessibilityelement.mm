@@ -424,8 +424,11 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         int index = [parameter intValue];
         if (index < 0 || index > iface->textInterface()->characterCount())
             return nil;
-        int line = -1;
-        convertLineOffset(iface->textInterface(), &line, &index);
+        int line = 0; // true for all single line edits
+        if (iface->state().multiLine) {
+            line = -1;
+            convertLineOffset(iface->textInterface(), &line, &index);
+        }
         return @(line);
     }
     if ([attribute isEqualToString: NSAccessibilityRangeForLineParameterizedAttribute]) {
