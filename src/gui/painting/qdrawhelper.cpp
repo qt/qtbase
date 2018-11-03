@@ -6288,6 +6288,10 @@ void qt_memfill32(quint32 *dest, quint32 color, qsizetype count)
     qt_memfill_template<quint32>(dest, color, count);
 }
 #endif
+#ifdef __SSE2__
+decltype(qt_memfill32_sse2) *qt_memfill32 = nullptr;
+decltype(qt_memfill64_sse2) *qt_memfill64 = nullptr;
+#endif
 
 #ifdef QT_COMPILER_SUPPORTS_SSE4_1
 template<QtPixelOrder> void QT_FASTCALL storeA2RGB30PMFromARGB32PM_sse4(uchar *dest, const uint *src, int index, int count, const QVector<QRgb> *, QDitherInfo *);
@@ -6301,6 +6305,10 @@ static void qInitDrawhelperFunctions()
     qInitBlendFunctions();
 
 #ifdef __SSE2__
+#  ifndef __AVX2__
+    qt_memfill32 = qt_memfill32_sse2;
+    qt_memfill64 = qt_memfill64_sse2;
+#  endif
     qDrawHelper[QImage::Format_RGB32].bitmapBlit = qt_bitmapblit32_sse2;
     qDrawHelper[QImage::Format_ARGB32].bitmapBlit = qt_bitmapblit32_sse2;
     qDrawHelper[QImage::Format_ARGB32_Premultiplied].bitmapBlit = qt_bitmapblit32_sse2;
@@ -6407,6 +6415,8 @@ static void qInitDrawhelperFunctions()
 
 #if defined(QT_COMPILER_SUPPORTS_AVX2)
     if (qCpuHasFeature(ArchHaswell)) {
+        qt_memfill32 = qt_memfill32_avx2;
+        qt_memfill64 = qt_memfill64_avx2;
         extern void qt_blend_rgb32_on_rgb32_avx2(uchar *destPixels, int dbpl,
                                                  const uchar *srcPixels, int sbpl,
                                                  int w, int h, int const_alpha);

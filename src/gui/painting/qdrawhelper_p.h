@@ -167,8 +167,13 @@ extern DrawHelper qDrawHelper[QImage::NImageFormats];
 
 void qBlendGradient(int count, const QSpan *spans, void *userData);
 void qBlendTexture(int count, const QSpan *spans, void *userData);
+#ifdef __SSE2__
+extern void (*qt_memfill64)(quint64 *dest, quint64 value, qsizetype count);
+extern void (*qt_memfill32)(quint32 *dest, quint32 value, qsizetype count);
+#else
 extern void qt_memfill64(quint64 *dest, quint64 value, qsizetype count);
 extern void qt_memfill32(quint32 *dest, quint32 value, qsizetype count);
+#endif
 extern void qt_memfill16(quint16 *dest, quint16 value, qsizetype count);
 
 typedef void (QT_FASTCALL *CompositionFunction)(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, uint const_alpha);

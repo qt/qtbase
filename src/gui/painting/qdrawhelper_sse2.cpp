@@ -233,6 +233,7 @@ void QT_FASTCALL comp_func_Source_sse2(uint *dst, const uint *src, int length, u
     }
 }
 
+#ifndef __AVX2__
 static Q_NEVER_INLINE
 void Q_DECL_VECTORCALL qt_memfillXX_aligned(void *dest, __m128i value128, quintptr bytecount)
 {
@@ -255,7 +256,7 @@ void Q_DECL_VECTORCALL qt_memfillXX_aligned(void *dest, __m128i value128, quintp
     }
 }
 
-void qt_memfill64(quint64 *dest, quint64 value, qsizetype count)
+void qt_memfill64_sse2(quint64 *dest, quint64 value, qsizetype count)
 {
     quintptr misaligned = quintptr(dest) % sizeof(__m128i);
     if (misaligned && count) {
@@ -285,7 +286,7 @@ void qt_memfill64(quint64 *dest, quint64 value, qsizetype count)
     qt_memfillXX_aligned(dest, _mm_set1_epi64x(value), count * sizeof(quint64));
 }
 
-void qt_memfill32(quint32 *dest, quint32 value, qsizetype count)
+void qt_memfill32_sse2(quint32 *dest, quint32 value, qsizetype count)
 {
     if (count < 4) {
         // this simplifies the code below: the first switch can fall through
@@ -316,6 +317,7 @@ void qt_memfill32(quint32 *dest, quint32 value, qsizetype count)
 
     qt_memfillXX_aligned(dest, _mm_set1_epi32(value), count * sizeof(quint32));
 }
+#endif // !__AVX2__
 
 void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, uint color, uint const_alpha)
 {

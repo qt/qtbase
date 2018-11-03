@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -38,6 +39,7 @@
 ****************************************************************************/
 
 #include "qdrawhelper_p.h"
+#include "qdrawhelper_x86_p.h"
 #include "qdrawingprimitive_sse2_p.h"
 #include "qrgba64_p.h"
 
@@ -314,6 +316,55 @@ void qt_blend_rgb32_on_rgb32_avx2(uchar *destPixels, int dbpl,
         srcPixels += sbpl;
         destPixels += dbpl;
     }
+}
+
+static Q_NEVER_INLINE
+void Q_DECL_VECTORCALL qt_memfillXX_avx2(uchar *dest, __m256i value256, qsizetype bytes)
+{
+    __m128i value128 = _mm256_castsi256_si128(value256);
+
+    // main body
+    __m256i *dst256 = reinterpret_cast<__m256i *>(dest);
+    uchar *end = dest + bytes;
+    while (reinterpret_cast<uchar *>(dst256 + 4) <= end) {
+        _mm256_storeu_si256(dst256 + 0, value256);
+        _mm256_storeu_si256(dst256 + 1, value256);
+        _mm256_storeu_si256(dst256 + 2, value256);
+        _mm256_storeu_si256(dst256 + 3, value256);
+        dst256 += 4;
+    }
+
+    // first epilogue: fewer than 128 bytes / 32 entries
+    bytes = end - reinterpret_cast<uchar *>(dst256);
+    switch (bytes / sizeof(value256)) {
+    case 3: _mm256_storeu_si256(dst256++, value256); Q_FALLTHROUGH();
+    case 2: _mm256_storeu_si256(dst256++, value256); Q_FALLTHROUGH();
+    case 1: _mm256_storeu_si256(dst256++, value256);
+    }
+
+    // second epilogue: fewer than 32 bytes
+    __m128i *dst128 = reinterpret_cast<__m128i *>(dst256);
+    if (bytes & sizeof(value128))
+        _mm_storeu_si128(dst128++, value128);
+
+    // third epilogue: fewer than 16 bytes
+    if (bytes & 8)
+        _mm_storel_epi64(reinterpret_cast<__m128i *>(end - 8), value128);
+}
+
+void qt_memfill64_avx2(quint64 *dest, quint64 value, qsizetype count)
+{
+    qt_memfillXX_avx2(reinterpret_cast<uchar *>(dest), _mm256_set1_epi64x(value), count * sizeof(quint64));
+}
+
+void qt_memfill32_avx2(quint32 *dest, quint32 value, qsizetype count)
+{
+    if (count % 2) {
+        // odd number of pixels, round to even
+        *dest++ = value;
+        --count;
+    }
+    qt_memfillXX_avx2(reinterpret_cast<uchar *>(dest), _mm256_set1_epi32(value), count * sizeof(quint32));
 }
 
 void QT_FASTCALL comp_func_SourceOver_avx2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha)
