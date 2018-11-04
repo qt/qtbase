@@ -634,14 +634,14 @@ Qt::DropActions QListModel::supportedDropActions() const
 
     \sa type()
 */
-QListWidgetItem::QListWidgetItem(QListWidget *view, int type)
-    : rtti(type), view(view), d(new QListWidgetItemPrivate(this)),
+QListWidgetItem::QListWidgetItem(QListWidget *listview, int type)
+    : rtti(type), view(listview), d(new QListWidgetItemPrivate(this)),
       itemFlags(Qt::ItemIsSelectable
                 |Qt::ItemIsUserCheckable
                 |Qt::ItemIsEnabled
                 |Qt::ItemIsDragEnabled)
 {
-    if (QListModel *model = (view ? qobject_cast<QListModel*>(view->model()) : 0))
+    if (QListModel *model = listModel())
         model->insert(model->rowCount(), this);
 }
 
@@ -661,16 +661,18 @@ QListWidgetItem::QListWidgetItem(QListWidget *view, int type)
 
     \sa type()
 */
-QListWidgetItem::QListWidgetItem(const QString &text, QListWidget *view, int type)
-    : rtti(type), view(0), d(new QListWidgetItemPrivate(this)),
+QListWidgetItem::QListWidgetItem(const QString &text, QListWidget *listview, int type)
+    : rtti(type), view(listview), d(new QListWidgetItemPrivate(this)),
       itemFlags(Qt::ItemIsSelectable
                 |Qt::ItemIsUserCheckable
                 |Qt::ItemIsEnabled
                 |Qt::ItemIsDragEnabled)
 {
-    setData(Qt::DisplayRole, text);
-    this->view = view;
-    if (QListModel *model = (view ? qobject_cast<QListModel*>(view->model()) : 0))
+    {
+        QSignalBlocker b(view);
+        setData(Qt::DisplayRole, text);
+    }
+    if (QListModel *model = listModel())
         model->insert(model->rowCount(), this);
 }
 
@@ -692,17 +694,19 @@ QListWidgetItem::QListWidgetItem(const QString &text, QListWidget *view, int typ
     \sa type()
 */
 QListWidgetItem::QListWidgetItem(const QIcon &icon,const QString &text,
-                                 QListWidget *view, int type)
-    : rtti(type), view(0), d(new QListWidgetItemPrivate(this)),
+                                 QListWidget *listview, int type)
+    : rtti(type), view(listview), d(new QListWidgetItemPrivate(this)),
       itemFlags(Qt::ItemIsSelectable
                 |Qt::ItemIsUserCheckable
                 |Qt::ItemIsEnabled
                 |Qt::ItemIsDragEnabled)
 {
-    setData(Qt::DisplayRole, text);
-    setData(Qt::DecorationRole, icon);
-    this->view = view;
-    if (QListModel *model = (view ? qobject_cast<QListModel*>(view->model()) : 0))
+    {
+        QSignalBlocker b(view);
+        setData(Qt::DisplayRole, text);
+        setData(Qt::DecorationRole, icon);
+    }
+    if (QListModel *model = listModel())
         model->insert(model->rowCount(), this);
 }
 
@@ -711,7 +715,7 @@ QListWidgetItem::QListWidgetItem(const QIcon &icon,const QString &text,
 */
 QListWidgetItem::~QListWidgetItem()
 {
-    if (QListModel *model = (view ? qobject_cast<QListModel*>(view->model()) : 0))
+    if (QListModel *model = listModel())
         model->remove(this);
     delete d;
 }
@@ -748,7 +752,7 @@ void QListWidgetItem::setData(int role, const QVariant &value)
     }
     if (!found)
         d->values.append(QWidgetItemData(role, value));
-    if (QListModel *model = (view ? qobject_cast<QListModel*>(view->model()) : nullptr)) {
+    if (QListModel *model = listModel()) {
         const QVector<int> roles((role == Qt::DisplayRole) ?
                                     QVector<int>({Qt::DisplayRole, Qt::EditRole}) :
                                     QVector<int>({role}));
@@ -815,7 +819,7 @@ void QListWidgetItem::write(QDataStream &out) const
     \sa data(), flags()
 */
 QListWidgetItem::QListWidgetItem(const QListWidgetItem &other)
-    : rtti(Type), view(0),
+    : rtti(Type), view(nullptr),
       d(new QListWidgetItemPrivate(this)),
       itemFlags(other.itemFlags)
 {
@@ -835,6 +839,15 @@ QListWidgetItem &QListWidgetItem::operator=(const QListWidgetItem &other)
     d->values = other.d->values;
     itemFlags = other.itemFlags;
     return *this;
+}
+
+/*!
+   \internal
+   returns the QListModel if a view is set
+ */
+QListModel *QListWidgetItem::listModel() const
+{
+    return (view ? qobject_cast<QListModel*>(view->model()) : nullptr);
 }
 
 #ifndef QT_NO_DATASTREAM
@@ -998,7 +1011,7 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
 void QListWidgetItem::setFlags(Qt::ItemFlags aflags)
 {
     itemFlags = aflags;
-    if (QListModel *model = (view ? qobject_cast<QListModel*>(view->model()) : 0))
+    if (QListModel *model = listModel())
         model->itemChanged(this);
 }
 

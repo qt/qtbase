@@ -1148,7 +1148,7 @@ void QTableWidgetItem::setSelected(bool select)
 void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
 {
     itemFlags = aflags;
-    if (QTableModel *model = (view ? qobject_cast<QTableModel*>(view->model()) : 0))
+    if (QTableModel *model = tableModel())
         model->itemChanged(this);
 }
 
@@ -1339,7 +1339,7 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
     \sa type()
 */
 QTableWidgetItem::QTableWidgetItem(int type)
-    :  rtti(type), view(0), d(new QTableWidgetItemPrivate(this)),
+    :  rtti(type), view(nullptr), d(new QTableWidgetItemPrivate(this)),
       itemFlags(Qt::ItemIsEditable
                 |Qt::ItemIsSelectable
                 |Qt::ItemIsUserCheckable
@@ -1355,7 +1355,7 @@ QTableWidgetItem::QTableWidgetItem(int type)
     \sa type()
 */
 QTableWidgetItem::QTableWidgetItem(const QString &text, int type)
-    :  rtti(type), view(0), d(new QTableWidgetItemPrivate(this)),
+    :  rtti(type), view(nullptr), d(new QTableWidgetItemPrivate(this)),
       itemFlags(Qt::ItemIsEditable
                 |Qt::ItemIsSelectable
                 |Qt::ItemIsUserCheckable
@@ -1372,7 +1372,7 @@ QTableWidgetItem::QTableWidgetItem(const QString &text, int type)
     \sa type()
 */
 QTableWidgetItem::QTableWidgetItem(const QIcon &icon, const QString &text, int type)
-    :  rtti(type), view(0), d(new QTableWidgetItemPrivate(this)),
+    :  rtti(type), view(nullptr), d(new QTableWidgetItemPrivate(this)),
        itemFlags(Qt::ItemIsEditable
                 |Qt::ItemIsSelectable
                 |Qt::ItemIsUserCheckable
@@ -1389,9 +1389,8 @@ QTableWidgetItem::QTableWidgetItem(const QIcon &icon, const QString &text, int t
 */
 QTableWidgetItem::~QTableWidgetItem()
 {
-    if (QTableModel *model = (view ? qobject_cast<QTableModel*>(view->model()) : 0))
+    if (QTableModel *model = tableModel())
         model->removeItem(this);
-    view = 0;
     delete d;
 }
 
@@ -1427,7 +1426,7 @@ void QTableWidgetItem::setData(int role, const QVariant &value)
     }
     if (!found)
         values.append(QWidgetItemData(role, value));
-    if (QTableModel *model = (view ? qobject_cast<QTableModel*>(view->model()) : nullptr))
+    if (QTableModel *model = tableModel())
     {
         const QVector<int> roles((role == Qt::DisplayRole) ?
                                     QVector<int>({Qt::DisplayRole, Qt::EditRole}) :
@@ -1482,6 +1481,16 @@ void QTableWidgetItem::write(QDataStream &out) const
 }
 
 /*!
+  \internal
+  returns the QTableModel if a view is set
+*/
+QTableModel *QTableWidgetItem::tableModel() const
+{
+    return (view ? qobject_cast<QTableModel*>(view->model()) : nullptr);
+}
+
+
+/*!
     \relates QTableWidgetItem
 
     Reads a table widget item from stream \a in into \a item.
@@ -1524,7 +1533,7 @@ QDataStream &operator<<(QDataStream &out, const QTableWidgetItem &item)
     \sa data(), flags()
 */
 QTableWidgetItem::QTableWidgetItem(const QTableWidgetItem &other)
-    : rtti(Type), values(other.values), view(0),
+    : rtti(Type), values(other.values), view(nullptr),
       d(new QTableWidgetItemPrivate(this)),
       itemFlags(other.itemFlags)
 {

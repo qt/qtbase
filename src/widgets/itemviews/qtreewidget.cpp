@@ -1346,7 +1346,7 @@ bool QTreeWidgetItem::isHidden() const
     \sa type()
 */
 QTreeWidgetItem::QTreeWidgetItem(int type)
-    : rtti(type), view(0), d(new QTreeWidgetItemPrivate(this)), par(0),
+    : rtti(type), view(nullptr), d(new QTreeWidgetItemPrivate(this)), par(nullptr),
       itemFlags(Qt::ItemIsSelectable
                 |Qt::ItemIsUserCheckable
                 |Qt::ItemIsEnabled
@@ -1365,7 +1365,7 @@ QTreeWidgetItem::QTreeWidgetItem(int type)
     \sa type()
 */
 QTreeWidgetItem::QTreeWidgetItem(const QStringList &strings, int type)
-    : rtti(type), view(0), d(new QTreeWidgetItemPrivate(this)), par(0),
+    : rtti(type), view(nullptr), d(new QTreeWidgetItemPrivate(this)), par(nullptr),
       itemFlags(Qt::ItemIsSelectable
                 |Qt::ItemIsUserCheckable
                 |Qt::ItemIsEnabled
@@ -1385,16 +1385,16 @@ QTreeWidgetItem::QTreeWidgetItem(const QStringList &strings, int type)
     \sa type()
 */
 
-QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *view, int type)
-    : rtti(type), view(0), d(new QTreeWidgetItemPrivate(this)), par(0),
+QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *treeview, int type)
+    : rtti(type), view(nullptr), d(new QTreeWidgetItemPrivate(this)), par(nullptr),
       itemFlags(Qt::ItemIsSelectable
                 |Qt::ItemIsUserCheckable
                 |Qt::ItemIsEnabled
                 |Qt::ItemIsDragEnabled
                 |Qt::ItemIsDropEnabled)
 {
-    if (view && view->model()) {
-        QTreeModel *model = qobject_cast<QTreeModel*>(view->model());
+    // do not set this->view here otherwise insertChild() will fail
+    if (QTreeModel *model = treeModel(treeview)) {
         model->rootItem->addChild(this);
         values.reserve(model->headerItem->columnCount());
     }
@@ -1410,8 +1410,8 @@ QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *view, int type)
   \sa type()
 */
 
-QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *view, const QStringList &strings, int type)
-    : rtti(type), view(0), d(new QTreeWidgetItemPrivate(this)), par(0),
+QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *treeview, const QStringList &strings, int type)
+    : rtti(type), view(nullptr), d(new QTreeWidgetItemPrivate(this)), par(nullptr),
       itemFlags(Qt::ItemIsSelectable
                 |Qt::ItemIsUserCheckable
                 |Qt::ItemIsEnabled
@@ -1420,8 +1420,8 @@ QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *view, const QStringList &strings, 
 {
     for (int i = 0; i < strings.count(); ++i)
         setText(i, strings.at(i));
-    if (view && view->model()) {
-        QTreeModel *model = qobject_cast<QTreeModel*>(view->model());
+    // do not set this->view here otherwise insertChild() will fail
+    if (QTreeModel *model = treeModel(treeview)) {
         model->rootItem->addChild(this);
         values.reserve(model->headerItem->columnCount());
     }
@@ -1435,21 +1435,19 @@ QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *view, const QStringList &strings, 
 
     \sa type()
 */
-QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *view, QTreeWidgetItem *after, int type)
-    : rtti(type), view(0), d(new QTreeWidgetItemPrivate(this)), par(0),
+QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *treeview, QTreeWidgetItem *after, int type)
+    : rtti(type), view(nullptr), d(new QTreeWidgetItemPrivate(this)), par(nullptr),
       itemFlags(Qt::ItemIsSelectable
                 |Qt::ItemIsUserCheckable
                 |Qt::ItemIsEnabled
                 |Qt::ItemIsDragEnabled
                 |Qt::ItemIsDropEnabled)
 {
-    if (view) {
-        QTreeModel *model = qobject_cast<QTreeModel*>(view->model());
-        if (model) {
-            int i = model->rootItem->children.indexOf(after) + 1;
-            model->rootItem->insertChild(i, this);
-            values.reserve(model->headerItem->columnCount());
-        }
+    // do not set this->view here otherwise insertChild() will fail
+    if (QTreeModel *model = treeModel(treeview)) {
+        int i = model->rootItem->children.indexOf(after) + 1;
+        model->rootItem->insertChild(i, this);
+        values.reserve(model->headerItem->columnCount());
     }
 }
 
@@ -1459,7 +1457,7 @@ QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *view, QTreeWidgetItem *after, int 
     \sa type()
 */
 QTreeWidgetItem::QTreeWidgetItem(QTreeWidgetItem *parent, int type)
-    : rtti(type), view(0), d(new QTreeWidgetItemPrivate(this)), par(0),
+    : rtti(type), view(nullptr), d(new QTreeWidgetItemPrivate(this)), par(nullptr),
       itemFlags(Qt::ItemIsSelectable
                 |Qt::ItemIsUserCheckable
                 |Qt::ItemIsEnabled
@@ -1477,7 +1475,7 @@ QTreeWidgetItem::QTreeWidgetItem(QTreeWidgetItem *parent, int type)
     \sa type()
 */
 QTreeWidgetItem::QTreeWidgetItem(QTreeWidgetItem *parent, const QStringList &strings, int type)
-    : rtti(type), view(0), d(new QTreeWidgetItemPrivate(this)), par(0),
+    : rtti(type), view(nullptr), d(new QTreeWidgetItemPrivate(this)), par(nullptr),
       itemFlags(Qt::ItemIsSelectable
                 |Qt::ItemIsUserCheckable
                 |Qt::ItemIsEnabled
@@ -1499,7 +1497,7 @@ QTreeWidgetItem::QTreeWidgetItem(QTreeWidgetItem *parent, const QStringList &str
     \sa type()
 */
 QTreeWidgetItem::QTreeWidgetItem(QTreeWidgetItem *parent, QTreeWidgetItem *after, int type)
-    : rtti(type), view(0), d(new QTreeWidgetItemPrivate(this)), par(0),
+    : rtti(type), view(nullptr), d(new QTreeWidgetItemPrivate(this)), par(nullptr),
       itemFlags(Qt::ItemIsSelectable
                 |Qt::ItemIsUserCheckable
                 |Qt::ItemIsEnabled
@@ -1522,7 +1520,7 @@ QTreeWidgetItem::QTreeWidgetItem(QTreeWidgetItem *parent, QTreeWidgetItem *after
 
 QTreeWidgetItem::~QTreeWidgetItem()
 {
-    QTreeModel *model = (view ? qobject_cast<QTreeModel*>(view->model()) : 0);
+    QTreeModel *model = treeModel();
     bool wasSkipSort = false;
     if (model) {
         wasSkipSort = model->skipPendingSort;
@@ -1684,16 +1682,17 @@ void QTreeWidgetItem::setFlags(Qt::ItemFlags flags)
 
 void QTreeWidgetItemPrivate::updateHiddenStatus(QTreeWidgetItem *item, bool inserting)
 {
-    QTreeModel *model = (item->view ? qobject_cast<QTreeModel*>(item->view->model()) : 0);
+    QTreeModel *model = item->treeModel();
     if (!model)
         return;
     QStack<QTreeWidgetItem *> parents;
     parents.push(item);
     while (!parents.isEmpty()) {
         QTreeWidgetItem *parent = parents.pop();
-        QModelIndex index = model->index(parent, 0);
-        if (parent->d->hidden)
+        if (parent->d->hidden) {
+            const QModelIndex index = model->index(parent, 0);
             item->view->setRowHidden(index.row(), index.parent(), inserting);
+        }
         for (int i = 0; i < parent->children.count(); ++i) {
             QTreeWidgetItem *child = parent->children.at(i);
             parents.push(child);
@@ -1758,7 +1757,7 @@ void QTreeWidgetItem::setData(int column, int role, const QVariant &value)
     if (column < 0)
         return;
 
-    QTreeModel *model = (view ? qobject_cast<QTreeModel*>(view->model()) : 0);
+    QTreeModel *model = treeModel();
     switch (role) {
     case Qt::EditRole:
     case Qt::DisplayRole: {
@@ -1966,7 +1965,7 @@ void QTreeWidgetItem::insertChild(int index, QTreeWidgetItem *child)
     if (index < 0 || index > children.count() || child == 0 || child->view != 0 || child->par != 0)
         return;
 
-    if (QTreeModel *model = (view ? qobject_cast<QTreeModel*>(view->model()) : 0)) {
+    if (QTreeModel *model = treeModel()) {
         const bool wasSkipSort = model->skipPendingSort;
         model->skipPendingSort = true;
         if (model->rootItem == this)
@@ -2017,7 +2016,7 @@ QTreeWidgetItem *QTreeWidgetItem::takeChild(int index)
 {
     // we move this outside the check of the index to allow executing
     // pending sorts from inline functions, using this function (hack)
-    QTreeModel *model = (view ? qobject_cast<QTreeModel*>(view->model()) : 0);
+    QTreeModel *model = treeModel();
     if (model) {
         // This will trigger a layoutChanged signal, thus we might want to optimize
         // this function by not emitting the rowsRemoved signal etc to the view.
@@ -2075,7 +2074,7 @@ void QTreeWidgetItem::insertChildren(int index, const QList<QTreeWidgetItem*> &c
             insertChild(index, children.at(n));
         return;
     }
-    QTreeModel *model = (view ? qobject_cast<QTreeModel*>(view->model()) : 0);
+    QTreeModel *model = treeModel();
     QStack<QTreeWidgetItem*> stack;
     QList<QTreeWidgetItem*> itemsToInsert;
     for (int n = 0; n < children.count(); ++n) {
@@ -2122,7 +2121,7 @@ QList<QTreeWidgetItem*> QTreeWidgetItem::takeChildren()
 {
     QList<QTreeWidgetItem*> removed;
     if (children.count() > 0) {
-        QTreeModel *model = (view ? qobject_cast<QTreeModel*>(view->model()) : 0);
+        QTreeModel *model = treeModel();
         if (model) {
             // This will trigger a layoutChanged signal, thus we might want to optimize
             // this function by not emitting the rowsRemoved signal etc to the view.
@@ -2154,7 +2153,7 @@ QList<QTreeWidgetItem*> QTreeWidgetItem::takeChildren()
 
 void QTreeWidgetItemPrivate::sortChildren(int column, Qt::SortOrder order, bool climb)
 {
-    QTreeModel *model = (q->view ? qobject_cast<QTreeModel*>(q->view->model()) : 0);
+    QTreeModel *model = q->treeModel();
     if (!model)
         return;
     model->sortItems(&q->children, column, order);
@@ -2177,7 +2176,7 @@ void QTreeWidgetItemPrivate::sortChildren(int column, Qt::SortOrder order, bool 
 */
 void QTreeWidgetItem::sortChildren(int column, Qt::SortOrder order, bool climb)
 {
-    QTreeModel *model = (view ? qobject_cast<QTreeModel*>(view->model()) : 0);
+    QTreeModel *model = treeModel();
     if (!model)
         return;
     if (model->isChanging())
@@ -2257,7 +2256,7 @@ void QTreeWidgetItem::emitDataChanged()
 */
 void QTreeWidgetItem::itemChanged()
 {
-    if (QTreeModel *model = (view ? qobject_cast<QTreeModel*>(view->model()) : 0))
+    if (QTreeModel *model = treeModel())
         model->itemChanged(this);
 }
 
@@ -2266,8 +2265,19 @@ void QTreeWidgetItem::itemChanged()
 */
 void QTreeWidgetItem::executePendingSort() const
 {
-    if (QTreeModel *model = (view ? qobject_cast<QTreeModel*>(view->model()) : 0))
+    if (QTreeModel *model = treeModel())
         model->executePendingSort();
+}
+
+/*!
+  \internal
+  returns the QTreeModel if a view is set
+*/
+QTreeModel *QTreeWidgetItem::treeModel(QTreeWidget *v) const
+{
+    if (!v)
+        v = view;
+    return (v ? qobject_cast<QTreeModel*>(v->model()) : nullptr);
 }
 
 

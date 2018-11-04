@@ -66,9 +66,9 @@ public:
     enum ItemType { Type = 0, UserType = 1000 };
     explicit QTreeWidgetItem(int type = Type);
     explicit QTreeWidgetItem(const QStringList &strings, int type = Type);
-    explicit QTreeWidgetItem(QTreeWidget *view, int type = Type);
-    QTreeWidgetItem(QTreeWidget *view, const QStringList &strings, int type = Type);
-    QTreeWidgetItem(QTreeWidget *view, QTreeWidgetItem *after, int type = Type);
+    explicit QTreeWidgetItem(QTreeWidget *treeview, int type = Type);
+    QTreeWidgetItem(QTreeWidget *treeview, const QStringList &strings, int type = Type);
+    QTreeWidgetItem(QTreeWidget *treeview, QTreeWidgetItem *after, int type = Type);
     explicit QTreeWidgetItem(QTreeWidgetItem *parent, int type = Type);
     QTreeWidgetItem(QTreeWidgetItem *parent, const QStringList &strings, int type = Type);
     QTreeWidgetItem(QTreeWidgetItem *parent, QTreeWidgetItem *after, int type = Type);
@@ -215,6 +215,7 @@ private:
     QVariant childrenCheckState(int column) const;
     void itemChanged();
     void executePendingSort() const;
+    QTreeModel *treeModel(QTreeWidget *v = nullptr) const;
 
     int rtti;
     // One item has a vector of column entries. Each column has a vector of (role, value) pairs.

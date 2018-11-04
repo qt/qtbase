@@ -183,6 +183,9 @@ public:
     inline int type() const { return rtti; }
 
 private:
+    QTableModel *tableModel() const;
+
+private:
     int rtti;
     QVector<QWidgetItemData> values;
     QTableWidget *view;

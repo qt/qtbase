@@ -61,10 +61,10 @@ class Q_WIDGETS_EXPORT QListWidgetItem
     friend class QListWidget;
 public:
     enum ItemType { Type = 0, UserType = 1000 };
-    explicit QListWidgetItem(QListWidget *view = nullptr, int type = Type);
-    explicit QListWidgetItem(const QString &text, QListWidget *view = nullptr, int type = Type);
+    explicit QListWidgetItem(QListWidget *listview = nullptr, int type = Type);
+    explicit QListWidgetItem(const QString &text, QListWidget *listview = nullptr, int type = Type);
     explicit QListWidgetItem(const QIcon &icon, const QString &text,
-                             QListWidget *view = nullptr, int type = Type);
+                             QListWidget *listview = nullptr, int type = Type);
     QListWidgetItem(const QListWidgetItem &other);
     virtual ~QListWidgetItem();
 
@@ -165,6 +165,8 @@ public:
 
     inline int type() const { return rtti; }
 
+private:
+    QListModel *listModel() const;
 private:
     int rtti;
     QVector<void *> dummy;
