@@ -2321,9 +2321,10 @@ void QHeaderView::initializeSections()
         if (stretchLastSection())   // we've already gotten the size hint
             d->maybeRestorePrevLastSectionAndStretchLast();
 
-        //make sure we update the hidden sections
+        // make sure we update the hidden sections
+        // simulate remove from newCount to oldCount
         if (newCount < oldCount)
-            d->updateHiddenSections(0, newCount-1);
+            d->updateHiddenSections(newCount, oldCount);
     }
 }
 
