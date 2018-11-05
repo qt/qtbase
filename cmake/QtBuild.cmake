@@ -435,17 +435,20 @@ function(extend_target target)
         qt_internal_process_automatic_sources("${target}" "${_arg_SOURCES}")
 
         foreach(dep ${_arg_LIBRARIES} ${_arg_PUBLIC_LIBRARIES})
-            if("${dep}" MATCHES "^Qt::(.+)(Private)?$")
-                set(depTarget ${CMAKE_MATCH_1})
+            if("${dep}" MATCHES "^Qt::((.+)(Private)|(.+))$")
+                if (${CMAKE_MATCH_COUNT} EQUAL 3)
+                    set(depTarget ${CMAKE_MATCH_2})
+                else()
+                    set(depTarget ${CMAKE_MATCH_4})
+                endif()
 
                 # Fetch features from dependencies and make them available to the
                 # caller as well as to the local scope for configure.cmake evaluation.
-
                 if(NOT TARGET "${dep}")
                     find_package(Qt${PROJECT_VERSION_MAJOR}${depTarget} REQUIRED)
                 endif()
 
-                if("x${CMAKE_MATCH_2}" STREQUAL "xPrivate")
+                if("x${CMAKE_MATCH_3}" STREQUAL "xPrivate")
                     qt_pull_features_into_current_scope(PRIVATE_FEATURES ${depTarget})
                 endif()
                 qt_pull_features_into_current_scope(PUBLIC_FEATURES ${depTarget})
