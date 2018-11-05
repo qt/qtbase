@@ -362,13 +362,8 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
     } else if ([attribute isEqualToString:NSAccessibilityInsertionPointLineNumberAttribute]) {
         if (QAccessibleTextInterface *text = iface->textInterface()) {
-            int line = 0; // true for all single line edits
-            if (iface->state().multiLine) {
-                line = -1;
-                int position = text->cursorPosition();
-                convertLineOffset(text, &line, &position);
-            }
-            return @(line);
+            int position = text->cursorPosition();
+            return [self accessibilityAttributeValue:NSAccessibilityLineForIndexParameterizedAttribute forParameter:@(position)];
         }
         return nil;
     } else if ([attribute isEqualToString:NSAccessibilityMinValueAttribute]) {
