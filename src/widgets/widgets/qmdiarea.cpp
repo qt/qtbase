@@ -2640,7 +2640,11 @@ bool QMdiArea::eventFilter(QObject *object, QEvent *event)
 #endif // QT_CONFIG(tabbar)
         Q_FALLTHROUGH();
     case QEvent::Hide:
-        d->isSubWindowsTiled = false;
+        // Do not reset the isSubWindowsTiled flag if the event is a spontaneous system window event.
+        // This ensures that tiling will be performed during the resizeEvent after an application
+        // window minimize (hide) and then restore (show).
+        if (!event->spontaneous())
+            d->isSubWindowsTiled = false;
         break;
 #if QT_CONFIG(rubberband)
     case QEvent::Close:
