@@ -159,6 +159,7 @@ Type Moc::parseType()
     bool isVoid = false;
     type.firstToken = lookup();
     for (;;) {
+        skipCxxAttributes();
         switch (next()) {
             case SIGNED:
             case UNSIGNED:
@@ -188,8 +189,11 @@ Type Moc::parseType()
         }
         break;
     }
+
+    skipCxxAttributes();
     test(ENUM) || test(CLASS) || test(STRUCT);
     for(;;) {
+        skipCxxAttributes();
         switch (next()) {
         case IDENTIFIER:
             // void mySlot(unsigned myArg)
@@ -356,6 +360,15 @@ bool Moc::testFunctionAttribute(Token tok, FunctionDef *def)
     return false;
 }
 
+bool Moc::skipCxxAttributes()
+{
+    auto rewind = index;
+    if (test(LBRACK) && test(LBRACK) && until(RBRACK) && test(RBRACK))
+        return true;
+    index = rewind;
+    return false;
+}
+
 bool Moc::testFunctionRevision(FunctionDef *def)
 {
     if (test(Q_REVISION_TOKEN)) {
@@ -381,7 +394,7 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
     //skip modifiers and attributes
     while (test(INLINE) || (test(STATIC) && (def->isStatic = true) == true) ||
         (test(VIRTUAL) && (def->isVirtual = true) == true) //mark as virtual
-        || testFunctionAttribute(def) || testFunctionRevision(def)) {}
+        || skipCxxAttributes() || testFunctionAttribute(def) || testFunctionRevision(def)) {}
     bool templateFunction = (lookup() == TEMPLATE);
     def->type = parseType();
     if (def->type.name.isEmpty()) {
@@ -454,10 +467,11 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
             until(RBRACE);
         else if ((def->isAbstract = test(EQ)))
             until(SEMIC);
+        else if (skipCxxAttributes())
+            until(SEMIC);
         else
             error();
     }
-
     if (scopedFunctionName) {
         const QByteArray msg = "Function declaration " + def->name
                 + " contains extra qualification. Ignoring as signal or slot.";
@@ -475,7 +489,7 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
     //skip modifiers and attributes
     while (test(EXPLICIT) || test(INLINE) || (test(STATIC) && (def->isStatic = true) == true) ||
         (test(VIRTUAL) && (def->isVirtual = true) == true) //mark as virtual
-        || testFunctionAttribute(def) || testFunctionRevision(def)) {}
+        || skipCxxAttributes() || testFunctionAttribute(def) || testFunctionRevision(def)) {}
     bool tilde = test(TILDE);
     def->type = parseType();
     if (def->type.name.isEmpty())

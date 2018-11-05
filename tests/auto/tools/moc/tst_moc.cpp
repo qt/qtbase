@@ -71,6 +71,7 @@
 #include "grand-parent-gadget-class.h"
 #include "namespace.h"
 #include "cxx17-namespaces.h"
+#include "cxx-attributes.h"
 
 #ifdef Q_MOC_RUN
 // check that moc can parse these constructs, they are being used in Windows winsock2.h header
@@ -703,6 +704,7 @@ private slots:
     void optionsFileError();
     void testQNamespace();
     void cxx17Namespaces();
+    void cxxAttributes();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -3906,6 +3908,24 @@ void tst_Moc::cxx17Namespaces()
     QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::ClassInNamespace::GadEn>().name(), "GadEn");
     QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::ClassInNamespace::GadEn>().keyCount(), 1);
     QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::ClassInNamespace::GadEn>().value(0), 3);
+}
+
+void tst_Moc::cxxAttributes()
+{
+    auto so = CppAttribute::staticMetaObject;
+    QCOMPARE(so.className(), "CppAttribute");
+    QCOMPARE(so.enumeratorCount(), 0);
+    QVERIFY(so.indexOfSignal("deprecatedSignal") != 1);
+    for (auto a: {"deprecatedSlot", "deprecatedSlot2", "deprecatedReason", "deprecatedReasonWithLBRACK",
+                  "deprecatedReasonWith2LBRACK", "deprecatedReasonWithRBRACK", "deprecatedReasonWith2RBRACK",
+                  "slotWithArguments"
+#if !defined(_MSC_VER) || _MSC_VER >= 1912
+                  , "noreturnSlot", "noreturnSlot2", "returnInt", "noreturnDeprecatedSlot",
+                  "noreturnSlot3"
+#endif
+                  }) {
+        QVERIFY(so.indexOfSlot(a) != 1);
+    }
 }
 
 QTEST_MAIN(tst_Moc)

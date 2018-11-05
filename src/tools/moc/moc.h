@@ -257,6 +257,8 @@ public:
     bool testFunctionAttribute(Token tok, FunctionDef *def);
     bool testFunctionRevision(FunctionDef *def);
 
+    bool skipCxxAttributes();
+
     void checkSuperClasses(ClassDef *def);
     void checkProperties(ClassDef* cdef);
 };
