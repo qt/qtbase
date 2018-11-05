@@ -22,6 +22,8 @@ find_package(WrapRt)
 set_package_properties(WrapRt PROPERTIES TYPE OPTIONAL)
 find_package(PCRE2)
 set_package_properties(PCRE2 PROPERTIES TYPE REQUIRED)
+find_package(PPS)
+set_package_properties(PPS PROPERTIES TYPE OPTIONAL)
 
 
 #### Tests
@@ -460,7 +462,7 @@ qt_feature("poll_select" PUBLIC PRIVATE
 qt_feature_definition("poll_select" "QT_NO_NATIVE_POLL")
 qt_feature("qqnx_pps" PRIVATE
     LABEL "PPS"
-    CONDITION libs.pps OR FIXME
+    CONDITION PPS_FOUND
     EMIT_IF QNX
 )
 qt_feature("renameat2" PRIVATE

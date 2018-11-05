@@ -508,7 +508,7 @@ extend_target(Core CONDITION QNX AND QT_FEATURE_qqnx_pps
         kernel/qppsattributeprivate_p.h
         kernel/qppsobject.cpp kernel/qppsobject_p.h
         kernel/qppsobjectprivate_p.h
-    LIBRARIES pps
+    LIBRARIES PPS::PPS
 )
 
 ## clock_gettime:

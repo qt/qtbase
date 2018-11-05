@@ -73,6 +73,7 @@ def map_library(lib: str) -> Union[str, LibraryMapping, List[str]]:
        'openssl_headers': LibraryMapping(package="OpenSSL", resultVariable="OPENSSL_INCLUDE_DIR", appendFoundSuffix=False),
        'pcre2': ['PCRE2', 'REQUIRED'],
        'posix_iconv': None,
+       'pps': 'PPS',
        'sun_iconv': None,
        'udev': 'Libudev',
        'vulkan': 'Vulkan',
