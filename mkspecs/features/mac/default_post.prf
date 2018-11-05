@@ -3,7 +3,7 @@ load(default_post)
 contains(TEMPLATE, .*app) {
     !macx-xcode {
         # Detect changes to the platform SDK
-        QMAKE_EXTRA_VARIABLES += QMAKE_MAC_SDK QMAKE_MAC_SDK_VERSION
+        QMAKE_EXTRA_VARIABLES += QMAKE_MAC_SDK QMAKE_MAC_SDK_VERSION QMAKE_XCODE_DEVELOPER_PATH
         QMAKE_EXTRA_INCLUDES += $$shell_quote($$PWD/sdk.mk)
     }
 

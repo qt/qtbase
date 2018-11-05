@@ -71,6 +71,7 @@ QEglFSKmsGbmCursor::QEglFSKmsGbmCursor(QEglFSKmsGbmScreen *screen)
     , m_bo(nullptr)
     , m_cursorImage(0, 0, 0, 0, 0, 0)
     , m_state(CursorPendingVisible)
+    , m_deviceListener(nullptr)
 {
     QByteArray hideCursorVal = qgetenv("QT_QPA_EGLFS_HIDECURSOR");
     if (!hideCursorVal.isEmpty() && hideCursorVal.toInt()) {
