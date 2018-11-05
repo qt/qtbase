@@ -6244,36 +6244,13 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     },
 };
 
-#if defined(Q_CC_MSVC) && !defined(_MIPS_)
-template <class T>
-inline void qt_memfill_template(T *dest, T color, int count)
+void qt_memfill64(quint64 *dest, quint64 color, int count)
 {
-    while (count--)
-        *dest++ = color;
+    qt_memfill_template<quint64>(dest, color, count);
 }
 
-#else
-
-template <class T>
-inline void qt_memfill_template(T *dest, T color, int count)
-{
-    int n = (count + 7) / 8;
-    switch (count & 0x07)
-    {
-    case 0: do { *dest++ = color; Q_FALLTHROUGH();
-    case 7:      *dest++ = color; Q_FALLTHROUGH();
-    case 6:      *dest++ = color; Q_FALLTHROUGH();
-    case 5:      *dest++ = color; Q_FALLTHROUGH();
-    case 4:      *dest++ = color; Q_FALLTHROUGH();
-    case 3:      *dest++ = color; Q_FALLTHROUGH();
-    case 2:      *dest++ = color; Q_FALLTHROUGH();
-    case 1:      *dest++ = color;
-    } while (--n > 0);
-    }
-}
-
-template <>
-inline void qt_memfill_template(quint16 *dest, quint16 value, int count)
+#if !defined(__SSE2__)
+void qt_memfill16(quint16 *dest, quint16 value, int count)
 {
     if (count < 3) {
         switch (count) {
@@ -6292,18 +6269,6 @@ inline void qt_memfill_template(quint16 *dest, quint16 value, int count)
     qt_memfill(reinterpret_cast<quint32*>(dest), value32, count / 2);
     if (count & 0x1)
         dest[count - 1] = value;
-}
-#endif
-
-void qt_memfill64(quint64 *dest, quint64 color, int count)
-{
-    qt_memfill_template<quint64>(dest, color, count);
-}
-
-#if !defined(__SSE2__)
-void qt_memfill16(quint16 *dest, quint16 color, int count)
-{
-    qt_memfill_template<quint16>(dest, color, count);
 }
 #endif
 #if !defined(__SSE2__) && !defined(__ARM_NEON__) && !defined(__MIPS_DSP__)

@@ -884,8 +884,30 @@ inline quint24::operator uint() const
     return data[2] | (data[1] << 8) | (data[0] << 16);
 }
 
-template <class T> static
-void qt_memfill(T *dest, T value, int count);
+template <class T> inline void qt_memfill_template(T *dest, T color, int count)
+{
+    if (!count)
+        return;
+
+    qsizetype n = (count + 7) / 8;
+    switch (count & 0x07)
+    {
+    case 0: do { *dest++ = color; Q_FALLTHROUGH();
+    case 7:      *dest++ = color; Q_FALLTHROUGH();
+    case 6:      *dest++ = color; Q_FALLTHROUGH();
+    case 5:      *dest++ = color; Q_FALLTHROUGH();
+    case 4:      *dest++ = color; Q_FALLTHROUGH();
+    case 3:      *dest++ = color; Q_FALLTHROUGH();
+    case 2:      *dest++ = color; Q_FALLTHROUGH();
+    case 1:      *dest++ = color;
+    } while (--n > 0);
+    }
+}
+
+template <class T> inline void qt_memfill(T *dest, T value, int count)
+{
+    qt_memfill_template(dest, value, count);
+}
 
 template<> inline void qt_memfill(quint64 *dest, quint64 color, int count)
 {
@@ -905,27 +927,6 @@ template<> inline void qt_memfill(quint16 *dest, quint16 color, int count)
 template<> inline void qt_memfill(quint8 *dest, quint8 color, int count)
 {
     memset(dest, color, count);
-}
-
-template <class T>
-inline void qt_memfill(T *dest, T value, int count)
-{
-    if (!count)
-        return;
-
-    int n = (count + 7) / 8;
-    switch (count & 0x07)
-    {
-    case 0: do { *dest++ = value; Q_FALLTHROUGH();
-    case 7:      *dest++ = value; Q_FALLTHROUGH();
-    case 6:      *dest++ = value; Q_FALLTHROUGH();
-    case 5:      *dest++ = value; Q_FALLTHROUGH();
-    case 4:      *dest++ = value; Q_FALLTHROUGH();
-    case 3:      *dest++ = value; Q_FALLTHROUGH();
-    case 2:      *dest++ = value; Q_FALLTHROUGH();
-    case 1:      *dest++ = value;
-    } while (--n > 0);
-    }
 }
 
 template <class T> static
