@@ -266,20 +266,20 @@ void qt_memfill32(quint32 *dest, quint32 value, int count)
     int count128 = count / 4;
     __m128i *dst128 = reinterpret_cast<__m128i*>(dest);
     __m128i *end128 = dst128 + count128;
-    const __m128i value128 = _mm_set_epi32(value, value, value, value);
+    const __m128i value128 = _mm_set1_epi32(value);
 
     while (dst128 + 3 < end128) {
-        _mm_stream_si128(dst128 + 0, value128);
-        _mm_stream_si128(dst128 + 1, value128);
-        _mm_stream_si128(dst128 + 2, value128);
-        _mm_stream_si128(dst128 + 3, value128);
+        _mm_store_si128(dst128 + 0, value128);
+        _mm_store_si128(dst128 + 1, value128);
+        _mm_store_si128(dst128 + 2, value128);
+        _mm_store_si128(dst128 + 3, value128);
         dst128 += 4;
     }
 
     switch (count128 & 0x3) {
-    case 3:      _mm_stream_si128(dst128++, value128); Q_FALLTHROUGH();
-    case 2:      _mm_stream_si128(dst128++, value128); Q_FALLTHROUGH();
-    case 1:      _mm_stream_si128(dst128++, value128);
+    case 3:      _mm_store_si128(dst128++, value128); Q_FALLTHROUGH();
+    case 2:      _mm_store_si128(dst128++, value128); Q_FALLTHROUGH();
+    case 1:      _mm_store_si128(dst128++, value128);
     }
 }
 
