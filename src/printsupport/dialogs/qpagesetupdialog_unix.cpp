@@ -361,13 +361,21 @@ void QPageSetupWidget::initPageSizes()
         QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
         if (ps) {
             QPrintDevice printDevice = ps->createPrintDevice(m_printerName);
+            const QPageSize defaultSize = printDevice.defaultPageSize();
             const auto pageSizes = printDevice.supportedPageSizes();
             for (const QPageSize &pageSize : pageSizes)
                 m_ui.pageSizeCombo->addItem(pageSize.name(), QVariant::fromValue(pageSize));
-            if (m_ui.pageSizeCombo->count() > 0 && printDevice.supportsCustomPageSizes()) {
-                m_ui.pageSizeCombo->addItem(tr("Custom"));
-                m_realCustomPageSizeIndex = m_ui.pageSizeCombo->count() - 1;
+            if (m_ui.pageSizeCombo->count() > 0) {
+                if (printDevice.supportsCustomPageSizes()) {
+                    m_ui.pageSizeCombo->addItem(tr("Custom"));
+                    m_realCustomPageSizeIndex = m_ui.pageSizeCombo->count() - 1;
+                }
                 m_blockSignals = false;
+
+                // If the defaultSize is index 0, setCurrentIndex won't emit the currentIndexChanged
+                // signal; workaround the issue by initially setting the currentIndex to -1
+                m_ui.pageSizeCombo->setCurrentIndex(-1);
+                m_ui.pageSizeCombo->setCurrentIndex(m_ui.pageSizeCombo->findData(QVariant::fromValue(defaultSize)));
                 return;
             }
         }
@@ -402,12 +410,6 @@ void QPageSetupWidget::setPrinter(QPrinter *printer, QPrintDevice *printDevice,
 
     // Initialize the layout to the current QPrinter layout
     m_pageLayout = m_printer->pageLayout();
-
-    if (printDevice) {
-        const QPageSize pageSize = printDevice->defaultPageSize();
-        const QMarginsF printable = printDevice->printableMargins(pageSize, m_pageLayout.orientation(), m_printer->resolution());
-        m_pageLayout.setPageSize(pageSize, qt_convertMargins(printable, QPageLayout::Point, m_pageLayout.units()));
-    }
 
     // Assume if margins are Points then is by default, so set to locale default units
     if (m_pageLayout.units() == QPageLayout::Point) {
@@ -735,8 +737,12 @@ int QPageSetupDialog::exec()
     Q_D(QPageSetupDialog);
 
     int ret = QDialog::exec();
-    if (ret == Accepted)
+    if (ret == Accepted) {
         static_cast <QUnixPageSetupDialogPrivate*>(d)->widget->setupPrinter();
+        static_cast <QUnixPageSetupDialogPrivate*>(d)->widget->updateSavedValues();
+    } else {
+        static_cast <QUnixPageSetupDialogPrivate*>(d)->widget->revertToSavedValues();
+    }
     return ret;
 }
 
