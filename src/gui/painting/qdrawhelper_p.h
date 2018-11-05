@@ -944,26 +944,6 @@ inline void qt_rectfill(T *dest, T value,
     }
 }
 
-#define QT_MEMCPY_REV_UINT(dest, src, length) \
-do {                                          \
-    /* Duff's device */                       \
-    uint *_d = (uint*)(dest) + length;         \
-    const uint *_s = (uint*)(src) + length;    \
-    int n = ((length) + 7) / 8;               \
-    switch ((length) & 0x07)                  \
-    {                                         \
-    case 0: do { *--_d = *--_s; Q_FALLTHROUGH(); \
-    case 7:      *--_d = *--_s; Q_FALLTHROUGH(); \
-    case 6:      *--_d = *--_s; Q_FALLTHROUGH(); \
-    case 5:      *--_d = *--_s; Q_FALLTHROUGH(); \
-    case 4:      *--_d = *--_s; Q_FALLTHROUGH(); \
-    case 3:      *--_d = *--_s; Q_FALLTHROUGH(); \
-    case 2:      *--_d = *--_s; Q_FALLTHROUGH(); \
-    case 1:      *--_d = *--_s;                 \
-    } while (--n > 0);                        \
-    }                                         \
-} while (false)
-
 #define QT_MEMCPY_USHORT(dest, src, length) \
 do {                                          \
     /* Duff's device */                       \
