@@ -163,6 +163,7 @@ typedef QList<QModelIndex> QModelIndexList;
 
 class QMimeData;
 class QAbstractItemModelPrivate;
+class QTransposeProxyModelPrivate;
 template <class Key, class T> class QMap;
 
 
@@ -173,6 +174,7 @@ class Q_CORE_EXPORT QAbstractItemModel : public QObject
     friend class QPersistentModelIndexData;
     friend class QAbstractItemViewPrivate;
     friend class QIdentityProxyModel;
+    friend class QTransposeProxyModelPrivate;
 public:
 
     explicit QAbstractItemModel(QObject *parent = nullptr);

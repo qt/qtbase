@@ -43,6 +43,15 @@ qtConfig(proxymodel) {
         SOURCES += \
             itemmodels/qsortfilterproxymodel.cpp
     }
+
+    qtConfig(transposeproxymodel) {
+        HEADERS += \
+            itemmodels/qtransposeproxymodel.h \
+            itemmodels/qtransposeproxymodel_p.h
+
+        SOURCES += \
+            itemmodels/qtransposeproxymodel.cpp
+    }
 }
 
 qtConfig(stringlistmodel) {

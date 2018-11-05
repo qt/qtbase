@@ -9,6 +9,7 @@ qtHaveModule(gui): SUBDIRS += \
     qidentityproxymodel \
     qitemselectionmodel \
     qsortfilterproxymodel_recursive \
+    qtransposeproxymodel \
 
 qtHaveModule(widgets) {
     SUBDIRS += \

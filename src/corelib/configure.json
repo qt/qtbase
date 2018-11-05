@@ -793,6 +793,13 @@
             "condition": "features.proxymodel",
             "output": [ "publicFeature", "feature" ]
         },
+        "transposeproxymodel": {
+            "label": "QTransposeProxyModel",
+            "purpose": "Provides a proxy to swap rows and columns of a model.",
+            "section": "ItemViews",
+            "condition": "features.proxymodel",
+            "output": [ "publicFeature", "feature" ]
+        },
         "concatenatetablesproxymodel": {
             "label": "QConcatenateTablesProxyModel",
             "purpose": "Supports concatenating source models.",
