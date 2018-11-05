@@ -748,6 +748,21 @@ static int drivePrefixLength(const QString &path)
 }
 #endif // Q_OS_WIN
 
+static bool treatAsAbsolute(const QString &path)
+{
+    // ### Qt 6: be consistent about absolute paths
+
+    // QFileInfo will use the right FS-engine for virtual file-systems
+    // (e.g. resource paths).  Unfortunately, for real file-systems, it relies
+    // on QFileSystemEntry's isRelative(), which is flawed on MS-Win, ignoring
+    // its (correct) isAbsolute().  So only use that isAbsolute() unless there's
+    // a colon in the path.
+    // FIXME: relies on virtual file-systems having colons in their prefixes.
+    // The case of an MS-absolute C:/... path happens to work either way.
+    return (path.contains(QLatin1Char(':')) && QFileInfo(path).isAbsolute())
+        || QFileSystemEntry(path).isAbsolute();
+}
+
 /*!
     Returns the path name of a file in the directory. Does \e not
     check if the file actually exists in the directory; but see
@@ -759,13 +774,10 @@ static int drivePrefixLength(const QString &path)
 */
 QString QDir::filePath(const QString &fileName) const
 {
-    const QDirPrivate* d = d_ptr.constData();
-    // Mistrust our own isAbsolutePath() for real files; Q_OS_WIN needs a drive.
-    if (fileName.startsWith(QLatin1Char(':')) // i.e. resource path
-        ? isAbsolutePath(fileName) : QFileSystemEntry(fileName).isAbsolute()) {
+    if (treatAsAbsolute(fileName))
         return fileName;
-    }
 
+    const QDirPrivate* d = d_ptr.constData();
     QString ret = d->dirEntry.filePath();
     if (fileName.isEmpty())
         return ret;
@@ -793,13 +805,10 @@ QString QDir::filePath(const QString &fileName) const
 */
 QString QDir::absoluteFilePath(const QString &fileName) const
 {
-    const QDirPrivate* d = d_ptr.constData();
-    // Mistrust our own isAbsolutePath() for real files; Q_OS_WIN needs a drive.
-    if (fileName.startsWith(QLatin1Char(':')) // i.e. resource path
-        ? isAbsolutePath(fileName) : QFileSystemEntry(fileName).isAbsolute()) {
+    if (treatAsAbsolute(fileName))
         return fileName;
-    }
 
+    const QDirPrivate* d = d_ptr.constData();
     d->resolveAbsoluteEntry();
     const QString absoluteDirPath = d->absoluteDirEntry.filePath();
     if (fileName.isEmpty())

@@ -1523,6 +1523,11 @@ void tst_QDir::filePath_data()
     QTest::newRow("rel-rel") << "relative" << "path" << "relative/path";
     QTest::newRow("empty-empty") << "" << "" << ".";
     QTest::newRow("resource") << ":/prefix" << "foo.bar" << ":/prefix/foo.bar";
+#ifdef Q_OS_IOS
+    QTest::newRow("assets-rel") << "assets-library:/" << "foo/bar.baz" << "assets-library:/foo/bar.baz";
+    QTest::newRow("assets-abs") << "assets-library:/" << "/foo/bar.baz" << "/foo/bar.baz";
+    QTest::newRow("abs-assets") << "/some/path" << "assets-library:/foo/bar.baz" << "assets-library:/foo/bar.baz";
+#endif
 #ifdef Q_OS_WIN
     QTest::newRow("abs-LTUNC") << "Q:/path" << "\\/leaning\\tooth/pick" << "\\/leaning\\tooth/pick";
     QTest::newRow("LTUNC-slash") << "\\/leaning\\tooth/pick" << "/path" << "//leaning/tooth/path";
