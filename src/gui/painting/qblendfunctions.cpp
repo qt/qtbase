@@ -187,19 +187,11 @@ void qt_blend_rgb16_on_rgb16(uchar *dst, int dbpl,
 #endif
 
     if (const_alpha == 256) {
-        if (w <= 64) {
-            while (h--) {
-                QT_MEMCPY_USHORT(dst, src, w);
-                dst += dbpl;
-                src += sbpl;
-            }
-        } else {
-            int length = w << 1;
-            while (h--) {
-                memcpy(dst, src, length);
-                dst += dbpl;
-                src += sbpl;
-            }
+        int length = w << 1;
+        while (h--) {
+            memcpy(dst, src, length);
+            dst += dbpl;
+            src += sbpl;
         }
     } else if (const_alpha != 0) {
         quint16 *d = (quint16 *) dst;
