@@ -67,6 +67,7 @@ def map_library(lib: str) -> Union[str, LibraryMapping, List[str]]:
        'libpng': 'PNG',
        'libpng': 'PNG',
        'libproxy': 'libproxy',
+       'librt': 'WrapRt',
        'libudev': 'Libudev',
        'opengl': LibraryMapping(package="OpenGL", resultVariable="OpenGL_OpenGL"),
        'openssl_headers': LibraryMapping(package="OpenSSL", resultVariable="OPENSSL_INCLUDE_DIR", appendFoundSuffix=False),

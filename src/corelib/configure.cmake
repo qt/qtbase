@@ -18,6 +18,8 @@ find_package(Libsystemd)
 set_package_properties(Libsystemd PROPERTIES TYPE OPTIONAL)
 find_package(Atomic)
 set_package_properties(Atomic PROPERTIES TYPE OPTIONAL)
+find_package(WrapRt)
+set_package_properties(WrapRt PROPERTIES TYPE OPTIONAL)
 find_package(PCRE2)
 set_package_properties(PCRE2 PROPERTIES TYPE REQUIRED)
 
@@ -340,7 +342,7 @@ closelog();
 
 qt_feature("clock_gettime" PRIVATE
     LABEL "clock_gettime()"
-    CONDITION UNIX AND libs.librt OR FIXME
+    CONDITION UNIX AND WrapRt_FOUND
 )
 qt_feature("clock_monotonic" PUBLIC
     LABEL "POSIX monotonic clock"

@@ -231,6 +231,7 @@ add_qt_module(Core
         tools/qvsnprintf.cpp
     LIBRARIES
         WrapDoubleConversion
+        WrapRt
         tinycbor Threads::Threads ZLIB::ZLIB
         QtHarfBuzz
     PUBLIC_LIBRARIES Qt::Platform
