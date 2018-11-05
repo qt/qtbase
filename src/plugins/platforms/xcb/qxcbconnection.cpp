@@ -131,6 +131,12 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     if (!m_startupId.isNull())
         qunsetenv("DESKTOP_STARTUP_ID");
 
+    m_focusInTimer.setSingleShot(true);
+    m_focusInTimer.callOnTimeout([]() {
+        // No FocusIn events for us, proceed with FocusOut normally.
+        QWindowSystemInterface::handleWindowActivated(nullptr, Qt::ActiveWindowFocusReason);
+    });
+
     sync();
 }
 
@@ -731,11 +737,6 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         m_glIntegration->handleXcbEvent(event, response_type);
 }
 
-void QXcbConnection::addPeekFunc(PeekFunc f)
-{
-    m_peekFuncs.append(f);
-}
-
 void QXcbConnection::setFocusWindow(QWindow *w)
 {
     m_focusWindow = w ? static_cast<QXcbWindow *>(w->handle()) : nullptr;
@@ -1015,15 +1016,6 @@ void QXcbConnection::processXcbEvents(QEventLoop::ProcessEventsFlags flags)
         if (compressEvent(event))
             continue;
 
-        auto isWaitingFor = [=](PeekFunc peekFunc) {
-            // These callbacks return true if the event is what they were
-            // waiting for, remove them from the list in that case.
-            return peekFunc(this, event);
-        };
-        m_peekFuncs.erase(std::remove_if(m_peekFuncs.begin(), m_peekFuncs.end(),
-                                         isWaitingFor),
-                          m_peekFuncs.end());
-
         handleXcbEvent(event);
 
         // The lock-based solution used to free the lock inside this loop,
@@ -1031,12 +1023,6 @@ void QXcbConnection::processXcbEvents(QEventLoop::ProcessEventsFlags flags)
         // this flush here after QTBUG-70095
         m_eventQueue->flushBufferedEvents();
     }
-
-    // Indicate with a null event that the event the callbacks are waiting for
-    // is not in the queue currently.
-    for (PeekFunc f : qAsConst(m_peekFuncs))
-        f(this, nullptr);
-    m_peekFuncs.clear();
 
     xcb_flush(xcb_connection());
 }

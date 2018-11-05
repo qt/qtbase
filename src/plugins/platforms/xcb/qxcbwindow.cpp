@@ -843,40 +843,12 @@ void QXcbWindow::doFocusIn()
     QWindowSystemInterface::handleWindowActivated(w, Qt::ActiveWindowFocusReason);
 }
 
-static bool focusInPeeker(QXcbConnection *connection, xcb_generic_event_t *event)
-{
-    if (!event) {
-        // FocusIn event is not in the queue, proceed with FocusOut normally.
-        QWindowSystemInterface::handleWindowActivated(nullptr, Qt::ActiveWindowFocusReason);
-        return true;
-    }
-    uint response_type = event->response_type & ~0x80;
-    if (response_type == XCB_FOCUS_IN) {
-        // Ignore focus events that are being sent only because the pointer is over
-        // our window, even if the input focus is in a different window.
-        xcb_focus_in_event_t *e = (xcb_focus_in_event_t *) event;
-        if (e->detail != XCB_NOTIFY_DETAIL_POINTER)
-            return true;
-    }
-
-    /* We are also interested in XEMBED_FOCUS_IN events */
-    if (response_type == XCB_CLIENT_MESSAGE) {
-        xcb_client_message_event_t *cme = (xcb_client_message_event_t *)event;
-        if (cme->type == connection->atom(QXcbAtom::_XEMBED)
-            && cme->data.data32[1] == XEMBED_FOCUS_IN)
-            return true;
-    }
-
-    return false;
-}
-
 void QXcbWindow::doFocusOut()
 {
     connection()->setFocusWindow(nullptr);
     relayFocusToModalWindow();
     // Do not set the active window to nullptr if there is a FocusIn coming.
-    // The FocusIn handler will update QXcbConnection::setFocusWindow() accordingly.
-    connection()->addPeekFunc(focusInPeeker);
+    connection()->focusInTimer().start(400);
 }
 
 struct QtMotifWmHints {
@@ -2264,6 +2236,8 @@ void QXcbWindow::handleFocusInEvent(const xcb_focus_in_event_t *event)
     // our window, even if the input focus is in a different window.
     if (event->detail == XCB_NOTIFY_DETAIL_POINTER)
         return;
+
+    connection()->focusInTimer().stop();
     doFocusIn();
 }
 
@@ -2491,6 +2465,7 @@ void QXcbWindow::handleXEmbedMessage(const xcb_client_message_event_t *event)
         xcbScreen()->windowShown(this);
         break;
     case XEMBED_FOCUS_IN:
+        connection()->focusInTimer().stop();
         Qt::FocusReason reason;
         switch (event->data.data32[2]) {
         case XEMBED_FOCUS_FIRST:
