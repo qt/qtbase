@@ -1,4 +1,4 @@
-CURRENT_MAC_SDK_VERSION := $(shell /usr/bin/xcrun --sdk $(EXPORT_QMAKE_MAC_SDK) -show-sdk-version)
+CURRENT_MAC_SDK_VERSION := $(shell DEVELOPER_DIR=$(EXPORT_QMAKE_XCODE_DEVELOPER_PATH) /usr/bin/xcrun --sdk $(EXPORT_QMAKE_MAC_SDK) -show-sdk-version)
 
 ifneq ($(CURRENT_MAC_SDK_VERSION),$(EXPORT_QMAKE_MAC_SDK_VERSION))
     $(info The platform SDK has been changed from version $(EXPORT_QMAKE_MAC_SDK_VERSION) to version $(CURRENT_MAC_SDK_VERSION).)

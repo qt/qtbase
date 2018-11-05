@@ -803,7 +803,8 @@ static void updateBlockedStatusRecursion(QWindow *window, bool shouldBeBlocked)
 void QGuiApplicationPrivate::updateBlockedStatus(QWindow *window)
 {
     bool shouldBeBlocked = false;
-    if (!QWindowPrivate::get(window)->isPopup() && !self->modalWindowList.isEmpty())
+    const bool popupType = (window->type() == Qt::ToolTip) || (window->type() == Qt::Popup);
+    if (!popupType && !self->modalWindowList.isEmpty())
         shouldBeBlocked = self->isWindowBlocked(window);
     updateBlockedStatusRecursion(window, shouldBeBlocked);
 }

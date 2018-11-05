@@ -134,7 +134,7 @@ private:
     QString m_windowManagerName;
     QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;
     QMap<xcb_visualid_t, quint8> m_visualDepths;
-    uint16_t m_rotation = XCB_RANDR_ROTATION_ROTATE_0;
+    uint16_t m_rotation = 0;
 };
 
 class Q_XCB_EXPORT QXcbScreen : public QXcbObject, public QPlatformScreen
