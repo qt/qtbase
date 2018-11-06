@@ -63,7 +63,7 @@ class tst_QSslKey : public QObject
 
     QList<KeyInfo> keyInfoList;
 
-    void createPlainTestRows(bool filter = false, QSsl::EncodingFormat format = QSsl::EncodingFormat::Pem);
+    void createPlainTestRows(bool pemOnly = false);
 
 public slots:
     void initTestCase();
@@ -155,7 +155,7 @@ Q_DECLARE_METATYPE(QSsl::KeyAlgorithm)
 Q_DECLARE_METATYPE(QSsl::KeyType)
 Q_DECLARE_METATYPE(QSsl::EncodingFormat)
 
-void tst_QSslKey::createPlainTestRows(bool filter, QSsl::EncodingFormat format)
+void tst_QSslKey::createPlainTestRows(bool pemOnly)
 {
     QTest::addColumn<QString>("absFilePath");
     QTest::addColumn<QSsl::KeyAlgorithm>("algorithm");
@@ -163,7 +163,7 @@ void tst_QSslKey::createPlainTestRows(bool filter, QSsl::EncodingFormat format)
     QTest::addColumn<int>("length");
     QTest::addColumn<QSsl::EncodingFormat>("format");
     foreach (KeyInfo keyInfo, keyInfoList) {
-        if (filter && keyInfo.format != format)
+        if (pemOnly && keyInfo.format != QSsl::EncodingFormat::Pem)
             continue;
 #ifdef Q_OS_WINRT
         if (keyInfo.fileInfo.fileName().contains("RC2-64"))
