@@ -6268,8 +6268,17 @@ void qt_memfill64(quint64 *dest, quint64 color, qsizetype count)
 }
 #endif
 
+#if defined(QT_COMPILER_SUPPORTS_SSSE3) && defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG)
+__attribute__((optimize("no-tree-vectorize")))
+#endif
 void qt_memfill24(quint24 *dest, quint24 color, qsizetype count)
 {
+#  ifdef QT_COMPILER_SUPPORTS_SSSE3
+    extern void qt_memfill24_ssse3(quint24 *, quint24, qsizetype);
+    if (qCpuHasFeature(SSSE3))
+        return qt_memfill24_ssse3(dest, color, count);
+#  endif
+
     const quint32 v = color;
     quint24 *end = dest + count;
 
