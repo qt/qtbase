@@ -502,7 +502,7 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
                     QString lang = xml.attributes().value(QLatin1String("xml:lang")).toString();
                     const QString text = xml.readElementText();
                     if (lang.isEmpty()) {
-                        lang = QLatin1String("en_US");
+                        lang = QLatin1String("default"); // no locale attribute provided, treat it as default.
                     }
                     data.localeComments.insert(lang, text);
                     continue; // we called readElementText, so we're at the EndElement already.

@@ -115,7 +115,6 @@ int runUic(int argc, char *argv[])
     driver.option().postfix = parser.value(postfixOption);
     driver.option().translateFunction = parser.value(translateOption);
     driver.option().includeFile = parser.value(includeOption);
-    driver.option().generator = (parser.value(generatorOption).toLower() == QLatin1String("java")) ? Option::JavaGenerator : Option::CppGenerator;
 
     if (parser.isSet(noStringLiteralOption))
         fprintf(stderr, "The -s, --no-stringliteral option is deprecated and it won't take any effect.\n");

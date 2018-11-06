@@ -224,7 +224,7 @@ void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
                 qWarning() << error;
 #endif
             }
-            // FALL-THROUGH
+            Q_FALLTHROUGH();
         case QTabletEvent::Stylus:
             painter.setPen(m_pen);
             painter.drawLine(lastPoint.pos, event->posF());

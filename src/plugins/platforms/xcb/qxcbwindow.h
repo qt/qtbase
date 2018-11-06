@@ -193,16 +193,15 @@ protected:
     void setImageFormatForVisual(const xcb_visualtype_t *visual);
 
     QXcbScreen *parentScreen();
-
     QXcbScreen *initialScreen() const;
-    void changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
+
+    void setNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
+    void setNetWmState(Qt::WindowFlags flags);
+    void setNetWmState(Qt::WindowStates state);
+    void setNetWmStateOnUnmappedWindow();
     NetWmStates netWmStates();
-    void setNetWmStates(NetWmStates);
 
     void setMotifWmHints(Qt::WindowFlags flags);
-
-    void setNetWmStateWindowFlags(Qt::WindowFlags flags);
-    void updateNetWmStateBeforeMap();
 
     void setTransparentForMouseEvents(bool transparent);
     void updateDoesNotAcceptFocus(bool doesNotAcceptFocus);

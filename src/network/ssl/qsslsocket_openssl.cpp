@@ -474,7 +474,12 @@ void QSslSocketPrivate::resetDefaultCiphers()
 #else
     SSL_CTX *myCtx = q_SSL_CTX_new(q_SSLv23_client_method());
 #endif
+    // Note, we assert, not just silently return/bail out early:
+    // this should never happen and problems with OpenSSL's initialization
+    // must be caught before this (see supportsSsl()).
+    Q_ASSERT(myCtx);
     SSL *mySsl = q_SSL_new(myCtx);
+    Q_ASSERT(mySsl);
 
     QList<QSslCipher> ciphers;
     QList<QSslCipher> defaultCiphers;

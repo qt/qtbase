@@ -502,6 +502,8 @@ void tst_QAccessibilityLinux::testSlider()
 
 void tst_QAccessibilityLinux::testFocus()
 {
+    m_window->activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(m_window));
     QLineEdit *lineEdit1 = new QLineEdit(m_window);
     lineEdit1->setText("lineEdit 1");
     QLineEdit *lineEdit2 = new QLineEdit(m_window);
