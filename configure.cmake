@@ -212,7 +212,7 @@ qt_feature("force_asserts" PUBLIC
 )
 qt_feature("framework" PUBLIC
     LABEL "Build Apple Frameworks"
-    CONDITION APPLE AND QT_FEATURE_shared
+    CONDITION APPLE AND BUILD_SHARED_LIBS
 )
 qt_feature_definition("framework" "QT_MAC_FRAMEWORK_BUILD")
 qt_feature("largefile" PUBLIC

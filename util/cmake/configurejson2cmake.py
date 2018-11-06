@@ -643,6 +643,7 @@ def parseFeature(ctx, feature, data, cm_fh):
         'enable_gdb_index': None,
         'enable_new_dtags': None,
         'force_debug_info': None,
+        'framework': { 'condition': 'APPLE AND BUILD_SHARED_LIBS', },
         'gc_binaries': None,
         'gcc-sysroot': None,
         'gcov': None,
