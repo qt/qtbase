@@ -1383,23 +1383,6 @@ bool QSocks5SocketEngine::bind(const QHostAddress &addr, quint16 port)
         d->localAddress = QHostAddress();
         d->udpData->associatePort = d->localPort;
         d->localPort = 0;
-        QUdpSocket dummy;
-#ifndef QT_NO_BEARERMANAGEMENT
-        dummy.setProperty("_q_networksession", property("_q_networksession"));
-#endif
-        dummy.setProxy(QNetworkProxy::NoProxy);
-        if (!dummy.bind()
-            || writeDatagram(0,0, QIpPacketHeader(d->data->controlSocket->localAddress(), dummy.localPort())) != 0
-            || !dummy.waitForReadyRead(qt_subtract_from_timeout(msecs, stopWatch.elapsed()))
-            || dummy.readDatagram(0,0, &d->localAddress, &d->localPort) != 0) {
-            QSOCKS5_DEBUG << "udp actual address and port lookup failed";
-            setState(QAbstractSocket::UnconnectedState);
-            setError(dummy.error(), dummy.errorString());
-            d->data->controlSocket->close();
-            //### reset and error
-            return false;
-        }
-        QSOCKS5_DEBUG << "udp actual address and port" << d->localAddress << ':' << d->localPort;
         return true;
 #endif // QT_NO_UDPSOCKET
     }
