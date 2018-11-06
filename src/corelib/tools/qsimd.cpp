@@ -529,7 +529,7 @@ Q_CORE_EXPORT QBasicAtomicInteger<quint64> qt_cpu_features[1] = { Q_BASIC_ATOMIC
 Q_CORE_EXPORT QBasicAtomicInteger<unsigned> qt_cpu_features[2] = { Q_BASIC_ATOMIC_INITIALIZER(0), Q_BASIC_ATOMIC_INITIALIZER(0) };
 #endif
 
-void qDetectCpuFeatures()
+quint64 qDetectCpuFeatures()
 {
     quint64 f = detectProcessorFeatures();
     QByteArray disable = qgetenv("QT_NO_CPU_FEATURE");
@@ -563,6 +563,7 @@ void qDetectCpuFeatures()
 #ifndef Q_ATOMIC_INT64_IS_SUPPORTED
     qt_cpu_features[1].store(f >> 32);
 #endif
+    return f;
 }
 
 void qDumpCPUFeatures()
