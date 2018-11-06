@@ -620,55 +620,94 @@ def parseTest(ctx, test, data, cm_fh):
 
 
 def parseFeature(ctx, feature, data, cm_fh):
-    skip_features = {
-        'c++11', 'c++14', 'c++1y', 'c++1z',  # C++ versions
-        'c89', 'c99', 'c11',  # C versions
-        'stl',  # Do we really need to test for this in 2018?!
-        'rpath', 'rpath_dir',  # rpath related
-        'static', 'shared',  # static/shared libs
-        'debug', 'release', 'debug_and_release', 'build_all', 'optimize_debug', 'optimize_size',  # build types
-        'release_tools', 'gcov', 'silent', 'profile',
-        'msvc_mp', 'static_runtime', 'incredibuild_xge', 'ccache',  # compiler specific stuff
-        'sanitize_address', 'sanitize_thread', 'sanitize_memory',  # sanitizer
-        'sanitize_undefined', 'sanitizer',
-        'force_debug_info', 'separate_debug_info',  'warnings_are_errors',  # FIXME: Do we need these?
-        'strip', 'precompile_header', 'ltcg', 'enable_new_dtags',
-        'enable_gdb_index', 'reduce_relocations',
-        'stack-protector-strong',
-        'host-dbus',  # dbus related
-        'cross_compile', 'gcc-sysroot', # cross compile related
-        'gc_binaries', 'qmakeargs', 'use_gold_linker', 'pkg-config', 'verifyspec',   # qmake stuff...
-        'GNUmake', 'compiler-flags',
-        'system-doubleconversion', 'system-pcre2', 'system-zlib', 'system-png', 'system-jpeg', 'system-freetype', 'system-xcb', 'xkbcommon-system', # system libraries
-        'doubleconversion',
-        'dlopen',  # handled by CMAKE_DL_LIBS
-        'alloc_stdlib_h', 'alloc_h', 'alloc_malloc_h',  # handled by alloc target
-        'posix_fallocate',  # Only needed for sqlite, which we do not want to build
-        'qpa_default_platform', # Not a bool!
-        'sun-libiconv', # internal feature but not referenced in our system
+    # This is *before* the feature name gets normalized! So keep - and + chars, etc.
+    feature_mapping = {
+        'alloc_h': None,  # handled by alloc target
+        'alloc_malloc_h': None,
+        'alloc_stdlib_h': None,
+        'build_all': None,
+        'c++11': None,   # C and C++ versions
+        'c11': None,
+        'c++14': None,
+        'c++1y': None,
+        'c++1z': None,
+        'c89': None,
+        'c99': None,
+        'ccache': None,
+        'compiler-flags': None,
+        'cross_compile': None,
+        'debug_and_release': None,
+        'debug': None,
+        'dlopen': None,  # handled by CMAKE_DL_LIBS
+        'doubleconversion': None,
+        'enable_gdb_index': None,
+        'enable_new_dtags': None,
+        'force_debug_info': None,
+        'gc_binaries': None,
+        'gcc-sysroot': None,
+        'gcov': None,
+        'GNUmake': None,
+        'host-dbus': None,
+        'incredibuild_xge': None,
+        'ltcg': None,
+        'msvc_mp': None,
+        'optimize_debug': None,
+        'optimize_size': None,
+        'pkg-config': None,
+        'posix_fallocate': None,  # Only needed for sqlite, which we do not want to build
+        'precompile_header': None,
+        'profile': None,
+        'qmakeargs': None,
+        'qpa_default_platform': None, # Not a bool!
+        'reduce_relocations': None,
+        'release': None,
+        'release_tools': None,
+        'rpath_dir': None,  # rpath related
+        'rpath': None,
+        'sanitize_address': None,   # sanitizer
+        'sanitize_memory': None,
+        'sanitizer': None,
+        'sanitize_thread': None,
+        'sanitize_undefined': None,
+        'separate_debug_info': None,
+        'shared': None,
+        'silent': None,
+        'stack-protector-strong': None,
+        'static': None,
+        'static_runtime': None,
+        'stl': None,  # Do we really need to test for this in 2018?!
+        'strip': None,
+        'sun-libiconv': None,  # internal feature but not referenced in our system
+        'system-doubleconversion': None,  # No system libraries anymore!
+        'system-freetype': None,
+        'system-jpeg': None,
+        'system-pcre2': None,
+        'system-png': None,
+        'system-xcb': None,
+        'system-zlib': None,
+        'use_gold_linker': None,
+        'verifyspec': None,   # qmake specific...
+        'warnings_are_errors': None,  # FIXME: Do we need these?
+        'xkbcommon-system': None, # another system library, just named a bit different from the rest
     }
-    if feature in skip_features:
+
+    mapping = feature_mapping.get(feature, {})
+
+    if mapping is None:
         print('    **** Skipping features {}: masked.'.format(feature))
         return
 
-    disabled_features = set()
-
-    override_condition = {}
-
     handled = { 'autoDetect', 'comment', 'condition', 'description', 'disable', 'emitIf', 'enable', 'label', 'output', 'purpose', 'section' }
-    label = data.get('label', '')
-    purpose = data.get('purpose', data.get('description', label))
-    autoDetect = map_condition(data.get('autoDetect', ''))
-    condition = override_condition.get(feature, map_condition(data.get('condition', '')))
-    output = data.get('output', [])
-    comment = data.get('comment', '')
-    section = data.get('section', '')
-    enable = map_condition(data.get('enable', ''))
-    disable = map_condition(data.get('disable', ''))
-    emitIf = map_condition(data.get('emitIf', ''))
-
-    if feature in disabled_features:
-        condition = "FALSE"
+    label = mapping.get('label', data.get('label', ''))
+    purpose = mapping.get('purpose', data.get('purpose', data.get('description', label)))
+    autoDetect = map_condition(mapping.get('autoDetect', data.get('autoDetect', '')))
+    condition = map_condition(mapping.get('condition', data.get('condition', '')))
+    output = mapping.get('output', data.get('output', []))
+    comment = mapping.get('comment', data.get('comment', ''))
+    section = mapping.get('section', data.get('section', ''))
+    enable = map_condition(mapping.get('enable', data.get('enable', '')))
+    disable = map_condition(mapping.get('disable', data.get('disable', '')))
+    emitIf = map_condition(mapping.get('emitIf', data.get('emitIf', '')))
 
     for k in [k for k in data.keys() if k not in handled]:
         print('    XXXX UNHANDLED KEY {} in feature description'.format(k))
