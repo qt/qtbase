@@ -172,15 +172,9 @@ QStringList QGenericUnixTheme::xdgIconThemePaths()
     if (homeIconDir.isDir())
         paths.prepend(homeIconDir.absoluteFilePath());
 
-    QString xdgDirString = QFile::decodeName(qgetenv("XDG_DATA_DIRS"));
-    if (xdgDirString.isEmpty())
-        xdgDirString = QLatin1String("/usr/local/share/:/usr/share/");
-    const auto xdgDirs = xdgDirString.splitRef(QLatin1Char(':'));
-    for (const QStringRef &xdgDir : xdgDirs) {
-        const QFileInfo xdgIconsDir(xdgDir + QLatin1String("/icons"));
-        if (xdgIconsDir.isDir())
-            paths.append(xdgIconsDir.absoluteFilePath());
-    }
+    paths.append(QStandardPaths::locateAll(QStandardPaths::GenericDataLocation,
+                                           QStringLiteral("icons"),
+                                           QStandardPaths::LocateDirectory));
 
     return paths;
 }
