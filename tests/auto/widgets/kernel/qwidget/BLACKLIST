@@ -32,7 +32,6 @@ osx
 [render_systemClip]
 osx
 [showMinimizedKeepsFocus]
-osx-10.11 ci
 osx-10.12 ci
 osx-10.13 ci
 [maskedUpdate]
