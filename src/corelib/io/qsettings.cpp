@@ -2685,7 +2685,7 @@ QSettings::QSettings(QObject *parent)
 */
 QSettings::QSettings(Scope scope, QObject *parent)
     : QObject(*QSettingsPrivate::create(globalDefaultFormat, scope,
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
                                         QCoreApplication::organizationDomain().isEmpty()
                                             ? QCoreApplication::organizationName()
                                             : QCoreApplication::organizationDomain()
