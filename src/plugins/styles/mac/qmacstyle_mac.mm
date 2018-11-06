@@ -2789,6 +2789,9 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
     case SH_SpinBox_ButtonsInsideFrame:
         ret = false;
         break;
+    case SH_Table_GridLineColor:
+        ret = int(qt_mac_toQColor(NSColor.gridColor).rgb());
+        break;
     default:
         ret = QCommonStyle::styleHint(sh, opt, w, hret);
         break;
