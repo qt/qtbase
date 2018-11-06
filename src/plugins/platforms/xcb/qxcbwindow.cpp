@@ -904,6 +904,8 @@ void QXcbWindow::doFocusOut()
 
 struct QtMotifWmHints {
     quint32 flags, functions, decorations;
+    qint32 input_mode; // unused
+    quint32 status; // unused
 };
 
 enum {

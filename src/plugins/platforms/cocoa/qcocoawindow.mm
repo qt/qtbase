@@ -541,6 +541,12 @@ void QCocoaWindow::setWindowZoomButton(Qt::WindowFlags flags)
 
 void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
 {
+    // Updating the window flags may affect the window's theme frame, which
+    // in the process retains and then autoreleases the NSWindow. To make
+    // sure this doesn't leave lingering releases when there is no pool in
+    // place (e.g. during main(), before exec), we add one locally here.
+    QMacAutoReleasePool pool;
+
     if (!isContentView())
         return;
 
@@ -1372,11 +1378,14 @@ void QCocoaWindow::recreateWindowIfNeeded()
     if (m_windowModality != window()->modality())
         recreateReason |= WindowModalityChanged;
 
-    const bool shouldBeContentView = !parentWindow && !isEmbeddedView;
+    Qt::WindowType type = window()->type();
+
+    const bool shouldBeContentView = !parentWindow
+        && !((type & Qt::SubWindow) == Qt::SubWindow)
+        && !isEmbeddedView;
     if (isContentView() != shouldBeContentView)
         recreateReason |= ContentViewChanged;
 
-    Qt::WindowType type = window()->type();
     const bool isPanel = isContentView() && [m_view.window isKindOfClass:[QNSPanel class]];
     const bool shouldBePanel = shouldBeContentView &&
         ((type & Qt::Popup) == Qt::Popup || (type & Qt::Dialog) == Qt::Dialog);
