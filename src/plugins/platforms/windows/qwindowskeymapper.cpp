@@ -1263,6 +1263,13 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, MSG msg,
             }
 #endif // !QT_NO_SHORTCUT
             key_recorder.storeKey(int(msg.wParam), a, state, text);
+
+            // QTBUG-71210
+            // VK_PACKET specifies multiple characters. The system only sends the first
+            // character of this sequence for each.
+            if (msg.wParam == VK_PACKET)
+                code = asciiToKeycode(char(uch.cell()), state);
+
             QWindowSystemInterface::handleExtendedKeyEvent(receiver, QEvent::KeyPress, code,
                                                            modifiers, scancode, quint32(msg.wParam), nModifiers, text, false);
             result =true;
