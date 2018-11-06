@@ -74,6 +74,7 @@ def map_library(lib: str) -> Union[str, LibraryMapping, List[str]]:
        'pcre2': ['PCRE2', 'REQUIRED'],
        'posix_iconv': None,
        'pps': 'PPS',
+       'slog2': 'Slog2',
        'sun_iconv': None,
        'udev': 'Libudev',
        'vulkan': 'Vulkan',

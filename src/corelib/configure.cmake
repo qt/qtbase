@@ -24,6 +24,8 @@ find_package(PCRE2)
 set_package_properties(PCRE2 PROPERTIES TYPE REQUIRED)
 find_package(PPS)
 set_package_properties(PPS PROPERTIES TYPE OPTIONAL)
+find_package(Slog2)
+set_package_properties(Slog2 PROPERTIES TYPE OPTIONAL)
 
 
 #### Tests
@@ -477,7 +479,7 @@ qt_feature("renameat2" PRIVATE
 )
 qt_feature("slog2" PRIVATE
     LABEL "slog2"
-    CONDITION libs.slog2 OR FIXME
+    CONDITION Slog2_FOUND
 )
 qt_feature("statx" PRIVATE
     LABEL "statx() in libc"
