@@ -558,6 +558,10 @@ public:
     SFGAOF attributes() const { return m_attributes; }
     QString normalDisplay() const // base name, usually
         { return displayName(m_item, SIGDN_NORMALDISPLAY); }
+    QString urlString() const
+        { return displayName(m_item, SIGDN_URL); }
+    QString fileSysPath() const
+        { return displayName(m_item, SIGDN_FILESYSPATH); }
     QString desktopAbsoluteParsing() const
         { return displayName(m_item, SIGDN_DESKTOPABSOLUTEPARSING); }
     QString path() const; // Only set for 'FileSystem' (SFGAO_FILESYSTEM) items
@@ -734,7 +738,8 @@ void QWindowsShellItem::format(QDebug &d) const
     if (canCopy())
         d << " [copyable]";
     d << ", normalDisplay=\"" << normalDisplay()
-        << "\", desktopAbsoluteParsing=\"" << desktopAbsoluteParsing() << '"';
+        << "\", desktopAbsoluteParsing=\"" << desktopAbsoluteParsing()
+        << "\", urlString=\"" << urlString() << "\", fileSysPath=\"" << fileSysPath() << '"';
     const QString pathS = path();
     if (!pathS.isEmpty())
         d << ", path=\"" << pathS << '"';
