@@ -2513,22 +2513,21 @@ bool QObject::isSignalConnected(const QMetaMethod &signal) const
     signalIndex += QMetaObjectPrivate::signalOffset(signal.mobj);
 
     QMutexLocker locker(signalSlotLock(this));
-    if (!d->connectionLists)
-        return false;
+    if (d->connectionLists) {
+        if (signalIndex < sizeof(d->connectedSignals) * 8 && !d->connectionLists->dirty)
+            return d->isSignalConnected(signalIndex);
 
-    if (signalIndex < sizeof(d->connectedSignals) * 8 && !d->connectionLists->dirty)
-        return d->isSignalConnected(signalIndex);
-
-    if (signalIndex < uint(d->connectionLists->count())) {
-        const QObjectPrivate::Connection *c =
-            d->connectionLists->at(signalIndex).first;
-        while (c) {
-            if (c->receiver)
-                return true;
-            c = c->nextConnectionList;
+        if (signalIndex < uint(d->connectionLists->count())) {
+            const QObjectPrivate::Connection *c =
+                d->connectionLists->at(signalIndex).first;
+            while (c) {
+                if (c->receiver)
+                    return true;
+                c = c->nextConnectionList;
+            }
         }
     }
-    return false;
+    return d->isDeclarativeSignalConnected(signalIndex);
 }
 
 /*!
