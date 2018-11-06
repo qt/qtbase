@@ -386,7 +386,7 @@ qt_feature("iconv" PUBLIC PRIVATE
     SECTION "Internationalization"
     LABEL "iconv"
     PURPOSE "Provides internationalization on Unix."
-    CONDITION NOT QT_FEATURE_icu AND QT_FEATURE_textcodec AND ( QT_FEATURE_posix_libiconv OR TEST_sun_iconv OR QT_FEATURE_gnu_libiconv )
+    CONDITION NOT QT_FEATURE_icu AND QT_FEATURE_textcodec AND ( TEST_posix_iconv OR TEST_sun_iconv )
 )
 qt_feature_definition("iconv" "QT_NO_ICONV" NEGATE VALUE "1")
 qt_feature("posix_libiconv" PRIVATE
@@ -395,11 +395,17 @@ qt_feature("posix_libiconv" PRIVATE
     ENABLE INPUT_iconv STREQUAL 'posix'
     DISABLE INPUT_iconv STREQUAL 'sun' OR INPUT_iconv STREQUAL 'gnu' OR INPUT_iconv STREQUAL 'no'
 )
+qt_feature("sun_libiconv"
+    LABEL "SUN iconv"
+    CONDITION NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND TEST_sun_iconv
+    ENABLE TEST_sun_iconv
+    DISABLE NOT TEST_sun_iconv
+)
 qt_feature("gnu_libiconv" PRIVATE
     LABEL "GNU iconv"
-    CONDITION NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND NOT QT_FEATURE_posix_libiconv AND NOT TEST_sun_iconv AND libs.gnu_iconv OR FIXME
-    ENABLE INPUT_iconv STREQUAL 'gnu'
-    DISABLE INPUT_iconv STREQUAL 'posix' OR INPUT_iconv STREQUAL 'sun' OR INPUT_iconv STREQUAL 'no'
+    CONDITION NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND TEST_posix_iconv AND NOT TEST_iconv_needlib
+    ENABLE TEST_posix_iconv AND NOT TEST_iconv_needlib
+    DISABLE NOT TEST_posix_iconv OR TEST_iconv_needlib
 )
 qt_feature("icu" PRIVATE
     LABEL "ICU"

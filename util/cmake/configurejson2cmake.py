@@ -274,7 +274,6 @@ def map_condition(condition):
     mapped_features = {
         "dlopen": "UNIX",
         'gbm': 'gbm_FOUND',
-        "sun-libiconv": "TEST_sun_iconv",
         "system-xcb": "ON",
         "system-freetype": "ON",
     }
@@ -645,12 +644,22 @@ def parseFeature(ctx, feature, data, cm_fh):
         'enable_gdb_index': None,
         'enable_new_dtags': None,
         'force_debug_info': None,
-        'framework': { 'condition': 'APPLE AND BUILD_SHARED_LIBS', },
+        'framework': {
+            'condition': 'APPLE AND BUILD_SHARED_LIBS',
+        },
         'gc_binaries': None,
         'gcc-sysroot': None,
         'gcov': None,
+        'gnu-libiconv': {
+            'condition': 'NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND TEST_posix_iconv AND NOT TEST_iconv_needlib',
+            'enable': 'TEST_posix_iconv AND NOT TEST_iconv_needlib',
+            'disable': 'NOT TEST_posix_iconv OR TEST_iconv_needlib',
+        },
         'GNUmake': None,
         'host-dbus': None,
+        'iconv': {
+            'condition': 'NOT QT_FEATURE_icu AND QT_FEATURE_textcodec AND ( TEST_posix_iconv OR TEST_sun_iconv )'
+        },
         'incredibuild_xge': None,
         'ltcg': None,
         'msvc_mp': None,
@@ -658,6 +667,11 @@ def parseFeature(ctx, feature, data, cm_fh):
         'optimize_size': None,
         'pkg-config': None,
         'posix_fallocate': None,  # Only needed for sqlite, which we do not want to build
+        'posix_libiconv': {
+            'condition': 'NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND TEST_posix_iconv AND TEST_iconv_needlib',
+            'enable': 'TEST_posix_iconv AND TEST_iconv_needlib',
+            'disable': 'NOT TEST_posix_iconv OR NOT TEST_iconv_needlib',
+        },
         'precompile_header': None,
         'profile': None,
         'qmakeargs': None,
@@ -680,7 +694,11 @@ def parseFeature(ctx, feature, data, cm_fh):
         'static_runtime': None,
         'stl': None,  # Do we really need to test for this in 2018?!
         'strip': None,
-        'sun-libiconv': None,  # internal feature but not referenced in our system
+        'sun-libiconv': {
+            'condition': 'NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND TEST_sun_iconv',
+            'enable': 'TEST_sun_iconv',
+            'disable': 'NOT TEST_sun_iconv',
+        },
         'system-doubleconversion': None,  # No system libraries anymore!
         'system-freetype': None,
         'system-jpeg': None,
