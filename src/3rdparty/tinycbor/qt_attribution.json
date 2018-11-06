@@ -5,6 +5,7 @@
     "QtUsage": "Used for QCborStreamReader and QCborStreamWriter.",
 
     "Description": "Concise Binary Object Representation (CBOR) Library",
+    "Version": "0.6.0",
     "Homepage": "https://github.com/intel/tinycbor",
     "License": "MIT License",
     "LicenseId": "MIT",

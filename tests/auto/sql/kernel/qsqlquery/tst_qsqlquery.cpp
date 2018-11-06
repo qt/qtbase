@@ -633,13 +633,20 @@ void tst_QSqlQuery::bindBool()
         QVERIFY_SQL(q, exec());
     }
 
-    QVERIFY_SQL(q, exec("SELECT id, flag FROM " + tableName));
+    QVERIFY_SQL(q, exec("SELECT id, flag FROM " + tableName + " ORDER BY id"));
     for (int i = 0; i < 2; ++i) {
         bool flag = i;
         QVERIFY_SQL(q, next());
         QCOMPARE(q.value(0).toInt(), i);
         QCOMPARE(q.value(1).toBool(), flag);
     }
+    QVERIFY_SQL(q, prepare("SELECT flag FROM " + tableName + " WHERE flag = :filter"));
+    const bool filter = true;
+    q.bindValue(":filter", filter);
+    QVERIFY_SQL(q, exec());
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toBool(), filter);
+    QFAIL_SQL(q, next());
     QVERIFY_SQL(q, exec("DROP TABLE " + tableName));
 }
 

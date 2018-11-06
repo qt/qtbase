@@ -107,9 +107,6 @@ class QXcbEventDispatcher
 {
 public:
     static QAbstractEventDispatcher *createEventDispatcher(QXcbConnection *connection);
-
-private:
-    QXcbConnection *m_connection;
 };
 
 QT_END_NAMESPACE

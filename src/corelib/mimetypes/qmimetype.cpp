@@ -258,6 +258,7 @@ QString QMimeType::comment() const
     QStringList languageList;
     languageList << QLocale().name();
     languageList << QLocale().uiLanguages();
+    languageList << QLatin1String("default"); // use the default locale if possible.
     for (const QString &language : qAsConst(languageList)) {
         const QString lang = language == QLatin1String("C") ? QLatin1String("en_US") : language;
         const QString comm = d->localeComments.value(lang);

@@ -114,7 +114,7 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
             externalFormat = GL_BGRA;
             internalFormat = GL_RGBA;
             pixelType = GL_UNSIGNED_INT_8_8_8_8_REV;
-        } else if (funcs->hasOpenGLExtension(QOpenGLExtensions::TextureSwizzle) && false) {
+        } else if (funcs->hasOpenGLExtension(QOpenGLExtensions::TextureSwizzle)) {
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
             GLint swizzle[4] = { GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA };
             funcs->glTexParameteriv(target, GL_TEXTURE_SWIZZLE_RGBA, swizzle);

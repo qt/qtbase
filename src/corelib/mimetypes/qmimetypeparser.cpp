@@ -248,11 +248,11 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
             }
                 break;
             case ParseComment: {
-                // comments have locale attributes. We want the default, English one
+                // comments have locale attributes.
                 QString locale = atts.value(QLatin1String(localeAttributeC)).toString();
                 const QString comment = reader.readElementText();
                 if (locale.isEmpty())
-                    locale = QString::fromLatin1("en_US");
+                    locale = QString::fromLatin1("default");
                 data.localeComments.insert(locale, comment);
             }
                 break;

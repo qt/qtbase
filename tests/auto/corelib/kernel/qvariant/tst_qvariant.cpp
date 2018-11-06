@@ -525,6 +525,12 @@ void tst_QVariant::canConvert_data()
     var = QVariant::fromValue<signed char>(-1);
     QTest::newRow("SChar")
         << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+    var = QVariant((short)-3);
+    QTest::newRow("Short")
+        << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << Y << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+    var = QVariant((ushort)7);
+    QTest::newRow("UShort")
+        << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << Y << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
     var = QVariant::fromValue<QJsonValue>(QJsonValue(QStringLiteral("hello")));
     QTest::newRow("JsonValue")
         << var << N << N << Y << N << N << N << N << N << N << Y << N << N << Y << N << N << Y << Y << Y << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
@@ -563,6 +569,8 @@ void tst_QVariant::toInt_data()
     QTest::newRow( "char" ) << QVariant::fromValue('a') << int('a') << true;
     signed char signedChar = -13;
     QTest::newRow( "signed char" ) << QVariant::fromValue(signedChar) << -13 << true;
+    QTest::newRow( "short" ) << QVariant::fromValue(short(-7)) << int(-7) << true;
+    QTest::newRow( "ushort" ) << QVariant::fromValue(ushort(30000)) << 30000 << true;
     QTest::newRow( "double" ) << QVariant( 3.1415927 ) << 3 << true;
     QTest::newRow( "float" ) << QVariant( 3.1415927f ) << 3 << true;
     QTest::newRow( "uint" ) << QVariant( 123u ) << 123 << true;

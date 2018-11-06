@@ -3523,13 +3523,19 @@ bool QVariant::canConvert(int targetTypeId) const
     }
 
     // TODO Reimplement this function, currently it works but it is a historical mess.
-    uint currentType = ((d.type == QMetaType::Float) ? QVariant::Double : d.type);
+    uint currentType = d.type;
     if (currentType == QMetaType::SChar || currentType == QMetaType::Char)
         currentType = QMetaType::UInt;
     if (targetTypeId == QMetaType::SChar || currentType == QMetaType::Char)
         targetTypeId = QMetaType::UInt;
-    if (uint(targetTypeId) == uint(QMetaType::Float)) targetTypeId = QVariant::Double;
-
+    if (currentType == QMetaType::Short || currentType == QMetaType::UShort)
+        currentType = QMetaType::Int;
+    if (targetTypeId == QMetaType::Short || currentType == QMetaType::UShort)
+        targetTypeId = QMetaType::Int;
+    if (currentType == QMetaType::Float)
+        currentType = QMetaType::Double;
+    if (targetTypeId == QMetaType::Float)
+        targetTypeId = QMetaType::Double;
 
     if (currentType == uint(targetTypeId))
         return true;

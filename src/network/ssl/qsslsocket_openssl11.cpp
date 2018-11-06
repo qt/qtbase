@@ -88,8 +88,6 @@ bool QSslSocketPrivate::ensureLibraryLoaded()
     const QMutexLocker locker(qt_opensslInitMutex);
 
     if (!s_libraryLoaded) {
-        s_libraryLoaded = true;
-
         // Initialize OpenSSL.
         if (q_OPENSSL_init_ssl(0, nullptr) != 1)
             return false;
@@ -105,6 +103,8 @@ bool QSslSocketPrivate::ensureLibraryLoaded()
             qWarning("Random number generator not seeded, disabling SSL support");
             return false;
         }
+
+        s_libraryLoaded = true;
     }
     return true;
 }
