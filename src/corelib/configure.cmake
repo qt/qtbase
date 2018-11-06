@@ -20,6 +20,8 @@ find_package(Atomic)
 set_package_properties(Atomic PROPERTIES TYPE OPTIONAL)
 find_package(WrapRt)
 set_package_properties(WrapRt PROPERTIES TYPE OPTIONAL)
+find_package(LTTngUST)
+set_package_properties(LTTngUST PROPERTIES TYPE OPTIONAL)
 find_package(PCRE2)
 set_package_properties(PCRE2 PROPERTIES TYPE REQUIRED)
 find_package(PPS)
@@ -713,7 +715,7 @@ qt_feature("commandlineparser" PUBLIC
 qt_feature("lttng" PRIVATE
     LABEL "LTTNG"
     AUTODETECT OFF
-    CONDITION LINUX AND libs.lttng-ust OR FIXME
+    CONDITION LINUX AND LTTNGUST_FOUND
     ENABLE INPUT_trace STREQUAL 'lttng' OR ( INPUT_trace STREQUAL 'yes' AND LINUX )
     DISABLE INPUT_trace STREQUAL 'etw' OR INPUT_trace STREQUAL 'no'
 )
