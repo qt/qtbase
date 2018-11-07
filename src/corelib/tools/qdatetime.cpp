@@ -908,10 +908,16 @@ QString QDate::toString(Qt::DateFormat format) const
             a minus sign is prepended in addition.
     \endtable
 
-    All other input characters will be ignored. Any sequence of characters that
-    are enclosed in single quotes will be treated as text and not be used as an
-    expression. Two consecutive single quotes ("''") are replaced by a singlequote
-    in the output. Formats without separators (e.g. "ddMM") are currently not supported.
+    Any sequence of characters enclosed in single quotes will be included
+    verbatim in the output string (stripped of the quotes), even if it contains
+    formatting characters. Two consecutive single quotes ("''") are replaced by
+    a single quote in the output. All other characters in the format string are
+    included verbatim in the output string.
+
+    Formats without separators (e.g. "ddMM") are supported but must be used with
+    care, as the resulting strings aren't always reliably readable (e.g. if "dM"
+    produces "212" it could mean either the 2nd of December or the 21st of
+    February).
 
     Example format strings (assuming that the QDate is the 20 July
     1969):
@@ -1672,10 +1678,16 @@ QString QTime::toString(Qt::DateFormat format) const
     \row \li t \li the timezone (for example "CEST")
     \endtable
 
-    All other input characters will be ignored. Any sequence of characters that
-    are enclosed in single quotes will be treated as text and not be used as an
-    expression. Two consecutive single quotes ("''") are replaced by a singlequote
-    in the output. Formats without separators (e.g. "HHmm") are currently not supported.
+    Any sequence of characters enclosed in single quotes will be included
+    verbatim in the output string (stripped of the quotes), even if it contains
+    formatting characters. Two consecutive single quotes ("''") are replaced by
+    a single quote in the output. All other characters in the format string are
+    included verbatim in the output string.
+
+    Formats without separators (e.g. "ddMM") are supported but must be used with
+    care, as the resulting strings aren't always reliably readable (e.g. if "dM"
+    produces "212" it could mean either the 2nd of December or the 21st of
+    February).
 
     Example format strings (assuming that the QTime is 14:13:09.042 and the system
     locale is \c{en_US})
@@ -3962,10 +3974,16 @@ QString QDateTime::toString(Qt::DateFormat format) const
     \row \li t \li the timezone (for example "CEST")
     \endtable
 
-    All other input characters will be ignored. Any sequence of characters that
-    are enclosed in single quotes will be treated as text and not be used as an
-    expression. Two consecutive single quotes ("''") are replaced by a singlequote
-    in the output. Formats without separators (e.g. "HHmm") are currently not supported.
+    Any sequence of characters enclosed in single quotes will be included
+    verbatim in the output string (stripped of the quotes), even if it contains
+    formatting characters. Two consecutive single quotes ("''") are replaced by
+    a single quote in the output. All other characters in the format string are
+    included verbatim in the output string.
+
+    Formats without separators (e.g. "ddMM") are supported but must be used with
+    care, as the resulting strings aren't always reliably readable (e.g. if "dM"
+    produces "212" it could mean either the 2nd of December or the 21st of
+    February).
 
     Example format strings (assumed that the QDateTime is 21 May 2001
     14:13:09.120):
