@@ -1839,7 +1839,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "<p>Qt provides single-source portability across all major desktop "
         "operating systems. It is also available for embedded Linux and other "
         "embedded and mobile operating systems.</p>"
-        "<p>Qt is available under three different licensing options designed "
+        "<p>Qt is available under multiple licensing options designed "
         "to accommodate the needs of our various users.</p>"
         "<p>Qt licensed under our commercial license agreement is appropriate "
         "for development of proprietary/commercial software where you do not "
