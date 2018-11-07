@@ -1343,13 +1343,19 @@ void tst_QSslSocket::protocolServerSide()
     QAbstractSocket::SocketState expectedState = (works) ? QAbstractSocket::ConnectedState : QAbstractSocket::UnconnectedState;
     // Determine whether the client or the server caused the event loop
     // to quit due to a socket error, and investigate the culprit.
-    if (server.socket->error() != QAbstractSocket::UnknownSocketError) {
+    if (client.error() != QAbstractSocket::UnknownSocketError) {
+        // It can happen that the client, after TCP connection established, before
+        // incomingConnection() slot fired, hits TLS initialization error and stops
+        // the loop, so the server socket is not created yet.
+        if (server.socket)
+            QVERIFY(server.socket->error() == QAbstractSocket::UnknownSocketError);
+
+        QCOMPARE(int(client.state()), int(expectedState));
+    } else if (server.socket->error() != QAbstractSocket::UnknownSocketError) {
         QVERIFY(client.error() == QAbstractSocket::UnknownSocketError);
         QCOMPARE(int(server.socket->state()), int(expectedState));
-    } else if (client.error() != QAbstractSocket::UnknownSocketError) {
-        QVERIFY(server.socket->error() == QAbstractSocket::UnknownSocketError);
-        QCOMPARE(int(client.state()), int(expectedState));
     }
+
     QCOMPARE(client.isEncrypted(), works);
 }
 
