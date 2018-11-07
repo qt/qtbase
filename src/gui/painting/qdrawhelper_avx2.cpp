@@ -55,7 +55,8 @@ enum {
 // Vectorized blend functions:
 
 // See BYTE_MUL_SSE2 for details.
-inline static void BYTE_MUL_AVX2(__m256i &pixelVector, const __m256i &alphaChannel, const __m256i &colorMask, const __m256i &half)
+inline static void Q_DECL_VECTORCALL
+BYTE_MUL_AVX2(__m256i &pixelVector, __m256i alphaChannel, __m256i colorMask, __m256i half)
 {
     __m256i pixelVectorAG = _mm256_srli_epi16(pixelVector, 8);
     __m256i pixelVectorRB = _mm256_and_si256(pixelVector, colorMask);
@@ -74,7 +75,8 @@ inline static void BYTE_MUL_AVX2(__m256i &pixelVector, const __m256i &alphaChann
     pixelVector = _mm256_or_si256(pixelVectorAG, pixelVectorRB);
 }
 
-inline static void BYTE_MUL_RGB64_AVX2(__m256i &pixelVector, const __m256i &alphaChannel, const __m256i &colorMask, const __m256i &half)
+inline static void Q_DECL_VECTORCALL
+BYTE_MUL_RGB64_AVX2(__m256i &pixelVector, __m256i alphaChannel, __m256i colorMask, __m256i half)
 {
     __m256i pixelVectorAG = _mm256_srli_epi32(pixelVector, 16);
     __m256i pixelVectorRB = _mm256_and_si256(pixelVector, colorMask);
@@ -94,7 +96,8 @@ inline static void BYTE_MUL_RGB64_AVX2(__m256i &pixelVector, const __m256i &alph
 }
 
 // See INTERPOLATE_PIXEL_255_SSE2 for details.
-inline static void INTERPOLATE_PIXEL_255_AVX2(const __m256i &srcVector, __m256i &dstVector, const __m256i &alphaChannel, const __m256i &oneMinusAlphaChannel, const __m256i &colorMask, const __m256i &half)
+inline static void Q_DECL_VECTORCALL
+INTERPOLATE_PIXEL_255_AVX2(__m256i srcVector, __m256i &dstVector, __m256i alphaChannel, __m256i oneMinusAlphaChannel, __m256i colorMask, __m256i half)
 {
     const __m256i srcVectorAG = _mm256_srli_epi16(srcVector, 8);
     const __m256i dstVectorAG = _mm256_srli_epi16(dstVector, 8);
@@ -116,7 +119,8 @@ inline static void INTERPOLATE_PIXEL_255_AVX2(const __m256i &srcVector, __m256i 
     dstVector = _mm256_or_si256(finalAG, finalRB);
 }
 
-inline static void INTERPOLATE_PIXEL_RGB64_AVX2(const __m256i &srcVector, __m256i &dstVector, const __m256i &alphaChannel, const __m256i &oneMinusAlphaChannel, const __m256i &colorMask, const __m256i &half)
+inline static void Q_DECL_VECTORCALL
+INTERPOLATE_PIXEL_RGB64_AVX2(__m256i srcVector, __m256i &dstVector, __m256i alphaChannel, __m256i oneMinusAlphaChannel, __m256i colorMask, __m256i half)
 {
     const __m256i srcVectorAG = _mm256_srli_epi32(srcVector, 16);
     const __m256i dstVectorAG = _mm256_srli_epi32(dstVector, 16);
@@ -140,7 +144,7 @@ inline static void INTERPOLATE_PIXEL_RGB64_AVX2(const __m256i &srcVector, __m256
 
 
 // See BLEND_SOURCE_OVER_ARGB32_SSE2 for details.
-inline static void BLEND_SOURCE_OVER_ARGB32_AVX2(quint32 *dst, const quint32 *src, const int length)
+inline static void Q_DECL_VECTORCALL BLEND_SOURCE_OVER_ARGB32_AVX2(quint32 *dst, const quint32 *src, const int length)
 {
     const __m256i half = _mm256_set1_epi16(0x80);
     const __m256i one = _mm256_set1_epi16(0xff);
@@ -211,7 +215,8 @@ inline static void BLEND_SOURCE_OVER_ARGB32_AVX2(quint32 *dst, const quint32 *sr
 
 
 // See BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_SSE2 for details.
-inline static void BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_AVX2(quint32 *dst, const quint32 *src, const int length, const int const_alpha)
+inline static void Q_DECL_VECTORCALL
+BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_AVX2(quint32 *dst, const quint32 *src, const int length, const int const_alpha)
 {
     int x = 0;
 

@@ -79,55 +79,58 @@ QT_BEGIN_NAMESPACE
 // The computation being done is:
 // result = s + d * (1-alpha)
 // with shortcuts if fully opaque or fully transparent.
-#define BLEND_SOURCE_OVER_ARGB32_SSSE3(dst, src, length, nullVector, half, one, colorMask, alphaMask) { \
-    int x = 0; \
-\
-    /* First, get dst aligned. */ \
-    ALIGNMENT_PROLOGUE_16BYTES(dst, x, length) { \
-        blend_pixel(dst[x], src[x]); \
-    } \
-\
-    const int minusOffsetToAlignSrcOn16Bytes = (reinterpret_cast<quintptr>(&(src[x])) >> 2) & 0x3;\
-\
-    if (!minusOffsetToAlignSrcOn16Bytes) {\
-        /* src is aligned, usual algorithm but with aligned operations.\
-           See the SSE2 version for more documentation on the algorithm itself. */\
-        const __m128i alphaShuffleMask = _mm_set_epi8(char(0xff),15,char(0xff),15,char(0xff),11,char(0xff),11,char(0xff),7,char(0xff),7,char(0xff),3,char(0xff),3);\
-        for (; x < length-3; x += 4) { \
-            const __m128i srcVector = _mm_load_si128((const __m128i *)&src[x]); \
-            const __m128i srcVectorAlpha = _mm_and_si128(srcVector, alphaMask); \
-            if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVectorAlpha, alphaMask)) == 0xffff) { \
-                _mm_store_si128((__m128i *)&dst[x], srcVector); \
-            } else if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVectorAlpha, nullVector)) != 0xffff) { \
-                __m128i alphaChannel = _mm_shuffle_epi8(srcVector, alphaShuffleMask); \
-                alphaChannel = _mm_sub_epi16(one, alphaChannel); \
-                const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]); \
-                __m128i destMultipliedByOneMinusAlpha; \
-                BYTE_MUL_SSE2(destMultipliedByOneMinusAlpha, dstVector, alphaChannel, colorMask, half); \
-                const __m128i result = _mm_add_epi8(srcVector, destMultipliedByOneMinusAlpha); \
-                _mm_store_si128((__m128i *)&dst[x], result); \
-            } \
-        } /* end for() */\
-    } else if ((length - x) >= 8) {\
-        /* We use two vectors to extract the src: prevLoaded for the first pixels, lastLoaded for the current pixels. */\
-        __m128i srcVectorPrevLoaded = _mm_load_si128((const __m128i *)&src[x - minusOffsetToAlignSrcOn16Bytes]);\
-        const int palignrOffset = minusOffsetToAlignSrcOn16Bytes << 2;\
-\
-        const __m128i alphaShuffleMask = _mm_set_epi8(char(0xff),15,char(0xff),15,char(0xff),11,char(0xff),11,char(0xff),7,char(0xff),7,char(0xff),3,char(0xff),3);\
-        switch (palignrOffset) {\
-        case 4:\
-            BLENDING_LOOP(4, length)\
-            break;\
-        case 8:\
-            BLENDING_LOOP(8, length)\
-            break;\
-        case 12:\
-            BLENDING_LOOP(12, length)\
-            break;\
-        }\
-    }\
-    for (; x < length; ++x) \
-        blend_pixel(dst[x], src[x]); \
+static inline void Q_DECL_VECTORCALL
+BLEND_SOURCE_OVER_ARGB32_SSSE3(quint32 *dst, const quint32 *src, int length,
+                               __m128i nullVector, __m128i half, __m128i one, __m128i colorMask, __m128i alphaMask)
+{
+    int x = 0;
+
+    /* First, get dst aligned. */
+    ALIGNMENT_PROLOGUE_16BYTES(dst, x, length) {
+        blend_pixel(dst[x], src[x]);
+    }
+
+    const int minusOffsetToAlignSrcOn16Bytes = (reinterpret_cast<quintptr>(&(src[x])) >> 2) & 0x3;
+
+    if (!minusOffsetToAlignSrcOn16Bytes) {
+        /* src is aligned, usual algorithm but with aligned operations.
+           See the SSE2 version for more documentation on the algorithm itself. */
+        const __m128i alphaShuffleMask = _mm_set_epi8(char(0xff),15,char(0xff),15,char(0xff),11,char(0xff),11,char(0xff),7,char(0xff),7,char(0xff),3,char(0xff),3);
+        for (; x < length-3; x += 4) {
+            const __m128i srcVector = _mm_load_si128((const __m128i *)&src[x]);
+            const __m128i srcVectorAlpha = _mm_and_si128(srcVector, alphaMask);
+            if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVectorAlpha, alphaMask)) == 0xffff) {
+                _mm_store_si128((__m128i *)&dst[x], srcVector);
+            } else if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVectorAlpha, nullVector)) != 0xffff) {
+                __m128i alphaChannel = _mm_shuffle_epi8(srcVector, alphaShuffleMask);
+                alphaChannel = _mm_sub_epi16(one, alphaChannel);
+                const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
+                __m128i destMultipliedByOneMinusAlpha;
+                BYTE_MUL_SSE2(destMultipliedByOneMinusAlpha, dstVector, alphaChannel, colorMask, half);
+                const __m128i result = _mm_add_epi8(srcVector, destMultipliedByOneMinusAlpha);
+                _mm_store_si128((__m128i *)&dst[x], result);
+            }
+        } /* end for() */
+    } else if ((length - x) >= 8) {
+        /* We use two vectors to extract the src: prevLoaded for the first pixels, lastLoaded for the current pixels. */
+        __m128i srcVectorPrevLoaded = _mm_load_si128((const __m128i *)&src[x - minusOffsetToAlignSrcOn16Bytes]);
+        const int palignrOffset = minusOffsetToAlignSrcOn16Bytes << 2;
+
+        const __m128i alphaShuffleMask = _mm_set_epi8(char(0xff),15,char(0xff),15,char(0xff),11,char(0xff),11,char(0xff),7,char(0xff),7,char(0xff),3,char(0xff),3);
+        switch (palignrOffset) {
+        case 4:
+            BLENDING_LOOP(4, length)
+            break;
+        case 8:
+            BLENDING_LOOP(8, length)
+            break;
+        case 12:
+            BLENDING_LOOP(12, length)
+            break;
+        }
+    }
+    for (; x < length; ++x)
+        blend_pixel(dst[x], src[x]);
 }
 
 void qt_blend_argb32_on_argb32_ssse3(uchar *destPixels, int dbpl,

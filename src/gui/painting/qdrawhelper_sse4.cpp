@@ -94,7 +94,7 @@ static void convertARGBToARGB32PM_sse4(uint *buffer, const uint *src, int count)
     }
 }
 
-static inline __m128 reciprocal_mul_ps(__m128 a, float mul)
+static inline __m128 Q_DECL_VECTORCALL reciprocal_mul_ps(__m128 a, float mul)
 {
     __m128 ia = _mm_rcp_ps(a); // Approximate 1/a
     // Improve precision of ia using Newton-Raphson
