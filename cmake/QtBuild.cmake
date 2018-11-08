@@ -67,9 +67,12 @@ set(QT_PLATFORM_DEFINITION_DIR ${QT_DEFAULT_PLATFORM_DEFINITION_DIR}
     CACHE PATH "Path to directory that contains qplatformdefs.h")
 set(QT_NAMESPACE "" CACHE STRING "Qt Namespace")
 
-# Reset:
-set(KNOWN_QT_MODULES "" CACHE INTERNAL "Known Qt modules" FORCE)
+macro(_set_known_qt_modules)
+    set(KNOWN_QT_MODULES ${ARGN} CACHE INTERNAL "Known Qt modules" FORCE)
+endmacro()
 
+# Reset:
+_set_known_qt_modules("")
 
 # For adjusting variables when running tests, we need to know what
 # the correct variable is for separating entries in PATH-alike
@@ -531,8 +534,7 @@ function(add_qt_module name)
     string(TOUPPER "${name}" name_upper)
     string(TOLOWER "${name}" name_lower)
 
-    set(known_modules "${KNOWN_QT_MODULES}" "${target}")
-    set(KNOWN_QT_MODULES ${known_modules} CACHE INTERNAL "Modules that are built." FORCE)
+    _set_known_qt_modules("${KNOWN_QT_MODULES}" "${target}")
 
     ### Define Targets:
     if(${_arg_STATIC})
