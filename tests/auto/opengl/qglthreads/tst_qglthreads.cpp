@@ -355,6 +355,11 @@ void tst_QGLThreads::renderInThread()
     QFETCH(bool, resize);
     QFETCH(bool, update);
 
+#if defined(Q_OS_MACOS)
+    if (resize)
+        QSKIP("gldSetZero crashes in render thread, QTBUG-68524");
+#endif
+
     ThreadSafeGLWidget widget;
     widget.resize(200, 200);
     SceneRenderingThread thread(&widget);
