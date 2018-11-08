@@ -185,13 +185,13 @@ int runRcc(int argc, char *argv[])
 
     QString errorMsg;
 
-    quint8 formatVersion = 2;
+    quint8 formatVersion = 3;
     if (parser.isSet(formatVersionOption)) {
         bool ok = false;
         formatVersion = parser.value(formatVersionOption).toUInt(&ok);
         if (!ok) {
             errorMsg = QLatin1String("Invalid format version specified");
-        } else if (formatVersion != 1 && formatVersion != 2) {
+        } else if (formatVersion < 1 || formatVersion > 3) {
             errorMsg = QLatin1String("Unsupported format version specified");
         }
     }
@@ -208,6 +208,8 @@ int runRcc(int argc, char *argv[])
 
     if (parser.isSet(compressionAlgoOption))
         library.setCompressionAlgorithm(RCCResourceLibrary::parseCompressionAlgorithm(parser.value(compressionAlgoOption), &errorMsg));
+    if (formatVersion < 3 && library.compressionAlgorithm() == RCCResourceLibrary::CompressionAlgorithm::Zstd)
+        errorMsg = QLatin1String("Zstandard compression requires format version 3 or higher");
     if (parser.isSet(nocompressOption))
         library.setCompressionAlgorithm(RCCResourceLibrary::CompressionAlgorithm::None);
     if (parser.isSet(compressOption) && errorMsg.isEmpty()) {

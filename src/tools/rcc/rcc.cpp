@@ -295,6 +295,7 @@ qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib, qint64 offset,
                     lib.m_errorDevice->write(msg.toUtf8());
                 }
 
+                lib.m_overallFlags |= CompressedZstd;
                 m_flags |= CompressedZstd;
                 data = std::move(compressed);
                 data.truncate(n);
@@ -321,6 +322,7 @@ qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib, qint64 offset,
                     lib.m_errorDevice->write(msg.toUtf8());
                 }
                 data = compressed;
+                lib.m_overallFlags |= Compressed;
                 m_flags |= Compressed;
             } else if (lib.verbose()) {
                 QString msg = QString::fromLatin1("%1: note: not compressed\n").arg(m_name);
@@ -438,6 +440,7 @@ RCCResourceLibrary::RCCResourceLibrary(quint8 formatVersion)
     m_treeOffset(0),
     m_namesOffset(0),
     m_dataOffset(0),
+    m_overallFlags(0),
     m_useNameSpace(CONSTANT_USENAMESPACE),
     m_errorDevice(0),
     m_outDevice(0),
@@ -945,6 +948,14 @@ bool RCCResourceLibrary::output(QIODevice &outDevice, QIODevice &tempDevice, QIO
     return true;
 }
 
+void RCCResourceLibrary::writeDecimal(int value)
+{
+    Q_ASSERT(m_format != RCCResourceLibrary::Binary);
+    char buf[std::numeric_limits<int>::digits10 + 2];
+    int n = snprintf(buf, sizeof(buf), "%d", value);
+    write(buf, n + 1);  // write() takes a size including terminating NUL
+}
+
 void RCCResourceLibrary::writeHex(quint8 tmp)
 {
     const char digits[] = "0123456789abcdef";
@@ -1039,6 +1050,8 @@ bool RCCResourceLibrary::writeHeader()
         writeNumber4(0);
         writeNumber4(0);
         writeNumber4(0);
+        if (m_formatVersion >= 3)
+            writeNumber4(m_overallFlags);
     }
     return true;
 }
@@ -1241,10 +1254,35 @@ bool RCCResourceLibrary::writeInitializer()
         if (m_root) {
             writeString("bool qRegisterResourceData"
                 "(int, const unsigned char *, "
-                "const unsigned char *, const unsigned char *);\n\n");
+                "const unsigned char *, const unsigned char *);\n");
             writeString("bool qUnregisterResourceData"
                 "(int, const unsigned char *, "
                 "const unsigned char *, const unsigned char *);\n\n");
+
+            if (m_overallFlags & (RCCFileInfo::Compressed | RCCFileInfo::CompressedZstd)) {
+                // use variable relocations with ELF and Mach-O
+                writeString("#if defined(__ELF__) || defined(__APPLE__)\n");
+                if (m_overallFlags & RCCFileInfo::Compressed) {
+                    writeString("static inline unsigned char qResourceFeatureZlib()\n"
+                                "{\n"
+                                "    extern const unsigned char qt_resourceFeatureZlib;\n"
+                                "    return qt_resourceFeatureZlib;\n"
+                                "}\n");
+                }
+                if (m_overallFlags & RCCFileInfo::CompressedZstd) {
+                    writeString("static inline unsigned char qResourceFeatureZstd()\n"
+                                "{\n"
+                                "    extern const unsigned char qt_resourceFeatureZstd;\n"
+                                "    return qt_resourceFeatureZstd;\n"
+                                "}\n");
+                }
+                writeString("#else\n");
+                if (m_overallFlags & RCCFileInfo::Compressed)
+                    writeString("unsigned char qResourceFeatureZlib();\n");
+                if (m_overallFlags & RCCFileInfo::CompressedZstd)
+                    writeString("unsigned char qResourceFeatureZstd();\n");
+                writeString("#endif\n\n");
+            }
         }
 
         if (m_useNameSpace)
@@ -1263,12 +1301,12 @@ bool RCCResourceLibrary::writeInitializer()
         writeString("()\n{\n");
 
         if (m_root) {
-            writeString("    ");
+            writeString("    int version = ");
+            writeDecimal(m_formatVersion);
+            writeString(";\n    ");
             writeAddNamespaceFunction("qRegisterResourceData");
-            writeString("\n        (");
-            writeHex(m_formatVersion);
-            writeString(" qt_resource_struct, "
-                       "qt_resource_name, qt_resource_data);\n");
+            writeString("\n        (version, qt_resource_struct, "
+                        "qt_resource_name, qt_resource_data);\n");
         }
         writeString("    return 1;\n");
         writeString("}\n\n");
@@ -1286,11 +1324,24 @@ bool RCCResourceLibrary::writeInitializer()
         writeMangleNamespaceFunction(cleanResources);
         writeString("()\n{\n");
         if (m_root) {
-            writeString("    ");
+            writeString("    int version = ");
+            writeDecimal(m_formatVersion);
+            writeString(";\n    ");
+
+            // ODR-use certain symbols from QtCore if we require optional features
+            if (m_overallFlags & RCCFileInfo::Compressed) {
+                writeString("version += ");
+                writeAddNamespaceFunction("qResourceFeatureZlib()");
+                writeString(";\n    ");
+            }
+            if (m_overallFlags & RCCFileInfo::CompressedZstd) {
+                writeString("version += ");
+                writeAddNamespaceFunction("qResourceFeatureZstd()");
+                writeString(";\n    ");
+            }
+
             writeAddNamespaceFunction("qUnregisterResourceData");
-            writeString("\n       (");
-            writeHex(m_formatVersion);
-            writeString(" qt_resource_struct, "
+            writeString("\n       (version, qt_resource_struct, "
                       "qt_resource_name, qt_resource_data);\n");
         }
         writeString("    return 1;\n");
@@ -1326,6 +1377,13 @@ bool RCCResourceLibrary::writeInitializer()
         p[i++] = (m_namesOffset >> 16) & 0xff;
         p[i++] = (m_namesOffset >>  8) & 0xff;
         p[i++] = (m_namesOffset >>  0) & 0xff;
+
+        if (m_formatVersion >= 3) {
+            p[i++] = (m_overallFlags >> 24) & 0xff;
+            p[i++] = (m_overallFlags >> 16) & 0xff;
+            p[i++] = (m_overallFlags >>  8) & 0xff;
+            p[i++] = (m_overallFlags >>  0) & 0xff;
+        }
     }
     return true;
 }

@@ -134,6 +134,7 @@ private:
     bool writeInitializer();
     void writeMangleNamespaceFunction(const QByteArray &name);
     void writeAddNamespaceFunction(const QByteArray &name);
+    void writeDecimal(int value);
     void writeHex(quint8 number);
     void writeNumber2(quint16 number);
     void writeNumber4(quint32 number);
@@ -160,6 +161,7 @@ private:
     int m_treeOffset;
     int m_namesOffset;
     int m_dataOffset;
+    quint32 m_overallFlags;
     bool m_useNameSpace;
     QStringList m_failedResources;
     QIODevice *m_errorDevice;

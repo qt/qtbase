@@ -159,9 +159,10 @@ void tst_rcc::rcc()
         return;
     }
 
-    // Launch
+    // Launch; force no compression, otherwise the output would be different
+    // depending on the compression algorithm we're using
     QProcess process;
-    process.start(m_rcc, QStringList(qrcfile));
+    process.start(m_rcc, { "-no-compress", qrcfile });
     if (!process.waitForFinished()) {
         const QString path = QString::fromLocal8Bit(qgetenv("PATH"));
         QString message = QString::fromLatin1("'%1' could not be found when run from '%2'. Path: '%3' ").
@@ -196,8 +197,9 @@ static void createRccBinaryData(const QString &rcc, const QString &baseDir,
     QString currentDir = QDir::currentPath();
     QDir::setCurrent(baseDir);
 
+    // same as above: force no compression
     QProcess rccProcess;
-    rccProcess.start(rcc, QStringList() << "-binary" << "-o" << rccFileName << qrcFileName);
+    rccProcess.start(rcc, { "-binary", "-no-compress", "-o", rccFileName, qrcFileName });
     bool ok = rccProcess.waitForFinished();
     if (!ok) {
         QString errorString = QString::fromLatin1("Could not start rcc (is it in PATH?): %1").arg(rccProcess.errorString());
