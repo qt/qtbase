@@ -424,7 +424,7 @@
     Note that by combining this option with ReuseAddressHint, you will
     also allow your service to rebind an existing shared address. On
     Unix, this is equivalent to the SO_REUSEADDR socket option. On Windows,
-    this option is ignored.
+    this is the default behavior, so this option is ignored.
 
     \value DontShareAddress Bind the address and port exclusively, so that
     no other services are allowed to rebind. By passing this option to
@@ -444,7 +444,7 @@
 
     \value DefaultForPlatform The default option for the current platform.
     On Unix and \macos, this is equivalent to (DontShareAddress
-    + ReuseAddressHint), and on Windows, its equivalent to ShareAddress.
+    + ReuseAddressHint), and on Windows, it is equivalent to ShareAddress.
 */
 
 /*! \enum QAbstractSocket::PauseMode
@@ -455,7 +455,7 @@
     The only notification currently supported is QSslSocket::sslErrors().
 
     \value PauseNever Do not pause data transfer on the socket. This is the
-    default and matches the behaviour of Qt 4.
+    default and matches the behavior of Qt 4.
     \value PauseOnSslErrors Pause data transfer on the socket upon receiving an
     SSL error notification. I.E. QSslSocket::sslErrors().
 */
@@ -1538,11 +1538,9 @@ void QAbstractSocket::setPauseMode(PauseModes pauseMode)
 
     Binds to \a address on port \a port, using the BindMode \a mode.
 
-    Binds this socket to the address \a address and the port \a port.
-
     For UDP sockets, after binding, the signal QUdpSocket::readyRead() is emitted
     whenever a UDP datagram arrives on the specified address and port.
-    Thus, This function is useful to write UDP servers.
+    Thus, this function is useful to write UDP servers.
 
     For TCP sockets, this function may be used to specify which interface to use
     for an outgoing connection, which is useful in case of multiple network
