@@ -244,6 +244,8 @@ bool QDesktopServices::openUrl(const QUrl &url)
     The provided method must be implemented as a slot that only accepts a single QUrl
     argument.
 
+    \snippet code/src_gui_util_qdesktopservices.cpp 0
+
     To use this function for receiving data from other apps on iOS you also need to
     add the custom scheme to the \c CFBundleURLSchemes list in your Info.plist file:
 
