@@ -886,26 +886,30 @@ void QTextOdfWriter::tableCellStyleElement(QXmlStreamWriter &writer, const int &
     if (hasBorder) {
         writer.writeAttribute(foNS, QString::fromLatin1("border"),
                               pixelToPoint(tableFormatTmp.border()) + QLatin1String(" ")
-                              + borderStyleName(tableFormatTmp.borderStyle())
-                              + QLatin1String(" #000000"));  //!! HARD-CODING color black
+                              + borderStyleName(tableFormatTmp.borderStyle()) + QLatin1String(" ")
+                              + tableFormatTmp.borderBrush().color().name(QColor::HexRgb));
     }
-    qreal padding = format.topPadding();
-    if (padding > 0 && padding == format.bottomPadding()
-        && padding == format.leftPadding() && padding == format.rightPadding()) {
+    qreal topPadding = format.topPadding();
+    qreal padding = topPadding + tableFormatTmp.cellPadding();
+    if (padding > 0 && topPadding == format.bottomPadding()
+        && topPadding == format.leftPadding() && topPadding == format.rightPadding()) {
         writer.writeAttribute(foNS, QString::fromLatin1("padding"), pixelToPoint(padding));
     }
     else {
         if (padding > 0)
             writer.writeAttribute(foNS, QString::fromLatin1("padding-top"), pixelToPoint(padding));
-        if (format.bottomPadding() > 0)
+        padding = format.bottomPadding() + tableFormatTmp.cellPadding();
+        if (padding > 0)
             writer.writeAttribute(foNS, QString::fromLatin1("padding-bottom"),
-                                  pixelToPoint(format.bottomPadding()));
-        if (format.leftPadding() > 0)
+                                  pixelToPoint(padding));
+        padding = format.leftPadding() + tableFormatTmp.cellPadding();
+        if (padding > 0)
             writer.writeAttribute(foNS, QString::fromLatin1("padding-left"),
-                                  pixelToPoint(format.leftPadding()));
-        if (format.rightPadding() > 0)
+                                  pixelToPoint(padding));
+        padding = format.rightPadding() + tableFormatTmp.cellPadding();
+        if (padding > 0)
             writer.writeAttribute(foNS, QString::fromLatin1("padding-right"),
-                                  pixelToPoint(format.rightPadding()));
+                                  pixelToPoint(padding));
     }
 
     if (format.hasProperty(QTextFormat::TextVerticalAlignment)) {
