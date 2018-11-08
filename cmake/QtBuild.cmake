@@ -440,6 +440,7 @@ function(extend_target target)
         endforeach()
         qt_internal_process_automatic_sources("${target}" "${_arg_SOURCES}")
 
+        set(must_push_features OFF)
         foreach(dep ${_arg_LIBRARIES} ${_arg_PUBLIC_LIBRARIES})
             if("${dep}" MATCHES "^Qt::((.+)(Private)|(.+))$")
                 if (${CMAKE_MATCH_COUNT} EQUAL 3)
@@ -458,6 +459,8 @@ function(extend_target target)
                     qt_pull_features_into_current_scope(PRIVATE_FEATURES ${depTarget})
                 endif()
                 qt_pull_features_into_current_scope(PUBLIC_FEATURES ${depTarget})
+
+                set(must_push_features ON)
             endif()
         endforeach()
 
@@ -468,9 +471,11 @@ function(extend_target target)
         target_include_directories("${target}" PUBLIC ${_arg_PUBLIC_INCLUDE_DIRECTORIES} PRIVATE ${_arg_INCLUDE_DIRECTORIES})
         target_compile_definitions("${target}" PUBLIC ${_arg_PUBLIC_DEFINES} PRIVATE ${_arg_DEFINES})
         target_link_libraries("${target}" PUBLIC ${_arg_PUBLIC_LIBRARIES} PRIVATE ${_arg_LIBRARIES})
-    endif()
 
-    qt_push_features_into_parent_scope()
+        if(must_push_features)
+            qt_push_features_into_parent_scope()
+        endif()
+    endif()
 endfunction()
 
 
