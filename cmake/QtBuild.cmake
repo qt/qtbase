@@ -239,7 +239,7 @@ function(qt_internal_wrap_cpp result)
             set(file_extension "moc")
         endif()
 
-        qt_make_output_file("${it}" "${file_prefix}" "${file_extension}" outfile)
+        qt_make_output_file("${it}" "${file_prefix}" ".${file_extension}" "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" outfile)
         qt_create_moc_command("${it}" "${outfile}" "${moc_flags}" "${moc_options}" "${moc_target}" "${moc_depends}")
         set_source_files_properties(${outfile} PROPERTIES HEADER_FILE_ONLY ${_arg_HEADER_FILE_ONLY})
         list(APPEND wrapped_files "${outfile}")
@@ -339,7 +339,7 @@ function(qt_extract_qrc_dependencies resourceFile _out_depends _rc_depends)
         # Since this cmake function is doing the dependency scanning for these files,
         # let's make a configured file and add it as a dependency so cmake is run
         # again when dependencies need to be recomputed.
-        qt_make_output_file("${infile}" "" "qrc.depends" out_depends)
+        qt_make_output_file("${infile}" "" ".qrc.depends" "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" out_depends)
         configure_file("${infile}" "${out_depends}" COPYONLY)
     else()
         # The .qrc file does not exist (yet). Let's add a dependency and hope
@@ -958,31 +958,26 @@ endfunction()
 
 # From Qt5CoreMacros
 # Function used to create the names of output files preserving relative dirs
-function(qt_make_output_file infile prefix ext result)
-    string(LENGTH ${CMAKE_CURRENT_BINARY_DIR} _binlength)
-    string(LENGTH ${infile} _infileLength)
-    set(_checkinfile ${CMAKE_CURRENT_SOURCE_DIR})
-    if(_infileLength GREATER _binlength)
-        string(SUBSTRING "${infile}" 0 ${_binlength} _checkinfile)
-        if(_checkinfile STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
-            file(RELATIVE_PATH rel ${CMAKE_CURRENT_BINARY_DIR} ${infile})
-        else()
-            file(RELATIVE_PATH rel ${CMAKE_CURRENT_SOURCE_DIR} ${infile})
-        endif()
-    else()
-        file(RELATIVE_PATH rel ${CMAKE_CURRENT_SOURCE_DIR} ${infile})
+function(qt_make_output_file infile prefix suffix source_dir binary_dir result)
+    get_filename_component(outfilename "${infile}" NAME_WE)
+
+    set(base_dir "${source_dir}")
+    string(FIND "${infile}" "${binary_dir}/" in_binary)
+    if (in_binary EQUAL 0)
+        set(base_dir "${binary_dir}")
     endif()
-    if(WIN32 AND rel MATCHES "^([a-zA-Z]):(.*)$") # absolute path
-        set(rel "${CMAKE_MATCH_1}_${CMAKE_MATCH_2}")
-    endif()
-    set(_outfile "${CMAKE_CURRENT_BINARY_DIR}/${rel}")
-    string(REPLACE ".." "__" _outfile "${_outfile}")
-    get_filename_component(outpath "${_outfile}" PATH)
-    get_filename_component(_outfile "${_outfile}" NAME_WE)
+
+    get_filename_component(abs_infile "${infile}" ABSOLUTE BASE_DIR "${base_dir}")
+    file(RELATIVE_PATH rel_infile "${base_dir}" "${abs_infile}")
+    string(REPLACE "../" "__/" mapped_infile "${rel_infile}")
+
+    get_filename_component(abs_mapped_infile "${mapped_infile}" ABSOLUTE BASE_DIR "${binary_dir}")
+    get_filename_component(outpath "${abs_mapped_infile}" PATH)
+
     file(MAKE_DIRECTORY "${outpath}")
-    set(full_outfile "${outpath}/${prefix}${_outfile}.${ext}")
-    set("${result}" "${full_outfile}" PARENT_SCOPE)
+    set("${result}" "${outpath}/${prefix}${outfilename}${suffix}" PARENT_SCOPE)
 endfunction()
+
 
 macro(qt_get_moc_flags _moc_flags)
     set(${_moc_flags})

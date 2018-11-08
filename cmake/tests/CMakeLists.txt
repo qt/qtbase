@@ -23,3 +23,4 @@ macro(add_test_macro NAME)
 endmacro()
 
 add_test_macro(features features)
+add_test_macro(qt_make_output_file qt_make_output_file)
