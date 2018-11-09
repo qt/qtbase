@@ -1512,7 +1512,7 @@ QRectF QMacStylePrivate::CocoaControl::adjustedControlFrame(const QRectF &rect) 
         frameRect = frameRect.translated(rect.topLeft());
         if (type == QMacStylePrivate::Button_PullDown || type == QMacStylePrivate::Button_PopupButton) {
             if (size == QStyleHelper::SizeLarge)
-                frameRect = frameRect.adjusted(0, 0, -6, 0).translated(3, -1);
+                frameRect = frameRect.adjusted(0, 0, -6, 0).translated(3, 0);
             else if (size == QStyleHelper::SizeSmall)
                 frameRect = frameRect.adjusted(0, 0, -4, 0).translated(2, 1);
             else if (size == QStyleHelper::SizeMini)
