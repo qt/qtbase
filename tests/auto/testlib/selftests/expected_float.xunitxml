@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="6" tests="4" name="tst_float">
+<testsuite errors="0" failures="9" tests="5" name="tst_float">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -16,6 +16,17 @@
     <failure tag="should FAIL 3" message="Compared floats are not the same (fuzzy compare)
    Actual   (operandLeft) : 99998
    Expected (operandRight): 99999" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="float16Comparisons">
+    <failure tag="should FAIL 1" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1
+   Expected (operandRight): 3" result="fail"/>
+    <failure tag="should FAIL 2" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 0.0001
+   Expected (operandRight): 0.0003" result="fail"/>
+    <failure tag="should FAIL 3" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 98
+   Expected (operandRight): 99" result="fail"/>
   </testcase>
   <testcase result="fail" name="compareFloatTests">
     <failure tag="1e0" message="Compared floats are not the same (fuzzy compare)

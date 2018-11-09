@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/qfloat16.h>
 #include <QtTest/QtTest>
 #include <QDebug>
 
@@ -36,6 +37,8 @@ class tst_float: public QObject
 private slots:
     void floatComparisons() const;
     void floatComparisons_data() const;
+    void float16Comparisons() const;
+    void float16Comparisons_data() const;
     void compareFloatTests() const;
     void compareFloatTests_data() const;
 };
@@ -77,6 +80,42 @@ void tst_float::floatComparisons_data() const
     QTest::newRow("should SUCCEED 2")
         << float(100001)
         << float(100002);
+}
+
+void tst_float::float16Comparisons() const
+{
+    QFETCH(qfloat16, operandLeft);
+    QFETCH(qfloat16, operandRight);
+
+    QCOMPARE(operandLeft, operandRight);
+}
+
+void tst_float::float16Comparisons_data() const
+{
+    QTest::addColumn<qfloat16>("operandLeft");
+    QTest::addColumn<qfloat16>("operandRight");
+
+    QTest::newRow("should SUCCEED 1")
+        << qfloat16(0)
+        << qfloat16(0);
+
+    QTest::newRow("should FAIL 1")
+        << qfloat16(1.000)
+        << qfloat16(3.000);
+
+    QTest::newRow("should FAIL 2")
+        << qfloat16(1.000e-4f)
+        << qfloat16(3.000e-4f);
+
+    // QCOMPARE for qfloat16s uses qFuzzyCompare()
+
+    QTest::newRow("should FAIL 3")
+        << qfloat16(98)
+        << qfloat16(99);
+
+    QTest::newRow("should SUCCEED 2")
+        << qfloat16(1001)
+        << qfloat16(1002);
 }
 
 void tst_float::compareFloatTests() const

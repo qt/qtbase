@@ -36,6 +36,33 @@
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>
+<TestFunction name="float16Comparisons">
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[should SUCCEED 1]]></DataTag>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL 1]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1
+   Expected (operandRight): 3]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL 2]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 0.0001
+   Expected (operandRight): 0.0003]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL 3]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 98
+   Expected (operandRight): 99]]></Description>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[should SUCCEED 2]]></DataTag>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
 <TestFunction name="compareFloatTests">
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
     <DataTag><![CDATA[1e0]]></DataTag>

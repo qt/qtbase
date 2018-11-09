@@ -52,6 +52,7 @@
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qfloat16.h>
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/private/qtools_p.h>
 #include <QtCore/qdiriterator.h>
@@ -2483,6 +2484,16 @@ bool QTest::compare_helper(bool success, const char *failureMsg,
     return QTestResult::compare(success, failureMsg, val1, val2, actual, expected, file, line);
 }
 
+/*! \fn bool QTest::qCompare(const qfloat16 &t1, const qfloat16 &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+ */
+bool QTest::qCompare(qfloat16 const &t1, qfloat16 const &t2, const char *actual, const char *expected,
+                     const char *file, int line)
+{
+    return compare_helper(qFuzzyCompare(t1, t2), "Compared qfloat16s are not the same (fuzzy compare)",
+                          toString(t1), toString(t2), actual, expected, file, line);
+}
+
 /*! \fn bool QTest::qCompare(const float &t1, const float &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
  */
@@ -2546,6 +2557,13 @@ TO_STRING_IMPL(signed char, %hhd)
 TO_STRING_IMPL(unsigned char, %hhu)
 TO_STRING_IMPL(float, %g)
 TO_STRING_IMPL(double, %lg)
+
+template <> Q_TESTLIB_EXPORT char *QTest::toString<qfloat16>(const qfloat16 &t)
+{
+    char *msg = new char[16];
+    qsnprintf(msg, 16, "%.3g", static_cast<float>(t));
+    return msg;
+}
 
 template <> Q_TESTLIB_EXPORT char *QTest::toString<char>(const char &t)
 {

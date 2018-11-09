@@ -57,6 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class qfloat16;
 class QRegularExpression;
 
 #define QVERIFY(statement) \
@@ -361,6 +362,9 @@ namespace QTest
     }
 #endif
 
+    Q_TESTLIB_EXPORT bool qCompare(qfloat16 const &t1, qfloat16 const &t2,
+                    const char *actual, const char *expected, const char *file, int line);
+
     Q_TESTLIB_EXPORT bool qCompare(float const &t1, float const &t2,
                     const char *actual, const char *expected, const char *file, int line);
 
@@ -405,6 +409,7 @@ namespace QTest
 
     QTEST_COMPARE_DECL(float)
     QTEST_COMPARE_DECL(double)
+    QTEST_COMPARE_DECL(qfloat16)
     QTEST_COMPARE_DECL(char)
     QTEST_COMPARE_DECL(signed char)
     QTEST_COMPARE_DECL(unsigned char)

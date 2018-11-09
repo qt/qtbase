@@ -10,9 +10,9 @@ not ok 3 - floatComparisons(should FAIL 1)
   found: 1 (operandLeft)
   expected: 3 (operandRight)
   actual: 1 (operandLeft)
-  at: tst_float::floatComparisons() (qtbase/tests/auto/testlib/selftests/float/tst_float.cpp:48)
+  at: tst_float::floatComparisons() (qtbase/tests/auto/testlib/selftests/float/tst_float.cpp:51)
   file: qtbase/tests/auto/testlib/selftests/float/tst_float.cpp
-  line: 48
+  line: 51
   ...
 not ok 4 - floatComparisons(should FAIL 2)
   ---
@@ -22,9 +22,9 @@ not ok 4 - floatComparisons(should FAIL 2)
   found: 1e-07 (operandLeft)
   expected: 3e-07 (operandRight)
   actual: 1e-07 (operandLeft)
-  at: tst_float::floatComparisons() (qtbase/tests/auto/testlib/selftests/float/tst_float.cpp:48)
+  at: tst_float::floatComparisons() (qtbase/tests/auto/testlib/selftests/float/tst_float.cpp:51)
   file: qtbase/tests/auto/testlib/selftests/float/tst_float.cpp
-  line: 48
+  line: 51
   ...
 not ok 5 - floatComparisons(should FAIL 3)
   ---
@@ -34,12 +34,50 @@ not ok 5 - floatComparisons(should FAIL 3)
   found: 99998 (operandLeft)
   expected: 99999 (operandRight)
   actual: 99998 (operandLeft)
-  at: tst_float::floatComparisons() (qtbase/tests/auto/testlib/selftests/float/tst_float.cpp:48)
+  at: tst_float::floatComparisons() (qtbase/tests/auto/testlib/selftests/float/tst_float.cpp:51)
   file: qtbase/tests/auto/testlib/selftests/float/tst_float.cpp
-  line: 48
+  line: 51
   ...
 ok 6 - floatComparisons(should SUCCEED 2)
-not ok 7 - compareFloatTests(1e0)
+ok 7 - float16Comparisons(should SUCCEED 1)
+not ok 8 - float16Comparisons(should FAIL 1)
+  ---
+  type: QCOMPARE
+  message: Compared qfloat16s are not the same (fuzzy compare)
+  wanted: 3 (operandRight)
+  found: 1 (operandLeft)
+  expected: 3 (operandRight)
+  actual: 1 (operandLeft)
+  at: tst_float::float16Comparisons() (qtbase/tests/auto/testlib/selftests/float/tst_float.cpp:90)
+  file: qtbase/tests/auto/testlib/selftests/float/tst_float.cpp
+  line: 90
+  ...
+not ok 9 - float16Comparisons(should FAIL 2)
+  ---
+  type: QCOMPARE
+  message: Compared qfloat16s are not the same (fuzzy compare)
+  wanted: 0.0003 (operandRight)
+  found: 0.0001 (operandLeft)
+  expected: 0.0003 (operandRight)
+  actual: 0.0001 (operandLeft)
+  at: tst_float::float16Comparisons() (qtbase/tests/auto/testlib/selftests/float/tst_float.cpp:90)
+  file: qtbase/tests/auto/testlib/selftests/float/tst_float.cpp
+  line: 90
+  ...
+not ok 10 - float16Comparisons(should FAIL 3)
+  ---
+  type: QCOMPARE
+  message: Compared qfloat16s are not the same (fuzzy compare)
+  wanted: 99 (operandRight)
+  found: 98 (operandLeft)
+  expected: 99 (operandRight)
+  actual: 98 (operandLeft)
+  at: tst_float::float16Comparisons() (qtbase/tests/auto/testlib/selftests/float/tst_float.cpp:90)
+  file: qtbase/tests/auto/testlib/selftests/float/tst_float.cpp
+  line: 90
+  ...
+ok 11 - float16Comparisons(should SUCCEED 2)
+not ok 12 - compareFloatTests(1e0)
   ---
   type: QCOMPARE
   message: Compared floats are not the same (fuzzy compare)
@@ -47,11 +85,11 @@ not ok 7 - compareFloatTests(1e0)
   found: 1 (t1)
   expected: 3 (t3)
   actual: 1 (t1)
-  at: tst_float::compareFloatTests() (qtbase/tests/auto/testlib/selftests/float/tst_float.cpp:96)
+  at: tst_float::compareFloatTests() (qtbase/tests/auto/testlib/selftests/float/tst_float.cpp:135)
   file: qtbase/tests/auto/testlib/selftests/float/tst_float.cpp
-  line: 96
+  line: 135
   ...
-not ok 8 - compareFloatTests(1e-7)
+not ok 13 - compareFloatTests(1e-7)
   ---
   type: QCOMPARE
   message: Compared floats are not the same (fuzzy compare)
@@ -59,11 +97,11 @@ not ok 8 - compareFloatTests(1e-7)
   found: 1e-07 (t1)
   expected: 3e-07 (t3)
   actual: 1e-07 (t1)
-  at: tst_float::compareFloatTests() (qtbase/tests/auto/testlib/selftests/float/tst_float.cpp:96)
+  at: tst_float::compareFloatTests() (qtbase/tests/auto/testlib/selftests/float/tst_float.cpp:135)
   file: qtbase/tests/auto/testlib/selftests/float/tst_float.cpp
-  line: 96
+  line: 135
   ...
-not ok 9 - compareFloatTests(1e+7)
+not ok 14 - compareFloatTests(1e+7)
   ---
   type: QCOMPARE
   message: Compared floats are not the same (fuzzy compare)
@@ -71,12 +109,12 @@ not ok 9 - compareFloatTests(1e+7)
   found: 1e+07 (t1)
   expected: 3e+07 (t3)
   actual: 1e+07 (t1)
-  at: tst_float::compareFloatTests() (qtbase/tests/auto/testlib/selftests/float/tst_float.cpp:96)
+  at: tst_float::compareFloatTests() (qtbase/tests/auto/testlib/selftests/float/tst_float.cpp:135)
   file: qtbase/tests/auto/testlib/selftests/float/tst_float.cpp
-  line: 96
+  line: 135
   ...
-ok 10 - cleanupTestCase()
-1..10
-# tests 10
-# pass 4
-# fail 6
+ok 15 - cleanupTestCase()
+1..15
+# tests 15
+# pass 6
+# fail 9
