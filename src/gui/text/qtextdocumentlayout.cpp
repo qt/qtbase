@@ -2709,7 +2709,8 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
                             qreal(q->paintDevice()->logicalDpiY()) / qreal(qt_defaultDpi()) : 1;
             getLineHeightParams(blockFormat, line, scaling, &lineAdjustment, &lineBreakHeight, &lineHeight, &lineBottom);
 
-            if (layoutStruct->pageHeight > 0 && layoutStruct->absoluteY() + lineBreakHeight > layoutStruct->pageBottom) {
+            if (layoutStruct->pageHeight > 0 && layoutStruct->absoluteY() + lineBreakHeight > layoutStruct->pageBottom &&
+                layoutStruct->pageHeight >= lineBreakHeight) {
                 layoutStruct->newPage();
 
                 floatMargins(layoutStruct->y, layoutStruct, &left, &right);
