@@ -226,6 +226,21 @@ void tst_QFileSystemModel::rootPath()
         QCOMPARE(rootChanged.count(), oldCount + 1);
         QCOMPARE(model->rootDirectory().absolutePath(), newdir.path());
     }
+
+#ifdef Q_OS_WIN
+    // check case insensitive root node on windows, tests QTBUG-71701
+    QModelIndex index = model->setRootPath(QString("\\\\localhost\\c$"));
+    QVERIFY(index.isValid());
+    QCOMPARE(model->rootPath(), QString("//localhost/c$"));
+
+    index = model->setRootPath(QString("\\\\localhost\\C$"));
+    QVERIFY(index.isValid());
+    QCOMPARE(model->rootPath(), QString("//localhost/C$"));
+
+    index = model->setRootPath(QString("\\\\LOCALHOST\\C$"));
+    QVERIFY(index.isValid());
+    QCOMPARE(model->rootPath(), QString("//LOCALHOST/C$"));
+#endif
 }
 
 void tst_QFileSystemModel::readOnly()
