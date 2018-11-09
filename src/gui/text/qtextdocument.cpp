@@ -1912,7 +1912,7 @@ static void printPage(int index, QPainter *painter, const QTextDocument *doc, co
 }
 
 /*!
-    Prints the document to the given \a printer. The QPageablePaintDevice must be
+    Prints the document to the given \a printer. The QPagedPaintDevice must be
     set up before being used with this function.
 
     This is only a convenience method to print the whole document to the printer.
