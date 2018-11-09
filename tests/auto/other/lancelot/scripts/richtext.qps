@@ -1,0 +1,9 @@
+drawTextDocument 10 10 "<img height=50 width=50 align=top src=:/images/border.png /><img height=10 width=10 valign=bottom src=:/images/border.png /><span style='font-size: 100px'>Xy</span>"
+drawTextDocument 10 210 "<img height=50 width=50 align=top src=:/images/border.png /><img height=10 width=10 valign=bottom src=:/images/border.png /><span style='font-size: 25px'>Xy</span>"
+drawTextDocument 310 210 "<img height=10 width=10 align=top src=:/images/border.png /><img height=50 width=50 valign=bottom src=:/images/border.png /><span style='font-size: 25px'>Xy</span>"
+drawTextDocument 10 310 "<img height=50 width=50 align=top src=:/images/border.png /><img height=50 width=50 valign=bottom src=:/images/border.png /><span style='font-size: 25px'>Xy</span>"
+
+drawTextDocument 10 410 "<img height=10 width=10 align=top src=:/images/border.png /><img height=50 width=50 src=:/images/border.png /><span style='font-size: 25px'>Xy</span>"
+drawTextDocument 10 510 "<img height=10 width=10 valign=bottom src=:/images/border.png /><img height=50 width=50 src=:/images/border.png /><span style='font-size: 25px'>Xy</span>"
+drawTextDocument 310 410 "<img height=50 width=50 align=top src=:/images/border.png /><img height=10 width=10 src=:/images/border.png /><span style='font-size: 25px'>Xy</span>"
+drawTextDocument 310 510 "<img height=50 width=50 valign=bottom src=:/images/border.png /><img height=10 width=10 src=:/images/border.png /><span style='font-size: 25px'>Xy</span>"
