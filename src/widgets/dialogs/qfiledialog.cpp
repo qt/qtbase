@@ -77,6 +77,8 @@
 #include <private/qwasmlocalfileaccess_p.h>
 #endif
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
@@ -3372,6 +3374,18 @@ void QFileDialogPrivate::_q_goHome()
     q->setDirectory(QDir::homePath());
 }
 
+
+void QFileDialogPrivate::saveHistorySelection()
+{
+    if (qFileDialogUi.isNull() || currentHistoryLocation < 0 || currentHistoryLocation >= currentHistory.size())
+        return;
+    auto &item = currentHistory[currentHistoryLocation];
+    item.selection.clear();
+    const auto selectedIndexes = qFileDialogUi->listView->selectionModel()->selectedRows();
+    for (const auto &index : selectedIndexes)
+        item.selection.append(QPersistentModelIndex(index));
+}
+
 /*!
     \internal
 
@@ -3385,15 +3399,47 @@ void QFileDialogPrivate::_q_pathChanged(const QString &newPath)
     qFileDialogUi->sidebar->selectUrl(QUrl::fromLocalFile(newPath));
     q->setHistory(qFileDialogUi->lookInCombo->history());
 
-    if (currentHistoryLocation < 0 || currentHistory.value(currentHistoryLocation) != QDir::toNativeSeparators(newPath)) {
+    const QString newNativePath = QDir::toNativeSeparators(newPath);
+
+    // equal paths indicate this was invoked by _q_navigateBack/Forward()
+    if (currentHistoryLocation < 0 || currentHistory.value(currentHistoryLocation).path != newNativePath) {
+        if (currentHistoryLocation >= 0)
+            saveHistorySelection();
         while (currentHistoryLocation >= 0 && currentHistoryLocation + 1 < currentHistory.count()) {
             currentHistory.removeLast();
         }
-        currentHistory.append(QDir::toNativeSeparators(newPath));
+        currentHistory.append({newNativePath, PersistentModelIndexList()});
         ++currentHistoryLocation;
     }
     qFileDialogUi->forwardButton->setEnabled(currentHistory.size() - currentHistoryLocation > 1);
     qFileDialogUi->backButton->setEnabled(currentHistoryLocation > 0);
+}
+
+void QFileDialogPrivate::navigate(HistoryItem &historyItem)
+{
+    Q_Q(QFileDialog);
+    q->setDirectory(historyItem.path);
+    // Restore selection unless something has changed in the file system
+    if (qFileDialogUi.isNull() || historyItem.selection.isEmpty())
+        return;
+    if (std::any_of(historyItem.selection.cbegin(), historyItem.selection.cend(),
+                    [](const QPersistentModelIndex &i) { return !i.isValid(); })) {
+        historyItem.selection.clear();
+        return;
+    }
+
+    QAbstractItemView *view = q->viewMode() == QFileDialog::List
+        ? static_cast<QAbstractItemView *>(qFileDialogUi->listView)
+        : static_cast<QAbstractItemView *>(qFileDialogUi->treeView);
+    auto selectionModel = view->selectionModel();
+    const QItemSelectionModel::SelectionFlags flags = QItemSelectionModel::Select
+        | QItemSelectionModel::Rows;
+    selectionModel->select(historyItem.selection.constFirst(),
+                           flags | QItemSelectionModel::Clear | QItemSelectionModel::Current);
+    for (int i = 1, size = historyItem.selection.size(); i < size; ++i)
+        selectionModel->select(historyItem.selection.at(i), flags);
+
+    view->scrollTo(historyItem.selection.constFirst());
 }
 
 /*!
@@ -3403,11 +3449,9 @@ void QFileDialogPrivate::_q_pathChanged(const QString &newPath)
 */
 void QFileDialogPrivate::_q_navigateBackward()
 {
-    Q_Q(QFileDialog);
     if (!currentHistory.isEmpty() && currentHistoryLocation > 0) {
-        --currentHistoryLocation;
-        QString previousHistory = currentHistory.at(currentHistoryLocation);
-        q->setDirectory(previousHistory);
+        saveHistorySelection();
+        navigate(currentHistory[--currentHistoryLocation]);
     }
 }
 
@@ -3418,11 +3462,9 @@ void QFileDialogPrivate::_q_navigateBackward()
 */
 void QFileDialogPrivate::_q_navigateForward()
 {
-    Q_Q(QFileDialog);
     if (!currentHistory.isEmpty() && currentHistoryLocation < currentHistory.size() - 1) {
-        ++currentHistoryLocation;
-        QString nextHistory = currentHistory.at(currentHistoryLocation);
-        q->setDirectory(nextHistory);
+        saveHistorySelection();
+        navigate(currentHistory[++currentHistoryLocation]);
     }
 }
 

@@ -116,6 +116,14 @@ class Q_WIDGETS_EXPORT QFileDialogPrivate : public QDialogPrivate
     Q_DECLARE_PUBLIC(QFileDialog)
 
 public:
+    using PersistentModelIndexList = QVector<QPersistentModelIndex>;
+
+    struct HistoryItem
+    {
+        QString path;
+        PersistentModelIndexList selection;
+    };
+
     QFileDialogPrivate();
 
     QPlatformFileDialogHelper *platformFileDialogHelper() const
@@ -193,9 +201,11 @@ public:
     void retranslateWindowTitle();
     void retranslateStrings();
     void emitFilesSelected(const QStringList &files);
+    void saveHistorySelection();
 
     void _q_goHome();
     void _q_pathChanged(const QString &);
+    void navigate(HistoryItem &);
     void _q_navigateBackward();
     void _q_navigateForward();
     void _q_navigateToParent();
@@ -237,7 +247,7 @@ public:
 
     QString setWindowTitle;
 
-    QStringList currentHistory;
+    QList<HistoryItem> currentHistory;
     int currentHistoryLocation;
 
     QAction *renameAction;

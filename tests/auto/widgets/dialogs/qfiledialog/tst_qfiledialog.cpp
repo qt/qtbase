@@ -1421,6 +1421,16 @@ void tst_QFiledialog::clearLineEdit()
 
     QTRY_VERIFY(fd.directory().absolutePath() != workDirPath);
     QVERIFY(lineEdit->text().isEmpty());
+
+    // QTBUG-71415: When pressing back, the selection (activated
+    // directory) should be restored.
+    QToolButton *backButton = fd.findChild<QToolButton*>("backButton");
+    QVERIFY(backButton);
+    QTreeView *treeView = fd.findChildren<QTreeView*>("treeView").value(0);
+    QVERIFY(treeView);
+    backButton->click();
+    QTRY_COMPARE(treeView->selectionModel()->selectedIndexes().value(0).data().toString(),
+                 dirName);
 }
 
 void tst_QFiledialog::enableChooseButton()
