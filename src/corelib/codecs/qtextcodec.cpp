@@ -39,10 +39,9 @@
 ****************************************************************************/
 
 #include "qplatformdefs.h"
+
 #include "qtextcodec.h"
 #include "qtextcodec_p.h"
-
-#ifndef QT_NO_TEXTCODEC
 
 #include "qbytearraymatcher.h"
 #include "qendian.h"
@@ -1274,5 +1273,3 @@ bool QTextDecoder::needsMoreData() const
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_TEXTCODEC

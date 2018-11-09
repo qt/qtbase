@@ -128,7 +128,6 @@
 #define QT_NO_COMPRESS
 #define QT_JSON_READONLY
 #define QT_NO_STANDARDPATHS
-#define QT_NO_TEXTCODEC
 #define QT_FEATURE_textcodec -1
 #else
 #define QT_FEATURE_codecs -1

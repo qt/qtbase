@@ -269,11 +269,11 @@ int QLibInputKeyboard::keysymToQtKey(xkb_keysym_t key) const
 int QLibInputKeyboard::keysymToQtKey(xkb_keysym_t keysym, Qt::KeyboardModifiers *modifiers, const QString &text) const
 {
     int code = 0;
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     QTextCodec *systemCodec = QTextCodec::codecForLocale();
 #endif
     if (keysym < 128 || (keysym < 256
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
                          && systemCodec->mibEnum() == 4
 #endif
                          )) {

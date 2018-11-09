@@ -58,7 +58,6 @@
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include "qstylefactory.h"
-#include "qtextcodec.h"
 #include "qtooltip.h"
 #include "qtranslator.h"
 #include "qvariant.h"

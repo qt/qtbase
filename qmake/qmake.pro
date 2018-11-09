@@ -152,7 +152,6 @@ SOURCES += \
     qstringlist.cpp \
     qsystemerror.cpp \
     qtemporaryfile.cpp \
-    qtextcodec.cpp \
     qtextstream.cpp \
     qutfcodec.cpp \
     quuid.cpp \
@@ -204,7 +203,6 @@ HEADERS += \
     qstringmatcher.h \
     qsystemerror_p.h \
     qtemporaryfile.h \
-    qtextcodec.h \
     qtextstream.h \
     qutfcodec.h \
     quuid.h \

@@ -63,7 +63,9 @@
 #include <qregexp.h>
 #include <qstring.h>
 #include <qstringlist.h>
+#if QT_CONFIG(textcodec)
 #include <qtextcodec.h>
+#endif
 
 #include <qapplication.h>
 #include <qbitmap.h>

@@ -45,7 +45,6 @@
 #include <qiodevice.h>
 #include <qimage.h>
 #include <qlist.h>
-#include <qtextcodec.h>
 #include <qvariant.h>
 #include <qvector.h>
 

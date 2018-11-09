@@ -53,6 +53,8 @@
 #include <QtCore/private/qglobal_p.h>
 #include "qtextcodec.h"
 
+QT_REQUIRE_CONFIG(textcodec);
+
 QT_BEGIN_NAMESPACE
 
 class QWindowsLocalCodec: public QTextCodec

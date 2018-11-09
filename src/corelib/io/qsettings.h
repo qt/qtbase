@@ -178,7 +178,7 @@ public:
     QString organizationName() const;
     QString applicationName() const;
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     void setIniCodec(QTextCodec *codec);
     void setIniCodec(const char *codecName);
     QTextCodec *iniCodec() const;

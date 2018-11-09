@@ -47,7 +47,6 @@
 #include <private/qpaintengine_raster_p.h>
 #include <qprinter.h>
 #include <qstack.h>
-#include <qtextcodec.h>
 #include <qwidget.h>
 #include <qvarlengtharray.h>
 #include <qdebug.h>

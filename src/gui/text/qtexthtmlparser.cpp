@@ -40,7 +40,6 @@
 #include "qtexthtmlparser_p.h"
 
 #include <qbytearray.h>
-#include <qtextcodec.h>
 #include <qstack.h>
 #include <qdebug.h>
 #include <qthread.h>
