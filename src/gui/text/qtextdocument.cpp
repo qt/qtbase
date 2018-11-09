@@ -51,7 +51,9 @@
 #include <qregularexpression.h>
 #endif
 #include <qvarlengtharray.h>
+#if QT_CONFIG(textcodec)
 #include <qtextcodec.h>
+#endif
 #include <qthread.h>
 #include <qcoreapplication.h>
 #include <qmetaobject.h>
@@ -181,7 +183,7 @@ QString Qt::convertFromPlainText(const QString &plain, Qt::WhiteSpaceMode mode)
     return rich;
 }
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 QTextCodec *Qt::codecForHtml(const QByteArray &ba)
 {
     return QTextCodec::codecForHtml(ba);

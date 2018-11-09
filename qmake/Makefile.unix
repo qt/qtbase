@@ -17,7 +17,7 @@ OBJS = \
 
 #qt code (please keep in order matching DEPEND_SRC)
 QOBJS = \
-	qtextcodec.o qutfcodec.o \
+	qutfcodec.o \
 	qglobal.o qlogging.o qmalloc.o qnumeric.o qoperatingsystemversion.o qrandom.o \
 	qabstractfileengine.o qbuffer.o qdatastream.o qdebug.o \
 	qdir.o qdiriterator.o \
@@ -66,7 +66,6 @@ DEPEND_SRC = \
 	   $(QMKGENSRC)/win32/msvc_vcxproj.cpp \
 	   $(QMKGENSRC)/win32/winmakefile.cpp \
 	   $(QMKGENSRC)/xmloutput.cpp \
-	   $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp \
 	   $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp \
 	   $(SOURCE_PATH)/src/corelib/global/qglobal.cpp \
 	   $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp \
@@ -335,9 +334,6 @@ qcore_foundation.o: $(SOURCE_PATH)/src/corelib/kernel/qcore_foundation.mm
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qutfcodec.o: $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
-
-qtextcodec.o: $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qstring.o: $(SOURCE_PATH)/src/corelib/tools/qstring.cpp

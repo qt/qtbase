@@ -74,6 +74,7 @@ private slots:
     void emptyBlocks();
     void setCharFormat();
     void highlightOnInit();
+    void highlightOnInitAndAppend();
     void stopHighlightingWhenStateDoesNotChange();
     void unindent();
     void highlightToEndOfDocument();
@@ -265,6 +266,19 @@ void tst_QSyntaxHighlighter::highlightOnInit()
     QTRY_VERIFY(hl->highlighted);
 }
 
+void tst_QSyntaxHighlighter::highlightOnInitAndAppend()
+{
+    cursor.insertText("Hello");
+    cursor.insertBlock();
+    cursor.insertText("World");
+
+    TestHighlighter *hl = new TestHighlighter(doc);
+    cursor.insertBlock();
+    cursor.insertText("More text");
+    QTRY_VERIFY(hl->highlighted);
+    QVERIFY(hl->highlightedText.endsWith(doc->toPlainText().remove(QLatin1Char('\n'))));
+}
+
 class StateTestHighlighter : public QSyntaxHighlighter
 {
 public:
@@ -330,6 +344,7 @@ void tst_QSyntaxHighlighter::unindent()
     QCOMPARE(doc->toPlainText(), plainText);
 
     TestHighlighter *hl = new TestHighlighter(doc);
+    QTRY_VERIFY(hl->highlighted);
     hl->callCount = 0;
 
     cursor.movePosition(QTextCursor::Start);

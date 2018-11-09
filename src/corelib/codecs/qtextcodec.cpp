@@ -38,10 +38,9 @@
 ****************************************************************************/
 
 #include "qplatformdefs.h"
+
 #include "qtextcodec.h"
 #include "qtextcodec_p.h"
-
-#ifndef QT_NO_TEXTCODEC
 
 #include "qbytearraymatcher.h"
 #include "qlist.h"
@@ -1221,5 +1220,3 @@ bool QTextDecoder::hasFailure() const
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_TEXTCODEC

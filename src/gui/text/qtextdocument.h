@@ -76,7 +76,7 @@ namespace Qt
     Q_GUI_EXPORT bool mightBeRichText(const QString&);
     Q_GUI_EXPORT QString convertFromPlainText(const QString &plain, WhiteSpaceMode mode = WhiteSpacePre);
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     Q_GUI_EXPORT QTextCodec *codecForHtml(const QByteArray &ba);
 #endif
 }

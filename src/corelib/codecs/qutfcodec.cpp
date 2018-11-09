@@ -922,7 +922,7 @@ QString QUtf32::convertToUnicode(const char *chars, int len, QTextCodec::Convert
 }
 
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 
 QUtf8Codec::~QUtf8Codec()
 {
@@ -1076,6 +1076,6 @@ QList<QByteArray> QUtf32LECodec::aliases() const
     return list;
 }
 
-#endif //QT_NO_TEXTCODEC
+#endif // textcodec
 
 QT_END_NAMESPACE

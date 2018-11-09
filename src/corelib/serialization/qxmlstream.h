@@ -478,7 +478,7 @@ public:
     void setDevice(QIODevice *device);
     QIODevice *device() const;
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     void setCodec(QTextCodec *codec);
     void setCodec(const char *codecName);
     QTextCodec *codec() const;

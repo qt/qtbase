@@ -35,7 +35,7 @@ using namespace QMakeInternal;
 #include <qfile.h>
 #include <qfileinfo.h>
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 #include <qtextcodec.h>
 #endif
 
@@ -49,7 +49,7 @@ QMakeVfs::QMakeVfs()
     , m_magicExisting(fL1S("existing"))
 #endif
 {
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     m_textCodec = 0;
 #endif
 }
@@ -219,7 +219,7 @@ QMakeVfs::ReadResult QMakeVfs::readFile(int id, QString *contents, QString *errS
         return ReadOtherError;
     }
     *contents =
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
         m_textCodec ? m_textCodec->toUnicode(bcont) :
 #endif
         QString::fromLocal8Bit(bcont);
@@ -273,7 +273,7 @@ void QMakeVfs::invalidateContents()
 }
 #endif
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 void QMakeVfs::setTextCodec(const QTextCodec *textCodec)
 {
     m_textCodec = textCodec;

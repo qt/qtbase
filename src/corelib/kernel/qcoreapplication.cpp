@@ -55,7 +55,6 @@
 #include <qmutex.h>
 #include <private/qloggingregistry_p.h>
 #include <qstandardpaths.h>
-#include <qtextcodec.h>
 #ifndef QT_NO_QOBJECT
 #include <qthread.h>
 #include <qthreadpool.h>

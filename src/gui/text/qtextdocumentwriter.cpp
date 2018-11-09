@@ -41,7 +41,9 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qfileinfo.h>
+#if QT_CONFIG(textcodec)
 #include <QtCore/qtextcodec.h>
+#endif
 #include <QtCore/qtextstream.h>
 #include <QtCore/qdebug.h>
 #include "qtextdocument.h"
@@ -63,7 +65,7 @@ public:
     QByteArray format;
     QIODevice *device;
     bool deleteDevice;
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     QTextCodec *codec;
 #endif
 
@@ -104,7 +106,7 @@ public:
 QTextDocumentWriterPrivate::QTextDocumentWriterPrivate(QTextDocumentWriter *qq)
     : device(0),
     deleteDevice(false),
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     codec(QTextCodec::codecForName("utf-8")),
 #endif
     q(qq)
@@ -258,7 +260,7 @@ bool QTextDocumentWriter::write(const QTextDocument *document)
 #ifndef QT_NO_TEXTODFWRITER
     if (format == "odf" || format == "opendocumentformat" || format == "odt") {
         QTextOdfWriter writer(*document, d->device);
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
         writer.setCodec(d->codec);
 #endif
         return writer.writeAll();
@@ -272,7 +274,7 @@ bool QTextDocumentWriter::write(const QTextDocument *document)
             return false;
         }
         QTextStream ts(d->device);
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
         ts.setCodec(d->codec);
         ts << document->toHtml(d->codec->name());
 #endif
@@ -286,7 +288,7 @@ bool QTextDocumentWriter::write(const QTextDocument *document)
             return false;
         }
         QTextStream ts(d->device);
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
         ts.setCodec(d->codec);
 #endif
         ts << document->toPlainText();
@@ -317,7 +319,7 @@ bool QTextDocumentWriter::write(const QTextDocumentFragment &fragment)
     uses UTF-8.
 */
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 void QTextDocumentWriter::setCodec(QTextCodec *codec)
 {
     if (codec == 0)
@@ -330,7 +332,7 @@ void QTextDocumentWriter::setCodec(QTextCodec *codec)
 /*!
     Returns the codec that is currently assigned to the writer.
 */
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 QTextCodec *QTextDocumentWriter::codec() const
 {
     return d->codec;

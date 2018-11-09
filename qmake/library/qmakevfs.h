@@ -38,7 +38,7 @@
 # include <qmutex.h>
 #endif
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 QT_FORWARD_DECLARE_CLASS(QTextCodec)
 #endif
 
@@ -89,7 +89,7 @@ public:
     void invalidateContents();
 #endif
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     void setTextCodec(const QTextCodec *textCodec);
 #endif
 
@@ -125,7 +125,7 @@ private:
     QString m_magicMissing;
     QString m_magicExisting;
 #endif
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     const QTextCodec *m_textCodec;
 #endif
 };
