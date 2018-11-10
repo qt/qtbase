@@ -213,7 +213,7 @@ void QGIFFormat::disposePrevious(QImage *image)
       case RestoreImage: {
         if (frame >= 0) {
             for (int ln=t; ln<=b; ln++) {
-                memcpy(image->scanLine(ln)+l,
+                memcpy(image->scanLine(ln)+l*sizeof(QRgb),
                     backingstore.constScanLine(ln-t),
                     (r-l+1)*sizeof(QRgb));
             }
@@ -426,7 +426,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                     unsigned char *dest_data = backingstore.bits();
                     for (int ln=0; ln<h; ln++) {
                         memcpy(FAST_SCAN_LINE(dest_data, dest_bpl, ln),
-                               FAST_SCAN_LINE(bits, bpl, t+ln) + l, w*sizeof(QRgb));
+                               FAST_SCAN_LINE(bits, bpl, t+ln) + l*sizeof(QRgb), w*sizeof(QRgb));
                     }
                 }
 

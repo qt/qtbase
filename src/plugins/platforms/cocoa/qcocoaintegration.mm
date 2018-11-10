@@ -79,6 +79,32 @@ static void initResources()
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQpa, "qt.qpa", QtWarningMsg);
+
+static void logVersionInformation()
+{
+    if (!lcQpa().isInfoEnabled())
+        return;
+
+    auto osVersion = QMacVersion::currentRuntime();
+    auto qtBuildSDK = QMacVersion::buildSDK(QMacVersion::QtLibraries);
+    auto qtDeploymentTarget = QMacVersion::deploymentTarget(QMacVersion::QtLibraries);
+    auto appBuildSDK = QMacVersion::buildSDK(QMacVersion::ApplicationBinary);
+    auto appDeploymentTarget = QMacVersion::deploymentTarget(QMacVersion::ApplicationBinary);
+
+    qCInfo(lcQpa, "Loading macOS (Cocoa) platform plugin for Qt " QT_VERSION_STR ", running on macOS %d.%d.%d\n\n" \
+        "  Component     SDK version   Deployment target  \n" \
+        " ------------- ------------- -------------------\n" \
+        "  Qt " QT_VERSION_STR "       %d.%d.%d          %d.%d.%d\n" \
+        "  Application     %d.%d.%d          %d.%d.%d\n",
+            osVersion.majorVersion(), osVersion.minorVersion(), osVersion.microVersion(),
+            qtBuildSDK.majorVersion(), qtBuildSDK.minorVersion(), qtBuildSDK.microVersion(),
+            qtDeploymentTarget.majorVersion(), qtDeploymentTarget.minorVersion(), qtDeploymentTarget.microVersion(),
+            appBuildSDK.majorVersion(), appBuildSDK.minorVersion(), appBuildSDK.microVersion(),
+            appDeploymentTarget.majorVersion(), appDeploymentTarget.minorVersion(), appDeploymentTarget.microVersion());
+}
+
+
 class QCoreTextFontEngine;
 class QFontEngineFT;
 
@@ -112,6 +138,8 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
     , mServices(new QCocoaServices)
     , mKeyboardMapper(new QCocoaKeyMapper)
 {
+    logVersionInformation();
+
     if (mInstance)
         qWarning("Creating multiple Cocoa platform integrations is not supported");
     mInstance = this;

@@ -43,7 +43,6 @@
 #include "qtextlist.h"
 
 #include <qdebug.h>
-#include <qtextcodec.h>
 #include <qbytearray.h>
 #include <qdatastream.h>
 #include <qdatetime.h>

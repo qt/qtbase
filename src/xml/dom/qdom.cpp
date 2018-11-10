@@ -49,7 +49,9 @@
 #include <qiodevice.h>
 #include <qlist.h>
 #include <qregexp.h>
+#if QT_CONFIG(textcodec)
 #include <qtextcodec.h>
+#endif
 #include <qtextstream.h>
 #include <qxml.h>
 #include "private/qxml_p.h"
@@ -4149,7 +4151,7 @@ static QString encodeText(const QString &str,
                           const bool performAVN = false,
                           const bool encodeEOLs = false)
 {
-#ifdef QT_NO_TEXTCODEC
+#if !QT_CONFIG(textcodec)
     Q_UNUSED(s);
 #else
     const QTextCodec *const codec = s.codec();
@@ -4191,7 +4193,7 @@ static QString encodeText(const QString &str,
             len += 4;
             i += 5;
         } else {
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
             if(codec->canEncode(ati))
                 ++i;
             else
@@ -6428,7 +6430,7 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
     const QDomNodePrivate* n = first;
 
     if(encUsed == QDomNode::EncodingFromDocument) {
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
         const QDomNodePrivate* n = first;
 
         QTextCodec *codec = 0;
@@ -6464,7 +6466,7 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
     else {
 
         // Write out the XML declaration.
-#ifdef QT_NO_TEXTCODEC
+#if !QT_CONFIG(textcodec)
         const QLatin1String codecName("iso-8859-1");
 #else
         const QTextCodec *const codec = s.codec();

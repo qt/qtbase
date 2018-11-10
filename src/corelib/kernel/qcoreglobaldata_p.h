@@ -57,7 +57,9 @@
 #include "QtCore/qreadwritelock.h"
 #include "QtCore/qhash.h"
 #include "QtCore/qbytearray.h"
+#if QT_CONFIG(textcodec)
 #include "QtCore/qtextcodec.h"
+#endif
 #include "QtCore/qmutex.h"
 
 QT_BEGIN_NAMESPACE

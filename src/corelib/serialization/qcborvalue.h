@@ -72,7 +72,7 @@ class QDataStream;
 struct QCborParserError
 {
     qint64 offset = 0;
-    QCborError error = {};
+    QCborError error = { QCborError::NoError };
 
     QString errorString() const { return error.toString(); }
 };

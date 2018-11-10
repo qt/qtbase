@@ -1134,10 +1134,14 @@ QVariant QSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
             num = copy.toInt(&ok, displayIntegerBase);
         } else {
             num = locale.toInt(copy, &ok);
-            if (!ok && copy.contains(locale.groupSeparator()) && (max >= 1000 || min <= -1000)) {
-                QString copy2 = copy;
-                copy2.remove(locale.groupSeparator());
-                num = locale.toInt(copy2, &ok);
+            if (!ok && (max >= 1000 || min <= -1000)) {
+                const QChar sep = locale.groupSeparator();
+                const QChar doubleSep[2] = {sep, sep};
+                if (copy.contains(sep) && !copy.contains(QString(doubleSep, 2))) {
+                    QString copy2 = copy;
+                    copy2.remove(locale.groupSeparator());
+                    num = locale.toInt(copy2, &ok);
+                }
             }
         }
         QSBDEBUG() << __FILE__ << __LINE__<< "num is set to" << num;

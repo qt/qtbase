@@ -138,6 +138,16 @@ QDataStream &operator<<(QDataStream &ds, QCborSimpleType st);
 QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st);
 #endif
 
+inline uint qHash(QCborSimpleType tag, uint seed = 0)
+{
+    return qHash(quint8(tag), seed);
+}
+
+inline uint qHash(QCborTag tag, uint seed = 0)
+{
+    return qHash(quint64(tag), seed);
+}
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QCborTag)

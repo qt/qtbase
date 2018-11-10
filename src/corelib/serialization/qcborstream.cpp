@@ -1795,6 +1795,8 @@ public:
         preread();
         if (CborError err = cbor_parser_init_reader(nullptr, &parser, &currentElement, this))
             handleError(err);
+        else
+            lastError = { QCborError::NoError };
     }
 
     char *bufferPtr()

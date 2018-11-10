@@ -5861,7 +5861,11 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
 
     pixmapOffset -= effectRect.topLeft();
 
-    const qreal dpr = context->painter->device()->devicePixelRatioF();
+    qreal dpr(1.0);
+    if (const auto *paintDevice = context->painter->device())
+        dpr = paintDevice->devicePixelRatioF();
+    else
+        qWarning("QWidgetEffectSourcePrivate::pixmap: Painter not active");
     QPixmap pixmap(effectRect.size() * dpr);
     pixmap.setDevicePixelRatio(dpr);
 

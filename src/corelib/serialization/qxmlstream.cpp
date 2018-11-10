@@ -45,7 +45,9 @@
 #include <qdebug.h>
 #include <qfile.h>
 #include <stdio.h>
+#if QT_CONFIG(textcodec)
 #include <qtextcodec.h>
+#endif
 #include <qstack.h>
 #include <qbuffer.h>
 #ifndef QT_BOOTSTRAPPED
@@ -420,7 +422,7 @@ QXmlStreamReader::QXmlStreamReader(const QString &data)
     : d_ptr(new QXmlStreamReaderPrivate(this))
 {
     Q_D(QXmlStreamReader);
-#ifdef QT_NO_TEXTCODEC
+#if !QT_CONFIG(textcodec)
     d->dataBuffer = data.toLatin1();
 #else
     d->dataBuffer = d->codec->fromUnicode(data);
@@ -515,7 +517,7 @@ void QXmlStreamReader::addData(const QString &data)
 {
     Q_D(QXmlStreamReader);
     d->lockEncoding = true;
-#ifdef QT_NO_TEXTCODEC
+#if !QT_CONFIG(textcodec)
     addData(data.toLatin1());
 #else
     addData(d->codec->fromUnicode(data));
@@ -792,7 +794,7 @@ QXmlStreamReaderPrivate::QXmlStreamReaderPrivate(QXmlStreamReader *q)
 {
     device = 0;
     deleteDevice = false;
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     decoder = 0;
 #endif
     stack_size = 64;
@@ -838,7 +840,7 @@ void QXmlStreamReaderPrivate::init()
     lineNumber = lastLineStart = characterOffset = 0;
     readBufferPos = 0;
     nbytesread = 0;
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     codec = QTextCodec::codecForMib(106); // utf8
     delete decoder;
     decoder = 0;
@@ -903,7 +905,7 @@ inline void QXmlStreamReaderPrivate::reallocateStack()
 
 QXmlStreamReaderPrivate::~QXmlStreamReaderPrivate()
 {
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     delete decoder;
 #endif
     free(sym_stack);
@@ -1482,7 +1484,7 @@ uint QXmlStreamReaderPrivate::getChar_helper()
     characterOffset += readBufferPos;
     readBufferPos = 0;
     readBuffer.resize(0);
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     if (decoder)
 #endif
         nbytesread = 0;
@@ -1503,7 +1505,7 @@ uint QXmlStreamReaderPrivate::getChar_helper()
         return StreamEOF;
     }
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     if (!decoder) {
         if (nbytesread < 4) { // the 4 is to cover 0xef 0xbb 0xbf plus
                               // one extra for the utf8 codec
@@ -1545,7 +1547,7 @@ uint QXmlStreamReaderPrivate::getChar_helper()
     }
 #else
     readBuffer = QString::fromLatin1(rawReadBuffer.data(), nbytesread);
-#endif // QT_NO_TEXTCODEC
+#endif // textcodec
 
     readBuffer.reserve(1); // keep capacity when calling resize() next time
 
@@ -1816,7 +1818,7 @@ void QXmlStreamReaderPrivate::startDocument()
             if (!QXmlUtils::isEncName(value))
                 err = QXmlStream::tr("%1 is an invalid encoding name.").arg(value);
             else {
-#ifdef QT_NO_TEXTCODEC
+#if !QT_CONFIG(textcodec)
                 readBuffer = QString::fromLatin1(rawReadBuffer.data(), nbytesread);
 #else
                 QTextCodec *const newCodec = QTextCodec::codecForName(value.toLatin1());
@@ -1828,7 +1830,7 @@ void QXmlStreamReaderPrivate::startDocument()
                     decoder = codec->makeDecoder();
                     decoder->toUnicode(&readBuffer, rawReadBuffer.data(), nbytesread);
                 }
-#endif // QT_NO_TEXTCODEC
+#endif // textcodec
             }
         } else if (prefix.isEmpty() && key == QLatin1String("standalone")) {
             hasStandalone = true;
@@ -2966,7 +2968,7 @@ public:
     ~QXmlStreamWriterPrivate() {
         if (deleteDevice)
             delete device;
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
         delete encoder;
 #endif
     }
@@ -2993,7 +2995,7 @@ public:
     NamespaceDeclaration emptyNamespace;
     int lastNamespaceDeclaration;
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     QTextCodec *codec;
     QTextEncoder *encoder;
 #endif
@@ -3015,7 +3017,7 @@ QXmlStreamWriterPrivate::QXmlStreamWriterPrivate(QXmlStreamWriter *q)
     device = 0;
     stringDevice = 0;
     deleteDevice = false;
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     codec = QTextCodec::codecForMib(106); // utf8
     encoder = codec->makeEncoder(QTextCodec::IgnoreHeader); // no byte order mark for utf8
 #endif
@@ -3032,7 +3034,7 @@ QXmlStreamWriterPrivate::QXmlStreamWriterPrivate(QXmlStreamWriter *q)
 
 void QXmlStreamWriterPrivate::checkIfASCIICompatibleCodec()
 {
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     Q_ASSERT(encoder);
     // test ASCII-compatibility using the letter 'a'
     QChar letterA = QLatin1Char('a');
@@ -3052,7 +3054,7 @@ void QXmlStreamWriterPrivate::write(const QStringRef &s)
     if (device) {
         if (hasIoError)
             return;
-#ifdef QT_NO_TEXTCODEC
+#if !QT_CONFIG(textcodec)
         QByteArray bytes = s.toLatin1();
 #else
         QByteArray bytes = encoder->fromUnicode(s.constData(), s.size());
@@ -3075,7 +3077,7 @@ void QXmlStreamWriterPrivate::write(const QString &s)
     if (device) {
         if (hasIoError)
             return;
-#ifdef QT_NO_TEXTCODEC
+#if !QT_CONFIG(textcodec)
         QByteArray bytes = s.toLatin1();
 #else
         QByteArray bytes = encoder->fromUnicode(s);
@@ -3324,7 +3326,7 @@ QIODevice *QXmlStreamWriter::device() const
 }
 
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 /*!
     Sets the codec for this stream to \a codec. The codec is used for
     encoding any data that is written. By default, QXmlStreamWriter
@@ -3382,7 +3384,7 @@ QTextCodec *QXmlStreamWriter::codec() const
     Q_D(const QXmlStreamWriter);
     return d->codec;
 }
-#endif // QT_NO_TEXTCODEC
+#endif // textcodec
 
 /*!
     \property  QXmlStreamWriter::autoFormatting
@@ -3847,7 +3849,7 @@ void QXmlStreamWriter::writeStartDocument(const QString &version)
     d->write(version);
     if (d->device) { // stringDevice does not get any encoding
         d->write("\" encoding=\"");
-#ifdef QT_NO_TEXTCODEC
+#if !QT_CONFIG(textcodec)
         d->write("iso-8859-1");
 #else
         const QByteArray name = d->codec->name();
@@ -3871,7 +3873,7 @@ void QXmlStreamWriter::writeStartDocument(const QString &version, bool standalon
     d->write(version);
     if (d->device) { // stringDevice does not get any encoding
         d->write("\" encoding=\"");
-#ifdef QT_NO_TEXTCODEC
+#if !QT_CONFIG(textcodec)
         d->write("iso-8859-1");
 #else
         const QByteArray name = d->codec->name();

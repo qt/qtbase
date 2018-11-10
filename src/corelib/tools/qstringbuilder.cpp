@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qstringbuilder.h"
-#include <QtCore/qtextcodec.h>
 #include <private/qutfcodec_p.h>
 
 QT_BEGIN_NAMESPACE

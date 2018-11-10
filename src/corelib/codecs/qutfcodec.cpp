@@ -70,9 +70,14 @@ static inline bool simdEncodeAscii(uchar *&dst, const ushort *&nextAscii, const 
 {
     // do sixteen characters at a time
     for ( ; end - src >= 16; src += 16, dst += 16) {
+#  ifdef __AVX2__
+        __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src));
+        __m128i data1 = _mm256_castsi256_si128(data);
+        __m128i data2 = _mm256_extracti128_si256(data, 1);
+#  else
         __m128i data1 = _mm_loadu_si128((const __m128i*)src);
         __m128i data2 = _mm_loadu_si128(1+(const __m128i*)src);
-
+#  endif
 
         // check if everything is ASCII
         // the highest ASCII value is U+007F
@@ -967,7 +972,7 @@ QString QUtf32::convertToUnicode(const char *chars, int len, QTextCodec::Convert
 }
 
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 
 QUtf8Codec::~QUtf8Codec()
 {
@@ -1121,6 +1126,6 @@ QList<QByteArray> QUtf32LECodec::aliases() const
     return list;
 }
 
-#endif //QT_NO_TEXTCODEC
+#endif // textcodec
 
 QT_END_NAMESPACE

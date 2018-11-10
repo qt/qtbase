@@ -521,7 +521,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         if (activePopupWidget->isEnabled()) {
             // deliver event
             qt_replay_popup_mouse_event = false;
-            QWidget *receiver = activePopupWidget;
+            QPointer<QWidget> receiver = activePopupWidget;
             QPoint widgetPos = mapped;
             if (qt_button_down)
                 receiver = qt_button_down;

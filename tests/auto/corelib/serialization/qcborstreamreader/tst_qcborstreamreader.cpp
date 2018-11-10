@@ -269,7 +269,7 @@ void tst_QCborStreamReader::integers()
     quint64 absolute = (isNegative ? expectedRaw + 1 : expectedRaw);
 
     QBuffer buffer(&data);
-    QCborStreamReader reader(data);
+    QCborStreamReader reader(useDevice ? QByteArray() : data);
     if (useDevice) {
         buffer.open(QIODevice::ReadOnly);
         reader.setDevice(&buffer);
@@ -605,7 +605,7 @@ void tst_QCborStreamReader::fixed()
     removeIndicators(expected);
 
     QBuffer buffer(&data);
-    QCborStreamReader reader(data);
+    QCborStreamReader reader(useDevice ? QByteArray() : data);
     if (useDevice) {
         buffer.open(QIODevice::ReadOnly);
         reader.setDevice(&buffer);

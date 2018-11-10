@@ -54,6 +54,7 @@
 #include <qplatformdefs.h>
 #include <qendian.h>
 #include "private/qabstractfileengine_p.h"
+#include "private/qnumeric_p.h"
 #include "private/qsimd_p.h"
 #include "private/qsystemerror_p.h"
 
@@ -1502,7 +1503,9 @@ uchar *QResourceFileEnginePrivate::map(qint64 offset, qint64 size, QFile::Memory
 {
     Q_Q(QResourceFileEngine);
     Q_UNUSED(flags);
-    if (offset < 0 || size <= 0 || !resource.isValid() || offset + size > resource.size()) {
+    qint64 end;
+    if (offset < 0 || size <= 0 || !resource.isValid() ||
+            add_overflow(offset, size, &end) || end > resource.size()) {
         q->setError(QFile::UnspecifiedError, QString());
         return 0;
     }

@@ -817,10 +817,10 @@ static bool convert_indexed8_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConve
     Q_ASSERT(data->own_data);
 
     const int depth = 32;
-
-    const qsizetype dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
-    const qsizetype nbytes = dst_bytes_per_line * data->height;
-    uchar *const newData = (uchar *)realloc(data->data, nbytes);
+    auto params = QImageData::calculateImageParameters(data->width, data->height, depth);
+    if (params.bytesPerLine < 0)
+        return false;
+    uchar *const newData = (uchar *)realloc(data->data, params.totalSize);
     if (!newData)
         return false;
 
@@ -828,10 +828,10 @@ static bool convert_indexed8_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConve
 
     // start converting from the end because the end image is bigger than the source
     uchar *src_data = newData + data->nbytes; // end of src
-    quint32 *dest_data = (quint32 *) (newData + nbytes); // end of dest > end of src
+    quint32 *dest_data = (quint32 *) (newData + params.totalSize); // end of dest > end of src
     const int width = data->width;
     const int src_pad = data->bytes_per_line - width;
-    const int dest_pad = (dst_bytes_per_line >> 2) - width;
+    const int dest_pad = (params.bytesPerLine >> 2) - width;
     if (data->colortable.size() == 0) {
         data->colortable.resize(256);
         for (int i = 0; i < 256; ++i)
@@ -858,9 +858,9 @@ static bool convert_indexed8_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConve
 
     data->colortable = QVector<QRgb>();
     data->format = QImage::Format_ARGB32_Premultiplied;
-    data->bytes_per_line = dst_bytes_per_line;
+    data->bytes_per_line = params.bytesPerLine;
     data->depth = depth;
-    data->nbytes = nbytes;
+    data->nbytes = params.totalSize;
 
     return true;
 }
@@ -871,10 +871,10 @@ static bool convert_indexed8_to_ARGB_inplace(QImageData *data, Qt::ImageConversi
     Q_ASSERT(data->own_data);
 
     const int depth = 32;
-
-    const qsizetype dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
-    const qsizetype nbytes = dst_bytes_per_line * data->height;
-    uchar *const newData = (uchar *)realloc(data->data, nbytes);
+    auto params = QImageData::calculateImageParameters(data->width, data->height, depth);
+    if (params.bytesPerLine < 0)
+        return false;
+    uchar *const newData = (uchar *)realloc(data->data, params.totalSize);
     if (!newData)
         return false;
 
@@ -882,10 +882,10 @@ static bool convert_indexed8_to_ARGB_inplace(QImageData *data, Qt::ImageConversi
 
     // start converting from the end because the end image is bigger than the source
     uchar *src_data = newData + data->nbytes;
-    quint32 *dest_data = (quint32 *) (newData + nbytes);
+    quint32 *dest_data = (quint32 *) (newData + params.totalSize);
     const int width = data->width;
     const int src_pad = data->bytes_per_line - width;
-    const int dest_pad = (dst_bytes_per_line >> 2) - width;
+    const int dest_pad = (params.bytesPerLine >> 2) - width;
     if (data->colortable.size() == 0) {
         data->colortable.resize(256);
         for (int i = 0; i < 256; ++i)
@@ -909,9 +909,9 @@ static bool convert_indexed8_to_ARGB_inplace(QImageData *data, Qt::ImageConversi
 
     data->colortable = QVector<QRgb>();
     data->format = QImage::Format_ARGB32;
-    data->bytes_per_line = dst_bytes_per_line;
+    data->bytes_per_line = params.bytesPerLine;
     data->depth = depth;
-    data->nbytes = nbytes;
+    data->nbytes = params.totalSize;
 
     return true;
 }
@@ -939,10 +939,10 @@ static bool convert_indexed8_to_RGB16_inplace(QImageData *data, Qt::ImageConvers
     Q_ASSERT(data->own_data);
 
     const int depth = 16;
-
-    const qsizetype dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
-    const qsizetype nbytes = dst_bytes_per_line * data->height;
-    uchar *const newData = (uchar *)realloc(data->data, nbytes);
+    auto params = QImageData::calculateImageParameters(data->width, data->height, depth);
+    if (params.bytesPerLine < 0)
+        return false;
+    uchar *const newData = (uchar *)realloc(data->data, params.totalSize);
     if (!newData)
         return false;
 
@@ -950,10 +950,10 @@ static bool convert_indexed8_to_RGB16_inplace(QImageData *data, Qt::ImageConvers
 
     // start converting from the end because the end image is bigger than the source
     uchar *src_data = newData + data->nbytes;
-    quint16 *dest_data = (quint16 *) (newData + nbytes);
+    quint16 *dest_data = (quint16 *) (newData + params.totalSize);
     const int width = data->width;
     const int src_pad = data->bytes_per_line - width;
-    const int dest_pad = (dst_bytes_per_line >> 1) - width;
+    const int dest_pad = (params.bytesPerLine >> 1) - width;
 
     quint16 colorTableRGB16[256];
     const int tableSize = data->colortable.size();
@@ -983,9 +983,9 @@ static bool convert_indexed8_to_RGB16_inplace(QImageData *data, Qt::ImageConvers
     }
 
     data->format = QImage::Format_RGB16;
-    data->bytes_per_line = dst_bytes_per_line;
+    data->bytes_per_line = params.bytesPerLine;
     data->depth = depth;
-    data->nbytes = nbytes;
+    data->nbytes = params.totalSize;
 
     return true;
 }
@@ -997,6 +997,7 @@ static bool convert_RGB_to_RGB16_inplace(QImageData *data, Qt::ImageConversionFl
 
     const int depth = 16;
 
+    // cannot overflow, since we're shrinking the buffer
     const qsizetype dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
     const qsizetype src_bytes_per_line = data->bytes_per_line;
     quint32 *src_data = (quint32 *) data->data;
@@ -1013,12 +1014,11 @@ static bool convert_RGB_to_RGB16_inplace(QImageData *data, Qt::ImageConversionFl
     data->depth = depth;
     data->nbytes = dst_bytes_per_line * data->height;
     uchar *const newData = (uchar *)realloc(data->data, data->nbytes);
-    if (newData) {
+    if (newData)
         data->data = newData;
-        return true;
-    } else {
-        return false;
-    }
+
+    // can't fail, since we're shrinking
+    return true;
 }
 
 static void convert_ARGB_PM_to_ARGB(QImageData *dest, const QImageData *src)

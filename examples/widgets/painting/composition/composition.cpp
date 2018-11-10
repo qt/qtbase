@@ -358,10 +358,10 @@ void CompositionRenderer::paint(QPainter *painter)
             m_blitter.create();
 
         int new_pbuf_size = m_pbuffer_size;
-        if (size().width() > m_pbuffer_size || size().height() > m_pbuffer_size)
+        while (size().width() > new_pbuf_size || size().height() > new_pbuf_size)
             new_pbuf_size *= 2;
 
-        if (size().width() < m_pbuffer_size/2 && size().height() < m_pbuffer_size/2)
+        while (size().width() < new_pbuf_size/2 && size().height() < new_pbuf_size/2)
             new_pbuf_size /= 2;
 
         if (!m_fbo || new_pbuf_size != m_pbuffer_size) {
@@ -372,6 +372,9 @@ void CompositionRenderer::paint(QPainter *painter)
         if (size() != m_previous_size) {
             m_previous_size = size();
             QPainter p(m_fbo.data());
+            p.setCompositionMode(QPainter::CompositionMode_Source);
+            p.fillRect(QRect(QPoint(0, 0), size()), Qt::transparent);
+            p.setCompositionMode(QPainter::CompositionMode_SourceOver);
             drawBase(p);
             p.end();
             m_base_tex = m_fbo->takeTexture();
