@@ -30,6 +30,7 @@
 #include <QtTest/QtTest>
 #include <qsslkey.h>
 #include <qsslsocket.h>
+#include <QScopeGuard>
 
 #include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qnetworkproxy.h>
@@ -233,15 +234,50 @@ void tst_QSslKey::constructorHandle()
     QByteArray passphrase;
     if (QByteArray(QTest::currentDataTag()).contains("-pkcs8-"))
         passphrase = "1234";
+
     BIO* bio = q_BIO_new(q_BIO_s_mem());
     q_BIO_write(bio, pem.constData(), pem.length());
-    QSslKey key(func(bio, nullptr, nullptr, static_cast<void *>(passphrase.data())), type);
+    EVP_PKEY *origin = func(bio, nullptr, nullptr, static_cast<void *>(passphrase.data()));
+#if QT_CONFIG(opensslv11)
+    q_EVP_PKEY_up_ref(origin);
+#endif
+    QSslKey key(origin, type);
+#if !QT_CONFIG(opensslv11)
+    q_BIO_write(bio, pem.constData(), pem.length());
+    origin = func(bio, nullptr, nullptr, static_cast<void *>(passphrase.data()));
+#endif
     q_BIO_free(bio);
+
+    EVP_PKEY *handle = q_EVP_PKEY_new();
+    switch (algorithm) {
+    case QSsl::Rsa:
+        q_EVP_PKEY_set1_RSA(handle, static_cast<RSA *>(key.handle()));
+        break;
+    case QSsl::Dsa:
+        q_EVP_PKEY_set1_DSA(handle, static_cast<DSA *>(key.handle()));
+        break;
+    case QSsl::Dh:
+        q_EVP_PKEY_set1_DH(handle, static_cast<DH *>(key.handle()));
+        break;
+#ifndef OPENSSL_NO_EC
+    case QSsl::Ec:
+        q_EVP_PKEY_set1_EC_KEY(handle, static_cast<EC_KEY *>(key.handle()));
+        break;
+#endif
+    default:
+        break;
+    }
+
+    auto cleanup = qScopeGuard([origin, handle] {
+        q_EVP_PKEY_free(origin);
+        q_EVP_PKEY_free(handle);
+    });
 
     QVERIFY(!key.isNull());
     QCOMPARE(key.algorithm(), algorithm);
     QCOMPARE(key.type(), type);
     QCOMPARE(key.length(), length);
+    QCOMPARE(q_EVP_PKEY_cmp(origin, handle), 1);
 #endif
 }
 
