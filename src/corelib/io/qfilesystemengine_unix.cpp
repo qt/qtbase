@@ -285,7 +285,7 @@ mtime(const T &statBuffer, int)
 { return timespecToMSecs(statBuffer.st_mtimespec); }
 #endif
 
-#ifndef st_mtimensec
+#if !defined(st_mtimensec) && !defined(__alpha__)
 // Xtimensec
 template <typename T>
 Q_DECL_UNUSED static typename std::enable_if<(&T::st_atimensec, true), qint64>::type
