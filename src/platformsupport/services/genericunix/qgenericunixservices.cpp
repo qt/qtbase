@@ -45,7 +45,9 @@
 #if QT_CONFIG(process)
 # include <QtCore/QProcess>
 #endif
+#if QT_CONFIG(settings)
 #include <QtCore/QSettings>
+#endif
 #include <QtCore/QStandardPaths>
 #include <QtCore/QUrl>
 
@@ -93,7 +95,7 @@ static inline QByteArray detectDesktopEnvironment()
     // This can be a path in /usr/share/xsessions
     int slash = desktopSession.lastIndexOf('/');
     if (slash != -1) {
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
         QSettings desktopFile(QFile::decodeName(desktopSession + ".desktop"), QSettings::IniFormat);
         desktopFile.beginGroup(QStringLiteral("Desktop Entry"));
         QByteArray desktopName = desktopFile.value(QStringLiteral("DesktopNames")).toByteArray();

@@ -53,7 +53,9 @@
 
 #include "QtCore/qcoreapplication.h"
 #include "QtCore/qtranslator.h"
+#if QT_CONFIG(settings)
 #include "QtCore/qsettings.h"
+#endif
 #ifndef QT_NO_QOBJECT
 #include "private/qobject_p.h"
 #endif

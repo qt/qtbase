@@ -57,7 +57,9 @@
 #include <qmessagebox.h>
 #endif
 #include <stdlib.h>
+#if QT_CONFIG(settings)
 #include <qsettings.h>
+#endif
 #include <qdebug.h>
 #if QT_CONFIG(mimetype)
 #include <qmimedatabase.h>
@@ -383,7 +385,7 @@ QFileDialog::QFileDialog(const QFileDialogArgs &args)
 */
 QFileDialog::~QFileDialog()
 {
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
     Q_D(QFileDialog);
     d->saveSettings();
 #endif
@@ -2723,7 +2725,7 @@ void QFileDialog::accept()
     }
 }
 
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
 void QFileDialogPrivate::saveSettings()
 {
     Q_Q(QFileDialog);
@@ -2781,7 +2783,7 @@ bool QFileDialogPrivate::restoreFromSettings()
 
     return restoreWidgetState(history, settings.value(QLatin1String("sidebarWidth"), -1).toInt());
 }
-#endif // QT_NO_SETTINGS
+#endif // settings
 
 bool QFileDialogPrivate::restoreWidgetState(QStringList &history, int splitterPosition)
 {
@@ -2854,7 +2856,7 @@ void QFileDialogPrivate::init(const QUrl &directory, const QString &nameFilter,
     else
         q->selectUrl(directory);
 
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
     // Try to restore from the FileDialog settings group; if it fails, fall back
     // to the pre-5.5 QByteArray serialized settings.
     if (!restoreFromSettings()) {
@@ -3019,7 +3021,7 @@ void QFileDialogPrivate::createWidgets()
     createToolButtons();
     createMenuActions();
 
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
     // Try to restore from the FileDialog settings group; if it fails, fall back
     // to the pre-5.5 QByteArray serialized settings.
     if (!restoreFromSettings()) {

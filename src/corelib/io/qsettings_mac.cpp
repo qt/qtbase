@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qsettings.h"
-#ifndef QT_NO_SETTINGS
 
 #include "qsettings_p.h"
 #include "qdatetime.h"
@@ -664,4 +663,3 @@ bool QConfFileSettingsPrivate::writePlistFile(QIODevice &file, const ParsedSetti
 }
 
 QT_END_NAMESPACE
-#endif //QT_NO_SETTINGS

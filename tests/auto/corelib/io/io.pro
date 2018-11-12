@@ -65,6 +65,9 @@ win32:!qtConfig(private_tests): SUBDIRS -= \
     qprocess \
     qprocess-noapplication
 
+!qtConfig(settings): SUBDIRS -= \
+    qsettings
+
 winrt: SUBDIRS -= \
     qstorageinfo
 

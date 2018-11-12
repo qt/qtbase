@@ -48,14 +48,14 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QPlatformInputContextFactoryInterface_iid, QLatin1String("/platforminputcontexts"), Qt::CaseInsensitive))
 #endif
 
 QStringList QPlatformInputContextFactory::keys()
 {
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
     return loader()->keyMap().values();
 #else
     return QStringList();
@@ -70,7 +70,7 @@ QString QPlatformInputContextFactory::requested()
 
 QPlatformInputContext *QPlatformInputContextFactory::create(const QString& key)
 {
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
     if (!key.isEmpty()) {
         QStringList paramList = key.split(QLatin1Char(':'));
         const QString platform = paramList.takeFirst().toLower();

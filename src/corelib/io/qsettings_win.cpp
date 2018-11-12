@@ -39,8 +39,6 @@
 
 #include "qsettings.h"
 
-#ifndef QT_NO_SETTINGS
-
 #include "qsettings_p.h"
 #include "qvector.h"
 #include "qmap.h"
@@ -859,4 +857,3 @@ QSettingsPrivate *QSettingsPrivate::create(const QString &fileName, QSettings::F
 }
 
 QT_END_NAMESPACE
-#endif // QT_NO_SETTINGS

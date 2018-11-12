@@ -45,10 +45,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qscopedpointer.h>
 
-QT_BEGIN_NAMESPACE
-QT_END_NAMESPACE
-
-#ifndef QT_NO_SETTINGS
+QT_REQUIRE_CONFIG(settings);
 
 #include <ctype.h>
 
@@ -207,7 +204,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SETTINGS
 
 #endif // QSETTINGS_H
