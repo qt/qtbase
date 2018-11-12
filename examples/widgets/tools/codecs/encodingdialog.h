@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -48,44 +48,26 @@
 **
 ****************************************************************************/
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef ENCODINGDIALOG_H
+#define ENCODINGDIALOG_H
 
-#include <QList>
-#include <QMainWindow>
+#include <QDialog>
 
-QT_BEGIN_NAMESPACE
-class QAction;
-class QTextCodec;
-class QPlainTextEdit;
-QT_END_NAMESPACE
+QT_FORWARD_DECLARE_CLASS(QLineEdit)
 
-class EncodingDialog;
-class PreviewForm;
-
-class MainWindow : public QMainWindow
+class EncodingDialog : public QDialog
 {
     Q_OBJECT
-
 public:
-    MainWindow();
+    explicit EncodingDialog(QWidget *parent = nullptr);
+
+    enum Encoding { Unicode, Utf8, Utf16, Utf32, Latin1, EncodingCount };
 
 private slots:
-    void open();
-    void save();
-    void about();
-    void aboutToShowSaveAsMenu();
-    void encodingDialog();
+    void textChanged(const QString &t);
 
 private:
-    void findCodecs();
-    void createMenus();
-
-    QList<QAction *> saveAsActs;
-    QPlainTextEdit *textEdit;
-    PreviewForm *previewForm;
-    QList<QTextCodec *> codecs;
-    EncodingDialog *m_encodingDialog = nullptr;
+    QLineEdit *m_lineEdits[EncodingCount];
 };
 
-#endif
+#endif // ENCODINGDIALOG_H
