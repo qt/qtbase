@@ -90,8 +90,8 @@
     \snippet itemviews/addressbook/tablemodel.h 0
 
     Two constructors are used, a default constructor which uses
-    \c TableModel's own \c {QList<Contact>} and one that takes
-    \c {QList<Contact>} as an argument, for convenience.
+    \c TableModel's own \c {QVector<Contact>} and one that takes
+    \c {QVector<Contact>} as an argument, for convenience.
 
 
     \section1 TableModel Class Implementation
@@ -107,9 +107,6 @@
     depending on the number of contacts added to the address book,
     \c columnCount()'s value is always 2 because we only need space
     for the \b Name and \b Address columns.
-
-    \note The \c Q_UNUSED() macro prevents the compiler from
-    generating warnings regarding unused parameters.
 
     \snippet itemviews/addressbook/tablemodel.cpp 1
 
@@ -164,7 +161,7 @@
     them here so that we can reuse the model in other programs.
 
     The last function in \c {TableModel}, \c getContacts() returns the
-    QList<Contact> object that holds all the contacts in the address
+    QVector<Contact> object that holds all the contacts in the address
     book. We use this function later to obtain the list of contacts to
     check for existing entries, write the contacts to a file and read
     them back. Further explanation is given with \c AddressWidget.
@@ -233,7 +230,7 @@
 
     \image addressbook-signals.png Signals and Slots Connections
 
-    We provide 2 \c addEntry() functions: 1 which is intended to be
+    We provide two \c addEntry() functions: One which is intended to be
     used to accept user input, and the other which performs the actual
     task of adding new entries to the address book. We divide the
     responsibility of adding entries into two parts to allow

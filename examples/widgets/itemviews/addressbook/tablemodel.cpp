@@ -56,9 +56,9 @@ TableModel::TableModel(QObject *parent)
 {
 }
 
-TableModel::TableModel(QList<Contact> contacts, QObject *parent)
-    : QAbstractTableModel(parent)
-    , contacts(contacts)
+TableModel::TableModel(const QVector<Contact> &contacts, QObject *parent)
+    : QAbstractTableModel(parent),
+      contacts(contacts)
 {
 }
 //! [0]
@@ -66,14 +66,12 @@ TableModel::TableModel(QList<Contact> contacts, QObject *parent)
 //! [1]
 int TableModel::rowCount(const QModelIndex &parent) const
 {
-    Q_UNUSED(parent);
-    return contacts.size();
+    return parent.isValid() ? 0 : contacts.size();
 }
 
 int TableModel::columnCount(const QModelIndex &parent) const
 {
-    Q_UNUSED(parent);
-    return 2;
+    return parent.isValid() ? 0 : 2;
 }
 //! [1]
 
@@ -89,10 +87,14 @@ QVariant TableModel::data(const QModelIndex &index, int role) const
     if (role == Qt::DisplayRole) {
         const auto &contact = contacts.at(index.row());
 
-        if (index.column() == 0)
-            return contact.name;
-        else if (index.column() == 1)
-            return contact.address;
+        switch (index.column()) {
+            case 0:
+                return contact.name;
+            case 1:
+                return contact.address;
+            default:
+                break;
+        }
     }
     return QVariant();
 }
@@ -108,12 +110,10 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation, int ro
         switch (section) {
             case 0:
                 return tr("Name");
-
             case 1:
                 return tr("Address");
-
             default:
-                return QVariant();
+                break;
         }
     }
     return QVariant();
@@ -152,19 +152,21 @@ bool TableModel::removeRows(int position, int rows, const QModelIndex &index)
 bool TableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (index.isValid() && role == Qt::EditRole) {
-        int row = index.row();
-
+        const int row = index.row();
         auto contact = contacts.value(row);
 
-        if (index.column() == 0)
-            contact.name = value.toString();
-        else if (index.column() == 1)
-            contact.address = value.toString();
-        else
-            return false;
-
+        switch (index.column()) {
+            case 0:
+                contact.name = value.toString();
+                break;
+            case 1:
+                contact.address = value.toString();
+                break;
+            default:
+                return false;
+        }
         contacts.replace(row, contact);
-        emit dataChanged(index, index, {role});
+        emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
 
         return true;
     }
@@ -184,7 +186,7 @@ Qt::ItemFlags TableModel::flags(const QModelIndex &index) const
 //! [7]
 
 //! [8]
-QList<Contact> TableModel::getContacts() const
+const QVector<Contact> &TableModel::getContacts() const
 {
     return contacts;
 }

@@ -66,15 +66,15 @@ class AddDialog : public QDialog
     Q_OBJECT
 
 public:
-    AddDialog(QWidget *parent = 0);
-    QLineEdit *nameText;
-    QTextEdit *addressText;
+    AddDialog(QWidget *parent = nullptr);
+
+    QString name() const;
+    QString address() const;
+    void editAddress(const QString &name, const QString &address);
 
 private:
-    QLabel *nameLabel;
-    QLabel *addressLabel;
-    QPushButton *okButton;
-    QPushButton *cancelButton;
+    QLineEdit *nameText;
+    QTextEdit *addressText;
 };
 //! [0]
 

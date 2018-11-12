@@ -56,8 +56,9 @@
 
 //! [0]
 MainWindow::MainWindow()
+    : QMainWindow(),
+      addressWidget(new AddressWidget)
 {
-    addressWidget = new AddressWidget;
     setCentralWidget(addressWidget);
     createMenus();
     setWindowTitle(tr("Address Book"));
@@ -67,28 +68,29 @@ MainWindow::MainWindow()
 //! [1a]
 void MainWindow::createMenus()
 {
-    fileMenu = menuBar()->addMenu(tr("&File"));
+    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
 
-    openAct = new QAction(tr("&Open..."), this);
+    QAction *openAct = new QAction(tr("&Open..."), this);
     fileMenu->addAction(openAct);
     connect(openAct, &QAction::triggered, this, &MainWindow::openFile);
 //! [1a]
 
-    saveAct = new QAction(tr("&Save As..."), this);
+    QAction *saveAct = new QAction(tr("&Save As..."), this);
     fileMenu->addAction(saveAct);
     connect(saveAct, &QAction::triggered, this, &MainWindow::saveFile);
 
     fileMenu->addSeparator();
 
-    exitAct = new QAction(tr("E&xit"), this);
+    QAction *exitAct = new QAction(tr("E&xit"), this);
     fileMenu->addAction(exitAct);
     connect(exitAct, &QAction::triggered, this, &QWidget::close);
 
-    toolMenu = menuBar()->addMenu(tr("&Tools"));
+    QMenu *toolMenu = menuBar()->addMenu(tr("&Tools"));
 
-    addAct = new QAction(tr("&Add Entry..."), this);
+    QAction *addAct = new QAction(tr("&Add Entry..."), this);
     toolMenu->addAction(addAct);
-    connect(addAct, &QAction::triggered, addressWidget, &AddressWidget::showAddEntryDialog);
+    connect(addAct, &QAction::triggered,
+            addressWidget, &AddressWidget::showAddEntryDialog);
 
 //! [1b]
     editAct = new QAction(tr("&Edit Entry..."), this);

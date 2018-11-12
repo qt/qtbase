@@ -54,17 +54,16 @@
 
 //! [0]
 AddDialog::AddDialog(QWidget *parent)
-    : QDialog(parent)
+    : QDialog(parent),
+      nameText(new QLineEdit),
+      addressText(new QTextEdit)
 {
-    nameLabel = new QLabel("Name");
-    addressLabel = new QLabel("Address");
-    okButton = new QPushButton("OK");
-    cancelButton = new QPushButton("Cancel");
+    auto nameLabel = new QLabel(tr("Name"));
+    auto addressLabel = new QLabel(tr("Address"));
+    auto okButton = new QPushButton(tr("OK"));
+    auto cancelButton = new QPushButton(tr("Cancel"));
 
-    nameText = new QLineEdit;
-    addressText = new QTextEdit;
-
-    QGridLayout *gLayout = new QGridLayout;
+    auto gLayout = new QGridLayout;
     gLayout->setColumnStretch(1, 2);
     gLayout->addWidget(nameLabel, 0, 0);
     gLayout->addWidget(nameText, 0, 1);
@@ -72,13 +71,13 @@ AddDialog::AddDialog(QWidget *parent)
     gLayout->addWidget(addressLabel, 1, 0, Qt::AlignLeft|Qt::AlignTop);
     gLayout->addWidget(addressText, 1, 1, Qt::AlignLeft);
 
-    QHBoxLayout *buttonLayout = new QHBoxLayout;
+    auto buttonLayout = new QHBoxLayout;
     buttonLayout->addWidget(okButton);
     buttonLayout->addWidget(cancelButton);
 
     gLayout->addLayout(buttonLayout, 2, 1, Qt::AlignRight);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout;
+    auto mainLayout = new QVBoxLayout;
     mainLayout->addLayout(gLayout);
     setLayout(mainLayout);
 
@@ -86,5 +85,22 @@ AddDialog::AddDialog(QWidget *parent)
     connect(cancelButton, &QAbstractButton::clicked, this, &QDialog::reject);
 
     setWindowTitle(tr("Add a Contact"));
+}
+
+QString AddDialog::name() const
+{
+    return nameText->text();
+}
+
+QString AddDialog::address() const
+{
+    return addressText->toPlainText();
+}
+
+void AddDialog::editAddress(const QString &name, const QString &address)
+{
+    nameText->setReadOnly(true);
+    nameText->setText(name);
+    addressText->setPlainText(address);
 }
 //! [0]
