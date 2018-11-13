@@ -837,6 +837,9 @@ void QXcbBackingStore::endPaint()
 
 QImage QXcbBackingStore::toImage() const
 {
+    // If the backingstore is rgbSwapped, return the internal image type here.
+    if (!m_rgbImage.isNull())
+        return m_rgbImage;
     return m_image && m_image->image() ? *m_image->image() : QImage();
 }
 

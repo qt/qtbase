@@ -1383,19 +1383,23 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxSize)
             // No data was available for reading
             r = -2;
             break;
-        case EBADF:
-        case EINVAL:
-        case EIO:
-            //error string is now set in read(), not here in nativeRead()
-            break;
         case ECONNRESET:
 #if defined(Q_OS_VXWORKS)
         case ESHUTDOWN:
 #endif
             r = 0;
             break;
-        default:
+        case ETIMEDOUT:
+            socketError = QAbstractSocket::SocketTimeoutError;
             break;
+        default:
+            socketError = QAbstractSocket::NetworkError;
+            break;
+        }
+
+        if (r == -1) {
+            hasSetSocketError = true;
+            socketErrorString = qt_error_string();
         }
     }
 

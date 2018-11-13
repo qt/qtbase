@@ -1214,6 +1214,7 @@
         },
         "compile_examples": {
             "label": "Compile examples",
+            "autoDetect": "!config.wasm",
             "output": [ "privateConfig" ]
         },
         "incredibuild_xge": {

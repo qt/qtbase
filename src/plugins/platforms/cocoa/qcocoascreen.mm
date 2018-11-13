@@ -466,6 +466,7 @@ QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height
 
     const qreal dpr = devicePixelRatio();
     QPixmap windowPixmap(windowSize * dpr);
+    windowPixmap.setDevicePixelRatio(dpr);
     windowPixmap.fill(Qt::transparent);
 
     for (uint i = 0; i < displayCount; ++i) {
@@ -473,8 +474,8 @@ QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height
 
         // Calculate the position and size of the requested area
         QPoint pos(qAbs(bounds.origin.x - x), qAbs(bounds.origin.y - y));
-        QSize size(qMin(pos.x() + width, qRound(bounds.size.width)),
-                   qMin(pos.y() + height, qRound(bounds.size.height)));
+        QSize size(qMin(width, qRound(bounds.size.width)),
+                   qMin(height, qRound(bounds.size.height)));
         pos *= dpr;
         size *= dpr;
 

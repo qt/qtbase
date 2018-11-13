@@ -701,6 +701,11 @@ void QScreenPrivate::updatePrimaryOrientation()
     border of the window. If \a height is negative, the function
     copies everything to the bottom of the window.
 
+    The offset and size arguments are specified in device independent
+    pixels. The returned pixmap may be larger than the requested size
+    when grabbing from a high-DPI screen. Call QPixmap::devicePixelRatio()
+    to determine if this is the case.
+
     The window system identifier (\c WId) can be retrieved using the
     QWidget::winId() function. The rationale for using a window
     identifier and not a QWidget, is to enable grabbing of windows
@@ -748,7 +753,7 @@ QPixmap QScreen::grabWindow(WId window, int x, int y, int width, int height)
     QPixmap result =
         platformScreen->grabWindow(window, nativePos.x(), nativePos.y(),
                                    nativeSize.width(), nativeSize.height());
-    result.setDevicePixelRatio(factor);
+    result.setDevicePixelRatio(result.devicePixelRatio() * factor);
     return result;
 }
 

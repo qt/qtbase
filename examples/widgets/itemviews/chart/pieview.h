@@ -59,7 +59,7 @@ class PieView : public QAbstractItemView
     Q_OBJECT
 
 public:
-    PieView(QWidget *parent = 0);
+    PieView(QWidget *parent = nullptr);
 
     QRect visualRect(const QModelIndex &index) const override;
     void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible) override;
@@ -100,13 +100,13 @@ private:
     int rows(const QModelIndex &index = QModelIndex()) const;
     void updateGeometries() override;
 
-    int margin;
-    int totalSize;
-    int pieSize;
-    int validItems;
-    double totalValue;
+    int margin = 0;
+    int totalSize = 300;
+    int pieSize = totalSize - 2 * margin;
+    int validItems = 0;
+    double totalValue = 0.0;
+    QRubberBand *rubberBand = nullptr;
     QPoint origin;
-    QRubberBand *rubberBand;
 };
 //! [0]
 

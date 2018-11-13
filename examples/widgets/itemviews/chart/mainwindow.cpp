@@ -48,12 +48,13 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "pieview.h"
 #include "mainwindow.h"
 
-MainWindow::MainWindow()
+#include <QtWidgets>
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
 {
     QMenu *fileMenu = new QMenu(tr("&File"), this);
     QAction *openAction = fileMenu->addAction(tr("&Open..."));
@@ -124,17 +125,18 @@ void MainWindow::loadFile(const QString &fileName)
         return;
 
     QTextStream stream(&file);
-    QString line;
 
     model->removeRows(0, model->rowCount(QModelIndex()), QModelIndex());
 
     int row = 0;
-    do {
-        line = stream.readLine();
+    while (!stream.atEnd()) {
+        const QString line = stream.readLine();
         if (!line.isEmpty()) {
             model->insertRows(row, 1, QModelIndex());
 
-            QStringList pieces = line.split(',', QString::SkipEmptyParts);
+            const QStringList pieces = line.split(',', QString::SkipEmptyParts);
+            if (pieces.size() < 3)
+                continue;
             model->setData(model->index(row, 0, QModelIndex()),
                            pieces.value(0));
             model->setData(model->index(row, 1, QModelIndex()),
@@ -143,7 +145,7 @@ void MainWindow::loadFile(const QString &fileName)
                            QColor(pieces.value(2)), Qt::DecorationRole);
             row++;
         }
-    } while (!line.isEmpty());
+    };
 
     file.close();
     statusBar()->showMessage(tr("Loaded %1").arg(fileName), 2000);

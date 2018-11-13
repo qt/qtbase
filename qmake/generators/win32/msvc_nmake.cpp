@@ -71,18 +71,28 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
             return MakefileGenerator::writeStubMakefile(t);
 #endif
         if (!project->isHostBuild()) {
+            const QString msvcVer = project->first("MSVC_VER").toQString();
+            if (msvcVer.isEmpty()) {
+                fprintf(stderr, "Mkspec does not specify MSVC_VER. Cannot continue.\n");
+                return false;
+            }
+
+            bool winrtBuild = false;
+            bool crossPlatformDesktopBuild = false;
+            QString arch = project->first("VCPROJ_ARCH").toQString().toLower();
             if (project->isActiveConfig(QStringLiteral("winrt"))) {
-                QString arch = project->first("VCPROJ_ARCH").toQString().toLower();
+                winrtBuild = true;
+
+            // Only add explicit support for arm64 cross-platform desktop builds.
+            } else if ((arch == QLatin1String("arm64")) && (msvcVer == QStringLiteral("15.0"))) {
+                crossPlatformDesktopBuild = true;
+            }
+
+            if (winrtBuild || crossPlatformDesktopBuild) {
                 QString compiler;
                 QString compilerArch;
-                const QString msvcVer = project->first("MSVC_VER").toQString();
-                if (msvcVer.isEmpty()) {
-                    fprintf(stderr, "Mkspec does not specify MSVC_VER. Cannot continue.\n");
-                    return false;
-                }
-
+                const ProStringList hostArch = project->values("QMAKE_TARGET.arch");
                 if (msvcVer == QStringLiteral("15.0")) {
-                    const ProStringList hostArch = project->values("QMAKE_TARGET.arch");
                     if (hostArch.contains("x86_64"))
                         compiler = QStringLiteral("HostX64/");
                     else
@@ -93,6 +103,9 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                     } else if (arch == QLatin1String("x64")) {
                         compiler += QStringLiteral("x64");
                         compilerArch = QStringLiteral("amd64");
+                    } else if (arch == QLatin1String("arm64")) {
+                        compiler += QStringLiteral("arm64");
+                        compilerArch = QStringLiteral("arm64");
                     } else {
                         arch = QStringLiteral("x86");
                         compiler += QStringLiteral("x86");
@@ -119,7 +132,7 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                     return false;
                 }
                 const QString targetVer = project->first("WINTARGET_VER").toQString();
-                if (targetVer.isEmpty()) {
+                if (targetVer.isEmpty() && winrtBuild) {
                     fprintf(stderr, "Mkspec does not specify WINTARGET_VER. Cannot continue.\n");
                     return false;
                 }
@@ -181,10 +194,19 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                     incDirs << crtInclude + QStringLiteral("/shared");
                     incDirs << crtInclude + QStringLiteral("/winrt");
 
-                    incDirs << kitDir + QStringLiteral("Extension SDKs/WindowsMobile/")
-                                      + crtVersion + QStringLiteral("/Include/WinRT");
+                    if (winrtBuild) {
+                        // Only use mobile-specific headers and link against store-specific libs for
+                        // winrt builds.
+                        incDirs << kitDir + QStringLiteral("Extension SDKs/WindowsMobile/")
+                                          + crtVersion + QStringLiteral("/Include/WinRT");
 
-                    libDirs << toolsInstallDir + QStringLiteral("lib/") + arch + QStringLiteral("/store");
+                        libDirs << toolsInstallDir + QStringLiteral("lib/") + arch + QStringLiteral("/store");
+                    } else {
+                        // Desktop projects may require the atl headers and libs.
+                        incDirs << toolsInstallDir + QStringLiteral("atlmfc/include");
+                        libDirs << toolsInstallDir + QStringLiteral("atlmfc/lib/") + compilerArch;
+                        libDirs << toolsInstallDir + QStringLiteral("lib/") + arch;
+                    }
 
                     libDirs << vcInstallDir + QStringLiteral("VC/Auxiliary/VS/lib/") + arch;
 

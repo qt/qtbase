@@ -164,7 +164,7 @@ bool TableModel::setData(const QModelIndex &index, const QVariant &value, int ro
             return false;
 
         contacts.replace(row, contact);
-        emit(dataChanged(index, index));
+        emit dataChanged(index, index, {role});
 
         return true;
     }

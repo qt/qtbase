@@ -4,12 +4,14 @@
     "Name": "Unicode Character Database (UCD)",
     "QDocModule": "qtcore",
     "QtUsage": "Qt Core uses data obtained from UCD files for working with characters and strings.",
+    "Files": "For update, see qtbase/util/unicode/README",
     "Files": "qunicodetables_p.h qunicodetables.cpp",
 
     "Description": "The Unicode Character Database (UCD) is a set of files that
  define the Unicode character properties and internal mappings.",
     "Homepage": "https://www.unicode.org/ucd/",
-    "Version": "10.0.0",
+    "Version": "Don't use the Unicode standard version; UCD has its own 'Revision' numbers",
+    "Version": "20",
     "License": "Unicode License Agreement - Data Files and Software (2016)",
     "LicenseId": "Unicode-DFS-2016",
     "LicenseFile": "UNICODE_LICENSE.txt",

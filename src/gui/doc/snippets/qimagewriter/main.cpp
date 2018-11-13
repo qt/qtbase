@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 Samuel Gaist <samuel.gaist@idiap.ch>
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** Commercial License Usage
@@ -48,49 +48,24 @@
 **
 ****************************************************************************/
 
-#include "mymodel.h"
+#include <QtGui>
 
-MyModel::MyModel(QObject *parent)
-    : QAbstractTableModel(parent)
+int main(int argc, char **argv)
 {
-}
+    QApplication app(argc, argv);
 
-//-------------------------------------------------------
-int MyModel::rowCount(const QModelIndex & /*parent*/) const
-{
-    return 2;
-}
-
-//-------------------------------------------------------
-int MyModel::columnCount(const QModelIndex & /*parent*/) const
-{
-    return 3;
-}
-
-//-------------------------------------------------------
-QVariant MyModel::data(const QModelIndex &index, int role) const
-{
-    if (role == Qt::DisplayRole) {
-        return QString("Row%1, Column%2")
-                .arg(index.row() + 1)
-                .arg(index.column() +1);
+//! [0]
+    QString imagePath(QStringLiteral("path/image.jpeg"));
+    QImage image(64, 64, QImage::Format_RGB32);
+    image.fill(Qt::red);
+    {
+        QImageWriter writer(imagePath);
+        writer.write(image);
     }
-    return QVariant();
-}
 
-//! [quoting mymodel_c]
-QVariant MyModel::headerData(int section, Qt::Orientation orientation, int role) const
-{
-    if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
-        switch (section) {
-        case 0:
-            return QString("first");
-        case 1:
-            return QString("second");
-        case 2:
-            return QString("third");
-        }
-    }
-    return QVariant();
+    QFile::rename(imagePath,
+                  QStringLiteral("path/other_image.jpeg"));
+//! [0]
+
+    return 0;
 }
-//! [quoting mymodel_c]

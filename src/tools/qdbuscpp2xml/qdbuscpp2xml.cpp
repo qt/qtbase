@@ -212,8 +212,11 @@ static QString generateInterfaceXml(const ClassDef *mo)
                 access |= 2;
 
             int typeId = QMetaType::type(mp.type.constData());
-            if (!typeId)
+            if (!typeId) {
+                fprintf(stderr, PROGRAMNAME ": unregistered type: '%s', ignoring\n",
+                        mp.type.constData());
                 continue;
+            }
             const char *signature = QDBusMetaType::typeToSignature(typeId);
             if (!signature)
                 continue;

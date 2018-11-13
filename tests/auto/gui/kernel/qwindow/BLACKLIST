@@ -26,7 +26,6 @@ osx
 # QTBUG-69163
 android
 [visibility]
-osx-10.11 ci
 osx-10.12 ci
 
 [testInputEvents]

@@ -53,7 +53,7 @@
 #include "mymodel.h"
 
 MyModel::MyModel(QObject *parent)
-    :QAbstractTableModel(parent)
+    : QAbstractTableModel(parent)
 {
 }
 
@@ -70,11 +70,10 @@ int MyModel::columnCount(const QModelIndex & /*parent*/) const
 QVariant MyModel::data(const QModelIndex &index, int role) const
 {
     if (role == Qt::DisplayRole)
-    {
        return QString("Row%1, Column%2")
                    .arg(index.row() + 1)
                    .arg(index.column() +1);
-    }
+
     return QVariant();
 }
 //! [Quoting ModelView Tutorial]
