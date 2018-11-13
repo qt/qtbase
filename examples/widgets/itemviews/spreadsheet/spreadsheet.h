@@ -65,10 +65,8 @@ QT_END_NAMESPACE
 class SpreadSheet : public QMainWindow
 {
     Q_OBJECT
-
 public:
-
-    SpreadSheet(int rows, int cols, QWidget *parent = 0);
+    SpreadSheet(int rows, int cols, QWidget *parent = nullptr);
 
 public slots:
     void updateStatus(QTableWidgetItem *item);

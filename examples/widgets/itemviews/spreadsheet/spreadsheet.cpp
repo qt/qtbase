@@ -48,36 +48,30 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-#if defined(QT_PRINTSUPPORT_LIB)
-#include <QtPrintSupport/qtprintsupportglobal.h>
-#if QT_CONFIG(printdialog)
-#include <QPrinter>
-#include <QPrintDialog>
-#endif
-#if QT_CONFIG(printpreviewdialog)
-#include <QPrintPreviewDialog>
-#endif
-#endif
-
 #include "spreadsheet.h"
 #include "spreadsheetdelegate.h"
 #include "spreadsheetitem.h"
 #include "printview.h"
 
-SpreadSheet::SpreadSheet(int rows, int cols, QWidget *parent)
-        : QMainWindow(parent)
-{
-    addToolBar(toolBar = new QToolBar());
-    formulaInput = new QLineEdit();
+#include <QtWidgets>
+#if defined(QT_PRINTSUPPORT_LIB)
+#include <QtPrintSupport>
+#endif
 
-    cellLabel = new QLabel(toolBar);
+SpreadSheet::SpreadSheet(int rows, int cols, QWidget *parent)
+    : QMainWindow(parent),
+      toolBar(new QToolBar(this)),
+      cellLabel(new QLabel(toolBar)),
+      table(new QTableWidget(rows, cols, this)),
+      formulaInput(new QLineEdit(this))
+{
+    addToolBar(toolBar);
+
     cellLabel->setMinimumSize(80, 0);
 
     toolBar->addWidget(cellLabel);
     toolBar->addWidget(formulaInput);
 
-    table = new QTableWidget(rows, cols, this);
     table->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
     for (int c = 0; c < cols; ++c) {
         QString character(QChar('A' + c));
@@ -88,7 +82,7 @@ SpreadSheet::SpreadSheet(int rows, int cols, QWidget *parent)
     table->setItemDelegate(new SpreadSheetDelegate());
 
     createActions();
-    updateColor(0);
+    updateColor(nullptr);
     setupMenuBar();
     setupContents();
     setupContextMenu();
@@ -103,7 +97,8 @@ SpreadSheet::SpreadSheet(int rows, int cols, QWidget *parent)
             this, &SpreadSheet::updateLineEdit);
     connect(table, &QTableWidget::itemChanged,
             this, &SpreadSheet::updateStatus);
-    connect(formulaInput, &QLineEdit::returnPressed, this, &SpreadSheet::returnPressed);
+    connect(formulaInput, &QLineEdit::returnPressed,
+            this, &SpreadSheet::returnPressed);
     connect(table, &QTableWidget::itemChanged,
             this, &SpreadSheet::updateLineEdit);
 
@@ -245,11 +240,11 @@ void SpreadSheet::selectColor()
     if (!col.isValid())
         return;
 
-    QList<QTableWidgetItem*> selected = table->selectedItems();
-    if (selected.count() == 0)
+    const QList<QTableWidgetItem *> selected = table->selectedItems();
+    if (selected.isEmpty())
         return;
 
-    foreach (QTableWidgetItem *i, selected) {
+    for (QTableWidgetItem *i : selected) {
         if (i)
             i->setBackgroundColor(col);
     }
@@ -259,8 +254,8 @@ void SpreadSheet::selectColor()
 
 void SpreadSheet::selectFont()
 {
-    QList<QTableWidgetItem*> selected = table->selectedItems();
-    if (selected.count() == 0)
+    const QList<QTableWidgetItem *> selected = table->selectedItems();
+    if (selected.isEmpty())
         return;
 
     bool ok = false;
@@ -268,7 +263,7 @@ void SpreadSheet::selectFont()
 
     if (!ok)
         return;
-    foreach (QTableWidgetItem *i, selected) {
+    for (QTableWidgetItem *i : selected) {
         if (i)
             i->setFont(fnt);
     }
@@ -397,7 +392,7 @@ void SpreadSheet::actionSum()
     int col_last = 0;
     int col_cur = 0;
 
-    QList<QTableWidgetItem*> selected = table->selectedItems();
+    const QList<QTableWidgetItem *> selected = table->selectedItems();
 
     if (!selected.isEmpty()) {
         QTableWidgetItem *first = selected.first();
@@ -408,7 +403,7 @@ void SpreadSheet::actionSum()
         col_last = table->column(last);
     }
 
-    QTableWidgetItem *current = table->currentItem();
+    const QTableWidgetItem *current = table->currentItem();
 
     if (current) {
         row_cur = table->row(current);
@@ -435,7 +430,7 @@ void SpreadSheet::actionMath_helper(const QString &title, const QString &op)
     QString cell2 = "C2";
     QString out = "C3";
 
-    QTableWidgetItem *current = table->currentItem();
+    const QTableWidgetItem *current = table->currentItem();
     if (current)
         out = encode_pos(table->currentRow(), table->currentColumn());
 
@@ -468,8 +463,9 @@ void SpreadSheet::actionDivide()
 
 void SpreadSheet::clear()
 {
-    foreach (QTableWidgetItem *i, table->selectedItems())
-        i->setText("");
+    const QList<QTableWidgetItem *> selectedItems = table->selectedItems();
+    for (QTableWidgetItem *i : selectedItems)
+        i->setText(QString());
 }
 
 void SpreadSheet::setupContextMenu()

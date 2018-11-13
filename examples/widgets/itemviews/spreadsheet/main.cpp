@@ -53,7 +53,8 @@
 #include <QApplication>
 #include <QLayout>
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv)
+{
     Q_INIT_RESOURCE(spreadsheet);
     QApplication app(argc, argv);
     SpreadSheet sheet(10, 6);

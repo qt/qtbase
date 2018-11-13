@@ -58,8 +58,7 @@
 class SpreadSheetItem : public QTableWidgetItem
 {
 public:
-    SpreadSheetItem();
-    SpreadSheetItem(const QString &text);
+    using QTableWidgetItem::QTableWidgetItem;
 
     QTableWidgetItem *clone() const override;
 
@@ -74,10 +73,10 @@ public:
 
     static QVariant computeFormula(const QString &formula,
                                    const QTableWidget *widget,
-                                   const QTableWidgetItem *self = 0);
+                                   const QTableWidgetItem *self = nullptr);
 
 private:
-    mutable bool isResolving;
+    mutable bool isResolving = false;
 };
 
 #endif // SPREADSHEETITEM_H

@@ -51,8 +51,6 @@
 #ifndef SPREADSHEETDELEGATE_H
 #define SPREADSHEETDELEGATE_H
 
-#include "spreadsheet.h"
-
 #include <QItemDelegate>
 
 class SpreadSheetDelegate : public QItemDelegate
@@ -60,7 +58,7 @@ class SpreadSheetDelegate : public QItemDelegate
     Q_OBJECT
 
 public:
-    SpreadSheetDelegate(QObject *parent = 0);
+    SpreadSheetDelegate(QObject *parent = nullptr);
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &,
                           const QModelIndex &index) const override;
     void setEditorData(QWidget *editor, const QModelIndex &index) const override;
