@@ -156,6 +156,8 @@ QFontMetrics::QFontMetrics(const QFont &font)
 }
 
 /*!
+    \since 5.13
+    \fn QFontMetrics::QFontMetrics(const QFont &font, const QPaintDevice *paintdevice)
     Constructs a font metrics object for \a font and \a paintdevice.
 
     The font metrics will be compatible with the paintdevice passed.
@@ -168,9 +170,21 @@ QFontMetrics::QFontMetrics(const QFont &font)
     passed in the constructor at the time it is created, and is not
     updated if the font's attributes are changed later.
 */
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+/*!
+    \fn QFontMetrics::QFontMetrics(const QFont &font, QPaintDevice *paintdevice)
+    \obsolete
+    Identical to QFontMetrics::QFontMetrics(const QFont &font, const QPaintDevice *paintdevice)
+*/
+
+
 QFontMetrics::QFontMetrics(const QFont &font, QPaintDevice *paintdevice)
+#else
+QFontMetrics::QFontMetrics(const QFont &font, const QPaintDevice *paintdevice)
+#endif
 {
-    int dpi = paintdevice ? paintdevice->logicalDpiY() : qt_defaultDpi();
+    const int dpi = paintdevice ? paintdevice->logicalDpiY() : qt_defaultDpi();
     const int screen = 0;
     if (font.d->dpi != dpi || font.d->screen != screen ) {
         d = new QFontPrivate(*font.d);
@@ -1127,6 +1141,8 @@ QFontMetricsF::QFontMetricsF(const QFont &font)
 }
 
 /*!
+    \fn QFontMetricsF::QFontMetricsF(const QFont &font, const QPaintDevice *paintdevice)
+    \since 5.13
     Constructs a font metrics object for \a font and \a paintdevice.
 
     The font metrics will be compatible with the paintdevice passed.
@@ -1139,7 +1155,20 @@ QFontMetricsF::QFontMetricsF(const QFont &font)
     passed in the constructor at the time it is created, and is not
     updated if the font's attributes are changed later.
 */
+
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+/*!
+    \fn QFontMetricsF::QFontMetricsF(const QFont &font, QPaintDevice *paintdevice)
+    \obsolete
+    Identical to QFontMetricsF::QFontMetricsF(const QFont &font, const QPaintDevice *paintdevice)
+*/
+
+
 QFontMetricsF::QFontMetricsF(const QFont &font, QPaintDevice *paintdevice)
+#else
+QFontMetricsF::QFontMetricsF(const QFont &font, const QPaintDevice *paintdevice)
+#endif
 {
     int dpi = paintdevice ? paintdevice->logicalDpiY() : qt_defaultDpi();
     const int screen = 0;

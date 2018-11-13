@@ -562,14 +562,25 @@ QFontEngineData::~QFontEngineData()
     \since 5.2
 */
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 /*!
+  \obsolete
   Constructs a font from \a font for use on the paint device \a pd.
 */
 QFont::QFont(const QFont &font, QPaintDevice *pd)
+    : QFont(font, static_cast<const QPaintDevice*>(pd))
+{}
+#endif
+
+/*!
+  \since 5.13
+  Constructs a font from \a font for use on the paint device \a pd.
+*/
+QFont::QFont(const QFont &font, const QPaintDevice *pd)
     : resolve_mask(font.resolve_mask)
 {
-    Q_ASSERT(pd != 0);
-    int dpi = pd->logicalDpiY();
+    Q_ASSERT(pd);
+    const int dpi = pd->logicalDpiY();
     const int screen = 0;
     if (font.d->dpi != dpi || font.d->screen != screen ) {
         d = new QFontPrivate(*font.d);

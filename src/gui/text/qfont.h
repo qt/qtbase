@@ -170,8 +170,11 @@ public:
 
     QFont();
     QFont(const QString &family, int pointSize = -1, int weight = -1, bool italic = false);
-    QFont(const QFont &, QPaintDevice *pd);
-    QFont(const QFont &);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QFont(const QFont &font, QPaintDevice *pd);
+#endif
+    QFont(const QFont &font, const QPaintDevice *pd);
+    QFont(const QFont &font);
     ~QFont();
 
     void swap(QFont &other)
