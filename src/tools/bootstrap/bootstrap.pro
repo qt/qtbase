@@ -42,6 +42,7 @@ SOURCES += \
            ../../corelib/io/qfsfileengine.cpp \
            ../../corelib/io/qfsfileengine_iterator.cpp \
            ../../corelib/io/qiodevice.cpp \
+           ../../corelib/io/qipaddress.cpp \
            ../../corelib/io/qfiledevice.cpp \
            ../../corelib/io/qresource.cpp \
            ../../corelib/io/qtemporarydir.cpp \
@@ -50,6 +51,9 @@ SOURCES += \
            ../../corelib/io/qstandardpaths.cpp \
            ../../corelib/io/qloggingcategory.cpp \
            ../../corelib/io/qloggingregistry.cpp \
+           ../../corelib/io/qurl.cpp \
+           ../../corelib/io/qurlidna.cpp \
+           ../../corelib/io/qurlrecode.cpp \
            ../../corelib/kernel/qcoreapplication.cpp \
            ../../corelib/kernel/qcoreglobaldata.cpp \
            ../../corelib/kernel/qmetatype.cpp \

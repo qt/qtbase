@@ -253,7 +253,7 @@ const QChar *parseIp6(IPv6Address &address, const QChar *begin, const QChar *end
 
 static inline QChar toHex(uchar c)
 {
-    return QtMiscUtils::toHexLower(c);
+    return QChar::fromLatin1(QtMiscUtils::toHexLower(c));
 }
 
 void toString(QString &appendTo, IPv6Address address)
