@@ -4280,7 +4280,7 @@ static inline Operator getOperator(const QSpanData *data, const QSpan *spans, in
             }
             ++spans;
         }
-        if (!alphaSpans) {
+        if (!alphaSpans && spanCount > 0) {
             // If all spans are opaque we do not need to fetch dest.
             // But don't clear passthrough destFetch as they are just as fast and save destStore.
             if (op.destFetch != destFetchARGB32P)
@@ -4301,23 +4301,62 @@ static inline Operator getOperator(const QSpanData *data, const QSpan *spans, in
     return op;
 }
 
+static void spanfill_from_first(QRasterBuffer *rasterBuffer, QPixelLayout::BPP bpp, int x, int y, int length)
+{
+    switch (bpp) {
+    case QPixelLayout::BPP64: {
+        quint64 *dest = reinterpret_cast<quint64 *>(rasterBuffer->scanLine(y)) + x;
+        qt_memfill_template(dest + 1, dest[0], length - 1);
+        break;
+    }
+    case QPixelLayout::BPP32: {
+        quint32 *dest = reinterpret_cast<quint32 *>(rasterBuffer->scanLine(y)) + x;
+        qt_memfill_template(dest + 1, dest[0], length - 1);
+        break;
+    }
+    case QPixelLayout::BPP24: {
+        quint24 *dest = reinterpret_cast<quint24 *>(rasterBuffer->scanLine(y)) + x;
+        qt_memfill_template(dest + 1, dest[0], length - 1);
+        break;
+    }
+    case QPixelLayout::BPP16: {
+        quint16 *dest = reinterpret_cast<quint16 *>(rasterBuffer->scanLine(y)) + x;
+        qt_memfill_template(dest + 1, dest[0], length - 1);
+        break;
+    }
+    case QPixelLayout::BPP8: {
+        uchar *dest = rasterBuffer->scanLine(y) + x;
+        memset(dest + 1, dest[0], length - 1);
+        break;
+    }
+    default:
+        Q_UNREACHABLE();
+    }
+}
 
 
 // -------------------- blend methods ---------------------
 
-#if !defined(Q_CC_SUN)
-static
-#endif
-void blend_color_generic(int count, const QSpan *spans, void *userData)
+static void blend_color_generic(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
     uint buffer[BufferSize];
-    Operator op = getOperator(data, spans, count);
+    Operator op = getOperator(data, nullptr, 0);
     const uint color = data->solidColor.toArgb32();
+    bool solidFill = data->rasterBuffer->compositionMode == QPainter::CompositionMode_Source
+                  || (data->rasterBuffer->compositionMode == QPainter::CompositionMode_SourceOver && qAlpha(color) == 255);
+    QPixelLayout::BPP bpp = qPixelLayouts[data->rasterBuffer->format].bpp;
 
     while (count--) {
         int x = spans->x;
         int length = spans->len;
+        if (solidFill && bpp >= QPixelLayout::BPP8 && spans->coverage == 255 && length) {
+            // If dest doesn't matter we don't need to bother with blending or converting all the identical pixels
+            op.destStore(data->rasterBuffer, x, spans->y, &color, 1);
+            spanfill_from_first(data->rasterBuffer, bpp, x, spans->y, length);
+            length = 0;
+        }
+
         while (length) {
             int l = qMin(BufferSize, length);
             uint *dest = op.destFetch(buffer, data->rasterBuffer, x, spans->y, l);
@@ -4335,7 +4374,7 @@ static void blend_color_argb(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
-    const Operator op = getOperator(data, spans, count);
+    const Operator op = getOperator(data, nullptr, 0);
     const uint color = data->solidColor.toArgb32();
 
     if (op.mode == QPainter::CompositionMode_Source) {
@@ -4365,7 +4404,7 @@ static void blend_color_argb(int count, const QSpan *spans, void *userData)
 void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
-    Operator op = getOperator(data, spans, count);
+    Operator op = getOperator(data, nullptr, 0);
     if (!op.funcSolid64) {
         qCDebug(lcQtGuiDrawHelper, "blend_color_generic_rgb64: unsupported 64bit blend attempted, falling back to 32-bit");
         return blend_color_generic(count, spans, userData);
@@ -4375,19 +4414,16 @@ void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
     const QRgba64 color = data->solidColor;
     bool solidFill = data->rasterBuffer->compositionMode == QPainter::CompositionMode_Source
                   || (data->rasterBuffer->compositionMode == QPainter::CompositionMode_SourceOver && color.isOpaque());
-    bool isBpp32 = qPixelLayouts[data->rasterBuffer->format].bpp == QPixelLayout::BPP32;
+    QPixelLayout::BPP bpp = qPixelLayouts[data->rasterBuffer->format].bpp;
 
     while (count--) {
         int x = spans->x;
         int length = spans->len;
-        if (solidFill && isBpp32 && spans->coverage == 255) {
+        if (solidFill && bpp >= QPixelLayout::BPP8 && spans->coverage == 255 && length) {
             // If dest doesn't matter we don't need to bother with blending or converting all the identical pixels
-            if (length > 0) {
-                op.destStore64(data->rasterBuffer, x, spans->y, &color, 1);
-                uint *dest = (uint*)data->rasterBuffer->scanLine(spans->y) + x;
-                qt_memfill32(dest + 1, dest[0], length - 1);
-                length = 0;
-            }
+            op.destStore64(data->rasterBuffer, x, spans->y, &color, 1);
+            spanfill_from_first(data->rasterBuffer, bpp, x, spans->y, length);
+            length = 0;
         }
 
         while (length) {
