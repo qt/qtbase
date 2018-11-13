@@ -87,6 +87,8 @@
 #include <openssl/ocsp.h>
 #endif
 
+#include <algorithm>
+
 #include <string.h>
 
 QT_BEGIN_NAMESPACE
@@ -135,6 +137,37 @@ static unsigned int q_ssl_psk_server_callback(SSL *ssl,
     return d->tlsPskServerCallback(identity, psk, max_psk_len);
 }
 #endif
+
+#if QT_CONFIG(ocsp)
+
+int qt_OCSP_status_server_callback(SSL *ssl, void *ocspRequest)
+{
+    Q_UNUSED(ocspRequest)
+    if (!ssl)
+        return SSL_TLSEXT_ERR_ALERT_FATAL;
+
+    auto d = static_cast<QSslSocketBackendPrivate *>(q_SSL_get_ex_data(ssl, QSslSocketBackendPrivate::s_indexForSSLExtraData));
+    if (!d)
+        return SSL_TLSEXT_ERR_ALERT_FATAL;
+
+    Q_ASSERT(d->mode == QSslSocket::SslServerMode);
+    const QByteArray &response = d->ocspResponseDer;
+    Q_ASSERT(response.size());
+
+    unsigned char *derCopy = static_cast<unsigned char *>(q_OPENSSL_malloc(size_t(response.size())));
+    if (!derCopy)
+        return SSL_TLSEXT_ERR_ALERT_FATAL;
+
+    std::copy(response.data(), response.data() + response.size(), derCopy);
+    // We don't check the return value: internally OpenSSL simply assignes the
+    // pointer (it assumes it now owns this memory btw!) and the length.
+    q_SSL_set_tlsext_status_ocsp_resp(ssl, derCopy, response.size());
+
+    return SSL_TLSEXT_ERR_OK;
+}
+
+#endif // ocsp
+
 } // extern "C"
 
 QSslSocketBackendPrivate::QSslSocketBackendPrivate()
@@ -504,6 +537,25 @@ bool QSslSocketBackendPrivate::initSslContext()
         if (q_SSL_set_tlsext_status_type(ssl, TLSEXT_STATUSTYPE_ocsp) != 1) {
             setErrorAndEmit(QAbstractSocket::SslInternalError,
                             QSslSocket::tr("Failed to enable OCSP stapling"));
+            return false;
+        }
+    }
+
+    ocspResponseDer.clear();
+    auto responsePos = configuration.backendConfig.find("Qt-OCSP-response");
+    if (responsePos != configuration.backendConfig.end()) {
+        // This is our private, undocumented 'API' we use for the auto-testing of
+        // OCSP-stapling. It must be a der-encoded OCSP response, presumably set
+        // by tst_QOcsp.
+        const QVariant data(responsePos.value());
+        if (data.canConvert<QByteArray>())
+            ocspResponseDer = data.toByteArray();
+    }
+
+    if (ocspResponseDer.size()) {
+        if (mode != QSslSocket::SslServerMode) {
+            setErrorAndEmit(QAbstractSocket::SslInvalidUserDataError,
+                            QSslSocket::tr("Client-side sockets do not send OCSP responses"));
             return false;
         }
     }

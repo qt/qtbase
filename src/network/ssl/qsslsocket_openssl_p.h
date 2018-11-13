@@ -157,12 +157,13 @@ public:
 
 #if QT_CONFIG(ocsp)
     bool checkOcspStatus();
+#endif
 
     // This decription will go to setErrorAndEmit(SslHandshakeError, ocspErrorDescription)
     QString ocspErrorDescription;
     // These will go to sslErrors()
     QVector<QSslError> ocspErrors;
-#endif
+    QByteArray ocspResponseDer;
 
     Q_AUTOTEST_EXPORT static long setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions);
     static QSslCipher QSslCipher_from_SSL_CIPHER(const SSL_CIPHER *cipher);
