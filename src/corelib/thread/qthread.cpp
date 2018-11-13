@@ -650,6 +650,13 @@ QThread::Priority QThread::priority() const
 
     Forces the current thread to sleep for \a secs seconds.
 
+    Avoid using this function if you need to wait for a given condition to
+    change. Instead, connect a slot to the signal that indicates the change or
+    use an event handler (see \l QObject::event()).
+
+    \note This function does not guarantee accuracy. The application may sleep
+    longer than \a secs under heavy load conditions.
+
     \sa msleep(), usleep()
 */
 
@@ -658,6 +665,14 @@ QThread::Priority QThread::priority() const
 
     Forces the current thread to sleep for \a msecs milliseconds.
 
+    Avoid using this function if you need to wait for a given condition to
+    change. Instead, connect a slot to the signal that indicates the change or
+    use an event handler (see \l QObject::event()).
+
+    \note This function does not guarantee accuracy. The application may sleep
+    longer than \a msecs under heavy load conditions. Some OSes might round \a
+    msecs up to 10 ms or 15 ms.
+
     \sa sleep(), usleep()
 */
 
@@ -665,6 +680,15 @@ QThread::Priority QThread::priority() const
     \fn void QThread::usleep(unsigned long usecs)
 
     Forces the current thread to sleep for \a usecs microseconds.
+
+    Avoid using this function if you need to wait for a given condition to
+    change. Instead, connect a slot to the signal that indicates the change or
+    use an event handler (see \l QObject::event()).
+
+    \note This function does not guarantee accuracy. The application may sleep
+    longer than \a usecs under heavy load conditions. Some OSes might round \a
+    usecs up to 10 ms or 15 ms; on Windows, it will be rounded up to a multiple
+    of 1 ms.
 
     \sa sleep(), msleep()
 */
