@@ -146,7 +146,6 @@ typedef void (*MemRotateFunc)(const uchar *srcPixels, int w, int h, int sbpl, uc
 
 struct DrawHelper {
     ProcessSpans blendColor;
-    ProcessSpans blendGradient;
     BitmapBlitFunc bitmapBlit;
     AlphamapBlitFunc alphamapBlit;
     AlphaRGBBlitFunc alphaRGBBlit;
@@ -159,6 +158,7 @@ extern SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::N
 
 extern DrawHelper qDrawHelper[QImage::NImageFormats];
 
+void qBlendGradient(int count, const QSpan *spans, void *userData);
 void qBlendTexture(int count, const QSpan *spans, void *userData);
 extern void qt_memfill64(quint64 *dest, quint64 value, qsizetype count);
 extern void qt_memfill32(quint32 *dest, quint32 value, qsizetype count);
@@ -218,11 +218,6 @@ struct Operator
 };
 
 class QRasterPaintEngine;
-
-struct QSolidData
-{
-    QRgba64 color;
-};
 
 struct QLinearGradientData
 {
@@ -328,8 +323,8 @@ struct QSpanData
     int fast_matrix : 1;
     bool bilinear;
     QImage *tempImage;
+    QRgba64 solidColor;
     union {
-        QSolidData solid;
         QGradientData gradient;
         QTextureData texture;
     };

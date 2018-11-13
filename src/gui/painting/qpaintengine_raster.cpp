@@ -873,7 +873,7 @@ void QRasterPaintEngine::updateRasterState()
                        && s->intOpacity == 256
                        && (mode == QPainter::CompositionMode_Source
                            || (mode == QPainter::CompositionMode_SourceOver
-                               && s->penData.solid.color.isOpaque()));
+                               && s->penData.solidColor.isOpaque()));
     }
 
     s->dirty = 0;
@@ -1528,9 +1528,9 @@ static void fillRect_normalized(const QRect &r, QSpanData *data,
 
         if (data->fillRect && (mode == QPainter::CompositionMode_Source
                                || (mode == QPainter::CompositionMode_SourceOver
-                                   && data->solid.color.isOpaque())))
+                                   && data->solidColor.isOpaque())))
         {
-            data->fillRect(data->rasterBuffer, x1, y1, width, height, data->solid.color);
+            data->fillRect(data->rasterBuffer, x1, y1, width, height, data->solidColor);
             return;
         }
     }
@@ -1892,9 +1892,9 @@ void QRasterPaintEngine::fillRect(const QRectF &r, const QColor &color)
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
 
-    d->solid_color_filler.solid.color = qPremultiply(combineAlpha256(color.rgba64(), s->intOpacity));
+    d->solid_color_filler.solidColor = qPremultiply(combineAlpha256(color.rgba64(), s->intOpacity));
 
-    if (d->solid_color_filler.solid.color.isTransparent()
+    if (d->solid_color_filler.solidColor.isTransparent()
         && s->composition_mode == QPainter::CompositionMode_SourceOver) {
         return;
     }
@@ -2348,14 +2348,14 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         case QImage::Format_A2BGR30_Premultiplied:
         case QImage::Format_A2RGB30_Premultiplied:
             // Combine premultiplied color with the opacity set on the painter.
-            d->solid_color_filler.solid.color = multiplyAlpha256(QRgba64::fromArgb32(color), s->intOpacity);
+            d->solid_color_filler.solidColor = multiplyAlpha256(QRgba64::fromArgb32(color), s->intOpacity);
             break;
         default:
-            d->solid_color_filler.solid.color = qPremultiply(combineAlpha256(QRgba64::fromArgb32(color), s->intOpacity));
+            d->solid_color_filler.solidColor = qPremultiply(combineAlpha256(QRgba64::fromArgb32(color), s->intOpacity));
             break;
         }
 
-        if (d->solid_color_filler.solid.color.isTransparent() && s->composition_mode == QPainter::CompositionMode_SourceOver)
+        if (d->solid_color_filler.solidColor.isTransparent() && s->composition_mode == QPainter::CompositionMode_SourceOver)
             return;
 
         d->solid_color_filler.clip = d->clip();
@@ -2705,20 +2705,20 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
         if (unclipped) {
             if (depth == 1) {
                 if (s->penData.bitmapBlit) {
-                    s->penData.bitmapBlit(rb, rx, ry, s->penData.solid.color,
+                    s->penData.bitmapBlit(rb, rx, ry, s->penData.solidColor,
                                           scanline, w, h, bpl);
                     return;
                 }
             } else if (depth == 8) {
                 if (s->penData.alphamapBlit) {
-                    s->penData.alphamapBlit(rb, rx, ry, s->penData.solid.color,
+                    s->penData.alphamapBlit(rb, rx, ry, s->penData.solidColor,
                                             scanline, w, h, bpl, 0, useGammaCorrection);
                     return;
                 }
             } else if (depth == 32) {
                 // (A)RGB Alpha mask where the alpha component is not used.
                 if (s->penData.alphaRGBBlit) {
-                    s->penData.alphaRGBBlit(rb, rx, ry, s->penData.solid.color,
+                    s->penData.alphaRGBBlit(rb, rx, ry, s->penData.solidColor,
                                             (const uint *) scanline, w, h, bpl / 4, 0, useGammaCorrection);
                     return;
                 }
@@ -2747,10 +2747,10 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
                 ry = ny;
             }
             if (depth == 8)
-                s->penData.alphamapBlit(rb, rx, ry, s->penData.solid.color,
+                s->penData.alphamapBlit(rb, rx, ry, s->penData.solidColor,
                                         scanline, w, h, bpl, clip, useGammaCorrection);
             else if (depth == 32)
-                s->penData.alphaRGBBlit(rb, rx, ry, s->penData.solid.color,
+                s->penData.alphaRGBBlit(rb, rx, ry, s->penData.solidColor,
                                         (const uint *) scanline, w, h, bpl / 4, clip, useGammaCorrection);
             return;
         }
@@ -4587,8 +4587,8 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
     case Qt::SolidPattern: {
         type = Solid;
         QColor c = qbrush_color(brush);
-        solid.color = qPremultiply(combineAlpha256(c.rgba64(), alpha));
-        if (solid.color.isTransparent() && compositionMode == QPainter::CompositionMode_SourceOver)
+        solidColor = qPremultiply(combineAlpha256(c.rgba64(), alpha));
+        if (solidColor.isTransparent() && compositionMode == QPainter::CompositionMode_SourceOver)
             type = None;
         break;
     }
@@ -4726,7 +4726,7 @@ void QSpanData::adjustSpanMethods()
     case LinearGradient:
     case RadialGradient:
     case ConicalGradient:
-        unclipped_blend = qDrawHelper[rasterBuffer->format].blendGradient;
+        unclipped_blend = qBlendGradient;
         break;
     case Texture:
         unclipped_blend = qBlendTexture;

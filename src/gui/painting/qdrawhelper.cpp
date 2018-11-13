@@ -4232,7 +4232,7 @@ static inline Operator getOperator(const QSpanData *data, const QSpan *spans, in
 
     switch(data->type) {
     case QSpanData::Solid:
-        solidSource = data->solid.color.isOpaque();
+        solidSource = data->solidColor.isOpaque();
         op.srcFetch = 0;
         op.srcFetch64 = 0;
         break;
@@ -4313,7 +4313,7 @@ void blend_color_generic(int count, const QSpan *spans, void *userData)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
     uint buffer[BufferSize];
     Operator op = getOperator(data, spans, count);
-    const uint color = data->solid.color.toArgb32();
+    const uint color = data->solidColor.toArgb32();
 
     while (count--) {
         int x = spans->x;
@@ -4336,7 +4336,7 @@ static void blend_color_argb(int count, const QSpan *spans, void *userData)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     const Operator op = getOperator(data, spans, count);
-    const uint color = data->solid.color.toArgb32();
+    const uint color = data->solidColor.toArgb32();
 
     if (op.mode == QPainter::CompositionMode_Source) {
         // inline for performance
@@ -4372,7 +4372,7 @@ void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
     }
 
     quint64 buffer[BufferSize];
-    const QRgba64 color = data->solid.color;
+    const QRgba64 color = data->solidColor;
     bool solidFill = data->rasterBuffer->compositionMode == QPainter::CompositionMode_Source
                   || (data->rasterBuffer->compositionMode == QPainter::CompositionMode_SourceOver && color.isOpaque());
     bool isBpp32 = qPixelLayouts[data->rasterBuffer->format].bpp == QPixelLayout::BPP32;
@@ -4413,12 +4413,12 @@ static void blend_color_rgb16(int count, const QSpan *spans, void *userData)
         from qt_gradient_quint16 with minimal overhead.
      */
     QPainter::CompositionMode mode = data->rasterBuffer->compositionMode;
-    if (mode == QPainter::CompositionMode_SourceOver && data->solid.color.isOpaque())
+    if (mode == QPainter::CompositionMode_SourceOver && data->solidColor.isOpaque())
         mode = QPainter::CompositionMode_Source;
 
     if (mode == QPainter::CompositionMode_Source) {
         // inline for performance
-        ushort c = data->solid.color.toRgb16();
+        ushort c = data->solidColor.toRgb16();
         while (count--) {
             ushort *target = ((ushort *)data->rasterBuffer->scanLine(spans->y)) + spans->x;
             if (spans->coverage == 255) {
@@ -4439,7 +4439,7 @@ static void blend_color_rgb16(int count, const QSpan *spans, void *userData)
 
     if (mode == QPainter::CompositionMode_SourceOver) {
         while (count--) {
-            uint color = BYTE_MUL(data->solid.color.toArgb32(), spans->coverage);
+            uint color = BYTE_MUL(data->solidColor.toArgb32(), spans->coverage);
             int ialpha = qAlpha(~color);
             ushort c = qConvertRgb32To16(color);
             ushort *target = ((ushort *)data->rasterBuffer->scanLine(spans->y)) + spans->x;
@@ -5228,6 +5228,110 @@ void qBlendTexture(int count, const QSpan *spans, void *userData)
     proc(count, spans, userData);
 }
 
+static void blend_vertical_gradient_argb(int count, const QSpan *spans, void *userData)
+{
+    QSpanData *data = reinterpret_cast<QSpanData *>(userData);
+
+    LinearGradientValues linear;
+    getLinearGradientValues(&linear, data);
+
+    CompositionFunctionSolid funcSolid =
+        functionForModeSolid[data->rasterBuffer->compositionMode];
+
+    /*
+        The logic for vertical gradient calculations is a mathematically
+        reduced copy of that in fetchLinearGradient() - which is basically:
+
+            qreal ry = data->m22 * (y + 0.5) + data->dy;
+            qreal t = linear.dy*ry + linear.off;
+            t *= (GRADIENT_STOPTABLE_SIZE - 1);
+            quint32 color =
+                qt_gradient_pixel_fixed(&data->gradient,
+                                        int(t * FIXPT_SIZE));
+
+        This has then been converted to fixed point to improve performance.
+     */
+    const int gss = GRADIENT_STOPTABLE_SIZE - 1;
+    int yinc = int((linear.dy * data->m22 * gss) * FIXPT_SIZE);
+    int off = int((((linear.dy * (data->m22 * qreal(0.5) + data->dy) + linear.off) * gss) * FIXPT_SIZE));
+
+    while (count--) {
+        int y = spans->y;
+        int x = spans->x;
+
+        quint32 *dst = (quint32 *)(data->rasterBuffer->scanLine(y)) + x;
+        quint32 color =
+            qt_gradient_pixel_fixed(&data->gradient, yinc * y + off);
+
+        funcSolid(dst, spans->len, color, spans->coverage);
+        ++spans;
+    }
+}
+
+template<ProcessSpans blend_color>
+static void blend_vertical_gradient(int count, const QSpan *spans, void *userData)
+{
+    QSpanData *data = reinterpret_cast<QSpanData *>(userData);
+
+    LinearGradientValues linear;
+    getLinearGradientValues(&linear, data);
+
+    // Based on the same logic as blend_vertical_gradient_argb.
+
+    const int gss = GRADIENT_STOPTABLE_SIZE - 1;
+    int yinc = int((linear.dy * data->m22 * gss) * FIXPT_SIZE);
+    int off = int((((linear.dy * (data->m22 * qreal(0.5) + data->dy) + linear.off) * gss) * FIXPT_SIZE));
+
+    while (count--) {
+        int y = spans->y;
+
+        data->solidColor = qt_gradient_pixel64_fixed(&data->gradient, yinc * y + off);
+        blend_color(1, spans, userData);
+        ++spans;
+    }
+}
+
+void qBlendGradient(int count, const QSpan *spans, void *userData)
+{
+    QSpanData *data = reinterpret_cast<QSpanData *>(userData);
+    bool isVerticalGradient =
+        data->txop <= QTransform::TxScale &&
+        data->type == QSpanData::LinearGradient &&
+        data->gradient.linear.end.x == data->gradient.linear.origin.x;
+    switch (data->rasterBuffer->format) {
+    case QImage::Format_RGB16:
+        if (isVerticalGradient)
+            return blend_vertical_gradient<blend_color_rgb16>(count, spans, userData);
+        return blend_src_generic(count, spans, userData);
+    case QImage::Format_RGB32:
+    case QImage::Format_ARGB32_Premultiplied:
+        if (isVerticalGradient)
+            return blend_vertical_gradient_argb(count, spans, userData);
+        return blend_src_generic(count, spans, userData);
+#if defined(__SSE2__) || defined(__ARM_NEON__) || (Q_PROCESSOR_WORDSIZE == 8)
+    case QImage::Format_ARGB32:
+    case QImage::Format_RGBA8888:
+#endif
+    case QImage::Format_BGR30:
+    case QImage::Format_A2BGR30_Premultiplied:
+    case QImage::Format_RGB30:
+    case QImage::Format_A2RGB30_Premultiplied:
+    case QImage::Format_RGBX64:
+    case QImage::Format_RGBA64:
+    case QImage::Format_RGBA64_Premultiplied:
+        if (isVerticalGradient)
+            return blend_vertical_gradient<blend_color_generic_rgb64>(count, spans, userData);
+        return blend_src_generic_rgb64(count, spans, userData);
+    case QImage::Format_Invalid:
+        break;
+    default:
+        if (isVerticalGradient)
+            return blend_vertical_gradient<blend_color_generic>(count, spans, userData);
+        return blend_src_generic(count, spans, userData);
+    }
+    Q_UNREACHABLE();
+}
+
 template <class DST> static
 inline void qt_bitmapblit_template(QRasterBuffer *rasterBuffer,
                                    int x, int y, DST color,
@@ -5287,103 +5391,6 @@ inline void qt_bitmapblit_template(QRasterBuffer *rasterBuffer,
             dest += destStride;
             map += mapStride;
         }
-    }
-}
-
-static void qt_gradient_argb32(int count, const QSpan *spans, void *userData)
-{
-    QSpanData *data = reinterpret_cast<QSpanData *>(userData);
-
-    bool isVerticalGradient =
-        data->txop <= QTransform::TxScale &&
-        data->type == QSpanData::LinearGradient &&
-        data->gradient.linear.end.x == data->gradient.linear.origin.x;
-
-    if (isVerticalGradient) {
-        LinearGradientValues linear;
-        getLinearGradientValues(&linear, data);
-
-        CompositionFunctionSolid funcSolid =
-            functionForModeSolid[data->rasterBuffer->compositionMode];
-
-        /*
-            The logic for vertical gradient calculations is a mathematically
-            reduced copy of that in fetchLinearGradient() - which is basically:
-
-                qreal ry = data->m22 * (y + 0.5) + data->dy;
-                qreal t = linear.dy*ry + linear.off;
-                t *= (GRADIENT_STOPTABLE_SIZE - 1);
-                quint32 color =
-                    qt_gradient_pixel_fixed(&data->gradient,
-                                            int(t * FIXPT_SIZE));
-
-            This has then been converted to fixed point to improve performance.
-         */
-        const int gss = GRADIENT_STOPTABLE_SIZE - 1;
-        int yinc = int((linear.dy * data->m22 * gss) * FIXPT_SIZE);
-        int off = int((((linear.dy * (data->m22 * qreal(0.5) + data->dy) + linear.off) * gss) * FIXPT_SIZE));
-
-        while (count--) {
-            int y = spans->y;
-            int x = spans->x;
-
-            quint32 *dst = (quint32 *)(data->rasterBuffer->scanLine(y)) + x;
-            quint32 color =
-                qt_gradient_pixel_fixed(&data->gradient, yinc * y + off);
-
-            funcSolid(dst, spans->len, color, spans->coverage);
-            ++spans;
-        }
-
-    } else {
-        blend_src_generic(count, spans, userData);
-    }
-}
-
-static void qt_gradient_quint16(int count, const QSpan *spans, void *userData)
-{
-    QSpanData *data = reinterpret_cast<QSpanData *>(userData);
-
-    bool isVerticalGradient =
-        data->txop <= QTransform::TxScale &&
-        data->type == QSpanData::LinearGradient &&
-        data->gradient.linear.end.x == data->gradient.linear.origin.x;
-
-    if (isVerticalGradient) {
-
-        LinearGradientValues linear;
-        getLinearGradientValues(&linear, data);
-
-        /*
-            The logic for vertical gradient calculations is a mathematically
-            reduced copy of that in fetchLinearGradient() - which is basically:
-
-                qreal ry = data->m22 * (y + 0.5) + data->dy;
-                qreal t = linear.dy*ry + linear.off;
-                t *= (GRADIENT_STOPTABLE_SIZE - 1);
-                quint32 color =
-                    qt_gradient_pixel_fixed(&data->gradient,
-                                            int(t * FIXPT_SIZE));
-
-            This has then been converted to fixed point to improve performance.
-         */
-        const int gss = GRADIENT_STOPTABLE_SIZE - 1;
-        int yinc = int((linear.dy * data->m22 * gss) * FIXPT_SIZE);
-        int off = int((((linear.dy * (data->m22 * qreal(0.5) + data->dy) + linear.off) * gss) * FIXPT_SIZE));
-
-        // Save the fillData since we overwrite it when setting solid.color.
-        QGradientData gradient = data->gradient;
-        while (count--) {
-            int y = spans->y;
-
-            data->solid.color = QRgba64::fromArgb32(qt_gradient_pixel_fixed(&gradient, yinc * y + off));
-            blend_color_rgb16(1, spans, userData);
-            ++spans;
-        }
-        data->gradient = gradient;
-
-    } else {
-        blend_src_generic(count, spans, userData);
     }
 }
 
@@ -6007,29 +6014,25 @@ static void qt_rectfill_quint64(QRasterBuffer *rasterBuffer,
 DrawHelper qDrawHelper[QImage::NImageFormats] =
 {
     // Format_Invalid,
-    { 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0 },
     // Format_Mono,
     {
         blend_color_generic,
-        blend_src_generic,
         0, 0, 0, 0
     },
     // Format_MonoLSB,
     {
         blend_color_generic,
-        blend_src_generic,
         0, 0, 0, 0
     },
     // Format_Indexed8,
     {
         blend_color_generic,
-        blend_src_generic,
         0, 0, 0, 0
     },
     // Format_RGB32,
     {
         blend_color_argb,
-        qt_gradient_argb32,
         qt_bitmapblit_argb32,
         qt_alphamapblit_argb32,
         qt_alphargbblit_argb32,
@@ -6038,7 +6041,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_ARGB32,
     {
         blend_color_generic,
-        blend_src_generic,
         qt_bitmapblit_argb32,
         qt_alphamapblit_argb32,
         qt_alphargbblit_argb32,
@@ -6047,7 +6049,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_ARGB32_Premultiplied
     {
         blend_color_argb,
-        qt_gradient_argb32,
         qt_bitmapblit_argb32,
         qt_alphamapblit_argb32,
         qt_alphargbblit_argb32,
@@ -6056,7 +6057,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_RGB16
     {
         blend_color_rgb16,
-        qt_gradient_quint16,
         qt_bitmapblit_quint16,
         qt_alphamapblit_quint16,
         qt_alphargbblit_generic,
@@ -6065,7 +6065,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_ARGB8565_Premultiplied
     {
         blend_color_generic,
-        blend_src_generic,
         0,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6074,7 +6073,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_RGB666
     {
         blend_color_generic,
-        blend_src_generic,
         0,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6083,7 +6081,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_ARGB6666_Premultiplied
     {
         blend_color_generic,
-        blend_src_generic,
         0,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6092,7 +6089,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_RGB555
     {
         blend_color_generic,
-        blend_src_generic,
         0,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6101,7 +6097,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_ARGB8555_Premultiplied
     {
         blend_color_generic,
-        blend_src_generic,
         0,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6110,7 +6105,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_RGB888
     {
         blend_color_generic,
-        blend_src_generic,
         0,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6119,7 +6113,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_RGB444
     {
         blend_color_generic,
-        blend_src_generic,
         0,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6128,7 +6121,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_ARGB4444_Premultiplied
     {
         blend_color_generic,
-        blend_src_generic,
         0,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6137,7 +6129,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_RGBX8888
     {
         blend_color_generic,
-        blend_src_generic,
         qt_bitmapblit_rgba8888,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6146,7 +6137,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_RGBA8888
     {
         blend_color_generic,
-        blend_src_generic,
         qt_bitmapblit_rgba8888,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6155,7 +6145,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_RGB8888_Premultiplied
     {
         blend_color_generic,
-        blend_src_generic,
         qt_bitmapblit_rgba8888,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6164,7 +6153,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_BGR30
     {
         blend_color_generic_rgb64,
-        blend_src_generic_rgb64,
         qt_bitmapblit_rgb30<PixelOrderBGR>,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6173,7 +6161,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_A2BGR30_Premultiplied
     {
         blend_color_generic_rgb64,
-        blend_src_generic_rgb64,
         qt_bitmapblit_rgb30<PixelOrderBGR>,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6182,7 +6169,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_RGB30
     {
         blend_color_generic_rgb64,
-        blend_src_generic_rgb64,
         qt_bitmapblit_rgb30<PixelOrderRGB>,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6191,7 +6177,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_A2RGB30_Premultiplied
     {
         blend_color_generic_rgb64,
-        blend_src_generic_rgb64,
         qt_bitmapblit_rgb30<PixelOrderRGB>,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6200,7 +6185,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_Alpha8
     {
         blend_color_generic,
-        blend_src_generic,
         0,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6209,7 +6193,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_Grayscale8
     {
         blend_color_generic,
-        blend_src_generic,
         0,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6218,7 +6201,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_RGBX64
     {
         blend_color_generic_rgb64,
-        blend_src_generic_rgb64,
         0,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6227,7 +6209,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_RGBA64
     {
         blend_color_generic_rgb64,
-        blend_src_generic_rgb64,
         0,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
@@ -6236,7 +6217,6 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_RGBA64_Premultiplied
     {
         blend_color_generic_rgb64,
-        blend_src_generic_rgb64,
         0,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
