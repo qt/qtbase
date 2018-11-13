@@ -50,12 +50,6 @@ void QLocalSocketPrivate::init()
     q->connect(pipeReader, SIGNAL(winError(ulong,QString)), SLOT(_q_winError(ulong,QString)));
 }
 
-void QLocalSocketPrivate::setErrorString(const QString &function)
-{
-    DWORD windowsError = GetLastError();
-    _q_winError(windowsError, function);
-}
-
 void QLocalSocketPrivate::_q_winError(ulong windowsError, const QString &function)
 {
     Q_Q(QLocalSocket);
@@ -127,7 +121,8 @@ void QLocalSocket::connectToServer(OpenMode openMode)
 {
     Q_D(QLocalSocket);
     if (state() == ConnectedState || state() == ConnectingState) {
-        setErrorString(tr("Trying to connect while connection is in progress"));
+        d->error = OperationError;
+        d->errorString = tr("Trying to connect while connection is in progress");
         emit error(QLocalSocket::OperationError);
         return;
     }
@@ -137,8 +132,8 @@ void QLocalSocket::connectToServer(OpenMode openMode)
     d->state = ConnectingState;
     emit stateChanged(d->state);
     if (d->serverName.isEmpty()) {
-        d->error = QLocalSocket::ServerNotFoundError;
-        setErrorString(QLocalSocket::tr("%1: Invalid name").arg(QLatin1String("QLocalSocket::connectToServer")));
+        d->error = ServerNotFoundError;
+        d->errorString = tr("%1: Invalid name").arg(QLatin1String("QLocalSocket::connectToServer"));
         d->state = UnconnectedState;
         emit error(d->error);
         emit stateChanged(d->state);
@@ -177,7 +172,8 @@ void QLocalSocket::connectToServer(OpenMode openMode)
     }
 
     if (localSocket == INVALID_HANDLE_VALUE) {
-        d->setErrorString(QLatin1String("QLocalSocket::connectToServer"));
+        const DWORD winError = GetLastError();
+        d->_q_winError(winError, QLatin1String("QLocalSocket::connectToServer"));
         d->fullServerName = QString();
         return;
     }
