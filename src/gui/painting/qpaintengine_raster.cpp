@@ -3827,7 +3827,6 @@ QImage::Format QRasterBuffer::prepare(QImage *image)
     bytes_per_line = image->bytesPerLine();
 
     format = image->format();
-    drawHelper = qDrawHelper + format;
     if (image->depth() == 1 && image->colorTable().size() == 2) {
         monoDestinationWithClut = true;
         const QVector<QRgb> colorTable = image->colorTable();
@@ -4715,17 +4714,19 @@ void QSpanData::adjustSpanMethods()
     case None:
         unclipped_blend = 0;
         break;
-    case Solid:
-        unclipped_blend = rasterBuffer->drawHelper->blendColor;
-        bitmapBlit = rasterBuffer->drawHelper->bitmapBlit;
-        alphamapBlit = rasterBuffer->drawHelper->alphamapBlit;
-        alphaRGBBlit = rasterBuffer->drawHelper->alphaRGBBlit;
-        fillRect = rasterBuffer->drawHelper->fillRect;
+    case Solid: {
+        const DrawHelper &drawHelper = qDrawHelper[rasterBuffer->format];
+        unclipped_blend = drawHelper.blendColor;
+        bitmapBlit = drawHelper.bitmapBlit;
+        alphamapBlit = drawHelper.alphamapBlit;
+        alphaRGBBlit = drawHelper.alphaRGBBlit;
+        fillRect = drawHelper.fillRect;
         break;
+    }
     case LinearGradient:
     case RadialGradient:
     case ConicalGradient:
-        unclipped_blend = rasterBuffer->drawHelper->blendGradient;
+        unclipped_blend = qDrawHelper[rasterBuffer->format].blendGradient;
         break;
     case Texture:
         unclipped_blend = qBlendTexture;

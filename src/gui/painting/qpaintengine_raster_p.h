@@ -471,7 +471,6 @@ public:
 
     QPainter::CompositionMode compositionMode;
     QImage::Format format;
-    DrawHelper *drawHelper;
     QImage colorizeBitmap(const QImage &image, const QColor &color);
 
 private:
