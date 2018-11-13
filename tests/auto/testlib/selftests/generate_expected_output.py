@@ -221,6 +221,65 @@ class Scanner (object):
                     print('tst_selftests.cpp names', d, "as a test, but it doesn't exist")
 del re
 
+# Keep in sync with tst_selftests.cpp's processEnvironment():
+def baseEnv(platname=None,
+            keep=('PATH', 'QT_QPA_PLATFORM'),
+            posix=('HOME', 'USER', 'QEMU_SET_ENV', 'QEMU_LD_PREFIX'),
+            nonapple=('DISPLAY', 'XAUTHLOCALHOSTNAME'), # and XDG_*
+            # Don't actually know how to test for QNX, so this is ignored:
+            qnx=('GRAPHICS_ROOT', 'TZ'),
+            # Probably not actually relevant
+            preserveLib=('QT_PLUGIN_PATH', 'LD_LIBRARY_PATH'),
+            # Shall be modified on first call (a *copy* is returned):
+            cached={}):
+    """Lazily-evaluated standard environment for sub-tests to run in.
+
+    This prunes the parent process environment, selecting a only those
+    variables we chose to keep.  The platname passed to the first call
+    helps select which variables to keep.  The environment computed
+    then is cached: a copy of this is returned on that call and each
+    subsequent call.\n"""
+
+    if not cached:
+        xdg = False
+        # The platform module may be more apt for the platform tests here.
+        if os.name == 'posix':
+            keep += posix
+            if platname != 'darwin':
+                keep += nonapple
+                xdg = True
+        if 'QT_PRESERVE_TESTLIB_PATH' in os.environ:
+            keep += preserveLib
+
+        cached = dict(
+            LC_ALL = 'C', # Use standard locale
+            # Avoid interference from any qtlogging.ini files, e.g. in
+            # /etc/xdg/QtProject/, (must match tst_selftests.cpp's
+            # processEnvironment()'s value):
+            QT_LOGGING_RULES = '*.debug=true;qt.*=false')
+
+        for k, v in os.environ.items():
+            if k in keep or (xdg and k.startswith('XDG_')):
+                cached[k] = v
+
+    return cached.copy()
+
+def testEnv(testname,
+            # Make sure this matches tst_Selftests::doRunSubTest():
+            extraEnv = {
+        "crashers": { "QTEST_DISABLE_CORE_DUMP": "1", "QTEST_DISABLE_STACK_DUMP": "1" },
+        },
+            # Must match tst_Selftests::runSubTest_data():
+            crashers = ("assert", "blacklisted", "crashes", "crashedterminate", "exceptionthrow",
+                        "faildatatype", "failfetchtype", "fetchbogus", "silent")):
+    """Determine the environment in which to run a test."""
+    data = baseEnv()
+    if testname in crashers:
+        data.update(extraEnv["crashers"])
+    if testname in extraEnv:
+        data.update(extraEnv[testname])
+    return data
+
 def generateTestData(testname, clean,
                      formats = ('xml', 'txt', 'xunitxml', 'lightxml', 'teamcity', 'tap'),
                      # Make sure this matches tst_Selftests::runSubTest_data():
@@ -237,15 +296,7 @@ def generateTestData(testname, clean,
         "silent": "-silent",
         "verbose1": "-v1",
         "verbose2": "-v2",
-        },
-                     # Make sure this matches tst_Selftests::doRunSubTest():
-                     extraEnv = {
-        "crashes": { "QTEST_DISABLE_CORE_DUMP": "1", "QTEST_DISABLE_STACK_DUMP": "1" },
-        },
-                     # These are actually *other* crashers, beside those in extraEnv;
-                     # must match tst_Selftests::runSubTest_data():
-                     crashers = ("assert", "blacklisted", "crashedterminate", "exceptionthrow",
-                                 "faildatatype", "failfetchtype", "fetchbogus", "silent")):
+        }):
     """Run one test and save its cleaned results.
 
     Required arguments are the name of the test directory (the binary
@@ -257,16 +308,9 @@ def generateTestData(testname, clean,
     if not os.path.isfile(path):
         print("Warning: directory", testname, "contains no test executable")
         return
-    env = None
-    try:
-        env = extraEnv[testname]
-    except KeyError:
-        if env in crashers:
-            env = extraEnv["crashes"]
-    if env:
-        data = os.environ.copy()
-        data.update(env)
-        env = data
+
+    # Prepare environment in which to run tests:
+    env = testEnv(testname)
 
     print("  running", testname)
     for format in formats:
@@ -281,13 +325,6 @@ def generateTestData(testname, clean,
 
 def main(name, *args):
     """Minimal argument parsing and driver for the real work"""
-    os.environ.update(
-        LC_ALL = 'C', # Use standard locale
-        # Avoid interference from any qtlogging.ini files, e.g. in
-        # /etc/xdg/QtProject/, (must match tst_selftests.cpp's
-        # processEnvironment()'s value):
-        QT_LOGGING_RULES = '*.debug=true;qt.*=false')
-
     herePath = os.getcwd()
     cleaner = Cleaner(herePath, name)
 
@@ -299,6 +336,7 @@ def main(name, *args):
 if __name__ == '__main__':
     # Executed when script is run, not when imported (e.g. to debug)
     import sys
+    baseEnv(sys.platform) # initializes its cache
 
     if sys.platform.startswith('win'):
         print("This script does not work on Windows.")
