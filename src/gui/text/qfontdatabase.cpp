@@ -2830,7 +2830,7 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
 
         fe = QFontDatabase::findFont(req, script);
         if (fe) {
-            if (fe->type() == QFontEngine::Box && !req.families.isEmpty()) {
+            if (fe->type() == QFontEngine::Box && !req.families.at(0).isEmpty()) {
                 if (fe->ref.load() == 0)
                     delete fe;
                 fe = 0;
