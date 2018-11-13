@@ -73,7 +73,7 @@ template <typename T> class QSet;
 template <typename T> struct QListSpecialMethods
 {
 protected:
-    ~QListSpecialMethods() {}
+    ~QListSpecialMethods() = default;
 };
 template <> struct QListSpecialMethods<QByteArray>;
 template <> struct QListSpecialMethods<QString>;
@@ -249,6 +249,8 @@ public:
         // can't remove it in Qt 5, since doing so would make the type trivial,
         // which changes the way it's passed to functions by value.
         inline iterator(const iterator &o) Q_DECL_NOTHROW : i(o.i){}
+        inline iterator &operator=(const iterator &o) Q_DECL_NOTHROW
+        { i = o.i; return *this; }
 #endif
         inline T &operator*() const { return i->t(); }
         inline T *operator->() const { return &i->t(); }
@@ -302,6 +304,8 @@ public:
         // can't remove it in Qt 5, since doing so would make the type trivial,
         // which changes the way it's passed to functions by value.
         inline const_iterator(const const_iterator &o) Q_DECL_NOTHROW : i(o.i) {}
+        inline const_iterator &operator=(const const_iterator &o) Q_DECL_NOTHROW
+        { i = o.i; return *this; }
 #endif
 #ifdef QT_STRICT_ITERATORS
         inline explicit const_iterator(const iterator &o) Q_DECL_NOTHROW : i(o.i) {}

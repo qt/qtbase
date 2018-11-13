@@ -66,7 +66,7 @@ template <> struct QListSpecialMethods<QString>
 {
 #ifndef Q_QDOC
 protected:
-    ~QListSpecialMethods() {}
+    ~QListSpecialMethods() = default;
 #endif
 public:
     inline void sort(Qt::CaseSensitivity cs = Qt::CaseSensitive);

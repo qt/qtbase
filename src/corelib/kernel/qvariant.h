@@ -398,10 +398,13 @@ class Q_CORE_EXPORT QVariant
             : type(variantType), is_shared(false), is_null(false)
         {}
 
-        inline Private(const Private &other) Q_DECL_NOTHROW
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        Private(const Private &other) Q_DECL_NOTHROW
             : data(other.data), type(other.type),
               is_shared(other.is_shared), is_null(other.is_null)
         {}
+        Private &operator=(const Private &other) Q_DECL_NOTHROW = default;
+#endif
         union Data
         {
             char c;
