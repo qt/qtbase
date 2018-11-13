@@ -467,6 +467,11 @@ bool QWindowsPointerHandler::translateMouseTouchPadEvent(QWindow *window, HWND h
                                                                keyModifiers, Qt::MouseEventNotSynthesized);
             return false;  // To allow window dragging, etc.
         } else {
+            if (eventType == QEvent::MouseButtonPress) {
+                // Implement "Click to focus" for native child windows (unless it is a native widget window).
+                if (!window->isTopLevel() && !window->inherits("QWidgetWindow") && QGuiApplication::focusWindow() != window)
+                    window->requestActivate();
+            }
             if (currentWindowUnderPointer != m_windowUnderPointer) {
                 if (m_windowUnderPointer && m_windowUnderPointer == m_currentWindow) {
                     QWindowSystemInterface::handleLeaveEvent(m_windowUnderPointer);
