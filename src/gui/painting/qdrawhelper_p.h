@@ -165,6 +165,22 @@ extern SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::N
 
 extern DrawHelper qDrawHelper[QImage::NImageFormats];
 
+struct quint24 {
+    quint24() = default;
+    quint24(uint value)
+    {
+        data[0] = uchar(value >> 16);
+        data[1] = uchar(value >> 8);
+        data[2] = uchar(value);
+    }
+    operator uint() const
+    {
+        return data[2] | (data[1] << 8) | (data[0] << 16);
+    }
+
+    uchar data[3];
+};
+
 void qBlendGradient(int count, const QSpan *spans, void *userData);
 void qBlendTexture(int count, const QSpan *spans, void *userData);
 #ifdef __SSE2__
@@ -174,6 +190,7 @@ extern void (*qt_memfill32)(quint32 *dest, quint32 value, qsizetype count);
 extern void qt_memfill64(quint64 *dest, quint64 value, qsizetype count);
 extern void qt_memfill32(quint32 *dest, quint32 value, qsizetype count);
 #endif
+extern void qt_memfill24(quint24 *dest, quint24 value, qsizetype count);
 extern void qt_memfill16(quint16 *dest, quint16 value, qsizetype count);
 
 typedef void (QT_FASTCALL *CompositionFunction)(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, uint const_alpha);
@@ -872,25 +889,6 @@ static Q_ALWAYS_INLINE uint qAlphaRgb30(uint c)
     return a;
 }
 
-struct quint24 {
-    quint24() = default;
-    quint24(uint value);
-    operator uint() const;
-    uchar data[3];
-};
-
-inline quint24::quint24(uint value)
-{
-    data[0] = uchar(value >> 16);
-    data[1] = uchar(value >> 8);
-    data[2] = uchar(value);
-}
-
-inline quint24::operator uint() const
-{
-    return data[2] | (data[1] << 8) | (data[0] << 16);
-}
-
 template <class T> inline void qt_memfill_template(T *dest, T color, qsizetype count)
 {
     if (!count)
@@ -924,6 +922,11 @@ template<> inline void qt_memfill(quint64 *dest, quint64 color, qsizetype count)
 template<> inline void qt_memfill(quint32 *dest, quint32 color, qsizetype count)
 {
     qt_memfill32(dest, color, count);
+}
+
+template<> inline void qt_memfill(quint24 *dest, quint24 color, qsizetype count)
+{
+    qt_memfill24(dest, color, count);
 }
 
 template<> inline void qt_memfill(quint16 *dest, quint16 color, qsizetype count)

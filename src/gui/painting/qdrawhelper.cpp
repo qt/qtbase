@@ -55,6 +55,7 @@
 #endif
 #include <private/qguiapplication_p.h>
 #include <private/qrgba64_p.h>
+#include <qendian.h>
 #include <qloggingcategory.h>
 #include <qmath.h>
 
@@ -6266,6 +6267,42 @@ void qt_memfill64(quint64 *dest, quint64 color, qsizetype count)
     qt_memfill_template<quint64>(dest, color, count);
 }
 #endif
+
+void qt_memfill24(quint24 *dest, quint24 color, qsizetype count)
+{
+    const quint32 v = color;
+    quint24 *end = dest + count;
+
+    // prolog: align dest to 32bit
+    while ((quintptr(dest) & 0x3) && dest < end) {
+        *dest++ = v;
+    }
+    if (dest >= end)
+        return;
+
+    const uint val1 = qFromBigEndian((v <<  8) | (v >> 16));
+    const uint val2 = qFromBigEndian((v << 16) | (v >>  8));
+    const uint val3 = qFromBigEndian((v << 24) | (v >>  0));
+
+    for ( ; dest <= (end - 4); dest += 4) {
+       quint32 *dst = reinterpret_cast<quint32 *>(dest);
+       dst[0] = val1;
+       dst[1] = val2;
+       dst[2] = val3;
+    }
+
+    // less than 4px left
+    switch (end - dest) {
+    case 3:
+        *dest++ = v;
+        Q_FALLTHROUGH();
+    case 2:
+        *dest++ = v;
+        Q_FALLTHROUGH();
+    case 1:
+        *dest++ = v;
+    }
+}
 
 void qt_memfill16(quint16 *dest, quint16 value, qsizetype count)
 {
