@@ -89,14 +89,6 @@ QT_BEGIN_NAMESPACE
     typedef OSStatus (*PtrSecTrustCopyAnchorCertificates)(CFArrayRef*);
 #endif
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-    typedef HCERTSTORE (WINAPI *PtrCertOpenSystemStoreW)(HCRYPTPROV_LEGACY, LPCWSTR);
-    typedef PCCERT_CONTEXT (WINAPI *PtrCertFindCertificateInStore)(HCERTSTORE, DWORD, DWORD, DWORD, const void*, PCCERT_CONTEXT);
-    typedef BOOL (WINAPI *PtrCertCloseStore)(HCERTSTORE, DWORD);
-#endif // Q_OS_WIN && !Q_OS_WINRT
-
-
-
 class QSslSocketPrivate : public QTcpSocketPrivate
 {
     Q_DECLARE_PUBLIC(QSslSocket)
@@ -154,12 +146,6 @@ public:
     Q_AUTOTEST_EXPORT static bool isMatchingHostname(const QSslCertificate &cert,
                                                      const QString &peerName);
     Q_AUTOTEST_EXPORT static bool isMatchingHostname(const QString &cn, const QString &hostname);
-
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-    static PtrCertOpenSystemStoreW ptrCertOpenSystemStoreW;
-    static PtrCertFindCertificateInStore ptrCertFindCertificateInStore;
-    static PtrCertCloseStore ptrCertCloseStore;
-#endif // Q_OS_WIN && !Q_OS_WINRT
 
     // The socket itself, including private slots.
     QTcpSocket *plainSocket;

@@ -87,12 +87,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_WIN)
-    PtrCertOpenSystemStoreW QSslSocketPrivate::ptrCertOpenSystemStoreW = nullptr;
-    PtrCertFindCertificateInStore QSslSocketPrivate::ptrCertFindCertificateInStore = nullptr;
-    PtrCertCloseStore QSslSocketPrivate::ptrCertCloseStore = nullptr;
-#endif
-
 bool QSslSocketPrivate::s_libraryLoaded = false;
 bool QSslSocketPrivate::s_loadedCiphersAndCerts = false;
 bool QSslSocketPrivate::s_loadRootCertsOnDemand = false;
@@ -544,22 +538,20 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
 #endif
     QList<QSslCertificate> systemCerts;
 #if defined(Q_OS_WIN)
-    if (ptrCertOpenSystemStoreW && ptrCertFindCertificateInStore && ptrCertCloseStore) {
-        HCERTSTORE hSystemStore;
-        hSystemStore = ptrCertOpenSystemStoreW(0, L"ROOT");
-        if (hSystemStore) {
-            PCCERT_CONTEXT pc = nullptr;
-            while (1) {
-                pc = ptrCertFindCertificateInStore(hSystemStore, X509_ASN_ENCODING, 0, CERT_FIND_ANY, nullptr, pc);
-                if (!pc)
-                    break;
-                QByteArray der(reinterpret_cast<const char *>(pc->pbCertEncoded),
-                               static_cast<int>(pc->cbCertEncoded));
-                QSslCertificate cert(der, QSsl::Der);
-                systemCerts.append(cert);
-            }
-            ptrCertCloseStore(hSystemStore, 0);
+    HCERTSTORE hSystemStore;
+    hSystemStore = CertOpenSystemStoreW(0, L"ROOT");
+    if (hSystemStore) {
+        PCCERT_CONTEXT pc = nullptr;
+        while (1) {
+            pc = CertFindCertificateInStore(hSystemStore, X509_ASN_ENCODING, 0, CERT_FIND_ANY, nullptr, pc);
+            if (!pc)
+                break;
+            QByteArray der(reinterpret_cast<const char *>(pc->pbCertEncoded),
+                            static_cast<int>(pc->cbCertEncoded));
+            QSslCertificate cert(der, QSsl::Der);
+            systemCerts.append(cert);
         }
+        CertCloseStore(hSystemStore, 0);
     }
 #elif defined(Q_OS_UNIX)
     QSet<QString> certFiles;
