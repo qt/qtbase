@@ -40,3 +40,5 @@ include(QtPostProcess)
 
 ## Print a feature summary:
 feature_summary(WHAT PACKAGES_FOUND PACKAGES_NOT_FOUND FATAL_ON_MISSING_REQUIRED_PACKAGES)
+
+add_executable(features ../main.cpp)

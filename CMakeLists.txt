@@ -23,6 +23,9 @@ include(FeatureSummary)
 ## QtBase specific configure tests:
 include(QtBaseConfigureTests)
 
+## Build System tests:
+include(QtBaseCMakeTesting)
+
 ## Targets for global features, etc.:
 include(QtBaseGlobalTargets)
 
