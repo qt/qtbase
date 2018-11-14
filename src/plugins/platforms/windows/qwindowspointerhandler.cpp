@@ -609,6 +609,7 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
 bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et,
                                                MSG msg, PVOID vPenInfo)
 {
+#if QT_CONFIG(tabletevent)
     if (et & QtWindows::NonClientEventFlag)
         return false; // Let DefWindowProc() handle Non Client messages.
 
@@ -703,6 +704,14 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
     }
     }
     return true;
+#else
+    Q_UNUSED(window);
+    Q_UNUSED(hwnd);
+    Q_UNUSED(et);
+    Q_UNUSED(msg);
+    Q_UNUSED(vPenInfo);
+    return false;
+#endif
 }
 
 // Process old-style mouse messages here.
