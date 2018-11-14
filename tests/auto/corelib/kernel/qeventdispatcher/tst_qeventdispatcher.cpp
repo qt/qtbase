@@ -28,6 +28,7 @@
 
 #ifdef QT_GUI_LIB
 #  include <QtGui/QGuiApplication>
+#  define tst_QEventDispatcher tst_QGuiEventDispatcher
 #else
 #  include <QtCore/QCoreApplication>
 #endif
