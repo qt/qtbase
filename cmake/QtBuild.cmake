@@ -300,20 +300,23 @@ endfunction()
 # Any sources with the .ui extension are passed on to uic and the generated output
 # is added to the target sources.
 function(qt_internal_autouic target)
-    if ("x${ARGN}" STREQUAL "x")
-        return()
-    endif()
+    set(outfiles "")
 
-    set(_ui_files "")
+    get_target_property(source_dir "${target}" SOURCE_DIR)
+    get_target_property(binary_dir "${target}" BINARY_DIR)
 
-    foreach(s ${ARGN})
-        get_filename_component(ext "${s}" EXT)
+    foreach(infile ${ARGN})
+        get_filename_component(ext "${infile}" EXT)
         if("${ext}" STREQUAL ".ui")
-            qt_create_uic_command("${s}" _ui_file)
-            list(APPEND _ui_files "${_ui_file}")
+            qt_make_output_file("${infile}" "ui_" ".h" "${source_dir}" "${binary_dir}" outfile)
+            qt_create_uic_command("${infile}" "${source_dir}" "${outfile}")
+            list(APPEND outfiles "${outfile}")
+
+            get_filename_component(outfile_path "${outfile}" PATH)
+            target_include_directories("${target}" PRIVATE "${outfile_path}")
         endif()
     endforeach()
-    target_sources("${target}" PRIVATE "${_ui_files}")
+    target_sources("${target}" PRIVATE "${outfiles}")
 endfunction()
 
 
@@ -1055,20 +1058,13 @@ endfunction()
 
 
 # helper to set up a uic rule
-function(qt_create_uic_command infile _result)
-    # Pass the parameters in a file.  Set the working directory to
-    # be that containing the parameters file and reference it by
-    # just the file name.  This is necessary because the moc tool on
-    # MinGW builds does not seem to handle spaces in the path to the
-    # file given with the @ syntax.
-    get_filename_component(_uic_basename "${infile}" NAME_WE)
-    set(outfile "ui_${_uic_basename}.h")
+function(qt_create_uic_command infile source_dir outfile)
     add_custom_command(OUTPUT "${outfile}"
-                       COMMAND "Qt::uic" "${CMAKE_CURRENT_SOURCE_DIR}/${infile}" -o "${CMAKE_CURRENT_BINARY_DIR}/${outfile}"
+                       COMMAND "Qt::uic" "${infile}" -o "${outfile}"
                        DEPENDS "${infile}"
                        COMMENT "Running UIC on ${infile}."
-                       VERBATIM)
-    set(${_result} "${CMAKE_CURRENT_BINARY_DIR}/${outfile}" PARENT_SCOPE)
+                       WORKING_DIRECTORY "${source_dir}" VERBATIM)
+    set_source_files_properties("${outfile}" PROPERTIES HEADER_FILE_ONLY ON)
 endfunction()
 
 
