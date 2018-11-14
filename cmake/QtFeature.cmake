@@ -166,14 +166,16 @@ function(qt_feature_set_cache_value resultVar feature emit_if calculated label)
         # Initial setup:
         if (emit_if)
             set("FEATURE_${feature}" "${calculated}" CACHE BOOL "${label}")
+            set(result "${calculated}")
+        else()
+            set(result OFF)
         endif()
-        set(result "${calculated}")
     endif()
 
     set("${resultVar}" "${result}" PARENT_SCOPE)
 endfunction()
 
-macro(qt_feature_set_value feature cache condition label)
+macro(qt_feature_set_value feature cache emit_if condition label)
     set(result "${cache}")
 
     if (NOT (condition) AND (cache))
@@ -241,7 +243,7 @@ function(qt_evaluate_feature _feature)
     endif()
 
     qt_feature_set_cache_value(cache "${_feature}" "${emit_if}" "${result}" "${_arg_LABEL}")
-    qt_feature_set_value("${_feature}" "${cache}" "${condition}" "${_arg_LABEL}")
+    qt_feature_set_value("${_feature}" "${cache}" "${emit_if}" "${condition}" "${_arg_LABEL}")
 endfunction()
 
 function(qt_feature_definition _feature _name)

@@ -28,7 +28,7 @@ assert(QT_FEATURE_top_b STREQUAL "OFF")
 assert(QT_FEATURE_top_enabled STREQUAL "ON")
 assert(QT_FEATURE_top_disabled STREQUAL "OFF")
 assert(QT_FEATURE_top_disabled_enabled STREQUAL "OFF")
-assert(NOT DEFINED QT_FEATURE_top_not_emitted)
+assert(QT_FEATURE_top_not_emitted STREQUAL "OFF")
 
 ## Enable feature summary at the end of the configure run:
 include(FeatureSummary)
