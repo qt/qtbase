@@ -424,8 +424,6 @@ information about a particular change.
 *                                  macOS                                   *
 ****************************************************************************
 
- - Layer-backed mode is now the default for QWindow.
-
  - QtGui:
    * [QTBUG-63800] Fixed display of condensed fonts when NoFontMerging is
      in use.
