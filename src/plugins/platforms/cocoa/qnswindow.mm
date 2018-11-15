@@ -239,10 +239,6 @@ static bool isMouseEvent(NSEvent *ev)
 - (void)closeAndRelease
 {
     qCDebug(lcQpaWindow) << "closeAndRelease" << self;
-
-    [self.delegate release];
-    self.delegate = nil;
-
     [self close];
     [self release];
 }
@@ -252,6 +248,9 @@ static bool isMouseEvent(NSEvent *ev)
 - (void)dealloc
 {
     qCDebug(lcQpaWindow) << "dealloc" << self;
+    [self.delegate release];
+    self.delegate = nil;
+
     qt_objcDynamicSuper();
 }
 #pragma clang diagnostic pop
