@@ -7,9 +7,13 @@ set(QT_MOCSCANNER /usr/bin/true)
 # The files passed in after MOC_AND_BUILD will be reported to be in need
 # of moc-ing and should also be built by the target.
 function(fake_moc_results)
-    cmake_parse_arguments(arg "" "" "INCLUDED;BUILT")
-    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/moc_files_included.txt" "${arg_INCLUDED}")
-    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/moc_files_to_build.txt" "${arg_BUILT}")
+    cmake_parse_arguments(arg "" "" "MOC;MOC_AND_BUILD" ${ARGN})
+
+    string(REPLACE ";" "\n" arg_MOC "${arg_MOC}")
+    string(REPLACE ";" "\n" arg_MOC_AND_BUILD "${arg_MOC_AND_BUILD}")
+
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/moc_files_included.txt" "${arg_MOC}")
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/moc_files_to_build.txt" "${arg_MOC_AND_BUILD}")
 endfunction()
 
 # Test whether a target has a file listed in its sources.

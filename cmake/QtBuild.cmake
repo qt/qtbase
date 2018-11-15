@@ -215,37 +215,42 @@ function(qt_internal_add_linker_version_script target)
 endfunction()
 
 # Generates the necessary rules to run moc on the sources specified after the MOC parameter.
-# The resulting moc files are returned in the variable specified by the result parameter.
-function(qt_internal_wrap_cpp result)
+# The resulting moc files are added to the target.
+function(qt_internal_wrap_cpp target)
     # get include dirs
     qt_get_moc_flags(moc_flags)
-    qt_parse_all_arguments(_arg "qt_internal_wrap_cpp" "" "TARGET;HEADER_FILE_ONLY" "OPTIONS;DEPENDS;MOC" ${ARGN})
+    qt_parse_all_arguments(arg "qt_internal_wrap_cpp" "" "HEADER_FILE_ONLY" "OPTIONS;DEPENDS;MOC" ${ARGN})
 
-    set(moc_files ${_arg_MOC})
-    set(moc_options ${_arg_OPTIONS})
-    set(moc_target ${_arg_TARGET})
-    set(moc_depends ${_arg_DEPENDS})
-    set(wrapped_files "")
+    set(outfiles)
 
-    foreach(it ${moc_files})
-        get_filename_component(it ${it} ABSOLUTE)
+    get_target_property(binary_dir "${target}" BINARY_DIR)
+    get_target_property(source_dir "${target}" SOURCE_DIR)
+
+    foreach(it ${arg_MOC})
         get_filename_component(moc_file_extension ${it} EXT)
 
-        if(${moc_file_extension} STREQUAL ".h")
+        if("x${moc_file_extension}" STREQUAL "x.h")
             set(file_prefix "moc_")
-            set(file_extension "cpp")
+            set(file_extension ".cpp")
         else()
             set(file_prefix "")
-            set(file_extension "moc")
+            set(file_extension ".moc")
         endif()
 
-        qt_make_output_file("${it}" "${file_prefix}" ".${file_extension}" "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" outfile)
-        qt_create_moc_command("${it}" "${outfile}" "${moc_flags}" "${moc_options}" "${moc_target}" "${moc_depends}")
-        set_source_files_properties(${outfile} PROPERTIES HEADER_FILE_ONLY ${_arg_HEADER_FILE_ONLY})
-        list(APPEND wrapped_files "${outfile}")
+        qt_make_output_file("${it}" "${file_prefix}" "${file_extension}" "${source_dir}" "${binary_dir}" outfile)
+
+        qt_create_moc_command("${target}" "${source_dir}" "${it}" "${outfile}" "${moc_flags}" "${arg_OPTIONS}" "${arg_DEPENDS}")
+        set_source_files_properties("${outfile}" PROPERTIES HEADER_FILE_ONLY ${arg_HEADER_FILE_ONLY})
+        if (arg_HEADER_FILE_ONLY)
+            get_filename_component(directory "${outfile}" DIRECTORY)
+            target_include_directories("${target}" PRIVATE "${directory}")
+        endif()
+
+        list(APPEND outfiles "${outfile}")
     endforeach()
-    set("${result}" ${wrapped_files} PARENT_SCOPE)
+    target_sources("${target}" PRIVATE "${outfiles}")
 endfunction()
+
 
 function(_qt_module_name name result)
     set("${result}" "Qt${name}" PARENT_SCOPE)
@@ -284,15 +289,8 @@ function(qt_internal_automoc target)
     file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/moc_files_included.txt")
     file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/moc_files_to_build.txt")
 
-    qt_internal_wrap_cpp(included_mocs TARGET "${target}" MOC ${moc_files_included} HEADER_FILE_ONLY ON)
-    qt_internal_wrap_cpp(moc_and_build_sources TARGET "${target}" MOC ${moc_files_to_build} HEADER_FILE_ONLY OFF)
-
-    target_sources("${target}" PRIVATE ${moc_and_build_sources} ${included_mocs})
-
-    foreach(generated_source ${included_mocs})
-        get_filename_component(directory "${generated_source}" DIRECTORY)
-        target_include_directories("${target}" PRIVATE "${directory}")
-    endforeach()
+    qt_internal_wrap_cpp("${target}" MOC ${moc_files_included} HEADER_FILE_ONLY ON)
+    qt_internal_wrap_cpp("${target}" MOC ${moc_files_to_build} HEADER_FILE_ONLY OFF)
 endfunction()
 
 
@@ -980,7 +978,8 @@ function(qt_make_output_file infile prefix suffix source_dir binary_dir result)
     get_filename_component(outpath "${abs_mapped_infile}" PATH)
 
     file(MAKE_DIRECTORY "${outpath}")
-    set("${result}" "${outpath}/${prefix}${outfilename}${suffix}" PARENT_SCOPE)
+    set(_result "${outpath}/${prefix}${outfilename}${suffix}")
+    set("${result}" "${_result}" PARENT_SCOPE)
 endfunction()
 
 
@@ -1016,46 +1015,32 @@ endmacro()
 
 
 # helper to set up a moc rule
-function(qt_create_moc_command infile outfile moc_flags moc_options moc_target moc_depends)
+function(qt_create_moc_command target source_dir infile outfile moc_flags moc_options moc_depends)
     # Pass the parameters in a file.  Set the working directory to
     # be that containing the parameters file and reference it by
     # just the file name.  This is necessary because the moc tool on
     # MinGW builds does not seem to handle spaces in the path to the
     # file given with the @ syntax.
-    get_filename_component(_moc_outfile_name "${outfile}" NAME)
-    get_filename_component(_moc_outfile_dir "${outfile}" PATH)
-    if(_moc_outfile_dir)
-        set(_moc_working_dir WORKING_DIRECTORY "${_moc_outfile_dir}")
-    endif()
-    set (_moc_parameters_file "${outfile}_parameters")
-    set (_moc_parameters ${moc_flags} ${moc_options} -o "${outfile}" "${infile}")
-    string (REPLACE ";" "\n" _moc_parameters "${_moc_parameters}")
+    set (moc_parameters_file "${outfile}_parameters")
+    set (moc_parameters ${moc_flags} ${moc_options} -o "${outfile}" "${infile}")
+    string (REPLACE ";" "\n" moc_parameters "${moc_parameters}")
 
-    if(moc_target)
-        set(_moc_parameters_file "${_moc_parameters_file}$<$<BOOL:$<CONFIGURATION>>:_$<CONFIGURATION>>")
-        set(targetincludes "$<TARGET_PROPERTY:${moc_target},INCLUDE_DIRECTORIES>")
-        set(targetdefines "$<TARGET_PROPERTY:${moc_target},COMPILE_DEFINITIONS>")
+    set(moc_parameters_file "${moc_parameters_file}$<$<BOOL:$<CONFIGURATION>>:_$<CONFIGURATION>>")
+    set(targetincludes "$<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>")
+    set(targetdefines "$<TARGET_PROPERTY:${target},COMPILE_DEFINITIONS>")
+    set(targetincludes "$<$<BOOL:${targetincludes}>:-I$<JOIN:${targetincludes},\n-I>\n>")
+    set(targetdefines "$<$<BOOL:${targetdefines}>:-D$<JOIN:${targetdefines},\n-D>\n>")
 
-        set(targetincludes "$<$<BOOL:${targetincludes}>:-I$<JOIN:${targetincludes},\n-I>\n>")
-        set(targetdefines "$<$<BOOL:${targetdefines}>:-D$<JOIN:${targetdefines},\n-D>\n>")
+    file (GENERATE
+        OUTPUT "${moc_parameters_file}"
+        CONTENT "${targetdefines}${targetincludes}${moc_parameters}\n"
+    )
 
-        file (GENERATE
-            OUTPUT "${_moc_parameters_file}"
-            CONTENT "${targetdefines}${targetincludes}${_moc_parameters}\n"
-        )
-
-        set(targetincludes)
-        set(targetdefines)
-    else()
-        file(WRITE ${_moc_parameters_file} "${_moc_parameters}\n")
-    endif()
-
-    set(_moc_extra_parameters_file @${_moc_parameters_file})
+    set(moc_extra_parameters_file @${moc_parameters_file})
     add_custom_command(OUTPUT "${outfile}"
-                       COMMAND "Qt::moc" "${_moc_extra_parameters_file}"
+                       COMMAND "Qt::moc" "${moc_extra_parameters_file}"
                        DEPENDS "${infile}" ${moc_depends}
-                       ${_moc_working_dir}
-                       VERBATIM)
+                       WORKING_DIRECTORY "${source_dir}" VERBATIM)
 endfunction()
 
 
@@ -1097,7 +1082,7 @@ function(qt_create_qdbusxml2cpp_command target infile)
                        VERBATIM)
 
     # Moc the header:
-    qt_internal_wrap_cpp(moc_sources TARGET "${target}" MOC "${header_file}" HEADER_FILE_ONLY OFF)
+    qt_internal_wrap_cpp("${target}" MOC "${header_file}" HEADER_FILE_ONLY OFF)
 
     target_sources("${target}" PRIVATE "${header_file}" "${source_file}" "${moc_sources}")
 endfunction()
