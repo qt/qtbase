@@ -45,5 +45,6 @@ macro(add_cmake_test_generate name)
 endmacro()
 
 add_cmake_test_generate(features)
+add_cmake_test_generate(qrc)
 add_cmake_test_generate(qt_make_output_file)
 add_cmake_test_generate(uic)

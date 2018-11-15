@@ -358,21 +358,18 @@ endfunction()
 # This function creates the necessary rule to call rcc on the given
 # resource file and stores the name of the to-be generated C++ source
 # file (created by rcc) in the outCppFile variable.
-function(qt_create_rcc_command resourceFile outCppFile)
-    get_filename_component(outfilename "${resourceFile}" NAME_WE)
-    get_filename_component(infile "${resourceFile}" ABSOLUTE)
-    set(generatedCppFile "${CMAKE_CURRENT_BINARY_DIR}/qrc_${outfilename}.cpp")
-
-    qt_extract_qrc_dependencies("${infile}" _out_depends _rc_depends)
+function(qt_create_rcc_command resourceFile source_dir binary_dir outfile)
+    qt_extract_qrc_dependencies("${infile}" out_depends rc_depends "${source_dir}" "${binary_dir}")
     set_source_files_properties("${infile}" PROPERTIES SKIP_AUTORCC ON)
 
-    add_custom_command(OUTPUT "${generatedCppFile}"
-                       COMMAND "Qt::rcc" --name "${outfilename}" --output "${generatedCppFile}" "${infile}"
+    get_filename_component(outfilename "${resourceFile}" NAME_WE)
+    add_custom_command(OUTPUT "${outfile}"
+                       COMMAND "Qt::rcc" --name "${outfilename}" --output "${outfile}" "${resourceFile}"
                        MAIN_DEPENDENCY "${infile}"
-                       DEPENDS "${_rc_depends}" "${_out_depends}" VERBATIM)
-    set_source_files_properties("${generatedCppFile}" PROPERTIES SKIP_AUTOMOC ON)
-    set_source_files_properties("${generatedCppFile}" PROPERTIES SKIP_AUTOUIC ON)
-    set("${outCppFile}" "${generatedCppFile}" PARENT_SCOPE)
+                       DEPENDS "${rc_depends}" "${out_depends}"
+                       WORKING_DIRECTORY "${source_dir}" VERBATIM)
+    set_source_files_properties("${outfile}" PROPERTIES SKIP_AUTOMOC ON)
+    set_source_files_properties("${outfile}" PROPERTIES SKIP_AUTOUIC ON)
 endfunction()
 
 
@@ -380,20 +377,25 @@ endfunction()
 # Any sources ending with the .qrc extension are treated as Qt resources and rules
 # to call rcc are generated. The source files rcc generates are added to the target.
 function(qt_internal_autorcc target)
-    if ("x${ARGN}" STREQUAL "x")
-        return()
-    endif()
+    get_target_property(binary_dir "${target}" BINARY_DIR)
+    get_target_property(source_dir "${target}" SOURCE_DIR)
 
-    set(_qrc_cpp_files "")
+    set(qrc_outfiles "")
 
-    foreach(s ${ARGN})
-        get_filename_component(ext "${s}" EXT)
+    foreach(infile ${ARGN})
+        get_filename_component(ext "${infile}" EXT)
         if("${ext}" STREQUAL ".qrc")
-            qt_create_rcc_command("${s}" _qrc_cpp_file)
-            list(APPEND _qrc_cpp_files "${_qrc_cpp_file}")
+            qt_make_output_file("${infile}" "qrc_" ".cpp" "${source_dir}" "${binary_dir}" outfile)
+            list(FIND all_sources "${outfile}" known_result)
+            if (known_result GREATER -1)
+                continue()
+            endif()
+
+            qt_create_rcc_command("${infile}" "${source_dir}" "${binary_dir}" "${outfile}")
+            list(APPEND qrc_outfiles "${outfile}")
         endif()
     endforeach()
-    target_sources("${target}" PRIVATE "${_qrc_cpp_files}")
+    target_sources("${target}" PRIVATE "${qrc_outfiles}")
 endfunction()
 
 
