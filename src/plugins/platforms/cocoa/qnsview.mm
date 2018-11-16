@@ -166,6 +166,8 @@
 
 - (void)dealloc
 {
+    qCDebug(lcQpaWindow) << "Deallocating" << self;
+
     if (m_trackingArea) {
         [self removeTrackingArea:m_trackingArea];
         [m_trackingArea release];
