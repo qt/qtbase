@@ -227,6 +227,12 @@ QWindowContainer::QWindowContainer(QWindow *embeddedWindow, QWidget *parent, Qt:
         embeddedWindow->setSurfaceType(QSurface::RasterGLSurface);
 
     d->window = embeddedWindow;
+
+    QString windowName = d->window->objectName();
+    if (windowName.isEmpty())
+        windowName = QString::fromUtf8(d->window->metaObject()->className());
+    d->fakeParent.setObjectName(windowName + "ContainerFakeParent");
+
     d->window->setParent(&d->fakeParent);
     setAcceptDrops(true);
 
