@@ -68,6 +68,8 @@
 // Private interface
 @interface QT_MANGLE_NAMESPACE(QNSView) ()
 - (BOOL)isTransparentForUserInput;
+@property (assign) NSView* previousSuperview;
+@property (assign) NSWindow* previousWindow;
 @end
 
 @interface QT_MANGLE_NAMESPACE(QNSView) (Drawing) <CALayerDelegate>
@@ -153,6 +155,9 @@
         self.focusRingType = NSFocusRingTypeNone;
         self.cursor = nil;
 
+        self.previousSuperview = nil;
+        self.previousWindow = nil;
+
         [self initDrawing];
         [self registerDragTypes];
 
@@ -195,8 +200,40 @@
     return description;
 }
 
+// ----------------------------- Re-parenting ---------------------------------
+
+- (void)removeFromSuperview
+{
+    QMacAutoReleasePool pool;
+    [super removeFromSuperview];
+}
+
+- (void)viewWillMoveToSuperview:(NSView *)newSuperview
+{
+    Q_ASSERT(!self.previousSuperview);
+    self.previousSuperview = self.superview;
+
+    if (newSuperview == self.superview)
+        qCDebug(lcQpaWindow) << "Re-ordering" << self << "inside" << self.superview;
+    else
+        qCDebug(lcQpaWindow) << "Re-parenting" << self << "from" << self.superview << "to" << newSuperview;
+}
+
 - (void)viewDidMoveToSuperview
 {
+    auto cleanup = qScopeGuard([&] { self.previousSuperview = nil; });
+
+    if (self.superview == self.previousSuperview) {
+        qCDebug(lcQpaWindow) << "Done re-ordering" << self << "new index:"
+            << [self.superview.subviews indexOfObject:self];
+        return;
+    }
+
+    qCDebug(lcQpaWindow) << "Done re-parenting" << self << "into" << self.superview;
+
+    // Note: at this point the view's window property hasn't been updated to match the window
+    // of the new superview. We have to wait for viewDidMoveToWindow for that to be reflected.
+
     if (!m_platformWindow)
         return;
 
@@ -209,6 +246,36 @@
         QWindowSystemInterface::flushWindowSystemEvents();
     }
 }
+
+- (void)viewWillMoveToWindow:(NSWindow *)newWindow
+{
+    Q_ASSERT(!self.previousWindow);
+    self.previousWindow = self.window;
+
+    // This callback is documented to be called also when a view is just moved between
+    // subviews in the same NSWindow, so we're not necessarily moving between NSWindows.
+    if (newWindow == self.window)
+        return;
+
+    qCDebug(lcQpaWindow) << "Moving" << self << "from" << self.window << "to" << newWindow;
+
+    // Note: at this point the superview has already been updated, so we know which view inside
+    // the new window the view will be a child of.
+}
+
+- (void)viewDidMoveToWindow
+{
+    auto cleanup = qScopeGuard([&] { self.previousWindow = nil; });
+
+    // This callback is documented to be called also when a view is just moved between
+    // subviews in the same NSWindow, so we're not necessarily moving between NSWindows.
+    if (self.window == self.previousWindow)
+        return;
+
+    qCDebug(lcQpaWindow) << "Done moving" << self << "to" << self.window;
+}
+
+// ----------------------------------------------------------------------------
 
 - (QWindow *)topLevelWindow
 {
@@ -237,12 +304,6 @@
 
     // Note: setNeedsDisplay is automatically called for
     // viewDidUnhide so no reason to override it here.
-}
-
-- (void)removeFromSuperview
-{
-    QMacAutoReleasePool pool;
-    [super removeFromSuperview];
 }
 
 - (BOOL)isTransparentForUserInput
