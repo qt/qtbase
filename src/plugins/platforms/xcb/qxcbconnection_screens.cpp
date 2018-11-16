@@ -384,7 +384,7 @@ void QXcbConnection::initializeScreens()
             }
             siblings << screen;
         }
-        virtualDesktop->setScreens(siblings);
+        virtualDesktop->setScreens(std::move(siblings));
         xcb_screen_next(&it);
         ++xcbScreenNumber;
     } // for each xcb screen
