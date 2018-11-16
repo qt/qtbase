@@ -315,6 +315,7 @@ bool QWindowContainer::event(QEvent *e)
             d->window->setParent(d->usesNativeWidgets
                                  ? windowHandle()
                                  : window()->windowHandle());
+            d->fakeParent.destroy();
         }
         if (d->window->parent()) {
             d->markParentChain();
@@ -404,6 +405,7 @@ void QWindowContainer::parentWasChanged(QWidget *parent)
                 Q_ASSERT(toplevel->windowHandle());
             }
             d->window->setParent(toplevel->windowHandle());
+            d->fakeParent.destroy();
             d->updateGeometry();
         }
     }
