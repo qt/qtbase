@@ -46,9 +46,7 @@
             "xcb-xlib": "boolean",
             "xcb-xinput": "boolean",
             "xkb": "boolean",
-            "xkbcommon": { "type": "enum", "values": [ "no", "qt", "system" ] },
-            "xkbcommon-evdev": "boolean",
-            "xkbcommon-x11": { "type": "enum", "name": "xkbcommon", "values": [ "no", "qt", "system" ] }
+            "xkbcommon": "boolean"
         }
     },
 
@@ -606,21 +604,33 @@
             ]
         },
         "xkbcommon": {
-            "label": "xkbcommon",
-            "export": "xkbcommon_evdev",
+            "label": "xkbcommon >= 0.5.0",
             "test": {
-                "include": [ "xkbcommon/xkbcommon.h", "xkbcommon/xkbcommon-keysyms.h", "xkbcommon/xkbcommon-names.h" ],
+                "include": [ "xkbcommon/xkbcommon.h" ],
                 "main": "xkb_context_new(XKB_CONTEXT_NO_FLAGS);"
             },
             "sources": [
-                { "type": "pkgConfig", "args": "xkbcommon" }
+                { "type": "pkgConfig", "args": "xkbcommon >= 0.5.0" }
             ]
         },
         "xkbcommon_x11": {
-            "label": "xkbcommon-x11 >= 0.4.1",
-            "export": "xkbcommon",
+            "label": "xkbcommon-x11",
+            "test": {
+                "include": [ "xkbcommon/xkbcommon-x11.h" ],
+                "main": "xkb_x11_get_core_keyboard_device_id(nullptr);"
+            },
             "sources": [
-                { "type": "pkgConfig", "args": "xkbcommon xkbcommon-x11 >= 0.4.1" }
+                { "type": "pkgConfig", "args": "xkbcommon-x11" }
+            ]
+        },
+        "xkbcommon_evdev": {
+            "label": "xkbcommon_evdev TRANSITION HACK",
+            "test": {
+                "include": [ "xkbcommon/xkbcommon.h" ],
+                "main": "xkb_context_new(XKB_CONTEXT_NO_FLAGS);"
+            },
+            "sources": [
+                { "type": "pkgConfig", "args": "xkbcommon >= 0.5.0" }
             ]
         },
         "xrender": {
@@ -1091,7 +1101,7 @@
             "label": "Mir client",
             "section": "Platform plugins",
             "autoDetect": false,
-            "condition": "libs.mirclient",
+            "condition": "libs.mirclient && features.xkbcommon",
             "output": [ "privateFeature" ]
         },
         "mtdev": {
@@ -1304,7 +1314,7 @@
             "section": "Platform plugins",
             "autoDetect": "!config.darwin",
             "enable": "input.xcb == 'system' || input.xcb == 'qt' || input.xcb == 'yes'",
-            "condition": "features.thread && libs.xcb",
+            "condition": "features.thread && features.xkbcommon && libs.xcb",
             "output": [ "privateFeature" ]
         },
         "system-xcb": {
@@ -1347,7 +1357,7 @@
         "xkb": {
             "label": "XCB XKB",
             "emitIf": "features.xcb",
-            "condition": "!features.system-xcb || libs.xcb_xkb",
+            "condition": "(!features.system-xcb || libs.xcb_xkb) && libs.xkbcommon_x11",
             "output": [ "privateFeature" ]
         },
         "xcb-xlib": {
@@ -1368,17 +1378,14 @@
             "condition": "!features.system-xcb || libs.xcb_xinput",
             "output": [ "privateFeature" ]
         },
-        "xkbcommon-evdev": {
-            "label": "xkbcommon-evdev",
+        "xkbcommon": {
+            "label": "xkbcommon",
             "condition": "libs.xkbcommon",
             "output": [ "privateFeature" ]
         },
-        "xkbcommon-system": {
-            "label": "Using system-provided xkbcommon",
-            "emitIf": "features.xcb",
-            "enable": "input.xkbcommon == 'system'",
-            "disable": "input.xkbcommon == 'qt' || input.xkbcommon == 'no'",
-            "condition": "libs.xkbcommon_x11",
+        "xkbcommon-evdev": {
+            "label": "xkbcommon-evdev TRANSITION HACK",
+            "condition": "libs.xkbcommon_evdev",
             "output": [ "privateFeature" ]
         },
         "xlib": {
@@ -1594,7 +1601,7 @@
         {
             "type": "error",
             "condition": "input.xcb != '' && input.xcb != 'no' && input.xkbcommon == 'no'",
-            "message": "XCB plugin requires libxkbcommon. See -qt-xkbcommon-x11 and -system-xkbcommon-x11."
+            "message": "XCB plugin requires xkbcommon, but -no-xkbcommon was provided."
         }
     ],
 
@@ -1705,7 +1712,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                 "integrityhid",
                 "mtdev",
                 "tslib",
-                "xkbcommon-evdev"
+                "xkbcommon"
             ]
         },
         {
@@ -1736,7 +1743,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                     "section": "X11",
                     "condition": "features.xcb",
                     "entries": [
-                        "system-xcb", "egl_x11", "xkb", "xlib", "xcb-render", "xcb-glx", "xcb-xinput", "xcb-xlib", "xkbcommon-system", "xcb-native-painting"
+                        "system-xcb", "egl_x11", "xkb", "xlib", "xcb-render", "xcb-glx", "xcb-xinput", "xcb-xlib", "xcb-native-painting"
                     ]
                 },
                 {

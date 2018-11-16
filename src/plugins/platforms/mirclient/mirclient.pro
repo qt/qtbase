@@ -53,12 +53,7 @@ HEADERS = \
     qmirclienttheme.h \
     qmirclientwindow.h
 
-# libxkbcommon
-!qtConfig(xkbcommon-system) {
-    include(../../../3rdparty/xkbcommon.pri)
-} else {
-    QMAKE_USE += xkbcommon
-}
+QMAKE_USE_PRIVATE += xkbcommon
 
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = MirServerIntegrationPlugin
