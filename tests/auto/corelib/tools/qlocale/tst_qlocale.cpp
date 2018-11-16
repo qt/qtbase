@@ -83,6 +83,8 @@ private slots:
     void matchingLocales();
     void stringToDouble_data();
     void stringToDouble();
+    void stringToFloat_data() { stringToDouble_data(); }
+    void stringToFloat();
     void doubleToString_data();
     void doubleToString();
     void strtod_data();
@@ -801,7 +803,7 @@ void tst_QLocale::stringToDouble_data()
 
 void tst_QLocale::stringToDouble()
 {
-#define MY_DOUBLE_EPSILON (2.22045e-16)
+#define MY_DOUBLE_EPSILON (2.22045e-16) // 1/2^{52}; double has a 53-bit mantissa
 
     QFETCH(QString, locale_name);
     QFETCH(QString, num_str);
@@ -824,6 +826,8 @@ void tst_QLocale::stringToDouble()
     }
 
     if (ok) {
+        // First use fuzzy-compare, then a more precise check:
+        QCOMPARE(d, num);
         double diff = d - num;
         if (diff < 0)
             diff = -diff;
@@ -834,11 +838,60 @@ void tst_QLocale::stringToDouble()
     QCOMPARE(ok, good);
 
     if (ok) {
+        QCOMPARE(d, num);
         double diff = d - num;
         if (diff < 0)
             diff = -diff;
         QVERIFY(diff <= MY_DOUBLE_EPSILON);
     }
+#undef MY_DOUBLE_EPSILON
+}
+
+void tst_QLocale::stringToFloat()
+{
+#define MY_FLOAT_EPSILON (2.384e-7) // 1/2^{22}; float has a 23-bit mantissa
+
+    QFETCH(QString, locale_name);
+    QFETCH(QString, num_str);
+    QFETCH(bool, good);
+    QFETCH(double, num);
+    QStringRef num_strRef = num_str.leftRef(-1);
+    float fnum = num;
+
+    QLocale locale(locale_name);
+    QCOMPARE(locale.name(), locale_name);
+
+    bool ok;
+    float f = locale.toFloat(num_str, &ok);
+    QCOMPARE(ok, good);
+
+    {
+        // Make sure result is independent of locale:
+        TransientLocale ignoreme(LC_ALL, "ar_SA");
+        QCOMPARE(locale.toFloat(num_str, &ok), f);
+        QCOMPARE(ok, good);
+    }
+
+    if (ok) {
+        // First use fuzzy-compare, then a more precise check:
+        QCOMPARE(f, fnum);
+        float diff = f - fnum;
+        if (diff < 0)
+            diff = -diff;
+        QVERIFY(diff <= MY_FLOAT_EPSILON);
+    }
+
+    f = locale.toFloat(num_strRef, &ok);
+    QCOMPARE(ok, good);
+
+    if (ok) {
+        QCOMPARE(f, fnum);
+        float diff = f - fnum;
+        if (diff < 0)
+            diff = -diff;
+        QVERIFY(diff <= MY_FLOAT_EPSILON);
+    }
+#undef MY_FLOAT_EPSILON
 }
 
 void tst_QLocale::doubleToString_data()
