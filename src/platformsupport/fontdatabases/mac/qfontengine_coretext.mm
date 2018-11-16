@@ -736,8 +736,7 @@ bool QCoreTextFontEngine::shouldSmoothFont() const
 
 bool QCoreTextFontEngine::expectsGammaCorrectedBlending() const
 {
-    // Only works well when font-smoothing is enabled
-    return (glyphFormat == Format_A32) && !(fontDef.styleStrategy & (QFont::NoAntialias | QFont::NoSubpixelAntialias));
+    return shouldSmoothFont();
 }
 
 QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &matrix)
