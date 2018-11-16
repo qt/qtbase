@@ -707,7 +707,7 @@ bool readInputFile(Options *options)
             return false;
         }
 
-        options->sdkPath = sdkPath.toString();
+        options->sdkPath = QDir::fromNativeSeparators(sdkPath.toString());
 
         if (options->androidPlatform.isEmpty()) {
             options->androidPlatform = detectLatestAndroidPlatform(options->sdkPath);

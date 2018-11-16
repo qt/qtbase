@@ -57,6 +57,12 @@
 QT_BEGIN_NAMESPACE
 
 /*!
+    \namespace QPlatformGraphicsBufferHelper
+    \inmodule QtGui
+    \internal
+*/
+
+/*!
     Convenience function to both lock and bind the \a graphicsBuffer to a texture.
     This function will first try to lock with texture read and texture write
     access. If this succeeds it will use the bindToTexture function to bind the

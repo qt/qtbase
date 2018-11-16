@@ -61,7 +61,6 @@ public:
     bool translateMouseEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result);
     QTouchDevice *touchDevice() const { return m_touchDevice; }
     QTouchDevice *ensureTouchDevice();
-    Qt::MouseButtons queryMouseButtons();
     QWindow *windowUnderMouse() const { return m_windowUnderPointer.data(); }
     void clearWindowUnderMouse() { m_windowUnderPointer = nullptr; }
 

@@ -254,7 +254,7 @@ inline RetType UnrollTailLoop<0>::exec(Number, RetType returnIfExited, Functor1,
 /*!
  * \internal
  *
- * Searches for character \a \c in the string \a str and returns a pointer to
+ * Searches for character \a c in the string \a str and returns a pointer to
  * it. Unlike strchr() and wcschr() (but like glibc's strchrnul()), if the
  * character is not found, this function returns a pointer to the end of the
  * string -- that is, \c{str.end()}.

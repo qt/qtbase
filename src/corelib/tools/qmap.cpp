@@ -537,7 +537,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa operator=()
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::QMap(const std::map<Key, T> & other)
+/*! \fn template <class Key, class T> QMap<Key, T>::QMap(const typename std::map<Key, T> & other)
 
     Constructs a copy of \a other.
 

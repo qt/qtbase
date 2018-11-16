@@ -2,7 +2,7 @@
     "Id": "libpng",
     "Name": "LibPNG",
     "QDocModule": "qtgui",
-    "QtUsage": "Used in the qpng image plugin. Configure with -system-png or -no-png to avoid.",
+    "QtUsage": "Used in the qpng image plugin. Configure with -system-libpng or -no-libpng to avoid.",
 
     "Description": "libpng is the official PNG reference library.",
     "Homepage": "http://www.libpng.org/pub/png/libpng.html",

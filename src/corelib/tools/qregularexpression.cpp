@@ -2000,8 +2000,8 @@ QString QRegularExpression::wildcardToRegularExpression(const QString &pattern)
 
     \since 5.12
 
-    Returns the expression wrapped between the \c{\A} and \c{\z} anchors to be
-    used for exact matching.
+    Returns the \a expression wrapped between the \c{\A} and \c{\z} anchors to
+    be used for exact matching.
 
     \sa {Porting from QRegExp's Exact Matching}
 */

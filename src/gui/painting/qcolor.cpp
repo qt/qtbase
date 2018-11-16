@@ -1366,7 +1366,7 @@ QRgba64 QColor::rgba64() const Q_DECL_NOTHROW
 
     Sets the RGB64 value to \a rgba, including its alpha.
 
-    \sa \setRgba(), rgba64()
+    \sa setRgba(), rgba64()
 */
 void QColor::setRgba64(QRgba64 rgba) Q_DECL_NOTHROW
 {

@@ -2,7 +2,7 @@
     "Id": "libjpeg",
     "Name": "LibJPEG-turbo",
     "QDocModule": "qtgui",
-    "QtUsage": "Used in the QJPEG image plugin. Configure with -no-jpeg to avoid.",
+    "QtUsage": "Used in the qjpeg image plugin. Configure with -system-libjpeg or -no-libjpeg to avoid.",
 
     "Description": "The Independent JPEG Group's JPEG software",
     "Homepage": "http://libjpeg-turbo.virtualgl.org/",

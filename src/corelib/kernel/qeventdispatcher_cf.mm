@@ -58,7 +58,7 @@
 
 QT_USE_NAMESPACE
 
-/*!
+/*
     During scroll view panning, and possibly other gestures, UIKit will
     request a switch to UITrackingRunLoopMode via GSEventPushRunLoopMode,
     which records the new runloop mode and stops the current runloop.

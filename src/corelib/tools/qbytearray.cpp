@@ -3076,7 +3076,7 @@ bool QByteArray::endsWith(const char *str) const
     return qstrncmp(d->data() + d->size - len, str, len) == 0;
 }
 
-/*!
+/*
     Returns true if \a c is an uppercase Latin1 letter.
     \note The multiplication sign 0xD7 and the sz ligature 0xDF are not
     treated as uppercase Latin1.
@@ -3112,7 +3112,7 @@ bool QByteArray::isUpper() const
     return true;
 }
 
-/*!
+/*
     Returns true if \a c is an lowercase Latin1 letter.
     \note The division sign 0xF7 is not treated as lowercase Latin1,
     but the small y dieresis 0xFF is.

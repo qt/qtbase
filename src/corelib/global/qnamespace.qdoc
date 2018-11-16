@@ -3187,8 +3187,12 @@
 
     \value ScrollUpdate The scrolling distance has changed (default).
 
-    \value ScrollEnd Scrolling has ended, but the scrolling distance
+    \value ScrollEnd Scrolling has ended, and the scrolling distance
     did not change anymore.
+
+    \value ScrollMomentum The user no longer touches the input device,
+    but scrolling continues due to scroll momentum.
+    This value was introduced in Qt 5.12.
 */
 
 /*!
