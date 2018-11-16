@@ -153,6 +153,16 @@ private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
     QString m_sysapp;
     bool europeanTimeZone;
+
+    class TransientLocale
+    {
+        const int m_category;
+        const char *const m_prior;
+    public:
+        TransientLocale(int category, const char *locale)
+            : m_category(category), m_prior(setlocale(category, locale)) {}
+        ~TransientLocale() { setlocale(m_category, m_prior); }
+    };
 };
 
 tst_QLocale::tst_QLocale()
@@ -806,10 +816,12 @@ void tst_QLocale::stringToDouble()
     double d = locale.toDouble(num_str, &ok);
     QCOMPARE(ok, good);
 
-    char *currentLocale = setlocale(LC_ALL, "de_DE");
-    QCOMPARE(locale.toDouble(num_str, &ok), d); // make sure result is independent of locale
-    QCOMPARE(ok, good);
-    setlocale(LC_ALL, currentLocale);
+    {
+        // Make sure result is independent of locale:
+        TransientLocale ignoreme(LC_ALL, "ar_SA");
+        QCOMPARE(locale.toDouble(num_str, &ok), d);
+        QCOMPARE(ok, good);
+    }
 
     if (ok) {
         double diff = d - num;
@@ -939,9 +951,8 @@ void tst_QLocale::doubleToString()
     const QLocale locale(locale_name);
     QCOMPARE(locale.toString(num, mode, precision), num_str);
 
-    char *currentLocale = setlocale(LC_ALL, "de_DE");
+    TransientLocale ignoreme(LC_ALL, "de_DE");
     QCOMPARE(locale.toString(num, mode, precision), num_str);
-    setlocale(LC_ALL, currentLocale);
 }
 
 void tst_QLocale::strtod_data()
