@@ -1775,7 +1775,6 @@ void QWidgetPrivate::createTLExtra()
         x->posIncludesFrame = 0;
         x->sizeAdjusted = false;
         x->inTopLevelResize = false;
-        x->inRepaint = false;
         x->embedded = 0;
         x->window = 0;
         x->shareContext = 0;
@@ -11033,11 +11032,8 @@ void QWidgetPrivate::repaint(T r)
         return;
 
     QTLWExtra *tlwExtra = q->window()->d_func()->maybeTopData();
-    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
-        tlwExtra->inRepaint = true;
+    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
         tlwExtra->backingStoreTracker->markDirty(r, q, QWidgetBackingStore::UpdateNow);
-        tlwExtra->inRepaint = false;
-    }
 }
 
 /*!
