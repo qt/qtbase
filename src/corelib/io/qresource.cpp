@@ -1050,74 +1050,76 @@ public:
     QString mappingFile() const { return fileName; }
     ResourceRootType type() const override { return Resource_File; }
 
-    bool registerSelf(const QString &f) {
-        bool fromMM = false;
-        uchar *data = 0;
-        unsigned int data_len = 0;
-
-#ifdef QT_USE_MMAP
+    bool registerSelf(const QString &f);
+};
 
 #ifndef MAP_FILE
-#define MAP_FILE 0
+#  define MAP_FILE 0
 #endif
 #ifndef MAP_FAILED
-#define MAP_FAILED -1
+#  define MAP_FAILED -1
 #endif
 
-        int fd = QT_OPEN(QFile::encodeName(f), O_RDONLY,
+bool QDynamicFileResourceRoot::registerSelf(const QString &f)
+{
+    bool fromMM = false;
+    uchar *data = 0;
+    unsigned int data_len = 0;
+
+#ifdef QT_USE_MMAP
+    int fd = QT_OPEN(QFile::encodeName(f), O_RDONLY,
 #if defined(Q_OS_WIN)
-                         _S_IREAD | _S_IWRITE
+                     _S_IREAD | _S_IWRITE
 #else
-                         0666
+                     0666
 #endif
-            );
-        if (fd >= 0) {
-            QT_STATBUF st;
-            if (!QT_FSTAT(fd, &st)) {
-                uchar *ptr;
-                ptr = reinterpret_cast<uchar *>(
-                    mmap(0, st.st_size,             // any address, whole file
-                         PROT_READ,                 // read-only memory
-                         MAP_FILE | MAP_PRIVATE,    // swap-backed map from file
-                         fd, 0));                   // from offset 0 of fd
-                if (ptr && ptr != reinterpret_cast<uchar *>(MAP_FAILED)) {
-                    data = ptr;
-                    data_len = st.st_size;
-                    fromMM = true;
-                }
+                     );
+    if (fd >= 0) {
+        QT_STATBUF st;
+        if (!QT_FSTAT(fd, &st)) {
+            uchar *ptr;
+            ptr = reinterpret_cast<uchar *>(
+                        mmap(0, st.st_size,             // any address, whole file
+                             PROT_READ,                 // read-only memory
+                             MAP_FILE | MAP_PRIVATE,    // swap-backed map from file
+                             fd, 0));                   // from offset 0 of fd
+            if (ptr && ptr != reinterpret_cast<uchar *>(MAP_FAILED)) {
+                data = ptr;
+                data_len = st.st_size;
+                fromMM = true;
             }
-            ::close(fd);
         }
-#endif // QT_USE_MMAP
-        if(!data) {
-            QFile file(f);
-            if (!file.exists())
-                return false;
-            data_len = file.size();
-            data = new uchar[data_len];
-
-            bool ok = false;
-            if (file.open(QIODevice::ReadOnly))
-                ok = (data_len == (uint)file.read((char*)data, data_len));
-            if (!ok) {
-                delete [] data;
-                data = 0;
-                data_len = 0;
-                return false;
-            }
-            fromMM = false;
-        }
-        if (data && QDynamicBufferResourceRoot::registerSelf(data, data_len)) {
-            if(fromMM) {
-                unmapPointer = data;
-                unmapLength = data_len;
-            }
-            fileName = f;
-            return true;
-        }
-        return false;
+        ::close(fd);
     }
-};
+#endif // QT_USE_MMAP
+    if (!data) {
+        QFile file(f);
+        if (!file.exists())
+            return false;
+        data_len = file.size();
+        data = new uchar[data_len];
+
+        bool ok = false;
+        if (file.open(QIODevice::ReadOnly))
+            ok = (data_len == (uint)file.read((char*)data, data_len));
+        if (!ok) {
+            delete [] data;
+            data = 0;
+            data_len = 0;
+            return false;
+        }
+        fromMM = false;
+    }
+    if (data && QDynamicBufferResourceRoot::registerSelf(data, data_len)) {
+        if (fromMM) {
+            unmapPointer = data;
+            unmapLength = data_len;
+        }
+        fileName = f;
+        return true;
+    }
+    return false;
+}
 
 static QString qt_resource_fixResourceRoot(QString r) {
     if(!r.isEmpty()) {
