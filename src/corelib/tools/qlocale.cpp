@@ -1373,8 +1373,10 @@ float QLocale::toFloat(const QString &s, bool *ok) const
 }
 
 /*!
-    Returns the double represented by the localized string \a s, or
-    0.0 if the conversion failed.
+    Returns the double represented by the localized string \a s.
+
+    Returns an infinity if the conversion overflows or 0.0 if the
+    conversion fails for any other reason (e.g. underflow).
 
     If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
@@ -1542,8 +1544,10 @@ float QLocale::toFloat(const QStringRef &s, bool *ok) const
 }
 
 /*!
-    Returns the double represented by the localized string \a s, or
-    0.0 if the conversion failed.
+    Returns the double represented by the localized string \a s.
+
+    Returns an infinity if the conversion overflows or 0.0 if the
+    conversion fails for any other reason (e.g. underflow).
 
     If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
@@ -1711,8 +1715,10 @@ float QLocale::toFloat(QStringView s, bool *ok) const
 }
 
 /*!
-    Returns the double represented by the localized string \a s, or
-    0.0 if the conversion failed.
+    Returns the double represented by the localized string \a s.
+
+    Returns an infinity if the conversion overflows or 0.0 if the
+    conversion fails for any other reason (e.g. underflow).
 
     If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.

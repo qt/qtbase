@@ -83,7 +83,7 @@ private slots:
     void matchingLocales();
     void stringToDouble_data();
     void stringToDouble();
-    void stringToFloat_data() { stringToDouble_data(); }
+    void stringToFloat_data();
     void stringToFloat();
     void doubleToString_data();
     void doubleToString();
@@ -155,6 +155,7 @@ private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
     QString m_sysapp;
     bool europeanTimeZone;
+    void toReal_data();
 
     class TransientLocale
     {
@@ -679,7 +680,7 @@ void tst_QLocale::unixLocaleName()
 #undef TEST_NAME
 }
 
-void tst_QLocale::stringToDouble_data()
+void tst_QLocale::toReal_data()
 {
     QTest::addColumn<QString>("locale_name");
     QTest::addColumn<QString>("num_str");
@@ -801,6 +802,32 @@ void tst_QLocale::stringToDouble_data()
     QTest::newRow("de_DE 9.876543,0e--2") << QString("de_DE") << QString("9.876543,0e")+QChar(8722)+QString("2")   << false << 0.0;
 }
 
+void tst_QLocale::stringToDouble_data()
+{
+    toReal_data();
+    if (std::numeric_limits<double>::has_infinity) {
+        double huge = std::numeric_limits<double>::infinity();
+        QTest::newRow("C inf") << QString("C") << QString("inf") << true << huge;
+        QTest::newRow("C +inf") << QString("C") << QString("+inf") << true << +huge;
+        QTest::newRow("C -inf") << QString("C") << QString("-inf") << true << -huge;
+        // Overflow:
+        QTest::newRow("C huge") << QString("C") << QString("2e308") << false << huge;
+        QTest::newRow("C -huge") << QString("C") << QString("-2e308") << false << -huge;
+    }
+    if (std::numeric_limits<double>::has_quiet_NaN)
+        QTest::newRow("C qnan") << QString("C") << QString("NaN") << true << std::numeric_limits<double>::quiet_NaN();
+
+    // In range (but outside float's range):
+    QTest::newRow("C big") << QString("C") << QString("3.5e38") << true << 3.5e38;
+    QTest::newRow("C -big") << QString("C") << QString("-3.5e38") << true << -3.5e38;
+    QTest::newRow("C small") << QString("C") << QString("1e-45") << true << 1e-45;
+    QTest::newRow("C -small") << QString("C") << QString("-1e-45") << true << -1e-45;
+
+    // Underflow:
+    QTest::newRow("C tiny") << QString("C") << QString("2e-324") << false << 0.;
+    QTest::newRow("C -tiny") << QString("C") << QString("-2e-324") << false << 0.;
+}
+
 void tst_QLocale::stringToDouble()
 {
 #define MY_DOUBLE_EPSILON (2.22045e-16) // 1/2^{52}; double has a 53-bit mantissa
@@ -825,26 +852,31 @@ void tst_QLocale::stringToDouble()
         QCOMPARE(ok, good);
     }
 
-    if (ok) {
+    if (ok || std::isinf(num)) {
         // First use fuzzy-compare, then a more precise check:
         QCOMPARE(d, num);
-        double diff = d - num;
-        if (diff < 0)
-            diff = -diff;
-        QVERIFY(diff <= MY_DOUBLE_EPSILON);
+        if (std::isfinite(num)) {
+            double diff = d > num ? d - num : num - d;
+            QVERIFY(diff <= MY_DOUBLE_EPSILON);
+        }
     }
 
     d = locale.toDouble(num_strRef, &ok);
     QCOMPARE(ok, good);
 
-    if (ok) {
+    if (ok || std::isinf(num)) {
         QCOMPARE(d, num);
-        double diff = d - num;
-        if (diff < 0)
-            diff = -diff;
-        QVERIFY(diff <= MY_DOUBLE_EPSILON);
+        if (std::isfinite(num)) {
+            double diff = d > num ? d - num : num - d;
+            QVERIFY(diff <= MY_DOUBLE_EPSILON);
+        }
     }
 #undef MY_DOUBLE_EPSILON
+}
+
+void tst_QLocale::stringToFloat_data()
+{
+    toReal_data();
 }
 
 void tst_QLocale::stringToFloat()
