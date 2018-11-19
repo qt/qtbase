@@ -41,6 +41,7 @@
 
 #include <QByteArray>
 #include <QOpenGLContext>
+#include <QtPlatformHeaders/QGLXNativeContext>
 
 #include <X11/Xlib.h>
 #include <GL/glx.h>
@@ -228,6 +229,9 @@ QOffscreenX11GLXContext::QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGL
         d->window = createDummyWindow(x11, visualInfo);
         XFree(visualInfo);
     }
+    if (d->context)
+        context->setNativeHandle(QVariant::fromValue<QGLXNativeContext>(QGLXNativeContext(d->context)));
+
 }
 
 QOffscreenX11GLXContext::~QOffscreenX11GLXContext()
