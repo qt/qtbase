@@ -693,6 +693,8 @@ void tst_QLocale::toReal_data()
     QTest::newRow("C 1.234e-10")       << QString("C") << QString("1.234e-10")       << true  << 1.234e-10;
     QTest::newRow("C 1.234E10")        << QString("C") << QString("1.234E10")        << true  << 1.234e10;
     QTest::newRow("C 1e10")            << QString("C") << QString("1e10")            << true  << 1.0e10;
+    QTest::newRow("C 1e310")           << QString("C") << QString("1e310")           << false << std::numeric_limits<double>::infinity();
+    QTest::newRow("C 1E310")           << QString("C") << QString("1E310")           << false << std::numeric_limits<double>::infinity();
     QTest::newRow("C  1")              << QString("C") << QString(" 1")              << true  << 1.0;
     QTest::newRow("C   1")             << QString("C") << QString("  1")             << true  << 1.0;
     QTest::newRow("C 1 ")              << QString("C") << QString("1 ")              << true  << 1.0;
