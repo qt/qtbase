@@ -80,17 +80,7 @@ public:
     bool isValid() const;
 
 private:
-    // ### Qt6: Keep the pointer and remove the rest.
-    QString unused1;
-    QString unused2;
-    struct Unused {
-        ErrorType unused3;
-        int unused4;
-    };
-    union {
-        QSqlErrorPrivate *d;
-        Unused unused5;
-    };
+    QSqlErrorPrivate *d = nullptr;
 };
 
 Q_DECLARE_SHARED(QSqlError)

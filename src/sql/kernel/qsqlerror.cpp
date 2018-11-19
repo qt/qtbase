@@ -128,9 +128,8 @@ public:
 */
 QSqlError::QSqlError(const QString &driverText, const QString &databaseText,
                      ErrorType type, const QString &code)
+    : d(new QSqlErrorPrivate)
 {
-    d = new QSqlErrorPrivate;
-
     d->driverError = driverText;
     d->databaseError = databaseText;
     d->errorType = type;
@@ -142,10 +141,8 @@ QSqlError::QSqlError(const QString &driverText, const QString &databaseText,
     Creates a copy of \a other.
 */
 QSqlError::QSqlError(const QSqlError& other)
+    : d(new QSqlErrorPrivate(*other.d))
 {
-    d = new QSqlErrorPrivate;
-
-    *d = *other.d;
 }
 
 /*!
