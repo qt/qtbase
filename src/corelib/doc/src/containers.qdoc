@@ -171,8 +171,9 @@
 
     The values stored in the various containers can be of any
     \e{assignable data type}. To qualify, a type must provide a
-    default constructor, a copy constructor, and an assignment
-    operator. This covers most data types you are likely to want to
+    copy constructor, and an assignment operator. For some
+    operations a default constructor is also required. This
+    covers most data types you are likely to want to
     store in a container, including basic types such as \c int and \c
     double, pointer types, and Qt data types such as QString, QDate,
     and QTime, but it doesn't cover QObject or any QObject subclass
