@@ -48,6 +48,8 @@
 #include <QtCore/qstringlist.h>
 #endif
 
+#include <initializer_list>
+
 QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT uint qHash(const QUrlQuery &key, uint seed = 0) Q_DECL_NOTHROW;
@@ -59,6 +61,13 @@ public:
     QUrlQuery();
     explicit QUrlQuery(const QUrl &url);
     explicit QUrlQuery(const QString &queryString);
+    QUrlQuery(std::initializer_list<QPair<QString, QString>> list)
+        : QUrlQuery()
+    {
+        for (const QPair<QString, QString> &item : list)
+            addQueryItem(item.first, item.second);
+    }
+
     QUrlQuery(const QUrlQuery &other);
     QUrlQuery &operator=(const QUrlQuery &other);
 #ifdef Q_COMPILER_RVALUE_REFS

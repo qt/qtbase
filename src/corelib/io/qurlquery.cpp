@@ -145,6 +145,14 @@ QT_BEGIN_NAMESPACE
     \since 5.2
 */
 
+/*!
+    \fn QUrlQuery(std::initializer_list<QPair<QString, QString>> list)
+
+    \since 5.13
+
+    Constructs a QUrlQuery object from the \a list of key/value pair.
+*/
+
 typedef QList<QPair<QString, QString> > Map;
 
 class QUrlQueryPrivate : public QSharedData
