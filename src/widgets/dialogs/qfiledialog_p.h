@@ -187,7 +187,7 @@ public:
 #endif
     }
 
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
     void saveSettings();
     bool restoreFromSettings();
 #endif

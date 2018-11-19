@@ -42,7 +42,9 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QVariant>
 #include <QtCore/QSharedData>
+#if QT_CONFIG(settings)
 #include <QtCore/QSettings>
+#endif
 #include <QtCore/QUrl>
 #include <QtCore/QVector>
 #include <QtGui/QColor>
@@ -284,7 +286,7 @@ QColorDialogStaticData::QColorDialogStaticData() : customSet(false)
 
 void QColorDialogStaticData::readSettings()
 {
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
     const QSettings settings(QSettings::UserScope, QStringLiteral("QtProject"));
     for (int i = 0; i < int(CustomColorCount); ++i) {
         const QVariant v = settings.value(QLatin1String("Qt/customColors/") + QString::number(i));
@@ -296,7 +298,7 @@ void QColorDialogStaticData::readSettings()
 
 void QColorDialogStaticData::writeSettings() const
 {
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
     if (customSet) {
         const_cast<QColorDialogStaticData*>(this)->customSet = false;
         QSettings settings(QSettings::UserScope, QStringLiteral("QtProject"));

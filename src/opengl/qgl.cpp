@@ -5205,25 +5205,6 @@ void QGLWidgetPrivate::cleanupColormaps()
 {
 }
 
-Q_GLOBAL_STATIC(QString, qt_gl_lib_name)
-
-void qt_set_gl_library_name(const QString& name)
-{
-    qt_gl_lib_name()->operator=(name);
-}
-
-const QString qt_gl_library_name()
-{
-    if (qt_gl_lib_name()->isNull()) {
-# if defined(QT_OPENGL_ES_2)
-        return QLatin1String("GLESv2");
-# else
-        return QLatin1String("GL");
-# endif
-    }
-    return *qt_gl_lib_name();
-}
-
 void QGLContextGroup::addShare(const QGLContext *context, const QGLContext *share) {
     Q_ASSERT(context && share);
     if (context->d_ptr->group == share->d_ptr->group)

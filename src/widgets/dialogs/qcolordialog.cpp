@@ -57,7 +57,9 @@
 #include "qpainter.h"
 #include "qpixmap.h"
 #include "qpushbutton.h"
+#if QT_CONFIG(settings)
 #include "qsettings.h"
+#endif
 #include "qsharedpointer.h"
 #include "qstyle.h"
 #include "qstyleoption.h"

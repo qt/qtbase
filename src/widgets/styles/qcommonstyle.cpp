@@ -102,7 +102,9 @@
 #endif
 #include <qfileinfo.h>
 #include <qdir.h>
+#if QT_CONFIG(settings)
 #include <qsettings.h>
+#endif
 #include <qvariant.h>
 #include <qpixmapcache.h>
 #if QT_CONFIG(animation)

@@ -41,7 +41,9 @@
 #include "qdir.h"
 #include "qstringlist.h"
 #include "qfile.h"
+#if QT_CONFIG(settings)
 #include "qsettings.h"
+#endif
 #include "qlibraryinfo.h"
 #include "qscopedpointer.h"
 
@@ -67,7 +69,7 @@ QT_BEGIN_NAMESPACE
 
 extern void qDumpCPUFeatures(); // in qsimd.cpp
 
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
 
 struct QLibrarySettings
 {
@@ -204,7 +206,7 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
     return 0;     //no luck
 }
 
-#endif // QT_NO_SETTINGS
+#endif // settings
 
 /*!
     \class QLibraryInfo
@@ -464,7 +466,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 #endif // QT_BUILD_QMAKE, started inside location !
     QString ret;
     bool fromConf = false;
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
 #ifdef QT_BUILD_QMAKE
     // Logic for choosing the right data source: if EffectivePaths are requested
     // and qt.conf with that section is present, use it, otherwise fall back to
@@ -547,7 +549,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
             ret = QDir::fromNativeSeparators(ret);
         }
     }
-#endif // QT_NO_SETTINGS
+#endif // settings
 
 #ifndef QT_BUILD_QMAKE_BOOTSTRAP
     if (!fromConf) {
@@ -646,7 +648,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 
 QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
 {
-#if !defined(QT_BUILD_QMAKE) && !defined(QT_NO_SETTINGS)
+#if !defined(QT_BUILD_QMAKE) && QT_CONFIG(settings)
     QScopedPointer<const QSettings> settings(QLibraryInfoPrivate::findConfiguration());
     if (!settings.isNull()) {
         const QString key = QLatin1String(platformsSection)
@@ -657,7 +659,7 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
     }
 #else
     Q_UNUSED(platformName);
-#endif // !QT_BUILD_QMAKE && !QT_NO_SETTINGS
+#endif // !QT_BUILD_QMAKE && settings
     return QStringList();
 }
 
