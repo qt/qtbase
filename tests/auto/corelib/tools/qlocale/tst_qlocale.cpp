@@ -877,6 +877,28 @@ void tst_QLocale::stringToDouble()
 void tst_QLocale::stringToFloat_data()
 {
     toReal_data();
+    if (std::numeric_limits<float>::has_infinity) {
+        double huge = std::numeric_limits<float>::infinity();
+        QTest::newRow("C inf") << QString("C") << QString("inf") << true << huge;
+        QTest::newRow("C +inf") << QString("C") << QString("+inf") << true << +huge;
+        QTest::newRow("C -inf") << QString("C") << QString("-inf") << true << -huge;
+        // Overflow float, but not double:
+        QTest::newRow("C big") << QString("C") << QString("3.5e38") << false << huge;
+        QTest::newRow("C -big") << QString("C") << QString("-3.5e38") << false << -huge;
+        // Overflow double, too:
+        QTest::newRow("C huge") << QString("C") << QString("2e308") << false << huge;
+        QTest::newRow("C -huge") << QString("C") << QString("-2e308") << false << -huge;
+    }
+    if (std::numeric_limits<float>::has_quiet_NaN)
+        QTest::newRow("C qnan") << QString("C") << QString("NaN") << true << double(std::numeric_limits<float>::quiet_NaN());
+
+    // Underflow float, but not double:
+    QTest::newRow("C small") << QString("C") << QString("1e-45") << false << 0.;
+    QTest::newRow("C -small") << QString("C") << QString("-1e-45") << false << 0.;
+
+    // Underflow double, too:
+    QTest::newRow("C tiny") << QString("C") << QString("2e-324") << false << 0.;
+    QTest::newRow("C -tiny") << QString("C") << QString("-2e-324") << false << 0.;
 }
 
 void tst_QLocale::stringToFloat()
@@ -904,24 +926,24 @@ void tst_QLocale::stringToFloat()
         QCOMPARE(ok, good);
     }
 
-    if (ok) {
+    if (ok || std::isinf(fnum)) {
         // First use fuzzy-compare, then a more precise check:
         QCOMPARE(f, fnum);
-        float diff = f - fnum;
-        if (diff < 0)
-            diff = -diff;
-        QVERIFY(diff <= MY_FLOAT_EPSILON);
+        if (std::isfinite(fnum)) {
+            float diff = f > fnum ? f - fnum : fnum - f;
+            QVERIFY(diff <= MY_FLOAT_EPSILON);
+        }
     }
 
     f = locale.toFloat(num_strRef, &ok);
     QCOMPARE(ok, good);
 
-    if (ok) {
+    if (ok || std::isinf(fnum)) {
         QCOMPARE(f, fnum);
-        float diff = f - fnum;
-        if (diff < 0)
-            diff = -diff;
-        QVERIFY(diff <= MY_FLOAT_EPSILON);
+        if (std::isfinite(fnum)) {
+            float diff = f > fnum ? f - fnum : fnum - f;
+            QVERIFY(diff <= MY_FLOAT_EPSILON);
+        }
     }
 #undef MY_FLOAT_EPSILON
 }

@@ -1353,8 +1353,10 @@ qulonglong QLocale::toULongLong(const QString &s, bool *ok) const
 }
 
 /*!
-    Returns the float represented by the localized string \a s, or 0.0
-    if the conversion failed.
+    Returns the float represented by the localized string \a s.
+
+    Returns an infinity if the conversion overflows or 0.0 if the
+    conversion fails for any other reason (e.g. underflow).
 
     If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
@@ -1522,8 +1524,10 @@ qulonglong QLocale::toULongLong(const QStringRef &s, bool *ok) const
 }
 
 /*!
-    Returns the float represented by the localized string \a s, or 0.0
-    if the conversion failed.
+    Returns the float represented by the localized string \a s.
+
+    Returns an infinity if the conversion overflows or 0.0 if the
+    conversion fails for any other reason (e.g. underflow).
 
     If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
@@ -1696,8 +1700,10 @@ qulonglong QLocale::toULongLong(QStringView s, bool *ok) const
 }
 
 /*!
-    Returns the float represented by the localized string \a s, or 0.0
-    if the conversion failed.
+    Returns the float represented by the localized string \a s.
+
+    Returns an infinity if the conversion overflows or 0.0 if the
+    conversion fails for any other reason (e.g. underflow).
 
     If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
