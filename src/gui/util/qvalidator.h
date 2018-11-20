@@ -69,6 +69,7 @@ public:
         Intermediate,
         Acceptable
     };
+    Q_ENUM(State)
 
     void setLocale(const QLocale &locale);
     QLocale locale() const;
