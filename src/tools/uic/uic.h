@@ -91,7 +91,8 @@ public:
 
 private:
     // copyright header
-    void writeCopyrightHeader(DomUI *ui);
+    void writeCopyrightHeaderCpp(const DomUI *ui) const;
+    void writeCopyrightHeaderPython(const DomUI *ui) const;
     DomUI *parseUiFile(QXmlStreamReader &reader);
 
     // header protection

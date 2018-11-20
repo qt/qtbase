@@ -71,7 +71,7 @@ namespace {
     // Write a statement to create a spacer item.
     void writeSpacerItem(const DomSpacer *node, QTextStream &output) {
         const QHash<QString, DomProperty *> properties = propertyMap(node->elementProperty());
-                output << "new QSpacerItem(";
+                output << language::operatorNew << "QSpacerItem(";
 
         int w = 0;
         int h = 0;
@@ -495,8 +495,9 @@ void WriteInitialization::acceptUI(DomUI *node)
 
     const QString widgetClassName = node->elementWidget()->attributeClass();
 
-    m_output << m_option.indent << "void " << "setupUi(" << widgetClassName << " *" << varName << ")\n"
-           << m_option.indent << "{\n";
+    const QString parameterType = widgetClassName + QLatin1String(" *");
+    m_output << m_option.indent
+             << language::startFunctionDefinition1("setupUi", parameterType, varName, m_option.indent);
 
     const QStringList connections = m_uic->databaseInfo()->connections();
     for (int i=0; i<connections.size(); ++i) {
@@ -550,7 +551,7 @@ void WriteInitialization::acceptUI(DomUI *node)
     if (m_option.autoConnection)
         m_output << "\n" << m_indent << "QMetaObject::connectSlotsByName(" << varName << ");\n";
 
-    m_output << m_option.indent << "} // setupUi\n\n";
+    m_output << m_option.indent << language::endFunctionDefinition("setupUi");
 
     if (!m_mainFormUsedInRetranslateUi) {
         m_refreshInitialization += m_indent;
@@ -559,10 +560,10 @@ void WriteInitialization::acceptUI(DomUI *node)
         m_refreshInitialization += QLatin1String(");\n");
     }
 
-    m_output << m_option.indent << "void " << "retranslateUi(" << widgetClassName << " *" << varName << ")\n"
-           << m_option.indent << "{\n"
+    m_output << m_option.indent
+           << language::startFunctionDefinition1("retranslateUi", parameterType, varName, m_option.indent)
            << m_refreshInitialization
-           << m_option.indent << "} // retranslateUi\n\n";
+           << m_option.indent << language::endFunctionDefinition("retranslateUi");
 
     m_layoutChain.pop();
     m_widgetChain.pop();
@@ -612,8 +613,9 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     const auto *cwi = m_uic->customWidgetsInfo();
 
     if (m_widgetChain.size() != 1) {
-        m_output << m_indent << varName << " = new " << cwi->realClassName(className)
-            << '(' << parentWidget << ");\n";
+        m_output << m_indent << varName << " = " << language::operatorNew
+            << language::fixClassName(cwi->realClassName(className))
+            << '(' << parentWidget << ')' << language::eol;
     }
 
     parentWidget = savedParentWidget;
@@ -846,7 +848,8 @@ void WriteInitialization::addButtonGroup(const DomWidget *buttonNode, const QStr
         m_output << m_indent;
         if (createGroupOnTheFly)
             m_output << className << " *";
-        m_output << groupName << " = new " << className << '(' << m_mainFormVarName << ");\n";
+        m_output << groupName << " = " << language::operatorNew
+            << className << '(' << m_mainFormVarName << ')' << language::eol;
         m_buttonGroups.insert(groupName);
         writeProperties(groupName, className, group->elementProperty());
     }
@@ -863,7 +866,7 @@ void WriteInitialization::acceptLayout(DomLayout *node)
 
     bool isGroupBox = false;
 
-    m_output << m_indent << varName << " = new " << className << '(';
+    m_output << m_indent << varName << " = " << language::operatorNew << className << '(';
 
     if (!m_layoutChain.top() && !isGroupBox)
         m_output << m_driver->findOrInsertWidget(m_widgetChain.top());
@@ -1037,7 +1040,8 @@ void WriteInitialization::acceptActionGroup(DomActionGroup *node)
     if (m_actionGroupChain.top())
         varName = m_driver->findOrInsertActionGroup(m_actionGroupChain.top());
 
-    m_output << m_indent << actionName << " = new QActionGroup(" << varName << ");\n";
+    m_output << m_indent << actionName << " = " << language::operatorNew
+        << "QActionGroup(" << varName << ");\n";
     writeProperties(actionName, QLatin1String("QActionGroup"), node->elementProperty());
 
     m_actionGroupChain.push(node);
@@ -1057,7 +1061,8 @@ void WriteInitialization::acceptAction(DomAction *node)
     if (m_actionGroupChain.top())
         varName = m_driver->findOrInsertActionGroup(m_actionGroupChain.top());
 
-    m_output << m_indent << actionName << " = new QAction(" << varName << ");\n";
+    m_output << m_indent << actionName << " = " << language::operatorNew
+        << "QAction(" << varName << ')' << language::eol;
     writeProperties(actionName, QLatin1String("QAction"), node->elementProperty());
 }
 
@@ -1322,8 +1327,8 @@ void WriteInitialization::writeProperties(const QString &varName,
         case DomProperty::Palette: {
             const DomPalette *pal = p->elementPalette();
             const QString paletteName = m_driver->unique(QLatin1String("palette"));
-            m_output << m_indent << "QPalette " << paletteName << ";\n";
-
+            m_output << m_indent << language::stackVariable("QPalette", paletteName)
+                << language::eol;
             writeColorGroup(pal->elementActive(), QLatin1String("QPalette::Active"), paletteName);
             writeColorGroup(pal->elementInactive(), QLatin1String("QPalette::Inactive"), paletteName);
             writeColorGroup(pal->elementDisabled(), QLatin1String("QPalette::Disabled"), paletteName);
@@ -1512,20 +1517,15 @@ QString  WriteInitialization::writeSizePolicy(const DomSizePolicy *sp)
     const QString spName = m_driver->unique(QLatin1String("sizePolicy"));
     m_sizePolicyNameMap.insert(sizePolicyHandle, spName);
 
-    m_output << m_indent << "QSizePolicy " << spName;
-    do {
-        if (sp->hasElementHSizeType() && sp->hasElementVSizeType()) {
-            m_output << "(QSizePolicy::" << language::sizePolicy(sp->elementHSizeType())
-                << ", QSizePolicy::" << language::sizePolicy(sp->elementVSizeType()) << ");\n";
-            break;
-        }
-        if (sp->hasAttributeHSizeType() && sp->hasAttributeVSizeType()) {
-                m_output << "(QSizePolicy::" << sp->attributeHSizeType() << ", QSizePolicy::"
-                << sp->attributeVSizeType() << ");\n";
-            break;
-        }
-        m_output << ";\n";
-    } while (false);
+    m_output << m_indent << language::stackVariableWithInitParameters("QSizePolicy", spName);
+    if (sp->hasElementHSizeType() && sp->hasElementVSizeType()) {
+        m_output << "QSizePolicy" << language::qualifier << language::sizePolicy(sp->elementHSizeType())
+            << ", QSizePolicy" << language::qualifier << language::sizePolicy(sp->elementVSizeType());
+    } else if (sp->hasAttributeHSizeType() && sp->hasAttributeVSizeType()) {
+        m_output << "QSizePolicy::" << sp->attributeHSizeType() << ", QSizePolicy::"
+            << sp->attributeVSizeType();
+    }
+    m_output << ')' << language::eol;
 
     m_output << m_indent << spName << ".setHorizontalStretch("
         << sp->elementHorStretch() << ");\n";
@@ -1549,7 +1549,8 @@ QString WriteInitialization::writeFontProperties(const DomFont *f)
     const QString fontName = m_driver->unique(QLatin1String("font"));
     m_fontPropertiesNameMap.insert(FontHandle(f), fontName);
 
-    m_output << m_indent << "QFont " << fontName << ";\n";
+    m_output << m_indent << language::stackVariable("QFont", fontName)
+        << language::eol;
     if (f->hasElementFamily() && !f->elementFamily().isEmpty()) {
         m_output << m_indent << fontName << ".setFamily("
             << language::qstring(f->elementFamily(), m_dindent) << ");\n";
@@ -2512,7 +2513,8 @@ QString WriteInitialization::Item::writeSetupUi(const QString &parent, Item::Emp
     bool generateMultiDirective = false;
     if (emptyItemPolicy == Item::ConstructItemOnly && m_children.isEmpty()) {
         if (m_setupUiData.policy == ItemData::DontGenerate) {
-            m_setupUiStream << m_indent << "new " << m_itemClassName << '(' << parent << ");\n";
+            m_setupUiStream << m_indent << language::operatorNew << m_itemClassName
+                << '(' << parent << ')' << language::eol;
             return QString();
         }
         if (m_setupUiData.policy == ItemData::GenerateWithMultiDirective)
@@ -2523,11 +2525,17 @@ QString WriteInitialization::Item::writeSetupUi(const QString &parent, Item::Emp
         generateMultiDirectiveBegin(m_setupUiStream, m_setupUiData.directives);
 
     const QString uniqueName = m_driver->unique(QLatin1String("__") + m_itemClassName.toLower());
-    m_setupUiStream << m_indent << m_itemClassName << " *" << uniqueName << " = new " << m_itemClassName << '(' << parent << ");\n";
+    m_setupUiStream << m_indent;
+    if (language::language() == Language::Cpp)
+        m_setupUiStream << m_itemClassName << " *";
+    m_setupUiStream << uniqueName
+        << " = " << language::operatorNew << m_itemClassName << '(' << parent
+        << ')' << language::eol;
 
     if (generateMultiDirective) {
         m_setupUiStream << "#else\n";
-        m_setupUiStream << m_indent << "new " << m_itemClassName << '(' << parent << ");\n";
+        m_setupUiStream << m_indent << language::operatorNew << m_itemClassName
+            << '(' << parent << ')' << language::eol;
         generateMultiDirectiveEnd(m_setupUiStream, m_setupUiData.directives);
     }
 

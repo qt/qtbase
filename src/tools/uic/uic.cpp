@@ -35,6 +35,10 @@
 
 #include "cppwriteincludes.h"
 #include "cppwritedeclaration.h"
+#include <pythonwritedeclaration.h>
+#include <pythonwriteimports.h>
+
+#include <language.h>
 
 #include <qxmlstream.h>
 #include <qfileinfo.h>
@@ -103,7 +107,7 @@ bool Uic::printDependencies()
     return true;
 }
 
-void Uic::writeCopyrightHeader(DomUI *ui)
+void Uic::writeCopyrightHeaderCpp(const DomUI *ui) const
 {
     QString comment = ui->elementComment();
     if (!comment.isEmpty())
@@ -116,6 +120,48 @@ void Uic::writeCopyrightHeader(DomUI *ui)
     out << "**\n";
     out << "** WARNING! All changes made in this file will be lost when recompiling UI file!\n";
     out << "********************************************************************************/\n\n";
+}
+
+// Format existing UI file comments for Python with some smartness : Replace all
+// leading C++ comment characters by '#' or prepend '#' if needed.
+
+static inline bool isCppCommentChar(QChar c)
+{
+    return  c == QLatin1Char('/') || c == QLatin1Char('*');
+}
+
+static int leadingCppCommentCharCount(const QStringRef &s)
+{
+    int i = 0;
+    for (const int size = s.size(); i < size && isCppCommentChar(s.at(i)); ++i) {
+    }
+    return i;
+}
+
+void Uic::writeCopyrightHeaderPython(const DomUI *ui) const
+{
+    QString comment = ui->elementComment();
+    if (!comment.isEmpty()) {
+        const auto lines = comment.splitRef(QLatin1Char('\n'));
+        for (const auto &line : lines) {
+            if (const int leadingCommentChars = leadingCppCommentCharCount(line)) {
+                 out << language::repeat(leadingCommentChars, '#')
+                     << line.right(line.size() - leadingCommentChars);
+            } else {
+                if (!line.startsWith(QLatin1Char('#')))
+                    out << "# ";
+                out << line;
+            }
+            out << '\n';
+        }
+        out << '\n';
+    }
+
+    out << language::repeat(80, '#') << "\n## Form generated from reading UI file '"
+        << QFileInfo(opt.inputFile).fileName()
+        << "'\n##\n## Created by: Qt User Interface Compiler version " << QT_VERSION_STR
+        << "\n##\n## WARNING! All changes made in this file will be lost when recompiling UI file!\n"
+        << language::repeat(80, '#') << "\n\n";
 }
 
 // Check the version with a stream reader at the <ui> element.
@@ -195,15 +241,26 @@ bool Uic::write(QIODevice *in)
 
 bool Uic::write(DomUI *ui)
 {
-    using namespace CPP;
-
     if (!ui || !ui->elementWidget())
         return false;
 
-    if (opt.copyrightHeader)
-        writeCopyrightHeader(ui);
+    const auto lang = language::language();
 
-    if (opt.headerProtection) {
+    if (lang == Language::Python)
+       out << "# -*- coding: utf-8 -*-\n\n";
+
+    if (opt.copyrightHeader) {
+        switch (language::language()) {
+        case Language::Cpp:
+            writeCopyrightHeaderCpp(ui);
+            break;
+        case Language::Python:
+            writeCopyrightHeaderPython(ui);
+            break;
+        }
+    }
+
+    if (opt.headerProtection && lang == Language::Cpp) {
         writeHeaderProtectionStart();
         out << "\n";
     }
@@ -218,13 +275,25 @@ bool Uic::write(DomUI *ui)
 
     info.acceptUI(ui);
     cWidgetsInfo.acceptUI(ui);
-    WriteIncludes writeIncludes(this);
-    writeIncludes.acceptUI(ui);
 
-    Validator(this).acceptUI(ui);
-    WriteDeclaration(this).acceptUI(ui);
+    switch (language::language()) {
+    case Language::Cpp: {
+        CPP::WriteIncludes writeIncludes(this);
+        writeIncludes.acceptUI(ui);
+        Validator(this).acceptUI(ui);
+        CPP::WriteDeclaration(this).acceptUI(ui);
+    }
+        break;
+    case Language::Python: {
+        Python::WriteImports writeImports(this);
+        writeImports.acceptUI(ui);
+        Validator(this).acceptUI(ui);
+        Python::WriteDeclaration(this).acceptUI(ui);
+    }
+        break;
+    }
 
-    if (opt.headerProtection)
+    if (opt.headerProtection && lang == Language::Cpp)
         writeHeaderProtectionEnd();
 
     return true;

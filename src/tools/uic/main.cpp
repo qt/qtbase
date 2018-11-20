@@ -29,6 +29,7 @@
 #include "uic.h"
 #include "option.h"
 #include "driver.h"
+#include <language.h>
 
 #include <qfile.h>
 #include <qdir.h>
@@ -96,7 +97,7 @@ int runUic(int argc, char *argv[])
 
     QCommandLineOption generatorOption(QStringList() << QStringLiteral("g") << QStringLiteral("generator"));
     generatorOption.setDescription(QStringLiteral("Select generator."));
-    generatorOption.setValueName(QStringLiteral("java|cpp"));
+    generatorOption.setValueName(QStringLiteral("python|cpp"));
     parser.addOption(generatorOption);
 
     QCommandLineOption idBasedOption(QStringLiteral("idbased"));
@@ -115,6 +116,13 @@ int runUic(int argc, char *argv[])
     driver.option().postfix = parser.value(postfixOption);
     driver.option().translateFunction = parser.value(translateOption);
     driver.option().includeFile = parser.value(includeOption);
+
+    Language language = Language::Cpp;
+    if (parser.isSet(generatorOption)) {
+        if (parser.value(generatorOption).compare(QLatin1String("python")) == 0)
+            language = Language::Python;
+    }
+    language::setLanguage(language);
 
     if (parser.isSet(noStringLiteralOption))
         fprintf(stderr, "The -s, --no-stringliteral option is deprecated and it won't take any effect.\n");
