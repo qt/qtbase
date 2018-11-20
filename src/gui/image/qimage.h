@@ -196,6 +196,8 @@ public:
     Q_REQUIRED_RESULT QImage convertToFormat(Format f, const QVector<QRgb> &colorTable, Qt::ImageConversionFlags flags = Qt::AutoColor) const;
     bool reinterpretAsFormat(Format f);
 
+    void convertTo(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor);
+
     int width() const;
     int height() const;
     QSize size() const;

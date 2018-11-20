@@ -2243,6 +2243,29 @@ bool QImage::reinterpretAsFormat(Format format)
 }
 
 /*!
+    \since 5.13
+
+    Detach and convert the image to the given \a format in place.
+
+    The specified image conversion \a flags control how the image data
+    is handled during the conversion process.
+
+    \sa convertToFormat()
+*/
+
+void QImage::convertTo(Format f, Qt::ImageConversionFlags flags)
+{
+    if (!d || f == QImage::Format_Invalid)
+        return;
+
+    detach();
+    if (convertToFormat_inplace(f, flags))
+        return;
+
+    *this = convertToFormat_helper(f, flags);
+}
+
+/*!
     \fn bool QImage::valid(const QPoint &pos) const
 
     Returns \c true if \a pos is a valid coordinate pair within the
