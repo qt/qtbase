@@ -1447,6 +1447,56 @@ static bool convert_RGBA64PM_to_RGBA64_inplace(QImageData *data, Qt::ImageConver
     return true;
 }
 
+static void convert_gray16_to_RGBA64(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
+{
+    Q_ASSERT(src->format == QImage::Format_Grayscale16);
+    Q_ASSERT(dest->format == QImage::Format_RGBA64 || dest->format == QImage::Format_RGBX64 ||
+             dest->format == QImage::Format_RGBA64_Premultiplied);
+    Q_ASSERT(src->width == dest->width);
+    Q_ASSERT(src->height == dest->height);
+
+    const qsizetype sbpl = src->bytes_per_line;
+    const qsizetype dbpl = dest->bytes_per_line;
+    const uchar *src_data = src->data;
+    uchar *dest_data = dest->data;
+
+    for (int i = 0; i < src->height; ++i) {
+        const quint16 *src_line = reinterpret_cast<const quint16 *>(src_data);
+        QRgba64 *dest_line = reinterpret_cast<QRgba64 *>(dest_data);
+        for (int j = 0; j < src->width; ++j) {
+            quint16 s = src_line[j];
+            dest_line[j] = qRgba64(s, s, s, 0xFFFF);
+        }
+        src_data += sbpl;
+        dest_data += dbpl;
+    }
+}
+
+static void convert_RGBA64_to_gray16(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
+{
+    Q_ASSERT(dest->format == QImage::Format_Grayscale16);
+    Q_ASSERT(src->format == QImage::Format_RGBX64 ||
+             src->format == QImage::Format_RGBA64_Premultiplied);
+    Q_ASSERT(src->width == dest->width);
+    Q_ASSERT(src->height == dest->height);
+
+    const qsizetype sbpl = src->bytes_per_line;
+    const qsizetype dbpl = dest->bytes_per_line;
+    const uchar *src_data = src->data;
+    uchar *dest_data = dest->data;
+
+    for (int i = 0; i < src->height; ++i) {
+        const QRgba64 *src_line = reinterpret_cast<const QRgba64 *>(src_data);
+        quint16 *dest_line = reinterpret_cast<quint16 *>(dest_data);
+        for (int j = 0; j < src->width; ++j) {
+            QRgba64 s = src_line[j].unpremultiplied();
+            dest_line[j] = qGray(s.red(), s.green(), s.blue());
+        }
+        src_data += sbpl;
+        dest_data += dbpl;
+    }
+}
+
 static QVector<QRgb> fix_color_table(const QVector<QRgb> &ctbl, QImage::Format format)
 {
     QVector<QRgb> colorTable = ctbl;
@@ -2291,7 +2341,7 @@ static bool convert_Grayscale8_to_Indexed8_inplace(QImageData *data, Qt::ImageCo
 Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormats] =
 {
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     },
     {
         0,
@@ -2312,7 +2362,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_Mono
 
     {
@@ -2334,7 +2384,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_MonoLSB
 
     {
@@ -2359,7 +2409,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0, 0, 0, 0, 0,
         convert_Indexed8_to_Alpha8,
         convert_Indexed8_to_Grayscale8,
-        0, 0, 0
+        0, 0, 0, 0
     }, // Format_Indexed8
 
     {
@@ -2387,7 +2437,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_RGB_to_RGB30<PixelOrderRGB, false>,
         0,
         0, 0,
-        0, 0, 0
+        0, 0, 0, 0
     }, // Format_RGB32
 
     {
@@ -2417,7 +2467,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0, 0,
         0,
         convert_ARGB32_to_RGBA64<false>,
-        0
+        0, 0
     }, // Format_ARGB32
 
     {
@@ -2442,7 +2492,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_ARGB_to_RGBA,
         0, 0, 0, 0,
         0, 0,
-        0, 0, 0
+        0, 0, 0, 0
     },  // Format_ARGB32_Premultiplied
 
     {
@@ -2464,7 +2514,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB16
 
     {
@@ -2486,7 +2536,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_ARGB8565_Premultiplied
 
     {
@@ -2508,7 +2558,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB666
 
     {
@@ -2530,7 +2580,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_ARGB6666_Premultiplied
 
     {
@@ -2552,7 +2602,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB555
 
     {
@@ -2574,7 +2624,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_ARGB8555_Premultiplied
 
     {
@@ -2597,7 +2647,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_RGB888_to_RGB<true>,
         convert_RGB888_to_RGB<true>,
         convert_RGB888_to_RGB<true>,
-        0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB888
 
     {
@@ -2619,7 +2669,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB444
 
     {
@@ -2640,7 +2690,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_ARGB4444_Premultiplied
     {
         0,
@@ -2667,7 +2717,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_RGB_to_RGB30<PixelOrderRGB, true>,
         0,
         0, 0,
-        0, 0, 0
+        0, 0, 0, 0
     }, // Format_RGBX8888
     {
         0,
@@ -2696,7 +2746,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0, 0,
         0,
         convert_ARGB32_to_RGBA64<true>,
-        0
+        0, 0
     }, // Format_RGBA8888
 
     {
@@ -2718,7 +2768,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGBA8888_Premultiplied
 
     {
@@ -2746,7 +2796,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_BGR30_to_RGB30,
         convert_BGR30_to_RGB30,
         0, 0,
-        0, 0, 0
+        0, 0, 0, 0
     }, // Format_BGR30
     {
         0,
@@ -2773,8 +2823,8 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_A2RGB30_PM_to_RGB30<true>,
         convert_BGR30_to_RGB30,
         0, 0,
-        0, 0, 0
-    }, // Format_BGR30A2_Premultiplied
+        0, 0, 0, 0
+    }, // Format_A2BGR30_Premultiplied
     {
         0,
         0,
@@ -2799,7 +2849,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_BGR30_to_RGB30,
         0,
         convert_passthrough,
-        0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0
     }, // Format_RGB30
     {
         0,
@@ -2826,8 +2876,8 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_A2RGB30_PM_to_RGB30<false>,
         0,
         0, 0,
-        0, 0, 0
-    }, // Format_RGB30A2_Premultiplied
+        0, 0, 0, 0
+    }, // Format_A2RGB30_Premultiplied
     {
         0,
         0,
@@ -2846,7 +2896,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_Alpha8
     {
         0,
@@ -2872,7 +2922,8 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, // self
         convert_passthrough,
-        convert_passthrough
+        convert_passthrough,
+        convert_RGBA64_to_gray16
     }, // Format_RGBX64
     {
         0,
@@ -2898,7 +2949,8 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0, 0,
         convert_RGBA64_to_RGBx64,
         0, // self
-        convert_RGBA64_to_RGBA64PM
+        convert_RGBA64_to_RGBA64PM,
+        0
     }, // Format_RGBA64
     {
         0,
@@ -2927,20 +2979,51 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0, 0,
         convert_RGBA64PM_to_RGBA64<true>,
         convert_RGBA64PM_to_RGBA64<false>,
-        0 // self
-    } // Format_RGBA64_Premultiplied
+        0, // self
+        convert_RGBA64_to_gray16
+    }, // Format_RGBA64_Premultiplied
+    {
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0, 0,
+        convert_gray16_to_RGBA64,
+        convert_gray16_to_RGBA64,
+        convert_gray16_to_RGBA64,
+        0  // self
+    }, // Format_Grayscale16
 };
 
 InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QImage::NImageFormats] =
 {
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     },
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_Mono
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_MonoLSB
     {
         0,
@@ -2964,7 +3047,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         0, 0, 0, 0, 0,
         convert_Indexed8_to_Alpha8_inplace,
         convert_Indexed8_to_Grayscale8_inplace,
-        0, 0, 0
+        0, 0, 0, 0
     }, // Format_Indexed8
     {
         0,
@@ -2991,7 +3074,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         convert_RGB_to_RGB30_inplace<PixelOrderRGB, false>,
         0,
         0, 0,
-        0, 0, 0
+        0, 0, 0, 0
     }, // Format_RGB32
     {
         0,
@@ -3018,7 +3101,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         convert_RGB_to_RGB30_inplace<PixelOrderRGB, false>,
         0,
         0, 0,
-        0, 0, 0
+        0, 0, 0, 0
     }, // Format_ARGB32
     {
         0,
@@ -3042,34 +3125,34 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         convert_ARGB_to_RGBA_inplace<QImage::Format_RGBA8888_Premultiplied>,
         0, 0, 0, 0,
         0, 0,
-        0, 0, 0
+        0, 0, 0, 0
     },  // Format_ARGB32_Premultiplied
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB16
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_ARGB8565_Premultiplied
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB666
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_ARGB6666_Premultiplied
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB555
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_ARGB8555_Premultiplied
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB888
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB444
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_ARGB4444_Premultiplied
     {
         0,
@@ -3096,7 +3179,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         convert_RGB_to_RGB30_inplace<PixelOrderRGB, true>,
         0,
         0, 0,
-        0, 0, 0
+        0, 0, 0, 0
     }, // Format_RGBX8888
     {
         0,
@@ -3123,7 +3206,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         convert_RGB_to_RGB30_inplace<PixelOrderRGB, true>,
         0,
         0, 0,
-        0, 0, 0
+        0, 0, 0, 0
     }, // Format_RGBA8888
     {
         0,
@@ -3145,7 +3228,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGBA8888_Premultiplied
     {
         0,
@@ -3172,7 +3255,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         convert_BGR30_to_RGB30_inplace,
         convert_BGR30_to_A2RGB30_inplace,
         0, 0,
-        0, 0, 0
+        0, 0, 0, 0
     }, // Format_BGR30
     {
         0,
@@ -3198,8 +3281,8 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         0, // self
         convert_A2RGB30_PM_to_RGB30_inplace<true>,
         convert_BGR30_to_RGB30_inplace,
-        0, 0, 0, 0, 0
-    }, // Format_BGR30A2_Premultiplied
+        0, 0, 0, 0, 0, 0
+    }, // Format_A2BGR30_Premultiplied
     {
         0,
         0,
@@ -3224,7 +3307,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         convert_BGR30_to_A2RGB30_inplace,
         0, // self
         convert_passthrough_inplace<QImage::Format_A2RGB30_Premultiplied>,
-        0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0
     }, // Format_RGB30
     {
         0,
@@ -3251,8 +3334,8 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         convert_A2RGB30_PM_to_RGB30_inplace<false>,
         0, // self
         0, 0,
-        0, 0, 0
-    }, // Format_RGB30A2_Premultiplied
+        0, 0, 0, 0
+    }, // Format_A2RGB30_Premultiplied
     {
         0,
         0,
@@ -3276,7 +3359,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         0, 0, 0, 0,
         0, // self
         0,
-        0, 0, 0
+        0, 0, 0, 0
     }, // Format_Alpha8
     {
         0,
@@ -3301,26 +3384,32 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         0, 0, 0, 0,
         0,
         0, // self
-        0, 0, 0
+        0, 0, 0, 0
     }, // Format_Grayscale8
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, // self
         convert_passthrough_inplace<QImage::Format_RGBA64>,
         convert_passthrough_inplace<QImage::Format_RGBA64_Premultiplied>,
+        0
     }, // Format_RGBX64
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         convert_RGBA64_to_RGBx64_inplace,
         0, // self
-        convert_RGBA64_to_RGBA64PM_inplace
+        convert_RGBA64_to_RGBA64PM_inplace,
+        0
     }, // Format_RGBA64
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         convert_RGBA64PM_to_RGBA64_inplace<true>,
         convert_RGBA64PM_to_RGBA64_inplace<false>,
-        0 // self
-    }  // Format_RGBA64_Premultiplied
+        0, // self
+        0
+    }, // Format_RGBA64_Premultiplied
+    {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    }, // Format_Grayscale16
 };
 
 static void qInitImageConversions()

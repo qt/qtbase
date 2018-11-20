@@ -239,7 +239,7 @@ void tst_QImageWriter::writeImage2_data()
         // QLatin1String("jpeg"),
     };
 
-    QImage image0(70, 70, QImage::Format_ARGB32);
+    QImage image0(70, 70, QImage::Format_RGB32);
     image0.fill(QColor(Qt::red).rgb());
 
     QImage::Format imgFormat = QImage::Format_Mono;
@@ -304,10 +304,10 @@ void tst_QImageWriter::writeImage2()
     if (!equalImageContents(written, image)) {
         qDebug() << "image" << image.format() << image.width()
                  << image.height() << image.depth()
-                 << hex << image.pixel(0, 0);
+                 << image.pixelColor(0, 0);
         qDebug() << "written" << written.format() << written.width()
                  << written.height() << written.depth()
-                 << hex << written.pixel(0, 0);
+                 << written.pixelColor(0, 0);
     }
     QVERIFY(equalImageContents(written, image));
 

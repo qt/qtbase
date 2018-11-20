@@ -189,6 +189,7 @@ inline int qt_depthForFormat(QImage::Format format)
     case QImage::Format_RGB16:
     case QImage::Format_RGB444:
     case QImage::Format_ARGB4444_Premultiplied:
+    case QImage::Format_Grayscale16:
         depth = 16;
         break;
     case QImage::Format_RGB666:

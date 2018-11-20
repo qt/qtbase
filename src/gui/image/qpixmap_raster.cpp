@@ -203,6 +203,9 @@ void QRasterPlatformPixmap::fill(const QColor &color)
         pixel = qAlpha(color.rgba());
     } else if (image.format() == QImage::Format_Grayscale8) {
         pixel = qGray(color.rgba());
+    } else if (image.format() == QImage::Format_Grayscale16) {
+        QRgba64 c = color.rgba64();
+        pixel = qGray(c.red(), c.green(), c.blue());
     } else
     {
         pixel = 0;

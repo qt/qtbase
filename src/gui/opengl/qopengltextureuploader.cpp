@@ -104,7 +104,7 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
     const bool isOpenGLES3orBetter = context->isOpenGLES() && context->format().majorVersion() >= 3;
     const bool sRgbBinding = (options & SRgbBindOption);
     Q_ASSERT(isOpenGL12orBetter || context->isOpenGLES());
-    Q_ASSERT((options & (SRgbBindOption | UseRedFor8BitBindOption)) != (SRgbBindOption | UseRedFor8BitBindOption));
+    Q_ASSERT((options & (SRgbBindOption | UseRedForAlphaAndLuminanceBindOption)) != (SRgbBindOption | UseRedForAlphaAndLuminanceBindOption));
 
     switch (image.format()) {
     case QImage::Format_RGB32:
@@ -213,7 +213,7 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
         if (sRgbBinding) {
             // Always needs conversion
             break;
-        } else if (options & UseRedFor8BitBindOption) {
+        } else if (options & UseRedForAlphaAndLuminanceBindOption) {
             externalFormat = internalFormat = GL_RED;
             pixelType = GL_UNSIGNED_BYTE;
             targetFormat = image.format();
@@ -223,7 +223,7 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
         if (sRgbBinding) {
             // Always needs conversion
             break;
-        } else if (options & UseRedFor8BitBindOption) {
+        } else if (options & UseRedForAlphaAndLuminanceBindOption) {
             externalFormat = internalFormat = GL_RED;
             pixelType = GL_UNSIGNED_BYTE;
             targetFormat = image.format();
@@ -243,7 +243,7 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
         if (sRgbBinding) {
             // Always needs conversion
             break;
-        } else if (options & UseRedFor8BitBindOption) {
+        } else if (options & UseRedForAlphaAndLuminanceBindOption) {
             externalFormat = internalFormat = GL_RED;
             pixelType = GL_UNSIGNED_BYTE;
             targetFormat = image.format();
@@ -256,6 +256,26 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
             funcs->glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
             externalFormat = internalFormat = GL_RED;
             pixelType = GL_UNSIGNED_BYTE;
+            targetFormat = image.format();
+        }
+        break;
+    case QImage::Format_Grayscale16:
+        if (sRgbBinding) {
+            // Always needs conversion
+            break;
+        } else if (options & UseRedForAlphaAndLuminanceBindOption) {
+            externalFormat = internalFormat = GL_RED;
+            pixelType = GL_UNSIGNED_SHORT;
+            targetFormat = image.format();
+        } else if (context->isOpenGLES() || context->format().profile() != QSurfaceFormat::CoreProfile) {
+            externalFormat = internalFormat = GL_LUMINANCE;
+            pixelType = GL_UNSIGNED_SHORT;
+            targetFormat = image.format();
+        } else if (funcs->hasOpenGLExtension(QOpenGLExtensions::TextureSwizzle)) {
+            GLint swizzle[4] = { GL_RED, GL_RED, GL_RED, GL_ONE };
+            funcs->glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
+            externalFormat = internalFormat = GL_RED;
+            pixelType = GL_UNSIGNED_SHORT;
             targetFormat = image.format();
         }
         break;

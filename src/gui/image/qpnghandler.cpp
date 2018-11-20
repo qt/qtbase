@@ -266,6 +266,18 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
                 else if (g == 1)
                     image.setColor(0, qRgba(255, 255, 255, 0));
             }
+        } else if (bit_depth == 16
+                   && png_get_channels(png_ptr, info_ptr) == 1
+                   && !png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
+            if (image.size() != QSize(width, height) || image.format() != QImage::Format_Grayscale16) {
+                image = QImage(width, height, QImage::Format_Grayscale16);
+                if (image.isNull())
+                    return;
+            }
+
+            png_read_update_info(png_ptr, info_ptr);
+            if (QSysInfo::ByteOrder == QSysInfo::LittleEndian)
+                png_set_swap(png_ptr);
         } else if (bit_depth == 16) {
             bool hasMask = png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS);
             if (!hasMask)
@@ -687,7 +699,7 @@ QImage::Format QPngHandlerPrivate::readImageFormat()
             if (bit_depth == 1 && png_get_channels(png_ptr, info_ptr) == 1) {
                 format = QImage::Format_Mono;
             } else if (bit_depth == 16) {
-                format = png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) ? QImage::Format_RGBA64 : QImage::Format_RGBX64;
+                format = png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) ? QImage::Format_RGBA64 : QImage::Format_Grayscale16;
             } else if (bit_depth == 8 && !png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
                 format = QImage::Format_Grayscale8;
             } else {
@@ -861,7 +873,8 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int compression_i
         else
             color_type = PNG_COLOR_TYPE_PALETTE;
     }
-    else if (image.format() == QImage::Format_Grayscale8)
+    else if (image.format() == QImage::Format_Grayscale8
+             || image.format() == QImage::Format_Grayscale16)
         color_type = PNG_COLOR_TYPE_GRAY;
     else if (image.hasAlphaChannel())
         color_type = PNG_COLOR_TYPE_RGB_ALPHA;
@@ -877,6 +890,7 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int compression_i
     case QImage::Format_RGBX64:
     case QImage::Format_RGBA64:
     case QImage::Format_RGBA64_Premultiplied:
+    case QImage::Format_Grayscale16:
         bpc = 16;
         break;
     default:
@@ -988,6 +1002,7 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int compression_i
         case QImage::Format_RGBX64:
         case QImage::Format_RGBA64:
         case QImage::Format_RGBA64_Premultiplied:
+        case QImage::Format_Grayscale16:
             png_set_swap(png_ptr);
             break;
         default:
@@ -1018,6 +1033,7 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int compression_i
     case QImage::Format_MonoLSB:
     case QImage::Format_Indexed8:
     case QImage::Format_Grayscale8:
+    case QImage::Format_Grayscale16:
     case QImage::Format_RGB32:
     case QImage::Format_ARGB32:
     case QImage::Format_RGB888:
