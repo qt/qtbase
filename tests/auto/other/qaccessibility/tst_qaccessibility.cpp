@@ -2580,6 +2580,7 @@ void tst_QAccessibility::dialogButtonBoxTest()
     case QDialogButtonBox::GnomeLayout:
     case QDialogButtonBox::KdeLayout:
     case QDialogButtonBox::MacLayout:
+    case QDialogButtonBox::AndroidLayout:
         expectedOrder << QDialogButtonBox::tr("Help")
                       << QDialogButtonBox::tr("Reset")
                       << QDialogButtonBox::tr("OK");
