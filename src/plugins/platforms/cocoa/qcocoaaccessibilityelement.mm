@@ -241,7 +241,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return [attributes autorelease];
 }
 
-- (id)parentElement {
+- (id)accessibilityParent {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
     if (!iface || !iface->isValid())
         return nil;
@@ -254,7 +254,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     if (QAccessibleInterface *parent = iface->parent()) {
         if (parent->role() != QAccessible::Application) {
             QAccessible::Id parentId = QAccessible::uniqueId(parent);
-            return [QMacAccessibilityElement elementWithId: parentId];
+            return NSAccessibilityUnignoredAncestor([QMacAccessibilityElement elementWithId: parentId]);
         }
     }
 
@@ -262,12 +262,11 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         QPlatformWindow *platformWindow = window->handle();
         if (platformWindow) {
             QCocoaWindow *win = static_cast<QCocoaWindow*>(platformWindow);
-            return qnsview_cast(win->view());
+            return NSAccessibilityUnignoredAncestor(qnsview_cast(win->view()));
         }
     }
     return nil;
 }
-
 
 - (id) minValueAttribute:(QAccessibleInterface*)iface {
     if (QAccessibleValueInterface *val = iface->valueInterface())
@@ -301,13 +300,13 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         id focusedElement = [NSApp accessibilityAttributeValue:NSAccessibilityFocusedUIElementAttribute];
         return @([focusedElement isEqual:self]);
     } else if ([attribute isEqualToString:NSAccessibilityParentAttribute]) {
-        return NSAccessibilityUnignoredAncestor([self parentElement]);
+        return self.accessibilityParent;
     } else if ([attribute isEqualToString:NSAccessibilityWindowAttribute]) {
         // We're in the same window as our parent.
-        return [[self parentElement] accessibilityAttributeValue:NSAccessibilityWindowAttribute];
+        return [[self accessibilityParent] accessibilityAttributeValue:NSAccessibilityWindowAttribute];
     } else if ([attribute isEqualToString:NSAccessibilityTopLevelUIElementAttribute]) {
         // We're in the same top level element as our parent.
-        return [[self parentElement] accessibilityAttributeValue:NSAccessibilityTopLevelUIElementAttribute];
+        return [[self accessibilityParent] accessibilityAttributeValue:NSAccessibilityTopLevelUIElementAttribute];
     } else if ([attribute isEqualToString:NSAccessibilityPositionAttribute]) {
         // The position in points of the element's lower-left corner in screen-relative coordinates
         QPointF qtPosition = QRectF(iface->rect()).bottomLeft();
