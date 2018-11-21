@@ -175,28 +175,22 @@ void tst_float::float16Comparisons_data() const
 {
     QTest::addColumn<qfloat16>("operandLeft");
     QTest::addColumn<qfloat16>("operandRight");
+    qfloat16 zero(0), one(1);
 
-    QTest::newRow("should SUCCEED 1")
-        << qfloat16(0)
-        << qfloat16(0);
-
-    QTest::newRow("should FAIL 1")
-        << qfloat16(1.000)
-        << qfloat16(3.000);
-
-    QTest::newRow("should FAIL 2")
-        << qfloat16(1.000e-4f)
-        << qfloat16(3.000e-4f);
+    QTest::newRow("should FAIL 1") << one << qfloat16(3);
+    QTest::newRow("should PASS 1") << zero << zero;
+    QTest::newRow("should FAIL 2") << qfloat16(1e-4f) << qfloat16(3e-4f);
 
     // QCOMPARE for qfloat16s uses qFuzzyCompare()
+    QTest::newRow("should PASS 2") << qfloat16(1001) << qfloat16(1002);
+    QTest::newRow("should FAIL 3") << qfloat16(98) << qfloat16(99);
+    // ... which gets a bit unreliable near to the type's bounds
+    QTest::newRow("should PASS 3") << qfloat16(6e-5f) + qfloat16(6e-7f) << qfloat16(6e-5f) + qfloat16(11e-7f);
+    QTest::newRow("should FAIL 4") << qfloat16(6e-5f) - qfloat16(7e-7f) << qfloat16(6e-5f) - qfloat16(13e-7f);
+    QTest::newRow("should PASS 4") << qfloat16(6e4) + qfloat16(700) << qfloat16(6e4) + qfloat16(1200);
+    QTest::newRow("should FAIL 5") << qfloat16(6e4) - qfloat16(600) << qfloat16(6e4) - qfloat16(1200);
 
-    QTest::newRow("should FAIL 3")
-        << qfloat16(98)
-        << qfloat16(99);
-
-    QTest::newRow("should SUCCEED 2")
-        << qfloat16(1001)
-        << qfloat16(1002);
+    nonFinite_data(zero, one);
 }
 
 void tst_float::compareFloatTests() const

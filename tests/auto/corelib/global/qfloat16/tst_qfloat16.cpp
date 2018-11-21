@@ -454,7 +454,7 @@ void tst_qfloat16::limits()
     QVERIFY(qIsInf(Bounds::infinity()));
     QVERIFY(!qIsNaN(Bounds::infinity()));
     QVERIFY(!qIsFinite(Bounds::infinity()));
-    // QCOMPARE(Bounds::infinity(), Bounds::infinity());
+    QCOMPARE(Bounds::infinity(), Bounds::infinity());
     QCOMPARE(qFpClassify(Bounds::infinity()), FP_INFINITE);
 
     QVERIFY(Bounds::infinity() > -Bounds::infinity());
@@ -462,7 +462,7 @@ void tst_qfloat16::limits()
     QVERIFY(qIsInf(-Bounds::infinity()));
     QVERIFY(!qIsNaN(-Bounds::infinity()));
     QVERIFY(!qIsFinite(-Bounds::infinity()));
-    // QCOMPARE(-Bounds::infinity(), -Bounds::infinity());
+    QCOMPARE(-Bounds::infinity(), -Bounds::infinity());
     QCOMPARE(qFpClassify(-Bounds::infinity()), FP_INFINITE);
 
     QVERIFY(-Bounds::infinity() < zero);
@@ -470,7 +470,7 @@ void tst_qfloat16::limits()
     QVERIFY(!qIsInf(Bounds::quiet_NaN()));
     QVERIFY(!qIsFinite(Bounds::quiet_NaN()));
     QVERIFY(!(Bounds::quiet_NaN() == Bounds::quiet_NaN()));
-    // QCOMPARE(Bounds::quiet_NaN(), Bounds::quiet_NaN());
+    QCOMPARE(Bounds::quiet_NaN(), Bounds::quiet_NaN());
     QCOMPARE(qFpClassify(Bounds::quiet_NaN()), FP_NAN);
 
     QVERIFY(Bounds::max() > zero);

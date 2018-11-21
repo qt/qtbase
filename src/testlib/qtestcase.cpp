@@ -2539,7 +2539,8 @@ static bool floatingCompare(const T &t1, const T &t2)
 bool QTest::qCompare(qfloat16 const &t1, qfloat16 const &t2, const char *actual, const char *expected,
                      const char *file, int line)
 {
-    return compare_helper(qFuzzyCompare(t1, t2), "Compared qfloat16s are not the same (fuzzy compare)",
+    return compare_helper(floatingCompare(t1, t2),
+                          "Compared qfloat16s are not the same (fuzzy compare)",
                           toString(t1), toString(t2), actual, expected, file, line);
 }
 
@@ -2646,15 +2647,9 @@ template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE>(const TYPE &t) \
     return msg; \
 }
 
+TO_STRING_FLOAT(qfloat16, %.3g)
 TO_STRING_FLOAT(float, %g)
 TO_STRING_FLOAT(double, %.12g)
-
-template <> Q_TESTLIB_EXPORT char *QTest::toString<qfloat16>(const qfloat16 &t)
-{
-    char *msg = new char[16];
-    qsnprintf(msg, 16, "%.3g", static_cast<float>(t));
-    return msg;
-}
 
 template <> Q_TESTLIB_EXPORT char *QTest::toString<char>(const char &t)
 {

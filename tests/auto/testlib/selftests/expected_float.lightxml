@@ -428,20 +428,23 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="float16Comparisons">
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[should SUCCEED 1]]></DataTag>
-</Incident>
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
     <DataTag><![CDATA[should FAIL 1]]></DataTag>
     <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
    Actual   (operandLeft) : 1
    Expected (operandRight): 3]]></Description>
 </Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[should PASS 1]]></DataTag>
+</Incident>
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
     <DataTag><![CDATA[should FAIL 2]]></DataTag>
     <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
    Actual   (operandLeft) : 0.0001
    Expected (operandRight): 0.0003]]></Description>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[should PASS 2]]></DataTag>
 </Incident>
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
     <DataTag><![CDATA[should FAIL 3]]></DataTag>
@@ -450,7 +453,187 @@
    Expected (operandRight): 99]]></Description>
 </Incident>
 <Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[should SUCCEED 2]]></DataTag>
+    <DataTag><![CDATA[should PASS 3]]></DataTag>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL 4]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 5.93e-05
+   Expected (operandRight): 5.87e-05]]></Description>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[should PASS 4]]></DataTag>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL 5]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 5.94e+04
+   Expected (operandRight): 5.88e+04]]></Description>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[should PASS: NaN == NaN]]></DataTag>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: NaN != 0]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : nan
+   Expected (operandRight): 0]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: 0 != NaN]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 0
+   Expected (operandRight): nan]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: NaN != 1]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : nan
+   Expected (operandRight): 1]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: 1 != NaN]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1
+   Expected (operandRight): nan]]></Description>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[should PASS: inf == inf]]></DataTag>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[should PASS: -inf == -inf]]></DataTag>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: inf != -inf]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): -inf]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: -inf != inf]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): inf]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: inf != nan]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): nan]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: nan != inf]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : nan
+   Expected (operandRight): inf]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: -inf != nan]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): nan]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: nan != -inf]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : nan
+   Expected (operandRight): -inf]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: inf != 0]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): 0]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: 0 != inf]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 0
+   Expected (operandRight): inf]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: -inf != 0]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): 0]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: 0 != -inf]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 0
+   Expected (operandRight): -inf]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: inf != 1]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): 1]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: 1 != inf]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1
+   Expected (operandRight): inf]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: -inf != 1]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): 1]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: 1 != -inf]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1
+   Expected (operandRight): -inf]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: inf != max]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): 6.55e+04]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: inf != -max]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): -6.55e+04]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: max != inf]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 6.55e+04
+   Expected (operandRight): inf]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: -max != inf]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : -6.55e+04
+   Expected (operandRight): inf]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: -inf != max]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): 6.55e+04]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: -inf != -max]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): -6.55e+04]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: max != -inf]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 6.55e+04
+   Expected (operandRight): -inf]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL: -max != -inf]]></DataTag>
+    <Description><![CDATA[Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : -6.55e+04
+   Expected (operandRight): -inf]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>
