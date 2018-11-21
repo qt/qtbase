@@ -8,6 +8,9 @@ windows
 *
 [getErrors:ftp-host]
 linux
+# QTBUG-71953
+[getFromHttp:success-external]
+*
 [getFromHttpIntoBuffer]
 windows
 [getFromHttpIntoBuffer2]
