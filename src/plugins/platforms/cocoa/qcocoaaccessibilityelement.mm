@@ -282,6 +282,22 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return QCocoaScreen::mapToNative(iface->rect());
 }
 
+- (NSString*)accessibilityLabel {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid()) {
+        qWarning() << "Called accessibilityLabel on invalid object: " << axid;
+        return nil;
+    }
+    return iface->text(QAccessible::Description).toNSString();
+}
+
+- (void)setAccessibilityLabel:(NSString*)label{
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid())
+        return;
+    iface->setText(QAccessible::Description, QString::fromNSString(label));
+}
+
 - (id) minValueAttribute:(QAccessibleInterface*)iface {
     if (QAccessibleValueInterface *val = iface->valueInterface())
         return @(val->minimumValue().toDouble());
@@ -332,7 +348,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
             return nil;
         return iface->text(QAccessible::Name).toNSString();
     } else if ([attribute isEqualToString:NSAccessibilityDescriptionAttribute]) {
-        return iface->text(QAccessible::Description).toNSString();
+        return [self accessibilityLabel];
     } else if ([attribute isEqualToString:NSAccessibilityEnabledAttribute]) {
         return @(!iface->state().disabled);
     } else if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
