@@ -174,6 +174,17 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 // accessibility protocol
 //
 
+- (BOOL)isAccessibilityFocused
+{
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid()) {
+        return false;
+    }
+    // Just check if the app thinks we're focused.
+    id focusedElement = NSApp.accessibilityApplicationFocusedUIElement;
+    return [focusedElement isEqual:self];
+}
+
 // attributes
 
 + (id) lineNumberForIndex: (int)index forText:(const QString &)text
@@ -300,9 +311,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     } else if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
         return QCocoaAccessible::unignoredChildren(iface);
     } else if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
-        // Just check if the app thinks we're focused.
-        id focusedElement = [NSApp accessibilityAttributeValue:NSAccessibilityFocusedUIElementAttribute];
-        return @([focusedElement isEqual:self]);
+        return @(self.isAccessibilityFocused);
     } else if ([attribute isEqualToString:NSAccessibilityParentAttribute]) {
         return self.accessibilityParent;
     } else if ([attribute isEqualToString:NSAccessibilityWindowAttribute]) {
