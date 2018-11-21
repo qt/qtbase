@@ -93,7 +93,40 @@
     is true then it will enable the WS_BORDER flag in full screen mode to enable other top level windows
     inside the application to appear on top when required.
 
+    \note The setting must be applied before showing the window or switching it
+    to full screen. For QML, setHasBorderInFullScreenDefault() can be used to
+    set a default value.
+
     See also \l [QtDoc] {Fullscreen OpenGL Based Windows}
+*/
+
+/*!
+    \typedef QWindowsWindowFunctions::SetHasBorderInFullScreenDefault
+    \since 5.13
+
+    This is the typedef for the function returned by QGuiApplication::platformFunction
+    when passed setHasBorderInFullScreenDefaultIdentifier.
+*/
+
+/*!
+    \fn QByteArray QWindowsWindowFunctions::setHasBorderInFullScreenDefaultIdentifier()
+    \since 5.13
+
+    This function returns the bytearray that can be used to query
+    QGuiApplication::platformFunction to retrieve the SetHasBorderInFullScreen function.
+*/
+
+/*!
+    \fn void QWindowsWindowFunctions::setHasBorderInFullScreenDefault(bool border)
+    \since 5.13
+
+    This is a convenience function that can be used directly instead of resolving
+    the function pointer. \a border will be relayed to the function retrieved by
+    QGuiApplication. When \a border is true, the WS_BORDER flag will be set
+    in full screen mode for all windows by default.
+
+    See also \l [QtDoc] {Fullscreen OpenGL Based Windows}
+    \sa setHasBorderInFullScreen()
 */
 
 /*!

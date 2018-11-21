@@ -338,6 +338,7 @@ public:
     static void setTouchWindowTouchTypeStatic(QWindow *window, QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes);
     void registerTouchWindow(QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes = QWindowsWindowFunctions::NormalTouch);
     static void setHasBorderInFullScreenStatic(QWindow *window, bool border);
+    static void setHasBorderInFullScreenDefault(bool border);
     void setHasBorderInFullScreen(bool border);
     static QString formatWindowTitle(const QString &title);
 
@@ -381,6 +382,7 @@ private:
     // note: intentionally not using void * in order to avoid breaking x86
     VkSurfaceKHR m_vkSurface = 0;
 #endif
+    static bool m_borderInFullScreenDefault;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

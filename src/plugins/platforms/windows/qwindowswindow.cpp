@@ -1190,6 +1190,7 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
 
 const char *QWindowsWindow::embeddedNativeParentHandleProperty = "_q_embedded_native_parent_handle";
 const char *QWindowsWindow::hasBorderInFullScreenProperty = "_q_has_border_in_fullscreen";
+bool QWindowsWindow::m_borderInFullScreenDefault = false;
 
 QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data) :
     QWindowsBaseWindow(aWindow),
@@ -1227,7 +1228,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
 
     if (aWindow->isTopLevel())
         setWindowIcon(aWindow->icon());
-    if (aWindow->property(hasBorderInFullScreenProperty).toBool())
+    if (m_borderInFullScreenDefault || aWindow->property(hasBorderInFullScreenProperty).toBool())
         setFlag(HasBorderInFullScreen);
     clearFlag(WithinCreate);
 }
@@ -2802,6 +2803,11 @@ void QWindowsWindow::setHasBorderInFullScreenStatic(QWindow *window, bool border
         static_cast<QWindowsWindow *>(handle)->setHasBorderInFullScreen(border);
     else
         window->setProperty(hasBorderInFullScreenProperty, QVariant(border));
+}
+
+void QWindowsWindow::setHasBorderInFullScreenDefault(bool border)
+{
+    m_borderInFullScreenDefault = border;
 }
 
 void QWindowsWindow::setHasBorderInFullScreen(bool border)
