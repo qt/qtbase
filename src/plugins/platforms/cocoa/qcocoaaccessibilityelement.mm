@@ -268,6 +268,13 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return nil;
 }
 
+- (NSRect)accessibilityFrame {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid())
+        return NSZeroRect;
+    return QCocoaScreen::mapToNative(iface->rect());
+}
+
 - (id) minValueAttribute:(QAccessibleInterface*)iface {
     if (QAccessibleValueInterface *val = iface->valueInterface())
         return @(val->minimumValue().toDouble());
