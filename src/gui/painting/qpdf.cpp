@@ -856,7 +856,6 @@ void QPdfEngine::drawRects (const QRectF *rects, int rectCount)
     if (!d->hasPen && !d->hasBrush)
         return;
 
-    QBrush penBrush = d->pen.brush();
     if (d->simplePen || !d->hasPen) {
         // draw strokes natively in this case for better output
         if(!d->simplePen && !d->stroker.matrix.isIdentity())

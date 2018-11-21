@@ -1138,8 +1138,6 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QVector<FormatRang
     QPainterPath textDoneRegion;
     for (int i = 0; i < selections.size(); ++i) {
         FormatRange selection = selections.at(i);
-        const QBrush bg = selection.format.background();
-
         QPainterPath region;
         region.setFillRule(Qt::WindingFill);
 
