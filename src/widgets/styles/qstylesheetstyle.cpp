@@ -5641,22 +5641,18 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
                     } else {
                         sliderlen = maxlen;
                     }
-                    const int sliderPosition = sb->orientation == Qt::Horizontal && sb->direction == Qt::RightToLeft ? sb->maximum - sb->sliderPosition + sb->minimum : sb->sliderPosition;
                     int sliderstart = (styleOptionSlider.orientation == Qt::Horizontal ? contentRect.left() : contentRect.top())
-                        + sliderPositionFromValue(sb->minimum, sb->maximum, sliderPosition,
+                        + sliderPositionFromValue(sb->minimum, sb->maximum, sb->sliderPosition,
                                                   maxlen - sliderlen, sb->upsideDown);
 
                     QRect sr = (sb->orientation == Qt::Horizontal)
                                ? QRect(sliderstart, contentRect.top(), sliderlen, contentRect.height())
                                : QRect(contentRect.left(), sliderstart, contentRect.width(), sliderlen);
-                    if (sc == SC_ScrollBarSlider) {
-                        return sr;
-                    } else if (sc == SC_ScrollBarSubPage) {
-                        return QRect(contentRect.topLeft(), sb->orientation == Qt::Horizontal ? sr.bottomLeft() : sr.topRight());
-                    } else { // SC_ScrollBarAddPage
-                        return QRect(sb->orientation == Qt::Horizontal ? sr.topRight() : sr.bottomLeft(), contentRect.bottomRight());
-                    }
-                    break;
+                    if (sc == SC_ScrollBarSubPage)
+                        sr = QRect(contentRect.topLeft(), sb->orientation == Qt::Horizontal ? sr.bottomLeft() : sr.topRight());
+                    else if (sc == SC_ScrollBarAddPage)
+                        sr = QRect(sb->orientation == Qt::Horizontal ? sr.topRight() : sr.bottomLeft(), contentRect.bottomRight());
+                    return visualRect(styleOptionSlider.direction, grooveRect, sr);
                 }
                 case SC_ScrollBarAddLine: pe = PseudoElement_ScrollBarAddLine; break;
                 case SC_ScrollBarSubLine: pe = PseudoElement_ScrollBarSubLine; break;

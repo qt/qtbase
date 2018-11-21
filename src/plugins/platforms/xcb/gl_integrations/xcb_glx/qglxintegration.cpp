@@ -649,8 +649,6 @@ QFunctionPointer QGLXContext::getProcAddress(const char *procName)
 #endif
             {
 #if QT_CONFIG(library)
-                extern const QString qt_gl_library_name();
-//                QLibrary lib(qt_gl_library_name());
                 QLibrary lib(QLatin1String("GL"));
                 if (!lib.load())
                     lib.setFileNameAndVersion(QLatin1String("GL"), 1);

@@ -96,7 +96,7 @@ public:
     static const char *name;
 };
 
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
 class QKdeThemePrivate;
 
 class QKdeTheme : public QPlatformTheme
@@ -123,7 +123,7 @@ public:
 
     static const char *name;
 };
-#endif // QT_NO_SETTINGS
+#endif // settings
 
 class QGnomeThemePrivate;
 

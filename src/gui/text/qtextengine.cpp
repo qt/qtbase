@@ -1962,19 +1962,24 @@ const QCharAttributes *QTextEngine::attributes() const
 
 void QTextEngine::shape(int item) const
 {
-    if (layoutData->items.at(item).analysis.flags == QScriptAnalysis::Object) {
+    auto &li = layoutData->items[item];
+    if (li.analysis.flags == QScriptAnalysis::Object) {
         ensureSpace(1);
         if (block.docHandle()) {
             docLayout()->resizeInlineObject(QTextInlineObject(item, const_cast<QTextEngine *>(this)),
-                                            layoutData->items[item].position + block.position(),
-                                            format(&layoutData->items[item]));
+                                            li.position + block.position(),
+                                            format(&li));
         }
-    } else if (layoutData->items.at(item).analysis.flags == QScriptAnalysis::Tab) {
+        // fix log clusters to point to the previous glyph, as the object doesn't have a glyph of it's own.
+        // This is required so that all entries in the array get initialized and are ordered correctly.
+        ushort *lc = logClusters(&li);
+        *lc = item ? lc[-1] : 0;
+    } else if (li.analysis.flags == QScriptAnalysis::Tab) {
         // set up at least the ascent/descent/leading of the script item for the tab
-        fontEngine(layoutData->items[item],
-                   &layoutData->items[item].ascent,
-                   &layoutData->items[item].descent,
-                   &layoutData->items[item].leading);
+        fontEngine(li, &li.ascent, &li.descent, &li.leading);
+        // see the comment above
+        ushort *lc = logClusters(&li);
+        *lc = item ? lc[-1] : 0;
     } else {
         shapeText(item);
     }

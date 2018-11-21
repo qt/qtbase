@@ -3229,7 +3229,13 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         break;
     case PE_IndicatorTabClose: {
         // Make close button visible only on the hovered tab.
-        if (QTabBar *tabBar = qobject_cast<QTabBar*>(w->parentWidget())) {
+        QTabBar *tabBar = qobject_cast<QTabBar*>(w->parentWidget());
+        if (!tabBar) {
+            // QStyleSheetStyle instead of CloseButton (which has
+            // a QTabBar as a parent widget) uses the QTabBar itself:
+            tabBar = qobject_cast<QTabBar *>(const_cast<QWidget*>(w));
+        }
+        if (tabBar) {
             const bool documentMode = tabBar->documentMode();
             const QTabBarPrivate *tabBarPrivate = static_cast<QTabBarPrivate *>(QObjectPrivate::get(tabBar));
             const int hoveredTabIndex = tabBarPrivate->hoveredTabIndex();

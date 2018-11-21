@@ -94,7 +94,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
     QMenu *editMenu = menuBar()->addMenu(tr("&Edit"));
     QAction *action = editMenu->addAction(tr("Cut"));
-    action->setShortcut(QKeySequence(QKeySequence::Quit));
+    action->setShortcut(QKeySequence(QKeySequence::Cut));
     action = editMenu->addAction(tr("Copy"));
     action->setShortcut(QKeySequence(QKeySequence::Copy));
     action = editMenu->addAction(tr("Paste"));

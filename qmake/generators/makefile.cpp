@@ -1101,8 +1101,6 @@ QString
 MakefileGenerator::prlFileName(bool fixify)
 {
     QString ret = project->first("PRL_TARGET") + Option::prl_ext;
-    if(!project->isEmpty("QMAKE_BUNDLE"))
-        ret.prepend(project->first("QMAKE_BUNDLE") + Option::dir_sep);
     if(fixify) {
         if(!project->isEmpty("DESTDIR"))
             ret.prepend(project->first("DESTDIR").toQString());

@@ -50,7 +50,9 @@
 #include <QtCore/qmath.h>
 #include <QtCore/QList>
 #include <QtCore/QDir>
+#if QT_CONFIG(settings)
 #include <QtCore/QSettings>
+#endif
 #include <QtGui/QPainter>
 
 #include <private/qhexstring_p.h>
@@ -348,7 +350,7 @@ QIconTheme::QIconTheme(const QString &themeName)
                 m_valid = true;
         }
     }
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
     if (themeIndex.exists()) {
         const QSettings indexReader(themeIndex.fileName(), QSettings::IniFormat);
         const QStringList keys = indexReader.allKeys();
@@ -407,7 +409,7 @@ QIconTheme::QIconTheme(const QString &themeName)
         if (!m_parents.contains(QLatin1String("hicolor")))
             m_parents.append(QLatin1String("hicolor"));
     }
-#endif //QT_NO_SETTINGS
+#endif // settings
 }
 
 QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,

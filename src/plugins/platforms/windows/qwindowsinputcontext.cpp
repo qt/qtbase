@@ -242,7 +242,18 @@ QRectF QWindowsInputContext::keyboardRect() const
 bool QWindowsInputContext::isInputPanelVisible() const
 {
     HWND hwnd = getVirtualKeyboardWindowHandle();
-    return hwnd && ::IsWindowEnabled(hwnd) && ::IsWindowVisible(hwnd);
+    if (hwnd && ::IsWindowEnabled(hwnd) && ::IsWindowVisible(hwnd))
+        return true;
+    // check if the Input Method Editor is open
+    if (inputMethodAccepted()) {
+        if (QWindow *window = QGuiApplication::focusWindow()) {
+            if (QWindowsWindow *platformWindow = QWindowsWindow::windowsWindowOf(window)) {
+                if (HIMC himc = ImmGetContext(platformWindow->handle()))
+                    return ImmGetOpenStatus(himc);
+            }
+        }
+    }
+    return false;
 }
 
 void QWindowsInputContext::showInputPanel()

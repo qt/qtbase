@@ -104,7 +104,6 @@
 #else
 # define QT_FEATURE_renameat2 -1
 #endif
-#define QT_FEATURE_settings -1
 #define QT_FEATURE_sharedmemory -1
 #define QT_FEATURE_slog2 -1
 #ifdef __GLIBC_PREREQ
@@ -127,11 +126,13 @@
 #define QT_FEATURE_commandlineparser -1
 #define QT_NO_COMPRESS
 #define QT_JSON_READONLY
+#define QT_FEATURE_settings 1
 #define QT_NO_STANDARDPATHS
 #define QT_FEATURE_textcodec -1
 #else
 #define QT_FEATURE_codecs -1
 #define QT_FEATURE_commandlineparser 1
+#define QT_FEATURE_settings -1
 #define QT_FEATURE_textcodec 1
 #endif
 

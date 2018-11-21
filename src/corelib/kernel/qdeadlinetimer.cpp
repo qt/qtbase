@@ -720,6 +720,11 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
   Returns the time remaining before the deadline.
  */
 
+/*!
+  \fn QPair<qint64, unsigned> QDeadlineTimer::_q_data() const
+  \internal
+*/
+
 // the rest of the functions are in qelapsedtimer_xxx.cpp
 
 QT_END_NAMESPACE

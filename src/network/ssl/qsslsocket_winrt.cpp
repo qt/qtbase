@@ -251,6 +251,8 @@ void QSslSocketBackendPrivate::startClientEncryption()
     case QSsl::TlsV1_0OrLater:
     case QSsl::TlsV1_1OrLater:
     case QSsl::TlsV1_2OrLater:
+    case QSsl::TlsV1_3:
+    case QSsl::TlsV1_3OrLater:
         // TlsV1_0OrLater, TlsV1_1OrLater and TlsV1_2OrLater are disabled on WinRT
         // because there is no good way to map them to the native API.
         setErrorAndEmit(QAbstractSocket::SslInvalidUserDataError,

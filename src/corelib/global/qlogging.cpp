@@ -1885,7 +1885,7 @@ static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const
     // [support.start.term]). So we bypass std::abort() and directly
     // terminate the application.
 
-#  ifdef Q_CC_MSVC
+#  if defined(Q_CC_MSVC) && !defined(Q_CC_INTEL)
     if (IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE))
         __fastfail(FAST_FAIL_FATAL_APP_EXIT);
 #  else

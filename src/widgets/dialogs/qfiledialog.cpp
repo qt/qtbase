@@ -57,7 +57,9 @@
 #include <qmessagebox.h>
 #endif
 #include <stdlib.h>
+#if QT_CONFIG(settings)
 #include <qsettings.h>
+#endif
 #include <qdebug.h>
 #if QT_CONFIG(mimetype)
 #include <qmimedatabase.h>
@@ -221,6 +223,9 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
     of QFileDialog that contains the Q_OBJECT macro, or the platform
     does not have a native dialog of the type that you require.
 
+    \note This option must be set before changing dialog properties
+    or showing the dialog.
+
     \value ReadOnly Indicates that the model is readonly.
 
     \value HideNameFilterDetails Indicates if the file name filter details are
@@ -383,7 +388,7 @@ QFileDialog::QFileDialog(const QFileDialogArgs &args)
 */
 QFileDialog::~QFileDialog()
 {
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
     Q_D(QFileDialog);
     d->saveSettings();
 #endif
@@ -722,6 +727,16 @@ bool QFileDialogPrivate::usingWidgets() const
     Sets the given \a option to be enabled if \a on is true; otherwise,
     clears the given \a option.
 
+    Options (particularly the DontUseNativeDialogs option) should be set
+    before changing dialog properties or showing the dialog.
+
+    Setting options while the dialog is visible is not guaranteed to have
+    an immediate effect on the dialog (depending on the option and on the
+    platform).
+
+    Setting options after changing other properties may cause these
+    values to have no effect.
+
     \sa options, testOption()
 */
 void QFileDialog::setOption(Option option, bool on)
@@ -752,9 +767,15 @@ bool QFileDialog::testOption(Option option) const
 
     By default, all options are disabled.
 
-    Options should be set before showing the dialog. Setting them while the
-    dialog is visible is not guaranteed to have an immediate effect on the
-    dialog (depending on the option and on the platform).
+    Options (particularly the DontUseNativeDialogs option) should be set
+    before changing dialog properties or showing the dialog.
+
+    Setting options while the dialog is visible is not guaranteed to have
+    an immediate effect on the dialog (depending on the option and on the
+    platform).
+
+    Setting options after changing other properties may cause these
+    values to have no effect.
 
     \sa setOption(), testOption()
 */
@@ -2720,7 +2741,7 @@ void QFileDialog::accept()
     }
 }
 
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
 void QFileDialogPrivate::saveSettings()
 {
     Q_Q(QFileDialog);
@@ -2778,7 +2799,7 @@ bool QFileDialogPrivate::restoreFromSettings()
 
     return restoreWidgetState(history, settings.value(QLatin1String("sidebarWidth"), -1).toInt());
 }
-#endif // QT_NO_SETTINGS
+#endif // settings
 
 bool QFileDialogPrivate::restoreWidgetState(QStringList &history, int splitterPosition)
 {
@@ -2851,7 +2872,7 @@ void QFileDialogPrivate::init(const QUrl &directory, const QString &nameFilter,
     else
         q->selectUrl(directory);
 
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
     // Try to restore from the FileDialog settings group; if it fails, fall back
     // to the pre-5.5 QByteArray serialized settings.
     if (!restoreFromSettings()) {
@@ -3016,7 +3037,7 @@ void QFileDialogPrivate::createWidgets()
     createToolButtons();
     createMenuActions();
 
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
     // Try to restore from the FileDialog settings group; if it fails, fall back
     // to the pre-5.5 QByteArray serialized settings.
     if (!restoreFromSettings()) {

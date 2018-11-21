@@ -3018,6 +3018,9 @@ bool QStandardItemModel::setData(const QModelIndex &index, const QVariant &value
 /*!
   \since 5.12
   Removes the data stored in all the roles for the given \a index.
+  Returns \c true if \a index is valid and data was cleared, \c false
+  otherwise.
+
   \sa setData(), data()
 */
 #endif

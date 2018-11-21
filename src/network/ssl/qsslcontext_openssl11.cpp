@@ -105,7 +105,24 @@ init_context:
             isDtls = true;
             sslContext->ctx = q_SSL_CTX_new(client ? q_DTLS_client_method() : q_DTLS_server_method());
             break;
+#else // dtls
+        case QSsl::DtlsV1_0:
+        case QSsl::DtlsV1_0OrLater:
+        case QSsl::DtlsV1_2:
+        case QSsl::DtlsV1_2OrLater:
+            sslContext->ctx = nullptr;
+            unsupportedProtocol = true;
+            qCWarning(lcSsl, "DTLS protocol requested, but feature 'dtls' is disabled");
+            break;
 #endif // dtls
+        case QSsl::TlsV1_3:
+        case QSsl::TlsV1_3OrLater:
+#if !defined(TLS1_3_VERSION)
+            qCWarning(lcSsl, "TLS 1.3 is not supported");
+            sslContext->ctx = nullptr;
+            unsupportedProtocol = true;
+            break;
+#endif // TLS1_3_VERSION
         default:
             // The ssl options will actually control the supported methods
             sslContext->ctx = q_SSL_CTX_new(client ? q_TLS_client_method() : q_TLS_server_method());
@@ -155,6 +172,16 @@ init_context:
         minVersion = TLS1_2_VERSION;
         maxVersion = TLS1_2_VERSION;
         break;
+    case QSsl::TlsV1_3:
+#ifdef TLS1_3_VERSION
+        minVersion = TLS1_3_VERSION;
+        maxVersion = TLS1_3_VERSION;
+#else
+        // This protocol is not supported by OpenSSL 1.1 and we handle
+        // it as an error (see the code above).
+        Q_UNREACHABLE();
+#endif // TLS1_3_VERSION
+        break;
     // Ranges:
     case QSsl::TlsV1SslV3:
     case QSsl::AnyProtocol:
@@ -192,6 +219,17 @@ init_context:
         maxVersion = DTLS_MAX_VERSION;
         break;
 #endif // dtls
+    case QSsl::TlsV1_3OrLater:
+#ifdef TLS1_3_VERSION
+        minVersion = TLS1_3_VERSION;
+        maxVersion = 0;
+        break;
+#else
+        // This protocol is not supported by OpenSSL 1.1 and we handle
+        // it as an error (see the code above).
+        Q_UNREACHABLE();
+        break;
+#endif // TLS1_3_VERSION
     case QSsl::SslV2:
         // This protocol is not supported by OpenSSL 1.1 and we handle
         // it as an error (see the code above).
@@ -223,23 +261,52 @@ init_context:
     // http://www.openssl.org/docs/ssl/SSL_CTX_set_mode.html
     q_SSL_CTX_set_mode(sslContext->ctx, SSL_MODE_RELEASE_BUFFERS);
 
+    auto filterCiphers = [](const QList<QSslCipher> &ciphers, bool selectTls13)
+    {
+        QByteArray cipherString;
+        bool first = true;
+
+        for (const QSslCipher &cipher : qAsConst(ciphers)) {
+            const bool isTls13Cipher = cipher.protocol() == QSsl::TlsV1_3 || cipher.protocol() == QSsl::TlsV1_3OrLater;
+            if (selectTls13 != isTls13Cipher)
+                continue;
+
+            if (first)
+                first = false;
+            else
+                cipherString.append(':');
+            cipherString.append(cipher.name().toLatin1());
+        }
+        return cipherString;
+    };
+
     // Initialize ciphers
-    QByteArray cipherString;
-    bool first = true;
     QList<QSslCipher> ciphers = sslContext->sslConfiguration.ciphers();
     if (ciphers.isEmpty())
         ciphers = isDtls ? q_getDefaultDtlsCiphers() : QSslSocketPrivate::defaultCiphers();
 
-    for (const QSslCipher &cipher : qAsConst(ciphers)) {
-        if (first)
-            first = false;
-        else
-            cipherString.append(':');
-        cipherString.append(cipher.name().toLatin1());
+    const QByteArray preTls13Ciphers = filterCiphers(ciphers, false);
+
+    if (preTls13Ciphers.size()) {
+        if (!q_SSL_CTX_set_cipher_list(sslContext->ctx, preTls13Ciphers.data())) {
+            sslContext->errorStr = QSslSocket::tr("Invalid or empty cipher list (%1)").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+            sslContext->errorCode = QSslError::UnspecifiedError;
+            return;
+        }
     }
 
-    if (!q_SSL_CTX_set_cipher_list(sslContext->ctx, cipherString.data())) {
-        sslContext->errorStr = QSslSocket::tr("Invalid or empty cipher list (%1)").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+    const QByteArray tls13Ciphers = filterCiphers(ciphers, true);
+#ifdef TLS1_3_VERSION
+    if (tls13Ciphers.size()) {
+        if (!q_SSL_CTX_set_ciphersuites(sslContext->ctx, tls13Ciphers.data())) {
+            sslContext->errorStr = QSslSocket::tr("Invalid or empty cipher list (%1)").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+            sslContext->errorCode = QSslError::UnspecifiedError;
+            return;
+        }
+    }
+#endif // TLS1_3_VERSION
+    if (!preTls13Ciphers.size() && !tls13Ciphers.size()) {
+        sslContext->errorStr = QSslSocket::tr("Invalid or empty cipher list (%1)").arg(QStringLiteral(""));
         sslContext->errorCode = QSslError::UnspecifiedError;
         return;
     }

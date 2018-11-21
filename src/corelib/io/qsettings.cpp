@@ -41,8 +41,6 @@
 #include "qplatformdefs.h"
 #include "qsettings.h"
 
-#ifndef QT_NO_SETTINGS
-
 #include "qsettings_p.h"
 #include "qcache.h"
 #include "qfile.h"
@@ -3617,5 +3615,3 @@ QT_END_NAMESPACE
 #ifndef QT_BOOTSTRAPPED
 #include "moc_qsettings.cpp"
 #endif
-
-#endif // QT_NO_SETTINGS

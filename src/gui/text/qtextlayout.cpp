@@ -1834,6 +1834,9 @@ void QTextLine::layout_helper(int maxGlyphs)
     lbh.logClusters = eng->layoutData->logClustersPtr;
     lbh.previousGlyph = 0;
 
+    bool hasInlineObject = false;
+    QFixed maxInlineObjectHeight = 0;
+
     while (newItem < eng->layoutData->items.size()) {
         lbh.resetRightBearing();
         lbh.softHyphenWidth = 0;
@@ -1862,8 +1865,11 @@ void QTextLine::layout_helper(int maxGlyphs)
         lbh.tmpData.leading = qMax(lbh.tmpData.leading + lbh.tmpData.ascent,
                                    current.leading + current.ascent) - qMax(lbh.tmpData.ascent,
                                                                             current.ascent);
-        lbh.tmpData.ascent = qMax(lbh.tmpData.ascent, current.ascent);
-        lbh.tmpData.descent = qMax(lbh.tmpData.descent, current.descent);
+        if (current.analysis.flags != QScriptAnalysis::Object) {
+            // objects need some special treatment as they can special alignment or be floating
+            lbh.tmpData.ascent = qMax(lbh.tmpData.ascent, current.ascent);
+            lbh.tmpData.descent = qMax(lbh.tmpData.descent, current.descent);
+        }
 
         if (current.analysis.flags == QScriptAnalysis::Tab && (alignment & (Qt::AlignLeft | Qt::AlignRight | Qt::AlignCenter | Qt::AlignJustify))) {
             lbh.whiteSpaceOrObject = true;
@@ -1911,8 +1917,17 @@ void QTextLine::layout_helper(int maxGlyphs)
 
             if (eng->block.docHandle()) {
                 QTextInlineObject inlineObject(item, eng);
-                eng->docLayout()->positionInlineObject(inlineObject, eng->block.position() + current.position, inlineObject.format());
+                QTextFormat f = inlineObject.format();
+                eng->docLayout()->positionInlineObject(inlineObject, eng->block.position() + current.position, f);
+                QTextCharFormat::VerticalAlignment valign = f.toCharFormat().verticalAlignment();
+                if (valign != QTextCharFormat::AlignTop && valign != QTextCharFormat::AlignBottom) {
+                    lbh.tmpData.ascent = qMax(lbh.tmpData.ascent, current.ascent);
+                    lbh.tmpData.descent = qMax(lbh.tmpData.descent, current.descent);
+                }
             }
+
+            hasInlineObject = true;
+            maxInlineObjectHeight = qMax(maxInlineObjectHeight, current.ascent + current.descent);
 
             lbh.tmpData.textWidth += current.width;
 
@@ -2048,6 +2063,43 @@ found:
                lbh.spaceData.length, lbh.spaceData.textWidth.toReal());
         line += lbh.tmpData;
     }
+
+    if (hasInlineObject && eng->block.docHandle()) {
+        // position top/bottom aligned inline objects
+        if (maxInlineObjectHeight > line.ascent + line.descent) {
+            // extend line height if required
+            QFixed toAdd = (maxInlineObjectHeight - line.ascent - line.descent)/2;
+            line.ascent += toAdd;
+            line.descent = maxInlineObjectHeight - line.ascent;
+        }
+        int startItem = eng->findItem(line.from);
+        int endItem = eng->findItem(line.from + line.length);
+        if (endItem < 0)
+            endItem = eng->layoutData->items.size();
+        for (int item = startItem; item < endItem; ++item) {
+            QScriptItem &current = eng->layoutData->items[item];
+            if (current.analysis.flags == QScriptAnalysis::Object) {
+                QTextInlineObject inlineObject(item, eng);
+                QTextCharFormat::VerticalAlignment align = inlineObject.format().toCharFormat().verticalAlignment();
+                QFixed height = current.ascent + current.descent;
+                switch (align) {
+                case QTextCharFormat::AlignTop:
+                    current.ascent = line.ascent;
+                    current.descent = height - line.ascent;
+                    break;
+                case QTextCharFormat::AlignBottom:
+                    current.descent = line.descent;
+                    current.ascent = height - line.descent;
+                    break;
+                default:
+                    break;
+                }
+                Q_ASSERT(line.ascent >= current.ascent);
+                Q_ASSERT(line.descent >= current.descent);
+            }
+        }
+    }
+
 
     LB_DEBUG("line length = %d, ascent=%f, descent=%f, textWidth=%f (spacew=%f)", line.length, line.ascent.toReal(),
            line.descent.toReal(), line.textWidth.toReal(), lbh.spaceData.width.toReal());
@@ -2522,6 +2574,8 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
                     QFixed itemY = y - si.ascent;
                     if (format.verticalAlignment() == QTextCharFormat::AlignTop) {
                         itemY = y - lineBase;
+                    } else if (format.verticalAlignment() == QTextCharFormat::AlignBottom) {
+                        itemY = y + line.descent - si.ascent - si.descent;
                     }
 
                     QRectF itemRect(iterator.x.toReal(), itemY.toReal(), iterator.itemWidth.toReal(), si.height().toReal());

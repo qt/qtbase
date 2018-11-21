@@ -71,7 +71,7 @@
 @end
 
 @interface QT_MANGLE_NAMESPACE(QNSView) (Drawing) <CALayerDelegate>
-- (BOOL)wantsLayerHelper;
+- (void)initDrawing;
 @end
 
 @interface QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) : NSObject
@@ -152,19 +152,8 @@
 
         self.focusRingType = NSFocusRingTypeNone;
         self.cursor = nil;
-        self.wantsLayer = [self wantsLayerHelper];
 
-        // Enable high-DPI OpenGL for retina displays. Enabling has the side
-        // effect that Cocoa will start calling glViewport(0, 0, width, height),
-        // overriding any glViewport calls in application code. This is usually not a
-        // problem, except if the application wants to have a "custom" viewport.
-        // (like the hellogl example)
-        if (m_platformWindow->window()->supportsOpenGL()) {
-            self.wantsBestResolutionOpenGLSurface = qt_mac_resolveOption(YES, m_platformWindow->window(),
-                "_q_mac_wantsBestResolutionOpenGLSurface", "QT_MAC_WANTS_BEST_RESOLUTION_OPENGL_SURFACE");
-            // See also QCocoaGLContext::makeCurrent for software renderer workarounds.
-        }
-
+        [self initDrawing];
         [self registerDragTypes];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -177,6 +166,8 @@
 
 - (void)dealloc
 {
+    qCDebug(lcQpaWindow) << "Deallocating" << self;
+
     if (m_trackingArea) {
         [self removeTrackingArea:m_trackingArea];
         [m_trackingArea release];

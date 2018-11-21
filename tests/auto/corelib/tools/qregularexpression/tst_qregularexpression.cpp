@@ -2135,11 +2135,12 @@ void tst_QRegularExpression::threadSafety()
     QFETCH(QString, pattern);
     QFETCH(QString, subject);
 
+    QElapsedTimer time;
+    time.start();
     static const int THREAD_SAFETY_ITERATIONS = 50;
-
     const int threadCount = qMax(QThread::idealThreadCount(), 4);
 
-    for (int threadSafetyIteration = 0; threadSafetyIteration < THREAD_SAFETY_ITERATIONS; ++threadSafetyIteration) {
+    for (int threadSafetyIteration = 0; threadSafetyIteration < THREAD_SAFETY_ITERATIONS && time.elapsed() < 2000; ++threadSafetyIteration) {
         QRegularExpression re(pattern);
 
         QVector<MatcherThread *> threads;

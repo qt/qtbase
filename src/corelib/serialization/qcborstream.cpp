@@ -1438,12 +1438,14 @@ bool QCborStreamWriter::endMap()
  */
 
 /*!
-   \variable Container QCborStreamReader::StringResult::data
+   \variable QCborStreamReader::StringResult::data
+
    Contains the actual data from the string if \l status is \c Ok.
  */
 
 /*!
-   \variable QCborStreamReader::StringResultCode QCborStreamReader::StringResult::status
+   \variable QCborStreamReader::StringResult::status
+
    Contains the status of the attempt of reading the string from the stream.
  */
 

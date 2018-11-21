@@ -24,9 +24,10 @@
     "Description": "The DejaVu fonts are a font family based on the Vera Fonts.",
 
     "Homepage": "https://dejavu-fonts.github.io/",
+    "Version": "2.37",
     "License": "Bitstream Vera Font License",
     "LicenseFile": "DEJAVU-LICENSE",
-    "Copyright": "Copyright (C) 2003 Bitstream,Inc
+    "Copyright": "Copyright (c) 2003 by Bitstream, Inc
 Copyright (c) 2006 by Tavmjong Bah
 (c) American Mathematical Society"
 }

@@ -50,7 +50,9 @@
 
 #include "qcoretextfontdatabase_p.h"
 #include "qfontengine_coretext_p.h"
+#if QT_CONFIG(settings)
 #include <QtCore/QSettings>
+#endif
 #include <QtCore/QtEndian>
 #ifndef QT_NO_FREETYPE
 #include <QtFontDatabaseSupport/private/qfontengine_ft_p.h>
@@ -116,21 +118,25 @@ QCoreTextFontDatabase::QCoreTextFontDatabase()
     : m_hasPopulatedAliases(false)
 {
 #ifdef Q_OS_MACX
-    QSettings appleSettings(QLatin1String("apple.com"));
-    QVariant appleValue = appleSettings.value(QLatin1String("AppleAntiAliasingThreshold"));
-    if (appleValue.isValid())
-        QCoreTextFontEngine::antialiasingThreshold = appleValue.toInt();
-
     /*
         font_smoothing = 0 means no smoothing, while 1-3 means subpixel
         antialiasing with different hinting styles (but we don't care about the
         exact value, only if subpixel rendering is available or not)
     */
     int font_smoothing = 0;
+
+#if QT_CONFIG(settings)
+    QSettings appleSettings(QLatin1String("apple.com"));
+    QVariant appleValue = appleSettings.value(QLatin1String("AppleAntiAliasingThreshold"));
+    if (appleValue.isValid())
+        QCoreTextFontEngine::antialiasingThreshold = appleValue.toInt();
+
     appleValue = appleSettings.value(QLatin1String("AppleFontSmoothing"));
     if (appleValue.isValid()) {
         font_smoothing = appleValue.toInt();
-    } else {
+    } else
+#endif // settings
+    {
         // non-Apple displays do not provide enough information about subpixel rendering so
         // draw text with cocoa and compare pixel colors to see if subpixel rendering is enabled
         int w = 10;

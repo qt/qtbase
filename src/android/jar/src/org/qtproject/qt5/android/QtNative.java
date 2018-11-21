@@ -177,6 +177,8 @@ public class QtNative
                         File f = new File(libName);
                         if (f.exists())
                             System.load(libName);
+                        else
+                            Log.i(QtTAG, "Can't find '" + libName + "'");
                     } catch (SecurityException e) {
                         Log.i(QtTAG, "Can't load '" + libName + "'", e);
                     } catch (Exception e) {

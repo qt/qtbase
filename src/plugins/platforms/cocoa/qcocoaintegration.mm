@@ -340,12 +340,17 @@ QCocoaScreen *QCocoaIntegration::screenForNSScreen(NSScreen *nsScreen)
 bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
-    case ThreadedPixmaps:
 #ifndef QT_NO_OPENGL
-    case OpenGL:
     case ThreadedOpenGL:
+        // AppKit expects rendering to happen on the main thread, and we can
+        // easily end up in situations where rendering on secondary threads
+        // will result in visual artifacts, bugs, or even deadlocks, when
+        // building with SDK 10.14 or higher which enbles view layer-backing.
+        return QMacVersion::buildSDK() < QOperatingSystemVersion(QOperatingSystemVersion::MacOSMojave);
+    case OpenGL:
     case BufferQueueingOpenGL:
 #endif
+    case ThreadedPixmaps:
     case WindowMasks:
     case MultipleWindows:
     case ForeignWindows:

@@ -1107,6 +1107,18 @@ bool QSslSocketBackendPrivate::setSessionProtocol()
         return false;
     }
 
+    // SecureTransport has kTLSProtocol13 constant and also, kTLSProtocolMaxSupported.
+    // Calling SSLSetProtocolVersionMax/Min with any of these two constants results
+    // in errInvalidParam and a failure to set the protocol version. This means
+    // no TLS 1.3 on macOS and iOS.
+    switch (configuration.protocol) {
+    case QSsl::TlsV1_3:
+    case QSsl::TlsV1_3OrLater:
+        qCWarning(lcSsl) << plainSocket << "SecureTransport does not support TLS 1.3";
+        return false;
+    default:;
+    }
+
     OSStatus err = errSecSuccess;
 
     if (configuration.protocol == QSsl::SslV3) {

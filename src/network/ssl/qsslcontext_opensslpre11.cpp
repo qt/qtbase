@@ -104,6 +104,15 @@ init_context:
         isDtls = true;
         sslContext->ctx = q_SSL_CTX_new(client ? q_DTLS_client_method() : q_DTLS_server_method());
         break;
+#else // dtls
+    case QSsl::DtlsV1_0:
+    case QSsl::DtlsV1_0OrLater:
+    case QSsl::DtlsV1_2:
+    case QSsl::DtlsV1_2OrLater:
+        sslContext->ctx = nullptr;
+        unsupportedProtocol = true;
+        qCWarning(lcSsl, "DTLS protocol requested, but feature 'dtls' is disabled");
+        break;
 #endif // dtls
     case QSsl::SslV2:
 #ifndef OPENSSL_NO_SSL2
@@ -167,6 +176,12 @@ init_context:
         sslContext->ctx = 0;
         unsupportedProtocol = true;
 #endif
+        break;
+    case QSsl::TlsV1_3:
+    case QSsl::TlsV1_3OrLater:
+        // TLS 1.3 is not supported by the system, but chosen deliberately -> error
+        sslContext->ctx = nullptr;
+        unsupportedProtocol = true;
         break;
     }
 

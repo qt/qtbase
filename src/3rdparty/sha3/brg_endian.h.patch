@@ -1,0 +1,34 @@
+diff -ub /home/eddy/.sys/tmp/sha/brg_endian.h /home/eddy/work/Qt-5.12/qtbase/src/3rdparty/sha3/brg_endian.h
+--- upstream/sha/brg_endian.h	2018-10-22 16:27:04.106128670 +0200
++++ qtbase/src/3rdparty/sha3/brg_endian.h	2018-10-22 16:30:35.098891562 +0200
+@@ -16,6 +16,7 @@
+ and fitness for purpose.
+ ---------------------------------------------------------------------------
+ Issue Date: 20/12/2007
++Changes for ARM 9/9/2010 [Downstream relative to Gladman's GitHub, upstream to Qt]
+ */
+ 
+ #ifndef _BRG_ENDIAN_H
+@@ -119,12 +120,18 @@
+       defined( THINK_C ) || defined( __VMCMS__ ) || defined( _AIX )
+ #  define PLATFORM_BYTE_ORDER IS_BIG_ENDIAN
+ 
+-#elif 0     /* **** EDIT HERE IF NECESSARY **** */
++#elif defined(__arm__)
++# ifdef __BIG_ENDIAN
++#  define PLATFORM_BYTE_ORDER IS_BIG_ENDIAN
++# else
++#  define PLATFORM_BYTE_ORDER IS_LITTLE_ENDIAN
++# endif
++#elif 1     /* **** EDIT HERE IF NECESSARY **** */
+ #  define PLATFORM_BYTE_ORDER IS_LITTLE_ENDIAN
+ #elif 0     /* **** EDIT HERE IF NECESSARY **** */
+ #  define PLATFORM_BYTE_ORDER IS_BIG_ENDIAN
+ #else
+-#  error Please edit lines 126 or 128 in brg_endian.h to set the platform byte order
++#  error Please edit lines 129 or 131 in brg_endian.h to set the platform byte order
+ #endif
+ 
+ #endif
+
+Diff finished.  Mon Oct 22 16:31:46 2018

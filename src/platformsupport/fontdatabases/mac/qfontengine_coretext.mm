@@ -41,7 +41,9 @@
 
 #include <qpa/qplatformfontdatabase.h>
 #include <QtCore/qendian.h>
+#if QT_CONFIG(settings)
 #include <QtCore/qsettings.h>
+#endif
 #include <QtCore/qoperatingsystemversion.h>
 
 #include <private/qimage_p.h>

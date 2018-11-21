@@ -238,11 +238,7 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (void)closeAndRelease
 {
-    qCDebug(lcQpaWindow) << "closeAndRelease" << self;
-
-    [self.delegate release];
-    self.delegate = nil;
-
+    qCDebug(lcQpaWindow) << "Closing and releasing" << self;
     [self close];
     [self release];
 }
@@ -251,7 +247,9 @@ static bool isMouseEvent(NSEvent *ev)
 #pragma clang diagnostic ignored "-Wobjc-missing-super-calls"
 - (void)dealloc
 {
-    qCDebug(lcQpaWindow) << "dealloc" << self;
+    qCDebug(lcQpaWindow) << "Deallocating" << self;
+    self.delegate = nil;
+
     qt_objcDynamicSuper();
 }
 #pragma clang diagnostic pop

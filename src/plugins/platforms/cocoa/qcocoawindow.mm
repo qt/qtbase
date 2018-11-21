@@ -1549,7 +1549,9 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
             QWindowSystemInterface::SynchronousDelivery>(window(), targetScreen);
     }
 
-    nsWindow.delegate = [[QNSWindowDelegate alloc] initWithQCocoaWindow:this];
+    static QSharedPointer<QNSWindowDelegate> sharedDelegate([[QNSWindowDelegate alloc] init],
+        [](QNSWindowDelegate *delegate) { [delegate release]; });
+    nsWindow.delegate = sharedDelegate.get();
 
     // Prevent Cocoa from releasing the window on close. Qt
     // handles the close event asynchronously and we want to

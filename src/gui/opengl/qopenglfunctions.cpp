@@ -142,6 +142,7 @@ void CLASS::init(QOpenGLContext *context) \
     \value BlendColor glBlendColor() is available.
     \value BlendEquation glBlendEquation() is available.
     \value BlendEquationSeparate glBlendEquationSeparate() is available.
+    \value BlendEquationAdvanced Advanced blend equations are available.
     \value BlendFuncSeparate glBlendFuncSeparate() is available.
     \value BlendSubtract Blend subtract mode is available.
     \value CompressedTextures Compressed texture functions are available.

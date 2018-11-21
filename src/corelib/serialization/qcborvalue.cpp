@@ -222,7 +222,7 @@ QT_BEGIN_NAMESPACE
  */
 
 /*!
-    \variable qint64 QCborParserError::offset
+    \variable QCborParserError::offset
 
     This field contains the offset from the beginning of the data where the
     error was detected. The offset should point to the beginning of the item
@@ -233,7 +233,7 @@ QT_BEGIN_NAMESPACE
  */
 
 /*!
-    \variable QCborError QCborParserError::error
+    \variable QCborParserError::error
 
     This field contains the error code that indicates what decoding problem was
     found.

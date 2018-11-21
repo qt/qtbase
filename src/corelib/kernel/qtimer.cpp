@@ -571,30 +571,43 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
 */
 
 /*!
-    \fn template<typename Functor> QMetaObject::Connection callOnTimeout(Functor functor, Qt::ConnectionType connectionType = Qt::AutoConnection)
+    \fn template <typename Functor> QMetaObject::Connection QTimer::callOnTimeout(Functor slot, Qt::ConnectionType connectionType = Qt::AutoConnection)
     \since 5.12
     \overload
 
-    Creates a connection from the timeout() signal to \a functor, and returns a
+    Creates a connection from the timeout() signal to \a slot, and returns a
     handle to the connection.
 
     This method is provided for convenience.
-    It's equivalent to calling \c {QObject::connect(timer, &QTimer::timeout, timer, functor, connectionType)}.
+    It's equivalent to calling \c {QObject::connect(timer, &QTimer::timeout, timer, slot, connectionType)}.
 
     \sa QObject::connect(), timeout()
 */
 
 /*!
-    \fn template<typename Functor> QMetaObject::Connection callOnTimeout(QObject *context, Functor function, Qt::ConnectionType connectionType = Qt::AutoConnection)
+    \fn template <typename Functor> QMetaObject::Connection QTimer::callOnTimeout(const QObject *context, Functor slot, Qt::ConnectionType connectionType = Qt::AutoConnection)
     \since 5.12
     \overload callOnTimeout()
 
-    Creates a connection from the timeout() signal to \a function, which could be a pointer
-    to a member function of \a context, or it could be a functor to be placed in a specific
-    event loop of \a context. It returns a handle to the connection.
+    Creates a connection from the timeout() signal to \a slot to be placed in a specific
+    event loop of \a context, and returns a handle to the connection.
 
     This method is provided for convenience. It's equivalent to calling
-    \c {QObject::connect(timer, &QTimer::timeout, context, function, connectionType)}.
+    \c {QObject::connect(timer, &QTimer::timeout, context, slot, connectionType)}.
+
+    \sa QObject::connect(), timeout()
+*/
+
+/*!
+    \fn template <typename PointerToMemberFunction> QMetaObject::Connection QTimer::callOnTimeout(const QObject *receiver, PointerToMemberFunction slot, Qt::ConnectionType connectionType = Qt::AutoConnection)
+    \since 5.12
+    \overload callOnTimeout()
+
+    Creates a connection from the timeout() signal to the \a slot in the \a receiver object. Returns
+    a handle to the connection.
+
+    This method is provided for convenience. It's equivalent to calling
+    \c {QObject::connect(timer, &QTimer::timeout, receiver, slot, connectionType)}.
 
     \sa QObject::connect(), timeout()
 */

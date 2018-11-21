@@ -48,15 +48,9 @@ exists($$QMLTYPEFILE): AUX_QML_FILES += $$QMLTYPEFILE
 
 load(qt_build_paths)
 
-qml1_target {
-    DESTDIR = $$MODULE_BASE_OUTDIR/imports/$$TARGETPATH
-    instbase = $$[QT_INSTALL_IMPORTS]
-} else {
-    DESTDIR = $$MODULE_BASE_OUTDIR/qml/$$TARGETPATH
-    instbase = $$[QT_INSTALL_QML]
-}
+DESTDIR = $$MODULE_BASE_OUTDIR/qml/$$TARGETPATH
 
-target.path = $$instbase/$$TARGETPATH
+target.path = $$[QT_INSTALL_QML]/$$TARGETPATH
 INSTALLS += target
 
 # Some final setup
@@ -75,20 +69,11 @@ load(qt_common)
 # directory.  Then review and commit the changes made to plugins.qmltypes.
 #
 !cross_compile {
-    qml1_target {
-        qmlplugindump = qml1plugindump
-        importpath.name = QML_IMPORT_PATH
-    } else {
-        qmlplugindump = qmlplugindump
-        importpath.name = QML2_IMPORT_PATH
-    }
+    qmlplugindump = qmlplugindump
+    importpath.name = QML2_IMPORT_PATH
     importpath.value =
     for(qmod, QTREPOS) {
-        qml1_target: \
-            qmod = $$qmod/imports
-        else: \
-            qmod = $$qmod/qml
-        exists($$qmod): importpath.value += $$shell_path($$qmod)
+        exists($$qmod/qml): importpath.value += $$shell_path($$qmod/qml)
     }
     importpath.value = $$unique(importpath.value)
     QT_TOOL_ENV = importpath

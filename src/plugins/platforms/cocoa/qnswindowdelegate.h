@@ -48,9 +48,6 @@ class QCocoaWindow;
 QT_END_NAMESPACE
 
 @interface QT_MANGLE_NAMESPACE(QNSWindowDelegate) : NSObject <NSWindowDelegate>
-
-- (instancetype)initWithQCocoaWindow:(QT_PREPEND_NAMESPACE(QCocoaWindow) *)cocoaWindow;
-
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSWindowDelegate);
