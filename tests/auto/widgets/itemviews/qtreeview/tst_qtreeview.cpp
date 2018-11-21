@@ -69,6 +69,7 @@ public slots:
     void selectionOrderTest();
 
 private slots:
+    void initTestCase() { QApplication::setKeyboardInputInterval(100); }
     void getSetCheck();
 
     // one test per QTreeView property
