@@ -345,8 +345,9 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         return [NSValue valueWithRange: NSMakeRange(0, 0)];
     } else if ([attribute isEqualToString:NSAccessibilityVisibleCharacterRangeAttribute]) {
         // FIXME This is not correct and may impact performance for big texts
-        return [NSValue valueWithRange: NSMakeRange(0, iface->textInterface()->characterCount())];
-
+        if (QAccessibleTextInterface *text = iface->textInterface())
+            return [NSValue valueWithRange: NSMakeRange(0, text->characterCount())];
+        return [NSValue valueWithRange: NSMakeRange(0, iface->text(QAccessible::Name).length())];
     } else if ([attribute isEqualToString:NSAccessibilityInsertionPointLineNumberAttribute]) {
         if (QAccessibleTextInterface *text = iface->textInterface()) {
             int line = 0; // true for all single line edits
