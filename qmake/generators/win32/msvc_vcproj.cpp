@@ -775,7 +775,7 @@ void VcprojGenerator::init()
 
     // Setup PCH variables
     precompH = project->first("PRECOMPILED_HEADER").toQString();
-    precompCPP = project->first("PRECOMPILED_SOURCE").toQString();
+    precompSource = project->first("PRECOMPILED_SOURCE").toQString();
     usePCH = !precompH.isEmpty() && project->isActiveConfig("precompile_header");
     if (usePCH) {
         precompHFilename = fileInfo(precompH).fileName();
@@ -790,13 +790,13 @@ void VcprojGenerator::init()
         project->values("PRECOMPILED_OBJECT") = ProStringList(precompObj);
         project->values("PRECOMPILED_PCH")    = ProStringList(precompPch);
 
-        autogenPrecompCPP = precompCPP.isEmpty() && project->isActiveConfig("autogen_precompile_source");
-        if (autogenPrecompCPP) {
-            precompCPP = precompH
+        autogenPrecompSource = precompSource.isEmpty() && project->isActiveConfig("autogen_precompile_source");
+        if (autogenPrecompSource) {
+            precompSource = precompH
                 + (Option::cpp_ext.count() ? Option::cpp_ext.at(0) : QLatin1String(".cpp"));
-            project->values("GENERATED_SOURCES") += precompCPP;
-        } else if (!precompCPP.isEmpty()) {
-            project->values("SOURCES") += precompCPP;
+            project->values("GENERATED_SOURCES") += precompSource;
+        } else if (!precompSource.isEmpty()) {
+            project->values("SOURCES") += precompSource;
         }
     }
 

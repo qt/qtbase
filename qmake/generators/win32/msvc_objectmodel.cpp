@@ -2213,8 +2213,8 @@ void VCFilter::addFiles(const ProStringList& fileList)
 
 void VCFilter::modifyPCHstage(QString str)
 {
-    bool autogenSourceFile = Project->autogenPrecompCPP;
-    bool pchThroughSourceFile = !Project->precompCPP.isEmpty();
+    bool autogenSourceFile = Project->autogenPrecompSource;
+    bool pchThroughSourceFile = !Project->precompSource.isEmpty();
     bool isCFile = false;
     for (QStringList::Iterator it = Option::c_ext.begin(); it != Option::c_ext.end(); ++it) {
         if (str.endsWith(*it)) {
@@ -2223,7 +2223,7 @@ void VCFilter::modifyPCHstage(QString str)
         }
     }
     const bool isHFile = (str == Project->precompH);
-    bool isCPPFile = pchThroughSourceFile && (str == Project->precompCPP);
+    bool isCPPFile = pchThroughSourceFile && (str == Project->precompSource);
 
     if(!isCFile && !isHFile && !isCPPFile)
         return;
@@ -2231,7 +2231,7 @@ void VCFilter::modifyPCHstage(QString str)
     if(isHFile && pchThroughSourceFile) {
         if (autogenSourceFile) {
             useCustomBuildTool = true;
-            QString toFile(Project->precompCPP);
+            QString toFile(Project->precompSource);
             CustomBuildTool.Description = "Generating precompiled header source file '" + toFile + "' ...";
             CustomBuildTool.Outputs += toFile;
 
