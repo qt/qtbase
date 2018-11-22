@@ -90,7 +90,10 @@ public:
     qreal opacity() const { return m_opacity; }
     void setOpacity(qreal value);
 #if QT_CONFIG(animation)
-    void animateShow(bool visible) { startOpacityAnimation(visible ? 1.0 : 0.0); }
+    void animateShow(bool visible);
+
+    bool shouldHideWithText() const;
+    void setHideWithText(bool hide);
 #endif
 
 protected:
@@ -100,6 +103,10 @@ protected:
 private slots:
     void updateCursor();
 
+#if QT_CONFIG(animation)
+    void onAnimationFinished();
+#endif
+
 private:
 #if QT_CONFIG(animation)
     void startOpacityAnimation(qreal endValue);
@@ -107,6 +114,12 @@ private:
     QLineEditPrivate *lineEditPrivate() const;
 
     qreal m_opacity;
+
+#if QT_CONFIG(animation)
+    bool m_hideWithText = false;
+    bool m_wasHidden = false;
+#endif
+
 };
 #endif // QT_CONFIG(toolbutton)
 

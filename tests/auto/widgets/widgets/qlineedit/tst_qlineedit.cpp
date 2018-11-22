@@ -4451,10 +4451,11 @@ void tst_QLineEdit::clearButtonVisibleAfterSettingText_QTBUG_45518()
     QTRY_VERIFY(clearButton->opacity() > 0);
     QTRY_COMPARE(clearButton->cursor().shape(), Qt::ArrowCursor);
 
-    QTest::mouseClick(clearButton, Qt::LeftButton, 0, clearButton->rect().center());
+    QTest::mouseClick(clearButton, Qt::LeftButton, nullptr, clearButton->rect().center());
     QTRY_COMPARE(edit.text(), QString());
 
     QTRY_COMPARE(clearButton->opacity(), qreal(0));
+    QVERIFY(clearButton->isHidden());
     QTRY_COMPARE(clearButton->cursor().shape(), clearButton->parentWidget()->cursor().shape());
 
     edit.setClearButtonEnabled(false);
