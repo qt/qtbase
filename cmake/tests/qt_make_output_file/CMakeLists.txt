@@ -20,5 +20,3 @@ assert(outfile STREQUAL "/tmp/bar/__/prefix_foo.cpp")
 
 qt_make_output_file("/tmp/bar/foo.cpp" "prefix_" ".cpp" "/tmp/foo" "/tmp/bar" outfile)
 assert(outfile STREQUAL "/tmp/bar/prefix_foo.cpp")
-
-add_executable(qt_make_output_file ../main.cpp)
