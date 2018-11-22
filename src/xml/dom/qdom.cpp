@@ -2648,7 +2648,7 @@ QDomNodePrivate* QDomNamedNodeMapPrivate::item(int index) const
 {
     if (index >= length() || index < 0)
         return nullptr;
-    return *(map.constBegin() + index);
+    return *std::next(map.cbegin(), index);
 }
 
 int QDomNamedNodeMapPrivate::length() const
