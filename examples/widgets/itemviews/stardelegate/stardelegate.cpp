@@ -65,7 +65,7 @@ void StarDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
             painter->fillRect(option.rect, option.palette.highlight());
 
         starRating.paint(painter, option.rect, option.palette,
-                         StarRating::ReadOnly);
+                         StarRating::EditMode::ReadOnly);
     } else {
         QStyledItemDelegate::paint(painter, option, index);
     }
@@ -79,9 +79,8 @@ QSize StarDelegate::sizeHint(const QStyleOptionViewItem &option,
     if (index.data().canConvert<StarRating>()) {
         StarRating starRating = qvariant_cast<StarRating>(index.data());
         return starRating.sizeHint();
-    } else {
-        return QStyledItemDelegate::sizeHint(option, index);
     }
+    return QStyledItemDelegate::sizeHint(option, index);
 }
 //! [1]
 
@@ -96,9 +95,8 @@ QWidget *StarDelegate::createEditor(QWidget *parent,
         connect(editor, &StarEditor::editingFinished,
                 this, &StarDelegate::commitAndCloseEditor);
         return editor;
-    } else {
-        return QStyledItemDelegate::createEditor(parent, option, index);
     }
+    return QStyledItemDelegate::createEditor(parent, option, index);
 }
 //! [2]
 

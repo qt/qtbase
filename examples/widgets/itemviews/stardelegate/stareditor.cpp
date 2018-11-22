@@ -48,10 +48,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "stareditor.h"
 #include "starrating.h"
+
+#include <QtWidgets>
 
 //! [0]
 StarEditor::StarEditor(QWidget *parent)
@@ -71,35 +71,37 @@ QSize StarEditor::sizeHint() const
 void StarEditor::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
-    myStarRating.paint(&painter, rect(), this->palette(),
-                       StarRating::Editable);
+    myStarRating.paint(&painter, rect(), palette(),
+                       StarRating::EditMode::Editable);
 }
 //! [1]
 
 //! [2]
 void StarEditor::mouseMoveEvent(QMouseEvent *event)
 {
-    int star = starAtPosition(event->x());
+    const int star = starAtPosition(event->x());
 
     if (star != myStarRating.starCount() && star != -1) {
         myStarRating.setStarCount(star);
         update();
     }
+    QWidget::mouseMoveEvent(event);
 }
 //! [2]
 
 //! [3]
-void StarEditor::mouseReleaseEvent(QMouseEvent * /* event */)
+void StarEditor::mouseReleaseEvent(QMouseEvent *event)
 {
     emit editingFinished();
+    QWidget::mouseReleaseEvent(event);
 }
 //! [3]
 
 //! [4]
-int StarEditor::starAtPosition(int x)
+int StarEditor::starAtPosition(int x) const
 {
-    int star = (x / (myStarRating.sizeHint().width()
-                     / myStarRating.maxStarCount())) + 1;
+    const int star = (x / (myStarRating.sizeHint().width()
+                           / myStarRating.maxStarCount())) + 1;
     if (star <= 0 || star > myStarRating.maxStarCount())
         return -1;
 
