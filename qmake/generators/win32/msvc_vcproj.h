@@ -66,6 +66,7 @@ public:
     QHash<QString, QString> extraCompilerOutputs;
     const QString customBuildToolFilterFileSuffix;
     bool usePCH;
+    bool pchIsCFile = false;
     VCProjectWriter *projectWriter;
 
 protected:

@@ -2213,20 +2213,8 @@ void VCFilter::addFiles(const ProStringList& fileList)
 
 void VCFilter::modifyPCHstage(QString str)
 {
-    bool pchThroughSourceFile = !Project->precompSource.isEmpty();
-    bool isCFile = false;
-    for (QStringList::Iterator it = Option::c_ext.begin(); it != Option::c_ext.end(); ++it) {
-        if (str.endsWith(*it)) {
-            isCFile = true;
-            break;
-        }
-    }
     const bool isHFile = (str == Project->precompH);
-    bool isCPPFile = pchThroughSourceFile && (str == Project->precompSource);
-
-    if(!isCFile && !isHFile && !isCPPFile)
-        return;
-
+    const bool pchThroughSourceFile = !Project->precompSource.isEmpty();
     if (isHFile && pchThroughSourceFile && Project->autogenPrecompSource) {
         useCustomBuildTool = true;
         QString toFile(Project->precompSource);
@@ -2259,13 +2247,29 @@ void VCFilter::modifyPCHstage(QString str)
     }
 
     useCompilerTool = true;
-    // Setup PCH options
-    CompilerTool.UsePrecompiledHeader     = (isCFile ? pchNone : pchCreateUsingSpecific);
-    if (isCFile)
+    const bool isPrecompSource = pchThroughSourceFile && (str == Project->precompSource);
+    if (isPrecompSource) {
+        CompilerTool.UsePrecompiledHeader = pchCreateUsingSpecific;
+        if (Project->autogenPrecompSource)
+            CompilerTool.PrecompiledHeaderThrough = Project->precompHFilename;
+        CompilerTool.ForcedIncludeFiles = QStringList("$(NOINHERIT)");
+        return;
+    }
+
+    bool isCFile = false;
+    for (QStringList::Iterator it = Option::c_ext.begin(); it != Option::c_ext.end(); ++it) {
+        if (str.endsWith(*it)) {
+            isCFile = true;
+            break;
+        }
+    }
+
+    bool pchCompatible = (isCFile == Project->pchIsCFile);
+    if (!pchCompatible) {
+        CompilerTool.UsePrecompiledHeader = pchNone;
         CompilerTool.PrecompiledHeaderThrough = QLatin1String("$(NOINHERIT)");
-    else if (Project->autogenPrecompSource)
-        CompilerTool.PrecompiledHeaderThrough = Project->precompHFilename;
-    CompilerTool.ForcedIncludeFiles       = QStringList("$(NOINHERIT)");
+        CompilerTool.ForcedIncludeFiles = QStringList("$(NOINHERIT)");
+    }
 }
 
 VCFilterFile VCFilter::findFile(const QString &filePath, bool *found) const
