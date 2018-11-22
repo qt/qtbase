@@ -2213,7 +2213,6 @@ void VCFilter::addFiles(const ProStringList& fileList)
 
 void VCFilter::modifyPCHstage(QString str)
 {
-    bool autogenSourceFile = Project->autogenPrecompSource;
     bool pchThroughSourceFile = !Project->precompSource.isEmpty();
     bool isCFile = false;
     for (QStringList::Iterator it = Option::c_ext.begin(); it != Option::c_ext.end(); ++it) {
@@ -2229,7 +2228,7 @@ void VCFilter::modifyPCHstage(QString str)
         return;
 
     if(isHFile && pchThroughSourceFile) {
-        if (autogenSourceFile) {
+        if (Project->autogenPrecompSource) {
             useCustomBuildTool = true;
             QString toFile(Project->precompSource);
             CustomBuildTool.Description = "Generating precompiled header source file '" + toFile + "' ...";
@@ -2266,7 +2265,7 @@ void VCFilter::modifyPCHstage(QString str)
     CompilerTool.UsePrecompiledHeader     = (isCFile ? pchNone : pchCreateUsingSpecific);
     if (isCFile)
         CompilerTool.PrecompiledHeaderThrough = QLatin1String("$(NOINHERIT)");
-    else if (autogenSourceFile)
+    else if (Project->autogenPrecompSource)
         CompilerTool.PrecompiledHeaderThrough = Project->precompHFilename;
     CompilerTool.ForcedIncludeFiles       = QStringList("$(NOINHERIT)");
 }
