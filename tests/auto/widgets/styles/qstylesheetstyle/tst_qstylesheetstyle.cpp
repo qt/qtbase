@@ -2085,7 +2085,8 @@ void tst_QStyleSheetStyle::highdpiImages()
     QFETCH(QColor, color);
 
     QWidget w;
-    QScreen *screen = QGuiApplication::screenAt(w.pos());
+    QScreen *screen = QGuiApplication::primaryScreen();
+    w.move(screen->availableGeometry().topLeft());
     QHighDpiScaling::setScreenFactor(screen, screenFactor);
     w.setStyleSheet("QWidget { background-image: url(\":/images/testimage.png\"); }");
     w.show();
