@@ -41,14 +41,14 @@ contains(TEMPLATE, .*app) {
 
     appjs.name = application qtloader.js
     appjs.output = $$DESTDIR/qtloader.js
-    appjs.commands = $$QMAKE_COPY $$WASM_PLUGIN_PATH/qtloader.js $$DESTDIR
+    appjs.commands = $$QMAKE_COPY $$shell_path($$WASM_PLUGIN_PATH/qtloader.js) $$shell_path($$DESTDIR)
     appjs.input = $$WASM_PLUGIN_PATH/qtloader.js
     appjs.depends = $$appjs.input
     QMAKE_EXTRA_COMPILERS += appjs
 
     appsvg.name = application qtlogo.svg
     appsvg.output = $$DESTDIR/qtlogo.svg
-    appsvg.commands = $$QMAKE_COPY $$WASM_PLUGIN_PATH/qtlogo.svg $$DESTDIR
+    appsvg.commands = $$QMAKE_COPY $$shell_path($$WASM_PLUGIN_PATH/qtlogo.svg) $$shell_path($$DESTDIR)
     appsvg.input = $$WASM_PLUGIN_PATH/qtlogo.svg
     appsvg.depends = $$appsvg.input
     QMAKE_EXTRA_COMPILERS += appsvg
