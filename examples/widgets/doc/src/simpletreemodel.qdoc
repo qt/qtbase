@@ -170,9 +170,8 @@
 
     \snippet itemviews/simpletreemodel/treeitem.cpp 5
 
-    Column data is returned by the \c data() function, taking advantage of
-    QList's ability to provide sensible default values if the column number
-    is out of range:
+    Column data is returned by the \c data() function. The bounds are checked
+    before accessing the container with the data:
 
     \snippet itemviews/simpletreemodel/treeitem.cpp 6
 

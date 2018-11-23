@@ -54,16 +54,12 @@
     A container for items of data supplied by the simple tree model.
 */
 
-#include <QStringList>
-
 #include "treeitem.h"
 
 //! [0]
-TreeItem::TreeItem(const QList<QVariant> &data, TreeItem *parent)
-{
-    m_parentItem = parent;
-    m_itemData = data;
-}
+TreeItem::TreeItem(const QVector<QVariant> &data, TreeItem *parent)
+    : m_itemData(data), m_parentItem(parent)
+{}
 //! [0]
 
 //! [1]
@@ -83,7 +79,9 @@ void TreeItem::appendChild(TreeItem *item)
 //! [3]
 TreeItem *TreeItem::child(int row)
 {
-    return m_childItems.value(row);
+    if (row < 0 || row >= m_childItems.size())
+        return nullptr;
+    return m_childItems.at(row);
 }
 //! [3]
 
@@ -104,7 +102,9 @@ int TreeItem::columnCount() const
 //! [6]
 QVariant TreeItem::data(int column) const
 {
-    return m_itemData.value(column);
+    if (column < 0 || column >= m_itemData.size())
+        return QVariant();
+    return m_itemData.at(column);
 }
 //! [6]
 
