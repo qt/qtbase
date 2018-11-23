@@ -175,6 +175,11 @@ QStringList QCupsPrinterSupport::availablePrintDeviceIds() const
 
 QString QCupsPrinterSupport::defaultPrintDeviceId() const
 {
+    return staticDefaultPrintDeviceId();
+}
+
+QString QCupsPrinterSupport::staticDefaultPrintDeviceId()
+{
     QString printerId;
     cups_dest_t *dests;
     int count = cupsGetDests(&dests);

@@ -71,6 +71,8 @@ public:
     QStringList availablePrintDeviceIds() const override;
     QString defaultPrintDeviceId() const override;
 
+    static QString staticDefaultPrintDeviceId();
+
 private:
     QString cupsOption(int i, const QString &key) const;
 };

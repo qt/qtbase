@@ -39,6 +39,8 @@
 
 #include "qppdprintdevice.h"
 
+#include "qcupsprintersupport_p.h"
+
 #include <QtCore/QMimeDatabase>
 #include <qdebug.h>
 
@@ -118,7 +120,12 @@ bool QPpdPrintDevice::isValid() const
 
 bool QPpdPrintDevice::isDefault() const
 {
-    return printerTypeFlags() & CUPS_PRINTER_DEFAULT;
+    // There seems to be a bug in cups in which printerTypeFlags
+    // returns CUPS_PRINTER_DEFAULT based only on system values, ignoring user lpoptions
+    // so we can't use that. And also there seems to be a bug in which dests returned
+    // by cupsGetNamedDest don't have is_default set at all so we can't use that either
+    // so go the long route and compare our id against the defaultPrintDeviceId
+    return id() == QCupsPrinterSupport::staticDefaultPrintDeviceId();
 }
 
 QPrint::DeviceState QPpdPrintDevice::state() const
