@@ -58,8 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     setupUi(this);
 
-    QStringList headers;
-    headers << tr("Title") << tr("Description");
+    const QStringList headers({tr("Title"), tr("Description")});
 
     QFile file(":/default.txt");
     file.open(QIODevice::ReadOnly);
@@ -87,7 +86,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::insertChild()
 {
-    QModelIndex index = view->selectionModel()->currentIndex();
+    const QModelIndex index = view->selectionModel()->currentIndex();
     QAbstractItemModel *model = view->model();
 
     if (model->columnCount(index) == 0) {
@@ -99,10 +98,10 @@ void MainWindow::insertChild()
         return;
 
     for (int column = 0; column < model->columnCount(index); ++column) {
-        QModelIndex child = model->index(0, column, index);
-        model->setData(child, QVariant("[No data]"), Qt::EditRole);
+        const QModelIndex child = model->index(0, column, index);
+        model->setData(child, QVariant(tr("[No data]")), Qt::EditRole);
         if (!model->headerData(column, Qt::Horizontal).isValid())
-            model->setHeaderData(column, Qt::Horizontal, QVariant("[No header]"), Qt::EditRole);
+            model->setHeaderData(column, Qt::Horizontal, QVariant(tr("[No header]")), Qt::EditRole);
     }
 
     view->selectionModel()->setCurrentIndex(model->index(0, 0, index),
@@ -127,7 +126,7 @@ bool MainWindow::insertColumn()
 
 void MainWindow::insertRow()
 {
-    QModelIndex index = view->selectionModel()->currentIndex();
+    const QModelIndex index = view->selectionModel()->currentIndex();
     QAbstractItemModel *model = view->model();
 
     if (!model->insertRow(index.row()+1, index.parent()))
@@ -136,19 +135,18 @@ void MainWindow::insertRow()
     updateActions();
 
     for (int column = 0; column < model->columnCount(index.parent()); ++column) {
-        QModelIndex child = model->index(index.row()+1, column, index.parent());
-        model->setData(child, QVariant("[No data]"), Qt::EditRole);
+        const QModelIndex child = model->index(index.row() + 1, column, index.parent());
+        model->setData(child, QVariant(tr("[No data]")), Qt::EditRole);
     }
 }
 
 bool MainWindow::removeColumn()
 {
     QAbstractItemModel *model = view->model();
-    int column = view->selectionModel()->currentIndex().column();
+    const int column = view->selectionModel()->currentIndex().column();
 
     // Insert columns in each child of the parent item.
-    bool changed = model->removeColumn(column);
-
+    const bool changed = model->removeColumn(column);
     if (changed)
         updateActions();
 
@@ -157,7 +155,7 @@ bool MainWindow::removeColumn()
 
 void MainWindow::removeRow()
 {
-    QModelIndex index = view->selectionModel()->currentIndex();
+    const QModelIndex index = view->selectionModel()->currentIndex();
     QAbstractItemModel *model = view->model();
     if (model->removeRow(index.row(), index.parent()))
         updateActions();
@@ -165,19 +163,19 @@ void MainWindow::removeRow()
 
 void MainWindow::updateActions()
 {
-    bool hasSelection = !view->selectionModel()->selection().isEmpty();
+    const bool hasSelection = !view->selectionModel()->selection().isEmpty();
     removeRowAction->setEnabled(hasSelection);
     removeColumnAction->setEnabled(hasSelection);
 
-    bool hasCurrent = view->selectionModel()->currentIndex().isValid();
+    const bool hasCurrent = view->selectionModel()->currentIndex().isValid();
     insertRowAction->setEnabled(hasCurrent);
     insertColumnAction->setEnabled(hasCurrent);
 
     if (hasCurrent) {
         view->closePersistentEditor(view->selectionModel()->currentIndex());
 
-        int row = view->selectionModel()->currentIndex().row();
-        int column = view->selectionModel()->currentIndex().column();
+        const int row = view->selectionModel()->currentIndex().row();
+        const int column = view->selectionModel()->currentIndex().column();
         if (view->selectionModel()->currentIndex().parent().isValid())
             statusBar()->showMessage(tr("Position: (%1,%2)").arg(row).arg(column));
         else
