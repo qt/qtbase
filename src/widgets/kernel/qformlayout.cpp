@@ -419,13 +419,15 @@ void QFormLayoutPrivate::updateSizes()
             if (label) {
                 maxMinLblWidth = qMax(maxMinLblWidth, label->minSize.width());
                 maxShLblWidth = qMax(maxShLblWidth, label->sizeHint.width());
-                if (field) {
+            }
+            if (field) {
+                if (field->fullRow) {
+                    maxMinIfldWidth = qMax(maxMinIfldWidth, field->minSize.width());
+                    maxShIfldWidth = qMax(maxShIfldWidth, field->sizeHint.width());
+                } else {
                     maxMinFldWidth = qMax(maxMinFldWidth, field->minSize.width() + field->sbsHSpace);
                     maxShFldWidth = qMax(maxShFldWidth, field->sizeHint.width() + field->sbsHSpace);
                 }
-            } else if (field) {
-                maxMinIfldWidth = qMax(maxMinIfldWidth, field->minSize.width());
-                maxShIfldWidth = qMax(maxShIfldWidth, field->sizeHint.width());
             }
 
             prevLbl = label;
