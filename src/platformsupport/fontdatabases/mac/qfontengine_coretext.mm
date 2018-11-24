@@ -155,17 +155,6 @@ static void loadAdvancesForGlyphs(CTFontRef ctfont,
     }
 }
 
-static float getTraitValue(CFDictionaryRef allTraits, CFStringRef trait)
-{
-    if (CFDictionaryContainsKey(allTraits, trait)) {
-        CFNumberRef traitNum = (CFNumberRef) CFDictionaryGetValue(allTraits, trait);
-        float v = 0;
-        CFNumberGetValue(traitNum, kCFNumberFloatType, &v);
-        return v;
-    }
-    return 0;
-}
-
 int QCoreTextFontEngine::antialiasingThreshold = 0;
 QFontEngine::GlyphFormat QCoreTextFontEngine::defaultGlyphFormat = QFontEngine::Format_A32;
 
@@ -276,6 +265,16 @@ void QCoreTextFontEngine::init()
 
     if (traits & kCTFontItalicTrait)
         fontDef.style = QFont::StyleItalic;
+
+    static const auto getTraitValue = [](CFDictionaryRef allTraits, CFStringRef trait) -> float {
+        if (CFDictionaryContainsKey(allTraits, trait)) {
+            CFNumberRef traitNum = (CFNumberRef) CFDictionaryGetValue(allTraits, trait);
+            float v = 0;
+            CFNumberGetValue(traitNum, kCFNumberFloatType, &v);
+            return v;
+        }
+        return 0;
+    };
 
     CFDictionaryRef allTraits = CTFontCopyTraits(ctfont);
     fontDef.weight = QCoreTextFontEngine::qtWeightFromCFWeight(getTraitValue(allTraits, kCTFontWeightTrait));
