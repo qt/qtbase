@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "colorlisteditor.h"
+
+#include <QtWidgets>
 
 ColorListEditor::ColorListEditor(QWidget *widget) : QComboBox(widget)
 {
@@ -65,16 +65,16 @@ QColor ColorListEditor::color() const
 //! [0]
 
 //! [1]
-void ColorListEditor::setColor(QColor color)
+void ColorListEditor::setColor(const QColor &color)
 {
-    setCurrentIndex(findData(color, int(Qt::DecorationRole)));
+    setCurrentIndex(findData(color, Qt::DecorationRole));
 }
 //! [1]
 
 //! [2]
 void ColorListEditor::populateList()
 {
-    QStringList colorNames = QColor::colorNames();
+    const QStringList colorNames = QColor::colorNames();
 
     for (int i = 0; i < colorNames.size(); ++i) {
         QColor color(colorNames[i]);

@@ -53,14 +53,6 @@
 
 #include <QDir>
 #include <QLocale>
-#include <qmath.h>
-#include <algorithm>
-#include <cmath>
-
-StorageModel::StorageModel(QObject *parent) :
-    QAbstractTableModel(parent)
-{
-}
 
 void StorageModel::refresh()
 {

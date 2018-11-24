@@ -52,7 +52,6 @@
 #define FILELISTMODEL_H
 
 #include <QAbstractListModel>
-#include <QList>
 #include <QStringList>
 
 //![0]
@@ -61,7 +60,7 @@ class FileListModel : public QAbstractListModel
     Q_OBJECT
 
 public:
-    FileListModel(QObject *parent = 0);
+    FileListModel(QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;

@@ -134,7 +134,7 @@ QMimeData *PiecesModel::mimeData(const QModelIndexList &indexes) const
 
     QDataStream stream(&encodedData, QIODevice::WriteOnly);
 
-    foreach (QModelIndex index, indexes) {
+    for (const QModelIndex &index : indexes) {
         if (index.isValid()) {
             QPixmap pixmap = qvariant_cast<QPixmap>(data(index, Qt::UserRole));
             QPoint location = data(index, Qt::UserRole+1).toPoint();
@@ -190,10 +190,7 @@ bool PiecesModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
 
 int PiecesModel::rowCount(const QModelIndex &parent) const
 {
-    if (parent.isValid())
-        return 0;
-    else
-        return pixmaps.size();
+    return parent.isValid() ? 0 : pixmaps.size();
 }
 
 Qt::DropActions PiecesModel::supportedDropActions() const
@@ -201,7 +198,7 @@ Qt::DropActions PiecesModel::supportedDropActions() const
     return Qt::CopyAction | Qt::MoveAction;
 }
 
-void PiecesModel::addPieces(const QPixmap& pixmap)
+void PiecesModel::addPieces(const QPixmap &pixmap)
 {
     if (!pixmaps.isEmpty()) {
         beginRemoveRows(QModelIndex(), 0, pixmaps.size() - 1);

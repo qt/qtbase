@@ -52,10 +52,10 @@
 #define PIECESLIST_H
 
 #include <QAbstractListModel>
-#include <QList>
 #include <QPixmap>
 #include <QPoint>
 #include <QStringList>
+#include <QVector>
 
 QT_BEGIN_NAMESPACE
 class QMimeData;
@@ -66,7 +66,7 @@ class PiecesModel : public QAbstractListModel
     Q_OBJECT
 
 public:
-    explicit PiecesModel(int pieceSize, QObject *parent = 0);
+    explicit PiecesModel(int pieceSize, QObject *parent = nullptr);
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
@@ -80,11 +80,11 @@ public:
     Qt::DropActions supportedDropActions() const override;
 
     void addPiece(const QPixmap &pixmap, const QPoint &location);
-    void addPieces(const QPixmap& pixmap);
+    void addPieces(const QPixmap &pixmap);
 
 private:
-    QList<QPoint> locations;
-    QList<QPixmap> pixmaps;
+    QVector<QPoint> locations;
+    QVector<QPixmap> pixmaps;
 
     int m_PieceSize;
 };

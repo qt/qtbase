@@ -48,10 +48,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "window.h"
 #include "colorlisteditor.h"
+
+#include <QtWidgets>
 
 //! [0]
 Window::Window()
@@ -71,19 +71,18 @@ Window::Window()
 
 void Window::createGUI()
 {
-    QList<QPair<QString, QColor> > list;
-    list << QPair<QString, QColor>(tr("Alice"), QColor("aliceblue")) <<
-            QPair<QString, QColor>(tr("Neptun"), QColor("aquamarine")) <<
-            QPair<QString, QColor>(tr("Ferdinand"), QColor("springgreen"));
+    const QVector<QPair<QString, QColor> > list =
+        {{ tr("Alice"), QColor("aliceblue") },
+         { tr("Neptun"), QColor("aquamarine") },
+         { tr("Ferdinand"), QColor("springgreen") }};
 
     QTableWidget *table = new QTableWidget(3, 2);
-    table->setHorizontalHeaderLabels(QStringList() << tr("Name")
-                                                   << tr("Hair Color"));
+    table->setHorizontalHeaderLabels({ tr("Name"), tr("Hair Color") });
     table->verticalHeader()->setVisible(false);
     table->resize(150, 50);
 
     for (int i = 0; i < 3; ++i) {
-        QPair<QString, QColor> pair = list.at(i);
+        const QPair<QString, QColor> &pair = list.at(i);
 
         QTableWidgetItem *nameItem = new QTableWidgetItem(pair.first);
         QTableWidgetItem *colorItem = new QTableWidgetItem;

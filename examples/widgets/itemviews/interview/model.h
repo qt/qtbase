@@ -61,7 +61,7 @@ class Model : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    Model(int rows, int columns, QObject *parent = 0);
+    Model(int rows, int columns, QObject *parent = nullptr);
     ~Model();
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const override;
@@ -80,7 +80,7 @@ private:
 
     struct Node
     {
-        Node(Node *parent = 0) : parent(parent), children(0) {}
+        Node(Node *parent = nullptr) : parent(parent), children(nullptr) {}
         ~Node() { delete children; }
         Node *parent;
         QVector<Node> *children;

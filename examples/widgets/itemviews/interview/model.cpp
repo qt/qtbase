@@ -50,14 +50,13 @@
 
 #include "model.h"
 
-#include <QIcon>
 #include <QPixmap>
 
 Model::Model(int rows, int columns, QObject *parent)
     : QAbstractItemModel(parent),
       services(QPixmap(":/images/services.png")),
       rc(rows), cc(columns),
-      tree(new QVector<Node>(rows, Node(0)))
+      tree(new QVector<Node>(rows, Node()))
 {
 
 }

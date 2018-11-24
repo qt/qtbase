@@ -49,10 +49,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QHeaderView>
-#include <QtWidgets/QShortcut>
-#include <QtWidgets/QTreeView>
+#include <QApplication>
+#include <QShortcut>
+#include <QTreeView>
 
 #include "storagemodel.h"
 

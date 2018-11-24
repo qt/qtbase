@@ -48,8 +48,8 @@
 **
 ****************************************************************************/
 
-#include "imagemodel.h"
 #include "mainwindow.h"
+#include "imagemodel.h"
 #include "pixeldelegate.h"
 
 #include <QtWidgets>

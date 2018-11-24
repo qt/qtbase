@@ -48,11 +48,11 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
-#include "mysortfilterproxymodel.h"
 #include "window.h"
+#include "mysortfilterproxymodel.h"
 #include "filterwidget.h"
+
+#include <QtWidgets>
 
 //! [0]
 Window::Window()
@@ -75,7 +75,7 @@ Window::Window()
 
     //! [3]
     filterWidget = new FilterWidget;
-    filterWidget->setText("Grace|Sports");
+    filterWidget->setText(tr("Grace|Sports"));
     connect(filterWidget, &FilterWidget::filterChanged, this, &Window::textFilterChanged);
 
     filterPatternLabel = new QLabel(tr("&Filter pattern:"));
@@ -137,6 +137,11 @@ void Window::setSourceModel(QAbstractItemModel *model)
 {
     proxyModel->setSourceModel(model);
     sourceView->setModel(model);
+
+    for (int i = 0; i < proxyModel->columnCount(); ++i)
+        proxyView->resizeColumnToContents(i);
+    for (int i = 0; i < model->columnCount(); ++i)
+        sourceView->resizeColumnToContents(i);
 }
 //! [7]
 

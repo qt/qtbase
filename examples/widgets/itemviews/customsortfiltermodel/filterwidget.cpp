@@ -52,13 +52,11 @@
 
 #include <QIcon>
 #include <QPixmap>
-#include <QImage>
 #include <QMenu>
 #include <QAction>
 #include <QActionGroup>
 #include <QToolButton>
 #include <QWidgetAction>
-#include <QDebug>
 
 FilterWidget::FilterWidget(QWidget *parent)
     : QLineEdit(parent)
@@ -127,7 +125,8 @@ QRegExp::PatternSyntax FilterWidget::patternSyntax() const
 
 void FilterWidget::setPatternSyntax(QRegExp::PatternSyntax s)
 {
-    foreach (QAction *a, m_patternGroup->actions()) {
+    const QList<QAction*> actions = m_patternGroup->actions();
+    for (QAction *a : actions) {
         if (patternSyntaxFromAction(a) == s) {
             a->setChecked(true);
             break;
