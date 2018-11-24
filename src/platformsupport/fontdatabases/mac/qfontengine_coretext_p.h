@@ -131,8 +131,8 @@ protected:
     QImage imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool colorful, const QTransform &m);
     void loadAdvancesForGlyphs(QVarLengthArray<CGGlyph> &cgGlyphs, QGlyphLayout *glyphs) const;
 
-    CTFontRef ctfont;
-    CGFontRef cgFont;
+    QCFType<CTFontRef> ctfont;
+    QCFType<CGFontRef> cgFont;
     int synthesisFlags;
     CGAffineTransform transform;
     QFixed avgCharWidth;

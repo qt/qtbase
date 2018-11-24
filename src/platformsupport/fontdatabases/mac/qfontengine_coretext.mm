@@ -192,19 +192,16 @@ QCoreTextFontEngine *QCoreTextFontEngine::create(const QByteArray &fontData, qre
 QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def)
     : QCoreTextFontEngine(def)
 {
-    ctfont = font;
-    CFRetain(ctfont);
-    cgFont = CTFontCopyGraphicsFont(font, NULL);
+    ctfont = QCFType<CTFontRef>::constructFromGet(font);
+    cgFont = CTFontCopyGraphicsFont(font, nullptr);
     init();
 }
 
 QCoreTextFontEngine::QCoreTextFontEngine(CGFontRef font, const QFontDef &def)
     : QCoreTextFontEngine(def)
 {
-    cgFont = font;
-    // Keep reference count balanced
-    CFRetain(cgFont);
-    ctfont = CTFontCreateWithGraphicsFont(font, fontDef.pixelSize, &transform, NULL);
+    cgFont = QCFType<CGFontRef>::constructFromGet(font);
+    ctfont = CTFontCreateWithGraphicsFont(font, fontDef.pixelSize, &transform, nullptr);
     init();
 }
 
@@ -217,14 +214,12 @@ QCoreTextFontEngine::QCoreTextFontEngine(const QFontDef &def)
 
 QCoreTextFontEngine::~QCoreTextFontEngine()
 {
-    CFRelease(cgFont);
-    CFRelease(ctfont);
 }
 
 void QCoreTextFontEngine::init()
 {
-    Q_ASSERT(ctfont != NULL);
-    Q_ASSERT(cgFont != NULL);
+    Q_ASSERT(ctfont);
+    Q_ASSERT(cgFont);
 
     face_id.index = 0;
     QCFString name = CTFontCopyName(ctfont, kCTFontUniqueNameKey);
@@ -856,7 +851,7 @@ QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
 
 Qt::HANDLE QCoreTextFontEngine::handle() const
 {
-    return (Qt::HANDLE)ctfont;
+    return (Qt::HANDLE)(static_cast<CTFontRef>(ctfont));
 }
 
 bool QCoreTextFontEngine::supportsTransformation(const QTransform &transform) const
