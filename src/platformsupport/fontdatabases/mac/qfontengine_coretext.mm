@@ -190,10 +190,8 @@ QCoreTextFontEngine *QCoreTextFontEngine::create(const QByteArray &fontData, qre
 }
 
 QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def)
-    : QFontEngine(Mac)
+    : QCoreTextFontEngine(def)
 {
-    fontDef = def;
-    transform = qt_transform_from_fontdef(fontDef);
     ctfont = font;
     CFRetain(ctfont);
     cgFont = CTFontCopyGraphicsFont(font, NULL);
@@ -201,15 +199,20 @@ QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def)
 }
 
 QCoreTextFontEngine::QCoreTextFontEngine(CGFontRef font, const QFontDef &def)
-    : QFontEngine(Mac)
+    : QCoreTextFontEngine(def)
 {
-    fontDef = def;
-    transform = qt_transform_from_fontdef(fontDef);
     cgFont = font;
     // Keep reference count balanced
     CFRetain(cgFont);
     ctfont = CTFontCreateWithGraphicsFont(font, fontDef.pixelSize, &transform, NULL);
     init();
+}
+
+QCoreTextFontEngine::QCoreTextFontEngine(const QFontDef &def)
+    : QFontEngine(Mac)
+{
+    fontDef = def;
+    transform = qt_transform_from_fontdef(fontDef);
 }
 
 QCoreTextFontEngine::~QCoreTextFontEngine()
