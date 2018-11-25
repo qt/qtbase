@@ -64,6 +64,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_GUI_EXPORT CGBitmapInfo qt_mac_bitmapInfoForImage(const QImage &image);
+
 #ifdef HAVE_APPKIT
 Q_GUI_EXPORT NSImage *qt_mac_create_nsimage(const QPixmap &pm);
 Q_GUI_EXPORT NSImage *qt_mac_create_nsimage(const QIcon &icon, int defaultSize = 0);

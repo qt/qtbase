@@ -45,7 +45,7 @@
 #include <QtCore/qsettings.h>
 #endif
 #include <QtCore/qoperatingsystemversion.h>
-
+#include <private/qcoregraphics_p.h>
 #include <private/qimage_p.h>
 
 #include <cmath>
@@ -647,14 +647,9 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
         im.fill(0); // Faster than Qt::black
 
     QCFType<CGColorSpaceRef> colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
-    uint cgflags = isColorGlyph ? kCGImageAlphaPremultipliedFirst : kCGImageAlphaNoneSkipFirst;
-#ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
-    cgflags |= kCGBitmapByteOrder32Host;
-#endif
-
     QCFType<CGContextRef> ctx = CGBitmapContextCreate(im.bits(), im.width(), im.height(),
                                              8, im.bytesPerLine(), colorspace,
-                                             cgflags);
+                                             qt_mac_bitmapInfoForImage(im));
     Q_ASSERT(ctx);
     CGContextSetFontSize(ctx, fontDef.pixelSize);
     const bool antialias = (aa || fontDef.pointSize > antialiasingThreshold) && !(fontDef.styleStrategy & QFont::NoAntialias);
