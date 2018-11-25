@@ -231,7 +231,7 @@ for(ever) {
         !isEmpty(MODULE_MODULE) {
             contains(MODULE_CONFIG, lib_bundle) {
                 framework = $$MODULE_MODULE
-                qtConfig(debug_and_release):!macx-xcode {
+                qtConfig(debug_and_release):qt_link_suffixed_framework:!macx-xcode {
                     platform_target_suffix = $$qtPlatformTargetSuffix()
                     !isEmpty(platform_target_suffix): \
                         # The -framework linker argument supports a name[,suffix] version,
