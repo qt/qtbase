@@ -433,6 +433,11 @@ qreal QCoreTextFontEngine::maxCharWidth() const
     return bb.xoff.toReal();
 }
 
+bool QCoreTextFontEngine::hasColorGlyphs() const
+{
+    return glyphFormat == QFontEngine::Format_ARGB;
+}
+
 void QCoreTextFontEngine::draw(CGContextRef ctx, qreal x, qreal y, const QTextItemInt &ti, int paintDeviceHeight)
 {
     QVarLengthArray<QFixedPoint> positions;
@@ -529,7 +534,7 @@ static void convertCGPathToQPainterPath(void *info, const CGPathElement *element
 void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nGlyphs,
                                           QPainterPath *path, QTextItem::RenderFlags)
 {
-    if (glyphFormat == QFontEngine::Format_ARGB)
+    if (hasColorGlyphs())
         return; // We can't convert color-glyphs to path
 
     CGAffineTransform cgMatrix = CGAffineTransformIdentity;
@@ -731,8 +736,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
 {
     glyph_metrics_t br = alphaMapBoundingBox(glyph, subPixelPosition, matrix, glyphFormat);
 
-    bool isColorGlyph = glyphFormat == QFontEngine::Format_ARGB;
-    QImage::Format imageFormat = isColorGlyph ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+    QImage::Format imageFormat = hasColorGlyphs() ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
     QImage im(br.width.ceil().toInt(), br.height.ceil().toInt(), imageFormat);
     if (!im.width() || !im.height())
         return im;
@@ -751,7 +755,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
         if (!qt_mac_applicationIsInDarkMode())
             glyphColor = CGColorGetConstantColor(kCGColorBlack);
     }
-    const bool blackOnWhiteGlyphs = !isColorGlyph
+    const bool blackOnWhiteGlyphs = !hasColorGlyphs()
             && CGColorEqualToColor(glyphColor, CGColorGetConstantColor(kCGColorBlack));
     if (blackOnWhiteGlyphs)
         im.fill(Qt::white);
@@ -775,7 +779,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     if (synthesisFlags & QFontEngine::SynthesizedItalic)
         cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, SYNTHETIC_ITALIC_SKEW, 1, 0, 0));
 
-    if (!isColorGlyph) // CTFontDrawGlyphs incorporates the font's matrix already
+    if (!hasColorGlyphs()) // CTFontDrawGlyphs incorporates the font's matrix already
         cgMatrix = CGAffineTransformConcat(cgMatrix, transform);
 
     if (matrix.isScaling())
@@ -785,7 +789,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     qreal pos_x = -br.x.truncate() + subPixelPosition.toReal();
     qreal pos_y = im.height() + br.y.toReal();
 
-    if (!isColorGlyph) {
+    if (!hasColorGlyphs()) {
         CGContextSetTextMatrix(ctx, cgMatrix);
 #if defined(Q_OS_MACOS)
         CGContextSetFillColorWithColor(ctx, glyphColor);

@@ -139,6 +139,7 @@ protected:
     void init();
     QImage imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool colorful, const QTransform &m);
     void loadAdvancesForGlyphs(QVarLengthArray<CGGlyph> &cgGlyphs, QGlyphLayout *glyphs) const;
+    bool hasColorGlyphs() const;
 
     QCFType<CTFontRef> ctfont;
     QCFType<CGFontRef> cgFont;
