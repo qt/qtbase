@@ -252,12 +252,11 @@ void QCoreTextFontEngine::init()
         return 0;
     };
 
-    CFDictionaryRef allTraits = CTFontCopyTraits(ctfont);
+    QCFType<CFDictionaryRef> allTraits = CTFontCopyTraits(ctfont);
     fontDef.weight = QCoreTextFontEngine::qtWeightFromCFWeight(getTraitValue(allTraits, kCTFontWeightTrait));
     int slant = static_cast<int>(getTraitValue(allTraits, kCTFontSlantTrait) * 500 + 500);
     if (slant > 500 && !(traits & kCTFontItalicTrait))
         fontDef.style = QFont::StyleOblique;
-    CFRelease(allTraits);
 
     if (fontDef.weight >= QFont::Bold && !(traits & kCTFontBoldTrait))
         synthesisFlags |= SynthesizedBold;
@@ -647,13 +646,13 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
 #endif
         im.fill(0); // Faster than Qt::black
 
-    CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+    QCFType<CGColorSpaceRef> colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
     uint cgflags = isColorGlyph ? kCGImageAlphaPremultipliedFirst : kCGImageAlphaNoneSkipFirst;
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
     cgflags |= kCGBitmapByteOrder32Host;
 #endif
 
-    CGContextRef ctx = CGBitmapContextCreate(im.bits(), im.width(), im.height(),
+    QCFType<CGContextRef> ctx = CGBitmapContextCreate(im.bits(), im.width(), im.height(),
                                              8, im.bytesPerLine(), colorspace,
                                              cgflags);
     Q_ASSERT(ctx);
@@ -705,9 +704,6 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
         // glyphs in the Apple Color Emoji font, so we use CTFontDrawGlyphs instead.
         CTFontDrawGlyphs(ctfont, &cgGlyph, &CGPointZero, 1, ctx);
     }
-
-    CGContextRelease(ctx);
-    CGColorSpaceRelease(colorspace);
 
 #if defined(Q_OS_MACOS)
     if (blackOnWhiteGlyphs)
