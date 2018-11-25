@@ -732,7 +732,8 @@ bool QCoreTextFontEngine::expectsGammaCorrectedBlending() const
     return (glyphFormat == Format_A32) && !(fontDef.styleStrategy & (QFont::NoAntialias | QFont::NoSubpixelAntialias));
 }
 
-QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool aa, const QTransform &matrix)
+QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition,
+                        bool overrideAntialiasingThreshold, const QTransform &matrix)
 {
     glyph_metrics_t br = alphaMapBoundingBox(glyph, subPixelPosition, matrix, glyphFormat);
 
@@ -769,7 +770,8 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
                                              qt_mac_bitmapInfoForImage(im));
     Q_ASSERT(ctx);
     CGContextSetFontSize(ctx, fontDef.pixelSize);
-    const bool antialias = (aa || fontDef.pointSize > antialiasingThreshold()) && !(fontDef.styleStrategy & QFont::NoAntialias);
+    const bool antialias = (overrideAntialiasingThreshold || fontDef.pointSize > antialiasingThreshold())
+        && !(fontDef.styleStrategy & QFont::NoAntialias);
     CGContextSetShouldAntialias(ctx, antialias);
     const bool smoothing = antialias && !(fontDef.styleStrategy & QFont::NoSubpixelAntialias);
     CGContextSetShouldSmoothFonts(ctx, smoothing);
