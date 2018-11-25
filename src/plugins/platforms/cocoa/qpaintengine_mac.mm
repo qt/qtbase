@@ -914,7 +914,7 @@ void QCoreGraphicsPaintEngine::drawTextItem(const QPointF &pos, const QTextItem 
     QFontEngine *fe = ti.fontEngine;
 
     const bool textAA = ((state->renderHints() & QPainter::TextAntialiasing)
-                         && (fe->fontDef.pointSize > QCoreTextFontEngine::antialiasingThreshold)
+                         && (fe->fontDef.pointSize > QCoreTextFontEngine::antialiasingThreshold())
                          && !(fe->fontDef.styleStrategy & QFont::NoAntialias));
     const bool lineAA = state->renderHints() & QPainter::Antialiasing;
     if (textAA != lineAA)

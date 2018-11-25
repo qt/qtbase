@@ -53,6 +53,7 @@
 
 #include <private/qfontengine_p.h>
 #include <private/qcore_mac_p.h>
+#include <QtCore/qloggingcategory.h>
 
 #ifdef Q_OS_OSX
 #include <ApplicationServices/ApplicationServices.h>
@@ -63,8 +64,12 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_LOGGING_CATEGORY(lcQpaFonts)
+
 class QCoreTextFontEngine : public QFontEngine
 {
+    Q_GADGET
+
 public:
     QCoreTextFontEngine(CTFontRef font, const QFontDef &def);
     QCoreTextFontEngine(CGFontRef font, const QFontDef &def);
@@ -118,13 +123,17 @@ public:
 
     QFontEngine::Properties properties() const override;
 
+    enum FontSmoothing { Disabled, Subpixel, Grayscale };
+    Q_ENUM(FontSmoothing);
+
+    static FontSmoothing fontSmoothing();
+    static int antialiasingThreshold();
+
     static bool ct_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *length);
     static QFont::Weight qtWeightFromCFWeight(float value);
 
-    static int antialiasingThreshold;
-    static QFontEngine::GlyphFormat defaultGlyphFormat;
-
     static QCoreTextFontEngine *create(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
+
 protected:
     QCoreTextFontEngine(const QFontDef &def);
     void init();

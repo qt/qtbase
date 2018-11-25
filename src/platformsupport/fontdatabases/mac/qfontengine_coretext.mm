@@ -85,6 +85,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQpaFonts, "qt.qpa.fonts")
+
 static float SYNTHETIC_ITALIC_SKEW = std::tan(14.f * std::acos(0.f) / 90.f);
 
 bool QCoreTextFontEngine::ct_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *length)
@@ -132,9 +134,6 @@ QFont::Weight QCoreTextFontEngine::qtWeightFromCFWeight(float value)
 
     return ret;
 }
-
-int QCoreTextFontEngine::antialiasingThreshold = 0;
-QFontEngine::GlyphFormat QCoreTextFontEngine::defaultGlyphFormat = QFontEngine::Format_A32;
 
 CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef)
 {
@@ -236,8 +235,10 @@ void QCoreTextFontEngine::init()
 
     if (traits & kCTFontColorGlyphsTrait)
         glyphFormat = QFontEngine::Format_ARGB;
+    else if (fontSmoothing() == FontSmoothing::Subpixel)
+        glyphFormat = QFontEngine::Format_A32;
     else
-        glyphFormat = defaultGlyphFormat;
+        glyphFormat = QFontEngine::Format_A8;
 
     if (traits & kCTFontItalicTrait)
         fontDef.style = QFont::StyleItalic;
@@ -520,7 +521,7 @@ static void convertCGPathToQPainterPath(void *info, const CGPathElement *element
             myInfo->path->closeSubpath();
             break;
         default:
-            qDebug() << "Unhandled path transform type: " << element->type;
+            qCWarning(lcQpaFonts) << "Unhandled path transform type: " << element->type;
     }
 
 }
@@ -608,6 +609,118 @@ glyph_metrics_t QCoreTextFontEngine::alphaMapBoundingBox(glyph_t glyph, QFixed s
     return br;
 }
 
+int QCoreTextFontEngine::antialiasingThreshold()
+{
+    static const int antialiasingThreshold = [] {
+        auto defaults = [NSUserDefaults standardUserDefaults];
+        int threshold = [defaults integerForKey:@"AppleAntiAliasingThreshold"];
+        qCDebug(lcQpaFonts) << "Resolved antialiasing threshold. Defaults ="
+            << [[defaults dictionaryRepresentation] dictionaryWithValuesForKeys:@[
+                @"AppleAntiAliasingThreshold"
+            ]] << "Result =" << threshold;
+        return threshold;
+    }();
+    return antialiasingThreshold;
+}
+
+/*
+    Apple has gone through many iterations of its font smoothing algorithms,
+    and there are many ways to enable or disable certain aspects of it. As
+    keeping up with all the different toggles and behavior differences between
+    macOS versions is tricky, we resort to rendering a single glyph in a few
+    configurations, picking up the font smoothing algorithm from the observed
+    result.
+
+    The possible values are:
+
+     - Disabled: No font smoothing is applied.
+
+       Possibly triggered by the user unchecking the "Use font smoothing when
+       available" checkbox in the system preferences or setting AppleFontSmoothing
+       to 0. Also controlled by the CGContextSetAllowsFontSmoothing() API,
+       which gets its default from the settings above. This API overrides
+       the more granular CGContextSetShouldSmoothFonts(), which we use to
+       enable (request) or disable font smoothing.
+
+       Note that this does not exclude normal antialiasing, controlled by
+       the CGContextSetShouldAntialias() API.
+
+     - Subpixel: Font smoothing is applied, and affects subpixels.
+
+       This was the default mode on macOS versions prior to 10.14 (Mojave).
+       The font dilation (stem darkening) parameters were controlled by the
+       AppleFontSmoothing setting, ranging from 1 to 3 (light to strong).
+
+       On Mojave it is no longer supported, but can be triggered by a legacy
+       override (CGFontRenderingFontSmoothingDisabled=NO), so we need to
+       still account for it, otherwise users will have a bad time.
+
+     - Grayscale: Font smoothing is applied, but does not affect subpixels.
+
+       This is the default mode on macOS 10.14 (Mojave). The font dilation
+       (stem darkening) parameters are not affected by the AppleFontSmoothing
+       setting, but are instead computed based on the fill color used when
+       drawing the glyphs (white fill gives a lighter dilation than black
+       fill). This affects how we build our glyph cache, since we produce
+       alpha maps by drawing white on black.
+*/
+QCoreTextFontEngine::FontSmoothing QCoreTextFontEngine::fontSmoothing()
+{
+    static const FontSmoothing cachedFontSmoothing = [] {
+        static const int kSize = 10;
+        QCFType<CTFontRef> font = CTFontCreateWithName(CFSTR("Helvetica"), kSize, nullptr);
+
+        UniChar character('X'); CGGlyph glyph;
+        CTFontGetGlyphsForCharacters(font, &character, &glyph, 1);
+
+        auto drawGlyph = [&](bool smooth) -> QImage {
+            QImage image(kSize, kSize, QImage::Format_RGB32);
+            image.fill(0);
+
+            QMacCGContext ctx(&image);
+            CGContextSetTextDrawingMode(ctx, kCGTextFill);
+            CGContextSetGrayFillColor(ctx, 1, 1);
+
+            // Will be ignored if CGContextSetAllowsFontSmoothing() has been
+            // set to false by CoreGraphics based on user defaults.
+            CGContextSetShouldSmoothFonts(ctx, smooth);
+
+            CTFontDrawGlyphs(font, &glyph, &CGPointZero, 1, ctx);
+            return image;
+        };
+
+        QImage nonSmoothed = drawGlyph(false);
+        QImage smoothed = drawGlyph(true);
+
+        FontSmoothing fontSmoothing = FontSmoothing::Disabled;
+        [&] {
+            for (int x = 0; x < kSize; ++x) {
+                for (int y = 0; y < kSize; ++y) {
+                    QRgb sp = smoothed.pixel(x, y);
+                    if (qRed(sp) != qGreen(sp) || qRed(sp) != qBlue(sp)) {
+                        fontSmoothing = FontSmoothing::Subpixel;
+                        return;
+                    }
+
+                    if (sp != nonSmoothed.pixel(x, y))
+                        fontSmoothing = FontSmoothing::Grayscale;
+                }
+            }
+        }();
+
+        auto defaults = [NSUserDefaults standardUserDefaults];
+        qCDebug(lcQpaFonts) << "Resolved font smoothing algorithm. Defaults ="
+            << [[defaults dictionaryRepresentation] dictionaryWithValuesForKeys:@[
+                @"AppleFontSmoothing",
+                @"CGFontRenderingFontSmoothingDisabled"
+            ]] << "Result =" << fontSmoothing;
+
+        return fontSmoothing;
+    }();
+
+    return cachedFontSmoothing;
+}
+
 bool QCoreTextFontEngine::expectsGammaCorrectedBlending() const
 {
     // Only works well when font-smoothing is enabled
@@ -652,7 +765,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
                                              qt_mac_bitmapInfoForImage(im));
     Q_ASSERT(ctx);
     CGContextSetFontSize(ctx, fontDef.pixelSize);
-    const bool antialias = (aa || fontDef.pointSize > antialiasingThreshold) && !(fontDef.styleStrategy & QFont::NoAntialias);
+    const bool antialias = (aa || fontDef.pointSize > antialiasingThreshold()) && !(fontDef.styleStrategy & QFont::NoAntialias);
     CGContextSetShouldAntialias(ctx, antialias);
     const bool smoothing = antialias && !(fontDef.styleStrategy & QFont::NoSubpixelAntialias);
     CGContextSetShouldSmoothFonts(ctx, smoothing);
