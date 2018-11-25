@@ -127,6 +127,7 @@ void QLineEditPrivate::_q_handleWindowActivate()
 void QLineEditPrivate::_q_textEdited(const QString &text)
 {
     Q_Q(QLineEdit);
+    edited = true;
     emit q->textEdited(text);
 #if QT_CONFIG(completer)
     if (control->completer()
@@ -270,6 +271,12 @@ void QLineEditPrivate::setCursorVisible(bool visible)
         q->update(cursorRect());
     else
         q->update();
+}
+
+void QLineEditPrivate::setText(const QString& text)
+{
+    edited = true;
+    control->setText(text);
 }
 
 void QLineEditPrivate::updatePasswordEchoEditing(bool editing)

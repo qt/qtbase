@@ -315,7 +315,7 @@ QString QLineEdit::text() const
 void QLineEdit::setText(const QString& text)
 {
     Q_D(QLineEdit);
-    d->control->setText(text);
+    d->setText(text);
 }
 
 /*!
@@ -1483,8 +1483,11 @@ bool QLineEdit::event(QEvent * e)
         } else if (e->type() == QEvent::LeaveEditFocus) {
             d->setCursorVisible(false);
             d->control->setCursorBlinkEnabled(false);
-            if (d->control->hasAcceptableInput() || d->control->fixup())
+            if (d->edited && (d->control->hasAcceptableInput()
+                              || d->control->fixup())) {
                 emit editingFinished();
+                d->edited = false;
+            }
         }
     }
 #endif
@@ -1891,7 +1894,6 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
 
 /*!\reimp
 */
-
 void QLineEdit::focusOutEvent(QFocusEvent *e)
 {
     Q_D(QLineEdit);
@@ -1914,8 +1916,10 @@ void QLineEdit::focusOutEvent(QFocusEvent *e)
 #endif
     if (reason != Qt::PopupFocusReason
         || !(QApplication::activePopupWidget() && QApplication::activePopupWidget()->parentWidget() == this)) {
-            if (hasAcceptableInput() || d->control->fixup())
+            if (d->edited && (hasAcceptableInput() || d->control->fixup())) {
                 emit editingFinished();
+                d->edited = false;
+            }
     }
 #ifdef QT_KEYPAD_NAVIGATION
     d->control->setCancelText(QString());

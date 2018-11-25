@@ -3615,6 +3615,14 @@ void tst_QLineEdit::task174640_editingFinished()
 
     le2->setFocus();
     QTRY_VERIFY(le2->hasFocus());
+    // editingFinished will not be emitted anew because no editing happened
+    QCOMPARE(editingFinishedSpy.count(), 0);
+
+    le1->setFocus();
+    QTRY_VERIFY(le1->hasFocus());
+    QTest::keyPress(le1, Qt::Key_Plus);
+    le2->setFocus();
+    QTRY_VERIFY(le2->hasFocus());
     QCOMPARE(editingFinishedSpy.count(), 1);
     editingFinishedSpy.clear();
 
@@ -3632,6 +3640,8 @@ void tst_QLineEdit::task174640_editingFinished()
     delete testMenu1;
     QCOMPARE(editingFinishedSpy.count(), 0);
     QTRY_VERIFY(le1->hasFocus());
+    // Ensure le1 has been edited
+    QTest::keyPress(le1, Qt::Key_Plus);
 
     QMenu *testMenu2 = new QMenu(le2);
     testMenu2->addAction("foo2");
