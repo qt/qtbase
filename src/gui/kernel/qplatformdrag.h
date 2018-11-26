@@ -91,6 +91,8 @@ class Q_GUI_EXPORT QPlatformDrag
 {
     Q_DECLARE_PRIVATE(QPlatformDrag)
 public:
+    Q_DISABLE_COPY_MOVE(QPlatformDrag)
+
     QPlatformDrag();
     virtual ~QPlatformDrag();
 
@@ -108,8 +110,6 @@ public:
 
 private:
     QPlatformDragPrivate *d_ptr;
-
-    Q_DISABLE_COPY(QPlatformDrag)
 };
 
 QT_END_NAMESPACE

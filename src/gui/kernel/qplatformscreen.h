@@ -80,6 +80,8 @@ class Q_GUI_EXPORT QPlatformScreen
     Q_DECLARE_PRIVATE(QPlatformScreen)
 
 public:
+    Q_DISABLE_COPY_MOVE(QPlatformScreen)
+
     enum SubpixelAntialiasingType { // copied from qfontengine_p.h since we can't include private headers
         Subpixel_None,
         Subpixel_RGB,
@@ -164,8 +166,6 @@ protected:
     QScopedPointer<QPlatformScreenPrivate> d_ptr;
 
 private:
-    Q_DISABLE_COPY(QPlatformScreen)
-
     friend class QScreenPrivate;
 };
 

@@ -71,6 +71,8 @@ class Q_GUI_EXPORT QPlatformWindow : public QPlatformSurface
 {
     Q_DECLARE_PRIVATE(QPlatformWindow)
 public:
+    Q_DISABLE_COPY_MOVE(QPlatformWindow)
+
     explicit QPlatformWindow(QWindow *window);
     ~QPlatformWindow() override;
 
@@ -164,8 +166,6 @@ protected:
     static QSize constrainWindowSize(const QSize &size);
 
     QScopedPointer<QPlatformWindowPrivate> d_ptr;
-private:
-    Q_DISABLE_COPY(QPlatformWindow)
 };
 
 QT_END_NAMESPACE

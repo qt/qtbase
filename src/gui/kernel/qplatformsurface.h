@@ -65,6 +65,8 @@ class QDebug;
 class Q_GUI_EXPORT QPlatformSurface
 {
 public:
+    Q_DISABLE_COPY_MOVE(QPlatformSurface)
+
     virtual ~QPlatformSurface();
     virtual QSurfaceFormat format() const = 0;
 

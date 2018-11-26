@@ -84,6 +84,8 @@ class QVulkanInstance;
 class Q_GUI_EXPORT QPlatformIntegration
 {
 public:
+    Q_DISABLE_COPY_MOVE(QPlatformIntegration)
+
     enum Capability {
         ThreadedPixmaps = 1,
         OpenGL,
@@ -199,6 +201,8 @@ public:
 #endif
 
 protected:
+    QPlatformIntegration() = default;
+
     void screenAdded(QPlatformScreen *screen, bool isPrimary = false);
     void destroyScreen(QPlatformScreen *screen);
     void setPrimaryScreen(QPlatformScreen *newPrimary);
