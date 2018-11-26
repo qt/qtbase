@@ -77,7 +77,7 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 {
     Q_ASSERT(data);
     Q_ASSERT(data->ref.load() == 0);
-    QAbstractItemModel *model = const_cast<QAbstractItemModel *>(data->model);
+    QAbstractItemModel *model = const_cast<QAbstractItemModel *>(data->index.model());
     // a valid persistent model index with a null model pointer can only happen if the model was destroyed
     if (model) {
         QAbstractItemModelPrivate *p = model->d_func();
@@ -512,10 +512,8 @@ QAbstractItemModel *QAbstractItemModelPrivate::staticEmptyModel()
 
 void QAbstractItemModelPrivate::invalidatePersistentIndexes()
 {
-    for (QPersistentModelIndexData *data : qAsConst(persistent.indexes)) {
+    for (QPersistentModelIndexData *data : qAsConst(persistent.indexes))
         data->index = QModelIndex();
-        data->model = 0;
-    }
     persistent.indexes.clear();
 }
 
@@ -530,7 +528,6 @@ void QAbstractItemModelPrivate::invalidatePersistentIndex(const QModelIndex &ind
         QPersistentModelIndexData *data = *it;
         persistent.indexes.erase(it);
         data->index = QModelIndex();
-        data->model = 0;
     }
 }
 
@@ -863,7 +860,6 @@ void QAbstractItemModelPrivate::rowsRemoved(const QModelIndex &parent,
         QPersistentModelIndexData *data = *it;
         persistent.indexes.erase(persistent.indexes.constFind(data->index));
         data->index = QModelIndex();
-        data->model = 0;
     }
 }
 
@@ -958,7 +954,6 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
         QPersistentModelIndexData *data = *it;
         persistent.indexes.erase(persistent.indexes.constFind(data->index));
         data->index = QModelIndex();
-        data->model = 0;
     }
 }
 
@@ -3294,8 +3289,6 @@ void QAbstractItemModel::changePersistentIndex(const QModelIndex &from, const QM
         data->index = to;
         if (to.isValid())
             d->persistent.insertMultiAtEnd(to, data);
-        else
-            data->model = 0;
     }
 }
 
@@ -3328,8 +3321,6 @@ void QAbstractItemModel::changePersistentIndexList(const QModelIndexList &from,
             data->index = to.at(i);
             if (data->index.isValid())
                 toBeReinserted << data;
-            else
-                data->model = 0;
         }
     }
 

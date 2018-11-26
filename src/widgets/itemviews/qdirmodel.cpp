@@ -1252,11 +1252,10 @@ void QDirModelPrivate::restorePersistentIndexes()
     for (const SavedPersistent &sp : qAsConst(savedPersistent)) {
         QPersistentModelIndexData *data = sp.data;
         QModelIndex idx = q->index(sp.path, sp.column);
-        if (idx != data->index || data->model == 0) {
+        if (idx != data->index || data->index.model() == nullptr) {
             //data->model may be equal to 0 if the model is getting destroyed
             persistent.indexes.remove(data->index);
             data->index = idx;
-            data->model = q;
             if (idx.isValid())
                 persistent.indexes.insert(idx, data);
         }

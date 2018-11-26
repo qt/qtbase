@@ -65,11 +65,10 @@ QT_REQUIRE_CONFIG(itemmodel);
 class QPersistentModelIndexData
 {
 public:
-    QPersistentModelIndexData() : model(0) {}
-    QPersistentModelIndexData(const QModelIndex &idx) : index(idx), model(idx.model()) {}
+    QPersistentModelIndexData() {}
+    QPersistentModelIndexData(const QModelIndex &idx) : index(idx) {}
     QModelIndex index;
     QAtomicInt ref;
-    const QAbstractItemModel *model;
     static QPersistentModelIndexData *create(const QModelIndex &index);
     static void destroy(QPersistentModelIndexData *data);
 };
