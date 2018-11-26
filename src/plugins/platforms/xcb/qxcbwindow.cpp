@@ -501,6 +501,8 @@ void QXcbWindow::create()
     // from various setter functions for adjusting the hints.
     xcb_wm_hints_t hints;
     memset(&hints, 0, sizeof(hints));
+    hints.flags = XCB_ICCCM_WM_HINT_WINDOW_GROUP;
+    hints.window_group = connection()->clientLeader();
     xcb_set_wm_hints(xcb_connection(), m_window, &hints);
 
     xcb_window_t leader = connection()->clientLeader();
