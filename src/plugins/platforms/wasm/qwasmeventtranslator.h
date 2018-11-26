@@ -197,6 +197,7 @@ private:
 private:
     QWindow *draggedWindow;
     QWindow *pressedWindow;
+    QWindow *lastWindow;
     Qt::MouseButtons pressedButtons;
 
     QWasmWindow::ResizeMode resizeMode;
