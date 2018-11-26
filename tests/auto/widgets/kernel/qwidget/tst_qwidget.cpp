@@ -166,6 +166,7 @@ private slots:
     void getSetCheck();
     void fontPropagation();
     void fontPropagation2();
+    void fontPropagation3();
     void palettePropagation();
     void palettePropagation2();
     void enabledPropagation();
@@ -817,6 +818,18 @@ void tst_QWidget::fontPropagation2()
     QCOMPARE(child5->font().pointSize(), 15);
     QVERIFY(!child5->font().bold());
     QVERIFY(child5->font().italic());
+}
+
+void tst_QWidget::fontPropagation3()
+{
+    QWidget parent;
+    QWidget *child = new QWidget(&parent);
+    parent.setFont(QFont("Monospace", 9));
+    QImage image(32, 32, QImage::Format_RGB32);
+    QPainter p(&image);
+    p.setFont(child->font());
+    QCOMPARE(p.font().family(), child->font().family());
+    QCOMPARE(p.font().pointSize(), child->font().pointSize());
 }
 
 void tst_QWidget::palettePropagation()

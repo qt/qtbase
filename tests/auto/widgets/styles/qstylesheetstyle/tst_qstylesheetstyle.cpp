@@ -741,9 +741,9 @@ void tst_QStyleSheetStyle::fontPropagation()
     QCOMPARE(FONTSIZE(pb), 20);
 
     QWidget window;
-    window.setStyleSheet("* { font-size: 10pt }");
+    window.setStyleSheet("* { font-size: 9pt }");
     pb.setParent(&window);
-    QCOMPARE(FONTSIZE(pb), 10);
+    QCOMPARE(FONTSIZE(pb), 9);
     window.setStyleSheet("");
     QCOMPARE(FONTSIZE(pb), buttonFontSize);
 
