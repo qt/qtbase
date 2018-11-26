@@ -90,6 +90,7 @@
 #include <qglobal.h>
 #include <qwindowdefs.h>
 #include <private/qcore_mac_p.h>
+#include <QtGui/qwindow.h>
 
 @class QT_MANGLE_NAMESPACE(QCocoaMenuLoader);
 
