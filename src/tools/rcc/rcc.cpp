@@ -129,7 +129,7 @@ public:
     QLocale::Country m_country;
     QFileInfo m_fileInfo;
     RCCFileInfo *m_parent;
-    QHash<QString, RCCFileInfo*> m_children;
+    QMultiHash<QString, RCCFileInfo *> m_children;
     RCCResourceLibrary::CompressionAlgorithm m_compressAlgo;
     int m_compressLevel;
     int m_compressThreshold;
@@ -737,7 +737,7 @@ bool RCCResourceLibrary::addFile(const QString &alias, const RCCFileInfo &file)
             parent->m_children.insert(node, s);
             parent = s;
         } else {
-            parent = parent->m_children[node];
+            parent = *parent->m_children.constFind(node);
         }
     }
 
@@ -757,7 +757,7 @@ bool RCCResourceLibrary::addFile(const QString &alias, const RCCFileInfo &file)
             break;
         }
     }
-    parent->m_children.insertMulti(filename, s);
+    parent->m_children.insert(filename, s);
     return true;
 }
 
