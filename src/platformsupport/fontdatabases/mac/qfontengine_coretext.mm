@@ -885,10 +885,8 @@ void QCoreTextFontEngine::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::Shap
     QVarLengthArray<CGGlyph> cgGlyphs(numGlyphs);
 
     for (int i = 0; i < numGlyphs; ++i) {
-        if (glyphs->glyphs[i] & 0xff000000)
-            cgGlyphs[i] = 0;
-        else
-            cgGlyphs[i] = glyphs->glyphs[i];
+        Q_ASSERT(!QFontEngineMulti::highByte(glyphs->glyphs[i]));
+        cgGlyphs[i] = glyphs->glyphs[i];
     }
 
     loadAdvancesForGlyphs(cgGlyphs, glyphs);
@@ -901,14 +899,9 @@ void QCoreTextFontEngine::loadAdvancesForGlyphs(QVarLengthArray<CGGlyph> &cgGlyp
     CTFontGetAdvancesForGlyphs(ctfont, kCTFontOrientationHorizontal, cgGlyphs.data(), advances.data(), numGlyphs);
 
     for (int i = 0; i < numGlyphs; ++i) {
-        if (glyphs->glyphs[i] & 0xff000000)
-            continue;
-        glyphs->advances[i] = QFixed::fromReal(advances[i].width);
-    }
-
-    if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
-        for (int i = 0; i < numGlyphs; ++i)
-            glyphs->advances[i] = glyphs->advances[i].round();
+        QFixed advance = QFixed::fromReal(advances[i].width);
+        glyphs->advances[i] = fontDef.styleStrategy & QFont::ForceIntegerMetrics
+                                    ? advance.round() : advance;
     }
 }
 
