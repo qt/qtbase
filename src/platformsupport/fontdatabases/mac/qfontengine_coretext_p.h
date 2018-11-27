@@ -139,6 +139,8 @@ protected:
     QImage imageForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &m);
     void loadAdvancesForGlyphs(QVarLengthArray<CGGlyph> &cgGlyphs, QGlyphLayout *glyphs) const;
     bool hasColorGlyphs() const;
+    bool shouldAntialias() const;
+    bool shouldSmoothFont() const;
 
     QCFType<CTFontRef> ctfont;
     QCFType<CGFontRef> cgFont;

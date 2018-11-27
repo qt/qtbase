@@ -712,6 +712,28 @@ QCoreTextFontEngine::FontSmoothing QCoreTextFontEngine::fontSmoothing()
     return cachedFontSmoothing;
 }
 
+bool QCoreTextFontEngine::shouldAntialias() const
+{
+    return !(fontDef.styleStrategy & QFont::NoAntialias);
+}
+
+bool QCoreTextFontEngine::shouldSmoothFont() const
+{
+    if (hasColorGlyphs())
+        return false;
+
+    if (!shouldAntialias())
+        return false;
+
+    switch (fontSmoothing()) {
+    case Disabled: return false;
+    case Subpixel: return !(fontDef.styleStrategy & QFont::NoSubpixelAntialias);
+    case Grayscale: return true;
+    }
+
+    Q_UNREACHABLE();
+}
+
 bool QCoreTextFontEngine::expectsGammaCorrectedBlending() const
 {
     // Only works well when font-smoothing is enabled
@@ -755,10 +777,9 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
                                              qt_mac_bitmapInfoForImage(im));
     Q_ASSERT(ctx);
     CGContextSetFontSize(ctx, fontDef.pixelSize);
-    const bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
-    CGContextSetShouldAntialias(ctx, antialias);
-    const bool smoothing = antialias && !(fontDef.styleStrategy & QFont::NoSubpixelAntialias);
-    CGContextSetShouldSmoothFonts(ctx, smoothing);
+
+    CGContextSetShouldAntialias(ctx, shouldAntialias());
+    CGContextSetShouldSmoothFonts(ctx, shouldSmoothFont());
 
     CGAffineTransform cgMatrix = CGAffineTransformIdentity;
 
