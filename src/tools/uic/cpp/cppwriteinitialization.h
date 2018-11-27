@@ -174,8 +174,6 @@ private:
         void writeRetranslateUi(const QString &parentPath);
         void addSetter(const QString &setter, const QString &directive = QString(), bool translatable = false); // don't call it if you already added *this as a child of another Item
         void addChild(Item *child); // all setters should already been added
-        int setupUiCount() const { return m_setupUiData.setters.count(); }
-        int retranslateUiCount() const { return m_retranslateUiData.setters.count(); }
     private:
         struct ItemData
         {
@@ -223,9 +221,6 @@ private:
     void enableSorting(DomWidget *w, const QString &varName, const QString &tempName);
 
     QString findDeclaration(const QString &name);
-    DomWidget *findWidget(QLatin1String widgetClass);
-
-    bool isValidObject(const QString &name) const;
 
 private:
     QString writeFontProperties(const DomFont *f);

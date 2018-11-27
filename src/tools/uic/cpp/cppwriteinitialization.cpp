@@ -32,7 +32,6 @@
 #include "utils.h"
 #include "uic.h"
 #include "databaseinfo.h"
-#include "globaldefs.h"
 
 #include <language.h>
 
@@ -648,7 +647,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
         if (const DomWidget* parentWidget = m_widgetChain.top()) {
             const QString parentClass = parentWidget->attributeClass();
             if (parentClass != QLatin1String("QMainWindow")
-                && !m_uic->isCustomWidgetContainer(parentClass)
+                && !m_uic->customWidgetsInfo()->isCustomWidgetContainer(parentClass)
                 && !m_uic->isContainer(parentClass))
             m_layoutWidget = true;
         }
@@ -2427,12 +2426,6 @@ QTextStream &WriteInitialization::autoTrOutput(const DomString *str, const QStri
     return m_output;
 }
 
-bool WriteInitialization::isValidObject(const QString &name) const
-{
-    return m_registeredWidgets.contains(name)
-        || m_registeredActions.contains(name);
-}
-
 QString WriteInitialization::findDeclaration(const QString &name)
 {
     const QString normalized = Driver::normalizedName(name);
@@ -2463,18 +2456,6 @@ void WriteInitialization::acceptConnection(DomConnection *connection)
         << ", "
         << "SLOT("<<connection->elementSlot()<<')'
         << ");\n";
-}
-
-DomWidget *WriteInitialization::findWidget(QLatin1String widgetClass)
-{
-    for (int i = m_widgetChain.count() - 1; i >= 0; --i) {
-        DomWidget *widget = m_widgetChain.at(i);
-
-        if (widget && m_uic->customWidgetsInfo()->extends(widget->attributeClass(), widgetClass))
-            return widget;
-    }
-
-    return 0;
 }
 
 static void generateMultiDirectiveBegin(QTextStream &outputStream, const QSet<QString> &directives)

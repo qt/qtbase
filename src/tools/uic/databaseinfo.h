@@ -48,12 +48,6 @@ public:
     inline QStringList connections() const
     { return m_connections; }
 
-    inline QStringList cursors(const QString &connection) const
-    { return m_cursors.value(connection); }
-
-    inline QStringList fields(const QString &connection) const
-    { return m_fields.value(connection); }
-
 private:
     QStringList m_connections;
     QMap<QString, QStringList> m_cursors;

@@ -306,48 +306,9 @@ bool Driver::uic(const QString &fileName, QTextStream *out)
     return rtn;
 }
 
-void Driver::reset()
-{
-    Q_ASSERT( m_output == 0 );
-
-    m_option = Option();
-    m_output = 0;
-    m_problems.clear();
-
-    QStringList m_problems;
-
-    m_widgets.clear();
-    m_spacers.clear();
-    m_layouts.clear();
-    m_actionGroups.clear();
-    m_actions.clear();
-    m_nameRepository.clear();
-    m_pixmaps.clear();
-}
-
-void Driver::insertPixmap(const QString &pixmap)
-{
-    m_pixmaps.insert(pixmap, true);
-}
-
-bool Driver::containsPixmap(const QString &pixmap) const
-{
-    return m_pixmaps.contains(pixmap);
-}
-
 DomWidget *Driver::widgetByName(const QString &name) const
 {
     return m_widgets.key(name);
-}
-
-DomSpacer *Driver::spacerByName(const QString &name) const
-{
-    return m_spacers.key(name);
-}
-
-DomLayout *Driver::layoutByName(const QString &name) const
-{
-    return m_layouts.key(name);
 }
 
 DomActionGroup *Driver::actionGroupByName(const QString &name) const

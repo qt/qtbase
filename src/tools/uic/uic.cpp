@@ -243,16 +243,6 @@ void Uic::writeHeaderProtectionEnd()
     out << "#endif // " << h << "\n";
 }
 
-bool Uic::isMainWindow(const QString &className) const
-{
-    return customWidgetsInfo()->extends(className, QLatin1String("QMainWindow"));
-}
-
-bool Uic::isToolBar(const QString &className) const
-{
-    return customWidgetsInfo()->extends(className, QLatin1String("QToolBar"));
-}
-
 bool Uic::isButton(const QString &className) const
 {
     return customWidgetsInfo()->extends(className, QLatin1String("QRadioButton"))
@@ -271,21 +261,6 @@ bool Uic::isContainer(const QString &className) const
         || customWidgetsInfo()->extends(className, QLatin1String("QMdiArea"))
         || customWidgetsInfo()->extends(className, QLatin1String("QWizard"))
         || customWidgetsInfo()->extends(className, QLatin1String("QDockWidget"));
-}
-
-bool Uic::isCustomWidgetContainer(const QString &className) const
-{
-    return customWidgetsInfo()->isCustomWidgetContainer(className);
-}
-
-bool Uic::isStatusBar(const QString &className) const
-{
-    return customWidgetsInfo()->extends(className, QLatin1String("QStatusBar"));
-}
-
-bool Uic::isMenuBar(const QString &className) const
-{
-    return customWidgetsInfo()->extends(className, QLatin1String("QMenuBar"));
 }
 
 bool Uic::isMenu(const QString &className) const

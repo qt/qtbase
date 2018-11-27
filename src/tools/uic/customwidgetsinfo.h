@@ -48,12 +48,6 @@ public:
     void acceptCustomWidgets(DomCustomWidgets *node) override;
     void acceptCustomWidget(DomCustomWidget *node) override;
 
-    inline QStringList customWidgets() const
-    { return m_customWidgets.keys(); }
-
-    inline bool hasCustomWidget(const QString &name) const
-    { return m_customWidgets.contains(name); }
-
     inline DomCustomWidget *customWidget(const QString &name) const
     { return m_customWidgets.value(name); }
 

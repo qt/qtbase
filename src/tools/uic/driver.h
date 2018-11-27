@@ -63,13 +63,6 @@ public:
     inline QTextStream &output() const { return *m_output; }
     inline Option &option() { return m_option; }
 
-    // initialization
-    void reset();
-
-    // error
-    inline QStringList problems() { return m_problems; }
-    inline void addProblem(const QString &problem) { m_problems.append(problem); }
-
     // utils
     static QString headerFileName(const QString &fileName);
     QString headerFileName() const;
@@ -91,18 +84,9 @@ public:
     // Find a group by its non-uniqified name
     const DomButtonGroup *findButtonGroup(const QString &attributeName) const;
 
-    inline bool hasName(const QString &name) const
-    { return m_nameRepository.contains(name); }
-
     DomWidget *widgetByName(const QString &name) const;
-    DomSpacer *spacerByName(const QString &name) const;
-    DomLayout *layoutByName(const QString &name) const;
     DomActionGroup *actionGroupByName(const QString &name) const;
     DomAction *actionByName(const QString &name) const;
-
-    // pixmap
-    void insertPixmap(const QString &pixmap);
-    bool containsPixmap(const QString &pixmap) const;
 
     bool useIdBasedTranslations() const { return m_idBasedTranslations; }
     void setUseIdBasedTranslations(bool u) { m_idBasedTranslations = u; }
@@ -111,8 +95,6 @@ private:
     Option m_option;
     QTextStream m_stdout;
     QTextStream *m_output;
-
-    QStringList m_problems;
 
     // symbol tables
     QHash<DomWidget*, QString> m_widgets;
@@ -123,7 +105,6 @@ private:
     ButtonGroupNameHash m_buttonGroups;
     QHash<DomAction*, QString> m_actions;
     QHash<QString, bool> m_nameRepository;
-    QHash<QString, bool> m_pixmaps;
     bool m_idBasedTranslations = false;
 };
 
