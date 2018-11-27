@@ -401,4 +401,15 @@ void formatConnection(QTextStream &str, const SignalSlot &sender, const SignalSl
     }
 }
 
+QString boolValue(bool v)
+{
+    switch (language()) {
+    case Language::Cpp:
+        return v ? cppTrue : cppFalse;
+    case Language::Python:
+        return v ? QStringLiteral("True") : QStringLiteral("False");
+    }
+    Q_UNREACHABLE();
+}
+
 } // namespace language

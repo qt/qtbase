@@ -199,6 +199,8 @@ struct SignalSlot
 
 void formatConnection(QTextStream &str, const SignalSlot &sender, const SignalSlot &receiver);
 
+QString boolValue(bool v);
+
 } // namespace language
 
 #endif // LANGUAGE_H
