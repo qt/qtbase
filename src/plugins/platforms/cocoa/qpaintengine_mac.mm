@@ -313,7 +313,6 @@ static void qt_mac_draw_pattern(void *info, CGContextRef c)
             }
             pat->image = qt_mac_create_imagemask(pm, pm.rect());
             CGImageRelease(swatch);
-            CGContextRelease(pm_ctx);
             w *= QMACPATTERN_MASK_MULTIPLIER;
             h *= QMACPATTERN_MASK_MULTIPLIER;
 #endif

@@ -1,4 +1,4 @@
-TARGET = wasm
+TARGET = qwasm
 CONFIG += static plugin
 QT += \
     core-private gui-private \

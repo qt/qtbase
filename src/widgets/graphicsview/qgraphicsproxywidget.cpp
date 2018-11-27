@@ -607,20 +607,20 @@ void QGraphicsProxyWidgetPrivate::setWidget_helper(QWidget *newWidget, bool auto
         for (QGraphicsItem *child : childItems) {
             if (child->d_ptr->isProxyWidget()) {
                 QGraphicsProxyWidget *childProxy = static_cast<QGraphicsProxyWidget *>(child);
-                QWidget * parent = childProxy->widget();
-                while (parent->parentWidget() != 0) {
+                QWidget *parent = childProxy->widget();
+                while (parent && parent->parentWidget()) {
                     if (parent == widget)
                         break;
                     parent = parent->parentWidget();
                 }
                 if (!childProxy->widget() || parent != widget)
                     continue;
-                childProxy->setWidget(0);
+                childProxy->setWidget(nullptr);
                 delete childProxy;
             }
         }
 
-        widget = 0;
+        widget = nullptr;
 #ifndef QT_NO_CURSOR
         q->unsetCursor();
 #endif

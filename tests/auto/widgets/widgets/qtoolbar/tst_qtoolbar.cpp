@@ -42,6 +42,7 @@
 #include <qlineedit.h>
 #include <qkeysequence.h>
 #include <qmenu.h>
+#include <qlabel.h>
 #include <private/qtoolbarextension_p.h>
 
 QT_FORWARD_DECLARE_CLASS(QAction)
@@ -80,6 +81,8 @@ private slots:
 
     void task191727_layout();
     void task197996_visibility();
+
+    void extraCpuConsumption(); // QTBUG-54676
 };
 
 
@@ -1096,6 +1099,82 @@ void tst_QToolBar::task197996_visibility()
     pAction->setVisible(true);
 
     QTRY_VERIFY(toolBar->widgetForAction(pAction)->isVisible());
+}
+
+class ShowHideEventCounter : public QObject
+{
+public:
+    using QObject::QObject;
+
+    bool eventFilter(QObject *watched, QEvent *event) override
+    {
+        if (qobject_cast<QLineEdit*>(watched) && !event->spontaneous()) {
+            if (event->type() == QEvent::Show)
+                ++m_showEventsCount;
+
+            if (event->type() == QEvent::Hide)
+                ++m_hideEventsCount;
+        }
+
+        return QObject::eventFilter(watched, event);
+    }
+
+    uint showEventsCount() const { return m_showEventsCount; }
+    uint hideEventsCount() const { return m_hideEventsCount; }
+
+private:
+    uint m_showEventsCount = 0;
+    uint m_hideEventsCount = 0;
+};
+
+void tst_QToolBar::extraCpuConsumption()
+{
+    QMainWindow mainWindow;
+
+    auto tb = new QToolBar(&mainWindow);
+    tb->setMovable(false);
+
+    auto extensions = tb->findChildren<QToolBarExtension *>();
+    QVERIFY(!extensions.isEmpty());
+
+    auto extensionButton = extensions.at(0);
+    QVERIFY(extensionButton);
+
+    tb->addWidget(new QLabel("Lorem ipsum dolor sit amet"));
+
+    auto le = new QLineEdit;
+    le->setClearButtonEnabled(true);
+    le->setText("Lorem ipsum");
+    tb->addWidget(le);
+
+    mainWindow.addToolBar(tb);
+    mainWindow.show();
+    QVERIFY(QTest::qWaitForWindowActive(&mainWindow));
+
+    auto eventCounter = new ShowHideEventCounter(&mainWindow);
+    le->installEventFilter(eventCounter);
+
+    auto defaultSize = mainWindow.size();
+
+    // Line edit should be hidden now and extension button should be displayed
+    for (double p = 0.7; extensionButton->isHidden() || qFuzzyCompare(p, 0.); p -= 0.01) {
+        mainWindow.resize(int(defaultSize.width() * p), defaultSize.height());
+    }
+    QVERIFY(!extensionButton->isHidden());
+
+    // Line edit should be visible, but smaller
+    for (double p = 0.75; !extensionButton->isHidden() || qFuzzyCompare(p, 1.); p += 0.01) {
+        mainWindow.resize(int(defaultSize.width() * p), defaultSize.height());
+    }
+    QVERIFY(extensionButton->isHidden());
+
+    // Dispatch all pending events
+    qApp->sendPostedEvents();
+    qApp->processEvents();
+
+    QCOMPARE(eventCounter->showEventsCount(), eventCounter->hideEventsCount());
+    QCOMPARE(eventCounter->showEventsCount(), uint(1));
+    QCOMPARE(eventCounter->hideEventsCount(), uint(1));
 }
 
 QTEST_MAIN(tst_QToolBar)

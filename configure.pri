@@ -121,8 +121,7 @@ defineReplace(qtConfFunc_licenseCheck) {
             }
         } else {
             !$$hasCommercial: \
-                qtConfFatalError("No license files and no licheck executables found." \
-                                 "Cannot proceed. Try re-installing Qt.")
+                qtConfFatalError("No license files. Cannot proceed. Try re-installing Qt.")
             commercial = yes
         }
     }
@@ -1318,6 +1317,7 @@ defineTest(createConfigStatus) {
         cont = \
             "$$system_quote($$system_path($$cfg)$$ext) -redo %*"
     } else {
+        !contains(cfg, .*/.*): cfg = ./$$cfg
         cont = \
             "$${LITERAL_HASH}!/bin/sh" \
             "exec $$system_quote($$cfg) -redo \"$@\""

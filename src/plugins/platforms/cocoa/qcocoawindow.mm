@@ -898,34 +898,36 @@ void QCocoaWindow::raise()
     qCDebug(lcQpaWindow) << "QCocoaWindow::raise" << window();
 
     // ### handle spaces (see Qt 4 raise_sys in qwidget_mac.mm)
-    if (!isContentView())
-        return;
-
-    if (m_view.window.visible) {
-        {
-            // Clean up autoreleased temp objects from orderFront immediately.
-            // Failure to do so has been observed to cause leaks also beyond any outer
-            // autorelease pool (for example around a complete QWindow
-            // construct-show-raise-hide-delete cyle), counter to expected autoreleasepool
-            // behavior.
-            QMacAutoReleasePool pool;
-            [m_view.window orderFront:m_view.window];
+    if (isContentView()) {
+        if (m_view.window.visible) {
+            {
+                // Clean up auto-released temp objects from orderFront immediately.
+                // Failure to do so has been observed to cause leaks also beyond any outer
+                // autorelease pool (for example around a complete QWindow
+                // construct-show-raise-hide-delete cycle), counter to expected autoreleasepool
+                // behavior.
+                QMacAutoReleasePool pool;
+                [m_view.window orderFront:m_view.window];
+            }
+            static bool raiseProcess = qt_mac_resolveOption(true, "QT_MAC_SET_RAISE_PROCESS");
+            if (raiseProcess)
+                [NSApp activateIgnoringOtherApps:YES];
         }
-        static bool raiseProcess = qt_mac_resolveOption(true, "QT_MAC_SET_RAISE_PROCESS");
-        if (raiseProcess) {
-            [NSApp activateIgnoringOtherApps:YES];
-        }
+    } else {
+        [m_view.superview addSubview:m_view positioned:NSWindowAbove relativeTo:nil];
     }
 }
 
 void QCocoaWindow::lower()
 {
     qCDebug(lcQpaWindow) << "QCocoaWindow::lower" << window();
-    if (!isContentView())
-        return;
 
-    if (m_view.window.visible)
-        [m_view.window orderBack:m_view.window];
+    if (isContentView()) {
+        if (m_view.window.visible)
+            [m_view.window orderBack:m_view.window];
+    } else {
+        [m_view.superview addSubview:m_view positioned:NSWindowBelow relativeTo:nil];
+    }
 }
 
 bool QCocoaWindow::isExposed() const

@@ -140,6 +140,7 @@ private slots:
     void palettePropagation();
     void fontPropagation();
     void dontCrashWhenDie();
+    void dontCrashNoParent();
     void createProxyForChildWidget();
 #ifndef QT_NO_CONTEXTMENU
     void actionsContextMenu();
@@ -2962,6 +2963,20 @@ void tst_QGraphicsProxyWidget::dontCrashWhenDie()
     delete w;
     // This leaves an invisible proxy widget behind.
     qDeleteAll(QApplication::topLevelWidgets());
+}
+
+void tst_QGraphicsProxyWidget::dontCrashNoParent()  // QTBUG-15442
+{
+    QGraphicsProxyWidget *parent(new QGraphicsProxyWidget);
+    QGraphicsProxyWidget *child(new QGraphicsProxyWidget);
+    QScopedPointer<QLabel> label0(new QLabel);
+    QScopedPointer<QLabel> label1(new QLabel);
+
+    child->setParentItem(parent);
+    // Set the first label as the proxied widget.
+    parent->setWidget(label0.data());
+    // If we attempt to change the proxied widget we get a crash.
+    parent->setWidget(label1.data());
 }
 
 void tst_QGraphicsProxyWidget::createProxyForChildWidget()

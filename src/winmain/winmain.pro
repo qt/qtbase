@@ -12,10 +12,10 @@ DEFINES += QT_NO_FOREACH
 
 qtConfig(debug_and_release): CONFIG += build_all
 
-win32-msvc*:QMAKE_CFLAGS_DEBUG -= -Zi
-win32-msvc*:QMAKE_CXXFLAGS_DEBUG -= -Zi
-win32-msvc*:QMAKE_CFLAGS_DEBUG *= -Z7
-win32-msvc*:QMAKE_CXXFLAGS_DEBUG *= -Z7
+msvc: QMAKE_CFLAGS_DEBUG -= -Zi
+msvc: QMAKE_CXXFLAGS_DEBUG -= -Zi
+msvc: QMAKE_CFLAGS_DEBUG *= -Z7
+msvc: QMAKE_CXXFLAGS_DEBUG *= -Z7
 mingw: DEFINES += QT_NEEDS_QMAIN
 
 winrt {

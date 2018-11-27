@@ -1775,7 +1775,6 @@ void QWidgetPrivate::createTLExtra()
         x->posIncludesFrame = 0;
         x->sizeAdjusted = false;
         x->inTopLevelResize = false;
-        x->inRepaint = false;
         x->embedded = 0;
         x->window = 0;
         x->shareContext = 0;
@@ -6596,20 +6595,25 @@ QWidget *QWidgetPrivate::deepestFocusProxy() const
     return focusProxy;
 }
 
+static inline bool isEmbedded(const QWindow *w)
+{
+     const auto platformWindow = w->handle();
+     return platformWindow && platformWindow->isEmbedded();
+}
+
 void QWidgetPrivate::setFocus_sys()
 {
     Q_Q(QWidget);
     // Embedded native widget may have taken the focus; get it back to toplevel
     // if that is the case (QTBUG-25852)
-    const QWidget *topLevel = q->window();
-    // Do not activate in case the popup menu opens another application (QTBUG-70810).
-    if (QGuiApplication::applicationState() == Qt::ApplicationActive
-        && topLevel->windowType() != Qt::Popup) {
-        if (QWindow *nativeWindow = q->window()->windowHandle()) {
-            if (nativeWindow != QGuiApplication::focusWindow()
-                && q->testAttribute(Qt::WA_WState_Created)) {
-                nativeWindow->requestActivate();
-            }
+    // Do not activate in case the popup menu opens another application (QTBUG-70810)
+    // unless the application is embedded (QTBUG-71991).
+    if (QWindow *nativeWindow = q->testAttribute(Qt::WA_WState_Created) ? q->window()->windowHandle() : nullptr) {
+        if (nativeWindow->type() != Qt::Popup && nativeWindow != QGuiApplication::focusWindow()
+            && (QGuiApplication::applicationState() == Qt::ApplicationActive
+                || QCoreApplication::testAttribute(Qt::AA_PluginApplication)
+                || isEmbedded(nativeWindow))) {
+            nativeWindow->requestActivate();
         }
     }
 }
@@ -11036,11 +11040,8 @@ void QWidgetPrivate::repaint(T r)
         return;
 
     QTLWExtra *tlwExtra = q->window()->d_func()->maybeTopData();
-    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
-        tlwExtra->inRepaint = true;
+    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
         tlwExtra->backingStoreTracker->markDirty(r, q, QWidgetBackingStore::UpdateNow);
-        tlwExtra->inRepaint = false;
-    }
 }
 
 /*!

@@ -190,7 +190,6 @@ struct QTLWExtra {
     uint posIncludesFrame : 1;
     uint sizeAdjusted : 1;
     uint inTopLevelResize : 1;
-    uint inRepaint : 1;
     uint embedded : 1;
 
     // *************************** Platform specific values (bit fields first) **********

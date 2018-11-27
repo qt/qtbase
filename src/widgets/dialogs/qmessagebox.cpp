@@ -1832,8 +1832,9 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "<h3>About Qt</h3>"
         "<p>This program uses Qt version %1.</p>"
         ).arg(QLatin1String(QT_VERSION_STR));
-    QString translatedTextAboutQtText;
-    translatedTextAboutQtText = QMessageBox::tr(
+    //: Leave this text untranslated or include a verbatim copy of it below
+    //: and note that it is the authoritative version in case of doubt.
+    const QString translatedTextAboutQtText = QMessageBox::tr(
         "<p>Qt is a C++ toolkit for cross-platform application "
         "development.</p>"
         "<p>Qt provides single-source portability across all major desktop "
