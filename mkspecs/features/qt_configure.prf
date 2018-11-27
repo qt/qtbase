@@ -378,6 +378,7 @@ defineReplace(qtConfFindInPathList) {
 
 defineReplace(qtConfFindInPath) {
     ensurePathEnv()
+    equals(QMAKE_HOST.os, Windows):!contains(1, .*\\.exe): 1 = $${1}.exe
     return($$qtConfFindInPathList($$1, $$2 $$QMAKE_PATH_ENV))
 }
 
