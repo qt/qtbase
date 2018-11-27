@@ -2429,7 +2429,17 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
         QString::fromLatin1("Could not start %1: %2").arg(processExe, serverProcess.errorString())));
     while (!serverProcess.canReadLine())
         QVERIFY(serverProcess.waitForReadyRead(10000));
-    QCOMPARE(serverProcess.readLine().data(), QByteArray(server.toLatin1() + "\n").data());
+
+    QByteArray line = serverProcess.readLine();
+
+    // Ignore following print, happens on Qemu:
+    if (line == "getsockopt level=41 optname=26 not yet supported\n") {
+        while (!serverProcess.canReadLine())
+            QVERIFY(serverProcess.waitForReadyRead(10000));
+        line = serverProcess.readLine();
+    }
+
+    QCOMPARE(line.data(), QByteArray(server.toLatin1() + "\n").data());
 
     // Start client
     QProcess clientProcess;

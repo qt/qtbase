@@ -49,6 +49,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "qcocoahelpers.h"
+#include <type_traits>
 
 QT_BEGIN_NAMESPACE
 
@@ -60,6 +61,23 @@ QT_BEGIN_NAMESPACE
 /*****************************************************************************
    QMacPasteboard code
 *****************************************************************************/
+
+namespace
+{
+OSStatus PasteboardGetItemCountSafe(PasteboardRef paste, ItemCount *cnt)
+{
+    Q_ASSERT(paste);
+    Q_ASSERT(cnt);
+    const OSStatus result = PasteboardGetItemCount(paste, cnt);
+    // Despite being declared unsigned, this API can return -1
+    if (std::make_signed<ItemCount>::type(*cnt) < 0)
+        *cnt = 0;
+    return result;
+}
+} // namespace
+
+// Ensure we don't call the broken one later on
+#define PasteboardGetItemCount
 
 class QMacMimeData : public QMimeData
 {
@@ -210,7 +228,7 @@ QMacPasteboard::hasOSType(int c_flavor) const
     sync();
 
     ItemCount cnt = 0;
-    if (PasteboardGetItemCount(paste, &cnt) || !cnt)
+    if (PasteboardGetItemCountSafe(paste, &cnt) || !cnt)
         return false;
 
 #ifdef DEBUG_PASTEBOARD
@@ -257,7 +275,7 @@ QMacPasteboard::hasFlavor(QString c_flavor) const
     sync();
 
     ItemCount cnt = 0;
-    if (PasteboardGetItemCount(paste, &cnt) || !cnt)
+    if (PasteboardGetItemCountSafe(paste, &cnt) || !cnt)
         return false;
 
 #ifdef DEBUG_PASTEBOARD
@@ -374,7 +392,7 @@ QMacPasteboard::formats() const
 
     QStringList ret;
     ItemCount cnt = 0;
-    if (PasteboardGetItemCount(paste, &cnt) || !cnt)
+    if (PasteboardGetItemCountSafe(paste, &cnt) || !cnt)
         return ret;
 
 #ifdef DEBUG_PASTEBOARD
@@ -417,7 +435,7 @@ QMacPasteboard::hasFormat(const QString &format) const
     sync();
 
     ItemCount cnt = 0;
-    if (PasteboardGetItemCount(paste, &cnt) || !cnt)
+    if (PasteboardGetItemCountSafe(paste, &cnt) || !cnt)
         return false;
 
 #ifdef DEBUG_PASTEBOARD
@@ -460,7 +478,7 @@ QMacPasteboard::retrieveData(const QString &format, QVariant::Type) const
     sync();
 
     ItemCount cnt = 0;
-    if (PasteboardGetItemCount(paste, &cnt) || !cnt)
+    if (PasteboardGetItemCountSafe(paste, &cnt) || !cnt)
         return QByteArray();
 
 #ifdef DEBUG_PASTEBOARD

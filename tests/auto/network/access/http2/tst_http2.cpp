@@ -48,6 +48,8 @@
 #include <cstdlib>
 #include <string>
 
+#include "emulationdetector.h"
+
 #if !defined(QT_NO_OPENSSL) && OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_TLSEXT)
 // HTTP/2 over TLS requires ALPN/NPN to negotiate the protocol version.
 const bool clearTextHTTP2 = false;
@@ -287,6 +289,9 @@ void tst_Http2::flowControlServerSide()
     // on a session/stream level correctly + resume/suspend streams
     // to let all replies finish without any error.
     using namespace Http2;
+
+    if (EmulationDetector::isRunningArmOnX86())
+        QSKIP("Test is too slow to run on emulator");
 
     clearHTTP2State();
 

@@ -4114,7 +4114,8 @@ ushort QByteArray::toUShort(bool *ok, int base) const
 /*!
     Returns the byte array converted to a \c double value.
 
-    Returns 0.0 if the conversion fails.
+    Returns an infinity if the conversion overflows or 0.0 if the
+    conversion fails for other reasons (e.g. underflow).
 
     If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
@@ -4149,7 +4150,8 @@ double QByteArray::toDouble(bool *ok) const
 /*!
     Returns the byte array converted to a \c float value.
 
-    Returns 0.0 if the conversion fails.
+    Returns an infinity if the conversion overflows or 0.0 if the
+    conversion fails for other reasons (e.g. underflow).
 
     If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
