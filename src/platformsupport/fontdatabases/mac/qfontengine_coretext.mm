@@ -739,6 +739,11 @@ bool QCoreTextFontEngine::expectsGammaCorrectedBlending() const
     return shouldSmoothFont();
 }
 
+qreal QCoreTextFontEngine::fontSmoothingGamma()
+{
+    return 2.0;
+}
+
 QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &matrix)
 {
     glyph_metrics_t br = alphaMapBoundingBox(glyph, subPixelPosition, matrix, glyphFormat);

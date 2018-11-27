@@ -127,6 +127,7 @@ public:
     Q_ENUM(FontSmoothing);
 
     static FontSmoothing fontSmoothing();
+    static qreal fontSmoothingGamma();
 
     static bool ct_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *length);
     static QFont::Weight qtWeightFromCFWeight(float value);
