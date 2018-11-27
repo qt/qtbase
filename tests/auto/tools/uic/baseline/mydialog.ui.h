@@ -56,11 +56,11 @@ public:
 
     void retranslateUi(QDialog *MyDialog)
     {
-        MyDialog->setWindowTitle(QApplication::translate("MyDialog", "Mach 2!", nullptr));
-        aLabel->setText(QApplication::translate("MyDialog", "Join the life in the fastlane; - PCH enable your project today! -", nullptr));
-        aButton->setText(QApplication::translate("MyDialog", "&Quit", nullptr));
+        MyDialog->setWindowTitle(QCoreApplication::translate("MyDialog", "Mach 2!", nullptr));
+        aLabel->setText(QCoreApplication::translate("MyDialog", "Join the life in the fastlane; - PCH enable your project today! -", nullptr));
+        aButton->setText(QCoreApplication::translate("MyDialog", "&Quit", nullptr));
 #if QT_CONFIG(shortcut)
-        aButton->setShortcut(QApplication::translate("MyDialog", "Alt+Q", nullptr));
+        aButton->setShortcut(QCoreApplication::translate("MyDialog", "Alt+Q", nullptr));
 #endif // QT_CONFIG(shortcut)
     } // retranslateUi
 

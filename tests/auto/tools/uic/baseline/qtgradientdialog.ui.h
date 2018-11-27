@@ -89,7 +89,7 @@ public:
 
     void retranslateUi(QDialog *QtGradientDialog)
     {
-        QtGradientDialog->setWindowTitle(QApplication::translate("QtGradientDialog", "Edit Gradient", nullptr));
+        QtGradientDialog->setWindowTitle(QCoreApplication::translate("QtGradientDialog", "Edit Gradient", nullptr));
     } // retranslateUi
 
 };

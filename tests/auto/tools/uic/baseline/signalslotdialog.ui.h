@@ -133,25 +133,25 @@ public:
 
     void retranslateUi(QDialog *SignalSlotDialogClass)
     {
-        SignalSlotDialogClass->setWindowTitle(QApplication::translate("SignalSlotDialogClass", "Signals and slots", nullptr));
-        slotGroupBox->setTitle(QApplication::translate("SignalSlotDialogClass", "Slots", nullptr));
+        SignalSlotDialogClass->setWindowTitle(QCoreApplication::translate("SignalSlotDialogClass", "Signals and slots", nullptr));
+        slotGroupBox->setTitle(QCoreApplication::translate("SignalSlotDialogClass", "Slots", nullptr));
 #if QT_CONFIG(tooltip)
-        addSlotButton->setToolTip(QApplication::translate("SignalSlotDialogClass", "Add", nullptr));
+        addSlotButton->setToolTip(QCoreApplication::translate("SignalSlotDialogClass", "Add", nullptr));
 #endif // QT_CONFIG(tooltip)
-        addSlotButton->setText(QApplication::translate("SignalSlotDialogClass", "...", nullptr));
+        addSlotButton->setText(QCoreApplication::translate("SignalSlotDialogClass", "...", nullptr));
 #if QT_CONFIG(tooltip)
-        removeSlotButton->setToolTip(QApplication::translate("SignalSlotDialogClass", "Delete", nullptr));
+        removeSlotButton->setToolTip(QCoreApplication::translate("SignalSlotDialogClass", "Delete", nullptr));
 #endif // QT_CONFIG(tooltip)
-        removeSlotButton->setText(QApplication::translate("SignalSlotDialogClass", "...", nullptr));
-        signalGroupBox->setTitle(QApplication::translate("SignalSlotDialogClass", "Signals", nullptr));
+        removeSlotButton->setText(QCoreApplication::translate("SignalSlotDialogClass", "...", nullptr));
+        signalGroupBox->setTitle(QCoreApplication::translate("SignalSlotDialogClass", "Signals", nullptr));
 #if QT_CONFIG(tooltip)
-        addSignalButton->setToolTip(QApplication::translate("SignalSlotDialogClass", "Add", nullptr));
+        addSignalButton->setToolTip(QCoreApplication::translate("SignalSlotDialogClass", "Add", nullptr));
 #endif // QT_CONFIG(tooltip)
-        addSignalButton->setText(QApplication::translate("SignalSlotDialogClass", "...", nullptr));
+        addSignalButton->setText(QCoreApplication::translate("SignalSlotDialogClass", "...", nullptr));
 #if QT_CONFIG(tooltip)
-        removeSignalButton->setToolTip(QApplication::translate("SignalSlotDialogClass", "Delete", nullptr));
+        removeSignalButton->setToolTip(QCoreApplication::translate("SignalSlotDialogClass", "Delete", nullptr));
 #endif // QT_CONFIG(tooltip)
-        removeSignalButton->setText(QApplication::translate("SignalSlotDialogClass", "...", nullptr));
+        removeSignalButton->setText(QCoreApplication::translate("SignalSlotDialogClass", "...", nullptr));
     } // retranslateUi
 
 };

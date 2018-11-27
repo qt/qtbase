@@ -2347,7 +2347,7 @@ QString WriteInitialization::trCall(const QString &str, const QString &commentHi
         if (idBasedTranslations || m_option.idBased) {
             result += QLatin1String("qtTrId(");
         } else {
-            result += QLatin1String("QApplication::translate(\"")
+            result += QLatin1String("QCoreApplication::translate(\"")
                     + m_generatedClass
                     + QLatin1String("\", ");
         }

@@ -90,9 +90,9 @@ public:
 
     void retranslateUi(QDialog *CertificateInfo)
     {
-        CertificateInfo->setWindowTitle(QApplication::translate("CertificateInfo", "Display Certificate Information", nullptr));
-        groupBox->setTitle(QApplication::translate("CertificateInfo", "Certification Path", nullptr));
-        groupBox_2->setTitle(QApplication::translate("CertificateInfo", "Certificate Information", nullptr));
+        CertificateInfo->setWindowTitle(QCoreApplication::translate("CertificateInfo", "Display Certificate Information", nullptr));
+        groupBox->setTitle(QCoreApplication::translate("CertificateInfo", "Certification Path", nullptr));
+        groupBox_2->setTitle(QCoreApplication::translate("CertificateInfo", "Certificate Information", nullptr));
     } // retranslateUi
 
 };

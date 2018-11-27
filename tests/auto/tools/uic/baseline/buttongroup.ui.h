@@ -195,14 +195,14 @@ public:
 
     void retranslateUi(QWidget *Form)
     {
-        Form->setWindowTitle(QApplication::translate("Form", "Easing curves", nullptr));
-        groupBox_2->setTitle(QApplication::translate("Form", "Path type", nullptr));
-        lineRadio->setText(QApplication::translate("Form", "Line", nullptr));
-        circleRadio->setText(QApplication::translate("Form", "Circle", nullptr));
-        groupBox->setTitle(QApplication::translate("Form", "Properties", nullptr));
-        label->setText(QApplication::translate("Form", "Period", nullptr));
-        label_3->setText(QApplication::translate("Form", "Overshoot", nullptr));
-        label_2->setText(QApplication::translate("Form", "Amplitude", nullptr));
+        Form->setWindowTitle(QCoreApplication::translate("Form", "Easing curves", nullptr));
+        groupBox_2->setTitle(QCoreApplication::translate("Form", "Path type", nullptr));
+        lineRadio->setText(QCoreApplication::translate("Form", "Line", nullptr));
+        circleRadio->setText(QCoreApplication::translate("Form", "Circle", nullptr));
+        groupBox->setTitle(QCoreApplication::translate("Form", "Properties", nullptr));
+        label->setText(QCoreApplication::translate("Form", "Period", nullptr));
+        label_3->setText(QCoreApplication::translate("Form", "Overshoot", nullptr));
+        label_2->setText(QCoreApplication::translate("Form", "Amplitude", nullptr));
     } // retranslateUi
 
 };

@@ -197,16 +197,16 @@ public:
 
     void retranslateUi(QDialog *qdesigner_internal__PaletteEditor)
     {
-        qdesigner_internal__PaletteEditor->setWindowTitle(QApplication::translate("qdesigner_internal::PaletteEditor", "Edit Palette", nullptr));
-        advancedBox->setTitle(QApplication::translate("qdesigner_internal::PaletteEditor", "Tune Palette", nullptr));
+        qdesigner_internal__PaletteEditor->setWindowTitle(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Edit Palette", nullptr));
+        advancedBox->setTitle(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Tune Palette", nullptr));
         buildButton->setText(QString());
-        detailsRadio->setText(QApplication::translate("qdesigner_internal::PaletteEditor", "Show Details", nullptr));
-        computeRadio->setText(QApplication::translate("qdesigner_internal::PaletteEditor", "Compute Details", nullptr));
-        label->setText(QApplication::translate("qdesigner_internal::PaletteEditor", "Quick", nullptr));
-        GroupBox126->setTitle(QApplication::translate("qdesigner_internal::PaletteEditor", "Preview", nullptr));
-        disabledRadio->setText(QApplication::translate("qdesigner_internal::PaletteEditor", "Disabled", nullptr));
-        inactiveRadio->setText(QApplication::translate("qdesigner_internal::PaletteEditor", "Inactive", nullptr));
-        activeRadio->setText(QApplication::translate("qdesigner_internal::PaletteEditor", "Active", nullptr));
+        detailsRadio->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Show Details", nullptr));
+        computeRadio->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Compute Details", nullptr));
+        label->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Quick", nullptr));
+        GroupBox126->setTitle(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Preview", nullptr));
+        disabledRadio->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Disabled", nullptr));
+        inactiveRadio->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Inactive", nullptr));
+        activeRadio->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Active", nullptr));
     } // retranslateUi
 
 };

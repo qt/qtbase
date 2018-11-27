@@ -375,22 +375,22 @@ public:
 
     void retranslateUi(QWidget *ValidatorsForm)
     {
-        ValidatorsForm->setWindowTitle(QApplication::translate("ValidatorsForm", "Form", nullptr));
-        groupBox->setTitle(QApplication::translate("ValidatorsForm", "QIntValidator", nullptr));
-        label->setText(QApplication::translate("ValidatorsForm", "Min:", nullptr));
-        label_2->setText(QApplication::translate("ValidatorsForm", "Max:", nullptr));
-        label_7->setText(QApplication::translate("ValidatorsForm", "editingFinished()", nullptr));
-        groupBox_2->setTitle(QApplication::translate("ValidatorsForm", "QDoubleValidator", nullptr));
-        label_3->setText(QApplication::translate("ValidatorsForm", "Min:", nullptr));
-        label_5->setText(QApplication::translate("ValidatorsForm", "Format:", nullptr));
-        doubleFormat->setItemText(0, QApplication::translate("ValidatorsForm", "Standard", nullptr));
-        doubleFormat->setItemText(1, QApplication::translate("ValidatorsForm", "Scientific", nullptr));
+        ValidatorsForm->setWindowTitle(QCoreApplication::translate("ValidatorsForm", "Form", nullptr));
+        groupBox->setTitle(QCoreApplication::translate("ValidatorsForm", "QIntValidator", nullptr));
+        label->setText(QCoreApplication::translate("ValidatorsForm", "Min:", nullptr));
+        label_2->setText(QCoreApplication::translate("ValidatorsForm", "Max:", nullptr));
+        label_7->setText(QCoreApplication::translate("ValidatorsForm", "editingFinished()", nullptr));
+        groupBox_2->setTitle(QCoreApplication::translate("ValidatorsForm", "QDoubleValidator", nullptr));
+        label_3->setText(QCoreApplication::translate("ValidatorsForm", "Min:", nullptr));
+        label_5->setText(QCoreApplication::translate("ValidatorsForm", "Format:", nullptr));
+        doubleFormat->setItemText(0, QCoreApplication::translate("ValidatorsForm", "Standard", nullptr));
+        doubleFormat->setItemText(1, QCoreApplication::translate("ValidatorsForm", "Scientific", nullptr));
 
-        label_4->setText(QApplication::translate("ValidatorsForm", "Max:", nullptr));
-        label_6->setText(QApplication::translate("ValidatorsForm", "Decimals:", nullptr));
+        label_4->setText(QCoreApplication::translate("ValidatorsForm", "Max:", nullptr));
+        label_6->setText(QCoreApplication::translate("ValidatorsForm", "Decimals:", nullptr));
         doubleLedWidget->setText(QString());
-        label_8->setText(QApplication::translate("ValidatorsForm", "editingFinished()", nullptr));
-        pushButton->setText(QApplication::translate("ValidatorsForm", "Quit", nullptr));
+        label_8->setText(QCoreApplication::translate("ValidatorsForm", "editingFinished()", nullptr));
+        pushButton->setText(QCoreApplication::translate("ValidatorsForm", "Quit", nullptr));
     } // retranslateUi
 
 };

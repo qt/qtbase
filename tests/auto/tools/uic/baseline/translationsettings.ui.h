@@ -99,10 +99,10 @@ public:
 
     void retranslateUi(QDialog *TranslationSettings)
     {
-        TranslationSettings->setWindowTitle(QApplication::translate("TranslationSettings", "Qt Linguist - Translation file settings", nullptr));
-        groupBox->setTitle(QApplication::translate("TranslationSettings", "Target language", nullptr));
-        label->setText(QApplication::translate("TranslationSettings", "Language", nullptr));
-        lblCountry->setText(QApplication::translate("TranslationSettings", "Country/Region", nullptr));
+        TranslationSettings->setWindowTitle(QCoreApplication::translate("TranslationSettings", "Qt Linguist - Translation file settings", nullptr));
+        groupBox->setTitle(QCoreApplication::translate("TranslationSettings", "Target language", nullptr));
+        label->setText(QCoreApplication::translate("TranslationSettings", "Language", nullptr));
+        lblCountry->setText(QCoreApplication::translate("TranslationSettings", "Country/Region", nullptr));
     } // retranslateUi
 
 };

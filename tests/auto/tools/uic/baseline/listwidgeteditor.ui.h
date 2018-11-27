@@ -172,28 +172,28 @@ public:
 
     void retranslateUi(QDialog *qdesigner_internal__ListWidgetEditor)
     {
-        qdesigner_internal__ListWidgetEditor->setWindowTitle(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Dialog", nullptr));
-        groupBox->setTitle(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Items List", nullptr));
+        qdesigner_internal__ListWidgetEditor->setWindowTitle(QCoreApplication::translate("qdesigner_internal::ListWidgetEditor", "Dialog", nullptr));
+        groupBox->setTitle(QCoreApplication::translate("qdesigner_internal::ListWidgetEditor", "Items List", nullptr));
 #if QT_CONFIG(tooltip)
-        listWidget->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Items List", nullptr));
+        listWidget->setToolTip(QCoreApplication::translate("qdesigner_internal::ListWidgetEditor", "Items List", nullptr));
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
-        newItemButton->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "New Item", nullptr));
+        newItemButton->setToolTip(QCoreApplication::translate("qdesigner_internal::ListWidgetEditor", "New Item", nullptr));
 #endif // QT_CONFIG(tooltip)
-        newItemButton->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "&New", nullptr));
+        newItemButton->setText(QCoreApplication::translate("qdesigner_internal::ListWidgetEditor", "&New", nullptr));
 #if QT_CONFIG(tooltip)
-        deleteItemButton->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Delete Item", nullptr));
+        deleteItemButton->setToolTip(QCoreApplication::translate("qdesigner_internal::ListWidgetEditor", "Delete Item", nullptr));
 #endif // QT_CONFIG(tooltip)
-        deleteItemButton->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "&Delete", nullptr));
+        deleteItemButton->setText(QCoreApplication::translate("qdesigner_internal::ListWidgetEditor", "&Delete", nullptr));
 #if QT_CONFIG(tooltip)
-        moveItemUpButton->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Move Item Up", nullptr));
+        moveItemUpButton->setToolTip(QCoreApplication::translate("qdesigner_internal::ListWidgetEditor", "Move Item Up", nullptr));
 #endif // QT_CONFIG(tooltip)
-        moveItemUpButton->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "U", nullptr));
+        moveItemUpButton->setText(QCoreApplication::translate("qdesigner_internal::ListWidgetEditor", "U", nullptr));
 #if QT_CONFIG(tooltip)
-        moveItemDownButton->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Move Item Down", nullptr));
+        moveItemDownButton->setToolTip(QCoreApplication::translate("qdesigner_internal::ListWidgetEditor", "Move Item Down", nullptr));
 #endif // QT_CONFIG(tooltip)
-        moveItemDownButton->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "D", nullptr));
-        label->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Icon", nullptr));
+        moveItemDownButton->setText(QCoreApplication::translate("qdesigner_internal::ListWidgetEditor", "D", nullptr));
+        label->setText(QCoreApplication::translate("qdesigner_internal::ListWidgetEditor", "Icon", nullptr));
     } // retranslateUi
 
 };

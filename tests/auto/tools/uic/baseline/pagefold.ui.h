@@ -242,84 +242,84 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", nullptr));
-        exitAction->setText(QApplication::translate("MainWindow", "&Exit", nullptr));
-        aboutQtAction->setText(QApplication::translate("MainWindow", "About Qt", nullptr));
-        editStyleAction->setText(QApplication::translate("MainWindow", "Edit &Style", nullptr));
-        aboutAction->setText(QApplication::translate("MainWindow", "About", nullptr));
-        nameCombo->setItemText(0, QApplication::translate("MainWindow", "Girish", nullptr));
-        nameCombo->setItemText(1, QApplication::translate("MainWindow", "Jasmin", nullptr));
-        nameCombo->setItemText(2, QApplication::translate("MainWindow", "Simon", nullptr));
-        nameCombo->setItemText(3, QApplication::translate("MainWindow", "Zack", nullptr));
+        MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
+        exitAction->setText(QCoreApplication::translate("MainWindow", "&Exit", nullptr));
+        aboutQtAction->setText(QCoreApplication::translate("MainWindow", "About Qt", nullptr));
+        editStyleAction->setText(QCoreApplication::translate("MainWindow", "Edit &Style", nullptr));
+        aboutAction->setText(QCoreApplication::translate("MainWindow", "About", nullptr));
+        nameCombo->setItemText(0, QCoreApplication::translate("MainWindow", "Girish", nullptr));
+        nameCombo->setItemText(1, QCoreApplication::translate("MainWindow", "Jasmin", nullptr));
+        nameCombo->setItemText(2, QCoreApplication::translate("MainWindow", "Simon", nullptr));
+        nameCombo->setItemText(3, QCoreApplication::translate("MainWindow", "Zack", nullptr));
 
 #if QT_CONFIG(tooltip)
-        nameCombo->setToolTip(QApplication::translate("MainWindow", "Specify your name", nullptr));
+        nameCombo->setToolTip(QCoreApplication::translate("MainWindow", "Specify your name", nullptr));
 #endif // QT_CONFIG(tooltip)
-        femaleRadioButton->setStyleSheet(QApplication::translate("MainWindow", "Check this if you are female", nullptr));
-        femaleRadioButton->setText(QApplication::translate("MainWindow", "&Female", nullptr));
-        genderLabel->setText(QApplication::translate("MainWindow", "Gender:", nullptr));
-        ageLabel->setText(QApplication::translate("MainWindow", "&Age:", nullptr));
+        femaleRadioButton->setStyleSheet(QCoreApplication::translate("MainWindow", "Check this if you are female", nullptr));
+        femaleRadioButton->setText(QCoreApplication::translate("MainWindow", "&Female", nullptr));
+        genderLabel->setText(QCoreApplication::translate("MainWindow", "Gender:", nullptr));
+        ageLabel->setText(QCoreApplication::translate("MainWindow", "&Age:", nullptr));
 #if QT_CONFIG(tooltip)
-        maleRadioButton->setToolTip(QApplication::translate("MainWindow", "Check this if you are male", nullptr));
+        maleRadioButton->setToolTip(QCoreApplication::translate("MainWindow", "Check this if you are male", nullptr));
 #endif // QT_CONFIG(tooltip)
-        maleRadioButton->setText(QApplication::translate("MainWindow", "&Male", nullptr));
-        nameLabel->setText(QApplication::translate("MainWindow", "&Name:", nullptr));
-        passwordLabel->setText(QApplication::translate("MainWindow", "&Password:", nullptr));
+        maleRadioButton->setText(QCoreApplication::translate("MainWindow", "&Male", nullptr));
+        nameLabel->setText(QCoreApplication::translate("MainWindow", "&Name:", nullptr));
+        passwordLabel->setText(QCoreApplication::translate("MainWindow", "&Password:", nullptr));
 #if QT_CONFIG(tooltip)
-        ageSpinBox->setToolTip(QApplication::translate("MainWindow", "Specify your age", nullptr));
+        ageSpinBox->setToolTip(QCoreApplication::translate("MainWindow", "Specify your age", nullptr));
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(statustip)
-        ageSpinBox->setStatusTip(QApplication::translate("MainWindow", "Specify your age", nullptr));
+        ageSpinBox->setStatusTip(QCoreApplication::translate("MainWindow", "Specify your age", nullptr));
 #endif // QT_CONFIG(statustip)
 #if QT_CONFIG(tooltip)
-        agreeCheckBox->setToolTip(QApplication::translate("MainWindow", "Please read the LICENSE file before checking", nullptr));
+        agreeCheckBox->setToolTip(QCoreApplication::translate("MainWindow", "Please read the LICENSE file before checking", nullptr));
 #endif // QT_CONFIG(tooltip)
-        agreeCheckBox->setText(QApplication::translate("MainWindow", "I &accept the terms and &conditions", nullptr));
+        agreeCheckBox->setText(QCoreApplication::translate("MainWindow", "I &accept the terms and &conditions", nullptr));
 #if QT_CONFIG(tooltip)
-        passwordEdit->setToolTip(QApplication::translate("MainWindow", "Specify your password", nullptr));
+        passwordEdit->setToolTip(QCoreApplication::translate("MainWindow", "Specify your password", nullptr));
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(statustip)
-        passwordEdit->setStatusTip(QApplication::translate("MainWindow", "Specify your password", nullptr));
+        passwordEdit->setStatusTip(QCoreApplication::translate("MainWindow", "Specify your password", nullptr));
 #endif // QT_CONFIG(statustip)
-        passwordEdit->setText(QApplication::translate("MainWindow", "Password", nullptr));
+        passwordEdit->setText(QCoreApplication::translate("MainWindow", "Password", nullptr));
 
         const bool __sortingEnabled = professionList->isSortingEnabled();
         professionList->setSortingEnabled(false);
         QListWidgetItem *___qlistwidgetitem = professionList->item(0);
-        ___qlistwidgetitem->setText(QApplication::translate("MainWindow", "Developer", nullptr));
+        ___qlistwidgetitem->setText(QCoreApplication::translate("MainWindow", "Developer", nullptr));
         QListWidgetItem *___qlistwidgetitem1 = professionList->item(1);
-        ___qlistwidgetitem1->setText(QApplication::translate("MainWindow", "Student", nullptr));
+        ___qlistwidgetitem1->setText(QCoreApplication::translate("MainWindow", "Student", nullptr));
         QListWidgetItem *___qlistwidgetitem2 = professionList->item(2);
-        ___qlistwidgetitem2->setText(QApplication::translate("MainWindow", "Fisherman", nullptr));
+        ___qlistwidgetitem2->setText(QCoreApplication::translate("MainWindow", "Fisherman", nullptr));
         professionList->setSortingEnabled(__sortingEnabled);
 
 #if QT_CONFIG(tooltip)
-        professionList->setToolTip(QApplication::translate("MainWindow", "Select your profession", nullptr));
+        professionList->setToolTip(QCoreApplication::translate("MainWindow", "Select your profession", nullptr));
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(statustip)
-        professionList->setStatusTip(QApplication::translate("MainWindow", "Specify your name here", nullptr));
+        professionList->setStatusTip(QCoreApplication::translate("MainWindow", "Specify your name here", nullptr));
 #endif // QT_CONFIG(statustip)
 #if QT_CONFIG(whatsthis)
-        professionList->setWhatsThis(QApplication::translate("MainWindow", "Specify your name here", nullptr));
+        professionList->setWhatsThis(QCoreApplication::translate("MainWindow", "Specify your name here", nullptr));
 #endif // QT_CONFIG(whatsthis)
-        label->setText(QApplication::translate("MainWindow", "Profession:", nullptr));
-        countryCombo->setItemText(0, QApplication::translate("MainWindow", "Egypt", nullptr));
-        countryCombo->setItemText(1, QApplication::translate("MainWindow", "France", nullptr));
-        countryCombo->setItemText(2, QApplication::translate("MainWindow", "Germany", nullptr));
-        countryCombo->setItemText(3, QApplication::translate("MainWindow", "India", nullptr));
-        countryCombo->setItemText(4, QApplication::translate("MainWindow", "Italy", nullptr));
-        countryCombo->setItemText(5, QApplication::translate("MainWindow", "Korea", nullptr));
-        countryCombo->setItemText(6, QApplication::translate("MainWindow", "Norway", nullptr));
+        label->setText(QCoreApplication::translate("MainWindow", "Profession:", nullptr));
+        countryCombo->setItemText(0, QCoreApplication::translate("MainWindow", "Egypt", nullptr));
+        countryCombo->setItemText(1, QCoreApplication::translate("MainWindow", "France", nullptr));
+        countryCombo->setItemText(2, QCoreApplication::translate("MainWindow", "Germany", nullptr));
+        countryCombo->setItemText(3, QCoreApplication::translate("MainWindow", "India", nullptr));
+        countryCombo->setItemText(4, QCoreApplication::translate("MainWindow", "Italy", nullptr));
+        countryCombo->setItemText(5, QCoreApplication::translate("MainWindow", "Korea", nullptr));
+        countryCombo->setItemText(6, QCoreApplication::translate("MainWindow", "Norway", nullptr));
 
 #if QT_CONFIG(tooltip)
-        countryCombo->setToolTip(QApplication::translate("MainWindow", "Specify country of origin", nullptr));
+        countryCombo->setToolTip(QCoreApplication::translate("MainWindow", "Specify country of origin", nullptr));
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(statustip)
-        countryCombo->setStatusTip(QApplication::translate("MainWindow", "Specify country of origin", nullptr));
+        countryCombo->setStatusTip(QCoreApplication::translate("MainWindow", "Specify country of origin", nullptr));
 #endif // QT_CONFIG(statustip)
-        countryLabel->setText(QApplication::translate("MainWindow", "Pro&fession", nullptr));
-        menu_File->setTitle(QApplication::translate("MainWindow", "&File", nullptr));
-        menu_Help->setTitle(QApplication::translate("MainWindow", "&Help", nullptr));
+        countryLabel->setText(QCoreApplication::translate("MainWindow", "Pro&fession", nullptr));
+        menu_File->setTitle(QCoreApplication::translate("MainWindow", "&File", nullptr));
+        menu_Help->setTitle(QCoreApplication::translate("MainWindow", "&Help", nullptr));
     } // retranslateUi
 
 };

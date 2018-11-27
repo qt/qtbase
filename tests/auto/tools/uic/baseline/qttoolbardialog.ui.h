@@ -178,40 +178,40 @@ public:
 
     void retranslateUi(QDialog *QtToolBarDialog)
     {
-        QtToolBarDialog->setWindowTitle(QApplication::translate("QtToolBarDialog", "Customize Toolbars", nullptr));
+        QtToolBarDialog->setWindowTitle(QCoreApplication::translate("QtToolBarDialog", "Customize Toolbars", nullptr));
         QTreeWidgetItem *___qtreewidgetitem = actionTree->headerItem();
-        ___qtreewidgetitem->setText(0, QApplication::translate("QtToolBarDialog", "1", nullptr));
-        label->setText(QApplication::translate("QtToolBarDialog", "Actions", nullptr));
-        label_2->setText(QApplication::translate("QtToolBarDialog", "Toolbars", nullptr));
+        ___qtreewidgetitem->setText(0, QCoreApplication::translate("QtToolBarDialog", "1", nullptr));
+        label->setText(QCoreApplication::translate("QtToolBarDialog", "Actions", nullptr));
+        label_2->setText(QCoreApplication::translate("QtToolBarDialog", "Toolbars", nullptr));
 #if QT_CONFIG(tooltip)
-        newButton->setToolTip(QApplication::translate("QtToolBarDialog", "Add new toolbar", nullptr));
+        newButton->setToolTip(QCoreApplication::translate("QtToolBarDialog", "Add new toolbar", nullptr));
 #endif // QT_CONFIG(tooltip)
-        newButton->setText(QApplication::translate("QtToolBarDialog", "New", nullptr));
+        newButton->setText(QCoreApplication::translate("QtToolBarDialog", "New", nullptr));
 #if QT_CONFIG(tooltip)
-        removeButton->setToolTip(QApplication::translate("QtToolBarDialog", "Remove selected toolbar", nullptr));
+        removeButton->setToolTip(QCoreApplication::translate("QtToolBarDialog", "Remove selected toolbar", nullptr));
 #endif // QT_CONFIG(tooltip)
-        removeButton->setText(QApplication::translate("QtToolBarDialog", "Remove", nullptr));
+        removeButton->setText(QCoreApplication::translate("QtToolBarDialog", "Remove", nullptr));
 #if QT_CONFIG(tooltip)
-        renameButton->setToolTip(QApplication::translate("QtToolBarDialog", "Rename toolbar", nullptr));
+        renameButton->setToolTip(QCoreApplication::translate("QtToolBarDialog", "Rename toolbar", nullptr));
 #endif // QT_CONFIG(tooltip)
-        renameButton->setText(QApplication::translate("QtToolBarDialog", "Rename", nullptr));
+        renameButton->setText(QCoreApplication::translate("QtToolBarDialog", "Rename", nullptr));
 #if QT_CONFIG(tooltip)
-        upButton->setToolTip(QApplication::translate("QtToolBarDialog", "Move action up", nullptr));
+        upButton->setToolTip(QCoreApplication::translate("QtToolBarDialog", "Move action up", nullptr));
 #endif // QT_CONFIG(tooltip)
-        upButton->setText(QApplication::translate("QtToolBarDialog", "Up", nullptr));
+        upButton->setText(QCoreApplication::translate("QtToolBarDialog", "Up", nullptr));
 #if QT_CONFIG(tooltip)
-        leftButton->setToolTip(QApplication::translate("QtToolBarDialog", "Remove action from toolbar", nullptr));
+        leftButton->setToolTip(QCoreApplication::translate("QtToolBarDialog", "Remove action from toolbar", nullptr));
 #endif // QT_CONFIG(tooltip)
-        leftButton->setText(QApplication::translate("QtToolBarDialog", "<-", nullptr));
+        leftButton->setText(QCoreApplication::translate("QtToolBarDialog", "<-", nullptr));
 #if QT_CONFIG(tooltip)
-        rightButton->setToolTip(QApplication::translate("QtToolBarDialog", "Add action to toolbar", nullptr));
+        rightButton->setToolTip(QCoreApplication::translate("QtToolBarDialog", "Add action to toolbar", nullptr));
 #endif // QT_CONFIG(tooltip)
-        rightButton->setText(QApplication::translate("QtToolBarDialog", "->", nullptr));
+        rightButton->setText(QCoreApplication::translate("QtToolBarDialog", "->", nullptr));
 #if QT_CONFIG(tooltip)
-        downButton->setToolTip(QApplication::translate("QtToolBarDialog", "Move action down", nullptr));
+        downButton->setToolTip(QCoreApplication::translate("QtToolBarDialog", "Move action down", nullptr));
 #endif // QT_CONFIG(tooltip)
-        downButton->setText(QApplication::translate("QtToolBarDialog", "Down", nullptr));
-        label_3->setText(QApplication::translate("QtToolBarDialog", "Current Toolbar Actions", nullptr));
+        downButton->setText(QCoreApplication::translate("QtToolBarDialog", "Down", nullptr));
+        label_3->setText(QCoreApplication::translate("QtToolBarDialog", "Current Toolbar Actions", nullptr));
     } // retranslateUi
 
 };

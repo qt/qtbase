@@ -205,34 +205,34 @@ public:
 
     void retranslateUi(QDialog *TranslateDialog)
     {
-        TranslateDialog->setWindowTitle(QApplication::translate("TranslateDialog", "Qt Linguist", nullptr));
+        TranslateDialog->setWindowTitle(QCoreApplication::translate("TranslateDialog", "Qt Linguist", nullptr));
 #if QT_CONFIG(whatsthis)
-        TranslateDialog->setWhatsThis(QApplication::translate("TranslateDialog", "This window allows you to search for some text in the translation source file.", nullptr));
+        TranslateDialog->setWhatsThis(QCoreApplication::translate("TranslateDialog", "This window allows you to search for some text in the translation source file.", nullptr));
 #endif // QT_CONFIG(whatsthis)
 #if QT_CONFIG(whatsthis)
-        ledTranslateTo->setWhatsThis(QApplication::translate("TranslateDialog", "Type in the text to search for.", nullptr));
+        ledTranslateTo->setWhatsThis(QCoreApplication::translate("TranslateDialog", "Type in the text to search for.", nullptr));
 #endif // QT_CONFIG(whatsthis)
-        findWhat->setText(QApplication::translate("TranslateDialog", "Find &source text:", nullptr));
-        translateTo->setText(QApplication::translate("TranslateDialog", "&Translate to:", nullptr));
+        findWhat->setText(QCoreApplication::translate("TranslateDialog", "Find &source text:", nullptr));
+        translateTo->setText(QCoreApplication::translate("TranslateDialog", "&Translate to:", nullptr));
 #if QT_CONFIG(whatsthis)
-        ledFindWhat->setWhatsThis(QApplication::translate("TranslateDialog", "Type in the text to search for.", nullptr));
+        ledFindWhat->setWhatsThis(QCoreApplication::translate("TranslateDialog", "Type in the text to search for.", nullptr));
 #endif // QT_CONFIG(whatsthis)
-        groupBox->setTitle(QApplication::translate("TranslateDialog", "Search options", nullptr));
+        groupBox->setTitle(QCoreApplication::translate("TranslateDialog", "Search options", nullptr));
 #if QT_CONFIG(whatsthis)
-        ckMatchCase->setWhatsThis(QApplication::translate("TranslateDialog", "Texts such as 'TeX' and 'tex' are considered as different when checked.", nullptr));
+        ckMatchCase->setWhatsThis(QCoreApplication::translate("TranslateDialog", "Texts such as 'TeX' and 'tex' are considered as different when checked.", nullptr));
 #endif // QT_CONFIG(whatsthis)
-        ckMatchCase->setText(QApplication::translate("TranslateDialog", "Match &case", nullptr));
-        ckMarkFinished->setText(QApplication::translate("TranslateDialog", "Mark new translation as &finished", nullptr));
+        ckMatchCase->setText(QCoreApplication::translate("TranslateDialog", "Match &case", nullptr));
+        ckMarkFinished->setText(QCoreApplication::translate("TranslateDialog", "Mark new translation as &finished", nullptr));
 #if QT_CONFIG(whatsthis)
-        findNxt->setWhatsThis(QApplication::translate("TranslateDialog", "Click here to find the next occurrence of the text you typed in.", nullptr));
+        findNxt->setWhatsThis(QCoreApplication::translate("TranslateDialog", "Click here to find the next occurrence of the text you typed in.", nullptr));
 #endif // QT_CONFIG(whatsthis)
-        findNxt->setText(QApplication::translate("TranslateDialog", "Find Next", nullptr));
-        translate->setText(QApplication::translate("TranslateDialog", "Translate", nullptr));
-        translateAll->setText(QApplication::translate("TranslateDialog", "Translate All", nullptr));
+        findNxt->setText(QCoreApplication::translate("TranslateDialog", "Find Next", nullptr));
+        translate->setText(QCoreApplication::translate("TranslateDialog", "Translate", nullptr));
+        translateAll->setText(QCoreApplication::translate("TranslateDialog", "Translate All", nullptr));
 #if QT_CONFIG(whatsthis)
-        cancel->setWhatsThis(QApplication::translate("TranslateDialog", "Click here to close this window.", nullptr));
+        cancel->setWhatsThis(QCoreApplication::translate("TranslateDialog", "Click here to close this window.", nullptr));
 #endif // QT_CONFIG(whatsthis)
-        cancel->setText(QApplication::translate("TranslateDialog", "Cancel", nullptr));
+        cancel->setText(QCoreApplication::translate("TranslateDialog", "Cancel", nullptr));
     } // retranslateUi
 
 };

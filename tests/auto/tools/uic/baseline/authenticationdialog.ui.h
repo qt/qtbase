@@ -103,12 +103,12 @@ public:
 
     void retranslateUi(QDialog *Dialog)
     {
-        Dialog->setWindowTitle(QApplication::translate("Dialog", "Http authentication required", nullptr));
-        label->setText(QApplication::translate("Dialog", "You need to supply a Username and a Password to access this site", nullptr));
-        label_2->setText(QApplication::translate("Dialog", "Username:", nullptr));
-        label_3->setText(QApplication::translate("Dialog", "Password:", nullptr));
-        label_4->setText(QApplication::translate("Dialog", "Site:", nullptr));
-        siteDescription->setText(QApplication::translate("Dialog", "%1 at %2", nullptr));
+        Dialog->setWindowTitle(QCoreApplication::translate("Dialog", "Http authentication required", nullptr));
+        label->setText(QCoreApplication::translate("Dialog", "You need to supply a Username and a Password to access this site", nullptr));
+        label_2->setText(QCoreApplication::translate("Dialog", "Username:", nullptr));
+        label_3->setText(QCoreApplication::translate("Dialog", "Password:", nullptr));
+        label_4->setText(QCoreApplication::translate("Dialog", "Site:", nullptr));
+        siteDescription->setText(QCoreApplication::translate("Dialog", "%1 at %2", nullptr));
     } // retranslateUi
 
 };

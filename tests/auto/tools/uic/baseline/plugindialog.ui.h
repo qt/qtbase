@@ -111,11 +111,11 @@ public:
 
     void retranslateUi(QDialog *PluginDialog)
     {
-        PluginDialog->setWindowTitle(QApplication::translate("PluginDialog", "Plugin Information", nullptr));
-        label->setText(QApplication::translate("PluginDialog", "TextLabel", nullptr));
+        PluginDialog->setWindowTitle(QCoreApplication::translate("PluginDialog", "Plugin Information", nullptr));
+        label->setText(QCoreApplication::translate("PluginDialog", "TextLabel", nullptr));
         QTreeWidgetItem *___qtreewidgetitem = treeWidget->headerItem();
-        ___qtreewidgetitem->setText(0, QApplication::translate("PluginDialog", "1", nullptr));
-        message->setText(QApplication::translate("PluginDialog", "TextLabel", nullptr));
+        ___qtreewidgetitem->setText(0, QCoreApplication::translate("PluginDialog", "1", nullptr));
+        message->setText(QCoreApplication::translate("PluginDialog", "TextLabel", nullptr));
     } // retranslateUi
 
 };

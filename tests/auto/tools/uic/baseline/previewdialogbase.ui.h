@@ -170,11 +170,11 @@ public:
 
     void retranslateUi(QDialog *PreviewDialogBase)
     {
-        PreviewDialogBase->setWindowTitle(QApplication::translate("PreviewDialogBase", "Print Preview", nullptr));
-        label->setText(QApplication::translate("PreviewDialogBase", "&Paper Size:", nullptr));
-        label_2->setText(QApplication::translate("PreviewDialogBase", "&Orientation:", nullptr));
+        PreviewDialogBase->setWindowTitle(QCoreApplication::translate("PreviewDialogBase", "Print Preview", nullptr));
+        label->setText(QCoreApplication::translate("PreviewDialogBase", "&Paper Size:", nullptr));
+        label_2->setText(QCoreApplication::translate("PreviewDialogBase", "&Orientation:", nullptr));
         QTreeWidgetItem *___qtreewidgetitem = pageList->headerItem();
-        ___qtreewidgetitem->setText(0, QApplication::translate("PreviewDialogBase", "1", nullptr));
+        ___qtreewidgetitem->setText(0, QCoreApplication::translate("PreviewDialogBase", "1", nullptr));
     } // retranslateUi
 
 };

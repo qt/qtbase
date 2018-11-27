@@ -104,11 +104,11 @@ public:
 
     void retranslateUi(QWidget *PathPage)
     {
-        PathPage->setWindowTitle(QApplication::translate("PathPage", "Form", nullptr));
-        label_2->setText(QApplication::translate("PathPage", "File filters:", nullptr));
-        label->setText(QApplication::translate("PathPage", "Documentation source file paths:", nullptr));
-        addButton->setText(QApplication::translate("PathPage", "Add", nullptr));
-        removeButton->setText(QApplication::translate("PathPage", "Remove", nullptr));
+        PathPage->setWindowTitle(QCoreApplication::translate("PathPage", "Form", nullptr));
+        label_2->setText(QCoreApplication::translate("PathPage", "File filters:", nullptr));
+        label->setText(QCoreApplication::translate("PathPage", "Documentation source file paths:", nullptr));
+        addButton->setText(QCoreApplication::translate("PathPage", "Add", nullptr));
+        removeButton->setText(QCoreApplication::translate("PathPage", "Remove", nullptr));
     } // retranslateUi
 
 };

@@ -108,9 +108,9 @@ public:
 
     void retranslateUi(QDialog *qdesigner_internal__NewDynamicPropertyDialog)
     {
-        qdesigner_internal__NewDynamicPropertyDialog->setWindowTitle(QApplication::translate("qdesigner_internal::NewDynamicPropertyDialog", "Create Dynamic Property", nullptr));
-        label->setText(QApplication::translate("qdesigner_internal::NewDynamicPropertyDialog", "Property Name", nullptr));
-        label_2->setText(QApplication::translate("qdesigner_internal::NewDynamicPropertyDialog", "Property Type", nullptr));
+        qdesigner_internal__NewDynamicPropertyDialog->setWindowTitle(QCoreApplication::translate("qdesigner_internal::NewDynamicPropertyDialog", "Create Dynamic Property", nullptr));
+        label->setText(QCoreApplication::translate("qdesigner_internal::NewDynamicPropertyDialog", "Property Name", nullptr));
+        label_2->setText(QCoreApplication::translate("qdesigner_internal::NewDynamicPropertyDialog", "Property Type", nullptr));
     } // retranslateUi
 
 };

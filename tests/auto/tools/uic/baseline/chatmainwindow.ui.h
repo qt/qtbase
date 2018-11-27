@@ -147,29 +147,29 @@ public:
 
     void retranslateUi(QMainWindow *ChatMainWindow)
     {
-        ChatMainWindow->setWindowTitle(QApplication::translate("ChatMainWindow", "Qt D-Bus Chat", nullptr));
-        actionQuit->setText(QApplication::translate("ChatMainWindow", "Quit", nullptr));
+        ChatMainWindow->setWindowTitle(QCoreApplication::translate("ChatMainWindow", "Qt D-Bus Chat", nullptr));
+        actionQuit->setText(QCoreApplication::translate("ChatMainWindow", "Quit", nullptr));
 #if QT_CONFIG(shortcut)
-        actionQuit->setShortcut(QApplication::translate("ChatMainWindow", "Ctrl+Q", nullptr));
+        actionQuit->setShortcut(QCoreApplication::translate("ChatMainWindow", "Ctrl+Q", nullptr));
 #endif // QT_CONFIG(shortcut)
-        actionAboutQt->setText(QApplication::translate("ChatMainWindow", "About Qt...", nullptr));
-        actionChangeNickname->setText(QApplication::translate("ChatMainWindow", "Change nickname...", nullptr));
+        actionAboutQt->setText(QCoreApplication::translate("ChatMainWindow", "About Qt...", nullptr));
+        actionChangeNickname->setText(QCoreApplication::translate("ChatMainWindow", "Change nickname...", nullptr));
 #if QT_CONFIG(shortcut)
-        actionChangeNickname->setShortcut(QApplication::translate("ChatMainWindow", "Ctrl+N", nullptr));
+        actionChangeNickname->setShortcut(QCoreApplication::translate("ChatMainWindow", "Ctrl+N", nullptr));
 #endif // QT_CONFIG(shortcut)
 #if QT_CONFIG(tooltip)
-        chatHistory->setToolTip(QApplication::translate("ChatMainWindow", "Messages sent and received from other users", nullptr));
+        chatHistory->setToolTip(QCoreApplication::translate("ChatMainWindow", "Messages sent and received from other users", nullptr));
 #endif // QT_CONFIG(tooltip)
-        label->setText(QApplication::translate("ChatMainWindow", "Message:", nullptr));
+        label->setText(QCoreApplication::translate("ChatMainWindow", "Message:", nullptr));
 #if QT_CONFIG(tooltip)
-        sendButton->setToolTip(QApplication::translate("ChatMainWindow", "Sends a message to other people", nullptr));
+        sendButton->setToolTip(QCoreApplication::translate("ChatMainWindow", "Sends a message to other people", nullptr));
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(whatsthis)
         sendButton->setWhatsThis(QString());
 #endif // QT_CONFIG(whatsthis)
-        sendButton->setText(QApplication::translate("ChatMainWindow", "Send", nullptr));
-        menuQuit->setTitle(QApplication::translate("ChatMainWindow", "Help", nullptr));
-        menuFile->setTitle(QApplication::translate("ChatMainWindow", "File", nullptr));
+        sendButton->setText(QCoreApplication::translate("ChatMainWindow", "Send", nullptr));
+        menuQuit->setTitle(QCoreApplication::translate("ChatMainWindow", "Help", nullptr));
+        menuFile->setTitle(QCoreApplication::translate("ChatMainWindow", "File", nullptr));
     } // retranslateUi
 
 };

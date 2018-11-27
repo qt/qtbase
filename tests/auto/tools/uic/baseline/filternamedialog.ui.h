@@ -76,8 +76,8 @@ public:
 
     void retranslateUi(QDialog *FilterNameDialogClass)
     {
-        FilterNameDialogClass->setWindowTitle(QApplication::translate("FilterNameDialogClass", "FilterNameDialog", nullptr));
-        label->setText(QApplication::translate("FilterNameDialogClass", "Filter Name:", nullptr));
+        FilterNameDialogClass->setWindowTitle(QCoreApplication::translate("FilterNameDialogClass", "FilterNameDialog", nullptr));
+        label->setText(QCoreApplication::translate("FilterNameDialogClass", "Filter Name:", nullptr));
     } // retranslateUi
 
 };

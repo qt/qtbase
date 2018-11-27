@@ -79,9 +79,9 @@ public:
 
     void retranslateUi(QWidget *QPrintPropertiesWidget)
     {
-        QPrintPropertiesWidget->setWindowTitle(QApplication::translate("QPrintPropertiesWidget", "Form", nullptr));
-        tabs->setTabText(tabs->indexOf(tabPage), QApplication::translate("QPrintPropertiesWidget", "Page", nullptr));
-        tabs->setTabText(tabs->indexOf(cupsPropertiesPage), QApplication::translate("QPrintPropertiesWidget", "Advanced", nullptr));
+        QPrintPropertiesWidget->setWindowTitle(QCoreApplication::translate("QPrintPropertiesWidget", "Form", nullptr));
+        tabs->setTabText(tabs->indexOf(tabPage), QCoreApplication::translate("QPrintPropertiesWidget", "Page", nullptr));
+        tabs->setTabText(tabs->indexOf(cupsPropertiesPage), QCoreApplication::translate("QPrintPropertiesWidget", "Advanced", nullptr));
     } // retranslateUi
 
 };

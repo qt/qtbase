@@ -196,14 +196,14 @@ public:
 
     void retranslateUi(QDialog *dialog)
     {
-        dialog->setWindowTitle(QApplication::translate("ImageDialog", "Create Image", nullptr));
-        widthLabel->setText(QApplication::translate("ImageDialog", "Width:", nullptr));
-        heightLabel->setText(QApplication::translate("ImageDialog", "Height:", nullptr));
-        nameLineEdit->setText(QApplication::translate("ImageDialog", "Untitled image", nullptr));
-        nameLabel->setText(QApplication::translate("ImageDialog", "Name:", nullptr));
-        colorDepthLabel->setText(QApplication::translate("ImageDialog", "Color depth:", nullptr));
-        okButton->setText(QApplication::translate("ImageDialog", "OK", nullptr));
-        cancelButton->setText(QApplication::translate("ImageDialog", "Cancel", nullptr));
+        dialog->setWindowTitle(QCoreApplication::translate("ImageDialog", "Create Image", nullptr));
+        widthLabel->setText(QCoreApplication::translate("ImageDialog", "Width:", nullptr));
+        heightLabel->setText(QCoreApplication::translate("ImageDialog", "Height:", nullptr));
+        nameLineEdit->setText(QCoreApplication::translate("ImageDialog", "Untitled image", nullptr));
+        nameLabel->setText(QCoreApplication::translate("ImageDialog", "Name:", nullptr));
+        colorDepthLabel->setText(QCoreApplication::translate("ImageDialog", "Color depth:", nullptr));
+        okButton->setText(QCoreApplication::translate("ImageDialog", "OK", nullptr));
+        cancelButton->setText(QCoreApplication::translate("ImageDialog", "Cancel", nullptr));
     } // retranslateUi
 
 };

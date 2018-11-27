@@ -57,9 +57,9 @@ public:
 
     void retranslateUi(QDialog *Dialog)
     {
-        Dialog->setWindowTitle(QApplication::translate("Dialog", "Dialog", nullptr));
+        Dialog->setWindowTitle(QCoreApplication::translate("Dialog", "Dialog", nullptr));
         QTreeWidgetItem *___qtreewidgetitem = treeWidget->headerItem();
-        ___qtreewidgetitem->setText(1, QApplication::translate("Dialog", "4", nullptr));
+        ___qtreewidgetitem->setText(1, QCoreApplication::translate("Dialog", "4", nullptr));
     } // retranslateUi
 
 };

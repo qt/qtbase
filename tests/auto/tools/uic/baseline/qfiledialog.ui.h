@@ -271,26 +271,26 @@ public:
 
     void retranslateUi(QDialog *QFileDialog)
     {
-        lookInLabel->setText(QApplication::translate("QFileDialog", "Look in:", nullptr));
+        lookInLabel->setText(QCoreApplication::translate("QFileDialog", "Look in:", nullptr));
 #if QT_CONFIG(tooltip)
-        backButton->setToolTip(QApplication::translate("QFileDialog", "Back", nullptr));
+        backButton->setToolTip(QCoreApplication::translate("QFileDialog", "Back", nullptr));
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
-        forwardButton->setToolTip(QApplication::translate("QFileDialog", "Forward", nullptr));
+        forwardButton->setToolTip(QCoreApplication::translate("QFileDialog", "Forward", nullptr));
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
-        toParentButton->setToolTip(QApplication::translate("QFileDialog", "Parent Directory", nullptr));
+        toParentButton->setToolTip(QCoreApplication::translate("QFileDialog", "Parent Directory", nullptr));
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
-        newFolderButton->setToolTip(QApplication::translate("QFileDialog", "Create New Folder", nullptr));
+        newFolderButton->setToolTip(QCoreApplication::translate("QFileDialog", "Create New Folder", nullptr));
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
-        listModeButton->setToolTip(QApplication::translate("QFileDialog", "List View", nullptr));
+        listModeButton->setToolTip(QCoreApplication::translate("QFileDialog", "List View", nullptr));
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
-        detailModeButton->setToolTip(QApplication::translate("QFileDialog", "Detail View", nullptr));
+        detailModeButton->setToolTip(QCoreApplication::translate("QFileDialog", "Detail View", nullptr));
 #endif // QT_CONFIG(tooltip)
-        fileTypeLabel->setText(QApplication::translate("QFileDialog", "Files of type:", nullptr));
+        fileTypeLabel->setText(QCoreApplication::translate("QFileDialog", "Files of type:", nullptr));
         Q_UNUSED(QFileDialog);
     } // retranslateUi
 

@@ -100,10 +100,10 @@ public:
 
     void retranslateUi(QDialog *TopicChooser)
     {
-        TopicChooser->setWindowTitle(QApplication::translate("TopicChooser", "Choose Topic", nullptr));
-        label->setText(QApplication::translate("TopicChooser", "&Topics", nullptr));
-        buttonDisplay->setText(QApplication::translate("TopicChooser", "&Display", nullptr));
-        buttonCancel->setText(QApplication::translate("TopicChooser", "&Close", nullptr));
+        TopicChooser->setWindowTitle(QCoreApplication::translate("TopicChooser", "Choose Topic", nullptr));
+        label->setText(QCoreApplication::translate("TopicChooser", "&Topics", nullptr));
+        buttonDisplay->setText(QCoreApplication::translate("TopicChooser", "&Display", nullptr));
+        buttonCancel->setText(QCoreApplication::translate("TopicChooser", "&Close", nullptr));
     } // retranslateUi
 
 };
