@@ -127,7 +127,6 @@ public:
     Q_ENUM(FontSmoothing);
 
     static FontSmoothing fontSmoothing();
-    static int antialiasingThreshold();
 
     static bool ct_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *length);
     static QFont::Weight qtWeightFromCFWeight(float value);
@@ -137,7 +136,7 @@ public:
 protected:
     QCoreTextFontEngine(const QFontDef &def);
     void init();
-    QImage imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool colorful, const QTransform &m);
+    QImage imageForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &m);
     void loadAdvancesForGlyphs(QVarLengthArray<CGGlyph> &cgGlyphs, QGlyphLayout *glyphs) const;
     bool hasColorGlyphs() const;
 

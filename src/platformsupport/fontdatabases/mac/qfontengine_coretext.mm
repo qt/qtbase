@@ -614,20 +614,6 @@ glyph_metrics_t QCoreTextFontEngine::alphaMapBoundingBox(glyph_t glyph, QFixed s
     return br;
 }
 
-int QCoreTextFontEngine::antialiasingThreshold()
-{
-    static const int antialiasingThreshold = [] {
-        auto defaults = [NSUserDefaults standardUserDefaults];
-        int threshold = [defaults integerForKey:@"AppleAntiAliasingThreshold"];
-        qCDebug(lcQpaFonts) << "Resolved antialiasing threshold. Defaults ="
-            << [[defaults dictionaryRepresentation] dictionaryWithValuesForKeys:@[
-                @"AppleAntiAliasingThreshold"
-            ]] << "Result =" << threshold;
-        return threshold;
-    }();
-    return antialiasingThreshold;
-}
-
 /*
     Apple has gone through many iterations of its font smoothing algorithms,
     and there are many ways to enable or disable certain aspects of it. As
@@ -732,8 +718,7 @@ bool QCoreTextFontEngine::expectsGammaCorrectedBlending() const
     return (glyphFormat == Format_A32) && !(fontDef.styleStrategy & (QFont::NoAntialias | QFont::NoSubpixelAntialias));
 }
 
-QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition,
-                        bool overrideAntialiasingThreshold, const QTransform &matrix)
+QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &matrix)
 {
     glyph_metrics_t br = alphaMapBoundingBox(glyph, subPixelPosition, matrix, glyphFormat);
 
@@ -770,8 +755,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
                                              qt_mac_bitmapInfoForImage(im));
     Q_ASSERT(ctx);
     CGContextSetFontSize(ctx, fontDef.pixelSize);
-    const bool antialias = (overrideAntialiasingThreshold || fontDef.pointSize > antialiasingThreshold())
-        && !(fontDef.styleStrategy & QFont::NoAntialias);
+    const bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
     CGContextSetShouldAntialias(ctx, antialias);
     const bool smoothing = antialias && !(fontDef.styleStrategy & QFont::NoSubpixelAntialias);
     CGContextSetShouldSmoothFonts(ctx, smoothing);
@@ -837,7 +821,7 @@ QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosit
     if (x.type() > QTransform::TxScale)
         return QFontEngine::alphaMapForGlyph(glyph, subPixelPosition, x);
 
-    QImage im = imageForGlyph(glyph, subPixelPosition, false, x);
+    QImage im = imageForGlyph(glyph, subPixelPosition, x);
 
     QImage alphaMap(im.width(), im.height(), QImage::Format_Alpha8);
 
@@ -859,7 +843,7 @@ QImage QCoreTextFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPo
     if (x.type() > QTransform::TxScale)
         return QFontEngine::alphaRGBMapForGlyph(glyph, subPixelPosition, x);
 
-    QImage im = imageForGlyph(glyph, subPixelPosition, true, x);
+    QImage im = imageForGlyph(glyph, subPixelPosition, x);
     qGamma_correct_back_to_linear_cs(&im);
     return im;
 }
@@ -869,7 +853,7 @@ QImage QCoreTextFontEngine::bitmapForGlyph(glyph_t glyph, QFixed subPixelPositio
     if (t.type() > QTransform::TxScale)
         return QFontEngine::bitmapForGlyph(glyph, subPixelPosition, t);
 
-    return imageForGlyph(glyph, subPixelPosition, true, t);
+    return imageForGlyph(glyph, subPixelPosition, t);
 }
 
 void QCoreTextFontEngine::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlags flags) const
