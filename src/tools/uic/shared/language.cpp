@@ -384,4 +384,21 @@ void _formatStackVariable(QTextStream &str, const char *className, QStringView v
     }
 }
 
+void formatConnection(QTextStream &str, const SignalSlot &sender, const SignalSlot &receiver)
+{
+    switch (language()) {
+    case Language::Cpp:
+        str << "QObject::connect(" << sender.name << ", SIGNAL("<< sender.signature
+            << "), " << receiver.name << ", SLOT("<< receiver.signature << "))";
+        break;
+    case Language::Python:
+        str << sender.name << '.'
+            << sender.signature.leftRef(sender.signature.indexOf(QLatin1Char('(')))
+            << ".connect(" << receiver.name << '.'
+            << receiver.signature.leftRef(receiver.signature.indexOf(QLatin1Char('(')))
+            << ')';
+        break;
+    }
+}
+
 } // namespace language

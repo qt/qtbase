@@ -220,7 +220,13 @@ private:
     QString disableSorting(DomWidget *w, const QString &varName);
     void enableSorting(DomWidget *w, const QString &varName, const QString &tempName);
 
-    QString findDeclaration(const QString &name);
+    struct Declaration
+    {
+        QString name;
+        QString className;
+    };
+
+    Declaration findDeclaration(const QString &name);
 
 private:
     QString writeFontProperties(const DomFont *f);

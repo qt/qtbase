@@ -31,6 +31,7 @@
 
 #include <QtCore/qstring.h>
 #include <QtCore/qstringview.h>
+#include <QtCore/qstring.h>
 
 QT_FORWARD_DECLARE_CLASS(QTextStream)
 
@@ -188,6 +189,15 @@ inline QTextStream &operator<<(QTextStream &str, const _stackVariable<withInitPa
 
 using stackVariable = _stackVariable<false>;
 using stackVariableWithInitParameters = _stackVariable<true>;
+
+struct SignalSlot
+{
+    QString name;
+    QString signature;
+    QString className;
+};
+
+void formatConnection(QTextStream &str, const SignalSlot &sender, const SignalSlot &receiver);
 
 } // namespace language
 

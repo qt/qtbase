@@ -2430,34 +2430,42 @@ QTextStream &WriteInitialization::autoTrOutput(const DomString *str, const QStri
     return m_output;
 }
 
-QString WriteInitialization::findDeclaration(const QString &name)
+WriteInitialization::Declaration WriteInitialization::findDeclaration(const QString &name)
 {
     if (const DomWidget *widget = m_driver->widgetByName(name))
-        return m_driver->findOrInsertWidget(widget);
+        return {m_driver->findOrInsertWidget(widget), widget->attributeClass()};
     if (const DomAction *action = m_driver->actionByName(name))
-        return m_driver->findOrInsertAction(action);
+        return {m_driver->findOrInsertAction(action), QStringLiteral("QAction")};
     if (const DomButtonGroup *group = m_driver->findButtonGroup(name))
-        return m_driver->findOrInsertButtonGroup(group);
-    return QString();
+         return {m_driver->findOrInsertButtonGroup(group), QStringLiteral("QButtonGroup")};
+    return {};
 }
 
 void WriteInitialization::acceptConnection(DomConnection *connection)
 {
-    const QString sender = findDeclaration(connection->elementSender());
-    const QString receiver = findDeclaration(connection->elementReceiver());
+    const QString senderName = connection->elementSender();
+    const QString receiverName = connection->elementReceiver();
 
-    if (sender.isEmpty() || receiver.isEmpty())
+    const auto senderDecl = findDeclaration(senderName);
+    const auto receiverDecl = findDeclaration(receiverName);
+
+    if (senderDecl.name.isEmpty() || receiverDecl.name.isEmpty()) {
+        QString message;
+        QTextStream(&message) << m_option.messagePrefix()
+            << ": Warning: Invalid signal/slot connection: \""
+            << senderName << "\" -> \"" << receiverName << "\".";
+        fprintf(stderr, "%s\n", qPrintable(message));
         return;
+    }
 
-    m_output << m_indent << "QObject::connect("
-        << sender
-        << ", "
-        << "SIGNAL("<<connection->elementSignal()<<')'
-        << ", "
-        << receiver
-        << ", "
-        << "SLOT("<<connection->elementSlot()<<')'
-        << ");\n";
+    language::SignalSlot theSignal{senderDecl.name, connection->elementSignal(),
+                                   senderDecl.className};
+    language::SignalSlot theSlot{receiverDecl.name, connection->elementSlot(),
+                                 receiverDecl.className};
+
+    m_output << m_indent;
+    language::formatConnection(m_output, theSignal, theSlot);
+    m_output << ";\n";
 }
 
 static void generateMultiDirectiveBegin(QTextStream &outputStream, const QSet<QString> &directives)
