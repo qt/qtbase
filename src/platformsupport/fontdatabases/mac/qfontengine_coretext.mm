@@ -824,6 +824,9 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
         CTFontDrawGlyphs(ctfont, &cgGlyph, &CGPointZero, 1, ctx);
     }
 
+    if (expectsGammaCorrectedBlending())
+        qGamma_correct_back_to_linear_cs(&im);
+
 #if defined(Q_OS_MACOS)
     if (blackOnWhiteGlyphs)
         im.invertPixels();
@@ -864,9 +867,7 @@ QImage QCoreTextFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPo
     if (x.type() > QTransform::TxScale)
         return QFontEngine::alphaRGBMapForGlyph(glyph, subPixelPosition, x);
 
-    QImage im = imageForGlyph(glyph, subPixelPosition, x);
-    qGamma_correct_back_to_linear_cs(&im);
-    return im;
+    return imageForGlyph(glyph, subPixelPosition, x);
 }
 
 QImage QCoreTextFontEngine::bitmapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t)
