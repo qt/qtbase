@@ -231,7 +231,7 @@ QWindowContainer::QWindowContainer(QWindow *embeddedWindow, QWidget *parent, Qt:
     QString windowName = d->window->objectName();
     if (windowName.isEmpty())
         windowName = QString::fromUtf8(d->window->metaObject()->className());
-    d->fakeParent.setObjectName(windowName + "ContainerFakeParent");
+    d->fakeParent.setObjectName(windowName + QLatin1String("ContainerFakeParent"));
 
     d->window->setParent(&d->fakeParent);
     setAcceptDrops(true);
