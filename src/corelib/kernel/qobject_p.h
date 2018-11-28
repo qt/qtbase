@@ -341,7 +341,7 @@ inline QMetaObject::Connection QObjectPrivate::connect(const typename QtPrivate:
     Q_STATIC_ASSERT_X((QtPrivate::AreArgumentsCompatible<typename SlotType::ReturnType, typename SignalType::ReturnType>::value),
                       "Return type of the slot is not compatible with the return type of the signal.");
 
-    const int *types = 0;
+    const int *types = nullptr;
     if (type == Qt::QueuedConnection || type == Qt::BlockingQueuedConnection)
         types = QtPrivate::ConnectionTypes<typename SignalType::Arguments>::types();
 
