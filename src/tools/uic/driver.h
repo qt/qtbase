@@ -98,7 +98,8 @@ private:
     const DomClass *findByAttributeName(const DomObjectHash<DomClass> &domHash,
                                         const QString &name) const;
     template <class DomClass>
-    QString findOrInsert(DomObjectHash<DomClass> *domHash, const DomClass *dom, const QString &className);
+    QString findOrInsert(DomObjectHash<DomClass> *domHash, const DomClass *dom, const QString &className,
+                         bool isMember = true);
 
     Option m_option;
     QTextStream m_stdout;

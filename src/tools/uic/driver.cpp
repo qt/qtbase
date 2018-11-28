@@ -30,6 +30,8 @@
 #include "uic.h"
 #include "ui4.h"
 
+#include <language.h>
+
 #include <qfileinfo.h>
 #include <qdebug.h>
 
@@ -63,17 +65,21 @@ const DomClass *Driver::findByAttributeName(const DomObjectHash<DomClass> &domHa
 
 template <class DomClass>
 QString Driver::findOrInsert(DomObjectHash<DomClass> *domHash, const DomClass *dom,
-                             const QString &className)
+                             const QString &className, bool isMember)
 {
     auto it = domHash->find(dom);
-    if (it == domHash->end())
-        it = domHash->insert(dom, this->unique(dom->attributeName(), className));
+    if (it == domHash->end()) {
+        const QString name = this->unique(dom->attributeName(), className);
+        it = domHash->insert(dom, isMember ? language::self + name : name);
+    }
     return it.value();
 }
 
 QString Driver::findOrInsertWidget(const DomWidget *ui_widget)
 {
-    return findOrInsert(&m_widgets, ui_widget, ui_widget->attributeClass());
+    // Top level is passed into setupUI(), everything else is a member variable
+    const bool isMember = !m_widgets.isEmpty();
+    return findOrInsert(&m_widgets, ui_widget, ui_widget->attributeClass(), isMember);
 }
 
 QString Driver::findOrInsertSpacer(const DomSpacer *ui_spacer)
