@@ -748,37 +748,44 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     if (!im.width() || !im.height())
         return im;
 
-#if defined(Q_OS_MACOS)
-    CGColorRef glyphColor = CGColorGetConstantColor(kCGColorWhite);
-    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
-        // macOS 10.14 uses a new font smoothing algorithm that takes the fill color into
-        // account. This means our default approach of drawing white on black to produce
-        // the alpha map will result in non-native looking text when then drawn as black
-        // on white during the final blit. As a workaround we use the application's current
-        // appearance to decide whether to draw with white or black fill, and then invert
-        // the glyph image in the latter case, producing an alpha map. This covers the
-        // most common use-cases, but longer term we should propagate the fill color all
-        // the way from the paint engine, and include it in the key for the glyph cache.
-        if (!qt_mac_applicationIsInDarkMode())
-            glyphColor = CGColorGetConstantColor(kCGColorBlack);
-    }
-    const bool blackOnWhiteGlyphs = !hasColorGlyphs()
-            && CGColorEqualToColor(glyphColor, CGColorGetConstantColor(kCGColorBlack));
-    if (blackOnWhiteGlyphs)
-        im.fill(Qt::white);
-    else
-#endif
-        im.fill(0); // Faster than Qt::black
-
     QCFType<CGColorSpaceRef> colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
     QCFType<CGContextRef> ctx = CGBitmapContextCreate(im.bits(), im.width(), im.height(),
                                              8, im.bytesPerLine(), colorspace,
                                              qt_mac_bitmapInfoForImage(im));
     Q_ASSERT(ctx);
-    CGContextSetFontSize(ctx, fontDef.pixelSize);
 
     CGContextSetShouldAntialias(ctx, shouldAntialias());
-    CGContextSetShouldSmoothFonts(ctx, shouldSmoothFont());
+
+    const bool shouldSmooth = shouldSmoothFont();
+    CGContextSetShouldSmoothFonts(ctx, shouldSmooth);
+
+#if defined(Q_OS_MACOS)
+    auto glyphColor = [&] {
+        if (shouldSmooth && fontSmoothing() == Grayscale) {
+            // The grayscale font smoothing algorithm introduced in macOS Mojave (10.14) adjusts
+            // its dilation (stem darkening) parameters based on the fill color. This means our
+            // default approach of drawing white on black to produce the alpha map will result
+            // in non-native looking text when then drawn as black on white during the final blit.
+            // As a workaround we use the application's current appearance to decide whether to
+            // draw with white or black fill, and then invert the glyph image in the latter case,
+            // producing an alpha map. This covers the most common use-cases, but longer term we
+            // should propagate the fill color all the way from the paint engine, and include it
+            //in the key for the glyph cache.
+
+            if (!qt_mac_applicationIsInDarkMode())
+                return kCGColorBlack;
+        }
+        return kCGColorWhite;
+    }();
+
+    const bool blackOnWhiteGlyphs = glyphColor == kCGColorBlack;
+    if (blackOnWhiteGlyphs)
+        im.fill(Qt::white);
+    else
+#endif
+        im.fill(0);
+
+    CGContextSetFontSize(ctx, fontDef.pixelSize);
 
     CGAffineTransform cgMatrix = CGAffineTransformIdentity;
 
@@ -798,7 +805,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     if (!hasColorGlyphs()) {
         CGContextSetTextMatrix(ctx, cgMatrix);
 #if defined(Q_OS_MACOS)
-        CGContextSetFillColorWithColor(ctx, glyphColor);
+        CGContextSetFillColorWithColor(ctx, CGColorGetConstantColor(glyphColor));
 #else
         CGContextSetRGBFillColor(ctx, 1, 1, 1, 1);
 #endif
