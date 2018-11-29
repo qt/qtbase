@@ -208,15 +208,6 @@ public:
     ClipType clipType() const;
     QRect clipBoundingRect() const;
 
-    void releaseBuffer();
-
-    QSize size() const;
-
-#ifndef QT_NO_DEBUG
-    void saveBuffer(const QString &s) const;
-#endif
-
-
 #ifdef Q_OS_WIN
     void setDC(HDC hdc);
     HDC getDC() const;
@@ -442,19 +433,8 @@ public:
     void init();
 
     QImage::Format prepare(QImage *image);
-    QImage::Format prepare(QPixmap *pix);
-    void prepare(int w, int h);
-    void prepareBuffer(int w, int h);
-
-    void resetBuffer(int val=0);
 
     uchar *scanLine(int y) { Q_ASSERT(y>=0); Q_ASSERT(y<m_height); return m_buffer + y * bytes_per_line; }
-
-#ifndef QT_NO_DEBUG
-    QImage bufferImage() const;
-#endif
-
-    void flushToARGBImage(QImage *image) const;
 
     int width() const { return m_width; }
     int height() const { return m_height; }

@@ -555,35 +555,6 @@ bool QRasterPaintEngine::end()
 /*!
     \internal
 */
-void QRasterPaintEngine::releaseBuffer()
-{
-    Q_D(QRasterPaintEngine);
-    d->rasterBuffer.reset(new QRasterBuffer);
-}
-
-/*!
-    \internal
-*/
-QSize QRasterPaintEngine::size() const
-{
-    Q_D(const QRasterPaintEngine);
-    return QSize(d->rasterBuffer->width(), d->rasterBuffer->height());
-}
-
-/*!
-    \internal
-*/
-#ifndef QT_NO_DEBUG
-void QRasterPaintEngine::saveBuffer(const QString &s) const
-{
-    Q_D(const QRasterPaintEngine);
-    d->rasterBuffer->bufferImage().save(s, "PNG");
-}
-#endif
-
-/*!
-    \internal
-*/
 void QRasterPaintEngine::updateMatrix(const QTransform &matrix)
 {
     QRasterPaintEngineState *s = state();
@@ -3845,11 +3816,6 @@ QImage::Format QRasterBuffer::prepare(QImage *image)
     return format;
 }
 
-void QRasterBuffer::resetBuffer(int val)
-{
-    memset(m_buffer, val, m_height*bytes_per_line);
-}
-
 QClipData::QClipData(int height)
 {
     clipSpanHeight = height;
@@ -4271,48 +4237,6 @@ static void qt_span_clip(int count, const QSpan *spans, void *userData)
         break;
     }
 }
-
-#ifndef QT_NO_DEBUG
-QImage QRasterBuffer::bufferImage() const
-{
-    QImage image(m_width, m_height, QImage::Format_ARGB32_Premultiplied);
-
-    for (int y = 0; y < m_height; ++y) {
-        uint *span = (uint *)const_cast<QRasterBuffer *>(this)->scanLine(y);
-
-        for (int x=0; x<m_width; ++x) {
-            uint argb = span[x];
-            image.setPixel(x, y, argb);
-        }
-    }
-    return image;
-}
-#endif
-
-
-void QRasterBuffer::flushToARGBImage(QImage *target) const
-{
-    int w = qMin(m_width, target->width());
-    int h = qMin(m_height, target->height());
-
-    for (int y=0; y<h; ++y) {
-        uint *sourceLine = (uint *)const_cast<QRasterBuffer *>(this)->scanLine(y);
-        QRgb *dest = (QRgb *) target->scanLine(y);
-        for (int x=0; x<w; ++x) {
-            QRgb pixel = sourceLine[x];
-            int alpha = qAlpha(pixel);
-            if (!alpha) {
-                dest[x] = 0;
-            } else {
-                dest[x] = (alpha << 24)
-                        | ((255*qRed(pixel)/alpha) << 16)
-                        | ((255*qGreen(pixel)/alpha) << 8)
-                        | ((255*qBlue(pixel)/alpha) << 0);
-            }
-        }
-    }
-}
-
 
 class QGradientCache
 {

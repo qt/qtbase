@@ -310,12 +310,6 @@ bool QWidgetBackingStore::bltRect(const QRect &rect, int dx, int dy, QWidget *wi
     return store->scroll(tlwRect, dx, dy);
 }
 
-void QWidgetBackingStore::releaseBuffer()
-{
-    if (store)
-        store->resize(QSize());
-}
-
 /*!
     Prepares the window surface to paint a\ toClean region of the \a widget and
     updates the BeginPaintInfo struct accordingly.
