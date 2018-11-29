@@ -53,7 +53,7 @@
 
 TESTSERVER_VERSION = $$system(docker-compose --version)
 
-equals(QMAKE_HOST.os, Windows)|isEmpty(TESTSERVER_VERSION) {
+equals(QMAKE_HOST.os, Darwin)|equals(QMAKE_HOST.os, Windows)|isEmpty(TESTSERVER_VERSION) {
     # Make check with server "qt-test-server.qt-test-net" as a fallback
     message("testserver: qt-test-server.qt-test-net")
 } else {
