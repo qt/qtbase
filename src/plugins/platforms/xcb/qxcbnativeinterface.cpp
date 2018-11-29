@@ -304,7 +304,7 @@ QPlatformNativeInterface::NativeResourceForWindowFunction QXcbNativeInterface::n
 QPlatformNativeInterface::NativeResourceForBackingStoreFunction QXcbNativeInterface::nativeResourceFunctionForBackingStore(const QByteArray &resource)
 {
     const QByteArray lowerCaseResource = resource.toLower();
-    NativeResourceForBackingStoreFunction func = handlerNativeResourceFunctionForBackingStore(resource);
+    NativeResourceForBackingStoreFunction func = handlerNativeResourceFunctionForBackingStore(lowerCaseResource);
     return func;
 }
 
