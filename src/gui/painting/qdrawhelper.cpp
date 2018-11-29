@@ -3500,8 +3500,8 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64_uint32(QRgba64 *buf
 
     uint sbuf1[BufferSize];
     uint sbuf2[BufferSize];
-    QRgba64 buf1[BufferSize];
-    QRgba64 buf2[BufferSize];
+    alignas(8) QRgba64 buf1[BufferSize];
+    alignas(8) QRgba64 buf2[BufferSize];
     QRgba64 *end = buffer + length;
     QRgba64 *b = buffer;
 
@@ -3658,8 +3658,8 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64_uint64(QRgba64 *buf
     const qreal cx = x + qreal(0.5);
     const qreal cy = y + qreal(0.5);
 
-    QRgba64 buf1[BufferSize];
-    QRgba64 buf2[BufferSize];
+    alignas(8) QRgba64 buf1[BufferSize];
+    alignas(8) QRgba64 buf2[BufferSize];
     QRgba64 *end = buffer + length;
     QRgba64 *b = buffer;
 
@@ -4371,7 +4371,7 @@ void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
         return blend_color_generic(count, spans, userData);
     }
 
-    quint64 buffer[BufferSize];
+    alignas(8) QRgba64 buffer[BufferSize];
     const QRgba64 color = data->solid.color;
     bool solidFill = data->rasterBuffer->compositionMode == QPainter::CompositionMode_Source
                   || (data->rasterBuffer->compositionMode == QPainter::CompositionMode_SourceOver && color.isOpaque());
@@ -4392,7 +4392,7 @@ void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
 
         while (length) {
             int l = qMin(BufferSize, length);
-            QRgba64 *dest = op.destFetch64((QRgba64 *)buffer, data->rasterBuffer, x, spans->y, l);
+            QRgba64 *dest = op.destFetch64(buffer, data->rasterBuffer, x, spans->y, l);
             op.funcSolid64(dest, l, color, spans->coverage);
             if (op.destStore64)
                 op.destStore64(data->rasterBuffer, x, spans->y, dest, l);
@@ -4544,8 +4544,8 @@ struct QBlendBase
 
     BlendType *dest;
 
-    BlendType buffer[BufferSize];
-    BlendType src_buffer[BufferSize];
+    alignas(8) BlendType buffer[BufferSize];
+    alignas(8) BlendType src_buffer[BufferSize];
 };
 
 class BlendSrcGeneric : public QBlendBase<uint>
@@ -4574,11 +4574,11 @@ public:
     }
 };
 
-class BlendSrcGenericRGB64 : public QBlendBase<quint64>
+class BlendSrcGenericRGB64 : public QBlendBase<QRgba64>
 {
 public:
     BlendSrcGenericRGB64(QSpanData *d, const Operator &o)
-        : QBlendBase<quint64>(d, o)
+        : QBlendBase<QRgba64>(d, o)
     {
     }
 
@@ -4587,21 +4587,21 @@ public:
         return op.func64 && op.destFetch64;
     }
 
-    const quint64 *fetch(int x, int y, int len)
+    const QRgba64 *fetch(int x, int y, int len)
     {
-        dest = (quint64 *)op.destFetch64((QRgba64 *)buffer, data->rasterBuffer, x, y, len);
-        return (const quint64 *)op.srcFetch64((QRgba64 *)src_buffer, &op, data, y, x, len);
+        dest = op.destFetch64(buffer, data->rasterBuffer, x, y, len);
+        return op.srcFetch64(src_buffer, &op, data, y, x, len);
     }
 
-    void process(int, int, int len, int coverage, const quint64 *src, int offset)
+    void process(int, int, int len, int coverage, const QRgba64 *src, int offset)
     {
-        op.func64((QRgba64 *)dest + offset, (const QRgba64 *)src + offset, len, coverage);
+        op.func64(dest + offset, src + offset, len, coverage);
     }
 
     void store(int x, int y, int len)
     {
         if (op.destStore64)
-            op.destStore64(data->rasterBuffer, x, y, (QRgba64 *)dest, len);
+            op.destStore64(data->rasterBuffer, x, y, dest, len);
     }
 };
 
@@ -4680,8 +4680,8 @@ static void blend_untransformed_generic_rgb64(int count, const QSpan *spans, voi
         qCDebug(lcQtGuiDrawHelper, "blend_untransformed_generic_rgb64: unsupported 64-bit blend attempted, falling back to 32-bit");
         return blend_untransformed_generic(count, spans, userData);
     }
-    quint64 buffer[BufferSize];
-    quint64 src_buffer[BufferSize];
+    alignas(8) QRgba64 buffer[BufferSize];
+    alignas(8) QRgba64 src_buffer[BufferSize];
 
     const int image_width = data->texture.width;
     const int image_height = data->texture.height;
@@ -4705,8 +4705,8 @@ static void blend_untransformed_generic_rgb64(int count, const QSpan *spans, voi
                 const int coverage = (spans->coverage * data->texture.const_alpha) >> 8;
                 while (length) {
                     int l = qMin(BufferSize, length);
-                    const QRgba64 *src = op.srcFetch64((QRgba64 *)src_buffer, &op, data, sy, sx, l);
-                    QRgba64 *dest = op.destFetch64((QRgba64 *)buffer, data->rasterBuffer, x, spans->y, l);
+                    const QRgba64 *src = op.srcFetch64(src_buffer, &op, data, sy, sx, l);
+                    QRgba64 *dest = op.destFetch64(buffer, data->rasterBuffer, x, spans->y, l);
                     op.func64(dest, src, l, coverage);
                     if (op.destStore64)
                         op.destStore64(data->rasterBuffer, x, spans->y, dest, l);
@@ -4922,8 +4922,8 @@ static void blend_tiled_generic_rgb64(int count, const QSpan *spans, void *userD
         qCDebug(lcQtGuiDrawHelper, "blend_tiled_generic_rgb64: unsupported 64-bit blend attempted, falling back to 32-bit");
         return blend_tiled_generic(count, spans, userData);
     }
-    quint64 buffer[BufferSize];
-    quint64 src_buffer[BufferSize];
+    alignas(8) QRgba64 buffer[BufferSize];
+    alignas(8) QRgba64 src_buffer[BufferSize];
 
     const int image_width = data->texture.width;
     const int image_height = data->texture.height;
@@ -4952,7 +4952,7 @@ static void blend_tiled_generic_rgb64(int count, const QSpan *spans, void *userD
             int sl = qMin(image_width, length);
             if (sx > 0 && sl > 0) {
                 int l = qMin(image_width - sx, sl);
-                const QRgba64 *src = op.srcFetch64((QRgba64 *)src_buffer, &op, data, sy, sx, l);
+                const QRgba64 *src = op.srcFetch64(src_buffer, &op, data, sy, sx, l);
                 op.destStore64(data->rasterBuffer, x, y, src, l);
                 x += l;
                 sx += l;
@@ -4962,7 +4962,7 @@ static void blend_tiled_generic_rgb64(int count, const QSpan *spans, void *userD
             }
             if (sl > 0) {
                 Q_ASSERT(sx == 0);
-                const QRgba64 *src = op.srcFetch64((QRgba64 *)src_buffer, &op, data, sy, sx, sl);
+                const QRgba64 *src = op.srcFetch64(src_buffer, &op, data, sy, sx, sl);
                 op.destStore64(data->rasterBuffer, x, y, src, sl);
                 x += sl;
                 sx += sl;
@@ -4994,8 +4994,8 @@ static void blend_tiled_generic_rgb64(int count, const QSpan *spans, void *userD
             int l = qMin(image_width - sx, length);
             if (BufferSize < l)
                 l = BufferSize;
-            const QRgba64 *src = op.srcFetch64((QRgba64 *)src_buffer, &op, data, sy, sx, l);
-            QRgba64 *dest = op.destFetch64((QRgba64 *)buffer, data->rasterBuffer, x, spans->y, l);
+            const QRgba64 *src = op.srcFetch64(src_buffer, &op, data, sy, sx, l);
+            QRgba64 *dest = op.destFetch64(buffer, data->rasterBuffer, x, spans->y, l);
             op.func64(dest, src, l, coverage);
             if (op.destStore64)
                 op.destStore64(data->rasterBuffer, x, spans->y, dest, l);
@@ -5472,7 +5472,7 @@ static void qt_alphamapblit_generic(QRasterBuffer *rasterBuffer,
             srcColor = colorProfile->toLinear(srcColor.unpremultiplied()).premultiplied();
     }
 
-    quint64 buffer[BufferSize];
+    alignas(8) QRgba64 buffer[BufferSize];
     const DestFetchProc64 destFetch64 = destFetchProc64[rasterBuffer->format];
     const DestStoreProc64 destStore64 = destStoreProc64[rasterBuffer->format];
 
@@ -5482,7 +5482,7 @@ static void qt_alphamapblit_generic(QRasterBuffer *rasterBuffer,
             int length = mapWidth;
             while (length > 0) {
                 int l = qMin(BufferSize, length);
-                QRgba64 *dest = destFetch64((QRgba64*)buffer, rasterBuffer, i, y + ly, l);
+                QRgba64 *dest = destFetch64(buffer, rasterBuffer, i, y + ly, l);
                 for (int j=0; j < l; ++j) {
                     const int coverage = map[j + (i - x)];
                     alphamapblend_generic(coverage, dest, j, srcColor, color, colorProfile);
@@ -5512,7 +5512,7 @@ static void qt_alphamapblit_generic(QRasterBuffer *rasterBuffer,
                 if (end <= start)
                     continue;
                 Q_ASSERT(end - start <= BufferSize);
-                QRgba64 *dest = destFetch64((QRgba64*)buffer, rasterBuffer, start, clip.y, end - start);
+                QRgba64 *dest = destFetch64(buffer, rasterBuffer, start, clip.y, end - start);
 
                 for (int xp=start; xp<end; ++xp) {
                     const int coverage = map[xp - x];
@@ -5791,7 +5791,7 @@ static void qt_alphargbblit_generic(QRasterBuffer *rasterBuffer,
             srcColor = colorProfile->toLinear(srcColor.unpremultiplied()).premultiplied();
     }
 
-    quint64 buffer[BufferSize];
+    alignas(8) QRgba64 buffer[BufferSize];
     const DestFetchProc64 destFetch64 = destFetchProc64[rasterBuffer->format];
     const DestStoreProc64 destStore64 = destStoreProc64[rasterBuffer->format];
 
@@ -5801,7 +5801,7 @@ static void qt_alphargbblit_generic(QRasterBuffer *rasterBuffer,
             int length = mapWidth;
             while (length > 0) {
                 int l = qMin(BufferSize, length);
-                QRgba64 *dest = destFetch64((QRgba64*)buffer, rasterBuffer, i, y + ly, l);
+                QRgba64 *dest = destFetch64(buffer, rasterBuffer, i, y + ly, l);
                 for (int j=0; j < l; ++j) {
                     const uint coverage = src[j + (i - x)];
                     alphargbblend_generic(coverage, dest, j, srcColor, color, colorProfile);
@@ -5831,7 +5831,7 @@ static void qt_alphargbblit_generic(QRasterBuffer *rasterBuffer,
                 if (end <= start)
                     continue;
                 Q_ASSERT(end - start <= BufferSize);
-                QRgba64 *dest = destFetch64((QRgba64*)buffer, rasterBuffer, start, clip.y, end - start);
+                QRgba64 *dest = destFetch64(buffer, rasterBuffer, start, clip.y, end - start);
 
                 for (int xp=start; xp<end; ++xp) {
                     const uint coverage = src[xp - x];
