@@ -89,9 +89,7 @@ void q_ERR_free_strings();
 void q_EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *a);
 void q_EVP_CIPHER_CTX_init(EVP_CIPHER_CTX *a);
 
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 typedef _STACK STACK;
-#endif
 
 // The typedef we use to make our pre 1.1 code look more like 1.1 (less ifdefs).
 typedef STACK OPENSSL_STACK;
@@ -111,22 +109,13 @@ void q_sk_free(STACK *a);
 // address of this:
 #define q_OPENSSL_sk_free q_sk_free
 
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 void *q_sk_value(STACK *a, int b);
 void q_sk_push(STACK *st, void *data);
-#else
-char *q_sk_value(STACK *a, int b);
-void q_sk_push(STACK *st, char *data);
-#endif // OPENSSL_VERSION_NUMBER >= 0x10000000L
 
 #define q_OPENSSL_sk_value(a, b) q_sk_value(a, b)
 #define q_OPENSSL_sk_push(st, data) q_sk_push(st, data)
 
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 SSL_CTX *q_SSL_CTX_new(const SSL_METHOD *a);
-#else
-SSL_CTX *q_SSL_CTX_new(SSL_METHOD *a);
-#endif
 
 int q_SSL_library_init();
 void q_SSL_load_error_strings();
@@ -135,7 +124,6 @@ void q_SSL_load_error_strings();
 int q_SSL_get_ex_new_index(long argl, void *argp, CRYPTO_EX_new *new_func, CRYPTO_EX_dup *dup_func, CRYPTO_EX_free *free_func);
 #endif
 
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 const SSL_METHOD *q_SSLv23_client_method();
 const SSL_METHOD *q_TLSv1_client_method();
 const SSL_METHOD *q_TLSv1_1_client_method();
@@ -144,16 +132,6 @@ const SSL_METHOD *q_SSLv23_server_method();
 const SSL_METHOD *q_TLSv1_server_method();
 const SSL_METHOD *q_TLSv1_1_server_method();
 const SSL_METHOD *q_TLSv1_2_server_method();
-#else
-SSL_METHOD *q_SSLv23_client_method();
-SSL_METHOD *q_TLSv1_client_method();
-SSL_METHOD *q_TLSv1_1_client_method();
-SSL_METHOD *q_TLSv1_2_client_method();
-SSL_METHOD *q_SSLv23_server_method();
-SSL_METHOD *q_TLSv1_server_method();
-SSL_METHOD *q_TLSv1_1_server_method();
-SSL_METHOD *q_TLSv1_2_server_method();
-#endif
 
 STACK_OF(X509) *q_X509_STORE_CTX_get_chain(X509_STORE_CTX *ctx);
 

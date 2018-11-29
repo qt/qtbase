@@ -357,11 +357,7 @@ int q_SSL_connect(SSL *a);
 int q_SSL_CTX_check_private_key(const SSL_CTX *a);
 long q_SSL_CTX_ctrl(SSL_CTX *a, int b, long c, void *d);
 void q_SSL_CTX_free(SSL_CTX *a);
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 SSL_CTX *q_SSL_CTX_new(const SSL_METHOD *a);
-#else
-SSL_CTX *q_SSL_CTX_new(SSL_METHOD *a);
-#endif
 int q_SSL_CTX_set_cipher_list(SSL_CTX *a, const char *b);
 int q_SSL_CTX_set_default_verify_paths(SSL_CTX *a);
 void q_SSL_CTX_set_verify(SSL_CTX *a, int b, int (*c)(int, X509_STORE_CTX *));
@@ -386,11 +382,7 @@ int q_SSL_CONF_cmd(SSL_CONF_CTX *a, const char *b, const char *c);
 #endif
 void q_SSL_free(SSL *a);
 STACK_OF(SSL_CIPHER) *q_SSL_get_ciphers(const SSL *a);
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 const SSL_CIPHER *q_SSL_get_current_cipher(SSL *a);
-#else
-SSL_CIPHER *q_SSL_get_current_cipher(SSL *a);
-#endif
 int q_SSL_version(const SSL *a);
 int q_SSL_get_error(SSL *a, int b);
 STACK_OF(X509) *q_SSL_get_peer_cert_chain(SSL *a);
@@ -444,11 +436,7 @@ int q_X509_EXTENSION_get_critical(X509_EXTENSION *a);
 ASN1_OCTET_STRING *q_X509_EXTENSION_get_data(X509_EXTENSION *a);
 void q_BASIC_CONSTRAINTS_free(BASIC_CONSTRAINTS *a);
 void q_AUTHORITY_KEYID_free(AUTHORITY_KEYID *a);
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 int q_ASN1_STRING_print(BIO *a, const ASN1_STRING *b);
-#else
-int q_ASN1_STRING_print(BIO *a, ASN1_STRING *b);
-#endif
 int q_X509_check_issued(X509 *a, X509 *b);
 X509_NAME *q_X509_get_issuer_name(X509 *a);
 X509_NAME *q_X509_get_subject_name(X509 *a);
