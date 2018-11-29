@@ -73,37 +73,41 @@ public:
                    const QString &className=QString());
 
     // symbol table
-    QString findOrInsertWidget(DomWidget *ui_widget);
-    QString findOrInsertSpacer(DomSpacer *ui_spacer);
-    QString findOrInsertLayout(DomLayout *ui_layout);
-    QString findOrInsertLayoutItem(DomLayoutItem *ui_layoutItem);
+    QString findOrInsertWidget(const DomWidget *ui_widget);
+    QString findOrInsertSpacer(const DomSpacer *ui_spacer);
+    QString findOrInsertLayout(const DomLayout *ui_layout);
+    QString findOrInsertLayoutItem(const DomLayoutItem *ui_layoutItem);
     QString findOrInsertName(const QString &name);
-    QString findOrInsertActionGroup(DomActionGroup *ui_group);
-    QString findOrInsertAction(DomAction *ui_action);
+    QString findOrInsertActionGroup(const DomActionGroup *ui_group);
+    QString findOrInsertAction(const DomAction *ui_action);
     QString findOrInsertButtonGroup(const DomButtonGroup *ui_group);
     // Find a group by its non-uniqified name
     const DomButtonGroup *findButtonGroup(const QString &attributeName) const;
 
-    DomWidget *widgetByName(const QString &name) const;
-    DomActionGroup *actionGroupByName(const QString &name) const;
-    DomAction *actionByName(const QString &name) const;
+    const DomWidget *widgetByName(const QString &name) const;
+    const DomActionGroup *actionGroupByName(const QString &name) const;
+    const DomAction *actionByName(const QString &name) const;
 
     bool useIdBasedTranslations() const { return m_idBasedTranslations; }
     void setUseIdBasedTranslations(bool u) { m_idBasedTranslations = u; }
 
 private:
+    template <class DomClass> using DomObjectHash = QHash<const DomClass *, QString>;
+
+    template <class DomClass>
+    QString findOrInsert(DomObjectHash<DomClass> *domHash, const DomClass *dom, const QString &className);
+
     Option m_option;
     QTextStream m_stdout;
     QTextStream *m_output;
 
     // symbol tables
-    QHash<DomWidget*, QString> m_widgets;
-    QHash<DomSpacer*, QString> m_spacers;
-    QHash<DomLayout*, QString> m_layouts;
-    QHash<DomActionGroup*, QString> m_actionGroups;
-    typedef QHash<const DomButtonGroup*, QString> ButtonGroupNameHash;
-    ButtonGroupNameHash m_buttonGroups;
-    QHash<DomAction*, QString> m_actions;
+    DomObjectHash<DomWidget> m_widgets;
+    DomObjectHash<DomSpacer> m_spacers;
+    DomObjectHash<DomLayout> m_layouts;
+    DomObjectHash<DomActionGroup> m_actionGroups;
+    DomObjectHash<DomButtonGroup> m_buttonGroups;
+    DomObjectHash<DomAction> m_actions;
     QHash<QString, bool> m_nameRepository;
     bool m_idBasedTranslations = false;
 };

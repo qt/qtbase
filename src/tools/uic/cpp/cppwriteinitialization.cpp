@@ -2404,9 +2404,9 @@ QString WriteInitialization::findDeclaration(const QString &name)
 {
     const QString normalized = Driver::normalizedName(name);
 
-    if (DomWidget *widget = m_driver->widgetByName(normalized))
+    if (const DomWidget *widget = m_driver->widgetByName(normalized))
         return m_driver->findOrInsertWidget(widget);
-    if (DomAction *action = m_driver->actionByName(normalized))
+    if (const DomAction *action = m_driver->actionByName(normalized))
         return m_driver->findOrInsertAction(action);
     if (const DomButtonGroup *group = m_driver->findButtonGroup(normalized))
         return m_driver->findOrInsertButtonGroup(group);
