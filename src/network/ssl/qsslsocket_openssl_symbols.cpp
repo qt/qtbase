@@ -285,23 +285,11 @@ DEFINEFUNC5(int, SSL_get_ex_new_index, long argl, argl, void *argp, argp, CRYPTO
 #endif // OPENSSL_VERSION_NUMBER >= 0x10001000L
 
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
-#ifndef OPENSSL_NO_SSL2
-DEFINEFUNC(const SSL_METHOD *, SSLv2_client_method, DUMMYARG, DUMMYARG, return nullptr, return)
-#endif
-#ifndef OPENSSL_NO_SSL3_METHOD
-DEFINEFUNC(const SSL_METHOD *, SSLv3_client_method, DUMMYARG, DUMMYARG, return nullptr, return)
-#endif
 DEFINEFUNC(const SSL_METHOD *, SSLv23_client_method, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC(const SSL_METHOD *, TLSv1_client_method, DUMMYARG, DUMMYARG, return nullptr, return)
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
 DEFINEFUNC(const SSL_METHOD *, TLSv1_1_client_method, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC(const SSL_METHOD *, TLSv1_2_client_method, DUMMYARG, DUMMYARG, return nullptr, return)
-#endif
-#ifndef OPENSSL_NO_SSL2
-DEFINEFUNC(const SSL_METHOD *, SSLv2_server_method, DUMMYARG, DUMMYARG, return nullptr, return)
-#endif
-#ifndef OPENSSL_NO_SSL3_METHOD
-DEFINEFUNC(const SSL_METHOD *, SSLv3_server_method, DUMMYARG, DUMMYARG, return nullptr, return)
 #endif
 DEFINEFUNC(const SSL_METHOD *, SSLv23_server_method, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC(const SSL_METHOD *, TLSv1_server_method, DUMMYARG, DUMMYARG, return nullptr, return)
@@ -310,20 +298,8 @@ DEFINEFUNC(const SSL_METHOD *, TLSv1_1_server_method, DUMMYARG, DUMMYARG, return
 DEFINEFUNC(const SSL_METHOD *, TLSv1_2_server_method, DUMMYARG, DUMMYARG, return nullptr, return)
 #endif
 #else
-#ifndef OPENSSL_NO_SSL2
-DEFINEFUNC(SSL_METHOD *, SSLv2_client_method, DUMMYARG, DUMMYARG, return nullptr, return)
-#endif
-#ifndef OPENSSL_NO_SSL3_METHOD
-DEFINEFUNC(SSL_METHOD *, SSLv3_client_method, DUMMYARG, DUMMYARG, return nullptr, return)
-#endif
 DEFINEFUNC(SSL_METHOD *, SSLv23_client_method, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC(SSL_METHOD *, TLSv1_client_method, DUMMYARG, DUMMYARG, return nullptr, return)
-#ifndef OPENSSL_NO_SSL2
-DEFINEFUNC(SSL_METHOD *, SSLv2_server_method, DUMMYARG, DUMMYARG, return nullptr, return)
-#endif
-#ifndef OPENSSL_NO_SSL3_METHOD
-DEFINEFUNC(SSL_METHOD *, SSLv3_server_method, DUMMYARG, DUMMYARG, return nullptr, return)
-#endif
 DEFINEFUNC(SSL_METHOD *, SSLv23_server_method, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC(SSL_METHOD *, TLSv1_server_method, DUMMYARG, DUMMYARG, return nullptr, return)
 #endif
@@ -1130,23 +1106,11 @@ bool q_resolveOpenSslSymbols()
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
     RESOLVEFUNC(SSL_get_ex_new_index)
 #endif
-#ifndef OPENSSL_NO_SSL2
-    RESOLVEFUNC(SSLv2_client_method)
-#endif
-#ifndef OPENSSL_NO_SSL3_METHOD
-    RESOLVEFUNC(SSLv3_client_method)
-#endif
     RESOLVEFUNC(SSLv23_client_method)
     RESOLVEFUNC(TLSv1_client_method)
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
     RESOLVEFUNC(TLSv1_1_client_method)
     RESOLVEFUNC(TLSv1_2_client_method)
-#endif
-#ifndef OPENSSL_NO_SSL2
-    RESOLVEFUNC(SSLv2_server_method)
-#endif
-#ifndef OPENSSL_NO_SSL3_METHOD
-    RESOLVEFUNC(SSLv3_server_method)
 #endif
     RESOLVEFUNC(SSLv23_server_method)
     RESOLVEFUNC(TLSv1_server_method)

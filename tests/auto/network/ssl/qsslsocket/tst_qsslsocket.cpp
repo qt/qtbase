@@ -245,6 +245,9 @@ private slots:
     void signatureAlgorithm();
 #endif
 
+    void deprecatedProtocols_data();
+    void deprecatedProtocols();
+
     void setEmptyDefaultConfiguration(); // this test should be last
 
 protected slots:
@@ -952,24 +955,6 @@ void tst_QSslSocket::protocol()
     QCOMPARE(socket->protocol(), QSsl::SecureProtocols);
     QFETCH_GLOBAL(bool, setProxy);
     {
-        // qt-test-server allows SSLv3.
-        socket->setProtocol(QSsl::SslV3);
-        QCOMPARE(socket->protocol(), QSsl::SslV3);
-        socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
-        if (setProxy && !socket->waitForEncrypted())
-            QSKIP("Skipping flaky test - See QTBUG-29941");
-        QCOMPARE(socket->protocol(), QSsl::SslV3);
-        socket->abort();
-        QCOMPARE(socket->protocol(), QSsl::SslV3);
-        socket->connectToHost(QtNetworkSettings::serverName(), 443);
-        QVERIFY2(socket->waitForConnected(), qPrintable(socket->errorString()));
-        socket->startClientEncryption();
-        if (setProxy && !socket->waitForEncrypted())
-            QSKIP("Skipping flaky test - See QTBUG-29941");
-        QCOMPARE(socket->protocol(), QSsl::SslV3);
-        socket->abort();
-    }
-    {
         // qt-test-server allows TLSV1.
         socket->setProtocol(QSsl::TlsV1_0);
         QCOMPARE(socket->protocol(), QSsl::TlsV1_0);
@@ -1045,26 +1030,6 @@ void tst_QSslSocket::protocol()
         socket->abort();
     }
 #endif // TLS1_3_VERSION
-#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
-    {
-        // qt-test-server allows SSLV2.
-        socket->setProtocol(QSsl::SslV2);
-        QCOMPARE(socket->protocol(), QSsl::SslV2);
-        socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
-        if (setProxy && !socket->waitForEncrypted())
-            QSKIP("Skipping flaky test - See QTBUG-29941");
-        QCOMPARE(socket->protocol(), QSsl::SslV2);
-        socket->abort();
-        QCOMPARE(socket->protocol(), QSsl::SslV2);
-        socket->connectToHost(QtNetworkSettings::serverName(), 443);
-        if (setProxy && !socket->waitForConnected())
-            QSKIP("Skipping flaky test - See QTBUG-29941");
-        socket->startClientEncryption();
-        if (setProxy && !socket->waitForEncrypted())
-            QSKIP("Skipping flaky test - See QTBUG-29941");
-        socket->abort();
-    }
-#endif
     {
         // qt-test-server allows SSLV3, so it allows AnyProtocol.
         socket->setProtocol(QSsl::AnyProtocol);
@@ -1084,7 +1049,7 @@ void tst_QSslSocket::protocol()
         socket->abort();
     }
     {
-        // qt-test-server allows SSLV3, so it allows NoSslV2
+        // qt-test-server allows TlsV1, so it allows TlsV1SslV3
         socket->setProtocol(QSsl::TlsV1SslV3);
         QCOMPARE(socket->protocol(), QSsl::TlsV1SslV3);
         socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
@@ -1207,120 +1172,38 @@ void tst_QSslSocket::protocolServerSide_data()
     QTest::addColumn<QSsl::SslProtocol>("clientProtocol");
     QTest::addColumn<bool>("works");
 
-#if QT_CONFIG(opensslv11)
-#if !defined(OPENSSL_NO_SSL2)
-    // OpenSSL 1.1 has removed SSL2 support. But there is no OPENSSL_NO_SSL2 macro ...
-#define OPENSSL_NO_SSL2
-#endif // OPENSSL_NO_SSL2
-#endif // opensslv11
-
-#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
-    QTest::newRow("ssl2-ssl2") << QSsl::SslV2 << QSsl::SslV2 << false; // no idea why it does not work, but we don't care about SSL 2
-#endif
-#if !defined(OPENSSL_NO_SSL3)
-    QTest::newRow("ssl3-ssl3") << QSsl::SslV3 << QSsl::SslV3 << true;
-#endif
     QTest::newRow("tls1.0-tls1.0") << QSsl::TlsV1_0 << QSsl::TlsV1_0 << true;
     QTest::newRow("tls1ssl3-tls1ssl3") << QSsl::TlsV1SslV3 << QSsl::TlsV1SslV3 << true;
     QTest::newRow("any-any") << QSsl::AnyProtocol << QSsl::AnyProtocol << true;
     QTest::newRow("secure-secure") << QSsl::SecureProtocols << QSsl::SecureProtocols << true;
 
-#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
-    QTest::newRow("ssl2-ssl3") << QSsl::SslV2 << QSsl::SslV3 << false;
-    QTest::newRow("ssl2-tls1.0") << QSsl::SslV2 << QSsl::TlsV1_0 << false;
-    QTest::newRow("ssl2-tls1ssl3") << QSsl::SslV2 << QSsl::TlsV1SslV3 << false;
-    QTest::newRow("ssl2-secure") << QSsl::SslV2 << QSsl::SecureProtocols << false;
-    QTest::newRow("ssl2-any") << QSsl::SslV2 << QSsl::AnyProtocol << false; // no idea why it does not work, but we don't care about SSL 2
-#endif
-
-#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT) && !defined(OPENSSL_NO_SSL3)
-    QTest::newRow("ssl3-ssl2") << QSsl::SslV3 << QSsl::SslV2 << false;
-#endif
-#if !defined(OPENSSL_NO_SSL3)
-    QTest::newRow("ssl3-tls1.0") << QSsl::SslV3 << QSsl::TlsV1_0 << false;
-    QTest::newRow("ssl3-tls1ssl3") << QSsl::SslV3 << QSsl::TlsV1SslV3 << true;
-    QTest::newRow("ssl3-secure") << QSsl::SslV3 << QSsl::SecureProtocols << false;
-#endif
-#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT) && !defined(OPENSSL_NO_SSL3)
-    QTest::newRow("ssl3-any") << QSsl::SslV3 << QSsl::AnyProtocol << false; // we won't set a SNI header here because we connect to a
-                                                                            // numerical IP, so OpenSSL will send a SSL 2 handshake
-#elif !defined(OPENSSL_NO_SSL3)
-    QTest::newRow("ssl3-any") << QSsl::SslV3 << QSsl::AnyProtocol << true;
-#endif
-
-#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
-    QTest::newRow("tls1.0-ssl2") << QSsl::TlsV1_0 << QSsl::SslV2 << false;
-#endif
-#if !defined(OPENSSL_NO_SSL3)
-    QTest::newRow("tls1.0-ssl3") << QSsl::TlsV1_0 << QSsl::SslV3 << false;
-#endif
     QTest::newRow("tls1-tls1ssl3") << QSsl::TlsV1_0 << QSsl::TlsV1SslV3 << true;
     QTest::newRow("tls1.0-secure") << QSsl::TlsV1_0 << QSsl::SecureProtocols << true;
-#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
-    QTest::newRow("tls1.0-any") << QSsl::TlsV1_0 << QSsl::AnyProtocol << false; // we won't set a SNI header here because we connect to a
-                                                                            // numerical IP, so OpenSSL will send a SSL 2 handshake
-#else
     QTest::newRow("tls1.0-any") << QSsl::TlsV1_0 << QSsl::AnyProtocol << true;
-#endif
 
-#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
-    QTest::newRow("tls1ssl3-ssl2") << QSsl::TlsV1SslV3 << QSsl::SslV2 << false;
-#endif
-#if !defined(OPENSSL_NO_SSL3)
-    QTest::newRow("tls1ssl3-ssl3") << QSsl::TlsV1SslV3 << QSsl::SslV3 << true;
-#endif
     QTest::newRow("tls1ssl3-tls1.0") << QSsl::TlsV1SslV3 << QSsl::TlsV1_0 << true;
     QTest::newRow("tls1ssl3-secure") << QSsl::TlsV1SslV3 << QSsl::SecureProtocols << true;
     QTest::newRow("tls1ssl3-any") << QSsl::TlsV1SslV3 << QSsl::AnyProtocol << true;
 
-#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
-    QTest::newRow("secure-ssl2") << QSsl::SecureProtocols << QSsl::SslV2 << false;
-#endif
-#if !defined(OPENSSL_NO_SSL3)
-    QTest::newRow("secure-ssl3") << QSsl::SecureProtocols << QSsl::SslV3 << false;
-#endif
     QTest::newRow("secure-tls1.0") << QSsl::SecureProtocols << QSsl::TlsV1_0 << true;
     QTest::newRow("secure-tls1ssl3") << QSsl::SecureProtocols << QSsl::TlsV1SslV3 << true;
     QTest::newRow("secure-any") << QSsl::SecureProtocols << QSsl::AnyProtocol << true;
 
-#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
-    QTest::newRow("any-ssl2") << QSsl::AnyProtocol << QSsl::SslV2 << false; // no idea why it does not work, but we don't care about SSL 2
-#endif
-#if !defined(OPENSSL_NO_SSL3)
-    QTest::newRow("any-ssl3") << QSsl::AnyProtocol << QSsl::SslV3 << true;
-#endif
-
-#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
-    QTest::newRow("tls1.0orlater-ssl2") << QSsl::TlsV1_0OrLater << QSsl::SslV2 << false;
-#endif
-#if !defined(OPENSSL_NO_SSL3)
-    QTest::newRow("tls1.0orlater-ssl3") << QSsl::TlsV1_0OrLater << QSsl::SslV3 << false;
-#endif
     QTest::newRow("tls1.0orlater-tls1.0") << QSsl::TlsV1_0OrLater << QSsl::TlsV1_0 << true;
     QTest::newRow("tls1.0orlater-tls1.1") << QSsl::TlsV1_0OrLater << QSsl::TlsV1_1 << true;
     QTest::newRow("tls1.0orlater-tls1.2") << QSsl::TlsV1_0OrLater << QSsl::TlsV1_2 << true;
 #ifdef TLS1_3_VERSION
     QTest::newRow("tls1.0orlater-tls1.3") << QSsl::TlsV1_0OrLater << QSsl::TlsV1_3 << true;
 #endif
-#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
-    QTest::newRow("tls1.1orlater-ssl2") << QSsl::TlsV1_1OrLater << QSsl::SslV2 << false;
-#endif
-#if !defined(OPENSSL_NO_SSL3)
-    QTest::newRow("tls1.1orlater-ssl3") << QSsl::TlsV1_1OrLater << QSsl::SslV3 << false;
-#endif
 
     QTest::newRow("tls1.1orlater-tls1.0") << QSsl::TlsV1_1OrLater << QSsl::TlsV1_0 << false;
     QTest::newRow("tls1.1orlater-tls1.1") << QSsl::TlsV1_1OrLater << QSsl::TlsV1_1 << true;
     QTest::newRow("tls1.1orlater-tls1.2") << QSsl::TlsV1_1OrLater << QSsl::TlsV1_2 << true;
+
 #ifdef TLS1_3_VERSION
     QTest::newRow("tls1.1orlater-tls1.3") << QSsl::TlsV1_1OrLater << QSsl::TlsV1_3 << true;
 #endif
-#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
-    QTest::newRow("tls1.2orlater-ssl2") << QSsl::TlsV1_2OrLater << QSsl::SslV2 << false;
-#endif
-#if !defined(OPENSSL_NO_SSL3)
-    QTest::newRow("tls1.2orlater-ssl3") << QSsl::TlsV1_2OrLater << QSsl::SslV3 << false;
-#endif
+
     QTest::newRow("tls1.2orlater-tls1.0") << QSsl::TlsV1_2OrLater << QSsl::TlsV1_0 << false;
     QTest::newRow("tls1.2orlater-tls1.1") << QSsl::TlsV1_2OrLater << QSsl::TlsV1_1 << false;
     QTest::newRow("tls1.2orlater-tls1.2") << QSsl::TlsV1_2OrLater << QSsl::TlsV1_2 << true;
@@ -1328,12 +1211,6 @@ void tst_QSslSocket::protocolServerSide_data()
     QTest::newRow("tls1.2orlater-tls1.3") << QSsl::TlsV1_2OrLater << QSsl::TlsV1_3 << true;
 #endif
 #ifdef TLS1_3_VERSION
-#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
-    QTest::newRow("tls1.3orlater-ssl2") << QSsl::TlsV1_3OrLater << QSsl::SslV2 << false;
-#endif
-#if !defined(OPENSSL_NO_SSL3)
-    QTest::newRow("tls1.3orlater-ssl3") << QSsl::TlsV1_3OrLater << QSsl::SslV3 << false;
-#endif
     QTest::newRow("tls1.3orlater-tls1.0") << QSsl::TlsV1_3OrLater << QSsl::TlsV1_0 << false;
     QTest::newRow("tls1.3orlater-tls1.1") << QSsl::TlsV1_3OrLater << QSsl::TlsV1_1 << false;
     QTest::newRow("tls1.3orlater-tls1.2") << QSsl::TlsV1_3OrLater << QSsl::TlsV1_2 << false;
@@ -4173,6 +4050,63 @@ void tst_QSslSocket::forwardReadChannelFinished()
 }
 
 #endif // QT_NO_OPENSSL
+
+void tst_QSslSocket::deprecatedProtocols_data()
+{
+    QTest::addColumn<QSsl::SslProtocol>("protocol");
+    QTest::addColumn<bool>("succeeds");
+    QTest::newRow("SecureProtocols") << QSsl::SecureProtocols << true;
+    QTest::newRow("SslV2") << QSsl::SslV2 << false;
+    QTest::newRow("SslV3") << QSsl::SslV3 << false;
+}
+
+void tst_QSslSocket::deprecatedProtocols()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        QSKIP("This test does not work under a proxy");
+
+    QFETCH(QSsl::SslProtocol, protocol);
+    QFETCH(bool, succeeds);
+
+    QSslSocket socket;
+    socket.setProtocol(protocol);
+
+    QSignalSpy connectedSpy(&socket, &QSslSocket::connected);
+    QVERIFY(connectedSpy.isValid());
+
+    QSignalSpy encryptedSpy(&socket, &QSslSocket::encrypted);
+    QVERIFY(encryptedSpy.isValid());
+
+    QSignalSpy errorSpy(&socket, QOverload<QAbstractSocket::SocketError>::of(&QSslSocket::error));
+    QVERIFY(errorSpy.isValid());
+
+    connect(&socket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors),
+            &socket, QOverload<>::of(&QSslSocket::ignoreSslErrors));
+
+    SslServer server;
+    QVERIFY(server.listen());
+
+    socket.connectToHost(server.serverAddress(), server.serverPort());
+
+    // Can't use waitForConnected / waitForEncrypted as they wait forever,
+    // so do this asynchronously via QTRY_ macros (QTBUG-72179)
+    QTRY_COMPARE(connectedSpy.size(), 1);
+    QCOMPARE(encryptedSpy.size(), 0);
+    QCOMPARE(errorSpy.size(), 0);
+
+    socket.startClientEncryption();
+
+    if (succeeds) {
+        QTRY_COMPARE(encryptedSpy.size(), 1);
+        QCOMPARE(errorSpy.size(), 0);
+    } else {
+        // The various backends differ in the errors fired here (QTBUG-72196),
+        // so just check that we did get an error (and we're not encrypted)
+        QTRY_VERIFY(errorSpy.size() > 0);
+        QCOMPARE(encryptedSpy.size(), 0);
+    }
+}
 
 #endif // QT_NO_SSL
 

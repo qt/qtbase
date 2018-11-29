@@ -136,43 +136,19 @@ int q_SSL_get_ex_new_index(long argl, void *argp, CRYPTO_EX_new *new_func, CRYPT
 #endif
 
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
-#ifndef OPENSSL_NO_SSL2
-const SSL_METHOD *q_SSLv2_client_method();
-#endif
-#ifndef OPENSSL_NO_SSL3_METHOD
-const SSL_METHOD *q_SSLv3_client_method();
-#endif
 const SSL_METHOD *q_SSLv23_client_method();
 const SSL_METHOD *q_TLSv1_client_method();
 const SSL_METHOD *q_TLSv1_1_client_method();
 const SSL_METHOD *q_TLSv1_2_client_method();
-#ifndef OPENSSL_NO_SSL2
-const SSL_METHOD *q_SSLv2_server_method();
-#endif
-#ifndef OPENSSL_NO_SSL3_METHOD
-const SSL_METHOD *q_SSLv3_server_method();
-#endif
 const SSL_METHOD *q_SSLv23_server_method();
 const SSL_METHOD *q_TLSv1_server_method();
 const SSL_METHOD *q_TLSv1_1_server_method();
 const SSL_METHOD *q_TLSv1_2_server_method();
 #else
-#ifndef OPENSSL_NO_SSL2
-SSL_METHOD *q_SSLv2_client_method();
-#endif
-#ifndef OPENSSL_NO_SSL3_METHOD
-SSL_METHOD *q_SSLv3_client_method();
-#endif
 SSL_METHOD *q_SSLv23_client_method();
 SSL_METHOD *q_TLSv1_client_method();
 SSL_METHOD *q_TLSv1_1_client_method();
 SSL_METHOD *q_TLSv1_2_client_method();
-#ifndef OPENSSL_NO_SSL2
-SSL_METHOD *q_SSLv2_server_method();
-#endif
-#ifndef OPENSSL_NO_SSL3_METHOD
-SSL_METHOD *q_SSLv3_server_method();
-#endif
 SSL_METHOD *q_SSLv23_server_method();
 SSL_METHOD *q_TLSv1_server_method();
 SSL_METHOD *q_TLSv1_1_server_method();

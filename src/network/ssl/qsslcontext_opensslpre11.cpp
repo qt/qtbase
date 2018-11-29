@@ -115,32 +115,19 @@ init_context:
         break;
 #endif // dtls
     case QSsl::SslV2:
-#ifndef OPENSSL_NO_SSL2
-        sslContext->ctx = q_SSL_CTX_new(client ? q_SSLv2_client_method() : q_SSLv2_server_method());
-#else
-        // SSL 2 not supported by the system, but chosen deliberately -> error
-        sslContext->ctx = 0;
-        unsupportedProtocol = true;
-#endif
-        break;
     case QSsl::SslV3:
-#ifndef OPENSSL_NO_SSL3_METHOD
-        sslContext->ctx = q_SSL_CTX_new(client ? q_SSLv3_client_method() : q_SSLv3_server_method());
-#else
-        // SSL 3 not supported by the system, but chosen deliberately -> error
+        // We don't support SSLv2 / SSLv3.
         sslContext->ctx = 0;
         unsupportedProtocol = true;
-#endif
         break;
     case QSsl::SecureProtocols:
         // SSLv2 and SSLv3 will be disabled by SSL options
         // But we need q_SSLv23_server_method() otherwise AnyProtocol will be unable to connect on Win32.
-    case QSsl::TlsV1SslV3:
-        // SSLv2 will will be disabled by SSL options
     case QSsl::AnyProtocol:
     default:
         sslContext->ctx = q_SSL_CTX_new(client ? q_SSLv23_client_method() : q_SSLv23_server_method());
         break;
+    case QSsl::TlsV1SslV3:
     case QSsl::TlsV1_0:
         sslContext->ctx = q_SSL_CTX_new(client ? q_TLSv1_client_method() : q_TLSv1_server_method());
         break;
