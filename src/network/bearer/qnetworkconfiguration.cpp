@@ -347,6 +347,8 @@ int QNetworkConfiguration::connectTimeout() const
     This allows control of the timeout used by \c QAbstractSocket
     to establish a connection.
 
+    \note \a timeout is in millisecond.
+
     \warning This will have no effect if the bearer plugin doesn't have
     the CanStartAndStopInterfaces capability.
 
