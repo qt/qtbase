@@ -485,6 +485,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << list // key sequence
             << 7;   // expected position
 
+    QTest::newRow("Step down once 1, horizontal, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 0    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 7;   // expected position
+
+    QTest::newRow("Step down once 1, horizontal, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 0    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 13;  // expected position
+
     QTest::newRow("Step down once 1, horizontal, both inverted")
             << 10   // initial position
             << 0    // minimum
@@ -506,6 +528,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << false// inverted controls
             << list // key sequence
             << 7;   // expected position
+
+    QTest::newRow("Step down once 1, vertical, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 0    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 7;   // expected position
+
+    QTest::newRow("Step down once 1, vertical, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 0    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 13;   // expected position
 
     QTest::newRow("Step down once 1, vertical, both inverted")
             << 10   // initial position
@@ -531,6 +575,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << list // key sequence
             << 13;  // expected position
 
+    QTest::newRow("Step up once 2, horizontal, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 0    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 13;  // expected position
+
+    QTest::newRow("Step up once 2, horizontal, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 0    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 7;  // expected position
+
     QTest::newRow("Step up once 2, horizontal, both inverted")
             << 10   // initial position
             << 0    // minimum
@@ -552,6 +618,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << false// inverted controls
             << list // key sequence
             << 13;  // expected position
+
+    QTest::newRow("Step up once 2, vertical, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 0    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 13;  // expected position
+
+    QTest::newRow("Step up once 2, vertical, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 0    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 7;  // expected position
 
     QTest::newRow("Step up once 2, vertical, both inverted")
             << 10   // initial position
@@ -577,6 +665,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << list // key sequence
             << 7;  // expected position
 
+    QTest::newRow("Step left once 2, horizontal, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 0    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 7;  // expected position
+
+    QTest::newRow("Step left once 2, horizontal, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 0    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 13;  // expected position
+
     QTest::newRow("Step left once 2, horizontal, both inverted")
             << 10   // initial position
             << 0    // minimum
@@ -598,6 +708,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << false// inverted controls
             << list // key sequence
             << 7;  // expected position
+
+    QTest::newRow("Step left once 2, vertical, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 0    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 7;  // expected position
+
+    QTest::newRow("Step left once 2, vertical, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 0    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 13;  // expected position
 
     QTest::newRow("Step left once 2, vertical, both inverted")
             << 10   // initial position
@@ -623,6 +755,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << list // key sequence
             << 13;  // expected position
 
+    QTest::newRow("Step right once 2, horizontal, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 0    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 13;  // expected position
+
+    QTest::newRow("Step right once 2, horizontal, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 0    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 7;  // expected position
+
     QTest::newRow("Step right once 2, horizontal, both inverted")
             << 10   // initial position
             << 0    // minimum
@@ -645,6 +799,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << list // key sequence
             << 13;  // expected position
 
+    QTest::newRow("Step right once 2, vertical, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 0    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 13;  // expected position
+
+    QTest::newRow("Step right once 2, vertical, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 0    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 7;   // expected position
+
     QTest::newRow("Step right once 2, vertical, both inverted")
             << 10   // initial position
             << 0    // minimum
@@ -654,7 +830,7 @@ void tst_QAbstractSlider::keyPressed_data()
             << true // inverted appearance
             << true // inverted controls
             << list // key sequence
-            << 7;  // expected position
+            << 7;   // expected position
 
     list = QList<Qt::Key>();
     list << Qt::Key_PageDown;
@@ -667,7 +843,29 @@ void tst_QAbstractSlider::keyPressed_data()
             << false// inverted appearance
             << false// inverted controls
             << list // key sequence
-            << 7;  // expected position
+            << 7;   // expected position
+
+    QTest::newRow("Page down once, horizontal, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 0    // single step size
+            << 3    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 7;   // expected position
+
+    QTest::newRow("Page down once, horizontal, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 0    // single step size
+            << 3    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 13;  // expected position
 
     QTest::newRow("Page down once, horizontal, both inverted")
             << 10   // initial position
@@ -689,7 +887,29 @@ void tst_QAbstractSlider::keyPressed_data()
             << false// inverted appearance
             << false// inverted controls
             << list // key sequence
-            << 7;  // expected position
+            << 7;   // expected position
+
+    QTest::newRow("Page down once, vertical, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 0    // single step size
+            << 3    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 7;   // expected position
+
+    QTest::newRow("Page down once, vertical, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 0    // single step size
+            << 3    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 13;  // expected position
 
     QTest::newRow("Page down once, vertical, both inverted")
             << 10   // initial position
@@ -715,6 +935,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << list // key sequence
             << 13;  // expected position
 
+    QTest::newRow("Page up once, horizontal, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 0    // single step size
+            << 3    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 13;  // expected position
+
+    QTest::newRow("Page up once, horizontal, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 0    // single step size
+            << 3    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 7;  // expected position
+
     QTest::newRow("Page up once, horizontal, both inverted")
             << 10   // initial position
             << 0    // minimum
@@ -736,6 +978,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << false// inverted controls
             << list // key sequence
             << 13;  // expected position
+
+    QTest::newRow("Page up once, vertical, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 0    // single step size
+            << 3    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 13;  // expected position
+
+    QTest::newRow("Page up once, vertical, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 0    // single step size
+            << 3    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 7;  // expected position
 
     QTest::newRow("Page up once, vertical, both inverted")
             << 10   // initial position
@@ -762,6 +1026,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << list // key sequence
             << 50;  // expected position
 
+    QTest::newRow("Symmetric seq, horizontal, appearance inverted")
+            << 50   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 3    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 50;  // expected position
+
+    QTest::newRow("Symmetric seq, horizontal, controls inverted")
+            << 50   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 3    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 50;  // expected position
+
     QTest::newRow("Symmetric seq, horizontal, both inverted")
             << 50   // initial position
             << 0    // minimum
@@ -781,6 +1067,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << 3    // page step size
             << false// inverted appearance
             << false// inverted controls
+            << list // key sequence
+            << 50;  // expected position
+
+    QTest::newRow("Symmetric seq, vertical, appearance inverted")
+            << 50   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 3    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 50;  // expected position
+
+    QTest::newRow("Symmetric seq, vertical, controls inverted")
+            << 50   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 3    // page step size
+            << false// inverted appearance
+            << true // inverted controls
             << list // key sequence
             << 50;  // expected position
 
@@ -808,6 +1116,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << list // key sequence
             << 0;   // expected position
 
+    QTest::newRow("Home, horizontal, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 0    // single step size
+            << 3    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 0;   // expected position
+
+    QTest::newRow("Home, horizontal, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 0    // single step size
+            << 3    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 0;   // expected position
+
     QTest::newRow("Home, horizontal, both inverted")
             << 10   // initial position
             << 0    // minimum
@@ -827,6 +1157,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << 3    // page step size
             << false// inverted appearance
             << false// inverted controls
+            << list // key sequence
+            << 0;   // expected position
+
+    QTest::newRow("Home, vertical, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 0    // single step size
+            << 3    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 0;   // expected position
+
+    QTest::newRow("Home, vertical, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 0    // single step size
+            << 3    // page step size
+            << false// inverted appearance
+            << true // inverted controls
             << list // key sequence
             << 0;   // expected position
 
@@ -854,6 +1206,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << list // key sequence
             << 100; // expected position
 
+    QTest::newRow("End, horizontal, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 0    // single step size
+            << 3    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 100; // expected position
+
+    QTest::newRow("End, horizontal, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 0    // single step size
+            << 3    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 100; // expected position
+
     QTest::newRow("End, horizontal, both inverted")
             << 10   // initial position
             << 0    // minimum
@@ -873,6 +1247,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << 3    // page step size
             << false// inverted appearance
             << false// inverted controls
+            << list // key sequence
+            << 100; // expected position
+
+    QTest::newRow("End, vertical, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 0    // single step size
+            << 3    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 100; // expected position
+
+    QTest::newRow("End, vertical, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 0    // single step size
+            << 3    // page step size
+            << false// inverted appearance
+            << true // inverted controls
             << list // key sequence
             << 100; // expected position
 
@@ -900,6 +1296,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << list // key sequence
             << 100; // expected position
 
+    QTest::newRow("Past end, horizontal, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 3    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 100; // expected position
+
+    QTest::newRow("Past end, horizontal, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 3    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 97;  // expected position
+
     QTest::newRow("Past end, horizontal, both inverted")
             << 10   // initial position
             << 0    // minimum
@@ -921,6 +1339,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << false// inverted controls
             << list // key sequence
             << 100; // expected position
+
+    QTest::newRow("Past end, vertical, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 3    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 100; // expected position
+
+    QTest::newRow("Past end, vertical, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 3    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 97;  // expected position
 
     QTest::newRow("Past end, vertical, both inverted")
             << 10   // initial position
@@ -946,6 +1386,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << list // key sequence
             << 0;   // expected position
 
+    QTest::newRow("Past home, horizontal, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 3    // page step size
+            << true // inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 0;   // expected position
+
+    QTest::newRow("Past home, horizontal, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 3    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 3;   // expected position
+
     QTest::newRow("Past home, horizontal, both inverted")
             << 10   // initial position
             << 0    // minimum
@@ -967,6 +1429,28 @@ void tst_QAbstractSlider::keyPressed_data()
             << false// inverted controls
             << list // key sequence
             << 0;   // expected position
+
+    QTest::newRow("Past home, vertical, appearance inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 3    // page step size
+            << false// inverted appearance
+            << false// inverted controls
+            << list // key sequence
+            << 0;   // expected position
+
+    QTest::newRow("Past home, vertical, controls inverted")
+            << 10   // initial position
+            << 0    // minimum
+            << 100  // maximum
+            << 3    // single step size
+            << 3    // page step size
+            << false// inverted appearance
+            << true // inverted controls
+            << list // key sequence
+            << 3;   // expected position
 
     QTest::newRow("Past home, vertical, both inverted")
             << 10   // initial position
