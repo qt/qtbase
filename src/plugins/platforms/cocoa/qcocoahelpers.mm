@@ -402,23 +402,30 @@ QOperatingSystemVersion QMacVersion::currentRuntime()
 
 QMacVersion::VersionTuple QMacVersion::versionsForImage(const mach_header *machHeader)
 {
+    static auto makeVersionTuple = [](uint32_t dt, uint32_t sdk) {
+        return qMakePair(
+            QOperatingSystemVersion(QOperatingSystemVersion::MacOS,
+                dt >> 16 & 0xffff, dt >> 8 & 0xff, dt & 0xff),
+            QOperatingSystemVersion(QOperatingSystemVersion::MacOS,
+                sdk >> 16 & 0xffff, sdk >> 8 & 0xff, sdk & 0xff)
+        );
+    };
+
     auto commandCursor = uintptr_t(machHeader) + sizeof(mach_header_64);
     for (uint32_t i = 0; i < machHeader->ncmds; ++i) {
         load_command *loadCommand = reinterpret_cast<load_command *>(commandCursor);
         if (loadCommand->cmd == LC_VERSION_MIN_MACOSX) {
             auto versionCommand = reinterpret_cast<version_min_command *>(loadCommand);
-            uint32_t dt = versionCommand->version; // Deployment target
-            uint32_t sdk = versionCommand->sdk; // Build SDK
-            return qMakePair(
-                QOperatingSystemVersion(QOperatingSystemVersion::MacOS,
-                    dt >> 16 & 0xffff, dt >> 8 & 0xff, dt & 0xff),
-                QOperatingSystemVersion(QOperatingSystemVersion::MacOS,
-                    sdk >> 16 & 0xffff, sdk >> 8 & 0xff, sdk & 0xff)
-            );
+            return makeVersionTuple(versionCommand->version, versionCommand->sdk);
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_13)
+        } else if (loadCommand->cmd == LC_BUILD_VERSION) {
+            auto versionCommand = reinterpret_cast<build_version_command *>(loadCommand);
+            return makeVersionTuple(versionCommand->minos, versionCommand->sdk);
+#endif
         }
         commandCursor += loadCommand->cmdsize;
     }
-    Q_ASSERT_X(false, "QCocoaIntegration", "Could not find version-min load command");
+    Q_ASSERT_X(false, "QCocoaIntegration", "Could not find any version load command");
     Q_UNREACHABLE();
 }
 
