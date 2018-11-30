@@ -102,11 +102,9 @@ namespace {
             if (orientation == QLatin1String("Qt::Vertical") || orientation == QLatin1String("Vertical"))
                 isVspacer = true;
         }
-
-        if (isVspacer)
-            output << "QSizePolicy::Minimum, " << sizeType << ')';
-        else
-            output << sizeType << ", QSizePolicy::Minimum)";
+        const QString horizType = isVspacer ? QLatin1String("QSizePolicy::Minimum") : sizeType;
+        const QString vertType = isVspacer ? sizeType : QLatin1String("QSizePolicy::Minimum");
+        output << language::enumValue(horizType) << ", " << language::enumValue(vertType) << ')';
     }
 
 
@@ -678,7 +676,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
                 << "setMenuBar(" << varName << ')' << language::eol;
         } else if (cwi->extends(className, QLatin1String("QToolBar"))) {
             m_output << m_indent << parentWidget << language::derefPointer << "addToolBar("
-                << toolBarAreaStringFromDOMAttributes(attributes) << varName
+                << language::enumValue(toolBarAreaStringFromDOMAttributes(attributes)) << varName
                 << ')' << language::eol;
 
             if (const DomProperty *pbreak = attributes.value(QLatin1String("toolBarBreak"))) {
@@ -690,8 +688,10 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 
         } else if (cwi->extends(className, QLatin1String("QDockWidget"))) {
             m_output << m_indent << parentWidget << language::derefPointer << "addDockWidget(";
-            if (DomProperty *pstyle = attributes.value(QLatin1String("dockWidgetArea")))
-                m_output << "Qt::" << language::dockWidgetArea(pstyle->elementNumber()) << ", ";
+            if (DomProperty *pstyle = attributes.value(QLatin1String("dockWidgetArea"))) {
+                m_output << "Qt" << language::qualifier
+                    << language::dockWidgetArea(pstyle->elementNumber()) << ", ";
+            }
             m_output << varName << ");\n";
         } else if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QStatusBar"))) {
             m_output << m_indent << parentWidget << language::derefPointer
@@ -1043,16 +1043,16 @@ void WriteInitialization::acceptLayoutItem(DomLayoutItem *node)
         const int colSpan = node->hasAttributeColSpan() ? node->attributeColSpan() : 1;
         m_output << itemName << ", " << row << ", " << col << ", " << rowSpan << ", " << colSpan;
         if (!node->attributeAlignment().isEmpty())
-            m_output << ", " << node->attributeAlignment();
+            m_output << ", " << language::enumValue(node->attributeAlignment());
     } else if (layout->attributeClass() == QLatin1String("QFormLayout")) {
         const int row = node->attributeRow();
         const int colSpan = node->hasAttributeColSpan() ? node->attributeColSpan() : 1;
         const QString role = formLayoutRole(node->attributeColumn(), colSpan);
-        m_output << row << ", " << role << ", " << itemName;
+        m_output << row << ", " << language::enumValue(role) << ", " << itemName;
     } else {
         m_output << itemName;
         if (layout->attributeClass().contains(QLatin1String("Box")) && !node->attributeAlignment().isEmpty())
-            m_output << ", 0, " << node->attributeAlignment();
+            m_output << ", 0, " << language::enumValue(node->attributeAlignment());
     }
     m_output << ");\n\n";
 }
@@ -1267,11 +1267,13 @@ void WriteInitialization::writeProperties(const QString &varName,
                 shape = QLatin1String("QFrame::VLine");
 
             m_output << m_indent << varName << language::derefPointer << "setFrameShape("
-                << shape << ')' << language::eol;
+                << language::enumValue(shape) << ')' << language::eol;
             // QFrame Default is 'Plain'. Make the line 'Sunken' unless otherwise specified
             if (!frameShadowEncountered) {
                 m_output << m_indent << varName << language::derefPointer
-                    << "setFrameShadow(QFrame::Sunken)" << language::eol;
+                    << "setFrameShadow("
+                    << language::enumValue(QLatin1String("QFrame::Sunken"))
+                    << ')' << language::eol;
             }
             continue;
         } else if ((flags & WritePropertyIgnoreMargin)  && propertyName == QLatin1String("margin")) {
@@ -1351,16 +1353,18 @@ void WriteInitialization::writeProperties(const QString &varName,
         case DomProperty::CursorShape:
             if (p->hasAttributeStdset() && !p->attributeStdset())
                 varNewName += language::derefPointer + QLatin1String("viewport()");
-            propertyValue = QString::fromLatin1("QCursor(Qt::%1)")
-                            .arg(p->elementCursorShape());
+            propertyValue = QLatin1String("QCursor(Qt") + language::qualifier
+                + p->elementCursorShape() + QLatin1Char(')');
             break;
         case DomProperty::Enum:
             propertyValue = p->elementEnum();
-            if (!propertyValue.contains(QLatin1String("::")))
-                propertyValue = className + QLatin1String("::") + propertyValue;
+            if (propertyValue.contains(language::cppQualifier))
+                propertyValue = language::enumValue(propertyValue);
+            else
+                propertyValue.prepend(className + language::qualifier);
             break;
         case DomProperty::Set:
-            propertyValue = p->elementSet();
+            propertyValue = language::enumValue(p->elementSet());
             break;
         case DomProperty::Font:
             propertyValue = writeFontProperties(p->elementFont());
@@ -1411,8 +1415,9 @@ void WriteInitialization::writeProperties(const QString &varName,
         }
         case DomProperty::Locale: {
              const DomLocale *locale = p->elementLocale();
-             propertyValue = QString::fromLatin1("QLocale(QLocale::%1, QLocale::%2)")
-                             .arg(locale->attributeLanguage(), locale->attributeCountry());
+             QTextStream(&propertyValue) << "QLocale(QLocale" << language::qualifier
+                 << locale->attributeLanguage() << ", QLocale" << language::qualifier
+                 << locale->attributeCountry() << ')';
             break;
         }
         case DomProperty::SizePolicy: {
@@ -1569,8 +1574,8 @@ QString  WriteInitialization::writeSizePolicy(const DomSizePolicy *sp)
         m_output << "QSizePolicy" << language::qualifier << language::sizePolicy(sp->elementHSizeType())
             << ", QSizePolicy" << language::qualifier << language::sizePolicy(sp->elementVSizeType());
     } else if (sp->hasAttributeHSizeType() && sp->hasAttributeVSizeType()) {
-        m_output << "QSizePolicy::" << sp->attributeHSizeType() << ", QSizePolicy::"
-            << sp->attributeVSizeType();
+        m_output << "QSizePolicy" << language::qualifier << sp->attributeHSizeType()
+            << ", QSizePolicy" << language::qualifier << sp->attributeVSizeType();
     }
     m_output << ')' << language::eol;
 
@@ -1632,14 +1637,26 @@ QString WriteInitialization::writeFontProperties(const DomFont *f)
             << language::boolValue(f->elementKerning()) << ')' << language::eol;
     }
     if (f->hasElementAntialiasing()) {
-        m_output << m_indent << fontName << ".setStyleStrategy("
-            << (f->elementAntialiasing() ? "QFont::PreferDefault" : "QFont::NoAntialias") << ");\n";
+        m_output << m_indent << fontName << ".setStyleStrategy(QFont"
+            << language::qualifier
+            << (f->elementAntialiasing() ? "PreferDefault" : "NoAntialias")
+            << ')' << language::eol;
     }
     if (f->hasElementStyleStrategy()) {
-         m_output << m_indent << fontName << ".setStyleStrategy(QFont::"
-            << f->elementStyleStrategy() << ");\n";
+         m_output << m_indent << fontName << ".setStyleStrategy(QFont"
+            << language::qualifier << f->elementStyleStrategy() << ')' << language::eol;
     }
     return  fontName;
+}
+
+static void writeIconAddFile(QTextStream &output, const QString &indent,
+                             const QString &iconName, const QString &fileName,
+                             const char *mode, const char *state)
+{
+    output << indent << iconName << ".addFile("
+        << language::qstring(fileName, indent) << ", QSize(), QIcon"
+        << language::qualifier << mode << ", QIcon" << language::qualifier
+        << state << ')' << language::eol;
 }
 
 // Post 4.4 write resource icon
@@ -1649,45 +1666,46 @@ static void writeResourceIcon(QTextStream &output,
                               const DomResourceIcon *i)
 {
     if (i->hasElementNormalOff()) {
-        output << indent << iconName << ".addFile("
-               << language::qstring(i->elementNormalOff()->text(), indent)
-               << ", QSize(), QIcon::Normal, QIcon::Off);\n";
+        writeIconAddFile(output, indent, iconName, i->elementNormalOff()->text(),
+                         "Normal", "Off");
     }
     if (i->hasElementNormalOn()) {
-        output << indent << iconName << ".addFile("
-               << language::qstring(i->elementNormalOn()->text(), indent)
-               << ", QSize(), QIcon::Normal, QIcon::On);\n";
+        writeIconAddFile(output, indent, iconName, i->elementNormalOn()->text(),
+                         "Normal", "On");
     }
     if (i->hasElementDisabledOff()) {
-        output << indent << iconName << ".addFile("
-               << language::qstring(i->elementDisabledOff()->text(), indent)
-               << ", QSize(), QIcon::Disabled, QIcon::Off);\n";
+        writeIconAddFile(output, indent, iconName, i->elementDisabledOff()->text(),
+                         "Disabled", "Off");
     }
     if (i->hasElementDisabledOn()) {
-        output << indent << iconName << ".addFile("
-               << language::qstring(i->elementDisabledOn()->text(), indent)
-               << ", QSize(), QIcon::Disabled, QIcon::On);\n";
+        writeIconAddFile(output, indent, iconName, i->elementDisabledOn()->text(),
+                         "Disabled", "On");
     }
     if (i->hasElementActiveOff()) {
-        output << indent << iconName << ".addFile("
-               << language::qstring(i->elementActiveOff()->text(), indent)
-               << ", QSize(), QIcon::Active, QIcon::Off);\n";
+        writeIconAddFile(output, indent, iconName, i->elementActiveOff()->text(),
+                         "Active", "Off");
     }
     if (i->hasElementActiveOn()) {
-        output << indent << iconName << ".addFile("
-               << language::qstring(i->elementActiveOn()->text(), indent)
-               << ", QSize(), QIcon::Active, QIcon::On);\n";
+        writeIconAddFile(output, indent, iconName, i->elementActiveOn()->text(),
+                         "Active", "On");
     }
     if (i->hasElementSelectedOff()) {
-        output << indent << iconName << ".addFile("
-               << language::qstring(i->elementSelectedOff()->text(), indent)
-               << ", QSize(), QIcon::Selected, QIcon::Off);\n";
+        writeIconAddFile(output, indent, iconName, i->elementSelectedOff()->text(),
+                         "Selected", "Off");
     }
     if (i->hasElementSelectedOn()) {
-        output << indent << iconName << ".addFile("
-               << language::qstring(i->elementSelectedOn()->text(), indent)
-               << "), QSize(), QIcon::Selected, QIcon::On);\n";
+        writeIconAddFile(output, indent, iconName, i->elementSelectedOff()->text(),
+                         "Selected", "On");
     }
+}
+
+static void writeIconAddPixmap(QTextStream &output, const QString &indent,
+                               const QString &iconName, const QString &call,
+                               const char *mode, const char *state)
+{
+    output << indent << iconName << ".addPixmap(" << call << ", QIcon"
+        << language::qualifier << mode << ", QIcon" << language::qualifier
+        << state << ')' << language::eol;
 }
 
 void WriteInitialization::writePixmapFunctionIcon(QTextStream &output,
@@ -1696,44 +1714,44 @@ void WriteInitialization::writePixmapFunctionIcon(QTextStream &output,
                                                   const DomResourceIcon *i) const
 {
     if (i->hasElementNormalOff()) {
-        output << indent << iconName << ".addPixmap("
-               << pixCall(QLatin1String("QPixmap"), i->elementNormalOff()->text())
-               << ", QIcon::Normal, QIcon::Off);\n";
+        writeIconAddPixmap(output, indent,  iconName,
+                           pixCall(QLatin1String("QPixmap"), i->elementNormalOff()->text()),
+                           "Normal", "Off");
     }
     if (i->hasElementNormalOn()) {
-        output << indent << iconName << ".addPixmap("
-               << pixCall(QLatin1String("QPixmap"), i->elementNormalOn()->text())
-               << ", QIcon::Normal, QIcon::On);\n";
+        writeIconAddPixmap(output, indent,  iconName,
+                           pixCall(QLatin1String("QPixmap"), i->elementNormalOn()->text()),
+                           "Normal", "On");
     }
     if (i->hasElementDisabledOff()) {
-        output << indent << iconName << ".addPixmap("
-               << pixCall(QLatin1String("QPixmap"), i->elementDisabledOff()->text())
-               << ", QIcon::Disabled, QIcon::Off);\n";
+        writeIconAddPixmap(output, indent,  iconName,
+                           pixCall(QLatin1String("QPixmap"), i->elementDisabledOff()->text()),
+                           "Disabled", "Off");
     }
     if (i->hasElementDisabledOn()) {
-        output << indent << iconName << ".addPixmap("
-               << pixCall(QLatin1String("QPixmap"), i->elementDisabledOn()->text())
-               << ", QIcon::Disabled, QIcon::On);\n";
+        writeIconAddPixmap(output, indent,  iconName,
+                           pixCall(QLatin1String("QPixmap"), i->elementDisabledOn()->text()),
+                           "Disabled", "On");
     }
     if (i->hasElementActiveOff()) {
-        output << indent << iconName << ".addPixmap("
-               << pixCall(QLatin1String("QPixmap"), i->elementActiveOff()->text())
-               << ", QIcon::Active, QIcon::Off);\n";
+        writeIconAddPixmap(output, indent,  iconName,
+                           pixCall(QLatin1String("QPixmap"), i->elementActiveOff()->text()),
+                           "Active", "Off");
     }
     if (i->hasElementActiveOn()) {
-        output << indent << iconName << ".addPixmap("
-               << pixCall(QLatin1String("QPixmap"), i->elementActiveOn()->text())
-               << ", QIcon::Active, QIcon::On);\n";
+        writeIconAddPixmap(output, indent,  iconName,
+                           pixCall(QLatin1String("QPixmap"), i->elementActiveOn()->text()),
+                           "Active", "On");
     }
     if (i->hasElementSelectedOff()) {
-        output << indent << iconName << ".addPixmap("
-               << pixCall(QLatin1String("QPixmap"), i->elementSelectedOff()->text())
-               << ", QIcon::Selected, QIcon::Off);\n";
+        writeIconAddPixmap(output, indent,  iconName,
+                           pixCall(QLatin1String("QPixmap"), i->elementSelectedOff()->text()),
+                           "Selected", "Off");
     }
     if (i->hasElementSelectedOn()) {
-        output << indent << iconName << ".addPixmap("
-               << pixCall(QLatin1String("QPixmap"), i->elementSelectedOn()->text())
-               << ", QIcon::Selected, QIcon::On);\n";
+        writeIconAddPixmap(output, indent,  iconName,
+                           pixCall(QLatin1String("QPixmap"), i->elementSelectedOn()->text()),
+                           "Selected", "On");
     }
 }
 
@@ -1826,7 +1844,7 @@ void WriteInitialization::writeColorGroup(DomColorGroup *colorGroup, const QStri
         const DomColor *color = colors.at(i);
 
         m_output << m_indent << paletteName << ".setColor(" << group
-            << ", QPalette::" << language::paletteColorRole(i)
+            << ", QPalette" << language::qualifier << language::paletteColorRole(i)
             << ", " << domColor2QString(color)
             << ");\n";
     }
@@ -1843,8 +1861,9 @@ void WriteInitialization::writeColorGroup(DomColorGroup *colorGroup, const QStri
                     << versionAdded.majorVersion() << ", " << versionAdded.minorVersion()
                     << ", " << versionAdded.microVersion() << ")\n";
             }
-            m_output << m_indent << paletteName << ".setBrush(" << group
-                << ", " << "QPalette::" << roleName
+            m_output << m_indent << paletteName << ".setBrush("
+                << language::enumValue(group) << ", "
+                << "QPalette" << language::qualifier << roleName
                 << ", " << brushName << ");\n";
             if (!versionAdded.isNull())
                 m_output << "#endif\n";

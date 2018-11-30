@@ -201,6 +201,8 @@ void formatConnection(QTextStream &str, const SignalSlot &sender, const SignalSl
 
 QString boolValue(bool v);
 
+QString enumValue(const QString &value);
+
 } // namespace language
 
 #endif // LANGUAGE_H

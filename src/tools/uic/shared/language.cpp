@@ -412,4 +412,15 @@ QString boolValue(bool v)
     Q_UNREACHABLE();
 }
 
+static inline QString dot() { return QStringLiteral("."); }
+
+QString enumValue(const QString &value)
+{
+    if (language() == Language::Cpp || !value.contains(cppQualifier))
+        return value;
+    QString fixed = value;
+    fixed.replace(cppQualifier, dot());
+    return fixed;
+}
+
 } // namespace language
