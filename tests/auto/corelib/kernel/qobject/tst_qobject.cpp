@@ -6750,16 +6750,16 @@ void tst_QObject::connectWarnings()
     r1.reset();
 
     QTest::ignoreMessage(QtWarningMsg, "QObject::connect(SenderObject, ReceiverObject): invalid null parameter");
-    connect(nullptr, &SubSender::signal1, &r1, &ReceiverObject::slot1);
+    connect(static_cast<const SenderObject *>(nullptr), &SubSender::signal1, &r1, &ReceiverObject::slot1);
 
     QTest::ignoreMessage(QtWarningMsg, "QObject::connect(SubSender, Unknown): invalid null parameter");
-    connect(&sub, &SubSender::signal1, nullptr, &ReceiverObject::slot1);
+    connect(&sub, &SubSender::signal1, static_cast<ReceiverObject *>(nullptr), &ReceiverObject::slot1);
 
     QTest::ignoreMessage(QtWarningMsg, "QObject::connect(SenderObject, ReceiverObject): invalid null parameter");
-    connect(nullptr, &SenderObject::signal1, &r1, &ReceiverObject::slot1);
+    connect(static_cast<const SenderObject *>(nullptr), &SenderObject::signal1, &r1, &ReceiverObject::slot1);
 
     QTest::ignoreMessage(QtWarningMsg, "QObject::connect(SenderObject, Unknown): invalid null parameter");
-    connect(&obj, &SenderObject::signal1, nullptr, &ReceiverObject::slot1);
+    connect(&obj, &SenderObject::signal1, static_cast<ReceiverObject *>(nullptr), &ReceiverObject::slot1);
 }
 
 struct QmlReceiver : public QtPrivate::QSlotObjectBase
