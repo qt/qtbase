@@ -21,6 +21,8 @@ services:
         entrypoint: common/startup.sh
         command: [common/ssl.sh, service/apache2.sh]
         network_mode: "host"
+        extra_hosts:
+            - "qt-test-server.${TEST_DOMAIN}:${MACHINE_IP}"
         environment:
             - test_domain=${TEST_DOMAIN}
 
@@ -36,6 +38,8 @@ services:
         entrypoint: common/startup.sh
         command: service/squid.sh
         network_mode: "host"
+        extra_hosts:
+            - "qt-test-server.${TEST_DOMAIN}:${MACHINE_IP}"
         environment:
             - test_domain=${TEST_DOMAIN}
 
@@ -49,6 +53,8 @@ services:
         entrypoint: common/startup.sh
         command: service/vsftpd.sh
         network_mode: "host"
+        extra_hosts:
+            - "qt-test-server.${TEST_DOMAIN}:${MACHINE_IP}"
         environment:
             - test_domain=${TEST_DOMAIN}
 
@@ -64,6 +70,8 @@ services:
         entrypoint: common/startup.sh
         command: service/ftp-proxy.sh
         network_mode: "host"
+        extra_hosts:
+            - "qt-test-server.${TEST_DOMAIN}:${MACHINE_IP}"
         environment:
             - test_domain=${TEST_DOMAIN}
 
@@ -81,6 +89,8 @@ services:
         entrypoint: common/startup.sh
         command: service/danted.sh
         network_mode: "host"
+        extra_hosts:
+            - "qt-test-server.${TEST_DOMAIN}:${MACHINE_IP}"
         environment:
             - danted_internal=${MACHINE_IP:-eth0}
             - danted_external=${MACHINE_IP:-eth0}
