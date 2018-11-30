@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,10 +37,7 @@
 **
 ****************************************************************************/
 
-/* XConvertCase was copied from src/3rdparty/xkbcommon/src/keysym.c,
-   which contains the following license information:
-
-   Copyright 1985, 1987, 1990, 1998  The Open Group
+/* Copyright 1985, 1987, 1990, 1998  The Open Group
 
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
@@ -89,6 +86,7 @@
 */
 
 /*
+ XConvertCase was copied from src/3rdparty/xkbcommon/src/keysym.c
  The following code modifications were applied:
 
  XConvertCase() was renamed to xkbcommon_XConvertCase(), to not confuse it
@@ -99,10 +97,9 @@
  results instead of using the less complete version from keysym.c
 */
 
-#include <xkbcommon/xkbcommon.h>
-#include <QtCore/QChar>
+#include "qxkbcommon_p.h"
 
-QT_BEGIN_NAMESPACE
+#include <QtCore/QChar>
 
 static void qt_UCSConvertCase(uint32_t code, xkb_keysym_t *lower, xkb_keysym_t *upper)
 {
@@ -110,7 +107,7 @@ static void qt_UCSConvertCase(uint32_t code, xkb_keysym_t *lower, xkb_keysym_t *
     *upper = QChar::toUpper(code);
 }
 
-void xkbcommon_XConvertCase(xkb_keysym_t sym, xkb_keysym_t *lower, xkb_keysym_t *upper)
+void QXkbCommon::xkbcommon_XConvertCase(xkb_keysym_t sym, xkb_keysym_t *lower, xkb_keysym_t *upper)
 {
     /* Latin 1 keysym */
     if (sym < 0x100) {
@@ -220,14 +217,3 @@ void xkbcommon_XConvertCase(xkb_keysym_t sym, xkb_keysym_t *lower, xkb_keysym_t 
         break;
     }
 }
-
-xkb_keysym_t xkbcommon_xkb_keysym_to_upper(xkb_keysym_t ks)
-{
-    xkb_keysym_t lower, upper;
-
-    xkbcommon_XConvertCase(ks, &lower, &upper);
-
-    return upper;
-}
-
-QT_END_NAMESPACE

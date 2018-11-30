@@ -6,7 +6,8 @@ QT += \
     core-private gui-private \
     service_support-private theme_support-private \
     fontdatabase_support-private \
-    edid_support-private
+    edid_support-private \
+    xkbcommon_support-private
 
 qtHaveModule(linuxaccessibility_support-private): \
     QT += linuxaccessibility_support-private
@@ -52,7 +53,6 @@ HEADERS = \
         qxcbimage.h \
         qxcbxsettings.h \
         qxcbsystemtraytracker.h \
-        qxcbxkbcommon.h \
         qxcbeventqueue.h \
         qxcbeventdispatcher.h \
         qxcbconnection_basic.h \

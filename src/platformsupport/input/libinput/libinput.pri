@@ -14,4 +14,7 @@ QMAKE_USE_PRIVATE += libudev libinput
 
 INCLUDEPATH += $$PWD/../shared
 
-qtConfig(xkbcommon): QMAKE_USE_PRIVATE += xkbcommon
+qtConfig(xkbcommon): {
+    QMAKE_USE_PRIVATE += xkbcommon
+    QT += xkbcommon_support-private
+}
