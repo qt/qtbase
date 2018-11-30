@@ -7,14 +7,14 @@ version: '3.4'
 # contexts gets changes, please make sure to update this compose file as well.
 # You can run command 'docker images' to list all the tag of test server images.
 # For example:
-# REPOSITORY              TAG                                       IMAGE ID
-# qt-test-server-apache2  e2a70c8b169c204e762b375885bd3a26cc40ba48  2ad5c8720317
+# REPOSITORY              TAG
+# qt-test-server-apache2  537fe302f61851d1663f41495230d8e3554a4a13
 
 services:
     apache2:
         image: qt-test-server-apache2:537fe302f61851d1663f41495230d8e3554a4a13
         container_name: qt-test-server-apache2
-        domainname: test-net.qt.local
+        domainname: ${TEST_DOMAIN}
         hostname: apache2
         volumes:
             - ./common:/common:ro
@@ -25,12 +25,12 @@ services:
     squid:
         image: qt-test-server-squid:9c32f41b19aca3d778733c4d8fb0ecc5955e893c
         container_name: qt-test-server-squid
-        domainname: test-net.qt.local
+        domainname: ${TEST_DOMAIN}
         hostname: squid
         depends_on:
             - apache2
         external_links:
-            - apache2:apache2.test-net.qt.local
+            - apache2:apache2.${TEST_DOMAIN}
         volumes:
             - ./common:/common:ro
             - ./squid:/service:ro
@@ -40,7 +40,7 @@ services:
     vsftpd:
         image: qt-test-server-vsftpd:f3a9c8d793a77cc007c0e4e481bec01f9e3eeb7e
         container_name: qt-test-server-vsftpd
-        domainname: test-net.qt.local
+        domainname: ${TEST_DOMAIN}
         hostname: vsftpd
         volumes:
             - ./common:/common:ro
@@ -51,12 +51,12 @@ services:
     ftp-proxy:
         image: qt-test-server-ftp-proxy:d7de8b28392d173db512a558ccc84ead8bece2ae
         container_name: qt-test-server-ftp-proxy
-        domainname: test-net.qt.local
+        domainname: ${TEST_DOMAIN}
         hostname: ftp-proxy
         depends_on:
             - vsftpd
         external_links:
-            - vsftpd:vsftpd.test-net.qt.local
+            - vsftpd:vsftpd.${TEST_DOMAIN}
         volumes:
             - ./common:/common:ro
             - ./ftp-proxy:/service:ro
@@ -66,16 +66,16 @@ services:
     danted:
         image: qt-test-server-danted:35607f9b790524cf9690c7d12a9a401696b7b6b5
         container_name: qt-test-server-danted
-        domainname: test-net.qt.local
+        domainname: ${TEST_DOMAIN}
         hostname: danted
         depends_on:
             - apache2
             - vsftpd
             - ftp-proxy
         external_links:
-            - apache2:apache2.test-net.qt.local
-            - vsftpd:vsftpd.test-net.qt.local
-            - ftp-proxy:ftp-proxy.test-net.qt.local
+            - apache2:apache2.${TEST_DOMAIN}
+            - vsftpd:vsftpd.${TEST_DOMAIN}
+            - ftp-proxy:ftp-proxy.${TEST_DOMAIN}
         volumes:
             - ./common:/common:ro
             - ./danted:/service:ro

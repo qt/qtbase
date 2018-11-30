@@ -100,6 +100,10 @@ isEmpty(TESTSERVER_VERSION) {
     } else {
         TESTSERVER_COMPOSE_FILE = $$dirname(_QMAKE_CONF_)/tests/testserver/docker-compose.yml
         DEFINES += QT_TEST_SERVER_NAME
+
+        # The environment variables passed to the docker-compose file
+        TEST_ENV = 'TEST_DOMAIN=$$DNSDOMAIN'
+        TEST_CMD = env
     }
 
     # The domain name is relevant to https keycert (qnetworkreply/crts/qt-test-net-cacert.pem).
