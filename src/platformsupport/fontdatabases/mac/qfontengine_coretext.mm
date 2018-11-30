@@ -235,7 +235,7 @@ void QCoreTextFontEngine::init()
 
     if (traits & kCTFontColorGlyphsTrait)
         glyphFormat = QFontEngine::Format_ARGB;
-    else if (fontSmoothing() == FontSmoothing::Subpixel)
+    else if (shouldSmoothFont() && fontSmoothing() == FontSmoothing::Subpixel)
         glyphFormat = QFontEngine::Format_A32;
     else
         glyphFormat = QFontEngine::Format_A8;
