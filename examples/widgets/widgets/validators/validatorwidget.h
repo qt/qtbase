@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -48,18 +48,17 @@
 **
 ****************************************************************************/
 
-#include "validatorwidget.h"
+#include <QWidget>
 
-#include <QApplication>
+#include "ui_validators.h"
 
-int main(int argc, char **argv)
+class ValidatorWidget : public QWidget, public Ui::ValidatorsForm
 {
-    Q_INIT_RESOURCE(validators);
+    Q_OBJECT
+public:
+    ValidatorWidget(QWidget *parent = nullptr);
 
-    QApplication app(argc, argv);
-
-    ValidatorWidget w;
-    w.show();
-
-    return app.exec();
-}
+private slots:
+    void updateValidator();
+    void updateDoubleValidator();
+};
