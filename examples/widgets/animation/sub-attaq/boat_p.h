@@ -146,7 +146,8 @@ private:
 class MoveStateRight : public QState
 {
 public:
-    explicit MoveStateRight(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
+    explicit MoveStateRight(Boat *boat, QState *parent = nullptr)
+        : QState(parent), boat(boat)
     {
     }
 protected:
@@ -163,7 +164,8 @@ private:
 class MoveStateLeft : public QState
 {
 public:
-    explicit MoveStateLeft(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
+    explicit MoveStateLeft(Boat *boat, QState *parent = nullptr)
+        : QState(parent), boat(boat)
     {
     }
 protected:
@@ -180,7 +182,8 @@ private:
 class StopState : public QState
 {
 public:
-    explicit StopState(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
+    explicit StopState(Boat *boat, QState *parent = nullptr)
+        : QState(parent), boat(boat)
     {
     }
 protected:
@@ -198,13 +201,14 @@ private:
 class LaunchStateRight : public QState
 {
 public:
-    explicit LaunchStateRight(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
+    explicit LaunchStateRight(Boat *boat, QState *parent = nullptr)
+        : QState(parent), boat(boat)
     {
     }
 protected:
     void onEntry(QEvent *) override
     {
-        Bomb *b = new Bomb();
+        Bomb *b = new Bomb;
         b->setPos(boat->x()+boat->size().width(),boat->y());
         GraphicsScene *scene = static_cast<GraphicsScene *>(boat->scene());
         scene->addItem(b);
@@ -219,13 +223,14 @@ private:
 class LaunchStateLeft : public QState
 {
 public:
-    explicit LaunchStateLeft(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
+    explicit LaunchStateLeft(Boat *boat, QState *parent = nullptr)
+        : QState(parent), boat(boat)
     {
     }
 protected:
     void onEntry(QEvent *) override
     {
-        Bomb *b = new Bomb();
+        Bomb *b = new Bomb;
         b->setPos(boat->x() - b->size().width(), boat->y());
         GraphicsScene *scene = static_cast<GraphicsScene *>(boat->scene());
         scene->addItem(b);

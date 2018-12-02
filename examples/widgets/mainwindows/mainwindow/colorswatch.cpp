@@ -584,7 +584,7 @@ void ColorSwatch::changeVerticalTitleBar(bool on)
 QSize BlueTitleBar::minimumSizeHint() const
 {
     QDockWidget *dw = qobject_cast<QDockWidget*>(parentWidget());
-    Q_ASSERT(dw != 0);
+    Q_ASSERT(dw);
     QSize result(leftPm.width() + rightPm.width(), centerPm.height());
     if (dw->features() & QDockWidget::DockWidgetVerticalTitleBar)
         result.transpose();
@@ -605,7 +605,7 @@ void BlueTitleBar::paintEvent(QPaintEvent*)
     QRect rect = this->rect();
 
     QDockWidget *dw = qobject_cast<QDockWidget*>(parentWidget());
-    Q_ASSERT(dw != 0);
+    Q_ASSERT(dw);
 
     if (dw->features() & QDockWidget::DockWidgetVerticalTitleBar) {
         QSize s = rect.size();
@@ -632,7 +632,7 @@ void BlueTitleBar::mouseReleaseEvent(QMouseEvent *event)
     QRect rect = this->rect();
 
     QDockWidget *dw = qobject_cast<QDockWidget*>(parentWidget());
-    Q_ASSERT(dw != 0);
+    Q_ASSERT(dw);
 
     if (dw->features() & QDockWidget::DockWidgetVerticalTitleBar) {
         QPoint p = pos;
@@ -676,7 +676,7 @@ void BlueTitleBar::mouseReleaseEvent(QMouseEvent *event)
 void BlueTitleBar::updateMask()
 {
     QDockWidget *dw = qobject_cast<QDockWidget*>(parent());
-    Q_ASSERT(dw != 0);
+    Q_ASSERT(dw);
 
     QRect rect = dw->rect();
     QPixmap bitmap(dw->size());

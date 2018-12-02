@@ -478,5 +478,5 @@ MainWindow *MainWindow::findMainWindow(const QString &fileName) const
             return mainWin;
     }
 
-    return 0;
+    return nullptr;
 }

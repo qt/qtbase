@@ -55,7 +55,9 @@
 #include <QtWidgets/QGraphicsScene>
 #include <QtWidgets/QGraphicsView>
 
-GraphicsView::GraphicsView(QWidget *parent) : QGraphicsView(parent), m_editor(0) {}
+GraphicsView::GraphicsView(QWidget *parent)
+    : QGraphicsView(parent), m_editor(nullptr)
+{}
 
 void GraphicsView::keyPressEvent(QKeyEvent *e)
 {

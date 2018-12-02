@@ -59,7 +59,7 @@ class DigitalClock : public QLCDNumber
     Q_OBJECT
 
 public:
-    DigitalClock(QWidget *parent = 0);
+    DigitalClock(QWidget *parent = nullptr);
 
 private slots:
     void showTime();

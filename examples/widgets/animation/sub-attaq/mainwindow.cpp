@@ -63,7 +63,8 @@
 # include <QtOpenGL/QtOpenGL>
 #endif
 
-MainWindow::MainWindow() : QMainWindow(0)
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
 {
     QMenu *file = menuBar()->addMenu(tr("&File"));
 

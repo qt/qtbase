@@ -188,7 +188,7 @@ void MainWindow::filterChanged(int f)
     const QFontComboBox::FontFilter filter =
         filterCombo->itemData(f).value<QFontComboBox::FontFilter>();
     fontCombo->setFontFilters(filter);
-    statusBar()->showMessage(tr("%n font(s) found", 0, fontCombo->count()));
+    statusBar()->showMessage(tr("%n font(s) found", nullptr, fontCombo->count()));
 }
 
 void MainWindow::findSizes(const QFont &font)

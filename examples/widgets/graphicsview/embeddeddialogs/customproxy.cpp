@@ -55,7 +55,7 @@
 #include <QGraphicsScene>
 
 CustomProxy::CustomProxy(QGraphicsItem *parent, Qt::WindowFlags wFlags)
-    : QGraphicsProxyWidget(parent, wFlags), popupShown(false), currentPopup(0)
+    : QGraphicsProxyWidget(parent, wFlags), popupShown(false), currentPopup(nullptr)
 {
     timeLine = new QTimeLine(250, this);
     connect(timeLine, &QTimeLine::valueChanged,
@@ -133,7 +133,7 @@ QVariant CustomProxy::itemChange(GraphicsItemChange change, const QVariant &valu
                 currentPopup->installSceneEventFilter(this);
         } else if (scene()) {
             currentPopup->removeSceneEventFilter(this);
-            currentPopup = 0;
+            currentPopup = nullptr;
         }
     } else if (currentPopup && change == ItemSceneHasChanged) {
         currentPopup->installSceneEventFilter(this);

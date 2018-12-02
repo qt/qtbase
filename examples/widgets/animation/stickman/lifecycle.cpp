@@ -175,9 +175,8 @@ void LifeCycle::addActivity(const QString &fileName, Qt::Key key, QObject *sende
     QState *state = makeState(m_alive, fileName);
     m_alive->addTransition(new KeyPressTransition(m_keyReceiver, key, state));
 
-    if((sender != NULL) || (signal != NULL)) {
+    if (sender || signal)
         m_alive->addTransition(sender, signal, state);
-    }
 }
 
 QState *LifeCycle::makeState(QState *parentState, const QString &animationFileName)
@@ -192,7 +191,7 @@ QState *LifeCycle::makeState(QState *parentState, const QString &animationFileNa
     }
 
     const int frameCount = animation.totalFrames();
-    QState *previousState = 0;
+    QState *previousState = nullptr;
     for (int i=0; i<frameCount; ++i) {
         animation.setCurrentFrame(i);
 
@@ -204,7 +203,7 @@ QState *LifeCycle::makeState(QState *parentState, const QString &animationFileNa
 //! [1]
 
         frameState->setObjectName(QString::fromLatin1("frame %0").arg(i));
-        if (previousState == 0)
+        if (previousState == nullptr)
             topLevel->setInitialState(frameState);
         else
 //! [2]

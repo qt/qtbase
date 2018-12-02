@@ -169,7 +169,8 @@ class GraphicsView : public QGraphicsView
 {
     Q_OBJECT
 public:
-    GraphicsView(QGraphicsScene *scene, QWidget *parent = NULL) : QGraphicsView(scene, parent)
+    GraphicsView(QGraphicsScene *scene, QWidget *parent = nullptr)
+        : QGraphicsView(scene, parent)
     {
     }
 

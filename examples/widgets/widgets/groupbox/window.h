@@ -63,7 +63,7 @@ class Window : public QWidget
     Q_OBJECT
 
 public:
-    Window(QWidget *parent = 0);
+    Window(QWidget *parent = nullptr);
 
 private:
     QGroupBox *createFirstExclusiveGroup();

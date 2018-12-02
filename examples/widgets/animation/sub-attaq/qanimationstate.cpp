@@ -84,7 +84,7 @@ machine.start();
   Constructs a new state with the given \a parent state.
 */
 QAnimationState::QAnimationState(QState *parent)
-    : QState(parent), m_animation(0)
+    : QState(parent), m_animation(nullptr)
 {
 }
 

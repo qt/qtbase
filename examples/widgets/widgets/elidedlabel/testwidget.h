@@ -64,7 +64,7 @@ class TestWidget : public QWidget
     Q_OBJECT
 
 public:
-    TestWidget(QWidget *parent = 0);
+    TestWidget(QWidget *parent = nullptr);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

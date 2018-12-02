@@ -59,7 +59,7 @@ class LEDWidget : public QLabel
 {
     Q_OBJECT
 public:
-    LEDWidget(QWidget *parent = 0);
+    LEDWidget(QWidget *parent = nullptr);
 public slots:
     void flash();
 

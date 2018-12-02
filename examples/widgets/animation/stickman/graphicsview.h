@@ -58,7 +58,7 @@ class GraphicsView: public QGraphicsView
 {
     Q_OBJECT
 public:
-    GraphicsView(QWidget *parent = 0);
+    GraphicsView(QWidget *parent = nullptr);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

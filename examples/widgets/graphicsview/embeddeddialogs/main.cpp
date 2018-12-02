@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 
     for (int y = 0; y < gridSize; ++y) {
         for (int x = 0; x < gridSize; ++x) {
-            CustomProxy *proxy = new CustomProxy(0, Qt::Window);
+            CustomProxy *proxy = new CustomProxy(nullptr, Qt::Window);
             proxy->setWidget(new EmbeddedDialog);
 
             QRectF rect = proxy->boundingRect();

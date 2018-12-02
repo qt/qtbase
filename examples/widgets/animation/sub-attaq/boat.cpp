@@ -92,8 +92,9 @@ static QAbstractAnimation *setupDestroyAnimation(Boat *boat)
 
 
 
-Boat::Boat() : PixmapItem(QString("boat"), GraphicsScene::Big),
-    speed(0), bombsAlreadyLaunched(0), direction(Boat::None), movementAnimation(0)
+Boat::Boat()
+    : PixmapItem(QString("boat"), GraphicsScene::Big),
+      speed(0), bombsAlreadyLaunched(0), direction(Boat::None)
 {
     setZValue(4);
     setFlags(QGraphicsItem::ItemIsFocusable);

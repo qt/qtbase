@@ -182,7 +182,7 @@ QStringList Window::findFiles(const QStringList &files, const QString &text)
 
     for (int i = 0; i < files.size(); ++i) {
         progressDialog.setValue(i);
-        progressDialog.setLabelText(tr("Searching file number %1 of %n...", 0, files.size()).arg(i));
+        progressDialog.setLabelText(tr("Searching file number %1 of %n...", nullptr, files.size()).arg(i));
         QCoreApplication::processEvents();
 //! [6]
 
@@ -237,7 +237,7 @@ void Window::showFiles(const QStringList &paths)
         filesTable->setItem(row, 0, fileNameItem);
         filesTable->setItem(row, 1, sizeItem);
     }
-    filesFoundLabel->setText(tr("%n file(s) found (Double click on a file to open it)", 0, paths.size()));
+    filesFoundLabel->setText(tr("%n file(s) found (Double click on a file to open it)", nullptr, paths.size()));
     filesFoundLabel->setWordWrap(true);
 }
 //! [8]

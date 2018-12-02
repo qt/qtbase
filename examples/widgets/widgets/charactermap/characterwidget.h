@@ -68,7 +68,7 @@ class CharacterWidget : public QWidget
     Q_OBJECT
 
 public:
-    CharacterWidget(QWidget *parent = 0);
+    CharacterWidget(QWidget *parent = nullptr);
     QSize sizeHint() const override;
 
 public slots:

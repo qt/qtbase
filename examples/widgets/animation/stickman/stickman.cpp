@@ -176,8 +176,7 @@ Node *StickMan::node(int idx) const
 {
     if (idx >= 0 && idx < NodeCount)
         return m_nodes[idx];
-    else
-        return 0;
+    return nullptr;
 }
 
 void StickMan::timerEvent(QTimerEvent *)

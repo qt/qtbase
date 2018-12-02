@@ -65,7 +65,7 @@ class ElidedLabel : public QFrame
     Q_PROPERTY(bool isElided READ isElided)
 
 public:
-    explicit ElidedLabel(const QString &text, QWidget *parent = 0);
+    explicit ElidedLabel(const QString &text, QWidget *parent = nullptr);
 
     void setText(const QString &text);
     const QString & text() const { return content; }

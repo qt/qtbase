@@ -64,7 +64,7 @@ SortingBox::SortingBox(QWidget *parent)
     setBackgroundRole(QPalette::Base);
 //! [2]
 
-    itemInMotion = 0;
+    itemInMotion = nullptr;
 
 //! [3]
     newCircleButton = createToolButton(tr("New Circle"),
@@ -179,7 +179,7 @@ void SortingBox::mouseReleaseEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton && itemInMotion) {
         moveItemTo(event->pos());
-        itemInMotion = 0;
+        itemInMotion = nullptr;
     }
 }
 //! [13]

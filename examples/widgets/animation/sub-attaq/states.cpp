@@ -67,11 +67,8 @@
 #include <QtCore/QRandomGenerator>
 
 PlayState::PlayState(GraphicsScene *scene, QState *parent)
-    : QState(parent),
-    scene(scene),
-    machine(0),
-    currentLevel(0),
-    score(0)
+    : QState(parent), scene(scene), machine(nullptr),
+      currentLevel(0), score(0)
 {
 }
 

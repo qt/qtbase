@@ -56,7 +56,7 @@
 #include <QtCore/QDebug>
 
 // the universe's only animation manager
-AnimationManager *AnimationManager::instance = 0;
+AnimationManager *AnimationManager::instance = nullptr;
 
 AnimationManager::AnimationManager()
 {

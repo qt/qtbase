@@ -242,7 +242,7 @@ void MainWindow::about()
 
 void MainWindow::updateMenus()
 {
-    bool hasMdiChild = (activeMdiChild() != 0);
+    bool hasMdiChild = (activeMdiChild() != nullptr);
     saveAct->setEnabled(hasMdiChild);
     saveAsAct->setEnabled(hasMdiChild);
 #ifndef QT_NO_CLIPBOARD
@@ -483,7 +483,7 @@ MdiChild *MainWindow::activeMdiChild() const
 {
     if (QMdiSubWindow *activeSubWindow = mdiArea->activeSubWindow())
         return qobject_cast<MdiChild *>(activeSubWindow->widget());
-    return 0;
+    return nullptr;
 }
 
 QMdiSubWindow *MainWindow::findMdiChild(const QString &fileName) const
@@ -495,7 +495,7 @@ QMdiSubWindow *MainWindow::findMdiChild(const QString &fileName) const
         if (mdiChild->currentFile() == canonicalFilePath)
             return window;
     }
-    return 0;
+    return nullptr;
 }
 
 void MainWindow::switchLayoutDirection()
