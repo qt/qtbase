@@ -1599,12 +1599,14 @@ bool QConfFileSettingsPrivate::readIniLine(const QByteArray &data, int &dataPos,
 
     int i = lineStart;
     while (i < dataLen) {
-        while (!(charTraits[uint(uchar(data.at(i)))] & Special)) {
+        char ch = data.at(i);
+        while (!(charTraits[uchar(ch)] & Special)) {
             if (++i == dataLen)
                 goto break_out_of_outer_loop;
+            ch = data.at(i);
         }
 
-        char ch = data.at(i++);
+        ++i;
         if (ch == '=') {
             if (!inQuotes && equalsPos == -1)
                 equalsPos = i - 1;
@@ -1631,7 +1633,6 @@ bool QConfFileSettingsPrivate::readIniLine(const QByteArray &data, int &dataPos,
             Q_ASSERT(ch == ';');
 
             if (i == lineStart + 1) {
-                char ch;
                 while (i < dataLen && (((ch = data.at(i)) != '\n') && ch != '\r'))
                     ++i;
                 while (i < dataLen && charTraits[uchar(data.at(i))] & Space)
