@@ -67,7 +67,7 @@ class TetrixWindow : public QWidget
     Q_OBJECT
 
 public:
-    TetrixWindow();
+    TetrixWindow(QWidget *parent = nullptr);
 
 private:
     QLabel *createLabel(const QString &text);

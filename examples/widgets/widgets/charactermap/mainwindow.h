@@ -70,7 +70,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow();
+    MainWindow(QWidget *parent = nullptr);
 
 public slots:
     void filterChanged(int);

@@ -59,13 +59,14 @@
 class ButtonTester : public QTextEdit
 {
     Q_OBJECT
-
+public:
+    using QTextEdit::QTextEdit;
 protected:
     void    mousePressEvent(QMouseEvent *event) override;
     void    mouseReleaseEvent(QMouseEvent *event) override;
     void    mouseDoubleClickEvent(QMouseEvent *event) override;
 #if QT_CONFIG(wheelevent)
-    void    wheelEvent(QWheelEvent * event) override;
+    void    wheelEvent(QWheelEvent *event) override;
 #endif
     int     buttonByNumber(const Qt::MouseButton button);
     QString enumNameFromValue(const Qt::MouseButton button);

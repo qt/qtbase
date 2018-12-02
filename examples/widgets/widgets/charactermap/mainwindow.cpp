@@ -57,7 +57,8 @@
 
 Q_DECLARE_METATYPE(QFontComboBox::FontFilter)
 
-MainWindow::MainWindow()
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
 {
     QMenu *fileMenu = menuBar()->addMenu(tr("File"));
     fileMenu->addAction(tr("Quit"), this, &QWidget::close);

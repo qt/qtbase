@@ -64,7 +64,7 @@ class Window : public QWidget
     Q_OBJECT
 
 public:
-    Window();
+    Window(QWidget *parent = nullptr);
 
 public slots:
     void echoChanged(int);

@@ -54,7 +54,8 @@
 #include "window.h"
 
 //! [0]
-Window::Window()
+Window::Window(QWidget *parent)
+    : QWidget(parent)
 {
     horizontalSliders = new SlidersGroup(Qt::Horizontal, tr("Horizontal"));
     verticalSliders = new SlidersGroup(Qt::Vertical, tr("Vertical"));

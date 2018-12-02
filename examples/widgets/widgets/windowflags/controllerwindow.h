@@ -69,7 +69,7 @@ class ControllerWindow : public QWidget
     Q_OBJECT
 
 public:
-    ControllerWindow();
+    ControllerWindow(QWidget *parent = nullptr);
 
 private slots:
     void updatePreview();

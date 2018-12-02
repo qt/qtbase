@@ -60,7 +60,8 @@ enum { OtherSize = QStyle::PM_CustomBase };
 //! [40]
 
 //! [0]
-MainWindow::MainWindow()
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
 {
     QWidget *centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);

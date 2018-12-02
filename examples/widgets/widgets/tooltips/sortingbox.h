@@ -67,7 +67,7 @@ class SortingBox : public QWidget
     Q_OBJECT
 
 public:
-    SortingBox();
+    SortingBox(QWidget *parent = nullptr);
 
 protected:
     bool event(QEvent *event) override;

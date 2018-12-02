@@ -55,7 +55,8 @@
 #include "sortingbox.h"
 
 //! [0]
-SortingBox::SortingBox()
+SortingBox::SortingBox(QWidget *parent)
+    : QWidget(parent)
 {
 //! [0] //! [1]
     setMouseTracking(true);

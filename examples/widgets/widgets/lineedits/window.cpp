@@ -53,7 +53,8 @@
 #include "window.h"
 
 //! [0]
-Window::Window()
+Window::Window(QWidget *parent)
+    : QWidget(parent)
 {
     QGroupBox *echoGroup = new QGroupBox(tr("Echo"));
 

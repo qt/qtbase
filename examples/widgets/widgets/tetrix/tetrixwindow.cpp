@@ -54,7 +54,8 @@
 #include "tetrixwindow.h"
 
 //! [0]
-TetrixWindow::TetrixWindow()
+TetrixWindow::TetrixWindow(QWidget *parent)
+    : QWidget(parent)
 {
     board = new TetrixBoard;
 //! [0]

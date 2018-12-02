@@ -74,7 +74,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow();
+    MainWindow(QWidget *parent = nullptr);
 
     void loadImages(const QStringList &fileNames);
 

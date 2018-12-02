@@ -71,7 +71,7 @@ class ImageViewer : public QMainWindow
     Q_OBJECT
 
 public:
-    ImageViewer();
+    ImageViewer(QWidget *parent = nullptr);
     bool loadFile(const QString &);
 
 private slots:

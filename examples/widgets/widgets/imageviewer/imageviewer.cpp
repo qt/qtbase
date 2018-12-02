@@ -59,10 +59,9 @@
 #include "imageviewer.h"
 
 //! [0]
-ImageViewer::ImageViewer()
-   : imageLabel(new QLabel)
-   , scrollArea(new QScrollArea)
-   , scaleFactor(1)
+ImageViewer::ImageViewer(QWidget *parent)
+   : QMainWindow(parent), imageLabel(new QLabel),
+     scrollArea(new QScrollArea), scaleFactor(1)
 {
     imageLabel->setBackgroundRole(QPalette::Base);
     imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);

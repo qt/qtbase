@@ -53,7 +53,8 @@
 #include "mainwindow.h"
 #include "stylesheeteditor.h"
 
-MainWindow::MainWindow()
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
 {
     ui.setupUi(this);
 

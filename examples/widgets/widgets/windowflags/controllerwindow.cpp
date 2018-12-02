@@ -53,7 +53,8 @@
 #include "controllerwindow.h"
 
 //! [0]
-ControllerWindow::ControllerWindow()
+ControllerWindow::ControllerWindow(QWidget *parent)
+    : QWidget(parent)
 {
     previewWindow = new PreviewWindow(this);
 
