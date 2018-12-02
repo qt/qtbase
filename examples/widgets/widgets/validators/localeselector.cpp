@@ -79,7 +79,8 @@ LocaleSelector::LocaleSelector(QWidget *parent)
     if (curIndex != -1)
         setCurrentIndex(curIndex);
 
-    connect(this, SIGNAL(activated(int)), this, SLOT(emitLocaleSelected(int)));
+    connect(this, QOverload<int>::of(&LocaleSelector::activated),
+            this, &LocaleSelector::emitLocaleSelected);
 }
 
 void LocaleSelector::emitLocaleSelected(int index)

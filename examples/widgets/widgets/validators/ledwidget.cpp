@@ -56,7 +56,7 @@ LEDWidget::LEDWidget(QWidget *parent)
     setPixmap(offPixmap);
     flashTimer.setInterval(200);
     flashTimer.setSingleShot(true);
-    connect(&flashTimer, SIGNAL(timeout()), this, SLOT(extinguish()));
+    connect(&flashTimer, &QTimer::timeout, this, &LEDWidget::extinguish);
 };
 
 void LEDWidget::extinguish()

@@ -79,19 +79,19 @@ WidgetGallery::WidgetGallery(QWidget *parent)
 //! [0]
 
 //! [1]
-    connect(styleComboBox, SIGNAL(activated(QString)),
+    connect(styleComboBox, QOverload<const QString &>::of(&QComboBox::activated),
 //! [1] //! [2]
-            this, SLOT(changeStyle(QString)));
-    connect(useStylePaletteCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(changePalette()));
-    connect(disableWidgetsCheckBox, SIGNAL(toggled(bool)),
-            topLeftGroupBox, SLOT(setDisabled(bool)));
-    connect(disableWidgetsCheckBox, SIGNAL(toggled(bool)),
-            topRightGroupBox, SLOT(setDisabled(bool)));
-    connect(disableWidgetsCheckBox, SIGNAL(toggled(bool)),
-            bottomLeftTabWidget, SLOT(setDisabled(bool)));
-    connect(disableWidgetsCheckBox, SIGNAL(toggled(bool)),
-            bottomRightGroupBox, SLOT(setDisabled(bool)));
+            this, &WidgetGallery::changeStyle);
+    connect(useStylePaletteCheckBox, &QCheckBox::toggled,
+            this, &WidgetGallery::changePalette);
+    connect(disableWidgetsCheckBox, &QCheckBox::toggled,
+            topLeftGroupBox, &QGroupBox::setDisabled);
+    connect(disableWidgetsCheckBox, &QCheckBox::toggled,
+            topRightGroupBox, &QGroupBox::setDisabled);
+    connect(disableWidgetsCheckBox, &QCheckBox::toggled,
+            bottomLeftTabWidget, &QGroupBox::setDisabled);
+    connect(disableWidgetsCheckBox, &QCheckBox::toggled,
+            bottomRightGroupBox, &QGroupBox::setDisabled);
 //! [2]
 
 //! [3]
@@ -279,7 +279,7 @@ void WidgetGallery::createProgressBar()
     progressBar->setValue(0);
 
     QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(advanceProgressBar()));
+    connect(timer, &QTimer::timeout, this, &WidgetGallery::advanceProgressBar);
     timer->start(1000);
 }
 //! [13]

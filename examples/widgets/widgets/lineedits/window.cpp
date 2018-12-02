@@ -123,16 +123,16 @@ Window::Window(QWidget *parent)
 //! [4]
 
 //! [5]
-    connect(echoComboBox, SIGNAL(activated(int)),
-            this, SLOT(echoChanged(int)));
-    connect(validatorComboBox, SIGNAL(activated(int)),
-            this, SLOT(validatorChanged(int)));
-    connect(alignmentComboBox, SIGNAL(activated(int)),
-            this, SLOT(alignmentChanged(int)));
-    connect(inputMaskComboBox, SIGNAL(activated(int)),
-            this, SLOT(inputMaskChanged(int)));
-    connect(accessComboBox, SIGNAL(activated(int)),
-            this, SLOT(accessChanged(int)));
+    connect(echoComboBox, QOverload<int>::of(&QComboBox::activated),
+            this, &Window::echoChanged);
+    connect(validatorComboBox, QOverload<int>::of(&QComboBox::activated),
+            this, &Window::validatorChanged);
+    connect(alignmentComboBox, QOverload<int>::of(&QComboBox::activated),
+            this, &Window::alignmentChanged);
+    connect(inputMaskComboBox, QOverload<int>::of(&QComboBox::activated),
+            this, &Window::inputMaskChanged);
+    connect(accessComboBox, QOverload<int>::of(&QComboBox::activated),
+            this, &Window::accessChanged);
 //! [5]
 
 //! [6]
