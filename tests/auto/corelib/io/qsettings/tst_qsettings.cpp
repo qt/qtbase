@@ -187,6 +187,7 @@ private slots:
     void bom();
     void embeddedZeroByte_data();
     void embeddedZeroByte();
+    void spaceAfterComment();
 
     void testXdg();
 private:
@@ -762,6 +763,34 @@ void tst_QSettings::embeddedZeroByte()
         if (value.toByteArray().contains(QChar::Null))
             QVERIFY(outValue.toByteArray().contains(QChar::Null));
     }
+}
+
+void tst_QSettings::spaceAfterComment()
+{
+    QSettings settings(QFINDTESTDATA("withcomments.ini"), QSettings::IniFormat);
+    QCOMPARE(settings.status(), QSettings::NoError);
+
+    QStringList groups = settings.childGroups();
+    QVERIFY(groups.contains("Regular"));
+    QVERIFY(groups.contains("WithSpaces"));
+    QVERIFY(groups.contains("WithTab"));
+    QVERIFY(groups.contains("SpacedGroup"));
+
+    settings.beginGroup("Regular");
+    QCOMPARE(settings.value("bar"), QVariant(2));
+    settings.endGroup();
+
+    settings.beginGroup("WithSpaces");
+    QCOMPARE(settings.value("bar"), QVariant(4));
+    settings.endGroup();
+
+    settings.beginGroup("WithTab");
+    QCOMPARE(settings.value("bar"), QVariant(6));
+    settings.endGroup();
+
+    settings.beginGroup("SpacedGroup");
+    QCOMPARE(settings.value("bar"), QVariant(7));
+    settings.endGroup();
 }
 
 void tst_QSettings::testErrorHandling_data()

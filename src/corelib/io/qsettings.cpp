@@ -1634,6 +1634,8 @@ bool QConfFileSettingsPrivate::readIniLine(const QByteArray &data, int &dataPos,
                 char ch;
                 while (i < dataLen && (((ch = data.at(i)) != '\n') && ch != '\r'))
                     ++i;
+                while (i < dataLen && charTraits[uchar(data.at(i))] & Space)
+                    ++i;
                 lineStart = i;
             } else if (!inQuotes) {
                 --i;
