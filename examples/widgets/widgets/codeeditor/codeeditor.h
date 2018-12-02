@@ -52,7 +52,6 @@
 #define CODEEDITOR_H
 
 #include <QPlainTextEdit>
-#include <QObject>
 
 QT_BEGIN_NAMESPACE
 class QPaintEvent;

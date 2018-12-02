@@ -48,11 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
-#include <stdlib.h>
-
 #include "sortingbox.h"
+
+#include <QtWidgets>
 
 //! [0]
 SortingBox::SortingBox(QWidget *parent)

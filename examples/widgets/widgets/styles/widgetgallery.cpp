@@ -48,10 +48,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
-#include "norwegianwoodstyle.h"
 #include "widgetgallery.h"
+#include "norwegianwoodstyle.h"
+
+#include <QtWidgets>
 
 //! [0]
 WidgetGallery::WidgetGallery(QWidget *parent)

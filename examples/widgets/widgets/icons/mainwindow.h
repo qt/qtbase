@@ -60,8 +60,6 @@ QT_BEGIN_NAMESPACE
 class QAction;
 class QActionGroup;
 class QLabel;
-class QMenu;
-class QRadioButton;
 class QButtonGroup;
 class QTableWidget;
 QT_END_NAMESPACE

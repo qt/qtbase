@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "iconpreviewarea.h"
+
+#include <QtWidgets>
 
 //! [0]
 IconPreviewArea::IconPreviewArea(QWidget *parent)

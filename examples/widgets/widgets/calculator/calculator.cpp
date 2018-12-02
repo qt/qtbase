@@ -48,12 +48,12 @@
 **
 ****************************************************************************/
 
+#include "button.h"
+#include "calculator.h"
+
 #include <QtWidgets>
 
 #include <cmath>
-
-#include "button.h"
-#include "calculator.h"
 
 //! [0]
 Calculator::Calculator(QWidget *parent)

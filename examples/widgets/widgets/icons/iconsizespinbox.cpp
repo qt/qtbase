@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "iconsizespinbox.h"
+
+#include <QtWidgets>
 
 //! [0]
 IconSizeSpinBox::IconSizeSpinBox(QWidget *parent)

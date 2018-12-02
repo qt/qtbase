@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "analogclock.h"
+
+#include <QtWidgets>
 
 //! [0] //! [1]
 AnalogClock::AnalogClock(QWidget *parent)

@@ -50,7 +50,7 @@
 
 #include "testwidget.h"
 
-#include <QtWidgets/QApplication>
+#include <QApplication>
 
 //! [0]
 int main( int argc, char *argv[] )

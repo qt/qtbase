@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "slidersgroup.h"
+
+#include <QtWidgets>
 
 //! [0]
 SlidersGroup::SlidersGroup(Qt::Orientation orientation, const QString &title,

@@ -48,6 +48,8 @@
 **
 ****************************************************************************/
 
+#include "imageviewer.h"
+
 #include <QtWidgets>
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>
@@ -55,8 +57,6 @@
 #include <QPrintDialog>
 #endif
 #endif
-
-#include "imageviewer.h"
 
 //! [0]
 ImageViewer::ImageViewer(QWidget *parent)
