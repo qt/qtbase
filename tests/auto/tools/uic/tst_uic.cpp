@@ -36,17 +36,27 @@
 #include <QtCore/QTemporaryDir>
 #include <QtCore/QRegularExpression>
 #include <QtCore/QStandardPaths>
+#include <QtCore/QVector>
 
 #include <cstdio>
 
 static const char keepEnvVar[] = "UIC_KEEP_GENERATED_FILES";
 static const char diffToStderrEnvVar[] = "UIC_STDERR_DIFF";
 
+struct TestEntry
+{
+    QByteArray name;
+    QString baselineBaseName;
+    QString generatedFileName;
+};
+
 class tst_uic : public QObject
 {
     Q_OBJECT
 
 public:
+    using TestEntries = QVector<TestEntry>;
+
     tst_uic();
 
 private Q_SLOTS:
@@ -66,9 +76,12 @@ private Q_SLOTS:
     void runCompare();
 
 private:
+    void populateTestEntries();
+
     const QString m_command;
     QString m_baseline;
     QTemporaryDir m_generated;
+    TestEntries m_testEntries;
     QRegularExpression m_versionRegexp;
 };
 
@@ -105,7 +118,26 @@ void tst_uic::initTestCase()
                   arg(QDir::currentPath());
     if (!outLines.empty())
         msg += outLines.front();
+    populateTestEntries();
+    QVERIFY(!m_testEntries.isEmpty());
     qDebug("%s", qPrintable(msg));
+}
+
+void tst_uic::populateTestEntries()
+{
+    const QString generatedPrefix = m_generated.path() + QLatin1Char('/');
+    QDir baseline(m_baseline);
+    const QString baseLinePrefix = baseline.path() + QLatin1Char('/');
+    const QFileInfoList baselineFiles =
+        baseline.entryInfoList(QStringList(QString::fromLatin1("*.ui")), QDir::Files);
+    m_testEntries.reserve(baselineFiles.size());
+    for (const QFileInfo &baselineFile : baselineFiles) {
+        const QString baseName = baselineFile.baseName();
+        const QString baselineBaseName = baseLinePrefix + baseName;
+        const QString generatedFile = generatedPrefix + baselineFile.fileName()
+            + QLatin1String(".h");
+        m_testEntries.append(TestEntry{baseName.toLocal8Bit(), baselineBaseName, generatedFile});
+    }
 }
 
 static const char helpFormat[] = R"(
@@ -171,22 +203,12 @@ void tst_uic::run_data() const
     QTest::addColumn<QString>("generatedFile");
     QTest::addColumn<QStringList>("options");
 
-    QDir generated(m_generated.path());
-    QDir baseline(m_baseline);
-    const QFileInfoList baselineFiles = baseline.entryInfoList(QStringList("*.ui"), QDir::Files);
-    foreach (const QFileInfo &baselineFile, baselineFiles) {
-        const QString generatedFile = generated.absolutePath()
-            + QLatin1Char('/') + baselineFile.fileName()
-            + QLatin1String(".h");
-
+    for (const TestEntry &te : m_testEntries) {
         QStringList options;
-        if (baselineFile.fileName() == QLatin1String("qttrid.ui"))
+        if (te.name == QByteArrayLiteral("qttrid"))
             options << QStringList(QLatin1String("-idbased"));
-
-        QTest::newRow(qPrintable(baselineFile.baseName()))
-            << baselineFile.absoluteFilePath()
-            << generatedFile
-            << options;
+        QTest::newRow(te.name.constData()) << (te.baselineBaseName + QLatin1String(".ui"))
+            << te.generatedFileName << options;
     }
 }
 
@@ -264,15 +286,9 @@ void tst_uic::compare_data() const
     QTest::addColumn<QString>("originalFile");
     QTest::addColumn<QString>("generatedFile");
 
-    QDir generated(m_generated.path());
-    QDir baseline(m_baseline);
-    const QFileInfoList baselineFiles = baseline.entryInfoList(QStringList("*.h"), QDir::Files);
-    foreach (const QFileInfo &baselineFile, baselineFiles) {
-        const QString generatedFile = generated.absolutePath()
-                + QLatin1Char('/') + baselineFile.fileName();
-        QTest::newRow(qPrintable(baselineFile.baseName()))
-            << baselineFile.absoluteFilePath()
-            << generatedFile;
+    for (const TestEntry &te : m_testEntries) {
+        QTest::newRow(te.name.constData()) << (te.baselineBaseName + QLatin1String(".ui.h"))
+            << te.generatedFileName;
     }
 }
 
@@ -280,7 +296,7 @@ void tst_uic::runTranslation()
 {
     QProcess process;
 
-    QDir baseline(m_baseline);
+    const QDir baseline(m_baseline);
 
     QDir generated(m_generated.path());
     generated.mkdir(QLatin1String("translation"));
