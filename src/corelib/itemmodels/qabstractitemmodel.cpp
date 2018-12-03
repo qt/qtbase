@@ -3950,7 +3950,7 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
 
 /*!
     \internal
-    QHash::insertMulti insert the value before the old value. and find() return the new value.
+    QMultiHash::insert inserts the value before the old value. and find() return the new value.
     We need insertMultiAtEnd because we don't want to overwrite the old one, which should be removed later
 
     There should be only one instance QPersistentModelIndexData per index, but in some intermediate state there may be
@@ -3960,9 +3960,9 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
  */
 void QAbstractItemModelPrivate::Persistent::insertMultiAtEnd(const QModelIndex& key, QPersistentModelIndexData *data)
 {
-    QHash<QModelIndex,QPersistentModelIndexData *>::iterator newIt =
-            indexes.insertMulti(key, data);
-    QHash<QModelIndex,QPersistentModelIndexData *>::iterator it = newIt + 1;
+    QHash<QModelIndex,QPersistentModelIndexData *>::iterator newIt = indexes.insert(key, data);
+    QHash<QModelIndex,QPersistentModelIndexData *>::iterator it = newIt;
+    ++it;
     while (it != indexes.end() && it.key() == key) {
         qSwap(*newIt,*it);
         newIt = it;

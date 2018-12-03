@@ -141,7 +141,7 @@ public:
 
     struct Persistent {
         Persistent() {}
-        QHash<QModelIndex, QPersistentModelIndexData *> indexes;
+        QMultiHash<QModelIndex, QPersistentModelIndexData *> indexes;
         QStack<QVector<QPersistentModelIndexData *> > moved;
         QStack<QVector<QPersistentModelIndexData *> > invalidated;
         void insertMultiAtEnd(const QModelIndex& key, QPersistentModelIndexData *data);
