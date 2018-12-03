@@ -1614,7 +1614,7 @@ QRectF QTextDocumentLayoutPrivate::layoutTable(QTextTable *table, int layoutFrom
         for (int i = 0; i < children.count(); ++i) {
             QTextFrame *frame = children.at(i);
             QTextTableCell cell = table->cellAt(frame->firstPosition());
-            td->childFrameMap.insertMulti(cell.row() + cell.column() * rows, frame);
+            td->childFrameMap.insert(cell.row() + cell.column() * rows, frame);
         }
     }
 

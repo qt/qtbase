@@ -2479,7 +2479,7 @@ void QWidgetTextControl::setExtraSelections(const QList<QTextEdit::ExtraSelectio
     QHash<int, int> hash;
     for (int i = 0; i < d->extraSelections.count(); ++i) {
         const QAbstractTextDocumentLayout::Selection &esel = d->extraSelections.at(i);
-        hash.insertMulti(esel.cursor.anchor(), i);
+        hash.insert(esel.cursor.anchor(), i);
     }
 
     for (int i = 0; i < selections.count(); ++i) {
