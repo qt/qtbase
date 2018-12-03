@@ -2008,7 +2008,7 @@ bool StyleSelector::basicSelectorMatches(const BasicSelector &sel, NodePtr node)
 }
 
 void StyleSelector::matchRule(NodePtr node, const StyleRule &rule, StyleSheetOrigin origin,
-                               int depth, QMap<uint, StyleRule> *weightedRules)
+                               int depth, QMultiMap<uint, StyleRule> *weightedRules)
 {
     for (int j = 0; j < rule.selectors.count(); ++j) {
         const Selector& selector = rule.selectors.at(j);
@@ -2022,7 +2022,7 @@ void StyleSelector::matchRule(NodePtr node, const StyleRule &rule, StyleSheetOri
                 newRule.selectors[0] = selector;
             }
             //We might have rules with the same weight if they came from a rule with several selectors
-            weightedRules->insertMulti(weight, newRule);
+            weightedRules->insert(weight, newRule);
         }
     }
 }
@@ -2035,7 +2035,7 @@ QVector<StyleRule> StyleSelector::styleRulesForNode(NodePtr node)
     if (styleSheets.isEmpty())
         return rules;
 
-    QMap<uint, StyleRule> weightedRules; // (spec, rule) that will be sorted below
+    QMultiMap<uint, StyleRule> weightedRules; // (spec, rule) that will be sorted below
 
     //prune using indexed stylesheet
     for (int sheetIdx = 0; sheetIdx < styleSheets.count(); ++sheetIdx) {
