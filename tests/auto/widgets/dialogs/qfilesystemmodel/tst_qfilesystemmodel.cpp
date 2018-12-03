@@ -1048,7 +1048,7 @@ void tst_QFileSystemModel::roleNames_data()
 {
     QTest::addColumn<int>("role");
     QTest::addColumn<QByteArray>("roleName");
-    QTest::newRow("decoration") << int(Qt::DecorationRole) << QByteArray("decoration");
+    QTest::newRow("decoration") << int(Qt::DecorationRole) << QByteArray("fileIcon");
     QTest::newRow("display") << int(Qt::DisplayRole) << QByteArray("display");
     QTest::newRow("fileIcon") << int(QFileSystemModel::FileIconRole) << QByteArray("fileIcon");
     QTest::newRow("filePath") << int(QFileSystemModel::FilePathRole) << QByteArray("filePath");
@@ -1065,8 +1065,8 @@ void tst_QFileSystemModel::roleNames()
     QVERIFY(roles.contains(role));
 
     QFETCH(QByteArray, roleName);
-    QList<QByteArray> values = roles.values(role);
-    QVERIFY(values.contains(roleName));
+    QCOMPARE(roles.values(role).count(), 1);
+    QCOMPARE(roles.value(role), roleName);
 }
 
 static inline QByteArray permissionRowName(bool readOnly, int permission)

@@ -1162,7 +1162,7 @@ void QDirModelPrivate::init()
     root.parent = 0;
     root.info = QFileInfo();
     clear(&root);
-    roleNames.insertMulti(QDirModel::FileIconRole, QByteArrayLiteral("fileIcon")); // == Qt::decoration
+    roleNames.insert(QDirModel::FileIconRole, QByteArrayLiteral("fileIcon")); // == Qt::decoration
     roleNames.insert(QDirModel::FilePathRole, QByteArrayLiteral("filePath"));
     roleNames.insert(QDirModel::FileNameRole, QByteArrayLiteral("fileName"));
 }
