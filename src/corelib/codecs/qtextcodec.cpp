@@ -695,11 +695,9 @@ void QTextCodec::setCodecForLocale(QTextCodec *c)
     \threadsafe
     Returns a pointer to the codec most suitable for this locale.
 
-    On Windows, the codec will be based on a system locale. On Unix
-    systems, the codec will might fall back to using the \e iconv
-    library if no builtin codec for the locale can be found.
-
-    Note that in these cases the codec's name will be "System".
+    The codec will be retrieved from ICU where that backend is in use, otherwise
+    it may be obtained from an OS-specific API.  In the latter case, the codec's
+    name may be "System".
 */
 
 QTextCodec* QTextCodec::codecForLocale()
