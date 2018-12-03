@@ -187,11 +187,29 @@ static bool draggingActive()
 bool QWindowsPointerHandler::translatePointerEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result)
 {
     *result = 0;
+
+    // If we are inside the move/resize modal loop, let DefWindowProc() handle it (but process NC button release).
+    QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
+    if (msg.message != WM_NCPOINTERUP && platformWindow->testFlag(QWindowsWindow::ResizeMoveActive))
+        return false;
+
     const quint32 pointerId = GET_POINTERID_WPARAM(msg.wParam);
 
     POINTER_INPUT_TYPE pointerType;
     if (!QWindowsContext::user32dll.getPointerType(pointerId, &pointerType)) {
         qWarning() << "GetPointerType() failed:" << qt_error_string();
+        return false;
+    }
+
+    // Handle non-client pen/touch as generic mouse events for compatibility with QDockWindow.
+    if ((pointerType == QT_PT_TOUCH || pointerType == QT_PT_PEN) && (et & QtWindows::NonClientEventFlag)) {
+        POINTER_INFO pointerInfo;
+        if (!QWindowsContext::user32dll.getPointerInfo(pointerId, &pointerInfo)) {
+            qWarning() << "GetPointerInfo() failed:" << qt_error_string();
+            return false;
+        }
+        if (pointerInfo.pointerFlags & (POINTER_FLAG_UP | POINTER_FLAG_DOWN))
+            return translateMouseTouchPadEvent(window, hwnd, et, msg, &pointerInfo);
         return false;
     }
 
