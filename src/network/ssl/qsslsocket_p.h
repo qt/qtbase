@@ -97,6 +97,7 @@ public:
     virtual ~QSslSocketPrivate();
 
     void init();
+    bool verifyProtocolSupported(const char *where);
     bool initialized;
 
     QSslSocket::SslMode mode;

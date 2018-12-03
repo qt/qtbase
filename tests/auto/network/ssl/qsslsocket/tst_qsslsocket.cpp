@@ -245,8 +245,8 @@ private slots:
     void signatureAlgorithm();
 #endif
 
-    void deprecatedProtocols_data();
-    void deprecatedProtocols();
+    void disabledProtocols_data();
+    void disabledProtocols();
 
     void setEmptyDefaultConfiguration(); // this test should be last
 
@@ -4051,60 +4051,71 @@ void tst_QSslSocket::forwardReadChannelFinished()
 
 #endif // QT_NO_OPENSSL
 
-void tst_QSslSocket::deprecatedProtocols_data()
+void tst_QSslSocket::disabledProtocols_data()
 {
-    QTest::addColumn<QSsl::SslProtocol>("protocol");
-    QTest::addColumn<bool>("succeeds");
-    QTest::newRow("SecureProtocols") << QSsl::SecureProtocols << true;
-    QTest::newRow("SslV2") << QSsl::SslV2 << false;
-    QTest::newRow("SslV3") << QSsl::SslV3 << false;
+    QTest::addColumn<QSsl::SslProtocol>("disabledProtocol");
+    QTest::newRow("SslV2") << QSsl::SslV2;
+    QTest::newRow("SslV3") << QSsl::SslV3;
 }
 
-void tst_QSslSocket::deprecatedProtocols()
+void tst_QSslSocket::disabledProtocols()
 {
-    QFETCH_GLOBAL(bool, setProxy);
+    QFETCH_GLOBAL(const bool, setProxy);
     if (setProxy)
-        QSKIP("This test does not work under a proxy");
+        return;
 
-    QFETCH(QSsl::SslProtocol, protocol);
-    QFETCH(bool, succeeds);
+    QFETCH(const QSsl::SslProtocol, disabledProtocol);
+    const int timeoutMS = 500;
+    // Test a client socket.
+    {
+        // 0. connectToHostEncrypted: client-side, non-blocking API, error is discovered
+        // early, preventing any real connection from ever starting.
+        QSslSocket socket;
+        socket.setProtocol(disabledProtocol);
+        QCOMPARE(socket.error(), QAbstractSocket::UnknownSocketError);
+        socket.connectToHostEncrypted(QStringLiteral("doesnotmatter.org"), 1010);
+        QCOMPARE(socket.error(), QAbstractSocket::SslInvalidUserDataError);
+        QCOMPARE(socket.state(), QAbstractSocket::UnconnectedState);
+    }
+    {
+        // 1. startClientEncryption: client-side, non blocking API, but wants a socket in
+        // the 'connected' state (otherwise just returns false not setting any error code).
+        SslServer server;
+        QVERIFY(server.listen());
 
-    QSslSocket socket;
-    socket.setProtocol(protocol);
+        QSslSocket socket;
+        QCOMPARE(socket.error(), QAbstractSocket::UnknownSocketError);
 
-    QSignalSpy connectedSpy(&socket, &QSslSocket::connected);
-    QVERIFY(connectedSpy.isValid());
+        socket.connectToHost(server.serverAddress(), server.serverPort());
+        QVERIFY(socket.waitForConnected(timeoutMS));
 
-    QSignalSpy encryptedSpy(&socket, &QSslSocket::encrypted);
-    QVERIFY(encryptedSpy.isValid());
+        socket.setProtocol(disabledProtocol);
+        socket.startClientEncryption();
+        QCOMPARE(socket.error(), QAbstractSocket::SslInvalidUserDataError);
+    }
+    {
+        // 2. waitForEncrypted: client-side, blocking API plus requires from us
+        // to call ... connectToHostEncrypted(), which will notice an error and
+        // will prevent any connect at all. Nothing to test.
+    }
 
-    QSignalSpy errorSpy(&socket, QOverload<QAbstractSocket::SocketError>::of(&QSslSocket::error));
-    QVERIFY(errorSpy.isValid());
+    // Test a server side, relatively simple: server does not connect, it listens/accepts
+    // and then calls startServerEncryption() (which must fall).
+    {
+        SslServer server;
+        server.protocol = disabledProtocol;
+        QVERIFY(server.listen());
 
-    connect(&socket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors),
-            &socket, QOverload<>::of(&QSslSocket::ignoreSslErrors));
+        QTestEventLoop loop;
+        connect(&server, &SslServer::socketError, [&loop](QAbstractSocket::SocketError)
+                {loop.exitLoop();});
 
-    SslServer server;
-    QVERIFY(server.listen());
-
-    socket.connectToHost(server.serverAddress(), server.serverPort());
-
-    // Can't use waitForConnected / waitForEncrypted as they wait forever,
-    // so do this asynchronously via QTRY_ macros (QTBUG-72179)
-    QTRY_COMPARE(connectedSpy.size(), 1);
-    QCOMPARE(encryptedSpy.size(), 0);
-    QCOMPARE(errorSpy.size(), 0);
-
-    socket.startClientEncryption();
-
-    if (succeeds) {
-        QTRY_COMPARE(encryptedSpy.size(), 1);
-        QCOMPARE(errorSpy.size(), 0);
-    } else {
-        // The various backends differ in the errors fired here (QTBUG-72196),
-        // so just check that we did get an error (and we're not encrypted)
-        QTRY_VERIFY(errorSpy.size() > 0);
-        QCOMPARE(encryptedSpy.size(), 0);
+        QTcpSocket client;
+        client.connectToHost(server.serverAddress(), server.serverPort());
+        loop.enterLoopMSecs(timeoutMS);
+        QVERIFY(!loop.timeout());
+        QVERIFY(server.socket);
+        QCOMPARE(server.socket->error(), QAbstractSocket::SslInvalidUserDataError);
     }
 }
 

@@ -460,6 +460,9 @@ void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port, O
         return;
     }
 
+    if (!d->verifyProtocolSupported("QSslSocket::connectToHostEncrypted:"))
+        return;
+
     d->init();
     d->autoStartHandshake = true;
     d->initialized = true;
@@ -1607,6 +1610,8 @@ bool QSslSocket::waitForEncrypted(int msecs)
         return false;
     if (d->mode == UnencryptedMode && !d->autoStartHandshake)
         return false;
+    if (!d->verifyProtocolSupported("QSslSocket::waitForEncrypted:"))
+        return false;
 
     QElapsedTimer stopWatch;
     stopWatch.start();
@@ -1856,6 +1861,10 @@ void QSslSocket::startClientEncryption()
         d->setErrorAndEmit(QAbstractSocket::SslInternalError, tr("TLS initialization failed"));
         return;
     }
+
+    if (!d->verifyProtocolSupported("QSslSocket::startClientEncryption:"))
+        return;
+
 #ifdef QSSLSOCKET_DEBUG
     qCDebug(lcSsl) << "QSslSocket::startClientEncryption()";
 #endif
@@ -1899,6 +1908,9 @@ void QSslSocket::startServerEncryption()
         d->setErrorAndEmit(QAbstractSocket::SslInternalError, tr("TLS initialization failed"));
         return;
     }
+    if (!d->verifyProtocolSupported("QSslSocket::startServerEncryption"))
+        return;
+
     d->mode = SslServerMode;
     emit modeChanged(d->mode);
     d->startServerEncryption();
@@ -2128,6 +2140,20 @@ void QSslSocketPrivate::init()
     writeBuffer.clear();
     configuration.peerCertificate.clear();
     configuration.peerCertificateChain.clear();
+}
+
+/*!
+    \internal
+*/
+bool QSslSocketPrivate::verifyProtocolSupported(const char *where)
+{
+    if (configuration.protocol == QSsl::SslV2 || configuration.protocol == QSsl::SslV3) {
+        qCWarning(lcSsl) << where << "Attempted to use an unsupported protocol.";
+        setErrorAndEmit(QAbstractSocket::SslInvalidUserDataError,
+                        QSslSocket::tr("Attempted to use an unsupported protocol."));
+        return false;
+    }
+    return true;
 }
 
 /*!
