@@ -2950,9 +2950,9 @@ void QFontCache::insertEngine(const Key &key, QFontEngine *engine, bool insertMu
     data.timestamp = ++current_timestamp;
 
     if (insertMulti)
-        engineCache.insertMulti(key, data);
-    else
         engineCache.insert(key, data);
+    else
+        engineCache.replace(key, data);
     // only increase the cost if this is the first time we insert the engine
     if (++engineCacheCount[engine] == 1)
         increaseCost(engine->cache_cost);

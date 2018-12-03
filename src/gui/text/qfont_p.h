@@ -274,7 +274,7 @@ public:
         uint hits;
     };
 
-    typedef QMap<Key,Engine> EngineCache;
+    typedef QMultiMap<Key,Engine> EngineCache;
     EngineCache engineCache;
     QHash<QFontEngine *, int> engineCacheCount;
 
