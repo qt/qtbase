@@ -222,11 +222,6 @@ Qt::CaseSensitivity QCollator::caseSensitivity() const
 
     By default this mode is off.
 
-    \note On Windows, this functionality makes use of the \l{ICU} library. If Qt was
-    compiled without ICU support, it falls back to code using native Windows API,
-    which only works from Windows 7 onwards. On older versions of Windows, it will not work
-    and a warning will be emitted at runtime.
-
     \sa numericMode()
  */
 void QCollator::setNumericMode(bool on)
