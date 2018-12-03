@@ -1289,6 +1289,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                     }
                 }
                 bool is_target = (wild == fileFixify(var("TARGET"), FileFixifyAbsolute));
+                const bool noStrip = installConfigValues.contains("nostrip");
                 if(is_target || exists(wild)) { //real file or target
                     QFileInfo fi(fileInfo(wild));
                     QString dst_file = filePrefixRoot(root, dst_dir);
@@ -1302,7 +1303,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                        cmd = QLatin1String("-$(QINSTALL)");
                     cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file);
                     inst << cmd;
-                    if (!project->isActiveConfig("debug_info") && !project->isActiveConfig("nostrip") &&
+                    if (!noStrip && !project->isActiveConfig("debug_info") && !project->isActiveConfig("nostrip") &&
                        !fi.isDir() && fi.isExecutable() && !project->isEmpty("QMAKE_STRIP"))
                         inst << QString("-") + var("QMAKE_STRIP") + " " +
                                   escapeFilePath(filePrefixRoot(root, fileFixify(dst_dir + filestr, FileFixifyAbsolute, false)));
@@ -1337,7 +1338,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                     QString cmd = QLatin1String("-$(QINSTALL) ") +
                                   escapeFilePath(dirstr + file) + " " + escapeFilePath(dst_file);
                     inst << cmd;
-                    if (!project->isActiveConfig("debug_info") && !project->isActiveConfig("nostrip") &&
+                    if (!noStrip && !project->isActiveConfig("debug_info") && !project->isActiveConfig("nostrip") &&
                        !fi.isDir() && fi.isExecutable() && !project->isEmpty("QMAKE_STRIP"))
                         inst << QString("-") + var("QMAKE_STRIP") + " " +
                                   escapeFilePath(filePrefixRoot(root, fileFixify(dst_dir + file, FileFixifyAbsolute, false)));
