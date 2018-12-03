@@ -43,7 +43,9 @@
 #include <QtCore/QPoint>
 #include <QtCore/QTimer>
 
-#ifndef QT_NO_XKBCOMMON_EVDEV
+#include <QtGui/private/qtguiglobal_p.h>
+
+#if QT_CONFIG(xkbcommon)
 #include <xkbcommon/xkbcommon.h>
 #endif
 
@@ -70,7 +72,7 @@ public:
 
     void processKey(libinput_event_keyboard *e);
 
-#ifndef QT_NO_XKBCOMMON_EVDEV
+#if QT_CONFIG(xkbcommon)
     void handleRepeat();
 
 private:
