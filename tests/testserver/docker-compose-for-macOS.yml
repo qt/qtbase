@@ -12,7 +12,7 @@ version: '3.4'
 
 services:
     apache2:
-        image: qt-test-server-apache2:cc9ea678b92bdda33acb9fa0159bb4ad0f3cd947
+        image: qt-test-server-apache2:537fe302f61851d1663f41495230d8e3554a4a13
         container_name: qt-test-server-apache2
         domainname: test-net.qt.local
         volumes:
@@ -23,7 +23,7 @@ services:
         network_mode: "host"
 
     squid:
-        image: qt-test-server-squid:577d99307eea9a8cccfec944d25be2bce2fe99cc
+        image: qt-test-server-squid:9c32f41b19aca3d778733c4d8fb0ecc5955e893c
         container_name: qt-test-server-squid
         domainname: test-net.qt.local
         depends_on:
@@ -36,7 +36,7 @@ services:
         network_mode: "host"
 
     vsftpd:
-        image: qt-test-server-vsftpd:18896604c7e90b543e56d80c8a8aabdb65a590d0
+        image: qt-test-server-vsftpd:f3a9c8d793a77cc007c0e4e481bec01f9e3eeb7e
         container_name: qt-test-server-vsftpd
         domainname: test-net.qt.local
         volumes:
@@ -47,7 +47,7 @@ services:
         network_mode: "host"
 
     ftp-proxy:
-        image: qt-test-server-ftp-proxy:2c6c8f1ab6a364b540c43d705fb6f15a585cb2af
+        image: qt-test-server-ftp-proxy:d7de8b28392d173db512a558ccc84ead8bece2ae
         container_name: qt-test-server-ftp-proxy
         domainname: test-net.qt.local
         depends_on:
@@ -60,7 +60,7 @@ services:
         network_mode: "host"
 
     danted:
-        image: qt-test-server-danted:2d5eea7356dd0ba25f3c12d1cba00d70770da1b0
+        image: qt-test-server-danted:35607f9b790524cf9690c7d12a9a401696b7b6b5
         container_name: qt-test-server-danted
         domainname: test-net.qt.local
         depends_on:
