@@ -1654,7 +1654,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                         alignment |= Qt::TextHideMnemonic;
 
                     if (toolbutton->toolButtonStyle == Qt::ToolButtonTextUnderIcon) {
-                        pr.setHeight(pmSize.height() + 6);
+                        pr.setHeight(pmSize.height() + 4); //### 4 is currently hardcoded in QToolButton::sizeHint()
                         tr.adjust(0, pr.height() - 1, 0, -1);
                         pr.translate(shiftX, shiftY);
                         if (!hasArrow) {
@@ -1664,7 +1664,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                         }
                         alignment |= Qt::AlignCenter;
                     } else {
-                        pr.setWidth(pmSize.width() + 8);
+                        pr.setWidth(pmSize.width() + 4); //### 4 is currently hardcoded in QToolButton::sizeHint()
                         tr.adjust(pr.width(), 0, 0, 0);
                         pr.translate(shiftX, shiftY);
                         if (!hasArrow) {
