@@ -50,7 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 // forward declaration
-static QMap<QByteArray, QString> _q_mapFromX509Name(X509_NAME *name);
+static QMultiMap<QByteArray, QString> _q_mapFromX509Name(X509_NAME *name);
 
 bool QSslCertificate::operator==(const QSslCertificate &other) const
 {
@@ -615,16 +615,16 @@ QByteArray QSslCertificatePrivate::asn1ObjectName(ASN1_OBJECT *object)
     return asn1ObjectId(object);
 }
 
-static QMap<QByteArray, QString> _q_mapFromX509Name(X509_NAME *name)
+static QMultiMap<QByteArray, QString> _q_mapFromX509Name(X509_NAME *name)
 {
-    QMap<QByteArray, QString> info;
+    QMultiMap<QByteArray, QString> info;
     for (int i = 0; i < q_X509_NAME_entry_count(name); ++i) {
         X509_NAME_ENTRY *e = q_X509_NAME_get_entry(name, i);
 
         QByteArray name = QSslCertificatePrivate::asn1ObjectName(q_X509_NAME_ENTRY_get_object(e));
         unsigned char *data = nullptr;
         int size = q_ASN1_STRING_to_UTF8(&data, q_X509_NAME_ENTRY_get_data(e));
-        info.insertMulti(name, QString::fromUtf8((char*)data, size));
+        info.insert(name, QString::fromUtf8((char*)data, size));
 #if QT_CONFIG(opensslv11)
         q_CRYPTO_free(data, nullptr, 0);
 #else
