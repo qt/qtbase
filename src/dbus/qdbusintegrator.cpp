@@ -222,7 +222,7 @@ static dbus_bool_t qDBusAddWatch(DBusWatch *watch, void *data)
         watcher.write->setEnabled(q_dbus_watch_get_enabled(watch));
         d->connect(watcher.write, &QSocketNotifier::activated, d, &QDBusConnectionPrivate::socketWrite);
     }
-    d->watchers.insertMulti(fd, watcher);
+    d->watchers.insert(fd, watcher);
 
     return true;
 }
@@ -2245,7 +2245,7 @@ bool QDBusConnectionPrivate::addSignalHook(const QString &key, const SignalHook 
         }
     }
 
-    signalHooks.insertMulti(key, hook);
+    signalHooks.insert(key, hook);
     connect(hook.obj, &QObject::destroyed, this, &QDBusConnectionPrivate::objectDestroyed,
             Qt::ConnectionType(Qt::BlockingQueuedConnection | Qt::UniqueConnection));
 
