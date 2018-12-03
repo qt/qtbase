@@ -85,6 +85,9 @@ public:
     QColorSpace(ColorSpaceId colorSpaceId = Undefined);
     QColorSpace(Gamut gamut, TransferFunction fun, float gamma = 0.0f);
     QColorSpace(Gamut gamut, float gamma);
+    QColorSpace(const QPointF &whitePoint, const QPointF &redPoint,
+                const QPointF &greenPoint, const QPointF &bluePoint,
+                TransferFunction fun, float gamma = 0.0f);
     ~QColorSpace();
 
     QColorSpace(QColorSpace &&colorSpace);

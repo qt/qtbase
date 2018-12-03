@@ -33,6 +33,8 @@
 #include <qimage.h>
 #include <qimagereader.h>
 
+#include <private/qcolorspace_p.h>
+
 Q_DECLARE_METATYPE(QColorSpace::ColorSpaceId)
 Q_DECLARE_METATYPE(QColorSpace::Gamut)
 Q_DECLARE_METATYPE(QColorSpace::TransferFunction)
@@ -59,6 +61,10 @@ private slots:
     void loadImage();
 
     void gamut();
+    void primariesXyz();
+    void primaries2_data();
+    void primaries2();
+    void invalidPrimaries();
 };
 
 tst_QColorSpace::tst_QColorSpace()
@@ -287,6 +293,68 @@ void tst_QColorSpace::gamut()
     QVERIFY(tblue.greenF() < 0.001);
     QVERIFY(tgreen.redF() > 0.2);
     QVERIFY(tgreen.blueF() > 0.2);
+}
+
+void tst_QColorSpace::primariesXyz()
+{
+    QColorSpace sRgb = QColorSpace::SRgb;
+    QColorSpace adobeRgb = QColorSpace::AdobeRgb;
+    QColorSpace displayP3 = QColorSpace::DisplayP3;
+    QColorSpace proPhotoRgb = QColorSpace::ProPhotoRgb;
+    QColorSpace bt2020 = QColorSpace::Bt2020;
+
+    // Check if our calculated matrices, match the precalculated ones.
+    QCOMPARE(sRgb.d_func()->toXyz, QColorMatrix::toXyzFromSRgb());
+    QCOMPARE(adobeRgb.d_func()->toXyz, QColorMatrix::toXyzFromAdobeRgb());
+    QCOMPARE(displayP3.d_func()->toXyz, QColorMatrix::toXyzFromDciP3D65());
+    QCOMPARE(proPhotoRgb.d_func()->toXyz, QColorMatrix::toXyzFromProPhotoRgb());
+    QCOMPARE(bt2020.d_func()->toXyz, QColorMatrix::toXyzFromBt2020());
+}
+
+void tst_QColorSpace::primaries2_data()
+{
+    QTest::addColumn<QColorSpace::Gamut>("gamut");
+
+    QTest::newRow("sRGB") << QColorSpace::Gamut::SRgb;
+    QTest::newRow("DCI-P3 (D65)") << QColorSpace::Gamut::DciP3D65;
+    QTest::newRow("Adobe RGB (1998)") << QColorSpace::Gamut::AdobeRgb;
+    QTest::newRow("ProPhoto RGB") << QColorSpace::Gamut::ProPhotoRgb;
+    QTest::newRow("BT.2020") << QColorSpace::Gamut::Bt2020;
+}
+
+void tst_QColorSpace::primaries2()
+{
+    QFETCH(QColorSpace::Gamut, gamut);
+    QColorSpacePrimaries primaries(gamut);
+
+    QColorSpace original(gamut,  QColorSpace::TransferFunction::Linear);
+    QColorSpace custom1(primaries.whitePoint, primaries.redPoint,
+                        primaries.greenPoint, primaries.bluePoint, QColorSpace::TransferFunction::Linear);
+    QCOMPARE(original, custom1);
+
+    // A custom color swizzled color-space:
+    QColorSpace custom2(primaries.whitePoint, primaries.bluePoint,
+                        primaries.greenPoint, primaries.redPoint, QColorSpace::TransferFunction::Linear);
+
+    QVERIFY(custom1 != custom2);
+    QColor color1(255, 127, 63);
+    QColor color2 = custom1.transformationToColorSpace(custom2).map(color1);
+    QCOMPARE(color2.red(),   color1.blue());
+    QCOMPARE(color2.green(), color1.green());
+    QCOMPARE(color2.blue(),  color1.red());
+    QCOMPARE(color2.alpha(), color1.alpha());
+    QColor color3 = custom2.transformationToColorSpace(custom1).map(color2);
+    QCOMPARE(color3.red(),   color1.red());
+    QCOMPARE(color3.green(), color1.green());
+    QCOMPARE(color3.blue(),  color1.blue());
+    QCOMPARE(color3.alpha(), color1.alpha());
+}
+
+void tst_QColorSpace::invalidPrimaries()
+{
+    QColorSpace custom(QPointF(), QPointF(), QPointF(), QPointF(), QColorSpace::TransferFunction::Linear);
+    QVERIFY(!custom.isValid());
+    QCOMPARE(custom.colorSpaceId(), QColorSpace::Undefined);
 }
 
 QTEST_MAIN(tst_QColorSpace)

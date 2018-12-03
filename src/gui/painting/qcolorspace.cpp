@@ -53,6 +53,102 @@
 
 QT_BEGIN_NAMESPACE
 
+QColorSpacePrimaries::QColorSpacePrimaries(QColorSpace::Gamut gamut)
+{
+    switch (gamut) {
+    case QColorSpace::Gamut::SRgb:
+        redPoint   = QPointF(0.640, 0.330);
+        greenPoint = QPointF(0.300, 0.600);
+        bluePoint  = QPointF(0.150, 0.060);
+        whitePoint = QColorVector::D65Chromaticity();
+        break;
+    case QColorSpace::Gamut::DciP3D65:
+        redPoint   = QPointF(0.680, 0.320);
+        greenPoint = QPointF(0.265, 0.690);
+        bluePoint  = QPointF(0.150, 0.060);
+        whitePoint = QColorVector::D65Chromaticity();
+        break;
+    case QColorSpace::Gamut::Bt2020:
+        redPoint   = QPointF(0.708, 0.292);
+        greenPoint = QPointF(0.190, 0.797);
+        bluePoint  = QPointF(0.131, 0.046);
+        whitePoint = QColorVector::D65Chromaticity();
+        break;
+    case QColorSpace::Gamut::AdobeRgb:
+        redPoint   = QPointF(0.640, 0.330);
+        greenPoint = QPointF(0.210, 0.710);
+        bluePoint  = QPointF(0.150, 0.060);
+        whitePoint = QColorVector::D65Chromaticity();
+        break;
+    case QColorSpace::Gamut::ProPhotoRgb:
+        redPoint   = QPointF(0.7347, 0.2653);
+        greenPoint = QPointF(0.1596, 0.8404);
+        bluePoint  = QPointF(0.0366, 0.0001);
+        whitePoint = QColorVector::D50Chromaticity();
+        break;
+    default:
+        Q_UNREACHABLE();
+    }
+}
+
+bool QColorSpacePrimaries::areValid() const
+{
+    if (!QColorVector::isValidChromaticity(redPoint))
+        return false;
+    if (!QColorVector::isValidChromaticity(greenPoint))
+        return false;
+    if (!QColorVector::isValidChromaticity(bluePoint))
+        return false;
+    if (!QColorVector::isValidChromaticity(whitePoint))
+        return false;
+    return true;
+}
+
+QColorMatrix QColorSpacePrimaries::toXyzMatrix() const
+{
+    // This converts to XYZ in some undefined scale.
+    QColorMatrix toXyz = { QColorVector(redPoint),
+                           QColorVector(greenPoint),
+                           QColorVector(bluePoint) };
+
+    // Since the white point should be (1.0, 1.0, 1.0) in the
+    // input, we can figure out the scale by using the
+    // inverse conversion on the white point.
+    QColorVector wXyz(whitePoint);
+    QColorVector whiteScale = toXyz.inverted().map(wXyz);
+
+    // Now we have scaled conversion to XYZ relative to the given whitepoint
+    toXyz = toXyz * QColorMatrix::fromScale(whiteScale);
+
+    // But we want a conversion to XYZ relative to D50
+    QColorVector wXyzD50 = QColorVector::D50();
+
+    if (wXyz != wXyzD50) {
+        // Do chromatic adaptation to map our white point to XYZ D50.
+
+        // The Bradford method chromatic adaptation matrix:
+        QColorMatrix abrad = { {  0.8951f, -0.7502f,  0.0389f },
+                               {  0.2664f,  1.7135f, -0.0685f },
+                               { -0.1614f,  0.0367f,  1.0296f } };
+        QColorMatrix abradinv = { {  0.9869929f, 0.4323053f, -0.0085287f },
+                                  { -0.1470543f, 0.5183603f,  0.0400428f },
+                                  {  0.1599627f, 0.0492912f,  0.9684867f } };
+
+        QColorVector srcCone = abrad.map(wXyz);
+        QColorVector dstCone = abrad.map(wXyzD50);
+
+        QColorMatrix wToD50 = { { dstCone.x / srcCone.x, 0, 0 },
+                                { 0, dstCone.y / srcCone.y, 0 },
+                                { 0, 0, dstCone.z / srcCone.z } };
+
+
+        QColorMatrix chromaticAdaptation = abradinv * (wToD50 * abrad);
+        toXyz = chromaticAdaptation * toXyz;
+    }
+
+    return toXyz;
+}
+
 QColorSpacePrivate::QColorSpacePrivate()
         : id(QColorSpace::Unknown)
         , gamut(QColorSpace::Gamut::Custom)
@@ -128,6 +224,21 @@ QColorSpacePrivate::QColorSpacePrivate(QColorSpace::Gamut gamut, QColorSpace::Tr
     initialize();
 }
 
+QColorSpacePrivate::QColorSpacePrivate(const QColorSpacePrimaries &primaries,
+                                       QColorSpace::TransferFunction fun,
+                                       float gamma)
+        : gamut(QColorSpace::Gamut::Custom)
+        , transferFunction(fun)
+        , gamma(gamma)
+{
+    Q_ASSERT(primaries.areValid());
+    toXyz = primaries.toXyzMatrix();
+    whitePoint = QColorVector(primaries.whitePoint);
+    if (!identifyColorSpace())
+        id = QColorSpace::Unknown;
+    setTransferFunction();
+}
+
 bool QColorSpacePrivate::identifyColorSpace()
 {
     switch (gamut) {
@@ -195,33 +306,14 @@ void QColorSpacePrivate::initialize()
 
 void QColorSpacePrivate::setToXyzMatrix()
 {
-    switch (gamut) {
-    case QColorSpace::Gamut::SRgb:
-        toXyz = QColorMatrix::toXyzFromSRgb();
-        whitePoint = QColorVector::D65();
-        return;
-    case QColorSpace::Gamut::AdobeRgb:
-        toXyz = QColorMatrix::toXyzFromAdobeRgb();
-        whitePoint = QColorVector::D65();
-        return;
-    case QColorSpace::Gamut::DciP3D65:
-        toXyz = QColorMatrix::toXyzFromDciP3D65();
-        whitePoint = QColorVector::D65();
-        return;
-    case QColorSpace::Gamut::ProPhotoRgb:
-        toXyz = QColorMatrix::toXyzFromProPhotoRgb();
-        whitePoint = QColorVector::D50();
-        return;
-    case QColorSpace::Gamut::Bt2020:
-        toXyz = QColorMatrix::toXyzFromBt2020();
-        whitePoint = QColorVector::D65();
-        return;
-    case QColorSpace::Gamut::Custom:
+    if (gamut == QColorSpace::Gamut::Custom) {
         toXyz = QColorMatrix::null();
         whitePoint = QColorVector::D50();
         return;
     }
-    Q_UNREACHABLE();
+    QColorSpacePrimaries primaries(gamut);
+    toXyz = primaries.toXyzMatrix();
+    whitePoint = QColorVector(primaries.whitePoint);
 }
 
 void QColorSpacePrivate::setTransferFunction()
@@ -384,6 +476,23 @@ QColorSpace::QColorSpace(QColorSpace::Gamut gamut, QColorSpace::TransferFunction
 QColorSpace::QColorSpace(QColorSpace::Gamut gamut, float gamma)
         : d_ptr(new QColorSpacePrivate(gamut, TransferFunction::Gamma, gamma))
 {
+}
+
+/*!
+    Creates a custom colorspace with a gamut based on the chromaticities of the primary colors \a whitePoint,
+    \a redPoint, \a greenPoint and \a bluePoint, and using the transfer function \a fun and optionally \a gamma.
+ */
+QColorSpace::QColorSpace(const QPointF &whitePoint, const QPointF &redPoint,
+                         const QPointF &greenPoint, const QPointF &bluePoint,
+                         QColorSpace::TransferFunction fun, float gamma)
+{
+    QColorSpacePrimaries primaries(whitePoint, redPoint, greenPoint, bluePoint);
+    if (!primaries.areValid()) {
+        qWarning() << "QColorSpace attempted constructed from invalid primaries:" << whitePoint << redPoint << greenPoint << bluePoint;
+        d_ptr = QColorSpace(QColorSpace::Undefined).d_ptr;
+        return;
+    }
+    d_ptr = new QColorSpacePrivate(primaries, fun, gamma);
 }
 
 QColorSpace::~QColorSpace()

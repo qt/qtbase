@@ -57,8 +57,33 @@
 #include "qcolortrclut_p.h"
 
 #include <QtCore/qshareddata.h>
+#include <QtCore/qpoint.h>
 
 QT_BEGIN_NAMESPACE
+
+class Q_GUI_EXPORT QColorSpacePrimaries
+{
+public:
+   QColorSpacePrimaries() = default;
+   QColorSpacePrimaries(QColorSpace::Gamut gamut);
+   QColorSpacePrimaries(QPointF whitePoint,
+                        QPointF redPoint,
+                        QPointF greenPoint,
+                        QPointF bluePoint)
+           : whitePoint(whitePoint)
+           , redPoint(redPoint)
+           , greenPoint(greenPoint)
+           , bluePoint(bluePoint)
+   { }
+
+   QColorMatrix toXyzMatrix() const;
+   bool areValid() const;
+
+   QPointF whitePoint;
+   QPointF redPoint;
+   QPointF greenPoint;
+   QPointF bluePoint;
+};
 
 class QColorSpacePrivate : public QSharedData
 {
@@ -66,6 +91,7 @@ public:
     QColorSpacePrivate();
     QColorSpacePrivate(QColorSpace::ColorSpaceId colorSpaceId);
     QColorSpacePrivate(QColorSpace::Gamut gamut, QColorSpace::TransferFunction fun, float gamma);
+    QColorSpacePrivate(const QColorSpacePrimaries &primaries, QColorSpace::TransferFunction fun, float gamma);
     QColorSpacePrivate(const QColorSpacePrivate &other) = default;
     QColorSpacePrivate &operator=(const QColorSpacePrivate &other) = default;
 
