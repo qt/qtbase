@@ -173,7 +173,7 @@ public:
         : QCborMap()
     {
         detach(args.size());
-        for (auto pair : args)
+        for (const auto &pair : args)
            insert(pair.first, pair.second);
     }
     ~QCborMap();

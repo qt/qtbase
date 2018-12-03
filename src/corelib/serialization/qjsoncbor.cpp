@@ -817,7 +817,7 @@ QCborArray QCborArray::fromJsonArray(const QJsonArray &array)
 {
     QCborArray a;
     a.detach(array.size());
-    for (const QJsonValue v : array) {
+    for (const QJsonValue &v : array) {
         if (v.isString())
             a.d->append(v.toString());
         else

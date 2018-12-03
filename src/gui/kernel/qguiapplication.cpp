@@ -1168,7 +1168,7 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
     QStringList plugins = pluginNamesWithArguments.split(QLatin1Char(';'));
     QStringList platformArguments;
     QStringList availablePlugins = QPlatformIntegrationFactory::keys(platformPluginPath);
-    for (auto pluginArgument : plugins) {
+    for (const auto &pluginArgument : plugins) {
         // Split into platform name and arguments
         QStringList arguments = pluginArgument.split(QLatin1Char(':'));
         const QString name = arguments.takeFirst().toLower();

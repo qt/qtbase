@@ -738,7 +738,7 @@ static std::vector<std::pair<int, int>> pageRangesFromString(const QString &page
 {
     std::vector<std::pair<int, int>> result;
     const QStringList items = pagesString.split(',');
-    for (const QString item : items) {
+    for (const QString &item : items) {
         if (item.isEmpty())
             return {};
 
