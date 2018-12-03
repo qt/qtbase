@@ -69,6 +69,7 @@ private slots:
     void initializerList();
     void eraseValidIteratorOnSharedHash();
     void equal_range();
+    void insert_hash();
 };
 
 struct IdentityTracker {
@@ -1640,6 +1641,78 @@ void tst_QHash::equal_range()
         std::sort(vec.begin(), vec.end());
         for (int j = 0; j < 8; ++j)
             QCOMPARE(i*j, vec[j]);
+    }
+}
+
+void tst_QHash::insert_hash()
+{
+    {
+        QHash<int, int> hash;
+        hash.insert(1, 1);
+        hash.insert(2, 2);
+        hash.insert(0, -1);
+
+        QHash<int, int> hash2;
+        hash2.insert(0, 0);
+        hash2.insert(3, 3);
+        hash2.insert(4, 4);
+
+        hash.insert(hash2);
+
+        QCOMPARE(hash.count(), 5);
+        for (int i = 0; i < 5; ++i)
+            QCOMPARE(hash[i], i);
+    }
+    {
+        QHash<int, int> hash;
+        hash.insert(0, 5);
+
+        QHash<int, int> hash2;
+
+        hash.insert(hash2);
+
+        QCOMPARE(hash.count(), 1);
+        QCOMPARE(hash[0], 5);
+    }
+    {
+        QHash<int, int> hash;
+        QHash<int, int> hash2;
+        hash2.insert(0, 5);
+
+        hash.insert(hash2);
+
+        QCOMPARE(hash.count(), 1);
+        QCOMPARE(hash[0], 5);
+        QCOMPARE(hash, hash2);
+    }
+    {
+        QHash<int, int> hash;
+        hash.insert(0, 7);
+        hash.insert(2, 5);
+        hash.insert(7, 55);
+
+        // insert into ourself, nothing should happen
+        hash.insert(hash);
+
+        QCOMPARE(hash.count(), 3);
+        QCOMPARE(hash[0], 7);
+        QCOMPARE(hash[2], 5);
+        QCOMPARE(hash[7], 55);
+    }
+    {
+        // This will use a QMultiHash and then insert that into QHash,
+        // the ordering is undefined so we won't test that but make
+        // sure this isn't adding multiple entries with the same key
+        // to the QHash.
+        QHash<int, int> hash;
+        QMultiHash<int, int> hash2;
+        hash2.insert(0, 5);
+        hash2.insert(0, 6);
+        hash2.insert(0, 7);
+
+        hash.insert(hash2);
+
+        QCOMPARE(hash.count(), 1);
     }
 }
 

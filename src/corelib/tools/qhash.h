@@ -526,6 +526,7 @@ public:
     const_iterator find(const Key &key) const;
     const_iterator constFind(const Key &key) const;
     iterator insert(const Key &key, const T &value);
+    void insert(const QHash &hash);
     iterator insertMulti(const Key &key, const T &value);
     QHash &unite(const QHash &other);
 
@@ -838,6 +839,31 @@ Q_INLINE_TEMPLATE typename QHash<Key, T>::iterator QHash<Key, T>::insert(const K
     if (!std::is_same<T, QHashDummyValue>::value)
         (*node)->value = avalue;
     return iterator(*node);
+}
+
+template <class Key, class T>
+Q_INLINE_TEMPLATE void QHash<Key, T>::insert(const QHash &hash)
+{
+    if (d == hash.d)
+        return;
+
+    detach();
+
+    QHashData::Node *i = hash.d->firstNode();
+    QHashData::Node *end = reinterpret_cast<QHashData::Node *>(hash.e);
+    while (i != end) {
+        Node *n = concrete(i);
+        Node **node = findNode(n->key, n->h);
+        if (*node == e) {
+            if (d->willGrow())
+                node = findNode(n->key, n->h);
+            createNode(n->h, n->key, n->value, node);
+        } else {
+            if (!std::is_same<T, QHashDummyValue>::value)
+                (*node)->value = n->value;
+        }
+        i = QHashData::nextNode(i);
+    }
 }
 
 template <class Key, class T>
