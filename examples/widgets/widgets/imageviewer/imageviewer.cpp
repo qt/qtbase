@@ -151,7 +151,7 @@ static void initializeImageFileDialog(QFileDialog &dialog, QFileDialog::AcceptMo
     QStringList mimeTypeFilters;
     const QByteArrayList supportedMimeTypes = acceptMode == QFileDialog::AcceptOpen
         ? QImageReader::supportedMimeTypes() : QImageWriter::supportedMimeTypes();
-    foreach (const QByteArray &mimeTypeName, supportedMimeTypes)
+    for (const QByteArray &mimeTypeName : supportedMimeTypes)
         mimeTypeFilters.append(mimeTypeName);
     mimeTypeFilters.sort();
     dialog.setMimeTypeFilters(mimeTypeFilters);

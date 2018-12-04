@@ -59,7 +59,9 @@ LocaleSelector::LocaleSelector(QWidget *parent)
     int index = 0;
     for (int _lang = QLocale::C; _lang <= QLocale::LastLanguage; ++_lang) {
         QLocale::Language lang = static_cast<QLocale::Language>(_lang);
-        foreach (const QLocale &l, QLocale::matchingLocales(lang, QLocale::AnyScript, QLocale::AnyCountry)) {
+        const QList<QLocale> locales =
+                QLocale::matchingLocales(lang, QLocale::AnyScript, QLocale::AnyCountry);
+        for (const QLocale &l : locales) {
             QString label = QLocale::languageToString(l.language());
             label += QLatin1Char('/');
             label += QLocale::countryToString(l.country());
