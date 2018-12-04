@@ -1383,15 +1383,18 @@ QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::ge
     ExternalRefCountData *x = new ExternalRefCountData(Qt::Uninitialized);
     x->strongref.store(-1);
     x->weakref.store(2);  // the QWeakPointer that called us plus the QObject itself
-    if (!d->sharedRefcount.testAndSetRelease(0, x)) {
+
+    ExternalRefCountData *ret;
+    if (d->sharedRefcount.testAndSetOrdered(nullptr, x, ret)) {     // ought to be release+acquire; this is acq_rel+acquire
+        ret = x;
+    } else {
         // ~ExternalRefCountData has a Q_ASSERT, so we use this trick to
         // only execute this if Q_ASSERTs are enabled
         Q_ASSERT((x->weakref.store(0), true));
         delete x;
-        x = d->sharedRefcount.loadAcquire();
-        x->weakref.ref();
+        ret->weakref.ref();
     }
-    return x;
+    return ret;
 }
 
 /**

@@ -273,7 +273,13 @@ void QDateTimeEdit::setDate(const QDate &date)
             setDateRange(date, date);
 
         d->clearCache();
-        d->setValue(QDateTime(date, d->value.toTime(), d->spec), EmitIfChanged);
+        QDateTime when(date, d->value.toTime(), d->spec);
+        // The specified time might not exist on the specified day,
+        // i.e. the time is in the gap a spring-forward jumps over.
+        if (!when.isValid())
+            when = QDateTime::fromMSecsSinceEpoch(when.toMSecsSinceEpoch(), d->spec);
+        Q_ASSERT(when.isValid());
+        d->setValue(when, EmitIfChanged);
         d->updateTimeSpec();
     }
 }

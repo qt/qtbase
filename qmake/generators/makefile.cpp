@@ -2325,6 +2325,7 @@ MakefileGenerator::writeHeader(QTextStream &t)
     if (ofile.lastIndexOf(Option::dir_sep) != -1)
         ofile.remove(0, ofile.lastIndexOf(Option::dir_sep) +1);
     t << "MAKEFILE      = " << escapeFilePath(ofile) << endl << endl;
+    t << "EQ            = =\n\n";
 }
 
 QList<MakefileGenerator::SubTarget*>
@@ -2869,6 +2870,7 @@ MakefileGenerator::escapeDependencyPath(const QString &path) const
         static const QRegExp criticalChars(QStringLiteral("([\t #])"));
 #endif
         ret.replace(criticalChars, QStringLiteral("\\\\1"));
+        ret.replace(QLatin1Char('='), QStringLiteral("$(EQ)"));
         debug_msg(2, "escapeDependencyPath: %s -> %s", path.toLatin1().constData(), ret.toLatin1().constData());
     }
     return ret;

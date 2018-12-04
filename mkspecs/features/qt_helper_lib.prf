@@ -34,19 +34,30 @@ THE_TARGET = $$qt5LibraryTarget($$TARGET)
     MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_ext_$${MODULE}.pri
     ucmodule = $$upper($$MODULE)
 
+    win32|CONFIG(static, static|shared) {
+        prefix = $$QMAKE_PREFIX_STATICLIB
+        suffix = $$QMAKE_EXTENSION_STATICLIB
+    } else {
+        prefix = $$QMAKE_PREFIX_SHLIB
+        suffix = $$QMAKE_EXTENSION_SHLIB
+    }
     MODULE_PRI_CONT = \
         "QMAKE_INCDIR_$${ucmodule} = $$val_escape(MODULE_INCLUDEPATH)" \
         "QMAKE_DEFINES_$${ucmodule} = $$val_escape(MODULE_DEFINES)"
     debug_and_release {
-        win32: MODULE_DEBUG_LIBS = -L$$DESTDIR -l$${TARGET}d
-        darwin: MODULE_DEBUG_LIBS = -L$$DESTDIR -l$${TARGET}_debug
-        MODULE_RELEASE_LIBS = -L$$DESTDIR -l$$TARGET
+        win32: \
+            MODULE_DEBUG_LIBS = $$DESTDIR/$$prefix$${TARGET}d.$$suffix
+        else: darwin: \
+            MODULE_DEBUG_LIBS = $$DESTDIR/$$prefix$${TARGET}_debug.$$suffix
+        else: \
+            error("'$$QMAKE_PLATFORM' does not do debug_and_release.")
+        MODULE_RELEASE_LIBS = $$DESTDIR/$$prefix$${TARGET}.$$suffix
         MODULE_PRI_CONT += \
             "QMAKE_LIBS_$${ucmodule} =" \  # Needed for the module to be recognized.
             "QMAKE_LIBS_$${ucmodule}_DEBUG = $$val_escape(MODULE_DEBUG_LIBS)" \
             "QMAKE_LIBS_$${ucmodule}_RELEASE = $$val_escape(MODULE_RELEASE_LIBS)"
     } else {
-        MODULE_LIBS = -L$$DESTDIR -l$$THE_TARGET
+        MODULE_LIBS = $$DESTDIR/$$prefix$${THE_TARGET}.$$suffix
         MODULE_PRI_CONT += \
             "QMAKE_LIBS_$${ucmodule} = $$val_escape(MODULE_LIBS)"
     }

@@ -9,7 +9,6 @@ for(ever) {
             error("Library '$$name' is not defined.")
 
         !contains(use, nolink) {
-            QMAKE_LIBDIR += $$eval(QMAKE_LIBDIR_$$nu)
             debug: \
                 LIBS$${suffix} += $$eval(QMAKE_LIBS_$${nu}_DEBUG) $$eval(QMAKE_LIBS_$$nu)
             else: \

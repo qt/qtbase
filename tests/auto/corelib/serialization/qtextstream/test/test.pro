@@ -3,6 +3,8 @@ TARGET = ../tst_qtextstream
 QT = core network testlib
 SOURCES = ../tst_qtextstream.cpp
 RESOURCES += ../qtextstream.qrc
+INCLUDEPATH += ../../../../../shared/
+HEADERS += ../../../../../shared/emulationdetector.h
 
 win32 {
     CONFIG(debug, debug|release) {

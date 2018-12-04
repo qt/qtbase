@@ -2,10 +2,15 @@ QT += widgets
 requires(qtConfig(filedialog))
 
 HEADERS      += mainwindow.h \
-                previewform.h
+                previewform.h \
+                encodingdialog.h
+
 SOURCES      += main.cpp \
                 mainwindow.cpp \
-                previewform.cpp
+                previewform.cpp \
+                encodingdialog.cpp
+
+RESOURCES    += codecs.qrc
 
 EXAMPLE_FILES = encodedfiles
 

@@ -506,6 +506,8 @@ QImage ICOReader::iconAt(int index)
                 icoAttrib.h = iconEntry.bHeight;
                 if (icoAttrib.h == 0) // means 256 pixels
                     icoAttrib.h = header.biHeight/2;
+                if (icoAttrib.w > 256 || icoAttrib.h > 256) // Max ico size
+                    return img;
 
                 QImage::Format format = QImage::Format_ARGB32;
                 if (icoAttrib.nbits == 24)

@@ -51,6 +51,33 @@ QT_BEGIN_NAMESPACE
 
 // ---------------------- Images ----------------------
 
+CGBitmapInfo qt_mac_bitmapInfoForImage(const QImage &image)
+{
+    CGBitmapInfo bitmapInfo = kCGImageAlphaNone;
+    switch (image.format()) {
+    case QImage::Format_ARGB32:
+        bitmapInfo = kCGImageAlphaFirst | kCGBitmapByteOrder32Host;
+        break;
+    case QImage::Format_RGB32:
+        bitmapInfo = kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host;
+        break;
+    case QImage::Format_RGBA8888_Premultiplied:
+        bitmapInfo = kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big;
+        break;
+    case QImage::Format_RGBA8888:
+        bitmapInfo = kCGImageAlphaLast | kCGBitmapByteOrder32Big;
+        break;
+    case QImage::Format_RGBX8888:
+        bitmapInfo = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big;
+        break;
+    case QImage::Format_ARGB32_Premultiplied:
+        bitmapInfo = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host;
+        break;
+    default: break;
+    }
+    return bitmapInfo;
+}
+
 CGImageRef qt_mac_toCGImage(const QImage &inImage)
 {
     CGImageRef cgImage = inImage.toCGImage();
@@ -153,7 +180,7 @@ QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size)
         return QPixmap();
     [NSGraphicsContext saveGraphicsState];
     [NSGraphicsContext setCurrentContext:gc];
-    [image drawInRect:iconRect fromRect:iconRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
+    [image drawInRect:iconRect fromRect:iconRect operation:NSCompositingOperationSourceOver fraction:1.0 respectFlipped:YES hints:nil];
     [NSGraphicsContext restoreGraphicsState];
     return pixmap;
 }
@@ -362,13 +389,10 @@ QMacCGContext::QMacCGContext(QPaintDevice *paintDevice) : context(0)
     if (!image)
         return; // Context type not supported.
 
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
-    uint flags = kCGImageAlphaPremultipliedFirst;
-    flags |= kCGBitmapByteOrder32Host;
+    QCFType<CGColorSpaceRef> colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+    context = CGBitmapContextCreate(image->bits(), image->width(), image->height(), 8,
+                                image->bytesPerLine(), colorSpace, qt_mac_bitmapInfoForImage(*image));
 
-    context = CGBitmapContextCreate(image->bits(), image->width(), image->height(),
-                                8, image->bytesPerLine(), colorSpace, flags);
-    CFRelease(colorSpace);
     CGContextTranslateCTM(context, 0, image->height());
     const qreal devicePixelRatio = paintDevice->devicePixelRatioF();
     CGContextScaleCTM(context, devicePixelRatio, devicePixelRatio);
@@ -396,16 +420,10 @@ QMacCGContext::QMacCGContext(QPainter *painter) : context(0)
                 devType == QInternal::Pixmap ||
                 devType == QInternal::Image)) {
 
-        CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
-        uint flags = kCGImageAlphaPremultipliedFirst;
-#ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
-        flags |= kCGBitmapByteOrder32Host;
-#endif
         const QImage *image = static_cast<const QImage *>(paintEngine->paintDevice());
-
-        context = CGBitmapContextCreate((void *)image->bits(), image->width(), image->height(),
-                                        8, image->bytesPerLine(), colorSpace, flags);
-        CFRelease(colorSpace);
+        QCFType<CGColorSpaceRef> colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+        context = CGBitmapContextCreate((void *)image->bits(), image->width(), image->height(), 8,
+                                        image->bytesPerLine(), colorSpace, qt_mac_bitmapInfoForImage(*image));
 
         // Invert y axis
         CGContextTranslateCTM(context, 0, image->height());

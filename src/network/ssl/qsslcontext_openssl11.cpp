@@ -97,24 +97,20 @@ init_context:
         unsupportedProtocol = true;
     } else {
         switch (sslContext->sslConfiguration.protocol()) {
-#if QT_CONFIG(dtls)
         case QSsl::DtlsV1_0:
         case QSsl::DtlsV1_0OrLater:
         case QSsl::DtlsV1_2:
         case QSsl::DtlsV1_2OrLater:
+#if QT_CONFIG(dtls)
             isDtls = true;
             sslContext->ctx = q_SSL_CTX_new(client ? q_DTLS_client_method() : q_DTLS_server_method());
-            break;
 #else // dtls
-        case QSsl::DtlsV1_0:
-        case QSsl::DtlsV1_0OrLater:
-        case QSsl::DtlsV1_2:
-        case QSsl::DtlsV1_2OrLater:
             sslContext->ctx = nullptr;
             unsupportedProtocol = true;
             qCWarning(lcSsl, "DTLS protocol requested, but feature 'dtls' is disabled");
-            break;
+
 #endif // dtls
+            break;
         case QSsl::TlsV1_3:
         case QSsl::TlsV1_3OrLater:
 #if !defined(TLS1_3_VERSION)

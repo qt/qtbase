@@ -63,6 +63,8 @@
 
 #include <QtGui/private/qcoregraphics_p.h>
 
+#include <QtFontDatabaseSupport/private/qfontengine_coretext_p.h>
+
 #ifdef QT_WIDGETS_LIB
 #include <QtWidgets/qtwidgetsglobal.h>
 #if QT_CONFIG(filedialog)
@@ -477,7 +479,7 @@ QCocoaServices *QCocoaIntegration::services() const
 QVariant QCocoaIntegration::styleHint(StyleHint hint) const
 {
     if (hint == QPlatformIntegration::FontSmoothingGamma)
-        return 2.0;
+        return QCoreTextFontEngine::fontSmoothingGamma();
 
     return QPlatformIntegration::styleHint(hint);
 }

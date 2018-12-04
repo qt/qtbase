@@ -365,9 +365,13 @@ defineTest(qtConfTest_linkerSupportsFlag) {
 }
 
 defineReplace(qtConfFindInPathList) {
+    # This nesting is consistent with Apple ld -search_paths_first,
+    # and presumably with GNU ld (no actual documentation found).
     for (dir, 2) {
-        exists("$$dir/$${1}"): \
-            return("$$dir/$${1}")
+        for (file, 1) {
+            exists("$$dir/$$file"): \
+                return("$$dir/$$file")
+        }
     }
     return()
 }
@@ -488,6 +492,110 @@ defineTest(qtConfSetupLibraries) {
     }
 }
 
+# libs-var, libs, in-paths, out-paths-var
+defineTest(qtConfResolveLibs) {
+    ret = true
+    paths = $$3
+    out =
+    copy = false
+    for (l, 2) {
+        $$copy {
+            copy = false
+            out += $$l
+        } else: equals(l, "-s") {
+            # em++ flag to link libraries from emscripten-ports; passed on literally.
+            copy = true
+            out += $$l
+        } else: contains(l, "^-L.*") {
+            lp = $$replace(l, "^-L", )
+            !exists($$lp/.) {
+                qtLog("Library path $$val_escape(lp) is invalid.")
+                ret = false
+            } else {
+                paths += $$lp
+            }
+        } else: contains(l, "^-l.*") {
+            lib = $$replace(l, "^-l", )
+            lcan =
+            unix {
+                # Under UNIX, we look for actual shared libraries, in addition
+                # to static ones.
+                lcan += \
+                    $${QMAKE_PREFIX_SHLIB}$${lib}.$${QMAKE_EXTENSION_SHLIB} \
+                    $${QMAKE_PREFIX_STATICLIB}$${lib}.$${QMAKE_EXTENSION_STATICLIB}
+            } else {
+                # Under Windows, we look only for static libraries, as even for DLLs
+                # one actually links against a static import library.
+                mingw {
+                    lcan += \
+                        # MinGW supports UNIX-style library naming in addition to
+                        # the MSVC style.
+                        lib$${lib}.dll.a lib$${lib}.a \
+                        # Fun fact: prefix-less libraries are also supported.
+                        $${lib}.dll.a $${lib}.a
+                }
+                lcan += $${lib}.lib
+            }
+            l = $$qtConfFindInPathList($$lcan, $$paths $$EXTRA_LIBDIR $$QMAKE_DEFAULT_LIBDIRS)
+            isEmpty(l) {
+                qtLog("None of [$$val_escape(lcan)] found in [$$val_escape(paths)] and global paths.")
+                ret = false
+            } else {
+                out += $$l
+            }
+        } else {
+            out += $$l
+        }
+    }
+    $$1 = $$out
+    export($$1)
+    !isEmpty(4) {
+        $$4 = $$paths
+        export($$4)
+    }
+    return($$ret)
+}
+
+# source-var
+defineTest(qtConfResolveAllLibs) {
+    ret = true
+    !qtConfResolveLibs($${1}.libs, $$eval($${1}.libs), , $${1}.libdirs): \
+        ret = false
+    for (b, $${1}.builds._KEYS_): \
+        !qtConfResolveLibs($${1}.builds.$${b}, $$eval($${1}.builds.$${b}), $$eval($${1}.libdirs), ): \
+            ret = false
+    return($$ret)
+}
+
+# libs-var, in-paths, libs
+defineTest(qtConfResolvePathLibs) {
+    ret = true
+    for (libdir, 2) {
+        !exists($$libdir/.) {
+            qtLog("Library path $$val_escape(libdir) is invalid.")
+            ret = false
+        }
+    }
+    !qtConfResolveLibs($$1, $$3, $$2): \
+        ret = false
+    return($$ret)
+}
+
+# includes-var, includes
+defineTest(qtConfResolvePathIncs) {
+    ret = true
+    for (incdir, 2) {
+        !exists($$incdir/.) {
+            qtLog("Include path $$val_escape(incdir) is invalid.")
+            ret = false
+        }
+    }
+    2 -= $$QMAKE_DEFAULT_INCDIRS
+    $$1 = $$2
+    export($$1)
+    return($$ret)
+}
+
 # the library is specified inline in a 'libs' field.
 # overrides from the command line are accepted.
 defineTest(qtConfLibrary_inline) {
@@ -517,7 +625,6 @@ defineTest(qtConfLibrary_inline) {
         vars += $$eval(config.commandline.rev_assignments.$${iv})
         defined(config.input.$${iv}, var) {
             eval($${1}.builds.$${b} = $$eval(config.input.$${iv}))
-            export($${1}.builds.$${b})
             $${1}.builds._KEYS_ *= $${b}
             any = true
         } else {
@@ -532,35 +639,30 @@ defineTest(qtConfLibrary_inline) {
         export($${1}.builds._KEYS_)
         # we also reset the generic libs, to avoid surprises.
         $${1}.libs =
-        export($${1}.libs)
     }
 
     # direct libs. overwrites inline libs.
-    defined(config.input.$${input}.libs, var) {
+    defined(config.input.$${input}.libs, var): \
         eval($${1}.libs = $$eval(config.input.$${input}.libs))
-        export($${1}.libs)
-    }
+
+    includes = $$eval(config.input.$${input}.incdir)
 
     # prefix. prepends to (possibly overwritten) inline libs.
     prefix = $$eval(config.input.$${input}.prefix)
     !isEmpty(prefix) {
-        $${1}.includedir = $$prefix/include
-        export($${1}.includedir)
+        includes += $$prefix/include
         $${1}.libs = -L$$prefix/lib $$eval($${1}.libs)
-        export($${1}.libs)
-    }
-
-    incdir = $$eval(config.input.$${input}.incdir)
-    !isEmpty(incdir) {
-        $${1}.includedir = $$incdir
-        export($${1}.includedir)
     }
 
     libdir = $$eval(config.input.$${input}.libdir)
-    !isEmpty(libdir) {
+    !isEmpty(libdir): \
         $${1}.libs = -L$$libdir $$eval($${1}.libs)
-        export($${1}.libs)
-    }
+
+    !qtConfResolveAllLibs($$1): \
+        return(false)
+
+    !qtConfResolvePathIncs($${1}.includedir, $$includes): \
+        return(false)
 
     return(true)
 }
@@ -572,17 +674,13 @@ defineTest(qtConfLibrary_makeSpec) {
     isEmpty(spec): \
         error("makeSpec source in library '$$eval($${1}.library)' does not specify 'spec'.")
 
-    $${1}.includedir = $$eval(QMAKE_INCDIR_$$spec)
-    export($${1}.includedir)
-    $${1}.libs =
-    for (l, QMAKE_LIBDIR_$$spec): \
-        $${1}.libs += -L$$l
-    $${1}.libs += $$eval(QMAKE_LIBS_$$spec)
-    export($${1}.libs)
+    !qtConfResolvePathLibs($${1}.libs, $$eval(QMAKE_LIBDIR_$$spec), $$eval(QMAKE_LIBS_$$spec)): \
+        return(false)
 
-    # the library definition is always in scope, so no point in exporting it.
-    $${1}.export = false
-    export($${1}.export)
+    !qtConfResolvePathIncs($${1}.includedir, $$eval(QMAKE_INCDIR_$$spec)): \
+        return(false)
+
+    # note that the object is re-exported, because we resolve the libraries.
 
     return(true)
 }
@@ -602,13 +700,15 @@ defineTest(qtConfLibrary_pkgConfig) {
     }
 
     qtRunLoggedCommand("$$pkg_config --modversion $$args", version)|return(false)
-    qtRunLoggedCommand("$$pkg_config --libs-only-L $$args", libpaths)|return(false)
-    qtRunLoggedCommand("$$pkg_config --libs-only-l $$args", libs)|return(false)
     version ~= s/[^0-9.].*$//
     $${1}.version = $$first(version)
     export($${1}.version)
-    eval($${1}.libs = $$libpaths $$libs)
-    export($${1}.libs)
+
+    qtRunLoggedCommand("$$pkg_config --libs-only-L $$args", libpaths)|return(false)
+    qtRunLoggedCommand("$$pkg_config --libs-only-l $$args", libs)|return(false)
+    eval(libs = $$libpaths $$libs)
+    !qtConfResolveLibs($${1}.libs, $$libs): \
+        return(false)
 
     qtRunLoggedCommand("$$pkg_config --cflags $$args", $${1}.cflags)|return(false)
     # Split CFLAGS into stuff that goes into DEFINES, INCLUDEPATH, and other stuff.
@@ -633,10 +733,11 @@ defineTest(qtConfLibrary_pkgConfig) {
     }
     !isEmpty(ignored): \
         qtLog("Note: Dropped compiler flags '$$ignored'.")
+    !qtConfResolvePathIncs($${1}.includedir, $$includes): \
+        return(false)
     $${1}.defines = $$defines
     export($${1}.defines)
-    $${1}.includedir = $$includes
-    export($${1}.includedir)
+
     return(true)
 }
 

@@ -64,36 +64,11 @@
 
 #include <algorithm>
 
-// FIXME This workaround can be removed for xcb-icccm > 3.8
-#define class class_name
 #include <xcb/xcb_icccm.h>
-#undef class
 #include <xcb/xfixes.h>
 #include <xcb/shape.h>
 #if QT_CONFIG(xcb_xinput)
 #include <xcb/xinput.h>
-#endif
-
-// xcb-icccm 3.8 support
-#ifdef XCB_ICCCM_NUM_WM_SIZE_HINTS_ELEMENTS
-#define xcb_get_wm_hints_reply xcb_icccm_get_wm_hints_reply
-#define xcb_get_wm_hints xcb_icccm_get_wm_hints
-#define xcb_get_wm_hints_unchecked xcb_icccm_get_wm_hints_unchecked
-#define xcb_set_wm_hints xcb_icccm_set_wm_hints
-#define xcb_set_wm_normal_hints xcb_icccm_set_wm_normal_hints
-#define xcb_size_hints_set_base_size xcb_icccm_size_hints_set_base_size
-#define xcb_size_hints_set_max_size xcb_icccm_size_hints_set_max_size
-#define xcb_size_hints_set_min_size xcb_icccm_size_hints_set_min_size
-#define xcb_size_hints_set_position xcb_icccm_size_hints_set_position
-#define xcb_size_hints_set_resize_inc xcb_icccm_size_hints_set_resize_inc
-#define xcb_size_hints_set_size xcb_icccm_size_hints_set_size
-#define xcb_size_hints_set_win_gravity xcb_icccm_size_hints_set_win_gravity
-#define xcb_wm_hints_set_iconic xcb_icccm_wm_hints_set_iconic
-#define xcb_wm_hints_set_normal xcb_icccm_wm_hints_set_normal
-#define xcb_wm_hints_set_input xcb_icccm_wm_hints_set_input
-#define xcb_wm_hints_t xcb_icccm_wm_hints_t
-#define XCB_WM_STATE_ICONIC XCB_ICCCM_WM_STATE_ICONIC
-#define XCB_WM_STATE_WITHDRAWN XCB_ICCCM_WM_STATE_WITHDRAWN
 #endif
 
 #include <private/qguiapplication_p.h>
@@ -497,11 +472,13 @@ void QXcbWindow::create()
                             clientMachine.size(), clientMachine.constData());
     }
 
-    // Create WM_HINTS property on the window, so we can xcb_get_wm_hints*()
+    // Create WM_HINTS property on the window, so we can xcb_icccm_get_wm_hints*()
     // from various setter functions for adjusting the hints.
-    xcb_wm_hints_t hints;
+    xcb_icccm_wm_hints_t hints;
     memset(&hints, 0, sizeof(hints));
-    xcb_set_wm_hints(xcb_connection(), m_window, &hints);
+    hints.flags = XCB_ICCCM_WM_HINT_WINDOW_GROUP;
+    hints.window_group = connection()->clientLeader();
+    xcb_icccm_set_wm_hints(xcb_connection(), m_window, &hints);
 
     xcb_window_t leader = connection()->clientLeader();
     xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
@@ -1198,7 +1175,7 @@ void QXcbWindow::setWindowState(Qt::WindowStates state)
         event.sequence = 0;
         event.window = m_window;
         event.type = atom(QXcbAtom::WM_CHANGE_STATE);
-        event.data.data32[0] = XCB_WM_STATE_ICONIC;
+        event.data.data32[0] = XCB_ICCCM_WM_STATE_ICONIC;
         event.data.data32[1] = 0;
         event.data.data32[2] = 0;
         event.data.data32[3] = 0;
@@ -1212,14 +1189,14 @@ void QXcbWindow::setWindowState(Qt::WindowStates state)
 
     setNetWmState(state);
 
-    xcb_get_property_cookie_t cookie = xcb_get_wm_hints_unchecked(xcb_connection(), m_window);
-    xcb_wm_hints_t hints;
-    if (xcb_get_wm_hints_reply(xcb_connection(), cookie, &hints, nullptr)) {
+    xcb_get_property_cookie_t cookie = xcb_icccm_get_wm_hints_unchecked(xcb_connection(), m_window);
+    xcb_icccm_wm_hints_t hints;
+    if (xcb_icccm_get_wm_hints_reply(xcb_connection(), cookie, &hints, nullptr)) {
         if (state & Qt::WindowMinimized)
-            xcb_wm_hints_set_iconic(&hints);
+            xcb_icccm_wm_hints_set_iconic(&hints);
         else
-            xcb_wm_hints_set_normal(&hints);
-        xcb_set_wm_hints(xcb_connection(), m_window, &hints);
+            xcb_icccm_wm_hints_set_normal(&hints);
+        xcb_icccm_set_wm_hints(xcb_connection(), m_window, &hints);
     }
 
     connection()->sync();
@@ -1300,14 +1277,14 @@ void QXcbWindow::setTransparentForMouseEvents(bool transparent)
 
 void QXcbWindow::updateDoesNotAcceptFocus(bool doesNotAcceptFocus)
 {
-    xcb_get_property_cookie_t cookie = xcb_get_wm_hints_unchecked(xcb_connection(), m_window);
+    xcb_get_property_cookie_t cookie = xcb_icccm_get_wm_hints_unchecked(xcb_connection(), m_window);
 
-    xcb_wm_hints_t hints;
-    if (!xcb_get_wm_hints_reply(xcb_connection(), cookie, &hints, nullptr))
+    xcb_icccm_wm_hints_t hints;
+    if (!xcb_icccm_get_wm_hints_reply(xcb_connection(), cookie, &hints, nullptr))
         return;
 
-    xcb_wm_hints_set_input(&hints, !doesNotAcceptFocus);
-    xcb_set_wm_hints(xcb_connection(), m_window, &hints);
+    xcb_icccm_wm_hints_set_input(&hints, !doesNotAcceptFocus);
+    xcb_icccm_set_wm_hints(xcb_connection(), m_window, &hints);
 }
 
 WId QXcbWindow::winId() const
@@ -1415,9 +1392,9 @@ void QXcbWindow::propagateSizeHints()
     QWindowPrivate *win = qt_window_private(window());
 
     if (!win->positionAutomatic)
-        xcb_size_hints_set_position(&hints, true, rect.x(), rect.y());
+        xcb_icccm_size_hints_set_position(&hints, true, rect.x(), rect.y());
     if (rect.width() < QWINDOWSIZE_MAX || rect.height() < QWINDOWSIZE_MAX)
-        xcb_size_hints_set_size(&hints, true, rect.width(), rect.height());
+        xcb_icccm_size_hints_set_size(&hints, true, rect.width(), rect.height());
 
     /* Gravity describes how to interpret x and y values the next time
        window needs to be positioned on a screen.
@@ -1426,7 +1403,7 @@ void QXcbWindow::propagateSizeHints()
     auto gravity = win->positionPolicy == QWindowPrivate::WindowFrameInclusive
                    ? XCB_GRAVITY_NORTH_WEST : XCB_GRAVITY_STATIC;
 
-    xcb_size_hints_set_win_gravity(&hints, gravity);
+    xcb_icccm_size_hints_set_win_gravity(&hints, gravity);
 
     QSize minimumSize = windowMinimumSize();
     QSize maximumSize = windowMaximumSize();
@@ -1434,21 +1411,21 @@ void QXcbWindow::propagateSizeHints()
     QSize sizeIncrement = windowSizeIncrement();
 
     if (minimumSize.width() > 0 || minimumSize.height() > 0)
-        xcb_size_hints_set_min_size(&hints,
-                                    qMin(XCOORD_MAX,minimumSize.width()),
-                                    qMin(XCOORD_MAX,minimumSize.height()));
+        xcb_icccm_size_hints_set_min_size(&hints,
+                                          qMin(XCOORD_MAX,minimumSize.width()),
+                                          qMin(XCOORD_MAX,minimumSize.height()));
 
     if (maximumSize.width() < QWINDOWSIZE_MAX || maximumSize.height() < QWINDOWSIZE_MAX)
-        xcb_size_hints_set_max_size(&hints,
-                                    qMin(XCOORD_MAX, maximumSize.width()),
-                                    qMin(XCOORD_MAX, maximumSize.height()));
+        xcb_icccm_size_hints_set_max_size(&hints,
+                                          qMin(XCOORD_MAX, maximumSize.width()),
+                                          qMin(XCOORD_MAX, maximumSize.height()));
 
     if (sizeIncrement.width() > 0 || sizeIncrement.height() > 0) {
-        xcb_size_hints_set_base_size(&hints, baseSize.width(), baseSize.height());
-        xcb_size_hints_set_resize_inc(&hints, sizeIncrement.width(), sizeIncrement.height());
+        xcb_icccm_size_hints_set_base_size(&hints, baseSize.width(), baseSize.height());
+        xcb_icccm_size_hints_set_resize_inc(&hints, sizeIncrement.width(), sizeIncrement.height());
     }
 
-    xcb_set_wm_normal_hints(xcb_connection(), m_window, &hints);
+    xcb_icccm_set_wm_normal_hints(xcb_connection(), m_window, &hints);
 }
 
 void QXcbWindow::requestActivateWindow()
@@ -2255,8 +2232,8 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
             if (reply && reply->format == 32 && reply->type == atom(QXcbAtom::WM_STATE)) {
                 const quint32 *data = (const quint32 *)xcb_get_property_value(reply.get());
                 if (reply->length != 0)
-                    m_minimized = (data[0] == XCB_WM_STATE_ICONIC
-                                   || (data[0] == XCB_WM_STATE_WITHDRAWN && m_minimized));
+                    m_minimized = (data[0] == XCB_ICCCM_WM_STATE_ICONIC
+                                   || (data[0] == XCB_ICCCM_WM_STATE_WITHDRAWN && m_minimized));
             }
         }
         if (m_minimized)

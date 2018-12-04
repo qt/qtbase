@@ -1070,10 +1070,11 @@ QDBusConnectionPrivate::~QDBusConnectionPrivate()
                  "Timer and socket errors will follow and the program will probably crash",
                  qPrintable(name));
 
+    auto lastMode = mode; // reset on connection close
     closeConnection();
     qDeleteAll(cachedMetaObjects);
 
-    if (mode == ClientMode || mode == PeerMode) {
+    if (lastMode == ClientMode || lastMode == PeerMode) {
         // the bus service object holds a reference back to us;
         // we need to destroy it before we finish destroying ourselves
         Q_ASSERT(ref.load() == 0);
@@ -1085,7 +1086,7 @@ QDBusConnectionPrivate::~QDBusConnectionPrivate()
         if (connection)
             q_dbus_connection_unref(connection);
         connection = 0;
-    } else if (mode == ServerMode) {
+    } else if (lastMode == ServerMode) {
         if (server)
             q_dbus_server_unref(server);
         server = 0;

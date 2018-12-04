@@ -306,10 +306,7 @@ Gui, printing, widget options:
     -mtdev ............. Enable mtdev support [auto]
     -tslib ............. Enable tslib support [auto]
     -xcb-xinput ........ Enable XInput2 support [auto]
-    -xkbcommon-x11 ..... Select xkbcommon used in combination with xcb
-                         [system/qt/no]
-    -xkbcommon-evdev ... Enable X-less xkbcommon in combination with libinput
-                         [auto]
+    -xkbcommon ......... Enable key mapping support [auto]
 
   Image formats:
     -gif ............... Enable reading support for GIF [auto]

@@ -105,7 +105,8 @@ QXcbEventQueue::~QXcbEventQueue()
         wait();
     }
 
-    while (xcb_generic_event_t *event = takeFirst())
+    flushBufferedEvents();
+    while (xcb_generic_event_t *event = takeFirst(QEventLoop::AllEvents))
         free(event);
 
     if (m_head && m_head->fromHeap)
@@ -219,6 +220,8 @@ void QXcbEventQueue::run()
             tail->next = qXcbEventNodeFactory(event);
             tail = tail->next;
             m_tail.store(tail, std::memory_order_release);
+        } else {
+            free(event);
         }
     };
 

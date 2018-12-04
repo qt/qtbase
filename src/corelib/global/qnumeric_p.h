@@ -58,14 +58,21 @@
 
 #if defined(Q_CC_MSVC)
 #  include <intrin.h>
-#endif
-
-#if defined(Q_CC_MSVC)
-#include <float.h>
+#  include <float.h>
+#  if defined(Q_PROCESSOR_X86_64) || defined(Q_PROCESSOR_ARM_64)
+#    define Q_INTRINSIC_MUL_OVERFLOW64
+#    define Q_UMULH(v1, v2) __umulh(v1, v2);
+#    define Q_SMULH(v1, v2) __mulh(v1, v2);
+#    pragma intrinsic(__umulh)
+#    pragma intrinsic(__mulh)
+#  endif
 #endif
 
 # if defined(Q_OS_INTEGRITY) && defined(Q_PROCESSOR_ARM_64)
 #include <arm64_ghs.h>
+#  define Q_INTRINSIC_MUL_OVERFLOW64
+#  define Q_UMULH(v1, v2) __MULUH64(v1, v2);
+#  define Q_SMULH(v1, v2) __MULSH64(v1, v2);
 #endif
 
 #if !defined(Q_CC_MSVC) && (defined(Q_OS_QNX) || defined(Q_CC_INTEL))
@@ -327,26 +334,26 @@ mul_overflow(T v1, T v2, T *r)
     return lr > std::numeric_limits<T>::max() || lr < std::numeric_limits<T>::min();
 }
 
-# if defined(Q_OS_INTEGRITY) && defined(Q_PROCESSOR_ARM_64)
+# if defined(Q_INTRINSIC_MUL_OVERFLOW64)
 template <> inline bool mul_overflow(quint64 v1, quint64 v2, quint64 *r)
 {
     *r = v1 * v2;
-    return __MULUH64(v1, v2);
+    return Q_UMULH(v1, v2);
 }
 template <> inline bool mul_overflow(qint64 v1, qint64 v2, qint64 *r)
 {
-    qint64 high = __MULSH64(v1, v2);
-    if (high == 0) {
-        *r = v1 * v2;
-        return *r < 0;
-    }
-    if (high == -1) {
-        *r = v1 * v2;
-        return *r >= 0;
-    }
-    return true;
+    // This is slightly more complex than the unsigned case above: the sign bit
+    // of 'low' must be replicated as the entire 'high', so the only valid
+    // values for 'high' are 0 and -1. Use unsigned multiply since it's the same
+    // as signed for the low bits and use a signed right shift to verify that
+    // 'high' is nothing but sign bits that match the sign of 'low'.
+
+    qint64 high = __mulh(v1, v2);
+    *r = qint64(quint64(v1) * quint64(v2));
+    return (*r >> 63) != high;
 }
 
+#   if defined(Q_OS_INTEGRITY) && defined(Q_PROCESSOR_ARM_64)
 template <> inline bool mul_overflow(uint64_t v1, uint64_t v2, uint64_t *r)
 {
     return mul_overflow<quint64>(v1,v2,reinterpret_cast<quint64*>(r));
@@ -356,8 +363,8 @@ template <> inline bool mul_overflow(int64_t v1, int64_t v2, int64_t *r)
 {
     return mul_overflow<qint64>(v1,v2,reinterpret_cast<qint64*>(r));
 }
-
-#endif
+#    endif // OS_INTEGRITY ARM64
+#  endif // Q_INTRINSIC_MUL_OVERFLOW64
 
 #  if defined(Q_CC_MSVC) && defined(Q_PROCESSOR_X86)
 // We can use intrinsics for the unsigned operations with MSVC
@@ -369,37 +376,8 @@ template <> inline bool add_overflow(unsigned v1, unsigned v2, unsigned *r)
 #    if defined(Q_PROCESSOR_X86_64)
 template <> inline bool add_overflow(quint64 v1, quint64 v2, quint64 *r)
 { return _addcarry_u64(0, v1, v2, reinterpret_cast<unsigned __int64 *>(r)); }
-
-#    pragma intrinsic(_umul128)
-template <> inline bool mul_overflow(quint64 v1, quint64 v2, quint64 *r)
-{
-    // use 128-bit multiplication with the _umul128 intrinsic
-    // https://msdn.microsoft.com/en-us/library/3dayytw9.aspx
-    quint64 high;
-    *r = _umul128(v1, v2, &high);
-    return high;
-}
-
-#    pragma intrinsic(_mul128)
-template <> inline bool mul_overflow(qint64 v1, qint64 v2, qint64 *r)
-{
-    // Use 128-bit multiplication with the _mul128 intrinsic
-    // https://msdn.microsoft.com/en-us/library/82cxdw50.aspx
-
-    // This is slightly more complex than the unsigned case above: the sign bit
-    // of 'low' must be replicated as the entire 'high', so the only valid
-    // values for 'high' are 0 and -1.
-
-    qint64 high;
-    *r = _mul128(v1, v2, &high);
-    if (high == 0)
-        return *r < 0;
-    if (high == -1)
-        return *r >= 0;
-    return true;
-}
 #    endif // x86-64
-#  endif // MSVC x86
+#  endif // MSVC X86
 #endif // !GCC
 }
 #endif // Q_CLANG_QDOC
