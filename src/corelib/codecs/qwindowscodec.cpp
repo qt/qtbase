@@ -179,7 +179,7 @@ QString QWindowsLocalCodec::convertToUnicodeCharByChar(const char *chars, int le
 #else
     QString s;
     size_t size = mbstowcs(NULL, mb, length);
-    if (size < 0) {
+    if (size == size_t(-1)) {
         Q_ASSERT("Error in CE TextCodec");
         return QString();
     }
