@@ -896,23 +896,6 @@ void QMenuPrivate::_q_overrideMenuActionDestroyed()
     menuAction=defaultMenuAction;
 }
 
-void QMenuPrivate::adjustMenuScreen(const QPoint &p)
-{
-    Q_Q(QMenu);
-    // The windowHandle must point to the screen where the menu will be shown.
-    // The (item) size calculations depend on the menu screen,
-    // so a wrong screen would often cause wrong sizes (on high DPI)
-    const QScreen *currentScreen = q->windowHandle() ? q->windowHandle()->screen() : nullptr;
-    QScreen *actualScreen = QGuiApplication::screenAt(p);
-    if (actualScreen && currentScreen != actualScreen) {
-        if (!q->windowHandle()) // Try to create a window handle if not created.
-            createWinId();
-        if (q->windowHandle())
-            q->windowHandle()->setScreen(actualScreen);
-        itemsDirty = true;
-    }
-}
-
 void QMenuPrivate::updateLayoutDirection()
 {
     Q_Q(QMenu);
@@ -2375,7 +2358,8 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     d->motions = 0;
     d->doChildEffects = true;
     d->updateLayoutDirection();
-    d->adjustMenuScreen(p);
+    // Ensure that we get correct sizeHints by placing this window on the right screen.
+    d->setScreenForPoint(p);
 
     const bool contextMenu = d->isContextMenu();
     if (d->lastContextMenu != contextMenu) {
