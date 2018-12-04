@@ -321,6 +321,11 @@ void QWindowsScreen::handleChanges(const QWindowsScreenData &newData)
     }
 }
 
+HMONITOR QWindowsScreen::handle() const
+{
+    return m_data.hMonitor;
+}
+
 QRect QWindowsScreen::virtualGeometry(const QPlatformScreen *screen) // cf QScreen::virtualGeometry()
 {
     QRect result;

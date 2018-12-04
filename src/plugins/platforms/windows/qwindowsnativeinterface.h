@@ -74,6 +74,7 @@ public:
     void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) override;
 #endif
     void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) override;
+    void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen) override;
 #ifndef QT_NO_CURSOR
     void *nativeResourceForCursor(const QByteArray &resource, const QCursor &cursor) override;
 #endif
