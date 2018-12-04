@@ -202,13 +202,7 @@
     \snippet draganddrop/dropsite/dropsitewindow.cpp updateFormatsTable() part1
 
     Once we are sure that \c mimeData is valid, we iterate through its
-    supported formats using the \l{The foreach Keyword}{foreach keyword}.
-    This keyword has the following format:
-
-    \include code/doc_src_examples_dropsite.qdoc 0
-
-    In our example, \c format is the \a variable and the \a container is a
-    QStringList, obtained from \c mimeData->formats().
+    supported formats.
 
     \note The \l{QMimeData::formats()}{formats()} function returns a
     QStringList object, containing all the formats supported by the
