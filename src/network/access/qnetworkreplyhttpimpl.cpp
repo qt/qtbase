@@ -1676,12 +1676,12 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
                 || header == "content-range"
                 || header == "content-type")
                 continue;
-
-            // For MS servers that send "Content-Length: 0" on 304 responses
-            // ignore this too
-            if (header == "content-length")
-                continue;
         }
+
+        // IIS has been known to send "Content-Length: 0" on 304 responses, so
+        // ignore this too
+        if (header == "content-length" && statusCode == 304)
+            continue;
 
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
         QByteArray n = q->rawHeader(header);
