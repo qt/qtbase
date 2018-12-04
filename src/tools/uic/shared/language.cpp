@@ -50,4 +50,95 @@ QTextStream &operator<<(QTextStream &str, const closeQtConfig &c)
     return str;
 }
 
+struct EnumLookup
+{
+    int value;
+    const char *valueString;
+};
+
+template <int N>
+const char *lookupEnum(const EnumLookup(&array)[N], int value, int defaultIndex = 0)
+{
+    for (int i = 0; i < N; ++i) {
+        if (value == array[i].value)
+            return array[i].valueString;
+    }
+    const char *defaultValue = array[defaultIndex].valueString;
+    qWarning("uic: Warning: Invalid enumeration value %d, defaulting to %s",
+             value, defaultValue);
+    return defaultValue;
+}
+
+const char *toolbarArea(int v)
+{
+    static const EnumLookup toolBarAreas[] =
+    {
+        {0,   "NoToolBarArea"},
+        {0x1, "LeftToolBarArea"},
+        {0x2, "RightToolBarArea"},
+        {0x4, "TopToolBarArea"},
+        {0x8, "BottomToolBarArea"},
+        {0xf, "AllToolBarAreas"}
+    };
+    return lookupEnum(toolBarAreas, v);
+}
+
+const char *sizePolicy(int v)
+{
+    static const EnumLookup sizePolicies[] =
+    {
+        {0,   "Fixed"},
+        {0x1, "Minimum"},
+        {0x4, "Maximum"},
+        {0x5, "Preferred"},
+        {0x3, "MinimumExpanding"},
+        {0x7, "Expanding"},
+        {0xD, "Ignored"}
+    };
+    return lookupEnum(sizePolicies, v, 3);
+}
+
+const char *dockWidgetArea(int v)
+{
+    static const EnumLookup dockWidgetAreas[] =
+    {
+        {0,   "NoDockWidgetArea"},
+        {0x1, "LeftDockWidgetArea"},
+        {0x2, "RightDockWidgetArea"},
+        {0x4, "TopDockWidgetArea"},
+        {0x8, "BottomDockWidgetArea"},
+        {0xf, "AllDockWidgetAreas"}
+    };
+    return lookupEnum(dockWidgetAreas, v);
+}
+
+const char *paletteColorRole(int v)
+{
+    static const EnumLookup colorRoles[] =
+    {
+        {0, "WindowText"},
+        {1, "Button"},
+        {2, "Light"},
+        {3, "Midlight"},
+        {4, "Dark"},
+        {5, "Mid"},
+        {6, "Text"},
+        {7, "BrightText"},
+        {8, "ButtonText"},
+        {9, "Base"},
+        {10, "Window"},
+        {11, "Shadow"},
+        {12, "Highlight"},
+        {13, "HighlightedText"},
+        {14, "Link"},
+        {15, "LinkVisited"},
+        {16, "AlternateBase"},
+        {17, "NoRole"},
+        {18, "ToolTipBase"},
+        {19, "ToolTipText"},
+        {20, "PlaceholderText"},
+    };
+    return lookupEnum(colorRoles, v);
+}
+
 } // namespace language

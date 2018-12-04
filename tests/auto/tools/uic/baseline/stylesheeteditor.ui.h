@@ -73,7 +73,7 @@ public:
 
         styleCombo = new QComboBox(StyleSheetEditor);
         styleCombo->setObjectName(QString::fromUtf8("styleCombo"));
-        QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(0));
+        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(styleCombo->sizePolicy().hasHeightForWidth());
@@ -83,7 +83,7 @@ public:
 
         label_7 = new QLabel(StyleSheetEditor);
         label_7->setObjectName(QString::fromUtf8("label_7"));
-        QSizePolicy sizePolicy1(static_cast<QSizePolicy::Policy>(0), static_cast<QSizePolicy::Policy>(5));
+        QSizePolicy sizePolicy1(QSizePolicy::Fixed, QSizePolicy::Preferred);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(label_7->sizePolicy().hasHeightForWidth());

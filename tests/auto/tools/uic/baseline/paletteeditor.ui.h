@@ -81,7 +81,7 @@ public:
         if (qdesigner_internal__PaletteEditor->objectName().isEmpty())
             qdesigner_internal__PaletteEditor->setObjectName(QString::fromUtf8("qdesigner_internal__PaletteEditor"));
         qdesigner_internal__PaletteEditor->resize(365, 409);
-        QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(7), static_cast<QSizePolicy::Policy>(7));
+        QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(qdesigner_internal__PaletteEditor->sizePolicy().hasHeightForWidth());
@@ -108,7 +108,7 @@ public:
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         buildButton = new QtColorButton(advancedBox);
         buildButton->setObjectName(QString::fromUtf8("buildButton"));
-        QSizePolicy sizePolicy1(static_cast<QSizePolicy::Policy>(7), static_cast<QSizePolicy::Policy>(13));
+        QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Ignored);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(buildButton->sizePolicy().hasHeightForWidth());
@@ -143,7 +143,7 @@ public:
 
         GroupBox126 = new QGroupBox(qdesigner_internal__PaletteEditor);
         GroupBox126->setObjectName(QString::fromUtf8("GroupBox126"));
-        QSizePolicy sizePolicy2(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(7));
+        QSizePolicy sizePolicy2(QSizePolicy::Preferred, QSizePolicy::Expanding);
         sizePolicy2.setHorizontalStretch(0);
         sizePolicy2.setVerticalStretch(0);
         sizePolicy2.setHeightForWidth(GroupBox126->sizePolicy().hasHeightForWidth());

@@ -39,7 +39,7 @@ public:
         if (NicknameDialog->objectName().isEmpty())
             NicknameDialog->setObjectName(QString::fromUtf8("NicknameDialog"));
         NicknameDialog->resize(396, 105);
-        QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(1), static_cast<QSizePolicy::Policy>(1));
+        QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(NicknameDialog->sizePolicy().hasHeightForWidth());

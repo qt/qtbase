@@ -45,35 +45,26 @@
 QT_BEGIN_NAMESPACE
 
 namespace {
-    // Fixup an enumeration name from class Qt.
-    // They are currently stored as "BottomToolBarArea" instead of "Qt::BottomToolBarArea".
-    // due to MO issues. This might be fixed in the future.
-    QLatin1String qtEnumerationPrefix(const QString &name) {
-        static const QLatin1String prefix("Qt::");
-        if (name.indexOf(prefix) != 0)
-            return prefix;
-        return QLatin1String();
-    }
     // figure out the toolbar area of a DOM attrib list.
     // By legacy, it is stored as an integer. As of 4.3.0, it is the enumeration value.
     QString toolBarAreaStringFromDOMAttributes(const CPP::WriteInitialization::DomPropertyMap &attributes) {
         const DomProperty *pstyle = attributes.value(QLatin1String("toolBarArea"));
+        QString result;
         if (!pstyle)
-            return QString();
-
+            return result;
         switch (pstyle->kind()) {
-        case DomProperty::Number: {
-            return QLatin1String("static_cast<Qt::ToolBarArea>(")
-                   + QString::number(pstyle->elementNumber()) + QLatin1String("), ");
-        }
-        case DomProperty::Enum: {
-            const QString area = pstyle->elementEnum();
-            return qtEnumerationPrefix(area) + area + QLatin1String(", ");
-        }
+        case DomProperty::Number:
+            result = QLatin1String(language::toolbarArea(pstyle->elementNumber()));
+            break;
+        case DomProperty::Enum:
+            result = pstyle->elementEnum();
+            break;
         default:
             break;
         }
-        return QString();
+        if (!result.startsWith(QLatin1String("Qt::")))
+            result.prepend(QLatin1String("Qt::"));
+        return result + QLatin1String(", ");
     }
 
     // Write a statement to create a spacer item.
@@ -681,7 +672,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
         } else if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QDockWidget"))) {
             m_output << m_indent << parentWidget << "->addDockWidget(";
             if (DomProperty *pstyle = attributes.value(QLatin1String("dockWidgetArea")))
-                m_output << "static_cast<Qt::DockWidgetArea>(" << pstyle->elementNumber() << "), ";
+                m_output << "Qt::" << language::dockWidgetArea(pstyle->elementNumber()) << ", ";
             m_output << varName << ");\n";
         } else if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QStatusBar"))) {
             m_output << m_indent << parentWidget << "->setStatusBar(" << varName << ");\n";
@@ -1509,8 +1500,8 @@ QString  WriteInitialization::writeSizePolicy(const DomSizePolicy *sp)
     m_output << m_indent << "QSizePolicy " << spName;
     do {
         if (sp->hasElementHSizeType() && sp->hasElementVSizeType()) {
-            m_output << "(static_cast<QSizePolicy::Policy>(" << sp->elementHSizeType()
-                << "), static_cast<QSizePolicy::Policy>(" << sp->elementVSizeType() << "));\n";
+            m_output << "(QSizePolicy::" << language::sizePolicy(sp->elementHSizeType())
+                << ", QSizePolicy::" << language::sizePolicy(sp->elementVSizeType()) << ");\n";
             break;
         }
         if (sp->hasAttributeHSizeType() && sp->hasAttributeVSizeType()) {
@@ -1767,7 +1758,7 @@ void WriteInitialization::writeColorGroup(DomColorGroup *colorGroup, const QStri
         const DomColor *color = colors.at(i);
 
         m_output << m_indent << paletteName << ".setColor(" << group
-            << ", " << "static_cast<QPalette::ColorRole>(" << i << ')'
+            << ", QPalette::" << language::paletteColorRole(i)
             << ", " << domColor2QString(color)
             << ");\n";
     }

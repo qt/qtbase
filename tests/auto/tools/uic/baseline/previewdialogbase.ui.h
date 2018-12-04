@@ -70,7 +70,7 @@ public:
 
         paperSizeCombo = new QComboBox(PreviewDialogBase);
         paperSizeCombo->setObjectName(QString::fromUtf8("paperSizeCombo"));
-        QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(1), static_cast<QSizePolicy::Policy>(0));
+        QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(paperSizeCombo->sizePolicy().hasHeightForWidth());
@@ -115,7 +115,7 @@ public:
 
         previewArea = new QScrollArea(PreviewDialogBase);
         previewArea->setObjectName(QString::fromUtf8("previewArea"));
-        QSizePolicy sizePolicy1(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(5));
+        QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Preferred);
         sizePolicy1.setHorizontalStretch(1);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(previewArea->sizePolicy().hasHeightForWidth());
@@ -135,7 +135,7 @@ public:
         progressBar = new QProgressBar(PreviewDialogBase);
         progressBar->setObjectName(QString::fromUtf8("progressBar"));
         progressBar->setEnabled(false);
-        QSizePolicy sizePolicy2(static_cast<QSizePolicy::Policy>(7), static_cast<QSizePolicy::Policy>(0));
+        QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Fixed);
         sizePolicy2.setHorizontalStretch(1);
         sizePolicy2.setVerticalStretch(0);
         sizePolicy2.setHeightForWidth(progressBar->sizePolicy().hasHeightForWidth());

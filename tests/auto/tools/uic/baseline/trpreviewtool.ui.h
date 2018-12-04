@@ -117,7 +117,7 @@ public:
         mainToolBar = new QToolBar(TrPreviewToolClass);
         mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
         mainToolBar->setOrientation(Qt::Horizontal);
-        TrPreviewToolClass->addToolBar(static_cast<Qt::ToolBarArea>(4), mainToolBar);
+        TrPreviewToolClass->addToolBar(Qt::TopToolBarArea, mainToolBar);
         statusBar = new QStatusBar(TrPreviewToolClass);
         statusBar->setObjectName(QString::fromUtf8("statusBar"));
         TrPreviewToolClass->setStatusBar(statusBar);
@@ -138,7 +138,7 @@ public:
         vboxLayout->addWidget(viewForms);
 
         dwForms->setWidget(dockWidgetContents);
-        TrPreviewToolClass->addDockWidget(static_cast<Qt::DockWidgetArea>(1), dwForms);
+        TrPreviewToolClass->addDockWidget(Qt::LeftDockWidgetArea, dwForms);
 
         menuBar->addAction(menuFile->menuAction());
         menuBar->addAction(menuView->menuAction());

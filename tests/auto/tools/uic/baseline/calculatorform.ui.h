@@ -45,7 +45,7 @@ public:
         if (CalculatorForm->objectName().isEmpty())
             CalculatorForm->setObjectName(QString::fromUtf8("CalculatorForm"));
         CalculatorForm->resize(276, 98);
-        QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(5));
+        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(CalculatorForm->sizePolicy().hasHeightForWidth());

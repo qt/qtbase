@@ -117,7 +117,7 @@ public:
 
         editFind = new QLineEdit(frameFind);
         editFind->setObjectName(QString::fromUtf8("editFind"));
-        QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(0), static_cast<QSizePolicy::Policy>(0));
+        QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(editFind->sizePolicy().hasHeightForWidth());

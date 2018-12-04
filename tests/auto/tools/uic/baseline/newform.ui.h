@@ -93,7 +93,7 @@ public:
 
         lblPreview = new QLabel(NewForm);
         lblPreview->setObjectName(QString::fromUtf8("lblPreview"));
-        QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(7), static_cast<QSizePolicy::Policy>(5));
+        QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(lblPreview->sizePolicy().hasHeightForWidth());

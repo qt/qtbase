@@ -92,7 +92,7 @@ public:
         if (qdesigner_internal__PreviewWidget->objectName().isEmpty())
             qdesigner_internal__PreviewWidget->setObjectName(QString::fromUtf8("qdesigner_internal__PreviewWidget"));
         qdesigner_internal__PreviewWidget->resize(471, 251);
-        QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(1), static_cast<QSizePolicy::Policy>(1));
+        QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(qdesigner_internal__PreviewWidget->sizePolicy().hasHeightForWidth());

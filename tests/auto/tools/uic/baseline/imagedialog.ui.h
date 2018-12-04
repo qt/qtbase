@@ -86,7 +86,7 @@ public:
         colorDepthCombo = new QComboBox(dialog);
         colorDepthCombo->setObjectName(QString::fromUtf8("colorDepthCombo"));
         colorDepthCombo->setGeometry(QRect(74, 83, 227, 22));
-        QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(0));
+        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(colorDepthCombo->sizePolicy().hasHeightForWidth());
@@ -98,7 +98,7 @@ public:
         nameLineEdit = new QLineEdit(dialog);
         nameLineEdit->setObjectName(QString::fromUtf8("nameLineEdit"));
         nameLineEdit->setGeometry(QRect(74, 83, 227, 22));
-        QSizePolicy sizePolicy1(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(0));
+        QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Fixed);
         sizePolicy1.setHorizontalStretch(1);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(nameLineEdit->sizePolicy().hasHeightForWidth());

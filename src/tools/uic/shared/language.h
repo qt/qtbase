@@ -71,6 +71,11 @@ public:
 
 QTextStream &operator<<(QTextStream &, const closeQtConfig &c);
 
+const char *toolbarArea(int v);
+const char *sizePolicy(int v);
+const char *dockWidgetArea(int v);
+const char *paletteColorRole(int v);
+
 } // namespace language
 
 #endif // LANGUAGE_H
