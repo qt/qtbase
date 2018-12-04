@@ -177,6 +177,14 @@ struct QFontNames
     QString preferredStyle; // e.g. "Condensed Italic"
 };
 
+struct QFontValues
+{
+    quint16 weight = 0;
+    bool isItalic = false;
+    bool isOverstruck = false;
+    bool isUnderlined = false;
+};
+
 bool qt_localizedName(const QString &name);
 QString qt_getEnglishName(const QString &familyName, bool includeStyle = false);
 QFontNames qt_getCanonicalFontNames(const LOGFONT &lf);

@@ -110,6 +110,12 @@ public:
 
     ~QWidgetLineControl()
     {
+        // If this control is used for password input, we don't want the
+        // password data to stay in the process memory, therefore we need
+        // to zero it out
+        if (m_echoMode != QLineEdit::Normal)
+            m_text.fill('\0');
+
         delete [] m_maskData;
     }
 

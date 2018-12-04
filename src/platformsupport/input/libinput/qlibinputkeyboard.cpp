@@ -44,7 +44,7 @@
 #include <QtGui/private/qinputdevicemanager_p.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <libinput.h>
-#ifndef QT_NO_XKBCOMMON_EVDEV
+#if QT_CONFIG(xkbcommon)
 #include <xkbcommon/xkbcommon-keysyms.h>
 #include <xkbcommon/xkbcommon-names.h>
 #endif
@@ -56,7 +56,7 @@ Q_DECLARE_LOGGING_CATEGORY(qLcLibInput)
 const int REPEAT_DELAY = 500;
 const int REPEAT_RATE = 100;
 
-#ifndef QT_NO_XKBCOMMON_EVDEV
+#if QT_CONFIG(xkbcommon)
 struct KeyTabEntry {
     int xkbkey;
     int qtkey;
@@ -132,14 +132,14 @@ static const KeyTabEntry keyTab[] = {
 #endif
 
 QLibInputKeyboard::QLibInputKeyboard()
-#ifndef QT_NO_XKBCOMMON_EVDEV
+#if QT_CONFIG(xkbcommon)
     : m_ctx(0),
       m_keymap(0),
       m_state(0),
       m_mods(Qt::NoModifier)
 #endif
 {
-#ifndef QT_NO_XKBCOMMON_EVDEV
+#if QT_CONFIG(xkbcommon)
     qCDebug(qLcLibInput) << "Using xkbcommon for key mapping";
     m_ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!m_ctx) {
@@ -164,13 +164,13 @@ QLibInputKeyboard::QLibInputKeyboard()
     m_repeatTimer.setSingleShot(true);
     connect(&m_repeatTimer, &QTimer::timeout, this, &QLibInputKeyboard::handleRepeat);
 #else
-    qCWarning(qLcLibInput) << "X-less xkbcommon not available, not performing key mapping";
+    qCWarning(qLcLibInput) << "xkbcommon not available, not performing key mapping";
 #endif
 }
 
 QLibInputKeyboard::~QLibInputKeyboard()
 {
-#ifndef QT_NO_XKBCOMMON_EVDEV
+#if QT_CONFIG(xkbcommon)
     if (m_state)
         xkb_state_unref(m_state);
     if (m_keymap)
@@ -182,7 +182,7 @@ QLibInputKeyboard::~QLibInputKeyboard()
 
 void QLibInputKeyboard::processKey(libinput_event_keyboard *e)
 {
-#ifndef QT_NO_XKBCOMMON_EVDEV
+#if QT_CONFIG(xkbcommon)
     if (!m_ctx || !m_keymap || !m_state)
         return;
 
@@ -245,7 +245,7 @@ void QLibInputKeyboard::processKey(libinput_event_keyboard *e)
 #endif
 }
 
-#ifndef QT_NO_XKBCOMMON_EVDEV
+#if QT_CONFIG(xkbcommon)
 void QLibInputKeyboard::handleRepeat()
 {
     QWindowSystemInterface::handleExtendedKeyEvent(nullptr, QEvent::KeyPress,

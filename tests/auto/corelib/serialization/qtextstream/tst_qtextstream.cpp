@@ -44,7 +44,7 @@
 # include <QProcess>
 #endif
 #include "../../../network-settings.h"
-
+#include "emulationdetector.h"
 
 QT_BEGIN_NAMESPACE
 template<> struct QMetaTypeId<QIODevice::OpenModeFlag>
@@ -1460,6 +1460,9 @@ void tst_QTextStream::pos2()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::pos3LargeFile()
 {
+    if (EmulationDetector::isRunningArmOnX86())
+        QSKIP("Running QTextStream::pos() in tight loop is too slow on emulator");
+
     {
         QFile file(testFileName);
         file.open(QIODevice::WriteOnly | QIODevice::Text);

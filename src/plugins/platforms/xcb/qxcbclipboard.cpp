@@ -261,7 +261,9 @@ QXcbClipboard::~QXcbClipboard()
             connection()->sync();
 
             // waiting until the clipboard manager fetches the content.
-            if (!waitForClipboardEvent(m_owner, XCB_SELECTION_NOTIFY, true)) {
+            if (auto event = waitForClipboardEvent(m_owner, XCB_SELECTION_NOTIFY, true)) {
+                free(event);
+            } else {
                 qWarning("QXcbClipboard: Unable to receive an event from the "
                          "clipboard manager in a reasonable time");
             }
@@ -838,6 +840,7 @@ QByteArray QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb
         if (!ge)
             break;
         xcb_property_notify_event_t *event = (xcb_property_notify_event_t *)ge;
+        QScopedPointer<xcb_property_notify_event_t, QScopedPointerPodDeleter> guard(event);
 
         if (event->atom != property
                 || event->state != XCB_PROPERTY_NEW_VALUE
@@ -869,8 +872,6 @@ QByteArray QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb
         } else {
             break;
         }
-
-        free(ge);
     }
 
     // timed out ... create a new requestor window, otherwise the requestor

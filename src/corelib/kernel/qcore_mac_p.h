@@ -89,7 +89,7 @@ public:
     QAppleRefCounted(QAppleRefCounted &&other) : value(other.value) { other.value = T(); }
     QAppleRefCounted(const QAppleRefCounted &other) : value(other.value) { if (value) RetainFunction(value); }
     ~QAppleRefCounted() { if (value) ReleaseFunction(value); }
-    operator T() { return value; }
+    operator T() const { return value; }
     void swap(QAppleRefCounted &other) Q_DECL_NOEXCEPT_EXPR(noexcept(qSwap(value, other.value)))
     { qSwap(value, other.value); }
     QAppleRefCounted &operator=(const QAppleRefCounted &other)

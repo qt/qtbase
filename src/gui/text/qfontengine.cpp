@@ -1755,7 +1755,7 @@ QImage QFontEngineBox::alphaMapForGlyph(glyph_t)
 // Multi engine
 // ------------------------------------------------------------------
 
-static inline uchar highByte(glyph_t glyph)
+uchar QFontEngineMulti::highByte(glyph_t glyph)
 { return glyph >> 24; }
 
 // strip high byte from glyph

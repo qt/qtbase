@@ -79,7 +79,7 @@ public:
     QXcbScreen *screenAt(const QPoint &pos) const;
 
     QList<QPlatformScreen *> screens() const { return m_screens; }
-    void setScreens(QList<QPlatformScreen *> sl) { m_screens = sl; }
+    void setScreens(QList<QPlatformScreen *> &&sl) { m_screens = std::move(sl); }
     void removeScreen(QPlatformScreen *s) { m_screens.removeOne(s); }
     void addScreen(QPlatformScreen *s);
     void setPrimaryScreen(QPlatformScreen *s);

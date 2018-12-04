@@ -128,8 +128,8 @@ isEmpty($${target_prefix}.INCDIRS) {
             # paths, so it can't just be used in place of the above code).
             # What's more, -print-search-dirs can't be used on clang on Apple because it
             # won't print all the library paths (only the clang-internal ones).
-            output = $$system("$$cmd_prefix $$QMAKE_CXX -print-search-dirs", lines, ec)
-            !equals(ec, 0): qtCompilerErrror($$QMAKE_CXX, $$output)
+            output = $$system("$$cmd_prefix $$QMAKE_LINK $$QMAKE_LFLAGS -print-search-dirs", lines, ec)
+            !equals(ec, 0): qtCompilerErrror($$QMAKE_LINK, $$output)
 
             for (line, output) {
                 contains(line, "^libraries: .*") {

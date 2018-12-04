@@ -9,12 +9,7 @@ SOURCES += $$PWD/qcomposeplatforminputcontextmain.cpp \
 HEADERS += $$PWD/qcomposeplatforminputcontext.h \
            $$PWD/generator/qtablegenerator.h \
 
-# libxkbcommon
-!qtConfig(xkbcommon-system) {
-    include(../../../3rdparty/xkbcommon.pri)
-} else {
-    QMAKE_USE += xkbcommon
-}
+QMAKE_USE_PRIVATE += xkbcommon
 
 include($$OUT_PWD/../../../gui/qtgui-config.pri)
 

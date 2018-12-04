@@ -51,6 +51,7 @@
 #include <QtWidgets>
 
 #include "mainwindow.h"
+#include "encodingdialog.h"
 #include "previewform.h"
 
 MainWindow::MainWindow()
@@ -188,9 +189,27 @@ void MainWindow::createMenus()
     QAction *exitAct = fileMenu->addAction(tr("E&xit"), this, &QWidget::close);
     exitAct->setShortcuts(QKeySequence::Quit);
 
+    auto toolMenu =  menuBar()->addMenu(tr("&Tools"));
+    auto encodingAction = toolMenu->addAction(tr("Encodings"), this, &MainWindow::encodingDialog);
+    encodingAction->setShortcut(Qt::CTRL + Qt::Key_E);
+    encodingAction->setToolTip(tr("Shows a dialog allowing to convert to common encoding in programming languages."));
+
+
     menuBar()->addSeparator();
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(tr("&About"), this, &MainWindow::about);
     helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
+}
+
+void MainWindow::encodingDialog()
+{
+    if (!m_encodingDialog) {
+        m_encodingDialog = new EncodingDialog(this);
+        const QRect screenGeometry = QApplication::desktop()->screenGeometry(this);
+        m_encodingDialog->setMinimumWidth(screenGeometry.width() / 4);
+    }
+    m_encodingDialog->show();
+    m_encodingDialog->raise();
+
 }

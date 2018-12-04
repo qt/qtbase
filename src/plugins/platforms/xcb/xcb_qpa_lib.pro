@@ -97,21 +97,15 @@ qtConfig(vulkan) {
 !qtConfig(system-xcb) {
     QMAKE_USE += xcb-static xcb
 } else {
-    qtConfig(xkb): QMAKE_USE += xcb_xkb
     qtConfig(xcb-render): QMAKE_USE += xcb_render
     qtConfig(xcb-xinput): QMAKE_USE += xcb_xinput
     QMAKE_USE += xcb_syslibs
 }
 
-# libxkbcommon
-!qtConfig(xkbcommon-system) {
-    qtConfig(xkb) {
-        include(../../../3rdparty/xkbcommon-x11.pri)
-    } else {
-        include(../../../3rdparty/xkbcommon.pri)
-    }
-} else {
-    QMAKE_USE += xkbcommon
+QMAKE_USE += xkbcommon
+qtConfig(xkb) {
+    QMAKE_USE += xkbcommon_x11
+    qtConfig(system-xcb): QMAKE_USE += xcb_xkb
 }
 
 qtConfig(dlopen): QMAKE_USE += libdl

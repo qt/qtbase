@@ -162,17 +162,17 @@ Float qbswapFloatHelper(Float source)
     return qFromUnaligned<Float>(&temp);
 }
 
-template <> inline qfloat16 qbswap<qfloat16>(qfloat16 source)
+inline qfloat16 qbswap(qfloat16 source)
 {
     return qbswapFloatHelper(source);
 }
 
-template <> inline float qbswap<float>(float source)
+inline float qbswap(float source)
 {
     return qbswapFloatHelper(source);
 }
 
-template <> inline double qbswap<double>(double source)
+inline double qbswap(double source)
 {
     return qbswapFloatHelper(source);
 }
@@ -185,7 +185,7 @@ template <> inline double qbswap<double>(double source)
 */
 template <typename T> inline void qbswap(const T src, void *dest)
 {
-    qToUnaligned<T>(qbswap<T>(src), dest);
+    qToUnaligned<T>(qbswap(src), dest);
 }
 
 template <int Size> void *qbswap(const void *source, qsizetype count, void *dest) noexcept;
@@ -223,9 +223,9 @@ template <typename T> inline void qFromLittleEndian(const void *source, qsizetyp
 #else // Q_LITTLE_ENDIAN
 
 template <typename T> inline Q_DECL_CONSTEXPR T qToBigEndian(T source)
-{ return qbswap<T>(source); }
+{ return qbswap(source); }
 template <typename T> inline Q_DECL_CONSTEXPR T qFromBigEndian(T source)
-{ return qbswap<T>(source); }
+{ return qbswap(source); }
 template <typename T> inline Q_DECL_CONSTEXPR T qToLittleEndian(T source)
 { return source; }
 template <typename T> inline Q_DECL_CONSTEXPR T qFromLittleEndian(T source)

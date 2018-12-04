@@ -212,7 +212,7 @@
         "verifySpec": [ "shared", "use_gold_linker", "compiler-flags", "qmakeargs", "commit" ],
         "compile": [ "verifyspec" ],
         "detectPkgConfig": [ "cross_compile", "machineTuple" ],
-        "library": [ "pkg-config" ],
+        "library": [ "pkg-config", "compiler-flags" ],
         "getPkgConfigVariable": [ "pkg-config" ]
     },
 
