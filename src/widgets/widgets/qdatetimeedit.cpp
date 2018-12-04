@@ -553,7 +553,7 @@ void QDateTimeEdit::setMaximumTime(const QTime &max)
 {
     Q_D(QDateTimeEdit);
     if (max.isValid()) {
-        const QDateTime m(d->maximum.toDate(), max);
+        const QDateTime m(d->maximum.toDate(), max, d->spec);
         setMaximumDateTime(m);
     }
 }
