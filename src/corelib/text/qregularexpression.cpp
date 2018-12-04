@@ -260,6 +260,12 @@ QT_BEGIN_NAMESPACE
     You can also use \l{QRegularExpressionMatchIterator::}{peekNext()} to get
     the next result without advancing the iterator.
 
+    It is also possible to simply use the result of
+    QRegularExpression::globalMatch in a range-based for loop, for instance
+    like this:
+
+    \snippet code/src_corelib_text_qregularexpression.cpp 34
+
     It is possible to pass a starting offset and one or more match options to
     the globalMatch() function, exactly like normal matching with match().
 
@@ -534,6 +540,12 @@ QT_BEGIN_NAMESPACE
 
     Moreover, QRegularExpressionMatchIterator offers a peekNext() function
     to get the next result \e{without} advancing the iterator.
+
+    Starting with Qt 6.0, it is also possible to simply use the result of
+    QRegularExpression::globalMatch in a range-based for loop, for instance
+    like this:
+
+    \snippet code/src_corelib_text_qregularexpression.cpp 34
 
     You can retrieve the QRegularExpression object the subject string was
     matched against by calling the regularExpression() function; the
@@ -2562,6 +2574,19 @@ QRegularExpression::MatchOptions QRegularExpressionMatchIterator::matchOptions()
 {
     return d->matchOptions;
 }
+
+/*!
+  \internal
+*/
+QtPrivate::QRegularExpressionMatchIteratorRangeBasedForIterator begin(const QRegularExpressionMatchIterator &iterator)
+{
+    return QtPrivate::QRegularExpressionMatchIteratorRangeBasedForIterator(iterator);
+}
+
+/*!
+  \fn QtPrivate::QRegularExpressionMatchIteratorRangeBasedForIteratorSentinel end(const QRegularExpressionMatchIterator &)
+  \internal
+*/
 
 #ifndef QT_NO_DATASTREAM
 /*!

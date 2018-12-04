@@ -355,4 +355,13 @@ QString wildcard = QRegularExpression::wildcardToRegularExpression("*.jpeg");
     ("", "day", "month", "year", "", "name")
 //! [33]
 
+{
+//! [34]
+QRegularExpression re(R"(\w+)");
+QString subject("the quick fox");
+for (const QRegularExpressionMatch &match : re.globalMatch(subject)) {
+    // ...
+}
+//! [34]
+}
 }

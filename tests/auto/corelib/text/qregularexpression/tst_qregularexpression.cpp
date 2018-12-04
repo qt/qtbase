@@ -184,6 +184,27 @@ bool operator==(const QRegularExpressionMatchIterator &iterator, const QList<Mat
     if (i.hasNext())
         return false;
 
+    i = iterator;
+
+    int index = 0;
+    for (const QRegularExpressionMatch &match : i) {
+        if (match != expectedMatchList[index++])
+            return false;
+    }
+
+    if (index != expectedMatchList.size())
+        return false;
+
+    // do it again
+    index = 0;
+    for (const QRegularExpressionMatch &match : i) {
+        if (match != expectedMatchList[index++])
+            return false;
+    }
+
+    if (index != expectedMatchList.size())
+        return false;
+
     return true;
 }
 
