@@ -599,7 +599,7 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
 */
 
 /*!
-    \fn template <typename PointerToMemberFunction> QMetaObject::Connection QTimer::callOnTimeout(const QObject *receiver, PointerToMemberFunction slot, Qt::ConnectionType connectionType = Qt::AutoConnection)
+    \fn template <typename MemberFunction> QMetaObject::Connection QTimer::callOnTimeout(const QObject *receiver, MemberFunction *slot, Qt::ConnectionType connectionType = Qt::AutoConnection)
     \since 5.12
     \overload callOnTimeout()
 
