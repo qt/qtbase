@@ -725,7 +725,6 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
 
         // Draw Outline
         painter->setPen( QPen(hasFocus ? highlightedOutline : outline));
-        painter->setBrush(option->palette.base());
         painter->drawRoundedRect(r.adjusted(0, 0, -1, -1), 2, 2);
 
         if (hasFocus) {
