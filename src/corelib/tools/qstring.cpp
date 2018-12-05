@@ -1350,7 +1350,7 @@ const QString::Null QString::null = { };
   literals and 8-bit data to unicode QStrings, but allows the use of
   the \c{QChar(char)} and \c{QString(const char (&ch)[N]} constructors,
   and the \c{QString::operator=(const char (&ch)[N])} assignment operator
-  giving most of the type-safety benefits of QT_NO_CAST_FROM_ASCII
+  giving most of the type-safety benefits of \c QT_NO_CAST_FROM_ASCII
   but does not require user code to wrap character and string literals
   with QLatin1Char, QLatin1String or similar.
 
@@ -2005,13 +2005,13 @@ const QString::Null QString::null = { };
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
 
-    \note Defining QT_RESTRICTED_CAST_FROM_ASCII also disables
+    \note Defining \c QT_RESTRICTED_CAST_FROM_ASCII also disables
     this constructor, but enables a \c{QString(const char (&ch)[N])}
     constructor instead. Using non-literal input, or input with
     embedded NUL characters, or non-7-bit characters is undefined
     in this case.
 
-    \sa fromLatin1(), fromLocal8Bit(), fromUtf8()
+    \sa fromLatin1(), fromLocal8Bit(), fromUtf8(), QT_NO_CAST_FROM_ASCII, QT_RESTRICTED_CAST_FROM_ASCII
 */
 
 /*! \fn QString QString::fromStdString(const std::string &str)
@@ -2204,7 +2204,7 @@ QString::QString(QChar ch)
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
 
-    \sa fromLatin1(), fromLocal8Bit(), fromUtf8()
+    \sa fromLatin1(), fromLocal8Bit(), fromUtf8(), QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString::QString(const Null &)
@@ -2452,6 +2452,8 @@ QString &QString::operator=(QLatin1String other)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::operator=(const char *str)
@@ -2466,6 +2468,7 @@ QString &QString::operator=(QLatin1String other)
     This can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
 
+    \sa QT_NO_CAST_FROM_ASCII, QT_RESTRICTED_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::operator=(char ch)
@@ -2480,6 +2483,8 @@ QString &QString::operator=(QLatin1String other)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -2542,8 +2547,10 @@ QString &QString::operator=(QChar ch)
     If the given \a position is greater than size(), the array is
     first extended using resize().
 
-    This function is not available when QT_NO_CAST_FROM_ASCII is
+    This function is not available when \c QT_NO_CAST_FROM_ASCII is
     defined.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 
@@ -2558,8 +2565,10 @@ QString &QString::operator=(QChar ch)
     If the given \a position is greater than size(), the array is
     first extended using resize().
 
-    This function is not available when QT_NO_CAST_FROM_ASCII is
+    This function is not available when \c QT_NO_CAST_FROM_ASCII is
     defined.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 
@@ -2724,6 +2733,8 @@ QString &QString::append(QLatin1String str)
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::append(const char *str)
@@ -2737,6 +2748,8 @@ QString &QString::append(QLatin1String str)
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -2799,6 +2812,8 @@ QString &QString::append(QChar ch)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::prepend(const char *str)
@@ -2812,6 +2827,8 @@ QString &QString::append(QChar ch)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::prepend(QChar ch)
@@ -3410,6 +3427,8 @@ bool QString::operator==(QLatin1String other) const Q_DECL_NOTHROW
 
     Returns \c true if this string is lexically equal to the parameter
     string \a other. Otherwise returns \c false.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator==(const char *other) const
@@ -3423,6 +3442,8 @@ bool QString::operator==(QLatin1String other) const Q_DECL_NOTHROW
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -3463,6 +3484,8 @@ bool QString::operator<(QLatin1String other) const Q_DECL_NOTHROW
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator<(const char *other) const
@@ -3479,6 +3502,8 @@ bool QString::operator<(QLatin1String other) const Q_DECL_NOTHROW
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool operator<=(const QString &s1, const QString &s2)
@@ -3514,6 +3539,8 @@ bool QString::operator<(QLatin1String other) const Q_DECL_NOTHROW
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator<=(const char *other) const
@@ -3527,6 +3554,8 @@ bool QString::operator<(QLatin1String other) const Q_DECL_NOTHROW
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool operator>(const QString &s1, const QString &s2)
@@ -3564,6 +3593,8 @@ bool QString::operator>(QLatin1String other) const Q_DECL_NOTHROW
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator>(const char *other) const
@@ -3577,6 +3608,8 @@ bool QString::operator>(QLatin1String other) const Q_DECL_NOTHROW
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool operator>=(const QString &s1, const QString &s2)
@@ -3611,6 +3644,8 @@ bool QString::operator>(QLatin1String other) const Q_DECL_NOTHROW
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator>=(const char *other) const
@@ -3624,6 +3659,8 @@ bool QString::operator>(QLatin1String other) const Q_DECL_NOTHROW
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool operator!=(const QString &s1, const QString &s2)
@@ -3658,6 +3695,8 @@ bool QString::operator>(QLatin1String other) const Q_DECL_NOTHROW
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator!=(const char *other) const
@@ -3671,6 +3710,8 @@ bool QString::operator>(QLatin1String other) const Q_DECL_NOTHROW
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -6064,6 +6105,8 @@ QString& QString::fill(QChar ch, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::operator+=(const char *str)
@@ -6077,6 +6120,8 @@ QString& QString::fill(QChar ch, int size)
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::operator+=(const QStringRef &str)
@@ -6098,6 +6143,8 @@ QString& QString::fill(QChar ch, int size)
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::operator+=(QChar ch)
@@ -9275,7 +9322,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     in the first place. In those cases, using QStringLiteral may be
     the better option.
 
-    \sa QString, QLatin1Char, {QStringLiteral()}{QStringLiteral}
+    \sa QString, QLatin1Char, {QStringLiteral()}{QStringLiteral}, QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9752,6 +9799,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9766,6 +9815,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QLatin1String::operator!=(const QString &other) const
@@ -9791,6 +9842,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9805,6 +9858,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9831,6 +9886,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9845,6 +9902,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9871,6 +9930,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9885,6 +9946,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9911,6 +9974,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9925,6 +9990,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QLatin1String::operator<=(const QString &other) const
@@ -9950,6 +10017,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9964,6 +10033,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 
@@ -10592,6 +10663,7 @@ bool operator<(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
     Returns \c true if this string is lexically equal to the parameter
     string \a s. Otherwise returns \c false.
 
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -10609,6 +10681,8 @@ bool operator<(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
 
     Returns \c true if this string is not lexically equal to the parameter
     string \a s. Otherwise returns \c false.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -10626,6 +10700,8 @@ bool operator<(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
 
     Returns \c true if this string is lexically smaller than the parameter
     string \a s. Otherwise returns \c false.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -10643,6 +10719,8 @@ bool operator<(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
 
     Returns \c true if this string is lexically smaller than or equal to the parameter
     string \a s. Otherwise returns \c false.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -10661,6 +10739,8 @@ bool operator<(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
 
     Returns \c true if this string is lexically greater than the parameter
     string \a s. Otherwise returns \c false.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -10678,6 +10758,8 @@ bool operator<(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
 
     Returns \c true if this string is lexically greater than or equal to the
     parameter string \a s. Otherwise returns \c false.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 /*!
     \typedef QString::Data
