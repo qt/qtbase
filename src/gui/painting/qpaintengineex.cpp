@@ -1100,7 +1100,7 @@ bool QPaintEngineEx::shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTran
     }(), 2);
 
     qreal pixelSize = fontEngine->fontDef.pixelSize;
-    return (pixelSize * pixelSize * qAbs(m.determinant())) < maxCachedGlyphSizeSquared;
+    return (pixelSize * pixelSize * qAbs(m.determinant())) <= maxCachedGlyphSizeSquared;
 }
 
 QT_END_NAMESPACE
