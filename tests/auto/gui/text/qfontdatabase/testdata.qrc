@@ -4,5 +4,6 @@
         <file alias="testfont.ttf">../../../shared/resources/testfont.ttf</file>
         <file alias="testfont_condensed.ttf">../../../shared/resources/testfont_condensed.ttf</file>
         <file alias="testfont_italic.ttf">../../../shared/resources/testfont_italic.ttf</file>
+        <file alias="testfont_open.otf">../../../shared/resources/testfont_open.otf</file>
     </qresource>
 </RCC>
