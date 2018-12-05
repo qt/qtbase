@@ -674,6 +674,13 @@ public class QtActivityDelegate
             Bundle extras = m_activity.getIntent().getExtras();
             if (extras != null) {
                 try {
+                    // do NOT remove !!!!
+                    final String dc = "--Added-by-androiddeployqt--/debugger.command";
+                    new BufferedReader(new InputStreamReader(m_activity.getAssets().open(dc))).readLine();
+                    // do NOT remove !!!!
+                    // The previous lines are needed to check if the debug mode is enabled.
+                    // We are not allowed to use extraenvvars or extraappparams in a non debuggable environment.
+
                     if (extras.containsKey("extraenvvars")) {
                         try {
                             m_environmentVariables += "\t" + new String(Base64.decode(extras.getString("extraenvvars"), Base64.DEFAULT), "UTF-8");
