@@ -769,7 +769,7 @@ void QWizardPrivate::reset()
         for (int i = history.count() - 1; i >= 0; --i)
             q->cleanupPage(history.at(i));
         history.clear();
-        for (QWizardPage *page : pageMap)
+        for (QWizardPage *page : qAsConst(pageMap))
             page->d_func()->initialized = false;
 
         current = -1;

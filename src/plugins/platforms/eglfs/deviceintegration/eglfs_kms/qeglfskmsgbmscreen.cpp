@@ -423,7 +423,7 @@ void QEglFSKmsGbmScreen::updateFlipStatus()
     if (m_flipPending)
         return;
 
-    for (const CloneDestination &d : m_cloneDests) {
+    for (const CloneDestination &d : qAsConst(m_cloneDests)) {
         if (d.cloneFlipPending)
             return;
     }
