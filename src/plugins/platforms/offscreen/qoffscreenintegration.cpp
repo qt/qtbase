@@ -45,6 +45,7 @@
 #include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
 #if defined(Q_OS_MAC)
 #include <qpa/qplatformfontdatabase.h>
+#include <QtFontDatabaseSupport/private/qcoretextfontdatabase_p.h>
 #else
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 #endif
@@ -63,6 +64,8 @@
 #include <qpa/qplatformservices.h>
 
 QT_BEGIN_NAMESPACE
+
+class QCoreTextFontEngine;
 
 template <typename BaseEventDispatcher>
 class QOffscreenEventDispatcher : public BaseEventDispatcher
@@ -98,7 +101,7 @@ QOffscreenIntegration::QOffscreenIntegration()
 {
 #if defined(Q_OS_UNIX)
 #if defined(Q_OS_MAC)
-    m_fontDatabase.reset(new QPlatformFontDatabase());
+    m_fontDatabase.reset(new QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>);
 #else
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
 #endif
