@@ -184,7 +184,10 @@ bool QStringListModel::setData(const QModelIndex &index, const QVariant &value, 
 {
     if (index.row() >= 0 && index.row() < lst.size()
         && (role == Qt::EditRole || role == Qt::DisplayRole)) {
-        lst.replace(index.row(), value.toString());
+        const QString valueString = value.toString();
+        if (lst.at(index.row()) == valueString)
+            return true;
+        lst.replace(index.row(), valueString);
         QVector<int> roles;
         roles.reserve(2);
         roles.append(Qt::DisplayRole);
