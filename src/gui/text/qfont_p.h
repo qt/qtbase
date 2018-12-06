@@ -210,7 +210,7 @@ private:
 };
 
 
-class Q_AUTOTEST_EXPORT QFontCache : public QObject
+class Q_GUI_EXPORT QFontCache : public QObject
 {
 public:
     // note: these static functions work on a per-thread basis
