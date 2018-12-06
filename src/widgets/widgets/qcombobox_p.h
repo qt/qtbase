@@ -293,6 +293,7 @@ private:
     QComboBox *mCombo;
 };
 
+// ### Qt6: QStyledItemDelegate ?
 // Note that this class is intentionally not using QStyledItemDelegate
 // Vista does not use the new theme for combo boxes and there might
 // be other side effects from using the new class

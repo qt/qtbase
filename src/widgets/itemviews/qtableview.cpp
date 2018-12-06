@@ -1108,7 +1108,7 @@ int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, QS
     \l showGrid property.
 
     The items shown in a table view, like those in the other item views, are
-    rendered and edited using standard \l{QItemDelegate}{delegates}. However,
+    rendered and edited using standard \l{QStyledItemDelegate}{delegates}. However,
     for some tasks it is sometimes useful to be able to insert widgets in a
     table instead. Widgets are set for particular indexes with the
     \l{QAbstractItemView::}{setIndexWidget()} function, and

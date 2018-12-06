@@ -1555,6 +1555,7 @@ void QCalendarView::mouseReleaseEvent(QMouseEvent *event)
     }
 }
 
+// ### Qt6: QStyledItemDelegate
 class QCalendarDelegate : public QItemDelegate
 {
     Q_OBJECT

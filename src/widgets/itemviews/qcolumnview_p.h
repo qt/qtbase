@@ -181,6 +181,7 @@ public:
 /*!
  * This is a delegate that will paint the triangle
  */
+// ### Qt6: QStyledItemDelegate
 class QColumnViewDelegate : public QItemDelegate
 {
 

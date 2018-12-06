@@ -3211,7 +3211,7 @@ bool QAbstractItemView::isPersistentEditorOpen(const QModelIndex &index) const
     This function should only be used to display static content within the
     visible area corresponding to an item of data. If you want to display
     custom dynamic content or implement a custom editor widget, subclass
-    QItemDelegate instead.
+    QStyledItemDelegate instead.
 
     \sa {Delegate Classes}
 */

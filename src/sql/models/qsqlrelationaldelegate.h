@@ -58,7 +58,7 @@ QT_REQUIRE_CONFIG(sqlmodel);
 #include <QtCore/qmetaobject.h>
 QT_BEGIN_NAMESPACE
 
-
+// ### Qt6: QStyledItemDelegate
 class QSqlRelationalDelegate: public QItemDelegate
 {
     static int fieldIndex(const QSqlTableModel *const model,

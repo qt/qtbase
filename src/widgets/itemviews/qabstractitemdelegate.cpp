@@ -88,7 +88,7 @@ QT_BEGIN_NAMESPACE
     and is part of Qt's \l{Model/View Programming}{model/view framework}.
 
     To render an item in a custom way, you must implement paint() and
-    sizeHint(). The QItemDelegate class provides default implementations for
+    sizeHint(). The QStyledItemDelegate class provides default implementations for
     these functions; if you do not need custom rendering, subclass that
     class instead.
 
@@ -115,7 +115,7 @@ QT_BEGIN_NAMESPACE
     The second approach is to handle user events directly by reimplementing
     editorEvent().
 
-    \sa {model-view-programming}{Model/View Programming}, QItemDelegate,
+    \sa {model-view-programming}{Model/View Programming}, QStyledItemDelegate,
         {Pixelator Example}, QStyledItemDelegate, QStyle
 */
 

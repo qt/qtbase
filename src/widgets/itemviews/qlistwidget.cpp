@@ -1757,7 +1757,7 @@ QWidget *QListWidget::itemWidget(QListWidgetItem *item) const
 
     This function should only be used to display static content in the place of
     a list widget item. If you want to display custom dynamic content or
-    implement a custom editor widget, use QListView and subclass QItemDelegate
+    implement a custom editor widget, use QListView and subclass QStyledItemDelegate
     instead.
 
     \sa itemWidget(), removeItemWidget(), {Delegate Classes}

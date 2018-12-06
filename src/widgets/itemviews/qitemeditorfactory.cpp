@@ -122,7 +122,7 @@ Q_SIGNALS:
     \inmodule QtWidgets
 
     When editing data in an item view, editors are created and
-    displayed by a delegate. QItemDelegate, which is the delegate by
+    displayed by a delegate. QStyledItemDelegate, which is the delegate by
     default installed on Qt's item views, uses a QItemEditorFactory to
     create editors for it. A default unique instance provided by
     QItemEditorFactory is used by all item delegates.  If you set a
@@ -156,7 +156,7 @@ Q_SIGNALS:
 
     Additional editors can be registered with the registerEditor() function.
 
-    \sa QItemDelegate, {Model/View Programming}, {Color Editor Factory Example}
+    \sa QStyledItemDelegate, {Model/View Programming}, {Color Editor Factory Example}
 */
 
 /*!
@@ -375,7 +375,7 @@ void QItemEditorFactory::setDefaultFactory(QItemEditorFactory *factory)
     QItemEditorCreatorBase objects are specialized widget factories that
     provide editor widgets for one particular QVariant data type. They
     are used by QItemEditorFactory to create editors for
-    \l{QItemDelegate}s. Creator bases must be registered with
+    \l{QStyledItemDelegate}s. Creator bases must be registered with
     QItemEditorFactory::registerEditor().
 
     An editor should provide a user property for the data it edits.
@@ -457,7 +457,7 @@ QItemEditorCreatorBase::~QItemEditorCreatorBase()
     \snippet code/src_gui_itemviews_qitemeditorfactory.cpp 1
 
     The constructor takes the name of the property that contains the
-    editing data. QItemDelegate can then access the property by name
+    editing data. QStyledItemDelegate can then access the property by name
     when it sets and retrieves editing data. Only use this class if
     your editor does not define a user property (using the USER
     keyword in the Q_PROPERTY macro).  If the widget has a user
@@ -472,7 +472,7 @@ QItemEditorCreatorBase::~QItemEditorCreatorBase()
 
     Constructs an editor creator object using \a valuePropertyName
     as the name of the property to be used for editing. The
-    property name is used by QItemDelegate when setting and
+    property name is used by QStyledItemDelegate when setting and
     getting editor data.
 
     Note that the \a valuePropertyName is only used if the editor
@@ -508,11 +508,11 @@ QItemEditorCreatorBase::~QItemEditorCreatorBase()
     \snippet code/src_gui_itemviews_qitemeditorfactory.cpp 2
 
     Setting the \c editorFactory created above in an item delegate via
-    QItemDelegate::setItemEditorFactory() makes sure that all values of type
+    QStyledItemDelegate::setItemEditorFactory() makes sure that all values of type
     QVariant::DateTime will be edited in \c{MyFancyDateTimeEdit}.
 
     The editor must provide a user property that will contain the
-    editing data. The property is used by \l{QItemDelegate}s to set
+    editing data. The property is used by \l{QStyledItemDelegate}s to set
     and retrieve the data (using Qt's \l{Meta-Object
     System}{meta-object system}). You set the user property with
     the USER keyword:
@@ -520,7 +520,7 @@ QItemEditorCreatorBase::~QItemEditorCreatorBase()
     \snippet code/src_gui_itemviews_qitemeditorfactory.cpp 3
 
     \sa QItemEditorCreatorBase, QItemEditorCreator,
-        QItemEditorFactory, QItemDelegate, {Color Editor Factory Example}
+        QItemEditorFactory, QStyledItemDelegate, {Color Editor Factory Example}
 */
 
 /*!

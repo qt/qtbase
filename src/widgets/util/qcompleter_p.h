@@ -194,6 +194,7 @@ private:
                      const QIndexMapper& iv, QMatchData* m);
 };
 
+// ### Qt6: QStyledItemDelegate
 class QCompleterItemDelegate : public QItemDelegate
 {
 public:

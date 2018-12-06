@@ -3101,7 +3101,7 @@ QWidget *QTreeWidget::itemWidget(QTreeWidgetItem *item, int column) const
 
     This function should only be used to display static content in the place of
     a tree widget item. If you want to display custom dynamic content or
-    implement a custom editor widget, use QTreeView and subclass QItemDelegate
+    implement a custom editor widget, use QTreeView and subclass QStyledItemDelegate
     instead.
 
     This function cannot be called before the item hierarchy has been set up,
