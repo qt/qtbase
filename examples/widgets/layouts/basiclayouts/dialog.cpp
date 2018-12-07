@@ -69,8 +69,8 @@ Dialog::Dialog()
     buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok
                                      | QDialogButtonBox::Cancel);
 
-    connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
-    connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+    connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 //! [1]
 
 //! [2]
@@ -99,7 +99,7 @@ void Dialog::createMenu()
     exitAction = fileMenu->addAction(tr("E&xit"));
     menuBar->addMenu(fileMenu);
 
-    connect(exitAction, SIGNAL(triggered()), this, SLOT(accept()));
+    connect(exitAction, &QAction::triggered, this, &QDialog::accept);
 }
 //! [6]
 

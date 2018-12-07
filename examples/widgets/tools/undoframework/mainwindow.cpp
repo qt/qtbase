@@ -70,8 +70,8 @@ MainWindow::MainWindow()
     diagramScene->setBackgroundBrush(pixmapBrush);
     diagramScene->setSceneRect(QRect(0, 0, 500, 500));
 
-    connect(diagramScene, SIGNAL(itemMoved(DiagramItem*,QPointF)),
-            this, SLOT(itemMoved(DiagramItem*,QPointF)));
+    connect(diagramScene, &DiagramScene::itemMoved,
+            this, &MainWindow::itemMoved);
 
     setWindowTitle("Undo Framework");
     QGraphicsView *view = new QGraphicsView(diagramScene);
@@ -95,18 +95,18 @@ void MainWindow::createActions()
 {
     deleteAction = new QAction(tr("&Delete Item"), this);
     deleteAction->setShortcut(tr("Del"));
-    connect(deleteAction, SIGNAL(triggered()), this, SLOT(deleteItem()));
+    connect(deleteAction, &QAction::triggered, this, &MainWindow::deleteItem);
 //! [2] //! [3]
 
 //! [3] //! [4]
     addBoxAction = new QAction(tr("Add &Box"), this);
 //! [4]
     addBoxAction->setShortcut(tr("Ctrl+O"));
-    connect(addBoxAction, SIGNAL(triggered()), this, SLOT(addBox()));
+    connect(addBoxAction, &QAction::triggered, this, &MainWindow::addBox);
 
     addTriangleAction = new QAction(tr("Add &Triangle"), this);
     addTriangleAction->setShortcut(tr("Ctrl+T"));
-    connect(addTriangleAction, SIGNAL(triggered()), this, SLOT(addTriangle()));
+    connect(addTriangleAction, &QAction::triggered, this, &MainWindow::addTriangle);
 
 //! [5]
     undoAction = undoStack->createUndoAction(this, tr("&Undo"));
@@ -118,13 +118,13 @@ void MainWindow::createActions()
 
     exitAction = new QAction(tr("E&xit"), this);
     exitAction->setShortcuts(QKeySequence::Quit);
-    connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
+    connect(exitAction, &QAction::triggered, this, &QWidget::close);
 
     aboutAction = new QAction(tr("&About"), this);
     QList<QKeySequence> aboutShortcuts;
     aboutShortcuts << tr("Ctrl+A") << tr("Ctrl+B");
     aboutAction->setShortcuts(aboutShortcuts);
-    connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
+    connect(aboutAction, &QAction::triggered, this, &MainWindow::about);
 }
 
 //! [6]
@@ -140,10 +140,10 @@ void MainWindow::createMenus()
     editMenu->addAction(redoAction);
     editMenu->addSeparator();
     editMenu->addAction(deleteAction);
-    connect(editMenu, SIGNAL(aboutToShow()),
-            this, SLOT(itemMenuAboutToShow()));
-    connect(editMenu, SIGNAL(aboutToHide()),
-            this, SLOT(itemMenuAboutToHide()));
+    connect(editMenu, &QMenu::aboutToShow,
+            this, &MainWindow::itemMenuAboutToShow);
+    connect(editMenu, &QMenu::aboutToHide,
+            this, &MainWindow::itemMenuAboutToHide);
 
 //! [7]
     itemMenu = menuBar()->addMenu(tr("&Item"));

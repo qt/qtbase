@@ -68,25 +68,25 @@ MainWindow::MainWindow(QWidget *parent)
     documentTabs->removeTab(0);
     delete w;
 
-    connect(actionOpen, SIGNAL(triggered()), this, SLOT(openDocument()));
-    connect(actionClose, SIGNAL(triggered()), this, SLOT(closeDocument()));
-    connect(actionNew, SIGNAL(triggered()), this, SLOT(newDocument()));
-    connect(actionSave, SIGNAL(triggered()), this, SLOT(saveDocument()));
-    connect(actionExit, SIGNAL(triggered()), this, SLOT(close()));
-    connect(actionRed, SIGNAL(triggered()), this, SLOT(setShapeColor()));
-    connect(actionGreen, SIGNAL(triggered()), this, SLOT(setShapeColor()));
-    connect(actionBlue, SIGNAL(triggered()), this, SLOT(setShapeColor()));
-    connect(actionAddCircle, SIGNAL(triggered()), this, SLOT(addShape()));
-    connect(actionAddRectangle, SIGNAL(triggered()), this, SLOT(addShape()));
-    connect(actionAddTriangle, SIGNAL(triggered()), this, SLOT(addShape()));
-    connect(actionRemoveShape, SIGNAL(triggered()), this, SLOT(removeShape()));
-    connect(actionAddRobot, SIGNAL(triggered()), this, SLOT(addRobot()));
-    connect(actionAddSnowman, SIGNAL(triggered()), this, SLOT(addSnowman()));
-    connect(actionAbout, SIGNAL(triggered()), this, SLOT(about()));
-    connect(actionAboutQt, SIGNAL(triggered()), this, SLOT(aboutQt()));
+    connect(actionOpen, &QAction::triggered, this, &MainWindow::openDocument);
+    connect(actionClose, &QAction::triggered, this, &MainWindow::closeDocument);
+    connect(actionNew, &QAction::triggered, this, &MainWindow::newDocument);
+    connect(actionSave, &QAction::triggered, this, &MainWindow::saveDocument);
+    connect(actionExit, &QAction::triggered, this, &QWidget::close);
+    connect(actionRed, &QAction::triggered, this, &MainWindow::setShapeColor);
+    connect(actionGreen, &QAction::triggered, this, &MainWindow::setShapeColor);
+    connect(actionBlue, &QAction::triggered, this, &MainWindow::setShapeColor);
+    connect(actionAddCircle, &QAction::triggered, this, &MainWindow::addShape);
+    connect(actionAddRectangle, &QAction::triggered, this, &MainWindow::addShape);
+    connect(actionAddTriangle, &QAction::triggered, this, &MainWindow::addShape);
+    connect(actionRemoveShape, &QAction::triggered, this, &MainWindow::removeShape);
+    connect(actionAddRobot, &QAction::triggered, this, &MainWindow::addRobot);
+    connect(actionAddSnowman, &QAction::triggered, this, &MainWindow::addSnowman);
+    connect(actionAbout, &QAction::triggered, this, &MainWindow::about);
+    connect(actionAboutQt, &QAction::triggered, this, &MainWindow::aboutQt);
 
-    connect(undoLimit, SIGNAL(valueChanged(int)), this, SLOT(updateActions()));
-    connect(documentTabs, SIGNAL(currentChanged(int)), this, SLOT(updateActions()));
+    connect(undoLimit, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::updateActions);
+    connect(documentTabs, &QTabWidget::currentChanged, this, &MainWindow::updateActions);
 
     actionOpen->setShortcut(QString("Ctrl+O"));
     actionClose->setShortcut(QString("Ctrl+W"));
@@ -226,9 +226,9 @@ void MainWindow::addDocument(Document *doc)
         return;
     m_undoGroup->addStack(doc->undoStack());
     documentTabs->addTab(doc, fixedWindowTitle(doc));
-    connect(doc, SIGNAL(currentShapeChanged(QString)), this, SLOT(updateActions()));
-    connect(doc->undoStack(), SIGNAL(indexChanged(int)), this, SLOT(updateActions()));
-    connect(doc->undoStack(), SIGNAL(cleanChanged(bool)), this, SLOT(updateActions()));
+    connect(doc, &Document::currentShapeChanged, this, &MainWindow::updateActions);
+    connect(doc->undoStack(), &QUndoStack::indexChanged, this, &MainWindow::updateActions);
+    connect(doc->undoStack(), &QUndoStack::cleanChanged, this, &MainWindow::updateActions);
 
     setCurrentDocument(doc);
 }
@@ -251,9 +251,9 @@ void MainWindow::removeDocument(Document *doc)
 
     documentTabs->removeTab(index);
     m_undoGroup->removeStack(doc->undoStack());
-    disconnect(doc, SIGNAL(currentShapeChanged(QString)), this, SLOT(updateActions()));
-    disconnect(doc->undoStack(), SIGNAL(indexChanged(int)), this, SLOT(updateActions()));
-    disconnect(doc->undoStack(), SIGNAL(cleanChanged(bool)), this, SLOT(updateActions()));
+    disconnect(doc, &Document::currentShapeChanged, this, &MainWindow::updateActions);
+    disconnect(doc->undoStack(), &QUndoStack::indexChanged, this, &MainWindow::updateActions);
+    disconnect(doc->undoStack(), &QUndoStack::cleanChanged, this, &MainWindow::updateActions);
 
     if (documentTabs->count() == 0) {
         newDocument();

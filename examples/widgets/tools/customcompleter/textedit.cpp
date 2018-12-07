@@ -88,8 +88,8 @@ void TextEdit::setCompleter(QCompleter *completer)
     c->setWidget(this);
     c->setCompletionMode(QCompleter::PopupCompletion);
     c->setCaseSensitivity(Qt::CaseInsensitive);
-    QObject::connect(c, SIGNAL(activated(QString)),
-                     this, SLOT(insertCompletion(QString)));
+    QObject::connect(c, QOverload<const QString &>::of(&QCompleter::activated),
+                     this, &TextEdit::insertCompletion);
 }
 //! [2]
 

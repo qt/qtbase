@@ -69,8 +69,8 @@ int main(int argc, char **argv)
 //! [1]
 
 //! [2]
-    off->addTransition(&button, SIGNAL(clicked()), on);
-    on->addTransition(&button, SIGNAL(clicked()), off);
+    off->addTransition(&button, &QAbstractButton::clicked, on);
+    on->addTransition(&button, &QAbstractButton::clicked, off);
 //! [2]
 
 //! [3]

@@ -217,7 +217,8 @@ void Window::buildMachine()
 //![5]
     machine->setInitialState(inputState);
 
-    connect(machine, SIGNAL(finished()), qApp, SLOT(quit()));
+    connect(machine, &QStateMachine::finished,
+            qApp, &QApplication::quit);
 
     machine->start();
 }
