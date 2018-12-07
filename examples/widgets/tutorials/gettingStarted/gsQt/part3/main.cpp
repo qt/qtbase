@@ -71,7 +71,8 @@ Notepad::Notepad()
     textEdit = new QTextEdit;
     quitButton = new QPushButton(tr("Quit"));
 
-    connect(quitButton, SIGNAL(clicked()), this, SLOT(quit()));
+    connect(quitButton, &QPushButton::clicked,
+            this, &Notepad::quit);
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(textEdit);

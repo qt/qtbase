@@ -86,16 +86,24 @@ AddressBook::AddressBook(QWidget *parent)
     dialog = new FindDialog(this);
 //! [instantiating FindDialog]
 
-    connect(addButton, SIGNAL(clicked()), this, SLOT(addContact()));
-    connect(submitButton, SIGNAL(clicked()), this, SLOT(submitContact()));
-    connect(editButton, SIGNAL(clicked()), this, SLOT(editContact()));
-    connect(cancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
-    connect(removeButton, SIGNAL(clicked()), this, SLOT(removeContact()));
+    connect(addButton, &QPushButton::clicked,
+            this, &AddressBook::addContact);
+    connect(submitButton, &QPushButton::clicked,
+            this, &AddressBook::submitContact);
+    connect(editButton, &QPushButton::clicked,
+            this, &AddressBook::editContact);
+    connect(removeButton, &QPushButton::clicked,
+            this, &AddressBook::removeContact);
+    connect(cancelButton, &QPushButton::clicked,
+            this, &AddressBook::cancel);
 //! [signals and slots for find]
-    connect(findButton, SIGNAL(clicked()), this, SLOT(findContact()));
+    connect(findButton, &QPushButton::clicked,
+            this, &AddressBook::findContact);
 //! [signals and slots for find]
-    connect(nextButton, SIGNAL(clicked()), this, SLOT(next()));
-    connect(previousButton, SIGNAL(clicked()), this, SLOT(previous()));
+    connect(nextButton, &QPushButton::clicked,
+            this, &AddressBook::next);
+    connect(previousButton, &QPushButton::clicked,
+            this, &AddressBook::previous);
 
     QVBoxLayout *buttonLayout1 = new QVBoxLayout;
     buttonLayout1->addWidget(addButton);
