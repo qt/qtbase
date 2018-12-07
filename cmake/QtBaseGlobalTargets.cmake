@@ -39,7 +39,7 @@ install(FILES
 ## Library to hold global features:
 add_library(Qt_global_Config INTERFACE)
 
-qt_feature_module_begin(LIBRARY QtCore
+qt_feature_module_begin(LIBRARY Core
     PUBLIC_FILE src/corelib/global/qconfig.h
     PRIVATE_FILE src/corelib/global/qconfig_p.h
 )

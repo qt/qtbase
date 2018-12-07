@@ -67,12 +67,12 @@ set(QT_PLATFORM_DEFINITION_DIR ${QT_DEFAULT_PLATFORM_DEFINITION_DIR}
     CACHE PATH "Path to directory that contains qplatformdefs.h")
 set(QT_NAMESPACE "" CACHE STRING "Qt Namespace")
 
-macro(_set_known_qt_modules)
+macro(qt_internal_set_known_qt_modules)
     set(KNOWN_QT_MODULES ${ARGN} CACHE INTERNAL "Known Qt modules" FORCE)
 endmacro()
 
 # Reset:
-_set_known_qt_modules("")
+qt_internal_set_known_qt_modules("")
 
 # For adjusting variables when running tests, we need to know what
 # the correct variable is for separating entries in PATH-alike
@@ -143,6 +143,18 @@ function(qt_ensure_perl)
 endfunction()
 
 
+function(qt_ensure_sync_qt)
+    qt_ensure_perl()
+    if(NOT DEFINED QT_SYNCQT)
+        get_target_property(mocPath "Qt::moc" LOCATION)
+        get_filename_component(binDirectory "${mocPath}" DIRECTORY)
+        # We could put this into the cache, but on the other hand there's no real need to
+        # pollute the app's cache with this. For the first qtbase build, the variable is
+        # set in global scope.
+        set(QT_SYNCQT "${binDirectory}/syncqt.pl")
+    endif()
+endfunction()
+
 # A version of cmake_parse_arguments that makes sure all arguments are processed and errors out
 # with a message about ${type} having received unknown arguments.
 macro(qt_parse_all_arguments result type flags options multiopts)
@@ -152,13 +164,6 @@ macro(qt_parse_all_arguments result type flags options multiopts)
     endif()
 endmacro()
 
-
-# Determines the directory where the generated class-style header files for
-# the specified module are located and stores the result in the given result
-# variable.
-function(qt_internal_module_include_dir result module)
-    set(${result} "${PROJECT_BINARY_DIR}/include/${module}" PARENT_SCOPE)
-endfunction()
 
 function(qt_internal_add_link_flags target to_add)
     get_target_property(flags "${target}" LINK_FLAGS)
@@ -262,13 +267,16 @@ endfunction()
 #  * foo_versioned with the value "Qt5Core" (based on major Qt version)
 #  * foo_upper with the value "CORE"
 #  * foo_lower with the value "core"
+#  * foo_include_dir with the module's include directory in the binary tree
 function(qt_internal_module_info result target)
-    set("${result}" "Qt${target}" PARENT_SCOPE)
+    set(module "Qt${target}")
+    set("${result}" "${module}" PARENT_SCOPE)
     set("${result}_versioned" "Qt${PROJECT_VERSION_MAJOR}${target}" PARENT_SCOPE)
     string(TOUPPER "${target}" upper)
     string(TOLOWER "${target}" lower)
     set("${result}_upper" "${upper}" PARENT_SCOPE)
     set("${result}_lower" "${lower}" PARENT_SCOPE)
+    set("${result}_include_dir" "${PROJECT_BINARY_DIR}/include/${module}" PARENT_SCOPE)
 endfunction()
 
 
@@ -503,9 +511,9 @@ function(qt_internal_library_deprecation_level result)
 endfunction()
 
 
-function(qt_read_headers_pri module resultVarPrefix)
-    qt_internal_module_include_dir(include_dir "${module}")
-    file(STRINGS "${include_dir}/headers.pri" headers_pri_contents)
+function(qt_read_headers_pri target resultVarPrefix)
+    qt_internal_module_info(module "${target}")
+    file(STRINGS "${module_include_dir}/headers.pri" headers_pri_contents)
     foreach(line ${headers_pri_contents})
         if("${line}" MATCHES "SYNCQT.HEADER_FILES = (.*)")
             set(public_module_headers "${CMAKE_MATCH_1}")
@@ -517,7 +525,7 @@ function(qt_read_headers_pri module resultVarPrefix)
             set(generated_module_headers "${CMAKE_MATCH_1}")
             separate_arguments(generated_module_headers UNIX_COMMAND "${generated_module_headers}")
             foreach(generated_header ${generated_module_headers})
-                list(APPEND public_module_headers "${include_dir}/${generated_header}")
+                list(APPEND public_module_headers "${module_include_dir}/${generated_header}")
             endforeach()
         # Ignore INJECTIONS!
         elseif("${line}" MATCHES "SYNCQT.([A-Z_]+)_HEADER_FILES = (.+)")
@@ -557,12 +565,17 @@ endfunction()
 #
 # Target is without leading "Qt". So e.g. the "QtCore" module has the target "Core".
 function(add_qt_module target)
+    qt_internal_module_info(module "${target}")
+
+    # Process arguments:
     qt_parse_all_arguments(arg "add_qt_module" "NO_MODULE_HEADERS;STATIC" "CONFIG_MODULE_NAME"
         "${__default_private_args};${__default_public_args};FEATURE_DEPENDENCIES" ${ARGN})
 
-    qt_internal_module_info(module "${target}")
+    if(NOT DEFINED arg_CONFIG_MODULE_NAME)
+        set(arg_CONFIG_MODULE_NAME "${module_lower}")
+    endif()
 
-    _set_known_qt_modules("${KNOWN_QT_MODULES}" "${target}")
+    qt_internal_set_known_qt_modules("${KNOWN_QT_MODULES}" "${target}")
 
     ### Define Targets:
     if(${arg_STATIC})
@@ -578,10 +591,6 @@ function(add_qt_module target)
     set(target_private "${target}Private")
     add_library("${target_private}" INTERFACE)
     qt_internal_add_target_aliases("${target_private}")
-
-    if(NOT DEFINED arg_CONFIG_MODULE_NAME)
-        set(arg_CONFIG_MODULE_NAME "${module_lower}")
-    endif()
 
     # Import global features
     if(NOT "${target}" STREQUAL "Core")
@@ -603,15 +612,7 @@ function(add_qt_module target)
     if(${arg_NO_MODULE_HEADERS})
         set_target_properties("${target}" PROPERTIES MODULE_HAS_HEADERS OFF)
     else()
-        qt_ensure_perl()
-        if(NOT DEFINED QT_SYNCQT)
-            get_target_property(mocPath "Qt::moc" LOCATION)
-            get_filename_component(binDirectory "${mocPath}" DIRECTORY)
-            # We could put this into the cache, but on the other hand there's no real need to
-            # pollute the app's cache with this. For the first qtbase build, the variable is
-            # set in global scope.
-            set(QT_SYNCQT "${binDirectory}/syncqt.pl")
-        endif()
+        qt_ensure_sync_qt()
         execute_process(COMMAND "${HOST_PERL}" -w "${QT_SYNCQT}" -quiet -module "${module}" -version "${PROJECT_VERSION}" -outdir "${PROJECT_BINARY_DIR}" "${PROJECT_SOURCE_DIR}")
 
         set_target_properties("${target}" PROPERTIES MODULE_HAS_HEADERS ON)
@@ -622,12 +623,10 @@ function(add_qt_module target)
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}"
         OUTPUT_NAME "${module_versioned}")
 
-    qt_internal_module_include_dir(include_dir "${module}")
-
     set(configureFile "${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
     if(EXISTS "${configureFile}")
         qt_feature_module_begin(
-            LIBRARY "${module}"
+            LIBRARY "${target}"
             PUBLIC_FILE "qt${arg_CONFIG_MODULE_NAME}-config.h"
             PRIVATE_FILE "qt${arg_CONFIG_MODULE_NAME}-config_p.h"
             PUBLIC_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
@@ -651,15 +650,15 @@ function(add_qt_module target)
     extend_target("${target}"
         SOURCES ${arg_SOURCES}
         PUBLIC_INCLUDE_DIRECTORIES
-            $<BUILD_INTERFACE:${include_dir}>
+            $<BUILD_INTERFACE:${module_include_dir}>
             $<INSTALL_INTERFACE:include/${module}>
             ${arg_PUBLIC_INCLUDE_DIRECTORIES}
         INCLUDE_DIRECTORIES
             "${CMAKE_CURRENT_SOURCE_DIR}"
             "${CMAKE_CURRENT_BINARY_DIR}"
             $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-            "${include_dir}/${PROJECT_VERSION}"
-            "${include_dir}/${PROJECT_VERSION}/${module}"
+            "${module_include_dir}/${PROJECT_VERSION}"
+            "${module_include_dir}/${PROJECT_VERSION}/${module}"
             ${arg_INCLUDE_DIRECTORIES}
         PUBLIC_DEFINES
             ${arg_PUBLIC_DEFINES}
@@ -684,12 +683,11 @@ function(add_qt_module target)
     )
 
     ### FIXME: Can we replace headers.pri?
-    qt_internal_module_include_dir(include_dir "${module}")
     if(NOT ${arg_NO_MODULE_HEADERS})
-        qt_read_headers_pri("${module}" "module_headers")
+        qt_read_headers_pri("${target}" "module_headers")
         set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${module_headers_public}")
         set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${module_headers_private}")
-        set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${include_dir}/${module}Depends")
+        set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${module_include_dir}/${module}Depends")
     endif()
 
     if(DEFINED module_headers_private)
@@ -751,11 +749,10 @@ function(add_qt_module target)
 
     target_link_libraries("${target_private}" INTERFACE "${target}" "${qt_libs_private}")
 
-    qt_internal_module_include_dir(include_dir "${module}")
     target_include_directories("${target_private}" INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-        $<BUILD_INTERFACE:${include_dir}/${PROJECT_VERSION}>
-        $<BUILD_INTERFACE:${include_dir}/${PROJECT_VERSION}/${module}>
+        $<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}>
+        $<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>
         $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}>
         $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>
     )
@@ -1116,19 +1113,19 @@ function(qt_create_qdbusxml2cpp_command target infile)
 endfunction()
 
 
-function(qt_generate_forwarding_headers module)
+function(qt_generate_forwarding_headers target)
     qt_parse_all_arguments(arg "qt_generate_forwarding_headers"
                            "PRIVATE" "SOURCE;DESTINATION" "CLASSES" ${ARGN})
-    qt_internal_module_include_dir(include_dir "${module}")
+    qt_internal_module_info(module "${target}")
 
     if (NOT arg_DESTINATION)
         get_filename_component(arg_DESTINATION "${arg_SOURCE}" NAME)
     endif()
 
     if (arg_PRIVATE)
-        set(main_fwd "${include_dir}/${PROJECT_VERSION}/${module}/private/${arg_DESTINATION}")
+        set(main_fwd "${module_include_dir}/${PROJECT_VERSION}/${module}/private/${arg_DESTINATION}")
     else()
-        set(main_fwd "${include_dir}/${arg_DESTINATION}")
+        set(main_fwd "${module_include_dir}/${arg_DESTINATION}")
     endif()
 
     get_filename_component(main_fwd_dir "${main_fwd}" DIRECTORY)
@@ -1139,7 +1136,7 @@ function(qt_generate_forwarding_headers module)
     foreach(class_fwd ${arg_CLASSES})
         set(class_fwd_contents "#include \"${fwd_hdr}\"")
         message("Generating forwarding header: ${class_fwd} -> ${relpath}.")
-        file(GENERATE OUTPUT "${include_dir}/${class_fwd}" CONTENT "${class_fwd_contents}")
+        file(GENERATE OUTPUT "${module_include_dir}/${class_fwd}" CONTENT "${class_fwd_contents}")
     endforeach()
 endfunction()
 

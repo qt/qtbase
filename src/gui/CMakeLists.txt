@@ -470,11 +470,11 @@ if (QT_FEATURE_vulkan)
         COMMENT "Generating vulkan data"
     )
 
-    qt_generate_forwarding_headers("QtGui" SOURCE "${vulkan_fun}"
+    qt_generate_forwarding_headers("Gui" SOURCE "${vulkan_fun}"
         DESTINATION qvulkanfunctions.h
         CLASSES QVulkanFunctions QVulkanDeviceFunctions
     )
-    qt_generate_forwarding_headers("QtGui" SOURCE "${vulkan_fun_p}"
+    qt_generate_forwarding_headers("Gui" SOURCE "${vulkan_fun_p}"
         DESTINATION qvulkanfunctions_p.h PRIVATE
     )
 
@@ -488,7 +488,7 @@ endif()
 # headers. So a private QtGui header is #include <private/qfoo_p.h> and
 # a qpa header is #include <qpa/qplatformfoo.h>, both of them implying
 # linkage against Qt::GuiPrivate.
-qt_read_headers_pri("QtGui" "module_headers")
+qt_read_headers_pri("Gui" "module_headers")
 install(FILES ${module_headers_qpa} DESTINATION ${INSTALL_INCLUDEDIR}/QtGui/${PROJECT_VERSION}/QtGui/qpa)
 
 add_qt_docs(./doc/qtgui.qdocconf)
