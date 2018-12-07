@@ -161,23 +161,23 @@ function(qt_internal_module_include_dir result module)
 endfunction()
 
 function(qt_internal_add_link_flags target to_add)
-    get_target_property(_flags "${target}" LINK_FLAGS)
-    if ("${_flags}" STREQUAL "_flags-NOTFOUND")
-        set(_flags "")
+    get_target_property(flags "${target}" LINK_FLAGS)
+    if ("${flags}" STREQUAL "flags-NOTFOUND")
+        set(flags "")
     endif()
-    string(APPEND _flags " ${to_add}")
-    set_target_properties("${target}" PROPERTIES LINK_FLAGS "${_flags}")
+    string(APPEND flags " ${to_add}")
+    set_target_properties("${target}" PROPERTIES LINK_FLAGS "${flags}")
 endfunction()
 
 function(qt_internal_add_linker_version_script target)
-    qt_parse_all_arguments(_arg "qt_internal_add_linker" "INTERNAL" "" "PRIVATE_HEADERS" ${ARGN})
+    qt_parse_all_arguments(arg "qt_internal_add_linker" "INTERNAL" "" "PRIVATE_HEADERS" ${ARGN})
 
     if (TEST_ld_version_script)
-        if (_arg_INTERNAL)
+        if (arg_INTERNAL)
             set(contents "Qt_${PROJECT_VERSION_MAJOR}_PRIVATE_API { *; };")
         else()
             set(contents "Qt_${PROJECT_VERSION_MAJOR}_PRIVATE_API {\n    qt_private_api_tag*;\n")
-            foreach(ph ${_arg_PRIVATE_HEADERS})
+            foreach(ph ${arg_PRIVATE_HEADERS})
                 string(APPEND contents "    @FILE:${ph}@\n")
             endforeach()
             string(APPEND contents "};\n")
@@ -324,7 +324,7 @@ endfunction()
 # This function attempts to (poorly) parse the given resourceFile (.qrc) and
 # determine the dependencies, i.e. which files are intended for inclusion into
 # the Qt resource.
-function(qt_extract_qrc_dependencies resourceFile _out_depends _rc_depends)
+function(qt_extract_qrc_dependencies resourceFile out_depends_ rc_depends_)
     get_filename_component(rc_path ${resourceFile} PATH)
 
     if(EXISTS "${infile}")
@@ -351,8 +351,8 @@ function(qt_extract_qrc_dependencies resourceFile _out_depends _rc_depends)
         set(out_depends)
     endif()
 
-    set(${_out_depends} ${out_depends} PARENT_SCOPE)
-    set(${_rc_depends} ${RC_DEPENDS} PARENT_SCOPE)
+    set(${out_depends_} ${out_depends} PARENT_SCOPE)
+    set(${rc_depends_} ${RC_DEPENDS} PARENT_SCOPE)
 endfunction()
 
 
@@ -421,27 +421,27 @@ function(extend_target target)
     if (NOT TARGET "${target}")
         message(FATAL_ERROR "Trying to extend non-existing target \"${target}\".")
     endif()
-    qt_parse_all_arguments(_arg "extend_target" "" ""
+    qt_parse_all_arguments(arg "extend_target" "" ""
         "CONDITION;${__default_public_args};${__default_private_args};COMPILE_FLAGS" ${ARGN})
-    if ("x${_arg_CONDITION}" STREQUAL x)
-        set(_arg_CONDITION ON)
+    if ("x${arg_CONDITION}" STREQUAL x)
+        set(arg_CONDITION ON)
     endif()
 
-    qt_evaluate_config_expression(result ${_arg_CONDITION})
+    qt_evaluate_config_expression(result ${arg_CONDITION})
     if (${result})
         set(dbus_sources "")
-        foreach(adaptor ${_arg_DBUS_ADAPTOR_SOURCES})
-            qt_create_qdbusxml2cpp_command("${target}" "${adaptor}" ADAPTOR FLAGS "${_arg_DBUS_ADAPTOR_FLAGS}")
+        foreach(adaptor ${arg_DBUS_ADAPTOR_SOURCES})
+            qt_create_qdbusxml2cpp_command("${target}" "${adaptor}" ADAPTOR FLAGS "${arg_DBUS_ADAPTOR_FLAGS}")
             list(APPEND dbus_sources "${sources}")
         endforeach()
-        foreach(interface ${_arg_DBUS_INTERFACE_SOURCES})
-            qt_create_qdbusxml2cpp_command("${target}" "${interface}" INTERFACE FLAGS "${_arg_DBUS_INTERFACE_FLAGS}")
+        foreach(interface ${arg_DBUS_INTERFACE_SOURCES})
+            qt_create_qdbusxml2cpp_command("${target}" "${interface}" INTERFACE FLAGS "${arg_DBUS_INTERFACE_FLAGS}")
             list(APPEND dbus_sources "${sources}")
         endforeach()
-        qt_internal_process_automatic_sources("${target}" "${_arg_SOURCES}")
+        qt_internal_process_automatic_sources("${target}" "${arg_SOURCES}")
 
         set(must_push_features OFF)
-        foreach(dep ${_arg_LIBRARIES} ${_arg_PUBLIC_LIBRARIES})
+        foreach(dep ${arg_LIBRARIES} ${arg_PUBLIC_LIBRARIES})
             if("${dep}" MATCHES "^Qt::((.+)(Private)|(.+))$")
                 if (${CMAKE_MATCH_COUNT} EQUAL 3)
                     set(depTarget ${CMAKE_MATCH_2})
@@ -464,13 +464,13 @@ function(extend_target target)
             endif()
         endforeach()
 
-        target_sources("${target}" PRIVATE ${_arg_SOURCES} ${dbus_sources})
-        if (_arg_COMPILE_FLAGS)
-            set_source_files_properties(${_arg_SOURCES} PROPERTIES COMPILE_FLAGS "${_arg_COMPILE_FLAGS}")
+        target_sources("${target}" PRIVATE ${arg_SOURCES} ${dbus_sources})
+        if (arg_COMPILE_FLAGS)
+            set_source_files_properties(${arg_SOURCES} PROPERTIES COMPILE_FLAGS "${arg_COMPILE_FLAGS}")
         endif()
-        target_include_directories("${target}" PUBLIC ${_arg_PUBLIC_INCLUDE_DIRECTORIES} PRIVATE ${_arg_INCLUDE_DIRECTORIES})
-        target_compile_definitions("${target}" PUBLIC ${_arg_PUBLIC_DEFINES} PRIVATE ${_arg_DEFINES})
-        target_link_libraries("${target}" PUBLIC ${_arg_PUBLIC_LIBRARIES} PRIVATE ${_arg_LIBRARIES})
+        target_include_directories("${target}" PUBLIC ${arg_PUBLIC_INCLUDE_DIRECTORIES} PRIVATE ${arg_INCLUDE_DIRECTORIES})
+        target_compile_definitions("${target}" PUBLIC ${arg_PUBLIC_DEFINES} PRIVATE ${arg_DEFINES})
+        target_link_libraries("${target}" PUBLIC ${arg_PUBLIC_LIBRARIES} PRIVATE ${arg_LIBRARIES})
 
         if(must_push_features)
             qt_push_features_into_parent_scope()
@@ -530,7 +530,7 @@ endfunction()
 # and testing. Any features defined as well as any features coming from dependencies to
 # this module are imported into the scope of the calling feature.
 function(add_qt_module name)
-    qt_parse_all_arguments(_arg "add_qt_module" "NO_MODULE_HEADERS;STATIC" "CONFIG_MODULE_NAME"
+    qt_parse_all_arguments(arg "add_qt_module" "NO_MODULE_HEADERS;STATIC" "CONFIG_MODULE_NAME"
         "${__default_private_args};${__default_public_args};FEATURE_DEPENDENCIES" ${ARGN})
 
     _qt_module_name("${name}" module)
@@ -542,7 +542,7 @@ function(add_qt_module name)
     _set_known_qt_modules("${KNOWN_QT_MODULES}" "${target}")
 
     ### Define Targets:
-    if(${_arg_STATIC})
+    if(${arg_STATIC})
         add_library("${target}" STATIC)
     elseif(${QT_BUILD_SHARED_LIBS})
         add_library("${target}" SHARED)
@@ -556,8 +556,8 @@ function(add_qt_module name)
     add_library("${target_private}" INTERFACE)
     add_library("Qt::${target_private}" ALIAS ${target_private})
 
-    if(NOT DEFINED _arg_CONFIG_MODULE_NAME)
-        set(_arg_CONFIG_MODULE_NAME "${name_lower}")
+    if(NOT DEFINED arg_CONFIG_MODULE_NAME)
+        set(arg_CONFIG_MODULE_NAME "${name_lower}")
     endif()
 
     # Import global features
@@ -567,7 +567,7 @@ function(add_qt_module name)
 
     # Fetch features from dependencies and make them available to the
     # caller as well as to the local scope for configure.cmake evaluation.
-    foreach(dep ${_arg_LIBRARIES} ${_arg_PUBLIC_LIBRARIES} ${_arg_FEATURE_DEPENDENCIES})
+    foreach(dep ${arg_LIBRARIES} ${arg_PUBLIC_LIBRARIES} ${arg_FEATURE_DEPENDENCIES})
         if("${dep}" MATCHES "(Qt::.+)Private")
             set(publicDep ${CMAKE_MATCH_1})
             qt_pull_features_into_current_scope(PRIVATE_FEATURES ${publicDep})
@@ -577,7 +577,7 @@ function(add_qt_module name)
         qt_pull_features_into_current_scope(PUBLIC_FEATURES ${publicDep})
     endforeach()
 
-    if(NOT ${_arg_NO_MODULE_HEADERS})
+    if(NOT ${arg_NO_MODULE_HEADERS})
         qt_ensure_perl()
         if(NOT DEFINED QT_SYNCQT)
             get_target_property(mocPath "Qt::moc" LOCATION)
@@ -590,7 +590,7 @@ function(add_qt_module name)
         execute_process(COMMAND "${HOST_PERL}" -w "${QT_SYNCQT}" -quiet -module "${module}" -version "${PROJECT_VERSION}" -outdir "${PROJECT_BINARY_DIR}" "${PROJECT_SOURCE_DIR}")
     endif()
 
-    if(NOT ${_arg_NO_MODULE_HEADERS})
+    if(NOT ${arg_NO_MODULE_HEADERS})
         set_target_properties("${target}" PROPERTIES MODULE_HAS_HEADERS ON)
     else()
         set_target_properties("${target}" PROPERTIES MODULE_HAS_HEADERS OFF)
@@ -606,17 +606,17 @@ function(add_qt_module name)
     if(EXISTS "${configureFile}")
         qt_feature_module_begin(
             LIBRARY "${module}"
-            PUBLIC_FILE "qt${_arg_CONFIG_MODULE_NAME}-config.h"
-            PRIVATE_FILE "qt${_arg_CONFIG_MODULE_NAME}-config_p.h"
-            PUBLIC_DEPENDENCIES ${_arg_FEATURE_DEPENDENCIES}
-            PRIVATE_DEPENDENCIES ${_arg_FEATURE_DEPENDENCIES}
+            PUBLIC_FILE "qt${arg_CONFIG_MODULE_NAME}-config.h"
+            PRIVATE_FILE "qt${arg_CONFIG_MODULE_NAME}-config_p.h"
+            PUBLIC_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
+            PRIVATE_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
         )
         include(${configureFile})
         qt_feature_module_end("${target}")
         qt_pull_features_into_current_scope(PUBLIC_FEATURES PRIVATE_FEATURES "${target}")
 
-        set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/qt${_arg_CONFIG_MODULE_NAME}-config.h")
-        set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/qt${_arg_CONFIG_MODULE_NAME}-config_p.h")
+        set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/qt${arg_CONFIG_MODULE_NAME}-config.h")
+        set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/qt${arg_CONFIG_MODULE_NAME}-config_p.h")
 
         if("${target}" STREQUAL "Core")
            set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig.h")
@@ -627,23 +627,23 @@ function(add_qt_module name)
     qt_internal_library_deprecation_level(deprecation_define)
 
     extend_target("${target}"
-        SOURCES ${_arg_SOURCES}
+        SOURCES ${arg_SOURCES}
         PUBLIC_INCLUDE_DIRECTORIES
             $<BUILD_INTERFACE:${include_dir}>
             $<INSTALL_INTERFACE:include/${module}>
-            ${_arg_PUBLIC_INCLUDE_DIRECTORIES}
+            ${arg_PUBLIC_INCLUDE_DIRECTORIES}
         INCLUDE_DIRECTORIES
             "${CMAKE_CURRENT_SOURCE_DIR}"
             "${CMAKE_CURRENT_BINARY_DIR}"
             $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
             "${include_dir}/${PROJECT_VERSION}"
             "${include_dir}/${PROJECT_VERSION}/${module}"
-            ${_arg_INCLUDE_DIRECTORIES}
+            ${arg_INCLUDE_DIRECTORIES}
         PUBLIC_DEFINES
-            ${_arg_PUBLIC_DEFINES}
+            ${arg_PUBLIC_DEFINES}
             QT_${name_upper}_LIB
         DEFINES
-            ${_arg_DEFINES}
+            ${arg_DEFINES}
             QT_NO_CAST_TO_ASCII QT_ASCII_CAST_WARNINGS
             QT_MOC_COMPAT #we don't need warnings from calling moc code in our generated code
             QT_USE_QSTRINGBUILDER
@@ -652,18 +652,18 @@ function(add_qt_module name)
             QT_BUILD_${name_upper}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
             "${deprecation_define}"
         PUBLIC_LIBRARIES
-            ${_arg_PUBLIC_LIBRARIES}
+            ${arg_PUBLIC_LIBRARIES}
         LIBRARIES
-            ${_arg_LIBRARIES}
-        DBUS_ADAPTOR_SOURCES "${_arg_DBUS_ADAPTOR_SOURCES}"
-        DBUS_ADAPTOR_FLAGS "${_arg_DBUS_ADAPTOR_FLAGS}"
-        DBUS_INTERFACE_SOURCES "${_arg_DBUS_INTERFACE_SOURCES}"
-        DBUS_INTERFACE_FLAGS "${_arg_DBUS_INTERFACE_FLAGS}"
+            ${arg_LIBRARIES}
+        DBUS_ADAPTOR_SOURCES "${arg_DBUS_ADAPTOR_SOURCES}"
+        DBUS_ADAPTOR_FLAGS "${arg_DBUS_ADAPTOR_FLAGS}"
+        DBUS_INTERFACE_SOURCES "${arg_DBUS_INTERFACE_SOURCES}"
+        DBUS_INTERFACE_FLAGS "${arg_DBUS_INTERFACE_FLAGS}"
     )
 
     ### FIXME: Can we replace headers.pri?
     qt_internal_module_include_dir(include_dir "${module}")
-    if(NOT ${_arg_NO_MODULE_HEADERS})
+    if(NOT ${arg_NO_MODULE_HEADERS})
         qt_read_headers_pri("${module}" "module_headers")
         set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${module_headers_public}")
         set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${module_headers_private}")
@@ -676,7 +676,7 @@ function(add_qt_module name)
         qt_internal_add_linker_version_script("${target}")
     endif()
 
-    qt_pull_features_into_current_scope(PUBLIC_FEATURES PRIVATE_FEATURES ${_arg_FEATURE_DEPENDENCIES})
+    qt_pull_features_into_current_scope(PUBLIC_FEATURES PRIVATE_FEATURES ${arg_FEATURE_DEPENDENCIES})
 
     install(TARGETS "${target}" "${target_private}" EXPORT "${versioned_module_name}Targets"
         LIBRARY DESTINATION ${INSTALL_LIBDIR}
@@ -719,15 +719,15 @@ function(add_qt_module name)
     endif()
 
     # When a public module depends on private, also make its private depend on the other's private
-    set(_qt_libs_private "")
+    set(qt_libs_private "")
     foreach(it ${KNOWN_QT_MODULES})
-        list(FIND _arg_LIBRARIES "Qt::${it}Private" _pos)
-        if(_pos GREATER -1)
-            list(APPEND _qt_libs_private "Qt::${it}Private")
+        list(FIND arg_LIBRARIES "Qt::${it}Private" pos)
+        if(pos GREATER -1)
+            list(APPEND qt_libs_private "Qt::${it}Private")
         endif()
     endforeach()
 
-    target_link_libraries("${target_private}" INTERFACE "${target}" "${_qt_libs_private}")
+    target_link_libraries("${target_private}" INTERFACE "${target}" "${qt_libs_private}")
 
     qt_internal_module_include_dir(include_dir "${module}")
     target_include_directories("${target_private}" INTERFACE
@@ -751,13 +751,13 @@ function(add_qt_plugin name)
     set(module "${name}")
     string(TOUPPER "${name}" name_upper)
 
-    qt_parse_all_arguments(_arg "add_qt_plugin" "" "TYPE" "${__default_private_args};${__default_public_args}" ${ARGN})
-    if (NOT DEFINED _arg_TYPE)
+    qt_parse_all_arguments(arg "add_qt_plugin" "" "TYPE" "${__default_private_args};${__default_public_args}" ${ARGN})
+    if (NOT DEFINED arg_TYPE)
         message(FATAL_ERROR "add_qt_plugin called without setting a TYPE.")
     endif()
 
     add_library("${module}")
-    set_target_properties("${module}" PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_PLUGINSDIR}/${_arg_TYPE}")
+    set_target_properties("${module}" PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}")
     set_target_properties("${module}" PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}")
 
     # Import global features
@@ -765,7 +765,7 @@ function(add_qt_plugin name)
 
     # Fetch features from dependencies and make them available to the
     # caller as well as to the local scope for configure.cmake evaluation.
-    foreach(dep ${_arg_LIBRARIES} ${_arg_PUBLIC_LIBRARIES})
+    foreach(dep ${arg_LIBRARIES} ${arg_PUBLIC_LIBRARIES})
         if("${dep}" MATCHES "(Qt::.+)Private")
             set(publicDep ${CMAKE_MATCH_1})
             qt_pull_features_into_current_scope(PRIVATE_FEATURES ${publicDep})
@@ -778,16 +778,16 @@ function(add_qt_plugin name)
     qt_internal_library_deprecation_level(deprecation_define)
 
     extend_target("${module}"
-        SOURCES ${_arg_SOURCES}
+        SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             "${CMAKE_CURRENT_SOURCE_DIR}"
             "${CMAKE_CURRENT_BINARY_DIR}"
-            ${_arg_INCLUDE_DIRECTORIES}
-        PUBLIC_INCLUDE_DIRECTORIES ${_arg_PUBLIC_INCLUDE_DIRECTORIES}
-        LIBRARIES ${_arg_LIBRARIES}
-        PUBLIC_LIBRARIES ${_arg_PUBLIC_LIBRARIES}
+            ${arg_INCLUDE_DIRECTORIES}
+        PUBLIC_INCLUDE_DIRECTORIES ${arg_PUBLIC_INCLUDE_DIRECTORIES}
+        LIBRARIES ${arg_LIBRARIES}
+        PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
         DEFINES
-            ${_arg_DEFINES}
+            ${arg_DEFINES}
             QT_NO_CAST_TO_ASCII QT_ASCII_CAST_WARNINGS
             QT_MOC_COMPAT #we don't need warnings from calling moc code in our generated code
             QT_USE_QSTRINGBUILDER
@@ -797,16 +797,16 @@ function(add_qt_plugin name)
             "${deprecation_define}"
         PUBLIC_DEFINES
             QT_${name_upper}_LIB
-            ${_arg_PUBLIC_DEFINES}
-        DBUS_ADAPTOR_SOURCES "${_arg_DBUS_ADAPTOR_SOURCES}"
-        DBUS_ADAPTOR_FLAGS "${_arg_DBUS_ADAPTOR_FLAGS}"
-        DBUS_INTERFACE_SOURCES "${_arg_DBUS_INTERFACE_SOURCES}"
-        DBUS_INTERFACE_FLAGS "${_arg_DBUS_INTERFACE_FLAGS}"
+            ${arg_PUBLIC_DEFINES}
+        DBUS_ADAPTOR_SOURCES "${arg_DBUS_ADAPTOR_SOURCES}"
+        DBUS_ADAPTOR_FLAGS "${arg_DBUS_ADAPTOR_FLAGS}"
+        DBUS_INTERFACE_SOURCES "${arg_DBUS_INTERFACE_SOURCES}"
+        DBUS_INTERFACE_FLAGS "${arg_DBUS_INTERFACE_FLAGS}"
     )
 
     install(TARGETS "${module}" EXPORT "${module}Targets"
-        LIBRARY DESTINATION ${INSTALL_PLUGINSDIR}/${_arg_TYPE}
-        ARCHIVE DESTINATION ${INSTALL_LIBDIR}/${_arg_TYPE}
+        LIBRARY DESTINATION ${INSTALL_PLUGINSDIR}/${arg_TYPE}
+        ARCHIVE DESTINATION ${INSTALL_LIBDIR}/${arg_TYPE}
         )
     install(EXPORT "${module}Targets" NAMESPACE Qt:: DESTINATION ${INSTALL_LIBDIR}/cmake)
 
@@ -826,30 +826,30 @@ endfunction()
 # Please consider to use a more specific version target like the one created
 # by add_qt_test or add_qt_tool below.
 function(add_qt_executable name)
-    qt_parse_all_arguments(_arg "add_qt_executable" "GUI" "OUTPUT_DIRECTORY" "EXE_FLAGS;${__default_private_args}" ${ARGN})
+    qt_parse_all_arguments(arg "add_qt_executable" "GUI" "OUTPUT_DIRECTORY" "EXE_FLAGS;${__default_private_args}" ${ARGN})
 
-    if ("x${_arg_OUTPUT_DIRECTORY}" STREQUAL "x")
-        set(_arg_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}")
+    if ("x${arg_OUTPUT_DIRECTORY}" STREQUAL "x")
+        set(arg_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}")
     endif()
 
-    add_executable("${name}" ${_arg_EXE_FLAGS})
+    add_executable("${name}" ${arg_EXE_FLAGS})
     extend_target("${name}"
-        SOURCES ${_arg_SOURCES}
+        SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             "${CMAKE_CURRENT_SOURCE_DIR}"
             "${CMAKE_CURRENT_BINARY_DIR}"
-            ${_arg_INCLUDE_DIRECTORIES}
-        DEFINES ${_arg_DEFINES}
-        LIBRARIES ${_arg_LIBRARIES}
-        DBUS_ADAPTOR_SOURCES "${_arg_DBUS_ADAPTOR_SOURCES}"
-        DBUS_ADAPTOR_FLAGS "${_arg_DBUS_ADAPTOR_FLAGS}"
-        DBUS_INTERFACE_SOURCES "${_arg_DBUS_INTERFACE_SOURCES}"
-        DBUS_INTERFACE_FLAGS "${_arg_DBUS_INTERFACE_FLAGS}"
+            ${arg_INCLUDE_DIRECTORIES}
+        DEFINES ${arg_DEFINES}
+        LIBRARIES ${arg_LIBRARIES}
+        DBUS_ADAPTOR_SOURCES "${arg_DBUS_ADAPTOR_SOURCES}"
+        DBUS_ADAPTOR_FLAGS "${arg_DBUS_ADAPTOR_FLAGS}"
+        DBUS_INTERFACE_SOURCES "${arg_DBUS_INTERFACE_SOURCES}"
+        DBUS_INTERFACE_FLAGS "${arg_DBUS_INTERFACE_FLAGS}"
     )
     set_target_properties("${name}" PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${_arg_OUTPUT_DIRECTORY}"
-        WIN32_EXECUTABLE "${_arg_GUI}"
-        MACOSX_BUNDLE "${_arg_GUI}"
+        RUNTIME_OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}"
+        WIN32_EXECUTABLE "${arg_GUI}"
+        MACOSX_BUNDLE "${arg_GUI}"
     )
 
     qt_push_features_into_parent_scope()
@@ -858,24 +858,24 @@ endfunction()
 
 # This function creates a CMake test target with the specified name for use with CTest.
 function(add_qt_test name)
-    qt_parse_all_arguments(_arg "add_qt_test" "RUN_SERIAL" "" "${__default_private_args}" ${ARGN})
-    set(_path "${CMAKE_CURRENT_BINARY_DIR}")
+    qt_parse_all_arguments(arg "add_qt_test" "RUN_SERIAL" "" "${__default_private_args}" ${ARGN})
+    set(path "${CMAKE_CURRENT_BINARY_DIR}")
 
     add_qt_executable("${name}"
-        OUTPUT_DIRECTORY "${_path}"
-        SOURCES "${_arg_SOURCES}"
+        OUTPUT_DIRECTORY "${path}"
+        SOURCES "${arg_SOURCES}"
         INCLUDE_DIRECTORIES
             "${CMAKE_CURRENT_SOURCE_DIR}"
             "${CMAKE_CURRENT_BINARY_DIR}"
-            "${_arg_INCLUDE_DIRECTORIES}"
-        DEFINES "${_arg_DEFINES}"
-        LIBRARIES Qt::Core Qt::Test ${_arg_LIBRARIES}
+            "${arg_INCLUDE_DIRECTORIES}"
+        DEFINES "${arg_DEFINES}"
+        LIBRARIES Qt::Core Qt::Test ${arg_LIBRARIES}
     )
 
     add_test(NAME "${name}" COMMAND "${name}" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 
-    set_tests_properties("${name}" PROPERTIES RUN_SERIAL "${_arg_RUN_SERIAL}")
-    set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "PATH=${_path}${QT_PATH_SEPARATOR}${CMAKE_CURRENT_BINARY_DIR}${QT_PATH_SEPARATOR}$ENV{PATH}")
+    set_tests_properties("${name}" PROPERTIES RUN_SERIAL "${arg_RUN_SERIAL}")
+    set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "PATH=${path}${QT_PATH_SEPARATOR}${CMAKE_CURRENT_BINARY_DIR}${QT_PATH_SEPARATOR}$ENV{PATH}")
     set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "QT_PLUGIN_PATH=${PROJECT_BINARY_DIR}/${INSTALL_PLUGINSDIR}")
 
     qt_push_features_into_parent_scope()
@@ -894,9 +894,9 @@ endfunction()
 # The BOOTSTRAP option allows building it as standalone program, otherwise
 # it will be linked against QtCore.
 function(add_qt_tool name)
-    qt_parse_all_arguments(_arg "add_qt_tool" "BOOTSTRAP" "" "${__default_private_args}" ${ARGN})
+    qt_parse_all_arguments(arg "add_qt_tool" "BOOTSTRAP" "" "${__default_private_args}" ${ARGN})
 
-    if (_arg_BOOTSTRAP)
+    if (arg_BOOTSTRAP)
         set(corelib Qt::Bootstrap)
     else()
         set(corelib Qt::Core)
@@ -905,15 +905,15 @@ function(add_qt_tool name)
     add_qt_executable("${name}" OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}"
         # Do not pass sources here: They may not get processed when BOOTSTRAP is set!
         INCLUDE_DIRECTORIES
-            ${_arg_INCLUDE_DIRECTORIES}
-        DEFINES ${_arg_DEFINES}
-        LIBRARIES ${corelib} ${_arg_LIBRARIES}
+            ${arg_INCLUDE_DIRECTORIES}
+        DEFINES ${arg_DEFINES}
+        LIBRARIES ${corelib} ${arg_LIBRARIES}
     )
-    target_sources("${name}" PRIVATE "${_arg_SOURCES}")
+    target_sources("${name}" PRIVATE "${arg_SOURCES}")
     add_executable("Qt::${name}" ALIAS "${name}")
 
-    if (NOT _arg_BOOTSTRAP)
-        qt_internal_process_automatic_sources("${name}" ${_arg_SOURCES})
+    if (NOT arg_BOOTSTRAP)
+        qt_internal_process_automatic_sources("${name}" ${arg_SOURCES})
     endif()
 
     install(TARGETS "${name}" EXPORT "Qt${PROJECT_VERSION_MAJOR}ToolsTargets" DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
@@ -985,38 +985,37 @@ function(qt_make_output_file infile prefix suffix source_dir binary_dir result)
     get_filename_component(outpath "${abs_mapped_infile}" PATH)
 
     file(MAKE_DIRECTORY "${outpath}")
-    set(_result "${outpath}/${prefix}${outfilename}${suffix}")
-    set("${result}" "${_result}" PARENT_SCOPE)
+    set("${result}" "${outpath}/${prefix}${outfilename}${suffix}" PARENT_SCOPE)
 endfunction()
 
 
-macro(qt_get_moc_flags _moc_flags)
-    set(${_moc_flags})
-    get_directory_property(_inc_DIRS INCLUDE_DIRECTORIES)
+macro(qt_get_moc_flags moc_flags)
+    set(${moc_flags})
+    get_directory_property(inc_DIRS INCLUDE_DIRECTORIES)
 
     if(CMAKE_INCLUDE_CURRENT_DIR)
-        list(APPEND _inc_DIRS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+        list(APPEND inc_DIRS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
     endif()
 
-    foreach(_current ${_inc_DIRS})
-        if("${_current}" MATCHES "\\.framework/?$")
-            string(REGEX REPLACE "/[^/]+\\.framework" "" framework_path "${_current}")
-            set(${_moc_flags} ${${_moc_flags}} "-F${framework_path}")
+    foreach(current ${inc_DIRS})
+        if("${current}" MATCHES "\\.framework/?$")
+            string(REGEX REPLACE "/[^/]+\\.framework" "" framework_path "${current}")
+            set(${moc_flags} ${${moc_flags}} "-F${framework_path}")
         else()
-            set(${_moc_flags} ${${_moc_flags}} "-I${_current}")
+            set(${moc_flags} ${${moc_flags}} "-I${current}")
         endif()
     endforeach()
 
-    get_directory_property(_defines COMPILE_DEFINITIONS)
-    foreach(_current ${_defines})
-        set(${_moc_flags} ${${_moc_flags}} "-D${_current}")
+    get_directory_property(defines COMPILE_DEFINITIONS)
+    foreach(current ${defines})
+        set(${moc_flags} ${${moc_flags}} "-D${current}")
     endforeach()
 
     if(WIN32)
-        set(${_moc_flags} ${${_moc_flags}} -DWIN32)
+        set(${moc_flags} ${${moc_flags}} -DWIN32)
     endif()
     if (MSVC)
-        set(${_moc_flags} ${${_moc_flags}} --compiler-flavor=msvc)
+        set(${moc_flags} ${${moc_flags}} --compiler-flavor=msvc)
     endif()
 endmacro()
 
@@ -1064,26 +1063,26 @@ endfunction()
 
 # helper to set up a qdbusxml2cpp rule
 function(qt_create_qdbusxml2cpp_command target infile)
-    qt_parse_all_arguments(_arg "qt_create_qdbusxml2cpp_command" "ADAPTOR;INTERFACE" "" "FLAGS" ${ARGN})
-    if((_arg_ADAPTOR AND _arg_INTERFACE) OR (NOT _arg_ADAPTOR AND NOT _arg_INTERFACE))
+    qt_parse_all_arguments(arg "qt_create_qdbusxml2cpp_command" "ADAPTOR;INTERFACE" "" "FLAGS" ${ARGN})
+    if((arg_ADAPTOR AND arg_INTERFACE) OR (NOT arg_ADAPTOR AND NOT arg_INTERFACE))
         message(FATAL_ERROR "qt_create_dbusxml2cpp_command needs either ADAPTOR or INTERFACE.")
     endif()
 
-    set(_option "-a")
-    set(_type "adaptor")
-    if (_arg_INTERFACE)
-        set(_option "-p")
-        set(_type "interface")
+    set(option "-a")
+    set(type "adaptor")
+    if (arg_INTERFACE)
+        set(option "-p")
+        set(type "interface")
     endif()
 
     get_filename_component(file_name "${infile}" NAME_WE)
     string(TOLOWER "${file_name}" file_name)
 
-    set(header_file "${CMAKE_CURRENT_BINARY_DIR}/${file_name}_${_type}.h")
-    set(source_file "${CMAKE_CURRENT_BINARY_DIR}/${file_name}_${_type}.cpp")
+    set(header_file "${CMAKE_CURRENT_BINARY_DIR}/${file_name}_${type}.h")
+    set(source_file "${CMAKE_CURRENT_BINARY_DIR}/${file_name}_${type}.cpp")
 
     add_custom_command(OUTPUT "${header_file}" "${source_file}"
-                       COMMAND Qt::qdbusxml2cpp ${_arg_FLAGS} "${_option}" "${header_file}:${source_file}" "${infile}"
+                       COMMAND Qt::qdbusxml2cpp ${arg_FLAGS} "${option}" "${header_file}:${source_file}" "${infile}"
                        DEPENDS "${infile}"
                        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
                        VERBATIM)
@@ -1096,26 +1095,26 @@ endfunction()
 
 
 function(qt_generate_forwarding_headers module)
-    qt_parse_all_arguments(_arg "qt_generate_forwarding_headers"
+    qt_parse_all_arguments(arg "qt_generate_forwarding_headers"
                            "PRIVATE" "SOURCE;DESTINATION" "CLASSES" ${ARGN})
     qt_internal_module_include_dir(include_dir "${module}")
 
-    if (NOT _arg_DESTINATION)
-        get_filename_component(_arg_DESTINATION "${_arg_SOURCE}" NAME)
+    if (NOT arg_DESTINATION)
+        get_filename_component(arg_DESTINATION "${arg_SOURCE}" NAME)
     endif()
 
-    if (_arg_PRIVATE)
-        set(main_fwd "${include_dir}/${PROJECT_VERSION}/${module}/private/${_arg_DESTINATION}")
+    if (arg_PRIVATE)
+        set(main_fwd "${include_dir}/${PROJECT_VERSION}/${module}/private/${arg_DESTINATION}")
     else()
-        set(main_fwd "${include_dir}/${_arg_DESTINATION}")
+        set(main_fwd "${include_dir}/${arg_DESTINATION}")
     endif()
 
     get_filename_component(main_fwd_dir "${main_fwd}" DIRECTORY)
-    file(RELATIVE_PATH relpath "${main_fwd_dir}" "${CMAKE_CURRENT_BINARY_DIR}/${_arg_SOURCE}")
+    file(RELATIVE_PATH relpath "${main_fwd_dir}" "${CMAKE_CURRENT_BINARY_DIR}/${arg_SOURCE}")
     set(main_contents "#include \"${relpath}\"")
     file(GENERATE OUTPUT "${main_fwd}" CONTENT "${main_contents}")
 
-    foreach(class_fwd ${_arg_CLASSES})
+    foreach(class_fwd ${arg_CLASSES})
         set(class_fwd_contents "#include \"${fwd_hdr}\"")
         message("Generating forwarding header: ${class_fwd} -> ${relpath}.")
         file(GENERATE OUTPUT "${include_dir}/${class_fwd}" CONTENT "${class_fwd_contents}")
