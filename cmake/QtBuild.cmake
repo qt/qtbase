@@ -533,6 +533,19 @@ function(qt_read_headers_pri module resultVarPrefix)
 endfunction()
 
 
+# Add Qt::target and Qt6::target as aliases for the target
+function(qt_internal_add_target_aliases target)
+    get_target_property(type "${target}" TYPE)
+    if (type STREQUAL EXECUTABLE)
+        add_executable("Qt::${target}" ALIAS "${target}")
+        add_executable("Qt${PROJECT_VERSION_MAJOR}::${target}" ALIAS "${target}")
+    else()
+        add_library("Qt::${target}" ALIAS "${target}")
+        add_library("Qt${PROJECT_VERSION_MAJOR}::${target}" ALIAS "${target}")
+    endif()
+endfunction()
+
+
 # This is the main entry function for creating a Qt module, that typically
 # consists of a library, public header files, private header files and configurable
 # features.
@@ -559,12 +572,12 @@ function(add_qt_module target)
     else()
         add_library("${target}" STATIC)
     endif()
-    add_library("Qt::${target}" ALIAS "${target}")
+    qt_internal_add_target_aliases("${target}")
 
     # Add _private target to link against the private headers:
     set(target_private "${target}Private")
     add_library("${target_private}" INTERFACE)
-    add_library("Qt::${target_private}" ALIAS ${target_private})
+    qt_internal_add_target_aliases("${target_private}")
 
     if(NOT DEFINED arg_CONFIG_MODULE_NAME)
         set(arg_CONFIG_MODULE_NAME "${module_lower}")
@@ -587,7 +600,9 @@ function(add_qt_module target)
         qt_pull_features_into_current_scope(PUBLIC_FEATURES ${publicDep})
     endforeach()
 
-    if(NOT ${arg_NO_MODULE_HEADERS})
+    if(${arg_NO_MODULE_HEADERS})
+        set_target_properties("${target}" PROPERTIES MODULE_HAS_HEADERS OFF)
+    else()
         qt_ensure_perl()
         if(NOT DEFINED QT_SYNCQT)
             get_target_property(mocPath "Qt::moc" LOCATION)
@@ -598,17 +613,14 @@ function(add_qt_module target)
             set(QT_SYNCQT "${binDirectory}/syncqt.pl")
         endif()
         execute_process(COMMAND "${HOST_PERL}" -w "${QT_SYNCQT}" -quiet -module "${module}" -version "${PROJECT_VERSION}" -outdir "${PROJECT_BINARY_DIR}" "${PROJECT_SOURCE_DIR}")
-    endif()
 
-    if(NOT ${arg_NO_MODULE_HEADERS})
         set_target_properties("${target}" PROPERTIES MODULE_HAS_HEADERS ON)
-    else()
-        set_target_properties("${target}" PROPERTIES MODULE_HAS_HEADERS OFF)
     endif()
 
-    set_target_properties("${target}" PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_LIBDIR}")
-    set_target_properties("${target}" PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}")
-    set_target_properties("${target}" PROPERTIES OUTPUT_NAME "${module_versioned}")
+    set_target_properties("${target}" PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_LIBDIR}"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}"
+        OUTPUT_NAME "${module_versioned}")
 
     qt_internal_module_include_dir(include_dir "${module}")
 
@@ -920,7 +932,7 @@ function(add_qt_tool name)
         LIBRARIES ${corelib} ${arg_LIBRARIES}
     )
     target_sources("${name}" PRIVATE "${arg_SOURCES}")
-    add_executable("Qt::${name}" ALIAS "${name}")
+    qt_internal_add_target_aliases("${name}")
 
     if (NOT arg_BOOTSTRAP)
         qt_internal_process_automatic_sources("${name}" ${arg_SOURCES})
