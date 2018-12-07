@@ -218,14 +218,14 @@ GLTextureCube::GLTextureCube(int size)
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
 
-GLTextureCube::GLTextureCube(const QStringList& fileNames, int size)
+GLTextureCube::GLTextureCube(const QStringList &fileNames, int size)
 {
     // TODO: Add error handling.
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_texture);
 
     int index = 0;
-    foreach (QString file, fileNames) {
+    for (const QString &file : fileNames) {
         QImage image(file);
         if (image.isNull()) {
             m_failed = true;

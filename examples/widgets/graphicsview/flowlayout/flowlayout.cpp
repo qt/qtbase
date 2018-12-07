@@ -154,8 +154,7 @@ QSizeF FlowLayout::minSize(const QSizeF &constraint) const
     } else if (constraint.height() >= 0) {  // width for height?
         // not supported
     } else {
-        QGraphicsLayoutItem *item;
-        foreach (item, m_items)
+        for (const QGraphicsLayoutItem *item : qAsConst(m_items))
             size = size.expandedTo(item->effectiveSizeHint(Qt::MinimumSize));
         size += QSize(left + right, top + bottom);
     }
@@ -167,10 +166,9 @@ QSizeF FlowLayout::prefSize() const
     qreal left, right;
     getContentsMargins(&left, 0, &right, 0);
 
-    QGraphicsLayoutItem *item;
     qreal maxh = 0;
     qreal totalWidth = 0;
-    foreach (item, m_items) {
+    for (const QGraphicsLayoutItem *item : qAsConst(m_items)) {
         if (totalWidth > 0)
             totalWidth += spacing(Qt::Horizontal);
         QSizeF pref = item->effectiveSizeHint(Qt::PreferredSize);
@@ -187,10 +185,9 @@ QSizeF FlowLayout::prefSize() const
 
 QSizeF FlowLayout::maxSize() const
 {
-    QGraphicsLayoutItem *item;
     qreal totalWidth = 0;
     qreal totalHeight = 0;
-    foreach (item, m_items) {
+    for (const QGraphicsLayoutItem *item : qAsConst(m_items)) {
         if (totalWidth > 0)
             totalWidth += spacing(Qt::Horizontal);
         if (totalHeight > 0)

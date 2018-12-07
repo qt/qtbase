@@ -164,16 +164,17 @@ void GraphWidget::timerEvent(QTimerEvent *event)
     Q_UNUSED(event);
 
     QList<Node *> nodes;
-    foreach (QGraphicsItem *item, scene()->items()) {
+    const QList<QGraphicsItem *> items = scene()->items();
+    for (QGraphicsItem *item : items) {
         if (Node *node = qgraphicsitem_cast<Node *>(item))
             nodes << node;
     }
 
-    foreach (Node *node, nodes)
+    for (Node *node : qAsConst(nodes))
         node->calculateForces();
 
     bool itemsMoved = false;
-    foreach (Node *node, nodes) {
+    for (Node *node : qAsConst(nodes)) {
         if (node->advancePosition())
             itemsMoved = true;
     }
@@ -246,7 +247,8 @@ void GraphWidget::scaleView(qreal scaleFactor)
 
 void GraphWidget::shuffle()
 {
-    foreach (QGraphicsItem *item, scene()->items()) {
+    const QList<QGraphicsItem *> items = scene()->items();
+    for (QGraphicsItem *item : items) {
         if (qgraphicsitem_cast<Node *>(item))
             item->setPos(-150 + QRandomGenerator::global()->bounded(300), -150 + QRandomGenerator::global()->bounded(300));
     }

@@ -234,12 +234,10 @@ void DiagramScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
 //! [13]
 
 //! [14]
-bool DiagramScene::isItemChange(int type)
+bool DiagramScene::isItemChange(int type) const
 {
-    foreach (QGraphicsItem *item, selectedItems()) {
-        if (item->type() == type)
-            return true;
-    }
-    return false;
+    const QList<QGraphicsItem *> items = selectedItems();
+    const auto cb = [type](const QGraphicsItem *item) { return item->type() == type; };
+    return std::find_if(items.begin(), items.end(), cb) != items.end();
 }
 //! [14]

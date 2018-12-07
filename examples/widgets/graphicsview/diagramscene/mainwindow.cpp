@@ -92,8 +92,8 @@ MainWindow::MainWindow()
 //! [1]
 void MainWindow::backgroundButtonGroupClicked(QAbstractButton *button)
 {
-    QList<QAbstractButton *> buttons = backgroundButtonGroup->buttons();
-    foreach (QAbstractButton *myButton, buttons) {
+    const QList<QAbstractButton *> buttons = backgroundButtonGroup->buttons();
+    for (QAbstractButton *myButton : buttons) {
         if (myButton != button)
             button->setChecked(false);
     }
@@ -115,8 +115,8 @@ void MainWindow::backgroundButtonGroupClicked(QAbstractButton *button)
 //! [2]
 void MainWindow::buttonGroupClicked(int id)
 {
-    QList<QAbstractButton *> buttons = buttonGroup->buttons();
-    foreach (QAbstractButton *button, buttons) {
+    const QList<QAbstractButton *> buttons = buttonGroup->buttons();
+    for (QAbstractButton *button : buttons) {
         if (buttonGroup->button(id) != button)
             button->setChecked(false);
     }
@@ -132,7 +132,8 @@ void MainWindow::buttonGroupClicked(int id)
 //! [3]
 void MainWindow::deleteItem()
 {
-    foreach (QGraphicsItem *item, scene->selectedItems()) {
+    QList<QGraphicsItem *> selectedItems = scene->selectedItems();
+    for (QGraphicsItem *item : qAsConst(selectedItems)) {
         if (item->type() == Arrow::Type) {
             scene->removeItem(item);
             Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
@@ -142,7 +143,8 @@ void MainWindow::deleteItem()
         }
     }
 
-    foreach (QGraphicsItem *item, scene->selectedItems()) {
+    selectedItems = scene->selectedItems();
+    for (QGraphicsItem *item : qAsConst(selectedItems)) {
          if (item->type() == DiagramItem::Type)
              qgraphicsitem_cast<DiagramItem *>(item)->removeArrows();
          scene->removeItem(item);
@@ -165,10 +167,10 @@ void MainWindow::bringToFront()
         return;
 
     QGraphicsItem *selectedItem = scene->selectedItems().first();
-    QList<QGraphicsItem *> overlapItems = selectedItem->collidingItems();
+    const QList<QGraphicsItem *> overlapItems = selectedItem->collidingItems();
 
     qreal zValue = 0;
-    foreach (QGraphicsItem *item, overlapItems) {
+    for (const QGraphicsItem *item : overlapItems) {
         if (item->zValue() >= zValue && item->type() == DiagramItem::Type)
             zValue = item->zValue() + 0.1;
     }
@@ -183,10 +185,10 @@ void MainWindow::sendToBack()
         return;
 
     QGraphicsItem *selectedItem = scene->selectedItems().first();
-    QList<QGraphicsItem *> overlapItems = selectedItem->collidingItems();
+    const QList<QGraphicsItem *> overlapItems = selectedItem->collidingItems();
 
     qreal zValue = 0;
-    foreach (QGraphicsItem *item, overlapItems) {
+    for (const QGraphicsItem *item : overlapItems) {
         if (item->zValue() <= zValue && item->type() == DiagramItem::Type)
             zValue = item->zValue() - 0.1;
     }
