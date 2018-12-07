@@ -85,11 +85,10 @@ void QCollatorPrivate::cleanup()
 {
 }
 
-
-int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const
+int QCollator::compare(QStringView s1, QStringView s2) const
 {
     if (d->isC())
-        return QString::compare_helper(s1, len1, s2, len2, d->caseSensitivity);
+        return s1.compare(s2, d->caseSensitivity);
 
     if (d->dirty)
         d->init();
@@ -101,23 +100,13 @@ int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) con
 
 #ifndef USE_COMPARESTRINGEX
     return CompareString(d->localeID, d->collator,
-                         reinterpret_cast<const wchar_t*>(s1), len1,
-                         reinterpret_cast<const wchar_t*>(s2), len2) - 2;
+                         reinterpret_cast<const wchar_t*>(s1.data()), s1.size(),
+                         reinterpret_cast<const wchar_t*>(s2.data()), s2.size()) - 2;
 #else
     return CompareStringEx(LPCWSTR(d->localeName.utf16()), d->collator,
-                           reinterpret_cast<LPCWSTR>(s1), len1,
-                           reinterpret_cast<LPCWSTR>(s2), len2, NULL, NULL, 0) - 2;
+                           reinterpret_cast<LPCWSTR>(s1.data()), s1.size(),
+                           reinterpret_cast<LPCWSTR>(s2.data()), s2.size(), NULL, NULL, 0) - 2;
 #endif
-}
-
-int QCollator::compare(const QString &str1, const QString &str2) const
-{
-    return compare(str1.constData(), str1.size(), str2.constData(), str2.size());
-}
-
-int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
-{
-    return compare(s1.constData(), s1.size(), s2.constData(), s2.size());
 }
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const

@@ -65,7 +65,7 @@ void QCollatorPrivate::cleanup()
 {
 }
 
-static void stringToWCharArray(QVarLengthArray<wchar_t> &ret, const QString &string)
+static void stringToWCharArray(QVarLengthArray<wchar_t> &ret, QStringView string)
 {
     ret.resize(string.length());
     int len = string.toWCharArray(ret.data());
@@ -73,12 +73,7 @@ static void stringToWCharArray(QVarLengthArray<wchar_t> &ret, const QString &str
     ret[len] = 0;
 }
 
-int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const
-{
-    return compare(QString::fromRawData(s1, len1), QString::fromRawData(s2, len2));
-}
-
-int QCollator::compare(const QString &s1, const QString &s2) const
+int QCollator::compare(QStringView s1, QStringView s2) const
 {
     if (d->isC())
         return s1.compare(s2, caseSensitivity());
@@ -89,11 +84,6 @@ int QCollator::compare(const QString &s1, const QString &s2) const
     stringToWCharArray(array1, s1);
     stringToWCharArray(array2, s2);
     return std::wcscoll(array1.constData(), array2.constData());
-}
-
-int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
-{
-    return compare(s1.toString(), s2.toString());
 }
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const

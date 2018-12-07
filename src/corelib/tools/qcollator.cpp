@@ -278,35 +278,60 @@ bool QCollator::ignorePunctuation() const
 }
 
 /*!
-    \fn int QCollator::compare(const QString &s1, const QString &s2) const
+    \since 5.13
+    \fn bool QCollator::operator()(QStringView s1, QStringView s2) const
+    \internal
+*/
+
+/*!
+    \since 5.13
+    \fn int QCollator::compare(QStringView s1, QStringView s2) const
 
     Compares \a s1 with \a s2. Returns an integer less than, equal to, or greater than zero
-    depending on whether \a s1 is smaller, equal or larger than \a s2.
+    depending on whether \a s1 sorts before, with or after \a s2.
  */
-
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn bool QCollator::operator()(const QString &s1, const QString &s2) const
     \internal
 */
 
 /*!
-    \fn int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
     \overload
 
     Compares \a s1 with \a s2. Returns an integer less than, equal to, or greater than zero
-    depending on whether \a s1 is smaller, equal or larger than \a s2.
+    depending on whether \a s1 sorts before, with or after \a s2.
  */
+int QCollator::compare(const QString &s1, const QString &s2) const
+{
+    return compare(QStringView(s1), QStringView(s2));
+}
 
 /*!
-    \fn int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const
+    \overload
+
+    Compares \a s1 with \a s2. Returns an integer less than, equal to, or greater than zero
+    depending on whether \a s1 sorts before, with or after \a s2.
+ */
+int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
+{
+    return compare(QStringView(s1), QStringView(s2));
+}
+
+/*!
     \overload
 
     Compares \a s1 with \a s2. \a len1 and \a len2 specify the length of the
     QChar arrays pointer to by \a s1 and \a s2.
 
     Returns an integer less than, equal to, or greater than zero
-    depending on whether \a s1 is smaller, equal or larger than \a s2.
+    depending on whether \a s1 sorts before, with or after \a s2.
 */
+int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const
+{
+    return compare(QStringView(s1, len1), QStringView(s2, len2));
+}
+#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
     \fn QCollatorSortKey QCollator::sortKey(const QString &string) const

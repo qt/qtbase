@@ -105,37 +105,20 @@ void QCollatorPrivate::cleanup()
     collator = nullptr;
 }
 
-int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const
+int QCollator::compare(QStringView s1, QStringView s2) const
 {
     if (d->dirty)
         d->init();
 
-    if (d->collator)
-        return ucol_strcoll(d->collator, (const UChar *)s1, len1, (const UChar *)s2, len2);
+    if (d->collator) {
+        return ucol_strcoll(d->collator,
+                            reinterpret_cast<const UChar *>(s1.data()), s1.size(),
+                            reinterpret_cast<const UChar *>(s2.data()), s2.size());
+    }
 
-    return QString::compare_helper(s1, len1, s2, len2, d->caseSensitivity);
-}
-
-int QCollator::compare(const QString &s1, const QString &s2) const
-{
-    if (d->dirty)
-        d->init();
-
-    if (d->collator)
-        return compare(s1.constData(), s1.size(), s2.constData(), s2.size());
-
-    return QString::compare(s1, s2, d->caseSensitivity);
-}
-
-int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
-{
-    if (d->dirty)
-        d->init();
-
-    if (d->collator)
-        return compare(s1.constData(), s1.size(), s2.constData(), s2.size());
-
-    return QStringRef::compare(s1, s2, d->caseSensitivity);
+    return QString::compare_helper(s1.data(), s1.size(),
+                                   s2.data(), s2.size(),
+                                   d->caseSensitivity);
 }
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const

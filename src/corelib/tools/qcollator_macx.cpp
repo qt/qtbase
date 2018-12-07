@@ -97,33 +97,23 @@ void QCollatorPrivate::cleanup()
     collator = 0;
 }
 
-int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const
+int QCollator::compare(QStringView s1, QStringView s2) const
 {
     if (d->dirty)
         d->init();
     if (!d->collator)
-        return QStringView(s1, len1).compare(QStringView(s2, len2), caseSensitivity());
+        return s1.compare(s2, caseSensitivity());
 
     SInt32 result;
     Boolean equivalent;
     UCCompareText(d->collator,
-                  reinterpret_cast<const UniChar *>(s1), len1,
-                  reinterpret_cast<const UniChar *>(s2), len2,
+                  reinterpret_cast<const UniChar *>(s1.data()), s1.size(),
+                  reinterpret_cast<const UniChar *>(s2.data()), s2.size(),
                   &equivalent,
                   &result);
     if (equivalent)
         return 0;
     return result < 0 ? -1 : 1;
-}
-
-int QCollator::compare(const QString &str1, const QString &str2) const
-{
-    return compare(str1.constData(), str1.size(), str2.constData(), str2.size());
-}
-
-int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
-{
-    return compare(s1.constData(), s1.size(), s2.constData(), s2.size());
 }
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const
