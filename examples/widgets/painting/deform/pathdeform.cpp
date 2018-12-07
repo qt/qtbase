@@ -152,19 +152,19 @@ void PathDeformControls::layoutForDesktop()
     mainLayout->addWidget(mainGroup);
     mainLayout->setMargin(0);
 
-    connect(radiusSlider, SIGNAL(valueChanged(int)), m_renderer, SLOT(setRadius(int)));
-    connect(deformSlider, SIGNAL(valueChanged(int)), m_renderer, SLOT(setIntensity(int)));
-    connect(fontSizeSlider, SIGNAL(valueChanged(int)), m_renderer, SLOT(setFontSize(int)));
-    connect(animateButton, SIGNAL(clicked(bool)), m_renderer, SLOT(setAnimated(bool)));
+    connect(radiusSlider, &QAbstractSlider::valueChanged, m_renderer, &PathDeformRenderer::setRadius);
+    connect(deformSlider, &QAbstractSlider::valueChanged, m_renderer, &PathDeformRenderer::setIntensity);
+    connect(fontSizeSlider, &QAbstractSlider::valueChanged, m_renderer, &PathDeformRenderer::setFontSize);
+    connect(animateButton, &QAbstractButton::clicked, m_renderer, &PathDeformRenderer::setAnimated);
 #if QT_CONFIG(opengl)
-    connect(enableOpenGLButton, SIGNAL(clicked(bool)), m_renderer, SLOT(enableOpenGL(bool)));
+    connect(enableOpenGLButton, &QAbstractButton::clicked, m_renderer, &ArthurFrame::enableOpenGL);
 #endif
 
-    connect(textInput, SIGNAL(textChanged(QString)), m_renderer, SLOT(setText(QString)));
-    connect(m_renderer, SIGNAL(descriptionEnabledChanged(bool)),
-            whatsThisButton, SLOT(setChecked(bool)));
-    connect(whatsThisButton, SIGNAL(clicked(bool)), m_renderer, SLOT(setDescriptionEnabled(bool)));
-    connect(showSourceButton, SIGNAL(clicked()), m_renderer, SLOT(showSource()));
+    connect(textInput, &QLineEdit::textChanged, m_renderer, &PathDeformRenderer::setText);
+    connect(m_renderer, &ArthurFrame::descriptionEnabledChanged,
+            whatsThisButton, &QAbstractButton::setChecked);
+    connect(whatsThisButton, &QAbstractButton::clicked, m_renderer, &ArthurFrame::setDescriptionEnabled);
+    connect(showSourceButton, &QAbstractButton::clicked, m_renderer, &ArthurFrame::showSource);
 
     animateButton->animateClick();
     deformSlider->setValue(80);
@@ -229,14 +229,14 @@ void PathDeformControls::layoutForSmallScreen()
     mainLayout->addWidget(okButton);
     mainLayout->addWidget(quitButton);
 
-    connect(quitButton, SIGNAL(clicked()), this, SIGNAL(quitPressed()));
-    connect(okButton, SIGNAL(clicked()), this, SIGNAL(okPressed()));
-    connect(radiusSlider, SIGNAL(valueChanged(int)), m_renderer, SLOT(setRadius(int)));
-    connect(deformSlider, SIGNAL(valueChanged(int)), m_renderer, SLOT(setIntensity(int)));
-    connect(fontSizeSlider, SIGNAL(valueChanged(int)), m_renderer, SLOT(setFontSize(int)));
-    connect(animateButton, SIGNAL(clicked(bool)), m_renderer, SLOT(setAnimated(bool)));
+    connect(quitButton, &QAbstractButton::clicked, this, &PathDeformControls::quitPressed);
+    connect(okButton, &QAbstractButton::clicked, this, &PathDeformControls::okPressed);
+    connect(radiusSlider, &QAbstractSlider::valueChanged, m_renderer, &PathDeformRenderer::setRadius);
+    connect(deformSlider, &QAbstractSlider::valueChanged, m_renderer, &PathDeformRenderer::setIntensity);
+    connect(fontSizeSlider, &QAbstractSlider::valueChanged, m_renderer, &PathDeformRenderer::setFontSize);
+    connect(animateButton, &QAbstractButton::clicked, m_renderer, &PathDeformRenderer::setAnimated);
 #if QT_CONFIG(opengl)
-    connect(enableOpenGLButton, SIGNAL(clicked(bool)), m_renderer, SLOT(enableOpenGL(bool)));
+    connect(enableOpenGLButton, &QAbstractButton::clicked, m_renderer, &ArthurFrame::enableOpenGL);
 #endif
 
 
@@ -272,9 +272,12 @@ PathDeformWidget::PathDeformWidget(QWidget *parent, bool smallScreen)
     m_renderer->loadDescription(":res/deform/pathdeform.html");
     m_renderer->setDescriptionEnabled(false);
 
-    connect(m_renderer, SIGNAL(clicked()), this, SLOT(showControls()));
-    connect(m_controls, SIGNAL(okPressed()), this, SLOT(hideControls()));
-    connect(m_controls, SIGNAL(quitPressed()), QCoreApplication::instance(), SLOT(quit()));
+    connect(m_renderer, &PathDeformRenderer::clicked,
+            this, &PathDeformWidget::showControls);
+    connect(m_controls, &PathDeformControls::okPressed,
+            this, &PathDeformWidget::hideControls);
+    connect(m_controls, &PathDeformControls::quitPressed,
+            qApp, &QCoreApplication::quit);
 }
 
 

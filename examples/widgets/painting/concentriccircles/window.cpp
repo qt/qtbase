@@ -77,8 +77,8 @@ Window::Window()
             circleWidgets[i][j]->setAntialiased(j != 0);
             circleWidgets[i][j]->setFloatBased(i != 0);
 
-            connect(timer, SIGNAL(timeout()),
-                    circleWidgets[i][j], SLOT(nextAnimationFrame()));
+            connect(timer, &QTimer::timeout,
+                    circleWidgets[i][j], &CircleWidget::nextAnimationFrame);
 
             layout->addWidget(circleWidgets[i][j], i + 1, j + 1);
         }

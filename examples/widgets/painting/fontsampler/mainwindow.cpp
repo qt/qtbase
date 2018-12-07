@@ -71,11 +71,12 @@ MainWindow::MainWindow(QWidget *parent)
     markedCount = 0;
     setupFontTree();
 
-    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    connect(fontTree, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
-            this, SLOT(showFont(QTreeWidgetItem*)));
-    connect(fontTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
-            this, SLOT(updateStyles(QTreeWidgetItem*,int)));
+    connect(quitAction, &QAction::triggered,
+            qApp, &QApplication::quit);
+    connect(fontTree, &QTreeWidget::currentItemChanged,
+            this, &MainWindow::showFont);
+    connect(fontTree, &QTreeWidget::itemChanged,
+            this, &MainWindow::updateStyles);
 
     fontTree->setItemSelected(fontTree->topLevelItem(0), true);
     showFont(fontTree->topLevelItem(0));
@@ -285,8 +286,8 @@ void MainWindow::on_printPreviewAction_triggered()
 
     QPrinter printer(QPrinter::HighResolution);
     QPrintPreviewDialog preview(&printer, this);
-    connect(&preview, SIGNAL(paintRequested(QPrinter*)),
-            this, SLOT(printDocument(QPrinter*)));
+    connect(&preview, &QPrintPreviewDialog::paintRequested,
+            this, &MainWindow::printDocument);
     preview.exec();
 #endif
 }

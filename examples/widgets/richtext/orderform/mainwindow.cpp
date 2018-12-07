@@ -66,7 +66,7 @@ MainWindow::MainWindow()
     QMenu *fileMenu = new QMenu(tr("&File"), this);
     QAction *newAction = fileMenu->addAction(tr("&New..."));
     newAction->setShortcuts(QKeySequence::New);
-    printAction = fileMenu->addAction(tr("&Print..."), this, SLOT(printFile()));
+    printAction = fileMenu->addAction(tr("&Print..."), this, &MainWindow::printFile);
     printAction->setShortcuts(QKeySequence::Print);
     printAction->setEnabled(false);
     QAction *quitAction = fileMenu->addAction(tr("E&xit"));

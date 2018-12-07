@@ -76,68 +76,68 @@ CompositionWidget::CompositionWidget(QWidget *parent)
     modesGroup->setTitle(tr("Mode"));
 
     rbClear = new QRadioButton(tr("Clear"), modesGroup);
-    connect(rbClear, SIGNAL(clicked()), view, SLOT(setClearMode()));
+    connect(rbClear, &QAbstractButton::clicked, view, &CompositionRenderer::setClearMode);
     rbSource = new QRadioButton(tr("Source"), modesGroup);
-    connect(rbSource, SIGNAL(clicked()), view, SLOT(setSourceMode()));
+    connect(rbSource, &QAbstractButton::clicked, view, &CompositionRenderer::setSourceMode);
     rbDest = new QRadioButton(tr("Destination"), modesGroup);
-    connect(rbDest, SIGNAL(clicked()), view, SLOT(setDestMode()));
+    connect(rbDest, &QAbstractButton::clicked, view, &CompositionRenderer::setDestMode);
     rbSourceOver = new QRadioButton(tr("Source Over"), modesGroup);
-    connect(rbSourceOver, SIGNAL(clicked()), view, SLOT(setSourceOverMode()));
+    connect(rbSourceOver, &QAbstractButton::clicked, view, &CompositionRenderer::setSourceOverMode);
     rbDestOver = new QRadioButton(tr("Destination Over"), modesGroup);
-    connect(rbDestOver, SIGNAL(clicked()), view, SLOT(setDestOverMode()));
+    connect(rbDestOver, &QAbstractButton::clicked, view, &CompositionRenderer::setDestOverMode);
     rbSourceIn = new QRadioButton(tr("Source In"), modesGroup);
-    connect(rbSourceIn, SIGNAL(clicked()), view, SLOT(setSourceInMode()));
+    connect(rbSourceIn, &QAbstractButton::clicked, view, &CompositionRenderer::setSourceInMode);
     rbDestIn = new QRadioButton(tr("Dest In"), modesGroup);
-    connect(rbDestIn, SIGNAL(clicked()), view, SLOT(setDestInMode()));
+    connect(rbDestIn, &QAbstractButton::clicked, view, &CompositionRenderer::setDestInMode);
     rbSourceOut = new QRadioButton(tr("Source Out"), modesGroup);
-    connect(rbSourceOut, SIGNAL(clicked()), view, SLOT(setSourceOutMode()));
+    connect(rbSourceOut, &QAbstractButton::clicked, view, &CompositionRenderer::setSourceOutMode);
     rbDestOut = new QRadioButton(tr("Dest Out"), modesGroup);
-    connect(rbDestOut, SIGNAL(clicked()), view, SLOT(setDestOutMode()));
+    connect(rbDestOut, &QAbstractButton::clicked, view, &CompositionRenderer::setDestOutMode);
     rbSourceAtop = new QRadioButton(tr("Source Atop"), modesGroup);
-    connect(rbSourceAtop, SIGNAL(clicked()), view, SLOT(setSourceAtopMode()));
+    connect(rbSourceAtop, &QAbstractButton::clicked, view, &CompositionRenderer::setSourceAtopMode);
     rbDestAtop = new QRadioButton(tr("Dest Atop"), modesGroup);
-    connect(rbDestAtop, SIGNAL(clicked()), view, SLOT(setDestAtopMode()));
+    connect(rbDestAtop, &QAbstractButton::clicked, view, &CompositionRenderer::setDestAtopMode);
     rbXor = new QRadioButton(tr("Xor"), modesGroup);
-    connect(rbXor, SIGNAL(clicked()), view, SLOT(setXorMode()));
+    connect(rbXor, &QAbstractButton::clicked, view, &CompositionRenderer::setXorMode);
 
     rbPlus = new QRadioButton(tr("Plus"), modesGroup);
-    connect(rbPlus, SIGNAL(clicked()), view, SLOT(setPlusMode()));
+    connect(rbPlus, &QAbstractButton::clicked, view, &CompositionRenderer::setPlusMode);
     rbMultiply = new QRadioButton(tr("Multiply"), modesGroup);
-    connect(rbMultiply, SIGNAL(clicked()), view, SLOT(setMultiplyMode()));
+    connect(rbMultiply, &QAbstractButton::clicked, view, &CompositionRenderer::setMultiplyMode);
     rbScreen = new QRadioButton(tr("Screen"), modesGroup);
-    connect(rbScreen, SIGNAL(clicked()), view, SLOT(setScreenMode()));
+    connect(rbScreen, &QAbstractButton::clicked, view, &CompositionRenderer::setScreenMode);
     rbOverlay = new QRadioButton(tr("Overlay"), modesGroup);
-    connect(rbOverlay, SIGNAL(clicked()), view, SLOT(setOverlayMode()));
+    connect(rbOverlay, &QAbstractButton::clicked, view, &CompositionRenderer::setOverlayMode);
     rbDarken = new QRadioButton(tr("Darken"), modesGroup);
-    connect(rbDarken, SIGNAL(clicked()), view, SLOT(setDarkenMode()));
+    connect(rbDarken, &QAbstractButton::clicked, view, &CompositionRenderer::setDarkenMode);
     rbLighten = new QRadioButton(tr("Lighten"), modesGroup);
-    connect(rbLighten, SIGNAL(clicked()), view, SLOT(setLightenMode()));
+    connect(rbLighten, &QAbstractButton::clicked, view, &CompositionRenderer::setLightenMode);
     rbColorDodge = new QRadioButton(tr("Color Dodge"), modesGroup);
-    connect(rbColorDodge, SIGNAL(clicked()), view, SLOT(setColorDodgeMode()));
+    connect(rbColorDodge, &QAbstractButton::clicked, view, &CompositionRenderer::setColorDodgeMode);
     rbColorBurn = new QRadioButton(tr("Color Burn"), modesGroup);
-    connect(rbColorBurn, SIGNAL(clicked()), view, SLOT(setColorBurnMode()));
+    connect(rbColorBurn, &QAbstractButton::clicked, view, &CompositionRenderer::setColorBurnMode);
     rbHardLight = new QRadioButton(tr("Hard Light"), modesGroup);
-    connect(rbHardLight, SIGNAL(clicked()), view, SLOT(setHardLightMode()));
+    connect(rbHardLight, &QAbstractButton::clicked, view, &CompositionRenderer::setHardLightMode);
     rbSoftLight = new QRadioButton(tr("Soft Light"), modesGroup);
-    connect(rbSoftLight, SIGNAL(clicked()), view, SLOT(setSoftLightMode()));
+    connect(rbSoftLight, &QAbstractButton::clicked, view, &CompositionRenderer::setSoftLightMode);
     rbDifference = new QRadioButton(tr("Difference"), modesGroup);
-    connect(rbDifference, SIGNAL(clicked()), view, SLOT(setDifferenceMode()));
+    connect(rbDifference, &QAbstractButton::clicked, view, &CompositionRenderer::setDifferenceMode);
     rbExclusion = new QRadioButton(tr("Exclusion"), modesGroup);
-    connect(rbExclusion, SIGNAL(clicked()), view, SLOT(setExclusionMode()));
+    connect(rbExclusion, &QAbstractButton::clicked, view, &CompositionRenderer::setExclusionMode);
 
     QGroupBox *circleColorGroup = new QGroupBox(mainGroup);
     circleColorGroup->setTitle(tr("Circle color"));
     QSlider *circleColorSlider = new QSlider(Qt::Horizontal, circleColorGroup);
     circleColorSlider->setRange(0, 359);
     circleColorSlider->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-    connect(circleColorSlider, SIGNAL(valueChanged(int)), view, SLOT(setCircleColor(int)));
+    connect(circleColorSlider, &QAbstractSlider::valueChanged, view, &CompositionRenderer::setCircleColor);
 
     QGroupBox *circleAlphaGroup = new QGroupBox(mainGroup);
     circleAlphaGroup->setTitle(tr("Circle alpha"));
     QSlider *circleAlphaSlider = new QSlider(Qt::Horizontal, circleAlphaGroup);
     circleAlphaSlider->setRange(0, 255);
     circleAlphaSlider->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-    connect(circleAlphaSlider, SIGNAL(valueChanged(int)), view, SLOT(setCircleAlpha(int)));
+    connect(circleAlphaSlider, &QAbstractSlider::valueChanged, view, &CompositionRenderer::setCircleAlpha);
 
     QPushButton *showSourceButton = new QPushButton(mainGroup);
     showSourceButton->setText(tr("Show Source"));
@@ -209,13 +209,13 @@ CompositionWidget::CompositionWidget(QWidget *parent)
     view->loadDescription(":res/composition/composition.html");
     view->loadSourceFile(":res/composition/composition.cpp");
 
-    connect(whatsThisButton, SIGNAL(clicked(bool)), view, SLOT(setDescriptionEnabled(bool)));
-    connect(view, SIGNAL(descriptionEnabledChanged(bool)), whatsThisButton, SLOT(setChecked(bool)));
-    connect(showSourceButton, SIGNAL(clicked()), view, SLOT(showSource()));
+    connect(whatsThisButton, &QAbstractButton::clicked, view, &ArthurFrame::setDescriptionEnabled);
+    connect(view, &ArthurFrame::descriptionEnabledChanged, whatsThisButton, &QAbstractButton::setChecked);
+    connect(showSourceButton, &QAbstractButton::clicked, view, &ArthurFrame::showSource);
 #if QT_CONFIG(opengl)
-    connect(enableOpenGLButton, SIGNAL(clicked(bool)), view, SLOT(enableOpenGL(bool)));
+    connect(enableOpenGLButton, &QAbstractButton::clicked, view, &ArthurFrame::enableOpenGL);
 #endif
-    connect(animateButton, SIGNAL(toggled(bool)), view, SLOT(setAnimationEnabled(bool)));
+    connect(animateButton, &QAbstractButton::toggled, view, &CompositionRenderer::setAnimationEnabled);
 
     circleColorSlider->setValue(270);
     circleAlphaSlider->setValue(200);

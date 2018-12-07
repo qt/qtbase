@@ -117,9 +117,12 @@ void MainWindow::setupFileMenu()
     QMenu *fileMenu = new QMenu(tr("&File"), this);
     menuBar()->addMenu(fileMenu);
 
-    fileMenu->addAction(tr("&New"), this, SLOT(newFile()), QKeySequence::New);
-    fileMenu->addAction(tr("&Open..."), this, SLOT(openFile()), QKeySequence::Open);
-    fileMenu->addAction(tr("E&xit"), qApp, SLOT(quit()), QKeySequence::Quit);
+    fileMenu->addAction(tr("&New"), this,
+                        &MainWindow::newFile, QKeySequence::New);
+    fileMenu->addAction(tr("&Open..."),
+                        this, [this](){ openFile(); }, QKeySequence::Open);
+    fileMenu->addAction(tr("E&xit"), qApp,
+                        &QApplication::quit, QKeySequence::Quit);
 }
 
 void MainWindow::setupHelpMenu()
@@ -127,6 +130,6 @@ void MainWindow::setupHelpMenu()
     QMenu *helpMenu = new QMenu(tr("&Help"), this);
     menuBar()->addMenu(helpMenu);
 
-    helpMenu->addAction(tr("&About"), this, SLOT(about()));
-    helpMenu->addAction(tr("About &Qt"), qApp, SLOT(aboutQt()));
+    helpMenu->addAction(tr("&About"), this, &MainWindow::about);
+    helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
 }

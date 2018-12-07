@@ -73,8 +73,8 @@ HoverPoints::HoverPoints(QWidget *widget, PointShape shape)
     m_editable = true;
     m_enabled = true;
 
-    connect(this, SIGNAL(pointsChanged(QPolygonF)),
-            m_widget, SLOT(update()));
+    connect(this, &HoverPoints::pointsChanged,
+            m_widget, QOverload<>::of(&QWidget::update));
 }
 
 

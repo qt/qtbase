@@ -421,7 +421,7 @@ GradientWidget::GradientWidget(QWidget *parent)
     m_renderer->loadSourceFile(":res/gradients/gradients.cpp");
     m_renderer->loadDescription(":res/gradients/gradients.html");
 
-    QTimer::singleShot(50, this, SLOT(setDefault1()));
+    QTimer::singleShot(50, this, &GradientWidget::setDefault1);
 }
 
 void GradientWidget::setDefault(int config)
