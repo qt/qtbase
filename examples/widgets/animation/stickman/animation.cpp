@@ -159,18 +159,16 @@ void Animation::save(QIODevice *device) const
     QDataStream stream(device);
     stream << m_name;
     stream << m_frames.size();
-    foreach (Frame *frame, m_frames) {
+    for (const Frame *frame : qAsConst(m_frames)) {
         stream << frame->nodeCount();
-        for (int i=0; i<frame->nodeCount(); ++i)
+        for (int i = 0; i < frame->nodeCount(); ++i)
             stream << frame->nodePos(i);
     }
 }
 
 void Animation::load(QIODevice *device)
 {
-    if (!m_frames.isEmpty())
-        qDeleteAll(m_frames);
-
+    qDeleteAll(m_frames);
     m_frames.clear();
 
     QDataStream stream(device);

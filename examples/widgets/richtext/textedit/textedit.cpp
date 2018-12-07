@@ -377,7 +377,7 @@ void TextEdit::setupTextActions()
     comboSize->setEditable(true);
 
     const QList<int> standardSizes = QFontDatabase::standardSizes();
-    foreach (int size, standardSizes)
+    for (int size : standardSizes)
         comboSize->addItem(QString::number(size));
     comboSize->setCurrentIndex(standardSizes.indexOf(QApplication::font().pointSize()));
 

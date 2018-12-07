@@ -589,7 +589,7 @@
     \snippet graphicsview/diagramscene/diagramscene.cpp 14
 
     The scene has single selection, i.e., only one item can be
-    selected at any given time. The foreach will then loop one time
+    selected at any given time. The for loop will then loop one time
     with the selected item or none if no item is selected. \c
     isItemChange() is used to check whether a selected item exists
     and also is of the specified diagram \a type.

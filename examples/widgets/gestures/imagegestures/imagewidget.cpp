@@ -72,7 +72,7 @@ ImageWidget::ImageWidget(QWidget *parent)
 void ImageWidget::grabGestures(const QList<Qt::GestureType> &gestures)
 {
     //! [enable gestures]
-    foreach (Qt::GestureType gesture, gestures)
+    for (Qt::GestureType gesture : gestures)
         grabGesture(gesture);
     //! [enable gestures]
 }

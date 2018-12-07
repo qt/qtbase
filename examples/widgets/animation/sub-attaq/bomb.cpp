@@ -112,7 +112,9 @@ void Bomb::launch(Bomb::Direction direction)
 
 void Bomb::onAnimationLaunchValueChanged(const QVariant &)
 {
-    foreach (QGraphicsItem * item , collidingItems(Qt::IntersectsItemBoundingRect)) {
+    const QList<QGraphicsItem *> colItems =
+            collidingItems(Qt::IntersectsItemBoundingRect);
+    for (QGraphicsItem *item : colItems) {
         if (item->type() == SubMarine::Type) {
             SubMarine *s = static_cast<SubMarine *>(item);
             destroy();

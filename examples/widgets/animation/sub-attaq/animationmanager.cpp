@@ -93,14 +93,14 @@ void AnimationManager::unregisterAllAnimations()
 
 void AnimationManager::pauseAll()
 {
-    foreach (QAbstractAnimation* animation, animations) {
+    for (QAbstractAnimation *animation : qAsConst(animations)) {
         if (animation->state() == QAbstractAnimation::Running)
             animation->pause();
     }
 }
 void AnimationManager::resumeAll()
 {
-    foreach (QAbstractAnimation* animation, animations) {
+    for (QAbstractAnimation *animation : qAsConst(animations)) {
         if (animation->state() == QAbstractAnimation::Paused)
             animation->resume();
     }

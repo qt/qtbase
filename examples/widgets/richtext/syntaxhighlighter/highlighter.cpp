@@ -58,18 +58,19 @@ Highlighter::Highlighter(QTextDocument *parent)
 
     keywordFormat.setForeground(Qt::darkBlue);
     keywordFormat.setFontWeight(QFont::Bold);
-    QStringList keywordPatterns;
-    keywordPatterns << "\\bchar\\b" << "\\bclass\\b" << "\\bconst\\b"
-                    << "\\bdouble\\b" << "\\benum\\b" << "\\bexplicit\\b"
-                    << "\\bfriend\\b" << "\\binline\\b" << "\\bint\\b"
-                    << "\\blong\\b" << "\\bnamespace\\b" << "\\boperator\\b"
-                    << "\\bprivate\\b" << "\\bprotected\\b" << "\\bpublic\\b"
-                    << "\\bshort\\b" << "\\bsignals\\b" << "\\bsigned\\b"
-                    << "\\bslots\\b" << "\\bstatic\\b" << "\\bstruct\\b"
-                    << "\\btemplate\\b" << "\\btypedef\\b" << "\\btypename\\b"
-                    << "\\bunion\\b" << "\\bunsigned\\b" << "\\bvirtual\\b"
-                    << "\\bvoid\\b" << "\\bvolatile\\b" << "\\bbool\\b";
-    foreach (const QString &pattern, keywordPatterns) {
+    const QString keywordPatterns[] = {
+        QStringLiteral("\\bchar\\b"), QStringLiteral("\\bclass\\b"), QStringLiteral("\\bconst\\b"),
+        QStringLiteral("\\bdouble\\b"), QStringLiteral("\\benum\\b"), QStringLiteral("\\bexplicit\\b"),
+        QStringLiteral("\\bfriend\\b"), QStringLiteral("\\binline\\b"), QStringLiteral("\\bint\\b"),
+        QStringLiteral("\\blong\\b"), QStringLiteral("\\bnamespace\\b"), QStringLiteral("\\boperator\\b"),
+        QStringLiteral("\\bprivate\\b"), QStringLiteral("\\bprotected\\b"), QStringLiteral("\\bpublic\\b"),
+        QStringLiteral("\\bshort\\b"), QStringLiteral("\\bsignals\\b"), QStringLiteral("\\bsigned\\b"),
+        QStringLiteral("\\bslots\\b"), QStringLiteral("\\bstatic\\b"), QStringLiteral("\\bstruct\\b"),
+        QStringLiteral("\\btemplate\\b"), QStringLiteral("\\btypedef\\b"), QStringLiteral("\\btypename\\b"),
+        QStringLiteral("\\bunion\\b"), QStringLiteral("\\bunsigned\\b"), QStringLiteral("\\bvirtual\\b"),
+        QStringLiteral("\\bvoid\\b"), QStringLiteral("\\bvolatile\\b"), QStringLiteral("\\bbool\\b")
+    };
+    for (const QString &pattern : keywordPatterns) {
         rule.pattern = QRegularExpression(pattern);
         rule.format = keywordFormat;
         highlightingRules.append(rule);
@@ -80,14 +81,14 @@ Highlighter::Highlighter(QTextDocument *parent)
 //! [2]
     classFormat.setFontWeight(QFont::Bold);
     classFormat.setForeground(Qt::darkMagenta);
-    rule.pattern = QRegularExpression("\\bQ[A-Za-z]+\\b");
+    rule.pattern = QRegularExpression(QStringLiteral("\\bQ[A-Za-z]+\\b"));
     rule.format = classFormat;
     highlightingRules.append(rule);
 //! [2]
 
 //! [3]
     singleLineCommentFormat.setForeground(Qt::red);
-    rule.pattern = QRegularExpression("//[^\n]*");
+    rule.pattern = QRegularExpression(QStringLiteral("//[^\n]*"));
     rule.format = singleLineCommentFormat;
     highlightingRules.append(rule);
 
@@ -96,7 +97,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 
 //! [4]
     quotationFormat.setForeground(Qt::darkGreen);
-    rule.pattern = QRegularExpression("\".*\"");
+    rule.pattern = QRegularExpression(QStringLiteral("\".*\""));
     rule.format = quotationFormat;
     highlightingRules.append(rule);
 //! [4]
@@ -104,21 +105,21 @@ Highlighter::Highlighter(QTextDocument *parent)
 //! [5]
     functionFormat.setFontItalic(true);
     functionFormat.setForeground(Qt::blue);
-    rule.pattern = QRegularExpression("\\b[A-Za-z0-9_]+(?=\\()");
+    rule.pattern = QRegularExpression(QStringLiteral("\\b[A-Za-z0-9_]+(?=\\()"));
     rule.format = functionFormat;
     highlightingRules.append(rule);
 //! [5]
 
 //! [6]
-    commentStartExpression = QRegularExpression("/\\*");
-    commentEndExpression = QRegularExpression("\\*/");
+    commentStartExpression = QRegularExpression(QStringLiteral("/\\*"));
+    commentEndExpression = QRegularExpression(QStringLiteral("\\*/"));
 }
 //! [6]
 
 //! [7]
 void Highlighter::highlightBlock(const QString &text)
 {
-    foreach (const HighlightingRule &rule, highlightingRules) {
+    for (const HighlightingRule &rule : qAsConst(highlightingRules)) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
         while (matchIterator.hasNext()) {
             QRegularExpressionMatch match = matchIterator.next();

@@ -99,9 +99,10 @@ void DialogOptionsWidget::addSpacer()
 int DialogOptionsWidget::value() const
 {
     int result = 0;
-    foreach (const CheckBoxEntry &checkboxEntry, checkBoxEntries)
+    for (const CheckBoxEntry &checkboxEntry : qAsConst(checkBoxEntries)) {
         if (checkboxEntry.first->isChecked())
             result |= checkboxEntry.second;
+    }
     return result;
 }
 

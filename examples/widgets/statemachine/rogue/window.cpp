@@ -66,7 +66,8 @@ Window::Window()
         font = QFont("Monospace");
     }
     else {
-        foreach (QString family, database.families()) {
+        const QStringList fontFamilies = database.families();
+        for (const QString &family : fontFamilies ) {
             if (database.isFixedPitch(family)) {
                 font = QFont(family);
                 break;

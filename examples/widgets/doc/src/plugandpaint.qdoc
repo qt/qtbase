@@ -171,8 +171,8 @@
     \snippet tools/plugandpaint/app/mainwindow.cpp 8
 
     We use QDir::entryList() to get a list of all files in that
-    directory. Then we iterate over the result using \l foreach and
-    try to load the plugin using QPluginLoader.
+    directory. Then we iterate over the result using a range-based for loop
+    and try to load the plugin using QPluginLoader.
 
     The QObject provided by the plugin is accessible through
     QPluginLoader::instance(). If the dynamic library isn't a Qt

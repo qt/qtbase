@@ -117,7 +117,8 @@ public:
     QRectF boundingRect() const override
     {
         QRectF rect;
-        foreach (QGraphicsItem *item, childItems())
+        const auto items = childItems();
+        for (const QGraphicsItem *item : items)
             rect |= item->boundingRect().translated(item->pos());
         return rect;
     }

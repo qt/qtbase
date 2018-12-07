@@ -265,17 +265,17 @@ void GraphicsScene::onSubMarineExecutionFinished()
 
 void GraphicsScene::clearScene()
 {
-    foreach (SubMarine *sub, submarines) {
+    for (SubMarine *sub : qAsConst(submarines)) {
         sub->destroy();
         sub->deleteLater();
     }
 
-    foreach (Torpedo *torpedo, torpedos) {
+    for (Torpedo *torpedo : qAsConst(torpedos)) {
         torpedo->destroy();
         torpedo->deleteLater();
     }
 
-    foreach (Bomb *bomb, bombs) {
+    for (Bomb *bomb : qAsConst(bombs)) {
         bomb->destroy();
         bomb->deleteLater();
     }

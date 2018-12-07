@@ -126,8 +126,8 @@ void MainWindow::createLetter(const QString &name, const QString &address,
     cursor.setPosition(topFrame->lastPosition());
 
     cursor.insertText(name, textFormat);
-    QString line;
-    foreach (line, address.split("\n")) {
+    const QStringList lines = address.split('\n');
+    for (const QString &line : lines) {
         cursor.insertBlock();
         cursor.insertText(line);
     }

@@ -111,7 +111,9 @@ void Torpedo::setCurrentSpeed(int speed)
 
 void Torpedo::onAnimationLaunchValueChanged(const QVariant &)
 {
-    foreach (QGraphicsItem *item , collidingItems(Qt::IntersectsItemBoundingRect)) {
+    const QList<QGraphicsItem *> colItems =
+            collidingItems(Qt::IntersectsItemBoundingRect);
+    for (QGraphicsItem *item : colItems) {
         if (Boat *b = qgraphicsitem_cast<Boat*>(item))
             b->destroy();
     }
