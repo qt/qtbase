@@ -60,12 +60,12 @@ int main(int argc, char **argv)
 
     bool smallScreen = QApplication::arguments().contains("-small-screen");
 
-    PathDeformWidget deformWidget(0, smallScreen);
+    PathDeformWidget deformWidget(nullptr, smallScreen);
 
-    QStyle *arthurStyle = new ArthurStyle();
+    QStyle *arthurStyle = new ArthurStyle;
     deformWidget.setStyle(arthurStyle);
-    QList<QWidget *> widgets = deformWidget.findChildren<QWidget *>();
-    foreach (QWidget *w, widgets)
+    const QList<QWidget *> widgets = deformWidget.findChildren<QWidget *>();
+    for (QWidget *w : widgets)
         w->setStyle(arthurStyle);
 
     if (smallScreen)

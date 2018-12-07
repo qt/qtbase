@@ -330,32 +330,40 @@ void ArthurFrame::showSource()
 
     QString contents;
     if (m_sourceFileName.isEmpty()) {
-        contents = QString("No source for widget: '%1'").arg(objectName());
+        contents = tr("No source for widget: '%1'").arg(objectName());
     } else {
         QFile f(m_sourceFileName);
         if (!f.open(QFile::ReadOnly))
-            contents = QString("Could not open file: '%1'").arg(m_sourceFileName);
+            contents = tr("Could not open file: '%1'").arg(m_sourceFileName);
         else
             contents = f.readAll();
     }
 
-    contents.replace('&', "&amp;");
-    contents.replace('<', "&lt;");
-    contents.replace('>', "&gt;");
+    contents.replace(QLatin1Char('&'), QStringLiteral("&amp;"));
+    contents.replace(QLatin1Char('<'), QStringLiteral("&lt;"));
+    contents.replace(QLatin1Char('>'), QStringLiteral("&gt;"));
 
-    QStringList keywords;
-    keywords << "for " << "if " << "switch " << " int " << "#include " << "const"
-             << "void " << "uint " << "case " << "double " << "#define " << "static"
-             << "new" << "this";
+    static const QString keywords[] = {
+        QStringLiteral("for "),      QStringLiteral("if "),
+        QStringLiteral("switch "),   QStringLiteral(" int "),
+        QStringLiteral("#include "), QStringLiteral("const"),
+        QStringLiteral("void "),     QStringLiteral("uint "),
+        QStringLiteral("case "),     QStringLiteral("double "),
+        QStringLiteral("#define "),  QStringLiteral("static"),
+        QStringLiteral("new"),       QStringLiteral("this")
+    };
 
-    foreach (QString keyword, keywords)
+    for (const QString &keyword : keywords)
         contents.replace(keyword, QLatin1String("<font color=olive>") + keyword + QLatin1String("</font>"));
-    contents.replace("(int ", "(<font color=olive><b>int </b></font>");
+    contents.replace(QStringLiteral("(int "), QStringLiteral("(<font color=olive><b>int </b></font>"));
 
-    QStringList ppKeywords;
-    ppKeywords << "#ifdef" << "#ifndef" << "#if" << "#endif" << "#else";
+    static const QString ppKeywords[] = {
+        QStringLiteral("#ifdef"), QStringLiteral("#ifndef"),
+        QStringLiteral("#if"),    QStringLiteral("#endif"),
+        QStringLiteral("#else")
+    };
 
-    foreach (QString keyword, ppKeywords)
+    for (const QString &keyword : ppKeywords)
         contents.replace(keyword, QLatin1String("<font color=navy>") + keyword + QLatin1String("</font>"));
 
     contents.replace(QRegularExpression("(\\d\\d?)"), QLatin1String("<font color=navy>\\1</font>"));
@@ -366,12 +374,10 @@ void ArthurFrame::showSource()
     QRegularExpression stringLiteralRe("(\".+?\")");
     contents.replace(stringLiteralRe, QLatin1String("<font color=green>\\1</font>"));
 
-    QString html = contents;
-    html.prepend("<html><pre>");
-    html.append("</pre></html>");
+    const QString html = QStringLiteral("<html><pre>") + contents + QStringLiteral("</pre></html>");
 
     QTextBrowser *sourceViewer = new QTextBrowser(0);
-    sourceViewer->setWindowTitle("Source: " + m_sourceFileName.mid(5));
+    sourceViewer->setWindowTitle(tr("Source: %1").arg(m_sourceFileName.midRef(5)));
     sourceViewer->setParent(this, Qt::Dialog);
     sourceViewer->setAttribute(Qt::WA_DeleteOnClose);
     sourceViewer->setLineWrapMode(QTextEdit::NoWrap);

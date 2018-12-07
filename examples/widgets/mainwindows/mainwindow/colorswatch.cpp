@@ -454,8 +454,8 @@ void ColorSwatch::updateContextMenu()
     tabMenu->clear();
     splitHMenu->clear();
     splitVMenu->clear();
-    QList<ColorSwatch*> dock_list = mainWindow->findChildren<ColorSwatch*>();
-    foreach (ColorSwatch *dock, dock_list) {
+    const QList<ColorSwatch *> dockList = mainWindow->findChildren<ColorSwatch*>();
+    for (const ColorSwatch *dock : dockList) {
         tabMenu->addAction(dock->objectName());
         splitHMenu->addAction(dock->objectName());
         splitVMenu->addAction(dock->objectName());
@@ -464,7 +464,8 @@ void ColorSwatch::updateContextMenu()
 
 static ColorSwatch *findByName(const QMainWindow *mainWindow, const QString &name)
 {
-    foreach (ColorSwatch *dock, mainWindow->findChildren<ColorSwatch*>()) {
+    const QList<ColorSwatch *> dockList = mainWindow->findChildren<ColorSwatch*>();
+    for (ColorSwatch *dock : dockList) {
         if (name == dock->objectName())
             return dock;
     }

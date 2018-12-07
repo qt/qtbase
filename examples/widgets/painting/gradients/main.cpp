@@ -61,8 +61,8 @@ int main(int argc, char *argv[])
     GradientWidget gradientWidget(0);
     QStyle *arthurStyle = new ArthurStyle();
     gradientWidget.setStyle(arthurStyle);
-    QList<QWidget *> widgets = gradientWidget.findChildren<QWidget *>();
-    foreach (QWidget *w, widgets) {
+    const QList<QWidget *> widgets = gradientWidget.findChildren<QWidget *>();
+    for (QWidget *w : widgets) {
         w->setStyle(arthurStyle);
         w->setAttribute(Qt::WA_AcceptTouchEvents);
     }

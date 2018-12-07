@@ -390,8 +390,8 @@ void PathStrokeWidget::setStyle( QStyle * style )
     {
         m_controls->setStyle(style);
 
-        QList<QWidget *> widgets = m_controls->findChildren<QWidget *>();
-        foreach (QWidget *w, widgets)
+        const QList<QWidget *> widgets = m_controls->findChildren<QWidget *>();
+        for (QWidget *w : widgets)
             w->setStyle(style);
     }
 }
@@ -605,7 +605,7 @@ bool PathStrokeRenderer::event(QEvent *e)
     {
         const QTouchEvent *const event = static_cast<const QTouchEvent*>(e);
         const QList<QTouchEvent::TouchPoint> points = event->touchPoints();
-        foreach (const QTouchEvent::TouchPoint &touchPoint, points) {
+        for (const QTouchEvent::TouchPoint &touchPoint : points) {
             const int id = touchPoint.id();
             switch (touchPoint.state()) {
             case Qt::TouchPointPressed:

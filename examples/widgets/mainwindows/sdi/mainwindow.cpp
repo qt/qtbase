@@ -472,7 +472,8 @@ MainWindow *MainWindow::findMainWindow(const QString &fileName) const
 {
     QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath();
 
-    foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+    const QList<QWidget *> topLevelWidgets = QApplication::topLevelWidgets();
+    for (QWidget *widget : topLevelWidgets) {
         MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
         if (mainWin && mainWin->curFile == canonicalFilePath)
             return mainWin;

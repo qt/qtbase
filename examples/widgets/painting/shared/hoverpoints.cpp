@@ -174,7 +174,7 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
                 const QTouchEvent *const touchEvent = static_cast<const QTouchEvent*>(event);
                 const QList<QTouchEvent::TouchPoint> points = touchEvent->touchPoints();
                 const qreal pointSize = qMax(m_pointSize.width(), m_pointSize.height());
-                foreach (const QTouchEvent::TouchPoint &touchPoint, points) {
+                for (const QTouchEvent::TouchPoint &touchPoint : points) {
                     const int id = touchPoint.id();
                     switch (touchPoint.state()) {
                     case Qt::TouchPointPressed:

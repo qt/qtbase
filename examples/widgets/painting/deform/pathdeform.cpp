@@ -291,16 +291,16 @@ void PathDeformWidget::hideControls()
     m_controls->hide();
 }
 
-void PathDeformWidget::setStyle( QStyle * style )
+void PathDeformWidget::setStyle(QStyle *style)
 {
     QWidget::setStyle(style);
-    if (m_controls == 0)
+    if (!m_controls)
         return;
 
     m_controls->setStyle(style);
 
-    QList<QWidget *> widgets = m_controls->findChildren<QWidget *>();
-    foreach (QWidget *w, widgets)
+    const QList<QWidget *> widgets = m_controls->findChildren<QWidget *>();
+    for (QWidget *w : widgets)
         w->setStyle(style);
 }
 

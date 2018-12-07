@@ -244,7 +244,8 @@ void ToolBar::order()
 {
     QList<QAction *> ordered;
     QList<QAction *> actions1 = actions();
-    foreach (QAction *action, findChildren<QAction *>()) {
+    const QList<QAction *> childActions = findChildren<QAction *>();
+    for (QAction *action : childActions) {
         if (!actions1.contains(action))
             continue;
         actions1.removeAll(action);

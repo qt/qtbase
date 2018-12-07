@@ -490,7 +490,8 @@ QMdiSubWindow *MainWindow::findMdiChild(const QString &fileName) const
 {
     QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath();
 
-    foreach (QMdiSubWindow *window, mdiArea->subWindowList()) {
+    const QList<QMdiSubWindow *> subWindows = mdiArea->subWindowList();
+    for (QMdiSubWindow *window : subWindows) {
         MdiChild *mdiChild = qobject_cast<MdiChild *>(window->widget());
         if (mdiChild->currentFile() == canonicalFilePath)
             return window;

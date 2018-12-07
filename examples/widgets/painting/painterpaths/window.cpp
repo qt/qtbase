@@ -280,8 +280,8 @@ void Window::penColorChanged()
 //! [22]
 void Window::populateWithColors(QComboBox *comboBox)
 {
-    QStringList colorNames = QColor::colorNames();
-    foreach (QString name, colorNames)
+    const QStringList colorNames = QColor::colorNames();
+    for (const QString &name : colorNames)
         comboBox->addItem(name, QColor(name));
 }
 //! [22]

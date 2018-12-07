@@ -135,7 +135,7 @@ signals:
     void okPressed();
     void quitPressed();
 private:
-    PathDeformRenderer* m_renderer;
+    PathDeformRenderer *m_renderer;
     void layoutForDesktop();
     void layoutForSmallScreen();
 };
@@ -145,7 +145,7 @@ class PathDeformWidget : public QWidget
     Q_OBJECT
 public:
     PathDeformWidget(QWidget *parent, bool smallScreen);
-    void setStyle (QStyle * style );
+    void setStyle(QStyle *style);
 
 private:
     PathDeformRenderer *m_renderer;
