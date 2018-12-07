@@ -122,6 +122,9 @@ public:
     QPlatformDialogHelper *platformHelper() const;
     virtual bool canBeNativeDialog() const;
 
+    void hide(int resultCode);
+    void finalize(int resultCode, int dialogCode);
+
 private:
     virtual void initHelper(QPlatformDialogHelper *) {}
     virtual void helperPrepareShow(QPlatformDialogHelper *) {}
