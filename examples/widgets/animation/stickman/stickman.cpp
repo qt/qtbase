@@ -126,7 +126,7 @@ StickMan::StickMan()
     // Set up start position of limbs
     for (int i=0; i<NodeCount; ++i) {
         m_nodes[i] = new Node(QPointF(Coords[i * 2], Coords[i * 2 + 1]), this);
-        connect(m_nodes[i], SIGNAL(positionChanged()), this, SLOT(childPositionChanged()));
+        connect(m_nodes[i], &Node::positionChanged, this, &StickMan::childPositionChanged);
     }
 
     for (int i=0; i<BoneCount; ++i) {

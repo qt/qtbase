@@ -124,7 +124,7 @@ void PlayState::onEntry(QEvent *)
     WinState *winState = new WinState(scene, this, machine);
 
     //The boat has been destroyed then the game is finished
-    levelState->addTransition(scene->boat, SIGNAL(boatExecutionFinished()),lostState);
+    levelState->addTransition(scene->boat, &Boat::boatExecutionFinished,lostState);
 
     //This transition check if we won or not
     WinTransition *winTransition = new WinTransition(scene, this, winState);
@@ -157,7 +157,7 @@ void PlayState::onEntry(QEvent *)
     winState->addTransition(spaceTransition);
 
     //We lost we should reach the final state
-    lostState->addTransition(lostState, SIGNAL(finished()), final);
+    lostState->addTransition(lostState, &QState::finished, final);
 
     machine->start();
 }
@@ -291,8 +291,8 @@ UpdateScoreState::UpdateScoreState(QState *parent) : QState(parent)
 
 /** Win transition */
 UpdateScoreTransition::UpdateScoreTransition(GraphicsScene *scene, PlayState *game, QAbstractState *target)
-    : QSignalTransition(scene,SIGNAL(subMarineDestroyed(int))),
-    game(game), scene(scene)
+    : QSignalTransition(scene, &GraphicsScene::subMarineDestroyed),
+      game(game), scene(scene)
 {
     setTargetState(target);
 }
@@ -309,8 +309,8 @@ bool UpdateScoreTransition::eventTest(QEvent *event)
 
 /** Win transition */
 WinTransition::WinTransition(GraphicsScene *scene, PlayState *game, QAbstractState *target)
-    : QSignalTransition(scene,SIGNAL(allSubMarineDestroyed(int))),
-    game(game), scene(scene)
+    : QSignalTransition(scene, &GraphicsScene::allSubMarineDestroyed),
+      game(game), scene(scene)
 {
     setTargetState(target);
 }

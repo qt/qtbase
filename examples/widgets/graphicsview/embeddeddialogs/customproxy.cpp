@@ -58,10 +58,10 @@ CustomProxy::CustomProxy(QGraphicsItem *parent, Qt::WindowFlags wFlags)
     : QGraphicsProxyWidget(parent, wFlags), popupShown(false), currentPopup(0)
 {
     timeLine = new QTimeLine(250, this);
-    connect(timeLine, SIGNAL(valueChanged(qreal)),
-            this, SLOT(updateStep(qreal)));
-    connect(timeLine, SIGNAL(stateChanged(QTimeLine::State)),
-            this, SLOT(stateChanged(QTimeLine::State)));
+    connect(timeLine, &QTimeLine::valueChanged,
+            this, &CustomProxy::updateStep);
+    connect(timeLine, &QTimeLine::stateChanged,
+            this, &CustomProxy::stateChanged);
 }
 
 QRectF CustomProxy::boundingRect() const

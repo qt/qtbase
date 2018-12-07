@@ -214,7 +214,7 @@ int main(int argc, char **argv)
     QTimer timer;
     timer.setInterval(1250);
     timer.setSingleShot(true);
-    QObject::connect(group, SIGNAL(entered()), &timer, SLOT(start()));
+    QObject::connect(group, &QState::entered, &timer, QOverload<>::of(&QTimer::start));
 //![2]
 
 //![3]
@@ -302,7 +302,7 @@ int main(int argc, char **argv)
 //![7]
     StateSwitcher *stateSwitcher = new StateSwitcher(&machine);
     stateSwitcher->setObjectName("stateSwitcher");
-    group->addTransition(&timer, SIGNAL(timeout()), stateSwitcher);
+    group->addTransition(&timer, &QTimer::timeout, stateSwitcher);
     stateSwitcher->addState(state1, &animationGroup);
     stateSwitcher->addState(state2, &animationGroup);
 //![7]

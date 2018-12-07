@@ -131,7 +131,7 @@ void FadeMessage::setupScene()
 
     QPushButton *press = new QPushButton;
     press->setText(tr("Press me"));
-    connect(press, SIGNAL(clicked()), SLOT(togglePopup()));
+    connect(press, &QAbstractButton::clicked, this, &FadeMessage::togglePopup);
     m_scene.addWidget(press);
 
     press->move(300, 500);

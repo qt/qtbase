@@ -80,7 +80,8 @@ public:
     explicit MovementState(SubMarine *submarine, QState *parent = 0) : QAnimationState(parent)
     {
         movementAnimation = new QPropertyAnimation(submarine, "pos");
-        connect(movementAnimation,SIGNAL(valueChanged(const QVariant &)),this,SLOT(onAnimationMovementValueChanged(const QVariant &)));
+        connect(movementAnimation, &QPropertyAnimation::valueChanged,
+                this, &MovementState::onAnimationMovementValueChanged);
         setAnimation(movementAnimation);
         AnimationManager::self()->registerAnimation(movementAnimation);
         this->submarine = submarine;

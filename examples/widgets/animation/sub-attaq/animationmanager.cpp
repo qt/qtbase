@@ -71,7 +71,7 @@ AnimationManager *AnimationManager::self()
 
 void AnimationManager::registerAnimation(QAbstractAnimation *anim)
 {
-    QObject::connect(anim, SIGNAL(destroyed(QObject*)), this, SLOT(unregisterAnimation_helper(QObject*)));
+    QObject::connect(anim, &QObject::destroyed, this, &AnimationManager::unregisterAnimation_helper);
     animations.append(anim);
 }
 
@@ -82,7 +82,7 @@ void AnimationManager::unregisterAnimation_helper(QObject *obj)
 
 void AnimationManager::unregisterAnimation(QAbstractAnimation *anim)
 {
-    QObject::disconnect(anim, SIGNAL(destroyed(QObject*)), this, SLOT(unregisterAnimation_helper(QObject*)));
+    QObject::disconnect(anim, &QObject::destroyed, this, &AnimationManager::unregisterAnimation_helper);
     animations.removeAll(anim);
 }
 

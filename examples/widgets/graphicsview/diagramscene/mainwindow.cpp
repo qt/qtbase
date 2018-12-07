@@ -67,12 +67,12 @@ MainWindow::MainWindow()
 
     scene = new DiagramScene(itemMenu, this);
     scene->setSceneRect(QRectF(0, 0, 5000, 5000));
-    connect(scene, SIGNAL(itemInserted(DiagramItem*)),
-            this, SLOT(itemInserted(DiagramItem*)));
-    connect(scene, SIGNAL(textInserted(QGraphicsTextItem*)),
-            this, SLOT(textInserted(QGraphicsTextItem*)));
-    connect(scene, SIGNAL(itemSelected(QGraphicsItem*)),
-            this, SLOT(itemSelected(QGraphicsItem*)));
+    connect(scene, &DiagramScene::itemInserted,
+            this, &MainWindow::itemInserted);
+    connect(scene, &DiagramScene::textInserted,
+            this, &MainWindow::textInserted);
+    connect(scene, &DiagramScene::itemSelected,
+            this, &MainWindow::itemSelected);
     createToolbars();
 
     QHBoxLayout *layout = new QHBoxLayout;
@@ -332,8 +332,8 @@ void MainWindow::createToolBox()
 {
     buttonGroup = new QButtonGroup(this);
     buttonGroup->setExclusive(false);
-    connect(buttonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(buttonGroupClicked(int)));
+    connect(buttonGroup, QOverload<int>::of(&QButtonGroup::buttonClicked),
+            this, &MainWindow::buttonGroupClicked);
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(createCellWidget(tr("Conditional"), DiagramItem::Conditional), 0, 0);
     layout->addWidget(createCellWidget(tr("Process"), DiagramItem::Step),0, 1);
@@ -359,8 +359,8 @@ void MainWindow::createToolBox()
     itemWidget->setLayout(layout);
 
     backgroundButtonGroup = new QButtonGroup(this);
-    connect(backgroundButtonGroup, SIGNAL(buttonClicked(QAbstractButton*)),
-            this, SLOT(backgroundButtonGroupClicked(QAbstractButton*)));
+    connect(backgroundButtonGroup, QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked),
+            this, &MainWindow::backgroundButtonGroupClicked);
 
     QGridLayout *backgroundLayout = new QGridLayout;
     backgroundLayout->addWidget(createBackgroundCellWidget(tr("Blue Grid"),
@@ -395,44 +395,44 @@ void MainWindow::createActions()
                                 tr("Bring to &Front"), this);
     toFrontAction->setShortcut(tr("Ctrl+F"));
     toFrontAction->setStatusTip(tr("Bring item to front"));
-    connect(toFrontAction, SIGNAL(triggered()), this, SLOT(bringToFront()));
+    connect(toFrontAction, &QAction::triggered, this, &MainWindow::bringToFront);
 //! [23]
 
     sendBackAction = new QAction(QIcon(":/images/sendtoback.png"), tr("Send to &Back"), this);
     sendBackAction->setShortcut(tr("Ctrl+T"));
     sendBackAction->setStatusTip(tr("Send item to back"));
-    connect(sendBackAction, SIGNAL(triggered()), this, SLOT(sendToBack()));
+    connect(sendBackAction, &QAction::triggered, this, &MainWindow::sendToBack);
 
     deleteAction = new QAction(QIcon(":/images/delete.png"), tr("&Delete"), this);
     deleteAction->setShortcut(tr("Delete"));
     deleteAction->setStatusTip(tr("Delete item from diagram"));
-    connect(deleteAction, SIGNAL(triggered()), this, SLOT(deleteItem()));
+    connect(deleteAction, &QAction::triggered, this, &MainWindow::deleteItem);
 
     exitAction = new QAction(tr("E&xit"), this);
     exitAction->setShortcuts(QKeySequence::Quit);
     exitAction->setStatusTip(tr("Quit Scenediagram example"));
-    connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
+    connect(exitAction, &QAction::triggered, this, &QWidget::close);
 
     boldAction = new QAction(tr("Bold"), this);
     boldAction->setCheckable(true);
     QPixmap pixmap(":/images/bold.png");
     boldAction->setIcon(QIcon(pixmap));
     boldAction->setShortcut(tr("Ctrl+B"));
-    connect(boldAction, SIGNAL(triggered()), this, SLOT(handleFontChange()));
+    connect(boldAction, &QAction::triggered, this, &MainWindow::handleFontChange);
 
     italicAction = new QAction(QIcon(":/images/italic.png"), tr("Italic"), this);
     italicAction->setCheckable(true);
     italicAction->setShortcut(tr("Ctrl+I"));
-    connect(italicAction, SIGNAL(triggered()), this, SLOT(handleFontChange()));
+    connect(italicAction, &QAction::triggered, this, &MainWindow::handleFontChange);
 
     underlineAction = new QAction(QIcon(":/images/underline.png"), tr("Underline"), this);
     underlineAction->setCheckable(true);
     underlineAction->setShortcut(tr("Ctrl+U"));
-    connect(underlineAction, SIGNAL(triggered()), this, SLOT(handleFontChange()));
+    connect(underlineAction, &QAction::triggered, this, &MainWindow::handleFontChange);
 
     aboutAction = new QAction(tr("A&bout"), this);
     aboutAction->setShortcut(tr("F1"));
-    connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
+    connect(aboutAction, &QAction::triggered, this, &MainWindow::about);
 }
 
 //! [24]
@@ -462,8 +462,8 @@ void MainWindow::createToolbars()
     editToolBar->addAction(sendBackAction);
 
     fontCombo = new QFontComboBox();
-    connect(fontCombo, SIGNAL(currentFontChanged(QFont)),
-            this, SLOT(currentFontChanged(QFont)));
+    connect(fontCombo, &QFontComboBox::currentFontChanged,
+            this, &MainWindow::currentFontChanged);
 
     fontSizeCombo = new QComboBox;
     fontSizeCombo->setEditable(true);
@@ -471,8 +471,8 @@ void MainWindow::createToolbars()
         fontSizeCombo->addItem(QString().setNum(i));
     QIntValidator *validator = new QIntValidator(2, 64, this);
     fontSizeCombo->setValidator(validator);
-    connect(fontSizeCombo, SIGNAL(currentIndexChanged(QString)),
-            this, SLOT(fontSizeChanged(QString)));
+    connect(fontSizeCombo, QOverload<const QString &>::of(&QComboBox::currentIndexChanged),
+            this, &MainWindow::fontSizeChanged);
 
     fontColorToolButton = new QToolButton;
     fontColorToolButton->setPopupMode(QToolButton::MenuButtonPopup);
@@ -480,8 +480,8 @@ void MainWindow::createToolbars()
     textAction = fontColorToolButton->menu()->defaultAction();
     fontColorToolButton->setIcon(createColorToolButtonIcon(":/images/textpointer.png", Qt::black));
     fontColorToolButton->setAutoFillBackground(true);
-    connect(fontColorToolButton, SIGNAL(clicked()),
-            this, SLOT(textButtonTriggered()));
+    connect(fontColorToolButton, &QAbstractButton::clicked,
+            this, &MainWindow::textButtonTriggered);
 
 //! [26]
     fillColorToolButton = new QToolButton;
@@ -490,8 +490,8 @@ void MainWindow::createToolbars()
     fillAction = fillColorToolButton->menu()->defaultAction();
     fillColorToolButton->setIcon(createColorToolButtonIcon(
                                      ":/images/floodfill.png", Qt::white));
-    connect(fillColorToolButton, SIGNAL(clicked()),
-            this, SLOT(fillButtonTriggered()));
+    connect(fillColorToolButton, &QAbstractButton::clicked,
+            this, &MainWindow::fillButtonTriggered);
 //! [26]
 
     lineColorToolButton = new QToolButton;
@@ -500,8 +500,8 @@ void MainWindow::createToolbars()
     lineAction = lineColorToolButton->menu()->defaultAction();
     lineColorToolButton->setIcon(createColorToolButtonIcon(
                                      ":/images/linecolor.png", Qt::black));
-    connect(lineColorToolButton, SIGNAL(clicked()),
-            this, SLOT(lineButtonTriggered()));
+    connect(lineColorToolButton, &QAbstractButton::clicked,
+            this, &MainWindow::lineButtonTriggered);
 
     textToolBar = addToolBar(tr("Font"));
     textToolBar->addWidget(fontCombo);
@@ -526,16 +526,16 @@ void MainWindow::createToolbars()
     pointerTypeGroup = new QButtonGroup(this);
     pointerTypeGroup->addButton(pointerButton, int(DiagramScene::MoveItem));
     pointerTypeGroup->addButton(linePointerButton, int(DiagramScene::InsertLine));
-    connect(pointerTypeGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(pointerGroupClicked(int)));
+    connect(pointerTypeGroup, QOverload<int>::of(&QButtonGroup::buttonClicked),
+            this, &MainWindow::pointerGroupClicked);
 
     sceneScaleCombo = new QComboBox;
     QStringList scales;
     scales << tr("50%") << tr("75%") << tr("100%") << tr("125%") << tr("150%");
     sceneScaleCombo->addItems(scales);
     sceneScaleCombo->setCurrentIndex(2);
-    connect(sceneScaleCombo, SIGNAL(currentIndexChanged(QString)),
-            this, SLOT(sceneScaleChanged(QString)));
+    connect(sceneScaleCombo, QOverload<const QString &>::of(&QComboBox::currentIndexChanged),
+            this, &MainWindow::sceneScaleChanged);
 
     pointerToolbar = addToolBar(tr("Pointer type"));
     pointerToolbar->addWidget(pointerButton);
