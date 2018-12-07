@@ -254,8 +254,7 @@ function(qt_internal_wrap_cpp target)
     target_sources("${target}" PRIVATE "${outfiles}")
 endfunction()
 
-
-function(_qt_module_name name result)
+function(qt_internal_module_name name result)
     set("${result}" "Qt${name}" PARENT_SCOPE)
 endfunction()
 
@@ -533,7 +532,7 @@ function(add_qt_module name)
     qt_parse_all_arguments(arg "add_qt_module" "NO_MODULE_HEADERS;STATIC" "CONFIG_MODULE_NAME"
         "${__default_private_args};${__default_public_args};FEATURE_DEPENDENCIES" ${ARGN})
 
-    _qt_module_name("${name}" module)
+    qt_internal_module_name("${name}" module)
     set(versioned_module_name "Qt${PROJECT_VERSION_MAJOR}${name}")
     set(target "${name}")
     string(TOUPPER "${name}" name_upper)
