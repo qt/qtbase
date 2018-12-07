@@ -922,7 +922,8 @@ bool QDockWidgetPrivate::mousePressEvent(QMouseEvent *event)
         initDrag(event->pos(), false);
 
         if (state)
-            state->ctrlDrag = hasFeature(this, QDockWidget::DockWidgetFloatable) && event->modifiers() & Qt::ControlModifier;
+            state->ctrlDrag = (hasFeature(this, QDockWidget::DockWidgetFloatable) && event->modifiers() & Qt::ControlModifier) ||
+                              (!hasFeature(this, QDockWidget::DockWidgetMovable) && q->isFloating());
 
         return true;
     }
@@ -1044,7 +1045,8 @@ void QDockWidgetPrivate::nonClientAreaMouseEvent(QMouseEvent *event)
             initDrag(event->pos(), true);
             if (state == 0)
                 break;
-            state->ctrlDrag = event->modifiers() & Qt::ControlModifier;
+            state->ctrlDrag = (event->modifiers() & Qt::ControlModifier) ||
+                              (!hasFeature(this, QDockWidget::DockWidgetMovable) && q->isFloating());
             startDrag();
             break;
         case QEvent::NonClientAreaMouseMove:
