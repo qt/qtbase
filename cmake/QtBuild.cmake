@@ -254,8 +254,21 @@ function(qt_internal_wrap_cpp target)
     target_sources("${target}" PRIVATE "${outfiles}")
 endfunction()
 
-function(qt_internal_module_name name result)
-    set("${result}" "Qt${name}" PARENT_SCOPE)
+
+# Get a set of Qt module related values based on the target name.
+# When doing qt_internal_module_info(foo Core) this method will set
+# the following variables in the caller's scope:
+#  * foo with the value "QtCore"
+#  * foo_versioned with the value "Qt5Core" (based on major Qt version)
+#  * foo_upper with the value "CORE"
+#  * foo_lower with the value "core"
+function(qt_internal_module_info result target)
+    set("${result}" "Qt${target}" PARENT_SCOPE)
+    set("${result}_versioned" "Qt${PROJECT_VERSION_MAJOR}${target}" PARENT_SCOPE)
+    string(TOUPPER "${target}" upper)
+    string(TOLOWER "${target}" lower)
+    set("${result}_upper" "${upper}" PARENT_SCOPE)
+    set("${result}_lower" "${lower}" PARENT_SCOPE)
 endfunction()
 
 
@@ -524,19 +537,17 @@ endfunction()
 # consists of a library, public header files, private header files and configurable
 # features.
 #
-# A CMake target with the specified name parameter is created. If the current source
+# A CMake target with the specified target parameter is created. If the current source
 # directory has a configure.cmake file, then that is also processed for feature definition
 # and testing. Any features defined as well as any features coming from dependencies to
 # this module are imported into the scope of the calling feature.
-function(add_qt_module name)
+#
+# Target is without leading "Qt". So e.g. the "QtCore" module has the target "Core".
+function(add_qt_module target)
     qt_parse_all_arguments(arg "add_qt_module" "NO_MODULE_HEADERS;STATIC" "CONFIG_MODULE_NAME"
         "${__default_private_args};${__default_public_args};FEATURE_DEPENDENCIES" ${ARGN})
 
-    qt_internal_module_name("${name}" module)
-    set(versioned_module_name "Qt${PROJECT_VERSION_MAJOR}${name}")
-    set(target "${name}")
-    string(TOUPPER "${name}" name_upper)
-    string(TOLOWER "${name}" name_lower)
+    qt_internal_module_info(module "${target}")
 
     _set_known_qt_modules("${KNOWN_QT_MODULES}" "${target}")
 
@@ -556,7 +567,7 @@ function(add_qt_module name)
     add_library("Qt::${target_private}" ALIAS ${target_private})
 
     if(NOT DEFINED arg_CONFIG_MODULE_NAME)
-        set(arg_CONFIG_MODULE_NAME "${name_lower}")
+        set(arg_CONFIG_MODULE_NAME "${module_lower}")
     endif()
 
     # Import global features
@@ -597,7 +608,7 @@ function(add_qt_module name)
 
     set_target_properties("${target}" PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_LIBDIR}")
     set_target_properties("${target}" PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}")
-    set_target_properties("${target}" PROPERTIES OUTPUT_NAME "${versioned_module_name}")
+    set_target_properties("${target}" PROPERTIES OUTPUT_NAME "${module_versioned}")
 
     qt_internal_module_include_dir(include_dir "${module}")
 
@@ -640,7 +651,7 @@ function(add_qt_module name)
             ${arg_INCLUDE_DIRECTORIES}
         PUBLIC_DEFINES
             ${arg_PUBLIC_DEFINES}
-            QT_${name_upper}_LIB
+            QT_${module_upper}_LIB
         DEFINES
             ${arg_DEFINES}
             QT_NO_CAST_TO_ASCII QT_ASCII_CAST_WARNINGS
@@ -648,7 +659,7 @@ function(add_qt_module name)
             QT_USE_QSTRINGBUILDER
             QT_DEPRECATED_WARNINGS
             QT_BUILDING_QT
-            QT_BUILD_${name_upper}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
+            QT_BUILD_${module_upper}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
             "${deprecation_define}"
         PUBLIC_LIBRARIES
             ${arg_PUBLIC_LIBRARIES}
@@ -677,35 +688,35 @@ function(add_qt_module name)
 
     qt_pull_features_into_current_scope(PUBLIC_FEATURES PRIVATE_FEATURES ${arg_FEATURE_DEPENDENCIES})
 
-    install(TARGETS "${target}" "${target_private}" EXPORT "${versioned_module_name}Targets"
+    install(TARGETS "${target}" "${target_private}" EXPORT "${module_versioned}Targets"
         LIBRARY DESTINATION ${INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module}
         PRIVATE_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module}/private
         )
 
-    set(config_install_dir "${INSTALL_LIBDIR}/cmake/${versioned_module_name}")
-    install(EXPORT "${versioned_module_name}Targets" NAMESPACE Qt:: DESTINATION ${config_install_dir})
+    set(config_install_dir "${INSTALL_LIBDIR}/cmake/${module_versioned}")
+    install(EXPORT "${module_versioned}Targets" NAMESPACE Qt:: DESTINATION ${config_install_dir})
 
     configure_package_config_file(
         "${Qt${PROJECT_VERSION_MAJOR}_DIR}/QtModuleConfig.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/${versioned_module_name}Config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${module_versioned}Config.cmake"
         INSTALL_DESTINATION "${config_install_dir}"
     )
     write_basic_package_version_file(
-        ${CMAKE_CURRENT_BINARY_DIR}/${versioned_module_name}ConfigVersion.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/${module_versioned}ConfigVersion.cmake
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY AnyNewerVersion
     )
 
     set(extra_cmake_files)
-    if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${versioned_module_name}Macros.cmake")
-        list(APPEND extra_cmake_files "${CMAKE_CURRENT_LIST_DIR}/${versioned_module_name}Macros.cmake")
+    if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${module_versioned}Macros.cmake")
+        list(APPEND extra_cmake_files "${CMAKE_CURRENT_LIST_DIR}/${module_versioned}Macros.cmake")
     endif()
 
     install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/${versioned_module_name}Config.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/${versioned_module_name}ConfigVersion.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${module_versioned}Config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${module_versioned}ConfigVersion.cmake"
         ${extra_cmake_files}
         DESTINATION "${config_install_dir}"
         COMPONENT Devel
