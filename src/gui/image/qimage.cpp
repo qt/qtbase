@@ -149,10 +149,7 @@ QImageData * QImageData::create(const QSize &size, QImage::Format format)
 
     d->bytes_per_line = params.bytesPerLine;
     d->nbytes = params.totalSize;
-    if (depth == 64)
-        d->data = (uchar *)new (std::nothrow) quint64[d->nbytes / sizeof(quint64)];
-    else // nbytes is known to already be a multipla of 4:
-        d->data = (uchar *)new (std::nothrow) quint32[d->nbytes / sizeof(quint32)];
+    d->data  = (uchar *)malloc(d->nbytes);
 
     if (!d->data)
         return nullptr;
@@ -168,13 +165,8 @@ QImageData::~QImageData()
     if (is_cached)
         QImagePixmapCleanupHooks::executeImageHooks((((qint64) ser_no) << 32) | ((qint64) detach_no));
     delete paintEngine;
-    if (data && own_data) {
-        // Casting to avoid being theoretically UB:
-        if (depth == 64)
-            delete[] (quint64 *)data;
-        else
-            delete[] (quint32 *)data;
-    }
+    if (data && own_data)
+        free(data);
     data = 0;
 }
 
