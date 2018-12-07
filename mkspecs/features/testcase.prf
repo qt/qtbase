@@ -21,6 +21,9 @@ testcase_lowdpi {
     }
 }
 
+# Make sure we explicitly link to the debug version of the Qt libraries if needed
+macos: CONFIG += qt_link_suffixed_framework
+
 benchmark: type = benchmark
 else: type = check
 
