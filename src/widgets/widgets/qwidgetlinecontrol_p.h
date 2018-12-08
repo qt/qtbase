@@ -280,6 +280,13 @@ public:
         cancelPasswordEchoTimer();
         m_echoMode = mode;
         m_passwordEchoEditing = false;
+
+        // If this control is used for password input, we want to minimize
+        // the possibility of string reallocation not to leak (parts of)
+        // the password.
+        if (m_echoMode != QLineEdit::Normal)
+            m_text.reserve(30);
+
         updateDisplayText();
     }
 

@@ -96,11 +96,6 @@ void tst_QCollator::compare_data()
     QTest::addColumn<int>("punctuationResult");
 
     /*
-        A few tests below are commented out on the mac. It's unclear why they fail,
-        as it looks like the collator for the locale is created correctly.
-    */
-
-    /*
         It's hard to test English, because it's treated differently
         on different platforms. For example, on Linux, it uses the
         iso14651_t1 template file, which happens to provide good
@@ -164,7 +159,7 @@ void tst_QCollator::compare_data()
     QTest::newRow("german13") << QString("de_DE") << QString("test.19") << QString("test,19") << 1 << 1 << true << true << 0;
 
     /*
-        French sorting of e and e with accent
+        French sorting of e and e with acute accent
     */
     QTest::newRow("french1") << QString("fr_FR") << QString::fromLatin1("\xe9") << QString::fromLatin1("e") << 1 << 1 << false << false << 1;
     QTest::newRow("french2") << QString("fr_FR") << QString::fromLatin1("\xe9t") << QString::fromLatin1("et") << 1 << 1 << false << false << 1;

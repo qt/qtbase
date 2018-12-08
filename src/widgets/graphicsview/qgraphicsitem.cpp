@@ -10569,14 +10569,11 @@ void QGraphicsTextItemPrivate::_q_update(QRectF rect)
 */
 void QGraphicsTextItemPrivate::_q_updateBoundingRect(const QSizeF &size)
 {
-    if (!control) return; // can't happen
-    const QSizeF pageSize = control->document()->pageSize();
-    // paged items have a constant (page) size
-    if (size == boundingRect.size() || pageSize.height() != -1)
-        return;
-    qq->prepareGeometryChange();
-    boundingRect.setSize(size);
-    qq->update();
+    if (size != boundingRect.size()) {
+        qq->prepareGeometryChange();
+        boundingRect.setSize(size);
+        qq->update();
+    }
 }
 
 /*!

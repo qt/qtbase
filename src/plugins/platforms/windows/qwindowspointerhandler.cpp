@@ -187,11 +187,29 @@ static bool draggingActive()
 bool QWindowsPointerHandler::translatePointerEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result)
 {
     *result = 0;
+
+    // If we are inside the move/resize modal loop, let DefWindowProc() handle it (but process NC button release).
+    QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
+    if (msg.message != WM_NCPOINTERUP && platformWindow->testFlag(QWindowsWindow::ResizeMoveActive))
+        return false;
+
     const quint32 pointerId = GET_POINTERID_WPARAM(msg.wParam);
 
     POINTER_INPUT_TYPE pointerType;
     if (!QWindowsContext::user32dll.getPointerType(pointerId, &pointerType)) {
         qWarning() << "GetPointerType() failed:" << qt_error_string();
+        return false;
+    }
+
+    // Handle non-client pen/touch as generic mouse events for compatibility with QDockWindow.
+    if ((pointerType == QT_PT_TOUCH || pointerType == QT_PT_PEN) && (et & QtWindows::NonClientEventFlag)) {
+        POINTER_INFO pointerInfo;
+        if (!QWindowsContext::user32dll.getPointerInfo(pointerId, &pointerInfo)) {
+            qWarning() << "GetPointerInfo() failed:" << qt_error_string();
+            return false;
+        }
+        if (pointerInfo.pointerFlags & (POINTER_FLAG_UP | POINTER_FLAG_DOWN))
+            return translateMouseTouchPadEvent(window, hwnd, et, msg, &pointerInfo);
         return false;
     }
 
@@ -564,6 +582,7 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
     QList<QWindowSystemInterface::TouchPoint> touchPoints;
 
     bool primaryPointer = false;
+    bool pressRelease = false;
 
     if (QWindowsContext::verbose > 1)
         qCDebug(lcQpaEvents).noquote().nospace() << showbase
@@ -600,9 +619,11 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
         if (touchInfo[i].pointerInfo.pointerFlags & POINTER_FLAG_DOWN) {
             touchPoint.state = Qt::TouchPointPressed;
             m_lastTouchPositions.insert(touchPoint.id, touchPoint.normalPosition);
+            pressRelease = true;
         } else if (touchInfo[i].pointerInfo.pointerFlags & POINTER_FLAG_UP) {
             touchPoint.state = Qt::TouchPointReleased;
             m_lastTouchPositions.remove(touchPoint.id);
+            pressRelease = true;
         } else {
             touchPoint.state = stationaryTouchPoint ? Qt::TouchPointStationary : Qt::TouchPointMoved;
             m_lastTouchPositions.insert(touchPoint.id, touchPoint.normalPosition);
@@ -615,7 +636,7 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
         // Avoid getting repeated messages for this frame if there are multiple pointerIds
         QWindowsContext::user32dll.skipPointerFrameMessages(touchInfo[i].pointerInfo.pointerId);
     }
-    if (primaryPointer) {
+    if (primaryPointer && !pressRelease) {
         // Postpone event delivery to avoid hanging inside DoDragDrop().
         // Only the primary pointer will generate mouse messages.
         enqueueTouchEvent(window, touchPoints, QWindowsKeyMapper::queryKeyboardModifiers());
