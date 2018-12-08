@@ -4921,8 +4921,8 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         break;
 #if QT_CONFIG(groupbox)
     case CT_GroupBox:
-        if (const QGroupBox *grb = static_cast<const QGroupBox *>(widget))
-            sz += QSize(!grb->isFlat() ? 16 : 0, 0);
+        if (const QStyleOptionGroupBox *styleOpt = qstyleoption_cast<const QStyleOptionGroupBox *>(opt))
+            sz += QSize(styleOpt->features.testFlag(QStyleOptionFrame::Flat) ? 0 : 16, 0);
         break;
 #endif // QT_CONFIG(groupbox)
     case CT_MdiControls:
