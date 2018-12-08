@@ -208,6 +208,8 @@ bool QGuiApplicationPrivate::obey_desktop_settings = true;
 
 QInputDeviceManager *QGuiApplicationPrivate::m_inputDeviceManager = 0;
 
+qreal QGuiApplicationPrivate::m_maxDevicePixelRatio = 0.0;
+
 static qreal fontSmoothingGamma = 1.7;
 
 extern void qRegisterGuiVariant();
@@ -1093,17 +1095,19 @@ QScreen *QGuiApplication::screenAt(const QPoint &point)
 */
 qreal QGuiApplication::devicePixelRatio() const
 {
-    // Cache topDevicePixelRatio, iterate through the screen list once only.
-    static qreal topDevicePixelRatio = 0.0;
-    if (!qFuzzyIsNull(topDevicePixelRatio)) {
-        return topDevicePixelRatio;
-    }
+    if (!qFuzzyIsNull(QGuiApplicationPrivate::m_maxDevicePixelRatio))
+        return QGuiApplicationPrivate::m_maxDevicePixelRatio;
 
-    topDevicePixelRatio = 1.0; // make sure we never return 0.
+    QGuiApplicationPrivate::m_maxDevicePixelRatio = 1.0; // make sure we never return 0.
     for (QScreen *screen : qAsConst(QGuiApplicationPrivate::screen_list))
-        topDevicePixelRatio = qMax(topDevicePixelRatio, screen->devicePixelRatio());
+        QGuiApplicationPrivate::m_maxDevicePixelRatio = qMax(QGuiApplicationPrivate::m_maxDevicePixelRatio, screen->devicePixelRatio());
 
-    return topDevicePixelRatio;
+    return QGuiApplicationPrivate::m_maxDevicePixelRatio;
+}
+
+void QGuiApplicationPrivate::resetCachedDevicePixelRatio()
+{
+    m_maxDevicePixelRatio = 0.0;
 }
 
 /*!
@@ -3000,6 +3004,8 @@ void QGuiApplicationPrivate::processScreenGeometryChange(QWindowSystemInterfaceP
         for (QScreen* sibling : siblings)
             emit sibling->virtualGeometryChanged(sibling->virtualGeometry());
     }
+
+    resetCachedDevicePixelRatio();
 }
 
 void QGuiApplicationPrivate::processScreenLogicalDotsPerInchChange(QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *e)
@@ -3015,6 +3021,8 @@ void QGuiApplicationPrivate::processScreenLogicalDotsPerInchChange(QWindowSystem
     s->d_func()->logicalDpi = QDpi(e->dpiX, e->dpiY);
 
     emit s->logicalDotsPerInchChanged(s->logicalDotsPerInch());
+
+    resetCachedDevicePixelRatio();
 }
 
 void QGuiApplicationPrivate::processScreenRefreshRateChange(QWindowSystemInterfacePrivate::ScreenRefreshRateEvent *e)

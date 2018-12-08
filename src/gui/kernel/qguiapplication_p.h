@@ -311,6 +311,8 @@ public:
 
     static void setApplicationState(Qt::ApplicationState state, bool forcePropagate = false);
 
+    static void resetCachedDevicePixelRatio();
+
 protected:
     virtual void notifyThemeChanged();
     bool tryCloseRemainingWindows(QWindowList processedWindows);
@@ -330,6 +332,10 @@ private:
     bool ownGlobalShareContext;
 
     static QInputDeviceManager *m_inputDeviceManager;
+
+    // Cache the maximum device pixel ratio, to iterate through the screen list
+    // only the first time it's required, or when devices are added or removed.
+    static qreal m_maxDevicePixelRatio;
 };
 
 Q_GUI_EXPORT uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k);
