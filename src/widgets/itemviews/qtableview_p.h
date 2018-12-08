@@ -234,16 +234,16 @@ public:
     inline bool isCellEnabled(int row, int column) const {
         return isIndexEnabled(model->index(row, column, root));
     }
-    inline bool isVisualRowHiddenOrDisabled(int row, int column) const {
-        int r = logicalRow(row);
-        int c = logicalColumn(column);
-        return isRowHidden(r) || !isCellEnabled(r, c);
-    }
-    inline bool isVisualColumnHiddenOrDisabled(int row, int column) const {
-        int r = logicalRow(row);
-        int c = logicalColumn(column);
-        return isColumnHidden(c) || !isCellEnabled(r, c);
-    }
+
+    enum class SearchDirection
+    {
+        Increasing,
+        Decreasing
+    };
+    int nextActiveVisualRow(int rowToStart, int column, int limit,
+                            SearchDirection searchDirection) const;
+    int nextActiveVisualColumn(int row, int columnToStart, int limit,
+                               SearchDirection searchDirection) const;
 
     QRect visualSpanRect(const QSpanCollection::Span &span) const;
 
