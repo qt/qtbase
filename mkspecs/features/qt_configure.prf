@@ -743,6 +743,21 @@ defineTest(qtConfLibrary_pkgConfig) {
     !qtConfResolvePathIncs($${1}.includedir, $$includes): \
         return(false)
     $${1}.defines = $$defines
+
+    # now remove the content of the transitive deps we know about.
+    largs = $$qtConfAllLibraryArgs($$eval($${2}.dependencies))
+    for (la, largs): \
+        eval("$$la")
+    USES = $$eval($$list($$upper($$QMAKE_USE)))
+    # _CC == _LD for configure's library sources, so pick first arbitrarily.
+    DEPS = $$resolve_depends(USES, QMAKE_DEPENDS_, _CC)
+    for (DEP, DEPS) {
+        $${1}.libs -= $$eval(QMAKE_LIBS_$${DEP})
+        $${1}.includedir -= $$eval(QMAKE_INCDIR_$${DEP})
+        $${1}.defines -= $$eval(QMAKE_DEFINES_$${DEP})
+    }
+    export($${1}.libs)
+    export($${1}.includedir)
     export($${1}.defines)
 
     return(true)
@@ -776,20 +791,36 @@ defineReplace(qtConfLibraryArgs) {
     defines = $$eval($${1}.defines)
     !isEmpty(defines): \
         qmake_args += "QMAKE_DEFINES_$${NAME} = $$val_escape(defines)"
+    depends = $$eval($${2}.dependencies)
+    !isEmpty(depends) {
+        dep_uses =
+        for (use, depends): \
+            dep_uses += $$section(use, :, 1, 1)
+        qmake_args += \
+            "QMAKE_DEPENDS_$${NAME}_CC = $$upper($$dep_uses)" \
+            "QMAKE_DEPENDS_$${NAME}_LD = $$upper($$dep_uses)"
+    }
     return($$qmake_args)
 }
 
 defineReplace(qtConfAllLibraryArgs) {
     isEmpty(1): return()
     dep_uses =
+    for (use, 1): \
+        dep_uses += $$section(use, :, 1, 1)
     dep_args =
-    for (use, 1) {
+    seen =
+    for(ever) {
+        isEmpty(1): break()
+        use = $$take_last(1)
+        contains(seen, $$use): next()
+        seen += $$use
         use_cfg = $$section(use, :, 0, 0)
-        use_lib = $$section(use, :, 1, 1)
-        dep_uses += $$use_lib
         !isEmpty(use_cfg) {
+            use_lib = $$section(use, :, 1, 1)
             lpfx = $${use_cfg}.libraries.$$use_lib
-            dep_args += $$qtConfLibraryArgs($${lpfx}.sources.$$eval($${lpfx}.source))
+            dep_args += $$qtConfLibraryArgs($${lpfx}.sources.$$eval($${lpfx}.source), $$lpfx)
+            1 += $$eval($${lpfx}.dependencies)
         }
     }
     return("QMAKE_USE += $$dep_uses" $$dep_args)
@@ -818,6 +849,24 @@ defineTest(qtConfExportLibrary) {
     !isEmpty(defines): qtConfOutputVar(assign, $$output, QMAKE_DEFINES_$$NAME, $$defines)
     includes = $$eval($${spfx}.includedir)
     !isEmpty(includes): qtConfOutputVar(assign, $$output, QMAKE_INCDIR_$$NAME, $$includes)
+    uses = $$eval($${lpfx}.dependencies)
+    !isEmpty(uses) {
+        # FIXME: ideally, we would export transitive deps only for static
+        # libs, to not extend the link interface unduly. however, the system
+        # does currently not differentiate between public and private deps.
+        depends =
+        for (use, uses) {
+            use_cfg = $$section(use, :, 0, 0)
+            use_lib = $$section(use, :, 1, 1)
+            !isEmpty(use_cfg): \
+                depends += $$upper($$eval($${use_cfg}.libraries.$${use_lib}.export))
+            else: \
+                depends += $$upper($$use_lib)
+        }
+        # we use suffixes instead of infixes, because $$resolve_depends() demands it.
+        qtConfOutputVar(assign, $$output, QMAKE_DEPENDS_$${NAME}_CC, $$depends)
+        qtConfOutputVar(assign, $$output, QMAKE_DEPENDS_$${NAME}_LD, $$depends)
+    }
     !isEmpty($${currentConfig}.module): \
         qtConfExtendVar($$output, "QT.$${currentModule}_private.libraries", $$name)
 }
@@ -843,7 +892,8 @@ defineTest(qtConfHandleLibrary) {
         export($${lpfx}.result)
         return()
     }
-    resolved_uses = $$eval($${lpfx}.resolved_uses)
+    $${lpfx}.dependencies = $$eval($${lpfx}.resolved_uses)
+    export($${lpfx}.dependencies)
 
     qtConfLoadResult($${lpfx}, $$1, "library") {
         $$eval($${lpfx}.result): \
@@ -881,7 +931,7 @@ defineTest(qtConfHandleLibrary) {
 
         # if the library defines a test, use it to verify the source.
         !isEmpty($${lpfx}.test)|!isEmpty($${lpfx}.test._KEYS_) {
-            $${lpfx}.resolved_uses = $$currentConfig:$$1 $$resolved_uses
+            $${lpfx}.resolved_uses = $$currentConfig:$$1
             $${lpfx}.host = $$eval($${spfx}.host)
             !qtConfTest_compile($$lpfx) {
                 qtLog(" => source failed verification.")

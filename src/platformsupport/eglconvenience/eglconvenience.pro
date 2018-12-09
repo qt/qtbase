@@ -26,15 +26,15 @@ qtConfig(opengl) {
         qeglpbuffer.cpp
 }
 
-# Avoid X11 header collision, use generic EGL native types
-DEFINES += QT_EGL_NO_X11
-
-qtConfig(xlib) {
+qtConfig(egl_x11) {
     HEADERS += \
         qxlibeglintegration_p.h
     SOURCES += \
         qxlibeglintegration.cpp
-    LIBS_PRIVATE += $$QMAKE_LIBS_X11
+    QMAKE_USE_PRIVATE += xlib
+} else {
+    # Avoid X11 header collision, use generic EGL native types
+    DEFINES += QT_EGL_NO_X11
 }
 CONFIG += egl
 

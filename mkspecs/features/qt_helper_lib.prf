@@ -41,7 +41,20 @@ THE_TARGET = $$qt5LibraryTarget($$TARGET)
         prefix = $$QMAKE_PREFIX_SHLIB
         suffix = $$QMAKE_EXTENSION_SHLIB
     }
+    CC_USES =
+    LD_USES =
+    for (use, QMAKE_USE) {
+        use = $$split(use, /)
+        name = $$take_first(use)
+        nu = $$upper($$name)
+        !contains(use, linkonly): CC_USES += $$nu
+        !contains(use, nolink): LD_USES += $$nu
+    }
+    CC_USES = $$unique(CC_USES)
+    LD_USES = $$unique(LD_USES)
     MODULE_PRI_CONT = \
+        "QMAKE_DEPENDS_$${ucmodule}_CC =$$join(CC_USES, " ", " ")" \
+        "QMAKE_DEPENDS_$${ucmodule}_LD =$$join(LD_USES, " ", " ")" \
         "QMAKE_INCDIR_$${ucmodule} = $$val_escape(MODULE_INCLUDEPATH)" \
         "QMAKE_DEFINES_$${ucmodule} = $$val_escape(MODULE_DEFINES)"
     debug_and_release {
