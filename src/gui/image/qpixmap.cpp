@@ -1356,12 +1356,6 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     The cacheKey() function returns a number that uniquely
     identifies the contents of the QPixmap object.
 
-    The x11Info() function returns information about the configuration
-    of the X display used by the screen to which the pixmap currently
-    belongs. The x11PictureHandle() function returns the X11 Picture
-    handle of the pixmap for XRender support. Note that the two latter
-    functions are only available on x11.
-
     \endtable
 
     \section1 Pixmap Conversion
@@ -1391,9 +1385,6 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     transformed points of the original pixmap. The static trueMatrix()
     function returns the actual matrix used for transforming the
     pixmap.
-
-    \note When using the native X11 graphics system, the pixmap
-    becomes invalid when the QApplication instance is destroyed.
 
     \sa QBitmap, QImage, QImageReader, QImageWriter
 */
