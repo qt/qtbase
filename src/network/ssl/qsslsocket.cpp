@@ -133,7 +133,8 @@
 
     \list
     \li The socket's cryptographic cipher suite can be customized before
-    the handshake phase with setCiphers() and setDefaultCiphers().
+    the handshake phase with QSslConfiguration::setCiphers()
+    and QSslConfiguration::setDefaultCiphers().
     \li The socket's local certificate and private key can be customized
     before the handshake phase with setLocalCertificate() and
     setPrivateKey().
@@ -906,7 +907,8 @@ void QSslSocket::abort()
     time without notice.
 
     \sa localCertificate(), peerCertificate(), peerCertificateChain(),
-        sessionCipher(), privateKey(), ciphers(), caCertificates()
+        sessionCipher(), privateKey(), QSslConfiguration::ciphers(),
+        QSslConfiguration::caCertificates()
 */
 QSslConfiguration QSslSocket::sslConfiguration() const
 {
@@ -930,7 +932,8 @@ QSslConfiguration QSslSocket::sslConfiguration() const
 
     It is not possible to set the SSL-state related fields.
 
-    \sa setLocalCertificate(), setPrivateKey(), setCaCertificates(), setCiphers()
+    \sa setLocalCertificate(), setPrivateKey(), QSslConfiguration::setCaCertificates(),
+        QSslConfiguration::setCiphers()
 */
 void QSslSocket::setSslConfiguration(const QSslConfiguration &configuration)
 {
@@ -1116,8 +1119,10 @@ QList<QSslCertificate> QSslSocket::peerCertificateChain() const
     session cipher. This ordered list must be in place before the
     handshake phase begins.
 
-    \sa ciphers(), setCiphers(), setDefaultCiphers(), defaultCiphers(),
-    supportedCiphers()
+    \sa QSslConfiguration::ciphers(), QSslConfiguration::setCiphers(),
+        QSslConfiguration::setDefaultCiphers(),
+        QSslConfiguration::defaultCiphers(),
+        QSslConfiguration::supportedCiphers()
 */
 QSslCipher QSslSocket::sessionCipher() const
 {
@@ -1379,7 +1384,8 @@ bool QSslSocket::addCaCertificates(const QString &path, QSsl::EncodingFormat for
 
   To add multiple certificates, use addCaCertificates().
 
-  \sa caCertificates(), setCaCertificates()
+  \sa QSslConfiguration::caCertificates(),
+      QSslConfiguration::setCaCertificates()
 */
 void QSslSocket::addCaCertificate(const QSslCertificate &certificate)
 {
@@ -1394,7 +1400,7 @@ void QSslSocket::addCaCertificate(const QSslCertificate &certificate)
 
   For more precise control, use addCaCertificate().
 
-  \sa caCertificates(), addDefaultCaCertificate()
+  \sa QSslConfiguration::caCertificates(), addDefaultCaCertificate()
 */
 void QSslSocket::addCaCertificates(const QList<QSslCertificate> &certificates)
 {
@@ -1457,7 +1463,8 @@ QList<QSslCertificate> QSslSocket::caCertificates() const
     Each SSL socket's CA certificate database is initialized to the
     default CA certificate database.
 
-    \sa defaultCaCertificates(), addCaCertificates(), addDefaultCaCertificate()
+    \sa QSslConfiguration::defaultCaCertificates(), addCaCertificates(),
+        addDefaultCaCertificate()
 */
 bool QSslSocket::addDefaultCaCertificates(const QString &path, QSsl::EncodingFormat encoding,
                                           QRegExp::PatternSyntax syntax)
@@ -1470,7 +1477,7 @@ bool QSslSocket::addDefaultCaCertificates(const QString &path, QSsl::EncodingFor
     SSL socket's CA certificate database is initialized to the default
     CA certificate database.
 
-    \sa defaultCaCertificates(), addCaCertificates()
+    \sa QSslConfiguration::defaultCaCertificates(), addCaCertificates()
 */
 void QSslSocket::addDefaultCaCertificate(const QSslCertificate &certificate)
 {
@@ -1482,7 +1489,7 @@ void QSslSocket::addDefaultCaCertificate(const QSslCertificate &certificate)
     SSL socket's CA certificate database is initialized to the default
     CA certificate database.
 
-    \sa defaultCaCertificates(), addCaCertificates()
+    \sa QSslConfiguration::defaultCaCertificates(), addCaCertificates()
 */
 void QSslSocket::addDefaultCaCertificates(const QList<QSslCertificate> &certificates)
 {
