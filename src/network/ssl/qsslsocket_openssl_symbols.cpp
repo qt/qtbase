@@ -824,7 +824,7 @@ static QPair<QLibrary*, QLibrary*> loadOpenSsl()
     // reason, we will search a few common paths (see findAllLibSsl() above) in hopes
     // we find one that works.
     //
-    // If that fails, for OpenSSL 1.0 we also try a fallback -- just look up
+    // If that fails, for OpenSSL 1.0 we also try some fallbacks -- look up
     // libssl.so with a hardcoded soname. The reason is QTBUG-68156: the binary
     // builds of Qt happen (at the time of this writing) on RHEL machines,
     // which change SHLIB_VERSION_NUMBER to a non-portable string. When running
@@ -857,14 +857,23 @@ static QPair<QLibrary*, QLibrary*> loadOpenSsl()
     }
 
 #if !QT_CONFIG(opensslv11)
-    // first-and-half attempt: for OpenSSL 1.0 try to load an hardcoded soname.
-    libssl->setFileNameAndVersion(QLatin1String("ssl"), QLatin1String("1.0.0"));
-    libcrypto->setFileNameAndVersion(QLatin1String("crypto"), QLatin1String("1.0.0"));
-    if (libcrypto->load() && libssl->load()) {
-        return pair;
-    } else {
-        libssl->unload();
-        libcrypto->unload();
+    // first-and-half attempts: for OpenSSL 1.0 try to load some hardcoded sonames:
+    // - "1.0.0" is the official upstream one
+    // - "1.0.2" is found on some distributions (e.g. Debian) that patch OpenSSL
+    static const QLatin1String fallbackSonames[] = {
+        QLatin1String("1.0.0"),
+        QLatin1String("1.0.2")
+    };
+
+    for (auto fallbackSoname : fallbackSonames) {
+        libssl->setFileNameAndVersion(QLatin1String("ssl"), fallbackSoname);
+        libcrypto->setFileNameAndVersion(QLatin1String("crypto"), fallbackSoname);
+        if (libcrypto->load() && libssl->load()) {
+            return pair;
+        } else {
+            libssl->unload();
+            libcrypto->unload();
+        }
     }
 #endif
 #endif

@@ -382,12 +382,20 @@ bool QWindowsSystemTrayIcon::winEvent(const MSG &message, long *result)
             emit activated(DoubleClick);     // release we must ignore it
             break;
         case WM_CONTEXTMENU: {
+            // QTBUG-67966: Coordinates may be out of any screen in PROCESS_DPI_UNAWARE mode
+            // since hi-res coordinates are delivered in this case (Windows issue).
+            // Default to primary screen with check to prevent a crash.
             const QPoint globalPos = QPoint(GET_X_LPARAM(message.wParam), GET_Y_LPARAM(message.wParam));
-            const QPlatformScreen *screen = QWindowsContext::instance()->screenManager().screenAtDp(globalPos);
-            emit contextMenuRequested(globalPos, screen);
-            emit activated(Context);
-            if (m_menu)
-                m_menu->trackPopupMenu(message.hwnd, globalPos.x(), globalPos.y());
+            const auto &screenManager = QWindowsContext::instance()->screenManager();
+            const QPlatformScreen *screen = screenManager.screenAtDp(globalPos);
+            if (!screen)
+                screen = screenManager.screens().value(0);
+            if (screen) {
+                emit contextMenuRequested(globalPos, screen);
+                emit activated(Context);
+                if (m_menu)
+                    m_menu->trackPopupMenu(message.hwnd, globalPos.x(), globalPos.y());
+            }
         }
             break;
         case NIN_BALLOONUSERCLICK:
