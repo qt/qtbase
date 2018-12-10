@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Gzip-compressed stream support.                                      */
 /*                                                                         */
-/*  Copyright 2002-2015 by                                                 */
+/*  Copyright 2002-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTGZIP_H__
-#define __FTGZIP_H__
+#ifndef FTGZIP_H_
+#define FTGZIP_H_
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -117,11 +117,11 @@ FT_BEGIN_HEADER
   *
   * @inout:
   *   output_len ::
-  *     Before calling the function, this is the the total size of the
-  *     output buffer, which must be large enough to hold the entire
-  *     uncompressed data (so the size of the uncompressed data must be
-  *     known in advance).  After calling the function, `output_len' is the
-  *     size of the used data in `output'.
+  *     Before calling the function, this is the total size of the output
+  *     buffer, which must be large enough to hold the entire uncompressed
+  *     data (so the size of the uncompressed data must be known in
+  *     advance).  After calling the function, `output_len' is the size of
+  *     the used data in `output'.
   *
   * @return:
   *   FreeType error code.  0~means success.
@@ -129,6 +129,9 @@ FT_BEGIN_HEADER
   * @note:
   *   This function may return `FT_Err_Unimplemented_Feature' if your build
   *   of FreeType was not compiled with zlib support.
+  *
+  * @since:
+  *   2.5.1
   */
   FT_EXPORT( FT_Error )
   FT_Gzip_Uncompress( FT_Memory       memory,
@@ -142,7 +145,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __FTGZIP_H__ */
+#endif /* FTGZIP_H_ */
 
 
 /* END */

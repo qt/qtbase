@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType error codes (specification).                                */
 /*                                                                         */
-/*  Copyright 2002-2015 by                                                 */
+/*  Copyright 2002-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -231,6 +231,10 @@
                 "invalid PostScript (post) table format" )
   FT_ERRORDEF_( Invalid_Post_Table,                          0x9B,
                 "invalid PostScript (post) table" )
+  FT_ERRORDEF_( DEF_In_Glyf_Bytecode,                        0x9C,
+                "found FDEF or IDEF opcode in glyf bytecode" )
+  FT_ERRORDEF_( Missing_Bitmap,                              0x9D,
+                "missing bitmap in strike" )
 
   /* CFF, CID, and Type 1 errors */
 
@@ -243,7 +247,7 @@
   FT_ERRORDEF_( No_Unicode_Glyph_Name,                       0xA3,
                 "no Unicode glyph name found" )
   FT_ERRORDEF_( Glyph_Too_Big,                               0xA4,
-                "glyph to big for hinting" )
+                "glyph too big for hinting" )
 
   /* BDF errors */
 

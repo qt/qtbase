@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Type 1 objects manager (specification).                              */
 /*                                                                         */
-/*  Copyright 1996-2015 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __T1OBJS_H__
-#define __T1OBJS_H__
+#ifndef T1OBJS_H_
+#define T1OBJS_H_
 
 
 #include <ft2build.h>
@@ -120,11 +120,11 @@ FT_BEGIN_HEADER
     FT_Bool          hint;
     FT_Bool          scaled;
 
-    FT_Int           max_points;
-    FT_Int           max_contours;
-
     FT_Fixed         x_scale;
     FT_Fixed         y_scale;
+
+    FT_Int           max_points;
+    FT_Int           max_contours;
 
   } T1_GlyphSlotRec;
 
@@ -154,7 +154,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __T1OBJS_H__ */
+#endif /* T1OBJS_H_ */
 
 
 /* END */

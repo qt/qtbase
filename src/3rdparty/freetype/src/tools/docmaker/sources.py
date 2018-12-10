@@ -3,7 +3,7 @@
 #
 #    Convert source code comments to multi-line blocks (library file).
 #
-#  Copyright 2002-2015 by
+#  Copyright 2002-2018 by
 #  David Turner.
 #
 #  This file is part of the FreeType project, and may only be used,
@@ -29,7 +29,7 @@
 #
 
 
-import fileinput, re, sys, os, string
+import fileinput, re, string
 
 
 ################################################################
@@ -138,12 +138,24 @@ re_markup_tags = [re_markup_tag1, re_markup_tag2]
 
 #
 # A regular expression to detect a cross reference, after markup tags have
-# been stripped off.  Group 1 is the reference, group 2 the rest of the
-# line.
+# been stripped off.
 #
-# A cross reference consists of letters, digits, or characters `-' and `_'.
+# Two syntax forms are supported:
 #
-re_crossref = re.compile( r'@((?:\w|-)*)(.*)' )    #  @foo
+#   @<name>
+#   @<name>[<id>]
+#
+# where both `<name>' and `<id>' consist of alphanumeric characters, `_',
+# and `-'.  Use `<id>' if there are multiple, valid `<name>' entries.
+#
+# Example: @foo[bar]
+#
+re_crossref = re.compile( r"""
+                            @
+                            (?P<name>(?:\w|-)+
+                                     (?:\[(?:\w|-)+\])?)
+                            (?P<rest>.*)
+                          """, re.VERBOSE )
 
 #
 # Two regular expressions to detect italic and bold markup, respectively.
@@ -159,7 +171,7 @@ re_bold   = re.compile( r"\*((?:\w|-)(?:\w|'|-)*)\*(.*)" )   #  *bold*
 #
 # This regular expression code to identify an URL has been taken from
 #
-#   http://mail.python.org/pipermail/tutor/2002-September/017228.html
+#   https://mail.python.org/pipermail/tutor/2002-September/017228.html
 #
 # (with slight modifications).
 #
@@ -284,10 +296,10 @@ class  SourceBlock:
     # debugging only -- not used in normal operations
     def  dump( self ):
         if self.content:
-            print "{{{content start---"
+            print( "{{{content start---" )
             for l in self.content:
-                print l
-            print "---content end}}}"
+                print( l )
+            print( "---content end}}}" )
             return
 
         fmt = ""
@@ -295,7 +307,7 @@ class  SourceBlock:
             fmt = repr( self.format.id ) + " "
 
         for line in self.lines:
-            print line
+            print( line )
 
 
 ################################################################

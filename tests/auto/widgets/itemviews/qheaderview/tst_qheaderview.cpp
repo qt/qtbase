@@ -1833,6 +1833,10 @@ void tst_QHeaderView::restoreBeforeSetModel()
 
 void tst_QHeaderView::defaultSectionSizeTest()
 {
+#if defined Q_OS_WINRT
+    QSKIP("Fails on WinRT - QTBUG-73309");
+#endif
+
     // Setup
     QTableView qtv;
     QHeaderView *hv = qtv.verticalHeader();
