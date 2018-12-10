@@ -96,7 +96,7 @@ class Q_CORE_EXPORT QDebug
         void setVerbosity(int v)
         {
             if (context.version > 1) {
-                flags &= ~(VerbosityMask << VerbosityShift);
+                flags &= ~(uint(VerbosityMask) << VerbosityShift);
                 flags |= (v & VerbosityMask) << VerbosityShift;
             }
         }
