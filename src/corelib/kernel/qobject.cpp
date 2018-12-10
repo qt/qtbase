@@ -1820,12 +1820,15 @@ void QObject::killTimer(int id)
 /*!
     \fn template<typename T> QList<T> QObject::findChildren(const QRegExp &regExp, Qt::FindChildOptions options) const
     \overload findChildren()
+    \obsolete
 
     Returns the children of this object that can be cast to type T
     and that have names matching the regular expression \a regExp,
     or an empty list if there are no such objects.
     The search is performed recursively, unless \a options specifies the
     option FindDirectChildrenOnly.
+
+    Use the findChildren overload taking a QRegularExpression instead.
 */
 
 /*!
