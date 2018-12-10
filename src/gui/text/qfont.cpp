@@ -2180,7 +2180,7 @@ void QFont::cacheStatistics()
 */
 QString QFont::lastResortFamily() const
 {
-    return QString::fromLatin1("helvetica");
+    return QStringLiteral("helvetica");
 }
 #endif
 
