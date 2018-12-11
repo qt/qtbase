@@ -756,6 +756,7 @@ void QOpenGLWidgetPrivate::recreateFbo()
 
     fbo->bind();
     context->functions()->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    flushPending = true; // Make sure the FBO is initialized before use
 
     paintDevice->setSize(deviceSize);
     paintDevice->setDevicePixelRatio(q->devicePixelRatioF());
