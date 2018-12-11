@@ -62,12 +62,7 @@
 #endif
 
 #ifdef QT_BUILD_INTERNAL
-
-QT_BEGIN_NAMESPACE
-extern Q_AUTOTEST_EXPORT QString
-    qt_normalizePathSegments(const QString &path, bool allowUncPaths, bool *ok = nullptr);
-QT_END_NAMESPACE
-
+#include "private/qdir_p.h"
 #endif
 
 static QByteArray msgDoesNotExist(const QString &name)
@@ -1376,7 +1371,7 @@ void tst_QDir::normalizePathSegments()
     QFETCH(QString, path);
     QFETCH(UncHandling, uncHandling);
     QFETCH(QString, expected);
-    QString cleaned = qt_normalizePathSegments(path, uncHandling == HandleUnc);
+    QString cleaned = qt_normalizePathSegments(path, uncHandling == HandleUnc ? QDirPrivate::AllowUncPaths : QDirPrivate::DefaultNormalization);
     QCOMPARE(cleaned, expected);
     if (path == expected)
         QVERIFY2(path.isSharedWith(cleaned), "Strings are same but data is not shared");

@@ -182,6 +182,8 @@ private slots:
     void matches();
     void ipv6_zoneId_data();
     void ipv6_zoneId();
+    void normalizeRemotePaths_data();
+    void normalizeRemotePaths();
 
 private:
     void testThreadingHelper();
@@ -323,7 +325,7 @@ void tst_QUrl::comparison()
 
     QUrl url3bis = QUrl::fromEncoded("example://a/b/c/%7Bfoo%7D/");
     QUrl url3bisNoSlash = QUrl::fromEncoded("example://a/b/c/%7Bfoo%7D");
-    QUrl url4bis = QUrl::fromEncoded("example://a/.//b/../b/c//%7Bfoo%7D/");
+    QUrl url4bis = QUrl::fromEncoded("example://a/./b/../b/c/%7Bfoo%7D/");
     QCOMPARE(url4bis.adjusted(QUrl::NormalizePathSegments), url3bis);
     QCOMPARE(url4bis.adjusted(QUrl::NormalizePathSegments | QUrl::StripTrailingSlash), url3bisNoSlash);
     QVERIFY(url3bis.matches(url4bis, QUrl::NormalizePathSegments));
@@ -335,7 +337,7 @@ void tst_QUrl::comparison()
     QCOMPARE(url4EncodedDots.path(QUrl::FullyDecoded), QString("/.//b/..//b/c/"));
     QCOMPARE(QString::fromLatin1(url4EncodedDots.toEncoded()), QString::fromLatin1("example://a/.//b/..%2F/b/c/"));
     QCOMPARE(url4EncodedDots.toString(), QString("example://a/.//b/..%2F/b/c/"));
-    QCOMPARE(url4EncodedDots.adjusted(QUrl::NormalizePathSegments).toString(), QString("example://a/b/..%2F/b/c/"));
+    QCOMPARE(url4EncodedDots.adjusted(QUrl::NormalizePathSegments).toString(), QString("example://a//b/..%2F/b/c/"));
 
     // 6.2.2.1 Make sure hexdecimal characters in percent encoding are
     // treated case-insensitively
@@ -4199,6 +4201,36 @@ void tst_QUrl::ipv6_zoneId()
     QCOMPARE(url.host(QUrl::FullyEncoded), encodedHost);
     QCOMPARE(url.toString(), "x://[" + prettyHost + "]");
     QCOMPARE(url.toString(QUrl::FullyEncoded), "x://[" + encodedHost + "]");
+}
+
+void tst_QUrl::normalizeRemotePaths_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("dotdot-slashslash") << QUrl("http://qt-project.org/some/long/..//path") << "http://qt-project.org/some//path";
+    QTest::newRow("slashslash-dotdot") << QUrl("http://qt-project.org/some//../path") << "http://qt-project.org/some/path";
+    QTest::newRow("slashslash-dotdot2") << QUrl("http://qt-project.org/some//path/../") << "http://qt-project.org/some//";
+    QTest::newRow("dot-slash") << QUrl("http://qt-project.org/some/./path") << "http://qt-project.org/some/path";
+    QTest::newRow("slashslash-dot-slashslash") << QUrl("http://qt-project.org/some//.//path") << "http://qt-project.org/some///path";
+    QTest::newRow("dot-slashslash") << QUrl("http://qt-project.org/some/.//path") << "http://qt-project.org/some//path";
+    QTest::newRow("multiple-slashes") << QUrl("http://qt-project.org/some//path") << "http://qt-project.org/some//path";
+    QTest::newRow("multiple-slashes4") << QUrl("http://qt-project.org/some////path") << "http://qt-project.org/some////path";
+    QTest::newRow("slashes-at-end") << QUrl("http://qt-project.org/some//") << "http://qt-project.org/some//";
+    QTest::newRow("dot-dotdot") << QUrl("http://qt-project.org/path/./../") << "http://qt-project.org/";
+    QTest::newRow("slash-dot-slash-dot-slash") << QUrl("http://qt-project.org/path//.//.//") << "http://qt-project.org/path////";
+    QTest::newRow("dotdot") << QUrl("http://qt-project.org/../") << "http://qt-project.org/";
+    QTest::newRow("dotdot-dotdot") << QUrl("http://qt-project.org/path/../../") << "http://qt-project.org/";
+    QTest::newRow("dot-dotdot-tail") << QUrl("http://qt-project.org/stem/path/./../tail") << "http://qt-project.org/stem/tail";
+    QTest::newRow("slash-dotdot-slash-tail") << QUrl("http://qt-project.org/stem/path//..//tail") << "http://qt-project.org/stem/path//tail";
+}
+
+void tst_QUrl::normalizeRemotePaths()
+{
+    QFETCH(QUrl, url);
+    QFETCH(QString, expected);
+
+    QCOMPARE(url.adjusted(QUrl::NormalizePathSegments).toString(), expected);
 }
 
 QTEST_MAIN(tst_QUrl)
