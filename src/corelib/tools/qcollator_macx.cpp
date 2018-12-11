@@ -71,7 +71,6 @@ void QCollatorPrivate::init()
         qWarning("Couldn't initialize the locale (%d)", int(status));
 
     UInt32 options = 0;
-
     if (caseSensitivity == Qt::CaseInsensitive)
         options |= kUCCollateCaseInsensitiveMask;
     if (numericMode)
@@ -125,13 +124,14 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     //Documentation recommends having it 5 times as big as the input
     QVector<UCCollationValue> ret(string.size() * 5);
     ItemCount actualSize;
-    int status = UCGetCollationKey(d->collator, reinterpret_cast<const UniChar *>(string.constData()), string.count(),
-                                   ret.size(), &actualSize, ret.data());
+    int status = UCGetCollationKey(d->collator,
+                                   reinterpret_cast<const UniChar *>(string.constData()),
+                                   string.count(), ret.size(), &actualSize, ret.data());
 
-    ret.resize(actualSize+1);
+    ret.resize(actualSize + 1);
     if (status == kUCOutputBufferTooSmall) {
-        UCGetCollationKey(d->collator, reinterpret_cast<const UniChar *>(string.constData()), string.count(),
-                          ret.size(), &actualSize, ret.data());
+        UCGetCollationKey(d->collator, reinterpret_cast<const UniChar *>(string.constData()),
+                          string.count(), ret.size(), &actualSize, ret.data());
     }
     ret[actualSize] = 0;
     return QCollatorSortKey(new QCollatorSortKeyPrivate(std::move(ret)));

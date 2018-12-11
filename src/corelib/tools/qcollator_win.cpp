@@ -94,9 +94,10 @@ int QCollator::compare(QStringView s1, QStringView s2) const
         d->init();
 
     //* from Windows documentation *
-    // Returns one of the following values if successful. To maintain the C runtime convention of
-    // comparing strings, the value 2 can be subtracted from a nonzero return value. Then, the
-    // meaning of <0, ==0, and >0 is consistent with the C runtime.
+    // Returns one of the following values if successful. To maintain the C
+    // runtime convention of comparing strings, the value 2 can be subtracted
+    // from a nonzero return value. Then, the meaning of <0, ==0, and >0 is
+    // consistent with the C runtime.
 
 #ifndef USE_COMPARESTRINGEX
     return CompareString(d->localeID, d->collator,
@@ -137,7 +138,9 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
                            NULL, NULL, 0);
 #endif
     if (finalSize == 0) {
-        qWarning() << "there were problems when generating the ::sortKey by LCMapStringW with error:" << GetLastError();
+        qWarning()
+            << "there were problems when generating the ::sortKey by LCMapStringW with error:"
+            << GetLastError();
     }
     return QCollatorSortKey(new QCollatorSortKeyPrivate(std::move(ret)));
 }

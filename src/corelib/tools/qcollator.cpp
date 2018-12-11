@@ -59,20 +59,21 @@ QT_BEGIN_NAMESPACE
     \ingroup string-processing
     \ingroup shared
 
-    QCollator is initialized with a QLocale and an optional collation strategy. It tries to
-    initialize the collator with the specified values. The collator can then be used to compare
-    and sort strings in a locale dependent fashion.
+    QCollator is initialized with a QLocale and an optional collation strategy.
+    It tries to initialize the collator with the specified values. The collator
+    can then be used to compare and sort strings in a locale dependent fashion.
 
-    A QCollator object can be used together with template based sorting algorithms such as std::sort
-    to sort a list of QStrings.
+    A QCollator object can be used together with template based sorting
+    algorithms such as std::sort to sort a list of QStrings.
 
-    In addition to the locale and collation strategy, several optional flags can be set that influence
-    the result of the collation.
+    In addition to the locale and collation strategy, several optional flags can
+    be set that influence the result of the collation.
 */
 
 /*!
-    Constructs a QCollator from \a locale. If \a locale is not specified
-    the system's default locale is used.
+    Constructs a QCollator for \a locale.
+
+    If \a locale is not specified, the system's default locale is used.
 
     \sa setLocale()
  */
@@ -128,9 +129,9 @@ QCollator &QCollator::operator=(const QCollator &other)
 
     Move constructor. Moves from \a other into this collator.
 
-    Note that a moved-from QCollator can only be destroyed or assigned
-    to. The effect of calling other functions than the destructor or
-    one of the assignment operators is undefined.
+    Note that a moved-from QCollator can only be destroyed or assigned to.
+    The effect of calling other functions than the destructor or one of the
+    assignment operators is undefined.
 */
 
 /*!
@@ -138,9 +139,9 @@ QCollator &QCollator::operator=(const QCollator &other)
 
     Move-assigns from \a other to this collator.
 
-    Note that a moved-from QCollator can only be destroyed or assigned
-    to. The effect of calling other functions than the destructor or
-    one of the assignment operators is undefined.
+    Note that a moved-from QCollator can only be destroyed or assigned to.
+    The effect of calling other functions than the destructor or one of the
+    assignment operators is undefined.
 */
 
 /*!
@@ -218,7 +219,8 @@ Qt::CaseSensitivity QCollator::caseSensitivity() const
 
     Enables numeric sorting mode when \a on is set to true.
 
-    This will enable proper sorting of numeric digits, so that e.g. 100 sorts after 99.
+    This will enable proper sorting of numeric digits, so that e.g. 100 sorts
+    after 99.
 
     By default this mode is off.
 
@@ -248,11 +250,13 @@ bool QCollator::numericMode() const
 /*!
     \fn void QCollator::setIgnorePunctuation(bool on)
 
-    If \a on is set to true, punctuation characters and symbols are ignored when determining sort order.
+    If \a on is set to true, punctuation characters and symbols are ignored when
+    determining sort order.
 
     The default is locale dependent.
 
-    \note This method is not currently supported if Qt is configured to not use ICU on Linux.
+    \note This method is not currently supported if Qt is configured to not use
+    ICU on Linux.
 
     \sa ignorePunctuation()
  */
@@ -268,7 +272,8 @@ void QCollator::setIgnorePunctuation(bool on)
 /*!
     \fn bool QCollator::ignorePunctuation() const
 
-    Returns \c true if punctuation characters and symbols are ignored when determining sort order.
+    Returns \c true if punctuation characters and symbols are ignored when
+    determining sort order.
 
     \sa setIgnorePunctuation()
  */
@@ -287,9 +292,11 @@ bool QCollator::ignorePunctuation() const
     \since 5.13
     \fn int QCollator::compare(QStringView s1, QStringView s2) const
 
-    Compares \a s1 with \a s2. Returns an integer less than, equal to, or greater than zero
-    depending on whether \a s1 sorts before, with or after \a s2.
- */
+    Compares \a s1 with \a s2.
+
+    Returns an integer less than, equal to, or greater than zero depending on
+    whether \a s1 sorts before, with or after \a s2.
+*/
 #if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn bool QCollator::operator()(const QString &s1, const QString &s2) const
@@ -299,9 +306,11 @@ bool QCollator::ignorePunctuation() const
 /*!
     \overload
 
-    Compares \a s1 with \a s2. Returns an integer less than, equal to, or greater than zero
-    depending on whether \a s1 sorts before, with or after \a s2.
- */
+    Compares \a s1 with \a s2.
+
+    Returns an integer less than, equal to, or greater than zero depending on
+    whether \a s1 sorts before, with or after \a s2.
+*/
 int QCollator::compare(const QString &s1, const QString &s2) const
 {
     return compare(QStringView(s1), QStringView(s2));
@@ -310,8 +319,10 @@ int QCollator::compare(const QString &s1, const QString &s2) const
 /*!
     \overload
 
-    Compares \a s1 with \a s2. Returns an integer less than, equal to, or greater than zero
-    depending on whether \a s1 sorts before, with or after \a s2.
+    Compares \a s1 with \a s2.
+
+    Returns an integer less than, equal to, or greater than zero depending on
+    whether \a s1 sorts before, with or after \a s2.
  */
 int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
 {
@@ -321,11 +332,11 @@ int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
 /*!
     \overload
 
-    Compares \a s1 with \a s2. \a len1 and \a len2 specify the length of the
-    QChar arrays pointer to by \a s1 and \a s2.
+    Compares \a s1 with \a s2. \a len1 and \a len2 specify the lengths of the
+    QChar arrays pointed to by \a s1 and \a s2.
 
-    Returns an integer less than, equal to, or greater than zero
-    depending on whether \a s1 sorts before, with or after \a s2.
+    Returns an integer less than, equal to, or greater than zero depending on
+    whether \a s1 sorts before, with or after \a s2.
 */
 int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const
 {
@@ -339,9 +350,9 @@ int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) con
     Returns a sortKey for \a string.
 
     Creating the sort key is usually somewhat slower, than using the compare()
-    methods directly. But if the string is compared repeatedly (e.g. when sorting
-    a whole list of strings), it's usually faster to create the sort keys for each
-    string and then sort using the keys.
+    methods directly. But if the string is compared repeatedly (e.g. when
+    sorting a whole list of strings), it's usually faster to create the sort
+    keys for each string and then sort using the keys.
 
     \note Not supported with the C (a.k.a. POSIX) locale on Darwin.
  */
@@ -353,8 +364,8 @@ int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) con
 
     \since 5.2
 
-    The QCollatorSortKey class is always created by QCollator::sortKey()
-    and is used for fast strings collation, for example when collating many strings.
+    The QCollatorSortKey class is always created by QCollator::sortKey() and is
+    used for fast strings collation, for example when collating many strings.
 
     \reentrant
     \ingroup i18n
@@ -423,9 +434,11 @@ QCollatorSortKey& QCollatorSortKey::operator=(const QCollatorSortKey &other)
 /*!
     \fn int QCollatorSortKey::compare(const QCollatorSortKey &otherKey) const
 
-    Compares the key to \a otherKey. Returns a negative value if the key
-    is less than \a otherKey, 0 if the key is equal to \a otherKey or a
-    positive value if the key is greater than \a otherKey.
+    Compares this key to \a otherKey.
+
+    Returns a negative value if the key is less than \a otherKey, 0 if the key
+    is equal to \a otherKey or a positive value if the key is greater than \a
+    otherKey.
 
     \sa operator<()
  */

@@ -78,7 +78,8 @@ void QCollatorPrivate::init()
     // and does case sensitive comparison.
     // UCOL_QUATERNARY is used as default in a few languages such as Japanese to take care of some
     // additional differences in those languages.
-    UColAttributeValue val = (caseSensitivity == Qt::CaseSensitive) ? UCOL_DEFAULT_STRENGTH : UCOL_SECONDARY;
+    UColAttributeValue val = (caseSensitivity == Qt::CaseSensitive)
+        ? UCOL_DEFAULT_STRENGTH : UCOL_SECONDARY;
 
     status = U_ZERO_ERROR;
     ucol_setAttribute(collator, UCOL_STRENGTH, val, &status);
@@ -91,7 +92,8 @@ void QCollatorPrivate::init()
         qWarning("ucol_setAttribute: numeric collation failed: %d", status);
 
     status = U_ZERO_ERROR;
-    ucol_setAttribute(collator, UCOL_ALTERNATE_HANDLING, ignorePunctuation ? UCOL_SHIFTED : UCOL_NON_IGNORABLE, &status);
+    ucol_setAttribute(collator, UCOL_ALTERNATE_HANDLING,
+                      ignorePunctuation ? UCOL_SHIFTED : UCOL_NON_IGNORABLE, &status);
     if (U_FAILURE(status))
         qWarning("ucol_setAttribute: Alternate handling failed: %d", status);
 
