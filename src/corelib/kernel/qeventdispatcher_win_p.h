@@ -165,8 +165,7 @@ public:
 
     DWORD threadId;
 
-    bool interrupt;
-    bool closingDown;
+    QAtomicInt interrupt;
 
     // internal window handle used for socketnotifiers/timers/etc
     HWND internalHwnd;
@@ -193,9 +192,11 @@ public:
     void postActivateSocketNotifiers();
     void doWsaAsyncSelect(int socket, long event);
 
+    bool closingDown = false;
+
+    bool winEventNotifierListModified = false;
     HANDLE winEventNotifierActivatedEvent;
     QList<QWinEventNotifier *> winEventNotifierList;
-    bool winEventNotifierListModified = false;
     void activateEventNotifier(QWinEventNotifier * wen);
 
     QList<MSG> queuedUserInputEvents;
