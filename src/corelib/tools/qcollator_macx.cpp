@@ -65,9 +65,10 @@ void QCollatorPrivate::init()
         return;
 
     LocaleRef localeRef;
-    int rc = LocaleRefFromLocaleString(QLocalePrivate::get(locale)->bcp47Name().constData(), &localeRef);
-    if (rc != 0)
-        qWarning("couldn't initialize the locale");
+    OSStatus status =
+        LocaleRefFromLocaleString(QLocalePrivate::get(locale)->bcp47Name().constData(), &localeRef);
+    if (status != 0)
+        qWarning("Couldn't initialize the locale (%d)", int(status));
 
     UInt32 options = 0;
 
@@ -78,14 +79,9 @@ void QCollatorPrivate::init()
     if (!ignorePunctuation)
         options |= kUCCollatePunctuationSignificantMask;
 
-    OSStatus status = UCCreateCollator(
-        localeRef,
-        0,
-        options,
-        &collator
-    );
+    status = UCCreateCollator(localeRef, 0, options, &collator);
     if (status != 0)
-        qWarning("Couldn't initialize the collator");
+        qWarning("Couldn't initialize the collator (%d)", int(status));
 
     dirty = false;
 }
