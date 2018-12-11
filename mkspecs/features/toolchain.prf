@@ -281,4 +281,8 @@ QMAKE_COMPILER_DEFINES += __cplusplus=$$QT_COMPILER_STDCXX
 QMAKE_CFLAGS += $$QMAKE_CFLAGS_MSVC_COMPAT
 QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_MSVC_COMPAT
 
-msvc:!intel_icl:!clang_cl: include(../common/msvc-version.conf)
+clang_cl|intel_icl {
+    include(../common/msvc-based-version.conf)
+} else: msvc {
+    include(../common/msvc-version.conf)
+}
