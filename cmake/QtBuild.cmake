@@ -431,7 +431,7 @@ function(qt_internal_process_automatic_sources target)
 endfunction()
 
 
-set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_ADAPTOR_FLAGS;DBUS_ADAPTOR_SOURCES;DBUS_INTERFACE_FLAGS;DBUS_INTERFACE_SOURCES")
+set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_ADAPTOR_FLAGS;DBUS_ADAPTOR_SOURCES;DBUS_INTERFACE_FLAGS;DBUS_INTERFACE_SOURCES;FEATURE_DEPENDENCIES")
 set(__default_public_args "PUBLIC_LIBRARIES;PUBLIC_INCLUDE_DIRECTORIES;PUBLIC_DEFINES")
 
 
@@ -454,14 +454,19 @@ function(extend_target target)
             qt_create_qdbusxml2cpp_command("${target}" "${adaptor}" ADAPTOR FLAGS "${arg_DBUS_ADAPTOR_FLAGS}")
             list(APPEND dbus_sources "${sources}")
         endforeach()
+
         foreach(interface ${arg_DBUS_INTERFACE_SOURCES})
             qt_create_qdbusxml2cpp_command("${target}" "${interface}" INTERFACE FLAGS "${arg_DBUS_INTERFACE_FLAGS}")
             list(APPEND dbus_sources "${sources}")
         endforeach()
         qt_internal_process_automatic_sources("${target}" "${arg_SOURCES}")
 
-        set(must_push_features OFF)
-        foreach(dep ${arg_LIBRARIES} ${arg_PUBLIC_LIBRARIES})
+        # Import features
+        if(NOT "${target}" STREQUAL "Core")
+            qt_pull_features_into_current_scope(PUBLIC_FEATURES PRIVATE_FEATURES FEATURE_PROPERTY_INFIX "GLOBAL_" Qt::Core)
+        endif()
+
+        foreach(dep ${arg_FEATURE_DEPENDENCIES} ${arg_LIBRARIES} ${arg_PUBLIC_LIBRARIES})
             if("${dep}" MATCHES "^Qt::((.+)(Private)|(.+))$")
                 if (${CMAKE_MATCH_COUNT} EQUAL 3)
                     set(depTarget ${CMAKE_MATCH_2})
@@ -479,8 +484,6 @@ function(extend_target target)
                     qt_pull_features_into_current_scope(PRIVATE_FEATURES ${depTarget})
                 endif()
                 qt_pull_features_into_current_scope(PUBLIC_FEATURES ${depTarget})
-
-                set(must_push_features ON)
             endif()
         endforeach()
 
@@ -492,9 +495,7 @@ function(extend_target target)
         target_compile_definitions("${target}" PUBLIC ${arg_PUBLIC_DEFINES} PRIVATE ${arg_DEFINES})
         target_link_libraries("${target}" PUBLIC ${arg_PUBLIC_LIBRARIES} PRIVATE ${arg_LIBRARIES})
 
-        if(must_push_features)
-            qt_push_features_into_parent_scope()
-        endif()
+        qt_push_features_into_parent_scope()
     endif()
 endfunction()
 
@@ -569,7 +570,7 @@ function(add_qt_module target)
 
     # Process arguments:
     qt_parse_all_arguments(arg "add_qt_module" "NO_MODULE_HEADERS;STATIC" "CONFIG_MODULE_NAME"
-        "${__default_private_args};${__default_public_args};FEATURE_DEPENDENCIES" ${ARGN})
+        "${__default_private_args};${__default_public_args}" ${ARGN})
 
     if(NOT DEFINED arg_CONFIG_MODULE_NAME)
         set(arg_CONFIG_MODULE_NAME "${module_lower}")
@@ -592,23 +593,7 @@ function(add_qt_module target)
     add_library("${target_private}" INTERFACE)
     qt_internal_add_target_aliases("${target_private}")
 
-    # Import global features
-    if(NOT "${target}" STREQUAL "Core")
-        qt_pull_features_into_current_scope(PUBLIC_FEATURES PRIVATE_FEATURES FEATURE_PROPERTY_INFIX "GLOBAL_" Qt::Core)
-    endif()
-
-    # Fetch features from dependencies and make them available to the
-    # caller as well as to the local scope for configure.cmake evaluation.
-    foreach(dep ${arg_LIBRARIES} ${arg_PUBLIC_LIBRARIES} ${arg_FEATURE_DEPENDENCIES})
-        if("${dep}" MATCHES "(Qt::.+)Private")
-            set(publicDep ${CMAKE_MATCH_1})
-            qt_pull_features_into_current_scope(PRIVATE_FEATURES ${publicDep})
-        else()
-            set(publicDep ${dep})
-        endif()
-        qt_pull_features_into_current_scope(PUBLIC_FEATURES ${publicDep})
-    endforeach()
-
+    # Module headers:
     if(${arg_NO_MODULE_HEADERS})
         set_target_properties("${target}" PROPERTIES MODULE_HAS_HEADERS OFF)
     else()
@@ -616,34 +601,18 @@ function(add_qt_module target)
         execute_process(COMMAND "${HOST_PERL}" -w "${QT_SYNCQT}" -quiet -module "${module}" -version "${PROJECT_VERSION}" -outdir "${PROJECT_BINARY_DIR}" "${PROJECT_SOURCE_DIR}")
 
         set_target_properties("${target}" PROPERTIES MODULE_HAS_HEADERS ON)
+
+        ### FIXME: Can we replace headers.pri?
+        qt_read_headers_pri("${target}" "module_headers")
+        set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${module_headers_public}")
+        set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${module_include_dir}/${module}Depends")
+        set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${module_headers_private}")
     endif()
 
     set_target_properties("${target}" PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_LIBDIR}"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}"
         OUTPUT_NAME "${module_versioned}")
-
-    set(configureFile "${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
-    if(EXISTS "${configureFile}")
-        qt_feature_module_begin(
-            LIBRARY "${target}"
-            PUBLIC_FILE "qt${arg_CONFIG_MODULE_NAME}-config.h"
-            PRIVATE_FILE "qt${arg_CONFIG_MODULE_NAME}-config_p.h"
-            PUBLIC_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
-            PRIVATE_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
-        )
-        include(${configureFile})
-        qt_feature_module_end("${target}")
-        qt_pull_features_into_current_scope(PUBLIC_FEATURES PRIVATE_FEATURES "${target}")
-
-        set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/qt${arg_CONFIG_MODULE_NAME}-config.h")
-        set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/qt${arg_CONFIG_MODULE_NAME}-config_p.h")
-
-        if("${target}" STREQUAL "Core")
-           set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig.h")
-           set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig_p.h")
-        endif()
-    endif()
 
     qt_internal_library_deprecation_level(deprecation_define)
 
@@ -672,22 +641,29 @@ function(add_qt_module target)
             QT_BUILDING_QT
             QT_BUILD_${module_upper}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
             "${deprecation_define}"
-        PUBLIC_LIBRARIES
-            ${arg_PUBLIC_LIBRARIES}
-        LIBRARIES
-            ${arg_LIBRARIES}
-        DBUS_ADAPTOR_SOURCES "${arg_DBUS_ADAPTOR_SOURCES}"
-        DBUS_ADAPTOR_FLAGS "${arg_DBUS_ADAPTOR_FLAGS}"
-        DBUS_INTERFACE_SOURCES "${arg_DBUS_INTERFACE_SOURCES}"
-        DBUS_INTERFACE_FLAGS "${arg_DBUS_INTERFACE_FLAGS}"
+        PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
+        LIBRARIES ${arg_LIBRARIES}
+        FEATURE_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
+        DBUS_ADAPTOR_SOURCES ${arg_DBUS_ADAPTOR_SOURCES}
+        DBUS_ADAPTOR_FLAGS ${arg_DBUS_ADAPTOR_FLAGS}
+        DBUS_INTERFACE_SOURCES ${arg_DBUS_INTERFACE_SOURCES}
+        DBUS_INTERFACE_FLAGS ${arg_DBUS_INTERFACE_FLAGS}
     )
 
-    ### FIXME: Can we replace headers.pri?
-    if(NOT ${arg_NO_MODULE_HEADERS})
-        qt_read_headers_pri("${target}" "module_headers")
-        set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${module_headers_public}")
-        set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${module_headers_private}")
-        set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${module_include_dir}/${module}Depends")
+    set(configureFile "${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
+    if(EXISTS "${configureFile}")
+        qt_feature_module_begin(
+            LIBRARY "${target}"
+            PUBLIC_FILE "qt${arg_CONFIG_MODULE_NAME}-config.h"
+            PRIVATE_FILE "qt${arg_CONFIG_MODULE_NAME}-config_p.h"
+            PUBLIC_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
+            PRIVATE_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
+        )
+        include(${configureFile})
+        qt_feature_module_end("${target}")
+
+        set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/qt${arg_CONFIG_MODULE_NAME}-config.h")
+        set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/qt${arg_CONFIG_MODULE_NAME}-config_p.h")
     endif()
 
     if(DEFINED module_headers_private)
@@ -695,8 +671,6 @@ function(add_qt_module target)
     else()
         qt_internal_add_linker_version_script("${target}")
     endif()
-
-    qt_pull_features_into_current_scope(PUBLIC_FEATURES PRIVATE_FEATURES ${arg_FEATURE_DEPENDENCIES})
 
     install(TARGETS "${target}" "${target_private}" EXPORT "${module_versioned}Targets"
         LIBRARY DESTINATION ${INSTALL_LIBDIR}
@@ -762,41 +736,26 @@ endfunction()
 
 
 # This is the main entry point for defining Qt plugins.
-# A CMake target is created with the given name. The TYPE parameter is needed to place the
+# A CMake target is created with the given target. The TYPE parameter is needed to place the
 # plugin into the correct plugins/ sub-directory.
-function(add_qt_plugin name)
-    # This is a copy paste of add_qt_module with minor changes and some commented out stuff.
-    # FIXME !!!
-    set(module "${name}")
-    string(TOUPPER "${name}" name_upper)
+function(add_qt_plugin target)
+    qt_internal_module_info(module "${target}")
 
     qt_parse_all_arguments(arg "add_qt_plugin" "" "TYPE" "${__default_private_args};${__default_public_args}" ${ARGN})
     if (NOT DEFINED arg_TYPE)
         message(FATAL_ERROR "add_qt_plugin called without setting a TYPE.")
     endif()
 
-    add_library("${module}")
-    set_target_properties("${module}" PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}")
-    set_target_properties("${module}" PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}")
+    add_library("${target}")
+    qt_internal_add_target_aliases("${target}")
 
-    # Import global features
-    qt_pull_features_into_current_scope(PUBLIC_FEATURES PRIVATE_FEATURES FEATURE_PROPERTY_INFIX "GLOBAL_" Qt::Core)
-
-    # Fetch features from dependencies and make them available to the
-    # caller as well as to the local scope for configure.cmake evaluation.
-    foreach(dep ${arg_LIBRARIES} ${arg_PUBLIC_LIBRARIES})
-        if("${dep}" MATCHES "(Qt::.+)Private")
-            set(publicDep ${CMAKE_MATCH_1})
-            qt_pull_features_into_current_scope(PRIVATE_FEATURES ${publicDep})
-        else()
-            set(publicDep ${dep})
-        endif()
-        qt_pull_features_into_current_scope(PUBLIC_FEATURES ${publicDep})
-    endforeach()
+    set_target_properties("${target}" PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}")
 
     qt_internal_library_deprecation_level(deprecation_define)
 
-    extend_target("${module}"
+    extend_target("${target}"
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -812,30 +771,31 @@ function(add_qt_plugin name)
             QT_USE_QSTRINGBUILDER
             QT_DEPRECATED_WARNINGS
             QT_BUILDING_QT
-            QT_BUILD_${name_upper}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
+            QT_BUILD_${module_upper}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
             "${deprecation_define}"
         PUBLIC_DEFINES
-            QT_${name_upper}_LIB
+            QT_${module_upper}_LIB
             ${arg_PUBLIC_DEFINES}
+        FEATURE_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
         DBUS_ADAPTOR_SOURCES "${arg_DBUS_ADAPTOR_SOURCES}"
         DBUS_ADAPTOR_FLAGS "${arg_DBUS_ADAPTOR_FLAGS}"
         DBUS_INTERFACE_SOURCES "${arg_DBUS_INTERFACE_SOURCES}"
         DBUS_INTERFACE_FLAGS "${arg_DBUS_INTERFACE_FLAGS}"
     )
 
-    install(TARGETS "${module}" EXPORT "${module}Targets"
+    install(TARGETS "${target}" EXPORT "${target}Targets"
         LIBRARY DESTINATION ${INSTALL_PLUGINSDIR}/${arg_TYPE}
         ARCHIVE DESTINATION ${INSTALL_LIBDIR}/${arg_TYPE}
         )
-    install(EXPORT "${module}Targets" NAMESPACE Qt:: DESTINATION ${INSTALL_LIBDIR}/cmake)
+    install(EXPORT "${target}Targets" NAMESPACE Qt:: DESTINATION ${INSTALL_LIBDIR}/cmake)
 
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.
     if (GCC)
-        qt_internal_add_link_flags("${module}" "-Wl,--no-undefined")
+        qt_internal_add_link_flags("${target}" "-Wl,--no-undefined")
     endif()
 
-    qt_internal_add_linker_version_script(${module})
+    qt_internal_add_linker_version_script(${target})
 
     qt_push_features_into_parent_scope()
 endfunction()

@@ -49,11 +49,11 @@ add_qt_module(Test
         qxmltestlogger.cpp
         qxunittestlogger.cpp
     LIBRARIES
-        CorePrivate
+        Qt::CorePrivate
     PUBLIC_LIBRARIES
-        Core
+        Qt::Core
     DEFINES
-        QT_NO_CAST_TO_ASCII QT_NO_CAST_FROM_ASCII
+        QT_NO_CAST_FROM_ASCII
         QT_NO_FOREACH
         QT_NO_DATASTREAM
 )

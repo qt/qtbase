@@ -240,6 +240,9 @@ add_qt_module(Core
         QT_NO_FOREACH
 )
 
+set_property(TARGET Core APPEND PROPERTY PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig.h")
+set_property(TARGET Core APPEND PROPERTY PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig_p.h")
+
 # As a special feature, the global features are attached to QtCore as
 # custom properties. That's symmetric to qconfig.cpp/h being part of
 # QtCore and not of a QtGlobal library.
