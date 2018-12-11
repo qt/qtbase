@@ -315,17 +315,9 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
     val xhr = val::global("XMLHttpRequest").new_();
     std::string verb = q->methodName().toStdString();
 
-    QUrl url;
     QString extraDataString;
 
-    if (request.url().hasQuery()) { //strip query from url
-        extraDataString = request.url().query(QUrl::FullyEncoded);
-        QString urlStr = request.url().toString();
-        url.setUrl(urlStr.left(urlStr.indexOf("?")));
-    } else {
-        url = request.url();
-    }
-    xhr.call<void>("open", verb, url.toString().toStdString());
+    xhr.call<void>("open", verb, request.url().toString().toStdString());
 
     xhr.set("onerror", val::module_property("QNetworkReplyWasmImplPrivate_requestErrorCallback"));
     xhr.set("onload", val::module_property("QNetworkReplyWasmImplPrivate_loadCallback"));
