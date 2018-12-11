@@ -348,7 +348,7 @@ template <> inline bool mul_overflow(qint64 v1, qint64 v2, qint64 *r)
     // as signed for the low bits and use a signed right shift to verify that
     // 'high' is nothing but sign bits that match the sign of 'low'.
 
-    qint64 high = __mulh(v1, v2);
+    qint64 high = Q_SMULH(v1, v2);
     *r = qint64(quint64(v1) * quint64(v2));
     return (*r >> 63) != high;
 }
