@@ -553,12 +553,13 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
             QDirIterator dit(sourceDir, sourceFilesFilter, QDir::Files | QDir::NoDotAndDotDot);
             while (dit.hasNext()) {
                 dit.next();
-                QString &duplicate = fileNames[dit.fileName()];
+                const QFileInfo fi = dit.fileInfo();
+                QString &duplicate = fileNames[fi.completeBaseName()];
                 if (duplicate.isNull()) {
-                    duplicate = dit.filePath();
+                    duplicate = fi.filePath();
                 } else {
                     warn_msg(WarnLogic, "%s conflicts with %s", qPrintable(duplicate),
-                             qPrintable(dit.filePath()));
+                             qPrintable(fi.filePath()));
                     duplicatesFound = true;
                 }
             }

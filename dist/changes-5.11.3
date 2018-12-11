@@ -1,0 +1,94 @@
+Qt 5.11.3 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.11.0 through 5.11.2.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+http://doc.qt.io/qt-5/index.html
+
+The Qt version 5.11 series is binary compatible with the 5.10.x series.
+Applications compiled for 5.10 will continue to run with 5.11.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                          Third-Party Components                          *
+****************************************************************************
+
+ - libpng was updated to version 1.6.35
+ - PCRE2 was updated to version 10.32.
+ - Added documentation for the SLJIT part of pcre2, which is available
+   under the BSD-2-Clause license.
+
+****************************************************************************
+*                              Documentation                               *
+****************************************************************************
+
+ - Fixed the icons for the "file save" action that were inaccurate
+   representations of a 3.5-inch floppy disk (the cut edge was on the wrong
+   side). Now all floppy representations are physically accurate.
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - QCommandLineParser:
+   * [QTBUG-70174] Fixed a bug that caused the help output to show two
+     options or more in the same line if the options didn't have a
+     description.
+
+ - QDateTime:
+   * [QTBUG-70823] Fixed parsing of date/time strings when the day is the
+     start of daylight savings and that starts at midnight on the
+     timezone.
+
+ - QPluginLoader:
+   * [QTBUG-70560] Fixed a bug in parsing certain plugins, which might
+     conclude a valid plugin wasn't valid.
+
+ - QPointer:
+   * [QTBUG-71412] Fixed a race condition that would cause an assertion
+     failure when two threads created a QPointer for the same QObject.
+
+ - QUrl:
+   * Fixed a bug that caused QUrl::matches to incorrectly compare two URLs
+     with different hostnames or different usernames as equal, if certain
+     QUrl::RemoveXxx options were passed.
+   * [QTBUG-70386][QTBUG-70852] Updated the public DNS suffix list.
+
+****************************************************************************
+*                                  QtGui                                   *
+****************************************************************************
+
+ - QPicture:
+   * [QTBUG-71208] Fix crash reading malformed picture file
+
+****************************************************************************
+*                                QtNetwork                                 *
+****************************************************************************
+
+ - SSL:
+   * [QTBUG-68156] OpenSSL >= 1.0 is now required to build Qt with OpenSSL
+     support.
+
+****************************************************************************
+*                                  Linux                                   *
+****************************************************************************
+
+ - Fixed a number of incompatibilities with Linux C libraries due to use of
+   new kernel system calls statx(2) and renameat2(2). In order to enable
+   them now in Qt, they need to be provided in the C library's own
+   headers. Currently, glibc 2.28 contains them.
+
+****************************************************************************
+*                                  macOS                                   *
+****************************************************************************
+
+ - Offline renderers will be disabled when the application is
+   using Qt WebEngine and running on one of the late 2013 Mac Pro models.

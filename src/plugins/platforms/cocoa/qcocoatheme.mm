@@ -53,11 +53,13 @@
 #include "qcocoahelpers.h"
 
 #include <QtCore/qfileinfo.h>
+#include <QtGui/private/qfont_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtGui/qpainter.h>
 #include <QtGui/qtextformat.h>
 #include <QtFontDatabaseSupport/private/qcoretextfontdatabase_p.h>
+#include <QtFontDatabaseSupport/private/qfontengine_coretext_p.h>
 #include <QtThemeSupport/private/qabstractfileiconengine_p.h>
 #include <qpa/qplatformdialoghelper.h>
 #include <qpa/qplatformintegration.h>
@@ -161,6 +163,11 @@ void QCocoaTheme::handleSystemThemeChange()
     reset();
     m_systemPalette = qt_mac_createSystemPalette();
     m_palettes = qt_mac_createRolePalettes();
+
+    if (QCoreTextFontEngine::fontSmoothing() == QCoreTextFontEngine::FontSmoothing::Grayscale) {
+        // Re-populate glyph caches based on the new appearance's assumed text fill color
+        QFontCache::instance()->clear();
+    }
 
     QWindowSystemInterface::handleThemeChange(nullptr);
 }
