@@ -4509,8 +4509,7 @@ void QWidget::setForegroundRole(QPalette::ColorRole role)
     style, depend on third party APIs to render the content of widgets,
     and these styles typically do not follow the palette. Because of this,
     assigning roles to a widget's palette is not guaranteed to change the
-    appearance of the widget. Instead, you may choose to apply a \l
-    styleSheet.
+    appearance of the widget. Instead, you may choose to apply a \l {styleSheet}.
 
     \warning Do not use this function in conjunction with \l{Qt Style Sheets}.
     When using style sheets, the palette of a widget can be customized using
