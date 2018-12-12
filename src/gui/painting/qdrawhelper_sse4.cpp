@@ -174,7 +174,7 @@ template<bool RGBA>
 static inline void convertARGBFromRGBA64PM_sse4(uint *buffer, const QRgba64 *src, int count)
 {
     int i = 0;
-    const __m128i alphaMask = _mm_set1_epi64x(Q_UINT64_C(0xffff) << 48);
+    const __m128i alphaMask = _mm_set1_epi64x(qint64(Q_UINT64_C(0xffff) << 48));
     const __m128i alphaMask32 = _mm_set1_epi32(0xff000000);
     const __m128i rgbaMask = _mm_setr_epi8(2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15);
     const __m128i zero = _mm_setzero_si128();
