@@ -88,7 +88,10 @@
 #include <private/qsimpledrag_p.h>
 
 #include <QtCore/QDebug>
-
+#include <QtCore/QJsonDocument>
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonArray>
+#include <QtCore/QFile>
 #include <errno.h>
 
 #if defined(QQNXINTEGRATION_DEBUG)
@@ -490,6 +493,108 @@ void QQnxIntegration::removeWindow(screen_window_t qnxWindow)
     m_windowMapper.remove(qnxWindow);
 }
 
+/*!
+  Get display ID for given \a display
+
+  Returns -1 for failure, otherwise returns display ID
+ */
+static int getIdOfDisplay(screen_display_t display)
+{
+    int displayId;
+    if (screen_get_display_property_iv(display,
+                                       SCREEN_PROPERTY_ID,
+                                       &displayId) == 0) {
+        return displayId;
+    }
+    return -1;
+}
+
+/*!
+  Read JSON configuration file for the QNX display order
+
+  Returns true if file was read successfully and fills \a requestedDisplays
+ */
+static bool getRequestedDisplays(QJsonArray &requestedDisplays)
+{
+   // Check if display configuration file is provided
+    QByteArray json = qgetenv("QT_QPA_QNX_DISPLAY_CONFIG");
+    if (json.isEmpty())
+        return false;
+
+    // Check if configuration file exists
+    QFile file(QString::fromUtf8(json));
+    if (!file.open(QFile::ReadOnly)) {
+        qWarning() << "Could not open config file" << json << "for reading";
+        return false;
+    }
+
+    // Read config file and check it's json
+    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    if (!doc.isObject()) {
+        qWarning() << "Invalid config file" << json
+                   << "- no top-level JSON object";
+        return false;
+    }
+
+    // Read the requested display order
+    const QJsonObject object = doc.object();
+    requestedDisplays = object.value(QLatin1String("displayOrder")).toArray();
+
+    return true;
+}
+
+/*!
+  Match \a availableDisplays with display order defined in a json file
+  pointed to by QT_QPA_QNX_DISPLAY_CONFIG. Display order must use same
+  identifiers as defined for displays in graphics.conf. Number of
+  available displays must be specified in \a displayCount
+
+  An example configuration is below:
+  \badcode
+    {
+      "displayOrder": [ 3, 1 ]
+    }
+  \endcode
+
+  Returns ordered list of displays. If no order was specified, returns
+  displays in the same order as in the original list.
+*/
+QList<screen_display_t *> QQnxIntegration::sortDisplays(screen_display_t *availableDisplays, int displayCount)
+{
+    // Intermediate list for sorting
+    QList<screen_display_t *> allDisplays;
+    for (int i = 0; i < displayCount; i++)
+        allDisplays.append(&availableDisplays[i]);
+
+    // Read requested display order if available
+    QJsonArray requestedDisplays;
+    if (!getRequestedDisplays(requestedDisplays))
+        return allDisplays;
+
+    // Go through all the requested displays IDs
+    QList<screen_display_t *> orderedDisplays;
+    for (const QJsonValue &value : qAsConst(requestedDisplays)) {
+        int requestedValue = value.toInt();
+
+        // Move all displays with matching ID from the intermediate list
+        // to the beginning of the ordered list
+        QMutableListIterator<screen_display_t *> iter(allDisplays);
+        while (iter.hasNext()) {
+            screen_display_t *display = iter.next();
+            if (getIdOfDisplay(*display) == requestedValue) {
+                orderedDisplays.append(display);
+                iter.remove();
+                break;
+            }
+        }
+    }
+
+    // Place all unordered displays to the end of list
+    orderedDisplays.append(allDisplays);
+
+    return orderedDisplays;
+}
+
 void QQnxIntegration::createDisplays()
 {
     qIntegrationDebug();
@@ -508,15 +613,16 @@ void QQnxIntegration::createDisplays()
     screen_display_t *displays = (screen_display_t *)alloca(sizeof(screen_display_t) * displayCount);
     result = screen_get_context_property_pv(m_screenContext, SCREEN_PROPERTY_DISPLAYS,
                                             (void **)displays);
+    QList<screen_display_t *> orderedDisplays = sortDisplays(displays, displayCount);
     Q_SCREEN_CRITICALERROR(result, "Failed to query displays");
 
     // If it's primary, we create a QScreen for it even if it's not attached
     // since Qt will dereference QGuiApplication::primaryScreen()
-    createDisplay(displays[0], /*isPrimary=*/true);
+    createDisplay(*orderedDisplays[0], /*isPrimary=*/true);
 
     for (int i=1; i<displayCount; i++) {
         int isAttached = 1;
-        result = screen_get_display_property_iv(displays[i], SCREEN_PROPERTY_ATTACHED,
+        result = screen_get_display_property_iv(*orderedDisplays[i], SCREEN_PROPERTY_ATTACHED,
                                                 &isAttached);
         Q_SCREEN_CHECKERROR(result, "Failed to query display attachment");
 
@@ -526,7 +632,7 @@ void QQnxIntegration::createDisplays()
         }
 
         qIntegrationDebug("Creating screen for display %d", i);
-        createDisplay(displays[i], /*isPrimary=*/false);
+        createDisplay(*orderedDisplays[i], /*isPrimary=*/false);
     } // of displays iteration
 }
 
