@@ -3225,7 +3225,7 @@ QSize QFusionStyle::sizeFromContents(ContentsType type, const QStyleOption *opti
                 QFont fontBold = menuItem->font;
                 fontBold.setBold(true);
                 QFontMetrics fmBold(fontBold);
-                w += fmBold.width(menuItem->text) - fm.horizontalAdvance(menuItem->text);
+                w += fmBold.horizontalAdvance(menuItem->text) - fm.horizontalAdvance(menuItem->text);
             }
             const int checkcol = qMax<int>(maxpmw, QStyleHelper::dpiScaled(QFusionStylePrivate::menuCheckMarkWidth)); // Windows always shows a check column
             w += checkcol;
