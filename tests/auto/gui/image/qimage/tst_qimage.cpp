@@ -233,6 +233,7 @@ private slots:
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     void toWinHBITMAP_data();
     void toWinHBITMAP();
+    void fromMonoHBITMAP();
 #endif // Q_OS_WIN && !Q_OS_WINRT
 
 private:
@@ -3635,6 +3636,19 @@ void tst_QImage::toWinHBITMAP()
     DeleteDC(bitmapDc);
     ReleaseDC(0, displayDc);
 }
+
+void tst_QImage::fromMonoHBITMAP() // QTBUG-72343, corruption for mono bitmaps
+{
+    enum : int { width = 32, height = 32, size = width * height / 8 }; // 32x32 mono bitmap
+    char bitmapData[size];
+    memset(bitmapData, 0, size);
+    const HBITMAP hbitmap  = CreateBitmap(width, height, /* planes */ 1, /* bitcount */ 1, bitmapData);
+    const QImage image = qt_imageFromWinHBITMAP(hbitmap);
+    QCOMPARE(image.size(), QSize(width, height));
+    QCOMPARE(image.scanLine(0)[0], 0u);
+    DeleteObject(hbitmap);
+}
+
 #endif // Q_OS_WIN && !Q_OS_WINRT
 
 QTEST_GUILESS_MAIN(tst_QImage)
