@@ -48,7 +48,9 @@
 #include <qhash.h>
 #include <qiodevice.h>
 #include <qlist.h>
-#include <qregexp.h>
+#if QT_CONFIG(regularexpression)
+#include <qregularexpression.h>
+#endif
 #if QT_CONFIG(textcodec)
 #include <qtextcodec.h>
 #endif
@@ -6430,7 +6432,7 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
     const QDomNodePrivate* n = first;
 
     if(encUsed == QDomNode::EncodingFromDocument) {
-#if QT_CONFIG(textcodec)
+#if QT_CONFIG(textcodec) && QT_CONFIG(regularexpression)
         const QDomNodePrivate* n = first;
 
         QTextCodec *codec = 0;
@@ -6438,11 +6440,11 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
         if (n && n->isProcessingInstruction() && n->nodeName() == QLatin1String("xml")) {
             // we have an XML declaration
             QString data = n->nodeValue();
-            QRegExp encoding(QString::fromLatin1("encoding\\s*=\\s*((\"([^\"]*)\")|('([^']*)'))"));
-            encoding.indexIn(data);
-            QString enc = encoding.cap(3);
+            QRegularExpression encoding(QString::fromLatin1("encoding\\s*=\\s*((\"([^\"]*)\")|('([^']*)'))"));
+            auto match = encoding.match(data);
+            QString enc = match.captured(3);
             if (enc.isEmpty())
-                enc = encoding.cap(5);
+                enc = match.captured(5);
             if (!enc.isEmpty())
                 codec = QTextCodec::codecForName(std::move(enc).toLatin1());
         }

@@ -43,7 +43,9 @@
 #include "qtextcodec.h"
 #endif
 #include "qbuffer.h"
-#include "qregexp.h"
+#if QT_CONFIG(regularexpression)
+#include "qregularexpression.h"
+#endif
 #include "qmap.h"
 #include "qhash.h"
 #include "qstack.h"
@@ -193,19 +195,23 @@ static const signed char charLookupTable[256]={
 */
 static bool stripTextDecl(QString& str)
 {
-    QString textDeclStart(QLatin1String("<?xml"));
+    QLatin1String textDeclStart("<?xml");
     if (str.startsWith(textDeclStart)) {
-        QRegExp textDecl(QString::fromLatin1(
+#if QT_CONFIG(regularexpression)
+        QRegularExpression textDecl(QString::fromLatin1(
             "^<\\?xml\\s+"
             "(version\\s*=\\s*((['\"])[-a-zA-Z0-9_.:]+\\3))?"
             "\\s*"
             "(encoding\\s*=\\s*((['\"])[A-Za-z][-a-zA-Z0-9_.]*\\6))?"
             "\\s*\\?>"
-       ));
+        ));
         QString strTmp = str.replace(textDecl, QLatin1String(""));
         if (strTmp.length() != str.length())
             return false; // external entity has wrong TextDecl
         str = strTmp;
+#else
+        return false;
+#endif
     }
     return true;
 }
