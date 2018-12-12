@@ -372,6 +372,7 @@ QT_END_NAMESPACE
 - (void)dealloc {
     [[NSStatusBar systemStatusBar] removeStatusItem:item];
     [[NSNotificationCenter defaultCenter] removeObserver:imageCell];
+    imageCell.parent = nil;
     [imageCell release];
     [item release];
     [super dealloc];
