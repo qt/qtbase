@@ -31,7 +31,15 @@ depends                 += qtcore qtdoc qtwidgets qtgui qmake qtquick
 
 headerdirs  += ..
 
+headers     += ../../corelib/kernel/qtestsupport_core.h \
+               ../../gui/kernel/qtestsupport_gui.h \
+               ../../widgets/kernel/qtestsupport_widgets.h
+
 sourcedirs  += ..
+
+sources     += ../../corelib/kernel/qtestsupport_core.cpp \
+               ../../gui/kernel/qtestsupport_gui.cpp \
+               ../../widgets/kernel/qtestsupport_widgets.cpp
 
 exampledirs += ../../../examples/qtestlib \
                ../ \

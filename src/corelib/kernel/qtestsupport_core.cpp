@@ -59,8 +59,7 @@ Q_CORE_EXPORT void QTestPrivate::qSleep(int ms)
 #endif
 }
 
-/*! \fn template <typename Functor> bool qWaitFor(Functor predicate, int timeout)
-    \relates QTest
+/*! \fn template <typename Functor> bool QTest::qWaitFor(Functor predicate, int timeout)
 
     Waits for \a timeout milliseconds or until the \a predicate returns true.
 
@@ -77,8 +76,7 @@ Q_CORE_EXPORT void QTestPrivate::qSleep(int ms)
 */
 
 
-/*! \fn void qWait(int ms)
-    \relates QTest
+/*! \fn void QTest::qWait(int ms)
 
     Waits for \a ms milliseconds. While waiting, events will be processed and
     your test will stay responsive to user interface events or network communication.
