@@ -641,6 +641,7 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
         // Only the primary pointer will generate mouse messages.
         enqueueTouchEvent(window, touchPoints, QWindowsKeyMapper::queryKeyboardModifiers());
     } else {
+        flushTouchEvents(m_touchDevice);
         QWindowSystemInterface::handleTouchEvent(window, m_touchDevice, touchPoints,
                                                  QWindowsKeyMapper::queryKeyboardModifiers());
     }
@@ -764,6 +765,13 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window, HWND hwnd, QtW
 
     *result = 0;
     if (et != QtWindows::MouseWheelEvent && msg.message != WM_MOUSELEAVE && msg.message != WM_MOUSEMOVE)
+        return false;
+
+    // Ignore messages synthesized from touch/pen (only use them for flushing queues).
+    const quint64 signatureMask = 0xffffff00;
+    const quint64 miWpSignature = 0xff515700;
+    const quint64 extraInfo = quint64(GetMessageExtraInfo());
+    if ((extraInfo & signatureMask) == miWpSignature)
         return false;
 
     const QPoint eventPos(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
