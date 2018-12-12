@@ -74,6 +74,7 @@ private slots:
     void testHelpOption_data();
     void testHelpOption();
     void testQuoteEscaping();
+    void testUnknownOption();
 };
 
 static char *empty_argv[] = { 0 };
@@ -645,6 +646,27 @@ void tst_QCommandLineParser::testQuoteEscaping()
     QVERIFY2(output.contains("KEY1=\"VALUE1\""), qPrintable(output));
     QVERIFY2(output.contains("QTBUG-15379=C:\\path\\'file.ext"), qPrintable(output));
     QVERIFY2(output.contains("QTBUG-30628=C:\\temp\\'file'.ext"), qPrintable(output));
+#endif // QT_CONFIG(process)
+}
+
+void tst_QCommandLineParser::testUnknownOption()
+{
+#if !QT_CONFIG(process)
+    QSKIP("This test requires QProcess support");
+#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+    QSKIP("Deploying executable applications to file system on Android not supported.");
+#else
+    QCoreApplication app(empty_argc, empty_argv);
+    QProcess process;
+    process.start("testhelper/qcommandlineparser_test_helper", QStringList() <<
+            QString::number(QCommandLineParser::ParseAsLongOptions) <<
+            "-unknown-option");
+    QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    process.setReadChannel(QProcess::StandardError);
+    QString output = process.readAll();
+    QVERIFY2(output.contains("qcommandlineparser_test_helper"), qPrintable(output)); // separate in case of .exe extension
+    QVERIFY2(output.contains(": Unknown option 'unknown-option'"), qPrintable(output));
 #endif // QT_CONFIG(process)
 }
 
