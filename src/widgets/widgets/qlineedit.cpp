@@ -1681,6 +1681,7 @@ void QLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
 
 /*!
     \fn void QLineEdit::inputRejected()
+    \since 5.12
 
     This signal is emitted when the user presses a key that is not
     considered to be acceptable input. For example, if a key press
