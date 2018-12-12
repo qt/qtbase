@@ -1264,11 +1264,6 @@ QWindowsFontDatabase::~QWindowsFontDatabase()
     removeApplicationFonts();
 }
 
-QFontEngineMulti *QWindowsFontDatabase::fontEngineMulti(QFontEngine *fontEngine, QChar::Script script)
-{
-    return new QWindowsMultiFontEngine(fontEngine, script);
-}
-
 QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef, void *handle)
 {
     const QString faceName(static_cast<const QChar*>(handle));
