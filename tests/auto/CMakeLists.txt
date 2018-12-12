@@ -49,7 +49,7 @@ if (TARGET Qt::Widgets)
      add_subdirectory(widgets)
 endif()
 if (TARGET Qt::PrintSupport)
-#     add_subdirectory(printsupport)
+     add_subdirectory(printsupport)
 endif()
 # add_subdirectory(cmake) ## FIXME: Does this still make sense in this form?
 # add_subdirectory(installed_cmake) ## FIXME: Does this still make sense in this form?

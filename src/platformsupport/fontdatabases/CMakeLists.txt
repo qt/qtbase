@@ -20,6 +20,11 @@ add_qt_module(FontDatabaseSupport
         Qt::CorePrivate
         Qt::GuiPrivate
 )
+set_source_files_properties(fake.cpp PROPERTIES
+    SKIP_AUTOMOC ON
+    SKIP_AUTOUIC ON
+    SKIP_AUTORCC ON
+)
 
 extend_target(FontDatabaseSupport CONDITION APPLE
     SOURCES

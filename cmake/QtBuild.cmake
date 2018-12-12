@@ -222,43 +222,6 @@ function(qt_internal_add_linker_version_script target)
     endif()
 endfunction()
 
-# Generates the necessary rules to run moc on the sources specified after the MOC parameter.
-# The resulting moc files are added to the target.
-function(qt_internal_wrap_cpp target)
-    # get include dirs
-    qt_get_moc_flags(moc_flags)
-    qt_parse_all_arguments(arg "qt_internal_wrap_cpp" "" "HEADER_FILE_ONLY" "OPTIONS;DEPENDS;MOC" ${ARGN})
-
-    set(outfiles)
-
-    get_target_property(binary_dir "${target}" BINARY_DIR)
-    get_target_property(source_dir "${target}" SOURCE_DIR)
-
-    foreach(it ${arg_MOC})
-        get_filename_component(moc_file_extension ${it} EXT)
-
-        if("x${moc_file_extension}" STREQUAL "x.h")
-            set(file_prefix "moc_")
-            set(file_extension ".cpp")
-        else()
-            set(file_prefix "")
-            set(file_extension ".moc")
-        endif()
-
-        qt_make_output_file("${it}" "${file_prefix}" "${file_extension}" "${source_dir}" "${binary_dir}" outfile)
-
-        qt_create_moc_command("${target}" "${source_dir}" "${it}" "${outfile}" "${moc_flags}" "${arg_OPTIONS}" "${arg_DEPENDS}")
-        set_source_files_properties("${outfile}" PROPERTIES HEADER_FILE_ONLY ${arg_HEADER_FILE_ONLY})
-        if (arg_HEADER_FILE_ONLY)
-            get_filename_component(directory "${outfile}" DIRECTORY)
-            target_include_directories("${target}" PRIVATE "${directory}")
-        endif()
-
-        list(APPEND outfiles "${outfile}")
-    endforeach()
-    target_sources("${target}" PRIVATE "${outfiles}")
-endfunction()
-
 
 # Get a set of Qt module related values based on the target name.
 # When doing qt_internal_module_info(foo Core) this method will set
@@ -277,157 +240,6 @@ function(qt_internal_module_info result target)
     set("${result}_upper" "${upper}" PARENT_SCOPE)
     set("${result}_lower" "${lower}" PARENT_SCOPE)
     set("${result}_include_dir" "${PROJECT_BINARY_DIR}/include/${module}" PARENT_SCOPE)
-endfunction()
-
-
-# This function takes a target as a parameter, followed by a list of sources.
-# The sources are scanned for Q_OBJECT/Q_GADGET use as well as the inclusion of
-# moc_*.cpp/*.moc. Rules are created to call moc accordingly at build time and
-# add the generated sources to the target, if the generated code is not
-# directly included otherwise.
-function(qt_internal_automoc target)
-    if ("x${ARGN}" STREQUAL "x")
-        return()
-    endif()
-
-    if(NOT DEFINED QT_MOCSCANNER)
-        get_target_property(mocPath "Qt::moc" LOCATION)
-        get_filename_component(binDirectory "${mocPath}" DIRECTORY)
-        set(QT_MOCSCANNER "${binDirectory}/qmocscanner${CMAKE_EXECUTABLE_SUFFIX}")
-    endif()
-
-    string(REPLACE ";" "\n" sources "${ARGN}")
-    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/moc_sources_and_headers.txt" ${sources})
-    execute_process(COMMAND "${QT_MOCSCANNER}"
-                    "${CMAKE_CURRENT_BINARY_DIR}/moc_sources_and_headers.txt"
-                    "${CMAKE_CURRENT_BINARY_DIR}/moc_files_included.txt"
-                    "${CMAKE_CURRENT_BINARY_DIR}/moc_files_to_build.txt"
-                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-                    )
-
-    file(STRINGS "${CMAKE_CURRENT_BINARY_DIR}/moc_files_included.txt" moc_files_included)
-    file(STRINGS "${CMAKE_CURRENT_BINARY_DIR}/moc_files_to_build.txt" moc_files_to_build)
-
-    file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/moc_sources_and_headers.txt")
-    file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/moc_files_included.txt")
-    file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/moc_files_to_build.txt")
-
-    qt_internal_wrap_cpp("${target}" MOC ${moc_files_included} HEADER_FILE_ONLY ON)
-    qt_internal_wrap_cpp("${target}" MOC ${moc_files_to_build} HEADER_FILE_ONLY OFF)
-endfunction()
-
-
-# This function takes a target as a parameter, followed by a list of sources.
-# Any sources with the .ui extension are passed on to uic and the generated output
-# is added to the target sources.
-function(qt_internal_autouic target)
-    set(outfiles "")
-
-    get_target_property(source_dir "${target}" SOURCE_DIR)
-    get_target_property(binary_dir "${target}" BINARY_DIR)
-
-    foreach(infile ${ARGN})
-        get_filename_component(ext "${infile}" EXT)
-        if("${ext}" STREQUAL ".ui")
-            qt_make_output_file("${infile}" "ui_" ".h" "${source_dir}" "${binary_dir}" outfile)
-            qt_create_uic_command("${infile}" "${source_dir}" "${outfile}")
-            list(APPEND outfiles "${outfile}")
-
-            get_filename_component(outfile_path "${outfile}" PATH)
-            target_include_directories("${target}" PRIVATE "${outfile_path}")
-        endif()
-    endforeach()
-    target_sources("${target}" PRIVATE "${outfiles}")
-endfunction()
-
-
-# This function attempts to (poorly) parse the given resourceFile (.qrc) and
-# determine the dependencies, i.e. which files are intended for inclusion into
-# the Qt resource.
-function(qt_extract_qrc_dependencies resourceFile out_depends_ rc_depends_)
-    get_filename_component(rc_path ${resourceFile} PATH)
-
-    if(EXISTS "${infile}")
-        #  parse file for dependencies
-        #  all files are absolute paths or relative to the location of the qrc file
-        file(READ "${infile}" RC_FILE_CONTENTS)
-        string(REGEX MATCHALL "<file[^<]+" RC_FILES "${RC_FILE_CONTENTS}")
-        set(RC_DEPENDS "")
-        foreach(RC_FILE ${RC_FILES})
-            string(REGEX REPLACE "^<file[^>]*>" "" RC_FILE "${RC_FILE}")
-            if(NOT IS_ABSOLUTE "${RC_FILE}")
-                set(RC_FILE "${rc_path}/${RC_FILE}")
-            endif()
-            set(RC_DEPENDS ${RC_DEPENDS} "${RC_FILE}")
-        endforeach()
-        # Since this cmake function is doing the dependency scanning for these files,
-        # let's make a configured file and add it as a dependency so cmake is run
-        # again when dependencies need to be recomputed.
-        qt_make_output_file("${infile}" "" ".qrc.depends" "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" out_depends)
-        configure_file("${infile}" "${out_depends}" COPYONLY)
-    else()
-        # The .qrc file does not exist (yet). Let's add a dependency and hope
-        # that it will be generated later
-        set(out_depends)
-    endif()
-
-    set(${out_depends_} ${out_depends} PARENT_SCOPE)
-    set(${rc_depends_} ${RC_DEPENDS} PARENT_SCOPE)
-endfunction()
-
-
-# This function creates the necessary rule to call rcc on the given
-# resource file and stores the name of the to-be generated C++ source
-# file (created by rcc) in the outCppFile variable.
-function(qt_create_rcc_command resourceFile source_dir binary_dir outfile)
-    qt_extract_qrc_dependencies("${infile}" out_depends rc_depends "${source_dir}" "${binary_dir}")
-    set_source_files_properties("${infile}" PROPERTIES SKIP_AUTORCC ON)
-
-    get_filename_component(outfilename "${resourceFile}" NAME_WE)
-    add_custom_command(OUTPUT "${outfile}"
-                       COMMAND "Qt::rcc" --name "${outfilename}" --output "${outfile}" "${resourceFile}"
-                       MAIN_DEPENDENCY "${infile}"
-                       DEPENDS "${rc_depends}" "${out_depends}"
-                       WORKING_DIRECTORY "${source_dir}" VERBATIM)
-    set_source_files_properties("${outfile}" PROPERTIES SKIP_AUTOMOC ON)
-    set_source_files_properties("${outfile}" PROPERTIES SKIP_AUTOUIC ON)
-endfunction()
-
-
-# This function takes a target as a parameter, followed by a list of sources.
-# Any sources ending with the .qrc extension are treated as Qt resources and rules
-# to call rcc are generated. The source files rcc generates are added to the target.
-function(qt_internal_autorcc target)
-    get_target_property(binary_dir "${target}" BINARY_DIR)
-    get_target_property(source_dir "${target}" SOURCE_DIR)
-
-    set(qrc_outfiles "")
-
-    foreach(infile ${ARGN})
-        get_filename_component(ext "${infile}" EXT)
-        if("${ext}" STREQUAL ".qrc")
-            qt_make_output_file("${infile}" "qrc_" ".cpp" "${source_dir}" "${binary_dir}" outfile)
-            list(FIND all_sources "${outfile}" known_result)
-            if (known_result GREATER -1)
-                continue()
-            endif()
-
-            qt_create_rcc_command("${infile}" "${source_dir}" "${binary_dir}" "${outfile}")
-            list(APPEND qrc_outfiles "${outfile}")
-        endif()
-    endforeach()
-    target_sources("${target}" PRIVATE "${qrc_outfiles}")
-endfunction()
-
-
-# This function takes a target as a parameter, followed by a list of sources.
-# The sources are scanned for .ui and .qrc as well as Q_OBJECT/Q_GADGET use
-# and rules to call uic/rcc/moc are created. Any generated sources are added
-# as private sources to the specified target.
-function(qt_internal_process_automatic_sources target)
-    qt_internal_automoc("${target}" ${ARGN})
-    qt_internal_autouic("${target}" ${ARGN})
-    qt_internal_autorcc("${target}" ${ARGN})
 endfunction()
 
 
@@ -459,7 +271,6 @@ function(extend_target target)
             qt_create_qdbusxml2cpp_command("${target}" "${interface}" INTERFACE FLAGS "${arg_DBUS_INTERFACE_FLAGS}")
             list(APPEND dbus_sources "${sources}")
         endforeach()
-        qt_internal_process_automatic_sources("${target}" "${arg_SOURCES}")
 
         # Import features
         if(NOT "${target}" STREQUAL "Core")
@@ -486,6 +297,15 @@ function(extend_target target)
                 qt_pull_features_into_current_scope(PUBLIC_FEATURES ${depTarget})
             endif()
         endforeach()
+
+        set_target_properties("${target}" PROPERTIES
+            AUTOMOC ON
+            AUTOMOC_EXECUTABLE "$<TARGET_FILE:Qt::moc>"
+            AUTORCC ON
+            AUTORCC_EXECUTABLE "$<TARGET_FILE:Qt::rcc>"
+            AUTOUIC ON
+            AUTOUIC_EXECUTABLE "$<TARGET_FILE:Qt::uic>"
+        )
 
         target_sources("${target}" PRIVATE ${arg_SOURCES} ${dbus_sources})
         if (arg_COMPILE_FLAGS)
@@ -882,18 +702,13 @@ function(add_qt_tool name)
     endif()
 
     add_qt_executable("${name}" OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}"
-        # Do not pass sources here: They may not get processed when BOOTSTRAP is set!
+        SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}
         DEFINES ${arg_DEFINES}
         LIBRARIES ${corelib} ${arg_LIBRARIES}
     )
-    target_sources("${name}" PRIVATE "${arg_SOURCES}")
     qt_internal_add_target_aliases("${name}")
-
-    if (NOT arg_BOOTSTRAP)
-        qt_internal_process_automatic_sources("${name}" ${arg_SOURCES})
-    endif()
 
     install(TARGETS "${name}" EXPORT "Qt${PROJECT_VERSION_MAJOR}ToolsTargets" DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
     qt_push_features_into_parent_scope()
@@ -968,75 +783,28 @@ function(qt_make_output_file infile prefix suffix source_dir binary_dir result)
 endfunction()
 
 
-macro(qt_get_moc_flags moc_flags)
-    set(${moc_flags})
-    get_directory_property(inc_DIRS INCLUDE_DIRECTORIES)
+# Complete manual moc invocation with full control.
+# Use AUTOMOC whenever possible.
+function(qt_manual_moc result)
+    cmake_parse_arguments(arg "" "" "FLAGS" ${ARGN})
+    set(moc_files)
+    foreach(infile ${arg_UNPARSED_ARGUMENTS})
+        qt_make_output_file("${infile}" "moc_" ".cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" outfile)
+        list(APPEND moc_files "${outfile}")
 
-    if(CMAKE_INCLUDE_CURRENT_DIR)
-        list(APPEND inc_DIRS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
-    endif()
+        set(moc_parameters_file "${outfile}_parameters$<$<BOOL:$<CONFIGURATION>>:_$<CONFIGURATION>>")
+        set(moc_parameters ${arg_FLAGS} -o "${outfile}" "${infile}")
+        string (REPLACE ";" "\n" moc_parameters "${moc_parameters}")
 
-    foreach(current ${inc_DIRS})
-        if("${current}" MATCHES "\\.framework/?$")
-            string(REGEX REPLACE "/[^/]+\\.framework" "" framework_path "${current}")
-            set(${moc_flags} ${${moc_flags}} "-F${framework_path}")
-        else()
-            set(${moc_flags} ${${moc_flags}} "-I${current}")
-        endif()
+        file(GENERATE OUTPUT "${moc_parameters_file}" CONTENT "${moc_parameters}\n")
+
+        add_custom_command(OUTPUT "${outfile}"
+                           COMMAND Qt::moc "@${moc_parameters_file}"
+                           DEPENDS "${infile}" ${moc_depends} Qt::moc
+                           WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" VERBATIM)
     endforeach()
-
-    get_directory_property(defines COMPILE_DEFINITIONS)
-    foreach(current ${defines})
-        set(${moc_flags} ${${moc_flags}} "-D${current}")
-    endforeach()
-
-    if(WIN32)
-        set(${moc_flags} ${${moc_flags}} -DWIN32)
-    endif()
-    if (MSVC)
-        set(${moc_flags} ${${moc_flags}} --compiler-flavor=msvc)
-    endif()
-endmacro()
-
-
-# helper to set up a moc rule
-function(qt_create_moc_command target source_dir infile outfile moc_flags moc_options moc_depends)
-    # Pass the parameters in a file.  Set the working directory to
-    # be that containing the parameters file and reference it by
-    # just the file name.  This is necessary because the moc tool on
-    # MinGW builds does not seem to handle spaces in the path to the
-    # file given with the @ syntax.
-    set (moc_parameters_file "${outfile}_parameters")
-    set (moc_parameters ${moc_flags} ${moc_options} -o "${outfile}" "${infile}")
-    string (REPLACE ";" "\n" moc_parameters "${moc_parameters}")
-
-    set(moc_parameters_file "${moc_parameters_file}$<$<BOOL:$<CONFIGURATION>>:_$<CONFIGURATION>>")
-    set(targetincludes "$<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>")
-    set(targetdefines "$<TARGET_PROPERTY:${target},COMPILE_DEFINITIONS>")
-    set(targetincludes "$<$<BOOL:${targetincludes}>:-I$<JOIN:${targetincludes},\n-I>\n>")
-    set(targetdefines "$<$<BOOL:${targetdefines}>:-D$<JOIN:${targetdefines},\n-D>\n>")
-
-    file (GENERATE
-        OUTPUT "${moc_parameters_file}"
-        CONTENT "${targetdefines}${targetincludes}${moc_parameters}\n"
-    )
-
-    set(moc_extra_parameters_file @${moc_parameters_file})
-    add_custom_command(OUTPUT "${outfile}"
-                       COMMAND "Qt::moc" "${moc_extra_parameters_file}"
-                       DEPENDS "${infile}" ${moc_depends}
-                       WORKING_DIRECTORY "${source_dir}" VERBATIM)
-endfunction()
-
-
-# helper to set up a uic rule
-function(qt_create_uic_command infile source_dir outfile)
-    add_custom_command(OUTPUT "${outfile}"
-                       COMMAND "Qt::uic" "${infile}" -o "${outfile}"
-                       DEPENDS "${infile}"
-                       COMMENT "Running UIC on ${infile}."
-                       WORKING_DIRECTORY "${source_dir}" VERBATIM)
-    set_source_files_properties("${outfile}" PROPERTIES HEADER_FILE_ONLY ON)
+    set("${result}" ${moc_files} PARENT_SCOPE)
 endfunction()
 
 
@@ -1066,10 +834,7 @@ function(qt_create_qdbusxml2cpp_command target infile)
                        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
                        VERBATIM)
 
-    # Moc the header:
-    qt_internal_wrap_cpp("${target}" MOC "${header_file}" HEADER_FILE_ONLY OFF)
-
-    target_sources("${target}" PRIVATE "${header_file}" "${source_file}" "${moc_sources}")
+    target_sources("${target}" PRIVATE "${header_file}" "${source_file}")
 endfunction()
 
 

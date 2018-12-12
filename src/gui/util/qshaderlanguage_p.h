@@ -59,7 +59,8 @@ QT_BEGIN_NAMESPACE
 
 namespace QShaderLanguage
 {
-    Q_GUI_EXPORT Q_NAMESPACE
+    Q_GUI_EXPORT
+    Q_NAMESPACE
 
     enum StorageQualifier : char {
         Const = 1,

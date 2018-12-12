@@ -235,6 +235,14 @@ add_qt_module(Gui
         Qt::Core
 )
 
+set_source_files_properties(
+    # Comment triggering moc:
+    opengl/qopenglfunctions.cpp
+  PROPERTIES
+    SKIP_AUTOMOC ON
+    SKIP_AUTOUIC ON
+    SKIP_AUTORCC ON)
+
 
 ## Scopes:
 #####################################################################

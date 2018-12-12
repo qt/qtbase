@@ -23,7 +23,6 @@ function(find_or_build_bootstrap_names)
         endif()
     endfunction()
 
-    find_or_build_bootstrap_tool(qmocscanner)
     if (_build_tools)
         add_subdirectory(tools/bootstrap)  # bootstrap library
     endif()
@@ -31,10 +30,6 @@ function(find_or_build_bootstrap_names)
     find_or_build_bootstrap_tool(rcc)
     find_or_build_bootstrap_tool(qfloat16-tables)
     find_or_build_bootstrap_tool(tracegen)
-
-    # $<TARGET_FILE:Qt::qmocscanner> does not work during configure run, so export into a plain variable:
-    get_target_property(_mocscanner "Qt::qmocscanner" IMPORTED_LOCATION)
-    set(QT_MOCSCANNER "${_mocscanner}" CACHE INTERNAL "Qt moc scanner")
 
     if (_build_tools)
         install(EXPORT "Qt${PROJECT_VERSION_MAJOR}ToolsTargets" NAMESPACE "Qt::" DESTINATION "${INSTALL_LIBDIR}/cmake/Qt${PROJECT_VERSION_MAJOR}")
@@ -76,4 +71,5 @@ endif()
 if (QT_FEATURE_testlib)
     add_subdirectory(testlib)
 endif()
+add_subdirectory(printsupport)
 add_subdirectory(plugins)

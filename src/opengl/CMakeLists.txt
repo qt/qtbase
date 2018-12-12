@@ -31,6 +31,12 @@ add_qt_module(OpenGL
         Qt::GuiPrivate
         Qt::WidgetsPrivate
 )
+set_source_files_properties(qglfunctions.cpp qgraphicsshadereffect.cpp PROPERTIES
+    SKIP_AUTOMOC ON
+    SKIP_AUTOUIC ON
+    SKIP_AUTORCC ON
+)
+
 
 ## Scopes:
 #####################################################################

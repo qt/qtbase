@@ -58,6 +58,14 @@ add_qt_module(Network
         Qt::CorePrivate
 )
 
+set_source_files_properties(
+    # Comment triggering moc:
+    access/qnetworkaccessdebugpipebackend_p.h
+  PROPERTIES
+    SKIP_AUTOMOC ON
+    SKIP_AUTOUIC ON
+    SKIP_AUTORCC ON)
+
 ## Scopes:
 #####################################################################
 

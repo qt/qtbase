@@ -1,4 +1,3 @@
-
 find_package(Threads)
 find_package(WrapDoubleConversion REQUIRED)
 
@@ -51,7 +50,6 @@ add_qt_module(Core
         global/qlibraryinfo.cpp global/qlibraryinfo.h
         global/qlogging.cpp global/qlogging.h
         global/qmalloc.cpp
-        global/qnamespace.h
         global/qnumeric.cpp global/qnumeric.h global/qnumeric_p.h
         global/qoperatingsystemversion.cpp global/qoperatingsystemversion.h global/qoperatingsystemversion_p.h
         global/qprocessordetection.h
@@ -117,7 +115,6 @@ add_qt_module(Core
         kernel/qmetatype.cpp kernel/qmetatype.h kernel/qmetatype_p.h
         kernel/qmetatypeswitcher_p.h
         kernel/qmimedata.cpp kernel/qmimedata.h
-        kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h
         kernel/qobject_impl.h
         kernel/qobjectcleanuphandler.cpp kernel/qobjectcleanuphandler.h
         kernel/qobjectdefs.h
@@ -229,6 +226,8 @@ add_qt_module(Core
         tools/qvector.h
         tools/qversionnumber.cpp tools/qversionnumber.h
         tools/qvsnprintf.cpp
+    INCLUDE_DIRECTORIES
+        ${CMAKE_CURRENT_BINARY_DIR}/global # For qconfig.cpp
     LIBRARIES
         WrapDoubleConversion
         WrapRt
@@ -239,6 +238,28 @@ add_qt_module(Core
         QT_NO_USING_NAMESPACE
         QT_NO_FOREACH
 )
+
+# Handle QObject: Automoc does not work for this as it would
+# require to spill internals into users:
+add_library(Core_qobject OBJECT)
+qt_manual_moc(qobject_moc_files kernel/qobject.h global/qnamespace.h)
+set_source_files_properties(${qobject_moc_files} PROPERTIES HEADER_FILE_ONLY ON)
+target_sources(Core_qobject PRIVATE
+    global/qnamespace.h
+    kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h ${qobject_moc_files})
+target_include_directories(Core_qobject PRIVATE
+    "${CMAKE_CURRENT_BINARY_DIR}"
+    "${CMAKE_CURRENT_BINARY_DIR}/global"
+    "${CMAKE_CURRENT_BINARY_DIR}/kernel"
+    "${PROJECT_BINARY_DIR}/include"
+    "${PROJECT_BINARY_DIR}/include/QtCore"
+    "${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}"
+    "${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}/QtCore")
+target_link_libraries(Core_qobject PRIVATE Qt::Platform)
+target_link_libraries(Core PRIVATE Core_qobject)
+
+# Comments trigger moc for these, so skip automoc:
+set_source_files_properties( tools/qsharedpointer.cpp PROPERTIES SKIP_AUTOMOC ON)
 
 set_property(TARGET Core APPEND PROPERTY PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig.h")
 set_property(TARGET Core APPEND PROPERTY PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig_p.h")
@@ -738,6 +759,7 @@ extend_target(Core CONDITION QT_FEATURE_statemachine
         statemachine/qsignaltransition.cpp statemachine/qsignaltransition.h statemachine/qsignaltransition_p.h
         statemachine/qstate.cpp statemachine/qstate.h statemachine/qstate_p.h
         statemachine/qstatemachine.cpp statemachine/qstatemachine.h statemachine/qstatemachine_p.h
+    INCLUDE_DIRECTORIES statemachine
 )
 
 # qeventtransition:
@@ -756,6 +778,7 @@ extend_target(Core CONDITION QT_FEATURE_mimetype
         mimetypes/qmimeprovider.cpp mimetypes/qmimeprovider_p.h
         mimetypes/qmimetype.cpp mimetypes/qmimetype.h mimetypes/qmimetype_p.h
         mimetypes/qmimetypeparser.cpp mimetypes/qmimetypeparser_p.h
+    INCLUDE_DIRECTORIES mimetypes
 )
 
 # Enable Evaluation based on QT_EVAL variable being set from the outside:
