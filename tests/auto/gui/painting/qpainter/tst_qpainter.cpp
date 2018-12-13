@@ -299,6 +299,8 @@ private slots:
 
     void fillPolygon();
 
+    void drawImageAtPointF();
+
 private:
     void fillData();
     void setPenColor(QPainter& p);
@@ -5290,6 +5292,20 @@ void tst_QPainter::fillPolygon()
             }
         }
     }
+}
+
+void tst_QPainter::drawImageAtPointF()
+{
+    // Just test we do not crash
+    QImage image1(10, 10, QImage::Format_RGB32);
+    QImage image2(200, 200, QImage::Format_RGB32);
+
+    QPainter paint(&image2);
+    paint.setClipRect(97, 46, 14, 14);
+    paint.setCompositionMode(QPainter::CompositionMode_Source);
+    paint.drawImage(QPointF(96, std::numeric_limits<int>::max()), image1);
+    paint.drawImage(QPointF(std::numeric_limits<int>::min(), 48), image1);
+    paint.end();
 }
 
 QTEST_MAIN(tst_QPainter)

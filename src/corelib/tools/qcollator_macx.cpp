@@ -55,6 +55,15 @@ QT_BEGIN_NAMESPACE
 void QCollatorPrivate::init()
 {
     cleanup();
+    /*
+      LocaleRefFromLocaleString() will accept "POSIX" as the locale name, but
+      the locale it produces (named "pos") doesn't implement the [A-Z] < [a-z]
+      behavior we expect of the C locale.  We can use QStringView to get round
+      that for collation, but this leaves no way to do a sort key.
+    */
+    if (isC())
+        return;
+
     LocaleRef localeRef;
     int rc = LocaleRefFromLocaleString(QLocalePrivate::get(locale)->bcp47Name().constData(), &localeRef);
     if (rc != 0)
@@ -92,6 +101,8 @@ int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) con
 {
     if (d->dirty)
         d->init();
+    if (!d->collator)
+        return QStringView(s1, len1).compare(QStringView(s2, len2), caseSensitivity());
 
     SInt32 result;
     Boolean equivalent;
@@ -104,6 +115,7 @@ int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) con
         return 0;
     return result < 0 ? -1 : 1;
 }
+
 int QCollator::compare(const QString &str1, const QString &str2) const
 {
     return compare(str1.constData(), str1.size(), str2.constData(), str2.size());
@@ -118,6 +130,11 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
 {
     if (d->dirty)
         d->init();
+    if (!d->collator) {
+        // What should (or even *can*) we do here ? (See init()'s comment.)
+        qWarning("QCollator doesn't support sort keys for the C locale on Darwin");
+        return QCollatorSortKey(nullptr);
+    }
 
     //Documentation recommends having it 5 times as big as the input
     QVector<UCCollationValue> ret(string.size() * 5);
@@ -136,6 +153,9 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
 
 int QCollatorSortKey::compare(const QCollatorSortKey &key) const
 {
+    if (!d.data())
+        return 0;
+
     SInt32 order;
     UCCompareCollationKeys(d->m_key.data(), d->m_key.size(),
                            key.d->m_key.data(), key.d->m_key.size(),

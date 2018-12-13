@@ -21,7 +21,7 @@ contains(TEMPLATE, .*app) {
         !isEmpty($$list($$(QT_MAC_SDK_NO_VERSION_CHECK))): \
             CONFIG += sdk_no_version_check
 
-        QMAKE_MAC_SDK_MAJOR_MINOR_VERSION = $$replace(QMAKE_MAC_SDK_VERSION, "(\d+)(\.\d+)(\.\d+)?", \1\2)
+        QMAKE_MAC_SDK_MAJOR_MINOR_VERSION = $$replace(QMAKE_MAC_SDK_VERSION, "(\\d+)(\\.\\d+)(\\.\\d+)?", \\1\\2)
 
         !sdk_no_version_check:!versionAtMost(QMAKE_MAC_SDK_MAJOR_MINOR_VERSION, $$QT_MAC_SDK_VERSION_MAX) {
             warning("Qt has only been tested with version $$QT_MAC_SDK_VERSION_MAX"\
