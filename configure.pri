@@ -291,6 +291,8 @@ defineTest(qtConfTest_architecture) {
         content = $$cat($$test_out_dir/libarch.so, blob)
     else: wasm:exists($$test_out_dir/arch.wasm): \
         content = $$cat($$test_out_dir/arch.wasm, blob)
+    else: wasm:exists($$test_out_dir/arch.o): \
+        content = $$cat($$test_out_dir/arch.o, blob)
     else: \
         error("$$eval($${1}.label) detection binary not found.")
 
