@@ -635,6 +635,16 @@
                 { "type": "pkgConfig", "args": "xkbcommon-x11" }
             ]
         },
+        "xkbcommon_evdev": {
+            "label": "xkbcommon_evdev TRANSITION HACK",
+            "test": {
+                "include": [ "xkbcommon/xkbcommon.h" ],
+                "main": "xkb_context_new(XKB_CONTEXT_NO_FLAGS);"
+            },
+            "sources": [
+                { "type": "pkgConfig", "args": "xkbcommon >= 0.5.0" }
+            ]
+        },
         "xrender": {
             "label": "XRender for native painting",
             "test": "x11/xrender",
@@ -1377,6 +1387,11 @@
         "xkbcommon": {
             "label": "xkbcommon",
             "condition": "libs.xkbcommon",
+            "output": [ "privateFeature" ]
+        },
+        "xkbcommon-evdev": {
+            "label": "xkbcommon-evdev TRANSITION HACK",
+            "condition": "libs.xkbcommon_evdev",
             "output": [ "privateFeature" ]
         },
         "xlib": {
