@@ -137,6 +137,55 @@ static unsigned int q_ssl_psk_server_callback(SSL *ssl,
     Q_ASSERT(d);
     return d->tlsPskServerCallback(identity, psk, max_psk_len);
 }
+
+#ifdef TLS1_3_VERSION
+#ifndef OPENSSL_NO_PSK
+static unsigned int q_ssl_psk_restore_client(SSL *ssl,
+                                             const char *hint,
+                                             char *identity, unsigned int max_identity_len,
+                                             unsigned char *psk, unsigned int max_psk_len)
+{
+    Q_UNUSED(hint);
+    Q_UNUSED(identity);
+    Q_UNUSED(max_identity_len);
+    Q_UNUSED(psk);
+    Q_UNUSED(max_psk_len);
+
+#ifdef QT_DEBUG
+    QSslSocketBackendPrivate *d = reinterpret_cast<QSslSocketBackendPrivate *>(q_SSL_get_ex_data(ssl, QSslSocketBackendPrivate::s_indexForSSLExtraData));
+    Q_ASSERT(d);
+    Q_ASSERT(d->mode == QSslSocket::SslClientMode);
+#endif
+    q_SSL_set_psk_client_callback(ssl, &q_ssl_psk_client_callback);
+
+    return 0;
+}
+#endif // !OPENSSL_NO_PSK
+
+static int q_ssl_psk_use_session_callback(SSL *ssl, const EVP_MD *md, const unsigned char **id,
+                                          size_t *idlen, SSL_SESSION **sess)
+{
+    Q_UNUSED(ssl);
+    Q_UNUSED(md);
+    Q_UNUSED(id);
+    Q_UNUSED(idlen);
+    Q_UNUSED(sess);
+
+#ifndef OPENSSL_NO_PSK
+#ifdef QT_DEBUG
+    QSslSocketBackendPrivate *d = reinterpret_cast<QSslSocketBackendPrivate *>(q_SSL_get_ex_data(ssl, QSslSocketBackendPrivate::s_indexForSSLExtraData));
+    Q_ASSERT(d);
+    Q_ASSERT(d->mode == QSslSocket::SslClientMode);
+#endif
+
+    // Temporarily rebind the psk because it will be called next. The function will restore it.
+    q_SSL_set_psk_client_callback(ssl, &q_ssl_psk_restore_client);
+#endif
+
+    return 1; // need to return 1 or else "the connection setup fails."
+}
+#endif // TLS1_3_VERSION
+
 #endif
 
 #if QT_CONFIG(ocsp)
@@ -555,6 +604,13 @@ bool QSslSocketBackendPrivate::initSslContext()
             q_SSL_set_psk_server_callback(ssl, &q_ssl_psk_server_callback);
     }
 #endif
+#if OPENSSL_VERSION_NUMBER >= 0x10101006L
+    // Set the client callback for TLSv1.3 PSK
+    if (mode == QSslSocket::SslClientMode
+        && QSslSocket::sslLibraryBuildVersionNumber() >= 0x10101006L) {
+        q_SSL_set_psk_use_session_callback(ssl, &q_ssl_psk_use_session_callback);
+    }
+#endif // openssl version >= 0x10101006L
 
 #if QT_CONFIG(ocsp)
     if (configuration.ocspStaplingEnabled) {
