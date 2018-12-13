@@ -208,10 +208,9 @@ public:
                 }
             }();
 
-            layout->addWidget(new TextRenderer(12, text, color.first, color.second));
-            layout->addWidget(new TextRenderer(24, text, color.first, color.second));
-            layout->addWidget(new TextRenderer(36, text, color.first, color.second));
-            layout->addWidget(new TextRenderer(48, text, color.first, color.second));
+            for (int pointSize : {8, 12, 24, 36, 48})
+                layout->addWidget(new TextRenderer(pointSize, text, color.first, color.second));
+
             static_cast<QHBoxLayout*>(m_previews->layout())->addLayout(layout);
         }
 
