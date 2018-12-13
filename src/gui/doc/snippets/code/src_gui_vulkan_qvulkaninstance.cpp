@@ -102,7 +102,7 @@
         }
 
         bool event(QEvent *e) {
-            if (e->type == QEvent::UpdateRequest)
+            if (e->type() == QEvent::UpdateRequest)
                 render();
             return QWindow::event(e);
         }

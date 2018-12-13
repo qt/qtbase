@@ -110,6 +110,7 @@ public:
 
     QCollatorPrivate(const QLocale &locale) : locale(locale) {}
     ~QCollatorPrivate() { cleanup(); }
+    bool isC() { return locale.language() == QLocale::C; }
 
     void clear() {
         cleanup();

@@ -79,7 +79,6 @@ QT_BEGIN_NAMESPACE
 QCollator::QCollator(const QLocale &locale)
     : d(new QCollatorPrivate(locale))
 {
-    d->init();
 }
 
 /*!
@@ -323,6 +322,8 @@ bool QCollator::ignorePunctuation() const
     methods directly. But if the string is compared repeatedly (e.g. when sorting
     a whole list of strings), it's usually faster to create the sort keys for each
     string and then sort using the keys.
+
+    \note Not supported with the C (a.k.a. POSIX) locale on Darwin.
  */
 
 /*!

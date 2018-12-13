@@ -2866,7 +2866,11 @@ void QFileDialogPrivate::init(const QUrl &directory, const QString &nameFilter,
     q->setFileMode(QFileDialog::AnyFile);
     if (!nameFilter.isEmpty())
         q->setNameFilter(nameFilter);
+    // QTBUG-70798, prevent the default blocking the restore logic.
+    const bool dontStoreDir = !directory.isValid() && !lastVisitedDir()->isValid();
     q->setDirectoryUrl(workingDirectory(directory));
+    if (dontStoreDir)
+        lastVisitedDir()->clear();
     if (directory.isLocalFile())
         q->selectFile(initialSelection(directory));
     else

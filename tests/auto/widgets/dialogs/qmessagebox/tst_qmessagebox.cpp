@@ -210,9 +210,9 @@ void tst_QMessageBox::button()
 {
     QMessageBox msgBox;
     msgBox.addButton("retry", QMessageBox::DestructiveRole);
-    QVERIFY(msgBox.button(QMessageBox::Ok) == 0); // not added yet
+    QVERIFY(msgBox.button(QMessageBox::Ok) == nullptr); // not added yet
     QPushButton *b1 = msgBox.addButton(QMessageBox::Ok);
-    QCOMPARE(msgBox.button(QMessageBox::Ok), (QAbstractButton *)b1);  // just added
+    QCOMPARE(msgBox.button(QMessageBox::Ok), static_cast<QAbstractButton *>(b1));  // just added
     QCOMPARE(msgBox.standardButton(b1), QMessageBox::Ok);
     msgBox.addButton(QMessageBox::Cancel);
     QCOMPARE(msgBox.standardButtons(), QMessageBox::Ok | QMessageBox::Cancel);
@@ -220,12 +220,12 @@ void tst_QMessageBox::button()
     // remove the cancel, should not exist anymore
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     QVERIFY(!msgBox.button(QMessageBox::Cancel));
-    QVERIFY(msgBox.button(QMessageBox::Yes) != 0);
+    QVERIFY(msgBox.button(QMessageBox::Yes) != nullptr);
 
     // should not crash
     QPushButton *b4 = new QPushButton;
     msgBox.addButton(b4, QMessageBox::DestructiveRole);
-    msgBox.addButton(0, QMessageBox::ActionRole);
+    msgBox.addButton(nullptr, QMessageBox::ActionRole);
 }
 
 void tst_QMessageBox::defaultButton()
@@ -237,7 +237,7 @@ void tst_QMessageBox::defaultButton()
     QVERIFY(!msgBox.defaultButton());
     QPushButton pushButton;
     msgBox.setDefaultButton(&pushButton);
-    QVERIFY(msgBox.defaultButton() == 0); // we have not added it yet
+    QVERIFY(msgBox.defaultButton() == nullptr); // we have not added it yet
     QPushButton *retryButton = msgBox.addButton(QMessageBox::Retry);
     msgBox.setDefaultButton(retryButton);
     QCOMPARE(msgBox.defaultButton(), retryButton);
@@ -248,11 +248,11 @@ void tst_QMessageBox::defaultButton()
 
     closeHelper.start(Qt::Key_Enter, &msgBox);
     msgBox.exec();
-    QCOMPARE(msgBox.clickedButton(), (QAbstractButton *)retryButton);
+    QCOMPARE(msgBox.clickedButton(), static_cast<QAbstractButton *>(retryButton));
 
     QAbstractButton *okButton = msgBox.button(QMessageBox::Ok);
     msgBox.setDefaultButton(QMessageBox::Ok);
-    QCOMPARE(msgBox.defaultButton(), (QPushButton *)okButton);
+    QCOMPARE(msgBox.defaultButton(), static_cast<QPushButton *>(okButton));
     closeHelper.start(Qt::Key_Enter, &msgBox);
     msgBox.exec();
     QCOMPARE(msgBox.clickedButton(), okButton);
@@ -260,7 +260,7 @@ void tst_QMessageBox::defaultButton()
     QCOMPARE(msgBox.defaultButton(), okButton);
     msgBox.removeButton(okButton);
     delete okButton;
-    okButton = 0;
+    okButton = nullptr;
     QVERIFY(!msgBox.defaultButton());
     msgBox.setDefaultButton(QMessageBox::Ok);
     QVERIFY(!msgBox.defaultButton());
@@ -287,7 +287,7 @@ void tst_QMessageBox::escapeButton()
     QVERIFY(msgBox.clickedButton() == msgBox.button(QMessageBox::Cancel)); // auto detected (cancel)
 
     msgBox.setEscapeButton(retryButton);
-    QCOMPARE(msgBox.escapeButton(), (QAbstractButton *)retryButton);
+    QCOMPARE(msgBox.escapeButton(), static_cast<QAbstractButton *>(retryButton));
 
     // with escape
     closeHelper.start(Qt::Key_Escape, &msgBox);
@@ -297,7 +297,7 @@ void tst_QMessageBox::escapeButton()
     // with close
     closeHelper.start(ExecCloseHelper::CloseWindow, &msgBox);
     msgBox.exec();
-    QCOMPARE(msgBox.clickedButton(), (QAbstractButton *)retryButton);
+    QCOMPARE(msgBox.clickedButton(), static_cast<QAbstractButton *>(retryButton));
 
     QAbstractButton *okButton = msgBox.button(QMessageBox::Ok);
     msgBox.setEscapeButton(QMessageBox::Ok);
@@ -309,7 +309,7 @@ void tst_QMessageBox::escapeButton()
     QCOMPARE(msgBox.escapeButton(), okButton);
     msgBox.removeButton(okButton);
     delete okButton;
-    okButton = 0;
+    okButton = nullptr;
     QVERIFY(!msgBox.escapeButton());
     msgBox.setEscapeButton(QMessageBox::Ok);
     QVERIFY(!msgBox.escapeButton());
@@ -353,28 +353,28 @@ void tst_QMessageBox::statics()
     ExecCloseHelper closeHelper;
     for (int i = 0; i < 4; i++) {
         closeHelper.start(Qt::Key_Escape);
-        QMessageBox::StandardButton sb = (*statics[i])(0, "caption",
+        QMessageBox::StandardButton sb = (*statics[i])(nullptr, "caption",
             "text", QMessageBox::Yes | QMessageBox::No | QMessageBox::Help | QMessageBox::Cancel,
            QMessageBox::NoButton);
         QCOMPARE(sb, QMessageBox::Cancel);
         QVERIFY(closeHelper.done());
 
         closeHelper.start(ExecCloseHelper::CloseWindow);
-        sb = (*statics[i])(0, "caption",
+        sb = (*statics[i])(nullptr, "caption",
            "text", QMessageBox::Yes | QMessageBox::No | QMessageBox::Help | QMessageBox::Cancel,
            QMessageBox::NoButton);
         QCOMPARE(sb, QMessageBox::Cancel);
         QVERIFY(closeHelper.done());
 
         closeHelper.start(Qt::Key_Enter);
-        sb = (*statics[i])(0, "caption",
+        sb = (*statics[i])(nullptr, "caption",
            "text", QMessageBox::Yes | QMessageBox::No | QMessageBox::Help,
            QMessageBox::Yes);
         QCOMPARE(sb, QMessageBox::Yes);
         QVERIFY(closeHelper.done());
 
         closeHelper.start(Qt::Key_Enter);
-        sb = (*statics[i])(0, "caption",
+        sb = (*statics[i])(nullptr, "caption",
            "text", QMessageBox::Yes | QMessageBox::No | QMessageBox::Help,
             QMessageBox::No);
         QCOMPARE(sb, QMessageBox::No);
@@ -400,7 +400,7 @@ void tst_QMessageBox::about()
 {
     ExecCloseHelper closeHelper;
     closeHelper.start(Qt::Key_Escape);
-    QMessageBox::about(0, "Caption", "This is an auto test");
+    QMessageBox::about(nullptr, "Caption", "This is an auto test");
     // On Mac, about and aboutQt are not modal, so we need to
     // explicitly run the event loop
 #ifdef Q_OS_MAC
@@ -412,7 +412,7 @@ void tst_QMessageBox::about()
     const int keyToSend = Qt::Key_Enter;
 
     closeHelper.start(keyToSend);
-    QMessageBox::aboutQt(0, "Caption");
+    QMessageBox::aboutQt(nullptr, "Caption");
 #ifdef Q_OS_MAC
     QTRY_VERIFY(closeHelper.done());
 #else
@@ -427,7 +427,7 @@ void tst_QMessageBox::staticSourceCompat()
     // source compat tests for < 4.2
     ExecCloseHelper closeHelper;
     closeHelper.start(Qt::Key_Enter);
-    ret = QMessageBox::information(0, "title", "text", QMessageBox::Yes, QMessageBox::No);
+    ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes, QMessageBox::No);
     int expectedButton = int(QMessageBox::Yes);
     if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
         const int dialogButtonBoxLayout = theme->themeHint(QPlatformTheme::DialogButtonBoxLayout).toInt();
@@ -439,39 +439,39 @@ void tst_QMessageBox::staticSourceCompat()
     QVERIFY(closeHelper.done());
 
     closeHelper.start(Qt::Key_Enter);
-    ret = QMessageBox::information(0, "title", "text", QMessageBox::Yes | QMessageBox::Default, QMessageBox::No);
+    ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes | QMessageBox::Default, QMessageBox::No);
     QCOMPARE(ret, int(QMessageBox::Yes));
     QVERIFY(closeHelper.done());
 
     closeHelper.start(Qt::Key_Enter);
-    ret = QMessageBox::information(0, "title", "text", QMessageBox::Yes, QMessageBox::No | QMessageBox::Default);
+    ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes, QMessageBox::No | QMessageBox::Default);
     QCOMPARE(ret, int(QMessageBox::No));
     QVERIFY(closeHelper.done());
 
     closeHelper.start(Qt::Key_Enter);
-    ret = QMessageBox::information(0, "title", "text", QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape);
+    ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape);
     QCOMPARE(ret, int(QMessageBox::Yes));
     QVERIFY(closeHelper.done());
 
     closeHelper.start(Qt::Key_Enter);
-    ret = QMessageBox::information(0, "title", "text", QMessageBox::Yes | QMessageBox::Escape, QMessageBox::No | QMessageBox::Default);
+    ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes | QMessageBox::Escape, QMessageBox::No | QMessageBox::Default);
     QCOMPARE(ret, int(QMessageBox::No));
     QVERIFY(closeHelper.done());
 
     // the button text versions
     closeHelper.start(Qt::Key_Enter);
-    ret = QMessageBox::information(0, "title", "text", "Yes", "No", QString(), 1);
+    ret = QMessageBox::information(nullptr, "title", "text", "Yes", "No", QString(), 1);
     QCOMPARE(ret, 1);
     QVERIFY(closeHelper.done());
 
     if (0) { // don't run these tests since the dialog won't close!
         closeHelper.start(Qt::Key_Escape);
-        ret = QMessageBox::information(0, "title", "text", "Yes", "No", QString(), 1);
+        ret = QMessageBox::information(nullptr, "title", "text", "Yes", "No", QString(), 1);
         QCOMPARE(ret, -1);
         QVERIFY(closeHelper.done());
 
         closeHelper.start(Qt::Key_Escape);
-        ret = QMessageBox::information(0, "title", "text", "Yes", "No", QString(), 0, 1);
+        ret = QMessageBox::information(nullptr, "title", "text", "Yes", "No", QString(), 0, 1);
         QCOMPARE(ret, 1);
         QVERIFY(closeHelper.done());
     }
@@ -618,9 +618,8 @@ void tst_QMessageBox::detailsButtonText()
     QDialogButtonBox* bb = box.findChild<QDialogButtonBox*>("qt_msgbox_buttonbox");
     QVERIFY(bb); //get the detail button
 
-    QList<QAbstractButton *> list = bb->buttons();
-    QAbstractButton* btn = NULL;
-    foreach(btn, list) {
+    auto list = bb->buttons();
+    for (auto btn : list) {
         if (btn && (btn->inherits("QPushButton"))) {
             if (btn->text().remove(QLatin1Char('&')) != QMessageBox::tr("OK")
                 && btn->text() != QMessageBox::tr("Show Details...")) {
@@ -640,12 +639,12 @@ void tst_QMessageBox::expandDetails_QTBUG_32473()
     QDialogButtonBox* bb = box.findChild<QDialogButtonBox*>("qt_msgbox_buttonbox");
     QVERIFY(bb);
 
-    QList<QAbstractButton *> list = bb->buttons();
-    QAbstractButton* moreButton = NULL;
-    foreach (QAbstractButton* btn, list)
-        if (btn && bb->buttonRole(btn) == QDialogButtonBox::ActionRole)
-            moreButton = btn;
-    QVERIFY(moreButton);
+    auto list = bb->buttons();
+    auto it = std::find_if(list.rbegin(), list.rend(), [&](QAbstractButton *btn) {
+                               return btn && bb->buttonRole(btn) == QDialogButtonBox::ActionRole; });
+    QVERIFY(it != list.rend());
+    auto moreButton = *it;
+
     QVERIFY(QTest::qWaitForWindowExposed(&box));
     QRect geom = box.geometry();
     box.resized = false;
@@ -667,19 +666,19 @@ void tst_QMessageBox::incorrectDefaultButton()
     closeHelper.start(Qt::Key_Escape);
     //Do not crash here
     QTest::ignoreMessage(QtWarningMsg, "QDialogButtonBox::createButton: Invalid ButtonRole, button not added");
-    QMessageBox::question( 0, "", "I've been hit!",QMessageBox::Ok | QMessageBox::Cancel,QMessageBox::Save );
+    QMessageBox::question(nullptr, "", "I've been hit!",QMessageBox::Ok | QMessageBox::Cancel,QMessageBox::Save);
     QVERIFY(closeHelper.done());
 
     closeHelper.start(Qt::Key_Escape);
     QTest::ignoreMessage(QtWarningMsg, "QDialogButtonBox::createButton: Invalid ButtonRole, button not added");
-    QMessageBox::question( 0, "", "I've been hit!",QFlag(QMessageBox::Ok | QMessageBox::Cancel),QMessageBox::Save );
+    QMessageBox::question(nullptr, "", "I've been hit!",QFlag(QMessageBox::Ok | QMessageBox::Cancel),QMessageBox::Save);
     QVERIFY(closeHelper.done());
 
     closeHelper.start(Qt::Key_Escape);
     QTest::ignoreMessage(QtWarningMsg, "QDialogButtonBox::createButton: Invalid ButtonRole, button not added");
     QTest::ignoreMessage(QtWarningMsg, "QDialogButtonBox::createButton: Invalid ButtonRole, button not added");
     //do not crash here -> call old function of QMessageBox in this case
-    QMessageBox::question( 0, "", "I've been hit!",QMessageBox::Ok | QMessageBox::Cancel,QMessageBox::Save | QMessageBox::Cancel,QMessageBox::Ok);
+    QMessageBox::question(nullptr, "", "I've been hit!",QMessageBox::Ok | QMessageBox::Cancel,QMessageBox::Save | QMessageBox::Cancel,QMessageBox::Ok);
     QVERIFY(closeHelper.done());
 }
 

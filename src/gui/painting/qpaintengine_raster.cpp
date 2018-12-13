@@ -997,6 +997,10 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
 {
     if (alpha == 0 || !clip.isValid())
         return;
+    if (pt.x() > qreal(clip.right()) || pt.y() > qreal(clip.bottom()))
+        return;
+    if ((pt.x() + img.width()) < qreal(clip.left()) || (pt.y() + img.height()) < qreal(clip.top()))
+        return;
 
     Q_ASSERT(img.depth() >= 8);
 
@@ -1062,6 +1066,10 @@ void QRasterPaintEnginePrivate::blitImage(const QPointF &pt,
                                           const QRect &sr)
 {
     if (!clip.isValid())
+        return;
+    if (pt.x() > qreal(clip.right()) || pt.y() > qreal(clip.bottom()))
+        return;
+    if ((pt.x() + img.width()) < qreal(clip.left()) || (pt.y() + img.height()) < qreal(clip.top()))
         return;
 
     Q_ASSERT(img.depth() >= 8);

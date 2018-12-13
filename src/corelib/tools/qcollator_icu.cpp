@@ -55,6 +55,8 @@ QT_BEGIN_NAMESPACE
 void QCollatorPrivate::init()
 {
     cleanup();
+    if (isC())
+        return;
 
     UErrorCode status = U_ZERO_ERROR;
     QByteArray name = QLocalePrivate::get(locale)->bcp47Name('_');
@@ -140,6 +142,8 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
 {
     if (d->dirty)
         d->init();
+    if (d->isC())
+        return QCollatorSortKey(new QCollatorSortKeyPrivate(string.toUtf8()));
 
     if (d->collator) {
         QByteArray result(16 + string.size() + (string.size() >> 2), Qt::Uninitialized);

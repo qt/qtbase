@@ -101,7 +101,9 @@ public:
 
         const int ascent = fontMetrics().ascent();
 
-        p.setPen(Qt::magenta);
+        QPen metricsPen(Qt::magenta, 1.0);
+        metricsPen.setCosmetic(true);
+        p.setPen(metricsPen);
         p.drawLine(QPoint(0, ascent), QPoint(width(), ascent));
         p.end();
 
@@ -152,13 +154,22 @@ public:
         if (font().styleStrategy() & QFont::NoAntialias)
             CGContextSetShouldAntialias(ctx, false);
 
-        // Retain count already tracked by QMacCGContext above
-        NSGraphicsContext.currentContext = [NSGraphicsContext graphicsContextWithCGContext:ctx flipped:YES];
-        [text().toNSString() drawAtPoint:CGPointZero withAttributes:@{
-            NSFontAttributeName : (NSFont *)fontEngine->handle(),
-            NSForegroundColorAttributeName : nsColor
-        }];
-        NSGraphicsContext.currentContext = nil;
+        // Flip to what CT expects
+        CGContextScaleCTM(ctx, 1, -1);
+        CGContextTranslateCTM(ctx, 0, -height());
+
+        // Set up baseline
+        CGContextSetTextPosition(ctx, 0, height() - fontMetrics().ascent());
+
+        auto *attributedString = [[NSAttributedString alloc] initWithString:text().toNSString()
+            attributes:@{
+                NSFontAttributeName : (NSFont *)fontEngine->handle(),
+                NSForegroundColorAttributeName : nsColor
+            }
+        ];
+
+        QCFType<CTLineRef> line = CTLineCreateWithAttributedString(CFAttributedStringRef([attributedString autorelease]));
+        CTLineDraw(line, ctx);
 #endif
     }
 

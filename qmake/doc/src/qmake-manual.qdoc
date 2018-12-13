@@ -3428,7 +3428,7 @@
     \snippet code/doc_src_qmake-manual.pro 72
 
     Like \l {qmake-cat}{$$cat()}, the \a mode argument takes \c blob, \c lines,
-    \c true, and \false as value. However, the legacy word splitting rules
+    \c true, and \c false as value. However, the legacy word splitting rules
     (i.e. empty or \c true, and \c false) differ subtly.
 
     If you pass \c stsvar, the command's exit status will be stored in that

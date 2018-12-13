@@ -60,6 +60,8 @@ extern LCID qt_inIsoNametoLCID(const char *name);
 void QCollatorPrivate::init()
 {
     collator = 0;
+    if (isC())
+        return;
 
 #ifndef USE_COMPARESTRINGEX
     localeID = qt_inIsoNametoLCID(QLocalePrivate::get(locale)->bcp47Name().constData());
@@ -86,6 +88,9 @@ void QCollatorPrivate::cleanup()
 
 int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const
 {
+    if (d->isC())
+        return QString::compare_helper(s1, len1, s2, len2, d->caseSensitivity);
+
     if (d->dirty)
         d->init();
 
@@ -119,6 +124,8 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
 {
     if (d->dirty)
         d->init();
+    if (d->isC())
+        return QCollatorSortKey(new QCollatorSortKeyPrivate(string));
 
 #ifndef USE_COMPARESTRINGEX
     int size = LCMapStringW(d->localeID, LCMAP_SORTKEY | d->collator,
