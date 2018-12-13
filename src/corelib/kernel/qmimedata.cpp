@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 static inline QString textUriListLiteral() { return QStringLiteral("text/uri-list"); }
 static inline QString textHtmlLiteral() { return QStringLiteral("text/html"); }
 static inline QString textPlainLiteral() { return QStringLiteral("text/plain"); }
+static inline QString textPlainUtf8Literal() { return QStringLiteral("text/plain;charset=utf-8"); }
 static inline QString applicationXColorLiteral() { return QStringLiteral("application/x-color"); }
 static inline QString applicationXQtImageLiteral() { return QStringLiteral("application/x-qt-image"); }
 
@@ -399,6 +400,10 @@ bool QMimeData::hasUrls() const
 QString QMimeData::text() const
 {
     Q_D(const QMimeData);
+    QVariant utf8Text = d->retrieveTypedData(textPlainUtf8Literal(), QVariant::String);
+    if (!utf8Text.isNull())
+        return utf8Text.toString();
+
     QVariant data = d->retrieveTypedData(textPlainLiteral(), QVariant::String);
     return data.toString();
 }
