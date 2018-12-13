@@ -2025,6 +2025,8 @@ static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSyst
             return "Sierra";
         case 13:
             return "High Sierra";
+        case 14:
+            return "Mojave";
         }
     }
     // unknown, future version
