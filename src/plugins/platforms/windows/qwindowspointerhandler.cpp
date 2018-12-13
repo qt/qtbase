@@ -370,22 +370,6 @@ static Qt::MouseButtons mouseButtonsFromPointerFlags(POINTER_FLAGS pointerFlags)
     return result;
 }
 
-static Qt::MouseButtons mouseButtonsFromKeyState(WPARAM keyState)
-{
-    Qt::MouseButtons result = Qt::NoButton;
-    if (keyState & MK_LBUTTON)
-        result |= Qt::LeftButton;
-    if (keyState & MK_RBUTTON)
-        result |= Qt::RightButton;
-    if (keyState & MK_MBUTTON)
-        result |= Qt::MiddleButton;
-    if (keyState & MK_XBUTTON1)
-        result |= Qt::XButton1;
-    if (keyState & MK_XBUTTON2)
-        result |= Qt::XButton2;
-    return result;
-}
-
 static QWindow *getWindowUnderPointer(QWindow *window, QPoint globalPos)
 {
     QWindow *currentWindowUnderPointer = QWindowsScreen::windowAt(globalPos, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT);
@@ -816,14 +800,6 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window, HWND hwnd, QtW
         return false;
     }
 
-    // Windows sends a mouse move with no buttons pressed to signal "Enter"
-    // when a window is shown over the cursor. Discard the event and only use
-    // it for generating QEvent::Enter to be consistent with other platforms -
-    // X11 and macOS.
-    static QPoint lastMouseMovePos;
-    const bool discardEvent = msg.wParam == 0 && (m_windowUnderPointer.isNull() || globalPos == lastMouseMovePos);
-    lastMouseMovePos = globalPos;
-
     QWindow *currentWindowUnderPointer = getWindowUnderPointer(window, globalPos);
 
     if (currentWindowUnderPointer != m_windowUnderPointer) {
@@ -846,11 +822,6 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window, HWND hwnd, QtW
         m_windowUnderPointer = currentWindowUnderPointer;
     }
 
-    const Qt::MouseButtons mouseButtons = mouseButtonsFromKeyState(msg.wParam);
-
-    if (!discardEvent)
-        QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos, mouseButtons, Qt::NoButton, QEvent::MouseMove,
-                                                 keyModifiers, Qt::MouseEventNotSynthesized);
     return false;
 }
 
