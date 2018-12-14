@@ -180,6 +180,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
     ProStringList &bundledFiles = project->values("QMAKE_BUNDLED_FILES");
 
+    writeExportedVariables(t);
+
     t << "####### Compiler, tools and options\n\n";
     t << "CC            = " << var("QMAKE_CC") << endl;
     t << "CXX           = " << var("QMAKE_CXX") << endl;
