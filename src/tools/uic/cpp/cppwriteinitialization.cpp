@@ -36,6 +36,7 @@
 #include "globaldefs.h"
 
 #include <qtextstream.h>
+#include <qversionnumber.h>
 #include <qdebug.h>
 
 #include <algorithm>
@@ -1702,6 +1703,13 @@ QString WriteInitialization::domColor2QString(const DomColor *c)
         .arg(c->elementBlue());
 }
 
+static inline QVersionNumber colorRoleVersionAdded(const QString &roleName)
+{
+    if (roleName == QLatin1String("PlaceholderText"))
+        return QVersionNumber(5, 12, 0);
+    return QVersionNumber();
+}
+
 void WriteInitialization::writeColorGroup(DomColorGroup *colorGroup, const QString &group, const QString &paletteName)
 {
     if (!colorGroup)
@@ -1722,10 +1730,19 @@ void WriteInitialization::writeColorGroup(DomColorGroup *colorGroup, const QStri
     const QList<DomColorRole *> colorRoles = colorGroup->elementColorRole();
     for (const DomColorRole *colorRole : colorRoles) {
         if (colorRole->hasAttributeRole()) {
+            const QString roleName = colorRole->attributeRole();
+            const QVersionNumber versionAdded = colorRoleVersionAdded(roleName);
             const QString brushName = writeBrushInitialization(colorRole->elementBrush());
+            if (!versionAdded.isNull()) {
+                m_output << "#if QT_VERSION >= QT_VERSION_CHECK("
+                    << versionAdded.majorVersion() << ", " << versionAdded.minorVersion()
+                    << ", " << versionAdded.microVersion() << ")\n";
+            }
             m_output << m_indent << paletteName << ".setBrush(" << group
-                << ", " << "QPalette::" << colorRole->attributeRole()
+                << ", " << "QPalette::" << roleName
                 << ", " << brushName << ");\n";
+            if (!versionAdded.isNull())
+                m_output << "#endif\n";
         }
     }
 }
