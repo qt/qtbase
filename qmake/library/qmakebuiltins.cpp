@@ -52,6 +52,9 @@
 # include <qthreadpool.h>
 #endif
 #include <qversionnumber.h>
+#ifdef Q_OS_WIN
+# include <registry_p.h>
+#endif
 
 #include <algorithm>
 
@@ -93,7 +96,7 @@ enum ExpandFunc {
     E_UPPER, E_LOWER, E_TITLE, E_FILES, E_PROMPT, E_RE_ESCAPE, E_VAL_ESCAPE,
     E_REPLACE, E_SORT_DEPENDS, E_RESOLVE_DEPENDS, E_ENUMERATE_VARS,
     E_SHADOWED, E_ABSOLUTE_PATH, E_RELATIVE_PATH, E_CLEAN_PATH,
-    E_SYSTEM_PATH, E_SHELL_PATH, E_SYSTEM_QUOTE, E_SHELL_QUOTE, E_GETENV
+    E_SYSTEM_PATH, E_SHELL_PATH, E_SYSTEM_QUOTE, E_SHELL_QUOTE, E_GETENV, E_READ_REGISTRY
 };
 
 enum TestFunc {
@@ -190,6 +193,7 @@ void QMakeEvaluator::initFunctionStatics()
         { "system_quote", E_SYSTEM_QUOTE, -1, 1, "arg" },
         { "shell_quote", E_SHELL_QUOTE, -1, 1, "arg" },
         { "getenv", E_GETENV, 1, 1, "arg" },
+        { "read_registry", E_READ_REGISTRY, 2, 3, "tree, key, [wow64]" },
     };
     statics.expands.reserve((int)(sizeof(expandInits)/sizeof(expandInits[0])));
     for (unsigned i = 0; i < sizeof(expandInits)/sizeof(expandInits[0]); ++i)
@@ -1214,6 +1218,40 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
         ret << ProString(m_option->getEnv(u1.str()));
         break;
     }
+#ifdef Q_OS_WIN
+    case E_READ_REGISTRY: {
+        HKEY tree;
+        const auto par = args.at(0);
+        if (!par.compare(QLatin1String("HKCU"), Qt::CaseInsensitive)
+                || !par.compare(QLatin1String("HKEY_CURRENT_USER"), Qt::CaseInsensitive)) {
+            tree = HKEY_CURRENT_USER;
+        } else if (!par.compare(QLatin1String("HKLM"), Qt::CaseInsensitive)
+                || !par.compare(QLatin1String("HKEY_LOCAL_MACHINE"), Qt::CaseInsensitive)) {
+            tree = HKEY_LOCAL_MACHINE;
+        } else {
+            evalError(fL1S("read_registry(): invalid or unsupported registry tree %1.")
+                      .arg(par.toQStringView()));
+            goto allfail;
+        }
+        int flags = 0;
+        if (args.count() > 2) {
+            const auto opt = args.at(2);
+            if (opt == "32"
+                    || !opt.compare(QLatin1String("wow64_32key"), Qt::CaseInsensitive)) {
+                flags = KEY_WOW64_32KEY;
+            } else if (opt == "64"
+                    || !opt.compare(QLatin1String("wow64_64key"), Qt::CaseInsensitive)) {
+                flags = KEY_WOW64_64KEY;
+            } else {
+                evalError(fL1S("read_registry(): invalid option %1.")
+                          .arg(opt.toQStringView()));
+                goto allfail;
+            }
+        }
+        ret << ProString(qt_readRegistryKey(tree, args.at(1).toQString(m_tmp1), flags));
+        break;
+    }
+#endif
     default:
         evalError(fL1S("Function '%1' is not implemented.").arg(func.toQStringView()));
         break;

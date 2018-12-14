@@ -1,6 +1,7 @@
 CONFIG += testcase
 TARGET = tst_qmakelib
 QT = core testlib
+win32: LIBS += -ladvapi32
 
 INCLUDEPATH += ../../../../qmake/library
 VPATH += ../../../../qmake/library
@@ -13,6 +14,7 @@ SOURCES += \
     parsertest.cpp \
     evaltest.cpp \
     ioutils.cpp \
+    registry.cpp \
     proitems.cpp \
     qmakevfs.cpp \
     qmakeparser.cpp \
