@@ -1992,7 +1992,7 @@ QString QRegularExpression::wildcardToRegularExpression(const QString &pattern)
         }
     }
 
-    return rx;
+    return anchoredPattern(rx);
 }
 
 /*!
