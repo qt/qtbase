@@ -707,8 +707,12 @@ defineTest(qtConfLibrary_inline) {
     }
 
     libdir = $$eval(config.input.$${input}.libdir)
-    !isEmpty(libdir): \
-        $${1}.libs = -L$$libdir $$eval($${1}.libs)
+    !isEmpty(libdir) {
+        libs =
+        for (ld, libdir): \
+            libs += -L$$ld
+        $${1}.libs = $$libs $$eval($${1}.libs)
+    }
 
     !qtConfResolveAllLibs($$1): \
         return(false)
