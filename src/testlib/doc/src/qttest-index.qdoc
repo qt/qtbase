@@ -75,11 +75,15 @@
 
     \section1 Reference
 
-    These are links to the API reference materials.
+    \list
+        \li \l{Qt Test C++ Classes}
+    \endlist
+
+    The \l {Qt Quick Test} module enables unit testing Qt Quick applications.
 
     \list
-        \li \l{Qt Test C++ Classes}{C++ Classes}
-        \li \l{Qt Quick Test QML Types}{QML Types}
+        \li \l{Qt Quick Test QML Types}
+        \li \l{Qt Quick Test C++ API}
     \endlist
 
 */
