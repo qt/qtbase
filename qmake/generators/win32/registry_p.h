@@ -40,8 +40,6 @@
 // We mean it.
 //
 
-QT_BEGIN_NAMESPACE
-
 #include <QtCore/qglobal.h>
 
 #ifdef Q_OS_WIN32
@@ -51,6 +49,8 @@ QT_BEGIN_NAMESPACE
 #endif
 
 #include <QtCore/qstring.h>
+
+QT_BEGIN_NAMESPACE
 
 /**
  * Read a value from the Windows registry.
