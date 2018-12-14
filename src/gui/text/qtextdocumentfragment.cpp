@@ -1139,7 +1139,8 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processBlockNode()
     // ####################
     //                block.setFloatPosition(node->cssFloat);
 
-    if (wsm == QTextHtmlParserNode::WhiteSpacePre) {
+    if (wsm == QTextHtmlParserNode::WhiteSpacePre
+            || wsm == QTextHtmlParserNode::WhiteSpaceNoWrap) {
         block.setNonBreakableLines(true);
         modifiedBlockFormat = true;
     }
