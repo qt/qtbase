@@ -399,6 +399,8 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
         libdirs.append(QMakeLocalFileName(dlib.toQString()));
     frameworkdirs.append(QMakeLocalFileName("/System/Library/Frameworks"));
     frameworkdirs.append(QMakeLocalFileName("/Library/Frameworks"));
+    ProStringList extens;
+    extens << project->first("QMAKE_EXTENSION_SHLIB") << "a";
     static const char * const lflags[] = { "LIBS", "LIBS_PRIVATE",
                                            "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", nullptr };
     for (int i = 0; lflags[i]; i++) {
@@ -417,8 +419,6 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                     libdirs.insert(libidx++, f);
                 } else if(opt.startsWith("-l")) {
                     QString lib = opt.mid(2);
-                    ProStringList extens;
-                    extens << project->first("QMAKE_EXTENSION_SHLIB") << "a";
                     for (QList<QMakeLocalFileName>::Iterator dep_it = libdirs.begin();
                          dep_it != libdirs.end(); ++dep_it) {
                         QString libBase = (*dep_it).local() + '/'
@@ -521,8 +521,18 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                         lflags[arch].append(opt);
                     }
                 } else if(!opt.isNull()) {
+                    for (const ProString &ext : extens) {
+                        if (opt.size() > ext.size() && opt.endsWith(ext)
+                                && opt.at(opt.size() - ext.size() - 1) == '.') {
+                            // Make sure we keep the dependency order of libraries
+                            lflags[arch].removeAll(opt);
+                            lflags[arch].append(opt);
+                            goto found2;
+                        }
+                    }
                     if(!lflags[arch].contains(opt))
                         lflags[arch].append(opt);
+                  found2: ;
                 }
             }
 
