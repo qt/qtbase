@@ -142,7 +142,7 @@ bool QMimeGlobPattern::matchFileName(const QString &inputFilename) const
         return (m_pattern == filename);
 
     // Other (quite rare) patterns, like "*.anim[1-9j]": use slow but correct method
-    QRegularExpression rx(QRegularExpression::anchoredPattern(QRegularExpression::wildcardToRegularExpression(m_pattern)));
+    QRegularExpression rx(QRegularExpression::wildcardToRegularExpression(m_pattern));
     return rx.match(filename).hasMatch();
 }
 
