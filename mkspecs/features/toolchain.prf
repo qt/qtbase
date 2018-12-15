@@ -178,13 +178,16 @@ isEmpty($${target_prefix}.INCDIRS) {
         QMAKE_DEFAULT_INCDIRS = $$split(INCLUDE, $$QMAKE_DIRLIST_SEP)
     }
 
-    unix {
+    unix:if(!cross_compile|host_build) {
         isEmpty(QMAKE_DEFAULT_INCDIRS): QMAKE_DEFAULT_INCDIRS = /usr/include /usr/local/include
         isEmpty(QMAKE_DEFAULT_LIBDIRS): QMAKE_DEFAULT_LIBDIRS = /lib /usr/lib
     }
 
-    cache($${target_prefix}.INCDIRS, set stash, QMAKE_DEFAULT_INCDIRS)
-    cache($${target_prefix}.LIBDIRS, set stash, QMAKE_DEFAULT_LIBDIRS)
+    # cache() complains about undefined variables and doesn't persist empty ones.
+    !isEmpty(QMAKE_DEFAULT_INCDIRS): \
+        cache($${target_prefix}.INCDIRS, set stash, QMAKE_DEFAULT_INCDIRS)
+    !isEmpty(QMAKE_DEFAULT_LIBDIRS): \
+        cache($${target_prefix}.LIBDIRS, set stash, QMAKE_DEFAULT_LIBDIRS)
 } else {
     QMAKE_DEFAULT_INCDIRS = $$eval($${target_prefix}.INCDIRS)
     QMAKE_DEFAULT_LIBDIRS = $$eval($${target_prefix}.LIBDIRS)
@@ -278,4 +281,8 @@ QMAKE_COMPILER_DEFINES += __cplusplus=$$QT_COMPILER_STDCXX
 QMAKE_CFLAGS += $$QMAKE_CFLAGS_MSVC_COMPAT
 QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_MSVC_COMPAT
 
-msvc:!intel_icl:!clang_cl: include(../common/msvc-version.conf)
+clang_cl|intel_icl {
+    include(../common/msvc-based-version.conf)
+} else: msvc {
+    include(../common/msvc-version.conf)
+}
