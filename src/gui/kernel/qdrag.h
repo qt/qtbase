@@ -74,7 +74,10 @@ public:
     QObject *source() const;
     QObject *target() const;
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QDrag::exec() instead")
     Qt::DropAction start(Qt::DropActions supportedActions = Qt::CopyAction);
+#endif
     Qt::DropAction exec(Qt::DropActions supportedActions = Qt::MoveAction);
     Qt::DropAction exec(Qt::DropActions supportedActions, Qt::DropAction defaultAction);
 
