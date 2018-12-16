@@ -981,7 +981,7 @@ QPalette QPalette::resolve(const QPalette &other) const
 #ifndef QT_NO_DATASTREAM
 
 static const int NumOldRoles = 7;
-static const int oldRoles[7] = { QPalette::Foreground, QPalette::Background, QPalette::Light,
+static const int oldRoles[7] = { QPalette::WindowText, QPalette::Window, QPalette::Light,
                                  QPalette::Dark, QPalette::Mid, QPalette::Text, QPalette::Base };
 
 /*!
