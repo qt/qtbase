@@ -147,7 +147,7 @@ void QXcbVirtualDesktop::setPrimaryScreen(QPlatformScreen *s)
 {
     const int idx = m_screens.indexOf(s);
     Q_ASSERT(idx > -1);
-    m_screens.swap(0, idx);
+    m_screens.swapItemsAt(0, idx);
 }
 
 QXcbXSettings *QXcbVirtualDesktop::xSettings() const
