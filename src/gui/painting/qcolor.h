@@ -219,9 +219,13 @@ public:
     static QColor fromHsl(int h, int s, int l, int a = 255);
     static QColor fromHslF(qreal h, qreal s, qreal l, qreal a = 1.0);
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QColor::lighter() instead")
     Q_REQUIRED_RESULT QColor light(int f = 150) const Q_DECL_NOTHROW;
-    Q_REQUIRED_RESULT QColor lighter(int f = 150) const Q_DECL_NOTHROW;
+    QT_DEPRECATED_X("Use QColor::darker() instead")
     Q_REQUIRED_RESULT QColor dark(int f = 200) const Q_DECL_NOTHROW;
+#endif
+    Q_REQUIRED_RESULT QColor lighter(int f = 150) const Q_DECL_NOTHROW;
     Q_REQUIRED_RESULT QColor darker(int f = 200) const Q_DECL_NOTHROW;
 
     bool operator==(const QColor &c) const Q_DECL_NOTHROW;
@@ -307,12 +311,6 @@ inline QColor::QColor(const QColor &acolor) Q_DECL_NOTHROW
 
 inline bool QColor::isValid() const Q_DECL_NOTHROW
 { return cspec != Invalid; }
-
-inline QColor QColor::lighter(int f) const Q_DECL_NOTHROW
-{ return light(f); }
-
-inline QColor QColor::darker(int f) const Q_DECL_NOTHROW
-{ return dark(f); }
 
 QT_END_NAMESPACE
 

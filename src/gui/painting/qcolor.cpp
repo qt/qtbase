@@ -2695,18 +2695,13 @@ QColor QColor::fromCmykF(qreal c, qreal m, qreal y, qreal k, qreal a)
     recommend using the darker() function for this purpose. If the \a factor
     is 0 or negative, the return value is unspecified.
 
-    The function converts the current RGB color to HSV, multiplies the value
-    (V) component by \a factor and converts the color back to RGB.
+    The function converts the current color to HSV, multiplies the value
+    (V) component by \a factor and converts the color back to it's original
+    color spec.
 
     \sa darker(), isValid()
 */
-
-/*!
-    \obsolete
-
-    Use lighter(\a factor) instead.
-*/
-QColor QColor::light(int factor) const Q_DECL_NOTHROW
+QColor QColor::lighter(int factor) const Q_DECL_NOTHROW
 {
     if (factor <= 0)                                // invalid lightness factor
         return *this;
@@ -2745,18 +2740,13 @@ QColor QColor::light(int factor) const Q_DECL_NOTHROW
     but we recommend using the lighter() function for this purpose. If the
     \a factor is 0 or negative, the return value is unspecified.
 
-    The function converts the current RGB color to HSV, divides the value (V)
-    component by \a factor and converts the color back to RGB.
+    The function converts the current color to HSV, divides the value (V)
+    component by \a factor and converts the color back to it's original
+    color spec.
 
     \sa lighter(), isValid()
 */
-
-/*!
-    \obsolete
-
-    Use darker(\a factor) instead.
-*/
-QColor QColor::dark(int factor) const Q_DECL_NOTHROW
+QColor QColor::darker(int factor) const Q_DECL_NOTHROW
 {
     if (factor <= 0)                                // invalid darkness factor
         return *this;
@@ -2769,6 +2759,28 @@ QColor QColor::dark(int factor) const Q_DECL_NOTHROW
     // convert back to same color spec as original color
     return hsv.convertTo(cspec);
 }
+
+#if QT_DEPRECATED_SINCE(5, 13)
+/*!
+    \obsolete
+
+    Use lighter(\a factor) instead.
+*/
+QColor QColor::light(int factor) const Q_DECL_NOTHROW
+{
+    return lighter(factor);
+}
+
+/*!
+    \obsolete
+
+    Use darker(\a factor) instead.
+*/
+QColor QColor::dark(int factor) const Q_DECL_NOTHROW
+{
+    return darker(factor);
+}
+#endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 /*!
