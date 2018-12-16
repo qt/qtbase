@@ -1766,7 +1766,7 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
         QPalette::ColorGroup cg = (option.state & QStyle::State_Enabled)
                                   ? QPalette::Normal : QPalette::Disabled;
         o.backgroundColor = option.palette.color(cg, d->selectionModel->isSelected(index)
-                                                 ? QPalette::Highlight : QPalette::Background);
+                                                 ? QPalette::Highlight : QPalette::Window);
         int x = 0;
         if (!option.showDecorationSelected)
             x = header->sectionPosition(0) + d->indentationForItem(d->current);

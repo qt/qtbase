@@ -277,7 +277,7 @@ protected:
                const QStyleOptionViewItem &option,
                const QModelIndex &index) const override {
         QStyleOptionMenuItem opt = getStyleOption(option, index);
-        painter->fillRect(option.rect, opt.palette.background());
+        painter->fillRect(option.rect, opt.palette.window());
         mCombo->style()->drawControl(QStyle::CE_MenuItem, &opt, painter, mCombo);
     }
     QSize sizeHint(const QStyleOptionViewItem &option,

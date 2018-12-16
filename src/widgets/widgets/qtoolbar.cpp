@@ -1045,7 +1045,7 @@ void QToolBar::paintEvent(QPaintEvent *)
     if (d->layout->expanded || d->layout->animating || isWindow()) {
         //if the toolbar is expended, we need to fill the background with the window color
         //because some styles may expects that.
-        p.fillRect(opt.rect, palette().background());
+        p.fillRect(opt.rect, palette().window());
         style->drawControl(QStyle::CE_ToolBar, &opt, &p, this);
         style->drawPrimitive(QStyle::PE_FrameMenu, &opt, &p, this);
     } else {

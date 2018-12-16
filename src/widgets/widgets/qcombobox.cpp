@@ -166,7 +166,7 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
         break;
     }
     if (index.data(Qt::BackgroundRole).canConvert<QBrush>()) {
-        menuOption.palette.setBrush(QPalette::All, QPalette::Background,
+        menuOption.palette.setBrush(QPalette::All, QPalette::Window,
                                     qvariant_cast<QBrush>(index.data(Qt::BackgroundRole)));
     }
     menuOption.text = index.model()->data(index, Qt::DisplayRole).toString()
