@@ -703,6 +703,8 @@ bool QFileInfo::exists() const
 */
 bool QFileInfo::exists(const QString &file)
 {
+    if (file.isEmpty())
+        return false;
     QFileSystemEntry entry(file);
     QFileSystemMetaData data;
     QAbstractFileEngine *engine =
