@@ -113,7 +113,7 @@ public:
     QColor outline(const QPalette &pal) const {
         if (pal.window().style() == Qt::TexturePattern)
             return QColor(0, 0, 0, 160);
-        return pal.background().color().darker(140);
+        return pal.window().color().darker(140);
     }
 
     QColor highlightedOutline(const QPalette &pal) const {

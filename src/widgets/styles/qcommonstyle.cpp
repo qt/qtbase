@@ -199,7 +199,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         break;
     case PE_IndicatorCheckBox:
         if (opt->state & State_NoChange) {
-            p->setPen(opt->palette.foreground().color());
+            p->setPen(opt->palette.windowText().color());
             p->fillRect(opt->rect, opt->palette.brush(QPalette::Button));
             p->drawRect(opt->rect);
             p->drawLine(opt->rect.topLeft(), opt->rect.bottomRight());
@@ -215,7 +215,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         p->drawArc(opt->rect, 0, 5760);
         if (opt->state & (State_Sunken | State_On)) {
             ir.adjust(2, 2, -2, -2);
-            p->setBrush(opt->palette.foreground());
+            p->setBrush(opt->palette.windowText());
             bool oldQt4CompatiblePainting = p->testRenderHint(QPainter::Qt4CompatiblePainting);
             p->setRenderHint(QPainter::Qt4CompatiblePainting);
             p->drawEllipse(ir);
@@ -234,7 +234,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                 else
                     p->setPen(Qt::white);
             } else {
-                p->setPen(opt->palette.foreground().color());
+                p->setPen(opt->palette.windowText().color());
             }
             QRect focusRect = opt->rect.adjusted(1, 1, -1, -1);
             p->drawRect(focusRect.adjusted(0, 0, -1, -1)); //draw pen inclusive
@@ -281,7 +281,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                 qDrawShadePanel(p, frame->rect, frame->palette, frame->state & State_Sunken,
                                 frame->lineWidth);
             } else {
-                qDrawPlainRect(p, frame->rect, frame->palette.foreground().color(), frame->lineWidth);
+                qDrawPlainRect(p, frame->rect, frame->palette.windowText().color(), frame->lineWidth);
             }
         }
         break;
@@ -618,7 +618,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             }
 
             p->setPen(QPen(tab->palette.dark(), qreal(.8)));
-            p->setBrush(tab->palette.background());
+            p->setBrush(tab->palette.window());
             p->setRenderHint(QPainter::Antialiasing);
             p->drawPath(path);
         }
@@ -1502,7 +1502,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 
             QPalette pal2 = pb->palette;
             // Correct the highlight color if it is the same as the background
-            if (pal2.highlight() == pal2.background())
+            if (pal2.highlight() == pal2.window())
                 pal2.setColor(QPalette::Highlight, pb->palette.color(QPalette::Active,
                                                                      QPalette::Highlight));
             bool reverse = ((!vertical && (pb->direction == Qt::RightToLeft)) || vertical);
@@ -1790,14 +1790,14 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 }
             }
 
-            p->setPen(QPen(tab->palette.foreground(), 0));
+            p->setPen(QPen(tab->palette.windowText(), 0));
             if (selected) {
                 p->setBrush(tab->palette.base());
             } else {
                 if (widget && widget->parentWidget())
-                    p->setBrush(widget->parentWidget()->palette().background());
+                    p->setBrush(widget->parentWidget()->palette().window());
                 else
-                    p->setBrush(tab->palette.background());
+                    p->setBrush(tab->palette.window());
             }
 
             int y;
@@ -2121,7 +2121,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         }
         break;
     case CE_FocusFrame:
-            p->fillRect(opt->rect, opt->palette.foreground());
+            p->fillRect(opt->rect, opt->palette.windowText());
         break;
     case CE_HeaderSection:
             qDrawShadePanel(p, opt->rect, opt->palette,
@@ -2129,7 +2129,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                         &opt->palette.brush(QPalette::Button));
         break;
     case CE_HeaderEmptyArea:
-            p->fillRect(opt->rect, opt->palette.background());
+            p->fillRect(opt->rect, opt->palette.window());
         break;
 #if QT_CONFIG(combobox)
     case CE_ComboBoxLabel:
@@ -3193,7 +3193,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 // Since there is no subrect for tickmarks do a translation here.
                 p->save();
                 p->translate(slider->rect.x(), slider->rect.y());
-                p->setPen(slider->palette.foreground().color());
+                p->setPen(slider->palette.windowText().color());
                 int v = slider->minimum;
                 while (v <= slider->maximum + 1) {
                     if (v == slider->maximum + 1 && interval == 1)
@@ -3639,7 +3639,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             QPalette pal = opt->palette;
             // draw notches
             if (dial->subControls & QStyle::SC_DialTickmarks) {
-                p->setPen(pal.foreground().color());
+                p->setPen(pal.windowText().color());
                 p->drawLines(QStyleHelper::calcLines(dial));
             }
 
