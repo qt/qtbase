@@ -1,3 +1,13 @@
+defineTest(qtToolchainError) {
+    msg = \
+        $$1 \
+        "===================" \
+        $$2 \
+        "===================" \
+        $$3
+    error($$join(msg, $$escape_expand(\\n)))
+}
+
 defineTest(qtCompilerError) {
     !cross_compile: \
         what =
@@ -5,13 +15,8 @@ defineTest(qtCompilerError) {
         what = " host"
     else: \
         what = " target"
-    msg = \
-        "Cannot run$$what compiler '$$1'. Output:" \
-        "===================" \
-        $$2 \
-        "===================" \
-        "Maybe you forgot to setup the environment?"
-    error($$join(msg, $$escape_expand(\\n)))
+    qtToolchainError("Cannot run$$what compiler '$$1'. Output:", $$2, \
+                     "Maybe you forgot to setup the environment?")
 }
 
 cross_compile:host_build: \
@@ -123,6 +128,36 @@ defineReplace(qtMakeExpand) {
             return($$out)
         out = $$replace(out, "\\$\\(EXPORT_$$m\\)", $$eval($$m))
     }
+}
+
+defineReplace(qtSplitPathList) {
+    paths = $$split(1, $$QMAKE_DIRLIST_SEP)
+    ret =
+    for (p, paths): \
+        ret += $$clean_path($$p)
+    return($$ret)
+}
+
+defineReplace(qtNmakePathList) {
+    paths =
+    for (p, 1): \
+        paths += $$shell_path($$p)
+    paths ~= s,$${LITERAL_HASH},^$${LITERAL_HASH},g
+    paths ~= s,\\$,\$\$,g
+    return($$join(paths, $$QMAKE_DIRLIST_SEP))
+}
+
+msvc {
+    arch = $$lower($$VCPROJ_ARCH)
+    equals(arch, x64): \  # may be "win32" or undefined
+        arch = amd64
+    else: !equals(arch, arm):!equals(arch, arm64): \  # may be "win32" or undefined
+        arch = x86
+    # Consider only WinRT and ARM64 desktop builds to be cross-builds -
+    # the host is assumed to be Intel and capable of running the target
+    # executables (so building for x64 on x86 will break).
+    winrt|equals(arch, arm64): \
+        CONFIG += msvc_cross
 }
 
 isEmpty($${target_prefix}.INCDIRS) {
@@ -264,9 +299,89 @@ isEmpty($${target_prefix}.INCDIRS) {
                 }
             }
         }
+    } else: msvc_cross {
+        # Use a batch file, because %VAR% in the system() call expands to
+        # the pre-script-call value, and !VAR! cannot be enabled outside
+        # a batch file without invoking another shell instance.
+        cmd = $$system_quote($$system_path($$PWD/data/dumpvcvars.bat))
+
+        hostArch = $$QMAKE_HOST.arch
+        equals(hostArch, x86_64): \
+            hostArch = amd64
+        !equals(arch, $$hostArch): \
+            arch = $${hostArch}_$$arch
+
+        isEmpty(MSVC_VER): \
+            error("Mkspec does not specify MSVC_VER. Cannot continue.")
+        versionAtLeast(MSVC_VER, 15.0) {
+            dir = $$(VSINSTALLDIR)
+            isEmpty(dir): \
+                dir = $$read_registry(HKLM, \
+                    "Software\\Microsoft\\VisualStudio\\SxS\\VS7\\$$MSVC_VER", 32)
+            isEmpty(dir): \
+                error("Failed to find the Visual Studio installation directory.")
+            cmd += $$system_quote($$dir\\VC\\Auxiliary\\Build\\vcvarsall.bat) $$arch
+        } else {
+            dir = $$(VCINSTALLDIR)
+            isEmpty(dir): \
+                dir = $$read_registry(HKLM, \
+                    "Software\\Microsoft\\VisualStudio\\$$MSVC_VER\\Setup\\VC\\ProductDir", 32)
+            isEmpty(dir): \
+                error("Failed to find the Visual C installation directory.")
+            cmd += $$system_quote($$dir\\vcvarsall.bat) $$arch
+        }
+        winrt: cmd += store
+
+        isEmpty(WINSDK_VER): \
+            error("Mkspec does not specify WINSDK_VER. Cannot continue.")
+        # We prefer the environment variable, because that may work around
+        # a broken registry entry after uninstalling a newer SDK.
+        # However, we do that only if the major+minor SDK version matches
+        # the one requested by the mkspec, as we might be building for a
+        # newer target than the host.
+        winsdk_ver = $$(WindowsSDKVersion)
+        !isEmpty(winsdk_ver) {
+            winsdk_ver ~= s,\\\\$,,  # Work around SDK breakage.
+            !equals(WINSDK_VER, $$replace(winsdk_ver, ^(\\d+\\.\\d+).*$, \\1)): \
+                winsdk_ver =
+        }
+        !isEmpty(winsdk_ver) {
+            cmd += $$winsdk_ver
+        } else {
+            winsdk_ver = $$read_registry(HKLM, \
+                "Software\\Microsoft\\Microsoft SDKs\\Windows\\v$$WINSDK_VER\\ProductVersion", 32)
+            isEmpty(winsdk_ver): \
+                error("Windows SDK $$WINSDK_VER requested by mkspec is not installed. Cannot continue.")
+            cmd += $${winsdk_ver}.0
+        }
+
+        output = $$system("$$cmd 2>&1", lines, ec)
+        !equals(ec, 0): \
+            qtToolchainError("SDK setup script failed. Output:", $$output, \
+                             "Command was: $$cmd")
+        lines = $$output
+        for(ever) {
+            isEmpty(lines): \
+                break()
+            line = $$take_first(lines)
+            equals(line, "=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+="): \
+                break()
+        }
+        !count(lines, 3): \
+            qtToolchainError("SDK setup script returned unexpected output:", $$output, \
+                             "Command was: $$cmd")
+
+        # These contain only paths for the target.
+        QMAKE_DEFAULT_INCDIRS = $$qtSplitPathList($$member(lines, 0))
+        QMAKE_DEFAULT_LIBDIRS = $$qtSplitPathList($$member(lines, 1))
+        # PATH is inherently for the host, and paths that are not shadowed
+        # by vcvarsall.bat are assumed to contain only tools that work for
+        # both host and target builds.
+        QMAKE_DEFAULT_PATH = $$qtSplitPathList($$member(lines, 2))
+        # We de-duplicate, because the script just prepends to the paths for
+        # the host, some of which are identical to the ones for the target.
+        QMAKE_DEFAULT_PATH = $$unique(QMAKE_DEFAULT_PATH)
     } else: msvc {
-        # This doesn't differentiate between host and target,
-        # but neither do the compilers.
         LIB = $$getenv("LIB")
         QMAKE_DEFAULT_LIBDIRS = $$split(LIB, $$QMAKE_DIRLIST_SEP)
         INCLUDE = $$getenv("INCLUDE")
@@ -283,9 +398,22 @@ isEmpty($${target_prefix}.INCDIRS) {
         cache($${target_prefix}.INCDIRS, set stash, QMAKE_DEFAULT_INCDIRS)
     !isEmpty(QMAKE_DEFAULT_LIBDIRS): \
         cache($${target_prefix}.LIBDIRS, set stash, QMAKE_DEFAULT_LIBDIRS)
+    !isEmpty(QMAKE_DEFAULT_PATH): \
+        cache($${target_prefix}.PATH, set stash, QMAKE_DEFAULT_PATH)
 } else {
     QMAKE_DEFAULT_INCDIRS = $$eval($${target_prefix}.INCDIRS)
     QMAKE_DEFAULT_LIBDIRS = $$eval($${target_prefix}.LIBDIRS)
+    QMAKE_DEFAULT_PATH = $$eval($${target_prefix}.PATH)
+}
+
+msvc_cross {
+    qmake_inc_exp.name = INCLUDE
+    qmake_inc_exp.value = $$qtNmakePathList($$QMAKE_DEFAULT_INCDIRS)
+    qmake_lib_exp.name = LIB
+    qmake_lib_exp.value = $$qtNmakePathList($$QMAKE_DEFAULT_LIBDIRS)
+    qmake_path_exp.name = PATH
+    qmake_path_exp.value = $$qtNmakePathList($$QMAKE_DEFAULT_PATH)
+    QMAKE_EXPORTED_VARIABLES += qmake_inc_exp qmake_lib_exp qmake_path_exp
 }
 
 unset(target_prefix)
