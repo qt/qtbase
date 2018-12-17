@@ -32,6 +32,9 @@
 #include <private/qtablewidget_p.h>
 #include <QtTest/QtTest>
 #include "private/qapplication_p.h"
+#if QT_CONFIG(textmarkdownwriter)
+#include "private/qtextmarkdownwriter_p.h"
+#endif
 
 #include <algorithm>
 
@@ -196,6 +199,10 @@ private slots:
     void viewOptions();
 
     void taskQTBUG_7232_AllowUserToControlSingleStep();
+
+#if QT_CONFIG(textmarkdownwriter)
+    void markdownWriter();
+#endif
 };
 
 // Testing get/set functions
@@ -4559,6 +4566,34 @@ void tst_QTableView::taskQTBUG_50171_selectRowAfterSwapColumns()
         QCOMPARE(sModel->isSelected(tableView.model()->index(2, 0)), false);
     }
 }
+
+// This has nothing to do with QTableView, but it's convenient to reuse the QtTestTableModel
+#if QT_CONFIG(textmarkdownwriter)
+
+// #define DEBUG_WRITE_OUTPUT
+
+void tst_QTableView::markdownWriter()
+{
+    QtTestTableModel model(2, 3);
+    QString md;
+    {
+        QTextStream stream(&md);
+        QTextMarkdownWriter writer(stream, QTextDocument::MarkdownDialectGitHub);
+        writer.writeTable(model);
+    }
+
+#ifdef DEBUG_WRITE_OUTPUT
+    {
+        QFile out("/tmp/table.md");
+        out.open(QFile::WriteOnly);
+        out.write(md.toUtf8());
+        out.close();
+    }
+#endif
+
+    QCOMPARE(md, QString::fromLatin1("|1      |2      |3      |\n|-------|-------|-------|\n|[0,0,0]|[0,1,0]|[0,2,0]|\n|[1,0,0]|[1,1,0]|[1,2,0]|\n"));
+}
+#endif
 
 QTEST_MAIN(tst_QTableView)
 #include "tst_qtableview.moc"
