@@ -1249,23 +1249,24 @@ static void qRemoveWhitespace(const char *s, char *d)
     *d = '\0';
 }
 
-static char *qNormalizeType(char *d, int &templdepth, QByteArray &result)
+static const char *qNormalizeType(const char *begin, int &templdepth, QByteArray &result)
 {
-    const char *t = d;
-    while (*d && (templdepth
-                   || (*d != ',' && *d != ')'))) {
-        if (*d == '<')
+    //skip until "end" points to ',' or ')' and is past first argument-type
+    const char *end = begin;
+    while (*end && (templdepth
+                   || (*end != ',' && *end != ')'))) {
+        if (*end == '<')
             ++templdepth;
-        if (*d == '>')
+        if (*end == '>')
             --templdepth;
-        ++d;
+        ++end;
     }
     // "void" should only be removed if this is part of a signature that has
     // an explicit void argument; e.g., "void foo(void)" --> "void foo()"
-    if (strncmp("void)", t, d - t + 1) != 0)
-        result += normalizeTypeInternal(t, d);
+    if (strncmp("void)", begin, end - begin + 1) != 0)
+        result += normalizeTypeInternal(begin, end);
 
-    return d;
+    return end;
 }
 
 
@@ -1325,7 +1326,7 @@ QByteArray QMetaObject::normalizedSignature(const char *method)
     int templdepth = 0;
     while (*d) {
         if (argdepth == 1) {
-            d = qNormalizeType(d, templdepth, result);
+            d = const_cast<char *>(qNormalizeType(d, templdepth, result));
             if (!*d) //most likely an invalid signature.
                 break;
         }
