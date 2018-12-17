@@ -1,14 +1,3 @@
-
-defineReplace(qtMakeExpand) {
-    out = "$$1"
-    for(ever) {
-        m = $$replace(out, ".*\\$\\(EXPORT_([^)]+)\\).*", \\1)
-        equals(m, $$out): \
-            return($$out)
-        out = $$replace(out, "\\$\\(EXPORT_$$m\\)", $$eval($$m))
-    }
-}
-
 defineTest(qtCompilerError) {
     !cross_compile: \
         what =
@@ -29,6 +18,112 @@ cross_compile:host_build: \
     target_prefix = QMAKE_HOST_CXX
 else: \
     target_prefix = QMAKE_CXX
+
+#
+# Determine and cache the compiler version
+#
+
+defineReplace(qtVariablesFromMSVC) {
+    ret = $$system("$$1 -nologo -E $$2 $$system_quote($$PWD/data/macros.cpp) 2>NUL", lines, ec)
+    !equals(ec, 0): qtCompilerError($$1, $$ret)
+    return($$ret)
+}
+
+defineReplace(qtVariablesFromGCC) {
+    ret = $$system("$$1 -E $$system_quote($$PWD/data/macros.cpp) \
+        2>$$QMAKE_SYSTEM_NULL_DEVICE", lines, ec)
+    !equals(ec, 0): qtCompilerError($$1, $$ret)
+    return($$ret)
+}
+
+isEmpty($${target_prefix}.COMPILER_MACROS) {
+    msvc {
+        clang_cl {
+            # We need to obtain the cl.exe version first
+            vars = $$qtVariablesFromMSVC(cl)
+            for (v, vars) {
+                isEmpty(v)|contains(v, $${LITERAL_HASH}.*): next()
+                eval($$v)
+            }
+            isEmpty(QMAKE_MSC_FULL_VER): error("Could not determine the Visual Studio version")
+
+            QMAKE_CFLAGS_MSVC_COMPAT = $$replace(QMAKE_MSC_FULL_VER, "(..)(..)(.*)", \
+                                                 "-fms-compatibility-version=\\1.\\2.\\3")
+            cache($${target_prefix}.QMAKE_CFLAGS_MSVC_COMPAT, set stash, QMAKE_CFLAGS_MSVC_COMPAT)
+            $${target_prefix}.COMPILER_MACROS += QMAKE_CFLAGS_MSVC_COMPAT
+            vars = $$qtVariablesFromMSVC($$QMAKE_CXX, $$QMAKE_CFLAGS_MSVC_COMPAT)
+        } else {
+            vars = $$qtVariablesFromMSVC($$QMAKE_CXX)
+        }
+    } else: gcc|ghs {
+        vars = $$qtVariablesFromGCC($$QMAKE_CXX)
+    }
+    for (v, vars) {
+        !contains(v, "[A-Z_]+ = .*"): next()
+        # Set both <varname> for the outer scope ...
+        eval($$v)
+        v ~= s/ .*//
+        isEmpty($$v): error("Compiler produced empty value for $${v}.")
+        # ... and save QMAKE_(HOST_)?CXX.<varname> in the cache.
+        cache($${target_prefix}.$$v, set stash, $$v)
+        $${target_prefix}.COMPILER_MACROS += $$v
+    }
+    cache($${target_prefix}.COMPILER_MACROS, set stash)
+} else {
+    # load from the cache
+    for (i, $${target_prefix}.COMPILER_MACROS): \
+        $$i = $$eval($${target_prefix}.$$i)
+}
+
+# Populate QMAKE_COMPILER_DEFINES and some compatibility variables.
+# The $$format_number() calls strip leading zeros to avoid misinterpretation as octal.
+QMAKE_COMPILER_DEFINES += __cplusplus=$$QT_COMPILER_STDCXX
+!isEmpty(QMAKE_MSC_VER): \
+    QMAKE_COMPILER_DEFINES += _MSC_VER=$$QMAKE_MSC_VER _MSC_FULL_VER=$$QMAKE_MSC_FULL_VER
+!isEmpty(QMAKE_ICC_VER): \
+    QMAKE_COMPILER_DEFINES += __INTEL_COMPILER=$$QMAKE_ICC_VER __INTEL_COMPILER_UPDATE=$$QMAKE_ICC_UPDATE_VER
+!isEmpty(QMAKE_APPLE_CC): \
+    QMAKE_COMPILER_DEFINES += __APPLE_CC__=$$QMAKE_APPLE_CC
+!isEmpty(QMAKE_APPLE_CLANG_MAJOR_VERSION): \
+    QMAKE_COMPILER_DEFINES += __clang__ \
+        __clang_major__=$$QMAKE_APPLE_CLANG_MAJOR_VERSION \
+        __clang_minor__=$$QMAKE_APPLE_CLANG_MINOR_VERSION \
+        __clang_patchlevel__=$$QMAKE_APPLE_CLANG_PATCH_VERSION
+!isEmpty(QMAKE_CLANG_MAJOR_VERSION): \
+    QMAKE_COMPILER_DEFINES += __clang__ \
+        __clang_major__=$$QMAKE_CLANG_MAJOR_VERSION \
+        __clang_minor__=$$QMAKE_CLANG_MINOR_VERSION \
+        __clang_patchlevel__=$$QMAKE_CLANG_PATCH_VERSION
+!isEmpty(QMAKE_GCC_MAJOR_VERSION): \
+    QMAKE_COMPILER_DEFINES += \
+        __GNUC__=$$QMAKE_GCC_MAJOR_VERSION \
+        __GNUC_MINOR__=$$QMAKE_GCC_MINOR_VERSION \
+        __GNUC_PATCHLEVEL__=$$QMAKE_GCC_PATCH_VERSION
+!isEmpty(QMAKE_GHS_VERSION): \
+    QMAKE_COMPILER_DEFINES += __ghs__ __GHS_VERSION_NUMBER=$$QMAKE_GHS_VERSION
+
+QMAKE_CFLAGS += $$QMAKE_CFLAGS_MSVC_COMPAT
+QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_MSVC_COMPAT
+
+clang_cl|intel_icl {
+    include(../common/msvc-based-version.conf)
+} else: msvc {
+    include(../common/msvc-version.conf)
+}
+
+#
+# Determine and cache the default search paths
+#
+
+defineReplace(qtMakeExpand) {
+    out = "$$1"
+    for(ever) {
+        m = $$replace(out, ".*\\$\\(EXPORT_([^)]+)\\).*", \\1)
+        equals(m, $$out): \
+            return($$out)
+        out = $$replace(out, "\\$\\(EXPORT_$$m\\)", $$eval($$m))
+    }
+}
 
 isEmpty($${target_prefix}.INCDIRS) {
     #
@@ -193,96 +288,4 @@ isEmpty($${target_prefix}.INCDIRS) {
     QMAKE_DEFAULT_LIBDIRS = $$eval($${target_prefix}.LIBDIRS)
 }
 
-#
-# Determine and cache the compiler version
-#
-
-defineReplace(qtVariablesFromMSVC) {
-    ret = $$system("$$1 -nologo -E $$2 $$system_quote($$PWD/data/macros.cpp) 2>NUL", lines, ec)
-    !equals(ec, 0): qtCompilerError($$1, $$ret)
-    return($$ret)
-}
-
-defineReplace(qtVariablesFromGCC) {
-    ret = $$system("$$1 -E $$system_quote($$PWD/data/macros.cpp) \
-        2>$$QMAKE_SYSTEM_NULL_DEVICE", lines, ec)
-    !equals(ec, 0): qtCompilerError($$1, $$ret)
-    return($$ret)
-}
-
-isEmpty($${target_prefix}.COMPILER_MACROS) {
-    msvc {
-        clang_cl {
-            # We need to obtain the cl.exe version first
-            vars = $$qtVariablesFromMSVC(cl)
-            for (v, vars) {
-                isEmpty(v)|contains(v, $${LITERAL_HASH}.*): next()
-                eval($$v)
-            }
-            isEmpty(QMAKE_MSC_FULL_VER): error("Could not determine the Visual Studio version")
-
-            QMAKE_CFLAGS_MSVC_COMPAT = $$replace(QMAKE_MSC_FULL_VER, "(..)(..)(.*)", \
-                                                 "-fms-compatibility-version=\\1.\\2.\\3")
-            cache($${target_prefix}.QMAKE_CFLAGS_MSVC_COMPAT, set stash, QMAKE_CFLAGS_MSVC_COMPAT)
-            $${target_prefix}.COMPILER_MACROS += QMAKE_CFLAGS_MSVC_COMPAT
-            vars = $$qtVariablesFromMSVC($$QMAKE_CXX, $$QMAKE_CFLAGS_MSVC_COMPAT)
-        } else {
-            vars = $$qtVariablesFromMSVC($$QMAKE_CXX)
-        }
-    } else: gcc|ghs {
-        vars = $$qtVariablesFromGCC($$QMAKE_CXX)
-    }
-    for (v, vars) {
-        !contains(v, "[A-Z_]+ = .*"): next()
-        # Set both <varname> for the outer scope ...
-        eval($$v)
-        v ~= s/ .*//
-        isEmpty($$v): error("Compiler produced empty value for $${v}.")
-        # ... and save QMAKE_(HOST_)?CXX.<varname> in the cache.
-        cache($${target_prefix}.$$v, set stash, $$v)
-        $${target_prefix}.COMPILER_MACROS += $$v
-    }
-    cache($${target_prefix}.COMPILER_MACROS, set stash)
-} else {
-    # load from the cache
-    for (i, $${target_prefix}.COMPILER_MACROS): \
-        $$i = $$eval($${target_prefix}.$$i)
-}
-
 unset(target_prefix)
-
-# Populate QMAKE_COMPILER_DEFINES and some compatibility variables.
-# The $$format_number() calls strip leading zeros to avoid misinterpretation as octal.
-QMAKE_COMPILER_DEFINES += __cplusplus=$$QT_COMPILER_STDCXX
-!isEmpty(QMAKE_MSC_VER): \
-    QMAKE_COMPILER_DEFINES += _MSC_VER=$$QMAKE_MSC_VER _MSC_FULL_VER=$$QMAKE_MSC_FULL_VER
-!isEmpty(QMAKE_ICC_VER): \
-    QMAKE_COMPILER_DEFINES += __INTEL_COMPILER=$$QMAKE_ICC_VER __INTEL_COMPILER_UPDATE=$$QMAKE_ICC_UPDATE_VER
-!isEmpty(QMAKE_APPLE_CC): \
-    QMAKE_COMPILER_DEFINES += __APPLE_CC__=$$QMAKE_APPLE_CC
-!isEmpty(QMAKE_APPLE_CLANG_MAJOR_VERSION): \
-    QMAKE_COMPILER_DEFINES += __clang__ \
-        __clang_major__=$$QMAKE_APPLE_CLANG_MAJOR_VERSION \
-        __clang_minor__=$$QMAKE_APPLE_CLANG_MINOR_VERSION \
-        __clang_patchlevel__=$$QMAKE_APPLE_CLANG_PATCH_VERSION
-!isEmpty(QMAKE_CLANG_MAJOR_VERSION): \
-    QMAKE_COMPILER_DEFINES += __clang__ \
-        __clang_major__=$$QMAKE_CLANG_MAJOR_VERSION \
-        __clang_minor__=$$QMAKE_CLANG_MINOR_VERSION \
-        __clang_patchlevel__=$$QMAKE_CLANG_PATCH_VERSION
-!isEmpty(QMAKE_GCC_MAJOR_VERSION): \
-    QMAKE_COMPILER_DEFINES += \
-        __GNUC__=$$QMAKE_GCC_MAJOR_VERSION \
-        __GNUC_MINOR__=$$QMAKE_GCC_MINOR_VERSION \
-        __GNUC_PATCHLEVEL__=$$QMAKE_GCC_PATCH_VERSION
-!isEmpty(QMAKE_GHS_VERSION): \
-    QMAKE_COMPILER_DEFINES += __ghs__ __GHS_VERSION_NUMBER=$$QMAKE_GHS_VERSION
-
-QMAKE_CFLAGS += $$QMAKE_CFLAGS_MSVC_COMPAT
-QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_MSVC_COMPAT
-
-clang_cl|intel_icl {
-    include(../common/msvc-based-version.conf)
-} else: msvc {
-    include(../common/msvc-version.conf)
-}
