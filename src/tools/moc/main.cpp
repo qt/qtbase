@@ -30,6 +30,7 @@
 #include "preprocessor.h"
 #include "moc.h"
 #include "outputrevision.h"
+#include "collectjson.h"
 
 #include <qfile.h>
 #include <qfileinfo.h>
@@ -37,10 +38,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include <qcoreapplication.h>
 #include <qcommandlineoption.h>
 #include <qcommandlineparser.h>
+#include <qscopedpointer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -77,6 +80,10 @@ void error(const char *msg = "Invalid argument")
         fprintf(stderr, "moc: %s\n", msg);
 }
 
+struct ScopedPointerFileCloser
+{
+    static inline void cleanup(FILE *handle) { if (handle) fclose(handle); }
+};
 
 static inline bool hasNext(const Symbols &symbols, int i)
 { return (i < symbols.size()); }
@@ -293,10 +300,20 @@ int runMoc(int argc, char **argv)
     ignoreConflictsOption.setDescription(QStringLiteral("Ignore all options that conflict with compilers, like -pthread conflicting with moc's -p option."));
     parser.addOption(ignoreConflictsOption);
 
+    QCommandLineOption jsonOption(QStringLiteral("output-json"));
+    jsonOption.setDescription(QStringLiteral("In addition to generating C++ code, create a machine-readable JSON file in a file that matches the output file and an extra .json extension."));
+    parser.addOption(jsonOption);
+
+    QCommandLineOption collectOption(QStringLiteral("collect-json"));
+    collectOption.setDescription(QStringLiteral("Instead of processing C++ code, collect previously generated JSON output into a single file."));
+    parser.addOption(collectOption);
+
     parser.addPositionalArgument(QStringLiteral("[header-file]"),
             QStringLiteral("Header file to read from, otherwise stdin."));
     parser.addPositionalArgument(QStringLiteral("[@option-file]"),
             QStringLiteral("Read additional options from option-file."));
+    parser.addPositionalArgument(QStringLiteral("[MOC generated json file]"),
+                                 QStringLiteral("MOC generated json output"));
 
     const QStringList arguments = argumentsFromCommandLineAndFile(app.arguments());
     if (arguments.isEmpty())
@@ -305,6 +322,10 @@ int runMoc(int argc, char **argv)
     parser.process(arguments);
 
     const QStringList files = parser.positionalArguments();
+    output = parser.value(outputOption);
+    if (parser.isSet(collectOption))
+        return collectJson(files, output);
+
     if (files.count() > 1) {
         error(qPrintable(QLatin1String("Too many input files specified: '") + files.join(QLatin1String("' '")) + QLatin1Char('\'')));
         parser.showHelp(1);
@@ -313,7 +334,6 @@ int runMoc(int argc, char **argv)
     }
 
     const bool ignoreConflictingOptions = parser.isSet(ignoreConflictsOption);
-    output = parser.value(outputOption);
     pp.preprocessOnly = parser.isSet(preprocessOption);
     if (parser.isSet(noIncludeOption)) {
         moc.noInclude = true;
@@ -485,6 +505,8 @@ int runMoc(int argc, char **argv)
 
     // 3. and output meta object code
 
+    QScopedPointer<FILE, ScopedPointerFileCloser> jsonOutput;
+
     if (output.size()) { // output file specified
 #if defined(_MSC_VER)
         if (_wfopen_s(&out, reinterpret_cast<const wchar_t *>(output.utf16()), L"w") != 0)
@@ -496,6 +518,21 @@ int runMoc(int argc, char **argv)
             fprintf(stderr, "moc: Cannot create %s\n", QFile::encodeName(output).constData());
             return 1;
         }
+
+        if (parser.isSet(jsonOption)) {
+            const QString jsonOutputFileName = output + QLatin1String(".json");
+            FILE *f;
+#if defined(_MSC_VER)
+            if (_wfopen_s(&f, reinterpret_cast<const wchar_t *>(jsonOutputFileName.utf16()), L"w") != 0)
+#else
+            f = fopen(QFile::encodeName(jsonOutputFileName).constData(), "w");
+            if (!f)
+#endif
+                fprintf(stderr, "moc: Cannot create JSON output file %s. %s\n",
+                        QFile::encodeName(jsonOutputFileName).constData(),
+                        strerror(errno));
+            jsonOutput.reset(f);
+        }
     } else { // use stdout
         out = stdout;
     }
@@ -506,7 +543,7 @@ int runMoc(int argc, char **argv)
         if (moc.classList.isEmpty())
             moc.note("No relevant classes found. No output generated.");
         else
-            moc.generate(out);
+            moc.generate(out, jsonOutput.data());
     }
 
     if (output.size())
