@@ -40,16 +40,6 @@
 #include <jni.h>
 #include <extract.h>
 
-extern "C" JNIEXPORT jintArray JNICALL Java_org_qtproject_qt5_android_ExtractStyle_extractNativeChunkInfo(JNIEnv *, jobject, Res_png_9patch*)
-{
-    return 0;
-}
-
-extern "C" JNIEXPORT jintArray JNICALL Java_org_qtproject_qt5_android_ExtractStyle_extractChunkInfo(JNIEnv *, jobject, jbyteArray)
-{
-        return 0;
-}
-
 extern "C" JNIEXPORT jintArray JNICALL Java_org_qtproject_qt5_android_ExtractStyle_extractNativeChunkInfo20(JNIEnv *, jobject, long)
 {
     return 0;

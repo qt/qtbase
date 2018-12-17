@@ -48,46 +48,6 @@
 #define LOG_TAG    "extractSyleInfo"
 #define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
-extern "C" JNIEXPORT jintArray JNICALL Java_org_qtproject_qt5_android_ExtractStyle_extractNativeChunkInfo(JNIEnv * env, jobject, Res_png_9patch* chunk)
-{
-        Res_png_9patch::deserialize(chunk);
-        //printChunkInformation(chunk);
-        jintArray result;
-        size_t size = 3+chunk->numXDivs+chunk->numYDivs+chunk->numColors;
-        result = env->NewIntArray(size);
-        if (!result)
-            return 0;
-
-        jint *data = (jint*)malloc(sizeof(jint)*size);
-        size_t pos = 0;
-        data[pos++]=chunk->numXDivs;
-        data[pos++]=chunk->numYDivs;
-        data[pos++]=chunk->numColors;
-        for (int x = 0; x <chunk->numXDivs; x ++)
-            data[pos++]=chunk->xDivs[x];
-        for (int y = 0; y <chunk->numYDivs; y ++)
-            data[pos++]=chunk->yDivs[y];
-        for (int c = 0; c <chunk->numColors; c ++)
-            data[pos++]=chunk->colors[c];
-        env->SetIntArrayRegion(result, 0, size, data);
-        free(data);
-        return result;
-}
-
-extern "C" JNIEXPORT jintArray JNICALL Java_org_qtproject_qt5_android_ExtractStyle_extractChunkInfo(JNIEnv * env, jobject  obj, jbyteArray chunkObj)
-{
-        size_t chunkSize = env->GetArrayLength(chunkObj);
-        void* storage = alloca(chunkSize);
-        env->GetByteArrayRegion(chunkObj, 0, chunkSize,
-                                reinterpret_cast<jbyte*>(storage));
-
-        if (!env->ExceptionCheck())
-            return Java_org_qtproject_qt5_android_ExtractStyle_extractNativeChunkInfo(env, obj, static_cast<Res_png_9patch*>(storage));
-        else
-            env->ExceptionClear();
-        return 0;
-}
-
 // The following part was shamelessly stolen from ResourceTypes.cpp from Android's sources
 /*
  * Copyright (C) 2005 The Android Open Source Project

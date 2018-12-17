@@ -132,7 +132,7 @@ public class QtActivityLoader extends QtLoader {
             return;
         }
 
-        if (Build.VERSION.SDK_INT < 16) {
+        if (Build.VERSION.SDK_INT < 21) {
             // fatal error, show the error and quit
             AlertDialog errorDialog = new AlertDialog.Builder(m_activity).create();
             if (m_contextInfo.metaData.containsKey("android.app.unsupported_android_version"))

@@ -618,14 +618,8 @@ defineTest(qtConfOutput_prepareOptions) {
             target_arch = armeabi-v7a
 
         platform = $$eval(config.input.android-ndk-platform)
-        isEmpty(platform): equals(target_arch, arm64-v8a): \
-            platform = android-21
-
-        isEmpty(platform): equals(target_arch, x86_64): \
-            platform = android-21
-
         isEmpty(platform): \
-            platform = android-16  ### the windows configure disagrees ...
+            platform = android-21
 
         $${currentConfig}.output.devicePro += \
             "DEFAULT_ANDROID_SDK_ROOT = $$val_escape(sdk_root)" \
