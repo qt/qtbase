@@ -9,7 +9,7 @@ defineReplace(qtMakeExpand) {
     }
 }
 
-defineTest(qtCompilerErrror) {
+defineTest(qtCompilerError) {
     !cross_compile: \
         what =
     else: host_build: \
@@ -69,7 +69,7 @@ isEmpty($${target_prefix}.INCDIRS) {
             cxx_flags += -E -v
 
         output = $$system("$$cmd_prefix $$QMAKE_CXX $$qtMakeExpand($$cxx_flags) -xc++ - 2>&1 $$cmd_suffix", lines, ec)
-        !equals(ec, 0): qtCompilerErrror($$QMAKE_CXX, $$output)
+        !equals(ec, 0): qtCompilerError($$QMAKE_CXX, $$output)
 
         rim_qcc {
             for (line, output) {
@@ -129,7 +129,7 @@ isEmpty($${target_prefix}.INCDIRS) {
             # What's more, -print-search-dirs can't be used on clang on Apple because it
             # won't print all the library paths (only the clang-internal ones).
             output = $$system("$$cmd_prefix $$QMAKE_LINK $$QMAKE_LFLAGS -print-search-dirs", lines, ec)
-            !equals(ec, 0): qtCompilerErrror($$QMAKE_LINK, $$output)
+            !equals(ec, 0): qtCompilerError($$QMAKE_LINK, $$output)
 
             for (line, output) {
                 contains(line, "^libraries: .*") {
@@ -149,7 +149,7 @@ isEmpty($${target_prefix}.INCDIRS) {
     } else: ghs {
         cmd = $$QMAKE_CXX $$QMAKE_CXXFLAGS -$${LITERAL_HASH} -o /tmp/fake_output /tmp/fake_input.cpp
         output = $$system("$$cmd", blob, ec)
-        !equals(ec, 0): qtCompilerErrror($$QMAKE_CXX, $$output)
+        !equals(ec, 0): qtCompilerError($$QMAKE_CXX, $$output)
         output ~= s/\\\\\\n {8}//g
         output = $$split(output, $$escape_expand(\\n))
         for (line, output) {
@@ -199,14 +199,14 @@ isEmpty($${target_prefix}.INCDIRS) {
 
 defineReplace(qtVariablesFromMSVC) {
     ret = $$system("$$1 -nologo -E $$2 $$system_quote($$PWD/data/macros.cpp) 2>NUL", lines, ec)
-    !equals(ec, 0): qtCompilerErrror($$1, $$ret)
+    !equals(ec, 0): qtCompilerError($$1, $$ret)
     return($$ret)
 }
 
 defineReplace(qtVariablesFromGCC) {
     ret = $$system("$$1 -E $$system_quote($$PWD/data/macros.cpp) \
         2>$$QMAKE_SYSTEM_NULL_DEVICE", lines, ec)
-    !equals(ec, 0): qtCompilerErrror($$1, $$ret)
+    !equals(ec, 0): qtCompilerError($$1, $$ret)
     return($$ret)
 }
 
