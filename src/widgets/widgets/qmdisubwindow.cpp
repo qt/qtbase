@@ -3341,8 +3341,11 @@ void QMdiSubWindow::mouseMoveEvent(QMouseEvent *mouseEvent)
     }
 
     if ((mouseEvent->buttons() & Qt::LeftButton) || d->isInInteractiveMode) {
-        if ((d->isResizeOperation() && d->resizeEnabled) || (d->isMoveOperation() && d->moveEnabled))
-            d->setNewGeometry(mapToParent(mouseEvent->pos()));
+        if ((d->isResizeOperation() && d->resizeEnabled) || (d->isMoveOperation() && d->moveEnabled)) {
+            // As setNewGeometry moves the window, it invalidates the pos() value of any mouse move events that are
+            // currently queued in the event loop. Map to parent using globalPos() instead.
+            d->setNewGeometry(parentWidget()->mapFromGlobal(mouseEvent->globalPos()));
+        }
         return;
     }
 
