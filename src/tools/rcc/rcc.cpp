@@ -332,8 +332,8 @@ qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib, qint64 offset,
                 lib.m_errorDevice->write(msg.toUtf8());
             }
         }
-    }
 #endif // QT_NO_COMPRESS
+    }
 
     // some info
     if (text || pass1) {
