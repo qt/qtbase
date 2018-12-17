@@ -2257,9 +2257,9 @@ bool QMetaMethod::invoke(QObject *object,
         return false;
 
     // check connection type
-    QThread *currentThread = QThread::currentThread();
-    QThread *objectThread = object->thread();
     if (connectionType == Qt::AutoConnection) {
+        QThread *currentThread = QThread::currentThread();
+        QThread *objectThread = object->thread();
         connectionType = currentThread == objectThread
                          ? Qt::DirectConnection
                          : Qt::QueuedConnection;
@@ -2342,6 +2342,8 @@ bool QMetaMethod::invoke(QObject *object,
                                                         0, -1, nargs, types, args));
     } else { // blocking queued connection
 #if QT_CONFIG(thread)
+        QThread *currentThread = QThread::currentThread();
+        QThread *objectThread = object->thread();
         if (currentThread == objectThread) {
             qWarning("QMetaMethod::invoke: Dead lock detected in "
                         "BlockingQueuedConnection: Receiver is %s(%p)",
