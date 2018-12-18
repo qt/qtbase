@@ -1420,24 +1420,7 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
 
     if (QApplicationPrivate::is_app_running && !QApplicationPrivate::is_app_closing) {
         // Send ApplicationPaletteChange to qApp itself, and to the widgets.
-        QEvent e(QEvent::ApplicationPaletteChange);
-        QApplication::sendEvent(QApplication::instance(), &e);
-
-        QWidgetList wids = QApplication::allWidgets();
-        for (QWidgetList::ConstIterator it = wids.constBegin(), cend = wids.constEnd(); it != cend; ++it) {
-            QWidget *w = *it;
-            if (all || (!className && w->isWindow()) || w->inherits(className)) // matching class
-                QApplication::sendEvent(w, &e);
-        }
-
-        // Send to all scenes as well.
-#if QT_CONFIG(graphicsview)
-        QList<QGraphicsScene *> &scenes = qApp->d_func()->scene_list;
-        for (QList<QGraphicsScene *>::ConstIterator it = scenes.constBegin();
-             it != scenes.constEnd(); ++it) {
-            QApplication::sendEvent(*it, &e);
-        }
-#endif // QT_CONFIG(graphicsview)
+        qApp->d_func()->sendApplicationPaletteChange(all, className);
     }
     if (!className && (!QApplicationPrivate::sys_pal || !palette.isCopyOf(*QApplicationPrivate::sys_pal))) {
         if (!QApplicationPrivate::set_pal)
@@ -4506,6 +4489,23 @@ void QApplicationPrivate::notifyThemeChanged()
     clearSystemPalette();
     initSystemPalette();
     qt_init_tooltip_palette();
+}
+
+void QApplicationPrivate::sendApplicationPaletteChange(bool toAllWidgets, const char *className)
+{
+    QGuiApplicationPrivate::sendApplicationPaletteChange();
+
+    QEvent event(QEvent::ApplicationPaletteChange);
+    const QWidgetList widgets = QApplication::allWidgets();
+    for (auto widget : widgets) {
+        if (toAllWidgets || (!className && widget->isWindow()) || (className && widget->inherits(className)))
+            QApplication::sendEvent(widget, &event);
+    }
+
+#if QT_CONFIG(graphicsview)
+    for (auto scene : qAsConst(scene_list))
+        QApplication::sendEvent(scene, &event);
+#endif // QT_CONFIG(graphicsview)
 }
 
 #if QT_CONFIG(draganddrop)

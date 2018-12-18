@@ -3983,12 +3983,24 @@ void QGuiApplicationPrivate::notifyThemeChanged()
         !QCoreApplication::testAttribute(Qt::AA_SetPalette)) {
         clearPalette();
         initPalette();
+        emit qGuiApp->paletteChanged(*app_pal);
+        if (is_app_running && !is_app_closing)
+            sendApplicationPaletteChange();
     }
     if (!(applicationResourceFlags & ApplicationFontExplicitlySet)) {
         QMutexLocker locker(&applicationFontMutex);
         clearFontUnlocked();
         initFontUnlocked();
     }
+}
+
+void QGuiApplicationPrivate::sendApplicationPaletteChange(bool toAllWidgets, const char *className)
+{
+    Q_UNUSED(toAllWidgets)
+    Q_UNUSED(className)
+
+    QEvent event(QEvent::ApplicationPaletteChange);
+    QGuiApplication::sendEvent(QGuiApplication::instance(), &event);
 }
 
 #if QT_CONFIG(draganddrop)

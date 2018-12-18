@@ -313,6 +313,7 @@ public:
 
 protected:
     virtual void notifyThemeChanged();
+    virtual void sendApplicationPaletteChange(bool toAllWidgets = false, const char *className = nullptr);
     bool tryCloseRemainingWindows(QWindowList processedWindows);
 #if QT_CONFIG(draganddrop)
     virtual void notifyDragStarted(const QDrag *);
