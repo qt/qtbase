@@ -228,16 +228,12 @@ const QPalette *QCocoaTheme::palette(Palette type) const
     return nullptr;
 }
 
-QHash<QPlatformTheme::Font, QFont *> qt_mac_createRoleFonts()
-{
-    QCoreTextFontDatabase *ctfd = static_cast<QCoreTextFontDatabase *>(QGuiApplicationPrivate::platformIntegration()->fontDatabase());
-    return ctfd->themeFonts();
-}
-
 const QFont *QCocoaTheme::font(Font type) const
 {
     if (m_fonts.isEmpty()) {
-        m_fonts = qt_mac_createRoleFonts();
+        const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
+        const auto *coreTextFontDb = static_cast<QCoreTextFontDatabase *>(platformIntegration->fontDatabase());
+        m_fonts = coreTextFontDb->themeFonts();
     }
     return m_fonts.value(type, nullptr);
 }
