@@ -87,7 +87,7 @@ public:
         {}
     ~QDialogPrivate();
 
-    QWindow *parentWindow() const;
+    QWindow *transientParentWindow() const;
     bool setNativeDialogVisible(bool visible);
     QVariant styleHint(QPlatformDialogHelper::StyleHint hint) const;
     void deletePlatformHelper();

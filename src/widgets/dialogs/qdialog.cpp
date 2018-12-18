@@ -145,10 +145,13 @@ bool QDialogPrivate::canBeNativeDialog() const
     return false;
 }
 
-QWindow *QDialogPrivate::parentWindow() const
+QWindow *QDialogPrivate::transientParentWindow() const
 {
-    if (const QWidget *parent = q_func()->nativeParentWidget())
+    Q_Q(const QDialog);
+    if (const QWidget *parent = q->nativeParentWidget())
         return parent->windowHandle();
+    else if (q->windowHandle())
+        return q->windowHandle()->transientParent();
     return 0;
 }
 
@@ -158,7 +161,7 @@ bool QDialogPrivate::setNativeDialogVisible(bool visible)
         if (visible) {
             Q_Q(QDialog);
             helperPrepareShow(helper);
-            nativeDialogInUse = helper->show(q->windowFlags(), q->windowModality(), parentWindow());
+            nativeDialogInUse = helper->show(q->windowFlags(), q->windowModality(), transientParentWindow());
         } else if (nativeDialogInUse) {
             helper->hide();
         }
