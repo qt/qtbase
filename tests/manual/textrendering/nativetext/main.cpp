@@ -101,7 +101,7 @@ public:
 
         const int ascent = fontMetrics().ascent();
 
-        QPen metricsPen(Qt::magenta, 1.0);
+        QPen metricsPen(QColor(112, 216, 255), 1.0);
         metricsPen.setCosmetic(true);
         p.setPen(metricsPen);
         p.drawLine(QPoint(0, ascent), QPoint(width(), ascent));
@@ -201,7 +201,7 @@ public:
                 case 0: return qMakePair(QColor(), QColor());
                 case 1: return qMakePair(QColor(Qt::black), QColor(Qt::white));
                 case 2: return qMakePair(QColor(Qt::white), QColor(Qt::black));
-                case 3: return qMakePair(QColor(Qt::green), QColor(Qt::red));
+                case 3: return qMakePair(QColor(Qt::magenta), QColor(Qt::green));
                 case 4: return qMakePair(QColor(0, 0, 0, 128), QColor(Qt::white));
                 case 5: return qMakePair(QColor(255, 255, 255, 128), QColor(Qt::black));
                 default: return qMakePair(QColor(), QColor());
