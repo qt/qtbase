@@ -110,4 +110,8 @@ qtConfig(xkb) {
 
 qtConfig(dlopen): QMAKE_USE += libdl
 
+# qxcbkeyboard.cpp's KeyTbl has more than 256 levels of expansion and older
+# Clang uses that as a limit (it's 1024 in current versions).
+clang:!intel_icc: QMAKE_CXXFLAGS += -ftemplate-depth=1024
+
 load(qt_module)
