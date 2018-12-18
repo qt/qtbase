@@ -1884,6 +1884,42 @@ bool qSharedBuild() noexcept
 */
 
 /*!
+    \macro Q_PROCESSOR_RISCV
+    \relates <QtGlobal>
+    \since 5.13
+
+    Defined if the application is compiled for RISC-V processors. Qt currently
+    supports two RISC-V variants: \l Q_PROCESSOR_RISCV_32 and \l
+    Q_PROCESSOR_RISCV_64.
+
+    \sa QSysInfo::buildCpuArchitecture()
+*/
+
+/*!
+    \macro Q_PROCESSOR_RISCV_32
+    \relates <QtGlobal>
+    \since 5.13
+
+    Defined if the application is compiled for 32-bit RISC-V processors. The \l
+    Q_PROCESSOR_RISCV macro is also defined when Q_PROCESSOR_RISCV_32 is
+    defined.
+
+    \sa QSysInfo::buildCpuArchitecture()
+*/
+
+/*!
+    \macro Q_PROCESSOR_RISCV_64
+    \relates <QtGlobal>
+    \since 5.13
+
+    Defined if the application is compiled for 64-bit RISC-V processors. The \l
+    Q_PROCESSOR_RISCV macro is also defined when Q_PROCESSOR_RISCV_64 is
+    defined.
+
+    \sa QSysInfo::buildCpuArchitecture()
+*/
+
+/*!
     \macro Q_PROCESSOR_S390
     \relates <QtGlobal>
 
