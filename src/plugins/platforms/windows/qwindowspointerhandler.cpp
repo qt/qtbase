@@ -54,7 +54,6 @@
 #  include "qwindowsdrag.h"
 #endif
 
-#include <qpa/qwindowsysteminterface.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qtouchdevice.h>
@@ -370,6 +369,22 @@ static Qt::MouseButtons mouseButtonsFromPointerFlags(POINTER_FLAGS pointerFlags)
     return result;
 }
 
+static Qt::MouseButtons mouseButtonsFromKeyState(WPARAM keyState)
+{
+    Qt::MouseButtons result = Qt::NoButton;
+    if (keyState & MK_LBUTTON)
+        result |= Qt::LeftButton;
+    if (keyState & MK_RBUTTON)
+        result |= Qt::RightButton;
+    if (keyState & MK_MBUTTON)
+        result |= Qt::MiddleButton;
+    if (keyState & MK_XBUTTON1)
+        result |= Qt::XButton1;
+    if (keyState & MK_XBUTTON2)
+        result |= Qt::XButton2;
+    return result;
+}
+
 static QWindow *getWindowUnderPointer(QWindow *window, QPoint globalPos)
 {
     QWindow *currentWindowUnderPointer = QWindowsScreen::windowAt(globalPos, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT);
@@ -411,6 +426,15 @@ static bool isValidWheelReceiver(QWindow *candidate)
     return false;
 }
 
+static bool isMenuWindow(QWindow *window)
+{
+    if (window)
+        if (QObject *fo = window->focusObject())
+            if (fo->inherits("QMenu"))
+                return true;
+    return false;
+}
+
 static QTouchDevice *createTouchDevice()
 {
     const int digitizers = GetSystemMetrics(SM_DIGITIZER);
@@ -439,6 +463,103 @@ QTouchDevice *QWindowsPointerHandler::ensureTouchDevice()
     return m_touchDevice;
 }
 
+void QWindowsPointerHandler::handleCaptureRelease(QWindow *window,
+                                                  QWindow *currentWindowUnderPointer,
+                                                  HWND hwnd,
+                                                  QEvent::Type eventType,
+                                                  Qt::MouseButtons mouseButtons)
+{
+    QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
+
+    // Qt expects the platform plugin to capture the mouse on any button press until release.
+    if (!platformWindow->hasMouseCapture() && eventType == QEvent::MouseButtonPress) {
+
+        platformWindow->setMouseGrabEnabled(true);
+        platformWindow->setFlag(QWindowsWindow::AutoMouseCapture);
+        qCDebug(lcQpaEvents) << "Automatic mouse capture " << window;
+
+        // Implement "Click to focus" for native child windows (unless it is a native widget window).
+        if (!window->isTopLevel() && !window->inherits("QWidgetWindow") && QGuiApplication::focusWindow() != window)
+            window->requestActivate();
+
+    } else if (platformWindow->hasMouseCapture()
+               && platformWindow->testFlag(QWindowsWindow::AutoMouseCapture)
+               && eventType == QEvent::MouseButtonRelease
+               && !mouseButtons) {
+
+        platformWindow->setMouseGrabEnabled(false);
+        qCDebug(lcQpaEvents) << "Releasing automatic mouse capture " << window;
+    }
+
+    // Enter new window: track to generate leave event.
+    // If there is an active capture, only track if the current window is capturing,
+    // so we don't get extra leave when cursor leaves the application.
+    if (window != m_currentWindow &&
+            (!platformWindow->hasMouseCapture() || currentWindowUnderPointer == window)) {
+        trackLeave(hwnd);
+        m_currentWindow =  window;
+    }
+}
+
+void QWindowsPointerHandler::handleEnterLeave(QWindow *window,
+                                              QWindow *currentWindowUnderPointer,
+                                              QPoint globalPos)
+{
+    QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
+    const bool hasCapture = platformWindow->hasMouseCapture();
+
+    // No enter or leave events are sent as long as there is an autocapturing window.
+    if (!hasCapture || !platformWindow->testFlag(QWindowsWindow::AutoMouseCapture)) {
+
+        // Leave is needed if:
+        // 1) There is no capture and we move from a window to another window.
+        //    Note: Leaving the application entirely is handled in translateMouseEvent(WM_MOUSELEAVE).
+        // 2) There is capture and we move out of the capturing window.
+        // 3) There is a new capture and we were over another window.
+        if ((m_windowUnderPointer && m_windowUnderPointer != currentWindowUnderPointer
+                && (!hasCapture || window == m_windowUnderPointer))
+            || (hasCapture && m_previousCaptureWindow != window && m_windowUnderPointer
+                && m_windowUnderPointer != window)) {
+
+            qCDebug(lcQpaEvents) << "Leaving window " << m_windowUnderPointer;
+            QWindowSystemInterface::handleLeaveEvent(m_windowUnderPointer);
+
+            if (hasCapture && currentWindowUnderPointer != window) {
+                // Clear tracking if capturing and current window is not the capturing window
+                // to avoid leave when mouse actually leaves the application.
+                m_currentWindow = nullptr;
+                // We are not officially in any window, but we need to set some cursor to clear
+                // whatever cursor the left window had, so apply the cursor of the capture window.
+                platformWindow->applyCursor();
+            }
+        }
+
+        // Enter is needed if:
+        // 1) There is no capture and we move to a new window.
+        // 2) There is capture and we move into the capturing window.
+        // 3) The capture just ended and we are over non-capturing window.
+        if ((currentWindowUnderPointer && m_windowUnderPointer != currentWindowUnderPointer
+                && (!hasCapture || currentWindowUnderPointer == window))
+            || (m_previousCaptureWindow && !hasCapture && currentWindowUnderPointer
+                && currentWindowUnderPointer != m_previousCaptureWindow)) {
+
+            QPoint wumLocalPos;
+            if (QWindowsWindow *wumPlatformWindow = QWindowsWindow::windowsWindowOf(currentWindowUnderPointer)) {
+                wumLocalPos = wumPlatformWindow->mapFromGlobal(globalPos);
+                wumPlatformWindow->applyCursor();
+            }
+            qCDebug(lcQpaEvents) << "Entering window " << currentWindowUnderPointer;
+            QWindowSystemInterface::handleEnterEvent(currentWindowUnderPointer, wumLocalPos, globalPos);
+        }
+
+        // We need to track m_windowUnderPointer separately from m_currentWindow, as Windows
+        // mouse tracking will not trigger WM_MOUSELEAVE for leaving window when mouse capture is set.
+        m_windowUnderPointer = currentWindowUnderPointer;
+    }
+
+    m_previousCaptureWindow = hasCapture ? window : nullptr;
+}
+
 bool QWindowsPointerHandler::translateMouseTouchPadEvent(QWindow *window, HWND hwnd,
                                                          QtWindows::WindowsEventType et,
                                                          MSG msg, PVOID vPointerInfo)
@@ -448,9 +569,7 @@ bool QWindowsPointerHandler::translateMouseTouchPadEvent(QWindow *window, HWND h
     const QPoint localPos = QWindowsGeometryHint::mapFromGlobal(hwnd, globalPos);
     const Qt::KeyboardModifiers keyModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
     const Qt::MouseButtons mouseButtons = mouseButtonsFromPointerFlags(pointerInfo->pointerFlags);
-
     QWindow *currentWindowUnderPointer = getWindowUnderPointer(window, globalPos);
-    QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
 
     switch (msg.message) {
     case WM_NCPOINTERDOWN:
@@ -469,38 +588,17 @@ bool QWindowsPointerHandler::translateMouseTouchPadEvent(QWindow *window, HWND h
                                                                keyModifiers, Qt::MouseEventNotSynthesized);
             return false;  // To allow window dragging, etc.
         } else {
-            if (eventType == QEvent::MouseButtonPress) {
-                // Implement "Click to focus" for native child windows (unless it is a native widget window).
-                if (!window->isTopLevel() && !window->inherits("QWidgetWindow") && QGuiApplication::focusWindow() != window)
-                    window->requestActivate();
-            }
-            if (currentWindowUnderPointer != m_windowUnderPointer) {
-                if (m_windowUnderPointer && m_windowUnderPointer == m_currentWindow) {
-                    QWindowSystemInterface::handleLeaveEvent(m_windowUnderPointer);
-                    m_currentWindow = nullptr;
-                }
 
-                if (currentWindowUnderPointer) {
-                    if (currentWindowUnderPointer != m_currentWindow) {
-                        QWindowSystemInterface::handleEnterEvent(currentWindowUnderPointer, localPos, globalPos);
-                        m_currentWindow = currentWindowUnderPointer;
-                        if (QWindowsWindow *wumPlatformWindow = QWindowsWindow::windowsWindowOf(currentWindowUnderPointer))
-                            wumPlatformWindow->applyCursor();
-                        trackLeave(hwnd);
-                    }
-                } else {
-                    platformWindow->applyCursor();
-                }
-                m_windowUnderPointer = currentWindowUnderPointer;
-            }
+            handleCaptureRelease(window, currentWindowUnderPointer, hwnd, eventType, mouseButtons);
+            handleEnterLeave(window, currentWindowUnderPointer, globalPos);
 
             QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos, mouseButtons, button, eventType,
                                                      keyModifiers, Qt::MouseEventNotSynthesized);
 
             // The initial down click over the QSizeGrip area, which posts a resize WM_SYSCOMMAND
             // has go to through DefWindowProc() for resizing to work, so we return false here,
-            // unless the mouse is captured, as it would mess with menu processing.
-            return msg.message != WM_POINTERDOWN || GetCapture();
+            // unless the click was on a menu, as it would mess with menu processing.
+            return msg.message != WM_POINTERDOWN || isMenuWindow(window);
         }
     }
     case WM_POINTERHWHEEL:
@@ -770,7 +868,6 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window, HWND hwnd, QtW
     }
 
     const Qt::KeyboardModifiers keyModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
-    QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
 
     if (et == QtWindows::MouseWheelEvent) {
 
@@ -792,36 +889,20 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window, HWND hwnd, QtW
 
     if (msg.message == WM_MOUSELEAVE) {
         if (window == m_currentWindow) {
-            QWindowSystemInterface::handleLeaveEvent(window);
+            QWindow *leaveTarget = m_windowUnderPointer ? m_windowUnderPointer : m_currentWindow;
+            qCDebug(lcQpaEvents) << "Leaving window " << leaveTarget;
+            QWindowSystemInterface::handleLeaveEvent(leaveTarget);
             m_windowUnderPointer = nullptr;
             m_currentWindow = nullptr;
-            platformWindow->applyCursor();
         }
         return false;
     }
 
     QWindow *currentWindowUnderPointer = getWindowUnderPointer(window, globalPos);
+    const Qt::MouseButtons mouseButtons = mouseButtonsFromKeyState(msg.wParam);
 
-    if (currentWindowUnderPointer != m_windowUnderPointer) {
-        if (m_windowUnderPointer && m_windowUnderPointer == m_currentWindow) {
-            QWindowSystemInterface::handleLeaveEvent(m_windowUnderPointer);
-            m_currentWindow = nullptr;
-        }
-
-        if (currentWindowUnderPointer) {
-            if (currentWindowUnderPointer != m_currentWindow) {
-                QWindowSystemInterface::handleEnterEvent(currentWindowUnderPointer, localPos, globalPos);
-                m_currentWindow = currentWindowUnderPointer;
-                if (QWindowsWindow *wumPlatformWindow = QWindowsWindow::windowsWindowOf(currentWindowUnderPointer))
-                    wumPlatformWindow->applyCursor();
-                trackLeave(hwnd);
-            }
-        } else {
-            platformWindow->applyCursor();
-        }
-        m_windowUnderPointer = currentWindowUnderPointer;
-    }
-
+    handleCaptureRelease(window, currentWindowUnderPointer, hwnd, QEvent::MouseMove, mouseButtons);
+    handleEnterLeave(window, currentWindowUnderPointer, globalPos);
     return false;
 }
 
