@@ -916,23 +916,63 @@ void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, int value)
 
 #ifndef QT_NO_QOBJECT
 /*!
+    \fn QDebug qt_QMetaEnum_debugOperator(QDebug &, int value, const QMetaObject *, const char *name)
     \internal
+
+    Formats the given enum \a value for debug output.
+
+    The supported verbosity are:
+
+      0: Just the key, or value with enum name if no key is found:
+
+         MyEnum2
+         MyEnum(123)
+         MyScopedEnum::Enum3
+         MyScopedEnum(456)
+
+      1: Same as 0, but treating all enums as scoped:
+
+         MyEnum::MyEnum2
+         MyEnum(123)
+         MyScopedEnum::Enum3
+         MyScopedEnum(456)
+
+      2: The QDebug default. Same as 0, and includes class/namespace scope:
+
+         MyNamespace::MyClass::MyEnum2
+         MyNamespace::MyClass::MyEnum(123)
+         MyNamespace::MyClass::MyScopedEnum::Enum3
+         MyNamespace::MyClass::MyScopedEnum(456)
+
+      3: Same as 2, but treating all enums as scoped:
+
+         MyNamespace::MyClass::MyEnum::MyEnum2
+         MyNamespace::MyClass::MyEnum(123)
+         MyNamespace::MyClass::MyScopedEnum::Enum3
+         MyNamespace::MyClass::MyScopedEnum(456)
  */
 QDebug qt_QMetaEnum_debugOperator(QDebug &dbg, int value, const QMetaObject *meta, const char *name)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace();
     QMetaEnum me = meta->enumerator(meta->indexOfEnumerator(name));
-    const char *key = me.valueToKey(value);
-    if (key) {
+
+    const int verbosity = dbg.verbosity();
+    if (verbosity >= QDebug::DefaultVerbosity) {
         if (const char *scope = me.scope())
             dbg << scope << "::";
-        if (me.isScoped())
-            dbg << me.enumName() << "::";
-        dbg << key;
-    } else {
-        dbg << meta->className() << "::" << name << "(" << value << ")";
     }
+
+    const char *key = me.valueToKey(value);
+    const bool scoped = me.isScoped() || verbosity & 1;
+    if (scoped || !key)
+        dbg << me.enumName() << (!key ? "(" : "::");
+
+    if (key)
+        dbg << key;
+    else
+        dbg << value << ")";
+
     return dbg;
 }
 

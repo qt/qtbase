@@ -324,6 +324,7 @@ private slots:
     void signal();
     void signalIndex_data();
     void signalIndex();
+    void enumDebugStream_data();
     void enumDebugStream();
 
     void inherits_data();
@@ -1741,16 +1742,52 @@ void tst_QMetaObject::signalIndex()
              SignalTestHelper::signalIndex(mm));
 }
 
+void tst_QMetaObject::enumDebugStream_data()
+{
+    QTest::addColumn<int>("verbosity");
+    QTest::addColumn<QString>("normalEnumMsg");
+    QTest::addColumn<QString>("scopedEnumMsg");
+    QTest::addColumn<QString>("globalEnumMsg");
+
+    QTest::newRow("verbosity=0") << 0
+        << "WindowTitleHint Window Desktop WindowSystemMenuHint";
+        << "hello MyEnum2 world"
+        << "hello MyScopedEnum::Enum3 scoped world"
+
+    QTest::newRow("verbosity=1") << 1
+        << "WindowType::WindowTitleHint WindowType::Window WindowType::Desktop WindowType::WindowSystemMenuHint";
+        << "hello MyEnum::MyEnum2 world"
+        << "hello MyScopedEnum::Enum3 scoped world"
+
+    QTest::newRow("verbosity=2") << 2
+        << "Qt::WindowTitleHint Qt::Window Qt::Desktop Qt::WindowSystemMenuHint";
+        << "hello MyNamespace::MyClass::MyEnum2 world"
+        << "hello MyNamespace::MyClass::MyScopedEnum::Enum3 scoped world"
+
+    QTest::newRow("verbosity=3") << 3
+        << "Qt::WindowType::WindowTitleHint Qt::WindowType::Window Qt::WindowType::Desktop Qt::WindowType::WindowSystemMenuHint";
+        << "hello MyNamespace::MyClass::MyEnum::MyEnum2 world"
+        << "hello MyNamespace::MyClass::MyScopedEnum::Enum3 scoped world"
+}
+
 void tst_QMetaObject::enumDebugStream()
 {
-    QTest::ignoreMessage(QtDebugMsg, "hello MyNamespace::MyClass::MyEnum2 world ");
-    qDebug() << "hello" << MyNamespace::MyClass::MyEnum2 << "world";
+    QFETCH(int, verbosity);
+    QFETCH(QString, normalEnumMsg);
+    QFETCH(QString, scopedEnumMsg);
+    QFETCH(QString, globalEnumMsg);
 
-    QTest::ignoreMessage(QtDebugMsg, "hello MyNamespace::MyClass::MyScopedEnum::Enum3 scoped world ");
-    qDebug() << "hello" << MyNamespace::MyClass::MyScopedEnum::Enum3 << "scoped world";
+    QTest::ignoreMessage(QtDebugMsg, qPrintable(normalEnumMsg));
+    qDebug().verbosity(verbosity) << "hello" << MyNamespace::MyClass::MyEnum2 << "world";
 
-    QTest::ignoreMessage(QtDebugMsg, "Qt::WindowTitleHint Qt::Window Qt::Desktop Qt::WindowSystemMenuHint");
-    qDebug() << Qt::WindowTitleHint << Qt::Window << Qt::Desktop << Qt::WindowSystemMenuHint;
+    QTest::ignoreMessage(QtDebugMsg, qPrintable(scopedEnumMsg));
+    qDebug().verbosity(verbosity) << "hello" << MyNamespace::MyClass::MyScopedEnum::Enum3 << "scoped world";
+
+    QTest::ignoreMessage(QtDebugMsg, qPrintable(globalEnumMsg));
+    qDebug().verbosity(verbosity) << Qt::WindowTitleHint << Qt::Window << Qt::Desktop << Qt::WindowSystemMenuHint;
+
+    if (verbosity != 2)
+        return;
 
     QTest::ignoreMessage(QtDebugMsg, "hello QFlags<MyNamespace::MyClass::MyFlag>(MyFlag1) world");
     MyNamespace::MyClass::MyFlags f1 = MyNamespace::MyClass::MyFlag1;
