@@ -476,6 +476,17 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
+    \fn QDebug &QDebug::verbosity(int verbosityLevel)
+    \since 5.13
+
+    Sets the verbosity of the stream to \a verbosityLevel and returns a reference to the stream.
+
+    The allowed range is from 0 to 7. The default value is 2.
+
+    \sa verbosity(), setVerbosity()
+*/
+
+/*!
     \fn QDebug &QDebug::operator<<(QChar t)
 
     Writes the character, \a t, to the stream and returns a reference to the
