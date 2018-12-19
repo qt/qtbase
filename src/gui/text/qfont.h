@@ -147,6 +147,7 @@ public:
     Q_ENUM(SpacingType)
 
     enum ResolveProperties {
+        NoPropertiesResolved        = 0x0000,
         FamilyResolved              = 0x0001,
         SizeResolved                = 0x0002,
         StyleHintResolved           = 0x0004,
@@ -167,6 +168,7 @@ public:
         FamiliesResolved            = 0x20000,
         AllPropertiesResolved       = 0x3ffff
     };
+    Q_ENUM(ResolveProperties)
 
     QFont();
     QFont(const QString &family, int pointSize = -1, int weight = -1, bool italic = false);
@@ -333,6 +335,10 @@ private:
 #ifndef QT_NO_DATASTREAM
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QFont &);
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QFont &);
+#endif
+
+#ifndef QT_NO_DEBUG_STREAM
+    friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QFont &);
 #endif
 
     QExplicitlySharedDataPointer<QFontPrivate> d;

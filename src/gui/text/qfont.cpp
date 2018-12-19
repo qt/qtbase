@@ -3161,7 +3161,104 @@ void QFontCache::decreaseCache()
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug stream, const QFont &font)
 {
-    return stream << "QFont(" << font.toString() << ')';
+    QDebugStateSaver saver(stream);
+    stream.nospace().noquote();
+    stream << "QFont(";
+
+    if (stream.verbosity() == QDebug::DefaultVerbosity) {
+        stream << font.toString() << ")";
+        return stream;
+    }
+
+    QString fontDescription;
+    QDebug debug(&fontDescription);
+    debug.nospace();
+
+    QFontPrivate priv;
+    const QFont defaultFont(&priv);
+
+    for (int property = QFont::FamilyResolved; property < QFont::AllPropertiesResolved; property <<= 1) {
+        const bool resolved = (font.resolve_mask & property) != 0;
+        if (!resolved && stream.verbosity() == QDebug::MinimumVerbosity)
+            continue;
+
+        #define QFONT_DEBUG_SKIP_DEFAULT(prop) \
+            if ((font.prop() == defaultFont.prop()) && stream.verbosity() == 1) \
+                continue;
+
+        QDebugStateSaver saver(debug);
+
+        switch (property) {
+        case QFont::FamilyResolved:
+            debug << font.family(); break;
+        case QFont::SizeResolved:
+            if (font.pointSizeF() >= 0)
+                debug << font.pointSizeF() << "pt";
+            else if (font.pixelSize() >= 0)
+                debug << font.pixelSize() << "px";
+            else
+                Q_UNREACHABLE();
+            break;
+        case QFont::StyleHintResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(styleHint);
+            debug.verbosity(1) << font.styleHint(); break;
+        case QFont::StyleStrategyResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(styleStrategy);
+            debug.verbosity(1) << font.styleStrategy(); break;
+        case QFont::WeightResolved:
+            debug.verbosity(1) << QFont::Weight(font.weight()); break;
+        case QFont::StyleResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(style);
+            debug.verbosity(0) << font.style(); break;
+        case QFont::UnderlineResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(underline);
+            debug << "underline=" << font.underline(); break;
+        case QFont::OverlineResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(overline);
+            debug << "overline=" << font.overline(); break;
+        case QFont::StrikeOutResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(strikeOut);
+            debug << "strikeOut=" << font.strikeOut(); break;
+        case QFont::FixedPitchResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(fixedPitch);
+            debug << "fixedPitch=" << font.fixedPitch(); break;
+        case QFont::StretchResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(stretch);
+            debug.verbosity(0) << QFont::Stretch(font.stretch()); break;
+        case QFont::KerningResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(kerning);
+            debug << "kerning=" << font.kerning(); break;
+        case QFont::CapitalizationResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(capitalization);
+            debug.verbosity(0) << font.capitalization(); break;
+        case QFont::LetterSpacingResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(letterSpacing);
+            debug << "letterSpacing=" << font.letterSpacing();
+            debug.verbosity(0) << " (" << font.letterSpacingType() << ")";
+            break;
+        case QFont::HintingPreferenceResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(hintingPreference);
+            debug.verbosity(0) << font.hintingPreference(); break;
+        case QFont::StyleNameResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(styleName);
+            debug << "styleName=" << font.styleName(); break;
+        default:
+            continue;
+        };
+
+        #undef QFONT_DEBUG_SKIP_DEFAULT
+
+        debug << ", ";
+    }
+
+    if (stream.verbosity() > QDebug::MinimumVerbosity)
+        debug.verbosity(0) << "resolveMask=" << QFlags<QFont::ResolveProperties>(font.resolve_mask);
+    else
+        fontDescription.chop(2); // Last ', '
+
+    stream << fontDescription << ')';
+
+    return stream;
 }
 #endif
 
