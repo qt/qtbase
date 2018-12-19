@@ -976,17 +976,67 @@ QDebug qt_QMetaEnum_debugOperator(QDebug &dbg, int value, const QMetaObject *met
     return dbg;
 }
 
+/*!
+    \fn QDebug qt_QMetaEnum_flagDebugOperator(QDebug &, quint64 value, const QMetaObject *, const char *name)
+    \internal
+
+    Formats the given flag \a value for debug output.
+
+    The supported verbosity are:
+
+      0: Just the key(s):
+
+         MyFlag1
+         MyFlag2|MyFlag3
+         MyScopedFlag(MyFlag2)
+         MyScopedFlag(MyFlag2|MyFlag3)
+
+      1: Same as 0, but treating all flags as scoped:
+
+         MyFlag(MyFlag1)
+         MyFlag(MyFlag2|MyFlag3)
+         MyScopedFlag(MyFlag2)
+         MyScopedFlag(MyFlag2|MyFlag3)
+
+      2: The QDebug default. Same as 1, and includes class/namespace scope:
+
+         QFlags<MyNamespace::MyClass::MyFlag>(MyFlag1)
+         QFlags<MyNamespace::MyClass::MyFlag>(MyFlag2|MyFlag3)
+         QFlags<MyNamespace::MyClass::MyScopedFlag>(MyFlag2)
+         QFlags<MyNamespace::MyClass::MyScopedFlag>(MyFlag2|MyFlag3)
+ */
 QDebug qt_QMetaEnum_flagDebugOperator(QDebug &debug, quint64 value, const QMetaObject *meta, const char *name)
 {
+    const int verbosity = debug.verbosity();
+
     QDebugStateSaver saver(debug);
     debug.resetFormat();
     debug.noquote();
     debug.nospace();
-    debug << "QFlags<";
+
     const QMetaEnum me = meta->enumerator(meta->indexOfEnumerator(name));
-    if (const char *scope = me.scope())
-        debug << scope << "::";
-    debug << me.enumName() << ">(" << me.valueToKeys(value) << ')';
+
+    const bool classScope = verbosity >= QDebug::DefaultVerbosity;
+    if (classScope) {
+        debug << "QFlags<";
+
+        if (const char *scope = me.scope())
+            debug << scope << "::";
+    }
+
+    const bool enumScope = me.isScoped() || verbosity > QDebug::MinimumVerbosity;
+    if (enumScope) {
+        debug << me.enumName();
+        if (classScope)
+            debug << ">";
+        debug << "(";
+    }
+
+    debug << me.valueToKeys(value);
+
+    if (enumScope)
+        debug << ')';
+
     return debug;
 }
 #endif // !QT_NO_QOBJECT
