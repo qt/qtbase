@@ -194,7 +194,7 @@ struct FontDescription {
     QFont::Weight weight;
     QFont::Style style;
     QFont::Stretch stretch;
-    int pixelSize;
+    qreal pointSize;
     bool fixedPitch;
     QSupportedWritingSystems writingSystems;
 };
@@ -210,7 +210,7 @@ Q_DECL_UNUSED static inline QDebug operator<<(QDebug debug, const FontDescriptio
         << ", weight=" << fd.weight
         << ", style=" << fd.style
         << ", stretch=" << fd.stretch
-        << ", pixelSize=" << fd.pixelSize
+        << ", pointSize=" << fd.pointSize
         << ", fixedPitch=" << fd.fixedPitch
         << ", writingSystems=" << fd.writingSystems
     << ")";
@@ -286,9 +286,11 @@ static void getFontDescription(CTFontDescriptorRef font, FontDescription *fd)
         if (CFNumberIsFloatType(size)) {
             double d;
             CFNumberGetValue(size, kCFNumberDoubleType, &d);
-            fd->pixelSize = d;
+            fd->pointSize = d;
         } else {
-            CFNumberGetValue(size, kCFNumberIntType, &fd->pixelSize);
+            int i;
+            CFNumberGetValue(size, kCFNumberIntType, &i);
+            fd->pointSize = i;
         }
     }
 
@@ -316,8 +318,8 @@ void QCoreTextFontDatabase::populateFromDescriptor(CTFontDescriptorRef font, con
 
     CFRetain(font);
     QPlatformFontDatabase::registerFont(family, fd.styleName, fd.foundryName, fd.weight, fd.style, fd.stretch,
-            true /* antialiased */, true /* scalable */,
-            fd.pixelSize, fd.fixedPitch, fd.writingSystems, (void *) font);
+            true /* antialiased */, true /* scalable */, 0 /* pixelSize, ignored as font is scalable */,
+            fd.fixedPitch, fd.writingSystems, (void *)font);
 }
 
 static NSString * const kQtFontDataAttribute = @"QtFontDataAttribute";
@@ -727,7 +729,7 @@ QFont *QCoreTextFontDatabase::themeFont(QPlatformTheme::Font f) const
     else
         CFRelease(fontDesc);
 
-    QFont *font = new QFont(fd.familyName, fd.pixelSize, fd.weight, fd.style == QFont::StyleItalic);
+    QFont *font = new QFont(fd.familyName, fd.pointSize, fd.weight, fd.style == QFont::StyleItalic);
     return font;
 }
 
