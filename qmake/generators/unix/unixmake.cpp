@@ -506,17 +506,14 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                             if (opt.startsWith("-Xarch"))
                                 opt = l.at(++lit); // The user has done the right thing and prefixed each part
                         }
-                        bool found = false;
                         for(int x = 0; x < lflags[arch].size(); ++x) {
                             if (lflags[arch].at(x) == "-framework" && lflags[arch].at(++x) == opt) {
-                                found = true;
+                                lflags[arch].remove(x - 1, 2);
                                 break;
                             }
                         }
-                        if(!found) {
-                            lflags[arch].append("-framework");
-                            lflags[arch].append(opt);
-                        }
+                        lflags[arch].append("-framework");
+                        lflags[arch].append(opt);
                     } else {
                         lflags[arch].append(opt);
                     }
