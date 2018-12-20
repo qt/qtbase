@@ -96,8 +96,8 @@ public:
         UnknownLaterVersion = 100000
     };
 
-    explicit QPSQLDriver(QObject *parent=0);
-    explicit QPSQLDriver(PGconn *conn, QObject *parent=0);
+    explicit QPSQLDriver(QObject *parent = nullptr);
+    explicit QPSQLDriver(PGconn *conn, QObject *parent = nullptr);
     ~QPSQLDriver();
     bool hasFeature(DriverFeature f) const override;
     bool open(const QString & db,
