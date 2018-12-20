@@ -81,7 +81,7 @@ def map_to_file(f: str, top_dir: str, current_dir: str,
     return f
 
 
-def map_source_to_cmake(source: str) -> typing.Optional[str]:
+def map_source_to_cmake(source: str, base_dir: str, vpath: List[str]) -> typing.Optional[str]:
     if not source or source == '$$NO_PCH_SOURCES':
         return None
     if source.startswith('$$PWD/'):
@@ -90,7 +90,19 @@ def map_source_to_cmake(source: str) -> typing.Optional[str]:
         return "${CMAKE_CURRENT_SOURCE_DIR}"
     if source.startswith('$$QT_SOURCE_TREE/'):
         return "${PROJECT_SOURCE_DIR}/" + source[17:]
-    return source
+
+    if os.path.exists(os.path.join(base_dir, source)):
+        return source
+
+
+    for v in vpath:
+        fullpath = os.path.join(v, source)
+        if os.path.exists(fullpath):
+            relpath = os.path.relpath(fullpath, base_dir)
+            return relpath
+
+    print('    XXXX: Source {}: Not found.'.format(source))
+    return '{}-NOTFOUND'.format(source)
 
 
 def map_source_to_fs(base_dir: str, file: str, source: str) -> typing.Optional[str]:
@@ -492,7 +504,9 @@ def write_sources_section(cm_fh: IO[str], scope: Scope, *, indent: int=0,
         else:
             sources += resources
 
-    sources = [map_source_to_cmake(s) for s in sources]
+    vpath = scope.get('VPATH')
+
+    sources = [map_source_to_cmake(s, scope.basedir(), vpath) for s in sources]
     if sources:
         cm_fh.write('{}    SOURCES\n'.format(ind))
     for l in sort_sources(sources):
