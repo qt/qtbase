@@ -335,7 +335,7 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g, QFixed subP
             // TODO optimize this
             mask = mask.alphaChannel();
             mask.invertPixels();
-            mask = mask.convertToFormat(QImage::Format_Mono);
+            mask = mask.convertToFormat(QImage::Format_Mono, Qt::ThresholdDither);
         }
 
         int mw = qMin(mask.width(), c.w);
