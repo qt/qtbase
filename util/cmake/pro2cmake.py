@@ -119,9 +119,74 @@ def map_source_to_fs(base_dir: str, file: str, source: str) -> typing.Optional[s
     return os.path.join(base_dir, source)
 
 
+class Operation:
+    def __init__(self, value):
+        if isinstance(value, list):
+            self._value = value
+        else:
+            self._value = [str(value),]
+
+    def process(self, input):
+        assert(False)
+
+    def __str__(self):
+        assert(False)
+
+
+class AddOperation(Operation):
+    def process(self, input):
+        return input + self._value
+
+    def __str__(self):
+        return '+({})'.format(self._value)
+
+
+class UniqueAddOperation(Operation):
+    def process(self, input):
+        result = input
+        for v in self._value:
+            if not v in result:
+                result += [v,]
+        return result
+
+    def __str__(self):
+        return '*({})'.format(self._value)
+
+
+class SetOperation(Operation):
+    def process(self, input):
+        return self._value
+
+    def __str__(self):
+        return '=({})'.format(self._value)
+
+
+class RemoveOperation(Operation):
+    def __init__(self, value):
+        super().__init__(value)
+
+    def process(self, input):
+        input_set = set(input)
+        result = []
+        for v in self._value:
+            if v in input_set:
+                continue
+            else:
+                result += ['-{}'.format(v),]
+        return result
+
+    def __str__(self):
+        return '-({})'.format(self._value)
+
+
 class Scope:
-    def __init__(self, file: typing.Optional[str]=None, condition: str='', base_dir: str='') -> None:
-        self._parent = None  # type: Scope
+    def __init__(self, parent_scope: typing.Optional['Scope'],
+                 file: typing.Optional[str]=None, condition: str='', base_dir: str='') -> None:
+        if parent_scope:
+            parent_scope._add_child(self)
+        else:
+            self._parent = None
+
         self._basedir = base_dir
         if file:
             self._currentdir = os.path.dirname(file)
@@ -133,27 +198,14 @@ class Scope:
         self._file = file
         self._condition = map_condition(condition)
         self._children = []  # type: List[Scope]
-        self._values = {}  # type: Dict[str, List[str]]
+        self._operations = {}  # type: Dict[str]
 
     def merge(self, other: 'Scope') -> None:
         for c in other._children:
-            self.add_child(c)
-        other.set_basedir(self._basedir)
+            self._add_child(c)
 
-        for k in self._values.keys():
-            if k == 'TEMPLATE':
-                assert other.get(k, []) == self.get(k, [])
-            else:
-                self.append_value(k, other.get(k, []))
-
-        for k in other._values.keys():
-            if k not in self._values:
-                self.set_value(k, other.get(k))
-
-    def set_basedir(self, dir: str) -> None:
-        self._basedir = dir
-        for c in self._children:
-            c.set_basedir(dir)
+        for k in other._operations.keys():
+            self._operations[key] = other._operations[k]
 
     def basedir(self) -> str:
         return self._basedir
@@ -161,9 +213,27 @@ class Scope:
     def currentdir(self) -> str:
         return self._currentdir
 
+    def diff(self, key: str, default: typing.Optional[List[str]]=[]) -> List[str]:
+        mine = self.get(key, default)
+
+        if self._parent:
+            parent = self._parent.get(key, default)
+            if (parent == mine):
+                return []
+
+            parent_set = set(parent)
+            mine_set = set(mine)
+
+            added = [x for x in mine if not x in parent_set]
+            removed = [x for x in parent if not x in mine_set]
+
+            return added + list('# {}'.format(x) for x in removed)
+        return mine
+
     @staticmethod
-    def FromDict(file: str, statements, cond: str = '', base_dir: str = ''):
-        scope = Scope(file, cond, base_dir)
+    def FromDict(parent_scope: typing.Optional['Scope'],
+                 file: str, statements, cond: str = '', base_dir: str = ''):
+        scope = Scope(parent_scope, file, cond, base_dir)
         for statement in statements:
             if isinstance(statement, list):  # Handle skipped parts...
                 assert not statement
@@ -174,16 +244,19 @@ class Scope:
                 key = statement.get('key', '')
                 value = statement.get('value', [])
                 assert key != ''
+                print('#### {}: {} = {}.'.format(operation, key, value))
 
                 if key in ('HEADERS', 'SOURCES', 'INCLUDEPATH') or key.endswith('_HEADERS') or key.endswith('_SOURCES'):
                     value = [map_to_file(v, scope.basedir(), scope.currentdir()) for v in value]
 
                 if operation == '=':
-                    scope.set_value(key, value)
+                    scope._append_operation(key, SetOperation(value))
                 elif operation == '-=':
-                    scope.substract_value(key, value)
-                elif operation == '+=' or operation == '*=':
-                    scope.append_value(key, value)
+                    scope._append_operation(key, RemoveOperation(value))
+                elif operation == '+=':
+                    scope._append_operation(key, AddOperation(value))
+                elif operation == '*=':
+                    scope._append_operation(key, UniqueAddOperation(value))
                 else:
                     print('Unexpected operation "{}" in scope with condition {}.'.format(operation, cond))
                     assert(False)
@@ -192,32 +265,35 @@ class Scope:
 
             condition = statement.get('condition', None)
             if condition:
-                child = Scope.FromDict(file, statement.get('statements'), condition, scope.basedir())
-                scope.add_child(child)
+                child = Scope.FromDict(scope, file, statement.get('statements'), condition, scope.basedir())
 
                 else_statements = statement.get('else_statements')
                 if else_statements:
-                    child = Scope.FromDict(file, else_statements, 'NOT ' + condition, scope.basedir())
-                    scope.add_child(child)
+                    child = Scope.FromDict(scope, file, else_statements, 'NOT ' + condition, scope.basedir())
                 continue
 
-            loaded = statement.get('loaded', None)
+            loaded = statement.get('loaded')
             if loaded:
-                scope.append_value('_LOADED', loaded)
+                scope._append_operation('_LOADED', UniqueAddOperation(loaded))
                 continue
 
             option = statement.get('option', None)
             if option:
-                scope.append_value('_OPTION', option)
+                scope._append_operation('_OPTION', UniqueAddOperation(option))
                 continue
 
             included = statement.get('included', None)
             if included:
-                scope.append_value('_INCLUDED',
-                                   map_to_file(included, scope.basedir(), scope.currentdir()))
+                scope.append_operation('_INCLUDED', UniqueAddOperation(map_to_file(included, scope.basedir(), scope.currentdir())))
                 continue
 
         return scope
+
+    def _append_operation(self, key: str, op: Operation) -> None:
+        if key in self._operations:
+            self._operations[key].append(op)
+        else:
+            self._operations[key] = [op,]
 
     def file(self) -> str:
         return self._file or ''
@@ -228,37 +304,9 @@ class Scope:
     def condition(self) -> str:
         return self._condition
 
-    def _push_down_TEMPLATE(self, template: str) -> None:
-        self.set_value('TEMPLATE', [template, ])
-        for c in self._children:
-            c._push_down_TEMPLATE(template)
-
-    def add_child(self, scope: 'Scope') -> None:
+    def _add_child(self, scope: 'Scope') -> None:
         scope._parent = self
-        if not scope._rawTemplate():
-            scope._push_down_TEMPLATE(self.getTemplate())
         self._children.append(scope)
-
-    def set_value(self, key: str, value: List[str]) -> None:
-        self._values[key] = value
-
-    def append_value(self, key: str, value: Union[str, List[str]]) -> None:
-        array = self._values.get(key, [])
-        if isinstance(value, str):
-            array.append(value)
-        elif isinstance(value, list):
-            array += value
-        else:
-            assert False
-        self._values[key] = array
-
-    def substract_value(self, key: str, value: Union[str, List[str]]) -> None:
-        if isinstance(value, str):
-            to_remove = [value, ]
-        if isinstance(value, list):
-            to_remove = value
-
-        self.append_value(key, ['-{}'.format(v) for v in to_remove])
 
     def children(self) -> List['Scope']:
         return self._children
@@ -270,28 +318,34 @@ class Scope:
         else:
             print('{}Scope {} in {} with condition: {}.'.format(ind, self._file, self._basedir, self._condition))
         print('{}Keys:'.format(ind))
-        for k in sorted(self._values.keys()):
-            print('{}  {} = "{}"'.format(ind, k, self._values[k]))
+        for k in sorted(self._operations.keys()):
+            print('{}  {} = "{}"'.format(ind, k, self._operations.get(k, [])))
         print('{}Children:'.format(ind))
         for c in self._children:
             c.dump(indent=indent + 1)
 
     def get(self, key: str, default=None) -> List[str]:
-        default = default or []
-        return self._values.get(key, default)
+        result = []
+
+        if self._parent:
+            result = self._parent.get(key, default)
+        else:
+            if default:
+                if isinstance(default, list):
+                    result = default
+                else:
+                    result = [str(default),]
+
+        for op in self._operations.get(key, []):
+            result = op.process(result)
+        return result
 
     def getString(self, key: str, default: str = '') -> str:
-        v = self.get(key)
-        if isinstance(v, list):
-            if len(v) == 0:
-                return default
-            assert len(v) == 1
-            return v[0]
-        elif isinstance(v, str):
-            return v
-        else:
-            assert False
-        return default
+        v = self.get(key, default)
+        if len(v) == 0:
+            return default
+        assert len(v) == 1
+        return v[0]
 
     def getTemplate(self) -> str:
         return self.getString('TEMPLATE', 'app')
@@ -425,7 +479,7 @@ def handle_subdir(scope: Scope, cm_fh: IO[str], *, indent: int = 0) -> None:
             cm_fh.write('{}add_subdirectory({})\n'.format(ind, sd))
         elif os.path.isfile(full_sd):
             subdir_result = parseProFile(full_sd, debug=False)
-            subdir_scope = Scope.FromDict(full_sd, subdir_result.asDict().get('statements'),
+            subdir_scope = Scope.FromDict(scope, full_sd, subdir_result.asDict().get('statements'),
                                           '', scope.basedir())
 
             cmakeify_scope(subdir_scope, cm_fh, indent=indent + 1)
@@ -490,8 +544,8 @@ def write_sources_section(cm_fh: IO[str], scope: Scope, *, indent: int=0,
     if plugin_type:
         cm_fh.write('{}    TYPE {}\n'.format(ind, plugin_type[0]))
 
-    sources = scope.get('SOURCES') + scope.get('HEADERS') + scope.get('OBJECTIVE_SOURCES') + scope.get('NO_PCH_SOURCES') + scope.get('FORMS')
-    resources = scope.get('RESOURCES')
+    sources = scope.diff('SOURCES') + scope.diff('HEADERS') + scope.diff('OBJECTIVE_SOURCES') + scope.diff('NO_PCH_SOURCES') + scope.diff('FORMS')
+    resources = scope.diff('RESOURCES')
     if resources:
         qrc_only = True
         for r in resources:
@@ -512,19 +566,21 @@ def write_sources_section(cm_fh: IO[str], scope: Scope, *, indent: int=0,
     for l in sort_sources(sources):
         cm_fh.write('{}        {}\n'.format(ind, l))
 
-    if scope.get('DEFINES'):
+    defines = scope.diff('DEFINES')
+    if defines:
         cm_fh.write('{}    DEFINES\n'.format(ind))
-        for d in scope.get('DEFINES'):
+        for d in defines:
             d = d.replace('=\\\\\\"$$PWD/\\\\\\"', '="${CMAKE_CURRENT_SOURCE_DIR}/"')
             cm_fh.write('{}        {}\n'.format(ind, d))
-    if scope.get('INCLUDEPATH'):
+    includes = scope.diff('INCLUDEPATH')
+    if includes:
         cm_fh.write('{}    INCLUDE_DIRECTORIES\n'.format(ind))
-        for i in scope.get('INCLUDEPATH'):
+        for i in includes:
             cm_fh.write('{}        {}\n'.format(ind, i))
 
-    dependencies = [map_qt_library(q) for q in scope.get('QT') if map_qt_library(q) not in known_libraries]
-    dependencies += [map_qt_library(q) for q in scope.get('QT_FOR_PRIVATE') if map_qt_library(q) not in known_libraries]
-    dependencies += scope.get('QMAKE_USE_PRIVATE') + scope.get('LIBS_PRIVATE') + scope.get('LIBS')
+    dependencies = [map_qt_library(q) for q in scope.diff('QT') if map_qt_library(q) not in known_libraries]
+    dependencies += [map_qt_library(q) for q in scope.diff('QT_FOR_PRIVATE') if map_qt_library(q) not in known_libraries]
+    dependencies += scope.diff('QMAKE_USE_PRIVATE') + scope.diff('LIBS_PRIVATE') + scope.diff('LIBS')
     if dependencies:
         cm_fh.write('{}    LIBRARIES\n'.format(ind))
         is_framework = False
@@ -714,10 +770,8 @@ def do_include(scope: Scope, *, debug: bool=False) -> None:
             continue
 
         include_result = parseProFile(include_file, debug=debug)
-        include_scope = Scope.FromDict(include_file, include_result.asDict().get('statements'),
+        include_scope = Scope.FromDict(scope, include_file, include_result.asDict().get('statements'),
                                        '', dir)
-        if not include_scope._rawTemplate():
-            include_scope._push_down_TEMPLATE(scope.getTemplate())
 
         do_include(include_scope)
 
@@ -744,7 +798,7 @@ def main() -> None:
             print(parseresult.asDict())
             print('\n#### End of parser result dictionary.\n')
 
-        file_scope = Scope.FromDict(file, parseresult.asDict().get('statements'))
+        file_scope = Scope.FromDict(None, file, parseresult.asDict().get('statements'))
 
         if args.debug_pro_structure or args.debug:
             print('\n\n#### .pro/.pri file structure:')
