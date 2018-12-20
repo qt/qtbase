@@ -356,7 +356,7 @@ QDebug &QDebug::resetFormat()
     stream->space = true;
     if (stream->context.version > 1)
         stream->flags = 0;
-    stream->setVerbosity(Stream::DefaultVerbosity);
+    stream->setVerbosity(DefaultVerbosity);
     return *this;
 }
 
@@ -461,7 +461,7 @@ QDebug &QDebug::resetFormat()
 
     The allowed range is from 0 to 7. The default value is 2.
 
-    \sa setVerbosity()
+    \sa setVerbosity(), VerbosityLevel
 */
 
 /*!
@@ -472,7 +472,7 @@ QDebug &QDebug::resetFormat()
 
     The allowed range is from 0 to 7. The default value is 2.
 
-    \sa verbosity()
+    \sa verbosity(), VerbosityLevel
 */
 
 /*!
@@ -482,6 +482,19 @@ QDebug &QDebug::resetFormat()
     Sets the verbosity of the stream to \a verbosityLevel and returns a reference to the stream.
 
     The allowed range is from 0 to 7. The default value is 2.
+
+    \sa verbosity(), setVerbosity(), VerbosityLevel
+*/
+
+/*!
+    \enum QDebug::VerbosityLevel
+    \since 5.13
+
+    This enum describes the range of verbosity levels.
+
+    \value MinimumVerbosity
+    \value DefaultVerbosity
+    \value MaximumVerbosity
 
     \sa verbosity(), setVerbosity()
 */
