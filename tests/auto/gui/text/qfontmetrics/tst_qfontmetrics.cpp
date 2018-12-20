@@ -58,6 +58,7 @@ private slots:
     void lineWidth();
     void mnemonicTextWidth();
     void leadingBelowLine();
+    void elidedMetrics();
 };
 
 void tst_QFontMetrics::same()
@@ -329,6 +330,32 @@ void tst_QFontMetrics::leadingBelowLine()
     line.ascent = 5;
     QCOMPARE(line.height(), line.ascent + line.descent + line.leading);
     QCOMPARE(line.base(), line.ascent);
+}
+
+void tst_QFontMetrics::elidedMetrics()
+{
+    QString testFont = QFINDTESTDATA("fonts/testfont.ttf");
+    QVERIFY(!testFont.isEmpty());
+
+    int id = QFontDatabase::addApplicationFont(testFont);
+    QVERIFY(id >= 0);
+
+    QFont font(QFontDatabase::applicationFontFamilies(id).at(0));
+    font.setPixelSize(12.0);
+
+    QFontMetricsF metrics(font);
+    QString s = QStringLiteral("VeryLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongLongText");
+
+    QRectF boundingRect = metrics.boundingRect(s);
+
+    QString elided = metrics.elidedText(s, Qt::ElideRight, boundingRect.width() / 2.0);
+
+    QRectF elidedBoundingRect = metrics.boundingRect(elided);
+
+    QCOMPARE(boundingRect.height(), elidedBoundingRect.height());
+    QCOMPARE(boundingRect.y(), elidedBoundingRect.y());
+
+    QFontDatabase::removeApplicationFont(id);
 }
 
 QTEST_MAIN(tst_QFontMetrics)
