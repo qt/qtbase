@@ -123,6 +123,7 @@ Q_REQUIRED_RESULT inline bool qIsNull(qfloat16 f) Q_DECL_NOTHROW
 inline int qIntCast(qfloat16 f) Q_DECL_NOTHROW
 { return int(static_cast<float>(f)); }
 
+#ifndef Q_QDOC
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wc99-extensions")
 QT_WARNING_DISABLE_GCC("-Wold-style-cast")
@@ -162,6 +163,7 @@ inline qfloat16::operator float() const Q_DECL_NOTHROW
     return f;
 #endif
 }
+#endif
 
 inline qfloat16 operator-(qfloat16 a) Q_DECL_NOTHROW
 {
