@@ -83,8 +83,6 @@ template<int N>
 struct StaticString
 {
     const char data[N];
-
-    constexpr StaticString(const StaticString<N> &other) noexcept = default;
 };
 
 
