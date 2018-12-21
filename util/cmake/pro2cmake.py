@@ -30,32 +30,38 @@
 from argparse import ArgumentParser
 import os.path
 import re
-import sys
 import io
-from typing import IO, List, Dict, Union
 import typing
 
 import pyparsing as pp
 
-from helper import map_qt_library, map_qt_base_library, featureName, substitute_platform, substitute_libs
+from helper import map_qt_library, map_qt_base_library, featureName, \
+    substitute_platform, substitute_libs
 
 
 def _parse_commandline():
-    parser = ArgumentParser(description='Generate CMakeLists.txt files from .pro files.')
+    parser = ArgumentParser(description='Generate CMakeLists.txt files from .'
+                            'pro files.')
     parser.add_argument('--debug', dest='debug', action='store_true',
                         help='Turn on all debug output')
-    parser.add_argument('--debug-parser', dest='debug_parser', action='store_true',
+    parser.add_argument('--debug-parser', dest='debug_parser',
+                        action='store_true',
                         help='Print debug output from qmake parser.')
-    parser.add_argument('--debug-parse-result', dest='debug_parse_result', action='store_true',
+    parser.add_argument('--debug-parse-result', dest='debug_parse_result',
+                        action='store_true',
                         help='Dump the qmake parser result.')
-    parser.add_argument('--debug-parse-dictionary', dest='debug_parse_dictionary', action='store_true',
+    parser.add_argument('--debug-parse-dictionary',
+                        dest='debug_parse_dictionary', action='store_true',
                         help='Dump the qmake parser result as dictionary.')
-    parser.add_argument('--debug-pro-structure', dest='debug_pro_structure', action='store_true',
+    parser.add_argument('--debug-pro-structure', dest='debug_pro_structure',
+                        action='store_true',
                         help='Dump the structure of the qmake .pro-file.')
-    parser.add_argument('--debug-full-pro-structure', dest='debug_full_pro_structure', action='store_true',
-                        help='Dump the full structure of the qmake .pro-file (with includes).')
-    parser.add_argument('files', metavar='<.pro/.pri file>', type=str, nargs='+',
-                        help='The .pro/.pri file to process')
+    parser.add_argument('--debug-full-pro-structure',
+                        dest='debug_full_pro_structure', action='store_true',
+                        help='Dump the full structure of the qmake .pro-file '
+                        '(with includes).')
+    parser.add_argument('files', metavar='<.pro/.pri file>', type=str,
+                        nargs='+', help='The .pro/.pri file to process')
 
     return parser.parse_args()
 
@@ -81,9 +87,10 @@ def map_to_file(f: str, top_dir: str, current_dir: str,
     return f
 
 
-def map_source_to_cmake(source: str, base_dir: str, vpath: List[str]) -> typing.Optional[str]:
+def map_source_to_cmake(source: str, base_dir: str,
+                        vpath: typing.List[str]) -> str:
     if not source or source == '$$NO_PCH_SOURCES':
-        return None
+        return ''
     if source.startswith('$$PWD/'):
         return source[6:]
     if source == '.':
@@ -93,7 +100,6 @@ def map_source_to_cmake(source: str, base_dir: str, vpath: List[str]) -> typing.
 
     if os.path.exists(os.path.join(base_dir, source)):
         return source
-
 
     for v in vpath:
         fullpath = os.path.join(v, source)
@@ -105,9 +111,10 @@ def map_source_to_cmake(source: str, base_dir: str, vpath: List[str]) -> typing.
     return '{}-NOTFOUND'.format(source)
 
 
-def map_source_to_fs(base_dir: str, file: str, source: str) -> typing.Optional[str]:
+def map_source_to_fs(base_dir: str, file: str,
+                     source: str) -> str:
     if source is None or source == '$$NO_PCH_SOURCES':
-        return None
+        return ''
     if source.startswith('$$PWD/'):
         return os.path.join(os.path.dirname(file), source[6:])
     if source.startswith('$$QT_SOURCE_TREE/'):
@@ -124,7 +131,7 @@ class Operation:
         if isinstance(value, list):
             self._value = value
         else:
-            self._value = [str(value),]
+            self._value = [str(value), ]
 
     def process(self, input):
         assert(False)
@@ -145,8 +152,8 @@ class UniqueAddOperation(Operation):
     def process(self, input):
         result = input
         for v in self._value:
-            if not v in result:
-                result += [v,]
+            if v not in result:
+                result += [v, ]
         return result
 
     def __str__(self):
@@ -172,7 +179,7 @@ class RemoveOperation(Operation):
             if v in input_set:
                 continue
             else:
-                result += ['-{}'.format(v),]
+                result += ['-{}'.format(v), ]
         return result
 
     def __str__(self):
@@ -181,11 +188,12 @@ class RemoveOperation(Operation):
 
 class Scope:
     def __init__(self, parent_scope: typing.Optional['Scope'],
-                 file: typing.Optional[str]=None, condition: str='', base_dir: str='') -> None:
+                 file: typing.Optional[str] = None, condition: str = '',
+                 base_dir: str = '') -> None:
         if parent_scope:
             parent_scope._add_child(self)
         else:
-            self._parent = None
+            self._parent = None  # type: typing.Optional[Scope]
 
         self._basedir = base_dir
         if file:
@@ -197,15 +205,15 @@ class Scope:
 
         self._file = file
         self._condition = map_condition(condition)
-        self._children = []  # type: List[Scope]
-        self._operations = {}  # type: Dict[str]
+        self._children = []  # type: typing.List[Scope]
+        self._operations = {}  # type: typing.Dict[str, typing.List[Operation]]
 
     def merge(self, other: 'Scope') -> None:
         for c in other._children:
             self._add_child(c)
 
-        for k in other._operations.keys():
-            self._operations[key] = other._operations[k]
+        for key in other._operations.keys():
+            self._operations[key] = other._operations[key]
 
     def basedir(self) -> str:
         return self._basedir
@@ -213,7 +221,9 @@ class Scope:
     def currentdir(self) -> str:
         return self._currentdir
 
-    def diff(self, key: str, default: typing.Optional[List[str]]=[]) -> List[str]:
+    def diff(self, key: str,
+             default: typing.Optional[typing.List[str]] = []) \
+            -> typing.List[str]:
         mine = self.get(key, default)
 
         if self._parent:
@@ -224,8 +234,8 @@ class Scope:
             parent_set = set(parent)
             mine_set = set(mine)
 
-            added = [x for x in mine if not x in parent_set]
-            removed = [x for x in parent if not x in mine_set]
+            added = [x for x in mine if x not in parent_set]
+            removed = [x for x in parent if x not in mine_set]
 
             return added + list('# {}'.format(x) for x in removed)
         return mine
@@ -244,10 +254,12 @@ class Scope:
                 key = statement.get('key', '')
                 value = statement.get('value', [])
                 assert key != ''
-                print('#### {}: {} = {}.'.format(operation, key, value))
 
-                if key in ('HEADERS', 'SOURCES', 'INCLUDEPATH') or key.endswith('_HEADERS') or key.endswith('_SOURCES'):
-                    value = [map_to_file(v, scope.basedir(), scope.currentdir()) for v in value]
+                if key in ('HEADERS', 'SOURCES', 'INCLUDEPATH') \
+                        or key.endswith('_HEADERS') \
+                        or key.endswith('_SOURCES'):
+                    value = [map_to_file(v, scope.basedir(),
+                                         scope.currentdir()) for v in value]
 
                 if operation == '=':
                     scope._append_operation(key, SetOperation(value))
@@ -258,18 +270,22 @@ class Scope:
                 elif operation == '*=':
                     scope._append_operation(key, UniqueAddOperation(value))
                 else:
-                    print('Unexpected operation "{}" in scope with condition {}.'.format(operation, cond))
+                    print('Unexpected operation "{}" in scope with '
+                          'condition {}.'.format(operation, cond))
                     assert(False)
 
                 continue
 
             condition = statement.get('condition', None)
             if condition:
-                child = Scope.FromDict(scope, file, statement.get('statements'), condition, scope.basedir())
+                Scope.FromDict(scope, file,
+                               statement.get('statements'), condition,
+                               scope.basedir())
 
                 else_statements = statement.get('else_statements')
                 if else_statements:
-                    child = Scope.FromDict(scope, file, else_statements, 'NOT ' + condition, scope.basedir())
+                    Scope.FromDict(scope, file, else_statements,
+                                   'NOT ' + condition, scope.basedir())
                 continue
 
             loaded = statement.get('loaded')
@@ -284,7 +300,11 @@ class Scope:
 
             included = statement.get('included', None)
             if included:
-                scope.append_operation('_INCLUDED', UniqueAddOperation(map_to_file(included, scope.basedir(), scope.currentdir())))
+                scope._append_operation('_INCLUDED',
+                                        UniqueAddOperation(
+                                            map_to_file(included,
+                                                        scope.basedir(),
+                                                        scope.currentdir())))
                 continue
 
         return scope
@@ -293,7 +313,7 @@ class Scope:
         if key in self._operations:
             self._operations[key].append(op)
         else:
-            self._operations[key] = [op,]
+            self._operations[key] = [op, ]
 
     def file(self) -> str:
         return self._file or ''
@@ -308,7 +328,7 @@ class Scope:
         scope._parent = self
         self._children.append(scope)
 
-    def children(self) -> List['Scope']:
+    def children(self) -> typing.List['Scope']:
         return self._children
 
     def dump(self, *, indent: int = 0) -> None:
@@ -316,7 +336,8 @@ class Scope:
         if self._condition == '':
             print('{}Scope {} in {}.'.format(ind, self._file, self._basedir))
         else:
-            print('{}Scope {} in {} with condition: {}.'.format(ind, self._file, self._basedir, self._condition))
+            print('{}Scope {} in {} with condition: {}.'
+                  .format(ind, self._file, self._basedir, self._condition))
         print('{}Keys:'.format(ind))
         for k in sorted(self._operations.keys()):
             print('{}  {} = "{}"'.format(ind, k, self._operations.get(k, [])))
@@ -324,8 +345,8 @@ class Scope:
         for c in self._children:
             c.dump(indent=indent + 1)
 
-    def get(self, key: str, default=None) -> List[str]:
-        result = []
+    def get(self, key: str, default=None) -> typing.List[str]:
+        result = []  # type: typing.List[str]
 
         if self._parent:
             result = self._parent.get(key, default)
@@ -334,7 +355,7 @@ class Scope:
                 if isinstance(default, list):
                     result = default
                 else:
-                    result = [str(default),]
+                    result = [str(default), ]
 
         for op in self._operations.get(key, []):
             result = op.process(result)
@@ -354,7 +375,8 @@ class Scope:
         return self.getString('TEMPLATE')
 
     def getTarget(self) -> str:
-        return self.getString('TARGET') or os.path.splitext(os.path.basename(self.file()))[0]
+        return self.getString('TARGET') \
+            or os.path.splitext(os.path.basename(self.file()))[0]
 
 
 class QmakeParser:
@@ -369,35 +391,54 @@ class QmakeParser:
         EOL = pp.Suppress(pp.Optional(pp.pythonStyleComment()) + pp.LineEnd())
 
         Identifier = pp.Word(pp.alphas + '_', bodyChars=pp.alphanums+'_-./')
-        Substitution = pp.Combine(pp.Literal('$')
-            + (((pp.Literal('$') + Identifier + pp.Optional(pp.nestedExpr()))
-               | (pp.Literal('(') + Identifier + pp.Literal(')'))
-               | (pp.Literal('{') + Identifier + pp.Literal('}'))
-               | (pp.Literal('$') + pp.Literal('{') + Identifier + pp.Optional(pp.nestedExpr()) + pp.Literal('}'))
-               | (pp.Literal('$') + pp.Literal('[') + Identifier + pp.Literal(']'))
-              )))
-        # Do not match word ending in '\' since that breaks line continuation:-/
+        Substitution \
+            = pp.Combine(pp.Literal('$')
+                         + (((pp.Literal('$') + Identifier
+                            + pp.Optional(pp.nestedExpr()))
+                            | (pp.Literal('(') + Identifier + pp.Literal(')'))
+                            | (pp.Literal('{') + Identifier + pp.Literal('}'))
+                            | (pp.Literal('$') + pp.Literal('{')
+                                + Identifier + pp.Optional(pp.nestedExpr())
+                                + pp.Literal('}'))
+                            | (pp.Literal('$') + pp.Literal('[') + Identifier
+                                + pp.Literal(']'))
+                             )))
+        # Do not match word ending in '\' since that breaks line
+        # continuation:-/
         LiteralValuePart = pp.Word(pp.printables, excludeChars='$#{}()')
-        SubstitutionValue = pp.Combine(pp.OneOrMore(Substitution | LiteralValuePart | pp.Literal('$')))
-        Value = (pp.QuotedString(quoteChar='"', escChar='\\') | SubstitutionValue)
+        SubstitutionValue \
+            = pp.Combine(pp.OneOrMore(Substitution | LiteralValuePart
+                                      | pp.Literal('$')))
+        Value = (pp.QuotedString(quoteChar='"', escChar='\\')
+                 | SubstitutionValue)
 
         Values = pp.ZeroOrMore(Value)('value')
 
-        Op = pp.Literal('=') | pp.Literal('-=') | pp.Literal('+=') | pp.Literal('*=')
+        Op = pp.Literal('=') | pp.Literal('-=') | pp.Literal('+=') \
+            | pp.Literal('*=')
 
-        Operation = Identifier('key') +  Op('operation') + Values('value')
-        Load = pp.Keyword('load') + pp.Suppress('(') + Identifier('loaded') + pp.Suppress(')')
-        Include = pp.Keyword('include') + pp.Suppress('(') + pp.CharsNotIn(':{=}#)\n')('included') + pp.Suppress(')')
-        Option = pp.Keyword('option') + pp.Suppress('(') + Identifier('option') + pp.Suppress(')')
-        DefineTest = pp.Suppress(pp.Keyword('defineTest') + pp.Suppress('(') + Identifier + pp.Suppress(')')
-            + pp.nestedExpr(opener='{', closer='}') + pp.LineEnd())  # ignore the whole thing...
+        Operation = Identifier('key') + Op('operation') + Values('value')
+        Load = pp.Keyword('load') + pp.Suppress('(') \
+            + Identifier('loaded') + pp.Suppress(')')
+        Include = pp.Keyword('include') + pp.Suppress('(') \
+            + pp.CharsNotIn(':{=}#)\n')('included') + pp.Suppress(')')
+        Option = pp.Keyword('option') + pp.Suppress('(') \
+            + Identifier('option') + pp.Suppress(')')
+        DefineTest = pp.Suppress(pp.Keyword('defineTest')
+                                 + pp.Suppress('(') + Identifier
+                                 + pp.Suppress(')')
+                                 + pp.nestedExpr(opener='{', closer='}')
+                                 + pp.LineEnd())  # ignore the whole thing...
         ForLoop = pp.Suppress(pp.Keyword('for') + pp.nestedExpr()
-            + pp.nestedExpr(opener='{', closer='}', ignoreExpr=None) + pp.LineEnd())  # ignore the whole thing...
+                              + pp.nestedExpr(opener='{', closer='}',
+                                              ignoreExpr=None)
+                              + pp.LineEnd())  # ignore the whole thing...
         FunctionCall = pp.Suppress(Identifier + pp.nestedExpr())
 
         Scope = pp.Forward()
 
-        Statement = pp.Group(Load | Include | Option | DefineTest | ForLoop | FunctionCall | Operation)
+        Statement = pp.Group(Load | Include | Option | DefineTest
+                             | ForLoop | FunctionCall | Operation)
         StatementLine = Statement + EOL
         StatementGroup = pp.ZeroOrMore(StatementLine | Scope | EOL)
 
@@ -409,16 +450,26 @@ class QmakeParser:
         Condition = pp.Optional(pp.White()) + pp.CharsNotIn(':{=}#\\\n')
         Condition.setParseAction(lambda x: ' '.join(x).strip())
 
-        SingleLineScope = pp.Suppress(pp.Literal(':')) + pp.Group(Scope | Block | StatementLine)('statements')
+        SingleLineScope = pp.Suppress(pp.Literal(':')) \
+            + pp.Group(Scope | Block | StatementLine)('statements')
         MultiLineScope = Block('statements')
 
-        SingleLineElse = pp.Suppress(pp.Literal(':')) + pp.Group(Scope | StatementLine)('else_statements')
-        MultiLineElse =  pp.Group(Block)('else_statements')
-        Else = pp.Suppress(pp.Keyword('else')) + (SingleLineElse | MultiLineElse)
-        Scope <<= pp.Group(Condition('condition') + (SingleLineScope | MultiLineScope) + pp.Optional(Else))
+        SingleLineElse = pp.Suppress(pp.Literal(':')) \
+            + pp.Group(Scope | StatementLine)('else_statements')
+        MultiLineElse = pp.Group(Block)('else_statements')
+        Else = pp.Suppress(pp.Keyword('else')) \
+            + (SingleLineElse | MultiLineElse)
+        Scope <<= pp.Group(Condition('condition')
+                           + (SingleLineScope | MultiLineScope)
+                           + pp.Optional(Else))
 
         if debug:
-            for ename in "EOL Identifier Substitution SubstitutionValue LiteralValuePart Value Values SingleLineScope MultiLineScope Scope SingleLineElse MultiLineElse Else Condition Block StatementGroup Statement Load Include Option DefineTest ForLoop FunctionCall Operation".split():
+            for ename in 'EOL Identifier Substitution SubstitutionValue ' \
+                         'LiteralValuePart Value Values SingleLineScope ' \
+                         'MultiLineScope Scope SingleLineElse ' \
+                         'MultiLineElse Else Condition Block ' \
+                         'StatementGroup Statement Load Include Option ' \
+                         'DefineTest ForLoop FunctionCall Operation'.split():
                 expr = locals()[ename]
                 expr.setName(ename)
                 expr.setDebug()
@@ -453,11 +504,14 @@ def map_condition(condition: str) -> str:
 
     cmake_condition = ''
     for part in condition.split():
-        # some features contain e.g. linux, that should not be turned upper case
-        feature = re.match(r"(qtConfig|qtHaveModule)\(([a-zA-Z0-9_-]+)\)", part)
+        # some features contain e.g. linux, that should not be
+        # turned upper case
+        feature = re.match(r"(qtConfig|qtHaveModule)\(([a-zA-Z0-9_-]+)\)",
+                           part)
         if feature:
             if (feature.group(1) == "qtHaveModule"):
-                part = 'TARGET {}'.format(map_qt_base_library(feature.group(2)))
+                part = 'TARGET {}'.format(map_qt_base_library(
+                                            feature.group(2)))
             else:
                 part = 'QT_FEATURE_' + featureName(feature.group(2))
         else:
@@ -470,7 +524,8 @@ def map_condition(condition: str) -> str:
     return cmake_condition.strip()
 
 
-def handle_subdir(scope: Scope, cm_fh: IO[str], *, indent: int = 0) -> None:
+def handle_subdir(scope: Scope, cm_fh: typing.IO[str], *,
+                  indent: int = 0) -> None:
     assert scope.getTemplate() == 'subdirs'
     ind = '    ' * indent
     for sd in scope.get('SUBDIRS', []):
@@ -479,14 +534,18 @@ def handle_subdir(scope: Scope, cm_fh: IO[str], *, indent: int = 0) -> None:
             cm_fh.write('{}add_subdirectory({})\n'.format(ind, sd))
         elif os.path.isfile(full_sd):
             subdir_result = parseProFile(full_sd, debug=False)
-            subdir_scope = Scope.FromDict(scope, full_sd, subdir_result.asDict().get('statements'),
-                                          '', scope.basedir())
+            subdir_scope \
+                = Scope.FromDict(scope, full_sd,
+                                 subdir_result.asDict().get('statements'),
+                                 '', scope.basedir())
 
             cmakeify_scope(subdir_scope, cm_fh, indent=indent + 1)
         elif sd.startswith('-'):
-            cm_fh.write('{}### remove_subdirectory("{}")\n'.format(ind, sd[1:]))
+            cm_fh.write('{}### remove_subdirectory'
+                        '("{}")\n'.format(ind, sd[1:]))
         else:
-            print('    XXXX: SUBDIR {} in {}: Not found.'.format(sd, scope.file()))
+            print('    XXXX: SUBDIR {} in {}: '
+                  'Not found.'.format(sd, scope.file()))
 
     for c in scope.children():
         cond = c.condition()
@@ -501,8 +560,8 @@ def handle_subdir(scope: Scope, cm_fh: IO[str], *, indent: int = 0) -> None:
             cm_fh.write('{}endif()\n'.format(ind))
 
 
-def sort_sources(sources) -> List[str]:
-    to_sort = {}  # type: Dict[str, List[str]]
+def sort_sources(sources) -> typing.List[str]:
+    to_sort = {}  # type: typing.Dict[str, typing.List[str]]
     for s in sources:
         if s is None:
             continue
@@ -525,26 +584,32 @@ def sort_sources(sources) -> List[str]:
     return lines
 
 
-def write_header(cm_fh: IO[str], name: str, typename: str, *, indent: int=0):
-    cm_fh.write('{}#####################################################################\n'.format(spaces(indent)))
+def write_header(cm_fh: typing.IO[str], name: str,
+                 typename: str, *, indent: int = 0):
+    cm_fh.write('{}###########################################'
+                '##########################\n'.format(spaces(indent)))
     cm_fh.write('{}## {} {}:\n'.format(spaces(indent), name, typename))
-    cm_fh.write('{}#####################################################################\n\n'.format(spaces(indent)))
+    cm_fh.write('{}###########################################'
+                '##########################\n\n'.format(spaces(indent)))
 
 
-def write_scope_header(cm_fh: IO[str], *, indent: int=0):
+def write_scope_header(cm_fh: typing.IO[str], *, indent: int = 0):
     cm_fh.write('\n{}## Scopes:\n'.format(spaces(indent)))
-    cm_fh.write('{}#####################################################################\n'.format(spaces(indent)))
+    cm_fh.write('{}###########################################'
+                '##########################\n'.format(spaces(indent)))
 
 
-def write_sources_section(cm_fh: IO[str], scope: Scope, *, indent: int=0,
-                          known_libraries=set()) -> None:
+def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
+                          indent: int = 0, known_libraries=set()) -> None:
     ind = spaces(indent)
 
     plugin_type = scope.get('PLUGIN_TYPE')
     if plugin_type:
         cm_fh.write('{}    TYPE {}\n'.format(ind, plugin_type[0]))
 
-    sources = scope.diff('SOURCES') + scope.diff('HEADERS') + scope.diff('OBJECTIVE_SOURCES') + scope.diff('NO_PCH_SOURCES') + scope.diff('FORMS')
+    sources = scope.diff('SOURCES') + scope.diff('HEADERS') \
+        + scope.diff('OBJECTIVE_SOURCES') + scope.diff('NO_PCH_SOURCES') \
+        + scope.diff('FORMS')
     resources = scope.diff('RESOURCES')
     if resources:
         qrc_only = True
@@ -570,7 +635,8 @@ def write_sources_section(cm_fh: IO[str], scope: Scope, *, indent: int=0,
     if defines:
         cm_fh.write('{}    DEFINES\n'.format(ind))
         for d in defines:
-            d = d.replace('=\\\\\\"$$PWD/\\\\\\"', '="${CMAKE_CURRENT_SOURCE_DIR}/"')
+            d = d.replace('=\\\\\\"$$PWD/\\\\\\"',
+                          '="${CMAKE_CURRENT_SOURCE_DIR}/"')
             cm_fh.write('{}        {}\n'.format(ind, d))
     includes = scope.diff('INCLUDEPATH')
     if includes:
@@ -578,9 +644,12 @@ def write_sources_section(cm_fh: IO[str], scope: Scope, *, indent: int=0,
         for i in includes:
             cm_fh.write('{}        {}\n'.format(ind, i))
 
-    dependencies = [map_qt_library(q) for q in scope.diff('QT') if map_qt_library(q) not in known_libraries]
-    dependencies += [map_qt_library(q) for q in scope.diff('QT_FOR_PRIVATE') if map_qt_library(q) not in known_libraries]
-    dependencies += scope.diff('QMAKE_USE_PRIVATE') + scope.diff('LIBS_PRIVATE') + scope.diff('LIBS')
+    dependencies = [map_qt_library(q) for q in scope.diff('QT')
+                    if map_qt_library(q) not in known_libraries]
+    dependencies += [map_qt_library(q) for q in scope.diff('QT_FOR_PRIVATE')
+                     if map_qt_library(q) not in known_libraries]
+    dependencies += scope.diff('QMAKE_USE_PRIVATE') \
+        + scope.diff('LIBS_PRIVATE') + scope.diff('LIBS')
     if dependencies:
         cm_fh.write('{}    LIBRARIES\n'.format(ind))
         is_framework = False
@@ -601,40 +670,50 @@ def write_sources_section(cm_fh: IO[str], scope: Scope, *, indent: int=0,
             is_framework = False
 
 
-def write_extend_target(cm_fh: IO[str], target: str, scope: Scope, parent_condition: str='',
-                        previous_conditon: str='', *, indent: int=0) -> str:
+def write_extend_target(cm_fh: typing.IO[str], target: str,
+                        scope: Scope, parent_condition: str = '',
+                        previous_conditon: str = '', *,
+                        indent: int = 0) -> str:
     total_condition = scope.condition()
     if total_condition == 'else':
-        assert previous_conditon, "Else branch without previous condition in: %s" % scope.file()
+        assert previous_conditon, \
+            "Else branch without previous condition in: %s" % scope.file()
         total_condition = 'NOT ({})'.format(previous_conditon)
     if parent_condition:
-        total_condition = '({}) AND ({})'.format(parent_condition, total_condition)
+        total_condition = '({}) AND ({})'.format(parent_condition,
+                                                 total_condition)
 
     extend_qt_io_string = io.StringIO()
     write_sources_section(extend_qt_io_string, scope)
     extend_qt_string = extend_qt_io_string.getvalue()
 
-    extend_scope = '\n{}extend_target({} CONDITION {}\n{})\n'.format(spaces(indent), target, total_condition, extend_qt_string)
+    extend_scope = '\n{}extend_target({} CONDITION {}\n' \
+                   '{})\n'.format(spaces(indent), target, total_condition,
+                                  extend_qt_string)
 
     if not extend_qt_string:
-        # Comment out the generated extend_target call because there no sources were found, but keep it commented
-        # for informational purposes.
-        extend_scope = ''.join(['#' + line for line in extend_scope.splitlines(keepends=True)])
+        # Comment out the generated extend_target call because there
+        # no sources were found, but keep it commented for
+        # informational purposes.
+        extend_scope = ''.join(['#' + line for line in
+                                extend_scope.splitlines(keepends=True)])
     cm_fh.write(extend_scope)
 
     children = scope.children()
     if children:
         prev_condition = ''
         for c in children:
-            prev_condition = write_extend_target(cm_fh, target, c, total_condition, prev_condition)
+            prev_condition = write_extend_target(cm_fh, target, c,
+                                                 total_condition,
+                                                 prev_condition)
 
     return total_condition
 
 
-def write_main_part(cm_fh: IO[str], name: str, typename: str,
+def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
                     cmake_function: str, scope: Scope, *,
                     extra_lines: typing.List[str] = [],
-                    indent: int=0,
+                    indent: int = 0,
                     **kwargs: typing.Any):
     write_header(cm_fh, name, typename, indent=indent)
 
@@ -657,8 +736,8 @@ def write_main_part(cm_fh: IO[str], name: str, typename: str,
         write_extend_target(cm_fh, name, c, '', indent=indent)
 
 
-
-def write_module(cm_fh: IO[str], scope: Scope, *, indent: int=0) -> None:
+def write_module(cm_fh: typing.IO[str], scope: Scope, *,
+                 indent: int = 0) -> None:
     module_name = scope.getTarget()
     assert module_name.startswith('Qt')
 
@@ -669,22 +748,26 @@ def write_module(cm_fh: IO[str], scope: Scope, *, indent: int=0) -> None:
         extra.append('NO_MODULE_HEADERS')
 
     write_main_part(cm_fh, module_name[2:], 'Module', 'add_qt_module', scope,
-                    extra_lines=extra, indent=indent, known_libraries={'Qt::Core', })
-
+                    extra_lines=extra, indent=indent,
+                    known_libraries={'Qt::Core', })
 
     if 'qt_tracepoints' in scope.get('CONFIG'):
-        tracepoints = map_to_file(scope.getString('TRACEPOINT_PROVIDER'), scope.basedir(), scope.currentdir())
-        cm_fh.write('\n\n{}qt_create_tracepoints({} {})\n'.format(spaces(indent), module_name[2:], tracepoints))
+        tracepoints = map_to_file(scope.getString('TRACEPOINT_PROVIDER'),
+                                  scope.basedir(), scope.currentdir())
+        cm_fh.write('\n\n{}qt_create_tracepoints({} {})\n'
+                    .format(spaces(indent), module_name[2:], tracepoints))
 
 
-def write_tool(cm_fh: IO[str], scope: Scope, *, indent: int=0) -> None:
+def write_tool(cm_fh: typing.IO[str], scope: Scope, *,
+               indent: int = 0) -> None:
     tool_name = scope.getTarget()
 
     write_main_part(cm_fh, tool_name, 'Tool', 'add_qt_tool', scope,
                     indent=indent, known_libraries={'Qt::Core', })
 
 
-def write_test(cm_fh: IO[str], scope: Scope, *, indent: int=0) -> None:
+def write_test(cm_fh: typing.IO[str], scope: Scope, *,
+               indent: int = 0) -> None:
     test_name = scope.getTarget()
     assert test_name
 
@@ -692,16 +775,18 @@ def write_test(cm_fh: IO[str], scope: Scope, *, indent: int=0) -> None:
                     indent=indent, known_libraries={'Qt::Core', 'Qt::Test', })
 
 
-def write_binary(cm_fh: IO[str], scope: Scope, gui: bool=False, *, indent: int=0) -> None:
+def write_binary(cm_fh: typing.IO[str], scope: Scope,
+                 gui: bool = False, *, indent: int = 0) -> None:
     binary_name = scope.getTarget()
     assert binary_name
 
-    extra = ['GUI',] if gui else []
+    extra = ['GUI', ] if gui else []
     write_main_part(cm_fh, binary_name, 'Binary', 'add_qt_executable', scope,
-                    extra_lines=extra, indent=indent, known_libraries={'Qt::Core', })
+                    extra_lines=extra, indent=indent,
+                    known_libraries={'Qt::Core', })
 
 
-def write_plugin(cm_fh, scope, *, indent: int=0):
+def write_plugin(cm_fh, scope, *, indent: int = 0):
     plugin_name = scope.getTarget()
     assert plugin_name
 
@@ -709,7 +794,8 @@ def write_plugin(cm_fh, scope, *, indent: int=0):
                     indent=indent, known_libraries={'QtCore', })
 
 
-def handle_app_or_lib(scope: Scope, cm_fh: IO[str], *, indent=0) -> None:
+def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
+                      indent: int = 0) -> None:
     assert scope.getTemplate() in ('app', 'lib')
 
     is_lib = scope.getTemplate() == 'lib'
@@ -722,7 +808,8 @@ def handle_app_or_lib(scope: Scope, cm_fh: IO[str], *, indent=0) -> None:
     elif 'qt_tool' in scope.get('_LOADED', []):
         write_tool(cm_fh, scope, indent=indent)
     else:
-        if 'testcase' in scope.get('CONFIG') or 'testlib' in scope.get('CONFIG'):
+        if 'testcase' in scope.get('CONFIG') \
+                or 'testlib' in scope.get('CONFIG'):
             write_test(cm_fh, scope, indent=indent)
         else:
             gui = 'console' not in scope.get('CONFIG')
@@ -730,19 +817,27 @@ def handle_app_or_lib(scope: Scope, cm_fh: IO[str], *, indent=0) -> None:
 
     docs = scope.getString("QMAKE_DOCS")
     if docs:
-        cm_fh.write("\n{}add_qt_docs({})\n".format(spaces(indent), map_to_file(docs, scope.basedir(), scope.currentdir())))
+        cm_fh.write("\n{}add_qt_docs({})\n"
+                    .format(spaces(indent),
+                            map_to_file(docs, scope.basedir(),
+                                        scope.currentdir())))
 
 
-def handle_qt_for_config(scope: Scope, cm_fh: IO[str], *, indent: int=0) -> None:
+def handle_qt_for_config(scope: Scope, cm_fh: typing.IO[str], *,
+                         indent: int = 0) -> None:
     for config in scope.get("QT_FOR_CONFIG") or []:
         lib = map_qt_library(config)
         if lib.endswith("Private"):
-            cm_fh.write('{}qt_pull_features_into_current_scope(PRIVATE_FEATURES {})\n'.format(spaces(indent), lib[:-len("Private")]))
+            cm_fh.write('{}qt_pull_features_into_current_scope'
+                        '(PRIVATE_FEATURES {})\n'
+                        .format(spaces(indent), lib[:-len("Private")]))
         else:
-            cm_fh.write('{}qt_pull_features_into_current_scope(PUBLIC_FEATURES {})\n'.format(spaces(indent), lib))
+            cm_fh.write('{}qt_pull_features_into_current_scope'
+                        '(PUBLIC_FEATURES {})\n'.format(spaces(indent), lib))
 
 
-def cmakeify_scope(scope: Scope, cm_fh: IO[str], *, indent: int=0) -> None:
+def cmakeify_scope(scope: Scope, cm_fh: typing.IO[str], *,
+                   indent: int = 0) -> None:
     template = scope.getTemplate()
     handle_qt_for_config(scope, cm_fh)
     if template == 'subdirs':
@@ -757,21 +852,27 @@ def cmakeify_scope(scope: Scope, cm_fh: IO[str], *, indent: int=0) -> None:
 def generate_cmakelists(scope: Scope) -> None:
     with open(scope.cMakeListsFile(), 'w') as cm_fh:
         assert scope.file()
-        cm_fh.write('# Generated from {}.\n\n'.format(os.path.basename(scope.file())))
+        cm_fh.write('# Generated from {}.\n\n'
+                    .format(os.path.basename(scope.file())))
         cmakeify_scope(scope, cm_fh)
 
 
-def do_include(scope: Scope, *, debug: bool=False) -> None:
+def do_include(scope: Scope, *, debug: bool = False) -> None:
     for i in scope.get('_INCLUDED', []):
         dir = scope.basedir()
-        include_file = map_to_file(i, dir, scope.currentdir(), want_absolute_path=True)
+        include_file = map_to_file(i, dir, scope.currentdir(),
+                                   want_absolute_path=True)
+        if not include_file:
+            continue
         if not os.path.isfile(include_file):
             print('    XXXX: Failed to include {}.'.format(include_file))
             continue
 
         include_result = parseProFile(include_file, debug=debug)
-        include_scope = Scope.FromDict(scope, include_file, include_result.asDict().get('statements'),
-                                       '', dir)
+        include_scope \
+            = Scope.FromDict(scope, include_file,
+                             include_result.asDict().get('statements'),
+                             '', dir)
 
         do_include(include_scope)
 
@@ -798,7 +899,8 @@ def main() -> None:
             print(parseresult.asDict())
             print('\n#### End of parser result dictionary.\n')
 
-        file_scope = Scope.FromDict(None, file, parseresult.asDict().get('statements'))
+        file_scope = Scope.FromDict(None, file,
+                                    parseresult.asDict().get('statements'))
 
         if args.debug_pro_structure or args.debug:
             print('\n\n#### .pro/.pri file structure:')
