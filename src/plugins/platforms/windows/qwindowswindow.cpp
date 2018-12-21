@@ -1758,15 +1758,12 @@ void QWindowsWindow::checkForScreenChanged()
 
     QPlatformScreen *currentScreen = screen();
     const auto &screenManager = QWindowsContext::instance()->screenManager();
-    // QTBUG-62971: When dragging a window by its border, detect by mouse position
-    // to prevent it from oscillating between screens when it resizes
-    const QWindowsScreen *newScreen = testFlag(ResizeMoveActive)
-        ? screenManager.screenAtDp(QWindowsCursor::mousePosition())
-        : screenManager.screenForHwnd(m_data.hwnd);
+    const QWindowsScreen *newScreen = screenManager.screenForHwnd(m_data.hwnd);
     if (newScreen != nullptr && newScreen != currentScreen) {
         qCDebug(lcQpaWindows).noquote().nospace() << __FUNCTION__
             << ' ' << window() << " \"" << currentScreen->name()
             << "\"->\"" << newScreen->name() << '"';
+        setFlag(SynchronousGeometryChangeEvent);
         QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
     }
 }
@@ -1785,11 +1782,14 @@ void QWindowsWindow::handleGeometryChange()
         fireExpose(QRect(QPoint(0, 0), m_data.geometry.size()), true);
     }
 
+    const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
     checkForScreenChanged();
 
     if (testFlag(SynchronousGeometryChangeEvent))
         QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 
+    if (!wasSync)
+        clearFlag(SynchronousGeometryChangeEvent);
     qCDebug(lcQpaEvents) << __FUNCTION__ << this << window() << m_data.geometry;
 }
 
