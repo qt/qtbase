@@ -117,7 +117,7 @@ QImageData::QImageData()
 */
 QImageData * QImageData::create(const QSize &size, QImage::Format format)
 {
-    if (!size.isValid() || format == QImage::Format_Invalid)
+    if (size.isEmpty() || format == QImage::Format_Invalid)
         return nullptr;                             // invalid parameter(s)
 
     int width = size.width();
