@@ -118,6 +118,7 @@ public:
     static QSqlDatabase addDatabase(QSqlDriver* driver,
                                  const QString& connectionName = QLatin1String(defaultConnection));
     static QSqlDatabase cloneDatabase(const QSqlDatabase &other, const QString& connectionName);
+    static QSqlDatabase cloneDatabase(const QString &other, const QString& connectionName);
     static QSqlDatabase database(const QString& connectionName = QLatin1String(defaultConnection),
                                  bool open = true);
     static void removeDatabase(const QString& connectionName);

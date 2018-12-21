@@ -2422,6 +2422,16 @@ public slots:
 
         QSqlDatabase invalidDb = QSqlDatabase::database("invalid");
         QVERIFY(!invalidDb.isValid());
+
+        {
+            QSqlDatabase clonedDatabase = QSqlDatabase::cloneDatabase(dbName, "CloneDB");
+            QVERIFY(!clonedDatabase.isOpen());
+            QVERIFY(clonedDatabase.isValid());
+            QVERIFY(clonedDatabase.open());
+            QVERIFY(clonedDatabase.isOpen());
+            clonedDatabase.close();
+        }
+
         QThread::currentThread()->exit();
     }
 private:
