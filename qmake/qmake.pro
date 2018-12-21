@@ -96,7 +96,7 @@ HEADERS += \
 bp = $$shadowed(..)
 INCLUDEPATH += \
     $$bp/include $$bp/include/QtCore \
-    $$bp/include/QtCore/$$QT_VERSION $$bp/include/QtCore/$$QT_VERSION/QtCore
+    $$bp/include/QtCore/$$QT_VERSION $$bp/include/QtCore/$$QT_VERSION/QtCore \
     $$bp/src/corelib/global
 
 VPATH += \
@@ -182,18 +182,17 @@ HEADERS += \
     qglobal.h \
     qhash.h \
     qiodevice.h \
-    qjson.h \
+    qjson_p.h \
     qjsonarray.h \
     qjsondocument.h \
     qjsonobject.h \
-    qjsonparser.h \
+    qjsonparser_p.h \
     qjsonvalue.h \
-    qjsonwriter.h \
+    qjsonwriter_p.h \
     qlinkedlist.h \
     qlist.h \
     qlocale.h \
     qlocale_tools_p.h \
-    qmalloc.h \
     qmap.h \
     qmetatype.h \
     qnumeric.h \
@@ -204,12 +203,12 @@ HEADERS += \
     qsystemerror_p.h \
     qtemporaryfile.h \
     qtextstream.h \
-    qutfcodec.h \
+    qutfcodec_p.h \
     quuid.h \
     qvector.h \
     qversionnumber.h \
     qxmlstream.h \
-    qxmlutils.h
+    qxmlutils_p.h
 
 unix {
     SOURCES += \
