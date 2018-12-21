@@ -195,11 +195,6 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                     incDirs << crtInclude + QStringLiteral("/winrt");
 
                     if (winrtBuild) {
-                        // Only use mobile-specific headers and link against store-specific libs for
-                        // winrt builds.
-                        incDirs << kitDir + QStringLiteral("Extension SDKs/WindowsMobile/")
-                                          + crtVersion + QStringLiteral("/Include/WinRT");
-
                         libDirs << toolsInstallDir + QStringLiteral("lib/") + arch + QStringLiteral("/store");
                     } else {
                         // Desktop projects may require the atl headers and libs.
@@ -235,9 +230,6 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                     incDirs << crtInclude + QStringLiteral("/um");
                     incDirs << crtInclude + QStringLiteral("/shared");
                     incDirs << crtInclude + QStringLiteral("/winrt");
-
-                    incDirs << kitDir + QStringLiteral("Extension SDKs/WindowsMobile/")
-                                      + crtVersion + QStringLiteral("/Include/WinRT");
 
                     libDirs << vcInstallDir + QStringLiteral("lib/store/") + compilerArch;
                     libDirs << vcInstallDir + QStringLiteral("atlmfc/lib") + compilerArch;
