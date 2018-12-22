@@ -170,8 +170,11 @@ QDebug operator<<(QDebug debug, const QMacAutoReleasePool *pool)
 bool qt_mac_applicationIsInDarkMode()
 {
 #if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
-    if (__builtin_available(macOS 10.14, *))
-        return [NSApp.effectiveAppearance.name hasSuffix:@"DarkAqua"];
+    if (__builtin_available(macOS 10.14, *)) {
+        auto appearance = [NSApp.effectiveAppearance bestMatchFromAppearancesWithNames:
+                @[ NSAppearanceNameAqua, NSAppearanceNameDarkAqua ]];
+        return [appearance isEqualToString:NSAppearanceNameDarkAqua];
+    }
 #endif
     return false;
 }
