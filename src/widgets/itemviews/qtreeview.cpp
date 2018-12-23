@@ -2301,9 +2301,9 @@ QModelIndex QTreeView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
     case MovePageDown:
         return d->modelIndex(d->pageDown(vi), current.column());
     case MoveHome:
-        return d->model->index(0, current.column(), d->root);
+        return d->modelIndex(d->itemForKeyHome(), current.column());
     case MoveEnd:
-        return d->modelIndex(d->viewItems.count() - 1, current.column());
+        return d->modelIndex(d->itemForKeyEnd(), current.column());
     }
     return current;
 }
@@ -3422,7 +3422,11 @@ int QTreeViewPrivate::pageUp(int i) const
     int index = itemAtCoordinate(coordinateForItem(i) - viewport->height());
     while (isItemHiddenOrDisabled(index))
         index--;
-    return index == -1 ? 0 : index;
+    if (index == -1)
+        index = 0;
+    while (isItemHiddenOrDisabled(index))
+        index++;
+    return index >= viewItems.count() ? 0 : index;
 }
 
 int QTreeViewPrivate::pageDown(int i) const
@@ -3430,6 +3434,26 @@ int QTreeViewPrivate::pageDown(int i) const
     int index = itemAtCoordinate(coordinateForItem(i) + viewport->height());
     while (isItemHiddenOrDisabled(index))
         index++;
+    if (index == -1 || index >= viewItems.count())
+        index = viewItems.count() - 1;
+    while (isItemHiddenOrDisabled(index))
+        index--;
+    return index == -1 ? viewItems.count() - 1 : index;
+}
+
+int QTreeViewPrivate::itemForKeyHome() const
+{
+    int index = 0;
+    while (isItemHiddenOrDisabled(index))
+        index++;
+    return index >= viewItems.count() ? 0 : index;
+}
+
+int QTreeViewPrivate::itemForKeyEnd() const
+{
+    int index = viewItems.count() - 1;
+    while (isItemHiddenOrDisabled(index))
+        index--;
     return index == -1 ? viewItems.count() - 1 : index;
 }
 

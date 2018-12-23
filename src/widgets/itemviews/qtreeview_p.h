@@ -140,6 +140,8 @@ public:
 
     int pageUp(int item) const;
     int pageDown(int item) const;
+    int itemForKeyHome() const;
+    int itemForKeyEnd() const;
 
     int itemHeight(int item) const;
     int indentationForItem(int item) const;

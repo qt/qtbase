@@ -99,6 +99,7 @@ private slots:
     void insertTopLevelItems_data();
     void insertTopLevelItems();
     void keyboardNavigation();
+    void keyboardNavigationWithHidden();
     void scrollToItem();
     void setSortingEnabled();
     void match();
@@ -1573,6 +1574,33 @@ void tst_QTreeWidget::keyboardNavigation()
         else
             QCOMPARE(testWidget->indexOfTopLevelItem(current), row);
     }
+}
+
+void tst_QTreeWidget::keyboardNavigationWithHidden()
+{
+    QTreeWidget tw;
+    for (int i = 0; i < 1000; ++i)
+        tw.addTopLevelItem(new QTreeWidgetItem({QString::number(i), QStringLiteral("second col")}));
+    // QTBUG-34832 - when first/last item is hidden,
+    // Key_PageUp/Down/Home/End will not work as expected.
+    tw.topLevelItem(0)->setHidden(true);
+    tw.topLevelItem(tw.model()->rowCount() - 1)->setHidden(true);
+    // PageUp
+    tw.setCurrentIndex(tw.model()->index(2, 0));
+    QCOMPARE(tw.currentIndex(), tw.model()->index(2, 0));
+    QTest::keyClick(tw.viewport(), Qt::Key_PageUp);
+    QCOMPARE(tw.currentIndex(), tw.model()->index(1, 0));
+    // PageDown
+    tw.setCurrentIndex(tw.model()->index(tw.model()->rowCount() - 3, 0));
+    QCOMPARE(tw.currentIndex(), tw.model()->index(tw.model()->rowCount() - 3, 0));
+    QTest::keyClick(tw.viewport(), Qt::Key_PageDown);
+    QCOMPARE(tw.currentIndex(), tw.model()->index(tw.model()->rowCount() - 2, 0));
+    // Key_Home
+    QTest::keyClick(tw.viewport(), Qt::Key_Home);
+    QCOMPARE(tw.currentIndex(), tw.model()->index(1, 0));
+    // Key_End
+    QTest::keyClick(tw.viewport(), Qt::Key_End);
+    QCOMPARE(tw.currentIndex(), tw.model()->index(tw.model()->rowCount() - 2, 0));
 }
 
 void tst_QTreeWidget::scrollToItem()

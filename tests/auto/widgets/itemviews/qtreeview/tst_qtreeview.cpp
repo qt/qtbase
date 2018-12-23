@@ -4135,6 +4135,30 @@ void tst_QTreeView::keyboardNavigationWithDisabled()
     QCOMPARE(view.currentIndex(), model.index(12, 0));
     QTest::keyClick(view.viewport(), Qt::Key_Up);
     QCOMPARE(view.currentIndex(), model.index(6, 0));
+    // QTBUG-44746 - when first/last item is disabled,
+    // Key_PageUp/Down/Home/End will not work as expected.
+    model.item(0)->setEnabled(false);
+    model.item(1)->setEnabled(true);
+    model.item(2)->setEnabled(true);
+    model.item(model.rowCount() - 1)->setEnabled(false);
+    model.item(model.rowCount() - 2)->setEnabled(true);
+    model.item(model.rowCount() - 3)->setEnabled(true);
+    // PageUp
+    view.setCurrentIndex(model.index(2, 0));
+    QCOMPARE(view.currentIndex(), model.index(2, 0));
+    QTest::keyClick(view.viewport(), Qt::Key_PageUp);
+    QCOMPARE(view.currentIndex(), model.index(1, 0));
+    // PageDown
+    view.setCurrentIndex(model.index(model.rowCount() - 3, 0));
+    QCOMPARE(view.currentIndex(), model.index(model.rowCount() - 3, 0));
+    QTest::keyClick(view.viewport(), Qt::Key_PageDown);
+    QCOMPARE(view.currentIndex(), model.index(model.rowCount() - 2, 0));
+    // Key_Home
+    QTest::keyClick(view.viewport(), Qt::Key_Home);
+    QCOMPARE(view.currentIndex(), model.index(1, 0));
+    // Key_End
+    QTest::keyClick(view.viewport(), Qt::Key_End);
+    QCOMPARE(view.currentIndex(), model.index(model.rowCount() - 2, 0));
 }
 
 class RemoveColumnOne : public QSortFilterProxyModel
