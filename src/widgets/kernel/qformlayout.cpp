@@ -783,7 +783,7 @@ void QFormLayoutPrivate::setupVerticalLayoutData(int width)
             vLayouts[vidx].expansive = expanding || (vLayouts[vidx].stretch > 0);
             vLayouts[vidx].empty = false;
 
-            if (vLayouts[vidx].stretch > 0)
+            if (vLayouts[vidx].expansive)
                 addTopBottomStretch = false;
 
             if (vidx > 1)
