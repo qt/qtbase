@@ -19,6 +19,10 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "xcb_renderutil.h"
 
 xcb_render_pictvisual_t *
@@ -41,7 +45,7 @@ xcb_render_util_find_visual_format (const xcb_render_query_pict_formats_reply_t 
 xcb_render_pictforminfo_t *
 xcb_render_util_find_format (const xcb_render_query_pict_formats_reply_t	*formats,
 			 unsigned long				mask,
-			 const xcb_render_pictforminfo_t		*template,
+			 const xcb_render_pictforminfo_t		*ptemplate,
 			 int					count)
 {
     xcb_render_pictforminfo_iterator_t i;
@@ -50,40 +54,40 @@ xcb_render_util_find_format (const xcb_render_query_pict_formats_reply_t	*format
     for (i = xcb_render_query_pict_formats_formats_iterator(formats); i.rem; xcb_render_pictforminfo_next(&i))
     {
 	if (mask & XCB_PICT_FORMAT_ID)
-	    if (template->id != i.data->id)
+	    if (ptemplate->id != i.data->id)
 		continue;
 	if (mask & XCB_PICT_FORMAT_TYPE)
-	    if (template->type != i.data->type)
+	    if (ptemplate->type != i.data->type)
 		continue;
 	if (mask & XCB_PICT_FORMAT_DEPTH)
-	    if (template->depth != i.data->depth)
+	    if (ptemplate->depth != i.data->depth)
 		continue;
 	if (mask & XCB_PICT_FORMAT_RED)
-	    if (template->direct.red_shift != i.data->direct.red_shift)
+	    if (ptemplate->direct.red_shift != i.data->direct.red_shift)
 		continue;
 	if (mask & XCB_PICT_FORMAT_RED_MASK)
-	    if (template->direct.red_mask != i.data->direct.red_mask)
+	    if (ptemplate->direct.red_mask != i.data->direct.red_mask)
 		continue;
 	if (mask & XCB_PICT_FORMAT_GREEN)
-	    if (template->direct.green_shift != i.data->direct.green_shift)
+	    if (ptemplate->direct.green_shift != i.data->direct.green_shift)
 		continue;
 	if (mask & XCB_PICT_FORMAT_GREEN_MASK)
-	    if (template->direct.green_mask != i.data->direct.green_mask)
+	    if (ptemplate->direct.green_mask != i.data->direct.green_mask)
 		continue;
 	if (mask & XCB_PICT_FORMAT_BLUE)
-	    if (template->direct.blue_shift != i.data->direct.blue_shift)
+	    if (ptemplate->direct.blue_shift != i.data->direct.blue_shift)
 		continue;
 	if (mask & XCB_PICT_FORMAT_BLUE_MASK)
-	    if (template->direct.blue_mask != i.data->direct.blue_mask)
+	    if (ptemplate->direct.blue_mask != i.data->direct.blue_mask)
 		continue;
 	if (mask & XCB_PICT_FORMAT_ALPHA)
-	    if (template->direct.alpha_shift != i.data->direct.alpha_shift)
+	    if (ptemplate->direct.alpha_shift != i.data->direct.alpha_shift)
 		continue;
 	if (mask & XCB_PICT_FORMAT_ALPHA_MASK)
-	    if (template->direct.alpha_mask != i.data->direct.alpha_mask)
+	    if (ptemplate->direct.alpha_mask != i.data->direct.alpha_mask)
 		continue;
 	if (mask & XCB_PICT_FORMAT_COLORMAP)
-	    if (template->colormap != i.data->colormap)
+	    if (ptemplate->colormap != i.data->colormap)
 		continue;
 	if (count-- == 0)
 	    return i.data;

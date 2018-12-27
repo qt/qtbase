@@ -44,13 +44,7 @@
 #include <QtGui/private/qdrawhelper_p.h>
 #if QT_CONFIG(xcb_render)
 #include <xcb/render.h>
-// 'template' is used as a function argument name in xcb_renderutil.h
-#define template template_param
-// extern "C" is missing too
-extern "C" {
 #include <xcb/xcb_renderutil.h>
-}
-#undef template
 #endif
 
 #include "qxcbconnection.h"

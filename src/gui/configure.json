@@ -615,6 +615,20 @@
             ],
             "use": "xcb"
         },
+        "xcb_renderutil": {
+            "label": "XCB Renderutil >= 0.3.9",
+            "test": {
+                "main": [
+                    "xcb_render_util_find_standard_format(nullptr, XCB_PICT_STANDARD_ARGB_32);"
+                ]
+            },
+            "headers": "xcb/xcb_renderutil.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-renderutil >= 0.3.9" },
+                "-lxcb-render-util"
+            ],
+            "use": "xcb xcb_render"
+        },
         "xcb_randr": {
             "label": "XCB RandR",
             "headers": "xcb/randr.h",
@@ -704,32 +718,20 @@
         "xcb_render": {
             "label": "XCB XRender",
             "test": {
-                "tail": [
-                    "// 'template' is used as a function argument name in xcb_renderutil.h",
-                    "#define template template_param",
-                    "// extern \"C\" is missing, too",
-                    "extern \"C\" {",
-                    "#include <xcb/xcb_renderutil.h>",
-                    "}",
-                    "#undef template"
-                ],
                 "main": [
-                    "int primaryScreen = 0;",
                     "xcb_generic_error_t *error = 0;",
                     "xcb_connection_t *connection = 0;",
                     "xcb_render_query_pict_formats_cookie_t formatsCookie =",
                     "    xcb_render_query_pict_formats(connection);",
                     "xcb_render_query_pict_formats_reply_t *formatsReply =",
                     "    xcb_render_query_pict_formats_reply(",
-                    "            connection, formatsCookie, &error);",
-                    "xcb_render_util_find_standard_format(",
-                    "        formatsReply, XCB_PICT_STANDARD_ARGB_32);"
+                    "            connection, formatsCookie, &error);"
                 ]
             },
             "headers": "xcb/render.h",
             "sources": [
-                { "type": "pkgConfig", "args": "xcb-renderutil xcb-render" },
-                "-lxcb-render-util -lxcb-render"
+                { "type": "pkgConfig", "args": "xcb-render" },
+                "-lxcb-render"
             ],
             "use": "xcb"
         },
@@ -737,7 +739,6 @@
             "label": "XCB GLX",
             "test": {
                 "main": [
-                    "int primaryScreen = 0;",
                     "xcb_connection_t *connection = 0;",
                     "xcb_generic_error_t *error = 0;",
                     "xcb_glx_query_version_cookie_t xglx_query_cookie = xcb_glx_query_version(",
@@ -1555,7 +1556,7 @@
         "xcb-render": {
             "label": "XCB render",
             "emitIf": "features.xcb",
-            "condition": "!features.system-xcb || libs.xcb_render",
+            "condition": "!features.system-xcb || (libs.xcb_render && libs.xcb_renderutil)",
             "output": [ "privateFeature" ]
         },
         "xkb": {

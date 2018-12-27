@@ -97,7 +97,7 @@ qtConfig(vulkan) {
 !qtConfig(system-xcb) {
     QMAKE_USE += xcb-static
 } else {
-    qtConfig(xcb-render): QMAKE_USE += xcb_render
+    qtConfig(xcb-render): QMAKE_USE += xcb_render xcb_renderutil
     qtConfig(xcb-xinput): QMAKE_USE += xcb_xinput
     QMAKE_USE += xcb_icccm xcb_image xcb_keysyms xcb_randr xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xinerama
 }
