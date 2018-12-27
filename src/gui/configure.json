@@ -617,11 +617,6 @@
         },
         "xcb_renderutil": {
             "label": "XCB Renderutil >= 0.3.9",
-            "test": {
-                "main": [
-                    "xcb_render_util_find_standard_format(nullptr, XCB_PICT_STANDARD_ARGB_32);"
-                ]
-            },
             "headers": "xcb/xcb_renderutil.h",
             "sources": [
                 { "type": "pkgConfig", "args": "xcb-renderutil >= 0.3.9" },
@@ -717,17 +712,6 @@
         },
         "xcb_render": {
             "label": "XCB XRender",
-            "test": {
-                "main": [
-                    "xcb_generic_error_t *error = 0;",
-                    "xcb_connection_t *connection = 0;",
-                    "xcb_render_query_pict_formats_cookie_t formatsCookie =",
-                    "    xcb_render_query_pict_formats(connection);",
-                    "xcb_render_query_pict_formats_reply_t *formatsReply =",
-                    "    xcb_render_query_pict_formats_reply(",
-                    "            connection, formatsCookie, &error);"
-                ]
-            },
             "headers": "xcb/render.h",
             "sources": [
                 { "type": "pkgConfig", "args": "xcb-render" },
@@ -1075,19 +1059,31 @@
                     "xcb/xcb_image.h",
                     "xcb/xcb_keysyms.h",
                     "xcb/randr.h",
+                    "xcb/render.h",
                     "xcb/shape.h",
                     "xcb/shm.h",
                     "xcb/sync.h",
                     "xcb/xfixes.h",
                     "xcb/xinerama.h",
-                    "xcb/xcb_icccm.h"
+                    "xcb/xcb_icccm.h",
+                    "xcb/xcb_renderutil.h"
                 ],
                 "main": [
                     "int primaryScreen = 0;",
-                    "(void) xcb_connect(\"\", &primaryScreen);"
+                    "xcb_connection_t *c = xcb_connect(\"\", &primaryScreen);",
+
+                    "/* RENDER */",
+                    "xcb_generic_error_t *error = nullptr;",
+                    "xcb_render_query_pict_formats_cookie_t formatsCookie =",
+                    "    xcb_render_query_pict_formats(c);",
+                    "xcb_render_query_pict_formats_reply_t *formatsReply =",
+                    "    xcb_render_query_pict_formats_reply(c, formatsCookie, &error);",
+
+                    "/* RENDERUTIL: xcb_renderutil.h include won't compile unless version >= 0.3.9 */",
+                    "xcb_render_util_find_standard_format(nullptr, XCB_PICT_STANDARD_ARGB_32);"
                 ]
             },
-            "use": "xcb_icccm xcb_image xcb_keysyms xcb_randr xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xinerama xcb"
+            "use": "xcb_icccm xcb_image xcb_keysyms xcb_randr xcb_render xcb_renderutil xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xinerama xcb"
         },
         "x11prefix": {
             "label": "X11 prefix",
@@ -1553,12 +1549,6 @@
             "condition": "features.xcb-native-painting",
             "output": [ "privateFeature" ]
         },
-        "xcb-render": {
-            "label": "XCB render",
-            "emitIf": "features.xcb",
-            "condition": "!features.system-xcb || (libs.xcb_render && libs.xcb_renderutil)",
-            "output": [ "privateFeature" ]
-        },
         "xkb": {
             "label": "XCB XKB",
             "emitIf": "features.xcb",
@@ -1943,7 +1933,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                     "section": "X11",
                     "condition": "features.xcb",
                     "entries": [
-                        "system-xcb", "egl_x11", "xkb", "xlib", "xcb-render", "xcb-glx", "xcb-xinput", "xcb-xlib", "xcb-native-painting"
+                        "system-xcb", "egl_x11", "xkb", "xlib", "xcb-glx", "xcb-xinput", "xcb-xlib", "xcb-native-painting"
                     ]
                 },
                 {

@@ -44,11 +44,9 @@
 #include <xcb/sync.h>
 #include <xcb/xfixes.h>
 #include <xcb/xinerama.h>
+#include <xcb/render.h>
 #if QT_CONFIG(xcb_xinput)
 #include <xcb/xinput.h>
-#endif
-#if QT_CONFIG(xcb_render)
-#include <xcb/render.h>
 #endif
 #if QT_CONFIG(xkb)
 #define explicit dont_use_cxx_explicit
@@ -139,11 +137,9 @@ QXcbBasicConnection::QXcbBasicConnection(const char *displayName)
 
     xcb_extension_t *extensions[] = {
         &xcb_shm_id, &xcb_xfixes_id, &xcb_randr_id, &xcb_shape_id, &xcb_sync_id,
+        &xcb_render_id,
 #if QT_CONFIG(xkb)
         &xcb_xkb_id,
-#endif
-#if QT_CONFIG(xcb_render)
-        &xcb_render_id,
 #endif
 #if QT_CONFIG(xcb_xinput)
         &xcb_input_id,
@@ -293,7 +289,6 @@ void QXcbBasicConnection::initializeShm()
 
 void QXcbBasicConnection::initializeXRandr()
 {
-#if QT_CONFIG(xcb_render)
     const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_xcbConnection, &xcb_render_id);
     if (!reply || !reply->present) {
         qCDebug(lcQpaXcb, "XRender extension not present on the X server");
@@ -311,7 +306,6 @@ void QXcbBasicConnection::initializeXRandr()
     m_hasXRandr = true;
     m_xrenderVersion.first = xrenderQuery->major_version;
     m_xrenderVersion.second = xrenderQuery->minor_version;
-#endif
 }
 
 void QXcbBasicConnection::initializeXinerama()
