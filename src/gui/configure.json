@@ -1531,10 +1531,22 @@
             "emitIf": "features.xcb",
             "output": [ { "type": "varAssign", "name": "QMAKE_X11_PREFIX", "value": "tests.x11prefix.value" } ]
         },
-        "xcb-glx": {
-            "label": "XCB GLX",
+        "xcb-glx-plugin": {
+            "label": "GLX Plugin",
             "emitIf": "features.xcb",
+            "condition": "features.xcb-xlib && features.opengl && !features.opengles2",
+            "output": [ "privateFeature" ]
+        },
+        "xcb-glx": {
+            "label": "  XCB GLX",
+            "emitIf": "features.xcb && features.xcb-glx-plugin",
             "condition": "libs.xcb_glx",
+            "output": [ "privateFeature" ]
+        },
+        "xcb-egl-plugin": {
+            "label": "EGL-X11 Plugin",
+            "emitIf": "features.xcb",
+            "condition": "features.egl_x11 && features.opengl",
             "output": [ "privateFeature" ]
         },
         "xcb-native-painting": {
@@ -1941,7 +1953,15 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                     "section": "XCB",
                     "condition": "features.xcb",
                     "entries": [
-                        "system-xcb", "xkb", "xcb-xinput", "xcb-glx", "xcb-native-painting"
+                        "system-xcb", "xkb", "xcb-xinput", "xcb-native-painting",
+                        {
+                            "section": "GL integrations",
+                            "entries": [
+                                "xcb-glx-plugin",
+                                "xcb-glx",
+                                "xcb-egl-plugin"
+                            ]
+                        }
                     ]
                 },
                 {
