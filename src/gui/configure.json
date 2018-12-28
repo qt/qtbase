@@ -1902,7 +1902,15 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                 "integrityhid",
                 "mtdev",
                 "tslib",
-                "xkbcommon"
+                "xkbcommon",
+                {
+                    "section": "X11 specific",
+                    "entries": [
+                        "xlib",
+                        "xcb-xlib",
+                        "egl_x11"
+                    ]
+                }
             ]
         },
         {
@@ -1930,10 +1938,10 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                     ]
                 },
                 {
-                    "section": "X11",
+                    "section": "XCB",
                     "condition": "features.xcb",
                     "entries": [
-                        "system-xcb", "egl_x11", "xkb", "xlib", "xcb-glx", "xcb-xinput", "xcb-xlib", "xcb-native-painting"
+                        "system-xcb", "xkb", "xcb-xinput", "xcb-glx", "xcb-native-painting"
                     ]
                 },
                 {
