@@ -1436,7 +1436,7 @@
         },
         "eglfs_x11": {
             "label": "EGLFS X11",
-            "condition": "features.eglfs && features.xcb && features.xcb-xlib && features.egl_x11",
+            "condition": "features.eglfs && features.xcb-xlib && features.egl_x11",
             "output": [ "privateFeature" ]
         },
         "gif": {
@@ -1569,7 +1569,6 @@
         },
         "xcb-xlib": {
             "label": "XCB Xlib",
-            "emitIf": "features.xcb",
             "condition": "features.xlib && libs.xcb_xlib",
             "output": [ "privateFeature" ]
         },
