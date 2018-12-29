@@ -464,8 +464,10 @@ static QNetworkInterface::InterfaceType probeIfType(int socket, int iftype, stru
         case IFM_ETHER:
             return QNetworkInterface::Ethernet;
 
+#ifdef IFM_FDDI
         case IFM_FDDI:
             return QNetworkInterface::Fddi;
+#endif
 
         case IFM_IEEE80211:
             return QNetworkInterface::Ieee80211;
