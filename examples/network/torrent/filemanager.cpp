@@ -77,7 +77,7 @@ FileManager::~FileManager()
     cond.wakeOne();
     wait();
 
-    foreach (QFile *file, files) {
+    for (QFile *file : qAsConst(files)) {
         file->close();
         delete file;
     }
@@ -285,7 +285,8 @@ bool FileManager::generateFiles()
             return false;
         }
 
-        foreach (const MetaInfoMultiFile &entry, metaInfo.multiFiles()) {
+        const QList<MetaInfoMultiFile> multiFiles = metaInfo.multiFiles();
+        for (const MetaInfoMultiFile &entry : multiFiles) {
             QString filePath = QFileInfo(prefix + entry.path).path();
             if (!QFile::exists(filePath)) {
                 if (!dir.mkpath(filePath)) {
@@ -437,7 +438,7 @@ void FileManager::verifyFileContents()
     }
 
     // Verify all pending pieces
-    foreach (int index, newPendingVerificationRequests)
+    for (int index : qAsConst(newPendingVerificationRequests))
         emit pieceVerified(index, verifySinglePiece(index));
 }
 

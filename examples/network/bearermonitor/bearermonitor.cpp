@@ -142,7 +142,8 @@ void BearerMonitor::configurationAdded(const QNetworkConfiguration &config, QTre
         treeWidget->addTopLevelItem(item);
 
     if (config.type() == QNetworkConfiguration::ServiceNetwork) {
-        foreach (const QNetworkConfiguration &child, config.children())
+        const QList<QNetworkConfiguration> children = config.children();
+        for (const QNetworkConfiguration &child : children)
             configurationAdded(child, item);
     }
 }
@@ -181,7 +182,8 @@ void BearerMonitor::configurationChanged(const QNetworkConfiguration &config)
 void BearerMonitor::updateSnapConfiguration(QTreeWidgetItem *parent, const QNetworkConfiguration &snap)
 {
     QMap<QString, QTreeWidgetItem *> itemMap;
-    foreach (QTreeWidgetItem *item, parent->takeChildren())
+    const QList<QTreeWidgetItem *> children = parent->takeChildren();
+    for (QTreeWidgetItem *item : children)
         itemMap.insert(item->data(0, Qt::UserRole).toString(), item);
 
     QList<QNetworkConfiguration> allConfigurations = snap.children();

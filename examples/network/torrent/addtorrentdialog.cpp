@@ -148,7 +148,8 @@ void AddTorrentDialog::setTorrent(const QString &torrentFile)
         ui.torrentContents->setHtml(metaInfo.singleFile().name);
     } else {
         QString html;
-        foreach (MetaInfoMultiFile file, metaInfo.multiFiles()) {
+        const QList<MetaInfoMultiFile> multiFiles = metaInfo.multiFiles();
+        for (const MetaInfoMultiFile &file : multiFiles) {
             QString name = metaInfo.name();
             if (!name.isEmpty()) {
                 html += name;

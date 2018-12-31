@@ -104,9 +104,9 @@ void PeerManager::startBroadcasting()
     broadcastTimer.start();
 }
 
-bool PeerManager::isLocalHostAddress(const QHostAddress &address)
+bool PeerManager::isLocalHostAddress(const QHostAddress &address) const
 {
-    foreach (QHostAddress localAddress, ipAddresses) {
+    for (const QHostAddress &localAddress : ipAddresses) {
         if (address.isEqual(localAddress))
             return true;
     }
@@ -125,7 +125,7 @@ void PeerManager::sendBroadcastDatagram()
     }
 
     bool validBroadcastAddresses = true;
-    foreach (QHostAddress address, broadcastAddresses) {
+    for (const QHostAddress &address : qAsConst(broadcastAddresses)) {
         if (broadcastSocket.writeDatagram(datagram, address,
                                           broadcastPort) == -1)
             validBroadcastAddresses = false;
@@ -182,8 +182,10 @@ void PeerManager::updateAddresses()
 {
     broadcastAddresses.clear();
     ipAddresses.clear();
-    foreach (QNetworkInterface interface, QNetworkInterface::allInterfaces()) {
-        foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
+    const QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
+    for (const QNetworkInterface &interface : interfaces) {
+        const QList<QNetworkAddressEntry> entries = interface.addressEntries();
+        for (const QNetworkAddressEntry &entry : entries) {
             QHostAddress broadcastAddress = entry.broadcast();
             if (broadcastAddress != QHostAddress::Null && entry.ip() != QHostAddress::LocalHost) {
                 broadcastAddresses << broadcastAddress;
