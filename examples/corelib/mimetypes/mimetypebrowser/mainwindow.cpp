@@ -185,7 +185,9 @@ void MainWindow::find()
 
     m_findMatches.clear();
     m_findIndex = 0;
-    foreach (const QStandardItem *item, m_model->findItems(value, Qt::MatchContains | Qt::MatchFixedString | Qt::MatchRecursive))
+    const QList<QStandardItem *> items =
+            m_model->findItems(value, Qt::MatchContains | Qt::MatchFixedString | Qt::MatchRecursive);
+    for (const QStandardItem *item : items)
         m_findMatches.append(m_model->indexFromItem(item));
     statusBar()->showMessage(tr("%n mime types match \"%1\".", 0, m_findMatches.size()).arg(value));
     updateFindActions();

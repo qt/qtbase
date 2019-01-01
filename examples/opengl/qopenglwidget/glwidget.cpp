@@ -385,10 +385,10 @@ void GLWidget::paintGL()
 
     painter.endNativePainting();
 
-    if (m_showBubbles)
-        foreach (Bubble *bubble, m_bubbles) {
+    if (m_showBubbles) {
+        for (Bubble *bubble : qAsConst(m_bubbles))
             bubble->drawBubble(&painter);
-        }
+    }
 
     if (const int elapsed = m_time.elapsed()) {
         QString framesPerSecond;

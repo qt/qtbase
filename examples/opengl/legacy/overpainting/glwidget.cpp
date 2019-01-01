@@ -201,7 +201,7 @@ void GLWidget::paintEvent(QPaintEvent *event)
 //! [10]
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    foreach (Bubble *bubble, bubbles) {
+    for (Bubble *bubble : qAsConst(bubbles)) {
         if (bubble->rect().intersects(event->rect()))
             bubble->drawBubble(&painter);
     }

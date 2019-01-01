@@ -50,7 +50,8 @@
 
 #include <QtCore>
 
-void parseHtmlFile(QTextStream &out, const QString &fileName) {
+void parseHtmlFile(QTextStream &out, const QString &fileName)
+{
     QFile file(fileName);
 
     out << "Analysis of HTML file: " << fileName << endl;
@@ -71,11 +72,11 @@ void parseHtmlFile(QTextStream &out, const QString &fileName) {
     while (!reader.atEnd()) {
         reader.readNext();
         if (reader.isStartElement()) {
-            if (reader.name() == "title")
+            if (reader.name() == QLatin1String("title"))
                 title = reader.readElementText();
-            else if(reader.name() == "a")
-                links.append(reader.attributes().value("href").toString());
-            else if(reader.name() == "p")
+            else if (reader.name() == QLatin1String("a"))
+                links.append(reader.attributes().value(QLatin1String("href")).toString());
+            else if (reader.name() == QLatin1String("p"))
                 ++paragraphCount;
         }
     }
@@ -94,10 +95,10 @@ void parseHtmlFile(QTextStream &out, const QString &fileName) {
         << "  Number of links: " << links.size() << endl
         << "  Showing first few links:" << endl;
 
-    while(links.size() > 5)
+    while (links.size() > 5)
         links.removeLast();
 
-    foreach(QString link, links)
+    for (const QString &link : qAsConst(links))
         out << "    " << link << endl;
     out << endl << endl;
 }
@@ -108,11 +109,10 @@ int main(int argc, char **argv)
     QCoreApplication app(argc, argv);
 
     // get a list of all html files in the current directory
-    QStringList filter;
-    filter << "*.htm";
-    filter << "*.html";
+    const QStringList filter = { QStringLiteral("*.htm"),
+                                 QStringLiteral("*.html") };
 
-    QStringList htmlFiles = QDir(":/").entryList(filter, QDir::Files);
+    const QStringList htmlFiles = QDir(QStringLiteral(":/")).entryList(filter, QDir::Files);
 
     QTextStream out(stdout);
 
@@ -122,8 +122,8 @@ int main(int argc, char **argv)
     }
 
     // parse each html file and write the result to file/stream
-    foreach(QString file, htmlFiles)
-        parseHtmlFile(out, ":/" + file);
+    for (const QString &file : htmlFiles)
+        parseHtmlFile(out, QStringLiteral(":/") + file);
 
     return 0;
 }
