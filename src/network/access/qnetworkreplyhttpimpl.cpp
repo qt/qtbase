@@ -1879,11 +1879,9 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
 {
     Q_Q(QNetworkReplyHttpImpl);
 
-    // ensure this function is only being called once
-    if (state == Working) {
-        qDebug() << "QNetworkReplyHttpImplPrivate::_q_startOperation was called more than once" << url;
+    if (state == Working) // ensure this function is only being called once
         return;
-    }
+
     state = Working;
 
 #ifndef QT_NO_BEARERMANAGEMENT
