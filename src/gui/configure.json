@@ -1830,8 +1830,7 @@ or may depend on your system and XQuartz setup."
             "condition": "features.gui && config.linux && !config.android && !features.xcb && !features.eglfs && !features.directfb && !features.linuxfb && !features.mirclient",
             "message": "No QPA platform plugin enabled! This will
 produce a Qt that cannot run GUI applications.
-The dependencies needed for xcb to build are listed in
-src/plugins/platforms/xcb/README"
+See \"Platform backends\" in the output of --help."
         },
         {
             "type": "warning",
