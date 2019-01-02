@@ -217,17 +217,14 @@ void QIBusPlatformInputContext::update(Qt::InputMethodQueries q)
             && (q.testFlag(Qt::ImSurroundingText)
                 || q.testFlag(Qt::ImCursorPosition)
                 || q.testFlag(Qt::ImAnchorPosition))) {
-        QInputMethodQueryEvent srrndTextQuery(Qt::ImSurroundingText);
-        QInputMethodQueryEvent cursorPosQuery(Qt::ImCursorPosition);
-        QInputMethodQueryEvent anchorPosQuery(Qt::ImAnchorPosition);
 
-        QCoreApplication::sendEvent(input, &srrndTextQuery);
-        QCoreApplication::sendEvent(input, &cursorPosQuery);
-        QCoreApplication::sendEvent(input, &anchorPosQuery);
+        QInputMethodQueryEvent query(Qt::ImSurroundingText | Qt::ImCursorPosition | Qt::ImAnchorPosition);
 
-        QString surroundingText = srrndTextQuery.value(Qt::ImSurroundingText).toString();
-        uint cursorPosition = cursorPosQuery.value(Qt::ImCursorPosition).toUInt();
-        uint anchorPosition = anchorPosQuery.value(Qt::ImAnchorPosition).toUInt();
+        QCoreApplication::sendEvent(input, &query);
+
+        QString surroundingText = query.value(Qt::ImSurroundingText).toString();
+        uint cursorPosition = query.value(Qt::ImCursorPosition).toUInt();
+        uint anchorPosition = query.value(Qt::ImAnchorPosition).toUInt();
 
         QIBusText text;
         text.text = surroundingText;
