@@ -41,12 +41,7 @@
 #include <private/qcore_mac_p.h>
 
 #ifdef Q_OS_MACOS
-# include <AppKit/AppKit.h>
-# if !QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
-@interface NSApplication (MojaveForwardDeclarations)
-@property (strong) NSAppearance *effectiveAppearance NS_AVAILABLE_MAC(10_14);
-@end
-# endif
+#include <AppKit/AppKit.h>
 #endif
 
 #if defined(QT_PLATFORM_UIKIT)
@@ -174,10 +169,11 @@ QDebug operator<<(QDebug debug, const QMacAutoReleasePool *pool)
 #ifdef Q_OS_MACOS
 bool qt_mac_applicationIsInDarkMode()
 {
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
     if (__builtin_available(macOS 10.14, *))
         return [NSApp.effectiveAppearance.name hasSuffix:@"DarkAqua"];
-    else
-        return false;
+#endif
+    return false;
 }
 #endif
 

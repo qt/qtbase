@@ -80,12 +80,7 @@
 
 #include <CoreServices/CoreServices.h>
 
-#if !QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
-@interface NSApplication (MojaveForwardDeclarations)
-@property (readonly, strong) NSAppearance *effectiveAppearance NS_AVAILABLE_MAC(10_14);
-@end
-#endif
-
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
 @interface QT_MANGLE_NAMESPACE(QCocoaThemeAppAppearanceObserver) : NSObject
 @property (readonly, nonatomic) QCocoaTheme *theme;
 - (instancetype)initWithTheme:(QCocoaTheme *)theme;
@@ -124,6 +119,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaThemeAppAppearanceObserver);
     self.theme->handleSystemThemeChange();
 }
 @end
+#endif // QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
 
 QT_BEGIN_NAMESPACE
 
@@ -132,8 +128,10 @@ const char *QCocoaTheme::name = "cocoa";
 QCocoaTheme::QCocoaTheme()
     : m_systemPalette(nullptr), m_appearanceObserver(nil)
 {
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
     if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave)
         m_appearanceObserver = [[QCocoaThemeAppAppearanceObserver alloc] initWithTheme:this];
+#endif
 
     [[NSNotificationCenter defaultCenter] addObserverForName:NSSystemColorsDidChangeNotification
         object:nil queue:nil usingBlock:^(NSNotification *) {
