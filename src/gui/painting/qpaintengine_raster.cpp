@@ -3882,51 +3882,15 @@ void QClipData::initialize()
 
     Q_CHECK_PTR(m_clipLines);
     QT_TRY {
-        m_spans = (QSpan *)malloc(clipSpanHeight*sizeof(QSpan));
         allocated = clipSpanHeight;
-        Q_CHECK_PTR(m_spans);
-
         QT_TRY {
-            if (hasRectClip) {
-                int y = 0;
-                while (y < ymin) {
-                    m_clipLines[y].spans = 0;
-                    m_clipLines[y].count = 0;
-                    ++y;
-                }
-
-                const int len = clipRect.width();
-                count = 0;
-                while (y < ymax) {
-                    QSpan *span = m_spans + count;
-                    span->x = xmin;
-                    span->len = len;
-                    span->y = y;
-                    span->coverage = 255;
-                    ++count;
-
-                    m_clipLines[y].spans = span;
-                    m_clipLines[y].count = 1;
-                    ++y;
-                }
-
-                while (y < clipSpanHeight) {
-                    m_clipLines[y].spans = 0;
-                    m_clipLines[y].count = 0;
-                    ++y;
-                }
-            } else if (hasRegionClip) {
-
+            if (hasRegionClip) {
                 const auto rects = clipRegion.begin();
                 const int numRects = clipRegion.rectCount();
-
-                { // resize
-                    const int maxSpans = (ymax - ymin) * numRects;
-                    if (maxSpans > allocated) {
-                        m_spans = q_check_ptr((QSpan *)realloc(m_spans, maxSpans * sizeof(QSpan)));
-                        allocated = maxSpans;
-                    }
-                }
+                const int maxSpans = (ymax - ymin) * numRects;
+                allocated = qMax(allocated, maxSpans);
+                m_spans = (QSpan *)malloc(allocated * sizeof(QSpan));
+                Q_CHECK_PTR(m_spans);
 
                 int y = 0;
                 int firstInBand = 0;
@@ -3973,6 +3937,40 @@ void QClipData::initialize()
                     ++y;
                 }
 
+                return;
+            }
+
+            m_spans = (QSpan *)malloc(allocated * sizeof(QSpan));
+            Q_CHECK_PTR(m_spans);
+
+            if (hasRectClip) {
+                int y = 0;
+                while (y < ymin) {
+                    m_clipLines[y].spans = 0;
+                    m_clipLines[y].count = 0;
+                    ++y;
+                }
+
+                const int len = clipRect.width();
+                count = 0;
+                while (y < ymax) {
+                    QSpan *span = m_spans + count;
+                    span->x = xmin;
+                    span->len = len;
+                    span->y = y;
+                    span->coverage = 255;
+                    ++count;
+
+                    m_clipLines[y].spans = span;
+                    m_clipLines[y].count = 1;
+                    ++y;
+                }
+
+                while (y < clipSpanHeight) {
+                    m_clipLines[y].spans = 0;
+                    m_clipLines[y].count = 0;
+                    ++y;
+                }
             }
         } QT_CATCH(...) {
             free(m_spans); // have to free m_spans again or someone might think that we were successfully initialized.
