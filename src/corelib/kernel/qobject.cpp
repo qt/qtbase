@@ -232,7 +232,6 @@ QObjectPrivate::QObjectPrivate(int version)
     receiveChildEvents = true;
     postedEvents = 0;
     extraData = 0;
-    connectedSignals[0] = connectedSignals[1] = 0;
     metaObject = 0;
     isWindow = false;
     deleteLaterCalled = false;
@@ -409,19 +408,12 @@ void QObjectPrivate::addConnection(int signal, Connection *c)
     *c->prev = c;
     if (c->next)
         c->next->prev = &c->next;
-
-    if (signal < 0) {
-        connectedSignals[0] = connectedSignals[1] = ~0;
-    } else if (signal < (int)sizeof(connectedSignals) * 8) {
-        connectedSignals[signal >> 5] |= (1 << (signal & 0x1f));
-    }
 }
 
 void QObjectPrivate::cleanConnectionLists()
 {
     if (connectionLists->dirty && !connectionLists->inUse) {
         // remove broken connections
-        bool allConnected = false;
         for (int signal = -1; signal < connectionLists->count(); ++signal) {
             QObjectPrivate::ConnectionList &connectionList =
                 (*connectionLists)[signal];
@@ -433,13 +425,11 @@ void QObjectPrivate::cleanConnectionLists()
 
             QObjectPrivate::Connection **prev = &connectionList.first;
             QObjectPrivate::Connection *c = *prev;
-            bool connected = false; // whether the signal is still connected somewhere
             while (c) {
                 if (c->receiver) {
                     last = c;
                     prev = &c->nextConnectionList;
                     c = *prev;
-                    connected = true;
                 } else {
                     QObjectPrivate::Connection *next = c->nextConnectionList;
                     *prev = next;
@@ -451,18 +441,39 @@ void QObjectPrivate::cleanConnectionLists()
             // Correct the connection list's last pointer.
             // As conectionList.last could equal last, this could be a noop
             connectionList.last = last;
-
-            if (!allConnected && !connected && signal >= 0
-                && size_t(signal) < sizeof(connectedSignals) * 8) {
-                // This signal is no longer connected
-                connectedSignals[signal >> 5] &= ~(1 << (signal & 0x1f));
-            } else if (signal == -1) {
-                allConnected = connected;
-            }
         }
         connectionLists->dirty = false;
     }
 }
+
+/*! \internal
+
+  Returns \c true if the signal with index \a signal_index from object \a sender is connected.
+
+  \a signal_index must be the index returned by QObjectPrivate::signalIndex;
+*/
+bool QObjectPrivate::isSignalConnected(uint signalIndex, bool checkDeclarative) const
+{
+    if (checkDeclarative && isDeclarativeSignalConnected(signalIndex))
+        return true;
+
+    if (!connectionLists)
+        return false;
+
+    if (connectionLists->allsignals.first)
+        return true;
+
+    if (signalIndex < uint(connectionLists->count())) {
+        const QObjectPrivate::Connection *c = connectionLists->at(signalIndex).first;
+        while (c) {
+            if (c->receiver)
+                return true;
+            c = c->nextConnectionList;
+        }
+    }
+    return false;
+}
+
 
 /*!
     \internal
@@ -2521,21 +2532,7 @@ bool QObject::isSignalConnected(const QMetaMethod &signal) const
     signalIndex += QMetaObjectPrivate::signalOffset(signal.mobj);
 
     QMutexLocker locker(signalSlotLock(this));
-    if (d->connectionLists) {
-        if (signalIndex < sizeof(d->connectedSignals) * 8 && !d->connectionLists->dirty)
-            return d->isSignalConnected(signalIndex);
-
-        if (signalIndex < uint(d->connectionLists->count())) {
-            const QObjectPrivate::Connection *c =
-                d->connectionLists->at(signalIndex).first;
-            while (c) {
-                if (c->receiver)
-                    return true;
-                c = c->nextConnectionList;
-            }
-        }
-    }
-    return d->isDeclarativeSignalConnected(signalIndex);
+    return d->isSignalConnected(signalIndex, true);
 }
 
 /*!
@@ -3668,7 +3665,7 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
         Q_TRACE(QMetaObject_activate_end_declarative_signal, sender, signal_index);
     }
 
-    if (!sender->d_func()->isSignalConnected(signal_index, /*checkDeclarative =*/ false)) {
+    if (!sender->d_func()->isSignalConnected(signal_index, false)) {
         // The possible declarative connection is done, and nothing else is connected
         if (qt_signal_spy_callback_set.signal_begin_callback != nullptr)
             qt_signal_spy_callback_set.signal_begin_callback(sender, signal_index, argv);

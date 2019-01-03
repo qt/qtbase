@@ -201,7 +201,7 @@ public:
     static const QObjectPrivate *get(const QObject *o) { return o->d_func(); }
 
     int signalIndex(const char *signalName, const QMetaObject **meta = nullptr) const;
-    inline bool isSignalConnected(uint signalIdx, bool checkDeclarative = true) const;
+    bool isSignalConnected(uint signalIdx, bool checkDeclarative = true) const;
     inline bool isDeclarativeSignalConnected(uint signalIdx) const;
 
     // To allow abitrary objects to call connectNotify()/disconnectNotify() without making
@@ -232,7 +232,6 @@ public:
 
     Connection *senders;     // linked list of connections connected to this object
     Sender *currentSender;   // object currently activating the object
-    mutable quint32 connectedSignals[2];
 
     union {
         QObject *currentChildBeingDeleted; // should only be used when QObjectData::isDeletingChildren is set
@@ -245,21 +244,6 @@ public:
 };
 
 Q_DECLARE_TYPEINFO(QObjectPrivate::ConnectionList, Q_MOVABLE_TYPE);
-
-/*! \internal
-
-  Returns \c true if the signal with index \a signal_index from object \a sender is connected.
-  Signals with indices above a certain range are always considered connected (see connectedSignals
-  in QObjectPrivate).
-
-  \a signal_index must be the index returned by QObjectPrivate::signalIndex;
-*/
-inline bool QObjectPrivate::isSignalConnected(uint signal_index, bool checkDeclarative) const
-{
-    return signal_index >= sizeof(connectedSignals) * 8
-        || (connectedSignals[signal_index >> 5] & (1 << (signal_index & 0x1f))
-        || (checkDeclarative && isDeclarativeSignalConnected(signal_index)));
-}
 
 inline bool QObjectPrivate::isDeclarativeSignalConnected(uint signal_index) const
 {
