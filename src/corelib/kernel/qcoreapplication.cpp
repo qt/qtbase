@@ -256,15 +256,6 @@ void QCoreApplicationPrivate::processCommandLineArguments()
 
 // Support for introspection
 
-#ifndef QT_NO_QOBJECT
-QSignalSpyCallbackSet Q_CORE_EXPORT qt_signal_spy_callback_set = { 0, 0, 0, 0 };
-
-void qt_register_signal_spy_callbacks(const QSignalSpyCallbackSet &callback_set)
-{
-    qt_signal_spy_callback_set = callback_set;
-}
-#endif
-
 extern "C" void Q_CORE_EXPORT qt_startup_hook()
 {
 }

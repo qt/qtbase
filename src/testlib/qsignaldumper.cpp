@@ -170,13 +170,12 @@ void QSignalDumper::startDump()
 {
     static QSignalSpyCallbackSet set = { QTest::qSignalDumperCallback,
         QTest::qSignalDumperCallbackSlot, QTest::qSignalDumperCallbackEndSignal, 0 };
-    qt_register_signal_spy_callbacks(set);
+    qt_register_signal_spy_callbacks(&set);
 }
 
 void QSignalDumper::endDump()
 {
-    static QSignalSpyCallbackSet nset = { 0, 0, 0 ,0 };
-    qt_register_signal_spy_callbacks(nset);
+    qt_register_signal_spy_callbacks(nullptr);
 }
 
 void QSignalDumper::ignoreClass(const QByteArray &klass)

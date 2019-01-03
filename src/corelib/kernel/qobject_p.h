@@ -79,9 +79,9 @@ struct QSignalSpyCallbackSet
     EndCallback signal_end_callback,
                 slot_end_callback;
 };
-void Q_CORE_EXPORT qt_register_signal_spy_callbacks(const QSignalSpyCallbackSet &callback_set);
+void Q_CORE_EXPORT qt_register_signal_spy_callbacks(QSignalSpyCallbackSet *callback_set);
 
-extern QSignalSpyCallbackSet Q_CORE_EXPORT qt_signal_spy_callback_set;
+extern Q_CORE_EXPORT QBasicAtomicPointer<QSignalSpyCallbackSet> qt_signal_spy_callback_set;
 
 enum { QObjectPrivateVersion = QT_VERSION };
 

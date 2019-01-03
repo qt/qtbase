@@ -77,6 +77,12 @@ QT_BEGIN_NAMESPACE
 
 static int DIRECT_CONNECTION_ONLY = 0;
 
+Q_CORE_EXPORT QBasicAtomicPointer<QSignalSpyCallbackSet> qt_signal_spy_callback_set = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
+
+void qt_register_signal_spy_callbacks(QSignalSpyCallbackSet *callback_set)
+{
+    qt_signal_spy_callback_set.store(callback_set);
+}
 
 QDynamicMetaObjectData::~QDynamicMetaObjectData()
 {
@@ -3638,41 +3644,32 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
     QCoreApplication::postEvent(c->receiver, ev);
 }
 
-/*!
-    \internal
- */
-void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_signal_index,
-                           void **argv)
+template <bool callbacks_enabled>
+void doActivate(QObject *sender, int signal_index, void **argv)
 {
-    activate(sender, QMetaObjectPrivate::signalOffset(m), local_signal_index, argv);
-}
+    QObjectPrivate *sp = QObjectPrivate::get(sender);
 
-/*!
-    \internal
- */
-void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_index, void **argv)
-{
-    int signal_index = signalOffset + local_signal_index;
-
-    if (sender->d_func()->blockSig)
+    if (sp->blockSig)
         return;
 
-    if (sender->d_func()->isDeclarativeSignalConnected(signal_index)
+    if (sp->isDeclarativeSignalConnected(signal_index)
             && QAbstractDeclarativeData::signalEmitted) {
         Q_TRACE(QMetaObject_activate_begin_declarative_signal, sender, signal_index);
-        QAbstractDeclarativeData::signalEmitted(sender->d_func()->declarativeData, sender,
+        QAbstractDeclarativeData::signalEmitted(sp->declarativeData, sender,
                                                 signal_index, argv);
         Q_TRACE(QMetaObject_activate_end_declarative_signal, sender, signal_index);
     }
 
-    if (!sender->d_func()->isSignalConnected(signal_index, false)) {
+    const QSignalSpyCallbackSet *signal_spy_set = callbacks_enabled ? qt_signal_spy_callback_set.load() : nullptr;
+
+    if (!sp->isSignalConnected(signal_index, false)) {
         // The possible declarative connection is done, and nothing else is connected
-        if (qt_signal_spy_callback_set.signal_begin_callback != nullptr)
-            qt_signal_spy_callback_set.signal_begin_callback(sender, signal_index, argv);
+        if (callbacks_enabled && signal_spy_set->signal_begin_callback != nullptr)
+            signal_spy_set->signal_begin_callback(sender, signal_index, argv);
         Q_TRACE(QMetaObject_activate_begin_signal, sender, signal_index);
         Q_TRACE(QMetaObject_activate_end_signal, sender, signal_index);
-        if (qt_signal_spy_callback_set.signal_end_callback != nullptr)
-            qt_signal_spy_callback_set.signal_end_callback(sender, signal_index);
+        if (callbacks_enabled && signal_spy_set->signal_end_callback != nullptr)
+            signal_spy_set->signal_end_callback(sender, signal_index);
         return;
     }
 
@@ -3680,9 +3677,8 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
     if (!argv)
         argv = empty_argv;
 
-    if (qt_signal_spy_callback_set.signal_begin_callback != 0) {
-        qt_signal_spy_callback_set.signal_begin_callback(sender, signal_index, argv);
-    }
+    if (callbacks_enabled && signal_spy_set->signal_begin_callback != nullptr)
+        signal_spy_set->signal_begin_callback(sender, signal_index, argv);
     Q_TRACE(QMetaObject_activate_begin_signal, sender, signal_index);
 
     {
@@ -3709,7 +3705,7 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
 
         QObjectConnectionListVector *operator->() const { return connectionLists; }
     };
-    ConnectionListsRef connectionLists = sender->d_func()->connectionLists;
+    ConnectionListsRef connectionLists = sp->connectionLists;
 
     const QObjectPrivate::ConnectionList *list;
     if (signal_index < connectionLists->count())
@@ -3731,7 +3727,7 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
                 continue;
 
             QObject * const receiver = c->receiver;
-            const bool receiverInSameThread = currentThreadId == receiver->d_func()->threadData->threadId.load();
+            const bool receiverInSameThread = currentThreadId == QObjectPrivate::get(receiver)->threadData->threadId.load();
 
             // determine if this connection should be sent immediately or
             // put into the event queue
@@ -3780,34 +3776,34 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
                 locker.relock();
             } else if (c->callFunction && c->method_offset <= receiver->metaObject()->methodOffset()) {
                 //we compare the vtable to make sure we are not in the destructor of the object.
-                const int methodIndex = c->method();
                 const int method_relative = c->method_relative;
                 const auto callFunction = c->callFunction;
                 locker.unlock();
-                if (qt_signal_spy_callback_set.slot_begin_callback != 0)
-                    qt_signal_spy_callback_set.slot_begin_callback(receiver, methodIndex, argv);
+                const int methodIndex = (Q_HAS_TRACEPOINTS || callbacks_enabled) ? c->method() : 0;
+                if (callbacks_enabled && signal_spy_set->slot_begin_callback != nullptr)
+                    signal_spy_set->slot_begin_callback(receiver, methodIndex, argv);
                 Q_TRACE(QMetaObject_activate_begin_slot, receiver, methodIndex);
 
                 callFunction(receiver, QMetaObject::InvokeMetaMethod, method_relative, argv);
 
                 Q_TRACE(QMetaObject_activate_end_slot, receiver, methodIndex);
-                if (qt_signal_spy_callback_set.slot_end_callback != 0)
-                    qt_signal_spy_callback_set.slot_end_callback(receiver, methodIndex);
+                if (callbacks_enabled && signal_spy_set->slot_end_callback != nullptr)
+                    signal_spy_set->slot_end_callback(receiver, methodIndex);
                 locker.relock();
             } else {
                 const int method = c->method_relative + c->method_offset;
                 locker.unlock();
 
-                if (qt_signal_spy_callback_set.slot_begin_callback != 0) {
-                    qt_signal_spy_callback_set.slot_begin_callback(receiver, method, argv);
+                if (callbacks_enabled && signal_spy_set->slot_begin_callback != nullptr) {
+                    signal_spy_set->slot_begin_callback(receiver, method, argv);
                 }
                 Q_TRACE(QMetaObject_activate_begin_slot, receiver, method);
 
-                metacall(receiver, QMetaObject::InvokeMetaMethod, method, argv);
+                QMetaObject::metacall(receiver, QMetaObject::InvokeMetaMethod, method, argv);
 
                 Q_TRACE(QMetaObject_activate_end_slot, receiver, method);
-                if (qt_signal_spy_callback_set.slot_end_callback != 0)
-                    qt_signal_spy_callback_set.slot_end_callback(receiver, method);
+                if (callbacks_enabled && signal_spy_set->slot_end_callback != nullptr)
+                    signal_spy_set->slot_end_callback(receiver, method);
 
                 locker.relock();
             }
@@ -3824,10 +3820,38 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
 
     }
 
-    if (qt_signal_spy_callback_set.signal_end_callback != 0)
-        qt_signal_spy_callback_set.signal_end_callback(sender, signal_index);
+    if (callbacks_enabled && signal_spy_set->signal_end_callback != nullptr)
+        signal_spy_set->signal_end_callback(sender, signal_index);
     Q_TRACE(QMetaObject_activate_end_signal, sender, signal_index);
+
 }
+
+/*!
+    \internal
+ */
+void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_signal_index,
+                           void **argv)
+{
+    int signal_index = local_signal_index + QMetaObjectPrivate::signalOffset(m);
+
+    if (Q_UNLIKELY(qt_signal_spy_callback_set.load()))
+        doActivate<true>(sender, signal_index, argv);
+    else
+        doActivate<false>(sender, signal_index, argv);
+}
+
+/*!
+    \internal
+ */
+void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_index, void **argv)
+{
+    int signal_index = signalOffset + local_signal_index;
+
+    if (Q_UNLIKELY(qt_signal_spy_callback_set.load()))
+        doActivate<true>(sender, signal_index, argv);
+    else
+        doActivate<false>(sender, signal_index, argv);
+ }
 
 /*!
     \internal
