@@ -3673,10 +3673,12 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
         return;
     }
 
-    void *empty_argv[] = { 0 };
+    void *empty_argv[] = { nullptr };
+    if (!argv)
+        argv = empty_argv;
+
     if (qt_signal_spy_callback_set.signal_begin_callback != 0) {
-        qt_signal_spy_callback_set.signal_begin_callback(sender, signal_index,
-                                                         argv ? argv : empty_argv);
+        qt_signal_spy_callback_set.signal_begin_callback(sender, signal_index, argv);
     }
     Q_TRACE(QMetaObject_activate_begin_signal, sender, signal_index);
 
@@ -3739,7 +3741,7 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
             // put into the event queue
             if ((c->connectionType == Qt::AutoConnection && !receiverInSameThread)
                 || (c->connectionType == Qt::QueuedConnection)) {
-                queued_activate(sender, signal_index, c, argv ? argv : empty_argv, locker);
+                queued_activate(sender, signal_index, c, argv, locker);
                 continue;
 #if QT_CONFIG(thread)
             } else if (c->connectionType == Qt::BlockingQueuedConnection) {
@@ -3751,8 +3753,8 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
                 }
                 QSemaphore semaphore;
                 QMetaCallEvent *ev = c->isSlotObject ?
-                    new QMetaCallEvent(c->slotObj, sender, signal_index, 0, 0, argv ? argv : empty_argv, &semaphore) :
-                    new QMetaCallEvent(c->method_offset, c->method_relative, c->callFunction, sender, signal_index, 0, 0, argv ? argv : empty_argv, &semaphore);
+                    new QMetaCallEvent(c->slotObj, sender, signal_index, 0, 0, argv, &semaphore) :
+                    new QMetaCallEvent(c->method_offset, c->method_relative, c->callFunction, sender, signal_index, 0, 0, argv, &semaphore);
                 QCoreApplication::postEvent(receiver, ev);
                 locker.unlock();
                 semaphore.acquire();
@@ -3771,7 +3773,7 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
                 QScopedPointer<QtPrivate::QSlotObjectBase, QSlotObjectBaseDeleter> obj(c->slotObj);
                 locker.unlock();
                 Q_TRACE(QMetaObject_activate_begin_slot_functor, obj.data());
-                obj->call(receiver, argv ? argv : empty_argv);
+                obj->call(receiver, argv);
                 Q_TRACE(QMetaObject_activate_end_slot_functor, obj.data());
 
                 // Make sure the slot object gets destroyed before the mutex is locked again, as the
@@ -3787,10 +3789,10 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
                 const auto callFunction = c->callFunction;
                 locker.unlock();
                 if (qt_signal_spy_callback_set.slot_begin_callback != 0)
-                    qt_signal_spy_callback_set.slot_begin_callback(receiver, methodIndex, argv ? argv : empty_argv);
+                    qt_signal_spy_callback_set.slot_begin_callback(receiver, methodIndex, argv);
                 Q_TRACE(QMetaObject_activate_begin_slot, receiver, methodIndex);
 
-                callFunction(receiver, QMetaObject::InvokeMetaMethod, method_relative, argv ? argv : empty_argv);
+                callFunction(receiver, QMetaObject::InvokeMetaMethod, method_relative, argv);
 
                 Q_TRACE(QMetaObject_activate_end_slot, receiver, methodIndex);
                 if (qt_signal_spy_callback_set.slot_end_callback != 0)
@@ -3801,13 +3803,11 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
                 locker.unlock();
 
                 if (qt_signal_spy_callback_set.slot_begin_callback != 0) {
-                    qt_signal_spy_callback_set.slot_begin_callback(receiver,
-                                                                method,
-                                                                argv ? argv : empty_argv);
+                    qt_signal_spy_callback_set.slot_begin_callback(receiver, method, argv);
                 }
                 Q_TRACE(QMetaObject_activate_begin_slot, receiver, method);
 
-                metacall(receiver, QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
+                metacall(receiver, QMetaObject::InvokeMetaMethod, method, argv);
 
                 Q_TRACE(QMetaObject_activate_end_slot, receiver, method);
                 if (qt_signal_spy_callback_set.slot_end_callback != 0)
