@@ -250,7 +250,7 @@
             "test": {
                 "tail": [
                     "#ifndef FC_RGBA_UNKNOWN",
-                    "#  error This version of fontconfig is tool old, it is missing the FC_RGBA_UNKNOWN define",
+                    "#  error This version of fontconfig is too old, it is missing the FC_RGBA_UNKNOWN define",
                     "#endif"
                 ],
                 "main": [
