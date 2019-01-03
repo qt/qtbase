@@ -83,14 +83,6 @@ QXcbSystemTrayTracker::QXcbSystemTrayTracker(QXcbConnection *connection,
 {
 }
 
-xcb_window_t QXcbSystemTrayTracker::locateTrayWindow(const QXcbConnection *connection, xcb_atom_t selection)
-{
-    auto reply = Q_XCB_REPLY(xcb_get_selection_owner, connection->xcb_connection(), selection);
-    if (!reply)
-        return 0;
-    return reply->owner;
-}
-
 // Request a window to be docked on the tray.
 void QXcbSystemTrayTracker::requestSystemTrayWindowDock(xcb_window_t window) const
 {
@@ -110,7 +102,7 @@ void QXcbSystemTrayTracker::requestSystemTrayWindowDock(xcb_window_t window) con
 xcb_window_t QXcbSystemTrayTracker::trayWindow()
 {
     if (!m_trayWindow) {
-        m_trayWindow = QXcbSystemTrayTracker::locateTrayWindow(m_connection, m_selection);
+        m_trayWindow = m_connection->selectionOwner(m_selection);
         if (m_trayWindow) { // Listen for DestroyNotify on tray.
             m_connection->addWindowEventListener(m_trayWindow, this);
             const quint32 mask = XCB_CW_EVENT_MASK;

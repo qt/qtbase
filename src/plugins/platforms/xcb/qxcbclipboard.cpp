@@ -254,8 +254,7 @@ QXcbClipboard::~QXcbClipboard()
             m_timestamp[QClipboard::Selection] != XCB_CURRENT_TIME) {
 
         // First we check if there is a clipboard manager.
-        auto reply = Q_XCB_REPLY(xcb_get_selection_owner, xcb_connection(), atom(QXcbAtom::CLIPBOARD_MANAGER));
-        if (reply && reply->owner != XCB_NONE) {
+        if (connection()->selectionOwner(atom(QXcbAtom::CLIPBOARD_MANAGER)) != XCB_NONE) {
             // we delete the property so the manager saves all TARGETS.
             xcb_delete_property(xcb_connection(), connection()->qtSelectionOwner(),
                                 atom(QXcbAtom::_QT_SELECTION));
@@ -784,8 +783,7 @@ xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t window, i
         const QXcbEventNode *flushedTailNode = queue->flushedTail();
 
         if (checkManager) {
-            auto reply = Q_XCB_REPLY(xcb_get_selection_owner, xcb_connection(), atom(QXcbAtom::CLIPBOARD_MANAGER));
-            if (!reply || reply->owner == XCB_NONE)
+            if (connection()->selectionOwner(atom(QXcbAtom::CLIPBOARD_MANAGER)) == XCB_NONE)
                 return nullptr;
         }
 

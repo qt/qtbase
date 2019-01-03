@@ -235,12 +235,11 @@ QXcbXSettings::QXcbXSettings(QXcbVirtualDesktop *screen)
 
     xcb_atom_t selection_owner_atom = atom_reply->atom;
 
-    auto selection_result = Q_XCB_REPLY(xcb_get_selection_owner,
-                                        screen->xcb_connection(), selection_owner_atom);
-    if (!selection_result)
+    xcb_window_t owner = screen->connection()->selectionOwner(selection_owner_atom);
+    if (owner == XCB_NONE)
         return;
 
-    d_ptr->x_settings_window = selection_result->owner;
+    d_ptr->x_settings_window = owner;
     if (!d_ptr->x_settings_window)
         return;
 

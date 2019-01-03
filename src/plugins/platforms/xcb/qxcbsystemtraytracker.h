@@ -70,7 +70,7 @@ private:
     explicit QXcbSystemTrayTracker(QXcbConnection *connection,
                                    xcb_atom_t trayAtom,
                                    xcb_atom_t selection);
-    static xcb_window_t locateTrayWindow(const QXcbConnection *connection, xcb_atom_t selection);
+
     void emitSystemTrayWindowChanged();
     xcb_visualid_t netSystemTrayVisual();
 
