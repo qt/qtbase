@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtCore/qvarlengtharray.h>
 #include <QtGui/private/qtguiglobal_p.h>
 #include "QtGui/qbrush.h"
 #include "QtGui/qfont.h"
@@ -202,7 +203,7 @@ public:
     QPainterPrivate **d_ptrs;
 
     QPainterState *state;
-    QVector<QPainterState*> states;
+    QVarLengthArray<QPainterState *, 8> states;
 
     mutable QPainterDummyState *dummyState;
 
