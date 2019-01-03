@@ -99,13 +99,12 @@ static jfieldID m_selectionStartFieldID = 0;
 static jfieldID m_startOffsetFieldID = 0;
 static jfieldID m_textFieldID = 0;
 
-Q_DECLARE_METATYPE(std::function<void()>)
-
 static void runOnQtThread(const std::function<void()> &func)
 {
-    const bool block = QGuiApplication::applicationState() >= Qt::ApplicationInactive;
-    QMetaObject::invokeMethod(m_androidInputContext, "safeCall",
-        block ? Qt::BlockingQueuedConnection : Qt::QueuedConnection, Q_ARG(std::function<void()>, func));
+    AndroidDeadlockProtector protector;
+    if (!protector.acquire())
+        return;
+    QMetaObject::invokeMethod(m_androidInputContext, "safeCall", Qt::BlockingQueuedConnection, Q_ARG(std::function<void()>, func));
 }
 
 static jboolean beginBatchEdit(JNIEnv */*env*/, jobject /*thiz*/)
@@ -516,7 +515,6 @@ QAndroidInputContext::QAndroidInputContext()
         m_handleMode = Hidden;
         updateSelectionHandles();
     });
-    qRegisterMetaType<std::function<void()>>();
 }
 
 QAndroidInputContext::~QAndroidInputContext()
