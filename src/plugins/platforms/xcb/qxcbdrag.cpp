@@ -174,11 +174,9 @@ void QXcbDrag::startDrag()
 {
     init();
 
-#ifndef QT_NO_CLIPBOARD
-    qCDebug(lcQpaXDnd) << "starting drag where source:" << connection()->clipboard()->owner();
-    xcb_set_selection_owner(xcb_connection(), connection()->clipboard()->owner(),
+    qCDebug(lcQpaXDnd) << "starting drag where source:" << connection()->qtSelectionOwner();
+    xcb_set_selection_owner(xcb_connection(), connection()->qtSelectionOwner(),
                             atom(QXcbAtom::XdndSelection), connection()->time());
-#endif
 
     QStringList fmts = QXcbMime::formatsHelper(drag()->mimeData());
     for (int i = 0; i < fmts.size(); ++i) {
@@ -188,12 +186,11 @@ void QXcbDrag::startDrag()
                 drag_types.append(atoms.at(j));
         }
     }
-#ifndef QT_NO_CLIPBOARD
+
     if (drag_types.size() > 3)
-        xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, connection()->clipboard()->owner(),
+        xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, connection()->qtSelectionOwner(),
                             atom(QXcbAtom::XdndTypelist),
                             XCB_ATOM_ATOM, 32, drag_types.size(), (const void *)drag_types.constData());
-#endif
 
     setUseCompositing(current_virtual_desktop->compositingActive());
     setScreen(current_virtual_desktop->screens().constFirst()->screen());
@@ -444,11 +441,7 @@ void QXcbDrag::move(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardMod
             enter.window = target;
             enter.format = 32;
             enter.type = atom(QXcbAtom::XdndEnter);
-#ifndef QT_NO_CLIPBOARD
-            enter.data.data32[0] = connection()->clipboard()->owner();
-#else
-            enter.data.data32[0] = 0;
-#endif
+            enter.data.data32[0] = connection()->qtSelectionOwner();
             enter.data.data32[1] = flags;
             enter.data.data32[2] = drag_types.size() > 0 ? drag_types.at(0) : 0;
             enter.data.data32[3] = drag_types.size() > 1 ? drag_types.at(1) : 0;
@@ -479,11 +472,7 @@ void QXcbDrag::move(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardMod
         move.window = target;
         move.format = 32;
         move.type = atom(QXcbAtom::XdndPosition);
-#ifndef QT_NO_CLIPBOARD
-        move.data.data32[0] = connection()->clipboard()->owner();
-#else
-        move.data.data32[0] = 0;
-#endif
+        move.data.data32[0] = connection()->qtSelectionOwner();
         move.data.data32[1] = 0; // flags
         move.data.data32[2] = (globalPos.x() << 16) + globalPos.y();
         move.data.data32[3] = connection()->time();
@@ -529,11 +518,7 @@ void QXcbDrag::drop(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardMod
     drop.window = current_target;
     drop.format = 32;
     drop.type = atom(QXcbAtom::XdndDrop);
-#ifndef QT_NO_CLIPBOARD
-    drop.data.data32[0] = connection()->clipboard()->owner();
-#else
-    drop.data.data32[0] = 0;
-#endif
+    drop.data.data32[0] = connection()->qtSelectionOwner();
     drop.data.data32[1] = 0; // flags
     drop.data.data32[2] = connection()->time();
 
@@ -640,7 +625,7 @@ void QXcbDrag::setActionList(Qt::DropAction requestedAction, Qt::DropActions sup
     checkAppend(Qt::LinkAction);
 
     if (current_actions != actions) {
-        xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, connection()->clipboard()->owner(),
+        xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, connection()->qtSelectionOwner(),
                             atom(QXcbAtom::XdndActionList),
                             XCB_ATOM_ATOM, 32, actions.size(), actions.constData());
         current_actions = actions;
@@ -861,11 +846,9 @@ void QXcbDrag::handle_xdnd_position(QPlatformWindow *w, const xcb_client_message
 
     qCDebug(lcQpaXDnd) << "sending XdndStatus to source:" << xdnd_dragsource;
 
-#ifndef QT_NO_CLIPBOARD
-    if (xdnd_dragsource == connection()->clipboard()->owner())
+    if (xdnd_dragsource == connection()->qtSelectionOwner())
         handle_xdnd_status(&response);
     else
-#endif
         xcb_send_event(xcb_connection(), false, current_proxy_target,
                        XCB_EVENT_MASK_NO_EVENT, (const char *)&response);
 }
@@ -931,11 +914,7 @@ void QXcbDrag::handle_xdnd_status(const xcb_client_message_event_t *event)
 
 void QXcbDrag::handleStatus(const xcb_client_message_event_t *event)
 {
-    if (
-#ifndef QT_NO_CLIPBOARD
-            event->window != connection()->clipboard()->owner() ||
-#endif
-            !drag())
+    if (event->window != connection()->qtSelectionOwner() || !drag())
         return;
 
     xcb_client_message_event_t *lastEvent = const_cast<xcb_client_message_event_t *>(event);
@@ -992,11 +971,7 @@ void QXcbDrag::send_leave()
     leave.window = current_target;
     leave.format = 32;
     leave.type = atom(QXcbAtom::XdndLeave);
-#ifndef QT_NO_CLIPBOARD
-    leave.data.data32[0] = connection()->clipboard()->owner();
-#else
-    leave.data.data32[0] = 0;
-#endif
+    leave.data.data32[0] = connection()->qtSelectionOwner();
     leave.data.data32[1] = 0; // flags
     leave.data.data32[2] = 0; // x, y
     leave.data.data32[3] = 0; // w, h
@@ -1091,10 +1066,8 @@ void QXcbDrag::handleFinished(const xcb_client_message_event_t *event)
     // Source receives XdndFinished when target is done processing the drop data.
     qCDebug(lcQpaXDnd) << "source:" << event->window << "received XdndFinished";
 
-#ifndef QT_NO_CLIPBOARD
-    if (event->window != connection()->clipboard()->owner())
+    if (event->window != connection()->qtSelectionOwner())
         return;
-#endif
 
     const unsigned long *l = (const unsigned long *)event->data.data32;
     if (l[0]) {
@@ -1369,7 +1342,7 @@ QVariant QXcbDropData::xdndObtainData(const QByteArray &format, QMetaType reques
         return result;
 
 #ifndef QT_NO_CLIPBOARD
-    if (c->clipboard()->getSelectionOwner(drag->atom(QXcbAtom::XdndSelection)) == XCB_NONE)
+    if (c->selectionOwner(c->atom(QXcbAtom::XdndSelection)) == XCB_NONE)
         return result; // should never happen?
 
     xcb_atom_t xdnd_selection = c->atom(QXcbAtom::XdndSelection);

@@ -62,7 +62,7 @@ QXcbVirtualDesktop::QXcbVirtualDesktop(QXcbConnection *connection, xcb_screen_t 
 {
     const QByteArray cmAtomName =  "_NET_WM_CM_S" + QByteArray::number(m_number);
     m_net_wm_cm_atom = connection->internAtom(cmAtomName.constData());
-    m_compositingActive = connection->getSelectionOwner(m_net_wm_cm_atom);
+    m_compositingActive = connection->selectionOwner(m_net_wm_cm_atom);
 
     m_workArea = getWorkArea();
 
@@ -177,7 +177,7 @@ bool QXcbVirtualDesktop::compositingActive() const
     if (connection()->hasXFixes())
         return m_compositingActive;
     else
-        return connection()->getSelectionOwner(m_net_wm_cm_atom);
+        return connection()->selectionOwner(m_net_wm_cm_atom);
 }
 
 void QXcbVirtualDesktop::handleXFixesSelectionNotify(xcb_xfixes_selection_notify_event_t *notify_event)
@@ -192,7 +192,7 @@ void QXcbVirtualDesktop::subscribeToXFixesSelectionNotify()
         const uint32_t mask = XCB_XFIXES_SELECTION_EVENT_MASK_SET_SELECTION_OWNER |
                               XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_WINDOW_DESTROY |
                               XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_CLIENT_CLOSE;
-        xcb_xfixes_select_selection_input_checked(xcb_connection(), connection()->getQtSelectionOwner(), m_net_wm_cm_atom, mask);
+        xcb_xfixes_select_selection_input_checked(xcb_connection(), connection()->qtSelectionOwner(), m_net_wm_cm_atom, mask);
     }
 }
 

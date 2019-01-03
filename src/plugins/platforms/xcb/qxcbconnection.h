@@ -191,8 +191,8 @@ public:
     inline void setNetWmUserTime(xcb_timestamp_t t) { if (timeGreaterThan(t, m_netWmUserTime)) m_netWmUserTime = t; }
 
     xcb_timestamp_t getTimestamp();
-    xcb_window_t getSelectionOwner(xcb_atom_t atom) const;
-    xcb_window_t getQtSelectionOwner();
+    xcb_window_t selectionOwner(xcb_atom_t atom) const;
+    xcb_window_t qtSelectionOwner();
 
     void setButtonState(Qt::MouseButton button, bool down);
     Qt::MouseButtons buttonState() const { return m_buttonState; }

@@ -97,8 +97,6 @@ public:
     xcb_window_t requestor() const;
     void setRequestor(xcb_window_t window);
 
-    xcb_window_t owner() const;
-
     void handleSelectionRequest(xcb_selection_request_event_t *event);
     void handleSelectionClearRequest(xcb_selection_clear_event_t *event);
     void handleXFixesSelectionRequest(xcb_xfixes_selection_notify_event_t *event);
@@ -110,7 +108,6 @@ public:
 
     bool handlePropertyNotify(const xcb_generic_event_t *event);
 
-    xcb_window_t getSelectionOwner(xcb_atom_t atom) const;
     QByteArray getSelection(xcb_atom_t selection, xcb_atom_t target, xcb_atom_t property, xcb_timestamp_t t = 0);
 
     int increment() const { return m_maxPropertyRequestDataBytes; }
@@ -133,7 +130,6 @@ private:
     xcb_timestamp_t m_timestamp[2];
 
     xcb_window_t m_requestor = XCB_NONE;
-    xcb_window_t m_owner = XCB_NONE;
 
     static const int clipboard_timeout;
 

@@ -868,7 +868,7 @@ xcb_timestamp_t QXcbConnection::getTimestamp()
     return timestamp;
 }
 
-xcb_window_t QXcbConnection::getSelectionOwner(xcb_atom_t atom) const
+xcb_window_t QXcbConnection::selectionOwner(xcb_atom_t atom) const
 {
     auto reply = Q_XCB_REPLY(xcb_get_selection_owner, xcb_connection(), atom);
     if (!reply) {
@@ -879,7 +879,7 @@ xcb_window_t QXcbConnection::getSelectionOwner(xcb_atom_t atom) const
     return reply->owner;
 }
 
-xcb_window_t QXcbConnection::getQtSelectionOwner()
+xcb_window_t QXcbConnection::qtSelectionOwner()
 {
     if (!m_qtSelectionOwner) {
         xcb_screen_t *xcbScreen = primaryVirtualDesktop()->screen();
