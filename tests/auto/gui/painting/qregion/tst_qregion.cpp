@@ -84,6 +84,8 @@ private slots:
 #endif
 
     void regionFromPath();
+    void scaleRegions_data();
+    void scaleRegions();
 
 #ifdef QT_BUILD_INTERNAL
     void regionToPath_data();
@@ -971,6 +973,59 @@ void tst_QRegion::regionFromPath()
 
         QCOMPARE(rgn.boundingRect(), QRect(0, 0, 100, 100));
     }
+}
+
+void tst_QRegion::scaleRegions_data()
+{
+    QTest::addColumn<qreal>("scale");
+    QTest::addColumn<QVector<QRect>>("inputRects");
+    QTest::addColumn<QVector<QRect>>("expectedRects");
+
+    QTest::newRow("1.0 single")  << 1.0
+                                 << QVector<QRect>{ QRect(10, 10, 20, 20) }
+                                 << QVector<QRect>{ QRect(10, 10, 20, 20) };
+    QTest::newRow("1.0 multi")   << 1.0
+                                 << QVector<QRect>{ QRect(10, 10, 20, 20), QRect(40, 10, 20, 20) }
+                                 << QVector<QRect>{ QRect(10, 10, 20, 20), QRect(40, 10, 20, 20) };
+    QTest::newRow("2.0 single")  << 2.0
+                                 << QVector<QRect>{ QRect(10, 10, 20, 20) }
+                                 << QVector<QRect>{ QRect(20, 20, 40, 40) };
+    QTest::newRow("2.0 multi")   << 2.0
+                                 << QVector<QRect>{ QRect(10, 10, 20, 20), QRect(40, 10, 20, 20) }
+                                 << QVector<QRect>{ QRect(20, 20, 40, 40), QRect(80, 20, 40, 40) };
+    QTest::newRow("-1.0 single") << -1.0
+                                 << QVector<QRect>{ QRect(10, 10, 20, 20) }
+                                 << QVector<QRect>{ QRect(-30, -30, 20, 20) };
+    QTest::newRow("-1.0 multi")  << -1.0
+                                 << QVector<QRect>{ QRect(10, 10, 20, 20), QRect(40, 10, 20, 20) }
+                                 << QVector<QRect>{ QRect(-60, -30, 20, 20), QRect(-30, -30, 20, 20) };
+    QTest::newRow("-2.0 single") << -2.0
+                                 << QVector<QRect>{ QRect(10, 10, 20, 20) }
+                                 << QVector<QRect>{ QRect(-60, -60, 40, 40) };
+    QTest::newRow("-2.0 multi")  << -2.0
+                                 << QVector<QRect>{ QRect(10, 10, 20, 20), QRect(40, 10, 20, 20) }
+                                 << QVector<QRect>{ QRect(-120, -60, 40, 40), QRect(-60, -60, 40, 40) };
+}
+
+void tst_QRegion::scaleRegions()
+{
+    QFETCH(qreal, scale);
+    QFETCH(QVector<QRect>, inputRects);
+    QFETCH(QVector<QRect>, expectedRects);
+
+    QRegion region;
+    region.setRects(inputRects.constData(), inputRects.size());
+
+    QRegion expected(expectedRects.first());
+    expected.setRects(expectedRects.constData(), expectedRects.size());
+
+    QTransform t;
+    t.scale(scale, scale);
+
+    auto result = t.map(region);
+
+    QCOMPARE(result.rectCount(), expectedRects.size());
+    QCOMPARE(result, expected);
 }
 
 Q_DECLARE_METATYPE(QPainterPath)
