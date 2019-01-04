@@ -507,6 +507,9 @@ void QWidgetBackingStore::sendUpdateRequest(QWidget *widget, UpdateTime updateTi
     }
 }
 
+static inline QRect widgetRectFor(QWidget *, const QRect &r) { return r; }
+static inline QRect widgetRectFor(QWidget *widget, const QRegion &) { return widget->rect(); }
+
 /*!
     Marks the region of the widget as dirty (if not already marked as dirty) and
     posts an UpdateRequest event to the top-level widget (if not already posted).
@@ -517,178 +520,114 @@ void QWidgetBackingStore::sendUpdateRequest(QWidget *widget, UpdateTime updateTi
 
     If the widget paints directly on screen, the event is sent to the widget
     instead of the top-level widget, and bufferState is completely ignored.
-
-    ### Qt 4.6: Merge into a template function (after MSVC isn't supported anymore).
 */
-void QWidgetBackingStore::markDirty(const QRegion &rgn, QWidget *widget,
-                                    UpdateTime updateTime, BufferState bufferState)
+template <class T>
+void QWidgetBackingStore::markDirty(const T &r, QWidget *widget, UpdateTime updateTime, BufferState bufferState)
 {
     Q_ASSERT(tlw->d_func()->extra);
     Q_ASSERT(tlw->d_func()->extra->topextra);
     Q_ASSERT(!tlw->d_func()->extra->topextra->inTopLevelResize);
     Q_ASSERT(widget->isVisible() && widget->updatesEnabled());
     Q_ASSERT(widget->window() == tlw);
-    Q_ASSERT(!rgn.isEmpty());
+    Q_ASSERT(!r.isEmpty());
 
 #if QT_CONFIG(graphicseffect)
     widget->d_func()->invalidateGraphicsEffectsRecursively();
-#endif // QT_CONFIG(graphicseffect)
+#endif
+
+    QRect widgetRect = widgetRectFor(widget, r);
+
+    // ---------------------------------------------------------------------------
 
     if (widget->d_func()->paintOnScreen()) {
         if (widget->d_func()->dirty.isEmpty()) {
-            widget->d_func()->dirty = rgn;
+            widget->d_func()->dirty = r;
             sendUpdateRequest(widget, updateTime);
             return;
-        } else if (qt_region_strictContains(widget->d_func()->dirty, widget->rect())) {
+        } else if (qt_region_strictContains(widget->d_func()->dirty, widgetRect)) {
             if (updateTime == UpdateNow)
                 sendUpdateRequest(widget, updateTime);
-            return; // Already dirty.
+            return; // Already dirty
         }
 
         const bool eventAlreadyPosted = !widget->d_func()->dirty.isEmpty();
-        widget->d_func()->dirty += rgn;
+        widget->d_func()->dirty += r;
         if (!eventAlreadyPosted || updateTime == UpdateNow)
             sendUpdateRequest(widget, updateTime);
         return;
     }
 
+    // ---------------------------------------------------------------------------
+
+    if (QWidgetPrivate::get(widget)->renderToTexture) {
+        if (!widget->d_func()->inDirtyList)
+            addDirtyRenderToTextureWidget(widget);
+        if (!updateRequestSent || updateTime == UpdateNow)
+            sendUpdateRequest(tlw, updateTime);
+        return;
+    }
+
+    // ---------------------------------------------------------------------------
+
+    QRect effectiveWidgetRect = widget->d_func()->effectiveRectFor(widgetRect);
     const QPoint offset = widget->mapTo(tlw, QPoint());
-
-    if (QWidgetPrivate::get(widget)->renderToTexture) {
-        if (!widget->d_func()->inDirtyList)
-            addDirtyRenderToTextureWidget(widget);
-        if (!updateRequestSent || updateTime == UpdateNow)
-            sendUpdateRequest(tlw, updateTime);
-        return;
-    }
-
-    const QRect widgetRect = widget->d_func()->effectiveRectFor(widget->rect());
-    if (qt_region_strictContains(dirty, widgetRect.translated(offset))) {
-        if (updateTime == UpdateNow)
-            sendUpdateRequest(tlw, updateTime);
-        return; // Already dirty.
-    }
-
-    if (bufferState == BufferInvalid) {
-        const bool eventAlreadyPosted = !dirty.isEmpty() || updateRequestSent;
+    QRect translatedRect = effectiveWidgetRect.translated(offset);
 #if QT_CONFIG(graphicseffect)
-        if (widget->d_func()->graphicsEffect)
-            dirty += widget->d_func()->effectiveRectFor(rgn.boundingRect()).translated(offset);
-        else
-#endif // QT_CONFIG(graphicseffect)
-            dirty += rgn.translated(offset);
-        if (!eventAlreadyPosted || updateTime == UpdateNow)
-            sendUpdateRequest(tlw, updateTime);
-        return;
-    }
-
-    if (dirtyWidgets.isEmpty()) {
-        addDirtyWidget(widget, rgn);
-        sendUpdateRequest(tlw, updateTime);
-        return;
-    }
-
-    if (widget->d_func()->inDirtyList) {
-        if (!qt_region_strictContains(widget->d_func()->dirty, widgetRect)) {
-#if QT_CONFIG(graphicseffect)
-            if (widget->d_func()->graphicsEffect)
-                widget->d_func()->dirty += widget->d_func()->effectiveRectFor(rgn.boundingRect());
-            else
-#endif // QT_CONFIG(graphicseffect)
-                widget->d_func()->dirty += rgn;
-        }
-    } else {
-        addDirtyWidget(widget, rgn);
-    }
-
-    if (updateTime == UpdateNow)
-        sendUpdateRequest(tlw, updateTime);
-}
-
-/*!
-    This function is equivalent to calling markDirty(QRegion(rect), ...), but
-    is more efficient as it eliminates QRegion operations/allocations and can
-    use the rect more precisely for additional cut-offs.
-
-    ### Qt 4.6: Merge into a template function (after MSVC isn't supported anymore).
-*/
-void QWidgetBackingStore::markDirty(const QRect &rect, QWidget *widget,
-                                    UpdateTime updateTime, BufferState bufferState)
-{
-    Q_ASSERT(tlw->d_func()->extra);
-    Q_ASSERT(tlw->d_func()->extra->topextra);
-    Q_ASSERT(!tlw->d_func()->extra->topextra->inTopLevelResize);
-    Q_ASSERT(widget->isVisible() && widget->updatesEnabled());
-    Q_ASSERT(widget->window() == tlw);
-    Q_ASSERT(!rect.isEmpty());
-
-#if QT_CONFIG(graphicseffect)
-    widget->d_func()->invalidateGraphicsEffectsRecursively();
-#endif // QT_CONFIG(graphicseffect)
-
-    if (widget->d_func()->paintOnScreen()) {
-        if (widget->d_func()->dirty.isEmpty()) {
-            widget->d_func()->dirty = QRegion(rect);
-            sendUpdateRequest(widget, updateTime);
-            return;
-        } else if (qt_region_strictContains(widget->d_func()->dirty, rect)) {
-            if (updateTime == UpdateNow)
-                sendUpdateRequest(widget, updateTime);
-            return; // Already dirty.
-        }
-
-        const bool eventAlreadyPosted = !widget->d_func()->dirty.isEmpty();
-        widget->d_func()->dirty += rect;
-        if (!eventAlreadyPosted || updateTime == UpdateNow)
-            sendUpdateRequest(widget, updateTime);
-        return;
-    }
-
-    if (QWidgetPrivate::get(widget)->renderToTexture) {
-        if (!widget->d_func()->inDirtyList)
-            addDirtyRenderToTextureWidget(widget);
-        if (!updateRequestSent || updateTime == UpdateNow)
-            sendUpdateRequest(tlw, updateTime);
-        return;
-    }
-
-
-    const QRect widgetRect = widget->d_func()->effectiveRectFor(rect);
-    QRect translatedRect = widgetRect;
-    if (widget != tlw)
-        translatedRect.translate(widget->mapTo(tlw, QPoint()));
-    // Graphics effects may exceed window size, clamp.
+    // Graphics effects may exceed window size, clamp
     translatedRect = translatedRect.intersected(QRect(QPoint(), tlw->size()));
+#endif
     if (qt_region_strictContains(dirty, translatedRect)) {
         if (updateTime == UpdateNow)
             sendUpdateRequest(tlw, updateTime);
         return; // Already dirty
     }
 
+    // ---------------------------------------------------------------------------
+
     if (bufferState == BufferInvalid) {
-        const bool eventAlreadyPosted = !dirty.isEmpty();
-        dirty += translatedRect;
+        const bool eventAlreadyPosted = !dirty.isEmpty() || updateRequestSent;
+#if QT_CONFIG(graphicseffect)
+        if (widget->d_func()->graphicsEffect)
+            dirty += widget->d_func()->effectiveRectFor(r).translated(offset);
+        else
+#endif
+            dirty += r.translated(offset);
+
         if (!eventAlreadyPosted || updateTime == UpdateNow)
             sendUpdateRequest(tlw, updateTime);
         return;
     }
 
+    // ---------------------------------------------------------------------------
+
     if (dirtyWidgets.isEmpty()) {
-        addDirtyWidget(widget, rect);
+        addDirtyWidget(widget, r);
         sendUpdateRequest(tlw, updateTime);
         return;
     }
 
+    // ---------------------------------------------------------------------------
+
     if (widget->d_func()->inDirtyList) {
-        if (!qt_region_strictContains(widget->d_func()->dirty, widgetRect))
-            widget->d_func()->dirty += widgetRect;
+        if (!qt_region_strictContains(widget->d_func()->dirty, effectiveWidgetRect)) {
+#if QT_CONFIG(graphicseffect)
+            if (widget->d_func()->graphicsEffect)
+                widget->d_func()->dirty += widget->d_func()->effectiveRectFor(r);
+            else
+#endif
+                widget->d_func()->dirty += r;
+        }
     } else {
-        addDirtyWidget(widget, rect);
+        addDirtyWidget(widget, r);
     }
+
+    // ---------------------------------------------------------------------------
 
     if (updateTime == UpdateNow)
         sendUpdateRequest(tlw, updateTime);
 }
+template void QWidgetBackingStore::markDirty<QRect>(const QRect &, QWidget *, UpdateTime, BufferState);
+template void QWidgetBackingStore::markDirty<QRegion>(const QRegion &, QWidget *, UpdateTime, BufferState);
 
 /*!
     Marks the \a region of the \a widget as dirty on screen. The \a region will be copied from

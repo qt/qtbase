@@ -607,6 +607,11 @@ public:
         return extra ? extra->nativeChildrenForced : false;
     }
 
+    inline QRect effectiveRectFor(const QRegion &region) const
+    {
+        return effectiveRectFor(region.boundingRect());
+    }
+
     inline QRect effectiveRectFor(const QRect &rect) const
     {
 #if QT_CONFIG(graphicseffect)
