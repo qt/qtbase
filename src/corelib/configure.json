@@ -11,7 +11,7 @@
             "icu": "boolean",
             "inotify": "boolean",
             "journald": "boolean",
-            "pcre": { "type": "enum", "values": [ "qt", "system" ] },
+            "pcre": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "posix-ipc": { "type": "boolean", "name": "ipc_posix" },
             "pps": { "type": "boolean", "name": "qqnx_pps" },
             "slog2": "boolean",
@@ -662,15 +662,18 @@
             "condition": "features.textcodec",
             "output": [ "publicFeature", "feature" ]
         },
+        "pcre2": {
+            "label": "PCRE2",
+            "disable": "input.pcre == 'no' || input.pcre == 'system'",
+            "enable": "input.pcre == 'qt'",
+            "output": [ "privateConfig" ]
+        },
         "system-pcre2": {
-            "label": "Using system PCRE2",
-            "disable": "input.pcre == 'qt'",
+            "label": "  Using system PCRE2",
+            "disable": "input.pcre == 'no' || input.pcre == 'qt'",
             "enable": "input.pcre == 'system'",
             "condition": "libs.pcre2",
-            "output": [
-                "privateFeature",
-                { "type": "privateConfig", "negative": true, "name": "pcre2" }
-            ]
+            "output": [ "privateFeature" ]
         },
         "poll_ppoll": {
             "label": "Native ppoll()",
@@ -749,6 +752,7 @@
             "label": "QRegularExpression",
             "purpose": "Provides an API to Perl-compatible regular expressions.",
             "section": "Kernel",
+            "condition": "features.system-pcre2 || features.pcre2",
             "output": [ "publicFeature", "feature" ]
         },
         "sharedmemory": {
@@ -1048,6 +1052,7 @@ Please apply the patch corresponding to your Standard Library vendor, found in
                     "args": "qqnx_pps",
                     "condition": "config.qnx"
                 },
+                "pcre2",
                 "system-pcre2"
             ]
         }
