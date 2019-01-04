@@ -1809,6 +1809,11 @@ void tst_QNetworkReply::getFromFileSpecial_data()
 
 void tst_QNetworkReply::getFromFileSpecial()
 {
+#if defined(QT_TEST_SERVER) && defined(Q_OS_WIN)
+    if (qstrcmp(QTest::currentDataTag(), "smb-path") == 0)
+        QSKIP("Docker-based test server doesn't support smb protocol yet");
+#endif
+
     QFETCH(QString, fileName);
     QFETCH(QString, url);
 
@@ -3202,6 +3207,11 @@ void tst_QNetworkReply::ioGetFromFileSpecial_data()
 
 void tst_QNetworkReply::ioGetFromFileSpecial()
 {
+#if defined(QT_TEST_SERVER) && defined(Q_OS_WIN)
+    if (qstrcmp(QTest::currentDataTag(), "smb-path") == 0)
+        QSKIP("Docker-based test server doesn't support smb protocol yet");
+#endif
+
     QFETCH(QString, fileName);
     QFETCH(QString, url);
 
