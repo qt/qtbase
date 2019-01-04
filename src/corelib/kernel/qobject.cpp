@@ -166,39 +166,6 @@ extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
 {}
 #endif
 
-struct QConnectionSenderSwitcher {
-    QObject *receiver;
-    QObjectPrivate::Sender *previousSender;
-    QObjectPrivate::Sender currentSender;
-    bool switched;
-
-    inline QConnectionSenderSwitcher() : switched(false) {}
-
-    inline QConnectionSenderSwitcher(QObject *receiver, QObject *sender, int signal_absolute_id)
-    {
-        switchSender(receiver, sender, signal_absolute_id);
-    }
-
-    inline void switchSender(QObject *receiver, QObject *sender, int signal_absolute_id)
-    {
-        this->receiver = receiver;
-        currentSender.sender = sender;
-        currentSender.signal = signal_absolute_id;
-        currentSender.ref = 1;
-        previousSender = QObjectPrivate::setCurrentSender(receiver, &currentSender);
-        switched = true;
-    }
-
-    inline ~QConnectionSenderSwitcher()
-    {
-        if (switched)
-            QObjectPrivate::resetCurrentSender(receiver, &currentSender, previousSender);
-    }
-private:
-    Q_DISABLE_COPY(QConnectionSenderSwitcher)
-};
-
-
 void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject *) = 0;
 void (*QAbstractDeclarativeData::destroyed_qml1)(QAbstractDeclarativeData *, QObject *) = 0;
 void (*QAbstractDeclarativeData::parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *) = 0;
@@ -938,10 +905,10 @@ QObject::~QObject()
         }
     }
 
-    // set ref to zero to indicate that this object has been deleted
-    if (d->currentSender != 0)
-        d->currentSender->ref = 0;
-    d->currentSender = 0;
+    if (d->currentSender) {
+        d->currentSender->receiverDeleted();
+        d->currentSender = nullptr;
+    }
 
     if (d->connectionLists || d->senders) {
         QMutex *signalSlotMutex = signalSlotLock(this);
@@ -1272,7 +1239,7 @@ bool QObject::event(QEvent *e)
         {
             QMetaCallEvent *mce = static_cast<QMetaCallEvent*>(e);
 
-            QConnectionSenderSwitcher sw(this, const_cast<QObject*>(mce->sender()), mce->signalId());
+            QObjectPrivate::Sender sender(this, const_cast<QObject*>(mce->sender()), mce->signalId());
 
             mce->placeMetaCall(this);
             break;
@@ -1576,9 +1543,10 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
     }
 
     // the current emitting thread shouldn't restore currentSender after calling moveToThread()
-    if (currentSender)
-        currentSender->ref = 0;
-    currentSender = 0;
+    if (currentSender) {
+        currentSender->receiverDeleted();
+        currentSender = nullptr;
+    }
 
     // set new thread data
     targetData->ref();
@@ -3755,11 +3723,8 @@ void doActivate(QObject *sender, int signal_index, void **argv)
 #endif
             }
 
-            QConnectionSenderSwitcher sw;
+            QObjectPrivate::Sender senderData(receiverInSameThread ? receiver : nullptr, sender, signal_index);
 
-            if (receiverInSameThread) {
-                sw.switchSender(receiver, sender, signal_index);
-            }
             if (c->isSlotObject) {
                 c->slotObj->ref();
                 QScopedPointer<QtPrivate::QSlotObjectBase, QSlotObjectBaseDeleter> obj(c->slotObj);

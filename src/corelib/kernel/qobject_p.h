@@ -167,9 +167,31 @@ public:
 
     struct Sender
     {
+        Sender(QObject *receiver, QObject *sender, int signal)
+            : receiver(receiver), sender(sender), signal(signal)
+        {
+            if (receiver) {
+                previous = receiver->d_func()->currentSender;
+                receiver->d_func()->currentSender = this;
+            }
+        }
+        ~Sender()
+        {
+            if (receiver)
+                receiver->d_func()->currentSender = previous;
+        }
+        void receiverDeleted()
+        {
+            Sender *s = this;
+            while (s) {
+                s->receiver = nullptr;
+                s = s->previous;
+            }
+        }
+        Sender *previous;
+        QObject *receiver;
         QObject *sender;
         int signal;
-        int ref;
     };
 
 
@@ -188,12 +210,6 @@ public:
 
     void addConnection(int signal, Connection *c);
     void cleanConnectionLists();
-
-    static inline Sender *setCurrentSender(QObject *receiver,
-                                    Sender *sender);
-    static inline void resetCurrentSender(QObject *receiver,
-                                   Sender *currentSender,
-                                   Sender *previousSender);
 
     static QObjectPrivate *get(QObject *o) {
         return o->d_func();
@@ -249,26 +265,6 @@ inline bool QObjectPrivate::isDeclarativeSignalConnected(uint signal_index) cons
 {
     return declarativeData && QAbstractDeclarativeData::isSignalConnected
             && QAbstractDeclarativeData::isSignalConnected(declarativeData, q_func(), signal_index);
-}
-
-inline QObjectPrivate::Sender *QObjectPrivate::setCurrentSender(QObject *receiver,
-                                                         Sender *sender)
-{
-    Sender *previousSender = receiver->d_func()->currentSender;
-    receiver->d_func()->currentSender = sender;
-    return previousSender;
-}
-
-inline void QObjectPrivate::resetCurrentSender(QObject *receiver,
-                                        Sender *currentSender,
-                                        Sender *previousSender)
-{
-    // ref is set to zero when this object is deleted during the metacall
-    if (currentSender->ref == 1)
-        receiver->d_func()->currentSender = previousSender;
-    // if we've recursed, we need to tell the caller about the objects deletion
-    if (previousSender)
-        previousSender->ref = currentSender->ref;
 }
 
 inline void QObjectPrivate::connectNotify(const QMetaMethod &signal)
