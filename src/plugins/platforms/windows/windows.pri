@@ -9,6 +9,8 @@ mingw: LIBS *= -luuid
 # For the dialog helpers:
 LIBS += -lshlwapi -lshell32 -ladvapi32 -lwtsapi32
 
+QMAKE_USE_PRIVATE += d3d9/nolink
+
 DEFINES *= QT_NO_CAST_FROM_ASCII QT_NO_FOREACH
 
 SOURCES += \

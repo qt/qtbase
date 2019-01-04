@@ -1549,7 +1549,7 @@ void QAbstractSocket::setPauseMode(PauseModes pauseMode)
     By default, the socket is bound using the DefaultForPlatform BindMode.
     If a port is not specified, a random port is chosen.
 
-    On success, the functions returns \c true and the socket enters
+    On success, the function returns \c true and the socket enters
     BoundState; otherwise it returns \c false.
 
 */

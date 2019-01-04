@@ -24,9 +24,9 @@
         "doubleconversion": {
             "label": "DoubleConversion",
             "test": {
-                "include": "double-conversion/double-conversion.h",
                 "main": "(void) double_conversion::StringToDoubleConverter::NO_FLAGS;"
             },
+            "headers": "double-conversion/double-conversion.h",
             "sources": [
                 "-ldouble-conversion"
             ]
@@ -35,7 +35,6 @@
             "label": "GLib",
             "test": {
                 "head": "typedef struct _GMainContext GMainContext;",
-                "include": "glib.h",
                 "main": [
                     "g_thread_init(NULL);",
                     "(void) g_main_context_default();",
@@ -43,22 +42,60 @@
                     "g_source_add_poll(NULL, NULL);"
                 ]
             },
+            "headers": "glib.h",
             "sources": [
                 { "type": "pkgConfig", "args": "glib-2.0 gthread-2.0" }
+            ]
+        },
+        "posix_iconv": {
+            "label": "POSIX iconv",
+            "export": "iconv",
+            "test": {
+                "main": [
+                    "iconv_t x = iconv_open(\"\", \"\");",
+                    "char *inp, *outp;",
+                    "size_t inbytes, outbytes;",
+                    "iconv(x, &inp, &inbytes, &outp, &outbytes);",
+                    "iconv_close(x);"
+                ]
+            },
+            "headers": "iconv.h",
+            "sources": [
+                { "libs": "-liconv", "condition": "config.openbsd || config.haiku" },
+                { "libs": "", "condition": "!(config.openbsd || config.haiku)" }
             ]
         },
         "gnu_iconv": {
             "label": "GNU libiconv",
             "export": "iconv",
-            "test": "gnu-libiconv",
+            "test": {
+                "main": [
+                    "iconv_t x = iconv_open(\"\", \"\");",
+                    "const char *inp;",
+                    "char *outp;",
+                    "size_t inbytes, outbytes;",
+                    "iconv(x, &inp, &inbytes, &outp, &outbytes);",
+                    "iconv_close(x);"
+                ]
+            },
+            "headers": "iconv.h",
             "sources": [
                 "-liconv"
+            ]
+        },
+        "sun_iconv": {
+            "label": "SUN libiconv",
+            "export": "iconv",
+            "test": {
+                "inherit": "gnu_iconv"
+            },
+            "sources": [
+                ""
             ]
         },
         "icu": {
             "label": "ICU",
             "test": {
-                "include": [ "unicode/utypes.h", "unicode/ucol.h", "unicode/ustring.h" ],
                 "main": [
                     "UErrorCode status = U_ZERO_ERROR;",
                     "UCollator *collator = ucol_open(\"ru_RU\", &status);",
@@ -66,6 +103,7 @@
                     "    ucol_close(collator);"
                 ]
             },
+            "headers": [ "unicode/utypes.h", "unicode/ucol.h", "unicode/ustring.h" ],
             "sources": [
                 {
                     "builds": {
@@ -84,9 +122,9 @@
         "journald": {
             "label": "journald",
             "test": {
-                "include": [ "systemd/sd-journal.h", "syslog.h" ],
                 "main": "sd_journal_send(\"PRIORITY=%i\", LOG_INFO, NULL);"
             },
+            "headers": [ "systemd/sd-journal.h", "syslog.h" ],
             "sources": [
                 { "type": "pkgConfig", "args": "libsystemd" },
                 { "type": "pkgConfig", "args": "libsystemd-journal" }
@@ -95,7 +133,6 @@
         "libatomic": {
             "label": "64 bit atomics",
             "test": {
-                "include": [ "atomic", "cstdint" ],
                 "tail": [
                     "void test(volatile std::atomic<std::int64_t> &a)",
                     "{",
@@ -114,6 +151,7 @@
                 ],
                 "qmake": "CONFIG += c++11"
             },
+            "headers": [ "atomic", "cstdint" ],
             "sources": [
                 "",
                 "-latomic"
@@ -122,13 +160,13 @@
         "libdl": {
             "label": "dlopen()",
             "test": {
-                "include": "dlfcn.h",
                 "main": [
                     "dlclose(dlopen(0, 0));",
                     "dlsym(RTLD_DEFAULT, 0);",
                     "dlerror();"
                 ]
             },
+            "headers": "dlfcn.h",
             "sources": [
                 "",
                 "-ldl"
@@ -137,9 +175,9 @@
         "librt": {
             "label": "clock_gettime()",
             "test": {
-                "include": [ "unistd.h", "time.h" ],
                 "main": "timespec ts; clock_gettime(CLOCK_REALTIME, &ts);"
             },
+            "headers": [ "unistd.h", "time.h" ],
             "sources": [
                 "",
                 "-lrt"
@@ -148,9 +186,9 @@
         "lttng-ust": {
             "label": "lttng-ust",
             "test": {
-                "include": "lttng/ust-events.h",
                 "main": "lttng_session_destroy(nullptr);"
             },
+            "headers": "lttng/ust-events.h",
             "sources": [
                 { "type": "pkgConfig", "args": "lttng-ust" },
                 "-llttng-ust"
@@ -161,13 +199,13 @@
             "label": "PCRE2",
             "test": {
                 "head": "#define PCRE2_CODE_UNIT_WIDTH 16",
-                "include": "pcre2.h",
                 "tail": [
                     "#if (PCRE2_MAJOR < 10) || ((PCRE2_MAJOR == 10) && (PCRE2_MINOR < 20))",
                     "#  error This PCRE version is not supported",
                     "#endif"
                 ]
             },
+            "headers": "pcre2.h",
             "sources": [
                 { "type": "pkgConfig", "args": "libpcre2-16" },
                 "-lpcre2-16"
@@ -176,12 +214,12 @@
         "pps": {
             "label": "PPS",
             "test": {
-                "include": "sys/pps.h",
                 "main": [
                     "pps_decoder_t decoder;",
                     "pps_decoder_initialize(&decoder, NULL);"
                 ]
             },
+            "headers": "sys/pps.h",
             "sources": [
                 "-lpps"
             ]
@@ -189,10 +227,10 @@
         "slog2": {
             "label": "slog2",
             "test": {
-                "include": "sys/slog2.h",
                 "main": "slog2_set_default_buffer((slog2_buffer_t)-1);"
             },
             "export": "",
+            "headers": "sys/slog2.h",
             "sources": [
                 "-lslog2"
             ]
@@ -277,7 +315,10 @@
         "cxx11_random": {
             "label": "C++11 <random>",
             "type": "compile",
-            "test": "unix/cxx11_random"
+            "test": {
+                "include": "random",
+                "main": "std::mt19937 mt(0);"
+            }
         },
         "eventfd": {
             "label": "eventfd",
@@ -295,32 +336,43 @@
         "futimens": {
             "label": "futimens()",
             "type": "compile",
-            "test": "unix/futimens"
+            "test": {
+                "include": "sys/stat.h",
+                "main": "futimens(-1, 0);",
+                "qmake": [
+                    "# Block futimens() on Apple platforms unless it's available on ALL",
+                    "# deployment targets. This simplifies the logic at the call site",
+                    "# dramatically, as it isn't strictly needed compared to futimes().",
+                    "darwin: QMAKE_CXXFLAGS += -Werror=unguarded-availability"
+                ]
+            }
         },
         "futimes": {
             "label": "futimes()",
             "type": "compile",
-            "test": "unix/futimes"
+            "test": {
+                "include": "sys/time.h",
+                "main": "futimes(-1, 0);"
+            }
         },
         "getauxval": {
             "label": "getauxval()",
             "type": "compile",
-            "test": "unix/getauxval"
+            "test": {
+                "include": "sys/auxv.h",
+                "main": "(void) getauxval(AT_NULL);"
+            }
         },
         "getentropy": {
             "label": "getentropy()",
             "type": "compile",
-            "test": "unix/getentropy"
-        },
-        "posix-iconv": {
-            "label": "POSIX iconv",
-            "type": "compile",
-            "test": "iconv"
-        },
-        "sun-iconv": {
-            "label": "SUN libiconv",
-            "type": "compile",
-            "test": "sun-libiconv"
+            "test": {
+                "include": "unistd.h",
+                "main": [
+                    "char buf[32];",
+                    "(void) getentropy(buf, sizeof(buf));"
+                ]
+            }
         },
         "inotify": {
             "label": "inotify",
@@ -443,7 +495,38 @@
         "xlocalescanprint": {
             "label": "xlocale.h (or equivalents)",
             "type": "compile",
-            "test": "xlocalescanprint"
+            "test": {
+                "files": {
+                    "qglobal.h": [
+                        "#ifndef QGLOBAL_H",
+                        "#define QGLOBAL_H",
+                        "#endif"
+                    ]
+                },
+                "tail": [
+                    "#define QT_BEGIN_NAMESPACE",
+                    "#define QT_END_NAMESPACE",
+                    "",
+                    "#ifdef _MSVC_VER",
+                    "#define Q_CC_MSVC _MSVC_VER",
+                    "#endif",
+                    "",
+                    "#define QT_NO_DOUBLECONVERSION",
+                    "",
+                    "#include QDSP_P_H"
+                ],
+                "main": [
+                    "#ifdef _MSVC_VER",
+                    "_locale_t invalidLocale = NULL;",
+                    "#else",
+                    "locale_t invalidLocale = NULL;",
+                    "#endif",
+                    "double a = 3.4;",
+                    "qDoubleSnprintf(argv[0], 1, invalidLocale, \"invalid format\", a);",
+                    "qDoubleSscanf(argv[0], invalidLocale, \"invalid format\", &a, &argc);"
+                ],
+                "qmake": "DEFINES += QDSP_P_H=$$shell_quote(\\\"@PWD@/tools/qdoublescanprint_p.h\\\")"
+            }
         }
     },
 
@@ -521,14 +604,14 @@
             "label": "POSIX iconv",
             "enable": "input.iconv == 'posix'",
             "disable": "input.iconv == 'sun' || input.iconv == 'gnu' || input.iconv == 'no'",
-            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && tests.posix-iconv",
+            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && libs.posix_iconv",
             "output": [ "privateFeature" ]
         },
         "sun-libiconv": {
             "label": "SUN iconv",
             "enable": "input.iconv == 'sun'",
             "disable": "input.iconv == 'posix' || input.iconv == 'gnu' || input.iconv == 'no'",
-            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && !features.posix-libiconv && tests.sun-iconv"
+            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && !features.posix-libiconv && libs.sun_iconv"
         },
         "gnu-libiconv": {
             "label": "GNU iconv",

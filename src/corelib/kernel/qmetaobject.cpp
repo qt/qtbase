@@ -1381,6 +1381,8 @@ static inline QByteArray findMethodCandidates(const QMetaObject *metaObject, con
 }
 
 /*!
+    \threadsafe
+
     Invokes the \a member (a signal or a slot name) on the object \a
     obj. Returns \c true if the member could be invoked. Returns \c false
     if there is no such member or the parameters did not match.
@@ -1570,6 +1572,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
                                        QGenericArgument val7 = QGenericArgument(),
                                        QGenericArgument val8 = QGenericArgument(),
                                        QGenericArgument val9 = QGenericArgument());
+    \threadsafe
     \overload invokeMethod()
 
     This overload always invokes the member using the connection type Qt::AutoConnection.
@@ -1588,6 +1591,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
                              QGenericArgument val8 = QGenericArgument(),
                              QGenericArgument val9 = QGenericArgument())
 
+    \threadsafe
     \overload invokeMethod()
 
     This overload can be used if the return value of the member is of no interest.
@@ -1606,6 +1610,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
                              QGenericArgument val8 = QGenericArgument(),
                              QGenericArgument val9 = QGenericArgument())
 
+    \threadsafe
     \overload invokeMethod()
 
     This overload invokes the member using the connection type Qt::AutoConnection and
@@ -1617,6 +1622,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
 
     \since 5.10
 
+    \threadsafe
     \overload
 
     Invokes the \a function in the event loop of \a context. \a function can be a functor
@@ -1630,6 +1636,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
 
     \since 5.10
 
+    \threadsafe
     \overload
 
     Invokes the \a function in the event loop of \a context using the connection type Qt::AutoConnection.

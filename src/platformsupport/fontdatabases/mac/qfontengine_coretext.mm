@@ -736,7 +736,7 @@ bool QCoreTextFontEngine::shouldSmoothFont() const
 
 bool QCoreTextFontEngine::expectsGammaCorrectedBlending() const
 {
-    return shouldSmoothFont();
+    return shouldSmoothFont() && fontSmoothing() == Subpixel;
 }
 
 qreal QCoreTextFontEngine::fontSmoothingGamma()

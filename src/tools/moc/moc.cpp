@@ -260,7 +260,7 @@ bool Moc::parseEnum(EnumDef *def)
 {
     bool isTypdefEnum = false; // typedef enum { ... } Foo;
 
-    if (test(CLASS))
+    if (test(CLASS) || test(STRUCT))
         def->isEnumClass = true;
 
     if (test(IDENTIFIER)) {

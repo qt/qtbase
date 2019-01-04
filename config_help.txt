@@ -17,7 +17,8 @@ quoting and double quotes for the outer quoting.
 
 Top-level installation directories:
   -prefix <dir> ...... The deployment directory, as seen on the target device.
-                       [/usr/local/Qt-$QT_VERSION, $PWD if -developer-build]
+                       [/usr/local/Qt-$QT_VERSION; qtbase build directory if
+                       -developer-build]
   -extprefix <dir> ... The installation directory, as seen on the host machine.
                        [SYSROOT/PREFIX]
   -hostprefix [dir] .. The installation directory for build tools running on

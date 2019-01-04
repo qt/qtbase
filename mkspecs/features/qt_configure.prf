@@ -1,3 +1,13 @@
+#
+#  W A R N I N G
+#  -------------
+#
+# This file is not part of the Qt API.  It exists purely as an
+# implementation detail.  It may change from version to version
+# without notice, or even be removed.
+#
+# We mean it.
+#
 
 QT_CONFIGURE_REPORT =
 QT_CONFIGURE_NOTES =
@@ -429,12 +439,12 @@ defineTest(qtConfSetupLibraries) {
         lpfx = $${currentConfig}.libraries.$${l}
         # 'export' may be omitted, in which case it falls back to the library's name
         !defined($${lpfx}.export, var) {
-            $${lpfx}.export = $$l
+            $${lpfx}.export = $$replace(l, -, _)
             export($${lpfx}.export)
         }
         # 'export' may also be empty, but we need a derived identifier
         alias = $$eval($${lpfx}.export)
-        isEmpty(alias): alias = $$l
+        isEmpty(alias): alias = $$replace(l, -, _)
         $${lpfx}.alias = $$alias
         export($${lpfx}.alias)
         # make it easy to refer to the library by its export name.
@@ -582,7 +592,43 @@ defineTest(qtConfResolvePathLibs) {
     return($$ret)
 }
 
-# includes-var, includes
+defineReplace(qtConfGetTestSourceList) {
+    result =
+    !isEmpty($${1}.test.inherit) {
+        base = $$section(1, ., 0, -2)
+        for (i, $${1}.test.inherit): \
+            result += $$qtConfGetTestSourceList($${base}.$$i)
+    }
+    return($$result $$1)
+}
+
+defineReplace(qtConfGetTestIncludes) {
+    defined($${1}._KEYS_, var) {
+        1st = $$first($${1}._KEYS_)
+        equals(1st, 0) {
+            # array; recurse for every element
+            ret =
+            for (k, $${1}._KEYS_): \
+                ret += $$qtConfGetTestIncludes($${1}.$$k)
+            return($$ret)
+        }
+        # object; try condition and recurse
+        !defined($${1}.headers, var):!defined($${1}.headers._KEYS_, var): \  # just plain broken without it
+            error("headers object '$$1' has no nested headers entry")
+        cond = $$eval($${1}.condition)
+        isEmpty(cond): \  # would be pointless otherwise
+            error("headers object '$$1' has no condition")
+        !$$qtConfEvaluate($$cond) {
+            qtLog("header entry '$$1' failed condition '$$cond'.")
+            return()
+        }
+        qtLog("header entry '$$1' passed condition.")
+        return($$qtConfGetTestIncludes($${1}.headers))
+    }
+    return($$eval($$1))  # plain string - or nothing (can happen for top-level call only)
+}
+
+# includes-var, in-paths, test-object-var
 defineTest(qtConfResolvePathIncs) {
     ret = true
     for (incdir, 2) {
@@ -594,6 +640,24 @@ defineTest(qtConfResolvePathIncs) {
     2 -= $$QMAKE_DEFAULT_INCDIRS
     $$1 = $$2
     export($$1)
+    wasm {
+        # FIXME: emcc downloads pre-built libraries and adds their include
+        # path to the clang call dynamically. it would be possible to parse
+        # the emcc -s USE_xyz=1 --cflags output to populate xzy_INCDIR and
+        # thus make the code below work.
+        return($$ret)
+    }
+    tests = $$qtConfGetTestSourceList($$3)
+    hdrs =
+    for (test, tests): \
+        hdrs += $$qtConfGetTestIncludes($${test}.headers)
+    for (hdr, hdrs) {
+        h = $$qtConfFindInPathList($$hdr, $$2 $$EXTRA_INCLUDEPATH $$QMAKE_DEFAULT_INCDIRS)
+        isEmpty(h) {
+            qtLog("$$hdr not found in [$$val_escape(2)] and global paths.")
+            ret = false
+        }
+    }
     return($$ret)
 }
 
@@ -656,13 +720,17 @@ defineTest(qtConfLibrary_inline) {
     }
 
     libdir = $$eval(config.input.$${input}.libdir)
-    !isEmpty(libdir): \
-        $${1}.libs = -L$$libdir $$eval($${1}.libs)
+    !isEmpty(libdir) {
+        libs =
+        for (ld, libdir): \
+            libs += -L$$ld
+        $${1}.libs = $$libs $$eval($${1}.libs)
+    }
 
     !qtConfResolveAllLibs($$1): \
         return(false)
 
-    !qtConfResolvePathIncs($${1}.includedir, $$includes): \
+    !qtConfResolvePathIncs($${1}.includedir, $$includes, $$2): \
         return(false)
 
     return(true)
@@ -678,7 +746,7 @@ defineTest(qtConfLibrary_makeSpec) {
     !qtConfResolvePathLibs($${1}.libs, $$eval(QMAKE_LIBDIR_$$spec), $$eval(QMAKE_LIBS_$$spec)): \
         return(false)
 
-    !qtConfResolvePathIncs($${1}.includedir, $$eval(QMAKE_INCDIR_$$spec)): \
+    !qtConfResolvePathIncs($${1}.includedir, $$eval(QMAKE_INCDIR_$$spec), $$2): \
         return(false)
 
     # note that the object is re-exported, because we resolve the libraries.
@@ -741,7 +809,7 @@ defineTest(qtConfLibrary_pkgConfig) {
     }
     !isEmpty(ignored): \
         qtLog("Note: Dropped compiler flags '$$ignored'.")
-    !qtConfResolvePathIncs($${1}.includedir, $$includes): \
+    !qtConfResolvePathIncs($${1}.includedir, $$includes, $$2): \
         return(false)
     $${1}.defines = $$defines
 
@@ -749,7 +817,7 @@ defineTest(qtConfLibrary_pkgConfig) {
     largs = $$qtConfAllLibraryArgs($$eval($${2}.dependencies))
     for (la, largs): \
         eval("$$la")
-    USES = $$eval($$list($$upper($$QMAKE_USE)))
+    USES = $$eval($$list($$upper($$replace(QMAKE_USE, -, _))))
     # _CC == _LD for configure's library sources, so pick first arbitrarily.
     DEPS = $$resolve_depends(USES, QMAKE_DEPENDS_, _CC)
     for (DEP, DEPS) {
@@ -782,7 +850,7 @@ defineTest(qtConfTest_getPkgConfigVariable) {
 }
 
 defineReplace(qtConfLibraryArgs) {
-    NAME = $$upper($$eval($${1}.library))
+    NAME = $$upper($$replace($${1}.library, -, _))
     qmake_args = "QMAKE_LIBS_$${NAME} = $$val_escape($${1}.libs)"
     for (b, $${1}.builds._KEYS_): \
         qmake_args += "QMAKE_LIBS_$${NAME}_$$upper($$b) = $$val_escape($${1}.builds.$${b})"
@@ -798,8 +866,8 @@ defineReplace(qtConfLibraryArgs) {
         for (use, depends): \
             dep_uses += $$section(use, :, 1, 1)
         qmake_args += \
-            "QMAKE_DEPENDS_$${NAME}_CC = $$upper($$dep_uses)" \
-            "QMAKE_DEPENDS_$${NAME}_LD = $$upper($$dep_uses)"
+            "QMAKE_DEPENDS_$${NAME}_CC = $$upper($$replace(dep_uses, -, _))" \
+            "QMAKE_DEPENDS_$${NAME}_LD = $$upper($$replace(dep_uses, -, _))"
     }
     return($$qmake_args)
 }
@@ -862,7 +930,7 @@ defineTest(qtConfExportLibrary) {
             !isEmpty(use_cfg): \
                 depends += $$upper($$eval($${use_cfg}.libraries.$${use_lib}.export))
             else: \
-                depends += $$upper($$use_lib)
+                depends += $$upper($$replace(use_lib, -, _))
         }
         # we use suffixes instead of infixes, because $$resolve_depends() demands it.
         qtConfOutputVar(assign, $$output, QMAKE_DEPENDS_$${NAME}_CC, $$depends)
@@ -931,7 +999,7 @@ defineTest(qtConfHandleLibrary) {
         export($${lpfx}.source)
 
         # if the library defines a test, use it to verify the source.
-        !isEmpty($${lpfx}.test)|!isEmpty($${lpfx}.test._KEYS_) {
+        defined($${lpfx}.test, var)|defined($${lpfx}.test._KEYS_, var) {
             $${lpfx}.resolved_uses = $$currentConfig:$$1
             $${lpfx}.host = $$eval($${spfx}.host)
             !qtConfTest_compile($$lpfx) {
@@ -1037,7 +1105,7 @@ defineTest(qtConfTestPrepare_compile) {
             }
         }
         isEmpty(libConfig) {
-            nu = $$upper($$u)
+            nu = $$upper($$replace(u, -, _))
             !defined(QMAKE_LIBS_$$nu, var): \
                 error("Test $$1 tries to use undeclared library '$$u'")
             # using an external library by exported name.
@@ -1056,8 +1124,12 @@ defineTest(qtConfTestPrepare_compile) {
 defineTest(qtConfPrepareCompileTestSource) {
     test_dir = $$2
 
-    test_lang = $$eval($${1}.lang)
-    isEmpty(test_lang): test_lang = "c++"
+    tests = $$qtConfGetTestSourceList($$1)
+
+    test_lang = "c++"
+    for (test, tests): \
+        test_lang += $$eval($${test}.test.lang)
+    test_lang = $$last(test_lang)  # Last non-empty, that is.
 
     equals(test_lang, "c++"): suffix = "cpp"
     else: equals(test_lang, "c"): suffix = "c"
@@ -1068,33 +1140,48 @@ defineTest(qtConfPrepareCompileTestSource) {
     # Create source code
     contents = "/* Generated by configure */"
     # Custom code before includes
-    for (ent, $$qtConfScalarOrList($${1}.head)): \
-        contents += $$ent
+    for (test, tests): \
+        for (ent, $$qtConfScalarOrList($${test}.test.head)): \
+            contents += $$ent
     # Includes
-    for (ent, $$qtConfScalarOrList($${1}.include)): \
-        contents += "$${LITERAL_HASH}include <$$ent>"
+    for (test, tests) {
+        hdrs = $$qtConfGetTestIncludes($${test}.test.include)
+        isEmpty(hdrs): \
+            hdrs = $$qtConfGetTestIncludes($${test}.headers)
+        for (ent, hdrs): \
+            contents += "$${LITERAL_HASH}include <$$ent>"
+    }
     # Custom code after includes
-    for (ent, $$qtConfScalarOrList($${1}.tail)): \
-        contents += $$ent
+    for (test, tests): \
+        for (ent, $$qtConfScalarOrList($${test}.test.tail)): \
+            contents += $$ent
     # And finally the custom code inside main()
     contents += \
         "int main(int argc, char **argv)" \
         "{" \
         "    (void)argc; (void)argv;" \
         "    /* BEGIN TEST: */"
-    for (ent, $$qtConfScalarOrList($${1}.main)): \
-        contents += "    $$ent"
+    for (test, tests): \
+        for (ent, $$qtConfScalarOrList($${test}.test.main)): \
+            contents += "    $$ent"
     contents += \
         "    /* END TEST */" \
         "    return 0;" \
         "}"
     write_file($$test_dir/main.$$suffix, contents)|error()
 
+    for (test, tests) {
+        for (file, $$qtConfScalarOrList($${test}.test.files._KEYS_)): \
+            write_file($$test_dir/$$file, $$qtConfScalarOrList($${test}.test.files.$${file}))|error()
+    }
+
     # Create stub .pro file
     contents = "SOURCES = main.$$suffix"
     # Custom project code
-    for (ent, $$qtConfScalarOrList($${1}.qmake)): \
-        contents += $$ent
+    pwd = $$val_escape($${currentConfig}.dir)
+    for (test, tests): \
+        for (ent, $$qtConfScalarOrList($${test}.test.qmake)): \
+            contents += $$replace(ent, "@PWD@", $$pwd)
     write_file($$test_dir/$$basename(test_dir).pro, contents)|error()
 }
 
@@ -1107,7 +1194,7 @@ defineTest(qtConfTest_compile) {
     isEmpty(test) {
         test_dir = $$test_base_out_dir/$$section(1, ".", -1)
         test_out_dir = $$test_dir
-        qtConfPrepareCompileTestSource($${1}.test, $$test_dir)
+        qtConfPrepareCompileTestSource($$1, $$test_dir)
     } else {
         test_dir = $$QMAKE_CONFIG_TESTS_DIR/$$test
         test_out_dir = $$test_base_out_dir/$$test

@@ -110,6 +110,10 @@ private slots:
     void setInformativeText();
     void iconPixmap();
 
+    // QTBUG-44131
+    void acceptedRejectedSignals();
+    void acceptedRejectedSignals_data();
+
     void cleanup();
 };
 
@@ -715,6 +719,97 @@ void tst_QMessageBox::iconPixmap()
 {
     QMessageBox messageBox;
     QCOMPARE(messageBox.iconPixmap(), QPixmap());
+}
+
+using SignalSignature = void(QDialog::*)();
+Q_DECLARE_METATYPE(SignalSignature);
+Q_DECLARE_METATYPE(QMessageBox::ButtonRole)
+
+using ButtonsCreator = std::function<QVector<QPushButton*>(QMessageBox &)>;
+Q_DECLARE_METATYPE(ButtonsCreator);
+
+using RoleSet = QSet<QMessageBox::ButtonRole>;
+Q_DECLARE_METATYPE(RoleSet);
+
+void tst_QMessageBox::acceptedRejectedSignals()
+{
+    QMessageBox messageBox(QMessageBox::Information, "Test window", "Test text");
+
+    QFETCH(ButtonsCreator, buttonsCreator);
+    QVERIFY(buttonsCreator);
+
+    const auto buttons = buttonsCreator(messageBox);
+    QVERIFY(!buttons.isEmpty());
+
+    QFETCH(RoleSet, roles);
+    QFETCH(SignalSignature, signalSignature);
+    for (auto button: buttons) {
+        QVERIFY(button);
+
+        messageBox.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&messageBox));
+
+        QSignalSpy spy(&messageBox, signalSignature);
+        QVERIFY(spy.isValid());
+        button->click();
+
+        if (roles.contains(messageBox.buttonRole(button)))
+            QCOMPARE(spy.count(), 1);
+        else
+            QVERIFY(spy.isEmpty());
+    }
+}
+
+static void addAcceptedRow(const char *title, ButtonsCreator bc)
+{
+    QTest::newRow(title) << (RoleSet() << QMessageBox::AcceptRole << QMessageBox::YesRole)
+                         << &QDialog::accepted << bc;
+}
+
+static void addRejectedRow(const char *title, ButtonsCreator bc)
+{
+    QTest::newRow(title) << (RoleSet() << QMessageBox::RejectRole << QMessageBox::NoRole)
+                         << &QDialog::rejected << bc;
+}
+
+static void addCustomButtonsData()
+{
+    ButtonsCreator buttonsCreator = [](QMessageBox &messageBox) {
+        QVector<QPushButton*> buttons(QMessageBox::NRoles);
+        for (int i = QMessageBox::AcceptRole; i < QMessageBox::NRoles; ++i) {
+            buttons[i] = messageBox.addButton(
+                QString("Button role: %1").arg(i), QMessageBox::ButtonRole(i));
+        }
+
+        return buttons;
+    };
+
+    addAcceptedRow("Accepted_CustomButtons", buttonsCreator);
+    addRejectedRow("Rejected_CustomButtons", buttonsCreator);
+}
+
+static void addStandardButtonsData()
+{
+    ButtonsCreator buttonsCreator = [](QMessageBox &messageBox) {
+        QVector<QPushButton*> buttons;
+        for (int i = QMessageBox::FirstButton; i <= QMessageBox::LastButton; i <<= 1)
+            buttons << messageBox.addButton(QMessageBox::StandardButton(i));
+
+        return buttons;
+    };
+
+    addAcceptedRow("Accepted_StandardButtons", buttonsCreator);
+    addRejectedRow("Rejected_StandardButtons", buttonsCreator);
+}
+
+void tst_QMessageBox::acceptedRejectedSignals_data()
+{
+    QTest::addColumn<RoleSet>("roles");
+    QTest::addColumn<SignalSignature>("signalSignature");
+    QTest::addColumn<ButtonsCreator>("buttonsCreator");
+
+    addStandardButtonsData();
+    addCustomButtonsData();
 }
 
 QTEST_MAIN(tst_QMessageBox)

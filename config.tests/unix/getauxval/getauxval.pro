@@ -1,1 +1,0 @@
-SOURCES = getauxval.cpp

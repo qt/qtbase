@@ -63,6 +63,7 @@ EMSCRIPTEN_BINDINGS(mouse_module) {
 QWasmEventTranslator::QWasmEventTranslator(QObject *parent)
     : QObject(parent)
     , draggedWindow(nullptr)
+    , lastWindow(nullptr)
     , pressedButtons(Qt::NoButton)
     , resizeMode(QWasmWindow::ResizeNone)
 {
@@ -370,15 +371,16 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
     Qt::KeyboardModifiers modifiers = translateMouseEventModifier(mouseEvent);
 
     QWindow *window2 = QWasmIntegration::get()->compositor()->windowAt(point, 5);
+    if (window2 != nullptr)
+        lastWindow = window2;
+
     QWasmWindow *htmlWindow = static_cast<QWasmWindow*>(window2->handle());
-    bool onFrame = false;
-    if (window2 && !window2->geometry().contains(point))
-        onFrame = true;
+
+    bool interior = window2 && window2->geometry().contains(point);
 
     QPoint localPoint(point.x() - window2->geometry().x(), point.y() - window2->geometry().y());
-
     switch (eventType) {
-    case 5: //down
+    case EMSCRIPTEN_EVENT_MOUSEDOWN:
     {
         if (window2)
             window2->raise();
@@ -403,7 +405,7 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
         htmlWindow->injectMousePressed(localPoint, point, button, modifiers);
         break;
     }
-    case 6: //up
+    case EMSCRIPTEN_EVENT_MOUSEUP:
     {
         pressedButtons.setFlag(translateMouseButton(mouseEvent->button), false);
         buttonEventType = QEvent::MouseButtonRelease;
@@ -414,7 +416,6 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
             pressedWindow = nullptr;
         }
 
-
         if (mouseEvent->button == 0) {
             draggedWindow = nullptr;
             resizeMode = QWasmWindow::ResizeNone;
@@ -424,7 +425,7 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
             oldWindow->injectMouseReleased(localPoint, point, button, modifiers);
         break;
     }
-    case 8://move //drag event
+    case EMSCRIPTEN_EVENT_MOUSEMOVE: // drag event
     {
         buttonEventType = QEvent::MouseMove;
         if (!(htmlWindow->m_windowState & Qt::WindowFullScreen) && !(htmlWindow->m_windowState & Qt::WindowMaximized)) {
@@ -440,11 +441,15 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
         }
         break;
     }
-    default:
+    default: // MOUSELEAVE MOUSEENTER
         break;
     };
-
-    if (window2 && !onFrame) {
+    if (!window2 && buttonEventType == QEvent::MouseButtonRelease) {
+        window2 = lastWindow;
+        lastWindow = nullptr;
+        interior = true;
+    }
+    if (window2 && interior) {
         QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(
             window2, timestamp, localPoint, point, pressedButtons, button, buttonEventType, modifiers);
     }

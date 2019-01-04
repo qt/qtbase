@@ -198,28 +198,6 @@ for(ever) {
         MODULE_LIBS_ADD = $$MODULE_LIBS
         MODULE_LIBS_ADD -= $$QMAKE_DEFAULT_LIBDIRS
 
-        !contains(MODULE_CONFIG, v2) {
-            # Backwards compatibility with pre-5.6 module .pri files
-
-            contains(MODULE_CONFIG, lib_bundle) {
-                MODULE_FRAMEWORKS = $$MODULE_LIBS
-                inc = $$MODULE_LIBS/$${MODULE_NAME}.framework/Headers
-                MODULE_INCLUDES = $$inc
-                contains(MODULE_CONFIG, internal_module): \
-                    MODULE_INCLUDES += \
-                        $$inc/$$eval(QT.$${QTLIB}.VERSION) \
-                        $$inc/$$eval(QT.$${QTLIB}.VERSION)/$$MODULE_NAME
-            } else {
-                # Re-insert the major version in the library name (cf qt5LibraryTarget above)
-                MODULE_NAME ~= s,^Qt,Qt$$QT_MAJOR_VERSION,
-            }
-
-            # Only link to this module if a libs directory is set, else this is just a module
-            # to give access to sources or include files, and not for linking.
-            !isEmpty(MODULE_LIBS):!contains(MODULE_CONFIG, no_link): \
-                MODULE_MODULE = $${MODULE_NAME}$${QT_LIBINFIX}
-        }
-
         # Frameworks shouldn't need include paths, but much code does not use
         # module-qualified #includes, so by default we add paths which point
         # directly into the frameworks. Private modules have somewhat convoluted

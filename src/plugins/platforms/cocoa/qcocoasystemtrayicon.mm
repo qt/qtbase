@@ -105,6 +105,8 @@ QT_USE_NAMESPACE
 @end
 
 @interface QT_MANGLE_NAMESPACE(QNSImageView) : NSImageView
+@property (nonatomic, assign) BOOL down;
+@property (nonatomic, assign) QT_MANGLE_NAMESPACE(QNSStatusItem) *parent;
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSStatusItem);
@@ -277,36 +279,32 @@ QT_END_NAMESPACE
 @implementation NSStatusItem (Qt)
 @end
 
-@implementation QNSImageView {
-    BOOL down;
-    QT_MANGLE_NAMESPACE(QNSStatusItem) *parent;
-}
-
+@implementation QNSImageView
 - (instancetype)initWithParent:(QNSStatusItem *)myParent {
     self = [super init];
-    parent = myParent;
-    down = NO;
+    self.parent = myParent;
+    self.down = NO;
     return self;
 }
 
 - (void)menuTrackingDone:(NSNotification *)__unused notification
 {
-    down = NO;
+    self.down = NO;
 
     [self setNeedsDisplay:YES];
 }
 
 - (void)mousePressed:(NSEvent *)mouseEvent
 {
-    down = YES;
+    self.down = YES;
     int clickCount = [mouseEvent clickCount];
     [self setNeedsDisplay:YES];
 
     if (clickCount == 2) {
         [self menuTrackingDone:nil];
-        [parent doubleClickSelector:self];
+        [self.parent doubleClickSelector:self];
     } else {
-        [parent triggerSelector:self button:cocoaButton2QtButton(mouseEvent)];
+        [self.parent triggerSelector:self button:cocoaButton2QtButton(mouseEvent)];
     }
 }
 
@@ -344,7 +342,7 @@ QT_END_NAMESPACE
 }
 
 - (void)drawRect:(NSRect)rect {
-    [[parent item] drawStatusBarBackgroundInRect:rect withHighlight:down];
+    [[self.parent item] drawStatusBarBackgroundInRect:rect withHighlight:self.down];
     [super drawRect:rect];
 }
 @end
@@ -374,6 +372,7 @@ QT_END_NAMESPACE
 - (void)dealloc {
     [[NSStatusBar systemStatusBar] removeStatusItem:item];
     [[NSNotificationCenter defaultCenter] removeObserver:imageCell];
+    imageCell.parent = nil;
     [imageCell release];
     [item release];
     [super dealloc];

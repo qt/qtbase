@@ -141,6 +141,8 @@ private:
 
     void addWindow(screen_window_t qnxWindow, QWindow *window);
     void removeWindow(screen_window_t qnxWindow);
+    QList<screen_display_t *> sortDisplays(screen_display_t *displays,
+                                          int displayCount);
 
     screen_context_t m_screenContext;
     QQnxScreenEventThread *m_screenEventThread;

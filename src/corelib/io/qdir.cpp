@@ -2127,10 +2127,9 @@ QString QDir::rootPath()
 bool QDir::match(const QStringList &filters, const QString &fileName)
 {
     for (QStringList::ConstIterator sit = filters.constBegin(); sit != filters.constEnd(); ++sit) {
-        QString wildcard = QRegularExpression::wildcardToRegularExpression(*sit);
         // Insensitive exact match
         // (see Notes for QRegExp Users in QRegularExpression's documentation)
-        QRegularExpression rx(QRegularExpression::anchoredPattern(wildcard),
+        QRegularExpression rx(QRegularExpression::wildcardToRegularExpression(*sit),
                               QRegularExpression::CaseInsensitiveOption);
         if (rx.match(fileName).hasMatch())
             return true;

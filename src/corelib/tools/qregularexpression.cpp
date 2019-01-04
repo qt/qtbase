@@ -1992,7 +1992,7 @@ QString QRegularExpression::wildcardToRegularExpression(const QString &pattern)
         }
     }
 
-    return rx;
+    return anchoredPattern(rx);
 }
 
 /*!
@@ -2138,6 +2138,9 @@ int QRegularExpressionMatch::lastCapturedIndex() const
     If the \a nth capturing group did not capture a string, or if there is no
     such capturing group, returns a null QString.
 
+    \note The implicit capturing group number 0 captures the substring matched
+    by the entire pattern.
+
     \sa capturedRef(), capturedView(), lastCapturedIndex(), capturedStart(), capturedEnd(),
     capturedLength(), QString::isNull()
 */
@@ -2159,6 +2162,9 @@ QString QRegularExpressionMatch::captured(int nth) const
 
     If the \a nth capturing group did not capture a string, or if there is no
     such capturing group, returns a null QStringRef.
+
+    \note The implicit capturing group number 0 captures the substring matched
+    by the entire pattern.
 
     \sa captured(), capturedView(), lastCapturedIndex(), capturedStart(), capturedEnd(),
     capturedLength(), QStringRef::isNull()
@@ -2183,6 +2189,9 @@ QStringRef QRegularExpressionMatch::capturedRef(int nth) const
 
     If the \a nth capturing group did not capture a string, or if there is no
     such capturing group, returns a null QStringView.
+
+    \note The implicit capturing group number 0 captures the substring matched
+    by the entire pattern.
 
     \sa captured(), capturedRef(), lastCapturedIndex(), capturedStart(), capturedEnd(),
     capturedLength(), QStringView::isNull()
@@ -2296,7 +2305,9 @@ QStringView QRegularExpressionMatch::capturedView(QStringView name) const
 
 /*!
     Returns a list of all strings captured by capturing groups, in the order
-    the groups themselves appear in the pattern string.
+    the groups themselves appear in the pattern string. The list includes the
+    implicit capturing group number 0, capturing the substring matched by the
+    entire pattern.
 */
 QStringList QRegularExpressionMatch::capturedTexts() const
 {

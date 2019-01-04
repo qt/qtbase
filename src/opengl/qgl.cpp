@@ -157,7 +157,7 @@ class QGLDefaultOverlayFormat: public QGLFormat
 public:
     inline QGLDefaultOverlayFormat()
     {
-        setOption(QGL::FormatOption(0xffff << 16)); // turn off all options
+        setOption(QGL::FormatOption(0xffffU << 16)); // turn off all options
         setOption(QGL::DirectRendering);
         setPlane(1);
     }

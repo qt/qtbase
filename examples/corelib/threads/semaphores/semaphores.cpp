@@ -94,12 +94,6 @@ public:
         }
         fprintf(stderr, "\n");
     }
-
-signals:
-    void stringConsumed(const QString &text);
-
-protected:
-    bool finish;
 };
 //! [4]
 

@@ -27,7 +27,11 @@
         "corewlan": {
             "label": "CoreWLan",
             "export": "",
-            "test": "corewlan",
+            "test": {
+                "lang": "objc++",
+                "main": "[CWInterface interfaceWithName:@\"en2\"];"
+            },
+            "headers": [ "CoreWLAN/CoreWLAN.h", "CoreWLAN/CWInterface.h" ],
             "sources": [
                 "-framework CoreWLAN -framework Foundation"
             ]
@@ -40,13 +44,13 @@
         "libproxy": {
             "label": "libproxy",
             "test": {
-                "include": [ "proxy.h" ],
                 "main": [
                     "pxProxyFactory *factory = px_proxy_factory_new();",
                     "px_proxy_factory_get_proxies(factory, \"http://qt-project.org\");",
                     "px_proxy_factory_free(factory);"
                 ]
             },
+            "headers": "proxy.h",
             "sources": [
                 "-lproxy"
             ]
@@ -54,7 +58,17 @@
         "openssl_headers": {
             "label": "OpenSSL Headers",
             "export": "openssl",
-            "test": "openssl",
+            "test": {
+                "tail": [
+                    "#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10000000L",
+                    "#  error OpenSSL >= 1.0.0 is required",
+                    "#endif",
+                    "#if OPENSSL_VERSION_NUMBER-0 >= 0x10002000L && !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)",
+                    "#  error OpenSSL was reported as >= 1.0.2 but is missing required features, possibly it's libressl which is unsupported",
+                    "#endif"
+                ]
+            },
+            "headers": [ "openssl/ssl.h", "openssl/opensslv.h" ],
             "sources": [
                 {
                     "comment": "placeholder for OPENSSL_PATH",
@@ -64,23 +78,24 @@
         },
         "openssl": {
             "label": "OpenSSL",
-            "test": "openssl",
+            "test": {
+                "inherit": "openssl_headers",
+                "main": "SSL_free(SSL_new(0));"
+            },
             "sources": [
                 { "type": "openssl" },
                 {
-                    "comment": "placeholder for OPENSSL_{PATH,LIBS{,_{DEBUG,RELEASE}}}",
-                    "libs": "",
-                    "condition": "config.win32 && !features.shared"
-                },
-                {
                     "libs": "-lssleay32 -llibeay32",
-                    "condition": "config.win32 && features.shared"
+                    "condition": "config.win32"
                 },
                 {
                     "libs": "-llibssl -llibcrypto",
-                    "condition": "config.win32"
+                    "condition": "config.msvc"
                 },
-                { "libs": "-lssl -lcrypto", "condition": "!config.win32" }
+                {
+                    "libs": "-lssl -lcrypto",
+                    "condition": "!config.msvc"
+                }
             ]
         }
     },
@@ -148,7 +163,14 @@
         "openssl11": {
             "label": "OpenSSL 1.1 support",
             "type": "compile",
-            "test": "unix/openssl11",
+            "test": {
+                "include": "openssl/opensslv.h",
+                "tail": [
+                    "#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10100000L",
+                    "#  error OpenSSL >= 1.1 is required",
+                    "#endif"
+                ]
+            },
             "use": "openssl"
         },
         "dtls": {
@@ -213,20 +235,24 @@
         },
         "openssl": {
             "label": "OpenSSL",
-            "enable": "input.openssl == 'yes' || input.openssl == 'linked' || input.openssl == 'runtime'",
-            "disable": "input.openssl == 'no' || input.ssl == 'no'",
-            "autoDetect": "!config.winrt && !config.wasm",
-            "condition": "!features.securetransport && (features.openssl-linked || libs.openssl_headers)",
+            "enable": "false",
+            "condition": "features.openssl-runtime || features.openssl-linked",
             "output": [
                 "privateFeature",
                 { "type": "publicQtConfig", "condition": "!features.openssl-linked" },
                 { "type": "define", "negative": true, "name": "QT_NO_OPENSSL" }
             ]
         },
+        "openssl-runtime": {
+            "autoDetect": "!config.winrt && !config.wasm",
+            "enable": "input.openssl == 'yes' || input.openssl == 'runtime'",
+            "disable": "input.openssl == 'no' || input.openssl == 'linked' || input.ssl == 'no'",
+            "condition": "!features.securetransport && libs.openssl_headers"
+        },
         "openssl-linked": {
             "label": "  Qt directly linked to OpenSSL",
+            "autoDetect": false,
             "enable": "input.openssl == 'linked'",
-            "disable": "input.openssl != 'linked'",
             "condition": "!features.securetransport && libs.openssl",
             "output": [
                 "privateFeature",

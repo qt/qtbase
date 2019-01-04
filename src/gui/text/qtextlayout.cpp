@@ -2607,6 +2607,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
                                             Qt::IntersectClip);
                         else
                              x /= 2; // Centered
+                        p->setFont(f);
                         p->drawText(QPointF(iterator.x.toReal() + x,
                                             y.toReal()), visualTab);
                     }
@@ -2680,8 +2681,11 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
             if (c.style() != Qt::NoBrush)
                 p->setPen(c.color());
             QChar visualSpace(si.analysis.flags == QScriptAnalysis::Space ? (ushort)0xb7 : (ushort)0xb0);
+            QFont oldFont = p->font();
+            p->setFont(eng->font(si));
             p->drawText(QPointF(iterator.x.toReal(), itemBaseLine.toReal()), visualSpace);
             p->setPen(pen);
+            p->setFont(oldFont);
         }
     }
     eng->drawDecorations(p);

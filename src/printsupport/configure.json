@@ -17,9 +17,9 @@
         "cups": {
             "label": "CUPS",
             "test": {
-                "include": "cups/cups.h",
                 "main": "cupsGetNamedDest(CUPS_HTTP_DEFAULT, NULL, NULL);  // CUPS 1.4 test"
             },
+            "headers": "cups/cups.h",
             "sources": [
                 "-lcups"
             ]
