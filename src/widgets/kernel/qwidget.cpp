@@ -5317,7 +5317,7 @@ void QWidget::setGraphicsEffect(QGraphicsEffect *effect)
         return;
 
     if (d->graphicsEffect) {
-        d->invalidateBuffer(rect());
+        d->invalidateBackingStore(rect());
         delete d->graphicsEffect;
         d->graphicsEffect = 0;
     }
@@ -7340,11 +7340,11 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                 if (renderToTexture) {
                     QRegion updateRegion(q->geometry());
                     updateRegion += QRect(oldPos, olds);
-                    q->parentWidget()->d_func()->invalidateBuffer(updateRegion);
+                    q->parentWidget()->d_func()->invalidateBackingStore(updateRegion);
                 } else if (isMove && !isResize) {
                     moveRect(QRect(oldPos, olds), x - oldPos.x(), y - oldPos.y());
                 } else {
-                    invalidateBuffer_resizeHelper(oldPos, olds);
+                    invalidateBackingStore_resizeHelper(oldPos, olds);
                 }
             }
         }
@@ -8106,7 +8106,7 @@ void QWidgetPrivate::show_sys()
     QWidgetWindow *window = windowHandle();
 
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
-        invalidateBuffer(q->rect());
+        invalidateBackingStore(q->rect());
         q->setAttribute(Qt::WA_Mapped);
         // add our window the modal window list (native dialogs)
         if (window && q->isWindow()
@@ -8149,7 +8149,7 @@ void QWidgetPrivate::show_sys()
 #ifndef QT_NO_CURSOR
         qt_qpa_set_cursor(q, false); // Needed in case cursor was set before show
 #endif
-        invalidateBuffer(q->rect());
+        invalidateBackingStore(q->rect());
         window->setNativeWindowVisibility(true);
         // Was the window moved by the Window system or QPlatformWindow::initialGeometry() ?
         if (window->isTopLevel()) {
@@ -8263,12 +8263,12 @@ void QWidgetPrivate::hide_sys()
         QWidget *p = q->parentWidget();
         if (p &&p->isVisible()) {
             if (renderToTexture)
-                p->d_func()->invalidateBuffer(q->geometry());
+                p->d_func()->invalidateBackingStore(q->geometry());
             else
-                invalidateBuffer(q->rect());
+                invalidateBackingStore(q->rect());
         }
     } else {
-        invalidateBuffer(q->rect());
+        invalidateBackingStore(q->rect());
     }
 
     if (window)
@@ -11901,7 +11901,7 @@ void QWidget::raise()
 
         QRegion region(rect());
         d->subtractOpaqueSiblings(region);
-        d->invalidateBuffer(region);
+        d->invalidateBackingStore(region);
     }
     if (testAttribute(Qt::WA_WState_Created))
         d->raise_sys();
@@ -11921,7 +11921,7 @@ void QWidgetPrivate::raise_sys()
     } else if (renderToTexture) {
         if (QWidget *p = q->parentWidget()) {
             setDirtyOpaqueRegion();
-            p->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
+            p->d_func()->invalidateBackingStore(effectiveRectFor(q->geometry()));
         }
     }
 }
@@ -11971,7 +11971,7 @@ void QWidgetPrivate::lower_sys()
         q->windowHandle()->lower();
     } else if (QWidget *p = q->parentWidget()) {
         setDirtyOpaqueRegion();
-        p->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
+        p->d_func()->invalidateBackingStore(effectiveRectFor(q->geometry()));
     }
 }
 
@@ -12015,7 +12015,7 @@ void QWidgetPrivate::stackUnder_sys(QWidget*)
     Q_Q(QWidget);
     if (QWidget *p = q->parentWidget()) {
         setDirtyOpaqueRegion();
-        p->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
+        p->d_func()->invalidateBackingStore(effectiveRectFor(q->geometry()));
     }
 }
 
@@ -12457,7 +12457,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 
     d->aboutToDestroy();
     if (!isWindow() && parentWidget())
-        parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
+        parentWidget()->d_func()->invalidateBackingStore(d->effectiveRectFor(geometry()));
     d->deactivateWidgetCleanup();
 
     if ((windowType() == Qt::Popup) && qApp)

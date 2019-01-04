@@ -859,11 +859,11 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
         if (!extra || !extra->hasMask) {
             parentR -= newRect;
         } else {
-            // invalidateBuffer() excludes anything outside the mask
+            // invalidateBackingStore() excludes anything outside the mask
             parentR += newRect & clipR;
         }
-        pd->invalidateBuffer(parentR);
-        invalidateBuffer((newRect & clipR).translated(-data.crect.topLeft()));
+        pd->invalidateBackingStore(parentR);
+        invalidateBackingStore((newRect & clipR).translated(-data.crect.topLeft()));
     } else {
 
         QWidgetBackingStore *wbs = x->backingStoreTracker.data();
@@ -894,7 +894,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
         if (childUpdatesEnabled) {
             if (!overlappedExpose.isEmpty()) {
                 overlappedExpose.translate(-data.crect.topLeft());
-                invalidateBuffer(overlappedExpose);
+                invalidateBackingStore(overlappedExpose);
             }
             if (!childExpose.isEmpty()) {
                 childExpose.translate(-data.crect.topLeft());
@@ -944,9 +944,9 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
         if (!overlappedRegion(scrollRect.translated(data.crect.topLeft()), true).isEmpty()) {
             QRegion region(scrollRect);
             subtractOpaqueSiblings(region);
-            invalidateBuffer(region);
+            invalidateBackingStore(region);
         }else {
-            invalidateBuffer(scrollRect);
+            invalidateBackingStore(scrollRect);
         }
     } else {
         const QPoint toplevelOffset = q->mapTo(tlw, QPoint());
@@ -987,7 +987,7 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
             return;
 
         if (!overlappedExpose.isEmpty())
-            invalidateBuffer(overlappedExpose);
+            invalidateBackingStore(overlappedExpose);
         if (!childExpose.isEmpty()) {
             wbs->markDirty(childExpose, q);
             isScrolled = true;
@@ -1471,26 +1471,11 @@ void QWidgetBackingStore::flush(QWidget *widget)
     dirtyOnScreenWidgets->clear();
 }
 
-static inline bool discardInvalidateBufferRequest(QWidget *widget, QTLWExtra *tlwExtra)
-{
-    Q_ASSERT(widget);
-    if (QApplication::closingDown())
-        return true;
-
-    if (!tlwExtra || tlwExtra->inTopLevelResize || !tlwExtra->backingStore)
-        return true;
-
-    if (!widget->isVisible() || !widget->updatesEnabled())
-        return true;
-
-    return false;
-}
-
 /*!
-    Invalidates the buffer when the widget is resized.
+    Invalidates the backing store when the widget is resized.
     Static areas are never invalidated unless absolutely needed.
 */
-void QWidgetPrivate::invalidateBuffer_resizeHelper(const QPoint &oldPos, const QSize &oldSize)
+void QWidgetPrivate::invalidateBackingStore_resizeHelper(const QPoint &oldPos, const QSize &oldSize)
 {
     Q_Q(QWidget);
     Q_ASSERT(!q->isWindow());
@@ -1515,10 +1500,10 @@ void QWidgetPrivate::invalidateBuffer_resizeHelper(const QPoint &oldPos, const Q
         if (hasStaticChildren) {
             QRegion dirty(newWidgetRect);
             dirty -= staticChildren;
-            invalidateBuffer(dirty);
+            invalidateBackingStore(dirty);
         } else {
             // Entire widget needs repaint.
-            invalidateBuffer(newWidgetRect);
+            invalidateBackingStore(newWidgetRect);
         }
 
         if (!parentAreaExposed)
@@ -1530,14 +1515,14 @@ void QWidgetPrivate::invalidateBuffer_resizeHelper(const QPoint &oldPos, const Q
             parentExpose &= QRect(oldPos, oldSize);
             if (hasStaticChildren)
                 parentExpose -= data.crect; // Offset is unchanged, safe to do this.
-            q->parentWidget()->d_func()->invalidateBuffer(parentExpose);
+            q->parentWidget()->d_func()->invalidateBackingStore(parentExpose);
         } else {
             if (hasStaticChildren && !graphicsEffect) {
                 QRegion parentExpose(QRect(oldPos, oldSize));
                 parentExpose -= data.crect; // Offset is unchanged, safe to do this.
-                q->parentWidget()->d_func()->invalidateBuffer(parentExpose);
+                q->parentWidget()->d_func()->invalidateBackingStore(parentExpose);
             } else {
-                q->parentWidget()->d_func()->invalidateBuffer(effectiveRectFor(QRect(oldPos, oldSize)));
+                q->parentWidget()->d_func()->invalidateBackingStore(effectiveRectFor(QRect(oldPos, oldSize)));
             }
         }
         return;
@@ -1558,7 +1543,7 @@ void QWidgetPrivate::invalidateBuffer_resizeHelper(const QPoint &oldPos, const Q
     if (!sizeDecreased || !oldWidgetRect.contains(newWidgetRect)) {
         QRegion newVisible(newWidgetRect);
         newVisible -= oldWidgetRect;
-        invalidateBuffer(newVisible);
+        invalidateBackingStore(newVisible);
     }
 
     if (!parentAreaExposed)
@@ -1570,74 +1555,56 @@ void QWidgetPrivate::invalidateBuffer_resizeHelper(const QPoint &oldPos, const Q
         QRegion parentExpose(oldRect);
         parentExpose &= extra->mask.translated(oldPos);
         parentExpose -= (extra->mask.translated(data.crect.topLeft()) & data.crect);
-        q->parentWidget()->d_func()->invalidateBuffer(parentExpose);
+        q->parentWidget()->d_func()->invalidateBackingStore(parentExpose);
     } else {
         QRegion parentExpose(oldRect);
         parentExpose -= data.crect;
-        q->parentWidget()->d_func()->invalidateBuffer(parentExpose);
+        q->parentWidget()->d_func()->invalidateBackingStore(parentExpose);
     }
 }
 
 /*!
-    Invalidates the \a rgn (in widget's coordinates) of the backing store, i.e.
-    all widgets intersecting with the region will be repainted when the backing store
-    is synced.
-
-    ### Qt 4.6: Merge into a template function (after MSVC isn't supported anymore).
+    Invalidates the \a r (in widget's coordinates) of the backing store, i.e.
+    all widgets intersecting with the region will be repainted when the backing
+    store is synced.
 */
-void QWidgetPrivate::invalidateBuffer(const QRegion &rgn)
+template <class T>
+void QWidgetPrivate::invalidateBackingStore(const T &r)
 {
+    if (r.isEmpty())
+        return;
+
+    if (QApplication::closingDown())
+        return;
+
     Q_Q(QWidget);
+    if (!q->isVisible() || !q->updatesEnabled())
+        return;
 
     QTLWExtra *tlwExtra = q->window()->d_func()->maybeTopData();
-    if (discardInvalidateBufferRequest(q, tlwExtra) || rgn.isEmpty())
+    if (!tlwExtra || tlwExtra->inTopLevelResize || !tlwExtra->backingStore)
         return;
 
-    QRegion wrgn(rgn);
-    wrgn &= clipRect();
-    if (!graphicsEffect && extra && extra->hasMask)
-        wrgn &= extra->mask;
-    if (wrgn.isEmpty())
+    T clipped(r);
+    clipped &= clipRect();
+    if (clipped.isEmpty())
         return;
 
-    tlwExtra->backingStoreTracker->markDirty(wrgn, q,
+    if (!graphicsEffect && extra && extra->hasMask) {
+        QRegion masked(extra->mask);
+        masked &= clipped;
+        if (masked.isEmpty())
+            return;
+
+        tlwExtra->backingStoreTracker->markDirty(masked, q,
             QWidgetBackingStore::UpdateLater, QWidgetBackingStore::BufferInvalid);
-}
-
-/*!
-    This function is equivalent to calling invalidateBuffer(QRegion(rect), ...), but
-    is more efficient as it eliminates QRegion operations/allocations and can
-    use the rect more precisely for additional cut-offs.
-
-    ### Qt 4.6: Merge into a template function (after MSVC isn't supported anymore).
-*/
-void QWidgetPrivate::invalidateBuffer(const QRect &rect)
-{
-    Q_Q(QWidget);
-
-    QTLWExtra *tlwExtra = q->window()->d_func()->maybeTopData();
-    if (discardInvalidateBufferRequest(q, tlwExtra) || rect.isEmpty())
-        return;
-
-    QRect wRect(rect);
-    wRect &= clipRect();
-    if (wRect.isEmpty())
-        return;
-
-    if (graphicsEffect || !extra || !extra->hasMask) {
-        tlwExtra->backingStoreTracker->markDirty(wRect, q,
-                QWidgetBackingStore::UpdateLater, QWidgetBackingStore::BufferInvalid);
-        return;
+    } else {
+        tlwExtra->backingStoreTracker->markDirty(clipped, q,
+            QWidgetBackingStore::UpdateLater, QWidgetBackingStore::BufferInvalid);
     }
-
-    QRegion wRgn(extra->mask);
-    wRgn &= wRect;
-    if (wRgn.isEmpty())
-        return;
-
-    tlwExtra->backingStoreTracker->markDirty(wRgn, q,
-            QWidgetBackingStore::UpdateLater, QWidgetBackingStore::BufferInvalid);
 }
+// Needed by tst_QWidget
+template Q_AUTOTEST_EXPORT void QWidgetPrivate::invalidateBackingStore<QRect>(const QRect &r);
 
 void QWidgetPrivate::repaint_sys(const QRegion &rgn)
 {
