@@ -43,7 +43,9 @@
 #include "qtestresult_p.h"
 #include "qtestassert.h"
 
-#include <QtCore/qregularexpression.h>
+#if QT_CONFIG(regularexpression)
+#  include <QtCore/qregularexpression.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -146,6 +148,7 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
         outputString(YAML_INDENT "---\n");
 
         if (type != XFail) {
+#if QT_CONFIG(regularexpression)
             // This is fragile, but unfortunately testlib doesn't plumb
             // the expected and actual values to the loggers (yet).
             static QRegularExpression verifyRegex(
@@ -206,6 +209,12 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
                     YAML_INDENT "# %s\n", description);
                 outputString(unparsableDescription.data());
             }
+#else
+            QTestCharBuffer unparsableDescription;
+            QTest::qt_asprintf(&unparsableDescription,
+                YAML_INDENT "# %s\n", description);
+            outputString(unparsableDescription.data());
+#endif
         }
 
         if (file) {

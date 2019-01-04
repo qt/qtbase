@@ -1052,11 +1052,13 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         return false;
 
 #ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(regularexpression)
     case QMetaType::QRegularExpression:
         if (d->type != QMetaType::QCborValue || !v_cast<QCborValue>(d)->isRegularExpression())
             return false;
         *static_cast<QRegularExpression *>(result) = v_cast<QCborValue>(d)->toRegularExpression();
         break;
+#endif
     case QMetaType::QJsonValue:
         switch (d->type) {
         case QMetaType::Nullptr:
@@ -1232,9 +1234,11 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         case QVariant::Url:
             *static_cast<QCborValue *>(result) = QCborValue(*v_cast<QUrl>(d));
             break;
+#if QT_CONFIG(regularexpression)
         case QVariant::RegularExpression:
             *static_cast<QCborValue *>(result) = QCborValue(*v_cast<QRegularExpression>(d));
             break;
+#endif
         case QVariant::Uuid:
             *static_cast<QCborValue *>(result) = QCborValue(*v_cast<QUuid>(d));
             break;

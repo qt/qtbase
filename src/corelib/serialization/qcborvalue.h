@@ -43,7 +43,9 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qcborcommon.h>
-#include <QtCore/qregularexpression.h>
+#if QT_CONFIG(regularexpression)
+#  include <QtCore/qregularexpression.h>
+#endif
 #include <QtCore/qstring.h>
 #include <QtCore/qstringview.h>
 #include <QtCore/qurl.h>
@@ -155,7 +157,9 @@ public:
 
     explicit QCborValue(const QDateTime &dt);
     explicit QCborValue(const QUrl &url);
+#if QT_CONFIG(regularexpression)
     explicit QCborValue(const QRegularExpression &rx);
+#endif
     explicit QCborValue(const QUuid &uuid);
 
     ~QCborValue() { if (container) dispose(); }
@@ -233,7 +237,9 @@ public:
     QString toString(const QString &defaultValue = {}) const;
     QDateTime toDateTime(const QDateTime &defaultValue = {}) const;
     QUrl toUrl(const QUrl &defaultValue = {}) const;
+#if QT_CONFIG(regularexpression)
     QRegularExpression toRegularExpression(const QRegularExpression &defaultValue = {}) const;
+#endif
     QUuid toUuid(const QUuid &defaultValue = {}) const;
 
 #ifdef Q_QDOC
@@ -380,8 +386,10 @@ public:
     { return concrete().toDateTime(defaultValue); }
     QUrl toUrl(const QUrl &defaultValue = {}) const
     { return concrete().toUrl(defaultValue); }
+#if QT_CONFIG(regularexpression)
     QRegularExpression toRegularExpression(const QRegularExpression &defaultValue = {}) const
     { return concrete().toRegularExpression(defaultValue); }
+#endif
     QUuid toUuid(const QUuid &defaultValue = {}) const
     { return concrete().toUuid(defaultValue); }
 

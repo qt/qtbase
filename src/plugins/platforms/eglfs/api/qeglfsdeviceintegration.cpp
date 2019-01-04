@@ -51,7 +51,9 @@
 #include <private/qguiapplication_p.h>
 #include <QScreen>
 #include <QDir>
-#include <QRegularExpression>
+#if QT_CONFIG(regularexpression)
+#  include <QRegularExpression>
+#endif
 #include <QLoggingCategory>
 
 #if defined(Q_OS_LINUX)
