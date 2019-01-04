@@ -1988,9 +1988,11 @@ QMdiSubWindow *QMdiArea::addSubWindow(QWidget *widget, Qt::WindowFlags windowFla
         Q_ASSERT(child->testAttribute(Qt::WA_DeleteOnClose));
     }
 
+    d->appendChild(child);
+
     if (childFocus)
         childFocus->setFocus();
-    d->appendChild(child);
+
     return child;
 }
 
