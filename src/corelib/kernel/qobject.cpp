@@ -3668,12 +3668,14 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
         Q_TRACE(QMetaObject_activate_end_declarative_signal, sender, signal_index);
     }
 
-    if (!sender->d_func()->isSignalConnected(signal_index, /*checkDeclarative =*/ false)
-        && !qt_signal_spy_callback_set.signal_begin_callback
-        && !qt_signal_spy_callback_set.signal_end_callback
-        && !Q_TRACE_ENABLED(QMetaObject_activate_begin_signal)
-        && !Q_TRACE_ENABLED(QMetaObject_activate_end_signal)) {
-        // The possible declarative connection is done, and nothing else is connected, so:
+    if (!sender->d_func()->isSignalConnected(signal_index, /*checkDeclarative =*/ false)) {
+        // The possible declarative connection is done, and nothing else is connected
+        if (qt_signal_spy_callback_set.signal_begin_callback != nullptr)
+            qt_signal_spy_callback_set.signal_begin_callback(sender, signal_index, argv);
+        Q_TRACE(QMetaObject_activate_begin_signal, sender, signal_index);
+        Q_TRACE(QMetaObject_activate_end_signal, sender, signal_index);
+        if (qt_signal_spy_callback_set.signal_end_callback != nullptr)
+            qt_signal_spy_callback_set.signal_end_callback(sender, signal_index);
         return;
     }
 
@@ -3711,13 +3713,6 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
         QObjectConnectionListVector *operator->() const { return connectionLists; }
     };
     ConnectionListsRef connectionLists = sender->d_func()->connectionLists;
-    if (!connectionLists.connectionLists) {
-        locker.unlock();
-        if (qt_signal_spy_callback_set.signal_end_callback != 0)
-            qt_signal_spy_callback_set.signal_end_callback(sender, signal_index);
-        Q_TRACE(QMetaObject_activate_end_signal, sender, signal_index);
-        return;
-    }
 
     const QObjectPrivate::ConnectionList *list;
     if (signal_index < connectionLists->count())
