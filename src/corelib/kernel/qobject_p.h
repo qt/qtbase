@@ -171,14 +171,15 @@ public:
             : receiver(receiver), sender(sender), signal(signal)
         {
             if (receiver) {
-                previous = receiver->d_func()->currentSender;
-                receiver->d_func()->currentSender = this;
+                ConnectionData *cd = receiver->d_func()->connections.load();
+                previous = cd->currentSender;
+                cd->currentSender = this;
             }
         }
         ~Sender()
         {
             if (receiver)
-                receiver->d_func()->currentSender = previous;
+                receiver->d_func()->connections.load()->currentSender = previous;
         }
         void receiverDeleted()
         {
@@ -194,6 +195,34 @@ public:
         int signal;
     };
 
+    /*
+        This contains the all connections from and to an object.
+
+        The signalVector contains the lists of connections for a given signal. The index in the vector correspond
+        to the signal index. The signal index is the one returned by QObjectPrivate::signalIndex (not
+        QMetaObject::indexOfSignal). allsignals contains a list of special connections that will get invoked on
+        any signal emission. This is done by connecting to signal index -1.
+
+        This vector is protected by the object mutex (signalSlotLock())
+
+        Each Connection is also part of a 'senders' linked list. This one contains all connections connected
+        to a slot in this object. The mutex of the receiver must be locked when touching the pointers of this
+        linked list.
+    */
+    struct ConnectionData {
+        bool orphaned = false; //the QObject owner of this vector has been destroyed while the vector was inUse
+        bool dirty = false; //some Connection have been disconnected (their receiver is 0) but not removed from the list yet
+        int inUse = 0; //number of functions that are currently accessing this object or its connections
+        ConnectionList allsignals;
+        QVector<ConnectionList> signalVector;
+        Connection *senders = nullptr;
+        Sender *currentSender = nullptr;   // object currently activating the object
+
+        ConnectionList &connectionsForSignal(int signal)
+        {
+            return signal < 0 ? allsignals : signalVector[signal];
+        }
+    };
 
     QObjectPrivate(int version = QObjectPrivateVersion);
     virtual ~QObjectPrivate();
@@ -240,14 +269,18 @@ public:
                                                const int *types, const QMetaObject *senderMetaObject);
     static QMetaObject::Connection connect(const QObject *sender, int signal_index, QtPrivate::QSlotObjectBase *slotObj, Qt::ConnectionType type);
     static bool disconnect(const QObject *sender, int signal_index, void **slot);
+
+    void ensureConnectionData()
+    {
+        if (connections.load())
+            return;
+        connections.store(new ConnectionData);
+    }
 public:
     ExtraData *extraData;    // extra data set by the user
     QThreadData *threadData; // id of the thread that owns the object
 
-    QObjectConnectionListVector *connectionLists;
-
-    Connection *senders;     // linked list of connections connected to this object
-    Sender *currentSender;   // object currently activating the object
+    QAtomicPointer<ConnectionData> connections;
 
     union {
         QObject *currentChildBeingDeleted; // should only be used when QObjectData::isDeletingChildren is set
