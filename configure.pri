@@ -606,6 +606,9 @@ defineTest(qtConfOutput_prepareOptions) {
         isEmpty(platform): equals(target_arch, arm64-v8a): \
             platform = android-21
 
+        isEmpty(platform): equals(target_arch, x86_64): \
+            platform = android-21
+
         isEmpty(platform): \
             platform = android-16  ### the windows configure disagrees ...
 
