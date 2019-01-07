@@ -2933,7 +2933,7 @@ QByteArray QSysInfo::machineUniqueId()
 #elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     // Let's poke at the registry
     HKEY key = NULL;
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ, &key)
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ | KEY_WOW64_64KEY, &key)
             == ERROR_SUCCESS) {
         wchar_t buffer[UuidStringLen + 1];
         DWORD size = sizeof(buffer);
