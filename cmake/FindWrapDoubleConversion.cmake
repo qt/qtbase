@@ -1,5 +1,15 @@
 include(CheckCXXSourceCompiles)
 
+add_library(WrapDoubleConversion INTERFACE)
+
+find_package(double-conversion)
+if (double-conversion_FOUND)
+    set_package_properties(double-conversion PROPERTIES TYPE REQUIRED)
+    target_link_libraries(WrapDoubleConversion INTERFACE double-conversion::double-conversion)
+    set(WrapDoubleConversion_FOUND 1)
+    return()
+endif()
+
 check_cxx_source_compiles("
 #include <stdio.h>
 #include <locale.h>
@@ -25,12 +35,9 @@ int main(int argc, char *argv[]) {
     return 0;
 }" HAVE_SPRINTF_L)
 
-add_library(WrapDoubleConversion INTERFACE)
-if (NOT HAVE__SPRINTF_L AND NOT HAVE_SPRINTF_L)
-    find_package(double-conversion)
-    set_package_properties(double-conversion PROPERTIES TYPE REQUIRED)
-    target_link_libraries(WrapDoubleConversion INTERFACE double-conversion::double-conversion)
+if (HAVE__SPRINTF_L OR HAVE_SPRINTF_L)
+    target_compile_definitions(WrapDoubleConversion INTERFACE QT_NO_DOUBLECONVERSION)
+    set(WrapDoubleConversion_FOUND 1)
+else()
+    set(WrapDoubleConversion_FOUND 0)
 endif()
-
-set(WrapDoubleConversion_FOUND 1)
-

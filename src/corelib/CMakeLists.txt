@@ -1,6 +1,11 @@
 find_package(Threads)
 find_package(WrapDoubleConversion REQUIRED)
 
+if (NOT WrapDoubleConversion_FOUND)
+  message(FATAL_ERROR "Your C library does not provide sscanf_l/snprintf_l _snprintf_l/_sscanf_l. \
+                       You need to use libdouble-conversion for double/string conversion.")
+endif()
+
 find_library(FWAppKit AppKit)
 find_library(FWApplicationServices ApplicationServices)
 find_library(FWCoreFoundation CoreFoundation)

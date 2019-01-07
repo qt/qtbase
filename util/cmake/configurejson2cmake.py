@@ -50,7 +50,7 @@ def map_library(lib: str) -> Union[str, LibraryMapping, List[str]]:
        'atspi': 'ATSPI2',
        'corewlan': None, # Framework
        'cups': 'Cups',
-       'double-conversion': 'WrapDoubleConversion',
+       'double-conversion': None,
        'drm': 'Libdrm',
        'egl': 'EGL',
        'fontconfig': LibraryMapping(package='Fontconfig', resultVariable="FONTCONFIG"),
