@@ -50,6 +50,8 @@
 #include "qasn1element_p.h"
 
 #include <QtCore/qdatastream.h>
+#include <QtCore/qendian.h>
+#include <QtNetwork/qhostaddress.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -403,10 +405,32 @@ bool QSslCertificatePrivate::parse(const QByteArray &data)
                             QDataStream nameStream(sanElem.value());
                             QAsn1Element nameElem;
                             while (nameElem.read(nameStream)) {
-                                if (nameElem.type() == QAsn1Element::Rfc822NameType) {
+                                switch (nameElem.type()) {
+                                case QAsn1Element::Rfc822NameType:
                                     subjectAlternativeNames.insert(QSsl::EmailEntry, nameElem.toString());
-                                } else if (nameElem.type() == QAsn1Element::DnsNameType) {
+                                    break;
+                                case QAsn1Element::DnsNameType:
                                     subjectAlternativeNames.insert(QSsl::DnsEntry, nameElem.toString());
+                                    break;
+                                case QAsn1Element::IpAddressType: {
+                                    QHostAddress ipAddress;
+                                    QByteArray ipAddrValue = nameElem.value();
+                                    switch (ipAddrValue.length()) {
+                                    case 4: // IPv4
+                                        ipAddress = QHostAddress(qFromBigEndian(*reinterpret_cast<quint32 *>(ipAddrValue.data())));
+                                        break;
+                                    case 16: // IPv6
+                                        ipAddress = QHostAddress(reinterpret_cast<quint8 *>(ipAddrValue.data()));
+                                        break;
+                                    default: // Unknown IP address format
+                                        break;
+                                    }
+                                    if (!ipAddress.isNull())
+                                        subjectAlternativeNames.insert(QSsl::IpAddressEntry, ipAddress.toString());
+                                    break;
+                                }
+                                default:
+                                    break;
                                 }
                             }
                         }

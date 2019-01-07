@@ -99,6 +99,9 @@ Q_LOGGING_CATEGORY(lcSsl, "qt.network.ssl");
     \value DnsEntry A DNS host name entry; the entry contains a host name
     entry that the certificate is valid for. The entry may contain wildcards.
 
+    \value IpAddressEntry An IP address entry; the entry contains an IP address
+    entry that the certificate is valid for, introduced in Qt 5.13.
+
     \note In Qt 4, this enum was called \c {AlternateNameEntryType}. That name
     is deprecated in Qt 5.
 

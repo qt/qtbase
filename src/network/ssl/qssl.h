@@ -68,7 +68,8 @@ namespace QSsl {
 
     enum AlternativeNameEntryType {
         EmailEntry,
-        DnsEntry
+        DnsEntry,
+        IpAddressEntry
     };
 
 #if QT_DEPRECATED_SINCE(5,0)

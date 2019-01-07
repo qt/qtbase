@@ -1710,6 +1710,17 @@ void tst_QSslSocket::isMatchingHostname()
     QCOMPARE(QSslSocketPrivate::isMatchingHostname(cert, QString::fromUtf8("foo.foo.xn--schufele-2za.de")), false);
     QCOMPARE(QSslSocketPrivate::isMatchingHostname(cert, QString::fromUtf8("www.schaufele.de")), false);
     QCOMPARE(QSslSocketPrivate::isMatchingHostname(cert, QString::fromUtf8("www.schufele.de")), false);
+
+    /* Generated with the following command (only valid with openssl >= 1.1.1 due to "-addext"):
+       openssl req -x509 -nodes -subj "/CN=example.org" \
+            -addext "subjectAltName = IP:192.5.8.16, IP:fe80::3c29:2fa1:dd44:765" \
+            -newkey rsa:2048 -keyout /dev/null -out subjectAltNameIP.crt
+    */
+    certs = QSslCertificate::fromPath(testDataDir + "certs/subjectAltNameIP.crt");
+    QVERIFY(!certs.isEmpty());
+    cert = certs.first();
+    QCOMPARE(QSslSocketPrivate::isMatchingHostname(cert, QString::fromUtf8("192.5.8.16")), true);
+    QCOMPARE(QSslSocketPrivate::isMatchingHostname(cert, QString::fromUtf8("fe80::3c29:2fa1:dd44:765")), true);
 }
 
 void tst_QSslSocket::wildcard()

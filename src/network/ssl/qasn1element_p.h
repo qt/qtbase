@@ -138,6 +138,7 @@ public:
         Rfc822NameType = 0x81,
         DnsNameType = 0x82,
         UniformResourceIdentifierType = 0x86,
+        IpAddressType = 0x87,
 
         // context specific
         Context0Type = 0xA0,

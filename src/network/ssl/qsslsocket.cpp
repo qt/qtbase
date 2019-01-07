@@ -2882,6 +2882,19 @@ QSharedPointer<QSslContext> QSslSocketPrivate::sslContext(QSslSocket *socket)
 
 bool QSslSocketPrivate::isMatchingHostname(const QSslCertificate &cert, const QString &peerName)
 {
+    QHostAddress hostAddress(peerName);
+    if (!hostAddress.isNull()) {
+        const auto subjectAlternativeNames = cert.subjectAlternativeNames();
+        const auto ipAddresses = subjectAlternativeNames.equal_range(QSsl::AlternativeNameEntryType::IpAddressEntry);
+
+        for (auto it = ipAddresses.first; it != ipAddresses.second; it++) {
+            if (QHostAddress(*it).isEqual(hostAddress, QHostAddress::StrictConversion))
+                return true;
+        }
+
+        return false;
+    }
+
     const QString lowerPeerName = QString::fromLatin1(QUrl::toAce(peerName));
     const QStringList commonNames = cert.subjectInfo(QSslCertificate::CommonName);
 
