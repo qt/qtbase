@@ -909,7 +909,7 @@ void tst_QSqlDatabase::recordMySQL()
         FieldDef("date", QVariant::Date,                 QDate::currentDate()),
         FieldDef("datetime", QVariant::DateTime,         dt),
         FieldDef("timestamp", QVariant::DateTime,        dt, false),
-        FieldDef("time", QVariant::Time,                 dt.time()),
+        FieldDef("time", QVariant::String,               dt.time()),
         FieldDef("year", QVariant::Int,                  2003),
         FieldDef("char(20)", QVariant::String,           "Blah"),
         FieldDef("varchar(20)", QVariant::String,        "BlahBlah"),

@@ -1,8 +1,8 @@
 TEMPLATE=subdirs
-SUBDIRS=\
+qtHaveModule(widgets): SUBDIRS = \
    qsqlquerymodel \
-   qsqlrelationaltablemodel \
+   qsqlrelationaldelegate
+
+SUBDIRS += qsqlrelationaltablemodel \
    qsqltablemodel \
 
-!qtHaveModule(widgets): SUBDIRS -= \
-   qsqlquerymodel
