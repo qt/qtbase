@@ -79,6 +79,7 @@ protected:
     void writeHeader(QTextStream &t);
     void writeSubDirs(QTextStream &t);
     void writeMakeQmake(QTextStream &t, bool noDummyQmakeAll = false);
+    void writeExportedVariables(QTextStream &t);
     void writeExtraVariables(QTextStream &t);
     void writeExtraTargets(QTextStream &t);
     void writeExtraCompilerTargets(QTextStream &t);

@@ -124,6 +124,7 @@ private slots:
     void compareCustomType();
     void compareCustomEqualOnlyType();
     void customDebugStream();
+    void unknownType();
 };
 
 struct BaseGenericType
@@ -2541,6 +2542,16 @@ void tst_QMetaType::customDebugStream()
     qDebug() << v1;
 }
 
+void tst_QMetaType::unknownType()
+{
+    QMetaType invalid(QMetaType::UnknownType);
+    QVERIFY(!invalid.create());
+    QVERIFY(!invalid.sizeOf());
+    QVERIFY(!invalid.metaObject());
+    int buffer = 0xBAD;
+    invalid.construct(&buffer);
+    QCOMPARE(buffer, 0xBAD);
+}
 // Compile-time test, it should be possible to register function pointer types
 class Undefined;
 

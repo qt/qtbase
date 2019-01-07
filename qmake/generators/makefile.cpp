@@ -2212,6 +2212,25 @@ MakefileGenerator::writeExtraVariables(QTextStream &t)
     }
 }
 
+// This is a more powerful alternative to the above function.
+// It's meant to be internal, as one can make quite a mess with it.
+void
+MakefileGenerator::writeExportedVariables(QTextStream &t)
+{
+    const auto &vars = project->values("QMAKE_EXPORTED_VARIABLES");
+    if (vars.isEmpty())
+        return;
+    for (const auto &exp : vars) {
+        const ProString &name = project->first(ProKey(exp + ".name"));
+        const ProString &value = project->first(ProKey(exp + ".value"));
+        if (!value.isEmpty())
+            t << name << " = " << value << endl;
+        else
+            t << name << " =\n";
+    }
+    t << endl;
+}
+
 bool
 MakefileGenerator::writeDummyMakefile(QTextStream &t)
 {

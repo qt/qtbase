@@ -2323,6 +2323,8 @@ void *QMetaType::createExtended(const void *copy) const
 */
 void QMetaType::destroyExtended(void *data) const
 {
+    if (m_typeId == QMetaType::UnknownType)
+        return;
     if (Q_UNLIKELY(m_typedDestructor && !m_destructor))
         m_typedDestructor(m_typeId, data);
     else
@@ -2339,6 +2341,8 @@ void QMetaType::destroyExtended(void *data) const
 */
 void *QMetaType::constructExtended(void *where, const void *copy) const
 {
+    if (m_typeId == QMetaType::UnknownType)
+        return nullptr;
     if (m_typedConstructor && !m_constructor)
         return m_typedConstructor(m_typeId, where, copy);
     return nullptr;
@@ -2353,6 +2357,8 @@ void *QMetaType::constructExtended(void *where, const void *copy) const
 */
 void QMetaType::destructExtended(void *data) const
 {
+    if (m_typeId == QMetaType::UnknownType)
+        return;
     if (m_typedDestructor && !m_destructor)
         m_typedDestructor(m_typeId, data);
 }

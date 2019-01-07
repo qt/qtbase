@@ -3280,6 +3280,17 @@
     Returns the \c string with every special regular expression character
     escaped with a backslash. This function is a wrapper around QRegExp::escape.
 
+    \section2 read_registry(tree, key[, flag])
+
+    Returns the value of registry key \c key inside the tree \c tree.
+
+    Only the trees \c HKEY_CURRENT_USER (\c HKCU) and \c HKEY_LOCAL_MACHINE
+    (\c HKLM) are supported.
+
+    The \c flag may be \c WOW64_32KEY (\c 32) or \c WOW64_64KEY (\c 64).
+
+    \note This function is available only on Windows hosts.
+
     \section2 relative_path(filePath[, base])
 
     Returns the path to \c filePath relative to \c base.

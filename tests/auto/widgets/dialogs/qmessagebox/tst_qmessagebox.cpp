@@ -38,49 +38,6 @@
 #include <qpa/qplatformtheme.h>
 #include <private/qguiapplication_p.h>
 
-#define CONVENIENCE_FUNC_SYMS(func) \
-    { \
-        int x1 = QMessageBox::func(0, "Foo", "Bar"); \
-        int x3 = QMessageBox::func(0, "Foo", "Bar", "Save"); \
-        int x6 = QMessageBox::func(0, "Foo", "Bar", "Save", "Save As"); \
-        int x7 = QMessageBox::func(0, "Foo", "Bar", "Save", "Save As", "Dont Save"); \
-        int x8 = QMessageBox::func(0, "Foo", "Bar", "Save", "Save As", "Dont Save", 1); \
-        int x9 = QMessageBox::func(0, "Foo", "Bar", "Save", "Save As", "Dont Save", 1, 2); \
-        int x10 = QMessageBox::func(0, "Foo", "Bar", QMessageBox::YesAll, QMessageBox::Yes); \
-        int x11 = QMessageBox::func(0, "Foo", "Bar", QMessageBox::YesAll, QMessageBox::Yes, \
-                                    QMessageBox::No); \
-        qDebug("%d %d %d %d %d %d %d %d", x1, x3, x6, x7, x8, x9, x10, x11); \
-        { \
-        int x4 = QMessageBox::func(0, "Foo", "Bar", (int)QMessageBox::Yes, (int)QMessageBox::No); \
-        int x5 = QMessageBox::func(0, "Foo", "Bar", QMessageBox::Yes, (int)QMessageBox::No); \
-        int x6 = QMessageBox::func(0, "Foo", "Bar", QMessageBox::Yes | QMessageBox::Default, (int)QMessageBox::No); \
-        int x7 = QMessageBox::func(0, "Foo", "Bar", (int)QMessageBox::Yes, QMessageBox::No); \
-        int x8 = QMessageBox::func(0, "Foo", "Bar", QMessageBox::Yes, QMessageBox::No); \
-        int x9 = QMessageBox::func(0, "Foo", "Bar", QMessageBox::Yes | QMessageBox::Default, QMessageBox::No); \
-        int x10 = QMessageBox::func(0, "Foo", "Bar", (int)QMessageBox::Yes, (int)QMessageBox::No, (int)QMessageBox::Ok); \
-        int x11 = QMessageBox::func(0, "Foo", "Bar", QMessageBox::Yes, (int)QMessageBox::No, (int)QMessageBox::Ok); \
-        int x12 = QMessageBox::func(0, "Foo", "Bar", QMessageBox::Yes | QMessageBox::Default, (int)QMessageBox::No, (int)QMessageBox::Ok); \
-        int x13 = QMessageBox::func(0, "Foo", "Bar", (int)QMessageBox::Yes, QMessageBox::No, (int)QMessageBox::Ok); \
-        int x14 = QMessageBox::func(0, "Foo", "Bar", QMessageBox::Yes, QMessageBox::No, (int)QMessageBox::Ok); \
-        int x15 = QMessageBox::func(0, "Foo", "Bar", QMessageBox::Yes | QMessageBox::Default, QMessageBox::No, (int)QMessageBox::Ok); \
-        int x16 = QMessageBox::func(0, "Foo", "Bar", (int)QMessageBox::Yes, (int)QMessageBox::No, QMessageBox::Ok); \
-        int x17 = QMessageBox::func(0, "Foo", "Bar", QMessageBox::Yes, (int)QMessageBox::No, QMessageBox::Ok); \
-        int x18 = QMessageBox::func(0, "Foo", "Bar", QMessageBox::Yes | QMessageBox::Default, (int)QMessageBox::No, QMessageBox::Ok); \
-        int x19 = QMessageBox::func(0, "Foo", "Bar", (int)QMessageBox::Yes, QMessageBox::No, QMessageBox::Ok); \
-        int x20 = QMessageBox::func(0, "Foo", "Bar", QMessageBox::Yes, QMessageBox::No, QMessageBox::Ok); \
-        int x21 = QMessageBox::func(0, "Foo", "Bar", QMessageBox::Yes | QMessageBox::Default, QMessageBox::No, QMessageBox::Ok); \
-        qDebug("%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x19, x20, x21); \
-        } \
-    }
-
-#define CONVENIENCE_FUNC_SYMS_EXTRA(func) \
-    { \
-        int x1 = QMessageBox::func(0, "Foo", "Bar", (int)QMessageBox::Yes); \
-        int x2 = QMessageBox::func(0, "Foo", "Bar", QMessageBox::Yes); \
-        int x3 = QMessageBox::func(0, "Foo", "Bar", QMessageBox::Yes | QMessageBox::Default); \
-        qDebug("%d %d %d", x1, x2, x3); \
-    }
-
 class tst_QMessageBox : public QObject
 {
     Q_OBJECT
@@ -103,7 +60,6 @@ private slots:
     void staticSourceCompat();
     void instanceSourceCompat();
 
-    void testSymbols();
     void incorrectDefaultButton();
     void updateSize();
 
@@ -507,96 +463,6 @@ void tst_QMessageBox::instanceSourceCompat()
     closeHelper.start(Qt::ALT + Qt::Key_Z, &mb);
     QCOMPARE(mb.exec(), 1);
 #endif
-}
-
-void tst_QMessageBox::testSymbols()
-{
-    return;
-
-    QMessageBox::Icon icon;
-    icon = QMessageBox::NoIcon;
-    icon = QMessageBox::Information;
-    icon = QMessageBox::Warning;
-    icon = QMessageBox::Critical;
-    icon = QMessageBox::Question;
-
-    QMessageBox mb1;
-    QMessageBox mb2(0);
-    QMessageBox mb3(&mb1);
-    QMessageBox mb3b("title", "text", QMessageBox::Critical, int(QMessageBox::Yes),
-                     int(QMessageBox::No), int(QMessageBox::Cancel), &mb1, Qt::Dialog);
-
-    QMessageBox::Button button = QMessageBox::NoButton;
-    button = QMessageBox::Ok;
-    button = QMessageBox::Cancel;
-    button = QMessageBox::Yes;
-    button = QMessageBox::No;
-    button = QMessageBox::Abort;
-    button = QMessageBox::Retry;
-    button = QMessageBox::Ignore;
-    button = QMessageBox::YesAll;
-    button = QMessageBox::NoAll;
-    button = QMessageBox::ButtonMask;
-    button = QMessageBox::Default;
-    button = QMessageBox::Escape;
-    button = QMessageBox::FlagMask;
-    QVERIFY(button);
-
-    const QString text = QStringLiteral("Foo");
-    mb1.setText(text);
-    QCOMPARE(mb1.text(), text);
-
-    icon = mb1.icon();
-    QCOMPARE(icon, QMessageBox::NoIcon);
-    mb1.setIcon(QMessageBox::Question);
-    QCOMPARE(mb1.icon(), QMessageBox::Question);
-
-    QPixmap iconPixmap = mb1.iconPixmap();
-    mb1.setIconPixmap(iconPixmap);
-    QCOMPARE(mb1.icon(), QMessageBox::NoIcon);
-
-    QCOMPARE(mb1.buttonText(QMessageBox::Ok), QLatin1String("OK"));
-    QCOMPARE(mb1.buttonText(QMessageBox::Cancel), QString());
-    QCOMPARE(mb1.buttonText(QMessageBox::Ok | QMessageBox::Default), QString());
-
-    const QString button1 = QStringLiteral("Bar");
-    mb2.setButtonText(QMessageBox::Cancel, QStringLiteral("Foo"));
-    mb2.setButtonText(QMessageBox::Ok, button1);
-    mb2.setButtonText(QMessageBox::Ok | QMessageBox::Default, QStringLiteral("Baz"));
-
-    QCOMPARE(mb2.buttonText(QMessageBox::Cancel), QString());
-    QCOMPARE(mb2.buttonText(QMessageBox::Ok), button1);
-
-    QVERIFY(mb3b.buttonText(QMessageBox::Yes).endsWith("Yes"));
-    QCOMPARE(mb3b.buttonText(QMessageBox::YesAll), QString());
-    QCOMPARE(mb3b.buttonText(QMessageBox::Ok), QString());
-
-    const QString button2 = QStringLiteral("Blah");
-    mb3b.setButtonText(QMessageBox::Yes, button2);
-    mb3b.setButtonText(QMessageBox::YesAll, QStringLiteral("Zoo"));
-    mb3b.setButtonText(QMessageBox::Ok, QStringLiteral("Zoo"));
-
-    QCOMPARE(mb3b.buttonText(QMessageBox::Yes), button2);
-    QCOMPARE(mb3b.buttonText(QMessageBox::YesAll), QString());
-    QCOMPARE(mb3b.buttonText(QMessageBox::Ok), QString());
-
-    QCOMPARE(mb1.textFormat(), Qt::AutoText);
-    mb1.setTextFormat(Qt::PlainText);
-    QCOMPARE(mb1.textFormat(), Qt::PlainText);
-
-    CONVENIENCE_FUNC_SYMS(information);
-    CONVENIENCE_FUNC_SYMS_EXTRA(information);
-    CONVENIENCE_FUNC_SYMS(question);
-    CONVENIENCE_FUNC_SYMS_EXTRA(question);
-    CONVENIENCE_FUNC_SYMS(warning);
-    CONVENIENCE_FUNC_SYMS(critical);
-
-    QSize sizeHint = mb1.sizeHint();
-    QVERIFY(sizeHint.width() > 20 && sizeHint.height() > 20);
-
-    QMessageBox::about(&mb1, "title", "text");
-    QMessageBox::aboutQt(&mb1);
-    QMessageBox::aboutQt(&mb1, "title");
 }
 
 void tst_QMessageBox::detailsText()

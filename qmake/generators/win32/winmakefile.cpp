@@ -520,6 +520,8 @@ void Win32MakefileGenerator::writeIncPart(QTextStream &t)
 
 void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
 {
+    writeExportedVariables(t);
+
     t << "####### Compiler, tools and options\n\n";
     t << "CC            = " << var("QMAKE_CC") << endl;
     t << "CXX           = " << var("QMAKE_CXX") << endl;
