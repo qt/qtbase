@@ -78,6 +78,7 @@ private:
     QPointer<QWindow> m_currentWindow;
     QWindow *m_previousCaptureWindow = nullptr;
     bool m_needsEnterOnPointerUpdate = false;
+    DWORD m_lastPointerType = 0;
 };
 
 QT_END_NAMESPACE
