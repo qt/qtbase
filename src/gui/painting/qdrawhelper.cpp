@@ -6579,6 +6579,15 @@ static void qInitDrawhelperFunctions()
         bilinearFastTransformHelperARGB32PM[0][SimpleScaleTransform] = fetchTransformedBilinearARGB32PM_simple_scale_helper_avx2;
         bilinearFastTransformHelperARGB32PM[0][DownscaleTransform] = fetchTransformedBilinearARGB32PM_downscale_helper_avx2;
         bilinearFastTransformHelperARGB32PM[0][FastRotateTransform] = fetchTransformedBilinearARGB32PM_fast_rotate_helper_avx2;
+
+        extern const QRgba64 * QT_FASTCALL convertARGB32ToRGBA64PM_avx2(QRgba64 *, const uint *, int, const QVector<QRgb> *, QDitherInfo *);
+        extern const QRgba64 * QT_FASTCALL convertRGBA8888ToRGBA64PM_avx2(QRgba64 *, const uint *, int count, const QVector<QRgb> *, QDitherInfo *);
+        extern const QRgba64 *QT_FASTCALL fetchARGB32ToRGBA64PM_avx2(QRgba64 *, const uchar *, int, int, const QVector<QRgb> *, QDitherInfo *);
+        extern const QRgba64 *QT_FASTCALL fetchRGBA8888ToRGBA64PM_avx2(QRgba64 *, const uchar *, int, int, const QVector<QRgb> *, QDitherInfo *);
+        qPixelLayouts[QImage::Format_ARGB32].convertToRGBA64PM = convertARGB32ToRGBA64PM_avx2;
+        qPixelLayouts[QImage::Format_RGBX8888].convertToRGBA64PM = convertRGBA8888ToRGBA64PM_avx2;
+        qPixelLayouts[QImage::Format_ARGB32].fetchToRGBA64PM = fetchARGB32ToRGBA64PM_avx2;
+        qPixelLayouts[QImage::Format_RGBX8888].fetchToRGBA64PM = fetchRGBA8888ToRGBA64PM_avx2;
     }
 #endif
 
