@@ -230,7 +230,6 @@ add_qt_module(Core
         ${CMAKE_CURRENT_BINARY_DIR}/global # For qconfig.cpp
     LIBRARIES
         WrapDoubleConversion
-        WrapRt
         tinycbor Threads::Threads ZLIB::ZLIB
         QtHarfBuzz
     PUBLIC_LIBRARIES Qt::Platform
@@ -537,7 +536,7 @@ extend_target(Core CONDITION QNX AND QT_FEATURE_qqnx_pps
 
 ## clock_gettime:
 extend_target(Core CONDITION UNIX AND QT_FEATURE_clock_gettime
-    LIBRARIES rt
+    LIBRARIES WrapRt
 )
 
 ## glib:
