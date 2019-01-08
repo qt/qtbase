@@ -67,8 +67,6 @@ class QWindowsFontEngineData;
 class QWindowsFontEngine : public QFontEngine
 {
     Q_DISABLE_COPY(QWindowsFontEngine)
-    friend class QWindowsMultiFontEngine;
-
 public:
     QWindowsFontEngine(const QString &name, LOGFONT lf,
                        const QSharedPointer<QWindowsFontEngineData> &fontEngineData);
@@ -167,14 +165,6 @@ private:
     mutable uint widthCacheSize = 0;
     mutable QFixed *designAdvances = nullptr;
     mutable int designAdvancesSize = 0;
-};
-
-class QWindowsMultiFontEngine : public QFontEngineMulti
-{
-public:
-    explicit QWindowsMultiFontEngine(QFontEngine *fe, int script);
-
-    QFontEngine *loadEngine(int at) override;
 };
 
 QT_END_NAMESPACE

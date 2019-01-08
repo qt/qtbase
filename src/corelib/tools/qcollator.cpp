@@ -79,7 +79,6 @@ QT_BEGIN_NAMESPACE
 QCollator::QCollator(const QLocale &locale)
     : d(new QCollatorPrivate(locale))
 {
-    d->init();
 }
 
 /*!
@@ -223,11 +222,6 @@ Qt::CaseSensitivity QCollator::caseSensitivity() const
 
     By default this mode is off.
 
-    \note On Windows, this functionality makes use of the \l{ICU} library. If Qt was
-    compiled without ICU support, it falls back to code using native Windows API,
-    which only works from Windows 7 onwards. On older versions of Windows, it will not work
-    and a warning will be emitted at runtime.
-
     \sa numericMode()
  */
 void QCollator::setNumericMode(bool on)
@@ -323,6 +317,8 @@ bool QCollator::ignorePunctuation() const
     methods directly. But if the string is compared repeatedly (e.g. when sorting
     a whole list of strings), it's usually faster to create the sort keys for each
     string and then sort using the keys.
+
+    \note Not supported with the C (a.k.a. POSIX) locale on Darwin.
  */
 
 /*!

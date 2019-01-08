@@ -34,22 +34,9 @@
 #include <qdiriterator.h>
 #include <qset.h>
 
-#include <registry_p.h>
-
 #include <time.h>
 
 QT_BEGIN_NAMESPACE
-
-static QString nmakePathList(const QStringList &list)
-{
-    QStringList pathList;
-    pathList.reserve(list.size());
-    for (const QString &path : list)
-        pathList.append(QDir::cleanPath(path));
-
-    return QDir::toNativeSeparators(pathList.join(QLatin1Char(';')))
-            .replace('#', QLatin1String("^#")).replace('$', QLatin1String("$$"));
-}
 
 NmakeMakefileGenerator::NmakeMakefileGenerator() : usePCH(false), usePCHC(false)
 {
@@ -70,202 +57,6 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
         if(Option::mkfile::do_stub_makefile)
             return MakefileGenerator::writeStubMakefile(t);
 #endif
-        if (!project->isHostBuild()) {
-            const QString msvcVer = project->first("MSVC_VER").toQString();
-            if (msvcVer.isEmpty()) {
-                fprintf(stderr, "Mkspec does not specify MSVC_VER. Cannot continue.\n");
-                return false;
-            }
-
-            bool winrtBuild = false;
-            bool crossPlatformDesktopBuild = false;
-            QString arch = project->first("VCPROJ_ARCH").toQString().toLower();
-            if (project->isActiveConfig(QStringLiteral("winrt"))) {
-                winrtBuild = true;
-
-            // Only add explicit support for arm64 cross-platform desktop builds.
-            } else if ((arch == QLatin1String("arm64")) && (msvcVer == QStringLiteral("15.0"))) {
-                crossPlatformDesktopBuild = true;
-            }
-
-            if (winrtBuild || crossPlatformDesktopBuild) {
-                QString compiler;
-                QString compilerArch;
-                const ProStringList hostArch = project->values("QMAKE_TARGET.arch");
-                if (msvcVer == QStringLiteral("15.0")) {
-                    if (hostArch.contains("x86_64"))
-                        compiler = QStringLiteral("HostX64/");
-                    else
-                        compiler = QStringLiteral("HostX86/");
-                    if (arch == QLatin1String("arm")) {
-                        compiler += QStringLiteral("arm");
-                        compilerArch = QStringLiteral("arm");
-                    } else if (arch == QLatin1String("x64")) {
-                        compiler += QStringLiteral("x64");
-                        compilerArch = QStringLiteral("amd64");
-                    } else if (arch == QLatin1String("arm64")) {
-                        compiler += QStringLiteral("arm64");
-                        compilerArch = QStringLiteral("arm64");
-                    } else {
-                        arch = QStringLiteral("x86");
-                        compiler += QStringLiteral("x86");
-                    }
-                } else {
-                    if (arch == QLatin1String("arm")) {
-                        compiler = QStringLiteral("x86_arm");
-                        compilerArch = QStringLiteral("arm");
-                    } else if (arch == QLatin1String("x64")) {
-                        const ProStringList hostArch = project->values("QMAKE_TARGET.arch");
-                        if (hostArch.contains("x86_64"))
-                            compiler = QStringLiteral("amd64");
-                        else
-                            compiler = QStringLiteral("x86_amd64");
-                        compilerArch = QStringLiteral("amd64");
-                    } else {
-                        arch = QStringLiteral("x86");
-                    }
-                }
-
-                const QString winsdkVer = project->first("WINSDK_VER").toQString();
-                if (winsdkVer.isEmpty()) {
-                    fprintf(stderr, "Mkspec does not specify WINSDK_VER. Cannot continue.\n");
-                    return false;
-                }
-                const QString targetVer = project->first("WINTARGET_VER").toQString();
-                if (targetVer.isEmpty() && winrtBuild) {
-                    fprintf(stderr, "Mkspec does not specify WINTARGET_VER. Cannot continue.\n");
-                    return false;
-                }
-
-#ifdef Q_OS_WIN
-                QString regKey;
-                if (msvcVer == QStringLiteral("15.0"))
-                    regKey = QStringLiteral("Software\\Microsoft\\VisualStudio\\SxS\\VS7\\") + msvcVer;
-                else
-                    regKey = QStringLiteral("Software\\Microsoft\\VisualStudio\\") + msvcVer + ("\\Setup\\VC\\ProductDir");
-                const QString vcInstallDir = qt_readRegistryKey(HKEY_LOCAL_MACHINE, regKey, KEY_WOW64_32KEY);
-                if (vcInstallDir.isEmpty()) {
-                    fprintf(stderr, "Failed to find the Visual Studio installation directory.\n");
-                    return false;
-                }
-
-                const QString windowsPath = "Software\\Microsoft\\Microsoft SDKs\\Windows\\v";
-
-                regKey = windowsPath + winsdkVer + QStringLiteral("\\InstallationFolder");
-                const QString kitDir = qt_readRegistryKey(HKEY_LOCAL_MACHINE, regKey, KEY_WOW64_32KEY);
-                if (kitDir.isEmpty()) {
-                    fprintf(stderr, "Failed to find the Windows Kit installation directory.\n");
-                    return false;
-                }
-#else
-                const QString vcInstallDir = "/fake/vc_install_dir";
-                const QString kitDir = "/fake/sdk_install_dir";
-#endif // Q_OS_WIN
-                QStringList incDirs;
-                QStringList libDirs;
-                QStringList binDirs;
-                if (msvcVer == QStringLiteral("15.0")) {
-                    const QString toolsInstallDir = qgetenv("VCToolsInstallDir");
-                    if (toolsInstallDir.isEmpty()) {
-                        fprintf(stderr, "Failed to access tools installation dir.\n");
-                        return false;
-                    }
-
-                    binDirs << toolsInstallDir + QStringLiteral("bin/") + compiler;
-                    if (arch == QStringLiteral("x64"))
-                        binDirs << toolsInstallDir + QStringLiteral("bin/HostX86/X86");
-                    binDirs << kitDir + QStringLiteral("bin/x86");
-                    binDirs << vcInstallDir + QStringLiteral("Common7/Tools");
-                    binDirs << vcInstallDir + QStringLiteral("Common7/ide");
-                    binDirs << vcInstallDir + QStringLiteral("MSBuild/15.0/bin");
-
-                    incDirs << toolsInstallDir + QStringLiteral("include");
-                    incDirs << vcInstallDir + QStringLiteral("VC/Auxiliary/VS/include");
-
-                    const QString crtVersion = qgetenv("UCRTVersion");
-                    if (crtVersion.isEmpty()) {
-                        fprintf(stderr, "Failed to access CRT version.\n");
-                        return false;
-                    }
-                    const QString crtInclude = kitDir + QStringLiteral("Include/") + crtVersion;
-                    const QString crtLib = kitDir + QStringLiteral("Lib/") + crtVersion;
-                    incDirs << crtInclude + QStringLiteral("/ucrt");
-                    incDirs << crtInclude + QStringLiteral("/um");
-                    incDirs << crtInclude + QStringLiteral("/shared");
-                    incDirs << crtInclude + QStringLiteral("/winrt");
-
-                    if (winrtBuild) {
-                        // Only use mobile-specific headers and link against store-specific libs for
-                        // winrt builds.
-                        incDirs << kitDir + QStringLiteral("Extension SDKs/WindowsMobile/")
-                                          + crtVersion + QStringLiteral("/Include/WinRT");
-
-                        libDirs << toolsInstallDir + QStringLiteral("lib/") + arch + QStringLiteral("/store");
-                    } else {
-                        // Desktop projects may require the atl headers and libs.
-                        incDirs << toolsInstallDir + QStringLiteral("atlmfc/include");
-                        libDirs << toolsInstallDir + QStringLiteral("atlmfc/lib/") + compilerArch;
-                        libDirs << toolsInstallDir + QStringLiteral("lib/") + arch;
-                    }
-
-                    libDirs << vcInstallDir + QStringLiteral("VC/Auxiliary/VS/lib/") + arch;
-
-                    libDirs << crtLib + QStringLiteral("/ucrt/") + arch;
-                    libDirs << crtLib + QStringLiteral("/um/") + arch;
-                } else if (msvcVer == QStringLiteral("14.0")) {
-                    binDirs << vcInstallDir + QStringLiteral("bin/") + compiler;
-                    binDirs << vcInstallDir + QStringLiteral("bin/"); // Maybe remove for x86 again?
-                    binDirs << kitDir + QStringLiteral("bin/") + (arch == QStringLiteral("arm") ? QStringLiteral("x86") : arch);
-                    binDirs << vcInstallDir + QStringLiteral("../Common7/Tools/bin");
-                    binDirs << vcInstallDir + QStringLiteral("../Common7/Tools");
-                    binDirs << vcInstallDir + QStringLiteral("../Common7/ide");
-                    binDirs << kitDir + QStringLiteral("Windows Performance Toolkit/");
-
-                    incDirs << vcInstallDir + QStringLiteral("include");
-                    incDirs << vcInstallDir + QStringLiteral("atlmfc/include");
-
-                    const QString crtVersion = qgetenv("UCRTVersion");
-                    if (crtVersion.isEmpty()) {
-                        fprintf(stderr, "Failed to access CRT version.\n");
-                        return false;
-                    }
-                    const QString crtInclude = kitDir + QStringLiteral("Include/") + crtVersion;
-                    const QString crtLib = kitDir + QStringLiteral("Lib/") + crtVersion;
-                    incDirs << crtInclude + QStringLiteral("/ucrt");
-                    incDirs << crtInclude + QStringLiteral("/um");
-                    incDirs << crtInclude + QStringLiteral("/shared");
-                    incDirs << crtInclude + QStringLiteral("/winrt");
-
-                    incDirs << kitDir + QStringLiteral("Extension SDKs/WindowsMobile/")
-                                      + crtVersion + QStringLiteral("/Include/WinRT");
-
-                    libDirs << vcInstallDir + QStringLiteral("lib/store/") + compilerArch;
-                    libDirs << vcInstallDir + QStringLiteral("atlmfc/lib") + compilerArch;
-
-                    libDirs << crtLib + QStringLiteral("/ucrt/") + arch;
-                    libDirs << crtLib + QStringLiteral("/um/") + arch;
-                } else {
-                    incDirs << vcInstallDir + QStringLiteral("/include");
-                    libDirs << vcInstallDir + QStringLiteral("/lib/store/") + compilerArch
-                            << vcInstallDir + QStringLiteral("/lib/") + compilerArch;
-                    binDirs << vcInstallDir + QStringLiteral("/bin/") + compiler
-                            << vcInstallDir + QStringLiteral("/../Common7/IDE");
-                    libDirs << kitDir + QStringLiteral("/Lib/") + targetVer + ("/um/") + arch;
-                    incDirs << kitDir + QStringLiteral("/include/um")
-                            << kitDir + QStringLiteral("/include/shared")
-                            << kitDir + QStringLiteral("/include/winrt");
-                }
-
-                binDirs << vcInstallDir + QStringLiteral("/bin");
-
-                // Inherit PATH
-                binDirs << QString::fromLocal8Bit(qgetenv("PATH")).split(QLatin1Char(';'));
-
-                t << "\nINCLUDE = " << nmakePathList(incDirs);
-                t << "\nLIB = " << nmakePathList(libDirs);
-                t << "\nPATH = " << nmakePathList(binDirs) << '\n';
-            }
-        }
         writeNmakeParts(t);
         return MakefileGenerator::writeMakefile(t);
     }
@@ -553,12 +344,13 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
             QDirIterator dit(sourceDir, sourceFilesFilter, QDir::Files | QDir::NoDotAndDotDot);
             while (dit.hasNext()) {
                 dit.next();
-                QString &duplicate = fileNames[dit.fileName()];
+                const QFileInfo fi = dit.fileInfo();
+                QString &duplicate = fileNames[fi.completeBaseName()];
                 if (duplicate.isNull()) {
-                    duplicate = dit.filePath();
+                    duplicate = fi.filePath();
                 } else {
                     warn_msg(WarnLogic, "%s conflicts with %s", qPrintable(duplicate),
-                             qPrintable(dit.filePath()));
+                             qPrintable(fi.filePath()));
                     duplicatesFound = true;
                 }
             }

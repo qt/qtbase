@@ -17,7 +17,8 @@ quoting and double quotes for the outer quoting.
 
 Top-level installation directories:
   -prefix <dir> ...... The deployment directory, as seen on the target device.
-                       [/usr/local/Qt-$QT_VERSION, $PWD if -developer-build]
+                       [/usr/local/Qt-$QT_VERSION; qtbase build directory if
+                       -developer-build]
   -extprefix <dir> ... The installation directory, as seen on the host machine.
                        [SYSROOT/PREFIX]
   -hostprefix [dir] .. The installation directory for build tools running on
@@ -292,7 +293,7 @@ Gui, printing, widget options:
     -kms ............... Enable backends for KMS [auto] (Linux only)
     -linuxfb ........... Enable Linux Framebuffer support [auto] (Linux only)
     -mirclient ......... Enable Mir client support [no] (Linux only)
-    -xcb ............... Select used xcb-* libraries [system/qt/no]
+    -xcb ............... Enable X11 support. Select used xcb-* libraries [system/qt/no]
                          (-qt-xcb still uses system version of libxcb itself)
 
   Input backends:

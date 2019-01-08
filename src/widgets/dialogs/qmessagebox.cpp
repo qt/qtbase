@@ -209,12 +209,15 @@ public:
     void setupLayout();
     void _q_buttonClicked(QAbstractButton *);
     void _q_clicked(QPlatformDialogHelper::StandardButton button, QPlatformDialogHelper::ButtonRole role);
+    void setClickedButton(QAbstractButton *button);
 
     QAbstractButton *findButton(int button0, int button1, int button2, int flags);
     void addOldButtons(int button0, int button1, int button2);
 
     QAbstractButton *abstractButtonForId(int id) const;
     int execReturnCode(QAbstractButton *button);
+
+    int dialogCodeForButton(QAbstractButton *button) const;
 
     void detectEscapeButton();
     void updateSize();
@@ -466,6 +469,27 @@ int QMessageBoxPrivate::execReturnCode(QAbstractButton *button)
     return ret;
 }
 
+/*!
+    \internal
+
+    Returns 0 for RejectedRole and NoRole, 1 for AcceptedRole and YesRole, -1 otherwise
+ */
+int QMessageBoxPrivate::dialogCodeForButton(QAbstractButton *button) const
+{
+    Q_Q(const QMessageBox);
+
+    switch (q->buttonRole(button)) {
+    case QMessageBox::AcceptRole:
+    case QMessageBox::YesRole:
+        return QDialog::Accepted;
+    case QMessageBox::RejectRole:
+    case QMessageBox::NoRole:
+        return QDialog::Rejected;
+    default:
+        return -1;
+    }
+}
+
 void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
 {
     Q_Q(QMessageBox);
@@ -477,18 +501,28 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     } else
 #endif
     {
-        clickedButton = button;
-        q->done(execReturnCode(button)); // does not trigger closeEvent
-        emit q->buttonClicked(button);
+        setClickedButton(button);
 
         if (receiverToDisconnectOnClose) {
             QObject::disconnect(q, signalToDisconnectOnClose, receiverToDisconnectOnClose,
                                 memberToDisconnectOnClose);
-            receiverToDisconnectOnClose = 0;
+            receiverToDisconnectOnClose = nullptr;
         }
         signalToDisconnectOnClose.clear();
         memberToDisconnectOnClose.clear();
     }
+}
+
+void QMessageBoxPrivate::setClickedButton(QAbstractButton *button)
+{
+    Q_Q(QMessageBox);
+
+    clickedButton = button;
+    emit q->buttonClicked(clickedButton);
+
+    auto resultCode = execReturnCode(button);
+    hide(resultCode);
+    finalize(resultCode, dialogCodeForButton(button));
 }
 
 void QMessageBoxPrivate::_q_clicked(QPlatformDialogHelper::StandardButton button, QPlatformDialogHelper::ButtonRole role)

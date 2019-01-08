@@ -101,7 +101,9 @@ public:
 
         const int ascent = fontMetrics().ascent();
 
-        p.setPen(Qt::magenta);
+        QPen metricsPen(QColor(112, 216, 255), 1.0);
+        metricsPen.setCosmetic(true);
+        p.setPen(metricsPen);
         p.drawLine(QPoint(0, ascent), QPoint(width(), ascent));
         p.end();
 
@@ -152,13 +154,22 @@ public:
         if (font().styleStrategy() & QFont::NoAntialias)
             CGContextSetShouldAntialias(ctx, false);
 
-        // Retain count already tracked by QMacCGContext above
-        NSGraphicsContext.currentContext = [NSGraphicsContext graphicsContextWithCGContext:ctx flipped:YES];
-        [text().toNSString() drawAtPoint:CGPointZero withAttributes:@{
-            NSFontAttributeName : (NSFont *)fontEngine->handle(),
-            NSForegroundColorAttributeName : nsColor
-        }];
-        NSGraphicsContext.currentContext = nil;
+        // Flip to what CT expects
+        CGContextScaleCTM(ctx, 1, -1);
+        CGContextTranslateCTM(ctx, 0, -height());
+
+        // Set up baseline
+        CGContextSetTextPosition(ctx, 0, height() - fontMetrics().ascent());
+
+        auto *attributedString = [[NSAttributedString alloc] initWithString:text().toNSString()
+            attributes:@{
+                NSFontAttributeName : (NSFont *)fontEngine->handle(),
+                NSForegroundColorAttributeName : nsColor
+            }
+        ];
+
+        QCFType<CTLineRef> line = CTLineCreateWithAttributedString(CFAttributedStringRef([attributedString autorelease]));
+        CTLineDraw(line, ctx);
 #endif
     }
 
@@ -190,17 +201,16 @@ public:
                 case 0: return qMakePair(QColor(), QColor());
                 case 1: return qMakePair(QColor(Qt::black), QColor(Qt::white));
                 case 2: return qMakePair(QColor(Qt::white), QColor(Qt::black));
-                case 3: return qMakePair(QColor(Qt::green), QColor(Qt::red));
+                case 3: return qMakePair(QColor(Qt::magenta), QColor(Qt::green));
                 case 4: return qMakePair(QColor(0, 0, 0, 128), QColor(Qt::white));
                 case 5: return qMakePair(QColor(255, 255, 255, 128), QColor(Qt::black));
                 default: return qMakePair(QColor(), QColor());
                 }
             }();
 
-            layout->addWidget(new TextRenderer(12, text, color.first, color.second));
-            layout->addWidget(new TextRenderer(24, text, color.first, color.second));
-            layout->addWidget(new TextRenderer(36, text, color.first, color.second));
-            layout->addWidget(new TextRenderer(48, text, color.first, color.second));
+            for (int pointSize : {8, 12, 24, 36, 48})
+                layout->addWidget(new TextRenderer(pointSize, text, color.first, color.second));
+
             static_cast<QHBoxLayout*>(m_previews->layout())->addLayout(layout);
         }
 

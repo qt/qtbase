@@ -134,6 +134,8 @@ int QPageSetupDialog::exec()
     QDialog::setVisible(false);
     if (result) {
         engine->setGlobalDevMode(psd.hDevNames, psd.hDevMode);
+        d->printer->setPageSize(QPageSize(QSizeF(psd.ptPaperSize.x / multiplier, psd.ptPaperSize.y / multiplier),
+                                layout.units() == QPageLayout::Inch ? QPageSize::Inch : QPageSize::Millimeter));
         const QMarginsF margins(psd.rtMargin.left, psd.rtMargin.top, psd.rtMargin.right, psd.rtMargin.bottom);
         d->printer->setPageMargins(margins / multiplier, layout.units());
 

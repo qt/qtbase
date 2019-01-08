@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "androidjniclipboard.h"
+#include <QtCore/QUrl>
 #include <QtCore/private/qjni_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -62,27 +63,60 @@ namespace QtAndroidClipboard
             return;
         }
     }
-
-    void setClipboardText(const QString &text)
+    void setClipboardMimeData(QMimeData *data)
     {
-        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
-                                                  "setClipboardText",
-                                                  "(Ljava/lang/String;)V",
-                                                  QJNIObjectPrivate::fromString(text).object());
+        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "clearClipData");
+        if (data->hasText()) {
+            QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
+                                                      "setClipboardText", "(Ljava/lang/String;)V",
+                                                      QJNIObjectPrivate::fromString(data->text()).object());
+        }
+        if (data->hasHtml()) {
+            QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
+                                                      "setClipboardHtml",
+                                                      "(Ljava/lang/String;Ljava/lang/String;)V",
+                                                      QJNIObjectPrivate::fromString(data->text()).object(),
+                                                      QJNIObjectPrivate::fromString(data->html()).object());
+        }
+        if (data->hasUrls()) {
+            QList<QUrl> urls = data->urls();
+            for (const auto &u : qAsConst(urls)) {
+                QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "setClipboardUri",
+                                                          "(Ljava/lang/String;)V",
+                                                          QJNIObjectPrivate::fromString(u.toEncoded()).object());
+            }
+        }
     }
 
-    bool hasClipboardText()
+    QMimeData *getClipboardMimeData()
     {
-        return QJNIObjectPrivate::callStaticMethod<jboolean>(applicationClass(),
-                                                             "hasClipboardText");
-    }
-
-    QString clipboardText()
-    {
-        QJNIObjectPrivate text = QJNIObjectPrivate::callStaticObjectMethod(applicationClass(),
-                                                                           "getClipboardText",
-                                                                           "()Ljava/lang/String;");
-        return text.toString();
+        QMimeData *data = new QMimeData;
+        if (QJNIObjectPrivate::callStaticMethod<jboolean>(applicationClass(), "hasClipboardText")) {
+            data->setText(QJNIObjectPrivate::callStaticObjectMethod(applicationClass(),
+                                                                    "getClipboardText",
+                                                                    "()Ljava/lang/String;").toString());
+        }
+        if (QJNIObjectPrivate::callStaticMethod<jboolean>(applicationClass(), "hasClipboardHtml")) {
+            data->setHtml(QJNIObjectPrivate::callStaticObjectMethod(applicationClass(),
+                                                                    "getClipboardHtml",
+                                                                    "()Ljava/lang/String;").toString());
+        }
+        if (QJNIObjectPrivate::callStaticMethod<jboolean>(applicationClass(), "hasClipboardUri")) {
+            QJNIObjectPrivate uris = QJNIObjectPrivate::callStaticObjectMethod(applicationClass(),
+                                                                               "getClipboardUris",
+                                                                               "()[Ljava/lang/String;");
+            if (uris.isValid()) {
+                QList<QUrl> urls;
+                QJNIEnvironmentPrivate env;
+                jobjectArray juris = static_cast<jobjectArray>(uris.object());
+                const jint nUris = env->GetArrayLength(juris);
+                urls.reserve(static_cast<int>(nUris));
+                for (int i = 0; i < nUris; ++i)
+                    urls << QUrl(QJNIObjectPrivate(env->GetObjectArrayElement(juris, i)).toString());
+                data->setUrls(urls);
+            }
+        }
+        return data;
     }
 
     void onClipboardDataChanged(JNIEnv */*env*/, jobject /*thiz*/)

@@ -17,7 +17,7 @@ repositories {
 apply plugin: 'com.android.application'
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
 }
 
 android {

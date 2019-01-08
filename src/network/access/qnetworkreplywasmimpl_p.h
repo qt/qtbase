@@ -62,6 +62,7 @@
 
 #include <emscripten.h>
 #include <emscripten/html5.h>
+#include <emscripten/val.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -133,6 +134,9 @@ public:
 
     QIODevice *outgoingData;
     QSharedPointer<QRingBuffer> outgoingDataBuffer;
+
+     emscripten::val m_xhr = emscripten::val::null();
+     void doAbort() const;
 
     static QNetworkReply::NetworkError statusCodeFromHttp(int httpStatusCode, const QUrl &url);
     Q_DECLARE_PUBLIC(QNetworkReplyWasmImpl)

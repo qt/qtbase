@@ -89,6 +89,14 @@ clang {
     greaterThan(QT_GCC_MAJOR_VERSION, 5): QMAKE_CXXFLAGS_WARN_ON += -Wshift-overflow=2 -Wduplicated-cond
     # GCC 7 has a lot of false positives relating to this, so disable completely
     greaterThan(QT_GCC_MAJOR_VERSION, 6): QMAKE_CXXFLAGS_WARN_ON += -Wno-stringop-overflow
+    # GCC 9 has a lot of false positives relating to this, so disable completely
+    greaterThan(QT_GCC_MAJOR_VERSION, 8): QMAKE_CXXFLAGS_WARN_ON += -Wno-deprecated-copy
+    # GCC 9 introduced this
+    greaterThan(QT_GCC_MAJOR_VERSION, 8): QMAKE_CXXFLAGS_WARN_ON += -Wno-redundant-move
+    # GCC 9 introduced this
+    greaterThan(QT_GCC_MAJOR_VERSION, 8): QMAKE_CXXFLAGS_WARN_ON += -Wno-format-overflow
+    # GCC 9 introduced this
+    greaterThan(QT_GCC_MAJOR_VERSION, 8): QMAKE_CXXFLAGS_WARN_ON += -Wno-init-list-lifetime
 }
 
 warnings_are_errors:warning_clean {
@@ -104,16 +112,17 @@ warnings_are_errors:warning_clean {
             QMAKE_CXXFLAGS_WARN_ON += -Werror -Wno-error=\\$${LITERAL_HASH}warnings -Wno-error=deprecated-declarations $$WERROR
         }
     } else:intel_icc:linux {
-        # Intel CC 13.0 - 17.0, on Linux only
+        # Intel CC 13.0 - 18.0, on Linux only
         ver = $${QT_ICC_MAJOR_VERSION}.$${QT_ICC_MINOR_VERSION}
-        linux:contains(ver, "(1[3456]\\.|17\\.0)") {
+        linux:contains(ver, "(1[345678]\\.|19\\.0)") {
             # 177: function "entity" was declared but never referenced
             #      (too aggressive; ICC reports even for functions created due to template instantiation)
             # 1224: #warning directive
             # 1478: function "entity" (declared at line N) was declared deprecated
+            # 1786: function "entity" (declared at line N of "file") was declared deprecated ("message")
             # 1881: argument must be a constant null pointer value
             #      (NULL in C++ is usually a literal 0)
-            QMAKE_CXXFLAGS_WARN_ON += -Werror -ww177,1224,1478,1881 $$WERROR
+            QMAKE_CXXFLAGS_WARN_ON += -Werror -ww177,1224,1478,1786,1881 $$WERROR
         }
     } else:gcc:!clang:!intel_icc:!rim_qcc {
         # GCC 4.6-4.9, 5.x, ...
@@ -127,7 +136,14 @@ warnings_are_errors:warning_clean {
 
             # GCC 7 includes -Wimplicit-fallthrough in -Wextra, but Qt is not yet free of implicit fallthroughs.
             greaterThan(QT_GCC_MAJOR_VERSION, 6): QMAKE_CXXFLAGS_WARN_ON += -Wno-error=implicit-fallthrough
-
+            # GCC 9 has a lot of false positives relating to this, so disable completely
+            greaterThan(QT_GCC_MAJOR_VERSION, 8): QMAKE_CXXFLAGS_WARN_ON += -Wno-deprecated-copy
+            # GCC 9 introduced this
+            greaterThan(QT_GCC_MAJOR_VERSION, 8): QMAKE_CXXFLAGS_WARN_ON += -Wno-redundant-move
+            # GCC 9 introduced this
+            greaterThan(QT_GCC_MAJOR_VERSION, 8): QMAKE_CXXFLAGS_WARN_ON += -Wno-format-overflow
+            # GCC 9 introduced this
+            greaterThan(QT_GCC_MAJOR_VERSION, 8): QMAKE_CXXFLAGS_WARN_ON += -Wno-init-list-lifetime
             # Work-around for bug https://code.google.com/p/android/issues/detail?id=58135
             android: QMAKE_CXXFLAGS_WARN_ON += -Wno-error=literal-suffix
         }

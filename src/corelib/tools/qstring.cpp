@@ -265,16 +265,46 @@ const ushort *QtPrivate::qustrchr(QStringView str, ushort c) noexcept
     const ushort *e = reinterpret_cast<const ushort *>(str.end());
 
 #ifdef __SSE2__
+    bool loops = true;
+    // Using the PMOVMSKB instruction, we get two bits for each character
+    // we compare.
+#  if defined(__AVX2__) && !defined(__OPTIMIZE_SIZE__)
+    // we're going to read n[0..15] (32 bytes)
+    __m256i mch256 = _mm256_set1_epi32(c | (c << 16));
+    for (const ushort *next = n + 16; next <= e; n = next, next += 16) {
+        __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(n));
+        __m256i result = _mm256_cmpeq_epi16(data, mch256);
+        uint mask = uint(_mm256_movemask_epi8(result));
+        if (mask) {
+            uint idx = qCountTrailingZeroBits(mask);
+            return n + idx / 2;
+        }
+    }
+    loops = false;
+    __m128i mch = _mm256_castsi256_si128(mch256);
+#  else
     __m128i mch = _mm_set1_epi32(c | (c << 16));
+#  endif
+
+    auto hasMatch = [mch, &n](__m128i data, ushort validityMask) {
+        __m128i result = _mm_cmpeq_epi16(data, mch);
+        uint mask = uint(_mm_movemask_epi8(result));
+        if ((mask & validityMask) == 0)
+            return false;
+        uint idx = qCountTrailingZeroBits(mask);
+        n += idx / 2;
+        return true;
+    };
 
     // we're going to read n[0..7] (16 bytes)
     for (const ushort *next = n + 8; next <= e; n = next, next += 8) {
         __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(n));
-        __m128i result = _mm_cmpeq_epi16(data, mch);
-        uint mask = _mm_movemask_epi8(result);
-        if (ushort(mask)) {
-            // found a match
-            return n + (qCountTrailingZeroBits(mask) >> 1);
+        if (hasMatch(data, 0xffff))
+            return n;
+
+        if (!loops) {
+            n += 8;
+            break;
         }
     }
 
@@ -282,12 +312,8 @@ const ushort *QtPrivate::qustrchr(QStringView str, ushort c) noexcept
     // we're going to read n[0..3] (8 bytes)
     if (e - n > 3) {
         __m128i data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(n));
-        __m128i result = _mm_cmpeq_epi16(data, mch);
-        uint mask = _mm_movemask_epi8(result);
-        if (uchar(mask)) {
-            // found a match
-            return n + (qCountTrailingZeroBits(mask) >> 1);
-        }
+        if (hasMatch(data, 0xff))
+            return n;
 
         n += 4;
     }
@@ -874,6 +900,19 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
     const QChar *end = a + l;
     qptrdiff offset = 0;
 
+    // Using the PMOVMSKB instruction, we get two bits for each character
+    // we compare.
+    int retval;
+    auto isDifferent = [a, b, &offset, &retval](__m128i a_data, __m128i b_data) {
+        __m128i result = _mm_cmpeq_epi16(a_data, b_data);
+        uint mask = ~uint(_mm_movemask_epi8(result));
+        if (ushort(mask) == 0)
+            return false;
+        uint idx = qCountTrailingZeroBits(mask);
+        retval = a[offset + idx / 2].unicode() - b[offset + idx / 2].unicode();
+        return true;
+    };
+
     // we're going to read a[0..15] and b[0..15] (32 bytes)
     for ( ; a + offset + 16 <= end; offset += 16) {
 #ifdef __AVX2__
@@ -902,13 +941,8 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
     if (a + offset + 8 <= end) {
         __m128i a_data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(a + offset));
         __m128i b_data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(b + offset));
-        __m128i result = _mm_cmpeq_epi16(a_data, b_data);
-        uint mask = ~_mm_movemask_epi8(result);
-        if (ushort(mask)) {
-            // found a different character
-            uint idx = qCountTrailingZeroBits(mask);
-            return a[offset + idx / 2].unicode() - b[offset + idx / 2].unicode();
-        }
+        if (isDifferent(a_data, b_data))
+            return retval;
 
         offset += 8;
     }
@@ -917,13 +951,8 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
     if (a + offset + 4 <= end) {
         __m128i a_data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(a + offset));
         __m128i b_data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(b + offset));
-        __m128i result = _mm_cmpeq_epi16(a_data, b_data);
-        uint mask = ~_mm_movemask_epi8(result);
-        if (uchar(mask)) {
-            // found a different character
-            uint idx = qCountTrailingZeroBits(mask);
-            return a[offset + idx / 2].unicode() - b[offset + idx / 2].unicode();
-        }
+        if (isDifferent(a_data, b_data))
+            return retval;
 
         offset += 4;
     }
@@ -1018,6 +1047,19 @@ static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
     __m128i nullmask = _mm_setzero_si128();
     qptrdiff offset = 0;
 
+    // Using the PMOVMSKB instruction, we get two bits for each character
+    // we compare.
+    int retval;
+    auto isDifferent = [uc, c, &offset, &retval](__m128i a_data, __m128i b_data) {
+        __m128i result = _mm_cmpeq_epi16(a_data, b_data);
+        uint mask = ~uint(_mm_movemask_epi8(result));
+        if (ushort(mask) == 0)
+            return false;
+        uint idx = qCountTrailingZeroBits(mask);
+        retval = uc[offset + idx / 2] - c[offset + idx / 2];
+        return true;
+    };
+
     // we're going to read uc[offset..offset+15] (32 bytes)
     // and c[offset..offset+15] (16 bytes)
     for ( ; uc + offset + 15 < e; offset += 16) {
@@ -1061,13 +1103,8 @@ static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
         __m128i secondHalf = mm_load8_zero_extend(c + offset);
 
         __m128i ucdata = _mm_loadu_si128((const __m128i*)(uc + offset));
-        __m128i result = _mm_cmpeq_epi16(secondHalf, ucdata);
-        uint mask = ~_mm_movemask_epi8(result);
-        if (ushort(mask)) {
-            // found a different character
-            uint idx = qCountTrailingZeroBits(mask);
-            return uc[offset + idx / 2] - c[offset + idx / 2];
-        }
+        if (isDifferent(ucdata, secondHalf))
+            return retval;
 
         // still matched
         offset += 8;
@@ -1080,13 +1117,8 @@ static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
         __m128i secondHalf = _mm_unpacklo_epi8(chunk, nullmask);
 
         __m128i ucdata = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(uc + offset));
-        __m128i result = _mm_cmpeq_epi8(secondHalf, ucdata);
-        uint mask = ~_mm_movemask_epi8(result);
-        if (uchar(mask)) {
-            // found a different character
-            uint idx = qCountTrailingZeroBits(mask);
-            return uc[offset + idx / 2] - c[offset + idx / 2];
-        }
+        if (isDifferent(ucdata, secondHalf))
+            return retval;
 
         // still matched
         offset += 4;
@@ -1318,7 +1350,7 @@ const QString::Null QString::null = { };
   literals and 8-bit data to unicode QStrings, but allows the use of
   the \c{QChar(char)} and \c{QString(const char (&ch)[N]} constructors,
   and the \c{QString::operator=(const char (&ch)[N])} assignment operator
-  giving most of the type-safety benefits of QT_NO_CAST_FROM_ASCII
+  giving most of the type-safety benefits of \c QT_NO_CAST_FROM_ASCII
   but does not require user code to wrap character and string literals
   with QLatin1Char, QLatin1String or similar.
 
@@ -1973,13 +2005,13 @@ const QString::Null QString::null = { };
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
 
-    \note Defining QT_RESTRICTED_CAST_FROM_ASCII also disables
+    \note Defining \c QT_RESTRICTED_CAST_FROM_ASCII also disables
     this constructor, but enables a \c{QString(const char (&ch)[N])}
     constructor instead. Using non-literal input, or input with
     embedded NUL characters, or non-7-bit characters is undefined
     in this case.
 
-    \sa fromLatin1(), fromLocal8Bit(), fromUtf8()
+    \sa fromLatin1(), fromLocal8Bit(), fromUtf8(), QT_NO_CAST_FROM_ASCII, QT_RESTRICTED_CAST_FROM_ASCII
 */
 
 /*! \fn QString QString::fromStdString(const std::string &str)
@@ -2172,7 +2204,7 @@ QString::QString(QChar ch)
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
 
-    \sa fromLatin1(), fromLocal8Bit(), fromUtf8()
+    \sa fromLatin1(), fromLocal8Bit(), fromUtf8(), QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString::QString(const Null &)
@@ -2420,6 +2452,8 @@ QString &QString::operator=(QLatin1String other)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::operator=(const char *str)
@@ -2434,6 +2468,7 @@ QString &QString::operator=(QLatin1String other)
     This can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
 
+    \sa QT_NO_CAST_FROM_ASCII, QT_RESTRICTED_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::operator=(char ch)
@@ -2448,6 +2483,8 @@ QString &QString::operator=(QLatin1String other)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -2510,8 +2547,10 @@ QString &QString::operator=(QChar ch)
     If the given \a position is greater than size(), the array is
     first extended using resize().
 
-    This function is not available when QT_NO_CAST_FROM_ASCII is
+    This function is not available when \c QT_NO_CAST_FROM_ASCII is
     defined.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 
@@ -2526,8 +2565,10 @@ QString &QString::operator=(QChar ch)
     If the given \a position is greater than size(), the array is
     first extended using resize().
 
-    This function is not available when QT_NO_CAST_FROM_ASCII is
+    This function is not available when \c QT_NO_CAST_FROM_ASCII is
     defined.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 
@@ -2692,6 +2733,8 @@ QString &QString::append(QLatin1String str)
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::append(const char *str)
@@ -2705,6 +2748,8 @@ QString &QString::append(QLatin1String str)
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -2767,6 +2812,8 @@ QString &QString::append(QChar ch)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::prepend(const char *str)
@@ -2780,6 +2827,8 @@ QString &QString::append(QChar ch)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::prepend(QChar ch)
@@ -3378,6 +3427,8 @@ bool QString::operator==(QLatin1String other) const Q_DECL_NOTHROW
 
     Returns \c true if this string is lexically equal to the parameter
     string \a other. Otherwise returns \c false.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator==(const char *other) const
@@ -3391,6 +3442,8 @@ bool QString::operator==(QLatin1String other) const Q_DECL_NOTHROW
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -3431,6 +3484,8 @@ bool QString::operator<(QLatin1String other) const Q_DECL_NOTHROW
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator<(const char *other) const
@@ -3447,6 +3502,8 @@ bool QString::operator<(QLatin1String other) const Q_DECL_NOTHROW
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool operator<=(const QString &s1, const QString &s2)
@@ -3482,6 +3539,8 @@ bool QString::operator<(QLatin1String other) const Q_DECL_NOTHROW
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator<=(const char *other) const
@@ -3495,6 +3554,8 @@ bool QString::operator<(QLatin1String other) const Q_DECL_NOTHROW
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool operator>(const QString &s1, const QString &s2)
@@ -3532,6 +3593,8 @@ bool QString::operator>(QLatin1String other) const Q_DECL_NOTHROW
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator>(const char *other) const
@@ -3545,6 +3608,8 @@ bool QString::operator>(QLatin1String other) const Q_DECL_NOTHROW
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool operator>=(const QString &s1, const QString &s2)
@@ -3579,6 +3644,8 @@ bool QString::operator>(QLatin1String other) const Q_DECL_NOTHROW
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator>=(const char *other) const
@@ -3592,6 +3659,8 @@ bool QString::operator>(QLatin1String other) const Q_DECL_NOTHROW
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool operator!=(const QString &s1, const QString &s2)
@@ -3626,6 +3695,8 @@ bool QString::operator>(QLatin1String other) const Q_DECL_NOTHROW
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator!=(const char *other) const
@@ -3639,6 +3710,8 @@ bool QString::operator>(QLatin1String other) const Q_DECL_NOTHROW
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -6032,6 +6105,8 @@ QString& QString::fill(QChar ch, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::operator+=(const char *str)
@@ -6045,6 +6120,8 @@ QString& QString::fill(QChar ch, int size)
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::operator+=(const QStringRef &str)
@@ -6066,6 +6143,8 @@ QString& QString::fill(QChar ch, int size)
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::operator+=(QChar ch)
@@ -9243,7 +9322,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     in the first place. In those cases, using QStringLiteral may be
     the better option.
 
-    \sa QString, QLatin1Char, {QStringLiteral()}{QStringLiteral}
+    \sa QString, QLatin1Char, {QStringLiteral()}{QStringLiteral}, QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9720,6 +9799,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9734,6 +9815,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QLatin1String::operator!=(const QString &other) const
@@ -9759,6 +9842,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9773,6 +9858,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9799,6 +9886,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9813,6 +9902,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9839,6 +9930,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9853,6 +9946,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9879,6 +9974,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9893,6 +9990,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QLatin1String::operator<=(const QString &other) const
@@ -9918,6 +10017,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9932,6 +10033,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 
@@ -10560,6 +10663,7 @@ bool operator<(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
     Returns \c true if this string is lexically equal to the parameter
     string \a s. Otherwise returns \c false.
 
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -10577,6 +10681,8 @@ bool operator<(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
 
     Returns \c true if this string is not lexically equal to the parameter
     string \a s. Otherwise returns \c false.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -10594,6 +10700,8 @@ bool operator<(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
 
     Returns \c true if this string is lexically smaller than the parameter
     string \a s. Otherwise returns \c false.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -10611,6 +10719,8 @@ bool operator<(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
 
     Returns \c true if this string is lexically smaller than or equal to the parameter
     string \a s. Otherwise returns \c false.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -10629,6 +10739,8 @@ bool operator<(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
 
     Returns \c true if this string is lexically greater than the parameter
     string \a s. Otherwise returns \c false.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -10646,6 +10758,8 @@ bool operator<(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
 
     Returns \c true if this string is lexically greater than or equal to the
     parameter string \a s. Otherwise returns \c false.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 /*!
     \typedef QString::Data

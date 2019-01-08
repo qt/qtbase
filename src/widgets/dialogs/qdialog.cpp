@@ -145,10 +145,48 @@ bool QDialogPrivate::canBeNativeDialog() const
     return false;
 }
 
-QWindow *QDialogPrivate::parentWindow() const
+/*!
+    \internal
+
+    Properly hides dialog and sets the \p resultCode
+ */
+void QDialogPrivate::hide(int resultCode)
 {
-    if (const QWidget *parent = q_func()->nativeParentWidget())
+    Q_Q(QDialog);
+
+    q->setResult(resultCode);
+    q->hide();
+
+    close_helper(QWidgetPrivate::CloseNoEvent);
+    resetModalitySetByOpen();
+}
+
+/*!
+    \internal
+
+    Emits finished() signal with \p resultCode. If the \p dialogCode
+    is equal to 0 emits rejected(), if the \p dialogCode is equal to
+    1 emits accepted().
+ */
+void QDialogPrivate::finalize(int resultCode, int dialogCode)
+{
+    Q_Q(QDialog);
+
+    if (dialogCode == QDialog::Accepted)
+        emit q->accepted();
+    else if (dialogCode == QDialog::Rejected)
+        emit q->rejected();
+
+    emit q->finished(resultCode);
+}
+
+QWindow *QDialogPrivate::transientParentWindow() const
+{
+    Q_Q(const QDialog);
+    if (const QWidget *parent = q->nativeParentWidget())
         return parent->windowHandle();
+    else if (q->windowHandle())
+        return q->windowHandle()->transientParent();
     return 0;
 }
 
@@ -158,7 +196,7 @@ bool QDialogPrivate::setNativeDialogVisible(bool visible)
         if (visible) {
             Q_Q(QDialog);
             helperPrepareShow(helper);
-            nativeDialogInUse = helper->show(q->windowFlags(), q->windowModality(), parentWindow());
+            nativeDialogInUse = helper->show(q->windowFlags(), q->windowModality(), transientParentWindow());
         } else if (nativeDialogInUse) {
             helper->hide();
         }
@@ -590,17 +628,8 @@ int QDialog::exec()
 void QDialog::done(int r)
 {
     Q_D(QDialog);
-    setResult(r);
-    hide();
-
-    d->close_helper(QWidgetPrivate::CloseNoEvent);
-    d->resetModalitySetByOpen();
-
-    emit finished(r);
-    if (r == Accepted)
-        emit accepted();
-    else if (r == Rejected)
-        emit rejected();
+    d->hide(r);
+    d->finalize(r, r);
 }
 
 /*!

@@ -766,6 +766,66 @@ bool QTableViewPrivate::spanContainsSection(const QHeaderView *header, int logic
 
 /*!
   \internal
+  Searches for the next cell which is available for e.g. keyboard navigation
+  The search is done by row
+*/
+int QTableViewPrivate::nextActiveVisualRow(int rowToStart, int column, int limit,
+                                           SearchDirection searchDirection) const
+{
+    const int lc = logicalColumn(column);
+    int visualRow = rowToStart;
+    const auto isCellActive = [this](int vr, int lc)
+    {
+        const int lr = logicalRow(vr);
+        return !isRowHidden(lr) && isCellEnabled(lr, lc);
+    };
+    switch (searchDirection) {
+    case SearchDirection::Increasing:
+        if (visualRow < limit) {
+            while (!isCellActive(visualRow, lc)) {
+                if (++visualRow == limit)
+                    return rowToStart;
+            }
+        }
+        break;
+    case SearchDirection::Decreasing:
+        while (visualRow > limit && !isCellActive(visualRow, lc))
+            --visualRow;
+        break;
+    }
+    return visualRow;
+}
+
+/*!
+  \internal
+  Searches for the next cell which is available for e.g. keyboard navigation
+  The search is done by column
+*/
+int QTableViewPrivate::nextActiveVisualColumn(int row, int columnToStart, int limit,
+                                              SearchDirection searchDirection) const
+{
+    const int lr = logicalRow(row);
+    int visualColumn = columnToStart;
+    const auto isCellActive = [this](int lr, int vc)
+    {
+        const int lc = logicalColumn(vc);
+        return !isColumnHidden(lc) && isCellEnabled(lr, lc);
+    };
+    switch (searchDirection) {
+    case SearchDirection::Increasing:
+        while (visualColumn < limit && !isCellActive(lr, visualColumn))
+            ++visualColumn;
+        break;
+    case SearchDirection::Decreasing:
+        while (visualColumn > limit && !isCellActive(lr, visualColumn))
+            --visualColumn;
+        break;
+    }
+    return visualColumn;
+}
+
+/*!
+  \internal
   Returns the visual rect for the given \a span.
 */
 QRect QTableViewPrivate::visualSpanRect(const QSpanCollection::Span &span) const
@@ -1800,35 +1860,34 @@ QModelIndex QTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifi
         break;
     }
     case MoveHome:
-        visualColumn = 0;
-        while (visualColumn < right && d->isVisualColumnHiddenOrDisabled(visualRow, visualColumn))
-            ++visualColumn;
-        if (modifiers & Qt::ControlModifier) {
-            visualRow = 0;
-            while (visualRow < bottom && d->isVisualRowHiddenOrDisabled(visualRow, visualColumn))
-                ++visualRow;
-        }
+        visualColumn = d->nextActiveVisualColumn(visualRow, 0, right,
+                                                 QTableViewPrivate::SearchDirection::Increasing);
+        if (modifiers & Qt::ControlModifier)
+            visualRow = d->nextActiveVisualRow(0, visualColumn, bottom,
+                                               QTableViewPrivate::SearchDirection::Increasing);
         break;
     case MoveEnd:
-        visualColumn = right;
+        visualColumn = d->nextActiveVisualColumn(visualRow, right, -1,
+                                                 QTableViewPrivate::SearchDirection::Decreasing);
         if (modifiers & Qt::ControlModifier)
-            visualRow = bottom;
+            visualRow = d->nextActiveVisualRow(bottom, current.column(), -1,
+                                               QTableViewPrivate::SearchDirection::Decreasing);
         break;
     case MovePageUp: {
-        int newRow = rowAt(visualRect(current).bottom() - d->viewport->height());
-        if (newRow == -1) {
-            int visualRow = 0;
-            while (visualRow < bottom && isRowHidden(d->logicalRow(visualRow)))
-                ++visualRow;
-            newRow = d->logicalRow(visualRow);
-        }
-        return d->model->index(newRow, current.column(), d->root);
+        int newLogicalRow = rowAt(visualRect(current).bottom() - d->viewport->height());
+        int visualRow = (newLogicalRow == -1 ? 0 : d->visualRow(newLogicalRow));
+        visualRow = d->nextActiveVisualRow(visualRow, current.column(), bottom,
+                                           QTableViewPrivate::SearchDirection::Increasing);
+        newLogicalRow = d->logicalRow(visualRow);
+        return d->model->index(newLogicalRow, current.column(), d->root);
     }
     case MovePageDown: {
-        int newRow = rowAt(visualRect(current).top() + d->viewport->height());
-        if (newRow == -1)
-            newRow = d->logicalRow(bottom);
-        return d->model->index(newRow, current.column(), d->root);
+        int newLogicalRow = rowAt(visualRect(current).top() + d->viewport->height());
+        int visualRow = (newLogicalRow == -1 ? bottom : d->visualRow(newLogicalRow));
+        visualRow = d->nextActiveVisualRow(visualRow, current.column(), -1,
+                                           QTableViewPrivate::SearchDirection::Decreasing);
+        newLogicalRow = d->logicalRow(visualRow);
+        return d->model->index(newLogicalRow, current.column(), d->root);
     }}
 
     d->visualCursor = QPoint(visualColumn, visualRow);

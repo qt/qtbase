@@ -3192,6 +3192,16 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
 
         QChar ellipsisChar(0x2026);
 
+        // We only want to use the ellipsis character if it is from the main
+        // font (not one of the fallbacks), since using a fallback font
+        // will affect the metrics of the text, potentially causing it to shift
+        // when it is being elided.
+        if (engine->type() == QFontEngine::Multi) {
+            QFontEngineMulti *multiEngine = static_cast<QFontEngineMulti *>(engine);
+            multiEngine->ensureEngineAt(0);
+            engine = multiEngine->engine(0);
+        }
+
         glyph_t glyph = engine->glyphIndex(ellipsisChar.unicode());
 
         QGlyphLayout glyphs;

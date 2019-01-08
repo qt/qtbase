@@ -231,7 +231,7 @@ QT_WARNING_POP
 // size_t. Implementations for 8- and 16-bit types will work but may not be as
 // efficient. Implementations for 64-bit may be missing on 32-bit platforms.
 
-#if (defined(Q_CC_GNU) && (Q_CC_GNU >= 500) || (defined(Q_CC_INTEL) && !defined(Q_OS_WIN))) || QT_HAS_BUILTIN(__builtin_add_overflowx)
+#if (defined(Q_CC_GNU) && (Q_CC_GNU >= 500) || (defined(Q_CC_INTEL) && !defined(Q_OS_WIN))) || QT_HAS_BUILTIN(__builtin_add_overflow)
 // GCC 5, ICC 18, and Clang 3.8 have builtins to detect overflows
 
 template <typename T> inline
@@ -373,10 +373,18 @@ template <> inline bool add_overflow(unsigned v1, unsigned v2, unsigned *r)
 
 // 32-bit mul_overflow is fine with the generic code above
 
-#    if defined(Q_PROCESSOR_X86_64)
 template <> inline bool add_overflow(quint64 v1, quint64 v2, quint64 *r)
-{ return _addcarry_u64(0, v1, v2, reinterpret_cast<unsigned __int64 *>(r)); }
-#    endif // x86-64
+{
+#    if defined(Q_PROCESSOR_X86_64)
+    return _addcarry_u64(0, v1, v2, reinterpret_cast<unsigned __int64 *>(r));
+#    else
+    uint low, high;
+    uchar carry = _addcarry_u32(0, unsigned(v1), unsigned(v2), &low);
+    carry = _addcarry_u32(carry, v1 >> 32, v2 >> 32, &high);
+    *r = (quint64(high) << 32) | low;
+    return carry;
+#    endif // !x86-64
+}
 #  endif // MSVC X86
 #endif // !GCC
 }

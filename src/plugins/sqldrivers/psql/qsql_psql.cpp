@@ -1060,8 +1060,10 @@ static QPSQLDriver::Protocol qMakePSQLVersion(int vMaj, int vMin)
     }
     case 10:
         return QPSQLDriver::Version10;
+    case 11:
+        return QPSQLDriver::Version11;
     default:
-        if (vMaj > 10)
+        if (vMaj > 11)
             return QPSQLDriver::UnknownLaterVersion;
         break;
     }

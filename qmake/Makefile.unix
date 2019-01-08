@@ -192,6 +192,9 @@ qmakeevaluator.o: $(QMKLIBSRC)/qmakeevaluator.cpp
 qmakebuiltins.o: $(QMKLIBSRC)/qmakebuiltins.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
+registry.o: $(QMKLIBSRC)/registry.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
 project.o: $(QMKSRC)/project.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
@@ -223,9 +226,6 @@ unixmake.o: $(QMKSRC)/generators/unix/unixmake.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 unixmake2.o: $(QMKSRC)/generators/unix/unixmake2.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
-
-registry.o: $(QMKSRC)/generators/win32/registry.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 winmakefile.o: $(QMKSRC)/generators/win32/winmakefile.cpp

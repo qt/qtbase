@@ -1664,9 +1664,15 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
                         theme.stateId = CBXS_NORMAL;
                     d->drawBackground(theme);
                 }
+                if ((sub & SC_ComboBoxEditField) && (flags & State_HasFocus)) {
+                    QStyleOptionFocusRect fropt;
+                    fropt.QStyleOption::operator=(*cmb);
+                    fropt.rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxEditField, widget);
+                    proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
+                }
             }
-       }
-       break;
+        }
+        break;
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(option))
         {

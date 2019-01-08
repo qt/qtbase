@@ -204,9 +204,9 @@ template <typename T> inline Q_DECL_CONSTEXPR T qToBigEndian(T source)
 template <typename T> inline Q_DECL_CONSTEXPR T qFromBigEndian(T source)
 { return source; }
 template <typename T> inline Q_DECL_CONSTEXPR T qToLittleEndian(T source)
-{ return qbswap<T>(source); }
+{ return qbswap(source); }
 template <typename T> inline Q_DECL_CONSTEXPR T qFromLittleEndian(T source)
-{ return qbswap<T>(source); }
+{ return qbswap(source); }
 template <typename T> inline void qToBigEndian(T src, void *dest)
 { qToUnaligned<T>(src, dest); }
 template <typename T> inline void qToLittleEndian(T src, void *dest)

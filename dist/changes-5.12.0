@@ -48,6 +48,7 @@ information about a particular change.
  - The minimal required version of libxcb is now 1.9. Bundled xcb sources
    were updated to libxcb 1.9.1 built with xcb-proto 1.8.
  - [QTBUG-67654] Updated CLDR to version 33.1
+ - [QTBUG-71144] Updated CLDR to version 34
  - [QTBUG-66561][QTBUG-70008] double-conversion got updated to upstream
    version 3.1.1.
  - libjpeg-turbo was updated to version 2.0.0

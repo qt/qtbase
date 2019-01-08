@@ -152,13 +152,13 @@
         "zlib": {
             "label": "zlib",
             "test": {
-                "include": "zlib.h",
                 "main": [
                     "z_streamp stream = 0;",
                     "(void) zlibVersion();",
                     "(void) compress2(0, 0, 0, 0, 1);  // compress2 was added in zlib version 1.0.8"
                 ]
             },
+            "headers": "zlib.h",
             "sources": [
                 { "libs": "-lzdll", "condition": "config.msvc" },
                 { "libs": "-lzlib", "condition": "config.msvc" },
@@ -169,9 +169,9 @@
         "dbus": {
             "label": "D-Bus >= 1.2",
             "test": {
-                "include": "dbus/dbus.h",
                 "main": "(void) dbus_bus_get_private(DBUS_BUS_SYSTEM, (DBusError *)NULL);"
             },
+            "headers": "dbus/dbus.h",
             "sources": [
                 { "type": "pkgConfig", "args": "dbus-1 >= 1.2" },
                 {
@@ -196,9 +196,9 @@
         "libudev": {
             "label": "udev",
             "test": {
-                "include": "libudev.h",
                 "main": "udev_unref(udev_new());"
             },
+            "headers": "libudev.h",
             "sources": [
                 { "type": "pkgConfig", "args": "libudev" },
                 "-ludev"
@@ -324,7 +324,21 @@
         "precompile_header": {
             "label": "precompiled header support",
             "type": "compile",
-            "test": "common/pch"
+            "test": {
+                "files": {
+                    "header.h": "#define HEADER_H"
+                },
+                "tail": [
+                    "#ifndef HEADER_H",
+                    "#error no go",
+                    "#endif"
+                ],
+                "qmake": [
+                    "CONFIG += precompile_header",
+                    "PRECOMPILED_DIR = .pch",
+                    "PRECOMPILED_HEADER = header.h"
+                ]
+            }
         },
         "use_gold_linker": {
             "label": "gold linker",
