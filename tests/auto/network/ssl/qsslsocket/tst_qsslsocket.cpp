@@ -4086,7 +4086,7 @@ void tst_QSslSocket::disabledProtocols()
         QSslSocket socket;
         QCOMPARE(socket.error(), QAbstractSocket::UnknownSocketError);
 
-        socket.connectToHost(server.serverAddress(), server.serverPort());
+        socket.connectToHost(QHostAddress::LocalHost, server.serverPort());
         QVERIFY(socket.waitForConnected(timeoutMS));
 
         socket.setProtocol(disabledProtocol);
@@ -4111,7 +4111,7 @@ void tst_QSslSocket::disabledProtocols()
                 {loop.exitLoop();});
 
         QTcpSocket client;
-        client.connectToHost(server.serverAddress(), server.serverPort());
+        client.connectToHost(QHostAddress::LocalHost, server.serverPort());
         loop.enterLoopMSecs(timeoutMS);
         QVERIFY(!loop.timeout());
         QVERIFY(server.socket);
