@@ -996,6 +996,144 @@ void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper_avx2(uint *
 }
 
 template<bool RGBA>
+static void convertARGBToARGB32PM_avx2(uint *buffer, const uint *src, qsizetype count)
+{
+    qsizetype i = 0;
+    const __m256i alphaMask = _mm256_set1_epi32(0xff000000);
+    const __m256i rgbaMask = _mm256_broadcastsi128_si256(_mm_setr_epi8(2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15));
+    const __m256i shuffleMask = _mm256_broadcastsi128_si256(_mm_setr_epi8(6, 7, 6, 7, 6, 7, 6, 7, 14, 15, 14, 15, 14, 15, 14, 15));
+    const __m256i half = _mm256_set1_epi16(0x0080);
+    const __m256i zero = _mm256_setzero_si256();
+
+    for (; i < count - 7; i += 8) {
+        __m256i srcVector = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src + i));
+        if (!_mm256_testz_si256(srcVector, alphaMask)) {
+            if (!_mm256_testc_si256(srcVector, alphaMask)) {
+                if (RGBA)
+                    srcVector = _mm256_shuffle_epi8(srcVector, rgbaMask);
+                __m256i src1 = _mm256_unpacklo_epi8(srcVector, zero);
+                __m256i src2 = _mm256_unpackhi_epi8(srcVector, zero);
+                __m256i alpha1 = _mm256_shuffle_epi8(src1, shuffleMask);
+                __m256i alpha2 = _mm256_shuffle_epi8(src2, shuffleMask);
+                src1 = _mm256_mullo_epi16(src1, alpha1);
+                src2 = _mm256_mullo_epi16(src2, alpha2);
+                src1 = _mm256_add_epi16(src1, _mm256_srli_epi16(src1, 8));
+                src2 = _mm256_add_epi16(src2, _mm256_srli_epi16(src2, 8));
+                src1 = _mm256_add_epi16(src1, half);
+                src2 = _mm256_add_epi16(src2, half);
+                src1 = _mm256_srli_epi16(src1, 8);
+                src2 = _mm256_srli_epi16(src2, 8);
+                src1 = _mm256_blend_epi16(src1, alpha1, 0x88);
+                src2 = _mm256_blend_epi16(src2, alpha2, 0x88);
+                srcVector = _mm256_packus_epi16(src1, src2);
+                _mm256_storeu_si256(reinterpret_cast<__m256i *>(buffer + i), srcVector);
+            } else {
+                if (RGBA)
+                    srcVector = _mm256_shuffle_epi8(srcVector, rgbaMask);
+                if (buffer != src || RGBA)
+                    _mm256_storeu_si256(reinterpret_cast<__m256i *>(buffer + i), srcVector);
+            }
+        } else {
+            _mm256_storeu_si256(reinterpret_cast<__m256i *>(buffer + i), zero);
+        }
+    }
+
+    if (i < count - 3) {
+        __m128i srcVector = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src + i));
+        if (!_mm_testz_si128(srcVector, _mm256_castsi256_si128(alphaMask))) {
+            if (!_mm_testc_si128(srcVector, _mm256_castsi256_si128(alphaMask))) {
+                if (RGBA)
+                    srcVector = _mm_shuffle_epi8(srcVector, _mm256_castsi256_si128(rgbaMask));
+                __m128i src1 = _mm_unpacklo_epi8(srcVector, _mm256_castsi256_si128(zero));
+                __m128i src2 = _mm_unpackhi_epi8(srcVector, _mm256_castsi256_si128(zero));
+                __m128i alpha1 = _mm_shuffle_epi8(src1, _mm256_castsi256_si128(shuffleMask));
+                __m128i alpha2 = _mm_shuffle_epi8(src2, _mm256_castsi256_si128(shuffleMask));
+                src1 = _mm_mullo_epi16(src1, alpha1);
+                src2 = _mm_mullo_epi16(src2, alpha2);
+                src1 = _mm_add_epi16(src1, _mm_srli_epi16(src1, 8));
+                src2 = _mm_add_epi16(src2, _mm_srli_epi16(src2, 8));
+                src1 = _mm_add_epi16(src1, _mm256_castsi256_si128(half));
+                src2 = _mm_add_epi16(src2, _mm256_castsi256_si128(half));
+                src1 = _mm_srli_epi16(src1, 8);
+                src2 = _mm_srli_epi16(src2, 8);
+                src1 = _mm_blend_epi16(src1, alpha1, 0x88);
+                src2 = _mm_blend_epi16(src2, alpha2, 0x88);
+                _mm_storeu_si128(reinterpret_cast<__m128i *>(buffer + i), srcVector);
+            } else {
+                if (RGBA)
+                    srcVector = _mm_shuffle_epi8(srcVector, _mm256_castsi256_si128(rgbaMask));
+                if (buffer != src || RGBA)
+                    _mm_storeu_si128(reinterpret_cast<__m128i *>(buffer + i), srcVector);
+            }
+        } else {
+            _mm_storeu_si128(reinterpret_cast<__m128i *>(buffer + i), _mm256_castsi256_si128(zero));
+        }
+        i += 4;
+    }
+
+    auto convert_half = [=](__m128i &srcVector) {
+        if (!_mm_testz_si128(srcVector, _mm256_castsi256_si128(alphaMask))) {
+            if (!_mm_testc_si128(srcVector, _mm256_castsi256_si128(alphaMask))) {
+                if (RGBA)
+                    srcVector = _mm_shuffle_epi8(srcVector, _mm256_castsi256_si128(rgbaMask));
+                __m128i src1 = _mm_unpacklo_epi8(srcVector, _mm256_castsi256_si128(zero));
+                __m128i alpha1 = _mm_shuffle_epi8(src1, _mm256_castsi256_si128(shuffleMask));
+                src1 = _mm_mullo_epi16(src1, alpha1);
+                src1 = _mm_add_epi16(src1, _mm_srli_epi16(src1, 8));
+                src1 = _mm_add_epi16(src1, _mm256_castsi256_si128(half));
+                src1 = _mm_srli_epi16(src1, 8);
+                src1 = _mm_blend_epi16(src1, alpha1, 0x88);
+                srcVector = _mm_packus_epi16(src1, src1);
+                return true;
+            } else {
+                if (RGBA)
+                    srcVector = _mm_shuffle_epi8(srcVector, _mm256_castsi256_si128(rgbaMask));
+                return buffer != src || RGBA;
+            }
+        } else {
+            srcVector = _mm256_castsi256_si128(zero);
+            return true;
+        }
+    };
+    if (i < count - 1) {
+        __m128i srcVector = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(src + i));
+        if (convert_half(srcVector))
+            _mm_storel_epi64(reinterpret_cast<__m128i *>(buffer + i), srcVector);
+        i += 2;
+    }
+
+    if (i != count) {
+        __m128i srcVector = _mm_cvtsi32_si128(src[i]);
+        if (convert_half(srcVector))
+            buffer[i] = _mm_cvtsi128_si32(srcVector);
+    }
+}
+
+void QT_FASTCALL convertARGB32ToARGB32PM_avx2(uint *buffer, int count, const QVector<QRgb> *)
+{
+    convertARGBToARGB32PM_avx2<false>(buffer, buffer, count);
+}
+
+void QT_FASTCALL convertRGBA8888ToARGB32PM_avx2(uint *buffer, int count, const QVector<QRgb> *)
+{
+    convertARGBToARGB32PM_avx2<true>(buffer, buffer, count);
+}
+
+const uint *QT_FASTCALL fetchARGB32ToARGB32PM_avx2(uint *buffer, const uchar *src, int index, int count,
+                                                  const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToARGB32PM_avx2<false>(buffer, reinterpret_cast<const uint *>(src) + index, count);
+    return buffer;
+}
+
+const uint *QT_FASTCALL fetchRGBA8888ToARGB32PM_avx2(uint *buffer, const uchar *src, int index, int count,
+                                                     const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToARGB32PM_avx2<true>(buffer, reinterpret_cast<const uint *>(src) + index, count);
+    return buffer;
+}
+
+template<bool RGBA>
 static void convertARGBToRGBA64PM_avx2(QRgba64 *buffer, const uint *src, qsizetype count)
 {
     qsizetype i = 0;
