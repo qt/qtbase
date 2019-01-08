@@ -51,6 +51,11 @@
 # 2. testserver_clean - Clean up server containers/images and tidy away related
 #    files.
 
+# The docker test server should only be integrated in the leaf Makefile.
+# If debug_and_release option is in use, skip the meta-Makefile except for
+# Makefile.Debug and Makefile.Release.
+debug_and_release:!build_pass: return()
+
 TESTSERVER_VERSION = $$system(docker-compose --version)
 
 equals(QMAKE_HOST.os, Windows)|isEmpty(TESTSERVER_VERSION) {
@@ -124,7 +129,7 @@ equals(QMAKE_HOST.os, Windows)|isEmpty(TESTSERVER_VERSION) {
                                 --detach --force-recreate --timeout 1 $${QT_TEST_SERVER_LIST} &&
 
     # Check test cases with docker-based test servers.
-    testserver_test.commands += $(MAKE) check_network;
+    testserver_test.commands += $(MAKE) -f $(MAKEFILE) check_network;
 
     # Stop and remove test servers after testing.
     testserver_test.commands += docker-compose $$MACHINE_CONFIG -f $$TESTSERVER_COMPOSE_FILE down \
