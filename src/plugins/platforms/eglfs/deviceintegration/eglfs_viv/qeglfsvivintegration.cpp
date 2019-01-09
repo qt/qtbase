@@ -65,7 +65,7 @@ void QEglFSVivIntegration::platformInit()
     VivanteInit();
     mNativeDisplay = fbGetDisplay();
 #else
-    mNativeDisplay = fbGetDisplayByIndex(framebufferIndex());
+    mNativeDisplay = static_cast<EGLNativeDisplayType>(fbGetDisplayByIndex(framebufferIndex()));
 #endif
 
     fbGetDisplayGeometry(mNativeDisplay, &width, &height);
@@ -88,7 +88,7 @@ EGLNativeWindowType QEglFSVivIntegration::createNativeWindow(QPlatformWindow *wi
     Q_UNUSED(window)
     Q_UNUSED(format)
 
-    EGLNativeWindowType eglWindow = fbCreateWindow(mNativeDisplay, 0, 0, size.width(), size.height());
+    EGLNativeWindowType eglWindow = static_cast<EGLNativeWindowType>(fbCreateWindow(mNativeDisplay, 0, 0, size.width(), size.height()));
     return eglWindow;
 }
 
