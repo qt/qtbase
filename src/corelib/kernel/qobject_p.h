@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -126,22 +126,29 @@ public:
     typedef void (*StaticMetaCallFunction)(QObject *, QMetaObject::Call, int, void **);
     struct Connection
     {
+        union {
+            // linked list of orphaned connections that need cleaning up
+            Connection *nextInOrphanList;
+            // linked list of connections connected to slots in this object
+            Connection *next;
+        };
+        Connection **prev;
+        // linked list of connections connected to signals in this object
+        Connection *nextConnectionList;
+        Connection *prevConnectionList;
+
         QObject *sender;
         QObject *receiver;
         union {
             StaticMetaCallFunction callFunction;
             QtPrivate::QSlotObjectBase *slotObj;
         };
-        // The next pointer for the singly-linked ConnectionList
-        Connection *nextConnectionList;
-        //senders linked list
-        Connection *next;
-        Connection **prev;
         QAtomicPointer<const int> argumentTypes;
         QAtomicInt ref_;
+        uint id = 0;
         ushort method_offset;
         ushort method_relative;
-        uint signal_index : 27; // In signal range (see QObjectPrivate::signalIndex())
+        int signal_index : 27; // In signal range (see QObjectPrivate::signalIndex())
         ushort connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
         ushort isSlotObject : 1;
         ushort ownArgumentTypes : 1;
@@ -151,9 +158,17 @@ public:
         ~Connection();
         int method() const { Q_ASSERT(!isSlotObject); return method_offset + method_relative; }
         void ref() { ref_.ref(); }
+        void freeSlotObject()
+        {
+            if (isSlotObject) {
+                slotObj->destroyIfLastRef();
+                isSlotObject = false;
+            }
+        }
         void deref() {
             if (!ref_.deref()) {
                 Q_ASSERT(!receiver);
+                Q_ASSERT(!isSlotObject);
                 delete this;
             }
         }
@@ -210,7 +225,9 @@ public:
         linked list.
     */
     struct ConnectionData {
-        bool objectDeleted = false; //the QObject owner of this vector has been destroyed while the vector was inUse
+        // the id below is used to avoid activating new connections. When the object gets
+        // deleted it's set to 0, so that signal emission stops
+        QAtomicInteger<uint> currentConnectionId;
         struct Ref {
             int _ref = 0;
             void ref() { ++_ref; }
@@ -219,11 +236,84 @@ public:
         };
 
         Ref ref;
-        bool dirty = false; //some Connection have been disconnected (their receiver is 0) but not removed from the list yet
         ConnectionList allsignals;
         QVector<ConnectionList> signalVector;
         Connection *senders = nullptr;
         Sender *currentSender = nullptr;   // object currently activating the object
+        QAtomicPointer<Connection> orphaned;
+
+        ~ConnectionData()
+        {
+            Connection *c = orphaned.load();
+            while (c) {
+                Q_ASSERT(!c->receiver);
+                QObjectPrivate::Connection *next = c->nextInOrphanList;
+                c->freeSlotObject();
+                c->deref();
+                c = next;
+            }
+        }
+
+        // must be called on the senders connection data
+        // assumes the senders and receivers lock are held
+        void removeConnection(Connection *c)
+        {
+            Q_ASSERT(c->receiver);
+            ConnectionList &connections = connectionsForSignal(c->signal_index);
+            c->receiver = nullptr;
+
+#ifndef QT_NO_DEBUG
+            bool found = false;
+            for (Connection *cc = connections.first; cc; cc = cc->nextConnectionList) {
+                if (cc == c) {
+                    found = true;
+                    break;
+                }
+            }
+            Q_ASSERT(found);
+#endif
+
+            // remove from the senders linked list
+            *c->prev = c->next;
+            if (c->next)
+                c->next->prev = c->prev;
+            c->prev = nullptr;
+
+            if (connections.first == c)
+                connections.first = c->nextConnectionList;
+            if (connections.last == c)
+                connections.last = c->prevConnectionList;
+
+            // keep c->nextConnectionList intact, as it might still get accessed by activate
+            if (c->nextConnectionList)
+                c->nextConnectionList->prevConnectionList = c->prevConnectionList;
+            if (c->prevConnectionList)
+                c->prevConnectionList->nextConnectionList = c->nextConnectionList;
+            c->prevConnectionList = nullptr;
+
+            Q_ASSERT(c != orphaned.load());
+            // add c to orphanedConnections
+            c->nextInOrphanList = orphaned.load();
+            orphaned.store(c);
+
+#ifndef QT_NO_DEBUG
+            found = false;
+            for (Connection *cc = connections.first; cc; cc = cc->nextConnectionList) {
+                if (cc == c) {
+                    found = true;
+                    break;
+                }
+            }
+            Q_ASSERT(!found);
+#endif
+
+        }
+        void cleanOrphanedConnections(QObject *sender)
+        {
+            if (orphaned.load() && ref == 1)
+                cleanOrphanedConnectionsImpl(sender);
+        }
+        void cleanOrphanedConnectionsImpl(QObject *sender);
 
         ConnectionList &connectionsForSignal(int signal)
         {
@@ -245,7 +335,6 @@ public:
     QObjectList senderList() const;
 
     void addConnection(int signal, Connection *c);
-    void cleanConnectionLists();
 
     static QObjectPrivate *get(QObject *o) {
         return o->d_func();

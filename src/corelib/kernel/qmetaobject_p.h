@@ -232,7 +232,7 @@ struct QMetaObjectPrivate
                            const QMetaObject *smeta,
                            const QObject *receiver, int method_index, void **slot,
                            DisconnectType = DisconnectAll);
-    static inline bool disconnectHelper(QObjectPrivate::Connection *c,
+    static inline bool disconnectHelper(QObjectPrivate::ConnectionData *connections, int signalIndex,
                                         const QObject *receiver, int method_index, void **slot,
                                         QBasicMutex *senderMutex, DisconnectType = DisconnectAll);
 #endif

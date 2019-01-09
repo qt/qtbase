@@ -3411,12 +3411,11 @@ void tst_QObject::disconnectSelfInSlotAndDeleteAfterEmit()
 void tst_QObject::dumpObjectInfo()
 {
     QObject a, b;
-    QObject::connect(&a, SIGNAL(destroyed(QObject*)), &b, SLOT(deleteLater()));
-    a.disconnect(&b);
+    QObject::connect(&a, &QObject::destroyed, &b, &QObject::deleteLater);
     QTest::ignoreMessage(QtDebugMsg, "OBJECT QObject::unnamed");
     QTest::ignoreMessage(QtDebugMsg, "  SIGNALS OUT");
     QTest::ignoreMessage(QtDebugMsg, "        signal: destroyed(QObject*)");
-    QTest::ignoreMessage(QtDebugMsg, "          <Disconnected receiver>");
+    QTest::ignoreMessage(QtDebugMsg, "          <functor or function pointer>");
     QTest::ignoreMessage(QtDebugMsg, "  SIGNALS IN");
     QTest::ignoreMessage(QtDebugMsg, "        <None>");
     a.dumpObjectInfo(); // should not crash
@@ -7575,8 +7574,6 @@ void tst_QObject::functorReferencesConnection()
             // top-level + the one in the 3 others lambdas
             QCOMPARE(countedStructObjectsCount, 4);
             QObject::disconnect(*c2);
-            // the one in the c2's lambda is gone
-            QCOMPARE(countedStructObjectsCount, 3);
             slot1Called++;
         });
         connect(&obj, &GetSenderObject::aSignal, [] {}); // just a dummy signal to fill the connection list
