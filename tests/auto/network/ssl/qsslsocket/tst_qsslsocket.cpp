@@ -74,6 +74,16 @@ typedef QSharedPointer<QSslSocket> QSslSocketPtr;
 #endif
 #endif // QT_NO_SSL
 
+// Detect ALPN (Application-Layer Protocol Negotiation) support
+#undef ALPN_SUPPORTED // Undef the variable first to be safe
+#if defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_TLSEXT)
+#define ALPN_SUPPORTED 1
+#endif
+
+#if QT_CONFIG(schannel) && !defined(Q_CC_MINGW)
+#define ALPN_SUPPORTED 1
+#endif
+
 #if defined Q_OS_HPUX && defined Q_CC_GNU
 // This error is delivered every time we try to use the fluke CA
 // certificate. For now we work around this bug. Task 202317.
@@ -3416,11 +3426,19 @@ void tst_QSslSocket::setEmptyDefaultConfiguration() // this test should be last,
 
 void tst_QSslSocket::allowedProtocolNegotiation()
 {
-#if defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_TLSEXT)
+#ifndef ALPN_SUPPORTED
+    QSKIP("ALPN is unsupported, skipping test");
+#endif
+
+#if QT_CONFIG(schannel)
+    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8_1)
+        QSKIP("ALPN is not supported on this version of Windows using Schannel.");
+#endif
 
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
+
 
     const QByteArray expectedNegotiated("cool-protocol");
     QList<QByteArray> serverProtos;
@@ -3449,8 +3467,6 @@ void tst_QSslSocket::allowedProtocolNegotiation()
     QVERIFY(server.socket->sslConfiguration().nextNegotiatedProtocol() ==
             clientSocket.sslConfiguration().nextNegotiatedProtocol());
     QVERIFY(server.socket->sslConfiguration().nextNegotiatedProtocol() == expectedNegotiated);
-
-#endif // OPENSSL_VERSION_NUMBER
 }
 
 #ifndef QT_NO_OPENSSL
