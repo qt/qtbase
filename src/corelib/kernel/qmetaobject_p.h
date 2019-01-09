@@ -54,6 +54,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qobjectdefs.h>
+#include <QtCore/qmutex.h>
 #ifndef QT_NO_QOBJECT
 #include <private/qobject_p.h> // For QObjectPrivate::Connection
 #endif
@@ -168,7 +169,6 @@ Q_DECLARE_TYPEINFO(QArgumentType, Q_MOVABLE_TYPE);
 typedef QVarLengthArray<QArgumentType, 10> QArgumentTypeArray;
 
 class QMetaMethodPrivate;
-class QMutex;
 
 struct QMetaObjectPrivate
 {
@@ -234,7 +234,7 @@ struct QMetaObjectPrivate
                            DisconnectType = DisconnectAll);
     static inline bool disconnectHelper(QObjectPrivate::Connection *c,
                                         const QObject *receiver, int method_index, void **slot,
-                                        QMutex *senderMutex, DisconnectType = DisconnectAll);
+                                        QBasicMutex *senderMutex, DisconnectType = DisconnectAll);
 #endif
 };
 

@@ -152,10 +152,9 @@ static QBasicMutex _q_ObjectMutexPool[131];
  * \internal
  * mutex to be locked when accessing the connectionlists or the senders list
  */
-static inline QMutex *signalSlotLock(const QObject *o)
+static inline QBasicMutex *signalSlotLock(const QObject *o)
 {
-    return static_cast<QMutex *>(&_q_ObjectMutexPool[
-        uint(quintptr(o)) % sizeof(_q_ObjectMutexPool)/sizeof(QBasicMutex)]);
+    return &_q_ObjectMutexPool[uint(quintptr(o)) % sizeof(_q_ObjectMutexPool)/sizeof(QBasicMutex)];
 }
 
 #if QT_VERSION < 0x60000
@@ -265,7 +264,7 @@ bool QObjectPrivate::isSender(const QObject *receiver, const char *signal) const
     ConnectionData *cd = connections.load();
     if (signal_index < 0 || !cd)
         return false;
-    QMutexLocker locker(signalSlotLock(q));
+    QBasicMutexLocker locker(signalSlotLock(q));
     if (signal_index < cd->signalVector.count()) {
         const QObjectPrivate::Connection *c = cd->signalVector.at(signal_index).first;
 
@@ -287,7 +286,7 @@ QObjectList QObjectPrivate::receiverList(const char *signal) const
     ConnectionData *cd = connections.load();
     if (signal_index < 0 || !cd)
         return returnValue;
-    QMutexLocker locker(signalSlotLock(q));
+    QBasicMutexLocker locker(signalSlotLock(q));
     if (signal_index < cd->signalVector.count()) {
         const QObjectPrivate::Connection *c = cd->signalVector.at(signal_index).first;
 
@@ -306,7 +305,7 @@ QObjectList QObjectPrivate::senderList() const
     QObjectList returnValue;
     ConnectionData *cd = connections.load();
     if (cd) {
-        QMutexLocker locker(signalSlotLock(q_func()));
+        QBasicMutexLocker locker(signalSlotLock(q_func()));
         for (Connection *c = cd->senders; c; c = c->next)
             returnValue << c->sender;
     }
@@ -881,8 +880,8 @@ QObject::~QObject()
             cd->currentSender = nullptr;
         }
 
-        QMutex *signalSlotMutex = signalSlotLock(this);
-        QMutexLocker locker(signalSlotMutex);
+        QBasicMutex *signalSlotMutex = signalSlotLock(this);
+        QBasicMutexLocker locker(signalSlotMutex);
 
         // disconnect all receivers
         int receiverCount = cd->signalVector.count();
@@ -896,7 +895,7 @@ QObject::~QObject()
                     continue;
                 }
 
-                QMutex *m = signalSlotLock(c->receiver);
+                QBasicMutex *m = signalSlotLock(c->receiver);
                 bool needToUnlock = QOrderedMutexLocker::relock(signalSlotMutex, m);
 
                 if (c->receiver) {
@@ -937,7 +936,7 @@ QObject::~QObject()
             // This ensures any eventual destructor of sender will block on getting receiver's lock
             // and not finish until we release it.
             sender->disconnectNotify(QMetaObjectPrivate::signal(sender->metaObject(), node->signal_index));
-            QMutex *m = signalSlotLock(sender);
+            QBasicMutex *m = signalSlotLock(sender);
             node->prev = &node;
             bool needToUnlock = QOrderedMutexLocker::relock(signalSlotMutex, m);
             //the node has maybe been removed while the mutex was unlocked in relock?
@@ -1205,7 +1204,7 @@ bool QObject::event(QEvent *e)
             QMetaCallEvent *mce = static_cast<QMetaCallEvent*>(e);
 
             if (!d_func()->connections.load()) {
-                QMutexLocker locker(signalSlotLock(this));
+                QBasicMutexLocker locker(signalSlotLock(this));
                 d_func()->ensureConnectionData();
             }
             QObjectPrivate::Sender sender(this, const_cast<QObject*>(mce->sender()), mce->signalId());
@@ -2323,7 +2322,7 @@ QObject *QObject::sender() const
 {
     Q_D(const QObject);
 
-    QMutexLocker locker(signalSlotLock(this));
+    QBasicMutexLocker locker(signalSlotLock(this));
     QObjectPrivate::ConnectionData *cd = d->connections.load();
     if (!cd || !cd->currentSender)
         return nullptr;
@@ -2365,7 +2364,7 @@ int QObject::senderSignalIndex() const
 {
     Q_D(const QObject);
 
-    QMutexLocker locker(signalSlotLock(this));
+    QBasicMutexLocker locker(signalSlotLock(this));
     QObjectPrivate::ConnectionData *cd = d->connections.load();
     if (!cd || !cd->currentSender)
         return -1;
@@ -2430,7 +2429,7 @@ int QObject::receivers(const char *signal) const
                                                              signal_index);
         }
 
-        QMutexLocker locker(signalSlotLock(this));
+        QBasicMutexLocker locker(signalSlotLock(this));
         if (signal_index < cd->signalVector.count()) {
             const QObjectPrivate::Connection *c =
                 cd->signalVector.at(signal_index).first;
@@ -2476,7 +2475,7 @@ bool QObject::isSignalConnected(const QMetaMethod &signal) const
 
     signalIndex += QMetaObjectPrivate::signalOffset(signal.mobj);
 
-    QMutexLocker locker(signalSlotLock(this));
+    QBasicMutexLocker locker(signalSlotLock(this));
     return d->isSignalConnected(signalIndex, true);
 }
 
@@ -3318,7 +3317,7 @@ bool QMetaObject::disconnectOne(const QObject *sender, int signal_index,
  */
 bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
                                           const QObject *receiver, int method_index, void **slot,
-                                          QMutex *senderMutex, DisconnectType disconnectType)
+                                          QBasicMutex *senderMutex, DisconnectType disconnectType)
 {
     bool success = false;
     while (c) {
@@ -3327,7 +3326,7 @@ bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
                            && (method_index < 0 || (!c->isSlotObject && c->method() == method_index))
                            && (slot == 0 || (c->isSlotObject && c->slotObj->compare(slot)))))) {
             bool needToUnlock = false;
-            QMutex *receiverMutex = 0;
+            QBasicMutex *receiverMutex = nullptr;
             if (c->receiver) {
                 receiverMutex = signalSlotLock(c->receiver);
                 // need to relock this receiver and sender in the correct order
@@ -3375,8 +3374,8 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender,
 
     QObject *s = const_cast<QObject *>(sender);
 
-    QMutex *senderMutex = signalSlotLock(sender);
-    QMutexLocker locker(senderMutex);
+    QBasicMutex *senderMutex = signalSlotLock(sender);
+    QBasicMutexLocker locker(senderMutex);
 
     QObjectPrivate::ConnectionData *scd  = QObjectPrivate::get(s)->connections.load();
     if (!scd)
@@ -3523,7 +3522,7 @@ void QMetaObject::connectSlotsByName(QObject *o)
     \a signal must be in the signal index range (see QObjectPrivate::signalIndex()).
 */
 static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connection *c, void **argv,
-                            QMutexLocker &locker)
+                            QBasicMutexLocker &locker)
 {
     const int *argumentTypes = c->argumentTypes.load();
     if (!argumentTypes) {
@@ -3614,7 +3613,7 @@ void doActivate(QObject *sender, int signal_index, void **argv)
     Q_TRACE(QMetaObject_activate_begin_signal, sender, signal_index);
 
     {
-    QMutexLocker locker(signalSlotLock(sender));
+    QBasicMutexLocker locker(signalSlotLock(sender));
     Q_ASSERT(sp->connections);
     QObjectPrivate::ConnectionDataPointer connections(sp->connections.load());
 
@@ -4015,7 +4014,7 @@ void QObject::dumpObjectInfo() const
            objectName().isEmpty() ? "unnamed" : objectName().toLocal8Bit().data());
 
     Q_D(const QObject);
-    QMutexLocker locker(signalSlotLock(this));
+    QBasicMutexLocker locker(signalSlotLock(this));
 
     // first, look for connections where this object is the sender
     qDebug("  SIGNALS OUT");
@@ -4845,8 +4844,8 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
     if (!c || !c->receiver)
         return false;
 
-    QMutex *senderMutex = signalSlotLock(c->sender);
-    QMutex *receiverMutex = signalSlotLock(c->receiver);
+    QBasicMutex *senderMutex = signalSlotLock(c->sender);
+    QBasicMutex *receiverMutex = signalSlotLock(c->receiver);
 
     {
         QOrderedMutexLocker locker(senderMutex, receiverMutex);
