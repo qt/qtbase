@@ -150,11 +150,12 @@ public:
         // linked list of connections connected to slots in this object, next is in base class
         Connection **prev;
         // linked list of connections connected to signals in this object
-        Connection *nextConnectionList;
+        QAtomicPointer<Connection> nextConnectionList;
         Connection *prevConnectionList;
 
         QObject *sender;
-        QObject *receiver;
+        QAtomicPointer<QObject> receiver;
+        QAtomicPointer<QThreadData> receiverThreadData;
         union {
             StaticMetaCallFunction callFunction;
             QtPrivate::QSlotObjectBase *slotObj;
@@ -168,7 +169,7 @@ public:
         ushort connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
         ushort isSlotObject : 1;
         ushort ownArgumentTypes : 1;
-        Connection() : nextConnectionList(nullptr), ref_(2), ownArgumentTypes(true) {
+        Connection() : ref_(2), ownArgumentTypes(true) {
             //ref_ is 2 for the use in the internal lists, and for the use in QMetaObject::Connection
         }
         ~Connection();
@@ -183,7 +184,7 @@ public:
         }
         void deref() {
             if (!ref_.deref()) {
-                Q_ASSERT(!receiver);
+                Q_ASSERT(!receiver.load());
                 Q_ASSERT(!isSlotObject);
                 delete this;
             }
@@ -191,9 +192,8 @@ public:
     };
     // ConnectionList is a singly-linked list
     struct ConnectionList {
-        ConnectionList() : first(nullptr), last(nullptr) {}
-        Connection *first;
-        Connection *last;
+        QAtomicPointer<Connection> first;
+        QAtomicPointer<Connection> last;
     };
 
     struct Sender
@@ -260,15 +260,8 @@ public:
         // the id below is used to avoid activating new connections. When the object gets
         // deleted it's set to 0, so that signal emission stops
         QAtomicInteger<uint> currentConnectionId;
-        struct Ref {
-            int _ref = 0;
-            void ref() { ++_ref; }
-            int deref() { return --_ref; }
-            operator int() const { return _ref; }
-        };
-
-        Ref ref;
-        SignalVector *signalVector = nullptr;
+        QAtomicInt ref;
+        QAtomicPointer<SignalVector> signalVector;
         Connection *senders = nullptr;
         Sender *currentSender = nullptr;   // object currently activating the object
         QAtomicPointer<Connection> orphaned;
@@ -276,66 +269,14 @@ public:
         ~ConnectionData()
         {
             deleteOrphaned(orphaned.load());
-            if (signalVector)
-                free(signalVector);
+            SignalVector *v = signalVector.load();
+            if (v)
+                free(v);
         }
 
         // must be called on the senders connection data
         // assumes the senders and receivers lock are held
-        void removeConnection(Connection *c)
-        {
-            Q_ASSERT(c->receiver);
-            ConnectionList &connections = signalVector->at(c->signal_index);
-            c->receiver = nullptr;
-
-#ifndef QT_NO_DEBUG
-            bool found = false;
-            for (Connection *cc = connections.first; cc; cc = cc->nextConnectionList) {
-                if (cc == c) {
-                    found = true;
-                    break;
-                }
-            }
-            Q_ASSERT(found);
-#endif
-
-            // remove from the senders linked list
-            *c->prev = c->next;
-            if (c->next)
-                c->next->prev = c->prev;
-            c->prev = nullptr;
-
-            if (connections.first == c)
-                connections.first = c->nextConnectionList;
-            if (connections.last == c)
-                connections.last = c->prevConnectionList;
-            Q_ASSERT(signalVector->at(c->signal_index).first != c);
-            Q_ASSERT(signalVector->at(c->signal_index).last != c);
-
-            // keep c->nextConnectionList intact, as it might still get accessed by activate
-            if (c->nextConnectionList)
-                c->nextConnectionList->prevConnectionList = c->prevConnectionList;
-            if (c->prevConnectionList)
-                c->prevConnectionList->nextConnectionList = c->nextConnectionList;
-            c->prevConnectionList = nullptr;
-
-            Q_ASSERT(c != orphaned.load());
-            // add c to orphanedConnections
-            c->nextInOrphanList = orphaned.load();
-            orphaned.store(c);
-
-#ifndef QT_NO_DEBUG
-            found = false;
-            for (Connection *cc = connections.first; cc; cc = cc->nextConnectionList) {
-                if (cc == c) {
-                    found = true;
-                    break;
-                }
-            }
-            Q_ASSERT(!found);
-#endif
-
-        }
+        void removeConnection(Connection *c);
         void cleanOrphanedConnections(QObject *sender)
         {
             if (orphaned.load() && ref == 1)
@@ -345,32 +286,33 @@ public:
 
         ConnectionList &connectionsForSignal(int signal)
         {
-            return signalVector->at(signal);
+            return signalVector.load()->at(signal);
         }
 
         void resizeSignalVector(uint size) {
-            if (signalVector && signalVector->allocated > size)
+            SignalVector *vector = this->signalVector.load();
+            if (vector && vector->allocated > size)
                 return;
             size = (size + 7) & ~7;
-            SignalVector *v = reinterpret_cast<SignalVector *>(malloc(sizeof(SignalVector) + (size + 1) * sizeof(ConnectionList)));
+            SignalVector *newVector = reinterpret_cast<SignalVector *>(malloc(sizeof(SignalVector) + (size + 1) * sizeof(ConnectionList)));
             int start = -1;
-            if (signalVector) {
-                memcpy(v, signalVector, sizeof(SignalVector) + (signalVector->allocated + 1) * sizeof(ConnectionList));
-                start = signalVector->count();
+            if (vector) {
+                memcpy(newVector, vector, sizeof(SignalVector) + (vector->allocated + 1) * sizeof(ConnectionList));
+                start = vector->count();
             }
             for (int i = start; i < int(size); ++i)
-                v->at(i) = ConnectionList();
-            v->next = nullptr;
-            v->allocated = size;
+                newVector->at(i) = ConnectionList();
+            newVector->next = nullptr;
+            newVector->allocated = size;
 
-            qSwap(v, signalVector);
-            if (v) {
-                v->next = orphaned.load();
-                orphaned.store(ConnectionOrSignalVector::fromSignalVector(v));
+            signalVector.store(newVector);
+            if (vector) {
+                vector->nextInOrphanList = orphaned.load();
+                orphaned.store(ConnectionOrSignalVector::fromSignalVector(vector));
             }
         }
         int signalVectorCount() const {
-            return  signalVector ? signalVector->count() : -1;
+            return  signalVector ? signalVector.load()->count() : -1;
         }
 
         static void deleteOrphaned(ConnectionOrSignalVector *c);
