@@ -265,8 +265,8 @@ bool QObjectPrivate::isSender(const QObject *receiver, const char *signal) const
     if (signal_index < 0 || !cd)
         return false;
     QBasicMutexLocker locker(signalSlotLock(q));
-    if (signal_index < cd->signalVector.count()) {
-        const QObjectPrivate::Connection *c = cd->signalVector.at(signal_index).first;
+    if (signal_index < cd->signalVectorCount()) {
+        const QObjectPrivate::Connection *c = cd->signalVector->at(signal_index).first;
 
         while (c) {
             if (c->receiver == receiver)
@@ -287,8 +287,8 @@ QObjectList QObjectPrivate::receiverList(const char *signal) const
     if (signal_index < 0 || !cd)
         return returnValue;
     QBasicMutexLocker locker(signalSlotLock(q));
-    if (signal_index < cd->signalVector.count()) {
-        const QObjectPrivate::Connection *c = cd->signalVector.at(signal_index).first;
+    if (signal_index < cd->signalVectorCount()) {
+        const QObjectPrivate::Connection *c = cd->signalVector->at(signal_index).first;
 
         while (c) {
             if (c->receiver)
@@ -327,8 +327,7 @@ void QObjectPrivate::addConnection(int signal, Connection *c)
     Q_ASSERT(c->sender == q_ptr);
     ensureConnectionData();
     ConnectionData *cd = connections.load();
-    if (signal >= cd->signalVector.count())
-        cd->signalVector.resize(signal + 1);
+    cd->resizeSignalVector(signal + 1);
 
     ConnectionList &connectionList = cd->connectionsForSignal(signal);
     if (connectionList.last) {
@@ -353,7 +352,7 @@ void QObjectPrivate::addConnection(int signal, Connection *c)
 
 void QObjectPrivate::ConnectionData::cleanOrphanedConnectionsImpl(QObject *sender)
 {
-    Connection *c = nullptr;
+    ConnectionOrSignalVector *c = nullptr;
     {
         QBasicMutexLocker l(signalSlotLock(sender));
         if (ref > 1)
@@ -365,13 +364,25 @@ void QObjectPrivate::ConnectionData::cleanOrphanedConnectionsImpl(QObject *sende
         c = orphaned.load();
         orphaned.store(nullptr);
     }
-    while (c) {
-        Q_ASSERT(!c->receiver);
-        Q_ASSERT(!c->prev);
-        QObjectPrivate::Connection *next = c->nextInOrphanList;
-        c->freeSlotObject();
-        c->deref();
-        c = next;
+    deleteOrphaned(c);
+}
+
+void QObjectPrivate::ConnectionData::deleteOrphaned(QObjectPrivate::ConnectionOrSignalVector *o)
+{
+    while (o) {
+        QObjectPrivate::ConnectionOrSignalVector *next = nullptr;
+        if (SignalVector *v = ConnectionOrSignalVector::asSignalVector(o)) {
+            next = v->nextInOrphanList;
+            free(v);
+        } else {
+            QObjectPrivate::Connection *c = static_cast<Connection *>(o);
+            next = c->nextInOrphanList;
+            Q_ASSERT(!c->receiver);
+            Q_ASSERT(!c->prev);
+            c->freeSlotObject();
+            c->deref();
+        }
+        o = next;
     }
 }
 
@@ -387,14 +398,14 @@ bool QObjectPrivate::isSignalConnected(uint signalIndex, bool checkDeclarative) 
         return true;
 
     ConnectionData *cd = connections.load();
-    if (!cd)
+    if (!cd || !cd->signalVector)
         return false;
 
-    if (cd->allsignals.first)
+    if (cd->signalVector->at(-1).first)
         return true;
 
-    if (signalIndex < uint(cd->signalVector.count())) {
-        const QObjectPrivate::Connection *c = cd->signalVector.at(signalIndex).first;
+    if (signalIndex < uint(cd->signalVectorCount())) {
+        const QObjectPrivate::Connection *c = cd->signalVector->at(signalIndex).first;
         while (c) {
             if (c->receiver)
                 return true;
@@ -407,14 +418,14 @@ bool QObjectPrivate::isSignalConnected(uint signalIndex, bool checkDeclarative) 
 bool QObjectPrivate::maybeSignalConnected(uint signalIndex) const
 {
     ConnectionData *cd = connections.load();
-    if (!cd)
+    if (!cd || !cd->signalVector)
         return false;
 
-    if (cd->allsignals.first)
+    if (cd->signalVector->at(-1).first)
         return true;
 
-    if (signalIndex < uint(cd->signalVector.count())) {
-        const QObjectPrivate::Connection *c = cd->signalVector.at(signalIndex).first;
+    if (signalIndex < uint(cd->signalVectorCount())) {
+        const QObjectPrivate::Connection *c = cd->signalVector->at(signalIndex).first;
         return c != nullptr;
     }
     return false;
@@ -895,7 +906,7 @@ QObject::~QObject()
         QBasicMutexLocker locker(signalSlotMutex);
 
         // disconnect all receivers
-        int receiverCount = cd->signalVector.count();
+        int receiverCount = cd->signalVectorCount();
         for (int signal = -1; signal < receiverCount; ++signal) {
             QObjectPrivate::ConnectionList &connectionList = cd->connectionsForSignal(signal);
 
@@ -2416,9 +2427,8 @@ int QObject::receivers(const char *signal) const
 
         QObjectPrivate::ConnectionData *cd = d->connections.load();
         QBasicMutexLocker locker(signalSlotLock(this));
-        if (cd && signal_index < cd->signalVector.count()) {
-            const QObjectPrivate::Connection *c =
-                cd->signalVector.at(signal_index).first;
+        if (cd && signal_index < cd->signalVectorCount()) {
+            const QObjectPrivate::Connection *c = cd->signalVector->at(signal_index).first;
             while (c) {
                 receivers += c->receiver ? 1 : 0;
                 c = c->nextConnectionList;
@@ -3232,8 +3242,8 @@ QObjectPrivate::Connection *QMetaObjectPrivate::connect(const QObject *sender,
 
     QObjectPrivate::ConnectionData *scd  = QObjectPrivate::get(s)->connections.load();
     if (type & Qt::UniqueConnection && scd) {
-        if (scd->signalVector.count() > signal_index) {
-            const QObjectPrivate::Connection *c2 = scd->signalVector.at(signal_index).first;
+        if (scd->signalVectorCount() > signal_index) {
+            const QObjectPrivate::Connection *c2 = scd->signalVector->at(signal_index).first;
 
             int method_index_absolute = method_index + method_offset;
 
@@ -3365,11 +3375,11 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender,
 
         if (signal_index < 0) {
             // remove from all connection lists
-            for (int sig_index = -1; sig_index < scd->signalVector.count(); ++sig_index) {
+            for (int sig_index = -1; sig_index < scd->signalVectorCount(); ++sig_index) {
                 if (disconnectHelper(connections.data(), sig_index, receiver, method_index, slot, senderMutex, disconnectType))
                     success = true;
             }
-        } else if (signal_index < scd->signalVector.count()) {
+        } else if (signal_index < scd->signalVectorCount()) {
             if (disconnectHelper(connections.data(), signal_index, receiver, method_index, slot, senderMutex, disconnectType))
                 success = true;
         }
@@ -3592,10 +3602,10 @@ void doActivate(QObject *sender, int signal_index, void **argv)
     QObjectPrivate::ConnectionDataPointer connections(sp->connections.load());
 
     const QObjectPrivate::ConnectionList *list;
-    if (signal_index < connections->signalVector.count())
-        list = &connections->signalVector.at(signal_index);
+    if (signal_index < connections->signalVector->count())
+        list = &connections->signalVector->at(signal_index);
     else
-        list = &connections->allsignals;
+        list = &connections->signalVector->at(-1);
 
     Qt::HANDLE currentThreadId = QThread::currentThreadId();
 
@@ -3691,9 +3701,9 @@ void doActivate(QObject *sender, int signal_index, void **argv)
             }
         } while ((c = c->nextConnectionList) != 0 && c->id <= highestConnectionId);
 
-    } while (list != &connections->allsignals &&
+    } while (list != &connections->signalVector->at(-1) &&
         //start over for all signals;
-        ((list = &connections->allsignals), true));
+        ((list = &connections->signalVector->at(-1)), true));
 
         if (connections->currentConnectionId.load() == 0)
             senderDeleted = true;
@@ -3994,13 +4004,15 @@ void QObject::dumpObjectInfo() const
     qDebug("  SIGNALS OUT");
 
     QObjectPrivate::ConnectionData *cd = d->connections.load();
-    if (cd && cd->signalVector.count()) {
-        for (int signal_index = 0; signal_index < cd->signalVector.count(); ++signal_index) {
+    if (cd && cd->signalVectorCount()) {
+        for (int signal_index = 0; signal_index < cd->signalVectorCount(); ++signal_index) {
+            const QObjectPrivate::Connection *c = cd->signalVector->at(signal_index).first;
+            if (!c)
+                continue;
             const QMetaMethod signal = QMetaObjectPrivate::signal(metaObject(), signal_index);
             qDebug("        signal: %s", signal.methodSignature().constData());
 
             // receivers
-            const QObjectPrivate::Connection *c = cd->signalVector.at(signal_index).first;
             while (c) {
                 if (!c->receiver) {
                     qDebug("          <Disconnected receiver>");
@@ -4766,8 +4778,8 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
 
     if (type & Qt::UniqueConnection && slot && QObjectPrivate::get(s)->connections.load()) {
         QObjectPrivate::ConnectionData *connections = QObjectPrivate::get(s)->connections.load();
-        if (connections->signalVector.count() > signal_index) {
-            const QObjectPrivate::Connection *c2 = connections->signalVector.at(signal_index).first;
+        if (connections->signalVectorCount() > signal_index) {
+            const QObjectPrivate::Connection *c2 = connections->signalVector->at(signal_index).first;
 
             while (c2) {
                 if (c2->receiver == receiver && c2->isSlotObject && c2->slotObj->compare(slot)) {
