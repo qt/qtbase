@@ -1760,55 +1760,76 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
     // check cache
     const IconHandle iconHandle(i);
     const IconPropertiesNameMap::const_iterator it = m_iconPropertiesNameMap.constFind(iconHandle);
-    if (it != m_iconPropertiesNameMap.constEnd()) {
+    if (it != m_iconPropertiesNameMap.constEnd())
         return it.value();
-    }
 
     // insert with new name
     const QString iconName = m_driver->unique(QLatin1String("icon"));
     m_iconPropertiesNameMap.insert(IconHandle(i), iconName);
-    if (isIconFormat44(i)) {
-        if (i->attributeTheme().isEmpty()) {
-            // No theme: Write resource icon as is
-            m_output << m_indent << "QIcon " << iconName << ";\n";
-            if (m_uic->pixmapFunction().isEmpty())
-                writeResourceIcon(m_output, iconName, m_indent, i);
-            else
-                writePixmapFunctionIcon(m_output, iconName, m_indent, i);
-        } else {
-            // Theme: Generate code to check the theme and default to resource
-            if (iconHasStatePixmaps(i)) {
-                // Theme + default state pixmaps:
-                // Generate code to check the theme and default to state pixmaps
-                m_output << m_indent << "QIcon " << iconName << ";\n";
-                const char themeNameStringVariableC[] = "iconThemeName";
-                // Store theme name in a variable
-                m_output << m_indent;
-                if (m_firstThemeIcon) { // Declare variable string
-                    m_output << "QString ";
-                    m_firstThemeIcon = false;
-                }
-                m_output << themeNameStringVariableC << " = "
-                    << language::qstring(i->attributeTheme()) << ";\n";
-                m_output << m_indent << "if (QIcon::hasThemeIcon("
-                         << themeNameStringVariableC
-                         << ")) {\n"
-                         << m_dindent << iconName << " = QIcon::fromTheme(" << themeNameStringVariableC << ");\n"
-                         << m_indent << "} else {\n";
-                if (m_uic->pixmapFunction().isEmpty())
-                    writeResourceIcon(m_output, iconName, m_dindent, i);
-                else
-                    writePixmapFunctionIcon(m_output, iconName, m_dindent, i);
-                m_output << m_indent << "}\n";
-            } else {
-                // Theme, but no state pixmaps: Construct from theme directly.
-                m_output << m_indent << "QIcon " << iconName << "(QIcon::fromTheme("
-                    << language::qstring(i->attributeTheme()) << "));\n";
-            } // Theme, but not state
-        }     // >= 4.4
-    } else {  // pre-4.4 legacy
-        m_output <<  m_indent << "const QIcon " << iconName << " = " << pixCall(QLatin1String("QIcon"), i->text())<< ";\n";
+
+    const bool isCpp = language::language() == Language::Cpp;
+
+    if (Q_UNLIKELY(!isIconFormat44(i))) { // pre-4.4 legacy
+        m_output <<  m_indent;
+        if (isCpp)
+            m_output << "const QIcon ";
+        m_output << iconName << " = " << pixCall(QLatin1String("QIcon"), i->text())
+            << language::eol;
+        return iconName;
     }
+
+    // 4.4 onwards
+    if (i->attributeTheme().isEmpty()) {
+        // No theme: Write resource icon as is
+        m_output << m_indent << language::stackVariable("QIcon", iconName)
+            << language::eol;
+        if (m_uic->pixmapFunction().isEmpty())
+            writeResourceIcon(m_output, iconName, m_indent, i);
+        else
+            writePixmapFunctionIcon(m_output, iconName, m_indent, i);
+        return iconName;
+    }
+
+    // Theme: Generate code to check the theme and default to resource
+    if (iconHasStatePixmaps(i)) {
+        // Theme + default state pixmaps:
+        // Generate code to check the theme and default to state pixmaps
+        m_output << m_indent << language::stackVariable("QIcon", iconName) << ";\n";
+        const char themeNameStringVariableC[] = "iconThemeName";
+        // Store theme name in a variable
+        m_output << m_indent;
+        if (m_firstThemeIcon) { // Declare variable string
+            if (isCpp)
+                m_output << "QString ";
+            m_firstThemeIcon = false;
+        }
+        m_output << themeNameStringVariableC << " = "
+            << language::qstring(i->attributeTheme()) << language::eol;
+        m_output << m_indent << "if ";
+        if (isCpp)
+            m_output << '(';
+        m_output << "QIcon" << language::qualifier << "hasThemeIcon("
+            << themeNameStringVariableC << ')' << (isCpp ? ") {" : ":") << '\n'
+            << m_dindent << iconName << " = QIcon" << language::qualifier << "fromTheme("
+            << themeNameStringVariableC << ')' << language::eol
+            << m_indent << (isCpp ? "} else {" : "else:") << '\n';
+        if (m_uic->pixmapFunction().isEmpty())
+            writeResourceIcon(m_output, iconName, m_dindent, i);
+        else
+            writePixmapFunctionIcon(m_output, iconName, m_dindent, i);
+        m_output << m_indent;
+        if (isCpp)
+            m_output << '}';
+        m_output  << '\n';
+        return iconName;
+    }
+
+    // Theme, but no state pixmaps: Construct from theme directly.
+    m_output << m_indent
+        << language::stackVariableWithInitParameters("QIcon", iconName)
+        << "QIcon" << language::qualifier << "fromTheme("
+        << language::qstring(i->attributeTheme()) << "))"
+        << language::eol;
     return iconName;
 }
 
