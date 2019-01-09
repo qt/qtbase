@@ -354,7 +354,7 @@ void QObjectPrivate::addConnection(int signal, Connection *c)
 void QObjectPrivate::cleanConnectionLists()
 {
     ConnectionData *cd = connections.load();
-    if (cd->dirty && !cd->inUse) {
+    if (cd->dirty && cd->ref == 1) {
         // remove broken connections
         for (int signal = -1; signal < cd->signalVector.count(); ++signal) {
             ConnectionList &connectionList = cd->connectionsForSignal(signal);
@@ -883,7 +883,6 @@ QObject::~QObject()
 
         QMutex *signalSlotMutex = signalSlotLock(this);
         QMutexLocker locker(signalSlotMutex);
-        ++cd->inUse;
 
         // disconnect all receivers
         int receiverCount = cd->signalVector.count();
@@ -949,7 +948,7 @@ QObject::~QObject()
                 continue;
             }
             node->receiver = 0;
-            QObjectPrivate::ConnectionData *senderData = sender->d_func()->connections;
+            QObjectPrivate::ConnectionData *senderData = sender->d_func()->connections.load();
             if (senderData)
                 senderData->dirty = true;
 
@@ -972,13 +971,11 @@ QObject::~QObject()
             }
         }
 
-        if (!--cd->inUse) {
-            delete cd;
-        } else {
-            cd->orphaned = true;
-        }
-        d->connections.store(nullptr);
+        cd->objectDeleted = true;
     }
+    if (cd && !cd->ref.deref())
+        delete cd;
+    d->connections.store(nullptr);
 
     if (!d->children.isEmpty())
         d->deleteChildren();
@@ -3385,31 +3382,28 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender,
     if (!scd)
         return false;
 
-    // prevent incoming connections changing the connections->receivers while unlocked
-    ++scd->inUse;
-
     bool success = false;
-    if (signal_index < 0) {
-        // remove from all connection lists
-        for (int sig_index = -1; sig_index < scd->signalVector.count(); ++sig_index) {
-            QObjectPrivate::Connection *c = scd->connectionsForSignal(sig_index).first;
+    {
+        // prevent incoming connections changing the connections->receivers while unlocked
+        QObjectPrivate::ConnectionDataPointer connections(scd);
+
+        if (signal_index < 0) {
+            // remove from all connection lists
+            for (int sig_index = -1; sig_index < scd->signalVector.count(); ++sig_index) {
+                QObjectPrivate::Connection *c = scd->connectionsForSignal(sig_index).first;
+                if (disconnectHelper(c, receiver, method_index, slot, senderMutex, disconnectType)) {
+                    success = true;
+                    scd->dirty = true;
+                }
+            }
+        } else if (signal_index < scd->signalVector.count()) {
+            QObjectPrivate::Connection *c = scd->signalVector.at(signal_index).first;
             if (disconnectHelper(c, receiver, method_index, slot, senderMutex, disconnectType)) {
                 success = true;
                 scd->dirty = true;
             }
         }
-    } else if (signal_index < scd->signalVector.count()) {
-        QObjectPrivate::Connection *c = scd->signalVector.at(signal_index).first;
-        if (disconnectHelper(c, receiver, method_index, slot, senderMutex, disconnectType)) {
-            success = true;
-            scd->dirty = true;
-        }
     }
-
-    --scd->inUse;
-    Q_ASSERT(scd->inUse >= 0);
-    if (scd->orphaned && !scd->inUse)
-        delete scd;
 
     locker.unlock();
     if (success) {
@@ -3621,30 +3615,8 @@ void doActivate(QObject *sender, int signal_index, void **argv)
 
     {
     QMutexLocker locker(signalSlotLock(sender));
-    struct ConnectionDataRef {
-        QObjectPrivate::ConnectionData *connections;
-        ConnectionDataRef(QObjectPrivate::ConnectionData *connections) : connections(connections)
-        {
-            if (connections)
-                ++connections->inUse;
-        }
-        ~ConnectionDataRef()
-        {
-            if (!connections)
-                return;
-
-            --connections->inUse;
-            Q_ASSERT(connections->inUse >= 0);
-            if (connections->orphaned) {
-                if (!connections->inUse)
-                    delete connections;
-            }
-        }
-
-        QObjectPrivate::ConnectionData *operator->() const { return connections; }
-    };
-    Q_ASSERT(sp->connections.load());
-    ConnectionDataRef connections = sp->connections.load();
+    Q_ASSERT(sp->connections);
+    QObjectPrivate::ConnectionDataPointer connections(sp->connections.load());
 
     const QObjectPrivate::ConnectionList *list;
     if (signal_index < connections->signalVector.count())
@@ -3744,11 +3716,11 @@ void doActivate(QObject *sender, int signal_index, void **argv)
                 locker.relock();
             }
 
-            if (connections->orphaned)
+            if (connections->objectDeleted)
                 break;
         } while (c != last && (c = c->nextConnectionList) != 0);
 
-        if (connections->orphaned)
+        if (connections->objectDeleted)
             break;
     } while (list != &connections->allsignals &&
         //start over for all signals;

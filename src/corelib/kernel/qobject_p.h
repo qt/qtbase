@@ -210,9 +210,16 @@ public:
         linked list.
     */
     struct ConnectionData {
-        bool orphaned = false; //the QObject owner of this vector has been destroyed while the vector was inUse
+        bool objectDeleted = false; //the QObject owner of this vector has been destroyed while the vector was inUse
+        struct Ref {
+            int _ref = 0;
+            void ref() { ++_ref; }
+            int deref() { return --_ref; }
+            operator int() const { return _ref; }
+        };
+
+        Ref ref;
         bool dirty = false; //some Connection have been disconnected (their receiver is 0) but not removed from the list yet
-        int inUse = 0; //number of functions that are currently accessing this object or its connections
         ConnectionList allsignals;
         QVector<ConnectionList> signalVector;
         Connection *senders = nullptr;
@@ -274,12 +281,15 @@ public:
     {
         if (connections.load())
             return;
-        connections.store(new ConnectionData);
+        ConnectionData *cd = new ConnectionData;
+        cd->ref.ref();
+        connections.store(cd);
     }
 public:
     ExtraData *extraData;    // extra data set by the user
     QThreadData *threadData; // id of the thread that owns the object
 
+    using ConnectionDataPointer = QExplicitlySharedDataPointer<ConnectionData>;
     QAtomicPointer<ConnectionData> connections;
 
     union {
