@@ -67,7 +67,7 @@ qt {
 # Add the same default rpaths as Xcode does for new projects.
 # This is especially important for iOS/tvOS/watchOS where no other option is possible.
 !no_default_rpath {
-    QMAKE_RPATHDIR += @executable_path/Frameworks
+    QMAKE_RPATHDIR += @executable_path/../Frameworks
     equals(TEMPLATE, lib):!plugin:lib_bundle: QMAKE_RPATHDIR += @loader_path/Frameworks
 }
 
