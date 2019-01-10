@@ -15,8 +15,6 @@ target_include_directories("${name}"
     )
 target_compile_definitions("${name}" INTERFACE ${QT_PLATFORM_DEFINITIONS})
 set(config_install_dir "${INSTALL_LIBDIR}/cmake/${name}${PROJECT_VERSION_MAJOR}")
-install(TARGETS "${name}" EXPORT "${name}${PROJECT_VERSION_MAJOR}Targets")
-install(EXPORT "${name}${PROJECT_VERSION_MAJOR}Targets" NAMESPACE Qt:: DESTINATION "${config_install_dir}")
 
 configure_package_config_file(
     "${PROJECT_SOURCE_DIR}/cmake/QtConfig.cmake.in"
@@ -37,15 +35,36 @@ install(FILES
 
 
 ## Library to hold global features:
-add_library(Qt_global_Config INTERFACE)
-
+## These features are stored and accessed via Qt::GlobalConfig, but the
+## files always lived in Qt::Core, so we keep it that way
+add_library(GlobalConfig INTERFACE)
+target_include_directories(GlobalConfig INTERFACE
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore>
+    $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:include/QtCore>
+)
 qt_feature_module_begin(LIBRARY Core
     PUBLIC_FILE src/corelib/global/qconfig.h
     PRIVATE_FILE src/corelib/global/qconfig_p.h
 )
 include("${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
-qt_feature_module_end(Qt_global_Config)
+qt_feature_module_end(GlobalConfig)
 
+add_library(Qt::GlobalConfig ALIAS GlobalConfig)
+
+add_library(GlobalConfigPrivate INTERFACE)
+target_link_libraries(GlobalConfigPrivate INTERFACE GlobalConfig)
+target_include_directories(GlobalConfigPrivate INTERFACE
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}/QtCore>
+    $<INSTALL_INTERFACE:include/QtCore/${PROJECT_VERSION}>
+    $<INSTALL_INTERFACE:include/QtCore/${PROJECT_VERSION}/QtCore>
+)
+add_library(Qt::GlobalConfigPrivate ALIAS GlobalConfigPrivate)
+
+install(TARGETS "${name}" GlobalConfig GlobalConfigPrivate EXPORT "${name}${PROJECT_VERSION_MAJOR}Targets")
+install(EXPORT "${name}${PROJECT_VERSION_MAJOR}Targets" NAMESPACE Qt:: DESTINATION "${config_install_dir}")
 
 ## Install some QtBase specific CMake files:
 install(FILES

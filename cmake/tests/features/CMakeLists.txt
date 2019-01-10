@@ -14,14 +14,14 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../;${CMAKE_CURREN
 include(QtSetup)
 
 ## Library to hold global features:
-add_library(Qt_global_Config INTERFACE)
+add_library(GlobalConfig INTERFACE)
 
-qt_feature_module_begin(LIBRARY Core
+qt_feature_module_begin(LIBRARY GlobalConfig
     PUBLIC_FILE src/corelib/global/qconfig.h
     PRIVATE_FILE src/corelib/global/qconfig_p.h
 )
 include("${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
-qt_feature_module_end(Qt_global_Config)
+qt_feature_module_end(GlobalConfig)
 
 assert(QT_FEATURE_top_a STREQUAL "ON")
 assert(QT_FEATURE_top_b STREQUAL "OFF")

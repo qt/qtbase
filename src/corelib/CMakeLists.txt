@@ -232,11 +232,14 @@ add_qt_module(Core
         WrapDoubleConversion
         tinycbor Threads::Threads ZLIB::ZLIB
         QtHarfBuzz
+        Qt::GlobalConfigPrivate
     PUBLIC_LIBRARIES Qt::Platform
     DEFINES
         QT_NO_USING_NAMESPACE
         QT_NO_FOREACH
 )
+
+configure_file(global/qconfig.cpp.in global/qconfig.cpp)
 
 # Handle QObject: Automoc does not work for this as it would
 # require to spill internals into users:
@@ -254,29 +257,14 @@ target_include_directories(Core_qobject PRIVATE
     "${PROJECT_BINARY_DIR}/include/QtCore"
     "${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}"
     "${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}/QtCore")
-target_link_libraries(Core_qobject PRIVATE Qt::Platform)
+target_link_libraries(Core_qobject PRIVATE Qt::Platform Qt::GlobalConfig)
 target_link_libraries(Core PRIVATE Core_qobject)
 
 # Comments trigger moc for these, so skip automoc:
-set_source_files_properties( tools/qsharedpointer.cpp PROPERTIES SKIP_AUTOMOC ON)
+set_source_files_properties(tools/qsharedpointer.cpp PROPERTIES SKIP_AUTOMOC ON)
 
 set_property(TARGET Core APPEND PROPERTY PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig.h")
 set_property(TARGET Core APPEND PROPERTY PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig_p.h")
-
-# As a special feature, the global features are attached to QtCore as
-# custom properties. That's symmetric to qconfig.cpp/h being part of
-# QtCore and not of a QtGlobal library.
-
-foreach(visibility PUBLIC PRIVATE)
-    foreach(state ENABLED DISABLED)
-        get_target_property(props Qt_global_Config INTERFACE_QT_${state}_${visibility}_FEATURES)
-        set(propertyName "QT_GLOBAL_${state}_${visibility}_FEATURES")
-        set_property(TARGET Core PROPERTY ${propertyName} "${props}")
-        set_property(TARGET Core APPEND PROPERTY EXPORT_PROPERTIES "${propertyName}")
-    endforeach()
-endforeach()
-
-configure_file(global/qconfig.cpp.in global/qconfig.cpp)
 
 # FIXME: tools still have a lot of special stuff that is not ported!
 

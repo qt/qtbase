@@ -272,11 +272,6 @@ function(extend_target target)
             list(APPEND dbus_sources "${sources}")
         endforeach()
 
-        # Import features
-        if(NOT "${target}" STREQUAL "Core")
-            qt_pull_features_into_current_scope(PUBLIC_FEATURES PRIVATE_FEATURES FEATURE_PROPERTY_INFIX "GLOBAL_" Qt::Core)
-        endif()
-
         foreach(dep ${arg_FEATURE_DEPENDENCIES} ${arg_LIBRARIES} ${arg_PUBLIC_LIBRARIES})
             if("${dep}" MATCHES "^Qt::((.+)(Private)|(.+))$")
                 if (${CMAKE_MATCH_COUNT} EQUAL 3)
@@ -292,9 +287,9 @@ function(extend_target target)
                 endif()
 
                 if("x${CMAKE_MATCH_3}" STREQUAL "xPrivate")
-                    qt_pull_features_into_current_scope(PRIVATE_FEATURES ${depTarget})
+                    qt_pull_features_into_current_scope(PRIVATE_FEATURES "Qt::${depTarget}")
                 endif()
-                qt_pull_features_into_current_scope(PUBLIC_FEATURES ${depTarget})
+                qt_pull_features_into_current_scope(PUBLIC_FEATURES "Qt::${depTarget}")
             endif()
         endforeach()
 
