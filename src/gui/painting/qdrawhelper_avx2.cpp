@@ -1146,9 +1146,20 @@ static void convertARGBToRGBA64PM_avx2(QRgba64 *buffer, const uint *src, qsizety
         __m256i src1, src2;
         __m256i srcVector = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src + i));
         if (!_mm256_testz_si256(srcVector, alphaMask)) {
-            if (!_mm256_testc_si256(srcVector, alphaMask)) {
-                if (!RGBA)
-                    srcVector = _mm256_shuffle_epi8(srcVector, rgbaMask);
+            // keep the two _mm_test[zc]_siXXX next to each other
+            bool cf = _mm256_testc_si256(srcVector, alphaMask);
+            if (!RGBA)
+                srcVector = _mm256_shuffle_epi8(srcVector, rgbaMask);
+
+            // The two unpack instructions unpack the low and upper halves of
+            // each 128-bit half of the 256-bit register. Here's the tracking
+            // of what's where: (p is 32-bit, P is 64-bit)
+            //  as loaded:        [ p1, p2, p3, p4; p5, p6, p7, p8 ]
+            //  after permute4x64 [ p1, p2, p5, p6; p3, p4, p7, p8 ]
+            //  after unpacklo/hi [ P1, P2; P3, P4 ] [ P5, P6; P7, P8 ]
+            srcVector = _mm256_permute4x64_epi64(srcVector, _MM_SHUFFLE(3, 1, 2, 0));
+
+            if (!cf) {
                 src1 = _mm256_unpacklo_epi8(srcVector, zero);
                 src2 = _mm256_unpackhi_epi8(srcVector, zero);
                 __m256i alpha1 = _mm256_shuffle_epi8(src1, shuffleMask);
@@ -1162,8 +1173,6 @@ static void convertARGBToRGBA64PM_avx2(QRgba64 *buffer, const uint *src, qsizety
                 src1 = _mm256_blend_epi16(src1, alpha1, 0x88);
                 src2 = _mm256_blend_epi16(src2, alpha2, 0x88);
             } else {
-                if (!RGBA)
-                    srcVector = _mm256_shuffle_epi8(srcVector, rgbaMask);
                 src1 = _mm256_unpacklo_epi8(srcVector, srcVector);
                 src2 = _mm256_unpackhi_epi8(srcVector, srcVector);
             }
