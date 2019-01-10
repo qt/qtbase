@@ -4338,6 +4338,12 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     in a QVariant, you can convert them to strings. Likewise, passing them to
     QDebug will print out their names.
 
+    Mind that the enum values are stored as signed \c int in the meta object system.
+    Registering enumerations with values outside the range of values valid for \c int
+    will lead to overflows and potentially undefined behavior when accessing them through
+    the meta object system. QML, for example, does access registered enumerations through
+    the meta object system.
+
     \sa {Qt's Property System}
 */
 
@@ -4388,6 +4394,12 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     Q_DECLARE_METATYPE(). This will enable useful features; for example, if
     used in a QVariant, you can convert them to strings. Likewise, passing them
     to QDebug will print out their names.
+
+    Mind that the enum values are stored as signed \c int in the meta object system.
+    Registering enumerations with values outside the range of values valid for \c int
+    will lead to overflows and potentially undefined behavior when accessing them through
+    the meta object system. QML, for example, does access registered enumerations through
+    the meta object system.
 
     \sa {Qt's Property System}
 */
