@@ -1375,7 +1375,7 @@ void QListWidget::setSelectionModel(QItemSelectionModel *selectionModel)
 
 /*!
     Returns the item that occupies the given \a row in the list if one has been
-    set; otherwise returns 0.
+    set; otherwise returns \nullptr.
 
     \sa row()
 */
@@ -1442,7 +1442,7 @@ void QListWidget::insertItems(int row, const QStringList &labels)
 
 /*!
     Removes and returns the item from the given \a row in the list widget;
-    otherwise returns 0.
+    otherwise returns \nullptr.
 
     Items removed from a list widget will not be managed by Qt, and will need
     to be deleted manually.

@@ -3747,7 +3747,7 @@ Qt::LayoutDirection QGuiApplication::layoutDirection()
 
     Returns the active application override cursor.
 
-    This function returns 0 if no application cursor has been defined (i.e. the
+    This function returns \nullptr if no application cursor has been defined (i.e. the
     internal cursor stack is empty).
 
     \sa setOverrideCursor(), restoreOverrideCursor()

@@ -1118,7 +1118,7 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
 /*!
     Resolves the function pointer to an OpenGL extension function, identified by \a procName
 
-    Returns 0 if no such function can be found.
+    Returns \nullptr if no such function can be found.
 */
 QFunctionPointer QOpenGLContext::getProcAddress(const QByteArray &procName) const
 {

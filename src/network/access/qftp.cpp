@@ -2154,7 +2154,7 @@ QFtp::Command QFtp::currentCommand() const
     \internal
     Returns the QIODevice pointer that is used by the FTP command to read data
     from or store data to. If there is no current FTP command being executed or
-    if the command does not use an IO device, this function returns 0.
+    if the command does not use an IO device, this function returns \nullptr.
 
     This function can be used to delete the QIODevice in the slot connected to
     the commandFinished() signal.

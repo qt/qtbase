@@ -1936,7 +1936,7 @@ int QTableWidget::column(const QTableWidgetItem *item) const
 
 /*!
     Returns the item for the given \a row and \a column if one has been set; otherwise
-    returns 0.
+    returns \nullptr.
 
     \sa setItem()
 */
@@ -2029,7 +2029,7 @@ QTableWidgetItem *QTableWidget::takeVerticalHeaderItem(int row)
 
 /*!
     Returns the horizontal header item for column, \a column, if one has been
-    set; otherwise returns 0.
+    set; otherwise returns \nullptr.
 */
 QTableWidgetItem *QTableWidget::horizontalHeaderItem(int column) const
 {
@@ -2435,7 +2435,7 @@ int QTableWidget::visualColumn(int logicalColumn) const
 /*!
   \fn QTableWidgetItem *QTableWidget::itemAt(const QPoint &point) const
 
-  Returns a pointer to the item at the given \a point, or returns 0 if
+  Returns a pointer to the item at the given \a point, or returns \nullptr if
   \a point is not covered by an item in the table widget.
 
   \sa item()

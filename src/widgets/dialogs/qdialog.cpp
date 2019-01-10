@@ -969,7 +969,7 @@ Qt::Orientation QDialog::orientation() const
 
     Sets the widget, \a extension, to be the dialog's extension,
     deleting any previous extension. The dialog takes ownership of the
-    extension. Note that if 0 is passed any existing extension will be
+    extension. Note that if \nullptr is passed, any existing extension will be
     deleted. This function must only be called while the dialog is hidden.
 
     Instead of using this functionality, we recommend that you simply call

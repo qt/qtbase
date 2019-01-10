@@ -350,7 +350,7 @@ void QPlatformIntegration::destroy()
 /*!
   Returns the platforms input context.
 
-  The default implementation returns 0, implying no input method support.
+  The default implementation returns \nullptr, implying no input method support.
 */
 QPlatformInputContext *QPlatformIntegration::inputContext() const
 {

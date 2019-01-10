@@ -2283,7 +2283,7 @@ int QMenu::columnCount() const
 }
 
 /*!
-  Returns the item at \a pt; returns 0 if there is no item there.
+  Returns the item at \a pt; returns \nullptr if there is no item there.
 */
 QAction *QMenu::actionAt(const QPoint &pt) const
 {

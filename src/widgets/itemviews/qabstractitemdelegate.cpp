@@ -240,7 +240,7 @@ QAbstractItemDelegate::~QAbstractItemDelegate()
     model being used. The editor's parent widget is specified by \a parent,
     and the item options by \a option.
 
-    The base implementation returns 0. If you want custom editing you
+    The base implementation returns \nullptr. If you want custom editing you
     will need to reimplement this function.
 
     The returned editor widget should have Qt::StrongFocus;

@@ -84,7 +84,7 @@ QT_BEGIN_NAMESPACE
 
     \a windowCursor is a pointer to the QCursor that should be displayed.
 
-    To unset the cursor of \a window, 0 is passed. This means \a window does not have
+    To unset the cursor of \a window, \nullptr is passed. This means \a window does not have
     a cursor set and the cursor of a the first parent window which has a cursor explicitly
     set or the system default cursor should take effect.
 

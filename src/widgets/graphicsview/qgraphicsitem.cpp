@@ -1726,8 +1726,8 @@ QGraphicsItem *QGraphicsItem::topLevelItem() const
 /*!
     \since 4.6
 
-    Returns a pointer to the item's parent, cast to a QGraphicsObject. returns 0 if the parent item
-    is not a QGraphicsObject.
+    Returns a pointer to the item's parent, cast to a QGraphicsObject. Returns
+    \nullptr if the parent item is not a QGraphicsObject.
 
     \sa parentItem(), childItems()
 */

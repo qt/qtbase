@@ -1825,7 +1825,7 @@ int QFormLayout::rowCount() const
 
 /*!
     Returns the layout item in the given \a row with the specified \a
-    role (column). Returns 0 if there is no such item.
+    role (column). Returns \nullptr if there is no such item.
 
     \sa QLayout::itemAt(), setItem()
 */

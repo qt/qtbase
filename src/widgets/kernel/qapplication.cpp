@@ -360,7 +360,7 @@ void QApplicationPrivate::createEventDispatcher()
 /*!
     \fn QWidget *QApplication::topLevelAt(const QPoint &point)
 
-    Returns the top-level widget at the given \a point; returns 0 if
+    Returns the top-level widget at the given \a point; returns \nullptr if
     there is no such widget.
 */
 QWidget *QApplication::topLevelAt(const QPoint &pos)
@@ -1226,7 +1226,7 @@ void QApplication::setStyle(QStyle *style)
     "windows", "windowsvista", "fusion", or "macintosh". Style
     names are case insensitive.
 
-    Returns 0 if an unknown \a style is passed, otherwise the QStyle object
+    Returns \nullptr if an unknown \a style is passed, otherwise the QStyle object
     returned is set as the application's GUI style.
 
     \warning To ensure that the application's style is set correctly, it is
@@ -2177,7 +2177,7 @@ void QApplicationPrivate::notifyActiveWindowChange(QWindow *previous)
 
 /*!internal
  * Helper function that returns the new focus widget, but does not set the focus reason.
- * Returns 0 if a new focus widget could not be found.
+ * Returns \nullptr if a new focus widget could not be found.
  * Shared with QGraphicsProxyWidgetPrivate::findFocusChild()
 */
 QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool next,

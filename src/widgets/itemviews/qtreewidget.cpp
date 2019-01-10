@@ -2688,7 +2688,7 @@ void QTreeWidget::addTopLevelItem(QTreeWidgetItem *item)
 
 /*!
   Removes the top-level item at the given \a index in the tree and
-  returns it, otherwise returns 0;
+  returns it, otherwise returns \nullptr;
 
   \sa insertTopLevelItem(), topLevelItem(), topLevelItemCount()
 */

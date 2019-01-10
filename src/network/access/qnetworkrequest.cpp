@@ -714,7 +714,7 @@ void QNetworkRequest::setOriginatingObject(QObject *object)
     \since 4.6
 
     Returns a reference to the object that initiated this
-    network request; returns 0 if not set or the object has
+    network request; returns \nullptr if not set or the object has
     been destroyed.
 
     \sa setOriginatingObject()

@@ -913,7 +913,7 @@ void QPaintEngine::setPaintDevice(QPaintDevice *device)
 
 /*!
     Returns the device that this engine is painting on, if painting is
-    active; otherwise returns 0.
+    active; otherwise returns \nullptr.
 */
 QPaintDevice *QPaintEngine::paintDevice() const
 {
