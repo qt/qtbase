@@ -21,8 +21,6 @@ function(qt_feature_module_begin)
 
     set(__QtFeature_private_extra "" PARENT_SCOPE)
     set(__QtFeature_public_extra "" PARENT_SCOPE)
-
-    qt_push_features_into_parent_scope()
 endfunction()
 
 function(qt_feature feature)
