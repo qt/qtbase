@@ -1931,31 +1931,36 @@ void WriteInitialization::writeBrush(const DomBrush *brush, const QString &brush
         const QString gradientType = gradient->attributeType();
         const QString gradientName = m_driver->unique(QLatin1String("gradient"));
         if (gradientType == QLatin1String("LinearGradient")) {
-            m_output << m_indent << "QLinearGradient " << gradientName
-                << '(' << gradient->attributeStartX()
+            m_output << m_indent
+                << language::stackVariableWithInitParameters("QLinearGradient", gradientName)
+                << gradient->attributeStartX()
                 << ", " << gradient->attributeStartY()
                 << ", " << gradient->attributeEndX()
-                << ", " << gradient->attributeEndY() << ");\n";
+                << ", " << gradient->attributeEndY() << ')' << language::eol;
         } else if (gradientType == QLatin1String("RadialGradient")) {
-            m_output << m_indent << "QRadialGradient " << gradientName
-                << '(' << gradient->attributeCentralX()
+            m_output << m_indent
+                << language::stackVariableWithInitParameters("QRadialGradient", gradientName)
+                << gradient->attributeCentralX()
                 << ", " << gradient->attributeCentralY()
                 << ", " << gradient->attributeRadius()
                 << ", " << gradient->attributeFocalX()
-                << ", " << gradient->attributeFocalY() << ");\n";
+                << ", " << gradient->attributeFocalY() << ')' << language::eol;
         } else if (gradientType == QLatin1String("ConicalGradient")) {
-            m_output << m_indent << "QConicalGradient " << gradientName
-                << '(' << gradient->attributeCentralX()
+            m_output << m_indent
+                << language::stackVariableWithInitParameters("QConicalGradient", gradientName)
+                << gradient->attributeCentralX()
                 << ", " << gradient->attributeCentralY()
-                << ", " << gradient->attributeAngle() << ");\n";
+                << ", " << gradient->attributeAngle() << ')' << language::eol;
         }
 
-        m_output << m_indent << gradientName << ".setSpread(QGradient::"
-            << gradient->attributeSpread() << ");\n";
+        m_output << m_indent << gradientName << ".setSpread(QGradient"
+            << language::qualifier << gradient->attributeSpread()
+            << ')' << language::eol;
 
         if (gradient->hasAttributeCoordinateMode()) {
-            m_output << m_indent << gradientName << ".setCoordinateMode(QGradient::"
-                << gradient->attributeCoordinateMode() << ");\n";
+            m_output << m_indent << gradientName << ".setCoordinateMode(QGradient"
+                << language::qualifier << gradient->attributeCoordinateMode()
+                << ')' << language::eol;
         }
 
        const auto &stops = gradient->elementGradientStop();
@@ -1963,19 +1968,22 @@ void WriteInitialization::writeBrush(const DomBrush *brush, const QString &brush
             const DomColor *color = stop->elementColor();
             m_output << m_indent << gradientName << ".setColorAt("
                 << stop->attributePosition() << ", "
-                << domColor2QString(color) << ");\n";
+                << domColor2QString(color) << ')' << language::eol;
         }
-        m_output << m_indent << "QBrush " << brushName << '('
-            << gradientName << ");\n";
+        m_output << m_indent
+            << language::stackVariableWithInitParameters("QBrush", brushName)
+            << gradientName << ')' << language::eol;
     } else if (style == QLatin1String("TexturePattern")) {
         const DomProperty *property = brush->elementTexture();
         const QString iconValue = iconCall(property);
 
-        m_output << m_indent << "QBrush " << brushName << " = QBrush("
-            << iconValue << ");\n";
+        m_output << m_indent
+            << language::stackVariableWithInitParameters("QBrush", brushName)
+            << iconValue << ')' << language::eol;
     } else {
         const DomColor *color = brush->elementColor();
-        m_output << m_indent << "QBrush " << brushName << '('
+        m_output << m_indent
+            << language::stackVariableWithInitParameters("QBrush", brushName)
             << domColor2QString(color) << ')' << language::eol;
 
         m_output << m_indent << brushName << ".setStyle("
