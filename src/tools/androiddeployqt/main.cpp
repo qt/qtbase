@@ -1261,7 +1261,7 @@ bool updateStringsXml(const Options &options)
             fprintf(stderr, "Can't open %s for writing.\n", qPrintable(fileName));
             return false;
         }
-        file.write(QByteArray("<?xml version='1.0' encoding='utf-8'?><resources><string name=\"app_name\">")
+        file.write(QByteArray("<?xml version='1.0' encoding='utf-8'?><resources><string name=\"app_name\" translatable=\"false\">")
                    .append(QFileInfo(options.applicationBinary).baseName().mid(sizeof("lib") - 1).toLatin1())
                    .append("</string></resources>\n"));
         return true;
