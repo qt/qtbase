@@ -3847,6 +3847,14 @@ static void checkEnum(const QMetaEnum &enumerator, const QByteArray &name, const
     }
 }
 
+class EnumFromNamespaceClass : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(FooNamespace::Enum1 prop READ prop CONSTANT)
+public:
+    FooNamespace::Enum1 prop() { return FooNamespace::Enum1::Key2; }
+};
+
 void tst_Moc::testQNamespace()
 {
     QCOMPARE(TestQNamespace::staticMetaObject.enumeratorCount(), 4);
@@ -3874,6 +3882,11 @@ void tst_Moc::testQNamespace()
     QCOMPARE(FooNamespace::staticMetaObject.enumeratorCount(), 1);
     QCOMPARE(FooNamespace::FooNestedNamespace::staticMetaObject.enumeratorCount(), 2);
     QCOMPARE(FooNamespace::FooNestedNamespace::FooMoreNestedNamespace::staticMetaObject.enumeratorCount(), 1);
+
+    EnumFromNamespaceClass obj;
+    const QVariant prop = obj.property("prop");
+    QCOMPARE(prop.type(), QMetaType::Int);
+    QCOMPARE(prop.toInt(), int(FooNamespace::Enum1::Key2));
 }
 
 void tst_Moc::cxx17Namespaces()

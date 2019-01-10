@@ -565,6 +565,7 @@ void Moc::parse()
                     } else if (!test(SEMIC)) {
                         NamespaceDef def;
                         def.classname = nsName;
+                        def.doGenerate = currentFilenames.size() <= 1;
 
                         next(LBRACE);
                         def.begin = index - 1;
@@ -572,25 +573,22 @@ void Moc::parse()
                         def.end = index;
                         index = def.begin + 1;
 
-                        const bool parseNamespace = currentFilenames.size() <= 1;
-                        if (parseNamespace) {
-                            for (int i = namespaceList.size() - 1; i >= 0; --i) {
-                                if (inNamespace(&namespaceList.at(i))) {
-                                    def.qualified.prepend(namespaceList.at(i).classname + "::");
-                                }
-                            }
-                            for (const QByteArray &ns : nested) {
-                                NamespaceDef parentNs;
-                                parentNs.classname = ns;
-                                parentNs.qualified = def.qualified;
-                                def.qualified += ns + "::";
-                                parentNs.begin = def.begin;
-                                parentNs.end = def.end;
-                                namespaceList += parentNs;
+                        for (int i = namespaceList.size() - 1; i >= 0; --i) {
+                            if (inNamespace(&namespaceList.at(i))) {
+                                def.qualified.prepend(namespaceList.at(i).classname + "::");
                             }
                         }
+                        for (const QByteArray &ns : nested) {
+                            NamespaceDef parentNs;
+                            parentNs.classname = ns;
+                            parentNs.qualified = def.qualified;
+                            def.qualified += ns + "::";
+                            parentNs.begin = def.begin;
+                            parentNs.end = def.end;
+                            namespaceList += parentNs;
+                        }
 
-                        while (parseNamespace && inNamespace(&def) && hasNext()) {
+                        while (inNamespace(&def) && hasNext()) {
                             switch (next()) {
                             case NAMESPACE:
                                 if (test(IDENTIFIER)) {
@@ -915,7 +913,8 @@ void Moc::parse()
         } else {
             knownGadgets.insert(def.classname, def.qualified);
             knownGadgets.insert(def.qualified, def.qualified);
-            classList += def;
+            if (n.doGenerate)
+                classList += def;
         }
     }
 }
