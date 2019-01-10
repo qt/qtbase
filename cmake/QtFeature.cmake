@@ -438,8 +438,6 @@ endfunction()
 
 macro(qt_push_features_into_parent_scope)
     get_cmake_property(_variableNames VARIABLES)
-    list (SORT _variableNames)
-    list(REMOVE_DUPLICATES _variableNames)
 
     foreach(_var IN ITEMS ${_variableNames})
         if(_var MATCHES "^QT_FEATURE_[a-z][a-z0-9_]*$")
