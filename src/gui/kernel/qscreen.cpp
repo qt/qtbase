@@ -67,6 +67,9 @@ QT_BEGIN_NAMESPACE
     desktop environment's settings panel, to let the user globally control UI
     and font sizes in different applications.
 
+    \note Both physical and logical DPI are expressed in device-independent dots.
+    Multiply by QScreen::devicePixelRatio() to get device-dependent density.
+
     \inmodule QtGui
 */
 
