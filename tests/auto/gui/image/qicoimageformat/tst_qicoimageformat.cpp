@@ -164,7 +164,7 @@ void tst_QIcoImageFormat::imageCount_data()
     QTest::newRow("16px,32px - 16 colors") << "valid/TIMER01.ICO" << 2;
     QTest::newRow("16px16c, 32px32c, 32px256c 1") << "valid/WORLD.ico" << 3;
     QTest::newRow("16px16c, 32px32c, 32px256c 2") << "valid/WORLDH.ico" << 3;
-    QTest::newRow("invalid floppy (first 8 bytes = 0xff)") << "invalid/35floppy.ico" << 0;
+    QTest::newRow("invalid floppy (first 8 bytes = 0xff)") << "invalid/35floppy.ico" << -1;
     QTest::newRow("includes 32BPP w/alpha") << "valid/semitransparent.ico" << 9;
     QTest::newRow("PNG compression") << "valid/Qt.ico" << 4;
     QTest::newRow("CUR file") << "valid/yellow.cur" << 1;
@@ -177,7 +177,6 @@ void tst_QIcoImageFormat::imageCount()
 
     QImageReader reader(m_IconPath + QLatin1Char('/') + fileName);
     QCOMPARE(reader.imageCount(), count);
-
 }
 
 void tst_QIcoImageFormat::jumpToNextImage_data()
@@ -218,7 +217,7 @@ void tst_QIcoImageFormat::loopCount_data()
     QTest::addColumn<int>("count");
 
     QTest::newRow("floppy (16px,32px - 16 colors)") << "valid/35FLOPPY.ICO" << 0;
-    QTest::newRow("invalid floppy (first 8 bytes = 0xff)") << "invalid/35floppy.ico" << 0;
+    QTest::newRow("invalid floppy (first 8 bytes = 0xff)") << "invalid/35floppy.ico" << -1;
 }
 
 void tst_QIcoImageFormat::loopCount()
@@ -228,6 +227,7 @@ void tst_QIcoImageFormat::loopCount()
 
     QImageReader reader(m_IconPath + QLatin1Char('/') + fileName);
     QCOMPARE(reader.loopCount(), count);
+    QCOMPARE(reader.canRead(), count < 0 ? false : true);
 }
 
 void tst_QIcoImageFormat::nextImageDelay_data()
@@ -256,7 +256,7 @@ void tst_QIcoImageFormat::nextImageDelay()
 
     QImageReader reader(m_IconPath + QLatin1Char('/') + fileName);
     if (count == -1) {
-        QCOMPARE(reader.nextImageDelay(), 0);
+        QCOMPARE(reader.nextImageDelay(), -1);
     } else {
         int i;
         for (i = 0; i < count; i++) {
