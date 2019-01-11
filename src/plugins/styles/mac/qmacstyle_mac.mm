@@ -130,6 +130,7 @@
 #include <QtWidgets/qgraphicsview.h>
 #endif
 #include <QtCore/qvariant.h>
+#include <QtCore/qvarlengtharray.h>
 #include <private/qstylehelper_p.h>
 #include <private/qstyleanimation_p.h>
 #include <qpa/qplatformfontdatabase.h>
@@ -312,6 +313,26 @@ static QLinearGradient titlebarGradientInactive()
         return gradient;
     }();
     return qt_mac_applicationIsInDarkMode() ? darkGradient : lightGradient;
+}
+
+static void clipTabBarFrame(const QStyleOption *option, const QMacStyle *style, CGContextRef ctx)
+{
+    Q_ASSERT(option);
+    Q_ASSERT(style);
+    Q_ASSERT(ctx);
+
+    if (qt_mac_applicationIsInDarkMode()) {
+        QTabWidget *tabWidget = qobject_cast<QTabWidget *>(option->styleObject);
+        Q_ASSERT(tabWidget);
+
+        const QRect tabBarRect = style->subElementRect(QStyle::SE_TabWidgetTabBar, option, tabWidget).adjusted(2, 2, -3, -2);
+        const QRegion clipPath = QRegion(option->rect) - tabBarRect;
+        QVarLengthArray<CGRect, 3> cgRects;
+        for (const QRect &qtRect : clipPath)
+            cgRects.push_back(qtRect.toCGRect());
+        if (cgRects.size())
+            CGContextClipToRects(ctx, &cgRects[0], size_t(cgRects.size()));
+    }
 }
 
 static const QColor titlebarSeparatorLineActive(111, 111, 111);
@@ -2976,6 +2997,8 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         // QDarkNSBox, of type NSBoxCustom. Its appearance is close enough to the real thing so
         // we can use this for now.
         d->drawNSViewInRect(box, opt->rect, p, ^(CGContextRef ctx, const CGRect &rect) {
+            if (QTabWidget *tabWidget = qobject_cast<QTabWidget *>(opt->styleObject))
+                clipTabBarFrame(opt, this, ctx);
             CGContextTranslateCTM(ctx, 0, rect.origin.y + rect.size.height);
             CGContextScaleCTM(ctx, 1, -1);
             if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSMojave
@@ -3699,6 +3722,12 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             // inFrame:withView:], -[drawRect:] or anything in between. Besides,
             // there's no public API do draw the pressed state, AFAICS. We'll use
             // a push NSButton instead and clip the CGContext.
+            // NOTE/TODO: this is not true. On 10.13 NSSegmentedControl works with
+            // some (black?) magic/magic dances, on 10.14 it simply works (was
+            // it fixed in AppKit?). But, indeed, we cannot make a tab 'pressed'
+            // with NSSegmentedControl (only selected), so we stay with buttons
+            // (mixing buttons and NSSegmentedControl for such a simple thing
+            // is too much work).
 
             const auto cs = d->effectiveAquaSizeConstrain(opt, w);
             // Extra hacks to get the proper pressed appreance when not selected or selected and inactive
