@@ -5273,9 +5273,20 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             }
 
             d->drawNSViewInRect(slider, opt->rect, p, ^(CGContextRef ctx, const CGRect &rect) {
-                if (isHorizontal && sl->upsideDown) {
-                    CGContextTranslateCTM(ctx, rect.size.width, 0);
-                    CGContextScaleCTM(ctx, -1, 1);
+
+                // Since the GC is flipped, upsideDown means *not* inverted when vertical.
+                const bool verticalFlip = !isHorizontal && !sl->upsideDown; // FIXME: && !isSierraOrLater
+
+                if (isHorizontal) {
+                    if (sl->upsideDown) {
+                        CGContextTranslateCTM(ctx, rect.size.width, rect.origin.y);
+                        CGContextScaleCTM(ctx, -1, 1);
+                    } else {
+                        CGContextTranslateCTM(ctx, 0, rect.origin.y);
+                    }
+                } else if (verticalFlip) {
+                    CGContextTranslateCTM(ctx, rect.origin.x, rect.size.height);
+                    CGContextScaleCTM(ctx, 1, -1);
                 }
 
                 if (hasDoubleTicks) {
@@ -5285,9 +5296,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     else
                         CGContextTranslateCTM(ctx, 1, 0);
                 }
-
-                // Since the GC is flipped, upsideDown means *not* inverted when vertical.
-                const bool verticalFlip = !isHorizontal && !sl->upsideDown; // FIXME: && !isSierraOrLater
 
 #if 0
                 // FIXME: Sadly, this part doesn't work. It seems to somehow polute the
@@ -5352,9 +5360,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         // This ain't HIG kosher: force round knob look.
                         if (hasDoubleTicks)
                             slider.numberOfTickMarks = 0;
-                        // Draw the knob in the symmetrical position instead of flipping.
-                        if (verticalFlip)
-                            slider.intValue = slider.maxValue - slider.intValue + slider.minValue;
                         [cell drawKnob];
                     }
                 }
