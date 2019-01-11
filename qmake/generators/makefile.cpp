@@ -1839,6 +1839,18 @@ static QStringList splitDeps(const QString &indeps, bool lineMode)
     return deps;
 }
 
+QString MakefileGenerator::resolveDependency(const QDir &outDir, const QString &file)
+{
+    const QList<QMakeLocalFileName> &depdirs = QMakeSourceFileInfo::dependencyPaths();
+    for (const auto &depdir : depdirs) {
+        const QString &local = depdir.local();
+        QString lf = outDir.absoluteFilePath(local + '/' + file);
+        if (exists(lf))
+            return lf;
+    }
+    return {};
+}
+
 void
 MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
 {
@@ -1991,16 +2003,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                                 } else if (exists(absFile)) {
                                     file = absFile;
                                 } else {
-                                    QString localFile;
-                                    QList<QMakeLocalFileName> depdirs = QMakeSourceFileInfo::dependencyPaths();
-                                    for (QList<QMakeLocalFileName>::Iterator dit = depdirs.begin();
-                                        dit != depdirs.end(); ++dit) {
-                                        QString lf = outDir.absoluteFilePath((*dit).local() + '/' + file);
-                                        if (exists(lf)) {
-                                            localFile = lf;
-                                            break;
-                                        }
-                                    }
+                                    QString localFile = resolveDependency(outDir, file);
                                     if (localFile.isEmpty()) {
                                         if (exists(file))
                                             warn_msg(WarnDeprecated, ".depend_command for extra compiler %s"
@@ -2088,16 +2091,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                             } else if (exists(absFile)) {
                                 file = absFile;
                             } else {
-                                QString localFile;
-                                QList<QMakeLocalFileName> depdirs = QMakeSourceFileInfo::dependencyPaths();
-                                for (QList<QMakeLocalFileName>::Iterator dit = depdirs.begin();
-                                    dit != depdirs.end(); ++dit) {
-                                    QString lf = outDir.absoluteFilePath((*dit).local() + '/' + file);
-                                    if (exists(lf)) {
-                                        localFile = lf;
-                                        break;
-                                    }
-                                }
+                                QString localFile = resolveDependency(outDir, file);
                                 if (localFile.isEmpty()) {
                                     if (exists(file))
                                         warn_msg(WarnDeprecated, ".depend_command for extra compiler %s"

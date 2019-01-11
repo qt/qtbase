@@ -82,6 +82,7 @@ protected:
     void writeExportedVariables(QTextStream &t);
     void writeExtraVariables(QTextStream &t);
     void writeExtraTargets(QTextStream &t);
+    QString resolveDependency(const QDir &outDir, const QString &file);
     void writeExtraCompilerTargets(QTextStream &t);
     void writeExtraCompilerVariables(QTextStream &t);
     bool writeDummyMakefile(QTextStream &t);
