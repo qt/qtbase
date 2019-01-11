@@ -195,10 +195,6 @@
                     "#if defined(OPENSSL_NO_OCSP) || defined(OPENSSL_NO_TLSEXT)",
                     "#  error OpenSSL without OCSP stapling",
                     "#endif"
-                ],
-                "main": [
-                    "(void)SSL_get_tlsext_status_ocsp_resp(nullptr, nullptr);",
-                    "(void)d2i_OCSP_RESPONSE(nullptr, nullptr, 0);"
                 ]
             },
             "use": "openssl"
