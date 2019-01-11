@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,49 +37,38 @@
 **
 ****************************************************************************/
 
-#ifndef QEVDEVKEYBOARDMANAGER_P_H
-#define QEVDEVKEYBOARDMANAGER_P_H
+#ifndef QLINUXFBFUNCTIONS_H
+#define QLINUXFBFUNCTIONS_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qevdevkeyboardhandler_p.h"
-
-#include <QtDeviceDiscoverySupport/private/qdevicediscovery_p.h>
-
-#include <QObject>
-#include <QHash>
-#include <QSocketNotifier>
+#include <QtCore/QByteArray>
+#include <QtGui/QGuiApplication>
 
 QT_BEGIN_NAMESPACE
 
-class QEvdevKeyboardManager : public QObject
+class QLinuxFbFunctions
 {
 public:
-    QEvdevKeyboardManager(const QString &key, const QString &specification, QObject *parent = 0);
-    ~QEvdevKeyboardManager();
+    typedef void (*LoadKeymapType)(const QString &filename);
+    typedef void (*SwitchLangType)();
+    static QByteArray loadKeymapTypeIdentifier() { return QByteArrayLiteral("LinuxFbLoadKeymap"); }
+    static QByteArray switchLangTypeIdentifier() { return QByteArrayLiteral("LinuxFbSwitchLang"); }
 
-    void loadKeymap(const QString &file);
-    void switchLang();
+    static void loadKeymap(const QString &filename)
+    {
+        LoadKeymapType func = reinterpret_cast<LoadKeymapType>(QGuiApplication::platformFunction(loadKeymapTypeIdentifier()));
+        if (func)
+            func(filename);
+    }
 
-    void addKeyboard(const QString &deviceNode = QString());
-    void removeKeyboard(const QString &deviceNode);
-
-private:
-    QString m_spec;
-    QHash<QString,QEvdevKeyboardHandler*> m_keyboards;
-    QDeviceDiscovery *m_deviceDiscovery;
-    QString m_defaultKeymapFile;
+    static void switchLang()
+    {
+        SwitchLangType func = reinterpret_cast<SwitchLangType>(QGuiApplication::platformFunction(switchLangTypeIdentifier()));
+        if (func)
+            func();
+    }
 };
+
 
 QT_END_NAMESPACE
 
-#endif // QEVDEVKEYBOARDMANAGER_P_H
+#endif // QLINUXFBFUNCTIONS_H

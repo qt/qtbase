@@ -153,4 +153,10 @@ void QEvdevKeyboardManager::loadKeymap(const QString &file)
     }
 }
 
+void QEvdevKeyboardManager::switchLang()
+{
+    foreach (QEvdevKeyboardHandler *handler, m_keyboards)
+        handler->switchLang();
+}
+
 QT_END_NAMESPACE

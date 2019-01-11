@@ -26,11 +26,11 @@
 ****************************************************************************/
 
 /*!
-    \class QEglFSFunctions
+    \class QLinuxFbFunctions
     \inmodule QtPlatformHeaders
 
-    \brief The QEglFSFunctions class is an inline class containing
-    platform-specific functionality for the eglfs platform plugin that is
+    \brief The QLinuxFbFunctions class is an inline class containing
+    platform-specific functionality for the linuxfb platform plugin that is
     typically used on systems running Embedded Linux or Android.
 
     \note There is no binary compatibility guarantee for this class,
@@ -39,13 +39,13 @@
 */
 
 /*!
-    \typedef QEglFSFunctions::LoadKeymapType
+    \typedef QLinuxFbFunctions::LoadKeymapType
 
     Function type for loadKeymap.
 */
 
 /*!
-    \fn QByteArray QEglFSFunctions::loadKeymapTypeIdentifier()
+    \fn QByteArray QLinuxFbFunctions::loadKeymapTypeIdentifier()
 
     \return the identifier that can be passed to
     QGuiApplication::platformFunction() to query the entry point for the
@@ -53,7 +53,7 @@
 */
 
 /*!
-    \fn void QEglFSFunctions::loadKeymap(const QString &filename)
+    \fn void QLinuxFbFunctions::loadKeymap(const QString &filename)
 
     Loads and switches to the keymap from \a filename. When \a filename is
     empty, the default keymap, which is either the built-on one or the keymap
@@ -62,12 +62,12 @@
     \note This is functional only when the evdev keyboard support code is
     compiled in to the platform plugin. When using external generic plugins via
     the \c{-plugin} argument, or when the environment variable
-    \c{QT_QPA_EGLFS_DISABLE_INPUT} is set or when building Qt without evdev
+    \c{QT_QPA_FB_DISABLE_INPUT} is set or when building Qt without evdev
     support, this function will have no effect.
 */
 
 /*!
-    \fn void QEglFSFunctions::switchLang()
+    \fn void QLinuxFbFunctions::switchLang()
 
     Switches between English and other language when the keymap is loaded.
     Usually the keymap contains two languages: English and national. When
@@ -77,96 +77,6 @@
     \note This is functional only when the evdev keyboard support code is
     compiled in to the platform plugin. When using external generic plugins via
     the \c{-plugin} argument, or when the environment variable
-    \c{QT_QPA_EGLFS_DISABLE_INPUT} is set or when building Qt without evdev
+    \c{QT_QPA_FB_DISABLE_INPUT} is set or when building Qt without evdev
     support, this function will have no effect.
 */
-
-/*!
-    \fn int QEglFSFunctions::vsp2AddLayer(const QScreen *screen, int dmabufFd, const QSize &size, const QPoint &position, uint drmPixelFormat, uint bytesPerLine)
-    \internal
-    \preliminary
-*/
-
-/*!
-    \fn bool QEglFSFunctions::vsp2RemoveLayer(const QScreen *screen, int id)
-    \internal
-    \preliminary
-*/
-
-/*!
-    \fn void QEglFSFunctions::vsp2SetLayerBuffer(const QScreen *screen, int id, int dmabufFd)
-    \internal
-    \preliminary
-*/
-
-/*!
-    \fn bool QEglFSFunctions::vsp2SetLayerPosition(const QScreen *screen, int id, const QPoint &position)
-    \internal
-    \preliminary
-*/
-
-/*!
-    \fn bool QEglFSFunctions::vsp2SetLayerAlpha(const QScreen *screen, int id, qreal alpha)
-    \internal
-    \preliminary
-*/
-
-/*!
-    \fn void QEglFSFunctions::vsp2AddBlendListener(const QScreen *screen, void(*callback)())
-    \internal
-    \preliminary
-*/
-
-/*!
-    \typedef QEglFSFunctions::Vsp2AddBlendListenerType
-    \internal
-*/
-
-/*!
-    \typedef QEglFSFunctions::Vsp2AddLayerType
-    \internal
-*/
-
-/*!
-    \typedef QEglFSFunctions::Vsp2RemoveLayerType
-    \internal
-*/
-
-/*!
-    \typedef QEglFSFunctions::Vsp2SetLayerBufferType
-    \internal
-*/
-
-/*!
-    \typedef QEglFSFunctions::Vsp2SetLayerPositionType
-    \internal
-*/
-
-/*!
-    \typedef QEglFSFunctions::Vsp2SetLayerAlphaType
-    \internal
-*/
-
-/*! \fn QByteArray QEglFSFunctions::vsp2AddBlendListenerTypeIdentifier()
-    \internal
- */
-
-/*! \fn QByteArray QEglFSFunctions::vsp2AddLayerTypeIdentifier()
-    \internal
- */
-
-/*! \fn QByteArray QEglFSFunctions::vsp2RemoveLayerTypeIdentifier()
-    \internal
- */
-
-/*! \fn QByteArray QEglFSFunctions::vsp2SetLayerBufferTypeIdentifier()
-    \internal
- */
-
-/*! \fn QByteArray QEglFSFunctions::vsp2SetLayerPositionTypeIdentifier()
-    \internal
- */
-
-/*! \fn QByteArray QEglFSFunctions::vsp2SetLayerAlphaTypeIdentifier()
-    \internal
- */

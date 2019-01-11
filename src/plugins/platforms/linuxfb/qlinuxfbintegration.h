@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 class QAbstractEventDispatcher;
 class QFbScreen;
 class QFbVtHandler;
+class QEvdevKeyboardManager;
 
 class QLinuxFbIntegration : public QPlatformIntegration, public QPlatformNativeInterface
 {
@@ -71,15 +72,20 @@ public:
 
     QList<QPlatformScreen *> screens() const;
 
+    QFunctionPointer platformFunction(const QByteArray &function) const Q_DECL_OVERRIDE;
+
 private:
     void createInputHandlers();
+    static void loadKeymapStatic(const QString &filename);
+    static void switchLangStatic();
 
     QFbScreen *m_primaryScreen;
     QPlatformInputContext *m_inputContext;
     QScopedPointer<QPlatformFontDatabase> m_fontDb;
     QScopedPointer<QPlatformServices> m_services;
     QScopedPointer<QFbVtHandler> m_vtHandler;
-    QScopedPointer<QPlatformNativeInterface> m_nativeInterface;
+
+    QEvdevKeyboardManager *m_kbdMgr;
 };
 
 QT_END_NAMESPACE

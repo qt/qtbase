@@ -192,6 +192,8 @@ public:
     void readKeycode();
     KeycodeAction processKeycode(quint16 keycode, bool pressed, bool autorepeat);
 
+    void switchLang();
+
 private:
     void processKeyEvent(int nativecode, int unicode, int qtcode,
                          Qt::KeyboardModifiers modifiers, bool isPress, bool autoRepeat);
@@ -206,6 +208,7 @@ private:
     quint8 m_locks[3];
     int m_composing;
     quint16 m_dead_unicode;
+    quint8 m_langLock;
 
     bool m_no_zap;
     bool m_do_compose;
