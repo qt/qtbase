@@ -55,6 +55,7 @@ class MakefileGenerator : protected QMakeSourceFileInfo
 {
     QString spec;
     bool no_io;
+    bool resolveDependenciesInFrameworks = false;
     QHash<QString, bool> init_compiler_already;
     QString makedir, chkexists;
     QString build_args();

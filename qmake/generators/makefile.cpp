@@ -424,6 +424,9 @@ MakefileGenerator::init()
     }
     incs.append(project->specDir());
 
+    const auto platform = v["QMAKE_PLATFORM"];
+    resolveDependenciesInFrameworks = platform.contains("darwin");
+
     const char * const cacheKeys[] = { "_QMAKE_STASH_", "_QMAKE_SUPER_CACHE_", nullptr };
     for (int i = 0; cacheKeys[i]; ++i) {
         if (v[cacheKeys[i]].isEmpty())
@@ -1847,6 +1850,21 @@ QString MakefileGenerator::resolveDependency(const QDir &outDir, const QString &
         QString lf = outDir.absoluteFilePath(local + '/' + file);
         if (exists(lf))
             return lf;
+
+        if (resolveDependenciesInFrameworks) {
+            // Given a file like "QtWidgets/QWidget", try to resolve it
+            // as framework header "QtWidgets.framework/Headers/QWidget".
+            int cut = file.indexOf('/');
+            if (cut < 0 || cut + 1 >= file.size())
+                continue;
+            QStringRef framework = file.leftRef(cut);
+            QStringRef include = file.midRef(cut + 1);
+            if (local.endsWith('/' + framework + ".framework/Headers")) {
+                lf = outDir.absoluteFilePath(local + '/' + include);
+                if (exists(lf))
+                    return lf;
+            }
+        }
     }
     return {};
 }
