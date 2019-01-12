@@ -4214,7 +4214,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     case CE_MenuBarEmptyArea:
         if (const QStyleOptionMenuItem *mi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
             const bool selected = (opt->state & State_Selected) && (opt->state & State_Enabled) && (opt->state & State_Sunken);
-            const QBrush bg = selected ? mi->palette.highlight() : mi->palette.background();
+            const QBrush bg = selected ? mi->palette.highlight() : mi->palette.window();
             p->fillRect(mi->rect, bg);
 
             if (ce != CE_MenuBarItem)
