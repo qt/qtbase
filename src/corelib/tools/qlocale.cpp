@@ -2367,6 +2367,8 @@ QLocale QLocale::system()
 {
     // this function is NOT thread-safe!
     QT_PREPEND_NAMESPACE(systemData)(); // trigger updating of the system data if necessary
+    if (systemLocalePrivate.isDestroyed())
+        return QLocale(QLocale::C);
     return QLocale(*systemLocalePrivate->data());
 }
 
