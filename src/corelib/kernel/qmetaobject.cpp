@@ -814,6 +814,7 @@ int QMetaObjectPrivate::indexOfConstructor(const QMetaObject *m, const QByteArra
 }
 
 /*!
+    \fn int QMetaObjectPrivate::signalOffset(const QMetaObject *m)
     \internal
     \since 5.0
 
@@ -823,14 +824,6 @@ int QMetaObjectPrivate::indexOfConstructor(const QMetaObject *m, const QByteArra
     Similar to QMetaObject::methodOffset(), but non-signal methods are
     excluded.
 */
-int QMetaObjectPrivate::signalOffset(const QMetaObject *m)
-{
-    Q_ASSERT(m != 0);
-    int offset = 0;
-    for (m = m->d.superdata; m; m = m->d.superdata)
-        offset += priv(m->d.data)->signalCount;
-    return offset;
-}
 
 /*!
     \internal
