@@ -97,6 +97,8 @@ static bool read_xbm_header(QIODevice *device, int& w, int& h)
     if (r1.indexIn(sbuf) == 0 &&
          r2.indexIn(sbuf, r1.matchedLength()) == r1.matchedLength())
         w = QByteArray(&buf[r1.matchedLength()]).trimmed().toInt();
+    else
+        return false;
 
     // "#define .._height <num>"
     readBytes = device->readLine(buf, buflen);
@@ -109,6 +111,8 @@ static bool read_xbm_header(QIODevice *device, int& w, int& h)
     if (r1.indexIn(sbuf) == 0 &&
          r2.indexIn(sbuf, r1.matchedLength()) == r1.matchedLength())
         h = QByteArray(&buf[r1.matchedLength()]).trimmed().toInt();
+    else
+        return false;
 
     // format error
     if (w <= 0 || w > 32767 || h <= 0 || h > 32767)
