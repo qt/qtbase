@@ -476,7 +476,8 @@ void tst_QSyntaxHighlighter::avoidUnnecessaryRehighlight()
     QVERIFY(hl->highlighted);
 
     hl->highlighted = false;
-    QTRY_VERIFY(!hl->highlighted);
+    QCoreApplication::processEvents();
+    QVERIFY(!hl->highlighted);
 }
 
 void tst_QSyntaxHighlighter::avoidUnnecessaryDelayedRehighlight()
