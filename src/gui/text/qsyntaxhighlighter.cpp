@@ -376,6 +376,7 @@ void QSyntaxHighlighter::rehighlight()
 
     QTextCursor cursor(d->doc);
     d->rehighlight(cursor, QTextCursor::End);
+    d->rehighlightPending = false; // user manually did a full rehighlight
 }
 
 /*!
