@@ -782,15 +782,6 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
         QString expectedFileName = expectedFileNameFromTest(subdir, logger);
         QByteArrayList exp = expectedResult(expectedFileName);
         if (!exp.isEmpty()) {
-#ifdef Q_CC_MINGW
-            // MinGW formats double numbers differently (last verified with 7.1)
-            if (n == 0 && subdir == QStringLiteral("float")) {
-                for (int i = 0; i < exp.size(); ++i) {
-                    exp[i].replace("e-07", "e-007");
-                    exp[i].replace("e+07", "e+007");
-                }
-            }
-#endif
             if (!compareOutput(logger, subdir, actualOutputs[n], res, exp, &errorMessage)) {
                 errorMessage.prepend(QLatin1Char('"') + logger + QLatin1String("\", ")
                                      + expectedFileName + QLatin1Char(' '));

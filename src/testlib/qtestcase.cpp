@@ -2525,7 +2525,7 @@ bool QTest::qCompare(double const &t1, double const &t2, const char *actual, con
  */
 
 #define TO_STRING_IMPL(TYPE, FORMAT) \
-template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE >(const TYPE &t) \
+template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE>(const TYPE &t) \
 { \
     char *msg = new char[128]; \
     qsnprintf(msg, 128, #FORMAT, t); \
@@ -2548,8 +2548,57 @@ TO_STRING_IMPL(quint64, %llu)
 TO_STRING_IMPL(bool, %d)
 TO_STRING_IMPL(signed char, %hhd)
 TO_STRING_IMPL(unsigned char, %hhu)
-TO_STRING_IMPL(float, %g)
-TO_STRING_IMPL(double, %lg)
+
+/*!
+  \internal
+
+  Be consistent about leading 0 in exponent.
+
+  POSIX specifies that %e (hence %g when using it) uses at least two digits in
+  the exponent, requiring a leading 0 on single-digit exponents; (at least)
+  MinGW includes a leading zero also on an already-two-digit exponent,
+  e.g. 9e-040, which differs from more usual platforms.  So massage that away.
+ */
+static void massageExponent(char *text)
+{
+    char *p = strchr(text, 'e');
+    if (!p)
+        return;
+    const char *const end = p + strlen(p); // *end is '\0'
+    p += (p[1] == '-' || p[1] == '+') ? 2 : 1;
+    if (p[0] != '0' || end - 2 <= p)
+        return;
+    // We have a leading 0 on an exponent of at least two more digits
+    const char *n = p + 1;
+    while (end - 2 > n && n[0] == '0')
+        ++n;
+    memmove(p, n, end + 1 - n);
+}
+
+// Be consistent about display of infinities and NaNs (snprintf()'s varies,
+// notably on MinGW, despite POSIX documenting "[-]inf" or "[-]infinity" for %f,
+// %e and %g, uppercasing for their capital versions; similar for "nan"):
+#define TO_STRING_FLOAT(TYPE, FORMAT) \
+template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE>(const TYPE &t) \
+{ \
+    char *msg = new char[128]; \
+    switch (std::fpclassify(t)) { \
+    case FP_INFINITE: \
+        qstrncpy(msg, (t < 0 ? "-inf" : "inf"), 128); \
+        break; \
+    case FP_NAN: \
+        qstrncpy(msg, "nan", 128); \
+        break; \
+    default: \
+        qsnprintf(msg, 128, #FORMAT, t); \
+        massageExponent(msg); \
+        break; \
+    } \
+    return msg; \
+}
+
+TO_STRING_FLOAT(float, %g)
+TO_STRING_FLOAT(double, %.12lg)
 
 template <> Q_TESTLIB_EXPORT char *QTest::toString<char>(const char &t)
 {

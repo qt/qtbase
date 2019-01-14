@@ -1,20 +1,268 @@
 ********* Start testing of tst_float *********
 Config: Using QtTest library
 PASS   : tst_float::initTestCase()
-PASS   : tst_float::floatComparisons(should SUCCEED 1)
+PASS   : tst_float::doubleComparisons(should PASS 1)
+FAIL!  : tst_float::doubleComparisons(should FAIL 1) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1
+   Expected (operandRight): 3
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL 2) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1e-07
+   Expected (operandRight): 3e-07
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+PASS   : tst_float::doubleComparisons(should PASS 2)
+FAIL!  : tst_float::doubleComparisons(should FAIL 3) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : 999999999999
+   Expected (operandRight): 999999999998
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+PASS   : tst_float::doubleComparisons(should PASS 3)
+FAIL!  : tst_float::doubleComparisons(should FAIL 4) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : 9.99999999999e-311
+   Expected (operandRight): 9.99999999997e-311
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+PASS   : tst_float::doubleComparisons(should PASS 4)
+FAIL!  : tst_float::doubleComparisons(should FAIL 5) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : 9.99999999999e+306
+   Expected (operandRight): 9.99999999997e+306
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+PASS   : tst_float::doubleComparisons(should PASS: NaN == NaN)
+FAIL!  : tst_float::doubleComparisons(should FAIL: NaN != 0) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : nan
+   Expected (operandRight): 0
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: 0 != NaN) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : 0
+   Expected (operandRight): nan
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: NaN != 1) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : nan
+   Expected (operandRight): 1
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: 1 != NaN) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1
+   Expected (operandRight): nan
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+PASS   : tst_float::doubleComparisons(should PASS: inf == inf)
+PASS   : tst_float::doubleComparisons(should PASS: -inf == -inf)
+FAIL!  : tst_float::doubleComparisons(should FAIL: inf != -inf) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): -inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: -inf != inf) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: inf != nan) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): nan
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: nan != inf) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : nan
+   Expected (operandRight): inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: -inf != nan) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): nan
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: nan != -inf) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : nan
+   Expected (operandRight): -inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: inf != 0) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): 0
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: 0 != inf) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : 0
+   Expected (operandRight): inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: -inf != 0) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): 0
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: 0 != -inf) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : 0
+   Expected (operandRight): -inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: inf != 1) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): 1
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: 1 != inf) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1
+   Expected (operandRight): inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: -inf != 1) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): 1
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: 1 != -inf) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1
+   Expected (operandRight): -inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: inf != max) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): 1.79769313486e+308
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: inf != -max) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): -1.79769313486e+308
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: max != inf) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1.79769313486e+308
+   Expected (operandRight): inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: -max != inf) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : -1.79769313486e+308
+   Expected (operandRight): inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: -inf != max) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): 1.79769313486e+308
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: -inf != -max) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): -1.79769313486e+308
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: max != -inf) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1.79769313486e+308
+   Expected (operandRight): -inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::doubleComparisons(should FAIL: -max != -inf) Compared doubles are not the same (fuzzy compare)
+   Actual   (operandLeft) : -1.79769313486e+308
+   Expected (operandRight): -inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
 FAIL!  : tst_float::floatComparisons(should FAIL 1) Compared floats are not the same (fuzzy compare)
    Actual   (operandLeft) : 1
    Expected (operandRight): 3
    Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+PASS   : tst_float::floatComparisons(should PASS 1)
 FAIL!  : tst_float::floatComparisons(should FAIL 2) Compared floats are not the same (fuzzy compare)
    Actual   (operandLeft) : 1e-07
    Expected (operandRight): 3e-07
    Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+PASS   : tst_float::floatComparisons(should PASS 2)
 FAIL!  : tst_float::floatComparisons(should FAIL 3) Compared floats are not the same (fuzzy compare)
-   Actual   (operandLeft) : 99998
-   Expected (operandRight): 99999
+   Actual   (operandLeft) : 99999
+   Expected (operandRight): 99998
    Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
-PASS   : tst_float::floatComparisons(should SUCCEED 2)
+PASS   : tst_float::floatComparisons(should PASS 3)
+FAIL!  : tst_float::floatComparisons(should FAIL 4) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : 9.9999e-40
+   Expected (operandRight): 9.99971e-40
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+PASS   : tst_float::floatComparisons(should PASS 4)
+FAIL!  : tst_float::floatComparisons(should FAIL 5) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : 9.9999e+37
+   Expected (operandRight): 9.9997e+37
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+PASS   : tst_float::floatComparisons(should PASS: NaN == NaN)
+FAIL!  : tst_float::floatComparisons(should FAIL: NaN != 0) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : nan
+   Expected (operandRight): 0
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: 0 != NaN) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : 0
+   Expected (operandRight): nan
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: NaN != 1) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : nan
+   Expected (operandRight): 1
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: 1 != NaN) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1
+   Expected (operandRight): nan
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+PASS   : tst_float::floatComparisons(should PASS: inf == inf)
+PASS   : tst_float::floatComparisons(should PASS: -inf == -inf)
+FAIL!  : tst_float::floatComparisons(should FAIL: inf != -inf) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): -inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: -inf != inf) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: inf != nan) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): nan
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: nan != inf) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : nan
+   Expected (operandRight): inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: -inf != nan) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): nan
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: nan != -inf) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : nan
+   Expected (operandRight): -inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: inf != 0) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): 0
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: 0 != inf) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : 0
+   Expected (operandRight): inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: -inf != 0) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): 0
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: 0 != -inf) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : 0
+   Expected (operandRight): -inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: inf != 1) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): 1
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: 1 != inf) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1
+   Expected (operandRight): inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: -inf != 1) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): 1
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: 1 != -inf) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1
+   Expected (operandRight): -inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: inf != max) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): 3.40282e+38
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: inf != -max) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): -3.40282e+38
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: max != inf) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : 3.40282e+38
+   Expected (operandRight): inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: -max != inf) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : -3.40282e+38
+   Expected (operandRight): inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: -inf != max) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): 3.40282e+38
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: -inf != -max) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : -inf
+   Expected (operandRight): -3.40282e+38
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: max != -inf) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : 3.40282e+38
+   Expected (operandRight): -inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+FAIL!  : tst_float::floatComparisons(should FAIL: -max != -inf) Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : -3.40282e+38
+   Expected (operandRight): -inf
+   Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
 FAIL!  : tst_float::compareFloatTests(1e0) Compared floats are not the same (fuzzy compare)
    Actual   (t1): 1
    Expected (t3): 3
@@ -28,5 +276,5 @@ FAIL!  : tst_float::compareFloatTests(1e+7) Compared floats are not the same (fu
    Expected (t3): 3e+07
    Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
 PASS   : tst_float::cleanupTestCase()
-Totals: 4 passed, 6 failed, 0 skipped, 0 blacklisted, 0ms
+Totals: 16 passed, 65 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_float *********
