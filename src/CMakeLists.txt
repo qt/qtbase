@@ -58,7 +58,6 @@ add_subdirectory(tools)
 if(QT_FEATURE_gui)
     add_subdirectory(gui)
 
-    qt_pull_features_into_current_scope(PUBLIC_FEATURES Qt::Gui)
     if(QT_FEATURE_widgets)
         add_subdirectory(widgets)
         if(QT_FEATURE_opengl)

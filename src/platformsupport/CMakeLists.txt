@@ -1,6 +1,5 @@
 # Generated from platformsupport.pro.
 
-qt_pull_features_into_current_scope(PRIVATE_FEATURES Qt::Gui)
 add_subdirectory(themes)
 add_subdirectory(edid)
 add_subdirectory(eventdispatchers)

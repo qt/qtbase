@@ -823,23 +823,9 @@ def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
                                         scope.currentdir())))
 
 
-def handle_qt_for_config(scope: Scope, cm_fh: typing.IO[str], *,
-                         indent: int = 0) -> None:
-    for config in scope.get("QT_FOR_CONFIG") or []:
-        lib = map_qt_library(config)
-        if lib.endswith("Private"):
-            cm_fh.write('{}qt_pull_features_into_current_scope'
-                        '(PRIVATE_FEATURES {})\n'
-                        .format(spaces(indent), lib[:-len("Private")]))
-        else:
-            cm_fh.write('{}qt_pull_features_into_current_scope'
-                        '(PUBLIC_FEATURES {})\n'.format(spaces(indent), lib))
-
-
 def cmakeify_scope(scope: Scope, cm_fh: typing.IO[str], *,
                    indent: int = 0) -> None:
     template = scope.getTemplate()
-    handle_qt_for_config(scope, cm_fh)
     if template == 'subdirs':
         handle_subdir(scope, cm_fh, indent=indent)
     elif template in ('app', 'lib'):

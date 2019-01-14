@@ -6,8 +6,6 @@ find_library(FWCoreGraphics CoreGraphics)
 ## Gui Module:
 #####################################################################
 
-qt_load_global_features()
-
 if (QT_FEATURE_gui)
     if (WINRT)
         set(_default_platform "winrt")

@@ -2,8 +2,12 @@
 
 find_package(Qt@PROJECT_VERSION_MAJOR@ QUIET)
 
-include("${CMAKE_CURRENT_LIST_DIR}/@versioned_module_name@Targets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/@module_versioned@Targets.cmake")
 
-if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/@versioned_module_name@Macros.cmake")
-    include("${CMAKE_CURRENT_LIST_DIR}/@versioned_module_name@Macros.cmake")
+if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/@module_versioned@Macros.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/@module_versioned@Macros.cmake")
 endif()
+
+include QtFeature
+
+qt_make_features_available(Qt::@module@)

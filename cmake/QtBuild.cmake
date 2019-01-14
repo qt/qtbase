@@ -272,27 +272,6 @@ function(extend_target target)
             list(APPEND dbus_sources "${sources}")
         endforeach()
 
-        foreach(dep ${arg_FEATURE_DEPENDENCIES} ${arg_LIBRARIES} ${arg_PUBLIC_LIBRARIES})
-            if("${dep}" MATCHES "^Qt::((.+)(Private)|(.+))$")
-                if (${CMAKE_MATCH_COUNT} EQUAL 3)
-                    set(depTarget ${CMAKE_MATCH_2})
-                else()
-                    set(depTarget ${CMAKE_MATCH_4})
-                endif()
-
-                # Fetch features from dependencies and make them available to the
-                # caller as well as to the local scope for configure.cmake evaluation.
-                if(NOT TARGET "${dep}")
-                    find_package(Qt${PROJECT_VERSION_MAJOR}${depTarget} REQUIRED)
-                endif()
-
-                if("x${CMAKE_MATCH_3}" STREQUAL "xPrivate")
-                    qt_pull_features_into_current_scope(PRIVATE_FEATURES "Qt::${depTarget}")
-                endif()
-                qt_pull_features_into_current_scope(PUBLIC_FEATURES "Qt::${depTarget}")
-            endif()
-        endforeach()
-
         set_target_properties("${target}" PROPERTIES
             AUTOMOC ON
             AUTOMOC_EXECUTABLE "$<TARGET_FILE:Qt::moc>"
@@ -309,8 +288,6 @@ function(extend_target target)
         target_include_directories("${target}" PUBLIC ${arg_PUBLIC_INCLUDE_DIRECTORIES} PRIVATE ${arg_INCLUDE_DIRECTORIES})
         target_compile_definitions("${target}" PUBLIC ${arg_PUBLIC_DEFINES} PRIVATE ${arg_DEFINES})
         target_link_libraries("${target}" PUBLIC ${arg_PUBLIC_LIBRARIES} PRIVATE ${arg_LIBRARIES})
-
-        qt_push_features_into_parent_scope()
     endif()
 endfunction()
 
@@ -545,8 +522,6 @@ function(add_qt_module target)
         $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}>
         $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>
     )
-
-    qt_push_features_into_parent_scope()
 endfunction()
 
 
@@ -611,8 +586,6 @@ function(add_qt_plugin target)
     endif()
 
     qt_internal_add_linker_version_script(${target})
-
-    qt_push_features_into_parent_scope()
 endfunction()
 
 
@@ -645,8 +618,6 @@ function(add_qt_executable name)
         WIN32_EXECUTABLE "${arg_GUI}"
         MACOSX_BUNDLE "${arg_GUI}"
     )
-
-    qt_push_features_into_parent_scope()
 endfunction()
 
 
@@ -671,8 +642,6 @@ function(add_qt_test name)
     set_tests_properties("${name}" PROPERTIES RUN_SERIAL "${arg_RUN_SERIAL}")
     set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "PATH=${path}${QT_PATH_SEPARATOR}${CMAKE_CURRENT_BINARY_DIR}${QT_PATH_SEPARATOR}$ENV{PATH}")
     set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "QT_PLUGIN_PATH=${PROJECT_BINARY_DIR}/${INSTALL_PLUGINSDIR}")
-
-    qt_push_features_into_parent_scope()
 endfunction()
 
 
@@ -680,7 +649,6 @@ endfunction()
 # tests launch separate programs to test certainly input/output behavior.
 function(add_qt_test_helper name)
     add_qt_executable("${name}" OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" ${ARGN})
-    qt_push_features_into_parent_scope()
 endfunction()
 
 
@@ -706,7 +674,6 @@ function(add_qt_tool name)
     qt_internal_add_target_aliases("${name}")
 
     install(TARGETS "${name}" EXPORT "Qt${PROJECT_VERSION_MAJOR}ToolsTargets" DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
-    qt_push_features_into_parent_scope()
 endfunction()
 
 
