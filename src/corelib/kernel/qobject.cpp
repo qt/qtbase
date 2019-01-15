@@ -4446,7 +4446,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     macro, it must appear in the private section of a class definition.
 
     Q_GADGETs can have Q_ENUM, Q_PROPERTY and Q_INVOKABLE, but they cannot have
-    signals or slots
+    signals or slots.
 
     Q_GADGET makes a class member, \c{staticMetaObject}, available.
     \c{staticMetaObject} is of type QMetaObject and provides access to the
