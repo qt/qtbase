@@ -95,6 +95,9 @@ private:
     template <class DomClass> using DomObjectHash = QHash<const DomClass *, QString>;
 
     template <class DomClass>
+    const DomClass *findByAttributeName(const DomObjectHash<DomClass> &domHash,
+                                        const QString &name) const;
+    template <class DomClass>
     QString findOrInsert(DomObjectHash<DomClass> *domHash, const DomClass *dom, const QString &className);
 
     Option m_option;

@@ -1069,28 +1069,29 @@ void WriteInitialization::acceptActionRef(DomActionRef *node)
     }
 
     const QString varName = m_driver->findOrInsertWidget(m_widgetChain.top());
-    const bool isSeparator = actionName == QLatin1String("separator");
-    bool isMenu = false;
 
-    if (const DomWidget *w = m_driver->widgetByName(actionName)) {
-        isMenu = m_uic->isMenu(w->attributeClass());
-    } else if (!(m_driver->actionByName(actionName) || isSeparator)) {
-        fprintf(stderr, "%s: Warning: action `%s' not declared\n",
-                qPrintable(m_option.messagePrefix()),
-                actionName.toLatin1().data());
-        return;
-    }
-
-    if (m_widgetChain.top() && isSeparator) {
+    if (m_widgetChain.top() && actionName == QLatin1String("separator")) {
         // separator is always reserved!
         m_actionOut << m_indent << varName << "->addSeparator();\n";
         return;
     }
 
-    if (isMenu)
-        actionName += QLatin1String("->menuAction()");
+    const DomWidget *domWidget = m_driver->widgetByName(actionName);
+    if (domWidget && m_uic->isMenu(domWidget->attributeClass())) {
+        m_actionOut << m_indent << varName << "->addAction("
+            << m_driver->findOrInsertWidget(domWidget) << "->menuAction());\n";
+        return;
+    }
 
-    m_actionOut << m_indent << varName << "->addAction(" << actionName << ");\n";
+    const DomAction *domAction = m_driver->actionByName(actionName);
+    if (!domAction) {
+        fprintf(stderr, "%s: Warning: action `%s' not declared\n",
+                qPrintable(m_option.messagePrefix()), qPrintable(actionName));
+        return;
+    }
+
+    m_actionOut << m_indent << varName << "->addAction("
+        << m_driver->findOrInsertAction(domAction) << ");\n";
 }
 
 QString WriteInitialization::writeStringListProperty(const DomStringList *list) const
@@ -2430,13 +2431,11 @@ QTextStream &WriteInitialization::autoTrOutput(const DomString *str, const QStri
 
 QString WriteInitialization::findDeclaration(const QString &name)
 {
-    const QString normalized = Driver::normalizedName(name);
-
-    if (const DomWidget *widget = m_driver->widgetByName(normalized))
+    if (const DomWidget *widget = m_driver->widgetByName(name))
         return m_driver->findOrInsertWidget(widget);
-    if (const DomAction *action = m_driver->actionByName(normalized))
+    if (const DomAction *action = m_driver->actionByName(name))
         return m_driver->findOrInsertAction(action);
-    if (const DomButtonGroup *group = m_driver->findButtonGroup(normalized))
+    if (const DomButtonGroup *group = m_driver->findButtonGroup(name))
         return m_driver->findOrInsertButtonGroup(group);
     return QString();
 }
