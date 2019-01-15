@@ -180,6 +180,13 @@ void QXunitTestLogger::addIncident(IncidentTypes type, const char *description,
         ++failureCounter;
         typeBuf = "bfail";
         break;
+    case QAbstractTestLogger::BlacklistedXPass:
+        typeBuf = "bxpass";
+        break;
+    case QAbstractTestLogger::BlacklistedXFail:
+        ++failureCounter;
+        typeBuf = "bxfail";
+        break;
     default:
         typeBuf = "??????";
         break;
@@ -212,11 +219,11 @@ void QXunitTestLogger::addIncident(IncidentTypes type, const char *description,
         if (!strcmp(oldResult, "pass")) {
             overwrite = true;
         }
-        else if (!strcmp(oldResult, "bpass")) {
+        else if (!strcmp(oldResult, "bpass") || !strcmp(oldResult, "bxfail")) {
             overwrite = (type == QAbstractTestLogger::XPass || type == QAbstractTestLogger::Fail) || (type == QAbstractTestLogger::XFail)
-                    || (type == QAbstractTestLogger::BlacklistedFail);
+                    || (type == QAbstractTestLogger::BlacklistedFail) || (type == QAbstractTestLogger::BlacklistedXPass);
         }
-        else if (!strcmp(oldResult, "bfail")) {
+        else if (!strcmp(oldResult, "bfail") || !strcmp(oldResult, "bxpass")) {
             overwrite = (type == QAbstractTestLogger::XPass || type == QAbstractTestLogger::Fail) || (type == QAbstractTestLogger::XFail);
         }
         else if (!strcmp(oldResult, "xfail")) {

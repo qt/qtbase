@@ -123,13 +123,15 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
         return;
     }
 
-    bool ok = type == Pass || type == XPass || type == BlacklistedPass;
+    bool ok = type == Pass || type == XPass || type == BlacklistedPass || type == BlacklistedXPass;
 
     QTestCharBuffer directive;
-    if (type == XFail || type == XPass || type == BlacklistedFail || type == BlacklistedPass)
+    if (type == XFail || type == XPass || type == BlacklistedFail || type == BlacklistedPass
+            || type == BlacklistedXFail || type == BlacklistedXPass) {
         // We treat expected or blacklisted failures/passes as TODO-failures/passes,
         // which should be treated as soft issues by consumers. Not all do though :/
         QTest::qt_asprintf(&directive, " # TODO %s", description);
+    }
 
     int testNumber = QTestLog::totalCount();
     if (type == XFail) {

@@ -24,15 +24,15 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xfail">
-<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
-    <Description><![CDATA[This test should XFAIL then BFAIL]]></Description>
+<Incident type="bxfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+    <Description><![CDATA[This test should BXFAIL then BPASS]]></Description>
 </Incident>
 <Incident type="bpass" file="" line="0" />
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xpass">
-<Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
-    <Description><![CDATA['true' returned TRUE unexpectedly. (This test should XPASS, blacklist ignored for XPASS)]]></Description>
+<Incident type="bxpass" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+    <Description><![CDATA['true' returned TRUE unexpectedly. (This test should BXPASS)]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>

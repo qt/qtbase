@@ -455,6 +455,24 @@ void QTestLog::addBFail(const char *msg, const char *file, int line)
     QTest::TestLoggers::addIncident(QAbstractTestLogger::BlacklistedFail, msg, file, line);
 }
 
+void QTestLog::addBXPass(const char *msg, const char *file, int line)
+{
+    QTEST_ASSERT(msg);
+    QTEST_ASSERT(file);
+
+    ++QTest::blacklists;
+
+    QTest::TestLoggers::addIncident(QAbstractTestLogger::BlacklistedXPass, msg, file, line);
+}
+
+void QTestLog::addBXFail(const char *msg, const char *file, int line)
+{
+    QTEST_ASSERT(msg);
+    QTEST_ASSERT(file);
+
+    QTest::TestLoggers::addIncident(QAbstractTestLogger::BlacklistedXFail, msg, file, line);
+}
+
 void QTestLog::addSkip(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
