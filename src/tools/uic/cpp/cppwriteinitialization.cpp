@@ -698,11 +698,12 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QToolBox"))) {
         const DomProperty *plabel = attributes.value(QLatin1String("label"));
         DomString *plabelString = plabel ? plabel->elementString() : 0;
-
-        m_output << m_indent << parentWidget << "->addItem(" << varName;
+        QString icon;
         if (const DomProperty *picon = attributes.value(QLatin1String("icon")))
-            m_output << ", " << iconCall(picon);
-        m_output << ", " << noTrCall(plabelString, pageDefaultString) << ");\n";
+            icon = QLatin1String(", ") + iconCall(picon); // Side effect: Writes icon definition
+
+        m_output << m_indent << parentWidget << "->addItem(" << varName << icon
+            << ", " << noTrCall(plabelString, pageDefaultString) << ");\n";
 
         autoTrOutput(plabelString, pageDefaultString) << m_indent << parentWidget << "->setItemText("
                    << parentWidget << "->indexOf(" << varName << "), " << autoTrCall(plabelString, pageDefaultString) << ");\n";
@@ -718,11 +719,11 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QTabWidget"))) {
         const DomProperty *ptitle = attributes.value(QLatin1String("title"));
         DomString *ptitleString = ptitle ? ptitle->elementString() : 0;
-
-        m_output << m_indent << parentWidget << "->addTab(" << varName;
+        QString icon;
         if (const DomProperty *picon = attributes.value(QLatin1String("icon")))
-            m_output << ", " << iconCall(picon);
-        m_output << ", " << "QString());\n";
+            icon = QLatin1String(", ") + iconCall(picon); // Side effect: Writes icon definition
+        m_output << m_indent << parentWidget << "->addTab(" << varName << icon
+            << ", " << "QString());\n";
 
         autoTrOutput(ptitleString, pageDefaultString) << m_indent << parentWidget << "->setTabText("
                    << parentWidget << "->indexOf(" << varName << "), " << autoTrCall(ptitleString, pageDefaultString) << ");\n";

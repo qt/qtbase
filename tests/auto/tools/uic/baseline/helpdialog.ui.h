@@ -124,7 +124,8 @@ public:
 
         vboxLayout1->addWidget(listContents);
 
-        tabWidget->addTab(contentPage, QString());
+        QIcon icon(QIcon::fromTheme(QString::fromUtf8("edit-copy")));
+        tabWidget->addTab(contentPage, icon, QString());
         indexPage = new QWidget();
         indexPage->setObjectName(QString::fromUtf8("indexPage"));
         vboxLayout2 = new QVBoxLayout(indexPage);

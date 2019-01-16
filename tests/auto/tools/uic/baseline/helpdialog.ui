@@ -57,6 +57,9 @@
       <string>Displays help topics organized by category, index or bookmarks. Another tab inherits the full text search.</string>
      </property>
      <widget class="QWidget" name="contentPage" >
+      <attribute name="icon">
+       <iconset theme="edit-copy"/>
+      </attribute>
       <attribute name="title" >
        <string>Con&amp;tents</string>
       </attribute>
