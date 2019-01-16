@@ -314,6 +314,7 @@
 #include "qssl_p.h"
 #include "qsslsocket.h"
 #include "qsslcipher.h"
+#include "qocspresponse.h"
 #ifndef QT_NO_OPENSSL
 #include "qsslsocket_openssl_p.h"
 #endif
@@ -1151,6 +1152,20 @@ QSsl::SslProtocol QSslSocket::sessionProtocol() const
     return d->sessionProtocol();
 }
 
+/*!
+    \since 5.13
+
+    This function returns Online Certificate Status Protocol response that
+    a server may send during a TLS handshake using OCSP stapling. If no
+    definitive or no response was received at all, the response is empty.
+
+    \sa QSslConfiguration::setOcspStaplingEnabled(), QOcspResponse::isNull()
+*/
+QOcspResponse QSslSocket::ocspResponse() const
+{
+    Q_D(const QSslSocket);
+    return d->ocspResponse;
+}
 
 /*!
     Sets the socket's private \l {QSslKey} {key} to \a key. The
@@ -2135,6 +2150,7 @@ void QSslSocketPrivate::init()
     shutdown = false;
     pendingClose = false;
     flushTriggered = false;
+    ocspResponse.clear();
 
     // we don't want to clear the ignoreErrorsList, so
     // that it is possible setting it before connecting

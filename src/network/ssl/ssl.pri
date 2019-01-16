@@ -29,7 +29,9 @@ qtConfig(ssl) {
                ssl/qsslsocket.h \
                ssl/qsslsocket_p.h \
                ssl/qsslpresharedkeyauthenticator.h \
-               ssl/qsslpresharedkeyauthenticator_p.h
+               ssl/qsslpresharedkeyauthenticator_p.h \
+               ssl/qocspresponse.h \
+               ssl/qocspresponse_p.h
     SOURCES += ssl/qsslconfiguration.cpp \
                ssl/qsslcipher.cpp \
                ssl/qssldiffiehellmanparameters.cpp \
@@ -37,7 +39,8 @@ qtConfig(ssl) {
                ssl/qsslkey_p.cpp \
                ssl/qsslerror.cpp \
                ssl/qsslsocket.cpp \
-               ssl/qsslpresharedkeyauthenticator.cpp
+               ssl/qsslpresharedkeyauthenticator.cpp \
+               ssl/qocspresponse.cpp
 
     winrt {
         HEADERS += ssl/qsslsocket_winrt_p.h

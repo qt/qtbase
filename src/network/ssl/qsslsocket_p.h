@@ -58,6 +58,7 @@
 #include <private/qtcpsocket_p.h>
 #include "qsslkey.h"
 #include "qsslconfiguration_p.h"
+#include "qocspresponse.h"
 #ifndef QT_NO_OPENSSL
 #include <private/qsslcontext_openssl_p.h>
 #else
@@ -207,6 +208,7 @@ protected:
     bool verifyErrorsHaveBeenIgnored();
     bool paused;
     bool flushTriggered;
+    QOcspResponse ocspResponse;
 };
 
 #if QT_CONFIG(securetransport) || QT_CONFIG(schannel)

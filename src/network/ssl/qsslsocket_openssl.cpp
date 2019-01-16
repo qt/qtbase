@@ -65,6 +65,7 @@
 #include "qsslellipticcurve.h"
 #include "qsslpresharedkeyauthenticator.h"
 #include "qsslpresharedkeyauthenticator_p.h"
+#include "qocspresponse_p.h"
 
 #ifdef Q_OS_WIN
 #include "qwindowscarootfetcher_p.h"
@@ -254,6 +255,34 @@ QSslError qt_OCSP_response_status_to_QSslError(long code)
     default:
         return {};
     }
+    Q_UNREACHABLE();
+}
+
+OcspRevocationReason qt_OCSP_revocation_reason(int reason)
+{
+    switch (reason) {
+    case OCSP_REVOKED_STATUS_NOSTATUS:
+        return OcspRevocationReason::None;
+    case OCSP_REVOKED_STATUS_UNSPECIFIED:
+        return OcspRevocationReason::Unspecified;
+    case OCSP_REVOKED_STATUS_KEYCOMPROMISE:
+        return OcspRevocationReason::KeyCompromise;
+    case OCSP_REVOKED_STATUS_CACOMPROMISE:
+        return OcspRevocationReason::CACompromise;
+    case OCSP_REVOKED_STATUS_AFFILIATIONCHANGED:
+        return OcspRevocationReason::AffiliationChanged;
+    case OCSP_REVOKED_STATUS_SUPERSEDED:
+        return OcspRevocationReason::Superseded;
+    case OCSP_REVOKED_STATUS_CESSATIONOFOPERATION:
+        return OcspRevocationReason::CessationOfOperation;
+    case OCSP_REVOKED_STATUS_CERTIFICATEHOLD:
+        return OcspRevocationReason::CertificateHold;
+    case OCSP_REVOKED_STATUS_REMOVEFROMCRL:
+        return OcspRevocationReason::RemoveFromCRL;
+    default:
+        return OcspRevocationReason::None;
+    }
+
     Q_UNREACHABLE();
 }
 
@@ -1429,6 +1458,9 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
     Q_ASSERT(mode == QSslSocket::SslClientMode); // See initSslContext() for SslServerMode
     Q_ASSERT(configuration.peerVerifyMode != QSslSocket::VerifyNone);
 
+    ocspResponse.clear();
+    QOcspResponsePrivate *dResponse = ocspResponse.d.data();
+
     ocspErrorDescription.clear();
     ocspErrors.clear();
 
@@ -1524,9 +1556,10 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
     // Let's make sure the response is for the correct certificate - we
     // can re-create this CertID using our peer's certificate and its
     // issuer's public key.
-
+    dResponse->isNull = false;
     bool matchFound = false;
     if (configuration.peerCertificate.isSelfSigned()) {
+        dResponse->signerCert = configuration.peerCertificate;
         matchFound = qt_OCSP_certificate_match(singleResponse, peerX509, peerX509);
     } else {
         const STACK_OF(X509) *certs = q_SSL_get_peer_cert_chain(ssl);
@@ -1541,16 +1574,20 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
                 X509 *issuer = q_sk_X509_value(certs, i);
                 matchFound = qt_OCSP_certificate_match(singleResponse, peerX509, issuer);
                 if (matchFound) {
-                    if (q_X509_check_issued(issuer, peerX509) == X509_V_OK)
+                    if (q_X509_check_issued(issuer, peerX509) == X509_V_OK) {
+                        dResponse->signerCert =  QSslCertificatePrivate::QSslCertificate_from_X509(issuer);
                         break;
+                    }
                     matchFound = false;
                 }
             }
         }
     }
 
-    if (!matchFound)
+    if (!matchFound) {
+        dResponse->signerCert.clear();
         ocspErrors.push_back({QSslError::OcspResponseCertIdUnknown, configuration.peerCertificate});
+    }
 
     // Check if the response is valid time-wise:
     ASN1_GENERALIZEDTIME *revTime = nullptr;
@@ -1562,6 +1599,7 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
         // This is unexpected, treat as SslHandshakeError, OCSP_check_validity assumes this pointer
         // to be != nullptr.
         ocspErrors.clear();
+        ocspResponse.clear();
         ocspErrorDescription = QSslSocket::tr("Failed to extract 'this update time' from the SingleResponse");
         return false;
     }
@@ -1582,11 +1620,15 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
     switch (certStatus) {
     case V_OCSP_CERTSTATUS_GOOD:
         // This certificate was not found among the revoked ones.
+        dResponse->certificateStatus = OcspCertificateStatus::Good;
         break;
     case V_OCSP_CERTSTATUS_REVOKED:
+        dResponse->certificateStatus = OcspCertificateStatus::Revoked;
+        dResponse->revocationReason = qt_OCSP_revocation_reason(reason);
         ocspErrors.push_back({QSslError::CertificateRevoked, configuration.peerCertificate});
         break;
     case V_OCSP_CERTSTATUS_UNKNOWN:
+        dResponse->certificateStatus = OcspCertificateStatus::Unknown;
         ocspErrors.push_back({QSslError::OcspStatusUnknown, configuration.peerCertificate});
     }
 

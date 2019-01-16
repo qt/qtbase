@@ -1,0 +1,238 @@
+/****************************************************************************
+** Copyright (C) 2011 Richard J. Moore <rich@kde.org>
+** Copyright (C) 2019 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the QtNetwork module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
+** packaging of this file. Please review the following information to
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include "qocspresponse_p.h"
+#include "qocspresponse.h"
+
+QT_BEGIN_NAMESPACE
+
+/*!
+    \class QOcspResponse
+    \brief This class represents Online Certificate Status Protocol response
+    \since 5.13
+
+    \ingroup network
+    \ingroup ssl
+    \inmodule QtNetwork
+
+    The QOcspResponse class represents the revocation status of a server's certficate,
+    received by the client-side socket during the TLS handshake. QSslSocket must be
+    configured with OCSP stapling enabled. A non-empty response corresponds to the
+    certificate that can be obtained from QSslConfiguration::peerCertificate().
+
+    \sa QSslSocket, QSslSocket::ocspResponse(), isNull(), clear(), certificateStatus(),
+    revocationReason(), responder(), OcspCertificateStatus, OcspRevocationReason,
+    QSslConfiguration::setOcspStaplingEnabled(), QSslConfiguration::ocspStaplingEnabled(),
+    QSslConfiguration::peerCertificate()
+*/
+
+/*!
+    \enum OcspCertificateStatus
+    \brief Describes the Online Certificate Status
+    \relates QOcspResponse
+    \since 5.13
+
+    \ingroup network
+    \ingroup ssl
+    \inmodule QtNetwork
+
+    \value Good The certificate is not revoked, but this does not necessarily
+           mean that the certificate was ever issued or that the time at which
+           the response was produced is within the certificate's validity interval.
+    \value Revoked This state indicates that the certificate has been revoked
+           (either permanently or temporarily - on hold).
+    \value Unknown This state indicates that the responder doesn't know about
+           the certificate being requested.
+
+    \sa OcspRevocationReason
+*/
+
+/*!
+    \enum OcspRevocationReason
+    \brief Describes the reason for revocation
+    \relates QOcspResponse
+    \since 5.13
+
+    \ingroup network
+    \ingroup ssl
+    \inmodule QtNetwork
+
+
+    This enumeration describes revocation reasons, defined in \l{https://tools.ietf.org/html/rfc5280#section-5.3.1}{RFC 5280, section 5.3.1}
+
+    \value None
+    \value Unspecified
+    \value KeyCompromise
+    \value CACompromise
+    \value AffiliationChanged
+    \value Superseded
+    \value CessationOfOperation
+    \value CertificateHold
+    \value RemoveFromCRL
+*/
+
+/*!
+    \since 5.13
+
+    Creates a new, null OCSP response.
+
+    \sa isNull()
+*/
+QOcspResponse::QOcspResponse()
+    : d(new QOcspResponsePrivate)
+{
+}
+
+/*!
+    \since 5.13
+
+    Creates a new response, the copy of \a other.
+*/
+QOcspResponse::QOcspResponse(const QOcspResponse &other)
+{
+    *d = *other.d;
+}
+
+/*!
+    \since 5.13
+
+    Move-constructs a QOcspResponse instance.
+*/
+QOcspResponse::QOcspResponse(QOcspResponse &&other) Q_DECL_NOTHROW
+{
+    d.swap(other.d);
+}
+
+/*!
+    \since 5.13
+
+    Destroys the response.
+*/
+QOcspResponse::~QOcspResponse()
+{
+}
+
+/*!
+    \since 5.13
+
+    Assignes \a other to the response and returns a reference to this response.
+*/
+QOcspResponse &QOcspResponse::operator=(const QOcspResponse &other)
+{
+    if (this != &other)
+        *d = *other.d;
+
+    return *this;
+}
+
+/*!
+    \since 5.13
+
+    Move-assigns \a other to this QOcspResponse instance.
+*/
+QOcspResponse &QOcspResponse::operator=(QOcspResponse &&other) Q_DECL_NOTHROW
+{
+    if (this != &other)
+        d.swap(other.d);
+
+    return *this;
+}
+
+/*!
+    \since 5.13
+
+    Returns \c true for default-constructed OCSP responses and also if during a
+    handshake no definitive OCSP response, or no response was received at all.
+
+    \sa QOcspResponse(), QSslSocket::ocspResponse()
+*/
+bool QOcspResponse::isNull() const
+{
+    return d->isNull;
+}
+
+/*!
+    \since 5.13
+
+    Resets this QOcspResponse to its default, null state.
+
+    \sa QOcspResponse(), isNull()
+*/
+void QOcspResponse::clear()
+{
+
+    d->certificateStatus = OcspCertificateStatus::Unknown;
+    d->revocationReason = OcspRevocationReason::None;
+    d->isNull = true;
+    d->signerCert.clear();
+}
+
+/*!
+    \since 5.13
+
+    Returns the certificate status.
+
+    \sa OcspCertificateStatus
+*/
+OcspCertificateStatus QOcspResponse::certificateStatus() const
+{
+    return d->certificateStatus;
+}
+
+/*!
+    \since 5.13
+
+    Returns the reason for revocation.
+*/
+OcspRevocationReason QOcspResponse::revocationReason() const
+{
+    return d->revocationReason;
+}
+
+/*!
+    \since 5.13
+
+    This function returns a certificate used to sign OCSP response.
+*/
+QSslCertificate QOcspResponse::responder() const
+{
+    return d->signerCert;
+}
+
+QT_END_NAMESPACE
