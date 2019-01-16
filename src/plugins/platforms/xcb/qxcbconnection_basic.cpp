@@ -134,6 +134,7 @@ QXcbBasicConnection::QXcbBasicConnection(const char *displayName)
 
     m_setup = xcb_get_setup(m_xcbConnection);
     m_xcbAtom.initialize(m_xcbConnection);
+    m_maximumRequestLength = xcb_get_maximum_request_length(m_xcbConnection);
 
     xcb_extension_t *extensions[] = {
         &xcb_shm_id, &xcb_xfixes_id, &xcb_randr_id, &xcb_shape_id, &xcb_sync_id,
@@ -178,6 +179,14 @@ QXcbBasicConnection::~QXcbBasicConnection()
     }
 }
 
+size_t QXcbBasicConnection::maxRequestDataBytes(size_t requestSize) const
+{
+    if (hasBigRequest())
+        requestSize += 4; // big-request encoding adds 4 bytes
+
+    return m_maximumRequestLength * 4 - requestSize;
+}
+
 xcb_atom_t QXcbBasicConnection::internAtom(const char *name)
 {
     if (!name || *name == 0)
@@ -197,6 +206,11 @@ QByteArray QXcbBasicConnection::atomName(xcb_atom_t atom)
 
     qCWarning(lcQpaXcb) << "atomName: bad atom" << atom;
     return QByteArray();
+}
+
+bool QXcbBasicConnection::hasBigRequest() const
+{
+    return m_maximumRequestLength > m_setup->maximum_request_length;
 }
 
 #if QT_CONFIG(xcb_xinput)

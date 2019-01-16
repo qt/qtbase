@@ -240,8 +240,8 @@ QXcbClipboard::QXcbClipboard(QXcbConnection *c)
         xcb_xfixes_select_selection_input_checked(xcb_connection(), m_owner, atom(QXcbAtom::CLIPBOARD), mask);
     }
 
-    // change property protocol request is 24 bytes
-    m_increment = (xcb_get_maximum_request_length(xcb_connection()) * 4) - 24;
+    // xcb_change_property_request_t and xcb_get_property_request_t are the same size
+    m_maxPropertyRequestDataBytes = connection()->maxRequestDataBytes(sizeof(xcb_change_property_request_t));
 }
 
 QXcbClipboard::~QXcbClipboard()
@@ -486,7 +486,7 @@ xcb_atom_t QXcbClipboard::sendSelection(QMimeData *d, xcb_atom_t target, xcb_win
         if (m_clipboard_closing)
             allow_incr = false;
 
-        if (data.size() > m_increment && allow_incr) {
+        if (data.size() > m_maxPropertyRequestDataBytes && allow_incr) {
             long bytes = data.size();
             xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, window, property,
                                 atom(QXcbAtom::INCR), 32, 1, (const void *)&bytes);
@@ -496,7 +496,7 @@ xcb_atom_t QXcbClipboard::sendSelection(QMimeData *d, xcb_atom_t target, xcb_win
         }
 
         // make sure we can perform the XChangeProperty in a single request
-        if (data.size() > m_increment)
+        if (data.size() > m_maxPropertyRequestDataBytes)
             return XCB_NONE; // ### perhaps use several XChangeProperty calls w/ PropModeAppend?
         int dataSize = data.size() / (dataFormat / 8);
         // use a single request to transfer data
@@ -678,17 +678,8 @@ void QXcbClipboard::handleXFixesSelectionRequest(xcb_xfixes_selection_notify_eve
         emitChanged(mode);
 }
 
-
-static inline int maxSelectionIncr(xcb_connection_t *c)
-{
-    int l = xcb_get_maximum_request_length(c);
-    return (l > 65536 ? 65536*4 : l*4) - 100;
-}
-
 bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property, bool deleteProperty, QByteArray *buffer, int *size, xcb_atom_t *type, int *format)
 {
-    int    maxsize = maxSelectionIncr(xcb_connection());
-    ulong  bytes_left; // bytes_after
     xcb_atom_t   dummy_type;
     int    dummy_format;
 
@@ -705,7 +696,8 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
     }
     *type = reply->type;
     *format = reply->format;
-    bytes_left = reply->bytes_after;
+
+    auto bytes_left = reply->bytes_after;
 
     int  offset = 0, buffer_offset = 0;
 
@@ -720,7 +712,8 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
         while (bytes_left) {
             // more to read...
 
-            reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(), false, win, property, XCB_GET_PROPERTY_TYPE_ANY, offset, maxsize/4);
+            reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(), false, win, property,
+                                XCB_GET_PROPERTY_TYPE_ANY, offset, m_maxPropertyRequestDataBytes / 4);
             if (!reply || reply->type == XCB_NONE)
                 break;
 

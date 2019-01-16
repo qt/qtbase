@@ -113,7 +113,7 @@ public:
     xcb_window_t getSelectionOwner(xcb_atom_t atom) const;
     QByteArray getSelection(xcb_atom_t selection, xcb_atom_t target, xcb_atom_t property, xcb_timestamp_t t = 0);
 
-    int increment() const { return m_increment; }
+    int increment() const { return m_maxPropertyRequestDataBytes; }
     int clipboardTimeout() const { return clipboard_timeout; }
 
     void removeTransaction(xcb_window_t window) { m_transactions.remove(window); }
@@ -137,7 +137,7 @@ private:
 
     static const int clipboard_timeout;
 
-    int m_increment = 0;
+    int m_maxPropertyRequestDataBytes = 0;
     bool m_clipboard_closing = false;
     xcb_timestamp_t m_incr_receive_time = 0;
 

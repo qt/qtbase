@@ -73,6 +73,8 @@ public:
     }
     const xcb_setup_t *setup() const { return m_setup; }
 
+    size_t maxRequestDataBytes(size_t requestSize) const;
+
     inline xcb_atom_t atom(QXcbAtom::Atom qatom) const { return m_xcbAtom.atom(qatom); }
     QXcbAtom::Atom qatom(xcb_atom_t atom) const { return m_xcbAtom.qatom(atom); }
     xcb_atom_t internAtom(const char *name);
@@ -94,6 +96,7 @@ public:
     bool hasShmFd() const { return m_hasShmFd; }
     bool hasXSync() const { return m_hasXSync; }
     bool hasXinerama() const { return m_hasXinerama; }
+    bool hasBigRequest() const;
 
 #if QT_CONFIG(xcb_xinput)
     bool isAtLeastXI21() const { return m_xi2Enabled && m_xi2Minor >= 1; }
@@ -152,6 +155,8 @@ private:
     uint32_t m_xfixesFirstEvent = 0;
     uint32_t m_xrandrFirstEvent = 0;
     uint32_t m_xkbFirstEvent = 0;
+
+    uint32_t m_maximumRequestLength = 0;
 };
 
 #define Q_XCB_REPLY_CONNECTION_ARG(connection, ...) connection

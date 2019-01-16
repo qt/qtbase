@@ -245,7 +245,7 @@ public:
     void flush() { xcb_flush(xcb_connection()); }
     void processXcbEvents(QEventLoop::ProcessEventsFlags flags);
 
-    QTimer &focusInTimer() { return m_focusInTimer; };
+    QTimer &focusInTimer() { return m_focusInTimer; }
 
 protected:
     bool event(QEvent *e) override;
