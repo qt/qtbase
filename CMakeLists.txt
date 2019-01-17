@@ -41,7 +41,11 @@ if (BUILD_TESTING)
 endif()
 
 add_subdirectory(qmake)
-add_subdirectory(examples)
+
+option(BUILD_EXAMPLES "Build Qt examples" ON)
+if (BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
 
 ## Delayed actions on some of the Qt targets:
 include(QtPostProcess)
