@@ -884,6 +884,9 @@ def generate_cmakelists(scope: Scope) -> None:
 
 
 def do_include(scope: Scope, *, debug: bool = False) -> None:
+    for c in scope.children():
+        do_include(c)
+
     for i in scope.getIncludes():
         dir = scope.basedir()
         include_file = i
@@ -905,9 +908,6 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
         do_include(include_scope)
 
         scope.merge(include_scope)
-
-    for c in scope.children():
-        do_include(c)
 
 
 def main() -> None:
