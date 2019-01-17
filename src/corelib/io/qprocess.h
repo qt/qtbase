@@ -172,8 +172,12 @@ public:
     QStringList arguments() const;
     void setArguments(const QStringList & arguments);
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QProcess::processChannelMode() instead")
     ProcessChannelMode readChannelMode() const;
+    QT_DEPRECATED_X("Use QProcess::setProcessChannelMode() instead")
     void setReadChannelMode(ProcessChannelMode mode);
+#endif
     ProcessChannelMode processChannelMode() const;
     void setProcessChannelMode(ProcessChannelMode mode);
     InputChannelMode inputChannelMode() const;
@@ -269,7 +273,10 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void started(QPrivateSignal);
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QProcess::finished(int, QProcess::ExitStatus) instead")
     void finished(int exitCode); // ### Qt 6: merge the two signals with a default value
+#endif
     void finished(int exitCode, QProcess::ExitStatus exitStatus);
 #if QT_DEPRECATED_SINCE(5,6)
     void error(QProcess::ProcessError error);

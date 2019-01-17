@@ -185,12 +185,12 @@ void tst_QProcess::getSetCheck()
 {
     QProcess obj1;
     // ProcessChannelMode QProcess::readChannelMode()
-    // void QProcess::setReadChannelMode(ProcessChannelMode)
-    obj1.setReadChannelMode(QProcess::ProcessChannelMode(QProcess::SeparateChannels));
+    // void QProcess::setProcessChannelMode(ProcessChannelMode)
+    obj1.setProcessChannelMode(QProcess::ProcessChannelMode(QProcess::SeparateChannels));
     QCOMPARE(QProcess::ProcessChannelMode(QProcess::SeparateChannels), obj1.readChannelMode());
-    obj1.setReadChannelMode(QProcess::ProcessChannelMode(QProcess::MergedChannels));
+    obj1.setProcessChannelMode(QProcess::ProcessChannelMode(QProcess::MergedChannels));
     QCOMPARE(QProcess::ProcessChannelMode(QProcess::MergedChannels), obj1.readChannelMode());
-    obj1.setReadChannelMode(QProcess::ProcessChannelMode(QProcess::ForwardedChannels));
+    obj1.setProcessChannelMode(QProcess::ProcessChannelMode(QProcess::ForwardedChannels));
     QCOMPARE(QProcess::ProcessChannelMode(QProcess::ForwardedChannels), obj1.readChannelMode());
 
     // ProcessChannel QProcess::readChannel()
@@ -913,7 +913,7 @@ public:
 
         switch (n) {
         case 0:
-            setReadChannelMode(QProcess::MergedChannels);
+            setProcessChannelMode(QProcess::MergedChannels);
             connect(this, &QIODevice::readyRead, this, &SoftExitProcess::terminateSlot);
             break;
         case 1:
@@ -929,7 +929,7 @@ public:
                     this, &SoftExitProcess::terminateSlot);
             break;
         case 4:
-            setReadChannelMode(QProcess::MergedChannels);
+            setProcessChannelMode(QProcess::MergedChannels);
             connect(this, SIGNAL(channelReadyRead(int)), this, SLOT(terminateSlot()));
             break;
         default:
@@ -1025,7 +1025,7 @@ void tst_QProcess::softExitInSlots()
 void tst_QProcess::mergedChannels()
 {
     QProcess process;
-    process.setReadChannelMode(QProcess::MergedChannels);
+    process.setProcessChannelMode(QProcess::MergedChannels);
     QCOMPARE(process.readChannelMode(), QProcess::MergedChannels);
 
     process.start("testProcessEcho2/testProcessEcho2");
@@ -1951,7 +1951,7 @@ void tst_QProcess::setStandardOutputFile()
 
     // run the process
     QProcess process;
-    process.setReadChannelMode(channelMode);
+    process.setProcessChannelMode(channelMode);
     if (channelToTest == QProcess::StandardOutput)
         process.setStandardOutputFile(file.fileName(), mode);
     else
@@ -2037,7 +2037,7 @@ void tst_QProcess::setStandardOutputProcess()
 
     QFETCH(bool, merged);
     QFETCH(bool, waitForBytesWritten);
-    source.setReadChannelMode(merged ? QProcess::MergedChannels : QProcess::SeparateChannels);
+    source.setProcessChannelMode(merged ? QProcess::MergedChannels : QProcess::SeparateChannels);
     source.setStandardOutputProcess(&sink);
 
     source.start("testProcessEcho2/testProcessEcho2");

@@ -215,7 +215,7 @@ static bool runHelper(const QString &program, const QStringList &arguments, QByt
 {
 #if QT_CONFIG(process)
     QProcess process;
-    process.setReadChannelMode(QProcess::ForwardedChannels);
+    process.setProcessChannelMode(QProcess::ForwardedChannels);
     process.start(program, arguments);
     if (!process.waitForStarted()) {
         *errorMessage = "Unable to start '" + program.toLocal8Bit() + " ': "

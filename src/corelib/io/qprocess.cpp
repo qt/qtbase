@@ -813,6 +813,7 @@ void QProcessPrivate::Channel::clear()
     \a newState argument is the state QProcess changed to.
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn void QProcess::finished(int exitCode)
     \obsolete
@@ -820,6 +821,7 @@ void QProcessPrivate::Channel::clear()
 
     Use finished(int exitCode, QProcess::ExitStatus status) instead.
 */
+#endif
 
 /*!
     \fn void QProcess::finished(int exitCode, QProcess::ExitStatus exitStatus)
@@ -1172,7 +1174,9 @@ bool QProcessPrivate::_q_processDied()
         //emit q->standardOutputClosed();
         //emit q->standardErrorClosed();
 
+#if QT_DEPRECATED_SINCE(5, 13)
         emit q->finished(exitCode);
+#endif
         emit q->finished(exitCode, exitStatus);
     }
 #if defined QPROCESS_DEBUG
@@ -1264,6 +1268,7 @@ QProcess::~QProcess()
     d->cleanup();
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
     Returns the read channel mode of the QProcess. This function is
@@ -1287,6 +1292,7 @@ void QProcess::setReadChannelMode(ProcessChannelMode mode)
 {
     setProcessChannelMode(mode);
 }
+#endif
 
 /*!
     \since 4.2
@@ -2473,7 +2479,7 @@ QProcess::ExitStatus QProcess::exitStatus() const
 int QProcess::execute(const QString &program, const QStringList &arguments)
 {
     QProcess process;
-    process.setReadChannelMode(ForwardedChannels);
+    process.setProcessChannelMode(ForwardedChannels);
     process.start(program, arguments);
     if (!process.waitForFinished(-1) || process.error() == FailedToStart)
         return -2;
@@ -2496,7 +2502,7 @@ int QProcess::execute(const QString &program, const QStringList &arguments)
 int QProcess::execute(const QString &command)
 {
     QProcess process;
-    process.setReadChannelMode(ForwardedChannels);
+    process.setProcessChannelMode(ForwardedChannels);
     process.start(command);
     if (!process.waitForFinished(-1) || process.error() == FailedToStart)
         return -2;
