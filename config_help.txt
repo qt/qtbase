@@ -167,7 +167,8 @@ Build options:
 
   -pch ................. Use precompiled headers [auto]
   -ltcg ................ Use Link Time Code Generation [no]
-  -use-gold-linker ..... Use the GNU gold linker [auto]
+  -linker [bfd,gold,lld] Force use of the GNU ld, GNU gold or LLVM/LLD linker
+                         instead of default one (GCC only)
   -incredibuild-xge .... Use the IncrediBuild XGE [no] (Windows only)
   -ccache .............. Use the ccache compiler cache [no] (Unix only)
   -make-tool <tool> .... Use <tool> to build qmake [nmake] (Windows only)

@@ -1026,11 +1026,27 @@ defineTest(qtConfOutput_crossCompile) {
     export(CONFIG)
 }
 
+defineTest(qtConfOutput_useBFDLinker) {
+    !$${2}: return()
+
+    # We need to preempt the output here, so that qtConfTest_linkerSupportsFlag can work properly in qtbase
+    CONFIG += use_bfd_linker
+    export(CONFIG)
+}
+
 defineTest(qtConfOutput_useGoldLinker) {
     !$${2}: return()
 
     # We need to preempt the output here, so that qtConfTest_linkerSupportsFlag can work properly in qtbase
     CONFIG += use_gold_linker
+    export(CONFIG)
+}
+
+defineTest(qtConfOutput_useLLDLinker) {
+    !$${2}: return()
+
+    # We need to preempt the output here, so that qtConfTest_linkerSupportsFlag can work properly in qtbase
+    CONFIG += use_lld_linker
     export(CONFIG)
 }
 
