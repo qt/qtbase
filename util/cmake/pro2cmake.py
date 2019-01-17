@@ -889,6 +889,9 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
         include_file = i
         if not include_file:
             continue
+        if '/3rdparty/' in include_file:
+            print('    ****: Ignoring include file in 3rdparty: {}.'.format(include_file))
+            continue
         if not os.path.isfile(include_file):
             print('    XXXX: Failed to include {}.'.format(include_file))
             continue
