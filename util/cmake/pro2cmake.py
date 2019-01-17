@@ -853,8 +853,7 @@ def generate_cmakelists(scope: Scope) -> None:
 def do_include(scope: Scope, *, debug: bool = False) -> None:
     for i in scope.getIncludes():
         dir = scope.basedir()
-        include_file = map_to_file(i, dir, scope.currentdir(),
-                                   want_absolute_path=True)
+        include_file = i
         if not include_file:
             continue
         if not os.path.isfile(include_file):
