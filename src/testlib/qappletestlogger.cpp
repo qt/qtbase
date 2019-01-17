@@ -55,9 +55,8 @@ bool QAppleTestLogger::debugLoggingEnabled()
     return os_log_type_enabled(OS_LOG_DEFAULT, OS_LOG_TYPE_DEBUG);
 }
 
-QAppleTestLogger::QAppleTestLogger(QAbstractTestLogger *logger)
+QAppleTestLogger::QAppleTestLogger()
     : QAbstractTestLogger(nullptr)
-    , m_logger(logger)
 {
 }
 
@@ -65,6 +64,8 @@ static QAppleLogActivity testFunctionActivity;
 
 void QAppleTestLogger::enterTestFunction(const char *function)
 {
+    Q_UNUSED(function);
+
     // Re-create activity each time
     testFunctionActivity = QT_APPLE_LOG_ACTIVITY("Running test function").enter();
 
@@ -73,15 +74,12 @@ void QAppleTestLogger::enterTestFunction(const char *function)
     QString identifier = QString::fromLatin1(testIdentifier.data());
     QMessageLogContext context(nullptr, 0, nullptr, "qt.test.enter");
     QString message = identifier;
-    if (AppleUnifiedLogger::messageHandler(QtDebugMsg, context, message, identifier))
-        return; // AUL already printed to stderr
 
-    m_logger->enterTestFunction(function);
+    AppleUnifiedLogger::messageHandler(QtDebugMsg, context, message, identifier);
 }
 
 void QAppleTestLogger::leaveTestFunction()
 {
-    m_logger->leaveTestFunction();
     testFunctionActivity.leave();
 }
 
@@ -134,18 +132,12 @@ void QAppleTestLogger::addIncident(IncidentTypes type, const char *description,
     if (qstrlen(description))
         message += QLatin1Char('\n') % QString::fromLatin1(description);
 
-    if (AppleUnifiedLogger::messageHandler(incidentClassification.first, context, message, subsystem))
-        return; // AUL already printed to stderr
-
-    m_logger->addIncident(type, description, file, line);
+    AppleUnifiedLogger::messageHandler(incidentClassification.first, context, message, subsystem);
 }
 
 void QAppleTestLogger::addMessage(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
-    if (AppleUnifiedLogger::messageHandler(type, context, message))
-        return; // AUL already printed to stderr
-
-    m_logger->addMessage(type, context, message);
+    AppleUnifiedLogger::messageHandler(type, context, message);
 }
 
 #endif // QT_USE_APPLE_UNIFIED_LOGGING

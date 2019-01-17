@@ -460,20 +460,17 @@ void QTestLog::addLogger(LogMode mode, const char *filename)
     case QTestLog::TAP:
         logger = new QTapTestLogger(filename);
         break;
+#if defined(QT_USE_APPLE_UNIFIED_LOGGING)
+    case QTestLog::Apple:
+        logger = new QAppleTestLogger;
+        break;
+#endif
 #if defined(HAVE_XCTEST)
     case QTestLog::XCTest:
         logger = new QXcodeTestLogger;
         break;
 #endif
     }
-
-#if defined(QT_USE_APPLE_UNIFIED_LOGGING)
-    // Logger that also feeds messages to AUL. It needs to wrap the existing
-    // logger, as it needs to be able to short circuit the existing logger
-    // in case AUL prints to stderr.
-    if (QAppleTestLogger::debugLoggingEnabled())
-        logger = new QAppleTestLogger(logger);
-#endif
 
     QTEST_ASSERT(logger);
     QTest::loggers.append(logger);
