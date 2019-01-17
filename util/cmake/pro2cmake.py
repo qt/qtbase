@@ -519,6 +519,8 @@ def map_condition(condition: str) -> str:
     condition = condition.replace('|', ' OR ')
     condition = condition.replace('==', ' STREQUAL ')
 
+    condition = condition.replace('NOT NOT', '')  # remove double negation
+
     cmake_condition = ''
     for part in condition.split():
         # some features contain e.g. linux, that should not be
@@ -686,19 +688,40 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
             cm_fh.write('{}        {}\n'.format(ind, d))
             is_framework = False
 
+    return set(scope.keys()) - scope.visited_keys()
+
+
+def is_simple_condition(condition: str) -> bool:
+    return ' ' not in condition or (condition.startswith('NOT ') and ' ' not in condition[4:])
+
 
 def write_extend_target(cm_fh: typing.IO[str], target: str,
                         scope: Scope, parent_condition: str = '',
-                        previous_conditon: str = '', *,
+                        previous_condition: str = '', *,
                         indent: int = 0) -> str:
     total_condition = scope.condition()
     if total_condition == 'else':
-        assert previous_conditon, \
+        assert previous_condition, \
             "Else branch without previous condition in: %s" % scope.file()
-        total_condition = 'NOT ({})'.format(previous_conditon)
+        if previous_condition.startswith('NOT '):
+            total_condition = previous_condition[4:]
+        elif is_simple_condition(previous_condition):
+            total_condition = 'NOT {}'.format(previous_condition)
+        else:
+            total_condition = 'NOT ({})'.format(previous_condition)
     if parent_condition:
-        total_condition = '({}) AND ({})'.format(parent_condition,
-                                                 total_condition)
+        if not total_condition:
+            total_condition = parent_condition
+        else:
+            if is_simple_condition(parent_condition) and is_simple_condition(total_condition):
+                total_condition = '{} AND {}'.format(parent_condition,
+                                                     total_condition)
+            elif is_simple_condition(total_condition):
+                total_condition = '({}) AND {}'.format(parent_condition, total_condition)
+            elif is_simple_condition(parent_condition):
+                total_condition = '{} AND ({})'.format(parent_condition, total_condition)
+            else:
+                total_condition = '({}) AND ({})'.format(parent_condition, total_condition)
 
     extend_qt_io_string = io.StringIO()
     write_sources_section(extend_qt_io_string, scope)
