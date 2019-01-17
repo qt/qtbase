@@ -8,3 +8,29 @@ scale 0.05 0.05
 translate -2500 -3000
 setPen black 800
 drawPath degenerate
+
+resetMatrix
+path_moveTo revbez 0 20
+path_cubicTo revbez 0 0 120 0 120 -20
+
+path_moveTo revbez 0 80
+path_cubicTo revbez 0 100 120 100 120 120
+
+translate 50 250
+
+setPen blue 40 solidline flatcap
+drawPath revbez
+setPen red 0
+drawPath revbez
+
+translate 200 0
+setPen blue 40 solidline squarecap
+drawPath revbez
+setPen red 0
+drawPath revbez
+
+translate 200 0
+setPen blue 40 solidline roundcap
+drawPath revbez
+setPen red 0
+drawPath revbez

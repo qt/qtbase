@@ -455,12 +455,12 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
         return;
     }
 #endif
+    QLineF prevLine(qt_fixed_to_real(m_back2X), qt_fixed_to_real(m_back2Y),
+                    qt_fixed_to_real(m_back1X), qt_fixed_to_real(m_back1Y));
+    QPointF isect;
+    QLineF::IntersectType type = prevLine.intersect(nextLine, &isect);
 
     if (join == FlatJoin) {
-        QLineF prevLine(qt_fixed_to_real(m_back2X), qt_fixed_to_real(m_back2Y),
-                        qt_fixed_to_real(m_back1X), qt_fixed_to_real(m_back1Y));
-        QPointF isect;
-        QLineF::IntersectType type = prevLine.intersect(nextLine, &isect);
         QLineF shortCut(prevLine.p2(), nextLine.p1());
         qreal angle = shortCut.angleTo(prevLine);
         if (type == QLineF::BoundedIntersection || (angle > 90 && !qFuzzyCompare(angle, (qreal)90))) {
@@ -472,12 +472,6 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
                    qt_real_to_fixed(nextLine.y1()));
 
     } else {
-        QLineF prevLine(qt_fixed_to_real(m_back2X), qt_fixed_to_real(m_back2Y),
-                        qt_fixed_to_real(m_back1X), qt_fixed_to_real(m_back1Y));
-
-        QPointF isect;
-        QLineF::IntersectType type = prevLine.intersect(nextLine, &isect);
-
         if (join == MiterJoin) {
             qreal appliedMiterLimit = qt_fixed_to_real(m_strokeWidth * m_miterLimit);
 
@@ -512,7 +506,11 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
             qfixed offset = m_strokeWidth / 2;
 
             QLineF l1(prevLine);
-            l1.translate(l1.dx(), l1.dy());
+            qreal dp = QPointF::dotProduct(QPointF(prevLine.dx(), prevLine.dy()), QPointF(nextLine.dx(), nextLine.dy()));
+            if (dp > 0)  // same direction, means that prevLine is from a bezier that has been "reversed" by shifting
+                l1 = QLineF(prevLine.p2(), prevLine.p1());
+            else
+                l1.translate(l1.dx(), l1.dy());
             l1.setLength(qt_fixed_to_real(offset));
             QLineF l2(nextLine.p2(), nextLine.p1());
             l2.translate(l2.dx(), l2.dy());
@@ -570,7 +568,11 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
 
             // first control line
             QLineF l1 = prevLine;
-            l1.translate(l1.dx(), l1.dy());
+            qreal dp = QPointF::dotProduct(QPointF(prevLine.dx(), prevLine.dy()), QPointF(nextLine.dx(), nextLine.dy()));
+            if (dp > 0)  // same direction, means that prevLine is from a bezier that has been "reversed" by shifting
+                l1 = QLineF(prevLine.p2(), prevLine.p1());
+            else
+                l1.translate(l1.dx(), l1.dy());
             l1.setLength(QT_PATH_KAPPA * offset);
 
             // second control line, find through normal between prevLine and focal.
@@ -705,7 +707,6 @@ template <class Iterator> bool qt_stroke_side(Iterator *it,
                                     QPointF(qt_fixed_to_real(e.x), qt_fixed_to_real(e.y)),
                                     QPointF(qt_fixed_to_real(cp2.x), qt_fixed_to_real(cp2.y)),
                                     QPointF(qt_fixed_to_real(ep.x), qt_fixed_to_real(ep.y)));
-
             int count = bezier.shifted(offsetCurves,
                                        MAX_OFFSET,
                                        offset,
