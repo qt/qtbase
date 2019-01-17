@@ -346,6 +346,7 @@ class Scope:
             c.dump(indent=indent + 1)
 
     def get(self, key: str, default=None) -> typing.List[str]:
+        assert key != '_INCLUDED'  # Special case things that may not recurse!
         result = []  # type: typing.List[str]
 
         if self._parent:
@@ -377,6 +378,12 @@ class Scope:
     def getTarget(self) -> str:
         return self.getString('TARGET') \
             or os.path.splitext(os.path.basename(self.file()))[0]
+
+    def getIncludes(self) -> typing.List[str]:
+        result = []
+        for op in self._operations.get('_INCLUDED', []):
+            result = op.process(result)
+        return result
 
 
 class QmakeParser:
@@ -844,7 +851,7 @@ def generate_cmakelists(scope: Scope) -> None:
 
 
 def do_include(scope: Scope, *, debug: bool = False) -> None:
-    for i in scope.get('_INCLUDED', []):
+    for i in scope.getIncludes():
         dir = scope.basedir()
         include_file = map_to_file(i, dir, scope.currentdir(),
                                    want_absolute_path=True)
