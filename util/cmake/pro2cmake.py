@@ -136,7 +136,7 @@ class Operation:
     def process(self, input):
         assert(False)
 
-    def __str__(self):
+    def __repr__(self):
         assert(False)
 
 
@@ -144,8 +144,8 @@ class AddOperation(Operation):
     def process(self, input):
         return input + self._value
 
-    def __str__(self):
-        return '+({})'.format(self._value)
+    def __repr__(self):
+        return '+({})'.format(','.join(self._value))
 
 
 class UniqueAddOperation(Operation):
@@ -156,7 +156,7 @@ class UniqueAddOperation(Operation):
                 result += [v, ]
         return result
 
-    def __str__(self):
+    def __repr__(self):
         return '*({})'.format(self._value)
 
 
@@ -164,7 +164,7 @@ class SetOperation(Operation):
     def process(self, input):
         return self._value
 
-    def __str__(self):
+    def __repr__(self):
         return '=({})'.format(self._value)
 
 
@@ -182,7 +182,7 @@ class RemoveOperation(Operation):
                 result += ['-{}'.format(v), ]
         return result
 
-    def __str__(self):
+    def __repr__(self):
         return '-({})'.format(self._value)
 
 
