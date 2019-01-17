@@ -116,8 +116,11 @@ public:
     bool isRoot() const;
     bool isBundle() const;
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QFileInfo::symLinkTarget() instead")
     QString readLink() const;
-    inline QString symLinkTarget() const { return readLink(); }
+#endif
+    QString symLinkTarget() const;
 
     QString owner() const;
     uint ownerId() const;

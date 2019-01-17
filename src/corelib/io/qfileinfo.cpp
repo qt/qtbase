@@ -1107,12 +1107,19 @@ bool QFileInfo::isRoot() const
     \sa exists(), isSymLink(), isDir(), isFile()
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
     Use symLinkTarget() instead.
 */
 QString QFileInfo::readLink() const
+{
+    return symLinkTarget();
+}
+#endif
+
+QString QFileInfo::symLinkTarget() const
 {
     Q_D(const QFileInfo);
     if (d->isDefaultConstructed)

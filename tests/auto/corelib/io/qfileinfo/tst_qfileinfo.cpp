@@ -2022,7 +2022,7 @@ static void stateCheck(const QFileInfo &info, const QString &dirname, const QStr
     QVERIFY(!info.isRoot());
     QCOMPARE(info.isNativePath(), !filename.isEmpty());
 
-    QCOMPARE(info.readLink(), QString());
+    QCOMPARE(info.symLinkTarget(), QString());
     QCOMPARE(info.ownerId(), uint(-2));
     QCOMPARE(info.groupId(), uint(-2));
     QCOMPARE(info.owner(), QString());

@@ -376,7 +376,7 @@ void tst_QTemporaryFile::io()
     before.setSecsSinceEpoch(before.toSecsSinceEpoch());
 
     QVERIFY(file.open());
-    QVERIFY(file.readLink().isEmpty()); // it's not a link!
+    QVERIFY(file.symLinkTarget().isEmpty()); // it's not a link!
     QFile::Permissions perm = file.permissions();
     QVERIFY(perm & QFile::ReadOwner);
     QVERIFY(file.setPermissions(perm));
