@@ -213,7 +213,10 @@ class Scope:
             self._add_child(c)
 
         for key in other._operations.keys():
-            self._operations[key] = other._operations[key]
+            if key in self._operations:
+                self._operations[key] += other._operations[key]
+            else:
+                self._operations[key] = other._operations[key]
 
     def basedir(self) -> str:
         return self._basedir
