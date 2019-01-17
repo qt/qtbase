@@ -337,16 +337,23 @@ class Scope:
     def dump(self, *, indent: int = 0) -> None:
         ind = '    ' * indent
         if self._condition == '':
-            print('{}Scope {} in {}.'.format(ind, self._file, self._basedir))
+            print('{}Scope {} in "{}".'.format(ind, self._file, self._basedir))
         else:
-            print('{}Scope {} in {} with condition: {}.'
+            print('{}Scope {} in "{}" with condition: "{}".'
                   .format(ind, self._file, self._basedir, self._condition))
         print('{}Keys:'.format(ind))
-        for k in sorted(self._operations.keys()):
-            print('{}  {} = "{}"'.format(ind, k, self._operations.get(k, [])))
+        keys = self._operations.keys()
+        if not keys:
+            print('{}    -- NONE --'.format(ind))
+        else:
+            for k in sorted(keys):
+                print('{}    {} = "{}"'.format(ind, k, self._operations.get(k, [])))
         print('{}Children:'.format(ind))
-        for c in self._children:
-            c.dump(indent=indent + 1)
+        if not self._children:
+            print('{}    -- NONE --'.format(ind))
+        else:
+            for c in self._children:
+                c.dump(indent=indent + 1)
 
     def get(self, key: str, default=None) -> typing.List[str]:
         assert key != '_INCLUDED'  # Special case things that may not recurse!
