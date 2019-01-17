@@ -204,6 +204,12 @@ extend_target(Network CONDITION (UNIX) AND (NOT ((UNIX) AND (QT_FEATURE_linux_ne
     SOURCES
         kernel/qnetworkinterface_unix.cpp
 )
+
+# TODO: how to merge to above
+extend_target(Network CONDITION APPLE_OSX
+    SOURCES
+        kernel/qnetworkinterface_unix.cpp
+)
 #
 #extend_target(Network CONDITION ANDROID
 #)
@@ -305,6 +311,7 @@ extend_target(Network CONDITION (QT_FEATURE_ssl) AND (QT_FEATURE_securetransport
         ssl/qsslkey_qt.cpp
         ssl/qsslsocket_mac.cpp ssl/qsslsocket_mac_p.h
         ssl/qsslsocket_mac_shared.cpp
+        ssl/qsslsocket_qt.cpp
 )
 
 extend_target(Network CONDITION (QT_FEATURE_ssl) AND (QT_FEATURE_dtls)
