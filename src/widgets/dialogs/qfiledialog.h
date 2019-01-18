@@ -46,6 +46,8 @@
 #include <QtCore/qurl.h>
 #include <QtWidgets/qdialog.h>
 
+#include <functional>
+
 QT_REQUIRE_CONFIG(filedialog);
 
 QT_BEGIN_NAMESPACE
@@ -273,6 +275,8 @@ public:
                                        Options options = Options(),
                                        const QStringList &supportedSchemes = QStringList());
 
+    static void getOpenFileContent(const QString &nameFilter,
+                                   const std::function<void(const QString &, const QByteArray &)> &fileContentsReady);
 
 protected:
     QFileDialog(const QFileDialogArgs &args);

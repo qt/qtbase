@@ -73,6 +73,9 @@
 #elif defined(Q_OS_WIN)
 #  include <QtCore/qt_windows.h>
 #endif
+#if defined(Q_OS_WASM)
+#include <private/qwasmlocalfileaccess_p.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -2345,6 +2348,85 @@ QList<QUrl> QFileDialog::getOpenFileUrls(QWidget *parent,
         return dialog.selectedUrls();
     }
     return QList<QUrl>();
+}
+
+/*!
+    This is a convenience static function that will return the content of a file
+    selected by the user.
+
+    This function is used to access local files on Qt for WebAssembly, where the web
+    sandbox places restrictions on how such access may happen. Its implementation will
+    make the browser display a native file dialog, where the user makes the file selection.
+
+    It can also be used on other platforms, where it will fall back to using QFileDialog.
+
+    The function is asynchronous and returns immediately. The \a fileOpenCompleted
+    callback will be called when a file has been selected and its contents has been
+    read into memory.
+
+    \snippet code/src_gui_dialogs_qfiledialog.cpp 14
+    \since 5.13
+*/
+void QFileDialog::getOpenFileContent(const QString &nameFilter, const std::function<void(const QString &, const QByteArray &)> &fileOpenCompleted)
+{
+#ifdef Q_OS_WASM
+    auto openFileImpl = std::make_shared<std::function<void(void)>>();
+    QString fileName;
+    QByteArray fileContent;
+    *openFileImpl = [=]() mutable {
+        auto fileDialogClosed = [&](bool fileSelected) {
+            if (!fileSelected) {
+                fileOpenCompleted(fileName, fileContent);
+                openFileImpl.reset();
+            }
+        };
+        auto acceptFile = [&](uint64_t size, const std::string name) -> char * {
+            const uint64_t twoGB = 1ULL << 31; // QByteArray limit
+            if (size > twoGB)
+                return nullptr;
+
+            fileName = QString::fromStdString(name);
+            fileContent.resize(size);
+            return fileContent.data();
+        };
+        auto fileContentReady = [&]() mutable {
+            fileOpenCompleted(fileName, fileContent);
+            openFileImpl.reset();
+        };
+
+        auto qtFilterStringToWebAcceptString = [](const QString &qtString) {
+            // The Qt and Web name filter string formats are similar, but
+            // not identical.
+            return qtString.toStdString(); // ### TODO
+        };
+
+        QWasmLocalFileAccess::openFile(qtFilterStringToWebAcceptString(nameFilter), fileDialogClosed, acceptFile, fileContentReady);
+    };
+
+    (*openFileImpl)();
+#else
+    QFileDialog *dialog = new QFileDialog();
+    dialog->selectNameFilter(nameFilter);
+
+    auto fileSelected = [=](const QString &fileName) {
+        QByteArray fileContent;
+        if (!fileName.isNull()) {
+            QFile selectedFile(fileName);
+            selectedFile.open(QIODevice::ReadOnly);
+            fileContent = selectedFile.readAll();
+        }
+        fileOpenCompleted(fileName, fileContent);
+    };
+
+    auto dialogClosed = [=](int code) {
+        Q_UNUSED(code);
+        delete dialog;
+    };
+
+    connect(dialog, &QFileDialog::fileSelected, fileSelected);
+    connect(dialog, &QFileDialog::finished, dialogClosed);
+    dialog->show();
+#endif
 }
 
 /*!
