@@ -48,6 +48,7 @@ include(opengl/opengl.pri)
 qtConfig(animation): include(animation/animation.pri)
 include(itemmodels/itemmodels.pri)
 include(vulkan/vulkan.pri)
+include(platform/platform.pri)
 
 QMAKE_LIBS += $$QMAKE_LIBS_GUI
 
