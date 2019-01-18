@@ -44,6 +44,7 @@ include(codecs/codecs.pri)
 include(serialization/serialization.pri)
 include(statemachine/statemachine.pri)
 include(mimetypes/mimetypes.pri)
+include(platform/platform.pri)
 
 win32 {
     LIBS_PRIVATE += -lws2_32
