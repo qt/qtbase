@@ -207,6 +207,10 @@ class Scope:
         self._condition = map_condition(condition)
         self._children = []  # type: typing.List[Scope]
         self._operations = {}  # type: typing.Dict[str, typing.List[Operation]]
+        self._visited_keys = set()  # type: typing.Set[str]
+
+    def reset_visited_keys(self):
+        self._visited_keys = set()
 
     def merge(self, other: 'Scope') -> None:
         for c in other._children:
@@ -355,8 +359,15 @@ class Scope:
             for c in self._children:
                 c.dump(indent=indent + 1)
 
+    def keys(self):
+        return self._operations.keys()
+
+    def visited_keys(self):
+        return self._visited_keys;
+
     def get(self, key: str, default=None) -> typing.List[str]:
         assert key != '_INCLUDED'  # Special case things that may not recurse!
+        self._visited_keys.add(key)
         result = []  # type: typing.List[str]
 
         if self._parent:
@@ -619,10 +630,12 @@ def write_scope_header(cm_fh: typing.IO[str], *, indent: int = 0):
 
 
 def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
-                          indent: int = 0, known_libraries=set()) -> None:
+                          indent: int = 0, known_libraries=set()) -> typing.Set[str]:
     ind = spaces(indent)
+    scope.reset_visited_keys();
 
     plugin_type = scope.get('PLUGIN_TYPE')
+
     if plugin_type:
         cm_fh.write('{}    TYPE {}\n'.format(ind, plugin_type[0]))
 
@@ -696,6 +709,18 @@ def is_simple_condition(condition: str) -> bool:
     return ' ' not in condition or (condition.startswith('NOT ') and ' ' not in condition[4:])
 
 
+def write_ignored_keys(scope: Scope, ignored_keys, indent) -> str:
+    result = ''
+    for k in sorted(ignored_keys):
+        if k == '_INCLUDED' or k == 'TARGET' or k == 'QMAKE_DOCS':
+            # All these keys are actually reported using "non-standard" means:-)
+            continue
+        values = scope.get(k)
+        value_string = '<EMPTY>' if not values else '"' + '" "'.join(scope.get(k)) + '"'
+        result += '{}# {} = {}\n'.format(indent, k, value_string)
+    return result
+
+
 def write_extend_target(cm_fh: typing.IO[str], target: str,
                         scope: Scope, parent_condition: str = '',
                         previous_condition: str = '', *,
@@ -725,19 +750,27 @@ def write_extend_target(cm_fh: typing.IO[str], target: str,
                 total_condition = '({}) AND ({})'.format(parent_condition, total_condition)
 
     extend_qt_io_string = io.StringIO()
-    write_sources_section(extend_qt_io_string, scope)
+    ignored_keys = write_sources_section(extend_qt_io_string, scope)
     extend_qt_string = extend_qt_io_string.getvalue()
 
+    ignored_keys_report = write_ignored_keys(scope, ignored_keys, spaces(indent + 1))
+    if extend_qt_string and ignored_keys_report:
+        ignored_keys_report = '\n' + ignored_keys_report
+
     extend_scope = '\n{}extend_target({} CONDITION {}\n' \
-                   '{})\n'.format(spaces(indent), target, total_condition,
-                                  extend_qt_string)
+                   '{}{})\n'.format(spaces(indent), target, total_condition,
+                                  extend_qt_string, ignored_keys_report)
 
     if not extend_qt_string:
-        # Comment out the generated extend_target call because there
-        # no sources were found, but keep it commented for
-        # informational purposes.
-        extend_scope = ''.join(['#' + line for line in
-                                extend_scope.splitlines(keepends=True)])
+        if ignored_keys_report:
+            # Comment out the generated extend_target call because there
+            # no sources were found, but keep it commented for
+            # informational purposes.
+            extend_scope = ''.join(['#' + line for line in
+                                    extend_scope.splitlines(keepends=True)])
+        else:
+            extend_scope = ''  # Nothing to report, so don't!
+
     cm_fh.write(extend_scope)
 
     children = scope.children()
@@ -762,7 +795,10 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
     for extra_line in extra_lines:
         cm_fh.write('{}    {}\n'.format(spaces(indent), extra_line))
 
-    write_sources_section(cm_fh, scope, indent=indent, **kwargs)
+    ignored_keys = write_sources_section(cm_fh, scope, indent=indent, **kwargs)
+    ignored_keys_report = write_ignored_keys(scope, ignored_keys, spaces(indent + 1))
+    if ignored_keys_report:
+        cm_fh.write(ignored_keys_report)
 
     # Footer:
     cm_fh.write('{})\n'.format(spaces(indent)))
