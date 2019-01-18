@@ -661,6 +661,7 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
     if includes:
         cm_fh.write('{}    INCLUDE_DIRECTORIES\n'.format(ind))
         for i in includes:
+            i = i.rstrip('/') or ('/')
             cm_fh.write('{}        {}\n'.format(ind, i))
 
     dependencies = [map_qt_library(q) for q in scope.diff('QT')
