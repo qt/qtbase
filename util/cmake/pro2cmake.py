@@ -901,9 +901,9 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
 
         include_result = parseProFile(include_file, debug=debug)
         include_scope \
-            = Scope.FromDict(scope, include_file,
+            = Scope.FromDict(None, include_file,
                              include_result.asDict().get('statements'),
-                             '', dir)
+                             '', dir)  # This scope will be merged into scope, so no parent_scope!
 
         do_include(include_scope)
 
