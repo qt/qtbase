@@ -228,25 +228,6 @@ class Scope:
     def currentdir(self) -> str:
         return self._currentdir
 
-    def diff(self, key: str,
-             default: typing.Optional[typing.List[str]] = []) \
-            -> typing.List[str]:
-        mine = self.get(key, default)
-
-        if self._parent:
-            parent = self._parent.get(key, default)
-            if (parent == mine):
-                return []
-
-            parent_set = set(parent)
-            mine_set = set(mine)
-
-            added = [x for x in mine if x not in parent_set]
-            removed = [x for x in parent if x not in mine_set]
-
-            return added + list('# {}'.format(x) for x in removed)
-        return mine
-
     @staticmethod
     def FromDict(parent_scope: typing.Optional['Scope'],
                  file: str, statements, cond: str = '', base_dir: str = ''):
@@ -366,18 +347,8 @@ class Scope:
         return self._visited_keys;
 
     def get(self, key: str, default=None) -> typing.List[str]:
-        assert key != '_INCLUDED'  # Special case things that may not recurse!
         self._visited_keys.add(key)
         result = []  # type: typing.List[str]
-
-        if self._parent:
-            result = self._parent.get(key, default)
-        else:
-            if default:
-                if isinstance(default, list):
-                    result = default
-                else:
-                    result = [str(default), ]
 
         for op in self._operations.get(key, []):
             result = op.process(result)
@@ -401,10 +372,7 @@ class Scope:
             or os.path.splitext(os.path.basename(self.file()))[0]
 
     def getIncludes(self) -> typing.List[str]:
-        result = []
-        for op in self._operations.get('_INCLUDED', []):
-            result = op.process(result)
-        return result
+        return self.get('_INCLUDED', [])
 
 
 class QmakeParser:
@@ -639,10 +607,10 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
     if plugin_type:
         cm_fh.write('{}    TYPE {}\n'.format(ind, plugin_type[0]))
 
-    sources = scope.diff('SOURCES') + scope.diff('HEADERS') \
-        + scope.diff('OBJECTIVE_SOURCES') + scope.diff('NO_PCH_SOURCES') \
-        + scope.diff('FORMS')
-    resources = scope.diff('RESOURCES')
+    sources = scope.get('SOURCES') + scope.get('HEADERS') \
+        + scope.get('OBJECTIVE_SOURCES') + scope.get('NO_PCH_SOURCES') \
+        + scope.get('FORMS')
+    resources = scope.get('RESOURCES')
     if resources:
         qrc_only = True
         for r in resources:
@@ -663,26 +631,26 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
     for l in sort_sources(sources):
         cm_fh.write('{}        {}\n'.format(ind, l))
 
-    defines = scope.diff('DEFINES')
+    defines = scope.get('DEFINES')
     if defines:
         cm_fh.write('{}    DEFINES\n'.format(ind))
         for d in defines:
             d = d.replace('=\\\\\\"$$PWD/\\\\\\"',
                           '="${CMAKE_CURRENT_SOURCE_DIR}/"')
             cm_fh.write('{}        {}\n'.format(ind, d))
-    includes = scope.diff('INCLUDEPATH')
+    includes = scope.get('INCLUDEPATH')
     if includes:
         cm_fh.write('{}    INCLUDE_DIRECTORIES\n'.format(ind))
         for i in includes:
             i = i.rstrip('/') or ('/')
             cm_fh.write('{}        {}\n'.format(ind, i))
 
-    dependencies = [map_qt_library(q) for q in scope.diff('QT')
+    dependencies = [map_qt_library(q) for q in scope.get('QT')
                     if map_qt_library(q) not in known_libraries]
-    dependencies += [map_qt_library(q) for q in scope.diff('QT_FOR_PRIVATE')
+    dependencies += [map_qt_library(q) for q in scope.get('QT_FOR_PRIVATE')
                      if map_qt_library(q) not in known_libraries]
-    dependencies += scope.diff('QMAKE_USE_PRIVATE') \
-        + scope.diff('LIBS_PRIVATE') + scope.diff('LIBS')
+    dependencies += scope.get('QMAKE_USE_PRIVATE') \
+        + scope.get('LIBS_PRIVATE') + scope.get('LIBS')
     if dependencies:
         cm_fh.write('{}    LIBRARIES\n'.format(ind))
         is_framework = False
