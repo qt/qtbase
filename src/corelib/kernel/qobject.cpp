@@ -5179,7 +5179,7 @@ bool QObject::disconnectImpl(const QObject *sender, void **signal, const QObject
         }
         if (!senderMetaObject) {
             qWarning("QObject::disconnect: signal not found in %s", sender->metaObject()->className());
-            return QMetaObject::Connection(0);
+            return false;
         }
         signal_index += QMetaObjectPrivate::signalOffset(senderMetaObject);
     }
