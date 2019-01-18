@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -143,7 +143,7 @@ public:
         return true;
     }
 
-    static bool verifyConnection(QString serverName, quint16 port, quint32 retry = 10)
+    static bool verifyConnection(QString serverName, quint16 port, quint32 retry = 60)
     {
         QTcpSocket socket;
         for (quint32 i = 1; i < retry; i++) {
