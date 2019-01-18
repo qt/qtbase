@@ -92,8 +92,8 @@ services:
         extra_hosts:
             - "qt-test-server.${TEST_DOMAIN}:${MACHINE_IP}"
         environment:
-            - danted_internal=${MACHINE_IP:-eth0}
-            - danted_external=${MACHINE_IP:-eth0}
-            - danted_auth_internal=${MACHINE_IP:-eth0}
-            - danted_auth_external=${MACHINE_IP:-eth0}
+            - danted_internal=${MACHINE_IP}
+            - danted_external=${MACHINE_IP}
+            - danted_auth_internal=${MACHINE_IP}
+            - danted_auth_external=${MACHINE_IP}
             - test_domain=${TEST_DOMAIN}
