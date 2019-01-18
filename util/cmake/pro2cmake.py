@@ -341,14 +341,14 @@ class Scope:
         else:
             print('{}Scope {} in "{}" with condition: "{}".'
                   .format(ind, self._file, self._basedir, self._condition))
-        print('{}Keys:'.format(ind))
+        print('{}  Keys:'.format(ind))
         keys = self._operations.keys()
         if not keys:
             print('{}    -- NONE --'.format(ind))
         else:
             for k in sorted(keys):
                 print('{}    {} = "{}"'.format(ind, k, self._operations.get(k, [])))
-        print('{}Children:'.format(ind))
+        print('{}  Children:'.format(ind))
         if not self._children:
             print('{}    -- NONE --'.format(ind))
         else:
