@@ -78,8 +78,12 @@ public:
     const uchar *data() const;
     QDateTime lastModified() const;
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QDir::addSearchPath() instead")
     static void addSearchPath(const QString &path);
+    QT_DEPRECATED_X("Use QDir::searchPaths() instead")
     static QStringList searchPaths();
+#endif
 
     static bool registerResource(const QString &rccFilename, const QString &resourceRoot=QString());
     static bool unregisterResource(const QString &rccFilename, const QString &resourceRoot=QString());

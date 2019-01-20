@@ -187,8 +187,12 @@ public:
 
     static void setDefaultFormat(Format format);
     static Format defaultFormat();
-    static void setSystemIniPath(const QString &dir); // ### Qt 6: remove (use setPath() instead)
-    static void setUserIniPath(const QString &dir);   // ### Qt 6: remove (use setPath() instead)
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QSettings::setPath() instead")
+    static void setSystemIniPath(const QString &dir);
+    QT_DEPRECATED_X("Use QSettings::setPath() instead")
+    static void setUserIniPath(const QString &dir);
+#endif
     static void setPath(Format format, Scope scope, const QString &path);
 
     typedef QMap<QString, QVariant> SettingsMap;

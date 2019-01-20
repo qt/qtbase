@@ -659,6 +659,7 @@ QStringList QResource::children() const
     return d->children;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
   \obsolete
 
@@ -700,6 +701,7 @@ QResource::searchPaths()
     QMutexLocker lock(resourceMutex());
     return *resourceSearchPaths();
 }
+#endif
 
 inline uint QResourceRoot::hash(int node) const
 {

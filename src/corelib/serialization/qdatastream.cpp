@@ -392,17 +392,18 @@ void QDataStream::setDevice(QIODevice *d)
     dev = d;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
     Unsets the I/O device.
-    Use setDevice(0) instead.
+    Use setDevice(nullptr) instead.
 */
 
 void QDataStream::unsetDevice()
 {
-    setDevice(0);
+    setDevice(nullptr);
 }
-
+#endif
 
 /*!
     \fn bool QDataStream::atEnd() const

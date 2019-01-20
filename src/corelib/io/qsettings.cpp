@@ -3444,6 +3444,7 @@ QSettings::Format QSettings::defaultFormat()
     return globalDefaultFormat;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -3477,7 +3478,7 @@ void QSettings::setUserIniPath(const QString &dir)
     setPath(NativeFormat, UserScope, dir);
 #endif
 }
-
+#endif
 /*!
     \since 4.1
 

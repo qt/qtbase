@@ -1060,6 +1060,7 @@ void QDir::setNameFilters(const QStringList &nameFilters)
     d->nameFilters = nameFilters;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -1079,6 +1080,7 @@ void QDir::addResourceSearchPath(const QString &path)
     Q_UNUSED(path)
 #endif
 }
+#endif
 
 #ifdef QT_BUILD_CORE_LIB
 /*!
@@ -1806,6 +1808,7 @@ QDir &QDir::operator=(const QDir &dir)
     return *this;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \overload
     \obsolete
@@ -1819,6 +1822,7 @@ QDir &QDir::operator=(const QString &path)
     d_ptr->setPath(path);
     return *this;
 }
+#endif
 
 /*!
     \fn void QDir::swap(QDir &other)
