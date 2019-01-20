@@ -1400,6 +1400,7 @@ void tst_QItemDelegate::comboBox()
     widget.setItem(0, 0, item1);
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    QApplication::setActiveWindow(&widget);
 
     widget.editItem(item1);
 
