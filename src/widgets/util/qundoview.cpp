@@ -412,7 +412,7 @@ void QUndoView::setGroup(QUndoGroup *group)
 /*!
     Returns the group displayed by this view.
 
-    If the view is not looking at group, this function returns 0.
+    If the view is not looking at group, this function returns \nullptr.
 
     \sa setGroup(), setStack()
 */

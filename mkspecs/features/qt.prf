@@ -209,14 +209,6 @@ for(ever) {
         !isEmpty(MODULE_MODULE) {
             contains(MODULE_CONFIG, lib_bundle) {
                 framework = $$MODULE_MODULE
-                qtConfig(debug_and_release):qt_link_suffixed_framework:!macx-xcode {
-                    platform_target_suffix = $$qtPlatformTargetSuffix()
-                    !isEmpty(platform_target_suffix): \
-                        # The -framework linker argument supports a name[,suffix] version,
-                        # where if the suffix is specified the framework is first searched
-                        # for the library with the suffix and then without.
-                        framework = $$framework,$$platform_target_suffix
-                }
                 LIBS$$var_sfx += -framework $$framework
             } else {
                 !isEmpty(MODULE_LIBS_ADD): \

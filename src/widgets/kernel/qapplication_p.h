@@ -177,6 +177,9 @@ public:
 
 protected:
     void notifyThemeChanged() override;
+    void sendApplicationPaletteChange(bool toAllWidgets = false,
+                                      const char *className = nullptr) override;
+
 #if QT_CONFIG(draganddrop)
     void notifyDragStarted(const QDrag *) override;
 #endif // QT_CONFIG(draganddrop)

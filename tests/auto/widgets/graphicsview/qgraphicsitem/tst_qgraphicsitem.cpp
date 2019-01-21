@@ -3231,6 +3231,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCoreApplication::processEvents(); // Process all queued paint events
 
     EventTester *tester = new EventTester;
     scene.addItem(tester);
@@ -5074,13 +5075,11 @@ void tst_QGraphicsItem::paint()
     QGraphicsView view2(&scene2);
     view2.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view2));
+    QCoreApplication::processEvents(); // Process all queued paint events
 
     PaintTester tester2;
     scene2.addItem(&tester2);
 
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Fails on WinRT. Figure out why - QTBUG-68297", Abort);
-#endif
     //First show one paint
     QTRY_COMPARE(tester2.painted, 1);
 
@@ -6534,11 +6533,9 @@ void tst_QGraphicsItem::ensureUpdateOnTextItem()
     QGraphicsView view(&scene);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QCoreApplication::processEvents(); // Process all queued paint events
     TextItem *text1 = new TextItem(QLatin1String("123"));
     scene.addItem(text1);
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Fails on WinRT. Figure out why - QTBUG-68297", Abort);
-#endif
     QTRY_COMPARE(text1->updates,1);
 
     //same bouding rect but we have to update
@@ -6810,6 +6807,7 @@ void tst_QGraphicsItem::opacity2()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCoreApplication::processEvents(); // Process all queued paint events
     QTRY_VERIFY(view.repaints >= 1);
 
 #define RESET_REPAINT_COUNTERS \
@@ -6883,6 +6881,7 @@ void tst_QGraphicsItem::opacityZeroUpdates()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCoreApplication::processEvents(); // Process all queued paint events
     QTRY_VERIFY(view.repaints > 0);
 
     view.reset();
@@ -7275,6 +7274,7 @@ void tst_QGraphicsItem::cacheMode()
     QApplication::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCoreApplication::processEvents(); // Process all queued paint events
 
     EventTester *tester = new EventTester;
     EventTester *testerChild = new EventTester;
@@ -7454,6 +7454,7 @@ void tst_QGraphicsItem::cacheMode2()
     QApplication::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCoreApplication::processEvents(); // Process all queued paint events
 
     EventTester *tester = new EventTester;
     scene.addItem(tester);
@@ -7944,6 +7945,7 @@ void tst_QGraphicsItem::itemUsesExtendedStyleOption()
     rect->startTrack = false;
     topLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QCoreApplication::processEvents(); // Process all queued paint events
     QTRY_VERIFY(rect->repaints > 0);
     rect->repaints = 0;
     rect->startTrack = true;
@@ -8030,6 +8032,7 @@ void tst_QGraphicsItem::moveItem()
     MyGraphicsView view(&scene);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QCoreApplication::processEvents(); // Process all queued paint events
 
     EventTester *parent = new EventTester;
     EventTester *child = new EventTester(parent);
@@ -8108,6 +8111,7 @@ void tst_QGraphicsItem::moveLineItem()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCoreApplication::processEvents(); // Process all queued paint events
     view.reset();
 
     QRectF brect = item->boundingRect();
@@ -8288,6 +8292,7 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     toplevel.resize(300, 300);
     toplevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&toplevel));
+    QCoreApplication::processEvents(); // Process all queued paint events
 
     // Confuse the BSP with dummy items.
     QGraphicsRectItem *dummy = new QGraphicsRectItem(0, 0, 20, 20);
@@ -11266,6 +11271,7 @@ void tst_QGraphicsItem::QTBUG_6738_missingUpdateWithSetParent()
     qApp->setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCoreApplication::processEvents(); // Process all queued paint events
     QTRY_VERIFY(view.repaints > 0);
 
     // test case #1
@@ -11315,6 +11321,7 @@ void tst_QGraphicsItem::QT_2653_fullUpdateDiscardingOpacityUpdate()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCoreApplication::processEvents(); // Process all queued paint events
     view.reset();
 
     parentGreen->setOpacity(1.0);
@@ -11348,6 +11355,8 @@ void tst_QGraphicsItem::QTBUG_7714_fullUpdateDiscardingOpacityUpdate2()
 
     origView.show();
     QVERIFY(QTest::qWaitForWindowActive(&origView));
+    QCoreApplication::processEvents(); // Process all queued paint events
+
     origView.setGeometry(origView.x() + origView.width() + 20, origView.y() + 20,
                          origView.width(), origView.height());
 
@@ -11356,9 +11365,6 @@ void tst_QGraphicsItem::QTBUG_7714_fullUpdateDiscardingOpacityUpdate2()
     origView.reset();
     childYellow->setOpacity(0.0);
 
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Fails on WinRT. Figure out why - QTBUG-68297", Abort);
-#endif
     QTRY_COMPARE(origView.repaints, 1);
 
     view.show();
@@ -11369,6 +11375,10 @@ void tst_QGraphicsItem::QTBUG_7714_fullUpdateDiscardingOpacityUpdate2()
     origView.reset();
 
     childYellow->setOpacity(1.0);
+
+#ifdef Q_OS_WINRT
+    QEXPECT_FAIL("", "Fails on WinRT. Figure out why - QTBUG-68297", Abort);
+#endif
 
     QTRY_COMPARE(origView.repaints, 1);
     QTRY_COMPARE(view.repaints, 1);
@@ -11505,6 +11515,7 @@ void tst_QGraphicsItem::doNotMarkFullUpdateIfNotInScene()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(view.windowHandle()));
     QVERIFY(QTest::qWaitForWindowActive(view.windowHandle()));
+    QCoreApplication::processEvents(); // Process all queued paint events
     view.activateWindow();
     QTRY_VERIFY(view.isActiveWindow());
     QTRY_VERIFY(view.repaints >= 1);

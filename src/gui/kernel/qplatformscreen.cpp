@@ -370,7 +370,7 @@ QString QPlatformScreen::serialNumber() const
 /*!
     Reimplement this function in subclass to return the cursor of the screen.
 
-    The default implementation returns 0.
+    The default implementation returns \nullptr.
 */
 QPlatformCursor *QPlatformScreen::cursor() const
 {

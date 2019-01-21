@@ -3072,7 +3072,7 @@ QDropEvent::~QDropEvent()
 /*!
     If the source of the drag operation is a widget in this
     application, this function returns that source; otherwise it
-    returns 0. The source of the operation is the first parameter to
+    returns \nullptr. The source of the operation is the first parameter to
     the QDrag object used instantiate the drag.
 
     This is useful if your widget needs special behavior when dragging
@@ -3514,7 +3514,7 @@ QActionEvent::~QActionEvent()
     \fn QAction *QActionEvent::before() const
 
     If type() is \l ActionAdded, returns the action that should
-    appear before action(). If this function returns 0, the action
+    appear before action(). If this function returns \nullptr, the action
     should be appended to already existing actions on the same
     widget.
 

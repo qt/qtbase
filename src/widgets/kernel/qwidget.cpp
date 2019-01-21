@@ -10412,7 +10412,7 @@ bool QWidget::hasHeightForWidth() const
 
     Returns the visible child widget at the position (\a{x}, \a{y})
     in the widget's coordinate system. If there is no visible child
-    widget at the specified position, the function returns 0.
+    widget at the specified position, the function returns \nullptr.
 */
 
 /*!
@@ -12376,7 +12376,7 @@ Q_WIDGETS_EXPORT QWidgetPrivate *qt_widget_private(QWidget *widget)
    \since 4.5
 
    Returns the proxy widget for the corresponding embedded widget in a graphics
-   view; otherwise returns 0.
+   view; otherwise returns \nullptr.
 
    \sa QGraphicsProxyWidget::createProxyForChildWidget(),
        QGraphicsScene::addWidget()

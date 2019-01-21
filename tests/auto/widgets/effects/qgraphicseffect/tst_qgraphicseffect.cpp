@@ -313,6 +313,7 @@ void tst_QGraphicsEffect::draw()
     view.show();
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(item->numRepaints > 0);
+    QCoreApplication::processEvents(); // Process all queued paint events
     item->reset();
 
     // Make sure installing the effect triggers a repaint.

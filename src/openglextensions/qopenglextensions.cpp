@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 Klaralvdalens Datakonsult AB (KDAB)
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGLExtensions module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** Commercial License Usage

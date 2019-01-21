@@ -2933,18 +2933,18 @@ enum {
 QByteArray QSysInfo::machineUniqueId()
 {
 #ifdef Q_OS_BSD4
-    char uuid[UuidStringLen];
+    char uuid[UuidStringLen + 1];
     size_t uuidlen = sizeof(uuid);
 #  ifdef KERN_HOSTUUID
     int name[] = { CTL_KERN, KERN_HOSTUUID };
     if (sysctl(name, sizeof name / sizeof name[0], &uuid, &uuidlen, nullptr, 0) == 0
             && uuidlen == sizeof(uuid))
-        return QByteArray(uuid, uuidlen);
+        return QByteArray(uuid, uuidlen - 1);
 
 #  else
     // Darwin: no fixed value, we need to search by name
     if (sysctlbyname("kern.uuid", uuid, &uuidlen, nullptr, 0) == 0 && uuidlen == sizeof(uuid))
-        return QByteArray(uuid, uuidlen);
+        return QByteArray(uuid, uuidlen - 1);
 #  endif
 #elif defined(Q_OS_UNIX)
     // The modern name on Linux is /etc/machine-id, but that path is
@@ -2967,7 +2967,7 @@ QByteArray QSysInfo::machineUniqueId()
 #elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     // Let's poke at the registry
     HKEY key = NULL;
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ, &key)
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ | KEY_WOW64_64KEY, &key)
             == ERROR_SUCCESS) {
         wchar_t buffer[UuidStringLen + 1];
         DWORD size = sizeof(buffer);
@@ -3008,11 +3008,11 @@ QByteArray QSysInfo::bootUniqueId()
     }
 #elif defined(Q_OS_DARWIN)
     // "kern.bootsessionuuid" is only available by name
-    char uuid[UuidStringLen];
+    char uuid[UuidStringLen + 1];
     size_t uuidlen = sizeof(uuid);
     if (sysctlbyname("kern.bootsessionuuid", uuid, &uuidlen, nullptr, 0) == 0
             && uuidlen == sizeof(uuid))
-        return QByteArray(uuid, uuidlen);
+        return QByteArray(uuid, uuidlen - 1);
 #endif
     return QByteArray();
 };

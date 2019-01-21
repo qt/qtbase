@@ -80,6 +80,7 @@ public:
 private Q_SLOTS:
     void fileOpenFinished(bool isOpen);
 
+private:
     Q_DECLARE_PRIVATE(QNetworkReplyFileImpl)
 };
 

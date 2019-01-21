@@ -506,7 +506,8 @@ public class QtActivityDelegate
                     m_rightSelectionHandle = null;
                     m_leftSelectionHandle = null;
                 }
-                m_editPopupMenu.hide();
+                if (m_editPopupMenu != null)
+                    m_editPopupMenu.hide();
                 break;
 
             case CursorHandleShowNormal:
@@ -561,7 +562,8 @@ public class QtActivityDelegate
             }
             m_editPopupMenu.setPosition(editX, editY, editButtons);
         } else {
-            m_editPopupMenu.hide();
+            if (m_editPopupMenu != null)
+                m_editPopupMenu.hide();
         }
     }
 

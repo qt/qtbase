@@ -109,11 +109,11 @@ QWidget *createEditor(QWidget *aParent,
             // to present the DisplayRole and not the EditRole which
             // is the id reference to the related model
             QVariant v = index.data(Qt::DisplayRole);
-            QByteArray n = editor->metaObject()->userProperty().name();
+            const QByteArray n = editor->metaObject()->userProperty().name();
             if (!n.isEmpty()) {
                 if (!v.isValid())
-                    v = QVariant(editor->property(n).userType(), nullptr);
-                editor->setProperty(n, v);
+                    v = QVariant(editor->property(n.data()).userType(), nullptr);
+                editor->setProperty(n.data(), v);
                 return;
             }
         }

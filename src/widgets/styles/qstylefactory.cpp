@@ -77,7 +77,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 
 /*!
     Creates and returns a QStyle object that matches the given \a key, or
-    returns 0 if no matching style is found.
+    returns \nullptr if no matching style is found.
 
     Both built-in styles and styles from style plugins are queried for a
     matching style.

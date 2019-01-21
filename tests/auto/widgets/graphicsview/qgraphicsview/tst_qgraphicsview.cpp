@@ -1650,6 +1650,7 @@ void tst_QGraphicsView::itemsInRect_cosmeticAdjust()
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(rect->numPaints > 0);
 
+    QCoreApplication::processEvents(); // Process all queued paint events
     rect->numPaints = 0;
     if (updateRect.isNull())
         view.viewport()->update();

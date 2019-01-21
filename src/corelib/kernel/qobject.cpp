@@ -1374,6 +1374,10 @@ void QObject::customEvent(QEvent * /* event */)
     might have reimplemented eventFilter() for its own internal
     purposes.
 
+    Some events, such as \l QEvent::ShortcutOverride must be explicitly
+    accepted (by calling \l {QEvent::}{accept()} on them) in order to prevent
+    propagation.
+
     \warning If you delete the receiver object in this function, be
     sure to return true. Otherwise, Qt will forward the event to the
     deleted object and the program might crash.

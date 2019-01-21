@@ -4318,6 +4318,7 @@ void tst_QGraphicsScene::removeFullyTransparentItem()
     view.show();
     qApp->setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCoreApplication::processEvents(); // Process all queued paint events
 
     // NB! The parent has the ItemHasNoContents flag set, which means
     // the parent itself doesn't generate any update requests, only the

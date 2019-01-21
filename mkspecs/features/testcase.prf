@@ -21,14 +21,18 @@ testcase_lowdpi {
     }
 }
 
-# Make sure we explicitly link to the debug version of the Qt libraries if needed
-macos: CONFIG += qt_link_suffixed_framework
-
 benchmark: type = benchmark
 else: type = check
 
 $${type}.files =
 $${type}.path = .
+
+# Make sure we explicitly load the debug version of the Qt libraries if needed
+macos {
+    dyld_image_suffix.name = DYLD_IMAGE_SUFFIX
+    dyld_image_suffix.value = $$qtPlatformTargetSuffix()
+    QT_TOOL_ENV += dyld_image_suffix
+}
 
 # Add environment for non-installed builds. Do this first, so the
 # 'make' variable expansions don't end up in a batch file/script.

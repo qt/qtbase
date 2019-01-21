@@ -1301,7 +1301,7 @@ const QTextDocument *QTextBlock::document() const
 
 /*!
     If the block represents a list item, returns the list that the item belongs
-    to; otherwise returns 0.
+    to; otherwise returns \nullptr.
 */
 QTextList *QTextBlock::textList() const
 {

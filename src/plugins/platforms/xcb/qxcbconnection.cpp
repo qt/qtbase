@@ -39,6 +39,7 @@
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtCore/QDebug>
+#include <QtCore/QCoreApplication>
 
 #include "qxcbconnection.h"
 #include "qxcbkeyboard.h"
@@ -818,7 +819,7 @@ xcb_window_t QXcbConnection::getQtSelectionOwner()
                           0);                                 // value list
 
         QXcbWindow::setWindowTitle(connection(), m_qtSelectionOwner,
-                               QStringLiteral("Qt Selection Window"));
+                                   QLatin1String("Qt Selection Owner for ") + QCoreApplication::applicationName());
     }
     return m_qtSelectionOwner;
 }

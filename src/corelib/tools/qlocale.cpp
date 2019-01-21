@@ -2371,6 +2371,8 @@ QString QLocale::toString(double i, char f, int prec) const
 QLocale QLocale::system()
 {
     QT_PREPEND_NAMESPACE(systemData)(); // trigger updating of the system data if necessary
+    if (systemLocalePrivate.isDestroyed())
+        return QLocale(QLocale::C);
     return QLocale(*systemLocalePrivate->data());
 }
 

@@ -296,7 +296,7 @@ Gui, printing, widget options:
     -kms ............... Enable backends for KMS [auto] (Linux only)
     -linuxfb ........... Enable Linux Framebuffer support [auto] (Linux only)
     -mirclient ......... Enable Mir client support [no] (Linux only)
-    -xcb ............... Select used xcb-* libraries [system/qt/no]
+    -xcb ............... Enable X11 support. Select used xcb-* libraries [system/qt/no]
                          (-qt-xcb still uses system version of libxcb itself)
 
   Input backends:

@@ -2599,6 +2599,8 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
         return;
 
     Q_Q(QWindow);
+    if (!q->isTopLevel())
+        return;
     // Attempt to close the application only if this has WA_QuitOnClose set and a non-visible parent
     bool quitOnClose = QGuiApplication::quitOnLastWindowClosed() && !q->parent();
     QWindowList list = QGuiApplication::topLevelWindows();
@@ -2655,7 +2657,7 @@ QOpenGLContext *QWindowPrivate::shareContext() const
     native window, or to embed a native window inside a QWindow.
 
     If foreign windows are not supported or embedding the native window
-    failed in the platform plugin, this function returns 0.
+    failed in the platform plugin, this function returns \nullptr.
 
     \note The resulting QWindow should not be used to manipulate the underlying
     native window (besides re-parenting), or to observe state changes of the

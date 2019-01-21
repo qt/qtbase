@@ -959,7 +959,7 @@
     \overload
     \since 5.8
 
-    Returns a string containing \c{nullptr}.
+    Returns a string containing \nullptr.
 */
 
 /*!

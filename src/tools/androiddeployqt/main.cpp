@@ -128,6 +128,7 @@ struct Options
     bool build;
     bool gradle;
     bool auxMode;
+    bool stripLibraries = true;
     QTime timer;
 
     // External tools
@@ -437,6 +438,8 @@ Options parseOptions()
             options.generateAssetsFileList = false;
         } else if (argument.compare(QLatin1String("--aux-mode"), Qt::CaseInsensitive) == 0) {
             options.auxMode = true;
+        } else if (argument.compare(QLatin1String("--no-strip"), Qt::CaseInsensitive) == 0) {
+            options.stripLibraries = false;
         }
     }
 
@@ -525,6 +528,7 @@ void printHelp()
                     "    --aux-mode: Operate in auxiliary mode. This will only copy the\n"
                     "       dependencies into the build directory and update the XML templates.\n"
                     "       The project will not be built or installed.\n"
+                    "    --no-strip: Do not strip debug symbols from libraries.\n"
                     "    --help: Displays this information.\n\n",
                     qPrintable(QCoreApplication::arguments().at(0))
             );
@@ -1897,6 +1901,8 @@ bool stripFile(const Options &options, const QString &fileName)
 
 bool stripLibraries(const Options &options)
 {
+    if (!options.stripLibraries)
+        return true;
     if (options.verbose)
         fprintf(stdout, "Stripping libraries to minimize size.\n");
 

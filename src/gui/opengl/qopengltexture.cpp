@@ -3914,8 +3914,7 @@ bool QOpenGLTexture::isAutoMipMapGenerationEnabled() const
     have disabled automatic mipmap generation then you need to call this function
     or the overload to create the mipmap chain.
 
-    \note Mipmap generation is not supported for compressed textures with OpenGL
-    ES 2.0.
+    \note Mipmap generation is not supported for compressed textures with OpenGL ES.
 
     \sa setAutoMipMapGenerationEnabled(), setMipLevels(), mipLevels()
 */
@@ -3926,7 +3925,7 @@ void QOpenGLTexture::generateMipMaps()
     Q_ASSERT(d->textureId);
     if (isCompressedFormat(d->format)) {
         if (QOpenGLContext *ctx = QOpenGLContext::currentContext())
-            if (ctx->isOpenGLES() && ctx->format().majorVersion() < 3)
+            if (ctx->isOpenGLES())
                 return;
     }
     d->texFuncs->glGenerateTextureMipmap(d->textureId, d->target, d->bindingTarget);
@@ -3951,7 +3950,7 @@ void QOpenGLTexture::generateMipMaps(int baseLevel, bool resetBaseLevel)
     Q_ASSERT(d->textureId);
     if (isCompressedFormat(d->format)) {
         if (QOpenGLContext *ctx = QOpenGLContext::currentContext())
-            if (ctx->isOpenGLES() && ctx->format().majorVersion() < 3)
+            if (ctx->isOpenGLES())
                 return;
     }
     int oldBaseLevel;

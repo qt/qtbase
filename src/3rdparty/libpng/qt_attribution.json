@@ -6,9 +6,9 @@
 
     "Description": "libpng is the official PNG reference library.",
     "Homepage": "http://www.libpng.org/pub/png/libpng.html",
-    "Version": "1.6.35",
-    "License": "libpng License",
-    "LicenseId": "Libpng",
+    "Version": "1.6.36",
+    "License": "libpng License and libpng License 2",
+    "LicenseId": "Libpng AND Libpng2",
     "LicenseFile": "LICENSE",
     "Copyright": "Copyright (c) 1998-2018 Glenn Randers-Pehrson
 Copyright (c) 2000-2017 Simon-Pierre Cadieux

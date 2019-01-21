@@ -654,7 +654,7 @@ void QAccessible::removeActivationObserver(ActivationObserver *observer)
 /*!
     If a QAccessibleInterface implementation exists for the given \a object,
     this function returns a pointer to the implementation; otherwise it
-    returns 0.
+    returns \nullptr.
 
     The function calls all installed factory functions (from most
     recently installed to least recently installed) until one is found
@@ -770,7 +770,7 @@ QAccessible::Id QAccessible::uniqueId(QAccessibleInterface *iface)
 /*!
     Returns the QAccessibleInterface belonging to the \a id.
 
-    Returns 0 if the id is invalid.
+    Returns \nullptr if the id is invalid.
 */
 QAccessibleInterface *QAccessible::accessibleInterface(Id id)
 {
@@ -1119,7 +1119,7 @@ QAccessibleInterface *QAccessibleInterface::focusChild() const
     \fn QAccessibleInterface *QAccessibleInterface::childAt(int x, int y) const
 
     Returns the QAccessibleInterface of a child that contains the screen coordinates (\a x, \a y).
-    If there are no children at this position this function returns 0.
+    If there are no children at this position this function returns \nullptr.
     The returned accessible must be a child, but not necessarily a direct child.
 
     This function is only relyable for visible objects (invisible
@@ -1139,7 +1139,7 @@ QAccessibleInterface *QAccessibleInterface::focusChild() const
 
     Returns the QAccessibleInterface of the parent in the accessible object hierarchy.
 
-    Returns 0 if no parent exists (e.g. for the top level application object).
+    Returns \nullptr if no parent exists (e.g. for the top level application object).
 
     \sa child()
 */
@@ -1150,7 +1150,7 @@ QAccessibleInterface *QAccessibleInterface::focusChild() const
     Returns the accessible child with index \a index.
     0-based index. The number of children of an object can be checked with childCount.
 
-    Returns 0 when asking for an invalid child (e.g. when the child became invalid in the meantime).
+    Returns \nullptr when asking for an invalid child (e.g. when the child became invalid in the meantime).
 
     \sa childCount(), parent()
 */
@@ -1356,7 +1356,7 @@ QAccessibleEvent::~QAccessibleEvent()
     \internal
     Returns the uniqueId of the QAccessibleInterface represented by this event.
 
-    In case the object() function returns 0 this is the only way to access the
+    In case the object() function returns \nullptr, this is the only way to access the
     interface.
 */
 QAccessible::Id QAccessibleEvent::uniqueId() const
@@ -1786,7 +1786,7 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
     (This means that at least one interface among the ancestors should
     return a valid QWindow pointer).
 
-    The default implementation returns 0.
+    The default implementation returns \nullptr.
   */
 QWindow *QAccessibleInterface::window() const
 {

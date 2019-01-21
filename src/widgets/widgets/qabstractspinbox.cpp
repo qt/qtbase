@@ -692,7 +692,7 @@ QLineEdit *QAbstractSpinBox::lineEdit() const
 
     QAbstractSpinBox takes ownership of the new lineEdit
 
-    If QLineEdit::validator() for the \a lineEdit returns 0, the internal
+    If QLineEdit::validator() for the \a lineEdit returns \nullptr, the internal
     validator of the spinbox will be set on the line edit.
 */
 

@@ -113,7 +113,7 @@ QImageData::QImageData()
     \internal
 
     Creates a new image data.
-    Returns 0 if invalid parameters are give or anything else failed.
+    Returns \nullptr if invalid parameters are give or anything else failed.
 */
 QImageData * QImageData::create(const QSize &size, QImage::Format format)
 {
