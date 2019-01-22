@@ -718,7 +718,8 @@ def write_ignored_keys(scope: Scope, ignored_keys, indent) -> str:
 
 def recursive_evaluate_scope(scope: Scope, parent_condition: str = '',
                              previous_condition: str = '') -> str:
-    total_condition = scope.condition()
+    current_condition = scope.condition()
+    total_condition = current_condition
     if total_condition == 'else':
         assert previous_condition, \
             "Else branch without previous condition in: %s" % scope.file()
@@ -753,7 +754,7 @@ def recursive_evaluate_scope(scope: Scope, parent_condition: str = '',
         prev_condition = recursive_evaluate_scope(c, total_condition,
                                                   prev_condition)
 
-    return total_condition
+    return current_condition
 
 
 def write_extend_target(cm_fh: typing.IO[str], target: str,
