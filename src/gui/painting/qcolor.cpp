@@ -2193,27 +2193,32 @@ QColor QColor::toCmyk() const Q_DECL_NOTHROW
     color.cspec = Cmyk;
     color.ct.acmyk.alpha = ct.argb.alpha;
 
-    // rgb -> cmy
-    const qreal r = ct.argb.red   / qreal(USHRT_MAX);
-    const qreal g = ct.argb.green / qreal(USHRT_MAX);
-    const qreal b = ct.argb.blue  / qreal(USHRT_MAX);
-    qreal c = qreal(1.0) - r;
-    qreal m = qreal(1.0) - g;
-    qreal y = qreal(1.0) - b;
+    if (!ct.argb.red && !ct.argb.green && !ct.argb.blue) {
+        // Avoid div-by-0 below
+        color.ct.acmyk.cyan    = 0;
+        color.ct.acmyk.magenta = 0;
+        color.ct.acmyk.yellow  = 0;
+        color.ct.acmyk.black   = USHRT_MAX;
+    } else {
+        // rgb -> cmy
+        const qreal r = ct.argb.red   / qreal(USHRT_MAX);
+        const qreal g = ct.argb.green / qreal(USHRT_MAX);
+        const qreal b = ct.argb.blue  / qreal(USHRT_MAX);
+        qreal c = qreal(1.0) - r;
+        qreal m = qreal(1.0) - g;
+        qreal y = qreal(1.0) - b;
 
-    // cmy -> cmyk
-    const qreal k = qMin(c, qMin(m, y));
-
-    if (!qFuzzyIsNull(k - 1)) {
+        // cmy -> cmyk
+        const qreal k = qMin(c, qMin(m, y));
         c = (c - k) / (qreal(1.0) - k);
         m = (m - k) / (qreal(1.0) - k);
         y = (y - k) / (qreal(1.0) - k);
-    }
 
-    color.ct.acmyk.cyan    = qRound(c * USHRT_MAX);
-    color.ct.acmyk.magenta = qRound(m * USHRT_MAX);
-    color.ct.acmyk.yellow  = qRound(y * USHRT_MAX);
-    color.ct.acmyk.black   = qRound(k * USHRT_MAX);
+        color.ct.acmyk.cyan    = qRound(c * USHRT_MAX);
+        color.ct.acmyk.magenta = qRound(m * USHRT_MAX);
+        color.ct.acmyk.yellow  = qRound(y * USHRT_MAX);
+        color.ct.acmyk.black   = qRound(k * USHRT_MAX);
+    }
 
     return color;
 }
