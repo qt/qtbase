@@ -139,13 +139,27 @@ class Operation:
     def __repr__(self):
         assert(False)
 
+    def _dump(self):
+        if not self._value:
+            return '<NOTHING>'
+
+        if not isinstance(self._value, list):
+            return '<NOT A LIST>'
+
+        result = []
+        for i in self._value:
+            if not i:
+                result.append('<NONE>')
+            else:
+                result.append(str(i))
+        return '"' + '", "'.join(result) + '"'
 
 class AddOperation(Operation):
     def process(self, input):
         return input + self._value
 
     def __repr__(self):
-        return '+({})'.format(','.join(self._value))
+        return '+({})'.format(self._dump())
 
 
 class UniqueAddOperation(Operation):
@@ -157,7 +171,7 @@ class UniqueAddOperation(Operation):
         return result
 
     def __repr__(self):
-        return '*({})'.format(self._value)
+        return '*({})'.format(self._dump())
 
 
 class SetOperation(Operation):
@@ -165,7 +179,7 @@ class SetOperation(Operation):
         return self._value
 
     def __repr__(self):
-        return '=({})'.format(self._value)
+        return '=({})'.format(self._dump())
 
 
 class RemoveOperation(Operation):
@@ -183,7 +197,7 @@ class RemoveOperation(Operation):
         return result
 
     def __repr__(self):
-        return '-({})'.format(self._value)
+        return '-({})'.format(self._dump())
 
 
 class Scope:
