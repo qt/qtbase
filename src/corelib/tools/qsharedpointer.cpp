@@ -414,7 +414,7 @@
     \code
     class ScriptInterface : public QObject
     {
-        Q_OBJECT
+        \Q_OBJECT
 
         // ...
 

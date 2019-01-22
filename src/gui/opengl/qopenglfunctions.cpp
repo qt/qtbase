@@ -93,7 +93,7 @@ void CLASS::init(QOpenGLContext *context) \
     \code
     class MyGLWindow : public QWindow, protected QOpenGLFunctions
     {
-        Q_OBJECT
+        \Q_OBJECT
     public:
         MyGLWindow(QScreen *screen = 0);
 

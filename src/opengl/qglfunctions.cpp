@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
     \code
     class MyGLWidget : public QGLWidget, protected QGLFunctions
     {
-        Q_OBJECT
+        \Q_OBJECT
     public:
         MyGLWidget(QWidget *parent = 0) : QGLWidget(parent) {}
 

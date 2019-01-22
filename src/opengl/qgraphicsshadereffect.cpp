@@ -87,7 +87,7 @@ QT_BEGIN_NAMESPACE
     \code
     class ColorizeEffect : public QGraphicsShaderEffect
     {
-        Q_OBJECT
+        \Q_OBJECT
     public:
         ColorizeEffect(QObject *parent = 0)
             : QGraphicsShaderEffect(parent), color(Qt::black)

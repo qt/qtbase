@@ -260,9 +260,6 @@ target_include_directories(Core_qobject PRIVATE
 target_link_libraries(Core_qobject PRIVATE Qt::Platform Qt::GlobalConfig)
 target_link_libraries(Core PRIVATE Core_qobject)
 
-# Comments trigger moc for these, so skip automoc:
-set_source_files_properties(tools/qsharedpointer.cpp PROPERTIES SKIP_AUTOMOC ON)
-
 set_property(TARGET Core APPEND PROPERTY PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig.h")
 set_property(TARGET Core APPEND PROPERTY PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig_p.h")
 
