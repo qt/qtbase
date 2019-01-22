@@ -551,12 +551,6 @@ static QScreen *screenForName(const QWindow *w, const QString &name)
     return winScreen;
 }
 
-static QScreen *forcedScreenForGLWindow(const QWindow *w)
-{
-    const QString forceToScreen = GpuDescription::detect().gpuSuitableScreen;
-    return forceToScreen.isEmpty() ? nullptr : screenForName(w, forceToScreen);
-}
-
 static QPoint calcPosition(const QWindow *w, const QWindowCreationContextPtr &context, const QMargins &invMargins)
 {
     const QPoint orgPos(context->frameX - invMargins.left(), context->frameY - invMargins.top());
@@ -565,7 +559,7 @@ static QPoint calcPosition(const QWindow *w, const QWindowCreationContextPtr &co
         return orgPos;
 
     // Workaround for QTBUG-50371
-    const QScreen *screenForGL = forcedScreenForGLWindow(w);
+    const QScreen *screenForGL = QWindowsWindow::forcedScreenForGLWindow(w);
     if (!screenForGL)
         return orgPos;
 
@@ -1357,6 +1351,28 @@ void QWindowsWindow::setDropSiteEnabled(bool dropEnabled)
         m_dropTarget = 0;
     }
 #endif // QT_CONFIG(clipboard) && QT_CONFIG(draganddrop)
+}
+
+bool QWindowsWindow::m_screenForGLInitialized = false;
+
+void QWindowsWindow::displayChanged()
+{
+    m_screenForGLInitialized = false;
+}
+
+void QWindowsWindow::settingsChanged()
+{
+    m_screenForGLInitialized = false;
+}
+
+QScreen *QWindowsWindow::forcedScreenForGLWindow(const QWindow *w)
+{
+    static QString forceToScreen;
+    if (!m_screenForGLInitialized) {
+        forceToScreen = GpuDescription::detect().gpuSuitableScreen;
+        m_screenForGLInitialized = true;
+    }
+    return forceToScreen.isEmpty() ? nullptr : screenForName(w, forceToScreen);
 }
 
 // Returns topmost QWindowsWindow ancestor even if there are embedded windows in the chain.

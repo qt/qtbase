@@ -297,6 +297,9 @@ public:
     void handleHidden();
     void handleCompositionSettingsChanged();
 
+    static void displayChanged();
+    static void settingsChanged();
+    static QScreen *forcedScreenForGLWindow(const QWindow *w);
     static QWindowsWindow *windowsWindowOf(const QWindow *w);
     static QWindow *topLevelOf(QWindow *w);
     static inline void *userDataOf(HWND hwnd);
@@ -376,6 +379,8 @@ private:
     HICON m_iconSmall = 0;
     HICON m_iconBig = 0;
     void *m_surface = nullptr;
+
+    static bool m_screenForGLInitialized;
 
 #if QT_CONFIG(vulkan)
     // note: intentionally not using void * in order to avoid breaking x86
