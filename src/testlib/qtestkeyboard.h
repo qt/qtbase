@@ -166,6 +166,7 @@ namespace QTest
     Q_DECL_UNUSED inline static void keyPress(QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { keyEvent(Press, window, key, modifier, delay); }
 
+#if QT_CONFIG(shortcut)
     Q_DECL_UNUSED inline static void keySequence(QWindow *window, const QKeySequence &keySequence)
     {
         for (int i = 0; i < keySequence.count(); ++i) {
@@ -174,6 +175,7 @@ namespace QTest
             keyClick(window, key, modifiers);
         }
     }
+#endif
 
 #ifdef QT_WIDGETS_LIB
     static void simulateEvent(QWidget *widget, bool press, int code,
@@ -305,6 +307,7 @@ namespace QTest
     inline static void keyClick(QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { keyEvent(Click, widget, key, modifier, delay); }
 
+#if QT_CONFIG(shortcut)
     inline static void keySequence(QWidget *widget, const QKeySequence &keySequence)
     {
         for (int i = 0; i < keySequence.count(); ++i) {
@@ -313,6 +316,7 @@ namespace QTest
             keyClick(widget, key, modifiers);
         }
     }
+#endif
 
 #endif // QT_WIDGETS_LIB
 

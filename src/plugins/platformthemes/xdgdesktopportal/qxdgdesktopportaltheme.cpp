@@ -185,11 +185,13 @@ QIconEngine * QXdgDesktopPortalTheme::createIconEngine(const QString &iconName) 
     return d->baseTheme->createIconEngine(iconName);
 }
 
+#if QT_CONFIG(shortcut)
 QList<QKeySequence> QXdgDesktopPortalTheme::keyBindings(QKeySequence::StandardKey key) const
 {
     Q_D(const QXdgDesktopPortalTheme);
     return d->baseTheme->keyBindings(key);
 }
+#endif
 
 QString QXdgDesktopPortalTheme::standardButtonText(int button) const
 {
