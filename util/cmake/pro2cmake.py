@@ -223,6 +223,7 @@ class Scope:
         self._children = []  # type: typing.List[Scope]
         self._operations = {}  # type: typing.Dict[str, typing.List[Operation]]
         self._visited_keys = set()  # type: typing.Set[str]
+        self._total_condition = None  # type: typing.Optional[str]
 
     def reset_visited_keys(self):
         self._visited_keys = set()
@@ -322,10 +323,17 @@ class Scope:
         return self._file or ''
 
     def cMakeListsFile(self) -> str:
+        assert self.basedir()
         return os.path.join(self.basedir(), 'CMakeLists.txt')
 
     def condition(self) -> str:
         return self._condition
+
+    def set_total_condition(self, condition: str) -> None:
+        self._total_condition = condition
+
+    def total_condition(self) -> typing.Optional[str]:
+        return self._total_condition
 
     def _add_child(self, scope: 'Scope') -> None:
         scope._parent = self
@@ -708,10 +716,8 @@ def write_ignored_keys(scope: Scope, ignored_keys, indent) -> str:
     return result
 
 
-def write_extend_target(cm_fh: typing.IO[str], target: str,
-                        scope: Scope, parent_condition: str = '',
-                        previous_condition: str = '', *,
-                        indent: int = 0) -> str:
+def recursive_evaluate_scope(scope: Scope, parent_condition: str = '',
+                             previous_condition: str = '') -> str:
     total_condition = scope.condition()
     if total_condition == 'else':
         assert previous_condition, \
@@ -740,6 +746,18 @@ def write_extend_target(cm_fh: typing.IO[str], target: str,
                 total_condition = '({}) AND ({})'.format(parent_condition,
                                                          total_condition)
 
+    scope.set_total_condition(total_condition)
+
+    prev_condition = ''
+    for c in scope.children():
+        prev_condition = recursive_evaluate_scope(c, total_condition,
+                                                  prev_condition)
+
+    return total_condition
+
+
+def write_extend_target(cm_fh: typing.IO[str], target: str,
+                        scope: Scope, indent: int = 0):
     extend_qt_io_string = io.StringIO()
     ignored_keys = write_sources_section(extend_qt_io_string, scope)
     extend_qt_string = extend_qt_io_string.getvalue()
@@ -750,7 +768,8 @@ def write_extend_target(cm_fh: typing.IO[str], target: str,
         ignored_keys_report = '\n' + ignored_keys_report
 
     extend_scope = '\n{}extend_target({} CONDITION {}\n' \
-                   '{}{})\n'.format(spaces(indent), target, total_condition,
+                   '{}{})\n'.format(spaces(indent), target,
+                                    scope.total_condition(),
                                     extend_qt_string, ignored_keys_report)
 
     if not extend_qt_string:
@@ -765,15 +784,30 @@ def write_extend_target(cm_fh: typing.IO[str], target: str,
 
     cm_fh.write(extend_scope)
 
-    children = scope.children()
-    if children:
-        prev_condition = ''
-        for c in children:
-            prev_condition = write_extend_target(cm_fh, target, c,
-                                                 total_condition,
-                                                 prev_condition)
 
-    return total_condition
+def flatten_scopes(scope: Scope) -> typing.List[Scope]:
+    result = []  # type: typing.List[Scope]
+    for c in scope.children():
+        result.append(c)
+        result += flatten_scopes(c)
+    return result
+
+
+def merge_scopes(scopes: typing.List[Scope]) -> typing.List[Scope]:
+    result = []  # type: typing.List[Scope]
+
+    current_scope = None
+    for scope in scopes:
+        if not current_scope \
+                or scope.total_condition() != current_scope.total_condition():
+            if current_scope:
+                result.append(current_scope)
+            current_scope = scope
+            continue
+
+        current_scope.merge(scope)
+
+    return result
 
 
 def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
@@ -802,8 +836,22 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
 
     write_scope_header(cm_fh, indent=indent)
 
+    # Evaluate total condition of all scopes:
     for c in scope.children():
-        write_extend_target(cm_fh, name, c, '', indent=indent)
+        recursive_evaluate_scope(c)
+
+    # Get a flat list of all scopes but the main one:
+    scopes = flatten_scopes(scope)
+
+    scopes = sorted(scopes, key=lambda x: x.total_condition())
+    print("xxxxxx Sorted to {} scopes!".format(len(scopes)))
+
+    # Merge scopes with identical conditions:
+    scopes = merge_scopes(scopes)
+    print("xxxxxx Merged to {} scopes!".format(len(scopes)))
+
+    for c in scopes:
+        write_extend_target(cm_fh, name, c, indent=indent)
 
 
 def write_module(cm_fh: typing.IO[str], scope: Scope, *,
