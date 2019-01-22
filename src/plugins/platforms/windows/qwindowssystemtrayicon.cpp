@@ -103,6 +103,13 @@ static void setIconContents(NOTIFYICONDATA &tnd, const QString &tip, HICON hIcon
     qStringToLimitedWCharArray(tip, tnd.szTip, sizeof(tnd.szTip) / sizeof(wchar_t));
 }
 
+static void setIconVisibility(NOTIFYICONDATA &tnd, bool v)
+{
+    tnd.uFlags |= NIF_STATE;
+    tnd.dwStateMask = NIS_HIDDEN;
+    tnd.dwState = v ? 0 : NIS_HIDDEN;
+}
+
 // Match the HWND of the dummy window to the instances
 struct QWindowsHwndSystemTrayIconEntry
 {
@@ -193,12 +200,15 @@ QWindowsSystemTrayIcon::~QWindowsSystemTrayIcon()
 void QWindowsSystemTrayIcon::init()
 {
     qCDebug(lcQpaTrayIcon) << __FUNCTION__ << this;
-    ensureInstalled();
+    m_visible = true;
+    if (!setIconVisible(m_visible))
+        ensureInstalled();
 }
 
 void QWindowsSystemTrayIcon::cleanup()
 {
     qCDebug(lcQpaTrayIcon) << __FUNCTION__ << this;
+    m_visible = false;
     ensureCleanup();
 }
 
@@ -333,6 +343,18 @@ void QWindowsSystemTrayIcon::ensureCleanup()
     m_toolTip.clear();
 }
 
+bool QWindowsSystemTrayIcon::setIconVisible(bool visible)
+{
+    if (!isInstalled())
+        return false;
+    NOTIFYICONDATA tnd;
+    initNotifyIconData(tnd);
+    tnd.uID = q_uNOTIFYICONID;
+    tnd.hWnd = m_hwnd;
+    setIconVisibility(tnd, visible);
+    return Shell_NotifyIcon(NIM_MODIFY, &tnd) == TRUE;
+}
+
 bool QWindowsSystemTrayIcon::sendTrayMessage(DWORD msg)
 {
     NOTIFYICONDATA tnd;
@@ -340,6 +362,8 @@ bool QWindowsSystemTrayIcon::sendTrayMessage(DWORD msg)
     tnd.uID = q_uNOTIFYICONID;
     tnd.hWnd = m_hwnd;
     tnd.uFlags = NIF_SHOWTIP;
+    if (msg != NIM_DELETE && !m_visible)
+        setIconVisibility(tnd, m_visible);
     if (msg == NIM_ADD || msg == NIM_MODIFY)
         setIconContents(tnd, m_toolTip, m_hIcon);
     if (!Shell_NotifyIcon(msg, &tnd))
