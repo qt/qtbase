@@ -2668,9 +2668,9 @@ QStringList QCoreApplication::libraryPaths()
         QStringList *app_libpaths = new QStringList;
         coreappdata()->app_libpaths.reset(app_libpaths);
 
-        const QByteArray libPathEnv = qgetenv("QT_PLUGIN_PATH");
+        QString libPathEnv = qEnvironmentVariable("QT_PLUGIN_PATH");
         if (!libPathEnv.isEmpty()) {
-            QStringList paths = QFile::decodeName(libPathEnv).split(QDir::listSeparator(), QString::SkipEmptyParts);
+            QStringList paths = libPathEnv.split(QDir::listSeparator(), QString::SkipEmptyParts);
             for (QStringList::const_iterator it = paths.constBegin(); it != paths.constEnd(); ++it) {
                 QString canonicalPath = QDir(*it).canonicalPath();
                 if (!canonicalPath.isEmpty()
