@@ -333,6 +333,15 @@ defineTest(qtConfParseCommandLine) {
             type = boolean
         }
 
+        isEmpty(type):contains(opt, "skip") {
+            isEmpty(skipOptionWarningAdded) {
+                qtConfAddWarning("Command line option -skip is only effective in top-level builds.")
+                skipOptionWarningAdded = 1
+            }
+            $$qtConfGetNextCommandlineArg()
+            next()
+        }
+
         isEmpty(type) {
             qtConfAddError("Unknown command line option '$$c'.")
             return()
