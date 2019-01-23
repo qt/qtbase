@@ -4517,7 +4517,7 @@ void QWidget::setForegroundRole(QPalette::ColorRole role)
     the "color", "background-color", "selection-color",
     "selection-background-color" and "alternate-background-color".
 
-    \sa QApplication::palette(), QWidget::font(), \l {Qt Style Sheets}
+    \sa QApplication::palette(), QWidget::font(), {Qt Style Sheets}
 */
 const QPalette &QWidget::palette() const
 {

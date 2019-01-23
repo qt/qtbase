@@ -99,13 +99,12 @@ static jfieldID m_selectionStartFieldID = 0;
 static jfieldID m_startOffsetFieldID = 0;
 static jfieldID m_textFieldID = 0;
 
-Q_DECLARE_METATYPE(std::function<void()>)
-
 static void runOnQtThread(const std::function<void()> &func)
 {
-    const bool block = QGuiApplication::applicationState() >= Qt::ApplicationInactive;
-    QMetaObject::invokeMethod(m_androidInputContext, "safeCall",
-        block ? Qt::BlockingQueuedConnection : Qt::QueuedConnection, Q_ARG(std::function<void()>, func));
+    AndroidDeadlockProtector protector;
+    if (!protector.acquire())
+        return;
+    QMetaObject::invokeMethod(m_androidInputContext, "safeCall", Qt::BlockingQueuedConnection, Q_ARG(std::function<void()>, func));
 }
 
 static jboolean beginBatchEdit(JNIEnv */*env*/, jobject /*thiz*/)
@@ -116,7 +115,7 @@ static jboolean beginBatchEdit(JNIEnv */*env*/, jobject /*thiz*/)
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
     qDebug("@@@ BEGINBATCH");
 #endif
-    jboolean res;
+    jboolean res = JNI_FALSE;
     runOnQtThread([&res]{res = m_androidInputContext->beginBatchEdit();});
     return res;
 }
@@ -130,7 +129,7 @@ static jboolean endBatchEdit(JNIEnv */*env*/, jobject /*thiz*/)
     qDebug("@@@ ENDBATCH");
 #endif
 
-    jboolean res;
+    jboolean res = JNI_FALSE;
     runOnQtThread([&res]{res = m_androidInputContext->endBatchEdit();});
     return res;
 }
@@ -149,7 +148,7 @@ static jboolean commitText(JNIEnv *env, jobject /*thiz*/, jstring text, jint new
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
     qDebug() << "@@@ COMMIT" << str << newCursorPosition;
 #endif
-    jboolean res;
+    jboolean res = JNI_FALSE;
     runOnQtThread([&]{res = m_androidInputContext->commitText(str, newCursorPosition);});
     return res;
 }
@@ -162,7 +161,7 @@ static jboolean deleteSurroundingText(JNIEnv */*env*/, jobject /*thiz*/, jint le
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
     qDebug() << "@@@ DELETE" << leftLength << rightLength;
 #endif
-    jboolean res;
+    jboolean res = JNI_FALSE;
     runOnQtThread([&]{res = m_androidInputContext->deleteSurroundingText(leftLength, rightLength);});
     return res;
 }
@@ -175,7 +174,7 @@ static jboolean finishComposingText(JNIEnv */*env*/, jobject /*thiz*/)
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
     qDebug("@@@ FINISH");
 #endif
-    jboolean res;
+    jboolean res = JNI_FALSE;
     runOnQtThread([&]{res = m_androidInputContext->finishComposingText();});
     return res;
 }
@@ -185,7 +184,7 @@ static jint getCursorCapsMode(JNIEnv */*env*/, jobject /*thiz*/, jint reqModes)
     if (!m_androidInputContext)
         return 0;
 
-    jboolean res;
+    jint res = 0;
     runOnQtThread([&]{res = m_androidInputContext->getCursorCapsMode(reqModes);});
     return res;
 }
@@ -270,7 +269,7 @@ static jboolean setComposingText(JNIEnv *env, jobject /*thiz*/, jstring text, ji
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
     qDebug() << "@@@ SET" << str << newCursorPosition;
 #endif
-    jboolean res;
+    jboolean res = JNI_FALSE;
     runOnQtThread([&]{res = m_androidInputContext->setComposingText(str, newCursorPosition);});
     return res;
 }
@@ -283,7 +282,7 @@ static jboolean setComposingRegion(JNIEnv */*env*/, jobject /*thiz*/, jint start
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
     qDebug() << "@@@ SETR" << start << end;
 #endif
-    jboolean res;
+    jboolean res = JNI_FALSE;
     runOnQtThread([&]{res = m_androidInputContext->setComposingRegion(start, end);});
     return res;
 }
@@ -297,7 +296,7 @@ static jboolean setSelection(JNIEnv */*env*/, jobject /*thiz*/, jint start, jint
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
     qDebug() << "@@@ SETSEL" << start << end;
 #endif
-    jboolean res;
+    jboolean res = JNI_FALSE;
     runOnQtThread([&]{res = m_androidInputContext->setSelection(start, end);});
     return res;
 
@@ -311,7 +310,7 @@ static jboolean selectAll(JNIEnv */*env*/, jobject /*thiz*/)
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
     qDebug("@@@ SELALL");
 #endif
-    jboolean res;
+    jboolean res = JNI_FALSE;
     runOnQtThread([&]{res = m_androidInputContext->selectAll();});
     return res;
 }
@@ -324,7 +323,7 @@ static jboolean cut(JNIEnv */*env*/, jobject /*thiz*/)
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
     qDebug("@@@");
 #endif
-    jboolean res;
+    jboolean res = JNI_FALSE;
     runOnQtThread([&]{res = m_androidInputContext->cut();});
     return res;
 }
@@ -337,7 +336,7 @@ static jboolean copy(JNIEnv */*env*/, jobject /*thiz*/)
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
     qDebug("@@@");
 #endif
-    jboolean res;
+    jboolean res = JNI_FALSE;
     runOnQtThread([&]{res = m_androidInputContext->copy();});
     return res;
 }
@@ -350,7 +349,7 @@ static jboolean copyURL(JNIEnv */*env*/, jobject /*thiz*/)
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
     qDebug("@@@");
 #endif
-    jboolean res;
+    jboolean res = JNI_FALSE;
     runOnQtThread([&]{res = m_androidInputContext->copyURL();});
     return res;
 }
@@ -363,7 +362,7 @@ static jboolean paste(JNIEnv */*env*/, jobject /*thiz*/)
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
     qDebug("@@@ PASTE");
 #endif
-    jboolean res;
+    jboolean res = JNI_FALSE;
     runOnQtThread([&]{res = m_androidInputContext->paste();});
     return res;
 }
@@ -516,7 +515,6 @@ QAndroidInputContext::QAndroidInputContext()
         m_handleMode = Hidden;
         updateSelectionHandles();
     });
-    qRegisterMetaType<std::function<void()>>();
 }
 
 QAndroidInputContext::~QAndroidInputContext()

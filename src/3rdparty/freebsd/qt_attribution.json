@@ -7,7 +7,7 @@
 
     "Description": "strtoll() and strtoull() are functions for converting a string to (unsigned) long long integer.",
     "Homepage": "https://github.com/freebsd/freebsd/",
-    "Upstream": "https://raw.githubusercontent.com/freebsd/freebsd/raw/tree/master/lib/libc/stdlib/$file",
+    "DownloadLocation": "https://github.com/freebsd/freebsd/tree/master/lib/libc/stdlib",
     "Version": "upstream has complicated with std locales; do not update",
     "Version": "18b29f3fb8abee5d57ed8f4a44f806bec7e0eeff",
     "License": "BSD 3-clause \"New\" or \"Revised\" License",

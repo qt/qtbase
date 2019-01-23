@@ -40,6 +40,9 @@ exampledirs += ../../../examples/widgets \
 
 excludedirs += snippets
 
+# Included in qttestlib.qdocconf instead
+excludefiles += ../kernel/qtestsupport_widgets.cpp
+
 imagedirs   += images \
                ../../../doc/src/images \
                ../../../examples/widgets/doc/images \

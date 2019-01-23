@@ -982,18 +982,9 @@ void QListView::paintEvent(QPaintEvent *e)
         ? qMax(viewport()->size().width(), d->contentsSize().width()) - 2 * d->spacing()
         : qMax(viewport()->size().height(), d->contentsSize().height()) - 2 * d->spacing();
 
-    const int rowCount = d->commonListView->rowCount();
     QVector<QModelIndex>::const_iterator end = toBeRendered.constEnd();
     for (QVector<QModelIndex>::const_iterator it = toBeRendered.constBegin(); it != end; ++it) {
         Q_ASSERT((*it).isValid());
-        if (rowCount == 1)
-            option.viewItemPosition = QStyleOptionViewItem::OnlyOne;
-        else if ((*it).row() == 0)
-            option.viewItemPosition = QStyleOptionViewItem::Beginning;
-        else if ((*it).row() == rowCount - 1)
-            option.viewItemPosition = QStyleOptionViewItem::End;
-        else
-            option.viewItemPosition = QStyleOptionViewItem::Middle;
         option.rect = visualRect(*it);
 
         if (flow() == TopToBottom)

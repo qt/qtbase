@@ -919,8 +919,7 @@ void QWindow::setFlag(Qt::WindowType flag, bool on)
 */
 Qt::WindowType QWindow::type() const
 {
-    Q_D(const QWindow);
-    return static_cast<Qt::WindowType>(int(d->windowFlags & Qt::WindowType_Mask));
+    return static_cast<Qt::WindowType>(int(flags() & Qt::WindowType_Mask));
 }
 
 /*!

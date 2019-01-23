@@ -531,8 +531,11 @@ defineTest(qtConfResolveLibs) {
             unix {
                 # Under UNIX, we look for actual shared libraries, in addition
                 # to static ones.
+                shexts = $$QMAKE_EXTENSION_SHLIB $$QMAKE_EXTENSIONS_AUX_SHLIB
+                for (ext, shexts) {
+                    lcan += $${QMAKE_PREFIX_SHLIB}$${lib}.$${ext}
+                }
                 lcan += \
-                    $${QMAKE_PREFIX_SHLIB}$${lib}.$${QMAKE_EXTENSION_SHLIB} \
                     $${QMAKE_PREFIX_STATICLIB}$${lib}.$${QMAKE_EXTENSION_STATICLIB}
             } else {
                 # Under Windows, we look only for static libraries, as even for DLLs

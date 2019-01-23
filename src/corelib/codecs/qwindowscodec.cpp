@@ -83,8 +83,12 @@ QString QWindowsLocalCodec::convertToUnicode(const char *chars, int length, Conv
         len = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
                                     prev, 2, wc.data(), wc.length());
         if (len) {
-            prepend = true;
             sp.append(QChar(wc[0]));
+            if (mblen == 1) {
+                state->remainingChars = 0;
+                return sp;
+            }
+            prepend = true;
             mb++;
             mblen--;
             wc[0] = 0;
