@@ -1221,10 +1221,12 @@ QString QKeySequence::encodeString(int key)
 static inline void addKey(QString &str, const QString &theKey, QKeySequence::SequenceFormat format)
 {
     if (!str.isEmpty()) {
-        if (format == QKeySequence::NativeText)
+        if (format == QKeySequence::NativeText) {
+            //: Key separator in shortcut string
             str += QCoreApplication::translate("QShortcut", "+");
-        else
+        } else {
             str += QLatin1Char('+');
+        }
     }
 
     str += theKey;
