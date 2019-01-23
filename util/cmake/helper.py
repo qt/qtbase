@@ -183,11 +183,18 @@ platform_mapping = {
     'msvc': 'MSVC',
     'clang': 'CLANG',
     'gcc': 'GCC',
+    'icc': 'ICC',
     'osx': 'APPLE_OSX',
+    'ios': 'APPLE_IOS',
     'freebsd': 'FREEBSD',
+    'openbsd': 'OPENBSD',
+    'netbsd': 'NETBSD',
     'haiku': 'HAIKU',
     'netbsd': 'NETBSD',
     'mac': 'APPLE_OSX',
+    'macx': 'APPLE_OSX',
+    'macos': 'APPLE_OSX',
+    'macx-icc': '(APPLE_OSX AND ICC)',
 }
 
 
