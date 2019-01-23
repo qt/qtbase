@@ -95,6 +95,11 @@ isEmpty(TESTSERVER_VERSION) {
         # The environment variables passed to the docker-compose file
         TEST_ENV = '\$\$env:MACHINE_IP = docker-machine ip qt-test-server;'
         TEST_ENV += '\$\$env:TEST_DOMAIN = $$shell_quote(\"$$DNSDOMAIN\");'
+
+        # Docker-compose CLI environment variables:
+        # Enable path conversion from Windows-style to Unix-style in volume definitions.
+        TEST_ENV += '\$\$env:COMPOSE_CONVERT_WINDOWS_PATHS = $$shell_quote(\"true\");'
+
         TEST_CMD = 'PowerShell -noprofile'
         CONFIG += PowerShell
     } else {
