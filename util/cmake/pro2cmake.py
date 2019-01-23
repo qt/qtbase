@@ -259,7 +259,7 @@ class Scope:
                 value = statement.get('value', [])
                 assert key != ''
 
-                if key in ('HEADERS', 'SOURCES', 'INCLUDEPATH') \
+                if key in ('HEADERS', 'SOURCES', 'INCLUDEPATH', 'RESOURCES',) \
                         or key.endswith('_HEADERS') \
                         or key.endswith('_SOURCES'):
                     value = [map_to_file(v, scope.basedir(),
