@@ -47,7 +47,9 @@
 
 #include <qpa/qplatformcursor.h>
 #include <qpa/qplatformscreen.h>
-#include <qpa/qwindowsysteminterface.h>
+#include <qpa/qwindowsysteminterface_p.h>
+
+#include <QtGui/private/qguiapplication_p.h>
 
 #include "qibusproxy.h"
 #include "qibusproxyportal.h"
@@ -419,9 +421,9 @@ bool QIBusPlatformInputContext::filterEvent(const QEvent *event)
     QDBusPendingReply<bool> reply = d->context->ProcessKeyEvent(sym, code - 8, ibusState);
 
     if (m_eventFilterUseSynchronousMode || reply.isFinished()) {
-        bool retval = reply.value();
-        qCDebug(qtQpaInputMethods) << "filterEvent return" << code << sym << state << retval;
-        return retval;
+        bool filtered = reply.value();
+        qCDebug(qtQpaInputMethods) << "filterEvent return" << code << sym << state << filtered;
+        return filtered;
     }
 
     Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
@@ -491,23 +493,22 @@ void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *cal
     const bool isAutoRepeat = args.at(7).toBool();
 
     // copied from QXcbKeyboard::handleKeyEvent()
-    bool retval = reply.value();
-    qCDebug(qtQpaInputMethods) << "filterEventFinished return" << code << sym << state << retval;
-    if (!retval) {
+    bool filtered = reply.value();
+    qCDebug(qtQpaInputMethods) << "filterEventFinished return" << code << sym << state << filtered;
+    if (!filtered) {
 #ifndef QT_NO_CONTEXTMENU
         if (type == QEvent::KeyPress && qtcode == Qt::Key_Menu
             && window != NULL) {
             const QPoint globalPos = window->screen()->handle()->cursor()->pos();
             const QPoint pos = window->mapFromGlobal(globalPos);
-#ifndef QT_NO_CONTEXTMENU
-            QWindowSystemInterface::handleContextMenuEvent(window, false, pos,
-                                                           globalPos, modifiers);
-#endif
+            QWindowSystemInterfacePrivate::ContextMenuEvent contextMenuEvent(window, false, pos,
+                                                                             globalPos, modifiers);
+            QGuiApplicationPrivate::processWindowSystemEvent(&contextMenuEvent);
         }
-#endif // QT_NO_CONTEXTMENU
-        QWindowSystemInterface::handleExtendedKeyEvent(window, time, type, qtcode, modifiers,
-                                                       code, sym, state, string, isAutoRepeat);
-
+#endif
+        QWindowSystemInterfacePrivate::KeyEvent keyEvent(window, time, type, qtcode, modifiers,
+                                                         code, sym, state, string, isAutoRepeat);
+        QGuiApplicationPrivate::processWindowSystemEvent(&keyEvent);
     }
     call->deleteLater();
 }
