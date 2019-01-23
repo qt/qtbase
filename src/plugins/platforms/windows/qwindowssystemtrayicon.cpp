@@ -183,12 +183,6 @@ static inline HWND createTrayIconMessageWindow()
 
 QWindowsSystemTrayIcon::QWindowsSystemTrayIcon()
 {
-    // For restoring the tray icon after explorer crashes
-    if (!MYWM_TASKBARCREATED)
-        MYWM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
-    // Allow the WM_TASKBARCREATED message through the UIPI filter
-    ChangeWindowMessageFilterEx(m_hwnd, MYWM_TASKBARCREATED, MSGFLT_ALLOW, 0);
-    qCDebug(lcQpaTrayIcon) << __FUNCTION__ << this << "MYWM_TASKBARCREATED=" << MYWM_TASKBARCREATED;
 }
 
 QWindowsSystemTrayIcon::~QWindowsSystemTrayIcon()
@@ -320,6 +314,13 @@ bool QWindowsSystemTrayIcon::ensureInstalled()
     m_hwnd = createTrayIconMessageWindow();
     if (Q_UNLIKELY(m_hwnd == nullptr))
         return false;
+    // For restoring the tray icon after explorer crashes
+    if (!MYWM_TASKBARCREATED)
+        MYWM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
+    // Allow the WM_TASKBARCREATED message through the UIPI filter
+    ChangeWindowMessageFilterEx(m_hwnd, MYWM_TASKBARCREATED, MSGFLT_ALLOW, nullptr);
+    qCDebug(lcQpaTrayIcon) << __FUNCTION__ << this << "MYWM_TASKBARCREATED=" << MYWM_TASKBARCREATED;
+
     QWindowsHwndSystemTrayIconEntry entry{m_hwnd, this};
     hwndTrayIconEntries()->append(entry);
     sendTrayMessage(NIM_ADD);
