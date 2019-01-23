@@ -517,6 +517,14 @@ def parseProFile(file: str, *, debug=False):
 
 
 def map_condition(condition: str) -> str:
+    re.sub(r"\bif\s*\((.*?)\)", r"\1", condition)
+    re.sub(r"\bisEmpty\s*\((.*?)\)", r"\1 STREQUAL \"\"", condition)
+    re.sub(r"\bcontains\s*\((.*?), (.*)?\)", r"\1___contains___\2", condition)
+
+    condition = condition.replace('*', '_x_')
+    condition = condition.replace('.$$', '__ss_')
+    condition = condition.replace('$$', '_ss_')
+
     condition = condition.replace('!', 'NOT ')
     condition = condition.replace('&&', ' AND ')
     condition = condition.replace('|', ' OR ')
