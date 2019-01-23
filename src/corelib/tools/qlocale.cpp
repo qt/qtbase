@@ -1333,6 +1333,48 @@ uint QLocale::toUInt(const QString &s, bool *ok) const
 }
 
 /*!
+ Returns the long int represented by the localized string \a s.
+
+ If the conversion fails the function returns 0.
+
+ If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ to \c false, and success by setting *\a{ok} to \c true.
+
+ This function ignores leading and trailing whitespace.
+
+ \sa toInt(), toULong(), toDouble(), toString()
+
+ \since 5.13
+ */
+
+
+long QLocale::toLong(const QString &s, bool *ok) const
+{
+    return toIntegral_helper<long>(d, s, ok);
+}
+
+/*!
+ Returns the unsigned long int represented by the localized
+ string \a s.
+
+ If the conversion fails the function returns 0.
+
+ If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ to \c false, and success by setting *\a{ok} to \c true.
+
+ This function ignores leading and trailing whitespace.
+
+ \sa toLong(), toInt(), toDouble(), toString()
+
+ \since 5.13
+*/
+
+ulong QLocale::toULong(const QString &s, bool *ok) const
+{
+    return toIntegral_helper<ulong>(d, s, ok);
+}
+
+/*!
     Returns the long long int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
@@ -1497,6 +1539,48 @@ int QLocale::toInt(const QStringRef &s, bool *ok) const
 uint QLocale::toUInt(const QStringRef &s, bool *ok) const
 {
     return toIntegral_helper<uint>(d, s, ok);
+}
+
+/*!
+ Returns the long int represented by the localized string \a s.
+
+ If the conversion fails the function returns 0.
+
+ If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ to \c false, and success by setting *\a{ok} to \c true.
+
+ This function ignores leading and trailing whitespace.
+
+ \sa toInt(), toULong(), toDouble(), toString()
+
+ \since 5.13
+ */
+
+
+long QLocale::toLong(const QStringRef &s, bool *ok) const
+{
+    return toIntegral_helper<long>(d, s, ok);
+}
+
+/*!
+ Returns the unsigned long int represented by the localized
+ string \a s.
+
+ If the conversion fails the function returns 0.
+
+ If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ to \c false, and success by setting *\a{ok} to \c true.
+
+ This function ignores leading and trailing whitespace.
+
+ \sa toLong(), toInt(), toDouble(), toString()
+
+ \since 5.13
+ */
+
+ulong QLocale::toULong(const QStringRef &s, bool *ok) const
+{
+    return toIntegral_helper<ulong>(d, s, ok);
 }
 
 /*!
@@ -1673,6 +1757,48 @@ int QLocale::toInt(QStringView s, bool *ok) const
 uint QLocale::toUInt(QStringView s, bool *ok) const
 {
     return toIntegral_helper<uint>(d, s, ok);
+}
+
+/*!
+ Returns the long int represented by the localized string \a s.
+
+ If the conversion fails the function returns 0.
+
+ If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ to \c false, and success by setting *\a{ok} to \c true.
+
+ This function ignores leading and trailing whitespace.
+
+ \sa toInt(), toULong(), toDouble(), toString()
+
+ \since 5.13
+ */
+
+
+long QLocale::toLong(QStringView s, bool *ok) const
+{
+    return toIntegral_helper<long>(d, s, ok);
+}
+
+/*!
+ Returns the unsigned long int represented by the localized
+ string \a s.
+
+ If the conversion fails the function returns 0.
+
+ If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ to \c false, and success by setting *\a{ok} to \c true.
+
+ This function ignores leading and trailing whitespace.
+
+ \sa toLong(), toInt(), toDouble(), toString()
+
+ \since 5.13
+ */
+
+ulong QLocale::toULong(QStringView s, bool *ok) const
+{
+    return toIntegral_helper<ulong>(d, s, ok);
 }
 
 /*!

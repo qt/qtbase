@@ -1163,6 +1163,30 @@
     currency string.
 */
 
+/*!
+\fn QString QLocale::toString(long i) const
+
+\overload
+
+\sa toLong()
+*/
+
+/*!
+\fn QString QLocale::toString(ulong i) const
+
+\overload
+
+\sa toULong()
+*/
+
+/*!
+\fn QString QLocale::toString(ushort i) const
+
+\overload
+
+\sa toUShort()
+*/
+
 
 /*!
 \fn QString QLocale::toString(short i) const
