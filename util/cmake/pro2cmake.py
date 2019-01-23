@@ -33,6 +33,8 @@ import re
 import io
 import typing
 
+from sympy.logic import (simplify_logic, And, Or, Not,)
+from sympy.core import SympifyError
 import pyparsing as pp
 
 from helper import map_qt_library, map_qt_base_library, featureName, \
@@ -517,9 +519,13 @@ def parseProFile(file: str, *, debug=False):
 
 
 def map_condition(condition: str) -> str:
-    re.sub(r"\bif\s*\((.*?)\)", r"\1", condition)
-    re.sub(r"\bisEmpty\s*\((.*?)\)", r"\1 STREQUAL \"\"", condition)
-    re.sub(r"\bcontains\s*\((.*?), (.*)?\)", r"\1___contains___\2", condition)
+    print('##### Mapping condition: {}.'.format(condition))
+    re.sub(r'if\s*\((.*?)\)', r'\1', condition)
+    re.sub(r'(^|[^a-zA-Z0-9_])isEmpty\s*\((.*?)\)', r'\2_ISEMPTY', condition)
+    re.sub(r'(^|[^a-zA-Z0-9_])contains\s*\((.*?), (.*)?\)',
+           r'\2___contains___\3', condition)
+    re.sub(r'\s*==\s*', '___STREQUAL___', condition)
+    print('   # after regexp: {}.'.format(condition))
 
     condition = condition.replace('*', '_x_')
     condition = condition.replace('.$$', '__ss_')
@@ -528,9 +534,6 @@ def map_condition(condition: str) -> str:
     condition = condition.replace('!', 'NOT ')
     condition = condition.replace('&&', ' AND ')
     condition = condition.replace('|', ' OR ')
-    condition = condition.replace('==', ' STREQUAL ')
-
-    condition = condition.replace('NOT NOT', '')  # remove double negation
 
     cmake_condition = ''
     for part in condition.split():
@@ -550,7 +553,6 @@ def map_condition(condition: str) -> str:
         part = part.replace('true', 'ON')
         part = part.replace('false', 'OFF')
         cmake_condition += ' ' + part
-
     return cmake_condition.strip()
 
 
@@ -724,6 +726,144 @@ def write_ignored_keys(scope: Scope, ignored_keys, indent) -> str:
     return result
 
 
+def _iterate_expr_tree(expr, op, matches):
+    assert expr.func == op
+    keepers = ()
+    for arg in expr.args:
+        if arg in matches:
+            matches = tuple(x for x in matches if x != arg)
+        elif arg == op:
+            (matches, extra_keepers) = _iterate_expr_tree(arg, op, matches)
+            keepers = (*keepers, *extra_keepers)
+        else:
+            keepers = (*keepers, arg)
+    return (matches, keepers)
+
+
+def _simplify_expressions(expr, op, matches, replacement):
+    args = expr.args
+    for arg in args:
+        expr = expr.subs(arg, _simplify_expressions(arg, op, matches,
+                                                    replacement))
+
+    if expr.func == op:
+        (to_match, keepers) = tuple(_iterate_expr_tree(expr, op, matches))
+        if len(to_match) == 0:
+            # build expression with keepers and replacement:
+            if keepers:
+                start = replacement
+                current_expr = None
+                last_expr = keepers[-1]
+                for repl_arg in keepers[:-1]:
+                    current_expr = op(start, repl_arg)
+                    start = current_expr
+                top_expr = op(start, last_expr)
+            else:
+                top_expr = replacement
+
+            expr = expr.subs(expr, top_expr)
+
+    return expr
+
+
+def _simplify_flavors_in_condition(base: str, flavors, expr):
+    ''' Simplify conditions based on the knownledge of which flavors
+        belong to which OS. '''
+    base_expr = simplify_logic(base)
+    false_expr = simplify_logic('false')
+    for flavor in flavors:
+        flavor_expr = simplify_logic(flavor)
+        expr = _simplify_expressions(expr, And, (base_expr, flavor_expr,),
+                                     flavor_expr)
+        expr = _simplify_expressions(expr, Or, (base_expr, flavor_expr),
+                                     base_expr)
+        expr = _simplify_expressions(expr, And, (Not(base_expr), flavor_expr,),
+                                     false_expr)
+    return expr
+
+
+def _recursive_simplify(expr):
+    ''' Simplify the expression as much as possible based on
+        domain knowledge. '''
+    input_expr = expr
+
+    # Simplify even further, based on domain knowledge:
+    apples = ('APPLE_OSX', 'APPLE_UIKIT', 'APPLE_IOS',
+              'APPLE_TVOS', 'APPLE_WATCHOS',)
+    bsds = ('APPLE', 'FREEBSD', 'OPENBSD', 'NETBSD',)
+    unixes = ('APPLE', *apples, 'BSD', *bsds, 'LINUX',
+              'ANDROID', 'ANDROID_EMBEDDED',
+              'INTEGRITY', 'VXWORKS', 'QNX', 'WASM')
+
+    unix_expr = simplify_logic('UNIX')
+    win_expr = simplify_logic('WIN32')
+    false_expr = simplify_logic('false')
+    true_expr = simplify_logic('true')
+
+    expr = expr.subs(Not(unix_expr), win_expr)  # NOT UNIX -> WIN32
+    expr = expr.subs(Not(win_expr), unix_expr)  # NOT WIN32 -> UNIX
+
+    # UNIX [OR foo ]OR WIN32 -> ON [OR foo]
+    expr = _simplify_expressions(expr, Or, (unix_expr, win_expr,), true_expr)
+    # UNIX  [AND foo ]AND WIN32 -> OFF [AND foo]
+    expr = _simplify_expressions(expr, And, (unix_expr, win_expr,), false_expr)
+    for unix_flavor in unixes:
+        #  unix_flavor [AND foo ] AND WIN32 -> FALSE [AND foo]
+        flavor_expr = simplify_logic(unix_flavor)
+        expr = _simplify_expressions(expr, And, (win_expr, flavor_expr,),
+                                     false_expr)
+
+    expr = _simplify_flavors_in_condition('WIN32', ('WINRT',), expr)
+    expr = _simplify_flavors_in_condition('APPLE', apples, expr)
+    expr = _simplify_flavors_in_condition('BSD', bsds, expr)
+    expr = _simplify_flavors_in_condition('UNIX', unixes, expr)
+
+    # Now simplify further:
+    expr = simplify_logic(expr)
+
+    while expr != input_expr:
+        input_expr = expr
+        expr = _recursive_simplify(expr)
+
+    return expr
+
+
+def simplify_condition(condition: str) -> str:
+    input_condition = condition.strip()
+
+    # Map to sympy syntax:
+    condition = ' ' + input_condition + ' '
+    condition = condition.replace('(', ' ( ')
+    condition = condition.replace(')', ' ) ')
+
+    tmp = ''
+    while tmp != condition:
+        tmp = condition
+
+        condition = condition.replace(' NOT ', ' ~ ')
+        condition = condition.replace(' AND ', ' & ')
+        condition = condition.replace(' OR ', ' | ')
+        condition = condition.replace(' ON ', 'true')
+        condition = condition.replace(' OFF ', 'false')
+
+    try:
+        # Generate and simplify condition using sympy:
+        condition_expr = simplify_logic(condition)
+        condition = str(_recursive_simplify(condition_expr))
+
+        # Map back to CMake syntax:
+        condition = condition.replace('~', 'NOT ')
+        condition = condition.replace('&', 'AND')
+        condition = condition.replace('|', 'OR')
+        condition = condition.replace('True', 'ON')
+        condition = condition.replace('False', 'OFF')
+    except:
+        # sympy did not like our input, so leave this condition alone:
+        condition = input_condition
+
+    return condition
+
+
 def recursive_evaluate_scope(scope: Scope, parent_condition: str = '',
                              previous_condition: str = '') -> str:
     current_condition = scope.condition()
@@ -755,7 +895,7 @@ def recursive_evaluate_scope(scope: Scope, parent_condition: str = '',
                 total_condition = '({}) AND ({})'.format(parent_condition,
                                                          total_condition)
 
-    scope.set_total_condition(total_condition)
+    scope.set_total_condition(simplify_condition(total_condition))
 
     prev_condition = ''
     for c in scope.children():
