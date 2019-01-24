@@ -227,6 +227,10 @@ class Scope:
         self._visited_keys = set()  # type: typing.Set[str]
         self._total_condition = None  # type: typing.Optional[str]
 
+    def __repr__(self):
+        return '{}:{}:{}'.format(self._basedir, self._file,
+                                 self._condition or '<NONE>')
+
     def reset_visited_keys(self):
         self._visited_keys = set()
 
@@ -276,8 +280,8 @@ class Scope:
                 elif operation == '*=':
                     scope._append_operation(key, UniqueAddOperation(value))
                 else:
-                    print('Unexpected operation "{}" in scope with '
-                          'condition {}.'.format(operation, cond))
+                    print('Unexpected operation "{}" in scope "{}".'
+                          .format(operation, scope))
                     assert(False)
 
                 continue
@@ -346,11 +350,7 @@ class Scope:
 
     def dump(self, *, indent: int = 0) -> None:
         ind = '    ' * indent
-        if self._condition == '':
-            print('{}Scope {} in "{}".'.format(ind, self._file, self._basedir))
-        else:
-            print('{}Scope {} in "{}" with condition: "{}".'
-                  .format(ind, self._file, self._basedir, self._condition))
+        print('{}Scope "{}":'.format(ind, self))
         print('{}  Keys:'.format(ind))
         keys = self._operations.keys()
         if not keys:
@@ -576,8 +576,7 @@ def handle_subdir(scope: Scope, cm_fh: typing.IO[str], *,
             cm_fh.write('{}### remove_subdirectory'
                         '("{}")\n'.format(ind, sd[1:]))
         else:
-            print('    XXXX: SUBDIR {} in {}: '
-                  'Not found.'.format(sd, scope.file()))
+            print('    XXXX: SUBDIR {} in {}: Not found.'.format(sd, scope))
 
     for c in scope.children():
         cond = c.condition()
