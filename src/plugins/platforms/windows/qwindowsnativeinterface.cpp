@@ -95,7 +95,7 @@ void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resourc
 {
     if (!window || !window->handle()) {
         qWarning("%s: '%s' requested for null window or window without handle.", __FUNCTION__, resource.constData());
-        return 0;
+        return nullptr;
     }
     QWindowsWindow *bw = static_cast<QWindowsWindow *>(window->handle());
     int type = resourceType(resource);
@@ -108,7 +108,7 @@ void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resourc
             return bw->getDC();
         if (type == ReleaseDCType) {
             bw->releaseDC();
-            return 0;
+            return nullptr;
         }
         break;
     case QWindow::VulkanSurface:
@@ -121,7 +121,7 @@ void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resourc
         break;
     }
     qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
-    return 0;
+    return nullptr;
 }
 
 #ifndef QT_NO_CURSOR
@@ -179,7 +179,7 @@ void *QWindowsNativeInterface::nativeResourceForIntegration(const QByteArray &re
     }
 #endif
 
-    return 0;
+    return nullptr;
 }
 
 #ifndef QT_NO_OPENGL
@@ -187,7 +187,7 @@ void *QWindowsNativeInterface::nativeResourceForContext(const QByteArray &resour
 {
     if (!context || !context->handle()) {
         qWarning("%s: '%s' requested for null context or context without handle.", __FUNCTION__, resource.constData());
-        return 0;
+        return nullptr;
     }
 
     QWindowsOpenGLContext *glcontext = static_cast<QWindowsOpenGLContext *>(context->handle());
@@ -204,7 +204,7 @@ void *QWindowsNativeInterface::nativeResourceForContext(const QByteArray &resour
     }
 
     qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
-    return 0;
+    return nullptr;
 }
 #endif // !QT_NO_OPENGL
 

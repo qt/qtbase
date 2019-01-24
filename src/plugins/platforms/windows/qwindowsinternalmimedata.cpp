@@ -70,7 +70,7 @@ bool QWindowsInternalMimeData::hasFormat_sys(const QString &mime) const
         return false;
 
     const QWindowsMimeConverter &mc = QWindowsContext::instance()->mimeConverter();
-    const bool has = mc.converterToMime(mime, pDataObj) != 0;
+    const bool has = mc.converterToMime(mime, pDataObj) != nullptr;
     releaseDataObject(pDataObj);
     qCDebug(lcQpaMime) << __FUNCTION__ <<  mime << has;
     return has;

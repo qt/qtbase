@@ -47,15 +47,15 @@ void *QWindowsDirect2DNativeInterface::nativeResourceForBackingStore(const QByte
 {
     if (!bs || !bs->handle()) {
         qWarning("%s: '%s' requested for null backingstore or backingstore without handle.", __FUNCTION__, resource.constData());
-        return 0;
+        return nullptr;
     }
 
     // getDC is so common we don't want to print an "invalid key" line for it
     if (resource == "getDC")
-        return 0;
+        return nullptr;
 
     qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
-    return 0;
+    return nullptr;
 
 }
 

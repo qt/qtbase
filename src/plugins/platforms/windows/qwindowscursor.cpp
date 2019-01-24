@@ -102,7 +102,7 @@ QWindowsPixmapCursorCacheKey::QWindowsPixmapCursorCacheKey(const QCursor &c)
 
 HCURSOR QWindowsCursor::createPixmapCursor(QPixmap pixmap, const QPoint &hotSpot, qreal scaleFactor)
 {
-    HCURSOR cur = 0;
+    HCURSOR cur = nullptr;
     const qreal pixmapScaleFactor = scaleFactor / pixmap.devicePixelRatioF();
     if (!qFuzzyCompare(pixmapScaleFactor, 1)) {
         pixmap = pixmap.scaled((pixmapScaleFactor * QSizeF(pixmap.size())).toSize(),
@@ -161,7 +161,7 @@ static HCURSOR createBitmapCursor(const QImage &bbits, const QImage &mbits,
             ++x;
         }
     }
-    return CreateCursor(GetModuleHandle(0), hotSpot.x(), hotSpot.y(), width, height,
+    return CreateCursor(GetModuleHandle(nullptr), hotSpot.x(), hotSpot.y(), width, height,
                         xBits.data(), xMask.data());
 }
 
@@ -456,7 +456,7 @@ QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursor
 
     const QSize cursorSize = systemCursorSize(screen);
     const QWindowsCustomPngCursor *sEnd = pngCursors + sizeof(pngCursors) / sizeof(pngCursors[0]);
-    const QWindowsCustomPngCursor *bestFit = 0;
+    const QWindowsCustomPngCursor *bestFit = nullptr;
     int sizeDelta = INT_MAX;
     for (const QWindowsCustomPngCursor *s = pngCursors; s < sEnd; ++s) {
         if (s->shape != cursorShape)
@@ -532,7 +532,7 @@ HCURSOR QWindowsCursor::createCursorFromShape(Qt::CursorShape cursorShape, const
     }
 
     qWarning("%s: Invalid cursor shape %d", __FUNCTION__, cursorShape);
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -741,10 +741,10 @@ QPixmap QWindowsCursor::dragDefaultCursor(Qt::DropAction action) const
     "...............XXXX....."};
 
     if (m_ignoreDragCursor.isNull()) {
-        HCURSOR cursor = LoadCursor(NULL, IDC_NO);
-        ICONINFO iconInfo = {0, 0, 0, 0, 0};
+        HCURSOR cursor = LoadCursor(nullptr, IDC_NO);
+        ICONINFO iconInfo = {0, 0, 0, nullptr, nullptr};
         GetIconInfo(cursor, &iconInfo);
-        BITMAP bmColor = {0, 0, 0, 0, 0, 0, 0};
+        BITMAP bmColor = {0, 0, 0, 0, 0, 0, nullptr};
 
         if (iconInfo.hbmColor
             && GetObject(iconInfo.hbmColor, sizeof(BITMAP), &bmColor)
@@ -780,7 +780,7 @@ HCURSOR QWindowsCursor::hCursor(const QCursor &c) const
         if (sit != m_standardCursorCache.constEnd())
             return sit.value()->handle();
     }
-    return HCURSOR(0);
+    return HCURSOR(nullptr);
 }
 
 /*!

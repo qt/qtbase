@@ -385,9 +385,9 @@ public:
                                                    antialiasMode(),
                                                    D2D1::IdentityMatrix(),
                                                    1.0,
-                                                   NULL,
+                                                   nullptr,
                                                    layerOptions()),
-                            NULL);
+                            nullptr);
             pushedClips.push(LayerClip);
         }
     }
@@ -602,7 +602,7 @@ public:
             hr = dc()->CreateBitmapBrush(bitmap.bitmap(), bitmapBrushProperties, &pen.dashBrush);
             pen.dashLength = bitmap.size().width();
         } else {
-            hr = factory()->CreateStrokeStyle(props, NULL, 0, &pen.strokeStyle);
+            hr = factory()->CreateStrokeStyle(props, nullptr, 0, &pen.strokeStyle);
         }
 
         if (FAILED(hr))
@@ -816,7 +816,7 @@ public:
 
         Direct2DPathGeometryWriter writer;
         if (!writer.begin())
-            return NULL;
+            return nullptr;
 
         writer.setWindingFillEnabled(path.hasWindingFill());
         writer.setAliasingEnabled(alias);
@@ -932,7 +932,7 @@ public:
 
         dc()->DrawGlyphRun(pos,
                            &glyphRun,
-                           NULL,
+                           nullptr,
                            pen.brush.Get(),
                            DWRITE_MEASURING_MODE_GDI_CLASSIC);
     }
@@ -990,7 +990,7 @@ public:
                 dashOffset = pen.dashLength - fmod(lineLength - dashOffset, pen.dashLength);
             }
             dc()->DrawLine(to_d2d_point_2f(p1), to_d2d_point_2f(p2),
-                           brush, FLOAT(pen.qpen.widthF()), NULL);
+                           brush, FLOAT(pen.qpen.widthF()), nullptr);
 
             if (skipJoin)
                 continue;
@@ -1102,9 +1102,9 @@ bool QWindowsDirect2DPaintEngine::begin(QPaintDevice * pdev)
                                                d->antialiasMode(),
                                                D2D1::IdentityMatrix(),
                                                1.0,
-                                               NULL,
+                                               nullptr,
                                                d->layerOptions()),
-                        NULL);
+                        nullptr);
     } else {
         QRect clip(0, 0, pdev->width(), pdev->height());
         if (!systemClip().isEmpty())
@@ -1474,7 +1474,7 @@ void QWindowsDirect2DPaintEngine::drawPixmap(const QRectF &r,
             r.x() + r.width(), r.y() + r.height(),
             r.x(), r.y() + r.height()
         };
-        const QVectorPath vp(points, 4, 0, QVectorPath::RectangleHint);
+        const QVectorPath vp(points, 4, nullptr, QVectorPath::RectangleHint);
         QBrush brush(sr.isValid() ? pm.copy(sr.toRect()) : pm);
         brush.setTransform(QTransform::fromTranslate(r.x(), r.y()));
         rasterFill(vp, brush);
@@ -1511,7 +1511,7 @@ void QWindowsDirect2DPaintEngine::drawPixmap(const QRectF &r,
             }
 
             D2D1_RECT_U d2d_sr =  to_d2d_rect_u(sr.toRect());
-            HRESULT hr = intermediate.bitmap()->CopyFromBitmap(NULL,
+            HRESULT hr = intermediate.bitmap()->CopyFromBitmap(nullptr,
                                                                bitmap->bitmap(),
                                                                &d2d_sr);
             if (FAILED(hr)) {
@@ -1526,9 +1526,9 @@ void QWindowsDirect2DPaintEngine::drawPixmap(const QRectF &r,
                 return;
             }
 
-            HRESULT hr = intermediate.bitmap()->CopyFromBitmap(NULL,
+            HRESULT hr = intermediate.bitmap()->CopyFromBitmap(nullptr,
                                                                bitmap->bitmap(),
-                                                               NULL);
+                                                               nullptr);
             if (FAILED(hr)) {
                 qWarning("%s: Could not copy source bitmap to intermediate bitmap: %#lx", __FUNCTION__, hr);
                 return;
@@ -1708,7 +1708,7 @@ void QWindowsDirect2DPaintEngine::rasterFill(const QVectorPath &path, const QBru
                                 right, info.rectf.y(),
                                 right, bottom,
                                 info.rectf.x(), bottom };
-                QVectorPath vp(pts, 4, 0, QVectorPath::RectangleHint);
+                QVectorPath vp(pts, 4, nullptr, QVectorPath::RectangleHint);
                 extended->clip(vp, info.operation);
                 break;
             }
