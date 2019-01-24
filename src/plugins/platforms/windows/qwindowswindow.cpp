@@ -482,26 +482,22 @@ struct WindowCreationData
     typedef QWindowsWindowData WindowData;
     enum Flags { ForceChild = 0x1, ForceTopLevel = 0x2 };
 
-    WindowCreationData() : parentHandle(0), type(Qt::Widget), style(0), exStyle(0),
-        topLevel(false), popup(false), dialog(false),
-        tool(false), embedded(false), hasAlpha(false) {}
-
     void fromWindow(const QWindow *w, const Qt::WindowFlags flags, unsigned creationFlags = 0);
     inline WindowData create(const QWindow *w, const WindowData &data, QString title) const;
     inline void applyWindowFlags(HWND hwnd) const;
     void initialize(const QWindow *w, HWND h, bool frameChange, qreal opacityLevel) const;
 
     Qt::WindowFlags flags;
-    HWND parentHandle;
-    Qt::WindowType type;
-    unsigned style;
-    unsigned exStyle;
-    bool topLevel;
-    bool popup;
-    bool dialog;
-    bool tool;
-    bool embedded;
-    bool hasAlpha;
+    HWND parentHandle = nullptr;
+    Qt::WindowType type = Qt::Widget;
+    unsigned style = 0;
+    unsigned exStyle = 0;
+    bool topLevel = false;
+    bool popup = false;
+    bool dialog = false;
+    bool tool = false;
+    bool embedded = false;
+    bool hasAlpha = false;
 };
 
 QDebug operator<<(QDebug debug, const WindowCreationData &d)
