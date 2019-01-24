@@ -229,6 +229,8 @@ void QXcbEventQueue::run()
         enqueueEvent(event);
         while (!m_closeConnectionDetected && (event = xcb_poll_for_queued_event(connection)))
             enqueueEvent(event);
+
+        m_newEventsCondition.wakeOne();
         wakeUpDispatcher();
     }
 
@@ -344,6 +346,13 @@ bool QXcbEventQueue::peekEventQueue(PeekerCallback peeker, void *peekerData,
     }
 
     return result;
+}
+
+void QXcbEventQueue::waitForNewEvents(unsigned long time)
+{
+    m_newEventsMutex.lock();
+    m_newEventsCondition.wait(&m_newEventsMutex, time);
+    m_newEventsMutex.unlock();
 }
 
 void QXcbEventQueue::sendCloseConnectionEvent() const
