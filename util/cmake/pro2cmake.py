@@ -27,14 +27,17 @@
 ##
 #############################################################################
 
+
+from __future__ import annotations
+
 from argparse import ArgumentParser
+import copy
 import os.path
 import re
 import io
 import typing
 
 from sympy.logic import (simplify_logic, And, Or, Not,)
-from sympy.core import SympifyError
 import pyparsing as pp
 
 from helper import map_qt_library, map_qt_base_library, featureName, \
@@ -204,9 +207,11 @@ class RemoveOperation(Operation):
 
 
 class Scope:
-    def __init__(self, parent_scope: typing.Optional['Scope'],
+    def __init__(self, *,
+                 parent_scope: typing.Optional[Scope],
                  file: typing.Optional[str] = None, condition: str = '',
-                 base_dir: str = '') -> None:
+                 base_dir: str = '',
+                 operations: typing.Mapping[str, typing.List[Operation]] = {}) -> None:
         if parent_scope:
             parent_scope._add_child(self)
         else:
@@ -223,7 +228,7 @@ class Scope:
         self._file = file
         self._condition = map_condition(condition)
         self._children = []  # type: typing.List[Scope]
-        self._operations = {}  # type: typing.Dict[str, typing.List[Operation]]
+        self._operations = copy.deepcopy(operations)
         self._visited_keys = set()  # type: typing.Set[str]
         self._total_condition = None  # type: typing.Optional[str]
 
@@ -244,6 +249,9 @@ class Scope:
             else:
                 self._operations[key] = other._operations[key]
 
+    def parent(self) -> typing.Optional[Scope]:
+        return self._parent
+
     def basedir(self) -> str:
         return self._basedir
 
@@ -253,7 +261,7 @@ class Scope:
     @staticmethod
     def FromDict(parent_scope: typing.Optional['Scope'],
                  file: str, statements, cond: str = '', base_dir: str = ''):
-        scope = Scope(parent_scope, file, cond, base_dir)
+        scope = Scope(parent_scope=parent_scope, file=file, condition=cond, base_dir=base_dir)
         for statement in statements:
             if isinstance(statement, list):  # Handle skipped parts...
                 assert not statement
@@ -519,13 +527,11 @@ def parseProFile(file: str, *, debug=False):
 
 
 def map_condition(condition: str) -> str:
-    print('##### Mapping condition: {}.'.format(condition))
     re.sub(r'if\s*\((.*?)\)', r'\1', condition)
     re.sub(r'(^|[^a-zA-Z0-9_])isEmpty\s*\((.*?)\)', r'\2_ISEMPTY', condition)
     re.sub(r'(^|[^a-zA-Z0-9_])contains\s*\((.*?), (.*)?\)',
            r'\2___contains___\3', condition)
     re.sub(r'\s*==\s*', '___STREQUAL___', condition)
-    print('   # after regexp: {}.'.format(condition))
 
     condition = condition.replace('*', '_x_')
     condition = condition.replace('.$$', '__ss_')
@@ -860,6 +866,8 @@ def simplify_condition(condition: str) -> str:
         # sympy did not like our input, so leave this condition alone:
         condition = input_condition
 
+    if condition == '':
+        condition = 'ON'
     return condition
 
 
@@ -934,9 +942,8 @@ def write_extend_target(cm_fh: typing.IO[str], target: str,
 
 
 def flatten_scopes(scope: Scope) -> typing.List[Scope]:
-    result = []  # type: typing.List[Scope]
+    result = [scope]  # type: typing.List[Scope]
     for c in scope.children():
-        result.append(c)
         result += flatten_scopes(c)
     return result
 
@@ -944,16 +951,19 @@ def flatten_scopes(scope: Scope) -> typing.List[Scope]:
 def merge_scopes(scopes: typing.List[Scope]) -> typing.List[Scope]:
     result = []  # type: typing.List[Scope]
 
-    current_scope = None
+    # Merge scopes with their parents:
+    known_scopes = {}  # type: typing.Mapping[str, Scope]
     for scope in scopes:
-        if not current_scope \
-                or scope.total_condition() != current_scope.total_condition():
-            if current_scope:
-                result.append(current_scope)
-            current_scope = scope
-            continue
-
-        current_scope.merge(scope)
+        total_condition = scope.total_condition()
+        if total_condition == 'OFF':
+            # ignore this scope entirely!
+            pass
+        elif total_condition in known_scopes:
+            known_scopes[total_condition].merge(scope)
+        else:
+            # Keep everything else:
+            result.append(scope)
+            known_scopes[total_condition] = scope
 
     return result
 
@@ -963,14 +973,28 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
                     extra_lines: typing.List[str] = [],
                     indent: int = 0,
                     **kwargs: typing.Any):
+    # Evaluate total condition of all scopes:
+    recursive_evaluate_scope(scope)
+
+    # Get a flat list of all scopes but the main one:
+    scopes = flatten_scopes(scope)
+    total_scopes = len(scopes)
+    # Merge scopes based on their conditions:
+    scopes = merge_scopes(scopes)
+    print("xxxxxx {} scopes, {} after merging!".format(total_scopes, len(scopes)))
+
+    assert len(scopes)
+    assert scopes[0].total_condition() == 'ON'
+
+    # Now write out the scopes:
     write_header(cm_fh, name, typename, indent=indent)
 
     cm_fh.write('{}{}({}\n'.format(spaces(indent), cmake_function, name))
     for extra_line in extra_lines:
         cm_fh.write('{}    {}\n'.format(spaces(indent), extra_line))
 
-    ignored_keys = write_sources_section(cm_fh, scope, indent=indent, **kwargs)
-    ignored_keys_report = write_ignored_keys(scope, ignored_keys,
+    ignored_keys = write_sources_section(cm_fh, scopes[0], indent=indent, **kwargs)
+    ignored_keys_report = write_ignored_keys(scopes[0], ignored_keys,
                                              spaces(indent + 1))
     if ignored_keys_report:
         cm_fh.write(ignored_keys_report)
@@ -979,26 +1003,12 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
     cm_fh.write('{})\n'.format(spaces(indent)))
 
     # Scopes:
-    if not scope.children():
+    if len(scopes) == 1:
         return
 
     write_scope_header(cm_fh, indent=indent)
 
-    # Evaluate total condition of all scopes:
-    for c in scope.children():
-        recursive_evaluate_scope(c)
-
-    # Get a flat list of all scopes but the main one:
-    scopes = flatten_scopes(scope)
-
-    scopes = sorted(scopes, key=lambda x: x.total_condition())
-    print("xxxxxx Sorted to {} scopes!".format(len(scopes)))
-
-    # Merge scopes with identical conditions:
-    scopes = merge_scopes(scopes)
-    print("xxxxxx Merged to {} scopes!".format(len(scopes)))
-
-    for c in scopes:
+    for c in scopes[1:]:
         write_extend_target(cm_fh, name, c, indent=indent)
 
 
@@ -1117,10 +1127,6 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
         dir = scope.basedir()
         include_file = i
         if not include_file:
-            continue
-        if '/3rdparty/' in include_file:
-            print('    ****: Ignoring include file in 3rdparty: {}.'
-                  .format(include_file))
             continue
         if not os.path.isfile(include_file):
             print('    XXXX: Failed to include {}.'.format(include_file))
