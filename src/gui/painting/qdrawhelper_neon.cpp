@@ -50,7 +50,18 @@ QT_BEGIN_NAMESPACE
 void qt_memfill32(quint32 *dest, quint32 value, int count)
 {
     const int epilogueSize = count % 16;
-#if !defined(Q_PROCESSOR_ARM_64)
+#if defined(Q_CC_GHS) || defined(Q_CC_MSVC)
+    // inline assembler free version:
+    if (count >= 16) {
+        quint32 *const neonEnd = dest + count - epilogueSize;
+        const uint32x4_t valueVector1 = vdupq_n_u32(value);
+        const uint32x4x4_t valueVector4 = { valueVector1, valueVector1, valueVector1, valueVector1 };
+        do {
+            vst4q_u32(dest, valueVector4);
+            dest += 16;
+        } while (dest != neonEnd);
+    }
+#elif !defined(Q_PROCESSOR_ARM_64)
     if (count >= 16) {
         quint32 *const neonEnd = dest + count - epilogueSize;
         register uint32x4_t valueVector1 asm ("q0") = vdupq_n_u32(value);
@@ -84,20 +95,20 @@ void qt_memfill32(quint32 *dest, quint32 value, int count)
 
     switch (epilogueSize)
     {
-    case 15:     *dest++ = value;
-    case 14:     *dest++ = value;
-    case 13:     *dest++ = value;
-    case 12:     *dest++ = value;
-    case 11:     *dest++ = value;
-    case 10:     *dest++ = value;
-    case 9:      *dest++ = value;
-    case 8:      *dest++ = value;
-    case 7:      *dest++ = value;
-    case 6:      *dest++ = value;
-    case 5:      *dest++ = value;
-    case 4:      *dest++ = value;
-    case 3:      *dest++ = value;
-    case 2:      *dest++ = value;
+    case 15:     *dest++ = value; Q_FALLTHROUGH();
+    case 14:     *dest++ = value; Q_FALLTHROUGH();
+    case 13:     *dest++ = value; Q_FALLTHROUGH();
+    case 12:     *dest++ = value; Q_FALLTHROUGH();
+    case 11:     *dest++ = value; Q_FALLTHROUGH();
+    case 10:     *dest++ = value; Q_FALLTHROUGH();
+    case 9:      *dest++ = value; Q_FALLTHROUGH();
+    case 8:      *dest++ = value; Q_FALLTHROUGH();
+    case 7:      *dest++ = value; Q_FALLTHROUGH();
+    case 6:      *dest++ = value; Q_FALLTHROUGH();
+    case 5:      *dest++ = value; Q_FALLTHROUGH();
+    case 4:      *dest++ = value; Q_FALLTHROUGH();
+    case 3:      *dest++ = value; Q_FALLTHROUGH();
+    case 2:      *dest++ = value; Q_FALLTHROUGH();
     case 1:      *dest++ = value;
     }
 }
