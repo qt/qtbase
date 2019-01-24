@@ -506,6 +506,8 @@ QSsl::SslProtocol QSslSocketBackendPrivate::sessionProtocol() const
         return QSsl::TlsV1_1;
     case kTLSProtocol12:
         return QSsl::TlsV1_2;
+    case kTLSProtocol13:
+        return QSsl::TlsV1_3;
     default:
         return QSsl::UnknownProtocol;
     }
@@ -1158,43 +1160,31 @@ bool QSslSocketBackendPrivate::setSessionProtocol()
     #endif
         // kSSLProtocol3, since kSSLProtocol2 is disabled:
         err = SSLSetProtocolVersionMin(context, kSSLProtocol3);
-        if (err == errSecSuccess)
-            err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
     } else if (configuration.protocol == QSsl::TlsV1SslV3) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << plainSocket << "requesting : SSLv3 - TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kSSLProtocol3);
-        if (err == errSecSuccess)
-            err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
     } else if (configuration.protocol == QSsl::SecureProtocols) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << plainSocket << "requesting : TLSv1 - TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
-        if (err == errSecSuccess)
-            err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
     } else if (configuration.protocol == QSsl::TlsV1_0OrLater) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << plainSocket << "requesting : TLSv1 - TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
-        if (err == errSecSuccess)
-            err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
     } else if (configuration.protocol == QSsl::TlsV1_1OrLater) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << plainSocket << "requesting : TLSv1.1 - TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol11);
-        if (err == errSecSuccess)
-            err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
     } else if (configuration.protocol == QSsl::TlsV1_2OrLater) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << plainSocket << "requesting : TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol12);
-        if (err == errSecSuccess)
-            err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
     } else {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << plainSocket << "no protocol version found in the configuration";
@@ -1229,6 +1219,8 @@ bool QSslSocketBackendPrivate::verifySessionProtocol() const
         protocolOk = (sessionProtocol() >= QSsl::TlsV1_1);
     else if (configuration.protocol == QSsl::TlsV1_2OrLater)
         protocolOk = (sessionProtocol() >= QSsl::TlsV1_2);
+    else if (configuration.protocol == QSsl::TlsV1_3OrLater)
+        protocolOk = (sessionProtocol() >= QSsl::TlsV1_3OrLater);
     else
         protocolOk = (sessionProtocol() == configuration.protocol);
 
