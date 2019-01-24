@@ -344,7 +344,10 @@ defineTest(qtConfParseCommandLine) {
 
         isEmpty(type) {
             qtConfAddError("Unknown command line option '$$c'.")
-            return()
+            equals(config.input.continue, yes): \
+                next()
+            else: \
+                return()
         }
 
         call = "qtConfCommandline_$${type}"
