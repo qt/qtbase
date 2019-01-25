@@ -68,6 +68,12 @@ void tst_QComplexText::bidiReorderString_data()
             << (int) data->basicDir;
         data++;
     }
+
+    QString isolateAndBoundary =  QString(QChar(0x2068 /* DirFSI */)) + QChar(0x1c /* DirB */) + QChar(0x2069 /* DirPDI */);
+    QTest::newRow( "isolateAndBoundary" )
+        << QString::fromUtf8( data->logical )
+        << QString::fromUtf8( data->visual )
+        << (int) QChar::DirL;
 }
 
 void tst_QComplexText::bidiReorderString()

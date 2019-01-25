@@ -252,8 +252,6 @@ struct QBidiAlgorithm {
 
     void initScriptAnalysisAndIsolatePairs(Vector<IsolatePair> &isolatePairs)
     {
-        isolatePairs.append({ -1, length }); // treat the whole string as one isolate
-
         int isolateStack[128];
         int isolateLevel = 0;
         // load directions of string, and determine isolate pairs
@@ -304,6 +302,14 @@ struct QBidiAlgorithm {
             case QChar::DirS:
             case QChar::DirB:
                 analysis[pos].bidiFlags = QScriptAnalysis::BidiResetToParagraphLevel;
+                if (uc == QChar::ParagraphSeparator) {
+                    // close all open isolates as we start a new paragraph
+                    while (isolateLevel > 0) {
+                        --isolateLevel;
+                        if (isolateLevel < 128)
+                            isolatePairs[isolateStack[isolateLevel]].end = pos;
+                    }
+                }
                 break;
             default:
                 break;
@@ -434,21 +440,21 @@ struct QBidiAlgorithm {
                 doEmbed(true, true, false);
                 break;
             case QChar::DirLRI:
-                ++isolatePairPosition;
                 Q_ASSERT(isolatePairs.at(isolatePairPosition).start == i);
                 doEmbed(false, false, true);
+                ++isolatePairPosition;
                 break;
             case QChar::DirRLI:
-                ++isolatePairPosition;
                 Q_ASSERT(isolatePairs.at(isolatePairPosition).start == i);
                 doEmbed(true, false, true);
+                ++isolatePairPosition;
                 break;
             case QChar::DirFSI: {
-                ++isolatePairPosition;
                 const auto &pair = isolatePairs.at(isolatePairPosition);
                 Q_ASSERT(pair.start == i);
                 bool isRtl = QStringView(text + pair.start + 1, pair.end - pair.start - 1).isRightToLeft();
                 doEmbed(isRtl, false, true);
+                ++isolatePairPosition;
                 break;
             }
 
@@ -492,16 +498,24 @@ struct QBidiAlgorithm {
                     analysis[i].bidiDirection = (level & 1) ? QChar::DirR : QChar::DirL;
                 break;
             case QChar::DirB:
-                // paragraph separator, go down to base direction
-                appendRun(i - 1);
-                while (stack.counter > 1) {
-                    // there might be remaining isolates on the stack that are missing a PDI. Those need to get
-                    // a continuation indicating to take the eos from the end of the string (ie. the paragraph level)
-                    const auto &t = stack.top();
-                    if (t.isIsolate) {
-                        runs[t.runBeforeIsolate].continuation = -2;
+                // paragraph separator, go down to base direction, reset all state
+                if (text[i].unicode() == QChar::ParagraphSeparator) {
+                    appendRun(i - 1);
+                    while (stack.counter > 1) {
+                        // there might be remaining isolates on the stack that are missing a PDI. Those need to get
+                        // a continuation indicating to take the eos from the end of the string (ie. the paragraph level)
+                        const auto &t = stack.top();
+                        if (t.isIsolate) {
+                            runs[t.runBeforeIsolate].continuation = -2;
+                        }
+                        --stack.counter;
                     }
-                    --stack.counter;
+                    continuationFrom = -1;
+                    lastRunWithContent = -1;
+                    validIsolateCount = 0;
+                    overflowIsolateCount = 0;
+                    overflowEmbeddingCount = 0;
+                    level = baseLevel;
                 }
                 break;
             default:
