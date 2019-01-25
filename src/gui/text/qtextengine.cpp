@@ -1108,6 +1108,22 @@ struct QBidiAlgorithm {
             resolveImplicitLevels(runs);
         }
 
+        BIDI_DEBUG() << "Rule L1:";
+        // Rule L1:
+        bool resetLevel = true;
+        for (int i = length - 1; i >= 0; --i) {
+            if (analysis[i].bidiFlags & QScriptAnalysis::BidiResetToParagraphLevel) {
+                BIDI_DEBUG() << "resetting pos" << i << "to baselevel";
+                analysis[i].bidiLevel = baseLevel;
+                resetLevel = true;
+            } else if (resetLevel && analysis[i].bidiFlags & QScriptAnalysis::BidiMaybeResetToParagraphLevel) {
+                BIDI_DEBUG() << "resetting pos" << i << "to baselevel (maybereset flag)";
+                analysis[i].bidiLevel = baseLevel;
+            } else {
+                resetLevel = false;
+            }
+        }
+
         // set directions for BN to the minimum of adjacent chars
         // This makes is possible to be conformant with the Bidi algorithm even though we don't
         // remove BN and explicit embedding chars from the stream of characters to reorder
@@ -1136,22 +1152,6 @@ struct QBidiAlgorithm {
             while (lastBNPos < length) {
                 analysis[lastBNPos].bidiLevel = baseLevel;
                 ++lastBNPos;
-            }
-        }
-
-        BIDI_DEBUG() << "Rule L1:";
-        // Rule L1:
-        bool resetLevel = true;
-        for (int i = length - 1; i >= 0; --i) {
-            if (analysis[i].bidiFlags & QScriptAnalysis::BidiResetToParagraphLevel) {
-                BIDI_DEBUG() << "resetting pos" << i << "to baselevel";
-                analysis[i].bidiLevel = baseLevel;
-                resetLevel = true;
-            } else if (resetLevel && analysis[i].bidiFlags & QScriptAnalysis::BidiMaybeResetToParagraphLevel) {
-                BIDI_DEBUG() << "resetting pos" << i << "to baselevel (maybereset flag)";
-                analysis[i].bidiLevel = baseLevel;
-            } else {
-                resetLevel = false;
             }
         }
 
@@ -2087,8 +2087,6 @@ void QTextEngine::itemize() const
             analysis->flags = QScriptAnalysis::Object;
             break;
         case QChar::LineSeparator:
-            if (analysis->bidiLevel % 2)
-                --analysis->bidiLevel;
             analysis->flags = QScriptAnalysis::LineOrParagraphSeparator;
             if (option.flags() & QTextOption::ShowLineAndParagraphSeparators) {
                 const int offset = uc - string;
