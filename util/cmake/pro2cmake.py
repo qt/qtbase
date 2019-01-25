@@ -154,6 +154,7 @@ class Operation:
                 result.append(str(i))
         return '"' + '", "'.join(result) + '"'
 
+
 class AddOperation(Operation):
     def process(self, input):
         return input + self._value
@@ -346,7 +347,8 @@ class Scope:
             print('{}    -- NONE --'.format(ind))
         else:
             for k in sorted(keys):
-                print('{}    {} = "{}"'.format(ind, k, self._operations.get(k, [])))
+                print('{}    {} = "{}"'
+                      .format(ind, k, self._operations.get(k, [])))
         print('{}  Children:'.format(ind))
         if not self._children:
             print('{}    -- NONE --'.format(ind))
@@ -358,7 +360,7 @@ class Scope:
         return self._operations.keys()
 
     def visited_keys(self):
-        return self._visited_keys;
+        return self._visited_keys
 
     def get(self, key: str, default=None) -> typing.List[str]:
         self._visited_keys.add(key)
@@ -404,13 +406,13 @@ class QmakeParser:
         Substitution \
             = pp.Combine(pp.Literal('$')
                          + (((pp.Literal('$') + Identifier
-                            + pp.Optional(pp.nestedExpr()))
-                            | (pp.Literal('(') + Identifier + pp.Literal(')'))
-                            | (pp.Literal('{') + Identifier + pp.Literal('}'))
-                            | (pp.Literal('$') + pp.Literal('{')
+                              + pp.Optional(pp.nestedExpr()))
+                             | (pp.Literal('(') + Identifier + pp.Literal(')'))
+                             | (pp.Literal('{') + Identifier + pp.Literal('}'))
+                             | (pp.Literal('$') + pp.Literal('{')
                                 + Identifier + pp.Optional(pp.nestedExpr())
                                 + pp.Literal('}'))
-                            | (pp.Literal('$') + pp.Literal('[') + Identifier
+                             | (pp.Literal('$') + pp.Literal('[') + Identifier
                                 + pp.Literal(']'))
                              )))
         # Do not match word ending in '\' since that breaks line
@@ -612,9 +614,10 @@ def write_scope_header(cm_fh: typing.IO[str], *, indent: int = 0):
 
 
 def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
-                          indent: int = 0, known_libraries=set()) -> typing.Set[str]:
+                          indent: int = 0, known_libraries=set()) \
+        -> typing.Set[str]:
     ind = spaces(indent)
-    scope.reset_visited_keys();
+    scope.reset_visited_keys()
 
     plugin_type = scope.get('PLUGIN_TYPE')
 
@@ -688,17 +691,19 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
 
 
 def is_simple_condition(condition: str) -> bool:
-    return ' ' not in condition or (condition.startswith('NOT ') and ' ' not in condition[4:])
+    return ' ' not in condition \
+        or (condition.startswith('NOT ') and ' ' not in condition[4:])
 
 
 def write_ignored_keys(scope: Scope, ignored_keys, indent) -> str:
     result = ''
     for k in sorted(ignored_keys):
         if k == '_INCLUDED' or k == 'TARGET' or k == 'QMAKE_DOCS':
-            # All these keys are actually reported using "non-standard" means:-)
+            # All these keys are actually reported already
             continue
         values = scope.get(k)
-        value_string = '<EMPTY>' if not values else '"' + '" "'.join(scope.get(k)) + '"'
+        value_string = '<EMPTY>' if not values \
+            else '"' + '" "'.join(scope.get(k)) + '"'
         result += '{}# {} = {}\n'.format(indent, k, value_string)
     return result
 
@@ -721,27 +726,32 @@ def write_extend_target(cm_fh: typing.IO[str], target: str,
         if not total_condition:
             total_condition = parent_condition
         else:
-            if is_simple_condition(parent_condition) and is_simple_condition(total_condition):
+            if is_simple_condition(parent_condition) \
+                    and is_simple_condition(total_condition):
                 total_condition = '{} AND {}'.format(parent_condition,
                                                      total_condition)
             elif is_simple_condition(total_condition):
-                total_condition = '({}) AND {}'.format(parent_condition, total_condition)
+                total_condition = '({}) AND {}'.format(parent_condition,
+                                                       total_condition)
             elif is_simple_condition(parent_condition):
-                total_condition = '{} AND ({})'.format(parent_condition, total_condition)
+                total_condition = '{} AND ({})'.format(parent_condition,
+                                                       total_condition)
             else:
-                total_condition = '({}) AND ({})'.format(parent_condition, total_condition)
+                total_condition = '({}) AND ({})'.format(parent_condition,
+                                                         total_condition)
 
     extend_qt_io_string = io.StringIO()
     ignored_keys = write_sources_section(extend_qt_io_string, scope)
     extend_qt_string = extend_qt_io_string.getvalue()
 
-    ignored_keys_report = write_ignored_keys(scope, ignored_keys, spaces(indent + 1))
+    ignored_keys_report = write_ignored_keys(scope, ignored_keys,
+                                             spaces(indent + 1))
     if extend_qt_string and ignored_keys_report:
         ignored_keys_report = '\n' + ignored_keys_report
 
     extend_scope = '\n{}extend_target({} CONDITION {}\n' \
                    '{}{})\n'.format(spaces(indent), target, total_condition,
-                                  extend_qt_string, ignored_keys_report)
+                                    extend_qt_string, ignored_keys_report)
 
     if not extend_qt_string:
         if ignored_keys_report:
@@ -778,7 +788,8 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
         cm_fh.write('{}    {}\n'.format(spaces(indent), extra_line))
 
     ignored_keys = write_sources_section(cm_fh, scope, indent=indent, **kwargs)
-    ignored_keys_report = write_ignored_keys(scope, ignored_keys, spaces(indent + 1))
+    ignored_keys_report = write_ignored_keys(scope, ignored_keys,
+                                             spaces(indent + 1))
     if ignored_keys_report:
         cm_fh.write(ignored_keys_report)
 
@@ -912,7 +923,8 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
         if not include_file:
             continue
         if '/3rdparty/' in include_file:
-            print('    ****: Ignoring include file in 3rdparty: {}.'.format(include_file))
+            print('    ****: Ignoring include file in 3rdparty: {}.'
+                  .format(include_file))
             continue
         if not os.path.isfile(include_file):
             print('    XXXX: Failed to include {}.'.format(include_file))
@@ -922,7 +934,7 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
         include_scope \
             = Scope.FromDict(None, include_file,
                              include_result.asDict().get('statements'),
-                             '', dir)  # This scope will be merged into scope, so no parent_scope!
+                             '', dir)  # This scope will be merged into scope!
 
         do_include(include_scope)
 

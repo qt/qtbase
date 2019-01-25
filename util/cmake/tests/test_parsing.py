@@ -49,7 +49,9 @@ def evaluate_condition(to_validate):
     assert 'condition' in to_validate
     assert 'statements' in to_validate
 
-    return (to_validate['condition'], to_validate['statements'], to_validate.get('else_statements', {}))
+    return (to_validate['condition'],
+            to_validate['statements'],
+            to_validate.get('else_statements', {}))
 
 
 def validate_default_else_test(file_name):
@@ -105,21 +107,27 @@ def test_else2():
 def test_else3():
     validate_default_else_test(_tests_path + '/data/else3.pro')
 
+
 def test_else4():
     validate_default_else_test(_tests_path + '/data/else4.pro')
+
 
 def test_else5():
     validate_default_else_test(_tests_path + '/data/else5.pro')
 
+
 def test_else6():
     validate_default_else_test(_tests_path + '/data/else6.pro')
+
 
 def test_else7():
     result = parse_file(_tests_path + '/data/else7.pro')
     assert len(result) == 1
 
+
 def test_else8():
     validate_default_else_test(_tests_path + '/data/else8.pro')
+
 
 def test_include():
     result = parse_file(_tests_path + '/data/include.pro')
@@ -130,6 +138,7 @@ def test_include():
     assert include.get('included', '') == 'foo'
     validate_op('B', '=', ['23'], result[2])
 
+
 def test_load():
     result = parse_file(_tests_path + '/data/load.pro')
     assert len(result) == 3
@@ -139,23 +148,28 @@ def test_load():
     assert load.get('loaded', '') == 'foo'
     validate_op('B', '=', ['23'], result[2])
 
+
 def test_definetest():
     result = parse_file(_tests_path + '/data/definetest.pro')
     assert len(result) == 1
     assert result[0] == []
+
 
 def test_unset():
     result = parse_file(_tests_path + '/data/unset.pro')
     assert len(result) == 1
     assert result[0] == []
 
+
 def test_quoted():
     result = parse_file(_tests_path + '/data/quoted.pro')
     assert len(result) == 1
 
+
 def test_complex_values():
     result = parse_file(_tests_path + '/data/complex_values.pro')
     assert len(result) == 1
+
 
 def test_function_if():
     result = parse_file(_tests_path + '/data/function_if.pro')
