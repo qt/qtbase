@@ -856,6 +856,7 @@ bool QPixmap::doImageIO(QImageWriter *writer, int quality) const
 }
 
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -876,6 +877,14 @@ void QPixmap::fill(const QPaintDevice *device, const QPoint &p)
 
     Use QPainter or the fill(QColor) overload instead.
 */
+void QPixmap::fill(const QPaintDevice *device, int xofs, int yofs)
+{
+    Q_UNUSED(device)
+    Q_UNUSED(xofs)
+    Q_UNUSED(yofs)
+    qWarning("this function is deprecated, ignored");
+}
+#endif
 
 
 /*!
@@ -959,6 +968,7 @@ static void sendResizeEvents(QWidget *target)
 }
 #endif
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -982,6 +992,11 @@ QPixmap QPixmap::grabWidget(QObject *widget, const QRect &rectangle)
 
     Use QWidget::grab() instead.
 */
+QPixmap QPixmap::grabWidget(QObject *widget, int x, int y, int w, int h)
+{
+    return grabWidget(widget, QRect(x, y, w, h));
+}
+#endif
 
 /*****************************************************************************
   QPixmap stream functions
@@ -1578,6 +1593,7 @@ QPixmap QPixmap::fromImageReader(QImageReader *imageReader, Qt::ImageConversionF
     return QPixmap(data.take());
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn QPixmap QPixmap::grabWindow(WId window, int x, int y, int
     width, int height)
@@ -1631,6 +1647,7 @@ QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
              " Defaulting to primary screen.");
     return QGuiApplication::primaryScreen()->grabWindow(window, x, y, w, h);
 }
+#endif
 
 /*!
   \internal
