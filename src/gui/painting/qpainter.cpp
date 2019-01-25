@@ -6210,7 +6210,7 @@ static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
                   % HexString<qreal>(pen.widthF());
 
     QPixmap pixmap;
-    if (QPixmapCache::find(key, pixmap))
+    if (QPixmapCache::find(key, &pixmap))
         return pixmap;
 
     const qreal halfPeriod = qMax(qreal(2), qreal(radiusBase * 1.61803399)); // the golden ratio

@@ -261,7 +261,7 @@ static void qt_fusion_draw_arrow(Qt::ArrowType type, QPainter *painter, const QS
     QString cacheKey = QStyleHelper::uniqueName(QLatin1String("fusion-arrow"), option, rect.size())
             % HexString<uint>(type)
             % HexString<uint>(color.rgba());
-    if (!QPixmapCache::find(cacheKey, cachePixmap)) {
+    if (!QPixmapCache::find(cacheKey, &cachePixmap)) {
         cachePixmap = styleCachePixmap(rect.size());
         cachePixmap.fill(Qt::transparent);
         QPainter cachePainter(&cachePixmap);
@@ -1272,7 +1272,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             pixmapName += QString::number(- int(header->orientation));
 
             QPixmap cache;
-            if (!QPixmapCache::find(pixmapName, cache)) {
+            if (!QPixmapCache::find(pixmapName, &cache)) {
                 cache = styleCachePixmap(rect.size());
                 cache.fill(Qt::transparent);
                 QRect pixmapRect(0, 0, rect.width(), rect.height());
@@ -2030,7 +2030,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             QPixmap cache;
             QString pixmapName = QStyleHelper::uniqueName(QLatin1String("spinbox"), spinBox, spinBox->rect.size());
-            if (!QPixmapCache::find(pixmapName, cache)) {
+            if (!QPixmapCache::find(pixmapName, &cache)) {
 
                 cache = styleCachePixmap(spinBox->rect.size());
                 cache.fill(Qt::transparent);
@@ -2745,7 +2745,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             if (!comboBox->frame)
                 pixmapName += QLatin1String("-frameless");
 
-            if (!QPixmapCache::find(pixmapName, cache)) {
+            if (!QPixmapCache::find(pixmapName, &cache)) {
                 cache = styleCachePixmap(comboBox->rect.size());
                 cache.fill(Qt::transparent);
                 QPainter cachePainter(&cache);
@@ -2852,7 +2852,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 QRect pixmapRect(0, 0, groove.width(), groove.height());
 
                 // draw background groove
-                if (!QPixmapCache::find(groovePixmapName, cache)) {
+                if (!QPixmapCache::find(groovePixmapName, &cache)) {
                     cache = styleCachePixmap(pixmapRect.size());
                     cache.fill(Qt::transparent);
                     QPainter groovePainter(&cache);
@@ -2880,7 +2880,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 // draw blue groove highlight
                 QRect clipRect;
                 groovePixmapName += QLatin1String("_blue");
-                if (!QPixmapCache::find(groovePixmapName, cache)) {
+                if (!QPixmapCache::find(groovePixmapName, &cache)) {
                     cache = styleCachePixmap(pixmapRect.size());
                     cache.fill(Qt::transparent);
                     QPainter groovePainter(&cache);
@@ -2987,7 +2987,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             // draw handle
             if ((option->subControls & SC_SliderHandle) ) {
                 QString handlePixmapName = QStyleHelper::uniqueName(QLatin1String("slider_handle"), option, handle.size());
-                if (!QPixmapCache::find(handlePixmapName, cache)) {
+                if (!QPixmapCache::find(handlePixmapName, &cache)) {
                     cache = styleCachePixmap(handle.size());
                     cache.fill(Qt::transparent);
                     QRect pixmapRect(0, 0, handle.width(), handle.height());

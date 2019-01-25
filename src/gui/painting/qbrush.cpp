@@ -111,7 +111,7 @@ Q_GUI_EXPORT QPixmap qt_pixmapForBrush(int brushStyle, bool invert)
     QString key = QLatin1String("$qt-brush$")
                   % HexString<uint>(brushStyle)
                   % QLatin1Char(invert ? '1' : '0');
-    if (!QPixmapCache::find(key, pm)) {
+    if (!QPixmapCache::find(key, &pm)) {
         pm = QBitmap::fromData(QSize(8, 8), qt_patternForBrush(brushStyle, invert),
                                QImage::Format_MonoLSB);
         QPixmapCache::insert(key, pm);
