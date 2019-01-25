@@ -2891,8 +2891,6 @@ bool QSslSocketPrivate::isMatchingHostname(const QSslCertificate &cert, const QS
             if (QHostAddress(*it).isEqual(hostAddress, QHostAddress::StrictConversion))
                 return true;
         }
-
-        return false;
     }
 
     const QString lowerPeerName = QString::fromLatin1(QUrl::toAce(peerName));

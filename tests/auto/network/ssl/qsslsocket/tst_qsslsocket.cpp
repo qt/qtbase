@@ -1722,6 +1722,14 @@ void tst_QSslSocket::isMatchingHostname()
     cert = certs.first();
     QCOMPARE(QSslSocketPrivate::isMatchingHostname(cert, QString::fromUtf8("192.5.8.16")), true);
     QCOMPARE(QSslSocketPrivate::isMatchingHostname(cert, QString::fromUtf8("fe80::3c29:2fa1:dd44:765")), true);
+
+    /* openssl req -x509 -nodes -new -newkey rsa -keyout /dev/null -out 127-0-0-1-as-CN.crt \
+            -subj "/CN=127.0.0.1"
+    */
+    certs = QSslCertificate::fromPath(testDataDir + "certs/127-0-0-1-as-CN.crt");
+    QVERIFY(!certs.isEmpty());
+    cert = certs.first();
+    QCOMPARE(QSslSocketPrivate::isMatchingHostname(cert, QString::fromUtf8("127.0.0.1")), true);
 }
 
 void tst_QSslSocket::wildcard()
