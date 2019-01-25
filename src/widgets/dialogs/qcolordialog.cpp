@@ -1887,7 +1887,7 @@ bool QColorDialogPrivate::canBeNativeDialog() const
 }
 
 static const Qt::WindowFlags DefaultWindowFlags =
-        Qt::Dialog | Qt::WindowTitleHint | Qt::MSWindowsFixedSizeDialogHint
+        Qt::Dialog | Qt::WindowTitleHint
         | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
 
 /*!
