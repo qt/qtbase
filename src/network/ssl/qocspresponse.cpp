@@ -53,11 +53,10 @@ QT_BEGIN_NAMESPACE
 
     The QOcspResponse class represents the revocation status of a server's certficate,
     received by the client-side socket during the TLS handshake. QSslSocket must be
-    configured with OCSP stapling enabled. A non-empty response corresponds to the
-    certificate that can be obtained from QSslConfiguration::peerCertificate().
+    configured with OCSP stapling enabled.
 
-    \sa QSslSocket, QSslSocket::ocspResponse(), isNull(), clear(), certificateStatus(),
-    revocationReason(), responder(), OcspCertificateStatus, OcspRevocationReason,
+    \sa QSslSocket, QSslSocket::ocspResponse(), certificateStatus(),
+    revocationReason(), responder(), subject(), OcspCertificateStatus, OcspRevocationReason,
     QSslConfiguration::setOcspStaplingEnabled(), QSslConfiguration::ocspStaplingEnabled(),
     QSslConfiguration::peerCertificate()
 */
@@ -110,9 +109,10 @@ QT_BEGIN_NAMESPACE
 /*!
     \since 5.13
 
-    Creates a new, null OCSP response.
+    Creates a new response with status OcspCertificateStatus::Unknown
+    and revocation reason OcspRevocationReason::None.
 
-    \sa isNull()
+    \sa OcspCertificateStatus
 */
 QOcspResponse::QOcspResponse()
     : d(new QOcspResponsePrivate)
@@ -132,7 +132,7 @@ QOcspResponse::QOcspResponse(const QOcspResponse &other)
 /*!
     \since 5.13
 
-    Move-constructs a QOcspResponse instance.
+    Move-constructs a QOcspResponse instance from \a other.
 */
 QOcspResponse::QOcspResponse(QOcspResponse &&other) Q_DECL_NOTHROW
 {
@@ -177,35 +177,6 @@ QOcspResponse &QOcspResponse::operator=(QOcspResponse &&other) Q_DECL_NOTHROW
 /*!
     \since 5.13
 
-    Returns \c true for default-constructed OCSP responses and also if during a
-    handshake no definitive OCSP response, or no response was received at all.
-
-    \sa QOcspResponse(), QSslSocket::ocspResponse()
-*/
-bool QOcspResponse::isNull() const
-{
-    return d->isNull;
-}
-
-/*!
-    \since 5.13
-
-    Resets this QOcspResponse to its default, null state.
-
-    \sa QOcspResponse(), isNull()
-*/
-void QOcspResponse::clear()
-{
-
-    d->certificateStatus = OcspCertificateStatus::Unknown;
-    d->revocationReason = OcspRevocationReason::None;
-    d->isNull = true;
-    d->signerCert.clear();
-}
-
-/*!
-    \since 5.13
-
     Returns the certificate status.
 
     \sa OcspCertificateStatus
@@ -233,6 +204,16 @@ OcspRevocationReason QOcspResponse::revocationReason() const
 QSslCertificate QOcspResponse::responder() const
 {
     return d->signerCert;
+}
+
+/*!
+    \since 5.13
+
+    This function returns a certificate, for which this response was issued.
+*/
+QSslCertificate QOcspResponse::subject() const
+{
+    return d->subjectCert;
 }
 
 QT_END_NAMESPACE

@@ -63,9 +63,9 @@ public:
 
     OcspCertificateStatus certificateStatus = OcspCertificateStatus::Unknown;
     OcspRevocationReason revocationReason = OcspRevocationReason::None;
-    bool isNull = true;
 
     QSslCertificate signerCert;
+    QSslCertificate subjectCert;
 };
 
 QT_END_NAMESPACE

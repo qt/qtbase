@@ -61,6 +61,7 @@ class QSslConfiguration;
 class QSslEllipticCurve;
 class QSslPreSharedKeyAuthenticator;
 class QOcspResponse;
+template<class> class QVector;
 
 class QSslSocketPrivate;
 class Q_NETWORK_EXPORT QSslSocket : public QTcpSocket
@@ -143,7 +144,7 @@ public:
     QList<QSslCertificate> peerCertificateChain() const;
     QSslCipher sessionCipher() const;
     QSsl::SslProtocol sessionProtocol() const;
-    QOcspResponse ocspResponse() const;
+    QVector<QOcspResponse> ocspResponses() const;
 
     // Private keys, for server sockets.
     void setPrivateKey(const QSslKey &key);

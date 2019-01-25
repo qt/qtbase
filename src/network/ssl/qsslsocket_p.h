@@ -66,7 +66,7 @@ class QSslContext;
 #endif
 
 #include <QtCore/qstringlist.h>
-
+#include <QtCore/qvector.h>
 #include <private/qringbuffer_p.h>
 
 #if defined(Q_OS_MAC)
@@ -208,7 +208,7 @@ protected:
     bool verifyErrorsHaveBeenIgnored();
     bool paused;
     bool flushTriggered;
-    QOcspResponse ocspResponse;
+    QVector<QOcspResponse> ocspResponses;
 };
 
 #if QT_CONFIG(securetransport) || QT_CONFIG(schannel)

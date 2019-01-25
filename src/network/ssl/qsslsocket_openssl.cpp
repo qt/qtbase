@@ -1458,9 +1458,7 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
     Q_ASSERT(mode == QSslSocket::SslClientMode); // See initSslContext() for SslServerMode
     Q_ASSERT(configuration.peerVerifyMode != QSslSocket::VerifyNone);
 
-    ocspResponse.clear();
-    QOcspResponsePrivate *dResponse = ocspResponse.d.data();
-
+    ocspResponses.clear();
     ocspErrorDescription.clear();
     ocspErrors.clear();
 
@@ -1556,7 +1554,9 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
     // Let's make sure the response is for the correct certificate - we
     // can re-create this CertID using our peer's certificate and its
     // issuer's public key.
-    dResponse->isNull = false;
+    ocspResponses.push_back(QOcspResponse());
+    QOcspResponsePrivate *dResponse = ocspResponses.back().d.data();
+    dResponse->subjectCert = configuration.peerCertificate;
     bool matchFound = false;
     if (configuration.peerCertificate.isSelfSigned()) {
         dResponse->signerCert = configuration.peerCertificate;
@@ -1599,7 +1599,7 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
         // This is unexpected, treat as SslHandshakeError, OCSP_check_validity assumes this pointer
         // to be != nullptr.
         ocspErrors.clear();
-        ocspResponse.clear();
+        ocspResponses.clear();
         ocspErrorDescription = QSslSocket::tr("Failed to extract 'this update time' from the SingleResponse");
         return false;
     }

@@ -1155,16 +1155,16 @@ QSsl::SslProtocol QSslSocket::sessionProtocol() const
 /*!
     \since 5.13
 
-    This function returns Online Certificate Status Protocol response that
-    a server may send during a TLS handshake using OCSP stapling. If no
-    definitive or no response was received at all, the response is empty.
+    This function returns Online Certificate Status Protocol responses that
+    a server may send during a TLS handshake using OCSP stapling. The vector
+    is empty if no definitive response or no response at all was received.
 
-    \sa QSslConfiguration::setOcspStaplingEnabled(), QOcspResponse::isNull()
+    \sa QSslConfiguration::setOcspStaplingEnabled()
 */
-QOcspResponse QSslSocket::ocspResponse() const
+QVector<QOcspResponse> QSslSocket::ocspResponses() const
 {
     Q_D(const QSslSocket);
-    return d->ocspResponse;
+    return d->ocspResponses;
 }
 
 /*!
@@ -2150,7 +2150,7 @@ void QSslSocketPrivate::init()
     shutdown = false;
     pendingClose = false;
     flushTriggered = false;
-    ocspResponse.clear();
+    ocspResponses.clear();
 
     // we don't want to clear the ignoreErrorsList, so
     // that it is possible setting it before connecting

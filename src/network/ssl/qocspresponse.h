@@ -84,13 +84,11 @@ public:
     QOcspResponse &operator = (const QOcspResponse &other);
     QOcspResponse &operator = (QOcspResponse &&other) Q_DECL_NOTHROW;
 
-    bool isNull() const;
-    void clear();
-
     OcspCertificateStatus certificateStatus() const;
     OcspRevocationReason revocationReason() const;
 
     class QSslCertificate responder() const;
+    QSslCertificate subject() const;
 
 private:
 
