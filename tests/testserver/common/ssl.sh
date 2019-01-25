@@ -35,5 +35,6 @@ set -ex
 
 # install ssl_certs and test data
 su $USER -c "mkdir -p -m 700 ~/ssl-certs/private"
-su $USER -c "cp $CONFIG/ssl/qt-test-server-cert.pem ~/ssl-certs/"
+su $USER -c \
+    "cp $CONFIG/ssl/${test_cert:-qt-test-server-cert.pem} ~/ssl-certs/qt-test-server-cert.pem"
 su $USER -c "cp $CONFIG/ssl/private/qt-test-server-key.pem ~/ssl-certs/private/"

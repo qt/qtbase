@@ -62,7 +62,19 @@ isEmpty(TESTSERVER_VERSION) {
     # Make check with server "qt-test-server.qt-test-net" as a fallback
 } else {
     # Make check with docker test servers
-    DNSDOMAIN = test-net.qt.local
+    equals(QMAKE_HOST.os, Linux) {
+        # For the platform supporting docker bridge network, each container is
+        # assigned a unique hostname and connected to the same network domain
+        # to communicate with the others.
+        DEFINES += QT_TEST_SERVER_NAME
+        DNSDOMAIN = test-net.qt.local
+    } else {
+        # For the others, the containers are deployed into a virtual machine
+        # using the host network. All the containers share the same hostname of
+        # the virtual machine, and they are connected to the same network domain.
+        # NOTE: In Windows, Apple Bonjour only works within a single local domain.
+        DNSDOMAIN = local
+    }
 
     equals(QMAKE_HOST.os, Darwin) {
         # There is no docker bridge on macOS. It is impossible to ping a container.
@@ -86,9 +98,6 @@ isEmpty(TESTSERVER_VERSION) {
         TESTSERVER_COMPOSE_FILE = \
             $$dirname(_QMAKE_CONF_)/tests/testserver/docker-compose-for-windows.yml
 
-        # Bonjour only works within a single broadcast domain.
-        DNSDOMAIN = local
-
         # The connection configuration for the target machine
         MACHINE_CONFIG = (docker-machine config qt-test-server)
 
@@ -104,7 +113,6 @@ isEmpty(TESTSERVER_VERSION) {
         CONFIG += PowerShell
     } else {
         TESTSERVER_COMPOSE_FILE = $$dirname(_QMAKE_CONF_)/tests/testserver/docker-compose.yml
-        DEFINES += QT_TEST_SERVER_NAME
 
         # The environment variables passed to the docker-compose file
         TEST_ENV = 'TEST_DOMAIN=$$DNSDOMAIN'
