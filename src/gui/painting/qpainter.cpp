@@ -1547,6 +1547,7 @@ bool QPainter::isActive() const
     return d->engine;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     Initializes the painters pen, background and font to the same as
     the given \a device.
@@ -1574,7 +1575,7 @@ void QPainter::initFrom(const QPaintDevice *device)
         d->engine->setDirty(QPaintEngine::DirtyFont);
     }
 }
-
+#endif
 
 /*!
     Saves the current painter state (pushes the state onto a stack). A
@@ -2885,6 +2886,7 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
     d->updateState(d->state);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \since 4.2
     \obsolete
@@ -3048,7 +3050,7 @@ void QPainter::resetMatrix()
 {
     resetTransform();
 }
-
+#endif
 
 /*!
     \since 4.2
@@ -3099,6 +3101,7 @@ bool QPainter::worldMatrixEnabled() const
     return d->state->WxF;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -3124,6 +3127,7 @@ bool QPainter::matrixEnabled() const
 {
     return worldMatrixEnabled();
 }
+#endif
 
 /*!
     Scales the coordinate system by (\a{sx}, \a{sy}).
@@ -4182,6 +4186,7 @@ void QPainter::drawRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadius,
     Draws the given rectangle \a x, \a y, \a w, \a h with rounded corners.
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -4209,6 +4214,10 @@ void QPainter::drawRoundRect(const QRectF &r, int xRnd, int yRnd)
 
     Draws the rectangle \a r with rounded corners.
 */
+void QPainter::drawRoundRect(const QRect &rect, int xRnd, int yRnd)
+{
+    drawRoundRect(QRectF(rect), xRnd, yRnd);
+}
 
 /*!
     \obsolete
@@ -4219,6 +4228,11 @@ void QPainter::drawRoundRect(const QRectF &r, int xRnd, int yRnd)
 
     Draws the rectangle \a x, \a y, \a w, \a h with rounded corners.
 */
+void QPainter::drawRoundRect(int x, int y, int w, int h, int xRnd, int yRnd)
+{
+    drawRoundRect(QRectF(x, y, w, h), xRnd, yRnd);
+}
+#endif
 
 /*!
     \fn void QPainter::drawEllipse(const QRectF &rectangle)
@@ -7378,6 +7392,7 @@ void QPainter::setViewTransformEnabled(bool enable)
     d->updateMatrix();
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \threadsafe
 
@@ -7458,6 +7473,7 @@ QPaintDevice *QPainter::redirected(const QPaintDevice *device, QPoint *offset)
     Q_UNUSED(offset)
     return 0;
 }
+#endif
 
 void qt_format_text(const QFont &fnt, const QRectF &_r,
                     int tf, const QString& str, QRectF *brect,
@@ -8067,6 +8083,7 @@ QFont QPaintEngineState::font() const
     return static_cast<const QPainterState *>(this)->font;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \since 4.2
     \obsolete
@@ -8089,6 +8106,7 @@ QMatrix QPaintEngineState::matrix() const
 
     return st->matrix.toAffine();
 }
+#endif
 
 /*!
     \since 4.3

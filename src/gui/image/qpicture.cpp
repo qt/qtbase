@@ -858,7 +858,7 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
             break;
         case QPicturePrivate::PdcSetWXform:
             s >> i_8;
-            painter->setMatrixEnabled(i_8);
+            painter->setWorldMatrixEnabled(i_8);
             break;
         case QPicturePrivate::PdcSetWMatrix:
             if (d->formatMajor >= 8) {
