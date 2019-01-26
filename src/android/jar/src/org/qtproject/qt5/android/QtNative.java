@@ -41,6 +41,7 @@
 package org.qtproject.qt5.android;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
@@ -59,6 +60,7 @@ import android.os.Looper;
 import android.content.ClipboardManager;
 import android.content.ClipboardManager.OnPrimaryClipChangedListener;
 import android.content.ClipData;
+import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -166,6 +168,17 @@ public class QtNative
         }
 
         return ok;
+    }
+
+    public static int openFdForContentUrl(Context context, String contentUrl, String openMode)
+    {
+        try {
+            ContentResolver resolver = context.getContentResolver();
+            ParcelFileDescriptor fdDesc = resolver.openFileDescriptor(Uri.parse(contentUrl), openMode);
+            return fdDesc.detachFd();
+        } catch (FileNotFoundException e) {
+            return -1;
+        }
     }
 
     // this method loads full path libs

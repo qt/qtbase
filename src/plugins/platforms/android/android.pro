@@ -20,6 +20,7 @@ INCLUDEPATH += \
     $$QT_SOURCE_TREE/src/3rdparty/android
 
 SOURCES += $$PWD/androidplatformplugin.cpp \
+           $$PWD/androidcontentfileengine.cpp \
            $$PWD/androiddeadlockprotector.cpp \
            $$PWD/androidjnimain.cpp \
            $$PWD/androidjniaccessibility.cpp \
@@ -50,6 +51,7 @@ SOURCES += $$PWD/androidplatformplugin.cpp \
            $$PWD/qandroidplatformfiledialoghelper.cpp
 
 HEADERS += $$PWD/qandroidplatformintegration.h \
+           $$PWD/androidcontentfileengine.h \
            $$PWD/androiddeadlockprotector.h \
            $$PWD/androidjnimain.h \
            $$PWD/androidjniaccessibility.h \
