@@ -1128,7 +1128,7 @@ void tst_QTextDocument::toHtml_data()
 
         QTextCharFormat fmt;
         fmt.setAnchor(true);
-        fmt.setAnchorName("blub");
+        fmt.setAnchorNames({"blub"});
         cursor.insertText("Blah", fmt);
 
         QTest::newRow("named anchor") << QTextDocumentFragment(&doc)

@@ -59,8 +59,11 @@ public:
 
     int count() const;
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use count() instead")
     inline bool isEmpty() const
     { return count() == 0; }
+#endif
 
     QTextBlock item(int i) const;
 
