@@ -73,8 +73,10 @@ class Q_WIDGETS_EXPORT QComboBox : public QWidget
     Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize)
 
 #if QT_CONFIG(completer)
+#if QT_DEPRECATED_SINCE(5, 13)
     Q_PROPERTY(bool autoCompletion READ autoCompletion WRITE setAutoCompletion DESIGNABLE false)
     Q_PROPERTY(Qt::CaseSensitivity autoCompletionCaseSensitivity READ autoCompletionCaseSensitivity WRITE setAutoCompletionCaseSensitivity DESIGNABLE false)
+#endif
 #endif // QT_CONFIG(completer)
 
     Q_PROPERTY(bool duplicatesEnabled READ duplicatesEnabled WRITE setDuplicatesEnabled)
@@ -93,11 +95,13 @@ public:
     int maxCount() const;
 
 #if QT_CONFIG(completer)
+#if QT_DEPRECATED_SINCE(5, 13)
     bool autoCompletion() const;
     void setAutoCompletion(bool enable);
 
     Qt::CaseSensitivity autoCompletionCaseSensitivity() const;
     void setAutoCompletionCaseSensitivity(Qt::CaseSensitivity sensitivity);
+#endif
 #endif
 
     bool duplicatesEnabled() const;

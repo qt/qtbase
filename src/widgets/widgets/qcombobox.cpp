@@ -1483,6 +1483,7 @@ int QComboBox::maxCount() const
 }
 
 #if QT_CONFIG(completer)
+#if QT_DEPRECATED_SINCE(5, 13)
 
 /*!
     \property QComboBox::autoCompletion
@@ -1576,6 +1577,7 @@ void QComboBox::setAutoCompletionCaseSensitivity(Qt::CaseSensitivity sensitivity
     if (d->lineEdit && d->lineEdit->completer())
         d->lineEdit->completer()->setCaseSensitivity(sensitivity);
 }
+#endif  //  QT_DEPRECATED_SINCE(5, 13)
 
 #endif // QT_CONFIG(completer)
 

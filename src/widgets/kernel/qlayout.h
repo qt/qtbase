@@ -63,7 +63,9 @@ class Q_WIDGETS_EXPORT QLayout : public QObject, public QLayoutItem
     Q_OBJECT
     Q_DECLARE_PRIVATE(QLayout)
 
+#if QT_DEPRECATED_SINCE(5, 13)
     Q_PROPERTY(int margin READ margin WRITE setMargin)
+#endif
     Q_PROPERTY(int spacing READ spacing WRITE setSpacing)
     Q_PROPERTY(SizeConstraint sizeConstraint READ sizeConstraint WRITE setSizeConstraint)
 public:
@@ -81,10 +83,12 @@ public:
     QLayout();
     ~QLayout();
 
+#if QT_DEPRECATED_SINCE(5, 13)
     int margin() const;
-    int spacing() const;
-
     void setMargin(int);
+#endif
+
+    int spacing() const;
     void setSpacing(int);
 
     void setContentsMargins(int left, int top, int right, int bottom);

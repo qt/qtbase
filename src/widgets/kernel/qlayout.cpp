@@ -282,6 +282,7 @@ bool QLayout::setAlignment(QLayout *l, Qt::Alignment alignment)
     return false;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \property QLayout::margin
     \brief the width of the outside border of the layout
@@ -306,6 +307,15 @@ int QLayout::margin() const
     }
 }
 
+/*!
+    \obsolete
+*/
+void QLayout::setMargin(int margin)
+{
+    setContentsMargins(margin, margin, margin, margin);
+}
+
+#endif
 /*!
     \property QLayout::spacing
     \brief the spacing between widgets inside the layout
@@ -342,14 +352,6 @@ int QLayout::spacing() const
             return qSmartSpacing(this, QStyle::PM_LayoutHorizontalSpacing);
         }
     }
-}
-
-/*!
-    \obsolete
-*/
-void QLayout::setMargin(int margin)
-{
-    setContentsMargins(margin, margin, margin, margin);
 }
 
 void QLayout::setSpacing(int spacing)
