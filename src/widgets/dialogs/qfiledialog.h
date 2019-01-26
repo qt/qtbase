@@ -65,11 +65,13 @@ class Q_WIDGETS_EXPORT QFileDialog : public QDialog
     Q_PROPERTY(FileMode fileMode READ fileMode WRITE setFileMode)
     Q_PROPERTY(AcceptMode acceptMode READ acceptMode WRITE setAcceptMode)
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly DESIGNABLE false)
-    Q_PROPERTY(bool resolveSymlinks READ resolveSymlinks WRITE setResolveSymlinks DESIGNABLE false)
     Q_PROPERTY(bool confirmOverwrite READ confirmOverwrite WRITE setConfirmOverwrite DESIGNABLE false)
     Q_PROPERTY(QString defaultSuffix READ defaultSuffix WRITE setDefaultSuffix)
+#if QT_DEPRECATED_SINCE(5, 13)
+    Q_PROPERTY(bool resolveSymlinks READ resolveSymlinks WRITE setResolveSymlinks DESIGNABLE false)
     Q_PROPERTY(bool nameFilterDetailsVisible READ isNameFilterDetailsVisible
                WRITE setNameFilterDetailsVisible DESIGNABLE false)
+#endif
     Q_PROPERTY(Options options READ options WRITE setOptions)
     Q_PROPERTY(QStringList supportedSchemes READ supportedSchemes WRITE setSupportedSchemes)
 
@@ -117,8 +119,12 @@ public:
     void selectUrl(const QUrl &url);
     QList<QUrl> selectedUrls() const;
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use setOption(HideNameFilterDetails, !enabled) instead")
     void setNameFilterDetailsVisible(bool enabled);
+    QT_DEPRECATED_X("Use !testOption(HideNameFilterDetails) instead")
     bool isNameFilterDetailsVisible() const;
+#endif
 
     void setNameFilter(const QString &filter);
     void setNameFilters(const QStringList &filters);
@@ -148,8 +154,12 @@ public:
     void setReadOnly(bool enabled);
     bool isReadOnly() const;
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use setOption(DontResolveSymlinks, !enabled) instead")
     void setResolveSymlinks(bool enabled);
+    QT_DEPRECATED_X("Use !testOption(DontResolveSymlinks) instead")
     bool resolveSymlinks() const;
+#endif
 
     void setSidebarUrls(const QList<QUrl> &urls);
     QList<QUrl> sidebarUrls() const;

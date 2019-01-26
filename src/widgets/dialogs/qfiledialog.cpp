@@ -1359,6 +1359,7 @@ void QFileDialog::setNameFilter(const QString &filter)
 }
 
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \property QFileDialog::nameFilterDetailsVisible
     \obsolete
@@ -1380,6 +1381,7 @@ bool QFileDialog::isNameFilterDetailsVisible() const
 {
     return !testOption(HideNameFilterDetails);
 }
+#endif
 
 
 /*
@@ -1879,6 +1881,7 @@ bool QFileDialog::isReadOnly() const
     return testOption(ReadOnly);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \property QFileDialog::resolveSymlinks
     \obsolete
@@ -1899,6 +1902,7 @@ bool QFileDialog::resolveSymlinks() const
 {
     return !testOption(DontResolveSymlinks);
 }
+#endif
 
 /*!
     \property QFileDialog::confirmOverwrite

@@ -946,6 +946,7 @@ void QDialog::adjustPosition(QWidget* w)
     move(p);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -1090,7 +1091,7 @@ void QDialog::showExtension(bool showIt)
 #endif
     }
 }
-
+#endif
 
 /*! \reimp */
 QSize QDialog::sizeHint() const

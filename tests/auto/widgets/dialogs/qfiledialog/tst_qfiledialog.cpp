@@ -854,9 +854,9 @@ void tst_QFiledialog::resolveSymlinks()
 
     // default
     QCOMPARE(fd.resolveSymlinks(), true);
-    fd.setResolveSymlinks(false);
+    fd.setOption(QFileDialog::DontResolveSymlinks, true);
     QCOMPARE(fd.resolveSymlinks(), false);
-    fd.setResolveSymlinks(true);
+    fd.setOption(QFileDialog::DontResolveSymlinks, false);
     QCOMPARE(fd.resolveSymlinks(), true);
 
     // the file dialog doesn't do anything based upon this, just passes it to the model
@@ -1119,7 +1119,7 @@ void tst_QFiledialog::setNameFilter()
 
     QFileDialog fd;
     fd.setNameFilters(filters);
-    fd.setNameFilterDetailsVisible(nameFilterDetailsVisible);
+    fd.setOption(QFileDialog::HideNameFilterDetails, !nameFilterDetailsVisible);
     fd.selectNameFilter(selectFilter);
     QCOMPARE(fd.selectedNameFilter(), expectedSelectedFilter);
 }
