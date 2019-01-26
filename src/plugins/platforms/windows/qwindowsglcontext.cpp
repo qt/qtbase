@@ -1350,10 +1350,10 @@ bool QWindowsGLContext::makeCurrent(QPlatformSurface *surface)
     // Set the swap interval
     if (m_staticContext->wglSwapInternalExt) {
         const int interval = surface->format().swapInterval();
-        if (interval >= 0 && m_swapInterval != interval) {
+        if (m_swapInterval != interval)
             m_swapInterval = interval;
+        if (interval >= 0)
             m_staticContext->wglSwapInternalExt(interval);
-        }
     }
 
     return success;

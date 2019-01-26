@@ -68,6 +68,7 @@ public:
     ~QEvdevKeyboardManager();
 
     void loadKeymap(const QString &file);
+    void switchLang();
 
     void addKeyboard(const QString &deviceNode = QString());
     void removeKeyboard(const QString &deviceNode);

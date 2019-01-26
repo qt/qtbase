@@ -62,12 +62,7 @@
 #endif
 
 #ifdef QT_BUILD_INTERNAL
-
-QT_BEGIN_NAMESPACE
-extern Q_AUTOTEST_EXPORT QString
-    qt_normalizePathSegments(const QString &path, bool allowUncPaths, bool *ok = nullptr);
-QT_END_NAMESPACE
-
+#include "private/qdir_p.h"
 #endif
 
 static QByteArray msgDoesNotExist(const QString &name)
@@ -1376,7 +1371,7 @@ void tst_QDir::normalizePathSegments()
     QFETCH(QString, path);
     QFETCH(UncHandling, uncHandling);
     QFETCH(QString, expected);
-    QString cleaned = qt_normalizePathSegments(path, uncHandling == HandleUnc);
+    QString cleaned = qt_normalizePathSegments(path, uncHandling == HandleUnc ? QDirPrivate::AllowUncPaths : QDirPrivate::DefaultNormalization);
     QCOMPARE(cleaned, expected);
     if (path == expected)
         QVERIFY2(path.isSharedWith(cleaned), "Strings are same but data is not shared");
@@ -1528,6 +1523,11 @@ void tst_QDir::filePath_data()
     QTest::newRow("rel-rel") << "relative" << "path" << "relative/path";
     QTest::newRow("empty-empty") << "" << "" << ".";
     QTest::newRow("resource") << ":/prefix" << "foo.bar" << ":/prefix/foo.bar";
+#ifdef Q_OS_IOS
+    QTest::newRow("assets-rel") << "assets-library:/" << "foo/bar.baz" << "assets-library:/foo/bar.baz";
+    QTest::newRow("assets-abs") << "assets-library:/" << "/foo/bar.baz" << "/foo/bar.baz";
+    QTest::newRow("abs-assets") << "/some/path" << "assets-library:/foo/bar.baz" << "assets-library:/foo/bar.baz";
+#endif
 #ifdef Q_OS_WIN
     QTest::newRow("abs-LTUNC") << "Q:/path" << "\\/leaning\\tooth/pick" << "\\/leaning\\tooth/pick";
     QTest::newRow("LTUNC-slash") << "\\/leaning\\tooth/pick" << "/path" << "//leaning/tooth/path";

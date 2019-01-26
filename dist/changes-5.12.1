@@ -1,0 +1,167 @@
+Qt 5.12.1 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.12.0.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+http://doc.qt.io/qt-5/index.html
+
+The Qt version 5.12 series is binary compatible with the 5.11.x series.
+Applications compiled for 5.11 will continue to run with 5.12.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                        Important Behavior Changes                        *
+****************************************************************************
+
+ - qmake / WinRT:
+   * Cross-builds will now ignore pre-set values of %INCLUDE% and %LIB%
+     when building target executables. If necessary, use configure's -I and
+     -L switches when building Qt, and pass QMAKE_INCDIR and QMAKE_LIBDIR
+     on qmake's command line when building own projects.
+
+****************************************************************************
+*                              Documentation                               *
+****************************************************************************
+
+ - Fixed the icons for the "file save" action that were inaccurate
+   representations of a 3.5-inch floppy disk (the cut edge was on the wrong
+   side). Now all floppy representations are physically accurate.
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - [QTBUG-71256] QString, QByteArray and QLocale's toDouble return an infinity
+   on overflow (since 5.7), while setting ok to false; this was at odds with
+   their documented behavior of returning 0 on failure. The documentation now
+   reflects the actual behavior.
+ - [QTBUG-71868] QString, QByteArray and QLocale's toFloat returned an
+   infinity on double-overflow (since 5.7) but returned 0 on a finite double
+   outside float's range, while setting ok to false; this was at odds with
+   their documented behavior of returning 0 on any failure. They also
+   succeeded, returning zero, on underflow of float's range, unless double
+   underflowed, where they failed. Changed the handling of values outside
+   float's range to match that of values outside double's range: fail,
+   returning an infinity on overflow or zero on underflow. The documentation
+   now reflects the revised behavior, which matches toDouble().
+
+ - QCborStreamReader:
+   * [QTBUG-71426] Made setDevice() clear the last error.
+
+ - QCollator:
+   * [QTBUG-58621] Added support for collation in the C locale, albeit this is
+     only well-defined for ASCII. Collation sort keys remain unsupported on
+     Darwin.
+
+ - QContiguousCache:
+   * [QTBUG-52125] Fixed a memory leak.
+
+ - QObject:
+   * [QTBUG-32340] Fixed a bug that caused isSignalConnected() to return
+     true if the signal was connected and later disconnected.
+   * [QTBUG-71550] Fixed a bug that caused isSignalConnected() not to
+     report signals that were connected by the QML engine.
+
+ - QPluginLoader:
+   * [QTBUG-71443] Fixed the parsing of ELF headers (Linux, FreeBSD, Solaris,
+     etc.), which could cause certain valid plugins to not be deteced as
+     valid.
+
+ - QRegularExpression:
+   * [QTBUG-72539] The wildcardToRegularExpression method now returns a
+     properly anchored pattern.
+
+ - QSettings:
+   * [QTBUG-72007] Fixed QSettings parsing of blank spaces after comment lines
+     in INI-style configuration files.
+
+ - QStringListModel:
+   * setData will now emit the dataChanged() signal only if the string set
+     is different from the one already contained in the model
+
+ - QSysInfo:
+   * [QTBUG-72489] Now returns "Mojave" in prettyProductName() for macOS
+     10.14.
+
+ - QUrl:
+   * [QTBUG-71973] Changed the normalization done by
+     QUrl::NormalizePathSegments) to match what web browsers do for non-local
+     URLs.
+
+****************************************************************************
+*                                  QtGui                                   *
+****************************************************************************
+
+ - Text:
+   * Fixed a bug where eliding text could change the height of its bounding
+     rectangle for certain fonts.
+   * Improved appearance of monochrome text on some platforms.
+   * Fixed so ShowTabsAndSpaces will use the correct font.
+
+****************************************************************************
+*                                  QtSql                                   *
+****************************************************************************
+
+ - PostgreSQL:
+   * Added support for PostgreSQL 11
+
+****************************************************************************
+*                                QtWidgets                                 *
+****************************************************************************
+
+ - Reverted a Qt 5.12.0 behavior change in QToolTip that made plain tooltip
+   text be wrapped automatically.
+ - [QTBUG-72844] Fixed a regression related to accepting a Drag'n'Drop event.
+ - [QTBUG-27110] Reverted a change that caused a regression related to
+   styling a QListView using CSS.
+
+ - QWidgetLineControl/security:
+   * Zero-out the string that contains a password entered into the
+     QLineEdit
+   * Preallocate a buffer for the string that contains the entered value
+     when the QLineEdit serves as a password input field to minimize
+     reallocations.
+
+****************************************************************************
+*                        Platform Specific Changes                         *
+****************************************************************************
+
+ - Android:
+   * QClipboard now supports HTML and URI data.
+
+ - Windows:
+   * Reduced the number of font engines that are created when loading new
+     fonts, fixing crashes in some special cases where a large number of
+     fonts are created during a short period of time.
+
+ - X11:
+   * [QTBUG-71296] Fixed a bug with open/close hand cursors not being shown
+     correctly.
+   * [QTBUG-46626][QTBUG-70756] Fixed a bug with dialogs hidden by other
+     windows in certain use cases.
+
+****************************************************************************
+*                             Third-Party Code                             *
+****************************************************************************
+
+ - [QTBUG-65503] Removed xkbcommon from bundled sources. This library is
+   present on all supported platforms. The minimal required version now is
+   0.5.0.
+ - Updated bundled SQLite to version 3.26.0.
+
+****************************************************************************
+*                                  Tools                                   *
+****************************************************************************
+
+ - moc now parses enum struct the same way as enum class therefore that
+   keyword can be used with the Q_ENUM macro as well as Q_FLAG and
+   Q_DECLARE_FLAGS.
+

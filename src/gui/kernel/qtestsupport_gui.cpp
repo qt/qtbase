@@ -44,23 +44,21 @@
 
 QT_BEGIN_NAMESPACE
 
-/*! \fn bool qWaitForWindowActive(QWindow *window, int timeout)
-    \relates QTest
+/*!
     \since 5.0
 
     Waits for \a timeout milliseconds or until the \a window is active.
 
     Returns \c true if \c window is active within \a timeout milliseconds, otherwise returns \c false.
 
-    \sa QTest::qWaitForWindowExposed(), QWindow::isActive()
+    \sa qWaitForWindowExposed(), QWindow::isActive()
 */
 Q_GUI_EXPORT bool QTest::qWaitForWindowActive(QWindow *window, int timeout)
 {
     return QTest::qWaitFor([&]() { return window->isActive(); }, timeout);
 }
 
-/*! \fn bool qWaitForWindowExposed(QWindow *window, int timeout)
-    \relates QTest
+/*!
     \since 5.0
 
     Waits for \a timeout milliseconds or until the \a window is exposed.
@@ -73,7 +71,7 @@ Q_GUI_EXPORT bool QTest::qWaitForWindowActive(QWindow *window, int timeout)
     area is completely covered by other windows, or if the window is otherwise not visible. This function
     will then time out when waiting for such a window.
 
-    \sa QTest::qWaitForWindowActive(), QWindow::isExposed()
+    \sa qWaitForWindowActive(), QWindow::isExposed()
 */
 Q_GUI_EXPORT bool QTest::qWaitForWindowExposed(QWindow *window, int timeout)
 {

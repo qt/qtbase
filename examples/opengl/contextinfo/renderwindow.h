@@ -72,6 +72,9 @@ signals:
     void ready();
     void error(const QString &msg);
 
+protected:
+    bool event(QEvent *ev) override;
+
 private slots:
     void render();
 

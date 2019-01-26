@@ -46,6 +46,7 @@
 #include <QtCore/qpointer.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qhash.h>
+#include <qpa/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -68,12 +69,16 @@ private:
     bool translateMouseTouchPadEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, PVOID vPointerInfo);
     bool translateTouchEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, PVOID vTouchInfo, unsigned int count);
     bool translatePenEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, PVOID vPenInfo);
+    void handleCaptureRelease(QWindow *window, QWindow *currentWindowUnderPointer, HWND hwnd, QEvent::Type eventType, Qt::MouseButtons mouseButtons);
+    void handleEnterLeave(QWindow *window, QWindow *currentWindowUnderPointer, QPoint globalPos);
 
     QTouchDevice *m_touchDevice = nullptr;
     QHash<int, QPointF> m_lastTouchPositions;
     QPointer<QWindow> m_windowUnderPointer;
     QPointer<QWindow> m_currentWindow;
+    QWindow *m_previousCaptureWindow = nullptr;
     bool m_needsEnterOnPointerUpdate = false;
+    DWORD m_lastPointerType = 0;
 };
 
 QT_END_NAMESPACE
