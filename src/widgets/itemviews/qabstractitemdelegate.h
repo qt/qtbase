@@ -103,8 +103,11 @@ public:
                              const QStyleOptionViewItem &option,
                              const QModelIndex &index);
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QFontMetrics::elidedText() instead")
     static QString elidedText(const QFontMetrics &fontMetrics, int width,
                               Qt::TextElideMode mode, const QString &text);
+#endif
 
     virtual bool helpEvent(QHelpEvent *event,
                            QAbstractItemView *view,

@@ -2921,6 +2921,7 @@ void QAbstractItemView::editorDestroyed(QObject *editor)
         setState(NoState);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
     Sets the horizontal scroll bar's steps per item to \a steps.
@@ -2978,6 +2979,7 @@ int QAbstractItemView::verticalStepsPerItem() const
 {
     return 1;
 }
+#endif
 
 /*!
     Moves to and selects the item best matching the string \a search.

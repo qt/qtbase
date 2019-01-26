@@ -3997,6 +3997,7 @@ void QGraphicsItem::ensureVisible(const QRectF &rect, int xmargin, int ymargin)
     ensureVisible(QRectF(\a x, \a y, \a w, \a h), \a xmargin, \a ymargin).
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -4012,6 +4013,7 @@ QMatrix QGraphicsItem::matrix() const
 {
     return transform().toAffine();
 }
+#endif
 
 /*!
     \since 4.3
@@ -4322,6 +4324,7 @@ void QGraphicsItem::setTransformOriginPoint(const QPointF &origin)
 */
 
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -4334,7 +4337,7 @@ QMatrix QGraphicsItem::sceneMatrix() const
     d_ptr->ensureSceneTransform();
     return d_ptr->sceneTransform.toAffine();
 }
-
+#endif
 
 /*!
     \since 4.3
@@ -4546,6 +4549,7 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
     return x;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -4584,6 +4588,7 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
     // Send post-notification.
     itemChange(ItemTransformHasChanged, QVariant::fromValue<QTransform>(newTransform));
 }
+#endif
 
 /*!
     \since 4.3
@@ -4638,6 +4643,7 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
     d_ptr->sendScenePosChange();
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -4647,6 +4653,7 @@ void QGraphicsItem::resetMatrix()
 {
     resetTransform();
 }
+#endif
 
 /*!
     \since 4.3

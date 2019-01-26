@@ -1929,6 +1929,7 @@ void QGraphicsScene::setBspTreeDepth(int depth)
     bspTree->setBspTreeDepth(depth);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \property QGraphicsScene::sortCacheEnabled
     \brief whether sort caching is enabled
@@ -1949,6 +1950,7 @@ void QGraphicsScene::setSortCacheEnabled(bool enabled)
         return;
     d->sortCacheEnabled = enabled;
 }
+#endif
 
 /*!
     Calculates and returns the bounding rect of all items on the scene. This
