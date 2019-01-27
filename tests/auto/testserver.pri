@@ -154,12 +154,14 @@ isEmpty(TESTSERVER_VERSION) {
         MACHINE_STATE_CMD = \
             docker-machine ls -q --filter "State=Running" --filter "Name=^qt-test-server\$\$"
         MACHINE_START_CMD = docker-machine start qt-test-server
+        MACHINE_RECERT = docker-machine regenerate-certs -f qt-test-server
         PowerShell {
             testserver_pretest.commands += \
-                $$TEST_CMD if (!($$MACHINE_STATE_CMD)) {$$MACHINE_START_CMD} &&
+                $$TEST_CMD if (!($$MACHINE_STATE_CMD)) {$$MACHINE_START_CMD; $$MACHINE_RECERT} &&
         } else {
             testserver_pretest.commands += \
-                $(if $(shell $$MACHINE_STATE_CMD),,$(shell $$MACHINE_START_CMD > /dev/null))
+                $(if $(shell $$MACHINE_STATE_CMD),,\
+                $(shell $$MACHINE_START_CMD > /dev/null && $$MACHINE_RECERT > /dev/null))
         }
     }
 
