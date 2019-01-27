@@ -422,7 +422,7 @@ QDialog::~QDialog()
 /*!
   \internal
   This function is called by the push button \a pushButton when it
-  becomes the default button. If \a pushButton is 0, the dialogs
+  becomes the default button. If \a pushButton is \nullptr, the dialogs
   default default button becomes the default button. This is what a
   push button calls when it loses focus.
 */
@@ -1014,7 +1014,7 @@ void QDialog::setExtension(QWidget* extension)
 /*!
     \obsolete
 
-    Returns the dialog's extension or 0 if no extension has been
+    Returns the dialog's extension or \nullptr if no extension has been
     defined.
 
     Instead of using this functionality, we recommend that you simply call

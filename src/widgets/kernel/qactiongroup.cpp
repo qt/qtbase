@@ -316,8 +316,8 @@ bool QActionGroup::isEnabled() const
 }
 
 /*!
-  Returns the currently checked action in the group, or 0 if none
-  are checked.
+  Returns the currently checked action in the group, or \nullptr if
+  none are checked.
 */
 QAction *QActionGroup::checkedAction() const
 {

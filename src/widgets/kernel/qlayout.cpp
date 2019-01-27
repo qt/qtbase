@@ -474,8 +474,8 @@ QRect QLayout::contentsRect() const
 
 
 /*!
-    Returns the parent widget of this layout, or 0 if this layout is
-    not installed on any widget.
+    Returns the parent widget of this layout, or \nullptr if this
+    layout is not installed on any widget.
 
     If the layout is a sub-layout, this function returns the parent
     widget of the parent layout.
@@ -490,11 +490,11 @@ QWidget *QLayout::parentWidget() const
             QLayout *parentLayout = qobject_cast<QLayout*>(parent());
             if (Q_UNLIKELY(!parentLayout)) {
                 qWarning("QLayout::parentWidget: A layout can only have another layout as a parent.");
-                return 0;
+                return nullptr;
             }
             return parentLayout->parentWidget();
         } else {
-            return 0;
+            return nullptr;
         }
     } else {
         Q_ASSERT(parent() && parent()->isWidgetType());
@@ -950,8 +950,8 @@ void QLayout::setMenuBar(QWidget *widget)
 }
 
 /*!
-    Returns the menu bar set for this layout, or 0 if no menu bar is
-    set.
+    Returns the menu bar set for this layout, or \nullptr if no
+    menu bar is set.
 */
 
 QWidget *QLayout::menuBar() const
@@ -1130,8 +1130,9 @@ bool QLayout::activate()
 
     Searches for widget \a from and replaces it with widget \a to if found.
     Returns the layout item that contains the widget \a from on success.
-    Otherwise \c 0 is returned. If \a options contains \c Qt::FindChildrenRecursively
-    (the default), sub-layouts are searched for doing the replacement.
+    Otherwise \nullptr is returned.
+    If \a options contains \c Qt::FindChildrenRecursively  (the default),
+    sub-layouts are searched for doing the replacement.
     Any other flag in \a options is ignored.
 
     Notice that the returned item therefore might not belong to this layout,
