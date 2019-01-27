@@ -1332,7 +1332,7 @@ void QTextStream::setDevice(QIODevice *device)
 
 /*!
     Returns the current device associated with the QTextStream,
-    or 0 if no device has been assigned.
+    or \nullptr if no device has been assigned.
 
     \sa setDevice(), string()
 */
@@ -1369,8 +1369,8 @@ void QTextStream::setString(QString *string, QIODevice::OpenMode openMode)
 }
 
 /*!
-    Returns the current string assigned to the QTextStream, or 0 if no
-    string has been assigned.
+    Returns the current string assigned to the QTextStream, or
+    \nullptr if no string has been assigned.
 
     \sa setString(), device()
 */

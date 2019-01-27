@@ -195,8 +195,8 @@ QAbstractTransition::~QAbstractTransition()
 }
 
 /*!
-  Returns the source state of this transition, or 0 if this transition has no
-  source state.
+  Returns the source state of this transition, or \nullptr if this
+  transition has no source state.
 */
 QState *QAbstractTransition::sourceState() const
 {
@@ -205,14 +205,14 @@ QState *QAbstractTransition::sourceState() const
 }
 
 /*!
-  Returns the target state of this transition, or 0 if the transition has no
-  target.
+  Returns the target state of this transition, or \nullptr if the
+  transition has no target.
 */
 QAbstractState *QAbstractTransition::targetState() const
 {
     Q_D(const QAbstractTransition);
     if (d->targetStates.isEmpty())
-        return 0;
+        return nullptr;
     return d->targetStates.first().data();
 }
 
@@ -325,8 +325,8 @@ void QAbstractTransition::setTransitionType(TransitionType type)
 }
 
 /*!
-  Returns the state machine that this transition is part of, or 0 if the
-  transition is not part of a state machine.
+  Returns the state machine that this transition is part of, or
+  \nullptr if the transition is not part of a state machine.
 */
 QStateMachine *QAbstractTransition::machine() const
 {

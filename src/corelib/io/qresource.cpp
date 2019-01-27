@@ -608,7 +608,7 @@ qint64 QResource::size() const
     Returns direct access to a read only segment of data that this resource
     represents. If the resource is compressed the data returns is
     compressed and qUncompress() must be used to access the data. If the
-    resource is a directory 0 is returned.
+    resource is a directory \nullptr is returned.
 
     \sa size(), isCompressed(), isFile()
 */

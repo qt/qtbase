@@ -1763,7 +1763,7 @@ void QObject::killTimer(int id)
     \fn template<typename T> T *QObject::findChild(const QString &name, Qt::FindChildOptions options) const
 
     Returns the child of this object that can be cast into type T and
-    that is called \a name, or 0 if there is no such object.
+    that is called \a name, or \nullptr if there is no such object.
     Omitting the \a name argument causes all object names to be matched.
     The search is performed recursively, unless \a options specifies the
     option FindDirectChildrenOnly.

@@ -155,7 +155,8 @@ QAbstractState::~QAbstractState()
 }
 
 /*!
-  Returns this state's parent state, or 0 if the state has no parent state.
+  Returns this state's parent state, or \nullptr if the state has no
+  parent state.
 */
 QState *QAbstractState::parentState() const
 {
@@ -166,8 +167,8 @@ QState *QAbstractState::parentState() const
 }
 
 /*!
-  Returns the state machine that this state is part of, or 0 if the state is
-  not part of a state machine.
+  Returns the state machine that this state is part of, or \nullptr if
+  the state is not part of a state machine.
 */
 QStateMachine *QAbstractState::machine() const
 {

@@ -216,8 +216,8 @@ private:
 
     Constructs a new instance of this class. You can pass up to ten arguments
     (\a val0, \a val1, \a val2, \a val3, \a val4, \a val5, \a val6, \a val7,
-    \a val8, and \a val9) to the constructor. Returns the new object, or 0 if
-    no suitable constructor is available.
+    \a val8, and \a val9) to the constructor. Returns the new object, or
+    \nullptr if no suitable constructor is available.
 
     Note that only constructors that are declared with the Q_INVOKABLE
     modifier are made available through the meta-object system.
@@ -321,8 +321,8 @@ const char *QMetaObject::className() const
 /*!
     \fn QMetaObject *QMetaObject::superClass() const
 
-    Returns the meta-object of the superclass, or 0 if there is no
-    such object.
+    Returns the meta-object of the superclass, or \nullptr if there is
+    no such object.
 
     \sa className()
 */
@@ -2615,7 +2615,7 @@ int QMetaEnum::keyCount() const
 }
 
 /*!
-    Returns the key with the given \a index, or 0 if no such key exists.
+    Returns the key with the given \a index, or \nullptr if no such key exists.
 
     \sa keyCount(), value(), valueToKey()
 */
@@ -2737,7 +2737,7 @@ int QMetaEnum::keyToValue(const char *key, bool *ok) const
 
 /*!
     Returns the string that is used as the name of the given
-    enumeration \a value, or 0 if \a value is not defined.
+    enumeration \a value, or \nullptr if \a value is not defined.
 
     For flag types, use valueToKeys().
 
