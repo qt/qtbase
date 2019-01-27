@@ -1888,8 +1888,8 @@ void QComboBox::setLineEdit(QLineEdit *edit)
 }
 
 /*!
-    Returns the line edit used to edit items in the combobox, or 0 if there
-    is no line edit.
+    Returns the line edit used to edit items in the combobox, or
+    \nullptr if there is no line edit.
 
     Only editable combo boxes have a line edit.
 */

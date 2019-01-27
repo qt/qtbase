@@ -1774,7 +1774,7 @@ QSize QMdiArea::minimumSizeHint() const
 }
 
 /*!
-    Returns a pointer to the current subwindow, or 0 if there is
+    Returns a pointer to the current subwindow, or \nullptr if there is
     no current subwindow.
 
     This function will return the same as activeSubWindow() if
@@ -1786,13 +1786,13 @@ QMdiSubWindow *QMdiArea::currentSubWindow() const
 {
     Q_D(const QMdiArea);
     if (d->childWindows.isEmpty())
-        return 0;
+        return nullptr;
 
     if (d->active)
         return d->active;
 
     if (d->isActivated && !window()->isMinimized())
-        return 0;
+        return nullptr;
 
     Q_ASSERT(d->indicesToActivatedChildren.count() > 0);
     int index = d->indicesToActivatedChildren.at(0);
@@ -1804,7 +1804,7 @@ QMdiSubWindow *QMdiArea::currentSubWindow() const
 
 /*!
     Returns a pointer to the current active subwindow. If no
-    window is currently active, 0 is returned.
+    window is currently active, \nullptr is returned.
 
     Subwindows are treated as top-level windows with respect to
     window state, i.e., if a widget outside the MDI area is the active
@@ -1821,7 +1821,7 @@ QMdiSubWindow *QMdiArea::activeSubWindow() const
 }
 
 /*!
-    Activates the subwindow \a window. If \a window is 0, any
+    Activates the subwindow \a window. If \a window is \nullptr, any
     current active window is deactivated.
 
     \sa activeSubWindow()
@@ -1830,7 +1830,7 @@ void QMdiArea::setActiveSubWindow(QMdiSubWindow *window)
 {
     Q_D(QMdiArea);
     if (!window) {
-        d->activateWindow(0);
+        d->activateWindow(nullptr);
         return;
     }
 

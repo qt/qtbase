@@ -669,7 +669,8 @@ void QToolButton::setMenu(QMenu* menu)
 }
 
 /*!
-    Returns the associated menu, or 0 if no menu has been defined.
+    Returns the associated menu, or \nullptr if no menu has been
+    defined.
 
     \sa setMenu()
 */
@@ -678,7 +679,7 @@ QMenu* QToolButton::menu() const
     Q_D(const QToolButton);
     if (d->menuAction)
         return d->menuAction->menu();
-    return 0;
+    return nullptr;
 }
 
 /*!

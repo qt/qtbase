@@ -1732,8 +1732,8 @@ void QDockWidget::setTitleBarWidget(QWidget *widget)
 
 /*!
     \since 4.3
-    Returns the custom title bar widget set on the QDockWidget, or 0 if no
-    custom title bar has been set.
+    Returns the custom title bar widget set on the QDockWidget, or
+    \nullptr if no custom title bar has been set.
 
     \sa setTitleBarWidget()
 */

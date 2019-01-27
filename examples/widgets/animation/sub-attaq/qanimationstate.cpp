@@ -118,7 +118,7 @@ void QAnimationState::setAnimation(QAbstractAnimation *animation)
 }
 
 /*!
-  Returns the animation handle by this animation state, or 0 if there is no animation.
+  Returns the animation handle by this animation state, or \nullptr if there is no animation.
 */
 QAbstractAnimation* QAnimationState::animation() const
 {

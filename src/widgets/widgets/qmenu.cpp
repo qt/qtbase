@@ -2196,7 +2196,7 @@ void QMenu::setActiveAction(QAction *act)
 
 
 /*!
-    Returns the currently highlighted action, or 0 if no
+    Returns the currently highlighted action, or \nullptr if no
     action is currently highlighted.
 */
 QAction *QMenu::activeAction() const
@@ -2564,8 +2564,8 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     This is equivalent to \c{exec(pos())}.
 
     This returns the triggered QAction in either the popup menu or one
-    of its submenus, or 0 if no item was triggered (normally because
-    the user pressed Esc).
+    of its submenus, or \nullptr if no item was triggered (normally
+    because the user pressed Esc).
 
     In most situations you'll want to specify the position yourself,
     for example, the current mouse position:
@@ -2591,8 +2591,8 @@ QAction *QMenu::exec()
     coordinates into global coordinates, use QWidget::mapToGlobal().
 
     This returns the triggered QAction in either the popup menu or one
-    of its submenus, or 0 if no item was triggered (normally because
-    the user pressed Esc).
+    of its submenus, or \nullptr if no item was triggered (normally
+    because the user pressed Esc).
 
     Note that all signals are emitted as usual. If you connect a
     QAction to a slot and call the menu's exec(), you get the result
@@ -2628,11 +2628,11 @@ QAction *QMenu::exec(const QPoint &p, QAction *action)
     QPointer<QObject> guard = this;
     (void) eventLoop.exec();
     if (guard.isNull())
-        return 0;
+        return nullptr;
 
     action = d->syncAction;
-    d->syncAction = 0;
-    d->eventLoop = 0;
+    d->syncAction = nullptr;
+    d->eventLoop = nullptr;
     return action;
 }
 
@@ -2650,7 +2650,7 @@ QAction *QMenu::exec(const QPoint &p, QAction *action)
     QGraphicsView).
 
     The function returns the triggered QAction in either the popup
-    menu or one of its submenus, or 0 if no item was triggered
+    menu or one of its submenus, or \nullptr if no item was triggered
     (normally because the user pressed Esc).
 
     This is equivalent to:

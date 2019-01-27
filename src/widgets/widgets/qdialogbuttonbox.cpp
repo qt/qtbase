@@ -820,7 +820,7 @@ QDialogButtonBox::StandardButtons QDialogButtonBox::standardButtons() const
 
 /*!
     Returns the QPushButton corresponding to the standard button \a which,
-    or 0 if the standard button doesn't exist in this button box.
+    or \nullptr if the standard button doesn't exist in this button box.
 
     \sa standardButton(), standardButtons(), buttons()
 */

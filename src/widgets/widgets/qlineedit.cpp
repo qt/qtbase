@@ -586,7 +586,7 @@ void QLineEdit::setEchoMode(EchoMode mode)
 
 #ifndef QT_NO_VALIDATOR
 /*!
-    Returns a pointer to the current input validator, or 0 if no
+    Returns a pointer to the current input validator, or \nullptr if no
     validator has been set.
 
     \sa setValidator()
