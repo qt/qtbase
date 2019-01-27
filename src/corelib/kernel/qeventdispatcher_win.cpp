@@ -992,8 +992,14 @@ int QEventDispatcherWin32::remainingTime(int timerId)
     quint64 currentTime = qt_msectime();
 
     for (const WinTimerInfo *t : qAsConst(d->timerVec)) {
-        if (t && t->timerId == timerId) // timer found, return time to wait
-            return t->timeout > currentTime ? t->timeout - currentTime : 0;
+        if (t && t->timerId == timerId) {
+            // timer found, return time to wait
+
+            if (d->internalHwnd)
+                return t->timeout > currentTime ? t->timeout - currentTime : 0;
+            else
+                return t->interval;
+        }
     }
 
 #ifndef QT_NO_DEBUG

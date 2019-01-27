@@ -51,6 +51,8 @@ private slots:
     void singleShotTimeout();
     void timeout();
     void remainingTime();
+    void remainingTimeInitial_data();
+    void remainingTimeInitial();
     void remainingTimeDuringActivation_data();
     void remainingTimeDuringActivation();
     void basic_chrono();
@@ -141,6 +143,33 @@ void tst_QTimer::remainingTime()
     // the timer is still active, so it should have a non-zero remaining time
     remainingTime = timer.remainingTime();
     QVERIFY2(remainingTime >= 50, qPrintable(QString::number(remainingTime)));
+}
+
+void tst_QTimer::remainingTimeInitial_data()
+{
+    QTest::addColumn<int>("startTimeMs");
+    QTest::addColumn<Qt::TimerType>("timerType");
+
+    QTest::addRow("precise time 0ms") << 0 << Qt::PreciseTimer;
+    QTest::addRow("precise time 1ms") << 1 << Qt::PreciseTimer;
+    QTest::addRow("precise time 10ms") << 10 << Qt::PreciseTimer;
+
+    QTest::addRow("coarse time 0ms") << 0 << Qt::CoarseTimer;
+    QTest::addRow("coarse time 1ms") << 1 << Qt::CoarseTimer;
+    QTest::addRow("coarse time 10ms") << 10 << Qt::CoarseTimer;
+}
+
+void tst_QTimer::remainingTimeInitial()
+{
+    QFETCH(int, startTimeMs);
+    QFETCH(Qt::TimerType, timerType);
+
+    QTimer timer;
+    timer.setTimerType(timerType);
+    timer.start(startTimeMs);
+
+    const int rt = timer.remainingTime();
+    QVERIFY2(rt >= 0 && rt <= startTimeMs, qPrintable(QString::number(rt)));
 }
 
 void tst_QTimer::remainingTimeDuringActivation_data()
