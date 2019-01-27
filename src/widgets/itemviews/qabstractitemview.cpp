@@ -940,8 +940,8 @@ void QAbstractItemView::setItemDelegateForRow(int row, QAbstractItemDelegate *de
    \since 4.2
 
    Returns the item delegate used by this view and model for the given \a row,
-   or 0 if no delegate has been assigned. You can call itemDelegate() to get a
-   pointer to the current delegate for a given index.
+   or \nullptr if no delegate has been assigned. You can call itemDelegate()
+   to get a pointer to the current delegate for a given index.
 
    \sa setItemDelegateForRow(), itemDelegateForColumn(), setItemDelegate()
 */

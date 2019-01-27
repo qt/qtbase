@@ -1676,7 +1676,7 @@ void QGraphicsView::setInteractive(bool allowed)
 
 /*!
     Returns a pointer to the scene that is currently visualized in the
-    view. If no scene is currently visualized, 0 is returned.
+    view. If no scene is currently visualized, \nullptr is returned.
 
     \sa setScene()
 */

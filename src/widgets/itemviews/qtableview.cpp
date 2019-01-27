@@ -138,20 +138,21 @@ void QSpanCollection::updateSpan(QSpanCollection::Span *span, int old_height)
 }
 
 /** \internal
- * \return a spans that spans over cell x,y  (column,row)  or 0 if there is none.
+ * \return a spans that spans over cell x,y  (column,row)
+ * or \nullptr if there is none.
  */
 QSpanCollection::Span *QSpanCollection::spanAt(int x, int y) const
 {
     Index::const_iterator it_y = index.lowerBound(-y);
     if (it_y == index.end())
-        return 0;
+        return nullptr;
     SubIndex::const_iterator it_x = (*it_y).lowerBound(-x);
     if (it_x == (*it_y).end())
-        return 0;
+        return nullptr;
     Span *span = *it_x;
     if (span->right() >= x && span->bottom() >= y)
         return span;
-    return 0;
+    return nullptr;
 }
 
 
