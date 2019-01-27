@@ -4119,14 +4119,14 @@ void QGLWidget::swapBuffers()
 /*!
     \fn const QGLContext* QGLWidget::overlayContext() const
 
-    Returns the overlay context of this widget, or 0 if this widget
-    has no overlay.
+    Returns the overlay context of this widget, or \nullptr if this
+    widget has no overlay.
 
     \sa context()
 */
 const QGLContext* QGLWidget::overlayContext() const
 {
-    return 0;
+    return nullptr;
 }
 
 /*!
