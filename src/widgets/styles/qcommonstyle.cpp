@@ -1157,6 +1157,25 @@ void QCommonStylePrivate::viewItemLayout(const QStyleOptionViewItem *opt,  QRect
 }
 #endif // QT_CONFIG(itemviews)
 
+#if QT_CONFIG(toolbutton)
+QString QCommonStylePrivate::toolButtonElideText(const QStyleOptionToolButton *option,
+                                                 const QRect &textRect, int flags) const
+{
+    if (option->fontMetrics.horizontalAdvance(option->text) <= textRect.width())
+        return option->text;
+
+    QString text = option->text;
+    text.replace('\n', QChar::LineSeparator);
+    QTextOption textOption;
+    textOption.setWrapMode(QTextOption::ManualWrap);
+    textOption.setTextDirection(option->direction);
+
+    return calculateElidedText(text, textOption,
+                               option->font, textRect, Qt::AlignTop,
+                               Qt::ElideMiddle, flags,
+                               false, nullptr);
+}
+#endif // QT_CONFIG(toolbutton)
 
 #if QT_CONFIG(tabbar)
 /*! \internal
@@ -1705,8 +1724,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                         alignment |= Qt::AlignLeft | Qt::AlignVCenter;
                     }
                     tr.translate(shiftX, shiftY);
-                    const QString text = toolbutton->fontMetrics.elidedText(toolbutton->text, Qt::ElideMiddle,
-                                                                            tr.width(), alignment);
+                    const QString text = d->toolButtonElideText(toolbutton, tr, alignment);
                     proxy()->drawItemText(p, QStyle::visualRect(opt->direction, rect, tr), alignment, toolbutton->palette,
                                  toolbutton->state & State_Enabled, text,
                                  QPalette::ButtonText);

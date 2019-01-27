@@ -115,6 +115,11 @@ public:
                && option.viewItemPosition == cachedOption->viewItemPosition);
     }
 #endif
+#if QT_CONFIG(toolbutton)
+    QString toolButtonElideText(const QStyleOptionToolButton *toolbutton,
+                                const QRect &textRect, int flags) const;
+#endif
+
     mutable QIcon tabBarcloseButtonIcon;
 #if QT_CONFIG(tabbar)
     void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *pixmapRect) const;
