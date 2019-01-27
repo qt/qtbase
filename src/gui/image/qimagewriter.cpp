@@ -407,8 +407,8 @@ void QImageWriter::setDevice(QIODevice *device)
 }
 
 /*!
-    Returns the device currently assigned to QImageWriter, or 0 if no
-    device has been assigned.
+    Returns the device currently assigned to QImageWriter, or \nullptr
+    if no device has been assigned.
 */
 QIODevice *QImageWriter::device() const
 {

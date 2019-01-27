@@ -206,8 +206,8 @@ void QTextDocumentWriter::setDevice (QIODevice *device)
 }
 
 /*!
-    Returns the device currently assigned, or 0 if no device has been
-    assigned.
+    Returns the device currently assigned, or \nullptr if no device
+    has been assigned.
 */
 QIODevice *QTextDocumentWriter::device () const
 {

@@ -1521,7 +1521,7 @@ QPainter::~QPainter()
 
 /*!
     Returns the paint device on which this painter is currently
-    painting, or 0 if the painter is not active.
+    painting, or \nullptr if the painter is not active.
 
     \sa isActive()
 */

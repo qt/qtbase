@@ -756,13 +756,13 @@ void QImageReader::setDevice(QIODevice *device)
     d->device = device;
     d->deleteDevice = false;
     delete d->handler;
-    d->handler = 0;
+    d->handler = nullptr;
     d->text.clear();
 }
 
 /*!
-    Returns the device currently assigned to QImageReader, or 0 if no
-    device has been assigned.
+    Returns the device currently assigned to QImageReader, or \nullptr
+    if no device has been assigned.
 */
 QIODevice *QImageReader::device() const
 {

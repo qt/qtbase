@@ -340,7 +340,7 @@ void QImageIOHandler::setDevice(QIODevice *device)
 
 /*!
     Returns the device currently assigned to the QImageIOHandler. If
-    not device has been assigned, 0 is returned.
+    not device has been assigned, \nullptr is returned.
 */
 QIODevice *QImageIOHandler::device() const
 {
