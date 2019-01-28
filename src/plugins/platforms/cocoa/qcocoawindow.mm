@@ -227,8 +227,9 @@ QSurfaceFormat QCocoaWindow::format() const
 
     // Upgrade the default surface format to include an alpha channel. The default RGB format
     // causes Cocoa to spend an unreasonable amount of time converting it to RGBA internally.
-    if (format == QSurfaceFormat())
+    if (format.alphaBufferSize() < 0)
         format.setAlphaBufferSize(8);
+
     return format;
 }
 
