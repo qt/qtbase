@@ -552,7 +552,12 @@ def map_condition(condition: str) -> str:
                 part = 'TARGET {}'.format(map_qt_base_library(
                                             feature.group(2)))
             else:
-                part = 'QT_FEATURE_' + featureName(feature.group(2))
+                feature = featureName(feature.group(2))
+                if feature.startswith('system_') and substitute_libs(feature[7:]) != feature[7:]:
+                    # Qt6 always uses system libraries!
+                    part = 'ON'
+                else:
+                    part = 'QT_FEATURE_' + feature
         else:
             part = substitute_platform(part)
 
