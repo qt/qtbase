@@ -2645,7 +2645,7 @@ void QStyleSheetStyle::setPalette(QWidget *w)
         QRenderRule rule = renderRule(w, PseudoElement_None, map[i].state | extendedPseudoClass(w));
         if (i == 0) {
             if (!w->property("_q_styleSheetWidgetFont").isValid()) {
-                saveWidgetFont(w, w->font());
+                saveWidgetFont(w, w->d_func()->localFont());
             }
             updateStyleSheetFont(w);
             if (ew != w)
@@ -6033,7 +6033,7 @@ void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
         unsetStyleSheetFont(w);
 
         if (rule.font.resolve()) {
-            QFont wf = w->font();
+            QFont wf = w->d_func()->localFont();
             styleSheetCaches->customFontWidgets.insert(w, {wf, rule.font.resolve()});
 
             QFont font = rule.font.resolve(wf);
@@ -6041,7 +6041,9 @@ void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
             w->setFont(font);
         }
     } else {
-        QFont font = rule.font.resolve(w->font());
+        QFont wf = w->d_func()->localFont();
+        QFont font = rule.font.resolve(wf);
+        font.resolve(wf.resolve() | rule.font.resolve());
 
         if ((!w->isWindow() || w->testAttribute(Qt::WA_WindowPropagation))
             && isNaturalChild(w) && qobject_cast<QWidget *>(w->parent())) {
@@ -6049,10 +6051,11 @@ void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
             font = font.resolve(static_cast<QWidget *>(w->parent())->font());
         }
 
-        if (w->data->fnt == font)
+        if (wf.resolve() == font.resolve() && wf == font)
             return;
 
         w->data->fnt = font;
+        w->d_func()->directFontResolveMask = font.resolve();
 
         QEvent e(QEvent::FontChange);
         QApplication::sendEvent(w, &e);

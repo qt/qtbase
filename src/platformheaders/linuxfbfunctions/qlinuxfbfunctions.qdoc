@@ -1,0 +1,82 @@
+/****************************************************************************
+**
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \class QLinuxFbFunctions
+    \inmodule QtPlatformHeaders
+
+    \brief The QLinuxFbFunctions class is an inline class containing
+    platform-specific functionality for the linuxfb platform plugin that is
+    typically used on systems running Embedded Linux or Android.
+
+    \note There is no binary compatibility guarantee for this class,
+    meaning that an application using it is only guaranteed to work with the Qt
+    version it was developed against.
+*/
+
+/*!
+    \typedef QLinuxFbFunctions::LoadKeymapType
+
+    Function type for loadKeymap.
+*/
+
+/*!
+    \fn QByteArray QLinuxFbFunctions::loadKeymapTypeIdentifier()
+
+    \return the identifier that can be passed to
+    QGuiApplication::platformFunction() to query the entry point for the
+    loadKeymap function implementation.
+*/
+
+/*!
+    \fn void QLinuxFbFunctions::loadKeymap(const QString &filename)
+
+    Loads and switches to the keymap from \a filename. When \a filename is
+    empty, the default keymap, which is either the built-on one or the keymap
+    given in the plugin specification, is restored.
+
+    \note This is functional only when the evdev keyboard support code is
+    compiled in to the platform plugin. When using external generic plugins via
+    the \c{-plugin} argument, or when the environment variable
+    \c{QT_QPA_FB_DISABLE_INPUT} is set or when building Qt without evdev
+    support, this function will have no effect.
+*/
+
+/*!
+    \fn void QLinuxFbFunctions::switchLang()
+
+    Switches between English and other language when the keymap is loaded.
+    Usually the keymap contains two languages: English and national. When
+    you load the keymap, English is selected by default. This function allows
+    to switch between these languages.
+
+    \note This is functional only when the evdev keyboard support code is
+    compiled in to the platform plugin. When using external generic plugins via
+    the \c{-plugin} argument, or when the environment variable
+    \c{QT_QPA_FB_DISABLE_INPUT} is set or when building Qt without evdev
+    support, this function will have no effect.
+*/

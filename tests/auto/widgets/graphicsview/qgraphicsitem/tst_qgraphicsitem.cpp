@@ -4148,11 +4148,9 @@ void tst_QGraphicsItem::ensureVisible()
 void tst_QGraphicsItem::cursor()
 {
     QGraphicsScene scene;
-    QWidget topLevel;
-    QGraphicsView view(&scene,&topLevel);
-    topLevel.showMaximized();
-    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
-    view.setFixedSize(topLevel.size());
+    QGraphicsView view(&scene);
+    view.showFullScreen();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QGraphicsRectItem *item1 = scene.addRect(QRectF(-100, 0, 50, 50));
     QGraphicsRectItem *item2 = scene.addRect(QRectF(50, 0, 50, 50));
 

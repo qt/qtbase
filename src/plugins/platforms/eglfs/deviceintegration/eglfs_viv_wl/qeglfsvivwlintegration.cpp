@@ -60,7 +60,7 @@ void QEglFSVivWaylandIntegration::platformInit()
     }
 
     mWaylandDisplay = wl_display_create();
-    mNativeDisplay = fbGetDisplay(mWaylandDisplay);
+    mNativeDisplay = static_cast<EGLNativeDisplayType>(fbGetDisplay(mWaylandDisplay));
     fbGetDisplayGeometry(mNativeDisplay, &width, &height);
     mScreenSize.setHeight(height);
     mScreenSize.setWidth(width);
@@ -81,7 +81,7 @@ EGLNativeWindowType QEglFSVivWaylandIntegration::createNativeWindow(QPlatformWin
     Q_UNUSED(window)
     Q_UNUSED(format)
 
-    EGLNativeWindowType eglWindow = fbCreateWindow(mNativeDisplay, 0, 0, size.width(), size.height());
+    EGLNativeWindowType eglWindow = static_cast<EGLNativeWindowType>(fbCreateWindow(mNativeDisplay, 0, 0, size.width(), size.height()));
     return eglWindow;
 }
 

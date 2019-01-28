@@ -1038,8 +1038,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 
     if (what & QFileSystemMetaData::Permissions)
         fillPermissions(fname, data, what);
-    if ((what & QFileSystemMetaData::LinkType)
-        && data.missingFlags(QFileSystemMetaData::LinkType)) {
+    if (what & QFileSystemMetaData::LinkType) {
         data.knownFlagsMask |= QFileSystemMetaData::LinkType;
         if (data.fileAttribute_ & FILE_ATTRIBUTE_REPARSE_POINT) {
             WIN32_FIND_DATA findData;

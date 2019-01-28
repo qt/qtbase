@@ -118,6 +118,8 @@ QPlatformCursor *QEglFSKmsGbmIntegration::createCursor(QPlatformScreen *screen) 
         qCDebug(qLcEglfsKmsDebug, "Using plain OpenGL mouse cursor");
         return new QEglFSCursor(screen);
     }
+#else
+    Q_UNUSED(screen);
 #endif
     return nullptr;
 }

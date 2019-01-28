@@ -110,6 +110,7 @@ private:
     EGLNativeDisplayType nativeDisplay() const;
     void createInputHandlers();
     static void loadKeymapStatic(const QString &filename);
+    static void switchLangStatic();
 
     EGLDisplay m_display;
     QPlatformInputContext *m_inputContext;

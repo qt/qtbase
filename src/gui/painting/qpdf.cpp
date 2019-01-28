@@ -1954,13 +1954,14 @@ void QPdfEnginePrivate::writePage()
             "/Contents %d 0 R\n"
             "/Resources %d 0 R\n"
             "/Annots %d 0 R\n"
-            "/MediaBox [0 0 %f %f]\n",
+            "/MediaBox [0 0 %s %s]\n",
             pageRoot, pageStream, resources, annots,
             // make sure we use the pagesize from when we started the page, since the user may have changed it
-            currentPage->pageSize.width() / userUnit, currentPage->pageSize.height() / userUnit);
+            QByteArray::number(currentPage->pageSize.width() / userUnit, 'f').constData(),
+            QByteArray::number(currentPage->pageSize.height() / userUnit, 'f').constData());
 
     if (pdfVersion >= QPdfEngine::Version_1_6)
-        xprintf("/UserUnit %f\n", userUnit);
+        xprintf("/UserUnit %s\n", QByteArray::number(userUnit, 'f').constData());
 
     xprintf(">>\n"
             "endobj\n");

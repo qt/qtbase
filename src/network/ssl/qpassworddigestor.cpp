@@ -75,7 +75,7 @@ namespace QPasswordDigestor {
     \a salt must always be 8 bytes long!
 
     \note This function is provided for use with legacy applications and all
-    new applications are recommended to use \l {pbkdf2} {PBKDF2}.
+    new applications are recommended to use \l {deriveKeyPbkdf2} {PBKDF2}.
 
     \sa deriveKeyPbkdf2, QCryptographicHash, QCryptographicHash::hashLength
 */

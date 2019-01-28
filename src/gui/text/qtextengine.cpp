@@ -1972,14 +1972,18 @@ void QTextEngine::shape(int item) const
         }
         // fix log clusters to point to the previous glyph, as the object doesn't have a glyph of it's own.
         // This is required so that all entries in the array get initialized and are ordered correctly.
-        ushort *lc = logClusters(&li);
-        *lc = item ? lc[-1] : 0;
+        if (layoutData->logClustersPtr) {
+            ushort *lc = logClusters(&li);
+            *lc = (lc != layoutData->logClustersPtr) ? lc[-1] : 0;
+        }
     } else if (li.analysis.flags == QScriptAnalysis::Tab) {
         // set up at least the ascent/descent/leading of the script item for the tab
         fontEngine(li, &li.ascent, &li.descent, &li.leading);
         // see the comment above
-        ushort *lc = logClusters(&li);
-        *lc = item ? lc[-1] : 0;
+        if (layoutData->logClustersPtr) {
+            ushort *lc = logClusters(&li);
+            *lc = (lc != layoutData->logClustersPtr) ? lc[-1] : 0;
+        }
     } else {
         shapeText(item);
     }

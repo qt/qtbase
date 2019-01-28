@@ -247,6 +247,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
 #ifndef QT_NO_TOOLTIP
       , toolTipDuration(-1)
 #endif
+      , directFontResolveMask(0)
       , inheritedFontResolveMask(0)
       , inheritedPaletteResolveMask(0)
       , leftmargin(0)
@@ -4519,7 +4520,7 @@ void QWidget::setForegroundRole(QPalette::ColorRole role)
     the "color", "background-color", "selection-color",
     "selection-background-color" and "alternate-background-color".
 
-    \sa QApplication::palette(), QWidget::font(), \l {Qt Style Sheets}
+    \sa QApplication::palette(), QWidget::font(), {Qt Style Sheets}
 */
 const QPalette &QWidget::palette() const
 {
@@ -4757,6 +4758,18 @@ QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
 /*!
     \internal
 
+    Returns a font suitable for inheritance, where only locally set attributes are considered resolved.
+*/
+QFont QWidgetPrivate::localFont() const
+{
+    QFont localfont = data.fnt;
+    localfont.resolve(directFontResolveMask);
+    return localfont;
+}
+
+/*!
+    \internal
+
     Determine which font is implicitly imposed on this widget by its ancestors
     and QApplication::font, resolve this against its own font (attributes from
     the implicit font are copied over). Then propagate this font to this
@@ -4765,7 +4778,7 @@ QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
 void QWidgetPrivate::resolveFont()
 {
     QFont naturalFont = naturalWidgetFont(inheritedFontResolveMask);
-    QFont resolvedFont = data.fnt.resolve(naturalFont);
+    QFont resolvedFont = localFont().resolve(naturalFont);
     setFont_helper(resolvedFont);
 }
 
@@ -4804,6 +4817,11 @@ void QWidgetPrivate::updateFont(const QFont &font)
         inheritedFontResolveMask = 0;
     }
     uint newMask = data.fnt.resolve() | inheritedFontResolveMask;
+    // Set the font as also having resolved inherited traits, so the result of reading QWidget::font()
+    // isn't all weak information, but save the original mask to be able to let new changes on the
+    // parent widget font propagate correctly.
+    directFontResolveMask = data.fnt.resolve();
+    data.fnt.resolve(newMask);
 
     for (int i = 0; i < children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget*>(children.at(i));

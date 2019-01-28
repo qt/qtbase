@@ -3217,6 +3217,29 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                 static_cast<NSTextFieldCell *>(tf.cell).bezelStyle = isRounded ? NSTextFieldRoundedBezel : NSTextFieldSquareBezel;
                 tf.frame = opt->rect.toCGRect();
                 d->drawNSViewInRect(tf, opt->rect, p, ^(CGContextRef, const CGRect &rect) {
+                    if (!qt_mac_applicationIsInDarkMode()) {
+                        // In 'Dark' mode controls are transparent, so we do not
+                        // over-paint the (potentially custom) color in the background.
+                        // In 'Light' mode we have to care about the correct
+                        // background color. See the comments below for PE_PanelLineEdit.
+                        CGContextRef cgContext = NSGraphicsContext.currentContext.CGContext;
+                        // See QMacCGContext, here we expect bitmap context created with
+                        // color space 'kCGColorSpaceSRGB', if it's something else - we
+                        // give up.
+                        if (cgContext ? bool(CGBitmapContextGetColorSpace(cgContext)) : false) {
+                            tf.drawsBackground = YES;
+                            const QColor bgColor = frame->palette.brush(QPalette::Base).color();
+                            tf.backgroundColor = [NSColor colorWithSRGBRed:bgColor.redF()
+                                                                     green:bgColor.greenF()
+                                                                      blue:bgColor.blueF()
+                                                                     alpha:bgColor.alphaF()];
+                            if (bgColor.alpha() != 255) {
+                                // No way we can have it bezeled and transparent ...
+                                tf.bordered = YES;
+                            }
+                        }
+                    }
+
                     [tf.cell drawWithFrame:rect inView:tf];
                 });
             } else {
@@ -3225,21 +3248,36 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         }
         break;
     case PE_PanelLineEdit:
-        QCommonStyle::drawPrimitive(pe, opt, p, w);
-        // Draw the focus frame for widgets other than QLineEdit (e.g. for line edits in Webkit).
-        // Focus frame is drawn outside the rectangle passed in the option-rect.
-        if (const QStyleOptionFrame *panel = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
-#if QT_CONFIG(lineedit)
-            if ((opt->state & State_HasFocus) && !qobject_cast<const QLineEdit*>(w)) {
-                int vmargin = pixelMetric(QStyle::PM_FocusFrameVMargin);
-                int hmargin = pixelMetric(QStyle::PM_FocusFrameHMargin);
-                QStyleOptionFrame focusFrame = *panel;
-                focusFrame.rect = panel->rect.adjusted(-hmargin, -vmargin, hmargin, vmargin);
-                drawControl(CE_FocusFrame, &focusFrame, p, w);
+        {
+            const QStyleOptionFrame *panel = qstyleoption_cast<const QStyleOptionFrame *>(opt);
+            if (qt_mac_applicationIsInDarkMode() || (panel && panel->lineWidth <= 0)) {
+                // QCommonStyle::drawPrimitive(PE_PanelLineEdit) fill the background with
+                // a proper color, defined in opt->palette and then, if lineWidth > 0, it
+                // calls QMacStyle::drawPrimitive(PE_FrameLineEdit). We use NSTextFieldCell
+                // to handle PE_FrameLineEdit, which will use system-default background.
+                // In 'Dark' mode it's transparent and thus it's not over-painted.
+                QCommonStyle::drawPrimitive(pe, opt, p, w);
+            } else {
+                // In 'Light' mode, if panel->lineWidth > 0, we have to use the correct
+                // background color when drawing PE_FrameLineEdit, so let's call it
+                // directly and set the proper color there.
+                drawPrimitive(PE_FrameLineEdit, opt, p, w);
             }
-#endif
-        }
 
+            // Draw the focus frame for widgets other than QLineEdit (e.g. for line edits in Webkit).
+            // Focus frame is drawn outside the rectangle passed in the option-rect.
+            if (panel) {
+#if QT_CONFIG(lineedit)
+                if ((opt->state & State_HasFocus) && !qobject_cast<const QLineEdit*>(w)) {
+                    int vmargin = pixelMetric(QStyle::PM_FocusFrameVMargin);
+                    int hmargin = pixelMetric(QStyle::PM_FocusFrameHMargin);
+                    QStyleOptionFrame focusFrame = *panel;
+                    focusFrame.rect = panel->rect.adjusted(-hmargin, -vmargin, hmargin, vmargin);
+                    drawControl(CE_FocusFrame, &focusFrame, p, w);
+                }
+#endif
+            }
+        }
         break;
     case PE_PanelScrollAreaCorner: {
         const QBrush brush(opt->palette.brush(QPalette::Base));
