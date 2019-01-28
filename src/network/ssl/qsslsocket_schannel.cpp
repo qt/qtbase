@@ -142,12 +142,9 @@
     Medium priority:
     - Setting cipher-suites (or ALG_ID)
         - People have survived without it in WinRT
-    - ALPN:
-        For HTTP2. Note: Windows 8.1 and up ONLY.
 
     Low priority:
     - Possibly make RAII wrappers for SecBuffer (which I commonly create QScopeGuards for)
-    - Perform the '@future' optimization in "transmit()"
 
 */
 
@@ -1188,23 +1185,21 @@ void QSslSocketBackendPrivate::transmit()
         qint64 totalBytesWritten = 0;
         qint64 writeBufferSize;
         while ((writeBufferSize = writeBuffer.size()) > 0) {
-            QByteArray plaintext;
+            const int headerSize = int(streamSizes.cbHeader);
+            const int trailerSize = int(streamSizes.cbTrailer);
+            // Try to read 'cbMaximumMessage' bytes from buffer before encrypting.
+            const int size = int(std::min(writeBufferSize, qint64(streamSizes.cbMaximumMessage)));
+            QByteArray fullMessage(headerSize + trailerSize + size, Qt::Uninitialized);
             {
-                // Try to read 'cbMaximumMessage' bytes from buffer before encrypting.
-                int size = int(std::min(writeBufferSize, qint64(streamSizes.cbMaximumMessage)));
-                plaintext.resize(size);
                 // Use peek() here instead of read() so we don't lose data if encryption fails.
-                qint64 copied = writeBuffer.peek(plaintext.data(), size);
+                qint64 copied = writeBuffer.peek(fullMessage.data() + headerSize, size);
                 Q_ASSERT(copied == size);
             }
-            QByteArray header(int(streamSizes.cbHeader), '\0');
-            QByteArray trailer(int(streamSizes.cbTrailer), '\0');
 
             SecBuffer inputBuffers[4]{
-                // @future[0/1]: optimize by using one container for all fields...
-                createSecBuffer(header, SECBUFFER_STREAM_HEADER),
-                createSecBuffer(plaintext, SECBUFFER_DATA),
-                createSecBuffer(trailer, SECBUFFER_STREAM_TRAILER),
+                createSecBuffer(fullMessage.data(), headerSize, SECBUFFER_STREAM_HEADER),
+                createSecBuffer(fullMessage.data() + headerSize, size, SECBUFFER_DATA),
+                createSecBuffer(fullMessage.data() + headerSize + size, trailerSize, SECBUFFER_STREAM_TRAILER),
                 createSecBuffer(nullptr, 0, SECBUFFER_EMPTY)
             };
             SecBufferDesc message{
@@ -1220,18 +1215,14 @@ void QSslSocketBackendPrivate::transmit()
                 return;
             }
             // Data was encrypted successfully, so we free() what we peek()ed earlier
-            writeBuffer.free(plaintext.length());
+            writeBuffer.free(size);
 
-            // trailer has been observed to change size, so resize them all (when needed) to be safe
-            header = header.left(int(inputBuffers[0].cbBuffer));
-            plaintext = plaintext.left(int(inputBuffers[1].cbBuffer));
-            trailer = trailer.left(int(inputBuffers[2].cbBuffer));
-            const qint64 bytesWritten = plainSocket->write(header // @future[1/1]: ...because they need to be merged
-                                                           + plaintext
-                                                           + trailer);
+            // The trailer's size is not final, so resize fullMessage to not send trailing junk
+            fullMessage.resize(inputBuffers[0].cbBuffer + inputBuffers[1].cbBuffer + inputBuffers[2].cbBuffer);
+            const qint64 bytesWritten = plainSocket->write(fullMessage);
 #ifdef QSSLSOCKET_DEBUG
             qCDebug(lcSsl) << "Wrote" << bytesWritten << "of total"
-                           << header.length() + plaintext.length() + trailer.length() << "bytes";
+                           << fullMessage.length() << "bytes";
 #endif
             if (bytesWritten >= 0) {
                 totalBytesWritten += bytesWritten;
