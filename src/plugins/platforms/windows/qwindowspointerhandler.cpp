@@ -174,15 +174,6 @@ static void flushTabletEvents()
     }
 }
 
-static bool draggingActive()
-{
-#if QT_CONFIG(draganddrop)
-    return QWindowsDrag::isDragging();
-#else
-    return false;
-#endif
-}
-
 bool QWindowsPointerHandler::translatePointerEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result)
 {
     *result = 0;
@@ -636,9 +627,6 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
     if (et & QtWindows::NonClientEventFlag)
         return false; // Let DefWindowProc() handle Non Client messages.
 
-    if (draggingActive())
-        return false; // Let DoDragDrop() loop handle it.
-
     if (count < 1)
         return false;
 
@@ -738,9 +726,6 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
 #if QT_CONFIG(tabletevent)
     if (et & QtWindows::NonClientEventFlag)
         return false; // Let DefWindowProc() handle Non Client messages.
-
-    if (draggingActive())
-        return false; // Let DoDragDrop() loop handle it.
 
     POINTER_PEN_INFO *penInfo = static_cast<POINTER_PEN_INFO *>(vPenInfo);
 
