@@ -239,6 +239,9 @@ add_qt_module(Core
         QT_NO_FOREACH
 )
 
+add_dependencies(Core Qt::moc)
+add_dependencies(Core Qt::rcc)
+
 configure_file(global/qconfig.cpp.in global/qconfig.cpp)
 
 # Handle QObject: Automoc does not work for this as it would

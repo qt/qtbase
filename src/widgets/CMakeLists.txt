@@ -65,6 +65,8 @@ add_qt_module(Widgets
         Qt::Gui
 )
 
+add_dependencies(Widgets Qt::uic)
+
 ## Scopes:
 #####################################################################
 #
