@@ -73,7 +73,7 @@
 #include <QtCore/qglobal.h>
 
 #if QT_CONFIG(ocsp)
-#include <openssl/ocsp.h>
+#include "qocsp_p.h"
 #endif
 
 QT_BEGIN_NAMESPACE

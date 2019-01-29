@@ -100,6 +100,8 @@ qtConfig(ssl) {
             SOURCES += ssl/qdtls_openssl.cpp
         }
 
+        qtConfig(ocsp): HEADERS += ssl/qocsp_p.h
+
         qtConfig(opensslv11) {
             HEADERS += ssl/qsslsocket_openssl11_symbols_p.h
             SOURCES += ssl/qsslsocket_openssl11.cpp \

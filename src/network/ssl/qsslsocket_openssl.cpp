@@ -85,7 +85,7 @@
 #include <QtCore/qscopedvaluerollback.h>
 
 #if QT_CONFIG(ocsp)
-#include <openssl/ocsp.h>
+#include "qocsp_p.h"
 #endif
 
 #include <algorithm>
