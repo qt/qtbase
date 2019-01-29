@@ -48,7 +48,7 @@ def _new_scope(*, parent_scope=None, condition='', **kwargs) -> Scope:
 
 def _evaluate_scopes(scopes: ScopeList) -> ScopeList:
     for s in scopes:
-        if not s.parent():
+        if not s.parent:
             recursive_evaluate_scope(s)
     return scopes
 
@@ -73,13 +73,13 @@ def test_evaluate_child_scope():
     input_scope = scope
     recursive_evaluate_scope(scope)
 
-    assert scope.total_condition() == 'QT_FEATURE_foo'
-    assert len(scope.children()) == 1
+    assert scope.total_condition == 'QT_FEATURE_foo'
+    assert len(scope.children) == 1
     assert scope.getString('test1') == 'bar'
     assert scope.getString('test2', 'not found') == 'not found'
 
-    child = scope.children()[0]
-    assert child.total_condition() == 'QT_FEATURE_bar AND QT_FEATURE_foo'
+    child = scope.children[0]
+    assert child.total_condition == 'QT_FEATURE_bar AND QT_FEATURE_foo'
     assert child.getString('test1', 'not found') == 'not found'
     assert child.getString('test2') == 'bar'
 
@@ -92,20 +92,20 @@ def test_evaluate_two_child_scopes():
     input_scope = scope
     recursive_evaluate_scope(scope)
 
-    assert scope.total_condition() == 'QT_FEATURE_foo'
-    assert len(scope.children()) == 2
+    assert scope.total_condition == 'QT_FEATURE_foo'
+    assert len(scope.children) == 2
     assert scope.getString('test1') == 'bar'
     assert scope.getString('test2', 'not found') == 'not found'
     assert scope.getString('test3', 'not found') == 'not found'
 
-    child1 = scope.children()[0]
-    assert child1.total_condition() == 'QT_FEATURE_bar AND QT_FEATURE_foo'
+    child1 = scope.children[0]
+    assert child1.total_condition == 'QT_FEATURE_bar AND QT_FEATURE_foo'
     assert child1.getString('test1', 'not found') == 'not found'
     assert child1.getString('test2') == 'bar'
     assert child1.getString('test3', 'not found') == 'not found'
 
-    child2 = scope.children()[1]
-    assert child2.total_condition() == 'QT_FEATURE_buz AND QT_FEATURE_foo'
+    child2 = scope.children[1]
+    assert child2.total_condition == 'QT_FEATURE_buz AND QT_FEATURE_foo'
     assert child2.getString('test1', 'not found') == 'not found'
     assert child2.getString('test2') == ''
     assert child2.getString('test3', 'not found') == 'buz'
@@ -119,20 +119,20 @@ def test_evaluate_else_child_scopes():
     input_scope = scope
     recursive_evaluate_scope(scope)
 
-    assert scope.total_condition() == 'QT_FEATURE_foo'
-    assert len(scope.children()) == 2
+    assert scope.total_condition == 'QT_FEATURE_foo'
+    assert len(scope.children) == 2
     assert scope.getString('test1') == 'bar'
     assert scope.getString('test2', 'not found') == 'not found'
     assert scope.getString('test3', 'not found') == 'not found'
 
-    child1 = scope.children()[0]
-    assert child1.total_condition() == 'QT_FEATURE_bar AND QT_FEATURE_foo'
+    child1 = scope.children[0]
+    assert child1.total_condition == 'QT_FEATURE_bar AND QT_FEATURE_foo'
     assert child1.getString('test1', 'not found') == 'not found'
     assert child1.getString('test2') == 'bar'
     assert child1.getString('test3', 'not found') == 'not found'
 
-    child2 = scope.children()[1]
-    assert child2.total_condition() == 'QT_FEATURE_foo AND NOT QT_FEATURE_bar'
+    child2 = scope.children[1]
+    assert child2.total_condition == 'QT_FEATURE_foo AND NOT QT_FEATURE_bar'
     assert child2.getString('test1', 'not found') == 'not found'
     assert child2.getString('test2') == ''
     assert child2.getString('test3', 'not found') == 'buz'
@@ -195,7 +195,7 @@ def test_merge_two_scopes_with_same_condition():
 
     assert len(result) == 1
     r0 = result[0]
-    assert r0.total_condition() == 'QT_FEATURE_bar'
+    assert r0.total_condition == 'QT_FEATURE_bar'
     assert r0.getString('test') == 'foo'
     assert r0.getString('test2') == 'bar'
 
@@ -213,7 +213,7 @@ def test_merge_three_scopes_two_with_same_condition():
 
     assert len(result) == 2
     r0 = result[0]
-    assert r0.total_condition() == 'QT_FEATURE_bar'
+    assert r0.total_condition == 'QT_FEATURE_bar'
     assert r0.getString('test') == 'foo'
     assert r0.getString('test2') == 'bar'
 
@@ -259,8 +259,8 @@ def test_merge_parent_child_scopes_with_same_conditions():
 
     assert len(result) == 1
     r0 = result[0]
-    assert r0.parent() == None
-    assert r0.total_condition() == 'FOO AND bar'
+    assert r0.parent == None
+    assert r0.total_condition == 'FOO AND bar'
     assert r0.getString('test1') == 'parent'
     assert r0.getString('test2') == 'child'
 
@@ -275,8 +275,8 @@ def test_merge_parent_child_scopes_with_on_child_condition():
 
     assert len(result) == 1
     r0 = result[0]
-    assert r0.parent() == None
-    assert r0.total_condition() == 'FOO AND bar'
+    assert r0.parent == None
+    assert r0.total_condition == 'FOO AND bar'
     assert r0.getString('test1') == 'parent'
     assert r0.getString('test2') == 'child'
 

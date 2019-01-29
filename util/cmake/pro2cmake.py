@@ -206,7 +206,7 @@ class RemoveOperation(Operation):
         return '-({})'.format(self._dump())
 
 
-class Scope:
+class Scope(object):
     def __init__(self, *,
                  parent_scope: typing.Optional[Scope],
                  file: typing.Optional[str] = None, condition: str = '',
@@ -249,12 +249,15 @@ class Scope:
             else:
                 self._operations[key] = other._operations[key]
 
+    @property
     def parent(self) -> typing.Optional[Scope]:
         return self._parent
 
+    @property
     def basedir(self) -> str:
         return self._basedir
 
+    @property
     def currentdir(self) -> str:
         return self._currentdir
 
@@ -276,8 +279,8 @@ class Scope:
                 if key in ('HEADERS', 'SOURCES', 'INCLUDEPATH', 'RESOURCES',) \
                         or key.endswith('_HEADERS') \
                         or key.endswith('_SOURCES'):
-                    value = [map_to_file(v, scope.basedir(),
-                                         scope.currentdir()) for v in value]
+                    value = [map_to_file(v, scope.basedir,
+                                         scope.currentdir) for v in value]
 
                 if operation == '=':
                     scope._append_operation(key, SetOperation(value))
@@ -298,12 +301,12 @@ class Scope:
             if condition:
                 Scope.FromDict(scope, file,
                                statement.get('statements'), condition,
-                               scope.basedir())
+                               scope.basedir)
 
                 else_statements = statement.get('else_statements')
                 if else_statements:
                     Scope.FromDict(scope, file, else_statements,
-                                   'NOT ' + condition, scope.basedir())
+                                   'NOT ' + condition, scope.basedir)
                 continue
 
             loaded = statement.get('loaded')
@@ -321,8 +324,8 @@ class Scope:
                 scope._append_operation('_INCLUDED',
                                         UniqueAddOperation(
                                             map_to_file(included,
-                                                        scope.basedir(),
-                                                        scope.currentdir())))
+                                                        scope.basedir,
+                                                        scope.currentdir)))
                 continue
 
         return scope
@@ -333,26 +336,32 @@ class Scope:
         else:
             self._operations[key] = [op, ]
 
+    @property
     def file(self) -> str:
         return self._file or ''
 
+    @property
     def cMakeListsFile(self) -> str:
-        assert self.basedir()
-        return os.path.join(self.basedir(), 'CMakeLists.txt')
+        assert self.basedir
+        return os.path.join(self.basedir, 'CMakeLists.txt')
 
+    @property
     def condition(self) -> str:
         return self._condition
 
-    def set_total_condition(self, condition: str) -> None:
-        self._total_condition = condition
-
+    @property
     def total_condition(self) -> typing.Optional[str]:
         return self._total_condition
+
+    @total_condition.setter
+    def total_condition(self, condition: str) -> None:
+        self._total_condition = condition
 
     def _add_child(self, scope: 'Scope') -> None:
         scope._parent = self
         self._children.append(scope)
 
+    @property
     def children(self) -> typing.List['Scope']:
         return self._children
 
@@ -374,9 +383,11 @@ class Scope:
             for c in self._children:
                 c.dump(indent=indent + 1)
 
+    @property
     def keys(self):
         return self._operations.keys()
 
+    @property
     def visited_keys(self):
         return self._visited_keys
 
@@ -395,17 +406,20 @@ class Scope:
         assert len(v) == 1
         return v[0]
 
-    def getTemplate(self) -> str:
+    @property
+    def TEMPLATE(self) -> str:
         return self.getString('TEMPLATE', 'app')
 
     def _rawTemplate(self) -> str:
         return self.getString('TEMPLATE')
 
-    def getTarget(self) -> str:
+    @property
+    def TARGET(self) -> str:
         return self.getString('TARGET') \
-            or os.path.splitext(os.path.basename(self.file()))[0]
+            or os.path.splitext(os.path.basename(self.file))[0]
 
-    def getIncludes(self) -> typing.List[str]:
+    @property
+    def _INCLUDED(self) -> typing.List[str]:
         return self.get('_INCLUDED', [])
 
 
@@ -569,10 +583,10 @@ def map_condition(condition: str) -> str:
 
 def handle_subdir(scope: Scope, cm_fh: typing.IO[str], *,
                   indent: int = 0) -> None:
-    assert scope.getTemplate() == 'subdirs'
+    assert scope.TEMPLATE == 'subdirs'
     ind = '    ' * indent
     for sd in scope.get('SUBDIRS', []):
-        full_sd = os.path.join(scope.basedir(), sd)
+        full_sd = os.path.join(scope.basedir, sd)
         if os.path.isdir(full_sd):
             cm_fh.write('{}add_subdirectory({})\n'.format(ind, sd))
         elif os.path.isfile(full_sd):
@@ -580,7 +594,7 @@ def handle_subdir(scope: Scope, cm_fh: typing.IO[str], *,
             subdir_scope \
                 = Scope.FromDict(scope, full_sd,
                                  subdir_result.asDict().get('statements'),
-                                 '', scope.basedir())
+                                 '', scope.basedir)
 
             cmakeify_scope(subdir_scope, cm_fh, indent=indent + 1)
         elif sd.startswith('-'):
@@ -590,7 +604,7 @@ def handle_subdir(scope: Scope, cm_fh: typing.IO[str], *,
             print('    XXXX: SUBDIR {} in {}: Not found.'.format(sd, scope))
 
     for c in scope.children():
-        cond = c.condition()
+        cond = c.condition
         if cond == 'else':
             cm_fh.write('\n{}else()\n'.format(ind))
         elif cond:
@@ -670,7 +684,7 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
 
     vpath = scope.get('VPATH')
 
-    sources = [map_source_to_cmake(s, scope.basedir(), vpath) for s in sources]
+    sources = [map_source_to_cmake(s, scope.basedir, vpath) for s in sources]
     if sources:
         cm_fh.write('{}    SOURCES\n'.format(ind))
     for l in sort_sources(sources):
@@ -715,7 +729,7 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
             cm_fh.write('{}        {}\n'.format(ind, d))
             is_framework = False
 
-    return set(scope.keys()) - scope.visited_keys()
+    return set(scope.keys) - scope.visited_keys
 
 
 def is_simple_condition(condition: str) -> bool:
@@ -878,11 +892,11 @@ def simplify_condition(condition: str) -> str:
 
 def recursive_evaluate_scope(scope: Scope, parent_condition: str = '',
                              previous_condition: str = '') -> str:
-    current_condition = scope.condition()
+    current_condition = scope.condition
     total_condition = current_condition
     if total_condition == 'else':
         assert previous_condition, \
-            "Else branch without previous condition in: %s" % scope.file()
+            "Else branch without previous condition in: %s" % scope.file
         if previous_condition.startswith('NOT '):
             total_condition = previous_condition[4:]
         elif is_simple_condition(previous_condition):
@@ -907,10 +921,10 @@ def recursive_evaluate_scope(scope: Scope, parent_condition: str = '',
                 total_condition = '({}) AND ({})'.format(parent_condition,
                                                          total_condition)
 
-    scope.set_total_condition(simplify_condition(total_condition))
+    scope.total_condition = simplify_condition(total_condition)
 
     prev_condition = ''
-    for c in scope.children():
+    for c in scope.children:
         prev_condition = recursive_evaluate_scope(c, total_condition,
                                                   prev_condition)
 
@@ -930,7 +944,7 @@ def write_extend_target(cm_fh: typing.IO[str], target: str,
 
     extend_scope = '\n{}extend_target({} CONDITION {}\n' \
                    '{}{})\n'.format(spaces(indent), target,
-                                    scope.total_condition(),
+                                    scope.total_condition,
                                     extend_qt_string, ignored_keys_report)
 
     if not extend_qt_string:
@@ -948,7 +962,7 @@ def write_extend_target(cm_fh: typing.IO[str], target: str,
 
 def flatten_scopes(scope: Scope) -> typing.List[Scope]:
     result = [scope]  # type: typing.List[Scope]
-    for c in scope.children():
+    for c in scope.children:
         result += flatten_scopes(c)
     return result
 
@@ -959,7 +973,7 @@ def merge_scopes(scopes: typing.List[Scope]) -> typing.List[Scope]:
     # Merge scopes with their parents:
     known_scopes = {}  # type: typing.Mapping[str, Scope]
     for scope in scopes:
-        total_condition = scope.total_condition()
+        total_condition = scope.total_condition
         if total_condition == 'OFF':
             # ignore this scope entirely!
             pass
@@ -989,7 +1003,7 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
     print("xxxxxx {} scopes, {} after merging!".format(total_scopes, len(scopes)))
 
     assert len(scopes)
-    assert scopes[0].total_condition() == 'ON'
+    assert scopes[0].total_condition == 'ON'
 
     # Now write out the scopes:
     write_header(cm_fh, name, typename, indent=indent)
@@ -1019,7 +1033,7 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
 
 def write_module(cm_fh: typing.IO[str], scope: Scope, *,
                  indent: int = 0) -> None:
-    module_name = scope.getTarget()
+    module_name = scope.TARGET
     assert module_name.startswith('Qt')
 
     extra = []
@@ -1034,14 +1048,14 @@ def write_module(cm_fh: typing.IO[str], scope: Scope, *,
 
     if 'qt_tracepoints' in scope.get('CONFIG'):
         tracepoints = map_to_file(scope.getString('TRACEPOINT_PROVIDER'),
-                                  scope.basedir(), scope.currentdir())
+                                  scope.basedir, scope.currentdir)
         cm_fh.write('\n\n{}qt_create_tracepoints({} {})\n'
                     .format(spaces(indent), module_name[2:], tracepoints))
 
 
 def write_tool(cm_fh: typing.IO[str], scope: Scope, *,
                indent: int = 0) -> None:
-    tool_name = scope.getTarget()
+    tool_name = scope.TARGET
 
     write_main_part(cm_fh, tool_name, 'Tool', 'add_qt_tool', scope,
                     indent=indent, known_libraries={'Qt::Core', })
@@ -1049,7 +1063,7 @@ def write_tool(cm_fh: typing.IO[str], scope: Scope, *,
 
 def write_test(cm_fh: typing.IO[str], scope: Scope, *,
                indent: int = 0) -> None:
-    test_name = scope.getTarget()
+    test_name = scope.TARGET
     assert test_name
 
     write_main_part(cm_fh, test_name, 'Test', 'add_qt_test', scope,
@@ -1058,7 +1072,7 @@ def write_test(cm_fh: typing.IO[str], scope: Scope, *,
 
 def write_binary(cm_fh: typing.IO[str], scope: Scope,
                  gui: bool = False, *, indent: int = 0) -> None:
-    binary_name = scope.getTarget()
+    binary_name = scope.TARGET
     assert binary_name
 
     extra = ['GUI', ] if gui else []
@@ -1068,7 +1082,7 @@ def write_binary(cm_fh: typing.IO[str], scope: Scope,
 
 
 def write_plugin(cm_fh, scope, *, indent: int = 0):
-    plugin_name = scope.getTarget()
+    plugin_name = scope.TARGET
     assert plugin_name
 
     write_main_part(cm_fh, plugin_name, 'Plugin', 'add_qt_plugin', scope,
@@ -1077,9 +1091,9 @@ def write_plugin(cm_fh, scope, *, indent: int = 0):
 
 def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
                       indent: int = 0) -> None:
-    assert scope.getTemplate() in ('app', 'lib')
+    assert scope.TEMPLATE in ('app', 'lib')
 
-    is_lib = scope.getTemplate() == 'lib'
+    is_lib = scope.TEMPLATE == 'lib'
     is_plugin = any('qt_plugin' == s for s in scope.get('_LOADED', []))
 
     if is_lib or 'qt_module' in scope.get('_LOADED', []):
@@ -1100,36 +1114,36 @@ def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
     if docs:
         cm_fh.write("\n{}add_qt_docs({})\n"
                     .format(spaces(indent),
-                            map_to_file(docs, scope.basedir(),
-                                        scope.currentdir())))
+                            map_to_file(docs, scope.basedir,
+                                        scope.currentdir)))
 
 
 def cmakeify_scope(scope: Scope, cm_fh: typing.IO[str], *,
                    indent: int = 0) -> None:
-    template = scope.getTemplate()
+    template = scope.TEMPLATE
     if template == 'subdirs':
         handle_subdir(scope, cm_fh, indent=indent)
     elif template in ('app', 'lib'):
         handle_app_or_lib(scope, cm_fh, indent=indent)
     else:
         print('    XXXX: {}: Template type {} not yet supported.'
-              .format(scope.file(), template))
+              .format(scope.file, template))
 
 
 def generate_cmakelists(scope: Scope) -> None:
-    with open(scope.cMakeListsFile(), 'w') as cm_fh:
-        assert scope.file()
+    with open(scope.cMakeListsFile, 'w') as cm_fh:
+        assert scope.file
         cm_fh.write('# Generated from {}.\n\n'
-                    .format(os.path.basename(scope.file())))
+                    .format(os.path.basename(scope.file)))
         cmakeify_scope(scope, cm_fh)
 
 
 def do_include(scope: Scope, *, debug: bool = False) -> None:
-    for c in scope.children():
+    for c in scope.children:
         do_include(c)
 
-    for i in scope.getIncludes():
-        dir = scope.basedir()
+    for i in scope._INCLUDED:
+        dir = scope.basedir
         include_file = i
         if not include_file:
             continue
