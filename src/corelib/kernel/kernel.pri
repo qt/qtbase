@@ -7,7 +7,7 @@ HEADERS += \
         kernel/qdeadlinetimer.h \
         kernel/qdeadlinetimer_p.h \
         kernel/qelapsedtimer.h \
-        kernel/qeventloop.h\
+        kernel/qeventloop.h \
         kernel/qpointer.h \
         kernel/qcorecmdlineargs_p.h \
         kernel/qcoreapplication.h \
