@@ -1,3 +1,17 @@
+if(APPLE)
+    find_library(FWAppKit AppKit)
+    find_library(FWApplicationServices ApplicationServices)
+    find_library(FWCoreFoundation CoreFoundation)
+    find_library(FWCoreServices CoreServices)
+    find_library(FWDiskArbitration DiskArbitration)
+    find_library(FWFoundation Foundation)
+    find_library(FWIOKit IOKit)
+    find_library(FWMobileCoreServices MobileCoreServices)
+    find_library(FWSecurity Security)
+    find_library(FWUIKit UIKit)
+    find_library(FWWatchKit WatchKit)
+endif()
+
 add_subdirectory(3rdparty)
 
 function(find_or_build_bootstrap_names)
