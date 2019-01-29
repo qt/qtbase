@@ -243,8 +243,8 @@ function(qt_internal_module_info result target)
 endfunction()
 
 
-set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_ADAPTOR_BASENAME;DBUS_ADAPTOR_FLAGS;DBUS_ADAPTOR_SOURCES;DBUS_INTERFACE_BASENAME;DBUS_INTERFACE_FLAGS;DBUS_INTERFACE_SOURCES;FEATURE_DEPENDENCIES")
-set(__default_public_args "PUBLIC_LIBRARIES;PUBLIC_INCLUDE_DIRECTORIES;PUBLIC_DEFINES")
+set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_ADAPTOR_BASENAME;DBUS_ADAPTOR_FLAGS;DBUS_ADAPTOR_SOURCES;DBUS_INTERFACE_BASENAME;DBUS_INTERFACE_FLAGS;DBUS_INTERFACE_SOURCES;FEATURE_DEPENDENCIES;COMPILE_OPTIONS;LINK_OPTIONS")
+set(__default_public_args "PUBLIC_LIBRARIES;PUBLIC_INCLUDE_DIRECTORIES;PUBLIC_DEFINES;PUBLIC_COMPILE_OPTIONS;PUBLIC_LINK_OPTIONS")
 
 
 # This function can be used to add sources/libraries/etc. to the specified CMake target
@@ -288,6 +288,8 @@ function(extend_target target)
         target_include_directories("${target}" PUBLIC ${arg_PUBLIC_INCLUDE_DIRECTORIES} PRIVATE ${arg_INCLUDE_DIRECTORIES})
         target_compile_definitions("${target}" PUBLIC ${arg_PUBLIC_DEFINES} PRIVATE ${arg_DEFINES})
         target_link_libraries("${target}" PUBLIC ${arg_PUBLIC_LIBRARIES} PRIVATE ${arg_LIBRARIES})
+        target_compile_options("${target}" PUBLIC ${arg_PUBLIC_COMPILE_OPTIONS} PRIVATE ${arg_COMPILE_OPTIONS})
+        target_link_options("${target}" PUBLIC ${arg_PUBLIC_LINK_OPTIONS} PRIVATE ${arg_LINK_OPTIONS})
     endif()
 endfunction()
 
@@ -440,6 +442,10 @@ function(add_qt_module target)
         DBUS_ADAPTOR_FLAGS ${arg_DBUS_ADAPTOR_FLAGS}
         DBUS_INTERFACE_SOURCES ${arg_DBUS_INTERFACE_SOURCES}
         DBUS_INTERFACE_FLAGS ${arg_DBUS_INTERFACE_FLAGS}
+        COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
+        PUBLIC_COMPILE_OPTIONS ${arg_PUBLIC_COMPILE_OPTIONS}
+        LINK_OPTIONS ${arg_LINK_OPTIONS}
+        PUBLIC_LINK_OPTIONS ${arg_PUBLIC_LINK_OPTIONS}
     )
 
     set(configureFile "${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
@@ -571,6 +577,10 @@ function(add_qt_plugin target)
         DBUS_ADAPTOR_FLAGS "${arg_DBUS_ADAPTOR_FLAGS}"
         DBUS_INTERFACE_SOURCES "${arg_DBUS_INTERFACE_SOURCES}"
         DBUS_INTERFACE_FLAGS "${arg_DBUS_INTERFACE_FLAGS}"
+        COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
+        PUBLIC_COMPILE_OPTIONS ${arg_PUBLIC_COMPILE_OPTIONS}
+        LINK_OPTIONS ${arg_LINK_OPTIONS}
+        PUBLIC_LINK_OPTIONS ${arg_PUBLIC_LINK_OPTIONS}
     )
 
     install(TARGETS "${target}" EXPORT "${target}Targets"
@@ -612,6 +622,8 @@ function(add_qt_executable name)
         DBUS_ADAPTOR_FLAGS "${arg_DBUS_ADAPTOR_FLAGS}"
         DBUS_INTERFACE_SOURCES "${arg_DBUS_INTERFACE_SOURCES}"
         DBUS_INTERFACE_FLAGS "${arg_DBUS_INTERFACE_FLAGS}"
+        COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
+        LINK_OPTIONS ${arg_LINK_OPTIONS}
     )
     set_target_properties("${name}" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}"
@@ -635,6 +647,8 @@ function(add_qt_test name)
             "${arg_INCLUDE_DIRECTORIES}"
         DEFINES "${arg_DEFINES}"
         LIBRARIES Qt::Core Qt::Test ${arg_LIBRARIES}
+        COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
+        LINK_OPTIONS ${arg_LINK_OPTIONS}
     )
 
     add_test(NAME "${name}" COMMAND "${name}" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -670,6 +684,8 @@ function(add_qt_tool name)
             ${arg_INCLUDE_DIRECTORIES}
         DEFINES ${arg_DEFINES}
         LIBRARIES ${corelib} ${arg_LIBRARIES}
+        COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
+        LINK_OPTIONS ${arg_LINK_OPTIONS}
     )
     qt_internal_add_target_aliases("${name}")
 

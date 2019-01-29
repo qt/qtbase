@@ -708,7 +708,7 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
                     if map_qt_library(q) not in known_libraries]
     dependencies += [map_qt_library(q) for q in scope.get('QT_FOR_PRIVATE')
                      if map_qt_library(q) not in known_libraries]
-    dependencies += scope.get('QMAKE_USE_PRIVATE') \
+    dependencies += scope.get('QMAKE_USE_PRIVATE') + scope.get('QMAKE_USE') \
         + scope.get('LIBS_PRIVATE') + scope.get('LIBS')
     if dependencies:
         cm_fh.write('{}    LIBRARIES\n'.format(ind))
@@ -728,6 +728,18 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
                 d = substitute_libs(d)
             cm_fh.write('{}        {}\n'.format(ind, d))
             is_framework = False
+
+    compile_options = scope.get('QMAKE_CXXFLAGS')
+    if compile_options:
+        cm_fh.write('{}    COMPILE_OPTIONS\n'.format(ind))
+        for co in compile_options:
+            cm_fh.write('{}        "{}"\n'.format(ind, co))
+
+    link_options = scope.get('QMAKE_LFLAGS')
+    if link_options:
+        cm_fh.write('{}    LINK_OPTIONS\n'.format(ind))
+        for lo in link_options:
+            cm_fh.write('{}        "{}"\n'.format(ind, lo))
 
     return set(scope.keys) - scope.visited_keys
 
