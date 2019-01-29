@@ -6,8 +6,8 @@
 
 #### Libraries
 
-find_package(libproxy)
-set_package_properties(libproxy PROPERTIES TYPE OPTIONAL)
+find_package(Libproxy)
+set_package_properties(Libproxy PROPERTIES TYPE OPTIONAL)
 find_package(OpenSSL)
 set_package_properties(OpenSSL PROPERTIES TYPE OPTIONAL)
 
@@ -146,7 +146,7 @@ qt_feature_definition("ipv6ifname" "QT_NO_IPV6IFNAME" NEGATE VALUE "1")
 qt_feature("libproxy" PRIVATE
     LABEL "libproxy"
     AUTODETECT OFF
-    CONDITION libproxy_FOUND
+    CONDITION Libproxy_FOUND
 )
 qt_feature("linux_netlink" PRIVATE
     LABEL "Linux AF_NETLINK"
