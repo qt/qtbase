@@ -1979,11 +1979,11 @@ bool qSharedBuild() Q_DECL_NOTHROW
   a specified version of Qt or any earlier version. The default version number is 5.0,
   meaning that functions deprecated in or before Qt 5.0 will not be included.
 
-  Examples:
-  When using a future release of Qt 5, set QT_DISABLE_DEPRECATED_BEFORE=0x050100 to
-  disable functions deprecated in Qt 5.1 and earlier. In any release, set
-  QT_DISABLE_DEPRECATED_BEFORE=0x000000 to enable any functions, including the ones
-  deprecated in Qt 5.0
+  For instance, when using a future release of Qt 5, set
+  \c{QT_DISABLE_DEPRECATED_BEFORE=0x050100} to disable functions deprecated in
+  Qt 5.1 and earlier. In any release, set
+  \c{QT_DISABLE_DEPRECATED_BEFORE=0x000000} to enable all functions, including
+  the ones deprecated in Qt 5.0.
 
   \sa QT_DEPRECATED_WARNINGS
  */
@@ -1993,11 +1993,23 @@ bool qSharedBuild() Q_DECL_NOTHROW
   \macro QT_DEPRECATED_WARNINGS
   \relates <QtGlobal>
 
-  If this macro is defined, the compiler will generate warnings if API declared as
+  Since Qt 5.13, this macro has no effect. In Qt 5.12 and before, if this macro
+  is defined, the compiler will generate warnings if any API declared as
   deprecated by Qt is used.
 
-  \sa QT_DISABLE_DEPRECATED_BEFORE
+  \sa QT_DISABLE_DEPRECATED_BEFORE, QT_NO_DEPRECATED_WARNINGS
  */
+
+/*!
+  \macro QT_NO_DEPRECATED_WARNINGS
+  \relates <QtGlobal>
+  \since 5.13
+
+  This macro can be used to suppress deprecation warnings that would otherwise
+  be generated when using deprecated APIs.
+
+  \sa QT_DISABLE_DEPRECATED_BEFORE
+*/
 
 #if defined(QT_BUILD_QMAKE)
 // needed to bootstrap qmake
