@@ -578,10 +578,10 @@ bool QSslSocketBackendPrivate::acquireCredentialsHandle()
                                             &findParam,
                                             nullptr);
         if (!chainContext) {
-            setErrorAndEmit(QAbstractSocket::SocketError::SslInvalidUserDataError,
-                            QSslSocket::tr("The certificate provided can not be used for a %1.")
-                                    .arg(isClient ? QSslSocket::tr("client")
-                                                  : QSslSocket::tr("server")));
+            const QString message = isClient
+                ? QSslSocket::tr("The certificate provided can not be used for a client.")
+                : QSslSocket::tr("The certificate provided can not be used for a server.");
+            setErrorAndEmit(QAbstractSocket::SocketError::SslInvalidUserDataError, message);
             return false;
         }
         Q_ASSERT(chainContext->cChain == 1);
