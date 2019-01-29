@@ -55,7 +55,7 @@ def map_library(lib: str) -> Union[str, LibraryMapping, List[str]]:
        'fontconfig': LibraryMapping(package='Fontconfig', resultVariable="FONTCONFIG"),
        'freetype': 'Freetype',
        'gbm': 'gbm',
-       'glib': 'GLib',
+       'glib': 'GLIB2',
        'gnu_iconv': None,
        'harfbuzz': 'harfbuzz',
        'host_dbus': None,

@@ -184,6 +184,7 @@ platform_mapping = {
     'clang': 'CLANG',
     'gcc': 'GCC',
     'icc': 'ICC',
+    'intel_icc': 'ICC',
     'osx': 'APPLE_OSX',
     'ios': 'APPLE_IOS',
     'freebsd': 'FREEBSD',
@@ -205,7 +206,7 @@ def substitute_platform(platform: str) -> str:
 
 libray_mapping = {
     'zlib': 'ZLIB::ZLIB',
-    'glib': 'PkgConfig::GLib',
+    'glib': 'GLIB2::GLIB2',
 }
 
 
