@@ -153,6 +153,7 @@ private:
     QQnxInputContext *m_inputContext;
     QQnxButtonEventNotifier *m_buttonsNotifier;
 #endif
+    QPlatformInputContext *m_qpaInputContext;
     QQnxServices *m_services;
     QPlatformFontDatabase *m_fontDatabase;
     mutable QAbstractEventDispatcher *m_eventDispatcher;
