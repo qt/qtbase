@@ -9,5 +9,6 @@ add_qt_executable(qmyserver
         ../myobject.h
         qmyserver.cpp
     LIBRARIES
+        Qt::Core
         Qt::DBus
 )
