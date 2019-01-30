@@ -1181,8 +1181,36 @@ QSharedPointer<QNetworkSession> QNetworkAccessManagerPrivate::getNetworkSession(
 
     \sa connectToHost(), get(), post(), put(), deleteResource()
 */
+
 void QNetworkAccessManager::connectToHostEncrypted(const QString &hostName, quint16 port,
                                                    const QSslConfiguration &sslConfiguration)
+{
+    connectToHostEncrypted(hostName, port, sslConfiguration, QString());
+}
+
+/*!
+    \since 5.13
+    \overload
+
+    Initiates a connection to the host given by \a hostName at port \a port, using
+    \a sslConfiguration with \a peerName set to be the hostName used for certificate
+    validation. This function is useful to complete the TCP and SSL handshake
+    to a host before the HTTPS request is made, resulting in a lower network latency.
+
+    \note Preconnecting a SPDY connection can be done by calling setAllowedNextProtocols()
+    on \a sslConfiguration with QSslConfiguration::NextProtocolSpdy3_0 contained in
+    the list of allowed protocols. When using SPDY, one single connection per host is
+    enough, i.e. calling this method multiple times per host will not result in faster
+    network transactions.
+
+    \note This function has no possibility to report errors.
+
+    \sa connectToHost(), get(), post(), put(), deleteResource()
+*/
+
+void QNetworkAccessManager::connectToHostEncrypted(const QString &hostName, quint16 port,
+                                                   const QSslConfiguration &sslConfiguration,
+                                                   const QString &peerName)
 {
     QUrl url;
     url.setHost(hostName);
@@ -1198,6 +1226,7 @@ void QNetworkAccessManager::connectToHostEncrypted(const QString &hostName, quin
                 QSslConfiguration::NextProtocolSpdy3_0))
         request.setAttribute(QNetworkRequest::SpdyAllowedAttribute, true);
 
+    request.setPeerVerifyName(peerName);
     get(request);
 }
 #endif

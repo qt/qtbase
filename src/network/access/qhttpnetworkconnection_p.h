@@ -154,6 +154,8 @@ public:
 
     void preConnectFinished();
 
+    QString peerVerifyName() const;
+    void setPeerVerifyName(const QString &peerName);
 private:
     Q_DECLARE_PRIVATE(QHttpNetworkConnection)
     Q_DISABLE_COPY_MOVE(QHttpNetworkConnection)
@@ -288,6 +290,8 @@ public:
 #endif
 
     Http2::ProtocolParameters http2Parameters;
+
+    QString peerVerifyName;
 
     friend class QHttpNetworkConnectionChannel;
 };

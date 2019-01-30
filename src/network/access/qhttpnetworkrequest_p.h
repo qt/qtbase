@@ -147,6 +147,8 @@ public:
     QByteArray methodName() const;
     QByteArray uri(bool throughProxy) const;
 
+    QString peerVerifyName() const;
+    void setPeerVerifyName(const QString &peerName);
 private:
     QSharedDataPointer<QHttpNetworkRequestPrivate> d;
     friend class QHttpNetworkRequestPrivate;
@@ -182,6 +184,7 @@ public:
     bool preConnect;
     int redirectCount;
     QNetworkRequest::RedirectPolicy redirectPolicy;
+    QString peerVerifyName;
 };
 
 
