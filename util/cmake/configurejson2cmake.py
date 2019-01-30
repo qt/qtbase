@@ -92,6 +92,7 @@ def map_library(lib: str) -> Union[str, LibraryMapping, List[str]]:
        'xlib': 'X11',
        'xrender': LibraryMapping(package="XCB", resultVariable="XCB_RENDER"),
        'zlib': 'ZLIB',
+       'zstd': 'ZSTD',
     }  # type: Dict[str, Union[str, List[str], LibraryMapping]]
     if lib not in libmap:
         raise Exception('    XXXX Unknown library "{}".'.format(lib))
