@@ -593,7 +593,7 @@ void QIBusPlatformInputContext::connectToContextSignals()
     if (d->context) {
         connect(d->context, SIGNAL(CommitText(QDBusVariant)), SLOT(commitText(QDBusVariant)));
         connect(d->context, SIGNAL(UpdatePreeditText(QDBusVariant,uint,bool)), this, SLOT(updatePreeditText(QDBusVariant,uint,bool)));
-        connect(d->context, SIGNAL(ForwardKeyEvent(uint, uint, uint)), this, SLOT(forwardKeyEvent(uint, uint, uint)));
+        connect(d->context, SIGNAL(ForwardKeyEvent(uint,uint,uint)), this, SLOT(forwardKeyEvent(uint,uint,uint)));
         connect(d->context, SIGNAL(DeleteSurroundingText(int,uint)), this, SLOT(deleteSurroundingText(int,uint)));
         connect(d->context, SIGNAL(RequireSurroundingText()), this, SLOT(surroundingTextRequired()));
         connect(d->context, SIGNAL(HidePreeditText()), this, SLOT(hidePreeditText()));

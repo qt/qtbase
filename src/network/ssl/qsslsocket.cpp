@@ -2394,8 +2394,8 @@ void QSslSocketPrivate::createPlainSocket(QIODevice::OpenMode openMode)
     q->connect(plainSocket, SIGNAL(bytesWritten(qint64)),
                q, SLOT(_q_bytesWrittenSlot(qint64)),
                Qt::DirectConnection);
-    q->connect(plainSocket, SIGNAL(channelBytesWritten(int, qint64)),
-               q, SLOT(_q_channelBytesWrittenSlot(int, qint64)),
+    q->connect(plainSocket, SIGNAL(channelBytesWritten(int,qint64)),
+               q, SLOT(_q_channelBytesWrittenSlot(int,qint64)),
                Qt::DirectConnection);
     q->connect(plainSocket, SIGNAL(readChannelFinished()),
                q, SLOT(_q_readChannelFinishedSlot()),
