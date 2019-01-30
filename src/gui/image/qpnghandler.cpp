@@ -234,7 +234,7 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
     png_uint_32 width;
     png_uint_32 height;
     int bit_depth;
-    int color_type;
+    int color_type = 0;
     png_bytep trans_alpha = 0;
     png_color_16p trans_color_p = 0;
     int num_trans;
@@ -678,7 +678,7 @@ QImage::Format QPngHandlerPrivate::readImageFormat()
 {
         QImage::Format format = QImage::Format_Invalid;
         png_uint_32 width, height;
-        int bit_depth, color_type;
+        int bit_depth, color_type = 0;
         png_colorp palette;
         int num_palette;
         png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, 0, 0, 0);
