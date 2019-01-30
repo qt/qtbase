@@ -1541,14 +1541,14 @@ void VcprojGenerator::initExtraCompilerOutputs()
         extraCompile.Filter = "";
         extraCompile.Guid = QString(_GUIDExtraCompilerFiles) + "-" + (*it);
 
-        // If the extra compiler has a variable_out set the output file
-        // is added to an other file list, and does not need its own..
         bool addOnInput = hasBuiltinCompiler(firstExpandedOutputFileName(*it));
-        const ProString &tmp_other_out = project->first(ProKey(*it + ".variable_out"));
-        if (!tmp_other_out.isEmpty() && !addOnInput)
-            continue;
-
         if (!addOnInput) {
+            // If the extra compiler has a variable_out set that is already handled
+            // some other place, ignore it.
+            const ProString &outputVar = project->first(ProKey(*it + ".variable_out"));
+            if (!outputVar.isEmpty() && otherFilters.contains(outputVar))
+                continue;
+
             QString tmp_out = project->first(ProKey(*it + ".output")).toQString();
             if (project->values(ProKey(*it + ".CONFIG")).indexOf("combine") != -1) {
                 // Combined output, only one file result
