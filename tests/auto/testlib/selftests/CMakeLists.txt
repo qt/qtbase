@@ -1,4 +1,4 @@
-# add_subdirectory(alive) # FIXME: Needs widgets
+# add_subdirectory(alive) # TODO is commented in selftests.pri too. Investigate if should be readded
 add_subdirectory(assert)
 add_subdirectory(badxml)
 add_subdirectory(benchlibcallgrind)
