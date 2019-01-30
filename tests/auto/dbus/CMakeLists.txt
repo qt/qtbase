@@ -27,7 +27,6 @@ if(QT_FEATURE_process)
     endif()
 endif()
 
-### FIXME
-# if(QT_FEATURE_xml)
-#     add_subdirectory(qdbusxmlparser)
-# endif()
+if(QT_FEATURE_xml)
+    add_subdirectory(qdbusxmlparser)
+endif()
