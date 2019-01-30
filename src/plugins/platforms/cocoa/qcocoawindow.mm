@@ -1101,6 +1101,9 @@ void QCocoaWindow::setEmbeddedInForeignView()
 
 void QCocoaWindow::viewDidChangeFrame()
 {
+    if (isContentView())
+        return; // Handled below
+
     handleGeometryChange();
 }
 
