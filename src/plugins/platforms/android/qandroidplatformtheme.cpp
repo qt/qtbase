@@ -44,6 +44,7 @@
 #include "qandroidplatformmenu.h"
 #include "qandroidplatformmenuitem.h"
 #include "qandroidplatformdialoghelpers.h"
+#include "qandroidplatformfiledialoghelper.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -512,6 +513,8 @@ bool QAndroidPlatformTheme::usePlatformNativeDialog(QPlatformTheme::DialogType t
 {
     if (type == MessageDialog)
         return qEnvironmentVariableIntValue("QT_USE_ANDROID_NATIVE_DIALOGS") == 1;
+    if (type == FileDialog)
+        return true;
     return false;
 }
 
@@ -520,6 +523,8 @@ QPlatformDialogHelper *QAndroidPlatformTheme::createPlatformDialogHelper(QPlatfo
     switch (type) {
     case MessageDialog:
         return new QtAndroidDialogHelpers::QAndroidPlatformMessageDialogHelper;
+    case FileDialog:
+        return new QtAndroidFileDialogHelper::QAndroidPlatformFileDialogHelper;
     default:
         return 0;
     }
