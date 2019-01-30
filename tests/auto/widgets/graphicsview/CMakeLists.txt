@@ -19,7 +19,7 @@ if (NOT WINRT)
     add_subdirectory(qgraphicsview)
 endif()
 
-if(FALSE)  # FIXME: How to test for fusion style?!
+if(QT_FEATURE_style_fusion)
     add_subdirectory(qgraphicsproxywidget)
     add_subdirectory(qgraphicswidget)
 endif()
