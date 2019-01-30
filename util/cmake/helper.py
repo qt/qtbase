@@ -205,8 +205,16 @@ def substitute_platform(platform: str) -> str:
 
 
 libray_mapping = {
-    'zlib': 'ZLIB::ZLIB',
+    'libdl': '${CMAKE_DL_LIBS}',
+    'doubleconversion': 'double-conversion',
     'glib': 'GLIB2::GLIB2',
+    'icu': 'ICU::i18n ICU::uc ICU::data',
+    'libatomic': 'Atomic',
+    'libproxy': 'LibProxy::LibProxy',
+    'pcre2': 'PCRE2',
+    'librt': 'WrapRt',
+    'zlib': 'ZLIB::ZLIB',
+    'zstd': 'ZSTD::ZSTD',
 }
 
 
