@@ -85,7 +85,8 @@ class XResetModel : public QStandardItemModel
         blockSignals(true);
         bool r = QStandardItemModel::removeRows(row, count, parent);
         blockSignals(false);
-        emit reset();
+        beginResetModel();
+        endResetModel();
         return r;
     }
     virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex())
@@ -93,7 +94,8 @@ class XResetModel : public QStandardItemModel
         blockSignals(true);
         bool r = QStandardItemModel::insertRows(row, count, parent);
         blockSignals(false);
-        emit reset();
+        beginResetModel();
+        endResetModel();
         return r;
     }
 };
