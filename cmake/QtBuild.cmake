@@ -66,6 +66,11 @@ set(QT_PLATFORM_DEFINITIONS ${QT_DEFAULT_PLATFORM_DEFINITIONS}
 set(QT_PLATFORM_DEFINITION_DIR ${QT_DEFAULT_PLATFORM_DEFINITION_DIR}
     CACHE PATH "Path to directory that contains qplatformdefs.h")
 set(QT_NAMESPACE "" CACHE STRING "Qt Namespace")
+if(QT_NAMESPACE STREQUAL "")
+    set(QT_HAS_NAMESPACE OFF)
+else()
+    set(QT_HAS_NAMESPACE ON)
+endif()
 
 macro(qt_internal_set_known_qt_modules)
     set(KNOWN_QT_MODULES ${ARGN} CACHE INTERNAL "Known Qt modules" FORCE)
