@@ -1,4 +1,4 @@
-## add_subdirectory(qabstractitemmodeltester) # FIXME: Needs GUI
+add_subdirectory(qabstractitemmodeltester)
 add_subdirectory(qsignalspy)
 add_subdirectory(selftests)
 
