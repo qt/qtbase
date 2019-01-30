@@ -163,6 +163,13 @@
     return NSViewLayerContentsRedrawDuringViewResize;
 }
 
+- (NSViewLayerContentsPlacement)layerContentsPlacement
+{
+    // Always place the layer at top left without any automatic scaling,
+    // so that we can re-use larger layers when resizing a window down.
+    return NSViewLayerContentsPlacementTopLeft;
+}
+
 - (void)updateMetalLayerDrawableSize:(CAMetalLayer *)layer
 {
     CGSize drawableSize = layer.bounds.size;

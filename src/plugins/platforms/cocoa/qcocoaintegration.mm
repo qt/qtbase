@@ -407,7 +407,16 @@ QPlatformOpenGLContext *QCocoaIntegration::createPlatformOpenGLContext(QOpenGLCo
 
 QPlatformBackingStore *QCocoaIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    return new QCocoaBackingStore(window);
+    QCocoaWindow *platformWindow = static_cast<QCocoaWindow*>(window->handle());
+    if (!platformWindow) {
+        qWarning() << window << "must be created before being used with a backingstore";
+        return nullptr;
+    }
+
+    if (platformWindow->view().layer)
+        return new QCALayerBackingStore(window);
+    else
+        return new QNSWindowBackingStore(window);
 }
 
 QAbstractEventDispatcher *QCocoaIntegration::createEventDispatcher() const

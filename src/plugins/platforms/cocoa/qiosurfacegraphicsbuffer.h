@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,75 +37,41 @@
 **
 ****************************************************************************/
 
-#ifndef QBACKINGSTORE_COCOA_H
-#define QBACKINGSTORE_COCOA_H
+#ifndef QIOSURFACEGRAPHICSBUFFER_H
+#define QIOSURFACEGRAPHICSBUFFER_H
 
-#include <QtGraphicsSupport/private/qrasterbackingstore_p.h>
-
+#include <qpa/qplatformgraphicsbuffer.h>
 #include <private/qcore_mac_p.h>
-
-#include <QScopedPointer>
-#include "qiosurfacegraphicsbuffer.h"
 
 QT_BEGIN_NAMESPACE
 
-class QNSWindowBackingStore : public QRasterBackingStore
+class QIOSurfaceGraphicsBuffer : public QPlatformGraphicsBuffer
 {
 public:
-    QNSWindowBackingStore(QWindow *window);
-    ~QNSWindowBackingStore();
+    QIOSurfaceGraphicsBuffer(const QSize &size, const QPixelFormat &format, QCFType<CGColorSpaceRef> colorSpace);
+    ~QIOSurfaceGraphicsBuffer();
 
-    void flush(QWindow *, const QRegion &, const QPoint &) override;
+    const uchar *data() const override;
+    uchar *data() override;
+    int bytesPerLine() const override;
 
-private:
-    bool windowHasUnifiedToolbar() const;
-    QImage::Format format() const override;
-    void redrawRoundedBottomCorners(CGRect) const;
-};
+    IOSurfaceRef surface();
+    bool isInUse() const;
 
-class QCALayerBackingStore : public QPlatformBackingStore
-{
-public:
-    QCALayerBackingStore(QWindow *window);
-    ~QCALayerBackingStore();
-
-    void resize(const QSize &size, const QRegion &staticContents) override;
-
-    void beginPaint(const QRegion &region) override;
-    QPaintDevice *paintDevice() override;
-    void endPaint() override;
-
-    void flush(QWindow *, const QRegion &, const QPoint &) override;
-    void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
-        QPlatformTextureList *textures, bool translucentBackground) override;
-
-    QPlatformGraphicsBuffer *graphicsBuffer() const override;
+protected:
+    bool doLock(AccessTypes access, const QRect &rect) override;
+    void doUnlock() override;
 
 private:
-    QSize m_requestedSize;
-    QRegion m_paintedRegion;
+    QCFType<IOSurfaceRef> m_surface;
 
-    class GraphicsBuffer : public QIOSurfaceGraphicsBuffer
-    {
-    public:
-        GraphicsBuffer(const QSize &size, qreal devicePixelRatio,
-                const QPixelFormat &format, QCFType<CGColorSpaceRef> colorSpace);
-
-        QRegion dirtyRegion; // In unscaled coordinates
-        QImage *asImage();
-
-    private:
-        qreal m_devicePixelRatio;
-        QImage m_image;
-    };
-
-    void ensureBackBuffer();
-    bool recreateBackBufferIfNeeded();
-    bool prepareForFlush();
-
-    std::list<std::unique_ptr<GraphicsBuffer>> m_buffers;
+    friend QDebug operator<<(QDebug, const QIOSurfaceGraphicsBuffer *);
 };
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug, const QIOSurfaceGraphicsBuffer *);
+#endif
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QIOSURFACEGRAPHICSBUFFER_H
