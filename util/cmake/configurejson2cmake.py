@@ -48,6 +48,7 @@ class LibraryMapping:
 def map_library(lib: str) -> Union[str, LibraryMapping, List[str]]:
     libmap = {
        'atspi': 'ATSPI2',
+       'corewlan': None, # Framework
        'double-conversion': 'WrapDoubleConversion',
        'drm': 'Libdrm',
        'egl': LibraryMapping(package="OpenGL", resultVariable="OpenGL_EGL"),
@@ -66,7 +67,7 @@ def map_library(lib: str) -> Union[str, LibraryMapping, List[str]]:
        'libjpeg': 'JPEG',
        'libpng': 'PNG',
        'libpng': 'PNG',
-       'libproxy': 'libproxy',
+       'libproxy': 'Libproxy',
        'librt': 'WrapRt',
        'libudev': 'Libudev',
        'lttng-ust': LibraryMapping(package='LTTngUST', resultVariable="LTTNGUST"),
