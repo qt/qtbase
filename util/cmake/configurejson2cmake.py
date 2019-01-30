@@ -550,10 +550,12 @@ def parseInput(ctx, input, data, cm_fh):
 #        },
 def parseTest(ctx, test, data, cm_fh):
     skip_tests = {
-       'c11', 'c99',
        'c++11', 'c++14', 'c++1y', 'c++1z',
-       'reduce_exports',
+       'c11', 'c99',
+       'gc_binaries',
        'posix-iconv', "sun-iconv",
+       'precomile_header',
+       'reduce_exports',
        'separate_debug_info',  # FIXME: see if cmake can do this
        'gc_binaries',
        'libinput_axis_api',
@@ -720,7 +722,7 @@ def parseFeature(ctx, feature, data, cm_fh):
         'optimize_size': None,
         'pkg-config': None,
         'posix_fallocate': None,  # Only needed for sqlite, which we do not want to build
-        'posix_libiconv': {
+        'posix-libiconv': {
             'condition': 'NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND TEST_posix_iconv AND TEST_iconv_needlib',
             'enable': 'TEST_posix_iconv AND TEST_iconv_needlib',
             'disable': 'NOT TEST_posix_iconv OR NOT TEST_iconv_needlib',
