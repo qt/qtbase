@@ -456,7 +456,7 @@ public:
 
     QSize minimumSizeHint() const override {
         if (pixmap() && !pixmap()->isNull())
-            return pixmap()->size();
+            return pixmap()->size() / pixmap()->devicePixelRatio();
         return QFrame::minimumSizeHint();
     }
 
