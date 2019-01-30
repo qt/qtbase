@@ -741,6 +741,12 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
         for lo in link_options:
             cm_fh.write('{}        "{}"\n'.format(ind, lo))
 
+    moc_options = scope.get('QMAKE_MOC_OPTIONS')
+    if moc_options:
+        cm_fh.write('{}    MOC_OPTIONS\n'.format(ind))
+        for mo in moc_options:
+            cm_fh.write('{}        "{}"\n'.format(ind, mo))
+
     return set(scope.keys) - scope.visited_keys
 
 

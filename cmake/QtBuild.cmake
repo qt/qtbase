@@ -243,7 +243,7 @@ function(qt_internal_module_info result target)
 endfunction()
 
 
-set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_ADAPTOR_BASENAME;DBUS_ADAPTOR_FLAGS;DBUS_ADAPTOR_SOURCES;DBUS_INTERFACE_BASENAME;DBUS_INTERFACE_FLAGS;DBUS_INTERFACE_SOURCES;FEATURE_DEPENDENCIES;COMPILE_OPTIONS;LINK_OPTIONS")
+set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_ADAPTOR_BASENAME;DBUS_ADAPTOR_FLAGS;DBUS_ADAPTOR_SOURCES;DBUS_INTERFACE_BASENAME;DBUS_INTERFACE_FLAGS;DBUS_INTERFACE_SOURCES;FEATURE_DEPENDENCIES;COMPILE_OPTIONS;LINK_OPTIONS;MOC_OPTIONS")
 set(__default_public_args "PUBLIC_LIBRARIES;PUBLIC_INCLUDE_DIRECTORIES;PUBLIC_DEFINES;PUBLIC_COMPILE_OPTIONS;PUBLIC_LINK_OPTIONS")
 
 
@@ -290,6 +290,7 @@ function(extend_target target)
         target_link_libraries("${target}" PUBLIC ${arg_PUBLIC_LIBRARIES} PRIVATE ${arg_LIBRARIES})
         target_compile_options("${target}" PUBLIC ${arg_PUBLIC_COMPILE_OPTIONS} PRIVATE ${arg_COMPILE_OPTIONS})
         target_link_options("${target}" PUBLIC ${arg_PUBLIC_LINK_OPTIONS} PRIVATE ${arg_LINK_OPTIONS})
+        set_target_properties("${target}" PROPERTIES AUTOMOC_MOC_OPTIONS "${arg_MOC_OPTIONS}")
     endif()
 endfunction()
 
@@ -446,6 +447,7 @@ function(add_qt_module target)
         PUBLIC_COMPILE_OPTIONS ${arg_PUBLIC_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
         PUBLIC_LINK_OPTIONS ${arg_PUBLIC_LINK_OPTIONS}
+        MOC_OPTIONS ${arg_MOC_OPTIONS}
     )
 
     set(configureFile "${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
@@ -581,6 +583,7 @@ function(add_qt_plugin target)
         PUBLIC_COMPILE_OPTIONS ${arg_PUBLIC_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
         PUBLIC_LINK_OPTIONS ${arg_PUBLIC_LINK_OPTIONS}
+        MOC_OPTIONS ${arg_MOC_OPTIONS}
     )
 
     install(TARGETS "${target}" EXPORT "${target}Targets"
@@ -624,6 +627,7 @@ function(add_qt_executable name)
         DBUS_INTERFACE_FLAGS "${arg_DBUS_INTERFACE_FLAGS}"
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
+        MOC_OPTIONS ${arg_MOC_OPTIONS}
     )
     set_target_properties("${name}" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}"
@@ -649,6 +653,7 @@ function(add_qt_test name)
         LIBRARIES Qt::Core Qt::Test ${arg_LIBRARIES}
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
+        MOC_OPTIONS ${arg_MOC_OPTIONS}
     )
 
     add_test(NAME "${name}" COMMAND "${name}" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -686,6 +691,7 @@ function(add_qt_tool name)
         LIBRARIES ${corelib} ${arg_LIBRARIES}
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
+        MOC_OPTIONS ${arg_MOC_OPTIONS}
     )
     qt_internal_add_target_aliases("${name}")
 
