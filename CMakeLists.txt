@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.13.0)
 
+CMAKE_POLICY(SET CMP0083 NEW) ## TODO Remove when we start requiring 3.14 in the line above
+
 project(QtBase
     VERSION 5.12.0
     DESCRIPTION "Qt Base Libraries"
