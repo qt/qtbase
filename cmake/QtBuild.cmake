@@ -247,6 +247,8 @@ set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_A
 set(__default_public_args "PUBLIC_LIBRARIES;PUBLIC_INCLUDE_DIRECTORIES;PUBLIC_DEFINES;PUBLIC_COMPILE_OPTIONS;PUBLIC_LINK_OPTIONS")
 
 
+option(QT_CMAKE_DEBUG_EXTEND_TARGET "Debug extend_target calls in Qt's build system" OFF)
+
 # This function can be used to add sources/libraries/etc. to the specified CMake target
 # if the provided CONDITION evaluates to true.
 function(extend_target target)
@@ -261,6 +263,9 @@ function(extend_target target)
 
     qt_evaluate_config_expression(result ${arg_CONDITION})
     if (${result})
+        if(QT_CMAKE_DEBUG_EXTEND_TARGET)
+            message("extend_target(${target} CONDITION ${arg_CONDITION} ...): Evaluated")
+        endif()
         set(dbus_sources "")
         foreach(adaptor ${arg_DBUS_ADAPTOR_SOURCES})
             qt_create_qdbusxml2cpp_command("${target}" "${adaptor}" ADAPTOR BASENAME "${arg_DBUS_ADAPTOR_BASENAME}" FLAGS "${arg_DBUS_ADAPTOR_FLAGS}")
@@ -291,6 +296,10 @@ function(extend_target target)
         target_compile_options("${target}" PUBLIC ${arg_PUBLIC_COMPILE_OPTIONS} PRIVATE ${arg_COMPILE_OPTIONS})
         target_link_options("${target}" PUBLIC ${arg_PUBLIC_LINK_OPTIONS} PRIVATE ${arg_LINK_OPTIONS})
         set_target_properties("${target}" PROPERTIES AUTOMOC_MOC_OPTIONS "${arg_MOC_OPTIONS}")
+    else()
+        if(QT_CMAKE_DEBUG_EXTEND_TARGET)
+            message("extend_target(${target} CONDITION ${arg_CONDITION} ...): Skipped")
+        endif()
     endif()
 endfunction()
 
