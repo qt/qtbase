@@ -55,7 +55,7 @@
 using namespace emscripten;
 QT_BEGIN_NAMESPACE
 
-void browserBeforeUnload()
+void browserBeforeUnload(emscripten::val)
 {
     QWasmIntegration::QWasmBrowserExit();
 }
@@ -83,11 +83,8 @@ QWasmIntegration::QWasmIntegration()
 
     m_eventTranslator = new QWasmEventTranslator;
 
-    EM_ASM(// exit app if browser closes
-           window.onbeforeunload = function () {
-           Module.browserBeforeUnload();
-           };
-     );
+    emscripten::val::global("window").set("onbeforeunload", val::module_property("browserBeforeUnload"));
+
 }
 
 QWasmIntegration::~QWasmIntegration()
@@ -187,11 +184,9 @@ int QWasmIntegration::uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void
 
 static void set_canvas_size(double width, double height)
 {
-    EM_ASM_({
-        var canvas = Module.canvas;
-        canvas.width = $0;
-        canvas.height = $1;
-    }, width, height);
+    emscripten::val canvas = emscripten::val::global("canvas");
+    canvas.set("width", width);
+    canvas.set("height", height);
 }
 
 void QWasmIntegration::updateQScreenAndCanvasRenderSize()

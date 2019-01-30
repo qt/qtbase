@@ -52,12 +52,17 @@ static bool g_usePlatformMacCtrlMetaSwitching = false;
 
 bool g_useNaturalScrolling = true; // natural scrolling is default on linux/windows
 
-void setNaturalScrolling(bool use) {
-    g_useNaturalScrolling = use;
+static void mouseWheelEvent(emscripten::val event) {
+
+    emscripten::val wheelInterted = event["webkitDirectionInvertedFromDevice"];
+
+    if (wheelInterted.as<bool>()) {
+        g_useNaturalScrolling = true;
+    }
 }
 
 EMSCRIPTEN_BINDINGS(mouse_module) {
-    function("setNaturalScrolling", &setNaturalScrolling);
+    function("mouseWheelEvent", &mouseWheelEvent);
 }
 
 QWasmEventTranslator::QWasmEventTranslator(QObject *parent)
@@ -93,23 +98,19 @@ QWasmEventTranslator::QWasmEventTranslator(QObject *parent)
         GenericPlatform,
         MacOSPlatform
     };
-    Platform platform =
-        Platform(EM_ASM_INT("if (navigator.platform.includes(\"Mac\")) return 1; return 0;"));
-
+  Platform platform = Platform(emscripten::val::global("navigator")["platform"]
+          .call<bool>("includes", emscripten::val("Mac")));
     g_usePlatformMacCtrlMetaSwitching = (platform == MacOSPlatform);
 
     if (platform == MacOSPlatform) {
         g_useNaturalScrolling = false; // make this !default on macOS
-        EM_ASM(
-            if (window.safari !== undefined)  {//this only works on safari
-                Module["canvas"].addEventListener('wheel', mouseWheelEvent);
-                function mouseWheelEvent(e) {
-                    if (event.webkitDirectionInvertedFromDevice) {
-                        Module.setNaturalScrolling(event.webkitDirectionInvertedFromDevice);
-                    }
-                }
-            }
-        );
+
+        if (emscripten::val::global("window")["safari"].isUndefined()) {
+
+            emscripten::val::global("canvas").call<void>("addEventListener",
+                                                         std::string("wheel"),
+                                                         val::module_property("mouseWheelEvent"));
+        }
     }
 }
 

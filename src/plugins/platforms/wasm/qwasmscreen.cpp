@@ -30,6 +30,7 @@
 #include "qwasmscreen.h"
 #include "qwasmwindow.h"
 #include "qwasmcompositor.h"
+#include <emscripten/bind.h>
 
 #include <QtEglSupport/private/qeglconvenience_p.h>
 #ifndef QT_NO_OPENGL
@@ -77,9 +78,7 @@ qreal QWasmScreen::devicePixelRatio() const
     // HTML window dpr if the OpenGL driver/GPU allocates a less than
     // full resolution surface. Use emscripten_webgl_get_drawing_buffer_size()
     // and compute the dpr instead.
-    double htmlWindowDpr = EM_ASM_DOUBLE({
-        return window.devicePixelRatio;
-    });
+    double htmlWindowDpr = emscripten::val::global("window")["devicePixelRatio"].as<double>();
     return qreal(htmlWindowDpr);
 }
 
