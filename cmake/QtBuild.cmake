@@ -243,7 +243,7 @@ function(qt_internal_module_info result target)
 endfunction()
 
 
-set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_ADAPTOR_FLAGS;DBUS_ADAPTOR_SOURCES;DBUS_INTERFACE_FLAGS;DBUS_INTERFACE_SOURCES;FEATURE_DEPENDENCIES")
+set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_ADAPTOR_BASENAME;DBUS_ADAPTOR_FLAGS;DBUS_ADAPTOR_SOURCES;DBUS_INTERFACE_BASENAME;DBUS_INTERFACE_FLAGS;DBUS_INTERFACE_SOURCES;FEATURE_DEPENDENCIES")
 set(__default_public_args "PUBLIC_LIBRARIES;PUBLIC_INCLUDE_DIRECTORIES;PUBLIC_DEFINES")
 
 
@@ -263,12 +263,12 @@ function(extend_target target)
     if (${result})
         set(dbus_sources "")
         foreach(adaptor ${arg_DBUS_ADAPTOR_SOURCES})
-            qt_create_qdbusxml2cpp_command("${target}" "${adaptor}" ADAPTOR FLAGS "${arg_DBUS_ADAPTOR_FLAGS}")
+            qt_create_qdbusxml2cpp_command("${target}" "${adaptor}" ADAPTOR BASENAME "${arg_DBUS_ADAPTOR_BASENAME}" FLAGS "${arg_DBUS_ADAPTOR_FLAGS}")
             list(APPEND dbus_sources "${sources}")
         endforeach()
 
         foreach(interface ${arg_DBUS_INTERFACE_SOURCES})
-            qt_create_qdbusxml2cpp_command("${target}" "${interface}" INTERFACE FLAGS "${arg_DBUS_INTERFACE_FLAGS}")
+            qt_create_qdbusxml2cpp_command("${target}" "${interface}" INTERFACE BASENAME "${arg_DBUS_INTERFACE_BASENAME}" FLAGS "${arg_DBUS_INTERFACE_FLAGS}")
             list(APPEND dbus_sources "${sources}")
         endforeach()
 
@@ -772,7 +772,7 @@ endfunction()
 
 # helper to set up a qdbusxml2cpp rule
 function(qt_create_qdbusxml2cpp_command target infile)
-    qt_parse_all_arguments(arg "qt_create_qdbusxml2cpp_command" "ADAPTOR;INTERFACE" "" "FLAGS" ${ARGN})
+    qt_parse_all_arguments(arg "qt_create_qdbusxml2cpp_command" "ADAPTOR;INTERFACE" "BASENAME" "FLAGS" ${ARGN})
     if((arg_ADAPTOR AND arg_INTERFACE) OR (NOT arg_ADAPTOR AND NOT arg_INTERFACE))
         message(FATAL_ERROR "qt_create_dbusxml2cpp_command needs either ADAPTOR or INTERFACE.")
     endif()
@@ -784,11 +784,17 @@ function(qt_create_qdbusxml2cpp_command target infile)
         set(type "interface")
     endif()
 
-    get_filename_component(file_name "${infile}" NAME_WE)
-    string(TOLOWER "${file_name}" file_name)
+    if ("${arg_BASENAME}" STREQUAL "")
+        get_filename_component(file_name "${infile}" NAME_WE)
+        string(TOLOWER "${file_name}" file_name)
+        set(file_name "${file_name}_${type}")
+    else()
+        set(file_name ${arg_BASENAME})
+    endif()
 
-    set(header_file "${CMAKE_CURRENT_BINARY_DIR}/${file_name}_${type}.h")
-    set(source_file "${CMAKE_CURRENT_BINARY_DIR}/${file_name}_${type}.cpp")
+
+    set(header_file "${CMAKE_CURRENT_BINARY_DIR}/${file_name}.h")
+    set(source_file "${CMAKE_CURRENT_BINARY_DIR}/${file_name}.cpp")
 
     add_custom_command(OUTPUT "${header_file}" "${source_file}"
                        COMMAND Qt::qdbusxml2cpp ${arg_FLAGS} "${option}" "${header_file}:${source_file}" "${infile}"

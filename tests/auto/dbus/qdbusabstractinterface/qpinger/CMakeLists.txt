@@ -9,5 +9,6 @@ add_qt_executable(qpinger
         ../interface.cpp ../interface.h
         qpinger.cpp
     LIBRARIES
+        Qt::Core
         Qt::DBus
 )
