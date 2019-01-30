@@ -476,7 +476,8 @@ bool QSslSocketBackendPrivate::initSslContext()
 {
     Q_Q(QSslSocket);
 
-    // If no external context was set (e.g. bei QHttpNetworkConnection) we will create a default context
+    // If no external context was set (e.g. by QHttpNetworkConnection) we will
+    // create a default context
     if (!sslContextPointer) {
         // create a deep copy of our configuration
         QSslConfigurationPrivate *configurationCopy = new QSslConfigurationPrivate(configuration);
