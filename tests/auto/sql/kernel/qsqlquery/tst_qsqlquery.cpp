@@ -258,6 +258,9 @@ private slots:
     void QTBUG_57138_data() { generic_data("QSQLITE"); }
     void QTBUG_57138();
 
+    void QTBUG_73286_data() { generic_data("QODBC"); }
+    void QTBUG_73286();
+
     void dateTime_data();
     void dateTime();
 
@@ -4548,6 +4551,7 @@ void tst_QSqlQuery::QTBUG_57138()
 
     QSqlQuery create(db);
     QString tableName = qTableName("qtbug57138", __FILE__, db);
+    tst_Databases::safeDropTable(db, tableName);
 
     QVERIFY_SQL(create, exec("create table " + tableName + " (id int, dt_utc datetime, dt_lt datetime, dt_tzoffset datetime)"));
     QVERIFY_SQL(create, prepare("insert into " + tableName + " (id, dt_utc, dt_lt, dt_tzoffset) values (?, ?, ?, ?)"));
@@ -4569,6 +4573,37 @@ void tst_QSqlQuery::QTBUG_57138()
     QCOMPARE(q.value(0).toDateTime(), utc);
     QCOMPARE(q.value(1).toDateTime(), localtime);
     QCOMPARE(q.value(2).toDateTime(), tzoffset);
+}
+
+void tst_QSqlQuery::QTBUG_73286()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery create(db);
+    QString tableName = qTableName("qtbug73286", __FILE__, db);
+    tst_Databases::safeDropTable(db, tableName);
+
+    QVERIFY_SQL(create, exec("create table " + tableName + " (dec2 decimal(4,2), dec0 decimal(20,0), dec3 decimal(20,3))"));
+    QVERIFY_SQL(create, prepare("insert into " + tableName + " (dec2, dec0, dec3) values (?, ?, ?)"));
+
+    create.addBindValue("99.99");
+    create.addBindValue("12345678901234567890");
+    create.addBindValue("12345678901234567.890");
+
+    QVERIFY_SQL(create, exec());
+
+    QSqlQuery q(db);
+    q.prepare("SELECT dec2, dec0, dec3 FROM " + tableName);
+    q.setNumericalPrecisionPolicy(QSql::HighPrecision);
+
+    QVERIFY_SQL(q, exec());
+    QVERIFY(q.next());
+
+    QCOMPARE(q.value(0).toString(), "99.99");
+    QCOMPARE(q.value(1).toString(), "12345678901234567890");
+    QCOMPARE(q.value(2).toString(), "12345678901234567.890");
 }
 
 void tst_QSqlQuery::dateTime_data()
