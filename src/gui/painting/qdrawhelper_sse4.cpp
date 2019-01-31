@@ -107,28 +107,26 @@ static void convertARGBToRGBA64PM_sse4(QRgba64 *buffer, const uint *src, int cou
     for (; i < count - 3; i += 4) {
         __m128i srcVector = _mm_loadu_si128((const __m128i *)&src[i]);
         if (!_mm_testz_si128(srcVector, alphaMask)) {
-            if (!_mm_testc_si128(srcVector, alphaMask)) {
-                if (!RGBA)
-                    srcVector = _mm_shuffle_epi8(srcVector, rgbaMask);
-                __m128i src1 = _mm_unpacklo_epi8(srcVector, zero);
-                __m128i src2 = _mm_unpackhi_epi8(srcVector, zero);
+            bool cf = _mm_testc_si128(srcVector, alphaMask);
+
+            if (!RGBA)
+                srcVector = _mm_shuffle_epi8(srcVector, rgbaMask);
+            const __m128i src1 = _mm_unpacklo_epi8(srcVector, srcVector);
+            const __m128i src2 = _mm_unpackhi_epi8(srcVector, srcVector);
+            if (!cf) {
                 __m128i alpha1 = _mm_shuffle_epi8(src1, shuffleMask);
                 __m128i alpha2 = _mm_shuffle_epi8(src2, shuffleMask);
-                src1 = _mm_mullo_epi16(src1, alpha1);
-                src2 = _mm_mullo_epi16(src2, alpha2);
-                alpha1 = _mm_unpacklo_epi8(srcVector, srcVector);
-                alpha2 = _mm_unpackhi_epi8(srcVector, srcVector);
-                src1 = _mm_add_epi16(src1, _mm_srli_epi16(src1, 7));
-                src2 = _mm_add_epi16(src2, _mm_srli_epi16(src2, 7));
-                src1 = _mm_blend_epi16(src1, alpha1, 0x88);
-                src2 = _mm_blend_epi16(src2, alpha2, 0x88);
-                _mm_storeu_si128((__m128i *)&buffer[i], src1);
-                _mm_storeu_si128((__m128i *)&buffer[i + 2], src2);
+                __m128i dst1 = _mm_mulhi_epu16(src1, alpha1);
+                __m128i dst2 = _mm_mulhi_epu16(src2, alpha2);
+                // Map 0->0xfffe to 0->0xffff
+                dst1 = _mm_add_epi16(dst1, _mm_srli_epi16(dst1, 15));
+                dst2 = _mm_add_epi16(dst2, _mm_srli_epi16(dst2, 15));
+                // correct alpha value:
+                dst1 = _mm_blend_epi16(dst1, src1, 0x88);
+                dst2 = _mm_blend_epi16(dst2, src2, 0x88);
+                _mm_storeu_si128((__m128i *)&buffer[i], dst1);
+                _mm_storeu_si128((__m128i *)&buffer[i + 2], dst2);
             } else {
-                if (!RGBA)
-                    srcVector = _mm_shuffle_epi8(srcVector, rgbaMask);
-                const __m128i src1 = _mm_unpacklo_epi8(srcVector, srcVector);
-                const __m128i src2 = _mm_unpackhi_epi8(srcVector, srcVector);
                 _mm_storeu_si128((__m128i *)&buffer[i], src1);
                 _mm_storeu_si128((__m128i *)&buffer[i + 2], src2);
             }

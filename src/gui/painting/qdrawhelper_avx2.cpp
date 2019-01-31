@@ -1135,14 +1135,12 @@ static void convertARGBToRGBA64PM_avx2(QRgba64 *buffer, const uint *src, qsizety
             const __m256i src1 = _mm256_unpacklo_epi8(srcVector, srcVector);
             const __m256i src2 = _mm256_unpackhi_epi8(srcVector, srcVector);
             if (!cf) {
-                dst1 = _mm256_unpacklo_epi8(srcVector, zero);
-                dst2 = _mm256_unpackhi_epi8(srcVector, zero);
-                const __m256i alpha1 = _mm256_shuffle_epi8(dst1, shuffleMask);
-                const __m256i alpha2 = _mm256_shuffle_epi8(dst2, shuffleMask);
-                dst1 = _mm256_mullo_epi16(dst1, alpha1);
-                dst2 = _mm256_mullo_epi16(dst2, alpha2);
-                dst1 = _mm256_add_epi16(dst1, _mm256_srli_epi16(dst1, 7));
-                dst2 = _mm256_add_epi16(dst2, _mm256_srli_epi16(dst2, 7));
+                const __m256i alpha1 = _mm256_shuffle_epi8(src1, shuffleMask);
+                const __m256i alpha2 = _mm256_shuffle_epi8(src2, shuffleMask);
+                dst1 = _mm256_mulhi_epu16(src1, alpha1);
+                dst2 = _mm256_mulhi_epu16(src2, alpha2);
+                dst1 = _mm256_add_epi16(dst1, _mm256_srli_epi16(dst1, 15));
+                dst2 = _mm256_add_epi16(dst2, _mm256_srli_epi16(dst2, 15));
                 dst1 = _mm256_blend_epi16(dst1, src1, 0x88);
                 dst2 = _mm256_blend_epi16(dst2, src2, 0x88);
             } else {
@@ -1171,14 +1169,12 @@ static void convertARGBToRGBA64PM_avx2(QRgba64 *buffer, const uint *src, qsizety
             const __m256i src1 = _mm256_unpacklo_epi8(srcVector, srcVector);
             const __m256i src2 = _mm256_unpackhi_epi8(srcVector, srcVector);
             if (!cf) {
-                dst1 = _mm256_unpacklo_epi8(srcVector, zero);
-                dst2 = _mm256_unpackhi_epi8(srcVector, zero);
-                const __m256i alpha1 = _mm256_shuffle_epi8(dst1, shuffleMask);
-                const __m256i alpha2 = _mm256_shuffle_epi8(dst2, shuffleMask);
-                dst1 = _mm256_mullo_epi16(dst1, alpha1);
-                dst2 = _mm256_mullo_epi16(dst2, alpha2);
-                dst1 = _mm256_add_epi16(dst1, _mm256_srli_epi16(dst1, 7));
-                dst2 = _mm256_add_epi16(dst2, _mm256_srli_epi16(dst2, 7));
+                const __m256i alpha1 = _mm256_shuffle_epi8(src1, shuffleMask);
+                const __m256i alpha2 = _mm256_shuffle_epi8(src2, shuffleMask);
+                dst1 = _mm256_mulhi_epu16(src1, alpha1);
+                dst2 = _mm256_mulhi_epu16(src2, alpha2);
+                dst1 = _mm256_add_epi16(dst1, _mm256_srli_epi16(dst1, 15));
+                dst2 = _mm256_add_epi16(dst2, _mm256_srli_epi16(dst2, 15));
                 dst1 = _mm256_blend_epi16(dst1, src1, 0x88);
                 dst2 = _mm256_blend_epi16(dst2, src2, 0x88);
             } else {
