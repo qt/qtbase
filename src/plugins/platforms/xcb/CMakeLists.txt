@@ -75,7 +75,7 @@ extend_target(XcbQpa CONDITION TARGET Qt::LinuxAccessibilitySupportPrivate
 
 extend_target(XcbQpa CONDITION QT_FEATURE_vulkan
     LIBRARIES
-        vulkan_supportPrivate
+        VulkanSupportPrivate
 )
 
 extend_target(XcbQpa CONDITION QT_FEATURE_draganddrop

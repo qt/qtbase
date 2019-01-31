@@ -19,6 +19,10 @@ if(QT_FEATURE_accessibility)
     endif()
 endif()
 
+if(QT_FEATURE_vulkan)
+    add_subdirectory(vkconvenience)
+endif()
+
 if(APPLE)
     add_subdirectory(clipboard)
     add_subdirectory(graphics)
