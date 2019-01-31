@@ -528,7 +528,7 @@ extend_target(Core CONDITION UNIX AND QT_FEATURE_clock_gettime
 extend_target(Core CONDITION QT_FEATURE_glib
     SOURCES
         kernel/qeventdispatcher_glib.cpp kernel/qeventdispatcher_glib_p.h
-    LIBRARIES PkgConfig::GLib
+    LIBRARIES GLIB2::GLIB2
 )
 
 ## poll_select:

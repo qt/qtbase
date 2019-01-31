@@ -10,8 +10,8 @@ set_property(CACHE INPUT_iconv PROPERTY STRINGS undefined no yes posix sun gnu)
 
 #### Libraries
 
-find_package(GLib)
-set_package_properties(GLib PROPERTIES TYPE OPTIONAL)
+find_package(GLIB2)
+set_package_properties(GLIB2 PROPERTIES TYPE OPTIONAL)
 find_package(ICU COMPONENTS i18n uc data)
 set_package_properties(ICU PROPERTIES TYPE OPTIONAL)
 find_package(Libsystemd)
@@ -383,7 +383,7 @@ qt_feature("getentropy" PRIVATE
 qt_feature("glib" PUBLIC PRIVATE
     LABEL "GLib"
     AUTODETECT NOT WIN32
-    CONDITION GLib_FOUND
+    CONDITION GLIB2_FOUND
 )
 qt_feature_definition("glib" "QT_NO_GLIB" NEGATE VALUE "1")
 qt_feature("iconv" PUBLIC PRIVATE

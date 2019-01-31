@@ -1,6 +1,6 @@
 # Generated from eventdispatchers.pro.
 
-find_package(GLib)
+find_package(GLIB2)
 set_package_properties(GLib PROPERTIES TYPE OPTIONAL)
 
 #####################################################################
@@ -35,5 +35,5 @@ extend_target(EventDispatcherSupport CONDITION QT_FEATURE_glib
     SOURCES
         qeventdispatcher_glib.cpp qeventdispatcher_glib_p.h
     LIBRARIES
-        PkgConfig::GLib
+        GLIB2::GLIB2
 )
