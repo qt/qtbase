@@ -114,4 +114,33 @@ void QWasmScreen::setGeometry(const QRect &rect)
     resizeMaximizedWindows();
 }
 
+static void set_canvas_size(double width, double height, const char *canvasId)
+{
+    emscripten::val canvas = emscripten::val::global(canvasId);
+    canvas.set("width", width);
+    canvas.set("height", height);
+}
+
+void QWasmScreen::updateQScreenAndCanvasRenderSize(const QString &canvasId)
+{
+    // The HTML canvas has two sizes: the CSS size and the canvas render size.
+    // The CSS size is determined according to standard CSS rules, while the
+    // render size is set using the "width" and "height" attributes. The render
+    // size must be set manually and is not auto-updated on CSS size change.
+    // Setting the render size to a value larger than the CSS size enables high-dpi
+    // rendering.
+
+    double css_width;
+    double css_height;
+    emscripten_get_element_css_size(canvasId.toLocal8Bit().constData(), &css_width, &css_height);
+    QSizeF cssSize(css_width, css_height);
+
+    QWasmScreen *screen = QWasmIntegration::get()->screen();
+    QSizeF canvasSize = cssSize * screen->devicePixelRatio();
+
+    set_canvas_size(canvasSize.width(), canvasSize.height(), canvasId.toLocal8Bit().constData());
+    screen->setGeometry(QRect(QPoint(0, 0), cssSize.toSize()));
+    QWasmIntegration::get()->compositor()->redrawWindowContent();
+}
+
 QT_END_NAMESPACE

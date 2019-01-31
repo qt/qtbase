@@ -75,11 +75,18 @@ QWasmIntegration::QWasmIntegration()
       m_eventDispatcher(nullptr),
       m_clipboard(new QWasmClipboard)
 {
+
+    globalHtml5Integration = this;
     s_instance = this;
 
-    updateQScreenAndCanvasRenderSize();
+    emscripten::val defaultCanvasId = emscripten::val::global("canvas");
+    canvasIds.append(QString::fromStdString(defaultCanvasId["id"].as<std::string>()));
+    m_screen->setCanvas(canvasIds.at(0));
+
+    globalHtml5Integration = this;
+
+    screen()->updateQScreenAndCanvasRenderSize(m_screen->m_canvasId);
     screenAdded(m_screen);
-    emscripten_set_resize_callback(0, (void *)this, 1, uiEvent_cb);
 
     m_eventTranslator = new QWasmEventTranslator;
 
@@ -166,50 +173,6 @@ QPlatformTheme *QWasmIntegration::createPlatformTheme(const QString &name) const
     if (name == QLatin1String("webassembly"))
         return new QWasmTheme;
     return QPlatformIntegration::createPlatformTheme(name);
-}
-
-int QWasmIntegration::uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData)
-{
-    Q_UNUSED(e)
-    Q_UNUSED(userData)
-
-    if (eventType == EMSCRIPTEN_EVENT_RESIZE) {
-        // This resize event is called when the HTML window is resized. Depending
-        // on the page layout the the canvas might also have been resized, so we
-        // update the Qt screen size (and canvas render size).
-        updateQScreenAndCanvasRenderSize();
-    }
-
-    return 0;
-}
-
-static void set_canvas_size(double width, double height)
-{
-    emscripten::val canvas = emscripten::val::global("canvas");
-    canvas.set("width", width);
-    canvas.set("height", height);
-}
-
-void QWasmIntegration::updateQScreenAndCanvasRenderSize()
-{
-    // The HTML canvas has two sizes: the CSS size and the canvas render size.
-    // The CSS size is determined according to standard CSS rules, while the
-    // render size is set using the "width" and "height" attributes. The render
-    // size must be set manually and is not auto-updated on CSS size change.
-    // Setting the render size to a value larger than the CSS size enables high-dpi
-    // rendering.
-
-    double css_width;
-    double css_height;
-    emscripten_get_element_css_size(0, &css_width, &css_height);
-    QSizeF cssSize(css_width, css_height);
-
-    QWasmScreen *screen = QWasmIntegration::get()->m_screen;
-    QSizeF canvasSize = cssSize * screen->devicePixelRatio();
-
-    set_canvas_size(canvasSize.width(), canvasSize.height());
-    screen->setGeometry(QRect(QPoint(0, 0), cssSize.toSize()));
-    QWasmIntegration::get()->m_compositor->redrawWindowContent();
 }
 
 QPlatformClipboard* QWasmIntegration::clipboard() const

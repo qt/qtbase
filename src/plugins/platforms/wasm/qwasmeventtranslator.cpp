@@ -327,34 +327,25 @@ QWasmEventTranslator::QWasmEventTranslator(QObject *parent)
     , pressedButtons(Qt::NoButton)
     , resizeMode(QWasmWindow::ResizeNone)
 {
-    emscripten_set_keydown_callback(0, (void *)this, 1, &keyboard_cb);
-    emscripten_set_keyup_callback(0, (void *)this, 1, &keyboard_cb);
-
-    emscripten_set_mousedown_callback(0, (void *)this, 1, &mouse_cb);
-    emscripten_set_mouseup_callback(0, (void *)this, 1, &mouse_cb);
-    emscripten_set_mousemove_callback(0, (void *)this, 1, &mouse_cb);
-
-    emscripten_set_focus_callback(0, (void *)this, 1, &focus_cb);
-
-    emscripten_set_wheel_callback(0, (void *)this, 1, &wheel_cb);
-
     touchDevice = new QTouchDevice;
     touchDevice->setType(QTouchDevice::TouchScreen);
     touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::NormalizedPosition);
     QWindowSystemInterface::registerTouchDevice(touchDevice);
 
-    emscripten_set_touchstart_callback("#canvas", (void *)this, 1, &touchCallback);
-    emscripten_set_touchend_callback("#canvas", (void *)this, 1, &touchCallback);
-    emscripten_set_touchmove_callback("#canvas", (void *)this, 1, &touchCallback);
-    emscripten_set_touchcancel_callback("#canvas", (void *)this, 1, &touchCallback);
+    QWasmScreen *wasmScreen = QWasmIntegration::get()->screen();
+    initEventHandlers(wasmScreen->m_canvasId);
+}
 
+void QWasmEventTranslator::initEventHandlers(const QString &canvas)
+{
+    const char *canvasId = canvas.toLocal8Bit().constData();
     // The Platform Detect: expand coverage and move as needed
     enum Platform {
         GenericPlatform,
         MacOSPlatform
     };
-  Platform platform = Platform(emscripten::val::global("navigator")["platform"]
-          .call<bool>("includes", emscripten::val("Mac")));
+    Platform platform = Platform(emscripten::val::global("navigator")["platform"]
+            .call<bool>("includes", emscripten::val("Mac")));
     g_usePlatformMacCtrlMetaSwitching = (platform == MacOSPlatform);
 
     if (platform == MacOSPlatform) {
@@ -362,11 +353,30 @@ QWasmEventTranslator::QWasmEventTranslator(QObject *parent)
 
         if (emscripten::val::global("window")["safari"].isUndefined()) {
 
-            emscripten::val::global("canvas").call<void>("addEventListener",
+            emscripten::val::global(canvasId).call<void>("addEventListener",
                                                          std::string("wheel"),
                                                          val::module_property("mouseWheelEvent"));
         }
     }
+
+    emscripten_set_keydown_callback(canvasId, (void *)this, 1, &keyboard_cb);
+    emscripten_set_keyup_callback(canvasId, (void *)this, 1, &keyboard_cb);
+
+    emscripten_set_mousedown_callback(canvasId, (void *)this, 1, &mouse_cb);
+    emscripten_set_mouseup_callback(canvasId, (void *)this, 1, &mouse_cb);
+    emscripten_set_mousemove_callback(canvasId, (void *)this, 1, &mouse_cb);
+
+    emscripten_set_focus_callback(canvasId, (void *)this, 1, &focus_cb);
+
+    emscripten_set_wheel_callback(canvasId, (void *)this, 1, &wheel_cb);
+
+    emscripten_set_touchstart_callback(canvasId, (void *)this, 1, &touchCallback);
+    emscripten_set_touchend_callback(canvasId, (void *)this, 1, &touchCallback);
+    emscripten_set_touchmove_callback(canvasId, (void *)this, 1, &touchCallback);
+    emscripten_set_touchcancel_callback(canvasId, (void *)this, 1, &touchCallback);
+
+    emscripten_set_resize_callback(canvasId, (void *)this, 1, uiEvent_cb);
+
 }
 
 template <typename Event>
@@ -863,6 +873,23 @@ bool QWasmEventTranslator::processKeyboard(int eventType, const EmscriptenKeyboa
     QWasmEventDispatcher::maintainTimers();
 
     return accepted;
+}
+
+int QWasmEventTranslator::uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData)
+{
+    Q_UNUSED(e)
+    Q_UNUSED(userData)
+
+    if (eventType == EMSCRIPTEN_EVENT_RESIZE) {
+        // This resize event is called when the HTML window is resized. Depending
+        // on the page layout the the canvas might also have been resized, so we
+        // update the Qt screen size (and canvas render size).
+        QWasmScreen *wasmScreen = QWasmIntegration::get()->screen();
+
+        wasmScreen->updateQScreenAndCanvasRenderSize(wasmScreen->m_canvasId.toLocal8Bit().constData());
+    }
+
+    return 0;
 }
 
 QT_END_NAMESPACE

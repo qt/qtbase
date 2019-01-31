@@ -57,7 +57,10 @@ public:
 
     static int touchCallback(int eventType, const EmscriptenTouchEvent *ev, void *userData);
 
+    static int uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData);
+
     void processEvents();
+    void initEventHandlers(const QString &);
 
 Q_SIGNALS:
     void getWindowAt(const QPoint &point, QWindow **window);

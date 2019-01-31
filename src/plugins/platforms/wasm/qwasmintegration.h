@@ -78,7 +78,7 @@ public:
 
     static QWasmIntegration *get() { return s_instance; }
     static void QWasmBrowserExit();
-    static void updateQScreenAndCanvasRenderSize();
+    QStringList canvasIds;
 
 private:
     mutable QWasmFontDatabase *m_fontDb;
@@ -86,7 +86,6 @@ private:
     mutable QWasmScreen *m_screen;
     mutable QWasmEventTranslator *m_eventTranslator;
     mutable QWasmEventDispatcher *m_eventDispatcher;
-    static int uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData);
     mutable QHash<QWindow *, QWasmBackingStore *> m_backingStores;
 
     mutable QWasmClipboard *m_clipboard;

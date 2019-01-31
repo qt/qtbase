@@ -64,10 +64,12 @@ public:
     QWindow *topLevelAt(const QPoint &p) const override;
 
     void invalidateSize();
+    static void updateQScreenAndCanvasRenderSize(const QString &);
+    QString m_canvasId;
+    void setCanvas(const QString &canvasId) { m_canvasId = canvasId; }
 
 public slots:
     void setGeometry(const QRect &rect);
-protected:
 
 private:
     QWasmCompositor *m_compositor;
