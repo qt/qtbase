@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the Windows main function of the Qt Toolkit.
@@ -48,12 +48,8 @@
 **
 ****************************************************************************/
 
-#include "qt_windows.h"
-#include "qbytearray.h"
-#include "qstring.h"
-#include "qvector.h"
-
-#include <shlobj.h>
+#include <windows.h>
+#include <shellapi.h>
 
 /*
   This file contains the code in the qtmain library for Windows.
@@ -63,9 +59,6 @@
   When a Windows application starts, the WinMain function is
   invoked.
 */
-
-QT_USE_NAMESPACE
-
 
 #if defined(QT_NEEDS_QMAIN)
 int qMain(int, char **);

@@ -21,8 +21,8 @@ mingw: DEFINES += QT_NEEDS_QMAIN
 winrt {
     SOURCES = qtmain_winrt.cpp
 } else {
+    CONFIG -= qt
     SOURCES = qtmain_win.cpp
-
     LIBS += -lshell32
 }
 
