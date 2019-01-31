@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -781,7 +781,7 @@ static const int locale_data_size = sizeof(locale_data)/sizeof(QLocaleData) - 1;
 
 Q_GLOBAL_STATIC_WITH_ARGS(QSharedDataPointer<QLocalePrivate>, defaultLocalePrivate,
                           (QLocalePrivate::create(defaultData(), default_number_options)))
-Q_GLOBAL_STATIC_WITH_ARGS(QSharedDataPointer<QLocalePrivate>, systemLocalePrivate,
+Q_GLOBAL_STATIC_WITH_ARGS(QExplicitlySharedDataPointer<QLocalePrivate>, systemLocalePrivate,
                           (QLocalePrivate::create(systemData())))
 
 static QLocalePrivate *localePrivateByName(const QString &name)
