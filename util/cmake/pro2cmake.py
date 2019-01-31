@@ -288,6 +288,31 @@ class Scope(object):
     def currentdir(self) -> str:
         return self._currentdir
 
+    def can_merge_condition(self):
+        if self._condition == 'else':
+            return False
+        if self._operations:
+            return False
+
+        child_count = len(self._children)
+        if child_count == 0 or child_count > 2:
+            return False
+        assert child_count != 1 or self._children[0]._condition != 'else'
+        return child_count == 1 or self._children[1]._condition == 'else'
+
+    def settle_condition(self):
+        new_children: typing.List[scope] = []
+        for c in self._children:
+            c.settle_condition()
+
+            if c.can_merge_condition():
+                child = c._children[0]
+                child._condition = '({}) AND ({})'.format(c._condition, child._condition)
+                new_children += c._children
+            else:
+                new_children.append(c)
+        self._children = new_children
+
     @staticmethod
     def FromDict(parent_scope: typing.Optional['Scope'],
                  file: str, statements, cond: str = '', base_dir: str = '') -> Scope:
@@ -333,7 +358,7 @@ class Scope(object):
                 else_statements = statement.get('else_statements')
                 if else_statements:
                     Scope.FromDict(scope, file, else_statements,
-                                   'NOT ' + condition, scope.basedir)
+                                   'else', scope.basedir)
                 continue
 
             loaded = statement.get('loaded')
@@ -354,6 +379,8 @@ class Scope(object):
                                                         scope.basedir,
                                                         scope.currentdir)))
                 continue
+
+        scope.settle_condition()
 
         if scope.scope_debug:
             print('..... [SCOPE_DEBUG]: Created scope {}:'.format(scope))
