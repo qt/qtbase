@@ -603,6 +603,8 @@ def map_condition(condition: str) -> str:
                 if feature.startswith('system_') and substitute_libs(feature[7:]) != feature[7:]:
                     # Qt6 always uses system libraries!
                     part = 'ON'
+                elif feature == 'dlopen':
+                    part = 'ON'
                 else:
                     part = 'QT_FEATURE_' + feature
         else:

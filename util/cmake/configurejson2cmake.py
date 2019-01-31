@@ -276,7 +276,7 @@ def map_condition(condition):
     assert isinstance(condition, str)
 
     mapped_features = {
-        "dlopen": "UNIX",
+        "dlopen": "ON",
         'gbm': 'gbm_FOUND',
         "system-xcb": "ON",
         "system-freetype": "ON",
