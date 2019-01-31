@@ -1283,7 +1283,8 @@ QVariant QODBCResult::data(int field)
                     d->fieldCache[i] = qGetDoubleData(d->hStmt, i);
                     break;
                 case QSql::HighPrecision:
-                    d->fieldCache[i] = qGetStringData(d->hStmt, i, info.length(), false);
+                    const int extra = info.precision() > 0 ? 1 : 0;
+                    d->fieldCache[i] = qGetStringData(d->hStmt, i, info.length() + extra, false);
                     break;
             }
             break;
