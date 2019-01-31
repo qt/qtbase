@@ -290,7 +290,7 @@ class Scope(object):
 
     @staticmethod
     def FromDict(parent_scope: typing.Optional['Scope'],
-                 file: str, statements, cond: str = '', base_dir: str = ''):
+                 file: str, statements, cond: str = '', base_dir: str = '') -> Scope:
         scope = Scope(parent_scope=parent_scope, file=file, condition=cond, base_dir=base_dir)
         for statement in statements:
             if isinstance(statement, list):  # Handle skipped parts...
