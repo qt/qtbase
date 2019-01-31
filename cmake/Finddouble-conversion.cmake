@@ -4,7 +4,9 @@
 
 find_package(double-conversion CONFIG)
 if (double-conversion_FOUND)
-    return()
+    if(TARGET double-conversion::double-conversion)
+        return()
+    endif()
 endif()
 
 find_path(DOUBLE_CONVERSION_INCLUDE_DIR
