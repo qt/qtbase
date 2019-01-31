@@ -207,6 +207,9 @@ class RemoveOperation(Operation):
 
 
 class Scope(object):
+
+    SCOPE_ID: int = 1
+
     def __init__(self, *,
                  parent_scope: typing.Optional[Scope],
                  file: typing.Optional[str] = None, condition: str = '',
@@ -225,6 +228,8 @@ class Scope(object):
         if not self._basedir:
             self._basedir = self._currentdir
 
+        self._scope_id = Scope.SCOPE_ID
+        Scope.SCOPE_ID += 1
         self._file = file
         self._condition = map_condition(condition)
         self._children = []  # type: typing.List[Scope]
@@ -234,8 +239,8 @@ class Scope(object):
 
     def __repr__(self):
         debug_mark = ' [MERGE_DEBUG]' if self.merge_debug else ''
-        return '{}:{}:{}{}'.format(self._basedir, self._file,
-                                 self._condition or '<NONE>', debug_mark)
+        return '{}:{}:{}:{}{}'.format(self._scope_id, self._basedir, self._file,
+                                      self._condition or '<NONE>', debug_mark)
 
     def reset_visited_keys(self):
         self._visited_keys = set()
