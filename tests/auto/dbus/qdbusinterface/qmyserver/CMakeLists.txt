@@ -4,10 +4,16 @@
 ## qmyserver Binary:
 #####################################################################
 
-add_qt_executable(qmyserver
+# Can't be called qmyserver since the qdbusabstractadaptor test
+# already has a executable target named like that, so use
+# a different target name and then rename the binary
+add_qt_executable(qmyserver_qdbusinterface
     SOURCES
         ../myobject.h
         qmyserver.cpp
     LIBRARIES
+        Qt::Core
         Qt::DBus
 )
+
+set_target_properties(qmyserver_qdbusinterface PROPERTIES OUTPUT_NAME qmyserver)

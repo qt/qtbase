@@ -20,7 +20,7 @@ add_subdirectory(qdbusthreading)
 if(QT_FEATURE_process)
     add_subdirectory(qdbusabstractadaptor)
     add_subdirectory(qdbusabstractinterface)
-    # missing add_qt_binary: add_subdirectory("qdbusinterface")
+    add_subdirectory(qdbusinterface)
 
     if(QT_FEATURE_private_tests)
         add_subdirectory(qdbusmarshall)
