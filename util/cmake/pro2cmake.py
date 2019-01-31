@@ -233,13 +233,22 @@ class Scope(object):
         self._total_condition = None  # type: typing.Optional[str]
 
     def __repr__(self):
-        return '{}:{}:{}'.format(self._basedir, self._file,
-                                 self._condition or '<NONE>')
+        debug_mark = ' [MERGE_DEBUG]' if self.merge_debug else ''
+        return '{}:{}:{}{}'.format(self._basedir, self._file,
+                                 self._condition or '<NONE>', debug_mark)
 
     def reset_visited_keys(self):
         self._visited_keys = set()
 
     def merge(self, other: 'Scope') -> None:
+        assert self != other
+        merge_debug = self.merge_debug or other.merge_debug
+        if merge_debug:
+            print('..... [MERGE_DEBUG]: Merging scope {}:'.format(other))
+            other.dump(indent=1)
+            print('..... [MERGE_DEBUG]: ... into scope {}:'.format(self))
+            self.dump(indent=1)
+
         for c in other._children:
             self._add_child(c)
 
@@ -248,6 +257,15 @@ class Scope(object):
                 self._operations[key] += other._operations[key]
             else:
                 self._operations[key] = other._operations[key]
+
+        if merge_debug:
+            print('..... [MERGE_DEBUG]: Result scope {}:'.format(self))
+            self.dump(indent=1)
+            print('..... [MERGE_DEBUG]: <<END OF MERGE>>')
+
+    @property
+    def merge_debug(self) -> bool:
+        return self.getString('PRO2CMAKE_MERGE_DEBUG', None) != None
 
     @property
     def parent(self) -> typing.Optional[Scope]:
