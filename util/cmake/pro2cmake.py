@@ -386,6 +386,8 @@ class Scope(object):
     def dump(self, *, indent: int = 0) -> None:
         ind = '    ' * indent
         print('{}Scope "{}":'.format(ind, self))
+        if self.total_condition:
+            print('{}  Total condition = {}'.format(ind, self.total_condition))
         print('{}  Keys:'.format(ind))
         keys = self._operations.keys()
         if not keys:
