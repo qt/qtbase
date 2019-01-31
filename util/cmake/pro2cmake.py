@@ -273,6 +273,10 @@ class Scope(object):
         return self.getString('PRO2CMAKE_MERGE_DEBUG', None) != None
 
     @property
+    def scope_debug(self) -> bool:
+        return self.getString('PRO2CMAKE_SCOPE_DEBUG', None) != None
+
+    @property
     def parent(self) -> typing.Optional[Scope]:
         return self._parent
 
@@ -351,6 +355,10 @@ class Scope(object):
                                                         scope.currentdir)))
                 continue
 
+        if scope.scope_debug:
+            print('..... [SCOPE_DEBUG]: Created scope {}:'.format(scope))
+            scope.dump(indent=1)
+            print('..... [SCOPE_DEBUG]: <<END OF SCOPE>>')
         return scope
 
     def _append_operation(self, key: str, op: Operation) -> None:
