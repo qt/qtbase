@@ -52,7 +52,6 @@
 #define CHARACTERWIDGET_H
 
 #include <QFont>
-#include <QPoint>
 #include <QSize>
 #include <QString>
 #include <QWidget>

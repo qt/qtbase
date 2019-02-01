@@ -216,7 +216,6 @@ void QTipLabel::reuseTip(const QString &text, int msecDisplayTime, const QPoint 
     }
 #endif
 
-    setWordWrap(true);
     setText(text);
     updateSize(pos);
     restartExpireTimer(msecDisplayTime);
@@ -235,20 +234,17 @@ void  QTipLabel::updateSize(const QPoint &pos)
     // Make it look good with the default ToolTip font on Mac, which has a small descent.
     if (fm.descent() == 2 && fm.ascent() >= 11)
         ++extra.rheight();
+    setWordWrap(Qt::mightBeRichText(text()));
     QSize sh = sizeHint();
-    if (wordWrap()) {
-        // ### When the above WinRT code is fixed, windowhandle should be used to find the screen.
-        QScreen *screen = QGuiApplication::screenAt(pos);
-        if (!screen)
-            screen = QGuiApplication::primaryScreen();
-        if (screen) {
-            const qreal screenWidth = screen->geometry().width();
-            if (sh.width() > screenWidth) {
-                // Try to use widely accepted 75chars max length or 80% of the screen width else.
-                // See https://en.wikipedia.org/wiki/Line_length
-                sh.setWidth(qMin(fm.averageCharWidth() * 75, static_cast<int>(screenWidth * .8)));
-                sh.setHeight(heightForWidth(sh.width()));
-            }
+    // ### When the above WinRT code is fixed, windowhandle should be used to find the screen.
+    QScreen *screen = QGuiApplication::screenAt(pos);
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+    if (screen) {
+        const qreal screenWidth = screen->geometry().width();
+        if (!wordWrap() && sh.width() > screenWidth) {
+            setWordWrap(true);
+            sh = sizeHint();
         }
     }
     resize(sh + extra);

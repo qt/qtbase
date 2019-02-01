@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "tetrixboard.h"
+
+#include <QtWidgets>
 
 //! [0]
 TetrixBoard::TetrixBoard(QWidget *parent)

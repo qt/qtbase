@@ -470,6 +470,10 @@ static const char *expectedLogC[] = {
     "Event at 11,241 accepted",
     "acceptingDropsWidget2::dropEvent at 1,51 action=1 MIME_DATA_ADDRESS 'testmimetext'",
     "Event at 11,261 accepted",
+    "acceptingDropsWidget3::dragEnterEvent at 1,21 action=1 MIME_DATA_ADDRESS 'testmimetext'",
+    "Event at 11,281 accepted",
+    "acceptingDropsWidget3::dragLeaveEvent QDragLeaveEvent",
+    "Event at 11,301 ignored",
     "acceptingDropsWidget1::dragEnterEvent at 10,10 action=1 MIME_DATA_ADDRESS 'testmimetext'",
     "Event at 0,0 accepted",
     "acceptingDropsWidget1::dragMoveEvent at 11,11 action=1 MIME_DATA_ADDRESS 'testmimetext'",
@@ -482,8 +486,9 @@ static const char *expectedLogC[] = {
 class DnDEventLoggerWidget : public QWidget
 {
 public:
-    DnDEventLoggerWidget(QStringList *log, QWidget *w = 0) : QWidget(w), m_log(log) {}
-
+    DnDEventLoggerWidget(QStringList *log, QWidget *w = nullptr, bool ignoreDragMove = false)
+        : QWidget(w), m_log(log), m_ignoreDragMove(ignoreDragMove)
+    {}
 protected:
     void dragEnterEvent(QDragEnterEvent *);
     void dragMoveEvent(QDragMoveEvent *);
@@ -493,6 +498,7 @@ protected:
 private:
     void formatDropEvent(const char *function, const QDropEvent *e, QTextStream &str) const;
     QStringList *m_log;
+    bool m_ignoreDragMove;
 };
 
 void DnDEventLoggerWidget::formatDropEvent(const char *function, const QDropEvent *e, QTextStream &str) const
@@ -513,6 +519,8 @@ void DnDEventLoggerWidget::dragEnterEvent(QDragEnterEvent *e)
 
 void DnDEventLoggerWidget::dragMoveEvent(QDragMoveEvent *e)
 {
+    if (m_ignoreDragMove)
+        return;
     e->accept();
     QString message;
     QTextStream str(&message);
@@ -580,7 +588,17 @@ void tst_QWidget_window::tst_dnd()
     dropsRefusingWidget2->resize(160, 60);
     dropsRefusingWidget2->move(10, 10);
 
+    QWidget *dropsAcceptingWidget3 = new DnDEventLoggerWidget(&log, &dndTestWidget, true);
+    dropsAcceptingWidget3->setAcceptDrops(true);
+    dropsAcceptingWidget3->setObjectName(QLatin1String("acceptingDropsWidget3"));
+    // 260 + 40 = 300 = widget size, must not be more than that.
+    // otherwise it will break WinRT because there the tlw is maximized every time
+    // and this window will receive one more event
+    dropsAcceptingWidget3->resize(180, 40);
+    dropsAcceptingWidget3->move(10, 260);
+
     dndTestWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&dndTestWidget));
     qApp->setActiveWindow(&dndTestWidget);
     QVERIFY(QTest::qWaitForWindowActive(&dndTestWidget));
 
@@ -595,16 +613,17 @@ void tst_QWidget_window::tst_dnd()
     log.push_back(msgEventAccepted(e));
     while (true) {
         position.ry() += 20;
-        if (position.y() >= 250) {
+        if (position.y() >= 250 && position.y() < 270) {
             QDropEvent e(position, Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
             qApp->sendEvent(window, &e);
             log.push_back(msgEventAccepted(e));
-            break;
         } else {
             QDragMoveEvent e(position, Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
             qApp->sendEvent(window, &e);
             log.push_back(msgEventAccepted(e));
         }
+        if (position.y() > 290)
+            break;
     }
 
     window = nativeWidget->windowHandle();
@@ -628,6 +647,15 @@ void tst_QWidget_window::tst_dnd()
     for (int i= 0; i < expectedLogSize; ++i)
         expectedLog.push_back(QString::fromLatin1(expectedLogC[i]).replace(mimeDataAddressPlaceHolder, mimeDataAddress));
 
+    if (log.size() != expectedLog.size()) {
+        for (int i = 0; i < log.size() && i < expectedLog.size(); ++i)
+            QCOMPARE(log.at(i), expectedLog.at(i));
+        const int iMin = std::min(log.size(), expectedLog.size());
+        for (int i = iMin; i < log.size(); ++i)
+            qDebug() << "log[" << i << "]:" << log.at(i);
+        for (int i = iMin; i < expectedLog.size(); ++i)
+            qDebug() << "exp[" << i << "]:" << log.at(i);
+    }
     QCOMPARE(log, expectedLog);
 }
 

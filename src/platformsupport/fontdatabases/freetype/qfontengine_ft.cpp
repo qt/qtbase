@@ -1556,7 +1556,7 @@ QFontEngineFT::QGlyphSet *QFontEngineFT::loadGlyphSet(const QTransform &matrix)
         gs = &transformedGlyphSets[0];
         gs->clear();
         gs->transformationMatrix = m;
-        gs->outline_drawing = fontDef.pixelSize * fontDef.pixelSize * qAbs(matrix.det()) > QT_MAX_CACHED_GLYPH_SIZE * QT_MAX_CACHED_GLYPH_SIZE;
+        gs->outline_drawing = fontDef.pixelSize * fontDef.pixelSize * qAbs(matrix.determinant()) > QT_MAX_CACHED_GLYPH_SIZE * QT_MAX_CACHED_GLYPH_SIZE;
     }
     Q_ASSERT(gs != 0);
 

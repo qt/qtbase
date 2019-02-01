@@ -1787,6 +1787,7 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
 */
 
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn void QTextCharFormat::setAnchorName(const QString &name)
     \obsolete
@@ -1797,6 +1798,7 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
     hyperlink, the destination must be set with setAnchorHref() and
     the anchor must be enabled with setAnchor().
 */
+#endif
 
 /*!
     \fn void QTextCharFormat::setAnchorNames(const QStringList &names)
@@ -1807,6 +1809,7 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
     the anchor must be enabled with setAnchor().
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn QString QTextCharFormat::anchorName() const
     \obsolete
@@ -1826,6 +1829,7 @@ QString QTextCharFormat::anchorName() const
         return QString();
     return prop.toString();
 }
+#endif
 
 /*!
     \fn QStringList QTextCharFormat::anchorNames() const

@@ -550,7 +550,14 @@ static void setupSslServer(QSslSocket* serverSocket)
 }
 
 #ifdef QT_TEST_SERVER
+#ifdef QT_TEST_SERVER_NAME
+// In this case, each server is assigned a unique hostname. Use the wildcard SSL
+// certificate (*.test-net.qt.local).
 const QString tst_QNetworkReply::certsFilePath = "/certs/qt-test-net-cacert.pem";
+#else
+// Otherwise, select the single-name SSL certificate (qt-test-server.local) instead.
+const QString tst_QNetworkReply::certsFilePath = "/certs/qt-test-server-host-network-cacert.pem";
+#endif // QT_TEST_SERVER_NAME
 #else
 const QString tst_QNetworkReply::certsFilePath = "/certs/qt-test-server-cacert.pem";
 #endif

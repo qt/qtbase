@@ -368,7 +368,7 @@ QDataStream::~QDataStream()
 /*!
     \fn QIODevice *QDataStream::device() const
 
-    Returns the I/O device currently set, or 0 if no
+    Returns the I/O device currently set, or \nullptr if no
     device is currently set.
 
     \sa setDevice()
@@ -377,7 +377,7 @@ QDataStream::~QDataStream()
 /*!
     void QDataStream::setDevice(QIODevice *d)
 
-    Sets the I/O device to \a d, which can be 0
+    Sets the I/O device to \a d, which can be \nullptr
     to unset to current I/O device.
 
     \sa device()

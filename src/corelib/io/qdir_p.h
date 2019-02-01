@@ -59,6 +59,14 @@ QT_BEGIN_NAMESPACE
 class QDirPrivate : public QSharedData
 {
 public:
+    enum PathNormalization {
+        DefaultNormalization = 0x00,
+        AllowUncPaths = 0x01,
+        RemotePath = 0x02
+    };
+    Q_DECLARE_FLAGS(PathNormalizations, PathNormalization)
+    Q_FLAGS(PathNormalizations)
+
     explicit QDirPrivate(const QString &path, const QStringList &nameFilters_ = QStringList(),
                          QDir::SortFlags sort_ = QDir::SortFlags(QDir::Name | QDir::IgnoreCase),
                          QDir::Filters filters_ = QDir::AllEntries);
@@ -96,6 +104,10 @@ public:
     mutable QFileSystemEntry absoluteDirEntry;
     mutable QFileSystemMetaData metaData;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDirPrivate::PathNormalizations)
+
+Q_AUTOTEST_EXPORT QString qt_normalizePathSegments(const QString &name, QDirPrivate::PathNormalizations flags, bool *ok = nullptr);
 
 QT_END_NAMESPACE
 

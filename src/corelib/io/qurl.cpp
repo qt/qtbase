@@ -253,7 +253,8 @@
      and contains no query or fragment, a local file path is returned.
     \value StripTrailingSlash  The trailing slash is removed from the path, if one is present.
     \value NormalizePathSegments  Modifies the path to remove redundant directory separators,
-             and to resolve "."s and ".."s (as far as possible).
+             and to resolve "."s and ".."s (as far as possible). For non-local paths, adjacent
+             slashes are preserved.
 
     Note that the case folding rules in \l{RFC 3491}{Nameprep}, which QUrl
     conforms to, require host names to always be converted to lower case,
@@ -419,10 +420,9 @@
 #endif
 #include "private/qipaddress_p.h"
 #include "qurlquery.h"
+#include "private/qdir_p.h"
 
 QT_BEGIN_NAMESPACE
-extern QString qt_normalizePathSegments(const QString &name, bool allowUncPaths,
-                                        bool *ok = nullptr); // qdir.cpp
 
 inline static bool isHex(char c)
 {
@@ -930,7 +930,7 @@ inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions o
 {
     QString thePath = path;
     if (options & QUrl::NormalizePathSegments) {
-        thePath = qt_normalizePathSegments(path, false);
+        thePath = qt_normalizePathSegments(path, isLocalFile() ? QDirPrivate::DefaultNormalization : QDirPrivate::RemotePath);
     }
 
     QStringRef thePathRef(&thePath);

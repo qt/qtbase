@@ -586,7 +586,7 @@ void QLineEdit::setEchoMode(EchoMode mode)
 
 #ifndef QT_NO_VALIDATOR
 /*!
-    Returns a pointer to the current input validator, or 0 if no
+    Returns a pointer to the current input validator, or \nullptr if no
     validator has been set.
 
     \sa setValidator()
@@ -1681,6 +1681,7 @@ void QLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
 
 /*!
     \fn void QLineEdit::inputRejected()
+    \since 5.12
 
     This signal is emitted when the user presses a key that is not
     considered to be acceptable input. For example, if a key press

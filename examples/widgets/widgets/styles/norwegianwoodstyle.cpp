@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "norwegianwoodstyle.h"
+
+#include <QtWidgets>
 
 NorwegianWoodStyle::NorwegianWoodStyle() :
     QProxyStyle(QStyleFactory::create("windows"))

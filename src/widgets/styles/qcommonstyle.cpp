@@ -946,17 +946,20 @@ void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewIt
     const QRectF boundingRect = textLayout.boundingRect();
     const QRect layoutRect = QStyle::alignedRect(option->direction, option->displayAlignment,
                                                  boundingRect.size().toSize(), textRect);
-    const QPointF position = layoutRect.topLeft();
-    const int lineCount = textLayout.lineCount();
+    QPointF paintPosition = QPointF(textRect.x(), layoutRect.top());
 
+    QString newText;
     qreal height = 0;
+    const int lineCount = textLayout.lineCount();
     for (int i = 0; i < lineCount; ++i) {
         const QTextLine line = textLayout.lineAt(i);
         height += line.height();
 
         // above visible rect
-        if (height + layoutRect.top() <= textRect.top())
+        if (height + layoutRect.top() <= textRect.top()) {
+            paintPosition.ry() += line.height();
             continue;
+        }
 
         const int start = line.textStart();
         const int length = line.textLength();
@@ -971,26 +974,33 @@ void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewIt
                 elideLastVisibleLine = true;
         }
 
+        QString text = textLayout.text().mid(start, length);
         if (drawElided || elideLastVisibleLine) {
-            QString text = textLayout.text().mid(start, length);
-            if (elideLastVisibleLine)
+            if (elideLastVisibleLine) {
+                if (text.endsWith(QChar::LineSeparator))
+                    text.chop(1);
                 text += QChar(0x2026);
+            }
             const QStackTextEngine engine(text, option->font);
-            const QString elidedText = engine.elidedText(option->textElideMode, textRect.width());
-            const QPointF pos(position.x() + line.x(),
-                              position.y() + line.y() + line.ascent());
-            p->save();
-            p->setFont(option->font);
-            p->drawText(pos, elidedText);
-            p->restore();
+            newText += engine.elidedText(option->textElideMode, textRect.width());
+            // sometimes drawElided is true but no eliding is done so the text ends
+            // with QChar::LineSeparator - don't add another one. This happened with
+            // arabic text in the testcase for QTBUG-72805
+            if (i < lineCount - 1 &&
+                !newText.endsWith(QChar::LineSeparator))
+                newText += QChar::LineSeparator;
         } else {
-            line.draw(p, position);
+            newText += text;
         }
 
         // below visible text, can stop
         if (height + layoutRect.top() >= textRect.bottom())
             break;
     }
+
+    textLayout.setText(newText);
+    viewItemTextLayout(textLayout, textRect.width());
+    textLayout.draw(p, paintPosition);
 }
 
 /*! \internal

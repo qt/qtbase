@@ -2144,13 +2144,14 @@ QTransform::operator QVariant() const
     \sa inverted()
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn qreal QTransform::det() const
     \obsolete
 
     Returns the matrix's determinant. Use determinant() instead.
 */
-
+#endif
 
 /*!
     \fn qreal QTransform::m11() const

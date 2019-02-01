@@ -748,6 +748,21 @@ static int drivePrefixLength(const QString &path)
 }
 #endif // Q_OS_WIN
 
+static bool treatAsAbsolute(const QString &path)
+{
+    // ### Qt 6: be consistent about absolute paths
+
+    // QFileInfo will use the right FS-engine for virtual file-systems
+    // (e.g. resource paths).  Unfortunately, for real file-systems, it relies
+    // on QFileSystemEntry's isRelative(), which is flawed on MS-Win, ignoring
+    // its (correct) isAbsolute().  So only use that isAbsolute() unless there's
+    // a colon in the path.
+    // FIXME: relies on virtual file-systems having colons in their prefixes.
+    // The case of an MS-absolute C:/... path happens to work either way.
+    return (path.contains(QLatin1Char(':')) && QFileInfo(path).isAbsolute())
+        || QFileSystemEntry(path).isAbsolute();
+}
+
 /*!
     Returns the path name of a file in the directory. Does \e not
     check if the file actually exists in the directory; but see
@@ -759,13 +774,10 @@ static int drivePrefixLength(const QString &path)
 */
 QString QDir::filePath(const QString &fileName) const
 {
-    const QDirPrivate* d = d_ptr.constData();
-    // Mistrust our own isAbsolutePath() for real files; Q_OS_WIN needs a drive.
-    if (fileName.startsWith(QLatin1Char(':')) // i.e. resource path
-        ? isAbsolutePath(fileName) : QFileSystemEntry(fileName).isAbsolute()) {
+    if (treatAsAbsolute(fileName))
         return fileName;
-    }
 
+    const QDirPrivate* d = d_ptr.constData();
     QString ret = d->dirEntry.filePath();
     if (fileName.isEmpty())
         return ret;
@@ -793,13 +805,10 @@ QString QDir::filePath(const QString &fileName) const
 */
 QString QDir::absoluteFilePath(const QString &fileName) const
 {
-    const QDirPrivate* d = d_ptr.constData();
-    // Mistrust our own isAbsolutePath() for real files; Q_OS_WIN needs a drive.
-    if (fileName.startsWith(QLatin1Char(':')) // i.e. resource path
-        ? isAbsolutePath(fileName) : QFileSystemEntry(fileName).isAbsolute()) {
+    if (treatAsAbsolute(fileName))
         return fileName;
-    }
 
+    const QDirPrivate* d = d_ptr.constData();
     d->resolveAbsoluteEntry();
     const QString absoluteDirPath = d->absoluteDirEntry.filePath();
     if (fileName.isEmpty())
@@ -2164,9 +2173,10 @@ bool QDir::match(const QString &filter, const QString &fileName)
     This method is shared with QUrl, so it doesn't deal with QDir::separator(),
     nor does it remove the trailing slash, if any.
 */
-Q_AUTOTEST_EXPORT QString qt_normalizePathSegments(const QString &name, bool allowUncPaths,
-                                                   bool *ok = nullptr)
+QString qt_normalizePathSegments(const QString &name, QDirPrivate::PathNormalizations flags, bool *ok)
 {
+    const bool allowUncPaths = QDirPrivate::AllowUncPaths & flags;
+    const bool isRemote = QDirPrivate::RemotePath & flags;
     const int len = name.length();
 
     if (ok)
@@ -2188,14 +2198,30 @@ Q_AUTOTEST_EXPORT QString qt_normalizePathSegments(const QString &name, bool all
     i -= prefixLength;
 
     // replicate trailing slash (i > 0 checks for emptiness of input string p)
-    if (i > 0 && p[i] == '/') {
+    // except for remote paths because there can be /../ or /./ ending
+    if (i > 0 && p[i] == '/' && !isRemote) {
         out[--used] = '/';
         --i;
     }
 
+    auto isDot = [](const ushort *p, int i) {
+        return i > 1 && p[i - 1] == '.' && p[i - 2] == '/';
+    };
+    auto isDotDot = [](const ushort *p, int i) {
+        return i > 2 && p[i - 1] == '.' && p[i - 2] == '.' && p[i - 3] == '/';
+    };
+
     while (i >= 0) {
-        // remove trailing slashes
+        // copy trailing slashes for remote urls
         if (p[i] == '/') {
+            if (isRemote && !up) {
+                if (isDot(p, i)) {
+                    i -= 2;
+                    continue;
+                }
+                out[--used] = p[i];
+            }
+
             --i;
             continue;
         }
@@ -2207,10 +2233,17 @@ Q_AUTOTEST_EXPORT QString qt_normalizePathSegments(const QString &name, bool all
         }
 
         // detect up dir
-        if (i >= 1 && p[i] == '.' && p[i-1] == '.'
-                && (i == 1 || (i >= 2 && p[i-2] == '/'))) {
+        if (i >= 1 && p[i] == '.' && p[i-1] == '.' && (i < 2 || p[i - 2] == '/')) {
             ++up;
-            i -= 2;
+            i -= i >= 2 ? 3 : 2;
+
+            if (isRemote) {
+                // moving up should consider empty path segments too (/path//../ -> /path/)
+                while (i > 0 && up && p[i] == '/') {
+                    --up;
+                    --i;
+                }
+            }
             continue;
         }
 
@@ -2220,7 +2253,27 @@ Q_AUTOTEST_EXPORT QString qt_normalizePathSegments(const QString &name, bool all
 
         // skip or copy
         while (i >= 0) {
-            if (p[i] == '/') { // do not copy slashes
+            if (p[i] == '/') {
+                // copy all slashes as is for remote urls if they are not part of /./ or /../
+                if (isRemote && !up) {
+                    while (i > 0 && p[i] == '/' && !isDotDot(p, i)) {
+
+                        if (isDot(p, i)) {
+                            i -= 2;
+                            continue;
+                        }
+
+                        out[--used] = p[i];
+                        --i;
+                    }
+
+                    // in case of /./, jump over
+                    if (isDot(p, i))
+                        i -= 2;
+
+                    break;
+                }
+
                 --i;
                 break;
             }
@@ -2241,7 +2294,7 @@ Q_AUTOTEST_EXPORT QString qt_normalizePathSegments(const QString &name, bool all
         *ok = prefixLength == 0 || up == 0;
 
     // add remaining '..'
-    while (up) {
+    while (up && !isRemote) {
         if (used != len && out[used] != '/') // is not empty and there isn't already a '/'
             out[--used] = '/';
         out[--used] = '.';
@@ -2287,7 +2340,7 @@ static QString qt_cleanPath(const QString &path, bool *ok)
     if (dir_separator != QLatin1Char('/'))
        name.replace(dir_separator, QLatin1Char('/'));
 
-    QString ret = qt_normalizePathSegments(name, OSSupportsUncPaths, ok);
+    QString ret = qt_normalizePathSegments(name, OSSupportsUncPaths ? QDirPrivate::AllowUncPaths : QDirPrivate::DefaultNormalization, ok);
 
     // Strip away last slash except for root directories
     if (ret.length() > 1 && ret.endsWith(QLatin1Char('/'))) {

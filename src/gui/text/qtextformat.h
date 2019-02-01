@@ -552,9 +552,13 @@ public:
     inline QString anchorHref() const
     { return stringProperty(AnchorHref); }
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use setAnchorNames() instead")
     inline void setAnchorName(const QString &name)
     { setAnchorNames(QStringList(name)); }
+    QT_DEPRECATED_X("Use anchorNames() instead")
     QString anchorName() const;
+#endif
 
     inline void setAnchorNames(const QStringList &names)
     { setProperty(AnchorName, names); }

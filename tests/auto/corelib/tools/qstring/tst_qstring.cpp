@@ -319,10 +319,18 @@ class tst_QString : public QObject
     template <typename ArgType>
     void insert_impl() const { insert_impl<ArgType, QString &(QString::*)(int, const ArgType&)>(); }
     void insert_data(bool emptyIsNoop = false);
+
+    class TransientDefaultLocale
+    {
+        const QLocale prior; // Records what *was* the default before we set it.
+    public:
+        TransientDefaultLocale(const QLocale &transient) { revise(transient); }
+        void revise(const QLocale &transient) { QLocale::setDefault(transient); }
+        ~TransientDefaultLocale() { QLocale::setDefault(prior); }
+    };
+
 public:
     tst_QString();
-public slots:
-    void cleanup();
 private slots:
     void fromStdString();
     void toStdString();
@@ -652,11 +660,6 @@ typedef QVector<int> IntList;
 tst_QString::tst_QString()
 {
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("ISO 8859-1"));
-}
-
-void tst_QString::cleanup()
-{
-    QLocale::setDefault(QString("C"));
 }
 
 void tst_QString::remove_uint_uint_data()
@@ -4750,7 +4753,7 @@ void tst_QString::arg()
     is all messed up, because Qt Test itself uses QString::arg().
 */
 
-    QLocale::setDefault(QString("de_DE"));
+    TransientDefaultLocale transient(QString("de_DE"));
 
     QString s4( "[%0]" );
     QString s5( "[%1]" );
@@ -4898,13 +4901,11 @@ void tst_QString::arg()
     QCOMPARE(QString("%1").arg(-1., 3, 'g', -1, QChar('x')), QLatin1String("x-1"));
     QCOMPARE(QString("%1").arg(-100., 3, 'g', -1, QChar('x')), QLatin1String("-100"));
 
-    QLocale::setDefault(QString("ar"));
+    transient.revise(QString("ar"));
     QCOMPARE( QString("%L1").arg(12345.6789, 10, 'g', 7, QLatin1Char('0')),
               QString::fromUtf8("\xd9\xa0\xd9\xa1\xd9\xa2\xd9\xac\xd9\xa3\xd9\xa4\xd9\xa5\xd9\xab\xd9\xa6\xd9\xa8") ); // "٠١٢٬٣٤٥٫٦٨"
     QCOMPARE( QString("%L1").arg(123456789, 13, 10, QLatin1Char('0')),
               QString("\xd9\xa0\xd9\xa0\xd9\xa1\xd9\xa2\xd9\xa3\xd9\xac\xd9\xa4\xd9\xa5\xd9\xa6\xd9\xac\xd9\xa7\xd9\xa8\xd9\xa9") ); // ٠٠١٢٣٬٤٥٦٬٧٨٩
-
-    QLocale::setDefault(QLocale::system());
 }
 
 void tst_QString::number()
@@ -6594,14 +6595,14 @@ void tst_QString::arg_locale()
     QLocale l(QLocale::English, QLocale::UnitedKingdom);
     QString str("*%L1*%L2*");
 
-    QLocale::setDefault(l);
+    TransientDefaultLocale transient(l);
     QCOMPARE(str.arg(123456).arg(1234.56), QString::fromLatin1("*123,456*1,234.56*"));
 
     l.setNumberOptions(QLocale::OmitGroupSeparator);
-    QLocale::setDefault(l);
+    transient.revise(l);
     QCOMPARE(str.arg(123456).arg(1234.56), QString::fromLatin1("*123456*1234.56*"));
 
-    QLocale::setDefault(QLocale::C);
+    transient.revise(QLocale::C);
     QCOMPARE(str.arg(123456).arg(1234.56), QString::fromLatin1("*123456*1234.56*"));
 }
 
@@ -6615,7 +6616,7 @@ void tst_QString::toUpperLower_icu()
     QCOMPARE(s.toUpper(), QString::fromLatin1("I"));
     QCOMPARE(s.toLower(), QString::fromLatin1("i"));
 
-    QLocale::setDefault(QLocale(QLocale::Turkish, QLocale::Turkey));
+    TransientDefaultLocale transient(QLocale(QLocale::Turkish, QLocale::Turkey));
 
     QCOMPARE(s.toUpper(), QString::fromLatin1("I"));
     QCOMPARE(s.toLower(), QString::fromLatin1("i"));
@@ -6639,8 +6640,6 @@ void tst_QString::toUpperLower_icu()
     // nothing should happen here
     QCOMPARE(l.toLower(sup), sup);
     QCOMPARE(l.toLower(QString::fromLatin1("i")), QString::fromLatin1("i"));
-
-    // the cleanup function will restore the default locale
 }
 #endif
 

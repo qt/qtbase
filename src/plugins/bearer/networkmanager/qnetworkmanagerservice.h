@@ -243,7 +243,7 @@ public:
   //  bool setConnections();
 
 Q_SIGNALS:
-    void propertiesChanged(QMap <QString,QVariant>);
+    void propertiesChanged(QMap<QString,QVariant>);
     void propertiesReady();
 
 private Q_SLOTS:

@@ -2576,7 +2576,8 @@ void QMdiSubWindow::showSystemMenu()
 /*!
     \since 4.4
 
-    Returns the area containing this sub-window, or 0 if there is none.
+    Returns the area containing this sub-window, or \nullptr if there
+    is none.
 
     \sa QMdiArea::addSubWindow()
 */
@@ -2590,7 +2591,7 @@ QMdiArea *QMdiSubWindow::mdiArea() const
         }
         parent = parent->parentWidget();
     }
-    return 0;
+    return nullptr;
 }
 
 /*!

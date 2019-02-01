@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "wigglywidget.h"
+
+#include <QtWidgets>
 
 //! [0]
 WigglyWidget::WigglyWidget(QWidget *parent)

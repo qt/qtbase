@@ -98,7 +98,10 @@ public:
     TransformationType type() const;
 
     inline qreal determinant() const;
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use determinant() instead")
     qreal det() const;
+#endif
 
     qreal m11() const;
     qreal m12() const;

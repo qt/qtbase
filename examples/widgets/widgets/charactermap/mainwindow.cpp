@@ -170,8 +170,8 @@ void MainWindow::findStyles(const QFont &font)
 //! [7]
 
 //! [8]
-    QString style;
-    foreach (style, fontDatabase.styles(font.family()))
+    const QStringList styles = fontDatabase.styles(font.family());
+    for (const QString &style : styles)
         styleCombo->addItem(style);
 
     int styleIndex = styleCombo->findText(currentItem);
@@ -201,15 +201,16 @@ void MainWindow::findSizes(const QFont &font)
         // sizeCombo signals are now blocked until end of scope
         sizeCombo->clear();
 
-        int size;
         if (fontDatabase.isSmoothlyScalable(font.family(), fontDatabase.styleString(font))) {
-            foreach (size, QFontDatabase::standardSizes()) {
+            const QList<int> sizes = QFontDatabase::standardSizes();
+            for (const int size : sizes) {
                 sizeCombo->addItem(QVariant(size).toString());
                 sizeCombo->setEditable(true);
             }
 
         } else {
-            foreach (size, fontDatabase.smoothSizes(font.family(), fontDatabase.styleString(font))) {
+            const QList<int> sizes = fontDatabase.smoothSizes(font.family(), fontDatabase.styleString(font));
+            for (const int size : sizes ) {
                 sizeCombo->addItem(QVariant(size).toString());
                 sizeCombo->setEditable(false);
             }

@@ -287,7 +287,7 @@ void QXcbBasicConnection::initializeShm()
         logging->setEnabled(QtMsgType::QtWarningMsg, true);
 }
 
-void QXcbBasicConnection::initializeXRandr()
+void QXcbBasicConnection::initializeXRender()
 {
     const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_xcbConnection, &xcb_render_id);
     if (!reply || !reply->present) {
@@ -303,7 +303,7 @@ void QXcbBasicConnection::initializeXRandr()
         return;
     }
 
-    m_hasXRandr = true;
+    m_hasXRender = true;
     m_xrenderVersion.first = xrenderQuery->major_version;
     m_xrenderVersion.second = xrenderQuery->minor_version;
 }
@@ -337,7 +337,7 @@ void QXcbBasicConnection::initializeXFixes()
     m_xfixesFirstEvent = reply->first_event;
 }
 
-void QXcbBasicConnection::initializeXRender()
+void QXcbBasicConnection::initializeXRandr()
 {
     const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_xcbConnection, &xcb_randr_id);
     if (!reply || !reply->present)
@@ -352,7 +352,7 @@ void QXcbBasicConnection::initializeXRender()
         return;
     }
 
-    m_hasXRender = true;
+    m_hasXRandr = true;
     m_xrandrFirstEvent = reply->first_event;
 }
 

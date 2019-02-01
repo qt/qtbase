@@ -43,6 +43,8 @@
 #include <QtCore/QHash>
 #include <QtCore/QEventLoop>
 #include <QtCore/QVector>
+#include <QtCore/QMutex>
+#include <QtCore/QWaitCondition>
 
 #include <xcb/xcb.h>
 
@@ -104,6 +106,8 @@ public:
     bool peekEventQueue(PeekerCallback peeker, void *peekerData = nullptr,
                         PeekOptions option = PeekDefault, qint32 peekerId = -1);
 
+    void waitForNewEvents(unsigned long time = ULONG_MAX);
+
 private:
     QXcbEventNode *qXcbEventNodeFactory(xcb_generic_event_t *event);
     void dequeueNode();
@@ -131,6 +135,9 @@ private:
 
     // debug stats
     quint64 m_nodesOnHeap = 0;
+
+    QMutex m_newEventsMutex;
+    QWaitCondition m_newEventsCondition;
 };
 
 template<typename Peeker>

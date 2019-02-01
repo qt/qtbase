@@ -49,13 +49,22 @@ class QEglFSFunctions
 {
 public:
     typedef void (*LoadKeymapType)(const QString &filename);
+    typedef void (*SwitchLangType)();
     static QByteArray loadKeymapTypeIdentifier() { return QByteArrayLiteral("EglFSLoadKeymap"); }
+    static QByteArray switchLangTypeIdentifier() { return QByteArrayLiteral("EglFSSwitchLang"); }
 
     static void loadKeymap(const QString &filename)
     {
         LoadKeymapType func = reinterpret_cast<LoadKeymapType>(QGuiApplication::platformFunction(loadKeymapTypeIdentifier()));
         if (func)
             func(filename);
+    }
+
+    static void switchLang()
+    {
+        SwitchLangType func = reinterpret_cast<SwitchLangType>(QGuiApplication::platformFunction(switchLangTypeIdentifier()));
+        if (func)
+            func();
     }
 
     typedef int (*Vsp2AddLayerType)(const QScreen *screen, int dmabufFd, const QSize &size, const QPoint &position, uint drmPixelFormat, uint bytesPerLine);

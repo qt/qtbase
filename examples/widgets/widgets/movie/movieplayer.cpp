@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "movieplayer.h"
+
+#include <QtWidgets>
 
 MoviePlayer::MoviePlayer(QWidget *parent)
     : QWidget(parent)

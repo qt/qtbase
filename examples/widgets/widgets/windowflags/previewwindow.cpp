@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "previewwindow.h"
+
+#include <QtWidgets>
 
 //! [0]
 PreviewWindow::PreviewWindow(QWidget *parent)

@@ -48,11 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
-#include <stdlib.h>
-
 #include "sortingbox.h"
+
+#include <QtWidgets>
 
 //! [0]
 SortingBox::SortingBox(QWidget *parent)
@@ -140,7 +138,7 @@ void SortingBox::paintEvent(QPaintEvent * /* event */)
 {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    foreach (ShapeItem shapeItem, shapeItems) {
+    for (const ShapeItem &shapeItem : qAsConst(shapeItems)) {
 //! [8] //! [9]
         painter.translate(shapeItem.position());
 //! [9] //! [10]

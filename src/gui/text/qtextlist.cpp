@@ -100,6 +100,7 @@ public:
     \sa QTextBlock, QTextListFormat, QTextCursor
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn bool QTextList::isEmpty() const
     \obsolete
@@ -111,6 +112,7 @@ public:
 
     \sa count()
 */
+#endif
 
 /*! \internal
  */

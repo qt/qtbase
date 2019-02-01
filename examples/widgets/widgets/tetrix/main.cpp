@@ -48,11 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
-#include <stdlib.h>
-
 #include "tetrixwindow.h"
+
+#include <QApplication>
 
 int main(int argc, char *argv[])
 {

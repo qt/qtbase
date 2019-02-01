@@ -626,8 +626,8 @@ QString QSqlRelationalTableModel::selectStatement() const
 
 /*!
     Returns a QSqlTableModel object for accessing the table for which
-    \a column is a foreign key, or 0 if there is no relation for the
-    given \a column.
+    \a column is a foreign key, or \nullptr if there is no relation for
+    the given \a column.
 
     The returned object is owned by the QSqlRelationalTableModel.
 
@@ -636,12 +636,12 @@ QString QSqlRelationalTableModel::selectStatement() const
 QSqlTableModel *QSqlRelationalTableModel::relationModel(int column) const
 {
     Q_D(const QSqlRelationalTableModel);
-    if ( column < 0 || column >= d->relations.count())
-        return 0;
+    if (column < 0 || column >= d->relations.count())
+        return nullptr;
 
     QRelation &relation = const_cast<QSqlRelationalTableModelPrivate *>(d)->relations[column];
     if (!relation.isValid())
-        return 0;
+        return nullptr;
 
     if (!relation.model)
         relation.populateModel();

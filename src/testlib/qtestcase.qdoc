@@ -995,6 +995,22 @@
 */
 
 /*!
+    \fn char *QTest::toString(const QCborError &c)
+    \overload
+    \since 5.12
+
+    Returns a textual representation of the given CBOR error \a c.
+*/
+
+/*!
+    \fn template <class... Types> char *QTest::toString(const std::tuple<Types...> &tuple)
+    \overload
+    \since 5.12
+
+    Returns a textual representation of the given \a tuple.
+*/
+
+/*!
     \fn char *QTest::toString(const QTime &time)
     \overload
 
@@ -1110,6 +1126,12 @@
     \since 5.5
 
     Returns a textual representation of size policy \a sp.
+*/
+
+/*!
+    \fn template <typename Tuple, int... I> char *QTest::toString(const Tuple &tuple, QtPrivate::IndexesList<I...> )
+    \internal
+    \since 5.12
 */
 
 /*!

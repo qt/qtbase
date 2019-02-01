@@ -50,7 +50,8 @@
 
 #include "emulationdetector.h"
 
-#if !defined(QT_NO_OPENSSL) && OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_TLSEXT)
+#if (!defined(QT_NO_OPENSSL) && OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_TLSEXT)) \
+        || QT_CONFIG(schannel)
 // HTTP/2 over TLS requires ALPN/NPN to negotiate the protocol version.
 const bool clearTextHTTP2 = false;
 #else

@@ -136,8 +136,9 @@ void QXmlTestLogger::startLogging()
 void QXmlTestLogger::stopLogging()
 {
     QTestCharBuffer buf;
-    QTest::qt_asprintf(&buf,
-                "<Duration msecs=\"%f\"/>\n", QTestLog::msecsTotalTime());
+
+    QTest::qt_asprintf(&buf, "<Duration msecs=\"%s\"/>\n",
+        QString::number(QTestLog::msecsTotalTime()).toUtf8().constData());
     outputString(buf.constData());
     if (xmlmode == QXmlTestLogger::Complete) {
         outputString("</TestCase>\n");
@@ -159,9 +160,9 @@ void QXmlTestLogger::leaveTestFunction()
 {
     QTestCharBuffer buf;
     QTest::qt_asprintf(&buf,
-                "    <Duration msecs=\"%f\"/>\n"
+                "    <Duration msecs=\"%s\"/>\n"
                 "</TestFunction>\n",
-        QTestLog::msecsFunctionTime());
+        QString::number(QTestLog::msecsFunctionTime()).toUtf8().constData());
 
     outputString(buf.constData());
 }

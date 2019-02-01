@@ -223,7 +223,7 @@ QString QXmlStreamReaderPrivate::resolveUndeclaredEntity(const QString &name)
    The stream reader does \e not take ownership of the resolver. It's
    the callers responsibility to ensure that the resolver is valid
    during the entire life-time of the stream reader object, or until
-   another resolver or 0 is set.
+   another resolver or \nullptr is set.
 
    \sa entityResolver()
  */
@@ -236,7 +236,7 @@ void QXmlStreamReader::setEntityResolver(QXmlStreamEntityResolver *resolver)
 /*!
   \since 4.4
 
-  Returns the entity resolver, or 0 if there is no entity resolver.
+  Returns the entity resolver, or \nullptr if there is no entity resolver.
 
   \sa setEntityResolver()
  */
@@ -480,7 +480,7 @@ void QXmlStreamReader::setDevice(QIODevice *device)
 
 /*!
     Returns the current device associated with the QXmlStreamReader,
-    or 0 if no device has been assigned.
+    or \nullptr if no device has been assigned.
 
     \sa setDevice()
 */
@@ -3315,7 +3315,7 @@ void QXmlStreamWriter::setDevice(QIODevice *device)
 
 /*!
     Returns the current device associated with the QXmlStreamWriter,
-    or 0 if no device has been assigned.
+    or \nullptr if no device has been assigned.
 
     \sa setDevice()
 */

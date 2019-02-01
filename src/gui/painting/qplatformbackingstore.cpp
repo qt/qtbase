@@ -411,6 +411,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
         } else if (!region.isEmpty()){
             funcs->glBindTexture(GL_TEXTURE_2D, d_ptr->textureId);
             QPlatformGraphicsBufferHelper::lockAndBindToTexture(graphicsBuffer, &d_ptr->needsSwizzle, &d_ptr->premultiplied);
+            graphicsBuffer->unlock();
         }
 
         if (graphicsBuffer->origin() == QPlatformGraphicsBuffer::OriginBottomLeft)

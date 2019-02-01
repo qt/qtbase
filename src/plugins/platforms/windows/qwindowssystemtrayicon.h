@@ -84,6 +84,7 @@ private:
     bool ensureInstalled();
     void ensureCleanup();
     bool sendTrayMessage(DWORD msg);
+    bool setIconVisible(bool visible);
     HICON createIcon(const QIcon &icon);
 
     QIcon m_icon;
@@ -92,6 +93,7 @@ private:
     HICON m_hIcon = nullptr;
     mutable QPointer<QWindowsPopupMenu> m_menu;
     bool m_ignoreNextMouseRelease = false;
+    bool m_visible = false;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

@@ -48,6 +48,8 @@
 **
 ****************************************************************************/
 
+#include "scribblearea.h"
+
 #include <QtWidgets>
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>
@@ -56,8 +58,6 @@
 #include <QPrintDialog>
 #endif
 #endif
-
-#include "scribblearea.h"
 
 //! [0]
 ScribbleArea::ScribbleArea(QWidget *parent)

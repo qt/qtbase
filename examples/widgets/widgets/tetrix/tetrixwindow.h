@@ -51,7 +51,6 @@
 #ifndef TETRIXWINDOW_H
 #define TETRIXWINDOW_H
 
-#include <QFrame>
 #include <QWidget>
 
 QT_BEGIN_NAMESPACE

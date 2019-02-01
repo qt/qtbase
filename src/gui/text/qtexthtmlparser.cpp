@@ -1544,7 +1544,7 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                 if (key == QLatin1String("href"))
                     node->charFormat.setAnchorHref(value);
                 else if (key == QLatin1String("name"))
-                    node->charFormat.setAnchorName(value);
+                    node->charFormat.setAnchorNames({value});
                 break;
             case Html_img:
                 if (key == QLatin1String("src") || key == QLatin1String("source")) {
@@ -1684,7 +1684,7 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
             node->charFormat.setToolTip(value);
         } else if (key == QLatin1String("id")) {
             node->charFormat.setAnchor(true);
-            node->charFormat.setAnchorName(value);
+            node->charFormat.setAnchorNames({value});
         }
     }
 

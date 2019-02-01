@@ -3570,7 +3570,7 @@ void QImage::rgbSwapped_inplace()
     The loader attempts to read the image using the specified \a format, e.g.,
     PNG or JPG. If \a format is not specified (which is the default), it is
     auto-detected based on the file's suffix and header. For details, see
-    {QImageReader::setAutoDetectImageFormat()}{QImageReader}.
+    QImageReader::setAutoDetectImageFormat().
 
     The file name can either refer to an actual file on disk or to one
     of the application's embedded resources. See the

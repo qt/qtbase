@@ -810,8 +810,9 @@ xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t window, i
 
         connection()->flush();
 
-        // sleep 50 ms, so we don't use up CPU cycles all the time.
-        QThread::msleep(50);
+        const auto elapsed = timer.elapsed();
+        if (elapsed < clipboard_timeout)
+            queue->waitForNewEvents(clipboard_timeout - elapsed);
     } while (timer.elapsed() < clipboard_timeout);
 
     return nullptr;

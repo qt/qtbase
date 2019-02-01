@@ -1763,7 +1763,7 @@ void QObject::killTimer(int id)
     \fn template<typename T> T *QObject::findChild(const QString &name, Qt::FindChildOptions options) const
 
     Returns the child of this object that can be cast into type T and
-    that is called \a name, or 0 if there is no such object.
+    that is called \a name, or \nullptr if there is no such object.
     Omitting the \a name argument causes all object names to be matched.
     The search is performed recursively, unless \a options specifies the
     option FindDirectChildrenOnly.
@@ -4342,6 +4342,12 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     in a QVariant, you can convert them to strings. Likewise, passing them to
     QDebug will print out their names.
 
+    Mind that the enum values are stored as signed \c int in the meta object system.
+    Registering enumerations with values outside the range of values valid for \c int
+    will lead to overflows and potentially undefined behavior when accessing them through
+    the meta object system. QML, for example, does access registered enumerations through
+    the meta object system.
+
     \sa {Qt's Property System}
 */
 
@@ -4392,6 +4398,12 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     Q_DECLARE_METATYPE(). This will enable useful features; for example, if
     used in a QVariant, you can convert them to strings. Likewise, passing them
     to QDebug will print out their names.
+
+    Mind that the enum values are stored as signed \c int in the meta object system.
+    Registering enumerations with values outside the range of values valid for \c int
+    will lead to overflows and potentially undefined behavior when accessing them through
+    the meta object system. QML, for example, does access registered enumerations through
+    the meta object system.
 
     \sa {Qt's Property System}
 */
@@ -4450,7 +4462,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     macro, it must appear in the private section of a class definition.
 
     Q_GADGETs can have Q_ENUM, Q_PROPERTY and Q_INVOKABLE, but they cannot have
-    signals or slots
+    signals or slots.
 
     Q_GADGET makes a class member, \c{staticMetaObject}, available.
     \c{staticMetaObject} is of type QMetaObject and provides access to the

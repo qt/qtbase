@@ -612,7 +612,7 @@ public abstract class QtLoader {
                 }
 
                 if (m_qtLibs != null) {
-                    String libPrefix = apkDeployFromSystem ? libsDir + "lib" : localPrefix + "lib/lib";
+                    String libPrefix = libsDir + "lib";
                     for (int i = 0; i < m_qtLibs.length; i++)
                         libraryList.add(libPrefix + m_qtLibs[i] + ".so");
                 }

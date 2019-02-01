@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "stylesheeteditor.h"
+
+#include <QtWidgets>
 
 StyleSheetEditor::StyleSheetEditor(QWidget *parent)
     : QDialog(parent)

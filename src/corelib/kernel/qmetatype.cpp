@@ -421,8 +421,8 @@ struct DefinedTypesFilter {
     pointer of this type. (given by QVariant::data for example)
 
     If the type is an enumeration, flags() contains QMetaType::IsEnumeration, and this function
-    returns the QMetaObject of the enclosing object if the enum was registered as a Q_ENUM or 0
-    otherwise
+    returns the QMetaObject of the enclosing object if the enum was registered as a Q_ENUM or
+    \nullptr otherwise
 
     \sa QMetaType::metaObjectForType(), QMetaType::flags()
 */

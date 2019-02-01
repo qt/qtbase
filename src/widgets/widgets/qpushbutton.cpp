@@ -545,8 +545,8 @@ void QPushButton::setMenu(QMenu* menu)
 }
 
 /*!
-    Returns the button's associated popup menu or 0 if no popup menu
-    has been set.
+    Returns the button's associated popup menu or \nullptr if no popup
+    menu has been set.
 
     \sa setMenu()
 */

@@ -2567,7 +2567,7 @@ void QTabBar::setChangeCurrentOnDrag(bool change)
 
     The tab bar will take ownership of the widget and so all widgets set here
     will be deleted by the tab bar when it is destroyed unless you separately
-    reparent the widget after setting some other widget (or 0).
+    reparent the widget after setting some other widget (or \nullptr).
 
     \sa tabsClosable()
   */
@@ -2597,14 +2597,14 @@ void QTabBar::setTabButton(int index, ButtonPosition position, QWidget *widget)
 }
 
 /*!
-    Returns the widget set a tab \a index and \a position or 0 if
-    one is not set.
+    Returns the widget set a tab \a index and \a position or \nullptr
+    if one is not set.
   */
 QWidget *QTabBar::tabButton(int index, ButtonPosition position) const
 {
     Q_D(const QTabBar);
     if (index < 0 || index >= d->tabList.count())
-        return 0;
+        return nullptr;
     if (position == LeftSide)
         return d->tabList.at(index).leftWidget;
     else

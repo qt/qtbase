@@ -289,7 +289,9 @@ QPlatformCursor *QEglFSKmsEglDeviceIntegration::createCursor(QPlatformScreen *sc
 {
 #if QT_CONFIG(opengl)
     if (screenConfig()->separateScreens())
-        return  new QEglFSCursor(screen);
+        return new QEglFSCursor(screen);
+#else
+    Q_UNUSED(screen);
 #endif
     return nullptr;
 }

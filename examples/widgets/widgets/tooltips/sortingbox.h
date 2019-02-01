@@ -51,9 +51,9 @@
 #ifndef SORTINGBOX_H
 #define SORTINGBOX_H
 
-#include <QWidget>
-
 #include "shapeitem.h"
+
+#include <QWidget>
 
 QT_BEGIN_NAMESPACE
 class QAction;

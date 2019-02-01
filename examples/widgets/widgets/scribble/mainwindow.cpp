@@ -153,8 +153,9 @@ void MainWindow::createActions()
     openAct->setShortcuts(QKeySequence::Open);
     connect(openAct, &QAction::triggered, this, &MainWindow::open);
 
-    foreach (QByteArray format, QImageWriter::supportedImageFormats()) {
-        QString text = tr("%1...").arg(QString(format).toUpper());
+    const QList<QByteArray> imageFormats = QImageWriter::supportedImageFormats();
+    for (const QByteArray &format : imageFormats) {
+        QString text = tr("%1...").arg(QString::fromLatin1(format).toUpper());
 
         QAction *action = new QAction(text, this);
         action->setData(format);
@@ -193,7 +194,7 @@ void MainWindow::createMenus()
 //! [15] //! [16]
 {
     saveAsMenu = new QMenu(tr("&Save As"), this);
-    foreach (QAction *action, saveAsActs)
+    for (QAction *action : qAsConst(saveAsActs))
         saveAsMenu->addAction(action);
 
     fileMenu = new QMenu(tr("&File"), this);

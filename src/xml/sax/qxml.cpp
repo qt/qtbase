@@ -2676,9 +2676,9 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 */
 
 /*!
-    \fn QXmlEntityResolver* QXmlReader::entityResolver() const
+    \fn QXmlEntityResolver *QXmlReader::entityResolver() const
 
-    Returns the entity resolver or 0 if none was set.
+    Returns the entity resolver or \nullptr if none was set.
 
     \sa setEntityResolver()
 */
@@ -2692,9 +2692,9 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 */
 
 /*!
-    \fn QXmlDTDHandler* QXmlReader::DTDHandler() const
+    \fn QXmlDTDHandler *QXmlReader::DTDHandler() const
 
-    Returns the DTD handler or 0 if none was set.
+    Returns the DTD handler or \nullptr if none was set.
 
     \sa setDTDHandler()
 */
@@ -2708,9 +2708,9 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 */
 
 /*!
-    \fn QXmlContentHandler* QXmlReader::contentHandler() const
+    \fn QXmlContentHandler *QXmlReader::contentHandler() const
 
-    Returns the content handler or 0 if none was set.
+    Returns the content handler or \nullptr if none was set.
 
     \sa setContentHandler()
 */
@@ -2725,9 +2725,9 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 */
 
 /*!
-    \fn QXmlErrorHandler* QXmlReader::errorHandler() const
+    \fn QXmlErrorHandler *QXmlReader::errorHandler() const
 
-    Returns the error handler or 0 if none is set.
+    Returns the error handler or \nullptr if none is set.
 
     \sa setErrorHandler()
 */
@@ -2741,9 +2741,9 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 */
 
 /*!
-    \fn QXmlLexicalHandler* QXmlReader::lexicalHandler() const
+    \fn QXmlLexicalHandler *QXmlReader::lexicalHandler() const
 
-    Returns the lexical handler or 0 if none was set.
+    Returns the lexical handler or \nullptr if none was set.
 
     \sa setLexicalHandler()
 */
@@ -2757,9 +2757,9 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 */
 
 /*!
-    \fn QXmlDeclHandler* QXmlReader::declHandler() const
+    \fn QXmlDeclHandler *QXmlReader::declHandler() const
 
-    Returns the declaration handler or 0 if none was set.
+    Returns the declaration handler or \nullptr if none was set.
 
     \sa setDeclHandler()
 */

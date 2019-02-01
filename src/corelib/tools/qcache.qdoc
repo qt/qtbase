@@ -70,7 +70,7 @@
     To look up objects in the cache, use object() or
     operator[](). This function looks up an object by its key, and
     returns either a pointer to the cached object (which is owned by
-    the cache) or 0.
+    the cache) or \nullptr.
 
     If you want to remove an object from the cache for a particular key,
     call remove(). This will also delete the object. If you want to
@@ -171,7 +171,7 @@
 
 /*! \fn template <class Key, class T> T *QCache<Key, T>::object(const Key &key) const
 
-    Returns the object associated with key \a key, or 0 if the key does
+    Returns the object associated with key \a key, or \nullptr if the key does
     not exist in the cache.
 
     \warning The returned object is owned by QCache and may be
@@ -190,7 +190,7 @@
 
 /*! \fn template <class Key, class T> T *QCache<Key, T>::operator[](const Key &key) const
 
-    Returns the object associated with key \a key, or 0 if the key does
+    Returns the object associated with key \a key, or \nullptr if the key does
     not exist in the cache.
 
     This is the same as object().

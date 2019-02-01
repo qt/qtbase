@@ -57,6 +57,11 @@
 #include <security.h>
 #include <schnlsp.h>
 
+#if NTDDI_VERSION >= NTDDI_WINBLUE && !defined(Q_CC_MINGW)
+// ALPN = Application Layer Protocol Negotiation
+#define SUPPORTS_ALPN 1
+#endif
+
 // Not defined in MinGW
 #ifndef SECBUFFER_ALERT
 #define SECBUFFER_ALERT 17
@@ -391,6 +396,40 @@ Required const_reinterpret_cast(Actual *p)
     return Required(p);
 }
 
+#ifdef SUPPORTS_ALPN
+bool supportsAlpn()
+{
+    return QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows8_1;
+}
+
+QByteArray createAlpnString(const QByteArrayList &nextAllowedProtocols)
+{
+    QByteArray alpnString;
+    if (!nextAllowedProtocols.isEmpty() && supportsAlpn()) {
+        const QByteArray names = [&nextAllowedProtocols]() {
+            QByteArray protocolString;
+            for (QByteArray proto : nextAllowedProtocols) {
+                if (proto.size() > 255) {
+                    qCWarning(lcSsl) << "TLS ALPN extension" << proto
+                                     << "is too long and will be truncated to 255 characters.";
+                    proto = proto.left(255);
+                }
+                protocolString += char(proto.length()) + proto;
+            }
+            return protocolString;
+        }();
+
+        const quint16 namesSize = names.size();
+        const quint32 alpnId = SecApplicationProtocolNegotiationExt_ALPN;
+        const quint32 totalSize = sizeof(alpnId) + sizeof(namesSize) + namesSize;
+        alpnString = QByteArray::fromRawData(reinterpret_cast<const char *>(&totalSize), sizeof(totalSize))
+                + QByteArray::fromRawData(reinterpret_cast<const char *>(&alpnId), sizeof(alpnId))
+                + QByteArray::fromRawData(reinterpret_cast<const char *>(&namesSize), sizeof(namesSize))
+                + names;
+    }
+    return alpnString;
+}
+#endif // SUPPORTS_ALPN
 } // anonymous namespace
 
 bool QSslSocketPrivate::s_loadRootCertsOnDemand = true;
@@ -684,13 +723,28 @@ bool QSslSocketBackendPrivate::createContext()
 
     TimeStamp expiry;
 
+    SecBufferDesc alpnBufferDesc;
+    bool useAlpn = false;
+#ifdef SUPPORTS_ALPN
+    configuration.nextProtocolNegotiationStatus = QSslConfiguration::NextProtocolNegotiationNone;
+    QByteArray alpnString = createAlpnString(configuration.nextAllowedProtocols);
+    useAlpn = !alpnString.isEmpty();
+    SecBuffer alpnBuffers[1];
+    alpnBuffers[0] = createSecBuffer(alpnString, SECBUFFER_APPLICATION_PROTOCOLS);
+    alpnBufferDesc = {
+        SECBUFFER_VERSION,
+        ARRAYSIZE(alpnBuffers),
+        alpnBuffers
+    };
+#endif
+
     auto status = InitializeSecurityContext(&credentialHandle, // phCredential
                                             nullptr, // phContext
                                             const_reinterpret_cast<SEC_WCHAR *>(targetName().utf16()), // pszTargetName
                                             contextReq, // fContextReq
                                             0, // Reserved1
                                             0, // TargetDataRep (unused)
-                                            nullptr, // pInput (no input at the moment @future: alpn)
+                                            useAlpn ? &alpnBufferDesc : nullptr, // pInput
                                             0, // Reserved2
                                             &contextHandle, // phNewContext
                                             &outputBufferDesc, // pOutput
@@ -725,7 +779,19 @@ bool QSslSocketBackendPrivate::acceptContext()
 
     SecBuffer inBuffers[2];
     inBuffers[0] = createSecBuffer(intermediateBuffer, SECBUFFER_TOKEN);
-    inBuffers[1] = createSecBuffer(nullptr, 0, SECBUFFER_EMPTY);
+
+#ifdef SUPPORTS_ALPN
+    configuration.nextProtocolNegotiationStatus = QSslConfiguration::NextProtocolNegotiationNone;
+    // The string must be alive when we call AcceptSecurityContext
+    QByteArray alpnString = createAlpnString(configuration.nextAllowedProtocols);
+    if (!alpnString.isEmpty()) {
+        inBuffers[1] = createSecBuffer(alpnString, SECBUFFER_APPLICATION_PROTOCOLS);
+    } else
+#endif
+    {
+        inBuffers[1] = createSecBuffer(nullptr, 0, SECBUFFER_EMPTY);
+    }
+
     SecBufferDesc inputBufferDesc{
         SECBUFFER_VERSION,
         ARRAYSIZE(inBuffers),
@@ -931,6 +997,31 @@ bool QSslSocketBackendPrivate::verifyHandshake()
                                     SECPKG_ATTR_CONNECTION_INFO,
                                     &connectionInfo);
     CHECK_STATUS(status);
+
+#ifdef SUPPORTS_ALPN
+    if (!configuration.nextAllowedProtocols.isEmpty() && supportsAlpn()) {
+        SecPkgContext_ApplicationProtocol alpn;
+        status = QueryContextAttributes(&contextHandle,
+                                        SECPKG_ATTR_APPLICATION_PROTOCOL,
+                                        &alpn);
+        CHECK_STATUS(status);
+        if (alpn.ProtoNegoStatus == SecApplicationProtocolNegotiationStatus_Success) {
+            QByteArray negotiatedProto = QByteArray((const char *)alpn.ProtocolId,
+                                                    alpn.ProtocolIdSize);
+            if (!configuration.nextAllowedProtocols.contains(negotiatedProto)) {
+                setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
+                                QSslSocket::tr("Unwanted protocol was negotiated"));
+                return false;
+            }
+            configuration.nextNegotiatedProtocol = negotiatedProto;
+            configuration.nextProtocolNegotiationStatus = QSslConfiguration::NextProtocolNegotiationNegotiated;
+        } else {
+            configuration.nextNegotiatedProtocol = "";
+            configuration.nextProtocolNegotiationStatus = QSslConfiguration::NextProtocolNegotiationUnsupported;
+        }
+    }
+#endif // supports ALPN
+
 #undef CHECK_STATUS
 
     // Verify certificate

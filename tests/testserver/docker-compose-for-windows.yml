@@ -25,6 +25,7 @@ services:
             - "qt-test-server.${TEST_DOMAIN}:${MACHINE_IP}"
         environment:
             - test_domain=${TEST_DOMAIN}
+            - test_cert="qt-test-server-host-network-cacert.pem"
 
     squid:
         image: qt-test-server-squid:9c32f41b19aca3d778733c4d8fb0ecc5955e893c
